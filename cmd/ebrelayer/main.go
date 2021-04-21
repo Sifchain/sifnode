@@ -13,7 +13,7 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/Sifchain/sifnode/app"
+	sifapp "github.com/Sifchain/sifnode/app"
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/contract"
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/relayer"
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/txs"
@@ -46,7 +46,7 @@ func init() {
 
 	log.SetFlags(log.Lshortfile)
 
-	app.SetConfig(true)
+	sifapp.SetConfig(true)
 
 	// Add --chain-id to persistent flags and mark it required
 	rootCmd.PersistentFlags().String(flags.FlagKeyringBackend, flags.DefaultKeyringBackend,
@@ -257,7 +257,7 @@ func listMissedCosmosEventCmd() *cobra.Command {
 }
 
 func main() {
-	if err := svrcmd.Execute(rootCmd, app.DefaultNodeHome); err != nil {
+	if err := svrcmd.Execute(rootCmd, sifapp.DefaultNodeHome); err != nil {
 		switch e := err.(type) {
 		case server.ErrorCode:
 			os.Exit(e.Code)

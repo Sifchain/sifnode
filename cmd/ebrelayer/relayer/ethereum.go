@@ -28,7 +28,7 @@ import (
 	tmClient "github.com/tendermint/tendermint/rpc/client/http"
 	"go.uber.org/zap"
 
-	"github.com/Sifchain/sifnode/app"
+	sifapp "github.com/Sifchain/sifnode/app"
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/contract"
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/txs"
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/types"
@@ -111,7 +111,7 @@ func NewEthereumSub(inBuf io.Reader, rpcURL string, validatorMoniker, chainID, e
 func LoadTendermintCLIContext(validatorAddress sdk.ValAddress, validatorName string,
 	rpcURL string, chainID string, sugaredLogger *zap.SugaredLogger) (client.Context, error) {
 	// Create the new CLI context
-	encodingConfig := app.MakeTestEncodingConfig()
+	encodingConfig := sifapp.MakeTestEncodingConfig()
 	cliCtx := client.Context{}.
 		WithLegacyAmino(encodingConfig.Amino).
 		WithFromAddress(sdk.AccAddress(validatorAddress)).
