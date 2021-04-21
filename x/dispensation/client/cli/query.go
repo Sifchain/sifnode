@@ -100,7 +100,7 @@ func GetCmdDistributionRecordForDistNameAll(queryRoute string) *cobra.Command {
 				return err
 			}
 			name := args[0]
-			params := types.NewQueryRecordsByDistributionName(name, 3)
+			params := types.NewQueryRecordsByDistributionName(name, sdk.NewUint(2))
 			bz, err := clientCtx.LegacyAmino.MarshalJSON(params)
 			if err != nil {
 				return err
@@ -130,7 +130,7 @@ func GetCmdDistributionRecordForDistNamePending(queryRoute string) *cobra.Comman
 				return err
 			}
 			name := args[0]
-			params := types.NewQueryRecordsByDistributionName(name, types.Pending)
+			params := types.NewQueryRecordsByDistributionName(name, sdk.NewUint(1))
 			bz, err := clientCtx.LegacyAmino.MarshalJSON(params)
 			if err != nil {
 				return err
@@ -160,7 +160,7 @@ func GetCmdDistributionRecordForDistNameCompleted(queryRoute string) *cobra.Comm
 				return err
 			}
 			name := args[0]
-			params := types.NewQueryRecordsByDistributionName(name, types.Completed)
+			params := types.NewQueryRecordsByDistributionName(name, sdk.NewUint(2))
 			bz, err := clientCtx.LegacyAmino.MarshalJSON(params)
 			if err != nil {
 				return err

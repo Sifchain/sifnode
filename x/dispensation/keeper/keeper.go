@@ -55,5 +55,5 @@ func (k Keeper) SendCoins(ctx sdk.Context, from sdk.AccAddress, to sdk.AccAddres
 }
 
 func (k Keeper) HasCoins(ctx sdk.Context, user sdk.AccAddress, coins sdk.Coins) bool {
-	return k.bankKeeper.HasCoins(ctx, user, coins)
+	return k.supplyKeeper.HasCoins(ctx, user, coins)
 }

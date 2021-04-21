@@ -2,7 +2,6 @@ package keeper
 
 import (
 	"github.com/Sifchain/sifnode/x/dispensation/types"
-	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	abci "github.com/tendermint/tendermint/abci/types"
@@ -33,14 +32,14 @@ func queryDistributionRecordsForName(ctx sdk.Context, req abci.RequestQuery, kee
 	}
 	records := new(types.DistributionRecords)
 	switch params.Status {
-	case types.Pending:
+	case sdk.NewUint(1):
 		*records = keeper.GetRecordsForNamePending(ctx, params.DistributionName)
-	case types.Completed:
+	case sdk.NewUint(2):
 		*records = keeper.GetRecordsForNameCompleted(ctx, params.DistributionName)
 	default:
 		*records = keeper.GetRecordsForNameAll(ctx, params.DistributionName)
 	}
-	res, err := codec.MarshalJSONIndent(keeper.cdc, records)
+	res, err := types.ModuleCdc.MarshalJSON(records)
 	if err != nil {
 		return nil, sdkerrors.Wrap(sdkerrors.ErrJSONMarshal, err.Error())
 	}
@@ -54,8 +53,8 @@ func queryDistributionRecordsForRecipient(ctx sdk.Context, req abci.RequestQuery
 	if err != nil {
 		return nil, sdkerrors.Wrap(sdkerrors.ErrJSONUnmarshal, err.Error())
 	}
-	records := keeper.GetRecordsForRecipient(ctx, params.Address)
-	res, err := codec.MarshalJSONIndent(keeper.cdc, records)
+	records := keeper.GetRecordsForRecipient(ctx, sdk.AccAddress(params.Address))
+	res, err := types.ModuleCdc.MarshalJSON(&records)
 	if err != nil {
 		return nil, sdkerrors.Wrap(sdkerrors.ErrJSONMarshal, err.Error())
 	}
@@ -64,7 +63,7 @@ func queryDistributionRecordsForRecipient(ctx sdk.Context, req abci.RequestQuery
 
 func queryAllDistributions(ctx sdk.Context, keeper Keeper) ([]byte, error) {
 	list := keeper.GetDistributions(ctx)
-	res, err := codec.MarshalJSONIndent(keeper.cdc, list)
+	res, err := types.ModuleCdc.MarshalJSON(&list)
 	if err != nil {
 		return nil, sdkerrors.Wrap(sdkerrors.ErrJSONMarshal, err.Error())
 	}

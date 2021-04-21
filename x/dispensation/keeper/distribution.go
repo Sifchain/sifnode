@@ -14,7 +14,7 @@ func (k Keeper) SetDistribution(ctx sdk.Context, ar types.Distribution) error {
 	}
 	store := ctx.KVStore(k.storeKey)
 	key := types.GetDistributionsKey(ar.DistributionName, ar.DistributionType)
-	store.Set(key, k.cdc.MustMarshalBinaryBare(ar))
+	store.Set(key, k.cdc.MustMarshalBinaryBare(&ar))
 	return nil
 }
 
@@ -51,7 +51,7 @@ func (k Keeper) GetDistributions(ctx sdk.Context) types.Distributions {
 		var dl types.Distribution
 		bytesValue := iterator.Value()
 		k.cdc.MustUnmarshalBinaryBare(bytesValue, &dl)
-		res = append(res, dl)
+		res.Distributions = append(res.Distributions, &dl)
 	}
 	return res
 }

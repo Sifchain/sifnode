@@ -12,7 +12,7 @@ import (
 // Each Recipient and DropName generate a unique Record
 func (k Keeper) CreateDrops(ctx sdk.Context, output []banktypes.Output, name string) error {
 	for _, receiver := range output {
-		distributionRecord := types.NewDistributionRecord(name, sdk.AccAddress{}, receiver.Coins, ctx.BlockHeight(), -1)
+		distributionRecord := types.NewDistributionRecord(name, "", receiver.Coins, sdk.NewInt(ctx.BlockHeight()), sdk.NewInt(-1))
 		if k.ExistsDistributionRecord(ctx, name, receiver.Address) {
 			oldRecord, err := k.GetDistributionRecord(ctx, name, receiver.Address)
 			if err != nil {
@@ -20,7 +20,7 @@ func (k Keeper) CreateDrops(ctx sdk.Context, output []banktypes.Output, name str
 			}
 			distributionRecord.Add(oldRecord)
 		}
-		distributionRecord.ClaimStatus = types.Pending
+		distributionRecord.ClaimStatus = sdk.NewUint(1)
 		err := k.SetDistributionRecord(ctx, distributionRecord)
 		if err != nil {
 			return errors.Wrapf(types.ErrFailedOutputs, "error setting distibution record  : %s", distributionRecord.String())
@@ -33,18 +33,18 @@ func (k Keeper) CreateDrops(ctx sdk.Context, output []banktypes.Output, name str
 // It checks if any pending records are present , if there are it completes the top 10
 func (k Keeper) DistributeDrops(ctx sdk.Context, height int64) error {
 	pendingRecords := k.GetPendingRecordsLimited(ctx, 10)
-	for _, record := range pendingRecords {
-		err := k.GetSupplyKeeper().SendCoinsFromModuleToAccount(ctx, types.ModuleName, record.RecipientAddress, record.Coins)
+	for _, record := range pendingRecords.DistributionRecords {
+		err := k.GetBankKeeper().SendCoinsFromModuleToAccount(ctx, types.ModuleName, sdk.AccAddress(record.RecipientAddress), record.Coins)
 		if err != nil {
-			return errors.Wrapf(types.ErrFailedOutputs, "for address  : %s", record.RecipientAddress.String())
+			return errors.Wrapf(types.ErrFailedOutputs, "for address  : %s", record.RecipientAddress)
 		}
-		record.ClaimStatus = types.Completed
-		record.DistributionCompletedHeight = height
-		err = k.SetDistributionRecord(ctx, record)
+		record.ClaimStatus = sdk.NewUint(2)
+		record.DistributionCompletedHeight = sdk.NewInt(height)
+		err = k.SetDistributionRecord(ctx, *record)
 		if err != nil {
-			return errors.Wrapf(types.ErrFailedOutputs, "error setting distibution record  : %s", record.String())
+			return errors.Wrapf(types.ErrFailedOutputs, "error setting distibution record  : %s", record)
 		}
-		ctx.Logger().Info(fmt.Sprintf("Distributed to : %s | At height : %d | Amount :%s \n", record.RecipientAddress.String(), height, record.Coins.String()))
+		ctx.Logger().Info(fmt.Sprintf("Distributed to : %s | At height : %d | Amount :%s \n", record.RecipientAddress, height, record.Coins.String()))
 	}
 	return nil
 }
@@ -52,7 +52,7 @@ func (k Keeper) DistributeDrops(ctx sdk.Context, height int64) error {
 // AccumulateDrops collects funds from a senders account and transfers it to the Dispensation module account
 func (k Keeper) AccumulateDrops(ctx sdk.Context, input []banktypes.Input) error {
 	for _, fundingInput := range input {
-		err := k.GetSupplyKeeper().SendCoinsFromAccountToModule(ctx, sdk.AccAddress(fundingInput.Address), types.ModuleName, fundingInput.Coins)
+		err := k.GetBankKeeper().SendCoinsFromAccountToModule(ctx, sdk.AccAddress(fundingInput.Address), types.ModuleName, fundingInput.Coins)
 		if err != nil {
 			return errors.Wrapf(types.ErrFailedInputs, "for address  : %s", fundingInput.Address)
 		}

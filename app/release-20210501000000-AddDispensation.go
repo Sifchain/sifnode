@@ -8,6 +8,6 @@ import (
 
 func GetAddDispensation(app *SifchainApp) func(ctx sdk.Context, plan upgradetypes.Plan) {
 	return func(ctx sdk.Context, plan upgradetypes.Plan) {
-		dispensation.InitGenesis(ctx, app.DispensationKeeper, dispensation.DefaultGenesisState())
+		dispensation.InitGenesis(ctx, app.DispensationKeeper, *dispensation.DefaultGenesisState())
 	}
 }

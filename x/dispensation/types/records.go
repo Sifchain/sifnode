@@ -1,9 +1,7 @@
 package types
 
 import (
-	"fmt"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"strings"
 )
 
 //This package is used to keep historical data. This will later be used to distribute rewards over different blocks through a gov proposal
@@ -46,13 +44,6 @@ func (dr DistributionRecord) Add(dr2 DistributionRecord) DistributionRecord {
 	return dr
 }
 
-// A Distribution object is created for every new distribution type
-type Distribution struct {
-	DistributionType DistributionType `json:"distribution_type"`
-	DistributionName string           `json:"distribution_name"`
-}
-type Distributions []Distribution
-
 func NewDistribution(t DistributionType, name string) Distribution {
 	return Distribution{DistributionType: t, DistributionName: name}
 }
@@ -62,8 +53,4 @@ func (ar Distribution) Validate() bool {
 		return false
 	}
 	return true
-}
-
-func (ar Distribution) String() string {
-	return strings.TrimSpace(fmt.Sprintf(`DistributionName: %s DistributionType :%s`, ar.DistributionName, ar.DistributionType.String()))
 }

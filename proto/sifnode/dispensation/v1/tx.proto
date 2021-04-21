@@ -9,7 +9,7 @@ option go_package = "github.com/Sifchain/sifnode/x/dispensation/types";
 service Msg {
 }
 
-message MsgDistribution  {
+message MsgDistribution {
     string signer = 1;
     string distribution_name = 2;
     DistributionType distribution_type = 3;
