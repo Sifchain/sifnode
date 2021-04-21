@@ -13,13 +13,13 @@ import (
 // NewEthBridgeClaim is a constructor function for NewEthBridgeClaim
 func NewEthBridgeClaim(
 	ethereumChainID int64,
-	bridgeContract fmt.Stringer,
+	bridgeContract EthereumAddress,
 	nonce int64,
 	symbol string,
-	tokenContact fmt.Stringer,
-	ethereumSender fmt.Stringer,
-	cosmosReceiver fmt.Stringer,
-	validator fmt.Stringer,
+	tokenContact EthereumAddress,
+	ethereumSender EthereumAddress,
+	cosmosReceiver sdk.AccAddress,
+	validator sdk.ValAddress,
 	amount sdk.Int,
 	claimType ClaimType,
 ) *EthBridgeClaim {

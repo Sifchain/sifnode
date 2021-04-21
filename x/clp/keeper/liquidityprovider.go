@@ -1,7 +1,6 @@
 package keeper
 
 import (
-	"fmt"
 	"github.com/Sifchain/sifnode/x/clp/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
@@ -45,7 +44,7 @@ func (k Keeper) GetLiquidityProviderIterator(ctx sdk.Context) sdk.Iterator {
 	return sdk.KVStorePrefixIterator(store, types.LiquidityProviderPrefix)
 }
 
-func (k Keeper) GetAssetsForLiquidityProvider(ctx sdk.Context, lpAddress fmt.Stringer) []types.Asset {
+func (k Keeper) GetAssetsForLiquidityProvider(ctx sdk.Context, lpAddress sdk.AccAddress) []types.Asset {
 	var assetList []types.Asset
 
 	iterator := k.GetLiquidityProviderIterator(ctx)

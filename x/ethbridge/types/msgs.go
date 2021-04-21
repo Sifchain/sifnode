@@ -19,8 +19,8 @@ const (
 
 // NewMsgLock is a constructor function for MsgLock
 func NewMsgLock(
-	ethereumChainID int64, cosmosSender fmt.Stringer,
-	ethereumReceiver fmt.Stringer, amount sdk.Int, symbol string, cethAmount sdk.Int) MsgLock {
+	ethereumChainID int64, cosmosSender sdk.AccAddress,
+	ethereumReceiver EthereumAddress, amount sdk.Int, symbol string, cethAmount sdk.Int) MsgLock {
 	return MsgLock{
 		EthereumChainId:  ethereumChainID,
 		CosmosSender:     cosmosSender.String(),
