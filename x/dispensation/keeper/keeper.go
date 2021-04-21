@@ -11,19 +11,19 @@ import (
 
 // Keeper of the clp store
 type Keeper struct {
-	storeKey     sdk.StoreKey
-	cdc          codec.BinaryMarshaler
-	bankKeeper   types.BankKeeper
-	supplyKeeper types.SupplyKeeper
+	storeKey      sdk.StoreKey
+	cdc           codec.BinaryMarshaler
+	bankKeeper    types.BankKeeper
+	accountKeeper types.AccountKeeper
 }
 
 // NewKeeper creates a dispensation keeper
-func NewKeeper(cdc codec.BinaryMarshaler, key sdk.StoreKey, bankkeeper types.BankKeeper, supplyKeeper types.SupplyKeeper, ps paramtypes.Subspace) Keeper {
+func NewKeeper(cdc codec.BinaryMarshaler, key sdk.StoreKey, bankkeeper types.BankKeeper, accountKeeper types.AccountKeeper, ps paramtypes.Subspace) Keeper {
 	keeper := Keeper{
-		storeKey:     key,
-		cdc:          cdc,
-		bankKeeper:   bankkeeper,
-		supplyKeeper: supplyKeeper,
+		storeKey:      key,
+		cdc:           cdc,
+		bankKeeper:    bankkeeper,
+		accountKeeper: accountKeeper,
 	}
 	return keeper
 }
@@ -41,8 +41,8 @@ func (k Keeper) GetBankKeeper() types.BankKeeper {
 	return k.bankKeeper
 }
 
-func (k Keeper) GetSupplyKeeper() types.SupplyKeeper {
-	return k.supplyKeeper
+func (k Keeper) GetAccountKeeper() types.AccountKeeper {
+	return k.accountKeeper
 }
 
 func (k Keeper) Exists(ctx sdk.Context, key []byte) bool {
@@ -55,5 +55,11 @@ func (k Keeper) SendCoins(ctx sdk.Context, from sdk.AccAddress, to sdk.AccAddres
 }
 
 func (k Keeper) HasCoins(ctx sdk.Context, user sdk.AccAddress, coins sdk.Coins) bool {
-	return k.supplyKeeper.HasCoins(ctx, user, coins)
+	for _, coin := range coins {
+		if !k.bankKeeper.HasBalance(ctx, user, coin) {
+			return false
+		}
+	}
+
+	return true
 }

@@ -165,7 +165,6 @@ type SifchainApp struct {
 
 	AccountKeeper    authkeeper.AccountKeeper
 	BankKeeper       bankkeeper.Keeper
-	SupplyKeeper     disptypes.SupplyKeeper
 	CapabilityKeeper *capabilitykeeper.Keeper
 	ParamsKeeper     paramskeeper.Keeper
 	UpgradeKeeper    upgradekeeper.Keeper
@@ -300,7 +299,7 @@ func NewSifApp(
 		appCodec,
 		keys[disptypes.StoreKey],
 		app.BankKeeper,
-		app.SupplyKeeper,
+		app.AccountKeeper,
 		app.GetSubspace(disptypes.ModuleName),
 	)
 

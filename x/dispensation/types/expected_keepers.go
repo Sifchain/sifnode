@@ -2,6 +2,8 @@ package types
 
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	authkeeper "github.com/cosmos/cosmos-sdk/x/auth/keeper"
+	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
@@ -15,6 +17,8 @@ type ParamSubspace interface {
 	SetParamSet(ctx sdk.Context, ps paramtypes.ParamSet)
 }
 
+var _ BankKeeper = &bankkeeper.BaseKeeper{}
+
 type BankKeeper interface {
 	SubtractCoins(ctx sdk.Context, addr sdk.AccAddress, amt sdk.Coins) error
 	SendCoins(ctx sdk.Context, fromAddr sdk.AccAddress, toAddr sdk.AccAddress, amt sdk.Coins) error
@@ -27,9 +31,9 @@ type BankKeeper interface {
 	HasBalance(ctx sdk.Context, addr sdk.AccAddress, amt sdk.Coin) bool
 }
 
-type SupplyKeeper interface {
-	GetCoins(ctx sdk.Context, addr sdk.AccAddress) sdk.Coins
-	HasCoins(ctx sdk.Context, addr sdk.AccAddress, amt sdk.Coins) bool
+var _ AccountKeeper = &authkeeper.AccountKeeper{}
+
+type AccountKeeper interface {
 	SetModuleAccount(sdk.Context, authtypes.ModuleAccountI)
 	GetModuleAccount(ctx sdk.Context, moduleName string) authtypes.ModuleAccountI
 }

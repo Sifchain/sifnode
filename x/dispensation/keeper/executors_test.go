@@ -23,7 +23,7 @@ func TestKeeper_AccumulateDrops(t *testing.T) {
 	err := keeper.AccumulateDrops(ctx, inputList)
 	assert.NoError(t, err)
 	moduleBalance, _ := sdk.NewIntFromString("30000000000000000000")
-	assert.True(t, keeper.GetSupplyKeeper().HasCoins(ctx, types.GetDistributionModuleAddress(), sdk.Coins{sdk.NewCoin("rowan", moduleBalance)}))
+	assert.True(t, keeper.GetAccountKeeper().HasCoins(ctx, types.GetDistributionModuleAddress(), sdk.Coins{sdk.NewCoin("rowan", moduleBalance)}))
 
 }
 
@@ -39,7 +39,7 @@ func TestKeeper_CreateAndDistributeDrops(t *testing.T) {
 	err := keeper.AccumulateDrops(ctx, inputList)
 	assert.NoError(t, err)
 	moduleBalance, _ := sdk.NewIntFromString("30000000000000000000")
-	assert.True(t, keeper.GetSupplyKeeper().HasCoins(ctx, types.GetDistributionModuleAddress(), sdk.Coins{sdk.NewCoin("rowan", moduleBalance)}))
+	assert.True(t, keeper.GetAccountKeeper().HasCoins(ctx, types.GetDistributionModuleAddress(), sdk.Coins{sdk.NewCoin("rowan", moduleBalance)}))
 
 	err = keeper.CreateDrops(ctx, outputList, "ar1")
 	assert.NoError(t, err)
