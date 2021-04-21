@@ -56,7 +56,6 @@ export default defineComponent({
   top: 0;
   left: 0;
   background: $c_white;
-  border-bottom: $divider;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -69,6 +68,7 @@ export default defineComponent({
     flex-direction: row;
     justify-content: space-between;
     padding: 1rem 2rem;
+    font-size: 12px;
   }
   .secondary-header-container {
     display: block;

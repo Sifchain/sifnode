@@ -59,7 +59,7 @@ export default defineComponent({
 #app,
 #portal-target,
 #tooltip-target {
-  font: italic normal bold 14px/22px $f_default;
+  font: normal bold 14px/22px $f_default;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
