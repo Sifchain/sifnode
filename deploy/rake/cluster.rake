@@ -861,7 +861,7 @@ metadata:
                 --title release-#{args[:release_version]} \
                 --description release-#{args[:release_version]} \
                 --node tcp://rpc.sifchain.finance:80 \
-                --keyring-backend file \
+                --keyring-backend test \
                 -y \
                 --chain-id #{args[:chainnet]} \
                 --gas-prices "#{args[:rowan]}"
@@ -877,7 +877,7 @@ metadata:
                 --title release-#{args[:release_version]} \
                 --description release-#{args[:release_version]} \
                 --node tcp://rpc-#{args[:app_env]}.sifchain.finance:80 \
-                --keyring-backend file \
+                --keyring-backend test \
                 -y \
                 --chain-id #{args[:chainnet]} \
                 --gas-prices "#{args[:rowan]}"
@@ -897,7 +897,7 @@ vote_id=$(go run ./cmd/sifnodecli q gov proposals --node tcp://rpc.sifchain.fina
 echo "vote_id $vote_id"
 yes "${keyring_passphrase}" | go run ./cmd/sifnodecli tx gov vote ${vote_id} yes \
     --from #{args[:from]} \
-    --keyring-backend file \
+    --keyring-backend test \
     --chain-id #{args[:chainnet]}  \
     --node tcp://rpc.sifchain.finance:80 \
     --gas-prices "#{args[:rowan]}" -y
@@ -909,7 +909,7 @@ vote_id=$(go run ./cmd/sifnodecli q gov proposals --node tcp://rpc-#{args[:app_e
 echo "vote_id $vote_id"
 yes "${keyring_passphrase}" | go run ./cmd/sifnodecli tx gov vote ${vote_id} yes \
     --from #{args[:from]} \
-    --keyring-backend file \
+    --keyring-backend test \
     --chain-id #{args[:chainnet]}  \
     --node tcp://rpc-#{args[:app_env]}.sifchain.finance:80 \
     --gas-prices "#{args[:rowan]}" -y
