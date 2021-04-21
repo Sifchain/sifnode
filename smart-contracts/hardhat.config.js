@@ -26,7 +26,15 @@ module.exports = {
       url: "http://localhost:7545",
     }
   },
-  solidity: "0.8.0",
+  solidity: {
+    version: "0.8.0",
+    settings: {
+      optimizer: {
+        enabled: true,
+        runs: 200
+      },
+    },
+  },
   typechain: {
     outDir: "build",
     target: "ethers-v5"

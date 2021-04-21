@@ -21,9 +21,13 @@ require("chai")
 
 use(solidity);
 
-// Contract's enum ClaimType can be represented a sequence of integers
+// Contract's enum ClaimType can be represented as a sequence of integers
 const CLAIM_TYPE_BURN = 1;
 const CLAIM_TYPE_LOCK = 2;
+
+const getBalance = async function(address) {
+  return await network.provider.send("eth_getBalance", [address]);
+}
 
 describe("Test Bridge Bank", function () {
   let userOne;
@@ -45,10 +49,11 @@ describe("Test Bridge Bank", function () {
     CosmosBridge = await ethers.getContractFactory("CosmosBridge");
     BridgeBank = await ethers.getContractFactory("BridgeBank");
     BridgeToken = await ethers.getContractFactory("BridgeToken");
-
+    
     accounts = await ethers.getSigners();
-
+    
     signerAccounts = accounts.map((e) => { return e.address });
+
     operator = accounts[0].address;
     userOne = accounts[1];
     userTwo = accounts[2];
@@ -96,6 +101,9 @@ describe("Test Bridge Bank", function () {
     this.senderSequence = 1;
     this.recipient = userThree;
     this.symbol = "TEST";
+    this.ethereumToken = "0x0000000000000000000000000000000000000000";
+    this.weiAmount = web3.utils.toWei("0.25", "ether");
+
     this.token = await BridgeToken.deploy(this.symbol);
     await this.token.deployed();
     this.amount = 100;
@@ -200,19 +208,53 @@ describe("Test Bridge Bank", function () {
         this.amount
       ).should.be.fulfilled;
 
-      // figure this out later, pending OZ forum response...
-      // const { logs } = await result.wait();
-      // console.log("logs: ", logs)
-      // console.log("receipt: ", receipt)
-      // console.log("(await receipt.wait()).logs: ", (await receipt.wait()))
-      // expectEvent.inLogs(logs, );
-      // expectEvent(receipt, 'LogNewProphecyClaim');
-
       // Confirm that the user has been minted the correct token
       const afterUserBalance = Number(
         await this.token.balanceOf(this.recipient)
       );
       afterUserBalance.should.be.bignumber.equal(this.amount);
+    });
+
+    it("should allow users to lock Ethereum in the bridge bank", async function () {
+      const tx = await this.bridgeBank.connect(userOne).lock(
+        this.sender,
+        this.ethereumToken,
+        this.weiAmount, {
+          value: this.weiAmount
+        }
+      ).should.be.fulfilled;
+      await tx.wait();
+
+      const contractBalanceWei = await getBalance(this.bridgeBank.address);
+      const contractBalance = Web3Utils.fromWei(contractBalanceWei, "ether");
+
+      contractBalance.should.be.bignumber.equal(
+        Web3Utils.fromWei(this.weiAmount, "ether")
+      );
+    });
+
+    it("should not allow users to lock Ethereum in the bridge bank if the sent amount and amount param are different", async function () {
+      await expect(
+        this.bridgeBank.connect(userOne).lock(
+          this.sender,
+          this.ethereumToken,
+          this.weiAmount + 1, {
+            value: this.weiAmount
+          },
+        ),
+      ).to.be.revertedWith("amount mismatch");
+    });
+
+    it("should not allow users to lock Ethereum in the bridge bank if sending tokens", async function () {
+      await expect(
+        this.bridgeBank.connect(userOne).lock(
+          this.sender,
+          this.token.address,
+          this.weiAmount + 1, {
+            value: this.weiAmount
+          },
+        ),
+      ).to.be.revertedWith("do not send currency if locking tokens");
     });
   });
 });

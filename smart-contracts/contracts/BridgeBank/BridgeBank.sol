@@ -45,6 +45,8 @@ contract BridgeBank is BankStorage,
         cosmosBridge = _cosmosBridgeAddress;
         owner = _owner;
         _initialized = true;
+        contractName[address(0)] = "Ethereum";
+        contractSymbol[address(0)] = "ETH";
     }
 
     /*
@@ -269,16 +271,19 @@ contract BridgeBank is BankStorage,
         bytes calldata _recipient,
         address _token,
         uint256 _amount
-    ) external validSifAddress(_recipient) whenNotPaused {
-        {
-            IERC20 tokenToTransfer = IERC20(_token);
-            // lock tokens
-            tokenToTransfer.safeTransferFrom(
-                msg.sender,
-                address(this),
-                _amount
-            );
+    ) external payable validSifAddress(_recipient) whenNotPaused {
+        if (_token == address(0)) {
+            return handleNativeCurrencyLock(_recipient, _amount);
         }
+        require(msg.value == 0, "do not send currency if locking tokens");
+
+        IERC20 tokenToTransfer = IERC20(_token);
+        // lock tokens
+        tokenToTransfer.safeTransferFrom(
+            msg.sender,
+            address(this),
+            _amount
+        );
 
         // decimals defaults to 18 if call to decimals fails
         uint8 decimals = getDecimals(_token);
@@ -289,6 +294,46 @@ contract BridgeBank is BankStorage,
 
         lockBurnNonce = lockBurnNonce + 1;
         uint256 _chainid = getChainID();
+        {
+            emit LogLock(
+                msg.sender,
+                _recipient,
+                _token,
+                _amount,
+                lockBurnNonce,
+                _chainid,
+                decimals,
+                symbol,
+                name
+            );
+        }
+    }
+
+    /*
+     * @dev: Locks received Ethereum/ERC20 funds.
+     *
+     * @param _recipient: bytes representation of destination address.
+     * @param _token: token address in origin chain (0x0 if ethereum)
+     * @param _amount: value of deposit
+     */
+    function handleNativeCurrencyLock(
+        bytes calldata _recipient,
+        uint256 _amount
+    ) internal {
+        require(msg.value == _amount, "amount mismatch");
+
+        address _token = address(0);
+
+        // decimals defaults to 18 if call to decimals fails
+        uint8 decimals = 18;
+
+        // Get name and symbol
+        string memory name = getName(_token);
+        string memory symbol = getSymbol(_token);
+
+        lockBurnNonce = lockBurnNonce + 1;
+        uint256 _chainid = getChainID();
+
         {
             emit LogLock(
                 msg.sender,
@@ -326,10 +371,4 @@ contract BridgeBank is BankStorage,
 
         emit LogUnlock(_recipient, _token, _amount);
     }
-
-    /*
-    * @dev fallback function for ERC223 tokens so that we can receive these tokens in our contract
-    * Don't need to do anything to handle these tokens
-    */
-    function tokenFallback(address _from, uint _value, bytes memory _data) public {}
 }
