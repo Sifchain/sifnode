@@ -67,19 +67,6 @@ func (dr DistributionRecord) Add(dr2 DistributionRecord) DistributionRecord {
 	return dr
 }
 
-type DistributionType int64
-
-const Airdrop DistributionType = 1
-
-func (d DistributionType) String() string {
-	switch d {
-	case Airdrop:
-		return "Airdrop"
-	default:
-		return "Invalid"
-	}
-}
-
 // A Distribution object is created for every new distribution type
 type Distribution struct {
 	DistributionType DistributionType `json:"distribution_type"`

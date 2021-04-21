@@ -1,11 +1,13 @@
 package keeper_test
 
 import (
-	"github.com/Sifchain/sifnode/x/dispensation/test"
-	"github.com/Sifchain/sifnode/x/dispensation/types"
+	"testing"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/assert"
-	"testing"
+
+	"github.com/Sifchain/sifnode/x/dispensation/test"
+	"github.com/Sifchain/sifnode/x/dispensation/types"
 )
 
 func TestKeeper_AccumulateDrops(t *testing.T) {
@@ -46,8 +48,8 @@ func TestKeeper_CreateAndDistributeDrops(t *testing.T) {
 func TestKeeper_VerifyDistribution(t *testing.T) {
 	app, ctx := test.CreateTestApp(false)
 	keeper := app.DispensationKeeper
-	err := keeper.VerifyDistribution(ctx, "AR1", types.Airdrop)
+	err := keeper.VerifyDistribution(ctx, "AR1", types.DistributionType_DISTRIBUTION_TYPE_AIRDROP)
 	assert.NoError(t, err)
-	err = keeper.VerifyDistribution(ctx, "AR1", types.Airdrop)
+	err = keeper.VerifyDistribution(ctx, "AR1", types.DistributionType_DISTRIBUTION_TYPE_AIRDROP)
 	assert.Error(t, err)
 }

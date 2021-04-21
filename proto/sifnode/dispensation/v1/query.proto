@@ -5,10 +5,5 @@ import "gogoproto/gogo.proto";
 
 option go_package = "github.com/Sifchain/sifnode/x/dispensation/types";
 
-message GenesisState {
-}
-
-enum DistributionType {
-  DISTRIBUTION_TYPE_UNSPECIFIED = 0;
-  DISTRIBUTION_TYPE_AIRDROP = 1;
+service Query {
 }

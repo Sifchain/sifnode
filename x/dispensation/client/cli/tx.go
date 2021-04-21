@@ -3,8 +3,7 @@ package cli
 import (
 	"bufio"
 	"fmt"
-	"github.com/Sifchain/sifnode/x/dispensation/types"
-	dispensationUtils "github.com/Sifchain/sifnode/x/dispensation/utils"
+
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/client/tx"
@@ -15,6 +14,9 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"github.com/tendermint/tendermint/libs/cli"
+
+	"github.com/Sifchain/sifnode/x/dispensation/types"
+	dispensationUtils "github.com/Sifchain/sifnode/x/dispensation/utils"
 )
 
 // GetTxCmd returns the transaction commands for this module
@@ -87,7 +89,7 @@ func GetCmdCreate() *cobra.Command {
 				return err
 			}
 			name := args[1]
-			msg := types.NewMsgDistribution(clientCtx.GetFromAddress(), name, types.Airdrop, inputList, outputlist)
+			msg := types.NewMsgDistribution(clientCtx.GetFromAddress(), name, types.DistributionType_DISTRIBUTION_TYPE_AIRDROP, inputList, outputlist)
 			if err := msg.ValidateBasic(); err != nil {
 				return err
 			}

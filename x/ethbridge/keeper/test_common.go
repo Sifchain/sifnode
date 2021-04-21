@@ -219,12 +219,5 @@ func NewPubKey(pk string) (res cryptotypes.PubKey) {
 
 // create a codec used only for testing
 func MakeTestEncodingConfig() simappparams.EncodingConfig {
-	encCfg := app.MakeTestEncodingConfig()
-
-	// Register AppAccount
-	// TODOD ?
-	// encCfg.Amino.RegisterConcrete(&authtypes.BaseAccount{}, "test/staking/BaseAccount", nil)
-	//cryptocodec.RegisterCrypto(encCfg.Amino)
-
-	return encCfg
+	return app.MakeTestEncodingConfig()
 }
