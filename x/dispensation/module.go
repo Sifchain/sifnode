@@ -91,11 +91,13 @@ type AppModule struct {
 }
 
 func (am AppModule) LegacyQuerierHandler(amino *codec.LegacyAmino) sdk.Querier {
-	panic("implement me")
+	return keeper.NewQuerier(am.keeper)
 }
 
-func (am AppModule) RegisterServices(configurator module.Configurator) {
-	panic("implement me")
+func (am AppModule) RegisterServices(cfg module.Configurator) {
+	types.RegisterMsgServer(cfg.MsgServer(), keeper.NewMsgServerImpl(am.keeper))
+	querier := keeper.Querier{Keeper: am.keeper}
+	types.RegisterQueryServer(cfg.QueryServer(), querier)
 }
 
 // NewAppModule creates a new AppModule object

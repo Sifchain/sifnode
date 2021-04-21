@@ -7,6 +7,10 @@ import (
 	abci "github.com/tendermint/tendermint/abci/types"
 )
 
+type Querier struct {
+	Keeper
+}
+
 // NewQuerier is the module level router for state queries
 func NewQuerier(keeper Keeper) sdk.Querier {
 	return func(ctx sdk.Context, path []string, req abci.RequestQuery) (res []byte, err error) {

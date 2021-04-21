@@ -88,7 +88,7 @@ func CreateOracleClaimFromEthClaim(ethClaim *EthBridgeClaim) (oracletypes.Claim,
 // from any generic claim from the oracle module into an ethereum bridge specific claim.
 func CreateEthClaimFromOracleString(
 	ethereumChainID int64,
-	bridgeContract fmt.Stringer,
+	bridgeContract EthereumAddress,
 	nonce int64,
 	ethereumAddress EthereumAddress,
 	validator sdk.ValAddress,
