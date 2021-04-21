@@ -113,6 +113,7 @@ var (
 		slashing.AppModuleBasic{},
 		evidence.AppModuleBasic{},
 		ibc.AppModuleBasic{},
+		transfer.AppModuleBasic{},
 
 		clp.AppModuleBasic{},
 		oracle.AppModuleBasic{},
