@@ -30,5 +30,5 @@ func TestNewHandler(t *testing.T) {
 	require.NotNil(t, res)
 
 	dr := keeper.GetRecordsForNameAll(ctx, "AR1")
-	assert.Len(t, dr, recipients)
+	assert.Len(t, dr.DistributionRecords, recipients)
 }
