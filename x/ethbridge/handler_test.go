@@ -1,4 +1,4 @@
-package ethbridge
+package ethbridge_test
 
 import (
 	"fmt"
@@ -14,6 +14,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 
+	"github.com/Sifchain/sifnode/x/ethbridge"
 	"github.com/Sifchain/sifnode/x/ethbridge/internal"
 	ethbridgekeeper "github.com/Sifchain/sifnode/x/ethbridge/keeper"
 	"github.com/Sifchain/sifnode/x/ethbridge/types"
@@ -30,7 +31,7 @@ const (
 var (
 	UnregisteredValidatorAddress = sdk.ValAddress("cosmos1xdp5tvt7lxh8rf9xx07wy2xlagzhq24ha48xtq")
 	TestAccAddress               = "cosmos1xdp5tvt7lxh8rf9xx07wy2xlagzhq24ha48xtq"
-	TestAddress = "cosmos1xdp5tvt7lxh8rf9xx07wy2xlagzhq24ha48xtq"
+	TestAddress                  = "cosmos1xdp5tvt7lxh8rf9xx07wy2xlagzhq24ha48xtq"
 )
 
 func TestBasicMsgs(t *testing.T) {
@@ -173,15 +174,15 @@ func TestNoMintFail(t *testing.T) {
 	ethClaim1 := types.CreateTestEthClaim(
 		t, testEthereumAddress, testTokenContractAddress,
 		valAddressVal1Pow3, testEthereumAddress, types.TestCoinsAmount, types.TestCoinsSymbol, types.ClaimType_CLAIM_TYPE_LOCK)
-	ethMsg1 := NewMsgCreateEthBridgeClaim(ethClaim1)
+	ethMsg1 := types.NewMsgCreateEthBridgeClaim(ethClaim1)
 	ethClaim2 := types.CreateTestEthClaim(
 		t, testEthereumAddress, testTokenContractAddress,
 		valAddressVal2Pow4, testEthereumAddress, types.TestCoinsAmount, types.TestCoinsSymbol, types.ClaimType_CLAIM_TYPE_LOCK)
-	ethMsg2 := NewMsgCreateEthBridgeClaim(ethClaim2)
+	ethMsg2 := types.NewMsgCreateEthBridgeClaim(ethClaim2)
 	ethClaim3 := types.CreateTestEthClaim(
 		t, testEthereumAddress, testTokenContractAddress,
 		valAddressVal3Pow3, testEthereumAddress, types.AltTestCoinsAmountSDKInt, types.AltTestCoinsSymbol, types.ClaimType_CLAIM_TYPE_LOCK)
-	ethMsg3 := NewMsgCreateEthBridgeClaim(ethClaim3)
+	ethMsg3 := types.NewMsgCreateEthBridgeClaim(ethClaim3)
 
 	//Initial message
 	res, err := handler(ctx, &ethMsg1)
@@ -273,7 +274,7 @@ func TestBurnEthSuccess(t *testing.T) {
 	ethClaim1 := types.CreateTestEthClaim(
 		t, testEthereumAddress, testTokenContractAddress,
 		valAddressVal1Pow5, testEthereumAddress, coinsToMintAmount, coinsToMintSymbol, types.ClaimType_CLAIM_TYPE_LOCK)
-	ethMsg1 := NewMsgCreateEthBridgeClaim(ethClaim1)
+	ethMsg1 := types.NewMsgCreateEthBridgeClaim(ethClaim1)
 
 	// Initial message succeeds and mints eth
 	res, err := handler(ctx, &ethMsg1)
@@ -292,7 +293,7 @@ func TestBurnEthSuccess(t *testing.T) {
 	ethClaim1 = types.CreateTestEthClaim(
 		t, testEthereumAddress, testTokenContractAddress,
 		valAddressVal1Pow5, testEthereumAddress, coinsToMintAmount, coinsToMintSymbol, types.ClaimType_CLAIM_TYPE_LOCK)
-	ethMsg1 = NewMsgCreateEthBridgeClaim(ethClaim1)
+	ethMsg1 = types.NewMsgCreateEthBridgeClaim(ethClaim1)
 
 	// Initial message succeeds and mints eth
 	res, err = handler(ctx, &ethMsg1)
@@ -335,7 +336,7 @@ func TestBurnEthSuccess(t *testing.T) {
 				// multiple recipient in burn, skip the comparison
 				// require.Equal(t, value, TestAddress)
 			case moduleString:
-				require.Equal(t, value, ModuleName)
+				require.Equal(t, value, types.ModuleName)
 			case "ethereum_chain_id":
 				eventEthereumChainID = value
 			case "cosmos_sender":
@@ -372,7 +373,7 @@ func TestBurnEthSuccess(t *testing.T) {
 	ethClaim1 = types.CreateTestEthClaim(
 		t, testEthereumAddress, testTokenContractAddress,
 		valAddressVal1Pow5, testEthereumAddress, coinsToMintAmount, coinsToMintSymbol, types.ClaimType_CLAIM_TYPE_LOCK)
-	ethMsg1 = NewMsgCreateEthBridgeClaim(ethClaim1)
+	ethMsg1 = types.NewMsgCreateEthBridgeClaim(ethClaim1)
 
 	// Initial message succeeds and mints eth
 	res, err = handler(ctx, &ethMsg1)
@@ -418,7 +419,7 @@ func TestUpdateCethReceiverAccountMsg(t *testing.T) {
 func TestRescueCethMsg(t *testing.T) {
 	ctx, _, bankKeeper, accountKeeper, handler, _, oracleKeeper := CreateTestHandler(t, 0.5, []int64{5})
 	coins := sdk.NewCoins(sdk.NewCoin(types.CethSymbol, sdk.NewInt(10000)))
-	err := bankKeeper.MintCoins(ctx, ModuleName, coins)
+	err := bankKeeper.MintCoins(ctx, types.ModuleName, coins)
 	require.NoError(t, err)
 
 	testRescueCethMsg := types.CreateTestRescueCethMsg(
@@ -448,7 +449,7 @@ func CreateTestHandler(t *testing.T, consensusNeeded float64, validatorAmounts [
 
 	CethReceiverAccount, _ := sdk.AccAddressFromBech32(TestAddress)
 	keeper.SetCethReceiverAccount(ctx, CethReceiverAccount)
-	handler := NewHandler(keeper)
+	handler := ethbridge.NewHandler(keeper)
 
 	return ctx, keeper, bankKeeper, accountKeeper, handler, validatorAddresses, oracleKeeper
 }
