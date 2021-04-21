@@ -1,7 +1,6 @@
 pragma solidity 0.8.0;
 
 import "./BridgeToken.sol";
-import "./CosmosBankStorage.sol";
 
 /**
  * @title CosmosBank
@@ -9,7 +8,7 @@ import "./CosmosBankStorage.sol";
  *      which represent assets based on the Cosmos blockchain.
  **/
 
-contract CosmosBank is CosmosBankStorage {
+contract CosmosBank {
     /*
      * @dev: Event declarations
      */

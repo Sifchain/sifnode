@@ -17,3 +17,4 @@ log/*.log
 .vercel
 nohup.out
 relayerdb
+smart-contracts/artifacts/

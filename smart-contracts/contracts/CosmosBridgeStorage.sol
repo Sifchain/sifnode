@@ -1,24 +1,6 @@
 pragma solidity 0.8.0;
 
-import "./BridgeBank/CosmosBankStorage.sol";
-import "./BridgeBank/EthereumBankStorage.sol";
-
 contract CosmosBridgeStorage {
-    /*
-    * @notice gap of storage for future upgrades
-    * VARIABLE DEPRECATED
-    */
-    string COSMOS_NATIVE_ASSET_PREFIX;
-    
-    /**
-    * @notice gap of storage for future upgrades
-    */
-    address payable public valset;
-    
-    /**
-    * @notice gap of storage for future upgrades
-    */
-    address payable public oracle;
     
     /**
     * @notice gap of storage for future upgrades
@@ -31,11 +13,6 @@ contract CosmosBridgeStorage {
     bool public hasBridgeBank;
 
     /**
-    * @notice gap of storage for future upgrades
-    */
-    mapping(uint256 => ProphecyClaim) public prophecyClaims;
-
-    /**
     * @notice prophecy status enum
     */
     enum Status {Null, Pending, Success, Failed}
@@ -44,15 +21,6 @@ contract CosmosBridgeStorage {
     * @notice claim type enum
     */
     enum ClaimType {Unsupported, Burn, Lock}
-
-    /**
-    * @notice Prophecy claim struct
-    */
-    struct ProphecyClaim {
-        address payable ethereumReceiver;
-        string symbol;
-        uint256 amount;
-    }
 
     /*
     * @notice gap of storage for future upgrades

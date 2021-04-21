@@ -1,13 +1,13 @@
 pragma solidity 0.8.0;
 
 import "./CosmosBank.sol";
-import "./EthereumBank.sol";
 import "./EthereumWhitelist.sol";
 import "./CosmosWhiteList.sol";
 import "../Oracle.sol";
 import "../CosmosBridge.sol";
 import "./BankStorage.sol";
 import "./Pausable.sol";
+import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 /**
  * @title BridgeBank
@@ -21,23 +21,18 @@ import "./Pausable.sol";
 
 contract BridgeBank is BankStorage,
     CosmosBank,
-    EthereumBank,
     EthereumWhiteList,
     CosmosWhiteList,
     Pausable {
+
     using SafeERC20 for IERC20;
 
     bool private _initialized;
 
-    mapping (address => uint8) public contractDecimals;
-    mapping (address => string) public contractSymbol;
-    mapping (address => string) public contractName;
-
     /*
-     * @dev: Initializer, sets operator
+     * @dev: Initializer
      */
     function initialize(
-        address _operatorAddress,
         address _cosmosBridgeAddress,
         address _owner,
         address _pauser
@@ -47,22 +42,13 @@ contract BridgeBank is BankStorage,
         CosmosWhiteList._cosmosWhitelistInitialize();
         Pausable._pausableInitialize(_pauser);
 
-        operator = _operatorAddress;
         cosmosBridge = _cosmosBridgeAddress;
         owner = _owner;
         _initialized = true;
     }
 
     /*
-     * @dev: Modifier to restrict access to operator
-     */
-    modifier onlyOperator() {
-        require(msg.sender == operator, "!operator");
-        _;
-    }
-
-    /*
-     * @dev: Modifier to restrict access to operator
+     * @dev: Modifier to restrict access to owner
      */
     modifier onlyOwner() {
         require(msg.sender == owner, "!owner");
@@ -89,6 +75,15 @@ contract BridgeBank is BankStorage,
         _;
     }
 
+    function getChainID() public view returns (uint256) {
+        uint256 id;
+        assembly {
+            id := chainid()
+        }
+
+        return id;
+    }
+
     /*
      * @dev: Set the token address in whitelist
      *
@@ -107,11 +102,6 @@ contract BridgeBank is BankStorage,
     function changeOwner(address _newOwner) public onlyOwner {
         require(_newOwner != address(0), "invalid address");
         owner = _newOwner;
-    }
-
-    function changeOperator(address _newOperator) public onlyOperator {
-        require(_newOperator != address(0), "invalid address");
-        operator = _newOperator;
     }
 
     /*
@@ -317,15 +307,24 @@ contract BridgeBank is BankStorage,
     /**
      *
      * @param _recipient: recipient's Ethereum address
-     * @param _tokenAddress: token contract address
+     * @param _token: token contract address
      * @param _amount: wei amount or ERC20 token count
      */
     function unlock(
         address payable _recipient,
-        address _tokenAddress,
+        address _token,
         uint256 _amount
     ) public onlyCosmosBridge whenNotPaused {
-        unlockFunds(_recipient, _tokenAddress, _amount);
+        // Transfer funds to intended recipient
+        if (_token == address(0)) {
+            (bool success,) = _recipient.call{value: _amount}("");
+            require(success, "error sending ether");
+        } else {
+            IERC20 tokenToTransfer = IERC20(_token);
+            tokenToTransfer.safeTransfer(_recipient, _amount);
+        }
+
+        emit LogUnlock(_recipient, _token, _amount);
     }
 
     /*

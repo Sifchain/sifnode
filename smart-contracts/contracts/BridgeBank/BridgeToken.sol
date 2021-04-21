@@ -14,10 +14,4 @@ contract BridgeToken is ERC20Burnable {
     {
         // Intentionally left blank
     }
-
-    // permission this later
-    function mint(address user, uint256 amount) public returns (bool) {
-        _mint(user, amount);
-        return true;
-    }
 }
