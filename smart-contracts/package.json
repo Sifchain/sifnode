@@ -93,6 +93,6 @@
     "test:setup": "cp .env.example .env",
     "coverage": "truffle run coverage",
     "compile": "hardhat compile",
-    "test": "concurrently -r -k -s first \"yarn develop\" \"truffle test --network develop\" "
+    "test": "npx hardhat test test/testHardhat.js"
   }
 }

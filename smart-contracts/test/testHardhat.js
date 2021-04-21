@@ -12,6 +12,7 @@ const {
   expectEvent,  // Assertions for emitted events
   expectRevert, // Assertions for transactions that should fail
 } = require('@openzeppelin/test-helpers');
+const { after } = require("lodash");
 
 require("chai")
   .use(require("chai-as-promised"))
@@ -26,7 +27,9 @@ const CLAIM_TYPE_LOCK = 2;
 
 describe("Test Bridge Bank", function () {
   let userOne;
+  let userTwo;
   let userThree;
+  let userFour;
   let accounts;
   let signerAccounts;
   let operator;
@@ -48,6 +51,8 @@ describe("Test Bridge Bank", function () {
     signerAccounts = accounts.map((e) => { return e.address });
     operator = accounts[0].address;
     userOne = accounts[1];
+    userTwo = accounts[2];
+    userFour = accounts[3];
     userThree = accounts[7].address;
 
     owner = accounts[5].address;
@@ -144,27 +149,70 @@ describe("Test Bridge Bank", function () {
       expect(await this.bridgeBank.pausers(pauser)).to.be.true;
     });
 
+    it("should not allow users to lock ERC20 tokens if the sifaddress prefix is incorrect", async function () {
+      const invalidSifAddress = web3.utils.utf8ToHex(
+        "zif1gdnl9jj2xgy5n04r7heqxlqvvzcy24zc96ns2f"
+      );
+      // Attempt to lock tokens
+      await expect(this.bridgeBank.connect(userOne).lock(
+          invalidSifAddress,
+          this.token.address,
+          this.amount
+        )
+      ).to.be.revertedWith("Invalid sif address");
+    });
 
     it("should mint bridge tokens upon the successful processing of a burn prophecy claim", async function () {
+      const beforeUserBalance = Number(
+        await this.token.balanceOf(this.recipient)
+      );
+      beforeUserBalance.should.be.bignumber.equal(Number(0));
+
       // Submit a new prophecy claim to the CosmosBridge to make oracle claims upon
       this.nonce = 1;
-      const {
-        logs
-      } = await this.cosmosBridge.connect(userOne).newProphecyClaim(
+      let receipt = await this.cosmosBridge.connect(userOne).newProphecyClaim(
         CLAIM_TYPE_BURN,
         this.sender,
+        this.symbol,
         this.senderSequence,
         this.recipient,
-        this.symbol,
+        this.token.address,
         this.amount
       ).should.be.fulfilled;
 
-      expectEvent.inLogs(logs, {_amount: this.amount});
+      receipt = await this.cosmosBridge.connect(userTwo).newProphecyClaim(
+        CLAIM_TYPE_BURN,
+        this.sender,
+        this.symbol,
+        this.senderSequence,
+        this.recipient,
+        this.token.address,
+        this.amount
+      ).should.be.fulfilled;
+
+      receipt = await this.cosmosBridge.connect(userFour).newProphecyClaim(
+        CLAIM_TYPE_BURN,
+        this.sender,
+        this.symbol,
+        this.senderSequence,
+        this.recipient,
+        this.token.address,
+        this.amount
+      ).should.be.fulfilled;
+
+      // figure this out later, pending OZ forum response...
+      // const { logs } = await result.wait();
+      // console.log("logs: ", logs)
+      // console.log("receipt: ", receipt)
+      // console.log("(await receipt.wait()).logs: ", (await receipt.wait()))
+      // expectEvent.inLogs(logs, );
+      // expectEvent(receipt, 'LogNewProphecyClaim');
+
       // Confirm that the user has been minted the correct token
-      // const afterUserBalance = Number(
-      //   await this.token.balanceOf(this.recipient)
-      // );
-      // afterUserBalance.should.be.bignumber.equal(this.amount);
+      const afterUserBalance = Number(
+        await this.token.balanceOf(this.recipient)
+      );
+      afterUserBalance.should.be.bignumber.equal(this.amount);
     });
   });
 });

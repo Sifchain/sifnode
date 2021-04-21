@@ -19,7 +19,7 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
         uint256 _prophecyID,
         ClaimType _claimType,
         address _ethereumReceiver,
-        uint256 _amount
+        uint256 indexed _amount
     );
 
     event LogProphecyCompleted(uint256 _prophecyID, ClaimType _claimType);
