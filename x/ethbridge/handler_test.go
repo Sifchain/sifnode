@@ -8,11 +8,16 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/testutil/testdata"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	authkeeper "github.com/cosmos/cosmos-sdk/x/auth/keeper"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
+	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 
 	"github.com/stretchr/testify/require"
 
+	"github.com/Sifchain/sifnode/x/ethbridge/internal"
+	ethbridgekeeper "github.com/Sifchain/sifnode/x/ethbridge/keeper"
 	"github.com/Sifchain/sifnode/x/ethbridge/types"
+	oraclekeeper "github.com/Sifchain/sifnode/x/oracle/keeper"
 	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
 )
 
@@ -25,6 +30,7 @@ const (
 var (
 	UnregisteredValidatorAddress = sdk.ValAddress("cosmos1xdp5tvt7lxh8rf9xx07wy2xlagzhq24ha48xtq")
 	TestAccAddress               = "cosmos1xdp5tvt7lxh8rf9xx07wy2xlagzhq24ha48xtq"
+	TestAddress = "cosmos1xdp5tvt7lxh8rf9xx07wy2xlagzhq24ha48xtq"
 )
 
 func TestBasicMsgs(t *testing.T) {
@@ -432,4 +438,17 @@ func TestRescueCethMsg(t *testing.T) {
 	res, err := handler(ctx, &testRescueCethMsg)
 	require.NoError(t, err)
 	require.NotNil(t, res)
+}
+
+func CreateTestHandler(t *testing.T, consensusNeeded float64, validatorAmounts []int64) (sdk.Context,
+	ethbridgekeeper.Keeper, bankkeeper.Keeper, authkeeper.AccountKeeper,
+	sdk.Handler, []sdk.ValAddress, oraclekeeper.Keeper) {
+
+	ctx, keeper, bankKeeper, accountKeeper, oracleKeeper, _, validatorAddresses := internal.CreateTestKeepers(t, consensusNeeded, validatorAmounts, "")
+
+	CethReceiverAccount, _ := sdk.AccAddressFromBech32(TestAddress)
+	keeper.SetCethReceiverAccount(ctx, CethReceiverAccount)
+	handler := NewHandler(keeper)
+
+	return ctx, keeper, bankKeeper, accountKeeper, handler, validatorAddresses, oracleKeeper
 }

@@ -7,6 +7,7 @@ import (
 	"github.com/stretchr/testify/require"
 	abci "github.com/tendermint/tendermint/abci/types"
 
+	"github.com/Sifchain/sifnode/x/ethbridge/internal"
 	"github.com/Sifchain/sifnode/x/ethbridge/types"
 )
 
@@ -16,7 +17,7 @@ const (
 )
 
 func TestNewQuerier(t *testing.T) {
-	ctx, keeper, _, _, _, encCfg, _ := CreateTestKeepers(t, 0.7, []int64{3, 3}, "")
+	ctx, keeper, _, _, _, encCfg, _ := internal.CreateTestKeepers(t, 0.7, []int64{3, 3}, "")
 
 	query := abci.RequestQuery{
 		Path: "",
@@ -32,7 +33,7 @@ func TestNewQuerier(t *testing.T) {
 }
 
 func TestQueryEthProphecy(t *testing.T) {
-	ctx, keeper, _, _, _, encCfg, validatorAddresses := CreateTestKeepers(t, 0.7, []int64{3, 3}, "")
+	ctx, keeper, _, _, _, encCfg, validatorAddresses := internal.CreateTestKeepers(t, 0.7, []int64{3, 3}, "")
 
 	valAddress := validatorAddresses[0]
 	testEthereumAddress := types.NewEthereumAddress(types.TestEthereumAddress)

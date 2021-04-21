@@ -7,6 +7,8 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/Sifchain/sifnode/x/ethbridge"
+	ethbridgekeeper "github.com/Sifchain/sifnode/x/ethbridge/keeper"
 	ethbridgetypes "github.com/Sifchain/sifnode/x/ethbridge/types"
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/client"
@@ -114,6 +116,7 @@ var (
 
 		clp.AppModuleBasic{},
 		oracle.AppModuleBasic{},
+		ethbridge.AppModuleBasic{},
 		dispensation.AppModuleBasic{},
 	)
 
@@ -180,6 +183,7 @@ type SifchainApp struct {
 
 	ClpKeeper          clpkeeper.Keeper
 	OracleKeeper       oraclekeeper.Keeper
+	EthbridgeKeeper ethbridgekeeper.Keeper
 	DispensationKeeper dispkeeper.Keeper
 
 	mm *module.Manager
@@ -283,6 +287,14 @@ func NewSifApp(
 		oracletypes.DefaultConsensusNeeded,
 	)
 
+	app.EthbridgeKeeper = ethbridgekeeper.NewKeeper(
+		appCodec,
+		app.BankKeeper,
+		app.OracleKeeper,
+		app.AccountKeeper,
+		keys[ethbridgetypes.StoreKey],
+	)
+
 	app.DispensationKeeper = dispkeeper.NewKeeper(
 		appCodec,
 		keys[disptypes.StoreKey],
@@ -364,6 +376,7 @@ func NewSifApp(
 		transferModule,
 		clp.NewAppModule(app.ClpKeeper, app.BankKeeper),
 		oracle.NewAppModule(app.OracleKeeper),
+		ethbridge.NewAppModule(app.OracleKeeper, app.BankKeeper, app.AccountKeeper, app.EthbridgeKeeper, &appCodec),
 		dispensation.NewAppModule(app.DispensationKeeper, app.BankKeeper, app.SupplyKeeper),
 	)
 
@@ -401,6 +414,7 @@ func NewSifApp(
 
 		clptypes.ModuleName,
 		oracletypes.ModuleName,
+		ethbridge.ModuleName,
 		dispensation.ModuleName,
 	)
 

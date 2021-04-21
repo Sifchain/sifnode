@@ -1,11 +1,14 @@
-package keeper
+package internal
 
 import (
 	"bytes"
 	"encoding/hex"
-	"github.com/Sifchain/sifnode/app"
+
 	"strconv"
 	"testing"
+
+	"github.com/Sifchain/sifnode/app"
+	"github.com/Sifchain/sifnode/x/ethbridge/keeper"
 
 	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
 	simappparams "github.com/cosmos/cosmos-sdk/simapp/params"
@@ -44,7 +47,7 @@ const (
 )
 
 // CreateTestKeepers greates an Mock App, OracleKeeper, bankKeeper and ValidatorAddresses to be used for test input
-func CreateTestKeepers(t *testing.T, consensusNeeded float64, validatorAmounts []int64, extraMaccPerm string) (sdk.Context, Keeper, bankkeeper.Keeper, authkeeper.AccountKeeper, oraclekeeper.Keeper, simappparams.EncodingConfig, []sdk.ValAddress) {
+func CreateTestKeepers(t *testing.T, consensusNeeded float64, validatorAmounts []int64, extraMaccPerm string) (sdk.Context, keeper.Keeper, bankkeeper.Keeper, authkeeper.AccountKeeper, oraclekeeper.Keeper, simappparams.EncodingConfig, []sdk.ValAddress) {
 
 	PKs := CreateTestPubKeys(500)
 	keyStaking := sdk.NewKVStoreKey(stakingtypes.StoreKey)
@@ -140,7 +143,7 @@ func CreateTestKeepers(t *testing.T, consensusNeeded float64, validatorAmounts [
 	accountKeeper.SetModuleAccount(ctx, bondPool)
 	accountKeeper.SetModuleAccount(ctx, notBondedPool)
 
-	ethbridgeKeeper := NewKeeper(encCfg.Marshaler, bankKeeper, oracleKeeper, accountKeeper, keyEthBridge)
+	ethbridgeKeeper := keeper.NewKeeper(encCfg.Marshaler, bankKeeper, oracleKeeper, accountKeeper, keyEthBridge)
 	CethReceiverAccount, _ := sdk.AccAddressFromBech32(TestCethReceiverAddress)
 	ethbridgeKeeper.SetCethReceiverAccount(ctx, CethReceiverAccount)
 
