@@ -347,29 +347,58 @@ spec:
   - key encipherment
   - server auth
 }
+
         puts "certificate request"
         puts certificate_request
         File.open("#{TMPDIR}/csr.yaml", 'w') { |file| file.write(certificate_request) }
 
-        apply_certificate_signing_requests = `kubectl apply --kubeconfig=./kubeconfig -f #{TMPDIR}/csr.yaml`
-        puts apply_certificate_signing_requests
+        certificate_request = %Q{
+            kubectl delete --kubeconfig=./kubeconfig -f ${TMPDIR}/csr.yaml
 
-        approve_certificate_signing_requets = `kubectl certificate approve --kubeconfig=./kubeconfig #{CSR_NAME}`
-        puts approve_certificate_signing_requets
+            kubectl apply --kubeconfig=./kubeconfig -f ${TMPDIR}/csr.yaml
 
-        retrieve_server_certificate = `kubectl get csr --kubeconfig=./kubeconfig #{CSR_NAME} -o jsonpath='{.status.certificate}' | openssl base64 -d -A -out #{TMPDIR}/vault.crt`
-        puts retrieve_server_certificate
+            kubectl certificate approve --kubeconfig=./kubeconfig ${CSR_NAME}
 
-        get_vault_ca = `kubectl config view --kubeconfig=./kubeconfig --raw --minify --flatten -o jsonpath='{.clusters[].cluster.certificate-authority-data}' | base64 --decode > #{TMPDIR}/vault.ca`
+            serverCert=$(kubectl get csr --kubeconfig=./kubeconfig ${CSR_NAME} -o jsonpath='{.status.certificate}')
 
-        cluster_automation = `kubectl create secret generic --kubeconfig=./kubeconfig #{SECRET_NAME} --namespace #{NAMESPACE} --from-file=vault.key=#{TMPDIR}/vault.key --from-file=vault.crt=#{TMPDIR}/vault.crt --from-file=vault.ca=#{TMPDIR}/vault.ca --from-file=vault.ca.key=#{TMPDIR}/vault.key`
+            echo "${serverCert}" | openssl base64 -d -A -out ${TMPDIR}/vault.crt
 
-        FileUtils.rm_rf("#{TMPDIR}/csr.conf")
-        FileUtils.rm_rf("#{TMPDIR}/csr.yaml")
-        FileUtils.rm_rf("#{TMPDIR}/vault.ca")
-        FileUtils.rm_rf("#{TMPDIR}/vault.key")
-        FileUtils.rm_rf("#{TMPDIR}/vault.crt")
-        FileUtils.rm_rf("#{TMPDIR}/vault.key")
+            kubectl config view --kubeconfig=./kubeconfig --raw --minify --flatten -o jsonpath='{.clusters[].cluster.certificate-authority-data}' | base64 --decode > ${TMPDIR}/vault.ca
+
+            vault_ca_base64=$(kubectl config view --kubeconfig=./kubeconfig --raw --minify --flatten -o jsonpath='{.clusters[].cluster.certificate-authority-data}')
+
+            kubectl delete secret --kubeconfig=./kubeconfig ${SECRET_NAME} --namespace ${NAMESPACE}
+
+            kubectl create secret generic --kubeconfig=./kubeconfig ${SECRET_NAME} \
+                    --namespace ${NAMESPACE} \
+                    --from-file=vault.key=${TMPDIR}/vault.key \
+                    --from-file=vault.crt=${TMPDIR}/vault.crt \
+                    --from-file=vault.ca=${TMPDIR}/vault.ca \
+                    --from-file=vault.ca.key=${TMPDIR}/vault.key
+        }
+        system(certificate_request) or exit 1
+
+        #apply_certificate_signing_requests = `kubectl apply --kubeconfig=./kubeconfig -f #{TMPDIR}/csr.yaml`
+        #puts apply_certificate_signing_requests
+
+        #approve_certificate_signing_requets = `kubectl certificate approve --kubeconfig=./kubeconfig #{CSR_NAME}`
+        #puts approve_certificate_signing_requets
+
+        #retrieve_server_certificate = `kubectl get csr --kubeconfig=./kubeconfig #{CSR_NAME} -o jsonpath='{.status.certificate}' | openssl base64 -d -A -out #{TMPDIR}/vault.crt`
+        #puts retrieve_server_certificate
+
+        #get_vault_ca = `kubectl config view --kubeconfig=./kubeconfig --raw --minify --flatten -o jsonpath='{.clusters[].cluster.certificate-authority-data}' | base64 --decode > #{TMPDIR}/vault.ca`
+        #puts get_vault_ca
+
+        #cluster_automation = `kubectl create secret generic --kubeconfig=./kubeconfig #{SECRET_NAME} --namespace #{NAMESPACE} --from-file=vault.key=#{TMPDIR}/vault.key --from-file=vault.crt=#{TMPDIR}/vault.crt --from-file=vault.ca=#{TMPDIR}/vault.ca --from-file=vault.ca.key=#{TMPDIR}/vault.key`
+        #kubectl get csr ${CSR_NAME} -o jsonpath='{.status.certificate}'
+
+        #FileUtils.rm_rf("#{TMPDIR}/csr.conf")
+        #FileUtils.rm_rf("#{TMPDIR}/csr.yaml")
+        #FileUtils.rm_rf("#{TMPDIR}/vault.ca")
+        #FileUtils.rm_rf("#{TMPDIR}/vault.key")
+        #FileUtils.rm_rf("#{TMPDIR}/vault.crt")
+        #FileUtils.rm_rf("#{TMPDIR}/vault.key")
 
         check_helm_repo_setup = `helm repo list --kubeconfig=./kubeconfig | grep hashicorp`
         if check_helm_repo_setup.empty?
