@@ -1,14 +1,6 @@
 import { computed, Ref } from "@vue/reactivity";
 import ColorHash from "color-hash";
-import {
-  Asset,
-  AssetAmount,
-  IAmount,
-  IAssetAmount,
-  Network,
-  toBaseUnits,
-  TxHash,
-} from "ui-core";
+import { Asset, IAssetAmount, Network, toBaseUnits, TxHash } from "ui-core";
 import { format } from "ui-core/src/utils/format";
 
 export function formatSymbol(symbol: string) {
@@ -37,7 +29,7 @@ export function formatNumber(displayNumber: string) {
 export function formatAssetAmount(value: IAssetAmount) {
   if (!value || value.equalTo("0")) return "0";
   const { amount, asset } = value;
-  return amount.greaterThan(AssetAmount(asset, toBaseUnits("100000", asset)))
+  return amount.greaterThan(toBaseUnits("100000", asset))
     ? format(amount, asset, { mantissa: 2 })
     : format(amount, asset, { mantissa: 6 });
 }
