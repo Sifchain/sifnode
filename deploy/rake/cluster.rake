@@ -367,7 +367,7 @@ spec:
 
             vault_ca_base64=$(kubectl config view --kubeconfig=./kubeconfig --raw --minify --flatten -o jsonpath='{.clusters[].cluster.certificate-authority-data}')
 
-            kubectl delete secret --kubeconfig=./kubeconfig #{SECRET_NAME} --namespace #{NAMESPACE}
+            kubectl delete secret --kubeconfig=./kubeconfig #{SECRET_NAME} --namespace #{NAMESPACE} --ignore-not-found=true
 
             #kubectl create secret generic --kubeconfig=./kubeconfig #{SECRET_NAME} \
             #        --namespace #{NAMESPACE} \
@@ -376,7 +376,7 @@ spec:
             #        --from-file=vault.ca=#{TMPDIR}/vault.ca \
             #        --from-file=vault.ca.key=#{TMPDIR}/vault.key
         }
-        system(certificate_request) or exit 1
+        system(certificate_request)
 
         #apply_certificate_signing_requests = `kubectl apply --kubeconfig=./kubeconfig -f #{TMPDIR}/csr.yaml`
         #puts apply_certificate_signing_requests
