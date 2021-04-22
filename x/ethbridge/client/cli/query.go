@@ -48,7 +48,7 @@ func GetCmdGetEthBridgeProphecy(queryRoute string) *cobra.Command {
 			ethereumSender := types.NewEthereumAddress(args[3])
 
 			req := &types.QueryEthProphecyRequest{
-				EthereumChainId:       int64(ethereumChainID),
+				EthereumChainId:       ethereumChainID,
 				BridgeContractAddress: bridgeContract.String(),
 				Nonce:                 int64(nonce),
 				Symbol:                symbol,
