@@ -41,10 +41,7 @@ describe("EthbridgeService", () => {
     });
   });
 
-  // We need to only run one test on ebrelayer as we have not got the
-  // infrastructure setup to retart it between tests
-  // To fix this we would need to deterministically reset the state of both
-  // blockchains as well as restart ebrelayer
+  // TODO: Break this out to multiple tests
   test("eth -> ceth -> eth then rowan -> erowan -> rowan ", async () => {
     // Setup services
     const sifService = await createTestSifService(juniper);
