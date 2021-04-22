@@ -33,7 +33,7 @@ type Node struct {
 	Password                  string        `yaml:"password"`
 	BondAmount                string        `yaml:"-"`
 	MintAmount                string        `yaml:"-"`
-	MinCLPCreatePoolThreshold string        `yaml:"-"`
+	MinCLPCreatePoolThreshold uint64        `yaml:"-"`
 	GovMaxDepositPeriod       time.Duration `yaml:"-"`
 	GovVotingPeriod           time.Duration `yaml:"-"`
 	CLPConfigURL              string        `yaml:"-"`

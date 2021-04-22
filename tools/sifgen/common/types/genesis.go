@@ -6,10 +6,13 @@ import (
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	disttypes "github.com/cosmos/cosmos-sdk/x/distribution/types"
+	genutiltypes "github.com/cosmos/cosmos-sdk/x/genutil/types"
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 	slashingtypes "github.com/cosmos/cosmos-sdk/x/slashing/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	tmtypes "github.com/tendermint/tendermint/proto/tendermint/types"
+
+	clptypes "github.com/Sifchain/sifnode/x/clp/types"
 )
 
 const (
@@ -83,27 +86,15 @@ type Genutil struct {
 
 type Upgrade struct{}
 
-type CLPParams struct {
-	MinCreatePoolThreshold string `json:"min_create_pool_threshold"`
-}
-
-type CLP struct {
-	Params                CLPParams   `json:"params"`
-	AddressWhitelist      interface{} `json:"address_whitelist"`
-	PoolList              interface{} `json:"pool_list"`
-	LiquidityProviderList interface{} `json:"liquidity_provider_list"`
-	CLPModuleAddress      string      `json:"clp_module_address"`
-}
-
 type AppState struct {
 	Auth         authtypes.GenesisState     `json:"auth"`
 	Bank         banktypes.GenesisState     `json:"bank"`
 	Staking      stakingtypes.GenesisState  `json:"staking"`
 	Params       interface{}                `json:"params"`
 	Ethbridge    interface{}                `json:"ethbridge"`
-	CLP          CLP                        `json:"clp"`
+	CLP          clptypes.GenesisState      `json:"clp"`
 	Oracle       interface{}                `json:"oracle"`
-	Genutil      Genutil                    `json:"genutil"`
+	Genutil      genutiltypes.GenesisState  `json:"genutil"`
 	Gov          govtypes.GenesisState      `json:"gov"`
 	Slashing     slashingtypes.GenesisState `json:"slashing"`
 	Distribution disttypes.GenesisState     `json:"distribution"`

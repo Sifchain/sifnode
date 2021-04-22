@@ -78,12 +78,12 @@ func (n *Network) Build(count int, outputDir, seedIPv4Addr string) (*string, err
 	validators := n.initValidators(count, outputDir, seedIPv4Addr)
 
 	for _, validator := range validators {
-		appDirs := []string{validator.NodeHomeDir, validator.CLIHomeDir, validator.CLIConfigDir}
+		appDirs := []string{validator.NodeHomeDir}
 		if err := n.createDirs(appDirs); err != nil {
 			return nil, err
 		}
 
-		if err := n.setDefaultConfig(fmt.Sprintf("%s/%s/%s/%s", validator.HomeDir, CLIHomeDir, ConfigDir, utils.ConfigFile)); err != nil {
+		if err := n.setDefaultConfig(fmt.Sprintf("%s/%s/%s", validator.HomeDir, ConfigDir, utils.ConfigFile)); err != nil {
 			return nil, err
 		}
 
@@ -206,7 +206,7 @@ func (n *Network) setDefaultConfig(configPath string) error {
 }
 
 func (n *Network) generateKey(validator *Validator) error {
-	output, err := n.CLI.AddKey(validator.Moniker, validator.Mnemonic, validator.Password, fmt.Sprintf("%s/%s", validator.HomeDir, CLIHomeDir))
+	output, err := n.CLI.AddKey(validator.Moniker, validator.Mnemonic, validator.Password, fmt.Sprintf("%s", validator.HomeDir))
 	if err != nil {
 		return err
 	}
