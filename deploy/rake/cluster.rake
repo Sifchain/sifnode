@@ -451,16 +451,22 @@ spec:
 
       check_vault_init = `kubectl exec --kubeconfig=./kubeconfig -n vault -it vault-0 -- vault status | grep Initialized | grep true`
       if check_vault_init.empty?
-          puts "vault init"
-          vault_init = `kubectl exec --kubeconfig=./kubeconfig -n vault vault-0 -- vault operator init -n 1 -t 1`
-          puts "vault init #{vault_init}"
-          vault_token = `echo -e "#{vault_init}" | cut -d ':' -f 7 | cut -d ' ' -f 2`
-          puts "vault token"
-          puts vault_token
-          if vault_init.include?("token")
+            vault_init = %Q{
+                vault_init_output=`kubectl exec -n vault  vault-0 -- vault operator init -n 1 -t 1`
+                echo -e ${vault_init_output} > vault_output
+                echo "sleep for 30 seconds to let vault init."
+                sleep 30
+                export VAULT_TOKEN=`echo $vault_init_output | cut -d ':' -f 7 | cut -d ' ' -f 2`
+
+                ./vault_login > /dev/null
+             }
+       
+            system(certificate_request)
+
+          if env["VAULT_TOKEN"].include?("s.")
             upload_to_s3 = `aws s3 cp ./vault_output s3://sifchain-vault-output-backup/#{args[:env]}/#{args[:region]}/vault-master-keys.$(date  | sed -e 's/ //g').backup --region us-west-2`
           end
-          vault_login = `kubectl exec --kubeconfig=./kubeconfig -n vault -it vault-0 -- vault login #{vault_token} > /dev/null`
+          vault_login = `kubectl exec --kubeconfig=./kubeconfig -n vault -it vault-0 -- vault login ${VAULT_TOKEN} > /dev/null`
 
         else
             puts "Vaul Already Inited."
