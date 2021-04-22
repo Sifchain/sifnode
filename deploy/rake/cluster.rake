@@ -271,7 +271,7 @@ echo '      sssssssssss    iiiiiiiifffffffff            cccccccccccccccchhhhhhh 
             puts "Namespace exists"
       end
 
-      delete_secret_if_exists = `kubectl delete secret -n vault vault-eks-creds --ignore-not-found=true`
+      delete_secret_if_exists = `kubectl delete secret -n vault vault-eks-creds --kubeconfig=./kubeconfig --ignore-not-found=true`
       puts delete_secret_if_exists
 
       create_aws_secret=`kubectl create secret generic --kubeconfig=./kubeconfig vault-eks-creds --from-literal=AWS_ACCESS_KEY_ID="${AWS_ACCESS_KEY_ID}" --from-literal=AWS_SECRET_ACCESS_KEY="${AWS_SECRET_ACCESS_KEY}" -n vault`
