@@ -7,20 +7,16 @@ env:
   IMAGE_NAME: sifdocker
 
 jobs:
-  push:
+  push-docker-image:
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@v2
-
+ 
       - name: Build image
         run: cd test/integration/vagrant; make sifdocker
 
       - name: Log into registry
         run: echo "${{ secrets.GITREPO }}" | docker login https://docker.pkg.github.com -u $GITHUB_ACTOR --password-stdin
 
-
       - name: Push image
-        run: |
-          IMAGE_ID=docker.pkg.github.com/${{ github.repository }}/$IMAGE_NAME
-          docker push ghcr.io/github/$IMAGE_NAME:latest
+        run: docker push ghcr.io/gboie/$IMAGE_NAME:latest
