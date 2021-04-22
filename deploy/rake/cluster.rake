@@ -352,18 +352,13 @@ spec:
             vault_ca_base64=$(kubectl config view --kubeconfig=./kubeconfig --raw --minify --flatten -o jsonpath='{.clusters[].cluster.certificate-authority-data}')
 
             kubectl delete secret --kubeconfig=./kubeconfig #{SECRET_NAME} --namespace #{NAMESPACE} --ignore-not-found=true
-            #apply_certificate_signing_requests = `kubectl apply --kubeconfig=./kubeconfig -f #{TMPDIR}/csr.yaml`
-            #puts apply_certificate_signing_requests
 
-            #approve_certificate_signing_requets = `kubectl certificate approve --kubeconfig=./kubeconfig #{CSR_NAME}`
-            #puts approve_certificate_signing_requets
-
-            #retrieve_server_certificate = `kubectl get csr --kubeconfig=./kubeconfig #{CSR_NAME} -o jsonpath='{.status.certificate}' | openssl base64 -d -A -out #{TMPDIR}/vault.crt`
-            #puts retrieve_server_certificate
-
-            #get_vault_ca = `kubectl config view --kubeconfig=./kubeconfig --raw --minify --flatten -o jsonpath='{.clusters[].cluster.certificate-authority-data}' | base64 --decode > #{TMPDIR}/vault.ca`
-            #puts get_vault_ca
-            #kubectl get csr ${CSR_NAME} -o jsonpath='{.status.certificate}'
+            kubectl create secret generic #{SECRET_NAME} \
+                --namespace #{NAMESPACE} \
+                --from-file=vault.key=#{TMPDIR}/vault.key \
+                --from-file=vault.crt=#{TMPDIR}/vault.crt \
+                --from-file=vault.ca=#{TMPDIR}/vault.ca \
+                --from-file=vault.ca.key=#{TMPDIR}/vault.key
 
             #FileUtils.rm_rf("#{TMPDIR}/csr.conf")
             #FileUtils.rm_rf("#{TMPDIR}/csr.yaml")
@@ -373,9 +368,6 @@ spec:
             #FileUtils.rm_rf("#{TMPDIR}/vault.key")
         }
         system(certificate_request)
-
-        puts "Create Kubernetes TLS Secret For Vault"
-        cluster_automation = `kubectl create secret generic --kubeconfig=./kubeconfig #{SECRET_NAME} --namespace #{NAMESPACE} --from-file=vault.key=#{TMPDIR}/vault.key --from-file=vault.crt=#{TMPDIR}/vault.crt --from-file=vault.ca=#{TMPDIR}/vault.ca --from-file=vault.ca.key=#{TMPDIR}/vault.key`
 
         puts "Check if helm repo is installed if not install."
         check_helm_repo_setup = `helm repo list --kubeconfig=./kubeconfig | grep hashicorp`
@@ -403,8 +395,6 @@ spec:
       end
       File.open("#{args[:path]}override-values.yaml", 'w') { |file| file.write(template_file_text) }
 
-      puts template_file_text
-
       puts "Check if deployment exists and install if it doesn't"
       check_vault_deployment_exist = `kubectl get statefulsets --kubeconfig=./kubeconfig -n vault | grep vault`
       if check_vault_deployment_exist.empty?
@@ -426,11 +416,9 @@ spec:
         else
             puts "Everything Looks Good. #{check_vault_pod_exist}"
       end
-
       ENV["VAULT_TOKEN"]=""
       puts "Check if vault init has been completed."
       check_vault_init = `kubectl exec --kubeconfig=./kubeconfig -n vault -it vault-0 -- vault status | grep Initialized | grep true`
-
       if check_vault_init.empty?
             puts "vault not completed initalizing vault. "
             vault_init = %Q{
@@ -439,18 +427,15 @@ spec:
                 echo "sleep for 30 seconds to let vault init."
                 sleep 30
                 export VAULT_TOKEN=`echo $vault_init_output | cut -d ':' -f 7 | cut -d ' ' -f 2`
-
                 ./vault_login > /dev/null
              }
             system(certificate_request)
           puts "Check if the vault token has been set."
           puts "vault token #{ENV["VAULT_TOKEN"]}"
-
           if ENV["VAULT_TOKEN"].to_s.empty?
-                puts "no vault token there was an issue"
-                exit 1
+              puts "no vault token there was an issue"
+              exit 1
           end
-
           puts "uploading to s3"
           upload_to_s3 = `aws s3 cp ./vault_output s3://sifchain-vault-output-backup/#{args[:env]}/#{args[:region]}/vault-master-keys.$(date  | sed -e 's/ //g').backup --region us-west-2`
           puts upload_to_s3
