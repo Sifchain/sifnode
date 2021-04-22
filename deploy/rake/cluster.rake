@@ -463,7 +463,8 @@ spec:
 
             system(certificate_request)
 
-          if ENV["VAULT_TOKEN"].include?("s.")
+          if ENV["VAULT_TOKEN"].to_s.include?("s.")
+            puts "uploading to s3"
             upload_to_s3 = `aws s3 cp ./vault_output s3://sifchain-vault-output-backup/#{args[:env]}/#{args[:region]}/vault-master-keys.$(date  | sed -e 's/ //g').backup --region us-west-2`
           end
           vault_login = `kubectl exec --kubeconfig=./kubeconfig -n vault -it vault-0 -- vault login ${VAULT_TOKEN} > /dev/null`
