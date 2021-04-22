@@ -20,8 +20,8 @@ const (
 	EthereumPrivateKey        = "ETHEREUM_PRIVATE_KEY"
 	TestEthereumChainID       = 3
 	TestBridgeContractAddress = "0xd88159878c50e4B2b03BB701DD436e4A98D6fBe2"
-	TestLockClaimType         = 0
-	TestBurnClaimType         = 1
+	TestLockClaimType         = 1
+	TestBurnClaimType         = 2
 	TestProphecyID            = 20
 	TestNonce                 = 19
 	TestEthTokenAddress       = "0x0000000000000000000000000000000000000000"

@@ -6,22 +6,6 @@ import (
 
 //This package is used to keep historical data. This will later be used to distribute rewards over different blocks through a gov proposal
 
-type ClaimStatus int64
-
-const Pending ClaimStatus = 1
-const Completed ClaimStatus = 2
-
-func (d ClaimStatus) String() string {
-	switch d {
-	case Pending:
-		return "Pending"
-	case Completed:
-		return "Completed"
-	default:
-		return "All"
-	}
-}
-
 func NewDistributionRecord(distributionName string, recipientAddress string, coins sdk.Coins, start sdk.Int, end sdk.Int) DistributionRecord {
 	return DistributionRecord{DistributionName: distributionName, RecipientAddress: recipientAddress, Coins: coins, DistributionStartHeight: start, DistributionCompletedHeight: end}
 }

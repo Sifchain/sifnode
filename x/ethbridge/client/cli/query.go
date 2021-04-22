@@ -10,7 +10,7 @@ import (
 )
 
 // GetCmdGetEthBridgeProphecy queries information about a specific prophecy
-func GetCmdGetEthBridgeProphecy(queryRoute string) *cobra.Command {
+func GetCmdGetEthBridgeProphecy() *cobra.Command {
 	return &cobra.Command{
 		Use: `prophecy [bridge-registry-contract] [nonce] [symbol] [ethereum-sender]
 		--ethereum-chain-id [ethereum-chain-id] --token-contract-address [token-contract-address]`,
@@ -48,7 +48,7 @@ func GetCmdGetEthBridgeProphecy(queryRoute string) *cobra.Command {
 			ethereumSender := types.NewEthereumAddress(args[3])
 
 			req := &types.QueryEthProphecyRequest{
-				EthereumChainId:       int64(ethereumChainID),
+				EthereumChainId:       ethereumChainID,
 				BridgeContractAddress: bridgeContract.String(),
 				Nonce:                 int64(nonce),
 				Symbol:                symbol,
