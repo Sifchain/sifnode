@@ -346,6 +346,7 @@ spec:
   - server auth
 }
         puts "certificate request"
+        puts certificate_request
         File.open("#{TMPDIR}/csr.yaml", 'w') { |file| file.write(certificate_request) }
 
         apply_certificate_signing_requests = `kubectl apply --kubeconfig=./kubeconfig -f #{TMPDIR}/csr.yaml`
