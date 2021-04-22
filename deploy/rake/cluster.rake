@@ -386,11 +386,11 @@ spec:
       ENV.each_pair do |k, v|
           replace_string="-=#{k}=-"
           puts replace_string
-          if replace_string == "-=region=-"
+          if replace_string == "-=aws_region=-"
             template_file_text.include?(k) ? (template_file_text.gsub! replace_string, "#{args[:region]}") : (puts 'env matching...')
           elsif replace_string == "-=kmskey=-"
             template_file_text.include?(k) ? (template_file_text.gsub! replace_string, "#{args[:kmskey]}") : (puts 'env matching...')
-          elsif replace_string == "-=role_arn=-"
+          elsif replace_string == "-=aws_role=-"
             template_file_text.include?(k) ? (template_file_text.gsub! replace_string, "#{args[:aws_role]}") : (puts 'env matching...')
           end
       end
