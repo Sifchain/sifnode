@@ -381,6 +381,7 @@ spec:
                 puts "Namespace exists"
         end
       end
+
       template_file_text = File.read("#{args[:path]}override-values.yaml").strip
       ENV.each_pair do |k, v|
           replace_string="-=#{k}=-"
@@ -394,6 +395,10 @@ spec:
           end
       end
       File.open("#{args[:path]}override-values.yaml", 'w') { |file| file.write(template_file_text) }
+
+      templated_helm_chart = `cat #{args[:path]}override-values.yaml`
+      puts templated_helm_chart
+
 
       check_vault_deployment_exist = `kubectl get statefulsets --kubeconfig=./kubeconfig -n vault | grep vault`
       if check_vault_deployment_exist.empty?
