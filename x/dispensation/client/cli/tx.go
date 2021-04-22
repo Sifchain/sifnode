@@ -45,8 +45,6 @@ func GetCmdCreate() *cobra.Command {
 		Short: "Create new distribution",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx := client.GetClientContextFromCmd(cmd)
-			//depCdc := clientCtx.JSONMarshaler
-			//cdc := depCdc.(codec.Marshaler)
 			serverCtx := server.GetServerContextFromCmd(cmd)
 			config := serverCtx.Config
 

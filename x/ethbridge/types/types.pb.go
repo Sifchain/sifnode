@@ -24,12 +24,16 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
+// Claim type enum
 type ClaimType int32
 
 const (
+	// Unspecified claim type
 	ClaimType_CLAIM_TYPE_UNSPECIFIED ClaimType = 0
-	ClaimType_CLAIM_TYPE_LOCK        ClaimType = 1
-	ClaimType_CLAIM_TYPE_BURN        ClaimType = 2
+	// Lock claim type
+	ClaimType_CLAIM_TYPE_LOCK ClaimType = 1
+	// Burn claim type
+	ClaimType_CLAIM_TYPE_BURN ClaimType = 2
 )
 
 var ClaimType_name = map[int32]string{

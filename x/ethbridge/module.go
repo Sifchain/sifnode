@@ -68,12 +68,12 @@ func (b AppModuleBasic) RegisterRESTRoutes(ctx sdkclient.Context, router *mux.Ro
 
 // GetTxCmd returns the root tx command for the ethbridge module.
 func (b AppModuleBasic) GetTxCmd() *cobra.Command {
-	return client.GetTxCmd(StoreKey)
+	return client.GetTxCmd()
 }
 
 // GetQueryCmd returns no root query command for the ethbridge module.
 func (AppModuleBasic) GetQueryCmd() *cobra.Command {
-	return client.GetQueryCmd(StoreKey)
+	return client.GetQueryCmd()
 }
 
 //____________________________________________________________________________

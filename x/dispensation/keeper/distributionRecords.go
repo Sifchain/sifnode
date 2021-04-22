@@ -67,7 +67,7 @@ func (k Keeper) GetRecordsForNamePending(ctx sdk.Context, name string) types.Dis
 		var dr types.DistributionRecord
 		bytesValue := iterator.Value()
 		k.cdc.MustUnmarshalBinaryBare(bytesValue, &dr)
-		if dr.DistributionName == name && dr.ClaimStatus == sdk.NewUint(1) {
+		if dr.DistributionName == name && dr.ClaimStatus == types.ClaimStatus_CLAIM_STATUS_PENDING {
 			res.DistributionRecords = append(res.DistributionRecords, &dr)
 		}
 	}
@@ -82,7 +82,7 @@ func (k Keeper) GetRecordsForNameCompleted(ctx sdk.Context, name string) types.D
 		var dr types.DistributionRecord
 		bytesValue := iterator.Value()
 		k.cdc.MustUnmarshalBinaryBare(bytesValue, &dr)
-		if dr.DistributionName == name && dr.ClaimStatus == sdk.NewUint(2) {
+		if dr.DistributionName == name && dr.ClaimStatus == types.ClaimStatus_CLAIM_STATUS_COMPLETED {
 			res.DistributionRecords = append(res.DistributionRecords, &dr)
 		}
 	}
@@ -115,7 +115,7 @@ func (k Keeper) GetPendingRecordsLimited(ctx sdk.Context, limit int) types.Distr
 		var dr types.DistributionRecord
 		bytesValue := iterator.Value()
 		k.cdc.MustUnmarshalBinaryBare(bytesValue, &dr)
-		if dr.ClaimStatus == sdk.NewUint(1) {
+		if dr.ClaimStatus == types.ClaimStatus_CLAIM_STATUS_PENDING {
 			res.DistributionRecords = append(res.DistributionRecords, &dr)
 			count++
 		}

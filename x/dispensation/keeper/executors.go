@@ -21,7 +21,7 @@ func (k Keeper) CreateDrops(ctx sdk.Context, output []banktypes.Output, name str
 			}
 			distributionRecord.Add(*oldRecord)
 		}
-		distributionRecord.ClaimStatus = sdk.NewUint(1)
+		distributionRecord.ClaimStatus = types.ClaimStatus_CLAIM_STATUS_COMPLETED
 		err := k.SetDistributionRecord(ctx, distributionRecord)
 		if err != nil {
 			return errors.Wrapf(types.ErrFailedOutputs, "error setting distibution record  : %s", distributionRecord.String())
@@ -39,7 +39,7 @@ func (k Keeper) DistributeDrops(ctx sdk.Context, height int64) error {
 		if err != nil {
 			return errors.Wrapf(types.ErrFailedOutputs, "for address  : %s", record.RecipientAddress)
 		}
-		record.ClaimStatus = sdk.NewUint(2)
+		record.ClaimStatus = types.ClaimStatus_CLAIM_STATUS_COMPLETED
 		record.DistributionCompletedHeight = sdk.NewInt(height)
 		err = k.SetDistributionRecord(ctx, *record)
 		if err != nil {
