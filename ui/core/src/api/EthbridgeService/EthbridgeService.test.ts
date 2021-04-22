@@ -41,7 +41,7 @@ describe("EthbridgeService", () => {
     });
   });
 
-  // TODO: Break this out to multiple tests
+  // TODO: Break this out to multiple tests we can now reset state between tests if required.
   test("eth -> ceth -> eth then rowan -> erowan -> rowan ", async () => {
     // Setup services
     const sifService = await createTestSifService(juniper);
