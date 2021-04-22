@@ -42,22 +42,25 @@ func GenerateInputList(rowanamount string) []types.Input {
 func GenerateOutputList(rowanamount string) []types.Output {
 	addressList := []string{"A58856F0FD53BF058B4909A21AEC019107BA3", "A58856F0FD53BF058B4909A21AEC019107BA4", "A58856F0FD53BF058B4909A21AEC019107BA5"}
 	accAddrList := GenerateAddressList(addressList)
+
 	rowan, ok := sdk.NewIntFromString(rowanamount)
 	if !ok {
 		panic(fmt.Sprintf("Err in getting amount : %s", rowanamount))
 	}
+
 	rowanAmount := sdk.Coins{sdk.NewCoin("rowan", rowan)}
 	res := make([]types.Output, len(accAddrList))
-	for _, address := range accAddrList {
+
+	for index, address := range accAddrList {
 		out := types.NewOutput(address, rowanAmount)
-		res = append(res, out)
+		res[index] = out
 	}
 	return res
 }
 
 func GenerateAddressList(addressList []string) []sdk.AccAddress {
 	acclist := make([]sdk.AccAddress, len(addressList))
-	for _, key := range addressList {
+	for index, key := range addressList {
 		var buffer bytes.Buffer
 		buffer.WriteString(key)
 		buffer.WriteString(strconv.Itoa(100))
@@ -82,7 +85,7 @@ func GenerateAddressList(addressList []string) []sdk.AccAddress {
 		if !bytes.Equal(bechres, res) {
 			panic("Bech decode and hex decode don't match")
 		}
-		acclist = append(acclist, res)
+		acclist[index] = res
 	}
 	return acclist
 }
