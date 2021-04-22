@@ -216,11 +216,13 @@ func (c CLI) CreateValidator(moniker, validatorPublicKey, keyPassword, bondAmoun
 func (c CLI) shellExec(cmd string, args ...string) (*string, error) {
 	cm := exec.Command(cmd, args...)
 	var out bytes.Buffer
+	var errOut bytes.Buffer
 	cm.Stdout = &out
+	cm.Stderr = &errOut
 
 	err := cm.Run()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("Error executing %s %s: %s \n %s", cmd, strings.Join(args, " "), err.Error(), errOut.String())
 	}
 
 	result := out.String()
