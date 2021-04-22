@@ -353,28 +353,28 @@ spec:
         File.open("#{TMPDIR}/csr.yaml", 'w') { |file| file.write(certificate_request) }
 
         certificate_request = %Q{
-            kubectl delete --kubeconfig=./kubeconfig -f ${TMPDIR}/csr.yaml
+            kubectl delete --kubeconfig=./kubeconfig -f #{TMPDIR}/csr.yaml
 
-            kubectl apply --kubeconfig=./kubeconfig -f ${TMPDIR}/csr.yaml
+            kubectl apply --kubeconfig=./kubeconfig -f #{TMPDIR}/csr.yaml
 
-            kubectl certificate approve --kubeconfig=./kubeconfig ${CSR_NAME}
+            kubectl certificate approve --kubeconfig=./kubeconfig #{CSR_NAME}
 
-            serverCert=$(kubectl get csr --kubeconfig=./kubeconfig ${CSR_NAME} -o jsonpath='{.status.certificate}')
+            serverCert=$(kubectl get csr --kubeconfig=./kubeconfig #{CSR_NAME} -o jsonpath='{.status.certificate}')
 
-            echo "${serverCert}" | openssl base64 -d -A -out ${TMPDIR}/vault.crt
+            echo "${serverCert}" | openssl base64 -d -A -out #{TMPDIR}/vault.crt
 
-            kubectl config view --kubeconfig=./kubeconfig --raw --minify --flatten -o jsonpath='{.clusters[].cluster.certificate-authority-data}' | base64 --decode > ${TMPDIR}/vault.ca
+            kubectl config view --kubeconfig=./kubeconfig --raw --minify --flatten -o jsonpath='{.clusters[].cluster.certificate-authority-data}' | base64 --decode > #{TMPDIR}/vault.ca
 
             vault_ca_base64=$(kubectl config view --kubeconfig=./kubeconfig --raw --minify --flatten -o jsonpath='{.clusters[].cluster.certificate-authority-data}')
 
-            kubectl delete secret --kubeconfig=./kubeconfig ${SECRET_NAME} --namespace ${NAMESPACE}
+            kubectl delete secret --kubeconfig=./kubeconfig #{SECRET_NAME} --namespace #{NAMESPACE}
 
-            kubectl create secret generic --kubeconfig=./kubeconfig ${SECRET_NAME} \
-                    --namespace ${NAMESPACE} \
-                    --from-file=vault.key=${TMPDIR}/vault.key \
-                    --from-file=vault.crt=${TMPDIR}/vault.crt \
-                    --from-file=vault.ca=${TMPDIR}/vault.ca \
-                    --from-file=vault.ca.key=${TMPDIR}/vault.key
+            kubectl create secret generic --kubeconfig=./kubeconfig #{SECRET_NAME} \
+                    --namespace #{NAMESPACE} \
+                    --from-file=vault.key=#{TMPDIR}/vault.key \
+                    --from-file=vault.crt=#{TMPDIR}/vault.crt \
+                    --from-file=vault.ca=#{TMPDIR}/vault.ca \
+                    --from-file=vault.ca.key=#{TMPDIR}/vault.key
         }
         system(certificate_request) or exit 1
 
