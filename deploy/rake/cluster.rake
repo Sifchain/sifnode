@@ -318,6 +318,9 @@ IP.1 = 127.0.0.1
         generate_server_csr = `openssl req -new -key #{TMPDIR}/vault.key -subj "/CN=#{SERVICE}.#{NAMESPACE}.svc" -config #{TMPDIR}/csr.conf -out #{TMPDIR}/server.csr`
         puts generate_server_csr
 
+        cat_csr = `cat #{TMPDIR}/server.csr`
+        puts cat_csr
+
         certificate_request = %Q{
 apiVersion: certificates.k8s.io/v1beta1
 kind: CertificateSigningRequest
@@ -327,7 +330,7 @@ metadata:
 spec:
   groups:
   - system:authenticated
-  request: $(cat #{TMPDIR}/server.csr | base64 | tr -d '\\n')
+  request: $(cat #{TMPDIR}/server.csr | base64 | tr -d '\n')
   usages:
   - digital signature
   - key encipherment
@@ -405,10 +408,11 @@ spec:
           vault_init = `kubectl exec --kubeconfig=./kubeconfig -n vault vault-0 -- vault operator init -n 1 -t 1`
           puts "vault init #{vault_init}"
           vault_token = `echo -e "#{vault_init}" | cut -d ':' -f 7 | cut -d ' ' -f 2`
-          if vault_init.includ?("token")
+          if vault_init.include?("token")
             upload_to_s3 = `aws s3 cp ./vault_output s3://sifchain-vault-output-backup/#{args[:env]}/#{args[:region]}/vault-master-keys.$(date  | sed -e 's/ //g').backup --region us-west-2`
           end
           vault_login = `kubectl exec --kubeconfig=./kubeconfig -n vault -it vault-0 -- vault login #{vault_token} > /dev/null`
+
         else
             puts "Vaul Already Inited."
       end
