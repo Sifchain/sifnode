@@ -330,15 +330,23 @@ EOF
 
 kubectl apply --kubeconfig=./kubeconfig -f ${TMPDIR}/csr.yaml
 
+cat ${TMPDIR}/csr.yaml
+
 kubectl certificate approve --kubeconfig=./kubeconfig ${CSR_NAME}
 
 serverCert=$(kubectl get csr --kubeconfig=./kubeconfig ${CSR_NAME} -o jsonpath='{.status.certificate}')
 
 echo "${serverCert}" | openssl base64 -d -A -out ${TMPDIR}/vault.crt
 
+cat ${TMPDIR}/vault.crt
+
 kubectl config view --kubeconfig=./kubeconfig --raw --minify --flatten -o jsonpath='{.clusters[].cluster.certificate-authority-data}' | base64 --decode > ${TMPDIR}/vault.ca
 
+cat ${TMPDIR}/vault.ca
+
 vault_ca_base64=$(kubectl config view --kubeconfig=./kubeconfig --raw --minify --flatten -o jsonpath='{.clusters[].cluster.certificate-authority-data}')
+
+cat ${TMPDIR}/vault.key
 
 kubectl create secret generic --kubeconfig=./kubeconfig ${SECRET_NAME} \
         --namespace ${NAMESPACE} \
