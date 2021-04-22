@@ -222,7 +222,7 @@ func (c CLI) shellExec(cmd string, args ...string) (*string, error) {
 
 	err := cm.Run()
 	if err != nil {
-		return nil, fmt.Errorf("Error executing %s %s: %s \n %s", cmd, strings.Join(args, " "), err.Error(), errOut.String())
+		return nil, fmt.Errorf("error executing %s %s: %s \n %s", cmd, strings.Join(args, " "), err.Error(), errOut.String())
 	}
 
 	result := out.String()
