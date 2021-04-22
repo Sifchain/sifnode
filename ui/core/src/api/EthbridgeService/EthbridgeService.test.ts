@@ -26,7 +26,7 @@ const [ETH, CETH, ATK, CATK, ROWAN, EROWAN] = getTestingTokens([
   "EROWAN",
 ]);
 
-describe.only("EthbridgeService", () => {
+describe("EthbridgeService", () => {
   let EthbridgeService: ReturnType<typeof createEthbridgeService>;
 
   beforeEach(async () => {
