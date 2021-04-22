@@ -2,7 +2,7 @@
 
 import { spawn, exec } from "child_process";
 import { resolve } from "path";
-import { sleep } from "./utils";
+import { sleep } from "../e2e/utils";
 import treekill from "tree-kill";
 import chalk from "chalk";
 
@@ -15,7 +15,7 @@ export async function restartStack() {
   cmdStack.push(cmd);
   let handler;
 
-  await new Promise((resolve) => {
+  await new Promise<void>((resolve) => {
     handler = (data) => {
       const dataStr = data.toString().replace(/\n$/, "");
       console.log(chalk.blue(dataStr));
@@ -26,7 +26,7 @@ export async function restartStack() {
     cmd.stdout.on("data", handler);
     cmd.stderr.on("data", handler);
     cmd.on("error", (err) => {
-      console.log(chalk.red(err));
+      console.log(chalk.red(err.toString()));
     });
   });
   console.log(chalk.green("DONE"));
@@ -42,13 +42,7 @@ export async function killStack() {
   await Promise.all(cmdStack.map((cmd) => treeKillProm(cmd.pid)));
 
   await new Promise((resolve) => {
-    exec(
-      "killall",
-      ["sifnoded", "sifnodecli", "ebrelayer", "ganache-cli"],
-      (out) => {
-        resolve(out);
-      },
-    );
+    exec("killall sifnoded sifnodecli ebrelayer ganache-cli", resolve);
     console.log("⬇⬇⬇  S.T.A.C.K  ⬇⬇⬇");
   });
   await sleep(1000);
