@@ -49,7 +49,7 @@ func TestLogLockToEthBridgeClaim(t *testing.T) {
 	ethBridgeClaim, err := EthereumEventToEthBridgeClaim(testCosmosValidatorBech32Address, ethereumEvent)
 	require.NoError(t, err)
 
-	require.Equal(t, expectedEthBridgeClaim, ethBridgeClaim)
+	require.Equal(t, expectedEthBridgeClaim, &ethBridgeClaim)
 }
 
 func TestProphecyClaimToSignedOracleClaim(t *testing.T) {
