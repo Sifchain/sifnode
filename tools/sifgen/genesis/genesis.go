@@ -3,11 +3,13 @@ package genesis
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
+	"net/http"
+	"time"
+
 	"github.com/Sifchain/sifnode/tools/sifgen/common"
 	"github.com/Sifchain/sifnode/tools/sifgen/common/types"
 	"github.com/Sifchain/sifnode/tools/sifgen/utils"
-	"io/ioutil"
-	"net/http"
 )
 
 func ReplaceStakingBondDenom(nodeHomeDir string) error {
@@ -67,7 +69,7 @@ func ReplaceGovDepositParamsMinDeposit(nodeHomeDir, tokenDenom string) error {
 	return nil
 }
 
-func ReplaceGovDepositParamsMaxDepositPeriod(nodeHomeDir, period string) error {
+func ReplaceGovDepositParamsMaxDepositPeriod(nodeHomeDir string, period time.Duration) error {
 	genesis, err := readGenesis(nodeHomeDir)
 	if err != nil {
 		return err
@@ -86,7 +88,7 @@ func ReplaceGovDepositParamsMaxDepositPeriod(nodeHomeDir, period string) error {
 	return nil
 }
 
-func ReplaceGovVotingParamsVotingPeriod(nodeHomeDir, period string) error {
+func ReplaceGovVotingParamsVotingPeriod(nodeHomeDir string, period time.Duration) error {
 	genesis, err := readGenesis(nodeHomeDir)
 	if err != nil {
 		return err

@@ -6,6 +6,7 @@ import (
 	"log"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/Sifchain/sifnode/tools/sifgen"
 	"github.com/spf13/cobra"
@@ -30,8 +31,8 @@ func main() {
 	_nodeCreateCmd.PersistentFlags().String("bond-amount", "1000000000000000000000000rowan", "bond amount")
 	_nodeCreateCmd.PersistentFlags().String("mint-amount", "999000000000000000000000000rowan", "mint amount")
 	_nodeCreateCmd.PersistentFlags().String("min-clp-create-pool-threshold", "100", "minimum CLP create pool threshold")
-	_nodeCreateCmd.PersistentFlags().String("gov-max-deposit-period", "900000000000", "governance max deposit period")
-	_nodeCreateCmd.PersistentFlags().String("gov-voting-period", "900000000000", "governance voting period")
+	_nodeCreateCmd.PersistentFlags().Duration("gov-max-deposit-period", time.Duration(900000000000), "governance max deposit period")
+	_nodeCreateCmd.PersistentFlags().Duration("gov-voting-period", time.Duration(900000000000), "governance voting period")
 	_nodeCreateCmd.PersistentFlags().String("clp-config-url", "", "URL of the JSON file to use to pre-populate CLPs during genesis")
 	_nodeCreateCmd.PersistentFlags().Bool("print-details", false, "print the node details")
 	_nodeCreateCmd.PersistentFlags().Bool("with-cosmovisor", false, "setup cosmovisor")
@@ -112,8 +113,8 @@ func nodeCreateCmd() *cobra.Command {
 			bondAmount, _ := cmd.Flags().GetString("bond-amount")
 			mintAmount, _ := cmd.Flags().GetString("mint-amount")
 			minCLPCreatePoolThreshold, _ := cmd.Flags().GetString("min-clp-create-pool-threshold")
-			govMaxDepositPeriod, _ := cmd.Flags().GetString("gov-max-deposit-period")
-			govVotingPeriod, _ := cmd.Flags().GetString("gov-voting-period")
+			govMaxDepositPeriod, _ := cmd.Flags().GetDuration("gov-max-deposit-period")
+			govVotingPeriod, _ := cmd.Flags().GetDuration("gov-voting-period")
 			clpConfigURL, _ := cmd.Flags().GetString("clp-config-url")
 			printDetails, _ := cmd.Flags().GetBool("print-details")
 			withCosmovisor, _ := cmd.Flags().GetBool("with-cosmovisor")

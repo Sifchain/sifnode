@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/Sifchain/sifnode/app"
 	"github.com/Sifchain/sifnode/tools/sifgen/common"
@@ -21,26 +22,26 @@ import (
 )
 
 type Node struct {
-	CLI                       utils.CLI `yaml:"-"`
-	AdminCLPAddresses         []string  `yaml:"admin_clp_addresses"`
-	ChainID                   string    `yaml:"chain_id"`
-	Moniker                   string    `yaml:"moniker"`
-	Mnemonic                  string    `yaml:"mnemonic"`
-	AdminOracleAddress        string    `yaml:"admin_oracle_address"`
-	IPAddr                    string    `yaml:"ip_address"`
-	Address                   string    `yaml:"address"`
-	Password                  string    `yaml:"password"`
-	BondAmount                string    `yaml:"-"`
-	MintAmount                string    `yaml:"-"`
-	MinCLPCreatePoolThreshold string    `yaml:"-"`
-	GovMaxDepositPeriod       string    `yaml:"-"`
-	GovVotingPeriod           string    `yaml:"-"`
-	CLPConfigURL              string    `yaml:"-"`
-	PeerAddress               string    `yaml:"-"`
-	GenesisURL                string    `yaml:"-"`
-	Key                       *key.Key  `yaml:"-"`
-	Standalone                bool      `yaml:"-"`
-	WithCosmovisor            bool      `yaml:"-"`
+	CLI                       utils.CLI     `yaml:"-"`
+	AdminCLPAddresses         []string      `yaml:"admin_clp_addresses"`
+	ChainID                   string        `yaml:"chain_id"`
+	Moniker                   string        `yaml:"moniker"`
+	Mnemonic                  string        `yaml:"mnemonic"`
+	AdminOracleAddress        string        `yaml:"admin_oracle_address"`
+	IPAddr                    string        `yaml:"ip_address"`
+	Address                   string        `yaml:"address"`
+	Password                  string        `yaml:"password"`
+	BondAmount                string        `yaml:"-"`
+	MintAmount                string        `yaml:"-"`
+	MinCLPCreatePoolThreshold string        `yaml:"-"`
+	GovMaxDepositPeriod       time.Duration `yaml:"-"`
+	GovVotingPeriod           time.Duration `yaml:"-"`
+	CLPConfigURL              string        `yaml:"-"`
+	PeerAddress               string        `yaml:"-"`
+	GenesisURL                string        `yaml:"-"`
+	Key                       *key.Key      `yaml:"-"`
+	Standalone                bool          `yaml:"-"`
+	WithCosmovisor            bool          `yaml:"-"`
 }
 
 func Reset(chainID string, nodeDir *string) error {

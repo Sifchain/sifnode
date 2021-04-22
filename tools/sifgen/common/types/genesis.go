@@ -2,72 +2,19 @@ package types
 
 import (
 	"time"
+
+	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
+	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
+	disttypes "github.com/cosmos/cosmos-sdk/x/distribution/types"
+	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
+	slashingtypes "github.com/cosmos/cosmos-sdk/x/slashing/types"
+	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
+	tmtypes "github.com/tendermint/tendermint/proto/tendermint/types"
 )
 
 const (
 	StakeTokenDenom = "rowan"
 )
-
-type AuthAccountValueCoin struct {
-	Denom  string `json:"denom"`
-	Amount string `json:"amount"`
-}
-
-type AuthAccountValue struct {
-	Address       string                 `json:"address"`
-	Coins         []AuthAccountValueCoin `json:"coins"`
-	PublicKey     interface{}            `json:"public_key"`
-	AccountNumber string                 `json:"account_number"`
-	Sequence      string                 `json:"sequence"`
-}
-
-type AuthAccount struct {
-	Type  string           `json:"type"`
-	Value AuthAccountValue `json:"value"`
-}
-
-type AuthParams struct {
-	MaxMemoCharacters      string `json:"max_memo_characters"`
-	TxSigLimit             string `json:"tx_sig_limit"`
-	TxSizeCostPerByte      string `json:"tx_size_cost_per_byte"`
-	SigVerifyCostEd25519   string `json:"sig_verify_cost_ed25519"`
-	SigVerifyCostSecp256K1 string `json:"sig_verify_cost_secp256k1"`
-}
-
-type Auth struct {
-	Params   AuthParams    `json:"params"`
-	Accounts []AuthAccount `json:"accounts"`
-}
-
-type GovTallyParams struct {
-	Quorum    string `json:"quorum"`
-	Threshold string `json:"threshold"`
-	Veto      string `json:"veto"`
-}
-
-type GovVotingParams struct {
-	VotingPeriod string `json:"voting_period"`
-}
-
-type GovMinDeposit []struct {
-	Denom  string `json:"denom"`
-	Amount string `json:"amount"`
-}
-
-type GovDepositParams struct {
-	MinDeposit       GovMinDeposit `json:"min_deposit"`
-	MaxDepositPeriod string        `json:"max_deposit_period"`
-}
-
-type Gov struct {
-	StartingProposalID string           `json:"starting_proposal_id"`
-	Deposits           interface{}      `json:"deposits"`
-	Votes              interface{}      `json:"votes"`
-	Proposals          interface{}      `json:"proposals"`
-	DepositParams      GovDepositParams `json:"deposit_params"`
-	VotingParams       GovVotingParams  `json:"voting_params"`
-	TallyParams        GovTallyParams   `json:"tally_params"`
-}
 
 type GentxValueSignaturePubKey struct {
 	Type  string `json:"type"`
@@ -148,108 +95,25 @@ type CLP struct {
 	CLPModuleAddress      string      `json:"clp_module_address"`
 }
 
-type Supply struct {
-	Supply []interface{} `json:"supply"`
-}
-
-type Staking struct {
-	Params               StakingParams `json:"params"`
-	LastTotalPower       string        `json:"last_total_power"`
-	LastValidatorPowers  interface{}   `json:"last_validator_powers"`
-	Validators           interface{}   `json:"validators"`
-	Delegations          interface{}   `json:"delegations"`
-	UnbondingDelegations interface{}   `json:"unbonding_delegations"`
-	Redelegations        interface{}   `json:"redelegations"`
-	Exported             bool          `json:"exported"`
-}
-
-type StakingParams struct {
-	UnbondingTime     string `json:"unbonding_time"`
-	MaxValidators     int    `json:"max_validators"`
-	MaxEntries        int    `json:"max_entries"`
-	HistoricalEntries int    `json:"historical_entries"`
-	BondDenom         string `json:"bond_denom"`
-}
-
-type Distribution struct {
-	Params                          DistributionParams `json:"params" yaml:"params"`
-	FeePool                         interface{}        `json:"fee_pool" yaml:"fee_pool"`
-	DelegatorWithdrawInfos          interface{}        `json:"delegator_withdraw_infos" yaml:"delegator_withdraw_infos"`
-	PreviousProposer                interface{}        `json:"previous_proposer" yaml:"previous_proposer"`
-	OutstandingRewards              interface{}        `json:"outstanding_rewards" yaml:"outstanding_rewards"`
-	ValidatorAccumulatedCommissions interface{}        `json:"validator_accumulated_commissions" yaml:"validator_accumulated_commissions"`
-	ValidatorHistoricalRewards      interface{}        `json:"validator_historical_rewards" yaml:"validator_historical_rewards"`
-	ValidatorCurrentRewards         interface{}        `json:"validator_current_rewards" yaml:"validator_current_rewards"`
-	DelegatorStartingInfos          interface{}        `json:"delegator_starting_infos" yaml:"delegator_starting_infos"`
-	ValidatorSlashEvents            interface{}        `json:"validator_slash_events" yaml:"validator_slash_events"`
-}
-
-type DistributionParams struct {
-	CommunityTax        interface{} `json:"community_tax" yaml:"community_tax"`
-	BaseProposerReward  interface{} `json:"base_proposer_reward" yaml:"base_proposer_reward"`
-	BonusProposerReward interface{} `json:"bonus_proposer_reward" yaml:"bonus_proposer_reward"`
-	WithdrawAddrEnabled interface{} `json:"withdraw_addr_enabled" yaml:"withdraw_addr_enabled"`
-}
-
-type Slashing struct {
-	Params       SlashingParams `json:"params" yaml:"params"`
-	SigningInfos interface{}    `json:"signing_infos" yaml:"signing_infos"`
-	MissedBlocks interface{}    `json:"missed_blocks" yaml:"missed_blocks"`
-}
-
-type SlashingParams struct {
-	SignedBlocksWindow      interface{} `json:"signed_blocks_window" yaml:"signed_blocks_window"`
-	MinSignedPerWindow      interface{} `json:"min_signed_per_window" yaml:"min_signed_per_window"`
-	DowntimeJailDuration    interface{} `json:"downtime_jail_duration" yaml:"downtime_jail_duration"`
-	SlashFractionDoubleSign interface{} `json:"slash_fraction_double_sign" yaml:"slash_fraction_double_sign"`
-	SlashFractionDowntime   interface{} `json:"slash_fraction_downtime" yaml:"slash_fraction_downtime"`
-}
-type Bank struct {
-	SendEnabled bool `json:"send_enabled"`
-}
-
 type AppState struct {
-	Bank         Bank         `json:"bank"`
-	Staking      Staking      `json:"staking"`
-	Params       interface{}  `json:"params"`
-	Supply       Supply       `json:"supply"`
-	Ethbridge    interface{}  `json:"ethbridge"`
-	CLP          CLP          `json:"clp"`
-	Upgrade      Upgrade      `json:"upgrade"`
-	Oracle       interface{}  `json:"oracle"`
-	Genutil      Genutil      `json:"genutil"`
-	Gov          Gov          `json:"gov"`
-	Auth         Auth         `json:"auth"`
-	Slashing     Slashing     `json:"slashing"`
-	Distribution Distribution `json:"distribution"`
-	Dispensation interface{}  `json:"dispensation"`
-}
-
-type Evidence struct {
-	MaxAgeNumBlocks string `json:"max_age_num_blocks"`
-	MaxAgeDuration  string `json:"max_age_duration"`
-}
-
-type Validator struct {
-	PubKeyTypes []string `json:"pub_key_types"`
-}
-
-type Block struct {
-	MaxBytes   string `json:"max_bytes"`
-	MaxGas     string `json:"max_gas"`
-	TimeIotaMs string `json:"time_iota_ms"`
-}
-
-type ConsensusParams struct {
-	Block     Block     `json:"block"`
-	Evidence  Evidence  `json:"evidence"`
-	Validator Validator `json:"validator"`
+	Auth         authtypes.GenesisState     `json:"auth"`
+	Bank         banktypes.GenesisState     `json:"bank"`
+	Staking      stakingtypes.GenesisState  `json:"staking"`
+	Params       interface{}                `json:"params"`
+	Ethbridge    interface{}                `json:"ethbridge"`
+	CLP          CLP                        `json:"clp"`
+	Oracle       interface{}                `json:"oracle"`
+	Genutil      Genutil                    `json:"genutil"`
+	Gov          govtypes.GenesisState      `json:"gov"`
+	Slashing     slashingtypes.GenesisState `json:"slashing"`
+	Distribution disttypes.GenesisState     `json:"distribution"`
+	Dispensation interface{}                `json:"dispensation"`
 }
 
 type Genesis struct {
-	GenesisTime     time.Time       `json:"genesis_time"`
-	ChainID         string          `json:"chain_id"`
-	ConsensusParams ConsensusParams `json:"consensus_params"`
-	AppHash         string          `json:"app_hash"`
-	AppState        AppState        `json:"app_state"`
+	GenesisTime     time.Time               `json:"genesis_time"`
+	ChainID         string                  `json:"chain_id"`
+	ConsensusParams tmtypes.ConsensusParams `json:"consensus_params"`
+	AppHash         string                  `json:"app_hash"`
+	AppState        AppState                `json:"app_state"`
 }
