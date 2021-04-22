@@ -1,10 +1,17 @@
 <template>
   <div :class="{ panel: true, dark }">
-    <div class="header" v-if="!!$slots.header">
+    <div
+      class="header"
+      v-if="!!$slots.header"
+      :data-handle="[dataHandle, 'panel-header'].filter(Boolean).join('-')"
+    >
       <slot name="header"></slot>
     </div>
 
-    <div class="body">
+    <div
+      class="body"
+      :data-handle="[dataHandle, 'panel-body'].filter(Boolean).join('-')"
+    >
       <slot></slot>
     </div>
 
@@ -18,14 +25,18 @@
 export default {
   props: {
     dark: Boolean,
+    dataHandle: String,
   },
 };
 </script>
 <style lang="scss" scoped>
+.panel::-webkit-scrollbar {
+  display: none;
+}
 .panel {
   width: 410px;
   border-radius: $br_lg;
-  overflow: hidden;
+  overflow: scroll;
   background: $c_white;
   position: relative;
 

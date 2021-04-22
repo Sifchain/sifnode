@@ -8,9 +8,10 @@ import {
   getBlockExplorerUrl,
   useAssetItem,
 } from "@/components/shared/utils";
-import { Fraction } from "ui-core";
 import { useCore } from "@/hooks/useCore";
 import { useRoute } from "vue-router";
+import { format } from "ui-core/src/utils/format";
+import { Amount } from "ui-core";
 
 const DECIMALS = 5;
 
@@ -45,7 +46,7 @@ export default defineComponent({
     const fromSymbol = computed(() =>
       accountPool?.value?.pool.amounts[1].asset
         ? getAssetLabel(accountPool?.value.pool.amounts[1].asset)
-        : ""
+        : "",
     );
     const fromAsset = useAssetItem(fromSymbol);
     const fromToken = fromAsset.token;
@@ -56,14 +57,16 @@ export default defineComponent({
       return t.imageUrl;
     });
 
-    const fromTotalValue = computed(() =>
-      accountPool?.value?.pool.amounts[1].toFixed(DECIMALS)
-    );
+    const fromTotalValue = computed(() => {
+      const aAmount = accountPool?.value?.pool.amounts[1];
+      if (!aAmount) return "";
+      return format(aAmount.amount, aAmount.asset, { mantissa: DECIMALS });
+    });
 
     const toSymbol = computed(() =>
       accountPool?.value?.pool.amounts[0].asset
         ? getAssetLabel(accountPool.value.pool.amounts[0].asset)
-        : ""
+        : "",
     );
     const toAsset = useAssetItem(toSymbol);
     const toToken = toAsset.token;
@@ -74,26 +77,31 @@ export default defineComponent({
       return t.imageUrl;
     });
 
-    const toTotalValue = computed(() =>
-      accountPool?.value?.pool.amounts[0].toFixed(DECIMALS)
-    );
+    const toTotalValue = computed(() => {
+      const aAmount = accountPool?.value?.pool.amounts[0];
+      if (!aAmount) return "";
+      return format(aAmount.amount, aAmount.asset, { mantissa: DECIMALS });
+    });
 
     const poolUnitsAsFraction = computed(
-      () => accountPool?.value?.lp.units || new Fraction("0")
+      () => accountPool?.value?.lp.units || Amount("0"),
     );
 
     const myPoolShare = computed(() => {
       if (!accountPool?.value?.pool?.poolUnits) return null;
 
-      const perc = poolUnitsAsFraction.value
-        .divide(accountPool?.value?.pool?.poolUnits)
-        .multiply("100")
-        .toSignificant(3);
+      const perc = format(
+        poolUnitsAsFraction.value
+          .divide(accountPool?.value?.pool?.poolUnits)
+          .multiply("100"),
+        { mantissa: 4 },
+      );
+
       return `${perc} %`;
     });
-    const myPoolUnits = computed(() =>
-      poolUnitsAsFraction.value.toFixed(DECIMALS)
-    );
+    const myPoolUnits = computed(() => {
+      return format(poolUnitsAsFraction.value, { mantissa: DECIMALS });
+    });
     return {
       accountPool,
       fromToken,
@@ -146,7 +154,10 @@ export default defineComponent({
       </div>
       <div class="section">
         <div class="details">
-          <div class="row">
+          <div
+            class="row"
+            :data-handle="'total-pooled-' + fromSymbol.toLowerCase()"
+          >
             <span>Total Pooled {{ fromSymbol }}:</span>
             <span class="value">
               <span>{{ fromTotalValue }}</span>
@@ -164,7 +175,10 @@ export default defineComponent({
               ></div>
             </span>
           </div>
-          <div class="row">
+          <div
+            class="row"
+            :data-handle="'total-pooled-' + toSymbol.toLowerCase()"
+          >
             <span>Total Pooled {{ toSymbol.toUpperCase() }}:</span>
             <span class="value">
               <span>{{ toTotalValue }}</span>
@@ -178,7 +192,7 @@ export default defineComponent({
               <div class="placeholder" :style="toBackgroundStyle" v-else></div>
             </span>
           </div>
-          <div class="row">
+          <div class="row" data-handle="total-pool-share">
             <span>Your pool share:</span>
             <span class="value">{{ myPoolShare }}</span>
           </div>

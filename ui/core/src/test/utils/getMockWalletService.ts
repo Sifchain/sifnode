@@ -1,16 +1,16 @@
 import { IWalletService } from "../../api/IWalletService";
-import { AssetAmount } from "../../entities";
+import { IAssetAmount } from "../../entities";
 
 export function getMockWalletService(
   state: {
     address: string;
     accounts: string[];
     connected: boolean;
-    balances: AssetAmount[];
+    balances: IAssetAmount[];
     log: string;
   },
-  walletBalances: AssetAmount[],
-  service: Partial<IWalletService> = {}
+  walletBalances: IAssetAmount[],
+  service: Partial<IWalletService> = {},
 ): IWalletService {
   return {
     setPhrase: async () => "",
@@ -30,7 +30,9 @@ export function getMockWalletService(
     ...service,
     signAndBroadcast: async (
       msg: { type: string; value: any },
-      memo?: string
+      memo?: string,
     ) => {},
+    onProviderNotFound: () => {},
+    onChainIdDetected: () => {},
   };
 }

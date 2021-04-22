@@ -16,6 +16,8 @@ import DetailsPanel from "@/components/shared/DetailsPanel.vue";
 import SlippagePanel from "@/components/slippagePanel/Index.vue";
 import { ConfirmState } from "../types";
 import { toConfirmState } from "./utils/toConfirmState";
+import { getMaxAmount } from "./utils/getMaxAmount";
+import { format } from "ui-core/src/utils/format";
 
 export default defineComponent({
   components: {
@@ -44,9 +46,7 @@ export default defineComponent({
     const transactionState = ref<ConfirmState>("selecting");
     const transactionHash = ref<string | null>(null);
     const selectedField = ref<"from" | "to" | null>(null);
-    const { connected, connectedText } = useWalletButton({
-      addrLen: 8,
-    });
+    const { connected } = useWalletButton();
 
     function requestTransactionModalClose() {
       transactionState.value = "selecting";
@@ -58,14 +58,16 @@ export default defineComponent({
 
     const getAccountBalance = () => {
       return balances.value.find(
-          (balance) => balance.asset.symbol === fromSymbol.value
-        )
+        (balance) => balance.asset.symbol === fromSymbol.value,
+      );
     };
 
     const isFromMaxActive = computed(() => {
       const accountBalance = getAccountBalance();
       if (!accountBalance) return false;
-      return fromAmount.value === accountBalance.toFixed();
+      return (
+        fromAmount.value === format(accountBalance.amount, accountBalance.asset)
+      );
     });
 
     const {
@@ -114,7 +116,7 @@ export default defineComponent({
       const tx = await actions.clp.swap(
         fromFieldAmount.value,
         toFieldAmount.value.asset,
-        minimumReceived.value
+        minimumReceived.value,
       );
       transactionHash.value = tx.hash;
       transactionState.value = toConfirmState(tx.state); // TODO: align states
@@ -122,9 +124,9 @@ export default defineComponent({
     }
 
     function swapInputs() {
-      selectedField.value === "to" ?
-        selectedField.value = "from" :
-        selectedField.value = "to"
+      selectedField.value === "to"
+        ? (selectedField.value = "from")
+        : (selectedField.value = "to");
       const fromAmountValue = fromAmount.value;
       const fromSymbolValue = fromSymbol.value;
       fromAmount.value = toAmount.value;
@@ -135,7 +137,6 @@ export default defineComponent({
 
     return {
       connected,
-      connectedText,
       nextStepMessage: computed(() => {
         switch (state.value) {
           case SwapState.SELECT_TOKENS:
@@ -185,23 +186,30 @@ export default defineComponent({
       },
       handleNextStepClicked,
       handleBlur() {
-        if (isFromMaxActive) return
+        if (isFromMaxActive) return;
         selectedField.value = null;
       },
       slippage,
       fromAmount,
       toAmount,
       fromSymbol,
-      minimumReceived,
+      minimumReceived: computed(() => {
+        if (!minimumReceived.value) return "";
+        const { amount, asset } = minimumReceived.value;
+        return format(amount, asset, { mantissa: 18, trimMantissa: true });
+      }),
       toSymbol,
       priceMessage,
       priceImpact,
       providerFee,
       handleFromMaxClicked() {
         selectedField.value = "from";
-        const accountBalance = getAccountBalance()
+        const accountBalance = getAccountBalance();
         if (!accountBalance) return;
-        fromAmount.value = accountBalance.toFixed(18);
+        const maxAmount = getMaxAmount(fromSymbol, accountBalance);
+        fromAmount.value = format(maxAmount, accountBalance.asset, {
+          mantissa: 1,
+        });
       },
       nextStepAllowed: computed(() => {
         return state.value === SwapState.VALID_INPUT;
@@ -214,6 +222,7 @@ export default defineComponent({
           "failed",
           "rejected",
           "confirmed",
+          "out_of_gas",
         ].includes(transactionState.value);
       }),
       requestTransactionModalClose,
@@ -226,7 +235,7 @@ export default defineComponent({
       handleAskConfirmClicked,
       transactionHash,
       isFromMaxActive,
-      selectedField
+      selectedField,
     };
   },
 });

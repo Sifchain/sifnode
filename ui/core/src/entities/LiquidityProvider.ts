@@ -1,19 +1,19 @@
 import { Asset } from "./Asset";
-import { IFraction } from "./fraction/Fraction";
+import { IAmount } from "./Amount";
 
 export function LiquidityProvider(
   asset: Asset,
-  units: IFraction,
+  units: IAmount,
   address: string,
-  nativeAmount: IFraction,
-  externalAmount: IFraction
+  nativeAmount: IAmount,
+  externalAmount: IAmount,
 ) {
   return { asset, units, address, nativeAmount, externalAmount };
 }
 export type LiquidityProvider = {
   asset: Asset;
-  units: IFraction;
+  units: IAmount;
   address: string;
-  nativeAmount: IFraction;
-  externalAmount: IFraction;
+  nativeAmount: IAmount;
+  externalAmount: IAmount;
 };

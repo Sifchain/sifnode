@@ -145,6 +145,7 @@ type CLP struct {
 	AddressWhitelist      interface{} `json:"address_whitelist"`
 	PoolList              interface{} `json:"pool_list"`
 	LiquidityProviderList interface{} `json:"liquidity_provider_list"`
+	CLPModuleAddress      string      `json:"clp_module_address"`
 }
 
 type Faucet struct {
@@ -226,6 +227,7 @@ type AppState struct {
 	Slashing     Slashing     `json:"slashing"`
 	Distribution Distribution `json:"distribution"`
 	Faucet       Faucet       `json:"faucet"`
+	Dispensation interface{}  `json:"dispensation"`
 }
 
 type Evidence struct {

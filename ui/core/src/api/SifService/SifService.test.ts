@@ -43,6 +43,7 @@ const testConfig: SifServiceContext = {
   sifAddrPrefix: "sif",
   sifApiUrl: "http://127.0.0.1:1317",
   sifWsUrl: "ws://127.0.0.1:26657/websocket",
+  sifRpcUrl: "http://127.0.0.1:26657",
   assets: [ROWAN, CATK, CBTK, CETH],
   keplrChainConfig: {
     rest: "",
@@ -114,7 +115,7 @@ describe("sifService", () => {
 
     const balances = await sifService.getBalance(account.address);
     const balance = getBalance(balances, "rowan");
-    expect(balance?.toFixed()).toEqual("100000000000.000000000000000000");
+    expect(balance?.toString()).toEqual("100000000000000000000000000000 ROWAN");
   });
 
   it("should transfer transaction", async () => {
@@ -129,6 +130,6 @@ describe("sifService", () => {
     });
     const balances = await sifService.getBalance(address);
     const balance = getBalance(balances, "rowan");
-    expect(balance?.toFixed()).toEqual("99999999999.999999999999999950");
+    expect(balance?.toString()).toEqual("99999999999999999999999999950 ROWAN");
   });
 });

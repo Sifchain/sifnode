@@ -1,29 +1,55 @@
-import { Coin } from "./Coin";
-import { Token } from "./Token";
+import { Network } from "./Network";
 
-export type Asset = Token | Coin;
-const assetMap = new Map<string, Asset>();
+export type IAsset = {
+  address?: string;
+  decimals: number;
+  imageUrl?: string;
+  name: string;
+  network: Network;
+  symbol: string;
+  label: string;
+};
+type ReadonlyAsset = Readonly<IAsset>;
+const assetMap = new Map<string, ReadonlyAsset>();
 
-export const Asset = {
-  set(key: string, value: Asset) {
-    if (!key) return;
+// XXX:Legacy
+export type Asset = IAsset;
 
-    assetMap.set(key.toLowerCase(), value);
-  },
-  get(key: string | Asset): Asset {
-    key = typeof key == "string" ? key : key.symbol;
-    const found = key ? assetMap.get(key.toLowerCase()) : false;
-    if (!found) {
-      console.log(
-        "Available keys: " +
-          Array.from(assetMap.keys())
-            .sort()
-            .join(",")
-      );
-      throw new Error(
-        `Attempt to retrieve the asset with key ${key} before it had been created.`
-      );
-    }
-    return found;
-  },
+function isAsset(value: any): value is IAsset {
+  return (
+    typeof value?.symbol === "string" && typeof value?.decimals === "number"
+  );
+}
+
+export function Asset(assetOrSymbol: IAsset | string): ReadonlyAsset {
+  // If it is an asset then cache it and return it
+  if (isAsset(assetOrSymbol)) {
+    assetMap.set(
+      assetOrSymbol.symbol.toLowerCase(),
+      assetOrSymbol as ReadonlyAsset,
+    );
+    return assetOrSymbol;
+  }
+
+  // Return it from cache
+  const found = assetOrSymbol
+    ? assetMap.get(assetOrSymbol.toLowerCase())
+    : false;
+  if (!found) {
+    throw new Error(
+      `Attempt to retrieve the asset with key "${assetOrSymbol}" before it had been cached.`,
+    );
+  }
+
+  return found;
+}
+
+// XXX:Legacy
+Asset.set = (symbol: string, asset: Asset) => {
+  Asset(asset); // assuming symbol is same
+};
+
+// XXX:Legacy
+Asset.get = (symbol: string) => {
+  return Asset(symbol);
 };

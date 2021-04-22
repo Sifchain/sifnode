@@ -54,29 +54,44 @@ test/integration/start-integration-env.sh
 
 ## Running tests against ropsten
 
-###  Set the appropriate environment variables:
+### Start with exampleenv.sh
+
+./exampleenv.sh is designed to be used in a shell like this:
 
 ```
-# only once, add a sifchain account that has rowan
-# sifnodecli keys import rowansource key.txt --keyring-backend test
-
-# Set an ethereum private key for an acount that has eth on the testnet
-export SMART_CONTRACTS_DIR=...
-export ETHEREUM_ADDRESS=...
-export ROWAN_SOURCE=sif1pvnu2kh826vn8r0ttlgt82hsmfknvcnf7qmpvk
-export ROWAN_SOURCE_KEY=thekey
-export ETHEREUM_NETWORK=ropsten
-export SIFNODE=http://xx.xx.xx.xx:26657
-export INFURA_PROJECT_ID=yourId
-cd $yourtestintegrationdirectory
-source <(smart_contract_env.sh ~/workspace/sifnode/smart-contracts/deployments/sandpit/)
-export ETHEREUM_PRIVATE_KEY=...
-
-python3 -m pytest -x -olog_cli=true -olog_level=DEBUG -v -olog_file=/tmp/log.txt -v src/py/test_eth_transfers
+# cd ~/workspace/sifnode/test/integration 
+# source ./exampleenv.sh
+# sifnodecli q auth account --node tcp://44.241.55.154:26657 sif1pvnu2kh826vn8r0ttlgt82hsmfknvcnf7qmpvk
+# ...
 ```
 
+It should echo a set of sample commands and tests that you can run 
+after it sets up your environment.
 
-1.  
+ Don't use exampleenv.sh itself, make a copy modify the variables to match your setup.
+
+Don't mix this with vagrantenv.sh; use one or the other in a shell.
+
+## Distributing ropsten test tokens
+
+Set up your environment as if you were going to run tests, then run:
+```
+TOKEN_AMOUNT=120000000000 python3 -m pytest --color=yes -x -olog_cli=true -olog_level=DEBUG -v -olog_file=vagrant/data/pytest.log src/py/token_refresh.py
+```
+
+This creates a new sifchain account with 120000000000 tokens of each of the tokens in the whitelist.  
+
+### To set up all test accounts with tokens:
+
+Use the test/integration/distribute_tokens.sh script.
+
+### Update the UI json files
+
+When you have an environment set up as above, the build_ui_token_files.sh script will update the appropriate files in 
+$BASEDIR/ui/core/src/assets.*.json.
+
+where ROWAN_SOURCE is a sifnode address with sufficient tokens to distribute.
+
 ## Github actions
 
 See [the github action file](../../.github/workflows/integrationtest.yml) for the description of what's executed in the integration test environment.

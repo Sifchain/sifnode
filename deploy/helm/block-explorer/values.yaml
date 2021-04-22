@@ -21,21 +21,17 @@ image:
   tag: "testnet"
 
 blockExplorer:
+  args:
+    mongoUsername: "mongodb"
+    mongoPassword:
+    mongoDatabase: "block_explorer"
   env:
     rootURL: "http://localhost:3000"
     chainnet: ""
     genesisURL: ""
     remote:
       rpcURL: ""
-      lcdURL: ""
-
-mongodb:
-  install: true
-  mongodbExtraFlags: "--storageEngine=wiredTiger"
-  usePassword: false
-  persistence:
-    enabled: true
-    size: 10Gi
+      apiURL: ""
 
 service:
   type: LoadBalancer
@@ -61,6 +57,8 @@ autoscaling:
   minReplicas: 1
   maxReplicas: 100
   targetCPUUtilizationPercentage: 80
+
+strategyType: Recreate
 
 nodeSelector: {}
 

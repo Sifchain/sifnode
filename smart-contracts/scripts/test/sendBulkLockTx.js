@@ -16,6 +16,11 @@ module.exports = async (cb) => {
             demandOption: true,
             description: 'json containing all the transactions to send.  Specify [{amount:, symbol:, sifchain_address:}].  The entries in --amount, --symbol, --sifchain_address are only used to estimate gas'
         },
+        'lock_or_burn': {
+            type: "string",
+            default: "lock",
+            description: 'set to either lock or burn'
+        },
     });
 
     const bridgeBankContract = await contractUtilites.buildContract(this, argv, logging, "BridgeBank", argv.bridgebank_address);
@@ -42,8 +47,18 @@ module.exports = async (cb) => {
     let transactions = JSON.parse(argv.transactions);
     const actions = [];
     for (const t of transactions) {
-        logging.info(`calling bridgeBankContract.lock for ${t.sifchain_address}`);
-        const lockResult = bridgeBankContract.lock(Web3.utils.utf8ToHex(t.sifchain_address), t.symbol, t.amount, request);
+        logging.info(`calling bridgeBankContract.lock for ${t.sifchain_address}, amount is |${t.amount}|`);
+        let lockResult;
+        const amount = new BN(t.amount);
+        try {
+            if (argv.lock_or_burn === "lock")
+                lockResult = bridgeBankContract.lock(Web3.utils.utf8ToHex(t.sifchain_address), t.symbol, amount, request);
+            else
+                lockResult = bridgeBankContract.burn(Web3.utils.utf8ToHex(t.sifchain_address), t.symbol, amount, request);
+        } catch (error){
+            logging.info(`goterror: ${error}`);
+        }
+        console.debug(`lockResult is ${lockResult}`);
         actions.push({lockResult, t});
     }
     const results = [];

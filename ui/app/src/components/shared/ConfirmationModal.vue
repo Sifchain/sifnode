@@ -1,5 +1,9 @@
 <template>
-  <ModalView :requestClose="requestClose" :isOpen="isOpen">
+  <ModalView
+    :requestClose="requestClose"
+    :isOpen="isOpen"
+    data-handle="confirmation-modal"
+  >
     <div class="modal-inner">
       <ConfirmationModalAsk
         v-if="state === 'confirming'"
@@ -33,6 +37,9 @@
 
         <template v-slot:failed>
           <slot :name="!!this.$slots.signing ? 'failed' : 'common'"></slot>
+        </template>
+        <template v-slot:out_of_gas>
+          <slot :name="!!this.$slots.signing ? 'out_of_gas' : 'common'"></slot>
         </template>
       </ConfirmationModalSigning>
     </div>
@@ -77,6 +84,7 @@ export default defineComponent({
         "failed",
         "rejected",
         "confirmed",
+        "out_of_gas",
       ].includes(props.state);
     });
 

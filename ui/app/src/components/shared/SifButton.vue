@@ -1,5 +1,11 @@
 <template>
-  <button v-if="!to" class="btn" :class="classes" :disabled="disabled">
+  <button
+    v-if="!to"
+    v-bind="$attrs"
+    class="btn"
+    :class="classes"
+    :disabled="disabled"
+  >
     <span class="content">
       <slot></slot>
     </span>
@@ -7,6 +13,7 @@
 
   <router-link
     v-else
+    v-bind="$attrs"
     :to="to"
     class="btn"
     :class="classes"
@@ -22,6 +29,7 @@
 import { defineComponent } from "vue";
 
 export default defineComponent({
+  inheritAttrs: false,
   props: {
     disabled: {
       type: Boolean,
@@ -129,7 +137,8 @@ export default defineComponent({
     margin-right: 0.5em;
   }
 
-  &:disabled {
+  &:disabled,
+  &[disabled="true"] {
     cursor: none;
     pointer-events: none;
     background: $c_gray_400 !important;
@@ -204,11 +213,15 @@ export default defineComponent({
       color: $c_white;
       &:hover {
         background: $g_gray;
-        color: initial
+        color: initial;
       }
     }
+    &:disabled {
+      background: $g_gold !important;
+      color: $c_white !important;
+    }
   }
-  
+
   &.ghost {
     background: transparent;
     &.secondary {

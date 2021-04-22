@@ -190,16 +190,16 @@ func GetCmdSwap(cdc *codec.Codec) *cobra.Command {
 	cmd.Flags().AddFlagSet(FsMinReceivingAmount)
 
 	if err := cmd.MarkFlagRequired(FlagSentAssetSymbol); err != nil {
-		log.Println("MarkFlagRequired failed: ", err.Error() )
+		log.Println("MarkFlagRequired failed: ", err.Error())
 	}
 	if err := cmd.MarkFlagRequired(FlagReceivedAssetSymbol); err != nil {
-		log.Println("MarkFlagRequired failed: ", err.Error() )
+		log.Println("MarkFlagRequired failed: ", err.Error())
 	}
 	if err := cmd.MarkFlagRequired(FlagAmount); err != nil {
-		log.Println("MarkFlagRequired failed: ", err.Error() )
+		log.Println("MarkFlagRequired failed: ", err.Error())
 	}
 	if err := cmd.MarkFlagRequired(FlagMinimumReceivingAmount); err != nil {
-		log.Println("MarkFlagRequired failed: ", err.Error() )
+		log.Println("MarkFlagRequired failed: ", err.Error())
 	}
 	return cmd
 }

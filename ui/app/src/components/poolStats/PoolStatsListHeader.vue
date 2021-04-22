@@ -6,44 +6,58 @@ import Icon from "@/components/shared/Icon.vue";
 export default defineComponent({
   components: {
     Tooltip,
-    Icon
+    Icon,
   },
 });
 </script>
 
 <template>
   <div class="header">
-    <div class="col-sm">
+    <div class="col-sm col-sm-s">
       <span>Token</span>
-
     </div>
-    <div class="col-sm">
+    <div class="col-lg">
       <span>Price of Token</span>
       <span>
         (USD)
         <Tooltip message="This is the current price of 1 TKN in USDT.">
           <Icon icon="info-box-white" />
         </Tooltip>
-
       </span>
     </div>
-    <div class="col-sm">
-      <span>Pool Depth</span>
+
+    <div class="col-lg">
+      <span>Arbitrage</span>
       <span>
-        (USD)
-        <Tooltip message="Total value of the external token in the pool in USD.">
+        Opportunity
+        <Tooltip
+          message="This is the arbitrage opportunity available based on a differential between the price of this token on Sifchain and its price on CoinMarketCap. If the percentage is green, it means the token is currently cheaper in Sifchain than CoinMarketCap."
+        >
           <Icon icon="info-box-white" />
         </Tooltip>
       </span>
     </div>
-    <div class="col-sm">
+    <div class="col-lg">
+      <span>Pool Depth</span>
+      <span>
+        (USD)
+        <Tooltip
+          message="Total value of the external token in the pool in USD."
+        >
+          <Icon icon="info-box-white" />
+        </Tooltip>
+      </span>
+    </div>
+    <div class="col-lg">
       <span>Trade Volume</span>
       <span>(24h)</span>
     </div>
     <div class="col-sm">
       <span>
         Pool APY
-        <Tooltip message="Annual percentage return earned by providing liquidity to this pool.">
+        <Tooltip
+          message="Annual percentage return earned by providing liquidity to this pool."
+        >
           <Icon icon="info-box-white" />
         </Tooltip>
       </span>
@@ -53,7 +67,9 @@ export default defineComponent({
 
       <span>
         APY&nbsp;
-        <Tooltip message="Annual percentage return earned via our Liquidity mining program for providing liquidity to this pool. ">
+        <Tooltip
+          message="Annual percentage return earned via our Liquidity mining program for providing liquidity to this pool. "
+        >
           <Icon icon="info-box-white" />
         </Tooltip>
       </span>
@@ -61,7 +77,9 @@ export default defineComponent({
     <div class="col-sm">
       <span>
         Total APY
-        <Tooltip message="Total APY earned (Pool + Liquidity Mining) by providing liquidity to this pool.">
+        <Tooltip
+          message="Total APY earned (Pool + Liquidity Mining) by providing liquidity to this pool."
+        >
           <Icon icon="info-box-white" />
         </Tooltip>
       </span>
@@ -89,6 +107,10 @@ export default defineComponent({
   color: $c_gray_400;
   display: flex;
   flex-direction: column;
+  &.col-sm-s {
+    min-width: 112px;
+    padding-left: 12px;
+  }
   span {
     display: flex;
     justify-content: center;
@@ -99,7 +121,6 @@ export default defineComponent({
       padding-top: 3px;
     }
   }
-
 }
 
 .col-md {
