@@ -369,12 +369,12 @@ spec:
 
             kubectl delete secret --kubeconfig=./kubeconfig #{SECRET_NAME} --namespace #{NAMESPACE}
 
-            kubectl create secret generic --kubeconfig=./kubeconfig #{SECRET_NAME} \
-                    --namespace #{NAMESPACE} \
-                    --from-file=vault.key=#{TMPDIR}/vault.key \
-                    --from-file=vault.crt=#{TMPDIR}/vault.crt \
-                    --from-file=vault.ca=#{TMPDIR}/vault.ca \
-                    --from-file=vault.ca.key=#{TMPDIR}/vault.key
+            #kubectl create secret generic --kubeconfig=./kubeconfig #{SECRET_NAME} \
+            #        --namespace #{NAMESPACE} \
+            #        --from-file=vault.key=#{TMPDIR}/vault.key \
+            #        --from-file=vault.crt=#{TMPDIR}/vault.crt \
+            #        --from-file=vault.ca=#{TMPDIR}/vault.ca \
+            #        --from-file=vault.ca.key=#{TMPDIR}/vault.key
         }
         system(certificate_request) or exit 1
 
@@ -390,8 +390,8 @@ spec:
         #get_vault_ca = `kubectl config view --kubeconfig=./kubeconfig --raw --minify --flatten -o jsonpath='{.clusters[].cluster.certificate-authority-data}' | base64 --decode > #{TMPDIR}/vault.ca`
         #puts get_vault_ca
 
-        #cluster_automation = `kubectl create secret generic --kubeconfig=./kubeconfig #{SECRET_NAME} --namespace #{NAMESPACE} --from-file=vault.key=#{TMPDIR}/vault.key --from-file=vault.crt=#{TMPDIR}/vault.crt --from-file=vault.ca=#{TMPDIR}/vault.ca --from-file=vault.ca.key=#{TMPDIR}/vault.key`
-        #kubectl get csr ${CSR_NAME} -o jsonpath='{.status.certificate}'
+        cluster_automation = `kubectl create secret generic --kubeconfig=./kubeconfig #{SECRET_NAME} --namespace #{NAMESPACE} --from-file=vault.key=#{TMPDIR}/vault.key --from-file=vault.crt=#{TMPDIR}/vault.crt --from-file=vault.ca=#{TMPDIR}/vault.ca --from-file=vault.ca.key=#{TMPDIR}/vault.key`
+        kubectl get csr ${CSR_NAME} -o jsonpath='{.status.certificate}'
 
         #FileUtils.rm_rf("#{TMPDIR}/csr.conf")
         #FileUtils.rm_rf("#{TMPDIR}/csr.yaml")
@@ -455,6 +455,8 @@ spec:
           vault_init = `kubectl exec --kubeconfig=./kubeconfig -n vault vault-0 -- vault operator init -n 1 -t 1`
           puts "vault init #{vault_init}"
           vault_token = `echo -e "#{vault_init}" | cut -d ':' -f 7 | cut -d ' ' -f 2`
+          puts "vault token"
+          puts vault_token
           if vault_init.include?("token")
             upload_to_s3 = `aws s3 cp ./vault_output s3://sifchain-vault-output-backup/#{args[:env]}/#{args[:region]}/vault-master-keys.$(date  | sed -e 's/ //g').backup --region us-west-2`
           end
