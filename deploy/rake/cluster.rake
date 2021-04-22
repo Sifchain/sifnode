@@ -403,6 +403,8 @@ spec:
       end
       File.open("#{args[:path]}override-values.yaml", 'w') { |file| file.write(template_file_text) }
 
+      puts template_file_text
+
       puts "Check if deployment exists and install if it doesn't"
       check_vault_deployment_exist = `kubectl get statefulsets --kubeconfig=./kubeconfig -n vault | grep vault`
       if check_vault_deployment_exist.empty?
