@@ -7,7 +7,9 @@ import treekill from "tree-kill";
 import chalk from "chalk";
 
 const cmdStack = [];
-
+/**
+ * This is a utility to be used within our testing frameworks for restarting our backend stack.
+ */
 export async function restartStack() {
   const uiFolder = resolve(__dirname, "../");
 
