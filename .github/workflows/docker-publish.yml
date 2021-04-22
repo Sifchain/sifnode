@@ -1,13 +1,13 @@
 name: Docker
 
-on: workflow_dispatch
+on: [workflow_run] 
 
 env:
   # TODO: Change variable to your image's name.
   IMAGE_NAME: sifdocker
 
 jobs:
-  push-docker-image:
+  push:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
