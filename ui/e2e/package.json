@@ -23,7 +23,8 @@
   },
   "jest": {
     "testTimeout": 1000000,
-    "collectCoverage": true
+    "collectCoverage": true,
+    "bail": true
   },
   "scripts": {
     "test": "jest"

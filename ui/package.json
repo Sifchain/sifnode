@@ -33,7 +33,7 @@
     "chain:start:all": "concurrently -r -k \"yarn chain:sif\" \"yarn chain:eth\"",
     "core:build": "cd core && yarn build",
     "core:compile": "cd core && yarn compile",
-    "core:test:all": "yarn core:compile && concurrently -r -k -s first \"yarn stack:backend\" \"sleep 40 && yarn core:test\"",
+    "core:test:all": "yarn core:compile && yarn core:test",
     "core:test": "cd core && yarn test",
     "core:watch": "cd core && yarn watch",
     "lint-quick": "yarn pretty-quick --staged --pattern 'ui/**/*.{vue,ts,js,json}'",

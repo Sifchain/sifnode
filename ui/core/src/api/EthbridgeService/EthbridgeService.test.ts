@@ -13,6 +13,9 @@ import Web3 from "web3";
 import JSBI from "jsbi";
 import { sleep } from "../../test/utils/sleep";
 import { waitFor } from "../../test/utils/waitFor";
+import { useStack } from "../../../../test/stack";
+
+useStack("every-test");
 
 const [ETH, CETH, ATK, CATK, ROWAN, EROWAN] = getTestingTokens([
   "ETH",
