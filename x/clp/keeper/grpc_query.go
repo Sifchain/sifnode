@@ -89,7 +89,7 @@ func (k Querier) GetAssetList(c context.Context, req *types.AssetListReq) (*type
 
 	assetList := k.GetAssetsForLiquidityProvider(ctx, addr)
 
-	var al []*types.Asset
+	al := make([]*types.Asset, len(assetList))
 
 	for i := range assetList {
 		asset := assetList[i]
@@ -111,7 +111,7 @@ func (k Querier) GetLiquidityProviderList(c context.Context, req *types.Liquidit
 	searchingAsset := types.NewAsset(req.Symbol)
 	lpList := k.GetLiquidityProvidersForAsset(ctx, searchingAsset)
 
-	var lpl []*types.LiquidityProvider
+	lpl := make([]*types.LiquidityProvider, len(lpList))
 
 	for _, lp := range lpList {
 		lp := lp

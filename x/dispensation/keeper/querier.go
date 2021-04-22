@@ -57,7 +57,7 @@ func queryDistributionRecordsForRecipient(ctx sdk.Context, req abci.RequestQuery
 	if err != nil {
 		return nil, sdkerrors.Wrap(sdkerrors.ErrJSONUnmarshal, err.Error())
 	}
-	addr, err := sdk.AccAddressFromBech32(params.Address)
+	addr, _ := sdk.AccAddressFromBech32(params.Address)
 	records := keeper.GetRecordsForRecipient(ctx, addr)
 	res, err := types.ModuleCdc.MarshalJSON(records)
 	if err != nil {

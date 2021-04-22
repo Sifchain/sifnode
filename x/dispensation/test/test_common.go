@@ -3,13 +3,14 @@ package test
 import (
 	"bytes"
 	"fmt"
+	"strconv"
+
 	sifapp "github.com/Sifchain/sifnode/app"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	"github.com/cosmos/cosmos-sdk/x/bank/types"
 	"github.com/tendermint/tendermint/crypto"
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
-	"strconv"
 )
 
 func CreateTestApp(isCheckTx bool) (*sifapp.SifchainApp, sdk.Context) {
@@ -30,7 +31,7 @@ func GenerateInputList(rowanamount string) []types.Input {
 		panic(fmt.Sprintf("Err in getting amount : %s", rowanamount))
 	}
 	rowanAmount := sdk.Coins{sdk.NewCoin("rowan", rowan)}
-	var res []types.Input
+	res := make([]types.Input, len(accAddrList))
 	for _, address := range accAddrList {
 		in := types.NewInput(address, rowanAmount)
 		res = append(res, in)
@@ -46,7 +47,7 @@ func GenerateOutputList(rowanamount string) []types.Output {
 		panic(fmt.Sprintf("Err in getting amount : %s", rowanamount))
 	}
 	rowanAmount := sdk.Coins{sdk.NewCoin("rowan", rowan)}
-	var res []types.Output
+	res := make([]types.Output, len(accAddrList))
 	for _, address := range accAddrList {
 		out := types.NewOutput(address, rowanAmount)
 		res = append(res, out)
@@ -55,7 +56,7 @@ func GenerateOutputList(rowanamount string) []types.Output {
 }
 
 func GenerateAddressList(addressList []string) []sdk.AccAddress {
-	var acclist []sdk.AccAddress
+	acclist := make([]sdk.AccAddress, len(addressList))
 	for _, key := range addressList {
 		var buffer bytes.Buffer
 		buffer.WriteString(key)
