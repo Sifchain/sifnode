@@ -254,6 +254,7 @@ echo '      sssssssssss    iiiiiiiifffffffff            cccccccccccccccchhhhhhh 
       cluster_automation = %Q{
 #!/usr/bin/env bash
 set +x
+
 echo "===================STAGE INIT - GLOBAL REQUIREMENT CHECKS==================="
 APP_NAME=vault
 APP_NAMESPACE=vault
@@ -263,12 +264,15 @@ export CSR_NAME=vault-csr
 NAMESPACE=${APP_NAMESPACE}
 SECRET_NAME=${APP_NAME}-${POD}-tls
 TMPDIR=/tmp
+
 echo "ENSURE NAMESPACE EXISTS"
 check_secret=`kubectl get namespaces --kubeconfig=./kubeconfig | grep vault | grep -v grep`
 [ -z "$check_secret" ] && kubectl create namespace --kubeconfig=./kubeconfig vault || echo "Namespace Exists"
+
 echo "Check to see if VAULT AWS SECRET EXISTS IF NOT CREATE."
 check_created=`kubectl get secret -n vault --kubeconfig=./kubeconfig | grep vault-eks-creds`
 [ -z "$check_created" ] && kubectl create secret generic --kubeconfig=./kubeconfig vault-eks-creds --from-literal=AWS_ACCESS_KEY_ID="${AWS_ACCESS_KEY_ID}" --from-literal=AWS_SECRET_ACCESS_KEY="${AWS_SECRET_ACCESS_KEY}" -n vault || echo "Vault EKS Secret Already Created"
+
 echo "===================STAGE 1 - GENERATE CA AND TLS KEY AND CERT==================="
 openssl genrsa -out ${TMPDIR}/vault.key 2048
 
@@ -287,18 +291,22 @@ DNS.1 = ${SERVICE}
 DNS.2 = ${SERVICE}.${NAMESPACE}
 DNS.3 = ${SERVICE}.${NAMESPACE}.svc
 DNS.4 = ${SERVICE}.${NAMESPACE}.svc.cluster.local
+
 DNS.5 = vault-0.${SERVICE}
 DNS.6 = vault-0.${SERVICE}.${NAMESPACE}
 DNS.7 = vault-0.${SERVICE}.${NAMESPACE}.svc
 DNS.8 = vault-0.${SERVICE}.${NAMESPACE}.svc.cluster.local
+
 DNS.9 = vault-1.${SERVICE}
 DNS.10 = vault-1.${SERVICE}.${NAMESPACE}
 DNS.11 = vault-1.${SERVICE}.${NAMESPACE}.svc
 DNS.12 = vault-1.${SERVICE}.${NAMESPACE}.svc.cluster.local
+
 DNS.13 = vault-2.${SERVICE}
 DNS.14 = vault-2.${SERVICE}.${NAMESPACE}
 DNS.15 = vault-2.${SERVICE}.${NAMESPACE}.svc
 DNS.16 = vault-2.${SERVICE}.${NAMESPACE}.svc.cluster.local
+
 IP.1 = 127.0.0.1
 EOF
 
@@ -321,11 +329,17 @@ spec:
 EOF
 
 kubectl apply --kubeconfig=./kubeconfig -f ${TMPDIR}/csr.yaml
+
 kubectl certificate approve --kubeconfig=./kubeconfig ${CSR_NAME}
+
 serverCert=$(kubectl get csr --kubeconfig=./kubeconfig ${CSR_NAME} -o jsonpath='{.status.certificate}')
+
 echo "${serverCert}" | openssl base64 -d -A -out ${TMPDIR}/vault.crt
+
 kubectl config view --kubeconfig=./kubeconfig --raw --minify --flatten -o jsonpath='{.clusters[].cluster.certificate-authority-data}' | base64 --decode > ${TMPDIR}/vault.ca
+
 vault_ca_base64=$(kubectl config view --kubeconfig=./kubeconfig --raw --minify --flatten -o jsonpath='{.clusters[].cluster.certificate-authority-data}')
+
 kubectl create secret generic --kubeconfig=./kubeconfig ${SECRET_NAME} \
         --namespace ${NAMESPACE} \
         --from-file=vault.key=${TMPDIR}/vault.key \
@@ -340,6 +354,7 @@ rm -rf ${TMPDIR}/vault.ca
 rm -rf ${TMPDIR}/vault.key
 rm -rf ${TMPDIR}/vault.crt
 rm -rf ${TMPDIR}/vault.key
+
 echo "===================STAGE 2 - SETUP and UPDATE VAULT REPO ==================="
 check_created=`helm repo list --kubeconfig=./kubeconfig | grep hashicorp`
 [ -z "$check_created" ] && helm repo add hashicorp https://helm.releases.hashicorp.com --kubeconfig=./kubeconfig && helm repo update --kubeconfig=./kubeconfig || echo "Helm Repo Already Added For Cert-Manager"
@@ -354,42 +369,47 @@ open("#{args[:path]}override-values.yaml", "w").write(vaules_yaml)
 EOF
 python helmvaulereplace.py
 
+cat #{args[:path]}override-values.yaml
+
+echo " "
+
 echo "===================STAGE 3 - INSTALL VAULT ==================="
 check_deployment=`kubectl get statefulsets --kubeconfig=./kubeconfig -n vault | grep vault`
 [ -z "$check_deployment" ] && helm install vault hashicorp/vault --namespace vault -f #{args[:path]}override-values.yaml --kubeconfig=./kubeconfig || helm upgrade vault hashicorp/vault --namespace vault -f #{args[:path]}override-values.yaml --kubeconfig=./kubeconfig
-echo "sleep for 2 min to let vault start up"
 
-sleep 200
+echo "sleep for 2 min to let vault start up"
+sleep 180
 
 check_deployment=`kubectl get pod --kubeconfig=./kubeconfig -n vault | grep vault`
 [ -z "$check_deployment" ] && echo "Something Went Wrong" || echo "Vault Deployed ${check_deployment}"
+
 vault_init_output=`kubectl exec --kubeconfig=./kubeconfig -n vault vault-0 -- vault operator init -n 1 -t 1`
 echo "sleep for 30 seconds to let vault init."
-
 sleep 30
 
 echo -e ${vault_init_output} > vault_output
 export VAULT_TOKEN=$(echo $vault_init_output | cut -d ':' -f 7 | cut -d ' ' -f 2)
+
 vault_output_wordcount=$(cat vault_output | wc | sed -e 's/ //g')
+
 echo "vault output word count ${vault_output_wordcount}"
 
 if [ "${vault_output_wordcount}" -ge "200" ]; then
     aws s3 cp ./vault_output s3://sifchain-vault-output-backup/#{args[:env]}/#{args[:region]}/vault-master-keys.$(date  | sed -e 's/ //g').backup --region us-west-2
 fi
+
 kubectl exec --kubeconfig=./kubeconfig -n vault -it vault-0 -- vault login ${VAULT_TOKEN} > /dev/null
+
 echo "create kv v2 engine"
 kubectl exec --kubeconfig=./kubeconfig -n vault  vault-0 -- vault secrets enable kv-v2
+
 echo "create test secret"
 kubectl exec --kubeconfig=./kubeconfig -n vault -it vault-0 -- vault kv put kv-v2/staging/test username=test123 password=foobar123
+
 echo "validate secret made it in vault."
-sleep 10
 get_secrets=`kubectl exec --kubeconfig=./kubeconfig -n vault -it vault-0 -- vault kv get kv-v2/staging/test | grep "test123"`
-if [ -z "$get_secrets" ]; then
-    echo "not present ${get_secrets}:
-    exit 1
-else
-    echo "secret present"
-fi
+[ -z "$get_secrets" ] && echo "not present ${get_secrets}" && exit 1 || echo "Secre Present"
+
       }
       system(cluster_automation) or exit 1
     end
