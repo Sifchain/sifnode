@@ -1,3 +1,4 @@
+import { MetaMaskInpageProvider } from "@metamask/inpage-provider";
 import JSBI from "jsbi";
 import Web3 from "web3";
 import {
@@ -31,10 +32,19 @@ export async function getTokenBalance(
 }
 
 export function isEventEmittingProvider(
-  provider?: provider,
+  provider?: unknown,
 ): provider is WebsocketProvider | IpcProvider {
   if (!provider || typeof provider === "string") return false;
   return typeof (provider as any).on === "function";
+}
+
+export type EIPProvider = MetaMaskInpageProvider;
+
+export function isMetaMaskInpageProvider(
+  provider?: unknown,
+): provider is EIPProvider {
+  if (!provider || typeof provider === "string") return false;
+  return typeof (provider as any).request === "function";
 }
 
 // Transfer token or ether
