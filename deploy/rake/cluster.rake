@@ -357,7 +357,7 @@ spec:
         approve_certificate_signing_requets = `kubectl certificate approve --kubeconfig=./kubeconfig #{CSR_NAME}`
         puts approve_certificate_signing_requets
 
-        retrieve_server_certificate = `kubectl get csr --kubeconfig=./kubeconfig #{CSR_NAME} -o jsonpath='{.status.certificate}') | openssl base64 -d -A -out #{TMPDIR}/vault.crt`
+        retrieve_server_certificate = `kubectl get csr --kubeconfig=./kubeconfig #{CSR_NAME} -o jsonpath='{.status.certificate}' | openssl base64 -d -A -out #{TMPDIR}/vault.crt`
         puts retrieve_server_certificate
 
         get_vault_ca = `kubectl config view --kubeconfig=./kubeconfig --raw --minify --flatten -o jsonpath='{.clusters[].cluster.certificate-authority-data}' | base64 --decode > #{TMPDIR}/vault.ca`
