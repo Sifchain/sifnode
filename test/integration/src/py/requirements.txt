@@ -1,2 +1,3 @@
 dataclasses==0.8
 pytest==6.2.3
+PyYAML==5.4.1
