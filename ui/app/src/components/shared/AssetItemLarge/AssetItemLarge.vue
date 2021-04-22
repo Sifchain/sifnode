@@ -1,11 +1,15 @@
 <script lang="ts">
 import { computed, defineComponent } from "vue";
-import { useAssetItem } from "./utils";
+import Icon from "@/components/shared/Icon.vue";
+import Tooltip from "@/components/shared/Tooltip.vue";
+import { format } from "ui-core/src/utils/format";
+import { useAssetItem } from "../utils";
 export default defineComponent({
   props: {
     symbol: String,
     amount: String,
   },
+  components: { Icon, Tooltip },
   setup(props) {
     const symbol = computed(() => props.symbol);
     const asset = useAssetItem(symbol);
@@ -20,7 +24,7 @@ export default defineComponent({
       return t.imageUrl;
     });
 
-    return { token, tokenLabel, tokenImage, backgroundStyle };
+    return { format, token, tokenLabel, tokenImage, backgroundStyle };
   },
 });
 </script>
@@ -28,9 +32,12 @@ export default defineComponent({
 <template>
   <div class="info-row">
     <img v-if="tokenImage" width="24" :src="tokenImage" class="info-img" />
-    <div class="placeholder" :style="backgroundStyle" v-else></div>
-    <div class="info-amount">{{ amount }}</div>
     <div class="info-token">{{ tokenLabel }}</div>
+    <!-- <div class="placeholder" :style="backgroundStyle" v-else></div> -->
+    <div class="info-amount">{{ format(amount, { mantissa: 6 }) }}</div>
+    <Tooltip :message="amount">
+      <Icon icon="eye" class="info-eye" />
+    </Tooltip>
   </div>
 </template>
 
@@ -44,16 +51,32 @@ export default defineComponent({
   }
   &-amount {
     font-size: 25px;
+    flex: 1 1 auto;
+    text-align: right;
   }
   &-token {
-    margin-left: auto;
     font-size: 20px;
+    width: 60px;
+    background: blue;
   }
   &-img {
+    width: 20px;
+    background: red;
     margin-right: 16px;
   }
+  &-eye {
+    width: 30px;
+  }
 }
-.placeholder {
+.info-eye {
+  svg {
+    path {
+      fill: blue !important;
+    }
+    fill: blue !important;
+  }
+}
+​.placeholder {
   background: #aaa;
   box-sizing: border-box;
   border-radius: 16px;

@@ -4,7 +4,7 @@ import SifButton from "@/components/shared/SifButton.vue";
 import DetailsPanel from "@/components/shared/DetailsPanel.vue";
 import AssetItemLarge, {
   getAssetLabel,
-} from "@/components/shared/AssetItemLarge.vue";
+} from "@/components/shared/AssetItemLarge/AssetItemLarge.vue";
 import ArrowIconButton from "@/components/shared/ArrowIconButton.vue";
 import { computed } from "@vue/reactivity";
 
@@ -62,7 +62,7 @@ export default defineComponent({
 }
 .info {
   background: $c_gray_100;
-  padding: 20px 40px 20px 20px;
+  padding: 20px 20px 20px 20px;
   border-radius: $br_sm;
 }
 
