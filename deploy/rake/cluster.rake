@@ -281,6 +281,8 @@ echo '      sssssssssss    iiiiiiiifffffffff            cccccccccccccccchhhhhhh 
       if check_vault_installed.empty?
         generate_certificate_key=`openssl genrsa -out #{TMPDIR}/vault.key 2048`
         puts generate_certificate_key
+
+
         csr_config = %Q{
 [req]
 req_extensions = v3_req
@@ -314,10 +316,17 @@ DNS.16 = vault-2.#{SERVICE}.#{NAMESPACE}.svc.cluster.local
 
 IP.1 = 127.0.0.1
 }
+
+        puts "CSR Config"
         File.open("#{TMPDIR}/csr.conf", 'w') { |file| file.write(csr_config) }
+        puts csr_config
+
         generate_server_csr = `openssl req -new -key #{TMPDIR}/vault.key -subj "/CN=#{SERVICE}.#{NAMESPACE}.svc" -config #{TMPDIR}/csr.conf -out #{TMPDIR}/server.csr`
+        puts "generate_server_csr"
         puts generate_server_csr
 
+
+        puts "csr output"
         cat_csr = `cat #{TMPDIR}/server.csr`
         puts cat_csr
 
@@ -336,6 +345,7 @@ spec:
   - key encipherment
   - server auth
 }
+        puts "certificate request"
         File.open("#{TMPDIR}/csr.yaml", 'w') { |file| file.write(certificate_request) }
 
         apply_certificate_signing_requests = `kubectl apply --kubeconfig=./kubeconfig -f #{TMPDIR}/csr.yaml`
