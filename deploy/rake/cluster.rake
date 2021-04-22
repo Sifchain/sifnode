@@ -347,9 +347,9 @@ check_created=`helm repo list --kubeconfig=./kubeconfig | grep hashicorp`
 cat << EOF > helmvaulereplace.py
 #!/usr/bin/env python
 vaules_yaml = open("#{args[:path]}override-values.yaml", "r").read()
-vaules_yaml = vaules_yaml.replace("-=region=-", "#{args[:region]}" )
+vaules_yaml = vaules_yaml.replace("-=aws_region=-", "#{args[:region]}" )
 vaules_yaml = vaules_yaml.replace("-=kmskey=-", "#{args[:kmskey]}" )
-vaules_yaml = vaules_yaml.replace("-=role_arn=-", "#{args[:aws_role]}" )
+vaules_yaml = vaules_yaml.replace("-=aws_role=-", "#{args[:aws_role]}" )
 open("#{args[:path]}override-values.yaml", "w").write(vaules_yaml)
 EOF
 python helmvaulereplace.py
