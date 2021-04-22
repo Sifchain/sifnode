@@ -330,6 +330,8 @@ IP.1 = 127.0.0.1
         cat_csr = `cat #{TMPDIR}/server.csr`
         puts cat_csr
 
+        CSR_BASE64=`cat /tmp/server.csr | base64 | tr -d '\n'`
+
         certificate_request = %Q{
 apiVersion: certificates.k8s.io/v1beta1
 kind: CertificateSigningRequest
@@ -339,7 +341,7 @@ metadata:
 spec:
   groups:
   - system:authenticated
-  request: $(cat #{TMPDIR}/server.csr | base64 | tr -d '\n')
+  request: #{CSR_BASE64}
   usages:
   - digital signature
   - key encipherment
