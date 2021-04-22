@@ -19,25 +19,29 @@ enum DistributionType {
   DISTRIBUTION_TYPE_AIRDROP = 1;
 }
 
+// Claim status enum
+enum ClaimStatus {
+  // Pending claim status
+  CLAIM_STATUS_PENDING = 0;
+  // Completed claim status
+  CLAIM_STATUS_COMPLETED = 1;
+}
+
 message DistributionRecord {
-  string claim_status                  = 1 [
-    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Uint",
-    (gogoproto.nullable)   = false,
-    (gogoproto.moretags)   = "yaml:\"claim_status\""
-  ];
-  string distribution_name             = 2;
-  string recipient_address             = 3;
+  ClaimStatus claim_status                = 1;
+  string distribution_name                = 2;
+  string recipient_address                = 3;
   repeated cosmos.base.v1beta1.Coin coins = 4 [
     (gogoproto.nullable)     = false,
     (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins",
     (gogoproto.moretags)     = "yaml:\"coins\""
   ];
-  string distribution_start_height     = 5 [
+  string distribution_start_height       = 5 [
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
     (gogoproto.nullable)   = false,
     (gogoproto.moretags)   = "yaml:\"distribution_start_height\""
   ];
-  string distribution_completed_height = 6 [
+  string distribution_completed_height  = 6 [
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
     (gogoproto.nullable)   = false,
     (gogoproto.moretags)   = "yaml:\"distribution_completed_height\""

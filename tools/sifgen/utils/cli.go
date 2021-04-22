@@ -92,7 +92,7 @@ func (c CLI) MoveFile(src, dest string) (*string, error) {
 }
 
 func (c CLI) CurrentChainID() (*string, error) {
-	return c.shellExec("sifnodecli", "config", "chain-id", "--get")
+	return c.shellExec("sifnoded", "config", "chain-id", "--get")
 }
 
 func (c CLI) NodeID(nodeDir string) (*string, error) {
@@ -112,23 +112,23 @@ func (c CLI) InitChain(chainID, moniker, nodeDir string) (*string, error) {
 }
 
 func (c CLI) SetKeyRingStorage() (*string, error) {
-	return c.shellExec("sifnodecli", "config", "keyring-backend", "file")
+	return c.shellExec("sifnoded", "config", "keyring-backend", "file")
 }
 
 func (c CLI) SetConfigChainID(chainID string) (*string, error) {
-	return c.shellExec("sifnodecli", "config", "chain-id", chainID)
+	return c.shellExec("sifnoded", "config", "chain-id", chainID)
 }
 
 func (c CLI) SetConfigIndent(indent bool) (*string, error) {
-	return c.shellExec("sifnodecli", "config", "indent", fmt.Sprintf("%v", indent))
+	return c.shellExec("sifnoded", "config", "indent", fmt.Sprintf("%v", indent))
 }
 
 func (c CLI) SetConfigTrustNode(indent bool) (*string, error) {
-	return c.shellExec("sifnodecli", "config", "trust-node", fmt.Sprintf("%v", indent))
+	return c.shellExec("sifnoded", "config", "trust-node", fmt.Sprintf("%v", indent))
 }
 
 func (c CLI) AddKey(name, mnemonic, keyPassword, cliDir string) (*string, error) {
-	return c.shellExecInput("sifnodecli",
+	return c.shellExecInput("sifnoded",
 		[][]byte{
 			[]byte(mnemonic + "\n"),
 			[]byte("\n"),
@@ -181,7 +181,7 @@ func (c CLI) ConfigFilePath() string {
 }
 
 func (c CLI) TransferFunds(keyPassword, fromAddress, toAddress, coins string) (*string, error) {
-	return c.shellExecInput("sifnodecli",
+	return c.shellExecInput("sifnoded",
 		[][]byte{
 			[]byte(keyPassword + "\n"),
 			[]byte(keyPassword + "\n"),
@@ -193,7 +193,7 @@ func (c CLI) ValidatorPublicKeyAddress() (*string, error) {
 }
 
 func (c CLI) CreateValidator(moniker, validatorPublicKey, keyPassword, bondAmount string) (*string, error) {
-	return c.shellExecInput("sifnodecli",
+	return c.shellExecInput("sifnoded",
 		[][]byte{
 			[]byte(keyPassword + "\n"),
 			[]byte(keyPassword + "\n"),
@@ -216,11 +216,13 @@ func (c CLI) CreateValidator(moniker, validatorPublicKey, keyPassword, bondAmoun
 func (c CLI) shellExec(cmd string, args ...string) (*string, error) {
 	cm := exec.Command(cmd, args...)
 	var out bytes.Buffer
+	var errOut bytes.Buffer
 	cm.Stdout = &out
+	cm.Stderr = &errOut
 
 	err := cm.Run()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("Error executing %s %s: %s \n %s", cmd, strings.Join(args, " "), err.Error(), errOut.String())
 	}
 
 	result := out.String()
