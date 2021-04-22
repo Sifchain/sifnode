@@ -428,7 +428,7 @@ spec:
       ENV["VAULT_TOKEN"]=""
       puts "Check if vault init has been completed."
       check_vault_init = `kubectl exec --kubeconfig=./kubeconfig -n vault -it vault-0 -- vault status | grep Initialized | grep true`
-      
+
       if check_vault_init.empty?
             puts "vault not completed initalizing vault. "
             vault_init = %Q{
@@ -442,7 +442,7 @@ spec:
              }
             system(certificate_request)
           puts "Check if the vault token has been set."
-          puts "vault token ENV["VAULT_TOKEN"]"
+          puts "vault token #{ENV["VAULT_TOKEN"]}"
 
           if ENV["VAULT_TOKEN"].to_s.empty?
                 puts "no vault token there was an issue"
