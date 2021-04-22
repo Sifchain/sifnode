@@ -15,4 +15,4 @@ const Template = (args: any) => ({
 });
 
 export const Primary = Template.bind({});
-Primary.args = {};
+(Primary as any).args = {};

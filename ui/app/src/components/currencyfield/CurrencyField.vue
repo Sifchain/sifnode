@@ -97,7 +97,6 @@ export default defineComponent({
           :disabled="inputDisabled"
           @focus="$emit('focus', $event.target)"
           @blur="$emit('blur', $event.target)"
-          @click="$event.target.select()"
           ><template v-slot:end
             ><SifButton
               v-if="max && !isMaxActive"
