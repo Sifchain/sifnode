@@ -89,9 +89,9 @@ server:
         }
 
         seal "awskms" {
-          region     = "-=region=-"
+          region     = "-=aws_region=-"
           kms_key_id = "-=kmskey=-"
-          role_arn = "-=role_arn=-"
+          role_arn = "-=aws_role=-"
         }
 
         storage "raft" {
