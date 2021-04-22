@@ -1,7 +1,7 @@
 #!/bin/bash
 # must run from the root directory of the sifnode tree
 
-set -xv
+set -x
 set -e # exit on any failure
 set -o pipefail
 
@@ -17,6 +17,7 @@ rm -f $envexportfile
 
 set_persistant_env_var ETHEREUM_PRIVATE_KEY c87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3 $envexportfile
 set_persistant_env_var OWNER 0x627306090abaB3A6e1400e9345bC60c78a8BEf57 $envexportfile
+set_persistant_env_var OPERATOR $OWNER $envexportfile
 # we may eventually switch things so PAUSER and OWNER aren't the same account, but for now they're the same
 set_persistant_env_var PAUSER $OWNER $envexportfile
 set_persistant_env_var BASEDIR $(fullpath $BASEDIR) $envexportfile
@@ -29,7 +30,7 @@ set_persistant_env_var datadir ${TEST_INTEGRATION_DIR}/vagrant/data $envexportfi
 set_persistant_env_var CONTAINER_NAME integration_sifnode1_1 $envexportfile
 set_persistant_env_var NETWORKDIR $BASEDIR/deploy/networks $envexportfile
 set_persistant_env_var GANACHE_DB_DIR $(mktemp -d /tmp/ganachedb.XXXX) $envexportfile
-set_persistant_env_var ETHEREUM_WEBSOCKET_ADDRESS ws://localhost:7545/ $envexportfile
+set_persistant_env_var ETHEREUM_WEBSOCKET_ADDRESS ws://localhost:8646/ $envexportfile
 set_persistant_env_var CHAINNET localnet $envexportfile
 mkdir -p $datadir
 
@@ -40,9 +41,13 @@ cp ${TEST_INTEGRATION_DIR}/.env.ciExample .env
 make -C $SMART_CONTRACTS_DIR clean-smartcontracts
 yarn --cwd $BASEDIR/smart-contracts install
 
+pkill geth || true
+pkill -9 -f ganache-cli || true
+
+echo start ganache
 # Startup ganache-cli (https://github.com/trufflesuite/ganache)
 #   Uses GANACHE_DB_DIR for the --db argument to the chain
-bash ${TEST_INTEGRATION_DIR}/ganache_start.sh && . ${TEST_INTEGRATION_DIR}/vagrantenv.sh
+bash -x ${TEST_INTEGRATION_DIR}/ganache_start.sh && . ${TEST_INTEGRATION_DIR}/vagrantenv.sh
 
 # Arbitrarily pick key #9 as the key for the relayer to use
 addr=$(cat $GANACHE_KEYS_JSON | jq -r '.private_keys | keys_unsorted | .[9]')
@@ -50,9 +55,21 @@ pk=$(cat $GANACHE_KEYS_JSON | jq -r ".private_keys[\"$addr\"]")
 set_persistant_env_var EBRELAYER_ETHEREUM_ADDR $addr $envexportfile
 set_persistant_env_var EBRELAYER_ETHEREUM_PRIVATE_KEY $pk $envexportfile
 
+# start geth, and use the keys that ganache creates since the tests already know
+# how to use those keys
+# docker kill gethdocker || true
+all_keys=$(less $GANACHE_KEYS_JSON | jq -r '.private_keys | keys | .[]')
+# docker run -d --rm -p 9091:8545 -p 9092:8546 --name gethdocker -v $(pwd)/../..:/sifnode sifdocker bash -c "/sifnode/test/integration/setupgeth.sh $all_keys"
+pkill geth || true
+pkill -f ganache-cli || true
+sleep 2
+$BASEDIR/test/integration/setupgeth.sh $all_keys
+
 # https://www.trufflesuite.com/docs/truffle/overview
 # and note that truffle migrate and truffle deploy are the same command
-INITIAL_VALIDATOR_ADDRESSES=$EBRELAYER_ETHEREUM_ADDR npx truffle deploy --network develop --reset
+echo OWNER is $OWNER
+echo OPERATOR is $OPERATOR
+INITIAL_VALIDATOR_ADDRESSES=$EBRELAYER_ETHEREUM_ADDR npx truffle deploy --network geth --reset
 
 # ETHEREUM_CONTRACT_ADDRESS is used for the BridgeRegistry address in many places, so we
 # set it and BRIDGE_REGISTRY_ADDRESS to the same value
@@ -65,7 +82,7 @@ set_persistant_env_var BRIDGE_BANK_ADDRESS $(cat $BASEDIR/smart-contracts/build/
 rm -rf $SMART_CONTRACTS_DIR/relayerdb
 bash ${BASEDIR}/test/integration/setup_sifchain.sh && . $envexportfile
 
-UPDATE_ADDRESS=0x0000000000000000000000000000000000000000 npx truffle exec scripts/setTokenLockBurnLimit.js 31000000000000000000
-UPDATE_ADDRESS=$BRIDGE_TOKEN_ADDRESS npx truffle exec scripts/setTokenLockBurnLimit.js 10000000000000000000000000
+#UPDATE_ADDRESS=0x0000000000000000000000000000000000000000 npx truffle exec scripts/setTokenLockBurnLimit.js 31000000000000000000
+#UPDATE_ADDRESS=$BRIDGE_TOKEN_ADDRESS npx truffle exec scripts/setTokenLockBurnLimit.js 10000000000000000000000000
 
 logecho finished $0
