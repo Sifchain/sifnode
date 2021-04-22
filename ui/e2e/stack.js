@@ -1,12 +1,14 @@
 #!/usr/bin/env node
 
-const { spawn, exec } = require("child_process");
-const { resolve } = require("path");
-const treekill = require("tree-kill");
-const chalk = require("chalk");
-const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+import { spawn, exec } from "child_process";
+import { resolve } from "path";
+import { sleep } from "./utils";
+import treekill from "tree-kill";
+import chalk from "chalk";
+
 const cmdStack = [];
-async function restartStack() {
+
+export async function restartStack() {
   const uiFolder = resolve(__dirname, "../");
 
   const cmd = spawn("./scripts/run-stack-backend.sh", [], { cwd: uiFolder });
@@ -36,7 +38,7 @@ function treeKillProm(pid) {
   });
 }
 
-async function killStack() {
+export async function killStack() {
   await Promise.all(cmdStack.map((cmd) => treeKillProm(cmd.pid)));
 
   await new Promise((resolve) => {
@@ -51,11 +53,3 @@ async function killStack() {
   });
   await sleep(1000);
 }
-
-module.exports.restartStack = restartStack;
-module.exports.killStack = killStack;
-module.exports.sleep = sleep;
-
-// restartStack().then(() => {
-//   console.log("Next");
-// });
