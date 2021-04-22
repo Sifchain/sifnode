@@ -51,6 +51,11 @@ export async function killStack() {
   await sleep(1000);
 }
 
+/**
+ * Utility for tooling tests with our backing stack. When `when` is `once` the stack is
+ * booted up at the start of the file and then torn down. When 'every-test` is passed in then a new stack gets created for every test.
+ * @param when "once" or "every-test"
+ */
 export function useStack(when: "once" | "every-test") {
   // This might change if we work out a way to run each jest test in it's own container.
   // For now this is just a sanity check as it is easy to accidentally mess up here.
@@ -65,7 +70,10 @@ export function useStack(when: "once" | "every-test") {
 
   beforeAll(async () => await restartStack());
   if (when === "every-test") {
-    afterEach(async () => await restartStack());
+    afterEach(async () => {
+      await restartStack();
+      await sleep(1000);
+    });
   }
   afterAll(async () => await killStack());
 }

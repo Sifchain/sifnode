@@ -30,8 +30,8 @@ const { importKeplrAccount, connectKeplrAccount } = require("./keplr");
 // services
 const { getSifchainBalances } = require("./sifchain.js");
 const { getEthBalance, advanceEthBlocks } = require("./ethereum.js");
-const { sleep, extractFile, getExtensionPage } = require("./utils");
-const { restartStack, killStack } = require("../test/stack");
+const { extractFile, getExtensionPage } = require("./utils");
+const { useStack } = require("../test/stack");
 
 async function getInputValue(page, selector) {
   return await page.evaluate((el) => el.value, await page.$(selector));
@@ -39,18 +39,8 @@ async function getInputValue(page, selector) {
 
 let browserContext;
 let dexPage;
-beforeAll(async () => {
-  await restartStack();
-});
 
-afterEach(async () => {
-  await restartStack();
-  await sleep(1000);
-});
-
-afterAll(async () => {
-  await killStack();
-});
+useStack("every-test");
 
 describe("connect to page", () => {
   beforeAll(async () => {
@@ -84,9 +74,11 @@ describe("connect to page", () => {
       "chrome-extension://dmkamcknogkgcdfhhbddcghachkejeap/popup.html#/register",
     );
     await importKeplrAccount(keplrPage, KEPLR_CONFIG.options);
+
     // goto dex page
     dexPage = await browserContext.newPage();
     dexPage.setDefaultTimeout(60000);
+
     await dexPage.goto(DEX_TARGET, { waitUntil: "domcontentloaded" });
 
     await connectKeplrAccount(dexPage, browserContext);
