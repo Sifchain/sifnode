@@ -358,7 +358,7 @@ spec:
                 --from-file=vault.key=#{TMPDIR}/vault.key \
                 --from-file=vault.crt=#{TMPDIR}/vault.crt \
                 --from-file=vault.ca=#{TMPDIR}/vault.ca \
-                --from-file=vault.ca.key=#{TMPDIR}/vault.key
+                --from-file=vault.ca.key=#{TMPDIR}/vault.key --kubeconfig=./kubeconfig
 
             #FileUtils.rm_rf("#{TMPDIR}/csr.conf")
             #FileUtils.rm_rf("#{TMPDIR}/csr.yaml")
