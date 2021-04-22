@@ -1,7 +1,26 @@
 pragma solidity 0.8.0;
 
 contract CosmosBridgeStorage {
-    
+        /**
+    * @notice gap of storage for future upgrades
+    */
+    string COSMOS_NATIVE_ASSET_PREFIX;
+
+    /*
+     * @dev: Public variable declarations
+     */
+    address public operator;
+
+    /**
+    * @notice gap of storage for future upgrades
+    */
+    address payable public valset;
+
+    /**
+    * @notice gap of storage for future upgrades
+    */
+    address payable public oracle;
+
     /**
     * @notice gap of storage for future upgrades
     */
@@ -11,6 +30,13 @@ contract CosmosBridgeStorage {
     * @notice gap of storage for future upgrades
     */
     bool public hasBridgeBank;
+    /**
+    * @notice gap of storage for future upgrades
+    */
+    mapping(uint256 => ProphecyClaim) public prophecyClaims;
+
+
+    mapping (address => address) public sourceAddressToDestinationAddress;
 
     /**
     * @notice prophecy status enum

@@ -11,18 +11,25 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
     /*
      * @dev: Event declarations
      */
-    event LogOracleSet(address _oracle);
-
-    event LogBridgeBankSet(address _bridgeBank);
+    event LogBridgeBankSet(address bridgeBank);
 
     event LogNewProphecyClaim(
-        uint256 _prophecyID,
-        ClaimType _claimType,
-        address _ethereumReceiver,
-        uint256 indexed _amount
+        uint256 indexed prophecyID,
+        ClaimType claimType,
+        address indexed ethereumReceiver,
+        uint256 indexed amount
     );
 
-    event LogProphecyCompleted(uint256 _prophecyID, ClaimType _claimType);
+    event LogNewBridgeTokenCreated(
+        uint8 decimals,
+        uint256 indexed sourceChainDescriptor,
+        string name,
+        string symbol,
+        address indexed sourceContractAddress,
+        address indexed bridgeTokenAddress
+    );
+
+    event LogProphecyCompleted(uint256 prophecyID, ClaimType claimType);
 
     /*
      * @dev: Modifier to restrict access to current ValSet validators
@@ -87,9 +94,9 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
 
     function getProphecyID(
         ClaimType _claimType,
-        bytes memory _cosmosSender,
+        bytes calldata _cosmosSender,
         uint256 _cosmosSenderSequence,
-        address _ethereumReceiver,
+        address payable _ethereumReceiver,
         address _tokenAddress,
         uint256 _amount
     ) public pure returns (uint256) {
@@ -107,20 +114,29 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
         );
     }
 
-    /*
-     * @dev: newProphecyClaim
+    /**
+     * function: newProphecyClaim
      *       Creates a new burn or lock prophecy claim, adding it to the prophecyClaims mapping.
      *       Burn claims require that there are enough locked Ethereum assets to complete the prophecy.
      *       Lock claims have a new token contract deployed or use an existing contract based on symbol.
+     *
+     * @param _claimType type of claim, either lock or burn
+     * @param _cosmosSender sifchain sender's address
+     * @param _cosmosSenderSequence nonce of the cosmos sender
+     * @param _ethereumReceiver ethereum address of the receiver
+     * @param _tokenAddress address of the token to send
+     * @param _amount amount of token to send
+     * @param _doublePeg whether or not this is a double peg transaction
+     *
      */
     function newProphecyClaim(
         ClaimType _claimType,
         bytes calldata _cosmosSender,
-        string calldata _symbol,
         uint256 _cosmosSenderSequence,
         address payable _ethereumReceiver,
         address _tokenAddress,
-        uint256 _amount
+        uint256 _amount,
+        bool _doublePeg
     ) external onlyValidator validClaimType(_claimType) {
 
         uint256 _prophecyID = getProphecyID(
@@ -135,12 +151,6 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
         require(!prophecyRedeemed[_prophecyID], "prophecy already redeemed");
 
         if (oracleClaimValidators[_prophecyID] == 0) {
-            if (_claimType == ClaimType.Lock && _tokenAddress == address(0)) {
-                // need to make a business decision on what this symbol should be
-                // First lock of this asset, deploy new contract and get new symbol/token address
-                _tokenAddress = BridgeBank(bridgeBank).createNewBridgeToken(_symbol);
-            }
-
             emit LogNewProphecyClaim(
                 _prophecyID,
                 _claimType,
@@ -152,7 +162,11 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
         bool claimComplete = newOracleClaim(_prophecyID, msg.sender);
 
         if (claimComplete) {
+            // you cannot redeem this prophecy again
             prophecyRedeemed[_prophecyID] = true;
+
+            _tokenAddress = _doublePeg ? sourceAddressToDestinationAddress[_tokenAddress] : _tokenAddress;
+
             completeProphecyClaim(
                 _claimType,
                 _prophecyID,
@@ -161,6 +175,44 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
                 _amount
             );
         }
+    }
+    
+    /**
+     *
+     * @param _cosmosSender address of the sifchain address
+     * @param _symbol symbol of the ERC20 token on the source chain
+     * @param _name name of the ERC20 token on the source chain
+     * @param _sourceChainTokenAddress address of the ERC20 token on the source chain
+     * @param _decimals of the ERC20 token on the source chain
+     * @param chainDescriptor descriptor of the source chain
+     */
+    function createNewBridgeToken(
+        bytes calldata _cosmosSender,
+        string calldata _symbol,
+        string calldata _name,
+        address _sourceChainTokenAddress,
+        uint8 _decimals,
+        uint256 chainDescriptor
+    ) external onlyValidator {
+        // need to make a business decision on what this symbol should be
+        // First lock of this asset, deploy new contract and get new symbol/token address
+        address tokenAddress = BridgeBank(bridgeBank)
+            .createNewBridgeToken(
+                _name,
+                _symbol,
+                _decimals
+            );
+
+        sourceAddressToDestinationAddress[_sourceChainTokenAddress] = tokenAddress;
+
+        emit LogNewBridgeTokenCreated(
+            _decimals,
+            chainDescriptor,
+            _name,
+            _symbol,
+            _sourceChainTokenAddress,
+            tokenAddress
+        );
     }
 
     // struct prophecyBundle {

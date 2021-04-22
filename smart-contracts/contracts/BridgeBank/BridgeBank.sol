@@ -126,11 +126,11 @@ contract BridgeBank is BankStorage,
      * @param _symbol: The new BridgeToken's symbol
      * @return: The new BridgeToken contract's address
      */
-    function createNewBridgeToken(string calldata _symbol)
-        external
-        onlyCosmosBridge
-        returns (address)
-    {
+    function createNewBridgeToken(
+        string calldata _name,
+        string calldata _symbol,
+        uint8 _decimals
+    ) external onlyCosmosBridge returns (address) {
         address newTokenAddress = deployNewBridgeToken(_symbol);
         setTokenInCosmosWhiteList(newTokenAddress, true);
 
