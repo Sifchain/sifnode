@@ -339,7 +339,7 @@ echo '      sssssssssss    iiiiiiiifffffffff            cccccccccccccccchhhhhhh 
                 export VAULT_TOKEN=`echo $vault_init_output | cut -d ':' -f 7 | cut -d ' ' -f 2`
                 ./vault_login > /dev/null
              }
-            system(certificate_request)
+            system(vault_init)
           puts "Check if the vault token has been set."
           puts "vault token #{ENV["VAULT_TOKEN"]}"
 
