@@ -23,7 +23,7 @@ type Key struct {
 	Keyring          keyring.Keyring
 }
 
-func NewKey(name, password *string) *Key {
+func NewKey(name *string, password *string) *Key {
 	return &Key{
 		Name:     name,
 		Password: password,
