@@ -3,9 +3,11 @@ package keeper
 import (
 	"fmt"
 
+	"github.com/tendermint/tendermint/libs/log"
+	"go.uber.org/zap"
+
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/tendermint/tendermint/libs/log"
 
 	"github.com/Sifchain/sifnode/x/oracle/types"
 )
@@ -13,8 +15,8 @@ import (
 // Keeper maintains the link to data storage and
 // exposes getter/setter methods for the various parts of the state machine
 type Keeper struct {
-	cdc      codec.BinaryMarshaler // The wire codec for binary encoding/decoding.
-	storeKey sdk.StoreKey          // Unexposed key to access store from sdk.Context
+	Cdc      *codec.Codec // The wire codec for binary encoding/decoding.
+	storeKey sdk.StoreKey // Unexposed key to access store from sdk.Context
 
 	stakeKeeper types.StakingKeeper
 	// TODO: use this as param instead
@@ -23,13 +25,13 @@ type Keeper struct {
 
 // NewKeeper creates new instances of the oracle Keeper
 func NewKeeper(
-	cdc codec.BinaryMarshaler, storeKey sdk.StoreKey, stakeKeeper types.StakingKeeper, consensusNeeded float64,
+	cdc *codec.Codec, storeKey sdk.StoreKey, stakeKeeper types.StakingKeeper, consensusNeeded float64,
 ) Keeper {
 	if consensusNeeded <= 0 || consensusNeeded > 1 {
 		panic(types.ErrMinimumConsensusNeededInvalid.Error())
 	}
 	return Keeper{
-		cdc:             cdc,
+		Cdc:             cdc,
 		storeKey:        storeKey,
 		stakeKeeper:     stakeKeeper,
 		consensusNeeded: consensusNeeded,
@@ -50,7 +52,7 @@ func (k Keeper) GetProphecy(ctx sdk.Context, id string) (types.Prophecy, bool) {
 	}
 
 	var dbProphecy types.DBProphecy
-	k.cdc.MustUnmarshalBinaryBare(bz, &dbProphecy)
+	k.Cdc.MustUnmarshalBinaryBare(bz, &dbProphecy)
 
 	deSerializedProphecy, err := dbProphecy.DeserializeFromDB()
 	if err != nil {
@@ -68,64 +70,58 @@ func (k Keeper) setProphecy(ctx sdk.Context, prophecy types.Prophecy) {
 		panic(err)
 	}
 
-	store.Set([]byte(prophecy.ID), k.cdc.MustMarshalBinaryBare(&serializedProphecy))
+	store.Set([]byte(prophecy.ID), k.Cdc.MustMarshalBinaryBare(serializedProphecy))
 }
 
 // ProcessClaim ...
-func (k Keeper) ProcessClaim(ctx sdk.Context, claim types.Claim) (types.Status, error) {
-	logger := k.Logger(ctx)
+func (k Keeper) ProcessClaim(ctx sdk.Context, claim types.Claim, sugaredLogger *zap.SugaredLogger) (types.Status, error) {
 	inWhiteList := false
 	// Check if claim from whitelist validators
 	for _, address := range k.GetOracleWhiteList(ctx) {
 
-		if address.String() == (claim.ValidatorAddress) {
+		if address.Equals(claim.ValidatorAddress) {
 			inWhiteList = true
 			break
 		}
 	}
 
 	if !inWhiteList {
-		logger.Error("sifnode oracle keeper ProcessClaim validator no in whitelist.")
+		sugaredLogger.Errorw("sifnode oracle keeper ProcessClaim validator no in whitelist.")
 		return types.Status{}, types.ErrValidatorNotInWhiteList
 	}
 
-	valAddr, err := sdk.ValAddressFromBech32(claim.ValidatorAddress)
-	if err != nil {
-		return types.Status{}, err
-	}
-
-	activeValidator := k.checkActiveValidator(ctx, valAddr)
+	activeValidator := k.checkActiveValidator(ctx, claim.ValidatorAddress)
 	if !activeValidator {
-		logger.Error("sifnode oracle keeper ProcessClaim validator not active.")
+		sugaredLogger.Errorw("sifnode oracle keeper ProcessClaim validator not active.")
 		return types.Status{}, types.ErrInvalidValidator
 	}
 
-	if claim.Id == "" {
-		logger.Error("sifnode oracle keeper ProcessClaim wrong claim id.", "claimID", claim.Id)
+	if claim.ID == "" {
+		sugaredLogger.Errorw("sifnode oracle keeper ProcessClaim wrong claim id.", "claimID", claim.ID)
 		return types.Status{}, types.ErrInvalidIdentifier
 	}
 
 	if claim.Content == "" {
-		logger.Error("sifnode oracle keeper ProcessClaim claim content is empty.")
+		sugaredLogger.Errorw("sifnode oracle keeper ProcessClaim claim content is empty.")
 		return types.Status{}, types.ErrInvalidClaim
 	}
 
-	prophecy, found := k.GetProphecy(ctx, claim.Id)
+	prophecy, found := k.GetProphecy(ctx, claim.ID)
 	if !found {
-		prophecy = types.NewProphecy(claim.Id)
+		prophecy = types.NewProphecy(claim.ID)
 	}
 	switch prophecy.Status.Text {
-	case types.StatusText_STATUS_TEXT_PENDING:
+	case types.PendingStatusText:
 		// continue processing
 	default:
 		return types.Status{}, types.ErrProphecyFinalized
 	}
 
-	if prophecy.ValidatorClaims[claim.ValidatorAddress] != "" {
+	if prophecy.ValidatorClaims[claim.ValidatorAddress.String()] != "" {
 		return types.Status{}, types.ErrDuplicateMessage
 	}
 
-	prophecy.AddClaim(valAddr, claim.Content)
+	prophecy.AddClaim(claim.ValidatorAddress, claim.Content)
 	prophecy = k.processCompletion(ctx, prophecy)
 
 	k.setProphecy(ctx, prophecy)
@@ -142,10 +138,9 @@ func (k Keeper) checkActiveValidator(ctx sdk.Context, validatorAddress sdk.ValAd
 }
 
 // ProcessUpdateWhiteListValidator processes the update whitelist validator from admin
-func (k Keeper) ProcessUpdateWhiteListValidator(ctx sdk.Context, cosmosSender sdk.AccAddress, validator sdk.ValAddress, operationtype string) error {
-	logger := k.Logger(ctx)
+func (k Keeper) ProcessUpdateWhiteListValidator(ctx sdk.Context, cosmosSender sdk.AccAddress, validator sdk.ValAddress, operationtype string, sugaredLogger *zap.SugaredLogger) error {
 	if !k.IsAdminAccount(ctx, cosmosSender) {
-		logger.Error("cosmos sender is not admin account.")
+		sugaredLogger.Errorw("cosmos sender is not admin account.")
 		return types.ErrNotAdminAccount
 	}
 
@@ -175,10 +170,10 @@ func (k Keeper) processCompletion(ctx sdk.Context, prophecy types.Prophecy) type
 	highestPossibleConsensusRatio := float64(highestPossibleClaimPower) / float64(totalPower)
 
 	if highestConsensusRatio >= k.consensusNeeded {
-		prophecy.Status.Text = types.StatusText_STATUS_TEXT_SUCCESS
+		prophecy.Status.Text = types.SuccessStatusText
 		prophecy.Status.FinalClaim = highestClaim
 	} else if highestPossibleConsensusRatio < k.consensusNeeded {
-		prophecy.Status.Text = types.StatusText_STATUS_TEXT_FAILED
+		prophecy.Status.Text = types.FailedStatusText
 	}
 
 	return prophecy

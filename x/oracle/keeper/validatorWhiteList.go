@@ -1,20 +1,14 @@
 package keeper
 
 import (
-	sdk "github.com/cosmos/cosmos-sdk/types"
-	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
-
 	"github.com/Sifchain/sifnode/x/oracle/types"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 func (k Keeper) SetOracleWhiteList(ctx sdk.Context, validatorList []sdk.ValAddress) {
 	store := ctx.KVStore(k.storeKey)
 	key := types.WhiteListValidatorPrefix
-	valList := make([]string, len(validatorList))
-	for i, entry := range validatorList {
-		valList[i] = entry.String()
-	}
-	store.Set(key, k.cdc.MustMarshalBinaryBare(&stakingtypes.ValAddresses{Addresses: valList}))
+	store.Set(key, k.Cdc.MustMarshalBinaryBare(validatorList))
 }
 
 func (k Keeper) ExistsOracleWhiteList(ctx sdk.Context) bool {
@@ -23,23 +17,12 @@ func (k Keeper) ExistsOracleWhiteList(ctx sdk.Context) bool {
 }
 
 //
-func (k Keeper) GetOracleWhiteList(ctx sdk.Context) []sdk.ValAddress {
+func (k Keeper) GetOracleWhiteList(ctx sdk.Context) (valList []sdk.ValAddress) {
 	store := ctx.KVStore(k.storeKey)
 	key := types.WhiteListValidatorPrefix
 	bz := store.Get(key)
-	valAddresses := &stakingtypes.ValAddresses{}
-	k.cdc.MustUnmarshalBinaryBare(bz, valAddresses)
-
-	vl := make([]sdk.ValAddress, len(valAddresses.Addresses))
-	for i, entry := range valAddresses.Addresses {
-		addr, err := sdk.ValAddressFromBech32(entry)
-		if err != nil {
-			panic(err)
-		}
-		vl[i] = addr
-	}
-
-	return vl
+	k.Cdc.MustUnmarshalBinaryBare(bz, &valList)
+	return
 }
 
 // ValidateAddress is a validator in whitelist

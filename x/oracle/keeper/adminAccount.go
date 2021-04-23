@@ -3,16 +3,14 @@ package keeper
 import (
 	"bytes"
 
-	sdk "github.com/cosmos/cosmos-sdk/types"
-	gogotypes "github.com/gogo/protobuf/types"
-
 	"github.com/Sifchain/sifnode/x/oracle/types"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 func (k Keeper) SetAdminAccount(ctx sdk.Context, adminAccount sdk.AccAddress) {
 	store := ctx.KVStore(k.storeKey)
 	key := types.AdminAccountPrefix
-	store.Set(key, k.cdc.MustMarshalBinaryBare(&gogotypes.BytesValue{Value: adminAccount}))
+	store.Set(key, k.Cdc.MustMarshalBinaryBare(adminAccount))
 }
 
 func (k Keeper) IsAdminAccount(ctx sdk.Context, adminAccount sdk.AccAddress) bool {
@@ -27,10 +25,9 @@ func (k Keeper) GetAdminAccount(ctx sdk.Context) (adminAccount sdk.AccAddress) {
 	store := ctx.KVStore(k.storeKey)
 	key := types.AdminAccountPrefix
 	bz := store.Get(key)
-	acc := gogotypes.BytesValue{}
-	k.cdc.MustUnmarshalBinaryBare(bz, &acc)
-
-	adminAccount = sdk.AccAddress(acc.Value)
-
-	return adminAccount
+	if len(bz) == 0 {
+		return nil
+	}
+	k.Cdc.MustUnmarshalBinaryBare(bz, &adminAccount)
+	return
 }
