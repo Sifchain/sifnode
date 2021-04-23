@@ -330,28 +330,24 @@ echo '      sssssssssss    iiiiiiiifffffffff            cccccccccccccccchhhhhhh 
       puts "Check if vault init has been completed."
       check_vault_init = `kubectl exec --kubeconfig=./kubeconfig -n vault -it vault-0 -- vault status | grep Initialized | grep true`
       if check_vault_init.empty?
-            puts "vault not completed initalizing vault. "
+            puts "Initialize Vault"
             vault_init = %Q{
-                vault_init_output=`kubectl exec -n vault  vault-0 -- vault operator init -n 1 -t 1`
+                vault_init_output=`kubectl exec --kubeconfig=./kubeconfig -n vault  vault-0 -- vault operator init -n 1 -t 1`
                 echo -e ${vault_init_output} > vault_output
-                echo "sleep for 30 seconds to let vault init."
                 sleep 30
                 export VAULT_TOKEN=`echo $vault_init_output | cut -d ':' -f 7 | cut -d ' ' -f 2`
-                kubectl exec -n vault -it vault-0 -- vault login ${VAULT_TOKEN} > /dev/null
+                kubectl exec -n vault --kubeconfig=./kubeconfig -it vault-0 -- vault login ${VAULT_TOKEN} > /dev/null
              }
             system(vault_init)
           puts "Check if the vault token has been set."
           puts "vault token #{ENV["VAULT_TOKEN"]}"
-
           if ENV["VAULT_TOKEN"].to_s.empty?
               puts "no vault token there was an issue"
               exit 1
           end
-
           puts "uploading to s3"
           upload_to_s3 = `aws s3 cp ./vault_output s3://sifchain-vault-output-backup/#{args[:env]}/#{args[:region]}/vault-master-keys.$(date  | sed -e 's/ //g').backup --region us-west-2`
           puts upload_to_s3
-          puts "ok now that the token is there lets login"
           vault_login = `kubectl exec --kubeconfig=./kubeconfig -n vault -it vault-0 -- vault login ${VAULT_TOKEN} > /dev/null`
         else
             puts "Vault Already Inited."
