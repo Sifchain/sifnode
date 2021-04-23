@@ -28,6 +28,7 @@ import Icon from "@/components/shared/Icon.vue";
 // NOTE - This will be removed and replaced with Amount API
 function format(amount: number, type: string) {
   if (type === "string") {
+    if (!amount) return "N/A";
     return amount;
   }
   // convert to number
