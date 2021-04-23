@@ -88,7 +88,7 @@ func RelayProphecyClaimToEthereum(provider string, contractAddress common.Addres
 	tx, err := cosmosBridgeInstance.NewProphecyClaim(auth, uint8(claim.ClaimType),
 		claim.CosmosSender, claim.CosmosSenderSequence, claim.EthereumReceiver, claim.Symbol, claim.Amount.BigInt())
 
-	if err.Error() == "not found" {
+	if err != nil && err.Error() == "not found" {
 		// if there is a not found error while broadcasting to infura, retry until there isn't an error
 		i := 0
 		for i < 30 {
