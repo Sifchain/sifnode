@@ -8,7 +8,7 @@ import (
 func (k Keeper) SetOracleWhiteList(ctx sdk.Context, validatorList []sdk.ValAddress) {
 	store := ctx.KVStore(k.storeKey)
 	key := types.WhiteListValidatorPrefix
-	store.Set(key, k.cdc.MustMarshalBinaryBare(validatorList))
+	store.Set(key, k.Cdc.MustMarshalBinaryBare(validatorList))
 }
 
 func (k Keeper) ExistsOracleWhiteList(ctx sdk.Context) bool {
@@ -21,7 +21,7 @@ func (k Keeper) GetOracleWhiteList(ctx sdk.Context) (valList []sdk.ValAddress) {
 	store := ctx.KVStore(k.storeKey)
 	key := types.WhiteListValidatorPrefix
 	bz := store.Get(key)
-	k.cdc.MustUnmarshalBinaryBare(bz, &valList)
+	k.Cdc.MustUnmarshalBinaryBare(bz, &valList)
 	return
 }
 
