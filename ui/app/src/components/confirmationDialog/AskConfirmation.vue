@@ -31,7 +31,7 @@ export default defineComponent({
     <h3 class="title mb-10">Confirm Swap</h3>
     <div class="info">
       <AssetItemLarge :amount="fromAmount" :symbol="fromToken" />
-      <ArrowIconButton left :enabled="false" />
+      <ArrowIconButton :enabled="true" />
       <AssetItemLarge :amount="toAmount" :symbol="toToken" />
     </div>
     <div class="estimate">Output is estimated.</div>
