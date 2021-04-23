@@ -316,7 +316,7 @@ echo '      sssssssssss    iiiiiiiifffffffff            cccccccccccccccchhhhhhh 
       end
 
       puts "sleep for 300 seconds to wait for vault to start."
-      sleep(300)
+      sleep(180)
 
       puts "Ensure there is  avault pod that exists as extra mesure to ensure vault is up and running."
       check_vault_pod_exist = `kubectl get pod --kubeconfig=./kubeconfig -n vault | grep vault`
@@ -333,9 +333,10 @@ echo '      sssssssssss    iiiiiiiifffffffff            cccccccccccccccchhhhhhh 
             vault_init = %Q{
                 vault_init_output=$(kubectl exec --kubeconfig=./kubeconfig -n vault  vault-0 -- vault operator init -n 1 -t 1)
                 echo "vault init output: $vault_init_output"
+                sleep 60
                 echo -e ${vault_init_output} > vault_output
                 VAULT_TOKEN=`echo $vault_init_output | cut -d ':' -f 7 | cut -d ' ' -f 2`
-                kubectl exec -n vault --kubeconfig=./kubeconfig -it vault-0 -- vault login ${VAULT_TOKEN} > /dev/null
+                kubectl exec -n vault --kubeconfig=./kubeconfig -it vault-0 -- vault login ${VAULT_TOKEN}
              }
             system(vault_init)
           vault_output = `cat vault_output`
@@ -349,14 +350,17 @@ echo '      sssssssssss    iiiiiiiifffffffff            cccccccccccccccchhhhhhh 
             puts "Vault Already Inited."
       end
 
+      puts "check kv is enabled"
       check_kv_engine_enabled=`kubectl exec --kubeconfig=./kubeconfig -n vault -it vault-0 -- vault secrets list | grep kv-v2`
       if check_kv_engine_enabled.empty?
+           puts "kv not enabled please enable"
            enable_kv_enagine=`kubectl exec --kubeconfig=./kubeconfig -n vault  vault-0 -- vault secrets enable kv-v2`
            puts "enable kv engine #{enable_kv_enagine}"
       else
            puts "kv engine already enabled."
       end
 
+      puts "create test secret"
       create_test_secret = `kubectl exec --kubeconfig=./kubeconfig -n vault -it vault-0 -- vault kv put kv-v2/staging/test username=test123 password=foobar123`
       puts create_test_secret
 
