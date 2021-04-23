@@ -5,7 +5,6 @@ package txs
 import (
 	"context"
 	"crypto/ecdsa"
-	"fmt"
 	"math/big"
 	"time"
 
@@ -44,23 +43,23 @@ func incrementNonce() {
 	nonce++
 }
 
-func recursiveRetry(provider string, contractAddress common.Address, event types.Event, claim ProphecyClaim,
-	key *ecdsa.PrivateKey, sugaredLogger *zap.SugaredLogger, cosmosBridge *cosmosbridge.CosmosBridge,
-	client *ethclient.Client, auth *bind.TransactOpts, retryNum uint16) error {
+// func recursiveRetry(provider string, contractAddress common.Address, event types.Event, claim ProphecyClaim,
+// 	key *ecdsa.PrivateKey, sugaredLogger *zap.SugaredLogger, cosmosBridge *cosmosbridge.CosmosBridge,
+// 	client *ethclient.Client, auth *bind.TransactOpts, retryNum uint16) error {
 	
-	if retryNum > 30 {
-		err := fmt.Errorf("retried over %d times. stopping retry", retryNum)
-		return err
-	}
+// 	if retryNum > 30 {
+// 		err := fmt.Errorf("retried over %d times. stopping retry", retryNum)
+// 		return err
+// 	}
 
-	_, err := cosmosBridge.NewProphecyClaim(auth, uint8(claim.ClaimType),
-		claim.CosmosSender, claim.CosmosSenderSequence, claim.EthereumReceiver, claim.Symbol, claim.Amount.BigInt())
-	if err != nil {
-		return recursiveRetry(provider, contractAddress, event, claim, key, sugaredLogger, cosmosBridge, client, auth, retryNum + 1)
-	}
+// 	_, err := cosmosBridge.NewProphecyClaim(auth, uint8(claim.ClaimType),
+// 		claim.CosmosSender, claim.CosmosSenderSequence, claim.EthereumReceiver, claim.Symbol, claim.Amount.BigInt())
+// 	if err != nil {
+// 		return recursiveRetry(provider, contractAddress, event, claim, key, sugaredLogger, cosmosBridge, client, auth, retryNum + 1)
+// 	}
 
-	return nil
-}
+// 	return nil
+// }
 
 // RelayProphecyClaimToEthereum relays the provided ProphecyClaim to CosmosBridge contract on the Ethereum network
 func RelayProphecyClaimToEthereum(provider string, contractAddress common.Address, event types.Event,
