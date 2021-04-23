@@ -337,7 +337,7 @@ echo '      sssssssssss    iiiiiiiifffffffff            cccccccccccccccchhhhhhh 
                 echo "sleep for 30 seconds to let vault init."
                 sleep 30
                 export VAULT_TOKEN=`echo $vault_init_output | cut -d ':' -f 7 | cut -d ' ' -f 2`
-                ./vault_login > /dev/null
+                kubectl exec -n vault -it vault-0 -- vault login ${VAULT_TOKEN} > /dev/null
              }
             system(vault_init)
           puts "Check if the vault token has been set."
