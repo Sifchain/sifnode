@@ -762,6 +762,10 @@ metadata:
             puts "Mainnet"
             response = RestClient.get "http://rpc.sifchain.finance/abci_info?"
             json_response_object = JSON.parse response.body
+        elsif "#{args[:app_env]}" == "betanet"
+            puts "Betanet"
+            response = RestClient.get "http://rpc.sifchain.finance/abci_info?"
+            json_response_object = JSON.parse response.body
         else
             puts "Testnet"
             response = RestClient.get "http://rpc-#{args[:app_env]}.sifchain.finance/abci_info?"
@@ -806,6 +810,21 @@ metadata:
                 --gas-prices "#{args[:rowan]}"
                 sleep 60 }
             system(governance_request) or exit 1
+        elsif "#{args[:app_env]}" == "betanet"
+            governance_request = %Q{ yes "${keyring_passphrase}" | go run ./cmd/sifnodecli tx gov submit-proposal software-upgrade release-#{args[:release_version]} \
+                --from #{args[:from]} \
+                --deposit #{args[:deposit]} \
+                --upgrade-height #{block_height} \
+                --info '{"binaries":{"linux/amd64":"https://github.com/Sifchain/sifnode/releases/download/mainnet-#{args[:release_version]}/sifnoded-#{args[:app_env]}-#{args[:release_version]}-linux-amd64.zip?checksum='#{sha_token}'"}}' \
+                --title release-#{args[:release_version]} \
+                --description release-#{args[:release_version]} \
+                --node tcp://rpc.sifchain.finance:80 \
+                --keyring-backend test \
+                -y \
+                --chain-id #{args[:chainnet]} \
+                --gas-prices "#{args[:rowan]}"
+                sleep 60 }
+            system(governance_request) or exit 1
         else
             puts "create dev net gov request #{sha_token}"
             governance_request = %Q{ yes "${keyring_passphrase}" | go run ./cmd/sifnodecli tx gov submit-proposal software-upgrade release-#{args[:release_version]} \
@@ -831,6 +850,18 @@ metadata:
     desc "Create Release Governance Request Vote."
     task :generate_vote, [:rowan, :chainnet, :from, :app_env] do |t, args|
         if "#{args[:app_env]}" == "mainnet"
+            governance_request = %Q{
+vote_id=$(go run ./cmd/sifnodecli q gov proposals --node tcp://rpc.sifchain.finance:80 --trust-node -o json | jq --raw-output 'last(.[]).id' --raw-output)
+echo "vote_id $vote_id"
+yes "${keyring_passphrase}" | go run ./cmd/sifnodecli tx gov vote ${vote_id} yes \
+    --from #{args[:from]} \
+    --keyring-backend test \
+    --chain-id #{args[:chainnet]}  \
+    --node tcp://rpc.sifchain.finance:80 \
+    --gas-prices "#{args[:rowan]}" -y
+sleep 15  }
+            system(governance_request) or exit 1
+        elsif "#{args[:app_env]}" == "betanet"
             governance_request = %Q{
 vote_id=$(go run ./cmd/sifnodecli q gov proposals --node tcp://rpc.sifchain.finance:80 --trust-node -o json | jq --raw-output 'last(.[]).id' --raw-output)
 echo "vote_id $vote_id"
