@@ -142,7 +142,7 @@ func init() {
 		panic(err)
 	}
 
-	DefaultNodeHome = filepath.Join(userHomeDir, ".sifenoded")
+	DefaultNodeHome = filepath.Join(userHomeDir, ".sifnoded")
 }
 
 var (
