@@ -40,7 +40,21 @@ export default defineComponent({
     </Tooltip>
   </div>
 </template>
-
+<style lang="scss">
+.info-eye {
+  svg {
+    fill: #c6c6c6 !important;
+    width: 16px;
+    margin-left: 5px;
+    margin-top: 7px;
+  }
+  &:hover {
+    svg {
+      fill: #d4b553 !important;
+    }
+  }
+}
+</style>
 <style lang="scss" scoped>
 .info {
   &-row {
@@ -50,32 +64,23 @@ export default defineComponent({
     font-weight: 400;
   }
   &-amount {
-    font-size: 25px;
+    font-size: 18px;
     flex: 1 1 auto;
     text-align: right;
   }
   &-token {
-    font-size: 20px;
+    font-size: 18px;
     width: 60px;
-    background: blue;
   }
   &-img {
     width: 20px;
-    background: red;
-    margin-right: 16px;
+    margin-right: 10px;
   }
   &-eye {
     width: 30px;
   }
 }
-.info-eye {
-  svg {
-    path {
-      fill: blue !important;
-    }
-    fill: blue !important;
-  }
-}
+
 ​.placeholder {
   background: #aaa;
   box-sizing: border-box;
