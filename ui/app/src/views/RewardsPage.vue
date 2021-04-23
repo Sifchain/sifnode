@@ -37,7 +37,7 @@ const REWARD_DETAIL = {
     title: "Start Date",
     tooltip: "start date",
     icon: null,
-    type: "date",
+    type: "string",
   },
   reserved: {
     title: "Reserved Amount",
@@ -55,8 +55,16 @@ async function getRewardsData(address: ComputedRef<any>) {
   );
   if (data.status !== 200)
     return [
-      { type: "lm", multiplier: 0, start: "", amount: null },
-      { type: "vs", multiplier: 0, start: "", amount: null },
+      {
+        type: "lm",
+        amount: null,
+        detail: [{ multiplier: 0 }, { start: "" }, { reserved: null }],
+      },
+      {
+        type: "vs",
+        amount: null,
+        detail: [{ multiplier: 0 }, { start: "" }, { reserved: null }],
+      },
     ];
 
   return await data.json();
@@ -73,6 +81,23 @@ function format(amount: number) {
   } else {
     return amount.toFixed(0);
   }
+}
+
+function manualSort(items: Array<Object>) {
+  let newOrder = [];
+  for (const item of items) {
+    if (!item) return;
+    const key = Object.getOwnPropertyNames(item)[0];
+    switch (key) {
+      case "reserved":
+        newOrder.unshift(item);
+        break;
+      default:
+        newOrder.push(item);
+        break;
+    }
+  }
+  return newOrder;
 }
 
 export default defineComponent({
@@ -111,6 +136,7 @@ export default defineComponent({
       REWARD_INFO,
       format,
       REWARD_DETAIL,
+      manualSort,
     };
   },
 });
@@ -164,7 +190,7 @@ export default defineComponent({
           </div>
           <div v-show="reward.showDetail" class="details-expanded-container">
             <DetailItem
-              v-for="item in reward.detail"
+              v-for="item in manualSort(reward.detail)"
               :key="Object.getOwnPropertyNames(item)[0]"
               :pkey="Object.getOwnPropertyNames(item)[0]"
               :item="item"

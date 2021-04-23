@@ -7,8 +7,9 @@
           :symbol="copyMap[pkey].icon"
           :label="false"
         />
-        <!-- TODO - Pass in type for Date vs Number -->
-        <span>{{ format(+item[pkey]) }}</span>
+        <!-- Spacer so numbers aligned -->
+        <div v-if="!copyMap[pkey].icon" class="spacer"></div>
+        <span>{{ format(item[pkey], copyMap[pkey].type) }}</span>
         <span v-if="pkey === 'multiplier'">x</span>
       </div>
       <span class="mr-3">{{ copyMap[pkey].title }}</span>
@@ -25,7 +26,12 @@ import Tooltip from "@/components/shared/Tooltip.vue";
 import Icon from "@/components/shared/Icon.vue";
 
 // NOTE - This will be removed and replaced with Amount API
-function format(amount: number) {
+function format(amount: number, type: string) {
+  if (type === "string") {
+    return amount;
+  }
+  // convert to number
+  +amount;
   if (amount < 1) {
     return amount.toFixed(6);
   } else if (amount < 1000) {
@@ -56,5 +62,8 @@ export default {
 }
 .detail-item-amount {
   width: 120px;
+}
+.spacer {
+  width: 25px;
 }
 </style>
