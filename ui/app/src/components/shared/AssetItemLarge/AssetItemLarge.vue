@@ -35,7 +35,7 @@ export default defineComponent({
     <div class="info-token">{{ tokenLabel }}</div>
     <!-- <div class="placeholder" :style="backgroundStyle" v-else></div> -->
     <div class="info-amount">{{ format(amount, { mantissa: 6 }) }}</div>
-    <Tooltip :message="amount">
+    <Tooltip :message="amount" :fit="true">
       <Icon icon="eye" class="info-eye" />
     </Tooltip>
   </div>
