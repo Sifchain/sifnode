@@ -53,7 +53,7 @@ func TestProcessClaimLock(t *testing.T) {
 	require.NoError(t, err)
 
 	ethBridgeClaim := types.NewEthBridgeClaim(
-		5777,
+		1,
 		ethBridgeAddress, // bridge registry
 		nonce,
 		symbol,
@@ -77,7 +77,7 @@ func TestProcessClaimLock(t *testing.T) {
 	// other validator execute
 
 	ethBridgeClaim = types.NewEthBridgeClaim(
-		5777,
+		1,
 		ethBridgeAddress, // bridge registry
 		nonce,
 		symbol,
@@ -105,7 +105,7 @@ func TestProcessClaimBurn(t *testing.T) {
 	require.NoError(t, err)
 
 	ethBridgeClaim := types.NewEthBridgeClaim(
-		5777,
+		1,
 		ethBridgeAddress, // bridge registry
 		nonce,
 		symbol,
@@ -129,7 +129,7 @@ func TestProcessClaimBurn(t *testing.T) {
 	// other validator execute
 
 	ethBridgeClaim = types.NewEthBridgeClaim(
-		5777,
+		1,
 		ethBridgeAddress, // bridge registry
 		nonce,
 		symbol,

@@ -18,7 +18,7 @@ import (
 const (
 	// EthereumPrivateKey config field which holds the user's private key
 	EthereumPrivateKey        = "ETHEREUM_PRIVATE_KEY"
-	TestEthereumChainID       = 3
+	TestEthereumChainID       = 1
 	TestBridgeContractAddress = "0xd88159878c50e4B2b03BB701DD436e4A98D6fBe2"
 	TestLockClaimType         = 0
 	TestBurnClaimType         = 1

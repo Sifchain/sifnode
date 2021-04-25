@@ -5,11 +5,11 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"strconv"
 
 	"github.com/Sifchain/sifnode/x/clp"
 	"github.com/Sifchain/sifnode/x/faucet"
 	"github.com/Sifchain/sifnode/x/oracle"
-
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
@@ -337,7 +337,7 @@ func AddGenesisValidatorCmd(
 ) *cobra.Command {
 
 	cmd := &cobra.Command{
-		Use:   "add-genesis-validators [address_or_key_name]",
+		Use:   "add-genesis-validators [network_descriptor] [address_or_key_name]",
 		Short: "add genesis validators to genesis.json",
 		Long: `add validator to genesis.json. The provided account must specify
 the account address or key name. If a key name is given, the address will be looked up in the local Keybase. 
@@ -346,9 +346,15 @@ the account address or key name. If a key name is given, the address will be loo
 		RunE: func(cmd *cobra.Command, args []string) error {
 			config := ctx.Config
 			config.SetRoot(viper.GetString(cli.HomeFlag))
-			addr, err := sdk.ValAddressFromBech32(args[0])
+
+			tmpNetworkID, err := strconv.ParseUint(args[1], 10, 32)
 			if err != nil {
 				return fmt.Errorf("failed to get validator address: %w", err)
+			}
+
+			addr, err := sdk.ValAddressFromBech32(args[1])
+			if err != nil {
+				return fmt.Errorf("failed to pass network descriptor: %w", err)
 			}
 
 			genFile := config.GenesisFile()
@@ -358,13 +364,14 @@ the account address or key name. If a key name is given, the address will be loo
 			}
 
 			oracleGenState := oracle.GetGenesisStateFromAppState(cdc, appState)
+			networkID := strconv.Itoa(int(tmpNetworkID))
 
-			for _, item := range oracleGenState.AddressWhitelist {
+			for _, item := range oracleGenState.AddressWhitelist[networkID] {
 				if bytes.Equal(item, addr) {
 					return fmt.Errorf("address %s already in white list", addr)
 				}
 			}
-			oracleGenState.AddressWhitelist = append(oracleGenState.AddressWhitelist, addr)
+			oracleGenState.AddressWhitelist[networkID] = append(oracleGenState.AddressWhitelist[networkID], addr)
 
 			oracleGenStateBz, err := cdc.MarshalJSON(oracleGenState)
 			if err != nil {

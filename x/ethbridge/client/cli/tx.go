@@ -226,9 +226,9 @@ func GetCmdLock(cdc *codec.Codec) *cobra.Command {
 // GetCmdUpdateWhiteListValidator is the CLI command for update the validator whitelist
 func GetCmdUpdateWhiteListValidator(cdc *codec.Codec) *cobra.Command {
 	return &cobra.Command{
-		Use:   "update_whitelist_validator [cosmos-sender-address] [validator-address] [operation-type] --node [node-address]",
+		Use:   "update_whitelist_validator [cosmos-sender-address] [network_descriptor] [validator-address] [operation-type] --node [node-address]",
 		Short: "This should be used to update the validator whitelist.",
-		Args:  cobra.ExactArgs(3),
+		Args:  cobra.ExactArgs(4),
 		RunE: func(cmd *cobra.Command, args []string) error {
 
 			cliCtx := context.NewCLIContext().WithCodec(cdc)
@@ -240,17 +240,22 @@ func GetCmdUpdateWhiteListValidator(cdc *codec.Codec) *cobra.Command {
 				return err
 			}
 
-			validatorAddress, err := sdk.ValAddressFromBech32(args[1])
+			networkDescriptor, err := strconv.Atoi(args[1])
+			if err != nil {
+				return errors.New("Error parsing network descriptor")
+			}
+
+			validatorAddress, err := sdk.ValAddressFromBech32(args[2])
 			if err != nil {
 				return err
 			}
 
-			operationType := args[2]
+			operationType := args[3]
 			if operationType != "add" && operationType != "remove" {
 				return errors.Errorf("invalid [operation-type]: %s", args[2])
 			}
 
-			msg := types.NewMsgUpdateWhiteListValidator(cosmosSender, validatorAddress, operationType)
+			msg := types.NewMsgUpdateWhiteListValidator(networkDescriptor, cosmosSender, validatorAddress, operationType)
 			if err := msg.ValidateBasic(); err != nil {
 				return err
 			}

@@ -74,8 +74,9 @@ func (k Keeper) setProphecy(ctx sdk.Context, prophecy types.Prophecy) {
 }
 
 // ProcessClaim ...
-func (k Keeper) ProcessClaim(ctx sdk.Context, networkDescriptor types.NetworkDescriptor, claim types.Claim, sugaredLogger *zap.SugaredLogger) (types.Status, error) {
+func (k Keeper) ProcessClaim(ctx sdk.Context, networkID uint32, claim types.Claim, sugaredLogger *zap.SugaredLogger) (types.Status, error) {
 	inWhiteList := false
+	networkDescriptor := types.NewNetworkDescriptor(networkID)
 	// Check if claim from whitelist validators
 	for _, address := range k.GetOracleWhiteList(ctx, networkDescriptor) {
 
@@ -138,12 +139,12 @@ func (k Keeper) checkActiveValidator(ctx sdk.Context, validatorAddress sdk.ValAd
 }
 
 // ProcessUpdateWhiteListValidator processes the update whitelist validator from admin
-func (k Keeper) ProcessUpdateWhiteListValidator(ctx sdk.Context, networkDescriptor types.NetworkDescriptor, cosmosSender sdk.AccAddress, validator sdk.ValAddress, operationtype string, sugaredLogger *zap.SugaredLogger) error {
+func (k Keeper) ProcessUpdateWhiteListValidator(ctx sdk.Context, networkID uint32, cosmosSender sdk.AccAddress, validator sdk.ValAddress, operationtype string, sugaredLogger *zap.SugaredLogger) error {
 	if !k.IsAdminAccount(ctx, cosmosSender) {
 		sugaredLogger.Errorw("cosmos sender is not admin account.")
 		return types.ErrNotAdminAccount
 	}
-
+	networkDescriptor := types.NewNetworkDescriptor(networkID)
 	switch operationtype {
 	case "add":
 		k.AddOracleWhiteList(ctx, networkDescriptor, validator)

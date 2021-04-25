@@ -10,14 +10,14 @@ import (
 // GenesisState - all clp state that must be provided at genesis
 //TODO: Add parameters to Genesis state ,such as minimum liquidity required to create a pool
 type GenesisState struct {
-	AddressWhitelist map[int32][]sdk.ValAddress `json:"address_whitelist"`
-	AdminAddress     sdk.AccAddress             `json:"admin_address"`
+	AddressWhitelist map[string][]sdk.ValAddress `json:"address_whitelist"`
+	AdminAddress     sdk.AccAddress              `json:"admin_address"`
 }
 
 // NewGenesisState creates a new GenesisState instance
 func NewGenesisState() GenesisState {
 	return GenesisState{
-		AddressWhitelist: map[int32][]sdk.ValAddress{},
+		AddressWhitelist: map[string][]sdk.ValAddress{},
 		AdminAddress:     sdk.AccAddress{},
 	}
 }
@@ -25,7 +25,7 @@ func NewGenesisState() GenesisState {
 // DefaultGenesisState gets the raw genesis raw message for testing
 func DefaultGenesisState() GenesisState {
 	return GenesisState{
-		AddressWhitelist: map[int32][]sdk.ValAddress{},
+		AddressWhitelist: map[string][]sdk.ValAddress{},
 		AdminAddress:     sdk.AccAddress{},
 	}
 }

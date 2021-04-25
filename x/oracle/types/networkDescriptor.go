@@ -5,16 +5,18 @@ import (
 	"encoding/binary"
 )
 
+// TODO if we should pre-define the network ID
+
 // MaxNetworkDescriptor record the max networkID, the ID should be an incremental value
-var MaxNetworkDescriptor int32 = 0
+var MaxNetworkDescriptor uint32 = 0
 
 // NetworkDescriptor define the different network like Ethereum, Binance
 type NetworkDescriptor struct {
-	NetworkID int32 `json:"network_id"`
+	NetworkID uint32 `json:"network_id"`
 }
 
 // NewNetworkDescriptor get a new NetworkDescriptor instance
-func NewNetworkDescriptor(networkID int32) NetworkDescriptor {
+func NewNetworkDescriptor(networkID uint32) NetworkDescriptor {
 	if networkID > MaxNetworkDescriptor {
 		MaxNetworkDescriptor = networkID
 	}
@@ -26,6 +28,6 @@ func NewNetworkDescriptor(networkID int32) NetworkDescriptor {
 // GetPrefix return storage prefix
 func (n NetworkDescriptor) GetPrefix() []byte {
 	bytebuf := bytes.NewBuffer([]byte{})
-	binary.Write(bytebuf, binary.BigEndian, n.NetworkID)
+	_ = binary.Write(bytebuf, binary.BigEndian, n.NetworkID)
 	return append(WhiteListValidatorPrefix, bytebuf.Bytes()...)
 }

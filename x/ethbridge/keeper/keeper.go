@@ -51,7 +51,8 @@ func (k Keeper) ProcessClaim(ctx sdk.Context, claim types.EthBridgeClaim, sugare
 		return oracle.Status{}, err
 	}
 
-	return k.oracleKeeper.ProcessClaim(ctx, oracleClaim, sugaredLogger)
+	// TODO use the ethereum chain id as network descriptor temporarily.
+	return k.oracleKeeper.ProcessClaim(ctx, uint32(claim.EthereumChainID), oracleClaim, sugaredLogger)
 }
 
 // ProcessSuccessfulClaim processes a claim that has just completed successfully with consensus
@@ -169,8 +170,8 @@ func (k Keeper) ProcessLock(ctx sdk.Context, cosmosSender sdk.AccAddress, msg ty
 }
 
 // ProcessUpdateWhiteListValidator processes the update whitelist validator from admin
-func (k Keeper) ProcessUpdateWhiteListValidator(ctx sdk.Context, cosmosSender sdk.AccAddress, validator sdk.ValAddress, operationtype string, sugaredLogger *zap.SugaredLogger) error {
-	return k.oracleKeeper.ProcessUpdateWhiteListValidator(ctx, cosmosSender, validator, operationtype, sugaredLogger)
+func (k Keeper) ProcessUpdateWhiteListValidator(ctx sdk.Context, networkID uint32, cosmosSender sdk.AccAddress, validator sdk.ValAddress, operationtype string, sugaredLogger *zap.SugaredLogger) error {
+	return k.oracleKeeper.ProcessUpdateWhiteListValidator(ctx, networkID, cosmosSender, validator, operationtype, sugaredLogger)
 }
 
 // ProcessUpdateCethReceiverAccount processes the update whitelist validator from admin
