@@ -8,7 +8,7 @@ import (
 func (k Keeper) SetOracleWhiteList(ctx sdk.Context, networkDescriptor types.NetworkDescriptor, validatorList []sdk.ValAddress) {
 	store := ctx.KVStore(k.storeKey)
 	key := networkDescriptor.GetPrefix()
-	store.Set(key, k.cdc.MustMarshalBinaryBare(validatorList))
+	store.Set(key, k.Cdc.MustMarshalBinaryBare(validatorList))
 }
 
 func (k Keeper) ExistsOracleWhiteList(ctx sdk.Context, networkDescriptor types.NetworkDescriptor) bool {
@@ -21,7 +21,7 @@ func (k Keeper) GetOracleWhiteList(ctx sdk.Context, networkDescriptor types.Netw
 	store := ctx.KVStore(k.storeKey)
 	key := networkDescriptor.GetPrefix()
 	bz := store.Get(key)
-	k.cdc.MustUnmarshalBinaryBare(bz, &valList)
+	k.Cdc.MustUnmarshalBinaryBare(bz, &valList)
 	return
 }
 
