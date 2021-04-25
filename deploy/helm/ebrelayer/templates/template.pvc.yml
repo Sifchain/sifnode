@@ -2,9 +2,9 @@
 kind: PersistentVolumeClaim
 apiVersion: v1
 metadata:
-  name: {{ template "ebrelayer.fullname" . }}
+  name: {{ template "-=app_name=-.fullname" . }}
   labels:
-    {{- include "ebrelayer.labels" . | nindent 4 }}
+    {{- include "-=app_name=-.labels" . | nindent 4 }}
 spec:
   accessModes:
     - {{ .Values.persistence.accessMode | quote }}
