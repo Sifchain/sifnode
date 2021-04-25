@@ -15,7 +15,6 @@ endif
 
 gofiles=$(shell find ${BASEDIR}/* -name \*.go) ${BASEDIR}/go.mod ${BASEDIR}/go.sum
 
-${GOBIN}/sifnodecli: $(gofiles)
+${GOBIN}/sifnoded: $(gofiles)
 	make -C ${BASEDIR} install
 	touch $@
-	rm -rf ~/.sifnodecli/localnet

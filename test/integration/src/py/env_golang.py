@@ -17,7 +17,7 @@ class GolangInput(env_utilities.SifchainCmdInput):
 
 
 def golang_build_cmd(args: GolangInput):
-    return f"cd {args.base_dir}/test/integration && BASEDIR={args.base_dir} GOBIN={args.go_bin} PATH=$PATH:/usr/local/go/bin make"
+    return f"cd {args.base_dir}/test/integration && BASEDIR={args.base_dir} GOCACHE=/gocache GOBIN={args.go_bin} PATH=$PATH:/usr/local/go/bin make"
 
 
 def golang_build(args: GolangInput):

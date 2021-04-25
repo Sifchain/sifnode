@@ -1,8 +1,11 @@
+import json
 import pathlib
 import subprocess
 import tempfile
 from dataclasses import dataclass
 from typing import List
+
+import time
 
 import env_ethereum
 import env_utilities
@@ -10,6 +13,7 @@ from env_utilities import wait_for_port
 
 gethname = "geth"
 datadir = "/home/vagrant/gethdata"
+ipcpath = "/tmp/geth.ipc"
 
 
 @dataclass
@@ -23,8 +27,8 @@ def geth_cmd(args: env_ethereum.EthereumInput) -> str:
     apis = "personal,eth,net,web3,debug"
     cmd = " ".join([
         "geth",
-        f"--datadir {datadir}",
         f"--networkid {args.network_id}",
+        f"--ipcpath {ipcpath}",
         f"--ws --ws.addr 0.0.0.0 --ws.port {args.ws_port} --ws.api {apis}",
         f"--http --http.addr 0.0.0.0 --http.port {args.http_port} --http.api {apis}",
         "--dev --dev.period 1",
@@ -42,13 +46,13 @@ def fund_initial_accounts(addresses: List[str], starting_amount: int):
     print(f"addresses: {addresses}")
     for addr in addresses:
         quotedaddr = f"\\{quote}{addr}\\{quote}"
-        cmd = f'geth attach /tmp/gethdata/geth.ipc --exec "eth.sendTransaction({{from:eth.coinbase, to:{quotedaddr}, value:{starting_amount * 10 ** 18}}})"'
+        cmd = f'geth attach {ipcpath} --exec "eth.sendTransaction({{from:eth.coinbase, to:{quotedaddr}, value:{starting_amount * 10 ** 18}}})"'
         # subprocess.run(cmd, shell=True, check=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         subprocess.run(cmd, shell=True, check=True)
     for addr in addresses:
         quotedaddr = f"\\{quote}{addr}\\{quote}"
         while True:
-            cmd = f'geth attach /tmp/gethdata/geth.ipc --exec "eth.getBalance({quotedaddr})"'
+            cmd = f'geth attach {ipcpath} --exec "eth.getBalance({quotedaddr})"'
             balance_result = subprocess.run(
                 cmd,
                 check=True,
@@ -95,17 +99,20 @@ def start_geth(args: GethInput):
     """returns an object with a wait() method"""
     pathlib.Path(datadir).mkdir(exist_ok=True)
     cmd = geth_cmd(args)
-    print(f"starting geth: \n{cmd}")
-    logfile = open(args.logfile, "w")
+    logfile = open(args.logfile, "ta")
+    print(f"starting geth: \n{cmd}\n")
     proc = subprocess.Popen(
         cmd,
         shell=True,
+        text=True,
         # stdout=logfile,
         # stdin=None,
         # stderr=subprocess.STDOUT,
     )
+    print(f"waiting for ports, args: {json.dumps(args.__dict__)}")
     wait_for_port("localhost", args.ws_port)
     wait_for_port("localhost", args.http_port)
+    print("got ports")
     new_accounts = create_initial_accounts(args.ethereum_addresses)
     fund_initial_accounts(map(lambda a: a[0], new_accounts), args.starting_ether)
     env_utilities.startup_complete(args, format_new_accounts(new_accounts))

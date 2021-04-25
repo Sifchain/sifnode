@@ -200,6 +200,7 @@ def recover_key(
         mnemonic: str,
 ):
     cmd = f'echo "{mnemonic}" | sifnodecli keys add --keyring-backend {backend} {key_name} --recover'
+    print(f"run keys: {cmd}")
     subprocess.run(
         cmd,
         shell=True,

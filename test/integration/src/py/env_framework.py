@@ -10,6 +10,7 @@ import yaml
 import env_ebrelayer
 import env_ganache
 import env_geth
+import env_sample
 import env_golang
 import env_sifnoded
 import env_smartcontractrunner
@@ -42,7 +43,7 @@ geth_input = env_geth.GethInput(
     network_id=3,
     starting_ether=123,
     ws_port=8646,
-    http_port=7890,
+    http_port=7990,
     ethereum_addresses=4,
     configoutputfile=config_file_full_path(gethname)
 )
@@ -105,10 +106,18 @@ sifnoded_input = env_sifnoded.SifnodedRunner(
     sifnode_host=env_sifnoded.sifnodename
 )
 
+sampleinput = env_sample.SampleInput(
+    basedir=basedir,
+    logfile=log_file_full_path(env_sample.samplename),
+    configoutputfile=config_file_full_path(env_sample.samplename),
+    shark="SHARK!!!"
+)
+
 geth_docker = env_geth.geth_docker_compose(geth_input)
 ganache_docker = env_ganache.ganache_docker_compose(ganache_input)
 smartcontractrunner_docker = env_smartcontractrunner.smartcontractrunner_docker_compose(ganache_input)
 sifnodedrunner = env_sifnoded.sifnoded_docker_compose(sifnoded_input)
+sampledockercompose = env_sample.sample_docker_compose(sampleinput)
 
 shared_docker = {
     "version": "3.9",
@@ -126,7 +135,7 @@ shared_docker = {
 
 component = sys.argv[1] if len(sys.argv) > 1 else "dockerconfig"
 
-if component == "dockerconfig":
+def dockerconfig():
     print(yaml.dump({
         **shared_docker,
         "services": {
@@ -134,6 +143,22 @@ if component == "dockerconfig":
             **geth_docker,
             **smartcontractrunner_docker,
             **sifnodedrunner,
+        }
+    }))
+
+
+if component == "dockerconfig":
+    # TODO - need variable number of relayers
+    relayer1 = env_ebrelayer.relayer_docker_compose(1)
+    print(yaml.dump({
+        **shared_docker,
+        "services": {
+            **ganache_docker,
+            **geth_docker,
+            **smartcontractrunner_docker,
+            **sifnodedrunner,
+            **sampledockercompose,
+            **relayer1,
         }
     }))
 elif component == "geth":
@@ -164,7 +189,7 @@ elif component == "startsifnoded":
     sifnoded_chain_data = env_sifnoded.build_chain(sifnoded_input)
     print(f"build_chain result: \n{json.dumps(sifnoded_chain_data)}")
     env_sifnoded.run(sifnoded_input, sifnoded_chain_data)
-elif "relayer" in component:
+elif "ebrelayer" in component:
     f = config_file_full_path(env_smartcontractrunner.smartcontractrunner_name)
     smart_contract_config = env_utilities.read_config_file(f)
     print(f"smart contract config: {json.dumps(smart_contract_config, indent=2)}")
@@ -183,7 +208,8 @@ elif "relayer" in component:
             ethereum_address=smart_contract_config["input"]["validator_ethereum_credentials"][0][0],
             ethereum_private_key=smart_contract_config["input"]["validator_ethereum_credentials"][0][1],
             web3_provider="ws://ganache:7545",
-            tendermint_node="tcp://0.0.0.0:26657",
+            tendermint_node="tcp://sifnoded:26657",
+            rpc_url="tcp://sifnoded:26657",
             bridge_registry_address=bridge_registry_address,
             moniker=v["moniker"],
             mnemonic=v["mnemonic"],
@@ -194,7 +220,7 @@ elif "relayer" in component:
         )
         env_ebrelayer.run(x)
     time.sleep(10000)
-elif component == "tr":
+elif component == "print_test_environment":
     i = env_testrunner.build_testrunner_input(
         basedir=basedir,
         logfile=log_file_full_path(env_testrunner.testrunnername),
@@ -207,14 +233,16 @@ elif component == "tr":
     )
     j = env_testrunner.testrunner_config_contents(i)
     print(j)
-elif component == "sifnodekeys":
+elif component == "sifnodekeys":  # adds the validator keys to the current test keyring
     sifnodedconfig = env_utilities.read_config_file(config_file_full_path(env_sifnoded.sifnodename))["config"]
     env_sifnoded.recover_key(uuid4().hex, "test", sifnodedconfig["adminuser"]["mnemonic"])
     for v in sifnodedconfig["validators"]:
         env_sifnoded.recover_key(uuid4().hex, "test", v["mnemonic"])
+elif component == "sample":  # adds the validator keys to the current test keyring
+    env_sample.start_sample(sampleinput)
 
-# TODO
-# start ganache
-# start geth
-# start ebrelayer
-#
+
+modules = {
+    "dockerconfig": dockerconfig
+}
+

@@ -13,17 +13,17 @@ module.exports = function(deployer, network, accounts) {
   /*******************************************
    *** Input validation of contract params
    ******************************************/
-  if (process.env.CONSENSUS_THRESHOLD.length === 0) {
+  if (!process.env.CONSENSUS_THRESHOLD) {
     return console.error(
-      "Must provide consensus threshold as environment variable."
+      "Must provide CONSENSUS_THRESHOLD as environment variable."
     );
   }
-  if (process.env.OPERATOR.length === 0) {
+  if (!process.env.OPERATOR) {
     return console.error(
       "Must provide operator address as environment variable."
     );
   }
-  if (process.env.OWNER.length === 0) {
+  if (!process.env.OWNER) {
     return console.error(
       "Must provide owner address as environment variable."
     );

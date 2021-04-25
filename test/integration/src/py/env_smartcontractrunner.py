@@ -52,6 +52,7 @@ def deploy_contracts_cmd(args: SmartContractDeployInput):
     os.environ["ETHEREUM_PRIVATE_KEY"] = args.operator_private_key
     os.environ["ETHEREUM_WEBSOCKET_ADDRESS"] = args.ws_addr
     os.environ["ETHEREUM_NETWORK_ID"] = str(args.network_id)
+    os.environ["CONSENSUS_THRESHOLD"] = str(args.consensus_threshold)
     validator_addresses = ",".join(map(lambda x: x[0], args.validator_ethereum_credentials))
     valpowers = ",".join(map(lambda x: str(x), args.validator_powers))
     env_vars = " ".join([
@@ -70,6 +71,7 @@ def deploy_contracts_cmd(args: SmartContractDeployInput):
 
 def deploy_contracts(args: SmartContractDeployInput):
     cmd = deploy_contracts_cmd(args)
+    print(f"deploy_contracts_cmd: {cmd}")
     output = subprocess.run(
         cmd,
         shell=True,

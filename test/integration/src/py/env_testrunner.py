@@ -26,6 +26,7 @@ class TestrunnerInput(env_utilities.SifchainCmdInput):
     sifchain_admin_address: str
 
 
+# Builds a collection of all the values needed to run tests
 def build_testrunner_input(
         basedir: str,
         logfile: str,
@@ -60,6 +61,8 @@ def build_testrunner_input(
     pass
 
 
+# Writes out test values to an environment file for use with the
+# current python integration tests
 def testrunner_config_contents(args: TestrunnerInput):
     config = f"""
 export BASEDIR={args.basedir}

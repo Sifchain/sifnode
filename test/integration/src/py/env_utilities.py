@@ -32,7 +32,8 @@ def base_docker_compose(name: str):
         "../..:/sifnode",
         "./configs:/configs",
         "./logs:/logs",
-        "./gobin:/gobin"
+        "./gobin:/gobin",
+        "./gocache:/gocache",
     ]
     image = "sifdocker:latest"
     return {
@@ -86,7 +87,7 @@ def startup_complete(args, config):
 
 
 def docker_compose_command(component: str) -> str:
-    return f"""bash -c "PATH=${{PATH}}:/gobin python3 src/py/env_framework.py {component}" """
+    return f"""bash -c "PATH=${{PATH}}:/gobin python3 -u src/py/env_framework.py {component}" """
 
 
 def open_and_create_parent_dirs(f: str):

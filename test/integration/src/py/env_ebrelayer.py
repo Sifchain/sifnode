@@ -1,10 +1,5 @@
-import json
-import os
 import subprocess
-import tempfile
 from dataclasses import dataclass
-
-import yaml
 
 import env_utilities
 
@@ -16,7 +11,8 @@ class EbrelayerInput(env_utilities.SifchainCmdInput):
     ethereum_address: str
     ethereum_private_key: str
     web3_provider: str
-    tendermint_node: str # something like tcp://0.0.0.0:26657
+    tendermint_node: str  # something like tcp://0.0.0.0:26657
+    rpc_url: str
     bridge_registry_address: str
     moniker: str
     mnemonic: str
@@ -37,12 +33,25 @@ def ebrelayer_cmd(args: EbrelayerInput):
         args.bridge_registry_address,
         args.moniker,
         f"{quote}{args.mnemonic}{quote}",
+        f"--rpc-url {args.rpc_url}",
         f"--chain-id {args.chain_id}",
         f"--home {args.home_dir}",
         f"--gas {args.gas}",
         f"--gas-prices {args.gas_prices}",
     ])
     return cmd
+
+
+def relayer_docker_compose(i: int):
+    name = f"{ebrelayername}{i}"
+    base = env_utilities.base_docker_compose(name)
+    network = "sifchaintest"
+    return {
+        name: {
+            **base,
+            "networks": [network],
+        }
+    }
 
 
 def run(args: EbrelayerInput):
