@@ -1,7 +1,5 @@
 #!/bin/bash
 
-whoami
-
 killall sifnoded sifnodecli ebrelayer ganache-cli
 sleep 10
 
