@@ -14,7 +14,8 @@ sif1u7cp5e5kty8xwuu7k234ah4jsknvkzazqagvl6
 sif1lj3rsayj4xtrhp2e3elv4nf7lazxty272zqegr
 sif1cffgyxgvw80rr6n9pcwpzrm6v8cd6dax8x32f5
 sif1dlse3w2pxlmuvsj5eda344zp99fegual958qyr
-sif1m7257566ehx7ya4ypeq7lj4y2h075z6u2xu79v"
+sif1m7257566ehx7ya4ypeq7lj4y2h075z6u2xu79v
+sif1qrxylp97p25wcqn4cs9nd02v672073ynpkt4yr"
 
 for i in $test_wallets
 do
