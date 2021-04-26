@@ -21,6 +21,7 @@ class GethInput(env_ethereum.EthereumInput):
     http_port: int
     ws_port: int
     ethereum_addresses: int
+    ethereum_server: str
 
 
 def geth_cmd(args: env_ethereum.EthereumInput) -> str:
@@ -31,7 +32,9 @@ def geth_cmd(args: env_ethereum.EthereumInput) -> str:
         f"--ipcpath {ipcpath}",
         f"--ws --ws.addr 0.0.0.0 --ws.port {args.ws_port} --ws.api {apis}",
         f"--http --http.addr 0.0.0.0 --http.port {args.http_port} --http.api {apis}",
+        "--rpc.allow-unprotected-txs",
         "--dev --dev.period 1",
+        # "--dev",
         "--mine --miner.threads=1",
     ])
     return cmd
@@ -115,7 +118,10 @@ def start_geth(args: GethInput):
     print("got ports")
     new_accounts = create_initial_accounts(args.ethereum_addresses)
     fund_initial_accounts(map(lambda a: a[0], new_accounts), args.starting_ether)
-    env_utilities.startup_complete(args, format_new_accounts(new_accounts))
+    env_utilities.startup_complete(args, {
+        **format_new_accounts(new_accounts),
+        "ws_addr": f"ws://{args.ethereum_server}:{args.ws_port}"
+    })
     return proc
 
 

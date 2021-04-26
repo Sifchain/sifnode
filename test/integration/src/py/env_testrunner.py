@@ -9,6 +9,7 @@ from env_utilities import wait_for_port
 
 testrunnername="testrunner"
 
+
 @dataclass
 class TestrunnerInput(env_utilities.SifchainCmdInput):
     ebrelayer_config_file: str
@@ -58,7 +59,6 @@ def build_testrunner_input(
         infura_id=8,
         sifchain_admin_address=sifnode_config["config"]["adminuser"]["address"]
     )
-    pass
 
 
 # Writes out test values to an environment file for use with the
@@ -83,3 +83,16 @@ export SIFCHAIN_ADMIN_ACCOUNT={args.sifchain_admin_address}
 . $BASEDIR/test/integration/environment_setup.sh
     """
     return config
+
+
+def testrunner_docker_compose():
+    base = env_utilities.base_docker_compose(testrunnername)
+    network = "sifchaintest"
+    return {
+        testrunnername: {
+            **base,
+            "networks": [network],
+        }
+    }
+
+

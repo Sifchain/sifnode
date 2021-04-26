@@ -112,5 +112,6 @@ def wait_for_file(f: str):
 
 
 def read_config_file(f: str):
+    print(f"reading config file {f}")
     wait_for_file(f)
     return read_json_file(f)

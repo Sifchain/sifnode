@@ -51,14 +51,13 @@ def deploy_contracts_cmd(args: SmartContractDeployInput):
         os.environ[i] = args.operator_address
     os.environ["ETHEREUM_PRIVATE_KEY"] = args.operator_private_key
     os.environ["ETHEREUM_WEBSOCKET_ADDRESS"] = args.ws_addr
-    os.environ["ETHEREUM_NETWORK_ID"] = str(args.network_id)
     os.environ["CONSENSUS_THRESHOLD"] = str(args.consensus_threshold)
     validator_addresses = ",".join(map(lambda x: x[0], args.validator_ethereum_credentials))
     valpowers = ",".join(map(lambda x: str(x), args.validator_powers))
     env_vars = " ".join([
         f"INITIAL_VALIDATOR_ADDRESSES={validator_addresses}",
         f"INITIAL_VALIDATOR_POWERS={valpowers}",
-        f''
+        f"ETHEREUM_NETWORK_ID={args.network_id}",
     ])
     return f"cd {smart_contract_dir(args)} && {env_vars} npx truffle deploy --network {args.truffle_network} --reset"
 

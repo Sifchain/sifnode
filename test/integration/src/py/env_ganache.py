@@ -16,6 +16,7 @@ class GanacheInput(env_ethereum.EthereumInput):
     mnemonic: str
     port: int
     db_dir: str
+    ethereum_server: str
 
 
 def ganache_cmd(args: GanacheInput, keysfile) -> str:
