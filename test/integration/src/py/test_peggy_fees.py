@@ -25,7 +25,7 @@ def test_rescue_ceth(
     """
     basic_transfer_request.ethereum_address = source_ethereum_address
     admin_user_credentials = SifchaincliCredentials(
-        from_key="sifnodeadmin"
+        from_key=sifchain_admin_account
     )
     small_amount = 100
     test_account_request, test_account_credentials = generate_test_account(
@@ -81,13 +81,12 @@ def test_ceth_receiver_account(
         bridgetoken_address,
         validator_address,
         ethbridge_module_address,
+        sifchain_admin_account_credentials,
 ):
     admin_account = test_utilities.get_required_env_var("SIFCHAIN_ADMIN_ACCOUNT")
     ceth_rescue_account, ceth_rescue_account_credentials = integration_env_credentials.create_new_sifaddr_and_credentials()
     basic_transfer_request.sifchain_address = validator_address
-    admin_user_credentials = SifchaincliCredentials(
-        from_key="sifnodeadmin"
-    )
+    admin_user_credentials = sifchain_admin_account_credentials
     test_utilities.update_ceth_receiver_account(
         receiver_account=ceth_rescue_account,
         admin_account=admin_account,

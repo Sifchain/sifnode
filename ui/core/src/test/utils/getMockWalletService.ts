@@ -33,5 +33,6 @@ export function getMockWalletService(
       memo?: string,
     ) => {},
     onProviderNotFound: () => {},
+    onChainIdDetected: () => {},
   };
 }
