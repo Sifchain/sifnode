@@ -119,7 +119,8 @@ func (am AppModule) InitGenesis(ctx sdk.Context, data json.RawMessage) []abci.Va
 // ExportGenesis returns the exported genesis state as raw bytes for the oracle
 // module.
 func (am AppModule) ExportGenesis(ctx sdk.Context) json.RawMessage {
-	return nil
+	gs := ExportGenesis(ctx, am.keeper)
+	return am.keeper.Cdc.MustMarshalJSON(gs)
 }
 
 // BeginBlock returns the begin blocker for the oracle module.
