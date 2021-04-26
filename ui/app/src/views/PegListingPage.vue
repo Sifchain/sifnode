@@ -108,15 +108,11 @@ export default defineComponent({
               )
             : [];
 
-          // Is the asset from a supported network
-          const supported = getIsSupportedNetwork(asset);
-
           if (!amount) {
             return {
               amount: AssetAmount(asset, "0"),
               asset,
               pegTxs,
-              supported,
             };
           }
 
@@ -124,7 +120,6 @@ export default defineComponent({
             amount,
             asset,
             pegTxs,
-            supported,
           };
         });
 
@@ -140,9 +135,12 @@ export default defineComponent({
                 getUnpeggedSymbol(token.asset.symbol.toLowerCase()),
             )
           : [];
+        // Is the asset from a supported network
+        const supported = getIsSupportedNetwork(token.asset);
         return {
           asset: token.asset,
           amount: token.amount,
+          supported,
           pegTxs,
         };
       });
