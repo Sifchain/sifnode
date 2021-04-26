@@ -59,7 +59,7 @@ def deploy_contracts_cmd(args: SmartContractDeployInput):
         f"INITIAL_VALIDATOR_POWERS={valpowers}",
         f"ETHEREUM_NETWORK_ID={args.network_id}",
     ])
-    return f"cd {smart_contract_dir(args)} && {env_vars} npx truffle deploy --network {args.truffle_network} --reset"
+    return f"cd {smart_contract_dir(args)} && yarn && {env_vars} npx truffle deploy --network {args.truffle_network} --reset"
 
 
 # def read_smart_contract_artifacts(args: SmartContractDeployInput):
