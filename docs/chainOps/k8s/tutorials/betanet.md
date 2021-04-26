@@ -4,7 +4,13 @@
 
 1. Switch to the root of the sifchain project.
 
-2. Scaffold a new cluster:
+2. import gotpl module
+
+```
+go get github.com/belitre/gotpl
+```
+
+3. Scaffold a new cluster:
 
 ```
 rake "cluster:scaffold[<cluster>,<provider>]"
@@ -23,9 +29,9 @@ where:
 |`<cluster>`|A name for your new cluster.|
 |`<provider>`|The cloud provider to use (currently only AWS is supported).|
 
-3. Once complete, you'll notice that several Terraform files/folders have been setup inside of the `.live` directory. We recommend you leave the defaults as-is, but for those that have experience with Terraform, feel free to adjust the configuration as you see fit.
+4. Once complete, you'll notice that several Terraform files/folders have been setup inside of the `.live` directory. We recommend you leave the defaults as-is, but for those that have experience with Terraform, feel free to adjust the configuration as you see fit.
 
-4. Deploy the cluster to AWS:
+5. Deploy the cluster to AWS:
 
 ```
 rake "cluster:deploy[<cluster>,<provider>]"
@@ -37,10 +43,19 @@ e.g.:
 rake "cluster:deploy[my-cluster,aws]"
 ```
 
-5. Once complete, you should see your cluster on your AWS account. You can also check using `kubectl`:
+6. Once complete, you should see your cluster on your AWS account. You can also check using `kubectl`:
 
 ```
 kubectl get pods --all-namespaces --kubeconfig ./.live/sifchain-aws-my-cluster/kubeconfig_sifchain-aws-my-cluster
+```
+
+Note: if you get 
+```
+Unable to connect to the server: getting credentials: exec: exec: "aws-iam-authenticator": executable file not found in $PATH
+```
+Install aws-iam-authenticator from
+```
+https://docs.aws.amazon.com/eks/latest/userguide/install-aws-iam-authenticator.html
 ```
 
 ## Deploy a new node
@@ -50,6 +65,15 @@ kubectl get pods --all-namespaces --kubeconfig ./.live/sifchain-aws-my-cluster/k
 ```
 rake "keys:generate:mnemonic"
 ```
+
+Note: if you get _rake abort!_ error
+
+run these commands
+```
+export GOPATH=~/go
+export PATH=$PATH:$GOPATH/bin
+```
+
 
 2. Import your newly generated key:
 
@@ -147,28 +171,49 @@ e.g.:
 ```
 rake "validator:keys:public[my-cluster,aws,sifnode]"
 ```
+Note: This requires jq JSON processor if not installed install with ```sudo apt-get install jq```
 
-3. Stake:
+3. Run the following command to become a validator:
 
+sifnodecli tx staking create-validator \
+    --commission-max-change-rate="0.1" \
+    --commission-max-rate="0.1" \
+    --commission-rate="0.1" \
+    --amount="<amount>" \
+    --pubkey=<pub_key> \
+    --moniker=<moniker> \
+    --chain-id=sifchain \
+    --min-self-delegation="1" \
+    --gas-prices="0.5rowan" \
+    --from=<moniker> \
+    --keyring-backend=file \
+    --node tcp://rpc.sifchain.finance:80
 ```
-rake "validator:stake[<chain_id>,<moniker>,<amount>,<gas>,<public_key>,<node_rpc_address>]"
-```
 
-where:
+Where:
 
 |Param|Description|
 |-----|----------|
-|`<chain_id>`|The Chain ID of the network (e.g.: sifchain).|
-|`<moniker>`|The moniker or name of your node as you want it to appear on the network.|
-|`<amount>`|The amount to stake, including the denomination (e.g.: 100000000rowan). The precision used is 1e18.|
-|`<gas>`|The gas price (e.g.: 0.5rowan).|
-|`<public_key>`|The public key of your validator (you got this in the previous step).|
-|`<node_rpc_address>`|The address to broadcast the transaction to (e.g.: tcp://rpc.sifchain.finance:80).|
+|`<amount>`|The amount of rowan you wish to stake (the more the better). The precision used is 1e18.|
+|`<pub_key>`|The public key of your node, that you got in the previous step.|
+|`<moniker>`|The moniker (name) of your node.|
 
 e.g.:
 
 ```
-rake "validator:stake[sifchain,my-node,10000000rowan,0.5rowan,<public_key>,tcp://rpc.sifchain.finance:80]"
+sifnodecli tx staking create-validator \
+    --commission-max-change-rate="0.1" \
+    --commission-max-rate="0.1" \
+    --commission-rate="0.1" \
+    --amount="1000000000000000000000rowan" \
+    --pubkey=thepublickeyofyournode \
+    --moniker=my-node \
+    --chain-id=sifchain \
+    --min-self-delegation="1" \
+    --gas-prices="0.5rowan" \
+    --from=my-node \
+    --keyring-backend=file \
+    --node tcp://rpc.sifchain.finance:80
 ```
 
 4. It may take several blocks before your node appears as a validator on the network, but you can always check by running:
