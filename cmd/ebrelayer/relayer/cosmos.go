@@ -41,14 +41,15 @@ const errorMessageKey = "errorMessage"
 type CosmosSub struct {
 	TmProvider              string
 	EthProvider             string
-	RegistryContractAddress common.Address
 	PrivateKey              *ecdsa.PrivateKey
 	DB                      *leveldb.DB
 	SugaredLogger           *zap.SugaredLogger
+	NetworkDescriptor       uint32
+	RegistryContractAddress common.Address
 }
 
 // NewCosmosSub initializes a new CosmosSub
-func NewCosmosSub(tmProvider, ethProvider string, registryContractAddress common.Address,
+func NewCosmosSub(networkDescriptor uint32, tmProvider, ethProvider string, registryContractAddress common.Address,
 	privateKey *ecdsa.PrivateKey, db *leveldb.DB, sugaredLogger *zap.SugaredLogger) CosmosSub {
 	return CosmosSub{
 		TmProvider:              tmProvider,
@@ -56,6 +57,7 @@ func NewCosmosSub(tmProvider, ethProvider string, registryContractAddress common
 		RegistryContractAddress: registryContractAddress,
 		PrivateKey:              privateKey,
 		DB:                      db,
+		NetworkDescriptor:       networkDescriptor,
 		SugaredLogger:           sugaredLogger,
 	}
 }
@@ -157,13 +159,15 @@ func (sub CosmosSub) Start(completionEvent *sync.WaitGroup) {
 
 						switch claimType {
 						case types.MsgBurn, types.MsgLock:
-							cosmosMsg, err := txs.BurnLockEventToCosmosMsg(claimType, event.GetAttributes(), sub.SugaredLogger)
+							cosmosMsg, networkDescriptor, err := txs.BurnLockEventToCosmosMsg(claimType, event.GetAttributes(), sub.SugaredLogger)
 							if err != nil {
 								sub.SugaredLogger.Errorw("sifchain client failed in get message from event.",
 									errorMessageKey, err.Error())
 								continue
 							}
-							sub.handleBurnLockMsg(cosmosMsg, claimType)
+							if networkDescriptor == sub.NetworkDescriptor {
+								sub.handleBurnLockMsg(cosmosMsg, claimType)
+							}
 						}
 					}
 				}
@@ -335,17 +339,19 @@ func (sub CosmosSub) Replay(fromBlock int64, toBlock int64, ethFromBlock int64, 
 				case types.MsgBurn, types.MsgLock:
 					log.Println("found out a lock burn message")
 
-					cosmosMsg, err := txs.BurnLockEventToCosmosMsg(claimType, event.GetAttributes(), sub.SugaredLogger)
+					cosmosMsg, networkDescriptor, err := txs.BurnLockEventToCosmosMsg(claimType, event.GetAttributes(), sub.SugaredLogger)
 					if err != nil {
 						log.Println(err)
 						continue
 					}
 					log.Printf("found out a lock burn message%s\n", cosmosMsg.String())
 
-					if !MessageProcessed(cosmosMsg, ProphecyClaims) {
-						sub.handleBurnLockMsg(cosmosMsg, claimType)
-					} else {
-						log.Println("lock burn message already processed by me")
+					if networkDescriptor == sub.NetworkDescriptor {
+						if !MessageProcessed(cosmosMsg, ProphecyClaims) {
+							sub.handleBurnLockMsg(cosmosMsg, claimType)
+						} else {
+							log.Println("lock burn message already processed by me")
+						}
 					}
 				}
 			}

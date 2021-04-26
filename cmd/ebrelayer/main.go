@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/url"
 	"os"
+	"strconv"
 	"strings"
 	"sync"
 
@@ -86,10 +87,10 @@ var rootCmd = &cobra.Command{
 func initRelayerCmd() *cobra.Command {
 	//nolint:lll
 	initRelayerCmd := &cobra.Command{
-		Use:     "init [tendermintNode] [web3Provider] [bridgeRegistryContractAddress] [validatorMoniker] [validatorMnemonic]",
+		Use:     "init [networkDescriptor] [tendermintNode] [web3Provider] [bridgeRegistryContractAddress] [validatorMoniker] [validatorMnemonic]",
 		Short:   "Validate credentials and initialize subscriptions to both chains",
-		Args:    cobra.ExactArgs(5),
-		Example: "ebrelayer init tcp://localhost:26657 ws://localhost:7545/ 0x30753E4A8aad7F8597332E813735Def5dD395028 validator mnemonic --chain-id=peggy",
+		Args:    cobra.ExactArgs(6),
+		Example: "ebrelayer init 1 tcp://localhost:26657 ws://localhost:7545/ 0x30753E4A8aad7F8597332E813735Def5dD395028 validator mnemonic --chain-id=peggy",
 		RunE:    RunInitRelayerCmd,
 	}
 
@@ -143,27 +144,32 @@ func RunInitRelayerCmd(cmd *cobra.Command, args []string) error {
 		}
 	}
 
+	networkDescriptor, err := strconv.Atoi(args[0])
+	if err != nil {
+		return errors.Errorf("%s is invalid network descriptor", args[0])
+	}
+
 	// Validate and parse arguments
-	if len(strings.Trim(args[0], "")) == 0 {
-		return errors.Errorf("invalid [tendermint-node]: %s", args[0])
+	if len(strings.Trim(args[1], "")) == 0 {
+		return errors.Errorf("invalid [tendermint-node]: %s", args[1])
 	}
-	tendermintNode := args[0]
+	tendermintNode := args[1]
 
-	if !relayer.IsWebsocketURL(args[1]) {
-		return errors.Errorf("invalid [web3-provider]: %s", args[1])
+	if !relayer.IsWebsocketURL(args[2]) {
+		return errors.Errorf("invalid [web3-provider]: %s", args[2])
 	}
-	web3Provider := args[1]
+	web3Provider := args[2]
 
-	if !common.IsHexAddress(args[2]) {
-		return errors.Errorf("invalid [bridge-registry-contract-address]: %s", args[2])
+	if !common.IsHexAddress(args[3]) {
+		return errors.Errorf("invalid [bridge-registry-contract-address]: %s", args[3])
 	}
-	contractAddress := common.HexToAddress(args[2])
+	contractAddress := common.HexToAddress(args[3])
 
-	if len(strings.Trim(args[3], "")) == 0 {
-		return errors.Errorf("invalid [validator-moniker]: %s", args[3])
+	if len(strings.Trim(args[4], "")) == 0 {
+		return errors.Errorf("invalid [validator-moniker]: %s", args[4])
 	}
-	validatorMoniker := args[3]
-	mnemonic := args[4]
+	validatorMoniker := args[4]
+	mnemonic := args[5]
 
 	logConfig := zap.NewDevelopmentConfig()
 	logConfig.Sampling = nil
@@ -189,7 +195,7 @@ func RunInitRelayerCmd(cmd *cobra.Command, args []string) error {
 		return err
 	}
 	// Initialize new Cosmos event listener
-	cosmosSub := relayer.NewCosmosSub(tendermintNode, web3Provider, contractAddress, privateKey, db, sugaredLogger)
+	cosmosSub := relayer.NewCosmosSub(uint32(networkDescriptor), tendermintNode, web3Provider, contractAddress, privateKey, db, sugaredLogger)
 
 	waitForAll := sync.WaitGroup{}
 	waitForAll.Add(2)
