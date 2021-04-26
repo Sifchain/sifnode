@@ -9,7 +9,9 @@ The transaction is priviledged, and only the admin account can set it.
 The admin account is the same account that updates the white list validators. The command is as follows:
 
 1. command format
-sifnodecli tx ethbridge update_ceth_receiver_account [cosmos-sender] [ceth-receiver-account]
+```
+sifnodecli tx ethbridge update_ceth_receiver_account $clp_admin_address $ceth-receiver-account
+```
 
 2. command example
 sifnodecli tx ethbridge update_ceth_receiver_account sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd --from=sif --yes
@@ -20,7 +22,9 @@ Similar to the account setting method, the transaction is priviledged and only t
 It will transfer the cEth from ethbridge module to an specific account.
 
 1. command format
-sifnodecli tx ethbridge rescue_ceth [cosmos-sender-address] [ceth_receiver_account] [ceth_amount]
+```
+sifnodecli tx ethbridge rescue_ceth $clp_admin_address $ceth-receiver-account $ceth_amount
+```
 
 2. command example
 sifnodecli tx ethbridge rescue_ceth sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd  10000000 --from=sif --yes
