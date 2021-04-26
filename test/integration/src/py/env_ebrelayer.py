@@ -1,6 +1,6 @@
 import subprocess
 from dataclasses import dataclass
-
+import re
 import env_utilities
 
 ebrelayername = "ebrelayer"
@@ -24,9 +24,11 @@ class EbrelayerInput(env_utilities.SifchainCmdInput):
 
 def ebrelayer_cmd(args: EbrelayerInput):
     quote = "\""
+    # ebrelayer wants private keys without a leading 0x
+    pk = re.sub(r"0x", "", args.ethereum_private_key)
     cmd = " ".join([
         "cd ~ &&",
-        f"ETHEREUM_PRIVATE_KEY={args.ethereum_private_key}",
+        f"ETHEREUM_PRIVATE_KEY={pk}",
         "ebrelayer init",
         args.tendermint_node,
         args.web3_provider,

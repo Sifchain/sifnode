@@ -146,6 +146,7 @@ shared_docker = {
 def run_dockerconfig():
     # TODO - need variable number of relayers
     relayer1 = env_ebrelayer.relayer_docker_compose(1)
+    relayer2 = env_ebrelayer.relayer_docker_compose(2)
     print(yaml.dump({
         **shared_docker,
         "services": {
@@ -155,6 +156,7 @@ def run_dockerconfig():
             **sifnodedrunner,
             **sampledockercompose,
             **relayer1,
+            **relayer2,
             **testrunnerdockercompose,
         }
     }))
