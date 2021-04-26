@@ -2,6 +2,7 @@ syntax = "proto3";
 package sifnode.dispensation.v1;
 
 import "gogoproto/gogo.proto";
+import "cosmos/base/coin.proto";
 
 option go_package = "github.com/Sifchain/sifnode/x/dispensation/types";
 
@@ -32,7 +33,8 @@ message DistributionRecord {
   ClaimStatus claim_status                = 1;
   string distribution_name                = 2;
   string recipient_address                = 3;
-  repeated string coins = 4 [
+  repeated cosmos.base.v1beta1.Coin coins = 4 [
+    (gogoproto.nullable)     = false,
     (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins",
     (gogoproto.moretags)     = "yaml:\"coins\""
   ];
