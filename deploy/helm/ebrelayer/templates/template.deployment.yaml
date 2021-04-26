@@ -1,9 +1,9 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "ebrelayer.fullname" . }}
+  name: {{ include "-=app_name=-.fullname" . }}
   labels:
-    {{- include "ebrelayer.labels" . | nindent 4 }}
+    {{- include "-=app_name=-.labels" . | nindent 4 }}
 spec:
 {{- if not .Values.autoscaling.enabled }}
   replicas: {{ .Values.replicaCount }}
@@ -12,7 +12,7 @@ spec:
     type: {{ .Values.strategyType }}
   selector:
     matchLabels:
-      {{- include "ebrelayer.selectorLabels" . | nindent 6 }}
+      {{- include "-=app_name=-.selectorLabels" . | nindent 6 }}
   template:
     metadata:
     {{- with .Values.podAnnotations }}
@@ -20,9 +20,9 @@ spec:
         {{- toYaml . | nindent 8 }}
     {{- end }}
       labels:
-        {{- include "ebrelayer.selectorLabels" . | nindent 8 }}
+        {{- include "-=app_name=-.selectorLabels" . | nindent 8 }}
     spec:
-      serviceAccountName: {{ include "ebrelayer.serviceAccountName" . }}
+      serviceAccountName: {{ include "-=app_name=-.serviceAccountName" . }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       containers:
@@ -31,7 +31,7 @@ spec:
             {{- toYaml .Values.securityContext | nindent 12 }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           env:
-          {{- range $key, $val := .Values.ebrelayer.env }}
+          {{- range $key, $val := .Values.-=app_name=-.env }}
             - name: {{ $key }}
               value: {{ $val | quote }}
           {{- end }}
@@ -47,7 +47,7 @@ spec:
       - name: data
       {{- if and .Values.persistence.enabled (not .Values.persistence.hostPath) }}
         persistentVolumeClaim:
-          claimName: {{ if .Values.persistence.existingClaim }}{{ .Values.persistence.existingClaim }}{{- else }}{{ template "ebrelayer.fullname" . }}{{- end }}
+          claimName: {{ if .Values.persistence.existingClaim }}{{ .Values.persistence.existingClaim }}{{- else }}{{ template "-=app_name=-.fullname" . }}{{- end }}
         {{- else if and .Values.persistence.enabled .Values.persistence.hostPath }}
         hostPath:
           path: {{ .Values.persistence.hostPath }}
