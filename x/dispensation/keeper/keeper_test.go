@@ -32,7 +32,7 @@ func TestKeeper_GetRecordsForName(t *testing.T) {
 	outList := test.GenerateOutputList("1000000000")
 	name := uuid.New().String()
 	for _, rec := range outList {
-		record := types.NewDistributionRecord(name, rec.Address, rec.Coins, sdk.NewInt(ctx.BlockHeight()), sdk.NewInt(-1))
+		record := types.NewDistributionRecord(name, rec.Address, rec.Coins, ctx.BlockHeight(), int64(-1))
 		err := keeper.SetDistributionRecord(ctx, record)
 		assert.NoError(t, err)
 		_, err = keeper.GetDistributionRecord(ctx, name, rec.Address)
@@ -48,7 +48,7 @@ func TestKeeper_GetRecordsForRecipient(t *testing.T) {
 	outList := test.GenerateOutputList("1000000000")
 	name := uuid.New().String()
 	for _, rec := range outList {
-		record := types.NewDistributionRecord(name, rec.Address, rec.Coins, sdk.NewInt(ctx.BlockHeight()), sdk.NewInt(-1))
+		record := types.NewDistributionRecord(name, rec.Address, rec.Coins, ctx.BlockHeight(), int64(-1))
 		err := keeper.SetDistributionRecord(ctx, record)
 		assert.NoError(t, err)
 		_, err = keeper.GetDistributionRecord(ctx, name, rec.Address)

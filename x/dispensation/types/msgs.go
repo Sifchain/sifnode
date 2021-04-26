@@ -32,7 +32,8 @@ func (m MsgDistribution) Type() string {
 }
 
 func (m MsgDistribution) ValidateBasic() error {
-	if m.Signer == "" {
+	_, err := sdk.AccAddressFromBech32(m.Signer)
+	if err != nil {
 		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, m.Signer)
 	}
 
@@ -40,7 +41,7 @@ func (m MsgDistribution) ValidateBasic() error {
 		return sdkerrors.Wrap(ErrInvalid, "Name cannot be empty")
 	}
 
-	err := types.ValidateInputsOutputs(m.Input, m.Output)
+	err = types.ValidateInputsOutputs(m.Input, m.Output)
 	if err != nil {
 		return err
 	}

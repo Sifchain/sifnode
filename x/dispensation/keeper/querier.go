@@ -36,9 +36,9 @@ func queryDistributionRecordsForName(ctx sdk.Context, req abci.RequestQuery, kee
 	}
 	records := new(types.DistributionRecords)
 	switch params.Status {
-	case sdk.NewUint(1):
+	case types.ClaimStatus_CLAIM_STATUS_PENDING:
 		*records = keeper.GetRecordsForNamePending(ctx, params.DistributionName)
-	case sdk.NewUint(2):
+	case types.ClaimStatus_CLAIM_STATUS_COMPLETED:
 		*records = keeper.GetRecordsForNameCompleted(ctx, params.DistributionName)
 	default:
 		*records = keeper.GetRecordsForNameAll(ctx, params.DistributionName)
@@ -57,7 +57,10 @@ func queryDistributionRecordsForRecipient(ctx sdk.Context, req abci.RequestQuery
 	if err != nil {
 		return nil, sdkerrors.Wrap(sdkerrors.ErrJSONUnmarshal, err.Error())
 	}
-	addr, _ := sdk.AccAddressFromBech32(params.Address)
+	addr, err := sdk.AccAddressFromBech32(params.Address)
+	if err != nil {
+		return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, err.Error())
+	}
 	records := keeper.GetRecordsForRecipient(ctx, addr)
 	res, err := types.ModuleCdc.MarshalJSON(records)
 	if err != nil {

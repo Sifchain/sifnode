@@ -79,7 +79,7 @@ func GetCmdDistributionRecordForRecipient(queryRoute string) *cobra.Command {
 			}
 			var drs types.DistributionRecords
 			types.ModuleCdc.MustUnmarshalJSON(res, &drs)
-			out := types.NewDistributionRecordsResponse(drs, sdk.NewInt(height))
+			out := types.NewDistributionRecordsResponse(drs, height)
 			return clientCtx.PrintProto(&out)
 		},
 	}
@@ -97,7 +97,7 @@ func GetCmdDistributionRecordForDistNameAll(queryRoute string) *cobra.Command {
 				return err
 			}
 			name := args[0]
-			params := types.NewQueryRecordsByDistributionName(name, sdk.NewUint(2))
+			params := types.NewQueryRecordsByDistributionName(name, types.ClaimStatus_CLAIM_STATUS_UNSPECIFIED)
 			bz, err := clientCtx.LegacyAmino.MarshalJSON(params)
 			if err != nil {
 				return err
@@ -109,7 +109,7 @@ func GetCmdDistributionRecordForDistNameAll(queryRoute string) *cobra.Command {
 			}
 			var drs types.DistributionRecords
 			types.ModuleCdc.MustUnmarshalJSON(res, &drs)
-			out := types.NewDistributionRecordsResponse(drs, sdk.NewInt(height))
+			out := types.NewDistributionRecordsResponse(drs, height)
 			return clientCtx.PrintProto(&out)
 		},
 	}
@@ -127,7 +127,7 @@ func GetCmdDistributionRecordForDistNamePending(queryRoute string) *cobra.Comman
 				return err
 			}
 			name := args[0]
-			params := types.NewQueryRecordsByDistributionName(name, sdk.NewUint(1))
+			params := types.NewQueryRecordsByDistributionName(name, types.ClaimStatus_CLAIM_STATUS_PENDING)
 			bz, err := clientCtx.LegacyAmino.MarshalJSON(params)
 			if err != nil {
 				return err
@@ -139,7 +139,7 @@ func GetCmdDistributionRecordForDistNamePending(queryRoute string) *cobra.Comman
 			}
 			var drs types.DistributionRecords
 			types.ModuleCdc.MustUnmarshalJSON(res, &drs)
-			out := types.NewDistributionRecordsResponse(drs, sdk.NewInt(height))
+			out := types.NewDistributionRecordsResponse(drs, height)
 			return clientCtx.PrintProto(&out)
 		},
 	}
@@ -157,7 +157,7 @@ func GetCmdDistributionRecordForDistNameCompleted(queryRoute string) *cobra.Comm
 				return err
 			}
 			name := args[0]
-			params := types.NewQueryRecordsByDistributionName(name, sdk.NewUint(2))
+			params := types.NewQueryRecordsByDistributionName(name, types.ClaimStatus_CLAIM_STATUS_COMPLETED)
 			bz, err := clientCtx.LegacyAmino.MarshalJSON(params)
 			if err != nil {
 				return err
@@ -169,7 +169,7 @@ func GetCmdDistributionRecordForDistNameCompleted(queryRoute string) *cobra.Comm
 			}
 			var drs types.DistributionRecords
 			types.ModuleCdc.MustUnmarshalJSON(res, &drs)
-			out := types.NewDistributionRecordsResponse(drs, sdk.NewInt(height))
+			out := types.NewDistributionRecordsResponse(drs, height)
 			return clientCtx.PrintProto(&out)
 		},
 	}
