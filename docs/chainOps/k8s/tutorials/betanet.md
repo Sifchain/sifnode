@@ -180,7 +180,7 @@ rake "validator:keys:public[my-cluster,aws,sifnode]"
 Note: This requires jq JSON processor if not installed install with ```sudo apt-get install jq```
 
 3. Run the following command to become a validator:
-
+```
 sifnodecli tx staking create-validator \
     --commission-max-change-rate="0.1" \
     --commission-max-rate="0.1" \
