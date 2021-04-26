@@ -4,6 +4,7 @@ import { Address, IAssetAmount } from "../entities";
 
 export type WalletStore = {
   eth: {
+    chainId?: string;
     balances: IAssetAmount[];
     isConnected: boolean;
     address: Address;

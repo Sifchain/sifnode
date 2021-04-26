@@ -137,7 +137,8 @@ export default defineComponent({
     margin-right: 0.5em;
   }
 
-  &:disabled {
+  &:disabled,
+  &[disabled="true"] {
     cursor: none;
     pointer-events: none;
     background: $c_gray_400 !important;
