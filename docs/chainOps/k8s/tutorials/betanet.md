@@ -154,6 +154,12 @@ e.g.:
 kubectl -n sifnode logs sifnode-65fbd7798f-6wqhb --kubeconfig ./.live/sifchain-aws-my-cluster/kubeconfig_sifchain-aws-my-cluster
 ```
 
+Note: Before moving to further steps make sure that your node is synced upto the current block height. 
+You can check this by comparing your logs from above command with the block height from
+```
+https://blockexplorer.sifchain.finance/blocks
+```
+
 ## Stake to become a validator
 
 In order to become a validator, that is a node which can participate in consensus on the network, you'll need to stake `rowan`.
