@@ -690,30 +690,30 @@ metadata:
                     workflow_id = child["id"]
                     response = RestClient.get "https://api.github.com/repos/Sifchain/sifnode/actions/workflows/#{workflow_id}/runs", headers
                     json_response_job_object = JSON.parse response.body
-                    json_response_job_object["workflow_runs"].each do |job|
-                        if job["head_branch"] == find_release
-                            puts "Release Job: #{job["head_branch"]} finished with state: #{job["status"]}"
-                            if job["status"].include?("completed")
-                                puts job["head_branch"]
-                                puts job["status"]
-                                puts job["conclusion"]
-                                job_succeeded = true
-                                break
-                            else
-                                puts job["head_branch"]
-                                puts job["status"]
-                                puts job["conclusion"]
-                            end
+                    job = json_response_job_object["workflow_runs"].first()
+                    if job["head_branch"] == find_release
+                        puts "Release Job: #{job["head_branch"]} finished with state: #{job["status"]}"
+                        puts job
+                        if job["status"].include?("completed")
+                            puts job["head_branch"]
+                            puts job["status"]
+                            puts job["conclusion"]
+                            job_succeeded = true
+                            break
+                        else
+                            puts job["head_branch"]
+                            puts job["status"]
+                            puts job["conclusion"]
                         end
                     end
-                 end
+                end
             end
             loop_count += 1
             puts loop_count
             puts "On Loop #{loop_count} of #{max_loops}"
             if loop_count >= max_loops
                 puts "Reached Max Loops"
-                break
+                exit 1
             end
             sleep(60)
         end
