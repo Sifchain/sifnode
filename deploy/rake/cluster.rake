@@ -753,10 +753,11 @@ metadata:
         require 'json'
 
         puts "Looking for the Release Handler"
-        release_search = "release-#{args[:release_version]}"
+        release_search = "#{args[:release_version]}"
         setupHandlers = File.read("app/setupHandlers.go").strip
         setupHandlers.include?(release_search) ? (puts 'Found') : (exit 1)
 
+        release_version = "#{args[:app_env]}-#{args[:release_version]}"
         puts "Calculating Upgrade Block Height"
         if "#{args[:app_env]}" == "mainnet"
             puts "Mainnet"
@@ -796,13 +797,13 @@ metadata:
         puts "Sha found #{sha_token}"
 
         if "#{args[:app_env]}" == "mainnet"
-            governance_request = %Q{ yes "${keyring_passphrase}" | go run ./cmd/sifnodecli tx gov submit-proposal software-upgrade release-#{args[:release_version]} \
+            governance_request = %Q{ yes "${keyring_passphrase}" | go run ./cmd/sifnodecli tx gov submit-proposal software-upgrade #{args[:app_env]}-#{args[:release_version]} \
                 --from #{args[:from]} \
                 --deposit #{args[:deposit]} \
                 --upgrade-height #{block_height} \
                 --info '{"binaries":{"linux/amd64":"https://github.com/Sifchain/sifnode/releases/download/mainnet-#{args[:release_version]}/sifnoded-#{args[:app_env]}-#{args[:release_version]}-linux-amd64.zip?checksum='#{sha_token}'"}}' \
-                --title release-#{args[:release_version]} \
-                --description release-#{args[:release_version]} \
+                --title #{args[:app_env]}-#{args[:release_version]} \
+                --description #{args[:app_env]}-#{args[:release_version]} \
                 --node tcp://rpc.sifchain.finance:80 \
                 --keyring-backend test \
                 -y \
@@ -811,13 +812,13 @@ metadata:
                 sleep 60 }
             system(governance_request) or exit 1
         elsif "#{args[:app_env]}" == "betanet"
-            governance_request = %Q{ yes "${keyring_passphrase}" | go run ./cmd/sifnodecli tx gov submit-proposal software-upgrade release-#{args[:release_version]} \
+            governance_request = %Q{ yes "${keyring_passphrase}" | go run ./cmd/sifnodecli tx gov submit-proposal software-upgrade #{args[:app_env]}-#{args[:release_version]} \
                 --from #{args[:from]} \
                 --deposit #{args[:deposit]} \
                 --upgrade-height #{block_height} \
                 --info '{"binaries":{"linux/amd64":"https://github.com/Sifchain/sifnode/releases/download/mainnet-#{args[:release_version]}/sifnoded-#{args[:app_env]}-#{args[:release_version]}-linux-amd64.zip?checksum='#{sha_token}'"}}' \
-                --title release-#{args[:release_version]} \
-                --description release-#{args[:release_version]} \
+                --title #{args[:app_env]}-#{args[:release_version]} \
+                --description #{args[:app_env]}-#{args[:release_version]} \
                 --node tcp://rpc.sifchain.finance:80 \
                 --keyring-backend test \
                 -y \
@@ -827,13 +828,13 @@ metadata:
             system(governance_request) or exit 1
         else
             puts "create dev net gov request #{sha_token}"
-            governance_request = %Q{ yes "${keyring_passphrase}" | go run ./cmd/sifnodecli tx gov submit-proposal software-upgrade release-#{args[:release_version]} \
+            governance_request = %Q{ yes "${keyring_passphrase}" | go run ./cmd/sifnodecli tx gov submit-proposal software-upgrade #{args[:app_env]}-#{args[:release_version]} \
                 --from #{args[:from]} \
                 --deposit #{args[:deposit]} \
                 --upgrade-height #{block_height} \
                 --info '{"binaries":{"linux/amd64":"https://github.com/Sifchain/sifnode/releases/download/#{args[:app_env]}-#{args[:release_version]}/sifnoded-#{args[:app_env]}-#{args[:release_version]}-linux-amd64.zip?checksum='#{sha_token}'"}}' \
-                --title release-#{args[:release_version]} \
-                --description release-#{args[:release_version]} \
+                --title #{args[:app_env]}-#{args[:release_version]} \
+                --description #{args[:app_env]}-#{args[:release_version]} \
                 --node tcp://rpc-#{args[:app_env]}.sifchain.finance:80 \
                 --keyring-backend test \
                 -y \
