@@ -34,7 +34,7 @@ def geth_cmd(args: env_ethereum.EthereumInput) -> str:
         f"--http --http.addr 0.0.0.0 --http.port {args.http_port} --http.api {apis}",
         "--rpc.allow-unprotected-txs",
         "--dev --dev.period 1",
-        # "--dev",
+        "--rpcvhosts=*",
         "--mine --miner.threads=1",
     ])
     return cmd

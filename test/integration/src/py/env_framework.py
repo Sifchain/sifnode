@@ -156,7 +156,7 @@ def run_dockerconfig():
             **sifnodedrunner,
             **sampledockercompose,
             **relayer1,
-            **relayer2,
+            # **relayer2,
             **testrunnerdockercompose,
         }
     }))
@@ -204,8 +204,8 @@ def run_startsifnoded():
 
 
 def run_ebrelayer(i: int):
-    f = config_file_full_path(env_smartcontractrunner.smartcontractrunner_name)
-    smart_contract_config = env_utilities.read_config_file(f)
+    ethereum_config = env_utilities.read_config_file(config_file_full_path("ethereum"))
+    smart_contract_config = env_utilities.read_config_file(config_file_full_path(env_smartcontractrunner.smartcontractrunner_name))
     print(f"smart contract config: {json.dumps(smart_contract_config, indent=2)}")
     sifnodedconfig = env_utilities.read_config_file(config_file_full_path(env_sifnoded.sifnodename))["config"]
     bridge_registry_address = env_smartcontractrunner.contract_address(
@@ -213,29 +213,26 @@ def run_ebrelayer(i: int):
         "BridgeRegistry",
         smart_contract_config["input"]["network_id"]
     )
-    for v in sifnodedconfig["validators"]:
-        print(f"sifnode validator:\n{json.dumps(v, indent=2)}")
-        web3provider = "ws://ganache:7545"
-        web3provider = "ws://geth:8646"
-        x = env_ebrelayer.EbrelayerInput(
-            basedir=basedir,
-            logfile=log_file_full_path(env_ebrelayer.ebrelayername),
-            configoutputfile=config_file_full_path(env_ebrelayer.ebrelayername),
-            ethereum_address=smart_contract_config["input"]["validator_ethereum_credentials"][0][0],
-            ethereum_private_key=smart_contract_config["input"]["validator_ethereum_credentials"][0][1],
-            web3_provider=web3provider,
-            tendermint_node="tcp://sifnoded:26657",
-            rpc_url="tcp://sifnoded:26657",
-            bridge_registry_address=bridge_registry_address,
-            moniker=v["moniker"],
-            mnemonic=v["mnemonic"],
-            chain_id=deployment_name,
-            home_dir=v["sifnodeclipath"],
-            gas="5000000000000",
-            gas_prices="0.5rowan",
-        )
-        env_ebrelayer.run(x)
-    time.sleep(10000)
+    v = sifnodedconfig["validators"][i - 1]
+    print(f"sifnode validator:\n{json.dumps(v, indent=2)}")
+    x = env_ebrelayer.EbrelayerInput(
+        basedir=basedir,
+        logfile=log_file_full_path(env_ebrelayer.ebrelayername),
+        configoutputfile=config_file_full_path(env_ebrelayer.ebrelayername),
+        ethereum_address=smart_contract_config["input"]["validator_ethereum_credentials"][0][0],
+        ethereum_private_key=smart_contract_config["input"]["validator_ethereum_credentials"][0][1],
+        web3_provider=ethereum_config["config"]["ws_addr"],
+        tendermint_node="tcp://sifnoded:26657",
+        rpc_url="tcp://sifnoded:26657",
+        bridge_registry_address=bridge_registry_address,
+        moniker=v["moniker"],
+        mnemonic=v["mnemonic"],
+        chain_id=deployment_name,
+        home_dir=v["sifnodeclipath"],
+        gas="5000000000000",
+        gas_prices="0.5rowan",
+    )
+    env_ebrelayer.run(x).wait()
 
 
 def build_testrunner_input():

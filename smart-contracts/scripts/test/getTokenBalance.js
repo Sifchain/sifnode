@@ -17,10 +17,6 @@ module.exports = async (cb) => {
         },
     });
 
-    const web3x = new Web3(new HDWalletProvider(
-        "ae6ae8e5ccbfb04590405997ee2d52d2b330726137b875053c36d94e974d162f",
-        "http://ganache:7545"
-    ));
     let balanceWei, balanceEth;
     const result = {};
     try {
