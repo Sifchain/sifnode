@@ -22,8 +22,10 @@ import {
   useAssetItem,
 } from "@/components/shared/utils";
 import { toConfirmState } from "./utils/toConfirmState";
+import { getMaxAmount } from "./utils/getMaxAmount";
 import { ConfirmState } from "../types";
 import ConfirmationModal from "@/components/shared/ConfirmationModal.vue";
+import { format, toBaseUnits } from "ui-core";
 
 function capitalize(value: string) {
   return value.charAt(0).toUpperCase() + value.slice(1);
@@ -61,6 +63,14 @@ export default defineComponent({
       return Array.isArray(assetFrom) ? assetFrom[0] : assetFrom;
     });
 
+    const networkIsSupported = computed(() => {
+      if (mode.value === "peg") {
+        return actions.ethWallet.isSupportedNetwork();
+      }
+
+      return true;
+    });
+
     const oppositeSymbol = computed(() => {
       if (mode.value === "peg") {
         return getPeggedSymbol(symbol.value);
@@ -70,22 +80,29 @@ export default defineComponent({
 
     const amount = ref("0.0");
     const address = computed(() =>
-      mode.value === "peg" ? store.wallet.sif.address : store.wallet.eth.address
+      mode.value === "peg"
+        ? store.wallet.sif.address
+        : store.wallet.eth.address,
     );
 
     const isMaxActive = computed(() => {
-      return amount.value === accountBalance.value?.toFixed();
+      if (!accountBalance.value) return false;
+      return (
+        amount.value ===
+        format(accountBalance.value.amount, accountBalance.value.asset)
+      );
     });
 
     async function handlePegRequested() {
       const asset = Asset.get(symbol.value);
+
       if (asset.symbol !== "eth") {
         // if not eth you need to approve spend before peg
         transactionState.value = "approving";
         try {
           await actions.peg.approve(
             store.wallet.eth.address,
-            AssetAmount(asset, amount.value)
+            AssetAmount(asset, amount.value),
           );
         } catch (err) {
           return (transactionState.value = "rejected");
@@ -93,7 +110,10 @@ export default defineComponent({
       }
 
       transactionState.value = "signing";
-      const tx = await actions.peg.peg(AssetAmount(asset, amount.value));
+
+      const tx = await actions.peg.peg(
+        AssetAmount(asset, toBaseUnits(amount.value, asset)),
+      );
 
       transactionHash.value = tx.hash;
       transactionState.value = toConfirmState(tx.state); // TODO: align states
@@ -102,9 +122,10 @@ export default defineComponent({
 
     async function handleUnpegRequested() {
       transactionState.value = "signing";
+      const asset = Asset.get(symbol.value);
 
       const tx = await actions.peg.unpeg(
-        AssetAmount(Asset.get(symbol.value), amount.value)
+        AssetAmount(asset, toBaseUnits(amount.value, asset)),
       );
 
       transactionHash.value = tx.hash;
@@ -125,13 +146,24 @@ export default defineComponent({
     });
 
     const nextStepAllowed = computed(() => {
+      if (!networkIsSupported.value) return false;
+
       const amountNum = new BigNumber(amount.value);
-      const balance = accountBalance.value?.toFixed() ?? "0.0";
+      const balance =
+        (accountBalance.value &&
+          format(accountBalance.value.amount, accountBalance.value.asset)) ??
+        "0.0";
+
       return (
         amountNum.isGreaterThan("0.0") &&
         address.value !== "" &&
         amountNum.isLessThanOrEqualTo(balance)
       );
+    });
+
+    const nextStepMessage = computed(() => {
+      if (!networkIsSupported.value) return "Network Not Supported";
+      return mode.value === "peg" ? "Peg" : "Unpeg";
     });
 
     function requestTransactionModalClose() {
@@ -144,6 +176,13 @@ export default defineComponent({
     }
     const feeAmount = computed(() => {
       return actions.peg.calculateUnpegFee(Asset.get(symbol.value));
+    });
+
+    const feeDisplayAmount = computed(() => {
+      if (!feeAmount.value) return "";
+      return format(feeAmount.value.amount, feeAmount.value.asset, {
+        mantissa: 8,
+      });
     });
     const pageState = {
       mode,
@@ -161,13 +200,12 @@ export default defineComponent({
       handleMaxClicked: () => {
         if (!accountBalance.value) return;
         const decimals = Asset.get(symbol.value).decimals;
-        const afterMaxValue =
-          symbol.value === "ceth"
-            ? accountBalance.value.subtract(feeAmount.value)
-            : accountBalance.value;
+        const afterMaxValue = getMaxAmount(symbol, accountBalance.value);
         amount.value = afterMaxValue.lessThan("0")
           ? "0.0"
-          : afterMaxValue.toFixed(decimals);
+          : format(afterMaxValue, accountBalance.value.asset, {
+              mantissa: decimals,
+            });
       },
       handleAmountUpdated: (newAmount: string) => {
         amount.value = newAmount;
@@ -185,9 +223,8 @@ export default defineComponent({
       transactionHash,
       nextStepAllowed,
       isMaxActive,
-      nextStepMessage: computed(() => {
-        return mode.value === "peg" ? "Peg" : "Unpeg";
-      }),
+      feeDisplayAmount,
+      nextStepMessage,
     };
     (window as any).pageState = pageState;
     return pageState;
@@ -199,6 +236,7 @@ export default defineComponent({
   <Layout :title="mode === 'peg' ? 'Peg Asset' : 'Unpeg Asset'" backLink="/peg">
     <div class="vspace">
       <CurrencyField
+        slug="peg"
         :amount="amount"
         :max="true"
         :isMaxActive="isMaxActive"
@@ -233,9 +271,9 @@ export default defineComponent({
         }"
         :rows="[
           {
-            show: !!feeAmount,
+            show: !!feeDisplayAmount,
             label: 'Transaction Fee',
-            data: `${feeAmount.toFixed(8)} cETH`,
+            data: `${feeDisplayAmount} cETH`,
             tooltipMessage: `This is a fixed fee amount. This is a temporary solution as we are working towards improving this amount in upcoming versions of the network.`,
           },
         ]"
@@ -312,9 +350,9 @@ export default defineComponent({
               data: `${formatSymbol(symbol)} → ${formatSymbol(oppositeSymbol)}`,
             },
             {
-              show: !!feeAmount,
+              show: !!feeDisplayAmount,
               label: 'Transaction Fee',
-              data: `${feeAmount.toFixed(8)} cETH`,
+              data: `${feeDisplayAmount} cETH`,
             },
           ]"
         />

@@ -1,9 +1,11 @@
 package keeper
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/tendermint/tendermint/libs/log"
+	"go.uber.org/zap"
 
 	"github.com/cosmos/cosmos-sdk/codec"
 
@@ -12,6 +14,8 @@ import (
 	"github.com/Sifchain/sifnode/x/ethbridge/types"
 	"github.com/Sifchain/sifnode/x/oracle"
 )
+
+const errorMessageKey = "errorMessageKey"
 
 // Keeper maintains the link to data storage and
 // exposes getter/setter methods for the various parts of the state machine
@@ -39,21 +43,23 @@ func (k Keeper) Logger(ctx sdk.Context) log.Logger {
 }
 
 // ProcessClaim processes a new claim coming in from a validator
-func (k Keeper) ProcessClaim(ctx sdk.Context, claim types.EthBridgeClaim) (oracle.Status, error) {
-	fmt.Println("sifnode ethbridge keeper ProcessClaim")
+func (k Keeper) ProcessClaim(ctx sdk.Context, claim types.EthBridgeClaim, sugaredLogger *zap.SugaredLogger) (oracle.Status, error) {
 	oracleClaim, err := types.CreateOracleClaimFromEthClaim(k.cdc, claim)
 	if err != nil {
-		fmt.Printf("sifnode ethbridge keeper ProcessClaim oracle %s\n", err.Error())
+		sugaredLogger.Errorw("failed to create oracle claim from eth claim.",
+			errorMessageKey, err.Error())
 		return oracle.Status{}, err
 	}
 
-	return k.oracleKeeper.ProcessClaim(ctx, oracleClaim)
+	return k.oracleKeeper.ProcessClaim(ctx, oracleClaim, sugaredLogger)
 }
 
 // ProcessSuccessfulClaim processes a claim that has just completed successfully with consensus
-func (k Keeper) ProcessSuccessfulClaim(ctx sdk.Context, claim string) error {
+func (k Keeper) ProcessSuccessfulClaim(ctx sdk.Context, claim string, sugaredLogger *zap.SugaredLogger) error {
 	oracleClaim, err := types.CreateOracleClaimFromOracleString(claim)
 	if err != nil {
+		sugaredLogger.Errorw("failed to create oracle claim from oracle string.",
+			errorMessageKey, err.Error())
 		return err
 	}
 
@@ -75,6 +81,8 @@ func (k Keeper) ProcessSuccessfulClaim(ctx sdk.Context, claim string) error {
 	}
 
 	if err != nil {
+		sugaredLogger.Errorw("failed to process successful claim.",
+			errorMessageKey, err.Error())
 		return err
 	}
 
@@ -88,28 +96,110 @@ func (k Keeper) ProcessSuccessfulClaim(ctx sdk.Context, claim string) error {
 }
 
 // ProcessBurn processes the burn of bridged coins from the given sender
-func (k Keeper) ProcessBurn(ctx sdk.Context, cosmosSender sdk.AccAddress, amount sdk.Coins) error {
-	if err := k.supplyKeeper.SendCoinsFromAccountToModule(
-		ctx, cosmosSender, types.ModuleName, amount,
-	); err != nil {
+func (k Keeper) ProcessBurn(ctx sdk.Context, cosmosSender sdk.AccAddress, msg types.MsgBurn, sugaredLogger *zap.SugaredLogger) error {
+	var coins sdk.Coins
+
+	if msg.Symbol == types.CethSymbol {
+		coins = sdk.NewCoins(sdk.NewCoin(types.CethSymbol, msg.CethAmount.Add(msg.Amount)))
+	} else {
+		coins = sdk.NewCoins(sdk.NewCoin(msg.Symbol, msg.Amount), sdk.NewCoin(types.CethSymbol, msg.CethAmount))
+	}
+
+	err := k.supplyKeeper.SendCoinsFromAccountToModule(
+		ctx, cosmosSender, types.ModuleName, coins,
+	)
+
+	if err != nil {
+		sugaredLogger.Errorw("failed to send coin from account to module.",
+			errorMessageKey, err.Error())
 		return err
 	}
 
-	if err := k.supplyKeeper.BurnCoins(ctx, types.ModuleName, amount); err != nil {
-		panic(err)
+	if k.IsCethReceiverAccountSet(ctx) {
+		coins = sdk.NewCoins(sdk.NewCoin(types.CethSymbol, msg.CethAmount))
+		err = k.supplyKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, k.GetCethReceiverAccount(ctx), coins)
+		if err != nil {
+			sugaredLogger.Errorw("failed to send ceth from module to account.",
+				errorMessageKey, err.Error())
+			return err
+		}
+	}
+
+	coins = sdk.NewCoins(sdk.NewCoin(msg.Symbol, msg.Amount))
+	err = k.supplyKeeper.BurnCoins(ctx, types.ModuleName, coins)
+	if err != nil {
+		sugaredLogger.Errorw("failed to burn locked coin.",
+			errorMessageKey, err.Error())
+		return err
 	}
 
 	return nil
 }
 
 // ProcessLock processes the lockup of cosmos coins from the given sender
-func (k Keeper) ProcessLock(ctx sdk.Context, cosmosSender sdk.AccAddress, amount sdk.Coins) error {
-	return k.supplyKeeper.SendCoinsFromAccountToModule(ctx, cosmosSender, types.ModuleName, amount)
+func (k Keeper) ProcessLock(ctx sdk.Context, cosmosSender sdk.AccAddress, msg types.MsgLock, sugaredLogger *zap.SugaredLogger) error {
+	coins := sdk.NewCoins(sdk.NewCoin(msg.Symbol, msg.Amount), sdk.NewCoin(types.CethSymbol, msg.CethAmount))
+
+	err := k.supplyKeeper.SendCoinsFromAccountToModule(ctx, cosmosSender, types.ModuleName, coins)
+
+	if err != nil {
+		sugaredLogger.Errorw("failed to transfer coin from account to module.",
+			errorMessageKey, err.Error())
+		return err
+	}
+
+	if k.IsCethReceiverAccountSet(ctx) {
+		coins = sdk.NewCoins(sdk.NewCoin(types.CethSymbol, msg.CethAmount))
+		err = k.supplyKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, k.GetCethReceiverAccount(ctx), coins)
+		if err != nil {
+			sugaredLogger.Errorw("failed to transfer ceth from module to account.",
+				errorMessageKey, err.Error())
+			return err
+		}
+	}
+
+	coins = sdk.NewCoins(sdk.NewCoin(msg.Symbol, msg.Amount))
+	err = k.supplyKeeper.BurnCoins(ctx, types.ModuleName, coins)
+	if err != nil {
+		sugaredLogger.Errorw("failed to burn burned coin.",
+			errorMessageKey, err.Error())
+		return err
+	}
+	return nil
 }
 
 // ProcessUpdateWhiteListValidator processes the update whitelist validator from admin
-func (k Keeper) ProcessUpdateWhiteListValidator(ctx sdk.Context, cosmosSender sdk.AccAddress, validator sdk.ValAddress, operationtype string) error {
-	return k.oracleKeeper.ProcessUpdateWhiteListValidator(ctx, cosmosSender, validator, operationtype)
+func (k Keeper) ProcessUpdateWhiteListValidator(ctx sdk.Context, cosmosSender sdk.AccAddress, validator sdk.ValAddress, operationtype string, sugaredLogger *zap.SugaredLogger) error {
+	return k.oracleKeeper.ProcessUpdateWhiteListValidator(ctx, cosmosSender, validator, operationtype, sugaredLogger)
+}
+
+// ProcessUpdateCethReceiverAccount processes the update whitelist validator from admin
+func (k Keeper) ProcessUpdateCethReceiverAccount(ctx sdk.Context, cosmosSender sdk.AccAddress, cethReceiverAccount sdk.AccAddress, sugaredLogger *zap.SugaredLogger) error {
+	if !k.oracleKeeper.IsAdminAccount(ctx, cosmosSender) {
+		sugaredLogger.Errorw("cosmos sender is not admin account.")
+		return errors.New("only admin account can update ceth receiver account")
+	}
+
+	k.SetCethReceiverAccount(ctx, cethReceiverAccount)
+	return nil
+}
+
+// ProcessRescueCeth transfer ceth from ethbridge module to an account
+func (k Keeper) ProcessRescueCeth(ctx sdk.Context, msg types.MsgRescueCeth, sugaredLogger *zap.SugaredLogger) error {
+	if !k.oracleKeeper.IsAdminAccount(ctx, msg.CosmosSender) {
+		sugaredLogger.Errorw("cosmos sender is not admin account.")
+		return errors.New("only admin account can call rescue ceth")
+	}
+
+	coins := sdk.NewCoins(sdk.NewCoin(types.CethSymbol, msg.CethAmount))
+	err := k.supplyKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, msg.CosmosReceiver, coins)
+
+	if err != nil {
+		sugaredLogger.Errorw("failed to transfer coin from module to account.",
+			errorMessageKey, err.Error())
+		return err
+	}
+	return nil
 }
 
 // Exists chec if the key existed in db.

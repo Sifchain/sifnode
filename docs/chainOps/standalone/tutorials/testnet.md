@@ -51,28 +51,28 @@ and your node will start synchronizing with the network. Please note that this m
 You can verify that you're connected by running:
 
 ```
-sifnodecli q tendermint-validator-set --node tcp://rpc-merry-go-round.sifchain.finance:80 --trust-node
+sifnodecli q tendermint-validator-set --node tcp://rpc-testnet.sifchain.finance:80 --trust-node
 ```
 
 and you should see the following primary validator node/s for Sifchain:
 
 ```
 validators:
-- address: sifvalcons19vn3vtccx7amdgfk07ne4x2jj87fpsgwusrpcm
-  pubkey: sifvalconspub1zcjduepqrczw0kfj0rm3u094lvk7le4u6enrdtm5wtjn8k207gnvtwerlcmshk3lvk
+- address: sifvalcons1w8gnu0k86dxs0nsjff7hh77wzhaxmmdcwf5krj
+  pubkey: sifvalconspub1zcjduepqvwq9cv5j3kv7x23g3zhd2qhcwp53quq6d72mr4f53xq0fpaqx0psvrmwxz
+  proposerpriority: 1125
+  votingpower: 1000
+- address: sifvalcons1j3z8x9f3x5zxpdzdk9e08kqvlke7y5tsshy9tv
+  pubkey: sifvalconspub1zcjduepq54s2l4facx6l3g9rt8jwuhwxfealmt6d2r6v7wn7sthfgwx9n6rq9alcm3
+  proposerpriority: -1625
+  votingpower: 1000
+- address: sifvalcons1hyw42srq4u7766y9zqx4vfurfcasjwwulllll7
+  pubkey: sifvalconspub1zcjduepqjdmaurc6v3ueskv7cgrzdw7phhzeg904akj3agz4yw87juq6yknsyw8qkf
+  proposerpriority: 1625
+  votingpower: 1000
+- address: sifvalcons1ufd9g9txtz0vptflty94ey6p97rh6l7q33w9hc
+  pubkey: sifvalconspub1zcjduepqcs85pl337wf2da6ucuu6vcs8l9xwtp2cv05swy7l8csr6uzs5vcq37pc07
   proposerpriority: -1125
-  votingpower: 1000
-- address: sifvalcons10mmxf7rmtw2u8lr0d4efzjk4s9q4u8pepn9r95
-  pubkey: sifvalconspub1zcjduepq2h0eupzq25g7g6s4uwwrwqaex0m37mhfdc9gh3rtxae0aylg7scq3r93et
-  proposerpriority: 125
-  votingpower: 1000
-- address: sifvalcons1sm9s7f0arcmveuqfx6jtjjhhedj58q3syjf68z
-  pubkey: sifvalconspub1zcjduepq98kugnwx40hfjy895n40ex6dwaj02zh06pj6zdjash0nj3wy4v0qhq9x2l
-  proposerpriority: 625
-  votingpower: 1000
-- address: sifvalcons15mnhwsqlkyaacjthmax5zn69ukpvg0wr7hhh87
-  pubkey: sifvalconspub1zcjduepq2kd405jrgsjtjmjmx038er8t4l0mcw808z8ka4a2t8q5d6dfxuqsrmdhux
-  proposerpriority: 375
   votingpower: 1000
 ```
 
@@ -112,12 +112,12 @@ sifnodecli tx staking create-validator \
     --amount="<amount>" \
     --pubkey=<pub_key> \
     --moniker=<moniker> \
-    --chain-id=merry-go-round \
+    --chain-id=sifchain-testnet \
     --min-self-delegation="1" \
     --gas-prices="0.5rowan" \
     --from=<moniker> \
     --keyring-backend=file \
-    --node tcp://rpc-merry-go-round.sifchain.finance:80
+    --node tcp://rpc-testnet.sifchain.finance:80
 ```
 
 Where:
@@ -138,12 +138,12 @@ sifnodecli tx staking create-validator \
     --amount="1000000000000000000000rowan" \
     --pubkey=thepublickeyofyournode \
     --moniker=my-node \
-    --chain-id=merry-go-round \
+    --chain-id=sifchain-testnet \
     --min-self-delegation="1" \
     --gas-prices="0.5rowan" \
     --from=my-node \
     --keyring-backend=file \
-    --node tcp://rpc-merry-go-round.sifchain.finance:80
+    --node tcp://rpc-testnet.sifchain.finance:80
 ```
 
 ## Additional Resources
@@ -152,6 +152,6 @@ sifnodecli tx staking create-validator \
 
 |Description|Address|
 |-----------|-------|
-|Block Explorer|https://blockexplorer-merry-go-round.sifchain.finance|
-|RPC|https://rpc-merry-go-round.sifchain.finance|
-|API|https://lcd-merry-go-round.sifchain.finance|
+|Block Explorer|https://blockexplorer-testnet.sifchain.finance|
+|RPC|https://rpc-testnet.sifchain.finance|
+|API|https://api-testnet.sifchain.finance|

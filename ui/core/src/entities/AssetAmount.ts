@@ -1,189 +1,136 @@
-import { Asset } from "./Asset";
-import invariant from "tiny-invariant";
-import _Big from "big.js";
-import toFormat from "toformat";
-
-import {
-  BigintIsh,
-  Fraction,
-  IFraction,
-  isFraction,
-  parseBigintIsh,
-  Rounding,
-  TEN,
-} from "./fraction/Fraction";
+import { IAmount, Amount, _ExposeInternal } from "./Amount";
+import { IAsset, Asset } from "./Asset";
+import { IFraction } from "./fraction/Fraction";
 import JSBI from "jsbi";
-import B from "./utils/B";
 
-const Big = toFormat(_Big);
+export type IAssetAmount = Readonly<IAsset> & {
+  readonly asset: IAsset;
+  readonly amount: IAmount;
+  // for use by display lib and in testing
+  toBigInt(): JSBI;
+  toString(detailed?: boolean): string;
 
-export interface IAssetAmount extends IFraction {
-  toFixed(decimalPlaces?: number, format?: object, rounding?: Rounding): string;
-  asset: Asset;
-  amount: JSBI;
-  toBaseUnits: () => JSBI;
-  toBaseUnitsFr: () => IFraction;
-  toFormatted: (p?: {
-    separator?: boolean;
-    symbol?: boolean;
-    decimals?: number;
-  }) => string;
-}
+  // for use elsewhere
+  add(other: IAmount | string): IAmount;
+  divide(other: IAmount | string): IAmount;
+  equalTo(other: IAmount | string): boolean;
+  greaterThan(other: IAmount | string): boolean;
+  greaterThanOrEqual(other: IAmount | string): boolean;
+  lessThan(other: IAmount | string): boolean;
+  lessThanOrEqual(other: IAmount | string): boolean;
+  multiply(other: IAmount | string): IAmount;
+  sqrt(): IAmount;
+  subtract(other: IAmount | string): IAmount;
+};
 
-export class _AssetAmount implements IAssetAmount {
-  protected fraction: IFraction;
-  constructor(public asset: Asset, public amount: JSBI) {
-    this.fraction = new Fraction(
-      amount,
-      JSBI.exponentiate(TEN, JSBI.BigInt(asset.decimals))
-    );
-  }
-
-  public toBaseUnits() {
-    return this.multiply(
-      JSBI.exponentiate(TEN, JSBI.BigInt(this.asset.decimals))
-    ).quotient;
-  }
-
-  public toBaseUnitsFr() {
-    return new Fraction(this.toBaseUnits());
-  }
-
-  public toSignificant(
-    significantDigits = 6,
-    format?: object,
-    rounding: Rounding = Rounding.ROUND_DOWN
-  ): string {
-    return this.fraction.toSignificant(significantDigits, format, rounding);
-  }
-
-  public toFixed(
-    decimalPlaces = this.asset.decimals,
-    format?: object,
-    rounding: Rounding = Rounding.ROUND_DOWN
-  ): string {
-    // Provisional: This breaks app if falsy. N
-    // Do not know why necessary if only for display
-    // invariant(decimalPlaces <= this.asset.decimals, "DECIMALS");
-    return this.fraction.toFixed(decimalPlaces, format, rounding);
-  }
-
-  public toExact(format: object = { groupSeparator: "" }): string {
-    Big.DP = this.asset.decimals;
-    return new Big(this.fraction.numerator.toString())
-      .div(this.fraction.denominator.toString())
-      .toFormat(format);
-  }
-
-  public get quotient() {
-    return this.fraction.quotient;
-  }
-
-  public get remainder() {
-    return this.fraction.remainder;
-  }
-  public get numerator() {
-    return this.fraction.numerator;
-  }
-  public get denominator() {
-    return this.fraction.denominator;
-  }
-
-  public invert() {
-    return this.fraction.invert();
-  }
-  public add(other: IFraction | BigintIsh) {
-    return this.fraction.add(other);
-  }
-
-  public subtract(other: IFraction | BigintIsh) {
-    return this.fraction.subtract(other);
-  }
-
-  public lessThan(other: IFraction | BigintIsh) {
-    return this.fraction.lessThan(other);
-  }
-
-  public lessThanOrEqual(other: IFraction | BigintIsh) {
-    return this.fraction.greaterThanOrEqual(other);
-  }
-
-  public equalTo(other: IFraction | BigintIsh) {
-    return this.fraction.equalTo(other);
-  }
-
-  public greaterThan(other: IFraction | BigintIsh) {
-    return this.fraction.greaterThan(other);
-  }
-
-  public greaterThanOrEqual(other: IFraction | BigintIsh) {
-    return this.fraction.greaterThanOrEqual(other);
-  }
-
-  public multiply(other: IFraction | BigintIsh) {
-    return this.fraction.multiply(other);
-  }
-
-  public divide(other: IFraction | BigintIsh) {
-    return this.fraction.divide(other);
-  }
-
-  // NOTE: This might eventually take a format string
-  public toFormatted(params?: {
-    decimals?: number;
-    separator?: boolean;
-    symbol?: boolean;
-  }) {
-    const { symbol = true } = params || {};
-    // If decimals is too high fraction will bark
-    const safeDecimals =
-      typeof params?.decimals !== "undefined"
-        ? this.asset.decimals < params.decimals
-          ? this.asset.decimals
-          : params.decimals
-        : undefined;
-
-    return [
-      this.toFixed(safeDecimals, {
-        groupSeparator: params?.separator ? "," : "",
-      }),
-      symbol ? this.asset.symbol.toUpperCase() : "",
-    ]
-      .filter(Boolean)
-      .join(" ");
-  }
-
-  public toString() {
-    return this.toFormatted();
-  }
-}
-
-export type AssetAmount = IAssetAmount;
-
-/**
- * Represents an amount of an Asset
- *
- * @param asset The Asset for the denomination
- * @param amount If amount is in JSBI then the amount this creates will be in base units (eg. Wei) otherwise the amount will be in natural units
- * @param options inBaseUnit boolean - if the asset amount given as string is in base units or not eg. 1000000000000000000 = 1 ether
- */
 export function AssetAmount(
-  asset: Asset,
-  amount: string | number | JSBI | IFraction,
-  options?: { inBaseUnit?: boolean }
+  asset: IAsset | string,
+  amount: IAmount | string,
 ): IAssetAmount {
-  const { inBaseUnit = false } = options ?? {};
-  if (inBaseUnit && typeof amount === "string") {
-    return new _AssetAmount(asset, JSBI.BigInt(amount));
-  }
-  const unfractionedAmount = isFraction(amount)
-    ? amount.toFixed(asset.decimals)
-    : amount;
+  type _IAssetAmount = _ExposeInternal<IAssetAmount>;
 
-  const jsbiAmount =
-    unfractionedAmount instanceof JSBI
-      ? unfractionedAmount
-      : B(unfractionedAmount, asset?.decimals);
+  const _asset = (asset as IAssetAmount)?.asset || Asset(asset);
+  const _amount = (amount as IAssetAmount)?.amount || Amount(amount);
 
-  return new _AssetAmount(asset, jsbiAmount);
+  // Proxy all methods because it is clearer and
+  // more explicit than prototypal inheritence
+  const instance: _IAssetAmount = {
+    get asset() {
+      return _asset;
+    },
+
+    get amount() {
+      return _amount;
+    },
+
+    get address() {
+      return _asset.address;
+    },
+
+    get decimals() {
+      return _asset.decimals;
+    },
+
+    get imageUrl() {
+      return _asset.imageUrl;
+    },
+
+    get name() {
+      return _asset.name;
+    },
+
+    get network() {
+      return _asset.network;
+    },
+
+    get symbol() {
+      return _asset.symbol;
+    },
+
+    get label() {
+      return _asset.label;
+    },
+
+    toBigInt() {
+      return _amount.toBigInt();
+    },
+
+    toString() {
+      return `${_amount.toString(false)} ${_asset.symbol.toUpperCase()}`;
+    },
+
+    add(other) {
+      return _amount.add(other);
+    },
+
+    divide(other) {
+      return _amount.divide(other);
+    },
+
+    equalTo(other) {
+      return _amount.equalTo(other);
+    },
+
+    greaterThan(other) {
+      return _amount.greaterThan(other);
+    },
+
+    greaterThanOrEqual(other) {
+      return _amount.greaterThanOrEqual(other);
+    },
+
+    lessThan(other) {
+      return _amount.lessThan(other);
+    },
+
+    lessThanOrEqual(other) {
+      return _amount.lessThanOrEqual(other);
+    },
+
+    multiply(other) {
+      return _amount.multiply(other);
+    },
+
+    sqrt() {
+      return _amount.sqrt();
+    },
+
+    subtract(other) {
+      return _amount.subtract(other);
+    },
+
+    // Internal methods need to be proxied here so this can be used as an Amount
+    _toInternal() {
+      return (_amount as _ExposeInternal<IAmount>)._toInternal();
+    },
+
+    _fromInternal(internal: IFraction) {
+      return (_amount as _ExposeInternal<IAmount>)._fromInternal(internal);
+    },
+  };
+  return instance;
+}
+
+export function isAssetAmount(value: any): value is IAssetAmount {
+  return value?.asset && value?.amount;
 }

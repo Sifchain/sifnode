@@ -139,7 +139,8 @@ func (am AppModule) InitGenesis(ctx sdk.Context, _ json.RawMessage) []abci.Valid
 // ExportGenesis returns the exported genesis state as raw bytes for the ethbridge
 // module.
 func (am AppModule) ExportGenesis(ctx sdk.Context) json.RawMessage {
-	return nil
+	gs := ExportGenesis(ctx, am.BridgeKeeper)
+	return am.Codec.MustMarshalJSON(gs)
 }
 
 // BeginBlock returns the begin blocker for the ethbridge module.

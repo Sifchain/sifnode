@@ -13,10 +13,10 @@ export default defineComponent({
 
 <template>
   <div class="header">
-    <div class="col-sm">
+    <div class="col-sm col-sm-s">
       <span>Token</span>
     </div>
-    <div class="col-sm">
+    <div class="col-lg">
       <span>Price of Token</span>
       <span>
         (USD)
@@ -25,7 +25,19 @@ export default defineComponent({
         </Tooltip>
       </span>
     </div>
-    <div class="col-sm">
+
+    <div class="col-lg">
+      <span>Arbitrage</span>
+      <span>
+        Opportunity
+        <Tooltip
+          message="This is the arbitrage opportunity available based on a differential between the price of this token on Sifchain and its price on CoinMarketCap. If the percentage is green, it means the token is currently cheaper in Sifchain than CoinMarketCap."
+        >
+          <Icon icon="info-box-white" />
+        </Tooltip>
+      </span>
+    </div>
+    <div class="col-lg">
       <span>Pool Depth</span>
       <span>
         (USD)
@@ -36,7 +48,7 @@ export default defineComponent({
         </Tooltip>
       </span>
     </div>
-    <div class="col-sm">
+    <div class="col-lg">
       <span>Trade Volume</span>
       <span>(24h)</span>
     </div>
@@ -95,6 +107,10 @@ export default defineComponent({
   color: $c_gray_400;
   display: flex;
   flex-direction: column;
+  &.col-sm-s {
+    min-width: 112px;
+    padding-left: 12px;
+  }
   span {
     display: flex;
     justify-content: center;

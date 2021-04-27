@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/tendermint/tendermint/libs/log"
+	"go.uber.org/zap"
 
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -14,7 +15,7 @@ import (
 // Keeper maintains the link to data storage and
 // exposes getter/setter methods for the various parts of the state machine
 type Keeper struct {
-	cdc      *codec.Codec // The wire codec for binary encoding/decoding.
+	Cdc      *codec.Codec // The wire codec for binary encoding/decoding.
 	storeKey sdk.StoreKey // Unexposed key to access store from sdk.Context
 
 	stakeKeeper types.StakingKeeper
@@ -30,7 +31,7 @@ func NewKeeper(
 		panic(types.ErrMinimumConsensusNeededInvalid.Error())
 	}
 	return Keeper{
-		cdc:             cdc,
+		Cdc:             cdc,
 		storeKey:        storeKey,
 		stakeKeeper:     stakeKeeper,
 		consensusNeeded: consensusNeeded,
@@ -51,7 +52,7 @@ func (k Keeper) GetProphecy(ctx sdk.Context, id string) (types.Prophecy, bool) {
 	}
 
 	var dbProphecy types.DBProphecy
-	k.cdc.MustUnmarshalBinaryBare(bz, &dbProphecy)
+	k.Cdc.MustUnmarshalBinaryBare(bz, &dbProphecy)
 
 	deSerializedProphecy, err := dbProphecy.DeserializeFromDB()
 	if err != nil {
@@ -69,12 +70,11 @@ func (k Keeper) setProphecy(ctx sdk.Context, prophecy types.Prophecy) {
 		panic(err)
 	}
 
-	store.Set([]byte(prophecy.ID), k.cdc.MustMarshalBinaryBare(serializedProphecy))
+	store.Set([]byte(prophecy.ID), k.Cdc.MustMarshalBinaryBare(serializedProphecy))
 }
 
 // ProcessClaim ...
-func (k Keeper) ProcessClaim(ctx sdk.Context, claim types.Claim) (types.Status, error) {
-	fmt.Println("sifnode oracle keeper ProcessClaim")
+func (k Keeper) ProcessClaim(ctx sdk.Context, claim types.Claim, sugaredLogger *zap.SugaredLogger) (types.Status, error) {
 	inWhiteList := false
 	// Check if claim from whitelist validators
 	for _, address := range k.GetOracleWhiteList(ctx) {
@@ -86,24 +86,23 @@ func (k Keeper) ProcessClaim(ctx sdk.Context, claim types.Claim) (types.Status, 
 	}
 
 	if !inWhiteList {
-		fmt.Println("sifnode oracle keeper ProcessClaim validator no in whitelist")
+		sugaredLogger.Errorw("sifnode oracle keeper ProcessClaim validator no in whitelist.")
 		return types.Status{}, types.ErrValidatorNotInWhiteList
 	}
 
 	activeValidator := k.checkActiveValidator(ctx, claim.ValidatorAddress)
 	if !activeValidator {
-		fmt.Println("sifnode oracle keeper ProcessClaim validator not active")
+		sugaredLogger.Errorw("sifnode oracle keeper ProcessClaim validator not active.")
 		return types.Status{}, types.ErrInvalidValidator
 	}
 
 	if claim.ID == "" {
-		fmt.Printf("sifnode oracle keeper ProcessClaim wrong claim id %s\n", claim.ID)
+		sugaredLogger.Errorw("sifnode oracle keeper ProcessClaim wrong claim id.", "claimID", claim.ID)
 		return types.Status{}, types.ErrInvalidIdentifier
 	}
 
 	if claim.Content == "" {
-		fmt.Println("sifnode oracle keeper ProcessClaim claim content is empty")
-
+		sugaredLogger.Errorw("sifnode oracle keeper ProcessClaim claim content is empty.")
 		return types.Status{}, types.ErrInvalidClaim
 	}
 
@@ -139,8 +138,9 @@ func (k Keeper) checkActiveValidator(ctx sdk.Context, validatorAddress sdk.ValAd
 }
 
 // ProcessUpdateWhiteListValidator processes the update whitelist validator from admin
-func (k Keeper) ProcessUpdateWhiteListValidator(ctx sdk.Context, cosmosSender sdk.AccAddress, validator sdk.ValAddress, operationtype string) error {
+func (k Keeper) ProcessUpdateWhiteListValidator(ctx sdk.Context, cosmosSender sdk.AccAddress, validator sdk.ValAddress, operationtype string, sugaredLogger *zap.SugaredLogger) error {
 	if !k.IsAdminAccount(ctx, cosmosSender) {
+		sugaredLogger.Errorw("cosmos sender is not admin account.")
 		return types.ErrNotAdminAccount
 	}
 

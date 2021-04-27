@@ -32,8 +32,6 @@ export default defineComponent({
     const allSifTokens = ref(actions.peg.getSifTokens());
     const { fullSearchList, displayList } = toRefs(props);
 
-
-
     const list = filterTokenList({
       searchText,
       tokens: forceShowAllATokens ? allSifTokens : fullSearchList,
@@ -69,6 +67,7 @@ export default defineComponent({
       <p>No tokens available.</p>
     </div>
     <button
+      :data-handle="token.symbol + '-select-button'"
       class="option"
       v-for="token in tokens"
       :disabled="token.disabled"

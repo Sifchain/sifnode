@@ -32,7 +32,6 @@ sifnode:
     minimumGasPrices: "0.5rowan"
     govMaxDepositPeriod: "10800000000000"
     govVotingPeriod: "10800000000000"
-    clpConfigURL: ""
   env:
     daemonHome: "/root/.sifnoded"
     daemonName: "sifnoded"

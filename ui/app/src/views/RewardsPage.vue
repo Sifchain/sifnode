@@ -1,70 +1,203 @@
 <script lang="ts">
-import { defineComponent } from "vue";
+import { computed, defineComponent, watch, onMounted } from "vue";
+import { ref, ComputedRef } from "@vue/reactivity";
+import { useCore } from "@/hooks/useCore";
 import Layout from "@/components/layout/Layout.vue";
-import Loader from "@/components/shared/Loader.vue";
+import SifButton from "@/components/shared/SifButton.vue";
+import AssetItem from "@/components/shared/AssetItem.vue";
+import Box from "@/components/shared/Box.vue";
+import { Copy, SubHeading } from "@/components/shared/Text";
+import ActionsPanel from "@/components/actionsPanel/ActionsPanel.vue";
+import Tooltip from "@/components/shared/Tooltip.vue";
+import Icon from "@/components/shared/Icon.vue";
 
+const REWARD_INFO = {
+  lm: {
+    label: "Liquidity Minining",
+    description:
+      "Earn additional rewards by providing liquidity to any of Sifchain's pools.",
+  },
+};
+
+// NOTE - This will be removed and replaced with Amount API
+function format(amount: number) {
+  if (amount < 1) {
+    return amount.toFixed(6);
+  } else if (amount < 1000) {
+    return amount.toFixed(4);
+  } else if (amount < 100000) {
+    return amount.toFixed(2);
+  } else {
+    return amount.toFixed(0);
+  }
+}
+
+async function getRewardsData(address: ComputedRef<any>) {
+  if (!address.value) return;
+  const data = await fetch(
+    `https://vtdbgplqd6.execute-api.us-west-2.amazonaws.com/default/rewards/${address.value}`,
+  );
+  if (data.status !== 200)
+    return [{ type: "lm", multiplier: 0, start: "", amount: null }];
+  return await data.json();
+}
 export default defineComponent({
   components: {
     Layout,
-    Loader
+    SifButton,
+    AssetItem,
+    ActionsPanel,
+    Copy,
+    SubHeading,
+    Box,
+    Tooltip,
+    Icon,
   },
-  data() {
+  setup() {
+    const { store } = useCore();
+    const address = computed(() => store.wallet.sif.address);
+    let rewards = ref<Array<Object>>([]);
+
+    watch(address, async () => {
+      rewards.value = await getRewardsData(address);
+    });
+
+    onMounted(async () => {
+      rewards.value = await getRewardsData(address);
+    });
+
     return {
-      data: null,
+      rewards,
+      REWARD_INFO,
+      format,
     };
-  },
-  async mounted() {
-    const data = await fetch(
-      "https://vtdbgplqd6.execute-api.us-west-2.amazonaws.com/default/liqvalrewards"
-    );
-    const json = await data.json();
-    this.data = json.body;
   },
 });
 </script>
 
 <template>
-  <Layout :header="false" title="Staking & Rewards" backLink="/peg">
-    <div class="liquidity-container">
-      <Loader black v-if="!data"/>
-      <div v-else>
-        <p class="mb-8">
-          Earn additional Rowan by staking or delegating.  The amount of rewards you can earn is the summation of:
-        </p> 
-        <p class="">
-          1. 
-            <a class="ul" href="https://medium.com/sifchain-finance/uses-for-rowan-the-polyvalent-token-for-omni-chain-decentralized-exchange-dex-3207e7f70f02?source=collection_home---4------10-----------------------" target="_blank">Liquidity Mining</a>:
-          
-          <span v-if="data.liqValRewards === ''">TBD</span>
-          <span v-else>
-            {{data.liqValRewards}} % APY
-          </span>
-        </p>
-        <p class="mb-8">
-          2. 
-            <a class="ul" href="https://docs.sifchain.finance/roles/validators#block-rewards" target="_blank">Block Rewards</a>:
-           (variable)
-        </p>
-        <p class="mb-8">
-          Learn more about staking and delegating <a class="ul" href="https://docs.sifchain.finance/roles/validators" target="_blank">here</a>!
-        </p>
-        <p class="mb-9">
-          Delegation instructions <a class="ul" href="https://docs.sifchain.finance/roles/delegators#how-to-delegate" target="_blank">here</a>
-        </p>
+  <Layout :header="true" title="Rewards">
+    <Copy>
+      Earn rewards by participating in any of our rewards-earning programs.
+      Please see additional information of our
+      <a
+        target="_blank"
+        href="https://docs.sifchain.finance/resources/rewards-programs"
+        >current rewards program</a
+      >
+      and how to become eligible.
+    </Copy>
+    <div class="rewards-container">
+      <div v-if="!rewards || rewards.length === 0" class="loader-container">
+        <div class="loader" />
       </div>
+      <Box v-else v-for="reward in rewards" v-bind:key="reward.type">
+        <div class="reward-container">
+          <SubHeading>{{ REWARD_INFO[reward.type].label }}</SubHeading>
+          <Copy>
+            {{ REWARD_INFO[reward.type].description }}
+          </Copy>
+          <div class="details-container">
+            <div class="amount-container w50 jcsb">
+              <div class="df fdr">
+                <AssetItem symbol="Rowan" :label="false" />
+                <span>{{ format(+reward.amount) }}</span>
+              </div>
+              <span>ROWAN</span>
+              <Tooltip>
+                <template #message>
+                  <div class="tooltip">
+                    Current multiplier: {{ format(+reward.multiplier) }}x
+                  </div>
+                </template>
+                <Icon icon="info-box-black" />
+              </Tooltip>
+            </div>
+            <a
+              class="more-info-button"
+              target="_blank"
+              href="https://docs.sifchain.finance/resources/rewards-programs#liquidity-mining-and-validator-subsidy-rewards-on-sifchain"
+              >More Info</a
+            >
+          </div>
+        </div>
+      </Box>
     </div>
+    <ActionsPanel connectType="connectToSif" />
   </Layout>
 </template>
 
 <style scoped lang="scss">
-.ul {text-decoration: underline}
-.liquidity-container { 
-  text-align: left;
-  color: $c_gray_700;
-  border-top: 1px solid $c_gray_400;
-  min-height: 145px;
-  background: white; 
-  padding: 15px;
-  border-radius: 0 0 6px 6px
+// TODO - Get variable margin/padding sizes in
+// TODO - Discuss how we should manage positioning
+.more-info-button {
+  // TODO - This Button !
+  background: #f3f3f3;
+  color: #343434;
+  font-size: 12px;
+  border-radius: 6px;
+  width: 96px;
+  height: 30px;
+  font-weight: 100;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.rewards-container {
+  display: flex;
+  flex-direction: column;
+  > :first-child {
+    margin-top: $margin_medium;
+  }
+  width: 100%;
+  > :nth-child(1) {
+    margin-bottom: $margin_medium;
+  }
+  .reward-container {
+    flex-direction: column;
+    > :nth-child(1),
+    > :nth-child(2) {
+      margin-bottom: $margin_small;
+    }
+    .amount-container {
+      display: flex;
+      align-items: center;
+      flex-direction: row;
+    }
+    .details-container {
+      display: flex;
+      flex-direction: row;
+      justify-content: space-between;
+    }
+  }
+
+  /* TODO - TEMP - Need to componentize our loaders */
+  .loader-container {
+    margin-top: $margin-large;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  .loader {
+    background: url("../../public/images/siflogo.png");
+    background-size: cover;
+    width: 64px;
+    height: 64px;
+    box-shadow: 0 0 0 0 rgba(0, 0, 0, 1);
+    transform: scale(1);
+    animation: pulse 1s infinite;
+  }
+  @keyframes pulse {
+    0% {
+      transform: scale(0.85);
+    }
+    70% {
+      transform: scale(1);
+    }
+    100% {
+      transform: scale(0.85);
+    }
+  }
 }
 </style>
