@@ -23,6 +23,7 @@
 - [UI] State loader for dispensation.
 - [UI] Remove the "select all" functionality when clicking in a field.
 - [UI] Token with zero balances would sometimes disappear from the swap options.
+- [Peggy] Add retry logic when infura gives us a not found error. Add additional retry logic to try to retrieve the tx if it cannot be found on the first query.
 
 ## ❓ Miscellaneous
 
