@@ -740,8 +740,10 @@ metadata:
         require 'rest-client'
         require 'json'
         begin
+            release_hash = { "devnet" => "DevNet", "testnet" =>"TestNet", "betanet" =>"BetaNet", "mainnet" =>"MainNet" }
+            release_name = release_hash[args[:env]]
             headers = {content_type: :json, "Accept": "application/vnd.github.v3+json", "Authorization":"token #{args[:token]}"}
-            payload = {"tag_name"  =>  "#{args[:env]}-#{args[:release]}","name"  =>  "#{args[:env]} v#{args[:release]}","body"  => "Sifchain #{args[:env]} Release v#{args[:release]}","prerelease"  =>  true}.to_json
+            payload = {"tag_name"  =>  "#{args[:env]}-#{args[:release]}","name"  =>  "#{release_name} v#{args[:release]}","body"  => "Sifchain #{args[:env]} Release v#{args[:release]}","prerelease"  =>  true}.to_json
             response = RestClient.post 'https://api.github.com/repos/Sifchain/sifnode/releases', payload, headers
             json_response_job_object = JSON.parse response.body
             puts json_response_job_object
