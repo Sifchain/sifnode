@@ -805,7 +805,7 @@ metadata:
         puts "Sha found #{sha_token}"
 
         if "#{args[:app_env]}" == "mainnet"
-            governance_request = %Q{ yes "${keyring_passphrase}" | go run ./cmd/sifnodecli tx gov submit-proposal software-upgrade #{args[:app_env]}-#{args[:release_version]} \
+            governance_request = %Q{ yes "${keyring_passphrase}" | go run ./cmd/sifnodecli tx gov submit-proposal software-upgrade #{args[:release_version]} \
                 --from #{args[:from]} \
                 --deposit #{args[:deposit]} \
                 --upgrade-height #{block_height} \
@@ -820,7 +820,7 @@ metadata:
                 sleep 60 }
             system(governance_request) or exit 1
         elsif "#{args[:app_env]}" == "betanet"
-            governance_request = %Q{ yes "${keyring_passphrase}" | go run ./cmd/sifnodecli tx gov submit-proposal software-upgrade #{args[:app_env]}-#{args[:release_version]} \
+            governance_request = %Q{ yes "${keyring_passphrase}" | go run ./cmd/sifnodecli tx gov submit-proposal software-upgrade #{args[:release_version]} \
                 --from #{args[:from]} \
                 --deposit #{args[:deposit]} \
                 --upgrade-height #{block_height} \
@@ -836,7 +836,7 @@ metadata:
             system(governance_request) or exit 1
         else
             puts "create dev net gov request #{sha_token}"
-            governance_request = %Q{ yes "${keyring_passphrase}" | go run ./cmd/sifnodecli tx gov submit-proposal software-upgrade #{args[:app_env]}-#{args[:release_version]} \
+            governance_request = %Q{ yes "${keyring_passphrase}" | go run ./cmd/sifnodecli tx gov submit-proposal software-upgrade #{args[:release_version]} \
                 --from #{args[:from]} \
                 --deposit #{args[:deposit]} \
                 --upgrade-height #{block_height} \
