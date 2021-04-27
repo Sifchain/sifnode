@@ -109,6 +109,11 @@ func (n *Network) Build(count int, outputDir, seedIPv4Addr string) (*string, err
 
 		if !validator.Seed {
 			seedValidator := n.getSeedValidator(validators)
+
+			if err := n.addValidatorKeyToSeed(validator, seedValidator); err != nil {
+				return nil, err
+			}
+
 			if err := n.addGenesis(validator.Address, seedValidator.NodeHomeDir); err != nil {
 				return nil, err
 			}
@@ -197,6 +202,15 @@ func (n *Network) generateKey(validator *Validator) error {
 
 	validator.Address = keys[0].Address
 	validator.PubKey = keys[0].PubKey
+
+	return nil
+}
+
+func (n *Network) addValidatorKeyToSeed(validator, seedValidator *Validator) error {
+	_, err := n.CLI.AddKey(validator.Moniker, validator.Mnemonic, seedValidator.Password, fmt.Sprintf("%s/%s", seedValidator.HomeDir, ".sifnoded"))
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
