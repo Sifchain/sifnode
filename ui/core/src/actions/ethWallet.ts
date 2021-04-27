@@ -1,7 +1,8 @@
 import { effect } from "@vue/reactivity";
 import { ActionContext } from "..";
-import { Asset } from "../entities";
+import { Asset, IAsset } from "../entities";
 import B from "../entities/utils/B";
+import { isSupportedEVMChain } from "./utils";
 
 export default ({
   api,
@@ -20,12 +21,21 @@ export default ({
     });
   });
 
+  api.EthereumService.onChainIdDetected((chainId) => {
+    store.wallet.eth.chainId = chainId;
+  });
+
   const etheriumState = api.EthereumService.getState();
 
   const actions = {
+    isSupportedNetwork() {
+      return isSupportedEVMChain(store.wallet.eth.chainId);
+    },
+
     async disconnectWallet() {
       await api.EthereumService.disconnect();
     },
+
     async connectToWallet() {
       try {
         await api.EthereumService.connect();
@@ -39,6 +49,7 @@ export default ({
         });
       }
     },
+
     async transferEthWallet(amount: number, recipient: string, asset: Asset) {
       const hash = await api.EthereumService.transfer({
         amount: B(amount, asset.decimals),

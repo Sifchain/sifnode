@@ -19,6 +19,18 @@ def sifnode_base_dir():
 
 
 @pytest.fixture
+def sifchain_admin_account():
+    return test_utilities.get_required_env_var("SIFCHAIN_ADMIN_ACCOUNT")
+
+
+@pytest.fixture
+def sifchain_admin_account_credentials(sifchain_admin_account):
+    return test_utilities.SifchaincliCredentials(
+        from_key=sifchain_admin_account
+    )
+
+
+@pytest.fixture
 def smart_contract_artifact_dir(smart_contracts_dir):
     result = test_utilities.get_optional_env_var("SMART_CONTRACT_ARTIFACT_DIR", None)
     return result if result else os.path.join(smart_contracts_dir, "build/contracts")
@@ -68,12 +80,6 @@ def ethereum_network():
 @pytest.fixture
 def n_sifchain_accounts():
     return int(test_utilities.get_optional_env_var("N_SIFCHAIN_ACCOUNTS", 1))
-
-
-@pytest.fixture
-def ceth_amount():
-    """the meaning of ceth_amount is determined by the test using it"""
-    return int(int(test_utilities.get_optional_env_var("CETH_AMOUNT", 10 ** 18)))
 
 
 @pytest.fixture
@@ -134,11 +140,6 @@ def basedir():
 
 
 @pytest.fixture
-def ceth_fee():
-    return max(test_utilities.burn_gas_cost, test_utilities.lock_gas_cost)
-
-
-@pytest.fixture
 def chain_id(is_ropsten_testnet):
     result = test_utilities.get_optional_env_var("DEPLOYMENT_NAME", "localnet")
     return result
@@ -178,8 +179,14 @@ def is_ganache(ethereum_network):
 
 
 @pytest.fixture
-def sifchain_fees():
-    return "200000rowan"
+def sifchain_fees(sifchain_fees_int):
+    """returns a string suitable for passing to sifnodecli"""
+    return f"{sifchain_fees_int}rowan"
+
+
+@pytest.fixture
+def sifchain_fees_int():
+    return 200000
 
 
 @pytest.fixture
@@ -238,14 +245,6 @@ def ganache_timed_blocks(integration_dir):
 
 
 @pytest.fixture(scope="function")
-def no_whitelisted_validators(integration_dir):
-    """restart sifchain with no whitelisted validators, execute test, then restart with validators"""
-    yield test_utilities.get_shell_output(f"ADD_VALIDATOR_TO_WHITELIST= bash {integration_dir}/setup_sifchain.sh")
-    test_utilities.get_shell_output(
-        f". {integration_dir}/vagrantenv.sh; ADD_VALIDATOR_TO_WHITELIST=true bash {integration_dir}/setup_sifchain.sh")
-
-
-@pytest.fixture(scope="function")
 def ensure_relayer_restart(integration_dir, smart_contracts_dir):
     """restarts relayer after the test function completes.  Used by tests that need to stop the relayer."""
     yield None
@@ -262,7 +261,6 @@ def basic_transfer_request(
         bridgebank_address,
         bridgetoken_address,
         ethereum_network,
-        ceth_fee,
         sifnodecli_node,
         chain_id,
         sifchain_fees,
@@ -278,7 +276,6 @@ def basic_transfer_request(
         bridgebank_address=bridgebank_address,
         bridgetoken_address=bridgetoken_address,
         ethereum_network=ethereum_network,
-        ceth_amount=ceth_fee,
         sifnodecli_node=sifnodecli_node,
         manual_block_advance=is_ganache,
         chain_id=chain_id,
@@ -320,3 +317,26 @@ def rowan_source_integrationtest_env_transfer_request(
     result.sifchain_address = rowan_source
     result.sifchain_symbol = "rowan"
     return result
+
+
+@pytest.fixture
+def ethbridge_module_address():
+    """The hardcoded address of the sifnode ethbridge module"""
+    return "sif1l3dftf499u4gvdeuuzdl2pgv4f0xdtnuuwlzp8"
+
+
+@pytest.fixture(scope="function")
+def restore_default_rescue_location(
+        ethbridge_module_address,
+        sifchain_admin_account,
+        sifchain_admin_account_credentials,
+        basic_transfer_request
+):
+    """Restores the ethbridge module as the destination for ceth fees"""
+    yield None
+    test_utilities.update_ceth_receiver_account(
+        receiver_account=ethbridge_module_address,
+        admin_account=sifchain_admin_account,
+        transfer_request=basic_transfer_request,
+        credentials=sifchain_admin_account_credentials
+    )

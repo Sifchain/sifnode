@@ -1,6 +1,7 @@
 import { computed, Ref } from "@vue/reactivity";
 import ColorHash from "color-hash";
-import { Asset, Network, TxHash } from "ui-core";
+import { Asset, IAssetAmount, Network, toBaseUnits, TxHash } from "ui-core";
+import { format } from "ui-core/src/utils/format";
 
 export function formatSymbol(symbol: string) {
   if (symbol.indexOf("c") === 0) {
@@ -23,6 +24,14 @@ export function formatNumber(displayNumber: string) {
   } else {
     return amount.toFixed(2);
   }
+}
+
+export function formatAssetAmount(value: IAssetAmount) {
+  if (!value || value.equalTo("0")) return "0";
+  const { amount, asset } = value;
+  return amount.greaterThan(toBaseUnits("100000", asset))
+    ? format(amount, asset, { mantissa: 2 })
+    : format(amount, asset, { mantissa: 6 });
 }
 
 // TODO: These could be replaced with a look up table
@@ -75,11 +84,15 @@ export function useAssetItem(symbol: Ref<string | undefined>) {
 }
 
 export function getBlockExplorerUrl(chainId: string, txHash?: TxHash): string {
-  if (chainId === "sifchain") {
-    if (!txHash) return "https://blockexplorer.sifchain.finance/";
-    return `https://blockexplorer.sifchain.finance/transactions/${txHash}`;
-  } else {
-    if (!txHash) return `https://blockexplorer-${chainId}.sifchain.finance/`;
-    return `https://blockexplorer-${chainId}.sifchain.finance/transactions/${txHash}`;
+  switch (chainId) {
+    case "sifchain":
+      if (!txHash) return "https://blockexplorer.sifchain.finance/";
+      return `https://blockexplorer.sifchain.finance/transactions/${txHash}`;
+    case "sifchain-testnet":
+      if (!txHash) return `https://blockexplorer-testnet.sifchain.finance/`;
+      return `https://blockexplorer-testnet.sifchain.finance/transactions/${txHash}`;
+    default:
+      if (!txHash) return "https://blockexplorer-devnet.sifchain.finance/";
+      return `https://blockexplorer-devnet.sifchain.finance/transactions/${txHash}`;
   }
 }

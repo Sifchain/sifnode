@@ -58,10 +58,19 @@
 
 
 // display
-.d-flex {
+.d-flex, .df {
     display: flex;
 }
 
-.j-between {
+.fdr {
+    flex-direction: row;
+}
+.w50 {
+    width: 50%
+}
+.w100 {
+    width: 100%
+}
+.j-between, .jcsb {
     justify-content: space-between;
 }

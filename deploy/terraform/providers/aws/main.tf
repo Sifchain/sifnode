@@ -1,5 +1,20 @@
 terraform {
-  required_version = ">= 0.13"
+  required_version = ">= 0.14"
+
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = ">= 3.23"
+    }
+    kubernetes = {
+      source  = "hashicorp/kubernetes"
+      version = ">= 2.0"
+    }
+    helm = {
+      source  = "hashicorp/helm"
+      version = ">= 2.0"
+    }
+  }
 }
 
 provider "aws" {
@@ -8,11 +23,17 @@ provider "aws" {
 }
 
 provider "kubernetes" {
-  host                   = element(concat(data.aws_eks_cluster.cluster[*].endpoint, list("")), 0)
-  cluster_ca_certificate = base64decode(element(concat(data.aws_eks_cluster.cluster[*].certificate_authority.0.data, list("")), 0))
-  token                  = element(concat(data.aws_eks_cluster_auth.cluster[*].token, list("")), 0)
-  load_config_file       = false
-  version                = "~> 1.9"
+  host                   = data.aws_eks_cluster.cluster.endpoint
+  cluster_ca_certificate = base64decode(data.aws_eks_cluster.cluster.certificate_authority.0.data)
+  token                  = data.aws_eks_cluster_auth.cluster.token
+}
+
+provider "helm" {
+  kubernetes {
+    host                   = data.aws_eks_cluster.cluster.endpoint
+    cluster_ca_certificate = base64decode(data.aws_eks_cluster.cluster.certificate_authority.0.data)
+    token                  = data.aws_eks_cluster_auth.cluster.token
+  }
 }
 
 data "aws_eks_cluster" "cluster" {
@@ -29,7 +50,7 @@ data "aws_iam_role" "cluster" {
 
 data "aws_subnet_ids" "a" {
   vpc_id = module.vpc.vpc_id
-    tags = {
+  tags = {
     Name = "${var.cluster_name}-public-${var.region}a"
   } 
  depends_on = [ module.vpc ]
@@ -37,7 +58,7 @@ data "aws_subnet_ids" "a" {
 
 data "aws_subnet_ids" "b" {
   vpc_id = module.vpc.vpc_id
-    tags = {
+  tags = {
     Name = "${var.cluster_name}-public-${var.region}b"
   } 
  depends_on = [ module.vpc ]
@@ -45,7 +66,7 @@ data "aws_subnet_ids" "b" {
 
 data "aws_subnet_ids" "c" {
   vpc_id = module.vpc.vpc_id
-    tags = {
+  tags = {
     Name = "${var.cluster_name}-public-${var.region}c"
   } 
  depends_on = [ module.vpc ]
@@ -80,7 +101,6 @@ module "eks" {
   subnets      = module.vpc.public_subnets
   vpc_id       = module.vpc.vpc_id
   tags         = merge({ "Name" = var.cluster_name }, var.tags)
-  version      = "13.2.1"
 
   node_groups_defaults = {
     ami_type  = var.ami_type
@@ -88,44 +108,41 @@ module "eks" {
   }
 
   node_groups = {
-    main_a = {
-      name = var.node_group_name_a
-      desired_capacity = var.desired_capacity_a
-      max_capacity     = var.max_capacity
-      min_capacity     = var.min_capacity_a
-      instance_type    = var.upgrade_instance_type
-      subnets = data.aws_subnet_ids.a.ids
+    main-0 = {
+      desired_capacity  = var.desired_capacity_0
+      max_capacity      = var.max_capacity_0
+      min_capacity      = var.min_capacity_0
+      instance_types    = [var.instance_type]
+      subnets           = data.aws_subnet_ids.a.ids
       k8s_labels = {
         Environment = "${var.cluster_name}-${var.region}"
       }
       additional_tags = var.tags
     },
-      main_b = {
-      name = var.node_group_name_b
-      desired_capacity = var.desired_capacity_b
-      max_capacity     = var.max_capacity
-      min_capacity     = var.min_capacity_b
-      instance_type    = var.upgrade_instance_type
-      subnets = data.aws_subnet_ids.b.ids
+    main-1 = {
+      desired_capacity  = var.desired_capacity_1
+      max_capacity      = var.max_capacity_1
+      min_capacity      = var.min_capacity_1
+      instance_types    = [var.instance_type]
+      subnets           = data.aws_subnet_ids.b.ids
       k8s_labels = {
         Environment = "${var.cluster_name}-${var.region}"
       }
       additional_tags = var.tags
     },
-      main_c = {
-      name = var.node_group_name_c
-      desired_capacity = var.desired_capacity_c
-      max_capacity     = var.max_capacity
-      min_capacity     = var.min_capacity_c
-      instance_type    = var.upgrade_instance_type
-      subnets = data.aws_subnet_ids.c.ids
+    main-2 = {
+      desired_capacity  = var.desired_capacity_2
+      max_capacity      = var.max_capacity_2
+      min_capacity      = var.min_capacity_2
+      instance_types    = [var.instance_type]
+      subnets           = data.aws_subnet_ids.c.ids
       k8s_labels = {
         Environment = "${var.cluster_name}-${var.region}"
       }
       additional_tags = var.tags
     },
   }
- depends_on = [ module.vpc ]
+  depends_on = [ module.vpc ]
   cluster_version  = var.cluster_version
   write_kubeconfig = true
 }
