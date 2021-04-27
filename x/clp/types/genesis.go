@@ -24,7 +24,7 @@ func DefaultGenesisState() *GenesisState {
 func GetGenesisStateFromAppState(appState map[string]json.RawMessage) GenesisState {
 	var genesisState GenesisState
 	if appState[ModuleName] != nil {
-		_, err := ModuleCdc.MarshalJSON(&genesisState)
+		err := ModuleCdc.UnmarshalJSON(appState[ModuleName], &genesisState)
 		if err != nil {
 			panic("Failed to get genesis state from app state")
 		}
