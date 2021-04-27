@@ -255,7 +255,7 @@ func GetCmdUpdateWhiteListValidator(cdc *codec.Codec) *cobra.Command {
 				return errors.Errorf("invalid [operation-type]: %s", args[2])
 			}
 
-			msg := types.NewMsgUpdateWhiteListValidator(networkDescriptor, cosmosSender, validatorAddress, operationType)
+			msg := types.NewMsgUpdateWhiteListValidator(uint32(networkDescriptor), cosmosSender, validatorAddress, operationType)
 			if err := msg.ValidateBasic(); err != nil {
 				return err
 			}

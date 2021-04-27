@@ -323,14 +323,14 @@ func (msg MsgRescueCeth) GetSigners() []sdk.AccAddress {
 
 // MsgUpdateWhiteListValidator add or remove validator from whitelist
 type MsgUpdateWhiteListValidator struct {
-	NetworkDescriptor int            `json:"network_descriptor" yaml:"network_descriptor"`
+	NetworkDescriptor uint32         `json:"network_descriptor" yaml:"network_descriptor"`
 	CosmosSender      sdk.AccAddress `json:"cosmos_sender" yaml:"cosmos_sender"`
 	Validator         sdk.ValAddress `json:"validator" yaml:"validator"`
 	OperationType     string         `json:"operation_type" yaml:"operation_type"`
 }
 
 // NewMsgUpdateWhiteListValidator is a constructor function for MsgUpdateWhiteListValidator
-func NewMsgUpdateWhiteListValidator(networkDescriptor int, cosmosSender sdk.AccAddress,
+func NewMsgUpdateWhiteListValidator(networkDescriptor uint32, cosmosSender sdk.AccAddress,
 	validator sdk.ValAddress, operationType string) MsgUpdateWhiteListValidator {
 	return MsgUpdateWhiteListValidator{
 		NetworkDescriptor: networkDescriptor,

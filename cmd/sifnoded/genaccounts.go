@@ -347,14 +347,14 @@ the account address or key name. If a key name is given, the address will be loo
 			config := ctx.Config
 			config.SetRoot(viper.GetString(cli.HomeFlag))
 
-			tmpNetworkID, err := strconv.ParseUint(args[1], 10, 32)
+			_, err := strconv.ParseUint(args[0], 10, 32)
 			if err != nil {
-				return fmt.Errorf("failed to get validator address: %w", err)
+				return fmt.Errorf("failed to pass network descriptor: %w", err)
 			}
 
 			addr, err := sdk.ValAddressFromBech32(args[1])
 			if err != nil {
-				return fmt.Errorf("failed to pass network descriptor: %w", err)
+				return fmt.Errorf("failed to get validator address: %w", err)
 			}
 
 			genFile := config.GenesisFile()
@@ -364,7 +364,7 @@ the account address or key name. If a key name is given, the address will be loo
 			}
 
 			oracleGenState := oracle.GetGenesisStateFromAppState(cdc, appState)
-			networkID := strconv.Itoa(int(tmpNetworkID))
+			networkID := args[0]
 
 			for _, item := range oracleGenState.AddressWhitelist[networkID] {
 				if bytes.Equal(item, addr) {
