@@ -10,5 +10,7 @@ jobs:
         working-directory: ui
 
     steps:
+      - name: Check out code
+        uses: actions/checkout@v2
       - name: Hello
         run: echo "Hello"
