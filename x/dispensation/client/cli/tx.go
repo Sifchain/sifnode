@@ -87,3 +87,19 @@ func GetCmdCreate(cdc *codec.Codec) *cobra.Command {
 
 	return cmd
 }
+
+func GetCmdClaim(cdc *codec.Codec) *cobra.Command {
+	// Note ,the command only creates a airdrop for now .
+	cmd := &cobra.Command{
+		Use:   "claim",
+		Short: "Create new Drop/Claim",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			inBuf := bufio.NewReader(cmd.InOrStdin())
+			txBldr := auth.NewTxBuilderFromCLI(inBuf).WithTxEncoder(utils.GetTxEncoder(cdc))
+			cliCtx := context.NewCLIContextWithInput(inBuf).WithCodec(cdc)
+			msg := types.NewMsgCreateClaim(cliCtx.GetFromAddress())
+			return utils.GenerateOrBroadcastMsgs(cliCtx, txBldr, []sdk.Msg{msg})
+		},
+	}
+	return cmd
+}

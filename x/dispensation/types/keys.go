@@ -24,6 +24,7 @@ const (
 var (
 	DistributionRecordPrefix = []byte{0x00} // key for storing DistributionRecords
 	DistributionsPrefix      = []byte{0x01} // key for storing airdropRecords
+	UserClaimPrefix          = []byte{0x05} // key for storing airdropRecords
 )
 
 func GetDistributionRecordKey(name string, recipient string) []byte {
@@ -32,6 +33,11 @@ func GetDistributionRecordKey(name string, recipient string) []byte {
 }
 func GetDistributionsKey(name string, distributionType DistributionType) []byte {
 	key := []byte(fmt.Sprintf("%s_%d", name, distributionType))
+	return append(DistributionsPrefix, key...)
+}
+
+func GetUserClaimKey(userAddress string) []byte {
+	key := []byte(fmt.Sprintf("%s", userAddress))
 	return append(DistributionsPrefix, key...)
 }
 

@@ -101,3 +101,22 @@ func (ar Distribution) Validate() bool {
 func (ar Distribution) String() string {
 	return strings.TrimSpace(fmt.Sprintf(`DistributionName: %s DistributionType :%s`, ar.DistributionName, ar.DistributionType.String()))
 }
+
+type UserClaim struct {
+	UserAddress sdk.AccAddress `json:"user_address"`
+}
+
+func NewUserClaim(userAddress sdk.AccAddress) UserClaim {
+	return UserClaim{UserAddress: userAddress}
+}
+
+func (uc UserClaim) Validate() bool {
+	if uc.UserAddress.Empty() {
+		return false
+	}
+	return true
+}
+
+func (uc UserClaim) String() string {
+	return strings.TrimSpace(fmt.Sprintf(`UserAddress : %s`, uc.UserAddress.String()))
+}

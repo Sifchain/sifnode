@@ -28,6 +28,7 @@ func (m MsgDistribution) Route() string {
 	return RouterKey
 }
 
+//TODO Replace with constant defined in keys.go with value CreateDispensation
 func (m MsgDistribution) Type() string {
 	return "airdrop"
 }
@@ -51,5 +52,37 @@ func (m MsgDistribution) GetSignBytes() []byte {
 }
 
 func (m MsgDistribution) GetSigners() []sdk.AccAddress {
+	return []sdk.AccAddress{m.Signer}
+}
+
+// Create a user claim
+type MsgCreateClaim struct {
+	Signer sdk.AccAddress `json:"signer"`
+}
+
+func NewMsgCreateClaim(Signer sdk.AccAddress) MsgCreateClaim {
+	return MsgCreateClaim{Signer: Signer}
+}
+
+func (m MsgCreateClaim) Route() string {
+	return RouterKey
+}
+
+func (m MsgCreateClaim) Type() string {
+	return "createClaim"
+}
+
+func (m MsgCreateClaim) ValidateBasic() error {
+	if m.Signer.Empty() {
+		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, m.Signer.String())
+	}
+	return nil
+}
+
+func (m MsgCreateClaim) GetSignBytes() []byte {
+	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(m))
+}
+
+func (m MsgCreateClaim) GetSigners() []sdk.AccAddress {
 	return []sdk.AccAddress{m.Signer}
 }
