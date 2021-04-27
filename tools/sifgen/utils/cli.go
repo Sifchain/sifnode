@@ -4,10 +4,12 @@ import (
 	"bytes"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"log"
 	"os"
 	"os/exec"
 	"strings"
+	"path"
 
 	"github.com/Sifchain/sifnode/app"
 )
@@ -35,7 +37,7 @@ type CLIUtils interface {
 	AddGenesisAccount(string, string, []string) (*string, error)
 	AddGenesisCLPAdmin(string, string) (*string, error)
 	SetGenesisOracleAdmin(string, string) (*string, error)
-	GenerateGenesisTxn(string, string, string, string, string, string, string, string) (*string, error)
+	GenerateGenesisTxn(string, string, string, string, string, string, string, string, string) (*string, error)
 	CollectGenesisTxns(string, string) (*string, error)
 	ExportGenesis() (*string, error)
 	GenesisFilePath() string
@@ -58,12 +60,14 @@ func NewCLI(chainID string) CLI {
 }
 
 func (c CLI) Reset(paths []string) error {
-	for _, path := range paths {
-		if _, err := os.Stat(path); !os.IsNotExist(err) {
-			err = os.Remove(path)
-			if err != nil {
-				return err
-			}
+	for _, _path := range paths {
+		dir, err := ioutil.ReadDir(_path)
+		for _, d := range dir {
+			_ = os.RemoveAll(path.Join([]string{_path, d.Name()}...))
+		}
+
+		if err != nil {
+			return err
 		}
 	}
 
@@ -117,26 +121,25 @@ func (c CLI) AddGenesisAccount(address, nodeDir string, coins []string) (*string
 }
 
 func (c CLI) AddGenesisCLPAdmin(address, nodeDir string) (*string, error) {
-	return c.shellExec("sifnoded", "add-genesis-clp-admin", address, "--home", nodeDir)
+	return c.shellExec("sifnoded", "add-genesis-clp-admin", address, "--home", nodeDir, "--keyring-backend", "file")
 }
 
 func (c CLI) SetGenesisOracleAdmin(address, nodeDir string) (*string, error) {
-	return c.shellExec("sifnoded", "set-genesis-oracle-admin", address, "--home", nodeDir)
+	return c.shellExec("sifnoded", "set-genesis-oracle-admin", address, "--home", nodeDir, "--keyring-backend", "file")
 }
 
-func (c CLI) GenerateGenesisTxn(name, keyPassword, bondAmount, nodeDir, outputFile, nodeID, pubKey, ipV4Addr string) (*string, error) {
+func (c CLI) GenerateGenesisTxn(name, keyPassword, bondAmount, nodeDir, outputFile, nodeID, pubKey, ipV4Addr, chainID string) (*string, error) {
 	return c.shellExecInput("sifnoded",
 		[][]byte{[]byte(keyPassword + "\n"), []byte(keyPassword + "\n"), []byte(keyPassword + "\n")},
-		"gentx",
-		"--name", name,
+		"gentx", name, bondAmount,
 		"--details", name,
-		"--amount", bondAmount,
 		"--keyring-backend", "file",
 		"--home", nodeDir,
 		"--output-document", outputFile,
 		"--node-id", nodeID,
 		"--pubkey", pubKey,
 		"--ip", ipV4Addr,
+		"--chain-id", chainID,
 	)
 }
 
@@ -196,6 +199,8 @@ func (c CLI) shellExec(cmd string, args ...string) (*string, error) {
 	cm.Stdout = &out
 	cm.Stderr = &errOut
 
+	fmt.Printf("%v\n", cm.String())
+
 	err := cm.Run()
 	if err != nil {
 		return nil, fmt.Errorf("error executing %s %s: %s \n %s", cmd, strings.Join(args, " "), err.Error(), errOut.String())
@@ -209,6 +214,8 @@ func (c CLI) shellExecInput(cmd string, inputs [][]byte, args ...string) (*strin
 	cm := exec.Command(cmd, args...)
 	var stderr bytes.Buffer
 	cm.Stderr = &stderr
+
+	fmt.Printf("%v\n", cm.String())
 
 	stdin, err := cm.StdinPipe()
 	if err != nil {

@@ -4,14 +4,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"net/http"
 	"time"
 
 	tmjson "github.com/tendermint/tendermint/libs/json"
 
 	"github.com/Sifchain/sifnode/tools/sifgen/common"
 	"github.com/Sifchain/sifnode/tools/sifgen/utils"
-	clptypes "github.com/Sifchain/sifnode/x/clp/types"
 )
 
 func ReplaceStakingBondDenom(nodeHomeDir string) error {
@@ -39,7 +37,7 @@ func ReplaceCLPMinCreatePoolThreshold(nodeHomeDir string, minCreatePoolThreshold
 		return err
 	}
 
-	(*genesis).AppState.CLP.Params.MinCreatePoolThreshold = minCreatePoolThreshold
+	(*genesis).AppState.CLP.Params.MinCreatePoolThreshold = fmt.Sprintf("%v", minCreatePoolThreshold)
 	content, err := tmjson.Marshal(genesis)
 	if err != nil {
 		return err
@@ -77,7 +75,7 @@ func ReplaceGovDepositParamsMaxDepositPeriod(nodeHomeDir string, period time.Dur
 		return err
 	}
 
-	(*genesis).AppState.Gov.DepositParams.MaxDepositPeriod = period
+	(*genesis).AppState.Gov.DepositParams.MaxDepositPeriod = fmt.Sprintf("%v", period)
 	content, err := tmjson.Marshal(genesis)
 	if err != nil {
 		return err
@@ -96,47 +94,8 @@ func ReplaceGovVotingParamsVotingPeriod(nodeHomeDir string, period time.Duration
 		return err
 	}
 
-	(*genesis).AppState.Gov.VotingParams.VotingPeriod = period
+	(*genesis).AppState.Gov.VotingParams.VotingPeriod = fmt.Sprintf("%v", period)
 	content, err := tmjson.Marshal(genesis)
-	if err != nil {
-		return err
-	}
-
-	if err := writeGenesis(nodeHomeDir, content); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func InitializeCLP(nodeHomeDir, clpConfigURL string) error {
-	genesis, err := readGenesis(nodeHomeDir)
-	if err != nil {
-		return err
-	}
-
-	response, err := http.Get(fmt.Sprintf("%v", clpConfigURL))
-	if err != nil {
-		return err
-	}
-
-	defer response.Body.Close()
-
-	body, err := ioutil.ReadAll(response.Body)
-	if err != nil {
-		return err
-	}
-
-	var pools clptypes.GenesisState
-	if err := json.Unmarshal(body, &pools); err != nil {
-		return err
-	}
-
-	(*genesis).AppState.CLP.PoolList = pools.PoolList
-	(*genesis).AppState.CLP.LiquidityProviders = pools.LiquidityProviders
-	(*genesis).AppState.CLP.AddressWhitelist = pools.AddressWhitelist
-
-	content, err := json.Marshal(genesis)
 	if err != nil {
 		return err
 	}
@@ -158,7 +117,7 @@ func readGenesis(nodeHomeDir string) (*common.Genesis, error) {
 		return nil, err
 	}
 
-	if err := tmjson.Unmarshal(body, &genesis); err != nil {
+	if err := json.Unmarshal(body, &genesis); err != nil {
 		return nil, err
 	}
 

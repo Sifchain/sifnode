@@ -83,10 +83,6 @@ func (n *Network) Build(count int, outputDir, seedIPv4Addr string) (*string, err
 			return nil, err
 		}
 
-		if err := n.setDefaultConfig(fmt.Sprintf("%s/%s/%s", validator.HomeDir, ConfigDir, utils.ConfigFile)); err != nil {
-			return nil, err
-		}
-
 		if err := n.generateKey(validator); err != nil {
 			return nil, err
 		}
@@ -181,32 +177,8 @@ func (n *Network) createDirs(toCreate []string) error {
 	return nil
 }
 
-func (n *Network) setDefaultConfig(configPath string) error {
-	config := common.CLIConfig{
-		ChainID:        n.ChainID,
-		Indent:         true,
-		KeyringBackend: "file",
-		TrustNode:      true,
-	}
-
-	file, err := os.Create(configPath)
-	if err != nil {
-		return err
-	}
-
-	if err := toml.NewEncoder(file).Encode(config); err != nil {
-		return err
-	}
-
-	if err := file.Close(); err != nil {
-		return err
-	}
-
-	return nil
-}
-
 func (n *Network) generateKey(validator *Validator) error {
-	output, err := n.CLI.AddKey(validator.Moniker, validator.Mnemonic, validator.Password, fmt.Sprintf("%s", validator.HomeDir))
+	output, err := n.CLI.AddKey(validator.Moniker, validator.Mnemonic, validator.Password, fmt.Sprintf("%s/%s", validator.HomeDir, ".sifnoded"))
 	if err != nil {
 		return err
 	}
@@ -300,6 +272,7 @@ func (n *Network) generateTx(validator *Validator, validatorDir, outputDir strin
 		validator.NodeID,
 		validator.ValidatorAddress,
 		validator.IPv4Address,
+		n.ChainID,
 	)
 	if err != nil {
 		return err

@@ -36,7 +36,6 @@ type Node struct {
 	MinCLPCreatePoolThreshold uint64        `yaml:"-"`
 	GovMaxDepositPeriod       time.Duration `yaml:"-"`
 	GovVotingPeriod           time.Duration `yaml:"-"`
-	CLPConfigURL              string        `yaml:"-"`
 	PeerAddress               string        `yaml:"-"`
 	GenesisURL                string        `yaml:"-"`
 	Key                       *key.Key      `yaml:"-"`
@@ -131,16 +130,20 @@ func (n *Node) seedGenesis() error {
 		return err
 	}
 
-	for _, adminAddress := range n.AdminCLPAddresses {
-		_, err := n.CLI.AddGenesisCLPAdmin(adminAddress, common.DefaultNodeHome)
-		if err != nil {
-			return err
+	if len(n.AdminCLPAddresses) != 0 {
+		for _, adminAddress := range n.AdminCLPAddresses {
+			_, err := n.CLI.AddGenesisCLPAdmin(adminAddress, common.DefaultNodeHome)
+			if err != nil {
+				return err
+			}
 		}
 	}
 
-	_, err = n.CLI.SetGenesisOracleAdmin(n.AdminOracleAddress, common.DefaultNodeHome)
-	if err != nil {
-		return err
+	if n.AdminOracleAddress != "" {
+		_, err = n.CLI.SetGenesisOracleAdmin(n.AdminOracleAddress, common.DefaultNodeHome)
+		if err != nil {
+			return err
+		}
 	}
 
 	gentxDir, err := ioutil.TempDir("", "gentx")
@@ -164,7 +167,8 @@ func (n *Node) seedGenesis() error {
 		outputFile,
 		strings.TrimSuffix(*nodeID, "\n"),
 		strings.TrimSuffix(*pubKey, "\n"),
-		n.IPAddr)
+		n.IPAddr,
+		n.ChainID)
 	if err != nil {
 		return err
 	}
@@ -192,12 +196,6 @@ func (n *Node) seedGenesis() error {
 
 	if err = genesis.ReplaceGovVotingParamsVotingPeriod(common.DefaultNodeHome, n.GovVotingPeriod); err != nil {
 		return err
-	}
-
-	if n.CLPConfigURL != "" {
-		if err = genesis.InitializeCLP(common.DefaultNodeHome, n.CLPConfigURL); err != nil {
-			return err
-		}
 	}
 
 	err = n.replaceConfig()
