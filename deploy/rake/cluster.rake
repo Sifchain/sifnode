@@ -713,7 +713,7 @@ metadata:
             puts "On Loop #{loop_count} of #{max_loops}"
             if loop_count >= max_loops
                 puts "Reached Max Loops"
-                break
+                exit 1
             end
             sleep(60)
         end
