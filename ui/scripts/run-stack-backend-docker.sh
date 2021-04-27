@@ -6,4 +6,5 @@ docker run -it \
   -p 5000:5000 \
   -p 26656:26656 \
   -p 26657:26657 \
-  stack:latest
+  --platform linux/amd64 \
+  ryardley/sifdevstack01:experimental 

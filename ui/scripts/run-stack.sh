@@ -13,7 +13,7 @@ killall sifnoded sifnodecli ebrelayer ganache-cli
 sleep 10
 
 tmux \
-  new-session 'yarn stack:backend || echo "process finished" && sleep 1000' \; \
+  new-session 'yarn stack:backend:docker || echo "process finished" && sleep 1000' \; \
   split-window 'yarn wait-on http-get://localhost:1317/node_info tcp:localhost:7545 && yarn app:serve || echo "process finished" && sleep 1000' \; \
   split-window 'yarn core:watch || echo "process finished" && sleep 1000' \; \
   select-layout even-vertical
