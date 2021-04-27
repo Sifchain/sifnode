@@ -115,7 +115,6 @@ func nodeCreateCmd() *cobra.Command {
 			minCLPCreatePoolThreshold, _ := cmd.Flags().GetUint64("min-clp-create-pool-threshold")
 			govMaxDepositPeriod, _ := cmd.Flags().GetDuration("gov-max-deposit-period")
 			govVotingPeriod, _ := cmd.Flags().GetDuration("gov-voting-period")
-			clpConfigURL, _ := cmd.Flags().GetString("clp-config-url")
 			printDetails, _ := cmd.Flags().GetBool("print-details")
 			withCosmovisor, _ := cmd.Flags().GetBool("with-cosmovisor")
 
@@ -125,14 +124,15 @@ func nodeCreateCmd() *cobra.Command {
 
 			if standalone {
 				node.Standalone = true
-				node.AdminCLPAddresses = strings.Split(adminCLPAddresses, "|")
+				if len(adminCLPAddresses) > 0 {
+					node.AdminCLPAddresses = strings.Split(adminCLPAddresses, "|")
+				}
 				node.AdminOracleAddress = adminOracleAddress
 				node.BondAmount = bondAmount
 				node.MintAmount = mintAmount
 				node.MinCLPCreatePoolThreshold = minCLPCreatePoolThreshold
 				node.GovMaxDepositPeriod = govMaxDepositPeriod
 				node.GovVotingPeriod = govVotingPeriod
-				node.CLPConfigURL = clpConfigURL
 			} else {
 				node.PeerAddress = peerAddress
 				node.GenesisURL = genesisURL
@@ -145,7 +145,7 @@ func nodeCreateCmd() *cobra.Command {
 				log.Fatal(err)
 			}
 
-			if printDetails {
+			if printDetails && summary != nil {
 				fmt.Println(*summary)
 			}
 		},
