@@ -692,15 +692,21 @@ metadata:
                     json_response_job_object = JSON.parse response.body
                     json_response_job_object["workflow_runs"].each do |job|
                         if job["head_branch"] == find_release
-                            puts "Release Job: #{job["head_branch"]} finished with state: #{job["conclusion"]}"
-                            puts job["head_branch"]
-                            puts job["status"]
-                            puts job["conclusion"]
-                            job_succeeded = true
-                            break
+                            puts "Release Job: #{job["head_branch"]} finished with state: #{job["status"]}"
+                            if job["status"].include?("completed")
+                                puts job["head_branch"]
+                                puts job["status"]
+                                puts job["conclusion"]
+                                job_succeeded = true
+                                break
+                            else
+                                puts job["head_branch"]
+                                puts job["status"]
+                                puts job["conclusion"]
+                            end
                         end
                     end
-                end
+                 end
             end
             loop_count += 1
             puts loop_count
