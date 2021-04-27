@@ -24,7 +24,6 @@
       </template>
     </Header>
     <router-view />
-    <Footer />
     <Notifications />
   </div>
 </template>

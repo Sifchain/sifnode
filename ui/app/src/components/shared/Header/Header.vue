@@ -72,7 +72,7 @@ export default defineComponent({
   }
   .secondary-header-container {
     display: block;
-    text-align: center;
+    text-align: left;
     background: $c_gold;
     color: $c_white;
     padding: 8px 2rem;

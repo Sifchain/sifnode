@@ -3,7 +3,6 @@
     <PanelNavItem
       data-handle="peg-page-button"
       to="/peg"
-      color="pink"
       icon="circle-half"
       label="PEG"
     ></PanelNavItem>
@@ -12,18 +11,21 @@
       to="/swap"
       icon="circle-arrows"
       label="SWAP"
-      color="blue"
     ></PanelNavItem>
     <PanelNavItem
       data-handle="pool-page-button"
       to="/pool"
       icon="pool"
       label="POOL"
-      color="green"
     ></PanelNavItem>
-    <PanelNavItem to="/rewards" label="REWARDS" icon="sif" color="gold">
-    </PanelNavItem>
-    <PanelNavItem to="/" label="SOON" disabled></PanelNavItem>
+    <PanelNavItem to="/rewards" label="REWARDS" icon="sif"> </PanelNavItem>
+    <PanelNavItem
+      to="/"
+      label="SOON"
+      icon="soon"
+      center
+      disabled
+    ></PanelNavItem>
   </div>
 </template>
 <script>

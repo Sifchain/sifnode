@@ -40,7 +40,7 @@ export default defineComponent({
 </script>
 
 <template>
-  <div>
+  <div class="container">
     <div v-if="rowanUSD" class="rowan">
       <Pill color="primary">
         <img class="image" src="../../../public/images/siflogo.png" />
@@ -52,6 +52,11 @@ export default defineComponent({
   </div>
 </template>
 
+<style lang="scss">
+.container .primary img {
+  margin-top: 2px;
+}
+</style>
 <style lang="scss" scoped>
 .rowan {
   .image {
