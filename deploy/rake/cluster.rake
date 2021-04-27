@@ -625,6 +625,24 @@ metadata:
     end
   end
 
+  desc "Kubernetes Create Namespace"
+  namespace :kubernetes do
+    desc "Create Kubernetes Namespace."
+    task :create_namespace, [:app_namespace] do |t, args|
+      puts "Create Kubernetes Namespace."
+      get_namespaces = `kubectl get namespaces --kubeconfig=./kubeconfig`
+      if get_namespaces.include?("#{args[:app_namespace]}")
+            puts "Namespace Exists"
+            puts get_namespaces
+      else
+            puts "Namespace Doesn't Exists"
+            puts get_namespaces
+            create_namespace = %Q{kubect create namespace #{args[:app_namespace]} --kubeconfig=./kubeconfig}
+            system(create_namespace) or exit 1
+      end
+    end
+  end
+
   desc "Deploy Helm Files"
   namespace :vault do
     desc "Deploy Helm Files"
