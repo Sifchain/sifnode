@@ -21,7 +21,7 @@
     "chain:migrate": "yarn chain:migrate:peggy && yarn chain:migrate:eth && yarn chain:migrate:sif && yarn chain:postmigrate",
     "chain:peggy:build": "cd ./chains/peggy && ./build.sh",
     "chain:peggy:revert": "cd ./chains/peggy && ./revert.sh",
-    "chain:pehttps://www.google.com.au/maps/@-27.0434304,153.141248,14zggy:snapshot": "cd ./chains/peggy && ./snapshot.sh",
+    "chain:peggy:snapshot": "cd ./chains/peggy && ./snapshot.sh",
     "chain:peggy": "cd ./chains/peggy && ./launch.sh",
     "chain:postmigrate": "cd chains && ./post_migrate.sh",
     "chain:revert": "concurrently -r -k -s first \"yarn chain:sif:revert\" \"yarn chain:eth:revert\" \"yarn chain:peggy:revert\"",
