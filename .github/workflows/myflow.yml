@@ -13,4 +13,4 @@ jobs:
       - name: Check out code
         uses: actions/checkout@v2
       - name: Hello
-        run: echo "Hello"
+        run: docker run hello-world
