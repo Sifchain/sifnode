@@ -87,26 +87,6 @@ func (n *Node) setup() error {
 		return err
 	}
 
-	_, err = n.CLI.SetKeyRingStorage()
-	if err != nil {
-		return err
-	}
-
-	_, err = n.CLI.SetConfigChainID(n.ChainID)
-	if err != nil {
-		return err
-	}
-
-	_, err = n.CLI.SetConfigIndent(true)
-	if err != nil {
-		return err
-	}
-
-	_, err = n.CLI.SetConfigTrustNode(true)
-	if err != nil {
-		return err
-	}
-
 	if err := n.generatePassword(); err != nil {
 		return err
 	}

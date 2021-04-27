@@ -22,25 +22,20 @@ var (
 )
 
 type CLIUtils interface {
-	DaemonPath() (*string, error)
 	Reset([]string) error
+	DaemonPath() (*string, error)
 	ResetState(string) (*string, error)
 	CreateDir(string) error
 	MoveFile(string, string) (*string, error)
-	CurrentChainID() (*string, error)
 	NodeID(string) (*string, error)
 	ValidatorAddress(string) (*string, error)
 	ValidatorConsensusAddress(string) (*string, error)
 	InitChain(string, string, string) (*string, error)
-	SetKeyRingStorage() (*string, error)
-	SetConfigChainID(string) (*string, error)
-	SetConfigIndent(bool) (*string, error)
-	SetConfigTrustNode(bool) (*string, error)
 	AddKey(string, string, string, string) (*string, error)
 	AddGenesisAccount(string, string, []string) (*string, error)
 	AddGenesisCLPAdmin(string, string) (*string, error)
 	SetGenesisOracleAdmin(string, string) (*string, error)
-	GenerateGenesisTxn(string, string, string, string, string, string, string, string, string) (*string, error)
+	GenerateGenesisTxn(string, string, string, string, string, string, string, string) (*string, error)
 	CollectGenesisTxns(string, string) (*string, error)
 	ExportGenesis() (*string, error)
 	GenesisFilePath() string
@@ -91,10 +86,6 @@ func (c CLI) MoveFile(src, dest string) (*string, error) {
 	return c.shellExec("mv", src, dest)
 }
 
-func (c CLI) CurrentChainID() (*string, error) {
-	return c.shellExec("sifnoded", "config", "chain-id", "--get")
-}
-
 func (c CLI) NodeID(nodeDir string) (*string, error) {
 	return c.shellExec("sifnoded", "tendermint", "show-node-id", "--home", nodeDir)
 }
@@ -111,22 +102,6 @@ func (c CLI) InitChain(chainID, moniker, nodeDir string) (*string, error) {
 	return c.shellExec("sifnoded", "init", moniker, "--chain-id", chainID, "--home", nodeDir)
 }
 
-func (c CLI) SetKeyRingStorage() (*string, error) {
-	return c.shellExec("sifnoded", "config", "keyring-backend", "file")
-}
-
-func (c CLI) SetConfigChainID(chainID string) (*string, error) {
-	return c.shellExec("sifnoded", "config", "chain-id", chainID)
-}
-
-func (c CLI) SetConfigIndent(indent bool) (*string, error) {
-	return c.shellExec("sifnoded", "config", "indent", fmt.Sprintf("%v", indent))
-}
-
-func (c CLI) SetConfigTrustNode(indent bool) (*string, error) {
-	return c.shellExec("sifnoded", "config", "trust-node", fmt.Sprintf("%v", indent))
-}
-
 func (c CLI) AddKey(name, mnemonic, keyPassword, cliDir string) (*string, error) {
 	return c.shellExecInput("sifnoded",
 		[][]byte{
@@ -140,6 +115,7 @@ func (c CLI) AddKey(name, mnemonic, keyPassword, cliDir string) (*string, error)
 func (c CLI) AddGenesisAccount(address, nodeDir string, coins []string) (*string, error) {
 	return c.shellExec("sifnoded", "add-genesis-account", address, strings.Join(coins[:], ","), "--home", nodeDir)
 }
+
 func (c CLI) AddGenesisCLPAdmin(address, nodeDir string) (*string, error) {
 	return c.shellExec("sifnoded", "add-genesis-clp-admin", address, "--home", nodeDir)
 }
