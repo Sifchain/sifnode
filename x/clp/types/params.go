@@ -44,11 +44,8 @@ func DefaultParams() Params {
 	return NewParams(DefaultMinCreatePoolThreshold)
 }
 
-func (p Params) Validate() bool {
-	if err := validateMinCreatePoolThreshold(p.MinCreatePoolThreshold); err != nil {
-		return false
-	}
-	return true
+func (p Params) Validate() error {
+	return validateMinCreatePoolThreshold(p.MinCreatePoolThreshold)
 }
 
 func validateMinCreatePoolThreshold(i interface{}) error {

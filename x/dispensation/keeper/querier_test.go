@@ -24,7 +24,7 @@ func GenerateQueryData(app *app.SifchainApp, ctx sdk.Context, name string, outLi
 	}
 
 	for _, rec := range outList {
-		record := types.NewDistributionRecord(name, rec.Address, rec.Coins, sdk.NewInt(ctx.BlockHeight()), sdk.NewInt(-1))
+		record := types.NewDistributionRecord(name, rec.Address, rec.Coins, ctx.BlockHeight(), int64(-1))
 		_ = keeper.SetDistributionRecord(ctx, record)
 	}
 

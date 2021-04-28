@@ -41,7 +41,7 @@ init:
 	./scripts/init.sh
 
 start:
-	sifnodecli rest-server & sifnoded start
+	sifnoded start
 
 lint-pre:
 	@test -z $(gofmt -l .)

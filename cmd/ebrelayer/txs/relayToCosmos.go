@@ -32,10 +32,10 @@ func RelayToCosmos(moniker, password string, claims []*types.EthBridgeClaim, cli
 		// Packages the claim as a Tendermint message
 		msg := types.NewMsgCreateEthBridgeClaim(claim)
 
-		e := msg.ValidateBasic()
-		if e != nil {
+		err := msg.ValidateBasic()
+		if err != nil {
 			sugaredLogger.Errorw("failed to get message from claim.",
-				errorMessageKey, e.Error())
+				errorMessageKey, err.Error())
 			continue
 		} else {
 			messages = append(messages, &msg)

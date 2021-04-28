@@ -13,7 +13,7 @@ import (
 // Each Recipient and DropName generate a unique Record
 func (k Keeper) CreateDrops(ctx sdk.Context, output []banktypes.Output, name string) error {
 	for _, receiver := range output {
-		distributionRecord := types.NewDistributionRecord(name, receiver.Address, receiver.Coins, sdk.NewInt(ctx.BlockHeight()), sdk.NewInt(1))
+		distributionRecord := types.NewDistributionRecord(name, receiver.Address, receiver.Coins, ctx.BlockHeight(), int64(1))
 		if k.ExistsDistributionRecord(ctx, name, receiver.Address) {
 			oldRecord, err := k.GetDistributionRecord(ctx, name, receiver.Address)
 			if err != nil {
@@ -21,7 +21,7 @@ func (k Keeper) CreateDrops(ctx sdk.Context, output []banktypes.Output, name str
 			}
 			distributionRecord.Add(*oldRecord)
 		}
-		distributionRecord.ClaimStatus = types.ClaimStatus_CLAIM_STATUS_COMPLETED
+		distributionRecord.ClaimStatus = types.ClaimStatus_CLAIM_STATUS_PENDING
 		err := k.SetDistributionRecord(ctx, distributionRecord)
 		if err != nil {
 			return errors.Wrapf(types.ErrFailedOutputs, "error setting distibution record  : %s", distributionRecord.String())
@@ -40,7 +40,7 @@ func (k Keeper) DistributeDrops(ctx sdk.Context, height int64) error {
 			return errors.Wrapf(types.ErrFailedOutputs, "for address  : %s", record.RecipientAddress)
 		}
 		record.ClaimStatus = types.ClaimStatus_CLAIM_STATUS_COMPLETED
-		record.DistributionCompletedHeight = sdk.NewInt(height)
+		record.DistributionCompletedHeight = height
 		err = k.SetDistributionRecord(ctx, *record)
 		if err != nil {
 			return errors.Wrapf(types.ErrFailedOutputs, "error setting distibution record  : %s", record)
