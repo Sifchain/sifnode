@@ -68,7 +68,7 @@ func RelayProphecyClaimToEthereum(provider string, contractAddress common.Addres
 			sugaredLogger.Errorw(
 				"no tx receipt after broadcasting",
 				"retry", i,
-				"getTxReceiptErr", err.Error(), 
+				"getTxReceiptErr", err.Error(),
 			)
 			tx, err = cosmosBridgeInstance.NewProphecyClaim(auth, uint8(claim.ClaimType),
 				claim.CosmosSender, claim.CosmosSenderSequence, claim.EthereumReceiver, claim.Symbol, claim.Amount.BigInt())
@@ -123,7 +123,7 @@ func initRelayConfig(provider string, registry common.Address, event types.Event
 	}
 
 	nonce, err := client.PendingNonceAt(context.Background(), sender)
-	
+
 	sugaredLogger.Infow("Current eth operator at pending nonce.", "pendingNonce", nonce)
 
 	if err != nil {
