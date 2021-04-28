@@ -8,6 +8,7 @@ import Tick from "./icons/Tick.vue";
 import Cross from "./icons/Cross.vue";
 import Back from "./icons/Back.vue";
 import Plus from "./icons/Plus.vue";
+import Eye from "./icons/Eye.vue";
 import InfoBoxBlack from "./icons/InfoBoxBlack.vue";
 import InfoBoxWhite from "./icons/InfoBoxWhite.vue";
 import Bang from "./icons/Bang.vue";
@@ -32,6 +33,7 @@ export default defineComponent({
         | "sif"
         | "exclaimation"
         | "soon"
+        | "eye"
       >,
     },
   },
@@ -49,6 +51,7 @@ export default defineComponent({
     Sif,
     Exclaimation,
     Soon,
+    Eye,
   },
 });
 </script>
@@ -68,5 +71,6 @@ export default defineComponent({
     <Sif v-if="icon === 'sif'" />
     <Exclaimation v-if="icon === 'exclaimation'" />
     <Soon v-if="icon === 'soon'" />
+    <Eye v-if="icon === 'eye'" />
   </span>
 </template>
