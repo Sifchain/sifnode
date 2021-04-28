@@ -9,7 +9,8 @@
 - [Go](https://golang.org/doc/install) (to build the sifchain to test against)
 - [Node 14](https://nodejs.org/en/)
 - [Yarn Classic](https://classic.yarnpkg.com/en/docs/install#mac-stable)
-- A linux like environment
+- [Docker](https://docs.docker.com/get-docker/) for your environment setup to run without sudo
+- A linux like environment (macOs,linux,WSL (might have some issues))
 
 ### Setup
 
