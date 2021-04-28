@@ -6,6 +6,7 @@
         class="tab"
         :class="{ selected: index === selectedIndex }"
         :key="tab.name"
+        :data-handle="tab.slug"
         @click="tabSelected(index)"
       >
         {{ tab.name }}
@@ -61,7 +62,10 @@ export default defineComponent({
   setup(props, context) {
     const selectedIndex = ref(props.defaultIndex || 0);
     const slots = (context.slots.default && context.slots.default()) ?? [];
-    const tabs = slots.map((s: any) => ({ name: (s.props as any).title }));
+    const tabs = slots.map((s: any) => ({
+      name: (s.props as any).title as string,
+      slug: (s.props as any).slug as string,
+    }));
     const selectedTitle = ref<string | undefined>(
       tabs[selectedIndex.value].name,
     );

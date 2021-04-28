@@ -14,7 +14,7 @@ import (
 // Keeper maintains the link to data storage and
 // exposes getter/setter methods for the various parts of the state machine
 type Keeper struct {
-	cdc      *codec.Codec // The wire codec for binary encoding/decoding.
+	Cdc      *codec.Codec // The wire codec for binary encoding/decoding.
 	storeKey sdk.StoreKey // Unexposed key to access store from sdk.Context
 
 	stakeKeeper types.StakingKeeper
@@ -30,7 +30,7 @@ func NewKeeper(
 		panic(types.ErrMinimumConsensusNeededInvalid.Error())
 	}
 	return Keeper{
-		cdc:             cdc,
+		Cdc:             cdc,
 		storeKey:        storeKey,
 		stakeKeeper:     stakeKeeper,
 		consensusNeeded: consensusNeeded,
@@ -51,7 +51,7 @@ func (k Keeper) GetProphecy(ctx sdk.Context, id string) (types.Prophecy, bool) {
 	}
 
 	var dbProphecy types.DBProphecy
-	k.cdc.MustUnmarshalBinaryBare(bz, &dbProphecy)
+	k.Cdc.MustUnmarshalBinaryBare(bz, &dbProphecy)
 
 	deSerializedProphecy, err := dbProphecy.DeserializeFromDB()
 	if err != nil {
@@ -69,7 +69,7 @@ func (k Keeper) setProphecy(ctx sdk.Context, prophecy types.Prophecy) {
 		panic(err)
 	}
 
-	store.Set([]byte(prophecy.ID), k.cdc.MustMarshalBinaryBare(serializedProphecy))
+	store.Set([]byte(prophecy.ID), k.Cdc.MustMarshalBinaryBare(serializedProphecy))
 }
 
 // ProcessClaim ...

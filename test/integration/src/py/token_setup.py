@@ -14,7 +14,7 @@ from test_utilities import create_new_currency
 #
 # Run example:
 #
-#  TOKENS_FILE=.../sifnode/ui/core/src/assets.sifchain.mainnet.json python3 -m pytest src/py/token_setup.py
+#  TOKENS_FILE=$BASEDIR/ui/core/src/assets.sifchain.mainnet.json python3 -m pytest src/py/token_setup.py
 
 def build_request_for_new_sifchain_address(basic_transfer_request, source_ethereum_address, new_currency, amount):
     sifaddress, credentials = create_new_sifaddr_and_credentials()

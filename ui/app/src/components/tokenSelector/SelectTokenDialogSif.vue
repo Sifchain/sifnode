@@ -13,20 +13,11 @@ export default defineComponent({
   },
   emits: ["tokenselected"],
   setup(props, context) {
-    const { store, config } = useCore();
+    const { config } = useCore();
+
     const { displayList, fullSearchList } = generateTokenSearchLists({
       walletLimit: 500,
-      walletTokens: (() => {
-        if (props.mode === "from") {
-          // select only from tokens with balances
-          return store.wallet.sif.balances.map((tok) => tok.asset);
-        } else {
-          // select from all tokens
-          return config.assets.filter((tok) => {
-            return tok.network === "sifchain";
-          });
-        }
-      })(),
+      walletTokens: config.assets.filter((tok) => tok.network === "sifchain"),
     });
 
     function selectToken(symbol: string) {

@@ -3,12 +3,13 @@ import { createRouter, createWebHashHistory, RouteRecordRaw } from "vue-router";
 import Swap from "@/views/SwapPage.vue";
 import Pool from "@/views/PoolPage.vue";
 import StatsPage from "@/views/StatsPage.vue";
-import RewardsPage from "@/views/RewardsPage.vue";
+import StakeDelegatePage from "@/views/StakeDelegatePage.vue";
 import CreatePool from "@/views/CreatePoolPage.vue";
 import RemoveLiquidity from "@/views/RemoveLiquidityPage.vue";
 import SinglePool from "@/views/SinglePool.vue";
 import PegListingPage from "@/views/PegListingPage.vue";
 import PegAssetPage from "@/views/PegAssetPage.vue";
+import RewardsPage from "@/views/RewardsPage.vue";
 
 const routes: Array<RouteRecordRaw> = [
   {
@@ -24,6 +25,11 @@ const routes: Array<RouteRecordRaw> = [
     path: "/rewards",
     name: "RewardsPage",
     component: RewardsPage,
+  },
+  {
+    path: "/stake-delegate",
+    name: "StakeDelegatePage",
+    component: StakeDelegatePage,
   },
   {
     path: "/swap",
