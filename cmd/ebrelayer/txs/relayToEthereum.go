@@ -24,7 +24,6 @@ const (
 )
 
 var GasPriceMinimum *big.Int = big.NewInt(60000000000)
-var nonce uint64 = 0
 
 // RelayProphecyClaimToEthereum relays the provided ProphecyClaim to CosmosBridge contract on the Ethereum network
 func RelayProphecyClaimToEthereum(provider string, contractAddress common.Address, event types.Event,
@@ -50,7 +49,7 @@ func RelayProphecyClaimToEthereum(provider string, contractAddress common.Addres
 		"CosmosSender", claim.CosmosSender,
 		"CosmosSenderSequence", claim.CosmosSenderSequence)
 
-	tx, err := cosmosBridgeInstance.NewProphecyClaim(auth, uint8(claim.ClaimType),
+	tx, _ := cosmosBridgeInstance.NewProphecyClaim(auth, uint8(claim.ClaimType),
 		claim.CosmosSender, claim.CosmosSenderSequence, claim.EthereumReceiver, claim.Symbol, claim.Amount.BigInt())
 	// sleep 30 seconds to wait for tx to go through.
 	time.Sleep(transactionInterval * 30)
@@ -70,7 +69,7 @@ func RelayProphecyClaimToEthereum(provider string, contractAddress common.Addres
 				"retry", i,
 				"getTxReceiptErr", err.Error(), 
 			)
-			tx, err = cosmosBridgeInstance.NewProphecyClaim(auth, uint8(claim.ClaimType),
+			_, _ = cosmosBridgeInstance.NewProphecyClaim(auth, uint8(claim.ClaimType),
 				claim.CosmosSender, claim.CosmosSenderSequence, claim.EthereumReceiver, claim.Symbol, claim.Amount.BigInt())
 
 			receipt, err := client.TransactionReceipt(context.Background(), txHash)
