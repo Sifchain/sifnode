@@ -17,6 +17,7 @@ import (
 	"github.com/Sifchain/sifnode/tools/sifgen/utils"
 
 	"github.com/BurntSushi/toml"
+	"github.com/cosmos/cosmos-sdk/crypto/keyring"
 	"github.com/sethvargo/go-password/password"
 	"gopkg.in/yaml.v3"
 )
@@ -51,7 +52,7 @@ func Reset(chainID string, nodeDir *string) error {
 		directory = *nodeDir
 	}
 
-	_, err := utils.NewCLI(chainID).ResetState(directory)
+	_, err := utils.NewCLI(chainID, keyring.BackendFile).ResetState(directory)
 	if err != nil {
 		return err
 	}

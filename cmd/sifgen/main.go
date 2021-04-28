@@ -181,7 +181,7 @@ func keyGenerateMnemonicCmd() *cobra.Command {
 		Short: "Generate a mnemonic phrase.",
 		Args:  cobra.MaximumNArgs(0),
 		Run: func(cmd *cobra.Command, args []string) {
-			sifgen.NewSifgen(nil).KeyGenerateMnemonic(nil, nil)
+			sifgen.NewSifgen(nil).KeyGenerateMnemonic("", "")
 		},
 	}
 }

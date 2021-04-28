@@ -278,7 +278,7 @@ type ChannelGenesis struct {
 type Ibc struct {
 	ClientGenesis     ClientGenesis     `json:"client_genesis"`
 	ConnectionGenesis ConnectionGenesis `json:"connection_genesis"`
-	ChannelGenesis  ChannelGenesis  `json:"channel_genesis"`
+	ChannelGenesis    ChannelGenesis    `json:"channel_genesis"`
 }
 
 type Oracle struct {
@@ -301,11 +301,11 @@ type Slashing struct {
 }
 
 type StakingParams struct {
-	UnbondingTime     string `json:"unbonding_time"`
-	MaxValidators     json.Number    `json:"max_validators"`
-	MaxEntries        json.Number    `json:"max_entries"`
-	HistoricalEntries json.Number    `json:"historical_entries"`
-	BondDenom         string `json:"bond_denom"`
+	UnbondingTime     string      `json:"unbonding_time"`
+	MaxValidators     json.Number `json:"max_validators"`
+	MaxEntries        json.Number `json:"max_entries"`
+	HistoricalEntries json.Number `json:"historical_entries"`
+	BondDenom         string      `json:"bond_denom"`
 }
 
 type Staking struct {

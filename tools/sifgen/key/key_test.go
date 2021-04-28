@@ -16,7 +16,7 @@ var (
 )
 
 func TestGenerateMnemonic(t *testing.T) {
-	k := NewKey(&name, &random)
+	k := NewKey(name, random)
 	k.GenerateMnemonic()
 
 	if !bip39.IsMnemonicValid(k.Mnemonic) {
@@ -25,7 +25,7 @@ func TestGenerateMnemonic(t *testing.T) {
 }
 
 func TestRecoverFromMnemonic(t *testing.T) {
-	k := NewKey(&name, &random)
+	k := NewKey(name, random)
 	if err := k.RecoverFromMnemonic(mnemonic); err != nil {
 		t.Error(err)
 	}

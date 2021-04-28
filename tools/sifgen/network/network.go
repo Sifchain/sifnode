@@ -14,6 +14,7 @@ import (
 	"github.com/Sifchain/sifnode/tools/sifgen/utils"
 
 	"github.com/BurntSushi/toml"
+	"github.com/cosmos/cosmos-sdk/crypto/keyring"
 	"gopkg.in/yaml.v3"
 )
 
@@ -44,7 +45,7 @@ func Reset(chainID, networkDir string) error {
 
 	for _, node := range nodes {
 		nodeDir := fmt.Sprintf("%s/validators/%s/%s/.sifnoded", networkDir, chainID, node.Moniker)
-		_, err = utils.NewCLI(chainID).ResetState(nodeDir)
+		_, err = utils.NewCLI(chainID, keyring.BackendTest).ResetState(nodeDir)
 		if err != nil {
 			return err
 		}
@@ -56,7 +57,7 @@ func Reset(chainID, networkDir string) error {
 func NewNetwork(chainID string) *Network {
 	return &Network{
 		ChainID: chainID,
-		CLI:     utils.NewCLI(chainID),
+		CLI:     utils.NewCLI(chainID, keyring.BackendTest),
 	}
 }
 

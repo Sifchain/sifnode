@@ -3,13 +3,14 @@ package utils
 import (
 	"bytes"
 	"fmt"
+	"github.com/cosmos/cosmos-sdk/crypto/keyring"
 	"io"
 	"io/ioutil"
 	"log"
 	"os"
 	"os/exec"
-	"strings"
 	"path"
+	"strings"
 
 	"github.com/Sifchain/sifnode/app"
 )
@@ -48,14 +49,16 @@ type CLIUtils interface {
 }
 
 type CLI struct {
-	chainID    string
-	configPath string
+	chainID        string
+	configPath     string
+	keyringBackend string
 }
 
-func NewCLI(chainID string) CLI {
+func NewCLI(chainID, keyringBackend string) CLI {
 	return CLI{
-		chainID:    chainID,
-		configPath: fmt.Sprintf("%s/config", app.DefaultNodeHome),
+		chainID:        chainID,
+		configPath:     fmt.Sprintf("%s/config", app.DefaultNodeHome),
+		keyringBackend: keyringBackend,
 	}
 }
 
@@ -107,13 +110,14 @@ func (c CLI) InitChain(chainID, moniker, nodeDir string) (*string, error) {
 }
 
 func (c CLI) AddKey(name, mnemonic, keyPassword, cliDir string) (*string, error) {
-	return c.shellExecInput("sifnoded",
-		[][]byte{
-			[]byte(mnemonic + "\n"),
-			[]byte("\n"),
-			[]byte(keyPassword + "\n"),
-			[]byte(keyPassword + "\n"),
-		}, "keys", "add", name, "--home", cliDir, "-i", "--keyring-backend", "file")
+	var input [][]byte
+	if c.keyringBackend == keyring.BackendFile {
+		input = c.formatInputs([]string{mnemonic, "", keyPassword, keyPassword})
+	} else {
+		input = c.formatInputs([]string{mnemonic, ""})
+	}
+
+	return c.shellExecInput("sifnoded", input, "keys", "add", name, "--home", cliDir, "-i", "--keyring-backend", c.keyringBackend)
 }
 
 func (c CLI) AddGenesisAccount(address, nodeDir string, coins []string) (*string, error) {
@@ -121,19 +125,23 @@ func (c CLI) AddGenesisAccount(address, nodeDir string, coins []string) (*string
 }
 
 func (c CLI) AddGenesisCLPAdmin(address, nodeDir string) (*string, error) {
-	return c.shellExec("sifnoded", "add-genesis-clp-admin", address, "--home", nodeDir, "--keyring-backend", "file")
+	return c.shellExec("sifnoded", "add-genesis-clp-admin", address, "--home", nodeDir, "--keyring-backend", c.keyringBackend)
 }
 
 func (c CLI) SetGenesisOracleAdmin(address, nodeDir string) (*string, error) {
-	return c.shellExec("sifnoded", "set-genesis-oracle-admin", address, "--home", nodeDir, "--keyring-backend", "file")
+	return c.shellExec("sifnoded", "set-genesis-oracle-admin", address, "--home", nodeDir, "--keyring-backend", c.keyringBackend)
 }
 
 func (c CLI) GenerateGenesisTxn(name, keyPassword, bondAmount, nodeDir, outputFile, nodeID, pubKey, ipV4Addr, chainID string) (*string, error) {
-	return c.shellExecInput("sifnoded",
-		[][]byte{[]byte(keyPassword + "\n"), []byte(keyPassword + "\n"), []byte(keyPassword + "\n")},
+	var input [][]byte
+	if c.keyringBackend == keyring.BackendFile {
+		input = c.formatInputs([]string{keyPassword, keyPassword, keyPassword})
+	}
+
+	return c.shellExecInput("sifnoded", input,
 		"gentx", name, bondAmount,
 		"--details", name,
-		"--keyring-backend", "file",
+		"--keyring-backend", c.keyringBackend,
 		"--home", nodeDir,
 		"--output-document", outputFile,
 		"--node-id", nodeID,
@@ -160,11 +168,12 @@ func (c CLI) ConfigFilePath() string {
 }
 
 func (c CLI) TransferFunds(keyPassword, fromAddress, toAddress, coins string) (*string, error) {
-	return c.shellExecInput("sifnoded",
-		[][]byte{
-			[]byte(keyPassword + "\n"),
-			[]byte(keyPassword + "\n"),
-		}, "tx", "send", fromAddress, toAddress, coins, "-y")
+	var input [][]byte
+	if c.keyringBackend == keyring.BackendFile {
+		input = c.formatInputs([]string{keyPassword, keyPassword})
+	}
+
+	return c.shellExecInput("sifnoded", input, "tx", "send", fromAddress, toAddress, coins, "-y")
 }
 
 func (c CLI) ValidatorPublicKeyAddress() (*string, error) {
@@ -172,11 +181,12 @@ func (c CLI) ValidatorPublicKeyAddress() (*string, error) {
 }
 
 func (c CLI) CreateValidator(moniker, validatorPublicKey, keyPassword, bondAmount string) (*string, error) {
-	return c.shellExecInput("sifnoded",
-		[][]byte{
-			[]byte(keyPassword + "\n"),
-			[]byte(keyPassword + "\n"),
-		},
+	var input [][]byte
+	if c.keyringBackend == keyring.BackendFile {
+		input = c.formatInputs([]string{keyPassword, keyPassword})
+	}
+
+	return c.shellExecInput("sifnoded", input,
 		"tx", "staking", "create-validator",
 		"--commission-max-change-rate", "0.1",
 		"--commission-max-rate", "0.1",
@@ -188,8 +198,17 @@ func (c CLI) CreateValidator(moniker, validatorPublicKey, keyPassword, bondAmoun
 		"--min-self-delegation", "1",
 		"--gas", "auto",
 		"--from", moniker,
-		"--keyring-backend", "file",
+		"--keyring-backend", c.keyringBackend,
 		"-y")
+}
+
+func (c CLI) formatInputs(inputs []string) [][]byte {
+	var formatted [][]byte
+	for _, input := range inputs {
+		formatted = append(formatted, []byte(input+"\n"))
+	}
+
+	return formatted
 }
 
 func (c CLI) shellExec(cmd string, args ...string) (*string, error) {
@@ -198,8 +217,6 @@ func (c CLI) shellExec(cmd string, args ...string) (*string, error) {
 	var errOut bytes.Buffer
 	cm.Stdout = &out
 	cm.Stderr = &errOut
-
-	fmt.Printf("%v\n", cm.String())
 
 	err := cm.Run()
 	if err != nil {
@@ -214,8 +231,6 @@ func (c CLI) shellExecInput(cmd string, inputs [][]byte, args ...string) (*strin
 	cm := exec.Command(cmd, args...)
 	var stderr bytes.Buffer
 	cm.Stderr = &stderr
-
-	fmt.Printf("%v\n", cm.String())
 
 	stdin, err := cm.StdinPipe()
 	if err != nil {
