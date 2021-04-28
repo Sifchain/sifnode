@@ -249,7 +249,7 @@ echo '      sssssssssss    iiiiiiiifffffffff            cccccccccccccccchhhhhhh 
   desc "Install Vault If Not Exists"
   namespace :vault do
     desc "Install Vault into Kubernetes Env Configured"
-    task :install, [:env, :region, :path, :kmskey, :aws_role] do |t, args|
+    task :install, [:env, :region, :path, :kmskey, :aws_role, :aws_region] do |t, args|
       require 'fileutils'
       require 'net/http'
 
@@ -296,7 +296,7 @@ echo '      sssssssssss    iiiiiiiifffffffff            cccccccccccccccchhhhhhh 
       ENV.each_pair do |k, v|
           replace_string="-=#{k}=-"
           if replace_string == "-=aws_region=-"
-            template_file_text.include?(k) ? (template_file_text.gsub! replace_string, "#{args[:region]}") : (puts 'env matching...')
+            template_file_text.include?(k) ? (template_file_text.gsub! replace_string, "#{args[:aws_region]}") : (puts 'env matching...')
           elsif replace_string == "-=kmskey=-"
             template_file_text.include?(k) ? (template_file_text.gsub! replace_string, "#{args[:kmskey]}") : (puts 'env matching...')
           elsif replace_string == "-=aws_role=-"
@@ -340,7 +340,7 @@ echo '      sssssssssss    iiiiiiiifffffffff            cccccccccccccccchhhhhhh 
             system(vault_init)
           vault_output = `cat vault_output`
           if vault_output.include?("s.")
-            upload_to_s3 = `aws s3 cp ./vault_output s3://sifchain-vault-output-backup/#{args[:env]}/#{args[:region]}/vault-master-keys.$(date  | sed -e 's/ //g').backup --region us-west-2`
+            upload_to_s3 = `aws s3 cp ./vault_output s3://sifchain-vault-output-backup/#{args[:env]}/#{args[:region]}/vault-master-keys.$(date  | sed -e 's/ //g').backup --region #{args[:aws_region]}`
             puts upload_to_s3
           else
             puts "vault token not found #{vault_output}"
