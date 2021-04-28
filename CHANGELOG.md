@@ -16,7 +16,7 @@
 - [Blockexplorer] Improved design elements and cUSDT decimal formatting.
 - [UI] Incorporated logic in token listing when swapping and adding liquidity. These will now be sorted by balance (high to low) and then alphebetically. Also added the ability to see your balance in these listings as well. - TBD
 - [UI] Added logic for when clicking on max button in ROWAN to take into consideration necessary gas fees. - TBD
-- [UI] In swap confirmation screen, built in cleaner UX logic around the way we display numbers. - TBD
+- [UI] In swap confirmation screen, built in cleaner UX logic around the way we display numbers. 
 
 ## 🐛 Bug Fixes
 
