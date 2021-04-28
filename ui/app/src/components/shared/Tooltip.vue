@@ -3,11 +3,19 @@ import { defineComponent } from "vue";
 
 export default defineComponent({
   props: {
+    fit: Boolean,
     message: {
       type: String,
     },
   },
-
+  setup: function (props) {
+    const { fit } = props;
+    const classes = {
+      "tooltip-container-fit": fit,
+      "tooltip-container": true,
+    };
+    return { fit, classes };
+  },
   data: function () {
     return {
       opened: false,
@@ -40,7 +48,7 @@ export default defineComponent({
     <teleport to="#tooltip-target">
       <div class="tooltip-background" v-if="opened" @click="close">
         <div class="tooltip-positioner" :style="containerLocation" @click.stop>
-          <div class="tooltip-container">
+          <div :class="classes">
             <div class="tooltip-inner">
               {{ message }}
               <slot name="message"></slot>
@@ -69,25 +77,23 @@ export default defineComponent({
 }
 .tooltip-container {
   transform: translateY(-100%);
-  background: #fff;
-  border: 1px solid #ccc;
-  padding: 1px;
-  border-radius: 10px;
-  line-height: 13px;
-  font-size: 11px;
+  background: #f9f9f9;
+  border-radius: 4px;
+  line-height: 16px;
+  font-size: 14px;
+  text-align: left;
+  font-weight: 400;
   z-index: 10000;
-  box-shadow: 0px 3px 10px #00000033;
   width: 210px;
-  border-bottom-left-radius: 0;
+  box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.4);
   .tooltip-inner {
-    border-radius: 8px;
-    border-bottom-left-radius: 0;
-    border: 1px solid #dedede;
-    border-bottom-left-radius: 0;
-    padding: 1rem;
+    padding: 8px 12px;
   }
 }
 .trigger {
   cursor: pointer;
+}
+.tooltip-container-fit {
+  width: auto !important;
 }
 </style>
