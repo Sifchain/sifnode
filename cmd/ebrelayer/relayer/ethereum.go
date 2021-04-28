@@ -25,7 +25,7 @@ import (
 	ctypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/sethvargo/go-password/password"
 	"github.com/syndtr/goleveldb/leveldb"
-	tmClient "github.com/tendermint/tendermint/rpc/client/http"
+	tmclient "github.com/tendermint/tendermint/rpc/client/http"
 	"go.uber.org/zap"
 
 	sifapp "github.com/Sifchain/sifnode/app"
@@ -53,7 +53,6 @@ type EthereumSub struct {
 	TxBldr                  client.TxBuilder
 	PrivateKey              *ecdsa.PrivateKey
 	TempPassword            string
-	EventsBuffer            types.EthEventBuffer
 	DB                      *leveldb.DB
 	SugaredLogger           *zap.SugaredLogger
 }
@@ -137,7 +136,7 @@ func LoadTendermintCLIContext(validatorAddress sdk.ValAddress, validatorName str
 func (sub EthereumSub) Start(completionEvent *sync.WaitGroup) {
 	defer completionEvent.Done()
 	time.Sleep(time.Second)
-	c, err := SetupWebsocketEthClient(sub.EthProvider)
+	ethClient, err := SetupWebsocketEthClient(sub.EthProvider)
 	if err != nil {
 		sub.SugaredLogger.Errorw("SetupWebsocketEthClient failed.",
 			errorMessageKey, err.Error())
@@ -146,11 +145,11 @@ func (sub EthereumSub) Start(completionEvent *sync.WaitGroup) {
 		go sub.Start(completionEvent)
 		return
 	}
-	defer c.Close()
+	defer ethClient.Close()
 	sub.SugaredLogger.Infow("Started Ethereum websocket with provider:",
 		"Ethereum provider", sub.EthProvider)
 
-	clientChainID, err := c.NetworkID(context.Background())
+	clientChainID, err := ethClient.NetworkID(context.Background())
 	if err != nil {
 		sub.SugaredLogger.Errorw("failed to get network ID.",
 			errorMessageKey, err.Error())
@@ -167,7 +166,7 @@ func (sub EthereumSub) Start(completionEvent *sync.WaitGroup) {
 	defer close(quit)
 
 	// get the bridgebank address from the registry contract
-	bridgeBankAddress, err := txs.GetAddressFromBridgeRegistry(c, sub.RegistryContractAddress, txs.BridgeBank, sub.SugaredLogger)
+	bridgeBankAddress, err := txs.GetAddressFromBridgeRegistry(ethClient, sub.RegistryContractAddress, txs.BridgeBank, sub.SugaredLogger)
 	if err != nil {
 		log.Fatal("Error getting bridgebank address: ", err.Error())
 	}
@@ -177,7 +176,7 @@ func (sub EthereumSub) Start(completionEvent *sync.WaitGroup) {
 	// Listen the new header
 	heads := make(chan *ctypes.Header)
 	defer close(heads)
-	subHead, err := c.SubscribeNewHead(context.Background(), heads)
+	subHead, err := ethClient.SubscribeNewHead(context.Background(), heads)
 	if err != nil {
 		sub.SugaredLogger.Errorw("failed to subscribe new head.",
 			errorMessageKey, err.Error())
@@ -233,7 +232,7 @@ func (sub EthereumSub) Start(completionEvent *sync.WaitGroup) {
 				"endingBlock", endingBlock)
 
 			// query event data from this specific block range
-			ethLogs, err := c.FilterLogs(context.Background(), ethereum.FilterQuery{
+			ethLogs, err := ethClient.FilterLogs(context.Background(), ethereum.FilterQuery{
 				FromBlock: lastProcessedBlock,
 				ToBlock:   endingBlock,
 				Addresses: []common.Address{bridgeBankAddress},
@@ -294,24 +293,24 @@ func (sub EthereumSub) getAllClaims(fromBlock int64, toBlock int64) []types.Ethe
 	log.Printf("Replay get all ethereum bridge claim from block %d to block %d\n", fromBlock, toBlock)
 
 	var claimArray []types.EthereumBridgeClaim
-	c, err := tmClient.New(sub.TmProvider, "/websocket")
+	tmClient, err := tmclient.New(sub.TmProvider, "/websocket")
 	if err != nil {
 		log.Printf("failed to initialize a client, error is %s\n", err.Error())
 		return claimArray
 	}
 
-	if err := c.Start(); err != nil {
+	if err := tmClient.Start(); err != nil {
 		log.Printf("failed to start a client, error is %s\n", err.Error())
 		return claimArray
 	}
 
-	defer c.Stop() //nolint:errcheck
+	defer tmClient.Stop() //nolint:errcheck
 
 	for blockNumber := fromBlock; blockNumber < toBlock; {
 		tmpBlockNumber := blockNumber
 
 		ctx := context.Background()
-		block, err := c.BlockResults(ctx, &tmpBlockNumber)
+		block, err := tmClient.BlockResults(ctx, &tmpBlockNumber)
 
 		blockNumber++
 		log.Printf("Replay start to process block %d\n", blockNumber)
