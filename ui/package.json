@@ -44,7 +44,6 @@
     "pw:test": "cd e2e && ./scripts/test.sh",
     "stack:backend-from-scratch": "./scripts/run-stack-backend-from-scratch.sh",
     "stack:backend": "./scripts/run-stack-backend.sh",
-    "stack:backend:docker": "./scripts/run-stack-backend-docker.sh",
     "stack:pause": "./scripts/run-stack-pause.sh",
     "stack:save-default-snapshot": "./scripts/run-stack-save-default-snapshot.sh",
     "stack:save-snapshot": "yarn chain:snapshot",
