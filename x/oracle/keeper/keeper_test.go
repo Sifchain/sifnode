@@ -5,6 +5,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/zap"
 
@@ -280,4 +281,34 @@ func TestNonValidator(t *testing.T) {
 	_, err := keeper.ProcessClaim(ctx, networkID, oracleClaim, sugaredLogger)
 	require.Error(t, err)
 	require.True(t, strings.Contains(err.Error(), "validator must be in whitelist"))
+}
+
+func TestProcessUpdateWhiteListValidator(t *testing.T) {
+	ctx, keeper, _, _, _, _, _ := CreateTestKeepers(t, 0.7, []int64{3, 7}, "")
+
+	addresses, testValidatorAddresses := CreateTestAddrs(10)
+	keeper.SetAdminAccount(ctx, addresses[0])
+	adminAccount := keeper.GetAdminAccount(ctx)
+	assert.Equal(t, adminAccount, addresses[0])
+
+	// test against non admin case
+	err := keeper.ProcessUpdateWhiteListValidator(ctx, networkID, addresses[1], testValidatorAddresses[0], "add", sugaredLogger)
+	require.Error(t, err)
+	require.Equal(t, err.Error(), "update whitelist validator must be admin account")
+
+	whiteList := keeper.GetOracleWhiteList(ctx, types.NewNetworkDescriptor(networkID))
+	require.Equal(t, len(whiteList), 2)
+
+	// remove one validator
+	err = keeper.ProcessUpdateWhiteListValidator(ctx, networkID, addresses[0], whiteList[0], "remove", sugaredLogger)
+	newWhiteList := keeper.GetOracleWhiteList(ctx, types.NewNetworkDescriptor(networkID))
+	require.Equal(t, err, nil)
+	require.Equal(t, len(newWhiteList), 1)
+
+	// add one validator
+	err = keeper.ProcessUpdateWhiteListValidator(ctx, networkID, addresses[0], whiteList[0], "add", sugaredLogger)
+	newWhiteList = keeper.GetOracleWhiteList(ctx, types.NewNetworkDescriptor(networkID))
+	require.Equal(t, err, nil)
+	require.Equal(t, len(newWhiteList), 2)
+
 }
