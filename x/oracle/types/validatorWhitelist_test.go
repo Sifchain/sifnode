@@ -18,10 +18,6 @@ func TestNewValidatorWhitelist(t *testing.T) {
 }
 
 func TestAddValidator(t *testing.T) {
-	tmpMap := make(map[string]int)
-	tmpMap["a"] = 12
-	assert.Equal(t, tmpMap["a"], 12)
-
 	address, err := sdk.ValAddressFromBech32(validatorAddress)
 	assert.NoError(t, err)
 
