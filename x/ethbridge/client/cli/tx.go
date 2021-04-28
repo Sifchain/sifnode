@@ -226,7 +226,7 @@ func GetCmdLock(cdc *codec.Codec) *cobra.Command {
 // GetCmdUpdateWhiteListValidator is the CLI command for update the validator whitelist
 func GetCmdUpdateWhiteListValidator(cdc *codec.Codec) *cobra.Command {
 	return &cobra.Command{
-		Use:   "update_whitelist_validator [cosmos-sender-address] [network_descriptor] [validator-address] [operation-type] --node [node-address]",
+		Use:   "update_whitelist_validator [cosmos-sender-address] [network_descriptor] [validator-address] [power] --node [node-address]",
 		Short: "This should be used to update the validator whitelist.",
 		Args:  cobra.ExactArgs(4),
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -250,12 +250,12 @@ func GetCmdUpdateWhiteListValidator(cdc *codec.Codec) *cobra.Command {
 				return err
 			}
 
-			operationType := args[3]
-			if operationType != "add" && operationType != "remove" {
-				return errors.Errorf("invalid [operation-type]: %s", args[2])
+			power, err := strconv.Atoi(args[3])
+			if err != nil {
+				return err
 			}
 
-			msg := types.NewMsgUpdateWhiteListValidator(uint32(networkDescriptor), cosmosSender, validatorAddress, operationType)
+			msg := types.NewMsgUpdateWhiteListValidator(uint32(networkDescriptor), cosmosSender, validatorAddress, power)
 			if err := msg.ValidateBasic(); err != nil {
 				return err
 			}

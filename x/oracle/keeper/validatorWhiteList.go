@@ -5,7 +5,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-func (k Keeper) SetOracleWhiteList(ctx sdk.Context, networkDescriptor types.NetworkDescriptor, validatorList []sdk.ValAddress) {
+func (k Keeper) SetOracleWhiteList(ctx sdk.Context, networkDescriptor types.NetworkDescriptor, validatorList types.ValidatorWhitelist) {
 	store := ctx.KVStore(k.storeKey)
 	key := networkDescriptor.GetPrefix()
 	store.Set(key, k.Cdc.MustMarshalBinaryBare(validatorList))
@@ -17,7 +17,7 @@ func (k Keeper) ExistsOracleWhiteList(ctx sdk.Context, networkDescriptor types.N
 }
 
 //
-func (k Keeper) GetOracleWhiteList(ctx sdk.Context, networkDescriptor types.NetworkDescriptor) (valList []sdk.ValAddress) {
+func (k Keeper) GetOracleWhiteList(ctx sdk.Context, networkDescriptor types.NetworkDescriptor) (valList types.ValidatorWhitelist) {
 	store := ctx.KVStore(k.storeKey)
 	key := networkDescriptor.GetPrefix()
 	bz := store.Get(key)
@@ -31,29 +31,12 @@ func (k Keeper) ValidateAddress(ctx sdk.Context, networkDescriptor types.Network
 		return false
 	}
 	valList := k.GetOracleWhiteList(ctx, networkDescriptor)
-
-	for _, validator := range valList {
-		if validator.Equals(address) {
-			return true
-		}
-	}
-	return false
+	return valList.ContainValidator(address)
 }
 
-// AddOracleWhiteList add new validator to whitelist
-func (k Keeper) AddOracleWhiteList(ctx sdk.Context, networkDescriptor types.NetworkDescriptor, validator sdk.ValAddress) {
+// UpdateOracleWhiteList validator's power
+func (k Keeper) UpdateOracleWhiteList(ctx sdk.Context, networkDescriptor types.NetworkDescriptor, validator sdk.ValAddress, power uint32) {
 	valList := k.GetOracleWhiteList(ctx, networkDescriptor)
-	k.SetOracleWhiteList(ctx, networkDescriptor, append(valList, validator))
-}
-
-// RemoveOracleWhiteList remove a validator from whitelist
-func (k Keeper) RemoveOracleWhiteList(ctx sdk.Context, networkDescriptor types.NetworkDescriptor, validator sdk.ValAddress) {
-	valList := k.GetOracleWhiteList(ctx, networkDescriptor)
-
-	for index, item := range valList {
-		if validator.Equals(item) {
-			k.SetOracleWhiteList(ctx, networkDescriptor, append(valList[:index], valList[index+1]))
-			return
-		}
-	}
+	valList.AddValidator(validator, power)
+	k.SetOracleWhiteList(ctx, networkDescriptor, valList)
 }

@@ -16,6 +16,13 @@ func NewValidatorWhitelist() ValidatorWhitelist {
 	}
 }
 
+// NewValidatorWhitelist get a new ValidatorWhitelist instance
+func NewValidatorWhitelistFromData(whitelist map[string]uint32) ValidatorWhitelist {
+	return ValidatorWhitelist{
+		Whitelist: whitelist,
+	}
+}
+
 // AddValidator add new validator and its power
 func (list *ValidatorWhitelist) AddValidator(validator sdk.ValAddress, power uint32) {
 	list.Whitelist[validator.String()] = power
@@ -28,7 +35,40 @@ func (list *ValidatorWhitelist) RemoveValidator(validator sdk.ValAddress) {
 
 // GetValidatorPower return validator's power
 func (list *ValidatorWhitelist) GetValidatorPower(validator sdk.ValAddress) uint32 {
-	power := uint32(0)
-	power = list.Whitelist[validator.String()]
-	return power
+	if list.ContainValidator(validator) {
+		return list.Whitelist[validator.String()]
+	}
+
+	return 0
+}
+
+// ContainValidator return if validator in the map
+func (list ValidatorWhitelist) ContainValidator(validator sdk.ValAddress) bool {
+	_, ok := list.Whitelist[validator.String()]
+	return ok
+}
+
+// GetPowerRatio return the power ratio of input validator address list
+func (list ValidatorWhitelist) GetPowerRatio(claimValidators map[string][]sdk.ValAddress) (string, float64) {
+	var totalPower = uint32(0)
+	for _, value := range list.Whitelist {
+		totalPower += value
+	}
+
+	var highestClaimPower = uint32(0)
+	var highestString = ""
+
+	for claim, validatorAddresses := range claimValidators {
+		claimPower := uint32(0)
+		for _, address := range validatorAddresses {
+			claimPower += list.GetValidatorPower(address)
+		}
+
+		if claimPower > highestClaimPower {
+			highestClaimPower = claimPower
+			highestString = claim
+		}
+	}
+
+	return highestString, float64(highestClaimPower) / float64(totalPower)
 }

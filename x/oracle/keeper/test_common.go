@@ -40,7 +40,7 @@ const (
 
 // CreateTestKeepers greates an Mock App, OracleKeeper, bankKeeper and ValidatorAddresses to be used for test input
 func CreateTestKeepers(t *testing.T, consensusNeeded float64, validatorAmounts []int64, extraMaccPerm string) (
-	sdk.Context, Keeper, bank.Keeper, supply.Keeper, auth.AccountKeeper, []sdk.ValAddress, sdk.StoreKey) {
+	sdk.Context, Keeper, bank.Keeper, supply.Keeper, auth.AccountKeeper, types.ValidatorWhitelist, sdk.StoreKey) {
 	PKs := CreateTestPubKeys(500)
 	keyStaking := sdk.NewKVStoreKey(stakingtypes.StoreKey)
 	tkeyStaking := sdk.NewTransientStoreKey(stakingtypes.TStoreKey)
@@ -129,11 +129,11 @@ func CreateTestKeepers(t *testing.T, consensusNeeded float64, validatorAmounts [
 	supplyKeeper.SetModuleAccount(ctx, notBondedPool)
 
 	// Setup validators
-	valAddrs := make([]sdk.ValAddress, len(validatorAmounts))
+	valAddrs := types.NewValidatorWhitelist()
 	for i, amount := range validatorAmounts {
 		valPubKey := PKs[i]
 		valAddr := sdk.ValAddress(valPubKey.Address().Bytes())
-		valAddrs[i] = valAddr
+		valAddrs.AddValidator(valAddr, 100)
 		valTokens := sdk.TokensFromConsensusPower(amount)
 		// test how the validator is set from a purely unbonbed pool
 		validator := stakingtypes.NewValidator(valAddr, valPubKey, stakingtypes.Description{})

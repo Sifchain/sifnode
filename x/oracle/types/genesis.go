@@ -4,20 +4,21 @@ import (
 	"encoding/json"
 
 	"github.com/cosmos/cosmos-sdk/codec"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 // GenesisState - all clp state that must be provided at genesis
 //TODO: Add parameters to Genesis state ,such as minimum liquidity required to create a pool
 type GenesisState struct {
-	AddressWhitelist map[string][]sdk.ValAddress `json:"address_whitelist"`
-	AdminAddress     sdk.AccAddress              `json:"admin_address"`
+	AddressWhitelist map[string]map[string]uint32 `json:"address_whitelist"`
+	AdminAddress     sdk.AccAddress               `json:"admin_address"`
 }
 
 // NewGenesisState creates a new GenesisState instance
 func NewGenesisState() GenesisState {
 	return GenesisState{
-		AddressWhitelist: map[string][]sdk.ValAddress{},
+		AddressWhitelist: map[string]map[string]uint32{},
 		AdminAddress:     sdk.AccAddress{},
 	}
 }
@@ -25,7 +26,7 @@ func NewGenesisState() GenesisState {
 // DefaultGenesisState gets the raw genesis raw message for testing
 func DefaultGenesisState() GenesisState {
 	return GenesisState{
-		AddressWhitelist: map[string][]sdk.ValAddress{},
+		AddressWhitelist: map[string]map[string]uint32{},
 		AdminAddress:     sdk.AccAddress{},
 	}
 }

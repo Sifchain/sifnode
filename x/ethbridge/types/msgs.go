@@ -326,17 +326,17 @@ type MsgUpdateWhiteListValidator struct {
 	NetworkDescriptor uint32         `json:"network_descriptor" yaml:"network_descriptor"`
 	CosmosSender      sdk.AccAddress `json:"cosmos_sender" yaml:"cosmos_sender"`
 	Validator         sdk.ValAddress `json:"validator" yaml:"validator"`
-	OperationType     string         `json:"operation_type" yaml:"operation_type"`
+	Power             uint32         `json:"power" yaml:"power"`
 }
 
 // NewMsgUpdateWhiteListValidator is a constructor function for MsgUpdateWhiteListValidator
 func NewMsgUpdateWhiteListValidator(networkDescriptor uint32, cosmosSender sdk.AccAddress,
-	validator sdk.ValAddress, operationType string) MsgUpdateWhiteListValidator {
+	validator sdk.ValAddress, power uint32) MsgUpdateWhiteListValidator {
 	return MsgUpdateWhiteListValidator{
 		NetworkDescriptor: networkDescriptor,
 		CosmosSender:      cosmosSender,
 		Validator:         validator,
-		OperationType:     operationType,
+		Power:             power,
 	}
 }
 

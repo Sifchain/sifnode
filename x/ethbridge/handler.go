@@ -238,7 +238,7 @@ func handleMsgUpdateWhiteListValidator(
 		"CosmosSender", msg.CosmosSender.String(),
 		"CosmosSenderSequence", strconv.FormatUint(account.GetSequence(), 10),
 		"Validator", msg.Validator.String(),
-		"OperationType", msg.OperationType)
+		"Power", msg.Power)
 
 	ctx.EventManager().EmitEvents(sdk.Events{
 		sdk.NewEvent(
@@ -250,7 +250,7 @@ func handleMsgUpdateWhiteListValidator(
 			types.EventTypeLock,
 			sdk.NewAttribute(types.AttributeKeyCosmosSender, msg.CosmosSender.String()),
 			sdk.NewAttribute(types.AttributeKeyValidator, msg.Validator.String()),
-			sdk.NewAttribute(types.AttributeKeyOperationType, msg.OperationType),
+			sdk.NewAttribute(types.AttributeKeyPowerType, strconv.Itoa(int(msg.Power))),
 		),
 	})
 
