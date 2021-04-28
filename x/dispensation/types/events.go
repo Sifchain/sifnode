@@ -6,4 +6,5 @@ const (
 	AttributeValueCategory        = ModuleName
 	EventTypeDistributionStarted  = "distribution_started"
 	AttributeKeyFromModuleAccount = "module_account"
+	EventTypeClaimCreated         = "claim_created"
 )

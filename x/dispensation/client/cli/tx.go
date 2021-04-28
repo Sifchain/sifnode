@@ -30,6 +30,7 @@ func GetTxCmd(cdc *codec.Codec) *cobra.Command {
 
 	dispensationTxCmd.AddCommand(flags.PostCommands(
 		GetCmdCreate(cdc),
+		GetCmdClaim(cdc),
 	)...)
 
 	return dispensationTxCmd
@@ -38,9 +39,8 @@ func GetTxCmd(cdc *codec.Codec) *cobra.Command {
 // GetCmdCreate adds a new command to the main dispensationTxCmd to create a new airdrop
 // Airdrop is a type of distribution on the network .
 func GetCmdCreate(cdc *codec.Codec) *cobra.Command {
-	// Note ,the command only creates a airdrop for now .
 	cmd := &cobra.Command{
-		Use:   "create [MultiSigKeyName] [DistributionName] [Input JSON File Path] [Output JSON File Path]",
+		Use:   "create [MultiSigKeyName] [DistributionName] [DistributionType] [Input JSON File Path] [Output JSON File Path]",
 		Short: "Create new distribution",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			inBuf := bufio.NewReader(cmd.InOrStdin())
@@ -65,8 +65,11 @@ func GetCmdCreate(cdc *codec.Codec) *cobra.Command {
 
 			txBldr := auth.NewTxBuilderFromCLI(inBuf).WithTxEncoder(utils.GetTxEncoder(cdc))
 			cliCtx := context.NewCLIContextWithInputAndFrom(inBuf, ko.Address).WithCodec(cdc)
-
-			inputList, err := dispensationUtils.ParseInput(args[2])
+			distributionType, ok := types.IsValidDistribution(args[2])
+			if !ok {
+				return fmt.Errorf("invalid distribution Type %s: Types supported [Airdrop/LiquidityMining/ValidatorSubsidy]", args[2])
+			}
+			inputList, err := dispensationUtils.ParseInput(args[3])
 			if err != nil {
 				return err
 			}
@@ -75,12 +78,12 @@ func GetCmdCreate(cdc *codec.Codec) *cobra.Command {
 			if err != nil {
 				return err
 			}
-			outputlist, err := dispensationUtils.ParseOutput(args[3])
+			outputlist, err := dispensationUtils.ParseOutput(args[4])
 			if err != nil {
 				return err
 			}
 			name := args[1]
-			msg := types.NewMsgDistribution(cliCtx.GetFromAddress(), name, types.Airdrop, inputList, outputlist)
+			msg := types.NewMsgDistribution(cliCtx.GetFromAddress(), name, distributionType, inputList, outputlist)
 			return utils.GenerateOrBroadcastMsgs(cliCtx, txBldr, []sdk.Msg{msg})
 		},
 	}
@@ -89,15 +92,18 @@ func GetCmdCreate(cdc *codec.Codec) *cobra.Command {
 }
 
 func GetCmdClaim(cdc *codec.Codec) *cobra.Command {
-	// Note ,the command only creates a airdrop for now .
 	cmd := &cobra.Command{
-		Use:   "claim",
-		Short: "Create new Drop/Claim",
+		Use:   "claim [ClaimType]",
+		Short: "Create new Claim",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			inBuf := bufio.NewReader(cmd.InOrStdin())
 			txBldr := auth.NewTxBuilderFromCLI(inBuf).WithTxEncoder(utils.GetTxEncoder(cdc))
 			cliCtx := context.NewCLIContextWithInput(inBuf).WithCodec(cdc)
-			msg := types.NewMsgCreateClaim(cliCtx.GetFromAddress())
+			claimType, ok := types.IsValidClaim(args[0])
+			if !ok {
+				return fmt.Errorf("invalid Claim Type %s: Types supported [LiquidityMining/ValidatorSubsidy]", args[0])
+			}
+			msg := types.NewMsgCreateClaim(cliCtx.GetFromAddress(), claimType)
 			return utils.GenerateOrBroadcastMsgs(cliCtx, txBldr, []sdk.Msg{msg})
 		},
 	}

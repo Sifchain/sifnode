@@ -57,11 +57,12 @@ func (m MsgDistribution) GetSigners() []sdk.AccAddress {
 
 // Create a user claim
 type MsgCreateClaim struct {
-	Signer sdk.AccAddress `json:"signer"`
+	Signer        sdk.AccAddress   `json:"signer"`
+	UserClaimType DistributionType `json:"user_claim_type"`
 }
 
-func NewMsgCreateClaim(Signer sdk.AccAddress) MsgCreateClaim {
-	return MsgCreateClaim{Signer: Signer}
+func NewMsgCreateClaim(Signer sdk.AccAddress, userClaimType DistributionType) MsgCreateClaim {
+	return MsgCreateClaim{Signer: Signer, UserClaimType: userClaimType}
 }
 
 func (m MsgCreateClaim) Route() string {

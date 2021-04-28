@@ -20,3 +20,12 @@ type DistributionsResponse struct {
 func NewDistributionsResponse(distributions Distributions, height int64) DistributionsResponse {
 	return DistributionsResponse{Distributions: distributions, Height: height}
 }
+
+type ClaimsResponse struct {
+	Claims []UserClaim `json:"claims"`
+	Height int64       `json:"height"`
+}
+
+func NewClaimsResponse(claims []UserClaim, height int64) ClaimsResponse {
+	return ClaimsResponse{Claims: claims, Height: height}
+}

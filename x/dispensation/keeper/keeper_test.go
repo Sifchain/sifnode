@@ -29,7 +29,7 @@ func TestKeeper_GetRecordsForName(t *testing.T) {
 	outList := test.GenerateOutputList("1000000000")
 	name := uuid.New().String()
 	for _, rec := range outList {
-		record := types.NewDistributionRecord(name, rec.Address, rec.Coins, ctx.BlockHeight(), -1)
+		record := types.NewDistributionRecord(name, types.Airdrop, rec.Address, rec.Coins, ctx.BlockHeight(), -1)
 		err := keeper.SetDistributionRecord(ctx, record)
 		assert.NoError(t, err)
 		_, err = keeper.GetDistributionRecord(ctx, name, rec.Address.String())
@@ -45,7 +45,7 @@ func TestKeeper_GetRecordsForRecipient(t *testing.T) {
 	outList := test.GenerateOutputList("1000000000")
 	name := uuid.New().String()
 	for _, rec := range outList {
-		record := types.NewDistributionRecord(name, rec.Address, rec.Coins, ctx.BlockHeight(), -1)
+		record := types.NewDistributionRecord(name, types.Airdrop, rec.Address, rec.Coins, ctx.BlockHeight(), -1)
 		err := keeper.SetDistributionRecord(ctx, record)
 		assert.NoError(t, err)
 		_, err = keeper.GetDistributionRecord(ctx, name, rec.Address.String())
@@ -53,4 +53,37 @@ func TestKeeper_GetRecordsForRecipient(t *testing.T) {
 	}
 	list := keeper.GetRecordsForRecipient(ctx, outList[0].Address)
 	assert.Len(t, list, 1)
+}
+
+func TestKeeper_GetClaimsByType(t *testing.T) {
+	app, ctx := test.CreateTestApp(false)
+	keeper := app.DispensationKeeper
+	numberOfClaims := 1000
+	claimList := test.CreateClaimsList(numberOfClaims, types.ValidatorSubsidy)
+	for _, claim := range claimList {
+		err := keeper.SetClaim(ctx, claim)
+		assert.NoError(t, err)
+	}
+	claimList = test.CreateClaimsList(numberOfClaims, types.LiquidityMining)
+	for _, claim := range claimList {
+		err := keeper.SetClaim(ctx, claim)
+		assert.NoError(t, err)
+	}
+	fetchList := keeper.GetClaimsByType(ctx, types.ValidatorSubsidy)
+	assert.Len(t, fetchList, numberOfClaims)
+	fetchList = keeper.GetClaims(ctx)
+	assert.Len(t, fetchList, numberOfClaims+numberOfClaims)
+}
+
+func TestKeeper_GetClaims(t *testing.T) {
+	app, ctx := test.CreateTestApp(false)
+	keeper := app.DispensationKeeper
+	numberOfClaims := 1000
+	claimList := test.CreateClaimsList(numberOfClaims, types.ValidatorSubsidy)
+	for _, claim := range claimList {
+		err := keeper.SetClaim(ctx, claim)
+		assert.NoError(t, err)
+	}
+	fetchList := keeper.GetClaims(ctx)
+	assert.Len(t, fetchList, numberOfClaims)
 }

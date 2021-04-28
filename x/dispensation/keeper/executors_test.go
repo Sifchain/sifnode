@@ -39,7 +39,7 @@ func TestKeeper_CreateAndDistributeDrops(t *testing.T) {
 	moduleBalance, _ := sdk.NewIntFromString("30000000000000000000")
 	assert.True(t, keeper.GetBankKeeper().HasCoins(ctx, types.GetDistributionModuleAddress(), sdk.Coins{sdk.NewCoin("rowan", moduleBalance)}))
 
-	err = keeper.CreateDrops(ctx, outputList, "ar1")
+	err = keeper.CreateDrops(ctx, outputList, "ar1", types.Airdrop)
 	assert.NoError(t, err)
 }
 

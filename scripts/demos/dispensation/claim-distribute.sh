@@ -2,13 +2,15 @@
 
 
 # Multisig Key - It is a key composed of two or more keys (N) , with a signing threshold (K) ,such that the transaction needs K out of N votes to go through.
-
+sifnodecli tx dispensation claim ValidatorSubsidy --from akasha --keyring-backend test --yes
+sifnodecli tx dispensation claim ValidatorSubsidy --from sif --keyring-backend test --yes
 # create airdrop
 # mkey = multisig key
 # ar1 = name for airdrop , needs to be unique for every airdrop . If not the tx gets rejected
 # input.json list of funding addresses  -  Input address must be part of the multisig key
 # output.json list of airdrop receivers.
-sifnodecli tx dispensation distribute mkey ar1 ValidatorSubsidy input.json output.json --gas 200064128 --generate-only >> offlinetx.json
+sleep 8
+sifnodecli tx dispensation create mkey ar1 ValidatorSubsidy input.json output.json --gas 200064128 --generate-only >> offlinetx.json
 # First user signs
 sifnodecli tx sign --multisig $(sifnodecli keys show mkey -a) --from $(sifnodecli keys show sif -a)  offlinetx.json >> sig1.json
 # Second user signs

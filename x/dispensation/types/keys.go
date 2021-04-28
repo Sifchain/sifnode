@@ -36,9 +36,9 @@ func GetDistributionsKey(name string, distributionType DistributionType) []byte 
 	return append(DistributionsPrefix, key...)
 }
 
-func GetUserClaimKey(userAddress string) []byte {
-	key := []byte(fmt.Sprintf("%s", userAddress))
-	return append(DistributionsPrefix, key...)
+func GetUserClaimKey(userAddress string, userClaimType DistributionType) []byte {
+	key := []byte(fmt.Sprintf("%s_%d", userAddress, userClaimType))
+	return append(UserClaimPrefix, key...)
 }
 
 func GetDistributionModuleAddress() sdk.AccAddress {
