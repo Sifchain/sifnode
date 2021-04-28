@@ -340,7 +340,7 @@ echo '      sssssssssss    iiiiiiiifffffffff            cccccccccccccccchhhhhhh 
             system(vault_init)
           vault_output = `cat vault_output`
           if vault_output.include?("s.")
-            upload_to_s3 = `aws s3 cp ./vault_output s3://sifchain-vault-output-backup/#{args[:env]}/#{args[:region]}/vault-master-keys.$(date  | sed -e 's/ //g').backup --region #{args[:aws_region]}`
+            upload_to_s3 = `aws s3 cp ./vault_output s3://sifchain-vault-output-backup/#{args[:env]}/#{args[:region]}/vault-master-keys.$(date  | sed -e 's/ //g').backup --region us-west-2`
             puts upload_to_s3
           else
             puts "vault token not found #{vault_output}"
