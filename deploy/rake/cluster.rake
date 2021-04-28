@@ -637,7 +637,7 @@ metadata:
       else
             puts "Namespace Doesn't Exists"
             puts get_namespaces
-            create_namespace = %Q{kubect create namespace #{args[:app_namespace]} --kubeconfig=./kubeconfig}
+            create_namespace = %Q{kubectl create namespace #{args[:app_namespace]} --kubeconfig=./kubeconfig}
             system(create_namespace) or exit 1
       end
     end
