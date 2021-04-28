@@ -4,6 +4,8 @@ import Icon from "@/components/shared/Icon.vue";
 import Tooltip from "@/components/shared/Tooltip.vue";
 import { format } from "ui-core/src/utils/format";
 import { useAssetItem } from "../utils";
+import { getMantissaValue } from "ui-core/src/utils/decimalShift";
+
 export default defineComponent({
   props: {
     symbol: String,
@@ -24,7 +26,14 @@ export default defineComponent({
       return t.imageUrl;
     });
 
-    return { format, token, tokenLabel, tokenImage, backgroundStyle };
+    return {
+      format,
+      token,
+      tokenLabel,
+      tokenImage,
+      backgroundStyle,
+      getMantissaValue,
+    };
   },
 });
 </script>
@@ -35,12 +44,20 @@ export default defineComponent({
     <div class="info-token">{{ tokenLabel }}</div>
     <!-- <div class="placeholder" :style="backgroundStyle" v-else></div> -->
     <div class="info-amount">{{ format(amount, { mantissa: 6 }) }}</div>
-    <Tooltip :message="amount" :fit="true">
+    <Tooltip
+      v-if="getMantissaValue(amount.toString()) > 6"
+      :message="amount"
+      :fit="true"
+    >
       <Icon icon="eye" class="info-eye" />
     </Tooltip>
+    <div v-else class="eye-placeholder" />
   </div>
 </template>
 <style lang="scss">
+.eye-placeholder {
+  width: 21px;
+}
 .info-eye {
   svg {
     fill: #c6c6c6 !important;
