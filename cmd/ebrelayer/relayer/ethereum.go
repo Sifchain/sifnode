@@ -101,7 +101,6 @@ func NewEthereumSub(inBuf io.Reader, rpcURL string, validatorMoniker, chainID, e
 		CliCtx:                  cliCtx,
 		PrivateKey:              privateKey,
 		TempPassword:            tempPassword,
-		EventsBuffer:            types.NewEthEventBuffer(),
 		DB:                      db,
 		SugaredLogger:           sugaredLogger,
 	}, nil
