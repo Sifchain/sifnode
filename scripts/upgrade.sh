@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 
-#cosmovisor start >> sifnode.log 2>&1  &
-#sleep 10
-yes Y | sifnodecli tx gov submit-proposal software-upgrade release-20210414000000 --from sif --deposit 100000000stake --upgrade-height 10 --title release-20210414000000 --description release-20210414000000
+cosmovisor start >> sifnode.log 2>&1  &
+sleep 10
+yes Y | sifnodecli tx gov submit-proposal software-upgrade release-20210414000000 --from sif --deposit 100000000stake --upgrade-height 20 --title release-20210414000000 --description release-20210414000000
 sleep 5
 yes Y | sifnodecli tx gov vote 1 yes --from sif --keyring-backend test --chain-id localnet
 clear
