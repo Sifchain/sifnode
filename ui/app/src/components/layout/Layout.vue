@@ -62,7 +62,7 @@ export default defineComponent({
   background: url("../../assets/World_Background_opt.jpg");
   background-size: cover;
   background-position: bottom center;
-  filter: blur(10px);
+  // filter: blur(10px);
 
   z-index: -1;
   width: 100%;

@@ -17,6 +17,7 @@
               data-handle="button-connected"
               @click="requestDialog"
               color="success"
+              class="connected-button"
               >Connected</Pill
             >
           </template>
@@ -81,5 +82,9 @@ a {
 
 .main {
   min-height: 100vh;
+}
+
+.connected-button {
+  cursor: pointer;
 }
 </style>

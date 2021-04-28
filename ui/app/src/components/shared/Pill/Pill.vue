@@ -29,7 +29,6 @@ export default {
   display: inline-block;
   background: #000;
   display: flex;
-  cursor: pointer;
 }
 .primary {
   border: 2px solid #d4b553;
