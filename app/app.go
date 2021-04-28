@@ -5,7 +5,6 @@ import (
 	"math/big"
 	"net/http"
 	"os"
-	"path/filepath"
 
 	"github.com/Sifchain/sifnode/x/ethbridge"
 	ethbridgekeeper "github.com/Sifchain/sifnode/x/ethbridge/keeper"
@@ -137,7 +136,7 @@ var (
 func init() {
 	sdk.PowerReduction = sdk.NewIntFromBigInt(new(big.Int).Exp(big.NewInt(10), big.NewInt(18), nil))
 
-	userHomeDir, err := os.UserHomeDir()
+	_, err := os.UserHomeDir()
 	if err != nil {
 		panic(err)
 	}
@@ -183,7 +182,7 @@ type SifchainApp struct {
 
 	ClpKeeper          clpkeeper.Keeper
 	OracleKeeper       oraclekeeper.Keeper
-	EthbridgeKeeper ethbridgekeeper.Keeper
+	EthbridgeKeeper    ethbridgekeeper.Keeper
 	DispensationKeeper dispkeeper.Keeper
 
 	mm *module.Manager

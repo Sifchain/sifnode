@@ -2,8 +2,14 @@ syntax = "proto3";
 package sifnode.dispensation.v1;
 
 import "gogoproto/gogo.proto";
+import "sifnode/dispensation/v1/types.proto";
 
 option go_package = "github.com/Sifchain/sifnode/x/dispensation/types";
 
 service Query {
+}
+
+message DistributionsResponse {
+  repeated Distribution distributions = 1;
+  int64 height = 2;
 }

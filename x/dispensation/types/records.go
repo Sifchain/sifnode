@@ -6,7 +6,7 @@ import (
 
 //This package is used to keep historical data. This will later be used to distribute rewards over different blocks through a gov proposal
 
-func NewDistributionRecord(distributionName string, recipientAddress string, coins sdk.Coins, start sdk.Int, end sdk.Int) DistributionRecord {
+func NewDistributionRecord(distributionName string, recipientAddress string, coins sdk.Coins, start int64, end int64) DistributionRecord {
 	return DistributionRecord{DistributionName: distributionName, RecipientAddress: recipientAddress, Coins: coins, DistributionStartHeight: start, DistributionCompletedHeight: end}
 }
 
