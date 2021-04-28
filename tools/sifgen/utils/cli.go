@@ -203,7 +203,7 @@ func (c CLI) CreateValidator(moniker, validatorPublicKey, keyPassword, bondAmoun
 }
 
 func (c CLI) formatInputs(inputs []string) [][]byte {
-	var formatted [][]byte
+	formatted := make([][]byte, 0)
 	for _, input := range inputs {
 		formatted = append(formatted, []byte(input+"\n"))
 	}

@@ -28,10 +28,10 @@ type Validator struct {
 type Version struct{}
 
 type ConsensusParams struct {
+	Version   Version   `json:"version"`
 	Block     Block     `json:"block"`
 	Evidence  Evidence  `json:"evidence"`
 	Validator Validator `json:"validator"`
-	Version   Version   `json:"version"`
 }
 
 type Params struct {
@@ -331,23 +331,23 @@ type Transfer struct {
 }
 
 type AppState struct {
+	Upgrade      struct{}      `json:"upgrade"`
+	Ibc          Ibc           `json:"ibc"`
+	Distribution Distribution  `json:"distribution"`
+	Staking      Staking       `json:"staking"`
+	Gov          Gov           `json:"gov"`
+	Slashing     Slashing      `json:"slashing"`
 	Auth         Auth          `json:"auth"`
 	Bank         Bank          `json:"bank"`
-	Capability   Capability    `json:"capability"`
 	CLP          CLP           `json:"clp"`
+	Transfer     Transfer      `json:"transfer"`
+	Capability   Capability    `json:"capability"`
 	Dispensation Dispensation  `json:"dispensation"`
-	Distribution Distribution  `json:"distribution"`
-	Ethbridge    interface{}   `json:"ethbridge"`
+	Oracle       Oracle        `json:"oracle"`
 	Evidence     EvidenceState `json:"evidence"`
 	Genutil      Genutil       `json:"genutil"`
-	Gov          Gov           `json:"gov"`
-	Ibc          Ibc           `json:"ibc"`
-	Oracle       Oracle        `json:"oracle"`
+	Ethbridge    interface{}   `json:"ethbridge"`
 	Params       interface{}   `json:"params"`
-	Slashing     Slashing      `json:"slashing"`
-	Staking      Staking       `json:"staking"`
-	Transfer     Transfer      `json:"transfer"`
-	Upgrade      struct{}      `json:"upgrade"`
 }
 
 type Genesis struct {
