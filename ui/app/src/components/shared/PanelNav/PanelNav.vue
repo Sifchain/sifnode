@@ -20,7 +20,7 @@
     ></PanelNavItem>
     <PanelNavItem to="/rewards" label="REWARDS" icon="sif"> </PanelNavItem>
     <PanelNavItem
-      to="/"
+      to="/soon"
       label="SOON"
       icon="soon"
       center

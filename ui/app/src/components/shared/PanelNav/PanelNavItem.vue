@@ -34,6 +34,7 @@ export default defineComponent({
     subPageIsActive(input: string) {
       const paths = [input];
       return paths.some((path) => {
+        console.log(this.$route?.path, path);
         return this.$route?.path.indexOf(path) === 0; // current path starts with this path string
       });
     },
@@ -45,7 +46,10 @@ export default defineComponent({
   <router-link
     class="link"
     :to="to"
-    :class="{ disabled: disabled, 'router-link-active': false }"
+    :class="{
+      disabled: disabled,
+      'router-link-sub-active': subPageIsActive(to),
+    }"
   >
     <div class="icon-button">
       <div class="icon"></div>
@@ -127,6 +131,7 @@ export default defineComponent({
     display: flex;
     align-items: center;
   }
+  &.router-link-sub-active,
   &.router-link-active {
     .icon-button {
       background: linear-gradient(180deg, #f2d267 0%, #68530d 100%);
