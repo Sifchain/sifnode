@@ -23,43 +23,8 @@ const (
 	transactionInterval = 1 * time.Second
 )
 
-var GasPriceMinimum *big.Int = big.NewInt(120000000000)
+var GasPriceMinimum *big.Int = big.NewInt(60000000000)
 var nonce uint64 = 0
-
-func getNonce(address common.Address, client *ethclient.Client) (uint64, error) {
-	if nonce > 0 {
-		return nonce, nil
-	}
-
-	nonceValue, err := client.PendingNonceAt(context.Background(), address)
-	if nonceValue > 0 {
-		nonce = nonceValue
-	}
-
-	return nonce, err
-}
-
-func incrementNonce() {
-	nonce++
-}
-
-// func recursiveRetry(provider string, contractAddress common.Address, event types.Event, claim ProphecyClaim,
-// 	key *ecdsa.PrivateKey, sugaredLogger *zap.SugaredLogger, cosmosBridge *cosmosbridge.CosmosBridge,
-// 	client *ethclient.Client, auth *bind.TransactOpts, retryNum uint16) error {
-	
-// 	if retryNum > 30 {
-// 		err := fmt.Errorf("retried over %d times. stopping retry", retryNum)
-// 		return err
-// 	}
-
-// 	_, err := cosmosBridge.NewProphecyClaim(auth, uint8(claim.ClaimType),
-// 		claim.CosmosSender, claim.CosmosSenderSequence, claim.EthereumReceiver, claim.Symbol, claim.Amount.BigInt())
-// 	if err != nil {
-// 		return recursiveRetry(provider, contractAddress, event, claim, key, sugaredLogger, cosmosBridge, client, auth, retryNum + 1)
-// 	}
-
-// 	return nil
-// }
 
 // RelayProphecyClaimToEthereum relays the provided ProphecyClaim to CosmosBridge contract on the Ethereum network
 func RelayProphecyClaimToEthereum(provider string, contractAddress common.Address, event types.Event,
@@ -87,40 +52,17 @@ func RelayProphecyClaimToEthereum(provider string, contractAddress common.Addres
 
 	tx, err := cosmosBridgeInstance.NewProphecyClaim(auth, uint8(claim.ClaimType),
 		claim.CosmosSender, claim.CosmosSenderSequence, claim.EthereumReceiver, claim.Symbol, claim.Amount.BigInt())
-
-	if err != nil && err.Error() == "not found" {
-		// if there is a not found error while broadcasting to infura, retry until there isn't an error
-		i := 0
-		for i < 30 {
-			sugaredLogger.Errorw(
-				"could not find tx after broadcasting",
-				"retry", i,
-				"err", err.Error(),
-			)
-
-			tx, err = cosmosBridgeInstance.NewProphecyClaim(auth, uint8(claim.ClaimType),
-				claim.CosmosSender, claim.CosmosSenderSequence, claim.EthereumReceiver, claim.Symbol, claim.Amount.BigInt())
-			if err == nil {
-				break
-			}
-
-			// sleep for 1 second until retrying
-			time.Sleep(transactionInterval)
-			i++
-		}
-
-		if i == 30 {
-			sugaredLogger.Errorw("failed to send ProphecyClaim to CosmosBridge.",
-				errorMessageKey, err.Error())
-			return err
-		}
-	}
+	// sleep 30 seconds to wait for tx to go through.
+	time.Sleep(transactionInterval * 30)
 
 	sugaredLogger.Infow("get NewProphecyClaim tx hash:", "ProphecyClaimHash", tx.Hash().Hex())
 
+	txHash := tx.Hash()
+
 	// Get the transaction receipt
-	receipt, err := client.TransactionReceipt(context.Background(), tx.Hash())
-	if err != nil {
+	receipt, err := client.TransactionReceipt(context.Background(), txHash)
+	// if there is an error getting the tx, or if the tx fails, retry 30 times
+	if err != nil || receipt.Status == 0 {
 		i := 0
 		for i < 30 {
 			sugaredLogger.Errorw(
@@ -128,9 +70,11 @@ func RelayProphecyClaimToEthereum(provider string, contractAddress common.Addres
 				"retry", i,
 				"getTxReceiptErr", err.Error(), 
 			)
+			tx, err = cosmosBridgeInstance.NewProphecyClaim(auth, uint8(claim.ClaimType),
+				claim.CosmosSender, claim.CosmosSenderSequence, claim.EthereumReceiver, claim.Symbol, claim.Amount.BigInt())
 
-			receipt, err := client.TransactionReceipt(context.Background(), tx.Hash())
-			if err == nil {
+			receipt, err := client.TransactionReceipt(context.Background(), txHash)
+			if err == nil || receipt.Status == 1 {
 				sugaredLogger.Infow(
 					"Successfully received transaction receipt after retry",
 					"txReceipt", receipt,
@@ -149,9 +93,6 @@ func RelayProphecyClaimToEthereum(provider string, contractAddress common.Addres
 			return err
 		}
 	}
-
-	// do not increment the nonce until the transaction receipt has been found
-	incrementNonce()
 
 	switch receipt.Status {
 	case 0:
@@ -181,7 +122,7 @@ func initRelayConfig(provider string, registry common.Address, event types.Event
 		return nil, nil, common.Address{}, err
 	}
 
-	nonce, err := getNonce(sender, client)
+	nonce, err := client.PendingNonceAt(context.Background(), sender)
 	
 	sugaredLogger.Infow("Current eth operator at pending nonce.", "pendingNonce", nonce)
 
