@@ -11,26 +11,35 @@ const cmdStack: ChildProcess[] = [];
 /**
  * This is a utility to be used within our testing frameworks for restarting our backend stack.
  */
+const uiFolder = resolve(__dirname, "../");
 export async function restartStack() {
-  const uiFolder = resolve(__dirname, "../");
+  console.log("^^^  START RESTART  ^^^");
 
-  const cmd = spawn("./scripts/run-stack-backend.sh", [], { cwd: uiFolder });
+  const cmd = spawn("./scripts/run-stack-backend.sh", [], {
+    cwd: uiFolder,
+    stdio: ["ignore", "pipe", "pipe"],
+    detached: true,
+  });
   cmdStack.push(cmd);
-  let handler;
+  let handler: (d: Buffer) => void;
 
   await new Promise<void>((resolve) => {
+    const errHandler = (err: Error) => {
+      console.log(chalk.red(err.toString()));
+    };
     handler = (data: Buffer) => {
       const dataStr = data.toString().replace(/\n$/, "");
       console.log(chalk.blue(dataStr));
       if (dataStr.includes("cosmos process events for blocks")) {
+        cmd.stdout.off("data", handler);
+        cmd.stderr.off("data", handler);
+        cmd.off("error", errHandler);
         resolve();
       }
     };
     cmd.stdout.on("data", handler);
     cmd.stderr.on("data", handler);
-    cmd.on("error", (err) => {
-      console.log(chalk.red(err.toString()));
-    });
+    cmd.on("error", errHandler);
   });
   console.log(chalk.green("DONE"));
 }
@@ -42,13 +51,23 @@ function treeKillProm(pid: number) {
 }
 
 export async function killStack() {
-  await Promise.all(cmdStack.map((cmd) => treeKillProm(cmd.pid)));
+  console.log("⬇⬇⬇  START SHUTDOWN  ⬇⬇⬇");
+  console.log(cmdStack.map((c) => c.pid).join(":"));
 
-  await new Promise((resolve) => {
-    exec("killall sifnoded sifnodecli ebrelayer ganache-cli", resolve);
-    console.log("⬇⬇⬇  S.T.A.C.K  ⬇⬇⬇");
+  await new Promise<void>((resolve, reject) => {
+    exec("./scripts/kill-stack-backend.sh", { cwd: uiFolder }, (err, out) => {
+      if (err) return reject(err);
+      resolve();
+    });
   });
-  await sleep(1000);
+
+  for (let cmd of cmdStack) {
+    console.log("...killing");
+    await treeKillProm(cmd.pid);
+    console.log("...finished killing");
+  }
+
+  console.log("⬇⬇⬇  S.T.A.C.K  ⬇⬇⬇");
 }
 
 /**
