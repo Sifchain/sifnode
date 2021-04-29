@@ -210,7 +210,7 @@ func TestNoMintFail(t *testing.T) {
 		for _, attribute := range event.Attributes {
 			value := string(attribute.Value)
 			if string(attribute.Key) == statusString {
-				require.Equal(t, value, oracle.StatusTextToString[oracle.PendingStatusText])
+				require.Equal(t, value, oracle.StatusTextToString[oracle.FailedStatusText])
 			}
 		}
 	}
@@ -244,10 +244,6 @@ func TestBurnFail(t *testing.T) {
 	require.Error(t, err)
 	require.Nil(t, res)
 	require.Equal(t, err.Error(), "validator must be in whitelist")
-}
-
-func TestBurnEthFail(t *testing.T) {
-
 }
 
 func TestBurnEthSuccess(t *testing.T) {

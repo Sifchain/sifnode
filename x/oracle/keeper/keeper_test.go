@@ -204,6 +204,7 @@ func TestPowerOverrule(t *testing.T) {
 	require.Equal(t, status.Text, types.SuccessStatusText)
 	require.Equal(t, status.FinalClaim, AlternateTestString)
 }
+
 func TestPowerAternate(t *testing.T) {
 	//Test alternate power setup with validators of 5/4/3/9 and total power 22 and 12/21 required
 	ctx, keeper, _, _, _, whitelist, _ := CreateTestKeepers(t, 0.571, []int64{5, 4, 3, 9}, "")
@@ -316,5 +317,4 @@ func TestProcessUpdateWhiteListValidator(t *testing.T) {
 	newWhiteList = keeper.GetOracleWhiteList(ctx, types.NewNetworkDescriptor(networkID))
 	require.Equal(t, err, nil)
 	require.Equal(t, len(newWhiteList.GetAllValidators()), 2)
-
 }
