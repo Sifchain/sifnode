@@ -14,4 +14,5 @@ func SetupHandlers(app *SifchainApp) {
 	app.UpgradeKeeper.SetUpgradeHandler("release-20210407042000", GetAddDispensation(app))
 	app.UpgradeKeeper.SetUpgradeHandler("release-20210414000000", func(ctx sdk.Context, plan upgrade.Plan) {})
 	app.UpgradeKeeper.SetUpgradeHandler("0.8.0", func(ctx sdk.Context, plan upgrade.Plan) {})
+	app.UpgradeKeeper.SetUpgradeHandler("0.8.1", func(ctx sdk.Context, plan upgrade.Plan) {})
 }

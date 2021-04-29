@@ -249,7 +249,7 @@ echo '      sssssssssss    iiiiiiiifffffffff            cccccccccccccccchhhhhhh 
   desc "Install Vault If Not Exists"
   namespace :vault do
     desc "Install Vault into Kubernetes Env Configured"
-    task :install, [:env, :region, :path, :kmskey, :aws_role] do |t, args|
+    task :install, [:env, :region, :path, :kmskey, :aws_role, :aws_region] do |t, args|
       require 'fileutils'
       require 'net/http'
 
@@ -296,7 +296,7 @@ echo '      sssssssssss    iiiiiiiifffffffff            cccccccccccccccchhhhhhh 
       ENV.each_pair do |k, v|
           replace_string="-=#{k}=-"
           if replace_string == "-=aws_region=-"
-            template_file_text.include?(k) ? (template_file_text.gsub! replace_string, "#{args[:region]}") : (puts 'env matching...')
+            template_file_text.include?(k) ? (template_file_text.gsub! replace_string, "#{args[:aws_region]}") : (puts 'env matching...')
           elsif replace_string == "-=kmskey=-"
             template_file_text.include?(k) ? (template_file_text.gsub! replace_string, "#{args[:kmskey]}") : (puts 'env matching...')
           elsif replace_string == "-=aws_role=-"
@@ -625,6 +625,24 @@ metadata:
     end
   end
 
+  desc "Kubernetes Create Namespace"
+  namespace :kubernetes do
+    desc "Create Kubernetes Namespace."
+    task :create_namespace, [:app_namespace] do |t, args|
+      puts "Create Kubernetes Namespace."
+      get_namespaces = `kubectl get namespaces --kubeconfig=./kubeconfig`
+      if get_namespaces.include?("#{args[:app_namespace]}")
+            puts "Namespace Exists"
+            puts get_namespaces
+      else
+            puts "Namespace Doesn't Exists"
+            puts get_namespaces
+            create_namespace = %Q{kubectl create namespace #{args[:app_namespace]} --kubeconfig=./kubeconfig}
+            system(create_namespace) or exit 1
+      end
+    end
+  end
+
   desc "Deploy Helm Files"
   namespace :vault do
     desc "Deploy Helm Files"
@@ -805,7 +823,7 @@ metadata:
         puts "Sha found #{sha_token}"
 
         if "#{args[:app_env]}" == "mainnet"
-            governance_request = %Q{ yes "${keyring_passphrase}" | go run ./cmd/sifnodecli tx gov submit-proposal software-upgrade #{args[:app_env]}-#{args[:release_version]} \
+            governance_request = %Q{ yes "${keyring_passphrase}" | go run ./cmd/sifnodecli tx gov submit-proposal software-upgrade #{args[:release_version]} \
                 --from #{args[:from]} \
                 --deposit #{args[:deposit]} \
                 --upgrade-height #{block_height} \
@@ -820,7 +838,7 @@ metadata:
                 sleep 60 }
             system(governance_request) or exit 1
         elsif "#{args[:app_env]}" == "betanet"
-            governance_request = %Q{ yes "${keyring_passphrase}" | go run ./cmd/sifnodecli tx gov submit-proposal software-upgrade #{args[:app_env]}-#{args[:release_version]} \
+            governance_request = %Q{ yes "${keyring_passphrase}" | go run ./cmd/sifnodecli tx gov submit-proposal software-upgrade #{args[:release_version]} \
                 --from #{args[:from]} \
                 --deposit #{args[:deposit]} \
                 --upgrade-height #{block_height} \
@@ -836,7 +854,7 @@ metadata:
             system(governance_request) or exit 1
         else
             puts "create dev net gov request #{sha_token}"
-            governance_request = %Q{ yes "${keyring_passphrase}" | go run ./cmd/sifnodecli tx gov submit-proposal software-upgrade #{args[:app_env]}-#{args[:release_version]} \
+            governance_request = %Q{ yes "${keyring_passphrase}" | go run ./cmd/sifnodecli tx gov submit-proposal software-upgrade #{args[:release_version]} \
                 --from #{args[:from]} \
                 --deposit #{args[:deposit]} \
                 --upgrade-height #{block_height} \
