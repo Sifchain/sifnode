@@ -14,16 +14,16 @@ var (
 )
 
 type Key struct {
-	Name             *string
+	Name             string
 	Mnemonic         string
-	Password         *string
+	Password         string
 	Address          string
 	ValidatorAddress string
 	ConsensusAddress string
 	Keyring          keyring.Keyring
 }
 
-func NewKey(name *string, password *string) *Key {
+func NewKey(name, password string) *Key {
 	return &Key{
 		Name:     name,
 		Password: password,
@@ -41,7 +41,7 @@ func (k *Key) RecoverFromMnemonic(mnemonic string) error {
 	k.setConfig()
 	k.Mnemonic = mnemonic
 
-	account, err := k.Keyring.NewAccount(*k.Name, k.Mnemonic, *k.Password, hdpath.String(), hd.Secp256k1)
+	account, err := k.Keyring.NewAccount(k.Name, k.Mnemonic, k.Password, hdpath.String(), hd.Secp256k1)
 	if err != nil {
 		return err
 	}

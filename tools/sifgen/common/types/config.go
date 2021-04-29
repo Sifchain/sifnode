@@ -1,12 +1,5 @@
 package types
 
-type CLIConfig struct {
-	ChainID        string `toml:"chain-id"`
-	KeyringBackend string `toml:"keyring-backend"`
-	Indent         bool   `toml:"indent"`
-	TrustNode      bool   `toml:"trust-node"`
-}
-
 type NodeConfig struct {
 	P2P                    P2P             `toml:"p2p"`
 	RPC                    RPC             `toml:"rpc"`
