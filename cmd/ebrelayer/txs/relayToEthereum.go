@@ -93,8 +93,18 @@ func RelayProphecyClaimToEthereum(
 }
 
 // initRelayConfig set up Ethereum client, validator's transaction auth, and the target contract's address
-func InitRelayConfig(provider string, registry common.Address, event types.Event, key *ecdsa.PrivateKey,
-	sugaredLogger *zap.SugaredLogger) (*ethclient.Client, *bind.TransactOpts, common.Address, error) {
+func InitRelayConfig(
+	provider string,
+	registry common.Address,
+	event types.Event,
+	key *ecdsa.PrivateKey,
+	sugaredLogger *zap.SugaredLogger,
+	) (
+		*ethclient.Client,
+		*bind.TransactOpts,
+		common.Address,
+		error,
+	) {
 	// Start Ethereum client
 	client, err := ethclient.Dial(provider)
 	if err != nil {

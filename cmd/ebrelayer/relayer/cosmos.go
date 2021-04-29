@@ -22,6 +22,7 @@ import (
 	cosmosbridge "github.com/Sifchain/sifnode/cmd/ebrelayer/contract/generated/bindings/cosmosbridge"
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/txs"
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/types"
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	ethTypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
@@ -368,6 +369,43 @@ func getOracleClaimType(eventType string) types.Event {
 	return claimType
 }
 
+func tryGettingCosmosBridge(target common.Address, client *ethclient.Client, sub CosmosSub) (*cosmosbridge.CosmosBridge, error) {
+
+	for i := 0; i < 5; i++ {
+		cosmosBridgeInstance, err := cosmosbridge.NewCosmosBridge(target, client)
+		if err != nil {
+			sub.SugaredLogger.Errorw("failed to get cosmosBridge instance.",
+				errorMessageKey, err.Error())
+			continue
+		}
+		return cosmosBridgeInstance, nil
+	}
+
+	return nil, errors.New("hit max initRelayConfig retries")
+}
+
+func tryInitRelayConfig(sub CosmosSub, claimType types.Event) (*ethclient.Client, *bind.TransactOpts, common.Address, error) {
+
+	for i := 0; i < 5; i++ {
+		client, auth, target, err := txs.InitRelayConfig(
+			sub.EthProvider,
+			sub.RegistryContractAddress,
+			claimType,
+			sub.PrivateKey,
+			sub.SugaredLogger,
+		)
+
+		if err != nil {
+			sub.SugaredLogger.Errorw("failed in init relay config.",
+				errorMessageKey, err.Error())
+			continue
+		}
+		return client, auth, target, err
+	}
+
+	return nil, nil, common.Address{}, errors.New("hit max initRelayConfig retries")
+}
+
 // Parses event data from the msg, event, builds a new ProphecyClaim, and relays it to Ethereum
 func (sub CosmosSub) handleBurnLockMsg(cosmosMsg types.CosmosMsg, claimType types.Event) {
 	sub.SugaredLogger.Infow("handle burn lock message.",
@@ -380,18 +418,20 @@ func (sub CosmosSub) handleBurnLockMsg(cosmosMsg types.CosmosMsg, claimType type
 		"CosmosSenderSequence", prophecyClaim.CosmosSenderSequence)
 		
 	// put this into it's own function with retry logic
-	client, auth, target, err := txs.InitRelayConfig(sub.EthProvider, sub.RegistryContractAddress, claimType, sub.PrivateKey, sub.SugaredLogger)
+	client, auth, target, err := tryInitRelayConfig(sub, claimType)
 	if err != nil {
 		sub.SugaredLogger.Errorw("failed in init relay config.",
 			errorMessageKey, err.Error())
+		return
 	}
 
 	// put this into it's own function with retry logic
 	// Initialize CosmosBridge instance
-	cosmosBridgeInstance, err := cosmosbridge.NewCosmosBridge(target, client)
+	cosmosBridgeInstance, err := tryGettingCosmosBridge(target, client, sub)
 	if err != nil {
 		sub.SugaredLogger.Errorw("failed to get cosmosBridge instance.",
 			errorMessageKey, err.Error())
+		return
 	}
 
 	maxRetries := 5
