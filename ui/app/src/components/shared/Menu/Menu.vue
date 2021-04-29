@@ -53,7 +53,7 @@ export default {};
 
   .link {
     @include resetLink;
-    font-size: 15px;
+    font-size: 18px;
     font-weight: normal;
     opacity: 1;
     transition: opacity $trans_fast;
