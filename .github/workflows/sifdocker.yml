@@ -1,0 +1,26 @@
+name: SifDocker Image Build and Publish
+
+on:
+  workflow_dispatch:
+env:
+  IMAGE_NAME: sifdocker
+
+jobs:
+  build_sifdocker:
+    runs-on: ubuntu-latest
+    permissions: 
+       packages: write
+       pull-requests: write       
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Build image
+      run: cd test/integration; docker build -t ghcr.io/sifchain/sifnode/$IMAGE_NAME:latest -f Dockerfile.devenv .
+
+    - name: Log into registry
+      run: echo "${{ github.token }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
+    - name: Push image
+      run: docker push ghcr.io/sifchain/sifnode/$IMAGE_NAME:latest
+
+      

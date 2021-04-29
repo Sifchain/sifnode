@@ -7,7 +7,7 @@
           <transition name="swipe">
             <div class="text" v-if="state === 'signing'">
               <p>Waiting for confirmation</p>
-              <p class="thin">
+              <p class="thin" data-handle="swap-message">
                 Swapping
                 <span class="thick">{{ _fromAmount }} {{ _fromToken }}</span>
                 for
@@ -20,7 +20,7 @@
           <transition name="swipe">
             <div class="text" v-if="state === 'out_of_gas'">
               <p>Transaction Failed</p>
-              <p class="thin">
+              <p class="thin" data-handle="swap-message">
                 Failed to swap
                 <span class="thick">{{ _fromAmount }} {{ _fromToken }}</span>
                 for
@@ -33,7 +33,7 @@
           <transition name="swipe">
             <div class="text" v-if="state === 'rejected'">
               <p>Transaction Rejected</p>
-              <p class="thin">
+              <p class="thin" data-handle="swap-message">
                 Failed to swap
                 <span class="thick">{{ _fromAmount }} {{ _fromToken }}</span>
                 for
@@ -46,7 +46,7 @@
           <transition name="swipe">
             <div class="text" v-if="state === 'failed'">
               <p>Transaction Failed</p>
-              <p class="thin">
+              <p class="thin" data-handle="swap-message">
                 Failed to swap
                 <span class="thick">{{ _fromAmount }} {{ _fromToken }}</span>
                 for
@@ -59,7 +59,7 @@
           <transition name="swipe">
             <div class="text" v-if="confirmed">
               <p>Transaction Submitted</p>
-              <p class="thin">
+              <p class="thin" data-handle="swap-message">
                 Swapped
                 <span class="thick">{{ _fromAmount }} {{ _fromToken }}</span>
                 for

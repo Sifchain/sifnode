@@ -1,6 +1,7 @@
 <template>
   <Icon class="arrow" :class="{ enabled, left }" icon="down" />
 </template>
+x
 
 <script lang="ts">
 import Icon from "@/components/shared/Icon.vue";
@@ -19,6 +20,7 @@ export default defineComponent({
   stroke: #c1c1c1;
   display: block;
   cursor: pointer;
+  text-align: center !important;
   &.enabled {
     stroke: $c_gold;
   }
