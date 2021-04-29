@@ -71,14 +71,14 @@ func TestQueryRecordsAddr(t *testing.T) {
 		Path: "",
 		Data: []byte{},
 	}
-	qp, errRes := sifapp.AppCodec().MarshalJSON(&quereyRecName)
+	qp, errRes := sifapp.LegacyAmino().MarshalJSON(&quereyRecName)
 	require.NoError(t, errRes)
 	query.Path = ""
 	query.Data = qp
 	res, err := querier(ctx, []string{types.QueryRecordsByRecipient}, query)
 	assert.NoError(t, err)
 	var dr types.DistributionRecords
-	err = sifapp.AppCodec().UnmarshalJSON(res, &dr)
+	err = sifapp.LegacyAmino().UnmarshalJSON(res, &dr)
 	assert.NoError(t, err)
 	assert.Len(t, dr.DistributionRecords, 1)
 }
@@ -99,7 +99,7 @@ func TestQueryAllDistributions(t *testing.T) {
 	res, err := querier(ctx, []string{types.QueryAllDistributions}, query)
 	assert.NoError(t, err)
 	var dr types.Distributions
-	err = sifapp.AppCodec().UnmarshalJSON(res, &dr)
+	err = sifapp.LegacyAmino().UnmarshalJSON(res, &dr)
 	assert.NoError(t, err)
 	assert.Len(t, dr.Distributions, 10)
 }
