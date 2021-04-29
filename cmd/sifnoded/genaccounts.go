@@ -2,7 +2,6 @@ package main
 
 import (
 	"bufio"
-	"bytes"
 	"errors"
 	"fmt"
 	"strconv"
@@ -337,7 +336,7 @@ func AddGenesisValidatorCmd(
 ) *cobra.Command {
 
 	cmd := &cobra.Command{
-		Use:   "add-genesis-validators [network_descriptor] [address_or_key_name]",
+		Use:   "add-genesis-validators [network_descriptor] [address_or_key_name] [power]",
 		Short: "add genesis validators to genesis.json",
 		Long: `add validator to genesis.json. The provided account must specify
 the account address or key name. If a key name is given, the address will be looked up in the local Keybase. 
@@ -357,6 +356,11 @@ the account address or key name. If a key name is given, the address will be loo
 				return fmt.Errorf("failed to get validator address: %w", err)
 			}
 
+			power, err := strconv.ParseUint(args[0], 10, 32)
+			if err != nil {
+				return fmt.Errorf("failed to pass network descriptor: %w", err)
+			}
+
 			genFile := config.GenesisFile()
 			appState, genDoc, err := genutil.GenesisStateFromGenFile(cdc, genFile)
 			if err != nil {
@@ -366,12 +370,7 @@ the account address or key name. If a key name is given, the address will be loo
 			oracleGenState := oracle.GetGenesisStateFromAppState(cdc, appState)
 			networkID := args[0]
 
-			for _, item := range oracleGenState.AddressWhitelist[networkID] {
-				if bytes.Equal(item, addr) {
-					return fmt.Errorf("address %s already in white list", addr)
-				}
-			}
-			oracleGenState.AddressWhitelist[networkID] = append(oracleGenState.AddressWhitelist[networkID], addr)
+			oracleGenState.AddressWhitelist[networkID][addr.String()] = uint32(power)
 
 			oracleGenStateBz, err := cdc.MarshalJSON(oracleGenState)
 			if err != nil {

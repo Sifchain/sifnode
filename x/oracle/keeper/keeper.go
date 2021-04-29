@@ -76,6 +76,7 @@ func (k Keeper) setProphecy(ctx sdk.Context, prophecy types.Prophecy) {
 // ProcessClaim ...
 func (k Keeper) ProcessClaim(ctx sdk.Context, networkID uint32, claim types.Claim, sugaredLogger *zap.SugaredLogger) (types.Status, error) {
 	networkDescriptor := types.NewNetworkDescriptor(networkID)
+
 	// Check if claim from whitelist validators
 	inWhiteList := k.GetOracleWhiteList(ctx, networkDescriptor).ContainValidator(claim.ValidatorAddress)
 
@@ -138,14 +139,8 @@ func (k Keeper) ProcessUpdateWhiteListValidator(ctx sdk.Context, networkID uint3
 		return types.ErrNotAdminAccount
 	}
 	networkDescriptor := types.NewNetworkDescriptor(networkID)
-	switch operationtype {
-	case "add":
-		k.AddOracleWhiteList(ctx, networkDescriptor, validator, power)
-	case "remove":
-		k.RemoveOracleWhiteList(ctx, networkDescriptor, validator)
-	default:
-		return types.ErrInvalidOperationType
-	}
+
+	k.UpdateOracleWhiteList(ctx, networkDescriptor, validator, power)
 
 	return nil
 }
@@ -156,10 +151,13 @@ func (k Keeper) ProcessUpdateWhiteListValidator(ctx sdk.Context, networkID uint3
 // will never be able to become successful due to not enough validation power being
 // left to push it over the threshold required for consensus.
 func (k Keeper) processCompletion(ctx sdk.Context, networkDescriptor types.NetworkDescriptor, prophecy types.Prophecy) types.Prophecy {
-	highestClaim, highestRatio := k.GetOracleWhiteList(ctx, networkDescriptor).GetPowerRatio(prophecy.ClaimValidators)
+	highestClaim, highestRatio, vetoRatio := k.GetOracleWhiteList(ctx, networkDescriptor).GetPowerRatio(prophecy.ClaimValidators)
+	fmt.Printf("ratio is %s, %f\n", highestClaim, highestRatio)
 	if highestRatio >= k.consensusNeeded {
 		prophecy.Status.Text = types.SuccessStatusText
 		prophecy.Status.FinalClaim = highestClaim
+	} else if vetoRatio > (1.0 - k.consensusNeeded) {
+		prophecy.Status.Text = types.FailedStatusText
 	}
 	return prophecy
 }

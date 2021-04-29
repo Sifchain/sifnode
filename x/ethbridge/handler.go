@@ -229,7 +229,7 @@ func handleMsgUpdateWhiteListValidator(
 		return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.CosmosSender.String())
 	}
 
-	if err := bridgeKeeper.ProcessUpdateWhiteListValidator(ctx, msg.NetworkDescriptor, msg.CosmosSender, msg.Validator, msg.OperationType, sugaredLogger); err != nil {
+	if err := bridgeKeeper.ProcessUpdateWhiteListValidator(ctx, msg.NetworkDescriptor, msg.CosmosSender, msg.Validator, msg.Power, sugaredLogger); err != nil {
 		sugaredLogger.Errorw("bridge keeper failed to process update validator.", errorMessageKey, err.Error())
 		return nil, err
 	}

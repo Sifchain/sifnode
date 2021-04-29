@@ -29,7 +29,7 @@ func TestBasicMsgs(t *testing.T) {
 	//Setup
 	ctx, _, _, _, _, validatorAddresses, handler := CreateTestHandler(t, 0.7, []int64{3, 7})
 
-	valAddress := validatorAddresses[0]
+	valAddress := validatorAddresses.GetAllValidators()[0]
 
 	//Unrecognized type
 	res, err := handler(ctx, sdk.NewTestMsg())
@@ -85,7 +85,7 @@ func TestBasicMsgs(t *testing.T) {
 func TestDuplicateMsgs(t *testing.T) {
 	ctx, _, _, _, _, validatorAddresses, handler := CreateTestHandler(t, 0.7, []int64{3, 7})
 
-	valAddress := validatorAddresses[0]
+	valAddress := validatorAddresses.GetAllValidators()[0]
 
 	normalCreateMsg := types.CreateTestEthMsg(t, valAddress, types.LockText)
 	res, err := handler(ctx, normalCreateMsg)
@@ -109,8 +109,8 @@ func TestDuplicateMsgs(t *testing.T) {
 
 func TestMintSuccess(t *testing.T) {
 	//Setup
-	ctx, _, bankKeeper, _, _, validatorAddresses, handler := CreateTestHandler(t, 0.7, []int64{2, 7, 1})
-
+	ctx, _, bankKeeper, _, _, whitelist, handler := CreateTestHandler(t, 0.7, []int64{2, 7, 1})
+	validatorAddresses := whitelist.GetAllValidators()
 	valAddressVal1Pow2 := validatorAddresses[0]
 	valAddressVal2Pow7 := validatorAddresses[1]
 	valAddressVal3Pow1 := validatorAddresses[2]
@@ -153,7 +153,8 @@ func TestMintSuccess(t *testing.T) {
 
 func TestNoMintFail(t *testing.T) {
 	//Setup
-	ctx, _, bankKeeper, _, _, validatorAddresses, handler := CreateTestHandler(t, 0.71, []int64{3, 4, 3})
+	ctx, _, bankKeeper, _, _, whitelist, handler := CreateTestHandler(t, 0.71, []int64{3, 4, 3})
+	validatorAddresses := whitelist.GetAllValidators()
 
 	valAddressVal1Pow3 := validatorAddresses[0]
 	valAddressVal2Pow4 := validatorAddresses[1]
@@ -209,7 +210,7 @@ func TestNoMintFail(t *testing.T) {
 		for _, attribute := range event.Attributes {
 			value := string(attribute.Value)
 			if string(attribute.Key) == statusString {
-				require.Equal(t, value, oracle.StatusTextToString[oracle.FailedStatusText])
+				require.Equal(t, value, oracle.StatusTextToString[oracle.PendingStatusText])
 			}
 		}
 	}
@@ -250,8 +251,8 @@ func TestBurnEthFail(t *testing.T) {
 }
 
 func TestBurnEthSuccess(t *testing.T) {
-	ctx, _, bankKeeper, _, _, validatorAddresses, handler := CreateTestHandler(t, 0.5, []int64{5})
-	valAddressVal1Pow5 := validatorAddresses[0]
+	ctx, _, bankKeeper, _, _, whitelist, handler := CreateTestHandler(t, 0.5, []int64{5})
+	valAddressVal1Pow5 := whitelist.GetAllValidators()[0]
 
 	// Initial message to mint some eth
 	coinsToMintAmount := sdk.NewInt(7)
@@ -415,12 +416,12 @@ func TestRescueCethMsg(t *testing.T) {
 
 	cosmosSender, err := sdk.AccAddressFromBech32(types.TestAddress)
 	require.NoError(t, err)
+	_, _ = bankKeeper.AddCoins(ctx, cosmosSender, coins)
 
 	_, err = handler(ctx, testRescueCethMsg)
 	require.Error(t, err)
 
 	oracleKeeper.SetAdminAccount(ctx, cosmosSender)
-	_, _ = bankKeeper.AddCoins(ctx, cosmosSender, coins)
 
 	res, err := handler(ctx, testRescueCethMsg)
 	require.NoError(t, err)

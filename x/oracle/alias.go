@@ -51,12 +51,13 @@ var (
 )
 
 type (
-	Keeper            = keeper.Keeper
-	Claim             = types.Claim
-	Prophecy          = types.Prophecy
-	DBProphecy        = types.DBProphecy
-	Status            = types.Status
-	StatusText        = types.StatusText
-	GenesisState      = types.GenesisState
-	NetworkDescriptor = types.NetworkDescriptor
+	Keeper             = keeper.Keeper
+	Claim              = types.Claim
+	Prophecy           = types.Prophecy
+	DBProphecy         = types.DBProphecy
+	Status             = types.Status
+	StatusText         = types.StatusText
+	GenesisState       = types.GenesisState
+	NetworkDescriptor  = types.NetworkDescriptor
+	ValidatorWhitelist = types.ValidatorWhitelist
 )

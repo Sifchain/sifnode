@@ -1,6 +1,7 @@
 package types
 
 import (
+	"fmt"
 	"testing"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -17,27 +18,17 @@ func TestNewValidatorWhitelist(t *testing.T) {
 	assert.Equal(t, len(list.Whitelist), 0)
 }
 
-func TestAddValidator(t *testing.T) {
+func TestUpdateValidator(t *testing.T) {
 	address, err := sdk.ValAddressFromBech32(validatorAddress)
 	assert.NoError(t, err)
 
 	list := NewValidatorWhitelist()
-	list.AddValidator(address, power)
-	assert.Equal(t, len(list.Whitelist), 1)
+	list.UpdateValidator(address, power)
+	fmt.Printf("list is %v\n", list.Whitelist)
+	assert.Equal(t, len(list.GetAllValidators()), 1)
 	assert.Equal(t, list.GetValidatorPower(address), power)
 
-}
-
-func TestRemoveValidator(t *testing.T) {
-	address, err := sdk.ValAddressFromBech32(validatorAddress)
-	assert.NoError(t, err)
-
-	list := NewValidatorWhitelist()
-	list.AddValidator(address, power)
-	assert.Equal(t, len(list.Whitelist), 1)
-	assert.Equal(t, list.GetValidatorPower(address), power)
-
-	list.RemoveValidator(address)
-	assert.Equal(t, len(list.Whitelist), 1)
+	list.UpdateValidator(address, uint32(0))
+	assert.Equal(t, len(list.GetAllValidators()), 0)
 	assert.Equal(t, list.GetValidatorPower(address), uint32(0))
 }

@@ -30,7 +30,7 @@ func NewZapSugaredLogger() *zap.SugaredLogger {
 func TestCreateGetProphecy(t *testing.T) {
 	ctx, keeper, _, _, _, validatorAddresses, _ := CreateTestKeepers(t, 0.7, []int64{3, 7}, "")
 
-	validator1Pow3 := validatorAddresses[0]
+	validator1Pow3 := validatorAddresses.GetAllValidators()[0]
 
 	//Test normal Creation
 	oracleClaim := types.NewClaim(TestID, validator1Pow3, TestString)
@@ -70,7 +70,7 @@ func TestBadConsensusForOracle(t *testing.T) {
 func TestBadMsgs(t *testing.T) {
 	ctx, keeper, _, _, _, validatorAddresses, _ := CreateTestKeepers(t, 0.6, []int64{3, 3}, "")
 
-	validator1Pow3 := validatorAddresses[0]
+	validator1Pow3 := validatorAddresses.GetAllValidators()[0]
 
 	//Test empty claim
 	oracleClaim := types.NewClaim(TestID, validator1Pow3, "")
@@ -99,7 +99,8 @@ func TestBadMsgs(t *testing.T) {
 }
 
 func TestSuccessfulProphecy(t *testing.T) {
-	ctx, keeper, _, _, _, validatorAddresses, _ := CreateTestKeepers(t, 0.6, []int64{3, 3, 4}, "")
+	ctx, keeper, _, _, _, whitelist, _ := CreateTestKeepers(t, 0.6, []int64{3, 3, 4}, "")
+	validatorAddresses := whitelist.GetAllValidators()
 
 	validator1Pow3 := validatorAddresses[0]
 	validator2Pow3 := validatorAddresses[1]
@@ -126,7 +127,8 @@ func TestSuccessfulProphecy(t *testing.T) {
 }
 
 func TestSuccessfulProphecyWithDisagreement(t *testing.T) {
-	ctx, keeper, _, _, _, validatorAddresses, _ := CreateTestKeepers(t, 0.6, []int64{3, 3, 4}, "")
+	ctx, keeper, _, _, _, whitelist, _ := CreateTestKeepers(t, 0.6, []int64{3, 3, 4}, "")
+	validatorAddresses := whitelist.GetAllValidators()
 
 	validator1Pow3 := validatorAddresses[0]
 	validator2Pow3 := validatorAddresses[1]
@@ -153,7 +155,8 @@ func TestSuccessfulProphecyWithDisagreement(t *testing.T) {
 }
 
 func TestFailedProphecy(t *testing.T) {
-	ctx, keeper, _, _, _, validatorAddresses, _ := CreateTestKeepers(t, 0.6, []int64{3, 3, 4}, "")
+	ctx, keeper, _, _, _, whitelist, _ := CreateTestKeepers(t, 0.6, []int64{3, 3, 4}, "")
+	validatorAddresses := whitelist.GetAllValidators()
 
 	validator1Pow3 := validatorAddresses[0]
 	validator2Pow3 := validatorAddresses[1]
@@ -182,7 +185,8 @@ func TestFailedProphecy(t *testing.T) {
 
 func TestPowerOverrule(t *testing.T) {
 	//Testing with 2 validators but one has high enough power to overrule
-	ctx, keeper, _, _, _, validatorAddresses, _ := CreateTestKeepers(t, 0.7, []int64{3, 7}, "")
+	ctx, keeper, _, _, _, whitelist, _ := CreateTestKeepers(t, 0.7, []int64{3, 7}, "")
+	validatorAddresses := whitelist.GetAllValidators()
 
 	validator1Pow3 := validatorAddresses[0]
 	validator2Pow7 := validatorAddresses[1]
@@ -202,7 +206,8 @@ func TestPowerOverrule(t *testing.T) {
 }
 func TestPowerAternate(t *testing.T) {
 	//Test alternate power setup with validators of 5/4/3/9 and total power 22 and 12/21 required
-	ctx, keeper, _, _, _, validatorAddresses, _ := CreateTestKeepers(t, 0.571, []int64{5, 4, 3, 9}, "")
+	ctx, keeper, _, _, _, whitelist, _ := CreateTestKeepers(t, 0.571, []int64{5, 4, 3, 9}, "")
+	validatorAddresses := whitelist.GetAllValidators()
 
 	validator1Pow5 := validatorAddresses[0]
 	validator2Pow4 := validatorAddresses[1]
@@ -237,7 +242,8 @@ func TestPowerAternate(t *testing.T) {
 
 func TestMultipleProphecies(t *testing.T) {
 	//Test multiple prophecies running in parallel work fine as expected
-	ctx, keeper, _, _, _, validatorAddresses, _ := CreateTestKeepers(t, 0.7, []int64{3, 7}, "")
+	ctx, keeper, _, _, _, whitelist, _ := CreateTestKeepers(t, 0.7, []int64{3, 7}, "")
+	validatorAddresses := whitelist.GetAllValidators()
 
 	validator1Pow3 := validatorAddresses[0]
 	validator2Pow7 := validatorAddresses[1]
@@ -292,23 +298,23 @@ func TestProcessUpdateWhiteListValidator(t *testing.T) {
 	assert.Equal(t, adminAccount, addresses[0])
 
 	// test against non admin case
-	err := keeper.ProcessUpdateWhiteListValidator(ctx, networkID, addresses[1], testValidatorAddresses[0], "add", sugaredLogger)
+	err := keeper.ProcessUpdateWhiteListValidator(ctx, networkID, addresses[1], testValidatorAddresses[0], 100, sugaredLogger)
 	require.Error(t, err)
 	require.Equal(t, err.Error(), "update whitelist validator must be admin account")
 
 	whiteList := keeper.GetOracleWhiteList(ctx, types.NewNetworkDescriptor(networkID))
-	require.Equal(t, len(whiteList), 2)
+	require.Equal(t, len(whiteList.GetAllValidators()), 2)
 
 	// remove one validator
-	err = keeper.ProcessUpdateWhiteListValidator(ctx, networkID, addresses[0], whiteList[0], "remove", sugaredLogger)
+	err = keeper.ProcessUpdateWhiteListValidator(ctx, networkID, addresses[0], whiteList.GetAllValidators()[0], 0, sugaredLogger)
 	newWhiteList := keeper.GetOracleWhiteList(ctx, types.NewNetworkDescriptor(networkID))
 	require.Equal(t, err, nil)
-	require.Equal(t, len(newWhiteList), 1)
+	require.Equal(t, len(newWhiteList.GetAllValidators()), 1)
 
 	// add one validator
-	err = keeper.ProcessUpdateWhiteListValidator(ctx, networkID, addresses[0], whiteList[0], "add", sugaredLogger)
+	err = keeper.ProcessUpdateWhiteListValidator(ctx, networkID, addresses[0], whiteList.GetAllValidators()[0], 100, sugaredLogger)
 	newWhiteList = keeper.GetOracleWhiteList(ctx, types.NewNetworkDescriptor(networkID))
 	require.Equal(t, err, nil)
-	require.Equal(t, len(newWhiteList), 2)
+	require.Equal(t, len(newWhiteList.GetAllValidators()), 2)
 
 }

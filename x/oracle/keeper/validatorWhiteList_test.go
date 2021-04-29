@@ -11,21 +11,20 @@ import (
 const networkID = 1
 
 func TestKeeper_SetValidatorWhiteList(t *testing.T) {
-	ctx, keeper, _, _, _, _, _ := oracleKeeper.CreateTestKeepers(t, 0.7, []int64{3, 7}, "")
-	_, addresses := oracleKeeper.CreateTestAddrs(2)
+	ctx, keeper, _, _, _, whitelist, _ := oracleKeeper.CreateTestKeepers(t, 0.7, []int64{3, 7}, "")
 	networkDescriptor := types.NewNetworkDescriptor(networkID)
-	keeper.SetOracleWhiteList(ctx, networkDescriptor, addresses)
+	keeper.SetOracleWhiteList(ctx, networkDescriptor, whitelist)
 	vList := keeper.GetOracleWhiteList(ctx, networkDescriptor)
-	assert.Equal(t, len(vList), 2)
+	assert.Equal(t, len(vList.Whitelist), 2)
 	assert.True(t, keeper.ExistsOracleWhiteList(ctx, networkDescriptor))
 }
 
 func TestKeeper_ValidateAddress(t *testing.T) {
-	ctx, keeper, _, _, _, _, _ := oracleKeeper.CreateTestKeepers(t, 0.7, []int64{3, 7}, "")
-	_, addresses := oracleKeeper.CreateTestAddrs(2)
+	ctx, keeper, _, _, _, whitelist, _ := oracleKeeper.CreateTestKeepers(t, 0.7, []int64{3, 7}, "")
+	addresses := whitelist.GetAllValidators()
 	networkDescriptor := types.NewNetworkDescriptor(networkID)
 
-	keeper.SetOracleWhiteList(ctx, networkDescriptor, addresses)
+	keeper.SetOracleWhiteList(ctx, networkDescriptor, whitelist)
 	assert.True(t, keeper.ValidateAddress(ctx, networkDescriptor, addresses[0]))
 	assert.True(t, keeper.ValidateAddress(ctx, networkDescriptor, addresses[1]))
 	_, addresses = oracleKeeper.CreateTestAddrs(3)

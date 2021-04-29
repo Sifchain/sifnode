@@ -9,6 +9,11 @@ type ValidatorWhitelist struct {
 	Whitelist map[string]uint32 `json:"whitelist"`
 }
 
+// DBValidatorWhitelist for db storage
+type DBValidatorWhitelist struct {
+	Whitelist []byte `json:"whitelist"`
+}
+
 // NewValidatorWhitelist get a new ValidatorWhitelist instance
 func NewValidatorWhitelist() ValidatorWhitelist {
 	return ValidatorWhitelist{
@@ -16,21 +21,16 @@ func NewValidatorWhitelist() ValidatorWhitelist {
 	}
 }
 
-// NewValidatorWhitelist get a new ValidatorWhitelist instance
+// NewValidatorWhitelistFromData get a new ValidatorWhitelist instance
 func NewValidatorWhitelistFromData(whitelist map[string]uint32) ValidatorWhitelist {
 	return ValidatorWhitelist{
 		Whitelist: whitelist,
 	}
 }
 
-// AddValidator add new validator and its power
-func (list *ValidatorWhitelist) AddValidator(validator sdk.ValAddress, power uint32) {
+// UpdateValidator update validator's power
+func (list *ValidatorWhitelist) UpdateValidator(validator sdk.ValAddress, power uint32) {
 	list.Whitelist[validator.String()] = power
-}
-
-// RemoveValidator just set its power as 0
-func (list *ValidatorWhitelist) RemoveValidator(validator sdk.ValAddress) {
-	list.Whitelist[validator.String()] = 0
 }
 
 // GetValidatorPower return validator's power
@@ -49,12 +49,13 @@ func (list ValidatorWhitelist) ContainValidator(validator sdk.ValAddress) bool {
 }
 
 // GetPowerRatio return the power ratio of input validator address list
-func (list ValidatorWhitelist) GetPowerRatio(claimValidators map[string][]sdk.ValAddress) (string, float64) {
+func (list ValidatorWhitelist) GetPowerRatio(claimValidators map[string][]sdk.ValAddress) (string, float64, float64) {
 	var totalPower = uint32(0)
 	for _, value := range list.Whitelist {
 		totalPower += value
 	}
 
+	var totalClaimPower = uint32(0)
 	var highestClaimPower = uint32(0)
 	var highestString = ""
 
@@ -64,11 +65,28 @@ func (list ValidatorWhitelist) GetPowerRatio(claimValidators map[string][]sdk.Va
 			claimPower += list.GetValidatorPower(address)
 		}
 
+		totalClaimPower += claimPower
 		if claimPower > highestClaimPower {
 			highestClaimPower = claimPower
 			highestString = claim
 		}
 	}
 
-	return highestString, float64(highestClaimPower) / float64(totalPower)
+	return highestString, float64(highestClaimPower) / float64(totalPower), float64(totalClaimPower-highestClaimPower) / float64(totalPower)
+}
+
+// GetAllValidators return all validators
+func (list ValidatorWhitelist) GetAllValidators() []sdk.ValAddress {
+	validators := make([]sdk.ValAddress, 0)
+	for key, value := range list.Whitelist {
+		address, err := sdk.ValAddressFromBech32(key)
+		if err != nil {
+			panic("invalid address in whitelist")
+		}
+		if value > 0 {
+			validators = append(validators, address)
+		}
+	}
+
+	return validators
 }

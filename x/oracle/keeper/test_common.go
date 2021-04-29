@@ -133,7 +133,7 @@ func CreateTestKeepers(t *testing.T, consensusNeeded float64, validatorAmounts [
 	for i, amount := range validatorAmounts {
 		valPubKey := PKs[i]
 		valAddr := sdk.ValAddress(valPubKey.Address().Bytes())
-		valAddrs.AddValidator(valAddr, 100)
+		valAddrs.UpdateValidator(valAddr, uint32(validatorAmounts[i]))
 		valTokens := sdk.TokensFromConsensusPower(amount)
 		// test how the validator is set from a purely unbonbed pool
 		validator := stakingtypes.NewValidator(valAddr, valPubKey, stakingtypes.Description{})
