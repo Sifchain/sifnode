@@ -83,7 +83,27 @@ func TestKeeper_GetClaims(t *testing.T) {
 	for _, claim := range claimList {
 		err := keeper.SetClaim(ctx, claim)
 		assert.NoError(t, err)
+		assert.True(t, keeper.ExistsClaim(ctx, claim.UserAddress.String(), claim.UserClaimType))
 	}
 	fetchList := keeper.GetClaims(ctx)
 	assert.Len(t, fetchList, numberOfClaims)
+}
+
+func TestKeeper_DeleteClaim(t *testing.T) {
+	app, ctx := test.CreateTestApp(false)
+	keeper := app.DispensationKeeper
+	numberOfClaims := 1000
+	claimList := test.CreateClaimsList(numberOfClaims, types.ValidatorSubsidy)
+	for _, claim := range claimList {
+		err := keeper.SetClaim(ctx, claim)
+		assert.NoError(t, err)
+	}
+	fetchList := keeper.GetClaims(ctx)
+	assert.Len(t, fetchList, numberOfClaims)
+	for _, claim := range claimList {
+		keeper.DeleteClaim(ctx, claim.UserAddress.String(), claim.UserClaimType)
+	}
+	fetchList = keeper.GetClaims(ctx)
+	assert.Len(t, fetchList, 0)
+
 }
