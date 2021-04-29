@@ -17189,6 +17189,7 @@ pdfjs-dist@2.1.266:
   dependencies:
     node-ensure "^0.0.0"
     worker-loader "^2.0.0"
+
 pend@~1.2.0:
   version "1.2.0"
   resolved "https://registry.yarnpkg.com/pend/-/pend-1.2.0.tgz#7a57eb550a6783f9115331fcf4663d5c8e007a50"
@@ -20029,6 +20030,11 @@ storybook-addon-designs@^5.4.5:
   integrity sha512-IYzY/LNuQA62dJ6/au3/4sC+lOIrlPuIiQJv3co3mkvokd3sjqy8LqMXu7lqD/XXbdVreJQ3WNJ2NuFHJhRasA==
   dependencies:
     react-pdf "^4.0.5"
+
+storybook-vue-router@^1.0.7:
+  version "1.0.7"
+  resolved "https://registry.yarnpkg.com/storybook-vue-router/-/storybook-vue-router-1.0.7.tgz#366451212149d9d0a32557545b244667bb01768e"
+  integrity sha512-R+DYARQ40YVbMbV5moLDmQvodJX5FQPVy5cULb782P1gD5rAkulWtgt8yrM7pmjYru+LTPdLS4blrFPnWlb0sQ==
 
 stream-browserify@^2.0.1:
   version "2.0.2"
