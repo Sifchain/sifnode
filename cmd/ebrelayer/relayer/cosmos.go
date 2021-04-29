@@ -369,7 +369,14 @@ func getOracleClaimType(eventType string) types.Event {
 	return claimType
 }
 
-func tryGettingCosmosBridge(target common.Address, client *ethclient.Client, sub CosmosSub) (*cosmosbridge.CosmosBridge, error) {
+func tryGettingCosmosBridge(
+	target common.Address,
+	client *ethclient.Client,
+	sub CosmosSub,
+	) (
+		*cosmosbridge.CosmosBridge,
+		error,
+	) {
 
 	for i := 0; i < 5; i++ {
 		cosmosBridgeInstance, err := cosmosbridge.NewCosmosBridge(target, client)
