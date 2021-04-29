@@ -163,6 +163,7 @@ export default defineComponent({
   font-family: "PT Serif", serif;
   font-size: 14px;
   font-style: italic;
+  padding-right: 14px;
   &[disabled] {
     color: #bbb;
     pointer-events: none;
