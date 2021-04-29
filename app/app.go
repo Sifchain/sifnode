@@ -5,11 +5,7 @@ import (
 	"math/big"
 	"net/http"
 	"os"
-	"path/filepath"
 
-	"github.com/Sifchain/sifnode/x/ethbridge"
-	ethbridgekeeper "github.com/Sifchain/sifnode/x/ethbridge/keeper"
-	ethbridgetypes "github.com/Sifchain/sifnode/x/ethbridge/types"
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/grpc/tmservice"
@@ -82,6 +78,9 @@ import (
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 	dbm "github.com/tendermint/tm-db"
 
+	"github.com/Sifchain/sifnode/x/ethbridge"
+	ethbridgekeeper "github.com/Sifchain/sifnode/x/ethbridge/keeper"
+	ethbridgetypes "github.com/Sifchain/sifnode/x/ethbridge/types"
 	"github.com/Sifchain/sifnode/x/clp"
 	clpkeeper "github.com/Sifchain/sifnode/x/clp/keeper"
 	clptypes "github.com/Sifchain/sifnode/x/clp/types"
@@ -137,12 +136,10 @@ var (
 func init() {
 	sdk.PowerReduction = sdk.NewIntFromBigInt(new(big.Int).Exp(big.NewInt(10), big.NewInt(18), nil))
 
-	userHomeDir, err := os.UserHomeDir()
+	_, err := os.UserHomeDir()
 	if err != nil {
 		panic(err)
 	}
-
-	DefaultNodeHome = filepath.Join(userHomeDir, ".sifnoded")
 }
 
 var (
