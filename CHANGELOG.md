@@ -4,7 +4,7 @@
 
 ## 🛠 Improvements
 
-- [UI] New design elements for the DEX (header/footer/buttons).
+- [UI] New design elements for the DEX (header/typorgraphy/buttons).
 
 ----
 
@@ -29,7 +29,7 @@
 
 - [UI] Added logic for when clicking on max button in ROWAN to take into consideration necessary gas fees.
 - [UI] In swap confirmation screen, built in cleaner UX logic around the way we display numbers. 
-- [UI] Updated design elements (typography and general look & feel) across the DEX.
+- [UI] Included logic in the token list pop-ups when doing a swap or liquidity add for how we sort the displayed tokens. We are also now calling in user's balances directly in this pop-up as well for easy viewing.
 - [Peggy] Add retry logic when infura gives us a not found error. Add additional retry logic to try to retrieve the tx if it cannot be found on the first query.
 - [Sifnode] Ability to propose and vote on new jailing parameters.
 - [ChainOps] MongoDb resource limit increases.
