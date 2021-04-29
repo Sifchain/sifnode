@@ -1,7 +1,7 @@
 
 ----
 
-# v0.8.0
+# v0.8.1
 > April 27, 2021
 
 ## ⭐ Features
@@ -11,19 +11,17 @@
 
 ## 🛠 Improvements
 
-- [Sifnode] Ability to propose and vote on new jailing parameters.
-- [ChainOps] MongoDb resource limit increases.
-- [Blockexplorer] Improved design elements and cUSDT decimal formatting.
 - [UI] Added logic for when clicking on max button in ROWAN to take into consideration necessary gas fees.
 - [UI] In swap confirmation screen, built in cleaner UX logic around the way we display numbers. 
 - [UI] Updated design elements (typography and general look & feel) across the DEX.
+- [Sifnode] Ability to propose and vote on new jailing parameters.
+- [ChainOps] MongoDb resource limit increases.
 
 ## 🐛 Bug Fixes
 
 - [UI] State loader for dispensation.
 - [UI] Remove the "select all" functionality when clicking in a field.
 - [UI] Token with zero balances would sometimes disappear from the swap options.
-- [Peggy] Add retry logic when infura gives us a not found error. Add additional retry logic to try to retrieve the tx if it cannot be found on the first query.
 
 ## ❓ Miscellaneous
 
