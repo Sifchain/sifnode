@@ -8,7 +8,7 @@
         class="link"
         target="_blank"
         href="https://docs.sifchain.finance/resources/sifchain-dex-ui"
-        >Discover</a
+        >DISCOVER</a
       >
     </div>
     <div class="item">
@@ -16,15 +16,15 @@
         class="link"
         target="_blank"
         href="https://docs.sifchain.finance/resources/faq#how-can-i-acquire-rowan-and-or-erowan"
-        >Get Rowan</a
+        >GET ROWAN</a
       >
     </div>
     <div class="item">
-      <router-link class="link" to="/stats">Pool Stats</router-link>
+      <router-link class="link" to="/stats">POOL STATS</router-link>
     </div>
     <div class="item">
       <router-link class="link" to="/stake-delegate"
-        >Stake & Delegate</router-link
+        >STAKE & DELEGATE</router-link
       >
     </div>
   </div>
@@ -48,15 +48,16 @@ export default {};
     font-size: 40px;
     font-weight: normal;
     margin-right: 46px;
+    color: #c1a04f;
   }
 
   .link {
     @include resetLink;
-    font-size: $fs_lg;
+    font-size: 18px;
     font-weight: normal;
     opacity: 1;
     transition: opacity $trans_fast;
-
+    color: #c1a04f;
     &:hover {
       opacity: 0.5;
     }

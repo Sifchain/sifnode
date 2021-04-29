@@ -14,6 +14,7 @@ import InfoBoxWhite from "./icons/InfoBoxWhite.vue";
 import Bang from "./icons/Bang.vue";
 import Sif from "./icons/Sif.vue";
 import Exclaimation from "./icons/Exclaimation.vue";
+import Soon from "./icons/Soon.vue";
 
 export default defineComponent({
   props: {
@@ -31,6 +32,7 @@ export default defineComponent({
         | "info-box-white"
         | "sif"
         | "exclaimation"
+        | "soon"
         | "eye"
       >,
     },
@@ -48,6 +50,7 @@ export default defineComponent({
     InfoBoxWhite,
     Sif,
     Exclaimation,
+    Soon,
     Eye,
   },
 });
@@ -67,6 +70,7 @@ export default defineComponent({
     <InfoBoxWhite v-if="icon === 'info-box-white'" />
     <Sif v-if="icon === 'sif'" />
     <Exclaimation v-if="icon === 'exclaimation'" />
+    <Soon v-if="icon === 'soon'" />
     <Eye v-if="icon === 'eye'" />
   </span>
 </template>
