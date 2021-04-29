@@ -1,4 +1,5 @@
 import { IAssetAmount, Asset } from "ui-core";
+import { format } from "ui-core/src/utils/format";
 
 export function sortAssetAmount(
   assetAmounts: {
@@ -22,11 +23,27 @@ export function sortAssetAmount(
     })
     .sort((a, b) => {
       // Next sort by balance
-      if (!b.amount || !a.amount) {
-        return 0;
+
+      if (!b.amount?.amount) {
+        return -1;
       }
-      return b.amount.greaterThanOrEqual(a.amount) ? 1 : -1;
-      // return b.amount.subtract(a.amount).toBigInt();
+      if (!a.amount?.amount) {
+        return 1;
+      }
+
+      // #TODO - TD - There is likely a much better way to do this an entire sort
+      //              But I couldn't figure it out #refactor
+      //              Asset balances needed to be sorted once precision is applied
+
+      const aValue = format(a.amount.amount, a.asset, {
+        mantissa: 18,
+      });
+
+      const bValue = format(b.amount.amount, b.asset, {
+        mantissa: 18,
+      });
+
+      return Number(bValue) >= Number(aValue) ? 1 : -1;
     })
     .sort((a) => {
       // Finally, sort and move rowan, erowan to the top
