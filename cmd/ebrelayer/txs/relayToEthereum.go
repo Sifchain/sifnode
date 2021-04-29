@@ -21,28 +21,8 @@ import (
 const (
 	// GasLimit the gas limit in Gwei used for transactions sent with TransactOpts
 	GasLimit            = uint64(500000)
-	transactionInterval = 1 * time.Second
+	transactionInterval = 60 * time.Second
 )
-
-var GasPriceMinimum *big.Int = big.NewInt(120000000000)
-var nonce uint64 = 0
-
-func getNonce(address common.Address, client *ethclient.Client) (uint64, error) {
-	if nonce > 0 {
-		return nonce, nil
-	}
-
-	nonceValue, err := client.PendingNonceAt(context.Background(), address)
-	if nonceValue > 0 {
-		nonce = nonceValue
-	}
-
-	return nonce, err
-}
-
-func incrementNonce() {
-	nonce++
-}
 
 // RelayProphecyClaimToEthereum relays the provided ProphecyClaim to CosmosBridge contract on the Ethereum network
 func RelayProphecyClaimToEthereum(provider string, contractAddress common.Address, event types.Event,
@@ -71,32 +51,10 @@ func RelayProphecyClaimToEthereum(provider string, contractAddress common.Addres
 	tx, err := cosmosBridgeInstance.NewProphecyClaim(auth, uint8(claim.ClaimType),
 		claim.CosmosSender, claim.CosmosSenderSequence, claim.EthereumReceiver, claim.Symbol, claim.Amount.BigInt())
 
-	if err != nil && err.Error() == "not found" {
-		// if there is a not found error while broadcasting to infura, retry until there isn't an error
-		i := 0
-		for i < 30 {
-			sugaredLogger.Errorw(
-				"could not find tx after broadcasting",
-				"retry", i,
-				"err", err.Error(),
-			)
-
-			tx, err = cosmosBridgeInstance.NewProphecyClaim(auth, uint8(claim.ClaimType),
-				claim.CosmosSender, claim.CosmosSenderSequence, claim.EthereumReceiver, claim.Symbol, claim.Amount.BigInt())
-			if err == nil {
-				break
-			}
-
-			// sleep for 1 second until retrying
-			time.Sleep(transactionInterval)
-			i++
-		}
-
-		if i == 30 {
-			sugaredLogger.Errorw("failed to send ProphecyClaim to CosmosBridge.",
-				errorMessageKey, err.Error())
-			return err
-		}
+	if err != nil {
+		sugaredLogger.Errorw("failed to send ProphecyClaim to CosmosBridge.",
+			errorMessageKey, err.Error())
+		return err
 	}
 
 	sugaredLogger.Infow("get NewProphecyClaim tx hash:", "ProphecyClaimHash", tx.Hash().Hex())
@@ -104,37 +62,10 @@ func RelayProphecyClaimToEthereum(provider string, contractAddress common.Addres
 	// Get the transaction receipt
 	receipt, err := client.TransactionReceipt(context.Background(), tx.Hash())
 	if err != nil {
-		i := 0
-		for i < 30 {
-			sugaredLogger.Errorw(
-				"no tx receipt after broadcasting",
-				"retry", i,
-				"getTxReceiptErr", err.Error(),
-			)
-
-			receipt, err := client.TransactionReceipt(context.Background(), tx.Hash())
-			if err == nil {
-				sugaredLogger.Infow(
-					"Successfully received transaction receipt after retry",
-					"txReceipt", receipt,
-				)
-				break
-			}
-
-			// sleep for 1 second until retrying
-			time.Sleep(transactionInterval)
-			i++
-		}
-
-		if i == 30 {
-			sugaredLogger.Errorw("failed to get transaction receipt.",
-				errorMessageKey, err.Error())
-			return err
-		}
+		sugaredLogger.Errorw("failed to get transaction receipt.",
+			errorMessageKey, err.Error())
+		return err
 	}
-
-	// do not increment the nonce until the transaction receipt has been found
-	incrementNonce()
 
 	switch receipt.Status {
 	case 0:
@@ -164,8 +95,10 @@ func initRelayConfig(provider string, registry common.Address, event types.Event
 		return nil, nil, common.Address{}, err
 	}
 
-	nonce, err := getNonce(sender, client)
+	// rate limit the bridge so that nonce is handled correctly
+	time.Sleep(transactionInterval)
 
+	nonce, err := client.PendingNonceAt(context.Background(), sender)
 	sugaredLogger.Infow("Current eth operator at pending nonce.", "pendingNonce", nonce)
 
 	if err != nil {
@@ -194,17 +127,6 @@ func initRelayConfig(provider string, registry common.Address, event types.Event
 	quarterGasPrice = quarterGasPrice.Div(gasPrice, big.NewInt(4))
 
 	gasPrice.Sub(gasPrice, quarterGasPrice)
-	if gasPrice.Cmp(GasPriceMinimum) == -1 {
-
-		sugaredLogger.Errorw(
-			"gas price under minimum of 120 gigawei",
-			"gasPriceBeforeAdjustment", gasPrice,
-			"gasPriceAfterAdjustment", GasPriceMinimum,
-		)
-
-		gasPrice = GasPriceMinimum
-	}
-
 	sugaredLogger.Infow("final gas price after adjustment.",
 		"finalGasPrice", gasPrice)
 
