@@ -5,8 +5,11 @@ package txs
 import (
 	"context"
 	"crypto/ecdsa"
+	"errors"
 	"math/big"
 	"time"
+
+	ctypes "github.com/ethereum/go-ethereum/core/types"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
@@ -25,85 +28,72 @@ const (
 
 var GasPriceMinimum *big.Int = big.NewInt(60000000000)
 
-// RelayProphecyClaimToEthereum relays the provided ProphecyClaim to CosmosBridge contract on the Ethereum network
-func RelayProphecyClaimToEthereum(provider string, contractAddress common.Address, event types.Event,
-	claim ProphecyClaim, key *ecdsa.PrivateKey, sugaredLogger *zap.SugaredLogger) error {
-	// Initialize client service, validator's tx auth, and target contract address
-	client, auth, target, err := initRelayConfig(provider, contractAddress, event, key, sugaredLogger)
-	if err != nil {
-		sugaredLogger.Errorw("failed in init relay config.",
-			errorMessageKey, err.Error())
-		return err
-	}
+func sleepThread(seconds time.Duration) {
+	time.Sleep(transactionInterval * seconds)
+}
 
-	// Initialize CosmosBridge instance
-	cosmosBridgeInstance, err := cosmosbridge.NewCosmosBridge(target, client)
-	if err != nil {
-		sugaredLogger.Errorw("failed to get cosmosBridge instance.",
-			errorMessageKey, err.Error())
-		return err
-	}
+// RelayProphecyClaimToEthereum relays the provided ProphecyClaim to CosmosBridge contract on the Ethereum network
+func RelayProphecyClaimToEthereum(
+	claim ProphecyClaim,
+	sugaredLogger *zap.SugaredLogger,
+	client *ethclient.Client,
+	auth *bind.TransactOpts,
+	cosmosBridgeInstance *cosmosbridge.CosmosBridge,
+	) error {
 
 	// Send transaction
-	sugaredLogger.Infow("Sending new ProphecyClaim to CosmosBridge.",
+	sugaredLogger.Infow(
+		"Sending new ProphecyClaim to CosmosBridge.",
 		"CosmosSender", claim.CosmosSender,
-		"CosmosSenderSequence", claim.CosmosSenderSequence)
+		"CosmosSenderSequence", claim.CosmosSenderSequence,
+	)
 
-	tx, _ := cosmosBridgeInstance.NewProphecyClaim(auth, uint8(claim.ClaimType),
-		claim.CosmosSender, claim.CosmosSenderSequence, claim.EthereumReceiver, claim.Symbol, claim.Amount.BigInt())
+	tx, err := cosmosBridgeInstance.NewProphecyClaim(
+		auth, uint8(claim.ClaimType), claim.CosmosSender,
+		claim.CosmosSenderSequence, claim.EthereumReceiver,
+		claim.Symbol, claim.Amount.BigInt(),
+	)
+
+	if err != nil {
+		return err
+	}
+
 	// sleep 30 seconds to wait for tx to go through.
-	time.Sleep(transactionInterval * 30)
+	sleepThread(2)
 
 	sugaredLogger.Infow("get NewProphecyClaim tx hash:", "ProphecyClaimHash", tx.Hash().Hex())
 
-	txHash := tx.Hash()
-
-	// Get the transaction receipt
-	receipt, err := client.TransactionReceipt(context.Background(), txHash)
-	// if there is an error getting the tx, or if the tx fails, retry 30 times
-	if err != nil || receipt.Status == 0 {
-		i := 0
-		for i < 30 {
-			sugaredLogger.Errorw(
-				"no tx receipt after broadcasting",
-				"retry", i,
-				"getTxReceiptErr", err.Error(),
-			)
-			_, _ = cosmosBridgeInstance.NewProphecyClaim(auth, uint8(claim.ClaimType),
-				claim.CosmosSender, claim.CosmosSenderSequence, claim.EthereumReceiver, claim.Symbol, claim.Amount.BigInt())
-
-			receipt, err := client.TransactionReceipt(context.Background(), txHash)
-			if err == nil || receipt.Status == 1 {
-				sugaredLogger.Infow(
-					"Successfully received transaction receipt after retry",
-					"txReceipt", receipt,
-				)
-				break
-			}
-
-			// sleep for 1 second until retrying
-			time.Sleep(transactionInterval)
-			i++
+	// var receipt *eth.types.Receipt
+	var receipt *ctypes.Receipt
+	maxRetries := 60
+	i := 0
+	// if there is an error getting the tx, or if the tx fails, retry 60 times
+	for i < maxRetries {
+		// Get the transaction receipt
+		receipt, err = client.TransactionReceipt(context.Background(), tx.Hash())
+	
+		if err != nil {
+			sleepThread(1)
+		} else {
+			break
 		}
-
-		if i == 30 {
-			sugaredLogger.Errorw("failed to get transaction receipt.",
-				errorMessageKey, err.Error())
-			return err
-		}
+		i++
 	}
 
-	switch receipt.Status {
-	case 0:
-		sugaredLogger.Infow("trasaction failed:")
-	case 1:
-		sugaredLogger.Infow("trasaction is successful:")
+	if i == maxRetries {
+		return errors.New("hit max tx receipt query retries")
 	}
+
+	sugaredLogger.Infow(
+		"Successfully received transaction receipt after retry",
+		"txReceipt", receipt,
+	)
+
 	return nil
 }
 
 // initRelayConfig set up Ethereum client, validator's transaction auth, and the target contract's address
-func initRelayConfig(provider string, registry common.Address, event types.Event, key *ecdsa.PrivateKey,
+func InitRelayConfig(provider string, registry common.Address, event types.Event, key *ecdsa.PrivateKey,
 	sugaredLogger *zap.SugaredLogger) (*ethclient.Client, *bind.TransactOpts, common.Address, error) {
 	// Start Ethereum client
 	client, err := ethclient.Dial(provider)

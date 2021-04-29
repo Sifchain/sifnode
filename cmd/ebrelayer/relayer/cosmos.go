@@ -19,6 +19,7 @@ import (
 	"time"
 
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/contract"
+	cosmosbridge "github.com/Sifchain/sifnode/cmd/ebrelayer/contract/generated/bindings/cosmosbridge"
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/txs"
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/types"
 	"github.com/ethereum/go-ethereum/common"
@@ -377,10 +378,48 @@ func (sub CosmosSub) handleBurnLockMsg(cosmosMsg types.CosmosMsg, claimType type
 	sub.SugaredLogger.Infow("get the prophecy claim.",
 		"CosmosSender", prophecyClaim.CosmosSender,
 		"CosmosSenderSequence", prophecyClaim.CosmosSenderSequence)
-
-	err := txs.RelayProphecyClaimToEthereum(sub.EthProvider, sub.RegistryContractAddress,
-		claimType, prophecyClaim, sub.PrivateKey, sub.SugaredLogger)
+		
+	// put this into it's own function with retry logic
+	client, auth, target, err := txs.InitRelayConfig(sub.EthProvider, sub.RegistryContractAddress, claimType, sub.PrivateKey, sub.SugaredLogger)
 	if err != nil {
-		log.Println(err)
+		sub.SugaredLogger.Errorw("failed in init relay config.",
+			errorMessageKey, err.Error())
+	}
+
+	// put this into it's own function with retry logic
+	// Initialize CosmosBridge instance
+	cosmosBridgeInstance, err := cosmosbridge.NewCosmosBridge(target, client)
+	if err != nil {
+		sub.SugaredLogger.Errorw("failed to get cosmosBridge instance.",
+			errorMessageKey, err.Error())
+	}
+
+	maxRetries := 5
+	i := 0
+	for i < maxRetries {
+		err = txs.RelayProphecyClaimToEthereum(
+			prophecyClaim,
+			sub.SugaredLogger,
+			client,
+			auth,
+			cosmosBridgeInstance,
+		)
+
+		if err != nil {
+			sub.SugaredLogger.Errorw(
+				"failed to send new prophecyclaim to ethereum",
+				errorMessageKey, err.Error(),
+			)
+		} else {
+			break
+		}
+		i++
+	}
+
+	if i == maxRetries {
+		sub.SugaredLogger.Errorw(
+			"failed to broadcast transaction after 30 attempts",
+			errorMessageKey, err.Error(),
+		)
 	}
 }
