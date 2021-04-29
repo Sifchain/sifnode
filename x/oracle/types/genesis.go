@@ -24,7 +24,10 @@ func DefaultGenesisState() *GenesisState {
 func GetGenesisStateFromAppState(appState map[string]json.RawMessage) GenesisState {
 	var genesisState GenesisState
 	if appState[ModuleName] != nil {
-		json.Unmarshal(appState[ModuleName], &genesisState) // todo when module is migrated we need to use codec.JSONMarshler
+		_, err := ModuleCdc.MarshalJSON(&genesisState)
+		if err != nil {
+			panic("Failed to get genesis state from app state")
+		}
 	}
 	return genesisState
 }

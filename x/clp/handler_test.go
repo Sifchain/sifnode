@@ -42,7 +42,7 @@ func TestCreatePool(t *testing.T) {
 
 	assert.True(t, ok, "")
 
-	MinThreshold := sdk.NewUint(uint64(keeper.GetParams(ctx).MinCreatePoolThreshold))
+	MinThreshold := sdk.NewUint(keeper.GetParams(ctx).MinCreatePoolThreshold)
 	// Will fail if we are below minimum
 	msgCreatePool := clptypes.NewMsgCreatePool(signer, asset, MinThreshold.Sub(sdk.NewUint(1)), sdk.ZeroUint())
 	res, err := handler(ctx, &msgCreatePool) //clp.handleMsgCreatePool(ctx, keeper, msgCreatePool)

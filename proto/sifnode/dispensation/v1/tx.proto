@@ -1,0 +1,22 @@
+syntax = "proto3";
+package sifnode.dispensation.v1;
+
+import "gogoproto/gogo.proto";
+import "sifnode/dispensation/v1/types.proto";
+
+option go_package = "github.com/Sifchain/sifnode/x/dispensation/types";
+
+service Msg {
+}
+
+message MsgDistribution {
+    string signer = 1;
+    string distribution_name = 2;
+    DistributionType distribution_type = 3;
+    repeated string input = 4 [
+        (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/x/bank/types.Input"
+    ];
+    repeated string output = 5 [
+        (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/x/bank/types.Output"
+    ];
+}

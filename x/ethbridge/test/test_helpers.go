@@ -1,10 +1,14 @@
-package keeper
+package test
 
 import (
 	"bytes"
 	"encoding/hex"
+
 	"strconv"
 	"testing"
+
+	"github.com/Sifchain/sifnode/app"
+	"github.com/Sifchain/sifnode/x/ethbridge/keeper"
 
 	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
 	simappparams "github.com/cosmos/cosmos-sdk/simapp/params"
@@ -28,7 +32,6 @@ import (
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	tmtypes "github.com/tendermint/tendermint/types"
 
-	"github.com/Sifchain/sifnode/app"
 	"github.com/Sifchain/sifnode/x/ethbridge/types"
 	oraclekeeper "github.com/Sifchain/sifnode/x/oracle/keeper"
 	oracleTypes "github.com/Sifchain/sifnode/x/oracle/types"
@@ -44,7 +47,7 @@ const (
 )
 
 // CreateTestKeepers greates an Mock App, OracleKeeper, bankKeeper and ValidatorAddresses to be used for test input
-func CreateTestKeepers(t *testing.T, consensusNeeded float64, validatorAmounts []int64, extraMaccPerm string) (sdk.Context, Keeper, bankkeeper.Keeper, authkeeper.AccountKeeper, oraclekeeper.Keeper, simappparams.EncodingConfig, []sdk.ValAddress) {
+func CreateTestKeepers(t *testing.T, consensusNeeded float64, validatorAmounts []int64, extraMaccPerm string) (sdk.Context, keeper.Keeper, bankkeeper.Keeper, authkeeper.AccountKeeper, oraclekeeper.Keeper, simappparams.EncodingConfig, []sdk.ValAddress) {
 
 	PKs := CreateTestPubKeys(500)
 	keyStaking := sdk.NewKVStoreKey(stakingtypes.StoreKey)
@@ -140,7 +143,7 @@ func CreateTestKeepers(t *testing.T, consensusNeeded float64, validatorAmounts [
 	accountKeeper.SetModuleAccount(ctx, bondPool)
 	accountKeeper.SetModuleAccount(ctx, notBondedPool)
 
-	ethbridgeKeeper := NewKeeper(encCfg.Marshaler, bankKeeper, oracleKeeper, accountKeeper, keyEthBridge)
+	ethbridgeKeeper := keeper.NewKeeper(encCfg.Marshaler, bankKeeper, oracleKeeper, accountKeeper, keyEthBridge)
 	CethReceiverAccount, _ := sdk.AccAddressFromBech32(TestCethReceiverAddress)
 	ethbridgeKeeper.SetCethReceiverAccount(ctx, CethReceiverAccount)
 
@@ -158,7 +161,10 @@ func CreateTestKeepers(t *testing.T, consensusNeeded float64, validatorAmounts [
 		validator, _ = validator.AddTokensFromDel(valTokens)
 		stakingKeeper.SetValidator(ctx, validator)
 		stakingKeeper.SetValidatorByPowerIndex(ctx, validator)
-		stakingKeeper.ApplyAndReturnValidatorSetUpdates(ctx)
+		_, err = stakingKeeper.ApplyAndReturnValidatorSetUpdates(ctx)
+		if err != nil {
+			panic("Failed to apply validator set updates")
+		}
 	}
 
 	oracleKeeper.SetOracleWhiteList(ctx, valAddrs)
@@ -219,12 +225,5 @@ func NewPubKey(pk string) (res cryptotypes.PubKey) {
 
 // create a codec used only for testing
 func MakeTestEncodingConfig() simappparams.EncodingConfig {
-	encCfg := app.MakeTestEncodingConfig()
-
-	// Register AppAccount
-	// TODOD ?
-	// encCfg.Amino.RegisterConcrete(&authtypes.BaseAccount{}, "test/staking/BaseAccount", nil)
-	//cryptocodec.RegisterCrypto(encCfg.Amino)
-
-	return encCfg
+	return app.MakeTestEncodingConfig()
 }

@@ -142,7 +142,9 @@ func (sub CosmosSub) Start(completionEvent *sync.WaitGroup) {
 
 			for blockNumber := startBlockHeight; blockNumber <= blockHeight; {
 				tmpBlockNumber := blockNumber
-				block, err := client.BlockResults(&tmpBlockNumber)
+
+				ctx := context.Background()
+				block, err := client.BlockResults(ctx, &tmpBlockNumber)
 
 				if err != nil {
 					sub.SugaredLogger.Errorw("sifchain client failed to get a block.",
@@ -150,8 +152,8 @@ func (sub CosmosSub) Start(completionEvent *sync.WaitGroup) {
 					continue
 				}
 
-				for _, log := range block.TxsResults {
-					for _, event := range log.Events {
+				for _, txLog := range block.TxsResults {
+					for _, event := range txLog.Events {
 
 						claimType := getOracleClaimType(event.GetType())
 
@@ -317,7 +319,10 @@ func (sub CosmosSub) Replay(fromBlock int64, toBlock int64, ethFromBlock int64, 
 
 	for blockNumber := fromBlock; blockNumber < toBlock; {
 		tmpBlockNumber := blockNumber
-		block, err := client.BlockResults(&tmpBlockNumber)
+
+		ctx := context.Background()
+		block, err := client.BlockResults(ctx, &tmpBlockNumber)
+
 		blockNumber++
 		log.Printf("Replay start to process block %d\n", blockNumber)
 

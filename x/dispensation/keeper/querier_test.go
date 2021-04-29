@@ -1,67 +1,68 @@
 package keeper_test
 
 import (
-	"github.com/Sifchain/sifnode/simapp"
+	"testing"
+
+	"github.com/Sifchain/sifnode/app"
 	"github.com/Sifchain/sifnode/x/dispensation"
 	"github.com/Sifchain/sifnode/x/dispensation/test"
 	"github.com/Sifchain/sifnode/x/dispensation/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/cosmos/cosmos-sdk/x/bank"
+	bank "github.com/cosmos/cosmos-sdk/x/bank/types"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	abci "github.com/tendermint/tendermint/abci/types"
-	"testing"
 )
 
-func GenerateQueryData(app *simapp.SimApp, ctx sdk.Context, name string, outList []bank.Output) {
+func GenerateQueryData(app *app.SifchainApp, ctx sdk.Context, name string, outList []bank.Output) {
 	keeper := app.DispensationKeeper
 	for i := 0; i < 10; i++ {
 		name := uuid.New().String()
-		distribution := types.NewDistribution(types.Airdrop, name)
+		distribution := types.NewDistribution(types.DistributionType_DISTRIBUTION_TYPE_AIRDROP, name)
 		_ = keeper.SetDistribution(ctx, distribution)
 	}
 
 	for _, rec := range outList {
-		record := types.NewDistributionRecord(name, rec.Address, rec.Coins, ctx.BlockHeight(), -1)
+		record := types.NewDistributionRecord(name, rec.Address, rec.Coins, ctx.BlockHeight(), int64(-1))
 		_ = keeper.SetDistributionRecord(ctx, record)
-
 	}
 
 }
 
 func TestQueryRecordsName(t *testing.T) {
-	app, ctx := test.CreateTestApp(false)
+	sifapp, ctx := test.CreateTestApp(false)
 	name := uuid.New().String()
 	outList := test.GenerateOutputList("1000000000")
-	GenerateQueryData(app, ctx, name, outList)
-	keeper := app.DispensationKeeper
+	GenerateQueryData(sifapp, ctx, name, outList)
+	keeper := sifapp.DispensationKeeper
 	querier := dispensation.NewQuerier(keeper)
 	quereyRecName := types.QueryRecordsByDistributionName{
 		DistributionName: name,
+		Status: types.ClaimStatus_CLAIM_STATUS_UNSPECIFIED,
 	}
 	query := abci.RequestQuery{
 		Path: "",
 		Data: []byte{},
 	}
-	qp, errRes := app.Codec().MarshalJSON(quereyRecName)
+	qp, errRes := sifapp.LegacyAmino().MarshalJSON(&quereyRecName)
 	require.NoError(t, errRes)
 	query.Path = ""
 	query.Data = qp
 	res, err := querier(ctx, []string{types.QueryRecordsByDistrName}, query)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	var dr types.DistributionRecords
-	err = keeper.Codec().UnmarshalJSON(res, &dr)
+	err = sifapp.LegacyAmino().UnmarshalJSON(res, &dr)
 	assert.NoError(t, err)
-	assert.Len(t, dr, 3)
+	assert.Len(t, dr.DistributionRecords, 3)
 }
 
 func TestQueryRecordsAddr(t *testing.T) {
-	app, ctx := test.CreateTestApp(false)
+	sifapp, ctx := test.CreateTestApp(false)
 	name := uuid.New().String()
 	outList := test.GenerateOutputList("1000000000")
-	GenerateQueryData(app, ctx, name, outList)
-	keeper := app.DispensationKeeper
+	GenerateQueryData(sifapp, ctx, name, outList)
+	keeper := sifapp.DispensationKeeper
 	querier := dispensation.NewQuerier(keeper)
 	quereyRecName := types.QueryRecordsByRecipientAddr{
 		Address: outList[0].Address,
@@ -70,24 +71,24 @@ func TestQueryRecordsAddr(t *testing.T) {
 		Path: "",
 		Data: []byte{},
 	}
-	qp, errRes := app.Codec().MarshalJSON(quereyRecName)
+	qp, errRes := sifapp.LegacyAmino().MarshalJSON(&quereyRecName)
 	require.NoError(t, errRes)
 	query.Path = ""
 	query.Data = qp
 	res, err := querier(ctx, []string{types.QueryRecordsByRecipient}, query)
 	assert.NoError(t, err)
 	var dr types.DistributionRecords
-	err = keeper.Codec().UnmarshalJSON(res, &dr)
+	err = sifapp.LegacyAmino().UnmarshalJSON(res, &dr)
 	assert.NoError(t, err)
-	assert.Len(t, dr, 1)
+	assert.Len(t, dr.DistributionRecords, 1)
 }
 
 func TestQueryAllDistributions(t *testing.T) {
-	app, ctx := test.CreateTestApp(false)
+	sifapp, ctx := test.CreateTestApp(false)
 	name := uuid.New().String()
 	outList := test.GenerateOutputList("1000000000")
-	GenerateQueryData(app, ctx, name, outList)
-	keeper := app.DispensationKeeper
+	GenerateQueryData(sifapp, ctx, name, outList)
+	keeper := sifapp.DispensationKeeper
 	querier := dispensation.NewQuerier(keeper)
 	query := abci.RequestQuery{
 		Path: "",
@@ -98,7 +99,7 @@ func TestQueryAllDistributions(t *testing.T) {
 	res, err := querier(ctx, []string{types.QueryAllDistributions}, query)
 	assert.NoError(t, err)
 	var dr types.Distributions
-	err = keeper.Codec().UnmarshalJSON(res, &dr)
+	err = sifapp.LegacyAmino().UnmarshalJSON(res, &dr)
 	assert.NoError(t, err)
-	assert.Len(t, dr, 10)
+	assert.Len(t, dr.Distributions, 10)
 }

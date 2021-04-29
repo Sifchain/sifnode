@@ -13,7 +13,7 @@ import (
 func InitGenesis(ctx sdk.Context, keeper keeper.Keeper, data types.GenesisState) (res []abci.ValidatorUpdate) {
 
 	if data.AddressWhitelist != nil {
-		wl := make([]sdk.ValAddress, len(data.AddressWhitelist), 0)
+		wl := make([]sdk.ValAddress, len(data.AddressWhitelist))
 		for i, entry := range data.AddressWhitelist {
 			wlAddress, err := sdk.ValAddressFromBech32(entry)
 			if err != nil {

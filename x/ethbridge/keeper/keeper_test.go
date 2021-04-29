@@ -1,19 +1,21 @@
-package keeper
+package keeper_test
 
 import (
 	"encoding/json"
 	"strings"
 	"testing"
 
-	"github.com/Sifchain/sifnode/x/ethbridge/types"
-	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/stretchr/testify/require"
+
+	"github.com/Sifchain/sifnode/x/ethbridge/test"
+	"github.com/Sifchain/sifnode/x/ethbridge/types"
+	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
 )
 
 var (
-	cosmosReceivers, _ = CreateTestAddrs(1)
+	cosmosReceivers, _ = test.CreateTestAddrs(1)
 	amount             = sdk.NewInt(10)
 	doubleAmount       = sdk.NewInt(20)
 
@@ -25,7 +27,7 @@ var (
 )
 
 func TestProcessClaimLock(t *testing.T) {
-	ctx, keeper, _, _, _, _, validatorAddresses := CreateTestKeepers(t, 0.7, []int64{3, 3}, "")
+	ctx, keeper, _, _, _, _, validatorAddresses := test.CreateTestKeepers(t, 0.7, []int64{3, 3}, "")
 	validator1Pow3 := validatorAddresses[0]
 	validator2Pow3 := validatorAddresses[1]
 
@@ -82,7 +84,7 @@ func TestProcessClaimLock(t *testing.T) {
 }
 
 func TestProcessClaimBurn(t *testing.T) {
-	ctx, keeper, _, _, _, _, validatorAddresses := CreateTestKeepers(t, 0.7, []int64{3, 3}, "")
+	ctx, keeper, _, _, _, _, validatorAddresses := test.CreateTestKeepers(t, 0.7, []int64{3, 3}, "")
 	validator1Pow3 := validatorAddresses[0]
 	validator2Pow3 := validatorAddresses[1]
 
@@ -133,7 +135,7 @@ func TestProcessClaimBurn(t *testing.T) {
 }
 
 func TestProcessSuccessfulClaimLock(t *testing.T) {
-	ctx, keeper, bankKeeper, _, _, _, _ := CreateTestKeepers(t, 0.7, []int64{3, 3}, "")
+	ctx, keeper, bankKeeper, _, _, _, _ := test.CreateTestKeepers(t, 0.7, []int64{3, 3}, "")
 
 	receiverCoins := bankKeeper.GetAllBalances(ctx, cosmosReceivers[0])
 	require.Equal(t, receiverCoins, sdk.Coins{})
@@ -160,7 +162,7 @@ func TestProcessSuccessfulClaimLock(t *testing.T) {
 }
 
 func TestProcessSuccessfulClaimBurn(t *testing.T) {
-	ctx, keeper, bankKeeper, _, _, _, _ := CreateTestKeepers(t, 0.7, []int64{3, 3}, "")
+	ctx, keeper, bankKeeper, _, _, _, _ := test.CreateTestKeepers(t, 0.7, []int64{3, 3}, "")
 
 	receiverCoins := bankKeeper.GetAllBalances(ctx, cosmosReceivers[0])
 	require.Equal(t, receiverCoins, sdk.Coins{})
@@ -187,7 +189,7 @@ func TestProcessSuccessfulClaimBurn(t *testing.T) {
 }
 
 func TestProcessBurn(t *testing.T) {
-	ctx, keeper, bankKeeper, _, _, _, _ := CreateTestKeepers(t, 0.7, []int64{3, 3}, "")
+	ctx, keeper, bankKeeper, _, _, _, _ := test.CreateTestKeepers(t, 0.7, []int64{3, 3}, "")
 
 	msg := types.NewMsgBurn(1, cosmosReceivers[0], ethereumSender, amount, "stake", amount)
 	coins := sdk.NewCoins(sdk.NewCoin("stake", amount), sdk.NewCoin(types.CethSymbol, amount))
@@ -202,7 +204,7 @@ func TestProcessBurn(t *testing.T) {
 }
 
 func TestProcessBurnCeth(t *testing.T) {
-	ctx, keeper, bankKeeper, _, _, _, _ := CreateTestKeepers(t, 0.7, []int64{3, 3}, "")
+	ctx, keeper, bankKeeper, _, _, _, _ := test.CreateTestKeepers(t, 0.7, []int64{3, 3}, "")
 
 	msg := types.NewMsgBurn(1, cosmosReceivers[0], ethereumSender, amount, types.CethSymbol, amount)
 	coins := sdk.NewCoins(sdk.NewCoin(types.CethSymbol, doubleAmount))
@@ -217,7 +219,7 @@ func TestProcessBurnCeth(t *testing.T) {
 }
 
 func TestProcessLock(t *testing.T) {
-	ctx, keeper, bankKeeper, _, _, _, _ := CreateTestKeepers(t, 0.7, []int64{3, 3}, "")
+	ctx, keeper, bankKeeper, _, _, _, _ := test.CreateTestKeepers(t, 0.7, []int64{3, 3}, "")
 
 	receiverCoins := bankKeeper.GetAllBalances(ctx, cosmosReceivers[0])
 	require.Equal(t, receiverCoins, sdk.Coins{})
@@ -240,10 +242,10 @@ func TestProcessLock(t *testing.T) {
 }
 
 func TestProcessBurnWithReceiver(t *testing.T) {
-	ctx, keeper, bankKeeper, _, _, _, _ := CreateTestKeepers(t, 0.7, []int64{3, 3}, "")
+	ctx, keeper, bankKeeper, _, oracleKeeper, _, _ := test.CreateTestKeepers(t, 0.7, []int64{3, 3}, "")
 	cosmosSender, err := sdk.AccAddressFromBech32(types.TestAddress)
 	require.NoError(t, err)
-	keeper.oracleKeeper.SetAdminAccount(ctx, cosmosSender)
+	oracleKeeper.SetAdminAccount(ctx, cosmosSender)
 
 	msg := types.NewMsgBurn(1, cosmosReceivers[0], ethereumSender, amount, "stake", amount)
 	coins := sdk.NewCoins(sdk.NewCoin("stake", amount), sdk.NewCoin(types.CethSymbol, amount))
@@ -258,10 +260,10 @@ func TestProcessBurnWithReceiver(t *testing.T) {
 }
 
 func TestProcessBurnCethWithReceiver(t *testing.T) {
-	ctx, keeper, bankKeeper, _, _, _, _ := CreateTestKeepers(t, 0.7, []int64{3, 3}, "")
+	ctx, keeper, bankKeeper, _, oracleKeeper, _, _ := test.CreateTestKeepers(t, 0.7, []int64{3, 3}, "")
 	cosmosSender, err := sdk.AccAddressFromBech32(types.TestAddress)
 	require.NoError(t, err)
-	keeper.oracleKeeper.SetAdminAccount(ctx, cosmosSender)
+	oracleKeeper.SetAdminAccount(ctx, cosmosSender)
 
 	msg := types.NewMsgBurn(1, cosmosReceivers[0], ethereumSender, amount, types.CethSymbol, amount)
 	coins := sdk.NewCoins(sdk.NewCoin(types.CethSymbol, doubleAmount))
@@ -276,10 +278,10 @@ func TestProcessBurnCethWithReceiver(t *testing.T) {
 }
 
 func TestProcessLockWithReceiver(t *testing.T) {
-	ctx, keeper, bankKeeper, _, _, _, _ := CreateTestKeepers(t, 0.7, []int64{3, 3}, "")
+	ctx, keeper, bankKeeper, _, oracleKeeper, _, _ := test.CreateTestKeepers(t, 0.7, []int64{3, 3}, "")
 	cosmosSender, err := sdk.AccAddressFromBech32(types.TestAddress)
 	require.NoError(t, err)
-	keeper.oracleKeeper.SetAdminAccount(ctx, cosmosSender)
+	oracleKeeper.SetAdminAccount(ctx, cosmosSender)
 
 	receiverCoins := bankKeeper.GetAllBalances(ctx, cosmosReceivers[0])
 	require.Equal(t, receiverCoins, sdk.Coins{})
@@ -302,21 +304,21 @@ func TestProcessLockWithReceiver(t *testing.T) {
 }
 
 func TestProcessUpdateCethReceiverAccount(t *testing.T) {
-	ctx, keeper, _, _, _, _, _ := CreateTestKeepers(t, 0.7, []int64{3, 3}, "")
+	ctx, keeper, _, _, oracleKeeper, _, _ := test.CreateTestKeepers(t, 0.7, []int64{3, 3}, "")
 	cosmosSender, err := sdk.AccAddressFromBech32(types.TestAddress)
 	require.NoError(t, err)
 
 	err = keeper.ProcessUpdateCethReceiverAccount(ctx, cosmosSender, cosmosSender)
 	require.Equal(t, err.Error(), "only admin account can update ceth receiver account")
 
-	keeper.oracleKeeper.SetAdminAccount(ctx, cosmosSender)
+	oracleKeeper.SetAdminAccount(ctx, cosmosSender)
 
 	err = keeper.ProcessUpdateCethReceiverAccount(ctx, cosmosSender, cosmosSender)
 	require.NoError(t, err)
 }
 
 func TestProcessRescueCeth(t *testing.T) {
-	ctx, keeper, bankKeeper, _, _, _, _ := CreateTestKeepers(t, 0.7, []int64{3, 3}, "")
+	ctx, keeper, bankKeeper, _, oracleKeeper, _, _ := test.CreateTestKeepers(t, 0.7, []int64{3, 3}, "")
 	cosmosSender, err := sdk.AccAddressFromBech32(types.TestAddress)
 	require.NoError(t, err)
 
@@ -329,7 +331,7 @@ func TestProcessRescueCeth(t *testing.T) {
 	err = keeper.ProcessRescueCeth(ctx, &msg)
 	require.Equal(t, err.Error(), "only admin account can call rescue ceth")
 
-	keeper.oracleKeeper.SetAdminAccount(ctx, cosmosSender)
+	oracleKeeper.SetAdminAccount(ctx, cosmosSender)
 
 	err = keeper.ProcessRescueCeth(ctx, &msg)
 	require.NoError(t, err)

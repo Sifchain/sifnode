@@ -38,7 +38,7 @@ func main() {
 	_nodeCmd.AddCommand(_nodeCreateCmd, nodeResetStateCmd())
 
 	_keyCmd := keyCmd()
-	_keyCmd.AddCommand(keyGenerateMnemonicCmd(), keyGenerateMnemonicCmd(), keyRecoverFromMnemonicCmd())
+	_keyCmd.AddCommand(keyGenerateMnemonicCmd(), keyRecoverFromMnemonicCmd())
 
 	rootCmd.AddCommand(_networkCmd, _nodeCmd, _keyCmd)
 	_ = rootCmd.Execute()

@@ -122,6 +122,9 @@ func GetCmdBurn() *cobra.Command {
 			flags := cmd.Flags()
 
 			ethereumChainID, err := flags.GetInt64(types.FlagEthereumChainID)
+			if err != nil {
+				return err
+			}
 
 			cosmosSender, err := sdk.AccAddressFromBech32(args[0])
 			if err != nil {

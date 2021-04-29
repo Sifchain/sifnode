@@ -5,7 +5,6 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/cosmos/cosmos-sdk/types/query"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -72,9 +71,6 @@ func (k Querier) GetLiquidityProvider(c context.Context, req *types.LiquidityPro
 	}
 	native, external, _, _ := CalculateAllAssetsForLP(pool, lp)
 	lpResponse := types.NewLiquidityProviderResponse(lp, ctx.BlockHeight(), native.String(), external.String())
-	if err != nil {
-		return nil, sdkerrors.Wrap(sdkerrors.ErrJSONMarshal, err.Error())
-	}
 
 	return &lpResponse, nil
 }
@@ -93,9 +89,10 @@ func (k Querier) GetAssetList(c context.Context, req *types.AssetListReq) (*type
 
 	assetList := k.GetAssetsForLiquidityProvider(ctx, addr)
 
-	var al []*types.Asset
+	al := make([]*types.Asset, len(assetList))
 
-	for _, asset := range assetList {
+	for i := range assetList {
+		asset := assetList[i]
 		al = append(al, &asset)
 	}
 
@@ -114,7 +111,7 @@ func (k Querier) GetLiquidityProviderList(c context.Context, req *types.Liquidit
 	searchingAsset := types.NewAsset(req.Symbol)
 	lpList := k.GetLiquidityProvidersForAsset(ctx, searchingAsset)
 
-	var lpl []*types.LiquidityProvider
+	lpl := make([]*types.LiquidityProvider, len(lpList))
 
 	for _, lp := range lpList {
 		lp := lp

@@ -177,7 +177,8 @@ func SetData(keeper clpkeeper.Keeper, ctx sdk.Context) (types.Pool, []types.Pool
 		ctx.Logger().Error("Unable to set pool")
 	}
 	pools := test.GenerateRandomPool(10)
-	for _, p := range pools {
+	for i := range pools {
+		p := pools[i]
 		err = keeper.SetPool(ctx, &p)
 		if err != nil {
 			ctx.Logger().Error("Unable to set pool")

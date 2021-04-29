@@ -5,7 +5,7 @@ import (
 	"github.com/Sifchain/sifnode/x/dispensation/test"
 	"github.com/Sifchain/sifnode/x/dispensation/utils"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/cosmos/cosmos-sdk/x/bank"
+	"github.com/cosmos/cosmos-sdk/x/bank/types"
 	"github.com/stretchr/testify/assert"
 	"io/ioutil"
 	"os"
@@ -38,7 +38,7 @@ func createInput(t *testing.T, filename string) {
 	out, err := sdk.AccAddressFromBech32("sif1l7hypmqk2yc334vc6vmdwzp5sdefygj2ad93p5")
 	assert.NoError(t, err)
 	coin := sdk.Coins{sdk.NewCoin("rowan", sdk.NewInt(10))}
-	inputList := []bank.Input{bank.NewInput(in, coin), bank.NewInput(out, coin)}
+	inputList := []types.Input{types.NewInput(in, coin), types.NewInput(out, coin)}
 	tempInput := utils.TempInput{In: inputList}
 	file, _ := json.MarshalIndent(tempInput, "", " ")
 	_ = ioutil.WriteFile(filename, file, 0600)

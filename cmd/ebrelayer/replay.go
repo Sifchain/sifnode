@@ -88,7 +88,7 @@ func RunReplayEthereumCmd(cmd *cobra.Command, args []string) error {
 	// Initialize new Ethereum event listener
 	inBuf := bufio.NewReader(cmd.InOrStdin())
 
-	ethSub, err := relayer.NewEthereumSub(inBuf, tendermintNode, cdc, validatorMoniker, chainID, web3Provider,
+	ethSub, err := relayer.NewEthereumSub(inBuf, tendermintNode, validatorMoniker, chainID, web3Provider,
 		contractAddress, privateKey, mnemonic, nil, sugaredLogger)
 	if err != nil {
 		return err

@@ -14,7 +14,7 @@ func (k Keeper) SetOracleWhiteList(ctx sdk.Context, validatorList []sdk.ValAddre
 	for i, entry := range validatorList {
 		valList[i] = entry.String()
 	}
-	store.Set(key, k.cdc.MustMarshalBinaryBare(&stakingtypes.ValAddresses{valList}))
+	store.Set(key, k.cdc.MustMarshalBinaryBare(&stakingtypes.ValAddresses{Addresses: valList}))
 }
 
 func (k Keeper) ExistsOracleWhiteList(ctx sdk.Context) bool {

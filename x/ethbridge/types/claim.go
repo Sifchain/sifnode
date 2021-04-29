@@ -6,10 +6,9 @@ import (
 	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
 	"strconv"
 
-	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
-	)
+)
 
 // NewEthBridgeClaim is a constructor function for NewEthBridgeClaim
 func NewEthBridgeClaim(
@@ -65,7 +64,7 @@ func NewOracleClaimContent(
 // must be created in a deterministic way that all validators can follow.
 // For this, we use the Nonce an Ethereum Sender provided,
 // as all validators will see this same data from the smart contract.
-func CreateOracleClaimFromEthClaim(cdc codec.BinaryMarshaler, ethClaim *EthBridgeClaim) (oracletypes.Claim, error) {
+func CreateOracleClaimFromEthClaim(ethClaim *EthBridgeClaim) (oracletypes.Claim, error) {
 	oracleID := strconv.FormatInt(ethClaim.EthereumChainId, 10) + strconv.FormatInt(ethClaim.Nonce, 10) +
 		ethClaim.EthereumSender
 

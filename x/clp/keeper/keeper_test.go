@@ -46,7 +46,8 @@ func TestKeeper_SetPool(t *testing.T) {
 func TestKeeper_GetPools(t *testing.T) {
 	pools := test.GenerateRandomPool(10)
 	ctx, keeper := test.CreateTestAppClp(false)
-	for _, pool := range pools {
+	for i := range pools {
+		pool := pools[i]
 		err := keeper.SetPool(ctx, &pool)
 		assert.NoError(t, err)
 	}
@@ -118,7 +119,8 @@ func TestKeeper_GetAssetsForLiquidityProvider(t *testing.T) {
 	ctx, keeper := test.CreateTestAppClp(false)
 
 	lpList := test.GenerateRandomLP(10)
-	for _, lp := range lpList {
+	for i := range lpList {
+		lp := lpList[i]
 		keeper.SetLiquidityProvider(ctx, &lp)
 	}
 

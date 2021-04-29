@@ -22,7 +22,11 @@ func TestSimAppExportAndBlockedAddrs(t *testing.T) {
 	app := NewSifApp(log.NewTMLogger(log.NewSyncWriter(os.Stdout)), db, nil, true, map[int64]bool{}, DefaultNodeHome, 0, encCfg, EmptyAppOptions{})
 
 	for acc := range maccPerms {
-		require.True(t, app.BankKeeper.BlacklistedAddr(app.SupplyKeeper.GetModuleAddress(acc)))
+		require.True(
+			t,
+			app.BankKeeper.BlockedAddr(app.AccountKeeper.GetModuleAddress(acc)),
+			"ensure that blocked addresses are properly set in bank keeper",
+		)
 	}
 
 	genesisState := NewDefaultGenesisState(encCfg.Marshaler)

@@ -9,7 +9,7 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/common"
-	tmKv "github.com/tendermint/tendermint/libs/kv"
+	abci "github.com/tendermint/tendermint/abci/types"
 	"go.uber.org/zap"
 
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/types"
@@ -68,14 +68,14 @@ func EthereumEventToEthBridgeClaim(valAddr sdk.ValAddress, event types.EthereumE
 	nonce := int(event.Nonce.Int64())
 
 	// Package the information in a unique EthBridgeClaim
-	witnessClaim.EthereumChainID = chainID
-	witnessClaim.BridgeContractAddress = bridgeContractAddress
-	witnessClaim.Nonce = nonce
-	witnessClaim.TokenContractAddress = tokenContractAddress
+	witnessClaim.EthereumChainId = int64(chainID)
+	witnessClaim.BridgeContractAddress = bridgeContractAddress.String()
+	witnessClaim.Nonce = int64(nonce)
+	witnessClaim.TokenContractAddress = tokenContractAddress.String()
 	witnessClaim.Symbol = symbol
-	witnessClaim.EthereumSender = sender
-	witnessClaim.ValidatorAddress = valAddr
-	witnessClaim.CosmosReceiver = recipient
+	witnessClaim.EthereumSender = sender.String()
+	witnessClaim.ValidatorAddress = valAddr.String()
+	witnessClaim.CosmosReceiver = recipient.String()
 	witnessClaim.Amount = amount
 	witnessClaim.ClaimType = event.ClaimType
 
@@ -124,7 +124,7 @@ func CosmosMsgToProphecyClaim(event types.CosmosMsg) ProphecyClaim {
 }
 
 // BurnLockEventToCosmosMsg parses data from a Burn/Lock event witnessed on Cosmos into a CosmosMsg struct
-func BurnLockEventToCosmosMsg(claimType types.Event, attributes []tmKv.Pair, sugaredLogger *zap.SugaredLogger) (types.CosmosMsg, error) {
+func BurnLockEventToCosmosMsg(claimType types.Event, attributes []abci.EventAttribute, sugaredLogger *zap.SugaredLogger) (types.CosmosMsg, error) {
 	var cosmosSender []byte
 	var cosmosSenderSequence *big.Int
 	var ethereumReceiver common.Address
@@ -195,7 +195,7 @@ func BurnLockEventToCosmosMsg(claimType types.Event, attributes []tmKv.Pair, sug
 }
 
 // AttributesToEthereumBridgeClaim parses data from event to EthereumBridgeClaim
-func AttributesToEthereumBridgeClaim(attributes []tmKv.Pair) (types.EthereumBridgeClaim, error) {
+func AttributesToEthereumBridgeClaim(attributes []abci.EventAttribute) (types.EthereumBridgeClaim, error) {
 	var cosmosSender sdk.ValAddress
 	var ethereumSenderNonce sdk.Int
 	var ethereumSender common.Address

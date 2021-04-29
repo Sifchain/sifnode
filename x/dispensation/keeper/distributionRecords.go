@@ -14,21 +14,21 @@ func (k Keeper) SetDistributionRecord(ctx sdk.Context, dr types.DistributionReco
 		return errors.Wrapf(types.ErrInvalid, "unable to set record : %s", dr.String())
 	}
 	store := ctx.KVStore(k.storeKey)
-	key := types.GetDistributionRecordKey(dr.DistributionName, dr.RecipientAddress.String())
-	store.Set(key, k.cdc.MustMarshalBinaryBare(dr))
+	key := types.GetDistributionRecordKey(dr.DistributionName, dr.RecipientAddress)
+	store.Set(key, k.cdc.MustMarshalBinaryBare(&dr))
 	return nil
 }
 
-func (k Keeper) GetDistributionRecord(ctx sdk.Context, airdropName string, recipientAddress string) (types.DistributionRecord, error) {
+func (k Keeper) GetDistributionRecord(ctx sdk.Context, airdropName string, recipientAddress string) (*types.DistributionRecord, error) {
 	var dr types.DistributionRecord
 	store := ctx.KVStore(k.storeKey)
 	key := types.GetDistributionRecordKey(airdropName, recipientAddress)
 	if !k.Exists(ctx, key) {
-		return dr, errors.Wrapf(types.ErrInvalid, "record Does not exist : %s", dr.String())
+		return &dr, errors.Wrapf(types.ErrInvalid, "record Does not exist : %s", dr.String())
 	}
 	bz := store.Get(key)
 	k.cdc.MustUnmarshalBinaryBare(bz, &dr)
-	return dr, nil
+	return &dr, nil
 }
 
 func (k Keeper) ExistsDistributionRecord(ctx sdk.Context, airdropName string, recipientAddress string) bool {
@@ -53,7 +53,7 @@ func (k Keeper) GetRecordsForNameAll(ctx sdk.Context, name string) types.Distrib
 		bytesValue := iterator.Value()
 		k.cdc.MustUnmarshalBinaryBare(bytesValue, &dr)
 		if dr.DistributionName == name {
-			res = append(res, dr)
+			res.DistributionRecords = append(res.DistributionRecords, &dr)
 		}
 	}
 	return res
@@ -67,8 +67,8 @@ func (k Keeper) GetRecordsForNamePending(ctx sdk.Context, name string) types.Dis
 		var dr types.DistributionRecord
 		bytesValue := iterator.Value()
 		k.cdc.MustUnmarshalBinaryBare(bytesValue, &dr)
-		if dr.DistributionName == name && dr.ClaimStatus == types.Pending {
-			res = append(res, dr)
+		if dr.DistributionName == name && dr.ClaimStatus == types.ClaimStatus_CLAIM_STATUS_PENDING {
+			res.DistributionRecords = append(res.DistributionRecords, &dr)
 		}
 	}
 	return res
@@ -82,14 +82,14 @@ func (k Keeper) GetRecordsForNameCompleted(ctx sdk.Context, name string) types.D
 		var dr types.DistributionRecord
 		bytesValue := iterator.Value()
 		k.cdc.MustUnmarshalBinaryBare(bytesValue, &dr)
-		if dr.DistributionName == name && dr.ClaimStatus == types.Completed {
-			res = append(res, dr)
+		if dr.DistributionName == name && dr.ClaimStatus == types.ClaimStatus_CLAIM_STATUS_COMPLETED {
+			res.DistributionRecords = append(res.DistributionRecords, &dr)
 		}
 	}
 	return res
 }
 
-func (k Keeper) GetRecordsForRecipient(ctx sdk.Context, recipient sdk.AccAddress) types.DistributionRecords {
+func (k Keeper) GetRecordsForRecipient(ctx sdk.Context, recipient sdk.AccAddress) *types.DistributionRecords {
 	var res types.DistributionRecords
 	iterator := k.GetDistributionRecordsIterator(ctx)
 	defer iterator.Close()
@@ -97,11 +97,11 @@ func (k Keeper) GetRecordsForRecipient(ctx sdk.Context, recipient sdk.AccAddress
 		var dr types.DistributionRecord
 		bytesValue := iterator.Value()
 		k.cdc.MustUnmarshalBinaryBare(bytesValue, &dr)
-		if dr.RecipientAddress.Equals(recipient) {
-			res = append(res, dr)
+		if dr.RecipientAddress == recipient.String() {
+			res.DistributionRecords = append(res.DistributionRecords, &dr)
 		}
 	}
-	return res
+	return &res
 }
 
 func (k Keeper) GetPendingRecordsLimited(ctx sdk.Context, limit int) types.DistributionRecords {
@@ -115,8 +115,8 @@ func (k Keeper) GetPendingRecordsLimited(ctx sdk.Context, limit int) types.Distr
 		var dr types.DistributionRecord
 		bytesValue := iterator.Value()
 		k.cdc.MustUnmarshalBinaryBare(bytesValue, &dr)
-		if dr.ClaimStatus == types.Pending {
-			res = append(res, dr)
+		if dr.ClaimStatus == types.ClaimStatus_CLAIM_STATUS_PENDING {
+			res.DistributionRecords = append(res.DistributionRecords, &dr)
 			count++
 		}
 		if count == limit {

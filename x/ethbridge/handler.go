@@ -10,8 +10,6 @@ import (
 	"github.com/Sifchain/sifnode/x/ethbridge/types"
 )
 
-const errorMessageKey = "errorMessage"
-
 // NewHandler returns a handler for "ethbridge" type messages.
 func NewHandler(k Keeper) sdk.Handler {
 	msgServer := keeper.NewMsgServerImpl(k)

@@ -5,8 +5,10 @@ import (
 	"math/big"
 	"net/http"
 	"os"
-	"path/filepath"
 
+	"github.com/Sifchain/sifnode/x/ethbridge"
+	ethbridgekeeper "github.com/Sifchain/sifnode/x/ethbridge/keeper"
+	ethbridgetypes "github.com/Sifchain/sifnode/x/ethbridge/types"
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/grpc/tmservice"
@@ -82,6 +84,9 @@ import (
 	"github.com/Sifchain/sifnode/x/clp"
 	clpkeeper "github.com/Sifchain/sifnode/x/clp/keeper"
 	clptypes "github.com/Sifchain/sifnode/x/clp/types"
+	"github.com/Sifchain/sifnode/x/dispensation"
+	dispkeeper "github.com/Sifchain/sifnode/x/dispensation/keeper"
+	disptypes "github.com/Sifchain/sifnode/x/dispensation/types"
 	"github.com/Sifchain/sifnode/x/oracle"
 	oraclekeeper "github.com/Sifchain/sifnode/x/oracle/keeper"
 	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
@@ -107,9 +112,11 @@ var (
 		slashing.AppModuleBasic{},
 		evidence.AppModuleBasic{},
 		ibc.AppModuleBasic{},
+		transfer.AppModuleBasic{},
 
 		clp.AppModuleBasic{},
 		oracle.AppModuleBasic{},
+		ethbridge.AppModuleBasic{},
 		dispensation.AppModuleBasic{},
 	)
 
@@ -129,12 +136,10 @@ var (
 func init() {
 	sdk.PowerReduction = sdk.NewIntFromBigInt(new(big.Int).Exp(big.NewInt(10), big.NewInt(18), nil))
 
-	userHomeDir, err := os.UserHomeDir()
+	_, err := os.UserHomeDir()
 	if err != nil {
 		panic(err)
 	}
-
-	DefaultNodeHome = filepath.Join(userHomeDir, ".sifenoded")
 }
 
 var (
@@ -175,7 +180,8 @@ type SifchainApp struct {
 
 	ClpKeeper          clpkeeper.Keeper
 	OracleKeeper       oraclekeeper.Keeper
-	DispensationKeeper dispensation.Keeper
+	EthbridgeKeeper    ethbridgekeeper.Keeper
+	DispensationKeeper dispkeeper.Keeper
 
 	mm *module.Manager
 	sm *module.SimulationManager
@@ -209,11 +215,10 @@ func NewSifApp(
 		ibchost.StoreKey,
 		ibctransfertypes.StoreKey,
 		capabilitytypes.StoreKey,
-
-		// ethbridge.StoreKey,
+		disptypes.StoreKey,
+		ethbridgetypes.StoreKey,
 		clptypes.StoreKey,
 		oracletypes.StoreKey,
-		dispensation.StoreKey,
 	)
 
 	tkeys := sdk.NewTransientStoreKeys(paramstypes.TStoreKey)
@@ -279,11 +284,20 @@ func NewSifApp(
 		oracletypes.DefaultConsensusNeeded,
 	)
 
-	app.DispensationKeeper = dispensation.NewKeeper(
-		app.Cdc,
-		keys[dispensation.StoreKey],
+	app.EthbridgeKeeper = ethbridgekeeper.NewKeeper(
+		appCodec,
 		app.BankKeeper,
-		app.AuthKeeper,
+		app.OracleKeeper,
+		app.AccountKeeper,
+		keys[ethbridgetypes.StoreKey],
+	)
+
+	app.DispensationKeeper = dispkeeper.NewKeeper(
+		appCodec,
+		keys[disptypes.StoreKey],
+		app.BankKeeper,
+		app.AccountKeeper,
+		app.GetSubspace(disptypes.ModuleName),
 	)
 
 	// This map defines heights to skip for updates
@@ -359,7 +373,8 @@ func NewSifApp(
 		transferModule,
 		clp.NewAppModule(app.ClpKeeper, app.BankKeeper),
 		oracle.NewAppModule(app.OracleKeeper),
-		dispensation.NewAppModule(app.DispensationKeeper, app.BankKeeper, app.AuthKeeper),
+		ethbridge.NewAppModule(app.OracleKeeper, app.BankKeeper, app.AccountKeeper, app.EthbridgeKeeper, &appCodec),
+		dispensation.NewAppModule(app.DispensationKeeper, app.BankKeeper, app.AccountKeeper),
 	)
 
 	// During begin block slashing happens after distr.BeginBlocker so that
@@ -396,13 +411,12 @@ func NewSifApp(
 
 		clptypes.ModuleName,
 		oracletypes.ModuleName,
+		ethbridge.ModuleName,
 		dispensation.ModuleName,
 	)
 
 	app.mm.RegisterRoutes(app.Router(), app.QueryRouter(), encodingConfig.Amino)
 	app.mm.RegisterServices(module.NewConfigurator(app.MsgServiceRouter(), app.GRPCQueryRouter()))
-
-	app.sm.RegisterStoreDecoders()
 
 	// initialize stores
 	app.MountKVStores(keys)

@@ -3,7 +3,7 @@ package types
 import (
 	"fmt"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/cosmos/cosmos-sdk/x/supply"
+	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 )
 
 const (
@@ -36,5 +36,5 @@ func GetDistributionsKey(name string, distributionType DistributionType) []byte 
 }
 
 func GetDistributionModuleAddress() sdk.AccAddress {
-	return supply.NewModuleAddress(ModuleName)
+	return authtypes.NewModuleAddress(ModuleName)
 }

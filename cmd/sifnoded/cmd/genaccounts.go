@@ -18,12 +18,9 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/genutil"
 	genutiltypes "github.com/cosmos/cosmos-sdk/x/genutil/types"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
-	"github.com/tendermint/tendermint/libs/cli"
 )
 
 const (
-	flagClientHome   = "home-client"
 	flagVestingStart = "vesting-start-time"
 	flagVestingEnd   = "vesting-end-time"
 	flagVestingAmt   = "vesting-amount"
@@ -49,7 +46,7 @@ contain valid denominations. Accounts may optionally be supplied with vesting pa
 			serverCtx := server.GetServerContextFromCmd(cmd)
 			config := serverCtx.Config
 
-			config.SetRoot(viper.GetString(cli.HomeFlag))
+			config.SetRoot(clientCtx.HomeDir)
 
 			addr, err := sdk.AccAddressFromBech32(args[0])
 			if err != nil {
@@ -78,11 +75,11 @@ contain valid denominations. Accounts may optionally be supplied with vesting pa
 				return fmt.Errorf("failed to parse coins: %w", err)
 			}
 
-			vestingStart, err := cmd.Flags().GetInt64(flagVestingStart)
+			vestingStart, err := cmd.Flags().GetUint64(flagVestingStart)
 			if err != nil {
 				return err
 			}
-			vestingEnd, err := cmd.Flags().GetInt64(flagVestingEnd)
+			vestingEnd, err := cmd.Flags().GetUint64(flagVestingEnd)
 			if err != nil {
 				return err
 			}
@@ -102,11 +99,11 @@ contain valid denominations. Accounts may optionally be supplied with vesting pa
 			balances := banktypes.Balance{Address: addr.String(), Coins: coins.Sort()}
 			baseAccount := authtypes.NewBaseAccount(addr, nil, 0, 0)
 			if !vestingAmt.IsZero() {
-				baseVestingAccount := authvesting.NewBaseVestingAccount(baseAccount, vestingAmt.Sort(), vestingEnd)
+				baseVestingAccount := authvesting.NewBaseVestingAccount(baseAccount, vestingAmt.Sort(), int64(vestingEnd))
 
 				switch {
 				case vestingStart != 0 && vestingEnd != 0:
-					genAccount = authvesting.NewContinuousVestingAccountRaw(baseVestingAccount, vestingStart)
+					genAccount = authvesting.NewContinuousVestingAccountRaw(baseVestingAccount, int64(vestingStart))
 
 				case vestingEnd != 0:
 					genAccount = authvesting.NewDelayedVestingAccountRaw(baseVestingAccount)
@@ -179,7 +176,7 @@ contain valid denominations. Accounts may optionally be supplied with vesting pa
 		},
 	}
 
-	cmd.Flags().String(cli.HomeFlag, defaultNodeHome, "node's home directory")
+	cmd.Flags().String(flags.FlagHome, defaultNodeHome, "node's home directory")
 	cmd.Flags().String(flags.FlagKeyringBackend, flags.DefaultKeyringBackend, "Select keyring's backend (os|file|test)")
 	cmd.Flags().String(flagVestingAmt, "", "amount of coins for vesting accounts")
 	cmd.Flags().Uint64(flagVestingStart, 0, "schedule start time (unix epoch) for vesting accounts")

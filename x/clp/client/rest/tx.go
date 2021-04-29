@@ -15,7 +15,7 @@ import (
 func registerTxRoutes(cliCtx client.Context, r *mux.Router) {
 	r.HandleFunc(
 		"/clp/createPool",
-		createPooHandler(cliCtx),
+		createPoolHandler(cliCtx),
 	).Methods("POST")
 	r.HandleFunc(
 		"/clp/addLiquidity",
@@ -77,7 +77,7 @@ type (
 //   wallet  < - > abci <-mempool-> tendermint
 //   storage > tx
 //   /tx hash= []
-func createPooHandler(cliCtx client.Context) http.HandlerFunc {
+func createPoolHandler(cliCtx client.Context) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var req CreatePoolReq
 		if !rest.ReadRESTReq(w, r, cliCtx.LegacyAmino, &req) {

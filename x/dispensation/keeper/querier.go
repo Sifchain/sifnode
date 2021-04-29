@@ -2,11 +2,14 @@ package keeper
 
 import (
 	"github.com/Sifchain/sifnode/x/dispensation/types"
-	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	abci "github.com/tendermint/tendermint/abci/types"
 )
+
+type Querier struct {
+	Keeper
+}
 
 // NewQuerier is the module level router for state queries
 func NewQuerier(keeper Keeper) sdk.Querier {
@@ -33,14 +36,14 @@ func queryDistributionRecordsForName(ctx sdk.Context, req abci.RequestQuery, kee
 	}
 	records := new(types.DistributionRecords)
 	switch params.Status {
-	case types.Pending:
+	case types.ClaimStatus_CLAIM_STATUS_PENDING:
 		*records = keeper.GetRecordsForNamePending(ctx, params.DistributionName)
-	case types.Completed:
+	case types.ClaimStatus_CLAIM_STATUS_COMPLETED:
 		*records = keeper.GetRecordsForNameCompleted(ctx, params.DistributionName)
 	default:
 		*records = keeper.GetRecordsForNameAll(ctx, params.DistributionName)
 	}
-	res, err := codec.MarshalJSONIndent(keeper.cdc, records)
+	res, err := types.ModuleCdc.MarshalJSON(records)
 	if err != nil {
 		return nil, sdkerrors.Wrap(sdkerrors.ErrJSONMarshal, err.Error())
 	}
@@ -54,8 +57,12 @@ func queryDistributionRecordsForRecipient(ctx sdk.Context, req abci.RequestQuery
 	if err != nil {
 		return nil, sdkerrors.Wrap(sdkerrors.ErrJSONUnmarshal, err.Error())
 	}
-	records := keeper.GetRecordsForRecipient(ctx, params.Address)
-	res, err := codec.MarshalJSONIndent(keeper.cdc, records)
+	addr, err := sdk.AccAddressFromBech32(params.Address)
+	if err != nil {
+		return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, err.Error())
+	}
+	records := keeper.GetRecordsForRecipient(ctx, addr)
+	res, err := types.ModuleCdc.MarshalJSON(records)
 	if err != nil {
 		return nil, sdkerrors.Wrap(sdkerrors.ErrJSONMarshal, err.Error())
 	}
@@ -64,7 +71,7 @@ func queryDistributionRecordsForRecipient(ctx sdk.Context, req abci.RequestQuery
 
 func queryAllDistributions(ctx sdk.Context, keeper Keeper) ([]byte, error) {
 	list := keeper.GetDistributions(ctx)
-	res, err := codec.MarshalJSONIndent(keeper.cdc, list)
+	res, err := types.ModuleCdc.MarshalJSON(list)
 	if err != nil {
 		return nil, sdkerrors.Wrap(sdkerrors.ErrJSONMarshal, err.Error())
 	}

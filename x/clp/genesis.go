@@ -69,17 +69,17 @@ func ExportGenesis(ctx sdk.Context, keeper keeper.Keeper) types.GenesisState {
 
 // ValidateGenesis validates the clp genesis parameters
 func ValidateGenesis(data types.GenesisState) error {
-	if !data.Params.Validate() {
-		return sdkerrors.Wrap(types.ErrInvalid, fmt.Sprintf("Params are invalid : %s", data.Params.String()))
+	if err := data.Params.Validate(); err != nil {
+		return sdkerrors.Wrap(types.ErrInvalid, fmt.Sprintf("clp: params are invalid : %s \n %s", err.Error(), data.Params.String()))
 	}
 	for _, pool := range data.PoolList {
 		if !pool.Validate() {
-			return sdkerrors.Wrap(types.ErrInvalid, fmt.Sprintf("Pool is invalid : %s", pool.String()))
+			return sdkerrors.Wrap(types.ErrInvalid, fmt.Sprintf("clp: pool is invalid : %s", pool.String()))
 		}
 	}
 	for _, lp := range data.LiquidityProviders {
 		if !lp.Validate() {
-			return sdkerrors.Wrap(types.ErrInvalid, fmt.Sprintf("LiquidityProvider is invalid : %s", lp.String()))
+			return sdkerrors.Wrap(types.ErrInvalid, fmt.Sprintf("clp: liquidityProvider is invalid : %s", lp.String()))
 		}
 	}
 	return nil
