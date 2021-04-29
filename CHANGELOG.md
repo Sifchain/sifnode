@@ -14,9 +14,9 @@
 - [Sifnode] Ability to propose and vote on new jailing parameters.
 - [ChainOps] MongoDb resource limit increases.
 - [Blockexplorer] Improved design elements and cUSDT decimal formatting.
-- [UI] Incorporated logic in token listing when swapping and adding liquidity. These will now be sorted by balance (high to low) and then alphebetically. Also added the ability to see your balance in these listings as well. - TBD
 - [UI] Added logic for when clicking on max button in ROWAN to take into consideration necessary gas fees.
 - [UI] In swap confirmation screen, built in cleaner UX logic around the way we display numbers. 
+- [UI] Updated design elements (typography and general look & feel) across the DEX.
 
 ## 🐛 Bug Fixes
 
