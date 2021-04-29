@@ -1,5 +1,7 @@
 package types
 
+import "github.com/cosmos/cosmos-sdk/types/rest"
+
 // ----------------------------------------------------------------------------
 // Client Types
 
@@ -28,4 +30,10 @@ type ClaimsResponse struct {
 
 func NewClaimsResponse(claims []UserClaim, height int64) ClaimsResponse {
 	return ClaimsResponse{Claims: claims, Height: height}
+}
+
+type CreateClaimReq struct {
+	BaseReq   rest.BaseReq     `json:"base_req"`
+	Signer    string           `json:"signer"`
+	ClaimType DistributionType `json:"claim_type"`
 }
