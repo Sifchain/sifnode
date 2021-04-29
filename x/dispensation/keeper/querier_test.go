@@ -39,19 +39,20 @@ func TestQueryRecordsName(t *testing.T) {
 	querier := dispensation.NewQuerier(keeper)
 	quereyRecName := types.QueryRecordsByDistributionName{
 		DistributionName: name,
+		Status: types.ClaimStatus_CLAIM_STATUS_UNSPECIFIED,
 	}
 	query := abci.RequestQuery{
 		Path: "",
 		Data: []byte{},
 	}
-	qp, errRes := sifapp.AppCodec().MarshalJSON(&quereyRecName)
+	qp, errRes := sifapp.LegacyAmino().MarshalJSON(&quereyRecName)
 	require.NoError(t, errRes)
 	query.Path = ""
 	query.Data = qp
 	res, err := querier(ctx, []string{types.QueryRecordsByDistrName}, query)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	var dr types.DistributionRecords
-	err = sifapp.AppCodec().UnmarshalJSON(res, &dr)
+	err = sifapp.LegacyAmino().UnmarshalJSON(res, &dr)
 	assert.NoError(t, err)
 	assert.Len(t, dr.DistributionRecords, 3)
 }
