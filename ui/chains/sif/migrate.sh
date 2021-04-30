@@ -1,3 +1,4 @@
+#!/bin/bash
 . ../credentials.sh
 
 # if we don't sleep there are issues

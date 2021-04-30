@@ -5,9 +5,12 @@ import { getWeb3Provider } from "../../test/utils/getWeb3Provider";
 import { Asset } from "../../entities";
 import JSBI from "jsbi";
 import { getBalance, getTestingTokens } from "../../test/utils/getTestingToken";
+import { useStack } from "../../../../test/stack";
 
 // ^ NOTE: we have had issues where truffle deploys contracts that cost a different amount of gas in CI versus locally.
 // These test have been altered to be less deterministic as a consequence
+
+useStack("every-test");
 
 describe("EthereumService", () => {
   let EthereumService: ReturnType<typeof createEthereumService>;
