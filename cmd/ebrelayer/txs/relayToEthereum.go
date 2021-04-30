@@ -23,7 +23,7 @@ import (
 const (
 	// GasLimit the gas limit in Gwei used for transactions sent with TransactOpts
 	GasLimit            = uint64(500000)
-	transactionInterval = 1 * time.Second
+	transactionInterval = 60 * time.Second
 )
 
 var GasPriceMinimum *big.Int = big.NewInt(60000000000)
@@ -58,7 +58,7 @@ func RelayProphecyClaimToEthereum(
 		return err
 	}
 
-	// sleep 30 seconds to wait for tx to go through.
+	// sleep 2 seconds to wait for tx to go through.
 	sleepThread(2)
 
 	sugaredLogger.Infow("get NewProphecyClaim tx hash:", "ProphecyClaimHash", tx.Hash().Hex())
@@ -122,7 +122,6 @@ func InitRelayConfig(
 	}
 
 	nonce, err := client.PendingNonceAt(context.Background(), sender)
-
 	sugaredLogger.Infow("Current eth operator at pending nonce.", "pendingNonce", nonce)
 
 	if err != nil {
@@ -151,17 +150,6 @@ func InitRelayConfig(
 	quarterGasPrice = quarterGasPrice.Div(gasPrice, big.NewInt(4))
 
 	gasPrice.Sub(gasPrice, quarterGasPrice)
-	if gasPrice.Cmp(GasPriceMinimum) == -1 {
-
-		sugaredLogger.Errorw(
-			"gas price under minimum of 120 gigawei",
-			"gasPriceBeforeAdjustment", gasPrice,
-			"gasPriceAfterAdjustment", GasPriceMinimum,
-		)
-
-		gasPrice = GasPriceMinimum
-	}
-
 	sugaredLogger.Infow("final gas price after adjustment.",
 		"finalGasPrice", gasPrice)
 
