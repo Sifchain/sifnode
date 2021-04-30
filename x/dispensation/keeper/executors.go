@@ -33,7 +33,7 @@ func (k Keeper) CreateDrops(ctx sdk.Context, output []bank.Output, name string, 
 		if distributionType == types.LiquidityMining || distributionType == types.ValidatorSubsidy {
 			err := k.LockClaim(ctx, receiver.Address.String(), distributionType)
 			if err != nil {
-				return errors.Wrap(err, fmt.Sprintf("Unable to verify assosiated claim for address : %s", receiver.Address.String()))
+				return errors.Wrap(err, fmt.Sprintf("Unable to verify associated claim for address : %s", receiver.Address.String()))
 			}
 		}
 	}
