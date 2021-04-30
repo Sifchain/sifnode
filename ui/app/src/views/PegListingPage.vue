@@ -1,80 +1,3 @@
-<template>
-  <Layout>
-    <div class="search-text">
-      <SifInput
-        gold
-        placeholder="Search name or paste address"
-        type="text"
-        v-model="searchText"
-      />
-    </div>
-    <Tabs :defaultIndex="1" @tabselected="onTabSelected">
-      <Tab title="External Tokens" slug="external-tab">
-        <AssetList :items="assetList" v-slot="{ asset }">
-          <SifButton
-            :disabled="!asset.supported"
-            :to="`/peg/${asset.asset.symbol}/${peggedSymbol(
-              asset.asset.symbol,
-            )}`"
-            primary
-            :data-handle="'peg-' + asset.asset.symbol"
-            >Peg</SifButton
-          >
-          <Tooltip v-if="!asset.supported" message="Network not supported">
-            &nbsp;<Icon icon="info-box-black" />
-          </Tooltip>
-        </AssetList>
-      </Tab>
-      <Tab title="Sifchain Native" slug="native-tab">
-        <AssetList :items="assetList">
-          <template #default="{ asset }">
-            <SifButton
-              :to="`/peg/reverse/${asset.asset.symbol}/${unpeggedSymbol(
-                asset.asset.symbol,
-              )}`"
-              primary
-              :data-handle="'unpeg-' + asset.asset.symbol"
-              >Unpeg</SifButton
-            >
-          </template>
-          <template #annotation="{ pegTxs }">
-            <span v-if="pegTxs.length > 0">
-              <Tooltip>
-                <template #message>
-                  <p>You have the following pending transactions:</p>
-                  <br />
-                  <p v-for="tx in pegTxs" :key="tx.hash">
-                    <a
-                      :href="`https://etherscan.io/tx/${tx.hash}`"
-                      :title="tx.hash"
-                      target="_blank"
-                      >{{ shortenHash(tx.hash) }}</a
-                    >
-                  </p></template
-                >
-                <template #default
-                  >&nbsp;<span class="footnote">*</span></template
-                >
-              </Tooltip>
-            </span>
-          </template>
-        </AssetList>
-      </Tab>
-    </Tabs>
-    <ActionsPanel connectType="connectToAll" />
-  </Layout>
-</template>
-<style lang="scss" scoped>
-.search-text {
-  margin-bottom: 1rem;
-}
-.footnote {
-  font-family: Arial, Helvetica, sans-serif;
-  font-weight: bold;
-  font-style: normal;
-  color: $c_gold_dark;
-}
-</style>
 <script lang="ts">
 import Tab from "@/components/shared/Tab.vue";
 import Tabs from "@/components/shared/Tabs.vue";
@@ -86,6 +9,7 @@ import SifButton from "@/components/shared/SifButton.vue";
 import Tooltip from "@/components/shared/Tooltip.vue";
 import Icon from "@/components/shared/Icon.vue";
 
+import { sortAssetAmount } from "./utils/sortAssetAmount";
 import { useCore } from "@/hooks/useCore";
 import { defineComponent, ref } from "vue";
 import { computed } from "@vue/reactivity";
@@ -163,7 +87,7 @@ export default defineComponent({
 
       const pegList = pendingPegTxList.value;
 
-      return allTokens.value
+      let listedTokens = allTokens.value
         .filter(
           ({ symbol }) =>
             symbol
@@ -184,15 +108,11 @@ export default defineComponent({
               )
             : [];
 
-          // Is the asset from a supported network
-          const supported = getIsSupportedNetwork(asset);
-
           if (!amount) {
             return {
               amount: AssetAmount(asset, "0"),
               asset,
               pegTxs,
-              supported,
             };
           }
 
@@ -200,34 +120,31 @@ export default defineComponent({
             amount,
             asset,
             pegTxs,
-            supported,
           };
-        })
-        .sort((a, b) => {
-          // TODO - This could be more succint
-          // A good refactor candidate when we go to use it in another place
-          // Sort alphabetically
-          if (a.asset.symbol < b.asset.symbol) {
-            return -1;
-          }
-          if (a.asset.symbol > b.asset.symbol) {
-            return 1;
-          }
-          return 0;
-        })
-        .sort((a, b) => {
-          if (b.amount.greaterThan(a.amount)) return 1;
-          if (b.amount.lessThan(a.amount)) return -1;
-          return 0;
-        })
-        .sort((a, b) => {
-          // Finally, sort and move rowan, erowan to the top
-          if (["rowan", "erowan"].includes(a.asset.symbol.toLowerCase())) {
-            return -1;
-          } else {
-            return 1;
-          }
         });
+
+      const listedTokensSorted = sortAssetAmount(listedTokens);
+
+      // attach pegTxs
+      const listedTokensPegTxs = listedTokensSorted.map((token) => {
+        // Get pegTxs for asset
+        const pegTxs = pegList
+          ? pegList.filter(
+              (txStatus) =>
+                txStatus.symbol?.toLowerCase() ===
+                getUnpeggedSymbol(token.asset.symbol.toLowerCase()),
+            )
+          : [];
+        // Is the asset from a supported network
+        const supported = getIsSupportedNetwork(token.asset);
+        return {
+          asset: token.asset,
+          amount: token.amount,
+          supported,
+          pegTxs,
+        };
+      });
+      return listedTokensPegTxs;
     });
 
     // TODO: add to utils
@@ -262,3 +179,81 @@ export default defineComponent({
   },
 });
 </script>
+
+<template>
+  <Layout>
+    <div class="search-text">
+      <SifInput
+        gold
+        placeholder="Search name or paste address"
+        type="text"
+        v-model="searchText"
+      />
+    </div>
+    <Tabs :defaultIndex="1" @tabselected="onTabSelected">
+      <Tab title="External Tokens" slug="external-tab">
+        <AssetList :items="assetList" v-slot="{ asset }">
+          <SifButton
+            :disabled="!asset.supported"
+            :to="`/peg/${asset.asset.symbol}/${peggedSymbol(
+              asset.asset.symbol,
+            )}`"
+            primary
+            :data-handle="'peg-' + asset.asset.symbol"
+            >Peg</SifButton
+          >
+          <Tooltip v-if="!asset.supported" message="Network not supported">
+            &nbsp;<Icon icon="info-box-black" />
+          </Tooltip>
+        </AssetList>
+      </Tab>
+      <Tab title="Sifchain Native" slug="native-tab">
+        <AssetList :items="assetList">
+          <template #default="{ asset }">
+            <SifButton
+              :to="`/peg/reverse/${asset.asset.symbol}/${unpeggedSymbol(
+                asset.asset.symbol,
+              )}`"
+              primary
+              :data-handle="'unpeg-' + asset.asset.symbol"
+              >Unpeg</SifButton
+            >
+          </template>
+          <template #annotation="{ pegTxs }">
+            <span v-if="pegTxs.length > 0">
+              <Tooltip>
+                <template #message>
+                  <p>You have the following pending transactions:</p>
+                  <br />
+                  <p v-for="tx in pegTxs" :key="tx.hash">
+                    <a
+                      :href="`https://etherscan.io/tx/${tx.hash}`"
+                      :title="tx.hash"
+                      target="_blank"
+                      >{{ shortenHash(tx.hash) }}</a
+                    >
+                  </p></template
+                >
+                <template #default
+                  >&nbsp;<span class="footnote">*</span></template
+                >
+              </Tooltip>
+            </span>
+          </template>
+        </AssetList>
+      </Tab>
+    </Tabs>
+    <ActionsPanel connectType="connectToAll" />
+  </Layout>
+</template>
+<style lang="scss" scoped>
+.search-text {
+  margin-bottom: 1rem;
+}
+.footnote {
+  font-family: Arial, Helvetica, sans-serif;
+  font-weight: bold;
+  font-style: normal;
+  color: $c_gold_dark;
+}
+</style>
