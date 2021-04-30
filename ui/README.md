@@ -31,34 +31,7 @@ yarn stack
 
 NOTE: This command requires [tmux](https://github.com/tmux/tmux/wiki/Installing)
 
-### How do I change something about the backing stack?
-
-Let's say you want to do one of the following type of things:
-
-- Add a new account
-- Provide some genesis tokens
-- Add a new token for localnet
-- Change anything about our blockchain setup
-- Respond to an environment request from one of the blockchain teams
-
-For any of these things you will want ot create a new snapshot. Backend state is saved to a snapshot that is shared with the team or quick start development and also affects our e2e tests. You can create a new snapshot if you need by using the scripts below. Some of these commands are a little confusing so this table shows you when to use which.
-
-| command                            | I want to                                                                     | quick start | ongoing | sif | eth | ebrelayer | FE  | setup scripts | save snapshot |
-| ---------------------------------- | ----------------------------------------------------------------------------- | ----------- | ------- | --- | --- | --------- | --- | ------------- | ------------- |
-| `yarn stack`                       | Work on frontend (requires tmux)                                              | ✅          | ✅      | ✅  | ✅  | ✅        | ✅  | 🚫            | 🚫            |
-| `yarn stack:backend`               | Run only backing services from a snapshot say during CI.                      | ✅          | ✅      | ✅  | ✅  | ✅        | 🚫  | 🚫            | 🚫            |
-| `yarn stack:backend-from-scripts`  | Run backing with setup scripts to manually change state and create a snapshot | 🚫          | ✅      | ✅  | ✅  | ✅        | 🚫  | ✅            | 🚫            |
-| `yarn stack:save-default-snapshot` | Save new setup scripts to a snapshot                                          | 🚫          | 🚫      | ✅  | ✅  | ✅        | 🚫  | ✅            | ✅            |
-| `yarn stack:save-snapshot`         | Save a snapshot from whatever is running                                      | 🚫          | 🚫      | 🚫  | 🚫  | 🚫        | 🚫  | 🚫            | ✅            |
-
-You can either
-
-- Alter the setup scripts that configure the blockchain and save the result as a snapshot (`yarn stack:save-snapshot-from-scripts`)
-- Run the setup scripts do some kind of account action manually and then create a snapshot. (`yarn stack:backend-from-scripts` -> make a transaction -> `yarn stack:save-snapshot`)
-
-It is preferrable that you include any changes you make in the setup scripts (say in `chains/post_migrate.sh`) as it means that it is possible your setup might get overwritten at a later date.
-
-### Run tests in core
+### Run unit and integration tests in core
 
 `yarn test`
 
@@ -83,6 +56,21 @@ It is preferrable that you include any changes you make in the setup scripts (sa
 | `yarn core:test`     | Run core tests with no background chain                       |
 | `yarn core:watch`    | Compile core code in watch mode                               |
 
+## End to end tests
+
+`yarn pw:test:stack`
+
+Will serve the built webapplication in `app/dist` on port 5000 and run tests over this including backing services which are then reset every test.
+
+`yarn pw:test:debug`
+
+Will run tests in debug mode over a website served on http://localhost:8080. This is good for testing a feature you are working on. Ideally when working on a feature you might want to do the following in separate terminals:
+
+1. `yarn stack:backend` - start up the backing services
+2. `yarn app:serve` - start up the web server
+3. `yarn core:watch` - update the webserver with core code on change
+4. `yarn pw:test:debug` - Run the test suite over the stack - you probably want to isolate the test you need with `.only` methods.
+
 ## Folder structure
 
 | Path               | Description                      |
@@ -90,6 +78,7 @@ It is preferrable that you include any changes you make in the setup scripts (sa
 | `./app`            | A Vue interface that uses core.  |
 | `./chains`         | Blockchain projects for testing. |
 | `./core`           | All business functionality.      |
+| `./e2e`            | End to end tests.                |
 | `./docs`           | Documentation.                   |
 | `./docs/decisions` | Architectural decisions.         |
 

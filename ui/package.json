@@ -42,6 +42,7 @@
     "pw:stack": "./scripts/run-playwright-stack.sh",
     "pw:test:stack": "concurrently -r -k -s first \"yarn serve app/dist\" \"wait-on http://localhost:5000 && PORT=5000 yarn pw:test\"",
     "pw:test": "cd e2e && ./scripts/test.sh",
+    "pw:test:debug": "cd e2e && DEBUG=pw:api NOSTACK=1 ./scripts/test.sh",
     "stack:backend-from-scratch": "./scripts/run-stack-backend-from-scratch.sh",
     "stack:backend": "./scripts/run-stack-backend.sh",
     "stack:pause": "./scripts/run-stack-pause.sh",

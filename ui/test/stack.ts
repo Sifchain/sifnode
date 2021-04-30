@@ -13,6 +13,7 @@ const cmdStack: ChildProcess[] = [];
  */
 const uiFolder = resolve(__dirname, "../");
 export async function restartStack() {
+  if (process.env.NOSTACK) return;
   console.log("^^^  START RESTART  ^^^");
 
   const cmd = spawn("./scripts/run-stack-backend.sh", [], {
@@ -34,7 +35,7 @@ export async function restartStack() {
         cmd.stdout.off("data", handler);
         cmd.stderr.off("data", handler);
         cmd.off("error", errHandler);
-        resolve();
+        setTimeout(resolve, 3000); // Adding a timeout here seems to stabilize keplr
       }
     };
     cmd.stdout.on("data", handler);
@@ -51,6 +52,7 @@ function treeKillProm(pid: number) {
 }
 
 export async function killStack() {
+  if (process.env.NOSTACK) return;
   console.log("⬇⬇⬇  START SHUTDOWN  ⬇⬇⬇");
   console.log(cmdStack.map((c) => c.pid).join(":"));
 
