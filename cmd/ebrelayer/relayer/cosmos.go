@@ -388,7 +388,7 @@ func tryGettingCosmosBridge(
 		return cosmosBridgeInstance, nil
 	}
 
-	return nil, errors.New("hit max initRelayConfig retries")
+	return nil, errors.New("hit max retries getting cosmos bridge instance")
 }
 
 func tryInitRelayConfig(sub CosmosSub, claimType types.Event) (*ethclient.Client, *bind.TransactOpts, common.Address, error) {
