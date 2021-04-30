@@ -35,7 +35,7 @@ Which returns
   "height": "3"
 }
 ```
-We can also parse events instead of the using this query . The events for each claim look like. This event would be in the same block as the one which has the dispensation/createClaim request
+We can also parse events instead of the using this query . This event would be in the same block as the one which has the dispensation/createClaim request
 ```json
  {"type": "claim_created",
             "attributes": [
