@@ -369,28 +369,6 @@ func getOracleClaimType(eventType string) types.Event {
 	return claimType
 }
 
-func tryGettingCosmosBridge(
-	target common.Address,
-	client *ethclient.Client,
-	sub CosmosSub,
-	) (
-		*cosmosbridge.CosmosBridge,
-		error,
-	) {
-
-	for i := 0; i < 5; i++ {
-		cosmosBridgeInstance, err := cosmosbridge.NewCosmosBridge(target, client)
-		if err != nil {
-			sub.SugaredLogger.Errorw("failed to get cosmosBridge instance.",
-				errorMessageKey, err.Error())
-			continue
-		}
-		return cosmosBridgeInstance, nil
-	}
-
-	return nil, errors.New("hit max retries getting cosmos bridge instance")
-}
-
 func tryInitRelayConfig(sub CosmosSub, claimType types.Event) (*ethclient.Client, *bind.TransactOpts, common.Address, error) {
 
 	for i := 0; i < 5; i++ {
@@ -424,7 +402,6 @@ func (sub CosmosSub) handleBurnLockMsg(cosmosMsg types.CosmosMsg, claimType type
 		"CosmosSender", prophecyClaim.CosmosSender,
 		"CosmosSenderSequence", prophecyClaim.CosmosSenderSequence)
 		
-	// put this into it's own function with retry logic
 	client, auth, target, err := tryInitRelayConfig(sub, claimType)
 	if err != nil {
 		sub.SugaredLogger.Errorw("failed in init relay config.",
@@ -432,13 +409,11 @@ func (sub CosmosSub) handleBurnLockMsg(cosmosMsg types.CosmosMsg, claimType type
 		return
 	}
 
-	// put this into it's own function with retry logic
 	// Initialize CosmosBridge instance
-	cosmosBridgeInstance, err := tryGettingCosmosBridge(target, client, sub)
+	cosmosBridgeInstance, err := cosmosbridge.NewCosmosBridge(target, client)
 	if err != nil {
 		sub.SugaredLogger.Errorw("failed to get cosmosBridge instance.",
 			errorMessageKey, err.Error())
-		return
 	}
 
 	maxRetries := 5
