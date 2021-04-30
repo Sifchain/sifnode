@@ -10,6 +10,8 @@ sifnodecli tx dispensation claim ValidatorSubsidy --from sif --keyring-backend t
 # input.json list of funding addresses  -  Input address must be part of the multisig key
 # output.json list of airdrop receivers.
 sleep 8
+sifnodecli q dispensation claims-by-type ValidatorSubsidy
+sleep 8
 sifnodecli tx dispensation create mkey ar1 ValidatorSubsidy input.json output.json --gas 200064128 --generate-only >> offlinetx.json
 # First user signs
 sifnodecli tx sign --multisig $(sifnodecli keys show mkey -a) --from $(sifnodecli keys show sif -a)  offlinetx.json >> sig1.json

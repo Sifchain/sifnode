@@ -7,4 +7,6 @@ const (
 	EventTypeDistributionStarted  = "distribution_started"
 	AttributeKeyFromModuleAccount = "module_account"
 	EventTypeClaimCreated         = "claim_created"
+	AttributeKeyClaimUser         = "claim_creator"
+	AttributeKeyClaimType         = "claim_type"
 )

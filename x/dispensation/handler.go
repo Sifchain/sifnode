@@ -58,5 +58,12 @@ func handleMsgCreateClaim(ctx sdk.Context, keeper Keeper, msg MsgCreateClaim) (*
 	if err != nil {
 		return nil, err
 	}
+	ctx.EventManager().EmitEvents(sdk.Events{
+		sdk.NewEvent(
+			types.EventTypeClaimCreated,
+			sdk.NewAttribute(types.AttributeKeyClaimUser, msg.Signer.String()),
+			sdk.NewAttribute(types.AttributeKeyClaimType, msg.UserClaimType.String()),
+		),
+	})
 	return &sdk.Result{Events: ctx.EventManager().Events()}, nil
 }
