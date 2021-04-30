@@ -41,7 +41,7 @@ func TestQueryEthProphecy(t *testing.T) {
 	ctx, oracleKeeper, _, _, _, validatorAddresses, _ := oracle.CreateTestKeepers(t, 0.7, []int64{3, 7}, "")
 	cdc := keeperLib.MakeTestCodec()
 
-	valAddress := validatorAddresses.GetAllValidators()[0]
+	valAddress := validatorAddresses[0]
 	testEthereumAddress := types.NewEthereumAddress(types.TestEthereumAddress)
 	testBridgeContractAddress := types.NewEthereumAddress(types.TestBridgeContractAddress)
 	testTokenContractAddress := types.NewEthereumAddress(types.TestTokenContractAddress)

@@ -105,6 +105,7 @@ func (k Keeper) ProcessClaim(ctx sdk.Context, networkID uint32, claim types.Clai
 	if !found {
 		prophecy = types.NewProphecy(claim.ID)
 	}
+
 	switch prophecy.Status.Text {
 	case types.PendingStatusText:
 		// continue processing
@@ -152,12 +153,14 @@ func (k Keeper) ProcessUpdateWhiteListValidator(ctx sdk.Context, networkID uint3
 // left to push it over the threshold required for consensus.
 func (k Keeper) processCompletion(ctx sdk.Context, networkDescriptor types.NetworkDescriptor, prophecy types.Prophecy) types.Prophecy {
 	highestClaim, highestRatio, vetoRatio := k.GetOracleWhiteList(ctx, networkDescriptor).GetPowerRatio(prophecy.ClaimValidators)
-	fmt.Printf("ratio is %s, %f\n", highestClaim, highestRatio)
 	if highestRatio >= k.consensusNeeded {
 		prophecy.Status.Text = types.SuccessStatusText
 		prophecy.Status.FinalClaim = highestClaim
 	} else if vetoRatio > (1.0 - k.consensusNeeded) {
 		prophecy.Status.Text = types.FailedStatusText
+	} else {
+		prophecy.Status.Text = types.PendingStatusText
+		prophecy.Status.FinalClaim = ""
 	}
 	return prophecy
 }
