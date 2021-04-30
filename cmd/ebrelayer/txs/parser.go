@@ -193,7 +193,7 @@ func BurnLockEventToCosmosMsg(claimType types.Event, attributes []tmKv.Pair, sug
 		}
 	}
 
-	if attributeNumber < 5 {
+	if attributeNumber < 6 {
 		sugaredLogger.Errorw("message not complete", "attributeNumber", attributeNumber)
 		return types.CosmosMsg{}, networkDescriptor, errors.New("message not complete")
 	}
