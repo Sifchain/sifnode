@@ -78,8 +78,8 @@ export default ({
 
     calculateUnpegFee(asset: IAsset) {
       const feeNumber = isOriginallySifchainNativeToken(asset)
-        ? "100080000000000000"
-        : "100080000000000000";
+        ? "70000000000000000"
+        : "70000000000000000";
 
       return AssetAmount(Asset.get("ceth"), feeNumber);
     },
