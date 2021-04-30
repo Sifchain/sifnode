@@ -157,5 +157,5 @@ func (uc UserClaim) IsLocked() bool {
 }
 
 func (uc UserClaim) String() string {
-	return strings.TrimSpace(fmt.Sprintf(`UserAddress : %s`, uc.UserAddress.String()))
+	return strings.TrimSpace(fmt.Sprintf(`UserAddress : %s | UserClaimType : %s`, uc.UserAddress.String(), uc.UserClaimType))
 }
