@@ -3,6 +3,9 @@ import JSBI from "jsbi";
 import { AssetAmount } from "../../entities";
 import createSifService, { SifServiceContext } from ".";
 import { getBalance, getTestingTokens } from "../../test/utils/getTestingToken";
+import { useStack } from "../../../../test/stack";
+
+useStack("once");
 
 const [ROWAN, CATK, CBTK, CETH] = getTestingTokens([
   "ROWAN",
@@ -17,9 +20,6 @@ const TOKENS = {
   btk: CBTK,
   eth: CETH,
 };
-
-// This is required because we need to wait for the blockchain to process transactions
-jest.setTimeout(20000);
 
 // const badMnemonic =
 //   "Ever have that feeling where you’re not sure if you’re awake or dreaming?";
