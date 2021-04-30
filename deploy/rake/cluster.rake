@@ -252,6 +252,7 @@ echo '      sssssssssss    iiiiiiiifffffffff            cccccccccccccccchhhhhhh 
     task :install, [:env, :region, :path, :kmskey, :aws_role, :aws_region] do |t, args|
       require 'fileutils'
       require 'net/http'
+      require 'json'
 
       APP_NAME='vault'
       APP_NAMESPACE='vault'
@@ -261,6 +262,32 @@ echo '      sssssssssss    iiiiiiiifffffffff            cccccccccccccccchhhhhhh 
       NAMESPACE='vault'
       SECRET_NAME="#{APP_NAME}-#{POD}-tls"
       TMPDIR='/tmp'
+      KEY_NAME="vault-#{args[:env]}"
+
+      list_keys=`aws kms list-keys --profile #{args[:env]} --region #{args[:aws_region]}`
+      keys_object = JSON.parse list_keys
+      key_found = false
+      key_id = ""
+
+      keys_object["Keys"].each do |v|
+          get_key=`aws kms describe-key --key-id=#{v["KeyId"]} --profile #{args[:env]} --region #{args[:aws_region]}`
+          get_key_object = JSON.parse get_key
+          if get_key_object["KeyMetadata"]["Description"].include?("#{KEY_NAME}")
+            puts "key found use id #{v["KeyId"]}"
+            key_id = "#{v["KeyId"]}"
+            key_found=true
+            break
+          end
+      end
+
+      role_ids = []
+
+      if not key_found
+            POLICY = %Q{{"Version" : "2012-10-17","Id" : "key-default-#{args[:env]}","Statement" : [{"Sid" : "Enable IAM User Permissions","Effect" : "Allow", "Principal" : {"AWS" : "#{args[:aws_role]}"},"Action" : "kms:","Resource" : "*"},{"Sid" : "Allow Use of Key","Effect" : "Allow","Principal" : {"AWS" : "#{args[:aws_role]}"},"Action" : ["*"],"Resource" : "*"}]}}
+            create_key=`aws kms create-key --tags TagKey=Name,TagValue=#{KEY_NAME} --description "vault-#{args[:env]}" --profile #{args[:env]} --region #{args[:aws_region]} --policy '#{POLICY}'`
+            key_id_json = JSON.parse create_key
+            key_id=key_id_json["KeyMetadata"]["KeyId"]
+      end
 
       check_namespace=`kubectl get namespaces --kubeconfig=./kubeconfig | grep vault`
       puts "check namespace #{check_namespace}"
@@ -298,7 +325,7 @@ echo '      sssssssssss    iiiiiiiifffffffff            cccccccccccccccchhhhhhh 
           if replace_string == "-=aws_region=-"
             template_file_text.include?(k) ? (template_file_text.gsub! replace_string, "#{args[:aws_region]}") : (puts 'env matching...')
           elsif replace_string == "-=kmskey=-"
-            template_file_text.include?(k) ? (template_file_text.gsub! replace_string, "#{args[:kmskey]}") : (puts 'env matching...')
+            template_file_text.include?(k) ? (template_file_text.gsub! replace_string, "#{key_id}") : (puts 'env matching...')
           elsif replace_string == "-=aws_role=-"
             template_file_text.include?(k) ? (template_file_text.gsub! replace_string, "#{args[:aws_role]}") : (puts 'env matching...')
           end
