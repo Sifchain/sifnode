@@ -6,6 +6,8 @@ import (
 	"log"
 	"sync/atomic"
 
+	"github.com/spf13/pflag"
+
 	"github.com/Sifchain/sifnode/x/ethbridge/types"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/tx"
@@ -53,8 +55,14 @@ func RelayToCosmos(moniker, password string, claims []*types.EthBridgeClaim, cli
 	log.Println("building and signing")
 
 	log.Println("built tx, now broadcasting")
+
+	var flagSet *pflag.FlagSet
+	// func (f *FlagSet) Uint64(name string, value uint64, usage string) *uint64 {
+	// I believe this should set the sequence number that we want to
+	_ = flagSet.Uint64("FlagSequence", nextSequenceNumber, "")
+
 	// Broadcast to a Tendermint node
-	err := tx.GenerateOrBroadcastTxCLI(cliCtx, nil, messages...)
+	err := tx.GenerateOrBroadcastTxCLI(cliCtx, flagSet, messages...)
 	if err != nil {
 		sugaredLogger.Errorw("failed to broadcast tx to sifchain.",
 			errorMessageKey, err.Error())
