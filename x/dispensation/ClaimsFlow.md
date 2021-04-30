@@ -93,7 +93,7 @@ After parsing should become
 }
 ```
 
-### This file is then used to do a create a dispensation
+### This file is then used to create a dispensation
 ```shell
 sifnodecli tx dispensation create mkey ar1 ValidatorSubsidy input.json output.json --gas 200064128 --generate-only >> offlinetx.json
 # First user signs
