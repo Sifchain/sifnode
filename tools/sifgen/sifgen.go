@@ -24,10 +24,10 @@ func NewSifgen(chainID *string) Sifgen {
 	}
 }
 
-func (s Sifgen) NewNetwork() *network.Network {
+func (s Sifgen) NewNetwork(keyringBackend string) *network.Network {
 	return &network.Network{
 		ChainID: *s.chainID,
-		CLI:     utils.NewCLI(*s.chainID, keyring.BackendTest),
+		CLI:     utils.NewCLI(*s.chainID, keyringBackend),
 	}
 }
 

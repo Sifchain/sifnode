@@ -18,6 +18,7 @@ func main() {
 	_networkCmd := networkCmd()
 	_networkCmd.PersistentFlags().String("bond-amount", "1000000000000000000000000rowan", "bond amount")
 	_networkCmd.PersistentFlags().String("mint-amount", "999000000000000000000000000rowan", "mint amount")
+	_networkCmd.PersistentFlags().String("keyring-backend", "file", "Select keyring's backend (os|file|kwallet|pass|test|memory)")
 	_networkCmd.AddCommand(networkCreateCmd(), networkResetCmd())
 
 	_nodeCmd := nodeCmd()
@@ -61,9 +62,10 @@ func networkCreateCmd() *cobra.Command {
 		Run: func(cmd *cobra.Command, args []string) {
 			bondAmount, _ := cmd.Flags().GetString("bond-amount")
 			mintAmount, _ := cmd.Flags().GetString("mint-amount")
+			keyringBackend, _ := cmd.Flags().GetString("keyring-backend")
 
 			count, _ := strconv.Atoi(args[1])
-			network := sifgen.NewSifgen(&args[0]).NewNetwork()
+			network := sifgen.NewSifgen(&args[0]).NewNetwork(keyringBackend)
 			network.BondAmount = bondAmount
 			network.MintAmount = mintAmount
 
