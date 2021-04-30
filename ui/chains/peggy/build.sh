@@ -2,6 +2,6 @@
 
 . ../credentials.sh
 
-cd ../../../smart-contracts
+cd $PWD/../../../smart-contracts
 
 yarn && truffle compile

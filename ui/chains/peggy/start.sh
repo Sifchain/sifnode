@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # This script should be run with a CWD that is the local folder
-. $PWD/../credentials.sh
+. ../credentials.sh
 
 if [[ -f "$PWD/../../../smart-contracts/.env" ]]; then
   . $PWD/../../../smart-contracts/.env
@@ -29,6 +29,7 @@ echo "OWNER='$OWNER'"
 echo "SHADOWFIEND_NAME='$SHADOWFIEND_NAME'"
 echo "-----------------------------------------------------"
 echo "  "
+
 
 ETHEREUM_PRIVATE_KEY=$ETHEREUM_PRIVATE_KEY ebrelayer init \
   tcp://localhost:26657 \
