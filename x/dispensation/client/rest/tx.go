@@ -20,7 +20,7 @@ func RegisterRoutes(cliCtx context.CLIContext, r *mux.Router) {
 
 func registerTxRoutes(cliCtx context.CLIContext, r *mux.Router) {
 	r.HandleFunc(
-		"/dispensation/creatClaim",
+		"/dispensation/createClaim",
 		createClaimHandler(cliCtx),
 	).Methods("POST")
 }
