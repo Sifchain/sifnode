@@ -45,7 +45,7 @@ func GetCmdDistributions(queryRoute string) *cobra.Command {
 			}
 			var dr types.Distributions
 			types.ModuleCdc.MustUnmarshalJSON(res, &dr)
-			out := types.NewDistributionsResponse(dr, height)
+			out := types.NewQueryAllDistributionsResponse(dr, height)
 			return clientCtx.PrintProto(&out)
 		},
 	}
@@ -79,7 +79,7 @@ func GetCmdDistributionRecordForRecipient(queryRoute string) *cobra.Command {
 			}
 			var drs types.DistributionRecords
 			types.ModuleCdc.MustUnmarshalJSON(res, &drs)
-			out := types.NewDistributionRecordsResponse(drs, height)
+			out := types.NewQueryRecordsByRecipientAddrResponse(drs, height)
 			return clientCtx.PrintProto(&out)
 		},
 	}
@@ -109,7 +109,7 @@ func GetCmdDistributionRecordForDistNameAll(queryRoute string) *cobra.Command {
 			}
 			var drs types.DistributionRecords
 			types.ModuleCdc.MustUnmarshalJSON(res, &drs)
-			out := types.NewDistributionRecordsResponse(drs, height)
+			out := types.NewQueryRecordsByDistributionNameResponse(drs, height)
 			return clientCtx.PrintProto(&out)
 		},
 	}
@@ -139,7 +139,7 @@ func GetCmdDistributionRecordForDistNamePending(queryRoute string) *cobra.Comman
 			}
 			var drs types.DistributionRecords
 			types.ModuleCdc.MustUnmarshalJSON(res, &drs)
-			out := types.NewDistributionRecordsResponse(drs, height)
+			out := types.NewQueryRecordsByDistributionNameResponse(drs, height)
 			return clientCtx.PrintProto(&out)
 		},
 	}
@@ -169,7 +169,7 @@ func GetCmdDistributionRecordForDistNameCompleted(queryRoute string) *cobra.Comm
 			}
 			var drs types.DistributionRecords
 			types.ModuleCdc.MustUnmarshalJSON(res, &drs)
-			out := types.NewDistributionRecordsResponse(drs, height)
+			out := types.NewQueryRecordsByDistributionNameResponse(drs, height)
 			return clientCtx.PrintProto(&out)
 		},
 	}

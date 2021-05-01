@@ -6,10 +6,10 @@ const (
 	QueryRecordsByRecipient = "records_by_recipient"
 )
 
-func NewQueryRecordsByDistributionName(distributionName string, status ClaimStatus) QueryRecordsByDistributionName {
-	return QueryRecordsByDistributionName{DistributionName: distributionName, Status: status}
+func NewQueryRecordsByDistributionName(distributionName string, status ClaimStatus) QueryRecordsByDistributionNameRequest {
+	return QueryRecordsByDistributionNameRequest{DistributionName: distributionName, Status: status}
 }
 
-func NewQueryRecordsByRecipientAddr(address string) QueryRecordsByRecipientAddr {
-	return QueryRecordsByRecipientAddr{Address: address}
+func NewQueryRecordsByRecipientAddr(address string) QueryRecordsByRecipientAddrRequest {
+	return QueryRecordsByRecipientAddrRequest{Address: address}
 }

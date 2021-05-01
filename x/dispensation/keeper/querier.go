@@ -7,73 +7,64 @@ import (
 	abci "github.com/tendermint/tendermint/abci/types"
 )
 
-type Querier struct {
-	Keeper
-}
+// NewLegacyQuerier is the module level router for state queries
+func NewLegacyQuerier(keeper Keeper) sdk.Querier {
+	querier := NewQuerier(keeper)
 
-// NewQuerier is the module level router for state queries
-func NewQuerier(keeper Keeper) sdk.Querier {
 	return func(ctx sdk.Context, path []string, req abci.RequestQuery) (res []byte, err error) {
 		switch path[0] {
 		case types.QueryAllDistributions:
-			return queryAllDistributions(ctx, keeper)
+			return queryAllDistributions(ctx, querier)
 		case types.QueryRecordsByDistrName:
-			return queryDistributionRecordsForName(ctx, req, keeper)
+			return queryDistributionRecordsForName(ctx, req, querier)
 		case types.QueryRecordsByRecipient:
-			return queryDistributionRecordsForRecipient(ctx, req, keeper)
+			return queryDistributionRecordsForRecipient(ctx, req, querier)
 		default:
 			return nil, sdkerrors.Wrap(sdkerrors.ErrUnknownRequest, "unknown dispensation query endpoint")
 		}
 	}
 }
 
-func queryDistributionRecordsForName(ctx sdk.Context, req abci.RequestQuery, keeper Keeper) ([]byte, error) {
-	var params types.QueryRecordsByDistributionName
+func queryDistributionRecordsForName(ctx sdk.Context, req abci.RequestQuery, querier Querier) ([]byte, error) {
+	var params types.QueryRecordsByDistributionNameRequest
 
 	err := types.ModuleCdc.UnmarshalJSON(req.Data, &params)
 	if err != nil {
 		return nil, sdkerrors.Wrap(sdkerrors.ErrJSONUnmarshal, err.Error())
 	}
-	records := new(types.DistributionRecords)
-	switch params.Status {
-	case types.ClaimStatus_CLAIM_STATUS_PENDING:
-		*records = keeper.GetRecordsForNamePending(ctx, params.DistributionName)
-	case types.ClaimStatus_CLAIM_STATUS_COMPLETED:
-		*records = keeper.GetRecordsForNameCompleted(ctx, params.DistributionName)
-	default:
-		*records = keeper.GetRecordsForNameAll(ctx, params.DistributionName)
-	}
-	res, err := types.ModuleCdc.MarshalJSON(records)
+
+	res, err := querier.RecordsByDistributionName(sdk.WrapSDKContext(ctx), &params)
+
+	bz, err := types.ModuleCdc.MarshalJSON(res.DistributionRecords)
 	if err != nil {
 		return nil, sdkerrors.Wrap(sdkerrors.ErrJSONMarshal, err.Error())
 	}
-	return res, nil
+	return bz, nil
 }
 
-func queryDistributionRecordsForRecipient(ctx sdk.Context, req abci.RequestQuery, keeper Keeper) ([]byte, error) {
-	var params types.QueryRecordsByRecipientAddr
+func queryDistributionRecordsForRecipient(ctx sdk.Context, req abci.RequestQuery, querier Querier) ([]byte, error) {
+	var params types.QueryRecordsByRecipientAddrRequest
 
 	err := types.ModuleCdc.UnmarshalJSON(req.Data, &params)
 	if err != nil {
 		return nil, sdkerrors.Wrap(sdkerrors.ErrJSONUnmarshal, err.Error())
 	}
-	addr, err := sdk.AccAddressFromBech32(params.Address)
-	if err != nil {
-		return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, err.Error())
-	}
-	records := keeper.GetRecordsForRecipient(ctx, addr)
-	res, err := types.ModuleCdc.MarshalJSON(records)
+
+	res, err := querier.RecordsByRecipient(sdk.WrapSDKContext(ctx), &params)
+
+	bz, err := types.ModuleCdc.MarshalJSON(res.DistributionRecords)
 	if err != nil {
 		return nil, sdkerrors.Wrap(sdkerrors.ErrJSONMarshal, err.Error())
 	}
-	return res, nil
+
+	return bz, nil
 }
 
-func queryAllDistributions(ctx sdk.Context, keeper Keeper) ([]byte, error) {
-	list := keeper.GetDistributions(ctx)
-	res, err := types.ModuleCdc.MarshalJSON(list)
+func queryAllDistributions(ctx sdk.Context, querier Querier) ([]byte, error) {
+	res, err := querier.AllDistributions(sdk.WrapSDKContext(ctx), &types.QueryAllDistributionsRequest{})
 	if err != nil {
-		return nil, sdkerrors.Wrap(sdkerrors.ErrJSONMarshal, err.Error())
+		return nil, err
 	}
-	return res, nil
+
+	return types.ModuleCdc.MarshalJSON(res)
 }

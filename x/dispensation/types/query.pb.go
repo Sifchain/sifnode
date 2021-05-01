@@ -10,6 +10,8 @@ import (
 	grpc1 "github.com/gogo/protobuf/grpc"
 	proto "github.com/gogo/protobuf/proto"
 	grpc "google.golang.org/grpc"
+	codes "google.golang.org/grpc/codes"
+	status "google.golang.org/grpc/status"
 	io "io"
 	math "math"
 	math_bits "math/bits"
@@ -26,23 +28,21 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
-type DistributionsResponse struct {
-	Distributions []*Distribution `protobuf:"bytes,1,rep,name=distributions,proto3" json:"distributions,omitempty"`
-	Height        int64           `protobuf:"varint,2,opt,name=height,proto3" json:"height,omitempty"`
+type QueryAllDistributionsRequest struct {
 }
 
-func (m *DistributionsResponse) Reset()         { *m = DistributionsResponse{} }
-func (m *DistributionsResponse) String() string { return proto.CompactTextString(m) }
-func (*DistributionsResponse) ProtoMessage()    {}
-func (*DistributionsResponse) Descriptor() ([]byte, []int) {
+func (m *QueryAllDistributionsRequest) Reset()         { *m = QueryAllDistributionsRequest{} }
+func (m *QueryAllDistributionsRequest) String() string { return proto.CompactTextString(m) }
+func (*QueryAllDistributionsRequest) ProtoMessage()    {}
+func (*QueryAllDistributionsRequest) Descriptor() ([]byte, []int) {
 	return fileDescriptor_395b1a3b0bf5b135, []int{0}
 }
-func (m *DistributionsResponse) XXX_Unmarshal(b []byte) error {
+func (m *QueryAllDistributionsRequest) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *DistributionsResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *QueryAllDistributionsRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_DistributionsResponse.Marshal(b, m, deterministic)
+		return xxx_messageInfo_QueryAllDistributionsRequest.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -52,93 +52,87 @@ func (m *DistributionsResponse) XXX_Marshal(b []byte, deterministic bool) ([]byt
 		return b[:n], nil
 	}
 }
-func (m *DistributionsResponse) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_DistributionsResponse.Merge(m, src)
+func (m *QueryAllDistributionsRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryAllDistributionsRequest.Merge(m, src)
 }
-func (m *DistributionsResponse) XXX_Size() int {
+func (m *QueryAllDistributionsRequest) XXX_Size() int {
 	return m.Size()
 }
-func (m *DistributionsResponse) XXX_DiscardUnknown() {
-	xxx_messageInfo_DistributionsResponse.DiscardUnknown(m)
+func (m *QueryAllDistributionsRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryAllDistributionsRequest.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_DistributionsResponse proto.InternalMessageInfo
+var xxx_messageInfo_QueryAllDistributionsRequest proto.InternalMessageInfo
 
-func (m *DistributionsResponse) GetDistributions() []*Distribution {
+type QueryAllDistributionsResponse struct {
+	Distributions []*Distribution `protobuf:"bytes,1,rep,name=distributions,proto3" json:"distributions,omitempty"`
+	Height        int64           `protobuf:"varint,2,opt,name=height,proto3" json:"height,omitempty"`
+}
+
+func (m *QueryAllDistributionsResponse) Reset()         { *m = QueryAllDistributionsResponse{} }
+func (m *QueryAllDistributionsResponse) String() string { return proto.CompactTextString(m) }
+func (*QueryAllDistributionsResponse) ProtoMessage()    {}
+func (*QueryAllDistributionsResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_395b1a3b0bf5b135, []int{1}
+}
+func (m *QueryAllDistributionsResponse) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *QueryAllDistributionsResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_QueryAllDistributionsResponse.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *QueryAllDistributionsResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryAllDistributionsResponse.Merge(m, src)
+}
+func (m *QueryAllDistributionsResponse) XXX_Size() int {
+	return m.Size()
+}
+func (m *QueryAllDistributionsResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryAllDistributionsResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_QueryAllDistributionsResponse proto.InternalMessageInfo
+
+func (m *QueryAllDistributionsResponse) GetDistributions() []*Distribution {
 	if m != nil {
 		return m.Distributions
 	}
 	return nil
 }
 
-func (m *DistributionsResponse) GetHeight() int64 {
+func (m *QueryAllDistributionsResponse) GetHeight() int64 {
 	if m != nil {
 		return m.Height
 	}
 	return 0
 }
 
-type QueryRecordsByRecipientAddr struct {
-	Address string `protobuf:"bytes,1,opt,name=address,proto3" json:"address,omitempty"`
-}
-
-func (m *QueryRecordsByRecipientAddr) Reset()         { *m = QueryRecordsByRecipientAddr{} }
-func (m *QueryRecordsByRecipientAddr) String() string { return proto.CompactTextString(m) }
-func (*QueryRecordsByRecipientAddr) ProtoMessage()    {}
-func (*QueryRecordsByRecipientAddr) Descriptor() ([]byte, []int) {
-	return fileDescriptor_395b1a3b0bf5b135, []int{1}
-}
-func (m *QueryRecordsByRecipientAddr) XXX_Unmarshal(b []byte) error {
-	return m.Unmarshal(b)
-}
-func (m *QueryRecordsByRecipientAddr) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	if deterministic {
-		return xxx_messageInfo_QueryRecordsByRecipientAddr.Marshal(b, m, deterministic)
-	} else {
-		b = b[:cap(b)]
-		n, err := m.MarshalToSizedBuffer(b)
-		if err != nil {
-			return nil, err
-		}
-		return b[:n], nil
-	}
-}
-func (m *QueryRecordsByRecipientAddr) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_QueryRecordsByRecipientAddr.Merge(m, src)
-}
-func (m *QueryRecordsByRecipientAddr) XXX_Size() int {
-	return m.Size()
-}
-func (m *QueryRecordsByRecipientAddr) XXX_DiscardUnknown() {
-	xxx_messageInfo_QueryRecordsByRecipientAddr.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_QueryRecordsByRecipientAddr proto.InternalMessageInfo
-
-func (m *QueryRecordsByRecipientAddr) GetAddress() string {
-	if m != nil {
-		return m.Address
-	}
-	return ""
-}
-
-type QueryRecordsByDistributionName struct {
+type QueryRecordsByDistributionNameRequest struct {
 	DistributionName string      `protobuf:"bytes,1,opt,name=distribution_name,json=distributionName,proto3" json:"distribution_name,omitempty"`
 	Status           ClaimStatus `protobuf:"varint,2,opt,name=status,proto3,enum=sifnode.dispensation.v1.ClaimStatus" json:"status,omitempty"`
 }
 
-func (m *QueryRecordsByDistributionName) Reset()         { *m = QueryRecordsByDistributionName{} }
-func (m *QueryRecordsByDistributionName) String() string { return proto.CompactTextString(m) }
-func (*QueryRecordsByDistributionName) ProtoMessage()    {}
-func (*QueryRecordsByDistributionName) Descriptor() ([]byte, []int) {
+func (m *QueryRecordsByDistributionNameRequest) Reset()         { *m = QueryRecordsByDistributionNameRequest{} }
+func (m *QueryRecordsByDistributionNameRequest) String() string { return proto.CompactTextString(m) }
+func (*QueryRecordsByDistributionNameRequest) ProtoMessage()    {}
+func (*QueryRecordsByDistributionNameRequest) Descriptor() ([]byte, []int) {
 	return fileDescriptor_395b1a3b0bf5b135, []int{2}
 }
-func (m *QueryRecordsByDistributionName) XXX_Unmarshal(b []byte) error {
+func (m *QueryRecordsByDistributionNameRequest) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *QueryRecordsByDistributionName) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *QueryRecordsByDistributionNameRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_QueryRecordsByDistributionName.Marshal(b, m, deterministic)
+		return xxx_messageInfo_QueryRecordsByDistributionNameRequest.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -148,36 +142,189 @@ func (m *QueryRecordsByDistributionName) XXX_Marshal(b []byte, deterministic boo
 		return b[:n], nil
 	}
 }
-func (m *QueryRecordsByDistributionName) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_QueryRecordsByDistributionName.Merge(m, src)
+func (m *QueryRecordsByDistributionNameRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryRecordsByDistributionNameRequest.Merge(m, src)
 }
-func (m *QueryRecordsByDistributionName) XXX_Size() int {
+func (m *QueryRecordsByDistributionNameRequest) XXX_Size() int {
 	return m.Size()
 }
-func (m *QueryRecordsByDistributionName) XXX_DiscardUnknown() {
-	xxx_messageInfo_QueryRecordsByDistributionName.DiscardUnknown(m)
+func (m *QueryRecordsByDistributionNameRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryRecordsByDistributionNameRequest.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_QueryRecordsByDistributionName proto.InternalMessageInfo
+var xxx_messageInfo_QueryRecordsByDistributionNameRequest proto.InternalMessageInfo
 
-func (m *QueryRecordsByDistributionName) GetDistributionName() string {
+func (m *QueryRecordsByDistributionNameRequest) GetDistributionName() string {
 	if m != nil {
 		return m.DistributionName
 	}
 	return ""
 }
 
-func (m *QueryRecordsByDistributionName) GetStatus() ClaimStatus {
+func (m *QueryRecordsByDistributionNameRequest) GetStatus() ClaimStatus {
 	if m != nil {
 		return m.Status
 	}
 	return ClaimStatus_CLAIM_STATUS_UNSPECIFIED
 }
 
+type QueryRecordsByDistributionNameResponse struct {
+	DistributionRecords *DistributionRecords `protobuf:"bytes,1,opt,name=distribution_records,json=distributionRecords,proto3" json:"distribution_records,omitempty"`
+	Height              int64                `protobuf:"varint,2,opt,name=height,proto3" json:"height,omitempty"`
+}
+
+func (m *QueryRecordsByDistributionNameResponse) Reset() {
+	*m = QueryRecordsByDistributionNameResponse{}
+}
+func (m *QueryRecordsByDistributionNameResponse) String() string { return proto.CompactTextString(m) }
+func (*QueryRecordsByDistributionNameResponse) ProtoMessage()    {}
+func (*QueryRecordsByDistributionNameResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_395b1a3b0bf5b135, []int{3}
+}
+func (m *QueryRecordsByDistributionNameResponse) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *QueryRecordsByDistributionNameResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_QueryRecordsByDistributionNameResponse.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *QueryRecordsByDistributionNameResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryRecordsByDistributionNameResponse.Merge(m, src)
+}
+func (m *QueryRecordsByDistributionNameResponse) XXX_Size() int {
+	return m.Size()
+}
+func (m *QueryRecordsByDistributionNameResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryRecordsByDistributionNameResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_QueryRecordsByDistributionNameResponse proto.InternalMessageInfo
+
+func (m *QueryRecordsByDistributionNameResponse) GetDistributionRecords() *DistributionRecords {
+	if m != nil {
+		return m.DistributionRecords
+	}
+	return nil
+}
+
+func (m *QueryRecordsByDistributionNameResponse) GetHeight() int64 {
+	if m != nil {
+		return m.Height
+	}
+	return 0
+}
+
+type QueryRecordsByRecipientAddrRequest struct {
+	Address string `protobuf:"bytes,1,opt,name=address,proto3" json:"address,omitempty"`
+}
+
+func (m *QueryRecordsByRecipientAddrRequest) Reset()         { *m = QueryRecordsByRecipientAddrRequest{} }
+func (m *QueryRecordsByRecipientAddrRequest) String() string { return proto.CompactTextString(m) }
+func (*QueryRecordsByRecipientAddrRequest) ProtoMessage()    {}
+func (*QueryRecordsByRecipientAddrRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_395b1a3b0bf5b135, []int{4}
+}
+func (m *QueryRecordsByRecipientAddrRequest) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *QueryRecordsByRecipientAddrRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_QueryRecordsByRecipientAddrRequest.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *QueryRecordsByRecipientAddrRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryRecordsByRecipientAddrRequest.Merge(m, src)
+}
+func (m *QueryRecordsByRecipientAddrRequest) XXX_Size() int {
+	return m.Size()
+}
+func (m *QueryRecordsByRecipientAddrRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryRecordsByRecipientAddrRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_QueryRecordsByRecipientAddrRequest proto.InternalMessageInfo
+
+func (m *QueryRecordsByRecipientAddrRequest) GetAddress() string {
+	if m != nil {
+		return m.Address
+	}
+	return ""
+}
+
+type QueryRecordsByRecipientAddrResponse struct {
+	DistributionRecords *DistributionRecords `protobuf:"bytes,1,opt,name=distribution_records,json=distributionRecords,proto3" json:"distribution_records,omitempty"`
+	Height              int64                `protobuf:"varint,2,opt,name=height,proto3" json:"height,omitempty"`
+}
+
+func (m *QueryRecordsByRecipientAddrResponse) Reset()         { *m = QueryRecordsByRecipientAddrResponse{} }
+func (m *QueryRecordsByRecipientAddrResponse) String() string { return proto.CompactTextString(m) }
+func (*QueryRecordsByRecipientAddrResponse) ProtoMessage()    {}
+func (*QueryRecordsByRecipientAddrResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_395b1a3b0bf5b135, []int{5}
+}
+func (m *QueryRecordsByRecipientAddrResponse) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *QueryRecordsByRecipientAddrResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_QueryRecordsByRecipientAddrResponse.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *QueryRecordsByRecipientAddrResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryRecordsByRecipientAddrResponse.Merge(m, src)
+}
+func (m *QueryRecordsByRecipientAddrResponse) XXX_Size() int {
+	return m.Size()
+}
+func (m *QueryRecordsByRecipientAddrResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryRecordsByRecipientAddrResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_QueryRecordsByRecipientAddrResponse proto.InternalMessageInfo
+
+func (m *QueryRecordsByRecipientAddrResponse) GetDistributionRecords() *DistributionRecords {
+	if m != nil {
+		return m.DistributionRecords
+	}
+	return nil
+}
+
+func (m *QueryRecordsByRecipientAddrResponse) GetHeight() int64 {
+	if m != nil {
+		return m.Height
+	}
+	return 0
+}
+
 func init() {
-	proto.RegisterType((*DistributionsResponse)(nil), "sifnode.dispensation.v1.DistributionsResponse")
-	proto.RegisterType((*QueryRecordsByRecipientAddr)(nil), "sifnode.dispensation.v1.QueryRecordsByRecipientAddr")
-	proto.RegisterType((*QueryRecordsByDistributionName)(nil), "sifnode.dispensation.v1.QueryRecordsByDistributionName")
+	proto.RegisterType((*QueryAllDistributionsRequest)(nil), "sifnode.dispensation.v1.QueryAllDistributionsRequest")
+	proto.RegisterType((*QueryAllDistributionsResponse)(nil), "sifnode.dispensation.v1.QueryAllDistributionsResponse")
+	proto.RegisterType((*QueryRecordsByDistributionNameRequest)(nil), "sifnode.dispensation.v1.QueryRecordsByDistributionNameRequest")
+	proto.RegisterType((*QueryRecordsByDistributionNameResponse)(nil), "sifnode.dispensation.v1.QueryRecordsByDistributionNameResponse")
+	proto.RegisterType((*QueryRecordsByRecipientAddrRequest)(nil), "sifnode.dispensation.v1.QueryRecordsByRecipientAddrRequest")
+	proto.RegisterType((*QueryRecordsByRecipientAddrResponse)(nil), "sifnode.dispensation.v1.QueryRecordsByRecipientAddrResponse")
 }
 
 func init() {
@@ -185,28 +332,37 @@ func init() {
 }
 
 var fileDescriptor_395b1a3b0bf5b135 = []byte{
-	// 331 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x74, 0x91, 0x4f, 0x4b, 0xf3, 0x40,
-	0x10, 0xc6, 0xbb, 0x6f, 0x79, 0x5b, 0x5c, 0x51, 0x34, 0xf8, 0xa7, 0x54, 0x58, 0x4a, 0x55, 0x28,
-	0x08, 0x89, 0xad, 0x07, 0x2f, 0x5e, 0xac, 0x9e, 0x14, 0x04, 0xd3, 0x9b, 0x17, 0xd9, 0x76, 0xb7,
-	0xc9, 0x80, 0xd9, 0x8d, 0x99, 0x4d, 0xb1, 0xe0, 0x37, 0xf0, 0xe2, 0xc7, 0xf2, 0xd8, 0xa3, 0x47,
-	0x69, 0xbf, 0x88, 0x64, 0x9b, 0x42, 0x2a, 0xe4, 0x36, 0xc3, 0xfc, 0xe6, 0x99, 0x67, 0x78, 0xe8,
-	0x31, 0xc2, 0x58, 0x69, 0x21, 0x3d, 0x01, 0x18, 0x4b, 0x85, 0xdc, 0x80, 0x56, 0xde, 0xa4, 0xeb,
-	0xbd, 0xa6, 0x32, 0x99, 0xba, 0x71, 0xa2, 0x8d, 0x76, 0x0e, 0x73, 0xc8, 0x2d, 0x42, 0xee, 0xa4,
-	0xdb, 0xdc, 0x0b, 0x74, 0xa0, 0x2d, 0xe3, 0x65, 0xd5, 0x12, 0x6f, 0x96, 0x6a, 0x9a, 0x69, 0x2c,
-	0x71, 0x09, 0xb5, 0xdf, 0xe9, 0xfe, 0x2d, 0xa0, 0x49, 0x60, 0x98, 0x66, 0x63, 0xf4, 0x25, 0xc6,
-	0x5a, 0xa1, 0x74, 0xee, 0xe9, 0x96, 0x28, 0x0e, 0x1a, 0xa4, 0x55, 0xed, 0x6c, 0xf6, 0x4e, 0xdd,
-	0x12, 0x13, 0x6e, 0x51, 0xc6, 0x5f, 0xdf, 0x75, 0x0e, 0x68, 0x2d, 0x94, 0x10, 0x84, 0xa6, 0xf1,
-	0xaf, 0x45, 0x3a, 0x55, 0x3f, 0xef, 0xda, 0x97, 0xf4, 0xe8, 0x31, 0x7b, 0xd0, 0x97, 0x23, 0x9d,
-	0x08, 0xec, 0x67, 0x05, 0xc4, 0x20, 0x95, 0xb9, 0x16, 0x22, 0x71, 0x1a, 0xb4, 0xce, 0x85, 0x48,
-	0x24, 0x66, 0xd7, 0x49, 0x67, 0xc3, 0x5f, 0xb5, 0xed, 0x0f, 0x42, 0xd9, 0xfa, 0x66, 0xf1, 0xfc,
-	0x03, 0x8f, 0xa4, 0x73, 0x46, 0x77, 0x8b, 0x26, 0x9e, 0x15, 0x8f, 0x64, 0x2e, 0xb3, 0x23, 0xfe,
-	0xc2, 0x57, 0xb4, 0x86, 0x86, 0x9b, 0x14, 0xad, 0xc1, 0xed, 0xde, 0x49, 0xe9, 0x9b, 0x37, 0x2f,
-	0x1c, 0xa2, 0x81, 0x65, 0xfd, 0x7c, 0xa7, 0x57, 0xa7, 0xff, 0xad, 0x99, 0xfe, 0xdd, 0xd7, 0x9c,
-	0x91, 0xd9, 0x9c, 0x91, 0x9f, 0x39, 0x23, 0x9f, 0x0b, 0x56, 0x99, 0x2d, 0x58, 0xe5, 0x7b, 0xc1,
-	0x2a, 0x4f, 0xe7, 0x01, 0x98, 0x30, 0x1d, 0xba, 0x23, 0x1d, 0x79, 0x03, 0x18, 0x8f, 0x42, 0x0e,
-	0xca, 0x5b, 0x05, 0xf4, 0xb6, 0x1e, 0x91, 0xcd, 0x67, 0x58, 0xb3, 0x01, 0x5d, 0xfc, 0x06, 0x00,
-	0x00, 0xff, 0xff, 0xde, 0xc4, 0x60, 0xce, 0x1b, 0x02, 0x00, 0x00,
+	// 468 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xc4, 0x94, 0xc1, 0x6a, 0xd4, 0x40,
+	0x1c, 0xc6, 0x33, 0x2e, 0xae, 0xf8, 0x2f, 0x4a, 0x1d, 0x8b, 0xc6, 0xa0, 0x61, 0x49, 0xad, 0x2c,
+	0x28, 0x89, 0x8d, 0xe8, 0xc5, 0x52, 0x69, 0xf5, 0xa4, 0x20, 0x38, 0xbd, 0x79, 0x29, 0xd9, 0xcc,
+	0x34, 0x19, 0xd8, 0x64, 0xd2, 0xcc, 0xa4, 0xb8, 0x67, 0x7d, 0x00, 0xf5, 0x01, 0x0a, 0xbe, 0x8a,
+	0x27, 0x8f, 0x3d, 0x7a, 0x94, 0xdd, 0x17, 0x91, 0x9d, 0x24, 0x92, 0xb4, 0x66, 0x5b, 0xf7, 0xe2,
+	0x6d, 0x67, 0xf3, 0x7d, 0xdf, 0xfc, 0xf2, 0xe5, 0xcf, 0x1f, 0xd6, 0x25, 0x3f, 0x48, 0x05, 0x65,
+	0x1e, 0xe5, 0x32, 0x63, 0xa9, 0x0c, 0x14, 0x17, 0xa9, 0x77, 0xb4, 0xe9, 0x1d, 0x16, 0x2c, 0x9f,
+	0xb8, 0x59, 0x2e, 0x94, 0xc0, 0xb7, 0x2b, 0x91, 0xdb, 0x14, 0xb9, 0x47, 0x9b, 0xd6, 0x5a, 0x24,
+	0x22, 0xa1, 0x35, 0xde, 0xfc, 0x57, 0x29, 0xb7, 0x3a, 0x33, 0xd5, 0x24, 0x63, 0xb2, 0x14, 0x39,
+	0x36, 0xdc, 0x7d, 0x37, 0xbf, 0x62, 0x67, 0x3c, 0x7e, 0xc5, 0xa5, 0xca, 0xf9, 0xa8, 0x98, 0xcb,
+	0x24, 0x61, 0x87, 0x05, 0x93, 0xca, 0xf9, 0x84, 0xe0, 0x5e, 0x87, 0x40, 0x66, 0x22, 0x95, 0x0c,
+	0xbf, 0x81, 0x6b, 0xb4, 0xf9, 0xc0, 0x44, 0x83, 0xde, 0x70, 0xc5, 0xdf, 0x70, 0x3b, 0x68, 0xdd,
+	0x66, 0x0c, 0x69, 0x7b, 0xf1, 0x2d, 0xe8, 0xc7, 0x8c, 0x47, 0xb1, 0x32, 0x2f, 0x0d, 0xd0, 0xb0,
+	0x47, 0xaa, 0x93, 0xf3, 0x15, 0xc1, 0x86, 0xc6, 0x20, 0x2c, 0x14, 0x39, 0x95, 0xbb, 0x93, 0x66,
+	0xca, 0xdb, 0x20, 0x61, 0x15, 0x30, 0x7e, 0x08, 0x37, 0x9a, 0x91, 0xfb, 0x69, 0x90, 0x30, 0x13,
+	0x0d, 0xd0, 0xf0, 0x2a, 0x59, 0xa5, 0xa7, 0x3c, 0x78, 0x0b, 0xfa, 0x52, 0x05, 0xaa, 0x90, 0xfa,
+	0xba, 0xeb, 0xfe, 0xfd, 0x4e, 0xe8, 0x97, 0xe3, 0x80, 0x27, 0x7b, 0x5a, 0x4b, 0x2a, 0x8f, 0xf3,
+	0x0d, 0xc1, 0x83, 0xf3, 0xa0, 0xaa, 0x92, 0xf6, 0x61, 0xad, 0x45, 0x95, 0x97, 0x0e, 0x0d, 0xb6,
+	0xe2, 0x3f, 0xba, 0x58, 0x57, 0xa5, 0x87, 0xdc, 0xa4, 0x67, 0xff, 0xec, 0x2c, 0x6e, 0x1b, 0x9c,
+	0x36, 0x22, 0x61, 0x21, 0xcf, 0x38, 0x4b, 0xd5, 0x0e, 0xa5, 0x79, 0x5d, 0x9a, 0x09, 0x57, 0x02,
+	0x4a, 0x73, 0x26, 0x65, 0x55, 0x55, 0x7d, 0x74, 0x8e, 0x11, 0xac, 0x2f, 0x0c, 0xf8, 0xcf, 0x2f,
+	0xe8, 0x7f, 0xef, 0xc1, 0x65, 0x0d, 0x88, 0x3f, 0x22, 0x58, 0x3d, 0x3d, 0xa5, 0xf8, 0x69, 0xe7,
+	0xcd, 0x8b, 0xc6, 0xde, 0x7a, 0xf6, 0xaf, 0xb6, 0xb2, 0x06, 0xc7, 0xc0, 0xc7, 0x08, 0xee, 0x74,
+	0xce, 0x03, 0xde, 0x5e, 0x9c, 0x7b, 0xde, 0x74, 0x5b, 0x2f, 0x96, 0xf6, 0xff, 0x01, 0xfc, 0x82,
+	0x00, 0x9f, 0xfd, 0x98, 0xf8, 0xf9, 0x05, 0x93, 0xff, 0x36, 0x3f, 0xd6, 0xd6, 0x72, 0xe6, 0x9a,
+	0x69, 0xf7, 0xf5, 0x8f, 0xa9, 0x8d, 0x4e, 0xa6, 0x36, 0xfa, 0x35, 0xb5, 0xd1, 0xe7, 0x99, 0x6d,
+	0x9c, 0xcc, 0x6c, 0xe3, 0xe7, 0xcc, 0x36, 0xde, 0x3f, 0x8e, 0xb8, 0x8a, 0x8b, 0x91, 0x1b, 0x8a,
+	0xc4, 0xdb, 0xe3, 0x07, 0x61, 0x1c, 0xf0, 0xd4, 0xab, 0x17, 0xdb, 0x87, 0xf6, 0x6a, 0xd3, 0x7b,
+	0x6d, 0xd4, 0xd7, 0x8b, 0xed, 0xc9, 0xef, 0x00, 0x00, 0x00, 0xff, 0xff, 0xec, 0xb6, 0xee, 0x70,
+	0x53, 0x05, 0x00, 0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -221,6 +377,9 @@ const _ = grpc.SupportPackageIsVersion4
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
 type QueryClient interface {
+	AllDistributions(ctx context.Context, in *QueryAllDistributionsRequest, opts ...grpc.CallOption) (*QueryAllDistributionsResponse, error)
+	RecordsByDistributionName(ctx context.Context, in *QueryRecordsByDistributionNameRequest, opts ...grpc.CallOption) (*QueryRecordsByDistributionNameResponse, error)
+	RecordsByRecipient(ctx context.Context, in *QueryRecordsByRecipientAddrRequest, opts ...grpc.CallOption) (*QueryRecordsByRecipientAddrResponse, error)
 }
 
 type queryClient struct {
@@ -231,27 +390,134 @@ func NewQueryClient(cc grpc1.ClientConn) QueryClient {
 	return &queryClient{cc}
 }
 
+func (c *queryClient) AllDistributions(ctx context.Context, in *QueryAllDistributionsRequest, opts ...grpc.CallOption) (*QueryAllDistributionsResponse, error) {
+	out := new(QueryAllDistributionsResponse)
+	err := c.cc.Invoke(ctx, "/sifnode.dispensation.v1.Query/AllDistributions", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *queryClient) RecordsByDistributionName(ctx context.Context, in *QueryRecordsByDistributionNameRequest, opts ...grpc.CallOption) (*QueryRecordsByDistributionNameResponse, error) {
+	out := new(QueryRecordsByDistributionNameResponse)
+	err := c.cc.Invoke(ctx, "/sifnode.dispensation.v1.Query/RecordsByDistributionName", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *queryClient) RecordsByRecipient(ctx context.Context, in *QueryRecordsByRecipientAddrRequest, opts ...grpc.CallOption) (*QueryRecordsByRecipientAddrResponse, error) {
+	out := new(QueryRecordsByRecipientAddrResponse)
+	err := c.cc.Invoke(ctx, "/sifnode.dispensation.v1.Query/RecordsByRecipient", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // QueryServer is the server API for Query service.
 type QueryServer interface {
+	AllDistributions(context.Context, *QueryAllDistributionsRequest) (*QueryAllDistributionsResponse, error)
+	RecordsByDistributionName(context.Context, *QueryRecordsByDistributionNameRequest) (*QueryRecordsByDistributionNameResponse, error)
+	RecordsByRecipient(context.Context, *QueryRecordsByRecipientAddrRequest) (*QueryRecordsByRecipientAddrResponse, error)
 }
 
 // UnimplementedQueryServer can be embedded to have forward compatible implementations.
 type UnimplementedQueryServer struct {
 }
 
+func (*UnimplementedQueryServer) AllDistributions(ctx context.Context, req *QueryAllDistributionsRequest) (*QueryAllDistributionsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AllDistributions not implemented")
+}
+func (*UnimplementedQueryServer) RecordsByDistributionName(ctx context.Context, req *QueryRecordsByDistributionNameRequest) (*QueryRecordsByDistributionNameResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RecordsByDistributionName not implemented")
+}
+func (*UnimplementedQueryServer) RecordsByRecipient(ctx context.Context, req *QueryRecordsByRecipientAddrRequest) (*QueryRecordsByRecipientAddrResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RecordsByRecipient not implemented")
+}
+
 func RegisterQueryServer(s grpc1.Server, srv QueryServer) {
 	s.RegisterService(&_Query_serviceDesc, srv)
+}
+
+func _Query_AllDistributions_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryAllDistributionsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServer).AllDistributions(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/sifnode.dispensation.v1.Query/AllDistributions",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServer).AllDistributions(ctx, req.(*QueryAllDistributionsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Query_RecordsByDistributionName_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryRecordsByDistributionNameRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServer).RecordsByDistributionName(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/sifnode.dispensation.v1.Query/RecordsByDistributionName",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServer).RecordsByDistributionName(ctx, req.(*QueryRecordsByDistributionNameRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Query_RecordsByRecipient_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryRecordsByRecipientAddrRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServer).RecordsByRecipient(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/sifnode.dispensation.v1.Query/RecordsByRecipient",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServer).RecordsByRecipient(ctx, req.(*QueryRecordsByRecipientAddrRequest))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
 var _Query_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "sifnode.dispensation.v1.Query",
 	HandlerType: (*QueryServer)(nil),
-	Methods:     []grpc.MethodDesc{},
-	Streams:     []grpc.StreamDesc{},
-	Metadata:    "sifnode/dispensation/v1/query.proto",
+	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "AllDistributions",
+			Handler:    _Query_AllDistributions_Handler,
+		},
+		{
+			MethodName: "RecordsByDistributionName",
+			Handler:    _Query_RecordsByDistributionName_Handler,
+		},
+		{
+			MethodName: "RecordsByRecipient",
+			Handler:    _Query_RecordsByRecipient_Handler,
+		},
+	},
+	Streams:  []grpc.StreamDesc{},
+	Metadata: "sifnode/dispensation/v1/query.proto",
 }
 
-func (m *DistributionsResponse) Marshal() (dAtA []byte, err error) {
+func (m *QueryAllDistributionsRequest) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -261,12 +527,35 @@ func (m *DistributionsResponse) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *DistributionsResponse) MarshalTo(dAtA []byte) (int, error) {
+func (m *QueryAllDistributionsRequest) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *DistributionsResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *QueryAllDistributionsRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	return len(dAtA) - i, nil
+}
+
+func (m *QueryAllDistributionsResponse) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *QueryAllDistributionsResponse) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *QueryAllDistributionsResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
@@ -293,7 +582,7 @@ func (m *DistributionsResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	return len(dAtA) - i, nil
 }
 
-func (m *QueryRecordsByRecipientAddr) Marshal() (dAtA []byte, err error) {
+func (m *QueryRecordsByDistributionNameRequest) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -303,42 +592,12 @@ func (m *QueryRecordsByRecipientAddr) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *QueryRecordsByRecipientAddr) MarshalTo(dAtA []byte) (int, error) {
+func (m *QueryRecordsByDistributionNameRequest) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *QueryRecordsByRecipientAddr) MarshalToSizedBuffer(dAtA []byte) (int, error) {
-	i := len(dAtA)
-	_ = i
-	var l int
-	_ = l
-	if len(m.Address) > 0 {
-		i -= len(m.Address)
-		copy(dAtA[i:], m.Address)
-		i = encodeVarintQuery(dAtA, i, uint64(len(m.Address)))
-		i--
-		dAtA[i] = 0xa
-	}
-	return len(dAtA) - i, nil
-}
-
-func (m *QueryRecordsByDistributionName) Marshal() (dAtA []byte, err error) {
-	size := m.Size()
-	dAtA = make([]byte, size)
-	n, err := m.MarshalToSizedBuffer(dAtA[:size])
-	if err != nil {
-		return nil, err
-	}
-	return dAtA[:n], nil
-}
-
-func (m *QueryRecordsByDistributionName) MarshalTo(dAtA []byte) (int, error) {
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
-}
-
-func (m *QueryRecordsByDistributionName) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *QueryRecordsByDistributionNameRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
@@ -358,6 +617,116 @@ func (m *QueryRecordsByDistributionName) MarshalToSizedBuffer(dAtA []byte) (int,
 	return len(dAtA) - i, nil
 }
 
+func (m *QueryRecordsByDistributionNameResponse) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *QueryRecordsByDistributionNameResponse) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *QueryRecordsByDistributionNameResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.Height != 0 {
+		i = encodeVarintQuery(dAtA, i, uint64(m.Height))
+		i--
+		dAtA[i] = 0x10
+	}
+	if m.DistributionRecords != nil {
+		{
+			size, err := m.DistributionRecords.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintQuery(dAtA, i, uint64(size))
+		}
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *QueryRecordsByRecipientAddrRequest) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *QueryRecordsByRecipientAddrRequest) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *QueryRecordsByRecipientAddrRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.Address) > 0 {
+		i -= len(m.Address)
+		copy(dAtA[i:], m.Address)
+		i = encodeVarintQuery(dAtA, i, uint64(len(m.Address)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *QueryRecordsByRecipientAddrResponse) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *QueryRecordsByRecipientAddrResponse) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *QueryRecordsByRecipientAddrResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.Height != 0 {
+		i = encodeVarintQuery(dAtA, i, uint64(m.Height))
+		i--
+		dAtA[i] = 0x10
+	}
+	if m.DistributionRecords != nil {
+		{
+			size, err := m.DistributionRecords.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintQuery(dAtA, i, uint64(size))
+		}
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
 func encodeVarintQuery(dAtA []byte, offset int, v uint64) int {
 	offset -= sovQuery(v)
 	base := offset
@@ -369,7 +738,16 @@ func encodeVarintQuery(dAtA []byte, offset int, v uint64) int {
 	dAtA[offset] = uint8(v)
 	return base
 }
-func (m *DistributionsResponse) Size() (n int) {
+func (m *QueryAllDistributionsRequest) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	return n
+}
+
+func (m *QueryAllDistributionsResponse) Size() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -387,20 +765,7 @@ func (m *DistributionsResponse) Size() (n int) {
 	return n
 }
 
-func (m *QueryRecordsByRecipientAddr) Size() (n int) {
-	if m == nil {
-		return 0
-	}
-	var l int
-	_ = l
-	l = len(m.Address)
-	if l > 0 {
-		n += 1 + l + sovQuery(uint64(l))
-	}
-	return n
-}
-
-func (m *QueryRecordsByDistributionName) Size() (n int) {
+func (m *QueryRecordsByDistributionNameRequest) Size() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -416,13 +781,58 @@ func (m *QueryRecordsByDistributionName) Size() (n int) {
 	return n
 }
 
+func (m *QueryRecordsByDistributionNameResponse) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.DistributionRecords != nil {
+		l = m.DistributionRecords.Size()
+		n += 1 + l + sovQuery(uint64(l))
+	}
+	if m.Height != 0 {
+		n += 1 + sovQuery(uint64(m.Height))
+	}
+	return n
+}
+
+func (m *QueryRecordsByRecipientAddrRequest) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.Address)
+	if l > 0 {
+		n += 1 + l + sovQuery(uint64(l))
+	}
+	return n
+}
+
+func (m *QueryRecordsByRecipientAddrResponse) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.DistributionRecords != nil {
+		l = m.DistributionRecords.Size()
+		n += 1 + l + sovQuery(uint64(l))
+	}
+	if m.Height != 0 {
+		n += 1 + sovQuery(uint64(m.Height))
+	}
+	return n
+}
+
 func sovQuery(x uint64) (n int) {
 	return (math_bits.Len64(x|1) + 6) / 7
 }
 func sozQuery(x uint64) (n int) {
 	return sovQuery(uint64((x << 1) ^ uint64((int64(x) >> 63))))
 }
-func (m *DistributionsResponse) Unmarshal(dAtA []byte) error {
+func (m *QueryAllDistributionsRequest) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -445,10 +855,60 @@ func (m *DistributionsResponse) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: DistributionsResponse: wiretype end group for non-group")
+			return fmt.Errorf("proto: QueryAllDistributionsRequest: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: DistributionsResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: QueryAllDistributionsRequest: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *QueryAllDistributionsResponse) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: QueryAllDistributionsResponse: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: QueryAllDistributionsResponse: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
@@ -525,7 +985,7 @@ func (m *DistributionsResponse) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *QueryRecordsByRecipientAddr) Unmarshal(dAtA []byte) error {
+func (m *QueryRecordsByDistributionNameRequest) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -548,10 +1008,216 @@ func (m *QueryRecordsByRecipientAddr) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: QueryRecordsByRecipientAddr: wiretype end group for non-group")
+			return fmt.Errorf("proto: QueryRecordsByDistributionNameRequest: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: QueryRecordsByRecipientAddr: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: QueryRecordsByDistributionNameRequest: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field DistributionName", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.DistributionName = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 2:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Status", wireType)
+			}
+			m.Status = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.Status |= ClaimStatus(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *QueryRecordsByDistributionNameResponse) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: QueryRecordsByDistributionNameResponse: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: QueryRecordsByDistributionNameResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field DistributionRecords", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if m.DistributionRecords == nil {
+				m.DistributionRecords = &DistributionRecords{}
+			}
+			if err := m.DistributionRecords.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 2:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Height", wireType)
+			}
+			m.Height = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.Height |= int64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *QueryRecordsByRecipientAddrRequest) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: QueryRecordsByRecipientAddrRequest: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: QueryRecordsByRecipientAddrRequest: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
@@ -607,7 +1273,7 @@ func (m *QueryRecordsByRecipientAddr) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *QueryRecordsByDistributionName) Unmarshal(dAtA []byte) error {
+func (m *QueryRecordsByRecipientAddrResponse) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -630,17 +1296,17 @@ func (m *QueryRecordsByDistributionName) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: QueryRecordsByDistributionName: wiretype end group for non-group")
+			return fmt.Errorf("proto: QueryRecordsByRecipientAddrResponse: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: QueryRecordsByDistributionName: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: QueryRecordsByRecipientAddrResponse: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field DistributionName", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field DistributionRecords", wireType)
 			}
-			var stringLen uint64
+			var msglen int
 			for shift := uint(0); ; shift += 7 {
 				if shift >= 64 {
 					return ErrIntOverflowQuery
@@ -650,29 +1316,33 @@ func (m *QueryRecordsByDistributionName) Unmarshal(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
+				msglen |= int(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
 			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
+			if msglen < 0 {
 				return ErrInvalidLengthQuery
 			}
-			postIndex := iNdEx + intStringLen
+			postIndex := iNdEx + msglen
 			if postIndex < 0 {
 				return ErrInvalidLengthQuery
 			}
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.DistributionName = string(dAtA[iNdEx:postIndex])
+			if m.DistributionRecords == nil {
+				m.DistributionRecords = &DistributionRecords{}
+			}
+			if err := m.DistributionRecords.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
 			iNdEx = postIndex
 		case 2:
 			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Status", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field Height", wireType)
 			}
-			m.Status = 0
+			m.Height = 0
 			for shift := uint(0); ; shift += 7 {
 				if shift >= 64 {
 					return ErrIntOverflowQuery
@@ -682,7 +1352,7 @@ func (m *QueryRecordsByDistributionName) Unmarshal(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				m.Status |= ClaimStatus(b&0x7F) << shift
+				m.Height |= int64(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}

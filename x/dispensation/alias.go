@@ -15,7 +15,6 @@ const (
 
 var (
 	NewKeeper           = keeper.NewKeeper
-	NewQuerier          = keeper.NewQuerier
 	RegisterCodec       = types.RegisterLegacyAminoCodec
 	DefaultGenesisState = types.DefaultGenesisState
 )

@@ -3,16 +3,16 @@ package keeper_test
 import (
 	"testing"
 
-	"github.com/Sifchain/sifnode/app"
-	"github.com/Sifchain/sifnode/x/dispensation"
-	"github.com/Sifchain/sifnode/x/dispensation/test"
-	"github.com/Sifchain/sifnode/x/dispensation/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	bank "github.com/cosmos/cosmos-sdk/x/bank/types"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	abci "github.com/tendermint/tendermint/abci/types"
+
+	"github.com/Sifchain/sifnode/app"
+	"github.com/Sifchain/sifnode/x/dispensation/test"
+	"github.com/Sifchain/sifnode/x/dispensation/types"
 )
 
 func GenerateQueryData(app *app.SifchainApp, ctx sdk.Context, name string, outList []bank.Output) {
@@ -36,8 +36,8 @@ func TestQueryRecordsName(t *testing.T) {
 	outList := test.GenerateOutputList("1000000000")
 	GenerateQueryData(sifapp, ctx, name, outList)
 	keeper := sifapp.DispensationKeeper
-	querier := dispensation.NewQuerier(keeper)
-	quereyRecName := types.QueryRecordsByDistributionName{
+	querier := keeper.NewLegacyQuerier(keeper)
+	queryRecName := types.QueryRecordsByDistributionNameRequest{
 		DistributionName: name,
 		Status: types.ClaimStatus_CLAIM_STATUS_UNSPECIFIED,
 	}
@@ -45,7 +45,7 @@ func TestQueryRecordsName(t *testing.T) {
 		Path: "",
 		Data: []byte{},
 	}
-	qp, errRes := sifapp.LegacyAmino().MarshalJSON(&quereyRecName)
+	qp, errRes := sifapp.LegacyAmino().MarshalJSON(&queryRecName)
 	require.NoError(t, errRes)
 	query.Path = ""
 	query.Data = qp
@@ -63,8 +63,8 @@ func TestQueryRecordsAddr(t *testing.T) {
 	outList := test.GenerateOutputList("1000000000")
 	GenerateQueryData(sifapp, ctx, name, outList)
 	keeper := sifapp.DispensationKeeper
-	querier := dispensation.NewQuerier(keeper)
-	quereyRecName := types.QueryRecordsByRecipientAddr{
+	querier := keeper.NewLegacyQuerier(keeper)
+	quereyRecName := types.QueryRecordsByRecipientAddrRequest{
 		Address: outList[0].Address,
 	}
 	query := abci.RequestQuery{
@@ -89,7 +89,7 @@ func TestQueryAllDistributions(t *testing.T) {
 	outList := test.GenerateOutputList("1000000000")
 	GenerateQueryData(sifapp, ctx, name, outList)
 	keeper := sifapp.DispensationKeeper
-	querier := dispensation.NewQuerier(keeper)
+	querier := keeper.NewLegacyQuerier(keeper)
 	query := abci.RequestQuery{
 		Path: "",
 		Data: []byte{},

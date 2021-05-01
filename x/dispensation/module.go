@@ -3,7 +3,7 @@ package dispensation
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/Sifchain/sifnode/x/dispensation/client/cli"
+
 	"github.com/cosmos/cosmos-sdk/client"
 	cdctypes "github.com/cosmos/cosmos-sdk/codec/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
@@ -11,12 +11,15 @@ import (
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 	"github.com/spf13/cobra"
 
+	"github.com/Sifchain/sifnode/x/dispensation/client/cli"
+
 	abci "github.com/tendermint/tendermint/abci/types"
+
+	"github.com/cosmos/cosmos-sdk/codec"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	"github.com/Sifchain/sifnode/x/dispensation/keeper"
 	"github.com/Sifchain/sifnode/x/dispensation/types"
-	"github.com/cosmos/cosmos-sdk/codec"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 // Type check to ensure the interface is properly implemented
@@ -91,12 +94,12 @@ type AppModule struct {
 }
 
 func (am AppModule) LegacyQuerierHandler(amino *codec.LegacyAmino) sdk.Querier {
-	return keeper.NewQuerier(am.keeper)
+	return keeper.NewLegacyQuerier(am.keeper)
 }
 
 func (am AppModule) RegisterServices(cfg module.Configurator) {
 	types.RegisterMsgServer(cfg.MsgServer(), keeper.NewMsgServerImpl(am.keeper))
-	querier := keeper.Querier{Keeper: am.keeper}
+	querier := keeper.NewQuerier(am.keeper)
 	types.RegisterQueryServer(cfg.QueryServer(), querier)
 }
 
@@ -135,7 +138,7 @@ func (AppModule) QuerierRoute() string {
 
 // NewQuerierHandler returns the dispensation module sdk.Querier.
 func (am AppModule) NewQuerierHandler() sdk.Querier {
-	return NewQuerier(am.keeper)
+	return keeper.NewLegacyQuerier(am.keeper)
 }
 
 // InitGenesis performs genesis initialization for the dispensation module. It returns
