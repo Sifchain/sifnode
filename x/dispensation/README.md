@@ -16,6 +16,9 @@ package records
 type DistributionType int64
 
 const Airdrop DistributionType = 1
+const LiquidityMining DistributionType = 2
+const ValidatorSubsidy DistributionType = 3
+
 type Distribution struct {
     DistributionType DistributionType `json:"distribution_type"`
     DistributionName string           `json:"distribution_name"`
@@ -28,18 +31,19 @@ This is stored in the keeper with the key DistributionType_DistributionName for 
 ```go
 package records
 
-type ClaimStatus int64
+type DistributionStatus int64
 
-const Pending ClaimStatus = 1
-const Completed ClaimStatus = 2
+const Pending DistributionStatus = 1
+const Completed DistributionStatus = 2
 
 type DistributionRecord struct {
-	ClaimStatus                 ClaimStatus    `json:"claimstatus"`
-	DistributionName            string         `json:"distribution_name"`
-	RecipientAddress            sdk.AccAddress `json:"recipient_address"`
-	Coins                       sdk.Coins      `json:"coins"`
-	DistributionStartHeight     int64          `json:"distribution_start_height"`
-	DistributionCompletedHeight int64          `json:"distribution_completed_height"`
+	DistributionStatus          DistributionStatus `json:"distribution_status"`
+	DistributionName            string             `json:"distribution_name"`
+	DistributionType            DistributionType   `json:"distribution_type"`
+	RecipientAddress            sdk.AccAddress     `json:"recipient_address"`
+	Coins                       sdk.Coins          `json:"coins"`
+	DistributionStartHeight     int64              `json:"distribution_start_height"`
+	DistributionCompletedHeight int64              `json:"distribution_completed_height"`
 }
 ```
 This record is also stored in the keeper for historical records .
