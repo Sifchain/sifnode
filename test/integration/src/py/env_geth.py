@@ -120,7 +120,8 @@ def start_geth(args: GethInput):
     fund_initial_accounts(map(lambda a: a[0], new_accounts), args.starting_ether)
     env_utilities.startup_complete(args, {
         **format_new_accounts(new_accounts),
-        "ws_addr": f"ws://{args.ethereum_server}:{args.ws_port}"
+        "ws_addr": f"ws://{args.ethereum_server}:{args.ws_port}",
+        "http_addr": f"http://{args.ethereum_server}:{args.http_port}"
     })
     return proc
 

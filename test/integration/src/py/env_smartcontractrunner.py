@@ -17,6 +17,7 @@ class SmartContractDeployInput(env_utilities.SifchainCmdInput):
     ethereum_config_file: str
     network_id: int
     ws_addr: str
+    http_addr: str
     truffle_network: str
     operator_address: str
     operator_private_key: str
@@ -50,7 +51,7 @@ def deploy_contracts_cmd(args: SmartContractDeployInput):
     for i in ["OWNER", "PAUSER", "OPERATOR"]:
         os.environ[i] = args.operator_address
     os.environ["ETHEREUM_PRIVATE_KEY"] = args.operator_private_key
-    os.environ["ETHEREUM_WEBSOCKET_ADDRESS"] = args.ws_addr
+    os.environ["ETHEREUM_WEBSOCKET_ADDRESS"] = args.http_addr
     os.environ["CONSENSUS_THRESHOLD"] = str(args.consensus_threshold)
     validator_addresses = ",".join(map(lambda x: x[0], args.validator_ethereum_credentials))
     valpowers = ",".join(map(lambda x: str(x), args.validator_powers))

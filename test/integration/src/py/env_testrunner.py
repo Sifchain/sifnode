@@ -55,7 +55,7 @@ def build_testrunner_input(
         rowan_source=sifnode_config["config"]["adminuser"]["address"],
         ethereum_network=smart_contract_config["input"]["truffle_network"],
         ethereum_network_id=smart_contract_config["input"]["network_id"],
-        ethereum_websocket_address=smart_contract_config["input"]["ws_addr"],
+        ethereum_websocket_address=smart_contract_config["input"]["http_addr"],
         infura_id=8,
         sifchain_admin_address=sifnode_config["config"]["adminuser"]["address"]
     )

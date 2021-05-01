@@ -86,6 +86,7 @@ def build_smartcontractrunner_input():
         logfile=log_file_full_path(env_smartcontractrunner.smartcontractrunner_name + "deploy"),
         configoutputfile=config_file_full_path(env_smartcontractrunner.smartcontractrunner_name),
         ws_addr=ethereum_config["config"]["ws_addr"],
+        http_addr=ethereum_config["config"]["http_addr"],
         truffle_network="dynamic",
         operator_private_key=None,
         operator_address=None,

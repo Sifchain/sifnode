@@ -8,3 +8,4 @@ for task in golang_build deploy_contracts print_test_environment
 do
   $runner bash -c "cd /sifnode/test/integration && python3 src/py/env_framework.py $task"
 done
+docker exec -ti testrunner bash smalltest.sh
