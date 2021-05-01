@@ -23,13 +23,12 @@ import (
 const (
 	// GasLimit the gas limit in Gwei used for transactions sent with TransactOpts
 	GasLimit            = uint64(500000)
-	transactionInterval = 60 * time.Second
 )
 
 var GasPriceMinimum *big.Int = big.NewInt(60000000000)
 
 func sleepThread(seconds time.Duration) {
-	time.Sleep(transactionInterval * seconds)
+	time.Sleep(time.Second * seconds)
 }
 
 // RelayProphecyClaimToEthereum relays the provided ProphecyClaim to CosmosBridge contract on the Ethereum network
