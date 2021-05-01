@@ -249,7 +249,7 @@ echo '      sssssssssss    iiiiiiiifffffffff            cccccccccccccccchhhhhhh 
   desc "Install Vault If Not Exists"
   namespace :vault do
     desc "Install Vault into Kubernetes Env Configured"
-    task :install, [:env, :region, :path, :kmskey, :aws_role, :aws_region] do |t, args|
+    task :install, [:env, :region, :path, :aws_role, :aws_region] do |t, args|
       require 'fileutils'
       require 'net/http'
       require 'json'
