@@ -11,7 +11,7 @@ export type IAssetAmount = Readonly<IAsset> & {
   // for use by display lib and in testing
   toBigInt(): JSBI;
   toString(detailed?: boolean): string;
-  toBaseUnitsAmount(): string;
+  toBaseUnitsAmount(): IAmount;
 
   // for use elsewhere
   add(other: IAmount | string): IAmount;
@@ -76,9 +76,7 @@ export function AssetAmount(
 
     toBaseUnitsAmount() {
       // NOTE - We may want to consider default returning a BigInt or Amount from toBaseUnits()
-      return Amount(toBaseUnits(_amount.toString(), _asset))
-        .toBigInt()
-        .toString();
+      return Amount(toBaseUnits(_amount.toString(), _asset));
     },
 
     toBigInt() {

@@ -134,7 +134,10 @@ export default function createEthbridgeService({
         value: 0,
         gas: 100000,
       };
-      const amountInBaseUnits = assetAmount.toBaseUnitsAmount();
+      const amountInBaseUnits = assetAmount
+        .toBaseUnitsAmount()
+        .toBigInt()
+        .toString();
 
       // TODO - give interface option to approve unlimited spend via web3.utils.toTwosComplement(-1);
       // NOTE - We may want to move this out into its own separate function.
