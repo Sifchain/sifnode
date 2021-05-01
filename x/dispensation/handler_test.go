@@ -24,7 +24,7 @@ func TestNewHandler(t *testing.T) {
 		err := keeper.GetBankKeeper().AddCoins(ctx, sdk.AccAddress(in.Address), in.Coins)
 		assert.NoError(t, err)
 	}
-	msgAirdrop := types.NewMsgDistribution(sdk.AccAddress{}, "AR1", types.DistributionType_DISTRIBUTION_TYPE_AIRDROP, inputList, outputList)
+	msgAirdrop := types.NewMsgCreateDistribution(sdk.AccAddress{}, "AR1", types.DistributionType_DISTRIBUTION_TYPE_AIRDROP, inputList, outputList)
 	res, err := handler(ctx, &msgAirdrop)
 	require.NoError(t, err)
 	require.NotNil(t, res)

@@ -23,5 +23,4 @@ var (
 type (
 	Keeper          = keeper.Keeper
 	GenesisState    = types.GenesisState
-	MsgDistribution = types.MsgDistribution
 )

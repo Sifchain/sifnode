@@ -87,7 +87,7 @@ func GetCmdCreate() *cobra.Command {
 				return err
 			}
 			name := args[1]
-			msg := types.NewMsgDistribution(clientCtx.GetFromAddress(), name, types.DistributionType_DISTRIBUTION_TYPE_AIRDROP, inputList, outputlist)
+			msg := types.NewMsgCreateDistribution(clientCtx.GetFromAddress(), name, types.DistributionType_DISTRIBUTION_TYPE_AIRDROP, inputList, outputlist)
 			if err := msg.ValidateBasic(); err != nil {
 				return err
 			}

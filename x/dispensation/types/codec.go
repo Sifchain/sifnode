@@ -5,11 +5,13 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec/types"
 	cryptocodec "github.com/cosmos/cosmos-sdk/crypto/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/cosmos-sdk/types/msgservice"
 )
 
 // RegisterCodec registers concrete types on codec
 func RegisterLegacyAminoCodec(cdc *codec.LegacyAmino) {
-	cdc.RegisterConcrete(MsgDistribution{}, "dispensation/create", nil)
+	cdc.RegisterConcrete(&MsgCreateDistribution{}, "dispensation/MsgCreateDistribution", nil)
+	cdc.RegisterConcrete(&Distribution{}, "dispensation/Distribution", nil)
 }
 
 var (
@@ -24,8 +26,8 @@ func init() {
 func RegisterInterfaces(registry types.InterfaceRegistry) {
 	registry.RegisterImplementations(
 		(*sdk.Msg)(nil),
-		&MsgDistribution{},
+		&MsgCreateDistribution{},
 	)
 
-	//msgservice.RegisterMsgServiceDesc(registry, &_Msg_serviceDesc)
+	msgservice.RegisterMsgServiceDesc(registry, &_Msg_serviceDesc)
 }
