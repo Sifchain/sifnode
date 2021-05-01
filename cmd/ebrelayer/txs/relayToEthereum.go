@@ -52,13 +52,13 @@ func RelayProphecyClaimToEthereum(
 		claim.CosmosSenderSequence, claim.EthereumReceiver,
 		claim.Symbol, claim.Amount.BigInt(),
 	)
+	
+	// sleep 2 seconds to wait for tx to go through.
+	sleepThread(2)
 
 	if err != nil {
 		return err
 	}
-
-	// sleep 2 seconds to wait for tx to go through.
-	sleepThread(2)
 
 	sugaredLogger.Infow("get NewProphecyClaim tx hash:", "ProphecyClaimHash", tx.Hash().Hex())
 
