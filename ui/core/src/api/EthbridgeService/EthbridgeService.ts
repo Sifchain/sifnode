@@ -12,7 +12,6 @@ import { SifUnSignedClient } from "../utils/SifClient";
 import { parseTxFailure } from "./parseTxFailure";
 import { Contract } from "web3-eth-contract";
 import JSBI from "jsbi";
-import { toBaseUnits } from "../../utils/decimalShift";
 
 // TODO: Do we break this service out to ethbridge and cosmos?
 
@@ -135,11 +134,8 @@ export default function createEthbridgeService({
         value: 0,
         gas: 100000,
       };
-      // NOTE - Would be good to move toBaseUnits into AssetAmount
-      const amountInBaseUnits = toBaseUnits(
-        assetAmount.amount.toString(),
-        assetAmount.asset,
-      );
+      const amountInBaseUnits = assetAmount.toBaseUnitsAmount();
+
       // TODO - give interface option to approve unlimited spend via web3.utils.toTwosComplement(-1);
       // NOTE - We may want to move this out into its own separate function.
       // Although I couldn't think of a situation we'd call allowance separately from approve
