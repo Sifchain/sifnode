@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/Sifchain/sifnode/app"
 	"github.com/Sifchain/sifnode/tools/sifgen/common"
@@ -16,31 +17,31 @@ import (
 	"github.com/Sifchain/sifnode/tools/sifgen/utils"
 
 	"github.com/BurntSushi/toml"
+	"github.com/cosmos/cosmos-sdk/crypto/keyring"
 	"github.com/sethvargo/go-password/password"
 	"gopkg.in/yaml.v3"
 )
 
 type Node struct {
-	CLI                       utils.CLI `yaml:"-"`
-	AdminCLPAddresses         []string  `yaml:"admin_clp_addresses"`
-	ChainID                   string    `yaml:"chain_id"`
-	Moniker                   string    `yaml:"moniker"`
-	Mnemonic                  string    `yaml:"mnemonic"`
-	AdminOracleAddress        string    `yaml:"admin_oracle_address"`
-	IPAddr                    string    `yaml:"ip_address"`
-	Address                   string    `yaml:"address"`
-	Password                  string    `yaml:"password"`
-	BondAmount                string    `yaml:"-"`
-	MintAmount                string    `yaml:"-"`
-	MinCLPCreatePoolThreshold string    `yaml:"-"`
-	GovMaxDepositPeriod       string    `yaml:"-"`
-	GovVotingPeriod           string    `yaml:"-"`
-	CLPConfigURL              string    `yaml:"-"`
-	PeerAddress               string    `yaml:"-"`
-	GenesisURL                string    `yaml:"-"`
-	Key                       *key.Key  `yaml:"-"`
-	Standalone                bool      `yaml:"-"`
-	WithCosmovisor            bool      `yaml:"-"`
+	CLI                       utils.CLI     `yaml:"-"`
+	AdminCLPAddresses         []string      `yaml:"admin_clp_addresses"`
+	ChainID                   string        `yaml:"chain_id"`
+	Moniker                   string        `yaml:"moniker"`
+	Mnemonic                  string        `yaml:"mnemonic"`
+	AdminOracleAddress        string        `yaml:"admin_oracle_address"`
+	IPAddr                    string        `yaml:"ip_address"`
+	Address                   string        `yaml:"address"`
+	Password                  string        `yaml:"password"`
+	BondAmount                string        `yaml:"-"`
+	MintAmount                string        `yaml:"-"`
+	MinCLPCreatePoolThreshold uint64        `yaml:"-"`
+	GovMaxDepositPeriod       time.Duration `yaml:"-"`
+	GovVotingPeriod           time.Duration `yaml:"-"`
+	PeerAddress               string        `yaml:"-"`
+	GenesisURL                string        `yaml:"-"`
+	Key                       *key.Key      `yaml:"-"`
+	Standalone                bool          `yaml:"-"`
+	WithCosmovisor            bool          `yaml:"-"`
 }
 
 func Reset(chainID string, nodeDir *string) error {
@@ -51,7 +52,7 @@ func Reset(chainID string, nodeDir *string) error {
 		directory = *nodeDir
 	}
 
-	_, err := utils.NewCLI(chainID).ResetState(directory)
+	_, err := utils.NewCLI(chainID, keyring.BackendFile).ResetState(directory)
 	if err != nil {
 		return err
 	}
@@ -82,26 +83,6 @@ func (n *Node) Build() (*string, error) {
 
 func (n *Node) setup() error {
 	_, err := n.CLI.InitChain(n.ChainID, n.Moniker, common.DefaultNodeHome)
-	if err != nil {
-		return err
-	}
-
-	_, err = n.CLI.SetKeyRingStorage()
-	if err != nil {
-		return err
-	}
-
-	_, err = n.CLI.SetConfigChainID(n.ChainID)
-	if err != nil {
-		return err
-	}
-
-	_, err = n.CLI.SetConfigIndent(true)
-	if err != nil {
-		return err
-	}
-
-	_, err = n.CLI.SetConfigTrustNode(true)
 	if err != nil {
 		return err
 	}
@@ -150,16 +131,20 @@ func (n *Node) seedGenesis() error {
 		return err
 	}
 
-	for _, adminAddress := range n.AdminCLPAddresses {
-		_, err := n.CLI.AddGenesisCLPAdmin(adminAddress, common.DefaultNodeHome)
-		if err != nil {
-			return err
+	if len(n.AdminCLPAddresses) != 0 {
+		for _, adminAddress := range n.AdminCLPAddresses {
+			_, err := n.CLI.AddGenesisCLPAdmin(adminAddress, common.DefaultNodeHome)
+			if err != nil {
+				return err
+			}
 		}
 	}
 
-	_, err = n.CLI.SetGenesisOracleAdmin(n.AdminOracleAddress, common.DefaultNodeHome)
-	if err != nil {
-		return err
+	if n.AdminOracleAddress != "" {
+		_, err = n.CLI.SetGenesisOracleAdmin(n.AdminOracleAddress, common.DefaultNodeHome)
+		if err != nil {
+			return err
+		}
 	}
 
 	gentxDir, err := ioutil.TempDir("", "gentx")
@@ -183,7 +168,8 @@ func (n *Node) seedGenesis() error {
 		outputFile,
 		strings.TrimSuffix(*nodeID, "\n"),
 		strings.TrimSuffix(*pubKey, "\n"),
-		n.IPAddr)
+		n.IPAddr,
+		n.ChainID)
 	if err != nil {
 		return err
 	}
@@ -211,12 +197,6 @@ func (n *Node) seedGenesis() error {
 
 	if err = genesis.ReplaceGovVotingParamsVotingPeriod(common.DefaultNodeHome, n.GovVotingPeriod); err != nil {
 		return err
-	}
-
-	if n.CLPConfigURL != "" {
-		if err = genesis.InitializeCLP(common.DefaultNodeHome, n.CLPConfigURL); err != nil {
-			return err
-		}
 	}
 
 	err = n.replaceConfig()

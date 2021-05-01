@@ -1,6 +1,7 @@
 package types
 
 import (
+	"encoding/json"
 	"time"
 )
 
@@ -8,25 +9,32 @@ const (
 	StakeTokenDenom = "rowan"
 )
 
-type AuthAccountValueCoin struct {
-	Denom  string `json:"denom"`
-	Amount string `json:"amount"`
+type Block struct {
+	MaxBytes   string `json:"max_bytes"`
+	MaxGas     string `json:"max_gas"`
+	TimeIotaMs string `json:"time_iota_ms"`
 }
 
-type AuthAccountValue struct {
-	Address       string                 `json:"address"`
-	Coins         []AuthAccountValueCoin `json:"coins"`
-	PublicKey     interface{}            `json:"public_key"`
-	AccountNumber string                 `json:"account_number"`
-	Sequence      string                 `json:"sequence"`
+type Evidence struct {
+	MaxAgeNumBlocks string `json:"max_age_num_blocks"`
+	MaxAgeDuration  string `json:"max_age_duration"`
+	MaxBytes        string `json:"max_bytes"`
 }
 
-type AuthAccount struct {
-	Type  string           `json:"type"`
-	Value AuthAccountValue `json:"value"`
+type Validator struct {
+	PubKeyTypes []string `json:"pub_key_types"`
 }
 
-type AuthParams struct {
+type Version struct{}
+
+type ConsensusParams struct {
+	Version   Version   `json:"version"`
+	Block     Block     `json:"block"`
+	Evidence  Evidence  `json:"evidence"`
+	Validator Validator `json:"validator"`
+}
+
+type Params struct {
 	MaxMemoCharacters      string `json:"max_memo_characters"`
 	TxSigLimit             string `json:"tx_sig_limit"`
 	TxSizeCostPerByte      string `json:"tx_size_cost_per_byte"`
@@ -34,19 +42,177 @@ type AuthParams struct {
 	SigVerifyCostSecp256K1 string `json:"sig_verify_cost_secp256k1"`
 }
 
+type Accounts []struct {
+	Type          string      `json:"@type"`
+	Address       string      `json:"address"`
+	PubKey        interface{} `json:"pub_key"`
+	AccountNumber string      `json:"account_number"`
+	Sequence      string      `json:"sequence"`
+}
+
 type Auth struct {
-	Params   AuthParams    `json:"params"`
-	Accounts []AuthAccount `json:"accounts"`
+	Params   Params   `json:"params"`
+	Accounts Accounts `json:"accounts"`
 }
 
-type GovTallyParams struct {
-	Quorum    string `json:"quorum"`
-	Threshold string `json:"threshold"`
-	Veto      string `json:"veto"`
+type BankParams struct {
+	SendEnabled        []interface{} `json:"send_enabled"`
+	DefaultSendEnabled bool          `json:"default_send_enabled"`
 }
 
-type GovVotingParams struct {
-	VotingPeriod string `json:"voting_period"`
+type Coins []struct {
+	Denom  string `json:"denom"`
+	Amount string `json:"amount"`
+}
+
+type Balances []struct {
+	Address string `json:"address"`
+	Coins   Coins  `json:"coins"`
+}
+
+type Supply []struct {
+	Denom  string `json:"denom"`
+	Amount string `json:"amount"`
+}
+
+type Bank struct {
+	Params        BankParams    `json:"params"`
+	Balances      Balances      `json:"balances"`
+	Supply        Supply        `json:"supply"`
+	DenomMetadata []interface{} `json:"denom_metadata"`
+}
+
+type Capability struct {
+	Index  string        `json:"index"`
+	Owners []interface{} `json:"owners"`
+}
+
+type CLPParams struct {
+	MinCreatePoolThreshold string `json:"min_create_pool_threshold"`
+}
+
+type CLP struct {
+	Params             CLPParams     `json:"params"`
+	AddressWhitelist   []string      `json:"address_whitelist"`
+	PoolList           []interface{} `json:"pool_list"`
+	LiquidityProviders []interface{} `json:"liquidity_providers"`
+}
+
+type Dispensation struct {
+	AddressWhitelist []interface{} `json:"address_whitelist"`
+	AdminAddress     string        `json:"admin_address"`
+}
+
+type DistributionParams struct {
+	CommunityTax        string `json:"community_tax"`
+	BaseProposerReward  string `json:"base_proposer_reward"`
+	BonusProposerReward string `json:"bonus_proposer_reward"`
+	WithdrawAddrEnabled bool   `json:"withdraw_addr_enabled"`
+}
+
+type FeePool struct {
+	CommunityPool []interface{} `json:"community_pool"`
+}
+
+type Distribution struct {
+	Params                          DistributionParams `json:"params"`
+	FeePool                         FeePool            `json:"fee_pool"`
+	DelegatorWithdrawInfos          []interface{}      `json:"delegator_withdraw_infos"`
+	PreviousProposer                string             `json:"previous_proposer"`
+	OutstandingRewards              []interface{}      `json:"outstanding_rewards"`
+	ValidatorAccumulatedCommissions []interface{}      `json:"validator_accumulated_commissions"`
+	ValidatorHistoricalRewards      []interface{}      `json:"validator_historical_rewards"`
+	ValidatorCurrentRewards         []interface{}      `json:"validator_current_rewards"`
+	DelegatorStartingInfos          []interface{}      `json:"delegator_starting_infos"`
+	ValidatorSlashEvents            []interface{}      `json:"validator_slash_events"`
+}
+
+type EvidenceState struct {
+	Evidence []interface{} `json:"evidence"`
+}
+
+type Description struct {
+	Moniker         string `json:"moniker"`
+	Identity        string `json:"identity"`
+	Website         string `json:"website"`
+	SecurityContact string `json:"security_contact"`
+	Details         string `json:"details"`
+}
+
+type Commission struct {
+	Rate          string `json:"rate"`
+	MaxRate       string `json:"max_rate"`
+	MaxChangeRate string `json:"max_change_rate"`
+}
+
+type Pubkey struct {
+	Type string `json:"@type"`
+	Key  string `json:"key"`
+}
+
+type Value struct {
+	Denom  string `json:"denom"`
+	Amount string `json:"amount"`
+}
+
+type GenTxsBodyMessages []struct {
+	Type              string      `json:"@type"`
+	Description       Description `json:"description"`
+	Commission        Commission  `json:"commission"`
+	MinSelfDelegation string      `json:"min_self_delegation"`
+	DelegatorAddress  string      `json:"delegator_address"`
+	ValidatorAddress  string      `json:"validator_address"`
+	Pubkey            Pubkey      `json:"pubkey"`
+	Value             Value       `json:"value"`
+}
+
+type GenTxsBody struct {
+	Messages                    GenTxsBodyMessages `json:"messages"`
+	Memo                        string             `json:"memo"`
+	TimeoutHeight               string             `json:"timeout_height"`
+	ExtensionOptions            []interface{}      `json:"extension_options"`
+	NonCriticalExtensionOptions []interface{}      `json:"non_critical_extension_options"`
+}
+
+type PublicKey struct {
+	Type string `json:"@type"`
+	Key  string `json:"key"`
+}
+
+type ModeInfo struct {
+	Single Single `json:"single"`
+}
+
+type Single struct {
+	Mode string `json:"mode"`
+}
+
+type SignerInfos []struct {
+	PublicKey PublicKey `json:"public_key"`
+	ModeInfo  ModeInfo  `json:"mode_info"`
+	Sequence  string    `json:"sequence"`
+}
+
+type Fee struct {
+	Amount   []interface{} `json:"amount"`
+	GasLimit string        `json:"gas_limit"`
+	Payer    string        `json:"payer"`
+	Granter  string        `json:"granter"`
+}
+
+type GenTxsAuthInfo struct {
+	SignerInfos SignerInfos `json:"signer_infos"`
+	Fee         Fee         `json:"fee"`
+}
+
+type GenTxs []struct {
+	Body       GenTxsBody     `json:"body"`
+	AuthInfo   GenTxsAuthInfo `json:"auth_info"`
+	Signatures []string       `json:"signatures"`
+}
+
+type Genutil struct {
+	GenTxs GenTxs `json:"gen_txs"`
 }
 
 type GovMinDeposit []struct {
@@ -59,196 +225,135 @@ type GovDepositParams struct {
 	MaxDepositPeriod string        `json:"max_deposit_period"`
 }
 
+type GovVotingParams struct {
+	VotingPeriod string `json:"voting_period"`
+}
+
+type GovTallyParams struct {
+	Quorum        string `json:"quorum"`
+	Threshold     string `json:"threshold"`
+	VetoThreshold string `json:"veto_threshold"`
+}
+
 type Gov struct {
 	StartingProposalID string           `json:"starting_proposal_id"`
-	Deposits           interface{}      `json:"deposits"`
-	Votes              interface{}      `json:"votes"`
-	Proposals          interface{}      `json:"proposals"`
+	Deposits           []interface{}    `json:"deposits"`
+	Votes              []interface{}    `json:"votes"`
+	Proposals          []interface{}    `json:"proposals"`
 	DepositParams      GovDepositParams `json:"deposit_params"`
 	VotingParams       GovVotingParams  `json:"voting_params"`
 	TallyParams        GovTallyParams   `json:"tally_params"`
 }
 
-type GentxValueSignaturePubKey struct {
-	Type  string `json:"type"`
-	Value string `json:"value"`
+type ClientGenesisParams struct {
+	AllowedClients []string `json:"allowed_clients"`
 }
 
-type GentxValueSignature struct {
-	PubKey    GentxValueSignaturePubKey `json:"pub_key"`
-	Signature string                    `json:"signature"`
+type ClientGenesis struct {
+	Clients            []interface{}       `json:"clients"`
+	ClientsConsensus   []interface{}       `json:"clients_consensus"`
+	ClientsMetadata    []interface{}       `json:"clients_metadata"`
+	Params             ClientGenesisParams `json:"params"`
+	CreateLocalhost    bool                `json:"create_localhost"`
+	NextClientSequence string              `json:"next_client_sequence"`
 }
 
-type GentxValueFee struct {
-	Amount []interface{} `json:"amount"`
-	Gas    string        `json:"gas"`
+type ConnectionGenesis struct {
+	Connections            []interface{} `json:"connections"`
+	ClientConnectionPaths  []interface{} `json:"client_connection_paths"`
+	NextConnectionSequence string        `json:"next_connection_sequence"`
 }
 
-type GentxValueMsgValueValue struct {
-	Denom  string `json:"denom"`
-	Amount string `json:"amount"`
+type ChannelGenesis struct {
+	Channels            []interface{} `json:"channels"`
+	Acknowledgements    []interface{} `json:"acknowledgements"`
+	Commitments         []interface{} `json:"commitments"`
+	Receipts            []interface{} `json:"receipts"`
+	SendSequences       []interface{} `json:"send_sequences"`
+	RecvSequences       []interface{} `json:"recv_sequences"`
+	AckSequences        []interface{} `json:"ack_sequences"`
+	NextChannelSequence string        `json:"next_channel_sequence"`
 }
 
-type GentxValueMsgValueCommission struct {
-	Rate          string `json:"rate"`
-	MaxRate       string `json:"max_rate"`
-	MaxChangeRate string `json:"max_change_rate"`
+type Ibc struct {
+	ClientGenesis     ClientGenesis     `json:"client_genesis"`
+	ConnectionGenesis ConnectionGenesis `json:"connection_genesis"`
+	ChannelGenesis    ChannelGenesis    `json:"channel_genesis"`
 }
 
-type GentxValueMsgValueDescription struct {
-	Moniker         string `json:"moniker"`
-	Identity        string `json:"identity"`
-	Website         string `json:"website"`
-	SecurityContact string `json:"security_contact"`
-	Details         string `json:"details"`
+type Oracle struct {
+	AddressWhitelist []interface{} `json:"address_whitelist"`
+	AdminAddress     string        `json:"admin_address"`
 }
 
-type GentxValueMsgValue struct {
-	Description       GentxValueMsgValueDescription `json:"description"`
-	Commission        GentxValueMsgValueCommission  `json:"commission"`
-	MinSelfDelegation string                        `json:"min_self_delegation"`
-	DelegatorAddress  string                        `json:"delegator_address"`
-	ValidatorAddress  string                        `json:"validator_address"`
-	Pubkey            string                        `json:"pubkey"`
-	Value             GentxValueMsgValueValue       `json:"value"`
+type SlashingParams struct {
+	SignedBlocksWindow      string `json:"signed_blocks_window"`
+	MinSignedPerWindow      string `json:"min_signed_per_window"`
+	DowntimeJailDuration    string `json:"downtime_jail_duration"`
+	SlashFractionDoubleSign string `json:"slash_fraction_double_sign"`
+	SlashFractionDowntime   string `json:"slash_fraction_downtime"`
 }
 
-type GentxValueMsg struct {
-	Type  string             `json:"type"`
-	Value GentxValueMsgValue `json:"value"`
+type Slashing struct {
+	Params       SlashingParams `json:"params"`
+	SigningInfos []interface{}  `json:"signing_infos"`
+	MissedBlocks []interface{}  `json:"missed_blocks"`
 }
 
-type GentxValue struct {
-	Msg        []GentxValueMsg       `json:"msg"`
-	Fee        GentxValueFee         `json:"fee"`
-	Signatures []GentxValueSignature `json:"signatures"`
-	Memo       string                `json:"memo"`
-}
-
-type Gentx struct {
-	Type  string     `json:"type"`
-	Value GentxValue `json:"value"`
-}
-
-type Genutil struct {
-	Gentxs []Gentx `json:"gentxs"`
-}
-
-type Upgrade struct{}
-
-type CLPParams struct {
-	MinCreatePoolThreshold string `json:"min_create_pool_threshold"`
-}
-
-type CLP struct {
-	Params                CLPParams   `json:"params"`
-	AddressWhitelist      interface{} `json:"address_whitelist"`
-	PoolList              interface{} `json:"pool_list"`
-	LiquidityProviderList interface{} `json:"liquidity_provider_list"`
-	CLPModuleAddress      string      `json:"clp_module_address"`
-}
-
-type Supply struct {
-	Supply []interface{} `json:"supply"`
+type StakingParams struct {
+	UnbondingTime     string      `json:"unbonding_time"`
+	MaxValidators     json.Number `json:"max_validators"`
+	MaxEntries        json.Number `json:"max_entries"`
+	HistoricalEntries json.Number `json:"historical_entries"`
+	BondDenom         string      `json:"bond_denom"`
 }
 
 type Staking struct {
 	Params               StakingParams `json:"params"`
 	LastTotalPower       string        `json:"last_total_power"`
-	LastValidatorPowers  interface{}   `json:"last_validator_powers"`
-	Validators           interface{}   `json:"validators"`
-	Delegations          interface{}   `json:"delegations"`
-	UnbondingDelegations interface{}   `json:"unbonding_delegations"`
-	Redelegations        interface{}   `json:"redelegations"`
+	LastValidatorPowers  []interface{} `json:"last_validator_powers"`
+	Validators           []interface{} `json:"validators"`
+	Delegations          []interface{} `json:"delegations"`
+	UnbondingDelegations []interface{} `json:"unbonding_delegations"`
+	Redelegations        []interface{} `json:"redelegations"`
 	Exported             bool          `json:"exported"`
 }
 
-type StakingParams struct {
-	UnbondingTime     string `json:"unbonding_time"`
-	MaxValidators     int    `json:"max_validators"`
-	MaxEntries        int    `json:"max_entries"`
-	HistoricalEntries int    `json:"historical_entries"`
-	BondDenom         string `json:"bond_denom"`
+type TransferParams struct {
+	SendEnabled    bool `json:"send_enabled"`
+	ReceiveEnabled bool `json:"receive_enabled"`
 }
 
-type Distribution struct {
-	Params                          DistributionParams `json:"params" yaml:"params"`
-	FeePool                         interface{}        `json:"fee_pool" yaml:"fee_pool"`
-	DelegatorWithdrawInfos          interface{}        `json:"delegator_withdraw_infos" yaml:"delegator_withdraw_infos"`
-	PreviousProposer                interface{}        `json:"previous_proposer" yaml:"previous_proposer"`
-	OutstandingRewards              interface{}        `json:"outstanding_rewards" yaml:"outstanding_rewards"`
-	ValidatorAccumulatedCommissions interface{}        `json:"validator_accumulated_commissions" yaml:"validator_accumulated_commissions"`
-	ValidatorHistoricalRewards      interface{}        `json:"validator_historical_rewards" yaml:"validator_historical_rewards"`
-	ValidatorCurrentRewards         interface{}        `json:"validator_current_rewards" yaml:"validator_current_rewards"`
-	DelegatorStartingInfos          interface{}        `json:"delegator_starting_infos" yaml:"delegator_starting_infos"`
-	ValidatorSlashEvents            interface{}        `json:"validator_slash_events" yaml:"validator_slash_events"`
-}
-
-type DistributionParams struct {
-	CommunityTax        interface{} `json:"community_tax" yaml:"community_tax"`
-	BaseProposerReward  interface{} `json:"base_proposer_reward" yaml:"base_proposer_reward"`
-	BonusProposerReward interface{} `json:"bonus_proposer_reward" yaml:"bonus_proposer_reward"`
-	WithdrawAddrEnabled interface{} `json:"withdraw_addr_enabled" yaml:"withdraw_addr_enabled"`
-}
-
-type Slashing struct {
-	Params       SlashingParams `json:"params" yaml:"params"`
-	SigningInfos interface{}    `json:"signing_infos" yaml:"signing_infos"`
-	MissedBlocks interface{}    `json:"missed_blocks" yaml:"missed_blocks"`
-}
-
-type SlashingParams struct {
-	SignedBlocksWindow      interface{} `json:"signed_blocks_window" yaml:"signed_blocks_window"`
-	MinSignedPerWindow      interface{} `json:"min_signed_per_window" yaml:"min_signed_per_window"`
-	DowntimeJailDuration    interface{} `json:"downtime_jail_duration" yaml:"downtime_jail_duration"`
-	SlashFractionDoubleSign interface{} `json:"slash_fraction_double_sign" yaml:"slash_fraction_double_sign"`
-	SlashFractionDowntime   interface{} `json:"slash_fraction_downtime" yaml:"slash_fraction_downtime"`
-}
-type Bank struct {
-	SendEnabled bool `json:"send_enabled"`
+type Transfer struct {
+	PortID      string         `json:"port_id"`
+	DenomTraces []interface{}  `json:"denom_traces"`
+	Params      TransferParams `json:"params"`
 }
 
 type AppState struct {
-	Bank         Bank         `json:"bank"`
-	Staking      Staking      `json:"staking"`
-	Params       interface{}  `json:"params"`
-	Supply       Supply       `json:"supply"`
-	Ethbridge    interface{}  `json:"ethbridge"`
-	CLP          CLP          `json:"clp"`
-	Upgrade      Upgrade      `json:"upgrade"`
-	Oracle       interface{}  `json:"oracle"`
-	Genutil      Genutil      `json:"genutil"`
-	Gov          Gov          `json:"gov"`
-	Auth         Auth         `json:"auth"`
-	Slashing     Slashing     `json:"slashing"`
-	Distribution Distribution `json:"distribution"`
-	Dispensation interface{}  `json:"dispensation"`
-}
-
-type Evidence struct {
-	MaxAgeNumBlocks string `json:"max_age_num_blocks"`
-	MaxAgeDuration  string `json:"max_age_duration"`
-}
-
-type Validator struct {
-	PubKeyTypes []string `json:"pub_key_types"`
-}
-
-type Block struct {
-	MaxBytes   string `json:"max_bytes"`
-	MaxGas     string `json:"max_gas"`
-	TimeIotaMs string `json:"time_iota_ms"`
-}
-
-type ConsensusParams struct {
-	Block     Block     `json:"block"`
-	Evidence  Evidence  `json:"evidence"`
-	Validator Validator `json:"validator"`
+	Upgrade      struct{}      `json:"upgrade"`
+	Ibc          Ibc           `json:"ibc"`
+	Distribution Distribution  `json:"distribution"`
+	Staking      Staking       `json:"staking"`
+	Gov          Gov           `json:"gov"`
+	Slashing     Slashing      `json:"slashing"`
+	Auth         Auth          `json:"auth"`
+	Bank         Bank          `json:"bank"`
+	CLP          CLP           `json:"clp"`
+	Transfer     Transfer      `json:"transfer"`
+	Capability   Capability    `json:"capability"`
+	Dispensation Dispensation  `json:"dispensation"`
+	Oracle       Oracle        `json:"oracle"`
+	Evidence     EvidenceState `json:"evidence"`
+	Genutil      Genutil       `json:"genutil"`
+	Ethbridge    interface{}   `json:"ethbridge"`
+	Params       interface{}   `json:"params"`
 }
 
 type Genesis struct {
 	GenesisTime     time.Time       `json:"genesis_time"`
 	ChainID         string          `json:"chain_id"`
+	InitialHeight   string          `json:"initial_height"`
 	ConsensusParams ConsensusParams `json:"consensus_params"`
 	AppHash         string          `json:"app_hash"`
 	AppState        AppState        `json:"app_state"`

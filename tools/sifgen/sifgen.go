@@ -10,6 +10,8 @@ import (
 	"github.com/Sifchain/sifnode/tools/sifgen/network"
 	"github.com/Sifchain/sifnode/tools/sifgen/node"
 	"github.com/Sifchain/sifnode/tools/sifgen/utils"
+
+	"github.com/cosmos/cosmos-sdk/crypto/keyring"
 )
 
 type Sifgen struct {
@@ -25,7 +27,7 @@ func NewSifgen(chainID *string) Sifgen {
 func (s Sifgen) NewNetwork() *network.Network {
 	return &network.Network{
 		ChainID: *s.chainID,
-		CLI:     utils.NewCLI(*s.chainID),
+		CLI:     utils.NewCLI(*s.chainID, keyring.BackendTest),
 	}
 }
 
@@ -52,7 +54,7 @@ func (s Sifgen) NetworkReset(networkDir string) {
 func (s Sifgen) NewNode() *node.Node {
 	return &node.Node{
 		ChainID: *s.chainID,
-		CLI:     utils.NewCLI(*s.chainID),
+		CLI:     utils.NewCLI(*s.chainID, keyring.BackendFile),
 	}
 }
 
@@ -62,14 +64,14 @@ func (s Sifgen) NodeReset(nodeHomeDir *string) {
 	}
 }
 
-func (s Sifgen) KeyGenerateMnemonic(name, password *string) {
+func (s Sifgen) KeyGenerateMnemonic(name, password string) {
 	newKey := key.NewKey(name, password)
 	newKey.GenerateMnemonic()
 	fmt.Println(newKey.Mnemonic)
 }
 
 func (s Sifgen) KeyRecoverFromMnemonic(mnemonic string) {
-	newKey := key.NewKey(nil, nil)
+	newKey := key.NewKey("", "")
 	if err := newKey.RecoverFromMnemonic(mnemonic); err != nil {
 		log.Fatal(err)
 	}

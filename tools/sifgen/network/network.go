@@ -14,6 +14,7 @@ import (
 	"github.com/Sifchain/sifnode/tools/sifgen/utils"
 
 	"github.com/BurntSushi/toml"
+	"github.com/cosmos/cosmos-sdk/crypto/keyring"
 	"gopkg.in/yaml.v3"
 )
 
@@ -44,7 +45,7 @@ func Reset(chainID, networkDir string) error {
 
 	for _, node := range nodes {
 		nodeDir := fmt.Sprintf("%s/validators/%s/%s/.sifnoded", networkDir, chainID, node.Moniker)
-		_, err = utils.NewCLI(chainID).ResetState(nodeDir)
+		_, err = utils.NewCLI(chainID, keyring.BackendTest).ResetState(nodeDir)
 		if err != nil {
 			return err
 		}
@@ -56,7 +57,7 @@ func Reset(chainID, networkDir string) error {
 func NewNetwork(chainID string) *Network {
 	return &Network{
 		ChainID: chainID,
-		CLI:     utils.NewCLI(chainID),
+		CLI:     utils.NewCLI(chainID, keyring.BackendTest),
 	}
 }
 
@@ -78,12 +79,8 @@ func (n *Network) Build(count int, outputDir, seedIPv4Addr string) (*string, err
 	validators := n.initValidators(count, outputDir, seedIPv4Addr)
 
 	for _, validator := range validators {
-		appDirs := []string{validator.NodeHomeDir, validator.CLIHomeDir, validator.CLIConfigDir}
+		appDirs := []string{validator.NodeHomeDir}
 		if err := n.createDirs(appDirs); err != nil {
-			return nil, err
-		}
-
-		if err := n.setDefaultConfig(fmt.Sprintf("%s/%s/%s/%s", validator.HomeDir, CLIHomeDir, ConfigDir, utils.ConfigFile)); err != nil {
 			return nil, err
 		}
 
@@ -113,6 +110,11 @@ func (n *Network) Build(count int, outputDir, seedIPv4Addr string) (*string, err
 
 		if !validator.Seed {
 			seedValidator := n.getSeedValidator(validators)
+
+			if err := n.addValidatorKeyToSeed(validator, seedValidator); err != nil {
+				return nil, err
+			}
+
 			if err := n.addGenesis(validator.Address, seedValidator.NodeHomeDir); err != nil {
 				return nil, err
 			}
@@ -181,32 +183,8 @@ func (n *Network) createDirs(toCreate []string) error {
 	return nil
 }
 
-func (n *Network) setDefaultConfig(configPath string) error {
-	config := common.CLIConfig{
-		ChainID:        n.ChainID,
-		Indent:         true,
-		KeyringBackend: "file",
-		TrustNode:      true,
-	}
-
-	file, err := os.Create(configPath)
-	if err != nil {
-		return err
-	}
-
-	if err := toml.NewEncoder(file).Encode(config); err != nil {
-		return err
-	}
-
-	if err := file.Close(); err != nil {
-		return err
-	}
-
-	return nil
-}
-
 func (n *Network) generateKey(validator *Validator) error {
-	output, err := n.CLI.AddKey(validator.Moniker, validator.Mnemonic, validator.Password, fmt.Sprintf("%s/%s", validator.HomeDir, CLIHomeDir))
+	output, err := n.CLI.AddKey(validator.Moniker, validator.Mnemonic, validator.Password, fmt.Sprintf("%s/%s", validator.HomeDir, ".sifnoded"))
 	if err != nil {
 		return err
 	}
@@ -225,6 +203,15 @@ func (n *Network) generateKey(validator *Validator) error {
 
 	validator.Address = keys[0].Address
 	validator.PubKey = keys[0].PubKey
+
+	return nil
+}
+
+func (n *Network) addValidatorKeyToSeed(validator, seedValidator *Validator) error {
+	_, err := n.CLI.AddKey(validator.Moniker, validator.Mnemonic, seedValidator.Password, fmt.Sprintf("%s/%s", seedValidator.HomeDir, ".sifnoded"))
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
@@ -300,6 +287,7 @@ func (n *Network) generateTx(validator *Validator, validatorDir, outputDir strin
 		validator.NodeID,
 		validator.ValidatorAddress,
 		validator.IPv4Address,
+		n.ChainID,
 	)
 	if err != nil {
 		return err

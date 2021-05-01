@@ -6,6 +6,7 @@ import (
 	"log"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/Sifchain/sifnode/tools/sifgen"
 	"github.com/spf13/cobra"
@@ -29,9 +30,9 @@ func main() {
 	_nodeCreateCmd.PersistentFlags().String("genesis-url", "", "genesis URL")
 	_nodeCreateCmd.PersistentFlags().String("bond-amount", "1000000000000000000000000rowan", "bond amount")
 	_nodeCreateCmd.PersistentFlags().String("mint-amount", "999000000000000000000000000rowan", "mint amount")
-	_nodeCreateCmd.PersistentFlags().String("min-clp-create-pool-threshold", "100", "minimum CLP create pool threshold")
-	_nodeCreateCmd.PersistentFlags().String("gov-max-deposit-period", "900000000000", "governance max deposit period")
-	_nodeCreateCmd.PersistentFlags().String("gov-voting-period", "900000000000", "governance voting period")
+	_nodeCreateCmd.PersistentFlags().Uint64("min-clp-create-pool-threshold", 100, "minimum CLP create pool threshold")
+	_nodeCreateCmd.PersistentFlags().Duration("gov-max-deposit-period", time.Duration(900000000000), "governance max deposit period")
+	_nodeCreateCmd.PersistentFlags().Duration("gov-voting-period", time.Duration(900000000000), "governance voting period")
 	_nodeCreateCmd.PersistentFlags().String("clp-config-url", "", "URL of the JSON file to use to pre-populate CLPs during genesis")
 	_nodeCreateCmd.PersistentFlags().Bool("print-details", false, "print the node details")
 	_nodeCreateCmd.PersistentFlags().Bool("with-cosmovisor", false, "setup cosmovisor")
@@ -111,10 +112,9 @@ func nodeCreateCmd() *cobra.Command {
 			genesisURL, _ := cmd.Flags().GetString("genesis-url")
 			bondAmount, _ := cmd.Flags().GetString("bond-amount")
 			mintAmount, _ := cmd.Flags().GetString("mint-amount")
-			minCLPCreatePoolThreshold, _ := cmd.Flags().GetString("min-clp-create-pool-threshold")
-			govMaxDepositPeriod, _ := cmd.Flags().GetString("gov-max-deposit-period")
-			govVotingPeriod, _ := cmd.Flags().GetString("gov-voting-period")
-			clpConfigURL, _ := cmd.Flags().GetString("clp-config-url")
+			minCLPCreatePoolThreshold, _ := cmd.Flags().GetUint64("min-clp-create-pool-threshold")
+			govMaxDepositPeriod, _ := cmd.Flags().GetDuration("gov-max-deposit-period")
+			govVotingPeriod, _ := cmd.Flags().GetDuration("gov-voting-period")
 			printDetails, _ := cmd.Flags().GetBool("print-details")
 			withCosmovisor, _ := cmd.Flags().GetBool("with-cosmovisor")
 
@@ -124,14 +124,15 @@ func nodeCreateCmd() *cobra.Command {
 
 			if standalone {
 				node.Standalone = true
-				node.AdminCLPAddresses = strings.Split(adminCLPAddresses, "|")
+				if len(adminCLPAddresses) > 0 {
+					node.AdminCLPAddresses = strings.Split(adminCLPAddresses, "|")
+				}
 				node.AdminOracleAddress = adminOracleAddress
 				node.BondAmount = bondAmount
 				node.MintAmount = mintAmount
 				node.MinCLPCreatePoolThreshold = minCLPCreatePoolThreshold
 				node.GovMaxDepositPeriod = govMaxDepositPeriod
 				node.GovVotingPeriod = govVotingPeriod
-				node.CLPConfigURL = clpConfigURL
 			} else {
 				node.PeerAddress = peerAddress
 				node.GenesisURL = genesisURL
@@ -144,7 +145,7 @@ func nodeCreateCmd() *cobra.Command {
 				log.Fatal(err)
 			}
 
-			if printDetails {
+			if printDetails && summary != nil {
 				fmt.Println(*summary)
 			}
 		},
@@ -180,7 +181,7 @@ func keyGenerateMnemonicCmd() *cobra.Command {
 		Short: "Generate a mnemonic phrase.",
 		Args:  cobra.MaximumNArgs(0),
 		Run: func(cmd *cobra.Command, args []string) {
-			sifgen.NewSifgen(nil).KeyGenerateMnemonic(nil, nil)
+			sifgen.NewSifgen(nil).KeyGenerateMnemonic("", "")
 		},
 	}
 }

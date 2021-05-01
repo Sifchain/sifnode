@@ -6,9 +6,6 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/Sifchain/sifnode/x/ethbridge"
-	ethbridgekeeper "github.com/Sifchain/sifnode/x/ethbridge/keeper"
-	ethbridgetypes "github.com/Sifchain/sifnode/x/ethbridge/types"
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/grpc/tmservice"
@@ -81,6 +78,9 @@ import (
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 	dbm "github.com/tendermint/tm-db"
 
+	"github.com/Sifchain/sifnode/x/ethbridge"
+	ethbridgekeeper "github.com/Sifchain/sifnode/x/ethbridge/keeper"
+	ethbridgetypes "github.com/Sifchain/sifnode/x/ethbridge/types"
 	"github.com/Sifchain/sifnode/x/clp"
 	clpkeeper "github.com/Sifchain/sifnode/x/clp/keeper"
 	clptypes "github.com/Sifchain/sifnode/x/clp/types"
