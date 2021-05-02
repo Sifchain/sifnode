@@ -51,8 +51,8 @@ type DistributionRecord struct {
 This record is also stored in the keeper for historical records .
 
 ### High Level Flow
-- After the sanity checks are cleared , the program iterate over the input addresses and send all funds from these address to a module account.
-- Then the program iterates over the output addresses and creates individual records for them in the keeper .( This would design would need to be changed in the future to save gas costs)
+- After the sanity checks are cleared , the program iterates over the input addresses and sends all funds from these address to a module account.
+- The program iterates over the output addresses and creates individual records for them in the keeper .( This design would need to be changed in the future to save gas costs)
 - In case of type LiquidityMining or ValidatorSubsidy the program also checks is the associated claim for the record is present .
 - The begin block iterates over these records and completes 10 records per block .
 - Complete refers to sending the specified amount from the  module account to the recipient.

@@ -29,7 +29,8 @@ type UserClaim struct {
 ```
 ### High Level Flow
 - User creates claims of type LiquidityMining or ValidatorSubsidy.
-- These claims are deleted when the user receives the funds  
+- The claims get locked when the associated distribution is created for the claim  
+- The claims are deleted when the user receives the funds . 
 - A user can only have 1 claim of a particular type ,at any point in time .
 
 ### User Flow
