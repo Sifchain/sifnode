@@ -54,15 +54,17 @@ func handleMsgCreateClaim(ctx sdk.Context, keeper Keeper, msg MsgCreateClaim) (*
 		ctx.Logger().Info("Claim already exists for user :", msg.Signer.String())
 		return nil, errors.Wrap(types.ErrInvalid, "Claim already exists for user")
 	}
-	err := keeper.SetClaim(ctx, types.NewUserClaim(msg.Signer, msg.UserClaimType))
+	newClaim := types.NewUserClaim(msg.Signer, msg.UserClaimType, ctx.BlockTime().UTC())
+	err := keeper.SetClaim(ctx, newClaim)
 	if err != nil {
 		return nil, err
 	}
 	ctx.EventManager().EmitEvents(sdk.Events{
 		sdk.NewEvent(
 			types.EventTypeClaimCreated,
-			sdk.NewAttribute(types.AttributeKeyClaimUser, msg.Signer.String()),
-			sdk.NewAttribute(types.AttributeKeyClaimType, msg.UserClaimType.String()),
+			sdk.NewAttribute(types.AttributeKeyClaimUser, newClaim.UserAddress.String()),
+			sdk.NewAttribute(types.AttributeKeyClaimType, newClaim.UserClaimType.String()),
+			sdk.NewAttribute(types.AttributeKeyClaimTime, newClaim.UserClaimTime.String()),
 		),
 	})
 	return &sdk.Result{Events: ctx.EventManager().Events()}, nil

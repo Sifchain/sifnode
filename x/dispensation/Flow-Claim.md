@@ -29,11 +29,22 @@ Which returns
 ```json
 {
   "claims": [
-    "UserAddress : sif1l7hypmqk2yc334vc6vmdwzp5sdefygj2ad93p5 | UserClaimType : ValidatorSubsidy",
-    "UserAddress : sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd | UserClaimType : ValidatorSubsidy"
+    {
+      "user_address": "sif1l7hypmqk2yc334vc6vmdwzp5sdefygj2ad93p5",
+      "user_claim_type": "3",
+      "user_claim_time": "2021-05-02T02:43:10.593125Z",
+      "locked": false
+    },
+    {
+      "user_address": "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
+      "user_claim_type": "3",
+      "user_claim_time": "2021-05-02T02:43:10.593125Z",
+      "locked": false
+    }
   ],
-  "height": "3"
+  "height": "7"
 }
+
 ```
 We can also parse events instead of the using this query . This event would be in the same block as the one which has the dispensation/createClaim request
 ```json
@@ -46,6 +57,10 @@ We can also parse events instead of the using this query . This event would be i
               {
                 "key": "Y2xhaW1fdHlwZQ==",
                 "value": "VmFsaWRhdG9yU3Vic2lkeQ=="
+              },
+              {
+                "key": "dXNlckNsYWltX2NyZWF0aW9uVGltZQ==",
+                "value": "MjAyMS0wNS0wMlQwMjo0MzoxMC41OTMxMjVa"
               }
             ]
 }
@@ -61,6 +76,10 @@ After parsing should become
               {
                 "key": "claim_type",
                 "value": "ValidatorSubsidy"
+              },
+              {
+                "key": "userClaim_creationTime",
+                "value": "2021-05-02T02:43:10.593125Z"
               }
             ]
 }

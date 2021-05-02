@@ -158,7 +158,7 @@ sifnodecli keys add mkey --multisig amara,zane --multisig-threshold 2
 ```
 - Zane decides to create the offline tx . He has the mkey in his local wallet. He runs the following command.Note the tx creator will have to pay for the gas fee
 ```shell
-sifnodecli tx dispensation create mkey airdrop-1 input.json output.json --gas 200064128 --gas-prices 1.0rowan --generate-only --from zane --keyring-backend file --node tcp://rpc-mainnet.sifchain.finance:80 --chain-id sifchain-mainnet >> offlinetx.json
+sifnodecli tx dispensation create mkey airdrop-1 Airdrop input.json output.json --gas 200064128 --gas-prices 1.0rowan --generate-only --from zane --keyring-backend file --node tcp://rpc-mainnet.sifchain.finance:80 --chain-id sifchain-mainnet >> offlinetx.json
 ```
 
 ### Zane Signs the transaction 

@@ -12,6 +12,7 @@ import (
 	abci "github.com/tendermint/tendermint/abci/types"
 	"github.com/tendermint/tendermint/crypto"
 	"strconv"
+	"time"
 )
 
 func CreateTestApp(isCheckTx bool) (*simapp.SimApp, sdk.Context) {
@@ -122,7 +123,7 @@ func CreateClaimsList(count int, claimType types.DistributionType) []types.UserC
 	list := make([]types.UserClaim, count)
 	for i := 0; i < count; i++ {
 		address := sdk.AccAddress(crypto.AddressHash([]byte("User" + strconv.Itoa(i))))
-		claim := types.NewUserClaim(address, claimType)
+		claim := types.NewUserClaim(address, claimType, time.Now())
 		list[i] = claim
 	}
 	return list

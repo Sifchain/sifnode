@@ -4,6 +4,7 @@ import (
 	"fmt"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"strings"
+	"time"
 )
 
 //This package is used to keep historical data. This will later be used to distribute rewards over different blocks through a gov proposal
@@ -138,11 +139,12 @@ func (ar Distribution) String() string {
 type UserClaim struct {
 	UserAddress   sdk.AccAddress   `json:"user_address"`
 	UserClaimType DistributionType `json:"user_claim_type"`
+	UserClaimTime time.Time        `json:"user_claim_time"`
 	Locked        bool             `json:"locked"`
 }
 
-func NewUserClaim(userAddress sdk.AccAddress, userClaimType DistributionType) UserClaim {
-	return UserClaim{UserAddress: userAddress, UserClaimType: userClaimType, Locked: false}
+func NewUserClaim(userAddress sdk.AccAddress, userClaimType DistributionType, time time.Time) UserClaim {
+	return UserClaim{UserAddress: userAddress, UserClaimType: userClaimType, Locked: false, UserClaimTime: time}
 }
 
 func (uc UserClaim) Validate() bool {

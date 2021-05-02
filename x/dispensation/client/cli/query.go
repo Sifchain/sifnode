@@ -187,11 +187,7 @@ func GetCmdClaimsByType(queryRoute string, cdc *codec.Codec) *cobra.Command {
 			}
 			var claims []types.UserClaim
 			cdc.MustUnmarshalJSON(res, &claims)
-			claimsString := make([]string, len(claims))
-			for i, claim := range claims {
-				claimsString[i] = claim.String()
-			}
-			out := types.NewClaimsResponse(claimsString, height)
+			out := types.NewClaimsResponse(claims, height)
 			return cliCtx.PrintOutput(out)
 		},
 	}

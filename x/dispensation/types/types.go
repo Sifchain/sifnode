@@ -24,11 +24,11 @@ func NewDistributionsResponse(distributions Distributions, height int64) Distrib
 }
 
 type ClaimsResponse struct {
-	Claims []string `json:"claims"`
-	Height int64    `json:"height"`
+	Claims []UserClaim `json:"claims"`
+	Height int64       `json:"height"`
 }
 
-func NewClaimsResponse(claims []string, height int64) ClaimsResponse {
+func NewClaimsResponse(claims []UserClaim, height int64) ClaimsResponse {
 	return ClaimsResponse{Claims: claims, Height: height}
 }
 
