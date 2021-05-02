@@ -83,7 +83,7 @@ func TestParseOutput(t *testing.T) {
 
 func TestAddressFilter(t *testing.T) {
 	var addresStrings []string
-	file, err := filepath.Abs("sample.json")
+	file, err := filepath.Abs("addrs.json")
 	if err != nil {
 		panic("Err getting filepath :" + err.Error())
 	}
