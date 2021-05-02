@@ -6,6 +6,8 @@ import time
 from dataclasses import dataclass
 from functools import lru_cache
 
+import yaml
+
 n_wait_blocks = 50  # number of blocks to wait for the relayer to act
 burn_gas_cost = 160000000000 * 393000  # see x/ethbridge/types/msgs.go for gas
 lock_gas_cost = 160000000000 * 393000
@@ -133,6 +135,18 @@ def get_shell_output_json(command_line):
         print_error_message(f"no result returned from {command_line}")
     try:
         result = json.loads(output)
+        return result
+    except:
+        logging.critical(f"failed to decode json.  cmd is: {command_line}, output is: {output}")
+        raise
+
+
+def get_shell_output_yaml(command_line):
+    output = get_shell_output(command_line)
+    if not output:
+        print_error_message(f"no result returned from {command_line}")
+    try:
+        result = yaml.safe_load(output)
         return result
     except:
         logging.critical(f"failed to decode json.  cmd is: {command_line}, output is: {output}")
