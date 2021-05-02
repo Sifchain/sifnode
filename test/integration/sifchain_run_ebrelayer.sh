@@ -44,7 +44,4 @@ ETHEREUM_PRIVATE_KEY=$EBRELAYER_ETHEREUM_PRIVATE_KEY $runner init tcp://0.0.0.0:
   "$BRIDGE_REGISTRY_ADDRESS" \
   "$MONIKER" \
   "$MNEMONIC" \
-  --chain-id "$CHAINNET" \
-  --home $CHAINDIR/.sifnodecli \
-  --gas 5000000000000 \
-  --gas-prices 0.5rowan
+  --home $CHAINDIR/.sifnoded \
