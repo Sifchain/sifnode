@@ -165,9 +165,7 @@ def export_key(
         check=True
     )
     key_contents = output.stderr
-    print(f"outputis: {json.dumps(output.__dict__, indent=2)}")
     output = import_key("mykey", "test", key_password, key_contents)
-    print(f"outputis: {json.dumps(output.__dict__, indent=2)}")
     return output.stdout
 
 
@@ -190,7 +188,6 @@ def import_key(
             capture_output=True,
             check=True
         )
-        print(f"outputis: {json.dumps(output.__dict__, indent=2)}")
         return output.stdout
 
 
@@ -200,9 +197,9 @@ def recover_key(
         mnemonic: str,
 ):
     cmd = f'echo "{mnemonic}" | sifnodecli keys add --keyring-backend {backend} {key_name} --recover'
-    print(f"run keys: {cmd}")
     subprocess.run(
         cmd,
         shell=True,
-        check=True
+        check=True,
+        capture_output=True
     )

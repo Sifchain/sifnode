@@ -27,6 +27,7 @@ basedir = "/sifnode"
 deployment_name = "localnet"
 n_validators = 1
 
+testenvfile = "/tmp/tstenv.sh"
 
 def config_file_full_path(name: str):
     return os.path.join(configbase, f"{name}.json")
@@ -78,7 +79,6 @@ ganache_input = env_ganache.GanacheInput(
 
 def build_smartcontractrunner_input():
     ethereum_config = env_utilities.read_config_file(config_file_full_path("ethereum"))
-    print(f"ethereumconfig in build_smartcontractrunner_input is {json.dumps(ethereum_config)}")
     return env_smartcontractrunner.SmartContractDeployInput(
         basedir=basedir,
         network_id=ethereum_config["input"]["network_id"],
@@ -200,14 +200,12 @@ def run_deploy_contracts():
 
 def run_startsifnoded():
     sifnoded_chain_data = env_sifnoded.build_chain(sifnoded_input)
-    print(f"build_chain result: \n{json.dumps(sifnoded_chain_data)}")
     env_sifnoded.run(sifnoded_input, sifnoded_chain_data)
 
 
 def run_ebrelayer(i: int):
     ethereum_config = env_utilities.read_config_file(config_file_full_path("ethereum"))
     smart_contract_config = env_utilities.read_config_file(config_file_full_path(env_smartcontractrunner.smartcontractrunner_name))
-    print(f"smart contract config: {json.dumps(smart_contract_config, indent=2)}")
     sifnodedconfig = env_utilities.read_config_file(config_file_full_path(env_sifnoded.sifnodename))["config"]
     bridge_registry_address = env_smartcontractrunner.contract_address(
         smart_contract_config["input"]["deployment_dir"],
@@ -215,7 +213,6 @@ def run_ebrelayer(i: int):
         smart_contract_config["input"]["network_id"]
     )
     v = sifnodedconfig["validators"][i - 1]
-    print(f"sifnode validator:\n{json.dumps(v, indent=2)}")
     x = env_ebrelayer.EbrelayerInput(
         basedir=basedir,
         logfile=log_file_full_path(env_ebrelayer.ebrelayername),
@@ -250,7 +247,8 @@ def build_testrunner_input():
 
 
 def run_print_test_environment():
-    print(env_testrunner.testrunner_config_contents(build_testrunner_input()))
+    """prints the test environment variables"""
+    print(build_testenv())
 
 
 def run_sifnodekeys():
@@ -268,12 +266,16 @@ def run_smalltest():
     pass
 
 
-def run_testrunner():
+def build_testenv():
     run_sifnodekeys()
-    testenv = env_testrunner.testrunner_config_contents(build_testrunner_input())
-    with open("/tmp/testenv.sh", "w") as envfile:
+    return env_testrunner.testrunner_config_contents(build_testrunner_input())
+
+
+def run_testrunner():
+    testenv = build_testenv()
+    with open(testenvfile, "w") as envfile:
         envfile.write(testenv)
-    time.sleep(60 * 60 * 24 * 365)  # stay up for a year
+    time.sleep(60 * 60 * 24 * 365)  # keep docker instance running
 
 
 def run_ebrelayer1():
@@ -292,6 +294,14 @@ def run_ebrelayer4():
     run_ebrelayer(4)
 
 
+def help():
+    cmds = functions.keys()
+    cmds = map(lambda k: str(k), cmds)
+    print(f"commands are:\n")
+    for k in cmds:
+        print(f"  {k}")
+
+
 functions = {
     "dockerconfig": run_dockerconfig,
     "geth": run_geth,
@@ -306,6 +316,7 @@ functions = {
     "ebrelayer2": run_ebrelayer2,
     "ebrelayer3": run_ebrelayer3,
     "ebrelayer4": run_ebrelayer4,
+    "help": help,
 }
 
 component = sys.argv[1] if len(sys.argv) > 1 else "dockerconfig"
