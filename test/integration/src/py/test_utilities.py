@@ -243,9 +243,9 @@ def mint_tokens(transfer_request: EthereumToSifchainTransferRequest, operator_ad
 
 def get_sifchain_addr_balance(sifaddress, sifnodecli_node, denom):
     node = f"--node {sifnodecli_node}" if sifnodecli_node else ""
-    command_line = f"{sifnoded_binary} q auth account {node} {sifaddress} --output json"
+    command_line = f"{sifnoded_binary} query bank balances {node} {sifaddress} --output json --limit 100000000"
     json_str = get_shell_output_json(command_line)
-    coins = json_str["value"]["coins"]
+    coins = json_str["balances"]
     for coin in coins:
         if coin["denom"] == denom:
             return int(coin["amount"])
