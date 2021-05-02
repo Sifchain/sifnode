@@ -345,7 +345,7 @@ def send_from_sifchain_to_sifchain_cmd(
     home_entry = f"--home {credentials.sifnodecli_homedir}" if credentials.sifnodecli_homedir else ""
     cmd = " ".join([
         yes_entry,
-        f"{sifnoded_binary} tx send",
+        f"{sifnoded_binary} tx bank send",
         transfer_request.sifchain_address,
         transfer_request.sifchain_destination_address,
         keyring_backend_entry,
@@ -355,7 +355,7 @@ def send_from_sifchain_to_sifchain_cmd(
         sifchain_fees_entry,
         home_entry,
         "--gas auto",
-        "-y --output json",
+        "-y",
     ])
     return cmd
 
