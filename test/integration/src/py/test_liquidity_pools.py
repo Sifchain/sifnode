@@ -19,14 +19,14 @@ bridgetoken_address = get_required_env_var("BRIDGE_TOKEN_ADDRESS")
 
 def get_faucet_balance(sifnodecli_node):
     node = f"--node {sifnodecli_node}" if sifnodecli_node else ""
-    command_line = f"{sifnoded_binary} q faucet balance {node} -o json"
+    command_line = f"{sifnoded_binary} q faucet balance {node} --output json"
     result = get_shell_output_json(command_line)
     return result
 
 
 def get_pools(sifnodecli_node):
     node = f"--node {sifnodecli_node}" if sifnodecli_node else ""
-    command_line = f"{sifnoded_binary} q clp pools {node} -o json"
+    command_line = f"{sifnoded_binary} q clp pools {node} --output json"
     # returns error when empty
     try:
         json_str = get_shell_output_json(command_line)
@@ -57,7 +57,7 @@ def create_pool(
         node,
         sifchain_fees_entry,
         f"--home {credentials.sifnodecli_homedir} ",
-        "-y -o json"
+        "-y --output json"
     ])
     json_str = get_shell_output_json(cmd)
     assert(json_str.get("code", 0) == 0)
@@ -90,7 +90,7 @@ def swap_pool(
         node,
         sifchain_fees_entry,
         f"--home {credentials.sifnodecli_homedir} ",
-        "-y -o json"
+        "-y --output json"
     ])
     json_str = get_shell_output_json(cmd)
     assert(json_str.get("code", 0) == 0)
@@ -123,7 +123,7 @@ def remove_pool_liquidity(
         node,
         sifchain_fees_entry,
         f"--home {credentials.sifnodecli_homedir} ",
-        "-y -o json"
+        "-y --output json"
     ])
     json_str = get_shell_output_json(cmd)
     assert(json_str.get("code", 0) == 0)
@@ -154,7 +154,7 @@ def add_pool_liquidity(
         node,
         sifchain_fees_entry,
         f"--home {credentials.sifnodecli_homedir} ",
-        "-y -o json"
+        "-y --output json"
     ])
     json_str = get_shell_output_json(cmd)
     assert(json_str.get("code", 0) == 0)
