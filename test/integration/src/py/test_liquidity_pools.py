@@ -9,7 +9,7 @@ from burn_lock_functions import EthereumToSifchainTransferRequest
 import test_utilities
 from pytest_utilities import generate_test_account
 from test_utilities import get_required_env_var, SifchaincliCredentials, get_optional_env_var, ganache_owner_account, \
-    get_shell_output_json, get_shell_output, detect_errors_in_sifnodecli_output, get_transaction_result, amount_in_wei
+    get_shell_output_json, get_shell_output, detect_errors_in_sifnodecli_output, get_transaction_result, amount_in_wei, sifnoded_binary
 
 
 smart_contracts_dir = get_required_env_var("SMART_CONTRACTS_DIR")
@@ -19,14 +19,14 @@ bridgetoken_address = get_required_env_var("BRIDGE_TOKEN_ADDRESS")
 
 def get_faucet_balance(sifnodecli_node):
     node = f"--node {sifnodecli_node}" if sifnodecli_node else ""
-    command_line = f"sifnodecli q faucet balance {node} -o json"
+    command_line = f"{sifnoded_binary} q faucet balance {node} -o json"
     result = get_shell_output_json(command_line)
     return result
 
 
 def get_pools(sifnodecli_node):
     node = f"--node {sifnodecli_node}" if sifnodecli_node else ""
-    command_line = f"sifnodecli q clp pools {node} -o json"
+    command_line = f"{sifnoded_binary} q clp pools {node} -o json"
     # returns error when empty
     try:
         json_str = get_shell_output_json(command_line)
@@ -47,7 +47,7 @@ def create_pool(
     sifchain_fees_entry = f"--fees {transfer_request.sifchain_fees}" if transfer_request.sifchain_fees else ""
     cmd = " ".join([
         yes_entry,
-        "sifnodecli tx clp create-pool",
+        f"{sifnoded_binary} tx clp create-pool",
         f"--from {transfer_request.sifchain_address}",
         f"--symbol {transfer_request.sifchain_symbol}",
         f"--nativeAmount {transfer_request.amount}",
@@ -79,7 +79,7 @@ def swap_pool(
     sifchain_fees_entry = f"--fees {transfer_request.sifchain_fees}" if transfer_request.sifchain_fees else ""
     cmd = " ".join([
         yes_entry,
-        "sifnodecli tx clp swap",
+        f"{sifnoded_binary} tx clp swap",
         f"--from {transfer_request.sifchain_address}",
         f"--sentSymbol {sent_symbol}",
         f"--receivedSymbol {received_symbol}",
@@ -113,7 +113,7 @@ def remove_pool_liquidity(
     sifchain_fees_entry = f"--fees {transfer_request.sifchain_fees}" if transfer_request.sifchain_fees else ""
     cmd = " ".join([
         yes_entry,
-        "sifnodecli tx clp remove-liquidity",
+        f"{sifnoded_binary} tx clp remove-liquidity",
         f"--from {transfer_request.sifchain_address}",
         f"--symbol {transfer_request.sifchain_symbol}",
         f"--wBasis {wBasis}",
@@ -144,7 +144,7 @@ def add_pool_liquidity(
     sifchain_fees_entry = f"--fees {transfer_request.sifchain_fees}" if transfer_request.sifchain_fees else ""
     cmd = " ".join([
         yes_entry,
-        "sifnodecli tx clp add-liquidity",
+        f"{sifnoded_binary} tx clp add-liquidity",
         f"--from {transfer_request.sifchain_address}",
         f"--symbol {transfer_request.sifchain_symbol}",
         f"--nativeAmount {transfer_request.amount}",
@@ -176,7 +176,7 @@ def add_faucet_coins(
     sifchain_fees_entry = f"--fees {transfer_request.sifchain_fees}" if transfer_request.sifchain_fees else ""
     cmd = " ".join([
         yes_entry,
-        "sifnodecli tx faucet add-coins",
+        f"{sifnoded_binary} tx faucet add-coins",
         f"{transfer_request.amount}{transfer_request.sifchain_symbol}",
         f"--from {transfer_request.sifchain_address}",
         keyring_backend_entry,
@@ -203,7 +203,7 @@ def request_faucet_coins(
     sifchain_fees_entry = f"--fees {transfer_request.sifchain_fees}" if transfer_request.sifchain_fees else ""
     cmd = " ".join([
         yes_entry,
-        "sifnodecli tx faucet request-coins",
+        f"{test_utilities.sifnoded_binary} tx faucet request-coins",
         f"{transfer_request.amount}{transfer_request.sifchain_symbol}",
         f"--from {transfer_request.sifchain_address}",
         keyring_backend_entry,
