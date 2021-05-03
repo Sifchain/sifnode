@@ -414,6 +414,7 @@ func (sub CosmosSub) handleBurnLockMsg(cosmosMsg types.CosmosMsg, claimType type
 	if err != nil {
 		sub.SugaredLogger.Errorw("failed to get cosmosBridge instance.",
 			errorMessageKey, err.Error())
+		return
 	}
 
 	maxRetries := 5
