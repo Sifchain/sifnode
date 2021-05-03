@@ -1,7 +1,7 @@
 core/lib
 app/dist
 node_modules
-chains/ethereum/build/contracts
+chains/eth/build/contracts
 coverage
 e2e/extensions
 e2e/playwright
