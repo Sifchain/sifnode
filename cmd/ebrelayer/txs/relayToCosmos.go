@@ -6,13 +6,14 @@ import (
 	"log"
 	"sync/atomic"
 
-	"github.com/spf13/pflag"
+	"go.uber.org/zap"
 
 	"github.com/Sifchain/sifnode/x/ethbridge/types"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/tx"
+
+	// tx "github.com/cosmos/cosmos-sdk/client/tx"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"go.uber.org/zap"
 )
 
 var (
@@ -26,9 +27,11 @@ func RelayToCosmos(moniker, password string, claims []*types.EthBridgeClaim, cli
 	txBldr client.TxBuilder, sugaredLogger *zap.SugaredLogger) error {
 	var messages []sdk.Msg
 
-	sugaredLogger.Infow("relay prophecies to cosmos.",
+	sugaredLogger.Infow(
+		"relay prophecies to cosmos.",
 		"claimAmount", len(claims),
-		"nextSequenceNumber", nextSequenceNumber)
+		"nextSequenceNumber", nextSequenceNumber,
+	)
 
 	for _, claim := range claims {
 		// Packages the claim as a Tendermint message
@@ -36,48 +39,57 @@ func RelayToCosmos(moniker, password string, claims []*types.EthBridgeClaim, cli
 
 		err := msg.ValidateBasic()
 		if err != nil {
-			sugaredLogger.Errorw("failed to get message from claim.",
-				errorMessageKey, err.Error())
+			sugaredLogger.Errorw(
+				"failed to get message from claim.",
+				errorMessageKey, err.Error(),
+			)
 			continue
 		} else {
 			messages = append(messages, &msg)
 		}
 	}
 
-	sugaredLogger.Infow("relay sequenceNumber from builder.",
-		"nextSequenceNumber", nextSequenceNumber)
+	factory := tx.NewFactoryCLI(cliCtx, nil)
+	sugaredLogger.Infow(
+		"relay sequenceNumber from builder.",
+		"nextSequenceNumber", nextSequenceNumber,
+	)
 
-	// If we start to control sequence
+	
+	// If we start to control sequence, get the sequence and set the factory with that sequence.
 	if nextSequenceNumber > 0 {
 		sugaredLogger.Infow("txBldr.WithSequence(nextSequenceNumber) passed")
+		factory = factory.WithSequence(nextSequenceNumber)
 	}
 
-	log.Println("building and signing")
-
-	log.Println("built tx, now broadcasting")
-
-	var flagSet *pflag.FlagSet
-	// func (f *FlagSet) Uint64(name string, value uint64, usage string) *uint64 {
-	// I believe this should set the sequence number that we want to
-	_ = flagSet.Uint64("FlagSequence", nextSequenceNumber, "")
+	log.Println("building, signing, and broadcasting")
+	err := tx.BroadcastTx(cliCtx, factory, messages...)
 
 	// Broadcast to a Tendermint node
-	err := tx.GenerateOrBroadcastTxCLI(cliCtx, flagSet, messages...)
+	// open question as to how we handle this situation.
+	//    do we retry, 
+	//        if so, how many times do we try?
 	if err != nil {
-		sugaredLogger.Errorw("failed to broadcast tx to sifchain.",
-			errorMessageKey, err.Error())
+		sugaredLogger.Errorw(
+			"failed to broadcast tx to sifchain.",
+			errorMessageKey, err.Error(),
+		)
 		return err
 	}
+
 	log.Println("Broadcasted tx without error")
 
 	// start to control sequence number after first successful tx
 	if nextSequenceNumber == 0 {
-		setNextSequenceNumber(nextSequenceNumber + 1)
+		setNextSequenceNumber(factory.Sequence() + 1)
 	} else {
 		incrementNextSequenceNumber()
 	}
-	sugaredLogger.Infow("relay next sequenceNumber from memory.",
-		"nextSequenceNumber", nextSequenceNumber)
+
+	sugaredLogger.Infow(
+		"relay next sequenceNumber from memory.",
+		"nextSequenceNumber", nextSequenceNumber,
+	)
 
 	return nil
 }

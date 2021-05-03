@@ -383,8 +383,15 @@ func (sub CosmosSub) handleBurnLockMsg(cosmosMsg types.CosmosMsg, claimType type
 		"CosmosSender", prophecyClaim.CosmosSender,
 		"CosmosSenderSequence", prophecyClaim.CosmosSenderSequence)
 
-	err := txs.RelayProphecyClaimToEthereum(sub.EthProvider, sub.RegistryContractAddress,
-		claimType, prophecyClaim, sub.PrivateKey, sub.SugaredLogger)
+	err := txs.RelayProphecyClaimToEthereum(
+		sub.EthProvider,
+		sub.RegistryContractAddress,
+		claimType,
+		prophecyClaim,
+		sub.PrivateKey,
+		sub.SugaredLogger,
+	)
+
 	if err != nil {
 		log.Println(err)
 	}
