@@ -45,3 +45,4 @@ ETHEREUM_PRIVATE_KEY=$EBRELAYER_ETHEREUM_PRIVATE_KEY $runner init tcp://0.0.0.0:
   "$MONIKER" \
   "$MNEMONIC" \
   --home $CHAINDIR/.sifnoded \
+  --chain-id $CHAINNET
