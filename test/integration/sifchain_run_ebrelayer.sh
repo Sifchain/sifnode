@@ -40,9 +40,12 @@ else
   runner="dlv exec $GOBIN/ebrelayer -- "
 fi
 
-ETHEREUM_PRIVATE_KEY=$EBRELAYER_ETHEREUM_PRIVATE_KEY $runner init tcp://0.0.0.0:26657 "$ETHEREUM_WEBSOCKET_ADDRESS" \
+TCP_URL=tcp://0.0.0.0:26657
+
+ETHEREUM_PRIVATE_KEY=$EBRELAYER_ETHEREUM_PRIVATE_KEY $runner init $TCP_URL "$ETHEREUM_WEBSOCKET_ADDRESS" \
   "$BRIDGE_REGISTRY_ADDRESS" \
   "$MONIKER" \
   "$MNEMONIC" \
   --home $CHAINDIR/.sifnoded \
-  --chain-id $CHAINNET
+  --chain-id $CHAINNET \
+  --rpc-url $TCP_URL
