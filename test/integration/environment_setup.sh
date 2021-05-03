@@ -94,17 +94,19 @@ echo yarn -s --cwd $BASEDIR/smart-contracts \
   --json_path $BASEDIR/smart-contracts/deployments/$DEPLOYMENT_NAME \
   --ethereum_network $ETHEREUM_NETWORK \
 
+sifnodecmd=sifnoded
+
 echo; echo == sifchain balance
-echo sifnodecli q auth account --node $SIFNODE $ROWAN_SOURCE
+echo $sifnodecmd q auth account --node $SIFNODE $ROWAN_SOURCE
 
 echo; echo == sifchain transaction
-echo sifnodecli q tx --node $SIFNODE --chain-id $DEPLOYMENT_NAME 193EFB4A5D20BEC58ADE8BACEB38264870ADD8BAFEA9D6DAABE554B0ACBC0C93
+echo $sifnodecmd q tx --node $SIFNODE --chain-id $DEPLOYMENT_NAME 193EFB4A5D20BEC58ADE8BACEB38264870ADD8BAFEA9D6DAABE554B0ACBC0C93
 
 echo; echo == all account balances
-echo "sifnodecli keys list --keyring-backend test -o json | jq -r '.[].address' | parallel sifnodecli q auth account --node $SIFNODE -o json {} | grep coins"
+echo "$sifnodecmd keys list --keyring-backend test -o json | jq -r '.[].address' | parallel $sifnodecmd q auth account --node $SIFNODE -o json {} | grep coins"
 
 echo; echo == burn ceth
-echo sifnodecli tx ethbridge burn \
+echo $sifnodecmd tx ethbridge burn \
   $ROWAN_SOURCE $ETHEREUM_ADDRESS 100 ceth 58560000000000000 \
   --node $SIFNODE \
   --keyring-backend test \
@@ -115,7 +117,7 @@ echo sifnodecli tx ethbridge burn \
   --from $ROWAN_SOURCE \
 
 echo; echo == send ceth
-echo sifnodecli tx send $ROWAN_SOURCE sifsomedestination 100rowan \
+echo $sifnodecmd tx send $ROWAN_SOURCE sifsomedestination 100rowan \
   --node $SIFNODE \
   --keyring-backend test \
   --fees 100000rowan \
