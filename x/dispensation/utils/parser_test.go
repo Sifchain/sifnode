@@ -118,7 +118,7 @@ func TestSplitBetweenReciepients(t *testing.T) {
 		address:           "sif1l7hypmqk2yc334vc6vmdwzp5sdefygj2ad93p5",
 		percentageFunding: 50.000,
 	})
-	file := "/Users/tanmay/Documents/sifnode/output.json"
+	file := "../../../output.json"
 	outputs, err := utils.ParseOutput(file)
 	assert.NoError(t, err)
 	total := sdk.ZeroDec()
