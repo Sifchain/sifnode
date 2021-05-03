@@ -25,12 +25,13 @@
       <slot name="after"></slot>
     </Panel>
   </div>
+  <div class="layout-bg" />
 </template>
 
 <script lang="ts">
 import { defineComponent } from "vue";
 import Panel from "@/components/shared/Panel.vue";
-import PanelNav from "@/components/navigation/PanelNav.vue";
+import PanelNav from "@/components/shared/PanelNav/PanelNav.vue";
 import Icon from "@/components/shared/Icon.vue";
 export default defineComponent({
   components: { Panel, PanelNav, Icon },
@@ -48,9 +49,6 @@ export default defineComponent({
 
 <style lang="scss" scoped>
 .layout {
-  background: url("../../assets/World_Background_opt.jpg");
-  background-size: cover;
-  background-position: bottom center;
   box-sizing: border-box;
   padding-top: $header_height;
   width: 100%;
@@ -59,6 +57,19 @@ export default defineComponent({
   flex-direction: column;
   justify-content: center;
   align-items: center;
+}
+.layout-bg {
+  background: url("../../assets/World_Background_opt.jpg");
+  background-size: cover;
+  background-position: bottom center;
+  // filter: blur(10px);
+
+  z-index: -1;
+  width: 100%;
+  height: 100vh; /* TODO: header height */
+  position: absolute;
+  top: 0;
+  left: 0;
 }
 
 .after {
