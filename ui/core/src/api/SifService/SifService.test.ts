@@ -3,6 +3,9 @@ import JSBI from "jsbi";
 import { AssetAmount } from "../../entities";
 import createSifService, { SifServiceContext } from ".";
 import { getBalance, getTestingTokens } from "../../test/utils/getTestingToken";
+import { useStack } from "../../../../test/stack";
+
+useStack("once");
 
 const [ROWAN, CATK, CBTK, CETH] = getTestingTokens([
   "ROWAN",
@@ -17,9 +20,6 @@ const TOKENS = {
   btk: CBTK,
   eth: CETH,
 };
-
-// This is required because we need to wait for the blockchain to process transactions
-jest.setTimeout(20000);
 
 // const badMnemonic =
 //   "Ever have that feeling where you’re not sure if you’re awake or dreaming?";
@@ -115,7 +115,7 @@ describe("sifService", () => {
 
     const balances = await sifService.getBalance(account.address);
     const balance = getBalance(balances, "rowan");
-    expect(balance?.toFixed()).toEqual("100000000000.000000000000000000");
+    expect(balance?.toString()).toEqual("100000000000000000000000000000 ROWAN");
   });
 
   it("should transfer transaction", async () => {
@@ -130,6 +130,6 @@ describe("sifService", () => {
     });
     const balances = await sifService.getBalance(address);
     const balance = getBalance(balances, "rowan");
-    expect(balance?.toFixed()).toEqual("99999999999.999999999999999950");
+    expect(balance?.toString()).toEqual("99999999999999999999999999950 ROWAN");
   });
 });

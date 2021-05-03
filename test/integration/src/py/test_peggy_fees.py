@@ -25,7 +25,7 @@ def test_rescue_ceth(
     """
     basic_transfer_request.ethereum_address = source_ethereum_address
     admin_user_credentials = SifchaincliCredentials(
-        from_key="sifnodeadmin"
+        from_key=sifchain_admin_account
     )
     small_amount = 100
     test_account_request, test_account_credentials = generate_test_account(
@@ -81,13 +81,12 @@ def test_ceth_receiver_account(
         bridgetoken_address,
         validator_address,
         ethbridge_module_address,
+        sifchain_admin_account_credentials,
 ):
     admin_account = test_utilities.get_required_env_var("SIFCHAIN_ADMIN_ACCOUNT")
     ceth_rescue_account, ceth_rescue_account_credentials = integration_env_credentials.create_new_sifaddr_and_credentials()
     basic_transfer_request.sifchain_address = validator_address
-    admin_user_credentials = SifchaincliCredentials(
-        from_key="sifnodeadmin"
-    )
+    admin_user_credentials = sifchain_admin_account_credentials
     test_utilities.update_ceth_receiver_account(
         receiver_account=ceth_rescue_account,
         admin_account=admin_account,
@@ -144,7 +143,7 @@ def test_fee_charged_to_transfer_rowan_to_erowan(
     ending_ceth_balance = test_utilities.get_sifchain_addr_balance(request.sifchain_address, request.sifnodecli_node,
                                                                    "ceth")
     fee = starting_ceth_balance - ending_ceth_balance
-    assert fee == request.ceth_amount
+    assert fee == test_utilities.lock_gas_cost
 
 
 def test_do_not_transfer_if_fee_allowed_is_too_low(

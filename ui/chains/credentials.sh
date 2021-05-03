@@ -1,4 +1,8 @@
+#!/bin/bash
+
 BASE_DIR=$PWD/../..
+
+rm -rf $BASE_DIR/ui/node_modules/.migrate-complete
 
 export SHADOWFIEND_NAME=shadowfiend
 export SHADOWFIEND_MNEMONIC="race draft rival universe maid cheese steel logic crowd fork comic easy truth drift tomorrow eye buddy head time cash swing swift midnight borrow"

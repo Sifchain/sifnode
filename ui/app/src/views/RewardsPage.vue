@@ -11,21 +11,37 @@ import ActionsPanel from "@/components/actionsPanel/ActionsPanel.vue";
 import Modal from "@/components/shared/Modal.vue";
 import ModalView from "@/components/shared/ModalView.vue";
 import PairTable from "@/components/shared/PairTable.vue";
+import Tooltip from "@/components/shared/Tooltip.vue";
+import Icon from "@/components/shared/Icon.vue";
 
 const REWARD_INFO = {
   lm: {
-    label: "Liquidity Minining",
+    label: "Liquidity Mining",
     description:
       "Earn additional rewards by providing liquidity to any of Sifchain's pools.",
   },
 };
+
+// NOTE - This will be removed and replaced with Amount API
+function format(amount: number) {
+  if (amount < 1) {
+    return amount.toFixed(6);
+  } else if (amount < 1000) {
+    return amount.toFixed(4);
+  } else if (amount < 100000) {
+    return amount.toFixed(2);
+  } else {
+    return amount.toFixed(0);
+  }
+}
 
 async function getRewardsData(address: ComputedRef<any>) {
   if (!address.value) return;
   const data = await fetch(
     `https://vtdbgplqd6.execute-api.us-west-2.amazonaws.com/default/rewards/${address.value}`,
   );
-  if (data.status !== 200) return [];
+  if (data.status !== 200)
+    return [{ type: "lm", multiplier: 0, start: "", amount: null }];
   return await data.json();
 }
 export default defineComponent({
@@ -37,16 +53,19 @@ export default defineComponent({
     Copy,
     SubHeading,
     Box,
+<<<<<<< HEAD
     Modal,
     ModalView,
     PairTable,
+=======
+    Tooltip,
+    Icon,
+>>>>>>> bug/bad-merge
   },
   setup() {
     const { store } = useCore();
     const address = computed(() => store.wallet.sif.address);
-    let rewards = ref<Array<Object>>([
-      { type: "lm", multiplier: 0, start: "", amount: null },
-    ]);
+    let rewards = ref<Array<Object>>([]);
 
     watch(address, async () => {
       rewards.value = await getRewardsData(address);
@@ -63,6 +82,7 @@ export default defineComponent({
         { key: "Your Multiplier Date", value: "12 Aug 2020" },
         { key: "Your Current Multiplier", value: "1.2x" },
       ],
+      format,
     };
   },
 });
@@ -71,8 +91,8 @@ export default defineComponent({
 <template>
   <Layout :header="true" title="Rewards">
     <Copy>
-      Earn rewards by participating in of our rewards-earning programs. Please
-      see additional information of our
+      Earn rewards by participating in any of our rewards-earning programs.
+      Please see additional information of our
       <a
         target="_blank"
         href="https://docs.sifchain.finance/resources/rewards-programs"
@@ -81,23 +101,30 @@ export default defineComponent({
       and how to become eligible.
     </Copy>
     <div class="rewards-container">
-      <div v-if="rewards.length === 0" class="loader-container">
+      <div v-if="!rewards || rewards.length === 0" class="loader-container">
         <div class="loader" />
       </div>
       <Box v-else v-for="reward in rewards" v-bind:key="reward.type">
         <div class="reward-container">
           <SubHeading>{{ REWARD_INFO[reward.type].label }}</SubHeading>
           <Copy>
-            Earn additional rewards by staking a node or delegating to a staked
-            node.
+            {{ REWARD_INFO[reward.type].description }}
           </Copy>
           <div class="details-container">
             <div class="amount-container w50 jcsb">
               <div class="df fdr">
                 <AssetItem symbol="Rowan" :label="false" />
-                <span>{{ reward.amount ? reward.amount?.toFixed() : 0 }}</span>
+                <span>{{ format(+reward.amount) }}</span>
               </div>
               <span>ROWAN</span>
+              <Tooltip>
+                <template #message>
+                  <div class="tooltip">
+                    Current multiplier: {{ format(+reward.multiplier) }}x
+                  </div>
+                </template>
+                <Icon icon="info-box-black" />
+              </Tooltip>
             </div>
             <a
               class="more-info-button"

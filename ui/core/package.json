@@ -24,9 +24,9 @@
     "coingecko-api": "^1.0.10",
     "decimal.js-light": "^2.5.1",
     "eventemitter2": "^6.4.3",
-    "ganache-time-traveler": "^1.0.15",
     "jsbi": "^3.1.4",
     "lodash": "^4.17.20",
+    "numbro": "^2.3.2",
     "reconnecting-websocket": "^4.4.0",
     "tiny-invariant": "^1.1.0",
     "toformat": "^2.0.0",
@@ -58,6 +58,7 @@
       "**/**.test.ts",
       "**/tests/unit/*.js"
     ],
-    "testTimeout": 1000000
+    "testTimeout": 1000000,
+    "bail": true
   }
 }
