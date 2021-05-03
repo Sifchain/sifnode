@@ -98,7 +98,10 @@ export function useSwapCalculator(input: {
 
     const swapResult = pair.calcSwapResult(amount);
 
-    return `${format(swapResult.divide(amount), {
+    const pricePerToken =
+      Number(input.fromAmount.value) / Number(input.toAmount.value);
+
+    return `${format(Amount(pricePerToken.toString()), {
       mantissa: 6,
     })} ${swapResult.label} per ${amount.label}`;
   });
