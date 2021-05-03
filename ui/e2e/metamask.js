@@ -51,7 +51,7 @@ async function addNetwork(mmPage, config) {
 }
 
 export async function connectMmAccount(page, browserContext, extensionId) {
-  await page.click("[data-handle='button-connected']");
+  await page.click("[data-handle='buton-connected']");
   await page.click("button:has-text('Connect Metamask')");
   const mmConnectPage = await getExtensionPage(browserContext, extensionId);
   await mmConnectPage.click(
@@ -88,4 +88,20 @@ export async function confirmApproval(
   await mmConnectPage.click("text=View full transaction details");
   await expect(mmConnectPage).toHaveText(amount);
   await mmConnectPage.click("text=Confirm");
+  await page.waitForTimeout(1000);
+}
+
+export async function resetAccount(browserContext, extensionId) {
+  const page = await browserContext.newPage();
+
+  await page.goto(
+    `chrome-extension://${extensionId}/home.html#settings/advanced`,
+    {
+      waitUntil: "domcontentloaded",
+    },
+  );
+  await page.waitForTimeout(1000);
+  await page.click('[data-testid="advanced-setting-reset-account"] button');
+  await page.waitForTimeout(1000);
+  await page.click('.modal-container button:has-text("Reset")');
 }

@@ -25,6 +25,7 @@ const {
   connectMmAccount,
   confirmTransaction,
   confirmApproval,
+  resetAccount,
 } = require("./metamask.js");
 const { importKeplrAccount, connectKeplrAccount } = require("./keplr");
 
@@ -85,6 +86,10 @@ describe("connect to page", () => {
     await connectKeplrAccount(dexPage, browserContext);
 
     await connectMmAccount(dexPage, browserContext, MM_CONFIG.id);
+  });
+
+  afterEach(async () => {
+    await resetAccount(browserContext, MM_CONFIG.id);
   });
 
   afterAll(async () => {
