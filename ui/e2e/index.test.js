@@ -136,7 +136,7 @@ describe("connect to page", () => {
       waitUntil: "domcontentloaded",
     });
 
-    const cEthBalance = await getSifchainBalances(
+    const cBalance = await getSifchainBalances(
       keplrConfig.sifApiUrl,
       KEPLR_CONFIG.options.address,
       "cusdc",
@@ -166,7 +166,7 @@ describe("connect to page", () => {
       "[data-handle='cusdc-row-amount']",
     );
 
-    const expected = (Number(cEthBalance) + Number(pegAmount)).toFixed(6);
+    const expected = (Number(cBalance) + Number(pegAmount)).toFixed(6);
 
     expect(rowAmount.trim()).toBe(expected);
   });
