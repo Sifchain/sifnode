@@ -210,7 +210,6 @@ export function usePoolCalculator(input: {
   const bPerARatio = computed(() => {
     if (!poolAmounts.value) return 0;
     const [native, external] = poolAmounts.value;
-
     return Amount(native.divide(external));
   });
 
@@ -301,13 +300,13 @@ export function usePoolCalculator(input: {
       if (input.lastFocusedTokenField.value === "A") {
         input.tokenBAmount.value = format(
           assetAmountA.multiply(bPerARatio.value || "0"),
-          assetA.value,
+          assetB.value,
           { mantissa: 5 },
         );
       } else if (input.lastFocusedTokenField.value === "B") {
         input.tokenAAmount.value = format(
           assetAmountB.multiply(aPerBRatio.value || "0"),
-          assetB.value,
+          assetA.value,
           { mantissa: 5 },
         );
       }
