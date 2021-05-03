@@ -53,14 +53,11 @@ export default defineComponent({
     Copy,
     SubHeading,
     Box,
-<<<<<<< HEAD
     Modal,
     ModalView,
     PairTable,
-=======
     Tooltip,
     Icon,
->>>>>>> bug/bad-merge
   },
   setup() {
     const { store } = useCore();
