@@ -24,6 +24,7 @@ const {
   MetaMask,
   connectMmAccount,
   confirmTransaction,
+  confirmApproval,
 } = require("./metamask.js");
 const { importKeplrAccount, connectKeplrAccount } = require("./keplr");
 
@@ -90,14 +91,12 @@ describe("connect to page", () => {
     browserContext.close();
   });
 
-  it("pegs", async () => {
-    // Navigate to swap page
+  it("pegs ether", async () => {
+    // Navigate to peg page
     await dexPage.goto(DEX_TARGET, {
       waitUntil: "domcontentloaded",
     });
-    // XXX: This currently reuses the page from a previous test - this might be ok for now but we will probably want to provide that state some other way
-    // assumes wallets connected
-    const mmEthBalance = await getEthBalance(MM_CONFIG.options.address);
+
     const cEthBalance = await getSifchainBalances(
       keplrConfig.sifApiUrl,
       KEPLR_CONFIG.options.address,
@@ -119,6 +118,47 @@ describe("connect to page", () => {
 
     const rowAmount = await dexPage.innerText(
       "[data-handle='ceth-row-amount']",
+    );
+
+    const expected = (Number(cEthBalance) + Number(pegAmount)).toFixed(6);
+
+    expect(rowAmount.trim()).toBe(expected);
+  });
+
+  it("pegs tokens", async () => {
+    // Navigate to peg page
+    await dexPage.goto(DEX_TARGET, {
+      waitUntil: "domcontentloaded",
+    });
+
+    const cEthBalance = await getSifchainBalances(
+      keplrConfig.sifApiUrl,
+      KEPLR_CONFIG.options.address,
+      "cusdc",
+    );
+
+    const pegAmount = "1";
+
+    await dexPage.click("[data-handle='external-tab']");
+    await dexPage.click("[data-handle='peg-usdc']");
+    await dexPage.click('[data-handle="peg-input"]');
+    await dexPage.fill('[data-handle="peg-input"]', pegAmount);
+    await dexPage.click('button:has-text("Peg")');
+    await dexPage.click('button:has-text("Confirm Peg")');
+
+    await confirmApproval(
+      dexPage,
+      browserContext,
+      pegAmount + " usdc",
+      MM_CONFIG.id,
+    );
+
+    await confirmTransaction(dexPage, browserContext, pegAmount, MM_CONFIG.id);
+    // move chain forward
+    await advanceEthBlocks(52);
+
+    const rowAmount = await dexPage.innerText(
+      "[data-handle='cusdc-row-amount']",
     );
 
     const expected = (Number(cEthBalance) + Number(pegAmount)).toFixed(6);

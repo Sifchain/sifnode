@@ -72,11 +72,20 @@ export async function confirmTransaction(
 ) {
   // extension popup
   const mmConnectPage = await getExtensionPage(browserContext, extensionId);
-  await mmConnectPage.click(
-    "#app-content > div > div.main-container-wrapper > div > div.confirm-page-container-content > div.page-container__footer > footer > button.button.btn-primary.page-container__footer-button",
-  );
+  await mmConnectPage.click("text=Confirm");
   // haven't yet figured out how to capture close popup event
   await page.waitForTimeout(1000);
   await page.click("text=×");
-  return;
+}
+
+export async function confirmApproval(
+  page,
+  browserContext,
+  amount,
+  extensionId,
+) {
+  const mmConnectPage = await getExtensionPage(browserContext, extensionId);
+  await mmConnectPage.click("text=View full transaction details");
+  await expect(mmConnectPage).toHaveText(amount);
+  await mmConnectPage.click("text=Confirm");
 }
