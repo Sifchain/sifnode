@@ -203,13 +203,34 @@ export function usePoolCalculator(input: {
       return "N/A";
     }
 
-    return format(aPerBRatio.value, { mantissa: 8 });
+    if (!assetA.value || !assetB.value || !tokenAField.fieldAmount.value) {
+      return "N/A";
+    }
+
+    const assetAmountA = AssetAmount(
+      assetA.value,
+      tokenAField.fieldAmount?.value || "0",
+    );
+
+    const price = Amount(
+      format(assetAmountA.multiply(bPerARatio.value || "0"), assetB.value),
+    );
+
+    const amountAsInput = format(
+      tokenAField.fieldAmount.value.amount,
+      tokenAField.fieldAmount.value.asset,
+    );
+
+    return format(price.divide(amountAsInput), {
+      mantissa: 6,
+    });
   });
 
   // native_balance / external_balance
   const bPerARatio = computed(() => {
     if (!poolAmounts.value) return 0;
     const [native, external] = poolAmounts.value;
+
     return Amount(native.divide(external));
   });
 
@@ -218,7 +239,27 @@ export function usePoolCalculator(input: {
       return "N/A";
     }
 
-    return format(bPerARatio.value, { mantissa: 8 });
+    if (!assetA.value || !assetB.value || !tokenBField.fieldAmount.value) {
+      return "N/A";
+    }
+
+    const assetAmountB = AssetAmount(
+      assetB.value,
+      tokenBField.fieldAmount?.value || "0",
+    );
+
+    const price = Amount(
+      format(assetAmountB.multiply(aPerBRatio.value || "0"), assetA.value),
+    );
+
+    const amountAsInput = format(
+      tokenBField.fieldAmount.value.amount,
+      tokenBField.fieldAmount.value.asset,
+    );
+
+    return format(price.divide(amountAsInput), {
+      mantissa: 6,
+    });
   });
 
   // Price Impact and Pool Share:
