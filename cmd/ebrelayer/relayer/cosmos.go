@@ -441,7 +441,7 @@ func (sub CosmosSub) handleBurnLockMsg(cosmosMsg types.CosmosMsg, claimType type
 
 	if i == maxRetries {
 		sub.SugaredLogger.Errorw(
-			"failed to broadcast transaction after 30 attempts",
+			"failed to broadcast transaction after 5 attempts",
 			errorMessageKey, err.Error(),
 		)
 	}
