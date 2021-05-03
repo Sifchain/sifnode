@@ -13,9 +13,9 @@ podSecurityContext: {}
 securityContext: {}
 
 image:
-  repository: -=docker_image_name=- #sifchain/binance
+  repository: sifchain/binance
   pullPolicy: Always
-  tag: "-=docker_image_tag=-" #"testnet"
+  tag: "testnet"
 
 -=app_name=-:
   env:
