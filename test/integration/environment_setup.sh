@@ -103,7 +103,7 @@ echo; echo == sifchain transaction
 echo $sifnodecmd q tx --node $SIFNODE --chain-id $DEPLOYMENT_NAME 193EFB4A5D20BEC58ADE8BACEB38264870ADD8BAFEA9D6DAABE554B0ACBC0C93
 
 echo; echo == all account balances
-echo "$sifnodecmd keys list --keyring-backend test -o json | jq -r '.[].address' | parallel $sifnodecmd q auth account --node $SIFNODE -o json {} | grep coins"
+echo "$sifnodecmd keys list --keyring-backend test --output json | jq -r '.[].address' | parallel $sifnodecmd q auth account --node $SIFNODE -o json {} | grep coins"
 
 echo; echo == burn ceth
 echo $sifnodecmd tx ethbridge burn \
