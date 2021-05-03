@@ -4,14 +4,15 @@
 
 ## Installation
 
-#### Prerequisites
+### Prerequisites
 
-- [Go](https://golang.org/doc/install) (to build the sifchain to test against)
-- [Node 14](https://nodejs.org/en/)
+- [Go 1.15](https://golang.org/doc/install) (to build the sifchain to test against)
+- [Node 14](https://nodejs.org/en/) we recommend using [nvm](https://github.com/nvm-sh/nvm)
 - [Yarn Classic](https://classic.yarnpkg.com/en/docs/install#mac-stable)
-- A linux like environment
+- [Docker](https://docs.docker.com/get-docker/) for your environment setup to run without sudo
+- A linux like environment (macOs,linux,WSL)
 
-#### Setup
+### Setup
 
 1. Install the base sifnode repo in your go directory: `~/go/src/github.com/Sifchain/sifnode`
 1. `cd ./ui` - To work on the frontend UI
@@ -20,21 +21,21 @@
 
 NOTE: If you are using VSCode you should use the code-workspace at `./ui/SifnodeUI.code-workspace` to ensure that Vetur works correctly.
 
-#### Launching locally
+### Launching locally
 
-Run the backing services using tmux. (Requires [tmux](https://github.com/tmux/tmux/wiki/Installing))
+There are a few ways you can launch the project stack locally. Most of the time working on frontend you will probably just want to use:
 
-```bash
+```
 yarn stack
 ```
 
-<img src="docs/tmux-example.png" />
+NOTE: This command requires [tmux](https://github.com/tmux/tmux/wiki/Installing)
 
-#### Run tests in core
+### Run unit and integration tests in core
 
 `yarn test`
 
-## Run App and Core tests
+### Run App and Core tests
 
 | Command                | Description                                                |
 | ---------------------- | ---------------------------------------------------------- |
@@ -55,13 +56,31 @@ yarn stack
 | `yarn core:test`     | Run core tests with no background chain                       |
 | `yarn core:watch`    | Compile core code in watch mode                               |
 
+## End to end tests
+
+`yarn pw:test:stack`
+
+Will serve the built webapplication in `app/dist` on port 5000 and run tests over this including backing services which are then reset every test.
+
+`yarn pw:test:debug`
+
+Will run tests in debug mode over a website served on http://localhost:8080. This is good for testing a feature you are working on. Ideally when working on a feature you might want to do the following in separate terminals:
+
+1. `yarn stack:backend` - start up the backing services
+2. `yarn app:serve` - start up the web server
+3. `yarn core:watch` - update the webserver with core code on change
+4. `yarn pw:test:debug` - Run the test suite over the stack - you probably want to isolate the test you need with `.only` methods.
+
 ## Folder structure
 
-| Path       | Description                      |
-| ---------- | -------------------------------- |
-| `./app`    | A Vue interface that uses core.  |
-| `./chains` | Blockchain projects for testing. |
-| `./core`   | All business functionality.      |
+| Path               | Description                      |
+| ------------------ | -------------------------------- |
+| `./app`            | A Vue interface that uses core.  |
+| `./chains`         | Blockchain projects for testing. |
+| `./core`           | All business functionality.      |
+| `./e2e`            | End to end tests.                |
+| `./docs`           | Documentation.                   |
+| `./docs/decisions` | Architectural decisions.         |
 
 ## Architecture
 
@@ -140,7 +159,7 @@ export default function createFooService(context: FooServiceContext) {
 
 To test our blockchain backed apps we use ganache-cli and truffle to create a local etherium chain that is migrated to contain a couple of fake tokens.
 
-You can find the token contracts [here](../chains/ethereum/contracts).
+You can find the token contracts [here](../chains/eth/contracts).
 
 Our API setup asks for getters to supply environment information. It may make sense to convert this to a function that returns a config object we inject everywhere.
 
