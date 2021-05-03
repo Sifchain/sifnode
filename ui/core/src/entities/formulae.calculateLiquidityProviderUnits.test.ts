@@ -1,23 +1,40 @@
 import { calculatePoolUnits } from "./formulae";
-import { Fraction } from "./fraction/Fraction";
 
-import tables from "../../../../test/test-tables/pool_units.json";
+import tables from "../../../../test/test-tables/pool_units_after_upgrade.json";
+import { Amount, IAmount } from "./Amount";
 
 // Use this list to only run specific tests
 const filterList: number[] = [];
 
-tables.PoolUnits.forEach(({ r, a, R, A, P, expected }, index) => {
+// The following copies how the backend tests against rounding
+// Backend appears to loose precision and the increase precision to avoid panic errors. Our Fraction system appears to avoid this by using integer Fractions to store values
+// This sidesteps the issue though as it might be possible for us to run into trouble if numerators or denominator get too big
+// See https://github.com/Sifchain/sifnode/blob/b4a18903319ba3dd5349deb4d6182140e720b163/x/clp/keeper/table_test.go#L14
+const BUFFER_PERCENTAGE = "1.21"; // Percentage difference allowable to accommodate rounding done by Big libraries in Go,Python and Javascript
+
+function isAllowable(a: IAmount, b: IAmount) {
+  let diffPercentage: IAmount;
+  if (a.greaterThanOrEqual(b)) {
+    diffPercentage = a.subtract(b).divide(a).multiply("100");
+  } else {
+    diffPercentage = b.subtract(a).divide(b).multiply("100");
+  }
+
+  return !diffPercentage.greaterThanOrEqual(Amount(BUFFER_PERCENTAGE));
+}
+
+tables.PoolUnitsAfterUpgrade.forEach(({ r, a, R, A, P, expected }, index) => {
   if (filterList.length === 0 || filterList.includes(index)) {
     test(`#${index} => (r:${r}, a:${a}, R:${R}, A:${A}, P:${P}) => ${expected}`, () => {
       const output = calculatePoolUnits(
-        new Fraction(r),
-        new Fraction(a),
-        new Fraction(R),
-        new Fraction(A),
-        new Fraction(P),
+        Amount(r),
+        Amount(a),
+        Amount(R),
+        Amount(A),
+        Amount(P),
       );
 
-      expect(output.toFixed(0)).toBe(expected);
+      expect(isAllowable(output, Amount(expected))).toBe(true);
     });
   }
 });

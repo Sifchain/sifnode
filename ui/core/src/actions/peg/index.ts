@@ -1,6 +1,15 @@
 import { ActionContext } from "..";
-import { Address, Asset, AssetAmount, TransactionStatus } from "../../entities";
-import JSBI from "jsbi";
+import {
+  Address,
+  Asset,
+  AssetAmount,
+  IAsset,
+  IAssetAmount,
+  Network,
+  TransactionStatus,
+} from "../../entities";
+import { isSupportedEVMChain } from "../utils";
+
 import { SubscribeToUnconfirmedPegTxs } from "./subscribeToUnconfirmedPegTxs";
 import { SubscribeToTx } from "./utils/subscribeToTx";
 
@@ -67,17 +76,15 @@ export default ({
       return api.EthereumService.getSupportedTokens();
     },
 
-    calculateUnpegFee(asset: Asset) {
+    calculateUnpegFee(asset: IAsset) {
       const feeNumber = isOriginallySifchainNativeToken(asset)
-        ? "54080000000000000"
-        : "58560000000000000";
+        ? "70000000000000000"
+        : "70000000000000000";
 
-      return AssetAmount(Asset.get("ceth"), JSBI.BigInt(feeNumber), {
-        inBaseUnit: true,
-      });
+      return AssetAmount(Asset.get("ceth"), feeNumber);
     },
 
-    async unpeg(assetAmount: AssetAmount) {
+    async unpeg(assetAmount: IAssetAmount) {
       const lockOrBurnFn = isOriginallySifchainNativeToken(assetAmount.asset)
         ? api.EthbridgeService.lockToEthereum
         : api.EthbridgeService.burnToEthereum;
@@ -126,14 +133,30 @@ export default ({
     // TODO: Move this approval command to within peg and report status via store or some other means
     //       This has been done for convenience but we should not have to know in the view that
     //       approval is required before pegging as that is very much business domain knowledge
-    async approve(address: Address, assetAmount: AssetAmount) {
+    async approve(address: Address, assetAmount: IAssetAmount) {
       return await api.EthbridgeService.approveBridgeBankSpend(
         address,
         assetAmount,
       );
     },
 
-    async peg(assetAmount: AssetAmount) {
+    async peg(assetAmount: IAssetAmount): Promise<TransactionStatus> {
+      if (
+        assetAmount.asset.network === Network.ETHEREUM &&
+        !isSupportedEVMChain(store.wallet.eth.chainId)
+      ) {
+        api.EventBusService.dispatch({
+          type: "ErrorEvent",
+          payload: {
+            message: "EVM Network not supported!",
+          },
+        });
+        return {
+          hash: "",
+          state: "failed",
+        };
+      }
+
       const subscribeToTx = SubscribeToTx(ctx);
 
       const lockOrBurnFn = isOriginallySifchainNativeToken(assetAmount.asset)

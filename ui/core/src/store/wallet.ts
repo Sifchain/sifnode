@@ -1,15 +1,16 @@
-import { reactive, computed } from "@vue/reactivity";
+import { reactive } from "@vue/reactivity";
 
-import { Address, AssetAmount } from "../entities";
+import { Address, IAssetAmount } from "../entities";
 
 export type WalletStore = {
   eth: {
-    balances: AssetAmount[];
+    chainId?: string;
+    balances: IAssetAmount[];
     isConnected: boolean;
     address: Address;
   };
   sif: {
-    balances: AssetAmount[];
+    balances: IAssetAmount[];
     isConnected: boolean;
     address: Address;
   };

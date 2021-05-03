@@ -92,19 +92,19 @@ where:
 |Param|Description|
 |-----|----------|
 |`<cluster>`|The name of your cluster.|
-|`<chain_id>`|The Chain ID of the network (e.g.: testnet).|
+|`<chain_id>`|The Chain ID of the network (this must be `sifchain-testnet`).|
 |`<provider>`|The cloud provider to use (currently only AWS is supported).|
 |`<namespace>`|The Kubernetes namespace to use (e.g.: sifnode).|
 |`<image>`|The image to pull down from Docker Hub (e.g.: sifchain/sifnoded).|
 |`<image_tag>`|The image tag to use (this must be `testnet-genesis`)..|
 |`<moniker>`|The moniker or name of your node as you want it to appear on the network.|
-|`<peer_address>`|The address of the peer to connect to.|
+|`<peer_address>`|The address of the peer to connect to (this must be `a2864737f01d3977211e2ea624dd348595dd4f73@3.222.8.87:26656`).|
 |`<genesis_url>`|The URL of genesis file for the network.|
 
 e.g.:
 
 ```
-rake "cluster:sifnode:deploy:peer[my-cluster,testnet,aws,sifnode,sifchain/sifnoded,testnet-genesis,my-node,'my mnemonic',c3daf4bdd3c559c2526c623a645527eddecd6f9b@23.22.36.176:26656,https://rpc-testnet.sifchain.finance/genesis]"
+rake "cluster:sifnode:deploy:peer[my-cluster,sifchain-testnet,aws,sifnode,sifchain/sifnoded,testnet-genesis,my-node,'my mnemonic',a2864737f01d3977211e2ea624dd348595dd4f73@3.222.8.87:26656,https://rpc-testnet.sifchain.finance/genesis]"
 ```
 
 _Please note: the image tag *must* be `testnet-genesis`._
@@ -157,14 +157,14 @@ rake "validator:keys:public[my-cluster,aws,sifnode]"
 3. Stake:
 
 ```
-rake "validator:stake[<chain_id>,<moniker>,<amount>,<public_key>,<node_rpc_address>]"
+rake "validator:stake[<chain_id>,<moniker>,<amount>,<gas>,<public_key>,<node_rpc_address>]"
 ```
 
 where:
 
 |Param|Description|
 |-----|----------|
-|`<chain_id>`|The Chain ID of the network (e.g.: testnet).|
+|`<chain_id>`|The Chain ID of the network (this must be `sifchain-testnet`).|
 |`<moniker>`|The moniker or name of your node as you want it to appear on the network.|
 |`<amount>`|The amount to stake, including the denomination (e.g.: 100000000rowan). The precision used is 1e18.|
 |`<gas>`|The gas price (e.g.: 0.5rowan).|
@@ -174,7 +174,7 @@ where:
 e.g.:
 
 ```
-rake "validator:stake[testnet,my-node,10000000rowan,0.5rowan,<public_key>,tcp://rpc-testnet.sifchain.finance:80]"
+rake "validator:stake[sifchain-testnet,my-node,10000000rowan,0.5rowan,<public_key>,tcp://rpc-testnet.sifchain.finance:80]"
 ```
 
 4. It may take several blocks before your node appears as a validator on the network, but you can always check by running:

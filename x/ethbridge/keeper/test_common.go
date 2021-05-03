@@ -38,6 +38,7 @@ const (
 	TestString                 = "{value: 5}"
 	AlternateTestString        = "{value: 7}"
 	AnotherAlternateTestString = "{value: 9}"
+	TestCethReceiverAddress    = "cosmos1gn8409qq9hnrxde37kuxwx5hrxpfpv8426szuv"
 )
 
 // CreateTestKeepers greates an Mock App, OracleKeeper, bankKeeper and ValidatorAddresses to be used for test input
@@ -134,6 +135,9 @@ func CreateTestKeepers(t *testing.T, consensusNeeded float64, validatorAmounts [
 	supplyKeeper.SetModuleAccount(ctx, notBondedPool)
 
 	ethbridgeKeeper := NewKeeper(cdc, supplyKeeper, oracleKeeper, keyEthBridge)
+	CethReceiverAccount, _ := sdk.AccAddressFromBech32(TestCethReceiverAddress)
+	ethbridgeKeeper.SetCethReceiverAccount(ctx, CethReceiverAccount)
+
 	// Setup validators
 	valAddrs := make([]sdk.ValAddress, len(validatorAmounts))
 	for i, amount := range validatorAmounts {

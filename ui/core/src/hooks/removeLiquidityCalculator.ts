@@ -1,10 +1,15 @@
 import { Ref } from "@vue/reactivity";
 
-import { Asset, AssetAmount, LiquidityProvider, Pool } from "../entities";
+import {
+  Amount,
+  Asset,
+  AssetAmount,
+  LiquidityProvider,
+  Pool,
+} from "../entities";
 import { calculateWithdrawal } from "../entities/formulae";
-import { Fraction, IFraction } from "../entities";
+import { format } from "../utils/format";
 import { PoolState } from "./addLiquidityCalculator";
-import { buildAsset } from "./utils";
 
 export function useRemoveLiquidityCalculator(input: {
   externalAssetSymbol: Ref<string | null>;
@@ -18,12 +23,12 @@ export function useRemoveLiquidityCalculator(input: {
   // this function needs to be refactored so
   const externalAsset = (() => {
     if (!input.externalAssetSymbol.value) return null;
-    return buildAsset(input.externalAssetSymbol.value);
+    return Asset(input.externalAssetSymbol.value);
   })();
 
   const nativeAsset = (() => {
     if (!input.nativeAssetSymbol.value) return null;
-    return buildAsset(input.nativeAssetSymbol.value);
+    return Asset(input.nativeAssetSymbol.value);
   })();
 
   const liquidityPool = (() => {
@@ -41,19 +46,19 @@ export function useRemoveLiquidityCalculator(input: {
 
   const wBasisPoints = (() => {
     if (!input.wBasisPoints.value) return null;
-    return new Fraction(input.wBasisPoints.value);
+    return Amount(input.wBasisPoints.value);
   })();
 
   const asymmetry = (() => {
     if (!input.asymmetry.value) return null;
-    return new Fraction(input.asymmetry.value);
+    return Amount(input.asymmetry.value);
   })();
 
   const nativeAssetBalance = (() => {
     if (!liquidityPool) return null;
     return (
       liquidityPool.amounts.find(
-        (a) => a.asset.symbol === input.nativeAssetSymbol.value,
+        (a) => a.symbol === input.nativeAssetSymbol.value,
       ) ?? null
     );
   })();
@@ -62,7 +67,7 @@ export function useRemoveLiquidityCalculator(input: {
     if (!liquidityPool) return null;
     return (
       liquidityPool.amounts.find(
-        (a) => a.asset.symbol === input.externalAssetSymbol.value,
+        (a) => a.symbol === input.externalAssetSymbol.value,
       ) ?? null
     );
   })();
@@ -70,7 +75,7 @@ export function useRemoveLiquidityCalculator(input: {
   const lpUnits = (() => {
     if (!input.liquidityProvider.value) return null;
 
-    return input.liquidityProvider.value.units as IFraction;
+    return input.liquidityProvider.value.units;
   })();
 
   const hasLiquidity = (() => {
@@ -131,21 +136,19 @@ export function useRemoveLiquidityCalculator(input: {
   })();
 
   const withdrawExternalAssetAmountMessage = (() => {
-    return (
-      withdrawalAmounts?.withdrawExternalAssetAmount.toFormatted({
-        decimals: 6,
-        symbol: false,
-      }) || ""
-    );
+    if (!withdrawalAmounts) return "";
+    const assetAmount = withdrawalAmounts?.withdrawExternalAssetAmount;
+    return format(assetAmount.amount, assetAmount.asset, {
+      mantissa: 6,
+    });
   })();
 
   const withdrawNativeAssetAmountMessage = (() => {
-    return (
-      withdrawalAmounts?.withdrawNativeAssetAmount.toFormatted({
-        decimals: 6,
-        symbol: false,
-      }) || ""
-    );
+    if (!withdrawalAmounts) return "";
+    const assetAmount = withdrawalAmounts?.withdrawNativeAssetAmount;
+    return format(assetAmount.amount, assetAmount.asset, {
+      mantissa: 6,
+    });
   })();
 
   return {

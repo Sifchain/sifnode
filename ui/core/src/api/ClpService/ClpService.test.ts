@@ -1,10 +1,13 @@
 import createClpService from ".";
 import { AssetAmount } from "../../entities";
 import { getTestingTokens } from "../../test/utils/getTestingToken";
+import { useStack } from "../../../../test/stack";
 
 const [ROWAN, CATK, CBTK] = getTestingTokens(["ROWAN", "CATK", "CBTK"]);
 
 let service: ReturnType<typeof createClpService>;
+
+useStack("once");
 
 beforeEach(() => {
   service = createClpService({
@@ -20,19 +23,19 @@ test("getPools()", async () => {
   const pools = await service.getPools();
 
   expect(pools.map((pool) => pool.toString())).toEqual([
-    "10000000.000000000000000000 ROWAN | 10000000.000000000000000000 CATK",
-    "10000000.000000000000000000 ROWAN | 10000000.000000000000000000 CBTK",
-    "10000000.000000000000000000 ROWAN | 8300.000000000000000000 CETH",
-    "10000000.000000000000000000 ROWAN | 588235.000000000000000000 CLINK",
-    "10000000.000000000000000000 ROWAN | 10000000.000000000000000000 CUSDC",
+    "10000000000000000000000000 ROWAN | 10000000000000000000000000 CATK",
+    "10000000000000000000000000 ROWAN | 10000000000000000000000000 CBTK",
+    "10000000000000000000000000 ROWAN | 8300000000000000000000 CETH",
+    "10000000000000000000000000 ROWAN | 588235000000000000000000 CLINK",
+    "10000000000000000000000000 ROWAN | 10000000000000000000000000 CUSDC",
   ]);
 });
 
 test("addLiquidity", async () => {
   const message = await service.addLiquidity({
     fromAddress: "sif1l7hypmqk2yc334vc6vmdwzp5sdefygj2ad93p5",
-    externalAssetAmount: AssetAmount(CATK, "1000"),
-    nativeAssetAmount: AssetAmount(ROWAN, "1000"),
+    externalAssetAmount: AssetAmount(CATK, "1000000000000000000000"),
+    nativeAssetAmount: AssetAmount(ROWAN, "1000000000000000000000"),
   });
   expect(message).toEqual({
     type: "cosmos-sdk/StdTx",
@@ -87,8 +90,8 @@ test("removeLiquidity()", async () => {
 test("createPool()", async () => {
   const message = await service.createPool({
     fromAddress: "sif1l7hypmqk2yc334vc6vmdwzp5sdefygj2ad93p5",
-    externalAssetAmount: AssetAmount(CATK, "1000"),
-    nativeAssetAmount: AssetAmount(ROWAN, "1000"),
+    externalAssetAmount: AssetAmount(CATK, "1000000000000000000000"),
+    nativeAssetAmount: AssetAmount(ROWAN, "1000000000000000000000"),
   });
 
   expect(message).toEqual({
@@ -116,8 +119,8 @@ test("swap()", async () => {
   const message = await service.swap({
     fromAddress: "sif1l7hypmqk2yc334vc6vmdwzp5sdefygj2ad93p5",
     receivedAsset: CATK,
-    sentAmount: AssetAmount(CBTK, "1000"),
-    minimumReceived: AssetAmount(CATK, "1000", { inBaseUnit: true }),
+    sentAmount: AssetAmount(CBTK, "1000000000000000000000"),
+    minimumReceived: AssetAmount(CATK, "1000000000000000000000"),
   });
 
   expect(message).toEqual({
@@ -131,7 +134,7 @@ test("swap()", async () => {
           value: {
             ReceivedAsset: { symbol: "catk" },
             SentAmount: "1000000000000000000000",
-            MinReceivingAmount: "1000",
+            MinReceivingAmount: "1000000000000000000000",
             SentAsset: { symbol: "cbtk" },
             Signer: "sif1l7hypmqk2yc334vc6vmdwzp5sdefygj2ad93p5",
           },
@@ -149,5 +152,5 @@ test("getLiquidityProvider()", async () => {
 
   expect(lp?.asset.symbol).toEqual("catk");
   expect(lp?.address).toEqual("sif1l7hypmqk2yc334vc6vmdwzp5sdefygj2ad93p5");
-  expect(lp?.units.toFixed(0)).toEqual("10000000000000000000000000");
+  expect(lp?.units.toBigInt().toString()).toEqual("10000000000000000000000000");
 });

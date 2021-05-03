@@ -25,7 +25,10 @@ export function getTestingTokens(tokens: string[]) {
   return tokens.map(getTestingToken);
 }
 
-export function getBalance(balances: IAssetAmount[], symbol: string) {
+export function getBalance(
+  balances: IAssetAmount[],
+  symbol: string,
+): IAssetAmount {
   const bal = balances.find(
     ({ asset }) => asset.symbol.toUpperCase() === symbol.toUpperCase(),
   );
