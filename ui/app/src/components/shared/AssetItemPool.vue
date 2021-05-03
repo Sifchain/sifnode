@@ -24,9 +24,9 @@ export default defineComponent({
     const fromSymbol = computed(() =>
       props.pool?.pool.amounts[1].asset
         ? getAssetLabel(props.pool?.pool.amounts[1].asset)
-        : props.tokenASymbol
+        : props.tokenASymbol,
     );
-    
+
     const fromAsset = useAssetItem(fromSymbol);
     const fromToken = fromAsset.token;
     const fromBackgroundStyle = fromAsset.background;
@@ -39,7 +39,7 @@ export default defineComponent({
     const toSymbol = computed(() =>
       props.pool?.pool.amounts[0].asset
         ? getAssetLabel(props.pool?.pool.amounts[0].asset)
-        : props.tokenBSymbol
+        : props.tokenBSymbol,
     );
     const toAsset = useAssetItem(toSymbol);
     const toToken = toAsset.token;
@@ -63,7 +63,7 @@ export default defineComponent({
 </script>
 
 <template>
-  <div class="pool-asset" :class="{'inline': inline}">
+  <div class="pool-asset" :class="{ inline: inline }">
     <div class="image">
       <img
         v-if="fromTokenImage"
@@ -82,7 +82,14 @@ export default defineComponent({
       />
       <div class="placeholder" :style="toBackgroundStyle" v-else></div>
     </div>
-    <div class="symbol">
+    <div
+      class="symbol"
+      :data-handle="
+        [fromSymbol.toLowerCase(), toSymbol.toLowerCase(), 'pool-list-item']
+          .filter(Boolean)
+          .join('-')
+      "
+    >
       <span>{{ fromSymbol }}</span>
       /
       <span>{{ toSymbol }}</span>

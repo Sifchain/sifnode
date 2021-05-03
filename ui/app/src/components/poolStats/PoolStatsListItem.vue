@@ -3,6 +3,14 @@ import { computed } from "@vue/reactivity";
 import { defineComponent } from "vue";
 import { formatSymbol, useAssetItem } from "@/components/shared/utils";
 
+// NOTE - this will be replaced by format display function
+function format(item: string) {
+  if (item !== "") {
+    return parseFloat(item).toFixed(2) + "%";
+  } else {
+    return "N/A";
+  }
+}
 export default defineComponent({
   props: {
     pool: {
@@ -33,21 +41,24 @@ export default defineComponent({
     });
 
     const priceToken = formatNumberString(
-      parseFloat(props.pool?.priceToken).toFixed(2)
+      parseFloat(props.pool?.priceToken).toFixed(2),
     );
+    const arb = props.pool?.arb;
     const poolDepth = formatNumberString(
-      parseFloat(props.pool?.poolDepth).toFixed(2)
+      parseFloat(props.pool?.poolDepth).toFixed(2),
     );
     const volume = formatNumberString(
-      parseFloat(props.pool?.volume).toFixed(1)
+      parseFloat(props.pool?.volume).toFixed(1),
     );
     const poolAPY = formatNumberString(
       (
-        parseFloat(props.pool?.volume) / parseFloat(props.pool?.poolDepth)
-      ).toFixed(1)
+        (parseFloat(props.pool?.volume) / parseFloat(props.pool?.poolDepth)) *
+        100
+      ).toFixed(1),
     );
 
     return {
+      format,
       symbol,
       image,
       priceToken,
@@ -55,6 +66,7 @@ export default defineComponent({
       volume,
       poolAPY,
       formatNumberString,
+      arb,
     };
   },
 });
@@ -74,13 +86,16 @@ export default defineComponent({
           }}</span>
         </div>
       </div>
-      <div class="col-sm">
+      <div class="col-lg">
         <span>${{ priceToken }}</span>
       </div>
-      <div class="col-sm">
+      <div class="col-lg">
+        <span :class="arb < 0 ? 'buy' : 'sell'"> {{ format(arb) }}</span>
+      </div>
+      <div class="col-lg">
         <span>${{ poolDepth }}</span>
       </div>
-      <div class="col-sm">
+      <div class="col-lg">
         <span>${{ volume }}</span>
       </div>
       <div class="col-sm">
@@ -93,7 +108,7 @@ export default defineComponent({
         <span
           >{{
             formatNumberString(
-              (parseFloat(poolAPY) + parseFloat(liqAPY)).toFixed(1)
+              (parseFloat(poolAPY) + parseFloat(liqAPY)).toFixed(1),
             )
           }}%</span
         >
@@ -109,6 +124,13 @@ export default defineComponent({
   &:not(:last-of-type) {
     border-bottom: $divider;
   }
+}
+
+.buy {
+  color: $c_buy;
+}
+.sell {
+  color: $c_sell;
 }
 
 .pool-asset {
@@ -150,7 +172,7 @@ export default defineComponent({
 
   .col-sm-s {
     padding-left: 12px;
-    min-width: 102px;
+    min-width: 112px;
     width: 10%;
     display: flex;
     justify-content: start;
@@ -174,6 +196,7 @@ export default defineComponent({
     min-width: 168px;
     font-size: $fs_md;
     color: $c_text;
+    text-align: center;
   }
 }
 </style>

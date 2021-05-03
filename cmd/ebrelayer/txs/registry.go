@@ -4,11 +4,11 @@ package txs
 
 import (
 	"context"
-	"log"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
+	"go.uber.org/zap"
 
 	bridgeregistry "github.com/Sifchain/sifnode/cmd/ebrelayer/contract/generated/bindings/bridgeregistry"
 )
@@ -38,16 +38,19 @@ func (d ContractRegistry) String() string {
 
 // GetAddressFromBridgeRegistry queries the requested contract address from the BridgeRegistry contract
 func GetAddressFromBridgeRegistry(client *ethclient.Client, registry common.Address, target ContractRegistry,
-) (common.Address, error) {
+	sugaredLogger *zap.SugaredLogger) (common.Address, error) {
 	sender, err := LoadSender()
 	if err != nil {
-		log.Println(err)
+		// log.Println(err)
+		sugaredLogger.Errorw("failed to get sender", errorMessageKey, err.Error())
 		return common.Address{}, err
 	}
 
 	header, err := client.HeaderByNumber(context.Background(), nil)
 	if err != nil {
-		log.Println(err)
+		// log.Println(err)
+		sugaredLogger.Errorw("failed to get header", errorMessageKey, err.Error())
+
 		return common.Address{}, err
 	}
 
@@ -62,7 +65,9 @@ func GetAddressFromBridgeRegistry(client *ethclient.Client, registry common.Addr
 	// Initialize BridgeRegistry instance
 	registryInstance, err := bridgeregistry.NewBridgeRegistry(registry, client)
 	if err != nil {
-		log.Println(err)
+		// log.Println(err)
+		sugaredLogger.Errorw("failed to get registry contract address", errorMessageKey, err.Error())
+
 		return common.Address{}, err
 	}
 
@@ -81,7 +86,8 @@ func GetAddressFromBridgeRegistry(client *ethclient.Client, registry common.Addr
 	}
 
 	if err != nil {
-		log.Println(err)
+		// log.Println(err)
+		sugaredLogger.Errorw("failed to get contract address from registry", errorMessageKey, err.Error())
 		return common.Address{}, err
 	}
 

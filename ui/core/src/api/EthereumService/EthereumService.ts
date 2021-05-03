@@ -8,34 +8,28 @@ import {
   TxParams,
   Asset,
   AssetAmount,
-  Token,
   Network,
+  IAssetAmount,
 } from "../../entities";
 import {
+  EIPProvider,
   getEtheriumBalance,
   getTokenBalance,
   isEventEmittingProvider,
+  isMetaMaskInpageProvider,
   transferAsset,
 } from "./utils/ethereumUtils";
-import { isToken } from "../../entities/utils/isToken";
-import notify from "../utils/Notifications";
+
+import { Msg } from "@cosmjs/launchpad";
 
 type Address = string;
-type Balances = AssetAmount[];
+type Balances = IAssetAmount[];
+type PossibleProvider = provider | EIPProvider;
 
 export type EthereumServiceContext = {
   getWeb3Provider: () => Promise<provider>;
   assets: Asset[];
 };
-
-type MetaMaskProvider = WebsocketProvider & {
-  request?: (a: any) => Promise<void>;
-  isConnected(): boolean;
-};
-
-function isMetaMaskProvider(provider?: provider): provider is MetaMaskProvider {
-  return typeof (provider as any).request === "function";
-}
 
 const initState = {
   connected: false,
@@ -45,36 +39,54 @@ const initState = {
   log: "unset",
 };
 
+// TODO: Refactor to be Module pattern with constructor function ie. `EthereumService()`
+
 export class EthereumService implements IWalletService {
   private web3: Web3 | null = null;
   private supportedTokens: Asset[] = [];
   private blockSubscription: any;
-  private provider: provider | undefined;
-  private providerPromise: Promise<provider>;
+  private provider: PossibleProvider | undefined;
+  private providerPromise: Promise<PossibleProvider>;
+  private reportProviderNotFound = () => {};
+  private chainIdDetectedHandler = (_chainId: string) => {};
 
   // This is shared reactive state
   private state: {
     connected: boolean;
     address: Address;
     accounts: Address[];
-    balances: AssetAmount[];
+    balances: IAssetAmount[];
     log: string;
   };
 
-  constructor(getWeb3Provider: () => Promise<provider>, assets: Asset[]) {
+  constructor(
+    getWeb3Provider: () => Promise<PossibleProvider>,
+    assets: Asset[],
+  ) {
     this.state = reactive({ ...initState });
     this.supportedTokens = assets.filter((t) => t.network === Network.ETHEREUM);
     this.providerPromise = getWeb3Provider();
     this.providerPromise
       .then((provider) => {
+        // Provider not found
         if (!provider) {
-          return (this.provider = null);
+          this.provider = null;
+          this.reportProviderNotFound();
+          return;
         }
+
         if (isEventEmittingProvider(provider)) {
           provider.on("chainChanged", () => window.location.reload());
           provider.on("accountsChanged", () => this.updateData());
         }
-        this.web3 = new Web3(provider);
+        // What network is the provider on
+        if (isMetaMaskInpageProvider(provider)) {
+          provider.request({ method: "eth_chainId" }).then((chainId) => {
+            this.chainIdDetectedHandler(chainId as string);
+          });
+        }
+
+        this.web3 = new Web3(provider as provider);
         this.provider = provider;
         this.addWeb3Subscription();
         this.updateData();
@@ -82,6 +94,14 @@ export class EthereumService implements IWalletService {
       .catch((error) => {
         console.log("error", error);
       });
+  }
+
+  onChainIdDetected(handler: (chainId: string) => void) {
+    this.chainIdDetectedHandler = handler;
+  }
+
+  onProviderNotFound(handler: () => void) {
+    this.reportProviderNotFound = handler;
   }
 
   getState() {
@@ -97,13 +117,14 @@ export class EthereumService implements IWalletService {
         this.state.balances = [];
         return;
       }
-      this.state.connected = !!this.web3;
+
+      this.state.connected = true;
       this.state.accounts = (await this.web3.eth.getAccounts()) ?? [];
       this.state.address = this.state.accounts[0];
       this.state.balances = await this.getBalance();
     },
     100,
-    { leading: true }
+    { leading: true },
   );
 
   getAddress(): Address {
@@ -124,19 +145,18 @@ export class EthereumService implements IWalletService {
       if (!provider) {
         throw new Error("Cannot connect because provider is not yet loaded!");
       }
-      this.web3 = new Web3(provider);
-      if (isMetaMaskProvider(provider)) {
+      this.web3 = new Web3(provider as provider);
+      if (isMetaMaskInpageProvider(provider)) {
         if (provider.request) {
           await provider.request({ method: "eth_requestAccounts" });
         }
       }
       this.addWeb3Subscription();
-      notify({ type: "success", message: "Connected to Metamask" });
       await this.updateData();
     } catch (err) {
-      console.log(err);
       this.web3 = null;
-      this.removeWeb3Subscription()
+      this.removeWeb3Subscription();
+      throw err;
     }
   }
 
@@ -150,7 +170,7 @@ export class EthereumService implements IWalletService {
         } else {
           this.state.log = error.message;
         }
-      }
+      },
     );
   }
 
@@ -165,19 +185,16 @@ export class EthereumService implements IWalletService {
   }
 
   async disconnect() {
-    if (isMetaMaskProvider(this.provider)) {
-      this.provider.disconnect &&
-        this.provider.disconnect(0, "Website disconnected wallet");
+    if (isMetaMaskInpageProvider(this.provider)) {
+      (this.provider as any).disconnect &&
+        (this.provider as any).disconnect(0, "Website disconnected wallet");
     }
     this.removeWeb3Subscription();
     this.web3 = null;
     await this.updateData();
   }
 
-  async getBalance(
-    address?: Address,
-    asset?: Asset | Token
-  ): Promise<Balances> {
+  async getBalance(address?: Address, asset?: Asset): Promise<Balances> {
     const supportedTokens = this.getSupportedTokens();
     const addr = address || this.state.address;
     if (!this.web3 || !addr) {
@@ -188,7 +205,7 @@ export class EthereumService implements IWalletService {
     let balances = [];
 
     if (asset) {
-      if (!isToken(asset)) {
+      if (!asset.address) {
         // Asset must be eth
         const ethBalance = await getEtheriumBalance(web3, addr);
         balances = [ethBalance];
@@ -204,7 +221,7 @@ export class EthereumService implements IWalletService {
         ...supportedTokens
           .filter((t) => t.symbol !== "eth")
           .map((token: Asset) => {
-            if (isToken(token)) return getTokenBalance(web3, addr, token);
+            if (token.address) return getTokenBalance(web3, addr, token);
             return AssetAmount(token, "0");
           }),
       ]);
@@ -217,7 +234,7 @@ export class EthereumService implements IWalletService {
     // TODO: validate params!!
     if (!this.web3) {
       throw new Error(
-        "Cannot do transfer because there is not yet a connection to Ethereum."
+        "Cannot do transfer because there is not yet a connection to Ethereum.",
       );
     }
 
@@ -226,16 +243,16 @@ export class EthereumService implements IWalletService {
 
     if (!from) {
       throw new Error(
-        "Transaction attempted but 'from' address cannot be determined!"
+        "Transaction attempted but 'from' address cannot be determined!",
       );
     }
 
     return await transferAsset(this.web3, from, recipient, amount, asset);
   }
 
-  async signAndBroadcast() {}
+  async signAndBroadcast(msg: Msg, mmo?: string) {}
 
-  async setPhrase() {
+  async setPhrase(args: string) {
     // We currently delegate auth to metamask so this is irrelavent
     return "";
   }

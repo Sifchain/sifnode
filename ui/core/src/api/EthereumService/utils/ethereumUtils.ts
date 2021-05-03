@@ -1,3 +1,4 @@
+import { MetaMaskInpageProvider } from "@metamask/inpage-provider";
 import JSBI from "jsbi";
 import Web3 from "web3";
 import {
@@ -7,19 +8,18 @@ import {
   WebsocketProvider,
 } from "web3-core";
 
-import { Address, Asset, AssetAmount, Network, Token } from "../../../entities";
-import B from "../../../entities/utils/B";
-import { isToken } from "../../../entities/utils/isToken";
+import { Address, Asset, AssetAmount, Network } from "../../../entities";
+
 import erc20TokenAbi from "./erc20TokenAbi";
 
-export function getTokenContract(web3: Web3, asset: Token) {
+export function getTokenContract(web3: Web3, asset: Asset) {
   return new web3.eth.Contract(erc20TokenAbi, asset.address);
 }
 
 export async function getTokenBalance(
   web3: Web3,
   address: Address,
-  asset: Token
+  asset: Asset,
 ) {
   const contract = getTokenContract(web3, asset);
   let tokenBalance = "0";
@@ -28,14 +28,23 @@ export async function getTokenBalance(
   } catch (err) {
     console.log(`Error fetching balance for ${asset.symbol}`);
   }
-  return AssetAmount(asset, B(tokenBalance, 0));
+  return AssetAmount(asset, tokenBalance);
 }
 
 export function isEventEmittingProvider(
-  provider?: provider
+  provider?: unknown,
 ): provider is WebsocketProvider | IpcProvider {
   if (!provider || typeof provider === "string") return false;
   return typeof (provider as any).on === "function";
+}
+
+export type EIPProvider = MetaMaskInpageProvider;
+
+export function isMetaMaskInpageProvider(
+  provider?: unknown,
+): provider is EIPProvider {
+  if (!provider || typeof provider === "string") return false;
+  return typeof (provider as any).request === "function";
 }
 
 // Transfer token or ether
@@ -44,9 +53,9 @@ export async function transferAsset(
   fromAddress: Address,
   toAddress: Address,
   amount: JSBI,
-  asset?: Asset
+  asset?: Asset,
 ) {
-  if (isToken(asset)) {
+  if (asset?.address) {
     return await transferToken(web3, fromAddress, toAddress, amount, asset);
   }
 
@@ -59,7 +68,7 @@ export async function transferToken(
   fromAddress: Address,
   toAddress: Address,
   amount: JSBI,
-  asset: Token
+  asset: Asset,
 ) {
   const contract = getTokenContract(web3, asset);
   return new Promise<string>((resolve, reject) => {
@@ -92,7 +101,7 @@ export async function transferEther(
   web3: Web3,
   fromAddress: Address,
   toAddress: Address,
-  amount: JSBI
+  amount: JSBI,
 ) {
   return new Promise<string>((resolve, reject) => {
     let hash: string;
@@ -128,11 +137,12 @@ export async function getEtheriumBalance(web3: Web3, address: Address) {
   return AssetAmount(
     {
       symbol: "eth",
+      label: "ETH",
       address: "",
       decimals: 18,
       name: "Ethereum",
       network: Network.ETHEREUM,
     },
-    web3.utils.fromWei(ethBalance)
+    ethBalance,
   );
 }

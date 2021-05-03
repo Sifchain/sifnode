@@ -1,9 +1,10 @@
 import { ApiContext } from "../api";
-import { Asset, Coin, Network, Token } from "../entities";
+import { Asset, Network } from "../entities";
 import { getMetamaskProvider } from "../api/EthereumService/utils/getMetamaskProvider";
 
 type TokenConfig = {
   symbol: string;
+  label?: string;
   decimals: number;
   imageUrl?: string;
   name: string;
@@ -12,6 +13,7 @@ type TokenConfig = {
 };
 
 type CoinConfig = {
+  label?: string;
   symbol: string;
   decimals: number;
   imageUrl?: string;
@@ -21,15 +23,22 @@ type CoinConfig = {
 
 export type AssetConfig = CoinConfig | TokenConfig;
 
-function isTokenConfig(a: any): a is TokenConfig {
-  return typeof a?.address === "string";
+/**
+ * Convert asset config to label with appropriate capitalization
+ */
+function parseLabel(a: AssetConfig) {
+  if (a.network === Network.SIFCHAIN) {
+    return a.symbol.indexOf("c") === 0
+      ? "c" + a.symbol.slice(1).toUpperCase()
+      : a.symbol.toUpperCase();
+  }
+
+  // network is ethereum
+  return a.symbol === "erowan" ? "eROWAN" : a.symbol.toUpperCase();
 }
 
-function parseAsset(a: unknown): Asset {
-  if (isTokenConfig(a)) {
-    return Token(a);
-  }
-  return Coin(a as CoinConfig);
+function parseAsset(a: AssetConfig): Asset {
+  return Asset({ ...a, label: parseLabel(a) });
 }
 
 export type KeplrChainConfig = {
@@ -88,20 +97,20 @@ export function parseAssets(configAssets: AssetConfig[]): Asset[] {
 }
 
 export function parseConfig(config: ChainConfig, assets: Asset[]): ApiContext {
-  const nativeAsset = assets.find(a => a.symbol === config.nativeAsset);
+  const nativeAsset = assets.find((a) => a.symbol === config.nativeAsset);
 
   if (!nativeAsset)
     throw new Error(
-      "No nativeAsset defined for chain config:" + JSON.stringify(config)
+      "No nativeAsset defined for chain config:" + JSON.stringify(config),
     );
 
-  const bridgetokenContractAddress = (assets.find(
-    token => token.symbol === "erowan"
-  ) as Token).address;
+  const bridgetokenContractAddress = assets.find(
+    (token) => token.symbol === "erowan",
+  )?.address!;
 
   const sifAssets = assets
-    .filter(asset => asset.network === "sifchain")
-    .map(sifAsset => {
+    .filter((asset) => asset.network === "sifchain")
+    .map((sifAsset) => {
       return {
         coinDenom: sifAsset.symbol,
         coinDecimals: sifAsset.decimals,

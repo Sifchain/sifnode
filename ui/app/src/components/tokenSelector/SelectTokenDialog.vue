@@ -2,7 +2,10 @@
 import { defineComponent, PropType } from "vue"; /* eslint-disable-line */
 import { Ref, ref, toRefs } from "@vue/reactivity";
 import { useCore } from "../../hooks/useCore";
+import { sortAssetAmount } from "../../views/utils/sortAssetAmount";
 import AssetItem from "@/components/shared/AssetItem.vue";
+import { format } from "ui-core/src/utils/format";
+import { computed } from "@vue/reactivity";
 import {
   disableSelected,
   filterTokenList,
@@ -10,6 +13,10 @@ import {
 } from "./tokenLists";
 import SifInput from "@/components/shared/SifInput.vue";
 import { Asset } from "ui-core";
+
+type Balances = {
+  age: number;
+};
 
 export default defineComponent({
   name: "SelectTokenDialog",
@@ -25,28 +32,46 @@ export default defineComponent({
     },
   },
   setup(props, context) {
-    const { actions } = useCore();
+    const { store, actions } = useCore();
     const { forceShowAllATokens } = props;
     const searchText = ref("");
     const selectedTokens = props.selectedTokens || [];
     const allSifTokens = ref(actions.peg.getSifTokens());
     const { fullSearchList, displayList } = toRefs(props);
 
-
-
-    const list = filterTokenList({
-      searchText,
-      tokens: forceShowAllATokens ? allSifTokens : fullSearchList,
-      displayList: forceShowAllATokens ? allSifTokens : displayList,
-    });
-
-    const tokens = disableSelected({ list, selectedTokens });
-
     function selectToken(symbol: string) {
       context.emit("tokenselected", symbol);
     }
 
-    return { tokens, searchText, selectToken };
+    const tokenBalances = computed(() => {
+      const list = filterTokenList({
+        searchText,
+        tokens: true ? allSifTokens : fullSearchList,
+        displayList: forceShowAllATokens ? allSifTokens : displayList,
+      });
+
+      const balances = store.wallet.sif.balances;
+
+      let tokens = disableSelected({ list, selectedTokens });
+
+      let tokenBalances = tokens.value.map((asset) => {
+        let balance = null;
+        // If not connected to Keplr, we still want to display the possible assets to trade
+        if (balances) {
+          balance = balances.find((balance) => {
+            return (
+              balance.asset.symbol.toLowerCase() === asset.symbol.toLowerCase()
+            );
+          });
+        }
+        return { asset: asset, amount: balance };
+      });
+
+      tokenBalances = sortAssetAmount(tokenBalances);
+
+      return tokenBalances;
+    });
+    return { searchText, selectToken, tokenBalances, format };
   },
 });
 </script>
@@ -65,17 +90,21 @@ export default defineComponent({
   </div>
 
   <div class="body">
-    <div class="no-tokens-message" v-if="tokens.length === 0">
+    <div class="no-tokens-message" v-if="tokenBalances.length === 0">
       <p>No tokens available.</p>
     </div>
     <button
+      :data-handle="tb.asset.symbol + '-select-button'"
       class="option"
-      v-for="token in tokens"
-      :disabled="token.disabled"
-      :key="token.symbol"
-      @click="selectToken(token.symbol)"
+      v-for="tb in tokenBalances"
+      :disabled="tb.asset.disabled"
+      :key="tb.asset.symbol"
+      @click="selectToken(tb.asset.symbol)"
     >
-      <AssetItem :symbol="token.symbol" />
+      <AssetItem :symbol="tb.asset.symbol" />
+      <div class="balance">
+        {{ tb.amount ? format(tb.amount, tb.asset, { mantissa: 4 }) : "0" }}
+      </div>
     </button>
   </div>
 </template>
@@ -127,13 +156,24 @@ export default defineComponent({
   text-align: left;
   background: transparent;
   border: none;
-
+  display: flex;
+  justify-content: space-between;
   @include listAnimation;
-
+  color: #818181;
+  font-family: "PT Serif", serif;
+  font-size: 14px;
+  font-style: italic;
+  padding-right: 14px;
   &[disabled] {
     color: #bbb;
     pointer-events: none;
   }
+}
+.balance {
+  color: #818181;
+  font-family: "PT Serif", serif;
+  font-size: 14px;
+  font-style: italic;
 }
 .no-tokens-message {
   padding: 40px;

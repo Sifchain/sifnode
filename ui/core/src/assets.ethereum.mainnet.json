@@ -424,7 +424,7 @@
       "imageUrl": "https://assets.coingecko.com/coins/images/4932/thumb_2x/_QPpjoUi_400x400.jpg?1566430520",
       "name": "COCOS BCX",
       "network": "ethereum",
-      "priceUsd": 0.927120,
+      "priceUsd": 0.92712,
       "symbol": "cocos",
       "transferLimit": "99999999999999999999999"
     },
@@ -446,6 +446,116 @@
       "network": "ethereum",
       "priceUsd": 0.4111,
       "symbol": "ogn",
+      "transferLimit": "99999999999999999999999"
+    },
+    {
+      "address": "0xd82bb924a1707950903e2c0a619824024e254cd1",
+      "decimals": 18,
+      "imageUrl": "https://assets.coingecko.com/coins/images/12782/small/logocircle.png?1611944557",
+      "name": "DAOfi",
+      "network": "ethereum",
+      "priceUsd": 1.05,
+      "symbol": "daofi",
+      "transferLimit": "99999999999999999999999"
+    },
+    {
+      "address": "0x3e9bc21c9b189c09df3ef1b824798658d5011937",
+      "decimals": 18,
+      "imageUrl": "https://assets.coingecko.com/coins/images/12509/small/linear.jpg?1606884470",
+      "name": "Linear",
+      "network": "ethereum",
+      "priceUsd": 0.1706,
+      "symbol": "lina",
+      "transferLimit": "99999999999999999999999"
+    },
+    {
+      "address": "0x525794473f7ab5715c81d06d10f52d11cc052804",
+      "decimals": 18,
+      "imageUrl": "https://assets.coingecko.com/coins/images/9351/small/12ships.png?1566485390",
+      "name": "12Ships",
+      "network": "ethereum",
+      "priceUsd": 0.0318,
+      "symbol": "tshp",
+      "transferLimit": "99999999999999999999999"
+    },
+    {
+      "address": "0xc4de189abf94c57f396bd4c52ab13b954febefd8",
+      "decimals": 18,
+      "imageUrl": "https://assets.coingecko.com/coins/images/13803/small/b20.png?1611996305",
+      "name": "B.20",
+      "network": "ethereum",
+      "priceUsd": 9.0934,
+      "symbol": "b20",
+      "transferLimit": "99999999999999999999999"
+    },
+    {
+      "address": "0x8ab7404063ec4dbcfd4598215992dc3f8ec853d7",
+      "decimals": 18,
+      "imageUrl": "https://assets.coingecko.com/coins/images/3328/small/Akropolis.png?1547037929",
+      "name": "Akropolis",
+      "network": "ethereum",
+      "priceUsd": 0.067,
+      "symbol": "akro",
+      "transferLimit": "99999999999999999999999"
+    },
+    {
+      "address": "0xaf9f549774ecedbd0966c52f250acc548d3f36e5",
+      "decimals": 18,
+      "imageUrl": "https://assets.coingecko.com/coins/images/12623/small/RFUEL_SQR.png?1602481093",
+      "name": "Rio Fuel Token",
+      "network": "ethereum",
+      "priceUsd": 0.1596,
+      "symbol": "rfuel",
+      "transferLimit": "99999999999999999999999"
+    },
+    {
+      "address": "0xf1f955016ecbcd7321c7266bccfb96c68ea5e49b",
+      "decimals": 18,
+      "imageUrl": "https://assets.coingecko.com/coins/images/12843/small/image.png?1611212077",
+      "name": "Rally",
+      "network": "ethereum",
+      "priceUsd": 1.11,
+      "symbol": "rly",
+      "transferLimit": "99999999999999999999999"
+    },
+    {
+      "address": "0xc834fa996fa3bec7aad3693af486ae53d8aa8b50",
+      "decimals": 18,
+      "imageUrl": "https://etherscan.io/token/images/convergence_32.png",
+      "name": "Convergence",
+      "network": "ethereum",
+      "priceUsd": 0.1531,
+      "symbol": "conv",
+      "transferLimit": "99999999999999999999999"
+    },
+    {
+      "address": "0x6de037ef9ad2725eb40118bb1702ebb27e4aeb24",
+      "decimals": 18,
+      "imageUrl": "https://etherscan.io/token/images/render_32.png",
+      "name": "Render Token",
+      "network": "ethereum",
+      "priceUsd": 2.21,
+      "symbol": "rndr",
+      "transferLimit": "99999999999999999999999"
+    },
+    {
+      "address": "0x1614f18fc94f47967a3fbe5ffcd46d4e7da3d787",
+      "decimals": 18,
+      "imageUrl": "https://etherscan.io/token/images/paidnetwork_32.png",
+      "name": "PAID Network",
+      "network": "ethereum",
+      "priceUsd": 0.1596,
+      "symbol": "paid",
+      "transferLimit": "99999999999999999999999"
+    },
+    {
+      "address": "0x29cbd0510eec0327992cd6006e63f9fa8e7f33b7",
+      "decimals": 18,
+      "imageUrl": "https://assets.coingecko.com/coins/images/14460/small/Tidal-mono.png?1616233894",
+      "name": "Tidal",
+      "network": "ethereum",
+      "priceUsd": 0,
+      "symbol": "tidal",
       "transferLimit": "99999999999999999999999"
     }
   ]

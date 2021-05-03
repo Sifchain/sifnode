@@ -4,7 +4,11 @@ import { defineComponent } from "vue";
 
 export default defineComponent({
   components: { Panel },
-  props: { isOpen: { type: Boolean, default: false }, requestClose: Function },
+  props: {
+    isOpen: { type: Boolean, default: false },
+    requestClose: Function,
+    dataHandle: String,
+  },
   emits: ["close"],
 });
 </script>
@@ -14,9 +18,20 @@ export default defineComponent({
     <teleport to="#portal-target">
       <transition name="fadein">
         <div class="backdrop" v-if="isOpen" @click="requestClose">
-          <Panel class="modal-panel" v-if="isOpen" @click.stop>
+          <Panel
+            class="modal-panel"
+            v-if="isOpen"
+            @click.stop
+            :data-handle="dataHandle"
+          >
             <slot :requestClose="requestClose"></slot>
-            <div class="close" @click="requestClose">&times;</div>
+            <div
+              class="close"
+              data-handle="modal-view-close"
+              @click="requestClose"
+            >
+              &times;
+            </div>
           </Panel>
         </div>
       </transition>
@@ -78,4 +93,3 @@ export default defineComponent({
   padding-top: 4rem; /* take into account header for centering */
 }
 </style>
-

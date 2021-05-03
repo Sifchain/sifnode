@@ -16,6 +16,8 @@ import DetailsPanel from "@/components/shared/DetailsPanel.vue";
 import SlippagePanel from "@/components/slippagePanel/Index.vue";
 import { ConfirmState } from "../types";
 import { toConfirmState } from "./utils/toConfirmState";
+import { getMaxAmount } from "./utils/getMaxAmount";
+import { format } from "ui-core/src/utils/format";
 
 export default defineComponent({
   components: {
@@ -56,14 +58,16 @@ export default defineComponent({
 
     const getAccountBalance = () => {
       return balances.value.find(
-        (balance) => balance.asset.symbol === fromSymbol.value
+        (balance) => balance.asset.symbol === fromSymbol.value,
       );
     };
 
     const isFromMaxActive = computed(() => {
       const accountBalance = getAccountBalance();
       if (!accountBalance) return false;
-      return fromAmount.value === accountBalance.toFixed();
+      return (
+        fromAmount.value === format(accountBalance.amount, accountBalance.asset)
+      );
     });
 
     const {
@@ -112,7 +116,7 @@ export default defineComponent({
       const tx = await actions.clp.swap(
         fromFieldAmount.value,
         toFieldAmount.value.asset,
-        minimumReceived.value
+        minimumReceived.value,
       );
       transactionHash.value = tx.hash;
       transactionState.value = toConfirmState(tx.state); // TODO: align states
@@ -189,7 +193,11 @@ export default defineComponent({
       fromAmount,
       toAmount,
       fromSymbol,
-      minimumReceived,
+      minimumReceived: computed(() => {
+        if (!minimumReceived.value) return "";
+        const { amount, asset } = minimumReceived.value;
+        return format(amount, asset, { mantissa: 18, trimMantissa: true });
+      }),
       toSymbol,
       priceMessage,
       priceImpact,
@@ -198,7 +206,10 @@ export default defineComponent({
         selectedField.value = "from";
         const accountBalance = getAccountBalance();
         if (!accountBalance) return;
-        fromAmount.value = accountBalance.toFixed(18);
+        const maxAmount = getMaxAmount(fromSymbol, accountBalance);
+        fromAmount.value = format(maxAmount, accountBalance.asset, {
+          mantissa: 1,
+        });
       },
       nextStepAllowed: computed(() => {
         return state.value === SwapState.VALID_INPUT;
@@ -211,6 +222,7 @@ export default defineComponent({
           "failed",
           "rejected",
           "confirmed",
+          "out_of_gas",
         ].includes(transactionState.value);
       }),
       requestTransactionModalClose,

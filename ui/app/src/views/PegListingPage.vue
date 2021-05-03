@@ -1,74 +1,3 @@
-<template>
-  <Layout>
-    <div class="search-text">
-      <SifInput
-        gold
-        placeholder="Search name or paste address"
-        type="text"
-        v-model="searchText"
-      />
-    </div>
-    <Tabs :defaultIndex="1" @tabselected="onTabSelected">
-      <Tab title="External Tokens">
-        <AssetList :items="assetList" v-slot="{ asset }">
-          <SifButton
-            :to="`/peg/${asset.asset.symbol}/${peggedSymbol(
-              asset.asset.symbol
-            )}`"
-            primary
-            >Peg</SifButton
-          >
-        </AssetList>
-      </Tab>
-      <Tab title="Sifchain Native">
-        <AssetList :items="assetList">
-          <template #default="{ asset }">
-            <SifButton
-              :to="`/peg/reverse/${asset.asset.symbol}/${unpeggedSymbol(
-                asset.asset.symbol
-              )}`"
-              primary
-              >Unpeg</SifButton
-            >
-          </template>
-          <template #annotation="{ pegTxs }">
-            <span v-if="pegTxs.length > 0">
-              <Tooltip>
-                <template #message>
-                  <p>You have the following pending transactions:</p>
-                  <br />
-                  <p v-for="tx in pegTxs" :key="tx.hash">
-                    <a
-                      :href="`https://etherscan.io/tx/${tx.hash}`"
-                      :title="tx.hash"
-                      target="_blank"
-                      >{{ shortenHash(tx.hash) }}</a
-                    >
-                  </p></template
-                >
-                <template #default
-                  >&nbsp;<span class="footnote">*</span></template
-                >
-              </Tooltip>
-            </span>
-          </template>
-        </AssetList>
-      </Tab>
-    </Tabs>
-    <ActionsPanel connectType="connectToAll" />
-  </Layout>
-</template>
-<style lang="scss" scoped>
-.search-text {
-  margin-bottom: 1rem;
-}
-.footnote {
-  font-family: Arial, Helvetica, sans-serif;
-  font-weight: bold;
-  font-style: normal;
-  color: $c_gold_dark;
-}
-</style>
 <script lang="ts">
 import Tab from "@/components/shared/Tab.vue";
 import Tabs from "@/components/shared/Tabs.vue";
@@ -78,12 +7,14 @@ import SifInput from "@/components/shared/SifInput.vue";
 import ActionsPanel from "@/components/actionsPanel/ActionsPanel.vue";
 import SifButton from "@/components/shared/SifButton.vue";
 import Tooltip from "@/components/shared/Tooltip.vue";
+import Icon from "@/components/shared/Icon.vue";
 
+import { sortAssetAmount } from "./utils/sortAssetAmount";
 import { useCore } from "@/hooks/useCore";
 import { defineComponent, ref } from "vue";
 import { computed } from "@vue/reactivity";
 import { getUnpeggedSymbol } from "../components/shared/utils";
-import { TransactionStatus } from "ui-core";
+import { AssetAmount, IAsset, TransactionStatus } from "ui-core";
 
 export default defineComponent({
   components: {
@@ -95,10 +26,20 @@ export default defineComponent({
     SifInput,
     ActionsPanel,
     Tooltip,
+    Icon,
   },
   setup(_, context) {
     const { store, actions } = useCore();
+    function getIsSupportedNetwork(asset: IAsset): boolean {
+      if (asset.network === "ethereum") {
+        return actions.ethWallet.isSupportedNetwork();
+      }
 
+      if (asset.network === "sifchain") {
+        return true; // TODO: Handle the case of whether the network is supported
+      }
+      return false;
+    }
     const searchText = ref("");
     const selectedTab = ref("Sifchain Native");
 
@@ -146,12 +87,12 @@ export default defineComponent({
 
       const pegList = pendingPegTxList.value;
 
-      return allTokens.value
+      let listedTokens = allTokens.value
         .filter(
           ({ symbol }) =>
             symbol
               .toLowerCase()
-              .indexOf(searchText.value.toLowerCase().trim()) > -1
+              .indexOf(searchText.value.toLowerCase().trim()) > -1,
         )
         .map((asset) => {
           const amount = balances.find(({ asset: { symbol } }) => {
@@ -163,11 +104,17 @@ export default defineComponent({
             ? pegList.filter(
                 (txStatus) =>
                   txStatus.symbol?.toLowerCase() ===
-                  getUnpeggedSymbol(asset.symbol.toLowerCase())
+                  getUnpeggedSymbol(asset.symbol.toLowerCase()),
               )
             : [];
 
-          if (!amount) return { amount: 0, asset, pegTxs };
+          if (!amount) {
+            return {
+              amount: AssetAmount(asset, "0"),
+              asset,
+              pegTxs,
+            };
+          }
 
           return {
             amount,
@@ -175,6 +122,29 @@ export default defineComponent({
             pegTxs,
           };
         });
+
+      const listedTokensSorted = sortAssetAmount(listedTokens);
+
+      // attach pegTxs
+      const listedTokensPegTxs = listedTokensSorted.map((token) => {
+        // Get pegTxs for asset
+        const pegTxs = pegList
+          ? pegList.filter(
+              (txStatus) =>
+                txStatus.symbol?.toLowerCase() ===
+                getUnpeggedSymbol(token.asset.symbol.toLowerCase()),
+            )
+          : [];
+        // Is the asset from a supported network
+        const supported = getIsSupportedNetwork(token.asset);
+        return {
+          asset: token.asset,
+          amount: token.amount,
+          supported,
+          pegTxs,
+        };
+      });
+      return listedTokensPegTxs;
     });
 
     // TODO: add to utils
@@ -188,7 +158,6 @@ export default defineComponent({
       shortenHash,
       assetList,
       searchText,
-
       peggedSymbol(unpeggedSymbol: string) {
         if (unpeggedSymbol.toLowerCase() === "erowan") {
           return "rowan";
@@ -210,3 +179,81 @@ export default defineComponent({
   },
 });
 </script>
+
+<template>
+  <Layout>
+    <div class="search-text">
+      <SifInput
+        gold
+        placeholder="Search name or paste address"
+        type="text"
+        v-model="searchText"
+      />
+    </div>
+    <Tabs :defaultIndex="1" @tabselected="onTabSelected">
+      <Tab title="External Tokens" slug="external-tab">
+        <AssetList :items="assetList" v-slot="{ asset }">
+          <SifButton
+            :disabled="!asset.supported"
+            :to="`/peg/${asset.asset.symbol}/${peggedSymbol(
+              asset.asset.symbol,
+            )}`"
+            primary
+            :data-handle="'peg-' + asset.asset.symbol"
+            >Peg</SifButton
+          >
+          <Tooltip v-if="!asset.supported" message="Network not supported">
+            &nbsp;<Icon icon="info-box-black" />
+          </Tooltip>
+        </AssetList>
+      </Tab>
+      <Tab title="Sifchain Native" slug="native-tab">
+        <AssetList :items="assetList">
+          <template #default="{ asset }">
+            <SifButton
+              :to="`/peg/reverse/${asset.asset.symbol}/${unpeggedSymbol(
+                asset.asset.symbol,
+              )}`"
+              primary
+              :data-handle="'unpeg-' + asset.asset.symbol"
+              >Unpeg</SifButton
+            >
+          </template>
+          <template #annotation="{ pegTxs }">
+            <span v-if="pegTxs.length > 0">
+              <Tooltip>
+                <template #message>
+                  <p>You have the following pending transactions:</p>
+                  <br />
+                  <p v-for="tx in pegTxs" :key="tx.hash">
+                    <a
+                      :href="`https://etherscan.io/tx/${tx.hash}`"
+                      :title="tx.hash"
+                      target="_blank"
+                      >{{ shortenHash(tx.hash) }}</a
+                    >
+                  </p></template
+                >
+                <template #default
+                  >&nbsp;<span class="footnote">*</span></template
+                >
+              </Tooltip>
+            </span>
+          </template>
+        </AssetList>
+      </Tab>
+    </Tabs>
+    <ActionsPanel connectType="connectToAll" />
+  </Layout>
+</template>
+<style lang="scss" scoped>
+.search-text {
+  margin-bottom: 1rem;
+}
+.footnote {
+  font-family: Arial, Helvetica, sans-serif;
+  font-weight: bold;
+  font-style: normal;
+  color: $c_gold_dark;
+}
+</style>

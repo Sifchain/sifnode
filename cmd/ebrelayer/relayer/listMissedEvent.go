@@ -11,6 +11,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
 	tmClient "github.com/tendermint/tendermint/rpc/client/http"
+	"go.uber.org/zap"
 )
 
 // ListMissedCosmosEvent defines a Cosmos listener that relays events to Ethereum and Cosmos
@@ -20,17 +21,19 @@ type ListMissedCosmosEvent struct {
 	RegistryContractAddress common.Address
 	EthereumAddress         common.Address
 	Days                    int64
+	SugaredLogger           *zap.SugaredLogger
 }
 
 // NewListMissedCosmosEvent initializes a new CosmosSub
 func NewListMissedCosmosEvent(tmProvider, ethProvider string, registryContractAddress common.Address,
-	ethereumAddress common.Address, days int64) ListMissedCosmosEvent {
+	ethereumAddress common.Address, days int64, sugaredLogger *zap.SugaredLogger) ListMissedCosmosEvent {
 	return ListMissedCosmosEvent{
 		TmProvider:              tmProvider,
 		EthProvider:             ethProvider,
 		RegistryContractAddress: registryContractAddress,
 		EthereumAddress:         ethereumAddress,
 		Days:                    days,
+		SugaredLogger:           sugaredLogger,
 	}
 }
 
@@ -106,7 +109,7 @@ func (list ListMissedCosmosEvent) ListMissedCosmosEvent() {
 				switch claimType {
 				case types.MsgBurn, types.MsgLock:
 
-					cosmosMsg, err := txs.BurnLockEventToCosmosMsg(claimType, event.GetAttributes())
+					cosmosMsg, err := txs.BurnLockEventToCosmosMsg(claimType, event.GetAttributes(), list.SugaredLogger)
 					if err != nil {
 						log.Println(err.Error())
 						continue

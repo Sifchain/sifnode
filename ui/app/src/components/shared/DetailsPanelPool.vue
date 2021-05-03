@@ -1,8 +1,7 @@
 <template>
   <div class="details">
-
     <div class="details-header">
-      <div class="details-row">
+      <div class="details-row" data-handle="token-a-details-panel-pool-row">
         <span class="details-row-asset">
           <AssetItem :symbol="fromTokenLabel" inline />&nbsp;Deposited
         </span>
@@ -10,7 +9,7 @@
           <span>{{ fromAmount ? fromAmount : 0 }}</span>
         </div>
       </div>
-      <div class="details-row">
+      <div class="details-row" data-handle="token-b-details-panel-pool-row">
         <span class="details-row-asset">
           <AssetItem :symbol="toTokenLabel" inline />&nbsp;Deposited
         </span>
@@ -27,15 +26,41 @@
       </div>
     </div>
     <div class="details-body">
-      <div class="details-row" v-if="realBPerA">
+      <div class="details-row" data-handle="real-b-per-a-row" v-if="realBPerA">
         <span>Rates</span>
-        <span>1 {{ fromTokenLabel.toLowerCase().includes("rowan") ? fromTokenLabel.toUpperCase() : "c" + fromTokenLabel.slice(1).toUpperCase() }} = {{ realBPerA }} {{ toTokenLabel.toLowerCase().includes("rowan") ? toTokenLabel.toUpperCase() : "c" + toTokenLabel.slice(1).toUpperCase() }}</span>
+        <span
+          >1
+          {{
+            fromTokenLabel.toLowerCase().includes("rowan")
+              ? fromTokenLabel.toUpperCase()
+              : "c" + fromTokenLabel.slice(1).toUpperCase()
+          }}
+          = {{ realBPerA }}
+          {{
+            toTokenLabel.toLowerCase().includes("rowan")
+              ? toTokenLabel.toUpperCase()
+              : "c" + toTokenLabel.slice(1).toUpperCase()
+          }}</span
+        >
       </div>
-      <div class="details-row" v-if="realAPerB">
+      <div class="details-row" data-handle="real-a-per-b-row" v-if="realAPerB">
         <span>&nbsp;</span>
-        <span>1 {{ toTokenLabel.toLowerCase().includes("rowan") ? toTokenLabel.toUpperCase() : "c" + toTokenLabel.slice(1).toUpperCase() }} = {{ realAPerB }} {{ fromTokenLabel.toLowerCase().includes("rowan") ? fromTokenLabel.toUpperCase() : "c" + fromTokenLabel.slice(1).toUpperCase() }}</span>
+        <span
+          >1
+          {{
+            toTokenLabel.toLowerCase().includes("rowan")
+              ? toTokenLabel.toUpperCase()
+              : "c" + toTokenLabel.slice(1).toUpperCase()
+          }}
+          = {{ realAPerB }}
+          {{
+            fromTokenLabel.toLowerCase().includes("rowan")
+              ? fromTokenLabel.toUpperCase()
+              : "c" + fromTokenLabel.slice(1).toUpperCase()
+          }}</span
+        >
       </div>
-      <div class="details-row">
+      <div class="details-row" data-handle="real-share-of-pool">
         <span>Share of Pool:</span>
         <span>{{ shareOfPool }}</span>
       </div>
@@ -84,7 +109,6 @@
         margin-left: 5px;
       }
     }
-
   }
 }
 </style>
@@ -98,26 +122,26 @@ export default defineComponent({
     AssetItem,
   },
   props: {
-    fromTokenLabel: { type: String, default: ""},
-    fromAmount: { type: String, default: ""},
-    fromTokenImage: { type: String, default: ""},
-    toTokenLabel: { type: String, default: ""},
-    toAmount: { type: String, default: ""},
-    toTokenImage: { type: String, default: ""},
-    aPerB: { type: String, default: ""},
-    bPerA: { type: String, default: ""},
+    fromTokenLabel: { type: String, default: "" },
+    fromAmount: { type: String, default: "" },
+    fromTokenImage: { type: String, default: "" },
+    toTokenLabel: { type: String, default: "" },
+    toAmount: { type: String, default: "" },
+    toTokenImage: { type: String, default: "" },
+    aPerB: { type: String, default: "" },
+    bPerA: { type: String, default: "" },
     shareOfPool: String,
   },
   setup(props) {
     const { aPerB, bPerA } = props;
     return {
       realAPerB: computed(() => {
-        return aPerB === 'N/A' ? '0' : aPerB;
+        return aPerB === "N/A" ? "0" : aPerB;
       }),
       realBPerA: computed(() => {
-        return bPerA === 'N/A' ? '0' : bPerA;
+        return bPerA === "N/A" ? "0" : bPerA;
       }),
-    }
-  }
+    };
+  },
 });
 </script>

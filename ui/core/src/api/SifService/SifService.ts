@@ -11,6 +11,7 @@ import {
   Address,
   Asset,
   AssetAmount,
+  IAssetAmount,
   Network,
   TransactionStatus,
   TxParams,
@@ -53,7 +54,7 @@ export default function createSifService({
     connected: boolean;
     address: Address;
     accounts: Address[];
-    balances: AssetAmount[];
+    balances: IAssetAmount[];
     log: string; // latest transaction hash
   } = reactive({
     connected: false,
@@ -67,18 +68,19 @@ export default function createSifService({
   let keplrProvider: any;
   let client: SifClient | null = null;
   let polling: any;
+  let connecting: boolean = false;
 
   const unSignedClient = new SifUnSignedClient(sifApiUrl, sifWsUrl, sifRpcUrl);
 
   const supportedTokens = assets.filter(
-    (asset) => asset.network === Network.SIFCHAIN
+    (asset) => asset.network === Network.SIFCHAIN,
   );
 
   async function createSifClientFromMnemonic(mnemonic: string) {
     const wallet = await Secp256k1HdWallet.fromMnemonic(
       mnemonic,
       makeCosmoshubPath(0),
-      sifAddrPrefix
+      sifAddrPrefix,
     );
     const accounts = await wallet.getAccounts();
 
@@ -128,7 +130,7 @@ export default function createSifService({
       }
     },
     100,
-    { leading: true }
+    { leading: true },
   );
 
   const instance = {
@@ -147,10 +149,23 @@ export default function createSifService({
       if (!keplrProvider) {
         return;
       }
+      if (connecting || state.connected) {
+        return;
+      }
+      connecting = true;
+      /* 
+        Only load dev env keplr configs.
+        Will need to change chain id in devnet, testnet so keplr asks to add experimental chain. 
+        Otherwise, if sifchain, auto maps to production chain per keplr code.
+      */
+      if (!state.connected && keplrChainConfig.chainId !== "sifchain") {
+        await this.connect();
+      }
       const offlineSigner = keplrProvider.getOfflineSigner(
-        keplrChainConfig.chainId
+        keplrChainConfig.chainId,
       );
       const accounts = await offlineSigner.getAccounts();
+      console.log("account", accounts);
       const address = accounts.length > 0 ? accounts[0].address : "";
       if (!address) {
         throw "No address on sif account";
@@ -160,8 +175,9 @@ export default function createSifService({
         address,
         offlineSigner,
         sifWsUrl,
-        sifRpcUrl
+        sifRpcUrl,
       );
+      connecting = false;
     },
 
     async initProvider() {
@@ -231,7 +247,10 @@ export default function createSifService({
       // We currently delegate auth to Keplr so this is irrelevant
     },
 
-    async getBalance(address?: Address, asset?: Asset): Promise<AssetAmount[]> {
+    async getBalance(
+      address?: Address,
+      asset?: Asset,
+    ): Promise<IAssetAmount[]> {
       if (!client) {
         throw "No client. Please sign in.";
       }
@@ -251,9 +270,9 @@ export default function createSifService({
           .filter((balance) => supportedTokenSymbols.includes(balance.denom))
           .map(({ amount, denom }) => {
             const asset = supportedTokens.find(
-              (token) => token.symbol === denom
+              (token) => token.symbol === denom,
             )!; // will be found because of filter above
-            return AssetAmount(asset, amount, { inBaseUnit: true });
+            return AssetAmount(asset, amount);
           })
           .filter((balance) => {
             // If an aseet is supplied filter for it
@@ -291,7 +310,7 @@ export default function createSifService({
 
         const fee = {
           amount: coins(0, params.asset.symbol),
-          gas: "300000", // TODO - see if "auto" setting
+          gas: "500000", // TODO - see if "auto" setting
         };
 
         return await client.signAndBroadcast([msg], fee, params.memo);
@@ -302,7 +321,7 @@ export default function createSifService({
 
     async signAndBroadcast(
       msg: Msg | Msg[],
-      memo?: string
+      memo?: string,
     ): Promise<TransactionStatus> {
       if (!client) {
         throw "No client. Please sign in.";
@@ -310,7 +329,7 @@ export default function createSifService({
       try {
         const fee = {
           amount: coins(0, "rowan"),
-          gas: "300000", // TODO - see if "auto" setting
+          gas: "500000", // TODO - see if "auto" setting
         };
 
         const msgArr = Array.isArray(msg) ? msg : [msg];

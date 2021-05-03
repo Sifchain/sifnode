@@ -1,9 +1,12 @@
 import createActions from "./ethWallet";
-import { IWalletService } from "../api/IWalletService";
-import { Address, Asset, Network, Token, TxParams } from "../entities";
+
+import { Address, Asset, Network, TxParams } from "../entities";
 import { Msg } from "@cosmjs/launchpad";
-let mockEthereumService: IWalletService;
+import { IWalletService } from "../api/IWalletService";
+let mockEthereumService: IWalletService & {};
+let mockEventBusService: any;
 let ethWalletActions: ReturnType<typeof createActions>;
+let dispatch = jest.fn();
 
 beforeEach(() => {
   mockEthereumService = {
@@ -19,13 +22,23 @@ beforeEach(() => {
     connect: async () => {},
     disconnect: jest.fn(async () => {}),
     transfer: jest.fn(async (params: TxParams) => ""),
-    getBalance: async (address: Address, asset?: Asset | Token) => [],
+    getBalance: async (address: Address, asset?: Asset) => [],
     signAndBroadcast: async (msg: Msg, memo?: string) => {},
     setPhrase: async (phrase: string) => "",
     purgeClient: () => {},
+    onProviderNotFound: () => {},
+    onChainIdDetected: () => {},
   };
+
+  mockEventBusService = {
+    dispatch: dispatch,
+  };
+
   ethWalletActions = createActions({
-    api: { EthereumService: mockEthereumService },
+    api: {
+      EthereumService: mockEthereumService,
+      EventBusService: mockEventBusService,
+    },
     store: {
       asset: { topTokens: [] },
       wallet: {
@@ -48,13 +61,14 @@ test("Calls transfer correctly", async () => {
   await ethWalletActions.transferEthWallet(
     123,
     "abcdef",
-    Token({
+    Asset({
       name: "Ethereum",
+      label: "ETH",
       network: Network.SIFCHAIN,
       address: "abcdefg",
       decimals: 18,
       symbol: "ceth",
-    })
+    }),
   );
   expect(mockEthereumService.transfer).toHaveBeenCalled();
 });

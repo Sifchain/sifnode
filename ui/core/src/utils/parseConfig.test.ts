@@ -87,7 +87,7 @@ const expected = {
         coinDecimals: 12,
         coinDenom: "rowan",
         coinMinimalDenom: "rowan",
-      }
+      },
     ],
     feeCurrencies: [
       {
@@ -131,6 +131,7 @@ test("parseConfig", () => {
         name: "123",
         network: Network.SIFCHAIN,
         symbol: "rowan",
+        label: "ROWAN",
       },
       {
         address: "0x2C2B9C9a4a25e24B174f26114e8926a9f2128FE4",
@@ -138,8 +139,9 @@ test("parseConfig", () => {
         name: "123",
         network: Network.ETHEREUM,
         symbol: "erowan",
+        label: "eROWAN",
       },
-    ])
+    ]),
   ).toMatchObject(expected);
 
   expect(() => {
@@ -149,7 +151,8 @@ test("parseConfig", () => {
         decimals: 12,
         name: "123",
         network: Network.ETHEREUM,
-        symbol: "rowan",
+        symbol: "thingfoo",
+        label: "ROWAN",
       },
     ]);
   }).toThrow();
@@ -161,6 +164,7 @@ test("parseConfig", () => {
         name: "123",
         network: Network.ETHEREUM,
         symbol: "erowan",
+        label: "eROWAN",
       },
     ]);
   }).toThrow();

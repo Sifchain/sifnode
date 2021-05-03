@@ -1,14 +1,13 @@
 import { ref, Ref } from "@vue/reactivity";
 
-import { AssetAmount, LiquidityProvider, Pool } from "../entities";
-import { Fraction, IFraction } from "../entities/fraction/Fraction";
+import { Amount, AssetAmount, LiquidityProvider, Pool } from "../entities";
 import { getTestingTokens } from "../test/utils/getTestingToken";
 import { PoolState } from "./addLiquidityCalculator";
 import { useRemoveLiquidityCalculator } from "./removeLiquidityCalculator";
 
 const [CATK, ROWAN] = getTestingTokens(["CATK", "ROWAN"]);
 
-const ZERO = new Fraction("0");
+const ZERO = Amount("0");
 
 describe("useRemoveLiquidityCalculator", () => {
   // input
@@ -48,21 +47,21 @@ describe("useRemoveLiquidityCalculator", () => {
   test("displays the correct withdrawal amounts", async () => {
     liquidityProvider.value = LiquidityProvider(
       CATK,
-      new Fraction("100000") as IFraction,
+      Amount("100000000000000000000000"),
       "sif123456876512341234",
       ZERO,
-      ZERO
+      ZERO,
     );
 
     poolFinder.mockImplementation(
       () =>
         ref(
           Pool(
-            AssetAmount(CATK, "1000000"),
-            AssetAmount(ROWAN, "1000000"),
-            new Fraction("1000000")
-          )
-        ) as Ref<Pool>
+            AssetAmount(CATK, "1000000000000000000000000"),
+            AssetAmount(ROWAN, "1000000000000000000000000"),
+            Amount("1000000000000000000000000"),
+          ),
+        ) as Ref<Pool>,
     );
 
     expect(state.value).toBe(PoolState.SELECT_TOKENS);

@@ -92,19 +92,19 @@ where:
 |Param|Description|
 |-----|----------|
 |`<cluster>`|The name of your cluster.|
-|`<chain_id>`|The Chain ID of the network (e.g.: merry-go-round).|
+|`<chain_id>`|The Chain ID of the network (this must be `sifchain-testnet`).|
 |`<provider>`|The cloud provider to use (currently only AWS is supported).|
 |`<namespace>`|The Kubernetes namespace to use (e.g.: sifnode).|
 |`<image>`|The image to pull down from Docker Hub (e.g.: sifchain/sifnoded).|
 |`<image_tag>`|The image tag to use (this must be `testnet-genesis`)..|
 |`<moniker>`|The moniker or name of your node as you want it to appear on the network.|
-|`<peer_address>`|The address of the peer to connect to.|
+|`<peer_address>`|The address of the peer to connect to (this must be `a2864737f01d3977211e2ea624dd348595dd4f73@3.222.8.87:26656`).|
 |`<genesis_url>`|The URL of genesis file for the network.|
 
 e.g.:
 
 ```
-rake "cluster:sifnode:deploy:peer[my-cluster,merry-go-round,aws,sifnode,sifchain/sifnoded,testnet-genesis,my-node,'my mnemonic',169d512e28d142962f9e0aa51c1bd1f6b9d0bed8@35.160.89.251:26656,https://rpc-merry-go-round.sifchain.finance/genesis]"
+rake "cluster:sifnode:deploy:peer[my-cluster,sifchain-testnet,aws,sifnode,sifchain/sifnoded,testnet-genesis,my-node,'my mnemonic',a2864737f01d3977211e2ea624dd348595dd4f73@3.222.8.87:26656,https://rpc-testnet.sifchain.finance/genesis]"
 ```
 
 _Please note: the image tag *must* be `testnet-genesis`._
@@ -112,7 +112,7 @@ _Please note: the image tag *must* be `testnet-genesis`._
 5. Once deployed, check the status of the pods:
 
 ```
-kubectl get pods -n sifnode --kubeconfig ./.live/sifchain-aws-merry-go-round/kubeconfig_sifchain-aws-merry-go-round
+kubectl get pods -n sifnode --kubeconfig ./.live/sifchain-aws-testnet/kubeconfig_sifchain-testnet
 ```
 
 and you should see something that resembles the following:
@@ -157,24 +157,24 @@ rake "validator:keys:public[my-cluster,aws,sifnode]"
 3. Stake:
 
 ```
-rake "validator:stake[<chain_id>,<moniker>,<amount>,<public_key>,<node_rpc_address>]"
+rake "validator:stake[<chain_id>,<moniker>,<amount>,<gas>,<public_key>,<node_rpc_address>]"
 ```
 
 where:
 
 |Param|Description|
 |-----|----------|
-|`<chain_id>`|The Chain ID of the network (e.g.: merry-go-round).|
+|`<chain_id>`|The Chain ID of the network (this must be `sifchain-testnet`).|
 |`<moniker>`|The moniker or name of your node as you want it to appear on the network.|
 |`<amount>`|The amount to stake, including the denomination (e.g.: 100000000rowan). The precision used is 1e18.|
 |`<gas>`|The gas price (e.g.: 0.5rowan).|
 |`<public_key>`|The public key of your validator (you got this in the previous step).|
-|`<node_rpc_address>`|The address to broadcast the transaction to (e.g.: tcp://rpc-merry-go-round.sifchain.finance:80).|
+|`<node_rpc_address>`|The address to broadcast the transaction to (e.g.: tcp://rpc-testnet.sifchain.finance:80).|
 
 e.g.:
 
 ```
-rake "validator:stake[merry-go-round,my-node,10000000rowan,0.5rowan,<public_key>,tcp://rpc-merry-go-round.sifchain.finance:80]"
+rake "validator:stake[sifchain-testnet,my-node,10000000rowan,0.5rowan,<public_key>,tcp://rpc-testnet.sifchain.finance:80]"
 ```
 
 4. It may take several blocks before your node appears as a validator on the network, but you can always check by running:
@@ -186,7 +186,7 @@ sifnodecli q tendermint-validator-set --node <node_rpc_address> --trust-node
 e.g.:
 
 ```
-sifnodecli q tendermint-validator-set --node tcp://rpc-merry-go-round.sifchain.finance:80 --trust-node
+sifnodecli q tendermint-validator-set --node tcp://rpc-testnet.sifchain.finance:80 --trust-node
 ```
 
 ## Additional Resources
@@ -195,6 +195,6 @@ sifnodecli q tendermint-validator-set --node tcp://rpc-merry-go-round.sifchain.f
 
 |Description|Address|
 |-----------|-------|
-|Block Explorer|https://blockexplorer-merry-go-round.sifchain.finance|
-|RPC|https://rpc-merry-go-round.sifchain.finance|
-|API|https://lcd-merry-go-round.sifchain.finance|
+|Block Explorer|https://blockexplorer-testnet.sifchain.finance|
+|RPC|https://rpc-testnet.sifchain.finance|
+|API|https://api-testnet.sifchain.finance|

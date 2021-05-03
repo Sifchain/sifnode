@@ -67,3 +67,4 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
           directory: ./ui/core/coverage
           flags: ui
+          verbose: true
