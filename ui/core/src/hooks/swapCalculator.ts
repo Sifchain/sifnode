@@ -93,15 +93,12 @@ export function useSwapCalculator(input: {
     }
 
     const amount = fromField.fieldAmount.value;
-
     const pair = pool.value;
-
     const swapResult = pair.calcSwapResult(amount);
+    // to get ratio needs to be divided by amount as input by user
+    const amountAsInput = format(amount.amount, amount.asset);
 
-    const pricePerToken =
-      Number(input.fromAmount.value) / Number(input.toAmount.value);
-
-    return `${format(Amount(pricePerToken.toString()), {
+    return `${format(swapResult.divide(amountAsInput), swapResult.asset, {
       mantissa: 6,
     })} ${swapResult.label} per ${amount.label}`;
   });
