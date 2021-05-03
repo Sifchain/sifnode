@@ -51,7 +51,7 @@ async function addNetwork(mmPage, config) {
 }
 
 export async function connectMmAccount(page, browserContext, extensionId) {
-  await page.click("[data-handle='buton-connected']");
+  await page.click("[data-handle='button-connected']");
   await page.click("button:has-text('Connect Metamask')");
   const mmConnectPage = await getExtensionPage(browserContext, extensionId);
   await mmConnectPage.click(
