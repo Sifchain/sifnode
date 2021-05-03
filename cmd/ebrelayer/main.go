@@ -32,7 +32,7 @@ const (
 	levelDbFile = "relayerdb"
 )
 
-func init() {
+func buildRootCmd() *cobra.Command {
 
 	// Read in the configuration file for the sdk
 	// config := sdk.GetConfig()
@@ -41,7 +41,10 @@ func init() {
 	// config.SetBech32PrefixForConsensusNode(sdk.Bech32PrefixConsAddr, sdk.Bech32PrefixConsPub)
 	// config.Seal()
 
-	rootCmd := &cobra.Command{Use: "ebrelayer"}
+	rootCmd := &cobra.Command{
+		Use:          "ebrelayer",
+		Short:        "Streams live events from Ethereum and Cosmos and relays event information to the opposite chain",
+	}
 
 	log.SetFlags(log.Lshortfile)
 
@@ -58,9 +61,9 @@ func init() {
 	))
 	rootCmd.PersistentFlags().String(flags.FlagGasPrices, "", "Gas prices to determine the transaction fee (e.g. 10uatom)")
 	rootCmd.PersistentFlags().Float64(flags.FlagGasAdjustment, flags.DefaultGasAdjustment, "gas adjustment")
-	rootCmd.PersistentPreRunE = func(_ *cobra.Command, _ []string) error {
-		return initConfig(rootCmd)
-	}
+	//rootCmd.PersistentPreRunE = func(_ *cobra.Command, _ []string) error {
+	//	return initConfig(rootCmd)
+	//}
 
 	// Construct Root Command
 	rootCmd.AddCommand(
@@ -71,12 +74,10 @@ func init() {
 		replayCosmosCmd(),
 		listMissedCosmosEventCmd(),
 	)
-}
 
-var rootCmd = &cobra.Command{
-	Use:          "ebrelayer",
-	Short:        "Streams live events from Ethereum and Cosmos and relays event information to the opposite chain",
-	SilenceUsage: true,
+	initConfig(rootCmd)
+
+	return rootCmd
 }
 
 //	initRelayerCmd
@@ -256,7 +257,7 @@ func listMissedCosmosEventCmd() *cobra.Command {
 }
 
 func main() {
-	if err := svrcmd.Execute(rootCmd, sifapp.DefaultNodeHome); err != nil {
+	if err := svrcmd.Execute(buildRootCmd(), sifapp.DefaultNodeHome); err != nil {
 		switch e := err.(type) {
 		case server.ErrorCode:
 			os.Exit(e.Code)
@@ -266,3 +267,4 @@ func main() {
 		}
 	}
 }
+
