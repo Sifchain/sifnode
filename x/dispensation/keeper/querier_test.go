@@ -13,6 +13,7 @@ import (
 	"github.com/Sifchain/sifnode/app"
 	"github.com/Sifchain/sifnode/x/dispensation/test"
 	"github.com/Sifchain/sifnode/x/dispensation/types"
+	dispensationkeeper "github.com/Sifchain/sifnode/x/dispensation/keeper"
 )
 
 func GenerateQueryData(app *app.SifchainApp, ctx sdk.Context, name string, outList []bank.Output) {
@@ -36,7 +37,7 @@ func TestQueryRecordsName(t *testing.T) {
 	outList := test.GenerateOutputList("1000000000")
 	GenerateQueryData(sifapp, ctx, name, outList)
 	keeper := sifapp.DispensationKeeper
-	querier := keeper.NewLegacyQuerier(keeper)
+	querier := dispensationkeeper.NewLegacyQuerier(keeper)
 	queryRecName := types.QueryRecordsByDistributionNameRequest{
 		DistributionName: name,
 		Status: types.ClaimStatus_CLAIM_STATUS_UNSPECIFIED,
@@ -63,7 +64,7 @@ func TestQueryRecordsAddr(t *testing.T) {
 	outList := test.GenerateOutputList("1000000000")
 	GenerateQueryData(sifapp, ctx, name, outList)
 	keeper := sifapp.DispensationKeeper
-	querier := keeper.NewLegacyQuerier(keeper)
+	querier := dispensationkeeper.NewLegacyQuerier(keeper)
 	quereyRecName := types.QueryRecordsByRecipientAddrRequest{
 		Address: outList[0].Address,
 	}
@@ -89,7 +90,7 @@ func TestQueryAllDistributions(t *testing.T) {
 	outList := test.GenerateOutputList("1000000000")
 	GenerateQueryData(sifapp, ctx, name, outList)
 	keeper := sifapp.DispensationKeeper
-	querier := keeper.NewLegacyQuerier(keeper)
+	querier := dispensationkeeper.NewLegacyQuerier(keeper)
 	query := abci.RequestQuery{
 		Path: "",
 		Data: []byte{},
