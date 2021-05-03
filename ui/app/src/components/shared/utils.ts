@@ -1,6 +1,7 @@
 import { computed, Ref } from "@vue/reactivity";
 import ColorHash from "color-hash";
-import { Asset, Network, TxHash } from "ui-core";
+import { Asset, IAssetAmount, Network, toBaseUnits, TxHash } from "ui-core";
+import { format } from "ui-core/src/utils/format";
 
 export function formatSymbol(symbol: string) {
   if (symbol.indexOf("c") === 0) {
@@ -23,6 +24,14 @@ export function formatNumber(displayNumber: string) {
   } else {
     return amount.toFixed(2);
   }
+}
+
+export function formatAssetAmount(value: IAssetAmount) {
+  if (!value || value.equalTo("0")) return "0";
+  const { amount, asset } = value;
+  return amount.greaterThan(toBaseUnits("100000", asset))
+    ? format(amount, asset, { mantissa: 2 })
+    : format(amount, asset, { mantissa: 6 });
 }
 
 // TODO: These could be replaced with a look up table

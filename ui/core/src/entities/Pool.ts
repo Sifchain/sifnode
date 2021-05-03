@@ -1,8 +1,6 @@
 import { Asset } from "./Asset";
 import { AssetAmount, IAssetAmount } from "./AssetAmount";
 import { Pair } from "./Pair";
-import Big from "big.js";
-import { Fraction } from "./fraction/Fraction";
 import {
   calculatePoolUnits,
   calculatePriceImpact,
@@ -10,14 +8,15 @@ import {
   calculateReverseSwapResult,
   calculateSwapResult,
 } from "./formulae";
+import { Amount, IAmount } from "./Amount";
 
 export type Pool = ReturnType<typeof Pool>;
 export type IPool = Omit<Pool, "poolUnits" | "calculatePoolUnits">;
 
 export function Pool(
-  a: AssetAmount, // native asset
-  b: AssetAmount, // external asset
-  poolUnits?: Fraction,
+  a: IAssetAmount, // native asset
+  b: IAssetAmount, // external asset
+  poolUnits?: IAmount,
 ) {
   const pair = Pair(a, b);
   const amounts: [IAssetAmount, IAssetAmount] = pair.amounts;
@@ -32,36 +31,36 @@ export function Pool(
     poolUnits:
       poolUnits ||
       calculatePoolUnits(
-        a,
-        b,
-        new Fraction("0"),
-        new Fraction("0"),
-        new Fraction("0"),
+        Amount(a),
+        Amount(b),
+        Amount("0"),
+        Amount("0"),
+        Amount("0"),
       ),
     priceAsset(asset: Asset) {
       return this.calcSwapResult(AssetAmount(asset, "1"));
     },
 
-    calcProviderFee(x: AssetAmount) {
-      const X = amounts.find((a) => a.asset.symbol === x.asset.symbol);
+    calcProviderFee(x: IAssetAmount) {
+      const X = amounts.find((a) => a.symbol === x.symbol);
       if (!X)
         throw new Error(
           `Sent amount with symbol ${
-            x.asset.symbol
+            x.symbol
           } does not exist in this pair: ${this.toString()}`,
         );
-      const Y = amounts.find((a) => a.asset.symbol !== x.asset.symbol);
+      const Y = amounts.find((a) => a.symbol !== x.symbol);
       if (!Y) throw new Error("Pool does not have an opposite asset."); // For Typescript's sake will probably never happen
       const providerFee = calculateProviderFee(x, X, Y);
-      return AssetAmount(this.otherAsset(x.asset), providerFee);
+      return AssetAmount(this.otherAsset(x), providerFee);
     },
 
-    calcPriceImpact(x: AssetAmount) {
-      const X = amounts.find((a) => a.asset.symbol === x.asset.symbol);
+    calcPriceImpact(x: IAssetAmount) {
+      const X = amounts.find((a) => a.symbol === x.symbol);
       if (!X)
         throw new Error(
           `Sent amount with symbol ${
-            x.asset.symbol
+            x.symbol
           } does not exist in this pair: ${this.toString()}`,
         );
       return calculatePriceImpact(x, X).multiply("100");
@@ -69,48 +68,43 @@ export function Pool(
 
     // https://github.com/Sifchain/sifnode/blob/develop/docs/1.Liquidity%20Pools%20Architecture.md
     // Formula: swapAmount = (x * X * Y) / (x + X) ^ 2
-    calcSwapResult(x: AssetAmount) {
-      const X = amounts.find((a) => a.asset.symbol === x.asset.symbol);
+    calcSwapResult(x: IAssetAmount) {
+      const X = amounts.find((a) => a.symbol === x.symbol);
       if (!X)
         throw new Error(
           `Sent amount with symbol ${
-            x.asset.symbol
+            x.symbol
           } does not exist in this pair: ${this.toString()}`,
         );
-      const Y = amounts.find((a) => a.asset.symbol !== x.asset.symbol);
+      const Y = amounts.find((a) => a.symbol !== x.symbol);
       if (!Y) throw new Error("Pool does not have an opposite asset."); // For Typescript's sake will probably never happen
       const swapAmount = calculateSwapResult(x, X, Y);
-      return AssetAmount(this.otherAsset(x.asset), swapAmount);
+      return AssetAmount(this.otherAsset(x), swapAmount);
     },
 
-    calcReverseSwapResult(Sa: AssetAmount): IAssetAmount {
-      const Ya = amounts.find((a) => a.asset.symbol === Sa.asset.symbol);
+    calcReverseSwapResult(Sa: IAssetAmount): IAssetAmount {
+      const Ya = amounts.find((a) => a.symbol === Sa.symbol);
       if (!Ya)
         throw new Error(
           `Sent amount with symbol ${
-            Sa.asset.symbol
+            Sa.symbol
           } does not exist in this pair: ${this.toString()}`,
         );
-      const Xa = amounts.find((a) => a.asset.symbol !== Sa.asset.symbol);
+      const Xa = amounts.find((a) => a.symbol !== Sa.symbol);
       if (!Xa) throw new Error("Pool does not have an opposite asset."); // For Typescript's sake will probably never happen
-      const otherAsset = this.otherAsset(Sa.asset);
+      const otherAsset = this.otherAsset(Sa);
       if (Sa.equalTo("0")) {
         return AssetAmount(otherAsset, "0");
       }
 
-      // Need to use Big.js for sqrt calculation
-      // Ok to accept a little precision loss as reverse swap amount can be rough
-      const S = Big(Sa.toFixed());
-      const X = Big(Xa.toFixed());
-      const Y = Big(Ya.toFixed());
-      const x = calculateReverseSwapResult(S, X, Y);
+      const x = calculateReverseSwapResult(Sa, Xa, Ya);
 
-      return AssetAmount(otherAsset, x.toFixed());
+      return AssetAmount(otherAsset, x);
     },
 
     calculatePoolUnits(
-      nativeAssetAmount: AssetAmount,
-      externalAssetAmount: AssetAmount,
+      nativeAssetAmount: IAssetAmount,
+      externalAssetAmount: IAssetAmount,
     ) {
       const [nativeBalanceBefore, externalBalanceBefore] = amounts;
 
@@ -131,8 +125,8 @@ export function Pool(
 
 export function CompositePool(pair1: IPool, pair2: IPool): IPool {
   // The combined asset is the
-  const pair1Assets = pair1.amounts.map((a) => a.asset.symbol);
-  const pair2Assets = pair2.amounts.map((a) => a.asset.symbol);
+  const pair1Assets = pair1.amounts.map((a) => a.symbol);
+  const pair2Assets = pair2.amounts.map((a) => a.symbol);
   const nativeSymbol = pair1Assets.find((value) => pair2Assets.includes(value));
 
   if (!nativeSymbol) {
@@ -142,8 +136,8 @@ export function CompositePool(pair1: IPool, pair2: IPool): IPool {
   }
 
   const amounts = [
-    ...pair1.amounts.filter((a) => a.asset.symbol !== nativeSymbol),
-    ...pair2.amounts.filter((a) => a.asset.symbol !== nativeSymbol),
+    ...pair1.amounts.filter((a) => a.symbol !== nativeSymbol),
+    ...pair2.amounts.filter((a) => a.symbol !== nativeSymbol),
   ];
 
   if (amounts.length !== 2) {
@@ -156,7 +150,7 @@ export function CompositePool(pair1: IPool, pair2: IPool): IPool {
     amounts: amounts as [IAssetAmount, IAssetAmount],
 
     getAmount: (asset: Asset | string) => {
-      if (Asset.get(asset).symbol === nativeSymbol) {
+      if (Asset(asset).symbol === nativeSymbol) {
         throw new Error(`Asset ${nativeSymbol} doesnt exist in pair`);
       }
 
@@ -174,27 +168,27 @@ export function CompositePool(pair1: IPool, pair2: IPool): IPool {
 
     otherAsset(asset: Asset) {
       const otherAsset = amounts.find(
-        (amount) => amount.asset.symbol !== asset.symbol,
+        (amount) => amount.symbol !== asset.symbol,
       );
       if (!otherAsset) throw new Error("Asset doesnt exist in pair");
-      return otherAsset.asset;
+      return otherAsset;
     },
 
     symbol() {
       return amounts
-        .map((a) => a.asset.symbol)
+        .map((a) => a.symbol)
         .sort()
         .join("_");
     },
 
     contains(...assets: Asset[]) {
-      const local = amounts.map((a) => a.asset.symbol).sort();
+      const local = amounts.map((a) => a.symbol).sort();
       const other = assets.map((a) => a.symbol).sort();
       return !!local.find((s) => other.includes(s));
     },
 
-    calcProviderFee(x: AssetAmount) {
-      const [first, second] = pair1.contains(x.asset)
+    calcProviderFee(x: IAssetAmount) {
+      const [first, second] = pair1.contains(x)
         ? [pair1, pair2]
         : [pair2, pair1];
       const firstSwapFee = first.calcProviderFee(x);
@@ -202,13 +196,13 @@ export function CompositePool(pair1: IPool, pair2: IPool): IPool {
       const secondSwapFee = second.calcProviderFee(firstSwapOutput);
       const firstSwapFeeInOutputAsset = second.calcSwapResult(firstSwapFee);
       return AssetAmount(
-        second.otherAsset(firstSwapFee.asset),
+        second.otherAsset(firstSwapFee),
         firstSwapFeeInOutputAsset.add(secondSwapFee),
       );
     },
 
-    calcPriceImpact(x: AssetAmount) {
-      const [first, second] = pair1.contains(x.asset)
+    calcPriceImpact(x: IAssetAmount) {
+      const [first, second] = pair1.contains(x)
         ? [pair1, pair2]
         : [pair2, pair1];
       const firstPoolImpact = first.calcPriceImpact(x);
@@ -217,9 +211,9 @@ export function CompositePool(pair1: IPool, pair2: IPool): IPool {
       return firstPoolImpact.add(secondPoolImpact);
     },
 
-    calcSwapResult(x: AssetAmount) {
+    calcSwapResult(x: IAssetAmount) {
       // TODO: possibly use a combined formula
-      const [first, second] = pair1.contains(x.asset)
+      const [first, second] = pair1.contains(x)
         ? [pair1, pair2]
         : [pair2, pair1];
 
@@ -228,9 +222,9 @@ export function CompositePool(pair1: IPool, pair2: IPool): IPool {
       return second.calcSwapResult(nativeAmount);
     },
 
-    calcReverseSwapResult(S: AssetAmount) {
+    calcReverseSwapResult(S: IAssetAmount) {
       // TODO: possibly use a combined formula
-      const [first, second] = pair1.contains(S.asset)
+      const [first, second] = pair1.contains(S)
         ? [pair1, pair2]
         : [pair2, pair1];
 
