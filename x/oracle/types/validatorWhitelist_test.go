@@ -1,7 +1,6 @@
 package types
 
 import (
-	"fmt"
 	"testing"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -24,7 +23,6 @@ func TestUpdateValidator(t *testing.T) {
 
 	list := NewValidatorWhitelist()
 	list.UpdateValidator(address, power)
-	fmt.Printf("list is %v\n", list.Whitelist)
 	assert.Equal(t, len(list.GetAllValidators()), 1)
 	assert.Equal(t, list.GetValidatorPower(address), power)
 

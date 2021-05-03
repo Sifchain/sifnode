@@ -2,7 +2,6 @@ package keeper
 
 import (
 	"encoding/json"
-	"fmt"
 
 	"github.com/Sifchain/sifnode/x/oracle/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -37,7 +36,6 @@ func (k Keeper) GetOracleWhiteList(ctx sdk.Context, networkDescriptor types.Netw
 	if err != nil {
 		panic("whitelist data format is wrong")
 	}
-	fmt.Printf("whittelist is %v\n", whitelistMap)
 	return types.NewValidatorWhitelistFromData(whitelistMap)
 }
 
