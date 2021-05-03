@@ -6,7 +6,6 @@ set -e
 . $(dirname $0)/vagrantenv.sh
 . ${TEST_INTEGRATION_DIR}/shell_utilities.sh
 
-pkill sifnodecli || true
 pkill sifnoded || true
 pkill ebrelayer || true
 
@@ -39,6 +38,6 @@ set_persistant_env_var SIFNODED_LOG $datadir/logs/sifnoded.log $envexportfile
 mkdir -p $datadir/logs
 nohup $TEST_INTEGRATION_DIR/sifchain_start_daemon.sh < /dev/null > $SIFNODED_LOG 2>&1 &
 set_persistant_env_var SIFNODED_PID $! $envexportfile
-nohup sifnodecli rest-server --laddr tcp://0.0.0.0:1317 < /dev/null > $datadir/logs/restserver.log 2>&1 &
+nohup sifnoded rest-server --laddr tcp://0.0.0.0:1317 < /dev/null > $datadir/logs/restserver.log 2>&1 &
 set_persistant_env_var REST_SERVER_PID $! $envexportfile
 bash $TEST_INTEGRATION_DIR/sifchain_start_ebrelayer.sh
