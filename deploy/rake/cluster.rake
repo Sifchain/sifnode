@@ -325,7 +325,10 @@ echo '      sssssssssss    iiiiiiiifffffffff            cccccccccccccccchhhhhhh 
           if replace_string == "-=aws_region=-"
             template_file_text.include?(k) ? (template_file_text.gsub! replace_string, "#{args[:aws_region]}") : (puts 'env matching...')
           elsif replace_string == "-=kmskey=-"
-            template_file_text.include?(k) ? (template_file_text.gsub! replace_string, "#{key_id}") : (puts 'env matching...')
+            puts "=========="
+            puts "=====KMSMATCH====="
+            puts "=========="
+            template_file_text.include?(k) ? (template_file_text.gsub! replace_string, key_id) : (puts 'env matching...')
           elsif replace_string == "-=aws_role=-"
             template_file_text.include?(k) ? (template_file_text.gsub! replace_string, "#{args[:aws_role]}") : (puts 'env matching...')
           end
