@@ -21,10 +21,10 @@ func NewQuerier(k Keeper) Querier {
 
 var _ types.QueryServer = Querier{}
 
-func (srv Querier) AllDistributions(ctx context.Context,
+func (q Querier) AllDistributions(ctx context.Context,
 	_ *types.QueryAllDistributionsRequest) (*types.QueryAllDistributionsResponse, error) {
 
-	list := srv.keeper.GetDistributions(sdk.UnwrapSDKContext(ctx))
+	list := q.keeper.GetDistributions(sdk.UnwrapSDKContext(ctx))
 
 	return &types.QueryAllDistributionsResponse{
 		Distributions: list.Distributions,
