@@ -141,7 +141,7 @@ describe("addLiquidityCalculator", () => {
         bPerARatioMessage: "1.00000000",
         aPerBRatioProjectedMessage: "1.00000000",
         bPerARatioProjectedMessage: "1.00000000",
-        shareOfPool: "33.33%", // Note small ration between
+        shareOfPool: "33.33%", // This seems puzzling to me...
         state: PoolState.VALID_INPUT,
       },
     },
