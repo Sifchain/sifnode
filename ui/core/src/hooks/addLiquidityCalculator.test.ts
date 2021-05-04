@@ -141,7 +141,7 @@ describe("addLiquidityCalculator", () => {
         bPerARatioMessage: "1.00000000",
         aPerBRatioProjectedMessage: "1.00000000",
         bPerARatioProjectedMessage: "1.00000000",
-        shareOfPool: "33.33%", // This seems puzzling to me...
+        shareOfPool: "< 0.01%",
         state: PoolState.VALID_INPUT,
       },
     },
@@ -197,7 +197,7 @@ describe("addLiquidityCalculator", () => {
         bPerARatioMessage: "0.50000000",
         aPerBRatioProjectedMessage: "0.60000000",
         bPerARatioProjectedMessage: "1.66666667",
-        shareOfPool: "55.56%",
+        shareOfPool: "54.55%",
         state: PoolState.VALID_INPUT,
       },
     },
@@ -214,7 +214,7 @@ describe("addLiquidityCalculator", () => {
         bPerARatioMessage: "0.25000000",
         aPerBRatioProjectedMessage: "1.00000000",
         bPerARatioProjectedMessage: "1.00000000",
-        shareOfPool: "50.00%",
+        shareOfPool: "45.95%",
         state: PoolState.VALID_INPUT,
       },
     },
@@ -291,8 +291,8 @@ describe("addLiquidityCalculator", () => {
 
           poolFinder.mockImplementation(() => {
             const pool = Pool(
-              AssetAmount(Asset.get(externalSymbol), poolExternal),
               AssetAmount(ROWAN, poolNative),
+              AssetAmount(Asset.get(externalSymbol), poolExternal),
               Amount(poolUnits),
             );
 
