@@ -320,14 +320,12 @@ export function usePoolCalculator(input: {
       );
       if (input.lastFocusedTokenField.value === "A") {
         input.tokenBAmount.value = format(
-          assetAmountA.multiply(bPerARatio.value || "0"),
-          assetB.value,
+          toDerived(assetAmountA).multiply(bPerARatio.value || "0"),
           { mantissa: 5 },
         );
       } else if (input.lastFocusedTokenField.value === "B") {
         input.tokenAAmount.value = format(
-          assetAmountB.multiply(aPerBRatio.value || "0"),
-          assetA.value,
+          toDerived(assetAmountB).multiply(aPerBRatio.value || "0"),
           { mantissa: 5 },
         );
       }
