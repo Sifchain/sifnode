@@ -45,10 +45,13 @@ func (k Querier) GetPools(c context.Context, req *types.PoolsReq) (*types.PoolsR
 
 	ctx := sdk.UnwrapSDKContext(c)
 
-	pool := k.Keeper.GetPools(ctx)
+	pools := k.Keeper.GetPools(ctx)
+	if len(pools) == 0 {
+		return nil, types.ErrPoolListIsEmpty
+	}
 
 	return &types.PoolsRes{
-		Pools:            pool,
+		Pools:            pools,
 		Height:           ctx.BlockHeight(),
 		ClpModuleAddress: types.GetCLPModuleAddress().String(),
 	}, nil
