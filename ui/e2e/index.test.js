@@ -69,11 +69,12 @@ beforeAll(async () => {
     "chrome-extension://dmkamcknogkgcdfhhbddcghachkejeap/popup.html#/register",
   );
   await importKeplrAccount(keplrPage, KEPLR_CONFIG.options);
+  await keplrPage.close();
 
   // goto dex page
   dexPage = await browserContext.newPage();
   dexPage.setDefaultTimeout(60000);
-  dexPage.waitForTimeout(1000); // wait a second before keplr is finished being setup
+  dexPage.waitForTimeout(4000); // wait a second before keplr is finished being setup
 
   await dexPage.goto(DEX_TARGET, { waitUntil: "domcontentloaded" });
 

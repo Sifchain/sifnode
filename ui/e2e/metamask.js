@@ -9,6 +9,7 @@ export class MetaMask {
     await confirmWelcomeScreen(mmPage);
     await importAccount(mmPage, this.config);
     await addNetwork(mmPage, this.config);
+    await mmPage.close();
   }
 }
 
