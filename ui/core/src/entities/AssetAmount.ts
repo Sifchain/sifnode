@@ -1,6 +1,8 @@
 import { IAmount, Amount, _ExposeInternal } from "./Amount";
 import { IAsset, Asset } from "./Asset";
 import { IFraction } from "./fraction/Fraction";
+import { toBaseUnits } from "../utils/decimalShift";
+
 import JSBI from "jsbi";
 
 export type IAssetAmount = Readonly<IAsset> & {
@@ -9,6 +11,7 @@ export type IAssetAmount = Readonly<IAsset> & {
   // for use by display lib and in testing
   toBigInt(): JSBI;
   toString(detailed?: boolean): string;
+  toBaseUnitsAmount(): IAmount;
 
   // for use elsewhere
   add(other: IAmount | string): IAmount;
@@ -69,6 +72,11 @@ export function AssetAmount(
 
     get label() {
       return _asset.label;
+    },
+
+    toBaseUnitsAmount() {
+      // NOTE - We may want to consider default returning a BigInt or Amount from toBaseUnits()
+      return Amount(toBaseUnits(_amount.toString(), _asset));
     },
 
     toBigInt() {
