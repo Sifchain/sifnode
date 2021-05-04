@@ -31,7 +31,7 @@ where:
 
 4. Once complete, you'll notice that several Terraform files/folders have been setup inside of the `.live` directory. We recommend you leave the defaults as-is, but for those that have experience with Terraform, feel free to adjust the configuration as you see fit.
 
-5. Deploy the cluster to AWS:
+5. Deploy the cluster to AWS (Default region is US-WEST-2):
 
 ```
 rake "cluster:deploy[<cluster>,<provider>]"
@@ -177,49 +177,27 @@ e.g.:
 ```
 rake "validator:keys:public[my-cluster,aws,sifnode]"
 ```
-Note: This requires jq JSON processor if not installed install with ```sudo apt-get install jq```
 
-3. Run the following command to become a validator:
+3. Stake:
+
 ```
-sifnodecli tx staking create-validator \
-    --commission-max-change-rate="0.1" \
-    --commission-max-rate="0.1" \
-    --commission-rate="0.1" \
-    --amount="<amount>" \
-    --pubkey=<pub_key> \
-    --moniker=<moniker> \
-    --chain-id=sifchain \
-    --min-self-delegation="1" \
-    --gas-prices="0.5rowan" \
-    --from=<moniker> \
-    --keyring-backend=file \
-    --node tcp://rpc.sifchain.finance:80
+rake "validator:stake[<chain_id>,<moniker>,<amount>,<gas>,<gas_prices>,<public_key>,<node_rpc_address>]"
 ```
 
-Where:
+where:
 
 |Param|Description|
 |-----|----------|
-|`<amount>`|The amount of rowan you wish to stake (the more the better). The precision used is 1e18.|
-|`<pub_key>`|The public key of your node, that you got in the previous step.|
-|`<moniker>`|The moniker (name) of your node.|
+|`<chain_id>`|The Chain ID of the network (e.g.: sifchain).|
+|`<moniker>`|The moniker or name of your node as you want it to appear on the network.|
+|`<amount>`|The amount to stake, including the denomination (e.g.: 100000000rowan). The precision used is 1e18.|
+|`<public_key>`|The public key of your validator (you got this in the previous step).|
+|`<node_rpc_address>`|The address to broadcast the transaction to (e.g.: tcp://rpc.sifchain.finance:80).|
 
 e.g.:
 
 ```
-sifnodecli tx staking create-validator \
-    --commission-max-change-rate="0.1" \
-    --commission-max-rate="0.1" \
-    --commission-rate="0.1" \
-    --amount="1000000000000000000000rowan" \
-    --pubkey=thepublickeyofyournode \
-    --moniker=my-node \
-    --chain-id=sifchain \
-    --min-self-delegation="1" \
-    --gas-prices="0.5rowan" \
-    --from=my-node \
-    --keyring-backend=file \
-    --node tcp://rpc.sifchain.finance:80
+rake "validator:stake[sifchain,my-node,10000000rowan,300000,0.5rowan,<public_key>,tcp://rpc.sifchain.finance:80]"
 ```
 
 4. It may take several blocks before your node appears as a validator on the network, but you can always check by running:
