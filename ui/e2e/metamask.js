@@ -52,8 +52,10 @@ async function addNetwork(mmPage, config) {
 
 export async function connectMmAccount(page, browserContext, extensionId) {
   await page.click("[data-handle='button-connected']");
-  await page.click("button:has-text('Connect Metamask')");
-  const mmConnectPage = await getExtensionPage(browserContext, extensionId);
+  const [mmConnectPage] = await Promise.all([
+    browserContext.waitForEvent("page"),
+    page.click("button:has-text('Connect Metamask')"),
+  ]);
   await mmConnectPage.click(
     "#app-content > div > div.main-container-wrapper > div > div.permissions-connect-choose-account > div.permissions-connect-choose-account__footer-container > div.permissions-connect-choose-account__bottom-buttons > button.button.btn-primary",
   );
@@ -62,46 +64,4 @@ export async function connectMmAccount(page, browserContext, extensionId) {
   );
   await page.click("text=×");
   return;
-}
-
-export async function confirmTransaction(
-  page,
-  browserContext,
-  amount,
-  extensionId,
-) {
-  // extension popup
-  const mmConnectPage = await getExtensionPage(browserContext, extensionId);
-  await mmConnectPage.click("text=Confirm");
-  // haven't yet figured out how to capture close popup event
-  await page.waitForTimeout(1000);
-  await page.click("text=×");
-}
-
-export async function confirmApproval(
-  page,
-  browserContext,
-  amount,
-  extensionId,
-) {
-  const mmConnectPage = await getExtensionPage(browserContext, extensionId);
-  await mmConnectPage.click("text=View full transaction details");
-  await expect(mmConnectPage).toHaveText(amount);
-  await mmConnectPage.click("text=Confirm");
-  await page.waitForTimeout(1000);
-}
-
-export async function resetAccount(browserContext, extensionId) {
-  const page = await browserContext.newPage();
-
-  await page.goto(
-    `chrome-extension://${extensionId}/home.html#settings/advanced`,
-    {
-      waitUntil: "domcontentloaded",
-    },
-  );
-  await page.waitForTimeout(1000);
-  await page.click('[data-testid="advanced-setting-reset-account"] button');
-  await page.waitForTimeout(1000);
-  await page.click('.modal-container button:has-text("Reset")');
 }
