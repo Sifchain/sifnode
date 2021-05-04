@@ -12,7 +12,7 @@ import { akasha } from "../test/utils/accounts";
 import { getTestingTokens } from "../test/utils/getTestingToken";
 import { PoolState, usePoolCalculator } from "./addLiquidityCalculator";
 
-const [ATK, ROWAN] = getTestingTokens(["ATK", "ROWAN"]);
+const [ATK, ROWAN, CTEST] = getTestingTokens(["ATK", "ROWAN", "CTEST"]);
 
 const ZERO = Amount("0");
 
@@ -119,6 +119,29 @@ describe("addLiquidityCalculator", () => {
         aPerBRatioProjectedMessage: "1.00000000",
         bPerARatioProjectedMessage: "1.00000000",
         shareOfPool: "50.50%",
+        state: PoolState.VALID_INPUT,
+      },
+    },
+    // Test for small decimals coin
+    {
+      poolExternal: "1000000000000000",
+      poolNative: "1000000000000000000000000000",
+      poolUnits: "1000000000000000000000000000",
+      addedExternal: "10000",
+      addedNative: "10000",
+      externalSymbol: "ctest",
+      nativeSymbol: "rowan",
+      preexistingLiquidity: {
+        native: "0",
+        external: "0",
+        units: "0",
+      },
+      expected: {
+        aPerBRatioMessage: "1.00000000",
+        bPerARatioMessage: "1.00000000",
+        aPerBRatioProjectedMessage: "1.00000000",
+        bPerARatioProjectedMessage: "1.00000000",
+        shareOfPool: "33.33%", // Note small ration between
         state: PoolState.VALID_INPUT,
       },
     },
@@ -254,6 +277,7 @@ describe("addLiquidityCalculator", () => {
           balances.value = [
             AssetAmount(ATK, "100000000000000000000000000000"),
             AssetAmount(ROWAN, "100000000000000000000000000000"),
+            AssetAmount(CTEST, "100000000000000000000000000000"),
           ];
           liquidityProvider.value = !preexistingLiquidity
             ? null
