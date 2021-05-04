@@ -19,9 +19,6 @@ sifnodecli tx multisign offlinetx.json mkey sig1.json sig2.json >> signedtx.json
 sifnodecli tx broadcast signedtx.json
 sleep 8
 sifnodecli q dispensation distributions-all
-sifnodecli q dispensation records-by-name-all ar1 >> all.json
-sifnodecli q dispensation records-by-name-pending ar1 >> pending.json
-sifnodecli q dispensation records-by-name-completed ar1 >> completed.json
 sifnodecli q dispensation records-by-addr sif1cp23ye3h49nl5ty35vewrtvsgwnuczt03jwg00
 rm -rf offlinetx.json sig1.json sig2.json signedtx.json
 

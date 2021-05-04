@@ -56,7 +56,8 @@ func (ClaimType) EnumDescriptor() ([]byte, []int) {
 	return fileDescriptor_4cb34f678c9ed59f, []int{0}
 }
 
-// EthBridgeClaim is a structure that contains all the data for a particular bridge claim
+// EthBridgeClaim is a structure that contains all the data for a particular
+// bridge claim
 type EthBridgeClaim struct {
 	EthereumChainId int64 `protobuf:"varint,1,opt,name=ethereum_chain_id,json=ethereumChainId,proto3" json:"ethereum_chain_id,omitempty" yaml:"ethereum_chain_id"`
 	// bridge_contract_address is an EthereumAddress

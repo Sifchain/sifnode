@@ -6,7 +6,7 @@ const (
 	QueryRecordsByRecipient = "records_by_recipient"
 )
 
-func NewQueryRecordsByDistributionName(distributionName string, status ClaimStatus) QueryRecordsByDistributionNameRequest {
+func NewQueryRecordsByDistributionName(distributionName string, status DistributionStatus) QueryRecordsByDistributionNameRequest {
 	return QueryRecordsByDistributionNameRequest{DistributionName: distributionName, Status: status}
 }
 

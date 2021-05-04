@@ -6,8 +6,8 @@ import (
 
 //This package is used to keep historical data. This will later be used to distribute rewards over different blocks through a gov proposal
 
-func NewDistributionRecord(distributionName string, recipientAddress string, coins sdk.Coins, start int64, end int64) DistributionRecord {
-	return DistributionRecord{DistributionName: distributionName, RecipientAddress: recipientAddress, Coins: coins, DistributionStartHeight: start, DistributionCompletedHeight: end}
+func NewDistributionRecord(status DistributionStatus, distributionName string, recipientAddress string, coins sdk.Coins, start int64, end int64) DistributionRecord {
+	return DistributionRecord{DistributionStatus: status, DistributionName: distributionName, RecipientAddress: recipientAddress, Coins: coins, DistributionStartHeight: start, DistributionCompletedHeight: end}
 }
 
 func (dr DistributionRecord) Validate() bool {
@@ -37,4 +37,14 @@ func (ar Distribution) Validate() bool {
 		return false
 	}
 	return true
+}
+func GetDistributionStatus(status string) DistributionStatus {
+	switch status {
+	case "Completed":
+		return DistributionStatus_DISTRIBUTION_STATUS_COMPLETED
+	case "Pending":
+		return DistributionStatus_DISTRIBUTION_STATUS_PENDING
+	default:
+		return DistributionStatus_DISTRIBUTION_STATUS_UNSPECIFIED
+	}
 }
