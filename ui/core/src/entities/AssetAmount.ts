@@ -26,7 +26,7 @@ export type IAssetAmount = Readonly<IAsset> & {
    * AssetAmount("usdc", "1000000").toDerived().equalTo(Amount("1")); // true
    *
    * All Math operators on AssetAmounts work on BaseUnits and return Amount objects. We have explored
-   * creating a scheme for allowing mathematical operations on AssetAmounts but it is not clear as to
+   * creating a scheme for allowing mathematical operations to combine AssetAmounts but it is not clear as to
    * how to combine assets and which asset gets precedence. These rules would need to be internalized
    * by the team which may not be intuitive. Also performing mathematical operations on differing currencies
    * doesn't make conceptual sense.
