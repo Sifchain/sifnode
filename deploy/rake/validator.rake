@@ -1,7 +1,7 @@
 desc "validator operations"
 namespace :validator do
   desc "Stake a node so it can participate in consensus"
-  task :stake, [:chainnet, :moniker, :amount, :gas, :pub_key, :node] do |t, args|
+  task :stake, [:chainnet, :moniker, :amount, :gas, :gas_prices, :pub_key, :node] do |t, args|
     node = if args[:node].nil?
              "tcp://127.0.0.1:26657"
            else
@@ -16,7 +16,8 @@ namespace :validator do
             --pubkey=#{args[:pub_key]} \
             --chain-id=#{args[:chainnet]} \
             --min-self-delegation="1" \
-            --gas-prices=#{args[:gas]} \
+            --gas=#{args[:gas]} \
+            --gas-prices=#{args[:gas_prices} \
             --moniker=#{args[:moniker]} \
             --from=#{args[:moniker]} \
             --keyring-backend=file \
