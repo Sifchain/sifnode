@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/pkg/errors"
@@ -45,7 +46,9 @@ func RunReplayEthereumCmd(cmd *cobra.Command, args []string) error {
 	// 	return errors.Errorf("invalid [web3-provider]: %s", args[0])
 	// }
 
-	tendermintNode := args[0]
+	// tendermintNode := args[0]
+
+	cliCtx := client.GetClientContextFromCmd(cmd)
 	web3Provider := args[1]
 
 	if !common.IsHexAddress(args[2]) {
@@ -88,7 +91,7 @@ func RunReplayEthereumCmd(cmd *cobra.Command, args []string) error {
 	// Initialize new Ethereum event listener
 	inBuf := bufio.NewReader(cmd.InOrStdin())
 
-	ethSub, err := relayer.NewEthereumSub(inBuf, tendermintNode, validatorMoniker, chainID, web3Provider,
+	ethSub, err := relayer.NewEthereumSub(inBuf, cliCtx, validatorMoniker, chainID, web3Provider,
 		contractAddress, privateKey, mnemonic, nil, sugaredLogger)
 	if err != nil {
 		return err

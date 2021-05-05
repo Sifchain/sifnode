@@ -70,7 +70,7 @@ func NewKeybase(validatorMoniker, mnemonic, password string) (keyring.Keyring, k
 }
 
 // NewEthereumSub initializes a new EthereumSub
-func NewEthereumSub(inBuf io.Reader, rpcURL string, validatorMoniker, chainID, ethProvider string,
+func NewEthereumSub(inBuf io.Reader, cliCtx client.Context, validatorMoniker, chainID, ethProvider string,
 	registryContractAddress common.Address, privateKey *ecdsa.PrivateKey, mnemonic string,
 	db *leveldb.DB, sugaredLogger *zap.SugaredLogger) (EthereumSub, error) {
 
@@ -86,14 +86,14 @@ func NewEthereumSub(inBuf io.Reader, rpcURL string, validatorMoniker, chainID, e
 	validatorAddress := sdk.ValAddress(info.GetAddress())
 
 	// Load CLI context and Tx builder
-	cliCtx, err := LoadTendermintCLIContext(validatorAddress, validatorMoniker, rpcURL, chainID, sugaredLogger)
+	cliCtx, err = LoadTendermintCLIContext(validatorAddress, validatorMoniker, cliCtx, chainID, sugaredLogger)
 	if err != nil {
 		return EthereumSub{}, err
 	}
 
 	return EthereumSub{
 		EthProvider:             ethProvider,
-		TmProvider:              rpcURL,
+		TmProvider:              cliCtx.NodeURI,
 		RegistryContractAddress: registryContractAddress,
 		ValidatorName:           validatorMoniker,
 		ValidatorAddress:        validatorAddress,
@@ -107,17 +107,14 @@ func NewEthereumSub(inBuf io.Reader, rpcURL string, validatorMoniker, chainID, e
 
 // LoadTendermintCLIContext : loads CLI context for tendermint txs
 func LoadTendermintCLIContext(validatorAddress sdk.ValAddress, validatorName string,
-	rpcURL string, chainID string, sugaredLogger *zap.SugaredLogger) (client.Context, error) {
+	cliCtx client.Context, chainID string, sugaredLogger *zap.SugaredLogger) (client.Context, error) {
 	// Create the new CLI context
 	encodingConfig := sifapp.MakeTestEncodingConfig()
-	cliCtx := client.Context{}.
+	cliCtx = cliCtx.
 		WithLegacyAmino(encodingConfig.Amino).
 		WithFromAddress(sdk.AccAddress(validatorAddress)).
 		WithFromName(validatorName)
 
-	if rpcURL != "" {
-		cliCtx = cliCtx.WithNodeURI(rpcURL)
-	}
 	cliCtx.SkipConfirm = true
 
 	// Confirm that the validator's address exists

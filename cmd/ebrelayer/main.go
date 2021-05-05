@@ -3,45 +3,57 @@ package main
 import (
 	"bufio"
 	"fmt"
-	"github.com/cosmos/cosmos-sdk/server"
-	svrcmd "github.com/cosmos/cosmos-sdk/server/cmd"
-	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 	"log"
 	"net/url"
 	"os"
 	"strings"
 	"sync"
 
-	sifapp "github.com/Sifchain/sifnode/app"
-	"github.com/Sifchain/sifnode/cmd/ebrelayer/contract"
-	"github.com/Sifchain/sifnode/cmd/ebrelayer/relayer"
-	"github.com/Sifchain/sifnode/cmd/ebrelayer/txs"
+	"github.com/cosmos/cosmos-sdk/client"
+	"github.com/cosmos/cosmos-sdk/server"
+	svrcmd "github.com/cosmos/cosmos-sdk/server/cmd"
+	"github.com/cosmos/cosmos-sdk/x/auth/types"
+	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
+
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/client/rpc"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/pkg/errors"
 	"github.com/syndtr/goleveldb/leveldb"
 	"go.uber.org/zap"
+
+	sifapp "github.com/Sifchain/sifnode/app"
+	"github.com/Sifchain/sifnode/cmd/ebrelayer/contract"
+	"github.com/Sifchain/sifnode/cmd/ebrelayer/relayer"
+	"github.com/Sifchain/sifnode/cmd/ebrelayer/txs"
 )
 
 const (
 	// FlagRPCURL defines the URL for the tendermint RPC connection
-	FlagRPCURL = "rpc-url"
+	FlagRPCURL = "rpc-url" // TODO: deprecate in favor of cosmos reading from flags.FlagNode
 	// EnvPrefix defines the environment prefix for the root cmd
 	levelDbFile = "relayerdb"
 )
 
+var rootCmd = &cobra.Command{
+	Use:          "ebrelayer",
+	Short:        "Streams live events from Ethereum and Cosmos and relays event information to the opposite chain",
+	SilenceUsage: true,
+}
+
 func init() {
 
-	// Read in the configuration file for the sdk
-	// config := sdk.GetConfig()
-	// config.SetBech32PrefixForAccount(sdk.Bech32PrefixAccAddr, sdk.Bech32PrefixAccPub)
-	// config.SetBech32PrefixForValidator(sdk.Bech32PrefixValAddr, sdk.Bech32PrefixValPub)
-	// config.SetBech32PrefixForConsensusNode(sdk.Bech32PrefixConsAddr, sdk.Bech32PrefixConsPub)
-	// config.Seal()
-
-	rootCmd := &cobra.Command{Use: "ebrelayer"}
+	encodingConfig := sifapp.MakeTestEncodingConfig()
+	initClientCtx := client.Context{}.
+		WithJSONMarshaler(encodingConfig.Marshaler).
+		WithInterfaceRegistry(encodingConfig.InterfaceRegistry).
+		WithTxConfig(encodingConfig.TxConfig).
+		WithLegacyAmino(encodingConfig.Amino).
+		WithInput(os.Stdin).
+		WithAccountRetriever(types.AccountRetriever{}).
+		WithBroadcastMode(flags.BroadcastBlock).
+		WithHomeDir(sifapp.DefaultNodeHome)
 
 	log.SetFlags(log.Lshortfile)
 
@@ -51,14 +63,24 @@ func init() {
 	rootCmd.PersistentFlags().String(flags.FlagKeyringBackend, flags.DefaultKeyringBackend,
 		"Select keyring's backend (os|file|test)")
 	rootCmd.PersistentFlags().String(flags.FlagChainID, "", "Chain ID of tendermint node")
-	rootCmd.PersistentFlags().String(FlagRPCURL, "", "RPC URL of tendermint node")
+	// Set FlagNode as seen in rpc.StatusCommand()
+	rootCmd.Flags().StringP(flags.FlagNode, "n", "tcp://localhost:26657", "Tendermint node to connect to")
 	rootCmd.PersistentFlags().String(flags.FlagGas, "gas", fmt.Sprintf(
 		"gas limit to set per-transaction; set to %q to calculate required gas automatically (default %d)",
 		flags.GasFlagAuto, flags.DefaultGasLimit,
 	))
 	rootCmd.PersistentFlags().String(flags.FlagGasPrices, "", "Gas prices to determine the transaction fee (e.g. 10uatom)")
 	rootCmd.PersistentFlags().Float64(flags.FlagGasAdjustment, flags.DefaultGasAdjustment, "gas adjustment")
-	rootCmd.PersistentPreRunE = func(_ *cobra.Command, _ []string) error {
+	rootCmd.PersistentPreRunE = func(cmd *cobra.Command, args []string) error {
+		// Set FlagNode from first arg, so that SetCmdClientContextHandler sets it in context / connection.
+		if len(args) > 0 {
+			rootCmd.PersistentFlags().Set(flags.FlagNode, args[0])
+		}
+
+		if err := client.SetCmdClientContextHandler(initClientCtx, cmd); err != nil {
+			return err
+		}
+
 		return initConfig(rootCmd)
 	}
 
@@ -71,12 +93,6 @@ func init() {
 		replayCosmosCmd(),
 		listMissedCosmosEventCmd(),
 	)
-}
-
-var rootCmd = &cobra.Command{
-	Use:          "ebrelayer",
-	Short:        "Streams live events from Ethereum and Cosmos and relays event information to the opposite chain",
-	SilenceUsage: true,
 }
 
 //	initRelayerCmd
@@ -180,7 +196,7 @@ func RunInitRelayerCmd(cmd *cobra.Command, args []string) error {
 
 	// Initialize new Ethereum event listener
 	inBuf := bufio.NewReader(cmd.InOrStdin())
-	ethSub, err := relayer.NewEthereumSub(inBuf, rpcURL, validatorMoniker, chainID, web3Provider,
+	ethSub, err := relayer.NewEthereumSub(inBuf, client.GetClientContextFromCmd(cmd), validatorMoniker, chainID, web3Provider,
 		contractAddress, privateKey, mnemonic, db, sugaredLogger)
 	if err != nil {
 		return err
