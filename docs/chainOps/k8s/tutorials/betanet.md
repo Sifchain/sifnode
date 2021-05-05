@@ -192,7 +192,7 @@ where:
 |`<moniker>`|The moniker or name of your node as you want it to appear on the network.|
 |`<amount>`|The amount to stake, including the denomination (e.g.: 100000000rowan). The precision used is 1e18.|
 |`<public_key>`|The public key of your validator (you got this in the previous step).|
-|`<gas>`| The per-transaction gas limit (e.g.: 300000rowan).|
+|`<gas>`| The per-transaction gas limit (e.g.: 300000).|
 |`<gas_prices>`|The minimum gas price to use  (e.g.: 0.5rowan).|
 |`<node_rpc_address>`|The address to broadcast the transaction to (e.g.: tcp://rpc.sifchain.finance:80).|
 
