@@ -1,7 +1,7 @@
 import { IAmount, Amount, _ExposeInternal } from "./Amount";
 import { IAsset, Asset } from "./Asset";
 import { IFraction } from "./fraction/Fraction";
-import { fromBaseUnits, toBaseUnits } from "../utils/decimalShift";
+import { fromBaseUnits } from "../utils/decimalShift";
 
 import JSBI from "jsbi";
 
