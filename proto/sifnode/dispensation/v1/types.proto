@@ -8,7 +8,7 @@ option go_package = "github.com/Sifchain/sifnode/x/dispensation/types";
 
 message GenesisState {
   repeated string address_whitelist = 1;
-  string          admin_address     = 2;
+  string admin_address = 2;
 }
 
 // Distribution type enum
@@ -30,27 +30,25 @@ enum ClaimStatus {
 }
 
 message DistributionRecord {
-  ClaimStatus claim_status                = 1;
-  string distribution_name                = 2;
-  string recipient_address                = 3;
+  ClaimStatus claim_status = 1;
+  string distribution_name = 2;
+  string recipient_address = 3;
   repeated cosmos.base.v1beta1.Coin coins = 4 [
-    (gogoproto.nullable)     = false,
+    (gogoproto.nullable) = false,
     (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins",
-    (gogoproto.moretags)     = "yaml:\"coins\""
+    (gogoproto.moretags) = "yaml:\"coins\""
   ];
-  int64 distribution_start_height       = 5;
-  int64 distribution_completed_height  = 6;
+  int64 distribution_start_height = 5;
+  int64 distribution_completed_height = 6;
 }
 
 message DistributionRecords {
   repeated DistributionRecord distribution_records = 1;
 }
 
-message Distributions {
-  repeated Distribution distributions = 1;
-}
+message Distributions { repeated Distribution distributions = 1; }
 
 message Distribution {
-  DistributionType distribution_type  = 1;
-  string distribution_name            = 2;
+  DistributionType distribution_type = 1;
+  string distribution_name = 2;
 }

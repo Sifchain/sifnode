@@ -7,10 +7,12 @@ import "sifnode/dispensation/v1/types.proto";
 option go_package = "github.com/Sifchain/sifnode/x/dispensation/types";
 
 service Query {
-  rpc AllDistributions(QueryAllDistributionsRequest) returns (QueryAllDistributionsResponse) {}
+  rpc AllDistributions(QueryAllDistributionsRequest)
+      returns (QueryAllDistributionsResponse) {}
   rpc RecordsByDistributionName(QueryRecordsByDistributionNameRequest)
       returns (QueryRecordsByDistributionNameResponse) {}
-  rpc RecordsByRecipient(QueryRecordsByRecipientAddrRequest) returns (QueryRecordsByRecipientAddrResponse) {}
+  rpc RecordsByRecipient(QueryRecordsByRecipientAddrRequest)
+      returns (QueryRecordsByRecipientAddrResponse) {}
 }
 
 message QueryAllDistributionsRequest {}
@@ -30,9 +32,7 @@ message QueryRecordsByDistributionNameResponse {
   int64 height = 2;
 }
 
-message QueryRecordsByRecipientAddrRequest {
-  string address = 1;
-}
+message QueryRecordsByRecipientAddrRequest { string address = 1; }
 
 message QueryRecordsByRecipientAddrResponse {
   DistributionRecords distribution_records = 1;
