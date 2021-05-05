@@ -200,7 +200,7 @@ where:
 e.g.:
 
 ```
-rake "validator:stake[sifchain,my-node,10000000rowan,300000,0.5rowan,<public_key>,tcp://rpc.sifchain.finance:80]"
+rake "validator:stake[sifchain,my-node,300000,10000000rowan,0.5rowan,<public_key>,tcp://rpc.sifchain.finance:80]"
 ```
 
 4. It may take several blocks before your node appears as a validator on the network, but you can always check by running:
