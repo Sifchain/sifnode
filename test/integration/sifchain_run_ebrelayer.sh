@@ -48,4 +48,5 @@ ETHEREUM_PRIVATE_KEY=$EBRELAYER_ETHEREUM_PRIVATE_KEY $runner init $TCP_URL "$ETH
   "$MNEMONIC" \
   --home $CHAINDIR/.sifnoded \
   --chain-id $CHAINNET \
-  --rpc-url $TCP_URL
+  --rpc-url $TCP_URL \
+  --node $TCP_URL \

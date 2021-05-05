@@ -6,7 +6,6 @@ import (
 	"context"
 	"crypto/ecdsa"
 	"fmt"
-	"io"
 	"log"
 	"math/big"
 	"os"
@@ -28,7 +27,6 @@ import (
 	tmclient "github.com/tendermint/tendermint/rpc/client/http"
 	"go.uber.org/zap"
 
-	sifapp "github.com/Sifchain/sifnode/app"
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/contract"
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/txs"
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/types"
@@ -70,7 +68,7 @@ func NewKeybase(validatorMoniker, mnemonic, password string) (keyring.Keyring, k
 }
 
 // NewEthereumSub initializes a new EthereumSub
-func NewEthereumSub(inBuf io.Reader, rpcURL string, validatorMoniker, chainID, ethProvider string,
+func NewEthereumSub(cliCtx client.Context, rpcURL string, validatorMoniker, chainID, ethProvider string,
 	registryContractAddress common.Address, privateKey *ecdsa.PrivateKey, mnemonic string,
 	db *leveldb.DB, sugaredLogger *zap.SugaredLogger) (EthereumSub, error) {
 
@@ -86,7 +84,7 @@ func NewEthereumSub(inBuf io.Reader, rpcURL string, validatorMoniker, chainID, e
 	validatorAddress := sdk.ValAddress(info.GetAddress())
 
 	// Load CLI context and Tx builder
-	cliCtx, err := LoadTendermintCLIContext(validatorAddress, validatorMoniker, rpcURL, chainID, sugaredLogger)
+	_, err = LoadTendermintCLIContext(cliCtx, validatorAddress, validatorMoniker, rpcURL, chainID, sugaredLogger)
 	if err != nil {
 		return EthereumSub{}, err
 	}
@@ -106,14 +104,8 @@ func NewEthereumSub(inBuf io.Reader, rpcURL string, validatorMoniker, chainID, e
 }
 
 // LoadTendermintCLIContext : loads CLI context for tendermint txs
-func LoadTendermintCLIContext(validatorAddress sdk.ValAddress, validatorName string,
+func LoadTendermintCLIContext(cliCtx client.Context, validatorAddress sdk.ValAddress, validatorName string,
 	rpcURL string, chainID string, sugaredLogger *zap.SugaredLogger) (client.Context, error) {
-	// Create the new CLI context
-	encodingConfig := sifapp.MakeTestEncodingConfig()
-	cliCtx := client.Context{}.
-		WithLegacyAmino(encodingConfig.Amino).
-		WithFromAddress(sdk.AccAddress(validatorAddress)).
-		WithFromName(validatorName)
 
 	if rpcURL != "" {
 		cliCtx = cliCtx.WithNodeURI(rpcURL)
@@ -124,7 +116,7 @@ func LoadTendermintCLIContext(validatorAddress sdk.ValAddress, validatorName str
 	accountRetriever := authtypes.AccountRetriever{}
 	err := accountRetriever.EnsureExists(cliCtx, sdk.AccAddress(validatorAddress))
 	if err != nil {
-		sugaredLogger.Errorw("validator address not exists.",
+		sugaredLogger.Errorw("accountRetriever.EnsureExists failed",
 			errorMessageKey, err.Error())
 		return client.Context{}, err
 	}
