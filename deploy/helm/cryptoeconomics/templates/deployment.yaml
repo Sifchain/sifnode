@@ -6,30 +6,30 @@ metadata:
     {{- include "cryptoeconomics.labels" . | nindent 4 }}
 spec:
   {{- if not .Values.autoscaling.enabled }}
-replicas: {{ .Values.replicaCount }}
+  replicas: {{ .Values.replicaCount }}
   {{- end }}
-strategy:
-  type: {{ .Values.strategyType }}
-selector:
-  matchLabels:
+  strategy:
+    type: {{ .Values.strategyType }}
+  selector:
+    matchLabels:
     {{- include "cryptoeconomics.selectorLabels" . | nindent 6 }}
-template:
-  metadata:
+  template:
+    metadata:
     {{- with .Values.podAnnotations }}
-    annotations:
+      annotations:
       {{- toYaml . | nindent 8 }}
     {{- end }}
-    labels:
+      labels:
       {{- include "cryptoeconomics.selectorLabels" . | nindent 8 }}
-  spec:
+    spec:
     {{- with .Values.imagePullSecrets }}
-    imagePullSecrets:
+      imagePullSecrets:
       {{- toYaml . | nindent 8 }}
     {{- end }}
-    serviceAccountName: {{ include "cryptoeconomics.serviceAccountName" . }}
-    securityContext:
+      serviceAccountName: {{ include "cryptoeconomics.serviceAccountName" . }}
+      securityContext:
       {{- toYaml .Values.podSecurityContext | nindent 8 }}
-    containers:
+      containers:
       - name: {{ .Chart.Name }}
         securityContext:
           {{- toYaml .Values.securityContext | nindent 12 }}
@@ -44,14 +44,14 @@ template:
         env:
         livenessProbe:
           httpGet:
-            path: /
-            port: http
-          initialDelaySeconds: 180
+            path: /api?key=users
+            port: 3000
+          initialDelaySeconds: 30
         readinessProbe:
           httpGet:
-            path: /
-            port: http
-          initialDelaySeconds: 180
+            path: /api?key=users
+            port: 3000
+          initialDelaySeconds: 30
         resources:
           {{- toYaml .Values.resources | nindent 12 }}
     {{- with .Values.nodeSelector }}
