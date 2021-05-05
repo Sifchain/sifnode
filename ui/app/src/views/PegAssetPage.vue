@@ -95,15 +95,13 @@ export default defineComponent({
 
     async function handlePegRequested() {
       const asset = Asset.get(symbol.value);
+      const assetAmount = AssetAmount(asset, toBaseUnits(amount.value, asset));
 
       if (asset.symbol !== "eth") {
         // if not eth you need to approve spend before peg
         transactionState.value = "approving";
         try {
-          await actions.peg.approve(
-            store.wallet.eth.address,
-            AssetAmount(asset, amount.value),
-          );
+          await actions.peg.approve(store.wallet.eth.address, assetAmount);
         } catch (err) {
           return (transactionState.value = "rejected");
         }
@@ -111,9 +109,7 @@ export default defineComponent({
 
       transactionState.value = "signing";
 
-      const tx = await actions.peg.peg(
-        AssetAmount(asset, toBaseUnits(amount.value, asset)),
-      );
+      const tx = await actions.peg.peg(assetAmount);
 
       transactionHash.value = tx.hash;
       transactionState.value = toConfirmState(tx.state); // TODO: align states
