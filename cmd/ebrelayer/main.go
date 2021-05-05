@@ -64,7 +64,7 @@ func init() {
 		"Select keyring's backend (os|file|test)")
 	rootCmd.PersistentFlags().String(flags.FlagChainID, "", "Chain ID of tendermint node")
 	// Set FlagNode as seen in rpc.StatusCommand()
-	rootCmd.Flags().StringP(flags.FlagNode, "n", "tcp://localhost:26657", "Tendermint node to connect to")
+	rootCmd.PersistentFlags().StringP(flags.FlagNode, "n", "tcp://localhost:26657", "Tendermint node to connect to")
 	rootCmd.PersistentFlags().String(flags.FlagGas, "gas", fmt.Sprintf(
 		"gas limit to set per-transaction; set to %q to calculate required gas automatically (default %d)",
 		flags.GasFlagAuto, flags.DefaultGasLimit,
@@ -77,11 +77,13 @@ func init() {
 			rootCmd.PersistentFlags().Set(flags.FlagNode, args[0])
 		}
 
+		viper.BindPFlag(flags.FlagChainID, cmd.PersistentFlags().Lookup(flags.FlagChainID))
+
 		if err := client.SetCmdClientContextHandler(initClientCtx, cmd); err != nil {
 			return err
 		}
 
-		return initConfig(rootCmd)
+		return nil
 	}
 
 	// Construct Root Command
@@ -226,10 +228,6 @@ func RunGenerateBindingsCmd(cmd *cobra.Command, args []string) error {
 
 	// Generate contract bindings from bins and abis
 	return contract.GenerateBindings(contracts)
-}
-
-func initConfig(cmd *cobra.Command) error {
-	return viper.BindPFlag(flags.FlagChainID, cmd.PersistentFlags().Lookup(flags.FlagChainID))
 }
 
 func replayEthereumCmd() *cobra.Command {
