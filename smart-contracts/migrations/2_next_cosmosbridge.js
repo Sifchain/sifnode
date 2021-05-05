@@ -79,7 +79,7 @@ module.exports = function(deployer, network, accounts) {
         initialValidators,
         initialPowers
       ],
-      setTxSpecifications(6721975, accounts[0], deployer)
+      setTxSpecifications(3000000, accounts[0], deployer)
     );
 
     console.log("cosmosBridge address: ", cosmosBridge.address)

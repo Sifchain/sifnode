@@ -82,7 +82,14 @@ export default defineComponent({
       />
       <div class="placeholder" :style="toBackgroundStyle" v-else></div>
     </div>
-    <div class="symbol">
+    <div
+      class="symbol"
+      :data-handle="
+        [fromSymbol.toLowerCase(), toSymbol.toLowerCase(), 'pool-list-item']
+          .filter(Boolean)
+          .join('-')
+      "
+    >
       <span>{{ fromSymbol }}</span>
       /
       <span>{{ toSymbol }}</span>

@@ -8,7 +8,9 @@ import {
   LiquidityProvider,
   Pool,
 } from "../entities";
-import { Fraction } from "../entities";
+import { Amount } from "../entities";
+import { fromBaseUnits } from "../utils";
+import { format } from "../utils/format";
 import { useField } from "./useField";
 import { useBalances } from "./utils";
 
@@ -19,6 +21,10 @@ export enum PoolState {
   VALID_INPUT,
   NO_LIQUIDITY,
   ZERO_AMOUNTS_NEW_POOL,
+}
+
+function toDerived(assetAmount: IAssetAmount) {
+  return assetAmount.amount.multiply(fromBaseUnits("1", assetAmount.asset));
 }
 
 export function usePoolCalculator(input: {
@@ -68,6 +74,7 @@ export function usePoolCalculator(input: {
     if (!tokenAField.fieldAmount.value || !tokenAField.asset.value) {
       return null;
     }
+
     if (preExistingPool.value) {
       return input.tokenASymbol.value
         ? balanceMap.value.get(input.tokenASymbol.value) ??
@@ -124,7 +131,7 @@ export function usePoolCalculator(input: {
       !tokenBField.fieldAmount.value ||
       !tokenAField.fieldAmount.value
     ) {
-      return [new Fraction("0"), new Fraction("0")];
+      return [Amount("0"), Amount("0")];
     }
 
     return liquidityPool.value.calculatePoolUnits(
@@ -135,8 +142,7 @@ export function usePoolCalculator(input: {
 
   // pool units from the perspective of the liquidity provider
   const liquidityProviderPoolUnitsArray = computed(() => {
-    if (!provisionedPoolUnitsArray.value)
-      return [new Fraction("0"), new Fraction("0")];
+    if (!provisionedPoolUnitsArray.value) return [Amount("0"), Amount("0")];
 
     const [totalPoolUnits, newUnits] = provisionedPoolUnitsArray.value;
 
@@ -149,39 +155,44 @@ export function usePoolCalculator(input: {
   });
 
   const totalPoolUnits = computed(() =>
-    liquidityProviderPoolUnitsArray.value[0].toFixed(0),
+    liquidityProviderPoolUnitsArray.value[0].toBigInt().toString(),
   );
 
   const totalLiquidityProviderUnits = computed(() =>
-    liquidityProviderPoolUnitsArray.value[1].toFixed(0),
+    liquidityProviderPoolUnitsArray.value[1].toBigInt().toString(),
   );
 
   const shareOfPool = computed(() => {
-    if (!liquidityProviderPoolUnitsArray.value) return new Fraction("0");
+    if (!liquidityProviderPoolUnitsArray.value) return Amount("0");
 
     const [units, lpUnits] = liquidityProviderPoolUnitsArray.value;
 
     // shareOfPool should be 0 if units and lpUnits are zero
-    if (units.equalTo("0") && lpUnits.equalTo("0")) return new Fraction("0");
+    if (units.equalTo("0") && lpUnits.equalTo("0")) return Amount("0");
 
     // if no units lp owns 100% of pool
-    return units.equalTo("0") ? new Fraction("1") : lpUnits.divide(units);
+    return units.equalTo("0") ? Amount("1") : lpUnits.divide(units);
   });
 
   const shareOfPoolPercent = computed(() => {
     if (shareOfPool.value.multiply("10000").lessThan("1")) return "< 0.01%";
-    return `${shareOfPool.value.multiply("100").toFixed(2)}%`;
+    return `${format(shareOfPool.value, {
+      mantissa: 2,
+      mode: "percent",
+    })}`;
   });
 
   const poolAmounts = computed(() => {
     if (!preExistingPool.value || !tokenAField.asset.value) {
       return null;
     }
+
     if (!preExistingPool.value.contains(tokenAField.asset.value)) return null;
     const externalBalance = preExistingPool.value.getAmount(
       tokenAField.asset.value,
     );
     const nativeBalance = preExistingPool.value.getAmount("rowan");
+
     return [nativeBalance, externalBalance];
   });
 
@@ -189,7 +200,11 @@ export function usePoolCalculator(input: {
   const aPerBRatio = computed(() => {
     if (!poolAmounts.value) return 0;
     const [native, external] = poolAmounts.value;
-    return external.divide(native);
+
+    const derivedNative = toDerived(native);
+    const derivedExternal = toDerived(external);
+
+    return derivedExternal.divide(derivedNative);
   });
 
   const aPerBRatioMessage = computed(() => {
@@ -197,14 +212,18 @@ export function usePoolCalculator(input: {
       return "N/A";
     }
 
-    return aPerBRatio.value.toFixed(8);
+    return format(aPerBRatio.value, { mantissa: 8 });
   });
 
   // native_balance / external_balance
   const bPerARatio = computed(() => {
     if (!poolAmounts.value) return 0;
     const [native, external] = poolAmounts.value;
-    return native.divide(external);
+
+    const derivedNative = toDerived(native);
+    const derivedExternal = toDerived(external);
+
+    return derivedNative.divide(derivedExternal);
   });
 
   const bPerARatioMessage = computed(() => {
@@ -212,7 +231,7 @@ export function usePoolCalculator(input: {
       return "N/A";
     }
 
-    return bPerARatio.value.toFixed(8);
+    return format(bPerARatio.value, { mantissa: 8 });
   });
 
   // Price Impact and Pool Share:
@@ -226,10 +245,14 @@ export function usePoolCalculator(input: {
       return null;
 
     const [native, external] = poolAmounts.value;
-    const externalAdded = tokenAField.fieldAmount.value;
-    const nativeAdded = tokenBField.fieldAmount.value;
+    const derivedNative = toDerived(native);
+    const derivedExternal = toDerived(external);
+    const externalAdded = toDerived(tokenAField.fieldAmount.value);
+    const nativeAdded = toDerived(tokenBField.fieldAmount.value);
 
-    return external.add(externalAdded).divide(native.add(nativeAdded));
+    return derivedExternal
+      .add(externalAdded)
+      .divide(derivedNative.add(nativeAdded));
   });
 
   const aPerBRatioProjectedMessage = computed(() => {
@@ -237,7 +260,7 @@ export function usePoolCalculator(input: {
       return "N/A";
     }
 
-    return aPerBRatioProjected.value.toFixed(8);
+    return format(aPerBRatioProjected.value, { mantissa: 8 });
   });
 
   // Price Impact and Pool Share:
@@ -251,9 +274,13 @@ export function usePoolCalculator(input: {
       return null;
 
     const [native, external] = poolAmounts.value;
-    const externalAdded = tokenAField.fieldAmount.value;
-    const nativeAdded = tokenBField.fieldAmount.value;
-    return native.add(nativeAdded).divide(external.add(externalAdded));
+    const derivedNative = toDerived(native);
+    const derivedExternal = toDerived(external);
+    const externalAdded = toDerived(tokenAField.fieldAmount.value);
+    const nativeAdded = toDerived(tokenBField.fieldAmount.value);
+    return derivedNative
+      .add(nativeAdded)
+      .divide(derivedExternal.add(externalAdded));
   });
 
   const bPerARatioProjectedMessage = computed(() => {
@@ -261,7 +288,7 @@ export function usePoolCalculator(input: {
       return "N/A";
     }
 
-    return bPerARatioProjected.value.toFixed(8);
+    return format(bPerARatioProjected.value, { mantissa: 8 });
   });
 
   effect(() => {
@@ -269,6 +296,8 @@ export function usePoolCalculator(input: {
     // calculate the price ratio of A / B
     // Only activates when it is a preexisting pool
     if (
+      assetA.value &&
+      assetB.value &&
       input.asyncPooling.value &&
       preExistingPool.value &&
       input.lastFocusedTokenField.value !== null
@@ -283,20 +312,22 @@ export function usePoolCalculator(input: {
       }
       const assetAmountA = AssetAmount(
         assetA.value,
-        tokenAField.fieldAmount?.value || 0,
+        tokenAField.fieldAmount?.value || "0",
       );
       const assetAmountB = AssetAmount(
         assetB.value,
-        tokenBField.fieldAmount?.value || 0,
+        tokenBField.fieldAmount?.value || "0",
       );
       if (input.lastFocusedTokenField.value === "A") {
-        input.tokenBAmount.value = assetAmountA
-          .multiply(bPerARatio.value || "0")
-          .toFixed(5);
+        input.tokenBAmount.value = format(
+          toDerived(assetAmountA).multiply(bPerARatio.value || "0"),
+          { mantissa: 5 },
+        );
       } else if (input.lastFocusedTokenField.value === "B") {
-        input.tokenAAmount.value = assetAmountB
-          .multiply(aPerBRatio.value || "0")
-          .toFixed(5);
+        input.tokenAAmount.value = format(
+          toDerived(assetAmountB).multiply(aPerBRatio.value || "0"),
+          { mantissa: 5 },
+        );
       }
     }
   });

@@ -31,7 +31,7 @@ export default defineComponent({
       <span>
         Opportunity
         <Tooltip
-          message="This is the arbitrage opportunity available based on a differential between the price of this token on Sifchain and its price on Coinmarketcap."
+          message="This is the arbitrage opportunity available based on a differential between the price of this token on Sifchain and its price on CoinMarketCap. If the percentage is green, it means the token is currently cheaper in Sifchain than CoinMarketCap."
         >
           <Icon icon="info-box-white" />
         </Tooltip>

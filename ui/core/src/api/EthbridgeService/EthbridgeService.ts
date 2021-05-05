@@ -2,7 +2,7 @@ import { provider } from "web3-core";
 import Web3 from "web3";
 import { getBridgeBankContract } from "./bridgebankContract";
 import { getTokenContract } from "./tokenContract";
-import { AssetAmount, Token } from "../../entities";
+import { IAssetAmount } from "../../entities";
 import {
   createPegTxEventEmitter,
   PegTxEventEmitter,
@@ -122,18 +122,19 @@ export default function createEthbridgeService({
   }
 
   return {
-    async approveBridgeBankSpend(account: string, amount: AssetAmount) {
+    async approveBridgeBankSpend(account: string, assetAmount: IAssetAmount) {
       // This will popup an approval request in metamask
       const web3 = await ensureWeb3();
       const tokenContract = await getTokenContract(
         web3,
-        (amount.asset as Token).address,
+        assetAmount.asset.address!,
       );
       const sendArgs = {
         from: account,
         value: 0,
         gas: 100000,
       };
+      const amountInBaseUnits = assetAmount.toBaseUnitsAmount();
 
       // TODO - give interface option to approve unlimited spend via web3.utils.toTwosComplement(-1);
       // NOTE - We may want to move this out into its own separate function.
@@ -141,12 +142,7 @@ export default function createEthbridgeService({
       const hasAlreadyApprovedSpend = await tokenContract.methods
         .allowance(account, bridgebankContractAddress)
         .call();
-      if (
-        JSBI.lessThanOrEqual(
-          amount.toBaseUnits(),
-          JSBI.BigInt(hasAlreadyApprovedSpend),
-        )
-      ) {
+      if (amountInBaseUnits.lessThanOrEqual(hasAlreadyApprovedSpend)) {
         // dont request approve again
         console.log(
           "approveBridgeBankSpend: spend already approved",
@@ -156,7 +152,10 @@ export default function createEthbridgeService({
       }
 
       const res = await tokenContract.methods
-        .approve(bridgebankContractAddress, amount.toBaseUnits().toString())
+        .approve(
+          bridgebankContractAddress,
+          amountInBaseUnits.toBigInt().toString(),
+        )
         .send(sendArgs);
       console.log("approveBridgeBankSpend:", res);
       return res;
@@ -165,13 +164,12 @@ export default function createEthbridgeService({
     async burnToEthereum(params: {
       fromAddress: string;
       ethereumRecipient: string;
-      assetAmount: AssetAmount;
-      feeAmount: AssetAmount;
+      assetAmount: IAssetAmount;
+      feeAmount: IAssetAmount;
     }) {
       const web3 = await ensureWeb3();
       const ethereumChainId = await web3.eth.net.getId();
-      const tokenAddress =
-        (params.assetAmount.asset as Token).address ?? ETH_ADDRESS;
+      const tokenAddress = params.assetAmount.asset.address ?? ETH_ADDRESS;
       console.log("burnToEthereum: start: ", tokenAddress);
 
       const txReceipt = await sifUnsignedClient.burn({
@@ -180,12 +178,12 @@ export default function createEthbridgeService({
           chain_id: sifChainId,
           from: params.fromAddress,
         },
-        amount: params.assetAmount.toBaseUnits().toString(),
+        amount: params.assetAmount.toBigInt().toString(),
         symbol: params.assetAmount.asset.symbol,
         cosmos_sender: params.fromAddress,
         ethereum_chain_id: `${ethereumChainId}`,
         token_contract_address: tokenAddress,
-        ceth_amount: params.feeAmount.toBaseUnits().toString(),
+        ceth_amount: params.feeAmount.toBigInt().toString(),
       });
 
       console.log("burnToEthereum: txReceipt: ", txReceipt, tokenAddress);
@@ -194,7 +192,7 @@ export default function createEthbridgeService({
 
     lockToSifchain(
       sifRecipient: string,
-      assetAmount: AssetAmount,
+      assetAmount: IAssetAmount,
       confirmations: number,
     ) {
       const pegTx = createPegTx(confirmations, assetAmount.asset.symbol);
@@ -216,8 +214,8 @@ export default function createEthbridgeService({
           bridgebankContractAddress,
         );
         const accounts = await web3.eth.getAccounts();
-        const coinDenom = (assetAmount.asset as Token).address ?? ETH_ADDRESS;
-        const amount = assetAmount.numerator.toString();
+        const coinDenom = assetAmount.asset.address || ETH_ADDRESS; // eth address is ""
+        const amount = assetAmount.toBigInt().toString();
         const fromAddress = accounts[0];
 
         const sendArgs = {
@@ -252,13 +250,12 @@ export default function createEthbridgeService({
     async lockToEthereum(params: {
       fromAddress: string;
       ethereumRecipient: string;
-      assetAmount: AssetAmount;
-      feeAmount: AssetAmount;
+      assetAmount: IAssetAmount;
+      feeAmount: IAssetAmount;
     }) {
       const web3 = await ensureWeb3();
       const ethereumChainId = await web3.eth.net.getId();
-      const tokenAddress =
-        (params.assetAmount.asset as Token).address ?? ETH_ADDRESS;
+      const tokenAddress = params.assetAmount.asset.address ?? ETH_ADDRESS;
 
       const lockParams = {
         ethereum_receiver: params.ethereumRecipient,
@@ -266,12 +263,12 @@ export default function createEthbridgeService({
           chain_id: sifChainId,
           from: params.fromAddress,
         },
-        amount: params.assetAmount.toBaseUnits().toString(),
+        amount: params.assetAmount.toBigInt().toString(),
         symbol: params.assetAmount.asset.symbol,
         cosmos_sender: params.fromAddress,
         ethereum_chain_id: `${ethereumChainId}`,
         token_contract_address: tokenAddress,
-        ceth_amount: params.feeAmount.toBaseUnits().toString(),
+        ceth_amount: params.feeAmount.toBigInt().toString(),
       };
 
       console.log("lockToEthereum: TRY LOCK", tokenAddress);
@@ -312,7 +309,7 @@ export default function createEthbridgeService({
 
     burnToSifchain(
       sifRecipient: string,
-      assetAmount: AssetAmount,
+      assetAmount: IAssetAmount,
       confirmations: number,
       account?: string,
     ) {
@@ -335,8 +332,8 @@ export default function createEthbridgeService({
           bridgebankContractAddress,
         );
         const accounts = await web3.eth.getAccounts();
-        const coinDenom = (assetAmount.asset as Token).address;
-        const amount = assetAmount.numerator.toString();
+        const coinDenom = assetAmount.asset.address;
+        const amount = assetAmount.toBigInt().toString();
         const fromAddress = account || accounts[0];
 
         const sendArgs = {
