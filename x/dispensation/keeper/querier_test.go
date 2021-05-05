@@ -34,7 +34,7 @@ func GenerateQueryData(app *app.SifchainApp, ctx sdk.Context, name string, outLi
 func TestQueryRecordsName(t *testing.T) {
 	sifapp, ctx := test.CreateTestApp(false)
 	name := uuid.New().String()
-	outList := test.GenerateOutputList("1000000000")
+	outList := test.CreatOutputList(3, "1000000000")
 	GenerateQueryData(sifapp, ctx, name, outList)
 	keeper := sifapp.DispensationKeeper
 	querier := dispensationkeeper.NewLegacyQuerier(keeper)
@@ -61,7 +61,7 @@ func TestQueryRecordsName(t *testing.T) {
 func TestQueryRecordsAddr(t *testing.T) {
 	sifapp, ctx := test.CreateTestApp(false)
 	name := uuid.New().String()
-	outList := test.GenerateOutputList("1000000000")
+	outList := test.CreatOutputList(3, "1000000000")
 	GenerateQueryData(sifapp, ctx, name, outList)
 	keeper := sifapp.DispensationKeeper
 	querier := dispensationkeeper.NewLegacyQuerier(keeper)
@@ -87,7 +87,7 @@ func TestQueryRecordsAddr(t *testing.T) {
 func TestQueryAllDistributions(t *testing.T) {
 	sifapp, ctx := test.CreateTestApp(false)
 	name := uuid.New().String()
-	outList := test.GenerateOutputList("1000000000")
+	outList := test.CreatOutputList(3, "1000000000")
 	GenerateQueryData(sifapp, ctx, name, outList)
 	keeper := sifapp.DispensationKeeper
 	querier := dispensationkeeper.NewLegacyQuerier(keeper)

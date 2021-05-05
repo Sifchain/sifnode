@@ -7,8 +7,8 @@ import "cosmos/base/coin.proto";
 option go_package = "github.com/Sifchain/sifnode/x/dispensation/types";
 
 message GenesisState {
-  repeated string address_whitelist = 1;
-  string admin_address = 2;
+  DistributionRecords distribution_records = 1;
+  Distributions distributions = 2;
 }
 
 // Distribution type enum
