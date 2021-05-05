@@ -59,6 +59,24 @@ export default defineComponent({
     Tooltip,
     Icon,
   },
+  methods: {
+    openClaimModal() {
+      console.log(this.modalOpen);
+      this.modalOpen = true;
+    },
+    requestClose() {
+      console.log(this.modalOpen);
+      this.modalOpen = false;
+    },
+    claimRewards() {
+      alert("claim logic/keplr goes here");
+    },
+  },
+  data() {
+    return {
+      modalOpen: true,
+    };
+  },
   setup() {
     const { store } = useCore();
     const address = computed(() => store.wallet.sif.address);
@@ -76,8 +94,8 @@ export default defineComponent({
       rewards,
       REWARD_INFO,
       items: [
-        { key: "Your Multiplier Date", value: "12 Aug 2020" },
-        { key: "Your Current Multiplier", value: "1.2x" },
+        { key: "Claimable  Rewards", value: "120.212" },
+        { key: "Projected Full Amount", value: "1000" },
       ],
       format,
     };
@@ -108,53 +126,76 @@ export default defineComponent({
             {{ REWARD_INFO[reward.type].description }}
           </Copy>
           <div class="details-container">
-            <div class="amount-container w50 jcsb">
-              <div class="df fdr">
-                <AssetItem symbol="Rowan" :label="false" />
-                <span>{{ format(+reward.amount) }}</span>
-              </div>
-              <span>ROWAN</span>
-              <Tooltip>
-                <template #message>
-                  <div class="tooltip">
-                    Current multiplier: {{ format(+reward.multiplier) }}x
+            <div class="amount-container">
+              <div class="reward-rows">
+                <div class="reward-row">
+                  <div class="row-label">Rewards in ROWAN</div>
+                  <div class="row-amount">{{ format(+reward.amount) }}</div>
+                  <AssetItem symbol="Rowan" :label="false" />
+                </div>
+                <div class="reward-row">
+                  <div class="row-label">
+                    Projected Full Amount
+                    <Tooltip>
+                      <template #message>
+                        <div class="tooltip">
+                          Current multiplier: {{ format(+reward.multiplier) }}x
+                        </div>
+                      </template>
+                      <Icon icon="info-box-black" />
+                    </Tooltip>
                   </div>
-                </template>
-                <Icon icon="info-box-black" />
-              </Tooltip>
+                  <div class="row-amount">10000</div>
+                  <AssetItem symbol="Rowan" :label="false" />
+                </div>
+              </div>
             </div>
+          </div>
+          <div class="reward-buttons">
             <a
               class="more-info-button"
               target="_blank"
-              href="https://docs.sifchain.finance/resources/rewards-programs#liquidity-mining-and-validator-subsidy-rewards-on-sifchain"
+              href="https://cryptoeconomics.vercel.app/"
               >More Info</a
             >
+            <SifButton @click="openClaimModal" primary="true">Claim</SifButton>
           </div>
         </div>
       </Box>
     </div>
     <ActionsPanel connectType="connectToSif" />
-    <Modal open="true">
-      <ModalView :isOpen="true">
-        <div class="claim-container">
-          <SubHeading>Claim Rewards</SubHeading>
-          <Copy>
-            Are you sure you want to claim your rewards? Once you claim these
-            rewards, your multiplier will reset to 1x for all remaining amounts
-            and will continue to accumulate if within the reward eligibility
-            timeframe. 
-            <br />
-            <br />
-            Please note that the rewards will be released at the end of the
-            week.
-            <br />
-            <br />
-            Find out additional information here.
-          </Copy>
-          <PairTable :items="items" />
+    <ModalView :isOpen="modalOpen" :requestClose="requestClose">
+      <div class="claim-container">
+        <SubHeading>Claim Rewards</SubHeading>
+        <br />
+        <Copy>
+          Are you sure you want to claim your rewards? Once you claim these
+          rewards, your multiplier will reset to 1x for all remaining amounts
+          and will continue to accumulate if within the reward eligibility
+          timeframe. 
+          <br />
+          <br />
+          Please note that the rewards will be released at the end of the week.
+          <br />
+          <br />
+          Find out <a href="">additional information here</a>.
+        </Copy>
+        <br />
+        <PairTable :items="items" />
+        <br />
+        <div class="reward-buttons">
+          <SifButton
+            class="reward-button"
+            @click="requestClose"
+            secondary="true"
+            >Cancel</SifButton
+          >
+          <SifButton class="reward-button" @click="claimRewards" primary="true"
+            >Claim Rewards</SifButton
+          >
         </div>
-      </ModalView>
-    </Modal>
+      </div>
+    </ModalView>
   </Layout>
 </template>
 
@@ -192,14 +233,28 @@ export default defineComponent({
       margin-bottom: $margin_small;
     }
     .amount-container {
-      display: flex;
-      align-items: center;
-      flex-direction: row;
     }
     .details-container {
-      display: flex;
-      flex-direction: row;
-      justify-content: space-between;
+    }
+  }
+  .reward-rows {
+    display: flex;
+    flex-direction: column;
+  }
+  .reward-row {
+    display: flex;
+    width: 100%;
+    justify-content: space-between;
+    .row-label {
+      flex: 1 1 auto;
+      text-align: left;
+    }
+    .row-amount {
+      width: 100px;
+      text-align: right;
+    }
+    .row {
+      width: 15px;
     }
   }
 
@@ -229,6 +284,20 @@ export default defineComponent({
     100% {
       transform: scale(0.85);
     }
+  }
+}
+
+.reward-buttons {
+  display: flex;
+  flex-direction: row;
+
+  justify-content: space-between;
+  .more-info-button,
+  .btn {
+    width: 300px;
+  }
+  .reward-button {
+    text-align: center;
   }
 }
 

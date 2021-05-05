@@ -40,6 +40,12 @@ export default defineComponent({
   td {
     border-bottom: 1px solid #d2d2d2;
     padding: 10px;
+    text-align: left;
+    font-size: 16px; /* make $variable */
+    line-height: 20.8px; /* make $variable */
+  }
+  td:last-child {
+    text-align: right;
   }
   tr:last-child td {
     border-bottom: none;
