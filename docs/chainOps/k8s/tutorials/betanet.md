@@ -4,7 +4,13 @@
 
 1. Switch to the root of the sifchain project.
 
-2. Scaffold a new cluster:
+2. import the `gotpl` module
+
+```
+go get github.com/belitre/gotpl
+```
+
+3. Scaffold a new cluster:
 
 ```
 rake "cluster:scaffold[<cluster>,<provider>]"
@@ -23,9 +29,9 @@ where:
 |`<cluster>`|A name for your new cluster.|
 |`<provider>`|The cloud provider to use (currently only AWS is supported).|
 
-3. Once complete, you'll notice that several Terraform files/folders have been setup inside of the `.live` directory. We recommend you leave the defaults as-is, but for those that have experience with Terraform, feel free to adjust the configuration as you see fit.
+4. Once complete, you'll notice that several Terraform files/folders have been setup inside of the `.live` directory. We recommend you leave the defaults as-is, but for those that have experience with Terraform, feel free to adjust the configuration as you see fit.
 
-4. Deploy the cluster to AWS:
+5. Deploy the cluster to AWS (Default region is US-WEST-2):
 
 ```
 rake "cluster:deploy[<cluster>,<provider>]"
@@ -37,11 +43,19 @@ e.g.:
 rake "cluster:deploy[my-cluster,aws]"
 ```
 
-5. Once complete, you should see your cluster on your AWS account. You can also check using `kubectl`:
+6. Once complete, you should see your cluster on your AWS account. You can also check using `kubectl`:
 
 ```
 kubectl get pods --all-namespaces --kubeconfig ./.live/sifchain-aws-my-cluster/kubeconfig_sifchain-aws-my-cluster
 ```
+
+If you receive the error:
+ 
+```
+Unable to connect to the server: getting credentials: exec: exec: "aws-iam-authenticator": executable file not found in $PATH
+```
+
+then install `aws-iam-authenticator` from [here](https://docs.aws.amazon.com/eks/latest/userguide/install-aws-iam-authenticator.html).
 
 ## Deploy a new node
 
@@ -49,6 +63,17 @@ kubectl get pods --all-namespaces --kubeconfig ./.live/sifchain-aws-my-cluster/k
 
 ```
 rake "keys:generate:mnemonic"
+```
+
+If this command fails, with:
+
+_rake abort!_
+
+then please ensure that your `$GOPATH` is set:
+
+```
+export GOPATH=~/go
+export PATH=$PATH:$GOPATH/bin
 ```
 
 2. Import your newly generated key:
@@ -130,6 +155,12 @@ e.g.:
 kubectl -n sifnode logs sifnode-65fbd7798f-6wqhb --kubeconfig ./.live/sifchain-aws-my-cluster/kubeconfig_sifchain-aws-my-cluster
 ```
 
+Note: Before moving to further steps make sure that your node is synced upto the current block height. 
+You can check this by comparing your logs from above command with the block height from
+```
+https://blockexplorer.sifchain.finance/blocks
+```
+
 ## Stake to become a validator
 
 In order to become a validator, that is a node which can participate in consensus on the network, you'll need to stake `rowan`.
@@ -151,7 +182,7 @@ rake "validator:keys:public[my-cluster,aws,sifnode]"
 3. Stake:
 
 ```
-rake "validator:stake[<chain_id>,<moniker>,<amount>,<gas>,<public_key>,<node_rpc_address>]"
+rake "validator:stake[<chain_id>,<moniker>,<amount>,<gas>,<gas_prices>,<public_key>,<node_rpc_address>]"
 ```
 
 where:
@@ -161,14 +192,15 @@ where:
 |`<chain_id>`|The Chain ID of the network (e.g.: sifchain).|
 |`<moniker>`|The moniker or name of your node as you want it to appear on the network.|
 |`<amount>`|The amount to stake, including the denomination (e.g.: 100000000rowan). The precision used is 1e18.|
-|`<gas>`|The gas price (e.g.: 0.5rowan).|
+|`<gas>`| The per-transaction gas limit (e.g.: 300000).|
+|`<gas_prices>`|The minimum gas price to use  (e.g.: 0.5rowan).|
 |`<public_key>`|The public key of your validator (you got this in the previous step).|
 |`<node_rpc_address>`|The address to broadcast the transaction to (e.g.: tcp://rpc.sifchain.finance:80).|
 
 e.g.:
 
 ```
-rake "validator:stake[sifchain,my-node,10000000rowan,0.5rowan,<public_key>,tcp://rpc.sifchain.finance:80]"
+rake "validator:stake[sifchain,my-node,10000000rowan,300000,0.5rowan,<public_key>,tcp://rpc.sifchain.finance:80]"
 ```
 
 4. It may take several blocks before your node appears as a validator on the network, but you can always check by running:
