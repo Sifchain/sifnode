@@ -6,17 +6,16 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/bank/types"
 )
 
-
 func NewMsgCreateDistribution(signer sdk.AccAddress, DistributionName string, DistributionType DistributionType, input []types.Input, output []types.Output) MsgCreateDistribution {
 
 	return MsgCreateDistribution{
-		Signer:           signer.String(),
+		Signer: signer.String(),
 		Distribution: &Distribution{
 			DistributionName: DistributionName,
 			DistributionType: DistributionType,
 		},
-		Input:            input,
-		Output:           output,
+		Input:  input,
+		Output: output,
 	}
 }
 
@@ -25,7 +24,7 @@ func (m MsgCreateDistribution) Route() string {
 }
 
 func (m MsgCreateDistribution) Type() string {
-	return "airdrop"
+	return "createDistribution"
 }
 
 func (m MsgCreateDistribution) ValidateBasic() error {

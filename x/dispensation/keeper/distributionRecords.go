@@ -65,7 +65,12 @@ func (k Keeper) DeleteDistributionRecord(ctx sdk.Context, distributionName strin
 func (k Keeper) GetRecordsForName(ctx sdk.Context, name string, status types.DistributionStatus) types.DistributionRecords {
 	var res types.DistributionRecords
 	iterator := k.GetDistributionRecordsIterator(ctx, status)
-	defer iterator.Close()
+	defer func(iterator sdk.Iterator) {
+		err := iterator.Close()
+		if err != nil {
+			panic("Failed to close iterator")
+		}
+	}(iterator)
 	for ; iterator.Valid(); iterator.Next() {
 		var dr types.DistributionRecord
 		bytesValue := iterator.Value()
@@ -80,7 +85,12 @@ func (k Keeper) GetRecordsForName(ctx sdk.Context, name string, status types.Dis
 func (k Keeper) GetRecordsForRecipient(ctx sdk.Context, recipient string) types.DistributionRecords {
 	var res types.DistributionRecords
 	iterator := k.GetDistributionRecordsIterator(ctx, types.DistributionStatus_DISTRIBUTION_STATUS_PENDING)
-	defer iterator.Close()
+	defer func(iterator sdk.Iterator) {
+		err := iterator.Close()
+		if err != nil {
+			panic("Failed to close iterator")
+		}
+	}(iterator)
 	for ; iterator.Valid(); iterator.Next() {
 		var dr types.DistributionRecord
 		bytesValue := iterator.Value()
@@ -90,7 +100,12 @@ func (k Keeper) GetRecordsForRecipient(ctx sdk.Context, recipient string) types.
 		}
 	}
 	iterator = k.GetDistributionRecordsIterator(ctx, types.DistributionStatus_DISTRIBUTION_STATUS_COMPLETED)
-	defer iterator.Close()
+	defer func(iterator sdk.Iterator) {
+		err := iterator.Close()
+		if err != nil {
+			panic("Failed to close iterator")
+		}
+	}(iterator)
 	for ; iterator.Valid(); iterator.Next() {
 		var dr types.DistributionRecord
 		bytesValue := iterator.Value()
@@ -106,7 +121,12 @@ func (k Keeper) GetRecordsLimited(ctx sdk.Context, status types.DistributionStat
 	var res types.DistributionRecords
 	iterator := k.GetDistributionRecordsIterator(ctx, status)
 	count := 0
-	defer iterator.Close()
+	defer func(iterator sdk.Iterator) {
+		err := iterator.Close()
+		if err != nil {
+			panic("Failed to close iterator")
+		}
+	}(iterator)
 	for ; iterator.Valid(); iterator.Next() {
 		var dr types.DistributionRecord
 		bytesValue := iterator.Value()

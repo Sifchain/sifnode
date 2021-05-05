@@ -32,9 +32,8 @@ func queryDistributionRecordsForName(ctx sdk.Context, req abci.RequestQuery, que
 	if err != nil {
 		return nil, sdkerrors.Wrap(sdkerrors.ErrJSONUnmarshal, err.Error())
 	}
-
-	res, err := querier.RecordsByDistributionName(sdk.WrapSDKContext(ctx), &params)
-
+	// RecordsByDistributionName cannot return error
+	res, _ := querier.RecordsByDistributionName(sdk.WrapSDKContext(ctx), &params)
 	bz, err := types.ModuleCdc.MarshalJSON(res.DistributionRecords)
 	if err != nil {
 		return nil, sdkerrors.Wrap(sdkerrors.ErrJSONMarshal, err.Error())
@@ -49,8 +48,8 @@ func queryDistributionRecordsForRecipient(ctx sdk.Context, req abci.RequestQuery
 	if err != nil {
 		return nil, sdkerrors.Wrap(sdkerrors.ErrJSONUnmarshal, err.Error())
 	}
-
-	res, err := querier.RecordsByRecipient(sdk.WrapSDKContext(ctx), &params)
+	//RecordsByRecipient cannot return error
+	res, _ := querier.RecordsByRecipient(sdk.WrapSDKContext(ctx), &params)
 
 	bz, err := types.ModuleCdc.MarshalJSON(res.DistributionRecords)
 	if err != nil {
