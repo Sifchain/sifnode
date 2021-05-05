@@ -208,7 +208,8 @@ export default defineComponent({
         if (!accountBalance) return;
         const maxAmount = getMaxAmount(fromSymbol, accountBalance);
         fromAmount.value = format(maxAmount, accountBalance.asset, {
-          mantissa: 1,
+          mantissa: accountBalance.asset.decimals,
+          trimMantissa: true,
         });
       },
       nextStepAllowed: computed(() => {
