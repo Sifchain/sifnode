@@ -1,11 +1,5 @@
 # Connecting to the Sifchain TestNet with Kubernetes (k8s).
 
-## Demo Videos
-
-1. https://youtu.be/dlPLIivwRGg
-2. https://youtu.be/ff9CZkmHo3o
-3. https://youtu.be/iJjXGXWMfsk
-
 ## Scaffold and deploy a new cluster
 
 1. Switch to the root of the sifchain project.
