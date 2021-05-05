@@ -4,7 +4,7 @@
 
 1. Switch to the root of the sifchain project.
 
-2. import gotpl module
+2. import the `gotpl` module
 
 ```
 go get github.com/belitre/gotpl
@@ -49,14 +49,13 @@ rake "cluster:deploy[my-cluster,aws]"
 kubectl get pods --all-namespaces --kubeconfig ./.live/sifchain-aws-my-cluster/kubeconfig_sifchain-aws-my-cluster
 ```
 
-Note: if you get 
+If you receive the error:
+ 
 ```
 Unable to connect to the server: getting credentials: exec: exec: "aws-iam-authenticator": executable file not found in $PATH
 ```
-Install aws-iam-authenticator from
-```
-https://docs.aws.amazon.com/eks/latest/userguide/install-aws-iam-authenticator.html
-```
+
+then install `aws-iam-authenticator` from [here](https://docs.aws.amazon.com/eks/latest/userguide/install-aws-iam-authenticator.html).
 
 ## Deploy a new node
 
@@ -66,14 +65,16 @@ https://docs.aws.amazon.com/eks/latest/userguide/install-aws-iam-authenticator.h
 rake "keys:generate:mnemonic"
 ```
 
-Note: if you get _rake abort!_ error
+If this command fails, with:
 
-run these commands
+_rake abort!_
+
+then please ensure that your `$GOPATH` is set:
+
 ```
 export GOPATH=~/go
 export PATH=$PATH:$GOPATH/bin
 ```
-
 
 2. Import your newly generated key:
 
@@ -191,9 +192,9 @@ where:
 |`<chain_id>`|The Chain ID of the network (e.g.: sifchain).|
 |`<moniker>`|The moniker or name of your node as you want it to appear on the network.|
 |`<amount>`|The amount to stake, including the denomination (e.g.: 100000000rowan). The precision used is 1e18.|
-|`<public_key>`|The public key of your validator (you got this in the previous step).|
 |`<gas>`| The per-transaction gas limit (e.g.: 300000).|
 |`<gas_prices>`|The minimum gas price to use  (e.g.: 0.5rowan).|
+|`<public_key>`|The public key of your validator (you got this in the previous step).|
 |`<node_rpc_address>`|The address to broadcast the transaction to (e.g.: tcp://rpc.sifchain.finance:80).|
 
 e.g.:
