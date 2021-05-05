@@ -130,6 +130,7 @@ sifnodecli tx staking create-validator \
     --moniker=<moniker> \
     --chain-id=sifchain \
     --min-self-delegation="1" \
+    --gas="300000" \
     --gas-prices="0.5rowan" \
     --from=<moniker> \
     --keyring-backend=file \
