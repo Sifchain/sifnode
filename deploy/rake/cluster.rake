@@ -359,7 +359,7 @@ echo '      sssssssssss    iiiiiiiifffffffff            cccccccccccccccchhhhhhh 
       if check_vault_init.empty?
             puts "Initialize Vault"
             vault_init = %Q{
-                vault_init_output=$(kubectl exec --kubeconfig=./kubeconfig -n vault  vault-0 -- vault operator init -n 1 -t 1)
+                vault_init_output=$(kubectl exec --kubeconfig=./kubeconfig -n vault vault-0 -- vault operator init -n 1 -t 1)
                 sleep 60
                 echo -e ${vault_init_output} > vault_output
                 VAULT_TOKEN=`echo $vault_init_output | cut -d ':' -f 7 | cut -d ' ' -f 2`
