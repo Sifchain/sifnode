@@ -1,52 +1,177 @@
-import { AssetAmount } from "./AssetAmount";
-import { Network } from "./Network";
-import { Coin } from "./Coin";
 import JSBI from "jsbi";
-import { Fraction } from "./fraction/Fraction";
+import { AssetAmount } from "./AssetAmount";
+import { Asset } from "./Asset";
+import { Amount } from "./Amount";
+import { Network } from "./Network";
 
-const USD = Coin({
-  symbol: "USD",
-  decimals: 2,
-  name: "US Dollar",
-  network: Network.ETHEREUM,
-});
+describe("AssetAmount", () => {
+  beforeEach(() => {
+    // ensure asset is available
+    // TODO: Add this to the test utils
+    Asset({
+      address: "1234568",
+      decimals: 18,
+      label: "ETH",
+      name: "Ethereum",
+      network: Network.ETHEREUM,
+      symbol: "eth",
+      imageUrl: "http://fooo",
+    });
+  });
 
-const ETH = Coin({
-  symbol: "ETH",
-  decimals: 18,
-  name: "Ethereum",
-  network: Network.ETHEREUM,
-});
+  test("Asset values", () => {
+    const bal = AssetAmount("eth", "12345678");
+    expect(bal.symbol).toBe("eth");
+    expect(bal.label).toBe("ETH");
+    expect(bal.network).toBe("ethereum");
+    expect(bal.imageUrl).toBe("http://fooo");
+    expect(bal.decimals).toBe(18);
+    expect(bal.address).toBe("1234568");
+  });
 
-test("it should be able to handle whole integars", () => {
-  const f = AssetAmount(USD, JSBI.BigInt("10012"));
-  expect(f.toFixed(2)).toBe("100.12");
-});
+  test("Parse to Amount", () => {
+    expect(Amount(AssetAmount("eth", "1234")).equalTo(Amount("1234"))).toBe(
+      true,
+    );
+  });
 
-test("Shorthand", () => {
-  expect(AssetAmount(USD, "100.12").toFixed()).toBe("100.12");
-  expect(AssetAmount(USD, "100").toFixed()).toBe("100.00");
-  expect(AssetAmount(ETH, "10.1234567").toFixed()).toBe(
-    "10.123456700000000000",
-  );
-  expect(AssetAmount(ETH, "10.1234567").toFixed(0)).toBe("10");
-});
+  test("#toBigInt", () => {
+    // Bigint
+    expect(
+      JSBI.equal(JSBI.BigInt("1"), AssetAmount("eth", "1").toBigInt()),
+    ).toBe(true);
+  });
 
-test("it takes a fraction", () => {
-  const ten = new Fraction("1000", "100");
-  expect(AssetAmount(USD, ten).toString()).toBe("10.00 USD");
-});
+  test("#toString", () => {
+    expect(AssetAmount("eth", "12345678").toString()).toBe("12345678 ETH");
+  });
 
-test("Formatted", () => {
-  const f = AssetAmount(USD, "100.12");
-  expect(f.toFormatted()).toBe("100.12 USD");
-  expect(f.toFormatted({ symbol: false })).toBe("100.12");
-});
+  test("#toBaseUnitsAmount", () => {
+    expect(
+      AssetAmount("eth", "1234.5678").toBaseUnitsAmount().toBigInt().toString(),
+    ).toBe("1234567800000000000000");
+  });
 
-test("To base units", () => {
-  expect(AssetAmount(ETH, "10").toString()).toBe("10.000000000000000000 ETH");
+  test("#add", () => {
+    expect(
+      AssetAmount("eth", "1000")
+        .add(AssetAmount("eth", "1000"))
+        .equalTo(AssetAmount("eth", "2000")),
+    ).toBe(true);
+  });
 
-  expect(AssetAmount(ETH, "10").toBaseUnits().toString()).toBe(
-    "10000000000000000000",
-  );
+  describe("#divide", () => {
+    test("basic division", () => {
+      expect(
+        AssetAmount("eth", "10")
+          .divide(AssetAmount("eth", "5"))
+          .equalTo(AssetAmount("eth", "2")),
+      ).toBe(true);
+      expect(
+        AssetAmount("eth", "30")
+          .divide(AssetAmount("eth", "15"))
+          .equalTo(AssetAmount("eth", "2")),
+      ).toBe(true);
+    });
+
+    test("bankers rounding", () => {
+      expect(
+        AssetAmount("eth", "30")
+          .divide(AssetAmount("eth", "20"))
+          .toBigInt()
+          .toString(),
+      ).toBe("2");
+
+      expect(
+        AssetAmount("eth", "30")
+          .divide(AssetAmount("eth", "40"))
+          .toBigInt()
+          .toString(),
+      ).toBe("1");
+    });
+  });
+
+  test("#equalTo", () => {
+    expect(AssetAmount("eth", "1").equalTo(AssetAmount("eth", "1"))).toBe(true);
+    expect(AssetAmount("eth", "1").equalTo(AssetAmount("eth", "0"))).toBe(
+      false,
+    );
+  });
+
+  test("#greaterThan", () => {
+    expect(AssetAmount("eth", "100").greaterThan(Amount("99"))).toBe(true);
+    expect(AssetAmount("eth", "100").greaterThan(Amount("100"))).toBe(false);
+    expect(AssetAmount("eth", "100").greaterThan(Amount("101"))).toBe(false);
+  });
+
+  test("#greaterThanOrEqual", () => {
+    expect(
+      AssetAmount("eth", "100").greaterThanOrEqual(AssetAmount("eth", "99")),
+    ).toBe(true);
+    expect(
+      AssetAmount("eth", "100").greaterThanOrEqual(AssetAmount("eth", "100")),
+    ).toBe(true);
+    expect(
+      AssetAmount("eth", "100").greaterThanOrEqual(AssetAmount("eth", "101")),
+    ).toBe(false);
+  });
+
+  test("#lessThan", () => {
+    expect(AssetAmount("eth", "100").lessThan(AssetAmount("eth", "99"))).toBe(
+      false,
+    );
+    expect(AssetAmount("eth", "100").lessThan(AssetAmount("eth", "100"))).toBe(
+      false,
+    );
+    expect(AssetAmount("eth", "100").lessThan(AssetAmount("eth", "101"))).toBe(
+      true,
+    );
+  });
+
+  test("#lessThanOrEqual", () => {
+    expect(
+      AssetAmount("eth", "100").lessThanOrEqual(AssetAmount("eth", "99")),
+    ).toBe(false);
+    expect(
+      AssetAmount("eth", "100").lessThanOrEqual(AssetAmount("eth", "100")),
+    ).toBe(true);
+    expect(
+      AssetAmount("eth", "100").lessThanOrEqual(AssetAmount("eth", "101")),
+    ).toBe(true);
+  });
+
+  test("#multiply", () => {
+    expect(
+      AssetAmount("eth", "12345678")
+        .multiply(AssetAmount("eth", "10"))
+        .equalTo(AssetAmount("eth", "123456780")),
+    ).toBe(true);
+  });
+
+  test("#sqrt", () => {
+    expect(
+      AssetAmount("eth", "15241383936")
+        .sqrt()
+        .equalTo(AssetAmount("eth", "123456")),
+    ).toBe(true);
+
+    expect(
+      AssetAmount("eth", "15241578750190521")
+        .sqrt()
+        .equalTo(AssetAmount("eth", "123456789")),
+    ).toBe(true);
+
+    // Floor
+    expect(AssetAmount("eth", "20").sqrt().toString()).toBe(
+      "4.472135954999579393",
+    );
+  });
+
+  test("#subtract", () => {
+    expect(
+      AssetAmount("eth", "12345678")
+        .subtract(AssetAmount("eth", "2345678"))
+        .equalTo(AssetAmount("eth", "10000000")),
+    ).toBe(true);
+  });
 });

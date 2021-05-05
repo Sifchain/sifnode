@@ -68,7 +68,7 @@ module.exports = function(deployer, network, accounts) {
         owner,
         pauser
       ],
-      setTxSpecifications(6721975, accounts[0], deployer)
+      setTxSpecifications(3000000, accounts[0], deployer)
     );
 
     console.log("bridgeBank address: ", bridgeBank.address)

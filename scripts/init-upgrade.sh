@@ -45,6 +45,5 @@ mkdir -p $DAEMON_HOME/cosmovisor/upgrades/release-20210414000000/bin
 cp $GOPATH/bin/old/sifnoded $DAEMON_HOME/cosmovisor/genesis/bin
 cp $GOPATH/bin/sifnoded $DAEMON_HOME/cosmovisor/upgrades/release-20210414000000/bin/
 
-
 #contents="$(jq '.gov.voting_params.voting_period = 10' $DAEMON_HOME/config/genesis.json)" && \
 #echo "${contents}" > $DAEMON_HOME/config/genesis.json
