@@ -12,7 +12,7 @@ import { akasha } from "../test/utils/accounts";
 import { getTestingTokens } from "../test/utils/getTestingToken";
 import { PoolState, usePoolCalculator } from "./addLiquidityCalculator";
 
-const [ATK, ROWAN] = getTestingTokens(["ATK", "ROWAN"]);
+const [ATK, ROWAN, CTEST] = getTestingTokens(["ATK", "ROWAN", "CTEST"]);
 
 const ZERO = Amount("0");
 
@@ -122,6 +122,29 @@ describe("addLiquidityCalculator", () => {
         state: PoolState.VALID_INPUT,
       },
     },
+    // Test for small decimals coin
+    {
+      poolExternal: "1000000000000000",
+      poolNative: "1000000000000000000000000000",
+      poolUnits: "1000000000000000000000000000",
+      addedExternal: "10000",
+      addedNative: "10000",
+      externalSymbol: "ctest",
+      nativeSymbol: "rowan",
+      preexistingLiquidity: {
+        native: "0",
+        external: "0",
+        units: "0",
+      },
+      expected: {
+        aPerBRatioMessage: "1.00000000",
+        bPerARatioMessage: "1.00000000",
+        aPerBRatioProjectedMessage: "1.00000000",
+        bPerARatioProjectedMessage: "1.00000000",
+        shareOfPool: "< 0.01%",
+        state: PoolState.VALID_INPUT,
+      },
+    },
     {
       poolExternal: "1000000000000000000000000000",
       poolNative: "1000000000000000000000000000",
@@ -174,7 +197,7 @@ describe("addLiquidityCalculator", () => {
         bPerARatioMessage: "0.50000000",
         aPerBRatioProjectedMessage: "0.60000000",
         bPerARatioProjectedMessage: "1.66666667",
-        shareOfPool: "55.56%",
+        shareOfPool: "54.55%",
         state: PoolState.VALID_INPUT,
       },
     },
@@ -191,7 +214,7 @@ describe("addLiquidityCalculator", () => {
         bPerARatioMessage: "0.25000000",
         aPerBRatioProjectedMessage: "1.00000000",
         bPerARatioProjectedMessage: "1.00000000",
-        shareOfPool: "50.00%",
+        shareOfPool: "45.95%",
         state: PoolState.VALID_INPUT,
       },
     },
@@ -254,6 +277,7 @@ describe("addLiquidityCalculator", () => {
           balances.value = [
             AssetAmount(ATK, "100000000000000000000000000000"),
             AssetAmount(ROWAN, "100000000000000000000000000000"),
+            AssetAmount(CTEST, "100000000000000000000000000000"),
           ];
           liquidityProvider.value = !preexistingLiquidity
             ? null
@@ -267,8 +291,8 @@ describe("addLiquidityCalculator", () => {
 
           poolFinder.mockImplementation(() => {
             const pool = Pool(
-              AssetAmount(Asset.get(externalSymbol), poolExternal),
               AssetAmount(ROWAN, poolNative),
+              AssetAmount(Asset.get(externalSymbol), poolExternal),
               Amount(poolUnits),
             );
 
