@@ -10,16 +10,14 @@ import (
 	"sync"
 
 	"github.com/cosmos/cosmos-sdk/client"
+	"github.com/cosmos/cosmos-sdk/client/flags"
+	"github.com/cosmos/cosmos-sdk/client/rpc"
 	"github.com/cosmos/cosmos-sdk/server"
 	svrcmd "github.com/cosmos/cosmos-sdk/server/cmd"
 	"github.com/cosmos/cosmos-sdk/x/auth/types"
-	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
-
-	"github.com/cosmos/cosmos-sdk/client/flags"
-	"github.com/cosmos/cosmos-sdk/client/rpc"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/pkg/errors"
+	"github.com/spf13/cobra"
 	"github.com/syndtr/goleveldb/leveldb"
 	"go.uber.org/zap"
 
@@ -76,8 +74,6 @@ func init() {
 		if len(args) > 0 {
 			rootCmd.PersistentFlags().Set(flags.FlagNode, args[0])
 		}
-
-		viper.BindPFlag(flags.FlagChainID, cmd.PersistentFlags().Lookup(flags.FlagChainID))
 
 		if err := client.SetCmdClientContextHandler(initClientCtx, cmd); err != nil {
 			return err
@@ -144,13 +140,13 @@ func RunInitRelayerCmd(cmd *cobra.Command, args []string) error {
 	}
 
 	// Parse flag --chain-id
-	chainID := viper.GetString(flags.FlagChainID)
-	if strings.TrimSpace(chainID) == "" {
+	chainID, err := cmd.Flags().GetString(flags.FlagChainID)
+	if err != nil || strings.TrimSpace(chainID) == "" {
 		return errors.Errorf("Must specify a 'chain-id'")
 	}
 
 	// Parse flag --rpc-url
-	rpcURL := viper.GetString(FlagRPCURL)
+	rpcURL, _ := cmd.Flags().GetString(FlagRPCURL)
 	if rpcURL != "" {
 		_, err := url.Parse(rpcURL)
 		if rpcURL != "" && err != nil {

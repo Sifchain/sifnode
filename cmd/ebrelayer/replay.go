@@ -12,7 +12,6 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 	"go.uber.org/zap"
 
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/relayer"
@@ -28,13 +27,13 @@ func RunReplayEthereumCmd(cmd *cobra.Command, args []string) error {
 	}
 
 	// Parse flag --chain-id
-	chainID := viper.GetString(flags.FlagChainID)
-	if strings.TrimSpace(chainID) == "" {
+	chainID, err := cmd.Flags().GetString(flags.FlagChainID)
+	if err != nil || strings.TrimSpace(chainID) == "" {
 		return errors.Errorf("Must specify a 'chain-id'")
 	}
 
 	// Parse flag --rpc-url
-	rpcURL := viper.GetString(FlagRPCURL)
+	rpcURL, _ := cmd.Flags().GetString(FlagRPCURL)
 	if rpcURL != "" {
 		_, err := url.Parse(rpcURL)
 		if rpcURL != "" && err != nil {
@@ -111,7 +110,7 @@ func RunReplayCosmosCmd(cmd *cobra.Command, args []string) error {
 	}
 
 	// Parse flag --rpc-url
-	rpcURL := viper.GetString(FlagRPCURL)
+	rpcURL, _ := cmd.Flags().GetString(FlagRPCURL)
 	if rpcURL != "" {
 		_, err := url.Parse(rpcURL)
 		if rpcURL != "" && err != nil {
@@ -172,7 +171,7 @@ func RunReplayCosmosCmd(cmd *cobra.Command, args []string) error {
 // RunListMissedCosmosEventCmd executes initRelayerCmd
 func RunListMissedCosmosEventCmd(cmd *cobra.Command, args []string) error {
 	// Parse flag --rpc-url
-	rpcURL := viper.GetString(FlagRPCURL)
+	rpcURL, _ := cmd.Flags().GetString(FlagRPCURL)
 	if rpcURL != "" {
 		_, err := url.Parse(rpcURL)
 		if rpcURL != "" && err != nil {
