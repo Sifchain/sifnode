@@ -17,7 +17,7 @@ namespace :validator do
             --chain-id=#{args[:chainnet]} \
             --min-self-delegation="1" \
             --gas=#{args[:gas]} \
-            --gas-prices=#{args[:gas_prices} \
+            --gas-prices=#{args[:gas_prices]} \
             --moniker=#{args[:moniker]} \
             --from=#{args[:moniker]} \
             --keyring-backend=file \
