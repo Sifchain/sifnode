@@ -76,7 +76,7 @@ func NewEthereumSub(cliCtx client.Context, rpcURL string, validatorMoniker, chai
 	kr := keyring.NewInMemory()
 	hdpath := *hd.NewFundraiserParams(0, sdk.CoinType, 0)
 
-	info, err := kr.NewAccount(validatorMoniker, mnemonic, tempPassword, hdpath.String(), hd.Secp256k1)
+	info, err := kr.NewAccount(validatorMoniker, mnemonic, "", hdpath.String(), hd.Secp256k1)
 	if err != nil {
 		return EthereumSub{}, err
 	}
