@@ -23,17 +23,17 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
 	ctypes "github.com/ethereum/go-ethereum/core/types"
-	"github.com/sethvargo/go-password/password"
 	"github.com/syndtr/goleveldb/leveldb"
 	tmclient "github.com/tendermint/tendermint/rpc/client/http"
 	"go.uber.org/zap"
+
+	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 
 	sifapp "github.com/Sifchain/sifnode/app"
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/contract"
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/txs"
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/types"
 	ethbridge "github.com/Sifchain/sifnode/x/ethbridge/types"
-	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 )
 
 const (
@@ -52,7 +52,6 @@ type EthereumSub struct {
 	CliCtx                  client.Context
 	TxBldr                  client.TxBuilder
 	PrivateKey              *ecdsa.PrivateKey
-	TempPassword            string
 	DB                      *leveldb.DB
 	SugaredLogger           *zap.SugaredLogger
 }
@@ -70,15 +69,21 @@ func NewKeybase(validatorMoniker, mnemonic, password string) (keyring.Keyring, k
 }
 
 // NewEthereumSub initializes a new EthereumSub
-func NewEthereumSub(inBuf io.Reader, cliCtx client.Context, validatorMoniker, chainID, ethProvider string,
-	registryContractAddress common.Address, privateKey *ecdsa.PrivateKey, mnemonic string,
-	db *leveldb.DB, sugaredLogger *zap.SugaredLogger) (EthereumSub, error) {
+func NewEthereumSub(inBuf io.Reader,
+	cliCtx client.Context,
+	validatorMoniker,
+	chainID,
+	ethProvider string,
+	registryContractAddress common.Address,
+	privateKey *ecdsa.PrivateKey,
+	mnemonic string,
+	db *leveldb.DB,
+	sugaredLogger *zap.SugaredLogger) (EthereumSub, error) {
 
-	tempPassword, _ := password.Generate(32, 5, 0, false, false)
 	kr := keyring.NewInMemory()
 	hdpath := *hd.NewFundraiserParams(0, sdk.CoinType, 0)
 
-	info, err := kr.NewAccount(validatorMoniker, mnemonic, tempPassword, hdpath.String(), hd.Secp256k1)
+	info, err := kr.NewAccount(validatorMoniker, mnemonic, "", hdpath.String(), hd.Secp256k1)
 	if err != nil {
 		return EthereumSub{}, err
 	}
@@ -99,7 +104,6 @@ func NewEthereumSub(inBuf io.Reader, cliCtx client.Context, validatorMoniker, ch
 		ValidatorAddress:        validatorAddress,
 		CliCtx:                  cliCtx,
 		PrivateKey:              privateKey,
-		TempPassword:            tempPassword,
 		DB:                      db,
 		SugaredLogger:           sugaredLogger,
 	}, nil
@@ -471,5 +475,5 @@ func (sub EthereumSub) handleEthereumEvent(events []types.EthereumEvent) error {
 		return nil
 	}
 
-	return txs.RelayToCosmos(sub.ValidatorName, sub.TempPassword, prophecyClaims, sub.CliCtx, sub.TxBldr, sub.SugaredLogger)
+	return txs.RelayToCosmos(sub.ValidatorName, prophecyClaims, sub.CliCtx, sub.TxBldr, sub.SugaredLogger)
 }
