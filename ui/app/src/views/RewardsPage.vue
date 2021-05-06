@@ -2,7 +2,7 @@
 import { computed, defineComponent, watch, onMounted } from "vue";
 import { ref, ComputedRef } from "@vue/reactivity";
 import { useCore } from "@/hooks/useCore";
-import { getLMRewardsUrl } from "@/components/shared/utils";
+import { getCryptoeconomicsUrl } from "@/components/shared/utils";
 import Layout from "@/components/layout/Layout.vue";
 import SifButton from "@/components/shared/SifButton.vue";
 import AssetItem from "@/components/shared/AssetItem.vue";
@@ -22,6 +22,11 @@ const REWARD_INFO = {
     description:
       "Earn additional rewards by providing liquidity to any of Sifchain's pools.",
   },
+  vs: {
+    label: "Validator Subsidy",
+    description:
+      "Earn additional rewards by staking a node or delegating to a staked node.",
+  },
 };
 
 // NOTE - This will be removed and replaced with Amount API
@@ -37,18 +42,49 @@ function format(amount: number) {
   }
 }
 
-async function getRewardsData(address: ComputedRef<any>) {
+async function getLMData(address: ComputedRef<any>, chainId: string) {
   if (!address.value) return;
+  // const timestamp = Date.parse(new Date().toString());
+  // const ceUrl = getCryptoeconomicsUrl(chainId);
+  // const data = await fetch(
+  //   // `${ceUrl}/api/lm/?key=userData&address=${address.value}&timestamp=now`,
+  //   // `http://localhost:3000/api/lm/?key=userData&address=${address.value}&timestamp=now`,
+  // );
+  // if (data.status !== 200) return null
+  // const parsedData = await data.json();
+  const parsedData = {
+    timestamp: 200600,
+    rewardBuckets: [],
+    totalTickets: 56578387.68990869,
+    user: {
+      tickets: [
+        {
+          amount: 83.87962924761631,
+          mul: 0.7274305555555691,
+          reward: 21.384575625320533,
+          timestamp: "April 15th 2021, 9:59:14 am",
+        },
+      ],
+      claimed: 66.48991988613547,
+      dispensed: 0,
+      forfeited: 61.81223708007379,
+      claimableReward: 82.04571361358246,
+      reservedReward: 87.874495511456,
+      totalTickets: 83.87962924761631,
+      nextRewardShare: 0.0000014825383449832216,
+      totalRewardAtMaturity: 2304.874495511456,
+      ticketAmountAtMaturity: 83.87962924761631,
+      yieldAtMaturity: 1.0476261793199715,
+      maturityDate: "August 13th 2021, 9:59:14 am",
+    },
+  };
 
-  const { config } = useCore();
-
-  const rewardsApiUrl = getLMRewardsUrl(config.sifChainId, address.value);
-
-  const data = await fetch(rewardsApiUrl);
-  if (data.status !== 200)
-    return [{ type: "lm", multiplier: 0, start: "", amount: null }];
-  return await data.json();
+  if (!parsedData.user.claimableReward) return null;
+  return parsedData;
 }
+
+async function getVSData(address: ComputedRef<any>, chainId: string) {}
+
 export default defineComponent({
   components: {
     Layout,
@@ -79,23 +115,29 @@ export default defineComponent({
   data() {
     return {
       modalOpen: false,
+      loadingLm: true,
     };
   },
   setup() {
-    const { store, actions } = useCore();
+    const { store, actions, config } = useCore();
     const address = computed(() => store.wallet.sif.address);
     const transactionState = ref<ConfirmState | string>("confirming");
     const transactionStateMsg = ref<string>("");
     const transactionHash = ref<string | null>(null);
 
-    let rewards = ref<Array<Object>>([]);
+    let lmRewards = ref<any>();
+    let loadingLm = ref<Boolean>(true);
 
     watch(address, async () => {
-      rewards.value = await getRewardsData(address);
+      loadingLm.value = true;
+      lmRewards.value = await getLMData(address, config.sifChainId);
+      loadingLm.value = false;
     });
 
     onMounted(async () => {
-      rewards.value = await getRewardsData(address);
+      loadingLm.value = true;
+      lmRewards.value = await getLMData(address, config.sifChainId);
+      loadingLm.value = false;
     });
 
     async function handleAskConfirmClicked() {
@@ -106,18 +148,33 @@ export default defineComponent({
       // transactionStateMsg.value = tx.memo ?? "";
     }
 
+    const computedLMPairPanel = computed(() => {
+      if (!lmRewards.value) {
+        return [];
+      }
+      return [
+        {
+          key: "Claimable  Rewards",
+          value: lmRewards.value.user.claimableReward,
+        },
+        {
+          key: "Projected Full Amount",
+          value: lmRewards.value.user.totalRewardAtMaturity,
+        },
+      ];
+    });
+
     return {
-      rewards,
+      lmRewards,
       REWARD_INFO,
-      items: [
-        { key: "Claimable  Rewards", value: "120.212" },
-        { key: "Projected Full Amount", value: "1000" },
-      ],
+      computedLMPairPanel,
       format,
       handleAskConfirmClicked,
       transactionState,
       transactionStateMsg,
       transactionHash,
+      loadingLm,
+      address,
     };
   },
 });
@@ -136,21 +193,24 @@ export default defineComponent({
       and how to become eligible.
     </Copy>
     <div class="rewards-container">
-      <div v-if="!rewards || rewards.length === 0" class="loader-container">
+      <div v-if="loadingLm" class="loader-container">
         <div class="loader" />
       </div>
-      <Box v-else v-for="reward in rewards" v-bind:key="reward.type">
+
+      <Box v-if="lmRewards">
         <div class="reward-container">
-          <SubHeading>{{ REWARD_INFO[reward.type].label }}</SubHeading>
+          <SubHeading>{{ REWARD_INFO["lm"].label }}</SubHeading>
           <Copy>
-            {{ REWARD_INFO[reward.type].description }}
+            {{ REWARD_INFO["lm"].description }}
           </Copy>
           <div class="details-container">
             <div class="amount-container">
               <div class="reward-rows">
                 <div class="reward-row">
                   <div class="row-label">Claimable Rewards</div>
-                  <div class="row-amount">{{ format(+reward.amount) }}</div>
+                  <div class="row-amount">
+                    {{ format(lmRewards.user.claimableReward) }}
+                  </div>
                   <AssetItem symbol="Rowan" :label="false" />
                 </div>
                 <div class="reward-row">
@@ -159,13 +219,18 @@ export default defineComponent({
                     <Tooltip>
                       <template #message>
                         <div class="tooltip">
-                          Current multiplier: {{ format(+reward.multiplier) }}x
+                          Explanation - This is your projected Amount if all
+                          else equal until Maturity Date <br />
+                          Maturity Date <br />
+                          {{ lmRewards.user.maturityDate }}
                         </div>
                       </template>
                       <Icon icon="info-box-black" />
                     </Tooltip>
                   </div>
-                  <div class="row-amount">10000</div>
+                  <div class="row-amount">
+                    {{ format(lmRewards.user.totalRewardAtMaturity) }}
+                  </div>
                   <AssetItem symbol="Rowan" :label="false" />
                 </div>
               </div>
@@ -173,15 +238,16 @@ export default defineComponent({
           </div>
           <div class="reward-buttons">
             <a
-              class="more-info-button"
+              class="more-info-button mr-8"
               target="_blank"
-              href="https://cryptoeconomics.vercel.app/"
+              :href="`https://cryptoeconomics.vercel.app/#${address}&type=lm`"
               >More Info</a
             >
             <SifButton @click="openClaimModal" :primary="true">Claim</SifButton>
           </div>
         </div>
       </Box>
+      <Box v-else-if="!loadingLm && !lmRewards">No LM Rewards</Box>
     </div>
     <ActionsPanel connectType="connectToSif" />
 
@@ -212,7 +278,7 @@ export default defineComponent({
                 Find out <a href="">additional information here</a>.
               </Copy>
               <br />
-              <PairTable :items="items" />
+              <PairTable :items="computedLMPairPanel" />
               <br />
               <!-- <div class="reward-buttons">
                 <SifButton
