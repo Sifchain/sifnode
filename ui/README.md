@@ -111,7 +111,7 @@ Will run tests in debug mode over a website served on http://localhost:8080. Thi
 If you need to update the instant stack image:
 
 1. Make changes to migrate scripts
-1. run `./scritps/run-stack-save-default-snapshot.sh`
+1. run `./scripts/run-stack-save-default-snapshot.sh`
 1. run `./scripts/build-stack-backend-docker.sh`
 
 Note you will need to ensure you have logged into the github container registry and have write access to the `/sifchain/sifnode` namespace.
