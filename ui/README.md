@@ -114,6 +114,8 @@ If you need to update the instant stack image:
 1. run `./scritps/run-stack-save-default-snapshot.sh`
 1. run `./scripts/build-stack-backend-docker.sh`
 
+Note you will need to ensure you have logged into the github container registry and have write access to the `/sifchain/sifnode` namespace.
+
 ### Testing Actions
 
 Actions can be grouped arbitrarily by domain aggregate and may have their dependencies injected using the supplied creator. You ask for your api and store keys by using the given TS types.
