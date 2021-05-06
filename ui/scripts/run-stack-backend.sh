@@ -1,6 +1,10 @@
 #!/bin/bash
+
+# get latest image name from latest file
 IMAGE_NAME=$(cat ./scripts/latest)
-docker ps -q -f name=sifdevstack01 && docker stop sifdevstack01 && docker rm sifdevstack01
+
+# kill all other docker processes
+docker ps -q -f name=sif-ui-stack && docker stop sif-ui-stack && docker rm sif-ui-stack
 
 # this runs a docker image built by the build command
 # the image temporarily will be pulled from dockerhub 
@@ -10,6 +14,6 @@ docker run -it \
   -p 7545:7545 \
   -p 26656:26656 \
   -p 26657:26657 \
-  --name sifdevstack01 \
+  --name sif-ui-stack \
   --platform linux/amd64 \
   $IMAGE_NAME
