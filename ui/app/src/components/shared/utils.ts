@@ -97,13 +97,15 @@ export function getBlockExplorerUrl(chainId: string, txHash?: TxHash): string {
   }
 }
 
-export function getLMRewardsUrl(chainId: string, address: string): string {
+export function getCryptoeconomicsUrl(chainId: string): string {
   switch (chainId) {
     case "sifchain":
-      return `https://vtdbgplqd6.execute-api.us-west-2.amazonaws.com/default/rewards/${address}`;
+      return `https://api-cryptoeconomics.sifchain.finance/api`;
     case "sifchain-testnet":
-      return `https://vtdbgplqd6.execute-api.us-west-2.amazonaws.com/default/rewards/${address}`;
+      return `https://api-cryptoeconomics-testnet.sifchain.finance/api`;
+    case "sifchain-local":
+      return `http://localhost:3000/api`; // sifnode/cryptoeconomics/js/server
     default:
-      return `https://vtdbgplqd6.execute-api.us-west-2.amazonaws.com/default/rewards/${address}`;
+      return `https://api-cryptoeconomics-devnet.sifchain.finance/api`;
   }
 }
