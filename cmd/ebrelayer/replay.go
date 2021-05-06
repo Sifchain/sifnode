@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/cosmos/cosmos-sdk/client"
+	"github.com/cosmos/cosmos-sdk/client/tx"
 	"log"
 	"net/url"
 	"strconv"
@@ -96,7 +97,8 @@ func RunReplayEthereumCmd(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	ethSub.Replay(fromBlock, toBlock, cosmosFromBlock, cosmosToBlock)
+	txFactory := tx.NewFactoryCLI(cliContext, cmd.Flags())
+	ethSub.Replay(txFactory, fromBlock, toBlock, cosmosFromBlock, cosmosToBlock)
 
 	return nil
 }

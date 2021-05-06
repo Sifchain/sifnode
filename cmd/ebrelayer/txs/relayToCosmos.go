@@ -23,7 +23,7 @@ var (
 
 // RelayToCosmos applies validator's signature to an EthBridgeClaim message containing
 // information about an event on the Ethereum blockchain before relaying to the Bridge
-func RelayToCosmos(moniker, password string, claims []*types.EthBridgeClaim, cliCtx client.Context,
+func RelayToCosmos(factory tx.Factory, moniker, password string, claims []*types.EthBridgeClaim, cliCtx client.Context,
 	txBldr client.TxBuilder, sugaredLogger *zap.SugaredLogger) error {
 	var messages []sdk.Msg
 
@@ -49,13 +49,11 @@ func RelayToCosmos(moniker, password string, claims []*types.EthBridgeClaim, cli
 		}
 	}
 
-	factory := tx.NewFactoryCLI(cliCtx, nil)
 	sugaredLogger.Infow(
 		"relay sequenceNumber from builder.",
 		"nextSequenceNumber", nextSequenceNumber,
 	)
 
-	
 	// If we start to control sequence, get the sequence and set the factory with that sequence.
 	if nextSequenceNumber > 0 {
 		sugaredLogger.Infow("txBldr.WithSequence(nextSequenceNumber) passed")

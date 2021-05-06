@@ -6,6 +6,7 @@ import (
 	"context"
 	"crypto/ecdsa"
 	"fmt"
+	"github.com/cosmos/cosmos-sdk/client/tx"
 	"log"
 	"math/big"
 	"os"
@@ -125,7 +126,7 @@ func LoadTendermintCLIContext(cliCtx client.Context, validatorAddress sdk.ValAdd
 }
 
 // Start an Ethereum chain subscription
-func (sub EthereumSub) Start(completionEvent *sync.WaitGroup) {
+func (sub EthereumSub) Start(txFactory tx.Factory, completionEvent *sync.WaitGroup) {
 	defer completionEvent.Done()
 	time.Sleep(time.Second)
 	ethClient, err := SetupWebsocketEthClient(sub.EthProvider)
@@ -134,7 +135,7 @@ func (sub EthereumSub) Start(completionEvent *sync.WaitGroup) {
 			errorMessageKey, err.Error())
 
 		completionEvent.Add(1)
-		go sub.Start(completionEvent)
+		go sub.Start(txFactory, completionEvent)
 		return
 	}
 	defer ethClient.Close()
@@ -146,7 +147,7 @@ func (sub EthereumSub) Start(completionEvent *sync.WaitGroup) {
 		sub.SugaredLogger.Errorw("failed to get network ID.",
 			errorMessageKey, err.Error())
 		completionEvent.Add(1)
-		go sub.Start(completionEvent)
+		go sub.Start(txFactory, completionEvent)
 		return
 	}
 
@@ -196,7 +197,7 @@ func (sub EthereumSub) Start(completionEvent *sync.WaitGroup) {
 			sub.SugaredLogger.Errorw("failed to subscribe ethereum header.",
 				errorMessageKey, err.Error())
 			completionEvent.Add(1)
-			go sub.Start(completionEvent)
+			go sub.Start(txFactory, completionEvent)
 			return
 		case newHead := <-heads:
 			sub.SugaredLogger.Infow("receive new ethereum header.",
@@ -262,7 +263,7 @@ func (sub EthereumSub) Start(completionEvent *sync.WaitGroup) {
 			}
 
 			if len(events) > 0 {
-				if err := sub.handleEthereumEvent(events); err != nil {
+				if err := sub.handleEthereumEvent(txFactory, events); err != nil {
 					sub.SugaredLogger.Errorw("failed to handle ethereum event.",
 						errorMessageKey, err.Error())
 				}
@@ -345,7 +346,7 @@ func EventProcessed(bridgeClaims []types.EthereumBridgeClaim, event types.Ethere
 }
 
 // Replay the missed events
-func (sub EthereumSub) Replay(fromBlock int64, toBlock int64, cosmosFromBlock int64, cosmosToBlock int64) {
+func (sub EthereumSub) Replay(txFactory tx.Factory, fromBlock int64, toBlock int64, cosmosFromBlock int64, cosmosToBlock int64) {
 	log.Printf("ethereum replay for %d block to %d block\n", fromBlock, toBlock)
 
 	bridgeClaims := sub.getAllClaims(cosmosFromBlock, cosmosToBlock)
@@ -392,7 +393,7 @@ func (sub EthereumSub) Replay(fromBlock int64, toBlock int64, cosmosFromBlock in
 		} else if isBurnLock {
 			log.Println(fmt.Sprintf("found out a burn lock event"))
 			if !EventProcessed(bridgeClaims, event) {
-				err := sub.handleEthereumEvent([]types.EthereumEvent{event})
+				err := sub.handleEthereumEvent(txFactory, []types.EthereumEvent{event})
 				time.Sleep(transactionInterval)
 				if err != nil {
 					log.Printf("failed to handle ethereum event, error is %s\n", err.Error())
@@ -447,7 +448,7 @@ func (sub EthereumSub) logToEvent(clientChainID *big.Int, contractAddress common
 }
 
 // handleEthereumEvent unpacks an Ethereum event, converts it to a ProphecyClaim, and relays a tx to Cosmos
-func (sub EthereumSub) handleEthereumEvent(events []types.EthereumEvent) error {
+func (sub EthereumSub) handleEthereumEvent(txFactory tx.Factory, events []types.EthereumEvent) error {
 	var prophecyClaims []*ethbridge.EthBridgeClaim
 
 	for _, event := range events {
@@ -466,5 +467,5 @@ func (sub EthereumSub) handleEthereumEvent(events []types.EthereumEvent) error {
 		return nil
 	}
 
-	return txs.RelayToCosmos(sub.ValidatorName, sub.TempPassword, prophecyClaims, sub.CliCtx, sub.TxBldr, sub.SugaredLogger)
+	return txs.RelayToCosmos(txFactory, sub.ValidatorName, sub.TempPassword, prophecyClaims, sub.CliCtx, sub.TxBldr, sub.SugaredLogger)
 }

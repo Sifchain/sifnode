@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/cosmos/cosmos-sdk/client"
+	"github.com/cosmos/cosmos-sdk/client/tx"
 	"github.com/cosmos/cosmos-sdk/server"
 	svrcmd "github.com/cosmos/cosmos-sdk/server/cmd"
 	authclient "github.com/cosmos/cosmos-sdk/x/auth/client"
@@ -215,7 +216,8 @@ func RunInitRelayerCmd(cmd *cobra.Command, args []string) error {
 
 	waitForAll := sync.WaitGroup{}
 	waitForAll.Add(2)
-	go ethSub.Start(&waitForAll)
+	txFactory := tx.NewFactoryCLI(cliContext, cmd.Flags())
+	go ethSub.Start(txFactory, &waitForAll)
 	go cosmosSub.Start(&waitForAll)
 	waitForAll.Wait()
 
