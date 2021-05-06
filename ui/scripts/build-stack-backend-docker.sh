@@ -16,7 +16,12 @@ echo "Building new container..."
 
 NOW=$(date +%s)
 IMAGE_NAME=ghcr.io/sifchain/sifnode/ui-stack:$NOW
+
+echo "New image name: $IMAGE_NAME"
+
 cd .. && docker build -f ./ui/scripts/stack.Dockerfile -t $IMAGE_NAME .
 docker push $IMAGE_NAME
 
 echo $IMAGE_NAME > ./scripts/latest
+
+echo "Commit the ./latest file to git"
