@@ -1,7 +1,7 @@
 pragma solidity 0.8.0;
 
 contract CosmosBridgeStorage {
-        /**
+    /*
     * @notice gap of storage for future upgrades
     */
     string COSMOS_NATIVE_ASSET_PREFIX;
@@ -9,7 +9,7 @@ contract CosmosBridgeStorage {
     /*
      * @dev: Public variable declarations
      */
-    address public operator;
+    address private _operator;
 
     /**
     * @notice gap of storage for future upgrades
@@ -48,8 +48,17 @@ contract CosmosBridgeStorage {
     */
     enum ClaimType {Unsupported, Burn, Lock}
 
+    /**
+    * @notice Prophecy claim struct
+    */
+    struct ProphecyClaim {
+        address payable ethereumReceiver;
+        string symbol;
+        uint256 amount;
+    }
+
     /*
     * @notice gap of storage for future upgrades
     */
-    uint256[100] private ____gap;
+    uint256[99] private ____gap;
 }

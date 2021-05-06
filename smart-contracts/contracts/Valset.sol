@@ -95,6 +95,8 @@ contract Valset is ValsetStorage {
 
         // Adjust total power by new validator power
         uint256 priorPower = powers[_validatorAddress][currentValsetVersion];
+        // solidity compiler will handle and revert on over or underflows here
+        // no need for safemath :)
         totalPower = totalPower - priorPower;
         totalPower = totalPower + _newValidatorPower;
 
@@ -117,6 +119,9 @@ contract Valset is ValsetStorage {
         require(validators[_validatorAddress][currentValsetVersion], "Can only remove active validators");
 
         // Update validator count and total power
+
+        // solidity compiler will handle and revert on over or underflows here
+        // no need for safemath :)
         validatorCount = validatorCount - 1;
         totalPower = totalPower - powers[_validatorAddress][currentValsetVersion];
 

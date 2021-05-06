@@ -26,14 +26,14 @@ contract CosmosBankStorage {
     /**
     * @notice mapping of symbols to token addresses
     */
-    mapping(string => address) controlledBridgeTokens;
+    mapping(string => address) public controlledBridgeTokens;
 
     /**
     * @notice mapping of lowercase symbols to properly capitalized tokens
     */
     mapping(string => string) public lowerToUpperTokens;
 
-    /**
+    /*
     * @notice gap of storage for future upgrades
     */
     uint256[100] private ____gap;

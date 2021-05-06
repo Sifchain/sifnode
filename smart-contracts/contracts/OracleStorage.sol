@@ -6,6 +6,11 @@ contract OracleStorage {
      */
     address public cosmosBridge;
 
+    /*
+    * @notice DEPRECATED variable
+    */
+    address private _operator;
+
     /**
     * @notice Tracks the number of OracleClaims made on an individual BridgeClaim
     */
