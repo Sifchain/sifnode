@@ -17,6 +17,7 @@
     "ts-jest": "^26.5.4"
   },
   "dependencies": {
+    "expect-playwright": "^0.3.4",
     "global": "^4.4.0",
     "isomorphic-fetch": "^3.0.0",
     "tree-kill": "^1.2.2"
@@ -24,7 +25,10 @@
   "jest": {
     "testTimeout": 1000000,
     "collectCoverage": true,
-    "bail": true
+    "bail": true,
+    "setupFilesAfterEnv": [
+      "expect-playwright"
+    ]
   },
   "scripts": {
     "test": "jest --runInBand"

@@ -249,9 +249,10 @@ echo '      sssssssssss    iiiiiiiifffffffff            cccccccccccccccchhhhhhh 
   desc "Install Vault If Not Exists"
   namespace :vault do
     desc "Install Vault into Kubernetes Env Configured"
-    task :install, [:env, :region, :path, :kmskey, :aws_role, :aws_region] do |t, args|
+    task :install, [:env, :region, :path, :aws_role, :aws_region] do |t, args|
       require 'fileutils'
       require 'net/http'
+      require 'json'
 
       APP_NAME='vault'
       APP_NAMESPACE='vault'
@@ -261,6 +262,32 @@ echo '      sssssssssss    iiiiiiiifffffffff            cccccccccccccccchhhhhhh 
       NAMESPACE='vault'
       SECRET_NAME="#{APP_NAME}-#{POD}-tls"
       TMPDIR='/tmp'
+      KEY_NAME="vault-#{args[:env]}"
+
+      list_keys=`aws kms list-keys --profile #{args[:env]} --region #{args[:aws_region]}`
+      keys_object = JSON.parse list_keys
+      key_found = false
+      key_id = ""
+
+      keys_object["Keys"].each do |v|
+          get_key=`aws kms describe-key --key-id=#{v["KeyId"]} --profile #{args[:env]} --region #{args[:aws_region]}`
+          get_key_object = JSON.parse get_key
+          if get_key_object["KeyMetadata"]["Description"].include?("#{KEY_NAME}")
+            puts "key found use id #{v["KeyId"]}"
+            key_id = "#{v["KeyId"]}"
+            key_found=true
+            break
+          end
+      end
+
+      role_ids = []
+
+      if not key_found
+            POLICY = %Q{{"Version" : "2012-10-17","Id" : "key-default-#{args[:env]}","Statement" : [{"Sid" : "Enable IAM User Permissions","Effect" : "Allow", "Principal" : {"AWS" : "#{args[:aws_role]}"},"Action" : "kms:","Resource" : "*"},{"Sid" : "Allow Use of Key","Effect" : "Allow","Principal" : {"AWS" : "#{args[:aws_role]}"},"Action" : ["*"],"Resource" : "*"}]}}
+            create_key=`aws kms create-key --tags TagKey=Name,TagValue=#{KEY_NAME} --description "vault-#{args[:env]}" --profile #{args[:env]} --region #{args[:aws_region]} --policy '#{POLICY}'`
+            key_id_json = JSON.parse create_key
+            key_id=key_id_json["KeyMetadata"]["KeyId"]
+      end
 
       check_namespace=`kubectl get namespaces --kubeconfig=./kubeconfig | grep vault`
       puts "check namespace #{check_namespace}"
@@ -298,7 +325,8 @@ echo '      sssssssssss    iiiiiiiifffffffff            cccccccccccccccchhhhhhh 
           if replace_string == "-=aws_region=-"
             template_file_text.include?(k) ? (template_file_text.gsub! replace_string, "#{args[:aws_region]}") : (puts 'env matching...')
           elsif replace_string == "-=kmskey=-"
-            template_file_text.include?(k) ? (template_file_text.gsub! replace_string, "#{args[:kmskey]}") : (puts 'env matching...')
+            puts "found kms"
+            template_file_text.include?(k) ? (template_file_text.gsub! replace_string, key_id) : (puts 'env matching...')
           elsif replace_string == "-=aws_role=-"
             template_file_text.include?(k) ? (template_file_text.gsub! replace_string, "#{args[:aws_role]}") : (puts 'env matching...')
           end
@@ -331,7 +359,7 @@ echo '      sssssssssss    iiiiiiiifffffffff            cccccccccccccccchhhhhhh 
       if check_vault_init.empty?
             puts "Initialize Vault"
             vault_init = %Q{
-                vault_init_output=$(kubectl exec --kubeconfig=./kubeconfig -n vault  vault-0 -- vault operator init -n 1 -t 1)
+                vault_init_output=$(kubectl exec --kubeconfig=./kubeconfig -n vault vault-0 -- vault operator init -n 1 -t 1)
                 sleep 60
                 echo -e ${vault_init_output} > vault_output
                 VAULT_TOKEN=`echo $vault_init_output | cut -d ':' -f 7 | cut -d ' ' -f 2`
@@ -758,13 +786,21 @@ metadata:
         require 'rest-client'
         require 'json'
         begin
-            release_hash = { "devnet" => "DevNet", "testnet" =>"TestNet", "betanet" =>"BetaNet", "mainnet" =>"MainNet" }
+            release_hash = { "devnet" => "DevNet", "testnet" =>"TestNet", "betanet" =>"MainNet" }
             release_name = release_hash[args[:env]]
-            headers = {content_type: :json, "Accept": "application/vnd.github.v3+json", "Authorization":"token #{args[:token]}"}
-            payload = {"tag_name"  =>  "#{args[:env]}-#{args[:release]}","name"  =>  "#{release_name} v#{args[:release]}","body"  => "Sifchain #{args[:env]} Release v#{args[:release]}","prerelease"  =>  true}.to_json
-            response = RestClient.post 'https://api.github.com/repos/Sifchain/sifnode/releases', payload, headers
-            json_response_job_object = JSON.parse response.body
-            puts json_response_job_object
+            if "#{args[:app_env]}" == "betanet"
+                headers = {content_type: :json, "Accept": "application/vnd.github.v3+json", "Authorization":"token #{args[:token]}"}
+                payload = {"tag_name"  =>  "mainnet-#{args[:release]}","name"  =>  "#{release_name} v#{args[:release]}","body"  => "Sifchain MainNet Release v#{args[:release]}","prerelease"  =>  true}.to_json
+                response = RestClient.post 'https://api.github.com/repos/Sifchain/sifnode/releases', payload, headers
+                json_response_job_object = JSON.parse response.body
+                puts json_response_job_object
+            else
+                headers = {content_type: :json, "Accept": "application/vnd.github.v3+json", "Authorization":"token #{args[:token]}"}
+                payload = {"tag_name"  =>  "#{args[:env]}-#{args[:release]}","name"  =>  "#{release_name} v#{args[:release]}","body"  => "Sifchain #{args[:env]} Release v#{args[:release]}","prerelease"  =>  true}.to_json
+                response = RestClient.post 'https://api.github.com/repos/Sifchain/sifnode/releases', payload, headers
+                json_response_job_object = JSON.parse response.body
+                puts json_response_job_object
+            end
         rescue
             puts 'Release Already Exists'
         end
@@ -785,59 +821,63 @@ metadata:
 
         release_version = "#{args[:app_env]}-#{args[:release_version]}"
         puts "Calculating Upgrade Block Height"
-        if "#{args[:app_env]}" == "mainnet"
-            puts "Mainnet"
-            response = RestClient.get "http://rpc.sifchain.finance/abci_info?"
-            json_response_object = JSON.parse response.body
-        elsif "#{args[:app_env]}" == "betanet"
-            puts "Betanet"
+        if "#{args[:app_env]}" == "betanet"
             response = RestClient.get "http://rpc.sifchain.finance/abci_info?"
             json_response_object = JSON.parse response.body
         else
-            puts "Testnet"
             response = RestClient.get "http://rpc-#{args[:app_env]}.sifchain.finance/abci_info?"
             json_response_object = JSON.parse response.body
         end
+
         current_height = json_response_object["result"]["response"]["last_block_height"].to_f
         average_block_time = "#{args[:block_time]}".to_f
-        average_time = 50 / average_block_time
+        average_time = 60 / average_block_time
         average_time = average_time * 60 * "#{args[:upgrade_hours]}".to_f
         future_block_height = current_height + average_time + 100
         block_height = future_block_height.round
         puts "Block Height #{block_height}"
 
-        sha_token=""
-        headers = {"Accept": "application/vnd.github.v3+json","Authorization":"token #{args[:token]}"}
-        response = RestClient.get 'https://api.github.com/repos/Sifchain/sifnode/releases', headers
-        json_response_job_object = JSON.parse response.body
-        json_response_job_object.each do |release|
-            if release["tag_name"].include?("#{args[:app_env]}-#{args[:release_version]}")
-                release["assets"].each do |asset|
-                    if asset["name"].include?(".sha256")
-                        response = RestClient.get asset["browser_download_url"], headers
-                        sha_token = response.body.strip
+        if "#{args[:app_env]}" == "betanet"
+            sha_token=""
+            headers = {"Accept": "application/vnd.github.v3+json","Authorization":"token #{args[:token]}"}
+            response = RestClient.get 'https://api.github.com/repos/Sifchain/sifnode/releases', headers
+            json_response_job_object = JSON.parse response.body
+            json_response_job_object.each do |release|
+                if release["tag_name"].include?("mainnet-#{args[:release_version]}")
+                    release["assets"].each do |asset|
+                        if asset["name"].include?(".sha256")
+                            response = RestClient.get asset["browser_download_url"], headers
+                            sha_token = response.body.strip
+                        end
+                    end
+                end
+            end
+        else
+            sha_token=""
+            headers = {"Accept": "application/vnd.github.v3+json","Authorization":"token #{args[:token]}"}
+            response = RestClient.get 'https://api.github.com/repos/Sifchain/sifnode/releases', headers
+            json_response_job_object = JSON.parse response.body
+            json_response_job_object.each do |release|
+                if release["tag_name"].include?("#{args[:app_env]}-#{args[:release_version]}")
+                    release["assets"].each do |asset|
+                        if asset["name"].include?(".sha256")
+                            response = RestClient.get asset["browser_download_url"], headers
+                            sha_token = response.body.strip
+                        end
                     end
                 end
             end
         end
+
+
+        if sha_token.empty?
+            puts "No Sha Found"
+            exit 1
+        end
+
         puts "Sha found #{sha_token}"
 
-        if "#{args[:app_env]}" == "mainnet"
-            governance_request = %Q{ yes "${keyring_passphrase}" | go run ./cmd/sifnodecli tx gov submit-proposal software-upgrade #{args[:release_version]} \
-                --from #{args[:from]} \
-                --deposit #{args[:deposit]} \
-                --upgrade-height #{block_height} \
-                --info '{"binaries":{"linux/amd64":"https://github.com/Sifchain/sifnode/releases/download/mainnet-#{args[:release_version]}/sifnoded-#{args[:app_env]}-#{args[:release_version]}-linux-amd64.zip?checksum='#{sha_token}'"}}' \
-                --title #{args[:app_env]}-#{args[:release_version]} \
-                --description #{args[:app_env]}-#{args[:release_version]} \
-                --node tcp://rpc.sifchain.finance:80 \
-                --keyring-backend test \
-                -y \
-                --chain-id #{args[:chainnet]} \
-                --gas-prices "#{args[:rowan]}"
-                sleep 60 }
-            system(governance_request) or exit 1
-        elsif "#{args[:app_env]}" == "betanet"
+        if "#{args[:app_env]}" == "betanet"
             governance_request = %Q{ yes "${keyring_passphrase}" | go run ./cmd/sifnodecli tx gov submit-proposal software-upgrade #{args[:release_version]} \
                 --from #{args[:from]} \
                 --deposit #{args[:deposit]} \
@@ -876,19 +916,7 @@ metadata:
   namespace :release do
     desc "Create Release Governance Request Vote."
     task :generate_vote, [:rowan, :chainnet, :from, :app_env] do |t, args|
-        if "#{args[:app_env]}" == "mainnet"
-            governance_request = %Q{
-vote_id=$(go run ./cmd/sifnodecli q gov proposals --node tcp://rpc.sifchain.finance:80 --trust-node -o json | jq --raw-output 'last(.[]).id' --raw-output)
-echo "vote_id $vote_id"
-yes "${keyring_passphrase}" | go run ./cmd/sifnodecli tx gov vote ${vote_id} yes \
-    --from #{args[:from]} \
-    --keyring-backend test \
-    --chain-id #{args[:chainnet]}  \
-    --node tcp://rpc.sifchain.finance:80 \
-    --gas-prices "#{args[:rowan]}" -y
-sleep 15  }
-            system(governance_request) or exit 1
-        elsif "#{args[:app_env]}" == "betanet"
+        if "#{args[:app_env]}" == "betanet"
             governance_request = %Q{
 vote_id=$(go run ./cmd/sifnodecli q gov proposals --node tcp://rpc.sifchain.finance:80 --trust-node -o json | jq --raw-output 'last(.[]).id' --raw-output)
 echo "vote_id $vote_id"
