@@ -152,7 +152,8 @@ export default defineComponent({
   &.primary {
     color: white;
     background: $c_gold;
-
+    font-weight: 600;
+    font-style: italic;
     &::before {
       content: "";
       display: block;
@@ -243,6 +244,7 @@ export default defineComponent({
     &.primary {
       color: $c_gold;
       border: 2px solid $c_gold;
+
       &:hover {
         background: transparent;
         border: 2px solid $c_gray_400;

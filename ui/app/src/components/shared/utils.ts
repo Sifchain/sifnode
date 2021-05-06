@@ -96,3 +96,14 @@ export function getBlockExplorerUrl(chainId: string, txHash?: TxHash): string {
       return `https://blockexplorer-devnet.sifchain.finance/transactions/${txHash}`;
   }
 }
+
+export function getLMRewardsUrl(chainId: string, address: string): string {
+  switch (chainId) {
+    case "sifchain":
+      return `https://vtdbgplqd6.execute-api.us-west-2.amazonaws.com/default/rewards/${address}`;
+    case "sifchain-testnet":
+      return `https://vtdbgplqd6.execute-api.us-west-2.amazonaws.com/default/rewards/${address}`;
+    default:
+      return `https://vtdbgplqd6.execute-api.us-west-2.amazonaws.com/default/rewards/${address}`;
+  }
+}

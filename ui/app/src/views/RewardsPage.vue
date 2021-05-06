@@ -2,6 +2,7 @@
 import { computed, defineComponent, watch, onMounted } from "vue";
 import { ref, ComputedRef } from "@vue/reactivity";
 import { useCore } from "@/hooks/useCore";
+import { getLMRewardsUrl } from "@/components/shared/utils";
 import Layout from "@/components/layout/Layout.vue";
 import SifButton from "@/components/shared/SifButton.vue";
 import AssetItem from "@/components/shared/AssetItem.vue";
@@ -13,7 +14,6 @@ import ModalView from "@/components/shared/ModalView.vue";
 import PairTable from "@/components/shared/PairTable.vue";
 import Tooltip from "@/components/shared/Tooltip.vue";
 import Icon from "@/components/shared/Icon.vue";
-
 const REWARD_INFO = {
   lm: {
     label: "Liquidity Mining",
@@ -37,9 +37,12 @@ function format(amount: number) {
 
 async function getRewardsData(address: ComputedRef<any>) {
   if (!address.value) return;
-  const data = await fetch(
-    `https://vtdbgplqd6.execute-api.us-west-2.amazonaws.com/default/rewards/${address.value}`,
-  );
+
+  const { config } = useCore();
+
+  const rewardsApiUrl = getLMRewardsUrl(config.sifChainId, address.value);
+
+  const data = await fetch(rewardsApiUrl);
   if (data.status !== 200)
     return [{ type: "lm", multiplier: 0, start: "", amount: null }];
   return await data.json();
@@ -61,11 +64,9 @@ export default defineComponent({
   },
   methods: {
     openClaimModal() {
-      console.log(this.modalOpen);
       this.modalOpen = true;
     },
     requestClose() {
-      console.log(this.modalOpen);
       this.modalOpen = false;
     },
     claimRewards() {
@@ -74,12 +75,13 @@ export default defineComponent({
   },
   data() {
     return {
-      modalOpen: true,
+      modalOpen: false,
     };
   },
   setup() {
     const { store } = useCore();
     const address = computed(() => store.wallet.sif.address);
+
     let rewards = ref<Array<Object>>([]);
 
     watch(address, async () => {
@@ -129,7 +131,7 @@ export default defineComponent({
             <div class="amount-container">
               <div class="reward-rows">
                 <div class="reward-row">
-                  <div class="row-label">Rewards in ROWAN</div>
+                  <div class="row-label">Claimable Rewards</div>
                   <div class="row-amount">{{ format(+reward.amount) }}</div>
                   <AssetItem symbol="Rowan" :label="false" />
                 </div>
@@ -240,11 +242,15 @@ export default defineComponent({
   .reward-rows {
     display: flex;
     flex-direction: column;
+    margin-bottom: 15px;
   }
   .reward-row {
     display: flex;
     width: 100%;
     justify-content: space-between;
+
+    font-size: 14px;
+    font-weight: 400;
     .row-label {
       flex: 1 1 auto;
       text-align: left;
@@ -255,6 +261,8 @@ export default defineComponent({
     }
     .row {
       width: 15px;
+
+      margin-left: 2px;
     }
   }
 
@@ -292,9 +300,13 @@ export default defineComponent({
   flex-direction: row;
 
   justify-content: space-between;
+
   .more-info-button,
   .btn {
     width: 300px;
+    display: block;
+    font-weight: 600;
+    font-style: italic;
   }
   .reward-button {
     text-align: center;
@@ -308,5 +320,9 @@ export default defineComponent({
   flex-direction: column;
   padding: 30px 20px 20px 20px;
   min-height: 50vh;
+  .container {
+    font-size: 14px;
+    line-height: 16px;
+  }
 }
 </style>

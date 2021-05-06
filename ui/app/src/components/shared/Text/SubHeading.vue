@@ -6,7 +6,7 @@
 
 <style lang="scss" scoped>
 .container {
-  font-size: 19px;
+  font-size: 16px;
   line-height: 22px;
   text-align: left;
   font-weight: 700;
