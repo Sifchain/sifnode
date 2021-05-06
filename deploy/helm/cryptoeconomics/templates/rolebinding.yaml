@@ -1,0 +1,16 @@
+{{- if .Values.serviceAccount.create -}}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: {{ include "cryptoeconomics.fullname" . }}
+  labels:
+  {{ include "cryptoeconomics.labels" . | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: {{ include "cryptoeconomics.fullname" . }}
+subjects:
+  - kind: ServiceAccount
+    name: {{ include "cryptoeconomics.serviceAccountName" . }}
+    namespace: {{ .Release.Namespace }}
+  {{- end -}}

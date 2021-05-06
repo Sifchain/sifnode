@@ -13,7 +13,7 @@ import Icon from "@/components/shared/Icon.vue";
 
 const REWARD_INFO = {
   lm: {
-    label: "Liquidity Minining",
+    label: "Liquidity Mining",
     description:
       "Earn additional rewards by providing liquidity to any of Sifchain's pools.",
   },

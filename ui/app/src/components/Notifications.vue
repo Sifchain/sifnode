@@ -165,6 +165,7 @@ export default defineComponent({
   bottom: 0px;
   right: 16px;
   height: auto;
+  bottom: 0px;
   .list-enter-active,
   .list-leave-active {
     transition: all 0.5s ease;
