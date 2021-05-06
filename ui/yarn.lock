@@ -10723,6 +10723,11 @@ expand-brackets@^2.1.4:
     snapdragon "^0.8.1"
     to-regex "^3.0.1"
 
+expect-playwright@^0.3.4:
+  version "0.3.4"
+  resolved "https://registry.yarnpkg.com/expect-playwright/-/expect-playwright-0.3.4.tgz#97a2eea0f4887350cf57b1f132484d14ca5bb301"
+  integrity sha512-JulhMkc5lVvpF18ImWLqviHZpo4qzT9FfpF+lP4D+U9guGUnYOCFpS/5Qk1c3zKhYHJL1JBEfiiGfcRUuzsnEg==
+
 expect@^24.9.0:
   version "24.9.0"
   resolved "https://registry.yarnpkg.com/expect/-/expect-24.9.0.tgz#b75165b4817074fa4a157794f46fe9f1ba15b6ca"
