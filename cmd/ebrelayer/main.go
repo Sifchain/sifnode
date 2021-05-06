@@ -61,6 +61,8 @@ func buildRootCmd() *cobra.Command {
 		Use:   "ebrelayer",
 		Short: "Streams live events from Ethereum and Cosmos and relays event information to the opposite chain",
 		PersistentPreRunE: func(cmd *cobra.Command, _ []string) error {
+			cmd.Flags().Set(flags.FlagSkipConfirmation, "true")
+
 			if err := client.SetCmdClientContextHandler(initClientCtx, cmd); err != nil {
 				return err
 			}
@@ -108,7 +110,8 @@ func initRelayerCmd() *cobra.Command {
 		Example: "ebrelayer init tcp://localhost:26657 ws://localhost:7545/ 0x30753E4A8aad7F8597332E813735Def5dD395028 validator mnemonic --chain-id=peggy",
 		RunE:    RunInitRelayerCmd,
 	}
-	flags.AddQueryFlagsToCmd(initRelayerCmd)
+	//flags.AddQueryFlagsToCmd(initRelayerCmd)
+	flags.AddTxFlagsToCmd(initRelayerCmd)
 
 	return initRelayerCmd
 }

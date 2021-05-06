@@ -84,6 +84,13 @@ func NewEthereumSub(cliCtx client.Context, rpcURL string, validatorMoniker, chai
 
 	validatorAddress := sdk.ValAddress(info.GetAddress())
 
+	cliCtx = cliCtx.
+		WithFromAddress(info.GetAddress()).
+		WithFromName(validatorMoniker).
+		WithSkipConfirmation(true)
+
+	log.Printf("cliCtx is: %v", cliCtx)
+
 	// Load CLI context and Tx builder
 	_, err = LoadTendermintCLIContext(cliCtx, validatorAddress, validatorMoniker, rpcURL, chainID, sugaredLogger)
 	if err != nil {
