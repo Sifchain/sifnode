@@ -77,6 +77,19 @@ export default defineComponent({
 
   setup(props) {
     const isOpen = computed(() => {
+      console.log(
+        "is it open",
+        props.state,
+        [
+          "approving",
+          "confirming",
+          "signing",
+          "failed",
+          "rejected",
+          "confirmed",
+          "out_of_gas",
+        ].includes(props.state),
+      );
       return [
         "approving",
         "confirming",

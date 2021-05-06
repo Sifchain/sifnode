@@ -78,6 +78,10 @@ type LiquidityDetailsResponse = {
   height: string;
 };
 
+type ClaimRewardsParams = {
+  address: string;
+};
+
 type ClpCmdSwap = (params: SwapParams) => Promise<Msg>;
 type ClpQueryPools = () => Promise<RawPool[]>;
 type ClpQueryPool = (params: { ticker: string }) => Promise<RawPool>;
@@ -90,6 +94,7 @@ type ClpGetLiquidityProvider = (params: {
 }) => Promise<LiquidityDetailsResponse>;
 
 type ClpRemoveLiquidity = (param: RemoveLiquidityParams) => Promise<any>;
+type ClpClaimRewards = (param: ClaimRewardsParams) => Promise<any>;
 
 export interface ClpExtension {
   readonly clp: {
@@ -101,6 +106,7 @@ export interface ClpExtension {
     getLiquidityProvider: ClpGetLiquidityProvider;
     removeLiquidity: ClpRemoveLiquidity;
     getPool: ClpQueryPool;
+    claimRewards: ClpClaimRewards;
   };
 }
 
@@ -139,6 +145,11 @@ export function setupClpExtension(base: LcdClient): ClpExtension {
 
       getPool: async ({ ticker }) => {
         return (await base.get(`/clp/getPool?ticker=${ticker}`)).result;
+      },
+
+      claimRewards: async (params) => {
+        return { value: { msg: "some claim rewards logic block goes here" } };
+        // return (await base.get(`/clp/getAssets?lpAddress=asd`)).result;
       },
     },
   };

@@ -179,6 +179,27 @@ export default ({
       return txStatus;
     },
 
+    async claimRewards() {
+      if (!state.address) throw "No from address provided for swap";
+
+      const tx = await api.ClpService.claimRewards({ address: "asd" });
+      console.log("=======");
+      console.log(tx);
+      const txStatus = await api.SifService.signAndBroadcast(tx.value.msg);
+      // if (txStatus.state !== "accepted") {
+      //   api.EventBusService.dispatch({
+      //     type: "TransactionErrorEvent",
+      //     payload: {
+      //       txStatus,
+      //       message: txStatus.memo || "There was an error with your swap",
+      //     },
+      //   });
+      // }
+
+      console.log(txStatus);
+      return "signed";
+    },
+
     async disconnect() {
       api.SifService.purgeClient();
     },

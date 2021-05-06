@@ -6,6 +6,7 @@ import { getLMRewardsUrl } from "@/components/shared/utils";
 import Layout from "@/components/layout/Layout.vue";
 import SifButton from "@/components/shared/SifButton.vue";
 import AssetItem from "@/components/shared/AssetItem.vue";
+import ConfirmationModal from "@/components/shared/ConfirmationModal.vue";
 import Box from "@/components/shared/Box.vue";
 import { Copy, SubHeading } from "@/components/shared/Text";
 import ActionsPanel from "@/components/actionsPanel/ActionsPanel.vue";
@@ -14,6 +15,7 @@ import ModalView from "@/components/shared/ModalView.vue";
 import PairTable from "@/components/shared/PairTable.vue";
 import Tooltip from "@/components/shared/Tooltip.vue";
 import Icon from "@/components/shared/Icon.vue";
+import { ConfirmState } from "@/types";
 const REWARD_INFO = {
   lm: {
     label: "Liquidity Mining",
@@ -61,6 +63,7 @@ export default defineComponent({
     PairTable,
     Tooltip,
     Icon,
+    ConfirmationModal,
   },
   methods: {
     openClaimModal() {
@@ -79,8 +82,11 @@ export default defineComponent({
     };
   },
   setup() {
-    const { store } = useCore();
+    const { store, actions } = useCore();
     const address = computed(() => store.wallet.sif.address);
+    const transactionState = ref<ConfirmState | string>("confirming");
+    const transactionStateMsg = ref<string>("");
+    const transactionHash = ref<string | null>(null);
 
     let rewards = ref<Array<Object>>([]);
 
@@ -92,6 +98,14 @@ export default defineComponent({
       rewards.value = await getRewardsData(address);
     });
 
+    async function handleAskConfirmClicked() {
+      transactionState.value = "signing";
+      const tx = await actions.clp.claimRewards();
+      // transactionHash.value = tx.hash;
+      // transactionState.value = toConfirmState(tx.state); // TODO: align states
+      // transactionStateMsg.value = tx.memo ?? "";
+    }
+
     return {
       rewards,
       REWARD_INFO,
@@ -100,6 +114,10 @@ export default defineComponent({
         { key: "Projected Full Amount", value: "1000" },
       ],
       format,
+      handleAskConfirmClicked,
+      transactionState,
+      transactionStateMsg,
+      transactionHash,
     };
   },
 });
@@ -160,44 +178,70 @@ export default defineComponent({
               href="https://cryptoeconomics.vercel.app/"
               >More Info</a
             >
-            <SifButton @click="openClaimModal" primary="true">Claim</SifButton>
+            <SifButton @click="openClaimModal" :primary="true">Claim</SifButton>
           </div>
         </div>
       </Box>
     </div>
     <ActionsPanel connectType="connectToSif" />
-    <ModalView :isOpen="modalOpen" :requestClose="requestClose">
-      <div class="claim-container">
-        <SubHeading>Claim Rewards</SubHeading>
-        <br />
-        <Copy>
-          Are you sure you want to claim your rewards? Once you claim these
-          rewards, your multiplier will reset to 1x for all remaining amounts
-          and will continue to accumulate if within the reward eligibility
-          timeframe. 
-          <br />
-          <br />
-          Please note that the rewards will be released at the end of the week.
-          <br />
-          <br />
-          Find out <a href="">additional information here</a>.
-        </Copy>
-        <br />
-        <PairTable :items="items" />
-        <br />
-        <div class="reward-buttons">
-          <SifButton
-            class="reward-button"
-            @click="requestClose"
-            secondary="true"
-            >Cancel</SifButton
-          >
-          <SifButton class="reward-button" @click="claimRewards" primary="true"
-            >Claim Rewards</SifButton
-          >
-        </div>
-      </div>
-    </ModalView>
+
+    <div v-if="modalOpen">
+      <ConfirmationModal
+        :requestClose="requestClose"
+        @confirmed="handleAskConfirmClicked"
+        :state="transactionState"
+        :transactionHash="transactionHash"
+        :transactionStateMsg="transactionStateMsg"
+        confirmButtonText="Claim Rewards"
+        title="Claim Rewards"
+      >
+        <template v-slot:selecting>
+          <div>
+            <div class="claim-container">
+              <Copy>
+                Are you sure you want to claim your rewards? Once you claim
+                these rewards, your multiplier will reset to 1x for all
+                remaining amounts and will continue to accumulate if within the
+                reward eligibility timeframe. 
+                <br />
+                <br />
+                Please note that the rewards will be released at the end of the
+                week.
+                <br />
+                <br />
+                Find out <a href="">additional information here</a>.
+              </Copy>
+              <br />
+              <PairTable :items="items" />
+              <br />
+              <!-- <div class="reward-buttons">
+                <SifButton
+                  class="reward-button"
+                  @click="requestClose"
+                  secondary="true"
+                  >Cancel</SifButton
+                >
+                <SifButton
+                  class="reward-button"
+                  @click="claimRewards"
+                  primary="true"
+                  >Claim Rewards</SifButton
+                >
+              </div> -->
+            </div>
+          </div>
+        </template>
+
+        <template v-slot:common>
+          <p class="text--normal" data-handle="confirmation-wait-message">
+            Supplying
+            <span class="text--bold">{{ fromAmount }} {{ fromSymbol }}</span>
+            and
+            <span class="text--bold">{{ toAmount }} {{ toSymbol }}</span>
+          </p>
+        </template>
+      </ConfirmationModal>
+    </div>
   </Layout>
 </template>
 

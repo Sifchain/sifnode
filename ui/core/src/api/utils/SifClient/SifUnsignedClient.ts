@@ -55,6 +55,7 @@ export class SifUnSignedClient
     this.createPool = this.lcdClient.clp.createPool;
     this.getLiquidityProvider = this.lcdClient.clp.getLiquidityProvider;
     this.removeLiquidity = this.lcdClient.clp.removeLiquidity;
+    this.claimRewards = this.lcdClient.clp.claimRewards;
     this.getPool = this.lcdClient.clp.getPool;
     this.burn = this.lcdClient.ethbridge.burn;
     this.lock = this.lcdClient.ethbridge.lock;
@@ -70,6 +71,7 @@ export class SifUnSignedClient
   getLiquidityProvider: IClpApi["getLiquidityProvider"];
   removeLiquidity: IClpApi["removeLiquidity"];
   getPool: IClpApi["getPool"];
+  claimRewards: IClpApi["claimRewards"];
 
   // Ethbridge Extension
   burn: IEthbridgeApi["burn"];
