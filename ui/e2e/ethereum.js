@@ -11,5 +11,4 @@ export async function getEthBalance(address) {
 
 export async function advanceEthBlocks() {
   await advanceBlock(50);
-  await sleep(20000); // need to wait for events to cascade
 }
