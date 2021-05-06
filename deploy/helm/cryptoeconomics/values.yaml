@@ -37,6 +37,7 @@ resources:
     cpu: 1
     memory: 8Gi
   limits:
+    memory: 16Gi
 
 autoscaling:
   enabled: false
