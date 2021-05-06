@@ -56,21 +56,6 @@ NOTE: This command requires [tmux](https://github.com/tmux/tmux/wiki/Installing)
 | `yarn core:test`     | Run core tests with no background chain                       |
 | `yarn core:watch`    | Compile core code in watch mode                               |
 
-## End to end tests
-
-`yarn pw:test:stack`
-
-Will serve the built webapplication in `app/dist` on port 5000 and run tests over this including backing services which are then reset every test.
-
-`yarn pw:test:debug`
-
-Will run tests in debug mode over a website served on http://localhost:8080. This is good for testing a feature you are working on. Ideally when working on a feature you might want to do the following in separate terminals:
-
-1. `yarn stack:backend` - start up the backing services
-2. `yarn app:serve` - start up the web server
-3. `yarn core:watch` - update the webserver with core code on change
-4. `yarn pw:test:debug` - Run the test suite over the stack - you probably want to isolate the test you need with `.only` methods.
-
 ## Folder structure
 
 | Path               | Description                      |
@@ -105,6 +90,29 @@ The main premise here is that we have a domain consisting of **actions** and **e
 Every part of this system is designed to facilitate easy testing.
 
 ## Testing
+
+### End to end tests
+
+`yarn pw:test:stack`
+
+Will serve the built webapplication in `app/dist` on port 5000 and run tests over this including backing services which are then reset every test.
+
+`yarn pw:test:debug`
+
+Will run tests in debug mode over a website served on http://localhost:8080. This is good for testing a feature you are working on. Ideally when working on a feature you might want to do the following in separate terminals:
+
+1. `yarn stack:backend` - start up the backing services
+2. `yarn app:serve` - start up the web server
+3. `yarn core:watch` - update the webserver with core code on change
+4. `yarn pw:test:debug` - Run the test suite over the stack - you probably want to isolate the test you need with `.only` methods.
+
+### To update instant stack
+
+If you need to update the instant stack image:
+
+1. Make changes to migrate scripts
+1. run `./scritps/run-stack-save-default-snapshot.sh`
+1. run `./scripts/build-stack-backend-docker.sh`
 
 ### Testing Actions
 
