@@ -6,6 +6,7 @@ import (
 	"context"
 	"crypto/ecdsa"
 	"math/big"
+	"strconv"
 	"time"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -15,6 +16,7 @@ import (
 
 	cosmosbridge "github.com/Sifchain/sifnode/cmd/ebrelayer/contract/generated/bindings/cosmosbridge"
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/types"
+	ethbridge "github.com/Sifchain/sifnode/x/ethbridge/types"
 )
 
 const (
@@ -25,7 +27,7 @@ const (
 
 // RelayProphecyClaimToEthereum relays the provided ProphecyClaim to CosmosBridge contract on the Ethereum network
 func RelayProphecyClaimToEthereum(provider string, contractAddress common.Address, event types.Event,
-	claim ProphecyClaim, key *ecdsa.PrivateKey, sugaredLogger *zap.SugaredLogger) error {
+	claim ethbridge.ProphecyClaim, key *ecdsa.PrivateKey, sugaredLogger *zap.SugaredLogger) error {
 	// Initialize client service, validator's tx auth, and target contract address
 	client, auth, target, err := initRelayConfig(provider, contractAddress, event, key, sugaredLogger)
 	if err != nil {
@@ -46,9 +48,23 @@ func RelayProphecyClaimToEthereum(provider string, contractAddress common.Addres
 	sugaredLogger.Infow("Sending new ProphecyClaim to CosmosBridge.",
 		"CosmosSender", claim.CosmosSender,
 		"CosmosSenderSequence", claim.CosmosSenderSequence)
-
-	tx, err := cosmosBridgeInstance.NewProphecyClaim(auth, uint8(claim.ClaimType),
-		claim.CosmosSender, claim.CosmosSenderSequence, claim.EthereumReceiver, claim.Symbol, claim.Amount.BigInt())
+	claimType, err := strconv.Atoi(claim.ClaimType)
+	if err != nil {
+		sugaredLogger.Errorw("failed convert ClaimType", errorMessageKey, err.Error())
+		return err
+	}
+	cosmosSenderSequence, err := strconv.ParseInt(string(claim.CosmosSenderSequence), 0, 64)
+	if err != nil {
+		sugaredLogger.Errorw("failed convert CosmosSenderSequence", errorMessageKey, err.Error())
+		return err
+	}
+	amount, err := strconv.ParseInt(claim.Amount, 0, 64)
+	if err != nil {
+		sugaredLogger.Errorw("failed convert Amount", errorMessageKey, err.Error())
+		return err
+	}
+	tx, err := cosmosBridgeInstance.NewProphecyClaim(auth, uint8(claimType),
+		claim.CosmosSender, big.NewInt(cosmosSenderSequence), common.BytesToAddress(claim.EthereumReceiver), claim.Symbol, big.NewInt(amount))
 
 	if err != nil {
 		sugaredLogger.Errorw("failed to send ProphecyClaim to CosmosBridge.",
