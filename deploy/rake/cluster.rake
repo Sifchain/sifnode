@@ -119,6 +119,38 @@ namespace :cluster do
 
         system({"KUBECONFIG" => kubeconfig(args)}, cmd)
       end
+
+      desc "Deploy a single standalone sifnode on to your cluster"
+      task :standalone_vault, [:namespace, :image, :image_tag, :path, :template_file_name, :final_file_name,:app_region, :app_env do |t, args|
+        ENV["app_env"] = args[:app_env]
+        ENV["app_region"] = args[:app_region]
+        variable_template_replace(args[:template_file_name], args[:final_file_name])
+        cmd = %Q{helm upgrade sifnode #{cwd}/../../deploy/helm/sifnode \
+          --install -n #{args[:namespace]} --create-namespace \
+          --set image.tag=#{args[:image_tag]} \
+          --set image.repository=#{args[:image]} \
+          --kubeconfig=./kubeconfig \
+          -f #{args[:path]}
+        }
+        system(cmd) or exit 1
+      end
+
+      desc "Deploy a single network-aware sifnode on to your cluster"
+      task :peer_vault, [:namespace, :image, :image_tag, :peer_address, :path, :template_file_name, :final_file_name,:app_region, :app_env do |t, args|
+        ENV["app_env"] = args[:app_env]
+        ENV["app_region"] = args[:app_region]
+        variable_template_replace(args[:template_file_name], args[:final_file_name])
+        cmd = %Q{helm upgrade sifnode #{cwd}/../../deploy/helm/sifnode \
+          --install -n #{args[:namespace]} --create-namespace \
+          --set sifnode.args.peerAddress=#{args[:peer_address]} \
+          --set image.tag=#{args[:image_tag]} \
+          --set image.repository=#{args[:image]} \
+          --kubeconfig=./kubeconfig \
+          -f #{args[:path]}
+        }
+        system(cmd) or exit 1
+      end
+
     end
   end
 
@@ -514,18 +546,11 @@ echo '      sssssssssss    iiiiiiiifffffffff            cccccccccccccccchhhhhhh 
     end
   end
 
-
   desc "Utility for Doing Variable Replacement"
   namespace :utilities do
     desc "Utility for Doing Variable Replacement"
     task :template_variable_replace, [:template_file_name, :final_file_name] do |t, args|
-        require 'fileutils'
-        template_file_text = File.read("#{args[:template_file_name]}").strip
-        ENV.each_pair do |k, v|
-          replace_string="-=#{k}=-"
-          template_file_text.include?(k) ? (template_file_text.gsub! replace_string, v) : (puts 'matching env vars for variable replacement...')
-        end
-        File.open("#{args[:final_file_name]}", 'w') { |file| file.write(template_file_text) }
+        variable_template_replace(args[:template_file_name], args[:final_file_name])
     end
   end
 
