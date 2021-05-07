@@ -1,13 +1,13 @@
 #!/bin/bash
 
 # If CI don't use tty - this is so we can use Ctrl C to cancel the stack script localy
-[ -z "$CI" ] && IT="-it"
+[ -t 1 ] && IT="-it"
 
 # get latest image name from latest file
 IMAGE_NAME=$(cat ./scripts/latest)
 
 # kill all other docker processes
-docker ps -q -f name=sif-ui-stack && docker stop sif-ui-stack && docker rm sif-ui-stack
+[[ ! -z "$(docker ps -qaf name=sif-ui-stack)" ]] && docker stop sif-ui-stack && docker rm sif-ui-stack
 
 # this runs a docker image built by the build command
 # the image temporarily will be pulled from dockerhub 
