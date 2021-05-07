@@ -132,7 +132,7 @@ func generateBindingsCmd() *cobra.Command {
 // RunInitRelayerCmd executes initRelayerCmd
 func RunInitRelayerCmd(cmd *cobra.Command, args []string) error {
 	// First initialize the Cosmos features we need for the context
-	cliContext, err := client.GetClientQueryContext(cmd)
+	cliContext, err := client.GetClientTxContext(cmd)
 	if err != nil {
 		return err
 	}
@@ -190,7 +190,7 @@ func RunInitRelayerCmd(cmd *cobra.Command, args []string) error {
 		return errors.Errorf("invalid [validator-moniker]: %s", args[3])
 	}
 	validatorMoniker := args[3]
-	mnemonic := args[4]
+	//mnemonic := args[4]
 
 	logConfig := zap.NewDevelopmentConfig()
 	logConfig.Sampling = nil
@@ -209,8 +209,14 @@ func RunInitRelayerCmd(cmd *cobra.Command, args []string) error {
 	zap.RedirectStdLog(sugaredLogger.Desugar())
 
 	// Initialize new Ethereum event listener
+	//validatorAddress, err := relayer.AddToKeyringWithMnemonic(cliContext.Keyring, validatorMoniker, mnemonic)
+	//if err != nil {
+	//	panic("could not add relayer to keyring")
+	//}
+	//
+	//valAddrAsFrom := sdk.ValAddress(validatorAddress.GetAddress())
 	ethSub, err := relayer.NewEthereumSub(cliContext, rpcURL, validatorMoniker, chainID, web3Provider,
-		contractAddress, privateKey, mnemonic, db, sugaredLogger)
+		contractAddress, privateKey, nil, db, sugaredLogger, "")
 	if err != nil {
 		return err
 	}

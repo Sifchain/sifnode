@@ -70,32 +70,8 @@ func NewKeybase(validatorMoniker, mnemonic, password string) (keyring.Keyring, k
 
 // NewEthereumSub initializes a new EthereumSub
 func NewEthereumSub(cliCtx client.Context, rpcURL string, validatorMoniker, chainID, ethProvider string,
-	registryContractAddress common.Address, privateKey *ecdsa.PrivateKey, mnemonic string,
-	db *leveldb.DB, sugaredLogger *zap.SugaredLogger) (EthereumSub, error) {
-
-	tempPassword, _ := password.Generate(32, 5, 0, false, false)
-	kr := keyring.NewInMemory()
-	hdpath := *hd.NewFundraiserParams(0, sdk.CoinType, 0)
-
-	info, err := kr.NewAccount(validatorMoniker, mnemonic, "", hdpath.String(), hd.Secp256k1)
-	if err != nil {
-		return EthereumSub{}, err
-	}
-
-	validatorAddress := sdk.ValAddress(info.GetAddress())
-
-	cliCtx = cliCtx.
-		WithFromAddress(info.GetAddress()).
-		WithFromName(validatorMoniker).
-		WithSkipConfirmation(true)
-
-	log.Printf("cliCtx is: %v", cliCtx)
-
-	// Load CLI context and Tx builder
-	_, err = LoadTendermintCLIContext(cliCtx, validatorAddress, validatorMoniker, rpcURL, chainID, sugaredLogger)
-	if err != nil {
-		return EthereumSub{}, err
-	}
+	registryContractAddress common.Address, privateKey *ecdsa.PrivateKey, validatorAddress sdk.ValAddress,
+	db *leveldb.DB, sugaredLogger *zap.SugaredLogger, tempPassword string) (EthereumSub, error) {
 
 	return EthereumSub{
 		EthProvider:             ethProvider,
@@ -109,6 +85,37 @@ func NewEthereumSub(cliCtx client.Context, rpcURL string, validatorMoniker, chai
 		DB:                      db,
 		SugaredLogger:           sugaredLogger,
 	}, nil
+}
+
+func buildKeyringInfoForAccount(validatorMoniker string, mnemonic string) (keyring.Info, error) {
+	_, err := password.Generate(32, 5, 0, false, false)
+
+	if err != nil {
+		return nil, err
+	}
+
+	kr := keyring.NewInMemory()
+	hdpath := *hd.NewFundraiserParams(0, sdk.CoinType, 0)
+
+	result, err := kr.NewAccount(validatorMoniker, mnemonic, "", hdpath.String(), hd.Secp256k1)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return result, err
+}
+
+func AddToKeyringWithMnemonic(kr keyring.Keyring, keyName string, mnemonic string) (keyring.Info, error) {
+	hdpath := *hd.NewFundraiserParams(0, sdk.CoinType, 0)
+
+	result, err := kr.NewAccount(keyName, mnemonic, "", hdpath.String(), hd.Secp256k1)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return result, err
 }
 
 // LoadTendermintCLIContext : loads CLI context for tendermint txs
@@ -474,5 +481,5 @@ func (sub EthereumSub) handleEthereumEvent(txFactory tx.Factory, events []types.
 		return nil
 	}
 
-	return txs.RelayToCosmos(txFactory, sub.ValidatorName, sub.TempPassword, prophecyClaims, sub.CliCtx, sub.TxBldr, sub.SugaredLogger)
+	return txs.RelayToCosmos(txFactory, prophecyClaims, sub.CliCtx, sub.TxBldr, sub.SugaredLogger)
 }
