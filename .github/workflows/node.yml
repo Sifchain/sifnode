@@ -29,6 +29,9 @@ jobs:
       - name: Log into registry
         run: echo "${{ github.token }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
 
+      - name: Pull instant stack image
+        run: docker pull $(cat scripts/latest)
+
       - name: Get dependencies
         run: |
           go get -v -t -d ./...

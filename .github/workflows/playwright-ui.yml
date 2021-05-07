@@ -46,6 +46,9 @@ jobs:
       - name: Log into registry
         run: echo "${{ github.token }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
 
+      - name: Pull instant stack image
+        run: docker pull $(cat scripts/latest)
+
       - name: Install dependencies
         run: yarn install --frozen-lockfile --silent
 
