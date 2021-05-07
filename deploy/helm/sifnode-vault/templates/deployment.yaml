@@ -29,7 +29,7 @@ spec:
         - name: external-ip
           image: alpine/k8s:1.18.2
           command: ["/bin/sh"]
-          args: ["-c", "source /vault/secrets/sifnode && /scripts/external-ip.sh sifnode $MONIKER {{ include \"sifnode.fullname\" . }}-external-ip"]
+          args: ["-c", 'while [ ! -f /vault/secrets/sifnode ]; do sleep 1; done && source /vault/secrets/sifnode && /scripts/external-ip.sh sifnode $MONIKER {{ include "sifnode.fullname" . }}-external-ip']
           volumeMounts:
             - name: scripts
               mountPath: /scripts
@@ -38,13 +38,14 @@ spec:
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           command: ["/bin/sh"]
           {{- if .Values.sifnode.args.peerAddress }}
-          args: ["-c", "source /vault/secrets/sifnode && sifgen node create $CHAINNET $MONIKER \"${mnemonic}\" --bind-ip-address $EXTERNAL_IP --peer-address {{ .Values.sifnode.args.peerAddress }} --genesis-url ${genesisURL} --with-cosmovisor"]
+          args: ["-c", 'while [ ! -f /vault/secrets/sifnode ]; do sleep 1; done && source /vault/secrets/sifnode && sifgen node create $CHAINNET $MONIKER "${mnemonic}" --bind-ip-address $EXTERNAL_IP --peer-address {{ .Values.sifnode.args.peerAddress }} --genesis-url ${genesisURL} --with-cosmovisor']
           {{- else }}
-          args: ["-c", "source /vault/secrets/sifnode && sifgen node create $CHAINNET $MONIKER \"${mnemonic}\" --mint-amount ${mintAmount} --bond-amount ${bondAmount} --admin-clp-addresses \"${adminCLPAddresses}\" --admin-oracle-address ${adminOracleAddress} --bind-ip-address $EXTERNAL_IP --gov-max-deposit-period ${govMaxDepositPeriod} --gov-voting-period ${govVotingPeriod} --standalone --with-cosmovisor"]
+          args: ["-c", 'while [ ! -f /vault/secrets/sifnode ]; do sleep 1; done && source /vault/secrets/sifnode && sifgen node create $CHAINNET $MONIKER "${mnemonic}" --mint-amount ${mintAmount} --bond-amount ${bondAmount} --admin-clp-addresses "${adminCLPAddresses}" --admin-oracle-address ${adminOracleAddress} --bind-ip-address $EXTERNAL_IP --gov-max-deposit-period ${govMaxDepositPeriod} --gov-voting-period ${govVotingPeriod} --standalone --with-cosmovisor']
           {{- end }}
           volumeMounts:
             - name: data
               mountPath: /root/
+          env:
             - name: EXTERNAL_IP
               valueFrom:
                 configMapKeyRef:
