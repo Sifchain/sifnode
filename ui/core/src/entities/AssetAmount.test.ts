@@ -46,6 +46,15 @@ describe("AssetAmount", () => {
     expect(AssetAmount("eth", "12345678").toString()).toBe("12345678 ETH");
   });
 
+  test("#toDerived", () => {
+    expect(
+      AssetAmount("eth", "1000000000000000000")
+        .toDerived()
+        .toBigInt()
+        .toString(),
+    ).toBe("1");
+  });
+
   test("#add", () => {
     expect(
       AssetAmount("eth", "1000")

@@ -8,10 +8,11 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/bank"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/tendermint/tendermint/crypto"
 	"testing"
 )
 
-func TestNewHandler(t *testing.T) {
+func TestNewHandler_CreateDistribution(t *testing.T) {
 	app, ctx := test.CreateTestApp(false)
 	keeper := app.DispensationKeeper
 	handler := dispensation.NewHandler(keeper)
@@ -31,4 +32,20 @@ func TestNewHandler(t *testing.T) {
 
 	dr := keeper.GetRecordsForNameAll(ctx, "AR1")
 	assert.Len(t, dr, recipients)
+}
+
+func TestNewHandler_CreateClaim(t *testing.T) {
+	app, ctx := test.CreateTestApp(false)
+	keeper := app.DispensationKeeper
+	handler := dispensation.NewHandler(keeper)
+	address := sdk.AccAddress(crypto.AddressHash([]byte("User1")))
+	msgClaim := types.NewMsgCreateClaim(address, types.ValidatorSubsidy)
+	res, err := handler(ctx, msgClaim)
+	require.NoError(t, err)
+	require.NotNil(t, res)
+
+	cl, err := keeper.GetClaim(ctx, address.String(), types.ValidatorSubsidy)
+	require.NoError(t, err)
+	assert.False(t, cl.Locked)
+	assert.Equal(t, cl.UserAddress.String(), address.String())
 }
