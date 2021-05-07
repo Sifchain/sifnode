@@ -16,6 +16,8 @@ import PairTable from "@/components/shared/PairTable.vue";
 import Tooltip from "@/components/shared/Tooltip.vue";
 import Icon from "@/components/shared/Icon.vue";
 import { ConfirmState } from "@/types";
+import { format } from "ui-core/src/utils/format";
+
 const REWARD_INFO = {
   lm: {
     label: "Liquidity Mining",
@@ -29,59 +31,17 @@ const REWARD_INFO = {
   },
 };
 
-// NOTE - This will be removed and replaced with Amount API
-function format(amount: number) {
-  if (amount < 1) {
-    return amount.toFixed(6);
-  } else if (amount < 1000) {
-    return amount.toFixed(4);
-  } else if (amount < 100000) {
-    return amount.toFixed(2);
-  } else {
-    return amount.toFixed(0);
-  }
-}
-
 async function getLMData(address: ComputedRef<any>, chainId: string) {
   if (!address.value) return;
-  // const timestamp = Date.parse(new Date().toString());
   const ceUrl = getCryptoeconomicsUrl(chainId);
   const data = await fetch(
     `${ceUrl}/lm/?key=userData&address=${address.value}&timestamp=now`,
   );
-  if (data.status !== 200) return null;
+  if (data.status !== 200) return {};
   const parsedData = await data.json();
-  // pastRewards = dispensed
-  // nextRewardPayment = claimed - dispensed
-  // unclaimedReward = claimableReward - claimed
-  // const parsedData = {
-  //   timestamp: 200600,
-  //   rewardBuckets: [],
-  //   totalTickets: 56578387.68990869,
-  //   user: {
-  //     tickets: [
-  //       {
-  //         amount: 83.87962924761631,
-  //         mul: 0.7274305555555691,
-  //         reward: 21.384575625320533,
-  //         timestamp: "April 15th 2021, 9:59:14 am",
-  //       },
-  //     ],
-  //     claimed: 66.48991988613547,
-  //     dispensed: 0,
-  //     forfeited: 61.81223708007379,
-  //     claimableReward: 82.04571361358246,
-  //     reservedReward: 87.874495511456,
-  //     totalTickets: 83.87962924761631,
-  //     nextRewardShare: 0.0000014825383449832216,
-  //     totalRewardAtMaturity: 2304.874495511456,
-  //     ticketAmountAtMaturity: 83.87962924761631,
-  //     yieldAtMaturity: 1.0476261793199715,
-  //     maturityDate: "August 13th 2021, 9:59:14 am",
-  //   },
-  // };
-
-  if (!parsedData.user.claimableReward) return null;
+  if (!parsedData.user || !parsedData.user.claimableReward) {
+    return {};
+  }
   return parsedData.user;
 }
 
@@ -165,18 +125,18 @@ export default defineComponent({
       loadingLm.value = true;
       lmRewards.value = await getLMData(address, config.sifChainId);
       loadingLm.value = false;
-      loadingVs.value = true;
-      vsRewards.value = await getVSData(address, config.sifChainId);
-      loadingVs.value = false;
+      // loadingVs.value = true;
+      // vsRewards.value = await getVSData(address, config.sifChainId);
+      // loadingVs.value = false;
     });
 
     onMounted(async () => {
       loadingLm.value = true;
       lmRewards.value = await getLMData(address, config.sifChainId);
       loadingLm.value = false;
-      loadingVs.value = true;
-      vsRewards.value = await getVSData(address, config.sifChainId);
-      loadingVs.value = false;
+      // loadingVs.value = true;
+      // vsRewards.value = await getVSData(address, config.sifChainId);
+      // loadingVs.value = false;
     });
 
     async function handleAskConfirmClicked() {
@@ -245,6 +205,7 @@ export default defineComponent({
       Please see additional information of our
       <a
         target="_blank"
+        class="underline"
         href="https://docs.sifchain.finance/resources/rewards-programs"
         >current rewards program</a
       >
@@ -255,7 +216,7 @@ export default defineComponent({
         <div class="loader" />
       </div>
 
-      <!-- TODO make this a component that can also handle VS-->
+      <!-- TODO make this a component that can also handle VS && DRY ME -->
       <Box v-if="lmRewards">
         <div class="reward-container">
           <SubHeading>{{ REWARD_INFO["lm"].label }}</SubHeading>
@@ -268,21 +229,39 @@ export default defineComponent({
                 <div class="reward-row">
                   <div class="row-label">Claimable Rewards</div>
                   <div class="row-amount">
-                    {{ format(lmRewards.claimableReward - lmRewards.claimed) }}
+                    {{
+                      format(lmRewards.claimableReward - lmRewards.claimed, {
+                        mantissa: 4,
+                      }) || "0"
+                    }}
                   </div>
                   <AssetItem symbol="Rowan" :label="false" />
                 </div>
+
                 <div class="reward-row">
                   <div class="row-label">
                     Projected Full Amount
                     <Tooltip>
                       <template #message>
                         <div class="tooltip">
-                          Projected Full Maturity Date: <br />
-                          <span class="tooltip-date">{{
-                            lmRewards.maturityDate
-                          }}</span
-                          ><br /><br />
+                          <div v-if="lmRewards.maturityDate">
+                            Projected Full Maturity Date: <br />
+                            <span class="tooltip-date">{{
+                              lmRewards.maturityDate
+                            }}</span>
+                            <span v-if="lmRewards.maturityAPY">
+                              Projected Fully Maturated APY (based on current
+                              holdings): <br />
+                              <span class="tooltip-date">
+                                {{
+                                  format(lmRewards.maturityAPY * 100, {
+                                    mantissa: 2,
+                                  })
+                                }}%</span
+                              >
+                            </span>
+                            <br /><br />
+                          </div>
                           This is your estimated projected full reward amount
                           that you can earn if you were to leave your current
                           liquidity positions in place to the above mentioned
@@ -295,7 +274,54 @@ export default defineComponent({
                     </Tooltip>
                   </div>
                   <div class="row-amount">
-                    {{ format(lmRewards.totalRewardAtMaturity) }}
+                    {{
+                      format(lmRewards.totalRewardAtMaturity, {
+                        mantissa: 4,
+                      }) || "0"
+                    }}
+                  </div>
+                  <AssetItem symbol="Rowan" :label="false" />
+                </div>
+
+                <div class="reward-row secondary">
+                  <div class="row-label">
+                    Pending Reward Dispensation
+                    <Tooltip>
+                      <template #message>
+                        <div class="tooltip">
+                          Rewards that have been claimed and are pending
+                          dispensation due to removal of liquidity or
+                          user-initiated claims. Pending rewards are dispensed
+                          every Friday
+                        </div>
+                      </template>
+                      <Icon icon="info-box-black" />
+                    </Tooltip>
+                  </div>
+                  <div class="row-amount">
+                    {{
+                      format(lmRewards.claimed - lmRewards.dispensed, {
+                        mantissa: 4,
+                      }) || "0"
+                    }}
+                  </div>
+                  <AssetItem symbol="Rowan" :label="false" />
+                </div>
+
+                <div class="reward-row secondary">
+                  <div class="row-label">
+                    Dispensed Rewards
+                    <Tooltip>
+                      <template #message>
+                        <div class="tooltip">
+                          Rewards that have already been dispensed.
+                        </div>
+                      </template>
+                      <Icon icon="info-box-black" />
+                    </Tooltip>
+                  </div>
+                  <div class="row-amount">
+                    {{ format(lmRewards.dispensed, { mantissa: 4 }) || "0" }}
                   </div>
                   <AssetItem symbol="Rowan" :label="false" />
                 </div>
@@ -309,10 +335,16 @@ export default defineComponent({
               :href="`https://cryptoeconomics.vercel.app/#${address}&type=lm`"
               >More Info</a
             >
-            <SifButton @click="openClaimModal" :primary="true">Claim</SifButton>
+
+            <!-- :disabled="(lmRewards.claimableReward - lmRewards.claimed) === 0" -->
+            <SifButton @click="openClaimModal" :primary="true" :disabled="true"
+              >Claim</SifButton
+            >
           </div>
         </div>
       </Box>
+
+      <!-- Validator Subsidy -->
       <Box v-if="vsRewards">
         <div class="reward-container">
           <SubHeading>Validator Subsidy</SubHeading>
@@ -327,7 +359,11 @@ export default defineComponent({
                 <div class="reward-row">
                   <div class="row-label">Claimable Rewards</div>
                   <div class="row-amount">
-                    {{ format(lmRewards.claimableReward - lmRewards.claimed) }}
+                    {{
+                      format(lmRewards.claimableReward - lmRewards.claimed, {
+                        mantissa: 4,
+                      })
+                    }}
                   </div>
                   <AssetItem symbol="Rowan" :label="false" />
                 </div>
@@ -354,7 +390,9 @@ export default defineComponent({
                     </Tooltip>
                   </div>
                   <div class="row-amount">
-                    {{ format(lmRewards.totalRewardAtMaturity) }}
+                    {{
+                      format(lmRewards.totalRewardAtMaturity, { mantissa: 4 })
+                    }}
                   </div>
                   <AssetItem symbol="Rowan" :label="false" />
                 </div>
@@ -372,7 +410,6 @@ export default defineComponent({
           </div>
         </div>
       </Box>
-      <Box v-else-if="!loadingLm && !lmRewards">No LM Rewards</Box>
     </div>
     <ActionsPanel connectType="connectToSif" />
 
@@ -439,19 +476,6 @@ export default defineComponent({
 <style scoped lang="scss">
 // TODO - Get variable margin/padding sizes in
 // TODO - Discuss how we should manage positioning
-.more-info-button {
-  // TODO - This Button !
-  background: #f3f3f3;
-  color: #343434;
-  font-size: 12px;
-  border-radius: 6px;
-  width: 96px;
-  height: 30px;
-  font-weight: 100;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
 
 .rewards-container {
   display: flex;
@@ -478,14 +502,17 @@ export default defineComponent({
     display: flex;
     flex-direction: column;
     margin-bottom: 15px;
+    color: #343434;
   }
   .reward-row {
     display: flex;
     width: 100%;
     justify-content: space-between;
-
-    font-size: 14px;
+    font-size: $fs;
     font-weight: 400;
+    &.secondary {
+      color: #818181;
+    }
     .row-label {
       flex: 1 1 auto;
       text-align: left;
@@ -496,7 +523,6 @@ export default defineComponent({
     }
     .row {
       width: 15px;
-
       margin-left: 2px;
     }
   }
@@ -533,18 +559,22 @@ export default defineComponent({
 .reward-buttons {
   display: flex;
   flex-direction: row;
-
   justify-content: space-between;
   .more-info-button {
-    font-weight: 600;
-    font-style: italic;
+    background: #f3f3f3;
+    color: #343434;
+    font-weight: 100;
+    display: flex;
+    justify-content: center;
+    align-items: center;
   }
   .more-info-button,
   .btn {
     width: 300px;
-    display: block;
-    font-weight: 600;
-    font-style: italic;
+    border-radius: 6px;
+    display: flex;
+    font-size: $fs;
+    height: 30px;
   }
   .reward-button {
     text-align: center;
