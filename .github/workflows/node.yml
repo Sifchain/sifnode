@@ -10,7 +10,7 @@ jobs:
         working-directory: ui
 
     permissions:
-      packages: read
+      packages: write
 
     steps:
       - name: Use Node.js
