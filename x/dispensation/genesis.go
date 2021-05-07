@@ -17,7 +17,7 @@ func InitGenesis(ctx sdk.Context, keeper Keeper, data types.GenesisState) (res [
 			}
 		}
 	}
-	if data.DistributionRecords != nil {
+	if data.Distributions != nil {
 		for _, dist := range data.Distributions.Distributions {
 			err := keeper.SetDistribution(ctx, *dist)
 			if err != nil {
