@@ -104,7 +104,7 @@ beforeEach(async () => {
   await page.close();
 });
 
-it.only("pegs rowan", async () => {
+it("pegs rowan", async () => {
   // First we need to unpeg rowan in order to have erowan on the bridgebank contract
   // Navigate to peg page
   await dexPage.goto(DEX_TARGET, {
