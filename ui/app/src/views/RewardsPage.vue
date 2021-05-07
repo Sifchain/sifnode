@@ -85,8 +85,34 @@ async function getLMData(address: ComputedRef<any>, chainId: string) {
   return parsedData.user;
 }
 
-async function getVSData(address: ComputedRef<any>, chainId: string) {}
-// `${ceUrl}/lm/?key=userData&address=${address.value}&timestamp=now`,
+async function getVSData(address: ComputedRef<any>, chainId: string) {
+  if (!address.value) return;
+  // const timestamp = Date.parse(new Date().toString());
+  const ceUrl = getCryptoeconomicsUrl(chainId);
+  const data = await fetch(
+    `${ceUrl}/vs/?key=userData&address=${address.value}&timestamp=now`,
+  );
+  if (data.status !== 200) return null;
+  const parsedData = await data.json();
+  // TODO - VS endpoint does not return the same thing as LM endpoint so
+  // mocking the data in the interim;
+  return {
+    claimableReward: 1133.5803574233153,
+    claimed: 1133.5803574233153,
+    dispensed: 0,
+    forfeited: 2820.4719248996316,
+    maturityDate: "June 12th 2021, 11:19:14 am",
+    nextRewardShare: 0,
+    reservedReward: 1133.5803574233153,
+    ticketAmountAtMaturity: 0,
+    tickets: [],
+    totalRewardAtMaturity: 1133.5803574233153,
+    totalTickets: 0,
+    yieldAtMaturity: null,
+  };
+  // if (!parsedData.user.claimableReward) return null;
+  // return parsedData.user;
+}
 
 export default defineComponent({
   components: {
@@ -119,6 +145,7 @@ export default defineComponent({
     return {
       modalOpen: false,
       loadingLm: true,
+      loadingVs: true,
     };
   },
   setup() {
@@ -128,19 +155,28 @@ export default defineComponent({
     const transactionStateMsg = ref<string>("");
     const transactionHash = ref<string | null>(null);
 
+    // TODO - We can do this better later
     let lmRewards = ref<any>();
+    let vsRewards = ref<any>();
     let loadingLm = ref<Boolean>(true);
+    let loadingVs = ref<Boolean>(true);
 
     watch(address, async () => {
       loadingLm.value = true;
       lmRewards.value = await getLMData(address, config.sifChainId);
       loadingLm.value = false;
+      loadingVs.value = true;
+      vsRewards.value = await getVSData(address, config.sifChainId);
+      loadingVs.value = false;
     });
 
     onMounted(async () => {
       loadingLm.value = true;
       lmRewards.value = await getLMData(address, config.sifChainId);
       loadingLm.value = false;
+      loadingVs.value = true;
+      vsRewards.value = await getVSData(address, config.sifChainId);
+      loadingVs.value = false;
     });
 
     async function handleAskConfirmClicked() {
@@ -167,16 +203,35 @@ export default defineComponent({
       ];
     });
 
+    const computedVSPairPanel = computed(() => {
+      if (!vsRewards.value) {
+        return [];
+      }
+      console.log("vsRewards", vsRewards);
+      return [
+        {
+          key: "Claimable  Rewards",
+          value: vsRewards.value.claimableReward,
+        },
+        {
+          key: "Projected Full Amount",
+          value: vsRewards.value.totalRewardAtMaturity,
+        },
+      ];
+    });
     return {
       lmRewards,
+      vsRewards,
       REWARD_INFO,
       computedLMPairPanel,
+      computedVSPairPanel,
       format,
       handleAskConfirmClicked,
       transactionState,
       transactionStateMsg,
       transactionHash,
       loadingLm,
+      loadingVs,
       address,
     };
   },
@@ -223,10 +278,17 @@ export default defineComponent({
                     <Tooltip>
                       <template #message>
                         <div class="tooltip">
-                          This is your projected Amount if all else equal until
-                          Maturity Date <br />
-                          Maturity Date <br />
-                          {{ lmRewards.maturityDate }}
+                          Projected Full Maturity Date: <br />
+                          <span class="tooltip-date">{{
+                            lmRewards.maturityDate
+                          }}</span
+                          ><br /><br />
+                          This is your estimated projected full reward amount
+                          that you can earn if you were to leave your current
+                          liquidity positions in place to the above mentioned
+                          date. This number can fluctuate due to other market
+                          conditions and this number is a representation of the
+                          current market as it is in this very moment.
                         </div>
                       </template>
                       <Icon icon="info-box-black" />
@@ -251,7 +313,65 @@ export default defineComponent({
           </div>
         </div>
       </Box>
-
+      <Box v-if="vsRewards">
+        <div class="reward-container">
+          <SubHeading>Validator Subsidy</SubHeading>
+          <Copy>
+            Missing copy here. Lorem ipsum dolor sit amet, consectetur
+            adipiscing elit, sed do eiusmod tempor incididunt ut labore et
+            dolore magna aliqua. Ut enim ad minim veniam.
+          </Copy>
+          <div class="details-container">
+            <div class="amount-container">
+              <div class="reward-rows">
+                <div class="reward-row">
+                  <div class="row-label">Claimable Rewards</div>
+                  <div class="row-amount">
+                    {{ format(lmRewards.claimableReward - lmRewards.claimed) }}
+                  </div>
+                  <AssetItem symbol="Rowan" :label="false" />
+                </div>
+                <div class="reward-row">
+                  <div class="row-label">
+                    Projected Full Amount
+                    <Tooltip>
+                      <template #message>
+                        <div class="tooltip">
+                          Projected Full Maturity Date: <br />
+                          <span class="tooltip-date">{{
+                            lmRewards.maturityDate
+                          }}</span
+                          ><br /><br />
+                          This is your estimated projected full reward amount
+                          that you can earn if you were to leave your current
+                          liquidity positions in place to the above mentioned
+                          date. This number can fluctuate due to other market
+                          conditions and this number is a representation of the
+                          current market as it is in this very moment.
+                        </div>
+                      </template>
+                      <Icon icon="info-box-black" />
+                    </Tooltip>
+                  </div>
+                  <div class="row-amount">
+                    {{ format(lmRewards.totalRewardAtMaturity) }}
+                  </div>
+                  <AssetItem symbol="Rowan" :label="false" />
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="reward-buttons">
+            <a
+              class="more-info-button mr-8"
+              target="_blank"
+              :href="`https://cryptoeconomics.vercel.app/#${address}&type=lm`"
+              >More Info</a
+            >
+            <SifButton @click="openClaimModal" :primary="true">Claim</SifButton>
+          </div>
+        </div>
+      </Box>
       <Box v-else-if="!loadingLm && !lmRewards">No LM Rewards</Box>
     </div>
     <ActionsPanel connectType="connectToSif" />
@@ -415,7 +535,10 @@ export default defineComponent({
   flex-direction: row;
 
   justify-content: space-between;
-
+  .more-info-button {
+    font-weight: 600;
+    font-style: italic;
+  }
   .more-info-button,
   .btn {
     width: 300px;
@@ -426,6 +549,10 @@ export default defineComponent({
   .reward-button {
     text-align: center;
   }
+}
+
+.tooltip-date {
+  font-weight: 600;
 }
 
 /* MODAL Styles */
