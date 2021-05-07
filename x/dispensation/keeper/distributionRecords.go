@@ -47,7 +47,7 @@ func (k Keeper) GetDistributionRecordsIterator(ctx sdk.Context, status types.Dis
 	case types.DistributionStatus_DISTRIBUTION_STATUS_COMPLETED:
 		return sdk.KVStorePrefixIterator(store, types.DistributionRecordPrefixCompleted)
 	default:
-		return sdk.KVStorePrefixIterator(store, types.DistributionRecordPrefixCompleted)
+		return nil
 	}
 }
 
