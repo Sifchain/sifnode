@@ -76,7 +76,9 @@ func (k Keeper) ProcessClaim(ctx sdk.Context, claim types.Claim) (types.Status, 
 	logger := k.Logger(ctx)
 	inWhiteList := false
 	// Check if claim from whitelist validators
-	for _, address := range k.GetOracleWhiteList(ctx) {
+	whiteList := k.GetOracleWhiteList(ctx)
+	logger.Info("oracle whitelist is", "whitelist", whiteList)
+	for _, address := range whiteList {
 
 		if address.String() == (claim.ValidatorAddress) {
 			inWhiteList = true

@@ -3,6 +3,7 @@ package cmd
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
@@ -50,6 +51,7 @@ the account address or key name. If a key name is given, the address will be loo
 					return fmt.Errorf("address %s already in white list", addr)
 				}
 			}
+			log.Printf("AddGenesisValidatorCmd, adding addr: %v to whitelist: %v", addr.String(), oracleGenState.AddressWhitelist)
 			oracleGenState.AddressWhitelist = append(oracleGenState.AddressWhitelist, addr.String())
 
 			oracleGenStateBz, err := json.Marshal(oracleGenState)

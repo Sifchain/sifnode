@@ -1,6 +1,7 @@
 package oracle
 
 import (
+	"log"
 	"strings"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -11,7 +12,7 @@ import (
 )
 
 func InitGenesis(ctx sdk.Context, keeper keeper.Keeper, data types.GenesisState) (res []abci.ValidatorUpdate) {
-
+	log.Printf("InitGenesis, data types.GenesisState (AddressWhitelist, AdminAddress) is %v", data)
 	if data.AddressWhitelist != nil {
 		wl := make([]sdk.ValAddress, len(data.AddressWhitelist))
 		for i, entry := range data.AddressWhitelist {
