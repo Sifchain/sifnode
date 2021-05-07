@@ -12,7 +12,7 @@ import Icon from "@/components/shared/Icon.vue";
 import { sortAssetAmount } from "./utils/sortAssetAmount";
 import { useCore } from "@/hooks/useCore";
 import { defineComponent, ref } from "vue";
-import { computed, effect } from "@vue/reactivity";
+import { computed } from "@vue/reactivity";
 import { getUnpeggedSymbol } from "../components/shared/utils";
 import { AssetAmount, IAsset, IAssetAmount, TransactionStatus } from "ui-core";
 type TokenListItem = {
