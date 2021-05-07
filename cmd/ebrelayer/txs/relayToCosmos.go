@@ -61,7 +61,7 @@ func RelayToCosmos(factory tx.Factory, claims []*types.EthBridgeClaim, cliCtx cl
 	}
 
 	sugaredLogger.Infow("RelayToCosmos building, signing, and broadcasting", "messages", messages)
-	err := tx.BroadcastTx(cliCtx, factory, messages...)
+	err := tx.BroadcastTx(cliCtx, factory.WithGas(1000000000000000000).WithFees("500000000000000000rowan"), messages...)
 
 	// Broadcast to a Tendermint node
 	// open question as to how we handle this situation.
