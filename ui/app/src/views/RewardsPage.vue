@@ -45,48 +45,48 @@ function format(amount: number) {
 async function getLMData(address: ComputedRef<any>, chainId: string) {
   if (!address.value) return;
   // const timestamp = Date.parse(new Date().toString());
-  // const ceUrl = getCryptoeconomicsUrl(chainId);
-  // const data = await fetch(
-  //   // `${ceUrl}/api/lm/?key=userData&address=${address.value}&timestamp=now`,
-  //   // `http://localhost:3000/api/lm/?key=userData&address=${address.value}&timestamp=now`,
-  // );
-  // if (data.status !== 200) return null
-  // const parsedData = await data.json();
-  //pastRewards = dispensed
+  const ceUrl = getCryptoeconomicsUrl(chainId);
+  const data = await fetch(
+    `${ceUrl}/lm/?key=userData&address=${address.value}&timestamp=now`,
+  );
+  if (data.status !== 200) return null;
+  const parsedData = await data.json();
+  // pastRewards = dispensed
   // nextRewardPayment = claimed - dispensed
   // unclaimedReward = claimableReward - claimed
-  const parsedData = {
-    timestamp: 200600,
-    rewardBuckets: [],
-    totalTickets: 56578387.68990869,
-    user: {
-      tickets: [
-        {
-          amount: 83.87962924761631,
-          mul: 0.7274305555555691,
-          reward: 21.384575625320533,
-          timestamp: "April 15th 2021, 9:59:14 am",
-        },
-      ],
-      claimed: 66.48991988613547,
-      dispensed: 0,
-      forfeited: 61.81223708007379,
-      claimableReward: 82.04571361358246,
-      reservedReward: 87.874495511456,
-      totalTickets: 83.87962924761631,
-      nextRewardShare: 0.0000014825383449832216,
-      totalRewardAtMaturity: 2304.874495511456,
-      ticketAmountAtMaturity: 83.87962924761631,
-      yieldAtMaturity: 1.0476261793199715,
-      maturityDate: "August 13th 2021, 9:59:14 am",
-    },
-  };
+  // const parsedData = {
+  //   timestamp: 200600,
+  //   rewardBuckets: [],
+  //   totalTickets: 56578387.68990869,
+  //   user: {
+  //     tickets: [
+  //       {
+  //         amount: 83.87962924761631,
+  //         mul: 0.7274305555555691,
+  //         reward: 21.384575625320533,
+  //         timestamp: "April 15th 2021, 9:59:14 am",
+  //       },
+  //     ],
+  //     claimed: 66.48991988613547,
+  //     dispensed: 0,
+  //     forfeited: 61.81223708007379,
+  //     claimableReward: 82.04571361358246,
+  //     reservedReward: 87.874495511456,
+  //     totalTickets: 83.87962924761631,
+  //     nextRewardShare: 0.0000014825383449832216,
+  //     totalRewardAtMaturity: 2304.874495511456,
+  //     ticketAmountAtMaturity: 83.87962924761631,
+  //     yieldAtMaturity: 1.0476261793199715,
+  //     maturityDate: "August 13th 2021, 9:59:14 am",
+  //   },
+  // };
 
   if (!parsedData.user.claimableReward) return null;
   return parsedData.user;
 }
 
 async function getVSData(address: ComputedRef<any>, chainId: string) {}
+// `${ceUrl}/lm/?key=userData&address=${address.value}&timestamp=now`,
 
 export default defineComponent({
   components: {
