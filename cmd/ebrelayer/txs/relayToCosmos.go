@@ -23,8 +23,7 @@ var (
 
 // RelayToCosmos applies validator's signature to an EthBridgeClaim message containing
 // information about an event on the Ethereum blockchain before relaying to the Bridge
-func RelayToCosmos(factory tx.Factory, claims []*types.EthBridgeClaim, cliCtx client.Context,
-	txBldr client.TxBuilder, sugaredLogger *zap.SugaredLogger) error {
+func RelayToCosmos(factory tx.Factory, claims []*types.EthBridgeClaim, cliCtx client.Context, sugaredLogger *zap.SugaredLogger) error {
 	var messages []sdk.Msg
 
 	sugaredLogger.Infow(
@@ -41,6 +40,7 @@ func RelayToCosmos(factory tx.Factory, claims []*types.EthBridgeClaim, cliCtx cl
 		if err != nil {
 			sugaredLogger.Errorw(
 				"failed to get message from claim.",
+				"message", msg,
 				errorMessageKey, err.Error(),
 			)
 			continue
@@ -60,7 +60,7 @@ func RelayToCosmos(factory tx.Factory, claims []*types.EthBridgeClaim, cliCtx cl
 		factory = factory.WithSequence(nextSequenceNumber)
 	}
 
-	log.Println("building, signing, and broadcasting")
+	sugaredLogger.Infow("RelayToCosmos building, signing, and broadcasting", "messages", messages)
 	err := tx.BroadcastTx(cliCtx, factory, messages...)
 
 	// Broadcast to a Tendermint node

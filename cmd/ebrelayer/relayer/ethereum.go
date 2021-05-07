@@ -49,7 +49,6 @@ type EthereumSub struct {
 	ValidatorName           string
 	ValidatorAddress        sdk.ValAddress
 	CliCtx                  client.Context
-	TxBldr                  client.TxBuilder
 	PrivateKey              *ecdsa.PrivateKey
 	TempPassword            string
 	DB                      *leveldb.DB
@@ -461,12 +460,34 @@ func (sub EthereumSub) logToEvent(clientChainID *big.Int, contractAddress common
 	return event, true, nil
 }
 
+
+func GetValAddressFromKeyring(k keyring.Keyring, keyname string) (sdk.ValAddress, error) {
+	i, err := k.Key(keyname)
+	if err != nil {
+		return nil, err
+	}
+	return sdk.ValAddress(i.GetAddress()), nil
+}
+
+
+func GetAccAddressFromKeyring(k keyring.Keyring, keyname string) (sdk.AccAddress, error) {
+	i, err := k.Key(keyname)
+	if err != nil {
+		return nil, err
+	}
+	return i.GetAddress(), nil
+}
+
+
 // handleEthereumEvent unpacks an Ethereum event, converts it to a ProphecyClaim, and relays a tx to Cosmos
 func (sub EthereumSub) handleEthereumEvent(txFactory tx.Factory, events []types.EthereumEvent) error {
 	var prophecyClaims []*ethbridge.EthBridgeClaim
-
+	valaddr, err := GetAccAddressFromKeyring(txFactory.Keybase(), sub.ValidatorName)
+	if err != nil {
+		return err
+	}
 	for _, event := range events {
-		prophecyClaim, err := txs.EthereumEventToEthBridgeClaim(sub.ValidatorAddress, event)
+		prophecyClaim, err := txs.EthereumEventToEthBridgeClaim(valaddr, event)
 		if err != nil {
 			sub.SugaredLogger.Errorw(".",
 				errorMessageKey, err.Error())
@@ -481,5 +502,5 @@ func (sub EthereumSub) handleEthereumEvent(txFactory tx.Factory, events []types.
 		return nil
 	}
 
-	return txs.RelayToCosmos(txFactory, prophecyClaims, sub.CliCtx, sub.TxBldr, sub.SugaredLogger)
+	return txs.RelayToCosmos(txFactory, prophecyClaims, sub.CliCtx, sub.SugaredLogger)
 }

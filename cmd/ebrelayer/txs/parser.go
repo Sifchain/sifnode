@@ -23,7 +23,7 @@ const (
 )
 
 // EthereumEventToEthBridgeClaim parses and packages an Ethereum event struct with a validator address in an EthBridgeClaim msg
-func EthereumEventToEthBridgeClaim(valAddr sdk.ValAddress, event types.EthereumEvent) (ethbridge.EthBridgeClaim, error) {
+func EthereumEventToEthBridgeClaim(valAddr sdk.AccAddress, event types.EthereumEvent) (ethbridge.EthBridgeClaim, error) {
 	witnessClaim := ethbridge.EthBridgeClaim{}
 
 	// chainID type casting (*big.Int -> int)
