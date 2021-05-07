@@ -1,15 +1,12 @@
 import { IAssetAmount, Asset } from "ui-core";
 import { format } from "ui-core/src/utils/format";
 
-export function sortAssetAmount(
-  assetAmounts: {
+export function sortAssetAmount<
+  T extends {
     amount: IAssetAmount | null | undefined;
     asset: Asset;
-  }[],
-): {
-  amount: IAssetAmount | null | undefined;
-  asset: Asset;
-}[] {
+  }[]
+>(assetAmounts: T): T {
   return assetAmounts
     .sort((a, b) => {
       // Sort alphabetically
