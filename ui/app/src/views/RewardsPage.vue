@@ -52,6 +52,9 @@ async function getLMData(address: ComputedRef<any>, chainId: string) {
   // );
   // if (data.status !== 200) return null
   // const parsedData = await data.json();
+  //pastRewards = dispensed
+  // nextRewardPayment = claimed - dispensed
+  // unclaimedReward = claimableReward - claimed
   const parsedData = {
     timestamp: 200600,
     rewardBuckets: [],
@@ -80,7 +83,7 @@ async function getLMData(address: ComputedRef<any>, chainId: string) {
   };
 
   if (!parsedData.user.claimableReward) return null;
-  return parsedData;
+  return parsedData.user;
 }
 
 async function getVSData(address: ComputedRef<any>, chainId: string) {}
@@ -155,11 +158,11 @@ export default defineComponent({
       return [
         {
           key: "Claimable  Rewards",
-          value: lmRewards.value.user.claimableReward,
+          value: lmRewards.value.claimableReward,
         },
         {
           key: "Projected Full Amount",
-          value: lmRewards.value.user.totalRewardAtMaturity,
+          value: lmRewards.value.totalRewardAtMaturity,
         },
       ];
     });
@@ -197,6 +200,7 @@ export default defineComponent({
         <div class="loader" />
       </div>
 
+      <!-- TODO make this a component that can also handle VS-->
       <Box v-if="lmRewards">
         <div class="reward-container">
           <SubHeading>{{ REWARD_INFO["lm"].label }}</SubHeading>
@@ -209,7 +213,7 @@ export default defineComponent({
                 <div class="reward-row">
                   <div class="row-label">Claimable Rewards</div>
                   <div class="row-amount">
-                    {{ format(lmRewards.user.claimableReward) }}
+                    {{ format(lmRewards.claimableReward - lmRewards.claimed) }}
                   </div>
                   <AssetItem symbol="Rowan" :label="false" />
                 </div>
@@ -219,17 +223,17 @@ export default defineComponent({
                     <Tooltip>
                       <template #message>
                         <div class="tooltip">
-                          Explanation - This is your projected Amount if all
-                          else equal until Maturity Date <br />
+                          This is your projected Amount if all else equal until
                           Maturity Date <br />
-                          {{ lmRewards.user.maturityDate }}
+                          Maturity Date <br />
+                          {{ lmRewards.maturityDate }}
                         </div>
                       </template>
                       <Icon icon="info-box-black" />
                     </Tooltip>
                   </div>
                   <div class="row-amount">
-                    {{ format(lmRewards.user.totalRewardAtMaturity) }}
+                    {{ format(lmRewards.totalRewardAtMaturity) }}
                   </div>
                   <AssetItem symbol="Rowan" :label="false" />
                 </div>
@@ -247,6 +251,7 @@ export default defineComponent({
           </div>
         </div>
       </Box>
+
       <Box v-else-if="!loadingLm && !lmRewards">No LM Rewards</Box>
     </div>
     <ActionsPanel connectType="connectToSif" />
