@@ -20,7 +20,7 @@ func GetQueryCmd(queryRoute string) *cobra.Command {
 	dispensationQueryCmd.AddCommand(
 		GetCmdDistributions(queryRoute),
 		GetCmdDistributionRecordForRecipient(queryRoute),
-		GetCmdDistributionRecordForDistNameAll(queryRoute),
+		GetCmdDistributionRecordForDistName(queryRoute),
 	)
 	return dispensationQueryCmd
 }
@@ -83,12 +83,12 @@ func GetCmdDistributionRecordForRecipient(queryRoute string) *cobra.Command {
 	}
 }
 
-//GetCmdDistributionRecordForDistNameAll returns all records for a given distribution name
-func GetCmdDistributionRecordForDistNameAll(queryRoute string) *cobra.Command {
+//GetCmdDistributionRecordForDistName returns all records for a given distribution name
+func GetCmdDistributionRecordForDistName(queryRoute string) *cobra.Command {
 	return &cobra.Command{
 		Use:   "records-by-name [distribution name] [status]",
 		Short: "get a list of all distribution records ",
-		Args:  cobra.ExactArgs(1),
+		Args:  cobra.ExactArgs(2),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx, err := client.GetClientQueryContext(cmd)
 			if err != nil {

@@ -153,7 +153,7 @@ func (am AppModule) InitGenesis(ctx sdk.Context, codec codec.JSONMarshaler, data
 // module.
 func (am AppModule) ExportGenesis(ctx sdk.Context, codec codec.JSONMarshaler) json.RawMessage {
 	gs := ExportGenesis(ctx, am.keeper)
-	return codec.MustMarshalJSON(gs)
+	return codec.MustMarshalJSON(&gs)
 }
 
 // BeginBlock returns the begin blocker for the dispensation module.

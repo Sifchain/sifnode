@@ -47,7 +47,7 @@ func (k Keeper) GetDistributionRecordsIterator(ctx sdk.Context, status types.Dis
 	case types.DistributionStatus_DISTRIBUTION_STATUS_COMPLETED:
 		return sdk.KVStorePrefixIterator(store, types.DistributionRecordPrefixCompleted)
 	default:
-		return sdk.KVStorePrefixIterator(store, types.DistributionRecordPrefixCompleted)
+		return nil
 	}
 }
 
@@ -140,4 +140,29 @@ func (k Keeper) GetRecordsLimited(ctx sdk.Context, status types.DistributionStat
 		}
 	}
 	return res
+}
+
+func (k Keeper) GetRecords(ctx sdk.Context) *types.DistributionRecords {
+	var res types.DistributionRecords
+	iterator := k.GetDistributionRecordsIterator(ctx, types.DistributionStatus_DISTRIBUTION_STATUS_PENDING)
+	defer func(iterator sdk.Iterator) {
+		err := iterator.Close()
+		if err != nil {
+			panic("Failed to close iterator")
+		}
+	}(iterator)
+	for ; iterator.Valid(); iterator.Next() {
+		var dr types.DistributionRecord
+		bytesValue := iterator.Value()
+		k.cdc.MustUnmarshalBinaryBare(bytesValue, &dr)
+		res.DistributionRecords = append(res.DistributionRecords, &dr)
+	}
+	iterator = k.GetDistributionRecordsIterator(ctx, types.DistributionStatus_DISTRIBUTION_STATUS_COMPLETED)
+	for ; iterator.Valid(); iterator.Next() {
+		var dr types.DistributionRecord
+		bytesValue := iterator.Value()
+		k.cdc.MustUnmarshalBinaryBare(bytesValue, &dr)
+		res.DistributionRecords = append(res.DistributionRecords, &dr)
+	}
+	return &res
 }
