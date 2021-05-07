@@ -235,7 +235,9 @@ export default defineComponent({
                   </p></template
                 >
                 <template #default
-                  >&nbsp;<span class="footnote">*</span></template
+                  >&nbsp;<span data-handle="pending-tx-marker" class="footnote"
+                    >*</span
+                  ></template
                 >
               </Tooltip>
             </span>
