@@ -18,6 +18,9 @@ func NewQuerier(keeper Keeper) sdk.Querier {
 			return queryDistributionRecordsForName(ctx, req, keeper)
 		case types.QueryRecordsByRecipient:
 			return queryDistributionRecordsForRecipient(ctx, req, keeper)
+		case types.QueryClaimsByType:
+			return queryClaimsByType(ctx, req, keeper)
+
 		default:
 			return nil, sdkerrors.Wrap(sdkerrors.ErrUnknownRequest, "unknown dispensation query endpoint")
 		}
@@ -64,6 +67,20 @@ func queryDistributionRecordsForRecipient(ctx sdk.Context, req abci.RequestQuery
 
 func queryAllDistributions(ctx sdk.Context, keeper Keeper) ([]byte, error) {
 	list := keeper.GetDistributions(ctx)
+	res, err := codec.MarshalJSONIndent(keeper.cdc, list)
+	if err != nil {
+		return nil, sdkerrors.Wrap(sdkerrors.ErrJSONMarshal, err.Error())
+	}
+	return res, nil
+}
+
+func queryClaimsByType(ctx sdk.Context, req abci.RequestQuery, keeper Keeper) ([]byte, error) {
+	var params types.QueryUserClaims
+	err := types.ModuleCdc.UnmarshalJSON(req.Data, &params)
+	if err != nil {
+		return nil, sdkerrors.Wrap(sdkerrors.ErrJSONUnmarshal, err.Error())
+	}
+	list := keeper.GetClaimsByType(ctx, params.UserClaimType)
 	res, err := codec.MarshalJSONIndent(keeper.cdc, list)
 	if err != nil {
 		return nil, sdkerrors.Wrap(sdkerrors.ErrJSONMarshal, err.Error())
