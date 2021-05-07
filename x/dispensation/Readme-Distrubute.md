@@ -1,11 +1,13 @@
-# DISPENSATION MODULE
+# DISPENSATION MODULE (Distribution)
 
 ## Overview
-- The module allows a user to crete an Airdrop. Which accepts a input and output list 
+- The module allows a user to create a Distribution which can be of Type [Airdrop/LiquidityMining/ValidatorSubsidy]. 
+- It accepts an input and output list .
 - This transaction needs to signed by at-least all addresses of the input list ( can be set to more ,but not less)
 - The module accumulates  funds from  the input address list and distributes it among the output list .
 - The records are created in the same block.
-- The distribution process starts in the next block with 10 distributions per block
+- The distribution process starts in the next block with 10 distributions per block.
+
 
 
 ## Technicals 
@@ -16,6 +18,9 @@ package records
 type DistributionType int64
 
 const Airdrop DistributionType = 1
+const LiquidityMining DistributionType = 2
+const ValidatorSubsidy DistributionType = 3
+
 type Distribution struct {
     DistributionType DistributionType `json:"distribution_type"`
     DistributionName string           `json:"distribution_name"`
@@ -28,21 +33,31 @@ This is stored in the keeper with the key DistributionType_DistributionName for 
 ```go
 package records
 
-type ClaimStatus int64
+type DistributionStatus int64
 
-const Pending ClaimStatus = 1
-const Completed ClaimStatus = 2
+const Pending DistributionStatus = 1
+const Completed DistributionStatus = 2
 
 type DistributionRecord struct {
-	ClaimStatus                 ClaimStatus    `json:"claimstatus"`
-	DistributionName            string         `json:"distribution_name"`
-	RecipientAddress            sdk.AccAddress `json:"recipient_address"`
-	Coins                       sdk.Coins      `json:"coins"`
-	DistributionStartHeight     int64          `json:"distribution_start_height"`
-	DistributionCompletedHeight int64          `json:"distribution_completed_height"`
+	DistributionStatus          DistributionStatus `json:"distribution_status"`
+	DistributionName            string             `json:"distribution_name"`
+	DistributionType            DistributionType   `json:"distribution_type"`
+	RecipientAddress            sdk.AccAddress     `json:"recipient_address"`
+	Coins                       sdk.Coins          `json:"coins"`
+	DistributionStartHeight     int64              `json:"distribution_start_height"`
+	DistributionCompletedHeight int64              `json:"distribution_completed_height"`
 }
 ```
 This record is also stored in the keeper for historical records .
+
+### High Level Flow
+- After the sanity checks are cleared , the program iterates over the input addresses and sends all funds from these address to a module account.
+- The program iterates over the output addresses and creates individual records for them in the keeper .( This design would need to be changed in the future to save gas costs)
+- In case of type LiquidityMining or ValidatorSubsidy the program also checks is the associated claim for the record is present .
+- The begin block iterates over these records and completes 10 records per block .
+- Complete refers to sending the specified amount from the  module account to the recipient.
+- In case of type LiquidityMining or ValidatorSubsidy the program also deletes the associated claim.
+
 
 ### User flow 
  The set of user commands to use this module 
