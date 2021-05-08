@@ -234,6 +234,49 @@ export default defineComponent({
 
                 <div class="reward-row">
                   <div class="row-label">
+                    Pending Reward Dispensation
+                    <Tooltip>
+                      <template #message>
+                        <div class="tooltip">
+                          Rewards that have been claimed and are pending
+                          dispensation due to removal of liquidity or
+                          user-initiated claims. Pending rewards are dispensed
+                          every Friday
+                        </div>
+                      </template>
+                      <Icon icon="info-box-black" />
+                    </Tooltip>
+                  </div>
+                  <div class="row-amount">
+                    {{
+                      format(lmRewards.claimed - lmRewards.dispensed, {
+                        mantissa: 4,
+                      }) || "0"
+                    }}
+                  </div>
+                  <AssetItem symbol="Rowan" :label="false" />
+                </div>
+
+                <div class="reward-row">
+                  <div class="row-label">
+                    Dispensed Rewards
+                    <Tooltip>
+                      <template #message>
+                        <div class="tooltip">
+                          Rewards that have already been dispensed.
+                        </div>
+                      </template>
+                      <Icon icon="info-box-black" />
+                    </Tooltip>
+                  </div>
+                  <div class="row-amount">
+                    {{ format(lmRewards.dispensed, { mantissa: 4 }) || "0" }}
+                  </div>
+                  <AssetItem symbol="Rowan" :label="false" />
+                </div>
+
+                <div class="reward-row secondary">
+                  <div class="row-label">
                     Projected Full Amount
                     <Tooltip>
                       <template #message>
@@ -273,49 +316,6 @@ export default defineComponent({
                         mantissa: 4,
                       }) || "0"
                     }}
-                  </div>
-                  <AssetItem symbol="Rowan" :label="false" />
-                </div>
-
-                <div class="reward-row secondary">
-                  <div class="row-label">
-                    Pending Reward Dispensation
-                    <Tooltip>
-                      <template #message>
-                        <div class="tooltip">
-                          Rewards that have been claimed and are pending
-                          dispensation due to removal of liquidity or
-                          user-initiated claims. Pending rewards are dispensed
-                          every Friday
-                        </div>
-                      </template>
-                      <Icon icon="info-box-black" />
-                    </Tooltip>
-                  </div>
-                  <div class="row-amount">
-                    {{
-                      format(lmRewards.claimed - lmRewards.dispensed, {
-                        mantissa: 4,
-                      }) || "0"
-                    }}
-                  </div>
-                  <AssetItem symbol="Rowan" :label="false" />
-                </div>
-
-                <div class="reward-row secondary">
-                  <div class="row-label">
-                    Dispensed Rewards
-                    <Tooltip>
-                      <template #message>
-                        <div class="tooltip">
-                          Rewards that have already been dispensed.
-                        </div>
-                      </template>
-                      <Icon icon="info-box-black" />
-                    </Tooltip>
-                  </div>
-                  <div class="row-amount">
-                    {{ format(lmRewards.dispensed, { mantissa: 4 }) || "0" }}
                   </div>
                   <AssetItem symbol="Rowan" :label="false" />
                 </div>
