@@ -1,10 +1,13 @@
 import createClpService from ".";
 import { AssetAmount } from "../../entities";
 import { getTestingTokens } from "../../test/utils/getTestingToken";
+import { useStack } from "../../../../test/stack";
 
 const [ROWAN, CATK, CBTK] = getTestingTokens(["ROWAN", "CATK", "CBTK"]);
 
 let service: ReturnType<typeof createClpService>;
+
+useStack("once");
 
 beforeEach(() => {
   service = createClpService({
