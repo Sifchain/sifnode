@@ -453,7 +453,7 @@ echo '      sssssssssss    iiiiiiiifffffffff            cccccccccccccccchhhhhhh 
     task :scan_by_path, [:image, :image_tag, :path] do |t, args|
       cluster_automation = %Q{
         set +x
-        curl -s https://ci-tools.anchore.io/inline_scan-latest | bash -s -- -f -r -d #{args[:path]}/Dockerfile -p "#{args[:image]}:#{args[:image_tag]}"
+        curl -s https://ci-tools.anchore.io/inline_scan-latest | bash -s -- -f -d #{args[:path]}/Dockerfile -p "#{args[:image]}:#{args[:image_tag]}"
       }
       system(cluster_automation) or exit 1
     end
