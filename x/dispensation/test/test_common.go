@@ -1,8 +1,6 @@
 package test
 
 import (
-	"bytes"
-	"fmt"
 	"strconv"
 
 	sifapp "github.com/Sifchain/sifnode/app"
@@ -21,73 +19,6 @@ func CreateTestApp(isCheckTx bool) (*sifapp.SifchainApp, sdk.Context) {
 	app.BankKeeper.SetSupply(ctx, types.NewSupply(sdk.Coins{}))
 	_ = sifapp.AddTestAddrs(app, ctx, 6, initTokens)
 	return app, ctx
-}
-
-func GenerateInputList(rowanamount string) []types.Input {
-	addressList := []string{"A58856F0FD53BF058B4909A21AEC019107BA6", "A58856F0FD53BF058B4909A21AEC019107BA7"}
-	accAddrList := GenerateAddressList(addressList)
-	rowan, ok := sdk.NewIntFromString(rowanamount)
-	if !ok {
-		panic(fmt.Sprintf("Err in getting amount : %s", rowanamount))
-	}
-	rowanAmount := sdk.Coins{sdk.NewCoin("rowan", rowan)}
-	res := make([]types.Input, len(accAddrList))
-	for _, address := range accAddrList {
-		in := types.NewInput(address, rowanAmount)
-		res = append(res, in)
-	}
-	return res
-}
-
-func GenerateOutputList(rowanamount string) []types.Output {
-	addressList := []string{"A58856F0FD53BF058B4909A21AEC019107BA3", "A58856F0FD53BF058B4909A21AEC019107BA4", "A58856F0FD53BF058B4909A21AEC019107BA5"}
-	accAddrList := GenerateAddressList(addressList)
-
-	rowan, ok := sdk.NewIntFromString(rowanamount)
-	if !ok {
-		panic(fmt.Sprintf("Err in getting amount : %s", rowanamount))
-	}
-
-	rowanAmount := sdk.Coins{sdk.NewCoin("rowan", rowan)}
-	res := make([]types.Output, len(accAddrList))
-
-	for index, address := range accAddrList {
-		out := types.NewOutput(address, rowanAmount)
-		res[index] = out
-	}
-	return res
-}
-
-func GenerateAddressList(addressList []string) []sdk.AccAddress {
-	acclist := make([]sdk.AccAddress, len(addressList))
-	for index, key := range addressList {
-		var buffer bytes.Buffer
-		buffer.WriteString(key)
-		buffer.WriteString(strconv.Itoa(100))
-		res, _ := sdk.AccAddressFromHex(buffer.String())
-		bech := res.String()
-		addr := buffer.String()
-		res, err := sdk.AccAddressFromHex(addr)
-
-		if err != nil {
-			panic(err)
-		}
-
-		bechexpected := res.String()
-		if bech != bechexpected {
-			panic("Bech encoding doesn't match reference")
-		}
-
-		bechres, err := sdk.AccAddressFromBech32(bech)
-		if err != nil {
-			panic(err)
-		}
-		if !bytes.Equal(bechres, res) {
-			panic("Bech decode and hex decode don't match")
-		}
-		acclist[index] = res
-	}
-	return acclist
 }
 
 func CreatOutputList(count int, rowanAmount string) []types.Output {

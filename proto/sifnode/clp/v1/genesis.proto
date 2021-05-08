@@ -3,6 +3,7 @@ package sifnode.clp.v1;
 
 import "gogoproto/gogo.proto";
 
+
 option go_package = "github.com/sifchain/sifnode/x/clp/types";
 
 import "sifnode/clp/v1/params.proto";
@@ -17,3 +18,4 @@ message GenesisState {
   repeated sifnode.clp.v1.Pool pool_list = 3;
   repeated sifnode.clp.v1.LiquidityProvider liquidity_providers = 4;
 }
+

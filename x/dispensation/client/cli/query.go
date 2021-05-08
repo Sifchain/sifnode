@@ -20,9 +20,7 @@ func GetQueryCmd(queryRoute string) *cobra.Command {
 	dispensationQueryCmd.AddCommand(
 		GetCmdDistributions(queryRoute),
 		GetCmdDistributionRecordForRecipient(queryRoute),
-		GetCmdDistributionRecordForDistNameAll(queryRoute),
-		GetCmdDistributionRecordForDistNamePending(queryRoute),
-		GetCmdDistributionRecordForDistNameCompleted(queryRoute),
+		GetCmdDistributionRecordForDistName(queryRoute),
 	)
 	return dispensationQueryCmd
 }
@@ -85,79 +83,20 @@ func GetCmdDistributionRecordForRecipient(queryRoute string) *cobra.Command {
 	}
 }
 
-//GetCmdDistributionRecordForDistNameAll returns all records for a given distribution name
-func GetCmdDistributionRecordForDistNameAll(queryRoute string) *cobra.Command {
+//GetCmdDistributionRecordForDistName returns all records for a given distribution name
+func GetCmdDistributionRecordForDistName(queryRoute string) *cobra.Command {
 	return &cobra.Command{
-		Use:   "records-by-name-all [distribution name]",
+		Use:   "records-by-name [distribution name] [status]",
 		Short: "get a list of all distribution records ",
-		Args:  cobra.ExactArgs(1),
+		Args:  cobra.ExactArgs(2),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx, err := client.GetClientQueryContext(cmd)
 			if err != nil {
 				return err
 			}
 			name := args[0]
-			params := types.NewQueryRecordsByDistributionName(name, types.ClaimStatus_CLAIM_STATUS_UNSPECIFIED)
-			bz, err := clientCtx.LegacyAmino.MarshalJSON(params)
-			if err != nil {
-				return err
-			}
-			route := fmt.Sprintf("custom/%s/%s", queryRoute, types.QueryRecordsByDistrName)
-			res, height, err := clientCtx.QueryWithData(route, bz)
-			if err != nil {
-				return err
-			}
-			var drs types.DistributionRecords
-			types.ModuleCdc.MustUnmarshalJSON(res, &drs)
-			out := types.NewQueryRecordsByDistributionNameResponse(drs, height)
-			return clientCtx.PrintProto(&out)
-		},
-	}
-}
-
-//GetCmdDistributionRecordForDistNamePending returns all pending records for a given distribution name
-func GetCmdDistributionRecordForDistNamePending(queryRoute string) *cobra.Command {
-	return &cobra.Command{
-		Use:   "records-by-name-pending [distribution name]",
-		Short: "get a list of all distribution records ",
-		Args:  cobra.ExactArgs(1),
-		RunE: func(cmd *cobra.Command, args []string) error {
-			clientCtx, err := client.GetClientQueryContext(cmd)
-			if err != nil {
-				return err
-			}
-			name := args[0]
-			params := types.NewQueryRecordsByDistributionName(name, types.ClaimStatus_CLAIM_STATUS_PENDING)
-			bz, err := clientCtx.LegacyAmino.MarshalJSON(params)
-			if err != nil {
-				return err
-			}
-			route := fmt.Sprintf("custom/%s/%s", queryRoute, types.QueryRecordsByDistrName)
-			res, height, err := clientCtx.QueryWithData(route, bz)
-			if err != nil {
-				return err
-			}
-			var drs types.DistributionRecords
-			types.ModuleCdc.MustUnmarshalJSON(res, &drs)
-			out := types.NewQueryRecordsByDistributionNameResponse(drs, height)
-			return clientCtx.PrintProto(&out)
-		},
-	}
-}
-
-//GetCmdDistributionRecordForDistNamePending returns all completed records for a given distribution name
-func GetCmdDistributionRecordForDistNameCompleted(queryRoute string) *cobra.Command {
-	return &cobra.Command{
-		Use:   "records-by-name-completed [distribution name]",
-		Short: "get a list of all distribution records ",
-		Args:  cobra.ExactArgs(1),
-		RunE: func(cmd *cobra.Command, args []string) error {
-			clientCtx, err := client.GetClientQueryContext(cmd)
-			if err != nil {
-				return err
-			}
-			name := args[0]
-			params := types.NewQueryRecordsByDistributionName(name, types.ClaimStatus_CLAIM_STATUS_COMPLETED)
+			status := types.GetDistributionStatus(args[1])
+			params := types.NewQueryRecordsByDistributionName(name, status)
 			bz, err := clientCtx.LegacyAmino.MarshalJSON(params)
 			if err != nil {
 				return err

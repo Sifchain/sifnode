@@ -6,12 +6,18 @@ import (
 
 // NewGenesisState creates a new GenesisState instance
 func NewGenesisState() GenesisState {
-	return GenesisState{}
+	return GenesisState{
+		DistributionRecords: nil,
+		Distributions:       nil,
+	}
 }
 
 // DefaultGenesisState gets the raw genesis raw message for testing
 func DefaultGenesisState() *GenesisState {
-	return &GenesisState{}
+	return &GenesisState{
+		DistributionRecords: nil,
+		Distributions:       nil,
+	}
 }
 
 func GetGenesisStateFromAppState(appState map[string]json.RawMessage) GenesisState {

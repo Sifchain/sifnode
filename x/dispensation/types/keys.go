@@ -17,18 +17,27 @@ const (
 	RouterKey = ModuleName
 
 	// QuerierRoute to be used for querier msgs
-	QuerierRoute      = ModuleName
-	DefaultParamspace = ModuleName
+	QuerierRoute       = ModuleName
+	DefaultParamspace  = ModuleName
+	MaxRecordsPerBlock = 10
 )
 
 var (
-	DistributionRecordPrefix = []byte{0x00} // key for storing DistributionRecords
-	DistributionsPrefix      = []byte{0x01} // key for storing airdropRecords
+	DistributionRecordPrefixPending   = []byte{0x000} // key for storing DistributionRecords pending
+	DistributionRecordPrefixCompleted = []byte{0x011} // key for storing DistributionRecords completed
+	DistributionsPrefix               = []byte{0x01}  // key for storing Distributions
 )
 
-func GetDistributionRecordKey(name string, recipient string) []byte {
+func GetDistributionRecordKey(status DistributionStatus, name string, recipient string) []byte {
 	key := []byte(fmt.Sprintf("%s_%s", name, recipient))
-	return append(DistributionRecordPrefix, key...)
+	switch status {
+	case DistributionStatus_DISTRIBUTION_STATUS_PENDING:
+		return append(DistributionRecordPrefixPending, key...)
+	case DistributionStatus_DISTRIBUTION_STATUS_COMPLETED:
+		return append(DistributionRecordPrefixCompleted, key...)
+	default:
+		return append(DistributionRecordPrefixCompleted, key...)
+	}
 }
 func GetDistributionsKey(name string, distributionType DistributionType) []byte {
 	key := []byte(fmt.Sprintf("%s_%d", name, distributionType))

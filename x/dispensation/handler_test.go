@@ -29,6 +29,7 @@ func TestNewHandler(t *testing.T) {
 	require.NoError(t, err)
 	require.NotNil(t, res)
 
-	dr := keeper.GetRecordsForNameAll(ctx, "AR1")
-	assert.Len(t, dr.DistributionRecords, recipients)
+	dr := append(keeper.GetRecordsForName(ctx, "AR1", types.DistributionStatus_DISTRIBUTION_STATUS_PENDING).DistributionRecords,
+		keeper.GetRecordsForName(ctx, "AR1", types.DistributionStatus_DISTRIBUTION_STATUS_COMPLETED).DistributionRecords...)
+	assert.Len(t, dr, recipients)
 }

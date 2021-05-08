@@ -11,9 +11,9 @@ import (
 	abci "github.com/tendermint/tendermint/abci/types"
 
 	"github.com/Sifchain/sifnode/app"
+	dispensationkeeper "github.com/Sifchain/sifnode/x/dispensation/keeper"
 	"github.com/Sifchain/sifnode/x/dispensation/test"
 	"github.com/Sifchain/sifnode/x/dispensation/types"
-	dispensationkeeper "github.com/Sifchain/sifnode/x/dispensation/keeper"
 )
 
 func GenerateQueryData(app *app.SifchainApp, ctx sdk.Context, name string, outList []bank.Output) {
@@ -25,7 +25,7 @@ func GenerateQueryData(app *app.SifchainApp, ctx sdk.Context, name string, outLi
 	}
 
 	for _, rec := range outList {
-		record := types.NewDistributionRecord(name, rec.Address, rec.Coins, ctx.BlockHeight(), int64(-1))
+		record := types.NewDistributionRecord(types.DistributionStatus_DISTRIBUTION_STATUS_PENDING, name, rec.Address, rec.Coins, ctx.BlockHeight(), int64(-1))
 		_ = keeper.SetDistributionRecord(ctx, record)
 	}
 
@@ -34,13 +34,13 @@ func GenerateQueryData(app *app.SifchainApp, ctx sdk.Context, name string, outLi
 func TestQueryRecordsName(t *testing.T) {
 	sifapp, ctx := test.CreateTestApp(false)
 	name := uuid.New().String()
-	outList := test.GenerateOutputList("1000000000")
+	outList := test.CreatOutputList(3, "1000000000")
 	GenerateQueryData(sifapp, ctx, name, outList)
 	keeper := sifapp.DispensationKeeper
 	querier := dispensationkeeper.NewLegacyQuerier(keeper)
 	queryRecName := types.QueryRecordsByDistributionNameRequest{
 		DistributionName: name,
-		Status: types.ClaimStatus_CLAIM_STATUS_UNSPECIFIED,
+		Status:           types.DistributionStatus_DISTRIBUTION_STATUS_UNSPECIFIED,
 	}
 	query := abci.RequestQuery{
 		Path: "",
@@ -61,7 +61,7 @@ func TestQueryRecordsName(t *testing.T) {
 func TestQueryRecordsAddr(t *testing.T) {
 	sifapp, ctx := test.CreateTestApp(false)
 	name := uuid.New().String()
-	outList := test.GenerateOutputList("1000000000")
+	outList := test.CreatOutputList(3, "1000000000")
 	GenerateQueryData(sifapp, ctx, name, outList)
 	keeper := sifapp.DispensationKeeper
 	querier := dispensationkeeper.NewLegacyQuerier(keeper)
@@ -87,7 +87,7 @@ func TestQueryRecordsAddr(t *testing.T) {
 func TestQueryAllDistributions(t *testing.T) {
 	sifapp, ctx := test.CreateTestApp(false)
 	name := uuid.New().String()
-	outList := test.GenerateOutputList("1000000000")
+	outList := test.CreatOutputList(3, "1000000000")
 	GenerateQueryData(sifapp, ctx, name, outList)
 	keeper := sifapp.DispensationKeeper
 	querier := dispensationkeeper.NewLegacyQuerier(keeper)
