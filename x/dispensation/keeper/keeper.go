@@ -48,11 +48,3 @@ func (k Keeper) Exists(ctx sdk.Context, key []byte) bool {
 	store := ctx.KVStore(k.storeKey)
 	return store.Has(key)
 }
-
-func (k Keeper) SendCoins(ctx sdk.Context, from sdk.AccAddress, to sdk.AccAddress, coins sdk.Coins) error {
-	return k.bankKeeper.SendCoins(ctx, from, to, coins)
-}
-
-func (k Keeper) HasCoins(ctx sdk.Context, user sdk.AccAddress, coins sdk.Coins) bool {
-	return k.bankKeeper.HasCoins(ctx, user, coins)
-}
