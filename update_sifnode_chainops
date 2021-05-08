@@ -69,6 +69,7 @@ echo "mnemonic=$mnemonic"
 echo "MONIKER=$MONIKER"
 echo "APP_NAMESPACE=$APP_NAMESPACE"
 export app_region=${APP_REGION}
+export app_env=${APP_ENV}
 
 echo "Pull Kubernetes Config"
 echo "======================"
