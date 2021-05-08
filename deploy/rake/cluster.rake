@@ -754,6 +754,36 @@ metadata:
   desc "Check kubernetes pod for specific log entry to ensure valid deployment."
   namespace :kubernetes do
     desc "Check kubernetes pod for specific log entry to ensure valid deployment."
+    task :log_validate_search_bycontainer, [:APP_NAME, :APP_NAMESPACE, :SEARCH_PATH, :CONTAINER] do |t, args|
+        ENV["APP_NAMESPACE"] = "#{args[:APP_NAMESPACE]}"
+        ENV["APP_NAME"] = "#{args[:APP_NAME]}"
+        was_successful = false
+        max_loops = 20
+        loop_count = 0
+        until was_successful == true
+            pod_name = `kubectl get pods --kubeconfig=./kubeconfig -n #{ENV["APP_NAMESPACE"]} | grep #{ENV["APP_NAME"]} | cut -d ' ' -f 1`.strip
+            puts "looking up logs fo #{pod_name}"
+            pod_logs = `kubectl logs #{pod_name} -c #{args[:CONTAINER]} --kubeconfig=./kubeconfig -n #{ENV["APP_NAMESPACE"]}`
+            if pod_logs.include?(args[:SEARCH_PATH])
+                #:SEARCH_PATH "new transaction witnessed in sifchain client."
+                puts "Log Search Completed Container Running and Producing Valid Logs"
+                was_successful = true
+                break
+            end
+            loop_count += 1
+            puts "On Loop #{loop_count} of #{max_loops}"
+            if loop_count >= max_loops
+                puts "Reached Max Loops"
+                break
+            end
+            sleep(60)
+        end
+    end
+  end
+
+  desc "Check kubernetes pod for specific log entry to ensure valid deployment."
+  namespace :kubernetes do
+    desc "Check kubernetes pod for specific log entry to ensure valid deployment."
     task :log_validate, [:APP_NAME, :APP_NAMESPACE, :SEARCH_PATH] do |t, args|
         ENV["APP_NAMESPACE"] = "#{args[:APP_NAMESPACE]}"
         ENV["APP_NAME"] = "#{args[:APP_NAME]}"
