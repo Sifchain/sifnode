@@ -100,7 +100,7 @@ export function getBlockExplorerUrl(chainId: string, txHash?: TxHash): string {
 export function getCryptoeconomicsUrl(chainId: string): string {
   switch (chainId) {
     case "sifchain":
-      return `https://api-cryptoeconomics-devnet.sifchain.finance/api`;
+      return `https://api-cryptoeconomics.sifchain.finance/api`;
     case "sifchain-testnet":
       return `https://api-cryptoeconomics-testnet.sifchain.finance/api`;
     // case "sifchain-local":
