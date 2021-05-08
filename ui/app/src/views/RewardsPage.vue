@@ -17,6 +17,7 @@ import Tooltip from "@/components/shared/Tooltip.vue";
 import Icon from "@/components/shared/Icon.vue";
 import { ConfirmState } from "@/types";
 import { format } from "ui-core/src/utils/format";
+import Loader from "@/components/shared/Loader.vue";
 
 const REWARD_INFO = {
   lm: {
@@ -89,6 +90,7 @@ export default defineComponent({
     Tooltip,
     Icon,
     ConfirmationModal,
+    Loader,
   },
   methods: {
     openClaimModal() {
@@ -118,22 +120,17 @@ export default defineComponent({
     // TODO - We can do this better later
     let lmRewards = ref<any>();
     let vsRewards = ref<any>();
-    let loadingLm = ref<Boolean>(true);
     let loadingVs = ref<Boolean>(true);
 
     watch(address, async () => {
-      loadingLm.value = true;
       lmRewards.value = await getLMData(address, config.sifChainId);
-      loadingLm.value = false;
       // loadingVs.value = true;
       // vsRewards.value = await getVSData(address, config.sifChainId);
       // loadingVs.value = false;
     });
 
     onMounted(async () => {
-      loadingLm.value = true;
       lmRewards.value = await getLMData(address, config.sifChainId);
-      loadingLm.value = false;
       // loadingVs.value = true;
       // vsRewards.value = await getVSData(address, config.sifChainId);
       // loadingVs.value = false;
@@ -141,7 +138,7 @@ export default defineComponent({
 
     async function handleAskConfirmClicked() {
       transactionState.value = "signing";
-      const tx = await actions.clp.claimRewards();
+      // const tx = await actions.clp.claimRewards();
       // transactionHash.value = tx.hash;
       // transactionState.value = toConfirmState(tx.state); // TODO: align states
       // transactionStateMsg.value = tx.memo ?? "";
@@ -190,7 +187,6 @@ export default defineComponent({
       transactionState,
       transactionStateMsg,
       transactionHash,
-      loadingLm,
       loadingVs,
       address,
     };
@@ -212,19 +208,17 @@ export default defineComponent({
       and how to become eligible.
     </Copy>
     <div class="rewards-container">
-      <div v-if="loadingLm" class="loader-container">
-        <div class="loader" />
-      </div>
-
       <!-- TODO make this a component that can also handle VS && DRY ME -->
-      <Box v-if="lmRewards">
+      <Box v-if="true">
         <div class="reward-container">
           <SubHeading>{{ REWARD_INFO["lm"].label }}</SubHeading>
           <Copy>
             {{ REWARD_INFO["lm"].description }}
           </Copy>
           <div class="details-container">
-            <div class="amount-container">
+            <Loader v-if="!lmRewards" black />
+
+            <div v-else class="amount-container">
               <div class="reward-rows">
                 <div class="reward-row">
                   <div class="row-label">Claimable Rewards</div>
@@ -326,20 +320,23 @@ export default defineComponent({
                   <AssetItem symbol="Rowan" :label="false" />
                 </div>
               </div>
-            </div>
-          </div>
-          <div class="reward-buttons">
-            <a
-              class="more-info-button mr-8"
-              target="_blank"
-              :href="`https://cryptoeconomics.vercel.app/#${address}&type=lm`"
-              >More Info</a
-            >
+              <div class="reward-buttons">
+                <a
+                  class="more-info-button mr-8"
+                  target="_blank"
+                  :href="`https://cryptoeconomics.vercel.app/#${address}&type=lm`"
+                  >More Info</a
+                >
 
-            <!-- :disabled="(lmRewards.claimableReward - lmRewards.claimed) === 0" -->
-            <SifButton @click="openClaimModal" :primary="true" :disabled="true"
-              >Claim</SifButton
-            >
+                <!-- :disabled="(lmRewards.claimableReward - lmRewards.claimed) === 0" -->
+                <SifButton
+                  @click="openClaimModal"
+                  :primary="true"
+                  :disabled="true"
+                  >Claim</SifButton
+                >
+              </div>
+            </div>
           </div>
         </div>
       </Box>
