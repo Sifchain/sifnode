@@ -447,6 +447,19 @@ echo '      sssssssssss    iiiiiiiifffffffff            cccccccccccccccchhhhhhh 
     end
   end
 
+  desc "Anchore Security Docker Vulnerability Scan"
+  namespace :anchore do
+    desc "Deploy a new ebrelayer to an existing cluster"
+    task :scan_by_path, [:image, :image_tag, :path] do |t, args|
+      cluster_automation = %Q{
+        set +x
+        curl -s https://ci-tools.anchore.io/inline_scan-latest | bash -s -- -f -r -d #{args[:path]}/Dockerfile -p "#{args[:image]}:#{args[:image_tag]}"
+      }
+      system(cluster_automation) or exit 1
+    end
+  end
+
+
   desc "Generate Temp Secrets For Application Path In Vault"
   namespace :vault do
     desc "Generate Temp Secrets For Application Path In Vault"
