@@ -36,7 +36,7 @@ spec:
         image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
         imagePullPolicy: {{ .Values.image.pullPolicy }}
         command: ["/bin/sh"]
-        args: ["-c", "yarn server"]
+        args: ["-c", "source /vault/secrets/cryptoeconomics && yarn server"]
         ports:
           - name: http
             containerPort: 3000
