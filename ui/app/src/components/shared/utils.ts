@@ -96,3 +96,16 @@ export function getBlockExplorerUrl(chainId: string, txHash?: TxHash): string {
       return `https://blockexplorer-devnet.sifchain.finance/transactions/${txHash}`;
   }
 }
+
+export function getCryptoeconomicsUrl(chainId: string): string {
+  switch (chainId) {
+    case "sifchain":
+      return `https://api-cryptoeconomics-devnet.sifchain.finance/api`;
+    case "sifchain-testnet":
+      return `https://api-cryptoeconomics-testnet.sifchain.finance/api`;
+    // case "sifchain-local":
+    //   return `http://localhost:3000/api`; // sifnode/cryptoeconomics/js/server
+    default:
+      return `https://api-cryptoeconomics-devnet.sifchain.finance/api`;
+  }
+}
