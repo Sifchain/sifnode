@@ -11,9 +11,9 @@ import (
 
 //CreateAndDistributeDrops creates new drop Records . These records are then used to facilitate distribution
 // Each Recipient and DropName generate a unique Record
-func (k Keeper) CreateDrops(ctx sdk.Context, output []banktypes.Output, name string) error {
+func (k Keeper) CreateDrops(ctx sdk.Context, output []banktypes.Output, name string, distributionType types.DistributionType) error {
 	for _, receiver := range output {
-		distributionRecord := types.NewDistributionRecord(types.DistributionStatus_DISTRIBUTION_STATUS_PENDING, name, receiver.Address, receiver.Coins, ctx.BlockHeight(), -1)
+		distributionRecord := types.NewDistributionRecord(types.DistributionStatus_DISTRIBUTION_STATUS_PENDING, distributionType, name, receiver.Address, receiver.Coins, ctx.BlockHeight(), -1)
 		if k.ExistsDistributionRecord(ctx, name, receiver.Address, types.DistributionStatus_DISTRIBUTION_STATUS_PENDING) {
 			oldRecord, err := k.GetDistributionRecord(ctx, name, receiver.Address, types.DistributionStatus_DISTRIBUTION_STATUS_PENDING)
 			if err != nil {
@@ -25,6 +25,17 @@ func (k Keeper) CreateDrops(ctx sdk.Context, output []banktypes.Output, name str
 		err := k.SetDistributionRecord(ctx, distributionRecord)
 		if err != nil {
 			return errors.Wrapf(types.ErrFailedOutputs, "error setting distibution record  : %s", distributionRecord.String())
+		}
+		// Lock the user claim so that the user cannot delete the claim while the distribution is in progress.
+		// Claim will not exist if its not a LM/VS drop
+		// IF it is a LM/VS drop the associated claim must always exist .
+		// The users of this module need to make sure they are submitting the proper distribution type when distributing rewards
+		// The same user might be eligible for Airdrop/LM/VS rewards . Based on Distribution type submitted the appropriate claim will be locked.
+		if distributionType == types.DistributionType_DISTRIBUTION_TYPE_LIQUIDITY_MINING || distributionType == types.DistributionType_DISTRIBUTION_TYPE_VALIDATOR_SUBSIDY {
+			err := k.LockClaim(ctx, receiver.Address, distributionType)
+			if err != nil {
+				return errors.Wrap(err, fmt.Sprintf("Unable to verify associated claim for address : %s", receiver.Address))
+			}
 		}
 	}
 	return nil
@@ -45,13 +56,20 @@ func (k Keeper) DistributeDrops(ctx sdk.Context, height int64) error {
 		}
 		record.DistributionStatus = types.DistributionStatus_DISTRIBUTION_STATUS_COMPLETED
 		record.DistributionCompletedHeight = height
+		// Setting to completed prefix
 		err = k.SetDistributionRecord(ctx, *record)
 		if err != nil {
 			return errors.Wrapf(types.ErrDistribution, "error setting distibution record  : %s", record.String())
 		}
+		// Deleting from Pending prefix
 		err = k.DeleteDistributionRecord(ctx, record.DistributionName, record.RecipientAddress, types.DistributionStatus_DISTRIBUTION_STATUS_PENDING) // Delete the record in the pending prefix so the iteration is cheaper.
 		if err != nil {
 			return errors.Wrapf(types.ErrDistribution, "error deleting pending distibution record  : %s", record.String())
+		}
+		// Use record details to delete associated claim
+		// The claim should always be locked at this point in time .
+		if record.DistributionType == types.DistributionType_DISTRIBUTION_TYPE_LIQUIDITY_MINING || record.DistributionType == types.DistributionType_DISTRIBUTION_TYPE_VALIDATOR_SUBSIDY {
+			k.DeleteClaim(ctx, record.RecipientAddress, record.DistributionType)
 		}
 		ctx.Logger().Info(fmt.Sprintf("Distributed to : %s | At height : %d | Amount :%s \n", record.RecipientAddress, height, record.Coins.String()))
 	}

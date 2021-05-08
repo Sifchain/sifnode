@@ -19,10 +19,27 @@ func NewLegacyQuerier(keeper Keeper) sdk.Querier {
 			return queryDistributionRecordsForName(ctx, req, querier)
 		case types.QueryRecordsByRecipient:
 			return queryDistributionRecordsForRecipient(ctx, req, querier)
+		case types.QueryClaimsByType:
+			return queryClaimsByType(ctx, req, querier)
 		default:
 			return nil, sdkerrors.Wrap(sdkerrors.ErrUnknownRequest, "unknown dispensation query endpoint")
 		}
 	}
+}
+
+func queryClaimsByType(ctx sdk.Context, req abci.RequestQuery, querier Querier) ([]byte, error) {
+	var params types.QueryClaimsByTypeRequest
+	err := types.ModuleCdc.UnmarshalJSON(req.Data, &params)
+	if err != nil {
+		return nil, sdkerrors.Wrap(sdkerrors.ErrJSONUnmarshal, err.Error())
+	}
+	list, _ := querier.ClaimsByType(sdk.WrapSDKContext(ctx), &params)
+
+	res, err := types.ModuleCdc.MarshalJSON(list)
+	if err != nil {
+		return nil, sdkerrors.Wrap(sdkerrors.ErrJSONMarshal, err.Error())
+	}
+	return res, nil
 }
 
 func queryDistributionRecordsForName(ctx sdk.Context, req abci.RequestQuery, querier Querier) ([]byte, error) {

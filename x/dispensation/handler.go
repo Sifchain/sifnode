@@ -8,7 +8,7 @@ import (
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
 
-// NewHandler creates an sdk.Handler for all the clp type messages
+// NewHandler creates an sdk.Handler for all the dispensation type messages
 func NewHandler(k Keeper) sdk.Handler {
 	msgServer := keeper.NewMsgServerImpl(k)
 
@@ -18,6 +18,10 @@ func NewHandler(k Keeper) sdk.Handler {
 		case *types.MsgCreateDistribution:
 			res, err := msgServer.CreateDistribution(sdk.WrapSDKContext(ctx), msg)
 			return sdk.WrapServiceResult(ctx, res, err)
+		case *types.MsgCreateUserClaim:
+			res, err := msgServer.CreateClaim(sdk.WrapSDKContext(ctx), msg)
+			return sdk.WrapServiceResult(ctx, res, err)
+
 		default:
 			errMsg := fmt.Sprintf("unrecognized %s message type: %T", ModuleName, msg)
 			return nil, sdkerrors.Wrap(sdkerrors.ErrUnknownRequest, errMsg)

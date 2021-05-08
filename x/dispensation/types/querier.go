@@ -4,6 +4,7 @@ const (
 	QueryAllDistributions   = "distributions"
 	QueryRecordsByDistrName = "records_by_name"
 	QueryRecordsByRecipient = "records_by_recipient"
+	QueryClaimsByType       = "claims_by_type"
 )
 
 func NewQueryRecordsByDistributionName(distributionName string, status DistributionStatus) QueryRecordsByDistributionNameRequest {

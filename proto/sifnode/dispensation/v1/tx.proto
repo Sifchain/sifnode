@@ -9,6 +9,8 @@ option go_package = "github.com/Sifchain/sifnode/x/dispensation/types";
 service Msg {
   rpc CreateDistribution(MsgCreateDistribution)
       returns (MsgCreateDistributionResponse);
+  rpc CreateClaim(MsgCreateUserClaim)
+      returns (MsgCreateClaimResponse);
 }
 
 message MsgCreateDistribution {
@@ -25,3 +27,9 @@ message MsgCreateDistribution {
 }
 
 message MsgCreateDistributionResponse {}
+message MsgCreateClaimResponse {}
+
+message MsgCreateUserClaim {
+  string signer = 1;
+  DistributionType user_claim_type = 2;
+}

@@ -2,8 +2,10 @@ package test
 
 import (
 	"strconv"
+	"time"
 
 	sifapp "github.com/Sifchain/sifnode/app"
+	dispensation "github.com/Sifchain/sifnode/x/dispensation/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	"github.com/cosmos/cosmos-sdk/x/bank/types"
@@ -47,6 +49,16 @@ func CreatInputList(count int, rowanAmount string) []types.Input {
 		address := sdk.AccAddress(crypto.AddressHash([]byte("Output1" + strconv.Itoa(i))))
 		out := types.NewInput(address, coin)
 		list[i] = out
+	}
+	return list
+}
+
+func CreateClaimsList(count int, claimType dispensation.DistributionType) []dispensation.UserClaim {
+	list := make([]dispensation.UserClaim, count)
+	for i := 0; i < count; i++ {
+		address := sdk.AccAddress(crypto.AddressHash([]byte("User" + strconv.Itoa(i))))
+		claim := dispensation.NewUserClaim(address.String(), claimType, time.Now().String())
+		list[i] = claim
 	}
 	return list
 }

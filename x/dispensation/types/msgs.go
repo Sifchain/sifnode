@@ -24,7 +24,7 @@ func (m MsgCreateDistribution) Route() string {
 }
 
 func (m MsgCreateDistribution) Type() string {
-	return "createDistribution"
+	return MsgTypeCreateDistribution
 }
 
 func (m MsgCreateDistribution) ValidateBasic() error {
@@ -45,6 +45,12 @@ func (m MsgCreateDistribution) ValidateBasic() error {
 	return nil
 }
 
+func NewMsgCreateUserClaim(signer sdk.AccAddress, claimType DistributionType) MsgCreateUserClaim {
+	return MsgCreateUserClaim{
+		Signer:        signer.String(),
+		UserClaimType: claimType,
+	}
+}
 func (m MsgCreateDistribution) GetSignBytes() []byte {
 	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(&m))
 }
@@ -55,5 +61,33 @@ func (m MsgCreateDistribution) GetSigners() []sdk.AccAddress {
 		panic(err)
 	}
 
+	return []sdk.AccAddress{addr}
+}
+
+func (m MsgCreateUserClaim) Route() string {
+	return RouterKey
+}
+
+func (m MsgCreateUserClaim) Type() string {
+	return MsgTypeCreateClaim
+}
+
+func (m MsgCreateUserClaim) ValidateBasic() error {
+	_, err := sdk.AccAddressFromBech32(m.Signer)
+	if err != nil {
+		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, m.Signer)
+	}
+	return nil
+}
+
+func (m MsgCreateUserClaim) GetSignBytes() []byte {
+	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(&m))
+}
+
+func (m MsgCreateUserClaim) GetSigners() []sdk.AccAddress {
+	addr, err := sdk.AccAddressFromBech32(m.Signer)
+	if err != nil {
+		panic(err)
+	}
 	return []sdk.AccAddress{addr}
 }

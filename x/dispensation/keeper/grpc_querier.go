@@ -2,7 +2,6 @@ package keeper
 
 import (
 	"context"
-
 	"github.com/Sifchain/sifnode/x/dispensation/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
@@ -26,6 +25,15 @@ func (q Querier) AllDistributions(ctx context.Context,
 
 	return &types.QueryAllDistributionsResponse{
 		Distributions: list.Distributions,
+	}, nil
+}
+
+func (q Querier) ClaimsByType(ctx context.Context,
+	request *types.QueryClaimsByTypeRequest) (*types.QueryClaimsResponse, error) {
+
+	claims := q.keeper.GetClaimsByType(sdk.UnwrapSDKContext(ctx), request.UserClaimType)
+	return &types.QueryClaimsResponse{
+		Claims: claims.UserClaims,
 	}, nil
 }
 
