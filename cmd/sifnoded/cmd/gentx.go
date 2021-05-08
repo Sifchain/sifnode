@@ -3,6 +3,7 @@ package cmd
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/cosmos/cosmos-sdk/codec"
 	"log"
 
 	"github.com/cosmos/cosmos-sdk/client"
@@ -30,7 +31,8 @@ the account address or key name. If a key name is given, the address will be loo
 
 			serverCtx := server.GetServerContextFromCmd(cmd)
 			config := serverCtx.Config
-
+			depCdc := clientCtx.JSONMarshaler
+			cdc := depCdc.(codec.Marshaler)
 			config.SetRoot(clientCtx.HomeDir)
 
 			addr, err := sdk.ValAddressFromBech32(args[0])
@@ -44,7 +46,7 @@ the account address or key name. If a key name is given, the address will be loo
 				return fmt.Errorf("failed to unmarshal genesis state: %w", err)
 			}
 
-			oracleGenState := oracletypes.GetGenesisStateFromAppState(appState)
+			oracleGenState := oracletypes.GetGenesisStateFromAppState(cdc, appState)
 
 			for _, item := range oracleGenState.AddressWhitelist {
 				if item == addr.String() {

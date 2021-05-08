@@ -2,6 +2,7 @@ package types
 
 import (
 	"encoding/json"
+	"github.com/cosmos/cosmos-sdk/codec"
 )
 
 // NewGenesisState creates a new GenesisState instance
@@ -21,10 +22,10 @@ func DefaultGenesisState() *GenesisState {
 }
 
 // GetGenesisStateFromAppState gets the GenesisState from raw message
-func GetGenesisStateFromAppState(appState map[string]json.RawMessage) GenesisState {
+func GetGenesisStateFromAppState(marshaler codec.JSONMarshaler, appState map[string]json.RawMessage) GenesisState {
 	var genesisState GenesisState
 	if appState[ModuleName] != nil {
-		_, err := ModuleCdc.MarshalJSON(&genesisState)
+		err := marshaler.UnmarshalJSON(appState[ModuleName], &genesisState)
 		if err != nil {
 			panic("Failed to get genesis state from app state")
 		}
