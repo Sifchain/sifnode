@@ -2,6 +2,12 @@ package main
 
 import (
 	"fmt"
+	"log"
+	"net/url"
+	"os"
+	"strings"
+	"sync"
+
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/tx"
 	"github.com/cosmos/cosmos-sdk/server"
@@ -10,11 +16,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/auth/types"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"log"
-	"net/url"
-	"os"
-	"strings"
-	"sync"
 
 	sifapp "github.com/Sifchain/sifnode/app"
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/contract"
@@ -61,7 +62,9 @@ func buildRootCmd() *cobra.Command {
 		Use:   "ebrelayer",
 		Short: "Streams live events from Ethereum and Cosmos and relays event information to the opposite chain",
 		PersistentPreRunE: func(cmd *cobra.Command, _ []string) error {
-			cmd.Flags().Set(flags.FlagSkipConfirmation, "true")
+			if err := cmd.Flags().Set(flags.FlagSkipConfirmation, "true"); err != nil {
+				return err
+			}
 
 			if err := client.SetCmdClientContextHandler(initClientCtx, cmd); err != nil {
 				return err

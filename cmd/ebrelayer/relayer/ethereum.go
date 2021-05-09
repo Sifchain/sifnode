@@ -6,7 +6,6 @@ import (
 	"context"
 	"crypto/ecdsa"
 	"fmt"
-	"github.com/cosmos/cosmos-sdk/client/tx"
 	"log"
 	"math/big"
 	"os"
@@ -14,6 +13,8 @@ import (
 	"sync"
 	"syscall"
 	"time"
+
+	"github.com/cosmos/cosmos-sdk/client/tx"
 
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/crypto/hd"
@@ -23,7 +24,6 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
 	ctypes "github.com/ethereum/go-ethereum/core/types"
-	"github.com/sethvargo/go-password/password"
 	"github.com/syndtr/goleveldb/leveldb"
 	tmclient "github.com/tendermint/tendermint/rpc/client/http"
 	"go.uber.org/zap"
@@ -86,24 +86,24 @@ func NewEthereumSub(cliCtx client.Context, rpcURL string, validatorMoniker, chai
 	}, nil
 }
 
-func buildKeyringInfoForAccount(validatorMoniker string, mnemonic string) (keyring.Info, error) {
-	_, err := password.Generate(32, 5, 0, false, false)
+// func buildKeyringInfoForAccount(validatorMoniker string, mnemonic string) (keyring.Info, error) {
+// 	_, err := password.Generate(32, 5, 0, false, false)
 
-	if err != nil {
-		return nil, err
-	}
+// 	if err != nil {
+// 		return nil, err
+// 	}
 
-	kr := keyring.NewInMemory()
-	hdpath := *hd.NewFundraiserParams(0, sdk.CoinType, 0)
+// 	kr := keyring.NewInMemory()
+// 	hdpath := *hd.NewFundraiserParams(0, sdk.CoinType, 0)
 
-	result, err := kr.NewAccount(validatorMoniker, mnemonic, "", hdpath.String(), hd.Secp256k1)
+// 	result, err := kr.NewAccount(validatorMoniker, mnemonic, "", hdpath.String(), hd.Secp256k1)
 
-	if err != nil {
-		return nil, err
-	}
+// 	if err != nil {
+// 		return nil, err
+// 	}
 
-	return result, err
-}
+// 	return result, err
+// }
 
 func AddToKeyringWithMnemonic(kr keyring.Keyring, keyName string, mnemonic string) (keyring.Info, error) {
 	hdpath := *hd.NewFundraiserParams(0, sdk.CoinType, 0)
@@ -460,7 +460,6 @@ func (sub EthereumSub) logToEvent(clientChainID *big.Int, contractAddress common
 	return event, true, nil
 }
 
-
 func GetValAddressFromKeyring(k keyring.Keyring, keyname string) (sdk.ValAddress, error) {
 	i, err := k.Key(keyname)
 	if err != nil {
@@ -468,7 +467,6 @@ func GetValAddressFromKeyring(k keyring.Keyring, keyname string) (sdk.ValAddress
 	}
 	return sdk.ValAddress(i.GetAddress()), nil
 }
-
 
 func GetAccAddressFromKeyring(k keyring.Keyring, keyname string) (sdk.AccAddress, error) {
 	i, err := k.Key(keyname)
@@ -478,16 +476,15 @@ func GetAccAddressFromKeyring(k keyring.Keyring, keyname string) (sdk.AccAddress
 	return i.GetAddress(), nil
 }
 
-
 // handleEthereumEvent unpacks an Ethereum event, converts it to a ProphecyClaim, and relays a tx to Cosmos
 func (sub EthereumSub) handleEthereumEvent(txFactory tx.Factory, events []types.EthereumEvent) error {
 	var prophecyClaims []*ethbridge.EthBridgeClaim
-	valaddr, err := GetAccAddressFromKeyring(txFactory.Keybase(), sub.ValidatorName)
+	accAddr, err := GetAccAddressFromKeyring(txFactory.Keybase(), sub.ValidatorName)
 	if err != nil {
 		return err
 	}
 	for _, event := range events {
-		prophecyClaim, err := txs.EthereumEventToEthBridgeClaim(valaddr, event)
+		prophecyClaim, err := txs.EthereumEventToEthBridgeClaim(sdk.ValAddress(accAddr), event)
 		if err != nil {
 			sub.SugaredLogger.Errorw(".",
 				errorMessageKey, err.Error())
