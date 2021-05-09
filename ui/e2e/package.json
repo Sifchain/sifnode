@@ -10,7 +10,11 @@
     "@babel/preset-typescript": "^7.12.1",
     "axios": "^0.21.1",
     "babel-jest": "^26.6.3",
+    "eslint": "^7.25.0",
+    "eslint-config-airbnb-base": "^14.2.1",
+    "eslint-plugin-jest-playwright": "^0.3.2",
     "jest": "^26.6.3",
+    "jest-playwright-preset": "^1.5.2",
     "node-stream-zip": "^1.13.2",
     "playwright": "^1.9.1",
     "regenerator-runtime": "^0.13.7",
@@ -21,14 +25,6 @@
     "global": "^4.4.0",
     "isomorphic-fetch": "^3.0.0",
     "tree-kill": "^1.2.2"
-  },
-  "jest": {
-    "testTimeout": 1000000,
-    "collectCoverage": true,
-    "bail": true,
-    "setupFilesAfterEnv": [
-      "expect-playwright"
-    ]
   },
   "scripts": {
     "test": "jest --runInBand"

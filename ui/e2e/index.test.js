@@ -11,57 +11,64 @@
  * - ethereumBlockchainAccount - class should represent ethereumBlockchain
  */
 require("@babel/polyfill");
-const path = require("path");
-const fs = require("fs");
-const { chromium } = require("playwright");
+// const path = require("path");
+// const fs = require("fs");
+// const { chromium } = require("playwright");
 
 // configs
 const { DEX_TARGET, MM_CONFIG, KEPLR_CONFIG } = require("./config.js");
 const keplrConfig = require("../core/src/config.localnet.json");
 
 // extension
-const { MetaMask, connectMmAccount } = require("./metamask.js");
+const { MetaMaskPage } = require("./pages/MetaMaskPage");
 const { importKeplrAccount, connectKeplrAccount } = require("./keplr");
 
 // services
 const { getSifchainBalances } = require("./sifchain.js");
 const { getEthBalance, advanceEthBlocks } = require("./ethereum.js");
-const { extractFile, getExtensionPage } = require("./utils");
+const {
+  extractFile,
+  getExtensionPage,
+  extractExtensionPackage,
+} = require("./utils");
 const { useStack } = require("../test/stack");
 
 async function getInputValue(page, selector) {
   return await page.evaluate((el) => el.value, await page.$(selector));
 }
 
-let browserContext;
+// let browserContext;
 let dexPage;
 
 useStack("every-test");
 
 beforeAll(async () => {
   // extract extension zips
-  await extractExtensionPackages();
-  const pathToKeplrExtension = path.join(__dirname, KEPLR_CONFIG.path);
-  const pathToMmExtension = path.join(__dirname, MM_CONFIG.path);
-  const userDataDir = path.join(__dirname, "./playwright");
-  // need to rm userDataDir or else will store extension state
-  if (fs.existsSync(userDataDir)) {
-    fs.rmdirSync(userDataDir, { recursive: true });
-  }
+  // await extractExtensionPackages();
+  // await extractExtensionPackage(MM_CONFIG.id)
+  // await extractExtensionPackage(KEPLR_CONFIG.id)
+  // const pathToKeplrExtension = path.join(__dirname, KEPLR_CONFIG.path);
+  // const pathToMmExtension = path.join(__dirname, MM_CONFIG.path);
+  // const userDataDir = path.join(__dirname, "./playwright");
+  // // need to rm userDataDir or else will store extension state
+  // if (fs.existsSync(userDataDir)) {
+  //   fs.rmdirSync(userDataDir, { recursive: true });
+  // }
 
-  browserContext = await chromium.launchPersistentContext(userDataDir, {
-    // headless required with extensions. xvfb used for ci/cd
-    headless: false,
-    args: [
-      `--disable-extensions-except=${pathToKeplrExtension},${pathToMmExtension}`,
-      `--load-extension=${pathToKeplrExtension},${pathToMmExtension}`,
-    ],
-    // devtools: true,
-  });
+  // const browserContext = await chromium.launchPersistentContext(userDataDir, {
+  //   // headless required with extensions. xvfb used for ci/cd
+  //   headless: false,
+  //   args: [
+  //     `--disable-extensions-except=${pathToKeplrExtension},${pathToMmExtension}`,
+  //     `--load-extension=${pathToKeplrExtension},${pathToMmExtension}`,
+  //   ],
+  //   // devtools: true,
+  // });
 
   // setup metamask
-  const MM = new MetaMask(browserContext, MM_CONFIG);
-  await MM.setup(browserContext);
+  // const metamaskPage = new MetaMaskPage(browserContext, MM_CONFIG);
+  const metamaskPage = new MetaMaskPage(MM_CONFIG);
+  await metamaskPage.setup();
 
   // setup keplr account
   const keplrPage = await browserContext.newPage();
@@ -72,16 +79,19 @@ beforeAll(async () => {
   await keplrPage.close();
 
   // goto dex page
-  dexPage = await browserContext.newPage();
+  // dexPage = await browserContext.newPage();
+  dexPage = await context.newPage();
   dexPage.setDefaultTimeout(60000);
   dexPage.waitForTimeout(4000); // wait a second before keplr is finished being setup
 
   await dexPage.goto(DEX_TARGET, { waitUntil: "domcontentloaded" });
 
   // Keplr will automatically connect and cause the add chain popup to come up
-  await connectKeplrAccount(dexPage, browserContext);
+  // await connectKeplrAccount(dexPage, browserContext);
+  await connectKeplrAccount(dexPage, context);
 
-  await connectMmAccount(dexPage, browserContext, MM_CONFIG.id);
+  // await metamaskPage.connectAccount(dexPage, browserContext, MM_CONFIG.id);
+  await metamaskPage.connectAccount(dexPage, context, MM_CONFIG.id);
 });
 
 afterAll(async () => {
@@ -89,7 +99,7 @@ afterAll(async () => {
 });
 
 beforeEach(async () => {
-  const page = await browserContext.newPage();
+  // const page = await browserContext.newPage();
 
   await page.goto(
     `chrome-extension://${MM_CONFIG.id}/home.html#settings/advanced`,
@@ -495,8 +505,8 @@ function prepareRowText(row) {
     .join(" ");
 }
 
-async function extractExtensionPackages() {
-  await extractFile(`downloads/${KEPLR_CONFIG.id}.zip`, "./extensions");
-  await extractFile(`downloads/${MM_CONFIG.id}.zip`, "./extensions");
-  return;
-}
+// async function extractExtensionPackages() {
+//   await extractFile(`downloads/${KEPLR_CONFIG.id}.zip`, "./extensions");
+//   await extractFile(`downloads/${MM_CONFIG.id}.zip`, "./extensions");
+//   return;
+// }
