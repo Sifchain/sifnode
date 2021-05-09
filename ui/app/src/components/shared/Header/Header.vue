@@ -19,7 +19,7 @@ export default defineComponent({
       Welcome to our BetaNet! Please be aware that while this has passed several
       public security audits, it is still in Beta. We encourage you to first
       understand how it works before transacting on it and exercise caution at
-      all times.
+      all times. This platform is not open to US users.
       <a
         target="_blank"
         href="https://docs.sifchain.finance/resources/betanet-launch"
