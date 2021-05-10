@@ -44,12 +44,12 @@ spec:
         env:
         livenessProbe:
           httpGet:
-            path: /api?key=users
+            path: /status
             port: 3000
           initialDelaySeconds: 30
         readinessProbe:
           httpGet:
-            path: /api?key=users
+            path: /status
             port: 3000
           initialDelaySeconds: 30
         resources:
