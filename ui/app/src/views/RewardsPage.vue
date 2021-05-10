@@ -289,8 +289,7 @@ export default defineComponent({
                             <span
                               v-if="lmRewards.nextRewardProjectedAPYOnTickets"
                             >
-                              Projected Fully Maturated APY (based on current
-                              holdings): <br />
+                              Projected Fully Maturated APY: <br />
                               <span class="tooltip-date">
                                 {{
                                   format(
@@ -330,7 +329,7 @@ export default defineComponent({
                 <a
                   class="more-info-button mr-8"
                   target="_blank"
-                  :href="`https://cryptoeconomics.vercel.app/#${address}&type=lm`"
+                  :href="`https://cryptoeconomics.sifchain.finance/#${address}&type=lm`"
                   >More Info</a
                 >
 
