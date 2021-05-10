@@ -83,8 +83,8 @@ func EthereumEventToEthBridgeClaim(valAddr sdk.ValAddress, event types.EthereumE
 }
 
 // ProphecyClaimToSignedOracleClaim packages and signs a prophecy claim's data, returning a new oracle claim
-func ProphecyClaimToSignedOracleClaim(event types.ProphecyClaimEvent, key *ecdsa.PrivateKey) (OracleClaim, error) {
-	oracleClaim := OracleClaim{}
+func ProphecyClaimToSignedOracleClaim(event types.ProphecyClaimEvent, key *ecdsa.PrivateKey) (ethbridge.OracleClaim, error) {
+	oracleClaim := ethbridge.OracleClaim{}
 
 	// Generate a hashed claim message which contains ProphecyClaim's data
 	message := GenerateClaimMessage(event)
@@ -95,8 +95,8 @@ func ProphecyClaimToSignedOracleClaim(event types.ProphecyClaimEvent, key *ecdsa
 		return oracleClaim, err
 	}
 
-	oracleClaim.ProphecyID = event.ProphecyID
-	var message32 [32]byte
+	oracleClaim.ProphecyId = event.ProphecyID.String()
+	var message32 []byte
 	copy(message32[:], message)
 	oracleClaim.Message = message32
 	oracleClaim.Signature = signature
@@ -104,7 +104,7 @@ func ProphecyClaimToSignedOracleClaim(event types.ProphecyClaimEvent, key *ecdsa
 }
 
 // CosmosMsgToProphecyClaim parses event data from a CosmosMsg, packaging it as a ProphecyClaim
-func CosmosMsgToProphecyClaim(event types.CosmosMsg) ProphecyClaim {
+func CosmosMsgToProphecyClaim(event types.CosmosMsg) ethbridge.ProphecyClaim {
 	claimType := event.ClaimType
 	cosmosSender := event.CosmosSender
 	cosmosSenderSequence := event.CosmosSenderSequence
@@ -112,13 +112,13 @@ func CosmosMsgToProphecyClaim(event types.CosmosMsg) ProphecyClaim {
 	symbol := event.Symbol
 	amount := event.Amount
 
-	prophecyClaim := ProphecyClaim{
-		ClaimType:            claimType,
+	prophecyClaim := ethbridge.ProphecyClaim{
+		ClaimType:            claimType.String(),
 		CosmosSender:         cosmosSender,
-		CosmosSenderSequence: cosmosSenderSequence,
-		EthereumReceiver:     ethereumReceiver,
+		CosmosSenderSequence: []byte(cosmosSenderSequence.String()),
+		EthereumReceiver:     []byte(ethereumReceiver.String()),
 		Symbol:               symbol,
-		Amount:               amount,
+		Amount:               amount.String(),
 	}
 	return prophecyClaim
 }
