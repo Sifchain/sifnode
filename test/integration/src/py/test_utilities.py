@@ -294,7 +294,7 @@ def wait_for_balance(balance_fn, target_balance, max_seconds=80, debug_prefix=""
         else:
             if time.time() >= done_at_time:
                 difference = target_balance - balance
-                errmsg = f"{debug_prefix} Failed to get target balance of {target_balance}, balance is {balance}, difference is {difference} ({float(difference) / 10 ** 18}), waited for {max_seconds} seconds"
+                errmsg = f"{debug_prefix} Failed to get target balance of {target_balance} with multiple attempts, balance is {balance}, difference is {difference} ({float(difference) / 10 ** 18}), waited for {max_seconds} seconds"
                 logging.critical(errmsg)
                 raise Exception(errmsg)
             else:
