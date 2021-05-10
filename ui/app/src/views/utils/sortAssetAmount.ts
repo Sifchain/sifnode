@@ -21,11 +21,11 @@ export function sortAssetAmount<
     .sort((a, b) => {
       // Next sort by balance
 
-      if (!b.amount?.amount) {
-        return -1;
-      }
       if (!a.amount?.amount) {
         return 1;
+      }
+      if (!b.amount?.amount) {
+        return -1;
       }
 
       // #TODO - TD - There is likely a much better way to do this an entire sort

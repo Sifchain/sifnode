@@ -104,3 +104,13 @@ def safe_system(cmd)
     STDERR.puts("System cmd failed: #{cmd}")
   end
 end
+
+def variable_template_replace(template_file_name, final_file_name)
+    require 'fileutils'
+    template_file_text = File.read(template_file_name).strip
+    ENV.each_pair do |k, v|
+      replace_string="-=#{k}=-"
+      template_file_text.include?(k) ? (template_file_text.gsub! replace_string, v) : (puts 'matching env vars for variable replacement...')
+    end
+    File.open(final_file_name, 'w') { |file| file.write(template_file_text) }
+end
