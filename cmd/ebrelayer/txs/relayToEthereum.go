@@ -53,12 +53,12 @@ func RelayProphecyClaimToEthereum(provider string, contractAddress common.Addres
 		sugaredLogger.Errorw("failed convert ClaimType", errorMessageKey, err.Error())
 		return err
 	}
-	cosmosSenderSequence, err := strconv.ParseInt(string(claim.CosmosSenderSequence), 0, 64)
+	cosmosSenderSequence, err := strconv.ParseInt(string(claim.CosmosSenderSequence), 10, 64)
 	if err != nil {
 		sugaredLogger.Errorw("failed convert CosmosSenderSequence", errorMessageKey, err.Error())
 		return err
 	}
-	amount, err := strconv.ParseInt(claim.Amount, 0, 64)
+	amount, err := strconv.ParseInt(claim.Amount, 10, 64)
 	if err != nil {
 		sugaredLogger.Errorw("failed convert Amount", errorMessageKey, err.Error())
 		return err
