@@ -549,6 +549,16 @@
       "transferLimit": "99999999999999999999999"
     },
     {
+      "address": "0x29cbd0510eec0327992cd6006e63f9fa8e7f33b7",
+      "decimals": 18,
+      "imageUrl": "https://assets.coingecko.com/coins/images/14460/small/Tidal-mono.png?1616233894",
+      "name": "Tidal",
+      "network": "ethereum",
+      "priceUsd": 0,
+      "symbol": "tidal",
+      "transferLimit": "99999999999999999999999"
+    },
+    {
       "address": "0x95ad61b0a150d79219dcf64e1e6cc01f0b64c4ce",
       "decimals": 18,
       "imageUrl": "https://assets.coingecko.com/coins/images/11939/small/SHIBLOGO.png?1600752116",
