@@ -286,14 +286,20 @@ export default defineComponent({
                             <span class="tooltip-date">{{
                               lmRewards.maturityDate
                             }}</span>
-                            <span v-if="lmRewards.maturityAPY">
+                            <span
+                              v-if="lmRewards.nextRewardProjectedAPYOnTickets"
+                            >
                               Projected Fully Maturated APY (based on current
                               holdings): <br />
                               <span class="tooltip-date">
                                 {{
-                                  format(lmRewards.maturityAPY * 100, {
-                                    mantissa: 2,
-                                  })
+                                  format(
+                                    lmRewards.nextRewardProjectedAPYOnTickets *
+                                      100,
+                                    {
+                                      mantissa: 2,
+                                    },
+                                  )
                                 }}%</span
                               >
                             </span>
