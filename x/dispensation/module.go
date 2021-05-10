@@ -3,6 +3,7 @@ package dispensation
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/Sifchain/sifnode/x/dispensation/client/rest"
 
 	"github.com/cosmos/cosmos-sdk/client"
 	cdctypes "github.com/cosmos/cosmos-sdk/codec/types"
@@ -65,7 +66,8 @@ func (AppModuleBasic) ValidateGenesis(cdc codec.JSONMarshaler, config client.TxE
 }
 
 // RegisterRESTRoutes registers the REST routes for the dispensation module.
-func (AppModuleBasic) RegisterRESTRoutes(_ client.Context, _ *mux.Router) {
+func (AppModuleBasic) RegisterRESTRoutes(ctx client.Context, rtr *mux.Router) {
+	rest.RegisterRoutes(ctx, rtr)
 }
 
 func (AppModuleBasic) RegisterGRPCGatewayRoutes(clientCtx client.Context, mux *runtime.ServeMux) {
