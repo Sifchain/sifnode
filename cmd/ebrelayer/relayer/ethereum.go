@@ -479,12 +479,12 @@ func GetAccAddressFromKeyring(k keyring.Keyring, keyname string) (sdk.AccAddress
 // handleEthereumEvent unpacks an Ethereum event, converts it to a ProphecyClaim, and relays a tx to Cosmos
 func (sub EthereumSub) handleEthereumEvent(txFactory tx.Factory, events []types.EthereumEvent) error {
 	var prophecyClaims []*ethbridge.EthBridgeClaim
-	accAddr, err := GetAccAddressFromKeyring(txFactory.Keybase(), sub.ValidatorName)
+	valAddr, err := GetValAddressFromKeyring(txFactory.Keybase(), sub.ValidatorName)
 	if err != nil {
 		return err
 	}
 	for _, event := range events {
-		prophecyClaim, err := txs.EthereumEventToEthBridgeClaim(sdk.ValAddress(accAddr), event)
+		prophecyClaim, err := txs.EthereumEventToEthBridgeClaim(valAddr, event)
 		if err != nil {
 			sub.SugaredLogger.Errorw(".",
 				errorMessageKey, err.Error())
