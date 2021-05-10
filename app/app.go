@@ -1,6 +1,7 @@
 package app
 
 import (
+	"encoding/json"
 	"io"
 	"math/big"
 	"net/http"
@@ -78,15 +79,15 @@ import (
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 	dbm "github.com/tendermint/tm-db"
 
-	"github.com/Sifchain/sifnode/x/ethbridge"
-	ethbridgekeeper "github.com/Sifchain/sifnode/x/ethbridge/keeper"
-	ethbridgetypes "github.com/Sifchain/sifnode/x/ethbridge/types"
 	"github.com/Sifchain/sifnode/x/clp"
 	clpkeeper "github.com/Sifchain/sifnode/x/clp/keeper"
 	clptypes "github.com/Sifchain/sifnode/x/clp/types"
 	"github.com/Sifchain/sifnode/x/dispensation"
 	dispkeeper "github.com/Sifchain/sifnode/x/dispensation/keeper"
 	disptypes "github.com/Sifchain/sifnode/x/dispensation/types"
+	"github.com/Sifchain/sifnode/x/ethbridge"
+	ethbridgekeeper "github.com/Sifchain/sifnode/x/ethbridge/keeper"
+	ethbridgetypes "github.com/Sifchain/sifnode/x/ethbridge/types"
 	"github.com/Sifchain/sifnode/x/oracle"
 	oraclekeeper "github.com/Sifchain/sifnode/x/oracle/keeper"
 	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
@@ -130,6 +131,7 @@ var (
 
 		clptypes.ModuleName:     {authtypes.Burner, authtypes.Minter},
 		dispensation.ModuleName: {authtypes.Burner, authtypes.Minter},
+		ethbridge.ModuleName:    {authtypes.Burner, authtypes.Minter},
 	}
 )
 
@@ -466,6 +468,8 @@ func (app *SifchainApp) InitChainer(ctx sdk.Context, req abci.RequestInitChain) 
 	if err := tmjson.Unmarshal(req.AppStateBytes, &genesisState); err != nil {
 		panic(err)
 	}
+
+	genesisState["ethbridge"] = json.RawMessage{}
 
 	return app.mm.InitGenesis(ctx, app.appCodec, genesisState)
 }

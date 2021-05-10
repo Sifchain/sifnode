@@ -57,7 +57,7 @@ func RelayToCosmos(factory tx.Factory, claims []*types.EthBridgeClaim, cliCtx cl
 	// If we start to control sequence, get the sequence and set the factory with that sequence.
 	if nextSequenceNumber > 0 {
 		sugaredLogger.Infow("txBldr.WithSequence(nextSequenceNumber) passed")
-		factory = factory.WithSequence(nextSequenceNumber)
+		//factory = factory.WithSequence(nextSequenceNumber)
 	}
 
 	sugaredLogger.Infow("RelayToCosmos building, signing, and broadcasting", "messages", messages)
