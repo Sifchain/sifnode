@@ -23,10 +23,6 @@ export enum PoolState {
   ZERO_AMOUNTS_NEW_POOL,
 }
 
-function toDerived(assetAmount: IAssetAmount) {
-  return assetAmount.amount.multiply(fromBaseUnits("1", assetAmount.asset));
-}
-
 export function usePoolCalculator(input: {
   tokenAAmount: Ref<string>;
   tokenASymbol: Ref<string | null>;
@@ -201,8 +197,8 @@ export function usePoolCalculator(input: {
     if (!poolAmounts.value) return 0;
     const [native, external] = poolAmounts.value;
 
-    const derivedNative = toDerived(native);
-    const derivedExternal = toDerived(external);
+    const derivedNative = native.toDerived();
+    const derivedExternal = external.toDerived();
 
     return derivedExternal.divide(derivedNative);
   });
@@ -220,8 +216,8 @@ export function usePoolCalculator(input: {
     if (!poolAmounts.value) return 0;
     const [native, external] = poolAmounts.value;
 
-    const derivedNative = toDerived(native);
-    const derivedExternal = toDerived(external);
+    const derivedNative = native.toDerived();
+    const derivedExternal = external.toDerived();
 
     return derivedNative.divide(derivedExternal);
   });
@@ -245,10 +241,10 @@ export function usePoolCalculator(input: {
       return null;
 
     const [native, external] = poolAmounts.value;
-    const derivedNative = toDerived(native);
-    const derivedExternal = toDerived(external);
-    const externalAdded = toDerived(tokenAField.fieldAmount.value);
-    const nativeAdded = toDerived(tokenBField.fieldAmount.value);
+    const derivedNative = native.toDerived();
+    const derivedExternal = external.toDerived();
+    const externalAdded = tokenAField.fieldAmount.value.toDerived();
+    const nativeAdded = tokenBField.fieldAmount.value.toDerived();
 
     return derivedExternal
       .add(externalAdded)
@@ -274,10 +270,10 @@ export function usePoolCalculator(input: {
       return null;
 
     const [native, external] = poolAmounts.value;
-    const derivedNative = toDerived(native);
-    const derivedExternal = toDerived(external);
-    const externalAdded = toDerived(tokenAField.fieldAmount.value);
-    const nativeAdded = toDerived(tokenBField.fieldAmount.value);
+    const derivedNative = native.toDerived();
+    const derivedExternal = external.toDerived();
+    const externalAdded = tokenAField.fieldAmount.value.toDerived();
+    const nativeAdded = tokenBField.fieldAmount.value.toDerived();
     return derivedNative
       .add(nativeAdded)
       .divide(derivedExternal.add(externalAdded));
@@ -320,12 +316,12 @@ export function usePoolCalculator(input: {
       );
       if (input.lastFocusedTokenField.value === "A") {
         input.tokenBAmount.value = format(
-          toDerived(assetAmountA).multiply(bPerARatio.value || "0"),
+          assetAmountA.toDerived().multiply(bPerARatio.value || "0"),
           { mantissa: 5 },
         );
       } else if (input.lastFocusedTokenField.value === "B") {
         input.tokenAAmount.value = format(
-          toDerived(assetAmountB).multiply(aPerBRatio.value || "0"),
+          assetAmountB.toDerived().multiply(aPerBRatio.value || "0"),
           { mantissa: 5 },
         );
       }
