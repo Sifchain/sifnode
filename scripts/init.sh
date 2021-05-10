@@ -27,6 +27,7 @@ sifnoded add-genesis-clp-admin $(sifnoded keys show sif -a --keyring-backend=tes
 sifnoded add-genesis-clp-admin $(sifnoded keys show akasha -a --keyring-backend=test) --keyring-backend=test
 
 sifnoded add-genesis-validators $(sifnoded keys show sif -a --bech val --keyring-backend=test) --keyring-backend=test
+sifnoded add-genesis-validators $(sifnoded keys show akasha -a --bech val --keyring-backend=test) --keyring-backend=test
 
 sifnoded gentx sif 1000000000000000000000000stake --chain-id=localnet --keyring-backend=test
 
