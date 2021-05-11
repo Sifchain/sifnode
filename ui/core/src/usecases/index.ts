@@ -20,5 +20,3 @@ export function createUsecases(context: UsecaseContext) {
     peg: pegActions(context),
   };
 }
-
-export type Actions = ReturnType<typeof createUsecases>;
