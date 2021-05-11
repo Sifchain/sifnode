@@ -415,13 +415,9 @@ def send_from_sifchain_to_ethereum_cmd(
                    f"{int(transfer_request.amount):0} " \
                    f"{transfer_request.sifchain_symbol} " \
                    f"{ceth_charge} " \
-                   f"{keyring_backend_entry} " \
-                   f"{sifchain_fees_entry} " \
                    f"--ethereum-chain-id={transfer_request.ethereum_chain_id} " \
                    f"--chain-id={transfer_request.chain_id} " \
-                   f"{home_entry} " \
-                   f"{from_entry} " \
-                   f"--yes "
+                   f"{home_entry} "
     return command_line
 
 
