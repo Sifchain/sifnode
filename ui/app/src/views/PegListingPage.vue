@@ -37,7 +37,7 @@ export default defineComponent({
     const { store, usecases } = useCore();
     function getIsSupportedNetwork(asset: IAsset): boolean {
       if (asset.network === "ethereum") {
-        return usecases.ethWallet.isSupportedNetwork();
+        return usecases.wallet.eth.isSupportedNetwork();
       }
 
       if (asset.network === "sifchain") {

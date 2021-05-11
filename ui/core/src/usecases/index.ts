@@ -1,8 +1,8 @@
 import { Services, WithService } from "../services";
 import { Store, WithStore } from "../store";
-import ethWalletActions from "./ethWallet";
+import ethWalletActions from "./wallet/eth";
 import clpActions from "./clp";
-import walletActions from "./wallet";
+import walletActions from "./wallet/sif";
 import pegActions from "./peg";
 
 export type UsecaseContext<
@@ -12,9 +12,11 @@ export type UsecaseContext<
 
 export function createUsecases(context: UsecaseContext) {
   return {
-    ethWallet: ethWalletActions(context),
     clp: clpActions(context),
-    wallet: walletActions(context),
+    wallet: {
+      sif: walletActions(context),
+      eth: ethWalletActions(context),
+    },
     peg: pegActions(context),
   };
 }

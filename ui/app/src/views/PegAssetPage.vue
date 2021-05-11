@@ -65,7 +65,7 @@ export default defineComponent({
 
     const networkIsSupported = computed(() => {
       if (mode.value === "peg") {
-        return usecases.ethWallet.isSupportedNetwork();
+        return usecases.wallet.eth.isSupportedNetwork();
       }
 
       return true;

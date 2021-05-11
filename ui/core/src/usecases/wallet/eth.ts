@@ -1,8 +1,8 @@
 import { effect } from "@vue/reactivity";
-import { UsecaseContext } from "..";
-import { Asset, IAsset } from "../entities";
-import B from "../entities/utils/B";
-import { isSupportedEVMChain } from "./utils";
+import { UsecaseContext } from "../..";
+import { Asset, IAsset } from "../../entities";
+import B from "../../entities/utils/B";
+import { isSupportedEVMChain } from "../utils";
 
 export default ({
   services,

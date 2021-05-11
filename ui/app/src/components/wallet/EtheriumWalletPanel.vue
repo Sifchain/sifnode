@@ -13,7 +13,7 @@ export default defineComponent({
   setup() {
     const { store, usecases } = useCore();
     async function handleConnectClicked() {
-      await usecases.ethWallet.connectToWallet();
+      await usecases.wallet.eth.connectToWallet();
     }
     const address = computed(() => store.wallet.eth.address);
     const connected = computed(() => store.wallet.eth.isConnected);
