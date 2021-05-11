@@ -44,6 +44,10 @@ read -p "What is the Moniker you will be setting the vault entry up for?: [devne
 MONIKER=${MONIKER:-devnet-us-1}
 
 
+read -p "What is the CHAINNET you will be setting the vault entry up for?: [sifchain-devnet]:" CHAINNET
+CHAINNET=${CHAINNET:-sifchain-devnet}
+
+
 read -p "What is the mnemonic you will be setting the vault entry up for?: [this is where your mnemonic goes]:" MNEMONIC
 MNEMONIC=${MNEMONIC:-None}
 if [ "${MNEMONIC}" == "None" ]; then
@@ -54,7 +58,7 @@ footer
 
 
 header "Building the docker sifnodecli image to test values import as keyring properly."
-make CHAINNET=${MONIKER} IMAGE_TAG=test BINARY=sifnodecli build-image
+make CHAINNET=${CHAINNET} IMAGE_TAG=test BINARY=sifnodecli build-image
 footer
 
 
