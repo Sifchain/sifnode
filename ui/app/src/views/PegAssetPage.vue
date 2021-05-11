@@ -13,7 +13,7 @@ import SifInput from "@/components/shared/SifInput.vue";
 import DetailsTable from "@/components/shared/DetailsTable.vue";
 import Label from "@/components/shared/Label.vue";
 import RaisedPanelColumn from "@/components/shared/RaisedPanelColumn.vue";
-import { trimZeros } from "ui-core/src/hooks/utils";
+import { trimZeros } from "ui-core";
 import BigNumber from "bignumber.js";
 import {
   formatSymbol,
