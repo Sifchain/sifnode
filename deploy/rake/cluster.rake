@@ -119,6 +119,36 @@ namespace :cluster do
 
         system({"KUBECONFIG" => kubeconfig(args)}, cmd)
       end
+
+      desc "Deploy a single standalone sifnode on to your cluster"
+      task :standalone_vault, [:namespace, :image, :image_tag, :template_file_name, :final_file_name] do |t, args|
+        variable_template_replace(args[:template_file_name], args[:final_file_name])
+        cmd = %Q{helm upgrade sifnode deploy/helm/sifnode-vault \
+          --install -n #{args[:namespace]} --create-namespace \
+          --set image.tag=#{args[:image_tag]} \
+          --set image.repository=#{args[:image]} \
+          -f #{args[:final_file_name]}
+        }
+        puts cmd
+        #system(cmd) or exit 1
+      end
+
+      desc "Deploy a single network-aware sifnode on to your cluster"
+      task :peer_vault, [:namespace, :image, :image_tag, :peer_address, :template_file_name, :final_file_name] do |t, args|
+        variable_template_replace(args[:template_file_name], args[:final_file_name])
+        cmd = %Q{helm upgrade sifnode deploy/helm/sifnode-vault \
+          --install -n #{args[:namespace]} --create-namespace \
+          --set sifnode.args.peerAddress=#{args[:peer_address]} \
+          --set image.tag=#{args[:image_tag]} \
+          --set image.repository=#{args[:image]} \
+          -f #{args[:final_file_name]}
+        }
+        puts cmd
+        system(cmd) or exit 1
+        #:namespace, :image, :image_tag, :peer_address, :template_file_name, :final_file_name,:app_region, :app_env
+        #rake "cluster:sifnode:peer_vault['sifnode', 'sifchain/sifnoded', 'testnet-genesis', '1b02f2eb065031426d37186efff75df268bb9097@54.164.57.141:26656', './deploy/helm/sifnode-vault/template.values.yaml', './deploy/helm/sifnode-vault/generated.values.yaml']"
+      end
+
     end
   end
 
@@ -417,6 +447,19 @@ echo '      sssssssssss    iiiiiiiifffffffff            cccccccccccccccchhhhhhh 
     end
   end
 
+  desc "Anchore Security Docker Vulnerability Scan"
+  namespace :anchore do
+    desc "Deploy a new ebrelayer to an existing cluster"
+    task :scan_by_path, [:image, :image_tag, :path] do |t, args|
+      cluster_automation = %Q{
+        set +x
+        curl -s https://ci-tools.anchore.io/inline_scan-latest | bash -s -- -f -t 800 -d #{args[:path]}/Dockerfile -p "#{args[:image]}:#{args[:image_tag]}"
+      }
+      system(cluster_automation) or exit 1
+    end
+  end
+
+
   desc "Generate Temp Secrets For Application Path In Vault"
   namespace :vault do
     desc "Generate Temp Secrets For Application Path In Vault"
@@ -444,6 +487,17 @@ echo '      sssssssssss    iiiiiiiifffffffff            cccccccccccccccchhhhhhh 
           temp_secrets_string += "export #{key}='#{value}' \n"
         end
         File.open("tmp_secrets", 'w') { |file| file.write(temp_secrets_string) }
+    end
+  end
+
+  desc "Push Secret To Vault"
+  namespace :vault do
+    desc "Push Secret to Vault"
+    task :push_secret_to_vault, [:path] do |t, args|
+        require "json"
+        secret_to_insert = File.read("app_secrets").to_s
+        secrets_json = `kubectl exec -n vault --kubeconfig=./kubeconfig -it vault-0 -- vault kv put -format json #{args[:path]} #{secret_to_insert}`
+        puts secrets_json
     end
   end
 
@@ -514,18 +568,11 @@ echo '      sssssssssss    iiiiiiiifffffffff            cccccccccccccccchhhhhhh 
     end
   end
 
-
   desc "Utility for Doing Variable Replacement"
   namespace :utilities do
     desc "Utility for Doing Variable Replacement"
     task :template_variable_replace, [:template_file_name, :final_file_name] do |t, args|
-        require 'fileutils'
-        template_file_text = File.read("#{args[:template_file_name]}").strip
-        ENV.each_pair do |k, v|
-          replace_string="-=#{k}=-"
-          template_file_text.include?(k) ? (template_file_text.gsub! replace_string, v) : (puts 'matching env vars for variable replacement...')
-        end
-        File.open("#{args[:final_file_name]}", 'w') { |file| file.write(template_file_text) }
+        variable_template_replace(args[:template_file_name], args[:final_file_name])
     end
   end
 
@@ -685,6 +732,65 @@ metadata:
     end
   end
 
+  desc "Check kubernetes pod for specific log entry to ensure valid deployment."
+  namespace :kubernetes do
+    desc "Check kubernetes pod for specific log entry to ensure valid deployment."
+    task :log_validate_search, [:APP_NAME, :APP_NAMESPACE, :SEARCH_PATH] do |t, args|
+        ENV["APP_NAMESPACE"] = "#{args[:APP_NAMESPACE]}"
+        ENV["APP_NAME"] = "#{args[:APP_NAME]}"
+        was_successful = false
+        max_loops = 20
+        loop_count = 0
+        until was_successful == true
+            pod_name = `kubectl get pods --kubeconfig=./kubeconfig -n #{ENV["APP_NAMESPACE"]} | grep #{ENV["APP_NAME"]} | cut -d ' ' -f 1`.strip
+            puts "looking up logs fo #{pod_name}"
+            pod_logs = `kubectl logs #{pod_name} --kubeconfig=./kubeconfig -n #{ENV["APP_NAMESPACE"]}`
+            if pod_logs.include?(args[:SEARCH_PATH])
+                #:SEARCH_PATH "new transaction witnessed in sifchain client."
+                puts "Log Search Completed Container Running and Producing Valid Logs"
+                was_successful = true
+                break
+            end
+            loop_count += 1
+            puts "On Loop #{loop_count} of #{max_loops}"
+            if loop_count >= max_loops
+                puts "Reached Max Loops"
+                break
+            end
+            sleep(60)
+        end
+    end
+  end
+
+  desc "Check kubernetes pod for specific log entry to ensure valid deployment."
+  namespace :kubernetes do
+    desc "Check kubernetes pod for specific log entry to ensure valid deployment."
+    task :log_validate_search_bycontainer, [:APP_NAME, :APP_NAMESPACE, :SEARCH_PATH, :CONTAINER] do |t, args|
+        ENV["APP_NAMESPACE"] = "#{args[:APP_NAMESPACE]}"
+        ENV["APP_NAME"] = "#{args[:APP_NAME]}"
+        was_successful = false
+        max_loops = 20
+        loop_count = 0
+        until was_successful == true
+            pod_name = `kubectl get pods --kubeconfig=./kubeconfig -n #{ENV["APP_NAMESPACE"]} | grep #{ENV["APP_NAME"]} | cut -d ' ' -f 1`.strip
+            puts "looking up logs fo #{pod_name}"
+            pod_logs = `kubectl logs #{pod_name} -c #{args[:CONTAINER]} --kubeconfig=./kubeconfig -n #{ENV["APP_NAMESPACE"]}`
+            if pod_logs.include?(args[:SEARCH_PATH])
+                #:SEARCH_PATH "new transaction witnessed in sifchain client."
+                puts "Log Search Completed Container Running and Producing Valid Logs"
+                was_successful = true
+                break
+            end
+            loop_count += 1
+            puts "On Loop #{loop_count} of #{max_loops}"
+            if loop_count >= max_loops
+                puts "Reached Max Loops"
+                break
+            end
+            sleep(60)
+        end
+    end
+  end
 
   desc "Check kubernetes pod for specific log entry to ensure valid deployment."
   namespace :kubernetes do
