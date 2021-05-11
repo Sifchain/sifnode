@@ -41,3 +41,5 @@ enum ClaimType {
   // Burn claim type
   CLAIM_TYPE_BURN        = 2;
 }
+
+message GenesisState {}
