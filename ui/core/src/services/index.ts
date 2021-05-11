@@ -31,6 +31,6 @@ export function createServices(context: ServiceContext) {
     eth: EthereumService,
     sif: SifService,
     ethbridge: EthbridgeService,
-    EventBusService,
+    bus: EventBusService,
   };
 }
