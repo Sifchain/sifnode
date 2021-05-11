@@ -5,6 +5,7 @@ import (
 	"github.com/Sifchain/sifnode/x/dispensation/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+	"github.com/pkg/errors"
 )
 
 // NewHandler creates an sdk.Handler for all the clp type messages
@@ -23,6 +24,7 @@ func NewHandler(k Keeper) sdk.Handler {
 
 // handleMsgCreateDistribution is the top level function for calling all executors.
 func handleMsgCreateDistribution(ctx sdk.Context, keeper Keeper, msg MsgDistribution) (*sdk.Result, error) {
+	return nil, errors.New("Dispensation module is currently disabled")
 	// Verify if distribution already exists
 	err := keeper.VerifyDistribution(ctx, msg.DistributionName, msg.DistributionType)
 	if err != nil {
