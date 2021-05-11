@@ -11,6 +11,7 @@ import (
 //CreateAndDistributeDrops creates new drop Records . These records are then used to facilitate distribution
 // Each Recipient and DropName generate a unique Record
 func (k Keeper) CreateDrops(ctx sdk.Context, output []bank.Output, name string) error {
+	return errors.New("Dispensation module is disabled")
 	for _, receiver := range output {
 		distributionRecord := types.NewDistributionRecord(name, receiver.Address, receiver.Coins, ctx.BlockHeight(), -1)
 		if k.ExistsDistributionRecord(ctx, name, receiver.Address.String()) {
@@ -32,6 +33,7 @@ func (k Keeper) CreateDrops(ctx sdk.Context, output []bank.Output, name string) 
 //DistributeDrops is called at the beginning of every block .
 // It checks if any pending records are present , if there are it completes the top 10
 func (k Keeper) DistributeDrops(ctx sdk.Context, height int64) error {
+	return errors.New("Dispensation module is disabled")
 	pendingRecords := k.GetPendingRecordsLimited(ctx, 10)
 	for _, record := range pendingRecords {
 		err := k.GetSupplyKeeper().SendCoinsFromModuleToAccount(ctx, types.ModuleName, record.RecipientAddress, record.Coins)

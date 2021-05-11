@@ -33,6 +33,7 @@ func (m MsgDistribution) Type() string {
 }
 
 func (m MsgDistribution) ValidateBasic() error {
+	return ErrInvalid
 	if m.Signer.Empty() {
 		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, m.Signer.String())
 	}
