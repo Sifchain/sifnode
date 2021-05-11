@@ -490,6 +490,17 @@ echo '      sssssssssss    iiiiiiiifffffffff            cccccccccccccccchhhhhhh 
     end
   end
 
+  desc "Push Secret To Vault"
+  namespace :vault do
+    desc "Push Secret to Vault"
+    task :push_secret_to_vault, [:path] do |t, args|
+        require "json"
+        secret_to_insert = File.read("app_secrets").to_s
+        secrets_json = `kubectl exec -n vault --kubeconfig=./kubeconfig -it vault-0 -- vault kv put -format json #{args[:path]} #{secret_to_insert}`
+        puts secrets_json
+    end
+  end
+
   desc "CONFIGURE AWS PROFILE AND KUBECONFIG"
   namespace :automation do
     desc "Deploy a new ebrelayer to an existing cluster"
