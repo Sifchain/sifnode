@@ -1,0 +1,53 @@
+debug: sendLockTx arguments: {
+  "_": [
+    "exec",
+    "scripts/test/sendLockTx.js"
+  ],
+  "sifchain_address": "sif1wpzh8k8znxrvssjx4p6grv47tzqa8uehhu93tz",
+  "symbol": "0x0000000000000000000000000000000000000000",
+  "amount": "100",
+  "bridgebank_address": "0x30753E4A8aad7F8597332E813735Def5dD395028",
+  "ethereum_address": "0x627306090abab3a6e1400e9345bc60c78a8bef57",
+  "ethereum_private_key_env_var": "ETHEREUM_PRIVATE_KEY",
+  "json_path": "/sifnode/smart-contracts/build/contracts",
+  "gas": "estimate",
+  "ethereum_network": "http://localhost:7545",
+  "$0": "node_modules/.bin/truffle"
+}
+debug: sendLockTx arguments: {
+  "_": [
+    "exec",
+    "scripts/test/sendLockTx.js"
+  ],
+  "sifchain_address": "sif1w0sp9nd37pe9ejzq3lwrsxr6vth727rwm6snq5",
+  "symbol": "0x0000000000000000000000000000000000000000",
+  "amount": "125760000000000100",
+  "bridgebank_address": "0x30753E4A8aad7F8597332E813735Def5dD395028",
+  "ethereum_address": "0x627306090abab3a6e1400e9345bc60c78a8bef57",
+  "ethereum_private_key_env_var": "ETHEREUM_PRIVATE_KEY",
+  "json_path": "/sifnode/smart-contracts/build/contracts",
+  "gas": "estimate",
+  "ethereum_network": "http://localhost:7545",
+  "$0": "node_modules/.bin/truffle"
+}
+debug: sendLockTx arguments: {
+  "_": [
+    "exec",
+    "scripts/test/sendLockTx.js"
+  ],
+  "sifchain_address": "sif13erg4wegdkx2d5f8spnnmvp2vl23y6cw4paaq4",
+  "symbol": "0x0000000000000000000000000000000000000000",
+  "amount": "500000000000000000000",
+  "bridgebank_address": "0x30753E4A8aad7F8597332E813735Def5dD395028",
+  "ethereum_address": "0x627306090abab3a6e1400e9345bc60c78a8bef57",
+  "ethereum_private_key_env_var": "ETHEREUM_PRIVATE_KEY",
+  "json_path": "/sifnode/smart-contracts/build/contracts",
+  "gas": "estimate",
+  "ethereum_network": "http://localhost:7545",
+  "$0": "node_modules/.bin/truffle"
+}
+error: uncaughtException: Returned error: sender doesn't have enough funds to send tx. The upfront cost is: 500001800000000000000 and the sender's account only has: 97259989535339999400 -- Reason given: Amount being transferred is over the limit.
+Error: Returned error: sender doesn't have enough funds to send tx. The upfront cost is: 500001800000000000000 and the sender's account only has: 97259989535339999400 -- Reason given: Amount being transferred is over the limit.
+    at module.exports (/sifnode/smart-contracts/scripts/test/sendLockTx.js:32:53)
+    at processTicksAndRejections (node:internal/process/task_queues:94:5) {"error":{"reason":"Amount being transferred is over the limit","hijackedStack":"Error: Returned error: sender doesn't have enough funds to send tx. The upfront cost is: 500001800000000000000 and the sender's account only has: 97259989535339999400 -- Reason given: Amount being transferred is over the limit.\n    at Object.ErrorResponse (/sifnode/smart-contracts/node_modules/web3-core-helpers/src/errors.js:29:16)\n    at /sifnode/smart-contracts/node_modules/@truffle/interface-adapter/node_modules/web3-core-requestmanager/src/index.js:170:36\n    at XMLHttpRequest.request.onreadystatechange (/sifnode/smart-contracts/node_modules/web3/node_modules/web3-providers-http/lib/index.js:98:13)\n    at XMLHttpRequestEventTarget.dispatchEvent (/sifnode/smart-contracts/node_modules/xhr2-cookies/xml-http-request-event-target.ts:44:13)\n    at XMLHttpRequest._setReadyState (/sifnode/smart-contracts/node_modules/xhr2-cookies/xml-http-request.ts:219:8)\n    at XMLHttpRequest._onHttpResponseEnd (/sifnode/smart-contracts/node_modules/xhr2-cookies/xml-http-request.ts:345:8)\n    at IncomingMessage.<anonymous> (/sifnode/smart-contracts/node_modules/xhr2-cookies/xml-http-request.ts:311:39)\n    at IncomingMessage.emit (node:events:381:22)\n    at endReadableNT (node:internal/streams/readable:1307:12)\n    at processTicksAndRejections (node:internal/process/task_queues:81:21)"},"stack":"Error: Returned error: sender doesn't have enough funds to send tx. The upfront cost is: 500001800000000000000 and the sender's account only has: 97259989535339999400 -- Reason given: Amount being transferred is over the limit.\n    at module.exports (/sifnode/smart-contracts/scripts/test/sendLockTx.js:32:53)\n    at processTicksAndRejections (node:internal/process/task_queues:94:5)","exception":true,"date":"Tue May 11 2021 15:58:13 GMT+0000 (GMT)","process":{"pid":11394,"uid":1000,"gid":1000,"cwd":"/sifnode/smart-contracts","execPath":"/usr/bin/node","version":"v15.14.0","argv":["/usr/bin/node","/sifnode/smart-contracts/node_modules/.bin/truffle","exec","scripts/test/sendLockTx.js","--sifchain_address","sif13erg4wegdkx2d5f8spnnmvp2vl23y6cw4paaq4","--symbol","eth","--amount","500000000000000000000","--bridgebank_address","0x30753E4A8aad7F8597332E813735Def5dD395028","--ethereum_address","0x627306090abab3a6e1400e9345bc60c78a8bef57","--ethereum_private_key_env_var","ETHEREUM_PRIVATE_KEY","--json_path","/sifnode/smart-contracts/build/contracts","--gas","estimate"],"memoryUsage":{"rss":739627008,"heapTotal":583192576,"heapUsed":567503016,"external":20015446,"arrayBuffers":19034307}},"os":{"loadavg":[0.48,0.25,0.19],"uptime":528235.2},"trace":[{"column":53,"file":"/sifnode/smart-contracts/scripts/test/sendLockTx.js","function":"module.exports","line":32,"method":"exports","native":false},{"column":5,"file":"node:internal/process/task_queues","function":"processTicksAndRejections","line":94,"method":null,"native":false}]}
+{"error":{"reason":"Amount being transferred is over the limit","hijackedStack":"Error: Returned error: sender doesn't have enough funds to send tx. The upfront cost is: 500001800000000000000 and the sender's account only has: 97259989535339999400 -- Reason given: Amount being transferred is over the limit.\n    at Object.ErrorResponse (/sifnode/smart-contracts/node_modules/web3-core-helpers/src/errors.js:29:16)\n    at /sifnode/smart-contracts/node_modules/@truffle/interface-adapter/node_modules/web3-core-requestmanager/src/index.js:170:36\n    at XMLHttpRequest.request.onreadystatechange (/sifnode/smart-contracts/node_modules/web3/node_modules/web3-providers-http/lib/index.js:98:13)\n    at XMLHttpRequestEventTarget.dispatchEvent (/sifnode/smart-contracts/node_modules/xhr2-cookies/xml-http-request-event-target.ts:44:13)\n    at XMLHttpRequest._setReadyState (/sifnode/smart-contracts/node_modules/xhr2-cookies/xml-http-request.ts:219:8)\n    at XMLHttpRequest._onHttpResponseEnd (/sifnode/smart-contracts/node_modules/xhr2-cookies/xml-http-request.ts:345:8)\n    at IncomingMessage.<anonymous> (/sifnode/smart-contracts/node_modules/xhr2-cookies/xml-http-request.ts:311:39)\n    at IncomingMessage.emit (node:events:381:22)\n    at endReadableNT (node:internal/streams/readable:1307:12)\n    at processTicksAndRejections (node:internal/process/task_queues:81:21)"},"level":"error","message":"uncaughtException: Returned error: sender doesn't have enough funds to send tx. The upfront cost is: 500001800000000000000 and the sender's account only has: 97259989535339999400 -- Reason given: Amount being transferred is over the limit.\nError: Returned error: sender doesn't have enough funds to send tx. The upfront cost is: 500001800000000000000 and the sender's account only has: 97259989535339999400 -- Reason given: Amount being transferred is over the limit.\n    at module.exports (/sifnode/smart-contracts/scripts/test/sendLockTx.js:32:53)\n    at processTicksAndRejections (node:internal/process/task_queues:94:5)","stack":"Error: Returned error: sender doesn't have enough funds to send tx. The upfront cost is: 500001800000000000000 and the sender's account only has: 97259989535339999400 -- Reason given: Amount being transferred is over the limit.\n    at module.exports (/sifnode/smart-contracts/scripts/test/sendLockTx.js:32:53)\n    at processTicksAndRejections (node:internal/process/task_queues:94:5)","exception":true,"date":"Tue May 11 2021 15:58:13 GMT+0000 (GMT)","process":{"pid":11394,"uid":1000,"gid":1000,"cwd":"/sifnode/smart-contracts","execPath":"/usr/bin/node","version":"v15.14.0","argv":["/usr/bin/node","/sifnode/smart-contracts/node_modules/.bin/truffle","exec","scripts/test/sendLockTx.js","--sifchain_address","sif13erg4wegdkx2d5f8spnnmvp2vl23y6cw4paaq4","--symbol","eth","--amount","500000000000000000000","--bridgebank_address","0x30753E4A8aad7F8597332E813735Def5dD395028","--ethereum_address","0x627306090abab3a6e1400e9345bc60c78a8bef57","--ethereum_private_key_env_var","ETHEREUM_PRIVATE_KEY","--json_path","/sifnode/smart-contracts/build/contracts","--gas","estimate"],"memoryUsage":{"rss":739627008,"heapTotal":583192576,"heapUsed":567503016,"external":20015446,"arrayBuffers":19034307}},"os":{"loadavg":[0.48,0.25,0.19],"uptime":528235.2},"trace":[{"column":53,"file":"/sifnode/smart-contracts/scripts/test/sendLockTx.js","function":"module.exports","line":32,"method":"exports","native":false},{"column":5,"file":"node:internal/process/task_queues","function":"processTicksAndRejections","line":94,"method":null,"native":false}]}
