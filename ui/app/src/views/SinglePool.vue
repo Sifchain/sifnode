@@ -3,6 +3,9 @@ import { defineComponent } from "vue";
 import { computed } from "@vue/reactivity";
 import Layout from "@/components/layout/Layout.vue";
 import SifButton from "@/components/shared/SifButton.vue";
+import Tooltip from "@/components/shared/Tooltip.vue";
+import Icon from "@/components/shared/Icon.vue";
+
 import {
   getAssetLabel,
   getBlockExplorerUrl,
@@ -16,7 +19,7 @@ import { Amount } from "ui-core";
 const DECIMALS = 5;
 
 export default defineComponent({
-  components: { Layout, SifButton },
+  components: { Layout, SifButton, Tooltip, Icon },
   setup(props) {
     const { config, store } = useCore();
     const route = useRoute().params.externalAsset;
@@ -196,6 +199,16 @@ export default defineComponent({
             <span>Your pool share:</span>
             <span class="value">{{ myPoolShare }}</span>
           </div>
+          <div class="row" data-handle="total-pool-share">
+            <span
+              >Your Net Gain/Loss:
+              <Tooltip
+                message="This is your net gain/loss based on earnings from swap fees and any gains or losses associated with changes in the tokens' prices. This is in USDT"
+              >
+                <Icon icon="info-box-black" /> </Tooltip
+            ></span>
+            <span class="value">$0.5 USDT</span>
+          </div>
         </div>
       </div>
       <div class="section">
@@ -214,11 +227,6 @@ export default defineComponent({
           </p>
         </div>
       </div>
-      <div class="text--small mt-6 mb-2">
-        <a target="_blank" :href="getBlockExplorerUrl(chainId)"
-          >Blockexplorer</a
-        >
-      </div>
       <div class="section footer">
         <div class="mr-1">
           <router-link
@@ -235,6 +243,12 @@ export default defineComponent({
             ></router-link
           >
         </div>
+      </div>
+    </div>
+    <div class="blockexplorer-container">
+      <div class="blockexplorer-label">Blockexplorer</div>
+      <div class="blockexplorer-link">
+        <a target="_blank" :href="getBlockExplorerUrl(chainId)">View</a>
       </div>
     </div>
   </Layout>
@@ -324,6 +338,28 @@ export default defineComponent({
     & > div {
       flex: 1;
     }
+  }
+}
+.blockexplorer-container {
+  // TODO - This should be somewhat like the <Panel> class
+  margin-top: 15px;
+  background: #ffffff;
+  border-radius: 6px;
+  border: 1px solid #dedede;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 20px;
+  .blockexplorer-label {
+    color: #333;
+    font-style: italic;
+    font-size: 16px;
+  }
+  .blockexplorer-link {
+    a {
+      color: #666;
+    }
+    font-style: italic;
   }
 }
 </style>
