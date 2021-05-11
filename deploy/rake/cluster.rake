@@ -496,7 +496,6 @@ echo '      sssssssssss    iiiiiiiifffffffff            cccccccccccccccchhhhhhh 
     task :push_secret_to_vault, [:path] do |t, args|
         require "json"
         secret_to_insert = File.read("app_secrets").to_s
-        puts secret_to_insert
         secrets_json = `kubectl exec -n vault --kubeconfig=./kubeconfig -it vault-0 -- vault kv put -format json #{args[:path]} #{secret_to_insert}`
         puts secrets_json
     end
