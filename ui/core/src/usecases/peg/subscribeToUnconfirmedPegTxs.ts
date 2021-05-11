@@ -6,14 +6,14 @@ export const SubscribeToUnconfirmedPegTxs = ({
   services,
   store,
   config,
-}: UsecaseContext<"EthbridgeService" | "EventBusService", "tx" | "wallet"> & {
+}: UsecaseContext<"ethbridge" | "EventBusService", "tx" | "wallet"> & {
   config: PegConfig;
 }) => () => {
   // Update a tx state in the store
   const subscribeToTx = SubscribeToTx({ store, services });
 
   async function getSubscriptions() {
-    const pendingTxs = await services.EthbridgeService.fetchUnconfirmedLockBurnTxs(
+    const pendingTxs = await services.ethbridge.fetchUnconfirmedLockBurnTxs(
       store.wallet.eth.address,
       config.ethConfirmations,
     );

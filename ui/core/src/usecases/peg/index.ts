@@ -32,7 +32,7 @@ export default ({
 }: UsecaseContext<
   // Once we have moved all interactors to their own files this can be
   // UsecaseContext<any,any> or renamed to InteractorContext<any,any>
-  "sif" | "EthbridgeService" | "EventBusService" | "eth", // Select the services you want to access
+  "sif" | "ethbridge" | "EventBusService" | "eth", // Select the services you want to access
   "wallet" | "tx" // Select the store keys you want to access
 >) => {
   const config: PegConfig = {
@@ -86,8 +86,8 @@ export default ({
 
     async unpeg(assetAmount: IAssetAmount) {
       const lockOrBurnFn = isOriginallySifchainNativeToken(assetAmount.asset)
-        ? services.EthbridgeService.lockToEthereum
-        : services.EthbridgeService.burnToEthereum;
+        ? services.ethbridge.lockToEthereum
+        : services.ethbridge.burnToEthereum;
 
       const feeAmount = this.calculateUnpegFee(assetAmount.asset);
 
@@ -134,7 +134,7 @@ export default ({
     //       This has been done for convenience but we should not have to know in the view that
     //       approval is required before pegging as that is very much business domain knowledge
     async approve(address: Address, assetAmount: IAssetAmount) {
-      return await services.EthbridgeService.approveBridgeBankSpend(
+      return await services.ethbridge.approveBridgeBankSpend(
         address,
         assetAmount,
       );
@@ -160,8 +160,8 @@ export default ({
       const subscribeToTx = SubscribeToTx(ctx);
 
       const lockOrBurnFn = isOriginallySifchainNativeToken(assetAmount.asset)
-        ? services.EthbridgeService.burnToSifchain
-        : services.EthbridgeService.lockToSifchain;
+        ? services.ethbridge.burnToSifchain
+        : services.ethbridge.lockToSifchain;
 
       return await new Promise<TransactionStatus>((done) => {
         const pegTx = lockOrBurnFn(
