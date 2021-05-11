@@ -7,10 +7,10 @@ import {
   IAssetAmount,
   LiquidityProvider,
   Pool,
-} from "../entities";
-import { Amount } from "../entities";
-import { fromBaseUnits } from "../utils";
-import { format } from "../utils/format";
+} from "../../../entities";
+import { Amount } from "../../../entities";
+import { fromBaseUnits } from "../../../utils";
+import { format } from "../../../utils/format";
 import { useField } from "./useField";
 import { useBalances } from "./utils";
 
