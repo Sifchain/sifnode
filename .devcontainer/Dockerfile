@@ -15,4 +15,5 @@ RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
 # RUN go get -x <your-dependency-or-tool>
 
 # Install Node packages
-RUN su vscode -c "source /usr/local/share/nvm/nvm.sh && npm install -g ganache-cli" 2>&1
+RUN su vscode -c "source /usr/local/share/nvm/nvm.sh && npm install" 2>&1
+RUN su vscode -c "source /usr/local/share/nvm/nvm.sh && npm install -g ganache-cli truffle" 2>&1
