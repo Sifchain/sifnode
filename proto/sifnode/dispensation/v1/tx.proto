@@ -9,7 +9,7 @@ option go_package = "github.com/Sifchain/sifnode/x/dispensation/types";
 service Msg {
   rpc CreateDistribution(MsgCreateDistribution)
       returns (MsgCreateDistributionResponse);
-  rpc CreateClaim(MsgCreateUserClaim)
+  rpc CreateUserClaim(MsgCreateUserClaim)
       returns (MsgCreateClaimResponse);
 }
 

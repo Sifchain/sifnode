@@ -54,7 +54,7 @@ func (srv msgServer) CreateDistribution(ctx context.Context,
 	return &types.MsgCreateDistributionResponse{}, nil
 }
 
-func (srv msgServer) CreateClaim(ctx context.Context,
+func (srv msgServer) CreateUserClaim(ctx context.Context,
 	claim *types.MsgCreateUserClaim) (*types.MsgCreateClaimResponse, error) {
 
 	sdkCtx := sdk.UnwrapSDKContext(ctx)

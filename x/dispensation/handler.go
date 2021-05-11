@@ -19,7 +19,7 @@ func NewHandler(k Keeper) sdk.Handler {
 			res, err := msgServer.CreateDistribution(sdk.WrapSDKContext(ctx), msg)
 			return sdk.WrapServiceResult(ctx, res, err)
 		case *types.MsgCreateUserClaim:
-			res, err := msgServer.CreateClaim(sdk.WrapSDKContext(ctx), msg)
+			res, err := msgServer.CreateUserClaim(sdk.WrapSDKContext(ctx), msg)
 			return sdk.WrapServiceResult(ctx, res, err)
 
 		default:

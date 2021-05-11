@@ -69,7 +69,7 @@ func (m MsgCreateUserClaim) Route() string {
 }
 
 func (m MsgCreateUserClaim) Type() string {
-	return MsgTypeCreateClaim
+	return MsgTypeCreateUserClaim
 }
 
 func (m MsgCreateUserClaim) ValidateBasic() error {

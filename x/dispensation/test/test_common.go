@@ -38,7 +38,7 @@ func CreatOutputList(count int, rowanAmount string) []types.Output {
 	return outputList
 }
 
-func CreatInputList(count int, rowanAmount string) []types.Input {
+func CreateInputList(count int, rowanAmount string) []types.Input {
 	list := make([]types.Input, count)
 	amount, ok := sdk.NewIntFromString(rowanAmount)
 	if !ok {

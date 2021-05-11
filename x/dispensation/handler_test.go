@@ -17,7 +17,7 @@ func TestNewHandler_CreateDistribution(t *testing.T) {
 	keeper := app.DispensationKeeper
 	handler := dispensation.NewHandler(keeper)
 	recipients := 3000
-	inputList := test.CreatInputList(2, "15000000000000000000000")
+	inputList := test.CreateInputList(2, "15000000000000000000000")
 	outputList := test.CreatOutputList(recipients, "10000000000000000000")
 	err := bank.ValidateInputsOutputs(inputList, outputList)
 	assert.NoError(t, err)

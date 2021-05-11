@@ -9,7 +9,7 @@ import (
 const (
 	// ModuleName is the name of the module
 	ModuleName                = "dispensation"
-	MsgTypeCreateClaim        = "createClaim"
+	MsgTypeCreateUserClaim    = "createUserClaim"
 	MsgTypeCreateDistribution = "createDistribution"
 	// StoreKey to be used when creating the KVStore
 	StoreKey = ModuleName
