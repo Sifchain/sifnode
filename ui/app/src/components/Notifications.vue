@@ -2,7 +2,7 @@
 import { computed, defineComponent } from "vue";
 import { reactive, ref, Ref } from "@vue/reactivity"; /* eslint-disable-line */
 import { useCore } from "@/hooks/useCore";
-import { AppEvent } from "ui-core/src/api/EventBusService";
+import { AppEvent } from "ui-core/src/services/EventBusService";
 
 // Message?
 type Notification = {
