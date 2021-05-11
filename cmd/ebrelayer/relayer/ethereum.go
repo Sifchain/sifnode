@@ -86,25 +86,6 @@ func NewEthereumSub(cliCtx client.Context, rpcURL string, validatorMoniker, chai
 	}, nil
 }
 
-// func buildKeyringInfoForAccount(validatorMoniker string, mnemonic string) (keyring.Info, error) {
-// 	_, err := password.Generate(32, 5, 0, false, false)
-
-// 	if err != nil {
-// 		return nil, err
-// 	}
-
-// 	kr := keyring.NewInMemory()
-// 	hdpath := *hd.NewFundraiserParams(0, sdk.CoinType, 0)
-
-// 	result, err := kr.NewAccount(validatorMoniker, mnemonic, "", hdpath.String(), hd.Secp256k1)
-
-// 	if err != nil {
-// 		return nil, err
-// 	}
-
-// 	return result, err
-// }
-
 func AddToKeyringWithMnemonic(kr keyring.Keyring, keyName string, mnemonic string) (keyring.Info, error) {
 	hdpath := *hd.NewFundraiserParams(0, sdk.CoinType, 0)
 
