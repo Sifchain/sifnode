@@ -7,7 +7,7 @@ export default ({
   services,
   store,
 }: UsecaseContext<
-  "SifService" | "ClpService" | "EventBusService",
+  "SifService" | "clp" | "EventBusService",
   "pools" | "wallet" | "accountpools"
 >) => {
   const state = services.SifService.getState();
@@ -16,14 +16,14 @@ export default ({
     const state = services.SifService.getState();
 
     // UPdate pools
-    const pools = await services.ClpService.getPools();
+    const pools = await services.clp.getPools();
     for (let pool of pools) {
       store.pools[pool.symbol()] = pool;
     }
 
     // Update lp pools
     if (state.address) {
-      const accountPoolSymbols = await services.ClpService.getPoolSymbolsByLiquidityProvider(
+      const accountPoolSymbols = await services.clp.getPoolSymbolsByLiquidityProvider(
         state.address,
       );
 
@@ -31,7 +31,7 @@ export default ({
       // Ideally we would have a better rest endpoint design
 
       accountPoolSymbols.forEach(async (symbol) => {
-        const lp = await services.ClpService.getLiquidityProvider({
+        const lp = await services.clp.getLiquidityProvider({
           symbol,
           lpAddress: state.address,
         });
@@ -96,7 +96,7 @@ export default ({
     ) {
       if (!state.address) throw "No from address provided for swap";
 
-      const tx = await services.ClpService.swap({
+      const tx = await services.clp.swap({
         fromAddress: state.address,
         sentAmount,
         receivedAsset,
@@ -130,8 +130,8 @@ export default ({
       );
 
       const provideLiquidity = hasPool
-        ? services.ClpService.addLiquidity
-        : services.ClpService.createPool;
+        ? services.clp.addLiquidity
+        : services.clp.createPool;
 
       const tx = await provideLiquidity({
         fromAddress: state.address,
@@ -157,7 +157,7 @@ export default ({
       wBasisPoints: string,
       asymmetry: string,
     ) {
-      const tx = await services.ClpService.removeLiquidity({
+      const tx = await services.clp.removeLiquidity({
         fromAddress: state.address,
         asset,
         asymmetry,
