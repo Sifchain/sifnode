@@ -2147,6 +2147,11 @@ expand-brackets@^2.1.4:
     snapdragon "^0.8.1"
     to-regex "^3.0.1"
 
+expect-playwright@^0.3.4:
+  version "0.3.4"
+  resolved "https://registry.yarnpkg.com/expect-playwright/-/expect-playwright-0.3.4.tgz#97a2eea0f4887350cf57b1f132484d14ca5bb301"
+  integrity sha512-JulhMkc5lVvpF18ImWLqviHZpo4qzT9FfpF+lP4D+U9guGUnYOCFpS/5Qk1c3zKhYHJL1JBEfiiGfcRUuzsnEg==
+
 expect@^26.6.2:
   version "26.6.2"
   resolved "https://registry.yarnpkg.com/expect/-/expect-26.6.2.tgz#c6b996bf26bf3fe18b67b2d0f51fc981ba934417"
@@ -2466,9 +2471,9 @@ has@^1.0.3:
     function-bind "^1.1.1"
 
 hosted-git-info@^2.1.4:
-  version "2.8.8"
-  resolved "https://registry.yarnpkg.com/hosted-git-info/-/hosted-git-info-2.8.8.tgz#7539bd4bc1e0e0a895815a2e0262420b12858488"
-  integrity sha512-f/wzC2QaWBs7t9IYqB4T3sR1xviIViXJRJTWBlx2Gf3g0Xi5vI7Yy4koXQ1c9OYDGHN9sBy1DQ2AB8fqZBWhUg==
+  version "2.8.9"
+  resolved "https://registry.yarnpkg.com/hosted-git-info/-/hosted-git-info-2.8.9.tgz#dffc0bf9a21c02209090f2aa69429e1414daf3f9"
+  integrity sha512-mxIDAb9Lsm6DoOJ7xH+5+X4y1LU/4Hi50L9C5sIswK3JzULS4bwk1FvjdBgvYR4bzT4tuUQiC15FE2f5HbLvYw==
 
 html-encoding-sniffer@^2.0.1:
   version "2.0.1"
@@ -4436,6 +4441,11 @@ tr46@^2.0.2:
   integrity sha512-3n1qG+/5kg+jrbTzwAykB5yRYtQCTqOGKq5U5PE3b0a1/mzo6snDhjGS0zJVJunO0NrT3Dg1MLy5TjWP/UJppg==
   dependencies:
     punycode "^2.1.1"
+
+tree-kill@^1.2.2:
+  version "1.2.2"
+  resolved "https://registry.yarnpkg.com/tree-kill/-/tree-kill-1.2.2.tgz#4ca09a9092c88b73a7cdc5e8a01b507b0790a0cc"
+  integrity sha512-L0Orpi8qGpRG//Nd+H90vFB+3iHnue1zSSGmNOOCh1GLJ7rUKVwV2HvijphGQS2UmhUZewS9VgvxYIdgr+fG1A==
 
 ts-jest@^26.5.4:
   version "26.5.4"
