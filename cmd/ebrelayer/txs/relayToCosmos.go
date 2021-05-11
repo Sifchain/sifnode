@@ -3,10 +3,8 @@ package txs
 // DONTCOVER
 
 import (
-	"log"
-	"sync/atomic"
-
 	"go.uber.org/zap"
+	"log"
 
 	"github.com/Sifchain/sifnode/x/ethbridge/types"
 	"github.com/cosmos/cosmos-sdk/client"
@@ -17,7 +15,6 @@ import (
 )
 
 var (
-	nextSequenceNumber uint64 = 0
 	errorMessageKey           = "errorMessage"
 )
 
@@ -29,7 +26,6 @@ func RelayToCosmos(factory tx.Factory, claims []*types.EthBridgeClaim, cliCtx cl
 	sugaredLogger.Infow(
 		"relay prophecies to cosmos.",
 		"claimAmount", len(claims),
-		"nextSequenceNumber", nextSequenceNumber,
 	)
 
 	for _, claim := range claims {
@@ -51,14 +47,7 @@ func RelayToCosmos(factory tx.Factory, claims []*types.EthBridgeClaim, cliCtx cl
 
 	sugaredLogger.Infow(
 		"relay sequenceNumber from builder.",
-		"nextSequenceNumber", nextSequenceNumber,
 	)
-
-	// If we start to control sequence, get the sequence and set the factory with that sequence.
-	if nextSequenceNumber > 0 {
-		sugaredLogger.Infow("txBldr.WithSequence(nextSequenceNumber) passed")
-		//factory = factory.WithSequence(nextSequenceNumber)
-	}
 
 	sugaredLogger.Infow("RelayToCosmos building, signing, and broadcasting", "messages", messages)
 	err := tx.BroadcastTx(cliCtx, factory.WithGas(1000000000000000000).WithFees("500000000000000000rowan"), messages...)
@@ -77,25 +66,5 @@ func RelayToCosmos(factory tx.Factory, claims []*types.EthBridgeClaim, cliCtx cl
 
 	log.Println("Broadcasted tx without error")
 
-	// start to control sequence number after first successful tx
-	if nextSequenceNumber == 0 {
-		setNextSequenceNumber(factory.Sequence() + 1)
-	} else {
-		incrementNextSequenceNumber()
-	}
-
-	sugaredLogger.Infow(
-		"relay next sequenceNumber from memory.",
-		"nextSequenceNumber", nextSequenceNumber,
-	)
-
 	return nil
-}
-
-func incrementNextSequenceNumber() {
-	atomic.AddUint64(&nextSequenceNumber, 1)
-}
-
-func setNextSequenceNumber(sequenceNumber uint64) {
-	atomic.StoreUint64(&nextSequenceNumber, sequenceNumber)
 }
