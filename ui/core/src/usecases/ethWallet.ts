@@ -7,11 +7,8 @@ import { isSupportedEVMChain } from "./utils";
 export default ({
   services,
   store,
-}: UsecaseContext<
-  "EthereumService" | "EventBusService",
-  "wallet" | "asset"
->) => {
-  services.EthereumService.onProviderNotFound(() => {
+}: UsecaseContext<"eth" | "EventBusService", "wallet" | "asset">) => {
+  services.eth.onProviderNotFound(() => {
     services.EventBusService.dispatch({
       type: "WalletConnectionErrorEvent",
       payload: {
@@ -21,11 +18,11 @@ export default ({
     });
   });
 
-  services.EthereumService.onChainIdDetected((chainId) => {
+  services.eth.onChainIdDetected((chainId) => {
     store.wallet.eth.chainId = chainId;
   });
 
-  const etheriumState = services.EthereumService.getState();
+  const etheriumState = services.eth.getState();
 
   const actions = {
     isSupportedNetwork() {
@@ -33,12 +30,12 @@ export default ({
     },
 
     async disconnectWallet() {
-      await services.EthereumService.disconnect();
+      await services.eth.disconnect();
     },
 
     async connectToWallet() {
       try {
-        await services.EthereumService.connect();
+        await services.eth.connect();
       } catch (err) {
         services.EventBusService.dispatch({
           type: "WalletConnectionErrorEvent",
@@ -51,7 +48,7 @@ export default ({
     },
 
     async transferEthWallet(amount: number, recipient: string, asset: Asset) {
-      const hash = await services.EthereumService.transfer({
+      const hash = await services.eth.transfer({
         amount: B(amount, asset.decimals),
         recipient,
         asset,
@@ -88,7 +85,7 @@ export default ({
 
   effect(async () => {
     etheriumState.log; // trigger on log change
-    await services.EthereumService.getBalance();
+    await services.eth.getBalance();
   });
 
   return actions;

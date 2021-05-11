@@ -32,7 +32,7 @@ export default ({
 }: UsecaseContext<
   // Once we have moved all interactors to their own files this can be
   // UsecaseContext<any,any> or renamed to InteractorContext<any,any>
-  "SifService" | "EthbridgeService" | "EventBusService" | "EthereumService", // Select the services you want to access
+  "SifService" | "EthbridgeService" | "EventBusService" | "eth", // Select the services you want to access
   "wallet" | "tx" // Select the store keys you want to access
 >) => {
   const config: PegConfig = {
@@ -73,7 +73,7 @@ export default ({
     },
 
     getEthTokens() {
-      return services.EthereumService.getSupportedTokens();
+      return services.eth.getSupportedTokens();
     },
 
     calculateUnpegFee(asset: IAsset) {
