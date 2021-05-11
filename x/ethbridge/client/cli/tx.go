@@ -166,7 +166,7 @@ func GetCmdBurn() *cobra.Command {
 				return errors.New("Error parsing ceth amount")
 			}
 
-			msg := types.NewMsgBurn(ethereumChainID, cosmosSender, ethereumReceiver, amount, symbol, cethAmount)
+			msg := types.NewMsgBurn(int64(ethereumChainID), cosmosSender, ethereumReceiver, amount, symbol, cethAmount)
 			if err := msg.ValidateBasic(); err != nil {
 				return err
 			}
