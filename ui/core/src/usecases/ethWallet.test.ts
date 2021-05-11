@@ -36,8 +36,8 @@ beforeEach(() => {
 
   ethWalletActions = createActions({
     services: {
-      EthereumService: mockEthereumService,
-      EventBusService: mockEventBusService,
+      eth: mockEthereumService,
+      bus: mockEventBusService,
     },
     store: {
       asset: { topTokens: [] },
