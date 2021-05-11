@@ -11,11 +11,16 @@ if  [[ $(cat ~/.docker/config.json  | jq '.auths["ghcr.io"].auth') == 'null' ]];
   exit 1
 fi
 
+if [[ ! -z "$(git status --porcelain --untracked-files=no)" ]]; then 
+  echo "Git workspace must be clean to save git commit hash"
+  exit 1
+fi
+
 echo "Github Registry Login found."
 echo "Building new container..."
 
-NOW=$(date +%s)
-IMAGE_NAME=ghcr.io/sifchain/sifnode/ui-stack:$NOW
+TAG=$(git rev-parse HEAD)
+IMAGE_NAME=ghcr.io/sifchain/sifnode/ui-stack:$TAG
 
 echo "New image name: $IMAGE_NAME"
 
