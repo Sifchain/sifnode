@@ -26,6 +26,7 @@ func NewHandler(k Keeper) sdk.Handler {
 
 // handleMsgCreateDistribution is the top level function for calling all executors.
 func handleMsgCreateDistribution(ctx sdk.Context, keeper Keeper, msg MsgDistribution) (*sdk.Result, error) {
+	return nil, errors.New("Dispensation module is currently disabled")
 	// Verify if distribution already exists
 	err := keeper.VerifyDistribution(ctx, msg.DistributionName, msg.DistributionType)
 	if err != nil {
