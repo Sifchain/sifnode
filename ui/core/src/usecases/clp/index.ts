@@ -7,7 +7,7 @@ export default ({
   services,
   store,
 }: UsecaseContext<
-  "sif" | "clp" | "EventBusService",
+  "sif" | "clp" | "bus",
   "pools" | "wallet" | "accountpools"
 >) => {
   const state = services.sif.getState();
@@ -62,7 +62,7 @@ export default ({
   syncPools().then(() => {
     effect(() => {
       if (Object.keys(store.pools).length === 0) {
-        services.EventBusService.dispatch({
+        services.bus.dispatch({
           type: "NoLiquidityPoolsFoundEvent",
           payload: {},
         });
@@ -106,7 +106,7 @@ export default ({
       const txStatus = await services.sif.signAndBroadcast(tx.value.msg);
 
       if (txStatus.state !== "accepted") {
-        services.EventBusService.dispatch({
+        services.bus.dispatch({
           type: "TransactionErrorEvent",
           payload: {
             txStatus,
@@ -141,7 +141,7 @@ export default ({
 
       const txStatus = await services.sif.signAndBroadcast(tx.value.msg);
       if (txStatus.state !== "accepted") {
-        services.EventBusService.dispatch({
+        services.bus.dispatch({
           type: "TransactionErrorEvent",
           payload: {
             txStatus,
@@ -167,7 +167,7 @@ export default ({
       const txStatus = await services.sif.signAndBroadcast(tx.value.msg);
 
       if (txStatus.state !== "accepted") {
-        services.EventBusService.dispatch({
+        services.bus.dispatch({
           type: "TransactionErrorEvent",
           payload: {
             txStatus,

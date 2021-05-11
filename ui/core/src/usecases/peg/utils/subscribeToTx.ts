@@ -7,7 +7,7 @@ import { TransactionStatus } from "../../../entities";
 export function SubscribeToTx({
   services,
   store,
-}: UsecaseContext<"EventBusService", "wallet" | "tx">) {
+}: UsecaseContext<"bus", "wallet" | "tx">) {
   // Helper to set store tx status
   // Should this live behind a store service API?
   function storeSetTxStatus(
@@ -40,7 +40,7 @@ export function SubscribeToTx({
         symbol: tx.symbol,
       });
 
-      services.EventBusService.dispatch({
+      services.bus.dispatch({
         type: "PegTransactionPendingEvent",
         payload: {
           hash: txHash,
@@ -55,7 +55,7 @@ export function SubscribeToTx({
         state: "completed",
       });
 
-      services.EventBusService.dispatch({
+      services.bus.dispatch({
         type: "PegTransactionCompletedEvent",
         payload: {
           hash: txHash,
@@ -73,7 +73,7 @@ export function SubscribeToTx({
         state: "failed",
       });
 
-      services.EventBusService.dispatch({
+      services.bus.dispatch({
         type: "PegTransactionErrorEvent",
         payload: {
           txStatus: {

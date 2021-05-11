@@ -7,9 +7,9 @@ import { isSupportedEVMChain } from "./utils";
 export default ({
   services,
   store,
-}: UsecaseContext<"eth" | "EventBusService", "wallet" | "asset">) => {
+}: UsecaseContext<"eth" | "bus", "wallet" | "asset">) => {
   services.eth.onProviderNotFound(() => {
-    services.EventBusService.dispatch({
+    services.bus.dispatch({
       type: "WalletConnectionErrorEvent",
       payload: {
         walletType: "eth",
@@ -37,7 +37,7 @@ export default ({
       try {
         await services.eth.connect();
       } catch (err) {
-        services.EventBusService.dispatch({
+        services.bus.dispatch({
           type: "WalletConnectionErrorEvent",
           payload: {
             walletType: "eth",
@@ -64,7 +64,7 @@ export default ({
         etheriumState.connected && !!etheriumState.address;
 
       if (store.wallet.eth.isConnected) {
-        services.EventBusService.dispatch({
+        services.bus.dispatch({
           type: "WalletConnectedEvent",
           payload: {
             walletType: "eth",

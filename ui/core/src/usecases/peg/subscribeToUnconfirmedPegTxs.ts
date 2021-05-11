@@ -6,7 +6,7 @@ export const SubscribeToUnconfirmedPegTxs = ({
   services,
   store,
   config,
-}: UsecaseContext<"ethbridge" | "EventBusService", "tx" | "wallet"> & {
+}: UsecaseContext<"ethbridge" | "bus", "tx" | "wallet"> & {
   config: PegConfig;
 }) => () => {
   // Update a tx state in the store

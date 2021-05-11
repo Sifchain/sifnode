@@ -32,7 +32,7 @@ export default ({
 }: UsecaseContext<
   // Once we have moved all interactors to their own files this can be
   // UsecaseContext<any,any> or renamed to InteractorContext<any,any>
-  "sif" | "ethbridge" | "EventBusService" | "eth", // Select the services you want to access
+  "sif" | "ethbridge" | "bus" | "eth", // Select the services you want to access
   "wallet" | "tx" // Select the store keys you want to access
 >) => {
   const config: PegConfig = {
@@ -110,7 +110,7 @@ export default ({
       const txStatus = await services.sif.signAndBroadcast(tx.value.msg);
 
       if (txStatus.state !== "accepted") {
-        services.EventBusService.dispatch({
+        services.bus.dispatch({
           type: "PegTransactionErrorEvent",
           payload: {
             txStatus,
@@ -145,7 +145,7 @@ export default ({
         assetAmount.asset.network === Network.ETHEREUM &&
         !isSupportedEVMChain(store.wallet.eth.chainId)
       ) {
-        services.EventBusService.dispatch({
+        services.bus.dispatch({
           type: "ErrorEvent",
           payload: {
             message: "EVM Network not supported!",
