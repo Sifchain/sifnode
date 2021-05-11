@@ -7,33 +7,33 @@ import { effect } from "@vue/reactivity";
 export default ({
   services,
   store,
-}: UsecaseContext<"SifService" | "clp" | "EventBusService", "wallet">) => {
-  const state = services.SifService.getState();
+}: UsecaseContext<"sif" | "clp" | "EventBusService", "wallet">) => {
+  const state = services.sif.getState();
 
   const actions = {
     async getCosmosBalances(address: Address) {
       // TODO: validate sif prefix
-      return await services.SifService.getBalance(address);
+      return await services.sif.getBalance(address);
     },
 
     async connect(mnemonic: Mnemonic): Promise<string> {
       if (!mnemonic) throw "Mnemonic must be defined";
       if (!validateMnemonic(mnemonic)) throw "Invalid Mnemonic. Not sent.";
-      return await services.SifService.setPhrase(mnemonic);
+      return await services.sif.setPhrase(mnemonic);
     },
 
     async sendCosmosTransaction(params: TxParams) {
-      return await services.SifService.transfer(params);
+      return await services.sif.transfer(params);
     },
 
     async disconnect() {
-      services.SifService.purgeClient();
+      services.sif.purgeClient();
     },
 
     async connectToWallet() {
       try {
         // TODO type
-        await services.SifService.connect();
+        await services.sif.connect();
         store.wallet.sif.isConnected = true;
       } catch (error) {
         services.EventBusService.dispatch({

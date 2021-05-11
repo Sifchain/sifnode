@@ -7,13 +7,13 @@ export default ({
   services,
   store,
 }: UsecaseContext<
-  "SifService" | "clp" | "EventBusService",
+  "sif" | "clp" | "EventBusService",
   "pools" | "wallet" | "accountpools"
 >) => {
-  const state = services.SifService.getState();
+  const state = services.sif.getState();
 
   async function syncPools() {
-    const state = services.SifService.getState();
+    const state = services.sif.getState();
 
     // UPdate pools
     const pools = await services.clp.getPools();
@@ -72,7 +72,7 @@ export default ({
 
   // Then every transaction
 
-  services.SifService.onNewBlock(async () => {
+  services.sif.onNewBlock(async () => {
     await syncPools();
   });
 
@@ -103,7 +103,7 @@ export default ({
         minimumReceived,
       });
 
-      const txStatus = await services.SifService.signAndBroadcast(tx.value.msg);
+      const txStatus = await services.sif.signAndBroadcast(tx.value.msg);
 
       if (txStatus.state !== "accepted") {
         services.EventBusService.dispatch({
@@ -139,7 +139,7 @@ export default ({
         externalAssetAmount,
       });
 
-      const txStatus = await services.SifService.signAndBroadcast(tx.value.msg);
+      const txStatus = await services.sif.signAndBroadcast(tx.value.msg);
       if (txStatus.state !== "accepted") {
         services.EventBusService.dispatch({
           type: "TransactionErrorEvent",
@@ -164,7 +164,7 @@ export default ({
         wBasisPoints,
       });
 
-      const txStatus = await services.SifService.signAndBroadcast(tx.value.msg);
+      const txStatus = await services.sif.signAndBroadcast(tx.value.msg);
 
       if (txStatus.state !== "accepted") {
         services.EventBusService.dispatch({
@@ -180,7 +180,7 @@ export default ({
     },
 
     async disconnect() {
-      services.SifService.purgeClient();
+      services.sif.purgeClient();
     },
   };
 

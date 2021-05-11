@@ -28,8 +28,8 @@ export function createServices(context: ServiceContext) {
   const EventBusService = eventBusService(context);
   return {
     clp: ClpService,
-    EthereumService,
-    SifService,
+    eth: EthereumService,
+    sif: SifService,
     EthbridgeService,
     EventBusService,
   };

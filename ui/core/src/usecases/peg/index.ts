@@ -32,7 +32,7 @@ export default ({
 }: UsecaseContext<
   // Once we have moved all interactors to their own files this can be
   // UsecaseContext<any,any> or renamed to InteractorContext<any,any>
-  "SifService" | "EthbridgeService" | "EventBusService" | "eth", // Select the services you want to access
+  "sif" | "EthbridgeService" | "EventBusService" | "eth", // Select the services you want to access
   "wallet" | "tx" // Select the store keys you want to access
 >) => {
   const config: PegConfig = {
@@ -69,7 +69,7 @@ export default ({
     subscribeToUnconfirmedPegTxs: SubscribeToUnconfirmedPegTxs(ctx),
 
     getSifTokens() {
-      return services.SifService.getSupportedTokens();
+      return services.sif.getSupportedTokens();
     },
 
     getEthTokens() {
@@ -107,7 +107,7 @@ export default ({
         feeAmount,
       );
 
-      const txStatus = await services.SifService.signAndBroadcast(tx.value.msg);
+      const txStatus = await services.sif.signAndBroadcast(tx.value.msg);
 
       if (txStatus.state !== "accepted") {
         services.EventBusService.dispatch({

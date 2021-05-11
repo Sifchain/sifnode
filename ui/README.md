@@ -119,7 +119,7 @@ type ActionContext<ServiceKeys, StoreKeys>
 export default function createAction({
   api,
   store,
-}: ActionContext<"WalletService" | "SifService", "WalletStore">) {
+}: ActionContext<"WalletService" | "sif", "WalletStore">) {
   return {
     async disconnectWallet() {
       await api.WalletService.disconnect();
