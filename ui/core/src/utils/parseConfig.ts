@@ -1,6 +1,6 @@
-import { ApiContext } from "../api";
+import { ApiContext } from "../services";
 import { Asset, Network } from "../entities";
-import { getMetamaskProvider } from "../api/EthereumService/utils/getMetamaskProvider";
+import { getMetamaskProvider } from "../services/EthereumService/utils/getMetamaskProvider";
 
 type TokenConfig = {
   symbol: string;

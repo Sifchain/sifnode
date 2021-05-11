@@ -1,6 +1,6 @@
 import { reactive } from "@vue/reactivity";
 import { ActionContext } from "../..";
-import { PegTxEventEmitter } from "../../../api/EthbridgeService/PegTxEventEmitter";
+import { PegTxEventEmitter } from "../../../services/EthbridgeService/PegTxEventEmitter";
 import { TransactionStatus } from "../../../entities";
 
 // Using PascalCase to signify this is a factory

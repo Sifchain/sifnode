@@ -2,7 +2,7 @@ import createActions from "./ethWallet";
 
 import { Address, Asset, Network, TxParams } from "../entities";
 import { Msg } from "@cosmjs/launchpad";
-import { IWalletService } from "../api/IWalletService";
+import { IWalletService } from "../services/IWalletService";
 let mockEthereumService: IWalletService & {};
 let mockEventBusService: any;
 let ethWalletActions: ReturnType<typeof createActions>;

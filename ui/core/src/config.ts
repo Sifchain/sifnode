@@ -19,7 +19,7 @@ import {
   AssetConfig,
 } from "./utils/parseConfig";
 import { Asset } from "./entities";
-import { ApiContext } from "./api";
+import { ApiContext } from "./services";
 
 type ConfigMap = { [s: string]: ApiContext };
 type AssetMap = { [s: string]: Asset[] };

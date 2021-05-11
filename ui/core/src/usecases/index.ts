@@ -1,4 +1,4 @@
-import { Api, WithApi } from "../api";
+import { Api, WithApi } from "../services";
 import { Store, WithStore } from "../store";
 import ethWalletActions from "./ethWallet";
 import clpActions from "./clp";
