@@ -1,8 +1,8 @@
 package txs
 
 import (
-	"math/big"
 	"os"
+	"strconv"
 	"strings"
 	"testing"
 
@@ -71,12 +71,12 @@ func TestProphecyClaimToSignedOracleClaim(t *testing.T) {
 	signature, err := SignClaim(prefixedHashedMsg, privateKey)
 	require.NoError(t, err)
 
-	var message32 [32]byte
+	var message32 []byte
 	copy(message32[:], message)
 
 	// Set up expected OracleClaim
-	expectedOracleClaim := OracleClaim{
-		ProphecyID: big.NewInt(int64(TestProphecyID)),
+	expectedOracleClaim := ethbridge.OracleClaim{
+		ProphecyId: strconv.Itoa(TestProphecyID),
 		Message:    message32,
 		Signature:  signature,
 	}
@@ -134,13 +134,13 @@ func TestMsgBurnToProphecyClaim(t *testing.T) {
 	symbol := strings.Join(res[1:], "")
 
 	// Set up expected ProphecyClaim
-	expectedProphecyClaim := ProphecyClaim{
-		ClaimType:            types.MsgBurn,
+	expectedProphecyClaim := ethbridge.ProphecyClaim{
+		ClaimType:            types.MsgBurn.String(),
 		CosmosSender:         []byte(TestCosmosAddress1),
-		CosmosSenderSequence: big.NewInt(1),
-		EthereumReceiver:     common.HexToAddress(TestEthereumAddress1),
+		CosmosSenderSequence: []byte(strconv.Itoa(TestCosmosAddressSequence)),
+		EthereumReceiver:     []byte(common.HexToAddress(TestEthereumAddress1).String()),
 		Symbol:               symbol,
-		Amount:               testSDKAmount,
+		Amount:               testSDKAmount.String(),
 	}
 
 	// Create a MsgBurn as input parameter
@@ -152,13 +152,13 @@ func TestMsgBurnToProphecyClaim(t *testing.T) {
 
 func TestMsgLockToProphecyClaim(t *testing.T) {
 	// Set up expected ProphecyClaim
-	expectedProphecyClaim := ProphecyClaim{
-		ClaimType:            types.MsgLock,
+	expectedProphecyClaim := ethbridge.ProphecyClaim{
+		ClaimType:            types.MsgLock.String(),
 		CosmosSender:         []byte(TestCosmosAddress1),
-		CosmosSenderSequence: big.NewInt(1),
-		EthereumReceiver:     common.HexToAddress(TestEthereumAddress1),
+		CosmosSenderSequence: []byte(strconv.Itoa(TestCosmosAddressSequence)),
+		EthereumReceiver:     []byte(common.HexToAddress(TestEthereumAddress1).String()),
 		Symbol:               TestSymbol,
-		Amount:               testSDKAmount,
+		Amount:               testSDKAmount.String(),
 	}
 
 	// Create a MsgLock as input parameter
