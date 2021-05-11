@@ -1,4 +1,4 @@
-import { ActionContext } from "..";
+import { UsecaseContext } from "..";
 import { SubscribeToTx } from "./utils/subscribeToTx";
 import { PegConfig } from "./index";
 
@@ -6,7 +6,7 @@ export const SubscribeToUnconfirmedPegTxs = ({
   api,
   store,
   config,
-}: ActionContext<"EthbridgeService" | "EventBusService", "tx" | "wallet"> & {
+}: UsecaseContext<"EthbridgeService" | "EventBusService", "tx" | "wallet"> & {
   config: PegConfig;
 }) => () => {
   // Update a tx state in the store

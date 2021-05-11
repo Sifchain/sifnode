@@ -7,20 +7,20 @@ import sifService, { SifServiceContext } from "./SifService";
 import clpService, { ClpServiceContext } from "./ClpService";
 import eventBusService, { EventBusServiceContext } from "./EventBusService";
 
-export type Api = ReturnType<typeof createApi>;
+export type Services = ReturnType<typeof createServices>;
 
-export type WithApi<T extends keyof Api = keyof Api> = {
-  api: Pick<Api, T>;
+export type WithService<T extends keyof Services = keyof Services> = {
+  api: Pick<Services, T>;
 };
 
-export type ApiContext = EthereumServiceContext &
+export type ServiceContext = EthereumServiceContext &
   SifServiceContext &
   ClpServiceContext &
   EthbridgeServiceContext &
   ClpServiceContext &
   EventBusServiceContext; // add contexts from other APIs
 
-export function createApi(context: ApiContext) {
+export function createServices(context: ServiceContext) {
   const EthereumService = ethereumService(context);
   const EthbridgeService = ethbridgeService(context);
   const SifService = sifService(context);

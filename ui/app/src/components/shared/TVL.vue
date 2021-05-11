@@ -22,7 +22,7 @@ export default defineComponent({
       return "";
     }
 
-    let total: number = 0.0;
+    let total = 0.0;
     pools.map((p: any) => {
       const depth = p.poolDepth;
       if (isNumeric(depth)) {

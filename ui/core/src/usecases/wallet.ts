@@ -1,13 +1,13 @@
 import { Address, TxParams } from "../entities";
 import { validateMnemonic } from "bip39";
 import { Mnemonic } from "../entities/Wallet";
-import { ActionContext } from ".";
+import { UsecaseContext } from ".";
 import { effect } from "@vue/reactivity";
 
 export default ({
   api,
   store,
-}: ActionContext<
+}: UsecaseContext<
   "SifService" | "ClpService" | "EventBusService",
   "wallet"
 >) => {

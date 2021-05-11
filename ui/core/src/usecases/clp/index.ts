@@ -1,12 +1,12 @@
 import { IAsset, IAssetAmount } from "../../entities";
-import { ActionContext } from "..";
+import { UsecaseContext } from "..";
 import { PoolStore } from "../../store/pools";
 import { effect } from "@vue/reactivity";
 
 export default ({
   api,
   store,
-}: ActionContext<
+}: UsecaseContext<
   "SifService" | "ClpService" | "EventBusService",
   "pools" | "wallet" | "accountpools"
 >) => {

@@ -1,16 +1,16 @@
-import { Api, WithApi } from "../services";
+import { Services, WithService } from "../services";
 import { Store, WithStore } from "../store";
 import ethWalletActions from "./ethWallet";
 import clpActions from "./clp";
 import walletActions from "./wallet";
 import pegActions from "./peg";
 
-export type ActionContext<
-  T extends keyof Api = keyof Api,
+export type UsecaseContext<
+  T extends keyof Services = keyof Services,
   S extends keyof Store = keyof Store
-> = WithApi<T> & WithStore<S>;
+> = WithService<T> & WithStore<S>;
 
-export function createActions(context: ActionContext) {
+export function createUsecases(context: UsecaseContext) {
   return {
     ethWallet: ethWalletActions(context),
     clp: clpActions(context),
@@ -19,4 +19,4 @@ export function createActions(context: ActionContext) {
   };
 }
 
-export type Actions = ReturnType<typeof createActions>;
+export type Actions = ReturnType<typeof createUsecases>;

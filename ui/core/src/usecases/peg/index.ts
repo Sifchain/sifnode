@@ -1,4 +1,4 @@
-import { ActionContext } from "..";
+import { UsecaseContext } from "..";
 import {
   Address,
   Asset,
@@ -29,9 +29,9 @@ export type PegConfig = { ethConfirmations: number };
 export default ({
   api,
   store,
-}: ActionContext<
+}: UsecaseContext<
   // Once we have moved all interactors to their own files this can be
-  // ActionContext<any,any> or renamed to InteractorContext<any,any>
+  // UsecaseContext<any,any> or renamed to InteractorContext<any,any>
   "SifService" | "EthbridgeService" | "EventBusService" | "EthereumService", // Select the services you want to access
   "wallet" | "tx" // Select the store keys you want to access
 >) => {

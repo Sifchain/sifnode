@@ -1,5 +1,5 @@
 import { effect } from "@vue/reactivity";
-import { ActionContext } from "..";
+import { UsecaseContext } from "..";
 import { Asset, IAsset } from "../entities";
 import B from "../entities/utils/B";
 import { isSupportedEVMChain } from "./utils";
@@ -7,7 +7,7 @@ import { isSupportedEVMChain } from "./utils";
 export default ({
   api,
   store,
-}: ActionContext<
+}: UsecaseContext<
   "EthereumService" | "EventBusService",
   "wallet" | "asset"
 >) => {

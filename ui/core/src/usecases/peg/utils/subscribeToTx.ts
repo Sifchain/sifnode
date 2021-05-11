@@ -1,5 +1,5 @@
 import { reactive } from "@vue/reactivity";
-import { ActionContext } from "../..";
+import { UsecaseContext } from "../..";
 import { PegTxEventEmitter } from "../../../services/EthbridgeService/PegTxEventEmitter";
 import { TransactionStatus } from "../../../entities";
 
@@ -7,7 +7,7 @@ import { TransactionStatus } from "../../../entities";
 export function SubscribeToTx({
   api,
   store,
-}: ActionContext<"EventBusService", "wallet" | "tx">) {
+}: UsecaseContext<"EventBusService", "wallet" | "tx">) {
   // Helper to set store tx status
   // Should this live behind a store service API?
   function storeSetTxStatus(
