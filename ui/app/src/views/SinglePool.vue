@@ -1,6 +1,6 @@
 <script lang="ts">
-import { defineComponent } from "vue";
-import { computed } from "@vue/reactivity";
+import { defineComponent, watch } from "vue";
+import { computed, ref, ComputedRef } from "@vue/reactivity";
 import Layout from "@/components/layout/Layout.vue";
 import SifButton from "@/components/shared/SifButton.vue";
 import Tooltip from "@/components/shared/Tooltip.vue";
@@ -17,12 +17,39 @@ import { format } from "ui-core/src/utils/format";
 import { Amount } from "ui-core";
 
 const DECIMALS = 5;
+//
+
+async function getEarnedRewards(address: ComputedRef<any>) {
+  if (!address.value) return;
+  // TODO - pass in dynamic address and symbol
+  // TODO - get API address from config
+  const res = await fetch(
+    "https://vtdbgplqd6.execute-api.us-west-2.amazonaws.com/default/netchange/devnet?symbol=c1inch&address=sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
+    // `https://vtdbgplqd6.execute-api.us-west-2.amazonaws.com/default/rewards/${address.value}`,
+  );
+  const data = await res.json();
+  const parsedData = JSON.parse(data);
+  console.log("what is earned rewards", parsedData);
+  console.log(
+    "what up",
+    parsedData.netChangeUSDT,
+    typeof parsedData.netChangeUSDT,
+  );
+  return parsedData.netChangeUSDT;
+}
 
 export default defineComponent({
   components: { Layout, SifButton, Tooltip, Icon },
   setup(props) {
     const { config, store } = useCore();
     const route = useRoute().params.externalAsset;
+
+    const address = computed(() => store.wallet.sif.address);
+    let earnedRewards = ref<string>();
+
+    watch(address, async () => {
+      earnedRewards.value = await getEarnedRewards(address);
+    });
 
     const accountPool = computed(() => {
       if (
@@ -120,6 +147,7 @@ export default defineComponent({
       myPoolShare,
       chainId: config.sifChainId,
       getBlockExplorerUrl,
+      earnedRewards,
     };
   },
 });
@@ -207,7 +235,7 @@ export default defineComponent({
               >
                 <Icon icon="info-box-black" /> </Tooltip
             ></span>
-            <span class="value">$0.5 USDT</span>
+            <span class="value">${{ earnedRewards }} USDT</span>
           </div>
         </div>
       </div>
