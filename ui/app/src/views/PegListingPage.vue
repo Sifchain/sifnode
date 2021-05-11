@@ -34,10 +34,10 @@ export default defineComponent({
     Icon,
   },
   setup(_, context) {
-    const { store, actions } = useCore();
+    const { store, usecases } = useCore();
     function getIsSupportedNetwork(asset: IAsset): boolean {
       if (asset.network === "ethereum") {
-        return actions.ethWallet.isSupportedNetwork();
+        return usecases.ethWallet.isSupportedNetwork();
       }
 
       if (asset.network === "sifchain") {
@@ -50,11 +50,11 @@ export default defineComponent({
 
     const allTokens = computed(() => {
       if (selectedTab.value === "External Tokens") {
-        return actions.peg.getEthTokens();
+        return usecases.peg.getEthTokens();
       }
 
       if (selectedTab.value === "Sifchain Native") {
-        return actions.peg.getSifTokens();
+        return usecases.peg.getSifTokens();
       }
       return [];
     });

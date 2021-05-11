@@ -5,14 +5,14 @@ import B from "../entities/utils/B";
 import { isSupportedEVMChain } from "./utils";
 
 export default ({
-  api,
+  services,
   store,
 }: UsecaseContext<
   "EthereumService" | "EventBusService",
   "wallet" | "asset"
 >) => {
-  api.EthereumService.onProviderNotFound(() => {
-    api.EventBusService.dispatch({
+  services.EthereumService.onProviderNotFound(() => {
+    services.EventBusService.dispatch({
       type: "WalletConnectionErrorEvent",
       payload: {
         walletType: "eth",
@@ -21,11 +21,11 @@ export default ({
     });
   });
 
-  api.EthereumService.onChainIdDetected((chainId) => {
+  services.EthereumService.onChainIdDetected((chainId) => {
     store.wallet.eth.chainId = chainId;
   });
 
-  const etheriumState = api.EthereumService.getState();
+  const etheriumState = services.EthereumService.getState();
 
   const actions = {
     isSupportedNetwork() {
@@ -33,14 +33,14 @@ export default ({
     },
 
     async disconnectWallet() {
-      await api.EthereumService.disconnect();
+      await services.EthereumService.disconnect();
     },
 
     async connectToWallet() {
       try {
-        await api.EthereumService.connect();
+        await services.EthereumService.connect();
       } catch (err) {
-        api.EventBusService.dispatch({
+        services.EventBusService.dispatch({
           type: "WalletConnectionErrorEvent",
           payload: {
             walletType: "eth",
@@ -51,7 +51,7 @@ export default ({
     },
 
     async transferEthWallet(amount: number, recipient: string, asset: Asset) {
-      const hash = await api.EthereumService.transfer({
+      const hash = await services.EthereumService.transfer({
         amount: B(amount, asset.decimals),
         recipient,
         asset,
@@ -67,7 +67,7 @@ export default ({
         etheriumState.connected && !!etheriumState.address;
 
       if (store.wallet.eth.isConnected) {
-        api.EventBusService.dispatch({
+        services.EventBusService.dispatch({
           type: "WalletConnectedEvent",
           payload: {
             walletType: "eth",
@@ -88,7 +88,7 @@ export default ({
 
   effect(async () => {
     etheriumState.log; // trigger on log change
-    await api.EthereumService.getBalance();
+    await services.EthereumService.getBalance();
   });
 
   return actions;

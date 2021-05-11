@@ -5,41 +5,41 @@ import { UsecaseContext } from ".";
 import { effect } from "@vue/reactivity";
 
 export default ({
-  api,
+  services,
   store,
 }: UsecaseContext<
   "SifService" | "ClpService" | "EventBusService",
   "wallet"
 >) => {
-  const state = api.SifService.getState();
+  const state = services.SifService.getState();
 
   const actions = {
     async getCosmosBalances(address: Address) {
       // TODO: validate sif prefix
-      return await api.SifService.getBalance(address);
+      return await services.SifService.getBalance(address);
     },
 
     async connect(mnemonic: Mnemonic): Promise<string> {
       if (!mnemonic) throw "Mnemonic must be defined";
       if (!validateMnemonic(mnemonic)) throw "Invalid Mnemonic. Not sent.";
-      return await api.SifService.setPhrase(mnemonic);
+      return await services.SifService.setPhrase(mnemonic);
     },
 
     async sendCosmosTransaction(params: TxParams) {
-      return await api.SifService.transfer(params);
+      return await services.SifService.transfer(params);
     },
 
     async disconnect() {
-      api.SifService.purgeClient();
+      services.SifService.purgeClient();
     },
 
     async connectToWallet() {
       try {
         // TODO type
-        await api.SifService.connect();
+        await services.SifService.connect();
         store.wallet.sif.isConnected = true;
       } catch (error) {
-        api.EventBusService.dispatch({
+        services.EventBusService.dispatch({
           type: "WalletConnectionErrorEvent",
           payload: {
             walletType: "sif",
@@ -54,7 +54,7 @@ export default ({
     if (store.wallet.sif.isConnected !== state.connected) {
       store.wallet.sif.isConnected = state.connected;
       if (store.wallet.sif.isConnected) {
-        api.EventBusService.dispatch({
+        services.EventBusService.dispatch({
           type: "WalletConnectedEvent",
           payload: {
             walletType: "sif",

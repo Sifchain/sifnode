@@ -11,9 +11,9 @@ export default defineComponent({
     Icon,
   },
   setup() {
-    const { store, actions } = useCore();
+    const { store, usecases } = useCore();
     async function handleConnectClicked() {
-      await actions.ethWallet.connectToWallet();
+      await usecases.ethWallet.connectToWallet();
     }
     const address = computed(() => store.wallet.eth.address);
     const connected = computed(() => store.wallet.eth.isConnected);

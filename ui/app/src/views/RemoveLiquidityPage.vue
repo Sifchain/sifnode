@@ -29,7 +29,7 @@ export default defineComponent({
     DetailsPanelRemove,
   },
   setup() {
-    const { store, actions, poolFinder, api } = useCore();
+    const { store, usecases, poolFinder, services } = useCore();
     const route = useRoute();
     const router = useRouter();
     const transactionState = ref<ConfirmState>("selecting");
@@ -50,7 +50,7 @@ export default defineComponent({
 
     effect(() => {
       if (!externalAssetSymbol.value) return null;
-      api.ClpService.getLiquidityProvider({
+      services.ClpService.getLiquidityProvider({
         symbol: externalAssetSymbol.value,
         lpAddress: store.wallet.sif.address,
       }).then((liquidityProviderResult) => {
@@ -120,7 +120,7 @@ export default defineComponent({
           return;
 
         transactionState.value = "signing";
-        const tx = await actions.clp.removeLiquidity(
+        const tx = await usecases.clp.removeLiquidity(
           Asset.get(externalAssetSymbol.value),
           wBasisPoints.value,
           asymmetry.value,

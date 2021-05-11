@@ -10,7 +10,7 @@ import eventBusService, { EventBusServiceContext } from "./EventBusService";
 export type Services = ReturnType<typeof createServices>;
 
 export type WithService<T extends keyof Services = keyof Services> = {
-  api: Pick<Services, T>;
+  services: Pick<Services, T>;
 };
 
 export type ServiceContext = EthereumServiceContext &

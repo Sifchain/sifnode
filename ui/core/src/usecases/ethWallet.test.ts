@@ -35,7 +35,7 @@ beforeEach(() => {
   };
 
   ethWalletActions = createActions({
-    api: {
+    services: {
       EthereumService: mockEthereumService,
       EventBusService: mockEventBusService,
     },

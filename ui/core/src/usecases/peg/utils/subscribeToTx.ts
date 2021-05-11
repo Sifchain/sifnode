@@ -5,7 +5,7 @@ import { TransactionStatus } from "../../../entities";
 
 // Using PascalCase to signify this is a factory
 export function SubscribeToTx({
-  api,
+  services,
   store,
 }: UsecaseContext<"EventBusService", "wallet" | "tx">) {
   // Helper to set store tx status
@@ -40,7 +40,7 @@ export function SubscribeToTx({
         symbol: tx.symbol,
       });
 
-      api.EventBusService.dispatch({
+      services.EventBusService.dispatch({
         type: "PegTransactionPendingEvent",
         payload: {
           hash: txHash,
@@ -55,7 +55,7 @@ export function SubscribeToTx({
         state: "completed",
       });
 
-      api.EventBusService.dispatch({
+      services.EventBusService.dispatch({
         type: "PegTransactionCompletedEvent",
         payload: {
           hash: txHash,
@@ -73,7 +73,7 @@ export function SubscribeToTx({
         state: "failed",
       });
 
-      api.EventBusService.dispatch({
+      services.EventBusService.dispatch({
         type: "PegTransactionErrorEvent",
         payload: {
           txStatus: {
