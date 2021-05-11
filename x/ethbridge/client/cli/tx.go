@@ -30,7 +30,12 @@ func GetCmdCreateEthBridgeClaim() *cobra.Command {
 
 			flags := cmd.Flags()
 
-			ethereumChainID, err := flags.GetInt64(types.FlagEthereumChainID)
+			ethereumChainIDStr, err := flags.GetString(types.FlagEthereumChainID)
+			if err != nil {
+				return err
+			}
+
+			ethereumChainID, err := strconv.Atoi(ethereumChainIDStr)
 			if err != nil {
 				return err
 			}
@@ -91,7 +96,7 @@ func GetCmdCreateEthBridgeClaim() *cobra.Command {
 			}
 			ct := types.ClaimType(claimType)
 
-			ethBridgeClaim := types.NewEthBridgeClaim(ethereumChainID, bridgeContract, nonce, symbol, tokenContract,
+			ethBridgeClaim := types.NewEthBridgeClaim(int64(ethereumChainID), bridgeContract, nonce, symbol, tokenContract,
 				ethereumSender, cosmosReceiver, validator, bigIntAmount, ct)
 
 			msg := types.NewMsgCreateEthBridgeClaim(ethBridgeClaim)
@@ -121,7 +126,12 @@ func GetCmdBurn() *cobra.Command {
 
 			flags := cmd.Flags()
 
-			ethereumChainID, err := flags.GetInt64(types.FlagEthereumChainID)
+			ethereumChainIDStr, err := flags.GetString(types.FlagEthereumChainID)
+			if err != nil {
+				return err
+			}
+
+			ethereumChainID, err := strconv.Atoi(ethereumChainIDStr)
 			if err != nil {
 				return err
 			}
@@ -181,7 +191,12 @@ func GetCmdLock() *cobra.Command {
 
 			flags := cmd.Flags()
 
-			ethereumChainID, err := flags.GetInt64(types.FlagEthereumChainID)
+			ethereumChainIDStr, err := flags.GetString(types.FlagEthereumChainID)
+			if err != nil {
+				return err
+			}
+
+			ethereumChainID, err := strconv.Atoi(ethereumChainIDStr)
 			if err != nil {
 				return err
 			}
@@ -217,7 +232,7 @@ func GetCmdLock() *cobra.Command {
 				return errors.New("Error parsing ceth amount")
 			}
 
-			msg := types.NewMsgLock(ethereumChainID, cosmosSender, ethereumReceiver, amount, symbol, cethAmount)
+			msg := types.NewMsgLock(int64(ethereumChainID), cosmosSender, ethereumReceiver, amount, symbol, cethAmount)
 			if err := msg.ValidateBasic(); err != nil {
 				return err
 			}
