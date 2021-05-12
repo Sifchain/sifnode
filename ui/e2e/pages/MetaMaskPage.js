@@ -1,14 +1,11 @@
 import { MM_CONFIG } from "../config";
 import { getExtensionPage } from "../utils";
 export class MetaMaskPage {
-  //   constructor(context, config = MM_CONFIG) {
   constructor(config = MM_CONFIG) {
     this.config = config;
-    // this.context = context
   }
   async setup() {
     this.page = await getExtensionPage(this.config.id);
-    // this.page = await getExtensionPage(this.context, this.config.id);
     await this.confirmWelcomeScreen();
     await this.importAccount();
     await this.addNetwork();
@@ -59,7 +56,7 @@ export class MetaMaskPage {
   async connectAccount(extensionId) {
     await this.page.click("[data-handle='button-connected']");
     const [mmConnectPage] = await Promise.all([
-      this.context.waitForEvent("page"),
+      context.waitForEvent("page"),
       this.page.click("button:has-text('Connect Metamask')"),
     ]);
     await mmConnectPage.click(
@@ -72,3 +69,5 @@ export class MetaMaskPage {
     return;
   }
 }
+
+export const metamaskPage = new MetaMaskPage();

@@ -3,6 +3,5 @@ module.exports = {
   testTimeout: 1000000,
   collectCoverage: true,
   bail: true,
-  setupFilesAfterEnv: ["expect-playwright"],
-  globalSetup: "./global-setup.js",
+  setupFilesAfterEnv: ["expect-playwright", "./setup.js"],
 };

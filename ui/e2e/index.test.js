@@ -11,16 +11,13 @@
  * - ethereumBlockchainAccount - class should represent ethereumBlockchain
  */
 require("@babel/polyfill");
-// const path = require("path");
-// const fs = require("fs");
-// const { chromium } = require("playwright");
 
 // configs
 const { DEX_TARGET, MM_CONFIG, KEPLR_CONFIG } = require("./config.js");
 const keplrConfig = require("../core/src/config.localnet.json");
 
 // extension
-const { MetaMaskPage } = require("./pages/MetaMaskPage");
+const { MetaMaskPage, metamaskPage } = require("./pages/MetaMaskPage");
 const { importKeplrAccount, connectKeplrAccount } = require("./keplr");
 
 // services
@@ -37,41 +34,23 @@ async function getInputValue(page, selector) {
   return await page.evaluate((el) => el.value, await page.$(selector));
 }
 
-// let browserContext;
 let dexPage;
 
 useStack("every-test");
 
 beforeAll(async () => {
   // extract extension zips
-  // await extractExtensionPackages();
-  // await extractExtensionPackage(MM_CONFIG.id)
-  // await extractExtensionPackage(KEPLR_CONFIG.id)
-  // const pathToKeplrExtension = path.join(__dirname, KEPLR_CONFIG.path);
-  // const pathToMmExtension = path.join(__dirname, MM_CONFIG.path);
-  // const userDataDir = path.join(__dirname, "./playwright");
-  // // need to rm userDataDir or else will store extension state
-  // if (fs.existsSync(userDataDir)) {
-  //   fs.rmdirSync(userDataDir, { recursive: true });
-  // }
+  await extractExtensionPackage(MM_CONFIG.id);
+  await extractExtensionPackage(KEPLR_CONFIG.id);
 
-  // const browserContext = await chromium.launchPersistentContext(userDataDir, {
-  //   // headless required with extensions. xvfb used for ci/cd
-  //   headless: false,
-  //   args: [
-  //     `--disable-extensions-except=${pathToKeplrExtension},${pathToMmExtension}`,
-  //     `--load-extension=${pathToKeplrExtension},${pathToMmExtension}`,
-  //   ],
-  //   // devtools: true,
-  // });
-
-  // setup metamask
-  // const metamaskPage = new MetaMaskPage(browserContext, MM_CONFIG);
-  const metamaskPage = new MetaMaskPage(MM_CONFIG);
   await metamaskPage.setup();
 
   // setup keplr account
+  // const keplrPage = page;
   const keplrPage = await browserContext.newPage();
+  console.log("local page=", keplrPage);
+  console.log("global browser context locally=", context);
+  console.log("global page locally=", page);
   await keplrPage.goto(
     "chrome-extension://dmkamcknogkgcdfhhbddcghachkejeap/popup.html#/register",
   );
@@ -114,7 +93,7 @@ beforeEach(async () => {
   await page.close();
 });
 
-it("pegs ether", async () => {
+it.only("pegs ether", async () => {
   // Navigate to peg page
   await dexPage.goto(DEX_TARGET, {
     waitUntil: "domcontentloaded",

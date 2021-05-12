@@ -40,19 +40,13 @@ export async function extractExtensionPackage(extensionId) {
 
 export async function getExtensionPage(extensionId) {
   // export async function getExtensionPage(browserContext, extensionId) {
-  // console.log("context=", context);
-  // console.log("browserContext=", browserContext);
-  return new Promise((resolve, reject) => {
-    context.waitForEvent("page", async (page) => {
-      if (page.url().match(`chrome-extension://${extensionId}`)) {
-        try {
-          resolve(page);
-        } catch (e) {
-          reject(e);
-        }
-      }
-    });
-  });
+  const pages = await context.pages();
+  const foundPages = pages.filter((page) =>
+    page.url().match(`chrome-extension://${extensionId}`),
+  );
+
+  if (foundPages.length > 0) return foundPages[0];
+  else return undefined;
 }
 
 export function sleep(ms) {

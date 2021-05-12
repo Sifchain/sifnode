@@ -1,14 +1,11 @@
-// global-setup.js
-import { globalSetup as playwrightGlobalSetup } from "jest-playwright-preset";
+// setup.js
 const { chromium } = require("playwright");
 const { extractExtensionPackage } = require("./utils");
 const { MM_CONFIG, KEPLR_CONFIG } = require("./config.js");
 const path = require("path");
 const fs = require("fs");
 
-module.exports = async function globalSetup(globalConfig) {
-  await playwrightGlobalSetup(globalConfig);
-
+beforeAll(async () => {
   await extractExtensionPackage(MM_CONFIG.id);
   await extractExtensionPackage(KEPLR_CONFIG.id);
   const pathToKeplrExtension = path.join(__dirname, KEPLR_CONFIG.path);
@@ -20,7 +17,6 @@ module.exports = async function globalSetup(globalConfig) {
   }
 
   context = await chromium.launchPersistentContext(userDataDir, {
-    //   const context = await chromium.launchPersistentContext(userDataDir, {
     // headless required with extensions. xvfb used for ci/cd
     headless: false,
     args: [
@@ -28,6 +24,5 @@ module.exports = async function globalSetup(globalConfig) {
       `--load-extension=${pathToKeplrExtension},${pathToMmExtension}`,
     ],
   });
-  //   const page = await context.newPage();
   page = await context.newPage();
-};
+});

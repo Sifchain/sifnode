@@ -15,6 +15,5 @@ module.exports = {
     page: true,
     browser: true,
     context: true,
-    wsEndpoint: true,
   },
 };
