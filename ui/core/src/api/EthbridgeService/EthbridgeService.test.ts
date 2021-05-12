@@ -13,6 +13,9 @@ import Web3 from "web3";
 import JSBI from "jsbi";
 import { sleep } from "../../test/utils/sleep";
 import { waitFor } from "../../test/utils/waitFor";
+import { useStack } from "../../../../test/stack";
+
+useStack("every-test");
 
 const [ETH, CETH, ATK, CATK, ROWAN, EROWAN] = getTestingTokens([
   "ETH",
@@ -38,10 +41,7 @@ describe("EthbridgeService", () => {
     });
   });
 
-  // We need to only run one test on ebrelayer as we have not got the
-  // infrastructure setup to retart it between tests
-  // To fix this we would need to deterministically reset the state of both
-  // blockchains as well as restart ebrelayer
+  // TODO: Break this out to multiple tests we can now reset state between tests if required.
   test("eth -> ceth -> eth then rowan -> erowan -> rowan ", async () => {
     // Setup services
     const sifService = await createTestSifService(juniper);
@@ -80,7 +80,7 @@ describe("EthbridgeService", () => {
     await new Promise<void>(async (done) => {
       EthbridgeService.lockToSifchain(getSifAddress(), amountToLock, 100)
         .onTxHash(() => {
-          advanceBlock(100);
+          advanceBlock(101);
         })
         .onComplete(async () => {
           done();
