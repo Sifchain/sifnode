@@ -35,17 +35,6 @@ func (m MsgDistribution) Type() string {
 
 func (m MsgDistribution) ValidateBasic() error {
 	return ErrInvalid
-	if m.Signer.Empty() {
-		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, m.Signer.String())
-	}
-	if m.DistributionName == "" {
-		return sdkerrors.Wrap(ErrInvalid, "Name cannot be empty")
-	}
-	err := bank.ValidateInputsOutputs(m.Input, m.Output)
-	if err != nil {
-		return err
-	}
-	return nil
 }
 
 func (m MsgDistribution) GetSignBytes() []byte {
