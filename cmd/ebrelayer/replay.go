@@ -1,7 +1,8 @@
 package main
 
 import (
-	"bufio"
+	"github.com/cosmos/cosmos-sdk/client"
+	"github.com/cosmos/cosmos-sdk/client/tx"
 	"log"
 	"net/url"
 	"strconv"
@@ -20,6 +21,11 @@ import (
 
 // RunReplayEthereumCmd executes replayEthereumCmd
 func RunReplayEthereumCmd(cmd *cobra.Command, args []string) error {
+	cliContext, err := client.GetClientQueryContext(cmd)
+	if err != nil {
+		return err
+	}
+
 	// Load the validator's Ethereum private key from environment variables
 	privateKey, err := txs.LoadPrivateKey()
 	if err != nil {
@@ -85,16 +91,14 @@ func RunReplayEthereumCmd(cmd *cobra.Command, args []string) error {
 	}
 	sugaredLogger := logger.Sugar()
 
-	// Initialize new Ethereum event listener
-	inBuf := bufio.NewReader(cmd.InOrStdin())
-
-	ethSub, err := relayer.NewEthereumSub(inBuf, tendermintNode, validatorMoniker, chainID, web3Provider,
+	ethSub, err := relayer.NewEthereumSub(cliContext, tendermintNode, validatorMoniker, chainID, web3Provider,
 		contractAddress, privateKey, mnemonic, nil, sugaredLogger)
 	if err != nil {
 		return err
 	}
 
-	ethSub.Replay(fromBlock, toBlock, cosmosFromBlock, cosmosToBlock)
+	txFactory := tx.NewFactoryCLI(cliContext, cmd.Flags())
+	ethSub.Replay(txFactory, fromBlock, toBlock, cosmosFromBlock, cosmosToBlock)
 
 	return nil
 }

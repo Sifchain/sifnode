@@ -13,8 +13,8 @@ from test_utilities import get_sifchain_addr_balance, advance_n_ethereum_blocks,
     n_wait_blocks, print_error_message, wait_for_sifchain_addr_balance, send_from_ethereum_to_sifchain, \
     get_eth_balance, send_from_sifchain_to_ethereum, wait_for_eth_balance, \
     wait_for_ethereum_block_number, send_from_sifchain_to_sifchain, wait_for_sif_account, \
-    get_shell_output_json, EthereumToSifchainTransferRequest, SifchaincliCredentials, RequestAndCredentials
-
+    get_shell_output_json, EthereumToSifchainTransferRequest, SifchaincliCredentials, RequestAndCredentials, \
+    sifnoded_binary
 
 default_timeout_for_ganache = 160
 
@@ -423,5 +423,5 @@ def create_new_sifaddr(
     yes_subcmd = f"yes {keyring_passphrase} |" if keyring_passphrase else ""
     keyring_backend_subcmd = f"--keyring-backend {credentials.keyring_backend}" if credentials.keyring_backend else ""
     # Note that keys-add prints to stderr
-    cmd = f"{yes_subcmd} sifnodecli keys add {keyname} --home {credentials.sifnodecli_homedir} {keyring_backend_subcmd} -o json 2>&1"
+    cmd = f"{yes_subcmd} {sifnoded_binary} keys add {keyname} --home {credentials.sifnodecli_homedir} {keyring_backend_subcmd} --output json 2>&1"
     return get_shell_output_json(cmd)

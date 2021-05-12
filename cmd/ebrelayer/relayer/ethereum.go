@@ -6,7 +6,7 @@ import (
 	"context"
 	"crypto/ecdsa"
 	"fmt"
-	"io"
+	"github.com/cosmos/cosmos-sdk/client/tx"
 	"log"
 	"math/big"
 	"os"
@@ -28,7 +28,6 @@ import (
 	tmclient "github.com/tendermint/tendermint/rpc/client/http"
 	"go.uber.org/zap"
 
-	sifapp "github.com/Sifchain/sifnode/app"
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/contract"
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/txs"
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/types"
@@ -70,7 +69,7 @@ func NewKeybase(validatorMoniker, mnemonic, password string) (keyring.Keyring, k
 }
 
 // NewEthereumSub initializes a new EthereumSub
-func NewEthereumSub(inBuf io.Reader, rpcURL string, validatorMoniker, chainID, ethProvider string,
+func NewEthereumSub(cliCtx client.Context, rpcURL string, validatorMoniker, chainID, ethProvider string,
 	registryContractAddress common.Address, privateKey *ecdsa.PrivateKey, mnemonic string,
 	db *leveldb.DB, sugaredLogger *zap.SugaredLogger) (EthereumSub, error) {
 
@@ -78,7 +77,7 @@ func NewEthereumSub(inBuf io.Reader, rpcURL string, validatorMoniker, chainID, e
 	kr := keyring.NewInMemory()
 	hdpath := *hd.NewFundraiserParams(0, sdk.CoinType, 0)
 
-	info, err := kr.NewAccount(validatorMoniker, mnemonic, tempPassword, hdpath.String(), hd.Secp256k1)
+	info, err := kr.NewAccount(validatorMoniker, mnemonic, "", hdpath.String(), hd.Secp256k1)
 	if err != nil {
 		return EthereumSub{}, err
 	}
@@ -86,7 +85,7 @@ func NewEthereumSub(inBuf io.Reader, rpcURL string, validatorMoniker, chainID, e
 	validatorAddress := sdk.ValAddress(info.GetAddress())
 
 	// Load CLI context and Tx builder
-	cliCtx, err := LoadTendermintCLIContext(validatorAddress, validatorMoniker, rpcURL, chainID, sugaredLogger)
+	_, err = LoadTendermintCLIContext(cliCtx, validatorAddress, validatorMoniker, rpcURL, chainID, sugaredLogger)
 	if err != nil {
 		return EthereumSub{}, err
 	}
@@ -106,14 +105,8 @@ func NewEthereumSub(inBuf io.Reader, rpcURL string, validatorMoniker, chainID, e
 }
 
 // LoadTendermintCLIContext : loads CLI context for tendermint txs
-func LoadTendermintCLIContext(validatorAddress sdk.ValAddress, validatorName string,
+func LoadTendermintCLIContext(cliCtx client.Context, validatorAddress sdk.ValAddress, validatorName string,
 	rpcURL string, chainID string, sugaredLogger *zap.SugaredLogger) (client.Context, error) {
-	// Create the new CLI context
-	encodingConfig := sifapp.MakeTestEncodingConfig()
-	cliCtx := client.Context{}.
-		WithLegacyAmino(encodingConfig.Amino).
-		WithFromAddress(sdk.AccAddress(validatorAddress)).
-		WithFromName(validatorName)
 
 	if rpcURL != "" {
 		cliCtx = cliCtx.WithNodeURI(rpcURL)
@@ -124,7 +117,7 @@ func LoadTendermintCLIContext(validatorAddress sdk.ValAddress, validatorName str
 	accountRetriever := authtypes.AccountRetriever{}
 	err := accountRetriever.EnsureExists(cliCtx, sdk.AccAddress(validatorAddress))
 	if err != nil {
-		sugaredLogger.Errorw("validator address not exists.",
+		sugaredLogger.Errorw("accountRetriever.EnsureExists failed",
 			errorMessageKey, err.Error())
 		return client.Context{}, err
 	}
@@ -133,7 +126,7 @@ func LoadTendermintCLIContext(validatorAddress sdk.ValAddress, validatorName str
 }
 
 // Start an Ethereum chain subscription
-func (sub EthereumSub) Start(completionEvent *sync.WaitGroup) {
+func (sub EthereumSub) Start(txFactory tx.Factory, completionEvent *sync.WaitGroup) {
 	defer completionEvent.Done()
 	time.Sleep(time.Second)
 	ethClient, err := SetupWebsocketEthClient(sub.EthProvider)
@@ -142,7 +135,7 @@ func (sub EthereumSub) Start(completionEvent *sync.WaitGroup) {
 			errorMessageKey, err.Error())
 
 		completionEvent.Add(1)
-		go sub.Start(completionEvent)
+		go sub.Start(txFactory, completionEvent)
 		return
 	}
 	defer ethClient.Close()
@@ -154,7 +147,7 @@ func (sub EthereumSub) Start(completionEvent *sync.WaitGroup) {
 		sub.SugaredLogger.Errorw("failed to get network ID.",
 			errorMessageKey, err.Error())
 		completionEvent.Add(1)
-		go sub.Start(completionEvent)
+		go sub.Start(txFactory, completionEvent)
 		return
 	}
 
@@ -204,7 +197,7 @@ func (sub EthereumSub) Start(completionEvent *sync.WaitGroup) {
 			sub.SugaredLogger.Errorw("failed to subscribe ethereum header.",
 				errorMessageKey, err.Error())
 			completionEvent.Add(1)
-			go sub.Start(completionEvent)
+			go sub.Start(txFactory, completionEvent)
 			return
 		case newHead := <-heads:
 			sub.SugaredLogger.Infow("receive new ethereum header.",
@@ -270,7 +263,7 @@ func (sub EthereumSub) Start(completionEvent *sync.WaitGroup) {
 			}
 
 			if len(events) > 0 {
-				if err := sub.handleEthereumEvent(events); err != nil {
+				if err := sub.handleEthereumEvent(txFactory, events); err != nil {
 					sub.SugaredLogger.Errorw("failed to handle ethereum event.",
 						errorMessageKey, err.Error())
 				}
@@ -353,7 +346,7 @@ func EventProcessed(bridgeClaims []types.EthereumBridgeClaim, event types.Ethere
 }
 
 // Replay the missed events
-func (sub EthereumSub) Replay(fromBlock int64, toBlock int64, cosmosFromBlock int64, cosmosToBlock int64) {
+func (sub EthereumSub) Replay(txFactory tx.Factory, fromBlock int64, toBlock int64, cosmosFromBlock int64, cosmosToBlock int64) {
 	log.Printf("ethereum replay for %d block to %d block\n", fromBlock, toBlock)
 
 	bridgeClaims := sub.getAllClaims(cosmosFromBlock, cosmosToBlock)
@@ -400,7 +393,7 @@ func (sub EthereumSub) Replay(fromBlock int64, toBlock int64, cosmosFromBlock in
 		} else if isBurnLock {
 			log.Println(fmt.Sprintf("found out a burn lock event"))
 			if !EventProcessed(bridgeClaims, event) {
-				err := sub.handleEthereumEvent([]types.EthereumEvent{event})
+				err := sub.handleEthereumEvent(txFactory, []types.EthereumEvent{event})
 				time.Sleep(transactionInterval)
 				if err != nil {
 					log.Printf("failed to handle ethereum event, error is %s\n", err.Error())
@@ -455,7 +448,7 @@ func (sub EthereumSub) logToEvent(clientChainID *big.Int, contractAddress common
 }
 
 // handleEthereumEvent unpacks an Ethereum event, converts it to a ProphecyClaim, and relays a tx to Cosmos
-func (sub EthereumSub) handleEthereumEvent(events []types.EthereumEvent) error {
+func (sub EthereumSub) handleEthereumEvent(txFactory tx.Factory, events []types.EthereumEvent) error {
 	var prophecyClaims []*ethbridge.EthBridgeClaim
 
 	for _, event := range events {
@@ -474,5 +467,5 @@ func (sub EthereumSub) handleEthereumEvent(events []types.EthereumEvent) error {
 		return nil
 	}
 
-	return txs.RelayToCosmos(sub.ValidatorName, sub.TempPassword, prophecyClaims, sub.CliCtx, sub.TxBldr, sub.SugaredLogger)
+	return txs.RelayToCosmos(txFactory, sub.ValidatorName, sub.TempPassword, prophecyClaims, sub.CliCtx, sub.TxBldr, sub.SugaredLogger)
 }

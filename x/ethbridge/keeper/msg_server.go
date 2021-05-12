@@ -2,12 +2,10 @@ package keeper
 
 import (
 	"context"
-	"strconv"
-	"sync"
-
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/pkg/errors"
+	"strconv"
 
 	"github.com/Sifchain/sifnode/x/ethbridge/types"
 	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
@@ -140,9 +138,6 @@ func (srv msgServer) CreateEthBridgeClaim(goCtx context.Context, msg *types.MsgC
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
 	logger := srv.Keeper.Logger(ctx)
-	var mutex = &sync.RWMutex{}
-	mutex.Lock()
-	defer mutex.Unlock()
 
 	status, err := srv.Keeper.ProcessClaim(ctx, msg.EthBridgeClaim)
 	if err != nil {
@@ -157,7 +152,6 @@ func (srv msgServer) CreateEthBridgeClaim(goCtx context.Context, msg *types.MsgC
 			return nil, err
 		}
 	}
-	// set mutex lock to false
 
 	logger.Info("sifnode emit create event.",
 		"CosmosSender", msg.EthBridgeClaim.ValidatorAddress,

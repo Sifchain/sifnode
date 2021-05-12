@@ -1,10 +1,13 @@
 package main
 
 import (
-	"bufio"
 	"fmt"
+	"github.com/cosmos/cosmos-sdk/client"
+	"github.com/cosmos/cosmos-sdk/client/tx"
 	"github.com/cosmos/cosmos-sdk/server"
 	svrcmd "github.com/cosmos/cosmos-sdk/server/cmd"
+	authclient "github.com/cosmos/cosmos-sdk/x/auth/client"
+	"github.com/cosmos/cosmos-sdk/x/auth/types"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"log"
@@ -32,7 +35,20 @@ const (
 	levelDbFile = "relayerdb"
 )
 
-func init() {
+func buildRootCmd() *cobra.Command {
+	// see cmd/sifnoded/cmd/root.go:37 ; we need to do the
+	// same thing in ebrelayer
+	encodingConfig := sifapp.MakeTestEncodingConfig()
+	authclient.Codec = encodingConfig.Marshaler
+	initClientCtx := client.Context{}.
+		WithJSONMarshaler(encodingConfig.Marshaler).
+		WithInterfaceRegistry(encodingConfig.InterfaceRegistry).
+		WithTxConfig(encodingConfig.TxConfig).
+		WithLegacyAmino(encodingConfig.Amino).
+		WithInput(os.Stdin).
+		WithAccountRetriever(types.AccountRetriever{}).
+		WithBroadcastMode(flags.BroadcastBlock).
+		WithHomeDir(sifapp.DefaultNodeHome)
 
 	// Read in the configuration file for the sdk
 	// config := sdk.GetConfig()
@@ -41,7 +57,17 @@ func init() {
 	// config.SetBech32PrefixForConsensusNode(sdk.Bech32PrefixConsAddr, sdk.Bech32PrefixConsPub)
 	// config.Seal()
 
-	rootCmd := &cobra.Command{Use: "ebrelayer"}
+	rootCmd := &cobra.Command{
+		Use:   "ebrelayer",
+		Short: "Streams live events from Ethereum and Cosmos and relays event information to the opposite chain",
+		PersistentPreRunE: func(cmd *cobra.Command, _ []string) error {
+			if err := client.SetCmdClientContextHandler(initClientCtx, cmd); err != nil {
+				return err
+			}
+
+			return server.InterceptConfigsPreRunHandler(cmd)
+		},
+	}
 
 	log.SetFlags(log.Lshortfile)
 
@@ -58,9 +84,6 @@ func init() {
 	))
 	rootCmd.PersistentFlags().String(flags.FlagGasPrices, "", "Gas prices to determine the transaction fee (e.g. 10uatom)")
 	rootCmd.PersistentFlags().Float64(flags.FlagGasAdjustment, flags.DefaultGasAdjustment, "gas adjustment")
-	rootCmd.PersistentPreRunE = func(_ *cobra.Command, _ []string) error {
-		return initConfig(rootCmd)
-	}
 
 	// Construct Root Command
 	rootCmd.AddCommand(
@@ -71,12 +94,8 @@ func init() {
 		replayCosmosCmd(),
 		listMissedCosmosEventCmd(),
 	)
-}
 
-var rootCmd = &cobra.Command{
-	Use:          "ebrelayer",
-	Short:        "Streams live events from Ethereum and Cosmos and relays event information to the opposite chain",
-	SilenceUsage: true,
+	return rootCmd
 }
 
 //	initRelayerCmd
@@ -89,6 +108,7 @@ func initRelayerCmd() *cobra.Command {
 		Example: "ebrelayer init tcp://localhost:26657 ws://localhost:7545/ 0x30753E4A8aad7F8597332E813735Def5dD395028 validator mnemonic --chain-id=peggy",
 		RunE:    RunInitRelayerCmd,
 	}
+	flags.AddQueryFlagsToCmd(initRelayerCmd)
 
 	return initRelayerCmd
 }
@@ -108,6 +128,13 @@ func generateBindingsCmd() *cobra.Command {
 
 // RunInitRelayerCmd executes initRelayerCmd
 func RunInitRelayerCmd(cmd *cobra.Command, args []string) error {
+	// First initialize the Cosmos features we need for the context
+	cliContext, err := client.GetClientQueryContext(cmd)
+	if err != nil {
+		return err
+	}
+	log.Printf("got result from GetClientQueryContext: %v", cliContext)
+
 	// Open the level db
 	db, err := leveldb.OpenFile(levelDbFile, nil)
 	if err != nil {
@@ -179,8 +206,7 @@ func RunInitRelayerCmd(cmd *cobra.Command, args []string) error {
 	zap.RedirectStdLog(sugaredLogger.Desugar())
 
 	// Initialize new Ethereum event listener
-	inBuf := bufio.NewReader(cmd.InOrStdin())
-	ethSub, err := relayer.NewEthereumSub(inBuf, rpcURL, validatorMoniker, chainID, web3Provider,
+	ethSub, err := relayer.NewEthereumSub(cliContext, rpcURL, validatorMoniker, chainID, web3Provider,
 		contractAddress, privateKey, mnemonic, db, sugaredLogger)
 	if err != nil {
 		return err
@@ -190,7 +216,8 @@ func RunInitRelayerCmd(cmd *cobra.Command, args []string) error {
 
 	waitForAll := sync.WaitGroup{}
 	waitForAll.Add(2)
-	go ethSub.Start(&waitForAll)
+	txFactory := tx.NewFactoryCLI(cliContext, cmd.Flags())
+	go ethSub.Start(txFactory, &waitForAll)
 	go cosmosSub.Start(&waitForAll)
 	waitForAll.Wait()
 
@@ -210,10 +237,6 @@ func RunGenerateBindingsCmd(cmd *cobra.Command, args []string) error {
 
 	// Generate contract bindings from bins and abis
 	return contract.GenerateBindings(contracts)
-}
-
-func initConfig(cmd *cobra.Command) error {
-	return viper.BindPFlag(flags.FlagChainID, cmd.PersistentFlags().Lookup(flags.FlagChainID))
 }
 
 func replayEthereumCmd() *cobra.Command {
@@ -256,7 +279,7 @@ func listMissedCosmosEventCmd() *cobra.Command {
 }
 
 func main() {
-	if err := svrcmd.Execute(rootCmd, sifapp.DefaultNodeHome); err != nil {
+	if err := svrcmd.Execute(buildRootCmd(), sifapp.DefaultNodeHome); err != nil {
 		switch e := err.(type) {
 		case server.ErrorCode:
 			os.Exit(e.Code)

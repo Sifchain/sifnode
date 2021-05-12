@@ -99,7 +99,7 @@ def sifnodecli_homedir(is_ropsten_testnet):
         base = test_utilities.get_required_env_var("HOME")
     else:
         base = test_utilities.get_required_env_var("CHAINDIR")
-    result = f"""{base}/.sifnodecli"""
+    result = f"""{base}/.sifnoded"""
     return result
 
 

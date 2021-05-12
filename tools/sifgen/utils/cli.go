@@ -110,14 +110,29 @@ func (c CLI) InitChain(chainID, moniker, nodeDir string) (*string, error) {
 }
 
 func (c CLI) AddKey(name, mnemonic, keyPassword, cliDir string) (*string, error) {
-	var input [][]byte
-	if c.keyringBackend == keyring.BackendFile {
-		input = c.formatInputs([]string{mnemonic, "", keyPassword, keyPassword})
-	} else {
+	switch c.keyringBackend {
+	case keyring.BackendFile:
+		return c.AddKeyToFileBackend(name, mnemonic, keyPassword, cliDir)
+	default:
+		var input [][]byte
 		input = c.formatInputs([]string{mnemonic, ""})
+		return c.shellExecInput("sifnoded", input, "keys", "add", name, "--home", cliDir, "-i", "--keyring-backend", c.keyringBackend)
 	}
+}
 
-	return c.shellExecInput("sifnoded", input, "keys", "add", name, "--home", cliDir, "-i", "--keyring-backend", c.keyringBackend)
+// AddKeyToFileBackend
+//
+// Adding a key to the file backend is different enough from the other backends that it's
+// worth splitting it out.  This is usually only called by AddKey.  (It needs a few things
+// from an interactive session - the mnemonic and the password repeated twice)
+func (c CLI) AddKeyToFileBackend(name, mnemonic, keyPassword, cliDir string) (*string, error) {
+	return c.shellExecInput("sifnoded",
+		[][]byte{
+			[]byte(mnemonic + "\n"),
+			[]byte("\n"),
+			[]byte(keyPassword + "\n"),
+			[]byte(keyPassword + "\n"),
+		}, "keys", "add", name, "--home", cliDir, "-i", "--keyring-backend", "file")
 }
 
 func (c CLI) AddGenesisAccount(address, nodeDir string, coins []string) (*string, error) {

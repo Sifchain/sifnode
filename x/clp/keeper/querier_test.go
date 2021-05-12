@@ -64,10 +64,10 @@ func TestQueryGetPool(t *testing.T) {
 	query.Data = qp
 	qpool, err := querier(ctx, []string{types.QueryPool}, query)
 	assert.NoError(t, err)
-	var p types.PoolResponse
+	var p types.PoolRes
 	err = cdc.UnmarshalJSON(qpool, &p)
 	assert.NoError(t, err)
-	assert.Equal(t, pool.ExternalAsset, p.ExternalAsset)
+	assert.Equal(t, pool.ExternalAsset, p.Pool.ExternalAsset)
 }
 
 func TestQueryErrorPools(t *testing.T) {
@@ -100,7 +100,7 @@ func TestQueryGetPools(t *testing.T) {
 	//Test Pools
 	qpools, err := querier(ctx, []string{types.QueryPools}, query)
 	assert.NoError(t, err)
-	var poolsRes types.PoolsResponse
+	var poolsRes types.PoolsRes
 
 	err = cdc.UnmarshalJSON(qpools, &poolsRes)
 	assert.NoError(t, err)
@@ -168,6 +168,91 @@ func TestQueryGetLiquidityProvider(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, lp.Asset, l.LiquidityProvider.Asset)
 
+}
+
+func TestQueryAssetList(t *testing.T) {
+	cdc, app, ctx := createTestInput()
+
+	keeper := app.ClpKeeper
+	query := abci.RequestQuery{
+		Path: "",
+		Data: []byte{},
+	}
+	//Set Data
+	_, _, lp := SetData(keeper, ctx)
+	querier := clpkeeper.NewQuerier(keeper, cdc)
+
+	req := types.AssetListReq{
+		LpAddress: lp.LiquidityProviderAddress,
+	}
+
+	queryData, err := cdc.MarshalJSON(req)
+	require.NoError(t, err)
+	query.Data = queryData
+
+	resBz, err := querier(ctx, []string{types.QueryAssetList}, query)
+	require.NoError(t, err)
+
+	res := types.AssetListRes{}
+	err = cdc.UnmarshalJSON(resBz, &res.Assets)
+	require.NoError(t, err)
+	require.Equal(t, []*types.Asset{lp.Asset}, res.Assets)
+}
+
+func TestQueryLPList(t *testing.T) {
+	cdc, app, ctx := createTestInput()
+
+	keeper := app.ClpKeeper
+	query := abci.RequestQuery{
+		Path: "",
+		Data: []byte{},
+	}
+	//Set Data
+	_, _, lp := SetData(keeper, ctx)
+	querier := clpkeeper.NewQuerier(keeper, cdc)
+
+	req := types.LiquidityProviderListReq{
+		Symbol: lp.Asset.Symbol,
+	}
+
+	queryData, err := cdc.MarshalJSON(req)
+	require.NoError(t, err)
+	query.Data = queryData
+
+	resBz, err := querier(ctx, []string{types.QueryLPList}, query)
+	require.NoError(t, err)
+
+	res := types.LiquidityProviderListRes{}
+	err = cdc.UnmarshalJSON(resBz, &res.LiquidityProviders)
+	require.NoError(t, err)
+	require.Equal(t, []*types.LiquidityProvider{&lp}, res.LiquidityProviders)
+}
+
+func TestQueryAllLPs(t *testing.T) {
+	cdc, app, ctx := createTestInput()
+
+	keeper := app.ClpKeeper
+	query := abci.RequestQuery{
+		Path: "",
+		Data: []byte{},
+	}
+	//Set Data
+	_, _, lp := SetData(keeper, ctx)
+	querier := clpkeeper.NewQuerier(keeper, cdc)
+
+	req := types.LiquidityProvidersReq{}
+
+	queryData, err := cdc.MarshalJSON(req)
+	require.NoError(t, err)
+	query.Data = queryData
+
+	resBz, err := querier(ctx, []string{types.QueryAllLP}, query)
+	require.NoError(t, err)
+
+	res := types.LiquidityProvidersRes{}
+	err = cdc.UnmarshalJSON(resBz, &res.LiquidityProviders)
+	require.NoError(t, err)
+	require.Equal(t, []*types.LiquidityProvider{&lp}, res.LiquidityProviders)
 }
 
 func SetData(keeper clpkeeper.Keeper, ctx sdk.Context) (types.Pool, []types.Pool, types.LiquidityProvider) {

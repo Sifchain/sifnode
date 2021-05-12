@@ -6,11 +6,15 @@ import time
 from dataclasses import dataclass
 from functools import lru_cache
 
+import yaml
+
 n_wait_blocks = 50  # number of blocks to wait for the relayer to act
 burn_gas_cost = 160000000000 * 393000  # see x/ethbridge/types/msgs.go for gas
 lock_gas_cost = 160000000000 * 393000
 highest_gas_cost = max(burn_gas_cost, lock_gas_cost)
 
+
+sifnoded_binary = "sifnoded"
 
 @dataclass
 class EthereumToSifchainTransferRequest:
@@ -110,7 +114,7 @@ cmdfile = open("/tmp/testcmds.txt", "w")
 
 def get_shell_output(command_line):
     cmdfile.write(command_line)
-    if "sifnodecli" in command_line and not "q auth account" in command_line:
+    if sifnoded_binary in command_line and not "q auth account" in command_line:
         time.sleep(2)
     logging.debug(f"execute shell command:\n{command_line}")
     sub = subprocess.run(command_line, shell=True, capture_output=True)
@@ -137,6 +141,18 @@ def get_shell_output_json(command_line):
         raise
 
 
+def get_shell_output_yaml(command_line):
+    output = get_shell_output(command_line)
+    if not output:
+        print_error_message(f"no result returned from {command_line}")
+    try:
+        result = yaml.safe_load(output)
+        return result
+    except:
+        logging.critical(f"failed to decode json.  cmd is: {command_line}, output is: {output}")
+        raise
+
+
 def run_yarn_command(command_line):
     output = get_shell_output(command_line)
     if not output:
@@ -153,7 +169,7 @@ def run_yarn_command(command_line):
 
 # converts a key to a sif address.
 def get_user_account(user, network_password):
-    command_line = "yes " + network_password + " | sifnodecli keys show " + user + " -a"
+    command_line = "yes " + network_password + f" | {sifnoded_binary} keys show " + user + " -a"
     return get_shell_output(command_line)
 
 
@@ -227,9 +243,9 @@ def mint_tokens(transfer_request: EthereumToSifchainTransferRequest, operator_ad
 
 def get_sifchain_addr_balance(sifaddress, sifnodecli_node, denom):
     node = f"--node {sifnodecli_node}" if sifnodecli_node else ""
-    command_line = f"sifnodecli q auth account {node} {sifaddress} -o json"
+    command_line = f"{sifnoded_binary} query bank balances {node} {sifaddress} --output json --limit 100000000"
     json_str = get_shell_output_json(command_line)
-    coins = json_str["value"]["coins"]
+    coins = json_str["balances"]
     for coin in coins:
         if coin["denom"] == denom:
             return int(coin["amount"])
@@ -261,7 +277,7 @@ def wait_for_successful_command(command_line, max_seconds=80):
 def get_transaction_result(tx_hash, sifnodecli_node, chain_id):
     node = f"--node {sifnodecli_node}" if sifnodecli_node else ""
     chain_id_entry = f"--chain-id {chain_id}" if chain_id else ""
-    command_line = f"sifnodecli q tx {node} {tx_hash} {chain_id_entry} -o json"
+    command_line = f"{sifnoded_binary} q tx {node} {tx_hash} {chain_id_entry} --output json"
     json_str = wait_for_successful_command(command_line, max_seconds=30)
     return json_str
 
@@ -343,7 +359,7 @@ def send_from_sifchain_to_sifchain_cmd(
     home_entry = f"--home {credentials.sifnodecli_homedir}" if credentials.sifnodecli_homedir else ""
     cmd = " ".join([
         yes_entry,
-        "sifnodecli tx send",
+        f"{sifnoded_binary} tx bank send",
         transfer_request.sifchain_address,
         transfer_request.sifchain_destination_address,
         keyring_backend_entry,
@@ -353,7 +369,7 @@ def send_from_sifchain_to_sifchain_cmd(
         sifchain_fees_entry,
         home_entry,
         "--gas auto",
-        "-y -o json",
+        "-y",
     ])
     return cmd
 
@@ -393,7 +409,7 @@ def send_from_sifchain_to_ethereum_cmd(
         else:
             ceth_charge = burn_gas_cost
     command_line = f"{yes_entry} " \
-                   f"sifnodecli tx ethbridge {direction} {node} " \
+                   f"{sifnoded_binary} tx ethbridge {direction} {node} " \
                    f"{transfer_request.sifchain_address} " \
                    f"{transfer_request.ethereum_address} " \
                    f"{int(transfer_request.amount):0} " \
@@ -664,7 +680,7 @@ def update_ceth_receiver_account(
         credentials: SifchaincliCredentials
 ):
     cmd = build_sifchain_command(
-        f"sifnodecli tx ethbridge update_ceth_receiver_account -y {admin_account} {receiver_account}",
+        f"{sifnoded_binary} tx ethbridge update_ceth_receiver_account -y {admin_account} {receiver_account}",
         transfer_request=transfer_request,
         credentials=credentials
     )
@@ -680,7 +696,7 @@ def rescue_ceth(
         credentials: SifchaincliCredentials
 ):
     cmd = build_sifchain_command(
-        f"sifnodecli tx ethbridge rescue_ceth -y {admin_account} {receiver_account} {amount:d}",
+        f"{sifnoded_binary} tx ethbridge rescue_ceth -y {admin_account} {receiver_account} {amount:d}",
         transfer_request=transfer_request,
         credentials=credentials
     )
