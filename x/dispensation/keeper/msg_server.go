@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"context"
+	"github.com/pkg/errors"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
@@ -38,7 +39,7 @@ func (srv msgServer) CreateDistribution(ctx context.Context,
 	}
 
 	//Create drops and Store Historical Data
-	err = srv.Keeper.CreateDrops(sdkCtx, msg.Output, msg.Distribution.DistributionName)
+	err = srv.Keeper.CreateDrops(sdkCtx, msg.Output, msg.Distribution.DistributionName, msg.Distribution.DistributionType)
 	if err != nil {
 		return nil, err
 	}
@@ -51,4 +52,28 @@ func (srv msgServer) CreateDistribution(ctx context.Context,
 	})
 
 	return &types.MsgCreateDistributionResponse{}, nil
+}
+
+func (srv msgServer) CreateUserClaim(ctx context.Context,
+	claim *types.MsgCreateUserClaim) (*types.MsgCreateClaimResponse, error) {
+
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	if srv.Keeper.ExistsClaim(sdkCtx, claim.Signer, claim.UserClaimType) {
+		sdkCtx.Logger().Info("Claim already exists for user :", claim.Signer)
+		return nil, errors.Wrap(types.ErrInvalid, "Claim already exists for user")
+	}
+	newClaim := types.NewUserClaim(claim.Signer, claim.UserClaimType, sdkCtx.BlockTime().UTC().String())
+	err := srv.Keeper.SetClaim(sdkCtx, newClaim)
+	if err != nil {
+		return nil, err
+	}
+	sdkCtx.EventManager().EmitEvents(sdk.Events{
+		sdk.NewEvent(
+			types.EventTypeClaimCreated,
+			sdk.NewAttribute(types.AttributeKeyClaimUser, newClaim.UserAddress),
+			sdk.NewAttribute(types.AttributeKeyClaimType, newClaim.UserClaimType.String()),
+			sdk.NewAttribute(types.AttributeKeyClaimTime, newClaim.UserClaimTime),
+		),
+	})
+	return &types.MsgCreateClaimResponse{}, nil
 }

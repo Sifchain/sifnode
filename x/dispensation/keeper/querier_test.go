@@ -25,7 +25,7 @@ func GenerateQueryData(app *app.SifchainApp, ctx sdk.Context, name string, outLi
 	}
 
 	for _, rec := range outList {
-		record := types.NewDistributionRecord(types.DistributionStatus_DISTRIBUTION_STATUS_PENDING, name, rec.Address, rec.Coins, ctx.BlockHeight(), int64(-1))
+		record := types.NewDistributionRecord(types.DistributionStatus_DISTRIBUTION_STATUS_PENDING, types.DistributionType_DISTRIBUTION_TYPE_AIRDROP, name, rec.Address, rec.Coins, ctx.BlockHeight(), int64(-1))
 		_ = keeper.SetDistributionRecord(ctx, record)
 	}
 
@@ -40,7 +40,7 @@ func TestQueryRecordsName(t *testing.T) {
 	querier := dispensationkeeper.NewLegacyQuerier(keeper)
 	queryRecName := types.QueryRecordsByDistributionNameRequest{
 		DistributionName: name,
-		Status:           types.DistributionStatus_DISTRIBUTION_STATUS_UNSPECIFIED,
+		Status:           types.DistributionStatus_DISTRIBUTION_STATUS_PENDING,
 	}
 	query := abci.RequestQuery{
 		Path: "",
@@ -103,4 +103,35 @@ func TestQueryAllDistributions(t *testing.T) {
 	err = sifapp.LegacyAmino().UnmarshalJSON(res, &dr)
 	assert.NoError(t, err)
 	assert.Len(t, dr.Distributions, 10)
+}
+
+func TestQueryClaims(t *testing.T) {
+	testApp, ctx := test.CreateTestApp(false)
+	keeper := testApp.DispensationKeeper
+	claimsVS := test.CreateClaimsList(1000, types.DistributionType_DISTRIBUTION_TYPE_VALIDATOR_SUBSIDY)
+	for _, claim := range claimsVS {
+		err := keeper.SetClaim(ctx, claim)
+		assert.NoError(t, err)
+	}
+	claimsLM := test.CreateClaimsList(1000, types.DistributionType_DISTRIBUTION_TYPE_LIQUIDITY_MINING)
+	for _, claim := range claimsLM {
+		err := keeper.SetClaim(ctx, claim)
+		assert.NoError(t, err)
+	}
+	// Query by type ValidatorSubsidy
+	queryData := types.QueryClaimsByTypeRequest{UserClaimType: types.DistributionType_DISTRIBUTION_TYPE_VALIDATOR_SUBSIDY}
+	qp, errRes := testApp.LegacyAmino().MarshalJSON(&queryData)
+	require.NoError(t, errRes)
+	query := abci.RequestQuery{
+		Path: "",
+		Data: qp,
+	}
+
+	querier := dispensationkeeper.NewLegacyQuerier(keeper)
+	res, err := querier(ctx, []string{types.QueryClaimsByType}, query)
+	assert.NoError(t, err)
+	var dr types.QueryClaimsResponse
+	err = testApp.LegacyAmino().UnmarshalJSON(res, &dr)
+	assert.NoError(t, err)
+	assert.Len(t, dr.Claims, 1000)
 }

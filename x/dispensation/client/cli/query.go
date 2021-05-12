@@ -21,6 +21,7 @@ func GetQueryCmd(queryRoute string) *cobra.Command {
 		GetCmdDistributions(queryRoute),
 		GetCmdDistributionRecordForRecipient(queryRoute),
 		GetCmdDistributionRecordForDistName(queryRoute),
+		GetCmdClaimsByType(queryRoute),
 	)
 	return dispensationQueryCmd
 }
@@ -65,7 +66,8 @@ func GetCmdDistributionRecordForRecipient(queryRoute string) *cobra.Command {
 			if err != nil {
 				return err
 			}
-			params := types.NewQueryRecordsByRecipientAddr(recipientAddress.String())
+			params := types.QueryRecordsByRecipientAddrRequest{
+				Address: recipientAddress.String()}
 			bz, err := clientCtx.LegacyAmino.MarshalJSON(params)
 			if err != nil {
 				return err
@@ -87,7 +89,7 @@ func GetCmdDistributionRecordForRecipient(queryRoute string) *cobra.Command {
 func GetCmdDistributionRecordForDistName(queryRoute string) *cobra.Command {
 	return &cobra.Command{
 		Use:   "records-by-name [distribution name] [status]",
-		Short: "get a list of all distribution records ",
+		Short: "get a list of all distribution records .Status : [Completed/Pending/All]",
 		Args:  cobra.ExactArgs(2),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx, err := client.GetClientQueryContext(cmd)
@@ -96,7 +98,9 @@ func GetCmdDistributionRecordForDistName(queryRoute string) *cobra.Command {
 			}
 			name := args[0]
 			status := types.GetDistributionStatus(args[1])
-			params := types.NewQueryRecordsByDistributionName(name, status)
+			params := types.QueryRecordsByDistributionNameRequest{
+				DistributionName: name,
+				Status:           status}
 			bz, err := clientCtx.LegacyAmino.MarshalJSON(params)
 			if err != nil {
 				return err
@@ -109,6 +113,43 @@ func GetCmdDistributionRecordForDistName(queryRoute string) *cobra.Command {
 			var drs types.DistributionRecords
 			types.ModuleCdc.MustUnmarshalJSON(res, &drs)
 			out := types.NewQueryRecordsByDistributionNameResponse(drs, height)
+			return clientCtx.PrintProto(&out)
+		},
+	}
+}
+
+func GetCmdClaimsByType(queryRoute string) *cobra.Command {
+	return &cobra.Command{
+		Use:   "claims-by-type [ClaimType]",
+		Short: "get a list of all claims for mentioned type",
+		Args:  cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			clientCtx, err := client.GetClientQueryContext(cmd)
+			if err != nil {
+				return err
+			}
+			claimType, ok := types.IsValidClaim(args[0])
+			if !ok {
+				return fmt.Errorf("invalid Claim Type %s: Types supported [LiquidityMining/ValidatorSubsidy]", args[0])
+			}
+			params := types.QueryClaimsByTypeRequest{
+				UserClaimType: claimType,
+			}
+			bz, err := clientCtx.LegacyAmino.MarshalJSON(params)
+			if err != nil {
+				return err
+			}
+			route := fmt.Sprintf("custom/%s/%s", queryRoute, types.QueryClaimsByType)
+			res, height, err := clientCtx.QueryWithData(route, bz)
+			if err != nil {
+				return err
+			}
+			var claims types.UserClaims
+			types.ModuleCdc.MustUnmarshalJSON(res, &claims)
+			out := types.QueryClaimsResponse{
+				Claims: claims.UserClaims,
+				Height: height,
+			}
 			return clientCtx.PrintProto(&out)
 		},
 	}

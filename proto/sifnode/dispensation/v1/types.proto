@@ -17,6 +17,10 @@ enum DistributionType {
   DISTRIBUTION_TYPE_UNSPECIFIED = 0;
   // Airdrop distribution type
   DISTRIBUTION_TYPE_AIRDROP = 1;
+  // Validator Subsidy distribution type
+  DISTRIBUTION_TYPE_VALIDATOR_SUBSIDY = 2;
+  // Liquidity mining distribution type
+  DISTRIBUTION_TYPE_LIQUIDITY_MINING = 3;
 }
 
 // Claim status enum
@@ -31,15 +35,16 @@ enum DistributionStatus {
 
 message DistributionRecord {
   DistributionStatus distribution_status = 1;
-  string distribution_name = 2;
-  string recipient_address = 3;
-  repeated cosmos.base.v1beta1.Coin coins = 4 [
+  DistributionType distribution_type = 2;
+  string distribution_name = 3;
+  string recipient_address = 4;
+  repeated cosmos.base.v1beta1.Coin coins = 5 [
     (gogoproto.nullable) = false,
     (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins",
     (gogoproto.moretags) = "yaml:\"coins\""
   ];
-  int64 distribution_start_height = 5;
-  int64 distribution_completed_height = 6;
+  int64 distribution_start_height = 6;
+  int64 distribution_completed_height = 7;
 }
 
 message DistributionRecords {
@@ -51,4 +56,15 @@ message Distributions { repeated Distribution distributions = 1; }
 message Distribution {
   DistributionType distribution_type = 1;
   string distribution_name = 2;
+}
+
+message UserClaim {
+  string user_address = 1;
+  DistributionType user_claim_type = 2;
+  string user_claim_time = 3;
+  bool locked = 4;
+}
+
+message UserClaims {
+  repeated UserClaim user_claims = 1;
 }

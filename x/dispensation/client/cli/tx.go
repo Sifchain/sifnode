@@ -3,7 +3,6 @@ package cli
 import (
 	"bufio"
 	"fmt"
-
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/client/tx"
@@ -31,6 +30,7 @@ func GetTxCmd() *cobra.Command {
 
 	dispensationTxCmd.AddCommand(
 		GetCmdCreate(),
+		GetCmdClaim(),
 	)
 
 	return dispensationTxCmd
@@ -41,7 +41,7 @@ func GetTxCmd() *cobra.Command {
 func GetCmdCreate() *cobra.Command {
 	// Note ,the command only creates a airdrop for now .
 	cmd := &cobra.Command{
-		Use:   "create [MultiSigKeyName] [DistributionName] [Input JSON File Path] [Output JSON File Path]",
+		Use:   "distribute [MultiSigKeyName] [DistributionName] [DistributionType] [Input JSON File Path] [Output JSON File Path]",
 		Short: "Create new distribution",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx := client.GetClientContextFromCmd(cmd)
@@ -70,8 +70,13 @@ func GetCmdCreate() *cobra.Command {
 			if multisigInfo.GetType() != keyring.TypeMulti {
 				return fmt.Errorf("%q must be of type %s: %s", args[0], keyring.TypeMulti, multisigInfo.GetType())
 			}
+			name := args[1]
+			distributionType, ok := types.IsValidDistribution(args[2])
+			if !ok {
+				return fmt.Errorf("invalid distribution Type %s: Types supported [Airdrop/LiquidityMining/ValidatorSubsidy]", args[2])
+			}
 
-			inputList, err := dispensationUtils.ParseInput(args[2])
+			inputList, err := dispensationUtils.ParseInput(args[3])
 			if err != nil {
 				return err
 			}
@@ -82,12 +87,11 @@ func GetCmdCreate() *cobra.Command {
 				return err
 			}
 
-			outputlist, err := dispensationUtils.ParseOutput(args[3])
+			outputlist, err := dispensationUtils.ParseOutput(args[4])
 			if err != nil {
 				return err
 			}
-			name := args[1]
-			msg := types.NewMsgCreateDistribution(clientCtx.GetFromAddress(), name, types.DistributionType_DISTRIBUTION_TYPE_AIRDROP, inputList, outputlist)
+			msg := types.NewMsgCreateDistribution(clientCtx.GetFromAddress(), name, distributionType, inputList, outputlist)
 			if err := msg.ValidateBasic(); err != nil {
 				return err
 			}
@@ -95,5 +99,25 @@ func GetCmdCreate() *cobra.Command {
 		},
 	}
 
+	return cmd
+}
+
+func GetCmdClaim() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "claim [ClaimType]",
+		Short: "Create new Claim",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			clientCtx := client.GetClientContextFromCmd(cmd)
+			claimType, ok := types.IsValidClaim(args[0])
+			if !ok {
+				return fmt.Errorf("invalid Claim Type %s: Types supported [LiquidityMining/ValidatorSubsidy]", args[0])
+			}
+			msg := types.NewMsgCreateUserClaim(clientCtx.GetFromAddress(), claimType)
+			if err := msg.ValidateBasic(); err != nil {
+				return err
+			}
+			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), &msg)
+		},
+	}
 	return cmd
 }

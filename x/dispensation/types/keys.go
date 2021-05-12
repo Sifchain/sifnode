@@ -8,8 +8,9 @@ import (
 
 const (
 	// ModuleName is the name of the module
-	ModuleName = "dispensation"
-
+	ModuleName                = "dispensation"
+	MsgTypeCreateUserClaim    = "createUserClaim"
+	MsgTypeCreateDistribution = "createDistribution"
 	// StoreKey to be used when creating the KVStore
 	StoreKey = ModuleName
 
@@ -26,6 +27,7 @@ var (
 	DistributionRecordPrefixPending   = []byte{0x000} // key for storing DistributionRecords pending
 	DistributionRecordPrefixCompleted = []byte{0x011} // key for storing DistributionRecords completed
 	DistributionsPrefix               = []byte{0x01}  // key for storing Distributions
+	UserClaimPrefix                   = []byte{0x02}  // key for storing user claims
 )
 
 func GetDistributionRecordKey(status DistributionStatus, name string, recipient string) []byte {
@@ -42,6 +44,11 @@ func GetDistributionRecordKey(status DistributionStatus, name string, recipient 
 func GetDistributionsKey(name string, distributionType DistributionType) []byte {
 	key := []byte(fmt.Sprintf("%s_%d", name, distributionType))
 	return append(DistributionsPrefix, key...)
+}
+
+func GetUserClaimKey(userAddress string, userClaimType DistributionType) []byte {
+	key := []byte(fmt.Sprintf("%s_%d", userAddress, userClaimType))
+	return append(UserClaimPrefix, key...)
 }
 
 func GetDistributionModuleAddress() sdk.AccAddress {

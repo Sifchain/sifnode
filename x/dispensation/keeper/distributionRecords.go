@@ -131,10 +131,8 @@ func (k Keeper) GetRecordsLimited(ctx sdk.Context, status types.DistributionStat
 		var dr types.DistributionRecord
 		bytesValue := iterator.Value()
 		k.cdc.MustUnmarshalBinaryBare(bytesValue, &dr)
-		if dr.DistributionStatus == types.DistributionStatus_DISTRIBUTION_STATUS_PENDING {
-			res.DistributionRecords = append(res.DistributionRecords, &dr)
-			count++
-		}
+		res.DistributionRecords = append(res.DistributionRecords, &dr)
+		count++
 		if count == types.MaxRecordsPerBlock {
 			break
 		}
