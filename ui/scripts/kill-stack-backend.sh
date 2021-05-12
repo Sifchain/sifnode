@@ -1,1 +1,3 @@
-docker ps -q -f name=sifdevstack01 && docker stop sifdevstack01 && docker rm -f sifdevstack01
+#!/bin/bash
+
+[[ ! -z "$(docker ps -qaf name=sif-ui-stack)" ]] && docker stop sif-ui-stack && docker rm -f sif-ui-stack
