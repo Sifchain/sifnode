@@ -26,7 +26,7 @@ export async function getTokenBalance(
   try {
     tokenBalance = await contract.methods.balanceOf(address).call();
   } catch (err) {
-    console.log(`Error fetching balance for ${asset.symbol}`);
+    // console.log(`Error fetching balance for ${asset.symbol}`);
   }
   return AssetAmount(asset, tokenBalance);
 }
