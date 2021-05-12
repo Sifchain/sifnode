@@ -194,6 +194,14 @@ func GetCmdLock() *cobra.Command {
 				return err
 			}
 
+			cosmosSender, err := sdk.AccAddressFromBech32(args[0])
+			if err != nil {
+				return err
+			}
+
+			// TODO: Rather use standard --from arg in integration test, and remove first redudant param in this command.
+			clientCtx = clientCtx.WithFromAddress(cosmosSender)
+
 			flags := cmd.Flags()
 
 			ethereumChainIDStr, err := flags.GetString(types.FlagEthereumChainID)
@@ -202,11 +210,6 @@ func GetCmdLock() *cobra.Command {
 			}
 
 			ethereumChainID, err := strconv.Atoi(ethereumChainIDStr)
-			if err != nil {
-				return err
-			}
-
-			cosmosSender, err := sdk.AccAddressFromBech32(args[0])
 			if err != nil {
 				return err
 			}
