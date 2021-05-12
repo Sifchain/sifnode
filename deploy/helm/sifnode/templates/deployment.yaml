@@ -64,7 +64,7 @@ spec:
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           command: ["/bin/sh"]
-          args: ["-c", "cp /usr/bin/sifnoded /root/.sifnoded/cosmovisor/upgrades/0.8.2/bin/sifnoded && cosmovisor start --rpc.laddr tcp://0.0.0.0:26657 --minimum-gas-prices \"{{ .Values.sifnode.args.minimumGasPrices }}\""]
+          args: ["-c", "cosmovisor start --rpc.laddr tcp://0.0.0.0:26657 --minimum-gas-prices \"{{ .Values.sifnode.args.minimumGasPrices }}\""]
           volumeMounts:
             - name: data
               mountPath: /root/
