@@ -12,12 +12,14 @@ import {
 } from "./TendermintSocketPoll";
 
 import { ClpExtension, setupClpExtension } from "./x/clp";
+import { IDispensationApi, setupDispensationApi } from "./x/dispensation";
 import { EthbridgeExtension, setupEthbridgeExtension } from "./x/ethbridge";
 
 type CustomLcdClient = LcdClient &
   AuthExtension &
   ClpExtension &
-  EthbridgeExtension;
+  EthbridgeExtension &
+  IDispensationApi;
 
 function createLcdClient(
   apiUrl: string,
@@ -28,6 +30,7 @@ function createLcdClient(
     setupAuthExtension,
     setupClpExtension,
     setupEthbridgeExtension,
+    setupDispensationApi,
   );
 }
 
@@ -42,7 +45,6 @@ export class SifUnSignedClient
   private subscriber: TendermintSocketPoll | undefined;
   constructor(
     apiUrl: string,
-    wsUrl = "ws://localhost:26657/websocket",
     rpcUrl = "http://localhost:26657",
     broadcastMode?: BroadcastMode,
   ) {
@@ -55,10 +57,10 @@ export class SifUnSignedClient
     this.createPool = this.lcdClient.clp.createPool;
     this.getLiquidityProvider = this.lcdClient.clp.getLiquidityProvider;
     this.removeLiquidity = this.lcdClient.clp.removeLiquidity;
-    this.claimRewards = this.lcdClient.clp.claimRewards;
     this.getPool = this.lcdClient.clp.getPool;
     this.burn = this.lcdClient.ethbridge.burn;
     this.lock = this.lcdClient.ethbridge.lock;
+    this.claim = this.lcdClient.dispensation.claim;
     this.subscriber = createTendermintSocketPoll(rpcUrl);
   }
 
@@ -71,11 +73,13 @@ export class SifUnSignedClient
   getLiquidityProvider: IClpApi["getLiquidityProvider"];
   removeLiquidity: IClpApi["removeLiquidity"];
   getPool: IClpApi["getPool"];
-  claimRewards: IClpApi["claimRewards"];
 
   // Ethbridge Extension
   burn: IEthbridgeApi["burn"];
   lock: IEthbridgeApi["lock"];
+
+  // Dispensation
+  claim: IDispensationApi["dispensation"]["claim"];
 
   onNewBlock<T>(handler: HandlerFn<T>) {
     console.log("received onNewBlock handler");

@@ -49,7 +49,6 @@ type IClpService = {
     asset: IAsset;
     fromAddress: string;
   }) => any;
-  claimRewards: (params: { address: string }) => any;
 };
 
 // TS not null type guard
@@ -187,12 +186,6 @@ export default function createClpService({
         signer: params.fromAddress,
         w_basis_points: params.wBasisPoints,
       });
-    },
-
-    async claimRewards(params) {
-      const rewards = await client.claimRewards({ address: "" });
-      console.log("rewards", rewards);
-      return rewards;
     },
   };
 
