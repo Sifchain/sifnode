@@ -13,6 +13,7 @@ export default defineComponent({
   data() {
     return {
       poolData: {},
+      liqAPY: 0,
     };
   },
   async mounted() {
@@ -21,13 +22,26 @@ export default defineComponent({
     );
     const json = await data.json();
     this.poolData = json.body;
+
+    const params = new URLSearchParams();
+    const DEFAULT_ADDRESS = "sif100snz8vss9gqhchg90mcgzkjaju2k76y7h9n6d";
+
+    params.set("address", DEFAULT_ADDRESS);
+    params.set("key", "userData");
+    params.set("timestamp", "now");
+    const lmRes = await fetch(
+      `https://api-cryptoeconomics.sifchain.finance/api/lm?${params.toString()}`,
+    );
+    const lmJson = await lmRes.json();
+
+    this.liqAPY = lmJson.user.currentAPYOnTickets * 100;
   },
 });
 </script>
 
 <template>
   <div class="layout">
-    <PoolStatsList :poolData="poolData" />
+    <PoolStatsList :poolData="poolData" :liqAPY="liqAPY" />
   </div>
 </template>
 
