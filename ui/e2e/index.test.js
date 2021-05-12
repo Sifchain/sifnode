@@ -93,7 +93,95 @@ beforeEach(async () => {
   await page.close();
 });
 
-it.only("pegs ether", async () => {
+it("pegs rowan", async () => {
+  // First we need to unpeg rowan in order to have erowan on the bridgebank contract
+  // Navigate to peg page
+  await dexPage.goto(DEX_TARGET, {
+    waitUntil: "domcontentloaded",
+  });
+
+  const unpegAmount = "500";
+  await dexPage.click("[data-handle='native-tab']");
+  await dexPage.click("[data-handle='unpeg-rowan']");
+  await dexPage.click('[data-handle="peg-input"]');
+  await dexPage.fill('[data-handle="peg-input"]', unpegAmount);
+  await dexPage.click('button:has-text("Unpeg")');
+
+  const [confirmPopup] = await Promise.all([
+    browserContext.waitForEvent("page"),
+    dexPage.click('button:has-text("Confirm Unpeg")'),
+  ]);
+
+  await Promise.all([
+    confirmPopup.waitForEvent("close"),
+    confirmPopup.click('button:has-text("Approve")'),
+  ]);
+
+  await dexPage.waitForSelector("text=Transaction Submitted");
+  await dexPage.click("text=×");
+  await dexPage.waitForTimeout(10000); // wait for sifnode to validate the tx
+
+  await dexPage.click("[data-handle='external-tab']");
+  await dexPage.waitForSelector("text=/600\\.000000/");
+
+  const rowAmount = await dexPage.innerText(
+    "[data-handle='erowan-row-amount']",
+  );
+
+  expect(rowAmount.trim()).toBe("600.000000");
+
+  // Now lets peg erowan
+  await dexPage.goto(DEX_TARGET, {
+    waitUntil: "domcontentloaded",
+  });
+
+  const pegAmount = "100";
+
+  await dexPage.click("[data-handle='external-tab']");
+  await dexPage.click("[data-handle='peg-erowan']");
+  await dexPage.click('[data-handle="peg-input"]');
+  await dexPage.fill('[data-handle="peg-input"]', pegAmount);
+  await dexPage.click('button:has-text("Peg")');
+
+  const [approveSpendPopup] = await Promise.all([
+    browserContext.waitForEvent("page"),
+    dexPage.click('button:has-text("Confirm Peg")'),
+  ]);
+
+  await approveSpendPopup.click("text=View full transaction details");
+  await expect(approveSpendPopup).toHaveText(pegAmount + " erowan");
+
+  // TODO: abstract away confirmation flow
+  const [confirmPopup2] = await Promise.all([
+    browserContext.waitForEvent("page"),
+    approveSpendPopup.click('button:has-text("Confirm")'),
+  ]);
+
+  await Promise.all([
+    confirmPopup2.waitForEvent("close"),
+    confirmPopup2.click('button:has-text("Confirm")'),
+  ]);
+
+  await dexPage.click("text=×");
+
+  // Check that tx marker for the tx is there
+  await dexPage.waitForSelector(
+    "[data-handle='rowan-row-amount'] [data-handle='pending-tx-marker']",
+  );
+
+  // move chain forward
+  await advanceEthBlocks(52);
+
+  await dexPage.waitForSelector("text=has succeded");
+
+  const rowAmount2 = await dexPage.innerText(
+    "[data-handle='rowan-row-amount']",
+  );
+
+  expect(rowAmount2.trim()).toBe("9600.000000");
+});
+
+it("pegs ether", async () => {
   // Navigate to peg page
   await dexPage.goto(DEX_TARGET, {
     waitUntil: "domcontentloaded",
@@ -124,6 +212,11 @@ it.only("pegs ether", async () => {
   ]);
 
   await dexPage.click("text=×");
+
+  // Check that tx marker for the tx is there
+  await dexPage.waitForSelector(
+    "[data-handle='ceth-row-amount'] [data-handle='pending-tx-marker']",
+  );
 
   // move chain forward
   await advanceEthBlocks(52);

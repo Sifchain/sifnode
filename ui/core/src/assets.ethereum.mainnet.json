@@ -557,6 +557,26 @@
       "priceUsd": 0,
       "symbol": "tidal",
       "transferLimit": "99999999999999999999999"
+    },
+    {
+      "address": "0x95ad61b0a150d79219dcf64e1e6cc01f0b64c4ce",
+      "decimals": 18,
+      "imageUrl": "https://assets.coingecko.com/coins/images/11939/small/SHIBLOGO.png?1600752116",
+      "name": "SHIBA INU",
+      "network": "ethereum",
+      "priceUsd": 0,
+      "symbol": "SHIB",
+      "transferLimit": "99999999999999999999999"
+    },
+    {
+      "address": "0x27c70cd1946795b66be9d954418546998b546634",
+      "decimals": 18,
+      "imageUrl": "https://etherscan.io/token/images/dogekiller_32.png",
+      "name": "DOGE KILLER",
+      "network": "ethereum",
+      "priceUsd": 0,
+      "symbol": "LEASH",
+      "transferLimit": "99999999999999999999999"
     }
   ]
 }
