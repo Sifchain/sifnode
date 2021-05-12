@@ -5,6 +5,7 @@ import (
 	"strconv"
 
 	"github.com/cosmos/cosmos-sdk/client"
+	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/client/tx"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/pkg/errors"
@@ -112,7 +113,7 @@ func GetCmdCreateEthBridgeClaim() *cobra.Command {
 // GetCmdBurn is the CLI command for burning some of your eth and triggering an event
 //nolint:lll
 func GetCmdBurn() *cobra.Command {
-	return &cobra.Command{
+	cmd := &cobra.Command{
 		Use:   "burn [cosmos-sender-address] [ethereum-receiver-address] [amount] [symbol] [cethAmount] --ethereum-chain-id [ethereum-chain-id]",
 		Short: "burn cETH or cERC20 on the Cosmos chain",
 		Long: `This should be used to burn cETH or cERC20. It will burn your coins on the Cosmos Chain, removing them from your account and deducting them from the supply.
@@ -174,12 +175,16 @@ func GetCmdBurn() *cobra.Command {
 			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), &msg)
 		},
 	}
+
+	flags.AddTxFlagsToCmd(cmd)
+
+	return cmd
 }
 
 // GetCmdLock is the CLI command for locking some of your coins and triggering an event
 func GetCmdLock() *cobra.Command {
 	//nolint:lll
-	return &cobra.Command{
+	cmd := &cobra.Command{
 		Use:   "lock [cosmos-sender-address] [ethereum-receiver-address] [amount] [symbol] [cethAmount] --ethereum-chain-id [ethereum-chain-id]",
 		Short: "This should be used to lock Cosmos-originating coins (eg: ATOM). It will lock up your coins in the supply module, removing them from your account. It will also trigger an event on the Cosmos Chain for relayers to watch so that they can trigger the minting of the pegged token on Etherum to you!",
 		Args:  cobra.ExactArgs(5),
@@ -240,11 +245,15 @@ func GetCmdLock() *cobra.Command {
 			return tx.GenerateOrBroadcastTxCLI(clientCtx, flags, &msg)
 		},
 	}
+
+	flags.AddTxFlagsToCmd(cmd)
+
+	return cmd
 }
 
 // GetCmdUpdateWhiteListValidator is the CLI command for update the validator whitelist
 func GetCmdUpdateWhiteListValidator() *cobra.Command {
-	return &cobra.Command{
+	cmd := &cobra.Command{
 		Use:   "update_whitelist_validator [cosmos-sender-address] [validator-address] [operation-type] --node [node-address]",
 		Short: "This should be used to update the validator whitelist.",
 		Args:  cobra.ExactArgs(3),
@@ -277,11 +286,15 @@ func GetCmdUpdateWhiteListValidator() *cobra.Command {
 			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), &msg)
 		},
 	}
+
+	flags.AddTxFlagsToCmd(cmd)
+
+	return cmd
 }
 
 // GetCmdUpdateCethReceiverAccount is the CLI command to update the sifchain account that receives the ceth proceeds
 func GetCmdUpdateCethReceiverAccount() *cobra.Command {
-	return &cobra.Command{
+	cmd := &cobra.Command{
 		Use:   "update_ceth_receiver_account [cosmos-sender-address] [ceth_receiver_account]",
 		Short: "This should be used to set the ceth receiver account.",
 		Args:  cobra.ExactArgs(2),
@@ -309,11 +322,15 @@ func GetCmdUpdateCethReceiverAccount() *cobra.Command {
 			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), &msg)
 		},
 	}
+
+	flags.AddTxFlagsToCmd(cmd)
+
+	return cmd
 }
 
 // GetCmdRescueCeth is the CLI command to send the message to transfer ceth from ethbridge module to account
 func GetCmdRescueCeth() *cobra.Command {
-	return &cobra.Command{
+	cmd := &cobra.Command{
 		Use:   "rescue_ceth [cosmos-sender-address] [ceth_receiver_account] [ceth_amount]",
 		Short: "This should be used to send ceth from ethbridge to an account.",
 		Args:  cobra.ExactArgs(3),
@@ -346,4 +363,8 @@ func GetCmdRescueCeth() *cobra.Command {
 			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), &msg)
 		},
 	}
+
+	flags.AddTxFlagsToCmd(cmd)
+
+	return cmd
 }

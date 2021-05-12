@@ -95,5 +95,7 @@ func GetCmdCreate() *cobra.Command {
 		},
 	}
 
+	flags.AddTxFlagsToCmd(cmd)
+
 	return cmd
 }
