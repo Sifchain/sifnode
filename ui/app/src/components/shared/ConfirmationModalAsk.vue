@@ -38,9 +38,10 @@ export default defineComponent({
 .title {
   font-size: $fs_lg;
   color: $c_text;
-  margin-bottom: 2rem;
+  margin-bottom: 1rem;
   text-align: left;
   font-weight: 700;
+  font-style: italic;
 }
 .ask-body {
   flex: 1;
