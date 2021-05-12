@@ -17,7 +17,6 @@ export const SubscribeToUnconfirmedPegTxs = ({
       store.wallet.eth.address,
       config.ethConfirmations,
     );
-
     return pendingTxs.map(subscribeToTx);
   }
 

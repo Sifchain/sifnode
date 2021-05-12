@@ -122,19 +122,15 @@ export default function createEthbridgeService({
   }
 
   return {
-    async approveBridgeBankSpend(account: string, assetAmount: IAssetAmount) {
+    async approveBridgeBankSpend(account: string, amount: IAssetAmount) {
       // This will popup an approval request in metamask
       const web3 = await ensureWeb3();
-      const tokenContract = await getTokenContract(
-        web3,
-        assetAmount.asset.address!,
-      );
+      const tokenContract = await getTokenContract(web3, amount.asset.address!);
       const sendArgs = {
         from: account,
         value: 0,
         gas: 100000,
       };
-      const amountInBaseUnits = assetAmount.toBaseUnitsAmount();
 
       // TODO - give interface option to approve unlimited spend via web3.utils.toTwosComplement(-1);
       // NOTE - We may want to move this out into its own separate function.
@@ -142,7 +138,12 @@ export default function createEthbridgeService({
       const hasAlreadyApprovedSpend = await tokenContract.methods
         .allowance(account, bridgebankContractAddress)
         .call();
-      if (amountInBaseUnits.lessThanOrEqual(hasAlreadyApprovedSpend)) {
+      if (
+        JSBI.lessThanOrEqual(
+          amount.toBigInt(),
+          JSBI.BigInt(hasAlreadyApprovedSpend),
+        )
+      ) {
         // dont request approve again
         console.log(
           "approveBridgeBankSpend: spend already approved",
@@ -152,10 +153,7 @@ export default function createEthbridgeService({
       }
 
       const res = await tokenContract.methods
-        .approve(
-          bridgebankContractAddress,
-          amountInBaseUnits.toBigInt().toString(),
-        )
+        .approve(bridgebankContractAddress, amount.toBigInt().toString())
         .send(sendArgs);
       console.log("approveBridgeBankSpend:", res);
       return res;

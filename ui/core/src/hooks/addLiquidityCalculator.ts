@@ -9,6 +9,7 @@ import {
   Pool,
 } from "../entities";
 import { Amount } from "../entities";
+import { fromBaseUnits } from "../utils";
 import { format } from "../utils/format";
 import { useField } from "./useField";
 import { useBalances } from "./utils";
@@ -195,7 +196,11 @@ export function usePoolCalculator(input: {
   const aPerBRatio = computed(() => {
     if (!poolAmounts.value) return 0;
     const [native, external] = poolAmounts.value;
-    return Amount(external.divide(native));
+
+    const derivedNative = native.toDerived();
+    const derivedExternal = external.toDerived();
+
+    return derivedExternal.divide(derivedNative);
   });
 
   const aPerBRatioMessage = computed(() => {
@@ -211,7 +216,10 @@ export function usePoolCalculator(input: {
     if (!poolAmounts.value) return 0;
     const [native, external] = poolAmounts.value;
 
-    return Amount(native.divide(external));
+    const derivedNative = native.toDerived();
+    const derivedExternal = external.toDerived();
+
+    return derivedNative.divide(derivedExternal);
   });
 
   const bPerARatioMessage = computed(() => {
@@ -233,10 +241,14 @@ export function usePoolCalculator(input: {
       return null;
 
     const [native, external] = poolAmounts.value;
-    const externalAdded = tokenAField.fieldAmount.value;
-    const nativeAdded = tokenBField.fieldAmount.value;
+    const derivedNative = native.toDerived();
+    const derivedExternal = external.toDerived();
+    const externalAdded = tokenAField.fieldAmount.value.toDerived();
+    const nativeAdded = tokenBField.fieldAmount.value.toDerived();
 
-    return Amount(external.add(externalAdded).divide(native.add(nativeAdded)));
+    return derivedExternal
+      .add(externalAdded)
+      .divide(derivedNative.add(nativeAdded));
   });
 
   const aPerBRatioProjectedMessage = computed(() => {
@@ -258,9 +270,13 @@ export function usePoolCalculator(input: {
       return null;
 
     const [native, external] = poolAmounts.value;
-    const externalAdded = tokenAField.fieldAmount.value;
-    const nativeAdded = tokenBField.fieldAmount.value;
-    return Amount(native.add(nativeAdded).divide(external.add(externalAdded)));
+    const derivedNative = native.toDerived();
+    const derivedExternal = external.toDerived();
+    const externalAdded = tokenAField.fieldAmount.value.toDerived();
+    const nativeAdded = tokenBField.fieldAmount.value.toDerived();
+    return derivedNative
+      .add(nativeAdded)
+      .divide(derivedExternal.add(externalAdded));
   });
 
   const bPerARatioProjectedMessage = computed(() => {
@@ -300,14 +316,12 @@ export function usePoolCalculator(input: {
       );
       if (input.lastFocusedTokenField.value === "A") {
         input.tokenBAmount.value = format(
-          assetAmountA.multiply(bPerARatio.value || "0"),
-          assetA.value,
+          assetAmountA.toDerived().multiply(bPerARatio.value || "0"),
           { mantissa: 5 },
         );
       } else if (input.lastFocusedTokenField.value === "B") {
         input.tokenAAmount.value = format(
-          assetAmountB.multiply(aPerBRatio.value || "0"),
-          assetB.value,
+          assetAmountB.toDerived().multiply(aPerBRatio.value || "0"),
           { mantissa: 5 },
         );
       }
