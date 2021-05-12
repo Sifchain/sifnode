@@ -55,7 +55,7 @@ jobs:
       - name: Build test chains
         run: yarn chain:build && yarn build
 
-      - uses: microsoft/playwright-github-action@v1
+      - uses: microsoft/playwright-github-action@v1.4.4
 
       - name: Build e2e App
         run: cd e2e && yarn install --frozen-lockfile
