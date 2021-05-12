@@ -4,12 +4,13 @@ const (
 	QueryAllDistributions   = "distributions"
 	QueryRecordsByDistrName = "records_by_name"
 	QueryRecordsByRecipient = "records_by_recipient"
+	QueryClaimsByType       = "claims_by_type"
 )
 
-func NewQueryRecordsByDistributionName(distributionName string, status ClaimStatus) QueryRecordsByDistributionName {
-	return QueryRecordsByDistributionName{DistributionName: distributionName, Status: status}
+func NewQueryRecordsByDistributionName(distributionName string, status DistributionStatus) QueryRecordsByDistributionNameRequest {
+	return QueryRecordsByDistributionNameRequest{DistributionName: distributionName, Status: status}
 }
 
-func NewQueryRecordsByRecipientAddr(address string) QueryRecordsByRecipientAddr {
-	return QueryRecordsByRecipientAddr{Address: address}
+func NewQueryRecordsByRecipientAddr(address string) QueryRecordsByRecipientAddrRequest {
+	return QueryRecordsByRecipientAddrRequest{Address: address}
 }

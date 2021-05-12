@@ -6,38 +6,34 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/bank/types"
 )
 
+func NewMsgCreateDistribution(signer sdk.AccAddress, DistributionName string, DistributionType DistributionType, input []types.Input, output []types.Output) MsgCreateDistribution {
 
-func NewMsgDistribution(
-	signer sdk.AccAddress,
-	DistributionName string,
-	DistributionType DistributionType,
-	input []types.Input,
-	output []types.Output) MsgDistribution {
-
-	return MsgDistribution{
+	return MsgCreateDistribution{
 		Signer: signer.String(),
-		DistributionName: DistributionName,
-		DistributionType: DistributionType,
-		Input: input,
+		Distribution: &Distribution{
+			DistributionName: DistributionName,
+			DistributionType: DistributionType,
+		},
+		Input:  input,
 		Output: output,
 	}
 }
 
-func (m MsgDistribution) Route() string {
+func (m MsgCreateDistribution) Route() string {
 	return RouterKey
 }
 
-func (m MsgDistribution) Type() string {
-	return "airdrop"
+func (m MsgCreateDistribution) Type() string {
+	return MsgTypeCreateDistribution
 }
 
-func (m MsgDistribution) ValidateBasic() error {
+func (m MsgCreateDistribution) ValidateBasic() error {
 	_, err := sdk.AccAddressFromBech32(m.Signer)
 	if err != nil {
 		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, m.Signer)
 	}
 
-	if m.DistributionName == "" {
+	if m.Distribution.DistributionName == "" {
 		return sdkerrors.Wrap(ErrInvalid, "Name cannot be empty")
 	}
 
@@ -49,15 +45,49 @@ func (m MsgDistribution) ValidateBasic() error {
 	return nil
 }
 
-func (m MsgDistribution) GetSignBytes() []byte {
+func NewMsgCreateUserClaim(signer sdk.AccAddress, claimType DistributionType) MsgCreateUserClaim {
+	return MsgCreateUserClaim{
+		Signer:        signer.String(),
+		UserClaimType: claimType,
+	}
+}
+func (m MsgCreateDistribution) GetSignBytes() []byte {
 	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(&m))
 }
 
-func (m MsgDistribution) GetSigners() []sdk.AccAddress {
+func (m MsgCreateDistribution) GetSigners() []sdk.AccAddress {
 	addr, err := sdk.AccAddressFromBech32(m.Signer)
 	if err != nil {
 		panic(err)
 	}
 
+	return []sdk.AccAddress{addr}
+}
+
+func (m MsgCreateUserClaim) Route() string {
+	return RouterKey
+}
+
+func (m MsgCreateUserClaim) Type() string {
+	return MsgTypeCreateUserClaim
+}
+
+func (m MsgCreateUserClaim) ValidateBasic() error {
+	_, err := sdk.AccAddressFromBech32(m.Signer)
+	if err != nil {
+		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, m.Signer)
+	}
+	return nil
+}
+
+func (m MsgCreateUserClaim) GetSignBytes() []byte {
+	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(&m))
+}
+
+func (m MsgCreateUserClaim) GetSigners() []sdk.AccAddress {
+	addr, err := sdk.AccAddressFromBech32(m.Signer)
+	if err != nil {
+		panic(err)
+	}
 	return []sdk.AccAddress{addr}
 }

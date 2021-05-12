@@ -7,8 +7,8 @@ import "cosmos/base/coin.proto";
 option go_package = "github.com/Sifchain/sifnode/x/dispensation/types";
 
 message GenesisState {
-  repeated string address_whitelist = 1;
-  string          admin_address     = 2;
+  DistributionRecords distribution_records = 1;
+  Distributions distributions = 2;
 }
 
 // Distribution type enum
@@ -17,45 +17,54 @@ enum DistributionType {
   DISTRIBUTION_TYPE_UNSPECIFIED = 0;
   // Airdrop distribution type
   DISTRIBUTION_TYPE_AIRDROP = 1;
+  // Validator Subsidy distribution type
+  DISTRIBUTION_TYPE_VALIDATOR_SUBSIDY = 2;
+  // Liquidity mining distribution type
+  DISTRIBUTION_TYPE_LIQUIDITY_MINING = 3;
 }
 
 // Claim status enum
-enum ClaimStatus {
+enum DistributionStatus {
   // Unspecified
-  CLAIM_STATUS_UNSPECIFIED = 0;
+  DISTRIBUTION_STATUS_UNSPECIFIED = 0;
   // Pending claim status
-  CLAIM_STATUS_PENDING = 1;
+  DISTRIBUTION_STATUS_PENDING = 1;
   // Completed claim status
-  CLAIM_STATUS_COMPLETED = 2;
+  DISTRIBUTION_STATUS_COMPLETED = 2;
 }
 
 message DistributionRecord {
-  ClaimStatus claim_status                = 1;
-  string distribution_name                = 2;
-  string recipient_address                = 3;
-  repeated cosmos.base.v1beta1.Coin coins = 4 [
-    (gogoproto.nullable)     = false,
+  DistributionStatus distribution_status = 1;
+  DistributionType distribution_type = 2;
+  string distribution_name = 3;
+  string recipient_address = 4;
+  repeated cosmos.base.v1beta1.Coin coins = 5 [
+    (gogoproto.nullable) = false,
     (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins",
-    (gogoproto.moretags)     = "yaml:\"coins\""
+    (gogoproto.moretags) = "yaml:\"coins\""
   ];
-  int64 distribution_start_height       = 5;
-  int64 distribution_completed_height  = 6;
+  int64 distribution_start_height = 6;
+  int64 distribution_completed_height = 7;
 }
 
 message DistributionRecords {
   repeated DistributionRecord distribution_records = 1;
 }
 
-message DistributionRecordsResponse {
-  DistributionRecords distribution_records = 1;
-  int64 height = 2;
-}
-
-message Distributions {
-  repeated Distribution distributions = 1;
-}
+message Distributions { repeated Distribution distributions = 1; }
 
 message Distribution {
-  DistributionType distribution_type  = 1;
-  string distribution_name            = 2;
+  DistributionType distribution_type = 1;
+  string distribution_name = 2;
+}
+
+message UserClaim {
+  string user_address = 1;
+  DistributionType user_claim_type = 2;
+  string user_claim_time = 3;
+  bool locked = 4;
+}
+
+message UserClaims {
+  repeated UserClaim user_claims = 1;
 }

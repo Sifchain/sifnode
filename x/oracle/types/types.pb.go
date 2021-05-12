@@ -60,7 +60,8 @@ func (StatusText) EnumDescriptor() ([]byte, []int) {
 }
 
 // GenesisState - all clp state that must be provided at genesis
-//TODO: Add parameters to Genesis state ,such as minimum liquidity required to create a pool
+// TODO: Add parameters to Genesis state ,such as minimum liquidity required to
+// create a pool
 type GenesisState struct {
 	AddressWhitelist []string `protobuf:"bytes,1,rep,name=address_whitelist,json=addressWhitelist,proto3" json:"address_whitelist,omitempty"`
 	AdminAddress     string   `protobuf:"bytes,2,opt,name=admin_address,json=adminAddress,proto3" json:"admin_address,omitempty"`
@@ -113,7 +114,8 @@ func (m *GenesisState) GetAdminAddress() string {
 	return ""
 }
 
-// Claim contrains an arbitrary claim with arbitrary content made by a given validator
+// Claim contrains an arbitrary claim with arbitrary content made by a given
+// validator
 type Claim struct {
 	Id               string `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
 	ValidatorAddress string `protobuf:"bytes,2,opt,name=validator_address,json=validatorAddress,proto3" json:"validator_address,omitempty"`
@@ -175,7 +177,8 @@ func (m *Claim) GetContent() string {
 }
 
 // DBProphecy is what the prophecy becomes when being saved to the database.
-//  Tendermint/Amino does not support maps so we must serialize those variables into bytes.
+//  Tendermint/Amino does not support maps so we must serialize those variables
+//  into bytes.
 type DBProphecy struct {
 	Id              string `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
 	Status          Status `protobuf:"bytes,2,opt,name=status,proto3" json:"status"`
