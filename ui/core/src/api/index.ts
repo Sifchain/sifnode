@@ -6,6 +6,9 @@ import ethbridgeService, { EthbridgeServiceContext } from "./EthbridgeService";
 import sifService, { SifServiceContext } from "./SifService";
 import clpService, { ClpServiceContext } from "./ClpService";
 import eventBusService, { EventBusServiceContext } from "./EventBusService";
+import createDispensationService, {
+  IDispensationServiceContext,
+} from "./DispensationService";
 
 export type Api = ReturnType<typeof createApi>;
 
@@ -18,7 +21,8 @@ export type ApiContext = EthereumServiceContext &
   ClpServiceContext &
   EthbridgeServiceContext &
   ClpServiceContext &
-  EventBusServiceContext; // add contexts from other APIs
+  EventBusServiceContext &
+  IDispensationServiceContext; // add contexts from other APIs
 
 export function createApi(context: ApiContext) {
   const EthereumService = ethereumService(context);
@@ -26,11 +30,14 @@ export function createApi(context: ApiContext) {
   const SifService = sifService(context);
   const ClpService = clpService(context);
   const EventBusService = eventBusService(context);
+  const DispensationService = createDispensationService(context);
+
   return {
     ClpService,
     EthereumService,
     SifService,
     EthbridgeService,
     EventBusService,
+    DispensationService,
   };
 }
