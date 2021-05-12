@@ -38,7 +38,7 @@ type HandlerFn<T> = (a: T) => void;
 /**
  * Constructor for SifService
  *
- * SifService handles communication between our ui core Domain and the SifNode blockchain
+ * SifService handles communication between our ui core Domain and the SifNode blockchain. This includes non-module related interaction
  */
 export default function createSifService({
   sifAddrPrefix,
