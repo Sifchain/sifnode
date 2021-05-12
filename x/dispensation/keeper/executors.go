@@ -13,7 +13,7 @@ import (
 func (k Keeper) CreateDrops(ctx sdk.Context, output []bank.Output, name string) error {
 	return errors.New("Dispensation module is disabled")
 	for _, receiver := range output {
-		distributionRecord := types.NewDistributionRecord(name, receiver.Address, receiver.Coins, ctx.BlockHeight(), -1)
+		distributionRecord := types.NewDistributionRecord(name, distributionType, receiver.Address, receiver.Coins, ctx.BlockHeight(), -1)
 		if k.ExistsDistributionRecord(ctx, name, receiver.Address.String()) {
 			oldRecord, err := k.GetDistributionRecord(ctx, name, receiver.Address.String())
 			if err != nil {
@@ -21,16 +21,27 @@ func (k Keeper) CreateDrops(ctx sdk.Context, output []bank.Output, name string) 
 			}
 			distributionRecord.Add(oldRecord)
 		}
-		distributionRecord.ClaimStatus = types.Pending
+		distributionRecord.DistributionStatus = types.Pending
 		err := k.SetDistributionRecord(ctx, distributionRecord)
 		if err != nil {
 			return errors.Wrapf(types.ErrFailedOutputs, "error setting distibution record  : %s", distributionRecord.String())
+		}
+		// Lock the user claim so that the user cannot delete the claim while the distribution is in progress.
+		// Claim will not exist if its not a LM/VS drop
+		// IF it is a LM/VS drop the associated claim must always exist .
+		// The users of this module need to make sure they are submitting the proper distribution type when distributing rewards
+		// The same user might be eligible for Airdrop/LM/VS rewards . Based on Distribution type submitted the appropriate claim will be locked.
+		if distributionType == types.LiquidityMining || distributionType == types.ValidatorSubsidy {
+			err := k.LockClaim(ctx, receiver.Address.String(), distributionType)
+			if err != nil {
+				return errors.Wrap(err, fmt.Sprintf("Unable to verify associated claim for address : %s", receiver.Address.String()))
+			}
 		}
 	}
 	return nil
 }
 
-//DistributeDrops is called at the beginning of every block .
+// DistributeDrops is called at the beginning of every block .
 // It checks if any pending records are present , if there are it completes the top 10
 func (k Keeper) DistributeDrops(ctx sdk.Context, height int64) error {
 	return errors.New("Dispensation module is disabled")
@@ -40,11 +51,16 @@ func (k Keeper) DistributeDrops(ctx sdk.Context, height int64) error {
 		if err != nil {
 			return errors.Wrapf(types.ErrFailedOutputs, "for address  : %s", record.RecipientAddress.String())
 		}
-		record.ClaimStatus = types.Completed
+		record.DistributionStatus = types.Completed
 		record.DistributionCompletedHeight = height
 		err = k.SetDistributionRecord(ctx, record)
 		if err != nil {
 			return errors.Wrapf(types.ErrFailedOutputs, "error setting distibution record  : %s", record.String())
+		}
+		// Use record details to delete associated claim
+		// The claim should always be locked at this point in time .
+		if record.DistributionType == types.LiquidityMining || record.DistributionType == types.ValidatorSubsidy {
+			k.DeleteClaim(ctx, record.RecipientAddress.String(), record.DistributionType)
 		}
 		ctx.Logger().Info(fmt.Sprintf("Distributed to : %s | At height : %d | Amount :%s \n", record.RecipientAddress.String(), height, record.Coins.String()))
 	}
