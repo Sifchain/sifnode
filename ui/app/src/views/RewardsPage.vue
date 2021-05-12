@@ -34,16 +34,31 @@ const REWARD_INFO = {
 
 async function getLMData(address: ComputedRef<any>, chainId: string) {
   if (!address.value) return;
-  const ceUrl = getCryptoeconomicsUrl(chainId);
-  const data = await fetch(
-    `${ceUrl}/lm/?key=userData&address=${address.value}&timestamp=now`,
-  );
-  if (data.status !== 200) return {};
-  const parsedData = await data.json();
-  if (!parsedData.user || !parsedData.user.claimableReward) {
-    return {};
-  }
-  return parsedData.user;
+  // const ceUrl = getCryptoeconomicsUrl(chainId);
+  // const data = await fetch(
+  //   `${ceUrl}/lm/?key=userData&address=${address.value}&timestamp=now`,
+  // );
+  // if (data.status !== 200) return {};
+  // const parsedData = await data.json();
+  // if (!parsedData.user || !parsedData.user.claimableReward) {
+  //   return {};
+  // }
+  // return parsedData.user;
+  return {
+    claimableReward: 10000,
+    claimed: 1133.5803574233153,
+    dispensed: 0,
+    forfeited: 2820.4719248996316,
+    nextRewardProjectedAPYOnTickets: 1.56,
+    maturityDate: "June 12th 2021, 11:19:14 am",
+    nextRewardShare: 0,
+    reservedReward: 1133.5803574233153,
+    ticketAmountAtMaturity: 0,
+    tickets: [],
+    totalRewardAtMaturity: 1133.5803574233153,
+    totalTickets: 0,
+    yieldAtMaturity: null,
+  };
 }
 
 async function getVSData(address: ComputedRef<any>, chainId: string) {
@@ -115,7 +130,7 @@ export default defineComponent({
     const address = computed(() => store.wallet.sif.address);
     const transactionState = ref<ConfirmState | string>("confirming");
     const transactionStateMsg = ref<string>("");
-    const transactionHash = ref<string | null>(null);
+    const transactionHash = ref<any>(null);
 
     // TODO - We can do this better later
     let lmRewards = ref<any>();
@@ -138,7 +153,7 @@ export default defineComponent({
 
     async function handleAskConfirmClicked() {
       transactionState.value = "signing";
-      // const tx = await actions.clp.claimRewards();
+      const tx = await actions.dispensation.claimRewards();
       // transactionHash.value = tx.hash;
       // transactionState.value = toConfirmState(tx.state); // TODO: align states
       // transactionStateMsg.value = tx.memo ?? "";
@@ -337,7 +352,7 @@ export default defineComponent({
                 <SifButton
                   @click="openClaimModal"
                   :primary="true"
-                  :disabled="true"
+                  :disabled="false"
                   >Claim</SifButton
                 >
               </div>
@@ -429,17 +444,23 @@ export default defineComponent({
           <div>
             <div class="claim-container">
               <Copy>
-                Are you sure you want to claim your rewards? Once you claim
-                these rewards, your multiplier will reset to 1x for all
-                remaining amounts and will continue to accumulate if within the
-                reward eligibility timeframe.
-                <br />
-                <br />
-                Please note that the rewards will be released at the end of the
-                week.
-                <br />
-                <br />
-                Find out <a href="">additional information here</a>.
+                <p>
+                  Are you sure you want to claim your rewards? Once you claim
+                  these rewards, additional rewards will not accumulate.
+                </p>
+                <p>
+                  Although if you re-add liquidity during our program window,
+                  you will start accumulating rewards again from a 1x
+                  multiplier.
+                </p>
+                <p>
+                  Please note that the rewards will be released at the end of
+                  the week.
+                </p>
+                <p>
+                  Find out
+                  <a href="" class="underline">additional information here</a>.
+                </p>
               </Copy>
               <br />
               <PairTable :items="computedLMPairPanel" />
@@ -592,8 +613,15 @@ export default defineComponent({
   font-weight: 400;
   display: flex;
   flex-direction: column;
-  padding: 30px 20px 20px 20px;
-  min-height: 50vh;
+
+  // padding: 30px 20px 20px 20px;
+  // min-height: 50vh;
+  p {
+    margin-bottom: 16px;
+    font-size: 16px;
+    line-height: 1.3;
+    color: #343434;
+  }
   .container {
     font-size: 14px;
     line-height: 16px;
