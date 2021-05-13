@@ -119,6 +119,36 @@ namespace :cluster do
 
         system({"KUBECONFIG" => kubeconfig(args)}, cmd)
       end
+
+      desc "Deploy a single standalone sifnode on to your cluster"
+      task :standalone_vault, [:namespace, :image, :image_tag, :template_file_name, :final_file_name] do |t, args|
+        variable_template_replace(args[:template_file_name], args[:final_file_name])
+        cmd = %Q{helm upgrade sifnode deploy/helm/sifnode-vault \
+          --install -n #{args[:namespace]} --create-namespace \
+          --set image.tag=#{args[:image_tag]} \
+          --set image.repository=#{args[:image]} \
+          -f #{args[:final_file_name]}
+        }
+        puts cmd
+        #system(cmd) or exit 1
+      end
+
+      desc "Deploy a single network-aware sifnode on to your cluster"
+      task :peer_vault, [:namespace, :image, :image_tag, :peer_address, :template_file_name, :final_file_name] do |t, args|
+        variable_template_replace(args[:template_file_name], args[:final_file_name])
+        cmd = %Q{helm upgrade sifnode deploy/helm/sifnode-vault \
+          --install -n #{args[:namespace]} --create-namespace \
+          --set sifnode.args.peerAddress=#{args[:peer_address]} \
+          --set image.tag=#{args[:image_tag]} \
+          --set image.repository=#{args[:image]} \
+          -f #{args[:final_file_name]}
+        }
+        puts cmd
+        system(cmd) or exit 1
+        #:namespace, :image, :image_tag, :peer_address, :template_file_name, :final_file_name,:app_region, :app_env
+        #rake "cluster:sifnode:peer_vault['sifnode', 'sifchain/sifnoded', 'testnet-genesis', '1b02f2eb065031426d37186efff75df268bb9097@54.164.57.141:26656', './deploy/helm/sifnode-vault/template.values.yaml', './deploy/helm/sifnode-vault/generated.values.yaml']"
+      end
+
     end
   end
 
@@ -214,29 +244,29 @@ echo '      sssssssssss    iiiiiiiifffffffff            cccccccccccccccchhhhhhh 
       check_namespace=`kubectl get namespaces --kubeconfig=./kubeconfig | grep cert-manager`
       puts "check namespace #{check_namespace}"
       if check_namespace.empty?
-            create_namespace=`kubectl create namespace --kubeconfig=./kubeconfig cert-manager`
-            puts "create namespace #{create_namespace}"
-        else
-            puts "Namespace exists"
+        create_namespace=`kubectl create namespace --kubeconfig=./kubeconfig cert-manager`
+        puts "create namespace #{create_namespace}"
+      else
+        puts "Namespace exists"
       end
 
       check_helm_repo_installed = `helm repo list --kubeconfig=./kubeconfig | grep jetstack`
       puts "check helm repo installed #{check_helm_repo_installed}"
       if check_helm_repo_installed.empty?
-            add_helm_repo=`helm repo add jetstack https://charts.jetstack.io --kubeconfig=./kubeconfig`
-            puts "add helm repo #{add_helm_repo}"
-            helm_repo_update=`helm repo update --kubeconfig=./kubeconfig`
-            puts "helm repo update #{helm_repo_update}"
+        add_helm_repo=`helm repo add jetstack https://charts.jetstack.io --kubeconfig=./kubeconfig`
+        puts "add helm repo #{add_helm_repo}"
+        helm_repo_update=`helm repo update --kubeconfig=./kubeconfig`
+        puts "helm repo update #{helm_repo_update}"
       else
-            puts "helm repo already installed."
+        puts "helm repo already installed."
       end
 
       check_cert_manager_installed = `kubectl get deployment -n cert-manager --kubeconfig=./kubeconfig | grep cert-manager`
       if check_helm_repo_installed.empty?
-            helm_install=`helm install cert-manager jetstack/cert-manager --namespace cert-manager --version v1.2.0 --kubeconfig=./kubeconfig --set installCRDs=true`
-            puts "cert-manager install: #{helm_install}"
+        helm_install=`helm install cert-manager jetstack/cert-manager --namespace cert-manager --version v1.2.0 --kubeconfig=./kubeconfig --set installCRDs=true`
+        puts "cert-manager install: #{helm_install}"
       else
-            puts "cert-manager already installed."
+        puts "cert-manager already installed."
       end
 
       rollout_status = `kubectl rollout status deployment/cert-manager -n cert-manager  --kubeconfig=./kubeconfig`
@@ -249,9 +279,10 @@ echo '      sssssssssss    iiiiiiiifffffffff            cccccccccccccccchhhhhhh 
   desc "Install Vault If Not Exists"
   namespace :vault do
     desc "Install Vault into Kubernetes Env Configured"
-    task :install, [:env, :region, :path, :kmskey, :aws_role, :aws_region] do |t, args|
+    task :install, [:env, :region, :path, :aws_role, :aws_region] do |t, args|
       require 'fileutils'
       require 'net/http'
+      require 'json'
 
       APP_NAME='vault'
       APP_NAMESPACE='vault'
@@ -261,14 +292,40 @@ echo '      sssssssssss    iiiiiiiifffffffff            cccccccccccccccchhhhhhh 
       NAMESPACE='vault'
       SECRET_NAME="#{APP_NAME}-#{POD}-tls"
       TMPDIR='/tmp'
+      KEY_NAME="vault-#{args[:env]}"
+
+      list_keys=`aws kms list-keys --profile #{args[:env]} --region #{args[:aws_region]}`
+      keys_object = JSON.parse list_keys
+      key_found = false
+      key_id = ""
+
+      keys_object["Keys"].each do |v|
+        get_key=`aws kms describe-key --key-id=#{v["KeyId"]} --profile #{args[:env]} --region #{args[:aws_region]}`
+        get_key_object = JSON.parse get_key
+        if get_key_object["KeyMetadata"]["Description"].include?("#{KEY_NAME}")
+          puts "key found use id #{v["KeyId"]}"
+          key_id = "#{v["KeyId"]}"
+          key_found=true
+          break
+        end
+      end
+
+      role_ids = []
+
+      if not key_found
+        POLICY = %Q{{"Version" : "2012-10-17","Id" : "key-default-#{args[:env]}","Statement" : [{"Sid" : "Enable IAM User Permissions","Effect" : "Allow", "Principal" : {"AWS" : "#{args[:aws_role]}"},"Action" : "kms:","Resource" : "*"},{"Sid" : "Allow Use of Key","Effect" : "Allow","Principal" : {"AWS" : "#{args[:aws_role]}"},"Action" : ["*"],"Resource" : "*"}]}}
+        create_key=`aws kms create-key --tags TagKey=Name,TagValue=#{KEY_NAME} --description "vault-#{args[:env]}" --profile #{args[:env]} --region #{args[:aws_region]} --policy '#{POLICY}'`
+        key_id_json = JSON.parse create_key
+        key_id=key_id_json["KeyMetadata"]["KeyId"]
+      end
 
       check_namespace=`kubectl get namespaces --kubeconfig=./kubeconfig | grep vault`
       puts "check namespace #{check_namespace}"
       if check_namespace.empty?
-            create_namespace=`kubectl create namespace --kubeconfig=./kubeconfig vault`
-            puts "create namespace #{create_namespace}"
-        else
-            puts "Namespace exists"
+        create_namespace=`kubectl create namespace --kubeconfig=./kubeconfig vault`
+        puts "create namespace #{create_namespace}"
+      else
+        puts "Namespace exists"
       end
 
       delete_secret_if_exists = `kubectl delete secret -n vault vault-eks-creds --kubeconfig=./kubeconfig --ignore-not-found=true`
@@ -282,37 +339,38 @@ echo '      sssssssssss    iiiiiiiifffffffff            cccccccccccccccchhhhhhh 
         puts "Check if helm repo is installed if not install."
         check_helm_repo_setup = `helm repo list --kubeconfig=./kubeconfig | grep hashicorp`
         if check_helm_repo_setup.empty?
-                add_helm_repo=`helm repo add hashicorp https://helm.releases.hashicorp.com --kubeconfig=./kubeconfig`
-                puts "add helm repo #{add_helm_repo}"
-                helm_repo_update = `helm repo update --kubeconfig=./kubeconfig`
-                puts "helm repo update #{helm_repo_update}"
+          add_helm_repo=`helm repo add hashicorp https://helm.releases.hashicorp.com --kubeconfig=./kubeconfig`
+          puts "add helm repo #{add_helm_repo}"
+          helm_repo_update = `helm repo update --kubeconfig=./kubeconfig`
+          puts "helm repo update #{helm_repo_update}"
         else
-                puts "Namespace exists"
+          puts "Namespace exists"
         end
       end
 
       puts "Template the overrides file for vault."
       template_file_text = File.read("#{args[:path]}override-values.yaml").strip
       ENV.each_pair do |k, v|
-          replace_string="-=#{k}=-"
-          if replace_string == "-=aws_region=-"
-            template_file_text.include?(k) ? (template_file_text.gsub! replace_string, "#{args[:aws_region]}") : (puts 'env matching...')
-          elsif replace_string == "-=kmskey=-"
-            template_file_text.include?(k) ? (template_file_text.gsub! replace_string, "#{args[:kmskey]}") : (puts 'env matching...')
-          elsif replace_string == "-=aws_role=-"
-            template_file_text.include?(k) ? (template_file_text.gsub! replace_string, "#{args[:aws_role]}") : (puts 'env matching...')
-          end
+        replace_string="-=#{k}=-"
+        if replace_string == "-=aws_region=-"
+          template_file_text.include?(k) ? (template_file_text.gsub! replace_string, "#{args[:aws_region]}") : (puts 'env matching...')
+        elsif replace_string == "-=kmskey=-"
+          puts "found kms"
+          template_file_text.include?(k) ? (template_file_text.gsub! replace_string, key_id) : (puts 'env matching...')
+        elsif replace_string == "-=aws_role=-"
+          template_file_text.include?(k) ? (template_file_text.gsub! replace_string, "#{args[:aws_role]}") : (puts 'env matching...')
+        end
       end
       File.open("#{args[:path]}override-values.yaml", 'w') { |file| file.write(template_file_text) }
 
       puts "Check if deployment exists and install if it doesn't"
       check_vault_deployment_exist = `kubectl get statefulsets --kubeconfig=./kubeconfig -n vault | grep vault`
       if check_vault_deployment_exist.empty?
-            helm_install = `helm install vault hashicorp/vault --namespace vault -f #{args[:path]}override-values.yaml --kubeconfig=./kubeconfig`
-            puts "helm install #{helm_install}"
-        else
-            helm_upgrade = `helm upgrade vault hashicorp/vault --namespace vault -f #{args[:path]}override-values.yaml --kubeconfig=./kubeconfig`
-            puts "helm upgrade #{helm_upgrade}"
+        helm_install = `helm install vault hashicorp/vault --namespace vault -f #{args[:path]}override-values.yaml --kubeconfig=./kubeconfig`
+        puts "helm install #{helm_install}"
+      else
+        helm_upgrade = `helm upgrade vault hashicorp/vault --namespace vault -f #{args[:path]}override-values.yaml --kubeconfig=./kubeconfig`
+        puts "helm upgrade #{helm_upgrade}"
       end
 
       puts "sleep for 300 seconds to wait for vault to start."
@@ -321,42 +379,42 @@ echo '      sssssssssss    iiiiiiiifffffffff            cccccccccccccccchhhhhhh 
       puts "Ensure there is  avault pod that exists as extra mesure to ensure vault is up and running."
       check_vault_pod_exist = `kubectl get pod --kubeconfig=./kubeconfig -n vault | grep vault`
       if check_vault_pod_exist.empty?
-            puts "Something went wrong no vault pods. #{check_vault_pod_exist}"
-            exit 1
-        else
-            puts "Everything Looks Good. #{check_vault_pod_exist}"
+        puts "Something went wrong no vault pods. #{check_vault_pod_exist}"
+        exit 1
+      else
+        puts "Everything Looks Good. #{check_vault_pod_exist}"
       end
       puts "Check if vault init has been completed."
       check_vault_init = `kubectl exec --kubeconfig=./kubeconfig -n vault -it vault-0 -- vault status | grep Initialized | grep true`
       if check_vault_init.empty?
-            puts "Initialize Vault"
-            vault_init = %Q{
-                vault_init_output=$(kubectl exec --kubeconfig=./kubeconfig -n vault  vault-0 -- vault operator init -n 1 -t 1)
+        puts "Initialize Vault"
+        vault_init = %Q{
+                vault_init_output=$(kubectl exec --kubeconfig=./kubeconfig -n vault vault-0 -- vault operator init -n 1 -t 1)
                 sleep 60
                 echo -e ${vault_init_output} > vault_output
                 VAULT_TOKEN=`echo $vault_init_output | cut -d ':' -f 7 | cut -d ' ' -f 2`
                 kubectl exec -n vault --kubeconfig=./kubeconfig -it vault-0 -- vault login ${VAULT_TOKEN} > /dev/null
              }
-            system(vault_init)
-          vault_output = `cat vault_output`
-          if vault_output.include?("s.")
-            upload_to_s3 = `aws s3 cp ./vault_output s3://sifchain-vault-output-backup/#{args[:env]}/#{args[:region]}/vault-master-keys.$(date  | sed -e 's/ //g').backup --region us-west-2`
-            puts upload_to_s3
-          else
-            puts "vault token not found #{vault_output}"
-          end
+        system(vault_init)
+        vault_output = `cat vault_output`
+        if vault_output.include?("s.")
+          upload_to_s3 = `aws s3 cp ./vault_output s3://sifchain-vault-output-backup/#{args[:env]}/#{args[:region]}/vault-master-keys.$(date  | sed -e 's/ //g').backup --region us-west-2`
+          puts upload_to_s3
         else
-            puts "Vault Already Inited."
+          puts "vault token not found #{vault_output}"
+        end
+      else
+        puts "Vault Already Inited."
       end
 
       puts "check kv is enabled"
       check_kv_engine_enabled=`kubectl exec --kubeconfig=./kubeconfig -n vault -it vault-0 -- vault secrets list | grep kv-v2`
       if check_kv_engine_enabled.empty?
-           puts "kv not enabled please enable"
-           enable_kv_enagine=`kubectl exec --kubeconfig=./kubeconfig -n vault  vault-0 -- vault secrets enable kv-v2`
-           puts "enable kv engine #{enable_kv_enagine}"
+        puts "kv not enabled please enable"
+        enable_kv_enagine=`kubectl exec --kubeconfig=./kubeconfig -n vault  vault-0 -- vault secrets enable kv-v2`
+        puts "enable kv engine #{enable_kv_enagine}"
       else
-           puts "kv engine already enabled."
+        puts "kv engine already enabled."
       end
 
       puts "create test secret"
@@ -368,10 +426,10 @@ echo '      sssssssssss    iiiiiiiifffffffff            cccccccccccccccchhhhhhh 
 
       get_test_secret = `kubectl exec --kubeconfig=./kubeconfig -n vault -it vault-0 -- vault kv get kv-v2/staging/test | grep "test123"`
       if get_test_secret.empty?
-           puts "Secret not found"
-           exit 1
+        puts "Secret not found"
+        exit 1
       else
-           puts "Secret Found Vault Running Properly"
+        puts "Secret Found Vault Running Properly"
       end
 
     end
@@ -389,18 +447,31 @@ echo '      sssssssssss    iiiiiiiifffffffff            cccccccccccccccchhhhhhh 
     end
   end
 
+  desc "Anchore Security Docker Vulnerability Scan"
+  namespace :anchore do
+    desc "Deploy a new ebrelayer to an existing cluster"
+    task :scan_by_path, [:image, :image_tag, :path] do |t, args|
+      cluster_automation = %Q{
+        set +x
+        curl -s https://ci-tools.anchore.io/inline_scan-latest | bash -s -- -f -t 800 -d #{args[:path]}/Dockerfile -p "#{args[:image]}:#{args[:image_tag]}"
+      }
+      system(cluster_automation) or exit 1
+    end
+  end
+
+
   desc "Generate Temp Secrets For Application Path In Vault"
   namespace :vault do
     desc "Generate Temp Secrets For Application Path In Vault"
     task :pull_temp_secrets_file_app, [:app_name,:app_region,:app_env] do |t, args|
-        require "json"
-        secrets_json = `kubectl exec -n vault --kubeconfig=./kubeconfig -it vault-0 -- vault kv get -format json kv-v2/#{args[:app_region]}/#{args[:app_env]}/#{args[:app_name]}`
-        data = JSON.parse(secrets_json)
-        temp_secrets_string = ""
-        data['data']['data'].each do |key, value|
-          temp_secrets_string += "export #{key}='#{value}' \n"
-        end
-        File.open("tmp_secrets", 'w') { |file| file.write(temp_secrets_string) }
+      require "json"
+      secrets_json = `kubectl exec -n vault --kubeconfig=./kubeconfig -it vault-0 -- vault kv get -format json kv-v2/#{args[:app_region]}/#{args[:app_env]}/#{args[:app_name]}`
+      data = JSON.parse(secrets_json)
+      temp_secrets_string = ""
+      data['data']['data'].each do |key, value|
+        temp_secrets_string += "export #{key}='#{value}' \n"
+      end
+      File.open("tmp_secrets", 'w') { |file| file.write(temp_secrets_string) }
     end
   end
 
@@ -408,14 +479,25 @@ echo '      sssssssssss    iiiiiiiifffffffff            cccccccccccccccchhhhhhh 
   namespace :vault do
     desc "Generate Temp Secrets For Path"
     task :pull_temp_secrets_file, [:path] do |t, args|
-        require "json"
-        secrets_json = `kubectl exec -n vault --kubeconfig=./kubeconfig -it vault-0 -- vault kv get -format json #{args[:path]}`
-        data = JSON.parse(secrets_json)
-        temp_secrets_string = ""
-        data['data']['data'].each do |key, value|
-          temp_secrets_string += "export #{key}='#{value}' \n"
-        end
-        File.open("tmp_secrets", 'w') { |file| file.write(temp_secrets_string) }
+      require "json"
+      secrets_json = `kubectl exec -n vault --kubeconfig=./kubeconfig -it vault-0 -- vault kv get -format json #{args[:path]}`
+      data = JSON.parse(secrets_json)
+      temp_secrets_string = ""
+      data['data']['data'].each do |key, value|
+        temp_secrets_string += "export #{key}='#{value}' \n"
+      end
+      File.open("tmp_secrets", 'w') { |file| file.write(temp_secrets_string) }
+    end
+  end
+
+  desc "Push Secret To Vault"
+  namespace :vault do
+    desc "Push Secret to Vault"
+    task :push_secret_to_vault, [:path] do |t, args|
+      require "json"
+      secret_to_insert = File.read("app_secrets").to_s
+      secrets_json = `kubectl exec -n vault --kubeconfig=./kubeconfig -it vault-0 -- vault kv put -format json #{args[:path]} #{secret_to_insert}`
+      puts secrets_json
     end
   end
 
@@ -423,16 +505,16 @@ echo '      sssssssssss    iiiiiiiifffffffff            cccccccccccccccchhhhhhh 
   namespace :automation do
     desc "Deploy a new ebrelayer to an existing cluster"
     task :configure_aws_credentials, [:APP_ENV, :AWS_ACCESS_KEY_ID, :AWS_SECRET_ACCESS_KEY, :AWS_REGION, :AWS_ROLE, :CLUSTER_NAME] do |t, args|
-        require 'fileutils'
-        require 'net/http'
+      require 'fileutils'
+      require 'net/http'
 
-        puts "Download aws-iam-authenticator"
-        File.write("aws-iam-authenticator", Net::HTTP.get(URI.parse("https://amazon-eks.s3.us-west-2.amazonaws.com/1.19.6/2021-01-05/bin/linux/amd64/aws-iam-authenticator")))
+      puts "Download aws-iam-authenticator"
+      File.write("aws-iam-authenticator", Net::HTTP.get(URI.parse("https://amazon-eks.s3.us-west-2.amazonaws.com/1.19.6/2021-01-05/bin/linux/amd64/aws-iam-authenticator")))
 
-        puts "Create AWS Directory!"
-        FileUtils.mkdir_p("/home/runner/.aws")
+      puts "Create AWS Directory!"
+      FileUtils.mkdir_p("/home/runner/.aws")
 
-        credential_file = %Q{
+      credential_file = %Q{
         [default]
         aws_access_key_id = #{args[:AWS_ACCESS_KEY_ID]}
         aws_secret_access_key = #{args[:AWS_SECRET_ACCESS_KEY]}
@@ -442,33 +524,33 @@ echo '      sssssssssss    iiiiiiiifffffffff            cccccccccccccccchhhhhhh 
         aws_access_key_id = #{args[:AWS_ACCESS_KEY_ID]}
         aws_secret_access_key = #{args[:AWS_SECRET_ACCESS_KEY]}
         region = #{args[:AWS_REGION]}
-        }
+      }
 
-        config_file = %Q{
+      config_file = %Q{
         [profile #{args[:APP_ENV]}]
         source_profile = sifchain-base
         role_arn = #{args[:AWS_ROLE]}
         color = 83000a
         role_session_name = elk_stack
         region = #{args[:AWS_REGION]}
-        }
+      }
 
-        if ENV["pipeline_debug"] == "true"
-            puts "config file"
-            puts config_file
+      if ENV["pipeline_debug"] == "true"
+        puts "config file"
+        puts config_file
 
-            puts "credential file"
-            puts credential_file
-        end
+        puts "credential file"
+        puts credential_file
+      end
 
-        puts "Write AWS Config File."
-        File.open("/home/runner/.aws/config", 'w') { |file| file.write(config_file) }
+      puts "Write AWS Config File."
+      File.open("/home/runner/.aws/config", 'w') { |file| file.write(config_file) }
 
-        puts "Write AWS Credential File"
-        File.open("/home/runner/.aws/credentials", 'w') { |file| file.write(credential_file) }
+      puts "Write AWS Credential File"
+      File.open("/home/runner/.aws/credentials", 'w') { |file| file.write(credential_file) }
 
-        puts "Generate Kubernetes Config from configured profile"
-        get_kubectl = %Q{
+      puts "Generate Kubernetes Config from configured profile"
+      get_kubectl = %Q{
               export PATH=$(pwd):${PATH}
               aws eks update-kubeconfig --name #{args[:CLUSTER_NAME]} \
               --region #{args[:AWS_REGION]} \
@@ -476,28 +558,21 @@ echo '      sssssssssss    iiiiiiiifffffffff            cccccccccccccccchhhhhhh 
               --profile #{args[:APP_ENV]} \
               --kubeconfig ./kubeconfig
         }
-        system(get_kubectl) or exit 1
+      system(get_kubectl) or exit 1
 
-        puts "Test Generated Kubernetes Profile"
-        test_kubectl = %Q{
+      puts "Test Generated Kubernetes Profile"
+      test_kubectl = %Q{
             kubectl get pods --all-namespaces --kubeconfig ./kubeconfig
         }
-        system(test_kubectl) or exit 1
+      system(test_kubectl) or exit 1
     end
   end
-
 
   desc "Utility for Doing Variable Replacement"
   namespace :utilities do
     desc "Utility for Doing Variable Replacement"
     task :template_variable_replace, [:template_file_name, :final_file_name] do |t, args|
-        require 'fileutils'
-        template_file_text = File.read("#{args[:template_file_name]}").strip
-        ENV.each_pair do |k, v|
-          replace_string="-=#{k}=-"
-          template_file_text.include?(k) ? (template_file_text.gsub! replace_string, v) : (puts 'matching env vars for variable replacement...')
-        end
-        File.open("#{args[:final_file_name]}", 'w') { |file| file.write(template_file_text) }
+      variable_template_replace(args[:template_file_name], args[:final_file_name])
     end
   end
 
@@ -506,15 +581,15 @@ echo '      sssssssssss    iiiiiiiifffffffff            cccccccccccccccchhhhhhh 
     desc "Create vault policy for application to read secrets."
     task :create_vault_policy, [:region, :app_namespace, :image, :image_tag, :env, :app_name] do |t, args|
 
-        puts "Build Vault Policy File For Application #{args[:app_name]}"
-        policy_file = %Q{
+      puts "Build Vault Policy File For Application #{args[:app_name]}"
+      policy_file = %Q{
 path "#{args[:region]}/#{args[:env]}/#{args[:app_name]}" { capabilities = ["read"] }
 path "#{args[:region]}/#{args[:env]}/#{args[:app_name]}/*" { capabilities = ["read"] }
 path "/#{args[:region]}/#{args[:env]}/#{args[:app_name]}" { capabilities = ["read"] }
 path "/#{args[:region]}/#{args[:env]}/#{args[:app_name]}/*" { capabilities = ["read"] }
 path "*" { capabilities = ["read"] }
         }
-        File.open("#{args[:app_name]}-policy.hcl", 'w') { |file| file.write(policy_file) }
+      File.open("#{args[:app_name]}-policy.hcl", 'w') { |file| file.write(policy_file) }
 
       puts "Copy Policy to the Vault Pod."
       copy_policy_file_to_pod = %Q{kubectl cp --kubeconfig=./kubeconfig #{args[:app_name]}-policy.hcl vault-0:/home/vault/#{args[:app_name]}-policy.hcl -n vault}
@@ -564,7 +639,7 @@ metadata:
   namespace: #{args[:app_namespace]}
   labels:
     app: #{args[:app_name]}
-}
+      }
       puts "Create Service Account File."
       puts service_account
       File.open("service_account.yaml", 'w') { |file| file.write(service_account) }
@@ -632,13 +707,13 @@ metadata:
       puts "Create Kubernetes Namespace."
       get_namespaces = `kubectl get namespaces --kubeconfig=./kubeconfig`
       if get_namespaces.include?("#{args[:app_namespace]}")
-            puts "Namespace Exists"
-            puts get_namespaces
+        puts "Namespace Exists"
+        puts get_namespaces
       else
-            puts "Namespace Doesn't Exists"
-            puts get_namespaces
-            create_namespace = %Q{kubectl create namespace #{args[:app_namespace]} --kubeconfig=./kubeconfig}
-            system(create_namespace) or exit 1
+        puts "Namespace Doesn't Exists"
+        puts get_namespaces
+        create_namespace = %Q{kubectl create namespace #{args[:app_namespace]} --kubeconfig=./kubeconfig}
+        system(create_namespace) or exit 1
       end
     end
   end
@@ -657,34 +732,93 @@ metadata:
     end
   end
 
+  desc "Check kubernetes pod for specific log entry to ensure valid deployment."
+  namespace :kubernetes do
+    desc "Check kubernetes pod for specific log entry to ensure valid deployment."
+    task :log_validate_search, [:APP_NAME, :APP_NAMESPACE, :SEARCH_PATH] do |t, args|
+      ENV["APP_NAMESPACE"] = "#{args[:APP_NAMESPACE]}"
+      ENV["APP_NAME"] = "#{args[:APP_NAME]}"
+      was_successful = false
+      max_loops = 20
+      loop_count = 0
+      until was_successful == true
+        pod_name = `kubectl get pods --kubeconfig=./kubeconfig -n #{ENV["APP_NAMESPACE"]} | grep #{ENV["APP_NAME"]} | cut -d ' ' -f 1`.strip
+        puts "looking up logs fo #{pod_name}"
+        pod_logs = `kubectl logs #{pod_name} --kubeconfig=./kubeconfig -n #{ENV["APP_NAMESPACE"]}`
+        if pod_logs.include?(args[:SEARCH_PATH])
+          #:SEARCH_PATH "new transaction witnessed in sifchain client."
+          puts "Log Search Completed Container Running and Producing Valid Logs"
+          was_successful = true
+          break
+        end
+        loop_count += 1
+        puts "On Loop #{loop_count} of #{max_loops}"
+        if loop_count >= max_loops
+          puts "Reached Max Loops"
+          break
+        end
+        sleep(60)
+      end
+    end
+  end
+
+  desc "Check kubernetes pod for specific log entry to ensure valid deployment."
+  namespace :kubernetes do
+    desc "Check kubernetes pod for specific log entry to ensure valid deployment."
+    task :log_validate_search_bycontainer, [:APP_NAME, :APP_NAMESPACE, :SEARCH_PATH, :CONTAINER] do |t, args|
+      ENV["APP_NAMESPACE"] = "#{args[:APP_NAMESPACE]}"
+      ENV["APP_NAME"] = "#{args[:APP_NAME]}"
+      was_successful = false
+      max_loops = 20
+      loop_count = 0
+      until was_successful == true
+        pod_name = `kubectl get pods --kubeconfig=./kubeconfig -n #{ENV["APP_NAMESPACE"]} | grep #{ENV["APP_NAME"]} | cut -d ' ' -f 1`.strip
+        puts "looking up logs fo #{pod_name}"
+        pod_logs = `kubectl logs #{pod_name} -c #{args[:CONTAINER]} --kubeconfig=./kubeconfig -n #{ENV["APP_NAMESPACE"]}`
+        if pod_logs.include?(args[:SEARCH_PATH])
+          #:SEARCH_PATH "new transaction witnessed in sifchain client."
+          puts "Log Search Completed Container Running and Producing Valid Logs"
+          was_successful = true
+          break
+        end
+        loop_count += 1
+        puts "On Loop #{loop_count} of #{max_loops}"
+        if loop_count >= max_loops
+          puts "Reached Max Loops"
+          break
+        end
+        sleep(60)
+      end
+    end
+  end
 
   desc "Check kubernetes pod for specific log entry to ensure valid deployment."
   namespace :kubernetes do
     desc "Check kubernetes pod for specific log entry to ensure valid deployment."
     task :log_validate, [:APP_NAME, :APP_NAMESPACE, :SEARCH_PATH] do |t, args|
-        ENV["APP_NAMESPACE"] = "#{args[:APP_NAMESPACE]}"
-        ENV["APP_NAME"] = "#{args[:APP_NAME]}"
-        was_successful = false
-        max_loops = 20
-        loop_count = 0
-        until was_successful == true
-            pod_name = `kubectl get pods --kubeconfig=./kubeconfig -n #{ENV["APP_NAMESPACE"]} | grep #{ENV["APP_NAME"]} | cut -d ' ' -f 1`.strip
-            puts "looking up logs fo #{pod_name}"
-            pod_logs = `kubectl logs #{pod_name} --kubeconfig=./kubeconfig -c ebrelayer -n #{ENV["APP_NAMESPACE"]}`
-            if pod_logs.include?(args[:SEARCH_PATH])
-                #:SEARCH_PATH "new transaction witnessed in sifchain client."
-                puts "Log Search Completed Container Running and Producing Valid Logs"
-                was_successful = true
-                break
-            end
-            loop_count += 1
-            puts "On Loop #{loop_count} of #{max_loops}"
-            if loop_count >= max_loops
-                puts "Reached Max Loops"
-                break
-            end
-            sleep(60)
+      ENV["APP_NAMESPACE"] = "#{args[:APP_NAMESPACE]}"
+      ENV["APP_NAME"] = "#{args[:APP_NAME]}"
+      was_successful = false
+      max_loops = 20
+      loop_count = 0
+      until was_successful == true
+        pod_name = `kubectl get pods --kubeconfig=./kubeconfig -n #{ENV["APP_NAMESPACE"]} | grep #{ENV["APP_NAME"]} | cut -d ' ' -f 1`.strip
+        puts "looking up logs fo #{pod_name}"
+        pod_logs = `kubectl logs #{pod_name} --kubeconfig=./kubeconfig -c ebrelayer -n #{ENV["APP_NAMESPACE"]}`
+        if pod_logs.include?(args[:SEARCH_PATH])
+          #:SEARCH_PATH "new transaction witnessed in sifchain client."
+          puts "Log Search Completed Container Running and Producing Valid Logs"
+          was_successful = true
+          break
         end
+        loop_count += 1
+        puts "On Loop #{loop_count} of #{max_loops}"
+        if loop_count >= max_loops
+          puts "Reached Max Loops"
+          break
+        end
+        sleep(60)
+      end
     end
   end
 
@@ -693,48 +827,48 @@ metadata:
   namespace :release do
     desc "Wait for Release Pipeline to Finish."
     task :wait_for_release_pipeline, [:APP_ENV, :RELEASE, :GIT_TOKEN] do |t, args|
-        require 'rest-client'
-        require 'json'
-        job_succeeded = false
-        max_loops = 20
-        loop_count = 0
-        until job_succeeded == true
-            headers = {"Accept": "application/vnd.github.v3+json","Authorization":"token #{args[:GIT_TOKEN]}"}
-            response = RestClient.get 'https://api.github.com/repos/Sifchain/sifnode/actions/workflows', headers
-            find_release="#{args[:APP_ENV]}-#{args[:RELEASE]}"
-            json_response_object = JSON.parse response.body
-            json_response_object["workflows"].each do |child|
-                if child["name"] == "Release"
-                    workflow_id = child["id"]
-                    response = RestClient.get "https://api.github.com/repos/Sifchain/sifnode/actions/workflows/#{workflow_id}/runs", headers
-                    json_response_job_object = JSON.parse response.body
-                    job = json_response_job_object["workflow_runs"].first()
-                    if job["head_branch"] == find_release
-                        puts "Release Job: #{job["head_branch"]} finished with state: #{job["status"]}"
-                        puts job
-                        if job["status"].include?("completed")
-                            puts job["head_branch"]
-                            puts job["status"]
-                            puts job["conclusion"]
-                            job_succeeded = true
-                            break
-                        else
-                            puts job["head_branch"]
-                            puts job["status"]
-                            puts job["conclusion"]
-                        end
-                    end
-                end
+      require 'rest-client'
+      require 'json'
+      job_succeeded = false
+      max_loops = 20
+      loop_count = 0
+      until job_succeeded == true
+        headers = {"Accept": "application/vnd.github.v3+json","Authorization":"token #{args[:GIT_TOKEN]}"}
+        response = RestClient.get 'https://api.github.com/repos/Sifchain/sifnode/actions/workflows', headers
+        find_release="#{args[:APP_ENV]}-#{args[:RELEASE]}"
+        json_response_object = JSON.parse response.body
+        json_response_object["workflows"].each do |child|
+          if child["name"] == "Release"
+            workflow_id = child["id"]
+            response = RestClient.get "https://api.github.com/repos/Sifchain/sifnode/actions/workflows/#{workflow_id}/runs", headers
+            json_response_job_object = JSON.parse response.body
+            job = json_response_job_object["workflow_runs"].first()
+            if job["head_branch"] == find_release
+              puts "Release Job: #{job["head_branch"]} finished with state: #{job["status"]}"
+              puts job
+              if job["status"].include?("completed")
+                puts job["head_branch"]
+                puts job["status"]
+                puts job["conclusion"]
+                job_succeeded = true
+                break
+              else
+                puts job["head_branch"]
+                puts job["status"]
+                puts job["conclusion"]
+              end
             end
-            loop_count += 1
-            puts loop_count
-            puts "On Loop #{loop_count} of #{max_loops}"
-            if loop_count >= max_loops
-                puts "Reached Max Loops"
-                exit 1
-            end
-            sleep(60)
+          end
         end
+        loop_count += 1
+        puts loop_count
+        puts "On Loop #{loop_count} of #{max_loops}"
+        if loop_count >= max_loops
+          puts "Reached Max Loops"
+          exit 1
+        end
+        sleep(60)
+      end
     end
   end
 
@@ -742,12 +876,41 @@ metadata:
   namespace :release do
     desc "Import Key Ring"
     task :import_keyring, [:moniker, :app_env] do |t, args|
-        File.open("tmp_keyring_rendered", "w+") do |f|
-            ENV["keyring_pem"]&.split("-=n=-")&.each { |line| f.puts(line) }
+      File.open("tmp_keyring_rendered", "w+") do |f|
+        ENV["keyring_pem"]&.split("-=n=-")&.each { |line| f.puts(line) }
+      end
+      import_key_ring=`yes "${keyring_passphrase}" | go run ./cmd/sifnodecli keys import #{args[:moniker]} tmp_keyring_rendered --keyring-backend test`
+      puts "import key ring"
+      puts import_key_ring
+    end
+  end
+
+  desc "Create Github Release."
+  namespace :release do
+    desc "Create Github Release."
+    task :create_github_release_by_branch, [:branch, :release, :env, :token] do |t, args|
+      require 'rest-client'
+      require 'json'
+      begin
+        release_hash = { "devnet" => "DevNet", "testnet" =>"TestNet", "betanet" =>"MainNet" }
+        release_target = { "devnet" => "develop", "testnet" =>"testnet", "betanet" =>"master" }
+        release_name = release_hash[args[:env]]
+        if "#{args[:app_env]}" == "betanet"
+          headers = {content_type: :json, "Accept": "application/vnd.github.v3+json", "Authorization":"token #{args[:token]}"}
+          payload = {"tag_name"  =>  "mainnet-#{args[:release]}", "target_commitish"  =>  args[:branch], "name"  =>  "#{release_name} v#{args[:release]}","body"  => "Sifchain MainNet Release v#{args[:release]}","prerelease"  =>  true}.to_json
+          response = RestClient.post 'https://api.github.com/repos/Sifchain/sifnode/releases', payload, headers
+          json_response_job_object = JSON.parse response.body
+          puts json_response_job_object
+        else
+          headers = {content_type: :json, "Accept": "application/vnd.github.v3+json", "Authorization":"token #{args[:token]}"}
+          payload = {"tag_name"  =>  "#{args[:env]}-#{args[:release]}", "target_commitish"  =>  args[:branch], "name"  =>  "#{release_name} v#{args[:release]}","body"  => "Sifchain #{args[:env]} Release v#{args[:release]}","prerelease"  =>  true}.to_json
+          response = RestClient.post 'https://api.github.com/repos/Sifchain/sifnode/releases', payload, headers
+          json_response_job_object = JSON.parse response.body
+          puts json_response_job_object
         end
-       import_key_ring=`yes "${keyring_passphrase}" | go run ./cmd/sifnodecli keys import #{args[:moniker]} tmp_keyring_rendered --keyring-backend test`
-       puts "import key ring"
-       puts import_key_ring
+      rescue
+        puts 'Release Already Exists'
+      end
     end
   end
 
@@ -755,19 +918,28 @@ metadata:
   namespace :release do
     desc "Create Github Release."
     task :create_github_release, [:release, :env, :token] do |t, args|
-        require 'rest-client'
-        require 'json'
-        begin
-            release_hash = { "devnet" => "DevNet", "testnet" =>"TestNet", "betanet" =>"BetaNet", "mainnet" =>"MainNet" }
-            release_name = release_hash[args[:env]]
-            headers = {content_type: :json, "Accept": "application/vnd.github.v3+json", "Authorization":"token #{args[:token]}"}
-            payload = {"tag_name"  =>  "#{args[:env]}-#{args[:release]}","name"  =>  "#{release_name} v#{args[:release]}","body"  => "Sifchain #{args[:env]} Release v#{args[:release]}","prerelease"  =>  true}.to_json
-            response = RestClient.post 'https://api.github.com/repos/Sifchain/sifnode/releases', payload, headers
-            json_response_job_object = JSON.parse response.body
-            puts json_response_job_object
-        rescue
-            puts 'Release Already Exists'
+      require 'rest-client'
+      require 'json'
+      begin
+        release_hash = { "devnet" => "DevNet", "testnet" =>"TestNet", "betanet" =>"MainNet" }
+        release_target = { "devnet" => "develop", "testnet" =>"testnet", "betanet" =>"master" }
+        release_name = release_hash[args[:env]]
+        if "#{args[:app_env]}" == "betanet"
+          headers = {content_type: :json, "Accept": "application/vnd.github.v3+json", "Authorization":"token #{args[:token]}"}
+          payload = {"tag_name"  =>  "mainnet-#{args[:release]}", "target_commitish"  =>  release_target[args[:env]], "name"  =>  "#{release_name} v#{args[:release]}","body"  => "Sifchain MainNet Release v#{args[:release]}","prerelease"  =>  true}.to_json
+          response = RestClient.post 'https://api.github.com/repos/Sifchain/sifnode/releases', payload, headers
+          json_response_job_object = JSON.parse response.body
+          puts json_response_job_object
+        else
+          headers = {content_type: :json, "Accept": "application/vnd.github.v3+json", "Authorization":"token #{args[:token]}"}
+          payload = {"tag_name"  =>  "#{args[:env]}-#{args[:release]}", "target_commitish"  =>  release_target[args[:env]], "name"  =>  "#{release_name} v#{args[:release]}","body"  => "Sifchain #{args[:env]} Release v#{args[:release]}","prerelease"  =>  true}.to_json
+          response = RestClient.post 'https://api.github.com/repos/Sifchain/sifnode/releases', payload, headers
+          json_response_job_object = JSON.parse response.body
+          puts json_response_job_object
         end
+      rescue
+        puts 'Release Already Exists'
+      end
     end
   end
 
@@ -775,55 +947,74 @@ metadata:
   namespace :release do
     desc "Create Release Governance Request."
     task :generate_governance_release_request, [:upgrade_hours, :block_time, :deposit, :rowan, :chainnet, :release_version, :from, :app_env, :token] do |t, args|
-        require 'rest-client'
-        require 'json'
+      require 'rest-client'
+      require 'json'
 
-        puts "Looking for the Release Handler"
-        release_search = "#{args[:release_version]}"
-        setupHandlers = File.read("app/setupHandlers.go").strip
-        setupHandlers.include?(release_search) ? (puts 'Found') : (exit 1)
+      puts "Looking for the Release Handler"
+      release_search = "#{args[:release_version]}"
+      setupHandlers = File.read("app/setupHandlers.go").strip
+      setupHandlers.include?(release_search) ? (puts 'Found') : (exit 1)
 
-        release_version = "#{args[:app_env]}-#{args[:release_version]}"
-        puts "Calculating Upgrade Block Height"
-        if "#{args[:app_env]}" == "mainnet"
-            puts "Mainnet"
-            response = RestClient.get "http://rpc.sifchain.finance/abci_info?"
-            json_response_object = JSON.parse response.body
-        elsif "#{args[:app_env]}" == "betanet"
-            puts "Betanet"
-            response = RestClient.get "http://rpc.sifchain.finance/abci_info?"
-            json_response_object = JSON.parse response.body
-        else
-            puts "Testnet"
-            response = RestClient.get "http://rpc-#{args[:app_env]}.sifchain.finance/abci_info?"
-            json_response_object = JSON.parse response.body
-        end
-        current_height = json_response_object["result"]["response"]["last_block_height"].to_f
-        average_block_time = "#{args[:block_time]}".to_f
-        average_time = 50 / average_block_time
-        average_time = average_time * 60 * "#{args[:upgrade_hours]}".to_f
-        future_block_height = current_height + average_time + 100
-        block_height = future_block_height.round
-        puts "Block Height #{block_height}"
+      release_version = "#{args[:app_env]}-#{args[:release_version]}"
+      puts "Calculating Upgrade Block Height"
+      if "#{args[:app_env]}" == "betanet"
+        response = RestClient.get "http://rpc.sifchain.finance/abci_info?"
+        json_response_object = JSON.parse response.body
+      else
+        response = RestClient.get "http://rpc-#{args[:app_env]}.sifchain.finance/abci_info?"
+        json_response_object = JSON.parse response.body
+      end
 
+      current_height = json_response_object["result"]["response"]["last_block_height"].to_f
+      average_block_time = "#{args[:block_time]}".to_f
+      average_time = 60 / average_block_time
+      average_time = average_time * 60 * "#{args[:upgrade_hours]}".to_f
+      future_block_height = current_height + average_time + 100
+      block_height = future_block_height.round
+      puts "Block Height #{block_height}"
+
+      if "#{args[:app_env]}" == "betanet"
         sha_token=""
         headers = {"Accept": "application/vnd.github.v3+json","Authorization":"token #{args[:token]}"}
         response = RestClient.get 'https://api.github.com/repos/Sifchain/sifnode/releases', headers
         json_response_job_object = JSON.parse response.body
         json_response_job_object.each do |release|
-            if release["tag_name"].include?("#{args[:app_env]}-#{args[:release_version]}")
-                release["assets"].each do |asset|
-                    if asset["name"].include?(".sha256")
-                        response = RestClient.get asset["browser_download_url"], headers
-                        sha_token = response.body.strip
-                    end
-                end
+          if release["tag_name"].include?("mainnet-#{args[:release_version]}")
+            release["assets"].each do |asset|
+              if asset["name"].include?(".sha256")
+                response = RestClient.get asset["browser_download_url"], headers
+                sha_token = response.body.strip
+              end
             end
+          end
         end
-        puts "Sha found #{sha_token}"
+      else
+        sha_token=""
+        headers = {"Accept": "application/vnd.github.v3+json","Authorization":"token #{args[:token]}"}
+        response = RestClient.get 'https://api.github.com/repos/Sifchain/sifnode/releases', headers
+        json_response_job_object = JSON.parse response.body
+        json_response_job_object.each do |release|
+          if release["tag_name"].include?("#{args[:app_env]}-#{args[:release_version]}")
+            release["assets"].each do |asset|
+              if asset["name"].include?(".sha256")
+                response = RestClient.get asset["browser_download_url"], headers
+                sha_token = response.body.strip
+              end
+            end
+          end
+        end
+      end
 
-        if "#{args[:app_env]}" == "mainnet"
-            governance_request = %Q{ yes "${keyring_passphrase}" | go run ./cmd/sifnodecli tx gov submit-proposal software-upgrade #{args[:release_version]} \
+
+      if sha_token.empty?
+        puts "No Sha Found"
+        exit 1
+      end
+
+      puts "Sha found #{sha_token}"
+
+      if "#{args[:app_env]}" == "betanet"
+        governance_request = %Q{ yes "${keyring_passphrase}" | go run ./cmd/sifnodecli tx gov submit-proposal software-upgrade #{args[:release_version]} \
                 --from #{args[:from]} \
                 --deposit #{args[:deposit]} \
                 --upgrade-height #{block_height} \
@@ -836,25 +1027,10 @@ metadata:
                 --chain-id #{args[:chainnet]} \
                 --gas-prices "#{args[:rowan]}"
                 sleep 60 }
-            system(governance_request) or exit 1
-        elsif "#{args[:app_env]}" == "betanet"
-            governance_request = %Q{ yes "${keyring_passphrase}" | go run ./cmd/sifnodecli tx gov submit-proposal software-upgrade #{args[:release_version]} \
-                --from #{args[:from]} \
-                --deposit #{args[:deposit]} \
-                --upgrade-height #{block_height} \
-                --info '{"binaries":{"linux/amd64":"https://github.com/Sifchain/sifnode/releases/download/mainnet-#{args[:release_version]}/sifnoded-#{args[:app_env]}-#{args[:release_version]}-linux-amd64.zip?checksum='#{sha_token}'"}}' \
-                --title #{args[:app_env]}-#{args[:release_version]} \
-                --description #{args[:app_env]}-#{args[:release_version]} \
-                --node tcp://rpc.sifchain.finance:80 \
-                --keyring-backend test \
-                -y \
-                --chain-id #{args[:chainnet]} \
-                --gas-prices "#{args[:rowan]}"
-                sleep 60 }
-            system(governance_request) or exit 1
-        else
-            puts "create dev net gov request #{sha_token}"
-            governance_request = %Q{ yes "${keyring_passphrase}" | go run ./cmd/sifnodecli tx gov submit-proposal software-upgrade #{args[:release_version]} \
+        system(governance_request) or exit 1
+      else
+        puts "create dev net gov request #{sha_token}"
+        governance_request = %Q{ yes "${keyring_passphrase}" | go run ./cmd/sifnodecli tx gov submit-proposal software-upgrade #{args[:release_version]} \
                 --from #{args[:from]} \
                 --deposit #{args[:deposit]} \
                 --upgrade-height #{block_height} \
@@ -867,17 +1043,19 @@ metadata:
                 --chain-id #{args[:chainnet]} \
                 --gas-prices "#{args[:rowan]}"
                 sleep 60 }
-            system(governance_request) or exit 1
-        end
+        system(governance_request) or exit 1
+      end
     end
   end
+
+
 
   desc "Create Release Governance Request Vote."
   namespace :release do
     desc "Create Release Governance Request Vote."
     task :generate_vote, [:rowan, :chainnet, :from, :app_env] do |t, args|
-        if "#{args[:app_env]}" == "mainnet"
-            governance_request = %Q{
+      if "#{args[:app_env]}" == "betanet"
+        governance_request = %Q{
 vote_id=$(go run ./cmd/sifnodecli q gov proposals --node tcp://rpc.sifchain.finance:80 --trust-node -o json | jq --raw-output 'last(.[]).id' --raw-output)
 echo "vote_id $vote_id"
 yes "${keyring_passphrase}" | go run ./cmd/sifnodecli tx gov vote ${vote_id} yes \
@@ -887,21 +1065,9 @@ yes "${keyring_passphrase}" | go run ./cmd/sifnodecli tx gov vote ${vote_id} yes
     --node tcp://rpc.sifchain.finance:80 \
     --gas-prices "#{args[:rowan]}" -y
 sleep 15  }
-            system(governance_request) or exit 1
-        elsif "#{args[:app_env]}" == "betanet"
-            governance_request = %Q{
-vote_id=$(go run ./cmd/sifnodecli q gov proposals --node tcp://rpc.sifchain.finance:80 --trust-node -o json | jq --raw-output 'last(.[]).id' --raw-output)
-echo "vote_id $vote_id"
-yes "${keyring_passphrase}" | go run ./cmd/sifnodecli tx gov vote ${vote_id} yes \
-    --from #{args[:from]} \
-    --keyring-backend test \
-    --chain-id #{args[:chainnet]}  \
-    --node tcp://rpc.sifchain.finance:80 \
-    --gas-prices "#{args[:rowan]}" -y
-sleep 15  }
-            system(governance_request) or exit 1
-        else
-            governance_request = %Q{
+        system(governance_request) or exit 1
+      else
+        governance_request = %Q{
 vote_id=$(go run ./cmd/sifnodecli q gov proposals --node tcp://rpc-#{args[:app_env]}.sifchain.finance:80 --trust-node -o json | jq --raw-output 'last(.[]).id' --raw-output)
 echo "vote_id $vote_id"
 yes "${keyring_passphrase}" | go run ./cmd/sifnodecli tx gov vote ${vote_id} yes \
@@ -911,8 +1077,8 @@ yes "${keyring_passphrase}" | go run ./cmd/sifnodecli tx gov vote ${vote_id} yes
     --node tcp://rpc-#{args[:app_env]}.sifchain.finance:80 \
     --gas-prices "#{args[:rowan]}" -y
 sleep 15 }
-             system(governance_request) or exit 1
-        end
+        system(governance_request) or exit 1
+      end
     end
   end
 
@@ -960,12 +1126,12 @@ sleep 15 }
             --set geth.args.network='--#{args[:network]}' \
             --set geth.args.networkID=#{network_id} \
             --set ethstats.env.websocketSecret=#{SecureRandom.base64 20}
-            }
+        }
       else
         cmd = %Q{helm upgrade ethereum #{cwd}/../../deploy/helm/ethereum \
             --install -n #{ns(args)} --create-namespace \
             --set ethstats.env.webSocketSecret=#{SecureRandom.base64 20}
-            }
+        }
       end
 
       system({"KUBECONFIG" => kubeconfig(args)}, cmd)
