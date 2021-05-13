@@ -9,6 +9,7 @@ import Icon from "@/components/shared/Icon.vue";
 import {
   getAssetLabel,
   getBlockExplorerUrl,
+  getRewardEarningsUrl,
   useAssetItem,
 } from "@/components/shared/utils";
 import { useCore } from "@/hooks/useCore";
@@ -19,22 +20,15 @@ import { Amount } from "ui-core";
 const DECIMALS = 5;
 //
 
-async function getEarnedRewards(address: ComputedRef<any>) {
+async function getEarnedRewards(address: ComputedRef<any>, symbol: string) {
+  const { config } = useCore();
+  const earnedRewardsUrl = getRewardEarningsUrl(config.sifChainId);
   if (!address.value) return;
-  // TODO - pass in dynamic address and symbol
-  // TODO - get API address from config
   const res = await fetch(
-    "https://vtdbgplqd6.execute-api.us-west-2.amazonaws.com/default/netchange/devnet?symbol=c1inch&address=sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
-    // `https://vtdbgplqd6.execute-api.us-west-2.amazonaws.com/default/rewards/${address.value}`,
+    `${earnedRewardsUrl}?symbol=${symbol}&address=${address.value}`,
   );
   const data = await res.json();
   const parsedData = JSON.parse(data);
-  console.log("what is earned rewards", parsedData);
-  console.log(
-    "what up",
-    parsedData.netChangeUSDT,
-    typeof parsedData.netChangeUSDT,
-  );
   return parsedData.netChangeUSDT;
 }
 
@@ -45,11 +39,7 @@ export default defineComponent({
     const route = useRoute().params.externalAsset;
 
     const address = computed(() => store.wallet.sif.address);
-    let earnedRewards = ref<string>();
-
-    watch(address, async () => {
-      earnedRewards.value = await getEarnedRewards(address);
-    });
+    let earnedRewards = ref<string>("0");
 
     const accountPool = computed(() => {
       if (
@@ -85,6 +75,16 @@ export default defineComponent({
       if (!fromToken.value) return "";
       const t = fromToken.value;
       return t.imageUrl;
+    });
+
+    watch([address, fromSymbol], async () => {
+      const realEarnedRewards = await getEarnedRewards(
+        address,
+        fromSymbol.value?.toLowerCase() || "0",
+      );
+      earnedRewards.value = format(Amount(realEarnedRewards.toString()), {
+        mantissa: 2,
+      });
     });
 
     const fromTotalValue = computed(() => {
@@ -235,7 +235,7 @@ export default defineComponent({
               >
                 <Icon icon="info-box-black" /> </Tooltip
             ></span>
-            <span class="value">${{ earnedRewards }} USDT</span>
+            <span class="value">${{ earnedRewards }}</span>
           </div>
         </div>
       </div>

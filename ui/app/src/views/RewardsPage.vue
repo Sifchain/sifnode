@@ -1,6 +1,7 @@
 <script lang="ts">
 import { computed, defineComponent, watch, onMounted } from "vue";
 import { ref, ComputedRef } from "@vue/reactivity";
+import { Amount } from "ui-core";
 import { useCore } from "@/hooks/useCore";
 import Layout from "@/components/layout/Layout.vue";
 import SifButton from "@/components/shared/SifButton.vue";
@@ -10,6 +11,7 @@ import { Copy, SubHeading } from "@/components/shared/Text";
 import ActionsPanel from "@/components/actionsPanel/ActionsPanel.vue";
 import Tooltip from "@/components/shared/Tooltip.vue";
 import Icon from "@/components/shared/Icon.vue";
+import { format } from "ui-core/src/utils/format";
 
 const REWARD_INFO = {
   lm: {
@@ -20,7 +22,7 @@ const REWARD_INFO = {
 };
 
 // NOTE - This will be removed and replaced with Amount API
-function format(amount: number) {
+function formatDeprecated(amount: number) {
   if (amount < 1) {
     return amount.toFixed(6);
   } else if (amount < 1000) {
@@ -70,6 +72,7 @@ export default defineComponent({
       rewards,
       REWARD_INFO,
       format,
+      formatDeprecated,
     };
   },
 });
@@ -101,13 +104,14 @@ export default defineComponent({
             <div class="amount-container w50 jcsb">
               <div class="df fdr">
                 <AssetItem symbol="Rowan" :label="false" />
-                <span>{{ format(+reward.amount) }}</span>
+                <span>{{ formatDeprecated(+reward.amount) }}</span>
               </div>
               <span>ROWAN</span>
               <Tooltip>
                 <template #message>
                   <div class="tooltip">
-                    Current multiplier: {{ format(+reward.multiplier) }}x
+                    Current multiplier:
+                    {{ formatDeprecated(+reward.multiplier) }}x
                   </div>
                 </template>
                 <Icon icon="info-box-black" />
