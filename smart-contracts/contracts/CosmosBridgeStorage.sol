@@ -5,7 +5,7 @@ contract CosmosBridgeStorage {
     * @notice gap of storage for future upgrades
     * @dev {DEPRECATED}
     */
-    string COSMOS_NATIVE_ASSET_PREFIX;
+    string private COSMOS_NATIVE_ASSET_PREFIX;
 
     /*
      * @dev: Public variable declarations

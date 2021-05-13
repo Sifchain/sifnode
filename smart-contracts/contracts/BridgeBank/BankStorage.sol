@@ -12,12 +12,12 @@ contract BankStorage is
     /**
     * @notice [DEPRECATED] operator address that can update the smart contract
     */
-    address public operator;
+    address private operator;
 
     /**
     * @notice [DEPRECATED] address of the Oracle smart contract
     */
-    address public oracle;
+    address private oracle;
 
     /**
     * @notice address of the Cosmos Bridge smart contract
@@ -32,7 +32,7 @@ contract BankStorage is
     /**
     * @notice [DEPRECATED] token limit
     */
-    mapping (string => uint256) public maxTokenAmount;
+    mapping (string => uint256) private maxTokenAmount;
 
     /*
     * @notice gap of storage for future upgrades

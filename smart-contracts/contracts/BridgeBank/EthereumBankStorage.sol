@@ -10,12 +10,12 @@ contract EthereumBankStorage {
     /**
     * @notice {DEPRECATED}
     */
-    mapping(address => uint256) public lockedFunds;
+    mapping(address => uint256) private lockedFunds;
 
     /**
     * @notice {DEPRECATED}
     */
-    mapping(string => address) public lockedTokenList;
+    mapping(string => address) private lockedTokenList;
 
     /**
     * @notice contract decimals based off of contract address
