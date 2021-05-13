@@ -6,10 +6,10 @@ import {
   IAssetAmount,
   LiquidityProvider,
   Pool,
-} from "../entities";
-import { IAmount } from "../entities/Amount";
-import { akasha } from "../test/utils/accounts";
-import { getTestingTokens } from "../test/utils/getTestingToken";
+} from "../../../entities";
+import { IAmount } from "../../../entities/Amount";
+import { akasha } from "../../../test/utils/accounts";
+import { getTestingTokens } from "../../../test/utils/getTestingToken";
 import { PoolState, usePoolCalculator } from "./addLiquidityCalculator";
 
 const [ATK, ROWAN, CTEST] = getTestingTokens(["ATK", "ROWAN", "CTEST"]);
