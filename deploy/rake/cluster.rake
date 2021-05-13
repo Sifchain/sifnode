@@ -890,7 +890,8 @@ metadata:
     desc "Import Key Ring"
     task :import_keyring_mnemonic, [:moniker, :mnemonic, :app_env] do |t, args|
             governance_request = %Q{
-docker run -i sifchain/sifnodecli:test sh <<'EOF'
+make CHAINNET=sifchain IMAGE_TAG=keyring BINARY=sifnodecli build-image
+docker run -i sifchain/sifnodecli:keyring sh <<'EOF'
     sifnodecli keys list
     yes "#{args[:mnemonic]}" | sifnodecli keys add #{args[:moniker]} -i --recover --keyring-backend test
 exit
