@@ -313,6 +313,52 @@ contract BridgeBank is BankStorage,
         }
     }
 
+    function multiLock(
+        bytes[] calldata _recipient,
+        address[] calldata _token,
+        uint256[] calldata _amount
+    ) external {
+        require(_recipient.length == _token.length, "malformed payload");
+        require(_token.length == _amount.length, "malformed payload");
+
+        uint256 _chainid = getChainID();
+
+        for (uint256 i = 0; i < _recipient.length; i++) {
+            address tokenAddress = _token[i];
+            uint256 tokenAmount = _amount[i];
+
+            IERC20 tokenToTransfer = IERC20(tokenAddress);
+            // lock tokens
+            tokenToTransfer.safeTransferFrom(
+                msg.sender,
+                address(this),
+                tokenAmount
+            );
+
+            // decimals defaults to 18 if call to decimals fails
+            uint8 decimals = getDecimals(tokenAddress);
+
+            // Get name and symbol
+            string memory name = getName(tokenAddress);
+            string memory symbol = getSymbol(tokenAddress);
+
+            lockBurnNonce = lockBurnNonce + 1;
+            {
+                emit LogLock(
+                    msg.sender,
+                    _recipient[i],
+                    tokenAddress,
+                    tokenAmount,
+                    lockBurnNonce,
+                    _chainid,
+                    decimals,
+                    symbol,
+                    name
+                );
+            }
+        }
+    }
+
     /*
      * @dev: Locks received Ethereum/ERC20 funds.
      *
