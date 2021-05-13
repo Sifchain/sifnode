@@ -200,6 +200,8 @@ def get_token_ethereum_address(
         token: str,
         whitelist
 ):
+    if token == "eth" or token == "ceth" or token == NULL_ADDRESS:
+        return NULL_ADDRESS
     for token_in_whitelist in whitelist:
         if token_in_whitelist["symbol"] == token:
             return token_in_whitelist["token"]

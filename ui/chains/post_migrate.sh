@@ -2,16 +2,16 @@
 
 BASE_DIR=$PWD/../..
 
-. $BASE_DIR/ui/chains/credentials.sh
+. $PWD/../../ui/chains/credentials.sh
 
 if [[ -f "$BASE_DIR/smart-contracts/.env" ]]; then
   . $BASE_DIR/smart-contracts/.env
 fi
 
-ATK_ADDRESS=$(cat $BASE_DIR/ui/chains/ethereum/build/contracts/AliceToken.json | jq -r '.networks["5777"].address') 
-BTK_ADDRESS=$(cat $BASE_DIR/ui/chains/ethereum/build/contracts/BobToken.json | jq -r '.networks["5777"].address') 
-USDC_ADDRESS=$(cat $BASE_DIR/ui/chains/ethereum/build/contracts/UsdCoin.json | jq -r '.networks["5777"].address') 
-LINK_ADDRESS=$(cat $BASE_DIR/ui/chains/ethereum/build/contracts/LinkCoin.json | jq -r '.networks["5777"].address') 
+ATK_ADDRESS=$(cat $BASE_DIR/ui/chains/eth/build/contracts/AliceToken.json | jq -r '.networks["5777"].address') 
+BTK_ADDRESS=$(cat $BASE_DIR/ui/chains/eth/build/contracts/BobToken.json | jq -r '.networks["5777"].address') 
+USDC_ADDRESS=$(cat $BASE_DIR/ui/chains/eth/build/contracts/UsdCoin.json | jq -r '.networks["5777"].address') 
+LINK_ADDRESS=$(cat $BASE_DIR/ui/chains/eth/build/contracts/LinkCoin.json | jq -r '.networks["5777"].address') 
 BRIDGE_TOKEN_ADDRESS=$(cat $BASE_DIR/smart-contracts/build/contracts/BridgeToken.json | jq -r '.networks["5777"].address') 
 
 if [[ -z "$ATK_ADDRESS" ]]; then 
