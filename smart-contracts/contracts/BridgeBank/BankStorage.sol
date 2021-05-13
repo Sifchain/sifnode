@@ -9,12 +9,12 @@ contract BankStorage is
     EthereumBankStorage,
     CosmosWhiteListStorage {
 
-    /**
+    /*
     * @notice [DEPRECATED] operator address that can update the smart contract
     */
     address private operator;
 
-    /**
+    /*
     * @notice [DEPRECATED] address of the Oracle smart contract
     */
     address private oracle;
@@ -29,7 +29,7 @@ contract BankStorage is
     */
     address public owner;
 
-    /**
+    /*
     * @notice [DEPRECATED] token limit
     */
     mapping (string => uint256) private maxTokenAmount;

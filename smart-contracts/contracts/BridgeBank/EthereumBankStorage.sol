@@ -7,12 +7,12 @@ contract EthereumBankStorage {
     */
     uint256 public lockBurnNonce;
 
-    /**
+    /*
     * @notice {DEPRECATED}
     */
     mapping(address => uint256) private lockedFunds;
 
-    /**
+    /*
     * @notice {DEPRECATED}
     */
     mapping(string => address) private lockedTokenList;
