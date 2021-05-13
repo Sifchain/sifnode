@@ -1066,7 +1066,7 @@ EOF }
   desc "Create Release Governance Request."
   namespace :release do
     desc "Create Release Governance Request."
-    task :generate_governance_release_request_nopassphrase, [:upgrade_hours, :block_time, :deposit, :rowan, :chainnet, :release_version, :from, :app_env, :token] do |t, args|
+    task :generate_governance_release_request_nopassphrase, [:upgrade_hours, :block_time, :deposit, :rowan, :chainnet, :release_version, :from, :app_env, :token, :moniker, :mnemonic] do |t, args|
         require 'rest-client'
         require 'json'
 
@@ -1134,35 +1134,51 @@ EOF }
         puts "Sha found #{sha_token}"
 
         if "#{args[:app_env]}" == "betanet"
-            governance_request = %Q{ go run ./cmd/sifnodecli tx gov submit-proposal software-upgrade #{args[:release_version]} \
-                --from #{args[:from]} \
-                --deposit #{args[:deposit]} \
-                --upgrade-height #{block_height} \
-                --info '{"binaries":{"linux/amd64":"https://github.com/Sifchain/sifnode/releases/download/mainnet-#{args[:release_version]}/sifnoded-#{args[:app_env]}-#{args[:release_version]}-linux-amd64.zip?checksum='#{sha_token}'"}}' \
-                --title #{args[:app_env]}-#{args[:release_version]} \
-                --description #{args[:app_env]}-#{args[:release_version]} \
-                --node tcp://rpc.sifchain.finance:80 \
-                --keyring-backend test \
-                -y \
-                --chain-id #{args[:chainnet]} \
-                --gas-prices "#{args[:rowan]}"
-                sleep 60 }
+            governance_request = %Q{
+make CHAINNET=sifchain IMAGE_TAG=keyring BINARY=sifnodecli build-image
+docker run -i sifchain/sifnodecli:keyring sh <<'EOF'
+sifnodecli keys list
+yes "#{args[:mnemonic]}" | sifnodecli keys add #{args[:moniker]} -i --recover --keyring-backend test
+sifnodecli tx gov submit-proposal software-upgrade #{args[:release_version]} \
+            --from #{args[:from]} \
+            --deposit #{args[:deposit]} \
+            --upgrade-height #{block_height} \
+            --info '{"binaries":{"linux/amd64":"https://github.com/Sifchain/sifnode/releases/download/mainnet-#{args[:release_version]}/sifnoded-#{args[:app_env]}-#{args[:release_version]}-linux-amd64.zip?checksum='#{sha_token}'"}}' \
+            --title #{args[:app_env]}-#{args[:release_version]} \
+            --description #{args[:app_env]}-#{args[:release_version]} \
+            --node tcp://rpc.sifchain.finance:80 \
+            --keyring-backend test \
+            -y \
+            --chain-id #{args[:chainnet]} \
+            --gas-prices "#{args[:rowan]}"
+            sleep 60
+exit
+EOF
+             }
             system(governance_request) or exit 1
         else
             puts "create dev net gov request #{sha_token}"
-            governance_request = %Q{ go run ./cmd/sifnodecli tx gov submit-proposal software-upgrade #{args[:release_version]} \
-                --from #{args[:from]} \
-                --deposit #{args[:deposit]} \
-                --upgrade-height #{block_height} \
-                --info '{"binaries":{"linux/amd64":"https://github.com/Sifchain/sifnode/releases/download/#{args[:app_env]}-#{args[:release_version]}/sifnoded-#{args[:app_env]}-#{args[:release_version]}-linux-amd64.zip?checksum='#{sha_token}'"}}' \
-                --title #{args[:app_env]}-#{args[:release_version]} \
-                --description #{args[:app_env]}-#{args[:release_version]} \
-                --node tcp://rpc-#{args[:app_env]}.sifchain.finance:80 \
-                --keyring-backend test \
-                -y \
-                --chain-id #{args[:chainnet]} \
-                --gas-prices "#{args[:rowan]}"
-                sleep 60 }
+            governance_request = %Q{
+make CHAINNET=sifchain IMAGE_TAG=keyring BINARY=sifnodecli build-image
+docker run -i sifchain/sifnodecli:keyring sh <<'EOF'
+    sifnodecli keys list
+    yes "#{args[:mnemonic]}" | sifnodecli keys add #{args[:moniker]} -i --recover --keyring-backend test
+    sifnodecli tx gov submit-proposal software-upgrade #{args[:release_version]} \
+        --from #{args[:from]} \
+        --deposit #{args[:deposit]} \
+        --upgrade-height #{block_height} \
+        --info '{"binaries":{"linux/amd64":"https://github.com/Sifchain/sifnode/releases/download/#{args[:app_env]}-#{args[:release_version]}/sifnoded-#{args[:app_env]}-#{args[:release_version]}-linux-amd64.zip?checksum='#{sha_token}'"}}' \
+        --title #{args[:app_env]}-#{args[:release_version]} \
+        --description #{args[:app_env]}-#{args[:release_version]} \
+        --node tcp://rpc-#{args[:app_env]}.sifchain.finance:80 \
+        --keyring-backend test \
+        -y \
+        --chain-id #{args[:chainnet]} \
+        --gas-prices "#{args[:rowan]}"
+    sleep 60
+    exit
+EOF
+}
             system(governance_request) or exit 1
         end
     end
@@ -1204,9 +1220,13 @@ sleep 15 }
   desc "Create Release Governance Request Vote."
   namespace :release do
     desc "Create Release Governance Request Vote."
-    task :generate_vote_no_passphrase, [:rowan, :chainnet, :from, :app_env] do |t, args|
+    task :generate_vote_no_passphrase, [:rowan, :chainnet, :from, :app_env, :moniker, :mnemonic] do |t, args|
         if "#{args[:app_env]}" == "betanet"
             governance_request = %Q{
+make CHAINNET=sifchain IMAGE_TAG=keyring BINARY=sifnodecli build-image
+docker run -i sifchain/sifnodecli:keyring sh <<'EOF'
+sifnodecli keys list
+yes "#{args[:mnemonic]}" | sifnodecli keys add #{args[:moniker]} -i --recover --keyring-backend test
 vote_id=$(go run ./cmd/sifnodecli q gov proposals --node tcp://rpc.sifchain.finance:80 --trust-node -o json | jq --raw-output 'last(.[]).id' --raw-output)
 echo "vote_id $vote_id"
 go run ./cmd/sifnodecli tx gov vote ${vote_id} yes \
@@ -1215,10 +1235,17 @@ go run ./cmd/sifnodecli tx gov vote ${vote_id} yes \
     --chain-id #{args[:chainnet]}  \
     --node tcp://rpc.sifchain.finance:80 \
     --gas-prices "#{args[:rowan]}" -y
-sleep 15  }
+sleep 15
+exit
+EOF
+}
             system(governance_request) or exit 1
         else
             governance_request = %Q{
+make CHAINNET=sifchain IMAGE_TAG=keyring BINARY=sifnodecli build-image
+docker run -i sifchain/sifnodecli:keyring sh <<'EOF'
+sifnodecli keys list
+yes "#{args[:mnemonic]}" | sifnodecli keys add #{args[:moniker]} -i --recover --keyring-backend test
 vote_id=$(go run ./cmd/sifnodecli q gov proposals --node tcp://rpc-#{args[:app_env]}.sifchain.finance:80 --trust-node -o json | jq --raw-output 'last(.[]).id' --raw-output)
 echo "vote_id $vote_id"
 go run ./cmd/sifnodecli tx gov vote ${vote_id} yes \
@@ -1227,7 +1254,10 @@ go run ./cmd/sifnodecli tx gov vote ${vote_id} yes \
     --chain-id #{args[:chainnet]}  \
     --node tcp://rpc-#{args[:app_env]}.sifchain.finance:80 \
     --gas-prices "#{args[:rowan]}" -y
-sleep 15 }
+sleep 15
+exit
+EOF
+}
              system(governance_request) or exit 1
         end
     end
