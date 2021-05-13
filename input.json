@@ -5,7 +5,16 @@
    "coins": [
     {
      "denom": "rowan",
-     "amount": "20000000000000000000"
+     "amount": "10000000000000000000"
+    }
+   ]
+  },
+  {
+   "address": "sif1l7hypmqk2yc334vc6vmdwzp5sdefygj2ad93p5",
+   "coins": [
+    {
+     "denom": "rowan",
+     "amount": "10000000000000000000"
     }
    ]
   }

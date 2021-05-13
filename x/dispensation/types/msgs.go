@@ -94,7 +94,7 @@ func (m MsgCreateClaim) GetSigners() []sdk.AccAddress {
 }
 
 func VerifyInputList(inputList []bank.Input, pubKeys []crypto.PubKey) error {
-	addressCount := len(inputList)
+	addressCount := len(pubKeys)
 	for _, i := range inputList {
 		addressFound := false
 		for _, signPubKeys := range pubKeys {
