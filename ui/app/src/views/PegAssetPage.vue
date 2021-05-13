@@ -13,7 +13,7 @@ import SifInput from "@/components/shared/SifInput.vue";
 import DetailsTable from "@/components/shared/DetailsTable.vue";
 import Label from "@/components/shared/Label.vue";
 import RaisedPanelColumn from "@/components/shared/RaisedPanelColumn.vue";
-import { trimZeros } from "ui-core/src/hooks/utils";
+import { trimZeros } from "ui-core";
 import BigNumber from "bignumber.js";
 import {
   formatSymbol,
@@ -45,7 +45,7 @@ export default defineComponent({
   },
 
   setup(props, context) {
-    const { store, actions } = useCore();
+    const { store, usecases } = useCore();
     const router = useRouter();
     const mode = computed(() => {
       return router.currentRoute.value.path.indexOf("/peg/reverse") > -1
@@ -65,7 +65,7 @@ export default defineComponent({
 
     const networkIsSupported = computed(() => {
       if (mode.value === "peg") {
-        return actions.ethWallet.isSupportedNetwork();
+        return usecases.wallet.eth.isSupportedNetwork();
       }
 
       return true;
@@ -101,7 +101,7 @@ export default defineComponent({
         // if not eth you need to approve spend before peg
         transactionState.value = "approving";
         try {
-          await actions.peg.approve(store.wallet.eth.address, assetAmount);
+          await usecases.peg.approve(store.wallet.eth.address, assetAmount);
         } catch (err) {
           return (transactionState.value = "rejected");
         }
@@ -109,7 +109,7 @@ export default defineComponent({
 
       transactionState.value = "signing";
 
-      const tx = await actions.peg.peg(assetAmount);
+      const tx = await usecases.peg.peg(assetAmount);
 
       transactionHash.value = tx.hash;
       transactionState.value = toConfirmState(tx.state); // TODO: align states
@@ -120,7 +120,7 @@ export default defineComponent({
       transactionState.value = "signing";
       const asset = Asset.get(symbol.value);
 
-      const tx = await actions.peg.unpeg(
+      const tx = await usecases.peg.unpeg(
         AssetAmount(asset, toBaseUnits(amount.value, asset)),
       );
 
@@ -171,7 +171,7 @@ export default defineComponent({
       }
     }
     const feeAmount = computed(() => {
-      return actions.peg.calculateUnpegFee(Asset.get(symbol.value));
+      return usecases.peg.calculateUnpegFee(Asset.get(symbol.value));
     });
 
     const feeDisplayAmount = computed(() => {

@@ -1,7 +1,5 @@
 # Frontend repo
 
-🚧 This is currently under construction and may not work. 🚧
-
 ## Installation
 
 ### Prerequisites
@@ -119,24 +117,24 @@ Note you will need to ensure you have [logged into the github container registry
 
 ### Testing Actions
 
-Actions can be grouped arbitrarily by domain aggregate and may have their dependencies injected using the supplied creator. You ask for your api and store keys by using the given TS types.
+Actions can be grouped arbitrarily by domain aggregate and may have their dependencies injected using the supplied creator. You ask for your services and store keys by using the given TS types.
 
 ```ts
 // Generic params specify what API the service expects
-type ActionContext<ServiceKeys, StoreKeys>
+type UsecaseContext<ServiceKeys, StoreKeys>
 ```
 
 ```ts
-export default function createAction({
-  api,
+export default function createUsecase({
+  services,
   store,
-}: ActionContext<"WalletService" | "SifService", "WalletStore">) {
+}: UsecaseContext<"wallet" | "sif", "wallet">) {
   return {
     async disconnectWallet() {
-      await api.WalletService.disconnect();
-      store.WalletStore.isConnected = false;
-      store.WalletStore.balances = [];
-      await api.SifService.disconnect();
+      await services.eth.disconnect();
+      store.wallet.isConnected = false;
+      store.wallet.balances = [];
+      await services.sif.disconnect();
     },
   };
 }
@@ -145,7 +143,7 @@ export default function createAction({
 The reason we do it this way is that in testing we only need to give the action creator exactly what it needs.
 
 ```ts
-const actions = createAction({ api: { WalletService: fakeWalletService } });
+const actions = createAction({ services: { eth: fakeWalletService } });
 
 // Then under test the wallet service runs with it's dependencies
 actions.disconnectWallet();

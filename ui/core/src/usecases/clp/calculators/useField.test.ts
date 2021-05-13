@@ -1,6 +1,6 @@
 import { ref, Ref } from "@vue/reactivity";
-import { Asset, IAssetAmount, Network } from "../entities";
-import { getTestingToken } from "../test/utils/getTestingToken";
+import { Asset, IAssetAmount, Network } from "../../../entities";
+import { getTestingToken } from "../../../test/utils/getTestingToken";
 import { useField } from "./useField";
 
 // TODO eventually delete me as this is an implementation detail
