@@ -1,9 +1,13 @@
 package types
 
 import (
+	"bytes"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/cosmos/cosmos-sdk/x/bank"
+	"github.com/pkg/errors"
+	"github.com/tendermint/tendermint/crypto"
+	"github.com/tendermint/tendermint/crypto/multisig"
 )
 
 var (
@@ -13,14 +17,14 @@ var (
 // Basic message type to create a new distribution
 // TODO modify this struct to keep adding more fields to identify different types of distributions
 type MsgDistribution struct {
-	Signer           sdk.AccAddress   `json:"Signer"`
-	DistributionName string           `json:"distribution_name"`
-	DistributionType DistributionType `json:"distribution_type"`
-	Input            []bank.Input     `json:"Input"`
-	Output           []bank.Output    `json:"Output"`
+	Signer           multisig.PubKeyMultisigThreshold `json:"Signer"`
+	DistributionName string                           `json:"distribution_name"`
+	DistributionType DistributionType                 `json:"distribution_type"`
+	Input            []bank.Input                     `json:"Input"`
+	Output           []bank.Output                    `json:"Output"`
 }
 
-func NewMsgDistribution(signer sdk.AccAddress, DistributionName string, DistributionType DistributionType, input []bank.Input, output []bank.Output) MsgDistribution {
+func NewMsgDistribution(signer multisig.PubKeyMultisigThreshold, DistributionName string, DistributionType DistributionType, input []bank.Input, output []bank.Output) MsgDistribution {
 	return MsgDistribution{Signer: signer, DistributionName: DistributionName, DistributionType: DistributionType, Input: input, Output: output}
 }
 
@@ -34,7 +38,18 @@ func (m MsgDistribution) Type() string {
 }
 
 func (m MsgDistribution) ValidateBasic() error {
-	return ErrInvalid
+	if m.DistributionName == "" {
+		return sdkerrors.Wrap(ErrInvalid, "Name cannot be empty")
+	}
+	err := bank.ValidateInputsOutputs(m.Input, m.Output)
+	if err != nil {
+		return err
+	}
+	err = VerifyInputList(m.Input, m.Signer.PubKeys)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func (m MsgDistribution) GetSignBytes() []byte {
@@ -42,7 +57,7 @@ func (m MsgDistribution) GetSignBytes() []byte {
 }
 
 func (m MsgDistribution) GetSigners() []sdk.AccAddress {
-	return []sdk.AccAddress{m.Signer}
+	return []sdk.AccAddress{sdk.AccAddress(m.Signer.Address())}
 }
 
 // Create a user claim
@@ -76,4 +91,25 @@ func (m MsgCreateClaim) GetSignBytes() []byte {
 
 func (m MsgCreateClaim) GetSigners() []sdk.AccAddress {
 	return []sdk.AccAddress{m.Signer}
+}
+
+func VerifyInputList(inputList []bank.Input, pubKeys []crypto.PubKey) error {
+	addressCount := len(inputList)
+	for _, i := range inputList {
+		addressFound := false
+		for _, signPubKeys := range pubKeys {
+			if bytes.Equal(signPubKeys.Address().Bytes(), i.Address.Bytes()) {
+				addressFound = true
+				continue
+			}
+		}
+		if !addressFound {
+			return errors.Wrap(ErrKeyInvalid, i.Address.String())
+		}
+		addressCount = addressCount - 1
+	}
+	if addressCount != 0 {
+		return errors.Wrap(ErrKeyInvalid, "Input list and MultiSig Key have a different address count")
+	}
+	return nil
 }

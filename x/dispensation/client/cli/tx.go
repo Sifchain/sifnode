@@ -74,7 +74,7 @@ func GetCmdCreate(cdc *codec.Codec) *cobra.Command {
 				return err
 			}
 			multisigPub := multisigInfo.GetPubKey().(multisig.PubKeyMultisigThreshold)
-			err = dispensationUtils.VerifyInputList(inputList, multisigPub.PubKeys)
+			err = types.VerifyInputList(inputList, multisigPub.PubKeys)
 			if err != nil {
 				return err
 			}
@@ -83,7 +83,7 @@ func GetCmdCreate(cdc *codec.Codec) *cobra.Command {
 				return err
 			}
 			name := args[1]
-			msg := types.NewMsgDistribution(cliCtx.GetFromAddress(), name, distributionType, inputList, outputlist)
+			msg := types.NewMsgDistribution(multisigPub, name, distributionType, inputList, outputlist)
 			return utils.GenerateOrBroadcastMsgs(cliCtx, txBldr, []sdk.Msg{msg})
 		},
 	}
