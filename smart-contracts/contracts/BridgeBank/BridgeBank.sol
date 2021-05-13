@@ -281,36 +281,8 @@ contract BridgeBank is BankStorage,
         }
         require(msg.value == 0, "do not send currency if locking tokens");
 
-        IERC20 tokenToTransfer = IERC20(_token);
-        // lock tokens
-        tokenToTransfer.safeTransferFrom(
-            msg.sender,
-            address(this),
-            _amount
-        );
-
-        // decimals defaults to 18 if call to decimals fails
-        uint8 decimals = getDecimals(_token);
-
-        // Get name and symbol
-        string memory name = getName(_token);
-        string memory symbol = getSymbol(_token);
-
-        lockBurnNonce = lockBurnNonce + 1;
         uint256 _chainid = getChainID();
-        {
-            emit LogLock(
-                msg.sender,
-                _recipient,
-                _token,
-                _amount,
-                lockBurnNonce,
-                _chainid,
-                decimals,
-                symbol,
-                name
-            );
-        }
+        _lockTokens(_recipient, _token, _amount, _chainid);
     }
 
     function multiLock(
@@ -324,38 +296,44 @@ contract BridgeBank is BankStorage,
         uint256 _chainid = getChainID();
 
         for (uint256 i = 0; i < _recipient.length; i++) {
-            address tokenAddress = _token[i];
-            uint256 tokenAmount = _amount[i];
+            _lockTokens(_recipient[i], _token[i], _amount[i], _chainid);
+        }
+    }
 
-            IERC20 tokenToTransfer = IERC20(tokenAddress);
-            // lock tokens
-            tokenToTransfer.safeTransferFrom(
+    function _lockTokens(
+        bytes calldata _recipient,
+        address tokenAddress,
+        uint256 tokenAmount,
+        uint256 _chainid
+    ) private {
+        IERC20 tokenToTransfer = IERC20(tokenAddress);
+        // lock tokens
+        tokenToTransfer.safeTransferFrom(
+            msg.sender,
+            address(this),
+            tokenAmount
+        );
+
+        // decimals defaults to 18 if call to decimals fails
+        uint8 decimals = getDecimals(tokenAddress);
+
+        // Get name and symbol
+        string memory name = getName(tokenAddress);
+        string memory symbol = getSymbol(tokenAddress);
+
+        lockBurnNonce = lockBurnNonce + 1;
+        {
+            emit LogLock(
                 msg.sender,
-                address(this),
-                tokenAmount
+                _recipient,
+                tokenAddress,
+                tokenAmount,
+                lockBurnNonce,
+                _chainid,
+                decimals,
+                symbol,
+                name
             );
-
-            // decimals defaults to 18 if call to decimals fails
-            uint8 decimals = getDecimals(tokenAddress);
-
-            // Get name and symbol
-            string memory name = getName(tokenAddress);
-            string memory symbol = getSymbol(tokenAddress);
-
-            lockBurnNonce = lockBurnNonce + 1;
-            {
-                emit LogLock(
-                    msg.sender,
-                    _recipient[i],
-                    tokenAddress,
-                    tokenAmount,
-                    lockBurnNonce,
-                    _chainid,
-                    decimals,
-                    symbol,
-                    name
-                );
-            }
         }
     }
 
