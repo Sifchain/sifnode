@@ -7,7 +7,9 @@ contract BridgeRegistry {
 
     // these variables are now deprecated and are made private
     // so that the getter helper method is not available.
+    // [DEPRECATED]
     address private oracle;
+    // [DEPRECATED]
     address private valset;
 
     bool private _initialized;

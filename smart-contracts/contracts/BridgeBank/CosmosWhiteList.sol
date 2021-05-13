@@ -17,7 +17,6 @@ contract CosmosWhiteList is CosmosWhiteListStorage {
 
     function _cosmosWhitelistInitialize() internal {
         require(!_initialized, "Initialized");
-        _cosmosTokenWhiteList[address(0)] = true;
         _initialized = true;
     }
 

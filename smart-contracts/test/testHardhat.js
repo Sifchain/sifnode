@@ -100,15 +100,21 @@ describe("Test Bridge Bank", function () {
     );
     this.senderSequence = 1;
     this.recipient = userThree;
+    this.name = "TEST COIN";
     this.symbol = "TEST";
     this.ethereumToken = "0x0000000000000000000000000000000000000000";
     this.weiAmount = web3.utils.toWei("0.25", "ether");
 
-    this.token = await BridgeToken.deploy(this.symbol);
+    this.token = await BridgeToken.deploy(
+      this.name,
+      this.symbol,
+      18
+    );
+
     await this.token.deployed();
     this.amount = 100;
     //Load user account with ERC20 tokens for testing
-    await this.token.mint(userOne.address, this.amount, {
+    await this.token.mint(userOne.address, this.amount * 2, {
       from: operator
     }).should.be.fulfilled;
 
@@ -120,6 +126,15 @@ describe("Test Bridge Bank", function () {
       this.sender,
       this.token.address,
       this.amount
+    ).should.be.fulfilled;
+
+    // Lock tokens on contract
+    await this.bridgeBank.connect(userOne).lock(
+      this.sender,
+      this.ethereumToken,
+      this.amount, {
+        value: this.amount
+      }
     ).should.be.fulfilled;
   });
 
@@ -157,17 +172,28 @@ describe("Test Bridge Bank", function () {
       expect(await this.bridgeBank.pausers(pauser)).to.be.true;
     });
 
-    it("should not allow users to lock ERC20 tokens if the sifaddress prefix is incorrect", async function () {
-      const invalidSifAddress = web3.utils.utf8ToHex(
-        "zif1gdnl9jj2xgy5n04r7heqxlqvvzcy24zc96ns2f"
+    it("should allow user to lock ERC20 tokens", async function () {
+      const beforeUserBalance = Number(
+        await this.token.balanceOf(userOne.address)
       );
+
+      await this.token.connect(userOne).approve(
+        this.bridgeBank.address,
+        this.amount
+      );
+
       // Attempt to lock tokens
-      await expect(this.bridgeBank.connect(userOne).lock(
-          invalidSifAddress,
-          this.token.address,
-          this.amount
-        )
-      ).to.be.revertedWith("Invalid sif address");
+      await this.bridgeBank.connect(userOne).lock(
+        this.sender,
+        this.token.address,
+        this.amount
+      );
+
+      // Confirm that the user has been minted the correct token
+      const afterUserBalance = Number(
+        await this.token.balanceOf(userOne.address)
+      );
+      afterUserBalance.should.be.bignumber.equal(0);
     });
 
     it("should mint bridge tokens upon the successful processing of a burn prophecy claim", async function () {
@@ -178,34 +204,33 @@ describe("Test Bridge Bank", function () {
 
       // Submit a new prophecy claim to the CosmosBridge to make oracle claims upon
       this.nonce = 1;
-      let receipt = await this.cosmosBridge.connect(userOne).newProphecyClaim(
-        CLAIM_TYPE_BURN,
-        this.sender,
-        this.symbol,
-        this.senderSequence,
-        this.recipient,
-        this.token.address,
-        this.amount
-      ).should.be.fulfilled;
+      let receipt = (
+        await this.cosmosBridge.connect(userOne).newProphecyClaim(
+          this.sender,
+          this.senderSequence,
+          this.recipient,
+          this.token.address,
+          this.amount,
+          false
+        ).should.be.fulfilled
+      );
 
       receipt = await this.cosmosBridge.connect(userTwo).newProphecyClaim(
-        CLAIM_TYPE_BURN,
         this.sender,
-        this.symbol,
         this.senderSequence,
         this.recipient,
         this.token.address,
-        this.amount
+        this.amount,
+        false
       ).should.be.fulfilled;
 
       receipt = await this.cosmosBridge.connect(userFour).newProphecyClaim(
-        CLAIM_TYPE_BURN,
         this.sender,
-        this.symbol,
         this.senderSequence,
         this.recipient,
         this.token.address,
-        this.amount
+        this.amount,
+        false
       ).should.be.fulfilled;
 
       // Confirm that the user has been minted the correct token
@@ -229,7 +254,7 @@ describe("Test Bridge Bank", function () {
       const contractBalance = Web3Utils.fromWei(contractBalanceWei, "ether");
 
       contractBalance.should.be.bignumber.equal(
-        Web3Utils.fromWei(this.weiAmount, "ether")
+        Web3Utils.fromWei((+this.weiAmount + +this.amount).toString(), "ether")
       );
     });
 
@@ -255,6 +280,47 @@ describe("Test Bridge Bank", function () {
           },
         ),
       ).to.be.revertedWith("do not send currency if locking tokens");
+    });
+  });
+
+  describe("CosmosBridge", function () {
+
+    it("should unlock eth upon the successful processing of a burn prophecy claim", async function () {
+      // Submit a new prophecy claim to the CosmosBridge to make oracle claims upon
+      this.nonce = 1;
+      let receipt = await this.cosmosBridge.connect(userOne).newProphecyClaim(
+        this.sender,
+        this.senderSequence,
+        this.recipient,
+        this.ethereumToken,
+        this.amount,
+        false
+      ).should.be.fulfilled;
+      
+      receipt = await this.cosmosBridge.connect(userTwo).newProphecyClaim(
+        this.sender,
+        this.senderSequence,
+        this.recipient,
+        this.ethereumToken,
+        this.amount,
+        false
+      ).should.be.fulfilled;
+
+      receipt = await this.cosmosBridge.connect(userFour).newProphecyClaim(
+        this.sender,
+        this.senderSequence,
+        this.recipient,
+        this.ethereumToken,
+        this.amount,
+        false
+      ).should.be.fulfilled;
+
+      const recipientEndingBalance = await getBalance(this.recipient);
+      const recipientBalance = Web3Utils.fromWei(recipientEndingBalance);
+
+      expect(recipientBalance).to.be.equal(
+        "10000.0000000000000001"
+      );
     });
   });
 });

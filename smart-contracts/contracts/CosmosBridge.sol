@@ -15,7 +15,6 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
 
     event LogNewProphecyClaim(
         uint256 indexed prophecyID,
-        ClaimType claimType,
         address indexed ethereumReceiver,
         uint256 indexed amount
     );
@@ -29,7 +28,7 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
         address indexed bridgeTokenAddress
     );
 
-    event LogProphecyCompleted(uint256 prophecyID, ClaimType claimType);
+    event LogProphecyCompleted(uint256 prophecyID);
 
     /*
      * @dev: Modifier to restrict access to current ValSet validators
@@ -38,14 +37,6 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
         require(
             isActiveValidator(msg.sender),
             "Must be an active validator"
-        );
-        _;
-    }
-
-    modifier validClaimType(ClaimType _claimType) {
-        require(
-            (_claimType == ClaimType.Lock || _claimType == ClaimType.Burn),
-            "Invalid claim type"
         );
         _;
     }
@@ -93,7 +84,6 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
     }
 
     function getProphecyID(
-        ClaimType _claimType,
         bytes calldata _cosmosSender,
         uint256 _cosmosSenderSequence,
         address payable _ethereumReceiver,
@@ -103,7 +93,6 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
         return uint256(
             keccak256(
                 abi.encodePacked(
-                    _claimType,
                     _cosmosSender,
                     _cosmosSenderSequence,
                     _ethereumReceiver,
@@ -120,7 +109,6 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
      *       Burn claims require that there are enough locked Ethereum assets to complete the prophecy.
      *       Lock claims have a new token contract deployed or use an existing contract based on symbol.
      *
-     * @param _claimType type of claim, either lock or burn
      * @param _cosmosSender sifchain sender's address
      * @param _cosmosSenderSequence nonce of the cosmos sender
      * @param _ethereumReceiver ethereum address of the receiver
@@ -130,17 +118,15 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
      *
      */
     function newProphecyClaim(
-        ClaimType _claimType,
         bytes calldata _cosmosSender,
         uint256 _cosmosSenderSequence,
         address payable _ethereumReceiver,
         address _tokenAddress,
         uint256 _amount,
         bool _doublePeg
-    ) external onlyValidator validClaimType(_claimType) {
+    ) external onlyValidator {
 
         uint256 _prophecyID = getProphecyID(
-            _claimType, 
             _cosmosSender,
             _cosmosSenderSequence,
             _ethereumReceiver,
@@ -153,7 +139,6 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
         if (oracleClaimValidators[_prophecyID] == 0) {
             emit LogNewProphecyClaim(
                 _prophecyID,
-                _claimType,
                 _ethereumReceiver,
                 _amount
             );
@@ -168,7 +153,6 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
             _tokenAddress = _doublePeg ? sourceAddressToDestinationAddress[_tokenAddress] : _tokenAddress;
 
             completeProphecyClaim(
-                _claimType,
                 _prophecyID,
                 _ethereumReceiver,
                 _tokenAddress,
@@ -178,8 +162,6 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
     }
     
     /**
-     *
-     * @param _cosmosSender address of the sifchain address
      * @param _symbol symbol of the ERC20 token on the source chain
      * @param _name name of the ERC20 token on the source chain
      * @param _sourceChainTokenAddress address of the ERC20 token on the source chain
@@ -187,7 +169,6 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
      * @param chainDescriptor descriptor of the source chain
      */
     function createNewBridgeToken(
-        bytes calldata _cosmosSender,
         string calldata _symbol,
         string calldata _name,
         address _sourceChainTokenAddress,
@@ -215,23 +196,41 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
         );
     }
 
-    // struct prophecyBundle {
-    //     ClaimType _claimType;
-    //     bytes _cosmosSender;
-    //     string _symbol;
-    //     uint256 _cosmosSenderSequence;
-    //     address payable _ethereumReceiver;
-    //     address _tokenAddress;
-    //     uint256 _amount;
-    // }
+    struct prophecyBundle {
+        bytes _cosmosSender;
+        uint256 _cosmosSenderSequence;
+        address payable _ethereumReceiver;
+        address _tokenAddress;
+        uint256 _amount;
+        bool _doublePeg;
+    }
 
-    // function batchSubmitProphecies(
-    //     prophecyBundle[] calldata _prophecies
-    // ) external onlyValidator {
-    //     for (uint256 i = 0; i < _prophecies.length; i++) {
-            
-    //     }
-    // }
+    function batchSubmitProphecies(
+        prophecyBundle[] calldata _prophecies
+    ) external onlyValidator {
+        for (uint256 i = 0; i < _prophecies.length; i++) {
+            uint256 _prophecyID = getProphecyID(
+                _prophecies[i]._cosmosSender,
+                _prophecies[i]._cosmosSenderSequence,
+                _prophecies[i]._ethereumReceiver,
+                _prophecies[i]._tokenAddress,
+                _prophecies[i]._amount
+            );
+
+            if (prophecyRedeemed[_prophecyID]) {
+                continue;
+            }
+
+            this.newProphecyClaim(
+                _prophecies[i]._cosmosSender,
+                _prophecies[i]._cosmosSenderSequence,
+                _prophecies[i]._ethereumReceiver,
+                _prophecies[i]._tokenAddress,
+                _prophecies[i]._amount,
+                _prophecies[i]._doublePeg
+            );
+        }
+    }
 
     /*
      * @dev: completeProphecyClaim
@@ -240,7 +239,6 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
      *       Lock claims mint BridgeTokens on BridgeBank's token whitelist.
      */
     function completeProphecyClaim(
-        ClaimType _claimType,
         uint256 _prophecyID,
         address payable ethereumReceiver,
         address _tokenAddress,
@@ -252,6 +250,6 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
             amount
         );
 
-        emit LogProphecyCompleted(_prophecyID, _claimType);
+        emit LogProphecyCompleted(_prophecyID);
     }
 }

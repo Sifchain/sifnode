@@ -1,6 +1,7 @@
 pragma solidity 0.8.0;
 
 import "./BridgeToken.sol";
+import "./CosmosBankStorage.sol";
 
 /**
  * @title CosmosBank
@@ -8,7 +9,7 @@ import "./BridgeToken.sol";
  *      which represent assets based on the Cosmos blockchain.
  **/
 
-contract CosmosBank {
+contract CosmosBank is CosmosBankStorage {
     /*
      * @dev: Event declarations
      */
@@ -25,12 +26,20 @@ contract CosmosBank {
      *
      * @param _symbol: The BridgeToken's symbol
      */
-    function deployNewBridgeToken(string memory _symbol)
+    function deployNewBridgeToken(
+        string memory _name,
+        string memory _symbol,
+        uint8 _decimals
+    )
         internal
         returns (address)
     {
         // Deploy new bridge token contract
-        BridgeToken newBridgeToken = (new BridgeToken)(_symbol);
+        BridgeToken newBridgeToken = new BridgeToken(
+            _name,
+            _symbol,
+            _decimals
+        );
 
         // Set address in tokens mapping
         address newBridgeTokenAddress = address(newBridgeToken);

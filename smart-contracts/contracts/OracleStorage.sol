@@ -7,7 +7,7 @@ contract OracleStorage {
     address public cosmosBridge;
 
     /*
-    * @notice DEPRECATED variable
+    * @notice [DEPRECATED] variable
     */
     address private _operator;
 

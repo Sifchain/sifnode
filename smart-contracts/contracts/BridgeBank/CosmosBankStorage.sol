@@ -24,12 +24,12 @@ contract CosmosBankStorage {
     uint256 public cosmosDepositNonce;
 
     /**
-    * @notice mapping of symbols to token addresses
+    * @notice [DEPRECATED] mapping of symbols to token addresses
     */
     mapping(string => address) public controlledBridgeTokens;
 
     /**
-    * @notice mapping of lowercase symbols to properly capitalized tokens
+    * @notice [DEPRECATED] mapping of lowercase symbols to properly capitalized tokens
     */
     mapping(string => string) public lowerToUpperTokens;
 

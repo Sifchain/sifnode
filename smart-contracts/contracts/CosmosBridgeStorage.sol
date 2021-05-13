@@ -3,6 +3,7 @@ pragma solidity 0.8.0;
 contract CosmosBridgeStorage {
     /*
     * @notice gap of storage for future upgrades
+    * @dev {DEPRECATED}
     */
     string COSMOS_NATIVE_ASSET_PREFIX;
 

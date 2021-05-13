@@ -131,7 +131,11 @@ contract BridgeBank is BankStorage,
         string calldata _symbol,
         uint8 _decimals
     ) external onlyCosmosBridge returns (address) {
-        address newTokenAddress = deployNewBridgeToken(_symbol);
+        address newTokenAddress = deployNewBridgeToken(
+            _name,
+            _symbol,
+            _decimals
+        );
         setTokenInCosmosWhiteList(newTokenAddress, true);
 
         return newTokenAddress;

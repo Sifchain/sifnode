@@ -8,6 +8,16 @@ contract EthereumBankStorage {
     uint256 public lockBurnNonce;
 
     /**
+    * @notice {DEPRECATED}
+    */
+    mapping(address => uint256) public lockedFunds;
+
+    /**
+    * @notice {DEPRECATED}
+    */
+    mapping(string => address) public lockedTokenList;
+
+    /**
     * @notice contract decimals based off of contract address
     */
     mapping (address => uint8) public contractDecimals;
@@ -25,7 +35,7 @@ contract EthereumBankStorage {
     /*
     * @notice gap of storage for future upgrades
     */
-    uint256[100] private ____gap;
+    uint256[97] private ____gap;
 
     /*
      * @dev: Event declarations

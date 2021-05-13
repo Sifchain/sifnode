@@ -1,7 +1,8 @@
 pragma solidity 0.8.0;
 
 /**
- * @notice deprecated contract that only contains storage variables to keep offsets correct
+ * @notice [DEPRECATED] all variables.
+ * Contract that only contains storage variables to keep offsets correct
  **/
 
 contract EthereumWhiteList {
@@ -16,8 +17,4 @@ contract EthereumWhiteList {
     * @notice gap of storage for future upgrades
     */
     uint256[100] private ____gap;
-    /*
-     * @dev: Event declarations
-     */
-    // event LogWhiteListUpdate(address _token, bool _value);
 }
