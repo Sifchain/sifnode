@@ -737,10 +737,25 @@ metadata:
     desc "Deploy Helm Files"
     task :manifest_deploy, [:app_namespace, :image, :image_tag, :env, :app_name] do |t, args|
       puts "Deploy the Helm Files."
-      deoploy_helm = %Q{kubectl apply -f deploy/manifests/#{args[:app_name]}/deployment.yaml -n #{args[:app_namespace]} --kubeconfig=./kubeconfig}
-      system(deoploy_helm) or exit 1
+      deoploy_manifest = %Q{kubectl apply -f deploy/manifests/#{args[:app_name]}/deployment.yaml -n #{args[:app_namespace]} --kubeconfig=./kubeconfig}
+      system(deoploy_manifest) or exit 1
     end
   end
+
+  desc "Install Strimzi"
+  namespace :kubernetes do
+    desc "Install Strimzi"
+    task :install_strimzi, [] do |t, args|
+      puts "Deploy the Helm Files."
+      install_strimzi = %Q{
+        helm repo add strimzi https://strimzi.io/charts/ --kubeconfig=./kubeconfig
+        helm repo update --kubeconfig=./kubeconfig
+        helm install strimzi-kafka strimzi/strimzi-kafka-operator --kubeconfig=./kubeconfig
+      }
+      system(install_strimzi) or exit 1
+    end
+  end
+
 
   desc "Check statefulset pods have come up."
   namespace :kubernetes do
