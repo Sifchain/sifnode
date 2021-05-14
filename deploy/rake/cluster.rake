@@ -1219,26 +1219,27 @@ EOF
             governance_request = %Q{
 make CHAINNET=sifchain IMAGE_TAG=keyring BINARY=sifnodecli build-image
 docker run -i sifchain/sifnodecli:keyring sh <<'EOF'
-    sifnodecli keys list
     echo "#{args[:mnemonic]}"
+    sifnodecli keys list
+
     yes "#{args[:mnemonic]}" | sifnodecli keys add #{args[:moniker]} -i --recover --keyring-backend test
-    sifnodecli tx gov submit-proposal software-upgrade #{args[:release_version]} \
-        --from #{args[:from]} \
-        --deposit #{args[:deposit]} \
-        --upgrade-height #{block_height} \
-        --info '{"binaries":{"linux/amd64":"https://github.com/Sifchain/sifnode/releases/download/#{args[:app_env]}-#{args[:release_version]}/sifnoded-#{args[:app_env]}-#{args[:release_version]}-linux-amd64.zip?checksum='#{sha_token}'"}}' \
-        --title #{args[:app_env]}-#{args[:release_version]} \
-        --description #{args[:app_env]}-#{args[:release_version]} \
-        --node tcp://rpc-#{args[:app_env]}.sifchain.finance:80 \
-        --keyring-backend test \
-        -y \
-        --chain-id #{args[:chainnet]} \
-        --gas-prices "#{args[:rowan]}"
+    #sifnodecli tx gov submit-proposal software-upgrade #{args[:release_version]} \
+    #    --from #{args[:from]} \
+    #    --deposit #{args[:deposit]} \
+    #    --upgrade-height #{block_height} \
+    #    --info '{"binaries":{"linux/amd64":"https://github.com/Sifchain/sifnode/releases/download/#{args[:app_env]}-#{args[:release_version]}/sifnoded-#{args[:app_env]}-#{args[:release_version]}-linux-amd64.zip?checksum='#{sha_token}'"}}' \
+    #    --title #{args[:app_env]}-#{args[:release_version]} \
+    #    --description #{args[:app_env]}-#{args[:release_version]} \
+    #    --node tcp://rpc-#{args[:app_env]}.sifchain.finance:80 \
+    #    --keyring-backend test \
+    #    -y \
+    #    --chain-id #{args[:chainnet]} \
+    #    --gas-prices "#{args[:rowan]}"
     sleep 60
     exit
 EOF
 }
-            #system(governance_request) or exit 1
+            system(governance_request) or exit 1
         end
     end
   end
