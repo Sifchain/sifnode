@@ -191,12 +191,12 @@ export default defineComponent({
         <AssetList :items="assetList" v-slot="{ asset }">
           <SifButton
             :disabled="!asset.supported"
-            :to="`/import/${asset.asset.symbol}/${peggedSymbol(
+            :to="`/peg/${asset.asset.symbol}/${peggedSymbol(
               asset.asset.symbol,
             )}`"
             primary
-            :data-handle="'import-' + asset.asset.symbol"
-            >Import</SifButton
+            :data-handle="'peg-' + asset.asset.symbol"
+            >Peg</SifButton
           >
           <Tooltip v-if="!asset.supported" message="Network not supported">
             &nbsp;<Icon icon="info-box-black" />
@@ -211,8 +211,8 @@ export default defineComponent({
                 asset.asset.symbol,
               )}`"
               primary
-              :data-handle="'export-' + asset.asset.symbol"
-              >Export</SifButton
+              :data-handle="'unpeg-' + asset.asset.symbol"
+              >Unpeg</SifButton
             >
           </template>
           <template #annotation="{ pegTxs }">

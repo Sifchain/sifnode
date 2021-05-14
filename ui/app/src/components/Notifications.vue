@@ -39,7 +39,7 @@ function parseEventToNotifications(event: AppEvent): Notification | null {
   if (event.type === "PegTransactionPendingEvent") {
     return {
       type: "info",
-      message: "Import Transaction Pending",
+      message: "Pegged Transaction Pending",
       detail: {
         type: "etherscan",
         message: event.payload.hash,

@@ -1,10 +1,10 @@
 <template>
   <div class="panel-nav">
     <PanelNavItem
-      data-handle="import-page-button"
-      to="/import"
+      data-handle="peg-page-button"
+      to="/peg"
       icon="circle-half"
-      label="IMPORT/EXPORT"
+      label="PEG"
     ></PanelNavItem>
     <PanelNavItem
       data-handle="swap-page-button"

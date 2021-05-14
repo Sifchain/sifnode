@@ -48,7 +48,7 @@ export default defineComponent({
     const { store, usecases } = useCore();
     const router = useRouter();
     const mode = computed(() => {
-      return router.currentRoute.value.path.indexOf("/import/reverse") > -1
+      return router.currentRoute.value.path.indexOf("/peg/reverse") > -1
         ? "unpeg"
         : "peg";
     });
@@ -165,7 +165,7 @@ export default defineComponent({
     function requestTransactionModalClose() {
       if (transactionState.value === "confirmed") {
         transactionState.value = "selecting";
-        router.push("/import"); // TODO push back to peg, but load unpeg tab when unpegging -> dynamic routing?
+        router.push("/peg"); // TODO push back to peg, but load unpeg tab when unpegging -> dynamic routing?
       } else {
         transactionState.value = "selecting";
       }
@@ -229,13 +229,10 @@ export default defineComponent({
 </script>
 
 <template>
-  <Layout
-    :title="mode === 'peg' ? 'Import Asset' : 'Export Asset'"
-    backLink="/import"
-  >
+  <Layout :title="mode === 'peg' ? 'Peg Asset' : 'Unpeg Asset'" backLink="/peg">
     <div class="vspace">
       <CurrencyField
-        slug="import"
+        slug="peg"
         :amount="amount"
         :max="true"
         :isMaxActive="isMaxActive"
@@ -291,8 +288,8 @@ export default defineComponent({
       :state="transactionState"
       :transactionHash="transactionHash"
       :transactionStateMsg="transactionStateMsg"
-      confirmButtonText="Confirm Import"
-      :title="`Import token to Sifchain`"
+      confirmButtonText="Confirm Peg"
+      :title="`Peg token to Sifchain`"
     >
       <template v-slot:selecting>
         <DetailsTable
@@ -321,7 +318,7 @@ export default defineComponent({
       </template>
       <template v-slot:common>
         <p class="text--normal">
-          Importing <span class="text--bold">{{ amount }} {{ symbol }}</span>
+          Pegging <span class="text--bold">{{ amount }} {{ symbol }}</span>
         </p>
       </template>
     </ConfirmationModal>
@@ -332,8 +329,8 @@ export default defineComponent({
       :state="transactionState"
       :transactionHash="transactionHash"
       :transactionStateMsg="transactionStateMsg"
-      confirmButtonText="Confirm Export"
-      title="Export token from Sifchain"
+      confirmButtonText="Confirm Unpeg"
+      title="Unpeg token from Sifchain"
     >
       <template v-slot:selecting>
         <DetailsTable
@@ -358,7 +355,7 @@ export default defineComponent({
       </template>
       <template v-slot:common>
         <p class="text--normal">
-          Exporting <span class="text--bold">{{ amount }} {{ symbol }}</span>
+          Unpegging <span class="text--bold">{{ amount }} {{ symbol }}</span>
         </p>
       </template>
     </ConfirmationModal>

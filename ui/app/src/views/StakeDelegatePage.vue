@@ -24,7 +24,7 @@ export default defineComponent({
 </script>
 
 <template>
-  <Layout :header="false" title="Staking & Rewards" backLink="/import">
+  <Layout :header="false" title="Staking & Rewards" backLink="/peg">
     <div class="liquidity-container">
       <Loader black v-if="!data" />
       <div v-else>

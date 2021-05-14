@@ -113,14 +113,14 @@ it("pegs rowan", async () => {
 
   const unpegAmount = "500";
   await dexPage.click("[data-handle='native-tab']");
-  await dexPage.click("[data-handle='export-rowan']");
-  await dexPage.click('[data-handle="import-input"]');
-  await dexPage.fill('[data-handle="import-input"]', unpegAmount);
-  await dexPage.click('button:has-text("Export")');
+  await dexPage.click("[data-handle='unpeg-rowan']");
+  await dexPage.click('[data-handle="peg-input"]');
+  await dexPage.fill('[data-handle="peg-input"]', unpegAmount);
+  await dexPage.click('button:has-text("Unpeg")');
 
   const [confirmPopup] = await Promise.all([
     browserContext.waitForEvent("page"),
-    dexPage.click('button:has-text("Confirm Export")'),
+    dexPage.click('button:has-text("Confirm Unpeg")'),
   ]);
 
   await Promise.all([
@@ -149,14 +149,14 @@ it("pegs rowan", async () => {
   const pegAmount = "100";
 
   await dexPage.click("[data-handle='external-tab']");
-  await dexPage.click("[data-handle='import-erowan']");
-  await dexPage.click('[data-handle="import-input"]');
-  await dexPage.fill('[data-handle="import-input"]', pegAmount);
-  await dexPage.click('button:has-text("Import")');
+  await dexPage.click("[data-handle='peg-erowan']");
+  await dexPage.click('[data-handle="peg-input"]');
+  await dexPage.fill('[data-handle="peg-input"]', pegAmount);
+  await dexPage.click('button:has-text("Peg")');
 
   const [approveSpendPopup] = await Promise.all([
     browserContext.waitForEvent("page"),
-    dexPage.click('button:has-text("Confirm Import")'),
+    dexPage.click('button:has-text("Confirm Peg")'),
   ]);
 
   await approveSpendPopup.click("text=View full transaction details");
@@ -207,14 +207,14 @@ it("pegs ether", async () => {
   const pegAmount = "1";
 
   await dexPage.click("[data-handle='external-tab']");
-  await dexPage.click("[data-handle='import-eth']");
-  await dexPage.click('[data-handle="import-input"]');
-  await dexPage.fill('[data-handle="import-input"]', pegAmount);
-  await dexPage.click('button:has-text("Import")');
+  await dexPage.click("[data-handle='peg-eth']");
+  await dexPage.click('[data-handle="peg-input"]');
+  await dexPage.fill('[data-handle="peg-input"]', pegAmount);
+  await dexPage.click('button:has-text("Peg")');
 
   const [confirmPopup] = await Promise.all([
     browserContext.waitForEvent("page"),
-    dexPage.click('button:has-text("Confirm Import")'),
+    dexPage.click('button:has-text("Confirm Peg")'),
   ]);
 
   await Promise.all([
@@ -256,14 +256,14 @@ it("pegs tokens", async () => {
   const pegAmount = "1";
 
   await dexPage.click("[data-handle='external-tab']");
-  await dexPage.click("[data-handle='import-usdc']");
-  await dexPage.click('[data-handle="import-input"]');
-  await dexPage.fill('[data-handle="import-input"]', pegAmount);
-  await dexPage.click('button:has-text("Import")');
+  await dexPage.click("[data-handle='peg-usdc']");
+  await dexPage.click('[data-handle="peg-input"]');
+  await dexPage.fill('[data-handle="peg-input"]', pegAmount);
+  await dexPage.click('button:has-text("Peg")');
 
   const [approveSpendPopup] = await Promise.all([
     browserContext.waitForEvent("page"),
-    dexPage.click('button:has-text("Confirm Import")'),
+    dexPage.click('button:has-text("Confirm Peg")'),
   ]);
 
   await approveSpendPopup.click("text=View full transaction details");
