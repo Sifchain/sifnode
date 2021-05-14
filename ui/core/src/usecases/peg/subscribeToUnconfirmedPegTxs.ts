@@ -1,19 +1,19 @@
-import { ActionContext } from "..";
+import { UsecaseContext } from "..";
 import { SubscribeToTx } from "./utils/subscribeToTx";
 import { PegConfig } from "./index";
 
 export const SubscribeToUnconfirmedPegTxs = ({
-  api,
+  services,
   store,
   config,
-}: ActionContext<"EthbridgeService" | "EventBusService", "tx" | "wallet"> & {
+}: UsecaseContext<"ethbridge" | "bus", "tx" | "wallet"> & {
   config: PegConfig;
 }) => () => {
   // Update a tx state in the store
-  const subscribeToTx = SubscribeToTx({ store, api });
+  const subscribeToTx = SubscribeToTx({ store, services });
 
   async function getSubscriptions() {
-    const pendingTxs = await api.EthbridgeService.fetchUnconfirmedLockBurnTxs(
+    const pendingTxs = await services.ethbridge.fetchUnconfirmedLockBurnTxs(
       store.wallet.eth.address,
       config.ethConfirmations,
     );

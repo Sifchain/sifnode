@@ -6,9 +6,9 @@ import {
   AssetAmount,
   LiquidityProvider,
   Pool,
-} from "../entities";
-import { calculateWithdrawal } from "../entities/formulae";
-import { format } from "../utils/format";
+} from "../../../entities";
+import { calculateWithdrawal } from "../../../entities/formulae";
+import { format } from "../../../utils/format";
 import { PoolState } from "./addLiquidityCalculator";
 
 export function useRemoveLiquidityCalculator(input: {

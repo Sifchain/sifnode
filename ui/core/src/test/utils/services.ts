@@ -1,7 +1,7 @@
 // Consolodated place where we can setup testing services
 
-import sifServiceInitializer from "../../api/SifService";
-import ethServiceInitializer from "../../api/EthereumService";
+import sifServiceInitializer from "../../services/SifService";
+import ethServiceInitializer from "../../services/EthereumService";
 import { KeplrChainConfig } from "../../utils/parseConfig";
 import { TestSifAccount, TestEthAccount } from "./accounts";
 import { getTestingTokens } from "./getTestingToken";

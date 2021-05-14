@@ -1,18 +1,15 @@
 import { effect } from "@vue/reactivity";
-import { ActionContext } from "..";
-import { Asset, IAsset } from "../entities";
-import B from "../entities/utils/B";
-import { isSupportedEVMChain } from "./utils";
+import { UsecaseContext } from "../..";
+import { Asset, IAsset } from "../../entities";
+import B from "../../entities/utils/B";
+import { isSupportedEVMChain } from "../utils";
 
 export default ({
-  api,
+  services,
   store,
-}: ActionContext<
-  "EthereumService" | "EventBusService",
-  "wallet" | "asset"
->) => {
-  api.EthereumService.onProviderNotFound(() => {
-    api.EventBusService.dispatch({
+}: UsecaseContext<"eth" | "bus", "wallet" | "asset">) => {
+  services.eth.onProviderNotFound(() => {
+    services.bus.dispatch({
       type: "WalletConnectionErrorEvent",
       payload: {
         walletType: "eth",
@@ -21,11 +18,11 @@ export default ({
     });
   });
 
-  api.EthereumService.onChainIdDetected((chainId) => {
+  services.eth.onChainIdDetected((chainId) => {
     store.wallet.eth.chainId = chainId;
   });
 
-  const etheriumState = api.EthereumService.getState();
+  const etheriumState = services.eth.getState();
 
   const actions = {
     isSupportedNetwork() {
@@ -33,14 +30,14 @@ export default ({
     },
 
     async disconnectWallet() {
-      await api.EthereumService.disconnect();
+      await services.eth.disconnect();
     },
 
     async connectToWallet() {
       try {
-        await api.EthereumService.connect();
+        await services.eth.connect();
       } catch (err) {
-        api.EventBusService.dispatch({
+        services.bus.dispatch({
           type: "WalletConnectionErrorEvent",
           payload: {
             walletType: "eth",
@@ -51,7 +48,7 @@ export default ({
     },
 
     async transferEthWallet(amount: number, recipient: string, asset: Asset) {
-      const hash = await api.EthereumService.transfer({
+      const hash = await services.eth.transfer({
         amount: B(amount, asset.decimals),
         recipient,
         asset,
@@ -67,7 +64,7 @@ export default ({
         etheriumState.connected && !!etheriumState.address;
 
       if (store.wallet.eth.isConnected) {
-        api.EventBusService.dispatch({
+        services.bus.dispatch({
           type: "WalletConnectedEvent",
           payload: {
             walletType: "eth",
@@ -88,7 +85,7 @@ export default ({
 
   effect(async () => {
     etheriumState.log; // trigger on log change
-    await api.EthereumService.getBalance();
+    await services.eth.getBalance();
   });
 
   return actions;

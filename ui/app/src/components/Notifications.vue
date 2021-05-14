@@ -2,7 +2,7 @@
 import { computed, defineComponent } from "vue";
 import { reactive, ref, Ref } from "@vue/reactivity"; /* eslint-disable-line */
 import { useCore } from "@/hooks/useCore";
-import { AppEvent } from "ui-core/src/api/EventBusService";
+import { AppEvent } from "ui-core/src/services/EventBusService";
 
 // Message?
 type Notification = {
@@ -105,10 +105,10 @@ export default defineComponent({
   name: "Notifications",
   components: {},
   setup() {
-    const { api } = useCore();
+    const { services } = useCore();
     const notifications = reactive<Notification[]>([]);
 
-    api.EventBusService.onAny((event) => {
+    services.bus.onAny((event) => {
       const notification = parseEventToNotifications(event);
       if (notification !== null) notifications.unshift(notification);
     });
