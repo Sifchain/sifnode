@@ -742,7 +742,7 @@ metadata:
     end
   end
 
-  desc "Check pods have come up."
+  desc "Check statefulset pods have come up."
   namespace :kubernetes do
     desc "Check kubernetes stateful set to match replica count"
     task :stateful_set_status_check, [:APP_NAME, :APP_NAMESPACE, :REPLICA_COUNT] do |t, args|
