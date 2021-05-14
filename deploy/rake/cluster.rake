@@ -760,7 +760,7 @@ metadata:
                 end
             else
                 #:SEARCH_PATH "new transaction witnessed in sifchain client."
-                puts "Log Search Completed Container Running and Producing Valid Logs"
+                puts "Number of Specified Replicas available."
                 was_successful = true
                 break
             end
