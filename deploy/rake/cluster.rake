@@ -748,9 +748,15 @@ metadata:
     task :install_strimzi, [] do |t, args|
       puts "Deploy the Helm Files."
       install_strimzi = %Q{
-        helm repo add strimzi https://strimzi.io/charts/ --kubeconfig=./kubeconfig
-        helm repo update --kubeconfig=./kubeconfig
-        helm install strimzi-kafka strimzi/strimzi-kafka-operator --kubeconfig=./kubeconfig
+        check_strimz_installed=$(kubectl get pods --all-namespaces --kubeconfig=./kubeconfig | grep "strimzi-cluster-operator")
+        if [ -z "${check_strimz_installed}" ]; then
+                echo "Strimzi not installed install strimzi"
+                helm repo add strimzi https://strimzi.io/charts/ --kubeconfig=./kubeconfig
+                helm repo update --kubeconfig=./kubeconfig
+                helm install strimzi-kafka strimzi/strimzi-kafka-operator --kubeconfig=./kubeconfig
+        else
+            echo "Strimzi installed alread."
+        fi
       }
       system(install_strimzi) or exit 1
     end
