@@ -732,6 +732,20 @@ metadata:
     end
   end
 
+  desc "Deploy Kubernetes Manifest"
+  namespace :kubernetes do
+    desc "Deploy Helm Files"
+    task :manifest_deploy, [:app_namespace, :image, :image_tag, :env, :app_name] do |t, args|
+      puts "Deploy the Helm Files."
+      deoploy_helm = %Q{kubectl apply -f deploy/manifests/#{args[:app_name]}/deployment.yaml -n #{args[:app_namespace]} --kubeconfig=./kubeconfig}
+      system(deoploy_helm) or exit 1
+
+      puts "Use kubectl rollout to wait for pods to start."
+      check_kubernetes_rollout_status = %Q{kubectl rollout status --kubeconfig=./kubeconfig deployment/#{args[:app_name]} -n #{args[:app_namespace]}}
+      system(check_kubernetes_rollout_status) or exit 1
+    end
+  end
+
   desc "Check kubernetes pod for specific log entry to ensure valid deployment."
   namespace :kubernetes do
     desc "Check kubernetes pod for specific log entry to ensure valid deployment."
