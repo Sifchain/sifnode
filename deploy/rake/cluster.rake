@@ -1219,10 +1219,9 @@ EOF
             governance_request = %Q{
 make CHAINNET=sifchain IMAGE_TAG=keyring BINARY=sifnodecli build-image
 docker run -i sifchain/sifnodecli:keyring sh <<'EOF'
-    echo "#{args[:mnemonic]}"
-    sifnodecli keys list
-
     yes "#{args[:mnemonic]}" | sifnodecli keys add #{args[:moniker]} -i --recover --keyring-backend test
+    sifnodecli keys list --keyring-backend test
+
     #sifnodecli tx gov submit-proposal software-upgrade #{args[:release_version]} \
     #    --from #{args[:from]} \
     #    --deposit #{args[:deposit]} \
