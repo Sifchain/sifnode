@@ -26,6 +26,7 @@ func GetQueryCmd(queryRoute string, cdc *codec.Codec) *cobra.Command {
 		GetCmdDistributionRecordForDistNameAll(queryRoute, cdc),
 		GetCmdDistributionRecordForDistNamePending(queryRoute, cdc),
 		GetCmdDistributionRecordForDistNameCompleted(queryRoute, cdc),
+		GetCmdClaimsByType(queryRoute, cdc),
 	)...)
 	return dispensationQueryCmd
 }
@@ -158,6 +159,35 @@ func GetCmdDistributionRecordForDistNameCompleted(queryRoute string, cdc *codec.
 			var drs types.DistributionRecords
 			cdc.MustUnmarshalJSON(res, &drs)
 			out := types.NewDistributionRecordsResponse(drs, height)
+			return cliCtx.PrintOutput(out)
+		},
+	}
+}
+
+func GetCmdClaimsByType(queryRoute string, cdc *codec.Codec) *cobra.Command {
+	return &cobra.Command{
+		Use:   "claims-by-type [ClaimType]",
+		Short: "get a list of all claims for mentioned type",
+		Args:  cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			cliCtx := context.NewCLIContext().WithCodec(cdc)
+			claimType, ok := types.IsValidClaim(args[0])
+			if !ok {
+				return fmt.Errorf("invalid Claim Type %s: Types supported [LiquidityMining/ValidatorSubsidy]", args[0])
+			}
+			params := types.NewQueryUserClaims(claimType)
+			bz, err := cliCtx.Codec.MarshalJSON(params)
+			if err != nil {
+				return err
+			}
+			route := fmt.Sprintf("custom/%s/%s", queryRoute, types.QueryClaimsByType)
+			res, height, err := cliCtx.QueryWithData(route, bz)
+			if err != nil {
+				return err
+			}
+			var claims []types.UserClaim
+			cdc.MustUnmarshalJSON(res, &claims)
+			out := types.NewClaimsResponse(claims, height)
 			return cliCtx.PrintOutput(out)
 		},
 	}

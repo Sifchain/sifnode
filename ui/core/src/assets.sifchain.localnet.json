@@ -43,6 +43,14 @@
       "imageUrl": "https://assets.coingecko.com/coins/images/877/large/chainlink-new-logo.png",
       "name": "Chainlink",
       "network": "sifchain"
+    },
+    {
+      "symbol": "ctest",
+      "decimals": 6,
+      "imageUrl": "https://assets.coingecko.com/coins/images/7310/thumb/cypto.png?1547043960",
+      "name": "Test coin with small decimals",
+      "address": "0xBd2c738B9F6Bfc1A66368D08CB44dC3EB2aE27bE",
+      "network": "sifchain"
     }
   ]
 }

@@ -1,0 +1,8 @@
+Get the p2p address by running these commands:
+
+** PLEASE NOTE: It may take a few minutes for the Load Balancer IP to be available. **
+
+You can watch the status by running: 'kubectl get --namespace {{ .Release.Namespace }} svc -w {{ include "sifnode.fullname" . }}'
+
+export SERVICE_HOST=$(kubectl get svc --namespace {{ .Release.Namespace }} {{ include "sifnode.fullname" . }} --template "{{"{{ range (index .status.loadBalancer.ingress 0) }}{{.}}{{ end }}"}}")
+echo tcp://$SERVICE_HOST:26656

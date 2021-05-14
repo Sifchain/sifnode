@@ -9,6 +9,7 @@ export class MetaMask {
     await confirmWelcomeScreen(mmPage);
     await importAccount(mmPage, this.config);
     await addNetwork(mmPage, this.config);
+    await mmPage.close();
   }
 }
 
@@ -52,31 +53,16 @@ async function addNetwork(mmPage, config) {
 
 export async function connectMmAccount(page, browserContext, extensionId) {
   await page.click("[data-handle='button-connected']");
-  await page.click("button:has-text('Connect Metamask')");
-  const mmConnectPage = await getExtensionPage(browserContext, extensionId);
+  const [mmConnectPage] = await Promise.all([
+    browserContext.waitForEvent("page"),
+    page.click("button:has-text('Connect Metamask')"),
+  ]);
   await mmConnectPage.click(
     "#app-content > div > div.main-container-wrapper > div > div.permissions-connect-choose-account > div.permissions-connect-choose-account__footer-container > div.permissions-connect-choose-account__bottom-buttons > button.button.btn-primary",
   );
   await mmConnectPage.click(
     "#app-content > div > div.main-container-wrapper > div > div.page-container.permission-approval-container > div.permission-approval-container__footers > div.page-container__footer > footer > button.button.btn-primary.page-container__footer-button",
   );
-  await page.click("text=×");
-  return;
-}
-
-export async function confirmTransaction(
-  page,
-  browserContext,
-  amount,
-  extensionId,
-) {
-  // extension popup
-  const mmConnectPage = await getExtensionPage(browserContext, extensionId);
-  await mmConnectPage.click(
-    "#app-content > div > div.main-container-wrapper > div > div.confirm-page-container-content > div.page-container__footer > footer > button.button.btn-primary.page-container__footer-button",
-  );
-  // haven't yet figured out how to capture close popup event
-  await page.waitForTimeout(1000);
   await page.click("text=×");
   return;
 }

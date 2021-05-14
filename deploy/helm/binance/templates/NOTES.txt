@@ -1,0 +1,1 @@
+You can watch the status by running: 'kubectl get --namespace {{ .Release.Namespace }} svc -w {{ include "ebrelayer.fullname" . }}'

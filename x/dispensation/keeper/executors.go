@@ -9,11 +9,11 @@ import (
 
 //CreateAndDistributeDrops creates new drop Records . These records are then used to facilitate distribution
 // Each Recipient and DropName generate a unique Record
-func (k Keeper) CreateDrops(ctx sdk.Context, output []bank.Output, name string) error {
+func (k Keeper) CreateDrops(ctx sdk.Context, output []bank.Output, name string, distributionType types.DistributionType) error {
 	return errors.New("Dispensation module is disabled")
 }
 
-//DistributeDrops is called at the beginning of every block .
+// DistributeDrops is called at the beginning of every block .
 // It checks if any pending records are present , if there are it completes the top 10
 func (k Keeper) DistributeDrops(ctx sdk.Context, height int64) error {
 	return errors.New("Dispensation module is disabled")

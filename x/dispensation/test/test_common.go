@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"github.com/Sifchain/sifnode/simapp"
+	"github.com/Sifchain/sifnode/x/dispensation/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	"github.com/cosmos/cosmos-sdk/x/bank"
@@ -11,6 +12,7 @@ import (
 	abci "github.com/tendermint/tendermint/abci/types"
 	"github.com/tendermint/tendermint/crypto"
 	"strconv"
+	"time"
 )
 
 func CreateTestApp(isCheckTx bool) (*simapp.SimApp, sdk.Context) {
@@ -113,6 +115,16 @@ func CreatInputList(count int, rowanAmount string) []bank.Input {
 		address := sdk.AccAddress(crypto.AddressHash([]byte("Output1" + strconv.Itoa(i))))
 		out := bank.NewInput(address, coin)
 		list[i] = out
+	}
+	return list
+}
+
+func CreateClaimsList(count int, claimType types.DistributionType) []types.UserClaim {
+	list := make([]types.UserClaim, count)
+	for i := 0; i < count; i++ {
+		address := sdk.AccAddress(crypto.AddressHash([]byte("User" + strconv.Itoa(i))))
+		claim := types.NewUserClaim(address, claimType, time.Now())
+		list[i] = claim
 	}
 	return list
 }
