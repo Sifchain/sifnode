@@ -16,7 +16,7 @@
           /></span>
         </div>
         <div class="title">
-          <SubHeading>{{ title }}</SubHeading>
+          {{ title }}
         </div>
       </div>
       <slot></slot>
@@ -33,10 +33,8 @@ import { defineComponent } from "vue";
 import Panel from "@/components/shared/Panel.vue";
 import PanelNav from "@/components/shared/PanelNav/PanelNav.vue";
 import Icon from "@/components/shared/Icon.vue";
-import { SubHeading } from "@/components/shared/Text";
-
 export default defineComponent({
-  components: { Panel, PanelNav, Icon, SubHeading },
+  components: { Panel, PanelNav, Icon },
   props: {
     backLink: String,
     header: { type: Boolean, default: true },
@@ -94,8 +92,8 @@ export default defineComponent({
   cursor: pointer;
 }
 .title {
-  display: flex;
-  justify-content: center;
-  width: 100%;
+  @include title16;
+  flex-grow: 1;
+  text-align: center;
 }
 </style>

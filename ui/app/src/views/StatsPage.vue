@@ -1,6 +1,5 @@
 <script lang="ts">
 import { defineComponent } from "vue";
-import { useCore } from "@/hooks/useCore";
 import Layout from "@/components/layout/Layout.vue";
 import PoolStatsList from "@/components/poolStats/PoolStatsList.vue";
 import PoolStatsListHeader from "@/components/poolStats/PoolStatsListHeader.vue";

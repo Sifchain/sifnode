@@ -11,6 +11,5 @@
   text-align: left;
   font-weight: 700;
   color: #343434;
-  font-style: italic;
 }
 </style>
