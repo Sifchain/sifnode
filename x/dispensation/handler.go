@@ -15,6 +15,8 @@ func NewHandler(k Keeper) sdk.Handler {
 		switch msg := msg.(type) {
 		case MsgDistribution:
 			return handleMsgCreateDistribution(ctx, k, msg)
+		case MsgCreateClaim:
+			return handleMsgCreateClaim(ctx, k, msg)
 		default:
 			errMsg := fmt.Sprintf("unrecognized %s message type: %T", ModuleName, msg)
 			return nil, sdkerrors.Wrap(sdkerrors.ErrUnknownRequest, errMsg)

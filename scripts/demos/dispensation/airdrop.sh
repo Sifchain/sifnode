@@ -8,13 +8,13 @@
 # ar1 = name for airdrop , needs to be unique for every airdrop . If not the tx gets rejected
 # input.json list of funding addresses  -  Input address must be part of the multisig key
 # output.json list of airdrop receivers.
-sifnodecli tx dispensation create mkey ar1 Airdrop input.json output.json --gas 200064128 --generate-only >> offlinetx.json
+sifnodecli tx dispensation create mkey ar1 Airdrop input.json output.json --gas 200064128 --generate-only > offlinetx.json
 # First user signs
-sifnodecli tx sign --multisig $(sifnodecli keys show mkey -a) --from $(sifnodecli keys show sif -a)  offlinetx.json >> sig1.json
+sifnodecli tx sign --multisig $(sifnodecli keys show mkey -a) --from $(sifnodecli keys show sif -a)  offlinetx.json > sig1.json
 # Second user signs
-sifnodecli tx sign --multisig $(sifnodecli keys show mkey -a) --from $(sifnodecli keys show akasha -a)  offlinetx.json >> sig2.json
+sifnodecli tx sign --multisig $(sifnodecli keys show mkey -a) --from $(sifnodecli keys show akasha -a)  offlinetx.json > sig2.json
 # Multisign created from the above signatures
-sifnodecli tx multisign offlinetx.json mkey sig1.json sig2.json >> signedtx.json
+sifnodecli tx multisign offlinetx.json mkey sig1.json sig2.json > signedtx.json
 # transaction broadcast , distribution happens
 sifnodecli tx broadcast signedtx.json
 sleep 8
