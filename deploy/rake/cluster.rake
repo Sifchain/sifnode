@@ -735,14 +735,39 @@ metadata:
   desc "Deploy Kubernetes Manifest"
   namespace :kubernetes do
     desc "Deploy Helm Files"
-    task :manifest_deploy, [:app_namespace, :image, :image_tag, :env, :app_name, :deployment_type] do |t, args|
+    task :manifest_deploy, [:app_namespace, :image, :image_tag, :env, :app_name] do |t, args|
       puts "Deploy the Helm Files."
       deoploy_helm = %Q{kubectl apply -f deploy/manifests/#{args[:app_name]}/deployment.yaml -n #{args[:app_namespace]} --kubeconfig=./kubeconfig}
       system(deoploy_helm) or exit 1
-
       puts "Use kubectl rollout to wait for pods to start."
-      check_kubernetes_rollout_status = %Q{kubectl rollout status --kubeconfig=./kubeconfig #{args[:deployment_type]}/#{args[:app_name]} -n #{args[:app_namespace]}}
       system(check_kubernetes_rollout_status) or exit 1
+    end
+  end
+
+  desc "Check pods have come up."
+  namespace :kubernetes do
+    desc "Check kubernetes stateful set to match replica count"
+    task :stateful_set_status_check, [:APP_NAME, :APP_NAMESPACE, :REPLICA_COUNT] do |t, args|
+        was_successful = false
+        max_loops = 20
+        loop_count = 0
+        until was_successful == true
+            ss_check = `kubectl get statefulset -n #{args[:APP_NAMESPACE]} --kubeconfig=./kubeconfig | grep #{args[:APP_NAME]} | grep "#{args[:REPLICA_COUNT]}/#{args[:REPLICA_COUNT]}"`
+            if ss_check.empty?()
+                loop_count += 1
+                puts "On Loop #{loop_count} of #{max_loops}"
+                if loop_count >= max_loops
+                    puts "Reached Max Loops"
+                    break
+                end
+            else
+                #:SEARCH_PATH "new transaction witnessed in sifchain client."
+                puts "Log Search Completed Container Running and Producing Valid Logs"
+                was_successful = true
+                break
+            end
+            sleep(60)
+        end
     end
   end
 

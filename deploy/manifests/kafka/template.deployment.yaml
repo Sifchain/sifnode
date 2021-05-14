@@ -5,7 +5,7 @@ metadata:
 spec:
   kafka:
     version: 2.7.0
-    replicas: 3
+    replicas: -=replica_count=-
     listeners:
       - name: plain
         port: 9092
@@ -16,9 +16,9 @@ spec:
         type: internal
         tls: true
     config:
-      offsets.topic.replication.factor: 3
-      transaction.state.log.replication.factor: 3
-      transaction.state.log.min.isr: 2
+      offsets.topic.replication.factor: -=topic_replication_factor=-
+      transaction.state.log.replication.factor: -=transaction_state_log_replication=-
+      transaction.state.log.min.isr: -=transaction_state_log_min_isr=-
       log.message.format.version: "2.7"
       inter.broker.protocol.version: "2.7"
     storage:
@@ -30,7 +30,7 @@ spec:
         size: 100Gi
         deleteClaim: false
   zookeeper:
-    replicas: 3
+    replicas: -=replica_count=-
     storage:
       type: persistent-claim
       class: gp2
