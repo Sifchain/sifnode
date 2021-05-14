@@ -1,6 +1,6 @@
-import { ApiContext } from "../api";
+import { ServiceContext } from "../services";
 import { Asset, Network } from "../entities";
-import { getMetamaskProvider } from "../api/EthereumService/utils/getMetamaskProvider";
+import { getMetamaskProvider } from "../services/EthereumService/utils/getMetamaskProvider";
 
 type TokenConfig = {
   symbol: string;
@@ -96,7 +96,10 @@ export function parseAssets(configAssets: AssetConfig[]): Asset[] {
   return configAssets.map(parseAsset);
 }
 
-export function parseConfig(config: ChainConfig, assets: Asset[]): ApiContext {
+export function parseConfig(
+  config: ChainConfig,
+  assets: Asset[],
+): ServiceContext {
   const nativeAsset = assets.find((a) => a.symbol === config.nativeAsset);
 
   if (!nativeAsset)

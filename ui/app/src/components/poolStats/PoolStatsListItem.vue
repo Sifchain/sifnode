@@ -90,7 +90,9 @@ export default defineComponent({
         <span>${{ priceToken }}</span>
       </div>
       <div class="col-lg">
-        <span :class="arb < 0 ? 'buy' : 'sell'"> {{ format(arb) }}</span>
+        <span :class="arb < 0 ? 'buy' : 'sell'">
+          {{ format(Math.abs(arb)) }}</span
+        >
       </div>
       <div class="col-lg">
         <span>${{ poolDepth }}</span>

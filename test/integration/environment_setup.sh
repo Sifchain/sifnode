@@ -126,6 +126,6 @@ echo; echo == Simple test run against $DEPLOYMENT_NAME:
 echo python3 -m pytest --color=yes -x -olog_cli=true -olog_level=DEBUG -v -olog_file=vagrant/data/pytest.log -v src/py/test_eth_transfers.py
 
 echo; echo == Load test run against $DEPLOYMENT_NAME - change NTRANSFERS to a large number:
-echo NTRANSFERS=2 python3 -m pytest -olog_level=DEBUG -olog_file=vagrant/data/pytest.log -v src/py/test_bulk_transfers_to_ethereum.py::test_bulk_transfers_from_sifchain
+echo TOKENS=ceth,rowan NTRANSFERS=2 python3 -m pytest -olog_level=DEBUG -olog_file=vagrant/data/pytest.log -v src/py/test_bulk_transfers_to_ethereum.py::test_bulk_transfers_from_sifchain
 
 echo; echo
