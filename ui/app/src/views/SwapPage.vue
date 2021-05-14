@@ -33,7 +33,7 @@ export default defineComponent({
   },
 
   setup() {
-    const { actions, poolFinder, store } = useCore();
+    const { usecases, poolFinder, store } = useCore();
 
     const {
       fromSymbol,
@@ -113,7 +113,7 @@ export default defineComponent({
 
       transactionState.value = "signing";
 
-      const tx = await actions.clp.swap(
+      const tx = await usecases.clp.swap(
         fromFieldAmount.value,
         toFieldAmount.value.asset,
         minimumReceived.value,

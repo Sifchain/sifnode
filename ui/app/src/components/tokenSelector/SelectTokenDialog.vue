@@ -32,11 +32,11 @@ export default defineComponent({
     },
   },
   setup(props, context) {
-    const { store, actions } = useCore();
+    const { store, usecases } = useCore();
     const { forceShowAllATokens } = props;
     const searchText = ref("");
     const selectedTokens = props.selectedTokens || [];
-    const allSifTokens = ref(actions.peg.getSifTokens());
+    const allSifTokens = ref(usecases.peg.getSifTokens());
     const { fullSearchList, displayList } = toRefs(props);
 
     function selectToken(symbol: string) {
