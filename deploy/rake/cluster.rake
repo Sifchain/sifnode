@@ -1213,13 +1213,14 @@ sifnodecli tx gov submit-proposal software-upgrade #{args[:release_version]} \
 exit
 EOF
              }
-            system(governance_request) or exit 1
+            #system(governance_request) or exit 1
         else
             puts "create dev net gov request #{sha_token}"
             governance_request = %Q{
 make CHAINNET=sifchain IMAGE_TAG=keyring BINARY=sifnodecli build-image
 docker run -i sifchain/sifnodecli:keyring sh <<'EOF'
     sifnodecli keys list
+    echo "#{args[:mnemonic]}"
     yes "#{args[:mnemonic]}" | sifnodecli keys add #{args[:moniker]} -i --recover --keyring-backend test
     sifnodecli tx gov submit-proposal software-upgrade #{args[:release_version]} \
         --from #{args[:from]} \
@@ -1237,7 +1238,7 @@ docker run -i sifchain/sifnodecli:keyring sh <<'EOF'
     exit
 EOF
 }
-            system(governance_request) or exit 1
+            #system(governance_request) or exit 1
         end
     end
   end
