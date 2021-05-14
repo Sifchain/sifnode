@@ -30,14 +30,9 @@ package keeper_test
 //	assert.NoError(t, err)
 //	moduleBalance, _ := sdk.NewIntFromString("30000000000000000000")
 //	assert.True(t, keeper.GetBankKeeper().HasCoins(ctx, types.GetDistributionModuleAddress(), sdk.Coins{sdk.NewCoin("rowan", moduleBalance)}))
-//	distributionName := "ar1"
-//	err = keeper.CreateDrops(ctx, outputList, distributionName, types.Airdrop)
-//	assert.NoError(t, err)
 //
-//	err = keeper.DistributeDrops(ctx, 1)
+//	err = keeper.CreateDrops(ctx, outputList, "ar1")
 //	assert.NoError(t, err)
-//	completedRecords := keeper.GetRecordsForNameCompleted(ctx, distributionName)
-//	assert.Equal(t, 3, len(completedRecords))
 //}
 //
 //func TestKeeper_VerifyDistribution(t *testing.T) {
