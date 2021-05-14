@@ -6,6 +6,26 @@ spec:
   kafka:
     version: 2.7.0
     replicas: -=replica_count=-
+    logging:
+      type: inline
+      loggers:
+        kafka.root.logger.level: "INFO"
+    resources:
+      requests:
+        memory: 4Gi
+        cpu: "2"
+      limits:
+        memory: 6Gi
+        cpu: "4"
+    readinessProbe:
+      initialDelaySeconds: 25
+      timeoutSeconds: 5
+    livenessProbe:
+      initialDelaySeconds: 25
+      timeoutSeconds: 5
+    jvmOptions:
+      -Xms: 4096m
+      -Xmx: 4096m
     listeners:
       - name: plain
         port: 9092
@@ -31,6 +51,20 @@ spec:
         deleteClaim: false
   zookeeper:
     replicas: -=replica_count=-
+    logging:
+      type: inline
+      loggers:
+        zookeeper.root.logger: "INFO"
+    resources:
+      requests:
+        memory: 2Gi
+        cpu: "2"
+      limits:
+        memory: 3Gi
+        cpu: "2"
+    jvmOptions:
+      -Xms: 4096m
+      -Xmx: 4096m
     storage:
       type: persistent-claim
       class: gp2
