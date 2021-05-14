@@ -739,8 +739,6 @@ metadata:
       puts "Deploy the Helm Files."
       deoploy_helm = %Q{kubectl apply -f deploy/manifests/#{args[:app_name]}/deployment.yaml -n #{args[:app_namespace]} --kubeconfig=./kubeconfig}
       system(deoploy_helm) or exit 1
-      puts "Use kubectl rollout to wait for pods to start."
-      system(check_kubernetes_rollout_status) or exit 1
     end
   end
 
