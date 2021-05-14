@@ -735,13 +735,13 @@ metadata:
   desc "Deploy Kubernetes Manifest"
   namespace :kubernetes do
     desc "Deploy Helm Files"
-    task :manifest_deploy, [:app_namespace, :image, :image_tag, :env, :app_name] do |t, args|
+    task :manifest_deploy, [:app_namespace, :image, :image_tag, :env, :app_name, :deployment_type] do |t, args|
       puts "Deploy the Helm Files."
       deoploy_helm = %Q{kubectl apply -f deploy/manifests/#{args[:app_name]}/deployment.yaml -n #{args[:app_namespace]} --kubeconfig=./kubeconfig}
       system(deoploy_helm) or exit 1
 
       puts "Use kubectl rollout to wait for pods to start."
-      check_kubernetes_rollout_status = %Q{kubectl rollout status --kubeconfig=./kubeconfig deployment/#{args[:app_name]} -n #{args[:app_namespace]}}
+      check_kubernetes_rollout_status = %Q{kubectl rollout status --kubeconfig=./kubeconfig #{args[:deployment_type]}/#{args[:app_name]} -n #{args[:app_namespace]}}
       system(check_kubernetes_rollout_status) or exit 1
     end
   end
