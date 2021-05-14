@@ -1,3 +1,11 @@
+# v0.8.4
+> May 13, 2021
+
+## 🐛 Bug Fixes
+
+- [Sifnode] Fixes to the dispensation module (used for airdrops).
+
+----
 
 # v0.8.2
 > April 29, 2021

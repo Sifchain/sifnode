@@ -1,6 +1,6 @@
 import { computed, Ref } from "@vue/reactivity";
-import { IAssetAmount, IPool } from "../entities";
-import { format } from "../utils/format";
+import { IAssetAmount, IPool } from "../../../entities";
+import { format } from "../../../utils/format";
 
 export function assetPriceMessage(
   amount: IAssetAmount | null,

@@ -1,6 +1,6 @@
 import { Ref, ref } from "@vue/reactivity";
-import { AssetAmount, IAssetAmount, Network, Pool } from "../entities";
-import { getTestingTokens } from "../test/utils/getTestingToken";
+import { AssetAmount, IAssetAmount, Network, Pool } from "../../../entities";
+import { getTestingTokens } from "../../../test/utils/getTestingToken";
 import { SwapState, useSwapCalculator } from "./swapCalculator";
 
 const [ATK, BTK, ROWAN, ETH] = getTestingTokens(["ATK", "BTK", "ROWAN", "ETH"]);

@@ -10,13 +10,13 @@ import createDispensationService, {
   IDispensationServiceContext,
 } from "./DispensationService";
 
-export type Api = ReturnType<typeof createApi>;
+export type Services = ReturnType<typeof createServices>;
 
-export type WithApi<T extends keyof Api = keyof Api> = {
-  api: Pick<Api, T>;
+export type WithService<T extends keyof Services = keyof Services> = {
+  services: Pick<Services, T>;
 };
 
-export type ApiContext = EthereumServiceContext &
+export type ServiceContext = EthereumServiceContext &
   SifServiceContext &
   ClpServiceContext &
   EthbridgeServiceContext &
@@ -24,7 +24,7 @@ export type ApiContext = EthereumServiceContext &
   EventBusServiceContext &
   IDispensationServiceContext; // add contexts from other APIs
 
-export function createApi(context: ApiContext) {
+export function createServices(context: ServiceContext) {
   const EthereumService = ethereumService(context);
   const EthbridgeService = ethbridgeService(context);
   const SifService = sifService(context);
@@ -33,11 +33,11 @@ export function createApi(context: ApiContext) {
   const DispensationService = createDispensationService(context);
 
   return {
-    ClpService,
-    EthereumService,
-    SifService,
-    EthbridgeService,
-    EventBusService,
-    DispensationService,
+    clp: ClpService,
+    eth: EthereumService,
+    sif: SifService,
+    ethbridge: EthbridgeService,
+    bus: EventBusService,
+    dispensation: DispensationService,
   };
 }

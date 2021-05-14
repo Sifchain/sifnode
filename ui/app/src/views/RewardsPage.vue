@@ -256,7 +256,8 @@ export default defineComponent({
                           Rewards that have been claimed and are pending
                           dispensation due to removal of liquidity or
                           user-initiated claims. Pending rewards are dispensed
-                          every Friday
+                          every Friday once we have the dispensation module up
+                          and running.
                         </div>
                       </template>
                       <Icon icon="info-box-black" />
@@ -322,9 +323,11 @@ export default defineComponent({
                           This is your estimated projected full reward amount
                           that you can earn if you were to leave your current
                           liquidity positions in place to the above mentioned
-                          date. This number can fluctuate due to other market
-                          conditions and this number is a representation of the
-                          current market as it is in this very moment.
+                          date. This includes projected future rewards, and
+                          already claimed/disbursed previous rewards. This
+                          number can fluctuate due to other market conditions
+                          and this number is a representation of the current
+                          market as it is in this very moment.
                         </div>
                       </template>
                       <Icon icon="info-box-black" />
