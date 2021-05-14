@@ -1221,7 +1221,10 @@ make CHAINNET=sifchain IMAGE_TAG=keyring BINARY=sifnodecli build-image
 docker run -i sifchain/sifnodecli:keyring sh <<'EOF'
     yes "#{args[:mnemonic]}" | sifnodecli keys add #{args[:moniker]} -i --recover --keyring-backend test
     sifnodecli keys list --keyring-backend test
-
+    echo "moniker #{args[:moniker]}"
+    echo "from #{args[:from]}"
+    echo "chainnet #{args[:chainnet]}"
+    echo "rowan #{args[:rowan]}"
     #sifnodecli tx gov submit-proposal software-upgrade #{args[:release_version]} \
     #    --from #{args[:from]} \
     #    --deposit #{args[:deposit]} \
