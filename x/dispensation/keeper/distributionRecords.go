@@ -14,15 +14,15 @@ func (k Keeper) SetDistributionRecord(ctx sdk.Context, dr types.DistributionReco
 		return errors.Wrapf(types.ErrInvalid, "unable to set record : %s", dr.String())
 	}
 	store := ctx.KVStore(k.storeKey)
-	key := types.GetDistributionRecordKey(dr.DistributionName, dr.RecipientAddress)
+	key := types.GetDistributionRecordKey(dr.DistributionStatus, dr.DistributionName, dr.RecipientAddress)
 	store.Set(key, k.cdc.MustMarshalBinaryBare(&dr))
 	return nil
 }
 
-func (k Keeper) GetDistributionRecord(ctx sdk.Context, airdropName string, recipientAddress string) (*types.DistributionRecord, error) {
+func (k Keeper) GetDistributionRecord(ctx sdk.Context, airdropName string, recipientAddress string, status types.DistributionStatus) (*types.DistributionRecord, error) {
 	var dr types.DistributionRecord
 	store := ctx.KVStore(k.storeKey)
-	key := types.GetDistributionRecordKey(airdropName, recipientAddress)
+	key := types.GetDistributionRecordKey(status, airdropName, recipientAddress)
 	if !k.Exists(ctx, key) {
 		return &dr, errors.Wrapf(types.ErrInvalid, "record Does not exist : %s", dr.String())
 	}
@@ -31,23 +31,46 @@ func (k Keeper) GetDistributionRecord(ctx sdk.Context, airdropName string, recip
 	return &dr, nil
 }
 
-func (k Keeper) ExistsDistributionRecord(ctx sdk.Context, airdropName string, recipientAddress string) bool {
-	key := types.GetDistributionRecordKey(airdropName, recipientAddress)
+func (k Keeper) ExistsDistributionRecord(ctx sdk.Context, airdropName string, recipientAddress string, status types.DistributionStatus) bool {
+	key := types.GetDistributionRecordKey(status, airdropName, recipientAddress)
 	if k.Exists(ctx, key) {
 		return true
 	}
 	return false
 }
 
-func (k Keeper) GetDistributionRecordsIterator(ctx sdk.Context) sdk.Iterator {
+func (k Keeper) GetDistributionRecordsIterator(ctx sdk.Context, status types.DistributionStatus) sdk.Iterator {
 	store := ctx.KVStore(k.storeKey)
-	return sdk.KVStorePrefixIterator(store, types.DistributionRecordPrefix)
+	switch status {
+	case types.DistributionStatus_DISTRIBUTION_STATUS_PENDING:
+		return sdk.KVStorePrefixIterator(store, types.DistributionRecordPrefixPending)
+	case types.DistributionStatus_DISTRIBUTION_STATUS_COMPLETED:
+		return sdk.KVStorePrefixIterator(store, types.DistributionRecordPrefixCompleted)
+	default:
+		return nil
+	}
 }
 
-func (k Keeper) GetRecordsForNameAll(ctx sdk.Context, name string) types.DistributionRecords {
+func (k Keeper) DeleteDistributionRecord(ctx sdk.Context, distributionName string, recipientAddress string, status types.DistributionStatus) error {
+	var dr types.DistributionRecord
+	store := ctx.KVStore(k.storeKey)
+	key := types.GetDistributionRecordKey(status, distributionName, recipientAddress)
+	if !k.Exists(ctx, key) {
+		return errors.Wrapf(types.ErrInvalid, "record Does not exist : %s", dr.String())
+	}
+	store.Delete(key)
+	return nil
+}
+
+func (k Keeper) GetRecordsForName(ctx sdk.Context, name string, status types.DistributionStatus) types.DistributionRecords {
 	var res types.DistributionRecords
-	iterator := k.GetDistributionRecordsIterator(ctx)
-	defer iterator.Close()
+	iterator := k.GetDistributionRecordsIterator(ctx, status)
+	defer func(iterator sdk.Iterator) {
+		err := iterator.Close()
+		if err != nil {
+			panic("Failed to close iterator")
+		}
+	}(iterator)
 	for ; iterator.Valid(); iterator.Next() {
 		var dr types.DistributionRecord
 		bytesValue := iterator.Value()
@@ -59,69 +82,85 @@ func (k Keeper) GetRecordsForNameAll(ctx sdk.Context, name string) types.Distrib
 	return res
 }
 
-func (k Keeper) GetRecordsForNamePending(ctx sdk.Context, name string) types.DistributionRecords {
+func (k Keeper) GetRecordsForRecipient(ctx sdk.Context, recipient string) types.DistributionRecords {
 	var res types.DistributionRecords
-	iterator := k.GetDistributionRecordsIterator(ctx)
-	defer iterator.Close()
+	iterator := k.GetDistributionRecordsIterator(ctx, types.DistributionStatus_DISTRIBUTION_STATUS_PENDING)
+	defer func(iterator sdk.Iterator) {
+		err := iterator.Close()
+		if err != nil {
+			panic("Failed to close iterator")
+		}
+	}(iterator)
 	for ; iterator.Valid(); iterator.Next() {
 		var dr types.DistributionRecord
 		bytesValue := iterator.Value()
 		k.cdc.MustUnmarshalBinaryBare(bytesValue, &dr)
-		if dr.DistributionName == name && dr.ClaimStatus == types.ClaimStatus_CLAIM_STATUS_PENDING {
+		if dr.RecipientAddress == recipient {
+			res.DistributionRecords = append(res.DistributionRecords, &dr)
+		}
+	}
+	iterator = k.GetDistributionRecordsIterator(ctx, types.DistributionStatus_DISTRIBUTION_STATUS_COMPLETED)
+	defer func(iterator sdk.Iterator) {
+		err := iterator.Close()
+		if err != nil {
+			panic("Failed to close iterator")
+		}
+	}(iterator)
+	for ; iterator.Valid(); iterator.Next() {
+		var dr types.DistributionRecord
+		bytesValue := iterator.Value()
+		k.cdc.MustUnmarshalBinaryBare(bytesValue, &dr)
+		if dr.RecipientAddress == recipient {
 			res.DistributionRecords = append(res.DistributionRecords, &dr)
 		}
 	}
 	return res
 }
 
-func (k Keeper) GetRecordsForNameCompleted(ctx sdk.Context, name string) types.DistributionRecords {
+func (k Keeper) GetRecordsLimited(ctx sdk.Context, status types.DistributionStatus) types.DistributionRecords {
 	var res types.DistributionRecords
-	iterator := k.GetDistributionRecordsIterator(ctx)
-	defer iterator.Close()
-	for ; iterator.Valid(); iterator.Next() {
-		var dr types.DistributionRecord
-		bytesValue := iterator.Value()
-		k.cdc.MustUnmarshalBinaryBare(bytesValue, &dr)
-		if dr.DistributionName == name && dr.ClaimStatus == types.ClaimStatus_CLAIM_STATUS_COMPLETED {
-			res.DistributionRecords = append(res.DistributionRecords, &dr)
-		}
-	}
-	return res
-}
-
-func (k Keeper) GetRecordsForRecipient(ctx sdk.Context, recipient sdk.AccAddress) *types.DistributionRecords {
-	var res types.DistributionRecords
-	iterator := k.GetDistributionRecordsIterator(ctx)
-	defer iterator.Close()
-	for ; iterator.Valid(); iterator.Next() {
-		var dr types.DistributionRecord
-		bytesValue := iterator.Value()
-		k.cdc.MustUnmarshalBinaryBare(bytesValue, &dr)
-		if dr.RecipientAddress == recipient.String() {
-			res.DistributionRecords = append(res.DistributionRecords, &dr)
-		}
-	}
-	return &res
-}
-
-func (k Keeper) GetPendingRecordsLimited(ctx sdk.Context, limit int) types.DistributionRecords {
-	var res types.DistributionRecords
-	iterator := k.GetDistributionRecordsIterator(ctx)
+	iterator := k.GetDistributionRecordsIterator(ctx, status)
 	count := 0
-	defer iterator.Close()
-	// Todo : Change the set completed from BlockBeginner to move the records to a different prefix (Or Prune it ? ).So that we can avoid extra iterations.
-	// Todo : Extra iteration might be a major issue later .
+	defer func(iterator sdk.Iterator) {
+		err := iterator.Close()
+		if err != nil {
+			panic("Failed to close iterator")
+		}
+	}(iterator)
 	for ; iterator.Valid(); iterator.Next() {
 		var dr types.DistributionRecord
 		bytesValue := iterator.Value()
 		k.cdc.MustUnmarshalBinaryBare(bytesValue, &dr)
-		if dr.ClaimStatus == types.ClaimStatus_CLAIM_STATUS_PENDING {
-			res.DistributionRecords = append(res.DistributionRecords, &dr)
-			count++
-		}
-		if count == limit {
+		res.DistributionRecords = append(res.DistributionRecords, &dr)
+		count++
+		if count == types.MaxRecordsPerBlock {
 			break
 		}
 	}
 	return res
+}
+
+func (k Keeper) GetRecords(ctx sdk.Context) *types.DistributionRecords {
+	var res types.DistributionRecords
+	iterator := k.GetDistributionRecordsIterator(ctx, types.DistributionStatus_DISTRIBUTION_STATUS_PENDING)
+	defer func(iterator sdk.Iterator) {
+		err := iterator.Close()
+		if err != nil {
+			panic("Failed to close iterator")
+		}
+	}(iterator)
+	for ; iterator.Valid(); iterator.Next() {
+		var dr types.DistributionRecord
+		bytesValue := iterator.Value()
+		k.cdc.MustUnmarshalBinaryBare(bytesValue, &dr)
+		res.DistributionRecords = append(res.DistributionRecords, &dr)
+	}
+	iterator = k.GetDistributionRecordsIterator(ctx, types.DistributionStatus_DISTRIBUTION_STATUS_COMPLETED)
+	for ; iterator.Valid(); iterator.Next() {
+		var dr types.DistributionRecord
+		bytesValue := iterator.Value()
+		k.cdc.MustUnmarshalBinaryBare(bytesValue, &dr)
+		res.DistributionRecords = append(res.DistributionRecords, &dr)
+	}
+	return &res
 }

@@ -1,11 +1,11 @@
 package test
 
 import (
-	"bytes"
-	"fmt"
 	"strconv"
+	"time"
 
 	sifapp "github.com/Sifchain/sifnode/app"
+	dispensation "github.com/Sifchain/sifnode/x/dispensation/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	"github.com/cosmos/cosmos-sdk/x/bank/types"
@@ -23,73 +23,6 @@ func CreateTestApp(isCheckTx bool) (*sifapp.SifchainApp, sdk.Context) {
 	return app, ctx
 }
 
-func GenerateInputList(rowanamount string) []types.Input {
-	addressList := []string{"A58856F0FD53BF058B4909A21AEC019107BA6", "A58856F0FD53BF058B4909A21AEC019107BA7"}
-	accAddrList := GenerateAddressList(addressList)
-	rowan, ok := sdk.NewIntFromString(rowanamount)
-	if !ok {
-		panic(fmt.Sprintf("Err in getting amount : %s", rowanamount))
-	}
-	rowanAmount := sdk.Coins{sdk.NewCoin("rowan", rowan)}
-	res := make([]types.Input, len(accAddrList))
-	for _, address := range accAddrList {
-		in := types.NewInput(address, rowanAmount)
-		res = append(res, in)
-	}
-	return res
-}
-
-func GenerateOutputList(rowanamount string) []types.Output {
-	addressList := []string{"A58856F0FD53BF058B4909A21AEC019107BA3", "A58856F0FD53BF058B4909A21AEC019107BA4", "A58856F0FD53BF058B4909A21AEC019107BA5"}
-	accAddrList := GenerateAddressList(addressList)
-
-	rowan, ok := sdk.NewIntFromString(rowanamount)
-	if !ok {
-		panic(fmt.Sprintf("Err in getting amount : %s", rowanamount))
-	}
-
-	rowanAmount := sdk.Coins{sdk.NewCoin("rowan", rowan)}
-	res := make([]types.Output, len(accAddrList))
-
-	for index, address := range accAddrList {
-		out := types.NewOutput(address, rowanAmount)
-		res[index] = out
-	}
-	return res
-}
-
-func GenerateAddressList(addressList []string) []sdk.AccAddress {
-	acclist := make([]sdk.AccAddress, len(addressList))
-	for index, key := range addressList {
-		var buffer bytes.Buffer
-		buffer.WriteString(key)
-		buffer.WriteString(strconv.Itoa(100))
-		res, _ := sdk.AccAddressFromHex(buffer.String())
-		bech := res.String()
-		addr := buffer.String()
-		res, err := sdk.AccAddressFromHex(addr)
-
-		if err != nil {
-			panic(err)
-		}
-
-		bechexpected := res.String()
-		if bech != bechexpected {
-			panic("Bech encoding doesn't match reference")
-		}
-
-		bechres, err := sdk.AccAddressFromBech32(bech)
-		if err != nil {
-			panic(err)
-		}
-		if !bytes.Equal(bechres, res) {
-			panic("Bech decode and hex decode don't match")
-		}
-		acclist[index] = res
-	}
-	return acclist
-}
-
 func CreatOutputList(count int, rowanAmount string) []types.Output {
 	outputList := make([]types.Output, count)
 	amount, ok := sdk.NewIntFromString(rowanAmount)
@@ -105,7 +38,7 @@ func CreatOutputList(count int, rowanAmount string) []types.Output {
 	return outputList
 }
 
-func CreatInputList(count int, rowanAmount string) []types.Input {
+func CreateInputList(count int, rowanAmount string) []types.Input {
 	list := make([]types.Input, count)
 	amount, ok := sdk.NewIntFromString(rowanAmount)
 	if !ok {
@@ -116,6 +49,16 @@ func CreatInputList(count int, rowanAmount string) []types.Input {
 		address := sdk.AccAddress(crypto.AddressHash([]byte("Output1" + strconv.Itoa(i))))
 		out := types.NewInput(address, coin)
 		list[i] = out
+	}
+	return list
+}
+
+func CreateClaimsList(count int, claimType dispensation.DistributionType) []dispensation.UserClaim {
+	list := make([]dispensation.UserClaim, count)
+	for i := 0; i < count; i++ {
+		address := sdk.AccAddress(crypto.AddressHash([]byte("User" + strconv.Itoa(i))))
+		claim := dispensation.NewUserClaim(address.String(), claimType, time.Now().String())
+		list[i] = claim
 	}
 	return list
 }

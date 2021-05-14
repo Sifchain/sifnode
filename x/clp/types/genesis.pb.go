@@ -24,7 +24,8 @@ var _ = math.Inf
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
 // GenesisState - all clp state that must be provided at genesis
-//TODO: Add parameters to Genesis state ,such as minimum liquidity required to create a pool
+// TODO: Add parameters to Genesis state ,such as minimum liquidity required to
+// create a pool
 type GenesisState struct {
 	Params             Params               `protobuf:"bytes,1,opt,name=params,proto3" json:"params"`
 	AddressWhitelist   []string             `protobuf:"bytes,2,rep,name=address_whitelist,json=addressWhitelist,proto3" json:"address_whitelist,omitempty"`

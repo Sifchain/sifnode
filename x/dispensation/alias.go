@@ -15,7 +15,6 @@ const (
 
 var (
 	NewKeeper           = keeper.NewKeeper
-	NewQuerier          = keeper.NewQuerier
 	RegisterCodec       = types.RegisterLegacyAminoCodec
 	DefaultGenesisState = types.DefaultGenesisState
 )
@@ -23,5 +22,4 @@ var (
 type (
 	Keeper          = keeper.Keeper
 	GenesisState    = types.GenesisState
-	MsgDistribution = types.MsgDistribution
 )
