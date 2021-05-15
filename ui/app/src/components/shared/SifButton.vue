@@ -111,20 +111,20 @@ export default defineComponent({
 .btn {
   @include resetButton;
   position: relative;
-  display: inline-flex;
+  display: flex;
   height: 30px;
   padding: 0 18px;
   align-items: center;
   overflow: hidden;
   font: inherit;
-  text-transform: uppercase;
-  font-size: $fs_md;
+  font-size: $fs;
   // line-height: $lh_btn;
-  letter-spacing: 1px;
+  letter-spacing: 0px;
   border-radius: $br_sm;
   transform: perspective(1px) translateZ(0);
   cursor: pointer;
   box-sizing: border-box;
+  justify-content: center;
 
   &.nocase {
     text-transform: none;
@@ -152,7 +152,8 @@ export default defineComponent({
   &.primary {
     color: white;
     background: $c_gold;
-
+    font-weight: initial;
+    font-style: normal;
     &::before {
       content: "";
       display: block;
@@ -243,6 +244,7 @@ export default defineComponent({
     &.primary {
       color: $c_gold;
       border: 2px solid $c_gold;
+
       &:hover {
         background: transparent;
         border: 2px solid $c_gray_400;

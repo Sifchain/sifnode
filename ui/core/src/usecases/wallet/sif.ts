@@ -1,45 +1,42 @@
-import { Address, TxParams } from "../entities";
+import { Address, TxParams } from "../../entities";
 import { validateMnemonic } from "bip39";
-import { Mnemonic } from "../entities/Wallet";
-import { ActionContext } from ".";
+import { Mnemonic } from "../../entities/Wallet";
+import { UsecaseContext } from "..";
 import { effect } from "@vue/reactivity";
 
 export default ({
-  api,
+  services,
   store,
-}: ActionContext<
-  "SifService" | "ClpService" | "EventBusService",
-  "wallet"
->) => {
-  const state = api.SifService.getState();
+}: UsecaseContext<"sif" | "clp" | "bus", "wallet">) => {
+  const state = services.sif.getState();
 
   const actions = {
     async getCosmosBalances(address: Address) {
       // TODO: validate sif prefix
-      return await api.SifService.getBalance(address);
+      return await services.sif.getBalance(address);
     },
 
     async connect(mnemonic: Mnemonic): Promise<string> {
       if (!mnemonic) throw "Mnemonic must be defined";
       if (!validateMnemonic(mnemonic)) throw "Invalid Mnemonic. Not sent.";
-      return await api.SifService.setPhrase(mnemonic);
+      return await services.sif.setPhrase(mnemonic);
     },
 
     async sendCosmosTransaction(params: TxParams) {
-      return await api.SifService.transfer(params);
+      return await services.sif.transfer(params);
     },
 
     async disconnect() {
-      api.SifService.purgeClient();
+      services.sif.purgeClient();
     },
 
     async connectToWallet() {
       try {
         // TODO type
-        await api.SifService.connect();
+        await services.sif.connect();
         store.wallet.sif.isConnected = true;
       } catch (error) {
-        api.EventBusService.dispatch({
+        services.bus.dispatch({
           type: "WalletConnectionErrorEvent",
           payload: {
             walletType: "sif",
@@ -54,7 +51,7 @@ export default ({
     if (store.wallet.sif.isConnected !== state.connected) {
       store.wallet.sif.isConnected = state.connected;
       if (store.wallet.sif.isConnected) {
-        api.EventBusService.dispatch({
+        services.bus.dispatch({
           type: "WalletConnectedEvent",
           payload: {
             walletType: "sif",

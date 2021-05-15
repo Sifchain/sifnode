@@ -1,6 +1,6 @@
 package dispensation_test
 
-//func TestNewHandler_CreateDistribution(t *testing.T) {
+//func TestNewHandler(t *testing.T) {
 //	app, ctx := test.CreateTestApp(false)
 //	keeper := app.DispensationKeeper
 //	handler := dispensation.NewHandler(keeper)
@@ -20,20 +20,4 @@ package dispensation_test
 //
 //	dr := keeper.GetRecordsForNameAll(ctx, "AR1")
 //	assert.Len(t, dr, recipients)
-//}
-
-//func TestNewHandler_CreateClaim(t *testing.T) {
-//	app, ctx := test.CreateTestApp(false)
-//	keeper := app.DispensationKeeper
-//	handler := dispensation.NewHandler(keeper)
-//	address := sdk.AccAddress(crypto.AddressHash([]byte("User1")))
-//	msgClaim := types.NewMsgCreateClaim(address, types.ValidatorSubsidy)
-//	res, err := handler(ctx, msgClaim)
-//	require.NoError(t, err)
-//	require.NotNil(t, res)
-//
-//	cl, err := keeper.GetClaim(ctx, address.String(), types.ValidatorSubsidy)
-//	require.NoError(t, err)
-//	assert.False(t, cl.Locked)
-//	assert.Equal(t, cl.UserAddress.String(), address.String())
 //}
