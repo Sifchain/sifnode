@@ -145,7 +145,8 @@ export default ({
           type: "TransactionErrorEvent",
           payload: {
             txStatus,
-            message: txStatus.memo || "There was an error with your swap",
+            message:
+              txStatus.memo || "There was an error with your adding liquidity",
           },
         });
       }

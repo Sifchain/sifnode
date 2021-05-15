@@ -118,6 +118,9 @@ export default defineComponent({
         toFieldAmount.value.asset,
         minimumReceived.value,
       );
+
+      // We need to build the confirmation panel from the object that is returned here.
+
       transactionHash.value = tx.hash;
       transactionState.value = toConfirmState(tx.state); // TODO: align states
       clearAmounts();
