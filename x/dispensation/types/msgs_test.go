@@ -30,7 +30,7 @@ func TestMsgCreateClaim_ValidateBasic_LessAddressesInInputList(t *testing.T) {
 	}
 	inputList := []bank.Input{input1, input2}
 	msg := types.MsgDistribution{
-		Signer:           mkey,
+		Distributor:      mkey,
 		DistributionName: "testName",
 		DistributionType: types.Airdrop,
 		Input:            inputList,
@@ -62,7 +62,7 @@ func TestMsgCreateClaim_ValidateBasic_MoreAddressesInInputList(t *testing.T) {
 	}
 	inputList := []bank.Input{input1, input2, input3}
 	msg := types.MsgDistribution{
-		Signer:           mkey,
+		Distributor:      mkey,
 		DistributionName: "testName",
 		DistributionType: types.Airdrop,
 		Input:            inputList,
@@ -91,7 +91,7 @@ func TestMsgCreateClaim_ValidateBasic_AddressMismatch(t *testing.T) {
 	}
 	inputList := []bank.Input{input1, input2}
 	msg := types.MsgDistribution{
-		Signer:           mkey,
+		Distributor:      mkey,
 		DistributionName: "testName",
 		DistributionType: types.Airdrop,
 		Input:            inputList,
@@ -118,7 +118,7 @@ func TestMsgCreateClaim_ValidateBasic(t *testing.T) {
 	}
 	inputList := []bank.Input{input1, input2}
 	msg := types.MsgDistribution{
-		Signer:           mkey,
+		Distributor:      mkey,
 		DistributionName: "testName",
 		DistributionType: types.Airdrop,
 		Input:            inputList,
@@ -148,7 +148,7 @@ func TestMsgDistribution_TestMultiSig(t *testing.T) {
 		PubKeys: pubkeys,
 	}
 	msg := types.MsgDistribution{
-		Signer:           mkey,
+		Distributor:      mkey,
 		DistributionName: "testName",
 		DistributionType: types.Airdrop,
 		Input:            inputList,

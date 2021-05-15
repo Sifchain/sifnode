@@ -17,7 +17,7 @@ var (
 // Basic message type to create a new distribution
 // TODO modify this struct to keep adding more fields to identify different types of distributions
 type MsgDistribution struct {
-	Signer           multisig.PubKeyMultisigThreshold `json:"Signer"`
+	Distributor      multisig.PubKeyMultisigThreshold `json:"distributor"`
 	DistributionName string                           `json:"distribution_name"`
 	DistributionType DistributionType                 `json:"distribution_type"`
 	Input            []bank.Input                     `json:"Input"`
@@ -25,7 +25,7 @@ type MsgDistribution struct {
 }
 
 func NewMsgDistribution(signer multisig.PubKeyMultisigThreshold, DistributionName string, DistributionType DistributionType, input []bank.Input, output []bank.Output) MsgDistribution {
-	return MsgDistribution{Signer: signer, DistributionName: DistributionName, DistributionType: DistributionType, Input: input, Output: output}
+	return MsgDistribution{Distributor: signer, DistributionName: DistributionName, DistributionType: DistributionType, Input: input, Output: output}
 }
 
 func (m MsgDistribution) Route() string {
@@ -45,7 +45,7 @@ func (m MsgDistribution) ValidateBasic() error {
 	if err != nil {
 		return err
 	}
-	err = VerifyInputList(m.Input, m.Signer.PubKeys)
+	err = VerifyInputList(m.Input, m.Distributor.PubKeys)
 	if err != nil {
 		return err
 	}
@@ -57,7 +57,7 @@ func (m MsgDistribution) GetSignBytes() []byte {
 }
 
 func (m MsgDistribution) GetSigners() []sdk.AccAddress {
-	return []sdk.AccAddress{sdk.AccAddress(m.Signer.Address())}
+	return []sdk.AccAddress{sdk.AccAddress(m.Distributor.Address())}
 }
 
 // Create a user claim
@@ -93,9 +93,10 @@ func (m MsgCreateClaim) GetSigners() []sdk.AccAddress {
 	return []sdk.AccAddress{m.Signer}
 }
 
-// more comments required
-// Possible refactor : https://github.com/deckarep/golang-set
+//more comments required
+//Possible refactor : https://github.com/deckarep/golang-set
 func VerifyInputList(inputList []bank.Input, pubKeys []crypto.PubKey) error {
+
 	addressCount := len(pubKeys)
 	for _, i := range inputList {
 		addressFound := false
