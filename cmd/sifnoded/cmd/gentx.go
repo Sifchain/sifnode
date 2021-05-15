@@ -8,7 +8,6 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
-	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/server"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/genutil"
@@ -34,8 +33,6 @@ the account address or key name. If a key name is given, the address will be loo
 
 			serverCtx := server.GetServerContextFromCmd(cmd)
 			config := serverCtx.Config
-			depCdc := clientCtx.JSONMarshaler
-			cdc := depCdc.(codec.Marshaler)
 			config.SetRoot(clientCtx.HomeDir)
 
 			addr, err := sdk.ValAddressFromBech32(args[0])

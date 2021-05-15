@@ -99,8 +99,8 @@ type CLP struct {
 }
 
 type Dispensation struct {
-	AddressWhitelist []interface{} `json:"address_whitelist"`
-	AdminAddress     string        `json:"admin_address"`
+	DistributionRecords interface{} `json:"distribution_records"`
+	Distributions     interface{}        `json:"distributions"`
 }
 
 type DistributionParams struct {
