@@ -1220,8 +1220,10 @@ EOF
 make CHAINNET=sifchain IMAGE_TAG=keyring BINARY=sifnodecli build-image
 docker run -i sifchain/sifnodecli:keyring sh <<'EOF'
 
-    printf "#{args[:mnemonic]}\r\r"| sifnodecli keys add #{args[:moniker]} -i --recover --keyring-backend test
-    sifnodecli keys list --keyring-backend test
+sifnodecli keys add #{args[:moniker]} -i --recover --keyring-backend test <<'EOF'
+#{args[:mnemonic]}
+\r
+EOF
 
     echo "moniker #{args[:moniker]}"
     echo "from #{args[:from]}"
