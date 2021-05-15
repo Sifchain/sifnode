@@ -127,3 +127,44 @@ func TestMsgCreateClaim_ValidateBasic(t *testing.T) {
 	err := msg.ValidateBasic()
 	assert.NoError(t, err)
 }
+
+func TestMsgDistribution_TestMultiSig(t *testing.T) {
+	n := 2
+	inputCoin := sdk.Coins{sdk.NewCoin("rowan", sdk.NewInt(1000))}
+	privkeys := make([]crypto.PrivKey, n)
+	pubkeys := make([]crypto.PubKey, n)
+	inputList := make([]bank.Input, n)
+	signatures := make([][]byte, n)
+	for i := 0; i < n; i++ {
+		privkeys[i] = ed25519.GenPrivKey()
+		pubkeys[i] = privkeys[i].PubKey()
+		inputList[i] = bank.Input{
+			Address: sdk.AccAddress(pubkeys[i].Address()),
+			Coins:   inputCoin,
+		}
+	}
+	mkey := multisig.PubKeyMultisigThreshold{
+		K:       uint(n),
+		PubKeys: pubkeys,
+	}
+	msg := types.MsgDistribution{
+		Signer:           mkey,
+		DistributionName: "testName",
+		DistributionType: types.Airdrop,
+		Input:            inputList,
+		Output:           test.CreatOutputList(2000, "1"),
+	}
+	multiSignature := multisig.NewMultisig(len(pubkeys))
+	// mkey.Pubkeys is the same as pubkeys list
+	for i, key := range privkeys {
+		signatures[i], _ = key.Sign(msg.GetSignBytes())
+		multiSignature.AddSignature(signatures[i], i)
+		break
+	}
+	assert.False(t, mkey.VerifyBytes(msg.GetSignBytes(), multiSignature.Marshal()), "Not enough signatures")
+	for i, key := range privkeys {
+		signatures[i], _ = key.Sign(msg.GetSignBytes())
+		multiSignature.AddSignature(signatures[i], i)
+	}
+	assert.True(t, mkey.VerifyBytes(msg.GetSignBytes(), multiSignature.Marshal()), "Enough signatures")
+}

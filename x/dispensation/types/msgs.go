@@ -93,6 +93,8 @@ func (m MsgCreateClaim) GetSigners() []sdk.AccAddress {
 	return []sdk.AccAddress{m.Signer}
 }
 
+// more comments required
+// Possible refactor : https://github.com/deckarep/golang-set
 func VerifyInputList(inputList []bank.Input, pubKeys []crypto.PubKey) error {
 	addressCount := len(pubKeys)
 	for _, i := range inputList {
