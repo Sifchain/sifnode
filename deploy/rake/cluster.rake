@@ -1219,10 +1219,13 @@ EOF
             governance_request = %Q{
 make CHAINNET=sifchain IMAGE_TAG=keyring BINARY=sifnodecli build-image
 docker run -i sifchain/sifnodecli:keyring sh <<'EOF'
-    yes "#{args[:mnemonic]}" | sifnodecli keys add #{args[:moniker]} -i --recover --keyring-backend test
+    spawn sifnodecli keys add #{args[:moniker]} -i --recover --keyring-backend test
+    expect "> Enter your bip39 mnemonic\r"
+    send -- "#{args[:mnemonic]}\r"
+    expect '> Enter your bip39 passphrase. This is combined with the mnemonic to derive the seed. Most users should just hit enter to use the default, ""\r'
+    send -- "\r"
     sifnodecli keys list --keyring-backend test
     echo "moniker #{args[:moniker]}"
-    echo "#{args[:mnemonic]}"
     echo "from #{args[:from]}"
     echo "chainnet #{args[:chainnet]}"
     echo "rowan #{args[:rowan]}"
