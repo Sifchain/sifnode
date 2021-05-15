@@ -1222,6 +1222,7 @@ docker run -i sifchain/sifnodecli:keyring sh <<'EOF'
     yes "#{args[:mnemonic]}" | sifnodecli keys add #{args[:moniker]} -i --recover --keyring-backend test
     sifnodecli keys list --keyring-backend test
     echo "moniker #{args[:moniker]}"
+    echo "#{args[:mnemonic]}"
     echo "from #{args[:from]}"
     echo "chainnet #{args[:chainnet]}"
     echo "rowan #{args[:rowan]}"
