@@ -377,18 +377,16 @@ func (sub CosmosSub) handleBurnLockMsg(cosmosMsg types.CosmosMsg, claimType type
 	sub.SugaredLogger.Infow("handle burn lock message.",
 		"cosmosMessage", cosmosMsg.String())
 
-	prophecyClaim := txs.CosmosMsgToProphecyClaim(cosmosMsg)
-
 	sub.SugaredLogger.Infow(
 		"get the prophecy claim.",
-		"prophecyClaim", prophecyClaim,
+		"cosmosMsg", cosmosMsg,
 	)
 
 	err := txs.RelayProphecyClaimToEthereum(
 		sub.EthProvider,
 		sub.RegistryContractAddress,
 		claimType,
-		prophecyClaim,
+		cosmosMsg,
 		sub.PrivateKey,
 		sub.SugaredLogger,
 	)

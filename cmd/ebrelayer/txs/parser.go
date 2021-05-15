@@ -116,7 +116,7 @@ func CosmosMsgToProphecyClaim(event types.CosmosMsg) ethbridge.ProphecyClaim {
 		ClaimType:            claimType.String(),
 		CosmosSender:         cosmosSender,
 		CosmosSenderSequence: []byte(cosmosSenderSequence.String()),
-		EthereumReceiver:     []byte(ethereumReceiver.String()),
+		EthereumReceiver:     ethereumReceiver.Bytes(),
 		Symbol:               symbol,
 		Amount:               amount.String(),
 	}

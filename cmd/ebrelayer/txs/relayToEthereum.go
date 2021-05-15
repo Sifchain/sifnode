@@ -6,7 +6,6 @@ import (
 	"context"
 	"crypto/ecdsa"
 	"math/big"
-	"strconv"
 	"time"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -27,7 +26,7 @@ const (
 
 // RelayProphecyClaimToEthereum relays the provided ProphecyClaim to CosmosBridge contract on the Ethereum network
 func RelayProphecyClaimToEthereum(provider string, contractAddress common.Address, event types.Event,
-	claim ethbridge.ProphecyClaim, key *ecdsa.PrivateKey, sugaredLogger *zap.SugaredLogger) error {
+	claim types.CosmosMsg, key *ecdsa.PrivateKey, sugaredLogger *zap.SugaredLogger) error {
 	// Initialize client service, validator's tx auth, and target contract address
 	client, auth, target, err := initRelayConfig(provider, contractAddress, event, key, sugaredLogger)
 	if err != nil {
@@ -51,29 +50,18 @@ func RelayProphecyClaimToEthereum(provider string, contractAddress common.Addres
 	)
 	var claimType ethbridge.ClaimType
 	switch claim.ClaimType {
-	case ethbridge.EventTypeLock:
+	case types.MsgLock:
 		claimType = ethbridge.ClaimType_CLAIM_TYPE_LOCK
-	case ethbridge.EventTypeBurn:
+	case types.MsgBurn:
 		claimType = ethbridge.ClaimType_CLAIM_TYPE_BURN
 	default:
 		sugaredLogger.Errorw(
 			"failed to convert ClaimType to lock or burn",
-			errorMessageKey, err.Error(),
 			"claim", claim,
 		)
 	}
-	cosmosSenderSequence, err := strconv.ParseInt(string(claim.CosmosSenderSequence), 10, 64)
-	if err != nil {
-		sugaredLogger.Errorw("failed convert CosmosSenderSequence", errorMessageKey, err.Error())
-		return err
-	}
-	amount, err := strconv.ParseInt(claim.Amount, 10, 64)
-	if err != nil {
-		sugaredLogger.Errorw("failed convert Amount", errorMessageKey, err.Error())
-		return err
-	}
 	tx, err := cosmosBridgeInstance.NewProphecyClaim(auth, uint8(claimType),
-		claim.CosmosSender, big.NewInt(cosmosSenderSequence), common.BytesToAddress(claim.EthereumReceiver), claim.Symbol, big.NewInt(amount))
+		claim.CosmosSender, claim.CosmosSenderSequence, claim.EthereumReceiver, claim.Symbol, claim.Amount.BigInt())
 
 	if err != nil {
 		sugaredLogger.Errorw(
