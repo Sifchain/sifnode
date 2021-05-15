@@ -37,15 +37,21 @@ func ExportGenesis(ctx sdk.Context, keeper Keeper) types.GenesisState {
 }
 
 func ValidateGenesis(data GenesisState) error {
-	for _, record := range data.DistributionRecords.DistributionRecords {
-		if !record.Validate() {
-			return errors.Wrap(types.ErrInvalid, fmt.Sprintf("Record is invalid : %s", record.String()))
+	if data.DistributionRecords != nil {
+		for _, record := range data.DistributionRecords.DistributionRecords {
+			if !record.Validate() {
+				return errors.Wrap(types.ErrInvalid, fmt.Sprintf("Record is invalid : %s", record.String()))
+			}
+		}
+
+	}
+	if data.Distributions != nil {
+		for _, dist := range data.Distributions.Distributions {
+			if !dist.Validate() {
+				return errors.Wrap(types.ErrInvalid, fmt.Sprintf("Distribution is invalid : %s", dist.String()))
+			}
 		}
 	}
-	for _, dist := range data.Distributions.Distributions {
-		if !dist.Validate() {
-			return errors.Wrap(types.ErrInvalid, fmt.Sprintf("Distribution is invalid : %s", dist.String()))
-		}
-	}
+
 	return nil
 }
