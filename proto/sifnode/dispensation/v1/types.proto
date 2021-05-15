@@ -65,6 +65,4 @@ message UserClaim {
   bool locked = 4;
 }
 
-message UserClaims {
-  repeated UserClaim user_claims = 1;
-}
+message UserClaims { repeated UserClaim user_claims = 1; }

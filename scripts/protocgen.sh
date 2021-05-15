@@ -35,5 +35,5 @@ done
 # go mod tidy
 
 # move proto files to the right places
-cp -r github.com/sifchain/sifnode/* ./
+cp -r github.com/Sifchain/sifnode/* ./
 rm -rf github.com
