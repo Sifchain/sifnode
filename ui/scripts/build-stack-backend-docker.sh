@@ -2,7 +2,7 @@
 
 set -e
 
-if  [[ $(cat ~/.docker/config.json  | jq '.auths["ghcr.io"].auth') == 'null' ]]; then
+if  [[ ! -f  ~/.docker/config.json || $(cat ~/.docker/config.json  | jq '.auths["ghcr.io"].auth') == 'null' ]]; then
   echo "In order to run this script and push a new container to the github registry you need to create a personal access token and use it to login to ghcr with docker"
   echo ""
   echo "  echo \$MY_PAT | docker login ghcr.io -u USERNAME --password-stdin"
@@ -24,11 +24,18 @@ echo "Building new container..."
 TAG=$(git rev-parse HEAD)
 IMAGE_NAME=ghcr.io/sifchain/sifnode/ui-stack:$TAG
 
+# Assume this script is run from `./ui`
+ROOT=$(pwd)/..
+
 echo "New image name: $IMAGE_NAME"
 
-cd .. && docker build -f ./ui/scripts/stack.Dockerfile -t $IMAGE_NAME .
+# Using buildkit to take advantage of local dockerignore files
+export DOCKER_BUILDKIT=1
+
+cd $ROOT && docker build -f ./ui/scripts/stack.Dockerfile -t $IMAGE_NAME .
+
 docker push $IMAGE_NAME
 
-echo $IMAGE_NAME > ./scripts/latest
+echo $IMAGE_NAME > $ROOT/ui/scripts/latest
 
-echo "Commit the ./latest file to git"
+echo "Commit the ./ui/scripts/latest file to git"
