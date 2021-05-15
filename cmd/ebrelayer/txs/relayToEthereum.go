@@ -45,13 +45,22 @@ func RelayProphecyClaimToEthereum(provider string, contractAddress common.Addres
 	}
 
 	// Send transaction
-	sugaredLogger.Infow("Sending new ProphecyClaim to CosmosBridge.",
-		"CosmosSender", claim.CosmosSender,
-		"CosmosSenderSequence", claim.CosmosSenderSequence)
-	claimType, err := strconv.Atoi(claim.ClaimType)
-	if err != nil {
-		sugaredLogger.Errorw("failed convert ClaimType", errorMessageKey, err.Error())
-		return err
+	sugaredLogger.Infow(
+		"Sending new ProphecyClaim to CosmosBridge.",
+		"claim", claim,
+	)
+	var claimType ethbridge.ClaimType
+	switch claim.ClaimType {
+	case ethbridge.EventTypeLock:
+		claimType = ethbridge.ClaimType_CLAIM_TYPE_LOCK
+	case ethbridge.EventTypeBurn:
+		claimType = ethbridge.ClaimType_CLAIM_TYPE_BURN
+	default:
+		sugaredLogger.Errorw(
+			"failed to convert ClaimType to lock or burn",
+			errorMessageKey, err.Error(),
+			"claim", claim,
+		)
 	}
 	cosmosSenderSequence, err := strconv.ParseInt(string(claim.CosmosSenderSequence), 10, 64)
 	if err != nil {
@@ -67,8 +76,11 @@ func RelayProphecyClaimToEthereum(provider string, contractAddress common.Addres
 		claim.CosmosSender, big.NewInt(cosmosSenderSequence), common.BytesToAddress(claim.EthereumReceiver), claim.Symbol, big.NewInt(amount))
 
 	if err != nil {
-		sugaredLogger.Errorw("failed to send ProphecyClaim to CosmosBridge.",
-			errorMessageKey, err.Error())
+		sugaredLogger.Errorw(
+			"failed to send ProphecyClaim to CosmosBridge.",
+			errorMessageKey, err.Error(),
+			"claim", claim,
+		)
 		return err
 	}
 
