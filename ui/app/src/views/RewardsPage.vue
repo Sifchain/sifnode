@@ -111,7 +111,7 @@ export default defineComponent({
     };
   },
   setup() {
-    const { store, actions, config } = useCore();
+    const { store, config } = useCore();
     const address = computed(() => store.wallet.sif.address);
     const transactionState = ref<ConfirmState | string>("confirming");
     const transactionStateMsg = ref<string>("");
