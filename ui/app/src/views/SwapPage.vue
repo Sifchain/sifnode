@@ -46,7 +46,6 @@ export default defineComponent({
     const uiState = ref<UiState>("idle");
     const txStatus = ref<TransactionStatus | null>(null);
 
-    const transactionHash = ref<string | null>(null);
     const selectedField = ref<"from" | "to" | null>(null);
     const { connected } = useWalletButton();
 
@@ -126,7 +125,6 @@ export default defineComponent({
         tx: txStatus.value,
         typeOfCode: typeof txStatus.value.code,
       });
-      transactionHash.value = txStatus.value.hash;
       uiState.value =
         typeof txStatus.value.code === "number" ? "fail" : "success";
       clearAmounts();
@@ -235,7 +233,7 @@ export default defineComponent({
         uiState.value = "submit";
       },
       handleAskConfirmClicked,
-      transactionHash,
+
       isFromMaxActive,
       selectedField,
     };
@@ -299,7 +297,6 @@ export default defineComponent({
         :isOpen="transactionModalOpen"
         ><ConfirmationDialog
           @confirmswap="handleAskConfirmClicked"
-          :transactionHash="transactionHash"
           :state="uiState"
           :txStatus="txStatus"
           :requestClose="requestTransactionModalClose"

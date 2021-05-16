@@ -106,7 +106,7 @@
                 <a
                   class="anchor"
                   target="_blank"
-                  :href="getBlockExplorerUrl(chainId, transactionHash)"
+                  :href="getBlockExplorerUrl(chainId, txStatus.hash)"
                   >View transaction on Block Explorer</a
                 >
               </p>
@@ -124,7 +124,7 @@
 </template>
 
 <script lang="ts">
-import { computed, defineComponent, PropType, watchEffect } from "vue";
+import { defineComponent, PropType } from "vue";
 import Loader from "@/components/shared/Loader.vue";
 import SifButton from "@/components/shared/SifButton.vue";
 import { useCore } from "@/hooks/useCore";
@@ -143,7 +143,6 @@ export default defineComponent({
     fromToken: String,
     toAmount: String,
     toToken: String,
-    transactionHash: String,
   },
   setup(props) {
     const { config } = useCore();
