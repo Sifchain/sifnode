@@ -10,7 +10,12 @@ export default defineComponent({
   components: { AskConfirmation, AnimatedConfirmation },
   inheritAttrs: false,
   props: {
-    state: { type: String as PropType<ConfirmState>, default: "confirming" },
+    state: {
+      type: String as PropType<
+        "selecting" | "confirming" | "signing" | "failed" | "accepted"
+      >,
+      default: "confirming",
+    },
     requestClose: Function,
     priceMessage: { type: String, default: "" },
     fromAmount: String,
@@ -27,15 +32,11 @@ export default defineComponent({
   emits: ["confirmswap"],
   setup(props) {
     const confirmed = computed(() => {
-      return props.state === "confirmed";
+      return props.state === "accepted";
     });
 
     const failed = computed(() => {
-      return (
-        props.state === "failed" ||
-        props.state === "rejected" ||
-        props.state === "out_of_gas"
-      );
+      return props.state === "failed";
     });
 
     return {

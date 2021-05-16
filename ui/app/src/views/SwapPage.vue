@@ -1,7 +1,7 @@
 <script lang="ts">
 import { defineComponent } from "vue";
 import Layout from "@/components/layout/Layout.vue";
-import { computed, ref } from "@vue/reactivity";
+import { computed, effect, ref } from "@vue/reactivity";
 import { useCore } from "@/hooks/useCore";
 import { SwapState, useSwapCalculator } from "ui-core";
 import { useWalletButton } from "@/components/wallet/useWalletButton";
@@ -43,11 +43,15 @@ export default defineComponent({
     } = useCurrencyFieldState();
 
     const slippage = ref<string>("1.0");
-    const transactionState = ref<ConfirmState>("selecting");
+    const transactionState = ref<
+      "selecting" | "confirming" | "signing" | "failed" | "accepted"
+    >("selecting");
     const transactionHash = ref<string | null>(null);
     const selectedField = ref<"from" | "to" | null>(null);
     const { connected } = useWalletButton();
-
+    effect(() => {
+      console.log(transactionState.value);
+    });
     function requestTransactionModalClose() {
       transactionState.value = "selecting";
     }
@@ -120,9 +124,10 @@ export default defineComponent({
       );
 
       // We need to build the confirmation panel from the object that is returned here.
-
+      console.log({ tx, typeOfCode: typeof tx.code });
       transactionHash.value = tx.hash;
-      transactionState.value = toConfirmState(tx.state); // TODO: align states
+      transactionState.value =
+        typeof tx.code === "number" ? "failed" : "accepted";
       clearAmounts();
     }
 
@@ -219,16 +224,9 @@ export default defineComponent({
         return state.value === SwapState.VALID_INPUT;
       }),
       transactionState,
-      transactionModalOpen: computed(() => {
-        return [
-          "confirming",
-          "signing",
-          "failed",
-          "rejected",
-          "confirmed",
-          "out_of_gas",
-        ].includes(transactionState.value);
-      }),
+      transactionModalOpen: computed(
+        () => transactionState.value !== "selecting",
+      ),
       requestTransactionModalClose,
       handleArrowClicked() {
         swapInputs();
