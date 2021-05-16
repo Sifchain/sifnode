@@ -5,7 +5,7 @@
         <Loader black :success="confirmed" :failed="failed" /><br />
         <div class="text-wrapper">
           <transition name="swipe">
-            <div class="text" v-if="state === 'signing'">
+            <div class="text" v-if="state === 'submit'">
               <p>Waiting for confirmation</p>
               <p class="thin" data-handle="swap-message">
                 Swapping
@@ -18,7 +18,13 @@
             </div>
           </transition>
           <transition name="swipe">
-            <div class="text" v-if="state === 'out_of_gas'">
+            <div
+              class="text"
+              v-if="
+                state === 'failed' &&
+                txStatus.code === ErrorCode.TX_FAILED_OUT_OF_GAS
+              "
+            >
               <p>Transaction Failed</p>
               <p class="thin" data-handle="swap-message">
                 Failed to swap
@@ -31,7 +37,12 @@
             </div>
           </transition>
           <transition name="swipe">
-            <div class="text" v-if="state === 'rejected'">
+            <div
+              class="text"
+              v-if="
+                state === 'failed' && txStatus.code === ErrorCode.USER_REJECTED
+              "
+            >
               <p>Transaction Rejected</p>
               <p class="thin" data-handle="swap-message">
                 Failed to swap
@@ -44,7 +55,13 @@
             </div>
           </transition>
           <transition name="swipe">
-            <div class="text" v-if="state === 'failed'">
+            <div
+              class="text"
+              v-if="
+                state === 'failed' &&
+                txStatus.code === ErrorCode.TX_FAILED_SLIPPAGE
+              "
+            >
               <p>Transaction Failed</p>
               <p class="thin" data-handle="swap-message">
                 Failed to swap
@@ -57,7 +74,26 @@
             </div>
           </transition>
           <transition name="swipe">
-            <div class="text" v-if="confirmed">
+            <div
+              class="text"
+              v-if="
+                state === 'failed' &&
+                txStatus.code === ErrorCode.UNKNOWN_FAILURE
+              "
+            >
+              <p>Transaction Failed</p>
+              <p class="thin" data-handle="swap-message">
+                Failed to swap
+                <span class="thick">{{ _fromAmount }} {{ _fromToken }}</span>
+                for
+                <span class="thick">{{ _toAmount }} {{ _toToken }}</span>
+              </p>
+              <br />
+              <p class="sub"></p>
+            </div>
+          </transition>
+          <transition name="swipe">
+            <div class="text" v-if="state === 'success'">
               <p>Transaction Submitted</p>
               <p class="thin" data-handle="swap-message">
                 Swapped
@@ -88,18 +124,21 @@
 </template>
 
 <script lang="ts">
-import { defineComponent } from "vue";
+import { computed, defineComponent, PropType, watchEffect } from "vue";
 import Loader from "@/components/shared/Loader.vue";
 import SifButton from "@/components/shared/SifButton.vue";
 import { useCore } from "@/hooks/useCore";
 import { getBlockExplorerUrl } from "../shared/utils";
+import { ErrorCode, TransactionStatus } from "ui-core";
+import { UiState } from "../../views/SwapPage.vue";
 
 export default defineComponent({
   components: { Loader, SifButton },
   props: {
+    txStatus: { type: Object as PropType<TransactionStatus>, default: null },
     confirmed: Boolean,
     failed: Boolean,
-    state: String,
+    state: { type: String as PropType<UiState> },
     fromAmount: String,
     fromToken: String,
     toAmount: String,
@@ -117,6 +156,7 @@ export default defineComponent({
       _toToken: props.toToken,
       chainId: config.sifChainId,
       getBlockExplorerUrl,
+      ErrorCode,
     };
   },
 });

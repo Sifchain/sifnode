@@ -3,7 +3,7 @@ import { defineComponent } from "vue";
 import Layout from "@/components/layout/Layout.vue";
 import { computed, effect, ref } from "@vue/reactivity";
 import { useCore } from "@/hooks/useCore";
-import { SwapState, useSwapCalculator } from "ui-core";
+import { SwapState, TransactionStatus, useSwapCalculator } from "ui-core";
 import { useWalletButton } from "@/components/wallet/useWalletButton";
 import CurrencyPairPanel from "@/components/currencyPairPanel/Index.vue";
 import Modal from "@/components/shared/Modal.vue";
@@ -14,10 +14,10 @@ import ConfirmationDialog from "@/components/confirmationDialog/ConfirmationDial
 import { useCurrencyFieldState } from "@/hooks/useCurrencyFieldState";
 import DetailsPanel from "@/components/shared/DetailsPanel.vue";
 import SlippagePanel from "@/components/slippagePanel/Index.vue";
-import { ConfirmState } from "../types";
-import { toConfirmState } from "./utils/toConfirmState";
 import { getMaxAmount } from "./utils/getMaxAmount";
 import { format } from "ui-core/src/utils/format";
+
+export type UiState = "idle" | "confirm" | "submit" | "fail" | "success";
 
 export default defineComponent({
   components: {
@@ -43,17 +43,15 @@ export default defineComponent({
     } = useCurrencyFieldState();
 
     const slippage = ref<string>("1.0");
-    const transactionState = ref<
-      "selecting" | "confirming" | "signing" | "failed" | "accepted"
-    >("selecting");
+    const uiState = ref<UiState>("idle");
+    const txStatus = ref<TransactionStatus | null>(null);
+
     const transactionHash = ref<string | null>(null);
     const selectedField = ref<"from" | "to" | null>(null);
     const { connected } = useWalletButton();
-    effect(() => {
-      console.log(transactionState.value);
-    });
+
     function requestTransactionModalClose() {
-      transactionState.value = "selecting";
+      uiState.value = "idle";
     }
 
     const balances = computed(() => {
@@ -104,7 +102,7 @@ export default defineComponent({
       if (!toFieldAmount.value)
         throw new Error("to field amount is not defined");
 
-      transactionState.value = "confirming";
+      uiState.value = "confirm";
     }
 
     async function handleAskConfirmClicked() {
@@ -115,19 +113,22 @@ export default defineComponent({
       if (!minimumReceived.value)
         throw new Error("minimumReceived amount is not defined");
 
-      transactionState.value = "signing";
+      uiState.value = "submit";
 
-      const tx = await usecases.clp.swap(
+      txStatus.value = await usecases.clp.swap(
         fromFieldAmount.value,
         toFieldAmount.value.asset,
         minimumReceived.value,
       );
 
       // We need to build the confirmation panel from the object that is returned here.
-      console.log({ tx, typeOfCode: typeof tx.code });
-      transactionHash.value = tx.hash;
-      transactionState.value =
-        typeof tx.code === "number" ? "failed" : "accepted";
+      console.log({
+        tx: txStatus.value,
+        typeOfCode: typeof txStatus.value.code,
+      });
+      transactionHash.value = txStatus.value.hash;
+      uiState.value =
+        typeof txStatus.value.code === "number" ? "fail" : "success";
       clearAmounts();
     }
 
@@ -223,16 +224,15 @@ export default defineComponent({
       nextStepAllowed: computed(() => {
         return state.value === SwapState.VALID_INPUT;
       }),
-      transactionState,
-      transactionModalOpen: computed(
-        () => transactionState.value !== "selecting",
-      ),
+      uiState,
+      txStatus,
+      transactionModalOpen: computed(() => uiState.value !== "idle"),
       requestTransactionModalClose,
       handleArrowClicked() {
         swapInputs();
       },
       handleConfirmClicked() {
-        transactionState.value = "signing";
+        uiState.value = "submit";
       },
       handleAskConfirmClicked,
       transactionHash,
@@ -300,7 +300,8 @@ export default defineComponent({
         ><ConfirmationDialog
           @confirmswap="handleAskConfirmClicked"
           :transactionHash="transactionHash"
-          :state="transactionState"
+          :state="uiState"
+          :txStatus="txStatus"
           :requestClose="requestTransactionModalClose"
           :priceMessage="priceMessage"
           :fromToken="fromSymbol"

@@ -1,21 +1,22 @@
 <script lang="ts">
 import { defineComponent, PropType } from "vue";
 
-import { computed } from "@vue/reactivity";
+import { computed, effect } from "@vue/reactivity";
 import AskConfirmation from "./AskConfirmation.vue";
 import AnimatedConfirmation from "./AnimatedConfirmation.vue";
-import { ConfirmState } from "../../types";
+// XXX: FIX THIS BEFORE PR
+import { UiState } from "../../views/SwapPage.vue";
+import { TransactionStatus } from "ui-core";
 
 export default defineComponent({
   components: { AskConfirmation, AnimatedConfirmation },
   inheritAttrs: false,
   props: {
     state: {
-      type: String as PropType<
-        "selecting" | "confirming" | "signing" | "failed" | "accepted"
-      >,
+      type: String as PropType<UiState>,
       default: "confirming",
     },
+    txStatus: { type: Object as PropType<TransactionStatus>, default: null },
     requestClose: Function,
     priceMessage: { type: String, default: "" },
     fromAmount: String,
@@ -32,11 +33,11 @@ export default defineComponent({
   emits: ["confirmswap"],
   setup(props) {
     const confirmed = computed(() => {
-      return props.state === "accepted";
+      return props.state === "success";
     });
 
     const failed = computed(() => {
-      return props.state === "failed";
+      return props.state === "fail";
     });
 
     return {
@@ -48,7 +49,7 @@ export default defineComponent({
 </script>
 <template>
   <AskConfirmation
-    v-if="state === 'confirming'"
+    v-if="state === 'confirm'"
     :fromAmount="fromAmount"
     :fromToken="fromToken"
     :toAmount="toAmount"
@@ -66,6 +67,7 @@ export default defineComponent({
     :confirmed="confirmed"
     :failed="failed"
     :state="state"
+    :txStatus="txStatus"
     :fromAmount="fromAmount"
     :fromToken="fromToken"
     :toAmount="toAmount"
