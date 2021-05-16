@@ -18,7 +18,6 @@ const keplrConfig = require("../core/src/config.localnet.json");
 
 // extension
 const { MetaMaskPage, metamaskPage } = require("./pages/MetaMaskPage");
-const { importKeplrAccount, connectKeplrAccount } = require("./keplr");
 
 // services
 const { getSifchainBalances } = require("./sifchain.js");
@@ -27,8 +26,12 @@ const {
   extractFile,
   getExtensionPage,
   extractExtensionPackage,
+  sleep,
 } = require("./utils");
 const { useStack } = require("../test/stack");
+const { keplrPage } = require("./pages/KeplrPage.js");
+const { connectMetaMaskAccount, connectKeplrAccount } = require("./helpers.js");
+const { pegPage } = require("./pages/PegPage.js");
 
 async function getInputValue(page, selector) {
   return await page.evaluate((el) => el.value, await page.$(selector));
@@ -43,142 +46,57 @@ beforeAll(async () => {
   await extractExtensionPackage(MM_CONFIG.id);
   await extractExtensionPackage(KEPLR_CONFIG.id);
 
+  await metamaskPage.navigate();
   await metamaskPage.setup();
 
-  // setup keplr account
-  // const keplrPage = page;
-  const keplrPage = await browserContext.newPage();
-  console.log("local page=", keplrPage);
-  console.log("global browser context locally=", context);
-  console.log("global page locally=", page);
-  await keplrPage.goto(
-    "chrome-extension://dmkamcknogkgcdfhhbddcghachkejeap/popup.html#/register",
-  );
-  await importKeplrAccount(keplrPage, KEPLR_CONFIG.options);
-  await keplrPage.close();
+  await keplrPage.navigate();
+  await keplrPage.setup();
 
   // goto dex page
-  // dexPage = await browserContext.newPage();
-  dexPage = await context.newPage();
-  dexPage.setDefaultTimeout(60000);
-  dexPage.waitForTimeout(4000); // wait a second before keplr is finished being setup
-
-  await dexPage.goto(DEX_TARGET, { waitUntil: "domcontentloaded" });
+  pegPage.navigate();
+  page.waitForTimeout(4000); // wait a second before keplr is finished being setup
 
   // Keplr will automatically connect and cause the add chain popup to come up
-  // await connectKeplrAccount(dexPage, browserContext);
-  await connectKeplrAccount(dexPage, context);
-
-  // await metamaskPage.connectAccount(dexPage, browserContext, MM_CONFIG.id);
-  await metamaskPage.connectAccount(dexPage, context, MM_CONFIG.id);
+  await connectKeplrAccount();
+  await connectMetaMaskAccount();
 });
 
 afterAll(async () => {
-  browserContext.close();
+  context.close();
 });
 
 beforeEach(async () => {
-  // const page = await browserContext.newPage();
-
-  await page.goto(
-    `chrome-extension://${MM_CONFIG.id}/home.html#settings/advanced`,
-    {
-      waitUntil: "domcontentloaded",
-    },
-  );
-  await page.waitForTimeout(1000);
-  await page.click('[data-testid="advanced-setting-reset-account"] button');
-  await page.waitForTimeout(1000);
-  await page.click('.modal-container button:has-text("Reset")');
-  await page.close();
+  metamaskPage.reset();
 });
 
 it("pegs rowan", async () => {
   // First we need to unpeg rowan in order to have erowan on the bridgebank contract
   // Navigate to peg page
-  await dexPage.goto(DEX_TARGET, {
-    waitUntil: "domcontentloaded",
-  });
+  await pegPage.navigate();
 
   const unpegAmount = "500";
-  await dexPage.click("[data-handle='native-tab']");
-  await dexPage.click("[data-handle='unpeg-rowan']");
-  await dexPage.click('[data-handle="peg-input"]');
-  await dexPage.fill('[data-handle="peg-input"]', unpegAmount);
-  await dexPage.click('button:has-text("Unpeg")');
+  await pegPage.openTab("native");
+  await pegPage.unpeg("rowan", unpegAmount);
 
-  const [confirmPopup] = await Promise.all([
-    browserContext.waitForEvent("page"),
-    dexPage.click('button:has-text("Confirm Unpeg")'),
-  ]);
-
-  await Promise.all([
-    confirmPopup.waitForEvent("close"),
-    confirmPopup.click('button:has-text("Approve")'),
-  ]);
-
-  await dexPage.waitForSelector("text=Transaction Submitted");
-  await dexPage.click("text=×");
-  await dexPage.waitForTimeout(10000); // wait for sifnode to validate the tx
-
-  await dexPage.click("[data-handle='external-tab']");
-  await dexPage.waitForSelector("text=/600\\.000000/");
-
-  const rowAmount = await dexPage.innerText(
-    "[data-handle='erowan-row-amount']",
-  );
-
-  expect(rowAmount.trim()).toBe("600.000000");
+  await pegPage.openTab("external");
+  await pegPage.verifyAssetAmount("erowan", "600.000000");
 
   // Now lets peg erowan
-  await dexPage.goto(DEX_TARGET, {
-    waitUntil: "domcontentloaded",
-  });
-
   const pegAmount = "100";
-
-  await dexPage.click("[data-handle='external-tab']");
-  await dexPage.click("[data-handle='peg-erowan']");
-  await dexPage.click('[data-handle="peg-input"]');
-  await dexPage.fill('[data-handle="peg-input"]', pegAmount);
-  await dexPage.click('button:has-text("Peg")');
-
-  const [approveSpendPopup] = await Promise.all([
-    browserContext.waitForEvent("page"),
-    dexPage.click('button:has-text("Confirm Peg")'),
-  ]);
-
-  await approveSpendPopup.click("text=View full transaction details");
-  await expect(approveSpendPopup).toHaveText(pegAmount + " erowan");
-
-  // TODO: abstract away confirmation flow
-  const [confirmPopup2] = await Promise.all([
-    browserContext.waitForEvent("page"),
-    approveSpendPopup.click('button:has-text("Confirm")'),
-  ]);
-
-  await Promise.all([
-    confirmPopup2.waitForEvent("close"),
-    confirmPopup2.click('button:has-text("Confirm")'),
-  ]);
-
-  await dexPage.click("text=×");
+  await pegPage.peg("erowan", pegAmount);
 
   // Check that tx marker for the tx is there
-  await dexPage.waitForSelector(
-    "[data-handle='rowan-row-amount'] [data-handle='pending-tx-marker']",
+  await page.waitForSelector(
+    `${pegPage.el.assetAmount("rowan")} [data-handle='pending-tx-marker']`,
   );
 
   // move chain forward
   await advanceEthBlocks(52);
 
-  await dexPage.waitForSelector("text=has succeded");
+  await page.waitForSelector("text=has succeded");
 
-  const rowAmount2 = await dexPage.innerText(
-    "[data-handle='rowan-row-amount']",
-  );
-
-  expect(rowAmount2.trim()).toBe("9600.000000");
+  await pegPage.openTab("native");
+  await pegPage.verifyAssetAmount("rowan", "9600.000000");
 });
 
 it("pegs ether", async () => {
@@ -576,9 +494,3 @@ function prepareRowText(row) {
     .filter(Boolean)
     .join(" ");
 }
-
-// async function extractExtensionPackages() {
-//   await extractFile(`downloads/${KEPLR_CONFIG.id}.zip`, "./extensions");
-//   await extractFile(`downloads/${MM_CONFIG.id}.zip`, "./extensions");
-//   return;
-// }

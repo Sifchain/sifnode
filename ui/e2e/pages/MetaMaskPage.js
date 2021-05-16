@@ -4,12 +4,22 @@ export class MetaMaskPage {
   constructor(config = MM_CONFIG) {
     this.config = config;
   }
+
+  async navigate(newPage = true) {
+    if (newPage) {
+      this.page = await context.newPage();
+    } else {
+      this.page = await getExtensionPage(this.config.id);
+    }
+    await this.page.goto(`chrome-extension://${this.config.id}/home.html`);
+  }
+
   async setup() {
     this.page = await getExtensionPage(this.config.id);
     await this.confirmWelcomeScreen();
     await this.importAccount();
     await this.addNetwork();
-    await this.page.close();
+    // await this.page.close();
   }
 
   async confirmWelcomeScreen() {
@@ -51,6 +61,18 @@ export class MetaMaskPage {
     await this.page.click(
       "#app-content > div > div.main-container-wrapper > div > div.settings-page__header > div.settings-page__close-button",
     );
+  }
+
+  async reset() {
+    await page.goto(
+      `chrome-extension://${this.config.id}/home.html#settings/advanced`,
+      {
+        waitUntil: "domcontentloaded",
+      },
+    );
+    await page.click('[data-testid="advanced-setting-reset-account"] button');
+    await page.click('.modal-container button:has-text("Reset")');
+    // await page.close();
   }
 
   async connectAccount(extensionId) {

@@ -41,6 +41,7 @@ export async function extractExtensionPackage(extensionId) {
 export async function getExtensionPage(extensionId) {
   // export async function getExtensionPage(browserContext, extensionId) {
   const pages = await context.pages();
+  // pages.forEach((page) => console.log('pageUrl=', page.url()))
   const foundPages = pages.filter((page) =>
     page.url().match(`chrome-extension://${extensionId}`),
   );

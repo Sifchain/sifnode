@@ -24,5 +24,5 @@ beforeAll(async () => {
       `--load-extension=${pathToKeplrExtension},${pathToMmExtension}`,
     ],
   });
-  page = await context.newPage();
+  [page] = await context.pages();
 });
