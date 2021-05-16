@@ -30,20 +30,6 @@ export default defineComponent({
     priceImpact: String,
   },
   emits: ["confirmswap"],
-  setup(props) {
-    const confirmed = computed(() => {
-      return props.state === "success";
-    });
-
-    const failed = computed(() => {
-      return props.state === "fail";
-    });
-
-    return {
-      confirmed,
-      failed,
-    };
-  },
 });
 </script>
 <template>
@@ -63,8 +49,6 @@ export default defineComponent({
   />
   <AnimatedConfirmation
     v-else
-    :confirmed="confirmed"
-    :failed="failed"
     :state="state"
     :txStatus="txStatus"
     :fromAmount="fromAmount"

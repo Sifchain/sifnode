@@ -2,10 +2,14 @@
   <div>
     <div class="confirmation">
       <div class="message">
-        <Loader black :success="confirmed" :failed="failed" /><br />
+        <Loader
+          black
+          :success="state === 'success'"
+          :failed="state === 'fail'"
+        /><br />
         <div class="text-wrapper">
           <transition name="swipe">
-            <div class="text" v-if="state === 'submit'">
+            <div class="text" v-if="dialogState === 'submit'">
               <p>Waiting for confirmation</p>
               <p class="thin" data-handle="swap-message">
                 Swapping
@@ -18,13 +22,7 @@
             </div>
           </transition>
           <transition name="swipe">
-            <div
-              class="text"
-              v-if="
-                state === 'failed' &&
-                txStatus.code === ErrorCode.TX_FAILED_OUT_OF_GAS
-              "
-            >
+            <div class="text" v-if="dialogState === 'out_of_gas'">
               <p>Transaction Failed</p>
               <p class="thin" data-handle="swap-message">
                 Failed to swap
@@ -37,12 +35,7 @@
             </div>
           </transition>
           <transition name="swipe">
-            <div
-              class="text"
-              v-if="
-                state === 'failed' && txStatus.code === ErrorCode.USER_REJECTED
-              "
-            >
+            <div class="text" v-if="dialogState === 'rejected'">
               <p>Transaction Rejected</p>
               <p class="thin" data-handle="swap-message">
                 Failed to swap
@@ -55,13 +48,7 @@
             </div>
           </transition>
           <transition name="swipe">
-            <div
-              class="text"
-              v-if="
-                state === 'failed' &&
-                txStatus.code === ErrorCode.TX_FAILED_SLIPPAGE
-              "
-            >
+            <div class="text" v-if="dialogState === 'slippage'">
               <p>Transaction Failed</p>
               <p class="thin" data-handle="swap-message">
                 Failed to swap
@@ -74,13 +61,7 @@
             </div>
           </transition>
           <transition name="swipe">
-            <div
-              class="text"
-              v-if="
-                state === 'failed' &&
-                txStatus.code === ErrorCode.UNKNOWN_FAILURE
-              "
-            >
+            <div class="text" v-if="dialogState === 'fail'">
               <p>Transaction Failed</p>
               <p class="thin" data-handle="swap-message">
                 Failed to swap
@@ -93,7 +74,7 @@
             </div>
           </transition>
           <transition name="swipe">
-            <div class="text" v-if="state === 'success'">
+            <div class="text" v-if="dialogState === 'success'">
               <p>Transaction Submitted</p>
               <p class="thin" data-handle="swap-message">
                 Swapped
@@ -125,6 +106,7 @@
 
 <script lang="ts">
 import { defineComponent, PropType } from "vue";
+import { computed } from "@vue/reactivity";
 import Loader from "@/components/shared/Loader.vue";
 import SifButton from "@/components/shared/SifButton.vue";
 import { useCore } from "@/hooks/useCore";
@@ -147,6 +129,34 @@ export default defineComponent({
   setup(props) {
     const { config } = useCore();
 
+    // Unfortunately because of the way vue works we need to
+    // tokenize all these states here instead of writing them inline
+    // This is annoying as it means we have more chance of error
+    // Best way to fix this is to explore strategies for converting to JSX
+    const dialogState = computed(() => {
+      if (props.state === "submit") return "submit";
+      if (props.state === "success") return "success";
+      if (
+        props.state === "fail" &&
+        props.txStatus.code === ErrorCode.TX_FAILED_OUT_OF_GAS
+      )
+        return "out_of_gas";
+
+      if (
+        props.state === "fail" &&
+        props.txStatus.code === ErrorCode.USER_REJECTED
+      )
+        return "rejected";
+
+      if (
+        props.state === "fail" &&
+        props.txStatus.code === ErrorCode.TX_FAILED_SLIPPAGE
+      )
+        return "slippage";
+
+      if (props.state === "fail") return "unknown";
+    });
+
     // Need to cache amounts and disconnect reactivity
     return {
       _fromAmount: props.fromAmount,
@@ -156,6 +166,7 @@ export default defineComponent({
       chainId: config.sifChainId,
       getBlockExplorerUrl,
       ErrorCode,
+      dialogState,
     };
   },
 });
