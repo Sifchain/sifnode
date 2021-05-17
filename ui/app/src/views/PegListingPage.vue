@@ -14,8 +14,13 @@ import { useCore } from "@/hooks/useCore";
 import { defineComponent, ref } from "vue";
 import { computed } from "@vue/reactivity";
 import { getUnpeggedSymbol } from "../components/shared/utils";
-import { AssetAmount, IAsset, TransactionStatus } from "ui-core";
-
+import { AssetAmount, IAsset, IAssetAmount, TransactionStatus } from "ui-core";
+type TokenListItem = {
+  amount: IAssetAmount;
+  asset: IAsset;
+  pegTxs: TransactionStatus[];
+  supported: boolean;
+};
 export default defineComponent({
   components: {
     Tab,
@@ -29,10 +34,10 @@ export default defineComponent({
     Icon,
   },
   setup(_, context) {
-    const { store, actions } = useCore();
+    const { store, usecases } = useCore();
     function getIsSupportedNetwork(asset: IAsset): boolean {
       if (asset.network === "ethereum") {
-        return actions.ethWallet.isSupportedNetwork();
+        return usecases.wallet.eth.isSupportedNetwork();
       }
 
       if (asset.network === "sifchain") {
@@ -45,11 +50,11 @@ export default defineComponent({
 
     const allTokens = computed(() => {
       if (selectedTab.value === "External Tokens") {
-        return actions.peg.getEthTokens();
+        return usecases.peg.getEthTokens();
       }
 
       if (selectedTab.value === "Sifchain Native") {
-        return actions.peg.getSifTokens();
+        return usecases.peg.getSifTokens();
       }
       return [];
     });
@@ -79,7 +84,16 @@ export default defineComponent({
       return list;
     });
 
-    const assetList = computed(() => {
+    const txMatchesUnpegSymbol = (pegAssetSymbol: string) => (
+      txStatus: TransactionStatus,
+    ) => {
+      return (
+        txStatus.symbol?.toLowerCase() ===
+        getUnpeggedSymbol(pegAssetSymbol.toLowerCase()).toLowerCase()
+      );
+    };
+
+    const assetList = computed<TokenListItem[]>(() => {
       const balances =
         selectedTab.value === "External Tokens"
           ? store.wallet.eth.balances
@@ -101,18 +115,18 @@ export default defineComponent({
 
           // Get pegTxs for asset
           const pegTxs = pegList
-            ? pegList.filter(
-                (txStatus) =>
-                  txStatus.symbol?.toLowerCase() ===
-                  getUnpeggedSymbol(asset.symbol.toLowerCase()),
-              )
+            ? pegList.filter(txMatchesUnpegSymbol(asset.symbol))
             : [];
+
+          // Is the asset from a supported network
+          const supported = getIsSupportedNetwork(asset);
 
           if (!amount) {
             return {
               amount: AssetAmount(asset, "0"),
               asset,
               pegTxs,
+              supported,
             };
           }
 
@@ -120,31 +134,13 @@ export default defineComponent({
             amount,
             asset,
             pegTxs,
+            supported,
           };
         });
 
       const listedTokensSorted = sortAssetAmount(listedTokens);
 
-      // attach pegTxs
-      const listedTokensPegTxs = listedTokensSorted.map((token) => {
-        // Get pegTxs for asset
-        const pegTxs = pegList
-          ? pegList.filter(
-              (txStatus) =>
-                txStatus.symbol?.toLowerCase() ===
-                getUnpeggedSymbol(token.asset.symbol.toLowerCase()),
-            )
-          : [];
-        // Is the asset from a supported network
-        const supported = getIsSupportedNetwork(token.asset);
-        return {
-          asset: token.asset,
-          amount: token.amount,
-          supported,
-          pegTxs,
-        };
-      });
-      return listedTokensPegTxs;
+      return listedTokensSorted;
     });
 
     // TODO: add to utils
@@ -235,7 +231,9 @@ export default defineComponent({
                   </p></template
                 >
                 <template #default
-                  >&nbsp;<span class="footnote">*</span></template
+                  >&nbsp;<span data-handle="pending-tx-marker" class="footnote"
+                    >*</span
+                  ></template
                 >
               </Tooltip>
             </span>
