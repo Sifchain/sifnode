@@ -1,11 +1,7 @@
 <script lang="ts">
 import { defineComponent, PropType } from "vue";
-
-import { computed, effect } from "@vue/reactivity";
 import AskConfirmation from "./AskConfirmation.vue";
 import AnimatedConfirmation from "./AnimatedConfirmation.vue";
-// XXX: FIX THIS BEFORE PR
-import { UiState } from "../../views/SwapPage.vue";
 import { TransactionStatus } from "ui-core";
 
 export default defineComponent({
@@ -13,8 +9,8 @@ export default defineComponent({
   inheritAttrs: false,
   props: {
     state: {
-      type: String as PropType<UiState>,
-      default: "confirming",
+      type: String as PropType<"confirm" | "submit" | "fail" | "success">,
+      default: "confirm",
     },
     txStatus: { type: Object as PropType<TransactionStatus>, default: null },
     requestClose: Function,
@@ -48,7 +44,7 @@ export default defineComponent({
     @confirmswap="$emit('confirmswap')"
   />
   <AnimatedConfirmation
-    v-else
+    v-if="state === 'submit' || state === 'fail' || state === 'success'"
     :state="state"
     :txStatus="txStatus"
     :fromAmount="fromAmount"

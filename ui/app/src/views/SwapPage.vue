@@ -17,7 +17,10 @@ import SlippagePanel from "@/components/slippagePanel/Index.vue";
 import { getMaxAmount } from "./utils/getMaxAmount";
 import { format } from "ui-core/src/utils/format";
 
-export type UiState = "idle" | "confirm" | "submit" | "fail" | "success";
+// This is a little generic but these UI Flows
+// can be different depending on our page functionality
+// It would be better not to share them but instead derive state based on them in this file/domain.
+export type SwapPageState = "idle" | "confirm" | "submit" | "fail" | "success";
 
 export default defineComponent({
   components: {
@@ -43,14 +46,14 @@ export default defineComponent({
     } = useCurrencyFieldState();
 
     const slippage = ref<string>("1.0");
-    const uiState = ref<UiState>("idle");
+    const pageState = ref<SwapPageState>("idle");
     const txStatus = ref<TransactionStatus | null>(null);
 
     const selectedField = ref<"from" | "to" | null>(null);
     const { connected } = useWalletButton();
 
     function requestTransactionModalClose() {
-      uiState.value = "idle";
+      pageState.value = "idle";
     }
 
     const balances = computed(() => {
@@ -101,7 +104,7 @@ export default defineComponent({
       if (!toFieldAmount.value)
         throw new Error("to field amount is not defined");
 
-      uiState.value = "confirm";
+      pageState.value = "confirm";
     }
 
     async function handleAskConfirmClicked() {
@@ -112,7 +115,7 @@ export default defineComponent({
       if (!minimumReceived.value)
         throw new Error("minimumReceived amount is not defined");
 
-      uiState.value = "submit";
+      pageState.value = "submit";
 
       txStatus.value = await usecases.clp.swap(
         fromFieldAmount.value,
@@ -120,13 +123,9 @@ export default defineComponent({
         minimumReceived.value,
       );
 
-      // We need to build the confirmation panel from the object that is returned here.
-      console.log({
-        tx: txStatus.value,
-        typeOfCode: typeof txStatus.value.code,
-      });
-      uiState.value =
+      pageState.value =
         typeof txStatus.value.code === "number" ? "fail" : "success";
+
       clearAmounts();
     }
 
@@ -222,15 +221,15 @@ export default defineComponent({
       nextStepAllowed: computed(() => {
         return state.value === SwapState.VALID_INPUT;
       }),
-      uiState,
+      pageState,
       txStatus,
-      transactionModalOpen: computed(() => uiState.value !== "idle"),
+      transactionModalOpen: computed(() => pageState.value !== "idle"),
       requestTransactionModalClose,
       handleArrowClicked() {
         swapInputs();
       },
       handleConfirmClicked() {
-        uiState.value = "submit";
+        pageState.value = "submit";
       },
       handleAskConfirmClicked,
 
@@ -297,7 +296,7 @@ export default defineComponent({
         :isOpen="transactionModalOpen"
         ><ConfirmationDialog
           @confirmswap="handleAskConfirmClicked"
-          :state="uiState"
+          :state="pageState"
           :txStatus="txStatus"
           :requestClose="requestTransactionModalClose"
           :priceMessage="priceMessage"

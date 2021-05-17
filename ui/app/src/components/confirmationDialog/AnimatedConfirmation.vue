@@ -1,13 +1,11 @@
 <script lang="tsx">
 import { defineComponent, PropType, useCssModule } from "vue";
-import { computed, effect } from "@vue/reactivity";
 import Loader from "@/components/shared/Loader.vue";
 import SifButton from "@/components/shared/SifButton.vue";
 import { useCore } from "@/hooks/useCore";
 import { getBlockExplorerUrl } from "../shared/utils";
 import { ErrorCode, TransactionStatus } from "ui-core";
 import SwipeTransition from "./SwipeTransition.vue";
-import { UiState } from "../../views/SwapPage.vue";
 
 export default defineComponent({
   components: { Loader, SifButton },
@@ -15,7 +13,7 @@ export default defineComponent({
     txStatus: { type: Object as PropType<TransactionStatus>, default: null },
     confirmed: Boolean,
     failed: Boolean,
-    state: { type: String as PropType<UiState> },
+    state: { type: String as PropType<"submit" | "fail" | "success"> },
     fromAmount: String,
     fromToken: String,
     toAmount: String,
@@ -25,12 +23,7 @@ export default defineComponent({
     const { config } = useCore();
     const styles = useCssModule();
 
-    // Need to cache amounts and disconnect reactivity
-    const _fromAmount = props.fromAmount;
-    const _fromToken = props.fromToken;
-    const _toAmount = props.toAmount;
-    const _toToken = props.toToken;
-
+    // Create a template for our confirmation screens
     const ConfirmTemplate = (p: {
       header: JSX.Element;
       pre: JSX.Element;
@@ -57,11 +50,12 @@ export default defineComponent({
       </div>
     );
 
+    // Need to cache amounts and disconnect reactivity
     const amounts = {
-      fromAmount: _fromAmount,
-      toAmount: _toAmount,
-      fromToken: _fromToken,
-      toToken: _toToken,
+      fromAmount: props.fromAmount,
+      fromToken: props.fromToken,
+      toAmount: props.toAmount,
+      toToken: props.toToken,
     };
 
     const handleCloseRequested = () => context.emit("closerequested");
