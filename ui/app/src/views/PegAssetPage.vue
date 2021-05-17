@@ -49,8 +49,8 @@ export default defineComponent({
     const router = useRouter();
     const mode = computed(() => {
       return router.currentRoute.value.path.indexOf("/import/reverse") > -1
-        ? "unpeg"
-        : "peg";
+        ? "export"
+        : "import";
     });
 
     const transactionState = ref<ConfirmState>("selecting");
@@ -64,7 +64,7 @@ export default defineComponent({
     });
 
     const networkIsSupported = computed(() => {
-      if (mode.value === "peg") {
+      if (mode.value === "import") {
         return usecases.wallet.eth.isSupportedNetwork();
       }
 
@@ -72,7 +72,7 @@ export default defineComponent({
     });
 
     const oppositeSymbol = computed(() => {
-      if (mode.value === "peg") {
+      if (mode.value === "import") {
         return getPeggedSymbol(symbol.value);
       }
       return getUnpeggedSymbol(symbol.value);
@@ -80,7 +80,7 @@ export default defineComponent({
 
     const amount = ref("0.0");
     const address = computed(() =>
-      mode.value === "peg"
+      mode.value === "import"
         ? store.wallet.sif.address
         : store.wallet.eth.address,
     );
@@ -131,7 +131,7 @@ export default defineComponent({
 
     const accountBalance = computed(() => {
       const balances =
-        mode.value === "peg"
+        mode.value === "import"
           ? store.wallet.eth.balances
           : store.wallet.sif.balances;
       return balances.find((balance) => {
@@ -159,7 +159,7 @@ export default defineComponent({
 
     const nextStepMessage = computed(() => {
       if (!networkIsSupported.value) return "Network Not Supported";
-      return mode.value === "peg" ? "Peg" : "Unpeg";
+      return mode.value === "import" ? "Import" : "Export";
     });
 
     function requestTransactionModalClose() {
@@ -230,7 +230,7 @@ export default defineComponent({
 
 <template>
   <Layout
-    :title="mode === 'peg' ? 'Import Asset' : 'Export Asset'"
+    :title="mode === 'import' ? 'Import Asset' : 'Export Asset'"
     backLink="/import"
   >
     <div class="vspace">
@@ -248,11 +248,11 @@ export default defineComponent({
         label="Amount"
       />
       <RaisedPanel>
-        <RaisedPanelColumn v-if="mode === 'peg'">
+        <RaisedPanelColumn v-if="mode === 'import'">
           <Label>Sifchain Recipient Address</Label>
           <SifInput disabled v-model="address" />
         </RaisedPanelColumn>
-        <RaisedPanelColumn v-if="mode === 'unpeg'">
+        <RaisedPanelColumn v-if="mode === 'export'">
           <Label>Ethereum Recipient Address</Label>
           <SifInput
             disabled
@@ -262,7 +262,7 @@ export default defineComponent({
         </RaisedPanelColumn>
       </RaisedPanel>
       <DetailsTable
-        v-if="mode === 'unpeg'"
+        v-if="mode === 'export'"
         :header="{
           show: amount !== '0.0',
           label: `${modeLabel} Amount`,
@@ -285,7 +285,7 @@ export default defineComponent({
       />
     </div>
     <ConfirmationModal
-      v-if="mode === 'peg'"
+      v-if="mode === 'import'"
       @confirmed="handlePegRequested"
       :requestClose="requestTransactionModalClose"
       :state="transactionState"
@@ -326,7 +326,7 @@ export default defineComponent({
       </template>
     </ConfirmationModal>
     <ConfirmationModal
-      v-if="mode === 'unpeg'"
+      v-if="mode === 'export'"
       @confirmed="handleUnpegRequested"
       :requestClose="requestTransactionModalClose"
       :state="transactionState"

@@ -4,7 +4,7 @@
       data-handle="import-page-button"
       to="/import"
       icon="circle-half"
-      label="IMPORT/EXPORT"
+      label="BALANCES"
     ></PanelNavItem>
     <PanelNavItem
       data-handle="swap-page-button"

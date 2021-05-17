@@ -207,7 +207,7 @@ export default defineComponent({
         <AssetList :items="assetList">
           <template #default="{ asset }">
             <SifButton
-              :to="`/peg/reverse/${asset.asset.symbol}/${unpeggedSymbol(
+              :to="`/import/reverse/${asset.asset.symbol}/${unpeggedSymbol(
                 asset.asset.symbol,
               )}`"
               primary
