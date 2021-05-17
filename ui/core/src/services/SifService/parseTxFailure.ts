@@ -58,9 +58,9 @@ export function parseTxFailure(txFailure: {
     txFailure.rawLog.toLowerCase().includes("user does not have enough balance")
   ) {
     return {
-      code: ErrorCode.INSUFFICIENT_FUNDS,
+      code: ErrorCode.TX_FAILED_USER_NOT_ENOUGH_BALANCE,
       hash: txFailure.transactionHash,
-      memo: getErrorMessage(ErrorCode.INSUFFICIENT_FUNDS),
+      memo: getErrorMessage(ErrorCode.TX_FAILED_USER_NOT_ENOUGH_BALANCE),
       state: "failed",
     };
   }

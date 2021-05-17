@@ -1,7 +1,13 @@
-import { IAsset, IAssetAmount } from "../../entities";
+import {
+  ErrorCode,
+  getErrorMessage,
+  IAsset,
+  IAssetAmount,
+} from "../../entities";
 import { UsecaseContext } from "..";
 import { PoolStore } from "../../store/pools";
 import { effect } from "@vue/reactivity";
+import { ReportTransactionError } from "../utils";
 
 export default ({
   services,
@@ -10,6 +16,8 @@ export default ({
   "sif" | "clp" | "bus",
   "pools" | "wallet" | "accountpools"
 >) => {
+  const reportTransactionError = ReportTransactionError(services.bus);
+
   const state = services.sif.getState();
 
   async function syncPools() {
@@ -106,13 +114,21 @@ export default ({
       const txStatus = await services.sif.signAndBroadcast(tx.value.msg);
 
       if (txStatus.state !== "accepted") {
-        services.bus.dispatch({
-          type: "TransactionErrorEvent",
-          payload: {
-            txStatus,
-            message: txStatus.memo || "There was an error with your swap",
-          },
-        });
+        // Edge case where we have run out of native balance and need to represent that
+        if (
+          txStatus.code === ErrorCode.TX_FAILED_USER_NOT_ENOUGH_BALANCE &&
+          sentAmount.symbol === "rowan"
+        ) {
+          return reportTransactionError({
+            ...txStatus,
+            code: ErrorCode.TX_FAILED_NOT_ENOUGH_ROWAN_TO_COVER_GAS,
+            memo: getErrorMessage(
+              ErrorCode.TX_FAILED_NOT_ENOUGH_ROWAN_TO_COVER_GAS,
+            ),
+          });
+        }
+
+        return reportTransactionError(txStatus);
       }
 
       return txStatus;

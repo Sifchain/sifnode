@@ -115,6 +115,17 @@ export default defineComponent({
                   )}
               </SwipeTransition>
               <SwipeTransition>
+                {props.state === "fail" &&
+                  ErrorCode.TX_FAILED_NOT_ENOUGH_ROWAN_TO_COVER_GAS && (
+                    <ConfirmTemplate
+                      header="Transaction Failed"
+                      pre="Failed to swap"
+                      post="Not enough ROWAN to cover the gas fees. Please try again and ensure you have enough ROWAN to cover the selected gas fees"
+                      {...amounts}
+                    />
+                  )}
+              </SwipeTransition>
+              <SwipeTransition>
                 {props.state === "fail" && (
                   <ConfirmTemplate
                     header="Transaction Failed"

@@ -426,7 +426,7 @@ it("swaps", async () => {
   );
 });
 
-it.skip("swaps when out of gas", async () => {
+it("swaps when out of gas", async () => {
   // Navigate to swap page
   await dexPage.goto(DEX_TARGET, {
     waitUntil: "domcontentloaded",
@@ -469,9 +469,7 @@ it.skip("swaps when out of gas", async () => {
   await dexPage.waitForTimeout(10000); // wait for blockchain to update...
 
   await expect(dexPage).toHaveText("Transaction Failed");
-  await expect(dexPage).not.toHaveText(
-    "Please try to increase slippage tolerance",
-  );
+  await expect(dexPage).toHaveText("Not enough ROWAN to cover the gas fees.");
 
   await dexPage.click("[data-handle='modal-view-close']");
 });

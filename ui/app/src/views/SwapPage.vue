@@ -18,8 +18,10 @@ import { getMaxAmount } from "./utils/getMaxAmount";
 import { format } from "ui-core/src/utils/format";
 
 // This is a little generic but these UI Flows
-// can be different depending on our page functionality
+// might be different depending on our page functionality
 // It would be better not to share them but instead derive state based on them in this file/domain.
+// Currently some of these are used in down tree components but until we convert to JSX
+// We will need to manage these manually
 export type SwapPageState = "idle" | "confirm" | "submit" | "fail" | "success";
 
 export default defineComponent({
