@@ -627,7 +627,7 @@ it("adds liquidity", async () => {
   ).toBe("Your pool share: 0.0602 %");
 });
 
-it.only("fails to add liquidity when can't pay gas with rowan", async () => {
+it("fails to add liquidity when can't pay gas with rowan", async () => {
   // Navigate to swap page
   await dexPage.goto(DEX_TARGET, {
     waitUntil: "domcontentloaded",
