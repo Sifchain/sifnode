@@ -426,7 +426,7 @@ it("swaps", async () => {
   );
 });
 
-it.only("swaps when out of gas", async () => {
+it.skip("swaps when out of gas", async () => {
   // Navigate to swap page
   await dexPage.goto(DEX_TARGET, {
     waitUntil: "domcontentloaded",
