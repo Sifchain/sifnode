@@ -34,7 +34,6 @@ export default defineComponent({
     subPageIsActive(input: string) {
       const paths = [input];
       return paths.some((path) => {
-        console.log(this.$route?.path, path);
         return this.$route?.path.indexOf(path) === 0; // current path starts with this path string
       });
     },

@@ -159,7 +159,7 @@ kubectl -n sifnode logs sifnode-65fbd7798f-6wqhb --kubeconfig ./.live/sifchain-a
 
 In order to become a validator, that is a node which can participate in consensus on the network, you'll need to stake `rowan`.
 
-1. If using testnet, obtain funds from the faucet.
+1. If using the testnet, please request funds via our [faucet discord channel](https://discord.com/invite/geqyCWSU5K).
 
 2. Get the public key of your node:
 

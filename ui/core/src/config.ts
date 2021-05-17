@@ -19,9 +19,9 @@ import {
   AssetConfig,
 } from "./utils/parseConfig";
 import { Asset } from "./entities";
-import { ApiContext } from "./api";
+import { ServiceContext } from "./services";
 
-type ConfigMap = { [s: string]: ApiContext };
+type ConfigMap = { [s: string]: ServiceContext };
 type AssetMap = { [s: string]: Asset[] };
 
 // Save assets for sync lookup throughout the app via Asset.get('symbol')
@@ -29,7 +29,7 @@ function cacheAsset(asset: Asset) {
   return Asset(asset);
 }
 
-export type AppConfig = ApiContext; // Will include other injectables
+export type AppConfig = ServiceContext; // Will include other injectables
 
 export function getConfig(
   config = "localnet",
