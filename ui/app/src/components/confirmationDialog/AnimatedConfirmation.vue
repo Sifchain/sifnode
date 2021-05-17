@@ -36,11 +36,11 @@ export default defineComponent({
       <div class={styles.text}>
         <p>{p.header}</p>
         <p class={styles.thin} data-handle="swap-message">
-          {p.pre}&nbsp;
+          {p.pre + " "}
           <span class={styles.thick}>
             {p.fromAmount} {p.fromToken}
-          </span>
-          &nbsp;for&nbsp;
+          </span>{" "}
+          for{" "}
           <span class={styles.thick}>
             {p.toAmount} {p.toToken}
           </span>
