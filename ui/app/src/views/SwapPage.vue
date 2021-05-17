@@ -1,7 +1,7 @@
 <script lang="ts">
 import { defineComponent } from "vue";
 import Layout from "@/components/layout/Layout.vue";
-import { computed, effect, ref } from "@vue/reactivity";
+import { computed, ref } from "@vue/reactivity";
 import { useCore } from "@/hooks/useCore";
 import { SwapState, TransactionStatus, useSwapCalculator } from "ui-core";
 import { useWalletButton } from "@/components/wallet/useWalletButton";
@@ -22,7 +22,7 @@ import { format } from "ui-core/src/utils/format";
 // It would be better not to share them but instead derive state based on them in this file/domain.
 // Currently some of these are used in down tree components but until we convert to JSX
 // We will need to manage these manually
-export type SwapPageState = "idle" | "confirm" | "submit" | "fail" | "success";
+type SwapPageState = "idle" | "confirm" | "submit" | "fail" | "success";
 
 export default defineComponent({
   components: {

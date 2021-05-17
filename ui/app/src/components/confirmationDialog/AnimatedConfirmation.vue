@@ -60,6 +60,29 @@ export default defineComponent({
 
     const handleCloseRequested = () => context.emit("closerequested");
 
+    const parseErrorObject = (
+      txStatus: TransactionStatus,
+    ): { header: JSX.Element; pre: JSX.Element; post: JSX.Element } => {
+      return {
+        header: "Transaction Failed",
+        pre: "Failed to swap",
+        post:
+          // Get the correct strings to show the user. This could be elevated elsewhere but is ultimately a UX/localization concern
+          typeof txStatus.code === "number"
+            ? {
+                [ErrorCode.TX_FAILED_SLIPPAGE]:
+                  "Please try to increase slippage tolerance.",
+                [ErrorCode.USER_REJECTED]: "You have rejected the transaction.",
+                [ErrorCode.TX_FAILED_OUT_OF_GAS]:
+                  "Please try to increase the gas limit.",
+                [ErrorCode.TX_FAILED_NOT_ENOUGH_ROWAN_TO_COVER_GAS]:
+                  "Not enough ROWAN to cover the gas fees. Please try again and ensure you have enough ROWAN to cover the selected gas fees.",
+              }[txStatus.code] ||
+              txStatus.memo ||
+              ""
+            : "",
+      };
+    };
     return () => (
       <div>
         <div class={styles.confirmation}>
@@ -81,56 +104,11 @@ export default defineComponent({
                   />
                 )}
               </SwipeTransition>
-              <SwipeTransition>
-                {props.state === "fail" &&
-                  props.txStatus.code === ErrorCode.TX_FAILED_OUT_OF_GAS && (
-                    <ConfirmTemplate
-                      header="Transaction Failed"
-                      pre="Failed to swap"
-                      post="Please try to increase the gas limit."
-                      {...amounts}
-                    />
-                  )}
-              </SwipeTransition>
-              <SwipeTransition>
-                {props.state === "fail" &&
-                  props.txStatus.code === ErrorCode.USER_REJECTED && (
-                    <ConfirmTemplate
-                      header="Transaction Rejected"
-                      pre="Failed to swap"
-                      post="Please confirm the transaction in your wallet."
-                      {...amounts}
-                    />
-                  )}
-              </SwipeTransition>
-              <SwipeTransition>
-                {props.state === "fail" &&
-                  props.txStatus.code === ErrorCode.TX_FAILED_SLIPPAGE && (
-                    <ConfirmTemplate
-                      header="Transaction Failed"
-                      pre="Failed to swap"
-                      post="Please try to increase slippage tolerance."
-                      {...amounts}
-                    />
-                  )}
-              </SwipeTransition>
-              <SwipeTransition>
-                {props.state === "fail" &&
-                  ErrorCode.TX_FAILED_NOT_ENOUGH_ROWAN_TO_COVER_GAS && (
-                    <ConfirmTemplate
-                      header="Transaction Failed"
-                      pre="Failed to swap"
-                      post="Not enough ROWAN to cover the gas fees. Please try again and ensure you have enough ROWAN to cover the selected gas fees"
-                      {...amounts}
-                    />
-                  )}
-              </SwipeTransition>
+              s
               <SwipeTransition>
                 {props.state === "fail" && (
                   <ConfirmTemplate
-                    header="Transaction Failed"
-                    pre="Failed to swap"
-                    post=""
+                    {...parseErrorObject(props.txStatus)}
                     {...amounts}
                   />
                 )}

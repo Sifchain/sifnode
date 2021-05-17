@@ -9,6 +9,7 @@ export enum ErrorCode {
   TX_FAILED_USER_NOT_ENOUGH_BALANCE,
 }
 
+// This may be removed as it is a UX concern
 const ErrorMessages = {
   [ErrorCode.TX_FAILED_SLIPPAGE]:
     "Your transaction has failed - Received amount is below expected",
