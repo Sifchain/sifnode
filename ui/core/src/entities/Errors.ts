@@ -19,7 +19,7 @@ const ErrorMessages = {
   [ErrorCode.INSUFFICIENT_FUNDS]: "You have insufficient funds",
   [ErrorCode.TX_FAILED_USER_NOT_ENOUGH_BALANCE]: "Not have enough balance",
   [ErrorCode.TX_FAILED_NOT_ENOUGH_ROWAN_TO_COVER_GAS]:
-    "Not have enough ROWAN to cover the gas fees",
+    "Not enough ROWAN to cover the gas fees",
   [ErrorCode.TX_FAILED_OUT_OF_GAS]: "Your transaction has failed - Out of gas",
 };
 
