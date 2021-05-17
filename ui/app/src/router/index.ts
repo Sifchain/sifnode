@@ -14,7 +14,7 @@ import RewardsPage from "@/views/RewardsPage.vue";
 const routes: Array<RouteRecordRaw> = [
   {
     path: "/",
-    redirect: { name: "ImportListingPage" },
+    redirect: { name: "Import" },
   },
   {
     path: "/stats",
