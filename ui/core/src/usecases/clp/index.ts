@@ -156,15 +156,18 @@ export default ({
       });
 
       const txStatus = await services.sif.signAndBroadcast(tx.value.msg);
+
       if (txStatus.state !== "accepted") {
-        services.bus.dispatch({
-          type: "TransactionErrorEvent",
-          payload: {
-            txStatus,
-            message:
-              txStatus.memo || "There was an error with your adding liquidity",
-          },
-        });
+        // Edge case where we have run out of native balance and need to represent that
+        if (txStatus.code === ErrorCode.TX_FAILED_USER_NOT_ENOUGH_BALANCE) {
+          return reportTransactionError({
+            ...txStatus,
+            code: ErrorCode.TX_FAILED_NOT_ENOUGH_ROWAN_TO_COVER_GAS,
+            memo: getErrorMessage(
+              ErrorCode.TX_FAILED_NOT_ENOUGH_ROWAN_TO_COVER_GAS,
+            ),
+          });
+        }
       }
       return txStatus;
     },
