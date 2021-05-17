@@ -18,7 +18,6 @@
     "node-stream-zip": "^1.13.2",
     "playwright": "^1.9.1",
     "regenerator-runtime": "^0.13.7",
-    "retry-assert": "^1.0.0",
     "ts-jest": "^26.5.4"
   },
   "dependencies": {

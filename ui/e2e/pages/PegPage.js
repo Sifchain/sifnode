@@ -1,11 +1,10 @@
 import { DEX_TARGET } from "../config";
-
-const retry = require("retry-assert");
+import expect from "expect-playwright";
 
 export class PegPage {
   constructor() {
     this.el = {
-      assetAmount: (asset) => `${asset}-row-amount`,
+      assetAmount: (asset) => `[data-handle='${asset}-row-amount']`,
     };
   }
 
@@ -21,6 +20,7 @@ export class PegPage {
     }
   }
 
+  // TODO: handling popup to be done outside of this page method
   async unpeg(asset, amount) {
     await page.click(`[data-handle='unpeg-${asset.toLowerCase()}']`);
     await page.click('[data-handle="peg-input"]');
@@ -39,7 +39,7 @@ export class PegPage {
 
     await page.waitForSelector("text=Transaction Submitted");
     await page.click("text=×");
-    await page.waitForTimeout(10000); // wait for sifnode to validate the tx
+    await page.waitForTimeout(10000); // wait for sifnode to validate the tx TODO: replace this wait with some dynamic condition
   }
 
   async peg(asset, amount) {
@@ -47,36 +47,15 @@ export class PegPage {
     await page.click('[data-handle="peg-input"]');
     await page.fill('[data-handle="peg-input"]', amount);
     await page.click('button:has-text("Peg")');
+  }
 
-    const [approveSpendPopup] = await Promise.all([
-      context.waitForEvent("page"),
-      page.click('button:has-text("Confirm Peg")'),
-    ]);
-
-    await approveSpendPopup.click("text=View full transaction details");
-    await expect(approveSpendPopup).toHaveText(
-      amount + ` ${asset.toLowerCase()}`,
-    );
-
-    // TODO: abstract away confirmation flow
-    const [confirmPopup2] = await Promise.all([
-      context.waitForEvent("page"),
-      approveSpendPopup.click('button:has-text("Confirm")'),
-    ]);
-
-    await Promise.all([
-      confirmPopup2.waitForEvent("close"),
-      confirmPopup2.click('button:has-text("Confirm")'),
-    ]);
-
-    await page.click("text=×");
+  async clickConfirmPeg() {
+    await page.click('button:has-text("Confirm Peg")'); // this opens new notification page
   }
 
   async verifyAssetAmount(asset, expectedAmount) {
-    const rowAmount = await retry()
-      .fn(() => page.innerText(`[data-handle='${asset}-row-amount']`))
-      .withTimeout(10000)
-      .until((rowAmount) => expect(rowAmount.trim()).toBe(expectedAmount));
+    const element = await page.$(this.el.assetAmount(asset));
+    await expect(element).toHaveText(expectedAmount);
   }
 }
 

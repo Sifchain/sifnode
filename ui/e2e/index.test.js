@@ -22,16 +22,12 @@ const { MetaMaskPage, metamaskPage } = require("./pages/MetaMaskPage");
 // services
 const { getSifchainBalances } = require("./sifchain.js");
 const { getEthBalance, advanceEthBlocks } = require("./ethereum.js");
-const {
-  extractFile,
-  getExtensionPage,
-  extractExtensionPackage,
-  sleep,
-} = require("./utils");
+const { getExtensionPage, extractExtensionPackage } = require("./utils");
 const { useStack } = require("../test/stack");
 const { keplrPage } = require("./pages/KeplrPage.js");
 const { connectMetaMaskAccount, connectKeplrAccount } = require("./helpers.js");
 const { pegPage } = require("./pages/PegPage.js");
+const { ApproveSpendPopup } = require("./pages/ApproveSpendPopup.js");
 
 async function getInputValue(page, selector) {
   return await page.evaluate((el) => el.value, await page.$(selector));
@@ -82,9 +78,34 @@ it("pegs rowan", async () => {
   await pegPage.verifyAssetAmount("erowan", "600.000000");
 
   // Now lets peg erowan
+  const pegAsset = "erowan";
   const pegAmount = "100";
   await pegPage.peg("erowan", pegAmount);
 
+  const [popupPage] = await Promise.all([
+    context.waitForEvent("page"),
+    pegPage.clickConfirmPeg(),
+  ]);
+  let approveSpendPopup = new ApproveSpendPopup(popupPage);
+
+  await approveSpendPopup.clickViewFullTransactionDetails();
+  await page.waitForTimeout(2000);
+  await expect(popupPage).toHaveText(`${pegAmount} ${pegAsset}`);
+
+  // TODO: abstract away confirmation flow
+  const [confirmPopup2] = await Promise.all([
+    context.waitForEvent("page"),
+    approveSpendPopup.clickConfirm(),
+  ]);
+
+  approveSpendPopup = new ApproveSpendPopup(confirmPopup2);
+
+  await Promise.all([
+    confirmPopup2.waitForEvent("close"),
+    await approveSpendPopup.clickConfirm(),
+  ]);
+
+  await page.click("text=×");
   // Check that tx marker for the tx is there
   await page.waitForSelector(
     `${pegPage.el.assetAmount("rowan")} [data-handle='pending-tx-marker']`,
