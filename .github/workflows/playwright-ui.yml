@@ -6,6 +6,7 @@ jobs:
   test:
     permissions:
       packages: write
+      pull-requests: write
 
     runs-on: ubuntu-latest
     defaults:
@@ -44,7 +45,7 @@ jobs:
           restore-keys: ${{ runner.os }}-yarn-
 
       - name: Log into registry
-        run: echo ${{ secrets.GHCR_TOKEN }} | docker login ghcr.io -u $GITHUB_ACTOR --password-stdin
+        run: echo "${{ github.token }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
 
       - name: Pull instant stack image
         run: docker pull $(cat scripts/latest)
