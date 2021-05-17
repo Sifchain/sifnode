@@ -411,8 +411,9 @@ it("swaps", async () => {
   await dexPage.waitForTimeout(10000); // wait for blockchain to update...
 
   // Wait for balances to be the amounts expected
-  expect(await dexPage.innerText('[data-handle="swap-message"]')).toBe(
-    "Swapped 50 cusdc for 49.9995000037 rowan",
+  await expect(dexPage).toHaveText(
+    '[data-handle="swap-message"]',
+    "Swapped 50 cusdc for 49.9995000037 rowan",
   );
 
   await dexPage.click("[data-handle='modal-view-close']");
