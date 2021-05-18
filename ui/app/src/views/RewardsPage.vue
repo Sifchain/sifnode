@@ -37,10 +37,6 @@ function toAmount(thing: any) {
   }
 }
 
-// TODO: this cannot be tested properly right now we need to provide this as an injectable service
-// through a usecase to adequately test the data We might want to add this service to our docker
-// backing stack or use fixtures within e2e tests we will likely want to add wrap this around some
-// kind of swr pattern to have a better UX
 async function getRewardsData(address: string): Promise<RewardsResult[]> {
   if (!address) return [];
 
