@@ -212,6 +212,7 @@ func RunInitRelayerCmd(cmd *cobra.Command, args []string) error {
 	sugaredLogger := logger.Sugar()
 	zap.RedirectStdLog(sugaredLogger.Desugar())
 
+	// TODO the validatorAddress here isn't used outside of the relayer; we should remove it
 	ethSub, err := relayer.NewEthereumSub(cliContext, rpcURL, validatorMoniker, chainID, web3Provider,
 		contractAddress, privateKey, nil, db, sugaredLogger)
 	if err != nil {
