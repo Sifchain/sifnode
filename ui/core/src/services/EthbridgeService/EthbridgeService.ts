@@ -109,6 +109,7 @@ export default function createEthbridgeService({
       const isEventWeCareAbout = eventList.includes(event.event);
 
       const matchesInputAddress =
+        address &&
         event?.returnValues?._from?.toLowerCase() === address.toLowerCase();
 
       if (isEventWeCareAbout && matchesInputAddress && event.transactionHash) {
