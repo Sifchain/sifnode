@@ -18,7 +18,6 @@ podAnnotations:
   vault.hashicorp.com/tls-skip-verify: "true"
   vault.hashicorp.com/agent-inject-template--=app_name=-: |
     {{- with secret "kv-v2/-=app_region=-/-=env=-/-=app_name=-" -}}
-      export ROOT_URL={{ .Data.data.ROOT_URL }}
       export MONGO_URL={{ .Data.data.MONGO_URL }}
       export PORT={{ .Data.data.PORT }}
     {{- end }}
@@ -37,7 +36,7 @@ blockExplorer:
     mongoUsername: "mongodb"
     mongoPassword:
     mongoDatabase: "block_explorer"
-    rootURL: "${ROOT_URL}"
+    rootURL: "-=ROOT_URL=-"
   env:
     chainnet: ""
     genesisURL: ""
