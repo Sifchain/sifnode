@@ -133,13 +133,15 @@ describe("format", () => {
     },
     // Dynamic mantissa
     // Will adjust based on given hash map
-    // We should tokenize these as reusable options
+    // We should tokenize all these as reusable options based on the
+    // design language we choose instead of use them inline
+    //   eg `format(amount, formatters.GENERAL_DYNAMIC)`
     ...(() => {
       const dynamicMantissa = {
-        1: 6,
-        1000: 4,
-        100000: 2,
-        infinity: 0,
+        1: 6, // < 1 show 6 decimals
+        1000: 4, // < 1000 show 4 decimals
+        100000: 2, // < 100000 show 2 decimals
+        infinity: 0, // otherwise show 0 decimals
       };
       return [
         {
