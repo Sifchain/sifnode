@@ -721,9 +721,9 @@ metadata:
   desc "Deploy Helm Files"
   namespace :vault do
     desc "Deploy Helm Files"
-    task :helm_deploy, [:app_namespace, :image, :image_tag, :env, :app_name] do |t, args|
+    task :helm_deploy_vault, [:app_namespace, :image, :image_tag, :env, :app_name] do |t, args|
       puts "Deploy the Helm Files."
-      deoploy_helm = %Q{helm upgrade #{args[:app_name]} deploy/helm/#{args[:app_name]} --install -n #{args[:app_namespace]} --create-namespace --set image.repository=#{args[:image]} --set image.tag=#{args[:image_tag]} --kubeconfig=./kubeconfig}
+      deoploy_helm = %Q{helm upgrade #{args[:app_name]} deploy/helm/#{args[:app_name]}-vault --install -n #{args[:app_namespace]} --create-namespace --set image.repository=#{args[:image]} --set image.tag=#{args[:image_tag]} --kubeconfig=./kubeconfig}
       system(deoploy_helm) or exit 1
 
       puts "Use kubectl rollout to wait for pods to start."
@@ -734,7 +734,7 @@ metadata:
 
   desc "Deploy Kubernetes Manifest"
   namespace :kubernetes do
-    desc "Deploy Helm Files"
+    desc "Deploy Kubernetes Manifest"
     task :manifest_deploy, [:app_namespace, :image, :image_tag, :env, :app_name] do |t, args|
       puts "Deploy the Helm Files."
       deoploy_manifest = %Q{kubectl apply -f deploy/manifests/#{args[:app_name]}/deployment.yaml -n #{args[:app_namespace]} --kubeconfig=./kubeconfig}
@@ -880,7 +880,6 @@ metadata:
     end
   end
 
-
   desc "Wait for Release Pipeline to Finish."
   namespace :release do
     desc "Wait for Release Pipeline to Finish."
@@ -930,19 +929,6 @@ metadata:
     end
   end
 
-  desc "Import Key Ring"
-  namespace :release do
-    desc "Import Key Ring"
-    task :import_keyring, [:moniker, :app_env] do |t, args|
-      File.open("tmp_keyring_rendered", "w+") do |f|
-        ENV["keyring_pem"]&.split("-=n=-")&.each { |line| f.puts(line) }
-      end
-      import_key_ring=`yes "${keyring_passphrase}" | go run ./cmd/sifnodecli keys import #{args[:moniker]} tmp_keyring_rendered --keyring-backend test`
-      puts "import key ring"
-      puts import_key_ring
-    end
-  end
-
   desc "Create Github Release."
   namespace :release do
     desc "Create Github Release."
@@ -968,140 +954,6 @@ metadata:
         end
       rescue
         puts 'Release Already Exists'
-      end
-    end
-  end
-
-  desc "Create Github Release."
-  namespace :release do
-    desc "Create Github Release."
-    task :create_github_release, [:release, :env, :token] do |t, args|
-      require 'rest-client'
-      require 'json'
-      begin
-        release_hash = { "devnet" => "DevNet", "testnet" =>"TestNet", "betanet" =>"MainNet" }
-        release_target = { "devnet" => "develop", "testnet" =>"testnet", "betanet" =>"master" }
-        release_name = release_hash[args[:env]]
-        if "#{args[:app_env]}" == "betanet"
-          headers = {content_type: :json, "Accept": "application/vnd.github.v3+json", "Authorization":"token #{args[:token]}"}
-          payload = {"tag_name"  =>  "mainnet-#{args[:release]}", "target_commitish"  =>  release_target[args[:env]], "name"  =>  "#{release_name} v#{args[:release]}","body"  => "Sifchain MainNet Release v#{args[:release]}","prerelease"  =>  true}.to_json
-          response = RestClient.post 'https://api.github.com/repos/Sifchain/sifnode/releases', payload, headers
-          json_response_job_object = JSON.parse response.body
-          puts json_response_job_object
-        else
-          headers = {content_type: :json, "Accept": "application/vnd.github.v3+json", "Authorization":"token #{args[:token]}"}
-          payload = {"tag_name"  =>  "#{args[:env]}-#{args[:release]}", "target_commitish"  =>  release_target[args[:env]], "name"  =>  "#{release_name} v#{args[:release]}","body"  => "Sifchain #{args[:env]} Release v#{args[:release]}","prerelease"  =>  true}.to_json
-          response = RestClient.post 'https://api.github.com/repos/Sifchain/sifnode/releases', payload, headers
-          json_response_job_object = JSON.parse response.body
-          puts json_response_job_object
-        end
-      rescue
-        puts 'Release Already Exists'
-      end
-    end
-  end
-
-  desc "Create Release Governance Request."
-  namespace :release do
-    desc "Create Release Governance Request."
-    task :generate_governance_release_request, [:upgrade_hours, :block_time, :deposit, :rowan, :chainnet, :release_version, :from, :app_env, :token] do |t, args|
-      require 'rest-client'
-      require 'json'
-
-      puts "Looking for the Release Handler"
-      release_search = "#{args[:release_version]}"
-      setupHandlers = File.read("app/setupHandlers.go").strip
-      setupHandlers.include?(release_search) ? (puts 'Found') : (exit 1)
-
-      release_version = "#{args[:app_env]}-#{args[:release_version]}"
-      puts "Calculating Upgrade Block Height"
-      if "#{args[:app_env]}" == "betanet"
-        response = RestClient.get "http://rpc.sifchain.finance/abci_info?"
-        json_response_object = JSON.parse response.body
-      else
-        response = RestClient.get "http://rpc-#{args[:app_env]}.sifchain.finance/abci_info?"
-        json_response_object = JSON.parse response.body
-      end
-
-      current_height = json_response_object["result"]["response"]["last_block_height"].to_f
-      average_block_time = "#{args[:block_time]}".to_f
-      average_time = 60 / average_block_time
-      average_time = average_time * 60 * "#{args[:upgrade_hours]}".to_f
-      future_block_height = current_height + average_time + 100
-      block_height = future_block_height.round
-      puts "Block Height #{block_height}"
-
-      if "#{args[:app_env]}" == "betanet"
-        sha_token=""
-        headers = {"Accept": "application/vnd.github.v3+json","Authorization":"token #{args[:token]}"}
-        response = RestClient.get 'https://api.github.com/repos/Sifchain/sifnode/releases', headers
-        json_response_job_object = JSON.parse response.body
-        json_response_job_object.each do |release|
-          if release["tag_name"].include?("mainnet-#{args[:release_version]}")
-            release["assets"].each do |asset|
-              if asset["name"].include?(".sha256")
-                response = RestClient.get asset["browser_download_url"], headers
-                sha_token = response.body.strip
-              end
-            end
-          end
-        end
-      else
-        sha_token=""
-        headers = {"Accept": "application/vnd.github.v3+json","Authorization":"token #{args[:token]}"}
-        response = RestClient.get 'https://api.github.com/repos/Sifchain/sifnode/releases', headers
-        json_response_job_object = JSON.parse response.body
-        json_response_job_object.each do |release|
-          if release["tag_name"].include?("#{args[:app_env]}-#{args[:release_version]}")
-            release["assets"].each do |asset|
-              if asset["name"].include?(".sha256")
-                response = RestClient.get asset["browser_download_url"], headers
-                sha_token = response.body.strip
-              end
-            end
-          end
-        end
-      end
-
-
-      if sha_token.empty?
-        puts "No Sha Found"
-        exit 1
-      end
-
-      puts "Sha found #{sha_token}"
-
-      if "#{args[:app_env]}" == "betanet"
-        governance_request = %Q{ yes "${keyring_passphrase}" | go run ./cmd/sifnodecli tx gov submit-proposal software-upgrade #{args[:release_version]} \
-                --from #{args[:from]} \
-                --deposit #{args[:deposit]} \
-                --upgrade-height #{block_height} \
-                --info '{"binaries":{"linux/amd64":"https://github.com/Sifchain/sifnode/releases/download/mainnet-#{args[:release_version]}/sifnoded-#{args[:app_env]}-#{args[:release_version]}-linux-amd64.zip?checksum='#{sha_token}'"}}' \
-                --title #{args[:app_env]}-#{args[:release_version]} \
-                --description #{args[:app_env]}-#{args[:release_version]} \
-                --node tcp://rpc.sifchain.finance:80 \
-                --keyring-backend test \
-                -y \
-                --chain-id #{args[:chainnet]} \
-                --gas-prices "#{args[:rowan]}"
-                sleep 60 }
-        system(governance_request) or exit 1
-      else
-        puts "create dev net gov request #{sha_token}"
-        governance_request = %Q{ yes "${keyring_passphrase}" | go run ./cmd/sifnodecli tx gov submit-proposal software-upgrade #{args[:release_version]} \
-                --from #{args[:from]} \
-                --deposit #{args[:deposit]} \
-                --upgrade-height #{block_height} \
-                --info '{"binaries":{"linux/amd64":"https://github.com/Sifchain/sifnode/releases/download/#{args[:app_env]}-#{args[:release_version]}/sifnoded-#{args[:app_env]}-#{args[:release_version]}-linux-amd64.zip?checksum='#{sha_token}'"}}' \
-                --title #{args[:app_env]}-#{args[:release_version]} \
-                --description #{args[:app_env]}-#{args[:release_version]} \
-                --node tcp://rpc-#{args[:app_env]}.sifchain.finance:80 \
-                --keyring-backend test \
-                -y \
-                --chain-id #{args[:chainnet]} \
-                --gas-prices "#{args[:rowan]}"
-                sleep 60 }
-        system(governance_request) or exit 1
       end
     end
   end
@@ -1233,38 +1085,6 @@ EOF
   desc "Create Release Governance Request Vote."
   namespace :release do
     desc "Create Release Governance Request Vote."
-    task :generate_vote, [:rowan, :chainnet, :from, :app_env] do |t, args|
-      if "#{args[:app_env]}" == "betanet"
-        governance_request = %Q{
-vote_id=$(go run ./cmd/sifnodecli q gov proposals --node tcp://rpc.sifchain.finance:80 --trust-node -o json | jq --raw-output 'last(.[]).id' --raw-output)
-echo "vote_id $vote_id"
-yes "${keyring_passphrase}" | go run ./cmd/sifnodecli tx gov vote ${vote_id} yes \
-    --from #{args[:from]} \
-    --keyring-backend test \
-    --chain-id #{args[:chainnet]}  \
-    --node tcp://rpc.sifchain.finance:80 \
-    --gas-prices "#{args[:rowan]}" -y
-sleep 15  }
-        system(governance_request) or exit 1
-      else
-        governance_request = %Q{
-vote_id=$(go run ./cmd/sifnodecli q gov proposals --node tcp://rpc-#{args[:app_env]}.sifchain.finance:80 --trust-node -o json | jq --raw-output 'last(.[]).id' --raw-output)
-echo "vote_id $vote_id"
-yes "${keyring_passphrase}" | go run ./cmd/sifnodecli tx gov vote ${vote_id} yes \
-    --from #{args[:from]} \
-    --keyring-backend test \
-    --chain-id #{args[:chainnet]}  \
-    --node tcp://rpc-#{args[:app_env]}.sifchain.finance:80 \
-    --gas-prices "#{args[:rowan]}" -y
-sleep 15 }
-        system(governance_request) or exit 1
-        end
-    end
-  end
-
-  desc "Create Release Governance Request Vote."
-  namespace :release do
-    desc "Create Release Governance Request Vote."
     task :generate_vote_no_passphrase, [:rowan, :chainnet, :from, :app_env, :moniker, :mnemonic] do |t, args|
         if "#{args[:app_env]}" == "betanet"
             governance_request = %Q{
@@ -1309,21 +1129,6 @@ EOF
 }
           system(governance_request) or exit 1
        end
-    end
-  end
-
-  desc "Block Explorer"
-  namespace :blockexplorer do
-    desc "Deploy a Block Explorer to an existing cluster"
-    task :deploy_vault, [:namespace, :image_name, :image_tag] do |t, args|
-
-      cmd = %Q{helm upgrade block-explorer #{cwd}/../../deploy/helm/block-explorer \
-        --install -n #{args[:namespace]} --create-namespace \
-        --set image.repository=#{args[:image_name]} \
-        --set image.tag=#{args[:image_tag]} --kubeconfig=./kubeconfig
-      }
-
-      system(cmd) or exit 1
     end
   end
 
