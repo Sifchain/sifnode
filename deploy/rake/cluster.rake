@@ -738,6 +738,8 @@ metadata:
     task :helm_mongo_deploy, [:ROOT_PASSWORD, :USERNAME, :PASSWORD, :DATABASE] do |t, args|
       puts "Deploy the Helm Files."
       deoploy_helm = %Q{
+            helm repo add bitnami https://charts.bitnami.com/bitnami --kubeconfig=./kubeconfig
+            helm repo update --kubeconfig=./kubeconfig
             helm upgrade mongodb --install \
             -n mongodb \
             -f deploy/helm/mongodb/values.yaml \
