@@ -5,6 +5,7 @@ package txs
 import (
 	"context"
 	"crypto/ecdsa"
+	"github.com/pkg/errors"
 	"math/big"
 	"time"
 
@@ -15,7 +16,6 @@ import (
 
 	cosmosbridge "github.com/Sifchain/sifnode/cmd/ebrelayer/contract/generated/bindings/cosmosbridge"
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/types"
-	ethbridge "github.com/Sifchain/sifnode/x/ethbridge/types"
 )
 
 const (
@@ -43,25 +43,21 @@ func RelayProphecyClaimToEthereum(provider string, contractAddress common.Addres
 		return err
 	}
 
-	// Send transaction
-	sugaredLogger.Infow(
-		"Sending new ProphecyClaim to CosmosBridge.",
-		"claim", claim,
-	)
-	// TODO this is leftover from when we were converting from a string; don't need it any more
-	var claimType ethbridge.ClaimType
 	switch claim.ClaimType {
-	case types.MsgLock:
-		claimType = ethbridge.ClaimType_CLAIM_TYPE_LOCK
-	case types.MsgBurn:
-		claimType = ethbridge.ClaimType_CLAIM_TYPE_BURN
-	default:
-		sugaredLogger.Errorw(
-			"failed to convert ClaimType to lock or burn",
+	case types.MsgLock | types.MsgBurn:
+		sugaredLogger.Infow(
+			"Sending new ProphecyClaim to CosmosBridge.",
 			"claim", claim,
 		)
+	default:
+		sugaredLogger.Errorw(
+			"unknown claim type",
+			"claim", claim,
+		)
+		return errors.New("unknown claim type in RelayProphecyClaimToEthereum")
 	}
-	tx, err := cosmosBridgeInstance.NewProphecyClaim(auth, uint8(claimType),
+
+	tx, err := cosmosBridgeInstance.NewProphecyClaim(auth, uint8(claim.ClaimType),
 		claim.CosmosSender, claim.CosmosSenderSequence, claim.EthereumReceiver, claim.Symbol, claim.Amount.BigInt())
 
 	if err != nil {
