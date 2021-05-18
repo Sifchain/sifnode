@@ -41,7 +41,7 @@ func TestLogLockToEthBridgeClaim(t *testing.T) {
 	// Set up expected EthBridgeClaim
 	expectedEthBridgeClaim := ethbridge.NewEthBridgeClaim(
 		TestEthereumChainID, testBridgeContractAddress, TestNonce, strings.ToLower(TestSymbol), testTokenContractAddress,
-		testEthereumAddress, testCosmosAddress, testCosmosValidatorBech32Address, testSDKAmount, TestLockClaimType)
+		testEthereumAddress, testCosmosAddress, testCosmosValidatorBech32Address, testSDKAmount, ethbridge.ClaimType_CLAIM_TYPE_LOCK)
 
 	// Create test ethereum event
 	ethereumEvent := CreateTestLogEthereumEvent(t)
@@ -54,7 +54,9 @@ func TestLogLockToEthBridgeClaim(t *testing.T) {
 
 func TestProphecyClaimToSignedOracleClaim(t *testing.T) {
 	// Set ETHEREUM_PRIVATE_KEY env variable
-	os.Setenv(EthereumPrivateKey, TestPrivHex)
+	if os.Setenv(EthereumPrivateKey, TestPrivHex) != nil {
+		t.Fatal("failed to set env variable")
+	}
 	// Get and load private key from env variables
 	rawKey := os.Getenv(EthereumPrivateKey)
 	privateKey, _ := crypto.HexToECDSA(rawKey)
@@ -126,46 +128,6 @@ func TestFailedLockEventToCosmosMsg(t *testing.T) {
 	_, err := BurnLockEventToCosmosMsg(types.MsgLock, cosmosMsgAttributes, sugaredLogger)
 
 	require.Error(t, err)
-}
-
-func TestMsgBurnToProphecyClaim(t *testing.T) {
-	// Parse expected symbol
-	res := strings.SplitAfter(strings.ToLower(TestSymbol), defaultSifchainPrefix)
-	symbol := strings.Join(res[1:], "")
-
-	// Set up expected ProphecyClaim
-	expectedProphecyClaim := ethbridge.ProphecyClaim{
-		ClaimType:            types.MsgBurn.String(),
-		CosmosSender:         []byte(TestCosmosAddress1),
-		CosmosSenderSequence: []byte(strconv.Itoa(TestCosmosAddressSequence)),
-		EthereumReceiver:     []byte(common.HexToAddress(TestEthereumAddress1).String()),
-		Symbol:               symbol,
-		Amount:               testSDKAmount.String(),
-	}
-
-	// Create a MsgBurn as input parameter
-	testCosmosMsgBurn := CreateTestCosmosMsg(t, types.MsgBurn)
-	prophecyClaim := CosmosMsgToProphecyClaim(testCosmosMsgBurn)
-
-	require.Equal(t, expectedProphecyClaim, prophecyClaim)
-}
-
-func TestMsgLockToProphecyClaim(t *testing.T) {
-	// Set up expected ProphecyClaim
-	expectedProphecyClaim := ethbridge.ProphecyClaim{
-		ClaimType:            types.MsgLock.String(),
-		CosmosSender:         []byte(TestCosmosAddress1),
-		CosmosSenderSequence: []byte(strconv.Itoa(TestCosmosAddressSequence)),
-		EthereumReceiver:     []byte(common.HexToAddress(TestEthereumAddress1).String()),
-		Symbol:               TestSymbol,
-		Amount:               testSDKAmount.String(),
-	}
-
-	// Create a MsgLock as input parameter
-	testCosmosMsgLock := CreateTestCosmosMsg(t, types.MsgLock)
-	prophecyClaim := CosmosMsgToProphecyClaim(testCosmosMsgLock)
-
-	require.Equal(t, expectedProphecyClaim, prophecyClaim)
 }
 
 func TestIsZeroAddress(t *testing.T) {
