@@ -38,11 +38,11 @@ blockExplorer:
     mongoDatabase: "block_explorer"
     rootURL: "-=ROOT_URL=-"
   env:
-    chainnet: ""
-    genesisURL: ""
+    chainnet: "-=CHAIN_NET=-"
+    genesisURL: "-=GENESIS_URL=-"
     remote:
-      rpcURL: ""
-      apiURL: ""
+      rpcURL: "-=RPC_URL=-"
+      apiURL: "-=API_URL=-"
 
 service:
   type: LoadBalancer
