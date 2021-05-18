@@ -3,19 +3,17 @@ package txs
 // DONTCOVER
 
 import (
-	"go.uber.org/zap"
-	"log"
-
 	"github.com/Sifchain/sifnode/x/ethbridge/types"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/tx"
+	"go.uber.org/zap"
 
 	// tx "github.com/cosmos/cosmos-sdk/client/tx"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 var (
-	errorMessageKey           = "errorMessage"
+	errorMessageKey = "errorMessage"
 )
 
 // RelayToCosmos applies validator's signature to an EthBridgeClaim message containing
@@ -45,12 +43,17 @@ func RelayToCosmos(factory tx.Factory, claims []*types.EthBridgeClaim, cliCtx cl
 		}
 	}
 
-	sugaredLogger.Infow(
-		"relay sequenceNumber from builder.",
-	)
-
 	sugaredLogger.Infow("RelayToCosmos building, signing, and broadcasting", "messages", messages)
-	err := tx.BroadcastTx(cliCtx, factory.WithGas(1000000000000000000).WithFees("500000000000000000rowan"), messages...)
+	// TODO this WithGas isn't correct
+	// TODO we need to investigate retries
+	// TODO we need to investigate what happens when the transaction has already been completed
+	err := tx.BroadcastTx(
+		cliCtx,
+		factory.
+			WithGas(1000000000000000000).
+			WithFees("500000000000000000rowan"),
+		messages...,
+	)
 
 	// Broadcast to a Tendermint node
 	// open question as to how we handle this situation.
@@ -64,7 +67,7 @@ func RelayToCosmos(factory tx.Factory, claims []*types.EthBridgeClaim, cliCtx cl
 		return err
 	}
 
-	log.Println("Broadcasted tx without error")
+	sugaredLogger.Infow("Broadcasted tx without error")
 
 	return nil
 }

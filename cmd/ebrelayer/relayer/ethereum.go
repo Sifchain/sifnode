@@ -86,18 +86,6 @@ func NewEthereumSub(cliCtx client.Context, rpcURL string, validatorMoniker, chai
 	}, nil
 }
 
-func AddToKeyringWithMnemonic(kr keyring.Keyring, keyName string, mnemonic string) (keyring.Info, error) {
-	hdpath := *hd.NewFundraiserParams(0, sdk.CoinType, 0)
-
-	result, err := kr.NewAccount(keyName, mnemonic, "", hdpath.String(), hd.Secp256k1)
-
-	if err != nil {
-		return nil, err
-	}
-
-	return result, err
-}
-
 // LoadTendermintCLIContext : loads CLI context for tendermint txs
 func LoadTendermintCLIContext(cliCtx client.Context, validatorAddress sdk.ValAddress, validatorName string,
 	rpcURL string, chainID string, sugaredLogger *zap.SugaredLogger) (client.Context, error) {
@@ -442,19 +430,11 @@ func (sub EthereumSub) logToEvent(clientChainID *big.Int, contractAddress common
 }
 
 func GetValAddressFromKeyring(k keyring.Keyring, keyname string) (sdk.ValAddress, error) {
-	i, err := k.Key(keyname)
+	keyInfo, err := k.Key(keyname)
 	if err != nil {
 		return nil, err
 	}
-	return sdk.ValAddress(i.GetAddress()), nil
-}
-
-func GetAccAddressFromKeyring(k keyring.Keyring, keyname string) (sdk.AccAddress, error) {
-	i, err := k.Key(keyname)
-	if err != nil {
-		return nil, err
-	}
-	return i.GetAddress(), nil
+	return sdk.ValAddress(keyInfo.GetAddress()), nil
 }
 
 // handleEthereumEvent unpacks an Ethereum event, converts it to a ProphecyClaim, and relays a tx to Cosmos

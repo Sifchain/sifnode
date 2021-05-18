@@ -48,6 +48,7 @@ func RelayProphecyClaimToEthereum(provider string, contractAddress common.Addres
 		"Sending new ProphecyClaim to CosmosBridge.",
 		"claim", claim,
 	)
+	// TODO this is leftover from when we were converting from a string; don't need it any more
 	var claimType ethbridge.ClaimType
 	switch claim.ClaimType {
 	case types.MsgLock:
