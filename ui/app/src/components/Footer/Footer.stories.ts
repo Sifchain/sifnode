@@ -14,7 +14,7 @@ const Template = (args: any) => ({
   template: '<footer :footer="footer" v-bind="args" />',
 });
 
-export const Footer = Template.bind({});
-Footer.args = {
+export const BasicFooter = Template.bind({});
+BasicFooter.args = {
   footer: "info-box-black",
 };

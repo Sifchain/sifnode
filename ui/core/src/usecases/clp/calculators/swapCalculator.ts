@@ -6,11 +6,11 @@ import {
   CompositePool,
   IAssetAmount,
   Amount,
-} from "../entities";
+} from "../../../entities";
 
 import { useField } from "./useField";
 import { trimZeros, useBalances } from "./utils";
-import { format } from "../utils/format";
+import { format } from "../../../utils/format";
 export enum SwapState {
   SELECT_TOKENS,
   ZERO_AMOUNTS,

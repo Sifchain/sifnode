@@ -1,7 +1,5 @@
 # Frontend repo
 
-🚧 This is currently under construction and may not work. 🚧
-
 ## Installation
 
 ### Prerequisites
@@ -56,21 +54,6 @@ NOTE: This command requires [tmux](https://github.com/tmux/tmux/wiki/Installing)
 | `yarn core:test`     | Run core tests with no background chain                       |
 | `yarn core:watch`    | Compile core code in watch mode                               |
 
-## End to end tests
-
-`yarn pw:test:stack`
-
-Will serve the built webapplication in `app/dist` on port 5000 and run tests over this including backing services which are then reset every test.
-
-`yarn pw:test:debug`
-
-Will run tests in debug mode over a website served on http://localhost:8080. This is good for testing a feature you are working on. Ideally when working on a feature you might want to do the following in separate terminals:
-
-1. `yarn stack:backend` - start up the backing services
-2. `yarn app:serve` - start up the web server
-3. `yarn core:watch` - update the webserver with core code on change
-4. `yarn pw:test:debug` - Run the test suite over the stack - you probably want to isolate the test you need with `.only` methods.
-
 ## Folder structure
 
 | Path               | Description                      |
@@ -106,26 +89,52 @@ Every part of this system is designed to facilitate easy testing.
 
 ## Testing
 
+### End to end tests
+
+`yarn pw:test:stack`
+
+Will serve the built webapplication in `app/dist` on port 5000 and run tests over this including backing services which are then reset every test.
+
+`yarn pw:test:debug`
+
+Will run tests in debug mode over a website served on http://localhost:8080. This is good for testing a feature you are working on. Ideally when working on a feature you might want to do the following in separate terminals:
+
+1. `yarn stack:backend` - start up the backing services
+2. `yarn app:serve` - start up the web server
+3. `yarn core:watch` - update the webserver with core code on change
+4. `yarn pw:test:debug` - Run the test suite over the stack - you probably want to isolate the test you need with `.only` methods.
+
+### To update instant stack
+
+If you need to update the instant stack image:
+
+1. Make changes to migrate scripts
+2. run `./scripts/run-stack-save-default-snapshot.sh`
+3. run `./scripts/build-stack-backend-docker.sh`
+4. Check in the changes to the local repo.
+
+Note you will need to ensure you have [logged into the github container registry](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry#authenticating-to-the-container-registry) and have write access to the `/sifchain/sifnode` namespace.
+
 ### Testing Actions
 
-Actions can be grouped arbitrarily by domain aggregate and may have their dependencies injected using the supplied creator. You ask for your api and store keys by using the given TS types.
+Actions can be grouped arbitrarily by domain aggregate and may have their dependencies injected using the supplied creator. You ask for your services and store keys by using the given TS types.
 
 ```ts
 // Generic params specify what API the service expects
-type ActionContext<ServiceKeys, StoreKeys>
+type UsecaseContext<ServiceKeys, StoreKeys>
 ```
 
 ```ts
-export default function createAction({
-  api,
+export default function createUsecase({
+  services,
   store,
-}: ActionContext<"WalletService" | "SifService", "WalletStore">) {
+}: UsecaseContext<"wallet" | "sif", "wallet">) {
   return {
     async disconnectWallet() {
-      await api.WalletService.disconnect();
-      store.WalletStore.isConnected = false;
-      store.WalletStore.balances = [];
-      await api.SifService.disconnect();
+      await services.eth.disconnect();
+      store.wallet.isConnected = false;
+      store.wallet.balances = [];
+      await services.sif.disconnect();
     },
   };
 }
@@ -134,7 +143,7 @@ export default function createAction({
 The reason we do it this way is that in testing we only need to give the action creator exactly what it needs.
 
 ```ts
-const actions = createAction({ api: { WalletService: fakeWalletService } });
+const actions = createAction({ services: { eth: fakeWalletService } });
 
 // Then under test the wallet service runs with it's dependencies
 actions.disconnectWallet();
