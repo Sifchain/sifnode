@@ -51,8 +51,8 @@ func TestKeeper_CreateAndDistributeDrops(t *testing.T) {
 func TestKeeper_VerifyDistribution(t *testing.T) {
 	app, ctx := test.CreateTestApp(false)
 	keeper := app.DispensationKeeper
-	err := keeper.VerifyDistribution(ctx, "AR1", types.Airdrop)
+	err := keeper.VerifyAndSetDistribution(ctx, "AR1", types.Airdrop)
 	assert.NoError(t, err)
-	err = keeper.VerifyDistribution(ctx, "AR1", types.Airdrop)
+	err = keeper.VerifyAndSetDistribution(ctx, "AR1", types.Airdrop)
 	assert.Error(t, err)
 }

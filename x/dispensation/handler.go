@@ -3,8 +3,10 @@ package dispensation
 import (
 	"fmt"
 	"github.com/Sifchain/sifnode/x/dispensation/types"
+	dispensationUtils "github.com/Sifchain/sifnode/x/dispensation/utils"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+	"github.com/cosmos/cosmos-sdk/x/bank"
 	"github.com/pkg/errors"
 )
 
@@ -27,12 +29,13 @@ func NewHandler(k Keeper) sdk.Handler {
 //handleMsgCreateDistribution is the top level function for calling all executors.
 func handleMsgCreateDistribution(ctx sdk.Context, keeper Keeper, msg MsgDistribution) (*sdk.Result, error) {
 	// Verify if distribution already exists
-	err := keeper.VerifyDistribution(ctx, msg.DistributionName, msg.DistributionType)
+	err := keeper.VerifyAndSetDistribution(ctx, msg.DistributionName, msg.DistributionType)
 	if err != nil {
 		return nil, err
 	}
 	//Accumulate all Drops into the ModuleAccount
-	err = keeper.AccumulateDrops(ctx, msg.Input)
+	totalOutput := dispensationUtils.TotalOutput(msg.Output)
+	err = keeper.AccumulateDrops(ctx, []bank.Input{bank.NewInput(msg.Distributor, totalOutput)})
 	if err != nil {
 		return nil, err
 	}
@@ -41,10 +44,14 @@ func handleMsgCreateDistribution(ctx sdk.Context, keeper Keeper, msg MsgDistribu
 	if err != nil {
 		return nil, err
 	}
+	// Add Distribution details to the events .
+	// Unit tests for events .
 	ctx.EventManager().EmitEvents(sdk.Events{
 		sdk.NewEvent(
 			types.EventTypeDistributionStarted,
 			sdk.NewAttribute(types.AttributeKeyFromModuleAccount, types.GetDistributionModuleAddress().String()),
+			sdk.NewAttribute(types.AttributeKeyDistributionName, msg.DistributionName),
+			sdk.NewAttribute(types.AttributeKeyDistributionType, msg.DistributionType.String()),
 		),
 	})
 	return &sdk.Result{Events: ctx.EventManager().Events()}, nil

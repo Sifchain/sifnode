@@ -19,6 +19,7 @@ const (
 	// QuerierRoute to be used for querier msgs
 	QuerierRoute      = ModuleName
 	DefaultParamspace = ModuleName
+	TokenSupported    = "rowan"
 )
 
 var (

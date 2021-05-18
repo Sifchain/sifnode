@@ -79,6 +79,18 @@ func TestParseOutput(t *testing.T) {
 	assert.Equal(t, len(outputs), count)
 }
 
+func TestTotalOutput(t *testing.T) {
+	file := "output.json"
+	count := 3000
+	createOutput(file, count)
+	defer removeFile(t, file)
+	outputs, err := utils.ParseOutput(file)
+	assert.NoError(t, err)
+	total := utils.TotalOutput(outputs)
+	num, _ := sdk.NewIntFromString("30000000000000000000000")
+	assert.True(t, total.AmountOf("rowan").Equal(num))
+}
+
 // TODO Add the following utils as its own separate cmd
 
 func TestAddressFilter(t *testing.T) {

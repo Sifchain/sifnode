@@ -79,7 +79,7 @@ func (k Keeper) AccumulateDrops(ctx sdk.Context, input []bank.Input) error {
 
 // Verify if the distribution is correct
 // The verification is the for distributionName + distributionType
-func (k Keeper) VerifyDistribution(ctx sdk.Context, distributionName string, distributionType types.DistributionType) error {
+func (k Keeper) VerifyAndSetDistribution(ctx sdk.Context, distributionName string, distributionType types.DistributionType) error {
 	if k.ExistsDistribution(ctx, distributionName, distributionType) {
 		return errors.Wrapf(types.ErrDistribution, "airdrop with same name already exists : %s ", distributionName)
 	}
