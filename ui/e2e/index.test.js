@@ -426,6 +426,38 @@ it("swaps", async () => {
   );
 });
 
+it("shows rewards", async () => {
+  // Navigate to swap page
+  await dexPage.goto(DEX_TARGET, {
+    waitUntil: "domcontentloaded",
+  });
+
+  await browserContext.route(
+    `https://vtdbgplqd6.execute-api.us-west-2.amazonaws.com/default/rewards/${KEPLR_CONFIG.options.address}`,
+    (route) =>
+      route.fulfill({
+        contentType: "application/json",
+        headers: { "access-control-allow-origin": "*" },
+        status: 200,
+        body: JSON.stringify([
+          {
+            type: "lm",
+            multiplier: 2.9972451790633006,
+            start: "2021-02-26",
+            amount: 0.07349046311337608,
+          },
+        ]),
+      }),
+  );
+
+  // Click pool page
+  await dexPage.click('[data-handle="rewards-page-button"]');
+
+  await expect(dexPage).toHaveText('[data-handle="reward-amount"]', "0.073490");
+  await dexPage.click('[data-handle="multiply-tooltip"]');
+  await expect(dexPage).toHaveText("Current multiplier: 2.9972x");
+});
+
 it("adds liquidity", async () => {
   // Navigate to swap page
   await dexPage.goto(DEX_TARGET, {

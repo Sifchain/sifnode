@@ -31,7 +31,7 @@ type RewardsResult = {
 
 function toAmount(thing: any) {
   try {
-    return Amount(thing);
+    return Amount(thing.toString());
   } catch (err) {
     return Amount("0");
   }
@@ -86,7 +86,11 @@ export default defineComponent({
     let rewards = ref<RewardsResult[]>([]);
 
     watchEffect(async () => {
-      rewards.value = await getRewardsData(address.value);
+      if (address.value) {
+        const data = await getRewardsData(address.value);
+        console.log({ data });
+        rewards.value = data;
+      }
     });
 
     // TODO: save this somewhere as a reuse option
@@ -133,7 +137,7 @@ export default defineComponent({
             <div class="amount-container w50 jcsb">
               <div class="df fdr">
                 <AssetItem symbol="Rowan" :label="false" />
-                <span>{{
+                <span data-handle="reward-amount">{{
                   format(reward.amount, { mantissa: dynamicMantissa })
                 }}</span>
               </div>
@@ -147,7 +151,7 @@ export default defineComponent({
                     }}x
                   </div>
                 </template>
-                <Icon icon="info-box-black" />
+                <Icon icon="info-box-black" data-handle="multiply-tooltip" />
               </Tooltip>
             </div>
             <a

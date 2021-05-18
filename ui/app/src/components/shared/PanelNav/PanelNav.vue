@@ -18,7 +18,13 @@
       icon="pool"
       label="POOL"
     ></PanelNavItem>
-    <PanelNavItem to="/rewards" label="REWARDS" icon="sif"> </PanelNavItem>
+    <PanelNavItem
+      to="/rewards"
+      data-handle="rewards-page-button"
+      label="REWARDS"
+      icon="sif"
+    >
+    </PanelNavItem>
     <PanelNavItem
       to="/soon"
       label="SOON"
