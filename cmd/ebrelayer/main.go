@@ -193,6 +193,7 @@ func RunInitRelayerCmd(cmd *cobra.Command, args []string) error {
 		return errors.Errorf("invalid [validator-moniker]: %s", args[3])
 	}
 	validatorMoniker := args[3]
+	// TODO we need to clean up the use of the mnemonic here and in replay
 	//mnemonic := args[4]
 
 	logConfig := zap.NewDevelopmentConfig()
