@@ -70,7 +70,7 @@ func NewKeybase(validatorMoniker, mnemonic, password string) (keyring.Keyring, k
 // NewEthereumSub initializes a new EthereumSub
 func NewEthereumSub(cliCtx client.Context, rpcURL string, validatorMoniker, chainID, ethProvider string,
 	registryContractAddress common.Address, privateKey *ecdsa.PrivateKey, validatorAddress sdk.ValAddress,
-	db *leveldb.DB, sugaredLogger *zap.SugaredLogger, tempPassword string) (EthereumSub, error) {
+	db *leveldb.DB, sugaredLogger *zap.SugaredLogger) (EthereumSub, error) {
 
 	return EthereumSub{
 		EthProvider:             ethProvider,
@@ -80,7 +80,6 @@ func NewEthereumSub(cliCtx client.Context, rpcURL string, validatorMoniker, chai
 		ValidatorAddress:        validatorAddress,
 		CliCtx:                  cliCtx,
 		PrivateKey:              privateKey,
-		TempPassword:            tempPassword,
 		DB:                      db,
 		SugaredLogger:           sugaredLogger,
 	}, nil

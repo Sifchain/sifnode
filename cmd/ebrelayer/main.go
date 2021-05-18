@@ -219,7 +219,7 @@ func RunInitRelayerCmd(cmd *cobra.Command, args []string) error {
 	//
 	//valAddrAsFrom := sdk.ValAddress(validatorAddress.GetAddress())
 	ethSub, err := relayer.NewEthereumSub(cliContext, rpcURL, validatorMoniker, chainID, web3Provider,
-		contractAddress, privateKey, nil, db, sugaredLogger, "")
+		contractAddress, privateKey, nil, db, sugaredLogger)
 	if err != nil {
 		return err
 	}
