@@ -328,7 +328,9 @@ export default function createSifService({
       }
       try {
         const fee = {
-          amount: coins(0, "rowan"),
+          // Keplr overwrites this in app but for unit/integration tests where we
+          // dont connect to keplr we need to specify an amount of rowan to pay for the fee.
+          amount: coins(250000, "rowan"),
           gas: "500000", // TODO - see if "auto" setting
         };
 
