@@ -1,0 +1,396 @@
+debug: sendLockTx arguments: {
+  "_": [
+    "exec",
+    "scripts/test/sendLockTx.js"
+  ],
+  "sifchain_address": "sif1ev7cwkkypl2ls6hwlkxg0j3dgqmws3mew8gvct",
+  "symbol": "0x0000000000000000000000000000000000000000",
+  "amount": "100",
+  "bridgebank_address": "0x30753E4A8aad7F8597332E813735Def5dD395028",
+  "ethereum_address": "0x627306090abab3a6e1400e9345bc60c78a8bef57",
+  "ethereum_private_key_env_var": "ETHEREUM_PRIVATE_KEY",
+  "json_path": "/home/psheokand/ClaimWorkspace/sifnode/smart-contracts/build/contracts",
+  "gas": "estimate",
+  "ethereum_network": "http://localhost:7545",
+  "$0": "node_modules/.bin/truffle"
+}
+debug: sendLockTx arguments: {
+  "_": [
+    "exec",
+    "scripts/test/sendLockTx.js"
+  ],
+  "sifchain_address": "sif1ev7cwkkypl2ls6hwlkxg0j3dgqmws3mew8gvct",
+  "symbol": "0x3d49d1eF2adE060a33c6E6Aa213513A7EE9a6241",
+  "amount": "300000",
+  "bridgebank_address": "0x30753E4A8aad7F8597332E813735Def5dD395028",
+  "ethereum_address": "0x627306090abab3a6e1400e9345bc60c78a8bef57",
+  "ethereum_private_key_env_var": "ETHEREUM_PRIVATE_KEY",
+  "json_path": "/home/psheokand/ClaimWorkspace/sifnode/smart-contracts/build/contracts",
+  "gas": "estimate",
+  "ethereum_network": "http://localhost:7545",
+  "$0": "node_modules/.bin/truffle"
+}
+info: currentAllowance is 300000, amount is 300000, 300000
+debug: sendLockTx arguments: {
+  "_": [
+    "exec",
+    "scripts/test/sendLockTx.js"
+  ],
+  "sifchain_address": "sif1we2h7rlf7nv4er0ssvp8vdhuzjmzvtyvrwwr8m",
+  "symbol": "0x0000000000000000000000000000000000000000",
+  "amount": "100",
+  "bridgebank_address": "0x30753E4A8aad7F8597332E813735Def5dD395028",
+  "ethereum_address": "0x627306090abab3a6e1400e9345bc60c78a8bef57",
+  "ethereum_private_key_env_var": "ETHEREUM_PRIVATE_KEY",
+  "json_path": "/home/psheokand/ClaimWorkspace/sifnode/smart-contracts/build/contracts",
+  "gas": "estimate",
+  "ethereum_network": "http://localhost:7545",
+  "$0": "node_modules/.bin/truffle"
+}
+debug: sendLockTx arguments: {
+  "_": [
+    "exec",
+    "scripts/test/sendLockTx.js"
+  ],
+  "sifchain_address": "sif1we2h7rlf7nv4er0ssvp8vdhuzjmzvtyvrwwr8m",
+  "symbol": "0xB9B7e0cb2EDF5Ea031C8B297A5A1Fa20379b6A0a",
+  "amount": "300000",
+  "bridgebank_address": "0x30753E4A8aad7F8597332E813735Def5dD395028",
+  "ethereum_address": "0x627306090abab3a6e1400e9345bc60c78a8bef57",
+  "ethereum_private_key_env_var": "ETHEREUM_PRIVATE_KEY",
+  "json_path": "/home/psheokand/ClaimWorkspace/sifnode/smart-contracts/build/contracts",
+  "gas": "estimate",
+  "ethereum_network": "http://localhost:7545",
+  "$0": "node_modules/.bin/truffle"
+}
+info: currentAllowance is 300000, amount is 300000, 300000
+debug: sendLockTx arguments: {
+  "_": [
+    "exec",
+    "scripts/test/sendLockTx.js"
+  ],
+  "sifchain_address": "sif164x5dqs35fwsel2hug3h574u77ucuzdlgyf3lz",
+  "symbol": "0x0000000000000000000000000000000000000000",
+  "amount": "1000000000000000000",
+  "bridgebank_address": "0x30753E4A8aad7F8597332E813735Def5dD395028",
+  "ethereum_address": "0x627306090abab3a6e1400e9345bc60c78a8bef57",
+  "ethereum_private_key_env_var": "ETHEREUM_PRIVATE_KEY",
+  "json_path": "/home/psheokand/ClaimWorkspace/sifnode/smart-contracts/build/contracts",
+  "gas": "estimate",
+  "ethereum_network": "http://localhost:7545",
+  "$0": "node_modules/.bin/truffle"
+}
+debug: sendLockTx arguments: {
+  "_": [
+    "exec",
+    "scripts/test/sendLockTx.js"
+  ],
+  "sifchain_address": "sif164x5dqs35fwsel2hug3h574u77ucuzdlgyf3lz",
+  "symbol": "0x74e3FC764c2474f25369B9d021b7F92e8441A2Dc",
+  "amount": "5000000000000000000",
+  "bridgebank_address": "0x30753E4A8aad7F8597332E813735Def5dD395028",
+  "ethereum_address": "0x627306090abab3a6e1400e9345bc60c78a8bef57",
+  "ethereum_private_key_env_var": "ETHEREUM_PRIVATE_KEY",
+  "json_path": "/home/psheokand/ClaimWorkspace/sifnode/smart-contracts/build/contracts",
+  "gas": "estimate",
+  "ethereum_network": "http://localhost:7545",
+  "$0": "node_modules/.bin/truffle"
+}
+info: currentAllowance is 5000000000000000000000, amount is 5000000000000000000, 5000000000000000000
+debug: sendLockTx arguments: {
+  "_": [
+    "exec",
+    "scripts/test/sendLockTx.js"
+  ],
+  "sifchain_address": "sif16gkur6vxy0czvldpztnz6t54nz5npr9s2ld8ge",
+  "symbol": "0x0000000000000000000000000000000000000000",
+  "amount": "1000000000000000000",
+  "bridgebank_address": "0x30753E4A8aad7F8597332E813735Def5dD395028",
+  "ethereum_address": "0x627306090abab3a6e1400e9345bc60c78a8bef57",
+  "ethereum_private_key_env_var": "ETHEREUM_PRIVATE_KEY",
+  "json_path": "/home/psheokand/ClaimWorkspace/sifnode/smart-contracts/build/contracts",
+  "gas": "estimate",
+  "ethereum_network": "http://localhost:7545",
+  "$0": "node_modules/.bin/truffle"
+}
+debug: sendLockTx arguments: {
+  "_": [
+    "exec",
+    "scripts/test/sendLockTx.js"
+  ],
+  "sifchain_address": "sif16gkur6vxy0czvldpztnz6t54nz5npr9s2ld8ge",
+  "symbol": "0x74e3FC764c2474f25369B9d021b7F92e8441A2Dc",
+  "amount": "5000000000000000000",
+  "bridgebank_address": "0x30753E4A8aad7F8597332E813735Def5dD395028",
+  "ethereum_address": "0x627306090abab3a6e1400e9345bc60c78a8bef57",
+  "ethereum_private_key_env_var": "ETHEREUM_PRIVATE_KEY",
+  "json_path": "/home/psheokand/ClaimWorkspace/sifnode/smart-contracts/build/contracts",
+  "gas": "estimate",
+  "ethereum_network": "http://localhost:7545",
+  "$0": "node_modules/.bin/truffle"
+}
+info: currentAllowance is 4995000000000000000000, amount is 5000000000000000000, 5000000000000000000
+debug: sendLockTx arguments: {
+  "_": [
+    "exec",
+    "scripts/test/sendLockTx.js"
+  ],
+  "sifchain_address": "sif1qhmyajawueph5af44sh6dnmmkfja43r3tlrmzz",
+  "symbol": "0x0000000000000000000000000000000000000000",
+  "amount": "100",
+  "bridgebank_address": "0x30753E4A8aad7F8597332E813735Def5dD395028",
+  "ethereum_address": "0x627306090abab3a6e1400e9345bc60c78a8bef57",
+  "ethereum_private_key_env_var": "ETHEREUM_PRIVATE_KEY",
+  "json_path": "/home/psheokand/ClaimWorkspace/sifnode/smart-contracts/build/contracts",
+  "gas": "estimate",
+  "ethereum_network": "http://localhost:7545",
+  "$0": "node_modules/.bin/truffle"
+}
+debug: sendLockTx arguments: {
+  "_": [
+    "exec",
+    "scripts/test/sendLockTx.js"
+  ],
+  "sifchain_address": "sif1qhmyajawueph5af44sh6dnmmkfja43r3tlrmzz",
+  "symbol": "0x3d49d1eF2adE060a33c6E6Aa213513A7EE9a6241",
+  "amount": "300000",
+  "bridgebank_address": "0x30753E4A8aad7F8597332E813735Def5dD395028",
+  "ethereum_address": "0x627306090abab3a6e1400e9345bc60c78a8bef57",
+  "ethereum_private_key_env_var": "ETHEREUM_PRIVATE_KEY",
+  "json_path": "/home/psheokand/ClaimWorkspace/sifnode/smart-contracts/build/contracts",
+  "gas": "estimate",
+  "ethereum_network": "http://localhost:7545",
+  "$0": "node_modules/.bin/truffle"
+}
+info: currentAllowance is 300000, amount is 300000, 300000
+debug: sendLockTx arguments: {
+  "_": [
+    "exec",
+    "scripts/test/sendLockTx.js"
+  ],
+  "sifchain_address": "sif15ag4h846uly3n24ls699vwtyudalf33c74rtxf",
+  "symbol": "0x0000000000000000000000000000000000000000",
+  "amount": "100",
+  "bridgebank_address": "0x30753E4A8aad7F8597332E813735Def5dD395028",
+  "ethereum_address": "0x627306090abab3a6e1400e9345bc60c78a8bef57",
+  "ethereum_private_key_env_var": "ETHEREUM_PRIVATE_KEY",
+  "json_path": "/home/psheokand/ClaimWorkspace/sifnode/smart-contracts/build/contracts",
+  "gas": "estimate",
+  "ethereum_network": "http://localhost:7545",
+  "$0": "node_modules/.bin/truffle"
+}
+debug: sendLockTx arguments: {
+  "_": [
+    "exec",
+    "scripts/test/sendLockTx.js"
+  ],
+  "sifchain_address": "sif15ag4h846uly3n24ls699vwtyudalf33c74rtxf",
+  "symbol": "0xB9B7e0cb2EDF5Ea031C8B297A5A1Fa20379b6A0a",
+  "amount": "300000",
+  "bridgebank_address": "0x30753E4A8aad7F8597332E813735Def5dD395028",
+  "ethereum_address": "0x627306090abab3a6e1400e9345bc60c78a8bef57",
+  "ethereum_private_key_env_var": "ETHEREUM_PRIVATE_KEY",
+  "json_path": "/home/psheokand/ClaimWorkspace/sifnode/smart-contracts/build/contracts",
+  "gas": "estimate",
+  "ethereum_network": "http://localhost:7545",
+  "$0": "node_modules/.bin/truffle"
+}
+info: currentAllowance is 300000, amount is 300000, 300000
+debug: sendLockTx arguments: {
+  "_": [
+    "exec",
+    "scripts/test/sendLockTx.js"
+  ],
+  "sifchain_address": "sif13lq30qm0w5nfnn4djwt38zmhmkz9d0a7yyxlf7",
+  "symbol": "0x0000000000000000000000000000000000000000",
+  "amount": "100",
+  "bridgebank_address": "0x30753E4A8aad7F8597332E813735Def5dD395028",
+  "ethereum_address": "0x627306090abab3a6e1400e9345bc60c78a8bef57",
+  "ethereum_private_key_env_var": "ETHEREUM_PRIVATE_KEY",
+  "json_path": "/home/psheokand/ClaimWorkspace/sifnode/smart-contracts/build/contracts",
+  "gas": "estimate",
+  "ethereum_network": "http://localhost:7545",
+  "$0": "node_modules/.bin/truffle"
+}
+debug: sendLockTx arguments: {
+  "_": [
+    "exec",
+    "scripts/test/sendLockTx.js"
+  ],
+  "sifchain_address": "sif13lq30qm0w5nfnn4djwt38zmhmkz9d0a7yyxlf7",
+  "symbol": "0x74e3FC764c2474f25369B9d021b7F92e8441A2Dc",
+  "amount": "300000",
+  "bridgebank_address": "0x30753E4A8aad7F8597332E813735Def5dD395028",
+  "ethereum_address": "0x627306090abab3a6e1400e9345bc60c78a8bef57",
+  "ethereum_private_key_env_var": "ETHEREUM_PRIVATE_KEY",
+  "json_path": "/home/psheokand/ClaimWorkspace/sifnode/smart-contracts/build/contracts",
+  "gas": "estimate",
+  "ethereum_network": "http://localhost:7545",
+  "$0": "node_modules/.bin/truffle"
+}
+info: currentAllowance is 300000, amount is 300000, 300000
+debug: sendLockTx arguments: {
+  "_": [
+    "exec",
+    "scripts/test/sendLockTx.js"
+  ],
+  "sifchain_address": "sif17vdadu42x258k7uu046msaanmc4rruq0al7a9k",
+  "symbol": "0x0000000000000000000000000000000000000000",
+  "amount": "100",
+  "bridgebank_address": "0x30753E4A8aad7F8597332E813735Def5dD395028",
+  "ethereum_address": "0x627306090abab3a6e1400e9345bc60c78a8bef57",
+  "ethereum_private_key_env_var": "ETHEREUM_PRIVATE_KEY",
+  "json_path": "/home/psheokand/ClaimWorkspace/sifnode/smart-contracts/build/contracts",
+  "gas": "estimate",
+  "ethereum_network": "http://localhost:7545",
+  "$0": "node_modules/.bin/truffle"
+}
+debug: sendLockTx arguments: {
+  "_": [
+    "exec",
+    "scripts/test/sendLockTx.js"
+  ],
+  "sifchain_address": "sif17vdadu42x258k7uu046msaanmc4rruq0al7a9k",
+  "symbol": "0x8065F4c7b8c2bf53561af92D9DA2Ea022A0b28Ca",
+  "amount": "300000",
+  "bridgebank_address": "0x30753E4A8aad7F8597332E813735Def5dD395028",
+  "ethereum_address": "0x627306090abab3a6e1400e9345bc60c78a8bef57",
+  "ethereum_private_key_env_var": "ETHEREUM_PRIVATE_KEY",
+  "json_path": "/home/psheokand/ClaimWorkspace/sifnode/smart-contracts/build/contracts",
+  "gas": "estimate",
+  "ethereum_network": "http://localhost:7545",
+  "$0": "node_modules/.bin/truffle"
+}
+info: currentAllowance is 300000, amount is 300000, 300000
+debug: sendLockTx arguments: {
+  "_": [
+    "exec",
+    "scripts/test/sendLockTx.js"
+  ],
+  "sifchain_address": "sif1uyj8zerku2wj76cyeql88merlm3ml6633kpyq9",
+  "symbol": "0x0000000000000000000000000000000000000000",
+  "amount": "100",
+  "bridgebank_address": "0x30753E4A8aad7F8597332E813735Def5dD395028",
+  "ethereum_address": "0x627306090abab3a6e1400e9345bc60c78a8bef57",
+  "ethereum_private_key_env_var": "ETHEREUM_PRIVATE_KEY",
+  "json_path": "/home/psheokand/ClaimWorkspace/sifnode/smart-contracts/build/contracts",
+  "gas": "estimate",
+  "ethereum_network": "http://localhost:7545",
+  "$0": "node_modules/.bin/truffle"
+}
+debug: sendLockTx arguments: {
+  "_": [
+    "exec",
+    "scripts/test/sendLockTx.js"
+  ],
+  "sifchain_address": "sif1uyj8zerku2wj76cyeql88merlm3ml6633kpyq9",
+  "symbol": "0x3d49d1eF2adE060a33c6E6Aa213513A7EE9a6241",
+  "amount": "300000",
+  "bridgebank_address": "0x30753E4A8aad7F8597332E813735Def5dD395028",
+  "ethereum_address": "0x627306090abab3a6e1400e9345bc60c78a8bef57",
+  "ethereum_private_key_env_var": "ETHEREUM_PRIVATE_KEY",
+  "json_path": "/home/psheokand/ClaimWorkspace/sifnode/smart-contracts/build/contracts",
+  "gas": "estimate",
+  "ethereum_network": "http://localhost:7545",
+  "$0": "node_modules/.bin/truffle"
+}
+info: currentAllowance is 300000, amount is 300000, 300000
+debug: sendLockTx arguments: {
+  "_": [
+    "exec",
+    "scripts/test/sendLockTx.js"
+  ],
+  "sifchain_address": "sif1ycmtxynfcnymd6n87qsydre0zxghll385gu8v0",
+  "symbol": "0x0000000000000000000000000000000000000000",
+  "amount": "100",
+  "bridgebank_address": "0x30753E4A8aad7F8597332E813735Def5dD395028",
+  "ethereum_address": "0x627306090abab3a6e1400e9345bc60c78a8bef57",
+  "ethereum_private_key_env_var": "ETHEREUM_PRIVATE_KEY",
+  "json_path": "/home/psheokand/ClaimWorkspace/sifnode/smart-contracts/build/contracts",
+  "gas": "estimate",
+  "ethereum_network": "http://localhost:7545",
+  "$0": "node_modules/.bin/truffle"
+}
+debug: sendLockTx arguments: {
+  "_": [
+    "exec",
+    "scripts/test/sendLockTx.js"
+  ],
+  "sifchain_address": "sif1ycmtxynfcnymd6n87qsydre0zxghll385gu8v0",
+  "symbol": "0xB9B7e0cb2EDF5Ea031C8B297A5A1Fa20379b6A0a",
+  "amount": "300000",
+  "bridgebank_address": "0x30753E4A8aad7F8597332E813735Def5dD395028",
+  "ethereum_address": "0x627306090abab3a6e1400e9345bc60c78a8bef57",
+  "ethereum_private_key_env_var": "ETHEREUM_PRIVATE_KEY",
+  "json_path": "/home/psheokand/ClaimWorkspace/sifnode/smart-contracts/build/contracts",
+  "gas": "estimate",
+  "ethereum_network": "http://localhost:7545",
+  "$0": "node_modules/.bin/truffle"
+}
+info: currentAllowance is 300000, amount is 300000, 300000
+debug: sendLockTx arguments: {
+  "_": [
+    "exec",
+    "scripts/test/sendLockTx.js"
+  ],
+  "sifchain_address": "sif16ss70evqqgpjr8jr8axy0ndlw66nl6r6vg6cn2",
+  "symbol": "0x0000000000000000000000000000000000000000",
+  "amount": "1000000000000000000",
+  "bridgebank_address": "0x30753E4A8aad7F8597332E813735Def5dD395028",
+  "ethereum_address": "0x627306090abab3a6e1400e9345bc60c78a8bef57",
+  "ethereum_private_key_env_var": "ETHEREUM_PRIVATE_KEY",
+  "json_path": "/home/psheokand/ClaimWorkspace/sifnode/smart-contracts/build/contracts",
+  "gas": "estimate",
+  "ethereum_network": "http://localhost:7545",
+  "$0": "node_modules/.bin/truffle"
+}
+debug: sendLockTx arguments: {
+  "_": [
+    "exec",
+    "scripts/test/sendLockTx.js"
+  ],
+  "sifchain_address": "sif16ss70evqqgpjr8jr8axy0ndlw66nl6r6vg6cn2",
+  "symbol": "0x74e3FC764c2474f25369B9d021b7F92e8441A2Dc",
+  "amount": "5000000000000000000",
+  "bridgebank_address": "0x30753E4A8aad7F8597332E813735Def5dD395028",
+  "ethereum_address": "0x627306090abab3a6e1400e9345bc60c78a8bef57",
+  "ethereum_private_key_env_var": "ETHEREUM_PRIVATE_KEY",
+  "json_path": "/home/psheokand/ClaimWorkspace/sifnode/smart-contracts/build/contracts",
+  "gas": "estimate",
+  "ethereum_network": "http://localhost:7545",
+  "$0": "node_modules/.bin/truffle"
+}
+info: currentAllowance is 5000000000000000000000, amount is 5000000000000000000, 5000000000000000000
+debug: sendLockTx arguments: {
+  "_": [
+    "exec",
+    "scripts/test/sendLockTx.js"
+  ],
+  "sifchain_address": "sif1l6kez5wmrf5aqytuv7h2nkyuuak3avpqwtnl34",
+  "symbol": "0x0000000000000000000000000000000000000000",
+  "amount": "1000000000000000000",
+  "bridgebank_address": "0x30753E4A8aad7F8597332E813735Def5dD395028",
+  "ethereum_address": "0x627306090abab3a6e1400e9345bc60c78a8bef57",
+  "ethereum_private_key_env_var": "ETHEREUM_PRIVATE_KEY",
+  "json_path": "/home/psheokand/ClaimWorkspace/sifnode/smart-contracts/build/contracts",
+  "gas": "estimate",
+  "ethereum_network": "http://localhost:7545",
+  "$0": "node_modules/.bin/truffle"
+}
+debug: sendLockTx arguments: {
+  "_": [
+    "exec",
+    "scripts/test/sendLockTx.js"
+  ],
+  "sifchain_address": "sif1l6kez5wmrf5aqytuv7h2nkyuuak3avpqwtnl34",
+  "symbol": "0x74e3FC764c2474f25369B9d021b7F92e8441A2Dc",
+  "amount": "5000000000000000000",
+  "bridgebank_address": "0x30753E4A8aad7F8597332E813735Def5dD395028",
+  "ethereum_address": "0x627306090abab3a6e1400e9345bc60c78a8bef57",
+  "ethereum_private_key_env_var": "ETHEREUM_PRIVATE_KEY",
+  "json_path": "/home/psheokand/ClaimWorkspace/sifnode/smart-contracts/build/contracts",
+  "gas": "estimate",
+  "ethereum_network": "http://localhost:7545",
+  "$0": "node_modules/.bin/truffle"
+}
+info: currentAllowance is 4995000000000000000000, amount is 5000000000000000000, 5000000000000000000
