@@ -309,7 +309,7 @@ export default function createSifService({
         };
 
         const fee = {
-          amount: coins(0, params.asset.symbol),
+          amount: coins(250000, params.asset.symbol),
           gas: "500000", // TODO - see if "auto" setting
         };
 
