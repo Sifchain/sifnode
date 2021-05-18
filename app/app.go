@@ -1,7 +1,6 @@
 package app
 
 import (
-	"encoding/json"
 	"io"
 	"math/big"
 	"net/http"
@@ -467,8 +466,6 @@ func (app *SifchainApp) InitChainer(ctx sdk.Context, req abci.RequestInitChain) 
 	if err := tmjson.Unmarshal(req.AppStateBytes, &genesisState); err != nil {
 		panic(err)
 	}
-
-	genesisState["ethbridge"] = json.RawMessage{}
 
 	return app.mm.InitGenesis(ctx, app.appCodec, genesisState)
 }
