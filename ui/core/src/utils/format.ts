@@ -15,9 +15,11 @@ type IFormatOptionsBase = {
   zeroFormat?: string; // could be something like `N/A`
 };
 
-type IFormatOptionsMantissa = IFormatOptionsBase & {
+type IFormatOptionsMantissa<
+  M = number | DynamicMantissa
+> = IFormatOptionsBase & {
   shorthand?: boolean;
-  mantissa?: number; // number of decimals after point default is exponent
+  mantissa?: M; // number of decimals after point default is exponent
   trimMantissa?: boolean; // Remove 0s from the mantissa default false
 };
 
@@ -26,12 +28,51 @@ type IFormatOptionsShorthandTotalLength = IFormatOptionsBase & {
   totalLength?: number; // This will give us significant digits using abbreviations eg. `1.234k` it will override anything in mantissa
 };
 
+export type DynamicMantissa = Record<number | "infinity", number>;
+
 export type IFormatOptions =
   | IFormatOptionsMantissa
   | IFormatOptionsShorthandTotalLength;
 
+type IFormatOptionsFixedMantissa =
+  | IFormatOptionsMantissa<number>
+  | IFormatOptionsShorthandTotalLength;
+
 function isAsset(val: any): val is IAsset {
   return !!val && typeof val?.symbol === "string";
+}
+
+/**
+ * Takes an amount and a dynamic mantissa hash and returns the mantisaa value to use
+ * @param amount amount given to format function
+ * @param hash dynamic value hash to calculate mantissa from
+ * @returns number of mantissa to send to formatter
+ */
+export function getMantissaFromDynamicMantissa(
+  amount: IAmount,
+  hash: DynamicMantissa,
+) {
+  const { infinity, ...numHash } = hash;
+
+  const entries = Object.entries(numHash);
+
+  entries.sort(([a], [b]) => {
+    if (a > b) return 1;
+    return -1;
+  });
+
+  for (const entry of entries) {
+    const [range, mantissa] = entry;
+    if (amount.lessThan(range)) {
+      return mantissa;
+    }
+  }
+
+  if (amount.lessThan("10000")) {
+    return 2;
+  }
+
+  return infinity;
 }
 
 export function round(decimal: string, places: number) {
@@ -42,6 +83,40 @@ export function round(decimal: string, places: number) {
       .toString(),
     -1 * places,
   );
+}
+
+function isDynamicMantissa(
+  value: undefined | number | DynamicMantissa,
+): value is DynamicMantissa {
+  return typeof value !== "number";
+}
+
+function isOptionsWithFixedMantissa(
+  options: IFormatOptionsFixedMantissa | IFormatOptions,
+): options is IFormatOptionsFixedMantissa {
+  return options.shorthand || !isDynamicMantissa(options.mantissa);
+}
+
+/**
+ * Options come with a dynamic or fixed mantissa. This function converts a dynamic mantissa value if it exists to a fixed number
+ * @param amount
+ * @param options
+ * @returns
+ */
+function convertDynamicMantissaToFixedMantissa(
+  amount: IAmount,
+  options: IFormatOptions,
+): IFormatOptionsFixedMantissa {
+  if (
+    !isOptionsWithFixedMantissa(options) &&
+    typeof options.mantissa === "object"
+  ) {
+    return {
+      ...options,
+      mantissa: getMantissaFromDynamicMantissa(amount, options.mantissa),
+    };
+  }
+  return options as IFormatOptionsFixedMantissa;
 }
 
 type AmountNotAssetAmount<T extends IAmount> = T extends IAssetAmount
@@ -70,8 +145,14 @@ export function format<T extends IAmount>(
   _options?: IFormatOptions,
 ): string {
   const amount = _amount;
-  const options = (isAsset(_asset) ? _options : _asset) || {};
+  const _optionsWithDynamicMantissa =
+    (isAsset(_asset) ? _options : _asset) || {};
   const asset = isAsset(_asset) ? _asset : undefined;
+
+  const options = convertDynamicMantissaToFixedMantissa(
+    amount,
+    _optionsWithDynamicMantissa,
+  );
 
   if (!amount) {
     // In theory this should not happen if we are using typescript correctly
@@ -140,7 +221,7 @@ function isShorthandWithTotalLength(
   return val?.shorthand && val?.totalLength;
 }
 
-function createNumbroConfig(options: IFormatOptions) {
+function createNumbroConfig(options: IFormatOptionsFixedMantissa) {
   return {
     forceSign: options.forceSign ?? false,
     output: options.mode ?? "number",

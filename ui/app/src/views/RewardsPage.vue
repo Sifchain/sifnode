@@ -1,7 +1,7 @@
 <script lang="ts">
-import { computed, defineComponent, watch, onMounted } from "vue";
-import { ref, ComputedRef } from "@vue/reactivity";
-import { Amount } from "ui-core";
+import { computed, defineComponent, watchEffect } from "vue";
+import { ref } from "@vue/reactivity";
+import { Amount, IAmount } from "ui-core";
 import { useCore } from "@/hooks/useCore";
 import Layout from "@/components/layout/Layout.vue";
 import SifButton from "@/components/shared/SifButton.vue";
@@ -21,28 +21,53 @@ const REWARD_INFO = {
   },
 };
 
-// NOTE - This will be removed and replaced with Amount API
-function formatDeprecated(amount: number) {
-  if (amount < 1) {
-    return amount.toFixed(6);
-  } else if (amount < 1000) {
-    return amount.toFixed(4);
-  } else if (amount < 100000) {
-    return amount.toFixed(2);
-  } else {
-    return amount.toFixed(0);
+// Need verification this is the correct schema
+type RewardsResult = {
+  type: string;
+  multiplier: IAmount;
+  start: string; // date string
+  amount: IAmount;
+};
+
+function toAmount(thing: any) {
+  try {
+    return Amount(thing);
+  } catch (err) {
+    return Amount("0");
   }
 }
 
-async function getRewardsData(address: ComputedRef<any>) {
-  if (!address.value) return;
+// TODO: this cannot be tested properly right now we need to provide this as an injectable service
+// through a usecase to adequately test the data We might want to add this service to our docker
+// backing stack or use fixtures within e2e tests we will likely want to add wrap this around some
+// kind of swr pattern to have a better UX
+async function getRewardsData(address: string): Promise<RewardsResult[]> {
+  if (!address) return [];
+
   const data = await fetch(
-    `https://vtdbgplqd6.execute-api.us-west-2.amazonaws.com/default/rewards/${address.value}`,
+    `https://vtdbgplqd6.execute-api.us-west-2.amazonaws.com/default/rewards/${address}`,
   );
+
   if (data.status !== 200)
-    return [{ type: "lm", multiplier: 0, start: "", amount: null }];
-  return await data.json();
+    return [
+      { type: "lm", multiplier: Amount("0"), start: "", amount: Amount("0") },
+    ];
+
+  const rewardsRaw = (await data.json()) as RewardsResult[];
+
+  // Map to Amount API
+  return rewardsRaw.map(
+    ({ type, multiplier, start, amount }: RewardsResult) => {
+      return {
+        type,
+        multiplier: toAmount(multiplier),
+        start,
+        amount: toAmount(amount),
+      };
+    },
+  );
 }
+
 export default defineComponent({
   components: {
     Layout,
@@ -58,21 +83,25 @@ export default defineComponent({
   setup() {
     const { store } = useCore();
     const address = computed(() => store.wallet.sif.address);
-    let rewards = ref<Array<Object>>([]);
+    let rewards = ref<RewardsResult[]>([]);
 
-    watch(address, async () => {
-      rewards.value = await getRewardsData(address);
+    watchEffect(async () => {
+      rewards.value = await getRewardsData(address.value);
     });
 
-    onMounted(async () => {
-      rewards.value = await getRewardsData(address);
-    });
+    // TODO: save this somewhere as a reuse option
+    const dynamicMantissa = {
+      1: 6,
+      1000: 4,
+      100000: 2,
+      infinity: 0,
+    };
 
     return {
       rewards,
       REWARD_INFO,
       format,
-      formatDeprecated,
+      dynamicMantissa,
     };
   },
 });
@@ -104,14 +133,18 @@ export default defineComponent({
             <div class="amount-container w50 jcsb">
               <div class="df fdr">
                 <AssetItem symbol="Rowan" :label="false" />
-                <span>{{ formatDeprecated(+reward.amount) }}</span>
+                <span>{{
+                  format(reward.amount, { mantissa: dynamicMantissa })
+                }}</span>
               </div>
               <span>ROWAN</span>
               <Tooltip>
                 <template #message>
                   <div class="tooltip">
                     Current multiplier:
-                    {{ formatDeprecated(+reward.multiplier) }}x
+                    {{
+                      format(reward.multiplier, { mantissa: dynamicMantissa })
+                    }}x
                   </div>
                 </template>
                 <Icon icon="info-box-black" />

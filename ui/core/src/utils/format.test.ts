@@ -131,6 +131,43 @@ describe("format", () => {
       }),
       expected: `100.000000000000000000`,
     },
+    // Dynamic mantissa
+    // Will adjust based on given hash map
+    // We should tokenize these as reusable options
+    ...(() => {
+      const dynamicMantissa = {
+        1: 6,
+        1000: 4,
+        100000: 2,
+        infinity: 0,
+      };
+      return [
+        {
+          input: format(Amount("0.12345678"), {
+            mantissa: dynamicMantissa,
+          }),
+          expected: "0.123457",
+        },
+        {
+          input: format(Amount("100.12345678"), {
+            mantissa: dynamicMantissa,
+          }),
+          expected: "100.1235",
+        },
+        {
+          input: format(Amount("5000.12345678"), {
+            mantissa: dynamicMantissa,
+          }),
+          expected: "5000.12",
+        },
+        {
+          input: format(Amount("500000.12345678"), {
+            mantissa: dynamicMantissa,
+          }),
+          expected: "500000",
+        },
+      ];
+    })(),
   ];
 
   tests.forEach(({ only, skip, input, expected }) => {
