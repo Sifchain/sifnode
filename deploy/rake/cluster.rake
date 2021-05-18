@@ -732,6 +732,25 @@ metadata:
     end
   end
 
+  desc "Deploy Mongo"
+  namespace :kubernetes do
+    desc "Deploy Mongo"
+    task :helm_mongo_deploy, [:ROOT_PASSWORD, :USERNAME, :PASSWORD, :DATABASE] do |t, args|
+      puts "Deploy the Helm Files."
+      deoploy_helm = %Q{
+            helm upgrade mongodb --install \
+            -n mongodb \
+            -f deploy/helm/mongodb/values.yaml \
+            --set auth.rootPassword="#{args[:ROOT_PASSWORD]}" \
+            --set auth.username="#{args[:USERNAME]}" \
+            --set auth.password="#{args[:PASSWORD]}" \
+            --set auth.database="#{args[:DATABASE]}" \
+            bitnami/mongodb --create-namespace --kubeconfig=./kubeconfig
+      }
+      system(deoploy_helm) or exit 1
+    end
+  end
+
   desc "Deploy Kubernetes Manifest"
   namespace :kubernetes do
     desc "Deploy Kubernetes Manifest"
