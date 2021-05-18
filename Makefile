@@ -127,5 +127,6 @@ proto-lint:
 .PHONY: proto-lint
 
 proto-check-breaking:
-	@$(DOCKER_BUF) breaking --against $(HTTPS_GIT)#branch=master
+	# we should turn this back on after our first release
+	# $(DOCKER_BUF) breaking --against $(HTTPS_GIT)#branch=master
 .PHONY: proto-check-breaking
