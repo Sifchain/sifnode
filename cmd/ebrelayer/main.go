@@ -211,13 +211,6 @@ func RunInitRelayerCmd(cmd *cobra.Command, args []string) error {
 	sugaredLogger := logger.Sugar()
 	zap.RedirectStdLog(sugaredLogger.Desugar())
 
-	// Initialize new Ethereum event listener
-	//validatorAddress, err := relayer.AddToKeyringWithMnemonic(cliContext.Keyring, validatorMoniker, mnemonic)
-	//if err != nil {
-	//	panic("could not add relayer to keyring")
-	//}
-	//
-	//valAddrAsFrom := sdk.ValAddress(validatorAddress.GetAddress())
 	ethSub, err := relayer.NewEthereumSub(cliContext, rpcURL, validatorMoniker, chainID, web3Provider,
 		contractAddress, privateKey, nil, db, sugaredLogger)
 	if err != nil {
@@ -237,7 +230,7 @@ func RunInitRelayerCmd(cmd *cobra.Command, args []string) error {
 }
 
 // RunGenerateBindingsCmd : executes the generateBindingsCmd
-func RunGenerateBindingsCmd(cmd *cobra.Command, args []string) error {
+func RunGenerateBindingsCmd(_ *cobra.Command, _ []string) error {
 	contracts := contract.LoadBridgeContracts()
 
 	// Compile contracts, generating contract bins and abis
