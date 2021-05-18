@@ -240,13 +240,6 @@ export function useSwapCalculator(input: {
     );
 
     if (
-      fromTokenLiquidity.lessThan(fromField.fieldAmount.value) ||
-      toTokenLiquidity.lessThan(toField.fieldAmount.value)
-    ) {
-      return SwapState.INSUFFICIENT_LIQUIDITY;
-    }
-
-    if (
       !fromTokenLiquidity ||
       !toTokenLiquidity ||
       !fromField.fieldAmount.value ||
