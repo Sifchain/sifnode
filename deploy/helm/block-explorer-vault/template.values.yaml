@@ -37,8 +37,8 @@ blockExplorer:
     mongoUsername: "mongodb"
     mongoPassword:
     mongoDatabase: "block_explorer"
+    rootURL: "${ROOT_URL}"
   env:
-    rootURL: "http://localhost:3000"
     chainnet: ""
     genesisURL: ""
     remote:

@@ -42,6 +42,8 @@ spec:
               containerPort: 3000
               protocol: TCP
           env:
+            - name: ROOT_URL
+              value: {{ .Values.blockExplorer.args.rootURL }}
             - name: METEOR_SETTINGS
               valueFrom:
                 configMapKeyRef:
