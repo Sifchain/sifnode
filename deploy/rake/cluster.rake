@@ -727,7 +727,10 @@ metadata:
       system(deoploy_helm) or exit 1
 
       puts "Use kubectl rollout to wait for pods to start."
-      check_kubernetes_rollout_status = %Q{kubectl rollout status --kubeconfig=./kubeconfig deployment/#{args[:app_name]} -n #{args[:app_namespace]}}
+      check_kubernetes_rollout_status = %Q{
+      sleep 30
+      kubectl rollout status --kubeconfig=./kubeconfig deployment/#{args[:app_name]} -n #{args[:app_namespace]}
+      }
       system(check_kubernetes_rollout_status) or exit 1
     end
   end
