@@ -1315,7 +1315,7 @@ EOF
   desc "Block Explorer"
   namespace :blockexplorer do
     desc "Deploy a Block Explorer to an existing cluster"
-    task :deploy_vault, [:namespace, :image, :image_tag] do |t, args|
+    task :deploy_vault, [:namespace, :image_name, :image_tag] do |t, args|
 
       cmd = %Q{helm upgrade block-explorer #{cwd}/../../deploy/helm/block-explorer \
         --install -n #{args[:namespace]} --create-namespace \
