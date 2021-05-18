@@ -28,6 +28,9 @@ const { keplrPage } = require("./pages/KeplrPage.js");
 const { connectMetaMaskAccount, connectKeplrAccount } = require("./helpers.js");
 const { pegPage } = require("./pages/PegPage.js");
 const { ApproveSpendPopup } = require("./pages/ApproveSpendPopup.js");
+const {
+  metamaskNotificationPopup,
+} = require("./pages/MetamaskNotificationPage.js");
 
 async function getInputValue(page, selector) {
   return await page.evaluate((el) => el.value, await page.$(selector));
@@ -67,7 +70,6 @@ beforeEach(async () => {
 
 it("pegs rowan", async () => {
   // First we need to unpeg rowan in order to have erowan on the bridgebank contract
-  // Navigate to peg page
   await pegPage.navigate();
 
   const unpegAmount = "500";
@@ -82,34 +84,26 @@ it("pegs rowan", async () => {
   const pegAmount = "100";
   await pegPage.peg("erowan", pegAmount);
 
-  const [popupPage] = await Promise.all([
-    context.waitForEvent("page"),
-    pegPage.clickConfirmPeg(),
-  ]);
-  let approveSpendPopup = new ApproveSpendPopup(popupPage);
+  await pegPage.clickConfirmPeg();
 
-  await approveSpendPopup.clickViewFullTransactionDetails();
-  await page.waitForTimeout(2000);
-  await expect(popupPage).toHaveText(`${pegAmount} ${pegAsset}`);
+  await page.waitForTimeout(500);
+  await metamaskNotificationPopup.navigate();
 
-  // TODO: abstract away confirmation flow
-  const [confirmPopup2] = await Promise.all([
-    context.waitForEvent("page"),
-    approveSpendPopup.clickConfirm(),
-  ]);
-
-  approveSpendPopup = new ApproveSpendPopup(confirmPopup2);
-
-  await Promise.all([
-    confirmPopup2.waitForEvent("close"),
-    await approveSpendPopup.clickConfirm(),
-  ]);
-
-  await page.click("text=×");
-  // Check that tx marker for the tx is there
-  await page.waitForSelector(
-    `${pegPage.el.assetAmount("rowan")} [data-handle='pending-tx-marker']`,
+  await metamaskNotificationPopup.clickViewFullTransactionDetails();
+  await metamaskNotificationPopup.verifyTransactionDetails(
+    `${pegAmount} ${pegAsset}`,
   );
+
+  await metamaskNotificationPopup.clickConfirm();
+  await page.waitForTimeout(1000);
+
+  await metamaskNotificationPopup.navigate(); // this call is needed to reload this.page with a new popup page
+  await metamaskNotificationPopup.clickConfirm();
+
+  await page.waitForTimeout(1000);
+  await pegPage.closeSubmissionWindow();
+  // Check that tx marker for the tx is there
+  await pegPage.verifyTransactionPending("rowan");
 
   // move chain forward
   await advanceEthBlocks(52);
@@ -122,9 +116,7 @@ it("pegs rowan", async () => {
 
 it("pegs ether", async () => {
   // Navigate to peg page
-  await dexPage.goto(DEX_TARGET, {
-    waitUntil: "domcontentloaded",
-  });
+  await pegPage.navigate();
 
   const cEthBalance = await getSifchainBalances(
     keplrConfig.sifApiUrl,
@@ -133,43 +125,33 @@ it("pegs ether", async () => {
   );
 
   const pegAmount = "1";
+  const pegAsset = "eth";
 
-  await dexPage.click("[data-handle='external-tab']");
-  await dexPage.click("[data-handle='peg-eth']");
-  await dexPage.click('[data-handle="peg-input"]');
-  await dexPage.fill('[data-handle="peg-input"]', pegAmount);
-  await dexPage.click('button:has-text("Peg")');
+  await pegPage.openTab("external");
+  await pegPage.peg(pegAsset, pegAmount);
 
-  const [confirmPopup] = await Promise.all([
-    browserContext.waitForEvent("page"),
-    dexPage.click('button:has-text("Confirm Peg")'),
-  ]);
+  await pegPage.clickConfirmPeg();
+  await page.waitForTimeout(1000);
 
-  await Promise.all([
-    confirmPopup.waitForEvent("close"),
-    confirmPopup.click('button:has-text("Confirm")'),
-  ]);
+  await metamaskNotificationPopup.navigate();
+  await metamaskNotificationPopup.clickConfirm();
 
-  await dexPage.click("text=×");
+  await page.waitForTimeout(1000);
+  await pegPage.closeSubmissionWindow();
 
   // Check that tx marker for the tx is there
-  await dexPage.waitForSelector(
-    "[data-handle='ceth-row-amount'] [data-handle='pending-tx-marker']",
-  );
+  await pegPage.verifyTransactionPending(pegAsset);
 
   // move chain forward
   await advanceEthBlocks(52);
 
-  await dexPage.waitForSelector("text=has succeded");
+  await page.waitForSelector("text=has succeded");
 
-  const rowAmount = await dexPage.innerText("[data-handle='ceth-row-amount']");
-
-  const expected = (Number(cEthBalance) + Number(pegAmount)).toFixed(6);
-
-  expect(rowAmount.trim()).toBe(expected);
+  const expectedAmount = (Number(cEthBalance) + Number(pegAmount)).toFixed(6);
+  await pegPage.verifyAssetAmount(pegAsset, expectedAmount);
 });
 
-it("pegs tokens", async () => {
+it.skip("pegs tokens", async () => {
   // Navigate to peg page
   await dexPage.goto(DEX_TARGET, {
     waitUntil: "domcontentloaded",
@@ -220,7 +202,7 @@ it("pegs tokens", async () => {
   expect(rowAmount.trim()).toBe(expected);
 });
 
-it("swaps", async () => {
+it.skip("swaps", async () => {
   // Navigate to swap page
   await dexPage.goto(DEX_TARGET, {
     waitUntil: "domcontentloaded",
@@ -354,7 +336,7 @@ it("swaps", async () => {
   );
 });
 
-it("adds liquidity", async () => {
+it.skip("adds liquidity", async () => {
   // Navigate to swap page
   await dexPage.goto(DEX_TARGET, {
     waitUntil: "domcontentloaded",

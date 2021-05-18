@@ -74,22 +74,6 @@ export class MetaMaskPage {
     await page.click('.modal-container button:has-text("Reset")');
     // await page.close();
   }
-
-  async connectAccount(extensionId) {
-    await this.page.click("[data-handle='button-connected']");
-    const [mmConnectPage] = await Promise.all([
-      context.waitForEvent("page"),
-      this.page.click("button:has-text('Connect Metamask')"),
-    ]);
-    await mmConnectPage.click(
-      "#app-content > div > div.main-container-wrapper > div > div.permissions-connect-choose-account > div.permissions-connect-choose-account__footer-container > div.permissions-connect-choose-account__bottom-buttons > button.button.btn-primary",
-    );
-    await mmConnectPage.click(
-      "#app-content > div > div.main-container-wrapper > div > div.page-container.permission-approval-container > div.permission-approval-container__footers > div.page-container__footer > footer > button.button.btn-primary.page-container__footer-button",
-    );
-    await this.page.click("text=×");
-    return;
-  }
 }
 
 export const metamaskPage = new MetaMaskPage();

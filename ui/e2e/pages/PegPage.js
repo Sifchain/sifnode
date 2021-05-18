@@ -38,8 +38,8 @@ export class PegPage {
     ]);
 
     await page.waitForSelector("text=Transaction Submitted");
-    await page.click("text=×");
-    await page.waitForTimeout(10000); // wait for sifnode to validate the tx TODO: replace this wait with some dynamic condition
+    await this.closeSubmissionWindow();
+    await page.waitForTimeout(15000); // wait for sifnode to validate the tx TODO: replace this wait with some dynamic condition
   }
 
   async peg(asset, amount) {
@@ -56,6 +56,16 @@ export class PegPage {
   async verifyAssetAmount(asset, expectedAmount) {
     const element = await page.$(this.el.assetAmount(asset));
     await expect(element).toHaveText(expectedAmount);
+  }
+
+  async closeSubmissionWindow() {
+    await page.click("text=×");
+  }
+
+  async verifyTransactionPending(asset) {
+    await expect(page).toHaveSelector(
+      `${this.el.assetAmount(asset)} [data-handle='pending-tx-marker']`,
+    );
   }
 }
 

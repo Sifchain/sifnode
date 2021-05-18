@@ -38,13 +38,15 @@ export async function extractExtensionPackage(extensionId) {
   return;
 }
 
-export async function getExtensionPage(extensionId) {
-  // export async function getExtensionPage(browserContext, extensionId) {
+export async function getExtensionPage(extensionId, suffixUrl = undefined) {
+  let matchingUrl;
+  if (!suffixUrl) {
+    matchingUrl = `chrome-extension://${extensionId}`;
+  } else {
+    matchingUrl = `chrome-extension://${extensionId}${suffixUrl}`;
+  }
   const pages = await context.pages();
-  // pages.forEach((page) => console.log('pageUrl=', page.url()))
-  const foundPages = pages.filter((page) =>
-    page.url().match(`chrome-extension://${extensionId}`),
-  );
+  const foundPages = pages.filter((page) => page.url().match(matchingUrl));
 
   if (foundPages.length > 0) return foundPages[0];
   else return undefined;
