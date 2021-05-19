@@ -474,6 +474,7 @@ it("fails to swap when it can't pay gas with rowan", async () => {
 
   await dexPage.click("[data-handle='modal-view-close']");
 });
+
 it("adds liquidity", async () => {
   // Navigate to swap page
   await dexPage.goto(DEX_TARGET, {
@@ -663,6 +664,32 @@ it("fails to add liquidity when can't pay gas with rowan", async () => {
   await expect(dexPage).toHaveText("Not enough ROWAN to cover the gas fees");
 
   await dexPage.click("[data-handle='modal-view-close']");
+});
+
+it.only("formats long amounts in confirmation screen", async () => {
+  // Navigate to swap page
+  await dexPage.goto(DEX_TARGET, {
+    waitUntil: "domcontentloaded",
+  });
+  // Click pool page
+  await dexPage.click('[data-handle="pool-page-button"]');
+
+  // Click add liquidity button
+  await dexPage.click('[data-handle="add-liquidity-button"]');
+
+  // Select ceth
+  await dexPage.click("[data-handle='token-a-select-button']");
+  await dexPage.click("[data-handle='ceth-select-button']");
+
+  await dexPage.click('[data-handle="token-a-input"]');
+  await dexPage.fill(
+    '[data-handle="token-a-input"]',
+    "1.00000000000000000000000000000",
+  );
+
+  await dexPage.click('[data-handle="actions-go"]');
+
+  await dexPage.pause();
 });
 
 function prepareRowText(row) {
