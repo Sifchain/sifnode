@@ -11,11 +11,11 @@ Any day of the week
      Users send a create claim request from their address and provide the claim-type (LM/VS) as a parameter. The claims are valid until they are paid out.
 
 
-On Friday ( No limitation on the day being friday , This was decided to be the plan)
+On Friday ( No limitation on the day being friday )
 - 2) Run a query to get all claims till that time , and create a list 
      Step(1) also emits a claim_created event , which can read to get the claims and create the list
     
-- 3) This is list is an input for a function (This function is off-chain and not part of this module)  which iterates over the list and calculates the rewards earned by that address. This data is then used to create a distribution list . 
+- 3) This  list is an input for a function (This function is off-chain and not part of this module)  which iterates over the list and calculates the rewards earned by that address. This data is then used to create a distribution list . 
      
 - 4) We run a distribution using the list from step (3). 
 - 5) The transfers happen over the next few blocks (10 per block) . 
