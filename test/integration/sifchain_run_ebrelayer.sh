@@ -43,7 +43,7 @@ fi
 
 TCP_URL=tcp://0.0.0.0:26657
 
-sifnoded keys delete $MONIKER --keyring-backend test || true
+yes | sifnoded keys delete $MONIKER --keyring-backend test || true
 echo $MNEMONIC | sifnoded keys add $MONIKER --keyring-backend test --recover
 
 ETHEREUM_PRIVATE_KEY=$EBRELAYER_ETHEREUM_PRIVATE_KEY $runner init $TCP_URL "$ETHEREUM_WEBSOCKET_ADDRESS" \
