@@ -2,6 +2,7 @@ package ethbridge
 
 import (
 	"encoding/json"
+	"fmt"
 
 	"github.com/gorilla/mux"
 	"github.com/spf13/cobra"
@@ -45,8 +46,13 @@ func (AppModuleBasic) DefaultGenesis() json.RawMessage {
 }
 
 // ValidateGenesis performs genesis state validation for the ethbridge module.
-func (AppModuleBasic) ValidateGenesis(_ json.RawMessage) error {
-	return nil
+func (am AppModuleBasic) ValidateGenesis(bz json.RawMessage) error {
+	var data GenesisState
+	err := am.Codec.UnmarshalJSON(bz, &data)
+	if err != nil {
+		return fmt.Errorf("failed to unmarshal %s genesis state: %w", ModuleName, err)
+	}
+	return ValidateGenesis(data)
 }
 
 // RegisterRESTRoutes registers the REST routes for the ethbridge module.
@@ -130,10 +136,13 @@ func (am AppModule) NewQuerierHandler() sdk.Querier {
 
 // InitGenesis performs genesis initialization for the ethbridge module. It returns
 // no validator updates.
-func (am AppModule) InitGenesis(ctx sdk.Context, _ json.RawMessage) []abci.ValidatorUpdate {
+func (am AppModule) InitGenesis(ctx sdk.Context, data json.RawMessage) []abci.ValidatorUpdate {
 	bridgeAccount := supply.NewEmptyModuleAccount(ModuleName, supply.Burner, supply.Minter)
 	am.SupplyKeeper.SetModuleAccount(ctx, bridgeAccount)
-	return nil
+
+	var genesisState GenesisState
+	am.Codec.MustUnmarshalJSON(data, &genesisState)
+	return InitGenesis(ctx, am.BridgeKeeper, genesisState)
 }
 
 // ExportGenesis returns the exported genesis state as raw bytes for the ethbridge
