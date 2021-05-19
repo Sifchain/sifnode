@@ -321,7 +321,8 @@ it.skip("swaps", async () => {
   await dexPage.waitForTimeout(10000); // wait for blockchain to update...
 
   // Wait for balances to be the amounts expected
-  expect(await dexPage.innerText('[data-handle="swap-message"]')).toBe(
+  await expect(dexPage).toHaveText(
+    '[data-handle="swap-message"]',
     "Swapped 50 cusdc for 49.9995000037 rowan",
   );
 
@@ -336,7 +337,55 @@ it.skip("swaps", async () => {
   );
 });
 
-it.skip("adds liquidity", async () => {
+it("fails to swap when it can't pay gas with rowan", async () => {
+  // Navigate to swap page
+  await dexPage.goto(DEX_TARGET, {
+    waitUntil: "domcontentloaded",
+  });
+
+  await dexPage.waitForTimeout(1000); // slowing down to avoid tokens not updating
+
+  await dexPage.click("[data-handle='swap-page-button']");
+
+  await dexPage.waitForTimeout(1000); // slowing down to avoid tokens not updating
+
+  // Get values of token A and token B in account
+  // Select Token A
+  await dexPage.click("[data-handle='token-a-select-button']");
+  await dexPage.click("[data-handle='rowan-select-button']");
+
+  // Select Token B
+  await dexPage.waitForTimeout(1000); // slowing down to avoid tokens not updating
+  await dexPage.click("[data-handle='token-b-select-button']");
+
+  await dexPage.waitForTimeout(1000); // slowing down to avoid tokens not updating
+  await dexPage.click("[data-handle='cusdc-select-button']");
+
+  // Input amount A
+  await dexPage.click('[data-handle="token-a-input"]');
+  await dexPage.fill('[data-handle="token-a-input"]', "10000");
+
+  // Click Swap Button
+  await dexPage.click('button:has-text("Swap")');
+
+  await dexPage.click('button:has-text("Confirm Swap")');
+
+  // Confirm transactioni popup
+
+  const keplrPage = await getExtensionPage(browserContext, KEPLR_CONFIG.id);
+
+  await keplrPage.waitForLoadState();
+  await keplrPage.click("text=Approve");
+  await keplrPage.waitForLoadState();
+  await dexPage.waitForTimeout(10000); // wait for blockchain to update...
+
+  await expect(dexPage).toHaveText("Transaction Failed");
+  await expect(dexPage).toHaveText("Not enough ROWAN to cover the gas fees.");
+
+  await dexPage.click("[data-handle='modal-view-close']");
+});
+
+it("adds liquidity", async () => {
   // Navigate to swap page
   await dexPage.goto(DEX_TARGET, {
     waitUntil: "domcontentloaded",
@@ -488,6 +537,43 @@ it.skip("adds liquidity", async () => {
   expect(
     prepareRowText(await dexPage.innerText('[data-handle="total-pool-share"]')),
   ).toBe("Your pool share: 0.0602 %");
+});
+
+it("fails to add liquidity when can't pay gas with rowan", async () => {
+  // Navigate to swap page
+  await dexPage.goto(DEX_TARGET, {
+    waitUntil: "domcontentloaded",
+  });
+  // Click pool page
+  await dexPage.click('[data-handle="pool-page-button"]');
+
+  // Click add liquidity button
+  await dexPage.click('[data-handle="add-liquidity-button"]');
+
+  // Select cusdc
+  await dexPage.click("[data-handle='token-a-select-button']");
+  await dexPage.click("[data-handle='cusdc-select-button']");
+
+  await dexPage.click('[data-handle="token-b-input"]');
+  await dexPage.fill('[data-handle="token-b-input"]', "10000");
+
+  await dexPage.click('[data-handle="actions-go"]');
+
+  await dexPage.click("button:has-text('CONFIRM SUPPLY')");
+
+  // Confirm transaction popup
+
+  const keplrPage = await getExtensionPage(browserContext, KEPLR_CONFIG.id);
+
+  await keplrPage.waitForLoadState();
+  await keplrPage.click("text=Approve");
+  await keplrPage.waitForLoadState();
+  await dexPage.waitForTimeout(10000); // wait for blockchain to update...
+
+  await expect(dexPage).toHaveText("Transaction Failed");
+  await expect(dexPage).toHaveText("Not enough ROWAN to cover the gas fees");
+
+  await dexPage.click("[data-handle='modal-view-close']");
 });
 
 function prepareRowText(row) {
