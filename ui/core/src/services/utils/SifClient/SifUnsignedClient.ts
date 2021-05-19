@@ -45,6 +45,7 @@ export class SifUnSignedClient
   private subscriber: TendermintSocketPoll | undefined;
   constructor(
     apiUrl: string,
+    wsUrl = "ws://localhost:26657/websocket",
     rpcUrl = "http://localhost:26657",
     broadcastMode?: BroadcastMode,
   ) {
