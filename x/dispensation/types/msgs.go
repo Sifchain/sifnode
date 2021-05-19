@@ -77,9 +77,14 @@ func (m MsgCreateClaim) Type() string {
 	return "createClaim"
 }
 
+// Validation for claim type
 func (m MsgCreateClaim) ValidateBasic() error {
 	if m.UserClaimAddress.Empty() {
 		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, m.UserClaimAddress.String())
+	}
+	_, ok := IsValidClaim(m.UserClaimType.String())
+	if !ok {
+		return sdkerrors.Wrap(ErrInvalid, m.UserClaimType.String())
 	}
 	return nil
 }

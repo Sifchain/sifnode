@@ -56,6 +56,8 @@ func handleMsgCreateDistribution(ctx sdk.Context, keeper Keeper, msg MsgDistribu
 	return &sdk.Result{Events: ctx.EventManager().Events()}, nil
 }
 
+// Test invalid claims
+
 func handleMsgCreateClaim(ctx sdk.Context, keeper Keeper, msg MsgCreateClaim) (*sdk.Result, error) {
 	if keeper.ExistsClaim(ctx, msg.UserClaimAddress.String(), msg.UserClaimType) {
 		ctx.Logger().Info("Claim already exists for user :", msg.UserClaimAddress.String())

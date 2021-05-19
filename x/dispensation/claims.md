@@ -22,3 +22,6 @@ On Friday ( No limitation on the day being friday )
 4) We run a distribution using the list from step (3). 
 5) The transfers happen over the next few blocks (10 per block) . 
 6) An event is emitted when a transfer to a user happens.The event is an indicator that the recipient has received the funds .This will be used by an external function to reset multipliers for the recievers. 
+
+### Out of Scope
+- No mechanism present to delete a user-claim once created .
