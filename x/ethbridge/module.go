@@ -47,8 +47,8 @@ func (AppModuleBasic) DefaultGenesis() json.RawMessage {
 
 // ValidateGenesis performs genesis state validation for the ethbridge module.
 func (am AppModuleBasic) ValidateGenesis(bz json.RawMessage) error {
-	var data GenesisState
-	err := am.Codec.UnmarshalJSON(bz, &data)
+	var data types.GenesisState
+	err := types.ModuleCdc.UnmarshalJSON(bz, &data)
 	if err != nil {
 		return fmt.Errorf("failed to unmarshal %s genesis state: %w", ModuleName, err)
 	}
@@ -140,7 +140,7 @@ func (am AppModule) InitGenesis(ctx sdk.Context, data json.RawMessage) []abci.Va
 	bridgeAccount := supply.NewEmptyModuleAccount(ModuleName, supply.Burner, supply.Minter)
 	am.SupplyKeeper.SetModuleAccount(ctx, bridgeAccount)
 
-	var genesisState GenesisState
+	var genesisState types.GenesisState
 	am.Codec.MustUnmarshalJSON(data, &genesisState)
 	return InitGenesis(ctx, am.BridgeKeeper, genesisState)
 }

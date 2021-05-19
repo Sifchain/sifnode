@@ -1,36 +1,38 @@
-package ethbridge
+package ethbridge_test
 
 import (
 	"testing"
 
-	"github.com/Sifchain/sifnode/x/ethbridge/types"
+	"github.com/Sifchain/sifnode/x/ethbridge"
+	"github.com/Sifchain/sifnode/x/ethbridge/test"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestExportGenesis(t *testing.T) {
-	ctx, keeper := types.CreateTestAppEthBridge(false)
+	ctx, keeper := test.CreateTestAppEthBridge(false)
 	// Generate State
 	tokenscount, receivercount := CreateState(ctx, keeper, t)
-	state := ExportGenesis(ctx, keeper)
+	state := ethbridge.ExportGenesis(ctx, keeper)
 	assert.Equal(t, len(state.PeggyTokens), tokenscount)
 	assert.Equal(t, len(state.CethReceiverAccount), receivercount)
 
 }
 
 func TestInitGenesis(t *testing.T) {
-	ctx1, keeper1 := types.CreateTestAppEthBridge(false)
-	ctx2, keeper2 := types.CreateTestAppEthBridge(false)
+	ctx1, keeper1 := test.CreateTestAppEthBridge(false)
+	ctx2, keeper2 := test.CreateTestAppEthBridge(false)
 	// Generate State
 	tokenscount, receivercount := CreateState(ctx1, keeper1, t)
-	state := ExportGenesis(ctx1, keeper1)
+	state := ethbridge.ExportGenesis(ctx1, keeper1)
 	assert.Equal(t, len(state.PeggyTokens), tokenscount)
 	assert.Equal(t, len(state.CethReceiverAccount), receivercount)
-	state2 := ExportGenesis(ctx2, keeper2)
+	state2 := ethbridge.ExportGenesis(ctx2, keeper2)
 	assert.Equal(t, len(state2.PeggyTokens), 0)
 	assert.Equal(t, len(state2.CethReceiverAccount), 0)
 
-	valUpdates := InitGenesis(ctx2, keeper2, state)
+	valUpdates := ethbridge.InitGenesis(ctx2, keeper2, state)
 	assert.Equal(t, len(valUpdates), 0)
 
 	tokenslist := keeper2.GetPeggyToken(ctx2)
@@ -40,12 +42,11 @@ func TestInitGenesis(t *testing.T) {
 
 }
 
-func CreateState(ctx sdk.Context, keeper Keeper, t *testing.T) (int, int) {
+func CreateState(ctx sdk.Context, keeper ethbridge.Keeper, t *testing.T) (int, int) {
 	// Setting Tokens
-	tokens := types.GenerateRandomTokens(10)
+	tokens := test.GenerateRandomTokens(10)
 	for _, token := range tokens {
-		err := keeper.AddPeggyToken(ctx, token)
-		assert.NoError(t, err)
+		keeper.AddPeggyToken(ctx, token)
 	}
 	gettokens := keeper.GetPeggyToken(ctx)
 	assert.Greater(t, len(gettokens), 0, "More than one token added")
@@ -54,9 +55,9 @@ func CreateState(ctx sdk.Context, keeper Keeper, t *testing.T) (int, int) {
 	tokenscount := len(gettokens)
 
 	//Setting Receiver account
-	receiver := types.GenerateAddress("")
-	keeper.SetCethReceiverAccount(ctx, []sdk.AccAddress{receiver})
-	set := keeper.IsCethReceiverAccount(ctx, []sdk.AccAddress{receiver})
+	receiver := test.GenerateAddress("")
+	keeper.SetCethReceiverAccount(ctx, receiver)
+	set := keeper.IsCethReceiverAccount(ctx, receiver)
 	assert.True(t, set)
 
 	return tokenscount, 1
