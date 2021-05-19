@@ -130,6 +130,6 @@ describe("sifService", () => {
     });
     const balances = await sifService.getBalance(address);
     const balance = getBalance(balances, "rowan");
-    expect(balance?.toString()).toEqual("99999999999999999999999999950 ROWAN");
+    expect(balance?.toString()).toEqual("99999999999999999999999749950 ROWAN");
   });
 });

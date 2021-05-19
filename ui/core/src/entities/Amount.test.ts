@@ -32,6 +32,35 @@ describe("Amount", () => {
     expect(() => {
       Amount("..534");
     }).toThrow();
+
+    expect(() => {
+      Amount("eatme");
+    }).toThrow();
+
+    expect(() => {
+      Amount("");
+    }).toThrow();
+
+    expect(() => {
+      Amount("123.");
+    }).toThrow();
+
+    expect(() => {
+      Amount(".6");
+    }).not.toThrow();
+
+    expect(() => {
+      Amount("- 1234");
+    }).toThrow();
+
+    expect(() => {
+      Amount(".6.5");
+    }).toThrow();
+
+    expect(() => {
+      const inp = null as any;
+      Amount(inp);
+    }).toThrow();
   });
 
   test("#toBigInt", () => {
