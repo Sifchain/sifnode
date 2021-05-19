@@ -5,11 +5,12 @@ import queryString from "query-string";
 import Panel from "@/components/shared/Panel.vue";
 import PanelNav from "@/components/shared/PanelNav/PanelNav.vue";
 import Icon from "@/components/shared/Icon.vue";
+import SifButton from "@/components/shared/SifButton.vue";
 
 const MAILCHIMP_URL = "https://finance.us2.list-manage.com/subscribe/post-json";
 
 export default defineComponent({
-  components: { Panel, PanelNav, Icon },
+  components: { Panel, PanelNav, Icon, SifButton },
   props: {},
   data() {
     return {
@@ -18,12 +19,12 @@ export default defineComponent({
     };
   },
   setup() {
-    const toggleActive = () => {
-      this.active = !this.active;
-    };
-    return { toggleActive };
+    return {};
   },
   methods: {
+    toggleActive() {
+      this.active = !this.active;
+    },
     async submitEmail() {
       console.log("asd", this.email);
       // const data = new URLSearchParams();
@@ -67,8 +68,13 @@ export default defineComponent({
           <div class="cta">
             <form @submit.prevent="submitEmail">
               Sign up for Sifchain updates
-              <input v-model="email" type="email" name="email" />
-              <button type="submit">Stay Informed</button>
+              <input
+                v-model="email"
+                type="email"
+                name="email"
+                class="email-input"
+              />
+              <SifButton primary type="submit">Stay Informed</SifButton>
             </form>
           </div>
           <div class="links">
@@ -80,6 +86,7 @@ export default defineComponent({
       </div>
     </div>
     <div v-else class="footer">
+      <div class="backdrop"></div>
       <div class="items">
         <div class="toggle-button" @click="toggleActive">
           <Icon icon="info-box-white" />Stay in the Loop
@@ -114,15 +121,25 @@ export default defineComponent({
 }
 
 .left {
-  flex: 1 1 auto;
+  display: flex;
+  justify-content: center;
   height: 51px;
+  align-items: center;
 }
 .right {
   flex: 1 1 auto;
   height: 51px;
-
+  font-size: 13px;
   justify-content: flex-end;
   display: flex;
+}
+.email-input {
+  border-bottom-left-radius: 6px;
+  border-top-left-radius: 6px;
+  padding: 8px;
+  outline: none;
+  border: none;
+  height: 30px;
 }
 .cta {
   display: flex;
@@ -132,12 +149,16 @@ export default defineComponent({
   color: #fff;
 }
 .toggle-button {
+  margin-left: 20px;
   padding: 0px 8px 0px 2px;
   height: 22px;
   border: 1px solid #ffffff;
   box-sizing: border-box;
   border-radius: 20px;
   color: #fff;
+  cursor: pointer;
+  background: rgba(0, 0, 0, 0.4);
+  border-radius: 20px;
 }
 .links {
   display: flex;
@@ -156,5 +177,14 @@ export default defineComponent({
   width: 100%;
   opacity: 0.5;
   height: 51px;
+}
+</style>
+<style lang="scss">
+.cta {
+  .btn {
+    border-bottom-left-radius: 0px;
+    border-top-left-radius: 0px;
+    display: inline;
+  }
 }
 </style>

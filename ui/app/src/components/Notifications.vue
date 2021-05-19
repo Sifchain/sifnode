@@ -162,10 +162,9 @@ export default defineComponent({
 <style lang="scss" scoped>
 .notifications-container {
   position: fixed;
-  bottom: 0px;
+  bottom: 50px;
   right: 16px;
   height: auto;
-  bottom: 0px;
   .list-enter-active,
   .list-leave-active {
     transition: all 0.5s ease;

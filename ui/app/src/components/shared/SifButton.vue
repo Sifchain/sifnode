@@ -116,7 +116,6 @@ export default defineComponent({
   padding: 0 18px;
   align-items: center;
   overflow: hidden;
-  font: inherit;
   font-size: $fs;
   // line-height: $lh_btn;
   letter-spacing: 0px;
