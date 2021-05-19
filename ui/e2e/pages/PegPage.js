@@ -54,8 +54,9 @@ export class PegPage {
   }
 
   async verifyAssetAmount(asset, expectedAmount) {
-    const element = await page.$(this.el.assetAmount(asset));
-    await expect(element).toHaveText(expectedAmount);
+    // const element = await page.$(this.el.assetAmount(asset));
+    // await expect(element).toHaveText(expectedAmount);
+    await expect(page).toHaveText(this.el.assetAmount(asset), expectedAmount);
   }
 
   async closeSubmissionWindow() {

@@ -65,7 +65,7 @@ afterAll(async () => {
 });
 
 beforeEach(async () => {
-  metamaskPage.reset();
+  // metamaskPage.reset();
 });
 
 it("pegs rowan", async () => {
@@ -115,6 +115,9 @@ it("pegs rowan", async () => {
 });
 
 it("pegs ether", async () => {
+  const pegAmount = "1";
+  const pegAsset = "eth";
+
   // Navigate to peg page
   await pegPage.navigate();
 
@@ -123,9 +126,6 @@ it("pegs ether", async () => {
     KEPLR_CONFIG.options.address,
     "ceth",
   );
-
-  const pegAmount = "1";
-  const pegAsset = "eth";
 
   await pegPage.openTab("external");
   await pegPage.peg(pegAsset, pegAmount);
@@ -151,11 +151,12 @@ it("pegs ether", async () => {
   await pegPage.verifyAssetAmount(pegAsset, expectedAmount);
 });
 
-it.skip("pegs tokens", async () => {
+it.only("pegs tokens", async () => {
+  const pegAmount = "1";
+  const pegAsset = "usdc";
+
   // Navigate to peg page
-  await dexPage.goto(DEX_TARGET, {
-    waitUntil: "domcontentloaded",
-  });
+  await pegPage.navigate();
 
   const cBalance = await getSifchainBalances(
     keplrConfig.sifApiUrl,
@@ -163,46 +164,37 @@ it.skip("pegs tokens", async () => {
     "cusdc",
   );
 
-  const pegAmount = "1";
+  await pegPage.openTab("external");
+  await pegPage.peg(pegAsset, pegAmount);
 
-  await dexPage.click("[data-handle='external-tab']");
-  await dexPage.click("[data-handle='peg-usdc']");
-  await dexPage.click('[data-handle="peg-input"]');
-  await dexPage.fill('[data-handle="peg-input"]', pegAmount);
-  await dexPage.click('button:has-text("Peg")');
+  await pegPage.clickConfirmPeg();
+  await page.waitForTimeout(1000);
 
-  const [approveSpendPopup] = await Promise.all([
-    browserContext.waitForEvent("page"),
-    dexPage.click('button:has-text("Confirm Peg")'),
-  ]);
+  await metamaskNotificationPopup.navigate();
 
-  await approveSpendPopup.click("text=View full transaction details");
-  await expect(approveSpendPopup).toHaveText(pegAmount + " usdc");
+  await metamaskNotificationPopup.clickViewFullTransactionDetails();
+  await metamaskNotificationPopup.verifyTransactionDetails(
+    `${pegAmount} ${pegAsset}`,
+  );
 
-  const [confirmPopup] = await Promise.all([
-    browserContext.waitForEvent("page"),
-    approveSpendPopup.click('button:has-text("Confirm")'),
-  ]);
+  await page.pause();
+  await metamaskNotificationPopup.clickConfirm();
 
-  await Promise.all([
-    confirmPopup.waitForEvent("close"),
-    confirmPopup.click('button:has-text("Confirm")'),
-  ]);
+  await page.waitForTimeout(1000);
+  await metamaskNotificationPopup.navigate(); // this call is needed to reload this.page with a new popup page
+  await metamaskNotificationPopup.clickConfirm();
 
-  await dexPage.click("text=×");
+  await pegPage.closeSubmissionWindow();
 
   await advanceEthBlocks(52);
 
-  await dexPage.waitForSelector("text=has succeded");
+  await page.waitForSelector("text=has succeded");
 
-  const rowAmount = await dexPage.innerText("[data-handle='cusdc-row-amount']");
-
-  const expected = (Number(cBalance) + Number(pegAmount)).toFixed(6);
-
-  expect(rowAmount.trim()).toBe(expected);
+  const expectedAmount = (Number(cBalance) + Number(pegAmount)).toFixed(6);
+  await pegPage.verifyAssetAmount("cusdc", expectedAmount);
 });
 
-it.skip("swaps", async () => {
+it("swaps", async () => {
   // Navigate to swap page
   await dexPage.goto(DEX_TARGET, {
     waitUntil: "domcontentloaded",
