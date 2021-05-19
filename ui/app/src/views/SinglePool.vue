@@ -271,11 +271,11 @@ export default defineComponent({
           >
         </div>
       </div>
-      <div class="blockexplorer-container">
-        <div class="blockexplorer-label">Blockexplorer</div>
-        <div class="blockexplorer-link">
-          <a target="_blank" :href="getBlockExplorerUrl(chainId)">View</a>
-        </div>
+    </div>
+    <div class="blockexplorer-container">
+      <div class="blockexplorer-label">Blockexplorer</div>
+      <div class="blockexplorer-link">
+        <a target="_blank" :href="getBlockExplorerUrl(chainId)">View</a>
       </div>
     </div>
   </Layout>
