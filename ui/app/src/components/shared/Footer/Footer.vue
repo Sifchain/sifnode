@@ -1,23 +1,53 @@
 <script lang="ts">
 import { defineComponent } from "vue";
+import jsonp from "jsonp";
+import queryString from "query-string";
 import Panel from "@/components/shared/Panel.vue";
-import Footer from "@/components/shared/Footer/Footer.vue";
 import PanelNav from "@/components/shared/PanelNav/PanelNav.vue";
 import Icon from "@/components/shared/Icon.vue";
-import { SubHeading } from "@/components/shared/Text";
+
+const MAILCHIMP_URL = "https://finance.us2.list-manage.com/subscribe/post-json";
 
 export default defineComponent({
-  components: { Panel, PanelNav, Icon, SubHeading, Footer },
+  components: { Panel, PanelNav, Icon },
   props: {},
   data() {
     return {
-      active: false,
+      active: true,
+      email: "thomas@gmail.com",
     };
   },
-  setup() {},
-  methods: {
-    toggleActive() {
+  setup() {
+    const toggleActive = () => {
       this.active = !this.active;
+    };
+    return { toggleActive };
+  },
+  methods: {
+    async submitEmail() {
+      console.log("asd", this.email);
+      // const data = new URLSearchParams();
+      // for (const pair of new FormData(formElement)) {
+      // data.append("email", "thomasalwyndavis@gmail.com");
+      // }
+      //
+      // const mailchimpRes = await fetch(MAILCHIMP_URL, {
+      //   method: "post",
+      //   body: data,
+      // });
+      const query = queryString.stringify({
+        u: "400787e0a5e23ec37b7b51f74",
+        id: "c1ee83387b",
+        EMAIL: "thomasalwyndavis@gmail.com",
+      });
+      const url = `${MAILCHIMP_URL}?${query}`;
+      jsonp(url, { param: "c" }, (error, data) => {
+        if (error) {
+          // say, try again
+        } else {
+          // say, thank you
+        }
+      });
     },
   },
 });
@@ -28,15 +58,19 @@ export default defineComponent({
     <div v-if="active" class="footer">
       <div class="backdrop"></div>
       <div class="items">
-        <div class="toggle-button" @click="toggleActive">
-          <Icon icon="info-box-white" />Close
-        </div>
         <div class="left">
-          <div class="cta">
-            Sign up for Sifchain updates<input /><button>Stay Informed</button>
+          <div class="toggle-button" @click="toggleActive">
+            <Icon icon="info-box-white" />Close
           </div>
         </div>
         <div class="right">
+          <div class="cta">
+            <form @submit.prevent="submitEmail">
+              Sign up for Sifchain updates
+              <input v-model="email" type="email" name="email" />
+              <button type="submit">Stay Informed</button>
+            </form>
+          </div>
           <div class="links">
             <a href="">Privacy Policy</a>
             <a href="">Roadmap</a>
@@ -86,6 +120,9 @@ export default defineComponent({
 .right {
   flex: 1 1 auto;
   height: 51px;
+
+  justify-content: flex-end;
+  display: flex;
 }
 .cta {
   display: flex;
