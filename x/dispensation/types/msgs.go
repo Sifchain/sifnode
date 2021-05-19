@@ -61,12 +61,12 @@ func (m MsgDistribution) GetSigners() []sdk.AccAddress {
 
 // Create a user claim
 type MsgCreateClaim struct {
-	Signer        sdk.AccAddress   `json:"signer"`
-	UserClaimType DistributionType `json:"user_claim_type"`
+	UserClaimAddress sdk.AccAddress   `json:"signer"`
+	UserClaimType    DistributionType `json:"user_claim_type"`
 }
 
 func NewMsgCreateClaim(Signer sdk.AccAddress, userClaimType DistributionType) MsgCreateClaim {
-	return MsgCreateClaim{Signer: Signer, UserClaimType: userClaimType}
+	return MsgCreateClaim{UserClaimAddress: Signer, UserClaimType: userClaimType}
 }
 
 func (m MsgCreateClaim) Route() string {
@@ -78,8 +78,8 @@ func (m MsgCreateClaim) Type() string {
 }
 
 func (m MsgCreateClaim) ValidateBasic() error {
-	if m.Signer.Empty() {
-		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, m.Signer.String())
+	if m.UserClaimAddress.Empty() {
+		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, m.UserClaimAddress.String())
 	}
 	return nil
 }
@@ -89,5 +89,5 @@ func (m MsgCreateClaim) GetSignBytes() []byte {
 }
 
 func (m MsgCreateClaim) GetSigners() []sdk.AccAddress {
-	return []sdk.AccAddress{m.Signer}
+	return []sdk.AccAddress{m.UserClaimAddress}
 }

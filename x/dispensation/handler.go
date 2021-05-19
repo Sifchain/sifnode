@@ -57,11 +57,11 @@ func handleMsgCreateDistribution(ctx sdk.Context, keeper Keeper, msg MsgDistribu
 }
 
 func handleMsgCreateClaim(ctx sdk.Context, keeper Keeper, msg MsgCreateClaim) (*sdk.Result, error) {
-	if keeper.ExistsClaim(ctx, msg.Signer.String(), msg.UserClaimType) {
-		ctx.Logger().Info("Claim already exists for user :", msg.Signer.String())
+	if keeper.ExistsClaim(ctx, msg.UserClaimAddress.String(), msg.UserClaimType) {
+		ctx.Logger().Info("Claim already exists for user :", msg.UserClaimAddress.String())
 		return nil, errors.Wrap(types.ErrInvalid, "Claim already exists for user")
 	}
-	newClaim := types.NewUserClaim(msg.Signer, msg.UserClaimType, ctx.BlockTime().UTC())
+	newClaim := types.NewUserClaim(msg.UserClaimAddress, msg.UserClaimType, ctx.BlockTime().UTC())
 	err := keeper.SetClaim(ctx, newClaim)
 	if err != nil {
 		return nil, err
