@@ -1,16 +1,14 @@
-import { ActionContext } from "..";
+import { UsecaseContext } from "..";
 
 export default ({
-  api,
+  services,
   store,
-}: ActionContext<
-  // Once we have moved all interactors to their own files this can be
-  // ActionContext<any,any> or renamed to InteractorContext<any,any>
-  "SifService" | "EthbridgeService" | "EventBusService" | "EthereumService", // Select the services you want to access
-  "wallet" | "tx" // Select the store keys you want to access
+}: UsecaseContext<
+  "sif" | "clp" | "bus",
+  "pools" | "wallet" | "accountpools"
 >) => {
   // Create the context for passing to commands, queries and subscriptions
-  const ctx = { api, store };
+  const ctx = { services, store };
 
   /* 
     TODO: suggestion externalize all interactors injecting ctx would look like the following
@@ -32,8 +30,8 @@ export default ({
   */
 
   // Rename and split this up to subscriptions, commands, queries
-  const actions = {
-    async claimRewards() {
+  const commands = {
+    async claim() {
       if (!store.wallet.sif.address) throw "No from address provided for swap";
 
       // const tx = await api.DispensationService.claim( {fromAddress: store.wallet.sif.address, });
@@ -43,5 +41,5 @@ export default ({
     },
   };
 
-  return actions;
+  return commands;
 };
