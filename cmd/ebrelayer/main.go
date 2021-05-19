@@ -193,7 +193,6 @@ func RunInitRelayerCmd(cmd *cobra.Command, args []string) error {
 		return errors.Errorf("invalid [validator-moniker]: %s", args[3])
 	}
 	validatorMoniker := args[3]
-	//mnemonic := args[4]
 
 	logConfig := zap.NewDevelopmentConfig()
 	logConfig.Sampling = nil
@@ -212,17 +211,19 @@ func RunInitRelayerCmd(cmd *cobra.Command, args []string) error {
 	zap.RedirectStdLog(sugaredLogger.Desugar())
 
 	// Initialize new Ethereum event listener
-	//validatorAddress, err := relayer.AddToKeyringWithMnemonic(cliContext.Keyring, validatorMoniker, mnemonic)
-	//if err != nil {
-	//	panic("could not add relayer to keyring")
-	//}
-	//
-	//valAddrAsFrom := sdk.ValAddress(validatorAddress.GetAddress())
-	ethSub, err := relayer.NewEthereumSub(cliContext, rpcURL, validatorMoniker, chainID, web3Provider,
-		contractAddress, privateKey, nil, db, sugaredLogger, "")
-	if err != nil {
-		return err
-	}
+	ethSub := relayer.NewEthereumSub(
+		cliContext,
+		rpcURL,
+		validatorMoniker,
+		chainID,
+		web3Provider,
+		contractAddress,
+		privateKey,
+		nil,
+		db,
+		sugaredLogger,
+	)
+
 	// Initialize new Cosmos event listener
 	cosmosSub := relayer.NewCosmosSub(tendermintNode, web3Provider, contractAddress, privateKey, db, sugaredLogger)
 
