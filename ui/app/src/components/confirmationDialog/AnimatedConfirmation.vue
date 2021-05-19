@@ -107,7 +107,6 @@ export default defineComponent({
                   />
                 )}
               </SwipeTransition>
-              s
               <SwipeTransition>
                 {props.state === "fail" && (
                   <ConfirmTemplate
