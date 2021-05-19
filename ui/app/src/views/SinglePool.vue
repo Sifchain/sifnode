@@ -27,6 +27,8 @@ async function getEarnedRewards(address: ComputedRef<any>, symbol: string) {
   );
   const data = await res.json();
   const parsedData = JSON.parse(data);
+  // TD - This should return Amount
+  // Rudis recent work should refactor this call too into a testable service
   return parsedData.netChangeUSDT;
 }
 
@@ -38,6 +40,7 @@ export default defineComponent({
 
     const address = computed(() => store.wallet.sif.address);
     let earnedRewards = ref<string>("0");
+    let earnedRewardsNegative = ref<boolean>(false);
 
     const accountPool = computed(() => {
       if (
@@ -80,9 +83,20 @@ export default defineComponent({
         address,
         fromSymbol.value?.toLowerCase() || "0",
       );
-      earnedRewards.value = format(Amount(realEarnedRewards.toString()), {
-        mantissa: 2,
-      });
+
+      // TODO - Need a strat to do negative price renderings easily with Amount API
+      //        e.g. -$5 #refactor
+      earnedRewardsNegative.value = Amount(
+        realEarnedRewards.toString(),
+      ).lessThan("0")
+        ? true
+        : false;
+      earnedRewards.value = format(
+        Amount(Math.abs(realEarnedRewards).toString()),
+        {
+          mantissa: 2,
+        },
+      );
     });
 
     const fromTotalValue = computed(() => {
@@ -146,6 +160,7 @@ export default defineComponent({
       chainId: config.sifChainId,
       getBlockExplorerUrl,
       earnedRewards,
+      earnedRewardsNegative,
     };
   },
 });
@@ -233,7 +248,9 @@ export default defineComponent({
               >
                 <Icon icon="info-box-black" /> </Tooltip
             ></span>
-            <span class="value">${{ earnedRewards }}</span>
+            <span class="value"
+              >{{ earnedRewardsNegative ? "-" : "" }}${{ earnedRewards }}</span
+            >
           </div>
         </div>
       </div>
@@ -385,6 +402,9 @@ export default defineComponent({
   .blockexplorer-link {
     a {
       color: #666;
+      background: #f3f3f3;
+      border-radius: 4px;
+      padding: 4px 10px;
     }
     font-style: italic;
   }
