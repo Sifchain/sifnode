@@ -60,5 +60,5 @@ func CreateState(ctx sdk.Context, keeper ethbridge.Keeper, t *testing.T) (int, i
 	set := keeper.IsCethReceiverAccount(ctx, receiver)
 	assert.True(t, set)
 
-	return tokenscount, 1
+	return tokenscount, len(receiver)
 }
