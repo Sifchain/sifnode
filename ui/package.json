@@ -81,7 +81,8 @@
     ]
   },
   "resolutions": {
-    "vue-loader": "^16.1.2"
+    "vue-loader": "^16.1.2",
+    "lodash": "4.17.21"
   },
   "dependencies": {
     "@storybook/preset-scss": "^1.0.3",
