@@ -12,6 +12,8 @@ Any day of the week
 
 
 On Friday ( No limitation on the day being friday )
+
+
 2) Run a query to get all claims till that time , and create a list 
      Step(1) also emits a claim_created event , which can read to get the claims and create the list
     
