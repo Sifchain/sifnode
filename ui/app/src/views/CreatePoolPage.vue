@@ -270,7 +270,8 @@ export default defineComponent({
       transactionHash,
 
       requestTransactionModalClose,
-
+      tokenAFieldAmount,
+      tokenBFieldAmount,
       transactionState,
       transactionStateMsg,
       toggleAsyncPooling,
@@ -487,8 +488,8 @@ export default defineComponent({
         <div>
           <DetailsPanelPool
             class="details"
-            :fromTokenLabel="fromSymbol"
-            :fromAmount="fromAmount"
+            :tokenAAmount="tokenAFieldAmount"
+            :tokenBAmount="tokenBFieldAmount"
             :toTokenLabel="toSymbol"
             :toAmount="toAmount"
             :aPerB="aPerBRatioMessage"
