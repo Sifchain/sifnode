@@ -44,7 +44,7 @@ func RelayProphecyClaimToEthereum(provider string, contractAddress common.Addres
 	}
 
 	switch claim.ClaimType {
-	case types.MsgLock | types.MsgBurn:
+	case types.MsgLock, types.MsgBurn:
 		sugaredLogger.Infow(
 			"Sending new ProphecyClaim to CosmosBridge.",
 			"claim", claim,
