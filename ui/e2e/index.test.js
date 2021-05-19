@@ -666,7 +666,7 @@ it("fails to add liquidity when can't pay gas with rowan", async () => {
   await dexPage.click("[data-handle='modal-view-close']");
 });
 
-it.only("formats long amounts in confirmation screen", async () => {
+it("formats long amounts in confirmation screen", async () => {
   // Navigate to swap page
   await dexPage.goto(DEX_TARGET, {
     waitUntil: "domcontentloaded",
