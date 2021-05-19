@@ -15,7 +15,7 @@ On Friday ( No limitation on the day being friday )
 
 
 2) Run a query to get all claims till that time , and create a list 
-     Step(1) also emits a claim_created event , which can read to get the claims and create the list
+     - Step(1) also emits a claim_created event , which can read to get the claims and create the list
     
 3) This  list is an input for a function (This function is off-chain and not part of this module)  which iterates over the list and calculates the rewards earned by that address. This data is then used to create a distribution list . 
      
