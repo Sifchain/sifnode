@@ -32,7 +32,6 @@ import (
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/txs"
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/types"
 	ethbridge "github.com/Sifchain/sifnode/x/ethbridge/types"
-	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 )
 
 const (
@@ -71,14 +70,13 @@ func NewEthereumSub(
 	cliCtx client.Context,
 	rpcURL string,
 	validatorMoniker,
-	chainID,
 	ethProvider string,
 	registryContractAddress common.Address,
 	privateKey *ecdsa.PrivateKey,
 	validatorAddress sdk.ValAddress,
 	db *leveldb.DB,
-	sugaredLogger *zap.SugaredLogger, 
-	) (EthereumSub) {
+	sugaredLogger *zap.SugaredLogger,
+) EthereumSub {
 
 	return EthereumSub{
 		EthProvider:             ethProvider,
@@ -91,27 +89,6 @@ func NewEthereumSub(
 		DB:                      db,
 		SugaredLogger:           sugaredLogger,
 	}
-}
-
-// LoadTendermintCLIContext : loads CLI context for tendermint txs
-func LoadTendermintCLIContext(cliCtx client.Context, validatorAddress sdk.ValAddress, validatorName string,
-	rpcURL string, chainID string, sugaredLogger *zap.SugaredLogger) (client.Context, error) {
-
-	if rpcURL != "" {
-		cliCtx = cliCtx.WithNodeURI(rpcURL)
-	}
-	cliCtx.SkipConfirm = true
-
-	// Confirm that the validator's address exists
-	accountRetriever := authtypes.AccountRetriever{}
-	err := accountRetriever.EnsureExists(cliCtx, sdk.AccAddress(validatorAddress))
-	if err != nil {
-		sugaredLogger.Errorw("accountRetriever.EnsureExists failed",
-			errorMessageKey, err.Error())
-		return client.Context{}, err
-	}
-	cliCtx.WithAccountRetriever(accountRetriever)
-	return cliCtx, nil
 }
 
 // Start an Ethereum chain subscription

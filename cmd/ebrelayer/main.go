@@ -215,7 +215,6 @@ func RunInitRelayerCmd(cmd *cobra.Command, args []string) error {
 		cliContext,
 		rpcURL,
 		validatorMoniker,
-		chainID,
 		web3Provider,
 		contractAddress,
 		privateKey,
