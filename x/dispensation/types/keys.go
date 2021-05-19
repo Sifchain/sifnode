@@ -28,15 +28,19 @@ var (
 	UserClaimPrefix          = []byte{0x05} // key for storing airdropRecords
 )
 
+// A distribution records is unique for name_recipientAddress
 func GetDistributionRecordKey(name string, recipient string) []byte {
 	key := []byte(fmt.Sprintf("%s_%s", name, recipient))
 	return append(DistributionRecordPrefix, key...)
 }
+
+// A distribution  is unique for name_distributionType
 func GetDistributionsKey(name string, distributionType DistributionType) []byte {
 	key := []byte(fmt.Sprintf("%s_%d", name, distributionType))
 	return append(DistributionsPrefix, key...)
 }
 
+// A claim is unique for userAddress_userClaimType
 func GetUserClaimKey(userAddress string, userClaimType DistributionType) []byte {
 	key := []byte(fmt.Sprintf("%s_%d", userAddress, userClaimType))
 	return append(UserClaimPrefix, key...)

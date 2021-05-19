@@ -36,7 +36,6 @@ func TestNewHandler_CreateDistribution(t *testing.T) {
 			assert.Contains(t, e.Attributes[2].String(), "distribution_type")
 			assert.Contains(t, e.Attributes[2].String(), types.Airdrop.String())
 		}
-
 	}
 	dr := keeper.GetRecordsForNameAll(ctx, "AR1")
 	assert.Len(t, dr, recipients)

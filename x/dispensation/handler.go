@@ -6,7 +6,6 @@ import (
 	dispensationUtils "github.com/Sifchain/sifnode/x/dispensation/utils"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
-	"github.com/cosmos/cosmos-sdk/x/bank"
 	"github.com/pkg/errors"
 )
 
@@ -35,7 +34,7 @@ func handleMsgCreateDistribution(ctx sdk.Context, keeper Keeper, msg MsgDistribu
 	}
 	//Accumulate all Drops into the ModuleAccount
 	totalOutput := dispensationUtils.TotalOutput(msg.Output)
-	err = keeper.AccumulateDrops(ctx, []bank.Input{bank.NewInput(msg.Distributor, totalOutput)})
+	err = keeper.AccumulateDrops(ctx, msg.Distributor, totalOutput)
 	if err != nil {
 		return nil, err
 	}

@@ -3,6 +3,7 @@ package keeper_test
 import (
 	"github.com/Sifchain/sifnode/x/dispensation/test"
 	"github.com/Sifchain/sifnode/x/dispensation/types"
+	dispensationUtils "github.com/Sifchain/sifnode/x/dispensation/utils"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/assert"
 	"testing"
@@ -11,16 +12,16 @@ import (
 func TestKeeper_AccumulateDrops(t *testing.T) {
 	app, ctx := test.CreateTestApp(false)
 	keeper := app.DispensationKeeper
-	inputList := test.GenerateInputList("15000000000000000000")
+	rowanAmount := "15000000000000000000"
+	inputList := test.GenerateInputList(rowanAmount)
 	//outputList := test.GenerateOutputList("10000000000000000000")
-
 	for _, in := range inputList {
 		_, err := keeper.GetBankKeeper().AddCoins(ctx, in.Address, in.Coins)
 		assert.NoError(t, err)
 	}
-	err := keeper.AccumulateDrops(ctx, inputList)
+	err := keeper.AccumulateDrops(ctx, inputList[0].Address, inputList[0].Coins)
 	assert.NoError(t, err)
-	moduleBalance, _ := sdk.NewIntFromString("30000000000000000000")
+	moduleBalance, _ := sdk.NewIntFromString(rowanAmount)
 	assert.True(t, keeper.GetBankKeeper().HasCoins(ctx, types.GetDistributionModuleAddress(), sdk.Coins{sdk.NewCoin("rowan", moduleBalance)}))
 
 }
@@ -28,15 +29,16 @@ func TestKeeper_AccumulateDrops(t *testing.T) {
 func TestKeeper_CreateAndDistributeDrops(t *testing.T) {
 	app, ctx := test.CreateTestApp(false)
 	keeper := app.DispensationKeeper
-	inputList := test.GenerateInputList("15000000000000000000")
+	inputList := test.GenerateInputList("30000000000000000000")
 	outputList := test.GenerateOutputList("10000000000000000000")
 	for _, in := range inputList {
 		_, err := keeper.GetBankKeeper().AddCoins(ctx, in.Address, in.Coins)
 		assert.NoError(t, err)
 	}
-	err := keeper.AccumulateDrops(ctx, inputList)
+	totalCoins := dispensationUtils.TotalOutput(outputList)
+	err := keeper.AccumulateDrops(ctx, inputList[0].Address, totalCoins)
 	assert.NoError(t, err)
-	moduleBalance, _ := sdk.NewIntFromString("30000000000000000000")
+	moduleBalance, _ := sdk.NewIntFromString("15000000000000000000")
 	assert.True(t, keeper.GetBankKeeper().HasCoins(ctx, types.GetDistributionModuleAddress(), sdk.Coins{sdk.NewCoin("rowan", moduleBalance)}))
 	distributionName := "ar1"
 	err = keeper.CreateDrops(ctx, outputList, distributionName, types.Airdrop)

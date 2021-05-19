@@ -67,14 +67,13 @@ func (k Keeper) DistributeDrops(ctx sdk.Context, height int64) error {
 }
 
 // AccumulateDrops collects funds from a senders account and transfers it to the Dispensation module account
-func (k Keeper) AccumulateDrops(ctx sdk.Context, input []bank.Input) error {
-	for _, fundingInput := range input {
-		err := k.GetSupplyKeeper().SendCoinsFromAccountToModule(ctx, fundingInput.Address, types.ModuleName, fundingInput.Coins)
-		if err != nil {
-			return errors.Wrapf(types.ErrFailedInputs, "for address  : %s", fundingInput.Address.String())
-		}
+func (k Keeper) AccumulateDrops(ctx sdk.Context, addr sdk.AccAddress, amount sdk.Coins) error {
+	err := k.GetSupplyKeeper().SendCoinsFromAccountToModule(ctx, addr, types.ModuleName, amount)
+	if err != nil {
+		return errors.Wrapf(types.ErrFailedInputs, "for address  : %s", addr.String())
 	}
 	return nil
+
 }
 
 // Verify if the distribution is correct
