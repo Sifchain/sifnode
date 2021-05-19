@@ -48,7 +48,6 @@
     "concurrently": "^5.3.0",
     "jest": "^24.9.0",
     "jest-websocket-mock": "^2.2.0",
-    "mock-socket": "^9.0.3",
     "tinyify": "^3.0.0",
     "tsify": "^5.0.2",
     "typescript": "~3.9.3"
