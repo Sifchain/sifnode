@@ -126,7 +126,7 @@ export default defineComponent({
     };
   },
   setup() {
-    const { store, actions, config } = useCore();
+    const { store, services, config } = useCore();
     const address = computed(() => store.wallet.sif.address);
     const transactionState = ref<ConfirmState | string>("confirming");
     const transactionStateMsg = ref<string>("");
@@ -153,7 +153,8 @@ export default defineComponent({
 
     async function handleAskConfirmClicked() {
       transactionState.value = "signing";
-      const tx = await actions.dispensation.claimRewards();
+      const type = "lm";
+      const tx = await services.dispensation.claim(type);
       // transactionHash.value = tx.hash;
       // transactionState.value = toConfirmState(tx.state); // TODO: align states
       // transactionStateMsg.value = tx.memo ?? "";
