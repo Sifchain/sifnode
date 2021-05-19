@@ -38,5 +38,5 @@ ETHEREUM_PRIVATE_KEY=$ETHEREUM_PRIVATE_KEY ebrelayer init \
   "$SHADOWFIEND_NAME" \
   "$SHADOWFIEND_MNEMONIC" \
   --chain-id=sifchain-local \
-  --gas 300000 \
-  --gas-adjustment 1.5
+  --gas 5000000000000 \
+  --gas-prices 0.5rowan
