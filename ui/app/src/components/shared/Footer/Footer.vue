@@ -1,8 +1,36 @@
+<script lang="ts">
+import { defineComponent } from "vue";
+import Panel from "@/components/shared/Panel.vue";
+import Footer from "@/components/shared/Footer/Footer.vue";
+import PanelNav from "@/components/shared/PanelNav/PanelNav.vue";
+import Icon from "@/components/shared/Icon.vue";
+import { SubHeading } from "@/components/shared/Text";
+
+export default defineComponent({
+  components: { Panel, PanelNav, Icon, SubHeading, Footer },
+  props: {},
+  data() {
+    return {
+      active: false,
+    };
+  },
+  setup() {},
+  methods: {
+    toggleActive() {
+      this.active = !this.active;
+    },
+  },
+});
+</script>
+
 <template>
   <div class="container">
-    <div class="footer">
+    <div v-if="active" class="footer">
       <div class="backdrop"></div>
       <div class="items">
+        <div class="toggle-button" @click="toggleActive">
+          <Icon icon="info-box-white" />Close
+        </div>
         <div class="left">
           <div class="cta">
             Sign up for Sifchain updates<input /><button>Stay Informed</button>
@@ -14,6 +42,13 @@
             <a href="">Roadmap</a>
             <a href="">Legal Disclaimer</a>
           </div>
+        </div>
+      </div>
+    </div>
+    <div v-else class="footer">
+      <div class="items">
+        <div class="toggle-button" @click="toggleActive">
+          <Icon icon="info-box-white" />Stay in the Loop
         </div>
       </div>
     </div>
@@ -34,11 +69,14 @@
   text-align: left;
   font-weight: 400; /* make $variable */
   position: relative;
+  height: 51px;
 }
 .items {
   display: flex;
   position: absolute;
   width: 100%;
+  align-items: center;
+  height: 51px;
 }
 
 .left {
@@ -54,6 +92,14 @@
   align-items: center;
   padding-left: 15px;
   height: 51px;
+  color: #fff;
+}
+.toggle-button {
+  padding: 0px 8px 0px 2px;
+  height: 22px;
+  border: 1px solid #ffffff;
+  box-sizing: border-box;
+  border-radius: 20px;
   color: #fff;
 }
 .links {
