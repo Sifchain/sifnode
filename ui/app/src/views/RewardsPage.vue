@@ -13,18 +13,29 @@ import PairTable from "@/components/shared/PairTable.vue";
 import { ConfirmState } from "@/types";
 import RewardContainer from "@/components/shared/RewardContainer/RewardContainer.vue";
 
+const claimTypeMap = {
+  lm: 2,
+  vs: 3,
+};
+type IClaimType = "lm" | "vs" | null;
+
 async function getLMData(address: ComputedRef<any>, chainId: string) {
   if (!address.value) return;
-  const ceUrl = getCryptoeconomicsUrl(chainId);
-  const data = await fetch(
-    `${ceUrl}/lm/?key=userData&address=${address.value}&timestamp=now`,
-  );
-  if (data.status !== 200) return {};
-  const parsedData = await data.json();
-  if (!parsedData.user || !parsedData.user.claimableReward) {
-    return {};
-  }
-  return parsedData.user;
+  return {
+    claimableReward: 10000,
+    claimed: 1133.5803574233153,
+    dispensed: 0,
+    forfeited: 2820.4719248996316,
+    nextRewardProjectedAPYOnTickets: 1.56,
+    maturityDate: "June 12th 2021, 11:19:14 am",
+    nextRewardShare: 0,
+    reservedReward: 1133.5803574233153,
+    ticketAmountAtMaturity: 0,
+    tickets: [],
+    totalRewardAtMaturity: 1133.5803574233153,
+    totalTickets: 0,
+    yieldAtMaturity: null,
+  };
 }
 
 async function getVSData(address: ComputedRef<any>, chainId: string) {
@@ -62,8 +73,10 @@ export default defineComponent({
     claimRewards() {
       alert("claim logic/keplr goes here");
     },
-    handleOpenModal(type: string) {
+    handleOpenModal(type: IClaimType) {
       console.log("type", type);
+      this.claimType = type;
+      this.openClaimModal();
     },
   },
   data() {
@@ -74,16 +87,16 @@ export default defineComponent({
     };
   },
   setup() {
-    const { store, actions, config } = useCore();
+    const { store, usecases, config } = useCore();
     const address = computed(() => store.wallet.sif.address);
     const transactionState = ref<ConfirmState | string>("confirming");
     const transactionStateMsg = ref<string>("");
     const transactionHash = ref<string | null>(null);
-
     // TODO - We can do this better later
     let lmRewards = ref<any>();
     let vsRewards = ref<any>();
     let loadingVs = ref<Boolean>(true);
+    let claimType = ref<IClaimType>(null);
 
     watch(address, async () => {
       lmRewards.value = await getLMData(address, config.sifChainId);
@@ -97,7 +110,12 @@ export default defineComponent({
 
     async function handleAskConfirmClicked() {
       transactionState.value = "signing";
-      // const tx = await actions.clp.claimRewards();
+      const claimType = claimTypeMap["lm"] as 2 | 3;
+      console.log(usecases.dispensation);
+      const tx = await usecases.dispensation.claim({
+        fromAddress: address.value,
+        claimType,
+      });
       // transactionHash.value = tx.hash;
       // transactionState.value = toConfirmState(tx.state); // TODO: align states
       // transactionStateMsg.value = tx.memo ?? "";
@@ -146,6 +164,7 @@ export default defineComponent({
       transactionHash,
       loadingVs,
       address,
+      claimType,
     };
   },
 });
@@ -166,13 +185,13 @@ export default defineComponent({
     </Copy>
     <div class="rewards-container">
       <RewardContainer
-        type="lm"
+        claimType="lm"
         :data="lmRewards"
         :address="address"
         @openModal="handleOpenModal"
       />
       <RewardContainer
-        type="vs"
+        claimType="vs"
         :data="vsRewards"
         :address="address"
         @openModal="handleOpenModal"
@@ -209,6 +228,7 @@ export default defineComponent({
               </Copy>
               <br />
               <PairTable :items="computedLMPairPanel" />
+              {{ claimType }}
               <br />
               <!-- <div class="reward-buttons">
                 <SifButton
@@ -259,7 +279,7 @@ export default defineComponent({
   font-weight: 400;
   display: flex;
   flex-direction: column;
-  padding: 30px 20px 20px 20px;
+  // padding: 30px 20px 20px 20px;
   min-height: 50vh;
   .container {
     font-size: 14px;

@@ -23,7 +23,7 @@ const REWARD_INFO = {
 
 export default {
   props: {
-    type: {
+    claimType: {
       type: String,
     },
     data: {
@@ -70,9 +70,9 @@ export default {
 <template>
   <Box>
     <div class="reward-container">
-      <SubHeading>{{ REWARD_INFO[type].label }}</SubHeading>
+      <SubHeading>{{ REWARD_INFO[claimType].label }}</SubHeading>
       <Copy>
-        {{ REWARD_INFO[type].description }}
+        {{ REWARD_INFO[claimType].description }}
       </Copy>
 
       <div class="details-container">
@@ -194,7 +194,7 @@ export default {
 
             <!-- :disabled="(data.claimableReward - data.claimed) === 0" -->
             <SifButton
-              @click="$emit('openModal', type)"
+              @click="$emit('openModal', claimType)"
               :primary="true"
               :disabled="false"
               >Claim</SifButton
