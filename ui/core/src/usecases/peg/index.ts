@@ -45,7 +45,7 @@ export default ({
   // Create the context for passing to commands, queries and subscriptions
   const ctx = { services, store, config };
 
-  /* 
+  /*
     TODO: suggestion externalize all interactors injecting ctx would look like the following
 
     const commands = {
@@ -58,7 +58,7 @@ export default ({
       getEthTokens: GetEthTokens(ctx),
       calculateUnpegFee: CalculateUnpegFee(ctx),
     }
-    
+
     const subscriptions = {
       subscribeToUnconfirmedPegTxs: SubscribeToUnconfirmedPegTxs(ctx),
     }
@@ -97,15 +97,6 @@ export default ({
         fromAddress: store.wallet.sif.address,
         feeAmount,
       });
-
-      console.log(
-        "unpeg",
-        tx,
-        assetAmount,
-        store.wallet.eth.address,
-        store.wallet.sif.address,
-        feeAmount,
-      );
 
       const txStatus = await services.sif.signAndBroadcast(tx.value.msg);
 
