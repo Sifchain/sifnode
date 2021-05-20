@@ -104,30 +104,31 @@ func (k Keeper) ProcessBurn(ctx sdk.Context, cosmosSender sdk.AccAddress, msg *t
 	logger := k.Logger(ctx)
 	var coins sdk.Coins
 
-	if msg.Symbol == types.CethSymbol {
-		coins = sdk.NewCoins(sdk.NewCoin(types.CethSymbol, msg.CethAmount.Add(msg.Amount)))
-	} else {
-		coins = sdk.NewCoins(sdk.NewCoin(msg.Symbol, msg.Amount), sdk.NewCoin(types.CethSymbol, msg.CethAmount))
-	}
-
-	err := k.bankKeeper.SendCoinsFromAccountToModule(
-		ctx, cosmosSender, types.ModuleName, coins,
-	)
-
-	if err != nil {
-		logger.Error("failed to send coin from account to module.",
-			errorMessageKey, err.Error())
-		return err
-	}
-
 	if k.IsCethReceiverAccountSet(ctx) {
 		coins = sdk.NewCoins(sdk.NewCoin(types.CethSymbol, msg.CethAmount))
-		err = k.bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, k.GetCethReceiverAccount(ctx), coins)
+
+		err := k.bankKeeper.SendCoins(ctx, cosmosSender, k.GetCethReceiverAccount(ctx), coins)
 		if err != nil {
-			logger.Error("failed to send ceth from module to account.",
+			logger.Error("failed to send ceth from account to account.",
 				errorMessageKey, err.Error())
 			return err
 		}
+
+		coins = sdk.NewCoins(sdk.NewCoin(msg.Symbol, msg.Amount))
+
+	} else {
+		if msg.Symbol == types.CethSymbol {
+			coins = sdk.NewCoins(sdk.NewCoin(types.CethSymbol, msg.CethAmount.Add(msg.Amount)))
+		} else {
+			coins = sdk.NewCoins(sdk.NewCoin(msg.Symbol, msg.Amount), sdk.NewCoin(types.CethSymbol, msg.CethAmount))
+		}
+	}
+
+	err := k.bankKeeper.SendCoinsFromAccountToModule(ctx, cosmosSender, types.ModuleName, coins)
+	if err != nil {
+		logger.Error("failed to send ceth from module to account.",
+			errorMessageKey, err.Error())
+		return err
 	}
 
 	coins = sdk.NewCoins(sdk.NewCoin(msg.Symbol, msg.Amount))
@@ -143,8 +144,24 @@ func (k Keeper) ProcessBurn(ctx sdk.Context, cosmosSender sdk.AccAddress, msg *t
 
 // ProcessLock processes the lockup of cosmos coins from the given sender
 func (k Keeper) ProcessLock(ctx sdk.Context, cosmosSender sdk.AccAddress, msg *types.MsgLock) error {
-	coins := sdk.NewCoins(sdk.NewCoin(msg.Symbol, msg.Amount), sdk.NewCoin(types.CethSymbol, msg.CethAmount))
 	logger := k.Logger(ctx)
+	var coins sdk.Coins
+
+	if k.IsCethReceiverAccountSet(ctx) {
+		coins = sdk.NewCoins(sdk.NewCoin(types.CethSymbol, msg.CethAmount))
+
+		err := k.bankKeeper.SendCoins(ctx, cosmosSender, k.GetCethReceiverAccount(ctx), coins)
+		if err != nil {
+			logger.Error("failed to send ceth from account to account.",
+				errorMessageKey, err.Error())
+			return err
+		}
+
+		coins = sdk.NewCoins(sdk.NewCoin(msg.Symbol, msg.Amount))
+
+	} else {
+		coins = sdk.NewCoins(sdk.NewCoin(msg.Symbol, msg.Amount), sdk.NewCoin(types.CethSymbol, msg.CethAmount))
+	}
 
 	err := k.bankKeeper.SendCoinsFromAccountToModule(ctx, cosmosSender, types.ModuleName, coins)
 
@@ -152,16 +169,6 @@ func (k Keeper) ProcessLock(ctx sdk.Context, cosmosSender sdk.AccAddress, msg *t
 		logger.Error("failed to transfer coin from account to module.",
 			errorMessageKey, err.Error())
 		return err
-	}
-
-	if k.IsCethReceiverAccountSet(ctx) {
-		coins = sdk.NewCoins(sdk.NewCoin(types.CethSymbol, msg.CethAmount))
-		err = k.bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, k.GetCethReceiverAccount(ctx), coins)
-		if err != nil {
-			logger.Error("failed to transfer ceth from module to account.",
-				errorMessageKey, err.Error())
-			return err
-		}
 	}
 
 	coins = sdk.NewCoins(sdk.NewCoin(msg.Symbol, msg.Amount))
