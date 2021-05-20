@@ -17,7 +17,7 @@ const { DEX_TARGET, MM_CONFIG, KEPLR_CONFIG } = require("./config.js");
 const keplrConfig = require("../core/src/config.localnet.json");
 
 // extension
-const { MetaMaskPage, metamaskPage } = require("./pages/MetaMaskPage");
+const { metamaskPage } = require("./pages/MetaMaskPage");
 
 // services
 const { getSifchainBalances } = require("./sifchain.js");
@@ -27,7 +27,6 @@ const { useStack } = require("../test/stack");
 const { keplrPage } = require("./pages/KeplrPage.js");
 const { connectMetaMaskAccount, connectKeplrAccount } = require("./helpers.js");
 const { pegPage } = require("./pages/PegPage.js");
-const { ApproveSpendPopup } = require("./pages/ApproveSpendPopup.js");
 const {
   metamaskNotificationPopup,
 } = require("./pages/MetamaskNotificationPage.js");
@@ -171,15 +170,11 @@ it.only("pegs tokens", async () => {
   await page.waitForTimeout(1000);
 
   await metamaskNotificationPopup.navigate();
-
   await metamaskNotificationPopup.clickViewFullTransactionDetails();
   await metamaskNotificationPopup.verifyTransactionDetails(
     `${pegAmount} ${pegAsset}`,
   );
-
-  await page.pause();
   await metamaskNotificationPopup.clickConfirm();
-
   await page.waitForTimeout(1000);
   await metamaskNotificationPopup.navigate(); // this call is needed to reload this.page with a new popup page
   await metamaskNotificationPopup.clickConfirm();

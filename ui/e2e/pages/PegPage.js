@@ -1,5 +1,6 @@
 import { DEX_TARGET } from "../config";
 import expect from "expect-playwright";
+import { dexHeader } from "./DexHeader";
 
 export class PegPage {
   constructor() {
@@ -54,13 +55,18 @@ export class PegPage {
   }
 
   async verifyAssetAmount(asset, expectedAmount) {
-    // const element = await page.$(this.el.assetAmount(asset));
-    // await expect(element).toHaveText(expectedAmount);
-    await expect(page).toHaveText(this.el.assetAmount(asset), expectedAmount);
+    // waitForSelector with state 'attached' is needed because the element is resolved as not visible
+    // checked DOM and it looks visible. TODO: further investigate why this happens
+    await page.waitForSelector(this.el.assetAmount(asset), {
+      state: "attached",
+    });
+    const element = await page.$(this.el.assetAmount(asset));
+    await expect(element).toHaveText(expectedAmount);
   }
 
   async closeSubmissionWindow() {
-    await page.click("text=×");
+    await page.waitForTimeout(1000);
+    await page.click("text=×"); // sometimes clicking 'x' doesn't close the window (even if Playwright says it clicked). Waiting a bit helps
   }
 
   async verifyTransactionPending(asset) {
