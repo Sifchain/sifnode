@@ -12,10 +12,11 @@ import ModalView from "@/components/shared/ModalView.vue";
 import PairTable from "@/components/shared/PairTable.vue";
 import { ConfirmState } from "@/types";
 import RewardContainer from "@/components/shared/RewardContainer/RewardContainer.vue";
+import { toConfirmState } from "./utils/toConfirmState";
 
 const claimTypeMap = {
-  lm: 2,
-  vs: 3,
+  lm: "2",
+  vs: "3",
 };
 type IClaimType = "lm" | "vs" | null;
 
@@ -65,13 +66,10 @@ export default defineComponent({
   },
   methods: {
     openClaimModal() {
-      this.modalOpen = true;
+      this.transactionState = "confirming";
     },
     requestClose() {
-      this.modalOpen = false;
-    },
-    claimRewards() {
-      alert("claim logic/keplr goes here");
+      this.transactionState = "selecting";
     },
     handleOpenModal(type: IClaimType) {
       console.log("type", type);
@@ -89,7 +87,7 @@ export default defineComponent({
   setup() {
     const { store, usecases, config } = useCore();
     const address = computed(() => store.wallet.sif.address);
-    const transactionState = ref<ConfirmState | string>("confirming");
+    const transactionState = ref<ConfirmState | string>("selecting");
     const transactionStateMsg = ref<string>("");
     const transactionHash = ref<string | null>(null);
     // TODO - We can do this better later
@@ -109,16 +107,17 @@ export default defineComponent({
     });
 
     async function handleAskConfirmClicked() {
+      if (!claimType.value) {
+        return console.error("No claim type");
+      }
       transactionState.value = "signing";
-      const claimType = claimTypeMap["lm"] as 2 | 3;
-      console.log(usecases.dispensation);
       const tx = await usecases.dispensation.claim({
         fromAddress: address.value,
-        claimType,
+        claimType: claimTypeMap[claimType.value] as "2" | "3",
       });
-      // transactionHash.value = tx.hash;
-      // transactionState.value = toConfirmState(tx.state); // TODO: align states
-      // transactionStateMsg.value = tx.memo ?? "";
+      transactionHash.value = tx.hash;
+      transactionState.value = toConfirmState(tx.state); // TODO: align states
+      transactionStateMsg.value = tx.memo ?? "";
     }
 
     const computedLMPairPanel = computed(() => {
@@ -200,7 +199,7 @@ export default defineComponent({
 
     <ActionsPanel connectType="connectToSif" />
 
-    <div v-if="modalOpen">
+    <div v-if="transactionState !== 'selecting'">
       <ConfirmationModal
         :requestClose="requestClose"
         @confirmed="handleAskConfirmClicked"
@@ -228,7 +227,6 @@ export default defineComponent({
               </Copy>
               <br />
               <PairTable :items="computedLMPairPanel" />
-              {{ claimType }}
               <br />
               <!-- <div class="reward-buttons">
                 <SifButton
@@ -283,7 +281,7 @@ export default defineComponent({
   min-height: 50vh;
   .container {
     font-size: 14px;
-    line-height: 16px;
+    line-height: 21px;
   }
 }
 </style>
