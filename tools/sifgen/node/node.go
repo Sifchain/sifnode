@@ -3,11 +3,12 @@ package node
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/Sifchain/sifnode/app"
 	"io/ioutil"
 	"net/http"
 	"os"
 	"strings"
+
+	"github.com/Sifchain/sifnode/app"
 
 	"github.com/Sifchain/sifnode/tools/sifgen/common"
 	"github.com/Sifchain/sifnode/tools/sifgen/genesis"
@@ -37,6 +38,7 @@ type Node struct {
 	GovMaxDepositPeriod       string    `yaml:"-"`
 	GovVotingPeriod           string    `yaml:"-"`
 	CLPConfigURL              string    `yaml:"-"`
+	EthbridgeConfigURL        string    `yaml:"_"`
 	PeerAddress               string    `yaml:"-"`
 	GenesisURL                string    `yaml:"-"`
 	Key                       *key.Key  `yaml:"-"`
@@ -224,6 +226,12 @@ func (n *Node) seedGenesis() error {
 
 	if n.CLPConfigURL != "" {
 		if err = genesis.InitializeCLP(common.DefaultNodeHome, n.CLPConfigURL); err != nil {
+			return err
+		}
+	}
+
+	if n.EthbridgeConfigURL != "" {
+		if err = genesis.InitializeEthbridge(common.DefaultNodeHome, n.EthbridgeConfigURL); err != nil {
 			return err
 		}
 	}
