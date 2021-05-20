@@ -53,6 +53,5 @@ func TestNewHandler_CreateClaim(t *testing.T) {
 
 	cl, err := keeper.GetClaim(ctx, address.String(), types.ValidatorSubsidy)
 	require.NoError(t, err)
-	assert.False(t, cl.Locked)
 	assert.Equal(t, cl.UserAddress.String(), address.String())
 }

@@ -140,11 +140,10 @@ type UserClaim struct {
 	UserAddress   sdk.AccAddress   `json:"user_address"`
 	UserClaimType DistributionType `json:"user_claim_type"`
 	UserClaimTime time.Time        `json:"user_claim_time"`
-	Locked        bool             `json:"locked"`
 }
 
 func NewUserClaim(userAddress sdk.AccAddress, userClaimType DistributionType, time time.Time) UserClaim {
-	return UserClaim{UserAddress: userAddress, UserClaimType: userClaimType, Locked: false, UserClaimTime: time}
+	return UserClaim{UserAddress: userAddress, UserClaimType: userClaimType, UserClaimTime: time}
 }
 
 func (uc UserClaim) Validate() bool {
@@ -152,10 +151,6 @@ func (uc UserClaim) Validate() bool {
 		return false
 	}
 	return true
-}
-
-func (uc UserClaim) IsLocked() bool {
-	return uc.Locked
 }
 
 func (uc UserClaim) String() string {

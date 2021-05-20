@@ -25,17 +25,6 @@ func (k Keeper) CreateDrops(ctx sdk.Context, output []bank.Output, name string, 
 		if err != nil {
 			return errors.Wrapf(types.ErrFailedOutputs, "error setting distibution record  : %s", distributionRecord.String())
 		}
-		// Lock the user claim so that the user cannot delete the claim while the distribution is in progress.
-		// Claim will not exist if its not a LM/VS drop
-		// IF it is a LM/VS drop the associated claim must always exist .
-		// The users of this module need to make sure they are submitting the proper distribution type when distributing rewards
-		// The same user might be eligible for Airdrop/LM/VS rewards . Based on Distribution type submitted the appropriate claim will be locked.
-		if distributionType == types.LiquidityMining || distributionType == types.ValidatorSubsidy {
-			err := k.LockClaim(ctx, receiver.Address.String(), distributionType)
-			if err != nil {
-				return errors.Wrap(err, fmt.Sprintf("Unable to verify associated claim for address : %s", receiver.Address.String()))
-			}
-		}
 	}
 	return nil
 }

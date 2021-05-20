@@ -10,7 +10,7 @@ import (
 	"testing"
 )
 
-func TestMsgCreateClaim_ValidateBasic(t *testing.T) {
+func TestMsgCreateDistribution_ValidateBasic(t *testing.T) {
 	distributor := ed25519.GenPrivKey()
 	msg := types.MsgDistribution{
 		Distributor:      sdk.AccAddress(distributor.PubKey().Address()),
@@ -62,4 +62,24 @@ func TestMsgCreateDistribution_ValidateBasic_NoName(t *testing.T) {
 	}
 	err := msg.ValidateBasic()
 	assert.Error(t, err)
+}
+
+func TestMsgCreateClaim_ValidateBasic_WrongType(t *testing.T) {
+	claimer := ed25519.GenPrivKey()
+	msg := types.MsgCreateClaim{
+		UserClaimAddress: sdk.AccAddress(claimer.PubKey().Address()),
+		UserClaimType:    types.Airdrop,
+	}
+	err := msg.ValidateBasic()
+	assert.Error(t, err)
+}
+
+func TestMsgCreateClaim_ValidateBasic(t *testing.T) {
+	claimer := ed25519.GenPrivKey()
+	msg := types.MsgCreateClaim{
+		UserClaimAddress: sdk.AccAddress(claimer.PubKey().Address()),
+		UserClaimType:    types.ValidatorSubsidy,
+	}
+	err := msg.ValidateBasic()
+	assert.NoError(t, err)
 }
