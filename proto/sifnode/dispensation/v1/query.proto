@@ -13,8 +13,7 @@ service Query {
       returns (QueryRecordsByDistributionNameResponse) {}
   rpc RecordsByRecipient(QueryRecordsByRecipientAddrRequest)
       returns (QueryRecordsByRecipientAddrResponse) {}
-  rpc ClaimsByType(QueryClaimsByTypeRequest)
-      returns (QueryClaimsResponse) {}
+  rpc ClaimsByType(QueryClaimsByTypeRequest) returns (QueryClaimsResponse) {}
 }
 
 message QueryAllDistributionsRequest {}

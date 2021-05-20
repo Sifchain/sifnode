@@ -2,6 +2,12 @@ package main
 
 import (
 	"fmt"
+	"log"
+	"net/url"
+	"os"
+	"strings"
+	"sync"
+
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/tx"
 	"github.com/cosmos/cosmos-sdk/server"
@@ -10,11 +16,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/auth/types"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"log"
-	"net/url"
-	"os"
-	"strings"
-	"sync"
 
 	sifapp "github.com/Sifchain/sifnode/app"
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/contract"
@@ -61,6 +62,10 @@ func buildRootCmd() *cobra.Command {
 		Use:   "ebrelayer",
 		Short: "Streams live events from Ethereum and Cosmos and relays event information to the opposite chain",
 		PersistentPreRunE: func(cmd *cobra.Command, _ []string) error {
+			if err := cmd.Flags().Set(flags.FlagSkipConfirmation, "true"); err != nil {
+				return err
+			}
+
 			if err := client.SetCmdClientContextHandler(initClientCtx, cmd); err != nil {
 				return err
 			}
@@ -108,7 +113,8 @@ func initRelayerCmd() *cobra.Command {
 		Example: "ebrelayer init tcp://localhost:26657 ws://localhost:7545/ 0x30753E4A8aad7F8597332E813735Def5dD395028 validator mnemonic --chain-id=peggy",
 		RunE:    RunInitRelayerCmd,
 	}
-	flags.AddQueryFlagsToCmd(initRelayerCmd)
+	//flags.AddQueryFlagsToCmd(initRelayerCmd)
+	flags.AddTxFlagsToCmd(initRelayerCmd)
 
 	return initRelayerCmd
 }
@@ -129,7 +135,7 @@ func generateBindingsCmd() *cobra.Command {
 // RunInitRelayerCmd executes initRelayerCmd
 func RunInitRelayerCmd(cmd *cobra.Command, args []string) error {
 	// First initialize the Cosmos features we need for the context
-	cliContext, err := client.GetClientQueryContext(cmd)
+	cliContext, err := client.GetClientTxContext(cmd)
 	if err != nil {
 		return err
 	}
@@ -187,7 +193,6 @@ func RunInitRelayerCmd(cmd *cobra.Command, args []string) error {
 		return errors.Errorf("invalid [validator-moniker]: %s", args[3])
 	}
 	validatorMoniker := args[3]
-	mnemonic := args[4]
 
 	logConfig := zap.NewDevelopmentConfig()
 	logConfig.Sampling = nil
@@ -206,11 +211,18 @@ func RunInitRelayerCmd(cmd *cobra.Command, args []string) error {
 	zap.RedirectStdLog(sugaredLogger.Desugar())
 
 	// Initialize new Ethereum event listener
-	ethSub, err := relayer.NewEthereumSub(cliContext, rpcURL, validatorMoniker, chainID, web3Provider,
-		contractAddress, privateKey, mnemonic, db, sugaredLogger)
-	if err != nil {
-		return err
-	}
+	ethSub := relayer.NewEthereumSub(
+		cliContext,
+		rpcURL,
+		validatorMoniker,
+		web3Provider,
+		contractAddress,
+		privateKey,
+		nil,
+		db,
+		sugaredLogger,
+	)
+
 	// Initialize new Cosmos event listener
 	cosmosSub := relayer.NewCosmosSub(tendermintNode, web3Provider, contractAddress, privateKey, db, sugaredLogger)
 
@@ -225,7 +237,7 @@ func RunInitRelayerCmd(cmd *cobra.Command, args []string) error {
 }
 
 // RunGenerateBindingsCmd : executes the generateBindingsCmd
-func RunGenerateBindingsCmd(cmd *cobra.Command, args []string) error {
+func RunGenerateBindingsCmd(_ *cobra.Command, _ []string) error {
 	contracts := contract.LoadBridgeContracts()
 
 	// Compile contracts, generating contract bins and abis

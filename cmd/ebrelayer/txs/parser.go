@@ -103,26 +103,6 @@ func ProphecyClaimToSignedOracleClaim(event types.ProphecyClaimEvent, key *ecdsa
 	return oracleClaim, nil
 }
 
-// CosmosMsgToProphecyClaim parses event data from a CosmosMsg, packaging it as a ProphecyClaim
-func CosmosMsgToProphecyClaim(event types.CosmosMsg) ethbridge.ProphecyClaim {
-	claimType := event.ClaimType
-	cosmosSender := event.CosmosSender
-	cosmosSenderSequence := event.CosmosSenderSequence
-	ethereumReceiver := event.EthereumReceiver
-	symbol := event.Symbol
-	amount := event.Amount
-
-	prophecyClaim := ethbridge.ProphecyClaim{
-		ClaimType:            claimType.String(),
-		CosmosSender:         cosmosSender,
-		CosmosSenderSequence: []byte(cosmosSenderSequence.String()),
-		EthereumReceiver:     []byte(ethereumReceiver.String()),
-		Symbol:               symbol,
-		Amount:               amount.String(),
-	}
-	return prophecyClaim
-}
-
 // BurnLockEventToCosmosMsg parses data from a Burn/Lock event witnessed on Cosmos into a CosmosMsg struct
 func BurnLockEventToCosmosMsg(claimType types.Event, attributes []abci.EventAttribute, sugaredLogger *zap.SugaredLogger) (types.CosmosMsg, error) {
 	var cosmosSender []byte

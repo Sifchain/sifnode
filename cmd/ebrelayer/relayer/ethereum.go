@@ -6,7 +6,6 @@ import (
 	"context"
 	"crypto/ecdsa"
 	"fmt"
-	"github.com/cosmos/cosmos-sdk/client/tx"
 	"log"
 	"math/big"
 	"os"
@@ -14,6 +13,8 @@ import (
 	"sync"
 	"syscall"
 	"time"
+
+	"github.com/cosmos/cosmos-sdk/client/tx"
 
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/crypto/hd"
@@ -23,7 +24,6 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
 	ctypes "github.com/ethereum/go-ethereum/core/types"
-	"github.com/sethvargo/go-password/password"
 	"github.com/syndtr/goleveldb/leveldb"
 	tmclient "github.com/tendermint/tendermint/rpc/client/http"
 	"go.uber.org/zap"
@@ -32,7 +32,6 @@ import (
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/txs"
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/types"
 	ethbridge "github.com/Sifchain/sifnode/x/ethbridge/types"
-	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 )
 
 const (
@@ -49,9 +48,7 @@ type EthereumSub struct {
 	ValidatorName           string
 	ValidatorAddress        sdk.ValAddress
 	CliCtx                  client.Context
-	TxBldr                  client.TxBuilder
 	PrivateKey              *ecdsa.PrivateKey
-	TempPassword            string
 	DB                      *leveldb.DB
 	SugaredLogger           *zap.SugaredLogger
 }
@@ -69,26 +66,17 @@ func NewKeybase(validatorMoniker, mnemonic, password string) (keyring.Keyring, k
 }
 
 // NewEthereumSub initializes a new EthereumSub
-func NewEthereumSub(cliCtx client.Context, rpcURL string, validatorMoniker, chainID, ethProvider string,
-	registryContractAddress common.Address, privateKey *ecdsa.PrivateKey, mnemonic string,
-	db *leveldb.DB, sugaredLogger *zap.SugaredLogger) (EthereumSub, error) {
-
-	tempPassword, _ := password.Generate(32, 5, 0, false, false)
-	kr := keyring.NewInMemory()
-	hdpath := *hd.NewFundraiserParams(0, sdk.CoinType, 0)
-
-	info, err := kr.NewAccount(validatorMoniker, mnemonic, "", hdpath.String(), hd.Secp256k1)
-	if err != nil {
-		return EthereumSub{}, err
-	}
-
-	validatorAddress := sdk.ValAddress(info.GetAddress())
-
-	// Load CLI context and Tx builder
-	_, err = LoadTendermintCLIContext(cliCtx, validatorAddress, validatorMoniker, rpcURL, chainID, sugaredLogger)
-	if err != nil {
-		return EthereumSub{}, err
-	}
+func NewEthereumSub(
+	cliCtx client.Context,
+	rpcURL string,
+	validatorMoniker,
+	ethProvider string,
+	registryContractAddress common.Address,
+	privateKey *ecdsa.PrivateKey,
+	validatorAddress sdk.ValAddress,
+	db *leveldb.DB,
+	sugaredLogger *zap.SugaredLogger,
+) EthereumSub {
 
 	return EthereumSub{
 		EthProvider:             ethProvider,
@@ -98,31 +86,9 @@ func NewEthereumSub(cliCtx client.Context, rpcURL string, validatorMoniker, chai
 		ValidatorAddress:        validatorAddress,
 		CliCtx:                  cliCtx,
 		PrivateKey:              privateKey,
-		TempPassword:            tempPassword,
 		DB:                      db,
 		SugaredLogger:           sugaredLogger,
-	}, nil
-}
-
-// LoadTendermintCLIContext : loads CLI context for tendermint txs
-func LoadTendermintCLIContext(cliCtx client.Context, validatorAddress sdk.ValAddress, validatorName string,
-	rpcURL string, chainID string, sugaredLogger *zap.SugaredLogger) (client.Context, error) {
-
-	if rpcURL != "" {
-		cliCtx = cliCtx.WithNodeURI(rpcURL)
 	}
-	cliCtx.SkipConfirm = true
-
-	// Confirm that the validator's address exists
-	accountRetriever := authtypes.AccountRetriever{}
-	err := accountRetriever.EnsureExists(cliCtx, sdk.AccAddress(validatorAddress))
-	if err != nil {
-		sugaredLogger.Errorw("accountRetriever.EnsureExists failed",
-			errorMessageKey, err.Error())
-		return client.Context{}, err
-	}
-	cliCtx.WithAccountRetriever(accountRetriever)
-	return cliCtx, nil
 }
 
 // Start an Ethereum chain subscription
@@ -447,12 +413,23 @@ func (sub EthereumSub) logToEvent(clientChainID *big.Int, contractAddress common
 	return event, true, nil
 }
 
+func GetValAddressFromKeyring(k keyring.Keyring, keyname string) (sdk.ValAddress, error) {
+	keyInfo, err := k.Key(keyname)
+	if err != nil {
+		return nil, err
+	}
+	return sdk.ValAddress(keyInfo.GetAddress()), nil
+}
+
 // handleEthereumEvent unpacks an Ethereum event, converts it to a ProphecyClaim, and relays a tx to Cosmos
 func (sub EthereumSub) handleEthereumEvent(txFactory tx.Factory, events []types.EthereumEvent) error {
 	var prophecyClaims []*ethbridge.EthBridgeClaim
-
+	valAddr, err := GetValAddressFromKeyring(txFactory.Keybase(), sub.ValidatorName)
+	if err != nil {
+		return err
+	}
 	for _, event := range events {
-		prophecyClaim, err := txs.EthereumEventToEthBridgeClaim(sub.ValidatorAddress, event)
+		prophecyClaim, err := txs.EthereumEventToEthBridgeClaim(valAddr, event)
 		if err != nil {
 			sub.SugaredLogger.Errorw(".",
 				errorMessageKey, err.Error())
@@ -467,5 +444,5 @@ func (sub EthereumSub) handleEthereumEvent(txFactory tx.Factory, events []types.
 		return nil
 	}
 
-	return txs.RelayToCosmos(txFactory, sub.ValidatorName, sub.TempPassword, prophecyClaims, sub.CliCtx, sub.TxBldr, sub.SugaredLogger)
+	return txs.RelayToCosmos(txFactory, prophecyClaims, sub.CliCtx, sub.SugaredLogger)
 }

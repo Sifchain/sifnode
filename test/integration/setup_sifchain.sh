@@ -21,6 +21,7 @@ then
   find $NETWORKDIR -type d | xargs chmod +w
   rm -rf $NETWORKDIR && mkdir $NETWORKDIR
 fi
+mkdir -p $NETWORKDIR
 
 BASEDIR=${BASEDIR} rake genesis:network:scaffold['localnet']
 

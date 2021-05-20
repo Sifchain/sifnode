@@ -223,12 +223,12 @@ func (msg MsgCreateEthBridgeClaim) GetSignBytes() []byte {
 
 // GetSigners defines whose signature is required
 func (msg MsgCreateEthBridgeClaim) GetSigners() []sdk.AccAddress {
-	validatorAddress, err := sdk.AccAddressFromBech32(msg.EthBridgeClaim.ValidatorAddress)
+	validatorAddress, err := sdk.ValAddressFromBech32(msg.EthBridgeClaim.ValidatorAddress)
 	if err != nil {
 		panic(err)
 	}
 
-	return []sdk.AccAddress{validatorAddress}
+	return []sdk.AccAddress{sdk.AccAddress(validatorAddress)}
 }
 
 // NewMsgUpdateCethReceiverAccount is a constructor function for MsgUpdateCethReceiverAccount

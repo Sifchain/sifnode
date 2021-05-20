@@ -3,34 +3,27 @@ package txs
 // DONTCOVER
 
 import (
-	"log"
-	"sync/atomic"
-
-	"go.uber.org/zap"
-
 	"github.com/Sifchain/sifnode/x/ethbridge/types"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/tx"
+	"go.uber.org/zap"
 
 	// tx "github.com/cosmos/cosmos-sdk/client/tx"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 var (
-	nextSequenceNumber uint64 = 0
-	errorMessageKey           = "errorMessage"
+	errorMessageKey = "errorMessage"
 )
 
 // RelayToCosmos applies validator's signature to an EthBridgeClaim message containing
 // information about an event on the Ethereum blockchain before relaying to the Bridge
-func RelayToCosmos(factory tx.Factory, moniker, password string, claims []*types.EthBridgeClaim, cliCtx client.Context,
-	txBldr client.TxBuilder, sugaredLogger *zap.SugaredLogger) error {
+func RelayToCosmos(factory tx.Factory, claims []*types.EthBridgeClaim, cliCtx client.Context, sugaredLogger *zap.SugaredLogger) error {
 	var messages []sdk.Msg
 
 	sugaredLogger.Infow(
 		"relay prophecies to cosmos.",
 		"claimAmount", len(claims),
-		"nextSequenceNumber", nextSequenceNumber,
 	)
 
 	for _, claim := range claims {
@@ -41,6 +34,7 @@ func RelayToCosmos(factory tx.Factory, moniker, password string, claims []*types
 		if err != nil {
 			sugaredLogger.Errorw(
 				"failed to get message from claim.",
+				"message", msg,
 				errorMessageKey, err.Error(),
 			)
 			continue
@@ -49,19 +43,17 @@ func RelayToCosmos(factory tx.Factory, moniker, password string, claims []*types
 		}
 	}
 
-	sugaredLogger.Infow(
-		"relay sequenceNumber from builder.",
-		"nextSequenceNumber", nextSequenceNumber,
+	sugaredLogger.Infow("RelayToCosmos building, signing, and broadcasting", "messages", messages)
+	// TODO this WithGas isn't correct
+	// TODO we need to investigate retries
+	// TODO we need to investigate what happens when the transaction has already been completed
+	err := tx.BroadcastTx(
+		cliCtx,
+		factory.
+			WithGas(1000000000000000000).
+			WithFees("500000000000000000rowan"),
+		messages...,
 	)
-
-	// If we start to control sequence, get the sequence and set the factory with that sequence.
-	if nextSequenceNumber > 0 {
-		sugaredLogger.Infow("txBldr.WithSequence(nextSequenceNumber) passed")
-		factory = factory.WithSequence(nextSequenceNumber)
-	}
-
-	log.Println("building, signing, and broadcasting")
-	err := tx.BroadcastTx(cliCtx, factory, messages...)
 
 	// Broadcast to a Tendermint node
 	// open question as to how we handle this situation.
@@ -75,27 +67,7 @@ func RelayToCosmos(factory tx.Factory, moniker, password string, claims []*types
 		return err
 	}
 
-	log.Println("Broadcasted tx without error")
-
-	// start to control sequence number after first successful tx
-	if nextSequenceNumber == 0 {
-		setNextSequenceNumber(factory.Sequence() + 1)
-	} else {
-		incrementNextSequenceNumber()
-	}
-
-	sugaredLogger.Infow(
-		"relay next sequenceNumber from memory.",
-		"nextSequenceNumber", nextSequenceNumber,
-	)
+	sugaredLogger.Infow("Broadcasted tx without error")
 
 	return nil
-}
-
-func incrementNextSequenceNumber() {
-	atomic.AddUint64(&nextSequenceNumber, 1)
-}
-
-func setNextSequenceNumber(sequenceNumber uint64) {
-	atomic.StoreUint64(&nextSequenceNumber, sequenceNumber)
 }

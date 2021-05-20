@@ -48,6 +48,6 @@ func ExportGenesis(ctx sdk.Context, keeper keeper.Keeper) *types.GenesisState {
 }
 
 // ValidateGenesis validates the oracle genesis parameters
-func ValidateGenesis(data *types.GenesisState) error {
+func ValidateGenesis(_ *types.GenesisState) error {
 	return nil
 }

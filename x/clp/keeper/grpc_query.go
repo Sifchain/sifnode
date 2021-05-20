@@ -46,9 +46,6 @@ func (k Querier) GetPools(c context.Context, req *types.PoolsReq) (*types.PoolsR
 	ctx := sdk.UnwrapSDKContext(c)
 
 	pools := k.Keeper.GetPools(ctx)
-	if len(pools) == 0 {
-		return nil, types.ErrPoolListIsEmpty
-	}
 
 	return &types.PoolsRes{
 		Pools:            pools,

@@ -3,10 +3,11 @@ package cmd
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/cosmos/cosmos-sdk/codec"
+	"log"
 
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
-	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/server"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/genutil"
@@ -32,7 +33,6 @@ the account address or key name. If a key name is given, the address will be loo
 
 			serverCtx := server.GetServerContextFromCmd(cmd)
 			config := serverCtx.Config
-
 			config.SetRoot(clientCtx.HomeDir)
 
 			addr, err := sdk.ValAddressFromBech32(args[0])
@@ -53,6 +53,7 @@ the account address or key name. If a key name is given, the address will be loo
 					return fmt.Errorf("address %s already in white list", addr)
 				}
 			}
+			log.Printf("AddGenesisValidatorCmd, adding addr: %v to whitelist: %v", addr.String(), oracleGenState.AddressWhitelist)
 			oracleGenState.AddressWhitelist = append(oracleGenState.AddressWhitelist, addr.String())
 
 			oracleGenStateBz, err := json.Marshal(oracleGenState)
