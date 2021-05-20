@@ -21,7 +21,7 @@ export type IDispensationServiceContext = {
 };
 
 type IDispensationService = {
-  claim: (params: { claimType: 2 | 3 }) => any;
+  claim: (params: { claimType: 2 | 3; fromAddress: string }) => any;
 };
 
 // TS not null type guard
@@ -41,7 +41,7 @@ export default function createDispensationService({
 
   const instance: IDispensationService = {
     async claim(params) {
-      return await client.swap({
+      return await client.claim({
         base_req: { chain_id: sifChainId, from: params.fromAddress },
         claim_type: params.claimType,
         signer: params.fromAddress,

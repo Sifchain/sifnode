@@ -12,14 +12,17 @@ import {
 } from "./TendermintSocketPoll";
 
 import { ClpExtension, setupClpExtension } from "./x/clp";
-import { IDispensationApi, setupDispensationApi } from "./x/dispensation";
+import {
+  DispensationExtension,
+  setupDispensationExtension,
+} from "./x/dispensation";
 import { EthbridgeExtension, setupEthbridgeExtension } from "./x/ethbridge";
 
 type CustomLcdClient = LcdClient &
   AuthExtension &
   ClpExtension &
   EthbridgeExtension &
-  IDispensationApi;
+  DispensationExtension;
 
 function createLcdClient(
   apiUrl: string,
@@ -30,12 +33,13 @@ function createLcdClient(
     setupAuthExtension,
     setupClpExtension,
     setupEthbridgeExtension,
-    setupDispensationApi,
+    setupDispensationExtension,
   );
 }
 
 type IClpApi = ClpExtension["clp"];
 type IEthbridgeApi = EthbridgeExtension["ethbridge"];
+type IDispensationApi = DispensationExtension["dispensation"];
 
 type HandlerFn<T> = (a: T) => void;
 export class SifUnSignedClient
@@ -80,7 +84,7 @@ export class SifUnSignedClient
   lock: IEthbridgeApi["lock"];
 
   // Dispensation
-  claim: IDispensationApi["dispensation"]["claim"];
+  claim: IDispensationApi["claim"];
 
   onNewBlock<T>(handler: HandlerFn<T>) {
     console.log("received onNewBlock handler");

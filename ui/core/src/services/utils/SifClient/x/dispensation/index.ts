@@ -7,6 +7,12 @@ type BaseReq = {
   sequence?: string;
 };
 
+type IClaimParams = {
+  base_req: BaseReq;
+  claim_type: 2 | 3;
+  signer: string;
+};
+
 /*
     type DistributionType int64
     const Airdrop DistributionType = 1
@@ -20,18 +26,15 @@ type BaseReq = {
     }
 */
 
-type ICreateClaim = {
-  base_req: BaseReq;
-  claim_type: 2 | 3;
-};
-
-export interface IDispensationApi {
+export interface DispensationExtension {
   readonly dispensation: {
-    claim: (params: ICreateClaim) => Promise<Msg>;
+    claim: (params: IClaimParams) => Promise<Msg>;
   };
 }
 
-export function setupDispensationApi(base: LcdClient): IDispensationApi {
+export function setupDispensationExtension(
+  base: LcdClient,
+): DispensationExtension {
   return {
     dispensation: {
       claim: async (params) => {

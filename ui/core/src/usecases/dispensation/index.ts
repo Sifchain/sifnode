@@ -4,7 +4,7 @@ export default ({
   services,
   store,
 }: UsecaseContext<
-  "sif" | "clp" | "bus",
+  "sif" | "clp" | "bus" | "dispensation",
   "pools" | "wallet" | "accountpools"
 >) => {
   // Create the context for passing to commands, queries and subscriptions
@@ -31,12 +31,16 @@ export default ({
 
   // Rename and split this up to subscriptions, commands, queries
   const commands = {
-    async claim() {
+    async claim(params: { claimType: 2 | 3; fromAddress: string }) {
+      console.log(params);
       if (!store.wallet.sif.address) throw "No from address provided for swap";
 
-      // const tx = await api.DispensationService.claim( {fromAddress: store.wallet.sif.address, });
+      const tx = await services.dispensation.claim(params);
       console.log("=======");
 
+      const txStatus = await services.sif.signAndBroadcast(tx.value.msg);
+
+      console.log("xt", tx, txStatus);
       return "signed";
     },
   };
