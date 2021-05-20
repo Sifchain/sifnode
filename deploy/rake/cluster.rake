@@ -991,6 +991,11 @@ metadata:
       require 'json'
         release_hash = { "devnet" => "DevNet", "testnet" =>"TestNet", "betanet" =>"MainNet" }
         release_target = { "devnet" => "develop", "testnet" =>"testnet", "betanet" =>"master" }
+        puts release_hash
+        puts args[:env]
+        puts args[:repo]
+        puts args[:branch]
+        puts args[:release]
         release_name = release_hash[args[:env]]
         puts "Release Name #{release_name}"
         if "#{args[:app_env]}" == "betanet"
