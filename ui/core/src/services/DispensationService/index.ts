@@ -1,12 +1,4 @@
-import {
-  Amount,
-  Asset,
-  IAsset,
-  IAssetAmount,
-  LiquidityProvider,
-  Network,
-  Pool,
-} from "../../entities";
+import { IAsset } from "../../entities";
 
 import { SifUnSignedClient } from "../utils/SifClient";
 import { toPool } from "../utils/SifClient/toPool";
@@ -21,7 +13,7 @@ export type IDispensationServiceContext = {
 };
 
 type IDispensationService = {
-  claim: (params: { claimType: 2 | 3; fromAddress: string }) => any;
+  claim: (params: { claimType: "2" | "3"; fromAddress: string }) => any;
 };
 
 // TS not null type guard

@@ -9,7 +9,7 @@ type BaseReq = {
 
 type IClaimParams = {
   base_req: BaseReq;
-  claim_type: 2 | 3;
+  claim_type: "2" | "3";
   signer: string;
 };
 

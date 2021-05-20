@@ -31,17 +31,13 @@ export default ({
 
   // Rename and split this up to subscriptions, commands, queries
   const commands = {
-    async claim(params: { claimType: 2 | 3; fromAddress: string }) {
+    async claim(params: { claimType: "2" | "3"; fromAddress: string }) {
       console.log(params);
       if (!store.wallet.sif.address) throw "No from address provided for swap";
 
       const tx = await services.dispensation.claim(params);
       console.log("=======");
-
-      const txStatus = await services.sif.signAndBroadcast(tx.value.msg);
-
-      console.log("xt", tx, txStatus);
-      return "signed";
+      return await services.sif.signAndBroadcast(tx.value.msg);
     },
   };
 
