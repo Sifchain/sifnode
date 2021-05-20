@@ -1,7 +1,6 @@
 <script lang="ts">
 import { defineComponent } from "vue";
 import jsonp from "jsonp";
-import queryString from "query-string";
 import Icon from "@/components/shared/Icon.vue";
 import SifButton from "@/components/shared/SifButton.vue";
 
