@@ -989,7 +989,7 @@ metadata:
     task :create_github_release_by_branch_and_repo, [:branch, :release, :env, :token, :repo] do |t, args|
       require 'rest-client'
       require 'json'
-        release_hash = { "devnet" => "DevNet", "testnet" =>"TestNet", "betanet" =>"MainNet" }
+        release_hash = { "develop" => "DevNet", "testnet" =>"TestNet", "master" =>"MainNet" }
         release_target = { "devnet" => "develop", "testnet" =>"testnet", "betanet" =>"master" }
         puts release_hash
         puts args[:env]
