@@ -992,6 +992,7 @@ metadata:
         release_hash = { "devnet" => "DevNet", "testnet" =>"TestNet", "betanet" =>"MainNet" }
         release_target = { "devnet" => "develop", "testnet" =>"testnet", "betanet" =>"master" }
         release_name = release_hash[args[:env]]
+        puts "Release Name #{release_name}"
         if "#{args[:app_env]}" == "betanet"
           headers = {content_type: :json, "Accept": "application/vnd.github.v3+json", "Authorization":"token #{args[:token]}"}
           payload = {"tag_name"  =>  "mainnet-#{args[:release]}", "target_commitish"  =>  args[:branch], "name"  =>  "#{release_name} v#{args[:release]}","body"  => "#{args[:repo]} MainNet Release v#{args[:release]}","prerelease"  =>  true}.to_json
