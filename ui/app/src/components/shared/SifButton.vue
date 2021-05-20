@@ -117,6 +117,7 @@ export default defineComponent({
   align-items: center;
   overflow: hidden;
   font-size: $fs;
+  font: inherit;
   // line-height: $lh_btn;
   letter-spacing: 0px;
   border-radius: $br_sm;
