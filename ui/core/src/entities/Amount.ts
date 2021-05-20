@@ -22,13 +22,31 @@ export type IAmount = {
   subtract(other: IAmount | string): IAmount;
 };
 
+const INTEGER_REG_EX = /^[+-]?\d+$/;
+const NUMBER_WITH_DECIMAL_POINT_REG_EX = /^[+-]?(\d+)?\.\d+$/;
+
 export function Amount(
   source: JSBI | bigint | string | IAmount,
 ): Readonly<IAmount> {
   type _IAmount = _ExposeInternal<IAmount>;
 
-  if (typeof source === "string" && source.match(/^[+-]?\s?(\d+)?\.\d+$/)) {
+  // Am I a decimal number string with a period?
+  if (
+    typeof source === "string" &&
+    source.match(NUMBER_WITH_DECIMAL_POINT_REG_EX)
+  ) {
     return getAmountFromDecimal(source);
+  }
+
+  // Ok so I must be an integer or something is wrong
+  if (typeof source === "string" && !source.match(INTEGER_REG_EX)) {
+    throw new Error(`Amount input error! string "${source}" is not numeric`);
+  }
+
+  // Our types dictate you cannot have falsey source but sometimes we
+  // have casted poorly or have not validated or sanitized input
+  if (!source) {
+    throw new Error(`Amount input cannot be falsey given <${source}>`);
   }
 
   if (
