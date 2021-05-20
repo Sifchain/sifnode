@@ -85,6 +85,7 @@
   },
   "dependencies": {
     "@storybook/preset-scss": "^1.0.3",
+    "@types/jsonp": "^0.2.0",
     "codecov": "^3.8.0",
     "css-loader": "^5.2.0",
     "fkill-cli": "^6.1.0",
