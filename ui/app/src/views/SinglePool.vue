@@ -1,5 +1,5 @@
 <script lang="ts">
-import { defineComponent, watch } from "vue";
+import { defineComponent, watch, onMounted } from "vue";
 import { computed, ref, ComputedRef } from "@vue/reactivity";
 import Layout from "@/components/layout/Layout.vue";
 import SifButton from "@/components/shared/SifButton.vue";
@@ -18,23 +18,27 @@ import Icon from "@/components/shared/Icon.vue";
 
 const DECIMALS = 5;
 
-async function getEarnedRewards(address: ComputedRef<any>, symbol: string) {
+async function getEarnedRewards(address: string, symbol: string) {
   const { config } = useCore();
   const earnedRewardsUrl = getRewardEarningsUrl(config.sifChainId);
-  if (!address.value) return;
   const res = await fetch(
-    `${earnedRewardsUrl}?symbol=${symbol}&address=${address.value}`,
+    `${earnedRewardsUrl}?symbol=${symbol}&address=${address}`,
   );
   const data = await res.json();
   const parsedData = JSON.parse(data);
-  // TD - This should return Amount
+  // TD - This should return Amount, method needs work
   // Rudis recent work should refactor this call too into a testable service
-  return parsedData.netChangeUSDT;
+  return {
+    negative: Amount(parsedData.netChangeUSDT.toString()).lessThan("0"),
+    netChange: format(Amount(Math.abs(parsedData.netChangeUSDT).toString()), {
+      mantissa: 2,
+    }),
+  };
 }
 
 export default defineComponent({
   components: { Layout, SifButton, Tooltip, Icon },
-  setup(props) {
+  setup() {
     const { config, store } = useCore();
     const route = useRoute().params.externalAsset;
 
@@ -78,25 +82,22 @@ export default defineComponent({
       return t.imageUrl;
     });
 
-    watch([address, fromSymbol], async () => {
-      const realEarnedRewards = await getEarnedRewards(
+    const calculateRewards = async (address: string, fromSymbol: string) => {
+      // TODO - needs a better pattern to handle this
+      const earnedRewardsObject = await getEarnedRewards(
         address,
-        fromSymbol.value?.toLowerCase() || "0",
+        fromSymbol?.toLowerCase(),
       );
+      earnedRewardsNegative.value = earnedRewardsObject.negative;
+      earnedRewards.value = earnedRewardsObject.netChange;
+    };
 
-      // TODO - Need a strat to do negative price renderings easily with Amount API
-      //        e.g. -$5 #refactor
-      earnedRewardsNegative.value = Amount(
-        realEarnedRewards.toString(),
-      ).lessThan("0")
-        ? true
-        : false;
-      earnedRewards.value = format(
-        Amount(Math.abs(realEarnedRewards).toString()),
-        {
-          mantissa: 2,
-        },
-      );
+    watch([address, fromSymbol], async () => {
+      calculateRewards(address.value, fromSymbol.value);
+    });
+
+    onMounted(async () => {
+      calculateRewards(address.value, fromSymbol.value);
     });
 
     const fromTotalValue = computed(() => {
