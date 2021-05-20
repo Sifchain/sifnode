@@ -1,3 +1,6 @@
+import { TransactionStatus } from "../../entities";
+import { AppEvent } from "../../services/EventBusService";
+
 export function isSupportedEVMChain(chainId?: string) {
   if (!chainId) return false;
   // List of supported EVM chainIds
@@ -9,3 +12,16 @@ export function isSupportedEVMChain(chainId?: string) {
 
   return supportedEVMChainIds.includes(chainId);
 }
+
+export const ReportTransactionError = (bus: {
+  dispatch: (event: AppEvent) => void;
+}) => (txStatus: TransactionStatus): TransactionStatus => {
+  bus.dispatch({
+    type: "TransactionErrorEvent",
+    payload: {
+      txStatus,
+      message: txStatus.memo || "There was an error with your swap",
+    },
+  });
+  return txStatus;
+};
