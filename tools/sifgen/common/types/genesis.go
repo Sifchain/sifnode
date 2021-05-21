@@ -148,11 +148,6 @@ type CLP struct {
 	CLPModuleAddress      string      `json:"clp_module_address"`
 }
 
-type Ethbridge struct {
-	PeggyTokens         []string    `json:"peggy_tokens"`
-	CethReceiverAccount interface{} `json:"ceth_receiver_account"`
-}
-
 type Faucet struct {
 	Value string `json:"value"`
 }
@@ -222,7 +217,7 @@ type AppState struct {
 	Staking      Staking      `json:"staking"`
 	Params       interface{}  `json:"params"`
 	Supply       Supply       `json:"supply"`
-	Ethbridge    Ethbridge    `json:"ethbridge"`
+	Ethbridge    interface{}  `json:"ethbridge"`
 	CLP          CLP          `json:"clp"`
 	Upgrade      Upgrade      `json:"upgrade"`
 	Oracle       interface{}  `json:"oracle"`
