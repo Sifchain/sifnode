@@ -79,8 +79,6 @@ func buildRootCmd() *cobra.Command {
 	sifapp.SetConfig(true)
 
 	// Add --chain-id to persistent flags and mark it required
-	rootCmd.PersistentFlags().String(flags.FlagKeyringBackend, flags.DefaultKeyringBackend,
-		"Select keyring's backend (os|file|test)")
 	rootCmd.PersistentFlags().String(flags.FlagChainID, "", "Chain ID of tendermint node")
 	rootCmd.PersistentFlags().String(FlagRPCURL, "", "RPC URL of tendermint node")
 	rootCmd.PersistentFlags().String(flags.FlagGas, "gas", fmt.Sprintf(
@@ -260,6 +258,8 @@ func replayEthereumCmd() *cobra.Command {
 		Example: "replayEthereum tcp://localhost:26657 ws://localhost:7545/ 0x30753E4A8aad7F8597332E813735Def5dD395028 validator mnemonic 100 200 100 200 --chain-id=peggy",
 		RunE:    RunReplayEthereumCmd,
 	}
+
+	flags.AddTxFlagsToCmd(replayEthereumCmd)
 
 	return replayEthereumCmd
 }

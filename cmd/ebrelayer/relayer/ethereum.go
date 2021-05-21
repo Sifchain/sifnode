@@ -360,10 +360,10 @@ func (sub EthereumSub) Replay(txFactory tx.Factory, fromBlock int64, toBlock int
 			log.Println(fmt.Sprintf("found out a burn lock event"))
 			if !EventProcessed(bridgeClaims, event) {
 				err := sub.handleEthereumEvent(txFactory, []types.EthereumEvent{event})
-				time.Sleep(transactionInterval)
 				if err != nil {
 					log.Printf("failed to handle ethereum event, error is %s\n", err.Error())
 				}
+				time.Sleep(transactionInterval)
 			} else {
 				log.Println("event already processed by me.")
 			}
