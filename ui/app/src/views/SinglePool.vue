@@ -423,7 +423,7 @@ export default defineComponent({
   margin-left: 10px;
 }
 .dotted-line {
-  border-top: 1px dashed #d4b553;
+  border-top: 1px dotted #d4b553;
   margin: 10px 0;
 }
 </style>
