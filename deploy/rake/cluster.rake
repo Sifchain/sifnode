@@ -1018,6 +1018,20 @@ metadata:
     end
   end
 
+  desc "Deploy Helm Files"
+  namespace :vault do
+    desc "Deploy Helm Files"
+    task :helm_deploy, [:app_namespace, :image, :image_tag, :env, :app_name] do |t, args|
+      puts "Deploy the Helm Files."
+      deoploy_helm = %Q{helm upgrade #{args[:app_name]} deploy/helm/#{args[:app_name]} --install -n #{args[:app_namespace]} --create-namespace --set image.repository=#{args[:image]} --set image.tag=#{args[:image_tag]} --kubeconfig=./kubeconfig}
+      system(deoploy_helm) or exit 1
+
+      puts "Use kubectl rollout to wait for pods to start."
+      check_kubernetes_rollout_status = %Q{kubectl rollout status --kubeconfig=./kubeconfig deployment/#{args[:app_name]} -n #{args[:app_namespace]}}
+      system(check_kubernetes_rollout_status) or exit 1
+    end
+  end
+
   desc "Create Release Governance Request."
   namespace :release do
     desc "Create Release Governance Request."
