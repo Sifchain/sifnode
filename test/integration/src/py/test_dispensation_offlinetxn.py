@@ -14,10 +14,11 @@ from test_dispensation_onlinetxn import create_new_sifaddr_and_key, send_sample_
 from test_utilities import get_required_env_var, SifchaincliCredentials, get_optional_env_var, ganache_owner_account, \
     get_shell_output_json, get_shell_output, detect_errors_in_sifnodecli_output, get_transaction_result, amount_in_wei
 
+#CODE TO GENERATE RANDOM STRING FOR DISPENSATION NAME
 def id_generator(size=6, chars=string.ascii_uppercase + string.digits):
     return ''.join(random.choice(chars) for _ in range(size))
 
-#sifnodecli tx dispensation create testnewquery15 ValidatorSubsidy output.json --gas 200064128 --from sif1w3dhr896jxxctmrl72axlz8uv9gcn9dr6rr0pt --generate-only >>offlinetx.json
+#CODE TO GENERATE OFFLINE DISPENSATION TXN
 def create_offline_singlekey_txn(
         claimType,
         dispensation_name,
@@ -43,7 +44,6 @@ def create_offline_singlekey_txn(
     return json_str
 
 #CODE TO SIGN DISPENSATION BY A USER
-#sifnodecli tx sign --from sif1w3dhr896jxxctmrl72axlz8uv9gcn9dr6rr0pt offlinetx.json >> sig.json
 def sign_txn(signingaddress, offlinetx):
     cmd = " ".join([
         "sifnodecli tx sign",
@@ -53,7 +53,7 @@ def sign_txn(signingaddress, offlinetx):
     json_str = get_shell_output_json(cmd)
     return json_str
 
-#sifnodecli tx broadcast sig.json
+
 #CODE TO BROADCAST SINGLE SIGNED TXN ON BLOCK
 def broadcast_txn(signedtx):
     cmd = " ".join([
