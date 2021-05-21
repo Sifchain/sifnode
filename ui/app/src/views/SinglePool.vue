@@ -140,7 +140,7 @@ export default defineComponent({
         { mantissa: 4 },
       );
 
-      return `${perc} %`;
+      return `${perc}%`;
     });
     const myPoolUnits = computed(() => {
       return format(poolUnitsAsFraction.value, { mantissa: DECIMALS });
@@ -169,8 +169,19 @@ export default defineComponent({
 
 <template>
   <Layout class="pool" backLink="/pool" title="Your Pair">
+    <p class="description">
+      Liquidity providers earn a percentage fee on all trades proportional to
+      their share of the pool. Fees are added to the pool, accrue in real time
+      and can be claimed by withdrawing your liquidity.
+
+      <a
+        target="_blank"
+        href="https://docs.sifchain.finance/core-concepts/liquidity-pool"
+        >Click here to learn more.</a
+      >
+    </p>
     <div class="sheet" :class="!accountPool ? 'disabled' : 'active'">
-      <div class="section">
+      <div class="">
         <div class="header" @click="$emit('poolselected')">
           <div class="image">
             <img
@@ -197,7 +208,8 @@ export default defineComponent({
           </div>
         </div>
       </div>
-      <div class="section">
+
+      <div class="">
         <div class="details">
           <div
             class="row"
@@ -208,8 +220,8 @@ export default defineComponent({
               <span>{{ fromTotalValue }}</span>
               <img
                 v-if="fromTokenImage"
-                width="22"
-                height="22"
+                width="18"
+                height="18"
                 :src="fromTokenImage"
                 class="info-img"
               />
@@ -229,8 +241,8 @@ export default defineComponent({
               <span>{{ toTotalValue }}</span>
               <img
                 v-if="toTokenImage"
-                width="22"
-                height="22"
+                width="18"
+                height="18"
                 :src="toTokenImage"
                 class="info-img"
               />
@@ -239,7 +251,7 @@ export default defineComponent({
           </div>
           <div class="row" data-handle="total-pool-share">
             <span>Your pool share:</span>
-            <span class="value">{{ myPoolShare }}</span>
+            <span class="value pool-share-value">{{ myPoolShare }}</span>
           </div>
           <div class="row" data-handle="total-pool-share">
             <span
@@ -249,30 +261,14 @@ export default defineComponent({
               >
                 <Icon icon="info-box-black" /> </Tooltip
             ></span>
-            <span class="value"
+            <span class="value net-loss-value"
               >{{ earnedRewardsNegative ? "-" : "" }}${{ earnedRewards }}</span
             >
           </div>
         </div>
       </div>
-      <div class="section">
-        <div class="info">
-          <h3 class="mb-2">Liquidity provider rewards</h3>
-          <p class="text--small mb-2">
-            Liquidity providers earn a percentage fee on all trades proportional
-            to their share of the pool. Fees are added to the pool, accrue in
-            real time and can be claimed by withdrawing your liquidity. To learn
-            more, refer to the documentation
-            <a
-              target="_blank"
-              href="https://docs.sifchain.finance/core-concepts/liquidity-pool"
-              >here</a
-            >.
-          </p>
-        </div>
-      </div>
 
-      <div class="section footer">
+      <div class="footer">
         <div class="mr-1">
           <router-link
             :to="`/pool/remove-liquidity/${fromSymbol.toLowerCase()}`"
@@ -281,7 +277,7 @@ export default defineComponent({
             ></router-link
           >
         </div>
-        <div class="ml-1">
+        <div class="ml-1 add-button">
           <router-link :to="`/pool/add-liquidity/${fromSymbol.toLowerCase()}`"
             ><SifButton primary nocase block
               >Add Liquidity</SifButton
@@ -289,11 +285,12 @@ export default defineComponent({
           >
         </div>
       </div>
-    </div>
-    <div class="blockexplorer-container">
-      <div class="blockexplorer-label">Blockexplorer</div>
-      <div class="blockexplorer-link">
-        <a target="_blank" :href="getBlockExplorerUrl(chainId)">View</a>
+      <div class="dotted-line"></div>
+      <!-- <a target="_blank" :href="getBlockExplorerUrl(chainId)">View</a> -->
+      <div class="blockexplorer-container">
+        <SifButton primaryOutline nocase block
+          >View On Block Explorer</SifButton
+        >
       </div>
     </div>
   </Layout>
@@ -304,6 +301,7 @@ export default defineComponent({
   background: $c_white;
   border-radius: $br_sm;
   border: $divider;
+  padding: 20px;
   &.disabled {
     opacity: 0.3;
   }
@@ -317,6 +315,7 @@ export default defineComponent({
 
   .header {
     display: flex;
+    margin-bottom: 10px;
   }
   .symbol {
     font-size: $fs_md;
@@ -346,9 +345,9 @@ export default defineComponent({
     .value {
       display: flex;
       align-items: center;
-      font-weight: 700;
+      font-weight: 400;
       & > * {
-        margin-right: 0.5rem;
+        margin-right: 4px;
       }
 
       & > *:last-child {
@@ -361,7 +360,9 @@ export default defineComponent({
       margin-left: 4px;
     }
   }
-
+  .details {
+    margin-bottom: 10px;
+  }
   .info {
     text-align: left;
     font-weight: 400;
@@ -385,16 +386,19 @@ export default defineComponent({
     }
   }
 }
+.description {
+  font-family: PT Serif;
+  font-style: normal;
+  font-weight: normal;
+  font-size: 14px;
+  line-height: 140%;
+  margin-bottom: 15px;
+  color: #343434;
+  font-weight: 400;
+  text-align: left;
+}
 .blockexplorer-container {
   // TODO - This should be somewhat like the <Panel> class
-  margin-top: 15px;
-  background: #ffffff;
-  border-radius: 6px;
-  border: 1px solid #dedede;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 15px 20px;
   .blockexplorer-label {
     color: #333;
     font-style: italic;
@@ -406,8 +410,20 @@ export default defineComponent({
       background: #f3f3f3;
       border-radius: 4px;
       padding: 4px 10px;
+      font-weight: 400;
     }
     font-style: italic;
   }
+}
+.pool-share-value,
+.net-loss-value {
+  margin-right: 22px;
+}
+.add-button {
+  margin-left: 10px;
+}
+.dotted-line {
+  border-top: 1px dashed #d4b553;
+  margin: 10px 0;
 }
 </style>

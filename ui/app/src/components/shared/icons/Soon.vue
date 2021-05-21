@@ -1,51 +1,14 @@
 <template>
   <svg
     width="24"
-    height="22"
-    viewBox="0 0 24 22"
+    height="24"
+    viewBox="0 0 24 24"
     fill="none"
     xmlns="http://www.w3.org/2000/svg"
   >
-    <g filter="url(#filter0_d)">
-      <path
-        d="M11.99 0C6.47 0 2 4.48 2 10C2 15.52 6.47 20 11.99 20C17.52 20 22 15.52 22 10C22 4.48 17.52 0 11.99 0ZM12 18C7.58 18 4 14.42 4 10C4 5.58 7.58 2 12 2C16.42 2 20 5.58 20 10C20 14.42 16.42 18 12 18ZM12.5 5H11V11L16.25 14.15L17 12.92L12.5 10.25V5Z"
-        fill="#A5A5A5"
-      />
-    </g>
-    <defs>
-      <filter
-        id="filter0_d"
-        x="0"
-        y="0"
-        width="24"
-        height="24"
-        filterUnits="userSpaceOnUse"
-        color-interpolation-filters="sRGB"
-      >
-        <feFlood flood-opacity="0" result="BackgroundImageFix" />
-        <feColorMatrix
-          in="SourceAlpha"
-          type="matrix"
-          values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0"
-        />
-        <feOffset dy="2" />
-        <feGaussianBlur stdDeviation="1" />
-        <feColorMatrix
-          type="matrix"
-          values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.2 0"
-        />
-        <feBlend
-          mode="normal"
-          in2="BackgroundImageFix"
-          result="effect1_dropShadow"
-        />
-        <feBlend
-          mode="normal"
-          in="SourceGraphic"
-          in2="effect1_dropShadow"
-          result="shape"
-        />
-      </filter>
-    </defs>
+    <path
+      d="M11.99 2C6.47 2 2 6.48 2 12C2 17.52 6.47 22 11.99 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 11.99 2ZM12 20C7.58 20 4 16.42 4 12C4 7.58 7.58 4 12 4C16.42 4 20 7.58 20 12C20 16.42 16.42 20 12 20ZM12.5 7H11V13L16.25 16.15L17 14.92L12.5 12.25V7Z"
+      fill="white"
+    />
   </svg>
 </template>
