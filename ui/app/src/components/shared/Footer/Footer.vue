@@ -11,7 +11,7 @@ export default defineComponent({
   props: {},
   data() {
     return {
-      active: true,
+      active: false,
       email: "",
       submitted: false,
     };
@@ -67,6 +67,7 @@ export default defineComponent({
                   type="email"
                   name="email"
                   class="email-input"
+                  placeholder="me@example.com"
                 />
                 <SifButton primary type="submit">Stay Informed</SifButton>
               </form>
@@ -176,16 +177,16 @@ export default defineComponent({
   font-weight: bold;
 }
 .toggle-button {
+  font-family: "Inter", sans-serif;
   margin-left: 20px;
   padding: 0px 10px 0px 2px;
   height: 24px;
-  border: 1px solid #ffffff;
   box-sizing: border-box;
   border-radius: 20px;
   color: #fff;
   cursor: pointer;
   background: rgba(0, 0, 0, 0.4);
-  font-weight: bold;
+  font-weight: 600;
   border-radius: 20px;
   display: flex;
   align-items: center;
