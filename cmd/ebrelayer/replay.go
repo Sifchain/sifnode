@@ -27,12 +27,6 @@ func RunReplayEthereumCmd(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	// Load the validator's Ethereum private key from environment variables
-	privateKey, err := txs.LoadPrivateKey()
-	if err != nil {
-		return errors.Errorf("invalid [ETHEREUM_PRIVATE_KEY] environment variable")
-	}
-
 	// Parse flag --chain-id
 	chainID := viper.GetString(flags.FlagChainID)
 	if strings.TrimSpace(chainID) == "" {
@@ -93,7 +87,7 @@ func RunReplayEthereumCmd(cmd *cobra.Command, args []string) error {
 	sugaredLogger := logger.Sugar()
 
 	ethSub := relayer.NewEthereumSub(cliContext, tendermintNode, validatorMoniker, web3Provider,
-		contractAddress, privateKey, nil, nil, sugaredLogger)
+		contractAddress, nil, nil, sugaredLogger)
 
 	txFactory := tx.NewFactoryCLI(cliContext, cmd.Flags())
 	ethSub.Replay(txFactory, fromBlock, toBlock, cosmosFromBlock, cosmosToBlock)

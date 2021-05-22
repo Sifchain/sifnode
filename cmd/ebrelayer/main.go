@@ -215,7 +215,6 @@ func RunInitRelayerCmd(cmd *cobra.Command, args []string) error {
 		validatorMoniker,
 		web3Provider,
 		contractAddress,
-		privateKey,
 		nil,
 		db,
 		sugaredLogger,

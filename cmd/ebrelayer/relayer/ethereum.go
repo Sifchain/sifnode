@@ -72,7 +72,6 @@ func NewEthereumSub(
 	validatorMoniker,
 	ethProvider string,
 	registryContractAddress common.Address,
-	privateKey *ecdsa.PrivateKey,
 	validatorAddress sdk.ValAddress,
 	db *leveldb.DB,
 	sugaredLogger *zap.SugaredLogger,
@@ -85,7 +84,6 @@ func NewEthereumSub(
 		ValidatorName:           validatorMoniker,
 		ValidatorAddress:        validatorAddress,
 		CliCtx:                  cliCtx,
-		PrivateKey:              privateKey,
 		DB:                      db,
 		SugaredLogger:           sugaredLogger,
 	}
