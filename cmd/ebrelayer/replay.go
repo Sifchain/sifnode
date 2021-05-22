@@ -2,7 +2,6 @@ package main
 
 import (
 	"github.com/cosmos/cosmos-sdk/client"
-	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/client/tx"
 	"log"
 	"net/url"
@@ -26,25 +25,6 @@ func RunReplayEthereumCmd(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
-
-	// Parse flag --chain-id
-	chainID := viper.GetString(flags.FlagChainID)
-	if strings.TrimSpace(chainID) == "" {
-		return errors.Errorf("Must specify a 'chain-id'")
-	}
-
-	// Parse flag --rpc-url
-	rpcURL := viper.GetString(FlagRPCURL)
-	if rpcURL != "" {
-		_, err := url.Parse(rpcURL)
-		if rpcURL != "" && err != nil {
-			return errors.Wrapf(err, "invalid RPC URL: %v", rpcURL)
-		}
-	}
-
-	// if !relayer.IsWebsocketURL(args[0]) {
-	// 	return errors.Errorf("invalid [web3-provider]: %s", args[0])
-	// }
 
 	tendermintNode := args[0]
 	web3Provider := args[1]
