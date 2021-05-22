@@ -8,7 +8,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-//CreateAndDistributeDrops creates new drop Records . These records are then used to facilitate distribution
+//CreateDrops creates new drop Records . These records are then used to facilitate distribution
 // Each Recipient and DropName generate a unique Record
 func (k Keeper) CreateDrops(ctx sdk.Context, output []bank.Output, name string, distributionType types.DistributionType) error {
 	for _, receiver := range output {
@@ -47,7 +47,7 @@ func (k Keeper) DistributeDrops(ctx sdk.Context, height int64) error {
 		}
 		// Use record details to delete associated claim
 		// The claim should always be locked at this point in time .
-		if record.DistributionType == types.LiquidityMining || record.DistributionType == types.ValidatorSubsidy {
+		if record.DoesClaimExist() {
 			k.DeleteClaim(ctx, record.RecipientAddress.String(), record.DistributionType)
 		}
 		ctx.Logger().Info(fmt.Sprintf("Distributed to : %s | At height : %d | Amount :%s \n", record.RecipientAddress.String(), height, record.Coins.String()))

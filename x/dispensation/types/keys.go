@@ -25,7 +25,8 @@ const (
 var (
 	DistributionRecordPrefix = []byte{0x00} // key for storing DistributionRecords
 	DistributionsPrefix      = []byte{0x01} // key for storing airdropRecords
-	UserClaimPrefix          = []byte{0x05} // key for storing airdropRecords
+	// Would need to verify usage for byte 02,03 and 04
+	UserClaimPrefix = []byte{0x05} // key for storing airdropRecords
 )
 
 // A distribution records is unique for name_recipientAddress

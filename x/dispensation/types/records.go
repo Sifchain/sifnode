@@ -42,6 +42,13 @@ func NewDistributionRecord(distributionName string, distributionType Distributio
 	return DistributionRecord{DistributionName: distributionName, DistributionType: distributionType, RecipientAddress: recipientAddress, Coins: coins, DistributionStartHeight: start, DistributionCompletedHeight: end}
 }
 
+func (dr DistributionRecord) DoesClaimExist() bool {
+	if dr.DistributionType == LiquidityMining || dr.DistributionType == ValidatorSubsidy {
+		return true
+	}
+	return false
+}
+
 func (dr DistributionRecord) Validate() bool {
 	if len(dr.RecipientAddress) == 0 {
 		return false

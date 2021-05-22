@@ -17,7 +17,7 @@ type MsgDistribution struct {
 	Distributor      sdk.AccAddress   `json:"distributor"`
 	DistributionName string           `json:"distribution_name"`
 	DistributionType DistributionType `json:"distribution_type"`
-	Output           []bank.Output    `json:"Output"`
+	Output           []bank.Output    `json:"output"`
 }
 
 func NewMsgDistribution(signer sdk.AccAddress, DistributionName string, DistributionType DistributionType, output []bank.Output) MsgDistribution {
@@ -36,6 +36,9 @@ func (m MsgDistribution) Type() string {
 func (m MsgDistribution) ValidateBasic() error {
 	if m.DistributionName == "" {
 		return sdkerrors.Wrap(ErrInvalid, "Name cannot be empty")
+	}
+	if len(m.Output) == 0 {
+		return errors.Wrapf(ErrInvalid, "Outputlist cannot be empty")
 	}
 	for _, out := range m.Output {
 		if !out.Coins.IsValid() {

@@ -52,6 +52,19 @@ func TestMsgCreateDistribution_ValidateBasic_MultipleCoins(t *testing.T) {
 	assert.Error(t, err)
 }
 
+func TestMsgCreateDistribution_ValidateBasic_ZeroCoins(t *testing.T) {
+	distributor := ed25519.GenPrivKey()
+	var outputlist []bank.Output
+	msg := types.MsgDistribution{
+		Distributor:      sdk.AccAddress(distributor.PubKey().Address()),
+		DistributionName: "testName",
+		DistributionType: types.Airdrop,
+		Output:           outputlist,
+	}
+	err := msg.ValidateBasic()
+	assert.Error(t, err)
+}
+
 func TestMsgCreateDistribution_ValidateBasic_NoName(t *testing.T) {
 	distributor := ed25519.GenPrivKey()
 	msg := types.MsgDistribution{
