@@ -4,7 +4,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/tx"
 	"log"
-	"net/url"
 	"strconv"
 	"strings"
 
@@ -126,19 +125,7 @@ func RunReplayCosmosCmd(_ *cobra.Command, args []string) error {
 }
 
 // RunListMissedCosmosEventCmd executes initRelayerCmd
-func RunListMissedCosmosEventCmd(cmd *cobra.Command, args []string) error {
-	// Parse flag --rpc-url
-	rpcURL, err := cmd.Flags().GetString(FlagRPCURL)
-	if err != nil {
-		return err
-	}
-	if rpcURL != "" {
-		_, err := url.Parse(rpcURL)
-		if rpcURL != "" && err != nil {
-			return errors.Wrapf(err, "invalid RPC URL: %v", rpcURL)
-		}
-	}
-
+func RunListMissedCosmosEventCmd(_ *cobra.Command, args []string) error {
 	// Validate and parse arguments
 	if len(strings.Trim(args[0], "")) == 0 {
 		return errors.Errorf("invalid [tendermint-node]: %s", args[0])

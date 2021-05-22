@@ -37,7 +37,7 @@ spec:
           {{- end }}
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           command: ["/bin/sh"]
-          args: ["-c", "source /vault/secrets/ebrelayer && ebrelayer init $nodeHost $ethWebsocketAddress $ethBridgeRegistryAddress $moniker \"$mnemonic\" --chain-id $chainnet --rpc-url $nodeHost --gas $gas --gas-prices $gasPrices"]
+          args: ["-c", "source /vault/secrets/ebrelayer && ebrelayer init $nodeHost $ethWebsocketAddress $ethBridgeRegistryAddress $moniker \"$mnemonic\" --chain-id $chainnet --gas $gas --gas-prices $gasPrices"]
           volumeMounts:
             - name: data
               mountPath: /relayerdb
