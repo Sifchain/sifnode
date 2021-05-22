@@ -8,23 +8,20 @@ import (
 	"strings"
 	"sync"
 
+	sifapp "github.com/Sifchain/sifnode/app"
+	"github.com/Sifchain/sifnode/cmd/ebrelayer/contract"
+	"github.com/Sifchain/sifnode/cmd/ebrelayer/relayer"
 	"github.com/cosmos/cosmos-sdk/client"
+	"github.com/cosmos/cosmos-sdk/client/flags"
+	"github.com/cosmos/cosmos-sdk/client/rpc"
 	"github.com/cosmos/cosmos-sdk/client/tx"
 	"github.com/cosmos/cosmos-sdk/server"
 	svrcmd "github.com/cosmos/cosmos-sdk/server/cmd"
 	authclient "github.com/cosmos/cosmos-sdk/x/auth/client"
 	"github.com/cosmos/cosmos-sdk/x/auth/types"
-	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
-
-	sifapp "github.com/Sifchain/sifnode/app"
-	"github.com/Sifchain/sifnode/cmd/ebrelayer/contract"
-	"github.com/Sifchain/sifnode/cmd/ebrelayer/relayer"
-	"github.com/Sifchain/sifnode/cmd/ebrelayer/txs"
-	"github.com/cosmos/cosmos-sdk/client/flags"
-	"github.com/cosmos/cosmos-sdk/client/rpc"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/pkg/errors"
+	"github.com/spf13/cobra"
 	"github.com/syndtr/goleveldb/leveldb"
 	"go.uber.org/zap"
 )
@@ -150,20 +147,8 @@ func RunInitRelayerCmd(cmd *cobra.Command, args []string) error {
 		}
 	}()
 
-	// Load the validator's Ethereum private key from environment variables
-	privateKey, err := txs.LoadPrivateKey()
-	if err != nil {
-		return errors.Errorf("invalid [ETHEREUM_PRIVATE_KEY] environment variable")
-	}
-
-	// Parse flag --chain-id
-	chainID := viper.GetString(flags.FlagChainID)
-	if strings.TrimSpace(chainID) == "" {
-		return errors.Errorf("Must specify a 'chain-id'")
-	}
-
 	// Parse flag --rpc-url
-	rpcURL := viper.GetString(FlagRPCURL)
+	rpcURL, err := cmd.Flags().GetString(FlagRPCURL)
 	if rpcURL != "" {
 		_, err := url.Parse(rpcURL)
 		if rpcURL != "" && err != nil {
@@ -221,7 +206,7 @@ func RunInitRelayerCmd(cmd *cobra.Command, args []string) error {
 	)
 
 	// Initialize new Cosmos event listener
-	cosmosSub := relayer.NewCosmosSub(tendermintNode, web3Provider, contractAddress, privateKey, db, sugaredLogger)
+	cosmosSub := relayer.NewCosmosSub(tendermintNode, web3Provider, contractAddress, db, sugaredLogger)
 
 	waitForAll := sync.WaitGroup{}
 	waitForAll.Add(2)
