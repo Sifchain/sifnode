@@ -147,8 +147,10 @@ func RunInitRelayerCmd(cmd *cobra.Command, args []string) error {
 		}
 	}()
 
-	// Parse flag --rpc-url
 	rpcURL, err := cmd.Flags().GetString(FlagRPCURL)
+	if err != nil {
+		return err
+	}
 	if rpcURL != "" {
 		_, err := url.Parse(rpcURL)
 		if rpcURL != "" && err != nil {

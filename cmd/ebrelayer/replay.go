@@ -3,7 +3,6 @@ package main
 import (
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/tx"
-	"github.com/spf13/viper"
 	"log"
 	"net/url"
 	"strconv"
@@ -127,9 +126,12 @@ func RunReplayCosmosCmd(_ *cobra.Command, args []string) error {
 }
 
 // RunListMissedCosmosEventCmd executes initRelayerCmd
-func RunListMissedCosmosEventCmd(_ *cobra.Command, args []string) error {
+func RunListMissedCosmosEventCmd(cmd *cobra.Command, args []string) error {
 	// Parse flag --rpc-url
-	rpcURL := viper.GetString(FlagRPCURL)
+	rpcURL, err := cmd.Flags().GetString(FlagRPCURL)
+	if err != nil {
+		return err
+	}
 	if rpcURL != "" {
 		_, err := url.Parse(rpcURL)
 		if rpcURL != "" && err != nil {
