@@ -45,8 +45,14 @@ export async function getExtensionPage(extensionId, suffixUrl = undefined) {
   } else {
     matchingUrl = `chrome-extension://${extensionId}${suffixUrl}`;
   }
+  // console.log("matchingUrl=", matchingUrl)
   const pages = await context.pages();
-  const foundPages = pages.filter((page) => page.url().match(matchingUrl));
+  // const pageUrls = await pages.map(async (page) => await page.url());
+  // console.log("pageUrls=", pageUrls)
+
+  const foundPages = pages.filter((page) => page.url().includes(matchingUrl));
+  // const foundPageUrls = await foundPages.map(async (page) => await page.url());
+  // console.log("foundPageUrls=", foundPageUrls)
 
   if (foundPages.length > 0) return foundPages[0];
   else return undefined;

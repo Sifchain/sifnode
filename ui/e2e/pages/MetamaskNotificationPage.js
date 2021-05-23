@@ -9,6 +9,8 @@ export class MetamaskNotificationPopup {
   }
 
   async navigate() {
+    const targetUrl = `chrome-extension://${this.config.id}${this.url}`;
+
     this.page = await getExtensionPage(this.config.id, this.url);
     if (!this.page) {
       this.page = await getExtensionPage(this.config.id);
@@ -16,7 +18,7 @@ export class MetamaskNotificationPopup {
         this.page = await context.newPage();
       }
     }
-    await this.page.goto(`chrome-extension://${this.config.id}${this.url}`);
+    if ((await this.page.url()) !== targetUrl) await this.page.goto(targetUrl);
   }
 
   async clickViewFullTransactionDetails() {
