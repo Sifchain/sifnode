@@ -12,6 +12,7 @@ export class ConfirmSwapModal {
       confirmSwapButton: `${this.rootSelector} button:has-text("Confirm Swap")`,
       closeButton: 'button:has-text("Close")', // TODO: these 2 selectors actually belong to a different modal but functionally they fit here, consider moving to a separate class
       swapMessage: '[data-handle="swap-message"]',
+      closeXButton: '[data-handle="modal-view-close"]',
     };
   }
 
@@ -41,6 +42,10 @@ export class ConfirmSwapModal {
 
   async clickClose() {
     await page.click(this.el.closeButton);
+  }
+
+  async closeModal() {
+    await page.click(this.el.closeXButton);
   }
 
   async getSwapMessage() {

@@ -267,51 +267,31 @@ it("swaps", async () => {
 });
 
 it("fails to swap when it can't pay gas with rowan", async () => {
+  const tokenA = "rowan";
+  const tokenB = "cusdc";
   // Navigate to swap page
-  await page.goto(DEX_TARGET, {
-    waitUntil: "domcontentloaded",
-  });
-
-  await page.waitForTimeout(1000); // slowing down to avoid tokens not updating
-
-  await page.click("[data-handle='swap-page-button']");
-
-  await page.waitForTimeout(1000); // slowing down to avoid tokens not updating
+  await swapPage.navigate();
 
   // Get values of token A and token B in account
-  // Select Token A
-  await page.click("[data-handle='token-a-select-button']");
-  await page.click("[data-handle='rowan-select-button']");
-
-  // Select Token B
+  await swapPage.selectTokenA(tokenA);
   await page.waitForTimeout(1000); // slowing down to avoid tokens not updating
-  await page.click("[data-handle='token-b-select-button']");
+  await swapPage.selectTokenB(tokenB);
 
-  await page.waitForTimeout(1000); // slowing down to avoid tokens not updating
-  await page.click("[data-handle='cusdc-select-button']");
+  await swapPage.fillTokenAValue("10000");
+  await swapPage.clickSwap();
+  await confirmSwapModal.clickConfirmSwap();
 
-  // Input amount A
-  await page.click('[data-handle="token-a-input"]');
-  await page.fill('[data-handle="token-a-input"]', "10000");
+  // Confirm transaction popup
+  await page.waitForTimeout(1000);
+  await keplrNotificationPopup.navigate();
+  await keplrNotificationPopup.clickApprove();
 
-  // Click Swap Button
-  await page.click('button:has-text("Swap")');
-
-  await page.click('button:has-text("Confirm Swap")');
-
-  // Confirm transactioni popup
-
-  const keplrPage = await getExtensionPage(browserContext, KEPLR_CONFIG.id);
-
-  await keplrPage.waitForLoadState();
-  await keplrPage.click("text=Approve");
-  await keplrPage.waitForLoadState();
   await page.waitForTimeout(10000); // wait for blockchain to update...
 
   await expect(page).toHaveText("Transaction Failed");
   await expect(page).toHaveText("Not enough ROWAN to cover the gas fees.");
 
-  await page.click("[data-handle='modal-view-close']");
+  await confirmSwapModal.closeModal();
 });
 
 it("adds liquidity", async () => {
