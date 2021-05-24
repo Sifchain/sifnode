@@ -49,6 +49,7 @@ def test_transfer_eth_to_ceth_using_replay_blocks(
 
     logging.info("make sure no balances changed while the relayer was offline")
     test_utilities.advance_n_ethereum_blocks(test_utilities.n_wait_blocks, smart_contracts_dir)
+    time.sleep(5)
     balance_with_no_relayer = test_utilities.get_sifchain_addr_balance(
         request.sifchain_address, request.sifnodecli_node,
         request.sifchain_symbol
@@ -65,7 +66,7 @@ def test_transfer_eth_to_ceth_using_replay_blocks(
     cmd = f"""yes | ebrelayer replayEthereum tcp://0.0.0.0:26657 {ews} {bra} {mon} '{mn}' {starting_block} {ending_block} 1 2 --chain-id {cn} --gas 5000000000000 \
  --keyring-backend test --node tcp://0.0.0.0:26657 --from {mon}"""
     test_utilities.get_shell_output(cmd)
-    time.sleep(15)
+    time.sleep(5)
     logging.info(f"check the ending balance of {request.sifchain_address} after replaying blocks")
     ending_balance = test_utilities.get_sifchain_addr_balance(request.sifchain_address, request.sifnodecli_node,
                                                               request.sifchain_symbol)
