@@ -9,6 +9,8 @@ export const SubscribeToUnconfirmedPegTxs = ({
 }: UsecaseContext<"ethbridge" | "bus", "tx" | "wallet"> & {
   config: PegConfig;
 }) => () => {
+  if (!store.wallet.eth.address) return () => {};
+
   // Update a tx state in the store
   const subscribeToTx = SubscribeToTx({ store, services });
 

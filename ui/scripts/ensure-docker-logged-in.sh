@@ -1,4 +1,4 @@
-if  [[ $(cat ~/.docker/config.json  | jq '.auths["ghcr.io"].auth') == 'null' ]]; then
+if  [[ ! -f  ~/.docker/config.json || $(cat ~/.docker/config.json  | jq '.auths["ghcr.io"].auth') == 'null' ]]; then
   echo "In order to run this script and push a new container to the github registry you need to create a personal access token and use it to login to ghcr with docker"
   echo ""
   echo "  echo \$MY_PAT | docker login ghcr.io -u USERNAME --password-stdin"

@@ -48,9 +48,9 @@ export default defineComponent({
     const { store, usecases } = useCore();
     const router = useRouter();
     const mode = computed(() => {
-      return router.currentRoute.value.path.indexOf("/peg/reverse") > -1
-        ? "unpeg"
-        : "peg";
+      return router.currentRoute.value.path.indexOf("/import/reverse") > -1
+        ? "export"
+        : "import";
     });
 
     const transactionState = ref<ConfirmState>("selecting");
@@ -64,7 +64,7 @@ export default defineComponent({
     });
 
     const networkIsSupported = computed(() => {
-      if (mode.value === "peg") {
+      if (mode.value === "import") {
         return usecases.wallet.eth.isSupportedNetwork();
       }
 
@@ -72,7 +72,7 @@ export default defineComponent({
     });
 
     const oppositeSymbol = computed(() => {
-      if (mode.value === "peg") {
+      if (mode.value === "import") {
         return getPeggedSymbol(symbol.value);
       }
       return getUnpeggedSymbol(symbol.value);
@@ -80,7 +80,7 @@ export default defineComponent({
 
     const amount = ref("0.0");
     const address = computed(() =>
-      mode.value === "peg"
+      mode.value === "import"
         ? store.wallet.sif.address
         : store.wallet.eth.address,
     );
@@ -131,7 +131,7 @@ export default defineComponent({
 
     const accountBalance = computed(() => {
       const balances =
-        mode.value === "peg"
+        mode.value === "import"
           ? store.wallet.eth.balances
           : store.wallet.sif.balances;
       return balances.find((balance) => {
@@ -159,13 +159,13 @@ export default defineComponent({
 
     const nextStepMessage = computed(() => {
       if (!networkIsSupported.value) return "Network Not Supported";
-      return mode.value === "peg" ? "Peg" : "Unpeg";
+      return mode.value === "import" ? "Import" : "Export";
     });
 
     function requestTransactionModalClose() {
       if (transactionState.value === "confirmed") {
         transactionState.value = "selecting";
-        router.push("/peg"); // TODO push back to peg, but load unpeg tab when unpegging -> dynamic routing?
+        router.push("/import"); // TODO push back to peg, but load unpeg tab when unpegging -> dynamic routing?
       } else {
         transactionState.value = "selecting";
       }
@@ -229,10 +229,13 @@ export default defineComponent({
 </script>
 
 <template>
-  <Layout :title="mode === 'peg' ? 'Peg Asset' : 'Unpeg Asset'" backLink="/peg">
+  <Layout
+    :title="mode === 'import' ? 'Import Asset' : 'Export Asset'"
+    backLink="/import"
+  >
     <div class="vspace">
       <CurrencyField
-        slug="peg"
+        slug="import"
         :amount="amount"
         :max="true"
         :isMaxActive="isMaxActive"
@@ -245,11 +248,11 @@ export default defineComponent({
         label="Amount"
       />
       <RaisedPanel>
-        <RaisedPanelColumn v-if="mode === 'peg'">
+        <RaisedPanelColumn v-if="mode === 'import'">
           <Label>Sifchain Recipient Address</Label>
           <SifInput disabled v-model="address" />
         </RaisedPanelColumn>
-        <RaisedPanelColumn v-if="mode === 'unpeg'">
+        <RaisedPanelColumn v-if="mode === 'export'">
           <Label>Ethereum Recipient Address</Label>
           <SifInput
             disabled
@@ -259,7 +262,7 @@ export default defineComponent({
         </RaisedPanelColumn>
       </RaisedPanel>
       <DetailsTable
-        v-if="mode === 'unpeg'"
+        v-if="mode === 'export'"
         :header="{
           show: amount !== '0.0',
           label: `${modeLabel} Amount`,
@@ -282,14 +285,14 @@ export default defineComponent({
       />
     </div>
     <ConfirmationModal
-      v-if="mode === 'peg'"
+      v-if="mode === 'import'"
       @confirmed="handlePegRequested"
       :requestClose="requestTransactionModalClose"
       :state="transactionState"
       :transactionHash="transactionHash"
       :transactionStateMsg="transactionStateMsg"
-      confirmButtonText="Confirm Peg"
-      :title="`Peg token to Sifchain`"
+      confirmButtonText="Confirm Import"
+      :title="`Import token to Sifchain`"
     >
       <template v-slot:selecting>
         <DetailsTable
@@ -318,19 +321,19 @@ export default defineComponent({
       </template>
       <template v-slot:common>
         <p class="text--normal">
-          Pegging <span class="text--bold">{{ amount }} {{ symbol }}</span>
+          Importing <span class="text--bold">{{ amount }} {{ symbol }}</span>
         </p>
       </template>
     </ConfirmationModal>
     <ConfirmationModal
-      v-if="mode === 'unpeg'"
+      v-if="mode === 'export'"
       @confirmed="handleUnpegRequested"
       :requestClose="requestTransactionModalClose"
       :state="transactionState"
       :transactionHash="transactionHash"
       :transactionStateMsg="transactionStateMsg"
-      confirmButtonText="Confirm Unpeg"
-      title="Unpeg token from Sifchain"
+      confirmButtonText="Confirm Export"
+      title="Export token from Sifchain"
     >
       <template v-slot:selecting>
         <DetailsTable
@@ -355,7 +358,7 @@ export default defineComponent({
       </template>
       <template v-slot:common>
         <p class="text--normal">
-          Unpegging <span class="text--bold">{{ amount }} {{ symbol }}</span>
+          Exporting <span class="text--bold">{{ amount }} {{ symbol }}</span>
         </p>
       </template>
     </ConfirmationModal>
