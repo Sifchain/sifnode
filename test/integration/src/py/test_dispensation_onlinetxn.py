@@ -101,13 +101,7 @@ def balance_check(address, currency):
     cmd = " ".join([
         "sifnodecli query account",
         f"{address}",
-<<<<<<< HEAD
         f"-o json"
-      
-=======
-        "-o json"
-
->>>>>>> 5cd3fb23... some local fixes.
     ])
     json_str = get_shell_output_json(cmd)
     amountbalance = json_str['value']['coins']

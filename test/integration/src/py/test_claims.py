@@ -41,25 +41,30 @@ def create_claim(
     txn = json_str["txhash"]
     return txn
 
-#CODE TO QUERY BLOCK FOR NEW CLAIM TXN
+# CODE TO QUERY BLOCK FOR NEW DISPENSATION TXN
 def query_block_claim(txnhash):
     cmd = " ".join([
         "sifnodecli q tx",
         f"{txnhash}",
-        f"-o json"
+        "--chain-id localnet",
+        "-o json"
     ])
     json_str = get_shell_output_json(cmd)
     return json_str
+
 
 #CODE TO QUERY A NEW CLAIM 
 def query_created_claim(claimType):
     cmd = " ".join([
         "sifnodecli q dispensation claims-by-type",
         f"{claimType}",
+        "--chain-id localnet",
         f"-o json"
     ])
     json_str = get_shell_output_json(cmd)
     return json_str
+
+
 #CODE TO GENERATE NEW ADDRESS    
 def create_new_sifaddr_and_key():
     new_account_key = test_utilities.get_shell_output("uuidgen")
@@ -128,4 +133,3 @@ def test_query_created_claim(claimType):
     assert queryexpectedtags[0] == 'user_address'
     assert queryexpectedtags[1] == 'user_claim_type'
     assert queryexpectedtags[2] == 'user_claim_time'
-    

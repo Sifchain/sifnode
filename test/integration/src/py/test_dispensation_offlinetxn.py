@@ -74,6 +74,7 @@ def query_block_claim(txnhash):
     cmd = " ".join([
         "sifnodecli q tx",
         f"{txnhash}",
+        "--chain-id localnet",
         f"-o json"
     ])
     json_str = get_shell_output_json(cmd)
@@ -82,16 +83,19 @@ def query_block_claim(txnhash):
 #TEST CODE TO ASSERT TAGS GENERATED ON A BLOCK WHEN A NEW UNSIGNED DISPENSATION IS CREATED
 @pytest.mark.parametrize("claimType", ['ValidatorSubsidy','LiquidityMining'])
 def test_create_offline_singlekey_txn(claimType):
-    sifchain_address = str(create_new_sifaddr_and_key())
-    destaddress1 = str(create_new_sifaddr_and_key())
-    destaddress2 = str(create_new_sifaddr_and_key())
+    sifchain_address, sifchain_name = create_new_sifaddr_and_key()
+    logging.info(f"sifchain_address = {sifchain_address}, sifchain_name = {sifchain_name}")
+    destaddress1, destname1 = create_new_sifaddr_and_key()
+    logging.info(f"destaddress1 = {destaddress1}, destname1 = {destname1}")
+    destaddress2, destname2 = create_new_sifaddr_and_key()
+    logging.info(f"destaddress2 = {destaddress2}, destname2 = {destname2}")
     from_address = 'sifnodeadmin'
     dispensation_name = id_generator()
     keyring_backend = 'test'
     chain_id = 'localnet'
     sifnodecli_node = 'tcp://127.0.0.1:1317'
     amount = '10000000rowan'
-    fee='50000'
+    fee = '50000'
     currency = 'rowan'
     sampleamount = '1000rowan'
 
@@ -140,9 +144,10 @@ def test_create_offline_singlekey_txn(claimType):
 #TEST CODE TO ASSERT TAGS GENERATED ON A BLOCK WHEN A NEW SIGNED DISPENSATION IS BROADCASTED on BLOCKCHAIN
 @pytest.mark.parametrize("claimType", ['ValidatorSubsidy','LiquidityMining'])
 def test_broadcast_txn(claimType):
-    sifchain_address = str(create_new_sifaddr_and_key())
-    destaddress1 = str(create_new_sifaddr_and_key())
-    destaddress2 = str(create_new_sifaddr_and_key())
+    sifchain_address, sifchain_name = create_new_sifaddr_and_key()
+    logging.info(f"sifchain_address = {sifchain_address}, sifchain_name = {sifchain_name}")
+    destaddress1, destname1 = create_new_sifaddr_and_key()
+    destaddress2, destname2 = create_new_sifaddr_and_key()
     from_address = 'sifnodeadmin'
     dispensation_name = id_generator()
     keyring_backend = 'test'
@@ -180,7 +185,7 @@ def test_broadcast_txn(claimType):
     with open("sample.json", "w") as outfile: 
         json.dump(response, outfile)
     
-    sigresponse = sign_txn(sifchain_address, 'sample.json')
+    sigresponse = sign_txn(sifchain_name, 'sample.json')
     with open("signed.json", "w") as sigfile: 
         json.dump(sigresponse, sigfile)
         
