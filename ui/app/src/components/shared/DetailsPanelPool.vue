@@ -80,7 +80,7 @@ export default defineComponent({
               )}
               &nbsp;Deposited
             </span>
-            <div class={styles.detailsRowValue} data-handle="detailsRowValue">
+            <div class={styles.detailsRowValue} data-handle="details-row-value">
               <span>
                 {format(props.tokenAAmount.amount, props.tokenAAmount.asset, {
                   mantissa: 18,
@@ -98,7 +98,7 @@ export default defineComponent({
               )}
               &nbsp;Deposited
             </span>
-            <div class={styles.detailsRowValue} data-handle="detailsRowValue">
+            <div class={styles.detailsRowValue} data-handle="details-row-value">
               <span>
                 {format(props.tokenBAmount.amount, props.tokenBAmount.asset, {
                   mantissa: 18,
