@@ -35,8 +35,10 @@ def create_offline_singlekey_txn(
         f"{claimType}",
         output,
         f"--from {signing_address}",
+        f"--chain-id {chain_id},
         f"--fees 150000rowan",
         f"--generate-only", 
+        f"--yes -o json"
         
     ])
     json_str = get_shell_output_json(cmd)
@@ -48,7 +50,8 @@ def sign_txn(signingaddress, offlinetx):
     cmd = " ".join([
         "sifnodecli tx sign",
         f"--from {signingaddress}",
-        f"{offlinetx}"
+        f"{offlinetx}",
+        f"--yes -o json"
     ])
     json_str = get_shell_output_json(cmd)
     return json_str
@@ -58,7 +61,8 @@ def sign_txn(signingaddress, offlinetx):
 def broadcast_txn(signedtx):
     cmd = " ".join([
         "sifnodecli tx broadcast",
-        f"{signedtx}"
+        f"{signedtx}",
+        f"--yes -o json"
     ])
     json_str = get_shell_output_json(cmd)
     txn = json_str["txhash"]
@@ -69,6 +73,7 @@ def query_block_claim(txnhash):
     cmd = " ".join([
         "sifnodecli q tx",
         f"{txnhash}",
+        f"--yes -o json"
     ])
     json_str = get_shell_output_json(cmd)
     return json_str
