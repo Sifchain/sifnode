@@ -574,7 +574,7 @@ it("adds liquidity", async () => {
     prepareRowText(
       await dexPage.innerText('[data-handle="token-a-details-panel-pool-row"]'),
     ),
-  ).toBe("cETH Deposited 5");
+  ).toBe("cETH Deposited 5.000000000000000000");
 
   expect(
     prepareRowText(
