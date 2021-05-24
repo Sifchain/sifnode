@@ -40,7 +40,7 @@ def create_online_singlekey_txn(
         f"--from {signing_address}", 
         f"{chain_id}",
         f"{sifnodecli_node}",
-        f"--yes"
+        f"--yes -o json"
         
     ])
     json_str = get_shell_output_json(cmd)
@@ -69,7 +69,7 @@ def send_sample_rowan(from_address,to_address,amount,keyring_backend,chain_id):
         keyring_backend_entry,
         sifchain_fees_entry,
         f"--chain-id={chain_id}",
-        f"--yes"
+        f"--yes -o json"
         
     ])
     json_str = get_shell_output_json(cmd)
