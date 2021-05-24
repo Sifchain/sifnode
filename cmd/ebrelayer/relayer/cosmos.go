@@ -374,24 +374,38 @@ func getOracleClaimType(eventType string) types.Event {
 
 // Parses event data from the msg, event, builds a new ProphecyClaim, and relays it to Ethereum
 func (sub CosmosSub) handleBurnLockMsg(cosmosMsg types.CosmosMsg, claimType types.Event) {
-	sub.SugaredLogger.Infow("handle burn lock message.",
+	log.Println("handle burn lock message.",
 		"cosmosMessage", cosmosMsg.String())
 
-	sub.SugaredLogger.Infow(
+	log.Println(
 		"get the prophecy claim.",
 		"cosmosMsg", cosmosMsg,
 	)
 
-	err := txs.RelayProphecyClaimToEthereum(
-		sub.EthProvider,
-		sub.RegistryContractAddress,
-		claimType,
-		cosmosMsg,
-		sub.PrivateKey,
-		sub.SugaredLogger,
-	)
+	maxRetries := 5
+	i := 0
+	for i < maxRetries {
+		err := txs.RelayProphecyClaimToEthereum(
+			sub.EthProvider,
+			sub.RegistryContractAddress,
+			claimType,
+			cosmosMsg,
+			sub.PrivateKey,
+			sub.SugaredLogger,
+		)
 
-	if err != nil {
-		log.Println(err)
+		if err != nil {
+			log.Println(
+				"failed to send new prophecyclaim to ethereum",
+				errorMessageKey, err.Error(),
+			)
+		} else {
+			break
+		}
+		i++
+	}
+
+	if i == maxRetries {
+		log.Println("failed to broadcast transaction after 5 attempts", errorMessageKey)
 	}
 }

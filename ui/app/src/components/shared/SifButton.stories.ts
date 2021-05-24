@@ -11,8 +11,8 @@ const Template = (args: any) => ({
   setup() {
     return { args };
   },
-  template: '<sif-button :icon="icon" v-bind="args">Click Me</SifButton>',
+  template: '<sif-button :icon="icon" v-bind="args">Click Me</sif-button>',
 });
 
 export const Primary = Template.bind({});
-Primary.args = {};
+(Primary as any).args = {};

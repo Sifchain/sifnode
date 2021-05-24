@@ -391,6 +391,20 @@
       "name": "Tidal",
       "network": "sifchain",
       "symbol": "ctidal"
+    },
+    {
+      "decimals": 18,
+      "imageUrl": "https://assets.coingecko.com/coins/images/11939/small/SHIBLOGO.png?1600752116",
+      "name": "SHIBA INU",
+      "network": "sifchain",
+      "symbol": "cshib"
+    },
+    {
+      "decimals": 18,
+      "imageUrl": "https://etherscan.io/token/images/dogekiller_32.png",
+      "name": "DOGE KILLER",
+      "network": "sifchain",
+      "symbol": "cleash"
     }
   ]
 }

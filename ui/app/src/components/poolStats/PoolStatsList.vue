@@ -10,6 +10,9 @@ export default defineComponent({
   },
 
   props: {
+    liqAPY: {
+      type: Number,
+    },
     poolData: {
       type: Object,
     },
@@ -29,7 +32,7 @@ export default defineComponent({
       v-for="(pool, index) in poolData.pools"
       :key="index"
       :pool="pool"
-      :liqAPY="poolData.liqAPY"
+      :liqAPY="liqAPY"
       class="pool-list"
     />
     <div v-else class="loading">
