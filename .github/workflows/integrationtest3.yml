@@ -1,4 +1,4 @@
-name: Run integration tests for test chain (clp #3)
+name: Run integration tests 3 for test chain (clp)
 on:
   push:
     paths-ignore:
