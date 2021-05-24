@@ -30,6 +30,7 @@ def create_claim(
         f"{claimType}",
         f"--from {sifchain_address}",
         sifchain_fees_entry,
+        f"--chain-id={chain_id}",
         keyring_backend_entry,
         f"--yes -o json" 
         
@@ -44,6 +45,7 @@ def query_block_claim(txnhash):
     cmd = " ".join([
         "sifnodecli q tx",
         f"{txnhash}",
+        f"--yes -o json"
     ])
     json_str = get_shell_output_json(cmd)
     return json_str
@@ -53,6 +55,7 @@ def query_created_claim(claimType):
     cmd = " ".join([
         "sifnodecli q dispensation claims-by-type",
         f"{claimType}",
+        f"--yes -o json"
     ])
     json_str = get_shell_output_json(cmd)
     return json_str
