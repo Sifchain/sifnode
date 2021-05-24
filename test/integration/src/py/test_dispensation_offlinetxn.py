@@ -48,10 +48,13 @@ def create_offline_singlekey_txn(
 
 #CODE TO SIGN DISPENSATION BY A USER
 def sign_txn(signingaddress, offlinetx):
+    keyring_backend_entry = f"--keyring-backend test"
     cmd = " ".join([
         "sifnodecli tx sign",
         f"--from {signingaddress}",
         f"{offlinetx}",
+        keyring_backend_entry,
+        "--chain-id localnet",
         f"--yes -o json"
     ])
     json_str = get_shell_output_json(cmd)
