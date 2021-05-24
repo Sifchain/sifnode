@@ -35,7 +35,8 @@ def create_offline_singlekey_txn(
         f"{claimType}",
         output,
         f"--from {signing_address}",
-        f"--chain-id {chain_id},
+        f"--chain-id={chain_id}",
+        f"{sifnodecli_node}",
         f"--fees 150000rowan",
         f"--generate-only", 
         f"--yes -o json"
@@ -73,7 +74,7 @@ def query_block_claim(txnhash):
     cmd = " ".join([
         "sifnodecli q tx",
         f"{txnhash}",
-        f"--yes -o json"
+        f"-o json"
     ])
     json_str = get_shell_output_json(cmd)
     return json_str
