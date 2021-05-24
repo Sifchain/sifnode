@@ -38,8 +38,8 @@ def create_online_singlekey_txn(
         sifchain_fees_entry,
         f"--fees 50000rowan",
         f"--from {signing_address}", 
-        f"{chain_id}",
-        f"{sifnodecli_node}",
+        f"--chain-id {chain_id}",
+        f"--node {sifnodecli_node}",
         f"--yes -o json"
         
     ])
@@ -81,6 +81,7 @@ def query_block_claim(txnhash):
     cmd = " ".join([
         "sifnodecli q tx",
         f"{txnhash}",
+        f"--yes -o json"
     ])
     json_str = get_shell_output_json(cmd)
     return json_str
@@ -91,6 +92,7 @@ def balance_check(address,currency):
     cmd = " ".join([
         "sifnodecli query account",
         f"{address}",
+        f"--yes -o json"
       
     ])
     json_str = get_shell_output_json(cmd)
