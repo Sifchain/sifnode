@@ -27,15 +27,15 @@ def create_offline_singlekey_txn(
         sifnodecli_node
     ):
     logging.debug(f"create_unsigned_offline_dispensation_txn")
-    sifchain_fees_entry = f"--gas 200064128"
+    sifchain_fees_entry = f"--gas auto"
     output = 'output.json'
     cmd = " ".join([
         "sifnodecli tx dispensation create",
         f"{dispensation_name}",
         f"{claimType}",
         output,
-        sifchain_fees_entry,
         f"--from {signing_address}",
+        f"--fees 150000rowan",
         f"--generate-only", 
         
     ])
@@ -77,82 +77,124 @@ def query_block_claim(txnhash):
 @pytest.mark.parametrize("claimType", ['ValidatorSubsidy','LiquidityMining'])
 def test_create_offline_singlekey_txn(claimType):
     sifchain_address = str(create_new_sifaddr_and_key())
-    from_address = 'sif'
+    destaddress1 = str(create_new_sifaddr_and_key())
+    destaddress2 = str(create_new_sifaddr_and_key())
+    from_address = 'sifnodeadmin'
     dispensation_name = id_generator()
     keyring_backend = 'test'
     chain_id = 'localnet'
     sifnodecli_node = 'tcp://127.0.0.1:1317'
     amount = '10000000rowan'
+    fee='50000'
     currency = 'rowan'
+    sampleamount = '1000rowan'
+
+    #THESE 3 TXNS ARE TO REGISTER NEW ACCOUNTS ON CHAIN
     send_sample_rowan(from_address,sifchain_address,amount,keyring_backend,chain_id)
     time.sleep(5)
+    send_sample_rowan(from_address,destaddress1,sampleamount,keyring_backend,chain_id)
+    time.sleep(5)
+    send_sample_rowan(from_address,destaddress2,sampleamount,keyring_backend,chain_id)
+    time.sleep(5)
 
+    #CREATING TEST DATA HERE MIMICKING OUTPUT.JSON TO BE SUPPLIED BY NIKO'S API
+    dict1 = {"denom": "rowan","amount": "5000"}
+    dict2 = {"denom": "rowan","amount": "7000"}
+    dict3 = {"address": destaddress1,"coins":[dict1]}
+    dict4 = {"address": destaddress2,"coins":[dict2]}
+    dict5 = {"Output":[dict3,dict4]}
+    data = json.dumps(dict5)
+    with open("output.json","w") as f:
+        f.write(data)
+
+    #READ OUTPUT.JSON WITH CLAIMING ADDRESSES AND AMOUNT
+    with open("output.json","r") as f:
+        data = f.read()
+    d = json.loads(data)
+    
+  
     response = (create_offline_singlekey_txn(claimType,dispensation_name,sifchain_address,chain_id,sifnodecli_node))
-    print(response)
-    with open("sample.json", "w") as outfile: 
-        json.dump(response, outfile)
-    try:
-        distype = response['value']['msg'][0]['type']
-        imptags = response['value']['msg'][0]['value']
-        actuallisttags = list(imptags.keys())
-        logging.info(f"dispensation create message= {distype}")
-        logging.info(f"dispensation message tags list= {actuallisttags}")
+    
+    distributiontypetag = response['value']['msg'][0]['type']
+    distributionvaluetags = response['value']['msg'][0]['value']
+    actuallisttags = list(distributionvaluetags.keys())
+    logging.info(f"dispensation create message= {distributiontypetag}")
+    logging.info(f"dispensation message tags list= {actuallisttags}")
         
-        assert str(distype) == 'dispensation/create'
-        assert actuallisttags[0] == 'distributor'
-        assert actuallisttags[1] == 'distribution_name'
-        assert actuallisttags[2] == 'distribution_type'
-        assert actuallisttags[3] == 'Output'
-        try:
-            os.remove('sample.json')
-        except OSError as e:
-            print ("Error: %s - %s." % (e.filename, e.strerror))
-
-    except Exception as e:
-            logging.error(f"error: {e}")   
-
+    assert str(distributiontypetag) == 'dispensation/create'
+    assert actuallisttags[0] == 'distributor'
+    assert actuallisttags[1] == 'distribution_name'
+    assert actuallisttags[2] == 'distribution_type'
+    assert actuallisttags[3] == 'output'
+    try:
+        os.remove('output.json')
+    except OSError as e:
+        print ("Error: %s - %s." % (e.filename, e.strerror))
+        
 #TEST CODE TO ASSERT TAGS GENERATED ON A BLOCK WHEN A NEW SIGNED DISPENSATION IS BROADCASTED on BLOCKCHAIN
 @pytest.mark.parametrize("claimType", ['ValidatorSubsidy','LiquidityMining'])
 def test_broadcast_txn(claimType):
     sifchain_address = str(create_new_sifaddr_and_key())
-    from_address = 'sif'
+    destaddress1 = str(create_new_sifaddr_and_key())
+    destaddress2 = str(create_new_sifaddr_and_key())
+    from_address = 'sifnodeadmin'
     dispensation_name = id_generator()
     keyring_backend = 'test'
     chain_id = 'localnet'
     sifnodecli_node = 'tcp://127.0.0.1:1317'
     amount = '10000000rowan'
+    fee='50000'
     currency = 'rowan'
+    sampleamount = '1000rowan'
 
+    #THESE 3 TXNS ARE TO REGISTER NEW ACCOUNTS ON CHAIN
     send_sample_rowan(from_address,sifchain_address,amount,keyring_backend,chain_id)
     time.sleep(5)
-    
+    send_sample_rowan(from_address,destaddress1,sampleamount,keyring_backend,chain_id)
+    time.sleep(5)
+    send_sample_rowan(from_address,destaddress2,sampleamount,keyring_backend,chain_id)
+    time.sleep(5)
+
+    #CREATING TEST DATA HERE MIMICKING OUTPUT.JSON TO BE SUPPLIED BY NIKO'S API
+    dict1 = {"denom": "rowan","amount": "5000"}
+    dict2 = {"denom": "rowan","amount": "7000"}
+    dict3 = {"address": destaddress1,"coins":[dict1]}
+    dict4 = {"address": destaddress2,"coins":[dict2]}
+    dict5 = {"Output":[dict3,dict4]}
+    data = json.dumps(dict5)
+    with open("output.json","w") as f:
+        f.write(data)
+
+    #READ OUTPUT.JSON WITH CLAIMING ADDRESSES AND AMOUNT
+    with open("output.json","r") as f:
+        data = f.read()
+    d = json.loads(data)
+      
     response = (create_offline_singlekey_txn(claimType,dispensation_name,sifchain_address,chain_id,sifnodecli_node))
     with open("sample.json", "w") as outfile: 
         json.dump(response, outfile)
-    try:
-        sigresponse = sign_txn(sifchain_address, 'sample.json')
-        with open("signed.json", "w") as sigfile: 
-            json.dump(sigresponse, sigfile)
+    
+    sigresponse = sign_txn(sifchain_address, 'sample.json')
+    with open("signed.json", "w") as sigfile: 
+        json.dump(sigresponse, sigfile)
         
-        txhashbcast = broadcast_txn('signed.json')
-        time.sleep(5)
-        resp = query_block_claim(txhashbcast)
-        distypebcast = (resp['tx']['value']['msg'][0]['type'])
-        disvalsbcast = (resp['tx']['value']['msg'][0]['value'])
-        list_of_values = [disvalsbcast[key] for key in disvalsbcast]
-        broadcasttags = list(disvalsbcast.keys())
-        assert str(distypebcast) == 'dispensation/create'
-        assert broadcasttags[0] == 'distributor'
-        assert broadcasttags[1] == 'distribution_name'
-        assert broadcasttags[2] == 'distribution_type'
-        assert broadcasttags[3] == 'Output'
-        assert list_of_values[0] == sifchain_address
-        assert list_of_values[1] == dispensation_name
-        try:
-            os.remove('signed.json')
-            os.remove('sample.json')
-        except OSError as e:
-            print ("Error: %s - %s." % (e.filename, e.strerror))
-
-    except Exception as e:
-            logging.error(f"error: {e}")
+    txhashbcast = broadcast_txn('signed.json')
+    time.sleep(5)
+    resp = query_block_claim(txhashbcast)
+    distypebcast = (resp['tx']['value']['msg'][0]['type'])
+    disvalsbcast = (resp['tx']['value']['msg'][0]['value'])
+    list_of_values = [disvalsbcast[key] for key in disvalsbcast]
+    broadcasttags = list(disvalsbcast.keys())
+    assert str(distypebcast) == 'dispensation/create'
+    assert broadcasttags[0] == 'distributor'
+    assert broadcasttags[1] == 'distribution_name'
+    assert broadcasttags[2] == 'distribution_type'
+    assert broadcasttags[3] == 'output'
+    assert list_of_values[0] == sifchain_address
+    assert list_of_values[1] == dispensation_name
+    try:
+        os.remove('signed.json')
+        os.remove('sample.json')
+        os.remove('sample.json')
+    except OSError as e:
+            print ("Error: %s - %s." % (e.filename, e.strerror)) 
