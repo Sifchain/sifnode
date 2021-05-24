@@ -3,9 +3,6 @@
  *
  * TODO
  * ==============
- * Playwright object models https://playwright.dev/docs/pom for maniplating windows
- * - MetaMask class should represent the metamask popup
- * - Keplr class should represent Keplr popup
  * Clients for inspecting the blockchain
  * - sifchainBlockchainAccount - class should represent sifchain blockain
  * - ethereumBlockchainAccount - class should represent ethereumBlockchain
@@ -13,34 +10,32 @@
 require("@babel/polyfill");
 
 // configs
-const { DEX_TARGET, MM_CONFIG, KEPLR_CONFIG } = require("./config.js");
+const { MM_CONFIG, KEPLR_CONFIG } = require("./config.js");
 const keplrConfig = require("../core/src/config.localnet.json");
 
 // extension
 const { metamaskPage } = require("./pages/MetaMaskPage");
-
-// services
-const { getSifchainBalances } = require("./sifchain.js");
-const { getEthBalance, advanceEthBlocks } = require("./ethereum.js");
-const { getExtensionPage, extractExtensionPackage } = require("./utils");
-const { useStack } = require("../test/stack");
 const { keplrPage } = require("./pages/KeplrPage.js");
-const { connectMetaMaskAccount, connectKeplrAccount } = require("./helpers.js");
-const { pegPage } = require("./pages/PegPage.js");
+const { keplrNotificationPopup } = require("./pages/KeplrNotificationPopup.js");
 const {
   metamaskNotificationPopup,
 } = require("./pages/MetamaskNotificationPage.js");
+
+// services
+const { getSifchainBalances } = require("./sifchain.js");
+const { advanceEthBlocks } = require("./ethereum.js");
+const { extractExtensionPackage } = require("./utils");
+const { useStack } = require("../test/stack");
+
+// utils
+const { connectMetaMaskAccount, connectKeplrAccount } = require("./helpers.js");
+
+// dex pages
+const { pegPage } = require("./pages/PegPage.js");
 const { swapPage } = require("./pages/SwapPage.js");
-const { keplrNotificationPopup } = require("./pages/KeplrNotificationPopup.js");
 const { confirmSwapModal } = require("./pages/ConfirmSwapModal.js");
 const { poolPage } = require("./pages/PoolPage.js");
 const { confirmSupplyModal } = require("./pages/ConfirmSupplyModal.js");
-
-async function getInputValue(selector) {
-  return await page.evaluate((el) => el.value, await page.$(selector));
-}
-
-let dexPage;
 
 useStack("every-test");
 
@@ -126,7 +121,6 @@ it("pegs ether", async () => {
   const assetExternal = "eth";
   const assetNative = "ceth";
 
-  // Navigate to peg page
   await pegPage.navigate();
 
   const cEthBalance = await getSifchainBalances(
@@ -163,7 +157,6 @@ it("pegs tokens", async () => {
   const pegAmount = "1";
   const pegAsset = "usdc";
 
-  // Navigate to peg page
   await pegPage.navigate();
 
   const cBalance = await getSifchainBalances(
@@ -201,7 +194,7 @@ it("pegs tokens", async () => {
 it("swaps", async () => {
   const tokenA = "cusdc";
   const tokenB = "rowan";
-  // Navigate to swap page
+
   await swapPage.navigate();
 
   await swapPage.selectTokenA(tokenA);
@@ -251,7 +244,7 @@ it("swaps", async () => {
 
   await confirmSwapModal.clickConfirmSwap();
 
-  // Confirm transactioni popup
+  // Confirm transaction popup
   await page.waitForTimeout(1000);
   await keplrNotificationPopup.navigate();
   await keplrNotificationPopup.clickApprove();
@@ -296,8 +289,9 @@ it("fails to swap when it can't pay gas with rowan", async () => {
   await confirmSwapModal.closeModal();
 });
 
-it.only("adds liquidity", async () => {
+it("adds liquidity", async () => {
   const tokenA = "ceth";
+  const tokenB = "rowan";
 
   await poolPage.navigate();
 
@@ -345,13 +339,11 @@ it.only("adds liquidity", async () => {
   // click Add Liquidity
   await poolPage.clickActionsGo();
 
-  // confirm add liquidity modal
-
   expect(await confirmSupplyModal.getTitle()).toBe("You are depositing");
 
   expect(
     prepareRowText(await confirmSupplyModal.getTokenADetailsPoolText()),
-  ).toBe("cETH Deposited 5");
+  ).toBe("cETH Deposited 5.00000");
 
   expect(
     prepareRowText(await confirmSupplyModal.getTokenBDetailsPoolText()),
@@ -370,7 +362,7 @@ it.only("adds liquidity", async () => {
   await confirmSupplyModal.clickConfirmSupply();
 
   expect(await confirmSupplyModal.getConfirmationWaitText()).toBe(
-    "Supplying 5 ceth and 6024.09639 rowan",
+    "Supplying 5.00000 ceth and 6024.09639 rowan",
   );
 
   // Confirm transaction popup
@@ -379,44 +371,29 @@ it.only("adds liquidity", async () => {
   await keplrNotificationPopup.clickApprove();
   await page.waitForTimeout(10000); // wait for blockchain to update...
 
-  await page.pause();
-  await page.click("text=×"); // TODO: put inside page object
-  await page.click('[data-handle="ceth-rowan-pool-list-item"]');
+  await confirmSupplyModal.closeModal();
 
-  expect(
-    prepareRowText(await page.innerText('[data-handle="total-pooled-ceth"]')),
-  ).toBe("Total Pooled cETH: 8305.00000");
-
-  expect(
-    prepareRowText(await page.innerText('[data-handle="total-pooled-rowan"]')),
-  ).toBe("Total Pooled ROWAN: 10006024.09639");
-
-  expect(
-    prepareRowText(await page.innerText('[data-handle="total-pool-share"]')),
-  ).toBe("Your pool share: 0.0602 %");
+  await poolPage.clickManagePool(tokenA, tokenB);
+  expect(prepareRowText(await poolPage.getTotalPooledText(tokenA))).toBe(
+    "Total Pooled cETH: 8305.00000",
+  );
+  expect(prepareRowText(await poolPage.getTotalPooledText(tokenB))).toBe(
+    "Total Pooled ROWAN: 10006024.09639",
+  );
+  expect(prepareRowText(await poolPage.getTotalPoolShareText())).toBe(
+    "Your pool share: 0.0602 %",
+  );
 });
 
 it("fails to add liquidity when can't pay gas with rowan", async () => {
-  // Navigate to swap page
-  await page.goto(DEX_TARGET, {
-    waitUntil: "domcontentloaded",
-  });
-  // Click pool page
-  await page.click('[data-handle="pool-page-button"]');
+  const tokenA = "cusdc";
 
-  // Click add liquidity button
-  await page.click('[data-handle="add-liquidity-button"]');
-
-  // Select cusdc
-  await page.click("[data-handle='token-a-select-button']");
-  await page.click("[data-handle='cusdc-select-button']");
-
-  await page.click('[data-handle="token-b-input"]');
-  await page.fill('[data-handle="token-b-input"]', "10000");
-
-  await page.click('[data-handle="actions-go"]');
-
-  await page.click("button:has-text('CONFIRM SUPPLY')");
+  await poolPage.navigate();
+  await poolPage.clickAddLiquidity();
+  await poolPage.selectTokenA(tokenA);
+  await poolPage.fillTokenBValue("10000");
+  await poolPage.clickActionsGo();
+  await confirmSupplyModal.clickConfirmSupply();
 
   // Confirm transaction popup
   await page.waitForTimeout(1000);
@@ -427,7 +404,7 @@ it("fails to add liquidity when can't pay gas with rowan", async () => {
   await expect(page).toHaveText("Transaction Failed");
   await expect(page).toHaveText("Not enough ROWAN to cover the gas fees");
 
-  await page.click("[data-handle='modal-view-close']");
+  await confirmSupplyModal.closeModal();
 });
 
 function prepareRowText(row) {

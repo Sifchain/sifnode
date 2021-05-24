@@ -3,8 +3,6 @@ import StreamZip from "node-stream-zip";
 import axios from "axios";
 import fs from "fs";
 import path from "path";
-import { KEPLR_CONFIG, MM_CONFIG } from "./config";
-const { chromium } = require("playwright");
 
 // Not in use, don't have good place to get the extension zips, for now
 export async function downloadFile(name, url, dir) {
@@ -45,14 +43,9 @@ export async function getExtensionPage(extensionId, suffixUrl = undefined) {
   } else {
     matchingUrl = `chrome-extension://${extensionId}${suffixUrl}`;
   }
-  // console.log("matchingUrl=", matchingUrl)
   const pages = await context.pages();
-  // const pageUrls = await pages.map(async (page) => await page.url());
-  // console.log("pageUrls=", pageUrls)
 
   const foundPages = pages.filter((page) => page.url().includes(matchingUrl));
-  // const foundPageUrls = await foundPages.map(async (page) => await page.url());
-  // console.log("foundPageUrls=", foundPageUrls)
 
   if (foundPages.length > 0) return foundPages[0];
   else return undefined;

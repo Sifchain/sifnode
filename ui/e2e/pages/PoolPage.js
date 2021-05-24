@@ -18,14 +18,18 @@ export class PoolPage extends GenericPage {
       poolPricesBackwardNumber: '[data-handle="pool-prices-backward-number"]',
       poolPricesBackwardSymbols: '[data-handle="pool-prices-backward-symbols"]',
       poolEstimatesForwardNumber:
-        '[data-handle="pool-estimates-forward-number"]',
+        '[data-handle="pool-estimates-forwards-number"]',
       poolEstimatesForwardSymbols:
-        '[data-handle="pool-estimates-forward-symbols"]',
+        '[data-handle="pool-estimates-forwards-symbols"]',
       poolEstimatesBackwardNumber:
-        '[data-handle="pool-estimates-backward-number"]',
+        '[data-handle="pool-estimates-backwards-number"]',
       poolEstimatesBackwardSymbols:
-        '[data-handle="pool-estimates-backward-symbols"]',
+        '[data-handle="pool-estimates-backwards-symbols"]',
       poolEstimatesShareNumber: '[data-handle="pool-estimates-share-number"]',
+      managePoolButton: (tokenA, tokenB) =>
+        `[data-handle="${tokenA}-${tokenB}-pool-list-item"]`,
+      totalPooled: (token) => `[data-handle="total-pooled-${token}"]`,
+      totalPoolShare: '[data-handle="total-pool-share"]',
     };
   }
 
@@ -54,10 +58,13 @@ export class PoolPage extends GenericPage {
   }
 
   async getTokenAValue() {
+    await page.click(tokenSelection.el.tokenInput("a"));
     return await tokenSelection.getTokenAValue();
   }
 
   async getTokenBValue() {
+    await page.click(tokenSelection.el.tokenInput("b"));
+    await page.waitForTimeout(250);
     return await tokenSelection.getTokenBValue();
   }
 
@@ -119,6 +126,18 @@ export class PoolPage extends GenericPage {
 
   async clickActionsGo() {
     await page.click(this.el.actionsButton);
+  }
+
+  async clickManagePool(tokenA, tokenB) {
+    await page.click(this.el.managePoolButton(tokenA, tokenB));
+  }
+
+  async getTotalPooledText(token) {
+    return await page.innerText(this.el.totalPooled(token));
+  }
+
+  async getTotalPoolShareText() {
+    return await page.innerText(this.el.totalPoolShare);
   }
 }
 

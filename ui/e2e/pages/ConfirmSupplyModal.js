@@ -9,6 +9,7 @@ export class ConfirmSupplyModal {
       ratesShareOfPool: '[data-handle="real-share-of-pool"]',
       confirmSupplyButton: 'button:has-text("Confirm Supply")',
       confirmationWaitMessage: '[data-handle="confirmation-wait-message"]',
+      closeXButton: '[data-handle="modal-view-close"]',
     };
   }
 
@@ -42,6 +43,10 @@ export class ConfirmSupplyModal {
 
   async getConfirmationWaitText() {
     return await page.innerText(this.el.confirmationWaitMessage);
+  }
+
+  async closeModal() {
+    await page.click(this.el.closeXButton);
   }
 }
 
