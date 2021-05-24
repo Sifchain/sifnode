@@ -41,8 +41,8 @@ func (AppModuleBasic) RegisterCodec(cdc *codec.Codec) {
 
 // DefaultGenesis returns default genesis state as raw bytes for the ethbridge
 // module.
-func (AppModuleBasic) DefaultGenesis() json.RawMessage {
-	return nil
+func (am AppModuleBasic) DefaultGenesis() json.RawMessage {
+	return types.ModuleCdc.MustMarshalJSON(types.DefaultGenesisState())
 }
 
 // ValidateGenesis performs genesis state validation for the ethbridge module.
