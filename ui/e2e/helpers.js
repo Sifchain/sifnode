@@ -1,5 +1,5 @@
 import { connectPopup } from "./pages/ConnectPopup";
-import { dexHeader } from "./pages/DexHeader";
+import { dexHeader } from "./pages/components/DexHeader";
 import { MetamaskConnectPage } from "./pages/MetamaskConnectPage";
 
 export async function connectKeplrAccount() {

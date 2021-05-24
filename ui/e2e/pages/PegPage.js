@@ -1,6 +1,5 @@
 import { DEX_TARGET } from "../config";
 import expect from "expect-playwright";
-import { dexHeader } from "./DexHeader";
 
 export class PegPage {
   constructor() {

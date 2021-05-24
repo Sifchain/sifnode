@@ -33,10 +33,12 @@ const {
 const { swapPage } = require("./pages/SwapPage.js");
 const { keplrNotificationPopup } = require("./pages/KeplrNotificationPopup.js");
 const { confirmSwapModal } = require("./pages/ConfirmSwapModal.js");
+const { poolPage } = require("./pages/PoolPage.js");
+const { confirmSupplyModal } = require("./pages/ConfirmSupplyModal.js");
 
-// async function getInputValue(selector) {
-//   return await page.evaluate((el) => el.value, await page.$(selector));
-// }
+async function getInputValue(selector) {
+  return await page.evaluate((el) => el.value, await page.$(selector));
+}
 
 let dexPage;
 
@@ -294,139 +296,91 @@ it("fails to swap when it can't pay gas with rowan", async () => {
   await confirmSwapModal.closeModal();
 });
 
-it("adds liquidity", async () => {
-  // Navigate to swap page
-  await page.goto(DEX_TARGET, {
-    waitUntil: "domcontentloaded",
+it.only("adds liquidity", async () => {
+  const tokenA = "ceth";
+
+  await poolPage.navigate();
+
+  await poolPage.clickAddLiquidity();
+
+  await poolPage.selectTokenA(tokenA);
+  await poolPage.fillTokenAValue("10");
+  expect(await poolPage.getTokenBValue()).toBe("12048.19277");
+
+  await poolPage.fillTokenBValue("10000");
+  expect(await poolPage.getTokenAValue()).toBe("8.30000");
+
+  await poolPage.clickTokenAMax();
+  expect(await poolPage.getTokenAValue()).toBe("100.000000000000000000");
+  expect(await poolPage.getTokenBValue()).toBe("120481.92771");
+
+  expect((await poolPage.getActionsButtonText()).toUpperCase()).toBe(
+    "INSUFFICIENT FUNDS",
+  );
+
+  await poolPage.clickTokenAMax();
+  await poolPage.fillTokenAValue("5");
+
+  expect(await poolPage.getTokenBValue()).toBe("6024.09639");
+
+  expect((await poolPage.getActionsButtonText()).toUpperCase()).toBe(
+    "ADD LIQUIDITY",
+  );
+
+  await poolPage.verifyPoolPrices({
+    expForwardNumber: "0.000830",
+    expForwardSymbols: "cETH per ROWAN",
+    expBackwardNumber: "1204.819277",
+    expBackwardSymbols: "ROWAN per cETH",
   });
-  // Click pool page
-  await page.click('[data-handle="pool-page-button"]');
 
-  // Click add liquidity button
-  await page.click('[data-handle="add-liquidity-button"]');
+  await poolPage.verifyPoolEstimates({
+    expForwardNumber: "0.000830",
+    expForwardSymbols: "CETH per ROWAN", // <-- this is a bug TODO: cETH
+    expBackwardNumber: "1204.819277",
+    expBackwardSymbols: "ROWAN per CETH", // <-- this is a bug TODO: cETH
+    expShareNumber: "0.06%",
+  });
 
-  // Select ceth
-  await page.click("[data-handle='token-a-select-button']");
-  await page.click("[data-handle='ceth-select-button']");
+  // click Add Liquidity
+  await poolPage.clickActionsGo();
 
-  await page.click('[data-handle="token-a-input"]');
-  await page.fill('[data-handle="token-a-input"]', "10");
+  // confirm add liquidity modal
 
-  expect(await getInputValue(page, '[data-handle="token-b-input"]')).toBe(
-    "12048.19277",
-  );
-
-  await page.click('[data-handle="token-b-input"]');
-  await page.fill('[data-handle="token-b-input"]', "10000");
-
-  await page.click('[data-handle="token-a-input"]');
-
-  expect(await getInputValue(page, '[data-handle="token-a-input"]')).toBe(
-    "8.30000",
-  );
-
-  await page.click('[data-handle="token-a-max-button"]');
-
-  expect(await getInputValue(page, '[data-handle="token-a-input"]')).toBe(
-    "100.000000000000000000",
-  );
-
-  await page.click('[data-handle="token-b-input"]');
-
-  expect(await getInputValue(page, '[data-handle="token-b-input"]')).toBe(
-    "120481.92771",
-  );
+  expect(await confirmSupplyModal.getTitle()).toBe("You are depositing");
 
   expect(
-    (await page.innerText('[data-handle="actions-go"]')).toUpperCase(),
-  ).toBe("INSUFFICIENT FUNDS");
-
-  await page.click('[data-handle="token-a-max-button"]');
-  await page.fill('[data-handle="token-a-input"]', "5");
-
-  expect(await getInputValue(page, '[data-handle="token-b-input"]')).toBe(
-    "6024.09639",
-  );
-
-  expect(
-    (await page.innerText('[data-handle="actions-go"]')).toUpperCase(),
-  ).toBe("ADD LIQUIDITY");
-
-  expect(
-    await page.innerText('[data-handle="pool-prices-forward-number"]'),
-  ).toBe("0.000830");
-  expect(
-    await page.innerText('[data-handle="pool-prices-forward-symbols"]'),
-  ).toBe("cETH per ROWAN");
-
-  expect(
-    await page.innerText('[data-handle="pool-prices-backward-number"]'),
-  ).toBe("1204.819277");
-  expect(
-    await page.innerText('[data-handle="pool-prices-backward-symbols"]'),
-  ).toBe("ROWAN per cETH");
-
-  expect(
-    await page.innerText('[data-handle="pool-estimates-forwards-number"]'),
-  ).toBe("0.000830");
-  expect(
-    await page.innerText('[data-handle="pool-estimates-forwards-symbols"]'),
-  ).toBe("CETH per ROWAN"); // <-- this is a bug TODO: cETH
-
-  expect(
-    await page.innerText('[data-handle="pool-estimates-backwards-number"]'),
-  ).toBe("1204.819277");
-  expect(
-    await page.innerText('[data-handle="pool-estimates-backwards-symbols"]'),
-  ).toBe("ROWAN per CETH"); // <-- this is a bug TODO: cETH
-  expect(
-    await page.innerText('[data-handle="pool-estimates-share-number"]'),
-  ).toBe("0.06%");
-
-  await page.click('[data-handle="actions-go"]');
-
-  expect(await page.innerText('[data-handle="confirmation-modal-title"]')).toBe(
-    "You are depositing",
-  );
-
-  expect(
-    prepareRowText(
-      await page.innerText('[data-handle="token-a-details-panel-pool-row"]'),
-    ),
+    prepareRowText(await confirmSupplyModal.getTokenADetailsPoolText()),
   ).toBe("cETH Deposited 5");
 
   expect(
-    prepareRowText(
-      await page.innerText('[data-handle="token-b-details-panel-pool-row"]'),
-    ),
+    prepareRowText(await confirmSupplyModal.getTokenBDetailsPoolText()),
   ).toBe("ROWAN Deposited 6024.09639");
 
+  expect(prepareRowText(await confirmSupplyModal.getRatesBPerARowText())).toBe(
+    "Rates 1 cETH = 1204.81927711 ROWAN",
+  );
+  expect(prepareRowText(await confirmSupplyModal.getRatesAPerBRowText())).toBe(
+    "1 ROWAN = 0.00083000 cETH",
+  );
   expect(
-    prepareRowText(await page.innerText('[data-handle="real-b-per-a-row"]')),
-  ).toBe("Rates 1 cETH = 1204.81927711 ROWAN");
-  expect(
-    prepareRowText(await page.innerText('[data-handle="real-a-per-b-row"]')),
-  ).toBe("1 ROWAN = 0.00083000 cETH");
-  expect(
-    prepareRowText(await page.innerText('[data-handle="real-share-of-pool"]')),
+    prepareRowText(await confirmSupplyModal.getRatesShareOfPoolText()),
   ).toBe("Share of Pool: 0.06%"); // TODO: remove ":"
 
-  await page.click("button:has-text('CONFIRM SUPPLY')");
+  await confirmSupplyModal.clickConfirmSupply();
 
-  expect(
-    await page.innerText('[data-handle="confirmation-wait-message"]'),
-  ).toBe("Supplying 5 ceth and 6024.09639 rowan");
+  expect(await confirmSupplyModal.getConfirmationWaitText()).toBe(
+    "Supplying 5 ceth and 6024.09639 rowan",
+  );
 
   // Confirm transaction popup
-
-  const keplrPage = await getExtensionPage(browserContext, KEPLR_CONFIG.id);
-
-  await keplrPage.waitForLoadState();
-  await keplrPage.click("text=Approve");
-  await keplrPage.waitForLoadState();
+  await page.waitForTimeout(1000);
+  await keplrNotificationPopup.navigate();
+  await keplrNotificationPopup.clickApprove();
   await page.waitForTimeout(10000); // wait for blockchain to update...
 
-  await page.click("text=×");
+  await page.pause();
+  await page.click("text=×"); // TODO: put inside page object
   await page.click('[data-handle="ceth-rowan-pool-list-item"]');
 
   expect(
@@ -465,12 +419,9 @@ it("fails to add liquidity when can't pay gas with rowan", async () => {
   await page.click("button:has-text('CONFIRM SUPPLY')");
 
   // Confirm transaction popup
-
-  const keplrPage = await getExtensionPage(browserContext, KEPLR_CONFIG.id);
-
-  await keplrPage.waitForLoadState();
-  await keplrPage.click("text=Approve");
-  await keplrPage.waitForLoadState();
+  await page.waitForTimeout(1000);
+  await keplrNotificationPopup.navigate();
+  await keplrNotificationPopup.clickApprove();
   await page.waitForTimeout(10000); // wait for blockchain to update...
 
   await expect(page).toHaveText("Transaction Failed");
