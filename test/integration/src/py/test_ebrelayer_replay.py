@@ -44,10 +44,16 @@ def test_transfer_eth_to_ceth_using_replay_blocks(
     test_utilities.get_shell_output("pkill -9 ebrelayer || true")
     request, credentials = build_request(smart_contracts_dir, source_ethereum_address, solidity_json_path)
     logging.info("(no transactions should happen without a relayer)")
-    # test_utilities.whitelist_token(request.ethereum_symbol, request.smart_contracts_dir, True)
     logging.info(f"send {request.amount / 10 ** 18} eth ({request.amount} wei) to {request.sifchain_address}")
     test_utilities.send_from_ethereum_to_sifchain(request)
-    # test_utilities.get_shell_output(f"{integration_dir}/sifchain_start_ebrelayer.sh")
+
+    logging.info("make sure no balances changed while the relayer was offline")
+    test_utilities.advance_n_ethereum_blocks(test_utilities.n_wait_blocks, smart_contracts_dir)
+    balance_with_no_relayer = test_utilities.get_sifchain_addr_balance(
+        request.sifchain_address, request.sifnodecli_node,
+        request.sifchain_symbol
+    )
+    assert (balance_with_no_relayer == 0)
 
     logging.info("replay blocks using ebrelayer replayEthereum")
     ews = test_utilities.get_required_env_var("ETHEREUM_WEBSOCKET_ADDRESS")
