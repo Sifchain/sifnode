@@ -15,6 +15,7 @@ import { format } from "ui-core/src/utils/format";
 import { Amount } from "ui-core";
 import Tooltip from "@/components/shared/Tooltip.vue";
 import Icon from "@/components/shared/Icon.vue";
+import Loader from "@/components/shared/Loader.vue";
 
 const DECIMALS = 5;
 
@@ -37,13 +38,13 @@ async function getEarnedRewards(address: string, symbol: string) {
 }
 
 export default defineComponent({
-  components: { Layout, SifButton, Tooltip, Icon },
+  components: { Layout, SifButton, Tooltip, Icon, Loader },
   setup() {
     const { config, store } = useCore();
     const route = useRoute().params.externalAsset;
 
     const address = computed(() => store.wallet.sif.address);
-    let earnedRewards = ref<string>("0");
+    let earnedRewards = ref<string | null>(null);
     let earnedRewardsNegative = ref<boolean>(false);
 
     const accountPool = computed(() => {
@@ -261,9 +262,12 @@ export default defineComponent({
               >
                 <Icon icon="info-box-black" /> </Tooltip
             ></span>
-            <span class="value net-loss-value"
-              >{{ earnedRewardsNegative ? "-" : "" }}${{ earnedRewards }}</span
-            >
+            <span v-if="earnedRewards" class="value net-loss-value">
+              {{ earnedRewardsNegative ? "-" : "" }}{{ earnedRewards }} $
+            </span>
+            <span v-else class="value">
+              <Loader typeSize />
+            </span>
           </div>
         </div>
       </div>
