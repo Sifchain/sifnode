@@ -153,6 +153,11 @@ export default defineComponent({
     });
     return {
       accountPool,
+      gotoBlockExplorer: () => {
+        window.open(
+          getBlockExplorerUrl(config.sifChainId) + `account/${address.value}`,
+        );
+      },
       fromToken,
       fromSymbol,
       fromBackgroundStyle,
@@ -306,9 +311,8 @@ export default defineComponent({
         </div>
       </div>
       <div class="dotted-line"></div>
-      <!-- <a target="_blank" :href="getBlockExplorerUrl(chainId)">View</a> -->
       <div class="blockexplorer-container">
-        <SifButton primaryOutline nocase block
+        <SifButton primaryOutline nocase block @click="gotoBlockExplorer"
           >View On Block Explorer</SifButton
         >
       </div>
