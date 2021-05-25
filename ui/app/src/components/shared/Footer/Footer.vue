@@ -43,7 +43,12 @@ export default defineComponent({
 </script>
 
 <template>
-  <div class="container">
+  <div
+    class="container"
+    :class="{
+      active: active,
+    }"
+  >
     <div
       class="footer"
       :class="{
@@ -112,6 +117,11 @@ export default defineComponent({
   height: 51px;
   bottom: 0;
   left: 0;
+  pointer-events: none;
+
+  &.active {
+    pointer-events: all;
+  }
 }
 .footer {
   font-size: 12px; /* make $variable */
@@ -133,6 +143,9 @@ export default defineComponent({
   opacity: 1;
   transition: opacity 0.5s ease-out;
   z-index: 200;
+  & .items > * {
+    pointer-events: all;
+  }
 }
 .items {
   display: flex;
@@ -140,6 +153,7 @@ export default defineComponent({
   width: 100%;
   align-items: center;
   height: 51px;
+  pointer-events: none;
 }
 
 .left {
