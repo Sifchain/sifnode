@@ -15,6 +15,8 @@ import Bang from "./icons/Bang.vue";
 import Sif from "./icons/Sif.vue";
 import Exclaimation from "./icons/Exclaimation.vue";
 import Soon from "./icons/Soon.vue";
+import InfoFullCircle from "./icons/InfoFullCircle.vue";
+import CloseFullCircle from "./icons/CloseFullCircle.vue";
 
 export default defineComponent({
   props: {
@@ -34,6 +36,8 @@ export default defineComponent({
         | "exclaimation"
         | "soon"
         | "eye"
+        | "info-full-circle"
+        | "close-full-circle"
       >,
     },
   },
@@ -52,6 +56,8 @@ export default defineComponent({
     Exclaimation,
     Soon,
     Eye,
+    InfoFullCircle,
+    CloseFullCircle,
   },
 });
 </script>
@@ -72,5 +78,7 @@ export default defineComponent({
     <Exclaimation v-if="icon === 'exclaimation'" />
     <Soon v-if="icon === 'soon'" />
     <Eye v-if="icon === 'eye'" />
+    <InfoFullCircle v-if="icon === 'info-full-circle'" />
+    <CloseFullCircle v-if="icon === 'close-full-circle'" />
   </span>
 </template>

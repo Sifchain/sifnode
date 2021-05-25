@@ -983,6 +983,55 @@ metadata:
     end
   end
 
+  desc "Create create_github_release_by_branch_and_repo."
+  namespace :release do
+    desc "Create create_github_release_by_branch_and_repo."
+    task :create_github_release_by_branch_and_repo, [:branch, :release, :env, :token, :repo] do |t, args|
+      require 'rest-client'
+      require 'json'
+        release_hash = { "develop" => "DevNet", "testnet" =>"TestNet", "master" =>"MainNet" }
+        release_target = { "devnet" => "develop", "testnet" =>"testnet", "betanet" =>"master" }
+        puts release_hash
+        puts args[:env]
+        puts args[:repo]
+        puts args[:branch]
+        puts args[:release]
+        release_name = release_hash[args[:env]]
+        puts "Release Name #{release_name}"
+        if "#{args[:app_env]}" == "betanet"
+          headers = {content_type: :json, "Accept": "application/vnd.github.v3+json", "Authorization":"token #{args[:token]}"}
+          payload = {"tag_name"  =>  "mainnet-#{args[:release]}", "target_commitish"  =>  args[:branch], "name"  =>  "#{release_name} v#{args[:release]}","body"  => "#{args[:repo]} MainNet Release v#{args[:release]}","prerelease"  =>  true}.to_json
+          url = "https://api.github.com/repos/Sifchain/#{args[:repo]}/releases"
+          puts "github api url #{url}"
+          response = RestClient.post url, payload, headers
+          json_response_job_object = JSON.parse response.body
+          puts json_response_job_object
+        else
+          headers = {content_type: :json, "Accept": "application/vnd.github.v3+json", "Authorization":"token #{args[:token]}"}
+          payload = {"tag_name"  =>  "#{args[:env]}-#{args[:release]}", "target_commitish"  =>  args[:branch], "name"  =>  "#{release_name} v#{args[:release]}","body"  => "#{args[:repo]} #{args[:env]} Release v#{args[:release]}","prerelease"  =>  true}.to_json
+          url = "https://api.github.com/repos/Sifchain/#{args[:repo]}/releases"
+          puts "github api url #{url}"
+          response = RestClient.post url, payload, headers
+          json_response_job_object = JSON.parse response.body
+          puts json_response_job_object
+        end
+    end
+  end
+
+  desc "Deploy Helm Files"
+  namespace :vault do
+    desc "Deploy Helm Files"
+    task :helm_deploy, [:app_namespace, :image, :image_tag, :env, :app_name] do |t, args|
+      puts "Deploy the Helm Files."
+      deoploy_helm = %Q{helm upgrade #{args[:app_name]} deploy/helm/#{args[:app_name]} --install -n #{args[:app_namespace]} --create-namespace --set image.repository=#{args[:image]} --set image.tag=#{args[:image_tag]} --kubeconfig=./kubeconfig}
+      system(deoploy_helm) or exit 1
+
+      puts "Use kubectl rollout to wait for pods to start."
+      check_kubernetes_rollout_status = %Q{kubectl rollout status --kubeconfig=./kubeconfig deployment/#{args[:app_name]} -n #{args[:app_namespace]}}
+      system(check_kubernetes_rollout_status) or exit 1
+    end
+  end
+
   desc "Create Release Governance Request."
   namespace :release do
     desc "Create Release Governance Request."
