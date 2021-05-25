@@ -39,7 +39,7 @@ function parseEventToNotifications(event: AppEvent): Notification | null {
   if (event.type === "PegTransactionPendingEvent") {
     return {
       type: "info",
-      message: "Pegged Transaction Pending",
+      message: "Import Transaction Pending",
       detail: {
         type: "etherscan",
         message: event.payload.hash,
@@ -162,10 +162,9 @@ export default defineComponent({
 <style lang="scss" scoped>
 .notifications-container {
   position: fixed;
-  bottom: 0px;
+  bottom: 50px;
   right: 16px;
   height: auto;
-  bottom: 0px;
   .list-enter-active,
   .list-leave-active {
     transition: all 0.5s ease;

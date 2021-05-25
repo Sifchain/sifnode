@@ -18,7 +18,7 @@
               @click="requestDialog"
               color="success"
               class="connected-button"
-              >Connected</Pill
+              >CONNECTED</Pill
             >
           </template>
         </WithWallet>
