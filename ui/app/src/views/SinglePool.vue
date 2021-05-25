@@ -74,6 +74,11 @@ export default defineComponent({
         ? getAssetLabel(accountPool?.value.pool.amounts[1].asset)
         : "",
     );
+
+    // const USDTImage = useAssetItem('USDT').token.value?.imageUrl;
+    const USDTImage =
+      "https://assets.coingecko.com/coins/images/325/thumb/Tether-logo.png?1598003707";
+
     const fromAsset = useAssetItem(fromSymbol);
     const fromToken = fromAsset.token;
     const fromBackgroundStyle = fromAsset.background;
@@ -141,7 +146,7 @@ export default defineComponent({
         { mantissa: 4 },
       );
 
-      return `${perc}%`;
+      return `${perc}`;
     });
     const myPoolUnits = computed(() => {
       return format(poolUnitsAsFraction.value, { mantissa: DECIMALS });
@@ -163,6 +168,7 @@ export default defineComponent({
       getBlockExplorerUrl,
       earnedRewards,
       earnedRewardsNegative,
+      USDTImage,
     };
   },
 });
@@ -251,8 +257,11 @@ export default defineComponent({
             </span>
           </div>
           <div class="row" data-handle="total-pool-share">
-            <span>Your pool share:</span>
-            <span class="value pool-share-value">{{ myPoolShare }}</span>
+            <span>Your Pool Share:</span>
+            <span class="value pool-share-value">
+              {{ myPoolShare }}
+              <span class="pool-share-percent">%</span>
+            </span>
           </div>
           <div class="row" data-handle="total-pool-share">
             <span
@@ -263,7 +272,13 @@ export default defineComponent({
                 <Icon icon="info-box-black" /> </Tooltip
             ></span>
             <span v-if="earnedRewards" class="value net-loss-value">
-              {{ earnedRewardsNegative ? "-" : "" }}{{ earnedRewards }} $
+              {{ earnedRewardsNegative ? "-" : "" }}{{ earnedRewards }}
+              <img
+                width="18"
+                height="18"
+                :src="USDTImage"
+                class="info-img net-loss-img"
+              />
             </span>
             <span v-else class="value">
               <Loader typeSize />
@@ -419,8 +434,10 @@ export default defineComponent({
     font-style: italic;
   }
 }
-.pool-share-value,
-.net-loss-value {
+.net-loss-img {
+  margin-left: 4px;
+}
+.pool-share-value {
   margin-right: 22px;
 }
 .add-button {
@@ -429,5 +446,9 @@ export default defineComponent({
 .dotted-line {
   border-top: 1px dotted #d4b553;
   margin: 10px 0;
+}
+.pool-share-percent {
+  margin-left: 7px;
+  margin-right: 3px;
 }
 </style>
