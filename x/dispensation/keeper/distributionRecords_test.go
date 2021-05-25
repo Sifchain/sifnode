@@ -15,6 +15,7 @@ func TestKeeper_GetRecordsForName(t *testing.T) {
 	name := uuid.New().String()
 	for _, rec := range outList {
 		record := types.NewDistributionRecord(name, types.Airdrop, rec.Address, rec.Coins, ctx.BlockHeight(), -1)
+		record.DistributionStatus = types.Pending
 		err := keeper.SetDistributionRecord(ctx, record)
 		assert.NoError(t, err)
 		_, err = keeper.GetDistributionRecord(ctx, name, rec.Address.String(), record.DistributionType.String())
@@ -31,6 +32,7 @@ func TestKeeper_GetRecordsForNames(t *testing.T) {
 	name := uuid.New().String()
 	for _, rec := range outList {
 		record := types.NewDistributionRecord(name, types.LiquidityMining, rec.Address, rec.Coins, ctx.BlockHeight(), -1)
+		record.DistributionStatus = types.Pending
 		err := keeper.SetDistributionRecord(ctx, record)
 		assert.NoError(t, err)
 		_, err = keeper.GetDistributionRecord(ctx, name, rec.Address.String(), record.DistributionType.String())
@@ -38,6 +40,15 @@ func TestKeeper_GetRecordsForNames(t *testing.T) {
 	}
 	for _, rec := range outList {
 		record := types.NewDistributionRecord(name, types.ValidatorSubsidy, rec.Address, rec.Coins, ctx.BlockHeight(), -1)
+		record.DistributionStatus = types.Pending
+		err := keeper.SetDistributionRecord(ctx, record)
+		assert.NoError(t, err)
+		_, err = keeper.GetDistributionRecord(ctx, name, rec.Address.String(), record.DistributionType.String())
+		assert.NoError(t, err)
+	}
+	for _, rec := range outList {
+		record := types.NewDistributionRecord(name, types.ValidatorSubsidy, rec.Address, rec.Coins, ctx.BlockHeight(), -1)
+		record.DistributionStatus = types.Pending
 		err := keeper.SetDistributionRecord(ctx, record)
 		assert.NoError(t, err)
 		_, err = keeper.GetDistributionRecord(ctx, name, rec.Address.String(), record.DistributionType.String())
@@ -45,6 +56,10 @@ func TestKeeper_GetRecordsForNames(t *testing.T) {
 	}
 	list := keeper.GetRecordsForNameAll(ctx, name)
 	assert.Len(t, list, 6)
+	list = keeper.GetRecordsForNameAndType(ctx, name, types.LiquidityMining)
+	assert.Len(t, list, 3)
+	list = keeper.GetRecordsForNameAndType(ctx, name, types.ValidatorSubsidy)
+	assert.Len(t, list, 3)
 }
 
 func TestKeeper_GetRecordsForRecipient(t *testing.T) {
@@ -54,6 +69,7 @@ func TestKeeper_GetRecordsForRecipient(t *testing.T) {
 	name := uuid.New().String()
 	for _, rec := range outList {
 		record := types.NewDistributionRecord(name, types.Airdrop, rec.Address, rec.Coins, ctx.BlockHeight(), -1)
+		record.DistributionStatus = types.Pending
 		err := keeper.SetDistributionRecord(ctx, record)
 		assert.NoError(t, err)
 		_, err = keeper.GetDistributionRecord(ctx, name, rec.Address.String(), record.DistributionType.String())

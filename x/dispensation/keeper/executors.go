@@ -18,9 +18,10 @@ func (k Keeper) CreateDrops(ctx sdk.Context, output []bank.Output, name string, 
 			if err != nil {
 				return errors.Wrapf(types.ErrDistribution, "failed appending record for : %s", distributionRecord.RecipientAddress)
 			}
-			if distributionRecord.DistributionStatus == types.Pending {
-				distributionRecord.Add(oldRecord)
+			if oldRecord.DistributionStatus == types.Pending {
+				distributionRecord = distributionRecord.Add(oldRecord)
 			}
+
 		}
 		distributionRecord.DistributionStatus = types.Pending
 		err := k.SetDistributionRecord(ctx, distributionRecord)
@@ -39,7 +40,7 @@ func (k Keeper) DistributeDrops(ctx sdk.Context, height int64) error {
 	for _, record := range pendingRecords {
 		err := k.GetSupplyKeeper().SendCoinsFromModuleToAccount(ctx, types.ModuleName, record.RecipientAddress, record.Coins)
 		if err != nil {
-			return errors.Wrapf(types.ErrFailedOutputs, "for address  : %s", record.RecipientAddress.String())
+			return errors.Wrapf(err, "for address  : %s", record.RecipientAddress.String())
 		}
 		record.DistributionStatus = types.Completed
 		record.DistributionCompletedHeight = height

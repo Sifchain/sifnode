@@ -59,6 +59,22 @@ func (k Keeper) GetRecordsForNameAll(ctx sdk.Context, name string) types.Distrib
 	return res
 }
 
+func (k Keeper) GetRecordsForNameAndType(ctx sdk.Context, name string, drType types.DistributionType) types.DistributionRecords {
+	var res types.DistributionRecords
+	iterator := k.GetDistributionRecordsIterator(ctx)
+	defer iterator.Close()
+	for ; iterator.Valid(); iterator.Next() {
+		var dr types.DistributionRecord
+		bytesValue := iterator.Value()
+		k.cdc.MustUnmarshalBinaryBare(bytesValue, &dr)
+		if dr.DistributionName == name && dr.DistributionType == drType {
+			res = append(res, dr)
+		}
+	}
+	return res
+}
+
+// The two queries have been replaced with a single query with status as a field in the .42 version
 func (k Keeper) GetRecordsForNamePending(ctx sdk.Context, name string) types.DistributionRecords {
 	var res types.DistributionRecords
 	iterator := k.GetDistributionRecordsIterator(ctx)
