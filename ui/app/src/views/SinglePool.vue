@@ -257,10 +257,9 @@ export default defineComponent({
             </span>
           </div>
           <div class="row" data-handle="total-pool-share">
-            <span>Your Pool Share:</span>
+            <span>Your Pool Share (%):</span>
             <span class="value pool-share-value">
               {{ myPoolShare }}
-              <span class="pool-share-percent">%</span>
             </span>
           </div>
           <div class="row" data-handle="total-pool-share">
@@ -271,18 +270,20 @@ export default defineComponent({
               >
                 <Icon icon="info-box-black" /> </Tooltip
             ></span>
-            <span v-if="earnedRewards" class="value net-loss-value">
-              {{ earnedRewardsNegative ? "-" : "" }}{{ earnedRewards }}
+            <div class="value net-loss-value">
+              <span v-if="earnedRewards">
+                {{ earnedRewardsNegative ? "-" : "" }}{{ earnedRewards }}
+              </span>
+              <span v-else class="value">
+                <Loader typeSize />
+              </span>
               <img
                 width="18"
                 height="18"
                 :src="USDTImage"
                 class="info-img net-loss-img"
               />
-            </span>
-            <span v-else class="value">
-              <Loader typeSize />
-            </span>
+            </div>
           </div>
         </div>
       </div>
@@ -417,6 +418,7 @@ export default defineComponent({
   text-align: left;
 }
 .blockexplorer-container {
+  padding: 8px 0;
   // TODO - This should be somewhat like the <Panel> class
   .blockexplorer-label {
     color: #333;
@@ -446,9 +448,5 @@ export default defineComponent({
 .dotted-line {
   border-top: 1px dotted #d4b553;
   margin: 10px 0;
-}
-.pool-share-percent {
-  margin-left: 7px;
-  margin-right: 3px;
 }
 </style>
