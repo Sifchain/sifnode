@@ -1,3 +1,18 @@
+# v0.8.5
+> May 25, 2021
+
+## 🛠 Improvements
+
+- [UI] Pool confirmation formatting.
+- [UI] Net single pool gain/loss calculation.
+- [UI] Newsletter support.
+
+## 🐛 Bug Fixes
+
+- [Sifnode] Additional updates/fixes to the dispensation module (used for airdrops).
+
+----
+
 # v0.8.4
 > May 13, 2021
 
