@@ -87,9 +87,11 @@
   },
   "dependencies": {
     "@storybook/preset-scss": "^1.0.3",
+    "@types/jsonp": "^0.2.0",
     "codecov": "^3.8.0",
     "css-loader": "^5.2.0",
     "fkill-cli": "^6.1.0",
+    "jsonp": "^0.2.1",
     "prettier": "^2.2.1",
     "sass-loader": "^10.1.1",
     "storybook-addon-designs": "^5.4.5",
