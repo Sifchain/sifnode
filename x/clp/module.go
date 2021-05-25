@@ -19,6 +19,8 @@ import (
 	"github.com/Sifchain/sifnode/x/clp/client/rest"
 	"github.com/Sifchain/sifnode/x/clp/keeper"
 	"github.com/Sifchain/sifnode/x/clp/types"
+	"github.com/cosmos/cosmos-sdk/store/prefix"
+	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 )
 
 // Type check to ensure the interface is properly implemented
@@ -150,7 +152,38 @@ func (am AppModule) ExportGenesis(ctx sdk.Context, cdc codec.JSONMarshaler) json
 	return cdc.MustMarshalJSON(&gs)
 }
 
-func (am AppModule) BeginBlock(ctx sdk.Context, req abci.RequestBeginBlock) {}
+// BeginBlock used to do token migration
+func (am AppModule) BeginBlock(ctx sdk.Context, req abci.RequestBeginBlock) {
+	migrationStartBlock := int64(0)
+	// a denom mapping example, will define a text file to store later
+	tokenMap := make(map[string]string)
+	tokenMap["ceth"] = "coin/0x00000000000000000000/01/18"
+	if req.Header.Height == migrationStartBlock {
+		store := ctx.KVStore(sdk.NewKVStoreKey(banktypes.StoreKey))
+		balancesStore := prefix.NewStore(store, banktypes.BalancesPrefix)
+		iterator := balancesStore.Iterator(nil, nil)
+		defer iterator.Close()
+
+		for ; iterator.Valid(); iterator.Next() {
+			// get all account and its balance
+			address := banktypes.AddressFromBalancesStore(iterator.Key())
+
+			var balance sdk.Coin
+			am.keeper.Codec().MustUnmarshalBinaryBare(iterator.Value(), &balance)
+
+			// keep the old balance
+			amount := balance.Amount
+
+			// clear the balance for old denom
+			balance.Amount = sdk.NewInt(0)
+			am.bankKeeper.SetBalance(ctx, address, balance)
+
+			// set the balance for new denom
+			balance = sdk.NewCoin(tokenMap[balance.Denom], amount)
+			am.bankKeeper.SetBalance(ctx, address, balance)
+		}
+	}
+}
 
 // EndBlock returns the end blocker for the clp module. It returns no validator
 // updates.
