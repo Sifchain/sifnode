@@ -625,7 +625,7 @@ it("adds liquidity", async () => {
 
   expect(
     prepareRowText(await dexPage.innerText('[data-handle="total-pool-share"]')),
-  ).toBe("Your pool share: 0.0602 %");
+  ).toBe("Your Pool Share (%): 0.0602");
 });
 
 it("fails to add liquidity when can't pay gas with rowan", async () => {

@@ -6,11 +6,12 @@
 
 <style lang="scss" scoped>
 .container {
-  font-size: 16px;
+  font-size: 18px;
   line-height: 22px;
+  letter-spacing: -0.02em;
   text-align: left;
-  font-weight: 700;
+  font-weight: 400;
+  font-style: normal;
   color: #343434;
-  font-style: italic;
 }
 </style>
