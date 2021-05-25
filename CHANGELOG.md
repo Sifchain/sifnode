@@ -3,16 +3,17 @@
 
 ## 🛠 Improvements
 
-- [UI] Pool confirmation formatting.
-- [UI] Introduction of a footer! User's can sign-up for our newsletter, and link to our privacy policy, roadmap, and leagal disclaimer. 
+- [UI] Introduction of a footer! User's can sign-up for our newsletter, and link to our privacy policy, roadmap, and legal disclaimer. 
 - [UI] Removal of negative signs in the Pool Stats>Arbitrage as these are confusing and not necessary. 
 - [UI] Removal of the words Peg and Unpeg. We have updated our language across our entire application to use 'Import' and 'Export' instead. We did this to be more clear with the action that is being done, as well as to prepare for more chains being integrated into Sifchain.
-- [Peggy] Relayer Upgrade - Nonce Handling & Retry Logic
+- [Peggy] Relayer Upgrade - Implementation of Retry Logic.
+- [Sifnode] Claims module - 
 <!-- - [UI] Included the ability for a user to see their net gain/loss on their liquidity pool position. This includes earnings from swap fees AND any gains or losses associated with changes in the tokens' prices. This number is represented as USDT. -->
 
 ## 🐛 Bug Fixes
 
 - [Sifnode] Additional updates/fixes to the dispensation module (used for airdrops).
+- [UI] When a user had 0 balances, the sorting logic we were using in our token listings was not accurate.
 
 ----
 
@@ -22,7 +23,6 @@
 ## 🐛 Bug Fixes
 
 - [Sifnode] Fixes to the dispensation module (used for airdrops).
-- [UI] When a user had 0 balances, the sorting logic we were using in our token listings was not accurate.
 
 ----
 
