@@ -580,7 +580,7 @@ it("adds liquidity", async () => {
     prepareRowText(
       await dexPage.innerText('[data-handle="token-b-details-panel-pool-row"]'),
     ),
-  ).toBe("ROWAN Deposited 6024.09639");
+  ).toBe("ROWAN Deposited 6024.096390000000000000");
 
   expect(
     prepareRowText(await dexPage.innerText('[data-handle="real-b-per-a-row"]')),

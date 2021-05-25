@@ -59,12 +59,12 @@ export default defineComponent({
   },
   setup(props) {
     const styles = useCssModule();
-    const { aPerB, bPerA } = props;
+
     const realAPerB = computed(() => {
-      return aPerB === "N/A" ? "0" : aPerB;
+      return props.aPerB === "N/A" ? "0" : props.aPerB;
     });
     const realBPerA = computed(() => {
-      return bPerA === "N/A" ? "0" : bPerA;
+      return props.bPerA === "N/A" ? "0" : props.bPerA;
     });
 
     return () => (
@@ -108,33 +108,19 @@ export default defineComponent({
           </div>
         </div>
         <div class={styles.detailsBody}>
-          {realBPerA && (
+          {realBPerA.value && (
             <div class={styles.detailsRow} data-handle="real-b-per-a-row">
               <span>Rates</span>
               <span>
-                1
-                {props.tokenAAmount.symbol.toLowerCase().includes("rowan")
-                  ? props.tokenAAmount.symbol.toUpperCase()
-                  : "c" + props.tokenAAmount.symbol.slice(1).toUpperCase()}
-                = {realBPerA}
-                {props.tokenBAmount.symbol.toLowerCase().includes("rowan")
-                  ? props.tokenBAmount.symbol.toUpperCase()
-                  : "c" + props.tokenBAmount.symbol.slice(1).toUpperCase()}
+                {`1 ${props.tokenAAmount.label} = ${realBPerA.value} ${props.tokenBAmount.label}`}
               </span>
             </div>
           )}
-          {realAPerB && (
+          {realAPerB.value && (
             <div class={styles.detailsRow} data-handle="real-a-per-b-row">
               <span>&nbsp;</span>
               <span>
-                1
-                {props.tokenBAmount.symbol.toLowerCase().includes("rowan")
-                  ? props.tokenBAmount.symbol.toUpperCase()
-                  : "c" + props.tokenBAmount.symbol.slice(1).toUpperCase()}
-                = {realAPerB}
-                {props.tokenAAmount.symbol.toLowerCase().includes("rowan")
-                  ? props.tokenAAmount.symbol.toUpperCase()
-                  : "c" + props.tokenAAmount.symbol.slice(1).toUpperCase()}
+                {`1 ${props.tokenBAmount.label} = ${realAPerB.value} ${props.tokenAAmount.label}`}
               </span>
             </div>
           )}
