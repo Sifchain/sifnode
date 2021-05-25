@@ -64,15 +64,22 @@ export class MetaMaskPage {
   }
 
   async reset() {
-    await page.goto(
+    this.page = await getExtensionPage(this.config.id);
+    if (!this.page) this.page = await context.newPage();
+
+    await this.page.goto(
       `chrome-extension://${this.config.id}/home.html#settings/advanced`,
       {
         waitUntil: "domcontentloaded",
       },
     );
-    await page.click('[data-testid="advanced-setting-reset-account"] button');
-    await page.click('.modal-container button:has-text("Reset")');
-    // await page.close();
+    await this.page.waitForTimeout(1000);
+    await this.page.click(
+      '[data-testid="advanced-setting-reset-account"] button',
+    );
+    await this.page.waitForTimeout(1000);
+    await this.page.click('.modal-container button:has-text("Reset")');
+    // await this.page.close();
   }
 }
 

@@ -60,11 +60,11 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  context.close();
+  await context.close();
 });
 
 beforeEach(async () => {
-  // metamaskPage.reset();
+  await metamaskPage.reset();
 });
 
 it("pegs rowan", async () => {
