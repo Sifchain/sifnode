@@ -380,6 +380,17 @@ it("swaps", async () => {
   // Confirm dialog shows the expected values
   expect(
     await dexPage.innerText(
+      "[data-handle='info-row-cusdc'] [data-handle='info-amount']",
+    ),
+  ).toBe("50.000000");
+  expect(
+    await dexPage.innerText(
+      "[data-handle='info-row-rowan'] [data-handle='info-amount']",
+    ),
+  ).toBe("49.999500");
+
+  expect(
+    await dexPage.innerText(
       "[data-handle='confirm-swap-modal'] [data-handle='details-price-message']",
     ),
   ).toBe("0.999990 ROWAN per cUSDC");

@@ -39,11 +39,13 @@ export default defineComponent({
 </script>
 
 <template>
-  <div class="info-row">
+  <div class="info-row" :data-handle="'info-row-' + tokenLabel.toLowerCase()">
     <img v-if="tokenImage" width="24" :src="tokenImage" class="info-img" />
     <div class="info-token">{{ tokenLabel }}</div>
     <!-- <div class="placeholder" :style="backgroundStyle" v-else></div> -->
-    <div class="info-amount">{{ format(amount, { mantissa: 6 }) }}</div>
+    <div class="info-amount" data-handle="info-amount">
+      {{ format(amount, { mantissa: 6 }) }}
+    </div>
     <Tooltip
       v-if="getMantissaValue(amount.toString()) > 6"
       :message="amount"
