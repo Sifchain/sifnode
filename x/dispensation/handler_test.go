@@ -20,8 +20,9 @@ func TestNewHandler_CreateDistribution(t *testing.T) {
 	recipients := 3000
 	outputList := test.CreatOutputList(recipients, "10000000000000000000")
 	distibutor := sdk.AccAddress(ed25519.GenPrivKey().PubKey().Address())
-	totalCoins := dispensationUtils.TotalOutput(outputList)
-	_, err := keeper.GetBankKeeper().AddCoins(ctx, distibutor, totalCoins)
+	totalCoins, err := dispensationUtils.TotalOutput(outputList)
+	assert.NoError(t, err)
+	_, err = keeper.GetBankKeeper().AddCoins(ctx, distibutor, totalCoins)
 	assert.NoError(t, err)
 	distributionname := "AR1"
 	msgAirdrop := types.NewMsgDistribution(distibutor, distributionname, types.Airdrop, outputList)

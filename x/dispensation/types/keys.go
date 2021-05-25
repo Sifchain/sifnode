@@ -30,8 +30,8 @@ var (
 )
 
 // A distribution records is unique for name_recipientAddress
-func GetDistributionRecordKey(name string, recipient string) []byte {
-	key := []byte(fmt.Sprintf("%s_%s", name, recipient))
+func GetDistributionRecordKey(name string, recipient string, distributionType string) []byte {
+	key := []byte(fmt.Sprintf("%s_%s_%s", name, distributionType, recipient))
 	return append(DistributionRecordPrefix, key...)
 }
 

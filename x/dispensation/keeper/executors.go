@@ -13,12 +13,14 @@ import (
 func (k Keeper) CreateDrops(ctx sdk.Context, output []bank.Output, name string, distributionType types.DistributionType) error {
 	for _, receiver := range output {
 		distributionRecord := types.NewDistributionRecord(name, distributionType, receiver.Address, receiver.Coins, ctx.BlockHeight(), -1)
-		if k.ExistsDistributionRecord(ctx, name, receiver.Address.String()) {
-			oldRecord, err := k.GetDistributionRecord(ctx, name, receiver.Address.String())
+		if k.ExistsDistributionRecord(ctx, name, receiver.Address.String(), distributionType.String()) {
+			oldRecord, err := k.GetDistributionRecord(ctx, name, receiver.Address.String(), distributionType.String())
 			if err != nil {
 				return errors.Wrapf(types.ErrDistribution, "failed appending record for : %s", distributionRecord.RecipientAddress)
 			}
-			distributionRecord.Add(oldRecord)
+			if distributionRecord.DistributionStatus == types.Pending {
+				distributionRecord.Add(oldRecord)
+			}
 		}
 		distributionRecord.DistributionStatus = types.Pending
 		err := k.SetDistributionRecord(ctx, distributionRecord)

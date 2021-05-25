@@ -84,7 +84,8 @@ func TestTotalOutput(t *testing.T) {
 	defer removeFile(t, file)
 	outputs, err := utils.ParseOutput(file)
 	assert.NoError(t, err)
-	total := utils.TotalOutput(outputs)
+	total, err := utils.TotalOutput(outputs)
+	assert.NoError(t, err)
 	num, _ := sdk.NewIntFromString("30000000000000000000000")
 	assert.True(t, total.AmountOf("rowan").Equal(num))
 }

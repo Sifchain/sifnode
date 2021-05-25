@@ -35,8 +35,9 @@ func TestKeeper_CreateAndDistributeDrops(t *testing.T) {
 		_, err := keeper.GetBankKeeper().AddCoins(ctx, in.Address, in.Coins)
 		assert.NoError(t, err)
 	}
-	totalCoins := dispensationUtils.TotalOutput(outputList)
-	err := keeper.AccumulateDrops(ctx, inputList[0].Address, totalCoins)
+	totalCoins, err := dispensationUtils.TotalOutput(outputList)
+	assert.NoError(t, err)
+	err = keeper.AccumulateDrops(ctx, inputList[0].Address, totalCoins)
 	assert.NoError(t, err)
 	moduleBalance, _ := sdk.NewIntFromString("15000000000000000000")
 	assert.True(t, keeper.GetBankKeeper().HasCoins(ctx, types.GetDistributionModuleAddress(), sdk.Coins{sdk.NewCoin("rowan", moduleBalance)}))

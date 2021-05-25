@@ -33,7 +33,10 @@ func handleMsgCreateDistribution(ctx sdk.Context, keeper Keeper, msg MsgDistribu
 		return nil, err
 	}
 	//Accumulate all Drops into the ModuleAccount
-	totalOutput := dispensationUtils.TotalOutput(msg.Output)
+	totalOutput, err := dispensationUtils.TotalOutput(msg.Output)
+	if err != nil {
+		return nil, err
+	}
 	err = keeper.AccumulateDrops(ctx, msg.Distributor, totalOutput)
 	if err != nil {
 		return nil, err

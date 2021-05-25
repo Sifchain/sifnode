@@ -48,7 +48,7 @@ func (m MsgDistribution) ValidateBasic() error {
 			return errors.Wrapf(ErrInvalid, "Invalid Coins Can only specify one coin type for an entry")
 		}
 		if out.Coins.GetDenomByIndex(0) != TokenSupported {
-			return errors.Wrapf(ErrInvalid, "Invalid Coins Specified coin can only be rowan")
+			return errors.Wrapf(ErrInvalid, "Invalid Coins Specified coin can only be %s", TokenSupported)
 		}
 	}
 	return nil

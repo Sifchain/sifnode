@@ -14,15 +14,15 @@ func (k Keeper) SetDistributionRecord(ctx sdk.Context, dr types.DistributionReco
 		return errors.Wrapf(types.ErrInvalid, "unable to set record : %s", dr.String())
 	}
 	store := ctx.KVStore(k.storeKey)
-	key := types.GetDistributionRecordKey(dr.DistributionName, dr.RecipientAddress.String())
+	key := types.GetDistributionRecordKey(dr.DistributionName, dr.RecipientAddress.String(), dr.DistributionType.String())
 	store.Set(key, k.cdc.MustMarshalBinaryBare(dr))
 	return nil
 }
 
-func (k Keeper) GetDistributionRecord(ctx sdk.Context, airdropName string, recipientAddress string) (types.DistributionRecord, error) {
+func (k Keeper) GetDistributionRecord(ctx sdk.Context, airdropName string, recipientAddress string, distributionType string) (types.DistributionRecord, error) {
 	var dr types.DistributionRecord
 	store := ctx.KVStore(k.storeKey)
-	key := types.GetDistributionRecordKey(airdropName, recipientAddress)
+	key := types.GetDistributionRecordKey(airdropName, recipientAddress, distributionType)
 	if !k.Exists(ctx, key) {
 		return dr, errors.Wrapf(types.ErrInvalid, "record Does not exist : %s", dr.String())
 	}
@@ -31,8 +31,8 @@ func (k Keeper) GetDistributionRecord(ctx sdk.Context, airdropName string, recip
 	return dr, nil
 }
 
-func (k Keeper) ExistsDistributionRecord(ctx sdk.Context, airdropName string, recipientAddress string) bool {
-	key := types.GetDistributionRecordKey(airdropName, recipientAddress)
+func (k Keeper) ExistsDistributionRecord(ctx sdk.Context, airdropName string, recipientAddress string, distributionType string) bool {
+	key := types.GetDistributionRecordKey(airdropName, recipientAddress, distributionType)
 	if k.Exists(ctx, key) {
 		return true
 	}
@@ -111,6 +111,7 @@ func (k Keeper) GetPendingRecordsLimited(ctx sdk.Context, limit int) types.Distr
 	defer iterator.Close()
 	// Todo : Change the set completed from BlockBeginner to move the records to a different prefix (Or Prune it ? ).So that we can avoid extra iterations.
 	// Todo : Extra iteration might be a major issue later .
+	// This is performance fix and does not affect functionality. This fix has been done in the .42 version of the module
 	for ; iterator.Valid(); iterator.Next() {
 		var dr types.DistributionRecord
 		bytesValue := iterator.Value()
