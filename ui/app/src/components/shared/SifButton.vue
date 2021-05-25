@@ -25,9 +25,8 @@
   </router-link>
 </template>
 
-<script>
-import { defineComponent } from "vue";
-
+<script lang="ts">
+import { PropType, defineComponent } from "vue";
 export default defineComponent({
   inheritAttrs: false,
   props: {
