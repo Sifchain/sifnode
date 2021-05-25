@@ -1,8 +1,8 @@
-<script lang="ts">
+<script lang="tsx">
 import { defineComponent, PropType } from "vue";
 import AskConfirmation from "./AskConfirmation.vue";
 import AnimatedConfirmation from "./AnimatedConfirmation.vue";
-import { TransactionStatus } from "ui-core";
+import { IAssetAmount, TransactionStatus } from "ui-core";
 
 export default defineComponent({
   components: { AskConfirmation, AnimatedConfirmation },
@@ -15,9 +15,8 @@ export default defineComponent({
     txStatus: { type: Object as PropType<TransactionStatus>, default: null },
     requestClose: Function,
     priceMessage: { type: String, default: "" },
-    fromAmount: String,
-    fromToken: String,
-    toAmount: String,
+    fromAmount: { type: Object as PropType<IAssetAmount>, required: true },
+    toAmount: { type: Object as PropType<IAssetAmount> },
     toToken: String,
     leastAmount: String,
     swapRate: String,
@@ -26,31 +25,39 @@ export default defineComponent({
     priceImpact: String,
   },
   emits: ["confirmswap"],
+  setup(props, ctx) {
+    return (
+      <>
+        {props.state === "confirm" && (
+          <AskConfirmation
+            fromAmount={props.fromAmount}
+            fromToken={props.fromAmount.label}
+            toAmount="toAmount"
+            toToken="toToken"
+            leastAmount="leastAmount"
+            swapRate="swapRate"
+            minimumReceived="minimumReceived"
+            providerFee="providerFee"
+            priceImpact="priceImpact"
+            priceMessage="priceMessage"
+            onConfirmswap={ctx.emit("confirmswap")}
+          />
+        )}
+        {props.state === "submit" ||
+          props.state === "fail" ||
+          (props.state === "success" && (
+            <AnimatedConfirmation
+              state={props.state}
+              txStatus={props.txStatus}
+              fromAmount={props.fromAmount.toString()}
+              fromToken={props.fromAmount.label}
+              toAmount="toAmount"
+              toToken="toToken"
+              on-closerequested={props.requestClose}
+            />
+          ))}
+      </>
+    );
+  },
 });
 </script>
-<template>
-  <AskConfirmation
-    v-if="state === 'confirm'"
-    :fromAmount="fromAmount"
-    :fromToken="fromToken"
-    :toAmount="toAmount"
-    :toToken="toToken"
-    :leastAmount="leastAmount"
-    :swapRate="swapRate"
-    :minimumReceived="minimumReceived"
-    :providerFee="providerFee"
-    :priceImpact="priceImpact"
-    :priceMessage="priceMessage"
-    @confirmswap="$emit('confirmswap')"
-  />
-  <AnimatedConfirmation
-    v-if="state === 'submit' || state === 'fail' || state === 'success'"
-    :state="state"
-    :txStatus="txStatus"
-    :fromAmount="fromAmount"
-    :fromToken="fromToken"
-    :toAmount="toAmount"
-    :toToken="toToken"
-    @closerequested="requestClose"
-  />
-</template>

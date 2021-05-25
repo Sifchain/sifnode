@@ -1,15 +1,11 @@
 <script>
-import { defineComponent } from "vue";
+import { defineComponent, useCssModule } from "vue";
 import SifButton from "@/components/shared/SifButton.vue";
 import DetailsPanel from "@/components/shared/DetailsPanel.vue";
-import AssetItemLarge, {
-  getAssetLabel,
-} from "@/components/shared/AssetItemLarge/AssetItemLarge.vue";
-import ArrowIconButton from "@/components/shared/ArrowIconButton.vue";
-import { computed } from "@vue/reactivity";
+import AskConfirmationInfo from "@/components/shared/AskConfirmationInfo/Index.vue";
 
 export default defineComponent({
-  components: { DetailsPanel, AssetItemLarge, SifButton, ArrowIconButton },
+  components: { DetailsPanel, AskConfirmationInfo, SifButton },
   props: {
     requestClose: Function,
     fromAmount: String,
@@ -23,20 +19,20 @@ export default defineComponent({
     priceImpact: String,
     priceMessage: String,
   },
+  setup() {
+    const styles = useCssModule();
+    return { styles };
+  },
 });
 </script>
 
 <template>
-  <div data-handle="confirm-swap-modal" class="confirm-swap">
+  <div data-handle="confirm-swap-modal" :class="styles['confirm-swap']">
     <h3 class="title mb-10">Confirm Swap</h3>
-    <div class="info">
-      <AssetItemLarge :amount="fromAmount" :symbol="fromToken" />
-      <ArrowIconButton :enabled="true" />
-      <AssetItemLarge :amount="toAmount" :symbol="toToken" />
-    </div>
-    <div class="estimate">Output is estimated.</div>
+    <AskConfirmationInfo :tokenAAmount="fromAmount" :tokenBAmount="toAmount" />
+    <div :class="styles['estimate']">Output is estimated.</div>
     <DetailsPanel
-      class="details"
+      :class="styles['details']"
       :priceMessage="priceMessage"
       :fromToken="fromToken"
       :fromTokenImage="fromTokenImage"
@@ -47,42 +43,31 @@ export default defineComponent({
       :providerFee="providerFee"
       :priceImpact="priceImpact"
     />
-    <SifButton block primary class="confirm-btn" @click="$emit('confirmswap')">
+    <SifButton
+      block
+      primary
+      :class="styles['confirm-btn']"
+      @click="$emit('confirmswap')"
+    >
       Confirm Swap
     </SifButton>
   </div>
 </template>
 
-<style lang="scss" scoped>
+<style lang="scss" module>
 .confirm-swap {
   display: flex;
   flex-direction: column;
   padding: 30px 20px 20px 20px;
   min-height: 50vh;
 }
-.info {
-  background: $c_gray_100;
-  padding: 20px 20px 20px 20px;
-  border-radius: $br_sm;
-}
 
 .details {
   margin-bottom: 20px;
 }
 
-.title {
-  font-size: $fs_lg;
-  color: $c_text;
-  margin-bottom: 1rem;
-  text-align: left;
-}
 .confirm-btn {
   margin-top: auto !important;
-}
-
-.arrow {
-  padding: 5px 4px;
-  text-align: left;
 }
 
 .estimate {

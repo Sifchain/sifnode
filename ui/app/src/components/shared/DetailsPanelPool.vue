@@ -6,7 +6,7 @@
 }
 .detailsHeader {
   padding: 10px 15px;
-  border-bottom: 1px solid $c_gray_200;
+  // border-bottom: 1px solid $c_gray_200;
 }
 .detailsBody {
   padding: 10px 15px;
@@ -45,6 +45,7 @@ import { defineComponent, PropType, useCssModule } from "vue";
 import AssetItem from "@/components/shared/AssetItem.vue";
 import { computed } from "@vue/reactivity";
 import { format, IAssetAmount } from "ui-core";
+import AskConfirmationInfo from "@/components/shared/AskConfirmationInfo/Index.vue";
 
 export default defineComponent({
   components: {
@@ -70,7 +71,11 @@ export default defineComponent({
     return () => (
       <div class={styles.details}>
         <div class={styles.detailsHeader}>
-          <div
+          <AskConfirmationInfo
+            tokenAAmount={props.tokenAAmount}
+            tokenBAmount={props.tokenBAmount}
+          />
+          {/* <div
             class={styles.detailsRow}
             data-handle="token-a-details-panel-pool-row"
           >
@@ -105,7 +110,7 @@ export default defineComponent({
                 }) || 0}
               </span>
             </div>
-          </div>
+          </div>*/}
         </div>
         <div class={styles.detailsBody}>
           {realBPerA.value && (

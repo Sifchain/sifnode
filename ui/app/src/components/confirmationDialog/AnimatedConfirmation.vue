@@ -9,6 +9,7 @@ import SwipeTransition from "./SwipeTransition.vue";
 
 export default defineComponent({
   components: { Loader, SifButton },
+  emits: ["closerequested"],
   props: {
     txStatus: { type: Object as PropType<TransactionStatus>, default: null },
     confirmed: Boolean,
