@@ -117,8 +117,9 @@ export default defineComponent({
   height: 51px;
   bottom: 0;
   left: 0;
-  pointer-events: none;
 
+  // We need to take care around allowing clicks through to the underlying buttons when on small screens
+  pointer-events: none;
   &.active {
     pointer-events: all;
   }
@@ -143,6 +144,8 @@ export default defineComponent({
   opacity: 1;
   transition: opacity 0.5s ease-out;
   z-index: 200;
+
+  // Enable clicks for any active item
   & .items > * {
     pointer-events: all;
   }
@@ -153,6 +156,8 @@ export default defineComponent({
   width: 100%;
   align-items: center;
   height: 51px;
+
+  // Need to make pointer-events none to allow for clicks underneath when not active
   pointer-events: none;
 }
 
