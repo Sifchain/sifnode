@@ -19,6 +19,7 @@ export default defineComponent({
     fromToken: String,
     toAmount: String,
     toToken: String,
+    onCloserequested: Function as PropType<() => void>,
   },
   setup(props, context) {
     const { config } = useCore();

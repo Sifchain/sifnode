@@ -490,8 +490,6 @@ export default defineComponent({
             class="details"
             :tokenAAmount="tokenAFieldAmount"
             :tokenBAmount="tokenBFieldAmount"
-            :toTokenLabel="toSymbol"
-            :toAmount="toAmount"
             :aPerB="aPerBRatioMessage"
             :bPerA="bPerARatioMessage"
             :shareOfPool="shareOfPoolPercent"

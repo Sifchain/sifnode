@@ -119,7 +119,7 @@ function convertDynamicMantissaToFixedMantissa(
   return options as IFormatOptionsFixedMantissa;
 }
 
-type AmountNotAssetAmount<T extends IAmount> = T extends IAssetAmount
+export type AmountNotAssetAmount<T extends IAmount> = T extends IAssetAmount
   ? never
   : T;
 
@@ -223,7 +223,7 @@ export function format<T extends IAmount>(
   return `${prefix}${decimal}${space}${postfix}`;
 }
 
-function trimMantissa(decimal: string) {
+export function trimMantissa(decimal: string) {
   return decimal.replace(/(0+)$/, "").replace(/\.$/, ".0");
 }
 
