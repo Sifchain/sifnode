@@ -36,7 +36,7 @@ func RelayProphecyClaimToEthereum(
 	client *ethclient.Client,
 	auth *bind.TransactOpts,
 	cosmosBridgeInstance *cosmosbridge.CosmosBridge,
-	) error {
+) error {
 
 	// Send transaction
 	sugaredLogger.Infow(
@@ -74,7 +74,7 @@ func RelayProphecyClaimToEthereum(
 	for i < maxRetries {
 		// Get the transaction receipt
 		receipt, err = client.TransactionReceipt(context.Background(), tx.Hash())
-	
+
 		if err != nil {
 			sleepThread(1)
 		} else {
@@ -102,12 +102,12 @@ func InitRelayConfig(
 	event types.Event,
 	key *ecdsa.PrivateKey,
 	sugaredLogger *zap.SugaredLogger,
-	) (
-		*ethclient.Client,
-		*bind.TransactOpts,
-		common.Address,
-		error,
-	) {
+) (
+	*ethclient.Client,
+	*bind.TransactOpts,
+	common.Address,
+	error,
+) {
 	// Start Ethereum client
 	client, err := ethclient.Dial(provider)
 	if err != nil {

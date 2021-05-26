@@ -400,7 +400,7 @@ func tryInitRelayConfig(sub CosmosSub, claimType types.Event) (*ethclient.Client
 func (sub CosmosSub) handleBurnLockMsg(
 	cosmosMsg types.CosmosMsg,
 	claimType types.Event,
-	) {
+) {
 	sub.SugaredLogger.Infow("handle burn lock message.",
 		"cosmosMessage", cosmosMsg.String())
 

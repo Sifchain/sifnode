@@ -44,3 +44,7 @@ export async function getExtensionPage(browserContext, extensionId) {
     });
   });
 }
+
+export function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}

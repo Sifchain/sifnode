@@ -4,3 +4,10 @@ externalAccess:
   enabled: true
 persistence:
   size: 50Gi
+resources:
+  requests:
+    memory: 8Gi
+  limits:
+    memory: 16Gi
+strategyType: Recreate
+
