@@ -20,7 +20,7 @@ type IFormatOptionsMantissa<
 > = IFormatOptionsBase & {
   shorthand?: boolean;
   mantissa?: M; // number of decimals after point default is exponent
-  trimMantissa?: boolean; // Remove 0s from the mantissa default false
+  trimMantissa?: boolean | "integer"; // Remove 0s from the mantissa default false
 };
 
 type IFormatOptionsShorthandTotalLength = IFormatOptionsBase & {
@@ -119,7 +119,7 @@ function convertDynamicMantissaToFixedMantissa(
   return options as IFormatOptionsFixedMantissa;
 }
 
-type AmountNotAssetAmount<T extends IAmount> = T extends IAssetAmount
+export type AmountNotAssetAmount<T extends IAmount> = T extends IAssetAmount
   ? never
   : T;
 
@@ -153,6 +153,27 @@ export function format<T extends IAmount>(
     amount,
     _optionsWithDynamicMantissa,
   );
+
+  // This should not happen in typed parts of the codebase
+  if (typeof amount === "string") {
+    // We need this in order to push developers to use the amount API right to the point at which we format values for display
+    // Currently not using JSX means types are not necessarily propagated to every view so types guards
+    // and there was a happy coincidence that format happened to work with a string and no asset
+    //
+    // We need to avoid this for the following reasons:
+    //   * It encourages the status quo of not using JSX which has many poor knockon effects
+    //   * One way api leads to simpler and easier to understand code
+    //   * It reduces refactorability
+    //   * It adds complexity to the codebase as it enables accidental amount -> string -> amount flows
+    //   * It makes it more likely that developers accidentally try to format AssetAmounts as Amounts which
+    //     is something this function attempts to solve using Types
+    //   * It adds difficult to track down errors as strings of unknown format are passed to the format function
+    //
+    // Once JSX is used throughout the codebase it might be time to revisit this
+    throw new Error(
+      "Amount can only take an IAmount and must NOT be a string. If you have a string and need to format it you should first convert it to an IAmount. Eg. format(Amount('100'), myformat)",
+    );
+  }
 
   if (!amount) {
     // In theory this should not happen if we are using typescript correctly
@@ -192,7 +213,7 @@ export function format<T extends IAmount>(
   }
 
   if (options.trimMantissa) {
-    decimal = trimMantissa(decimal);
+    decimal = trimMantissa(decimal, options.trimMantissa === "integer");
   }
 
   if (options.separator) {
@@ -202,8 +223,8 @@ export function format<T extends IAmount>(
   return `${prefix}${decimal}${space}${postfix}`;
 }
 
-function trimMantissa(decimal: string) {
-  return decimal.replace(/(0+)$/, "").replace(/\.$/, ".0");
+export function trimMantissa(decimal: string, integer = false) {
+  return decimal.replace(/(0+)$/, "").replace(/\.$/, integer ? "" : ".0");
 }
 
 function applySeparator(decimal: string) {
@@ -237,7 +258,7 @@ function createNumbroConfig(options: IFormatOptionsFixedMantissa) {
       : {
           average: options.shorthand ?? false,
           mantissa: options.mantissa ?? 0,
-          trimMantissa: options.trimMantissa ?? false,
+          trimMantissa: !!options.trimMantissa,
         }),
   };
 }
