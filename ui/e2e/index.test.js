@@ -424,7 +424,7 @@ it("swaps", async () => {
   // Wait for balances to be the amounts expected
   await expect(dexPage).toHaveText(
     '[data-handle="swap-message"]',
-    "Swapped 50 cusdc for 49.9995000037 rowan",
+    "Swapped 50.0 cUSDC for 49.9995000037 ROWAN",
   );
 
   await dexPage.click("[data-handle='modal-view-close']");
@@ -582,16 +582,12 @@ it("adds liquidity", async () => {
   ).toBe("You are depositing");
 
   expect(
-    prepareRowText(
-      await dexPage.innerText('[data-handle="token-a-details-panel-pool-row"]'),
-    ),
-  ).toBe("cETH Deposited 5.000000000000000000");
+    prepareRowText(await dexPage.innerText('[data-handle="token-a-row"]')),
+  ).toBe("cETH Deposited 5.000000");
 
   expect(
-    prepareRowText(
-      await dexPage.innerText('[data-handle="token-b-details-panel-pool-row"]'),
-    ),
-  ).toBe("ROWAN Deposited 6024.096390000000000000");
+    prepareRowText(await dexPage.innerText('[data-handle="token-b-row"]')),
+  ).toBe("ROWAN Deposited 6024.096390");
 
   expect(
     prepareRowText(await dexPage.innerText('[data-handle="real-b-per-a-row"]')),

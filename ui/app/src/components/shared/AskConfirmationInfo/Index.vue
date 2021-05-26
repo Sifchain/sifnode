@@ -3,7 +3,6 @@ import AssetItemLarge from "@/components/shared/AssetItemLarge/AssetItemLarge.vu
 import ArrowIconButton from "@/components/shared/ArrowIconButton.vue";
 import { defineComponent, PropType, useCssModule } from "vue";
 import { IAssetAmount } from "ui-core";
-import { effect } from "@vue/reactivity";
 
 export default defineComponent({
   props: {
@@ -17,19 +16,23 @@ export default defineComponent({
 
     return () => (
       <div class={styles.info}>
-        <AssetItemLarge
-          description={props.amountDescriptions}
-          amount={props.tokenAAmount}
-        />
+        <div data-handle="token-a-row">
+          <AssetItemLarge
+            description={props.amountDescriptions}
+            amount={props.tokenAAmount}
+          />
+        </div>
         <div
           class={props.showArrow ? styles.arrowHolder : styles.arrowHolderEmpty}
         >
           {props.showArrow && <ArrowIconButton enabled={true} />}
         </div>
-        <AssetItemLarge
-          description={props.amountDescriptions}
-          amount={props.tokenBAmount}
-        />
+        <div data-handle="token-b-row">
+          <AssetItemLarge
+            description={props.amountDescriptions}
+            amount={props.tokenBAmount}
+          />
+        </div>
       </div>
     );
   },

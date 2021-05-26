@@ -7,6 +7,11 @@ import { getBlockExplorerUrl } from "../shared/utils";
 import { ErrorCode, format, IAssetAmount, TransactionStatus } from "ui-core";
 import SwipeTransition from "./SwipeTransition.vue";
 
+const SHORT_TRIMMED = {
+  mantissa: 10,
+  trimMantissa: true,
+};
+
 export default defineComponent({
   components: { Loader, SifButton },
   emits: ["closerequested"],
@@ -36,12 +41,12 @@ export default defineComponent({
         <p class={styles.thin} data-handle="swap-message">
           {p.pre + " "}
           <span class={styles.thick}>
-            {format(p.fromAmount.amount, p.fromAmount.asset, { mantissa: 6 })}{" "}
+            {format(p.fromAmount.amount, p.fromAmount.asset, SHORT_TRIMMED)}{" "}
             {p.fromAmount.label}
           </span>{" "}
           for{" "}
           <span class={styles.thick}>
-            {format(p.toAmount.amount, p.toAmount.asset, { mantissa: 6 })}{" "}
+            {format(p.toAmount.amount, p.toAmount.asset, SHORT_TRIMMED)}{" "}
             {p.toAmount.label}
           </span>
         </p>
