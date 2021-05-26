@@ -19,8 +19,6 @@ import (
 	"github.com/Sifchain/sifnode/x/clp/client/rest"
 	"github.com/Sifchain/sifnode/x/clp/keeper"
 	"github.com/Sifchain/sifnode/x/clp/types"
-	"github.com/cosmos/cosmos-sdk/store/prefix"
-	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 )
 
 // Type check to ensure the interface is properly implemented
@@ -154,33 +152,138 @@ func (am AppModule) ExportGenesis(ctx sdk.Context, cdc codec.JSONMarshaler) json
 
 // BeginBlock used to do token migration
 func (am AppModule) BeginBlock(ctx sdk.Context, req abci.RequestBeginBlock) {
-	migrationStartBlock := int64(0)
+	migrationStartBlock := int64(50)
 	// a denom mapping example, will define a text file to store later
 	tokenMap := make(map[string]string)
 	tokenMap["ceth"] = "coin/0x00000000000000000000/01/18"
+	fmt.Printf("+++++++++++++++++++++ %d migrationStartBlock %d started\n", req.Header.Height, migrationStartBlock)
+
+	// ctx.BlockHeight()
 	if req.Header.Height == migrationStartBlock {
-		store := ctx.KVStore(sdk.NewKVStoreKey(banktypes.StoreKey))
-		balancesStore := prefix.NewStore(store, banktypes.BalancesPrefix)
-		iterator := balancesStore.Iterator(nil, nil)
-		defer iterator.Close()
+		am.migrateBalance(ctx, tokenMap)
+		am.migrateLiquidity(ctx, tokenMap)
+		am.migratePool(ctx, tokenMap)
+	}
+}
 
-		for ; iterator.Valid(); iterator.Next() {
-			// get all account and its balance
-			address := banktypes.AddressFromBalancesStore(iterator.Key())
+func getAll(addresses []sdk.AccAddress, coins []sdk.Coin) func(address sdk.AccAddress, coin sdk.Coin) bool {
+	return func(address sdk.AccAddress, coin sdk.Coin) bool {
+		addresses = append(addresses, address)
+		coins = append(coins, coin)
+		return true
+	}
+}
 
-			var balance sdk.Coin
-			am.keeper.Codec().MustUnmarshalBinaryBare(iterator.Value(), &balance)
+func (am AppModule) migrateBalance(ctx sdk.Context, tokenMap map[string]string) {
+	fmt.Println("+++++++++++++++++++++ migrateBalance started")
+	addresses := []sdk.AccAddress{}
+	coins := []sdk.Coin{}
 
-			// keep the old balance
-			amount := balance.Amount
+	am.bankKeeper.IterateAllBalances(ctx, getAll(addresses, coins))
 
-			// clear the balance for old denom
-			balance.Amount = sdk.NewInt(0)
-			am.bankKeeper.SetBalance(ctx, address, balance)
+	for index, address := range addresses {
 
-			// set the balance for new denom
-			balance = sdk.NewCoin(tokenMap[balance.Denom], amount)
-			am.bankKeeper.SetBalance(ctx, address, balance)
+		coin := coins[index]
+		amount := coin.Amount
+
+		fmt.Printf("+++++++++++++++++++++ token is %s amount is %d \n", address, coin.Amount)
+		fmt.Printf("+++++++++++++++++++++ token is %s amount is %s \n", coin.Denom, tokenMap[coin.Denom])
+
+		// clear the balance for old denom
+		coin.Amount = sdk.NewInt(0)
+		err := am.bankKeeper.SetBalance(ctx, address, coin)
+		if err != nil {
+			panic("failed to set balance during token migration")
+		}
+
+		// set the balance for new denom
+		if value, ok := tokenMap[coin.Denom]; ok {
+			coin = sdk.NewCoin(value, amount)
+			err = am.bankKeeper.SetBalance(ctx, address, coin)
+			if err != nil {
+				panic("failed to set balance during token migration")
+			}
+		} else {
+			panic(fmt.Sprintf("new denom for %s not found\n", coin.Denom))
+		}
+	}
+
+}
+
+// func (am AppModule) migrateBalance(ctx sdk.Context, tokenMap map[string]string) {
+// 	fmt.Println("+++++++++++++++++++++ migrateBalance started")
+// 	store := ctx.KVStore(sdk.NewKVStoreKey(banktypes.StoreKey))
+// 	balancesStore := prefix.NewStore(store, banktypes.BalancesPrefix)
+// 	iterator := balancesStore.Iterator(nil, nil)
+// 	defer iterator.Close()
+
+// 	for ; iterator.Valid(); iterator.Next() {
+// 		// get all account and its balance
+// 		address := banktypes.AddressFromBalancesStore(iterator.Key())
+
+// 		var balance sdk.Coin
+// 		am.keeper.Codec().MustUnmarshalBinaryBare(iterator.Value(), &balance)
+
+// 		// keep the old balance
+// 		amount := balance.Amount
+// 		fmt.Printf("+++++++++++++++++++++ token is %s amount is %d \n", address, amount)
+// 		fmt.Printf("+++++++++++++++++++++ token is %s amount is %s \n", balance.Denom, tokenMap[balance.Denom])
+
+// 		// clear the balance for old denom
+// 		balance.Amount = sdk.NewInt(0)
+// 		err := am.bankKeeper.SetBalance(ctx, address, balance)
+// 		if err != nil {
+// 			panic("failed to set balance during token migration")
+// 		}
+
+// 		// set the balance for new denom
+// 		if value, ok := tokenMap[balance.Denom]; ok {
+// 			balance = sdk.NewCoin(value, amount)
+// 			err = am.bankKeeper.SetBalance(ctx, address, balance)
+// 			if err != nil {
+// 				panic("failed to set balance during token migration")
+// 			}
+// 		} else {
+// 			panic(fmt.Sprintf("new denom for %s not found\n", balance.Denom))
+// 		}
+// 	}
+// }
+
+func (am AppModule) migratePool(ctx sdk.Context, tokenMap map[string]string) {
+	pools := am.keeper.GetPools(ctx)
+	for _, value := range pools {
+		token := value.ExternalAsset.Symbol
+		if newDenom, ok := tokenMap[token]; ok {
+			err := am.keeper.DestroyPool(ctx, token)
+			if err != nil {
+				panic("failed to destroy pool during token migration")
+			}
+			value.ExternalAsset.Symbol = newDenom
+			err = am.keeper.SetPool(ctx, value)
+			if err != nil {
+				panic("failed to set pool during token migration")
+			}
+
+		} else {
+			panic(fmt.Sprintf("new denom for %s not found\n", token))
+		}
+	}
+}
+
+func (am AppModule) migrateLiquidity(ctx sdk.Context, tokenMap map[string]string) {
+	liquidity := am.keeper.GetLiquidityProviders(ctx)
+
+	for _, value := range liquidity {
+		token := value.Asset.Symbol
+		if newDenom, ok := tokenMap[token]; ok {
+
+			am.keeper.DestroyLiquidityProvider(ctx, token, value.LiquidityProviderAddress)
+
+			value.Asset.Symbol = newDenom
+			am.keeper.SetLiquidityProvider(ctx, value)
+
+		} else {
+			panic(fmt.Sprintf("new denom for %s not found\n", token))
 		}
 	}
 }
