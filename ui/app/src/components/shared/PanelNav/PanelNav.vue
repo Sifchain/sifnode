@@ -2,7 +2,7 @@
   <div class="panel-nav">
     <PanelNavItem
       data-handle="import-page-button"
-      to="/import"
+      to="/balances"
       icon="circle-half"
       label="BALANCES"
     ></PanelNavItem>

@@ -191,7 +191,7 @@ export default defineComponent({
         <AssetList :items="assetList" v-slot="{ asset }">
           <SifButton
             :disabled="!asset.supported"
-            :to="`/import/${asset.asset.symbol}/${peggedSymbol(
+            :to="`/balances/import/${asset.asset.symbol}/${peggedSymbol(
               asset.asset.symbol,
             )}`"
             primary
@@ -207,7 +207,7 @@ export default defineComponent({
         <AssetList :items="assetList">
           <template #default="{ asset }">
             <SifButton
-              :to="`/import/reverse/${asset.asset.symbol}/${unpeggedSymbol(
+              :to="`/balances/export/${asset.asset.symbol}/${unpeggedSymbol(
                 asset.asset.symbol,
               )}`"
               primary

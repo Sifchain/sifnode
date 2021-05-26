@@ -14,7 +14,7 @@ import RewardsPage from "@/views/RewardsPage.vue";
 const routes: Array<RouteRecordRaw> = [
   {
     path: "/",
-    redirect: { name: "Import" },
+    redirect: { name: "Balances" },
   },
   {
     path: "/stats",
@@ -86,15 +86,15 @@ const routes: Array<RouteRecordRaw> = [
     },
   },
   {
-    path: "/import",
-    name: "Import",
+    path: "/balances",
+    name: "Balances",
     component: PegListingPage,
     meta: {
-      title: "Import Listing - Sifchain",
+      title: "Balances - Import - Sifchain",
     },
   },
   {
-    path: "/import/:assetFrom/:assetTo",
+    path: "/balances/import/:assetFrom/:assetTo",
     name: "ImportListingPage",
     component: PegAssetPage,
     meta: {
@@ -102,7 +102,7 @@ const routes: Array<RouteRecordRaw> = [
     },
   },
   {
-    path: "/import/reverse/:assetFrom/:assetTo",
+    path: "/balances/export/:assetFrom/:assetTo",
     name: "UnpegAssetPage",
     component: PegAssetPage,
     meta: {
