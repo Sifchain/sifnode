@@ -71,44 +71,6 @@ export default defineComponent({
           tokenAAmount={props.tokenAAmount}
           tokenBAmount={props.tokenBAmount}
         />
-        <div class={styles.detailsHeader}>
-          {/* <div
-            class={styles.detailsRow}
-            data-handle="token-a-details-panel-pool-row"
-          >
-            <span class={styles.detailsRowAsset}>
-              {props.tokenAAmount && (
-                <AssetItem symbol={props.tokenAAmount.symbol} inline />
-              )}
-              &nbsp;Deposited
-            </span>
-            <div class={styles.detailsRowValue} data-handle="details-row-value">
-              <span>
-                {format(props.tokenAAmount.amount, props.tokenAAmount.asset, {
-                  mantissa: 18,
-                }) || "0"}
-              </span>
-            </div>
-          </div>
-          <div
-            class={styles.detailsRow}
-            data-handle="token-b-details-panel-pool-row"
-          >
-            <span class={styles.detailsRowAsset}>
-              {props.tokenBAmount && (
-                <AssetItem symbol={props.tokenBAmount.symbol} inline />
-              )}
-              &nbsp;Deposited
-            </span>
-            <div class={styles.detailsRowValue} data-handle="details-row-value">
-              <span>
-                {format(props.tokenBAmount.amount, props.tokenBAmount.asset, {
-                  mantissa: 18,
-                }) || 0}
-              </span>
-            </div>
-          </div>*/}
-        </div>
         <div class={styles.detailsBody}>
           {realBPerA.value && (
             <div class={styles.detailsRow} data-handle="real-b-per-a-row">
