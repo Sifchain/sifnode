@@ -3,6 +3,14 @@ import { computed } from "@vue/reactivity";
 import { defineComponent } from "vue";
 import { formatSymbol, useAssetItem } from "@/components/shared/utils";
 
+// NOTE - this will be replaced by format display function
+function format(item: string) {
+  if (item !== "") {
+    return parseFloat(item).toFixed(2) + "%";
+  } else {
+    return "N/A";
+  }
+}
 export default defineComponent({
   props: {
     pool: {
@@ -35,10 +43,7 @@ export default defineComponent({
     const priceToken = formatNumberString(
       parseFloat(props.pool?.priceToken).toFixed(2),
     );
-    const arb =
-      props.pool?.arb !== ""
-        ? formatNumberString(parseFloat(props.pool?.arb).toFixed(2)) + "%"
-        : "N/A";
+    const arb = props.pool?.arb;
     const poolDepth = formatNumberString(
       parseFloat(props.pool?.poolDepth).toFixed(2),
     );
@@ -53,6 +58,7 @@ export default defineComponent({
     );
 
     return {
+      format,
       symbol,
       image,
       priceToken,
@@ -84,7 +90,9 @@ export default defineComponent({
         <span>${{ priceToken }}</span>
       </div>
       <div class="col-lg">
-        <span>{{ arb }}</span>
+        <span :class="arb < 0 ? 'buy' : 'sell'">
+          {{ format(Math.abs(arb)) }}</span
+        >
       </div>
       <div class="col-lg">
         <span>${{ poolDepth }}</span>
@@ -118,6 +126,13 @@ export default defineComponent({
   &:not(:last-of-type) {
     border-bottom: $divider;
   }
+}
+
+.buy {
+  color: $c_buy;
+}
+.sell {
+  color: $c_sell;
 }
 
 .pool-asset {

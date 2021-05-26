@@ -13,12 +13,12 @@ export async function importKeplrAccount(page, options) {
 }
 
 export async function connectKeplrAccount(page, browserContext) {
-  const [newPage] = await Promise.all([browserContext.waitForEvent("page")]);
-  await newPage.waitForLoadState();
-  await newPage.click("text=Approve");
-  await newPage.waitForLoadState();
-
-  const [popup] = await Promise.all([browserContext.waitForEvent("page")]);
-  await popup.waitForLoadState();
+  const newPage = await browserContext.waitForEvent("page");
+  await newPage.waitForLoadState("domcontentloaded");
+  const [popup] = await Promise.all([
+    browserContext.waitForEvent("page"),
+    newPage.click("text=Approve"),
+  ]);
+  await popup.waitForLoadState("domcontentloaded");
   await popup.click("text=Approve");
 }

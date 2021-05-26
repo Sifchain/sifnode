@@ -16,7 +16,7 @@
           /></span>
         </div>
         <div class="title">
-          {{ title }}
+          <SubHeading>{{ title }}</SubHeading>
         </div>
       </div>
       <slot></slot>
@@ -25,15 +25,18 @@
       <slot name="after"></slot>
     </Panel>
   </div>
+  <div class="layout-bg" />
 </template>
 
 <script lang="ts">
 import { defineComponent } from "vue";
 import Panel from "@/components/shared/Panel.vue";
-import PanelNav from "@/components/navigation/PanelNav.vue";
+import PanelNav from "@/components/shared/PanelNav/PanelNav.vue";
 import Icon from "@/components/shared/Icon.vue";
+import { SubHeading } from "@/components/shared/Text";
+
 export default defineComponent({
-  components: { Panel, PanelNav, Icon },
+  components: { Panel, PanelNav, Icon, SubHeading },
   props: {
     backLink: String,
     header: { type: Boolean, default: true },
@@ -48,9 +51,6 @@ export default defineComponent({
 
 <style lang="scss" scoped>
 .layout {
-  background: url("../../assets/World_Background_opt.jpg");
-  background-size: cover;
-  background-position: bottom center;
   box-sizing: border-box;
   padding-top: $header_height;
   width: 100%;
@@ -59,6 +59,19 @@ export default defineComponent({
   flex-direction: column;
   justify-content: center;
   align-items: center;
+}
+.layout-bg {
+  background: url("../../assets/World_Background_opt.jpg");
+  background-size: cover;
+  background-position: bottom center;
+  // filter: blur(10px);
+
+  z-index: -1;
+  width: 100%;
+  height: 100vh; /* TODO: header height */
+  position: absolute;
+  top: 0;
+  left: 0;
 }
 
 .after {
@@ -81,8 +94,8 @@ export default defineComponent({
   cursor: pointer;
 }
 .title {
-  @include title16;
-  flex-grow: 1;
-  text-align: center;
+  display: flex;
+  justify-content: center;
+  width: 100%;
 }
 </style>

@@ -1,7 +1,7 @@
 import logging
 import os
 import time
-
+import json
 import pytest
 
 import burn_lock_functions
@@ -15,6 +15,39 @@ from test_utilities import get_required_env_var, SifchaincliCredentials, get_opt
 smart_contracts_dir = get_required_env_var("SMART_CONTRACTS_DIR")
 bridgebank_address = get_required_env_var("BRIDGE_BANK_ADDRESS")
 bridgetoken_address = get_required_env_var("BRIDGE_TOKEN_ADDRESS")
+
+#LOCAL UTILITIES
+def generate_new_currency(symbol, amount, solidity_json_path, operator_address, ethereum_network):
+    logging.info(f"create new currency: "+symbol)
+    new_currency = test_utilities.create_new_currency(
+        amount,
+        symbol,
+        token_name=symbol,
+        decimals=18,
+        smart_contracts_dir=smart_contracts_dir,
+        bridgebank_address=bridgebank_address,
+        solidity_json_path=solidity_json_path,
+        operator_address=operator_address,
+        ethereum_network=ethereum_network
+    )
+    return new_currency
+
+
+def transfer_new_currency(request, symbol, currency, amount):
+    logging.info(f"transfer some of the new currency {symbol} to the test sifchain address")
+    request.ethereum_symbol = currency["newtoken_address"]
+    request.sifchain_symbol = symbol
+    request.amount = amount
+    burn_lock_functions.transfer_ethereum_to_sifchain(request)
+
+
+def get_currency_faucet_balance(currency, json_input):
+    amount = 0;
+    for obj in json_input:
+        for key, value in obj.items():
+            if value == currency:
+                amount = int(obj['amount'])
+    return amount
 
 
 def get_pools(sifnodecli_node):

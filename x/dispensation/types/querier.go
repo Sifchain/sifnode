@@ -14,3 +14,11 @@ func NewQueryRecordsByDistributionName(distributionName string, status Distribut
 func NewQueryRecordsByRecipientAddr(address string) QueryRecordsByRecipientAddrRequest {
 	return QueryRecordsByRecipientAddrRequest{Address: address}
 }
+
+type QueryUserClaims struct {
+	UserClaimType DistributionType `json:"user_claim_type"`
+}
+
+func NewQueryUserClaims(userClaimType DistributionType) QueryUserClaims {
+	return QueryUserClaims{UserClaimType: userClaimType}
+}
