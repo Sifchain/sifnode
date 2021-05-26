@@ -48,7 +48,7 @@ export default defineComponent({
     },
     absolute: {
       type: Boolean,
-      default: false,
+      default: false, // Skips vue routing
     },
     block: {
       type: Boolean,
