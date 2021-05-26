@@ -1,4 +1,5 @@
 import { DEX_TARGET } from "../config";
+import { assertWaitedValue } from "../utils";
 import { tokenSelection } from "./components/TokenSelection";
 import { GenericPage } from "./GenericPage";
 
@@ -57,15 +58,14 @@ export class PoolPage extends GenericPage {
     await tokenSelection.fillTokenBValue(value);
   }
 
-  async getTokenAValue() {
+  async verifyTokenAValue(expectedValue) {
     await page.click(tokenSelection.el.tokenInput("a"));
-    return await tokenSelection.getTokenAValue();
+    await assertWaitedValue(tokenSelection.el.tokenInput("a"), expectedValue);
   }
 
-  async getTokenBValue() {
+  async verifyTokenBValue(expectedValue) {
     await page.click(tokenSelection.el.tokenInput("b"));
-    await page.waitForTimeout(250);
-    return await tokenSelection.getTokenBValue();
+    await assertWaitedValue(tokenSelection.el.tokenInput("b"), expectedValue);
   }
 
   async clickTokenAMax() {

@@ -4,6 +4,8 @@ import axios from "axios";
 import fs from "fs";
 import path from "path";
 
+const retry = require("retry-assert");
+
 // Not in use, don't have good place to get the extension zips, for now
 export async function downloadFile(name, url, dir) {
   const write = path.resolve(dir, `${name}.zip`);
@@ -53,4 +55,31 @@ export async function getExtensionPage(extensionId, suffixUrl = undefined) {
 
 export function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+export async function getInputValue(selector) {
+  return await page.$eval(selector, (el) => el.value);
+  // return await page.evaluate((el) => el.value, await page.$(selector));
+}
+
+export async function assertWaitedText(
+  selector,
+  expectedText,
+  timeout = 30000,
+) {
+  const text = await retry()
+    .fn(() => page.innerText(selector))
+    .withTimeout(timeout)
+    .until((text) => expect(text.trim()).toBe(expectedText));
+}
+
+export async function assertWaitedValue(
+  selector,
+  expectedValue,
+  timeout = 30000,
+) {
+  const value = await retry()
+    .fn(() => getInputValue(selector))
+    .withTimeout(timeout)
+    .until((value) => expect(value).toBe(expectedValue));
 }

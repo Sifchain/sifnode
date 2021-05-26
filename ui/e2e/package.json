@@ -25,6 +25,7 @@
     "expect-playwright": "^0.3.4",
     "global": "^4.4.0",
     "isomorphic-fetch": "^3.0.0",
+    "retry-assert": "^1.0.0",
     "tree-kill": "^1.2.2"
   },
   "scripts": {

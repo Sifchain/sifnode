@@ -31,7 +31,7 @@ const { useStack } = require("../test/stack");
 const { connectMetaMaskAccount, connectKeplrAccount } = require("./helpers.js");
 
 // dex pages
-const { pegPage } = require("./pages/PegPage.js");
+const { balancesPage } = require("./pages/BalancesPage.js");
 const { swapPage } = require("./pages/SwapPage.js");
 const { confirmSwapModal } = require("./pages/ConfirmSwapModal.js");
 const { poolPage } = require("./pages/PoolPage.js");
@@ -51,7 +51,7 @@ beforeAll(async () => {
   await keplrPage.setup();
 
   // goto dex page
-  pegPage.navigate();
+  balancesPage.navigate();
   page.waitForTimeout(4000); // wait a second before keplr is finished being setup
 
   // Keplr will automatically connect and cause the add chain popup to come up
@@ -67,25 +67,26 @@ beforeEach(async () => {
   await metamaskPage.reset();
 });
 
-it("pegs rowan", async () => {
+it("imports rowan", async () => {
   const assetNative = "rowan";
-  const unpegAmount = "500";
+  const exportAmount = "500";
   const assetExternal = "erowan";
-  const pegAmount = "100";
+  const importAmount = "100";
 
-  // First we need to unpeg rowan in order to have erowan on the bridgebank contract
-  await pegPage.navigate();
+  // First we need to export rowan in order to have erowan on the bridgebank contract
+  await balancesPage.navigate();
 
-  await pegPage.openTab("native");
-  await pegPage.unpeg(assetNative, unpegAmount);
+  await balancesPage.openTab("native");
+  await balancesPage.export(assetNative, exportAmount);
 
-  await pegPage.openTab("external");
-  await pegPage.verifyAssetAmount(assetExternal, "600.000000");
+  await balancesPage.openTab("external");
+  // await page.pause();
+  await balancesPage.verifyAssetAmount(assetExternal, "600.000000");
 
-  // Now lets peg erowan
-  await pegPage.peg(assetExternal, pegAmount);
+  // Now lets import erowan
+  await balancesPage.import(assetExternal, importAmount);
 
-  await pegPage.clickConfirmPeg();
+  await balancesPage.clickConfirmImport();
 
   await page.waitForTimeout(500);
   await metamaskNotificationPopup.navigate();
@@ -93,7 +94,7 @@ it("pegs rowan", async () => {
   await page.waitForTimeout(1000);
   await metamaskNotificationPopup.clickViewFullTransactionDetails();
   await metamaskNotificationPopup.verifyTransactionDetails(
-    `${pegAmount} ${assetExternal}`,
+    `${importAmount} ${assetExternal}`,
   );
 
   await metamaskNotificationPopup.clickConfirm();
@@ -103,25 +104,26 @@ it("pegs rowan", async () => {
   await metamaskNotificationPopup.clickConfirm();
 
   await page.waitForTimeout(1000);
-  await pegPage.closeSubmissionWindow();
+  await balancesPage.closeSubmissionWindow();
   // Check that tx marker for the tx is there
-  await pegPage.verifyTransactionPending(assetNative);
+  await balancesPage.verifyTransactionPending(assetNative);
 
   // move chain forward
   await advanceEthBlocks(52);
 
   await page.waitForSelector("text=has succeded", { timeout: 60 * 1000 });
 
-  await pegPage.openTab("native");
-  await pegPage.verifyAssetAmount(assetNative, "9600.000000");
+  await balancesPage.openTab("native");
+  await balancesPage.verifyAssetAmount(assetNative, "9600.000000");
+  // await balancesPage.verifyAssetAmount(assetNative, "96000.000000");
 });
 
-it("pegs ether", async () => {
-  const pegAmount = "1";
+it("imports ether", async () => {
+  const importAmount = "1";
   const assetExternal = "eth";
   const assetNative = "ceth";
 
-  await pegPage.navigate();
+  await balancesPage.navigate();
 
   const cEthBalance = await getSifchainBalances(
     keplrConfig.sifApiUrl,
@@ -129,35 +131,37 @@ it("pegs ether", async () => {
     assetNative,
   );
 
-  await pegPage.openTab("external");
-  await pegPage.peg(assetExternal, pegAmount);
+  await balancesPage.openTab("external");
+  await balancesPage.import(assetExternal, importAmount);
 
-  await pegPage.clickConfirmPeg();
+  await balancesPage.clickConfirmImport();
   await page.waitForTimeout(1000);
 
   await metamaskNotificationPopup.navigate();
   await metamaskNotificationPopup.clickConfirm();
 
   await page.waitForTimeout(1000);
-  await pegPage.closeSubmissionWindow();
+  await balancesPage.closeSubmissionWindow();
 
   // Check that tx marker for the tx is there
-  await pegPage.verifyTransactionPending(assetNative);
+  await balancesPage.verifyTransactionPending(assetNative);
 
   // move chain forward
   await advanceEthBlocks(52);
 
   await page.waitForSelector("text=has succeded", { timeout: 60 * 1000 });
 
-  const expectedAmount = (Number(cEthBalance) + Number(pegAmount)).toFixed(6);
-  await pegPage.verifyAssetAmount(assetNative, expectedAmount);
+  const expectedAmount = (Number(cEthBalance) + Number(importAmount)).toFixed(
+    6,
+  );
+  await balancesPage.verifyAssetAmount(assetNative, expectedAmount);
 });
 
-it("pegs tokens", async () => {
-  const pegAmount = "1";
-  const pegAsset = "usdc";
+it("imports tokens", async () => {
+  const importAmount = "1";
+  const importAsset = "usdc";
 
-  await pegPage.navigate();
+  await balancesPage.navigate();
 
   const cBalance = await getSifchainBalances(
     keplrConfig.sifApiUrl,
@@ -165,30 +169,30 @@ it("pegs tokens", async () => {
     "cusdc",
   );
 
-  await pegPage.openTab("external");
-  await pegPage.peg(pegAsset, pegAmount);
+  await balancesPage.openTab("external");
+  await balancesPage.import(importAsset, importAmount);
 
-  await pegPage.clickConfirmPeg();
+  await balancesPage.clickConfirmImport();
   await page.waitForTimeout(1000);
 
   await metamaskNotificationPopup.navigate();
   await metamaskNotificationPopup.clickViewFullTransactionDetails();
   await metamaskNotificationPopup.verifyTransactionDetails(
-    `${pegAmount} ${pegAsset}`,
+    `${importAmount} ${importAsset}`,
   );
   await metamaskNotificationPopup.clickConfirm();
   await page.waitForTimeout(1000);
   await metamaskNotificationPopup.navigate(); // this call is needed to reload this.page with a new popup page
   await metamaskNotificationPopup.clickConfirm();
 
-  await pegPage.closeSubmissionWindow();
+  await balancesPage.closeSubmissionWindow();
 
   await advanceEthBlocks(52);
 
   await page.waitForSelector("text=has succeded", { timeout: 60 * 1000 });
 
-  const expectedAmount = (Number(cBalance) + Number(pegAmount)).toFixed(6);
-  await pegPage.verifyAssetAmount("cusdc", expectedAmount);
+  const expectedAmount = (Number(cBalance) + Number(importAmount)).toFixed(6);
+  await balancesPage.verifyAssetAmount("cusdc", expectedAmount);
 });
 
 it("swaps", async () => {
@@ -202,19 +206,16 @@ it("swaps", async () => {
   await swapPage.selectTokenB(tokenB);
 
   await swapPage.fillTokenAValue("100");
-  expect(await swapPage.getTokenBValue()).toBe("99.99800003");
+  await swapPage.verifyTokenBValue("99.99800003");
 
   // Check expected output (XXX: hmmm - might have to pull in formulae from core??)
 
   await swapPage.fillTokenBValue("100");
-  expect(await swapPage.getTokenAValue()).toBe("100.00200005");
+  await swapPage.verifyTokenAValue("100.00200005");
 
   await swapPage.clickTokenAMax();
-
-  expect(await swapPage.getTokenAValue()).toBe(
-    "10000.0", // TODO: trim mantissa
-  );
-  expect(await swapPage.getTokenBValue()).toBe("9980.0299600499");
+  await swapPage.verifyTokenAValue("10000.0"); // TODO: trim mantissa
+  await swapPage.verifyTokenBValue("9980.0299600499");
   await swapPage.verifyDetails({
     expPriceMessage: "0.998003 ROWAN per cUSDC",
     expMinimumReceived: "9880.229660 ROWAN",
@@ -230,7 +231,7 @@ it("swaps", async () => {
     expPriceImpact: "< 0.01%",
     expLiquidityProviderFee: "0.00025 ROWAN",
   });
-  expect(await swapPage.getTokenBValue()).toBe("49.9995000037");
+  await swapPage.verifyTokenBValue("49.9995000037");
 
   await swapPage.clickSwap();
 
@@ -299,14 +300,14 @@ it("adds liquidity", async () => {
 
   await poolPage.selectTokenA(tokenA);
   await poolPage.fillTokenAValue("10");
-  expect(await poolPage.getTokenBValue()).toBe("12048.19277");
+  await poolPage.verifyTokenBValue("12048.19277");
 
   await poolPage.fillTokenBValue("10000");
-  expect(await poolPage.getTokenAValue()).toBe("8.30000");
+  await poolPage.verifyTokenAValue("8.30000");
 
   await poolPage.clickTokenAMax();
-  expect(await poolPage.getTokenAValue()).toBe("100.000000000000000000");
-  expect(await poolPage.getTokenBValue()).toBe("120481.92771");
+  await poolPage.verifyTokenAValue("100.000000000000000000");
+  await poolPage.verifyTokenBValue("120481.92771");
 
   expect((await poolPage.getActionsButtonText()).toUpperCase()).toBe(
     "INSUFFICIENT FUNDS",
@@ -314,8 +315,7 @@ it("adds liquidity", async () => {
 
   await poolPage.clickTokenAMax();
   await poolPage.fillTokenAValue("5");
-
-  expect(await poolPage.getTokenBValue()).toBe("6024.09639");
+  await poolPage.verifyTokenBValue("6024.09639");
 
   expect((await poolPage.getActionsButtonText()).toUpperCase()).toBe(
     "ADD LIQUIDITY",

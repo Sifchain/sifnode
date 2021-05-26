@@ -1,7 +1,8 @@
 import { DEX_TARGET } from "../config";
 import expect from "expect-playwright";
+import { assertWaitedText } from "../utils";
 
-export class PegPage {
+export class BalancesPage {
   constructor() {
     this.el = {
       assetAmount: (asset) => `[data-handle='${asset}-row-amount']`,
@@ -9,7 +10,9 @@ export class PegPage {
   }
 
   async navigate() {
-    await page.goto(`${DEX_TARGET}/#/peg`, { waitUntil: "domcontentloaded" });
+    await page.goto(`${DEX_TARGET}/#/import`, {
+      waitUntil: "domcontentloaded",
+    });
   }
 
   async openTab(tab) {
@@ -21,15 +24,15 @@ export class PegPage {
   }
 
   // TODO: handling popup to be done outside of this page method
-  async unpeg(asset, amount) {
-    await page.click(`[data-handle='unpeg-${asset.toLowerCase()}']`);
-    await page.click('[data-handle="peg-input"]');
-    await page.fill('[data-handle="peg-input"]', amount);
-    await page.click('button:has-text("Unpeg")');
+  async export(asset, amount) {
+    await page.click(`[data-handle='export-${asset.toLowerCase()}']`);
+    await page.click('[data-handle="import-input"]');
+    await page.fill('[data-handle="import-input"]', amount);
+    await page.click('button:has-text("Export")');
 
     const [confirmPopup] = await Promise.all([
       context.waitForEvent("page"),
-      page.click('button:has-text("Confirm Unpeg")'),
+      page.click('button:has-text("Confirm Export")'),
     ]);
 
     await Promise.all([
@@ -39,28 +42,31 @@ export class PegPage {
 
     await page.waitForSelector("text=Transaction Submitted");
     await this.closeSubmissionWindow();
-    await page.waitForTimeout(15000); // wait for sifnode to validate the tx TODO: replace this wait with some dynamic condition
+    await page.waitForTimeout(10000); // wait for sifnode to validate the tx TODO: replace this wait with some dynamic condition
   }
 
-  async peg(asset, amount) {
-    await page.click(`[data-handle='peg-${asset.toLowerCase()}']`);
-    await page.click('[data-handle="peg-input"]');
-    await page.fill('[data-handle="peg-input"]', amount);
-    await page.click('button:has-text("Peg")');
+  async import(asset, amount) {
+    await page.click(`[data-handle='import-${asset.toLowerCase()}']`);
+    await page.click('[data-handle="import-input"]');
+    await page.fill('[data-handle="import-input"]', amount);
+    await page.click('button:has-text("Import")');
   }
 
-  async clickConfirmPeg() {
-    await page.click('button:has-text("Confirm Peg")'); // this opens new notification page
+  async clickConfirmImport() {
+    await page.click('button:has-text("Confirm Import")'); // this opens new notification page
   }
 
   async verifyAssetAmount(asset, expectedAmount) {
     // waitForSelector with state 'attached' is needed because the element is resolved as not visible
     // checked DOM and it looks visible. TODO: further investigate why this happens
-    await page.waitForSelector(this.el.assetAmount(asset), {
-      state: "attached",
-    });
-    const element = await page.$(this.el.assetAmount(asset));
-    await expect(element).toHaveText(expectedAmount);
+    // await page.waitForSelector(
+    //   `${this.el.assetAmount(asset)}:has-text("${expectedAmount}")`,
+    //   {
+    //     state: "attached",
+    //   },
+    // );
+
+    await assertWaitedText(this.el.assetAmount(asset), expectedAmount);
   }
 
   async closeSubmissionWindow() {
@@ -75,4 +81,4 @@ export class PegPage {
   }
 }
 
-export const pegPage = new PegPage();
+export const balancesPage = new BalancesPage();
