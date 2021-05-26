@@ -20,7 +20,7 @@ type IFormatOptionsMantissa<
 > = IFormatOptionsBase & {
   shorthand?: boolean;
   mantissa?: M; // number of decimals after point default is exponent
-  trimMantissa?: boolean; // Remove 0s from the mantissa default false
+  trimMantissa?: boolean | "integer"; // Remove 0s from the mantissa default false
 };
 
 type IFormatOptionsShorthandTotalLength = IFormatOptionsBase & {
@@ -213,7 +213,7 @@ export function format<T extends IAmount>(
   }
 
   if (options.trimMantissa) {
-    decimal = trimMantissa(decimal);
+    decimal = trimMantissa(decimal, options.trimMantissa === "integer");
   }
 
   if (options.separator) {
@@ -223,8 +223,8 @@ export function format<T extends IAmount>(
   return `${prefix}${decimal}${space}${postfix}`;
 }
 
-export function trimMantissa(decimal: string) {
-  return decimal.replace(/(0+)$/, "").replace(/\.$/, ".0");
+export function trimMantissa(decimal: string, integer = false) {
+  return decimal.replace(/(0+)$/, "").replace(/\.$/, integer ? "" : ".0");
 }
 
 function applySeparator(decimal: string) {
@@ -258,7 +258,7 @@ function createNumbroConfig(options: IFormatOptionsFixedMantissa) {
       : {
           average: options.shorthand ?? false,
           mantissa: options.mantissa ?? 0,
-          trimMantissa: options.trimMantissa ?? false,
+          trimMantissa: !!options.trimMantissa,
         }),
   };
 }

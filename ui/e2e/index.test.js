@@ -424,7 +424,7 @@ it("swaps", async () => {
   // Wait for balances to be the amounts expected
   await expect(dexPage).toHaveText(
     '[data-handle="swap-message"]',
-    "Swapped 50.0 cUSDC for 49.9995000037 ROWAN",
+    "Swapped 50 cUSDC for 49.9995000037 ROWAN",
   );
 
   await dexPage.click("[data-handle='modal-view-close']");

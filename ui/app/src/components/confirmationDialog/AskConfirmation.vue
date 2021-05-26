@@ -4,7 +4,7 @@ import SifButton from "@/components/shared/SifButton.vue";
 import DetailsPanel from "@/components/shared/DetailsPanel.vue";
 import AskConfirmationInfo from "@/components/shared/AskConfirmationInfo/Index.vue";
 import { IAssetAmount } from "ui-core";
-import { effect } from "@vue/reactivity";
+
 export default defineComponent({
   components: { DetailsPanel, AskConfirmationInfo, SifButton },
   emits: ["confirmswap"],
@@ -26,15 +26,15 @@ export default defineComponent({
     const styles = useCssModule();
 
     return () => (
-      <div data-handle="confirm-swap-modal" class={styles["confirm-swap"]}>
+      <div data-handle="confirm-swap-modal" class={styles.confirmSwap}>
         <h3 class={[styles.title, "mb-10"]}>Confirm Swap</h3>
         <AskConfirmationInfo
           tokenAAmount={props.fromAmount}
           tokenBAmount={props.toAmount}
         />
-        <div class={styles["estimate"]}>Output is estimated.</div>
+        <div class={styles.estimate}>Output is estimated.</div>
         <DetailsPanel
-          class={styles["details"]}
+          class={styles.details}
           priceMessage={props.priceMessage}
           toToken={props.toToken}
           minimumReceived={props.minimumReceived}
@@ -44,7 +44,7 @@ export default defineComponent({
         <SifButton
           block
           primary
-          class={styles["confirm-btn"]}
+          class={styles.confirmBtn}
           {...{ onClick: () => ctx.emit("confirmswap") }}
         >
           Confirm Swap
@@ -56,7 +56,7 @@ export default defineComponent({
 </script>
 
 <style lang="scss" module>
-.confirm-swap {
+.confirmSwap {
   display: flex;
   flex-direction: column;
   padding: 30px 20px 20px 20px;
@@ -67,7 +67,7 @@ export default defineComponent({
   margin-bottom: 20px;
 }
 
-.confirm-btn {
+.confirmBtn {
   margin-top: auto !important;
 }
 .title {

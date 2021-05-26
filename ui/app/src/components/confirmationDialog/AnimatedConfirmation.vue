@@ -7,9 +7,10 @@ import { getBlockExplorerUrl } from "../shared/utils";
 import { ErrorCode, format, IAssetAmount, TransactionStatus } from "ui-core";
 import SwipeTransition from "./SwipeTransition.vue";
 
-const SHORT_TRIMMED = {
+// TODO: Move this to a consolodated number format module perhaps?
+const MEDIUM_TRIMMED = {
   mantissa: 10,
-  trimMantissa: true,
+  trimMantissa: "integer" as const,
 };
 
 export default defineComponent({
@@ -41,12 +42,12 @@ export default defineComponent({
         <p class={styles.thin} data-handle="swap-message">
           {p.pre + " "}
           <span class={styles.thick}>
-            {format(p.fromAmount.amount, p.fromAmount.asset, SHORT_TRIMMED)}{" "}
+            {format(p.fromAmount.amount, p.fromAmount.asset, MEDIUM_TRIMMED)}{" "}
             {p.fromAmount.label}
           </span>{" "}
           for{" "}
           <span class={styles.thick}>
-            {format(p.toAmount.amount, p.toAmount.asset, SHORT_TRIMMED)}{" "}
+            {format(p.toAmount.amount, p.toAmount.asset, MEDIUM_TRIMMED)}{" "}
             {p.toAmount.label}
           </span>
         </p>
