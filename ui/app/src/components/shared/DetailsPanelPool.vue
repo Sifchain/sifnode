@@ -1,7 +1,6 @@
 <style lang="scss" module>
 .detailsHeader {
   padding: 10px 15px;
-  // border-bottom: 1px solid $c_gray_200;
 }
 .detailsBody {
   padding: 10px 15px;
