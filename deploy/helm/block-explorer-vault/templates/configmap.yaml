@@ -1,0 +1,321 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "block-explorer.fullname" . }}-settings
+  labels:
+    {{- include "block-explorer.labels" . | nindent 4 }}
+data:
+  settings: |
+    {
+        "public":{
+            "chainName": "Sifchain",
+            "chainId": "{{ .Values.blockExplorer.env.chainnet }}",
+            "gtm": "",
+            "slashingWindow": 10000,
+            "uptimeWindow": 250,
+            "initialPageSize": 30,
+            "secp256k1": false,
+            "bech32PrefixAccAddr": "sif",
+            "bech32PrefixAccPub": "sifpub",
+            "bech32PrefixValAddr": "sifvaloper",
+            "bech32PrefixValPub": "sifvaloperpub",
+            "bech32PrefixConsAddr": "sifvalcons",
+            "bech32PrefixConsPub": "sifvalconspub",
+            "bondDenom": "rowan",
+            "powerReduction": 1000000,
+            "coins": [
+                {
+                    "denom": "rowan",
+                    "displayName": "ROWAN",
+                    "displayNamePlural": "ROWAN",
+                    "fraction": 1000000000000000000
+                },
+                {
+                    "denom": "cusdt",
+                    "displayName": "cUSDT",
+                    "displayNamePlural": "cUSDT",
+                    "fraction": 1000000
+                },
+                {
+                    "denom": "ceth",
+                    "displayName": "cETH",
+                    "displayNamePlural": "cETH",
+                    "fraction": 1000000000000000000
+                },
+                {
+                    "denom": "cbat",
+                    "displayName": "cBAT",
+                    "displayNamePlural": "cBAT",
+                    "fraction": 1000000000000000000
+                },
+                {
+                    "denom": "cant",
+                    "displayName": "cANT",
+                    "displayNamePlural": "cANT",
+                    "fraction": 1000000000000000000
+                },
+                {
+                    "denom": "cbnt",
+                    "displayName": "cBNT",
+                    "displayNamePlural": "cBNT",
+                    "fraction": 1000000000000000000
+                },
+                {
+                    "denom": "czrx",
+                    "displayName": "cZRX",
+                    "displayNamePlural": "cZRX",
+                    "fraction": 1000000000000000000
+                },
+                {
+                    "denom": "clink",
+                    "displayName": "cLINK",
+                    "displayNamePlural": "cLINK",
+                    "fraction": 1000000000000000000
+                },
+                {
+                    "denom": "cmana",
+                    "displayName": "cMANA",
+                    "displayNamePlural": "cMANA",
+                    "fraction": 1000000000000000000
+                },
+                {
+                    "denom": "clrc",
+                    "displayName": "cLRC",
+                    "displayNamePlural": "cLRC",
+                    "fraction": 1000000000000000000
+                },
+                {
+                    "denom": "cenj",
+                    "displayName": "cENJ",
+                    "displayNamePlural": "cENJ",
+                    "fraction": 1000000000000000000
+                },
+                {
+                    "denom": "csnx",
+                    "displayName": "cSNX",
+                    "displayNamePlural": "cSNX",
+                    "fraction": 1000000000000000000
+                },
+                {
+                    "denom": "ctusd",
+                    "displayName": "cTUSD",
+                    "displayNamePlural": "cTUSD",
+                    "fraction": 1000000000000000000
+                },
+                {
+                    "denom": "cocean",
+                    "displayName": "cOCEAN",
+                    "displayNamePlural": "cOCEAN",
+                    "fraction": 1000000000000000000
+                },
+                {
+                    "denom": "cftm",
+                    "displayName": "cFTM",
+                    "displayNamePlural": "cFTM",
+                    "fraction": 1000000000000000000
+                },
+                {
+                    "denom": "csusd",
+                    "displayName": "cSUSD",
+                    "displayNamePlural": "cSUSD",
+                    "fraction": 1000000000000000000
+                },
+                {
+                    "denom": "cusdc",
+                    "displayName": "cUSDC",
+                    "displayNamePlural": "cUSDC",
+                    "fraction": 1000000
+                },
+                {
+                    "denom": "ccro",
+                    "displayName": "cCRO",
+                    "displayNamePlural": "cCRO",
+                    "fraction": 100000000
+                },
+                {
+                    "denom": "cwbtc",
+                    "displayName": "cWBTC",
+                    "displayNamePlural": "cWBTC",
+                    "fraction": 100000000
+                },
+                {
+                    "denom": "csxp",
+                    "displayName": "cSXP",
+                    "displayNamePlural": "cSXP",
+                    "fraction": 1000000000000000000
+                },
+                {
+                    "denom": "cband",
+                    "displayName": "cBAND",
+                    "displayNamePlural": "cband",
+                    "fraction": 1000000000000000000
+                },
+                {
+                    "denom": "cdai",
+                    "displayName": "cDAI",
+                    "displayNamePlural": "cDAI",
+                    "fraction": 1000000000000000000
+                },
+                {
+                    "denom": "ccomp",
+                    "displayName": "cCOMP",
+                    "displayNamePlural": "cCOMP",
+                    "fraction": 1000000000000000000
+                },
+                {
+                    "denom": "cuma",
+                    "displayName": "cUMA",
+                    "displayNamePlural": "cUMA",
+                    "fraction": 1000000000000000000
+                },
+                {
+                    "denom": "cbal",
+                    "displayName": "cBAL",
+                    "displayNamePlural": "cBAL",
+                    "fraction": 1000000000000000000
+                },
+                {
+                    "denom": "cyfi",
+                    "displayName": "cYFI",
+                    "displayNamePlural": "cYFI",
+                    "fraction": 1000000000000000000
+                },
+                {
+                    "denom": "csrm",
+                    "displayName": "cSRM",
+                    "displayNamePlural": "cSRM",
+                    "fraction": 1000000
+                },
+                {
+                    "denom": "ccream",
+                    "displayName": "cCREAM",
+                    "displayNamePlural": "cCREAM",
+                    "fraction": 1000000000000000000
+                },
+                {
+                    "denom": "csand",
+                    "displayName": "cSAND",
+                    "displayNamePlural": "cSAND",
+                    "fraction": 1000000000000000000
+                },
+                {
+                    "denom": "csushi",
+                    "displayName": "cSUSHI",
+                    "displayNamePlural": "cSUSHI",
+                    "fraction": 1000000000000000000
+                },
+                {
+                    "denom": "cesd",
+                    "displayName": "cESD",
+                    "displayNamePlural": "cESD",
+                    "fraction": 1000000000000000000
+                },
+                {
+                    "denom": "cuni",
+                    "displayName": "cUNI",
+                    "displayNamePlural": "cUNI",
+                    "fraction": 1000000000000000000
+                },
+                {
+                    "denom": "caave",
+                    "displayName": "cAAVE",
+                    "displayNamePlural": "cAAVE",
+                    "fraction": 1000000000000000000
+                },
+                {
+                    "denom": "cbond",
+                    "displayName": "cBOND",
+                    "displayNamePlural": "cBOND",
+                    "fraction": 1000000000000000000
+                },
+                {
+                    "denom": "cwfil",
+                    "displayName": "cWFIL",
+                    "displayNamePlural": "cWFIL",
+                    "fraction": 1000000000000000000
+                },
+                {
+                    "denom": "cgrt",
+                    "displayName": "cGRT",
+                    "displayNamePlural": "cGRT",
+                    "fraction": 1000000000000000000
+                },
+                {
+                    "denom": "clon",
+                    "displayName": "cLON",
+                    "displayNamePlural": "cLON",
+                    "fraction": 1000000000000000000
+                },
+                {
+                    "denom": "c1inch",
+                    "displayName": "c1INCH",
+                    "displayNamePlural": "c1INCH",
+                    "fraction": 1000000000000000000
+                },
+                {
+                    "denom": "crune",
+                    "displayName": "cRUNE",
+                    "displayNamePlural": "cRUNE",
+                    "fraction": 1000000000000000000
+                },
+                {
+                    "denom": "cwscrt",
+                    "displayName": "cWSCRT",
+                    "displayNamePlural": "cWSCRT",
+                    "fraction": 1000000
+                },
+                {
+                    "denom": "ciotx",
+                    "displayName": "cIOTX",
+                    "displayNamePlural": "cIOTX",
+                    "fraction": 1000000000000000000
+                },
+                {
+                    "denom": "creef",
+                    "displayName": "cREEF",
+                    "displayNamePlural": "cREEF",
+                    "fraction": 1000000000000000000
+                },
+                {
+                    "denom": "ccocos",
+                    "displayName": "cCOCOS",
+                    "displayNamePlural": "cCOCOS",
+                    "fraction": 1000000000000000000
+                },
+                {
+                    "denom": "ckeep",
+                    "displayName": "cKEEP",
+                    "displayNamePlural": "cKEEP",
+                    "fraction": 1000000000000000000
+                },
+                {
+                    "denom": "cogn",
+                    "displayName": "cOGN",
+                    "displayNamePlural": "cOGN",
+                    "fraction": 1000000000000000000
+                }
+            ],
+            "gasPrice": 0.02,
+            "coingeckoId": "sifchain"
+        },
+        "genesisFile": "{{ .Values.blockExplorer.env.genesisURL }}",
+        "remote":{
+            "rpc": "{{ .Values.blockExplorer.env.remote.rpcURL }}",
+            "lcd": "{{ .Values.blockExplorer.env.remote.apiURL }}"
+        },
+        "debug": {
+            "startTimer": true,
+            "readGenesis": true
+        },
+        "params":{
+            "startHeight": 0,
+            "defaultBlockTime": 5000,
+            "blockInterval": 15000,
+            "consensusInterval": 1000,
+            "statusInterval":7500,
+            "signingInfoInterval": 1800000,
+            "proposalInterval": 5000,
+            "missedBlocksInterval": 60000,
+            "delegationInterval": 900000
+        }
+    }

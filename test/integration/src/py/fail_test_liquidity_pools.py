@@ -1,7 +1,7 @@
 import logging
 import os
 import time
-
+import json
 import pytest
 
 import burn_lock_functions
@@ -15,6 +15,22 @@ from test_utilities import get_required_env_var, SifchaincliCredentials, get_opt
 smart_contracts_dir = get_required_env_var("SMART_CONTRACTS_DIR")
 bridgebank_address = get_required_env_var("BRIDGE_BANK_ADDRESS")
 bridgetoken_address = get_required_env_var("BRIDGE_TOKEN_ADDRESS")
+
+#LOCAL UTILITIES
+def generate_new_currency(symbol, amount, solidity_json_path, operator_address, ethereum_network):
+    logging.info(f"create new currency: "+symbol)
+    new_currency = test_utilities.create_new_currency(
+        amount,
+        symbol,
+        token_name=symbol,
+        decimals=18,
+        smart_contracts_dir=smart_contracts_dir,
+        bridgebank_address=bridgebank_address,
+        solidity_json_path=solidity_json_path,
+        operator_address=operator_address,
+        ethereum_network=ethereum_network
+    )
+    return new_currency
 
 
 def get_pools(sifnodecli_node):
