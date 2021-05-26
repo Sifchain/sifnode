@@ -1,19 +1,17 @@
-<script>
-import { defineComponent } from "vue";
+<script lang="tsx">
+import { defineComponent, PropType, useCssModule } from "vue";
 import SifButton from "@/components/shared/SifButton.vue";
 import DetailsPanel from "@/components/shared/DetailsPanel.vue";
-import AssetItemLarge, {
-  getAssetLabel,
-} from "@/components/shared/AssetItemLarge/AssetItemLarge.vue";
-import ArrowIconButton from "@/components/shared/ArrowIconButton.vue";
-import { computed } from "@vue/reactivity";
+import AskConfirmationInfo from "@/components/shared/AskConfirmationInfo/Index.vue";
+import { IAssetAmount } from "ui-core";
 
 export default defineComponent({
-  components: { DetailsPanel, AssetItemLarge, SifButton, ArrowIconButton },
+  components: { DetailsPanel, AskConfirmationInfo, SifButton },
+  emits: ["confirmswap"],
   props: {
     requestClose: Function,
-    fromAmount: String,
-    toAmount: String,
+    fromAmount: { type: Object as PropType<IAssetAmount>, required: true },
+    toAmount: { type: Object as PropType<IAssetAmount>, required: true },
     leastAmount: String,
     fromToken: String,
     toToken: String,
@@ -22,66 +20,60 @@ export default defineComponent({
     providerFee: String,
     priceImpact: String,
     priceMessage: String,
+    onConfirmswap: Function as PropType<() => void>,
+  },
+  setup(props, ctx) {
+    const styles = useCssModule();
+
+    return () => (
+      <div data-handle="confirm-swap-modal" class={styles.confirmSwap}>
+        <h3 class={[styles.title, "mb-10"]}>Confirm Swap</h3>
+        <AskConfirmationInfo
+          tokenAAmount={props.fromAmount}
+          tokenBAmount={props.toAmount}
+        />
+        <div class={styles.estimate}>Output is estimated.</div>
+        <DetailsPanel
+          class={styles.details}
+          priceMessage={props.priceMessage}
+          toToken={props.toToken}
+          minimumReceived={props.minimumReceived}
+          providerFee={props.providerFee}
+          priceImpact={props.priceImpact}
+        />
+        <SifButton
+          block
+          primary
+          class={styles.confirmBtn}
+          {...{ onClick: () => ctx.emit("confirmswap") }}
+        >
+          Confirm Swap
+        </SifButton>
+      </div>
+    );
   },
 });
 </script>
 
-<template>
-  <div data-handle="confirm-swap-modal" class="confirm-swap">
-    <h3 class="title mb-10">Confirm Swap</h3>
-    <div class="info">
-      <AssetItemLarge :amount="fromAmount" :symbol="fromToken" />
-      <ArrowIconButton :enabled="true" />
-      <AssetItemLarge :amount="toAmount" :symbol="toToken" />
-    </div>
-    <div class="estimate">Output is estimated.</div>
-    <DetailsPanel
-      class="details"
-      :priceMessage="priceMessage"
-      :fromToken="fromToken"
-      :fromTokenImage="fromTokenImage"
-      :toToken="toToken"
-      :toTokenImage="toTokenImage"
-      :swapRate="swapRate"
-      :minimumReceived="minimumReceived"
-      :providerFee="providerFee"
-      :priceImpact="priceImpact"
-    />
-    <SifButton block primary class="confirm-btn" @click="$emit('confirmswap')">
-      Confirm Swap
-    </SifButton>
-  </div>
-</template>
-
-<style lang="scss" scoped>
-.confirm-swap {
+<style lang="scss" module>
+.confirmSwap {
   display: flex;
   flex-direction: column;
   padding: 30px 20px 20px 20px;
   min-height: 50vh;
-}
-.info {
-  background: $c_gray_100;
-  padding: 20px 20px 20px 20px;
-  border-radius: $br_sm;
 }
 
 .details {
   margin-bottom: 20px;
 }
 
+.confirmBtn {
+  margin-top: auto !important;
+}
 .title {
   font-size: $fs_lg;
   color: $c_text;
-  margin-bottom: 1rem;
-  text-align: left;
-}
-.confirm-btn {
-  margin-top: auto !important;
-}
-
-.arrow {
-  padding: 5px 4px;
+  margin-bottom: 2rem;
   text-align: left;
 }
 

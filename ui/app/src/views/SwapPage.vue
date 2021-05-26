@@ -201,6 +201,8 @@ export default defineComponent({
       fromAmount,
       toAmount,
       fromSymbol,
+      fromFieldAmount,
+      toFieldAmount,
       minimumReceived: computed(() => {
         if (!minimumReceived.value) return "";
         const { amount, asset } = minimumReceived.value;
@@ -302,10 +304,8 @@ export default defineComponent({
           :txStatus="txStatus"
           :requestClose="requestTransactionModalClose"
           :priceMessage="priceMessage"
-          :fromToken="fromSymbol"
-          :fromAmount="fromAmount"
-          :toAmount="toAmount"
-          :toToken="toSymbol"
+          :fromAmount="fromFieldAmount"
+          :toAmount="toFieldAmount"
           :minimumReceived="minimumReceived || ''"
           :providerFee="providerFee || ''"
           :priceImpact="priceImpact || ''"

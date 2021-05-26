@@ -380,6 +380,17 @@ it("swaps", async () => {
   // Confirm dialog shows the expected values
   expect(
     await dexPage.innerText(
+      "[data-handle='info-row-cusdc'] [data-handle='info-amount']",
+    ),
+  ).toBe("50.000000");
+  expect(
+    await dexPage.innerText(
+      "[data-handle='info-row-rowan'] [data-handle='info-amount']",
+    ),
+  ).toBe("49.999500");
+
+  expect(
+    await dexPage.innerText(
       "[data-handle='confirm-swap-modal'] [data-handle='details-price-message']",
     ),
   ).toBe("0.999990 ROWAN per cUSDC");
@@ -413,7 +424,7 @@ it("swaps", async () => {
   // Wait for balances to be the amounts expected
   await expect(dexPage).toHaveText(
     '[data-handle="swap-message"]',
-    "Swapped 50 cusdc for 49.9995000037 rowan",
+    "Swapped 50 cUSDC for 49.9995000037 ROWAN",
   );
 
   await dexPage.click("[data-handle='modal-view-close']");
@@ -474,6 +485,7 @@ it("fails to swap when it can't pay gas with rowan", async () => {
 
   await dexPage.click("[data-handle='modal-view-close']");
 });
+
 it("adds liquidity", async () => {
   // Navigate to swap page
   await dexPage.goto(DEX_TARGET, {
@@ -570,16 +582,12 @@ it("adds liquidity", async () => {
   ).toBe("You are depositing");
 
   expect(
-    prepareRowText(
-      await dexPage.innerText('[data-handle="token-a-details-panel-pool-row"]'),
-    ),
-  ).toBe("cETH Deposited 5");
+    prepareRowText(await dexPage.innerText('[data-handle="token-a-row"]')),
+  ).toBe("cETH Deposited 5.000000");
 
   expect(
-    prepareRowText(
-      await dexPage.innerText('[data-handle="token-b-details-panel-pool-row"]'),
-    ),
-  ).toBe("ROWAN Deposited 6024.09639");
+    prepareRowText(await dexPage.innerText('[data-handle="token-b-row"]')),
+  ).toBe("ROWAN Deposited 6024.096390");
 
   expect(
     prepareRowText(await dexPage.innerText('[data-handle="real-b-per-a-row"]')),
@@ -663,6 +671,36 @@ it("fails to add liquidity when can't pay gas with rowan", async () => {
   await expect(dexPage).toHaveText("Not enough ROWAN to cover the gas fees");
 
   await dexPage.click("[data-handle='modal-view-close']");
+});
+
+it("formats long amounts in confirmation screen", async () => {
+  // Navigate to swap page
+  await dexPage.goto(DEX_TARGET, {
+    waitUntil: "domcontentloaded",
+  });
+  // Click pool page
+  await dexPage.click('[data-handle="pool-page-button"]');
+
+  // Click add liquidity button
+  await dexPage.click('[data-handle="add-liquidity-button"]');
+
+  // Select ceth
+  await dexPage.click("[data-handle='token-a-select-button']");
+  await dexPage.click("[data-handle='ceth-select-button']");
+
+  await dexPage.click('[data-handle="token-a-input"]');
+  await dexPage.fill(
+    '[data-handle="token-a-input"]',
+    "1.00000000000000000000000000000",
+  );
+
+  await dexPage.click('[data-handle="actions-go"]');
+
+  expect(
+    await dexPage.innerText(
+      '[data-handle="token-a-row"] [data-handle="info-amount"]',
+    ),
+  ).toEqual("1.000000");
 });
 
 function prepareRowText(row) {
