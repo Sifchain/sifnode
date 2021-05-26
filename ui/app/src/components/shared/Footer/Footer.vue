@@ -25,7 +25,9 @@ export default defineComponent({
     },
     async submitEmail() {
       this.submitted = true;
-      const query = `u=400787e0a5e23ec37b7b51f74&id=c1ee83387b&EMAIL=${this.email}`;
+      const query = `u=400787e0a5e23ec37b7b51f74&id=c1ee83387b&EMAIL=${encodeURIComponent(
+        this.email,
+      )}`;
       const url = `${MAILCHIMP_URL}?${query}`;
       jsonp(url, { param: "c" });
       // TODO - Set this as a callback to jsonp
