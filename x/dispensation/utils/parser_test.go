@@ -125,7 +125,7 @@ func TestSplitBetweenReciepients(t *testing.T) {
 	for _, out := range outputs {
 		total = total.Add(out.Coins.AmountOf("rowan").ToDec())
 	}
-	inputList := make([]bank.Input, len(investors))
+	inputList := make([]types.Input, len(investors))
 	var totalPercentage float64
 	for _, investor := range investors {
 		totalPercentage = totalPercentage + investor.percentageFunding
@@ -134,7 +134,7 @@ func TestSplitBetweenReciepients(t *testing.T) {
 		investor.calculatedAmount = percentage.Quo(denom).Mul(total).TruncateInt()
 		add, err := sdk.AccAddressFromBech32(investor.address)
 		assert.NoError(t, err)
-		in := bank.NewInput(add, sdk.Coins{sdk.NewCoin("rowan", investor.calculatedAmount)})
+		in := types.NewInput(add, sdk.Coins{sdk.NewCoin("rowan", investor.calculatedAmount)})
 		inputList = append(inputList, in)
 	}
 	assert.True(t, totalPercentage == 100.00, "Total Percentage is not 100%")
