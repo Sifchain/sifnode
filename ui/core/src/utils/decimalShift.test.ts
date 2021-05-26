@@ -1,4 +1,5 @@
-import { decimalShift, floorDecimal, getMantissaValue } from "./decimalShift";
+import { Amount, IAmount } from "../entities";
+import { decimalShift, floorDecimal, getMantissaLength } from "./decimalShift";
 
 type Tests<InputType, OutputType = string> = {
   input: InputType;
@@ -129,25 +130,29 @@ describe("floorDecimal", () => {
 });
 
 describe("getMantissa", () => {
-  const getMantissaTests: Tests<string> = [
+  const getMantissaTests: Tests<IAmount, number> = [
     {
-      input: "1234.12341234",
-      expected: "8",
+      input: Amount("1234.12341234"),
+      expected: 8,
     },
     {
-      input: "0.123412341234",
-      expected: "12",
+      input: Amount("0.123412341234"),
+      expected: 12,
     },
     {
-      input: "0.99999",
-      expected: "5",
+      input: Amount("0.99999"),
+      expected: 5,
+    },
+    {
+      input: Amount("0.9999900000"),
+      expected: 5,
     },
   ];
   getMantissaTests.forEach(({ skip, only, input, expected }) => {
     const tester = only ? test.only : skip ? test.skip : test;
 
     tester(`${input}\t=> ${expected}`, () => {
-      expect(getMantissaValue(input)).toBe(expected);
+      expect(getMantissaLength(input)).toBe(expected);
     });
   });
 });
