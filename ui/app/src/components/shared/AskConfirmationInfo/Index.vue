@@ -7,19 +7,27 @@ import { effect } from "@vue/reactivity";
 
 export default defineComponent({
   props: {
+    amountDescriptions: { type: String },
     tokenAAmount: { type: Object as PropType<IAssetAmount>, required: true },
     tokenBAmount: { type: Object as PropType<IAssetAmount>, required: true },
+    showArrow: { type: Boolean },
   },
   setup(props) {
     const styles = useCssModule();
 
     return () => (
       <div class={styles.info}>
-        <AssetItemLarge amount={props.tokenAAmount} />
+        <AssetItemLarge
+          description={props.amountDescriptions}
+          amount={props.tokenAAmount}
+        />
         <div class={styles.arrowHolder}>
-          <ArrowIconButton enabled={true} />
+          {props.showArrow && <ArrowIconButton enabled={true} />}
         </div>
-        <AssetItemLarge amount={props.tokenBAmount} />
+        <AssetItemLarge
+          description={props.amountDescriptions}
+          amount={props.tokenBAmount}
+        />
       </div>
     );
   },

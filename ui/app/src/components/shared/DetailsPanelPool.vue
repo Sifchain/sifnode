@@ -1,9 +1,4 @@
 <style lang="scss" module>
-.details {
-  border: 1px solid $c_gray_200;
-  border-radius: $br_sm;
-  background: $c_white;
-}
 .detailsHeader {
   padding: 10px 15px;
   // border-bottom: 1px solid $c_gray_200;
@@ -69,12 +64,13 @@ export default defineComponent({
     });
 
     return () => (
-      <div class={styles.details}>
+      <div>
+        <AskConfirmationInfo
+          amountDescriptions="Deposited"
+          tokenAAmount={props.tokenAAmount}
+          tokenBAmount={props.tokenBAmount}
+        />
         <div class={styles.detailsHeader}>
-          <AskConfirmationInfo
-            tokenAAmount={props.tokenAAmount}
-            tokenBAmount={props.tokenBAmount}
-          />
           {/* <div
             class={styles.detailsRow}
             data-handle="token-a-details-panel-pool-row"

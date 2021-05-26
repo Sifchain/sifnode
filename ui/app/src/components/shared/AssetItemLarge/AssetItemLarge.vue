@@ -9,6 +9,7 @@ import { effect } from "@vue/reactivity";
 export default defineComponent({
   props: {
     amount: { type: Object as PropType<IAssetAmount>, required: true },
+    description: { type: String, required: false },
   },
   setup(props) {
     effect(() => {
@@ -33,11 +34,21 @@ export default defineComponent({
           <img width="24" src={tokenImage.value} class={styles.infoImg} />
         )}
         <div class={styles.infoToken}>{tokenLabel.value}</div>
+        {props.description && (
+          <div class={styles.infoDescription}>{props.description}</div>
+        )}
         <div class={styles.infoAmount} data-handle="info-amount">
           {format(props.amount.amount, props.amount.asset, { mantissa: 6 })}
         </div>
         {props.amount && getMantissaLength(props.amount.toDerived()) > 6 ? (
-          <Tooltip message={props.amount.toString()} fit>
+          <Tooltip
+            message={
+              format(props.amount.amount, props.amount.asset) +
+              " " +
+              props.amount.label
+            }
+            fit
+          >
             <div class={styles.iconHolder}>
               <Icon icon="eye" class={styles.infoEye} />
             </div>
@@ -79,9 +90,16 @@ export default defineComponent({
   flex: 1 1 auto;
   text-align: right;
 }
+.infoDescription {
+  color: $c_gray_700;
+  transform: translateY(2px);
+  font-size: 14px;
+  margin-left: 5px;
+}
 .infoToken {
   font-size: 18px;
-  width: 60px;
+  min-width: 68px;
+  text-align: left;
 }
 .infoImg {
   width: 20px;
