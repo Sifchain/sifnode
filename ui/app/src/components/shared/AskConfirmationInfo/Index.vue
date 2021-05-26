@@ -10,7 +10,7 @@ export default defineComponent({
     amountDescriptions: { type: String },
     tokenAAmount: { type: Object as PropType<IAssetAmount>, required: true },
     tokenBAmount: { type: Object as PropType<IAssetAmount>, required: true },
-    showArrow: { type: Boolean },
+    showArrow: { type: Boolean, default: true },
   },
   setup(props) {
     const styles = useCssModule();
@@ -21,7 +21,9 @@ export default defineComponent({
           description={props.amountDescriptions}
           amount={props.tokenAAmount}
         />
-        <div class={styles.arrowHolder}>
+        <div
+          class={props.showArrow ? styles.arrowHolder : styles.arrowHolderEmpty}
+        >
           {props.showArrow && <ArrowIconButton enabled={true} />}
         </div>
         <AssetItemLarge
@@ -43,5 +45,9 @@ export default defineComponent({
 
 .arrowHolder {
   padding: 5px 4px;
+}
+
+.arrowHolderEmpty {
+  height: 17px;
 }
 </style>

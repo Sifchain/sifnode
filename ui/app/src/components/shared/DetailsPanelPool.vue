@@ -67,6 +67,7 @@ export default defineComponent({
       <div>
         <AskConfirmationInfo
           amountDescriptions="Deposited"
+          showArrow={false}
           tokenAAmount={props.tokenAAmount}
           tokenBAmount={props.tokenBAmount}
         />

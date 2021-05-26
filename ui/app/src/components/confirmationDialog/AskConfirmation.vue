@@ -27,7 +27,7 @@ export default defineComponent({
 
     return () => (
       <div data-handle="confirm-swap-modal" class={styles["confirm-swap"]}>
-        <h3 class="title mb-10">Confirm Swap</h3>
+        <h3 class={[styles.title, "mb-10"]}>Confirm Swap</h3>
         <AskConfirmationInfo
           tokenAAmount={props.fromAmount}
           tokenBAmount={props.toAmount}
@@ -69,6 +69,12 @@ export default defineComponent({
 
 .confirm-btn {
   margin-top: auto !important;
+}
+.title {
+  font-size: $fs_lg;
+  color: $c_text;
+  margin-bottom: 2rem;
+  text-align: left;
 }
 
 .estimate {

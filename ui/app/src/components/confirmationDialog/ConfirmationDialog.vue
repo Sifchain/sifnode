@@ -49,10 +49,8 @@ export default defineComponent({
             <AnimatedConfirmation
               state={props.state}
               txStatus={props.txStatus}
-              fromAmount={props.fromAmount.toString()}
-              fromToken={props.fromAmount.label}
-              toAmount="toAmount"
-              toToken="toToken"
+              fromAmount={props.fromAmount}
+              toAmount={props.toAmount}
               onCloserequested={props.requestClose}
             />
           ))}

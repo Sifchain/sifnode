@@ -4,7 +4,7 @@ import Loader from "@/components/shared/Loader.vue";
 import SifButton from "@/components/shared/SifButton.vue";
 import { useCore } from "@/hooks/useCore";
 import { getBlockExplorerUrl } from "../shared/utils";
-import { ErrorCode, TransactionStatus } from "ui-core";
+import { ErrorCode, format, IAssetAmount, TransactionStatus } from "ui-core";
 import SwipeTransition from "./SwipeTransition.vue";
 
 export default defineComponent({
@@ -15,10 +15,8 @@ export default defineComponent({
     confirmed: Boolean,
     failed: Boolean,
     state: { type: String as PropType<"submit" | "fail" | "success"> },
-    fromAmount: String,
-    fromToken: String,
-    toAmount: String,
-    toToken: String,
+    fromAmount: { type: Object as PropType<IAssetAmount>, required: true },
+    toAmount: { type: Object as PropType<IAssetAmount>, required: true },
     onCloserequested: Function as PropType<() => void>,
   },
   setup(props, context) {
@@ -29,10 +27,8 @@ export default defineComponent({
     const ConfirmTemplate = (p: {
       header: JSX.Element;
       pre: JSX.Element;
-      fromAmount?: string;
-      toAmount?: string;
-      fromToken?: string;
-      toToken?: string;
+      fromAmount: IAssetAmount;
+      toAmount: IAssetAmount;
       post: JSX.Element;
     }) => (
       <div class={styles.text}>
@@ -40,11 +36,13 @@ export default defineComponent({
         <p class={styles.thin} data-handle="swap-message">
           {p.pre + " "}
           <span class={styles.thick}>
-            {p.fromAmount} {p.fromToken}
+            {format(p.fromAmount.amount, p.fromAmount.asset, { mantissa: 6 })}{" "}
+            {p.fromAmount.label}
           </span>{" "}
           for{" "}
           <span class={styles.thick}>
-            {p.toAmount} {p.toToken}
+            {format(p.toAmount.amount, p.toAmount.asset, { mantissa: 6 })}{" "}
+            {p.toAmount.label}
           </span>
         </p>
         <br />
@@ -55,9 +53,7 @@ export default defineComponent({
     // Need to cache amounts and disconnect reactivity
     const amounts = {
       fromAmount: props.fromAmount,
-      fromToken: props.fromToken,
       toAmount: props.toAmount,
-      toToken: props.toToken,
     };
 
     const handleCloseRequested = () => context.emit("closerequested");
