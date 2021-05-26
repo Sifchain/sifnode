@@ -3,7 +3,7 @@ import { defineComponent } from "vue";
 import Layout from "@/components/layout/Layout.vue";
 import { computed, ref } from "@vue/reactivity";
 import { useCore } from "@/hooks/useCore";
-import { SwapState, useSwapCalculator } from "ui-core";
+import { SwapState, TransactionStatus, useSwapCalculator } from "ui-core";
 import { useWalletButton } from "@/components/wallet/useWalletButton";
 import CurrencyPairPanel from "@/components/currencyPairPanel/Index.vue";
 import Modal from "@/components/shared/Modal.vue";
@@ -14,9 +14,15 @@ import ConfirmationDialog from "@/components/confirmationDialog/ConfirmationDial
 import { useCurrencyFieldState } from "@/hooks/useCurrencyFieldState";
 import DetailsPanel from "@/components/shared/DetailsPanel.vue";
 import SlippagePanel from "@/components/slippagePanel/Index.vue";
-import { ConfirmState } from "../types";
-import { toConfirmState } from "./utils/toConfirmState";
+import { getMaxAmount } from "./utils/getMaxAmount";
 import { format } from "ui-core/src/utils/format";
+
+// This is a little generic but these UI Flows
+// might be different depending on our page functionality
+// It would be better not to share them but instead derive state based on them in this file/domain.
+// Currently some of these are used in down tree components but until we convert to JSX
+// We will need to manage these manually
+type SwapPageState = "idle" | "confirm" | "submit" | "fail" | "success";
 
 export default defineComponent({
   components: {
@@ -32,7 +38,7 @@ export default defineComponent({
   },
 
   setup() {
-    const { actions, poolFinder, store } = useCore();
+    const { usecases, poolFinder, store } = useCore();
 
     const {
       fromSymbol,
@@ -42,13 +48,14 @@ export default defineComponent({
     } = useCurrencyFieldState();
 
     const slippage = ref<string>("1.0");
-    const transactionState = ref<ConfirmState>("selecting");
-    const transactionHash = ref<string | null>(null);
+    const pageState = ref<SwapPageState>("idle");
+    const txStatus = ref<TransactionStatus | null>(null);
+
     const selectedField = ref<"from" | "to" | null>(null);
     const { connected } = useWalletButton();
 
     function requestTransactionModalClose() {
-      transactionState.value = "selecting";
+      pageState.value = "idle";
     }
 
     const balances = computed(() => {
@@ -99,7 +106,7 @@ export default defineComponent({
       if (!toFieldAmount.value)
         throw new Error("to field amount is not defined");
 
-      transactionState.value = "confirming";
+      pageState.value = "confirm";
     }
 
     async function handleAskConfirmClicked() {
@@ -110,15 +117,17 @@ export default defineComponent({
       if (!minimumReceived.value)
         throw new Error("minimumReceived amount is not defined");
 
-      transactionState.value = "signing";
+      pageState.value = "submit";
 
-      const tx = await actions.clp.swap(
+      txStatus.value = await usecases.clp.swap(
         fromFieldAmount.value,
         toFieldAmount.value.asset,
         minimumReceived.value,
       );
-      transactionHash.value = tx.hash;
-      transactionState.value = toConfirmState(tx.state); // TODO: align states
+
+      pageState.value =
+        typeof txStatus.value.code === "number" ? "fail" : "success";
+
       clearAmounts();
     }
 
@@ -205,34 +214,27 @@ export default defineComponent({
         selectedField.value = "from";
         const accountBalance = getAccountBalance();
         if (!accountBalance) return;
-        fromAmount.value = format(accountBalance.amount, accountBalance.asset, {
-          mantissa: 18,
+        const maxAmount = getMaxAmount(fromSymbol, accountBalance);
+        fromAmount.value = format(maxAmount, accountBalance.asset, {
+          mantissa: accountBalance.asset.decimals,
           trimMantissa: true,
         });
       },
       nextStepAllowed: computed(() => {
         return state.value === SwapState.VALID_INPUT;
       }),
-      transactionState,
-      transactionModalOpen: computed(() => {
-        return [
-          "confirming",
-          "signing",
-          "failed",
-          "rejected",
-          "confirmed",
-          "out_of_gas",
-        ].includes(transactionState.value);
-      }),
+      pageState,
+      txStatus,
+      transactionModalOpen: computed(() => pageState.value !== "idle"),
       requestTransactionModalClose,
       handleArrowClicked() {
         swapInputs();
       },
       handleConfirmClicked() {
-        transactionState.value = "signing";
+        pageState.value = "submit";
       },
       handleAskConfirmClicked,
-      transactionHash,
+
       isFromMaxActive,
       selectedField,
     };
@@ -296,8 +298,8 @@ export default defineComponent({
         :isOpen="transactionModalOpen"
         ><ConfirmationDialog
           @confirmswap="handleAskConfirmClicked"
-          :transactionHash="transactionHash"
-          :state="transactionState"
+          :state="pageState"
+          :txStatus="txStatus"
           :requestClose="requestTransactionModalClose"
           :priceMessage="priceMessage"
           :fromToken="fromSymbol"
