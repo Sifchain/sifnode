@@ -309,7 +309,7 @@ export default defineComponent({
       <!-- <a target="_blank" :href="getBlockExplorerUrl(chainId)">View</a> -->
       <div class="blockexplorer-container">
         <SifButton
-          absolute="true"
+          :absolute="true"
           target="_blank"
           :to="getBlockExplorerUrl(chainId)"
           primaryOutline
