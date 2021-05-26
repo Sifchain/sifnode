@@ -236,6 +236,16 @@ it("swaps", async () => {
   await swapPage.clickSwap();
 
   // Confirm dialog shows the expected values
+  // expect(
+  //   await dexPage.innerText(
+  //     "[data-handle='info-row-cusdc'] [data-handle='info-amount']",
+  //   ),
+  // ).toBe("50.000000");
+  // expect(
+  //   await dexPage.innerText(
+  //     "[data-handle='info-row-rowan'] [data-handle='info-amount']",
+  //   ),
+  // ).toBe("49.999500");
   await confirmSwapModal.verifyDetails({
     expPriceMessage: "0.999990 ROWAN per cUSDC",
     expMinimumReceived: "49.499505 ROWAN",
@@ -253,7 +263,7 @@ it("swaps", async () => {
 
   // Wait for balances to be the amounts expected
   await confirmSwapModal.verifySwapMessage(
-    "Swapped 50 cusdc for 49.9995000037 rowan",
+    "Swapped 50 cUSDC for 49.9995000037 ROWAN",
   );
 
   await confirmSwapModal.clickClose();
@@ -347,7 +357,7 @@ it("adds liquidity", async () => {
 
   expect(
     prepareRowText(await confirmSupplyModal.getTokenBDetailsPoolText()),
-  ).toBe("ROWAN Deposited 6024.09639");
+  ).toBe("ROWAN Deposited 6024.096390");
 
   expect(prepareRowText(await confirmSupplyModal.getRatesBPerARowText())).toBe(
     "Rates 1 cETH = 1204.81927711 ROWAN",
@@ -381,7 +391,7 @@ it("adds liquidity", async () => {
     "Total Pooled ROWAN: 10006024.09639",
   );
   expect(prepareRowText(await poolPage.getTotalPoolShareText())).toBe(
-    "Your pool share: 0.0602 %",
+    "Your Pool Share (%): 0.0602",
   );
 });
 
@@ -405,6 +415,36 @@ it("fails to add liquidity when can't pay gas with rowan", async () => {
   await expect(page).toHaveText("Not enough ROWAN to cover the gas fees");
 
   await confirmSupplyModal.closeModal();
+});
+
+it("formats long amounts in confirmation screen", async () => {
+  // Navigate to swap page
+  await dexPage.goto(DEX_TARGET, {
+    waitUntil: "domcontentloaded",
+  });
+  // Click pool page
+  await dexPage.click('[data-handle="pool-page-button"]');
+
+  // Click add liquidity button
+  await dexPage.click('[data-handle="add-liquidity-button"]');
+
+  // Select ceth
+  await dexPage.click("[data-handle='token-a-select-button']");
+  await dexPage.click("[data-handle='ceth-select-button']");
+
+  await dexPage.click('[data-handle="token-a-input"]');
+  await dexPage.fill(
+    '[data-handle="token-a-input"]',
+    "1.00000000000000000000000000000",
+  );
+
+  await dexPage.click('[data-handle="actions-go"]');
+
+  expect(
+    await dexPage.innerText(
+      '[data-handle="token-a-row"] [data-handle="info-amount"]',
+    ),
+  ).toEqual("1.000000");
 });
 
 function prepareRowText(row) {

@@ -1,6 +1,10 @@
 <template>
   <div class="positioner">
-    <LoaderCircle :black="black" :success="success || failed" />
+    <LoaderCircle
+      :typeSize="typeSize"
+      :black="black"
+      :success="success || failed"
+    />
     <div class="tick-holder">
       <transition name="reveal">
         <LoaderTick v-if="success" class="tick" />
@@ -24,6 +28,7 @@ export default defineComponent({
     black: { type: Boolean, default: false },
     success: { type: Boolean, default: false },
     failed: { type: Boolean, default: false },
+    typeSize: { type: Boolean, default: false },
   },
 });
 </script>
