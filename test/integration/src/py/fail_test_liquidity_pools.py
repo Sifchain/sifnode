@@ -33,23 +33,6 @@ def generate_new_currency(symbol, amount, solidity_json_path, operator_address, 
     return new_currency
 
 
-def transfer_new_currency(request, symbol, currency, amount):
-    logging.info(f"transfer some of the new currency {symbol} to the test sifchain address")
-    request.ethereum_symbol = currency["newtoken_address"]
-    request.sifchain_symbol = symbol
-    request.amount = amount
-    burn_lock_functions.transfer_ethereum_to_sifchain(request)
-
-
-def get_currency_faucet_balance(currency, json_input):
-    amount = 0;
-    for obj in json_input:
-        for key, value in obj.items():
-            if value == currency:
-                amount = int(obj['amount'])
-    return amount
-
-
 def get_pools(sifnodecli_node):
     node = f"--node {sifnodecli_node}" if sifnodecli_node else ""
     command_line = f"{sifnoded_binary} q clp pools {node} --output json"
