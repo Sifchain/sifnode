@@ -3,7 +3,6 @@ import { defineComponent, PropType } from "vue";
 import AskConfirmation from "./AskConfirmation.vue";
 import AnimatedConfirmation from "./AnimatedConfirmation.vue";
 import { IAssetAmount, TransactionStatus } from "ui-core";
-import { effect } from "@vue/reactivity";
 
 export default defineComponent({
   components: { AskConfirmation, AnimatedConfirmation },
@@ -43,17 +42,17 @@ export default defineComponent({
             onConfirmswap={() => ctx.emit("confirmswap")}
           />
         )}
-        {props.state === "submit" ||
+        {(props.state === "submit" ||
           props.state === "fail" ||
-          (props.state === "success" && (
-            <AnimatedConfirmation
-              state={props.state}
-              txStatus={props.txStatus}
-              fromAmount={props.fromAmount}
-              toAmount={props.toAmount}
-              onCloserequested={props.requestClose}
-            />
-          ))}
+          props.state === "success") && (
+          <AnimatedConfirmation
+            state={props.state}
+            txStatus={props.txStatus}
+            fromAmount={props.fromAmount}
+            toAmount={props.toAmount}
+            onCloserequested={props.requestClose}
+          />
+        )}
       </>
     );
   },

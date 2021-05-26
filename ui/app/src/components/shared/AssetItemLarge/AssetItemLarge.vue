@@ -4,7 +4,6 @@ import Icon from "@/components/shared/Icon.vue";
 import Tooltip from "@/components/shared/Tooltip.vue";
 import { getMantissaLength, format, IAssetAmount } from "ui-core";
 import { useAssetItem } from "../utils";
-import { effect } from "@vue/reactivity";
 
 export default defineComponent({
   props: {
@@ -12,9 +11,6 @@ export default defineComponent({
     description: { type: String, required: false },
   },
   setup(props) {
-    effect(() => {
-      console.log({ "props.amount": props.amount });
-    });
     const styles = useCssModule();
     const symbol = computed(() => props.amount?.symbol);
     const { token, label: tokenLabel } = useAssetItem(symbol);
