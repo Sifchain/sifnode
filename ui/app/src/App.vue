@@ -34,8 +34,6 @@ import { defineComponent } from "vue";
 import WithWallet from "@/components/wallet/WithWallet.vue";
 import Header from "./components/shared/Header/Header.vue";
 import Pill from "./components/shared/Pill/Pill.vue";
-import Footer from "./components/shared/Footer/Footer.vue";
-import SifButton from "./components/shared/SifButton.vue";
 import Notifications from "./components/Notifications.vue";
 import { useInitialize } from "./hooks/useInitialize";
 export default defineComponent({
@@ -44,8 +42,6 @@ export default defineComponent({
     Header,
     Notifications,
     WithWallet,
-    SifButton,
-    Footer,
     Pill,
   },
   setup() {
