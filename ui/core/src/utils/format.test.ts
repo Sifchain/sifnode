@@ -102,6 +102,20 @@ describe("format", () => {
       expected: `1.0`,
     },
     {
+      input: format(Amount("1.000000"), {
+        mantissa: 6,
+        trimMantissa: "integer",
+      }),
+      expected: `1`,
+    },
+    {
+      input: format(Amount("1.100000"), {
+        mantissa: 6,
+        trimMantissa: "integer",
+      }),
+      expected: `1.1`,
+    },
+    {
       input: format(Amount("1.100000"), { mantissa: 6, trimMantissa: true }),
       expected: `1.1`,
     },
