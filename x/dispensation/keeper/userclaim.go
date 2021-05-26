@@ -11,8 +11,8 @@ func (k Keeper) SetClaim(ctx sdk.Context, ar types.UserClaim) error {
 		return errors.Wrapf(types.ErrInvalid, "Claim Details : %s", ar.String())
 	}
 	store := ctx.KVStore(k.storeKey)
-	key := types.GetUserClaimKey(ar.UserAddress.String(), ar.UserClaimType)
-	store.Set(key, k.cdc.MustMarshalBinaryBare(ar))
+	key := types.GetUserClaimKey(ar.UserAddress, ar.UserClaimType)
+	store.Set(key, k.cdc.MustMarshalBinaryBare(&ar))
 	return nil
 }
 
