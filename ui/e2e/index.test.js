@@ -698,9 +698,9 @@ it("formats long amounts in confirmation screen", async () => {
 
   expect(
     await dexPage.innerText(
-      '[data-handle="token-a-details-panel-pool-row"] [data-handle="details-row-value"]',
+      '[data-handle="token-a-row"] [data-handle="info-amount"]',
     ),
-  ).toEqual("1.000000000000000000");
+  ).toEqual("1.000000");
 });
 
 function prepareRowText(row) {
