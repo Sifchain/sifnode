@@ -68,11 +68,10 @@ func NewKeybase(validatorMoniker, mnemonic, password string) (keyring.Keyring, k
 // NewEthereumSub initializes a new EthereumSub
 func NewEthereumSub(
 	cliCtx client.Context,
-	rpcURL string,
+	nodeUrl string,
 	validatorMoniker,
 	ethProvider string,
 	registryContractAddress common.Address,
-	privateKey *ecdsa.PrivateKey,
 	validatorAddress sdk.ValAddress,
 	db *leveldb.DB,
 	sugaredLogger *zap.SugaredLogger,
@@ -80,12 +79,11 @@ func NewEthereumSub(
 
 	return EthereumSub{
 		EthProvider:             ethProvider,
-		TmProvider:              rpcURL,
+		TmProvider:              nodeUrl,
 		RegistryContractAddress: registryContractAddress,
 		ValidatorName:           validatorMoniker,
 		ValidatorAddress:        validatorAddress,
 		CliCtx:                  cliCtx,
-		PrivateKey:              privateKey,
 		DB:                      db,
 		SugaredLogger:           sugaredLogger,
 	}
@@ -360,10 +358,10 @@ func (sub EthereumSub) Replay(txFactory tx.Factory, fromBlock int64, toBlock int
 			log.Println(fmt.Sprintf("found out a burn lock event"))
 			if !EventProcessed(bridgeClaims, event) {
 				err := sub.handleEthereumEvent(txFactory, []types.EthereumEvent{event})
-				time.Sleep(transactionInterval)
 				if err != nil {
 					log.Printf("failed to handle ethereum event, error is %s\n", err.Error())
 				}
+				time.Sleep(transactionInterval)
 			} else {
 				log.Println("event already processed by me.")
 			}

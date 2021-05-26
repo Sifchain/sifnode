@@ -18,4 +18,4 @@ See [here](https://github.com/Sifchain/sifnode/tree/master/docs/chainOps/k8s/REA
 
 ## Additional Resources
 
-Feel free to ask questions on Discord [here](https://discord.com/invite/zZTYnNG).
+Feel free to ask questions on Discord [here](https://discord.gg/vdNRZBttC8).

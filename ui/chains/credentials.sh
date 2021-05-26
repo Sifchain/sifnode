@@ -1,3 +1,5 @@
+#!/bin/bash
+
 BASE_DIR=$PWD/../..
 
 rm -rf $BASE_DIR/ui/node_modules/.migrate-complete

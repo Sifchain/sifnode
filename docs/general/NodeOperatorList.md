@@ -72,4 +72,4 @@ sif10ps0r8zym8f9pw4euvs9qgqxjrwyzpyugcvvgc | akshayalenchery#5574 | Casper | As 
 sif1vqysw7rv9lf6ryk8xx3t2t2r9pmc5nhmryvhdl | Perfect Stake#5940 | Celo, Kusama, Band, Solana, Crypto.com, Certik, Plasm, Centrifuge | as long as required | 
 sif14xuftjs6k3hecsw3g63nelkwr3jff300wq6z6z | beny1234#4111 | oasis, nucypher, irisnet | forever | 
 sif1chky4sqt0nqegd2cz8c2gtchtnw9ctu2f546fl | Breather#0955 | Solana, Robonomics, Bitsong, Oasis | as long as I receive the delegations from Sifchain foundation | 
-
+sif1fdppshyftmfxsqy9ln66qkxc8q6faktd26nhrr | Eddie Nuta | Valid Blocks#0997 | Elrond, Solana, previoulsy did Cosmos, Kava) | No target set. We're in this for the long run.
