@@ -308,7 +308,13 @@ export default defineComponent({
       <div class="dotted-line"></div>
       <!-- <a target="_blank" :href="getBlockExplorerUrl(chainId)">View</a> -->
       <div class="blockexplorer-container">
-        <SifButton primaryOutline nocase block
+        <SifButton
+          absolute="true"
+          target="_blank"
+          :to="getBlockExplorerUrl(chainId)"
+          primaryOutline
+          nocase
+          block
           >View On Block Explorer</SifButton
         >
       </div>

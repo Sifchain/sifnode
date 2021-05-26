@@ -12,7 +12,7 @@
   </button>
 
   <router-link
-    v-else
+    v-else-if="!absolute"
     v-bind="$attrs"
     :to="to"
     class="btn"
@@ -23,6 +23,18 @@
       <slot></slot>
     </span>
   </router-link>
+  <a
+    v-else
+    v-bind="$attrs"
+    :href="to"
+    class="btn"
+    :class="classes"
+    :disabled="disabled"
+  >
+    <span class="content">
+      <slot></slot>
+    </span>
+  </a>
 </template>
 
 <script lang="ts">
@@ -31,6 +43,10 @@ export default defineComponent({
   inheritAttrs: false,
   props: {
     disabled: {
+      type: Boolean,
+      default: false,
+    },
+    absolute: {
       type: Boolean,
       default: false,
     },
@@ -283,5 +299,8 @@ export default defineComponent({
     display: flex;
     justify-content: center;
   }
+}
+a.btn {
+  display: flex !important;
 }
 </style>
