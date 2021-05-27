@@ -4,11 +4,12 @@ import (
 	"github.com/Sifchain/sifnode/x/dispensation"
 	"github.com/Sifchain/sifnode/x/dispensation/test"
 	"github.com/Sifchain/sifnode/x/dispensation/types"
+	dispensationUtils "github.com/Sifchain/sifnode/x/dispensation/utils"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	bank "github.com/cosmos/cosmos-sdk/x/bank/types"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/tendermint/tendermint/crypto"
+	"github.com/tendermint/tendermint/crypto/ed25519"
 	"testing"
 )
 
@@ -17,22 +18,30 @@ func TestNewHandler_CreateDistribution(t *testing.T) {
 	keeper := app.DispensationKeeper
 	handler := dispensation.NewHandler(keeper)
 	recipients := 3000
-	inputList := test.CreateInputList(2, "15000000000000000000000")
 	outputList := test.CreatOutputList(recipients, "10000000000000000000")
-	err := bank.ValidateInputsOutputs(inputList, outputList)
+	distributor := sdk.AccAddress(ed25519.GenPrivKey().PubKey().Address())
+	totalCoins, err := dispensationUtils.TotalOutput(outputList)
 	assert.NoError(t, err)
-	for _, in := range inputList {
-		err := keeper.GetBankKeeper().AddCoins(ctx, sdk.AccAddress(in.Address), in.Coins)
-		assert.NoError(t, err)
-	}
-	msgAirdrop := types.NewMsgCreateDistribution(sdk.AccAddress{}, "AR1", types.DistributionType_DISTRIBUTION_TYPE_AIRDROP, inputList, outputList)
+	err = keeper.GetBankKeeper().AddCoins(ctx, distributor, totalCoins)
+	assert.NoError(t, err)
+	distributionname := "AR1"
+	msgAirdrop := types.NewMsgCreateDistribution(distributor, distributionname, types.DistributionType_DISTRIBUTION_TYPE_AIRDROP, outputList)
 	res, err := handler(ctx, &msgAirdrop)
 	require.NoError(t, err)
 	require.NotNil(t, res)
-
-	dr := append(keeper.GetRecordsForName(ctx, "AR1", types.DistributionStatus_DISTRIBUTION_STATUS_PENDING).DistributionRecords,
-		keeper.GetRecordsForName(ctx, "AR1", types.DistributionStatus_DISTRIBUTION_STATUS_COMPLETED).DistributionRecords...)
-	assert.Len(t, dr, recipients)
+	for _, e := range res.Events {
+		if e.Type == "distribution_started" {
+			assert.Len(t, e.Attributes, 3)
+			assert.Contains(t, e.Attributes[1].String(), "distribution_name")
+			assert.Contains(t, e.Attributes[1].String(), distributionname)
+			assert.Contains(t, e.Attributes[2].String(), "distribution_type")
+			assert.Contains(t, e.Attributes[2].String(), types.DistributionType_DISTRIBUTION_TYPE_AIRDROP.String())
+		}
+	}
+	dr := keeper.GetRecordsForName(ctx, distributionname)
+	assert.Len(t, dr.DistributionRecords, recipients)
+	dr = keeper.GetRecordsForNameAndStatus(ctx, distributionname, types.DistributionStatus_DISTRIBUTION_STATUS_PENDING)
+	assert.Len(t, dr.DistributionRecords, recipients)
 }
 
 func TestNewHandler_CreateClaim(t *testing.T) {
@@ -47,6 +56,5 @@ func TestNewHandler_CreateClaim(t *testing.T) {
 
 	cl, err := keeper.GetClaim(ctx, address.String(), types.DistributionType_DISTRIBUTION_TYPE_VALIDATOR_SUBSIDY)
 	require.NoError(t, err)
-	assert.False(t, cl.Locked)
 	assert.Equal(t, cl.UserAddress, address.String())
 }

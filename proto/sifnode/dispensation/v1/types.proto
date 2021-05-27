@@ -62,7 +62,6 @@ message UserClaim {
   string user_address = 1;
   DistributionType user_claim_type = 2;
   string user_claim_time = 3;
-  bool locked = 4;
 }
 
 message UserClaims { repeated UserClaim user_claims = 1; }

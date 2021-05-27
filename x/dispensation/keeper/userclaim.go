@@ -49,7 +49,12 @@ func (k Keeper) GetUserClaimsIterator(ctx sdk.Context) sdk.Iterator {
 func (k Keeper) GetClaims(ctx sdk.Context) []types.UserClaim {
 	var res []types.UserClaim
 	iterator := k.GetUserClaimsIterator(ctx)
-	defer iterator.Close()
+	defer func(iterator sdk.Iterator) {
+		err := iterator.Close()
+		if err != nil {
+			panic("Failed to close iterator")
+		}
+	}(iterator)
 	for ; iterator.Valid(); iterator.Next() {
 		var dl types.UserClaim
 		bytesValue := iterator.Value()
@@ -62,7 +67,12 @@ func (k Keeper) GetClaims(ctx sdk.Context) []types.UserClaim {
 func (k Keeper) GetClaimsByType(ctx sdk.Context, userClaimType types.DistributionType) []types.UserClaim {
 	var res []types.UserClaim
 	iterator := k.GetUserClaimsIterator(ctx)
-	defer iterator.Close()
+	defer func(iterator sdk.Iterator) {
+		err := iterator.Close()
+		if err != nil {
+			panic("Failed to close iterator")
+		}
+	}(iterator)
 	for ; iterator.Valid(); iterator.Next() {
 		var dl types.UserClaim
 		bytesValue := iterator.Value()
@@ -72,17 +82,4 @@ func (k Keeper) GetClaimsByType(ctx sdk.Context, userClaimType types.Distributio
 		}
 	}
 	return res
-}
-
-func (k Keeper) LockClaim(ctx sdk.Context, recipient string, userClaimType types.DistributionType) error {
-	claim, err := k.GetClaim(ctx, recipient, userClaimType)
-	if err != nil {
-		return err
-	}
-	claim.Locked = true
-	err = k.SetClaim(ctx, claim)
-	if err != nil {
-		return err
-	}
-	return nil
 }

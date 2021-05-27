@@ -18,7 +18,7 @@ func TestKeeper_GetRecordsForNamePrefixed(t *testing.T) {
 		record := types.NewDistributionRecord(types.DistributionStatus_DISTRIBUTION_STATUS_PENDING, types.DistributionType_DISTRIBUTION_TYPE_AIRDROP, name, rec.Address, rec.Coins, ctx.BlockHeight(), -1)
 		err := keeper.SetDistributionRecord(ctx, record)
 		assert.NoError(t, err)
-		_, err = keeper.GetDistributionRecord(ctx, name, rec.Address, types.DistributionStatus_DISTRIBUTION_STATUS_PENDING)
+		_, err = keeper.GetDistributionRecord(ctx, name, rec.Address, types.DistributionStatus_DISTRIBUTION_STATUS_PENDING, record.DistributionType)
 		assert.NoError(t, err)
 	}
 	outList2 := test.CreatOutputList(7, "1000000000")
@@ -26,12 +26,12 @@ func TestKeeper_GetRecordsForNamePrefixed(t *testing.T) {
 		record := types.NewDistributionRecord(types.DistributionStatus_DISTRIBUTION_STATUS_COMPLETED, types.DistributionType_DISTRIBUTION_TYPE_AIRDROP, name, rec.Address, rec.Coins, ctx.BlockHeight(), -1)
 		err := keeper.SetDistributionRecord(ctx, record)
 		assert.NoError(t, err)
-		_, err = keeper.GetDistributionRecord(ctx, name, rec.Address, types.DistributionStatus_DISTRIBUTION_STATUS_COMPLETED)
+		_, err = keeper.GetDistributionRecord(ctx, name, rec.Address, types.DistributionStatus_DISTRIBUTION_STATUS_COMPLETED, record.DistributionType)
 		assert.NoError(t, err)
 
 	}
-	assert.Len(t, keeper.GetRecordsForName(ctx, name, types.DistributionStatus_DISTRIBUTION_STATUS_PENDING).DistributionRecords, 3)
-	assert.Len(t, keeper.GetRecordsForName(ctx, name, types.DistributionStatus_DISTRIBUTION_STATUS_COMPLETED).DistributionRecords, 7)
+	assert.Len(t, keeper.GetRecordsForNameAndStatus(ctx, name, types.DistributionStatus_DISTRIBUTION_STATUS_PENDING).DistributionRecords, 3)
+	assert.Len(t, keeper.GetRecordsForNameAndStatus(ctx, name, types.DistributionStatus_DISTRIBUTION_STATUS_COMPLETED).DistributionRecords, 7)
 }
 
 func TestKeeper_GetPendingRecordsLimited(t *testing.T) {
@@ -43,7 +43,7 @@ func TestKeeper_GetPendingRecordsLimited(t *testing.T) {
 		record := types.NewDistributionRecord(types.DistributionStatus_DISTRIBUTION_STATUS_PENDING, types.DistributionType_DISTRIBUTION_TYPE_AIRDROP, name, rec.Address, rec.Coins, ctx.BlockHeight(), -1)
 		err := keeper.SetDistributionRecord(ctx, record)
 		assert.NoError(t, err)
-		_, err = keeper.GetDistributionRecord(ctx, name, rec.Address, types.DistributionStatus_DISTRIBUTION_STATUS_PENDING)
+		_, err = keeper.GetDistributionRecord(ctx, name, rec.Address, types.DistributionStatus_DISTRIBUTION_STATUS_PENDING, record.DistributionType)
 		assert.NoError(t, err)
 	}
 	outList2 := test.CreatOutputList(7, "1000000000")
@@ -51,11 +51,11 @@ func TestKeeper_GetPendingRecordsLimited(t *testing.T) {
 		record := types.NewDistributionRecord(types.DistributionStatus_DISTRIBUTION_STATUS_COMPLETED, types.DistributionType_DISTRIBUTION_TYPE_AIRDROP, name, rec.Address, rec.Coins, ctx.BlockHeight(), -1)
 		err := keeper.SetDistributionRecord(ctx, record)
 		assert.NoError(t, err)
-		_, err = keeper.GetDistributionRecord(ctx, name, rec.Address, types.DistributionStatus_DISTRIBUTION_STATUS_COMPLETED)
+		_, err = keeper.GetDistributionRecord(ctx, name, rec.Address, types.DistributionStatus_DISTRIBUTION_STATUS_COMPLETED, record.DistributionType)
 		assert.NoError(t, err)
 	}
-	assert.Len(t, keeper.GetRecordsLimited(ctx, types.DistributionStatus_DISTRIBUTION_STATUS_PENDING).DistributionRecords, 10)
-	assert.Len(t, keeper.GetRecordsForName(ctx, name, types.DistributionStatus_DISTRIBUTION_STATUS_PENDING).DistributionRecords, 1000)
+	assert.Len(t, keeper.GetRecordsLimitedForStatus(ctx, types.DistributionStatus_DISTRIBUTION_STATUS_PENDING).DistributionRecords, 10)
+	assert.Len(t, keeper.GetRecordsForNameAndStatus(ctx, name, types.DistributionStatus_DISTRIBUTION_STATUS_PENDING).DistributionRecords, 1000)
 }
 func TestKeeper_GetPendingRecordsLimitedMultipleDistributions(t *testing.T) {
 	app, ctx := test.CreateTestApp(false)
@@ -66,7 +66,7 @@ func TestKeeper_GetPendingRecordsLimitedMultipleDistributions(t *testing.T) {
 		record := types.NewDistributionRecord(types.DistributionStatus_DISTRIBUTION_STATUS_PENDING, types.DistributionType_DISTRIBUTION_TYPE_AIRDROP, name, rec.Address, rec.Coins, ctx.BlockHeight(), -1)
 		err := keeper.SetDistributionRecord(ctx, record)
 		assert.NoError(t, err)
-		_, err = keeper.GetDistributionRecord(ctx, name, rec.Address, types.DistributionStatus_DISTRIBUTION_STATUS_PENDING)
+		_, err = keeper.GetDistributionRecord(ctx, name, rec.Address, types.DistributionStatus_DISTRIBUTION_STATUS_PENDING, record.DistributionType)
 		assert.NoError(t, err)
 	}
 	name = uuid.New().String()
@@ -75,11 +75,11 @@ func TestKeeper_GetPendingRecordsLimitedMultipleDistributions(t *testing.T) {
 		record := types.NewDistributionRecord(types.DistributionStatus_DISTRIBUTION_STATUS_PENDING, types.DistributionType_DISTRIBUTION_TYPE_AIRDROP, name, rec.Address, rec.Coins, ctx.BlockHeight(), -1)
 		err := keeper.SetDistributionRecord(ctx, record)
 		assert.NoError(t, err)
-		_, err = keeper.GetDistributionRecord(ctx, name, rec.Address, types.DistributionStatus_DISTRIBUTION_STATUS_PENDING)
+		_, err = keeper.GetDistributionRecord(ctx, name, rec.Address, types.DistributionStatus_DISTRIBUTION_STATUS_PENDING, record.DistributionType)
 		assert.NoError(t, err)
 	}
-	assert.Len(t, keeper.GetRecordsLimited(ctx, types.DistributionStatus_DISTRIBUTION_STATUS_PENDING).DistributionRecords, 5)
-	assert.Len(t, keeper.GetRecordsForName(ctx, name, types.DistributionStatus_DISTRIBUTION_STATUS_PENDING).DistributionRecords, 3)
+	assert.Len(t, keeper.GetRecordsLimitedForStatus(ctx, types.DistributionStatus_DISTRIBUTION_STATUS_PENDING).DistributionRecords, 5)
+	assert.Len(t, keeper.GetRecordsForNameAndStatus(ctx, name, types.DistributionStatus_DISTRIBUTION_STATUS_PENDING).DistributionRecords, 3)
 }
 
 func TestKeeper_GetRecordsForName(t *testing.T) {
@@ -91,10 +91,10 @@ func TestKeeper_GetRecordsForName(t *testing.T) {
 		record := types.NewDistributionRecord(types.DistributionStatus_DISTRIBUTION_STATUS_PENDING, types.DistributionType_DISTRIBUTION_TYPE_AIRDROP, name, rec.Address, rec.Coins, ctx.BlockHeight(), int64(-1))
 		err := keeper.SetDistributionRecord(ctx, record)
 		assert.NoError(t, err)
-		_, err = keeper.GetDistributionRecord(ctx, name, rec.Address, types.DistributionStatus_DISTRIBUTION_STATUS_PENDING)
+		_, err = keeper.GetDistributionRecord(ctx, name, rec.Address, types.DistributionStatus_DISTRIBUTION_STATUS_PENDING, record.DistributionType)
 		assert.NoError(t, err)
 	}
-	list := keeper.GetRecordsForName(ctx, name, types.DistributionStatus_DISTRIBUTION_STATUS_PENDING)
+	list := keeper.GetRecordsForNameAndStatus(ctx, name, types.DistributionStatus_DISTRIBUTION_STATUS_PENDING)
 	assert.Len(t, list.DistributionRecords, 3)
 }
 
@@ -107,7 +107,7 @@ func TestKeeper_GetRecordsForRecipient(t *testing.T) {
 		record := types.NewDistributionRecord(types.DistributionStatus_DISTRIBUTION_STATUS_PENDING, types.DistributionType_DISTRIBUTION_TYPE_AIRDROP, name, rec.Address, rec.Coins, ctx.BlockHeight(), int64(-1))
 		err := keeper.SetDistributionRecord(ctx, record)
 		assert.NoError(t, err)
-		_, err = keeper.GetDistributionRecord(ctx, name, rec.Address, types.DistributionStatus_DISTRIBUTION_STATUS_PENDING)
+		_, err = keeper.GetDistributionRecord(ctx, name, rec.Address, types.DistributionStatus_DISTRIBUTION_STATUS_PENDING, record.DistributionType)
 		assert.NoError(t, err)
 	}
 	list := keeper.GetRecordsForRecipient(ctx, outList[0].Address)

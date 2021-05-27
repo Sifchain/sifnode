@@ -28,8 +28,15 @@ func (dr DistributionRecord) Add(dr2 DistributionRecord) DistributionRecord {
 	return dr
 }
 
+func (dr DistributionRecord) DoesClaimExist() bool {
+	if dr.DistributionType == DistributionType_DISTRIBUTION_TYPE_LIQUIDITY_MINING || dr.DistributionType == DistributionType_DISTRIBUTION_TYPE_VALIDATOR_SUBSIDY {
+		return true
+	}
+	return false
+}
+
 func NewUserClaim(userAddress string, userClaimType DistributionType, time string) UserClaim {
-	return UserClaim{UserAddress: userAddress, UserClaimType: userClaimType, Locked: false, UserClaimTime: time}
+	return UserClaim{UserAddress: userAddress, UserClaimType: userClaimType, UserClaimTime: time}
 }
 
 func (uc UserClaim) Validate() bool {
@@ -37,10 +44,6 @@ func (uc UserClaim) Validate() bool {
 		return false
 	}
 	return true
-}
-
-func (uc UserClaim) IsLocked() bool {
-	return uc.Locked
 }
 
 func NewDistribution(t DistributionType, name string) Distribution {

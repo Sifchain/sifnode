@@ -13,13 +13,8 @@ service Msg {
 }
 
 message MsgCreateDistribution {
-  string signer = 1;
-
+  string distributor = 1;
   Distribution distribution = 2;
-
-  repeated string input = 4
-      [ (gogoproto.customtype) =
-            "github.com/cosmos/cosmos-sdk/x/bank/types.Input" ];
   repeated string output = 5
       [ (gogoproto.customtype) =
             "github.com/cosmos/cosmos-sdk/x/bank/types.Output" ];
@@ -29,6 +24,6 @@ message MsgCreateDistributionResponse {}
 message MsgCreateClaimResponse {}
 
 message MsgCreateUserClaim {
-  string signer = 1;
+  string user_claim_address = 1;
   DistributionType user_claim_type = 2;
 }

@@ -21,6 +21,7 @@ const (
 	QuerierRoute       = ModuleName
 	DefaultParamspace  = ModuleName
 	MaxRecordsPerBlock = 10
+	TokenSupported     = "rowan"
 )
 
 var (
@@ -30,8 +31,8 @@ var (
 	UserClaimPrefix                   = []byte{0x02}  // key for storing user claims
 )
 
-func GetDistributionRecordKey(status DistributionStatus, name string, recipient string) []byte {
-	key := []byte(fmt.Sprintf("%s_%s", name, recipient))
+func GetDistributionRecordKey(status DistributionStatus, name string, recipient string, distributionType DistributionType) []byte {
+	key := []byte(fmt.Sprintf("%s_%d_%s", name, distributionType, recipient))
 	switch status {
 	case DistributionStatus_DISTRIBUTION_STATUS_PENDING:
 		return append(DistributionRecordPrefixPending, key...)
