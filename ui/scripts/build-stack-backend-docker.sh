@@ -4,7 +4,8 @@ set -e
 
 ./scripts/ensure-docker-logged-in.sh
 
-if [[ ! -z "$(git status --porcelain --untracked-files=no)" ]]; then 
+# reverse grep for go.mod because on CI this can be altered by installing go dependencies
+if [[ ! -z "$(git status --porcelain --untracked-files=no | grep -v go.mod)" ]]; then 
   echo "Git workspace must be clean to save git commit hash"
   exit 1
 fi

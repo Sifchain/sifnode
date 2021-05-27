@@ -35,9 +35,6 @@ jobs:
         run: |
           cd .. && go get -v -t -d ./...
 
-      - name: test
-        run: git status --porcelain --untracked-files=no
-
       - name: Get yarn cache directory path
         id: yarn-cache-dir-path
         run: echo "::set-output name=dir::$(yarn cache dir)"
