@@ -151,7 +151,7 @@ namespace :cluster do
 
     end
     namespace :upgrade do
-      desc "Update an existing sifnode on your cluster"
+      desc "Upgrade an existing sifnode on your cluster"
       task :peer, [:cluster, :chainnet, :provider, :namespace, :image, :image_tag, :block_height, :cosmos_sdk_version, :genesis_time, :version] do |t, args|
         check_args(args)
 
