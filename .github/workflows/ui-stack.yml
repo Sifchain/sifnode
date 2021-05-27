@@ -7,6 +7,8 @@ on:
       # Feel free to add feature branches for work in progress testing
       # However once features are shipped this should be updated
       - ryardley/438-build-image-merge
+      - develop
+      - master
 
 jobs:
   build_ui_stack:
