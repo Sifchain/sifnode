@@ -1,7 +1,9 @@
 package app
 
 import (
+	"encoding/json"
 	"io"
+	"io/ioutil"
 	"math/big"
 	"net/http"
 	"os"
@@ -92,7 +94,10 @@ import (
 	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
 )
 
-const appName = "sifnode"
+const (
+	appName             = "sifnode"
+	migrationStartBlock = int64(50)
+)
 
 var (
 	DefaultNodeHome = os.ExpandEnv("$HOME/.sifnoded")
@@ -352,6 +357,8 @@ func NewSifApp(
 	// If evidence needs to be handled for the app, set routes in router here and seal
 	app.EvidenceKeeper = *evidenceKeeper
 
+	tokenMap := readTokenMapJSON()
+
 	// NOTE: Any module instantiated in the module manager that is later modified
 	// must be passed by reference here.
 	app.mm = module.NewManager(
@@ -371,9 +378,9 @@ func NewSifApp(
 		evidence.NewAppModule(app.EvidenceKeeper),
 		ibc.NewAppModule(app.IBCKeeper),
 		transferModule,
-		clp.NewAppModule(app.ClpKeeper, app.BankKeeper),
+		clp.NewAppModule(app.ClpKeeper, app.BankKeeper, tokenMap, migrationStartBlock),
 		oracle.NewAppModule(app.OracleKeeper),
-		ethbridge.NewAppModule(app.OracleKeeper, app.BankKeeper, app.AccountKeeper, app.EthbridgeKeeper, &appCodec),
+		ethbridge.NewAppModule(app.OracleKeeper, app.BankKeeper, app.AccountKeeper, app.EthbridgeKeeper, &appCodec, tokenMap, migrationStartBlock),
 		dispensation.NewAppModule(app.DispensationKeeper, app.BankKeeper, app.AccountKeeper),
 	)
 
@@ -388,6 +395,7 @@ func NewSifApp(
 		stakingtypes.ModuleName,
 		ibchost.ModuleName,
 		clptypes.ModuleName,
+		ethbridge.ModuleName,
 	)
 
 	app.mm.SetOrderEndBlockers(
@@ -601,4 +609,18 @@ func initParamsKeeper(appCodec codec.BinaryMarshaler, legacyAmino *codec.LegacyA
 	paramsKeeper.Subspace(ibchost.ModuleName)
 
 	return paramsKeeper
+}
+
+func readTokenMapJSON() map[string]string {
+	data, err := ioutil.ReadFile("./token_migration.json")
+	if err != nil {
+		panic(err)
+	}
+
+	jsonData := map[string]string{}
+	err = json.Unmarshal(data, &jsonData)
+	if err != nil {
+		panic("fail to parse token migration file")
+	}
+	return jsonData
 }

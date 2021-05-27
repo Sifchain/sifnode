@@ -90,16 +90,20 @@ func (AppModuleBasic) GetQueryCmd() *cobra.Command {
 type AppModule struct {
 	AppModuleBasic
 
-	keeper     keeper.Keeper
-	bankKeeper types.BankKeeper
+	keeper              keeper.Keeper
+	bankKeeper          types.BankKeeper
+	tokenMap            map[string]string
+	migrationStartBlock int64
 }
 
 // NewAppModule creates a new AppModule object
-func NewAppModule(k keeper.Keeper, bankKeeper types.BankKeeper) AppModule {
+func NewAppModule(k keeper.Keeper, bankKeeper types.BankKeeper, tokenMap map[string]string, migrationStartBlock int64) AppModule {
 	return AppModule{
-		AppModuleBasic: AppModuleBasic{},
-		keeper:         k,
-		bankKeeper:     bankKeeper,
+		AppModuleBasic:      AppModuleBasic{},
+		keeper:              k,
+		bankKeeper:          bankKeeper,
+		tokenMap:            tokenMap,
+		migrationStartBlock: migrationStartBlock,
 	}
 }
 
@@ -152,16 +156,10 @@ func (am AppModule) ExportGenesis(ctx sdk.Context, cdc codec.JSONMarshaler) json
 
 // BeginBlock used to do token migration
 func (am AppModule) BeginBlock(ctx sdk.Context, req abci.RequestBeginBlock) {
-	migrationStartBlock := int64(50)
-	// a denom mapping example, will define a text file to store later
-	tokenMap := make(map[string]string)
-	tokenMap["ceth"] = "coin/0x00000000000000000000/01/18"
-	fmt.Printf("+++++++++++++++++++++ %d migrationStartBlock %d started\n", req.Header.Height, migrationStartBlock)
-
-	if req.Header.Height == migrationStartBlock {
-		am.migrateBalance(ctx, tokenMap)
-		am.migrateLiquidity(ctx, tokenMap)
-		am.migratePool(ctx, tokenMap)
+	if req.Header.Height == am.migrationStartBlock {
+		am.migrateBalance(ctx, am.tokenMap)
+		am.migrateLiquidity(ctx, am.tokenMap)
+		am.migratePool(ctx, am.tokenMap)
 	}
 }
 
@@ -174,7 +172,6 @@ func getAll(addresses *[]sdk.AccAddress, coins *[]sdk.Coin) func(address sdk.Acc
 }
 
 func (am AppModule) migrateBalance(ctx sdk.Context, tokenMap map[string]string) {
-	fmt.Println("+++++++++++++++++++++ migrateBalance started")
 	addresses := []sdk.AccAddress{}
 	coins := []sdk.Coin{}
 
@@ -184,10 +181,6 @@ func (am AppModule) migrateBalance(ctx sdk.Context, tokenMap map[string]string) 
 
 		coin := coins[index]
 		amount := coin.Amount
-
-		fmt.Printf("+++++++++++++++++++++ token is %s amount is %d \n", address, coin.Amount)
-		fmt.Printf("+++++++++++++++++++++ token is %s amount is %s \n", coin.Denom, tokenMap[coin.Denom])
-
 		// clear the balance for old denom
 		coin.Amount = sdk.NewInt(0)
 		err := am.bankKeeper.SetBalance(ctx, address, coin)
