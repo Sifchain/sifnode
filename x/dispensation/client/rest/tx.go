@@ -25,9 +25,9 @@ func registerTxRoutes(cliCtx client.Context, r *mux.Router) {
 }
 
 type CreateClaimReq struct {
-	BaseReq   rest.BaseReq           `json:"base_req"`
-	Signer    string                 `json:"signer"`
-	ClaimType types.DistributionType `json:"claim_type"`
+	BaseReq      rest.BaseReq           `json:"base_req"`
+	ClaimCreator string                 `json:"claim_creator"`
+	ClaimType    types.DistributionType `json:"claim_type"`
 }
 
 func createClaimHandler(cliCtx client.Context) http.HandlerFunc {
@@ -41,7 +41,7 @@ func createClaimHandler(cliCtx client.Context) http.HandlerFunc {
 		if !baseReq.ValidateBasic(w) {
 			return
 		}
-		signer, err := sdk.AccAddressFromBech32(req.Signer)
+		signer, err := sdk.AccAddressFromBech32(req.ClaimCreator)
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
 			return
