@@ -10,4 +10,4 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - run: |
-          echo "Hello! This was run from commit: {{ $GITHUB_SHA }}"
+          echo "Hello! This was run from commit: $GITHUB_SHA"
