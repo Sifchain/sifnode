@@ -150,6 +150,25 @@ namespace :cluster do
       end
 
     end
+    namespace :upgrade do
+      desc "Update an existing sifnode on your cluster"
+      task :peer, [:cluster, :chainnet, :provider, :namespace, :image, :image_tag, :block_height, :cosmos_sdk_version, :genesis_time, :version] do |t, args|
+        check_args(args)
+
+        cmd = %Q{helm upgrade sifnode #{cwd}/../../deploy/helm/sifnode
+          --install -n #{ns(args)} --create-namespace
+          --set sifnode.env.chainnet=#{args[:chainnet]}
+          --set sifnode.args.blockHeight=#{args[:block_height]}
+          --set sifnode.args.cosmosSDKVersion=#{args[:cosmos_sdk_version]}
+          --set sifnode.args.genesisTime=#{args[:genesis_time]}
+          --set sifnode.args.version=#{args[:version]}
+          --set image.tag=#{image_tag(args)}
+          --set image.repository=#{image_repository(args)}
+        }
+
+        system({"KUBECONFIG" => kubeconfig(args)}, cmd)
+      end
+    end
   end
 
   desc "ebrelayer Operations"

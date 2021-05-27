@@ -57,6 +57,16 @@ spec:
                 configMapKeyRef:
                   name: {{ include "sifnode.fullname" . }}-external-ip
                   key: externalIP
+        - name: upgrade
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          command: ["/bin/sh"]
+          args: ["-c", "/scripts/upgrade.sh -b {{ .Values.sifnode.args.blockHeight }} -c $CHAINNET -s {{ .Values.sifnode.args.cosmosSDKVersion }} -t {{ .Values.sifnode.args.genesisTime }} -v {{ .Values.sifnode.args.version }}"]
+          volumeMounts:
+            - name: scripts
+              mountPath: /scripts
+          env:
+            - name: CHAINNET
+              value: {{ .Values.sifnode.env.chainnet }}
       containers:
         - name: {{ .Chart.Name }}
           securityContext:
