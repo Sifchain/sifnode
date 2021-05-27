@@ -1,4 +1,4 @@
-name: Build and publish ui-stack image
+name: Build ui-stack
 
 on:
   push:
