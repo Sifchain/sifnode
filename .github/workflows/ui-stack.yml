@@ -1,0 +1,13 @@
+name: Build and publish ui-stack image
+
+on:
+  push:
+    branches:
+      - ryardley/438-build-image-merge
+
+jobs:
+  say_hello:
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          echo "Hello!"
