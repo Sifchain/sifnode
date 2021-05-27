@@ -2,6 +2,13 @@
 
 set -e
 
+
+COMMIT=$(git rev-parse --short HEAD)
+BRANCH=$(git rev-parse --abbrev-ref HEAD)
+
+IMAGE_NAME=ghcr.io/sifchain/sifnode/ui-stack:$COMMIT
+STABLE_TAG=ghcr.io/sifchain/sifnode/ui-stack:${BRANCH/\//__}
+
 ./scripts/ensure-docker-logged-in.sh
 
 # reverse grep for go.mod because on CI this can be altered by installing go dependencies
@@ -12,12 +19,6 @@ fi
 
 echo "Github Registry Login found."
 echo "Building new container..."
-
-COMMIT=$(git rev-parse --short HEAD)
-BRANCH=$(git rev-parse --abbrev-ref HEAD)
-
-IMAGE_NAME=ghcr.io/sifchain/sifnode/ui-stack:$COMMIT
-STABLE_TAG=ghcr.io/sifchain/sifnode/ui-stack:$BRANCH
 
 ROOT=$(pwd)/..
 
