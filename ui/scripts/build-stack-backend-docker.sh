@@ -35,7 +35,8 @@ if [[ ! -z "$CI" ]]; then
   docker tag $IMAGE_NAME $STABLE_TAG
 fi
 
-docker push $IMAGE_ROOT
+docker push $STABLE_TAG
+docker push $IMAGE_NAME
 
 
 # echo $IMAGE_NAME > $ROOT/ui/scripts/latest
