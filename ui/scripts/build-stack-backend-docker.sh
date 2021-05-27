@@ -3,7 +3,7 @@
 set -e
 
 
-COMMIT=$(git rev-parse --short HEAD)
+COMMIT=$(git rev-parse HEAD)
 BRANCH=$(git rev-parse --abbrev-ref HEAD)
 
 IMAGE_ROOT=ghcr.io/sifchain/sifnode/ui-stack
