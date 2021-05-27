@@ -66,7 +66,7 @@ export default defineComponent({
         </div>
         <div class="right">
           <div class="cta">
-            <div>Sign up for Sifchain updates</div>
+            <div class="signup-label">Sign up for Sifchain updates</div>
             <div v-if="!submitted">
               <form @submit.prevent="submitEmail">
                 <input
@@ -82,6 +82,11 @@ export default defineComponent({
             <div v-else class="thankyou">Thank you!</div>
           </div>
           <div class="links">
+            <a
+              target="_blank"
+              href="https://www.youtube.com/playlist?list=PLj5x_t273CNiBvcH6GjI9gBPzMFm9BlCL"
+              >Tutorials</a
+            >
             <a
               target="_blank"
               href="https://sifchain.finance/wp-content/uploads/2020/12/Sifchain-Website-Privacy-Policy.pdf"
@@ -237,6 +242,11 @@ export default defineComponent({
   width: 100%;
   opacity: 0.5;
   height: 51px;
+}
+@media screen and (max-width: 1024px) {
+  .signup-label {
+    display: none;
+  }
 }
 </style>
 <style lang="scss">
