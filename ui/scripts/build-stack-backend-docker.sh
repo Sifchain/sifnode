@@ -5,7 +5,7 @@ set -e
 ./scripts/ensure-docker-logged-in.sh
 
 # reverse grep for go.mod because on CI this can be altered by installing go dependencies
-if [[ ! -z "$(git status --porcelain --untracked-files=no | grep -v go.mod)" ]]; then 
+if [[ -z "$CI" && ! -z "$(git status --porcelain --untracked-files=no)" ]]; then 
   echo "Git workspace must be clean to save git commit hash"
   exit 1
 fi
@@ -28,10 +28,11 @@ export DOCKER_BUILDKIT=1
 
 cd $ROOT && docker build -f ./ui/scripts/stack.Dockerfile -t $IMAGE_NAME .
 
-docker tag $IMAGE_NAME $STABLE_TAG
+if [[ ! -z "$CI" ]]; then
+  docker tag $IMAGE_NAME $STABLE_TAG
+fi
 
 docker push $IMAGE_NAME
-
 
 
 # echo $IMAGE_NAME > $ROOT/ui/scripts/latest

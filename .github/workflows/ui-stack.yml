@@ -53,11 +53,13 @@ jobs:
       - name: Build test chains
         run: yarn chain:build && yarn build
 
-      - name: Save backend from scratch
+      - name: Build databases for docker state
         run: ./scripts/run-stack-save-default-snapshot.sh
 
-      - name: Build docker image
+      - name: Build and push docker image
         run: ./scripts/build-stack-backend-docker.sh
+        env:
+          CI: true
 
       - name: Say hello!
         run: |
