@@ -82,15 +82,25 @@ set_version() {
 # Create export state dir.
 #
 create_export_state_dir() {
-  EXPORT_DIR="${HOME}"/.sifnoded/"${COSMOS_SDK_VERSION}"_exports
-  mkdir "${EXPORT_DIR}"
+  EXPORT_STATE_DIR="${HOME}"/.sifnoded/"${COSMOS_SDK_VERSION}"_exports
+  mkdir "${EXPORT_STATE_DIR}"
+}
+
+#
+# Backup.
+#
+backup() {
+  BACKUP_DIR="${HOME}"/.sifnoded/backups/"${BLOCK_HEIGHT}"/
+  mkdir -p "${BACKUP_DIR}"
+  cp -avr "${HOME}"/.sifnoded/data/ "${BACKUP_DIR}"
+  cp -avr "${HOME}"/.sifnoded/config/ "${BACKUP_DIR}"
 }
 
 #
 # Export state.
 #
 export_state() {
-  "${HOME}"/.sifnoded/cosmovisor/current/bin/sifnoded export --for-zero-height --height "${BLOCK_HEIGHT}" > "${EXPORT_DIR}"/exported_state.json
+  "${HOME}"/.sifnoded/cosmovisor/current/bin/sifnoded export --for-zero-height --height "${BLOCK_HEIGHT}" > "${EXPORT_STATE_DIR}"/exported_state.json
 }
 
 #
@@ -98,17 +108,17 @@ export_state() {
 #
 migrate_exported_state() {
   # Need to be the latest binary.
-  "${HOME}"/.sifnoded/cosmovisor/"${VERSION}"/bin/sifnoded migrate v"${COSMOS_SDK_VERSION}" "${EXPORT_DIR}"/exported_state.json \
+  "${HOME}"/.sifnoded/cosmovisor/"${VERSION}"/bin/sifnoded migrate v"${COSMOS_SDK_VERSION}" "${EXPORT_STATE_DIR}"/exported_state.json \
     --chain-id "${CHAIN_ID}" \
-    --genesis-time "${GENESIS_TIME}" > "${EXPORT_DIR}"/migrated_state.json
+    --genesis-time "${GENESIS_TIME}" > "${EXPORT_STATE_DIR}"/migrated_state.json
 }
 
 #
 # Configure IBC
 #
 configure_ibc() {
-  cat "${EXPORT_DIR}"/migrated_state.json | jq '.app_state |= . + {"ibc":{"client_genesis":{"clients":[],"clients_consensus":[],"create_localhost":false},"connection_genesis":{"connections":[],"client_connection_paths":[]},"channel_genesis":{"channels":[],"acknowledgements":[],"commitments":[],"receipts":[],"send_sequences":[],"recv_sequences":[],"ack_sequences":[]}},"transfer":{"port_id":"transfer","denom_traces":[],"params":{"send_enabled":false,"receive_enabled":false}},"capability":{"index":"1","owners":[]}}' > "${EXPORT_DIR}"/genesis_ibc.json
-  mv "${EXPORT_DIR}"/genesis_ibc.json "${EXPORT_DIR}"/genesis.json
+  cat "${EXPORT_STATE_DIR}"/migrated_state.json | jq '.app_state |= . + {"ibc":{"client_genesis":{"clients":[],"clients_consensus":[],"create_localhost":false},"connection_genesis":{"connections":[],"client_connection_paths":[]},"channel_genesis":{"channels":[],"acknowledgements":[],"commitments":[],"receipts":[],"send_sequences":[],"recv_sequences":[],"ack_sequences":[]}},"transfer":{"port_id":"transfer","denom_traces":[],"params":{"send_enabled":false,"receive_enabled":false}},"capability":{"index":"1","owners":[]}}' > "${EXPORT_STATE_DIR}"/genesis_ibc.json
+  mv "${EXPORT_STATE_DIR}"/genesis_ibc.json "${EXPORT_STATE_DIR}"/genesis.json
 }
 
 #
@@ -122,7 +132,7 @@ reset_old_state() {
 # Install genesis.
 #
 install_genesis() {
-  cp "${EXPORT_DIR}"/genesis.json "${HOME}"/.sifnoded/config/genesis.json
+  cp "${EXPORT_STATE_DIR}"/genesis.json "${HOME}"/.sifnoded/config/genesis.json
 }
 
 #
@@ -154,6 +164,10 @@ run() {
   # Setup.
   printf "\nConfiguring environment for upgrade..."
   setup "${1}" "${2}" "${3}" "${4}" "${5}"
+
+  # Backup.
+  printf "\nTaking a backup..."
+  backup
 
   # Check if already upgraded?
   printf "\nChecking if validator has already been upgraded..."
