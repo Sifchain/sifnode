@@ -12,10 +12,12 @@ fi
 echo "Github Registry Login found."
 echo "Building new container..."
 
-TAG=$(git rev-parse HEAD)
-IMAGE_NAME=ghcr.io/sifchain/sifnode/ui-stack:$TAG
+COMMIT=$(git rev-parse --short HEAD)
+BRANCH=$(git rev-parse --abbrev-ref HEAD)
 
-# Assume this script is run from `./ui`
+IMAGE_NAME=ghcr.io/sifchain/sifnode/ui-stack:$COMMIT
+STABLE_TAG=ghcr.io/sifchain/sifnode/ui-stack:$BRANCH
+
 ROOT=$(pwd)/..
 
 echo "New image name: $IMAGE_NAME"
@@ -25,8 +27,12 @@ export DOCKER_BUILDKIT=1
 
 cd $ROOT && docker build -f ./ui/scripts/stack.Dockerfile -t $IMAGE_NAME .
 
+docker tag $IMAGE_NAME $STABLE_TAG
+
 docker push $IMAGE_NAME
 
-echo $IMAGE_NAME > $ROOT/ui/scripts/latest
 
-echo "Commit the ./ui/scripts/latest file to git"
+
+# echo $IMAGE_NAME > $ROOT/ui/scripts/latest
+
+# echo "Commit the ./ui/scripts/latest file to git"
