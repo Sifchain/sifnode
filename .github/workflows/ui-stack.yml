@@ -65,7 +65,3 @@ jobs:
         run: ./scripts/build-stack-backend-docker.sh
         env:
           CI: true
-
-      - name: Say hello!
-        run: |
-          echo "Hello! This was run from commit: $GITHUB_SHA"
