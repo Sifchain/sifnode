@@ -165,7 +165,7 @@ export default defineComponent({
     function requestTransactionModalClose() {
       if (transactionState.value === "confirmed") {
         transactionState.value = "selecting";
-        router.push("/balances/import"); // TODO push back to peg, but load unpeg tab when unpegging -> dynamic routing?
+        router.push("/balances"); // TODO push back to peg, but load unpeg tab when unpegging -> dynamic routing?
       } else {
         transactionState.value = "selecting";
       }
