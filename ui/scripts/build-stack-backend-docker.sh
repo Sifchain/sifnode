@@ -6,8 +6,9 @@ set -e
 COMMIT=$(git rev-parse --short HEAD)
 BRANCH=$(git rev-parse --abbrev-ref HEAD)
 
-IMAGE_NAME=ghcr.io/sifchain/sifnode/ui-stack:$COMMIT
-STABLE_TAG=ghcr.io/sifchain/sifnode/ui-stack:${BRANCH/\//__}
+IMAGE_ROOT=ghcr.io/sifchain/sifnode/ui-stack
+IMAGE_NAME=$IMAGE_ROOT:$COMMIT
+STABLE_TAG=$IMAGE_ROOT:${BRANCH/\//__}
 
 ./scripts/ensure-docker-logged-in.sh
 
@@ -30,10 +31,11 @@ export DOCKER_BUILDKIT=1
 cd $ROOT && docker build -f ./ui/scripts/stack.Dockerfile -t $IMAGE_NAME .
 
 if [[ ! -z "$CI" ]]; then
+  echo "Tagging image as $STABLE_TAG"
   docker tag $IMAGE_NAME $STABLE_TAG
 fi
 
-docker push $IMAGE_NAME
+docker push $IMAGE_ROOT
 
 
 # echo $IMAGE_NAME > $ROOT/ui/scripts/latest
