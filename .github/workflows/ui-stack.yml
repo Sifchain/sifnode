@@ -1,4 +1,4 @@
-name: Build ui-stack
+name: Build ui-stack backend
 
 on:
   push:
