@@ -109,3 +109,14 @@ export function getCryptoeconomicsUrl(chainId: string): string {
       return `https://api-cryptoeconomics.sifchain.finance/api`;
   }
 }
+
+export function getRewardEarningsUrl(chainId: string): string {
+  switch (chainId) {
+    case "sifchain":
+      return `https://vtdbgplqd6.execute-api.us-west-2.amazonaws.com/default/netchange`;
+    case "sifchain-testnet":
+      return `https://vtdbgplqd6.execute-api.us-west-2.amazonaws.com/default/netchange/testnet`;
+    default:
+      return `https://vtdbgplqd6.execute-api.us-west-2.amazonaws.com/default/netchange/devnet`;
+  }
+}

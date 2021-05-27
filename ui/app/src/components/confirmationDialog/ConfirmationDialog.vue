@@ -1,8 +1,8 @@
-<script lang="ts">
+<script lang="tsx">
 import { defineComponent, PropType } from "vue";
 import AskConfirmation from "./AskConfirmation.vue";
 import AnimatedConfirmation from "./AnimatedConfirmation.vue";
-import { TransactionStatus } from "ui-core";
+import { IAssetAmount, TransactionStatus } from "ui-core";
 
 export default defineComponent({
   components: { AskConfirmation, AnimatedConfirmation },
@@ -13,12 +13,10 @@ export default defineComponent({
       default: "confirm",
     },
     txStatus: { type: Object as PropType<TransactionStatus>, default: null },
-    requestClose: Function,
+    requestClose: Function as PropType<() => void>,
     priceMessage: { type: String, default: "" },
-    fromAmount: String,
-    fromToken: String,
-    toAmount: String,
-    toToken: String,
+    fromAmount: { type: Object as PropType<IAssetAmount>, required: true },
+    toAmount: { type: Object as PropType<IAssetAmount>, required: true },
     leastAmount: String,
     swapRate: String,
     minimumReceived: String,
@@ -26,31 +24,37 @@ export default defineComponent({
     priceImpact: String,
   },
   emits: ["confirmswap"],
+  setup(props, ctx) {
+    return () => (
+      <>
+        {props.state === "confirm" && (
+          <AskConfirmation
+            fromAmount={props.fromAmount}
+            fromToken={props.fromAmount.label}
+            toAmount={props.toAmount}
+            toToken={props.toAmount.label}
+            leastAmount={props.leastAmount}
+            swapRate={props.swapRate}
+            minimumReceived={props.minimumReceived}
+            providerFee={props.providerFee}
+            priceImpact={props.priceImpact}
+            priceMessage={props.priceMessage}
+            onConfirmswap={() => ctx.emit("confirmswap")}
+          />
+        )}
+        {(props.state === "submit" ||
+          props.state === "fail" ||
+          props.state === "success") && (
+          <AnimatedConfirmation
+            state={props.state}
+            txStatus={props.txStatus}
+            fromAmount={props.fromAmount}
+            toAmount={props.toAmount}
+            onCloserequested={props.requestClose}
+          />
+        )}
+      </>
+    );
+  },
 });
 </script>
-<template>
-  <AskConfirmation
-    v-if="state === 'confirm'"
-    :fromAmount="fromAmount"
-    :fromToken="fromToken"
-    :toAmount="toAmount"
-    :toToken="toToken"
-    :leastAmount="leastAmount"
-    :swapRate="swapRate"
-    :minimumReceived="minimumReceived"
-    :providerFee="providerFee"
-    :priceImpact="priceImpact"
-    :priceMessage="priceMessage"
-    @confirmswap="$emit('confirmswap')"
-  />
-  <AnimatedConfirmation
-    v-if="state === 'submit' || state === 'fail' || state === 'success'"
-    :state="state"
-    :txStatus="txStatus"
-    :fromAmount="fromAmount"
-    :fromToken="fromToken"
-    :toAmount="toAmount"
-    :toToken="toToken"
-    @closerequested="requestClose"
-  />
-</template>
