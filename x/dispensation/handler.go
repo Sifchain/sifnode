@@ -46,8 +46,6 @@ func handleMsgCreateDistribution(ctx sdk.Context, keeper Keeper, msg MsgDistribu
 	if err != nil {
 		return nil, err
 	}
-	// Add Distribution details to the events .
-	// Unit tests for events .
 	ctx.EventManager().EmitEvents(sdk.Events{
 		sdk.NewEvent(
 			types.EventTypeDistributionStarted,
@@ -58,8 +56,6 @@ func handleMsgCreateDistribution(ctx sdk.Context, keeper Keeper, msg MsgDistribu
 	})
 	return &sdk.Result{Events: ctx.EventManager().Events()}, nil
 }
-
-// Test invalid claims
 
 func handleMsgCreateClaim(ctx sdk.Context, keeper Keeper, msg MsgCreateClaim) (*sdk.Result, error) {
 	if keeper.ExistsClaim(ctx, msg.UserClaimAddress.String(), msg.UserClaimType) {

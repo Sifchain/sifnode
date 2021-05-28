@@ -14,8 +14,8 @@ type DistributionStatus int64
 const Pending DistributionStatus = 1
 const Completed DistributionStatus = 2
 
-func (d DistributionStatus) String() string {
-	switch d {
+func (ds DistributionStatus) String() string {
+	switch ds {
 	case Pending:
 		return "Pending"
 	case Completed:
@@ -84,8 +84,8 @@ const Airdrop DistributionType = 1
 const LiquidityMining DistributionType = 2
 const ValidatorSubsidy DistributionType = 3
 
-func (d DistributionType) String() string {
-	switch d {
+func (dt DistributionType) String() string {
+	switch dt {
 	case Airdrop:
 		return "Airdrop"
 	case LiquidityMining:
@@ -97,7 +97,7 @@ func (d DistributionType) String() string {
 	}
 }
 
-func IsValidDistribution(distributionType string) (DistributionType, bool) {
+func IsValidDistributionType(distributionType string) (DistributionType, bool) {
 	switch distributionType {
 	case "Airdrop":
 		return Airdrop, true
@@ -132,15 +132,15 @@ func NewDistribution(t DistributionType, name string) Distribution {
 	return Distribution{DistributionType: t, DistributionName: name}
 }
 
-func (ar Distribution) Validate() bool {
-	if ar.DistributionName == "" {
+func (d Distribution) Validate() bool {
+	if d.DistributionName == "" {
 		return false
 	}
 	return true
 }
 
-func (ar Distribution) String() string {
-	return strings.TrimSpace(fmt.Sprintf(`DistributionName: %s DistributionType :%s`, ar.DistributionName, ar.DistributionType.String()))
+func (d Distribution) String() string {
+	return strings.TrimSpace(fmt.Sprintf(`DistributionName: %s DistributionType :%s`, d.DistributionName, d.DistributionType.String()))
 }
 
 type UserClaim struct {

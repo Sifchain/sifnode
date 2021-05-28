@@ -44,7 +44,7 @@ func GetCmdCreate(cdc *codec.Codec) *cobra.Command {
 
 			txBldr := auth.NewTxBuilderFromCLI(inBuf).WithTxEncoder(utils.GetTxEncoder(cdc))
 			cliCtx := context.NewCLIContextWithInput(inBuf).WithCodec(cdc)
-			distributionType, ok := types.IsValidDistribution(args[1])
+			distributionType, ok := types.IsValidDistributionType(args[1])
 			if !ok {
 				return fmt.Errorf("invalid distribution Type %s: Types supported [Airdrop/LiquidityMining/ValidatorSubsidy]", args[1])
 			}

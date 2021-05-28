@@ -14,12 +14,29 @@ func TestMsgCreateDistribution_ValidateBasic(t *testing.T) {
 	distributor := ed25519.GenPrivKey()
 	msg := types.MsgDistribution{
 		Distributor:      sdk.AccAddress(distributor.PubKey().Address()),
-		DistributionName: "testName",
+		DistributionName: "TestName",
 		DistributionType: types.Airdrop,
 		Output:           test.CreatOutputList(2000, "1"),
 	}
 	err := msg.ValidateBasic()
 	assert.NoError(t, err)
+}
+
+func TestMsgCreateDistribution_ValidateBasic_WrongAddress(t *testing.T) {
+	distributor := ed25519.GenPrivKey()
+	outputList := test.CreatOutputList(1, "1")
+	validAddress := ed25519.GenPrivKey().PubKey().Address()
+	inValidAddress := validAddress[1:]
+	outputList = append(outputList, bank.NewOutput(sdk.AccAddress(inValidAddress),
+		sdk.NewCoins(sdk.NewCoin("rowan", sdk.NewInt(1000000)))))
+	msg := types.MsgDistribution{
+		Distributor:      sdk.AccAddress(distributor.PubKey().Address()),
+		DistributionName: "TestName",
+		DistributionType: types.Airdrop,
+		Output:           outputList,
+	}
+	err := msg.ValidateBasic()
+	assert.Error(t, err)
 }
 
 func TestMsgCreateDistribution_ValidateBasic_NonRowan(t *testing.T) {
@@ -70,6 +87,42 @@ func TestMsgCreateDistribution_ValidateBasic_NoName(t *testing.T) {
 	msg := types.MsgDistribution{
 		Distributor:      sdk.AccAddress(distributor.PubKey().Address()),
 		DistributionName: "",
+		DistributionType: types.Airdrop,
+		Output:           test.CreatOutputList(2000, "1"),
+	}
+	err := msg.ValidateBasic()
+	assert.Error(t, err)
+}
+
+func TestMsgCreateDistribution_ValidateBasic_ShortName(t *testing.T) {
+	distributor := ed25519.GenPrivKey()
+	msg := types.MsgDistribution{
+		Distributor:      sdk.AccAddress(distributor.PubKey().Address()),
+		DistributionName: "a",
+		DistributionType: types.Airdrop,
+		Output:           test.CreatOutputList(2000, "1"),
+	}
+	err := msg.ValidateBasic()
+	assert.Error(t, err)
+}
+
+func TestMsgCreateDistribution_ValidateBasic_LongName(t *testing.T) {
+	distributor := ed25519.GenPrivKey()
+	msg := types.MsgDistribution{
+		Distributor:      sdk.AccAddress(distributor.PubKey().Address()),
+		DistributionName: "aasdasd131gjahdgajhdfakdgkfaklaifgya",
+		DistributionType: types.Airdrop,
+		Output:           test.CreatOutputList(2000, "1"),
+	}
+	err := msg.ValidateBasic()
+	assert.Error(t, err)
+}
+
+func TestMsgCreateDistribution_ValidateBasic_Alphanumeric(t *testing.T) {
+	distributor := ed25519.GenPrivKey()
+	msg := types.MsgDistribution{
+		Distributor:      sdk.AccAddress(distributor.PubKey().Address()),
+		DistributionName: "asd%#s",
 		DistributionType: types.Airdrop,
 		Output:           test.CreatOutputList(2000, "1"),
 	}

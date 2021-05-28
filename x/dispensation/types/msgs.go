@@ -1,10 +1,12 @@
 package types
 
 import (
+	"fmt"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/cosmos/cosmos-sdk/x/bank"
 	"github.com/pkg/errors"
+	"regexp"
 )
 
 var (
@@ -12,7 +14,7 @@ var (
 )
 
 // Basic message type to create a new distribution
-// TODO modify this struct to keep adding more fields to identify different types of distributions
+
 type MsgDistribution struct {
 	Distributor      sdk.AccAddress   `json:"distributor"`
 	DistributionName string           `json:"distribution_name"`
@@ -20,15 +22,14 @@ type MsgDistribution struct {
 	Output           []bank.Output    `json:"output"`
 }
 
-func NewMsgDistribution(signer sdk.AccAddress, DistributionName string, DistributionType DistributionType, output []bank.Output) MsgDistribution {
-	return MsgDistribution{Distributor: signer, DistributionName: DistributionName, DistributionType: DistributionType, Output: output}
+func NewMsgDistribution(distributor sdk.AccAddress, DistributionName string, DistributionType DistributionType, output []bank.Output) MsgDistribution {
+	return MsgDistribution{Distributor: distributor, DistributionName: DistributionName, DistributionType: DistributionType, Output: output}
 }
 
 func (m MsgDistribution) Route() string {
 	return RouterKey
 }
 
-//TODO Replace with constant defined in keys.go with value CreateDispensation
 func (m MsgDistribution) Type() string {
 	return "airdrop"
 }
@@ -37,10 +38,27 @@ func (m MsgDistribution) ValidateBasic() error {
 	if m.DistributionName == "" {
 		return sdkerrors.Wrap(ErrInvalid, "Name cannot be empty")
 	}
+	// Validate Distribution Name
+	distributionNameRegex := `[a-zA-Z][a-z0-9A-Z]{2,15}`
+	nameRegX := regexp.MustCompile(fmt.Sprintf(`^%s$`, distributionNameRegex))
+	if !nameRegX.MatchString(m.DistributionName) {
+		return fmt.Errorf("invalid name: %s , Name must be [2-15 character long]", m.DistributionName)
+	}
+	// Validate distribution Type
+	_, ok := IsValidDistributionType(m.DistributionType.String())
+	if !ok {
+		return sdkerrors.Wrap(ErrInvalid, "Invalid Distribution Type")
+	}
+	// Validate length of output is not 0
 	if len(m.Output) == 0 {
 		return errors.Wrapf(ErrInvalid, "Outputlist cannot be empty")
 	}
+	// Validate individual out records
 	for _, out := range m.Output {
+		_, err := sdk.AccAddressFromBech32(out.Address.String())
+		if err != nil {
+			return errors.Wrapf(ErrInvalid, "Invalid Recipient Address")
+		}
 		if !out.Coins.IsValid() {
 			return errors.Wrapf(ErrInvalid, "Invalid Coins")
 		}
