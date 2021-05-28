@@ -2,7 +2,6 @@ package ethbridge
 
 import (
 	"encoding/json"
-	"fmt"
 
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
@@ -88,13 +87,11 @@ type AppModule struct {
 	AppModuleBasic
 	AppModuleSimulation
 
-	OracleKeeper        types.OracleKeeper
-	BankKeeper          types.BankKeeper
-	AccountKeeper       types.AccountKeeper
-	BridgeKeeper        Keeper
-	Codec               *codec.Marshaler
-	tokenMap            map[string]string
-	migrationStartBlock int64
+	OracleKeeper  types.OracleKeeper
+	BankKeeper    types.BankKeeper
+	AccountKeeper types.AccountKeeper
+	BridgeKeeper  Keeper
+	Codec         *codec.Marshaler
 }
 
 func (am AppModule) RegisterServices(cfg module.Configurator) {
@@ -106,20 +103,17 @@ func (am AppModule) RegisterServices(cfg module.Configurator) {
 func NewAppModule(
 	oracleKeeper types.OracleKeeper, bankKeeper types.BankKeeper,
 	accountKeeper types.AccountKeeper, bridgeKeeper Keeper,
-	cdc *codec.Marshaler, tokenMap map[string]string,
-	migrationStartBlock int64) AppModule {
+	cdc *codec.Marshaler) AppModule {
 
 	return AppModule{
 		AppModuleBasic:      AppModuleBasic{},
 		AppModuleSimulation: AppModuleSimulation{},
 
-		OracleKeeper:        oracleKeeper,
-		BankKeeper:          bankKeeper,
-		AccountKeeper:       accountKeeper,
-		BridgeKeeper:        bridgeKeeper,
-		Codec:               cdc,
-		tokenMap:            tokenMap,
-		migrationStartBlock: migrationStartBlock,
+		OracleKeeper:  oracleKeeper,
+		BankKeeper:    bankKeeper,
+		AccountKeeper: accountKeeper,
+		BridgeKeeper:  bridgeKeeper,
+		Codec:         cdc,
 	}
 }
 
@@ -167,21 +161,7 @@ func (am AppModule) ExportGenesis(s sdk.Context, marshaler codec.JSONMarshaler) 
 }
 
 // BeginBlock returns the begin blocker for the ethbridge module.
-func (am AppModule) BeginBlock(ctx sdk.Context, req abci.RequestBeginBlock) {
-
-	if req.Header.Height == am.migrationStartBlock {
-		tokens := am.BridgeKeeper.GetPeggyToken(ctx).Tokens
-		newTokens := []string{}
-		for _, token := range tokens {
-			if value, ok := am.tokenMap[token]; ok {
-				newTokens = append(newTokens, value)
-			} else {
-				panic(fmt.Sprintf("new denom for %s not found\n", token))
-			}
-		}
-		am.BridgeKeeper.SetPeggyToken(ctx, newTokens)
-	}
-}
+func (am AppModule) BeginBlock(ctx sdk.Context, req abci.RequestBeginBlock) {}
 
 // EndBlock returns the end blocker for the ethbridge module. It returns no validator
 // updates.

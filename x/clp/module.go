@@ -90,20 +90,16 @@ func (AppModuleBasic) GetQueryCmd() *cobra.Command {
 type AppModule struct {
 	AppModuleBasic
 
-	keeper              keeper.Keeper
-	bankKeeper          types.BankKeeper
-	tokenMap            map[string]string
-	migrationStartBlock int64
+	keeper     keeper.Keeper
+	bankKeeper types.BankKeeper
 }
 
 // NewAppModule creates a new AppModule object
-func NewAppModule(k keeper.Keeper, bankKeeper types.BankKeeper, tokenMap map[string]string, migrationStartBlock int64) AppModule {
+func NewAppModule(k keeper.Keeper, bankKeeper types.BankKeeper) AppModule {
 	return AppModule{
-		AppModuleBasic:      AppModuleBasic{},
-		keeper:              k,
-		bankKeeper:          bankKeeper,
-		tokenMap:            tokenMap,
-		migrationStartBlock: migrationStartBlock,
+		AppModuleBasic: AppModuleBasic{},
+		keeper:         k,
+		bankKeeper:     bankKeeper,
 	}
 }
 
@@ -155,91 +151,7 @@ func (am AppModule) ExportGenesis(ctx sdk.Context, cdc codec.JSONMarshaler) json
 }
 
 // BeginBlock used to do token migration
-func (am AppModule) BeginBlock(ctx sdk.Context, req abci.RequestBeginBlock) {
-	if req.Header.Height == am.migrationStartBlock {
-		am.migrateBalance(ctx, am.tokenMap)
-		am.migrateLiquidity(ctx, am.tokenMap)
-		am.migratePool(ctx, am.tokenMap)
-	}
-}
-
-func getAll(addresses *[]sdk.AccAddress, coins *[]sdk.Coin) func(address sdk.AccAddress, coin sdk.Coin) bool {
-	return func(address sdk.AccAddress, coin sdk.Coin) bool {
-		*addresses = append(*addresses, address)
-		*coins = append(*coins, coin)
-		return true
-	}
-}
-
-func (am AppModule) migrateBalance(ctx sdk.Context, tokenMap map[string]string) {
-	addresses := []sdk.AccAddress{}
-	coins := []sdk.Coin{}
-
-	am.bankKeeper.IterateAllBalances(ctx, getAll(&addresses, &coins))
-
-	for index, address := range addresses {
-
-		coin := coins[index]
-		amount := coin.Amount
-		// clear the balance for old denom
-		coin.Amount = sdk.NewInt(0)
-		err := am.bankKeeper.SetBalance(ctx, address, coin)
-		if err != nil {
-			panic("failed to set balance during token migration")
-		}
-
-		// set the balance for new denom
-		if value, ok := tokenMap[coin.Denom]; ok {
-			coin = sdk.NewCoin(value, amount)
-			err = am.bankKeeper.SetBalance(ctx, address, coin)
-			if err != nil {
-				panic("failed to set balance during token migration")
-			}
-		} else {
-			panic(fmt.Sprintf("new denom for %s not found\n", coin.Denom))
-		}
-	}
-
-}
-
-func (am AppModule) migratePool(ctx sdk.Context, tokenMap map[string]string) {
-	pools := am.keeper.GetPools(ctx)
-	for _, value := range pools {
-		token := value.ExternalAsset.Symbol
-		if newDenom, ok := tokenMap[token]; ok {
-			err := am.keeper.DestroyPool(ctx, token)
-			if err != nil {
-				panic("failed to destroy pool during token migration")
-			}
-			value.ExternalAsset.Symbol = newDenom
-			err = am.keeper.SetPool(ctx, value)
-			if err != nil {
-				panic("failed to set pool during token migration")
-			}
-
-		} else {
-			panic(fmt.Sprintf("new denom for %s not found\n", token))
-		}
-	}
-}
-
-func (am AppModule) migrateLiquidity(ctx sdk.Context, tokenMap map[string]string) {
-	liquidity := am.keeper.GetLiquidityProviders(ctx)
-
-	for _, value := range liquidity {
-		token := value.Asset.Symbol
-		if newDenom, ok := tokenMap[token]; ok {
-
-			am.keeper.DestroyLiquidityProvider(ctx, token, value.LiquidityProviderAddress)
-
-			value.Asset.Symbol = newDenom
-			am.keeper.SetLiquidityProvider(ctx, value)
-
-		} else {
-			panic(fmt.Sprintf("new denom for %s not found\n", token))
-		}
-	}
-}
+func (am AppModule) BeginBlock(ctx sdk.Context, req abci.RequestBeginBlock) {}
 
 // EndBlock returns the end blocker for the clp module. It returns no validator
 // updates.
