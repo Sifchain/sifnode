@@ -161,7 +161,7 @@ func (am AppModule) ExportGenesis(s sdk.Context, marshaler codec.JSONMarshaler) 
 }
 
 // BeginBlock returns the begin blocker for the ethbridge module.
-func (am AppModule) BeginBlock(ctx sdk.Context, req abci.RequestBeginBlock) {}
+func (am AppModule) BeginBlock(_ sdk.Context, _ abci.RequestBeginBlock) {}
 
 // EndBlock returns the end blocker for the ethbridge module. It returns no validator
 // updates.

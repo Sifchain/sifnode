@@ -92,9 +92,7 @@ import (
 	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
 )
 
-const (
-	appName = "sifnode"
-)
+const appName = "sifnode"
 
 var (
 	DefaultNodeHome = os.ExpandEnv("$HOME/.sifnoded")
