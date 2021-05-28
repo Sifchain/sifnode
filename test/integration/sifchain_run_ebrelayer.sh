@@ -51,7 +51,6 @@ ETHEREUM_PRIVATE_KEY=$EBRELAYER_ETHEREUM_PRIVATE_KEY $runner init $TCP_URL "$ETH
   "$MONIKER" \
   "$MNEMONIC" \
   --chain-id $CHAINNET \
-  --rpc-url $TCP_URL \
   --node $TCP_URL \
   --keyring-backend test \
   --from $MONIKER \

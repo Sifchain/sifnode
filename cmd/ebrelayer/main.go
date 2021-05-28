@@ -8,30 +8,25 @@ import (
 	"strings"
 	"sync"
 
+	sifapp "github.com/Sifchain/sifnode/app"
+	"github.com/Sifchain/sifnode/cmd/ebrelayer/contract"
+	"github.com/Sifchain/sifnode/cmd/ebrelayer/relayer"
 	"github.com/cosmos/cosmos-sdk/client"
+	"github.com/cosmos/cosmos-sdk/client/flags"
+	"github.com/cosmos/cosmos-sdk/client/rpc"
 	"github.com/cosmos/cosmos-sdk/client/tx"
 	"github.com/cosmos/cosmos-sdk/server"
 	svrcmd "github.com/cosmos/cosmos-sdk/server/cmd"
 	authclient "github.com/cosmos/cosmos-sdk/x/auth/client"
 	"github.com/cosmos/cosmos-sdk/x/auth/types"
-	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
-
-	sifapp "github.com/Sifchain/sifnode/app"
-	"github.com/Sifchain/sifnode/cmd/ebrelayer/contract"
-	"github.com/Sifchain/sifnode/cmd/ebrelayer/relayer"
-	"github.com/Sifchain/sifnode/cmd/ebrelayer/txs"
-	"github.com/cosmos/cosmos-sdk/client/flags"
-	"github.com/cosmos/cosmos-sdk/client/rpc"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/pkg/errors"
+	"github.com/spf13/cobra"
 	"github.com/syndtr/goleveldb/leveldb"
 	"go.uber.org/zap"
 )
 
 const (
-	// FlagRPCURL defines the URL for the tendermint RPC connection
-	FlagRPCURL = "rpc-url"
 	// EnvPrefix defines the environment prefix for the root cmd
 	levelDbFile = "relayerdb"
 )
@@ -79,10 +74,7 @@ func buildRootCmd() *cobra.Command {
 	sifapp.SetConfig(true)
 
 	// Add --chain-id to persistent flags and mark it required
-	rootCmd.PersistentFlags().String(flags.FlagKeyringBackend, flags.DefaultKeyringBackend,
-		"Select keyring's backend (os|file|test)")
 	rootCmd.PersistentFlags().String(flags.FlagChainID, "", "Chain ID of tendermint node")
-	rootCmd.PersistentFlags().String(FlagRPCURL, "", "RPC URL of tendermint node")
 	rootCmd.PersistentFlags().String(flags.FlagGas, "gas", fmt.Sprintf(
 		"gas limit to set per-transaction; set to %q to calculate required gas automatically (default %d)",
 		flags.GasFlagAuto, flags.DefaultGasLimit,
@@ -152,24 +144,14 @@ func RunInitRelayerCmd(cmd *cobra.Command, args []string) error {
 		}
 	}()
 
-	// Load the validator's Ethereum private key from environment variables
-	privateKey, err := txs.LoadPrivateKey()
+	nodeURL, err := cmd.Flags().GetString(flags.FlagNode)
 	if err != nil {
-		return errors.Errorf("invalid [ETHEREUM_PRIVATE_KEY] environment variable")
+		return err
 	}
-
-	// Parse flag --chain-id
-	chainID := viper.GetString(flags.FlagChainID)
-	if strings.TrimSpace(chainID) == "" {
-		return errors.Errorf("Must specify a 'chain-id'")
-	}
-
-	// Parse flag --rpc-url
-	rpcURL := viper.GetString(FlagRPCURL)
-	if rpcURL != "" {
-		_, err := url.Parse(rpcURL)
-		if rpcURL != "" && err != nil {
-			return errors.Wrapf(err, "invalid RPC URL: %v", rpcURL)
+	if nodeURL != "" {
+		_, err := url.Parse(nodeURL)
+		if nodeURL != "" && err != nil {
+			return errors.Wrapf(err, "invalid RPC URL: %v", nodeURL)
 		}
 	}
 
@@ -213,18 +195,17 @@ func RunInitRelayerCmd(cmd *cobra.Command, args []string) error {
 	// Initialize new Ethereum event listener
 	ethSub := relayer.NewEthereumSub(
 		cliContext,
-		rpcURL,
+		nodeURL,
 		validatorMoniker,
 		web3Provider,
 		contractAddress,
-		privateKey,
 		nil,
 		db,
 		sugaredLogger,
 	)
 
 	// Initialize new Cosmos event listener
-	cosmosSub := relayer.NewCosmosSub(tendermintNode, web3Provider, contractAddress, privateKey, db, sugaredLogger)
+	cosmosSub := relayer.NewCosmosSub(tendermintNode, web3Provider, contractAddress, db, sugaredLogger)
 
 	waitForAll := sync.WaitGroup{}
 	waitForAll.Add(2)
@@ -260,6 +241,8 @@ func replayEthereumCmd() *cobra.Command {
 		Example: "replayEthereum tcp://localhost:26657 ws://localhost:7545/ 0x30753E4A8aad7F8597332E813735Def5dD395028 validator mnemonic 100 200 100 200 --chain-id=peggy",
 		RunE:    RunReplayEthereumCmd,
 	}
+
+	flags.AddTxFlagsToCmd(replayEthereumCmd)
 
 	return replayEthereumCmd
 }
