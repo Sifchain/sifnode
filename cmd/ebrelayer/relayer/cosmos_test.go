@@ -1,6 +1,7 @@
 package relayer
 
 import (
+	"crypto/ecdsa"
 	"log"
 	"math/big"
 	"testing"
@@ -29,8 +30,9 @@ func TestNewCosmosSub(t *testing.T) {
 
 	sugaredLogger := logger.Sugar()
 	registryContractAddress := common.HexToAddress(contractAddress)
+	var key *ecdsa.PrivateKey // this isn't actually used
 	sub := NewCosmosSub(tmProvider, ethProvider, registryContractAddress,
-		db, sugaredLogger)
+		key, db, sugaredLogger)
 	require.NotEqual(t, sub, nil)
 }
 
