@@ -85,6 +85,7 @@ func TestQueryEmptyPools(t *testing.T) {
 	assert.NoError(t, err)
 	var poolsRes types.PoolsRes
 	err = cdc.UnmarshalJSON(qpools, &poolsRes)
+	assert.NoError(t, err)
 	assert.Empty(t, poolsRes.Pools)
 }
 
