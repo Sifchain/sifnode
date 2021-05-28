@@ -2,8 +2,9 @@ export class ConfirmSupplyModal {
   constructor() {
     this.el = {
       title: '[data-handle="confirmation-modal-title"]',
-      tokenADetailsPoolRow: '[data-handle="token-a-details-panel-pool-row"]',
-      tokenBDetailsPoolRow: '[data-handle="token-b-details-panel-pool-row"]',
+      tokenInfoRow: (token) => `[data-handle="info-row-${token}"]`,
+      tokenInfoAmount: (token) =>
+        `[data-handle="info-row-${token}"] [data-handle="info-amount"]`,
       ratesAPerBRow: '[data-handle="real-a-per-b-row"]',
       ratesBPerARow: '[data-handle="real-b-per-a-row"]',
       ratesShareOfPool: '[data-handle="real-share-of-pool"]',
@@ -21,12 +22,12 @@ export class ConfirmSupplyModal {
     return await page.innerText(this.el.title);
   }
 
-  async getTokenADetailsPoolText() {
-    return await page.innerText(this.el.tokenADetailsPoolRow);
+  async getTokenInfoRowText(token) {
+    return await page.innerText(this.el.tokenInfoRow(token));
   }
 
-  async getTokenBDetailsPoolText() {
-    return await page.innerText(this.el.tokenBDetailsPoolRow);
+  async getTokenAmountText(token) {
+    return await page.innerText(this.el.tokenInfoAmount(token));
   }
 
   async getRatesAPerBRowText() {

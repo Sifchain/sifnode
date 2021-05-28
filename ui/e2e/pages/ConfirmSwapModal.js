@@ -1,10 +1,13 @@
-// import { expect as expectPw } from "expect-playwright";
 const expectPw = require("expect-playwright");
 
 export class ConfirmSwapModal {
   constructor() {
     this.rootSelector = '[data-handle="confirm-swap-modal"]';
     this.el = {
+      tokenInfoRow: (token) =>
+        `${this.rootSelector} [data-handle="info-row-${token}"]`,
+      tokenInfoAmount: (token) =>
+        `${this.rootSelector} [data-handle="info-row-${token}"] [data-handle="info-amount"]`,
       detailsPriceMessage: `${this.rootSelector} [data-handle='details-price-message']`,
       detailsMinimumReceived: `${this.rootSelector} [data-handle='details-minimum-received']`,
       detailsPriceImpact: `${this.rootSelector} [data-handle='details-price-impact']`,
@@ -17,11 +20,21 @@ export class ConfirmSwapModal {
   }
 
   async verifyDetails({
+    tokenA,
+    tokenB,
+    expTokenAAmount,
+    expTokenBAmount,
     expPriceMessage,
     expMinimumReceived,
     expPriceImpact,
     expLiquidityProviderFee,
   }) {
+    expect(await page.innerText(this.el.tokenInfoAmount(tokenA))).toBe(
+      expTokenAAmount,
+    );
+    expect(await page.innerText(this.el.tokenInfoAmount(tokenB))).toBe(
+      expTokenBAmount,
+    );
     expect(await page.innerText(this.el.detailsPriceMessage)).toBe(
       expPriceMessage,
     );
@@ -50,6 +63,14 @@ export class ConfirmSwapModal {
 
   async getSwapMessage() {
     return await page.innerText(this.el.swapMessage);
+  }
+
+  async getTokenInfoRowText(token) {
+    return await page.innerText(this.el.tokenInfoRow(token));
+  }
+
+  async getTokenAmountText(token) {
+    return await page.innerText(this.el.tokenInfoAmount(token));
   }
 
   async verifySwapMessage(expectedMessage) {
