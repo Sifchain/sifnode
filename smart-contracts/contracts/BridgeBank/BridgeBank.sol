@@ -109,7 +109,7 @@ contract BridgeBank is BankStorage,
     /*
      * @dev: function to validate if a sif address has a correct prefix
      */
-    function verifySifPrefix(bytes memory _sifAddress) public pure returns (bool) {
+    function verifySifPrefix(bytes calldata _sifAddress) private pure returns (bool) {
         bytes3 sifInHex = 0x736966;
 
         for (uint256 i = 0; i < sifInHex.length; i++) {
@@ -118,6 +118,14 @@ contract BridgeBank is BankStorage,
             }
         }
         return true;
+    }
+
+    function verifySifAddressLength(bytes calldata _sifAddress) private pure returns (bool) {
+        return _sifAddress == 42 ? true : false;
+    }
+
+    function verifySifAddress(bytes external _sifAddress) private pure returns (bool) {
+        return verifySifAddressLength(_sifAddress) && verifySifPrefix(_sifAddress);
     }
 
     /*
@@ -300,6 +308,32 @@ contract BridgeBank is BankStorage,
         }
     }
 
+    // multi-lock burn. For locking ERC20 tokens and rowan
+    // not for beginner users
+    function multiLockBurn(
+        bytes[] calldata _recipient,
+        address[] calldata _token,
+        uint256[] calldata _amount,
+        bool[] calldata _isBurn
+    ) external {
+        // all 
+        require(_recipient.length == _token.length, "M_P");
+        require(_token.length == _amount.length, "M_P");
+        require(_token.length == _isBurn.length, "M_P");
+
+        uint256 _chainid = getChainID();
+
+        for (uint256 i = 0; i < _recipient.length; i++) {
+            require(verifySifAddress(_recipient[i]), "INV_ADR");
+
+            if (_isBurn[i]) {
+                _burnTokens(_recipient[i], _token[i], _amount[i], _chainid);
+            } else {
+                _lockTokens(_recipient[i], _token[i], _amount[i], _chainid);
+            }
+        }
+    }
+
     function _lockTokens(
         bytes calldata _recipient,
         address tokenAddress,
@@ -333,6 +367,40 @@ contract BridgeBank is BankStorage,
                 decimals,
                 symbol,
                 name
+            );
+        }
+    }
+
+    function _burnTokens(
+        bytes calldata _recipient,
+        address tokenAddress,
+        uint256 tokenAmount,
+        uint256 _chainid
+    ) private {
+        IERC20 tokenToTransfer = IERC20(tokenAddress);
+        // burn tokens
+        tokenToTransfer.burnFrom(
+            msg.sender,
+            tokenAmount
+        );
+
+        // decimals defaults to 18 if call to decimals fails
+        uint8 decimals = getDecimals(tokenAddress);
+
+        // Get name and symbol
+        string memory name = getName(tokenAddress);
+        string memory symbol = getSymbol(tokenAddress);
+
+        lockBurnNonce = lockBurnNonce + 1;
+        {
+            emit LogBurn(
+                msg.sender,
+                _recipient,
+                _token,
+                _amount,
+                lockBurnNonce,
+                _chainid,
+                decimals
             );
         }
     }

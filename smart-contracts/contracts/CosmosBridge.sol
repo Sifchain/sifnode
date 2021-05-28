@@ -134,7 +134,14 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
             _amount
         );
 
-        require(!prophecyRedeemed[_prophecyID], "prophecy already redeemed");
+        // save state of this oracle making a claim
+        bool claimComplete = newOracleClaim(_prophecyID, msg.sender);
+
+        // we need to exit gracefully otherwise it would cause ordering
+        // issues and never allow the 4th validator to catch up
+        if (prophecyRedeemed[_prophecyID]) {
+            return ;
+        }
 
         if (oracleClaimValidators[_prophecyID] == 0) {
             emit LogNewProphecyClaim(
@@ -143,13 +150,12 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
                 _amount
             );
         }
-    
-        bool claimComplete = newOracleClaim(_prophecyID, msg.sender);
 
         if (claimComplete) {
             // you cannot redeem this prophecy again
             prophecyRedeemed[_prophecyID] = true;
 
+            // if we are double pegging, then we are going to need to get the address on this chain
             _tokenAddress = _doublePeg ? sourceAddressToDestinationAddress[_tokenAddress] : _tokenAddress;
 
             completeProphecyClaim(
