@@ -121,16 +121,16 @@ namespace :cluster do
       end
 
       desc "Deploy a single standalone sifnode on to your cluster"
-      task :standalone_vault, [:namespace, :image, :image_tag, :template_file_name, :final_file_name] do |t, args|
-        variable_template_replace(args[:template_file_name], args[:final_file_name])
+      task :standalone_vault, [:namespace, :image, :image_tag, :helm_values_file] do |t, args|
+        #variable_template_replace(args[:template_file_name], args[:final_file_name])
         cmd = %Q{helm upgrade sifnode deploy/helm/sifnode-vault \
           --install -n #{args[:namespace]} --create-namespace \
           --set image.tag=#{args[:image_tag]} \
           --set image.repository=#{args[:image]} \
-          -f #{args[:final_file_name]}
+          -f #{args[:helm_values_file]}
         }
-        puts cmd
-        #system(cmd) or exit 1
+        #puts cmd
+        system(cmd) or exit 1
       end
 
       desc "Deploy a single network-aware sifnode on to your cluster"
