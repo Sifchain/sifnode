@@ -1032,6 +1032,18 @@ metadata:
     end
   end
 
+  desc "Map Variables to Github Variables"
+  namespace :utilities do
+    desc "Map Variables to Github Variables"
+    task :github_variable_map, [:path,:app_env] do |t, args|
+        require 'yaml'
+        yaml_variables = YAML.load(File.read(args[:path]))
+        yaml_variables[args[:app_env]].each do |key, value|
+            %x{ echo "#{key}=#{value}" >> $GITHUB_ENV }
+        end
+    end
+  end
+
   desc "Create Release Governance Request."
   namespace :release do
     desc "Create Release Governance Request."
