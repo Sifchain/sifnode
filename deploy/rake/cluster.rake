@@ -79,6 +79,7 @@ namespace :cluster do
           -f #{args[:helm_values_file]}
         }
         system(cmd) or exit 1
+      end
     end
 
     namespace :deploy do
