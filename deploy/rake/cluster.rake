@@ -1039,7 +1039,7 @@ metadata:
         require 'yaml'
         yaml_variables = YAML.load(File.read(args[:path]))
         yaml_variables[args[:app_env]].each do |key, value|
-            %x{ echo "#{key}=#{value}" >> $GITHUB_ENV }
+            %x{ echo "export #{key}='#{value}'" >> $GITHUB_ENV }
         end
     end
   end
