@@ -68,20 +68,6 @@ namespace :cluster do
   desc "Manage sifnode deploy, upgrade, etc processes"
   namespace :sifnode do
 
-    namespace :sifnode_vault do
-    desc "Deploy a new sifnode vault to a new cluster"
-    task :standalone, [:namespace, :image, :image_tag, :helm_values_file] do |t, args|
-        #variable_template_replace(args[:template_file_name], args[:final_file_name])
-        cmd = %Q{helm upgrade sifnode deploy/helm/sifnode-vault \
-          --install -n #{args[:namespace]} --create-namespace \
-          --set image.tag=#{args[:image_tag]} \
-          --set image.repository=#{args[:image]} \
-          -f #{args[:helm_values_file]}
-        }
-        system(cmd) or exit 1
-      end
-    end
-
     namespace :deploy do
       desc "Deploy a single standalone sifnode on to your cluster"
       task :standalone, [:cluster, :chainnet, :provider, :namespace, :image, :image_tag, :moniker, :mnemonic, :admin_clp_addresses, :admin_oracle_address, :minimum_gas_prices] do |t, args|
@@ -165,6 +151,18 @@ namespace :cluster do
     end
   end
 
+    namespace :sifnode_vault do
+    desc "Deploy a new sifnode vault to a new cluster"
+    task :standalone, [:namespace, :image, :image_tag, :helm_values_file] do |t, args|
+        cmd = %Q{helm upgrade sifnode deploy/helm/sifnode-vault \
+          --install -n #{args[:namespace]} --create-namespace \
+          --set image.tag=#{args[:image_tag]} \
+          --set image.repository=#{args[:image]} \
+          -f #{args[:helm_values_file]}
+        }
+        system(cmd) or exit 1
+      end
+    end
 
   desc "ebrelayer Operations"
   namespace :ebrelayer do
