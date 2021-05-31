@@ -41,6 +41,11 @@ func (m MsgDistribution) ValidateBasic() error {
 	if len(m.Output) == 0 {
 		return errors.Wrapf(ErrInvalid, "Outputlist cannot be empty")
 	}
+	// Validator distributor
+	_, err := sdk.AccAddressFromBech32(m.Distributor.String())
+	if err != nil {
+		return errors.Wrapf(ErrInvalid, "Invalid Distributor Address")
+	}
 	// Validate individual out records
 	for _, out := range m.Output {
 		_, err := sdk.AccAddressFromBech32(out.Address.String())
