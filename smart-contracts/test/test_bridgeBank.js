@@ -421,22 +421,7 @@ contract("BridgeBank", function (accounts) {
       );
     });
 
-    it("should not allow users to lock ERC20 tokens if the sifaddress prefix is incorrect", async function () {
-      const invalidSifAddress = web3.utils.utf8ToHex(
-        "zif1gdnl9jj2xgy5n04r7heqxlqvvzcy24zc96ns2f"
-      );
-      // Attempt to lock tokens
-      await expectRevert(this.bridgeBank.lock(
-        invalidSifAddress,
-        this.token.address,
-        this.amount, {
-          from: userOne,
-          value: 0
-        }
-      ),
-        "Invalid sif address"
-      );
-    });
+
 
     it("should allow users to lock Ethereum", async function () {
       await this.bridgeBank.lock(

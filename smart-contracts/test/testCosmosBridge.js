@@ -1,4 +1,3 @@
-const EVMRevert = "revert";
 const Web3Utils = require("web3-utils");
 const web3 = require("web3");
 const BigNumber = web3.BigNumber;
@@ -6,13 +5,6 @@ const BigNumber = web3.BigNumber;
 const { ethers, upgrades } = require("hardhat");
 const { use, expect } = require("chai");
 const { solidity } = require("ethereum-waffle");
-const {
-  BN,           // Big Number support
-  constants,    // Common constants, like the zero address and largest integers
-  expectEvent,  // Assertions for emitted events
-  expectRevert, // Assertions for transactions that should fail
-} = require('@openzeppelin/test-helpers');
-const { after } = require("lodash");
 
 require("chai")
   .use(require("chai-as-promised"))
@@ -21,15 +13,11 @@ require("chai")
 
 use(solidity);
 
-// Contract's enum ClaimType can be represented as a sequence of integers
-const CLAIM_TYPE_BURN = 1;
-const CLAIM_TYPE_LOCK = 2;
-
 const getBalance = async function(address) {
   return await network.provider.send("eth_getBalance", [address]);
 }
 
-describe("Test Bridge Bank", function () {
+describe("Test Cosmos Bridge", function () {
   let userOne;
   let userTwo;
   let userThree;
@@ -140,14 +128,21 @@ describe("Test Bridge Bank", function () {
 
   describe("CosmosBridge", function () {
     it("should return true if a sifchain address prefix is correct", async function () {
-      (await this.bridgeBank.verifySifPrefix(this.sender)).should.be.equal(true);
+      (await this.bridgeBank.VSA(this.sender)).should.be.equal(true);
+    });
+
+    it("should return false if a sifchain address length is incorrect", async function () {
+      const incorrectSifAddress = web3.utils.utf8ToHex(
+        "sif1nx650s8q9w28f2g3t9ztxyg48ugldptuwzpaceee"
+      );
+      (await this.bridgeBank.VSA(incorrectSifAddress)).should.be.equal(false);
     });
 
     it("should return false if a sifchain address has an incorrect `sif` prefix", async function () {
       const incorrectSifAddress = web3.utils.utf8ToHex(
         "eif1nx650s8q9w28f2g3t9ztxyg48ugldptuwzpace"
       );
-      (await this.bridgeBank.verifySifPrefix(incorrectSifAddress)).should.be.equal(false);
+      (await this.bridgeBank.VSA(incorrectSifAddress)).should.be.equal(false);
     });
 
     it("Should deploy cosmos bridge and bridge bank", async function () {
@@ -155,6 +150,8 @@ describe("Test Bridge Bank", function () {
         (await this.cosmosBridge.consensusThreshold()).toString()
       ).to.equal(consensusThreshold.toString());
 
+      // iterate over all validators and ensure they have the proper
+      // powers and that they have been succcessfully whitelisted
       for (let i = 0; i < initialValidators.length; i++) {
         const address = initialValidators[i];
 
@@ -170,30 +167,6 @@ describe("Test Bridge Bank", function () {
       expect(await this.bridgeBank.cosmosBridge()).to.be.equal(this.cosmosBridge.address);
       expect(await this.bridgeBank.owner()).to.be.equal(owner);
       expect(await this.bridgeBank.pausers(pauser)).to.be.true;
-    });
-
-    it("should allow user to lock ERC20 tokens", async function () {
-      const beforeUserBalance = Number(
-        await this.token.balanceOf(userOne.address)
-      );
-
-      await this.token.connect(userOne).approve(
-        this.bridgeBank.address,
-        this.amount
-      );
-
-      // Attempt to lock tokens
-      await this.bridgeBank.connect(userOne).lock(
-        this.sender,
-        this.token.address,
-        this.amount
-      );
-
-      // Confirm that the user has been minted the correct token
-      const afterUserBalance = Number(
-        await this.token.balanceOf(userOne.address)
-      );
-      afterUserBalance.should.be.bignumber.equal(0);
     });
 
     it("should mint bridge tokens upon the successful processing of a burn prophecy claim", async function () {
@@ -240,52 +213,15 @@ describe("Test Bridge Bank", function () {
       afterUserBalance.should.be.bignumber.equal(this.amount);
     });
 
-    it("should allow users to lock Ethereum in the bridge bank", async function () {
-      const tx = await this.bridgeBank.connect(userOne).lock(
-        this.sender,
-        this.ethereumToken,
-        this.weiAmount, {
-          value: this.weiAmount
-        }
-      ).should.be.fulfilled;
-      await tx.wait();
-
-      const contractBalanceWei = await getBalance(this.bridgeBank.address);
-      const contractBalance = Web3Utils.fromWei(contractBalanceWei, "ether");
-
-      contractBalance.should.be.bignumber.equal(
-        Web3Utils.fromWei((+this.weiAmount + +this.amount).toString(), "ether")
-      );
-    });
-
-    it("should not allow users to lock Ethereum in the bridge bank if the sent amount and amount param are different", async function () {
-      await expect(
-        this.bridgeBank.connect(userOne).lock(
-          this.sender,
-          this.ethereumToken,
-          this.weiAmount + 1, {
-            value: this.weiAmount
-          },
-        ),
-      ).to.be.revertedWith("amount mismatch");
-    });
-
-    it("should not allow users to lock Ethereum in the bridge bank if sending tokens", async function () {
-      await expect(
-        this.bridgeBank.connect(userOne).lock(
-          this.sender,
-          this.token.address,
-          this.weiAmount + 1, {
-            value: this.weiAmount
-          },
-        ),
-      ).to.be.revertedWith("do not send currency if locking tokens");
-    });
-  });
-
-  describe("CosmosBridge", function () {
-
     it("should unlock eth upon the successful processing of a burn prophecy claim", async function () {
+      // assert recipient balance before receiving proceeds from newProphecyClaim is correct
+      const recipientStartingBalance = await getBalance(this.recipient);
+      const recipientCurrentBalance = Web3Utils.fromWei(recipientStartingBalance);
+
+      expect(recipientCurrentBalance).to.be.equal(
+        "10000"
+      );
+
       // Submit a new prophecy claim to the CosmosBridge to make oracle claims upon
       this.nonce = 1;
       let receipt = await this.cosmosBridge.connect(userOne).newProphecyClaim(

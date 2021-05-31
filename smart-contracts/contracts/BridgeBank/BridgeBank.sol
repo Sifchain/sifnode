@@ -52,7 +52,7 @@ contract BridgeBank is BankStorage,
     /*
      * @dev: Modifier to restrict access to owner
      */
-    modifier onlyOwner() {
+    modifier onlyOwner {
         require(msg.sender == owner, "!owner");
         _;
     }
@@ -60,7 +60,7 @@ contract BridgeBank is BankStorage,
     /*
      * @dev: Modifier to restrict access to the cosmos bridge
      */
-    modifier onlyCosmosBridge() {
+    modifier onlyCosmosBridge {
         require(
             msg.sender == cosmosBridge,
             "!cosmosbridge"
@@ -71,9 +71,8 @@ contract BridgeBank is BankStorage,
     /*
      * @dev: Modifier to only allow valid sif addresses
      */
-    modifier validSifAddress(bytes memory _sifAddress) {
-        require(_sifAddress.length == 42, "Invalid len");
-        require(verifySifPrefix(_sifAddress) == true, "Invalid sif address");
+    modifier validSifAddress(bytes calldata _sifAddress) {
+        require(verifySifAddress(_sifAddress) == true, "Invalid sif address");
         _;
     }
 
@@ -121,11 +120,16 @@ contract BridgeBank is BankStorage,
     }
 
     function verifySifAddressLength(bytes calldata _sifAddress) private pure returns (bool) {
-        return _sifAddress == 42 ? true : false;
+        return _sifAddress.length == 42;
     }
 
-    function verifySifAddress(bytes external _sifAddress) private pure returns (bool) {
+    function verifySifAddress(bytes calldata _sifAddress) private pure returns (bool) {
         return verifySifAddressLength(_sifAddress) && verifySifPrefix(_sifAddress);
+    }
+
+    // function used only for testing
+    function VSA(bytes calldata _sifAddress) external pure returns (bool) {
+        return verifySifAddress(_sifAddress);
     }
 
     /*
@@ -377,7 +381,7 @@ contract BridgeBank is BankStorage,
         uint256 tokenAmount,
         uint256 _chainid
     ) private {
-        IERC20 tokenToTransfer = IERC20(tokenAddress);
+        BridgeToken tokenToTransfer = BridgeToken(tokenAddress);
         // burn tokens
         tokenToTransfer.burnFrom(
             msg.sender,
@@ -396,8 +400,8 @@ contract BridgeBank is BankStorage,
             emit LogBurn(
                 msg.sender,
                 _recipient,
-                _token,
-                _amount,
+                tokenAddress,
+                tokenAmount,
                 lockBurnNonce,
                 _chainid,
                 decimals
