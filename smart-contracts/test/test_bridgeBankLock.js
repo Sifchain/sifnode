@@ -91,6 +91,27 @@ describe("Test Bridge Bank", function () {
       afterUserBalance.should.be.bignumber.equal(state.amount);
     });
 
+    it("should allow users to lock Ethereum in the bridge bank", async function () {
+      const tx = await state.bridgeBank.connect(userOne).lock(
+        state.sender,
+        state.ethereumToken,
+        state.weiAmount, {
+          value: state.weiAmount
+        }
+      ).should.be.fulfilled;
+      await tx.wait();
+
+      const contractBalanceWei = await getBalance(state.bridgeBank.address);
+      const contractBalance = Web3Utils.fromWei(contractBalanceWei, "ether");
+
+      contractBalance.should.be.bignumber.equal(
+        Web3Utils.fromWei((+state.weiAmount).toString(), "ether")
+      );
+    });
+  });
+
+
+  describe("Multi Lock ERC20 Tokens", function () {
     it("should allow user to multi-lock ERC20 tokens", async function () {
       await state.token1.connect(userOne).approve(
         state.bridgeBank.address,
@@ -252,23 +273,56 @@ describe("Test Bridge Bank", function () {
         )
       ).to.be.revertedWith("INV_ADR");
     });
+  });
 
-    it("should allow users to lock Ethereum in the bridge bank", async function () {
-      const tx = await state.bridgeBank.connect(userOne).lock(
-        state.sender,
-        state.ethereumToken,
-        state.weiAmount, {
-          value: state.weiAmount
-        }
-      ).should.be.fulfilled;
-      await tx.wait();
+  describe("Multi Lock Burn ERC20 Tokens", function () {
+    it("should revert when parameters are malformed, not enough token amounts", async function () {
+      // Attempt to lock tokens
+      await expect(
+        state.bridgeBank.connect(userOne).multiLockBurn(
+          [state.sender, state.sender, state.sender],
+          [state.token1.address, state.token2.address, state.token3.address],
+          [state.amount, state.amount],
+          [false, false, false],
 
-      const contractBalanceWei = await getBalance(state.bridgeBank.address);
-      const contractBalance = Web3Utils.fromWei(contractBalanceWei, "ether");
+        )
+      ).to.be.revertedWith("M_P");
+    });
 
-      contractBalance.should.be.bignumber.equal(
-        Web3Utils.fromWei((+state.weiAmount).toString(), "ether")
-      );
+    it("should revert when multi-lock parameters are malformed, not enough token addresses", async function () {
+      // Attempt to lock tokens
+      await expect(
+        state.bridgeBank.connect(userOne).multiLockBurn(
+          [state.sender, state.sender, state.sender],
+          [state.token1.address, state.token2.address],
+          [state.amount, state.amount, state.amount],
+          [false, false, false]
+        )
+      ).to.be.revertedWith("M_P");
+    });
+
+    it("should revert when multi-lock parameters are malformed, not enough sif addresses", async function () {
+      // Attempt to lock tokens
+      await expect(
+        state.bridgeBank.connect(userOne).multiLockBurn(
+          [state.sender, state.sender],
+          [state.token1.address, state.token2.address, state.token3.address],
+          [state.amount, state.amount, state.amount],
+          [false, false, false]
+        )
+      ).to.be.revertedWith("M_P");
+    });
+
+    it("should revert when multi-lock parameters are malformed, invalid sif addresses", async function () {
+      // Attempt to lock tokens
+      await expect(
+        state.bridgeBank.connect(userOne).multiLockBurn(
+          [state.sender + "ee", state.sender, state.sender],
+          [state.token1.address, state.token2.address, state.token3.address],
+          [state.amount, state.amount, state.amount],
+          [false, false, false]
+        )
+      ).to.be.revertedWith("INV_ADR");
     });
   });
 });

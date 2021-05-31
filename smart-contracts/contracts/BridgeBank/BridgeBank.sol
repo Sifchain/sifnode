@@ -309,6 +309,7 @@ contract BridgeBank is BankStorage,
 
         for (uint256 i = 0; i < _recipient.length; i++) {
             require(verifySifAddress(_recipient[i]), "INV_ADR");
+
             _lockTokens(_recipient[i], _token[i], _amount[i], _chainid);
         }
     }
