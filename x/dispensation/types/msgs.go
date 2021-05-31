@@ -1,12 +1,10 @@
 package types
 
 import (
-	"fmt"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/cosmos/cosmos-sdk/x/bank"
 	"github.com/pkg/errors"
-	"regexp"
 )
 
 var (
@@ -17,13 +15,12 @@ var (
 
 type MsgDistribution struct {
 	Distributor      sdk.AccAddress   `json:"distributor"`
-	DistributionName string           `json:"distribution_name"`
 	DistributionType DistributionType `json:"distribution_type"`
 	Output           []bank.Output    `json:"output"`
 }
 
-func NewMsgDistribution(distributor sdk.AccAddress, DistributionName string, DistributionType DistributionType, output []bank.Output) MsgDistribution {
-	return MsgDistribution{Distributor: distributor, DistributionName: DistributionName, DistributionType: DistributionType, Output: output}
+func NewMsgDistribution(distributor sdk.AccAddress, DistributionType DistributionType, output []bank.Output) MsgDistribution {
+	return MsgDistribution{Distributor: distributor, DistributionType: DistributionType, Output: output}
 }
 
 func (m MsgDistribution) Route() string {
@@ -35,15 +32,6 @@ func (m MsgDistribution) Type() string {
 }
 
 func (m MsgDistribution) ValidateBasic() error {
-	if m.DistributionName == "" {
-		return sdkerrors.Wrap(ErrInvalid, "Name cannot be empty")
-	}
-	// Validate Distribution Name
-	distributionNameRegex := `[a-zA-Z][a-z0-9A-Z]{2,15}`
-	nameRegX := regexp.MustCompile(fmt.Sprintf(`^%s$`, distributionNameRegex))
-	if !nameRegX.MatchString(m.DistributionName) {
-		return fmt.Errorf("invalid name: %s , Name must be [2-15 character long]", m.DistributionName)
-	}
 	// Validate distribution Type
 	_, ok := IsValidDistributionType(m.DistributionType.String())
 	if !ok {

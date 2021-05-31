@@ -37,23 +37,22 @@ func GetTxCmd(cdc *codec.Codec) *cobra.Command {
 // Airdrop is a type of distribution on the network .
 func GetCmdCreate(cdc *codec.Codec) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "create [DistributionName] [DistributionType] [Output JSON File Path]",
+		Use:   "create [DistributionType] [Output JSON File Path]",
 		Short: "Create new distribution",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			inBuf := bufio.NewReader(cmd.InOrStdin())
 
 			txBldr := auth.NewTxBuilderFromCLI(inBuf).WithTxEncoder(utils.GetTxEncoder(cdc))
 			cliCtx := context.NewCLIContextWithInput(inBuf).WithCodec(cdc)
-			distributionType, ok := types.IsValidDistributionType(args[1])
+			distributionType, ok := types.IsValidDistributionType(args[0])
 			if !ok {
 				return fmt.Errorf("invalid distribution Type %s: Types supported [Airdrop/LiquidityMining/ValidatorSubsidy]", args[1])
 			}
-			outputList, err := dispensationUtils.ParseOutput(args[2])
+			outputList, err := dispensationUtils.ParseOutput(args[1])
 			if err != nil {
 				return err
 			}
-			name := args[0]
-			msg := types.NewMsgDistribution(cliCtx.GetFromAddress(), name, distributionType, outputList)
+			msg := types.NewMsgDistribution(cliCtx.GetFromAddress(), distributionType, outputList)
 			return utils.GenerateOrBroadcastMsgs(cliCtx, txBldr, []sdk.Msg{msg})
 		},
 	}

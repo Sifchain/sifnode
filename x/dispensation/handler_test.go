@@ -1,6 +1,7 @@
 package dispensation_test
 
 import (
+	"fmt"
 	"github.com/Sifchain/sifnode/x/dispensation"
 	"github.com/Sifchain/sifnode/x/dispensation/test"
 	"github.com/Sifchain/sifnode/x/dispensation/types"
@@ -24,21 +25,21 @@ func TestNewHandler_CreateDistribution(t *testing.T) {
 	assert.NoError(t, err)
 	_, err = keeper.GetBankKeeper().AddCoins(ctx, distibutor, totalCoins)
 	assert.NoError(t, err)
-	distributionname := "AR1"
-	msgAirdrop := types.NewMsgDistribution(distibutor, distributionname, types.Airdrop, outputList)
+	msgAirdrop := types.NewMsgDistribution(distibutor, types.Airdrop, outputList)
 	res, err := handler(ctx, msgAirdrop)
 	require.NoError(t, err)
 	require.NotNil(t, res)
+	distributionName := fmt.Sprintf("%s_%d", msgAirdrop.Distributor.String(), ctx.BlockHeight())
 	for _, e := range res.Events {
 		if e.Type == "distribution_started" {
 			assert.Len(t, e.Attributes, 3)
 			assert.Contains(t, e.Attributes[1].String(), "distribution_name")
-			assert.Contains(t, e.Attributes[1].String(), distributionname)
+			assert.Contains(t, e.Attributes[1].String(), distributionName)
 			assert.Contains(t, e.Attributes[2].String(), "distribution_type")
 			assert.Contains(t, e.Attributes[2].String(), types.Airdrop.String())
 		}
 	}
-	dr := keeper.GetRecordsForNameAll(ctx, "AR1")
+	dr := keeper.GetRecordsForNameAll(ctx, distributionName)
 	assert.Len(t, dr, recipients)
 }
 

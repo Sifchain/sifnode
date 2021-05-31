@@ -28,7 +28,8 @@ func NewHandler(k Keeper) sdk.Handler {
 //handleMsgCreateDistribution is the top level function for calling all executors.
 func handleMsgCreateDistribution(ctx sdk.Context, keeper Keeper, msg MsgDistribution) (*sdk.Result, error) {
 	// Verify if distribution already exists
-	err := keeper.VerifyAndSetDistribution(ctx, msg.DistributionName, msg.DistributionType)
+	distributionName := fmt.Sprintf("%s_%d", msg.Distributor.String(), ctx.BlockHeight())
+	err := keeper.VerifyAndSetDistribution(ctx, distributionName, msg.DistributionType)
 	if err != nil {
 		return nil, err
 	}
@@ -42,7 +43,7 @@ func handleMsgCreateDistribution(ctx sdk.Context, keeper Keeper, msg MsgDistribu
 		return nil, err
 	}
 	//Create drops and Store Historical Data
-	err = keeper.CreateDrops(ctx, msg.Output, msg.DistributionName, msg.DistributionType)
+	err = keeper.CreateDrops(ctx, msg.Output, distributionName, msg.DistributionType)
 	if err != nil {
 		return nil, err
 	}
@@ -50,7 +51,7 @@ func handleMsgCreateDistribution(ctx sdk.Context, keeper Keeper, msg MsgDistribu
 		sdk.NewEvent(
 			types.EventTypeDistributionStarted,
 			sdk.NewAttribute(types.AttributeKeyFromModuleAccount, types.GetDistributionModuleAddress().String()),
-			sdk.NewAttribute(types.AttributeKeyDistributionName, msg.DistributionName),
+			sdk.NewAttribute(types.AttributeKeyDistributionName, distributionName),
 			sdk.NewAttribute(types.AttributeKeyDistributionType, msg.DistributionType.String()),
 		),
 	})
