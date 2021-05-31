@@ -28,7 +28,7 @@ func NewHandler(k Keeper) sdk.Handler {
 //handleMsgCreateDistribution is the top level function for calling all executors.
 func handleMsgCreateDistribution(ctx sdk.Context, keeper Keeper, msg MsgDistribution) (*sdk.Result, error) {
 	// Verify if distribution already exists
-	distributionName := fmt.Sprintf("%s_%d", msg.Distributor.String(), ctx.BlockHeight())
+	distributionName := fmt.Sprintf("%d_%s", ctx.BlockHeight(), msg.Distributor.String())
 	err := keeper.VerifyAndSetDistribution(ctx, distributionName, msg.DistributionType)
 	if err != nil {
 		return nil, err

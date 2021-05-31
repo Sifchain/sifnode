@@ -29,7 +29,7 @@ func TestNewHandler_CreateDistribution(t *testing.T) {
 	res, err := handler(ctx, msgAirdrop)
 	require.NoError(t, err)
 	require.NotNil(t, res)
-	distributionName := fmt.Sprintf("%s_%d", msgAirdrop.Distributor.String(), ctx.BlockHeight())
+	distributionName := fmt.Sprintf("%d_%s", ctx.BlockHeight(), msgAirdrop.Distributor.String())
 	for _, e := range res.Events {
 		if e.Type == "distribution_started" {
 			assert.Len(t, e.Attributes, 3)

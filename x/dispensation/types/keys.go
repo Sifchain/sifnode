@@ -26,13 +26,22 @@ var (
 	DistributionRecordPrefix = []byte{0x00} // key for storing DistributionRecords
 	DistributionsPrefix      = []byte{0x01} // key for storing airdropRecords
 	// Would need to verify usage for byte 02,03 and 04
-	UserClaimPrefix = []byte{0x05} // key for storing airdropRecords
+	UserClaimPrefix                = []byte{0x05} // key for storing airdropRecords
+	DistributionRecordPrefixFailed = []byte{0x06} // key for storing DistributionRecords
+
 )
 
 // A distribution records is unique for name_recipientAddress
+// key format  :  Height_Distributor_Receipient_DistributionType
 func GetDistributionRecordKey(name string, recipient string, distributionType string) []byte {
 	key := []byte(fmt.Sprintf("%s_%s_%s", name, distributionType, recipient))
 	return append(DistributionRecordPrefix, key...)
+}
+
+// A distribution faile records is the similar to GetDistributionRecordKey , but uses a different prefix
+func GetDistributionRecordFailedKey(name string, recipient string, distributionType string) []byte {
+	key := []byte(fmt.Sprintf("%s_%s_%s", name, distributionType, recipient))
+	return append(DistributionRecordPrefixFailed, key...)
 }
 
 // A distribution  is unique for name_distributionType

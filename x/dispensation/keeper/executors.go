@@ -40,13 +40,27 @@ func (k Keeper) DistributeDrops(ctx sdk.Context, height int64) error {
 	for _, record := range pendingRecords {
 		err := k.GetSupplyKeeper().SendCoinsFromModuleToAccount(ctx, types.ModuleName, record.RecipientAddress, record.Coins)
 		if err != nil {
-			return errors.Wrapf(err, "for address  : %s", record.RecipientAddress.String())
+			err := errors.Wrapf(err, "Distribution failed for address  : %s", record.RecipientAddress.String())
+			ctx.Logger().Error(err.Error())
+			err = k.MoveRecordToFailed(ctx, record)
+			if err != nil {
+				panic(fmt.Sprintf("Unable to set Distribution Records to Failed : %s", record.String()))
+			}
+			continue
 		}
 		record.DistributionStatus = types.Completed
 		record.DistributionCompletedHeight = height
 		err = k.SetDistributionRecord(ctx, record)
 		if err != nil {
-			return errors.Wrapf(types.ErrFailedOutputs, "error setting distibution record  : %s", record.String())
+			err := errors.Wrapf(types.ErrFailedOutputs, "error setting distibution record  : %s", record.String())
+			ctx.Logger().Error(err.Error())
+			// If the SetDistributionRecord returns error , that would mean the required amount was transferred to the user , but the record was not set to completed .
+			// In this case we try to take the funds back from the user , and attempt the withdrawal later .
+			err = k.GetSupplyKeeper().SendCoinsFromAccountToModule(ctx, record.RecipientAddress, types.ModuleName, record.Coins)
+			if err != nil {
+				panic(fmt.Sprintf("Unable to set Distribution Records to completed : %s", record.String()))
+			}
+			continue
 		}
 		// Use record details to delete associated claim
 		// The claim should always be locked at this point in time .

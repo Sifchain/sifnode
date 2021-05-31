@@ -19,6 +19,25 @@ func (k Keeper) SetDistributionRecord(ctx sdk.Context, dr types.DistributionReco
 	return nil
 }
 
+func (k Keeper) SetDistributionRecordFailed(ctx sdk.Context, dr types.DistributionRecord) error {
+	if !dr.Validate() {
+		return errors.Wrapf(types.ErrInvalid, "unable to set record : %s", dr.String())
+	}
+	store := ctx.KVStore(k.storeKey)
+	key := types.GetDistributionRecordFailedKey(dr.DistributionName, dr.RecipientAddress.String(), dr.DistributionType.String())
+	store.Set(key, k.cdc.MustMarshalBinaryBare(dr))
+	return nil
+}
+
+func (k Keeper) MoveRecordToFailed(ctx sdk.Context, dr types.DistributionRecord) error {
+	err := k.SetDistributionRecordFailed(ctx, dr)
+	if err != nil {
+		return err
+	}
+	k.DeleteDistributionRecord(ctx, dr)
+	return nil
+}
+
 func (k Keeper) GetDistributionRecord(ctx sdk.Context, airdropName string, recipientAddress string, distributionType string) (types.DistributionRecord, error) {
 	var dr types.DistributionRecord
 	store := ctx.KVStore(k.storeKey)
@@ -29,6 +48,12 @@ func (k Keeper) GetDistributionRecord(ctx sdk.Context, airdropName string, recip
 	bz := store.Get(key)
 	k.cdc.MustUnmarshalBinaryBare(bz, &dr)
 	return dr, nil
+}
+
+func (k Keeper) DeleteDistributionRecord(ctx sdk.Context, dr types.DistributionRecord) {
+	store := ctx.KVStore(k.storeKey)
+	key := types.GetDistributionRecordKey(dr.DistributionName, dr.RecipientAddress.String(), dr.DistributionType.String())
+	store.Delete(key)
 }
 
 func (k Keeper) ExistsDistributionRecord(ctx sdk.Context, airdropName string, recipientAddress string, distributionType string) bool {
