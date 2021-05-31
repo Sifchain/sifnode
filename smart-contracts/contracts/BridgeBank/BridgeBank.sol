@@ -322,7 +322,7 @@ contract BridgeBank is BankStorage,
         uint256[] calldata _amount,
         bool[] calldata _isBurn
     ) external {
-        // all 
+        // all array inputs must be of the same length
         require(_recipient.length == _token.length, "M_P");
         require(_token.length == _amount.length, "M_P");
         require(_token.length == _isBurn.length, "M_P");

@@ -30,28 +30,21 @@ describe("Test Bridge Bank", function () {
   const consensusThreshold = 75;
   let initialPowers;
   let initialValidators;
-  let CosmosBridge;
-  let BridgeBank;
-  let BridgeToken;
   // track the state of the deployed contracts
   let state;
 
   before(async function() {
-    CosmosBridge = await ethers.getContractFactory("CosmosBridge");
-    BridgeBank = await ethers.getContractFactory("BridgeBank");
-    BridgeToken = await ethers.getContractFactory("BridgeToken");
-    
     accounts = await ethers.getSigners();
     
     signerAccounts = accounts.map((e) => { return e.address });
 
-    operator = accounts[0].address;
+    operator = accounts[0];
     userOne = accounts[1];
     userTwo = accounts[2];
     userFour = accounts[3];
     userThree = accounts[7].address;
 
-    owner = accounts[5].address;
+    owner = accounts[5];
     pauser = accounts[6].address;
 
     initialPowers = [25, 25, 25, 25];
@@ -189,6 +182,48 @@ describe("Test Bridge Bank", function () {
 
       afterUserBalance = Number(
         await state.token3.balanceOf(userOne.address)
+      );
+      afterUserBalance.should.be.bignumber.equal(state.amount);
+    });
+
+    it("should allow user to multi-lock and burn ERC20 tokens and rowan with multiLockBurn method", async function () {
+      await state.token1.connect(userOne).approve(
+        state.bridgeBank.address,
+        state.amount
+      );
+
+      await state.token2.connect(userOne).approve(
+        state.bridgeBank.address,
+        state.amount
+      );
+
+      // approve bridgebank to spend rowan
+      await state.rowan.connect(userOne).approve(
+        state.bridgeBank.address,
+        state.amount
+      );
+
+      // Attempt to lock tokens
+      await state.bridgeBank.connect(userOne).multiLockBurn(
+        [state.sender, state.sender, state.sender],
+        [state.token1.address, state.token2.address, state.rowan.address],
+        [state.amount, state.amount, state.amount],
+        [false, false, true]
+      );
+
+      // Confirm that the user has the proper balance after the multiLockBurn
+      let afterUserBalance = Number(
+        await state.token1.balanceOf(userOne.address)
+      );
+      afterUserBalance.should.be.bignumber.equal(state.amount);
+
+      afterUserBalance = Number(
+        await state.token2.balanceOf(userOne.address)
+      );
+      afterUserBalance.should.be.bignumber.equal(state.amount);
+
+      afterUserBalance = Number(
+        await state.rowan.balanceOf(userOne.address)
       );
       afterUserBalance.should.be.bignumber.equal(state.amount);
     });

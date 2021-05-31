@@ -405,10 +405,6 @@ contract("CosmosBridge", function (accounts) {
       await this.cosmosBridge.setBridgeBank(this.bridgeBank.address, {
         from: operator
       });
-      // Add the token into white list
-      await this.bridgeBank.addExistingBridgeToken(this.token.address, {
-        from: operator
-      }).should.be.fulfilled;
 
       // Update the lock/burn limit for this token
       await this.bridgeBank.updateTokenLockBurnLimit(this.token.address, this.amount, {

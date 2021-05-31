@@ -28,7 +28,7 @@ async function multiTokenSetup(
 
     // Deploy CosmosBridge contract
     state.cosmosBridge = await upgrades.deployProxy(CosmosBridge, [
-      operator,
+      operator.address,
       consensusThreshold,
       initialValidators,
       initialPowers
@@ -38,10 +38,13 @@ async function multiTokenSetup(
     // Deploy BridgeBank contract
     state.bridgeBank = await upgrades.deployProxy(BridgeBank, [
       state.cosmosBridge.address,
-      owner,
+      owner.address,
       pauser
     ]);
     await state.bridgeBank.deployed();
+
+    // Operator sets Bridge Bank
+    await state.cosmosBridge.connect(operator).setBridgeBank(state.bridgeBank.address);
 
     // state is for ERC20 deposits
     state.sender = web3.utils.utf8ToHex(
@@ -55,10 +58,15 @@ async function multiTokenSetup(
     state.weiAmount = web3.utils.toWei("0.25", "ether");
     state.amount = 100;
 
+    state.rowan = await BridgeToken.deploy("rowan", "rowan", 18);
+
+    await state.rowan.deployed();
+    await state.rowan.connect(operator).mint(userOne.address, state.amount * 2);
+    // Add rowan as an existing bridge token
+    await state.bridgeBank.connect(owner).addExistingBridgeToken(state.rowan.address);
+
     state.token1 = await BridgeToken.deploy(state.name, state.symbol, 18);
-
     state.token2 = await BridgeToken.deploy(state.name, state.symbol, 18);
-
     state.token3 = await BridgeToken.deploy(state.name, state.symbol, 18);
 
     await state.token1.deployed();
@@ -66,17 +74,9 @@ async function multiTokenSetup(
     await state.token3.deployed();
 
     //Load user account with ERC20 tokens for testing
-    await state.token1.mint(userOne.address, state.amount * 2, {
-      from: operator
-    }).should.be.fulfilled;
-
-    await state.token2.mint(userOne.address, state.amount * 2, {
-      from: operator
-    }).should.be.fulfilled;
-
-    await state.token3.mint(userOne.address, state.amount * 2, {
-      from: operator
-    }).should.be.fulfilled;
+    await state.token1.connect(operator).mint(userOne.address, state.amount * 2);
+    await state.token2.connect(operator).mint(userOne.address, state.amount * 2);
+    await state.token3.connect(operator).mint(userOne.address, state.amount * 2);
 
     return state;
 }
@@ -99,7 +99,7 @@ async function singleSetup(
 
     // Deploy CosmosBridge contract
     state.cosmosBridge = await upgrades.deployProxy(CosmosBridge, [
-      operator,
+      operator.address,
       consensusThreshold,
       initialValidators,
       initialPowers
@@ -109,15 +109,13 @@ async function singleSetup(
     // Deploy BridgeBank contract
     state.bridgeBank = await upgrades.deployProxy(BridgeBank, [
       state.cosmosBridge.address,
-      owner,
+      owner.address,
       pauser
     ]);
     await state.bridgeBank.deployed();
 
     // Operator sets Bridge Bank
-    await state.cosmosBridge.setBridgeBank(state.bridgeBank.address, {
-      from: operator
-    });
+    await state.cosmosBridge.connect(operator).setBridgeBank(state.bridgeBank.address);
 
     // state is for ERC20 deposits
     state.sender = web3.utils.utf8ToHex(
@@ -136,12 +134,12 @@ async function singleSetup(
       18
     );
 
+    state.rowan = await BridgeToken.deploy("rowan", "rowan", 18);
+
     await state.token.deployed();
     state.amount = 100;
     //Load user account with ERC20 tokens for testing
-    await state.token.mint(userOne.address, state.amount * 2, {
-      from: operator
-    }).should.be.fulfilled;
+    await state.token.connect(operator).mint(userOne.address, state.amount * 2);
 
     // Approve tokens to contract
     await state.token.connect(userOne).approve(state.bridgeBank.address, state.amount).should.be.fulfilled;

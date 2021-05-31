@@ -30,27 +30,20 @@ describe("Test Bridge Bank", function () {
   const consensusThreshold = 75;
   let initialPowers;
   let initialValidators;
-  let CosmosBridge;
-  let BridgeBank;
-  let BridgeToken;
   let state;
 
   before(async function() {
-    CosmosBridge = await ethers.getContractFactory("CosmosBridge");
-    BridgeBank = await ethers.getContractFactory("BridgeBank");
-    BridgeToken = await ethers.getContractFactory("BridgeToken");
-    
     accounts = await ethers.getSigners();
     
     signerAccounts = accounts.map((e) => { return e.address });
 
-    operator = accounts[0].address;
+    operator = accounts[0];
     userOne = accounts[1];
     userTwo = accounts[2];
     userFour = accounts[3];
     userThree = accounts[7].address;
 
-    owner = accounts[5].address;
+    owner = accounts[5];
     pauser = accounts[6].address;
 
     initialPowers = [25, 25, 25, 25];

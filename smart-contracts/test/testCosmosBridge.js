@@ -37,13 +37,13 @@ describe("Test Cosmos Bridge", function () {
     
     signerAccounts = accounts.map((e) => { return e.address });
 
-    operator = accounts[0].address;
+    operator = accounts[0];
     userOne = accounts[1];
     userTwo = accounts[2];
     userFour = accounts[3];
     userThree = accounts[7].address;
 
-    owner = accounts[5].address;
+    owner = accounts[5];
     pauser = accounts[6].address;
 
     initialPowers = [25, 25, 25, 25];
@@ -101,7 +101,7 @@ describe("Test Cosmos Bridge", function () {
       }
 
       expect(await state.bridgeBank.cosmosBridge()).to.be.equal(state.cosmosBridge.address);
-      expect(await state.bridgeBank.owner()).to.be.equal(owner);
+      expect(await state.bridgeBank.owner()).to.be.equal(owner.address);
       expect(await state.bridgeBank.pausers(pauser)).to.be.true;
     });
 
