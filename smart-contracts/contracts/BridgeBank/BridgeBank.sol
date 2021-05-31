@@ -302,12 +302,13 @@ contract BridgeBank is BankStorage,
         address[] calldata _token,
         uint256[] calldata _amount
     ) external {
-        require(_recipient.length == _token.length, "malformed payload");
-        require(_token.length == _amount.length, "malformed payload");
+        require(_recipient.length == _token.length, "M_P");
+        require(_token.length == _amount.length, "M_P");
 
         uint256 _chainid = getChainID();
 
         for (uint256 i = 0; i < _recipient.length; i++) {
+            require(verifySifAddress(_recipient[i]), "INV_ADR");
             _lockTokens(_recipient[i], _token[i], _amount[i], _chainid);
         }
     }

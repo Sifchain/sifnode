@@ -2,7 +2,7 @@ const Web3Utils = require("web3-utils");
 const web3 = require("web3");
 const BigNumber = web3.BigNumber;
 
-const { ethers, upgrades } = require("hardhat");
+const { ethers } = require("hardhat");
 const { use, expect } = require("chai");
 const { solidity } = require("ethereum-waffle");
 const { singleSetup } = require("./helpers/testFixture");

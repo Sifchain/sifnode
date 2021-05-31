@@ -131,6 +131,128 @@ describe("Test Bridge Bank", function () {
       afterUserBalance.should.be.bignumber.equal(state.amount);
     });
 
+    it("should allow user to multi-lock ERC20 tokens with multiLockBurn method", async function () {
+      await state.token1.connect(userOne).approve(
+        state.bridgeBank.address,
+        state.amount
+      );
+
+      await state.token2.connect(userOne).approve(
+        state.bridgeBank.address,
+        state.amount
+      );
+
+      await state.token3.connect(userOne).approve(
+        state.bridgeBank.address,
+        state.amount
+      );
+
+      // Attempt to lock tokens
+      await state.bridgeBank.connect(userOne).multiLockBurn(
+        [state.sender, state.sender, state.sender],
+        [state.token1.address,state.token2.address,state.token3.address],
+        [state.amount, state.amount, state.amount],
+        [false, false, false]
+      );
+
+      // Confirm that the user has been minted the correct token
+      let afterUserBalance = Number(
+        await state.token1.balanceOf(userOne.address)
+      );
+      afterUserBalance.should.be.bignumber.equal(state.amount);
+
+      afterUserBalance = Number(
+        await state.token2.balanceOf(userOne.address)
+      );
+      afterUserBalance.should.be.bignumber.equal(state.amount);
+
+      afterUserBalance = Number(
+        await state.token3.balanceOf(userOne.address)
+      );
+      afterUserBalance.should.be.bignumber.equal(state.amount);
+    });
+
+    it("should not allow user to multi-lock ERC20 tokens if one token is not fully approved", async function () {
+      await state.token2.connect(userOne).approve(
+        state.bridgeBank.address,
+        state.amount
+      );
+
+      await state.token3.connect(userOne).approve(
+        state.bridgeBank.address,
+        state.amount
+      );
+
+      // Attempt to lock tokens
+      await expect(
+        state.bridgeBank.connect(userOne).multiLock(
+          [state.sender, state.sender, state.sender],
+          [state.token1.address, state.token2.address, state.token3.address],
+          [state.amount, state.amount, state.amount]
+        )
+      ).to.be.revertedWith("transfer amount exceeds allowance");
+
+      // Confirm that user token balances have stayed the same
+      let afterUserBalance = Number(
+        await state.token1.balanceOf(userOne.address)
+      );
+      afterUserBalance.should.be.bignumber.equal(state.amount * 2);
+
+      afterUserBalance = Number(
+        await state.token2.balanceOf(userOne.address)
+      );
+      afterUserBalance.should.be.bignumber.equal(state.amount * 2);
+
+      afterUserBalance = Number(
+        await state.token3.balanceOf(userOne.address)
+      );
+      afterUserBalance.should.be.bignumber.equal(state.amount * 2);
+    });
+
+    it("should not allow user to multi-lock when parameters are malformed, not enough token amounts", async function () {
+      // Attempt to lock tokens
+      await expect(
+        state.bridgeBank.connect(userOne).multiLock(
+          [state.sender, state.sender, state.sender],
+          [state.token1.address, state.token2.address, state.token3.address],
+          [state.amount, state.amount]
+        )
+      ).to.be.revertedWith("M_P");
+    });
+
+    it("should not allow user to multi-lock when parameters are malformed, not enough token addresses", async function () {
+      // Attempt to lock tokens
+      await expect(
+        state.bridgeBank.connect(userOne).multiLock(
+          [state.sender, state.sender, state.sender],
+          [state.token1.address, state.token2.address],
+          [state.amount, state.amount, state.amount]
+        )
+      ).to.be.revertedWith("M_P");
+    });
+
+    it("should not allow user to multi-lock when parameters are malformed, not enough sif addresses", async function () {
+      // Attempt to lock tokens
+      await expect(
+        state.bridgeBank.connect(userOne).multiLock(
+          [state.sender, state.sender],
+          [state.token1.address, state.token2.address, state.token3.address],
+          [state.amount, state.amount, state.amount]
+        )
+      ).to.be.revertedWith("M_P");
+    });
+
+    it("should not allow user to multi-lock when parameters are malformed, invalid sif addresses", async function () {
+      // Attempt to lock tokens
+      await expect(
+        state.bridgeBank.connect(userOne).multiLock(
+          [state.sender + "ee", state.sender, state.sender],
+          [state.token1.address, state.token2.address, state.token3.address],
+          [state.amount, state.amount, state.amount]
+        )
+      ).to.be.revertedWith("INV_ADR");
+    });
+
     it("should allow users to lock Ethereum in the bridge bank", async function () {
       const tx = await state.bridgeBank.connect(userOne).lock(
         state.sender,
