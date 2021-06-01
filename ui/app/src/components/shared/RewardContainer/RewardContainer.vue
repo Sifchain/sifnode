@@ -91,7 +91,22 @@ export default {
               <AssetItem symbol="Rowan" :label="false" />
             </div>
             <div v-if="type === 'vs'" class="reward-row">
-              <div class="row-label">Rewards Based on Commission</div>
+              <div class="row-label">
+                Reserved Commission Rewards
+                <Tooltip>
+                  <template #message>
+                    <div class="tooltip">
+                      These are rewards you have earned from your delegators,
+                      but are not yet claimable due to either: a) your
+                      delegators not claiming their portion of these rewards yet
+                      or b) those rewards for your delegators not reaching full
+                      maturity yet. Once one of these actions happen, these
+                      rewards will be considered claimable for you.
+                    </div>
+                  </template>
+                  <Icon icon="info-box-black" />
+                </Tooltip>
+              </div>
               <div class="row-amount">
                 {{
                   format(
