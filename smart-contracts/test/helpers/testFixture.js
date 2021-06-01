@@ -16,8 +16,9 @@ async function multiTokenSetup(
     consensusThreshold,
     owner,
     userOne,
-    userThree
-    ) {
+    userThree,
+    pauser
+  ) {
     const state = {}
 
     // Deploy Valset contract

@@ -183,7 +183,6 @@ contract BridgeBank is BankStorage,
         }
     }
 
-
     function getDecimals(address _token) private returns (uint8) {
         uint8 decimals = contractDecimals[_token];
         if (decimals > 0) {
@@ -201,7 +200,6 @@ contract BridgeBank is BankStorage,
 
         return decimals;
     }
-
 
     /*
      * @dev: Burns BridgeTokens representing native Cosmos assets.
@@ -275,7 +273,6 @@ contract BridgeBank is BankStorage,
         return symbol;
     }
 
-
     /*
      * @dev: Locks received Ethereum/ERC20 funds.
      *
@@ -301,7 +298,7 @@ contract BridgeBank is BankStorage,
         bytes[] calldata _recipient,
         address[] calldata _token,
         uint256[] calldata _amount
-    ) external {
+    ) external whenNotPaused {
         require(_recipient.length == _token.length, "M_P");
         require(_token.length == _amount.length, "M_P");
 
@@ -321,7 +318,7 @@ contract BridgeBank is BankStorage,
         address[] calldata _token,
         uint256[] calldata _amount,
         bool[] calldata _isBurn
-    ) external {
+    ) external whenNotPaused {
         // all array inputs must be of the same length
         require(_recipient.length == _token.length, "M_P");
         require(_token.length == _amount.length, "M_P");

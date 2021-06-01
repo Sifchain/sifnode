@@ -92,6 +92,6 @@
     "test:setup": "cp .env.example .env",
     "coverage": "truffle run coverage",
     "compile": "hardhat compile",
-    "test": "npx hardhat test test/testCosmosBridge.js test/testBridgeBank.js test/test_bridgeBankLock.js"
+    "test": "npx hardhat test test/testCosmosBridge.js test/testBridgeBank.js test/test_bridgeBankLock.js test/test_valset.js"
   }
 }

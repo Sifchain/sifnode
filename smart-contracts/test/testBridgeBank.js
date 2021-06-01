@@ -44,7 +44,6 @@ describe("Test Bridge Bank", function () {
     userThree = accounts[7].address;
 
     owner = accounts[5];
-    pauser = accounts[6].address;
 
     initialPowers = [25, 25, 25, 25];
     initialValidators = signerAccounts.slice(0, 4);

@@ -45,7 +45,7 @@ describe("Test Bridge Bank", function () {
     userThree = accounts[7].address;
 
     owner = accounts[5];
-    pauser = accounts[6].address;
+    pauser = accounts[6];
 
     initialPowers = [25, 25, 25, 25];
     initialValidators = signerAccounts.slice(0, 4);
@@ -59,7 +59,8 @@ describe("Test Bridge Bank", function () {
       consensusThreshold,
       owner,
       userOne,
-      userThree
+      userThree,
+      pauser.address
     );
   });
 
@@ -308,6 +309,18 @@ describe("Test Bridge Bank", function () {
         )
       ).to.be.revertedWith("INV_ADR");
     });
+
+    it("should not allow user to multi-lock when bridgebank is paused", async function () {
+      await state.bridgeBank.connect(pauser).pause();
+      // Attempt to lock tokens
+      await expect(
+        state.bridgeBank.connect(userOne).multiLock(
+          [state.sender, state.sender, state.sender],
+          [state.token1.address, state.token2.address, state.token3.address],
+          [state.amount, state.amount, state.amount]
+        )
+      ).to.be.revertedWith("Pausable: paused");
+    });
   });
 
   describe("Multi Lock Burn ERC20 Tokens", function () {
@@ -358,6 +371,19 @@ describe("Test Bridge Bank", function () {
           [false, false, false]
         )
       ).to.be.revertedWith("INV_ADR");
+    });
+
+    it("should not allow user to multi-lock/burn when bridgebank is paused", async function () {
+      await state.bridgeBank.connect(pauser).pause();
+      // Attempt to lock tokens
+      await expect(
+        state.bridgeBank.connect(userOne).multiLockBurn(
+          [state.sender, state.sender, state.sender],
+          [state.token1.address, state.token2.address, state.token3.address],
+          [state.amount, state.amount, state.amount],
+          [false, false, false]
+        )
+      ).to.be.revertedWith("Pausable: paused");
     });
   });
 });
