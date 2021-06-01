@@ -1,21 +1,28 @@
-const { deployProxy } = require('@openzeppelin/truffle-upgrades');
+const { upgrades } = require("hardhat");
+const { BN } = require('@openzeppelin/truffle-upgrades');
 
-const Web3Utils = require("web3-utils");
 const EVMRevert = "revert";
-const web3 = require("web3");
-const BigNumber = web3.BigNumber;
+
 const { expect } = require('chai');
 const { multiTokenSetup } = require("./helpers/testFixture");
 
 const NULL_ADDRESS = "0x0000000000000000000000000000000000000000";
-const sifRecipient = web3.utils.utf8ToHex(
+
+const sifRecipient = utf8ToHex(
   "sif1nx650s8q9w28f2g3t9ztxyg48ugldptuwzpace"
 );
 
 require("chai")
   .use(require("chai-as-promised"))
-  .use(require("chai-bignumber")(BigNumber))
+  .use(require("chai-bignumber")(BN))
   .should();
+
+function utf8ToHex(str) {
+  return '0x' + Array.from(str).map(c =>
+    c.charCodeAt(0) < 128 ? c.charCodeAt(0).toString(16) :
+    encodeURIComponent(c).replace(/\%/g,'').toLowerCase()
+  ).join('');
+}
 
 describe("Security Test", function () {
   let userOne;
@@ -178,7 +185,7 @@ describe("Security Test", function () {
 
     it("should not allow a user to send ethereum directly to the contract", async function () {
       await state.bridgeBank
-        .send(Web3Utils.toWei("0.25", "ether"), {
+        .send(ethers.utils.parseEther('0.25').toString(), {
           from: userOne
         })
         .should.be.rejectedWith(EVMRevert);
@@ -293,7 +300,7 @@ describe("Security Test", function () {
       state.initialPowers = [33, 33, 33];
 
       // Deploy CosmosBridge contract
-      state.cosmosBridge = await deployProxy(CosmosBridge, [
+      state.cosmosBridge = await upgrades.deployProxy(CosmosBridge, [
         operator,
         consensusThreshold,
         state.initialValidators,
@@ -303,7 +310,7 @@ describe("Security Test", function () {
       );
 
       // Deploy BridgeBank contract
-      state.bridgeBank = await deployProxy(BridgeBank, [
+      state.bridgeBank = await upgrades.deployProxy(BridgeBank, [
         operator,
         state.cosmosBridge.address,
         operator,
