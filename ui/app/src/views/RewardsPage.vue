@@ -17,7 +17,7 @@ async function getLMData(address: ComputedRef<any>, chainId: string) {
   if (!address.value) return;
   const ceUrl = getCryptoeconomicsUrl(chainId);
   const data = await fetch(
-    `${ceUrl}/lm/?key=userData&address=${address.value}&timestamp=now`,
+    `${ceUrl}/lm/?key=userData&address=${"sif10jahaw8kdsz56sazgxgg4u7jzqgddp6gnpaul7"}&timestamp=now`,
   );
   if (data.status !== 200) return {};
   const parsedData = await data.json();
@@ -31,7 +31,7 @@ async function getVSData(address: ComputedRef<any>, chainId: string) {
   if (!address.value) return;
   const ceUrl = getCryptoeconomicsUrl(chainId);
   const data = await fetch(
-    `${ceUrl}/vs/?key=userData&address=${address.value}&timestamp=now`,
+    `${ceUrl}/vs/?key=userData&address=${"sif100qt2nm394racccl2ykwtrdsakcdhvq3fe37eg"}&timestamp=now`,
   );
   if (data.status !== 200) return {};
   const parsedData = await data.json();
