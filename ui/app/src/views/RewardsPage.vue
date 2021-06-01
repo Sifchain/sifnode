@@ -17,7 +17,7 @@ async function getLMData(address: ComputedRef<any>, chainId: string) {
   if (!address.value) return;
   const ceUrl = getCryptoeconomicsUrl(chainId);
   const data = await fetch(
-    `${ceUrl}/lm/?key=userData&address=${"sif10jahaw8kdsz56sazgxgg4u7jzqgddp6gnpaul7"}&timestamp=now`,
+    `${ceUrl}/lm/?key=userData&address=${address.value}&timestamp=now`,
   );
   if (data.status !== 200) return {};
   const parsedData = await data.json();
@@ -31,7 +31,7 @@ async function getVSData(address: ComputedRef<any>, chainId: string) {
   if (!address.value) return;
   const ceUrl = getCryptoeconomicsUrl(chainId);
   const data = await fetch(
-    `${ceUrl}/vs/?key=userData&address=${"sif100qt2nm394racccl2ykwtrdsakcdhvq3fe37eg"}&timestamp=now`,
+    `${ceUrl}/vs/?key=userData&address=${address.value}&timestamp=now`,
   );
   if (data.status !== 200) return {};
   const parsedData = await data.json();
@@ -75,7 +75,7 @@ export default defineComponent({
   },
   setup() {
     const { store, actions, config } = useCore();
-    const address = computed(() => store.wallet.sif.address);
+    const address = ref<any>("sif1ka4lwrh22a55gw7ef665az49grwy285ktv6ucl");
     const transactionState = ref<ConfirmState | string>("confirming");
     const transactionStateMsg = ref<string>("");
     const transactionHash = ref<string | null>(null);
@@ -153,6 +153,8 @@ export default defineComponent({
 
 <template>
   <Layout :header="true" title="Rewards">
+    <input type="text" v-model="address" />
+    {{ address }}
     <Copy>
       Earn rewards by participating in any of our rewards-earning programs.
       Please see additional information of our
