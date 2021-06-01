@@ -9,7 +9,7 @@ option go_package = "github.com/Sifchain/sifnode/x/oracle/types";
 // TODO: Add parameters to Genesis state ,such as minimum liquidity required to
 // create a pool
 message GenesisState {
-  repeated string address_whitelist = 1;
+  map<uint32, ValidatorWhiteList> address_whitelist = 1;
   string admin_address = 2;
 }
 
@@ -36,6 +36,9 @@ message Status {
   StatusText text = 1;
   string final_claim = 2;
 }
+
+// ValidatorWhiteList is struct that contains validator and its voting power
+message ValidatorWhiteList { map<string, uint32> white_list = 1; }
 
 // StatusText is an enum used to represent the status of the prophecy
 enum StatusText {

@@ -13,16 +13,10 @@ import (
 func InitGenesis(ctx sdk.Context, keeper keeper.Keeper, data types.GenesisState) (res []abci.ValidatorUpdate) {
 
 	if data.AddressWhitelist != nil {
-		wl := make([]sdk.ValAddress, len(data.AddressWhitelist))
-		for i, entry := range data.AddressWhitelist {
-			wlAddress, err := sdk.ValAddressFromBech32(entry)
-			if err != nil {
-				panic(err)
-			}
-			wl[i] = wlAddress
+		for networkID, list := range data.AddressWhitelist {
+			keeper.SetOracleWhiteList(ctx, types.NewNetworkDescriptor(networkID), *list)
 		}
 
-		keeper.SetOracleWhiteList(ctx, wl)
 	}
 
 	if len(strings.TrimSpace(data.AdminAddress)) != 0 {

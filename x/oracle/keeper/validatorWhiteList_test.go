@@ -3,11 +3,14 @@ package keeper_test
 import (
 	"testing"
 
+	"github.com/Sifchain/sifnode/x/oracle/types"
 	"github.com/stretchr/testify/assert"
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 
 	sifapp "github.com/Sifchain/sifnode/app"
 )
+
+const networkID = 1
 
 func TestKeeper_SetValidatorWhiteList(t *testing.T) {
 	app := sifapp.Setup(false)
@@ -15,12 +18,12 @@ func TestKeeper_SetValidatorWhiteList(t *testing.T) {
 
 	addresses := sifapp.CreateRandomAccounts(2)
 	valAddresses := sifapp.ConvertAddrsToValAddrs(addresses)
+	networkDescriptor := types.NetworkDescriptor(networkID)
+	app.OracleKeeper.SetOracleWhiteList(ctx, networkDescriptor, valAddresses)
 
-	app.OracleKeeper.SetOracleWhiteList(ctx, valAddresses)
-
-	vList := app.OracleKeeper.GetOracleWhiteList(ctx)
+	vList := app.OracleKeeper.GetOracleWhiteList(ctx, networkDescriptor)
 	assert.Equal(t, len(vList), 2)
-	assert.True(t, app.OracleKeeper.ExistsOracleWhiteList(ctx))
+	assert.True(t, app.OracleKeeper.ExistsOracleWhiteList(ctx, networkDescriptor))
 }
 
 func TestKeeper_ValidateAddress(t *testing.T) {
@@ -29,10 +32,12 @@ func TestKeeper_ValidateAddress(t *testing.T) {
 
 	addresses := sifapp.CreateRandomAccounts(2)
 	valAddresses := sifapp.ConvertAddrsToValAddrs(addresses)
-	app.OracleKeeper.SetOracleWhiteList(ctx, valAddresses)
-	assert.True(t, app.OracleKeeper.ValidateAddress(ctx, valAddresses[0]))
-	assert.True(t, app.OracleKeeper.ValidateAddress(ctx, valAddresses[1]))
+	networkDescriptor := types.NetworkDescriptor(networkID)
+
+	app.OracleKeeper.SetOracleWhiteList(ctx, networkDescriptor, valAddresses)
+	assert.True(t, app.OracleKeeper.ValidateAddress(ctx, networkDescriptor, valAddresses[0]))
+	assert.True(t, app.OracleKeeper.ValidateAddress(ctx, networkDescriptor, valAddresses[1]))
 	addresses = sifapp.CreateRandomAccounts(3)
 	valAddresses = sifapp.ConvertAddrsToValAddrs(addresses)
-	assert.False(t, app.OracleKeeper.ValidateAddress(ctx, valAddresses[2]))
+	assert.False(t, app.OracleKeeper.ValidateAddress(ctx, networkDescriptor, valAddresses[2]))
 }
