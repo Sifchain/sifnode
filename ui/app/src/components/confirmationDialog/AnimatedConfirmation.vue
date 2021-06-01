@@ -104,7 +104,7 @@ export default defineComponent({
               <SwipeTransition>
                 {props.state === "submit" && (
                   <ConfirmTemplate
-                    header="Waiting for confirmation"
+                    header="Waiting for Confirmation"
                     pre="Swapping"
                     post="Confirm this transaction in your wallet"
                     {...amounts}

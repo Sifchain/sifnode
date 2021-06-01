@@ -21,14 +21,14 @@
           -->
           <transition name="swipe">
             <div class="text" v-if="state === 'approving'">
-              <p>Waiting for approval</p>
+              <p>Waiting for Approval</p>
               <br />
               <p class="sub">Confirm this transaction in your wallet</p>
             </div>
           </transition>
           <transition name="swipe">
             <div class="text" v-if="state === 'signing'">
-              <p>Waiting for confirmation</p>
+              <p>Waiting for Confirmation</p>
               <slot name="signing"></slot>
               <br />
               <p class="sub">Confirm this transaction in your wallet</p>
