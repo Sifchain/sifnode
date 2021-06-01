@@ -135,8 +135,8 @@ def test_create_offline_singlekey_txn(claimType):
         
     assert str(distributiontypetag) == 'dispensation/create'
     assert actuallisttags[0] == 'distributor'
-    assert actuallisttags[1] == 'distribution_name'
-    assert actuallisttags[2] == 'distribution_type'
+    assert actuallisttags[1] == 'distribution_type'
+    assert actuallisttags[2] == 'distribution_name'
     assert actuallisttags[3] == 'output'
     try:
         os.remove('output.json')
@@ -200,11 +200,11 @@ def test_broadcast_txn(claimType):
     broadcasttags = list(disvalsbcast.keys())
     assert str(distypebcast) == 'dispensation/create'
     assert broadcasttags[0] == 'distributor'
-    assert broadcasttags[1] == 'distribution_name'
-    assert broadcasttags[2] == 'distribution_type'
+    assert broadcasttags[1] == 'distribution_type'
+    assert broadcasttags[2] == 'distribution_name'
     assert broadcasttags[3] == 'output'
     assert list_of_values[0] == sifchain_address
-    assert list_of_values[1] == dispensation_name
+
     try:
         os.remove('signed.json')
         os.remove('sample.json')

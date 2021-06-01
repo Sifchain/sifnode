@@ -181,11 +181,10 @@ def test_create_online_singlekey_txn(claimType):
     assert str(account_key) == 'module_account'
     assert str(distributiontypetag) == 'dispensation/create'
     assert chaintags[0] == 'distributor'
-    assert chaintags[1] == 'distribution_name'
-    assert chaintags[2] == 'distribution_type'
+    assert chaintags[1] == 'distribution_type'
+    assert chaintags[2] == 'distribution_name'
     assert chaintags[3] == 'output'
     assert list_of_values[0] == sifchain_address
-    assert list_of_values[1] == dispensation_name
 
     txn_signer_sender_address = resp['tx']['value']['msg'][0]['value']['distributor']
     distributionaddresslist = resp['tx']['value']['msg'][0]['value']['output']

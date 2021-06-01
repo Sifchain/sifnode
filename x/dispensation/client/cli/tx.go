@@ -46,7 +46,7 @@ func GetCmdCreate(cdc *codec.Codec) *cobra.Command {
 			cliCtx := context.NewCLIContextWithInput(inBuf).WithCodec(cdc)
 			distributionType, ok := types.IsValidDistributionType(args[0])
 			if !ok {
-				return fmt.Errorf("invalid distribution Type %s: Types supported [Airdrop/LiquidityMining/ValidatorSubsidy]", args[1])
+				return fmt.Errorf("invalid distribution Type %s: Types supported [Airdrop/LiquidityMining/ValidatorSubsidy]", args[0])
 			}
 			outputList, err := dispensationUtils.ParseOutput(args[1])
 			if err != nil {
