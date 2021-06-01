@@ -67,5 +67,5 @@ message ProphecyClaim {
 // GenesisState for ethbridge
 message GenesisState {
   string ceth_receive_account = 1;
-  PeggyTokens peggy_tokens = 2;
+  repeated string peggy_tokens = 2;
 }

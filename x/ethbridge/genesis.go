@@ -8,6 +8,10 @@ import (
 	"github.com/Sifchain/sifnode/x/ethbridge/types"
 )
 
+func DefaultGenesis() *types.GenesisState {
+	return &types.GenesisState{}
+}
+
 func InitGenesis(ctx sdk.Context, keeper keeper.Keeper, data types.GenesisState) (res []abci.ValidatorUpdate) {
 	// SetCethReceiverAccount
 	if data.CethReceiveAccount != "" {
@@ -20,7 +24,7 @@ func InitGenesis(ctx sdk.Context, keeper keeper.Keeper, data types.GenesisState)
 
 	// AddPeggyTokens
 	if data.PeggyTokens != nil {
-		for _, tokenStr := range data.PeggyTokens.Tokens {
+		for _, tokenStr := range data.PeggyTokens {
 			keeper.AddPeggyToken(ctx, tokenStr)
 		}
 	}
@@ -33,7 +37,7 @@ func ExportGenesis(ctx sdk.Context, keeper keeper.Keeper) *types.GenesisState {
 	receiveAccount := keeper.GetCethReceiverAccount(ctx)
 
 	return &types.GenesisState{
-		PeggyTokens: &peggyTokens,
+		PeggyTokens: peggyTokens.Tokens,
 		CethReceiveAccount: receiveAccount.String(),
 	}
 }
