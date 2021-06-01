@@ -75,7 +75,7 @@ export default defineComponent({
   },
   setup() {
     const { store, actions, config } = useCore();
-    const address = ref<any>("sif1ka4lwrh22a55gw7ef665az49grwy285ktv6ucl");
+    const address = computed(() => store.wallet.sif.address);
     const transactionState = ref<ConfirmState | string>("confirming");
     const transactionStateMsg = ref<string>("");
     const transactionHash = ref<string | null>(null);
@@ -153,8 +153,6 @@ export default defineComponent({
 
 <template>
   <Layout :header="true" title="Rewards">
-    <input type="text" v-model="address" />
-    {{ address }}
     <Copy>
       Earn rewards by participating in any of our rewards-earning programs.
       Please see additional information of our
