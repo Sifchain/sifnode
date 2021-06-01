@@ -163,6 +163,18 @@ namespace :cluster do
         system(cmd) or exit 1
     end
 
+    desc "Deploy the sifnode API to your cluster"
+    task :sifnode_api, [:chainnet, :namespace, :image, :image_tag, :node_host] do |t, args|
+        cmd = %Q{helm upgrade sifnode-api deploy/helm/sifnode-api \
+          --install -n #{args[:namespace]} --create-namespace \
+          --set sifnodeApi.args.chainnet=#{args[:chainnet]} \
+          --set sifnodeApi.args.nodeHost=#{args[:node_host]} \
+          --set image.tag=#{args[:image_tag]} \
+          --set image.repository=#{args[:image]} --kubeconfig=./kubeconfig
+        }
+        system(cmd) or exit 1
+      end
+
     desc "Deploy a single network-aware sifnode on to your cluster"
     task :peer_vault, [:namespace, :image, :image_tag, :helm_values_file, :peer_address] do |t, args|
         cmd = %Q{helm upgrade sifnode deploy/helm/sifnode-vault \
