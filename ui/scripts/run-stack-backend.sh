@@ -1,5 +1,9 @@
 #!/bin/bash
 
+set -e
+
+./scripts/ensure-docker-logged-in.sh
+
 # If CI don't use tty - this is so we can use Ctrl C to cancel the stack script localy
 [ -t 1 ] && IT="-it"
 

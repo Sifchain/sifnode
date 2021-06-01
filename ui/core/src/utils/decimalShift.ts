@@ -1,4 +1,5 @@
-import { Asset } from "../entities";
+import { Amount, Asset, IAmount, IAsset } from "../entities";
+import { AmountNotAssetAmount, format, trimMantissa } from "./format";
 
 /**
  * Function to shift the magnitude of a string without using any Math libs
@@ -71,10 +72,13 @@ export function floorDecimal(decimal: string) {
 }
 
 /**
- * Utility to get mantissa value
- * @param integer the integer string
- * @returns number of mantissa as a string
+ * Utility to get the length of the trimmed mantissa from the amount
+ * @param amount an IAmount
+ * @returns length of mantissa
  */
-export function getMantissaValue(number: string) {
-  return (number.length - number.indexOf(".") - 1).toString();
+export function getMantissaLength<T extends IAmount>(
+  amount: AmountNotAssetAmount<T>,
+): number {
+  const number = format(amount, { mantissa: 18, trimMantissa: true });
+  return number.length - number.indexOf(".") - 1;
 }

@@ -43,7 +43,7 @@ export default defineComponent({
   },
   props: ["title"],
   setup() {
-    const { actions, poolFinder, store } = useCore();
+    const { usecases, poolFinder, store } = useCore();
     const selectedField = ref<"from" | "to" | null>(null);
     const lastFocusedTokenField = ref<"A" | "B" | null>(null);
 
@@ -173,7 +173,7 @@ export default defineComponent({
       if (!tokenBFieldAmount.value)
         throw new Error("Token B field amount is not defined");
       transactionState.value = "signing";
-      const tx = await actions.clp.addLiquidity(
+      const tx = await usecases.clp.addLiquidity(
         tokenBFieldAmount.value,
         tokenAFieldAmount.value,
       );
@@ -270,7 +270,8 @@ export default defineComponent({
       transactionHash,
 
       requestTransactionModalClose,
-
+      tokenAFieldAmount,
+      tokenBFieldAmount,
       transactionState,
       transactionStateMsg,
       toggleAsyncPooling,
@@ -487,10 +488,8 @@ export default defineComponent({
         <div>
           <DetailsPanelPool
             class="details"
-            :fromTokenLabel="fromSymbol"
-            :fromAmount="fromAmount"
-            :toTokenLabel="toSymbol"
-            :toAmount="toAmount"
+            :tokenAAmount="tokenAFieldAmount"
+            :tokenBAmount="tokenBFieldAmount"
             :aPerB="aPerBRatioMessage"
             :bPerA="bPerARatioMessage"
             :shareOfPool="shareOfPoolPercent"
