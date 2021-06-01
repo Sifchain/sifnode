@@ -19,6 +19,7 @@ export class MetamaskNotificationPopup {
       }
     }
     if ((await this.page.url()) !== targetUrl) await this.page.goto(targetUrl);
+    else await this.page.reload();
   }
 
   async clickViewFullTransactionDetails() {

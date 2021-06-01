@@ -30,12 +30,16 @@ export default defineComponent({
   <div class="wrapper">
     <div v-if="connected">
       <p class="mb-2" v-if="address">{{ address }} <Icon icon="tick" /></p>
-      <SifButton connect disabled>
+      <SifButton connect disabled data-handle="metamask-connect-button">
         <img class="image" src="../../assets/metamask.png" />
         Metamask Connected
       </SifButton>
     </div>
-    <SifButton connect v-else @click="handleConnectClicked"
+    <SifButton
+      connect
+      v-else
+      @click="handleConnectClicked"
+      data-handle="metamask-connect-button"
       >Connect Metamask</SifButton
     >
   </div>

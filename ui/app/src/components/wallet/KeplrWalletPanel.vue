@@ -31,12 +31,16 @@ export default defineComponent({
   <div class="wrapper">
     <div v-if="connected">
       <p class="mb-2" v-if="address">{{ address }} <Icon icon="tick" /></p>
-      <SifButton connect disabled>
+      <SifButton connect disabled data-handle="keplr-connect-button">
         <img class="image" src="../../assets/keplr.jpg" />
         Keplr Connected
       </SifButton>
     </div>
-    <SifButton connect v-else @click="handleConnectClicked"
+    <SifButton
+      connect
+      v-else
+      @click="handleConnectClicked"
+      data-handle="keplr-connect-button"
       >Connect Keplr</SifButton
     >
   </div>

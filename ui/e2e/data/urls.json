@@ -1,0 +1,9 @@
+{
+  "keplr": {
+    "notificationPopup": {
+      "generic": "/popup.html#/sign?interaction=true&interactionInternal=false",
+      "connect": "/popup.html#/suggest-chain?interaction=true&interactionInternal=false",
+      "signinApprove": "/popup.html#/access?interaction=true&interactionInternal=false"
+    }
+  }
+}

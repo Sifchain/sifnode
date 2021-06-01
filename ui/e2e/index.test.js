@@ -28,7 +28,11 @@ const { extractExtensionPackage } = require("./utils");
 const { useStack } = require("../test/stack");
 
 // utils
-const { connectMetaMaskAccount, connectKeplrAccount } = require("./helpers.js");
+const {
+  connectMetaMaskAccount,
+  connectKeplrAccount,
+  reconnectKeplrAccount,
+} = require("./helpers.js");
 
 // dex pages
 const { balancesPage } = require("./pages/BalancesPage.js");
@@ -36,6 +40,7 @@ const { swapPage } = require("./pages/SwapPage.js");
 const { confirmSwapModal } = require("./pages/ConfirmSwapModal.js");
 const { poolPage } = require("./pages/PoolPage.js");
 const { confirmSupplyModal } = require("./pages/ConfirmSupplyModal.js");
+const { connectPopup } = require("./pages/ConnectPopup.js");
 
 useStack("every-test");
 
@@ -51,12 +56,13 @@ beforeAll(async () => {
   await keplrPage.setup();
 
   // goto dex page
-  balancesPage.navigate();
-  page.waitForTimeout(4000); // wait a second before keplr is finished being setup
+  await balancesPage.navigate();
+  await page.waitForTimeout(4000); // wait a second before keplr is finished being setup
 
   // Keplr will automatically connect and cause the add chain popup to come up
   await connectKeplrAccount();
   await connectMetaMaskAccount();
+  await page.close();
 });
 
 afterAll(async () => {
@@ -64,7 +70,19 @@ afterAll(async () => {
 });
 
 beforeEach(async () => {
+  page = await context.newPage(); // TODO: move it to global setup
+  await balancesPage.navigate();
+
+  await reconnectKeplrAccount();
+  await connectPopup.verifyKeplrConnected();
+  await connectPopup.close();
+
   await metamaskPage.reset();
+  await page.bringToFront();
+});
+
+afterEach(async () => {
+  await page.close(); // TODO: move it to global teardown
 });
 
 it("imports rowan", async () => {
@@ -72,7 +90,6 @@ it("imports rowan", async () => {
   const exportAmount = "500";
   const assetExternal = "erowan";
   const importAmount = "100";
-
   // First we need to export rowan in order to have erowan on the bridgebank contract
   await balancesPage.navigate();
 
@@ -80,7 +97,6 @@ it("imports rowan", async () => {
   await balancesPage.export(assetNative, exportAmount);
 
   await balancesPage.openTab("external");
-  // await page.pause();
   await balancesPage.verifyAssetAmount(assetExternal, "600.000000");
 
   // Now lets import erowan
@@ -159,7 +175,6 @@ it("imports ether", async () => {
 it("imports tokens", async () => {
   const importAmount = "1";
   const importAsset = "usdc";
-
   await balancesPage.navigate();
 
   const cBalance = await getSifchainBalances(
@@ -296,7 +311,6 @@ it("fails to swap when it can't pay gas with rowan", async () => {
 it("adds liquidity", async () => {
   const tokenA = "ceth";
   const tokenB = "rowan";
-
   await poolPage.navigate();
 
   await poolPage.clickAddLiquidity();
