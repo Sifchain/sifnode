@@ -358,13 +358,13 @@ it("adds liquidity", async () => {
 
   expect(await confirmSupplyModal.getTitle()).toBe("You are depositing");
 
-  expect(prepareRowText(await confirmSupplyModal.getTokenARowText())).toBe(
-    "cETH Deposited 5.00000",
-  );
+  expect(
+    prepareRowText(await confirmSupplyModal.getTokenInfoRowText(tokenA)),
+  ).toBe("cETH Deposited 5.000000");
 
-  expect(prepareRowText(await confirmSupplyModal.getTokenBRowText())).toBe(
-    "ROWAN Deposited 6024.096390",
-  );
+  expect(
+    prepareRowText(await confirmSupplyModal.getTokenInfoRowText(tokenB)),
+  ).toBe("ROWAN Deposited 6024.096390");
 
   expect(prepareRowText(await confirmSupplyModal.getRatesBPerARowText())).toBe(
     "Rates 1 cETH = 1204.81927711 ROWAN",
