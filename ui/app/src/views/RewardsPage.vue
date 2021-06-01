@@ -21,7 +21,7 @@ async function getLMData(address: ComputedRef<any>, chainId: string) {
   );
   if (data.status !== 200) return {};
   const parsedData = await data.json();
-  if (!parsedData.user || !parsedData.user.claimableReward) {
+  if (!parsedData.user || !parsedData.user) {
     return {};
   }
   return parsedData.user;
@@ -35,7 +35,7 @@ async function getVSData(address: ComputedRef<any>, chainId: string) {
   );
   if (data.status !== 200) return {};
   const parsedData = await data.json();
-  if (!parsedData.user || !parsedData.user.claimableReward) {
+  if (!parsedData.user || !parsedData.user) {
     return {};
   }
   return parsedData.user;
