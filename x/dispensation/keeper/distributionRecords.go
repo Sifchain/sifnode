@@ -69,9 +69,29 @@ func (k Keeper) GetDistributionRecordsIterator(ctx sdk.Context) sdk.Iterator {
 	return sdk.KVStorePrefixIterator(store, types.DistributionRecordPrefix)
 }
 
+func (k Keeper) GetDistributionRecordsIteratorFailed(ctx sdk.Context) sdk.Iterator {
+	store := ctx.KVStore(k.storeKey)
+	return sdk.KVStorePrefixIterator(store, types.DistributionRecordPrefixFailed)
+}
+
 func (k Keeper) GetRecordsForNameAll(ctx sdk.Context, name string) types.DistributionRecords {
 	var res types.DistributionRecords
 	iterator := k.GetDistributionRecordsIterator(ctx)
+	defer iterator.Close()
+	for ; iterator.Valid(); iterator.Next() {
+		var dr types.DistributionRecord
+		bytesValue := iterator.Value()
+		k.cdc.MustUnmarshalBinaryBare(bytesValue, &dr)
+		if dr.DistributionName == name {
+			res = append(res, dr)
+		}
+	}
+	return res
+}
+
+func (k Keeper) GetRecordsForNameAllFailed(ctx sdk.Context, name string) types.DistributionRecords {
+	var res types.DistributionRecords
+	iterator := k.GetDistributionRecordsIteratorFailed(ctx)
 	defer iterator.Close()
 	for ; iterator.Valid(); iterator.Next() {
 		var dr types.DistributionRecord

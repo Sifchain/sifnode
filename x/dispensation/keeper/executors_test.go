@@ -5,7 +5,9 @@ import (
 	"github.com/Sifchain/sifnode/x/dispensation/types"
 	dispensationUtils "github.com/Sifchain/sifnode/x/dispensation/utils"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/cosmos-sdk/x/bank"
 	"github.com/stretchr/testify/assert"
+	"github.com/tendermint/tendermint/crypto/ed25519"
 	"testing"
 )
 
@@ -65,6 +67,41 @@ func TestKeeper_CreateAndDistributeDrops(t *testing.T) {
 		assert.True(t, recordsLM[i].Coins.IsAllGT(recordsAD[i].Coins))
 		assert.True(t, recordsLM[i].Coins.AmountOf("rowan").Equal(doubleOutputAmount))
 	}
+}
+
+func TestKeeper_CreateAndDistributeDrops_AddressError(t *testing.T) {
+	app, ctx := test.CreateTestApp(false)
+	keeper := app.DispensationKeeper
+	outputAmount := "10000000000000000000"
+
+	outputList := test.GenerateOutputList(outputAmount)
+
+	newCoins, _ := sdk.NewIntFromString("900000")
+	newAddressCoins := sdk.NewCoins(sdk.NewCoin("rowan", newCoins))
+	totalCoins, err := dispensationUtils.TotalOutput(outputList)
+	assert.NoError(t, err)
+
+	// New address added after total Coins is calculated
+	// This means total coins is less than that the amount required for distribution
+	outputList = append(outputList, bank.NewOutput(sdk.AccAddress(ed25519.GenPrivKey().PubKey().Address()),
+		newAddressCoins))
+	outputList = append(outputList, bank.NewOutput(sdk.AccAddress(ed25519.GenPrivKey().PubKey().Address()),
+		newAddressCoins))
+	fundingAddress := sdk.AccAddress(ed25519.GenPrivKey().PubKey().Address())
+	_, err = keeper.GetBankKeeper().AddCoins(ctx, fundingAddress, totalCoins)
+	assert.NoError(t, err)
+	err = keeper.AccumulateDrops(ctx, fundingAddress, totalCoins)
+	assert.NoError(t, err)
+	distributionName := "ar1"
+	err = keeper.CreateDrops(ctx, outputList, distributionName, types.LiquidityMining)
+	assert.NoError(t, err)
+
+	err = keeper.DistributeDrops(ctx, 1)
+	assert.NoError(t, err)
+	completedRecords := keeper.GetRecordsForNameCompleted(ctx, distributionName)
+	assert.GreaterOrEqual(t, len(completedRecords), 3)
+	failedRecords := keeper.GetRecordsForNameAllFailed(ctx, distributionName)
+	assert.LessOrEqual(t, len(failedRecords), 2)
 }
 
 func TestKeeper_VerifyDistribution(t *testing.T) {

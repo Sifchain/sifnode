@@ -43,6 +43,33 @@ func TestNewHandler_CreateDistribution(t *testing.T) {
 	assert.Len(t, dr, recipients)
 }
 
+func TestNewHandler_CreateDistribution_MultipleTypes(t *testing.T) {
+	app, ctx := test.CreateTestApp(false)
+	keeper := app.DispensationKeeper
+	handler := dispensation.NewHandler(keeper)
+	recipients := 3000
+	outputList := test.CreatOutputList(recipients, "10000000000000000000")
+	distibutor := sdk.AccAddress(ed25519.GenPrivKey().PubKey().Address())
+	totalCoins, err := dispensationUtils.TotalOutput(outputList)
+	assert.NoError(t, err)
+	_, err = keeper.GetBankKeeper().AddCoins(ctx, distibutor, totalCoins)
+	assert.NoError(t, err)
+	_, err = keeper.GetBankKeeper().AddCoins(ctx, distibutor, totalCoins)
+	assert.NoError(t, err)
+	msgAirdrop := types.NewMsgDistribution(distibutor, types.Airdrop, outputList)
+	res, err := handler(ctx, msgAirdrop)
+	require.NoError(t, err)
+	require.NotNil(t, res)
+	res, err = handler(ctx, msgAirdrop)
+	require.Error(t, err)
+	require.Nil(t, res)
+	msgLm := types.NewMsgDistribution(distibutor, types.LiquidityMining, outputList)
+	res, err = handler(ctx, msgLm)
+	require.NoError(t, err)
+	require.NotNil(t, res)
+
+}
+
 func TestNewHandler_CreateClaim(t *testing.T) {
 	app, ctx := test.CreateTestApp(false)
 	keeper := app.DispensationKeeper
