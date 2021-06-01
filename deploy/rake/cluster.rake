@@ -490,6 +490,17 @@ echo '      sssssssssss    iiiiiiiifffffffff            cccccccccccccccchhhhhhh 
     end
   end
 
+  desc "Push Secret To Vault"
+  namespace :vault do
+    desc "Push Secret to Vault"
+    task :push_secret_to_vault, [:path] do |t, args|
+        require "json"
+        secret_to_insert = File.read("app_secrets").to_s
+        secrets_json = `kubectl exec -n vault --kubeconfig=./kubeconfig -it vault-0 -- vault kv put -format json #{args[:path]} #{secret_to_insert}`
+        puts secrets_json
+    end
+  end
+
   desc "CONFIGURE AWS PROFILE AND KUBECONFIG"
   namespace :automation do
     desc "Deploy a new ebrelayer to an existing cluster"
@@ -754,6 +765,36 @@ metadata:
   desc "Check kubernetes pod for specific log entry to ensure valid deployment."
   namespace :kubernetes do
     desc "Check kubernetes pod for specific log entry to ensure valid deployment."
+    task :log_validate_search_bycontainer, [:APP_NAME, :APP_NAMESPACE, :SEARCH_PATH, :CONTAINER] do |t, args|
+        ENV["APP_NAMESPACE"] = "#{args[:APP_NAMESPACE]}"
+        ENV["APP_NAME"] = "#{args[:APP_NAME]}"
+        was_successful = false
+        max_loops = 20
+        loop_count = 0
+        until was_successful == true
+            pod_name = `kubectl get pods --kubeconfig=./kubeconfig -n #{ENV["APP_NAMESPACE"]} | grep #{ENV["APP_NAME"]} | cut -d ' ' -f 1`.strip
+            puts "looking up logs fo #{pod_name}"
+            pod_logs = `kubectl logs #{pod_name} -c #{args[:CONTAINER]} --kubeconfig=./kubeconfig -n #{ENV["APP_NAMESPACE"]}`
+            if pod_logs.include?(args[:SEARCH_PATH])
+                #:SEARCH_PATH "new transaction witnessed in sifchain client."
+                puts "Log Search Completed Container Running and Producing Valid Logs"
+                was_successful = true
+                break
+            end
+            loop_count += 1
+            puts "On Loop #{loop_count} of #{max_loops}"
+            if loop_count >= max_loops
+                puts "Reached Max Loops"
+                break
+            end
+            sleep(60)
+        end
+    end
+  end
+
+  desc "Check kubernetes pod for specific log entry to ensure valid deployment."
+  namespace :kubernetes do
+    desc "Check kubernetes pod for specific log entry to ensure valid deployment."
     task :log_validate, [:APP_NAME, :APP_NAMESPACE, :SEARCH_PATH] do |t, args|
         ENV["APP_NAMESPACE"] = "#{args[:APP_NAMESPACE]}"
         ENV["APP_NAME"] = "#{args[:APP_NAME]}"
@@ -852,16 +893,17 @@ metadata:
         require 'json'
         begin
             release_hash = { "devnet" => "DevNet", "testnet" =>"TestNet", "betanet" =>"MainNet" }
+            release_target = { "devnet" => "develop", "testnet" =>"testnet", "betanet" =>"master" }
             release_name = release_hash[args[:env]]
             if "#{args[:app_env]}" == "betanet"
                 headers = {content_type: :json, "Accept": "application/vnd.github.v3+json", "Authorization":"token #{args[:token]}"}
-                payload = {"tag_name"  =>  "mainnet-#{args[:release]}","name"  =>  "#{release_name} v#{args[:release]}","body"  => "Sifchain MainNet Release v#{args[:release]}","prerelease"  =>  true}.to_json
+                payload = {"tag_name"  =>  "mainnet-#{args[:release]}", "target_commitish"  =>  release_target[args[:env]], "name"  =>  "#{release_name} v#{args[:release]}","body"  => "Sifchain MainNet Release v#{args[:release]}","prerelease"  =>  true}.to_json
                 response = RestClient.post 'https://api.github.com/repos/Sifchain/sifnode/releases', payload, headers
                 json_response_job_object = JSON.parse response.body
                 puts json_response_job_object
             else
                 headers = {content_type: :json, "Accept": "application/vnd.github.v3+json", "Authorization":"token #{args[:token]}"}
-                payload = {"tag_name"  =>  "#{args[:env]}-#{args[:release]}","name"  =>  "#{release_name} v#{args[:release]}","body"  => "Sifchain #{args[:env]} Release v#{args[:release]}","prerelease"  =>  true}.to_json
+                payload = {"tag_name"  =>  "#{args[:env]}-#{args[:release]}", "target_commitish"  =>  release_target[args[:env]], "name"  =>  "#{release_name} v#{args[:release]}","body"  => "Sifchain #{args[:env]} Release v#{args[:release]}","prerelease"  =>  true}.to_json
                 response = RestClient.post 'https://api.github.com/repos/Sifchain/sifnode/releases', payload, headers
                 json_response_job_object = JSON.parse response.body
                 puts json_response_job_object
