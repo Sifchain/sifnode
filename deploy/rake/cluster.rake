@@ -121,16 +121,16 @@ namespace :cluster do
       end
 
       desc "Deploy a single standalone sifnode on to your cluster"
-      task :standalone_vault, [:namespace, :image, :image_tag, :template_file_name, :final_file_name] do |t, args|
-        variable_template_replace(args[:template_file_name], args[:final_file_name])
+      task :standalone_vault, [:namespace, :image, :image_tag, :helm_values_file] do |t, args|
+        #variable_template_replace(args[:template_file_name], args[:final_file_name])
         cmd = %Q{helm upgrade sifnode deploy/helm/sifnode-vault \
           --install -n #{args[:namespace]} --create-namespace \
           --set image.tag=#{args[:image_tag]} \
           --set image.repository=#{args[:image]} \
-          -f #{args[:final_file_name]}
+          -f #{args[:helm_values_file]}
         }
-        puts cmd
-        #system(cmd) or exit 1
+        #puts cmd
+        system(cmd) or exit 1
       end
 
       desc "Deploy a single network-aware sifnode on to your cluster"
@@ -1029,6 +1029,18 @@ metadata:
       puts "Use kubectl rollout to wait for pods to start."
       check_kubernetes_rollout_status = %Q{kubectl rollout status --kubeconfig=./kubeconfig deployment/#{args[:app_name]} -n #{args[:app_namespace]}}
       system(check_kubernetes_rollout_status) or exit 1
+    end
+  end
+
+  desc "Map Variables to Github Variables"
+  namespace :utilities do
+    desc "Map Variables to Github Variables"
+    task :github_variable_map, [:path,:app_env] do |t, args|
+        require 'yaml'
+        yaml_variables = YAML.load(File.read(args[:path]))
+        yaml_variables[args[:app_env]].each do |key, value|
+            %x{ echo "#{key}=#{value}" >> $GITHUB_ENV }
+        end
     end
   end
 

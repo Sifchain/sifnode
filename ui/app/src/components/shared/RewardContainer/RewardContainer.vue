@@ -74,34 +74,34 @@ export default {
       <Copy>
         {{ REWARD_INFO[claimType].description }}
       </Copy>
-
       <div class="details-container">
         <Loader v-if="!data" black />
 
         <div v-else class="amount-container">
           <div class="reward-rows">
             <div class="reward-row">
-              <div class="row-label">Claimable Rewards</div>
+              <div class="row-label">Claimable Amount</div>
               <div class="row-amount">
                 {{
-                  format(data.claimableReward - data.claimed, {
+                  format(data.totalClaimableCommissionsAndClaimableRewards, {
                     mantissa: 4,
                   }) || "0"
                 }}
               </div>
               <AssetItem symbol="Rowan" :label="false" />
             </div>
-
-            <div class="reward-row">
+            <div v-if="type === 'vs'" class="reward-row">
               <div class="row-label">
-                Pending Reward Dispensation
+                Reserved Commission Rewards
                 <Tooltip>
                   <template #message>
                     <div class="tooltip">
-                      Rewards that have been claimed and are pending
-                      dispensation due to removal of liquidity or user-initiated
-                      claims. Pending rewards are dispensed every Friday once we
-                      have the dispensation module up and running.
+                      These are rewards you have earned from your delegators,
+                      but are not yet claimable due to either: a) your
+                      delegators not claiming their portion of these rewards yet
+                      or b) those rewards for your delegators not reaching full
+                      maturity yet. Once one of these actions happen, these
+                      rewards will be considered claimable for you.
                     </div>
                   </template>
                   <Icon icon="info-box-black" />
@@ -109,9 +109,12 @@ export default {
               </div>
               <div class="row-amount">
                 {{
-                  format(data.claimed - data.dispensed, {
-                    mantissa: 4,
-                  }) || "0"
+                  format(
+                    data.currentTotalCommissionsOnClaimableDelegatorRewards,
+                    {
+                      mantissa: 4,
+                    },
+                  ) || "0"
                 }}
               </div>
               <AssetItem symbol="Rowan" :label="false" />
@@ -176,7 +179,7 @@ export default {
               </div>
               <div class="row-amount">
                 {{
-                  format(data.totalRewardAtMaturity, {
+                  format(data.totalCommissionsAndRewardsAtMaturity, {
                     mantissa: 4,
                   }) || "0"
                 }}
@@ -196,7 +199,7 @@ export default {
             <SifButton
               @click="$emit('openModal', claimType)"
               :primary="true"
-              :disabled="false"
+              :disabled="true"
               >Claim</SifButton
             >
           </div>

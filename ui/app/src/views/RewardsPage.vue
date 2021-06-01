@@ -22,21 +22,16 @@ type IClaimType = "lm" | "vs" | null;
 
 async function getLMData(address: ComputedRef<any>, chainId: string) {
   if (!address.value) return;
-  return {
-    claimableReward: 10000,
-    claimed: 1133.5803574233153,
-    dispensed: 0,
-    forfeited: 2820.4719248996316,
-    nextRewardProjectedAPYOnTickets: 1.56,
-    maturityDate: "June 12th 2021, 11:19:14 am",
-    nextRewardShare: 0,
-    reservedReward: 1133.5803574233153,
-    ticketAmountAtMaturity: 0,
-    tickets: [],
-    totalRewardAtMaturity: 1133.5803574233153,
-    totalTickets: 0,
-    yieldAtMaturity: null,
-  };
+  const ceUrl = getCryptoeconomicsUrl(chainId);
+  const data = await fetch(
+    `${ceUrl}/lm/?key=userData&address=${address.value}&timestamp=now`,
+  );
+  if (data.status !== 200) return {};
+  const parsedData = await data.json();
+  if (!parsedData.user || !parsedData.user) {
+    return {};
+  }
+  return parsedData.user;
 }
 
 async function getVSData(address: ComputedRef<any>, chainId: string) {
@@ -47,7 +42,7 @@ async function getVSData(address: ComputedRef<any>, chainId: string) {
   );
   if (data.status !== 200) return {};
   const parsedData = await data.json();
-  if (!parsedData.user || !parsedData.user.claimableReward) {
+  if (!parsedData.user || !parsedData.user) {
     return {};
   }
   return parsedData.user;
