@@ -35,7 +35,6 @@ def create_online_singlekey_txn(
     output = 'output.json'
     cmd = " ".join([
         "sifnodecli tx dispensation create",
-        f"{dispensation_name}",
         f"{claimType}",
         output,
         sifchain_fees_entry,

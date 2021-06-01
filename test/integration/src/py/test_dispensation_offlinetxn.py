@@ -31,7 +31,6 @@ def create_offline_singlekey_txn(
     output = 'output.json'
     cmd = " ".join([
         "sifnodecli tx dispensation create",
-        f"{dispensation_name}",
         f"{claimType}",
         output,
         f"--from {signing_address}",
