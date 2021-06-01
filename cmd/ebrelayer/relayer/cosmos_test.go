@@ -1,6 +1,7 @@
 package relayer
 
 import (
+	"crypto/ecdsa"
 	"log"
 	"math/big"
 	"testing"
@@ -8,7 +9,6 @@ import (
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/txs"
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/types"
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/stretchr/testify/require"
 	"github.com/syndtr/goleveldb/leveldb"
 	"go.uber.org/zap"
@@ -18,13 +18,11 @@ const (
 	tmProvider      = "Node"
 	ethProvider     = "ws://127.0.0.1:7545/"
 	contractAddress = "0x00"
-	privateKeyStr   = "ae6ae8e5ccbfb04590405997ee2d52d2b330726137b875053c36d94e974d162f"
 )
 
 func TestNewCosmosSub(t *testing.T) {
 	db, err := leveldb.OpenFile("relayerdb", nil)
 	require.Equal(t, err, nil)
-	privateKey, _ := crypto.HexToECDSA(privateKeyStr)
 	logger, err := zap.NewProduction()
 	if err != nil {
 		log.Fatalln("failed to init zap logging")
@@ -32,8 +30,9 @@ func TestNewCosmosSub(t *testing.T) {
 
 	sugaredLogger := logger.Sugar()
 	registryContractAddress := common.HexToAddress(contractAddress)
+	var key *ecdsa.PrivateKey // this isn't actually used
 	sub := NewCosmosSub(tmProvider, ethProvider, registryContractAddress,
-		privateKey, db, sugaredLogger)
+		key, db, sugaredLogger)
 	require.NotEqual(t, sub, nil)
 }
 
