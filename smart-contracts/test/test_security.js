@@ -175,14 +175,6 @@ describe("Security Test", function () {
           .burn(sifRecipient, state.rowan.address, 100),
       ).to.be.revertedWith("Pausable: paused");
     });
-
-    it("should not allow a user to send ethereum directly to the contract", async function () {
-      await state.bridgeBank
-        .send(Web3Utils.toWei("0.25", "ether"), {
-          from: userOne
-        })
-        .should.be.rejectedWith(EVMRevert);
-    });
   });
 
   // state entire scenario is mimicking the mainnet scenario where there will be

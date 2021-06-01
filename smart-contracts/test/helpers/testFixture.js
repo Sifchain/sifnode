@@ -1,4 +1,4 @@
-const { ethers, upgrades } = require("hardhat");
+const { ethers, upgrades, waffle } = require("hardhat");
 const web3 = require("web3")
 
 async function returnContractObjects() {
