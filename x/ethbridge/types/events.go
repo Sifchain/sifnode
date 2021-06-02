@@ -18,7 +18,7 @@ var (
 	AttributeKeyStatus              = "status"
 	AttributeKeyClaimType           = "claim_type"
 	AttributeKeyValidator           = "validator"
-	AttributeKeyOperationType       = "operation_type"
+	AttributeKeyPowerType           = "power"
 	AttributeKeyCethReceiverAccount = "ceth_receiver_account"
 
 	AttributeKeyEthereumChainID      = "ethereum_chain_id"
@@ -26,6 +26,7 @@ var (
 	AttributeKeyCosmosSender         = "cosmos_sender"
 	AttributeKeyCosmosSenderSequence = "cosmos_sender_sequence"
 	AttributeKeyEthereumReceiver     = "ethereum_receiver"
+	AttributeKeyNetworkID            = "network_id"
 
 	AttributeValueCategory = ModuleName
 )

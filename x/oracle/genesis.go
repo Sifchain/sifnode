@@ -31,13 +31,15 @@ func InitGenesis(ctx sdk.Context, keeper keeper.Keeper, data types.GenesisState)
 }
 
 func ExportGenesis(ctx sdk.Context, keeper keeper.Keeper) *types.GenesisState {
-	whiteList := keeper.GetOracleWhiteList(ctx)
-	wl := make([]string, len(whiteList), 0)
+	whiteList := keeper.GetAllWhiteList(ctx)
+	wl := make(map[uint32]*types.ValidatorWhiteList)
+
 	for i, entry := range whiteList {
-		wl[i] = entry.String()
+		wl[i] = &entry
 	}
 	return &types.GenesisState{
 		AddressWhitelist: wl,
+		AdminAddress:     keeper.GetAdminAccount(ctx).String(),
 	}
 }
 

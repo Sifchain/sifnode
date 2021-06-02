@@ -2,18 +2,25 @@ package keeper
 
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
+	protobuftypes "github.com/gogo/protobuf/types"
 
 	"github.com/Sifchain/sifnode/x/oracle/types"
 )
 
 // GetAllWhiteList set the validator list for a network.
-func (k Keeper) GetAllWhiteList(ctx sdk.Context) types.ValidatorWhiteList {
+func (k Keeper) GetAllWhiteList(ctx sdk.Context) map[uint32]types.ValidatorWhiteList {
+	result := make(map[uint32]types.ValidatorWhiteList)
 	store := ctx.KVStore(k.storeKey)
-	iterator := store.Iterator()
+	iterator := sdk.KVStorePrefixIterator(store, types.WhiteListValidatorPrefix)
+	defer iterator.Close()
+	var networkID protobuftypes.UInt32Value
+	for ; iterator.Valid(); iterator.Next() {
+		bytesValue := iterator.Key()
+		k.cdc.MustUnmarshalBinaryBare(bytesValue, &networkID)
+		result[networkID.Value] = k.GetOracleWhiteList(ctx, types.NewNetworkDescriptor(networkID.Value))
+	}
 
-	key := networkDescriptor.GetPrefix()
-	store.Set(key, k.cdc.MustMarshalBinaryBare(&validatorList))
+	return result
 }
 
 // SetOracleWhiteList set the validator list for a network.
@@ -37,26 +44,22 @@ func (k Keeper) GetOracleWhiteList(ctx sdk.Context, networkDescriptor types.Netw
 	bz := store.Get(key)
 	validators := &types.ValidatorWhiteList{}
 	k.cdc.MustUnmarshalBinaryBare(bz, validators)
-
 	return *validators
 }
 
 // GetAllValidators return validator list
 func (k Keeper) GetAllValidators(ctx sdk.Context, networkDescriptor types.NetworkDescriptor) []sdk.ValAddress {
-	store := ctx.KVStore(k.storeKey)
-	// key := types.WhiteListValidatorPrefix
-	key := networkDescriptor.GetPrefix()
-	bz := store.Get(key)
-	valAddresses := &stakingtypes.ValAddresses{}
-	k.cdc.MustUnmarshalBinaryBare(bz, valAddresses)
+	valAddresses := k.GetOracleWhiteList(ctx, networkDescriptor)
 
-	vl := make([]sdk.ValAddress, len(valAddresses.Addresses))
-	for i, entry := range valAddresses.Addresses {
-		addr, err := sdk.ValAddressFromBech32(entry)
+	vl := make([]sdk.ValAddress, len(valAddresses.GetWhiteList()))
+	index := 0
+	for i := range valAddresses.GetWhiteList() {
+		addr, err := sdk.ValAddressFromBech32(i)
 		if err != nil {
 			panic(err)
 		}
-		vl[i] = addr
+		vl[index] = addr
+		index++
 	}
 
 	return vl

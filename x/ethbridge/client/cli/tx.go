@@ -257,7 +257,7 @@ func GetCmdLock() *cobra.Command {
 // GetCmdUpdateWhiteListValidator is the CLI command for update the validator whitelist
 func GetCmdUpdateWhiteListValidator() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "update_whitelist_validator [cosmos-sender-address] [validator-address] [operation-type] --node [node-address]",
+		Use:   "update_whitelist_validator [cosmos-sender-address] [network-id]  [validator-address] [power] --node [node-address]",
 		Short: "This should be used to update the validator whitelist.",
 		Args:  cobra.ExactArgs(3),
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -271,17 +271,22 @@ func GetCmdUpdateWhiteListValidator() *cobra.Command {
 				return err
 			}
 
-			validatorAddress, err := sdk.ValAddressFromBech32(args[1])
+			networkID, err := strconv.Atoi(args[1])
+			if err != nil {
+				return errors.New("Error parsing network descriptor")
+			}
+
+			validatorAddress, err := sdk.ValAddressFromBech32(args[2])
 			if err != nil {
 				return err
 			}
 
-			operationType := args[2]
-			if operationType != "add" && operationType != "remove" {
-				return errors.Errorf("invalid [operation-type]: %s", args[2])
+			power, err := strconv.Atoi(args[3])
+			if err != nil {
+				return err
 			}
 
-			msg := types.NewMsgUpdateWhiteListValidator(cosmosSender, validatorAddress, operationType)
+			msg := types.NewMsgUpdateWhiteListValidator(uint32(networkID), cosmosSender, validatorAddress, uint32(power))
 			if err := msg.ValidateBasic(); err != nil {
 				return err
 			}

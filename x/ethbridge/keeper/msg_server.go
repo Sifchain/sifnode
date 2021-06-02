@@ -2,10 +2,12 @@ package keeper
 
 import (
 	"context"
+	"fmt"
+	"strconv"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/pkg/errors"
-	"strconv"
 
 	"github.com/Sifchain/sifnode/x/ethbridge/types"
 	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
@@ -24,6 +26,7 @@ func NewMsgServerImpl(keeper Keeper) types.MsgServer {
 var _ types.MsgServer = msgServer{}
 
 func (srv msgServer) Lock(goCtx context.Context, msg *types.MsgLock) (*types.MsgLockResponse, error) {
+	fmt.Println("Lock started")
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
 	logger := srv.Keeper.Logger(ctx)
@@ -206,18 +209,19 @@ func (srv msgServer) UpdateWhiteListValidator(goCtx context.Context,
 		return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.CosmosSender)
 	}
 
-	err = srv.Keeper.ProcessUpdateWhiteListValidator(ctx, cosmosSender,
-		sdk.ValAddress(msg.Validator), msg.OperationType)
+	err = srv.Keeper.ProcessUpdateWhiteListValidator(ctx, msg.NetworkId, cosmosSender,
+		sdk.ValAddress(msg.Validator), msg.Power)
 	if err != nil {
 		logger.Error("bridge keeper failed to process update validator.", errorMessageKey, err.Error())
 		return nil, err
 	}
 
 	logger.Info("sifnode emit update whitelist validators event.",
+		"NetworkID", msg.NetworkId,
 		"CosmosSender", msg.CosmosSender,
 		"CosmosSenderSequence", strconv.FormatUint(account.GetSequence(), 10),
 		"Validator", msg.Validator,
-		"OperationType", msg.OperationType)
+		"Power", msg.Power)
 
 	ctx.EventManager().EmitEvents(sdk.Events{
 		sdk.NewEvent(
@@ -227,9 +231,10 @@ func (srv msgServer) UpdateWhiteListValidator(goCtx context.Context,
 		),
 		sdk.NewEvent(
 			types.EventTypeLock,
+			sdk.NewAttribute(types.AttributeKeyNetworkID, strconv.Itoa(int(msg.NetworkId))),
 			sdk.NewAttribute(types.AttributeKeyCosmosSender, msg.CosmosSender),
 			sdk.NewAttribute(types.AttributeKeyValidator, msg.Validator),
-			sdk.NewAttribute(types.AttributeKeyOperationType, msg.OperationType),
+			sdk.NewAttribute(types.AttributeKeyPowerType, strconv.Itoa(int(msg.Power))),
 		),
 	})
 

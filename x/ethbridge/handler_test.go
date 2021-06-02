@@ -15,8 +15,8 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/Sifchain/sifnode/x/ethbridge"
-	"github.com/Sifchain/sifnode/x/ethbridge/test"
 	ethbridgekeeper "github.com/Sifchain/sifnode/x/ethbridge/keeper"
+	"github.com/Sifchain/sifnode/x/ethbridge/test"
 	"github.com/Sifchain/sifnode/x/ethbridge/types"
 	oraclekeeper "github.com/Sifchain/sifnode/x/oracle/keeper"
 	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
@@ -29,7 +29,7 @@ const (
 )
 
 var (
-	UnregisteredValidatorAddress = sdk.ValAddress("cosmos1xdp5tvt7lxh8rf9xx07wy2xlagzhq24ha48xtq")
+	UnregisteredValidatorAddress = "cosmos1xdp5tvt7lxh8rf9xx07wy2xlagzhq24ha48xtq"
 	TestAccAddress               = "cosmos1xdp5tvt7lxh8rf9xx07wy2xlagzhq24ha48xtq"
 	TestAddress                  = "cosmos1xdp5tvt7lxh8rf9xx07wy2xlagzhq24ha48xtq"
 )
@@ -233,26 +233,34 @@ func TestLockFail(t *testing.T) {
 	//Setup
 	ctx, _, _, _, handler, _, _ := CreateTestHandler(t, 0.7, []int64{2, 7, 1})
 
+	addAddress, err := sdk.AccAddressFromBech32(UnregisteredValidatorAddress)
+	valAddress := sdk.ValAddress(addAddress)
+	fmt.Printf("message is address %v \n", valAddress.String())
+
+	// require.Error(t, err)
+
 	//Initial message
-	normalCreateMsg := types.CreateTestEthMsg(t, UnregisteredValidatorAddress, types.ClaimType_CLAIM_TYPE_LOCK)
+	normalCreateMsg := types.CreateTestEthMsg(t, valAddress, types.ClaimType_CLAIM_TYPE_LOCK)
+	fmt.Printf("message is %v \n", normalCreateMsg)
 	res, err := handler(ctx, &normalCreateMsg)
 
 	require.Error(t, err)
 	require.Nil(t, res)
-	require.Equal(t, err.Error(), "validator must be in whitelist")
+	require.Equal(t, err.Error(), "validator not in white list")
 }
 
 func TestBurnFail(t *testing.T) {
 	//Setup
 	ctx, _, _, _, handler, _, _ := CreateTestHandler(t, 0.7, []int64{2, 7, 1})
-
+	addAddress, err := sdk.AccAddressFromBech32(UnregisteredValidatorAddress)
+	valAddress := sdk.ValAddress(addAddress)
 	//Initial message
-	normalCreateMsg := types.CreateTestEthMsg(t, UnregisteredValidatorAddress, types.ClaimType_CLAIM_TYPE_BURN)
+	normalCreateMsg := types.CreateTestEthMsg(t, valAddress, types.ClaimType_CLAIM_TYPE_BURN)
 	res, err := handler(ctx, &normalCreateMsg)
 
 	require.Error(t, err)
 	require.Nil(t, res)
-	require.Equal(t, err.Error(), "validator must be in whitelist")
+	require.Equal(t, err.Error(), "validator not in white list")
 }
 
 func TestBurnEthFail(t *testing.T) {
@@ -451,5 +459,5 @@ func CreateTestHandler(t *testing.T, consensusNeeded float64, validatorAmounts [
 	keeper.SetCethReceiverAccount(ctx, CethReceiverAccount)
 	handler := ethbridge.NewHandler(keeper)
 
-	return ctx, keeper, bankKeeper, accountKeeper, handler, validatorAddresses, oracleKeeper
+	return ctx, keeper, bankKeeper, accountKeeper, handler, validatorAddresses.GetAllValidators(), oracleKeeper
 }

@@ -327,12 +327,13 @@ func (msg MsgRescueCeth) GetSigners() []sdk.AccAddress {
 }
 
 // NewMsgUpdateWhiteListValidator is a constructor function for MsgUpdateWhiteListValidator
-func NewMsgUpdateWhiteListValidator(cosmosSender sdk.AccAddress,
-	validator sdk.ValAddress, operationType string) MsgUpdateWhiteListValidator {
+func NewMsgUpdateWhiteListValidator(networkID uint32, cosmosSender sdk.AccAddress,
+	validator sdk.ValAddress, power uint32) MsgUpdateWhiteListValidator {
 	return MsgUpdateWhiteListValidator{
-		CosmosSender:  cosmosSender.String(),
-		Validator:     validator.String(),
-		OperationType: operationType,
+		NetworkId:    networkID,
+		CosmosSender: cosmosSender.String(),
+		Validator:    validator.String(),
+		Power:        power,
 	}
 }
 
