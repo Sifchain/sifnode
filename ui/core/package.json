@@ -24,7 +24,6 @@
     "coingecko-api": "^1.0.10",
     "decimal.js-light": "^2.5.1",
     "eventemitter2": "^6.4.3",
-    "ganache-time-traveler": "^1.0.15",
     "jsbi": "^3.1.4",
     "lodash": "^4.17.20",
     "numbro": "^2.3.2",
@@ -49,7 +48,6 @@
     "concurrently": "^5.3.0",
     "jest": "^24.9.0",
     "jest-websocket-mock": "^2.2.0",
-    "mock-socket": "^9.0.3",
     "tinyify": "^3.0.0",
     "tsify": "^5.0.2",
     "typescript": "~3.9.3"
@@ -59,6 +57,7 @@
       "**/**.test.ts",
       "**/tests/unit/*.js"
     ],
-    "testTimeout": 1000000
+    "testTimeout": 1000000,
+    "bail": true
   }
 }

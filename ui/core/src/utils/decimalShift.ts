@@ -69,3 +69,12 @@ export function fromBaseUnits(integer: string, asset: Asset): string {
 export function floorDecimal(decimal: string) {
   return decimal.split(".")[0];
 }
+
+/**
+ * Utility to get mantissa value
+ * @param integer the integer string
+ * @returns number of mantissa as a string
+ */
+export function getMantissaValue(number: string) {
+  return (number.length - number.indexOf(".") - 1).toString();
+}

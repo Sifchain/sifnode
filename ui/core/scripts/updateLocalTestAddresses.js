@@ -34,7 +34,7 @@ function updateERowan(asset) {
 function updateToken(contractName, asset) {
   const location = resolve(
     __dirname,
-    `../../chains/ethereum/build/contracts/${contractName}.json`,
+    `../../chains/eth/build/contracts/${contractName}.json`,
   );
 
   const {

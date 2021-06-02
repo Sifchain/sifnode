@@ -1,4 +1,4 @@
-import { IWalletService } from "../../api/IWalletService";
+import { IWalletService } from "../../services/IWalletService";
 import { IAssetAmount } from "../../entities";
 
 export function getMockWalletService(
@@ -33,5 +33,6 @@ export function getMockWalletService(
       memo?: string,
     ) => {},
     onProviderNotFound: () => {},
+    onChainIdDetected: () => {},
   };
 }

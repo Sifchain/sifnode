@@ -1,6 +1,6 @@
 import { computed, Ref } from "@vue/reactivity";
 import ColorHash from "color-hash";
-import { Asset, IAmount, IAssetAmount, Network, TxHash } from "ui-core";
+import { Asset, IAssetAmount, Network, toBaseUnits, TxHash } from "ui-core";
 import { format } from "ui-core/src/utils/format";
 
 export function formatSymbol(symbol: string) {
@@ -29,7 +29,7 @@ export function formatNumber(displayNumber: string) {
 export function formatAssetAmount(value: IAssetAmount) {
   if (!value || value.equalTo("0")) return "0";
   const { amount, asset } = value;
-  return amount.greaterThan("100000000000000000000000")
+  return amount.greaterThan(toBaseUnits("100000", asset))
     ? format(amount, asset, { mantissa: 2 })
     : format(amount, asset, { mantissa: 6 });
 }
@@ -94,5 +94,18 @@ export function getBlockExplorerUrl(chainId: string, txHash?: TxHash): string {
     default:
       if (!txHash) return "https://blockexplorer-devnet.sifchain.finance/";
       return `https://blockexplorer-devnet.sifchain.finance/transactions/${txHash}`;
+  }
+}
+
+export function getCryptoeconomicsUrl(chainId: string): string {
+  switch (chainId) {
+    case "sifchain":
+      return `https://api-cryptoeconomics.sifchain.finance/api`;
+    case "sifchain-testnet":
+      return `https://api-cryptoeconomics-testnet.sifchain.finance/api`;
+    // case "sifchain-local":
+    //   return `http://localhost:3000/api`; // sifnode/cryptoeconomics/js/server
+    default:
+      return `https://api-cryptoeconomics.sifchain.finance/api`;
   }
 }

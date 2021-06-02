@@ -4,28 +4,22 @@
       <template v-slot:right>
         <WithWallet>
           <template v-slot:disconnected="{ requestDialog }">
-            <SifButton
+            <Pill
               data-handle="button-connected"
-              round
-              small
-              ghost
-              secondary
+              color="danger"
               @click="requestDialog"
             >
               Not connected
-            </SifButton>
+            </Pill>
           </template>
           <template v-slot:connected="{ requestDialog }">
-            <SifButton
+            <Pill
               data-handle="button-connected"
-              small
-              ghost
-              success
-              round
               @click="requestDialog"
+              color="success"
+              class="connected-button"
+              >Connected</Pill
             >
-              Connected
-            </SifButton>
           </template>
         </WithWallet>
       </template>
@@ -38,7 +32,9 @@
 <script lang="ts">
 import { defineComponent } from "vue";
 import WithWallet from "@/components/wallet/WithWallet.vue";
-import Header from "./components/shared/Header.vue";
+import Header from "./components/shared/Header/Header.vue";
+import Pill from "./components/shared/Pill/Pill.vue";
+import Footer from "./components/shared/Footer/Footer.vue";
 import SifButton from "./components/shared/SifButton.vue";
 import Notifications from "./components/Notifications.vue";
 import { useInitialize } from "./hooks/useInitialize";
@@ -49,6 +45,8 @@ export default defineComponent({
     Notifications,
     WithWallet,
     SifButton,
+    Footer,
+    Pill,
   },
   setup() {
     /// Initialize app
@@ -61,7 +59,7 @@ export default defineComponent({
 #app,
 #portal-target,
 #tooltip-target {
-  font: italic normal bold 14px/22px $f_default;
+  font: normal bold 14px/22px $f_default;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
@@ -84,5 +82,9 @@ a {
 
 .main {
   min-height: 100vh;
+}
+
+.connected-button {
+  cursor: pointer;
 }
 </style>

@@ -16,7 +16,7 @@ linters:
     - gosec
     - govet
     - ineffassign
-# - interfacer
+#    - interfacer
     - maligned
     - misspell
     - nakedret

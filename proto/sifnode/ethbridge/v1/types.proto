@@ -64,4 +64,8 @@ message ProphecyClaim {
   bytes cosmos_sender_sequence = 6;
 }
 
-message GenesisState {}
+// GenesisState for ethbridge
+message GenesisState {
+  string ceth_receive_account = 1;
+  repeated string peggy_tokens = 2;
+}
