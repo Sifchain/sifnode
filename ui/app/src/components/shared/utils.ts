@@ -1,4 +1,4 @@
-import { computed, Ref } from "@vue/reactivity";
+import { computed, Ref, ComputedRef } from "@vue/reactivity";
 import ColorHash from "color-hash";
 import { Asset, IAssetAmount, Network, toBaseUnits, TxHash } from "ui-core";
 import { format } from "ui-core/src/utils/format";
@@ -81,6 +81,75 @@ export function useAssetItem(symbol: Ref<string | undefined>) {
     label: tokenLabel,
     background: backgroundStyle,
   };
+}
+
+export async function getLMData(address: ComputedRef<any>, chainId: string) {
+  if (!address.value) return;
+  // const ceUrl = getCryptoeconomicsUrl(chainId);
+  // const data = await fetch(
+  //   `${ceUrl}/lm/?key=userData&address=${address.value}&timestamp=now`,
+  // );
+  // if (data.status !== 200) return {};
+  const parsedData = {
+    totalDepositedAmount: 53919106.11780828,
+    timestamp: 147400,
+    rewardBuckets: [
+      {
+        rowan: 17339449.541285392,
+        initialRowan: 45000000,
+        duration: 1200,
+      },
+    ],
+    user: {
+      tickets: [
+        {
+          commission: 0,
+          amount: 293.99999564707366,
+          mul: 0.417534722222227,
+          reward: 38.12101358818803,
+          validatorRewardAddress: null,
+          validatorStakeAddress: null,
+          timestamp: "May 5th 2021, 8:08:43 pm",
+          rewardDelta: 0.20469172665896876,
+          poolDominanceRatio: 0.000005453897339202301,
+          commissionRewardsByValidator: {},
+        },
+      ],
+      claimableRewardsOnWithdrawnAssets: 0,
+      dispensed: 0,
+      forfeited: 0,
+      totalAccruedCommissionsAndClaimableRewards: 15.916846819373829,
+      totalClaimableCommissionsAndClaimableRewards: 15.916846819373829,
+      reservedReward: 38.12101358818803,
+      totalDepositedAmount: 293.99999564707366,
+      totalClaimableRewardsOnDepositedAssets: 15.916846819373829,
+      currentTotalCommissionsOnClaimableDelegatorRewards: 0,
+      totalAccruedCommissionsAtMaturity: 0,
+      totalCommissionsAndRewardsAtMaturity: 132.86652090850077,
+      claimableCommissions: 0,
+      delegatorAddresses: [],
+      totalRewardsOnDepositedAssetsAtMaturity: 132.86652090850077,
+      ticketAmountAtMaturity: 293.99999564707366,
+      yieldAtMaturity: 0.4519269485568214,
+      nextRewardShare: 0.000005452612567513837,
+      currentYieldOnTickets: 0.39778801299547234,
+      maturityDate: "September 2nd 2021, 8:08:43 pm",
+      maturityDateISO: "2021-09-02T20:08:43.000Z",
+      yearsToMaturity: 0.2553272450532724,
+      currentAPYOnTickets: 1.557953648512819,
+      maturityDateMs: 0,
+      futureReward: 116.94967408912694,
+      nextReward: 0.2044729712817689,
+      nextRewardProjectedFutureReward: 537.3549685284886,
+      nextRewardProjectedAPYOnTickets: 1.827738015253393,
+      maturityAPY: 1.9233043771965068,
+    },
+  };
+
+  if (!parsedData.user || !parsedData.user) {
+    return {};
+  }
+  return parsedData.user;
 }
 
 export function getBlockExplorerUrl(chainId: string, txHash?: TxHash): string {
