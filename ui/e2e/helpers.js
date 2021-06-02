@@ -28,10 +28,11 @@ export async function reconnectKeplrAccount() {
 }
 
 export async function connectMetaMaskAccount() {
+  await page.bringToFront();
   await dexHeader.clickConnected();
   await connectPopup.clickConnectMetamask();
   // opens new page so we need to retrieve it
-  await page.waitForTimeout(3000); // TODO: replace explicit wait with dynamic waiting for page with given url
+  await page.waitForTimeout(4000); // TODO: replace explicit wait with dynamic waiting for page with given url
   await metamaskConnectPage.navigate();
   await metamaskConnectPage.clickNext();
   await metamaskConnectPage.clickConnect();

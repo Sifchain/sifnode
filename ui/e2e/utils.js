@@ -60,7 +60,6 @@ export function sleep(ms) {
 
 export async function getInputValue(selector) {
   return await page.$eval(selector, (el) => el.value);
-  // return await page.evaluate((el) => el.value, await page.$(selector));
 }
 
 export async function assertWaitedText(

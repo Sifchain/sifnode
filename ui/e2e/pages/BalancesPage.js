@@ -57,15 +57,6 @@ export class BalancesPage {
   }
 
   async verifyAssetAmount(asset, expectedAmount) {
-    // waitForSelector with state 'attached' is needed because the element is resolved as not visible
-    // checked DOM and it looks visible. TODO: further investigate why this happens
-    // await page.waitForSelector(
-    //   `${this.el.assetAmount(asset)}:has-text("${expectedAmount}")`,
-    //   {
-    //     state: "attached",
-    //   },
-    // );
-
     await assertWaitedText(this.el.assetAmount(asset), expectedAmount);
   }
 

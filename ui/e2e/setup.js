@@ -16,6 +16,7 @@ beforeAll(async () => {
     fs.rmdirSync(userDataDir, { recursive: true });
   }
 
+  // exposing "context" object globally
   context = await chromium.launchPersistentContext(userDataDir, {
     // headless required with extensions. xvfb used for ci/cd
     headless: false,
@@ -24,5 +25,6 @@ beforeAll(async () => {
       `--load-extension=${pathToKeplrExtension},${pathToMmExtension}`,
     ],
   });
+  // exposing "page" object globally
   [page] = await context.pages();
 });

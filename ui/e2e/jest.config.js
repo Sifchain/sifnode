@@ -7,5 +7,4 @@ module.exports = {
   coveragePathIgnorePatterns: ["e2e/utils.js"],
   bail: true,
   setupFilesAfterEnv: ["expect-playwright", "./setup.js"],
-  // setupFilesAfterEnv: ["expect-playwright", "./setup.js", "./jest.setup.js"],
 };

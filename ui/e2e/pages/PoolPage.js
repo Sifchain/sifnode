@@ -1,11 +1,9 @@
 import { DEX_TARGET } from "../config";
 import { assertWaitedValue } from "../utils";
 import { tokenSelection } from "./components/TokenSelection";
-import { GenericPage } from "./GenericPage";
 
-export class PoolPage extends GenericPage {
+export class PoolPage {
   constructor() {
-    super();
     this.el = {
       detailsPriceMessage: "[data-handle='details-price-message']",
       detailsMinimumReceived: "[data-handle='details-minimum-received']",
