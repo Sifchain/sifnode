@@ -50,7 +50,7 @@ ingress:
   enabled: false
   annotations: {}
   hosts:
-    - host: ebrelayer.local
+    - host: -=app_name=-.local
       paths: []
   tls: []
 
