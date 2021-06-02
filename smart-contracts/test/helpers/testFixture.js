@@ -164,7 +164,15 @@ async function singleSetup(
     return state;
 }
 
+async function deployTrollToken() {
+  let TrollToken = await ethers.getContractFactory("TrollToken");
+  const troll = await TrollToken.deploy("Troll", "TRL");
+
+  return troll;
+}
+
 module.exports = {
     multiTokenSetup,
-    singleSetup
+    singleSetup,
+    deployTrollToken
 };

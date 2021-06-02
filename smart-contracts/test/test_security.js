@@ -5,7 +5,7 @@ const EVMRevert = "revert";
 const web3 = require("web3");
 const BigNumber = web3.BigNumber;
 const { expect } = require('chai');
-const { multiTokenSetup } = require("./helpers/testFixture");
+const { multiTokenSetup, deployTrollToken } = require("./helpers/testFixture");
 
 const NULL_ADDRESS = "0x0000000000000000000000000000000000000000";
 const sifRecipient = web3.utils.utf8ToHex(
@@ -33,6 +33,7 @@ describe("Security Test", function () {
   let state;
   let CosmosBridge;
   let BridgeToken;
+  let TrollToken;
 
   before(async function() {
     CosmosBridge = await ethers.getContractFactory("CosmosBridge");
@@ -52,7 +53,12 @@ describe("Security Test", function () {
     pauser = accounts[6];
 
     initialPowers = [25, 25, 25, 25];
-    initialValidators = signerAccounts.slice(0, 4);
+    initialValidators = [
+      accounts[0].address,
+      accounts[1].address,
+      accounts[2].address,
+      accounts[3].address,
+    ];
   });
 
 
@@ -274,37 +280,83 @@ describe("Security Test", function () {
     });
   });
 
-  describe("Bulk whitelist and limit add", function () {
-    before(async function () {
-      // state test needs to create a new token contract that will
-      // effectively be able to be treated as if it was a cosmos native asset
-      // even though it was created on top of ethereum
-
-      // Deploy Valset contract
-      state.initialValidators = [userOne, userTwo, userThree];
-      state.initialPowers = [33, 33, 33];
-
-      // Deploy CosmosBridge contract
-      state.cosmosBridge = await deployProxy(CosmosBridge, [
+  describe("Troll token tests", function () {
+    beforeEach(async function () {
+      state = await multiTokenSetup(
+        initialValidators,
+        initialPowers,
         operator,
         consensusThreshold,
-        state.initialValidators,
-        state.initialPowers
-      ],
-        {unsafeAllowCustomTypes: true}
+        owner,
+        userOne,
+        userThree,
+        pauser.address
       );
 
-      // Deploy BridgeBank contract
-      state.bridgeBank = await deployProxy(BridgeBank, [
-        operator,
-        state.cosmosBridge.address,
-        operator,
-        operator
-      ],
-      {unsafeAllowCustomTypes: true}
+      TrollToken = await deployTrollToken();
+      state.troll = TrollToken;
+      await state.troll.mint(userOne.address, 100);
+    });
+
+    it("should allow users to unpeg troll token, but then does not receive", async function () {
+      // approve and lock tokens
+      await state.troll.connect(userOne).approve(
+        state.bridgeBank.address,
+        state.amount
       );
 
-      await state.cosmosBridge.setBridgeBank(state.bridgeBank.address, {from: operator});
+      // Attempt to lock tokens
+      await state.bridgeBank.connect(userOne).lock(
+        state.sender,
+        state.troll.address,
+        state.amount
+      );
+
+      let endingBalance = Number(await state.troll.balanceOf(userOne.address));
+      expect(endingBalance).to.be.equal(0);
+
+      state.recipient = userOne.address;
+      receipt = await state.cosmosBridge.connect(userOne).newProphecyClaim(
+        state.sender,
+        state.senderSequence,
+        state.recipient,
+        state.troll.address,
+        state.amount,
+        false
+      ).should.be.fulfilled;
+
+      receipt = await state.cosmosBridge.connect(userTwo).newProphecyClaim(
+        state.sender,
+        state.senderSequence,
+        state.recipient,
+        state.troll.address,
+        state.amount,
+        false
+      ).should.be.fulfilled;
+
+      receipt = await state.cosmosBridge.connect(accounts[3]).newProphecyClaim(
+        state.sender,
+        state.senderSequence,
+        state.recipient,
+        state.troll.address,
+        state.amount,
+        false
+      ).should.be.fulfilled;
+
+      // user should not receive funds as troll token just burns gas
+      endingBalance = Number(await state.troll.balanceOf(userOne.address));
+      expect(endingBalance).to.be.equal(0);
+
+      let prophecyID = (await state.cosmosBridge.getProphecyID(
+        state.sender,
+        state.senderSequence,
+        state.recipient,
+        state.troll.address,
+        state.amount
+      )).toString();
+
+      let status = await state.cosmosBridge.prophecyRedeemed(prophecyID);
+      expect(status).to.be.true;
     });
   });
 });

@@ -250,12 +250,19 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
         address _tokenAddress,
         uint256 amount
     ) internal {
-        BridgeBank(bridgeBank).handleUnpeg(
-            ethereumReceiver,
-            _tokenAddress,
-            amount
+        (bool success, ) = bridgeBank.call{gas: 120000}(
+            abi.encodeWithSignature(
+                "handleUnpeg(address,address,uint256)",
+                ethereumReceiver,
+                _tokenAddress,
+                amount
+            )
         );
 
-        emit LogProphecyCompleted(_prophecyID);
+        if (success) {
+            // if successful in unpegging, emit event
+            emit LogProphecyCompleted(_prophecyID);
+        }
+        // otherwise, fail silently
     }
 }
