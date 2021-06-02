@@ -16,7 +16,6 @@
     "@openzeppelin/hardhat-upgrades": "^1.6.0",
     "@truffle/artifactor": "^4.0.90",
     "@truffle/hdwallet-provider": "^1.1.0",
-    "@typechain/ethers-v5": "^6.0.5",
     "@typechain/truffle-v5": "^4.0.1",
     "@typechain/web3-v1": "^2.2.0",
     "big-integer": "^1.6.48",
@@ -42,7 +41,6 @@
     "truffle": "^5.1.48",
     "truffle-contract": "^4.0.31",
     "truffle-contract-size": "^2.0.0",
-    "ts-generator": "^0.1.1",
     "typechain": "^4.0.3",
     "utf8": "^3.0.0",
     "winston": "^3.3.3",
@@ -52,13 +50,17 @@
     "@openzeppelin/test-helpers": "^0.5.6",
     "@openzeppelin/truffle-upgrades": "1.3.0",
     "@truffle/hdwallet-provider": "^1.1.0",
+    "@typechain/ethers-v5": "^6.0.5",
     "chai": "^4.2.0",
     "chai-as-promised": "^7.1.1",
     "chai-bignumber": "^3.0.0",
     "concurrently": "^5.3.0",
     "ganache-cli": "^6.12.0",
+    "hardhat-gas-reporter": "^1.0.4",
     "shelljs": "^0.8.4",
     "truffle": "^5.1.48",
+    "ts-generator": "^0.1.1",
+    "typechain-target-ethers-v5": "^5.0.1",
     "web3": "^1.3.1",
     "web3-utils": "^1.3.0"
   },
@@ -92,6 +94,6 @@
     "test:setup": "cp .env.example .env",
     "coverage": "truffle run coverage",
     "compile": "hardhat compile",
-    "test": "npx hardhat test test/testCosmosBridge.js test/testBridgeBank.js test/test_bridgeBankLock.js test/test_valset.js test/test_security.js test/test_upgradeContracts.js"
+    "test": "npx hardhat test test/testCosmosBridge.js test/testBridgeBank.js test/test_bridgeBankLock.js test/test_valset.js test/test_security.js test/test_upgradeContracts.js test/test_txCostCheckLock.js test/test_txCostCheckMint.js"
   }
 }

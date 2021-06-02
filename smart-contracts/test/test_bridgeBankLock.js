@@ -230,6 +230,11 @@ describe("Test Bridge Bank", function () {
     });
 
     it("should not allow user to multi-lock ERC20 tokens if one token is not fully approved", async function () {
+      await state.token1.connect(userOne).approve(
+        state.bridgeBank.address,
+        0
+      );
+
       await state.token2.connect(userOne).approve(
         state.bridgeBank.address,
         state.amount

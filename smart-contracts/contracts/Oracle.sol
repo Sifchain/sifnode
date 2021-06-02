@@ -69,11 +69,6 @@ contract Oracle is OracleStorage, Valset {
             _prophecyID,
             validatorAddress
         );
-
-        // Process the prophecy
-        (bool valid, , ) = getProphecyThreshold(_prophecyID);
-
-        return valid;
     }
 
     /*

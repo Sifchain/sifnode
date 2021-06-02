@@ -291,7 +291,8 @@ contract BridgeBank is BankStorage,
         require(msg.value == 0, "do not send currency if locking tokens");
 
         uint256 _chainid = getChainID();
-        _lockTokens(_recipient, _token, _amount, _chainid);
+        lockBurnNonce += 1;
+        _lockTokens(_recipient, _token, _amount, _chainid, lockBurnNonce);
     }
 
     function multiLock(
@@ -303,12 +304,21 @@ contract BridgeBank is BankStorage,
         require(_token.length == _amount.length, "M_P");
 
         uint256 _chainid = getChainID();
+        uint256 intermediateLockBurnNonce = lockBurnNonce;
 
         for (uint256 i = 0; i < _recipient.length; i++) {
             require(verifySifAddress(_recipient[i]), "INV_ADR");
+            intermediateLockBurnNonce++;
 
-            _lockTokens(_recipient[i], _token[i], _amount[i], _chainid);
+            _lockTokens(
+                _recipient[i],
+                _token[i],
+                _amount[i],
+                _chainid,
+                intermediateLockBurnNonce
+            );
         }
+        lockBurnNonce = intermediateLockBurnNonce;
     }
 
     // multi-lock burn. For locking ERC20 tokens and rowan
@@ -320,28 +330,46 @@ contract BridgeBank is BankStorage,
         bool[] calldata _isBurn
     ) external whenNotPaused {
         // all array inputs must be of the same length
+        // else throw malformed params error
         require(_recipient.length == _token.length, "M_P");
         require(_token.length == _amount.length, "M_P");
         require(_token.length == _isBurn.length, "M_P");
 
         uint256 _chainid = getChainID();
 
+        uint256 intermediateLockBurnNonce = lockBurnNonce;
+
         for (uint256 i = 0; i < _recipient.length; i++) {
             require(verifySifAddress(_recipient[i]), "INV_ADR");
+            intermediateLockBurnNonce++;
 
             if (_isBurn[i]) {
-                _burnTokens(_recipient[i], _token[i], _amount[i], _chainid);
+                _burnTokens(
+                    _recipient[i],
+                    _token[i],
+                    _amount[i],
+                    _chainid,
+                    intermediateLockBurnNonce
+                );
             } else {
-                _lockTokens(_recipient[i], _token[i], _amount[i], _chainid);
+                _lockTokens(
+                    _recipient[i],
+                    _token[i],
+                    _amount[i],
+                    _chainid,
+                    intermediateLockBurnNonce
+                );
             }
         }
+        lockBurnNonce = intermediateLockBurnNonce;
     }
 
     function _lockTokens(
         bytes calldata _recipient,
         address tokenAddress,
         uint256 tokenAmount,
-        uint256 _chainid
+        uint256 _chainid,
+        uint256 _lockBurnNonce
     ) private {
         IERC20 tokenToTransfer = IERC20(tokenAddress);
         // lock tokens
@@ -358,27 +386,25 @@ contract BridgeBank is BankStorage,
         string memory name = getName(tokenAddress);
         string memory symbol = getSymbol(tokenAddress);
 
-        lockBurnNonce = lockBurnNonce + 1;
-        {
-            emit LogLock(
-                msg.sender,
-                _recipient,
-                tokenAddress,
-                tokenAmount,
-                lockBurnNonce,
-                _chainid,
-                decimals,
-                symbol,
-                name
-            );
-        }
+        emit LogLock(
+            msg.sender,
+            _recipient,
+            tokenAddress,
+            tokenAmount,
+            _lockBurnNonce,
+            _chainid,
+            decimals,
+            symbol,
+            name
+        );
     }
 
     function _burnTokens(
         bytes calldata _recipient,
         address tokenAddress,
         uint256 tokenAmount,
-        uint256 _chainid
+        uint256 _chainid,
+        uint256 _lockBurnNonce
     ) private {
         BridgeToken tokenToTransfer = BridgeToken(tokenAddress);
         // burn tokens
@@ -394,18 +420,15 @@ contract BridgeBank is BankStorage,
         string memory name = getName(tokenAddress);
         string memory symbol = getSymbol(tokenAddress);
 
-        lockBurnNonce = lockBurnNonce + 1;
-        {
-            emit LogBurn(
-                msg.sender,
-                _recipient,
-                tokenAddress,
-                tokenAmount,
-                lockBurnNonce,
-                _chainid,
-                decimals
-            );
-        }
+        emit LogBurn(
+            msg.sender,
+            _recipient,
+            tokenAddress,
+            tokenAmount,
+            _lockBurnNonce,
+            _chainid,
+            decimals
+        );
     }
 
     /*

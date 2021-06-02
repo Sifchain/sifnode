@@ -58,7 +58,8 @@ describe("Test Cosmos Bridge", function () {
       consensusThreshold,
       owner,
       userOne,
-      userThree
+      userThree,
+      pauser
     );
   });
 
@@ -120,7 +121,8 @@ describe("Test Cosmos Bridge", function () {
           state.recipient,
           state.token.address,
           state.amount,
-          false
+          false,
+          state.nonce
         ).should.be.fulfilled
       );
 
@@ -130,7 +132,8 @@ describe("Test Cosmos Bridge", function () {
         state.recipient,
         state.token.address,
         state.amount,
-        false
+        false,
+        state.nonce
       ).should.be.fulfilled;
 
       receipt = await state.cosmosBridge.connect(userFour).newProphecyClaim(
@@ -139,7 +142,8 @@ describe("Test Cosmos Bridge", function () {
         state.recipient,
         state.token.address,
         state.amount,
-        false
+        false,
+        state.nonce
       ).should.be.fulfilled;
 
       // Confirm that the user has been minted the correct token
@@ -166,7 +170,8 @@ describe("Test Cosmos Bridge", function () {
         state.recipient,
         state.ethereumToken,
         state.amount,
-        false
+        false,
+        state.nonce
       ).should.be.fulfilled;
       
       receipt = await state.cosmosBridge.connect(userTwo).newProphecyClaim(
@@ -175,7 +180,8 @@ describe("Test Cosmos Bridge", function () {
         state.recipient,
         state.ethereumToken,
         state.amount,
-        false
+        false,
+        state.nonce
       ).should.be.fulfilled;
 
       receipt = await state.cosmosBridge.connect(userFour).newProphecyClaim(
@@ -184,7 +190,8 @@ describe("Test Cosmos Bridge", function () {
         state.recipient,
         state.ethereumToken,
         state.amount,
-        false
+        false,
+        state.nonce
       ).should.be.fulfilled;
 
       const recipientEndingBalance = await getBalance(state.recipient);

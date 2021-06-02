@@ -123,7 +123,8 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
         address payable _ethereumReceiver,
         address _tokenAddress,
         uint256 _amount,
-        bool _doublePeg
+        bool _doublePeg,
+        uint128 _nonce
     ) external onlyValidator {
 
         uint256 _prophecyID = getProphecyID(
@@ -135,7 +136,15 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
         );
 
         // save state of this oracle making a claim
-        bool claimComplete = newOracleClaim(_prophecyID, msg.sender);
+        newOracleClaim(_prophecyID, msg.sender);
+
+        uint256 previousNonce = lastNonceSubmitted[msg.sender];
+        require(
+            // assert nonce is correct
+            previousNonce < _nonce && previousNonce + 1 == _nonce,
+            "INV_ORD"
+        );
+        lastNonceSubmitted[msg.sender] = _nonce;
 
         // we need to exit gracefully otherwise it would cause ordering
         // issues and never allow the 4th validator to catch up
@@ -150,6 +159,9 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
                 _amount
             );
         }
+
+        // Process the prophecy
+        (bool claimComplete, , ) = getProphecyThreshold(_prophecyID);
 
         if (claimComplete) {
             // you cannot redeem this prophecy again
@@ -209,6 +221,7 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
         address _tokenAddress;
         uint256 _amount;
         bool _doublePeg;
+        uint128 _nonce;
     }
 
     function batchSubmitProphecies(
@@ -233,7 +246,8 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
                 _prophecies[i]._ethereumReceiver,
                 _prophecies[i]._tokenAddress,
                 _prophecies[i]._amount,
-                _prophecies[i]._doublePeg
+                _prophecies[i]._doublePeg,
+                _prophecies[i]._nonce
             );
         }
     }

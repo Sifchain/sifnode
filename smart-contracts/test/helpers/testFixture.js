@@ -62,7 +62,13 @@ async function multiTokenSetup(
     state.rowan = await BridgeToken.deploy("rowan", "rowan", 18);
 
     await state.rowan.deployed();
+    // mint tokens
     await state.rowan.connect(operator).mint(userOne.address, state.amount * 2);
+    // add bridgebank as owner of the rowan contract
+    await state.rowan.transferOwnership(state.bridgeBank.address);
+
+    await state.rowan.connect(userOne).approve(state.bridgeBank.address, state.amount * 2);
+
     // Add rowan as an existing bridge token
     await state.bridgeBank.connect(owner).addExistingBridgeToken(state.rowan.address);
 
@@ -79,6 +85,10 @@ async function multiTokenSetup(
     await state.token2.connect(operator).mint(userOne.address, state.amount * 2);
     await state.token3.connect(operator).mint(userOne.address, state.amount * 2);
 
+    await state.token1.connect(userOne).approve(state.bridgeBank.address, state.amount * 2);
+    await state.token2.connect(userOne).approve(state.bridgeBank.address, state.amount * 2);
+    await state.token3.connect(userOne).approve(state.bridgeBank.address, state.amount * 2);
+
     return state;
 }
 
@@ -89,7 +99,8 @@ async function singleSetup(
     consensusThreshold,
     owner,
     userOne,
-    userThree
+    userThree,
+    pauser
     ) {
     const state = {};
     // Deploy Valset contract

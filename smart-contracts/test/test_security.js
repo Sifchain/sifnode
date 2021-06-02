@@ -1,7 +1,3 @@
-const { deployProxy } = require('@openzeppelin/truffle-upgrades');
-
-const Web3Utils = require("web3-utils");
-const EVMRevert = "revert";
 const web3 = require("web3");
 const BigNumber = web3.BigNumber;
 const { expect } = require('chai');
@@ -38,9 +34,7 @@ describe("Security Test", function () {
   before(async function() {
     CosmosBridge = await ethers.getContractFactory("CosmosBridge");
     BridgeToken = await ethers.getContractFactory("BridgeToken");
-
     accounts = await ethers.getSigners();
-    
     signerAccounts = accounts.map((e) => { return e.address });
 
     operator = accounts[0];
@@ -60,7 +54,6 @@ describe("Security Test", function () {
       accounts[3].address,
     ];
   });
-
 
   describe("BridgeBank Security", function () {
     beforeEach(async function () {
@@ -298,6 +291,22 @@ describe("Security Test", function () {
       await state.troll.mint(userOne.address, 100);
     });
 
+    it("should revert when prophecyclaim is submitted out of order", async function () {
+      state.recipient = userOne.address;
+      state.nonce = 10;
+      await expect(
+        state.cosmosBridge.connect(userOne).newProphecyClaim(
+          state.sender,
+          state.senderSequence,
+          state.recipient,
+          state.troll.address,
+          state.amount,
+          false,
+          state.nonce
+        ),
+      ).to.be.revertedWith("INV_ORD");
+    });
+
     it("should allow users to unpeg troll token, but then does not receive", async function () {
       // approve and lock tokens
       await state.troll.connect(userOne).approve(
@@ -316,13 +325,15 @@ describe("Security Test", function () {
       expect(endingBalance).to.be.equal(0);
 
       state.recipient = userOne.address;
+      state.nonce = 1;
       receipt = await state.cosmosBridge.connect(userOne).newProphecyClaim(
         state.sender,
         state.senderSequence,
         state.recipient,
         state.troll.address,
         state.amount,
-        false
+        false,
+        state.nonce
       ).should.be.fulfilled;
 
       receipt = await state.cosmosBridge.connect(userTwo).newProphecyClaim(
@@ -331,7 +342,8 @@ describe("Security Test", function () {
         state.recipient,
         state.troll.address,
         state.amount,
-        false
+        false,
+        state.nonce
       ).should.be.fulfilled;
 
       receipt = await state.cosmosBridge.connect(accounts[3]).newProphecyClaim(
@@ -340,7 +352,8 @@ describe("Security Test", function () {
         state.recipient,
         state.troll.address,
         state.amount,
-        false
+        false,
+        state.nonce
       ).should.be.fulfilled;
 
       // user should not receive funds as troll token just burns gas

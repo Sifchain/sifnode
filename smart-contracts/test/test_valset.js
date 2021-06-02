@@ -57,7 +57,8 @@ describe("Test Valset", function () {
         consensusThreshold,
         owner,
         userOne,
-        userThree
+        userThree,
+        pauser
       );
     });
 
@@ -122,7 +123,8 @@ describe("Test Valset", function () {
           consensusThreshold,
           owner,
           userOne,
-          userThree
+          userThree,
+          pauser
         );
 
         state.userTwoPower = 11;
@@ -227,7 +229,8 @@ describe("Test Valset", function () {
           consensusThreshold,
           owner,
           userOne,
-          userThree
+          userThree,
+          pauser
         );
 
         state.userTwoPower = 11;
@@ -298,7 +301,8 @@ describe("Test Valset", function () {
           consensusThreshold,
           owner,
           userOne,
-          userThree
+          userThree,
+          pauser
         );
       });
 
@@ -365,7 +369,8 @@ describe("Test Valset", function () {
           consensusThreshold,
           owner,
           userOne,
-          userThree
+          userThree,
+          pauser
         );
 
         state.secondValidators = [userThree, accounts[4].address, accounts[5].address];
@@ -498,7 +503,8 @@ describe("Test Valset", function () {
         consensusThreshold,
         owner,
         userOne,
-        userThree
+        userThree,
+        pauser
       );
 
       state.secondValidators = [userThree];
