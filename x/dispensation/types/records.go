@@ -25,6 +25,17 @@ func (ds DistributionStatus) String() string {
 	}
 }
 
+func IsValidStatus(s string) (DistributionStatus, bool) {
+	switch s {
+	case "Pending":
+		return Pending, true
+	case "Completed:":
+		return Completed, true
+	default:
+		return -1, false
+	}
+}
+
 // DistributionRecord is created for every recipient for a distribution
 // TODO : Add DistributionStatus to the prefixed key for records
 type DistributionRecord struct {
