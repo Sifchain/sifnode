@@ -5,7 +5,7 @@ import (
 	clptypes "github.com/Sifchain/sifnode/x/clp/types"
 )
 
-func Migrate(genesis v039clp.GenesisState) *clptypes.GenesisState {
+func Migrate(genesis v039clp.GenesisState) clptypes.GenesisState {
 	whitelist := make([]string, len(genesis.AddressWhitelist))
 	for _, addr := range genesis.AddressWhitelist {
 		whitelist = append(whitelist, addr.String())
@@ -30,7 +30,7 @@ func Migrate(genesis v039clp.GenesisState) *clptypes.GenesisState {
 		})
 	}
 
-	return &clptypes.GenesisState{
+	return clptypes.GenesisState{
 		Params:             clptypes.Params{MinCreatePoolThreshold: uint64(genesis.Params.MinCreatePoolThreshold)},
 		AddressWhitelist:   whitelist,
 		PoolList:           poolList,

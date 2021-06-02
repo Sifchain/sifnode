@@ -6,6 +6,7 @@ import (
 	"sort"
 
 	"github.com/cosmos/cosmos-sdk/codec"
+	evidencetypes "github.com/cosmos/cosmos-sdk/x/evidence/types"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	tmjson "github.com/tendermint/tendermint/libs/json"
@@ -101,7 +102,7 @@ $ %s migrate v0.8.6 /path/to/genesis.json
 				return errors.Wrap(err, "failed to sort JSON genesis doc")
 			}
 
-			fmt.Println(string(sortedBz))
+			cmd.OutOrStdout().Write(sortedBz)
 			return nil
 		},
 	}
@@ -122,7 +123,7 @@ func Migrate(appState types.AppMap, clientCtx client.Context) types.AppMap {
 		v039Codec.MustUnmarshalJSON(appState[v039clp.ModuleName], &genesis)
 
 		newGenesis := v042clp.Migrate(genesis)
-		appState[clptypes.ModuleName] = v040Codec.MustMarshalJSON(newGenesis)
+		appState[clptypes.ModuleName] = v040Codec.MustMarshalJSON(&newGenesis)
 	}
 	// Ethbridge
 	if appState[v039ethbridge.ModuleName] != nil {
@@ -131,6 +132,10 @@ func Migrate(appState types.AppMap, clientCtx client.Context) types.AppMap {
 
 		newGenesis := v042ethbridge.Migrate(ethbridgeGenesis)
 		appState[ethbridgetypes.ModuleName] = v040Codec.MustMarshalJSON(newGenesis)
+	}
+
+	if appState[evidencetypes.ModuleName] == nil {
+		appState[evidencetypes.ModuleName] = v040Codec.MustMarshalJSON(evidencetypes.DefaultGenesisState())
 	}
 
 	return appState
