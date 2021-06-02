@@ -1,5 +1,5 @@
 <script lang="ts">
-import { defineComponent, ref, watch } from "vue";
+import { defineComponent, ref, watch, onMounted } from "vue";
 import Layout from "@/components/layout/Layout.vue";
 import { useWalletButton } from "@/components/wallet/useWalletButton";
 import {
@@ -18,6 +18,7 @@ import { toConfirmState } from "./utils/toConfirmState";
 import { ConfirmState } from "@/types";
 import ConfirmationModal from "@/components/shared/ConfirmationModal.vue";
 import DetailsPanelRemove from "@/components/shared/DetailsPanelRemove.vue";
+import { getLMData } from "@/components/shared/utils";
 
 export default defineComponent({
   components: {
@@ -29,7 +30,7 @@ export default defineComponent({
     DetailsPanelRemove,
   },
   setup() {
-    const { store, usecases, poolFinder, services } = useCore();
+    const { store, usecases, poolFinder, services, config } = useCore();
     const route = useRoute();
     const router = useRouter();
     const transactionState = ref<ConfirmState>("selecting");
@@ -38,6 +39,7 @@ export default defineComponent({
     const asymmetry = ref("0");
     const wBasisPoints = ref("0");
     const nativeAssetSymbol = ref("rowan");
+    let lmRewards = ref<any>();
     const externalAssetSymbol = ref<string | null>(
       route.params.externalAsset ? route.params.externalAsset.toString() : null,
     );
@@ -46,6 +48,7 @@ export default defineComponent({
     const liquidityProvider = ref(null) as Ref<LiquidityProvider | null>;
     const withdrawExternalAssetAmount: Ref<string | null> = ref(null);
     const withdrawNativeAssetAmount: Ref<string | null> = ref(null);
+    const address = computed(() => store.wallet.sif.address);
     const state = ref(0);
 
     effect(() => {
@@ -58,6 +61,10 @@ export default defineComponent({
         .then((liquidityProviderResult) => {
           liquidityProvider.value = liquidityProviderResult;
         });
+    });
+
+    onMounted(async () => {
+      lmRewards.value = await getLMData(address, config.sifChainId);
     });
 
     // if these values change, recalculate state and asset amounts
@@ -148,6 +155,7 @@ export default defineComponent({
       externalAssetSymbol,
       transactionState,
       transactionHash,
+      lmRewards,
     };
   },
 });
@@ -228,7 +236,7 @@ export default defineComponent({
       <template v-slot:selecting>
         <div>
           <DetailsPanelRemove
-            class="details"
+            :rewardsData="lmRewards"
             :externalAssetSymbol="externalAssetSymbol"
             :externalAssetAmount="withdrawExternalAssetAmount"
             :nativeAssetSymbol="nativeAssetSymbol"
