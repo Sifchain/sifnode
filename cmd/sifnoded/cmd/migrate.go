@@ -20,6 +20,8 @@ import (
 	v042clp "github.com/Sifchain/sifnode/x/clp/legacy/v42"
 	clptypes "github.com/Sifchain/sifnode/x/clp/types"
 	v039ethbridge "github.com/Sifchain/sifnode/x/ethbridge/legacy/v39"
+	v042ethbridge "github.com/Sifchain/sifnode/x/ethbridge/legacy/v42"
+	ethbridgetypes "github.com/Sifchain/sifnode/x/ethbridge/types"
 )
 
 var migrationMap = types.MigrationMap{
@@ -114,6 +116,7 @@ func Migrate(appState types.AppMap, clientCtx client.Context) types.AppMap {
 
 	v040Codec := clientCtx.JSONMarshaler
 
+	// CLP
 	if appState[v039clp.ModuleName] != nil {
 		var genesis v039clp.GenesisState
 		v039Codec.MustUnmarshalJSON(appState[v039clp.ModuleName], &genesis)
@@ -121,16 +124,14 @@ func Migrate(appState types.AppMap, clientCtx client.Context) types.AppMap {
 		newGenesis := v042clp.Migrate(genesis)
 		appState[clptypes.ModuleName] = v040Codec.MustMarshalJSON(newGenesis)
 	}
+	// Ethbridge
+	if appState[v039ethbridge.ModuleName] != nil {
+		var ethbridgeGenesis v039ethbridge.GenesisState
+		v039Codec.MustUnmarshalJSON(appState[v039ethbridge.ModuleName], &ethbridgeGenesis)
 
-	/* TODO: Merge in genesis state PR for 42 branch.
-		if appState[v039ethbridge.ModuleName] != nil {
-			var ethbridgeGenesis v039ethbridge.GenesisState
-			v039Codec.MustUnmarshalJSON(appState[v039ethbridge.ModuleName], &ethbridgeGenesis)
-
-			newGenesis := v042ethbridge.Migrate(ethbridgeGenesis)
-			appState[ethbridgetypes.ModuleName] = v040Codec.MustMarshalJSON(newGenesis)
-		}
-	*/
+		newGenesis := v042ethbridge.Migrate(ethbridgeGenesis)
+		appState[ethbridgetypes.ModuleName] = v040Codec.MustMarshalJSON(newGenesis)
+	}
 
 	return appState
 }
