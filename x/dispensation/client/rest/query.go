@@ -14,26 +14,26 @@ func registerQueryRoutes(cliCtx context.CLIContext, r *mux.Router) {
 	// Input :No parameters
 	// Output : List of all distributions created on the network
 	r.HandleFunc(
-		"/clp/getDistributions",
+		"/dispensation/getDistributions",
 		getDistributionsHandler(cliCtx),
 	).Methods("GET")
 	// Input : User Address (address)
 	// Output : List of all Distribution Records for the address (Completed and Pending)
 	r.HandleFunc(
-		"/clp/getDrForAddress",
+		"/dispensation/getDrForAddress",
 		getDrForRecipientHandler(cliCtx),
 	).Methods("GET")
 	// Input : Distribution Name (distName)
 	//		   Status (status)	 [accepts Pending and Completed]
 	// Output : List of all Distribution Records Distribution name and status provided
 	r.HandleFunc(
-		"/clp/getDrForDistName",
+		"/dispensation/getDrForDistName",
 		getDrForDistHandler(cliCtx),
 	).Methods("GET")
 	// Input : Claim type (type) [Accepts ValidatorSubsidy and LiquidityMining]
 	// Output : List of all Claims for the type.
 	r.HandleFunc(
-		"/clp/getClaims",
+		"/dispensation/getClaims",
 		getClaimsHandler(cliCtx),
 	).Methods("GET")
 }

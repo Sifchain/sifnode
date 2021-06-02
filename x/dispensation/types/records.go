@@ -29,7 +29,7 @@ func IsValidStatus(s string) (DistributionStatus, bool) {
 	switch s {
 	case "Pending":
 		return Pending, true
-	case "Completed:":
+	case "Completed":
 		return Completed, true
 	default:
 		return -1, false
