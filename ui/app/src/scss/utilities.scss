@@ -31,7 +31,7 @@
 // text utilities
 .text--small {
     font-size: $fs_sm;
-    line-height: 14px;
+    line-height: 17px;
 }
 .text--left {
     text-align: left;
@@ -73,4 +73,9 @@
 }
 .j-between, .jcsb {
     justify-content: space-between;
+}
+
+a.underline {
+    color: inherit;
+    border-bottom: 1px solid 
 }

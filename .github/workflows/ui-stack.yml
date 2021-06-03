@@ -1,0 +1,66 @@
+name: Build ui-stack backend
+
+on:
+  push:
+    branches:
+      # Here we list all branches that will build ui-stack when merged to
+      # Feel free to add feature branches for work in progress testing
+      # However once features are shipped this should be updated
+      - develop
+      - master
+
+jobs:
+  build_ui_stack:
+    defaults:
+      run:
+        working-directory: ui
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Use Node.js
+        uses: actions/setup-node@v2.1.4
+        with:
+          node-version: "14.x"
+
+      - name: Set up Go 1.x
+        uses: actions/setup-go@v2
+        with:
+          go-version: ^1.15
+        id: go
+
+      - name: Check out code
+        uses: actions/checkout@v2
+
+      - name: Log into registry
+        run: echo ${{ secrets.GHCR_TOKEN }} | docker login ghcr.io -u $GITHUB_ACTOR --password-stdin
+
+      - name: Get dependencies
+        run: |
+          cd .. && go get -v -t -d ./...
+
+      - name: Get yarn cache directory path
+        id: yarn-cache-dir-path
+        run: echo "::set-output name=dir::$(yarn cache dir)"
+
+      - name: Cache Node.js modules
+        id: yarn-cache
+        uses: actions/cache@v2.1.3
+        with:
+          path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
+          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: ${{ runner.os }}-yarn-
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile --silent
+
+      - name: Build test chains
+        run: yarn chain:build && yarn build
+
+      - name: Build databases for docker state
+        run: ./scripts/run-stack-save-default-snapshot.sh
+
+      - name: Build and push docker image
+        run: ./scripts/build-stack-backend-docker.sh
+        env:
+          CI: true

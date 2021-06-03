@@ -102,6 +102,20 @@ describe("format", () => {
       expected: `1.0`,
     },
     {
+      input: format(Amount("1.000000"), {
+        mantissa: 6,
+        trimMantissa: "integer",
+      }),
+      expected: `1`,
+    },
+    {
+      input: format(Amount("1.100000"), {
+        mantissa: 6,
+        trimMantissa: "integer",
+      }),
+      expected: `1.1`,
+    },
+    {
       input: format(Amount("1.100000"), { mantissa: 6, trimMantissa: true }),
       expected: `1.1`,
     },
@@ -131,6 +145,45 @@ describe("format", () => {
       }),
       expected: `100.000000000000000000`,
     },
+    // Dynamic mantissa
+    // Will adjust based on given hash map
+    // We should tokenize all these as reusable options based on the
+    // design language we choose instead of use them inline
+    //   eg `format(amount, formatters.GENERAL_DYNAMIC)`
+    ...(() => {
+      const dynamicMantissa = {
+        1: 6, // < 1 show 6 decimals
+        1000: 4, // < 1000 show 4 decimals
+        100000: 2, // < 100000 show 2 decimals
+        infinity: 0, // otherwise show 0 decimals
+      };
+      return [
+        {
+          input: format(Amount("0.12345678"), {
+            mantissa: dynamicMantissa,
+          }),
+          expected: "0.123457",
+        },
+        {
+          input: format(Amount("100.12345678"), {
+            mantissa: dynamicMantissa,
+          }),
+          expected: "100.1235",
+        },
+        {
+          input: format(Amount("5000.12345678"), {
+            mantissa: dynamicMantissa,
+          }),
+          expected: "5000.12",
+        },
+        {
+          input: format(Amount("500000.12345678"), {
+            mantissa: dynamicMantissa,
+          }),
+          expected: "500000",
+        },
+      ];
+    })(),
   ];
 
   tests.forEach(({ only, skip, input, expected }) => {
