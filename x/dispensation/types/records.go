@@ -47,6 +47,7 @@ type DistributionRecord struct {
 	DistributionStartHeight     int64              `json:"distribution_start_height"`
 	DistributionCompletedHeight int64              `json:"distribution_completed_height"`
 }
+
 type DistributionRecords []DistributionRecord
 
 func NewDistributionRecord(distributionName string, distributionType DistributionType, recipientAddress sdk.AccAddress, coins sdk.Coins, start int64, end int64) DistributionRecord {
@@ -91,6 +92,7 @@ func (dr DistributionRecord) Add(dr2 DistributionRecord) DistributionRecord {
 // The same type is also used Claims
 type DistributionType int64
 
+const DistributionTypeUnknown DistributionType = 0
 const Airdrop DistributionType = 1
 const LiquidityMining DistributionType = 2
 const ValidatorSubsidy DistributionType = 3
