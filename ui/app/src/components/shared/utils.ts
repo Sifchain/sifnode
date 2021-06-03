@@ -102,10 +102,21 @@ export function getCryptoeconomicsUrl(chainId: string): string {
     case "sifchain":
       return `https://api-cryptoeconomics.sifchain.finance/api`;
     case "sifchain-testnet":
-      return `https://api-cryptoeconomics-testnet.sifchain.finance/api`;
+      return `https://api-cryptoeconomics-devnet.sifchain.finance/api`;
     // case "sifchain-local":
     //   return `http://localhost:3000/api`; // sifnode/cryptoeconomics/js/server
     default:
-      return `https://api-cryptoeconomics.sifchain.finance/api`;
+      return `https://api-cryptoeconomics-devnet.sifchain.finance/api`;
+  }
+}
+
+export function getRewardEarningsUrl(chainId: string): string {
+  switch (chainId) {
+    case "sifchain":
+      return `https://vtdbgplqd6.execute-api.us-west-2.amazonaws.com/default/netchange`;
+    case "sifchain-testnet":
+      return `https://vtdbgplqd6.execute-api.us-west-2.amazonaws.com/default/netchange/testnet`;
+    default:
+      return `https://vtdbgplqd6.execute-api.us-west-2.amazonaws.com/default/netchange/devnet`;
   }
 }

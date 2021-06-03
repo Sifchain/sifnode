@@ -14,10 +14,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/client/context"
 )
 
-func RegisterRoutes(cliCtx context.CLIContext, r *mux.Router) {
-	registerTxRoutes(cliCtx, r)
-}
-
 func registerTxRoutes(cliCtx context.CLIContext, r *mux.Router) {
 	r.HandleFunc(
 		"/dispensation/createClaim",

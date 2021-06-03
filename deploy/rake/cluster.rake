@@ -67,6 +67,7 @@ namespace :cluster do
 
   desc "Manage sifnode deploy, upgrade, etc processes"
   namespace :sifnode do
+
     namespace :deploy do
       desc "Deploy a single standalone sifnode on to your cluster"
       task :standalone, [:cluster, :chainnet, :provider, :namespace, :image, :image_tag, :moniker, :mnemonic, :admin_clp_addresses, :admin_oracle_address, :minimum_gas_prices] do |t, args|
@@ -121,16 +122,15 @@ namespace :cluster do
       end
 
       desc "Deploy a single standalone sifnode on to your cluster"
-      task :standalone_vault, [:namespace, :image, :image_tag, :template_file_name, :final_file_name] do |t, args|
-        variable_template_replace(args[:template_file_name], args[:final_file_name])
+      task :standalone_vault, [:namespace, :image, :image_tag, :helm_values_file] do |t, args|
+        #variable_template_replace(args[:template_file_name], args[:final_file_name])
         cmd = %Q{helm upgrade sifnode deploy/helm/sifnode-vault \
           --install -n #{args[:namespace]} --create-namespace \
           --set image.tag=#{args[:image_tag]} \
           --set image.repository=#{args[:image]} \
-          -f #{args[:final_file_name]}
+          -f #{args[:helm_values_file]}
         }
-        puts cmd
-        #system(cmd) or exit 1
+        system(cmd) or exit 1
       end
 
       desc "Deploy a single network-aware sifnode on to your cluster"
@@ -143,13 +143,49 @@ namespace :cluster do
           --set image.repository=#{args[:image]} \
           -f #{args[:final_file_name]}
         }
-        puts cmd
         system(cmd) or exit 1
         #:namespace, :image, :image_tag, :peer_address, :template_file_name, :final_file_name,:app_region, :app_env
         #rake "cluster:sifnode:peer_vault['sifnode', 'sifchain/sifnoded', 'testnet-genesis', '1b02f2eb065031426d37186efff75df268bb9097@54.164.57.141:26656', './deploy/helm/sifnode-vault/template.values.yaml', './deploy/helm/sifnode-vault/generated.values.yaml']"
       end
 
     end
+  end
+
+  namespace :sifnode_vault do
+    desc "Deploy a new sifnode vault to a new cluster"
+    task :standalone, [:namespace, :image, :image_tag, :helm_values_file] do |t, args|
+        cmd = %Q{helm upgrade sifnode deploy/helm/sifnode-vault \
+          --install -n #{args[:namespace]} --create-namespace \
+          --set image.tag=#{args[:image_tag]} \
+          --set image.repository=#{args[:image]} \
+          -f #{args[:helm_values_file]} --kubeconfig=./kubeconfig
+        }
+        system(cmd) or exit 1
+    end
+
+    desc "Deploy the sifnode API to your cluster"
+    task :sifnode_api, [:chainnet, :namespace, :image, :image_tag, :node_host] do |t, args|
+        cmd = %Q{helm upgrade sifnode-api deploy/helm/sifnode-api \
+          --install -n #{args[:namespace]} --create-namespace \
+          --set sifnodeApi.args.chainnet=#{args[:chainnet]} \
+          --set sifnodeApi.args.nodeHost=#{args[:node_host]} \
+          --set image.tag=#{args[:image_tag]} \
+          --set image.repository=#{args[:image]} --kubeconfig=./kubeconfig
+        }
+        system(cmd) or exit 1
+      end
+
+    desc "Deploy a single network-aware sifnode on to your cluster"
+    task :peer_vault, [:namespace, :image, :image_tag, :helm_values_file, :peer_address] do |t, args|
+        cmd = %Q{helm upgrade sifnode deploy/helm/sifnode-vault \
+          --install -n #{args[:namespace]} --create-namespace \
+          --set sifnode.args.peerAddress=#{args[:peer_address]} \
+          --set image.tag=#{args[:image_tag]} \
+          --set image.repository=#{args[:image]} \
+          -f #{args[:helm_values_file]} --kubeconfig=./kubeconfig
+        }
+        system(cmd) or exit 1
+      end
   end
 
   desc "ebrelayer Operations"
@@ -1029,6 +1065,18 @@ metadata:
       puts "Use kubectl rollout to wait for pods to start."
       check_kubernetes_rollout_status = %Q{kubectl rollout status --kubeconfig=./kubeconfig deployment/#{args[:app_name]} -n #{args[:app_namespace]}}
       system(check_kubernetes_rollout_status) or exit 1
+    end
+  end
+
+  desc "Map Variables to Github Variables"
+  namespace :utilities do
+    desc "Map Variables to Github Variables"
+    task :github_variable_map, [:path,:app_env] do |t, args|
+        require 'yaml'
+        yaml_variables = YAML.load(File.read(args[:path]))
+        yaml_variables[args[:app_env]].each do |key, value|
+            %x{ echo "#{key}=#{value}" >> $GITHUB_ENV }
+        end
     end
   end
 

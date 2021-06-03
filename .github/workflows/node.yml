@@ -9,9 +9,6 @@ jobs:
       run:
         working-directory: ui
 
-    permissions:
-      packages: write
-
     steps:
       - name: Use Node.js
         uses: actions/setup-node@v2.1.4
