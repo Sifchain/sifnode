@@ -18,7 +18,7 @@ func GenerateQueryData(app *simapp.SimApp, ctx sdk.Context, name string, outList
 	keeper := app.DispensationKeeper
 	for i := 0; i < 10; i++ {
 		name := uuid.New().String()
-		distribution := types.NewDistribution(types.Airdrop, name)
+		distribution := types.NewDistribution(types.Airdrop, name, sdk.AccAddress{})
 		_ = keeper.SetDistribution(ctx, distribution)
 	}
 

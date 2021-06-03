@@ -15,6 +15,7 @@ var (
 
 type MsgDistribution struct {
 	Distributor      sdk.AccAddress   `json:"distributor"`
+	Runner           sdk.AccAddress   `json:"runner"`
 	DistributionType DistributionType `json:"distribution_type"`
 	Output           []bank.Output    `json:"output"`
 }

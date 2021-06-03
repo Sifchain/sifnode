@@ -138,11 +138,13 @@ func IsValidClaim(claimType string) (DistributionType, bool) {
 type Distribution struct {
 	DistributionType DistributionType `json:"distribution_type"`
 	DistributionName string           `json:"distribution_name"`
+	Runner           sdk.AccAddress   `json:"runner"`
 }
+
 type Distributions []Distribution
 
-func NewDistribution(t DistributionType, name string) Distribution {
-	return Distribution{DistributionType: t, DistributionName: name}
+func NewDistribution(t DistributionType, name string, runner sdk.AccAddress) Distribution {
+	return Distribution{DistributionType: t, DistributionName: name, Runner: runner}
 }
 
 func (d Distribution) Validate() bool {

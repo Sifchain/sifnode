@@ -107,8 +107,8 @@ func TestKeeper_CreateAndDistributeDrops_AddressError(t *testing.T) {
 func TestKeeper_VerifyDistribution(t *testing.T) {
 	app, ctx := test.CreateTestApp(false)
 	keeper := app.DispensationKeeper
-	err := keeper.VerifyAndSetDistribution(ctx, "AR1", types.Airdrop)
+	err := keeper.VerifyAndSetDistribution(ctx, "AR1", types.Airdrop, sdk.AccAddress{})
 	assert.NoError(t, err)
-	err = keeper.VerifyAndSetDistribution(ctx, "AR1", types.Airdrop)
+	err = keeper.VerifyAndSetDistribution(ctx, "AR1", types.Airdrop, sdk.AccAddress{})
 	assert.Error(t, err)
 }

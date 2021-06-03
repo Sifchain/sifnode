@@ -29,7 +29,7 @@ func NewHandler(k Keeper) sdk.Handler {
 func handleMsgCreateDistribution(ctx sdk.Context, keeper Keeper, msg MsgDistribution) (*sdk.Result, error) {
 	// Verify if distribution already exists
 	distributionName := fmt.Sprintf("%d_%s", ctx.BlockHeight(), msg.Distributor.String())
-	err := keeper.VerifyAndSetDistribution(ctx, distributionName, msg.DistributionType)
+	err := keeper.VerifyAndSetDistribution(ctx, distributionName, msg.DistributionType, msg.Runner)
 	if err != nil {
 		return nil, err
 	}

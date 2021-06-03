@@ -84,15 +84,17 @@ func (k Keeper) AccumulateDrops(ctx sdk.Context, addr sdk.AccAddress, amount sdk
 
 // Verify if the distribution is correct
 // The verification is the for distributionName + distributionType
-func (k Keeper) VerifyAndSetDistribution(ctx sdk.Context, distributionName string, distributionType types.DistributionType) error {
+func (k Keeper) VerifyAndSetDistribution(ctx sdk.Context, distributionName string,
+	distributionType types.DistributionType, runner sdk.AccAddress) error {
+
 	if k.ExistsDistribution(ctx, distributionName, distributionType) {
 		return errors.Wrapf(types.ErrDistribution, "airdrop with same name already exists : %s ", distributionName)
 	}
 	// Create distribution only if a distribution with the same name does not exist
-	err := k.SetDistribution(ctx, types.NewDistribution(distributionType, distributionName))
+	err := k.SetDistribution(ctx, types.NewDistribution(distributionType, distributionName, runner))
 	if err != nil {
 		return errors.Wrapf(types.ErrDistribution, "unable to set airdrop :  %s ", distributionName)
-
 	}
+
 	return nil
 }
