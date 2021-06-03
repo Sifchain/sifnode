@@ -34,8 +34,8 @@ func ExportGenesis(ctx sdk.Context, keeper keeper.Keeper) *types.GenesisState {
 	whiteList := keeper.GetAllWhiteList(ctx)
 	wl := make(map[uint32]*types.ValidatorWhiteList)
 
-	for i, entry := range whiteList {
-		wl[i] = &entry
+	for i, value := range whiteList {
+		wl[i] = &types.ValidatorWhiteList{WhiteList: value.WhiteList}
 	}
 	return &types.GenesisState{
 		AddressWhitelist: wl,

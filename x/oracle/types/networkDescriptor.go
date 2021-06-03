@@ -30,8 +30,11 @@ func GetFromPrefix(key []byte) (NetworkDescriptor, error) {
 	if len(key) == 5 {
 		var data uint32
 		bytebuff := bytes.NewBuffer(key[1:])
-		binary.Read(bytebuff, binary.BigEndian, &data)
-		return NewNetworkDescriptor(data), nil
+		err := binary.Read(bytebuff, binary.BigEndian, &data)
+		if err == nil {
+			return NewNetworkDescriptor(data), nil
+		}
+		return NetworkDescriptor{}, err
 	}
 
 	return NetworkDescriptor{}, errors.New("prefix is invalid")
