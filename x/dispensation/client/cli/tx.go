@@ -33,20 +33,19 @@ func GetTxCmd() *cobra.Command {
 func GetCmdCreate() *cobra.Command {
 	// Note ,the command only creates a airdrop for now .
 	cmd := &cobra.Command{
-		Use:   "distribute [DistributionName] [DistributionType] [Output JSON File Path]",
+		Use:   "distribute [DistributionType] [Output JSON File Path]",
 		Short: "Create new distribution",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx := client.GetClientContextFromCmd(cmd)
-			name := args[0]
-			distributionType, ok := types.IsValidDistribution(args[1])
+			distributionType, ok := types.GetDistributionType(args[0])
 			if !ok {
 				return fmt.Errorf("invalid distribution Type %s: Types supported [Airdrop/LiquidityMining/ValidatorSubsidy]", args[2])
 			}
-			outputList, err := dispensationUtils.ParseOutput(args[2])
+			outputList, err := dispensationUtils.ParseOutput(args[1])
 			if err != nil {
 				return err
 			}
-			msg := types.NewMsgCreateDistribution(clientCtx.GetFromAddress(), name, distributionType, outputList)
+			msg := types.NewMsgCreateDistribution(clientCtx.GetFromAddress(), distributionType, outputList)
 			if err := msg.ValidateBasic(); err != nil {
 				return err
 			}
@@ -65,7 +64,7 @@ func GetCmdClaim() *cobra.Command {
 		Short: "Create new Claim",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx := client.GetClientContextFromCmd(cmd)
-			claimType, ok := types.IsValidClaim(args[0])
+			claimType, ok := types.GetClaimType(args[0])
 			if !ok {
 				return fmt.Errorf("invalid Claim Type %s: Types supported [LiquidityMining/ValidatorSubsidy]", args[0])
 			}

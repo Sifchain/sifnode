@@ -14,7 +14,7 @@ service Msg {
 
 message MsgCreateDistribution {
   string distributor = 1;
-  Distribution distribution = 2;
+  DistributionType distribution_type = 2;
   repeated string output = 5
       [ (gogoproto.customtype) =
             "github.com/cosmos/cosmos-sdk/x/bank/types.Output" ];

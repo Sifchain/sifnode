@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"context"
+	"fmt"
 	dispensationUtils "github.com/Sifchain/sifnode/x/dispensation/utils"
 	"github.com/pkg/errors"
 
@@ -26,9 +27,9 @@ func (srv msgServer) CreateDistribution(ctx context.Context,
 	msg *types.MsgCreateDistribution) (*types.MsgCreateDistributionResponse, error) {
 
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
-
+	distributionName := fmt.Sprintf("%d_%s", sdkCtx.BlockHeight(), msg.Distributor)
 	// Verify if distribution already exists
-	err := srv.Keeper.VerifyAndSetDistribution(sdkCtx, msg.Distribution.DistributionName, msg.Distribution.DistributionType)
+	err := srv.Keeper.VerifyAndSetDistribution(sdkCtx, distributionName, msg.DistributionType)
 	if err != nil {
 		return nil, err
 	}
@@ -41,7 +42,7 @@ func (srv msgServer) CreateDistribution(ctx context.Context,
 	}
 
 	//Create drops and Store Historical Data
-	err = srv.Keeper.CreateDrops(sdkCtx, msg.Output, msg.Distribution.DistributionName, msg.Distribution.DistributionType)
+	err = srv.Keeper.CreateDrops(sdkCtx, msg.Output, distributionName, msg.DistributionType)
 	if err != nil {
 		return nil, err
 	}
@@ -50,8 +51,8 @@ func (srv msgServer) CreateDistribution(ctx context.Context,
 		sdk.NewEvent(
 			types.EventTypeDistributionStarted,
 			sdk.NewAttribute(types.AttributeKeyFromModuleAccount, types.GetDistributionModuleAddress().String()),
-			sdk.NewAttribute(types.AttributeKeyDistributionName, msg.Distribution.DistributionName),
-			sdk.NewAttribute(types.AttributeKeyDistributionType, msg.Distribution.DistributionType.String()),
+			sdk.NewAttribute(types.AttributeKeyDistributionName, distributionName),
+			sdk.NewAttribute(types.AttributeKeyDistributionType, msg.DistributionType.String()),
 		),
 	})
 

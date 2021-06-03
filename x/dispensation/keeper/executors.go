@@ -21,7 +21,7 @@ func (k Keeper) CreateDrops(ctx sdk.Context, output []banktypes.Output, name str
 			}
 			distributionRecord = distributionRecord.Add(*oldRecord)
 		}
-		distributionRecord.DistributionStatus = types.DistributionStatus_DISTRIBUTION_STATUS_PENDING
+		//distributionRecord.DistributionStatus = types.DistributionStatus_DISTRIBUTION_STATUS_PENDING
 		err := k.SetDistributionRecord(ctx, distributionRecord)
 		if err != nil {
 			return errors.Wrapf(types.ErrFailedOutputs, "error setting distibution record  : %s", distributionRecord.String())
@@ -37,23 +37,32 @@ func (k Keeper) DistributeDrops(ctx sdk.Context, height int64) error {
 	for _, record := range pendingRecords.DistributionRecords {
 		recipientAddress, err := sdk.AccAddressFromBech32(record.RecipientAddress)
 		if err != nil {
-			return errors.Wrapf(err, "Invalid address for distribute : %s", record.RecipientAddress)
+			err := errors.Wrapf(err, "Invalid address for distribute : %s", record.RecipientAddress)
+			ctx.Logger().Error(err.Error())
+			continue
 		}
 		err = k.GetBankKeeper().SendCoinsFromModuleToAccount(ctx, types.ModuleName, recipientAddress, record.Coins)
 		if err != nil {
-			return errors.Wrapf(types.ErrFailedOutputs, "for address  : %s", record.RecipientAddress)
+			err := errors.Wrapf(types.ErrFailedOutputs, "for address  : %s", record.RecipientAddress)
+			ctx.Logger().Error(err.Error())
+			err = k.ChangeRecordStatus(ctx, *record, height, types.DistributionStatus_DISTRIBUTION_STATUS_FAILED)
+			if err != nil {
+				panic(fmt.Sprintf("Unable to set Distribution Records to Failed : %s", record.String()))
+			}
+			continue
 		}
-		record.DistributionStatus = types.DistributionStatus_DISTRIBUTION_STATUS_COMPLETED
-		record.DistributionCompletedHeight = height
-		// Setting to completed prefix
-		err = k.SetDistributionRecord(ctx, *record)
+
+		err = k.ChangeRecordStatus(ctx, *record, height, types.DistributionStatus_DISTRIBUTION_STATUS_COMPLETED)
 		if err != nil {
-			return errors.Wrapf(types.ErrDistribution, "error setting distibution record  : %s", record.String())
-		}
-		// Deleting from Pending prefix
-		err = k.DeleteDistributionRecord(ctx, record.DistributionName, record.RecipientAddress, types.DistributionStatus_DISTRIBUTION_STATUS_PENDING, record.DistributionType) // Delete the record in the pending prefix so the iteration is cheaper.
-		if err != nil {
-			return errors.Wrapf(types.ErrDistribution, "error deleting pending distibution record  : %s", record.String())
+			err := errors.Wrapf(types.ErrFailedOutputs, "error setting distibution record  : %s", record.String())
+			ctx.Logger().Error(err.Error())
+			// If the SetDistributionRecord returns error , that would mean the required amount was transferred to the user , but the record was not set to completed .
+			// In this case we try to take the funds back from the user , and attempt the withdrawal later .
+			err = k.GetBankKeeper().SendCoinsFromAccountToModule(ctx, recipientAddress, types.ModuleName, record.Coins)
+			if err != nil {
+				panic(fmt.Sprintf("Unable to set Distribution Records to completed : %s", record.String()))
+			}
+			continue
 		}
 		// Use record details to delete associated claim
 		// The claim should always be locked at this point in time .

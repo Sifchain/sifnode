@@ -128,7 +128,7 @@ func GetCmdClaimsByType(queryRoute string) *cobra.Command {
 			if err != nil {
 				return err
 			}
-			claimType, ok := types.IsValidClaim(args[0])
+			claimType, ok := types.GetClaimType(args[0])
 			if !ok {
 				return fmt.Errorf("invalid Claim Type %s: Types supported [LiquidityMining/ValidatorSubsidy]", args[0])
 			}

@@ -62,12 +62,14 @@ func GetDistributionStatus(status string) DistributionStatus {
 		return DistributionStatus_DISTRIBUTION_STATUS_COMPLETED
 	case "Pending":
 		return DistributionStatus_DISTRIBUTION_STATUS_PENDING
+	case "Failed":
+		return DistributionStatus_DISTRIBUTION_STATUS_FAILED
 	default:
 		return DistributionStatus_DISTRIBUTION_STATUS_UNSPECIFIED
 	}
 }
 
-func IsValidClaim(claimType string) (DistributionType, bool) {
+func GetClaimType(claimType string) (DistributionType, bool) {
 	switch claimType {
 	case "LiquidityMining":
 		return DistributionType_DISTRIBUTION_TYPE_LIQUIDITY_MINING, true
@@ -78,7 +80,7 @@ func IsValidClaim(claimType string) (DistributionType, bool) {
 	}
 }
 
-func IsValidDistribution(distributionType string) (DistributionType, bool) {
+func GetDistributionType(distributionType string) (DistributionType, bool) {
 	switch distributionType {
 	case "Airdrop":
 		return DistributionType_DISTRIBUTION_TYPE_AIRDROP, true
@@ -88,5 +90,28 @@ func IsValidDistribution(distributionType string) (DistributionType, bool) {
 		return DistributionType_DISTRIBUTION_TYPE_VALIDATOR_SUBSIDY, true
 	default:
 		return DistributionType_DISTRIBUTION_TYPE_UNSPECIFIED, false
+	}
+}
+func IsValidDistribution(distributionType string) (DistributionType, bool) {
+	switch distributionType {
+	case "DISTRIBUTION_TYPE_AIRDROP":
+		return DistributionType_DISTRIBUTION_TYPE_AIRDROP, true
+	case "DISTRIBUTION_TYPE_LIQUIDITY_MINING":
+		return DistributionType_DISTRIBUTION_TYPE_LIQUIDITY_MINING, true
+	case "DISTRIBUTION_TYPE_VALIDATOR_SUBSIDY":
+		return DistributionType_DISTRIBUTION_TYPE_VALIDATOR_SUBSIDY, true
+	default:
+		return DistributionType_DISTRIBUTION_TYPE_UNSPECIFIED, false
+	}
+}
+
+func IsValidClaim(claimType string) (DistributionType, bool) {
+	switch claimType {
+	case "DISTRIBUTION_TYPE_LIQUIDITY_MINING":
+		return DistributionType_DISTRIBUTION_TYPE_LIQUIDITY_MINING, true
+	case "DISTRIBUTION_TYPE_VALIDATOR_SUBSIDY":
+		return DistributionType_DISTRIBUTION_TYPE_VALIDATOR_SUBSIDY, true
+	default:
+		return 0, false
 	}
 }

@@ -7,15 +7,12 @@ import (
 	"github.com/pkg/errors"
 )
 
-func NewMsgCreateDistribution(distributor sdk.AccAddress, DistributionName string, DistributionType DistributionType, output []types.Output) MsgCreateDistribution {
+func NewMsgCreateDistribution(distributor sdk.AccAddress, DistributionType DistributionType, output []types.Output) MsgCreateDistribution {
 
 	return MsgCreateDistribution{
-		Distributor: distributor.String(),
-		Distribution: &Distribution{
-			DistributionName: DistributionName,
-			DistributionType: DistributionType,
-		},
-		Output: output,
+		Distributor:      distributor.String(),
+		DistributionType: DistributionType,
+		Output:           output,
 	}
 }
 
@@ -28,13 +25,26 @@ func (m MsgCreateDistribution) Type() string {
 }
 
 func (m MsgCreateDistribution) ValidateBasic() error {
-	if m.Distribution.DistributionName == "" {
-		return sdkerrors.Wrap(ErrInvalid, "Name cannot be empty")
+	// Validate distribution Type
+	_, ok := IsValidDistribution(m.DistributionType.String())
+	if !ok {
+		return sdkerrors.Wrap(ErrInvalid, "Invalid Distribution Type")
 	}
+	// Validate length of output is not 0
 	if len(m.Output) == 0 {
 		return errors.Wrapf(ErrInvalid, "Outputlist cannot be empty")
 	}
+	// Validator distributor
+	_, err := sdk.AccAddressFromBech32(m.Distributor)
+	if err != nil {
+		return errors.Wrapf(ErrInvalid, "Invalid Distributor Address")
+	}
+	// Validate individual out records
 	for _, out := range m.Output {
+		_, err := sdk.AccAddressFromBech32(out.Address)
+		if err != nil {
+			return errors.Wrapf(ErrInvalid, "Invalid Recipient Address")
+		}
 		if !out.Coins.IsValid() {
 			return errors.Wrapf(ErrInvalid, "Invalid Coins")
 		}
@@ -79,6 +89,10 @@ func (m MsgCreateUserClaim) ValidateBasic() error {
 	_, err := sdk.AccAddressFromBech32(m.UserClaimAddress)
 	if err != nil {
 		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, m.UserClaimAddress)
+	}
+	_, ok := IsValidClaim(m.UserClaimType.String())
+	if !ok {
+		return sdkerrors.Wrap(ErrInvalid, m.UserClaimType.String())
 	}
 	return nil
 }

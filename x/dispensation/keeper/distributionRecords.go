@@ -46,6 +46,8 @@ func (k Keeper) GetDistributionRecordsIterator(ctx sdk.Context, status types.Dis
 		return sdk.KVStorePrefixIterator(store, types.DistributionRecordPrefixPending)
 	case types.DistributionStatus_DISTRIBUTION_STATUS_COMPLETED:
 		return sdk.KVStorePrefixIterator(store, types.DistributionRecordPrefixCompleted)
+	case types.DistributionStatus_DISTRIBUTION_STATUS_FAILED:
+		return sdk.KVStorePrefixIterator(store, types.DistributionRecordPrefixFailed)
 	default:
 		return nil
 	}
@@ -134,6 +136,21 @@ func (k Keeper) GetRecordsForRecipient(ctx sdk.Context, recipient string) *types
 			res.DistributionRecords = append(res.DistributionRecords, &dr)
 		}
 	}
+	iterator = k.GetDistributionRecordsIterator(ctx, types.DistributionStatus_DISTRIBUTION_STATUS_FAILED)
+	defer func(iterator sdk.Iterator) {
+		err := iterator.Close()
+		if err != nil {
+			panic("Failed to close iterator")
+		}
+	}(iterator)
+	for ; iterator.Valid(); iterator.Next() {
+		var dr types.DistributionRecord
+		bytesValue := iterator.Value()
+		k.cdc.MustUnmarshalBinaryBare(bytesValue, &dr)
+		if dr.RecipientAddress == recipient {
+			res.DistributionRecords = append(res.DistributionRecords, &dr)
+		}
+	}
 	return &res
 }
 
@@ -182,6 +199,13 @@ func (k Keeper) GetRecords(ctx sdk.Context) *types.DistributionRecords {
 		k.cdc.MustUnmarshalBinaryBare(bytesValue, &dr)
 		res.DistributionRecords = append(res.DistributionRecords, &dr)
 	}
+	iterator = k.GetDistributionRecordsIterator(ctx, types.DistributionStatus_DISTRIBUTION_STATUS_FAILED)
+	for ; iterator.Valid(); iterator.Next() {
+		var dr types.DistributionRecord
+		bytesValue := iterator.Value()
+		k.cdc.MustUnmarshalBinaryBare(bytesValue, &dr)
+		res.DistributionRecords = append(res.DistributionRecords, &dr)
+	}
 	return &res
 }
 
@@ -212,5 +236,31 @@ func (k Keeper) GetRecordsForName(ctx sdk.Context, name string) *types.Distribut
 			res.DistributionRecords = append(res.DistributionRecords, &dr)
 		}
 	}
+	iterator = k.GetDistributionRecordsIterator(ctx, types.DistributionStatus_DISTRIBUTION_STATUS_FAILED)
+	for ; iterator.Valid(); iterator.Next() {
+		var dr types.DistributionRecord
+		bytesValue := iterator.Value()
+		k.cdc.MustUnmarshalBinaryBare(bytesValue, &dr)
+		if dr.DistributionName == name {
+			res.DistributionRecords = append(res.DistributionRecords, &dr)
+		}
+	}
 	return &res
+}
+
+func (k Keeper) ChangeRecordStatus(ctx sdk.Context, dr types.DistributionRecord, height int64, newStatus types.DistributionStatus) error {
+	oldStatus := dr.DistributionStatus
+	dr.DistributionStatus = newStatus
+	dr.DistributionCompletedHeight = height
+	// Setting to completed prefix
+	err := k.SetDistributionRecord(ctx, dr)
+	if err != nil {
+		return errors.Wrapf(types.ErrDistribution, "error setting distribution record  : %s", dr.String())
+	}
+	// Deleting from old prefix
+	err = k.DeleteDistributionRecord(ctx, dr.DistributionName, dr.RecipientAddress, oldStatus, dr.DistributionType) // Delete the record in the pending prefix so the iteration is cheaper.
+	if err != nil {
+		return errors.Wrapf(types.ErrDistribution, "error deleting pending distribution record  : %s", dr.String())
+	}
+	return nil
 }

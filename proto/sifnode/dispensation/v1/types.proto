@@ -27,10 +27,12 @@ enum DistributionType {
 enum DistributionStatus {
   // Unspecified
   DISTRIBUTION_STATUS_UNSPECIFIED = 0;
-  // Pending claim status
+  // Pending status
   DISTRIBUTION_STATUS_PENDING = 1;
-  // Completed claim status
+  // Completed status
   DISTRIBUTION_STATUS_COMPLETED = 2;
+  // Failed status
+  DISTRIBUTION_STATUS_FAILED = 3;
 }
 
 message DistributionRecord {
