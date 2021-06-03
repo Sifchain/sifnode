@@ -27,7 +27,7 @@ func NewHandler(k Keeper) sdk.Handler {
 
 //handleMsgRunDistribution 
 func handleMsgRunDistribution(ctx sdk.Context, keeper Keeper, msg MsgRunDistribution) (*sdk.Result, error) {
-	_ = k.DistributeDrops(ctx, ctx.BlockHeight())
+	_ = k.DistributeDrops(ctx, ctx.BlockHeight(), msg.DistributionName)
 
 	ctx.EventManager().EmitEvents(sdk.Events{
 		sdk.NewEvent(

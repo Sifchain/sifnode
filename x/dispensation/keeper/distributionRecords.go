@@ -187,3 +187,22 @@ func (k Keeper) GetPendingRecordsLimited(ctx sdk.Context, limit int) types.Distr
 	}
 	return res
 }
+
+func (k Keeper) GetRecordsForNamePendingLimited(ctx sdk.Context, name string, limit int) types.DistributionRecords {
+	var res types.DistributionRecords
+	iterator := k.GetDistributionRecordsIterator(ctx)
+	count := 0
+	defer iterator.Close()
+	for ; iterator.Valid(); iterator.Next() {
+		var dr types.DistributionRecord
+		bytesValue := iterator.Value()
+		k.cdc.MustUnmarshalBinaryBare(bytesValue, &dr)
+		if dr.DistributionName == name && dr.DistributionStatus == types.Pending {
+			res = append(res, dr)
+		}
+		if count == limit {
+			break
+		}
+	}
+	return res
+}

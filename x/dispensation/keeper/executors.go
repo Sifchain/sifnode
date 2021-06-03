@@ -34,9 +34,9 @@ func (k Keeper) CreateDrops(ctx sdk.Context, output []bank.Output, name string, 
 
 // DistributeDrops is called at the beginning of every block .
 // It checks if any pending records are present , if there are it completes the top 10
-func (k Keeper) DistributeDrops(ctx sdk.Context, height int64) error {
+func (k Keeper) DistributeDrops(ctx sdk.Context, height int64, DistributionName string) error {
 	// TODO replace 10 with a variable declared in genesis or a constant in keys.go.
-	pendingRecords := k.GetPendingRecordsLimited(ctx, 10)
+	pendingRecords := k.GetRecordsForNamePendingLimited(ctx, DistributionName, 10)
 	for _, record := range pendingRecords {
 		err := k.GetSupplyKeeper().SendCoinsFromModuleToAccount(ctx, types.ModuleName, record.RecipientAddress, record.Coins)
 		if err != nil {
