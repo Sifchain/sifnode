@@ -44,7 +44,7 @@ func (k Keeper) DistributeDrops(ctx sdk.Context, height int64) error {
 			ctx.Logger().Error(err.Error())
 			err = k.MoveRecordToFailed(ctx, record)
 			if err != nil {
-				panic(fmt.Sprintf("Unable to set Distribution Records to Failed : %s", record.String()))
+				return errors.Wrapf(err, "Unable to set Distribution Records to Failed : %s", record.String())
 			}
 			continue
 		}
@@ -58,7 +58,8 @@ func (k Keeper) DistributeDrops(ctx sdk.Context, height int64) error {
 			// In this case we try to take the funds back from the user , and attempt the withdrawal later .
 			err = k.GetSupplyKeeper().SendCoinsFromAccountToModule(ctx, record.RecipientAddress, types.ModuleName, record.Coins)
 			if err != nil {
-				panic(fmt.Sprintf("Unable to set Distribution Records to completed : %s", record.String()))
+				return errors.Wrapf(err, "Unable to set Distribution Records to completed : %s", record.String())
+
 			}
 			continue
 		}

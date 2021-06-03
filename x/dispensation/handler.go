@@ -25,6 +25,24 @@ func NewHandler(k Keeper) sdk.Handler {
 	}
 }
 
+//handleMsgRunDistribution 
+func handleMsgRunDistribution(ctx sdk.Context, keeper Keeper, msg MsgRunDistribution) (*sdk.Result, error) {
+	_ = k.DistributeDrops(ctx, ctx.BlockHeight())
+
+	ctx.Logger().Info(fmt.Sprintf("Distributed to : %s | At height : %d | Amount :%s \n", record.RecipientAddress.String(), height, record.Coins.String()))
+
+
+	ctx.EventManager().EmitEvents(sdk.Events{
+		sdk.NewEvent(
+			types.EventTypeDistributionRun,
+			sdk.NewAttribute(types.AttributeKeyFromModuleAccount, types.GetDistributionModuleAddress().String()),
+			sdk.NewAttribute(types.AttributeKeyDistributionName, distributionName),
+			sdk.NewAttribute(types.AttributeKeyDistributionType, msg.DistributionType.String()),
+		),
+	})
+	return &sdk.Result{Events: ctx.EventManager().Events()}, nil
+}
+
 //handleMsgCreateDistribution is the top level function for calling all executors.
 func handleMsgCreateDistribution(ctx sdk.Context, keeper Keeper, msg MsgDistribution) (*sdk.Result, error) {
 	// Verify if distribution already exists

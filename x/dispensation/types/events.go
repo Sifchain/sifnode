@@ -5,6 +5,7 @@ package types
 const (
 	AttributeValueCategory        = ModuleName
 	EventTypeDistributionStarted  = "distribution_started"
+	EventTypeDistributionRun  	  = "distribution_run"
 	AttributeKeyFromModuleAccount = "module_account"
 	AttributeKeyDistributionName  = "distribution_name"
 	AttributeKeyDistributionType  = "distribution_type"
