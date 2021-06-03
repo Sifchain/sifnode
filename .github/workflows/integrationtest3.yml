@@ -1,4 +1,4 @@
-name: Run integration tests 2 for any chain (peg)
+name: Run integration tests 3 for test chain (clp)
 on:
   push:
     paths-ignore:
@@ -22,4 +22,4 @@ jobs:
           source $HOME/.bash_profile
           . test/integration/vagrantenv.sh
           export LOG_LEVEL=DEBUG
-          bash test/integration/execute_integration_tests_against_any_chain.sh
+          bash test/integration/execute_integration_tests_against_test_chain_clp.sh

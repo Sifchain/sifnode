@@ -73,16 +73,3 @@ func (k Keeper) GetClaimsByType(ctx sdk.Context, userClaimType types.Distributio
 	}
 	return res
 }
-
-func (k Keeper) LockClaim(ctx sdk.Context, recipient string, userClaimType types.DistributionType) error {
-	claim, err := k.GetClaim(ctx, recipient, userClaimType)
-	if err != nil {
-		return err
-	}
-	claim.Locked = true
-	err = k.SetClaim(ctx, claim)
-	if err != nil {
-		return err
-	}
-	return nil
-}
