@@ -234,10 +234,8 @@ func TestLockFail(t *testing.T) {
 	ctx, _, _, _, handler, _, _ := CreateTestHandler(t, 0.7, []int64{2, 7, 1})
 
 	addAddress, err := sdk.AccAddressFromBech32(UnregisteredValidatorAddress)
+	require.NoError(t, err)
 	valAddress := sdk.ValAddress(addAddress)
-	fmt.Printf("message is address %v \n", valAddress.String())
-
-	// require.Error(t, err)
 
 	//Initial message
 	normalCreateMsg := types.CreateTestEthMsg(t, valAddress, types.ClaimType_CLAIM_TYPE_LOCK)
@@ -253,6 +251,8 @@ func TestBurnFail(t *testing.T) {
 	//Setup
 	ctx, _, _, _, handler, _, _ := CreateTestHandler(t, 0.7, []int64{2, 7, 1})
 	addAddress, err := sdk.AccAddressFromBech32(UnregisteredValidatorAddress)
+	require.NoError(t, err)
+
 	valAddress := sdk.ValAddress(addAddress)
 	//Initial message
 	normalCreateMsg := types.CreateTestEthMsg(t, valAddress, types.ClaimType_CLAIM_TYPE_BURN)

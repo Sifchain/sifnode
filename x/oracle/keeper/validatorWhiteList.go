@@ -1,10 +1,8 @@
 package keeper
 
 import (
-	sdk "github.com/cosmos/cosmos-sdk/types"
-	protobuftypes "github.com/gogo/protobuf/types"
-
 	"github.com/Sifchain/sifnode/x/oracle/types"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 // GetAllWhiteList set the validator list for a network.
@@ -13,11 +11,13 @@ func (k Keeper) GetAllWhiteList(ctx sdk.Context) map[uint32]types.ValidatorWhite
 	store := ctx.KVStore(k.storeKey)
 	iterator := sdk.KVStorePrefixIterator(store, types.WhiteListValidatorPrefix)
 	defer iterator.Close()
-	var networkID protobuftypes.UInt32Value
 	for ; iterator.Valid(); iterator.Next() {
-		bytesValue := iterator.Key()
-		k.cdc.MustUnmarshalBinaryBare(bytesValue, &networkID)
-		result[networkID.Value] = k.GetOracleWhiteList(ctx, types.NewNetworkDescriptor(networkID.Value))
+		networkDescriptor, err := types.GetFromPrefix(iterator.Key())
+		if err != nil {
+			panic(err.Error())
+		}
+
+		result[networkDescriptor.NetworkID] = k.GetOracleWhiteList(ctx, networkDescriptor)
 	}
 
 	return result

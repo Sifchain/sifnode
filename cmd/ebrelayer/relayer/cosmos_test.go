@@ -17,6 +17,7 @@ const (
 	tmProvider      = "Node"
 	ethProvider     = "ws://127.0.0.1:7545/"
 	contractAddress = "0x00"
+	networkID       = uint32(1)
 )
 
 func TestNewCosmosSub(t *testing.T) {
@@ -29,7 +30,7 @@ func TestNewCosmosSub(t *testing.T) {
 
 	sugaredLogger := logger.Sugar()
 	registryContractAddress := common.HexToAddress(contractAddress)
-	sub := NewCosmosSub(tmProvider, ethProvider, registryContractAddress,
+	sub := NewCosmosSub(networkID, tmProvider, ethProvider, registryContractAddress,
 		db, sugaredLogger)
 	require.NotEqual(t, sub, nil)
 }

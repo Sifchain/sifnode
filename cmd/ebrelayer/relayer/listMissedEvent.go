@@ -16,6 +16,7 @@ import (
 
 // ListMissedCosmosEvent defines a Cosmos listener that relays events to Ethereum and Cosmos
 type ListMissedCosmosEvent struct {
+	NetworkID               uint32
 	TmProvider              string
 	EthProvider             string
 	RegistryContractAddress common.Address
@@ -25,9 +26,10 @@ type ListMissedCosmosEvent struct {
 }
 
 // NewListMissedCosmosEvent initializes a new CosmosSub
-func NewListMissedCosmosEvent(tmProvider, ethProvider string, registryContractAddress common.Address,
+func NewListMissedCosmosEvent(networkID uint32, tmProvider, ethProvider string, registryContractAddress common.Address,
 	ethereumAddress common.Address, days int64, sugaredLogger *zap.SugaredLogger) ListMissedCosmosEvent {
 	return ListMissedCosmosEvent{
+		NetworkID:               networkID,
 		TmProvider:              tmProvider,
 		EthProvider:             ethProvider,
 		RegistryContractAddress: registryContractAddress,
@@ -111,13 +113,13 @@ func (list ListMissedCosmosEvent) ListMissedCosmosEvent() {
 				switch claimType {
 				case types.MsgBurn, types.MsgLock:
 
-					cosmosMsg, err := txs.BurnLockEventToCosmosMsg(claimType, event.GetAttributes(), list.SugaredLogger)
+					cosmosMsg, networkID, err := txs.BurnLockEventToCosmosMsg(claimType, event.GetAttributes(), list.SugaredLogger)
 					if err != nil {
 						log.Println(err.Error())
 						continue
 					}
 
-					if !MessageProcessed(cosmosMsg, ProphecyClaims) {
+					if networkID == list.NetworkID && !MessageProcessed(cosmosMsg, ProphecyClaims) {
 						log.Printf("missed cosmos event: %s\n", cosmosMsg.String())
 					}
 				}

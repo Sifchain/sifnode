@@ -18,7 +18,7 @@ import (
 const (
 	// EthereumPrivateKey config field which holds the user's private key
 	EthereumPrivateKey        = "ETHEREUM_PRIVATE_KEY"
-	TestEthereumChainID       = 3
+	TestEthereumChainID       = 1
 	TestBridgeContractAddress = "0xd88159878c50e4B2b03BB701DD436e4A98D6fBe2"
 	TestLockClaimType         = 1
 	TestBurnClaimType         = 2
@@ -103,7 +103,7 @@ func CreateTestCosmosMsg(t *testing.T, claimType types.Event) types.CosmosMsg {
 
 // CreateCosmosMsgAttributes creates expected attributes for a MsgBurn/MsgLock for testing purposes
 func CreateCosmosMsgAttributes(t *testing.T, claimType types.Event) []abci.EventAttribute {
-	attributes := [6]abci.EventAttribute{}
+	attributes := [7]abci.EventAttribute{}
 
 	// (key, value) pairing for "cosmos_sender" key
 	pairCosmosSender := abci.EventAttribute{
@@ -147,6 +147,12 @@ func CreateCosmosMsgAttributes(t *testing.T, claimType types.Event) []abci.Event
 		Value: []byte(common.HexToAddress(TestEthTokenAddress).Hex()),
 	}
 
+	// (key, value) pairing for "ethereum_chain_id" key
+	pairEthereumChainID := abci.EventAttribute{
+		Key:   []byte("ethereum_chain_id"),
+		Value: []byte(strconv.Itoa(TestEthereumChainID)),
+	}
+
 	// Assign pairs to attributes array
 	attributes[0] = pairCosmosSender
 	attributes[1] = pairCosmosSenderSequence
@@ -154,7 +160,7 @@ func CreateCosmosMsgAttributes(t *testing.T, claimType types.Event) []abci.Event
 	attributes[3] = pairTokenContract
 	attributes[4] = pairSymbol
 	attributes[5] = pairAmount
-
+	attributes[6] = pairEthereumChainID
 	return attributes[:]
 }
 
