@@ -14,14 +14,25 @@ type DistributionStatus int64
 const Pending DistributionStatus = 1
 const Completed DistributionStatus = 2
 
-func (d DistributionStatus) String() string {
-	switch d {
+func (ds DistributionStatus) String() string {
+	switch ds {
 	case Pending:
 		return "Pending"
 	case Completed:
 		return "Completed"
 	default:
 		return "All"
+	}
+}
+
+func IsValidStatus(s string) (DistributionStatus, bool) {
+	switch s {
+	case "Pending":
+		return Pending, true
+	case "Completed":
+		return Completed, true
+	default:
+		return -1, false
 	}
 }
 
@@ -40,6 +51,13 @@ type DistributionRecords []DistributionRecord
 
 func NewDistributionRecord(distributionName string, distributionType DistributionType, recipientAddress sdk.AccAddress, coins sdk.Coins, start int64, end int64) DistributionRecord {
 	return DistributionRecord{DistributionName: distributionName, DistributionType: distributionType, RecipientAddress: recipientAddress, Coins: coins, DistributionStartHeight: start, DistributionCompletedHeight: end}
+}
+
+func (dr DistributionRecord) DoesClaimExist() bool {
+	if dr.DistributionType == LiquidityMining || dr.DistributionType == ValidatorSubsidy {
+		return true
+	}
+	return false
 }
 
 func (dr DistributionRecord) Validate() bool {
@@ -77,8 +95,8 @@ const Airdrop DistributionType = 1
 const LiquidityMining DistributionType = 2
 const ValidatorSubsidy DistributionType = 3
 
-func (d DistributionType) String() string {
-	switch d {
+func (dt DistributionType) String() string {
+	switch dt {
 	case Airdrop:
 		return "Airdrop"
 	case LiquidityMining:
@@ -90,7 +108,7 @@ func (d DistributionType) String() string {
 	}
 }
 
-func IsValidDistribution(distributionType string) (DistributionType, bool) {
+func IsValidDistributionType(distributionType string) (DistributionType, bool) {
 	switch distributionType {
 	case "Airdrop":
 		return Airdrop, true
@@ -125,26 +143,25 @@ func NewDistribution(t DistributionType, name string) Distribution {
 	return Distribution{DistributionType: t, DistributionName: name}
 }
 
-func (ar Distribution) Validate() bool {
-	if ar.DistributionName == "" {
+func (d Distribution) Validate() bool {
+	if d.DistributionName == "" {
 		return false
 	}
 	return true
 }
 
-func (ar Distribution) String() string {
-	return strings.TrimSpace(fmt.Sprintf(`DistributionName: %s DistributionType :%s`, ar.DistributionName, ar.DistributionType.String()))
+func (d Distribution) String() string {
+	return strings.TrimSpace(fmt.Sprintf(`DistributionName: %s DistributionType :%s`, d.DistributionName, d.DistributionType.String()))
 }
 
 type UserClaim struct {
 	UserAddress   sdk.AccAddress   `json:"user_address"`
 	UserClaimType DistributionType `json:"user_claim_type"`
 	UserClaimTime time.Time        `json:"user_claim_time"`
-	Locked        bool             `json:"locked"`
 }
 
 func NewUserClaim(userAddress sdk.AccAddress, userClaimType DistributionType, time time.Time) UserClaim {
-	return UserClaim{UserAddress: userAddress, UserClaimType: userClaimType, Locked: false, UserClaimTime: time}
+	return UserClaim{UserAddress: userAddress, UserClaimType: userClaimType, UserClaimTime: time}
 }
 
 func (uc UserClaim) Validate() bool {
@@ -152,10 +169,6 @@ func (uc UserClaim) Validate() bool {
 		return false
 	}
 	return true
-}
-
-func (uc UserClaim) IsLocked() bool {
-	return uc.Locked
 }
 
 func (uc UserClaim) String() string {

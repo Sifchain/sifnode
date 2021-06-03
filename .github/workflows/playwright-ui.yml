@@ -4,9 +4,6 @@ on: [pull_request]
 
 jobs:
   test:
-    permissions:
-      packages: write
-
     runs-on: ubuntu-latest
     defaults:
       run:
