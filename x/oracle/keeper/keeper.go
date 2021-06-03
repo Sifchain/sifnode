@@ -77,23 +77,6 @@ func (k Keeper) setProphecy(ctx sdk.Context, prophecy types.Prophecy) {
 	store.Set([]byte(prophecy.ID), k.cdc.MustMarshalBinaryBare(&serializedProphecy))
 }
 
-// func (k Keeper) EnsureAddressIsInWhitelist(ctx sdk.Context, validatorAddress string) error {
-// 	// Check if claim from whitelist validators
-// 	whiteList := k.GetOracleWhiteList(ctx)
-// 	for _, address := range whiteList {
-// 		if address.String() == validatorAddress {
-// 			return nil
-// 		}
-// 	}
-
-// 	k.Logger(ctx).Error(
-// 		"sifnode oracle keeper ProcessClaim validator not in whitelist",
-// 		"address", validatorAddress,
-// 		"whitelist", whiteList)
-
-// 	return types.ErrValidatorNotInWhiteList
-// }
-
 // ProcessClaim handle claim
 func (k Keeper) ProcessClaim(ctx sdk.Context, networkID uint32, claim types.Claim) (types.Status, error) {
 	logger := k.Logger(ctx)
