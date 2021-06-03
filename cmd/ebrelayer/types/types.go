@@ -163,11 +163,14 @@ const (
 	EthereumSender
 	// EthereumSenderNonce is ethereum sender nonce
 	EthereumSenderNonce
+	// use EthereumChainID as network descriptor for now
+	// TODO will rename it after attribute finalized in sinfode side
+	NetworkDescriptor
 )
 
 // String returns the event type as a string
 func (d CosmosMsgAttributeKey) String() string {
-	return [...]string{"unsupported", "cosmos_sender", "cosmos_sender_sequence", "ethereum_receiver", "amount", "symbol", "ethereum_sender", "ethereum_sender_nonce"}[d]
+	return [...]string{"unsupported", "cosmos_sender", "cosmos_sender_sequence", "ethereum_receiver", "amount", "symbol", "ethereum_sender", "ethereum_sender_nonce", "ethereum_chain_id"}[d]
 }
 
 // EthereumBridgeClaim for store the EventTypeCreateClaim from cosmos

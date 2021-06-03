@@ -110,7 +110,6 @@ func TestDuplicateMsgs(t *testing.T) {
 func TestMintSuccess(t *testing.T) {
 	//Setup
 	ctx, _, bankKeeper, _, _, validatorAddresses, handler := CreateTestHandler(t, 0.7, []int64{2, 7, 1})
-
 	valAddressVal1Pow2 := validatorAddresses[0]
 	valAddressVal2Pow7 := validatorAddresses[1]
 	valAddressVal3Pow1 := validatorAddresses[2]
@@ -243,10 +242,6 @@ func TestBurnFail(t *testing.T) {
 	require.Error(t, err)
 	require.Nil(t, res)
 	require.Equal(t, err.Error(), "validator must be in whitelist")
-}
-
-func TestBurnEthFail(t *testing.T) {
-
 }
 
 func TestBurnEthSuccess(t *testing.T) {
@@ -415,12 +410,12 @@ func TestRescueCethMsg(t *testing.T) {
 
 	cosmosSender, err := sdk.AccAddressFromBech32(types.TestAddress)
 	require.NoError(t, err)
+	_, _ = bankKeeper.AddCoins(ctx, cosmosSender, coins)
 
 	_, err = handler(ctx, testRescueCethMsg)
 	require.Error(t, err)
 
 	oracleKeeper.SetAdminAccount(ctx, cosmosSender)
-	_, _ = bankKeeper.AddCoins(ctx, cosmosSender, coins)
 
 	res, err := handler(ctx, testRescueCethMsg)
 	require.NoError(t, err)

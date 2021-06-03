@@ -129,11 +129,13 @@ func CreateTestKeepers(t *testing.T, consensusNeeded float64, validatorAmounts [
 	supplyKeeper.SetModuleAccount(ctx, notBondedPool)
 
 	// Setup validators
-	valAddrs := make([]sdk.ValAddress, len(validatorAmounts))
+	valAddrs := types.NewValidatorWhitelist()
+	valAddrVec := make([]sdk.ValAddress, 0)
 	for i, amount := range validatorAmounts {
 		valPubKey := PKs[i]
 		valAddr := sdk.ValAddress(valPubKey.Address().Bytes())
-		valAddrs[i] = valAddr
+		valAddrVec = append(valAddrVec, valAddr)
+		valAddrs.UpdateValidator(valAddr, uint32(validatorAmounts[i]))
 		valTokens := sdk.TokensFromConsensusPower(amount)
 		// test how the validator is set from a purely unbonbed pool
 		validator := stakingtypes.NewValidator(valAddr, valPubKey, stakingtypes.Description{})
@@ -143,8 +145,9 @@ func CreateTestKeepers(t *testing.T, consensusNeeded float64, validatorAmounts [
 		stakingKeeper.ApplyAndReturnValidatorSetUpdates(ctx)
 	}
 
-	oracleKeeper.SetOracleWhiteList(ctx, valAddrs)
-	return ctx, oracleKeeper, bankKeeper, supplyKeeper, accountKeeper, valAddrs, keyEthBridge
+	networkDescriptor := types.NewNetworkDescriptor(1)
+	oracleKeeper.SetOracleWhiteList(ctx, networkDescriptor, valAddrs)
+	return ctx, oracleKeeper, bankKeeper, supplyKeeper, accountKeeper, valAddrVec, keyEthBridge
 }
 
 // nolint: unparam

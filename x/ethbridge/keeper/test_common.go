@@ -39,11 +39,12 @@ const (
 	AlternateTestString        = "{value: 7}"
 	AnotherAlternateTestString = "{value: 9}"
 	TestCethReceiverAddress    = "cosmos1gn8409qq9hnrxde37kuxwx5hrxpfpv8426szuv"
+	NetworkID                  = 1
 )
 
 // CreateTestKeepers greates an Mock App, OracleKeeper, bankKeeper and ValidatorAddresses to be used for test input
 func CreateTestKeepers(t *testing.T, consensusNeeded float64, validatorAmounts []int64, extraMaccPerm string) (
-	sdk.Context, Keeper, bank.Keeper, supply.Keeper, auth.AccountKeeper, []sdk.ValAddress) {
+	sdk.Context, Keeper, bank.Keeper, supply.Keeper, auth.AccountKeeper, oracle.ValidatorWhitelist) {
 	PKs := CreateTestPubKeys(500)
 	keyStaking := sdk.NewKVStoreKey(stakingtypes.StoreKey)
 	tkeyStaking := sdk.NewTransientStoreKey(stakingtypes.TStoreKey)
@@ -139,11 +140,11 @@ func CreateTestKeepers(t *testing.T, consensusNeeded float64, validatorAmounts [
 	ethbridgeKeeper.SetCethReceiverAccount(ctx, CethReceiverAccount)
 
 	// Setup validators
-	valAddrs := make([]sdk.ValAddress, len(validatorAmounts))
+	valAddrs := make(map[string]uint32)
 	for i, amount := range validatorAmounts {
 		valPubKey := PKs[i]
 		valAddr := sdk.ValAddress(valPubKey.Address().Bytes())
-		valAddrs[i] = valAddr
+		valAddrs[valAddr.String()] = 100
 		valTokens := sdk.TokensFromConsensusPower(amount)
 		// test how the validator is set from a purely unbonbed pool
 		validator := stakingtypes.NewValidator(valAddr, valPubKey, stakingtypes.Description{})
@@ -153,9 +154,11 @@ func CreateTestKeepers(t *testing.T, consensusNeeded float64, validatorAmounts [
 		stakingKeeper.ApplyAndReturnValidatorSetUpdates(ctx)
 	}
 
-	oracleKeeper.SetOracleWhiteList(ctx, valAddrs)
+	networkDescriptor := oracle.NewNetworkDescriptor(NetworkID)
+	whitelist := oracleTypes.NewValidatorWhitelistFromData(valAddrs)
+	oracleKeeper.SetOracleWhiteList(ctx, networkDescriptor, whitelist)
 
-	return ctx, ethbridgeKeeper, bankKeeper, supplyKeeper, accountKeeper, valAddrs
+	return ctx, ethbridgeKeeper, bankKeeper, supplyKeeper, accountKeeper, whitelist
 }
 
 // nolint: unparam

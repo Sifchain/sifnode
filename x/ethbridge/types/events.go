@@ -18,7 +18,7 @@ var (
 	AttributeKeyStatus              = "status"
 	AttributeKeyClaimType           = "claim_type"
 	AttributeKeyValidator           = "validator"
-	AttributeKeyOperationType       = "operation_type"
+	AttributeKeyPowerType           = "power_type"
 	AttributeKeyCethReceiverAccount = "ceth_receiver_account"
 
 	AttributeKeyEthereumChainID      = "ethereum_chain_id"

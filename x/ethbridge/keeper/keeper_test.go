@@ -39,7 +39,9 @@ func NewZapSugaredLogger() *zap.SugaredLogger {
 }
 
 func TestProcessClaimLock(t *testing.T) {
-	ctx, keeper, _, _, _, validatorAddresses := CreateTestKeepers(t, 0.7, []int64{3, 3}, "")
+	ctx, keeper, _, _, _, whitelist := CreateTestKeepers(t, 0.7, []int64{3, 3}, "")
+	validatorAddresses := whitelist.GetAllValidators()
+
 	validator1Pow3 := validatorAddresses[0]
 	validator2Pow3 := validatorAddresses[1]
 
@@ -53,7 +55,7 @@ func TestProcessClaimLock(t *testing.T) {
 	require.NoError(t, err)
 
 	ethBridgeClaim := types.NewEthBridgeClaim(
-		5777,
+		1,
 		ethBridgeAddress, // bridge registry
 		nonce,
 		symbol,
@@ -77,7 +79,7 @@ func TestProcessClaimLock(t *testing.T) {
 	// other validator execute
 
 	ethBridgeClaim = types.NewEthBridgeClaim(
-		5777,
+		1,
 		ethBridgeAddress, // bridge registry
 		nonce,
 		symbol,
@@ -95,7 +97,9 @@ func TestProcessClaimLock(t *testing.T) {
 }
 
 func TestProcessClaimBurn(t *testing.T) {
-	ctx, keeper, _, _, _, validatorAddresses := CreateTestKeepers(t, 0.7, []int64{3, 3}, "")
+	ctx, keeper, _, _, _, whitelist := CreateTestKeepers(t, 0.7, []int64{3, 3}, "")
+	validatorAddresses := whitelist.GetAllValidators()
+
 	validator1Pow3 := validatorAddresses[0]
 	validator2Pow3 := validatorAddresses[1]
 
@@ -105,7 +109,7 @@ func TestProcessClaimBurn(t *testing.T) {
 	require.NoError(t, err)
 
 	ethBridgeClaim := types.NewEthBridgeClaim(
-		5777,
+		1,
 		ethBridgeAddress, // bridge registry
 		nonce,
 		symbol,
@@ -129,7 +133,7 @@ func TestProcessClaimBurn(t *testing.T) {
 	// other validator execute
 
 	ethBridgeClaim = types.NewEthBridgeClaim(
-		5777,
+		1,
 		ethBridgeAddress, // bridge registry
 		nonce,
 		symbol,

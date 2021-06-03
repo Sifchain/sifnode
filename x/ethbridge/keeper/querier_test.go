@@ -15,7 +15,9 @@ import (
 
 //nolint:lll
 const (
-	TestResponseJSON = "{\"id\":\"300x7B95B6EC7EbD73572298cEf32Bb54FA408207359\",\"status\":{\"text\":\"pending\",\"final_claim\":\"\"},\"claims\":[{\"ethereum_chain_id\":3,\"bridge_registry_contract_address\":\"0xC4cE93a5699c68241fc2fB503Fb0f21724A624BB\",\"nonce\":0,\"symbol\":\"eth\",\"token_contract_address\":\"0x0000000000000000000000000000000000000000\",\"ethereum_sender\":\"0x7B95B6EC7EbD73572298cEf32Bb54FA408207359\",\"cosmos_receiver\":\"cosmos1gn8409qq9hnrxde37kuxwx5hrxpfpv8426szuv\",\"validator_address\":\"cosmosvaloper1mnfm9c7cdgqnkk66sganp78m0ydmcr4pn7fqfk\",\"amount\":\"10\",\"claim_type\":\"lock\"}]}"
+	TestResponseJSON = "{\"id\":\"100x7B95B6EC7EbD73572298cEf32Bb54FA408207359\",\"status\":{\"text\":\"pending\",\"final_claim\":\"\"},\"claims\":[{\"ethereum_chain_id\":1,\"bridge_registry_contract_address\":\"0xC4cE93a5699c68241fc2fB503Fb0f21724A624BB\",\"nonce\":0,\"symbol\":\"eth\",\"token_contract_address\":\"0x0000000000000000000000000000000000000000\",\"ethereum_sender\":\"0x7B95B6EC7EbD73572298cEf32Bb54FA408207359\",\"cosmos_receiver\":\"cosmos1gn8409qq9hnrxde37kuxwx5hrxpfpv8426szuv\",\"validator_address\":\"cosmosvaloper1mnfm9c7cdgqnkk66sganp78m0ydmcr4pn7fqfk\",\"amount\":\"10\",\"claim_type\":\"lock\"}]}"
+
+	networkID = 1
 )
 
 func TestNewQuerier(t *testing.T) {
@@ -48,7 +50,7 @@ func TestQueryEthProphecy(t *testing.T) {
 		t, testBridgeContractAddress, testTokenContractAddress, valAddress,
 		testEthereumAddress, types.TestCoinsAmount, types.TestCoinsSymbol, types.LockText)
 	oracleClaim, _ := types.CreateOracleClaimFromEthClaim(cdc, initialEthBridgeClaim)
-	_, err := oracleKeeper.ProcessClaim(ctx, oracleClaim, NewZapSugaredLogger())
+	_, err := oracleKeeper.ProcessClaim(ctx, networkID, oracleClaim, NewZapSugaredLogger())
 	require.NoError(t, err)
 
 	testResponse := types.CreateTestQueryEthProphecyResponse(cdc, t, valAddress, types.LockText)

@@ -1,6 +1,8 @@
 package oracle
 
 import (
+	"strconv"
+
 	"github.com/Sifchain/sifnode/x/oracle/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	abci "github.com/tendermint/tendermint/abci/types"
@@ -9,7 +11,14 @@ import (
 func InitGenesis(ctx sdk.Context, keeper Keeper, data types.GenesisState) (res []abci.ValidatorUpdate) {
 
 	if data.AddressWhitelist != nil {
-		keeper.SetOracleWhiteList(ctx, data.AddressWhitelist)
+		for k, v := range data.AddressWhitelist {
+			networkID, err := strconv.ParseUint(k, 10, 32)
+			if err != nil {
+				panic("white list can't parse from genesis data")
+			}
+			keeper.SetOracleWhiteList(ctx, NewNetworkDescriptor(uint32(networkID)), types.NewValidatorWhitelistFromData(v))
+		}
+
 	}
 
 	if data.AdminAddress != nil {
@@ -20,9 +29,15 @@ func InitGenesis(ctx sdk.Context, keeper Keeper, data types.GenesisState) (res [
 }
 
 func ExportGenesis(ctx sdk.Context, keeper Keeper) types.GenesisState {
-	whiteList := keeper.GetOracleWhiteList(ctx)
+	whiteList := make(map[string]map[string]uint32)
+	var i uint32 = 0
+	for ; i < MaxNetworkDescriptor; i++ {
+		whiteList[strconv.Itoa(int(i))] = keeper.GetOracleWhiteList(ctx, NewNetworkDescriptor(i)).Whitelist
+	}
+
 	return GenesisState{
 		AddressWhitelist: whiteList,
+		AdminAddress:     keeper.GetAdminAccount(ctx),
 	}
 }
 

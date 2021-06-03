@@ -23,23 +23,22 @@ const (
 var (
 	// functions aliases
 
-	NewKeeper                         = keeper.NewKeeper
-	NewQuerier                        = keeper.NewQuerier
-	NewEthBridgeClaim                 = types.NewEthBridgeClaim
-	NewOracleClaimContent             = types.NewOracleClaimContent
-	CreateOracleClaimFromEthClaim     = types.CreateOracleClaimFromEthClaim
-	CreateEthClaimFromOracleString    = types.CreateEthClaimFromOracleString
-	CreateOracleClaimFromOracleString = types.CreateOracleClaimFromOracleString
-	RegisterCodec                     = types.RegisterCodec
-	ErrInvalidEthNonce                = types.ErrInvalidEthNonce
-	ErrInvalidEthAddress              = types.ErrInvalidEthAddress
-	ErrJSONMarshalling                = types.ErrJSONMarshalling
-	NewEthereumAddress                = types.NewEthereumAddress
-	NewMsgCreateEthBridgeClaim        = types.NewMsgCreateEthBridgeClaim
-	MapOracleClaimsToEthBridgeClaims  = types.MapOracleClaimsToEthBridgeClaims
-	NewQueryEthProphecyParams         = types.NewQueryEthProphecyParams
-	NewQueryEthProphecyResponse       = types.NewQueryEthProphecyResponse
-
+	NewKeeper                          = keeper.NewKeeper
+	NewQuerier                         = keeper.NewQuerier
+	NewEthBridgeClaim                  = types.NewEthBridgeClaim
+	NewOracleClaimContent              = types.NewOracleClaimContent
+	CreateOracleClaimFromEthClaim      = types.CreateOracleClaimFromEthClaim
+	CreateEthClaimFromOracleString     = types.CreateEthClaimFromOracleString
+	CreateOracleClaimFromOracleString  = types.CreateOracleClaimFromOracleString
+	RegisterCodec                      = types.RegisterCodec
+	ErrInvalidEthNonce                 = types.ErrInvalidEthNonce
+	ErrInvalidEthAddress               = types.ErrInvalidEthAddress
+	ErrJSONMarshalling                 = types.ErrJSONMarshalling
+	NewEthereumAddress                 = types.NewEthereumAddress
+	NewMsgCreateEthBridgeClaim         = types.NewMsgCreateEthBridgeClaim
+	MapOracleClaimsToEthBridgeClaims   = types.MapOracleClaimsToEthBridgeClaims
+	NewQueryEthProphecyParams          = types.NewQueryEthProphecyParams
+	NewQueryEthProphecyResponse        = types.NewQueryEthProphecyResponse
 	CreateTestEthMsg                   = types.CreateTestEthMsg
 	CreateTestEthClaim                 = types.CreateTestEthClaim
 	CreateTestQueryEthProphecyResponse = types.CreateTestQueryEthProphecyResponse

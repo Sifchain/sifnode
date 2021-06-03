@@ -74,16 +74,11 @@ func (k Keeper) setProphecy(ctx sdk.Context, prophecy types.Prophecy) {
 }
 
 // ProcessClaim ...
-func (k Keeper) ProcessClaim(ctx sdk.Context, claim types.Claim, sugaredLogger *zap.SugaredLogger) (types.Status, error) {
-	inWhiteList := false
-	// Check if claim from whitelist validators
-	for _, address := range k.GetOracleWhiteList(ctx) {
+func (k Keeper) ProcessClaim(ctx sdk.Context, networkID uint32, claim types.Claim, sugaredLogger *zap.SugaredLogger) (types.Status, error) {
+	networkDescriptor := types.NewNetworkDescriptor(networkID)
 
-		if address.Equals(claim.ValidatorAddress) {
-			inWhiteList = true
-			break
-		}
-	}
+	// Check if claim from whitelist validators
+	inWhiteList := k.GetOracleWhiteList(ctx, networkDescriptor).ContainValidator(claim.ValidatorAddress)
 
 	if !inWhiteList {
 		sugaredLogger.Errorw("sifnode oracle keeper ProcessClaim validator no in whitelist.")
@@ -110,6 +105,7 @@ func (k Keeper) ProcessClaim(ctx sdk.Context, claim types.Claim, sugaredLogger *
 	if !found {
 		prophecy = types.NewProphecy(claim.ID)
 	}
+
 	switch prophecy.Status.Text {
 	case types.PendingStatusText:
 		// continue processing
@@ -122,7 +118,7 @@ func (k Keeper) ProcessClaim(ctx sdk.Context, claim types.Claim, sugaredLogger *
 	}
 
 	prophecy.AddClaim(claim.ValidatorAddress, claim.Content)
-	prophecy = k.processCompletion(ctx, prophecy)
+	prophecy = k.processCompletion(ctx, networkDescriptor, prophecy)
 
 	k.setProphecy(ctx, prophecy)
 	return prophecy.Status, nil
@@ -138,20 +134,14 @@ func (k Keeper) checkActiveValidator(ctx sdk.Context, validatorAddress sdk.ValAd
 }
 
 // ProcessUpdateWhiteListValidator processes the update whitelist validator from admin
-func (k Keeper) ProcessUpdateWhiteListValidator(ctx sdk.Context, cosmosSender sdk.AccAddress, validator sdk.ValAddress, operationtype string, sugaredLogger *zap.SugaredLogger) error {
+func (k Keeper) ProcessUpdateWhiteListValidator(ctx sdk.Context, networkID uint32, cosmosSender sdk.AccAddress, validator sdk.ValAddress, power uint32, sugaredLogger *zap.SugaredLogger) error {
 	if !k.IsAdminAccount(ctx, cosmosSender) {
 		sugaredLogger.Errorw("cosmos sender is not admin account.")
 		return types.ErrNotAdminAccount
 	}
+	networkDescriptor := types.NewNetworkDescriptor(networkID)
 
-	switch operationtype {
-	case "add":
-		k.AddOracleWhiteList(ctx, validator)
-	case "remove":
-		k.RemoveOracleWhiteList(ctx, validator)
-	default:
-		return types.ErrInvalidOperationType
-	}
+	k.UpdateOracleWhiteList(ctx, networkDescriptor, validator, power)
 
 	return nil
 }
@@ -161,21 +151,17 @@ func (k Keeper) ProcessUpdateWhiteListValidator(ctx sdk.Context, cosmosSender sd
 // power to be considered successful, or alternatively,
 // will never be able to become successful due to not enough validation power being
 // left to push it over the threshold required for consensus.
-func (k Keeper) processCompletion(ctx sdk.Context, prophecy types.Prophecy) types.Prophecy {
-	highestClaim, highestClaimPower, totalClaimsPower, totalPower := prophecy.FindHighestClaim(ctx, k.stakeKeeper, k.GetOracleWhiteList(ctx))
-
-	highestConsensusRatio := float64(highestClaimPower) / float64(totalPower)
-	remainingPossibleClaimPower := totalPower - totalClaimsPower
-	highestPossibleClaimPower := highestClaimPower + remainingPossibleClaimPower
-	highestPossibleConsensusRatio := float64(highestPossibleClaimPower) / float64(totalPower)
-
-	if highestConsensusRatio >= k.consensusNeeded {
+func (k Keeper) processCompletion(ctx sdk.Context, networkDescriptor types.NetworkDescriptor, prophecy types.Prophecy) types.Prophecy {
+	highestClaim, highestRatio, vetoRatio := k.GetOracleWhiteList(ctx, networkDescriptor).GetPowerRatio(prophecy.ClaimValidators)
+	if highestRatio >= k.consensusNeeded {
 		prophecy.Status.Text = types.SuccessStatusText
 		prophecy.Status.FinalClaim = highestClaim
-	} else if highestPossibleConsensusRatio < k.consensusNeeded {
+	} else if vetoRatio > (1.0 - k.consensusNeeded) {
 		prophecy.Status.Text = types.FailedStatusText
+	} else {
+		prophecy.Status.Text = types.PendingStatusText
+		prophecy.Status.FinalClaim = ""
 	}
-
 	return prophecy
 }
 
