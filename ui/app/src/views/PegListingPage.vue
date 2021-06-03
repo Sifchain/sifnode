@@ -34,10 +34,10 @@ export default defineComponent({
     Icon,
   },
   setup(_, context) {
-    const { store, actions } = useCore();
+    const { store, usecases } = useCore();
     function getIsSupportedNetwork(asset: IAsset): boolean {
       if (asset.network === "ethereum") {
-        return actions.ethWallet.isSupportedNetwork();
+        return usecases.wallet.eth.isSupportedNetwork();
       }
 
       if (asset.network === "sifchain") {
@@ -50,11 +50,11 @@ export default defineComponent({
 
     const allTokens = computed(() => {
       if (selectedTab.value === "External Tokens") {
-        return actions.peg.getEthTokens();
+        return usecases.peg.getEthTokens();
       }
 
       if (selectedTab.value === "Sifchain Native") {
-        return actions.peg.getSifTokens();
+        return usecases.peg.getSifTokens();
       }
       return [];
     });
@@ -191,12 +191,12 @@ export default defineComponent({
         <AssetList :items="assetList" v-slot="{ asset }">
           <SifButton
             :disabled="!asset.supported"
-            :to="`/peg/${asset.asset.symbol}/${peggedSymbol(
+            :to="`/import/${asset.asset.symbol}/${peggedSymbol(
               asset.asset.symbol,
             )}`"
             primary
-            :data-handle="'peg-' + asset.asset.symbol"
-            >Peg</SifButton
+            :data-handle="'import-' + asset.asset.symbol"
+            >Import</SifButton
           >
           <Tooltip v-if="!asset.supported" message="Network not supported">
             &nbsp;<Icon icon="info-box-black" />
@@ -207,12 +207,12 @@ export default defineComponent({
         <AssetList :items="assetList">
           <template #default="{ asset }">
             <SifButton
-              :to="`/peg/reverse/${asset.asset.symbol}/${unpeggedSymbol(
+              :to="`/import/reverse/${asset.asset.symbol}/${unpeggedSymbol(
                 asset.asset.symbol,
               )}`"
               primary
-              :data-handle="'unpeg-' + asset.asset.symbol"
-              >Unpeg</SifButton
+              :data-handle="'export-' + asset.asset.symbol"
+              >Export</SifButton
             >
           </template>
           <template #annotation="{ pegTxs }">

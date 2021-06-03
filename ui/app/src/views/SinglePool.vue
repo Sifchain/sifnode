@@ -1,25 +1,51 @@
 <script lang="ts">
-import { defineComponent } from "vue";
-import { computed } from "@vue/reactivity";
+import { defineComponent, watch, onMounted } from "vue";
+import { computed, ref, ComputedRef } from "@vue/reactivity";
 import Layout from "@/components/layout/Layout.vue";
 import SifButton from "@/components/shared/SifButton.vue";
 import {
   getAssetLabel,
   getBlockExplorerUrl,
+  getRewardEarningsUrl,
   useAssetItem,
 } from "@/components/shared/utils";
 import { useCore } from "@/hooks/useCore";
 import { useRoute } from "vue-router";
 import { format } from "ui-core/src/utils/format";
 import { Amount } from "ui-core";
+import Tooltip from "@/components/shared/Tooltip.vue";
+import Icon from "@/components/shared/Icon.vue";
+import Loader from "@/components/shared/Loader.vue";
 
 const DECIMALS = 5;
 
+async function getEarnedRewards(address: string, symbol: string) {
+  const { config } = useCore();
+  const earnedRewardsUrl = getRewardEarningsUrl(config.sifChainId);
+  const res = await fetch(
+    `${earnedRewardsUrl}?symbol=${symbol}&address=${address}`,
+  );
+  const data = await res.json();
+  const parsedData = JSON.parse(data);
+  // TD - This should return Amount, method needs work
+  // Rudis recent work should refactor this call too into a testable service
+  return {
+    negative: Amount(parsedData.netChangeUSDT.toString()).lessThan("0"),
+    netChange: format(Amount(Math.abs(parsedData.netChangeUSDT).toString()), {
+      mantissa: 2,
+    }),
+  };
+}
+
 export default defineComponent({
-  components: { Layout, SifButton },
-  setup(props) {
+  components: { Layout, SifButton, Tooltip, Icon, Loader },
+  setup() {
     const { config, store } = useCore();
     const route = useRoute().params.externalAsset;
+
+    const address = computed(() => store.wallet.sif.address);
+    let earnedRewards = ref<string | null>(null);
+    let earnedRewardsNegative = ref<boolean>(false);
 
     const accountPool = computed(() => {
       if (
@@ -48,6 +74,11 @@ export default defineComponent({
         ? getAssetLabel(accountPool?.value.pool.amounts[1].asset)
         : "",
     );
+
+    // const USDTImage = useAssetItem('USDT').token.value?.imageUrl;
+    const USDTImage =
+      "https://assets.coingecko.com/coins/images/325/thumb/Tether-logo.png?1598003707";
+
     const fromAsset = useAssetItem(fromSymbol);
     const fromToken = fromAsset.token;
     const fromBackgroundStyle = fromAsset.background;
@@ -55,6 +86,24 @@ export default defineComponent({
       if (!fromToken.value) return "";
       const t = fromToken.value;
       return t.imageUrl;
+    });
+
+    const calculateRewards = async (address: string, fromSymbol: string) => {
+      // TODO - needs a better pattern to handle this
+      const earnedRewardsObject = await getEarnedRewards(
+        address,
+        fromSymbol?.toLowerCase(),
+      );
+      earnedRewardsNegative.value = earnedRewardsObject.negative;
+      earnedRewards.value = earnedRewardsObject.netChange;
+    };
+
+    watch([address, fromSymbol], async () => {
+      calculateRewards(address.value, fromSymbol.value);
+    });
+
+    onMounted(async () => {
+      calculateRewards(address.value, fromSymbol.value);
     });
 
     const fromTotalValue = computed(() => {
@@ -97,7 +146,7 @@ export default defineComponent({
         { mantissa: 4 },
       );
 
-      return `${perc} %`;
+      return `${perc}`;
     });
     const myPoolUnits = computed(() => {
       return format(poolUnitsAsFraction.value, { mantissa: DECIMALS });
@@ -117,6 +166,9 @@ export default defineComponent({
       myPoolShare,
       chainId: config.sifChainId,
       getBlockExplorerUrl,
+      earnedRewards,
+      earnedRewardsNegative,
+      USDTImage,
     };
   },
 });
@@ -124,8 +176,19 @@ export default defineComponent({
 
 <template>
   <Layout class="pool" backLink="/pool" title="Your Pair">
+    <p class="description">
+      Liquidity providers earn a percentage fee on all trades proportional to
+      their share of the pool. Fees are added to the pool, accrue in real time
+      and can be claimed by withdrawing your liquidity.
+
+      <a
+        target="_blank"
+        href="https://docs.sifchain.finance/core-concepts/liquidity-pool"
+        >Click here to learn more.</a
+      >
+    </p>
     <div class="sheet" :class="!accountPool ? 'disabled' : 'active'">
-      <div class="section">
+      <div class="">
         <div class="header" @click="$emit('poolselected')">
           <div class="image">
             <img
@@ -152,7 +215,8 @@ export default defineComponent({
           </div>
         </div>
       </div>
-      <div class="section">
+
+      <div class="">
         <div class="details">
           <div
             class="row"
@@ -163,8 +227,8 @@ export default defineComponent({
               <span>{{ fromTotalValue }}</span>
               <img
                 v-if="fromTokenImage"
-                width="22"
-                height="22"
+                width="18"
+                height="18"
                 :src="fromTokenImage"
                 class="info-img"
               />
@@ -184,8 +248,8 @@ export default defineComponent({
               <span>{{ toTotalValue }}</span>
               <img
                 v-if="toTokenImage"
-                width="22"
-                height="22"
+                width="18"
+                height="18"
                 :src="toTokenImage"
                 class="info-img"
               />
@@ -193,33 +257,38 @@ export default defineComponent({
             </span>
           </div>
           <div class="row" data-handle="total-pool-share">
-            <span>Your pool share:</span>
-            <span class="value">{{ myPoolShare }}</span>
+            <span>Your Pool Share (%):</span>
+            <span class="value pool-share-value">
+              {{ myPoolShare }}
+            </span>
+          </div>
+          <div class="row" data-handle="total-pool-share">
+            <span
+              >Your Net Gain/Loss:
+              <Tooltip
+                message="This is your net gain/loss based on earnings from swap fees and any gains or losses associated with changes in the tokens' prices. This is in USDT"
+              >
+                <Icon icon="info-box-black" /> </Tooltip
+            ></span>
+            <div class="value net-loss-value">
+              <span v-if="earnedRewards">
+                {{ earnedRewardsNegative ? "-" : "" }}{{ earnedRewards }}
+              </span>
+              <span v-else class="value">
+                <Loader typeSize />
+              </span>
+              <img
+                width="18"
+                height="18"
+                :src="USDTImage"
+                class="info-img net-loss-img"
+              />
+            </div>
           </div>
         </div>
       </div>
-      <div class="section">
-        <div class="info">
-          <h3 class="mb-2">Liquidity provider rewards</h3>
-          <p class="text--small mb-2">
-            Liquidity providers earn a percentage fee on all trades proportional
-            to their share of the pool. Fees are added to the pool, accrue in
-            real time and can be claimed by withdrawing your liquidity. To learn
-            more, refer to the documentation
-            <a
-              target="_blank"
-              href="https://docs.sifchain.finance/core-concepts/liquidity-pool"
-              >here</a
-            >.
-          </p>
-        </div>
-      </div>
-      <div class="text--small mt-6 mb-2">
-        <a target="_blank" :href="getBlockExplorerUrl(chainId)"
-          >Blockexplorer</a
-        >
-      </div>
-      <div class="section footer">
+
+      <div class="footer">
         <div class="mr-1">
           <router-link
             :to="`/pool/remove-liquidity/${fromSymbol.toLowerCase()}`"
@@ -228,13 +297,26 @@ export default defineComponent({
             ></router-link
           >
         </div>
-        <div class="ml-1">
+        <div class="ml-1 add-button">
           <router-link :to="`/pool/add-liquidity/${fromSymbol.toLowerCase()}`"
             ><SifButton primary nocase block
               >Add Liquidity</SifButton
             ></router-link
           >
         </div>
+      </div>
+      <div class="dotted-line"></div>
+      <!-- <a target="_blank" :href="getBlockExplorerUrl(chainId)">View</a> -->
+      <div class="blockexplorer-container">
+        <SifButton
+          :absolute="true"
+          target="_blank"
+          :to="getBlockExplorerUrl(chainId)"
+          primaryOutline
+          nocase
+          block
+          >View On Block Explorer</SifButton
+        >
       </div>
     </div>
   </Layout>
@@ -245,6 +327,7 @@ export default defineComponent({
   background: $c_white;
   border-radius: $br_sm;
   border: $divider;
+  padding: 20px;
   &.disabled {
     opacity: 0.3;
   }
@@ -258,6 +341,7 @@ export default defineComponent({
 
   .header {
     display: flex;
+    margin-bottom: 10px;
   }
   .symbol {
     font-size: $fs_md;
@@ -287,9 +371,9 @@ export default defineComponent({
     .value {
       display: flex;
       align-items: center;
-      font-weight: 700;
+      font-weight: 400;
       & > * {
-        margin-right: 0.5rem;
+        margin-right: 4px;
       }
 
       & > *:last-child {
@@ -302,7 +386,9 @@ export default defineComponent({
       margin-left: 4px;
     }
   }
-
+  .details {
+    margin-bottom: 10px;
+  }
   .info {
     text-align: left;
     font-weight: 400;
@@ -325,5 +411,48 @@ export default defineComponent({
       flex: 1;
     }
   }
+}
+.description {
+  font-family: PT Serif;
+  font-style: normal;
+  font-weight: normal;
+  font-size: 14px;
+  line-height: 140%;
+  margin-bottom: 15px;
+  color: #343434;
+  font-weight: 400;
+  text-align: left;
+}
+.blockexplorer-container {
+  padding: 8px 0;
+  // TODO - This should be somewhat like the <Panel> class
+  .blockexplorer-label {
+    color: #333;
+    font-style: italic;
+    font-size: 16px;
+  }
+  .blockexplorer-link {
+    a {
+      color: #666;
+      background: #f3f3f3;
+      border-radius: 4px;
+      padding: 4px 10px;
+      font-weight: 400;
+    }
+    font-style: italic;
+  }
+}
+.net-loss-img {
+  margin-left: 4px;
+}
+.pool-share-value {
+  margin-right: 22px;
+}
+.add-button {
+  margin-left: 10px;
+}
+.dotted-line {
+  border-top: 1px dotted #d4b553;
+  margin: 10px 0;
 }
 </style>

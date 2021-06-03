@@ -12,7 +12,7 @@
   </button>
 
   <router-link
-    v-else
+    v-else-if="!absolute"
     v-bind="$attrs"
     :to="to"
     class="btn"
@@ -23,17 +23,32 @@
       <slot></slot>
     </span>
   </router-link>
+  <a
+    v-else
+    v-bind="$attrs"
+    :href="to"
+    class="btn"
+    :class="classes"
+    :disabled="disabled"
+  >
+    <span class="content">
+      <slot></slot>
+    </span>
+  </a>
 </template>
 
-<script>
+<script lang="ts">
 import { defineComponent } from "vue";
-
 export default defineComponent({
   inheritAttrs: false,
   props: {
     disabled: {
       type: Boolean,
       default: false,
+    },
+    absolute: {
+      type: Boolean,
+      default: false, // Skips vue routing
     },
     block: {
       type: Boolean,
@@ -111,20 +126,20 @@ export default defineComponent({
 .btn {
   @include resetButton;
   position: relative;
-  display: inline-flex;
+  display: flex;
   height: 30px;
   padding: 0 18px;
   align-items: center;
   overflow: hidden;
+  font-size: $fs;
   font: inherit;
-  text-transform: uppercase;
-  font-size: $fs_md;
   // line-height: $lh_btn;
-  letter-spacing: 1px;
+  letter-spacing: 0px;
   border-radius: $br_sm;
   transform: perspective(1px) translateZ(0);
   cursor: pointer;
   box-sizing: border-box;
+  justify-content: center;
 
   &.nocase {
     text-transform: none;
@@ -152,7 +167,8 @@ export default defineComponent({
   &.primary {
     color: white;
     background: $c_gold;
-
+    font-weight: initial;
+    font-style: normal;
     &::before {
       content: "";
       display: block;
@@ -243,6 +259,7 @@ export default defineComponent({
     &.primary {
       color: $c_gold;
       border: 2px solid $c_gold;
+
       &:hover {
         background: transparent;
         border: 2px solid $c_gray_400;
@@ -282,5 +299,8 @@ export default defineComponent({
     display: flex;
     justify-content: center;
   }
+}
+a.btn {
+  display: flex !important;
 }
 </style>
