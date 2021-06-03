@@ -29,15 +29,10 @@ func NewHandler(k Keeper) sdk.Handler {
 func handleMsgRunDistribution(ctx sdk.Context, keeper Keeper, msg MsgRunDistribution) (*sdk.Result, error) {
 	_ = k.DistributeDrops(ctx, ctx.BlockHeight())
 
-	ctx.Logger().Info(fmt.Sprintf("Distributed to : %s | At height : %d | Amount :%s \n", record.RecipientAddress.String(), height, record.Coins.String()))
-
-
 	ctx.EventManager().EmitEvents(sdk.Events{
 		sdk.NewEvent(
 			types.EventTypeDistributionRun,
-			sdk.NewAttribute(types.AttributeKeyFromModuleAccount, types.GetDistributionModuleAddress().String()),
-			sdk.NewAttribute(types.AttributeKeyDistributionName, distributionName),
-			sdk.NewAttribute(types.AttributeKeyDistributionType, msg.DistributionType.String()),
+			sdk.NewAttribute(types.AttributeKeyDistributionName, msg.distributionName),
 		),
 	})
 	return &sdk.Result{Events: ctx.EventManager().Events()}, nil
