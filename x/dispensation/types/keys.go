@@ -28,7 +28,7 @@ var (
 	// Would need to verify usage for byte 02,03 and 04
 	UserClaimPrefix                = []byte{0x05} // key for storing airdropRecords
 	DistributionRecordPrefixFailed = []byte{0x06} // key for storing DistributionRecords
-
+	CursorPrefix                   = []byte{0x07} // Key for storing cursors
 )
 
 // A distribution records is unique for name_recipientAddress
