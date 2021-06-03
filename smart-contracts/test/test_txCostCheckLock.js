@@ -72,7 +72,9 @@ describe("Gas Cost Tests", function () {
       state.cosmosSenderSequence = 10;
       state.nonce = 1;
 
-      await state.cosmosBridge
+      let sum = 0;
+
+      let tx = await state.cosmosBridge
         .connect(userOne)
         .newProphecyClaim(
           state.sender,
@@ -83,9 +85,12 @@ describe("Gas Cost Tests", function () {
           false,
           state.nonce
       );
+      let receipt = await tx.wait();
+      console.log("tx0 ", receipt.gasUsed.toString());
+      sum += Number(receipt.gasUsed);
 
       // Create the prophecy claim
-      await state.cosmosBridge
+      tx = await state.cosmosBridge
         .connect(userTwo)
         .newProphecyClaim(
           state.sender,
@@ -96,8 +101,11 @@ describe("Gas Cost Tests", function () {
           false,
           state.nonce
       );
+      receipt = await tx.wait();
+      console.log("tx1 ", receipt.gasUsed.toString());
+      sum += Number(receipt.gasUsed);
 
-      await state.cosmosBridge
+      tx = await state.cosmosBridge
         .connect(userThree)
         .newProphecyClaim(
           state.sender,
@@ -108,8 +116,11 @@ describe("Gas Cost Tests", function () {
           false,
           state.nonce
       );
+      receipt = await tx.wait();
+      console.log("tx2 ", receipt.gasUsed.toString());
+      sum += Number(receipt.gasUsed);
 
-      await state.cosmosBridge
+      tx = await state.cosmosBridge
         .connect(userFour)
         .newProphecyClaim(
           state.sender,
@@ -120,7 +131,12 @@ describe("Gas Cost Tests", function () {
           false,
           state.nonce
       );
+      receipt = await tx.wait();
+      console.log("tx3 ", receipt.gasUsed.toString());
+      sum += Number(receipt.gasUsed);
 
+      console.log("~~~~~~~~~~~~\nTotal: ", sum);
+      
       let prophecyID = await state.cosmosBridge.getProphecyID(
         state.sender,
         state.senderSequence,

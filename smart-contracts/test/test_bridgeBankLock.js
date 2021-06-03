@@ -205,12 +205,15 @@ describe("Test Bridge Bank", function () {
       );
 
       // Attempt to lock tokens
-      await state.bridgeBank.connect(userOne).multiLockBurn(
+      const tx = await state.bridgeBank.connect(userOne).multiLockBurn(
         [state.sender, state.sender, state.sender],
         [state.token1.address, state.token2.address, state.rowan.address],
         [state.amount, state.amount, state.amount],
         [false, false, true]
       );
+
+      const receipt = await tx.wait();
+      console.log("multilockburn receipt: ", receipt)
 
       // Confirm that the user has the proper balance after the multiLockBurn
       let afterUserBalance = Number(
@@ -230,10 +233,12 @@ describe("Test Bridge Bank", function () {
     });
 
     it("should not allow user to multi-lock ERC20 tokens if one token is not fully approved", async function () {
-      await state.token1.connect(userOne).approve(
+      const tx = await state.token1.connect(userOne).approve(
         state.bridgeBank.address,
         0
       );
+      const receipt = await tx.wait();
+      console.log("receipt: ", receipt);
 
       await state.token2.connect(userOne).approve(
         state.bridgeBank.address,

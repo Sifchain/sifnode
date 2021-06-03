@@ -51,6 +51,7 @@ async function multiTokenSetup(
     state.sender = web3.utils.utf8ToHex(
       "sif1nx650s8q9w28f2g3t9ztxyg48ugldptuwzpace"
     );
+    state.cosmosSender = state.sender;
     state.senderSequence = 1;
     state.recipient = userThree;
     state.name = "TEST COIN";
