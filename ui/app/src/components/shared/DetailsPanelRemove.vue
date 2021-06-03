@@ -1,15 +1,22 @@
 <template>
   <div>
     <Copy class="mb-8">
-      Are you sure you want to claim your rewards? Once you claim these rewards,
-      your multiplier will reset to 1x for all remaining amounts and will
-      continue to accumulate if within the reward eligibility timeframe.
+      Are you sure you want to withdraw your liquidity? This withdrawal will not
+      automatically submit a claim for the associated rewards. While it will
+      reset your reward tickets, you will still need to go into the DEX and
+      manually submit a claim transaction to fully claim those rewards.
     </Copy>
     <Copy class="mb-8">
-      Please note that the rewards will be released at the end of the week.
+      Unless you have reached full maturity on your rewards, we recommend that
+      you do not withdraw your liquidity so you can realize your full rewards.
     </Copy>
     <Copy class="mb-8">
-      Find out <a href="">additional information here</a>.
+      Find out
+      <a
+        href="https://docs.sifchain.finance/resources/rewards-programs"
+        target="_blank"
+        >more information here</a
+      >.
     </Copy>
     <PairTable class="mb-8" :items="computedPairPanel" />
     <div class="details mb-8">

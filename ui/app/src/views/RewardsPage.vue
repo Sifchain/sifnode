@@ -252,17 +252,25 @@ export default defineComponent({
         <template v-slot:selecting>
           <div class="claim-container">
             <Copy class="mb-8">
-              Are you sure you want to claim your rewards? Once you claim these
-              rewards, your multiplier will reset to 1x for all remaining
-              amounts and will continue to accumulate if within the reward
-              eligibility timeframe.
+              Are you sure you want to claim your rewards? Claiming your rewards
+              will reset all of your tickets at this very moment. Resetting your
+              tickers will release your rewards based on its current multiplier.
+              Reset tickets then start empty with a 25% multiplier again and
+              will continue to accumulate if within the reward eligibility
+              timeframe. Unless you have reached full maturity, we recommend
+              that you do not claim so you can realize your full rewards.
             </Copy>
             <Copy class="mb-8">
-              Please note that the rewards will be released at the end of the
+              Please note that the rewards will be dispensed at the end of the
               week.
             </Copy>
             <Copy class="mb-8">
-              Find out <a href="">additional information here</a>.
+              Find out
+              <a
+                href="https://docs.sifchain.finance/resources/rewards-programs"
+                target="_blank"
+                >additional information here</a
+              >.
             </Copy>
             <PairTable :items="computedPairPanel" />
           </div>
