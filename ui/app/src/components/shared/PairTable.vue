@@ -26,7 +26,10 @@ export default defineComponent({
     <table class="pair-table" border="1">
       <tr v-for="item in items" :key="item.key">
         <td>{{ item.key }}</td>
-        <td class="token">
+        <td v-if="item.type === 'date'" class="mr-5">
+          {{ new Date(item.value).toLocaleString() }}
+        </td>
+        <td v-else class="token">
           {{ format(item.value, { mantissa: 4 }) }}
           <AssetItem symbol="Rowan" class="ml-3" :label="false" />
         </td>
@@ -45,18 +48,15 @@ export default defineComponent({
   box-shadow: 0 0 0 1px #d2d2d2; /* this draws the table border  */
 
   td {
-    border-bottom: 1px solid #d2d2d2;
     padding: 10px;
-    text-align: left;
-  }
-  td.token {
     display: flex;
-    justify-content: flex-end;
   }
-  td:last-child {
-    text-align: right;
+  tr {
+    border-bottom: 1px solid #d2d2d2;
+    display: flex;
+    justify-content: space-between;
   }
-  tr:last-child td {
+  tr:last-child {
     border-bottom: none;
   }
 }

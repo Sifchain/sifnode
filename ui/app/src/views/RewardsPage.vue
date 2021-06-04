@@ -188,6 +188,11 @@ export default defineComponent({
           key: "Projected Full Amount",
           value: data.value.totalCommissionsAndRewardsAtMaturity,
         },
+        {
+          key: "Maturity Date",
+          value: data.value.maturityDateISO,
+          type: "date",
+        },
       ];
     });
 
@@ -272,7 +277,7 @@ export default defineComponent({
                 >additional information here</a
               >.
             </Copy>
-            <PairTable :items="computedPairPanel" />
+            <PairTable :items="computedPairPanel" class="mb-10" />
           </div>
         </template>
 

@@ -103,6 +103,11 @@ export default defineComponent({
           key: "Projected Full Amount",
           value: this.$props.rewardsData.totalCommissionsAndRewardsAtMaturity,
         },
+        {
+          key: "Maturity Date",
+          value: this.$props.rewardsData.maturityDateISO,
+          type: "date",
+        },
       ];
     },
   },
