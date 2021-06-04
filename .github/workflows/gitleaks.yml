@@ -6,9 +6,9 @@ jobs:
   gitleaks:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v1
-      #with:
-      #  fetch-depth: '0'
+    - uses: actions/checkout@v2
+      with:
+        fetch-depth: '10'
     - name: gitleaks-action
       uses: zricethezav/gitleaks-action@master
       with:
