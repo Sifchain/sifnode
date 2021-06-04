@@ -1151,13 +1151,13 @@ metadata:
 
         if "#{args[:app_env]}" == "betanet"
             governance_request = %Q{
-make CHAINNET=sifchain IMAGE_TAG=keyring BINARY=sifnodecli build-image
-docker run -i sifchain/sifnodecli:keyring sh <<'EOF'
-sifnodecli keys add #{args[:moniker]} -i --recover --keyring-backend test <<'EOF'
+
+go run ./cmd/sifnodecli keys add #{args[:moniker]} -i --recover --keyring-backend test <<'EOF'
 #{args[:mnemonic]}
 \r
 EOF
-sifnodecli tx gov submit-proposal software-upgrade #{args[:release_version]} \
+
+go run ./cmd/sifnodecli tx gov submit-proposal software-upgrade #{args[:release_version]} \
             --from #{args[:from]} \
             --deposit #{args[:deposit]} \
             --upgrade-height #{block_height} \
@@ -1170,20 +1170,18 @@ sifnodecli tx gov submit-proposal software-upgrade #{args[:release_version]} \
             --chain-id #{args[:chainnet]} \
             --gas-prices "#{args[:rowan]}"
             sleep 60
-exit
-EOF
              }
             system(governance_request) or exit 1
         else
             puts "create dev net gov request #{sha_token}"
             governance_request = %Q{
-make CHAINNET=sifchain IMAGE_TAG=keyring BINARY=sifnodecli build-image
-docker run -i sifchain/sifnodecli:keyring sh <<'EOF'
-sifnodecli keys add #{args[:moniker]} -i --recover --keyring-backend test <<'EOF'
+
+go run ./cmd/sifnodecli keys add #{args[:moniker]} -i --recover --keyring-backend test <<'EOF'
 #{args[:mnemonic]}
 \r
 EOF
-    sifnodecli tx gov submit-proposal software-upgrade #{args[:release_version]} \
+
+go run ./cmd/sifnodecli tx gov submit-proposal software-upgrade #{args[:release_version]} \
        --from #{args[:from]} \
        --deposit #{args[:deposit]} \
        --upgrade-height #{block_height} \
@@ -1196,8 +1194,6 @@ EOF
        --chain-id #{args[:chainnet]} \
        --gas-prices "#{args[:rowan]}"
     sleep 60
-    exit
-EOF
 }
          system(governance_request) or exit 1
         end
@@ -1210,13 +1206,13 @@ EOF
     task :generate_vote_no_passphrase, [:rowan, :chainnet, :from, :app_env, :moniker, :mnemonic] do |t, args|
         if "#{args[:app_env]}" == "betanet"
             governance_request = %Q{
-make CHAINNET=sifchain IMAGE_TAG=keyring BINARY=sifnodecli build-image
-docker run -i sifchain/sifnodecli:keyring sh <<'EOF'
-sifnodecli keys add #{args[:moniker]} -i --recover --keyring-backend test <<'EOF'
+go run ./cmd/sifnodecli keys add #{args[:moniker]} -i --recover --keyring-backend test <<'EOF'
 #{args[:mnemonic]}
 \r
 EOF
+
 vote_id=$(go run ./cmd/sifnodecli q gov proposals --node tcp://rpc.sifchain.finance:80 --trust-node -o json | jq --raw-output 'last(.[]).id' --raw-output)
+
 echo "vote_id $vote_id"
 go run ./cmd/sifnodecli tx gov vote ${vote_id} yes \
     --from #{args[:from]} \
@@ -1231,13 +1227,13 @@ EOF
             system(governance_request) or exit 1
         else
             governance_request = %Q{
-make CHAINNET=sifchain IMAGE_TAG=keyring BINARY=sifnodecli build-image
-docker run -i sifchain/sifnodecli:keyring sh <<'EOF'
-sifnodecli keys add #{args[:moniker]} -i --recover --keyring-backend test <<'EOF'
+go run ./cmd/sifnodecli keys add #{args[:moniker]} -i --recover --keyring-backend test <<'EOF'
 #{args[:mnemonic]}
 \r
 EOF
+
 vote_id=$(go run ./cmd/sifnodecli q gov proposals --node tcp://rpc-#{args[:app_env]}.sifchain.finance:80 --trust-node -o json | jq --raw-output 'last(.[]).id' --raw-output)
+
 echo "vote_id $vote_id"
 go run ./cmd/sifnodecli tx gov vote ${vote_id} yes \
     --from #{args[:from]} \
@@ -1246,8 +1242,6 @@ go run ./cmd/sifnodecli tx gov vote ${vote_id} yes \
     --node tcp://rpc-#{args[:app_env]}.sifchain.finance:80 \
     --gas-prices "#{args[:rowan]}" -y
 sleep 15
-exit
-EOF
 }
           system(governance_request) or exit 1
        end
