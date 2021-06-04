@@ -77,27 +77,17 @@ contract Oracle is OracleStorage, Valset {
      *       combined active signatory validator powers pass the consensus threshold.
      *       The threshold is x% of Total power, where x is the consensusThreshold param.
      */
-    function getProphecyThreshold(uint256 _prophecyID)
+    function getProphecyStatus(uint256 signedPower)
         public
         view
-        returns (bool, uint256, uint256)
+        returns (bool)
     {
-        uint256 signedPower = 0;
-        uint256 totalPower = totalPower;
-
-        signedPower = oracleClaimValidators[_prophecyID];
-
         // Prophecy must reach total signed power % threshold in order to pass consensus
         uint256 prophecyPowerThreshold = totalPower * consensusThreshold;
         // consensusThreshold is a decimal multiplied by 100, so signedPower must also be multiplied by 100
         uint256 prophecyPowerCurrent = signedPower * 100;
-        bool hasReachedThreshold = prophecyPowerCurrent >=
-            prophecyPowerThreshold;
+        bool hasReachedThreshold = prophecyPowerCurrent >= prophecyPowerThreshold;
 
-        return (
-            hasReachedThreshold,
-            prophecyPowerCurrent,
-            prophecyPowerThreshold
-        );
+        return hasReachedThreshold;
     }
 }

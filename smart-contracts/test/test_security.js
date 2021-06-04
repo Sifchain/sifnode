@@ -1,7 +1,12 @@
 const web3 = require("web3");
 const BigNumber = web3.BigNumber;
 const { expect } = require('chai');
-const { multiTokenSetup, deployTrollToken } = require("./helpers/testFixture");
+const {
+  signHash,
+  multiTokenSetup,
+  deployTrollToken,
+  getDigestNewProphecyClaim,
+} = require("./helpers/testFixture");
 
 const NULL_ADDRESS = "0x0000000000000000000000000000000000000000";
 const sifRecipient = web3.utils.utf8ToHex(
@@ -294,16 +299,35 @@ describe("Security Test", function () {
     it("should revert when prophecyclaim is submitted out of order", async function () {
       state.recipient = userOne.address;
       state.nonce = 10;
+      const digest = getDigestNewProphecyClaim([
+        state.sender,
+        state.senderSequence,
+        state.recipient,
+        state.troll.address,
+        state.amount,
+        false,
+        state.nonce
+      ]);
+
+      const signatures = await signHash([userOne, userTwo, userFour], digest);
+      let claimData = {
+        cosmosSender: state.sender,
+        cosmosSenderSequence: state.senderSequence,
+        ethereumReceiver: state.recipient,
+        tokenAddress: state.troll.address,
+        amount: state.amount,
+        doublePeg: false,
+        nonce: state.nonce
+      };
+
       await expect(
-        state.cosmosBridge.connect(userOne).newProphecyClaim(
-          state.sender,
-          state.senderSequence,
-          state.recipient,
-          state.troll.address,
-          state.amount,
-          false,
-          state.nonce
-        ),
+        state.cosmosBridge
+          .connect(userOne)
+          .submitProphecyClaimAggregatedSigs(
+            digest,
+            claimData,
+            signatures
+          )
       ).to.be.revertedWith("INV_ORD");
     });
 
@@ -326,7 +350,7 @@ describe("Security Test", function () {
 
       state.recipient = userOne.address;
       state.nonce = 1;
-      receipt = await state.cosmosBridge.connect(userOne).newProphecyClaim(
+      const digest = getDigestNewProphecyClaim([
         state.sender,
         state.senderSequence,
         state.recipient,
@@ -334,42 +358,35 @@ describe("Security Test", function () {
         state.amount,
         false,
         state.nonce
-      ).should.be.fulfilled;
+      ]);
 
-      receipt = await state.cosmosBridge.connect(userTwo).newProphecyClaim(
-        state.sender,
-        state.senderSequence,
-        state.recipient,
-        state.troll.address,
-        state.amount,
-        false,
-        state.nonce
-      ).should.be.fulfilled;
+      const signatures = await signHash([userOne, userTwo, userFour], digest);
+      let claimData = {
+        cosmosSender: state.sender,
+        cosmosSenderSequence: state.senderSequence,
+        ethereumReceiver: state.recipient,
+        tokenAddress: state.troll.address,
+        amount: state.amount,
+        doublePeg: false,
+        nonce: state.nonce
+      };
 
-      receipt = await state.cosmosBridge.connect(accounts[3]).newProphecyClaim(
-        state.sender,
-        state.senderSequence,
-        state.recipient,
-        state.troll.address,
-        state.amount,
-        false,
-        state.nonce
-      ).should.be.fulfilled;
+      await state.cosmosBridge
+        .connect(userOne)
+        .submitProphecyClaimAggregatedSigs(
+            digest,
+            claimData,
+            signatures
+        );
 
       // user should not receive funds as troll token just burns gas
       endingBalance = Number(await state.troll.balanceOf(userOne.address));
       expect(endingBalance).to.be.equal(0);
 
-      let prophecyID = (await state.cosmosBridge.getProphecyID(
-        state.sender,
-        state.senderSequence,
-        state.recipient,
-        state.troll.address,
-        state.amount
-      )).toString();
 
-      let status = await state.cosmosBridge.prophecyRedeemed(prophecyID);
-      expect(status).to.be.true;
+      // Last nonce should now be 1
+      let lastNonceSubmitted = Number(await state.cosmosBridge.lastNonceSubmitted());
+      expect(lastNonceSubmitted).to.be.equal(1);
     });
   });
 });

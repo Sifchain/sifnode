@@ -46,7 +46,6 @@ contract EthereumBankStorage {
         address _token,
         uint256 _value,
         uint256 _nonce,
-        uint256 _chainid,
         uint256 _decimals
     );
 
@@ -56,7 +55,6 @@ contract EthereumBankStorage {
         address _token,
         uint256 _value,
         uint256 _nonce,
-        uint256 _chainid,
         uint256 _decimals,
         string _symbol,
         string _name

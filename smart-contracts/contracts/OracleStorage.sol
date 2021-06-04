@@ -34,7 +34,7 @@ contract OracleStorage {
     /**
     * @notice mapping of validator address to last nonce submitted
     */
-    mapping(address => uint128) public lastNonceSubmitted;
+    uint256 public lastNonceSubmitted;
 
     /*
     * @notice gap of storage for future upgrades

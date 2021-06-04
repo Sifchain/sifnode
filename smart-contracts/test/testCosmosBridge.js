@@ -5,7 +5,11 @@ const BigNumber = web3.BigNumber;
 const { ethers } = require("hardhat");
 const { use, expect } = require("chai");
 const { solidity } = require("ethereum-waffle");
-const { singleSetup } = require("./helpers/testFixture");
+const {
+  singleSetup,
+  getDigestNewProphecyClaim,
+  signHash
+} = require("./helpers/testFixture");
 
 require("chai")
   .use(require("chai-as-promised"))
@@ -106,27 +110,18 @@ describe("Test Cosmos Bridge", function () {
       expect(await state.bridgeBank.pausers(pauser)).to.be.true;
     });
 
-    it("should mint bridge tokens upon the successful processing of a burn prophecy claim", async function () {
+    it("should unlock tokens upon the successful processing of a burn prophecy claim", async function () {
       const beforeUserBalance = Number(
         await state.token.balanceOf(state.recipient)
       );
       beforeUserBalance.should.be.bignumber.equal(Number(0));
 
-      // Submit a new prophecy claim to the CosmosBridge to make oracle claims upon
+      // Last nonce should be 0
+      let lastNonceSubmitted = Number(await state.cosmosBridge.lastNonceSubmitted());
+      expect(lastNonceSubmitted).to.be.equal(0);
+
       state.nonce = 1;
-      let receipt = (
-        await state.cosmosBridge.connect(userOne).newProphecyClaim(
-          state.sender,
-          state.senderSequence,
-          state.recipient,
-          state.token.address,
-          state.amount,
-          false,
-          state.nonce
-        ).should.be.fulfilled
-      );
-
-      receipt = await state.cosmosBridge.connect(userTwo).newProphecyClaim(
+      const digest = getDigestNewProphecyClaim([
         state.sender,
         state.senderSequence,
         state.recipient,
@@ -134,23 +129,33 @@ describe("Test Cosmos Bridge", function () {
         state.amount,
         false,
         state.nonce
-      ).should.be.fulfilled;
+      ]);
 
-      receipt = await state.cosmosBridge.connect(userFour).newProphecyClaim(
-        state.sender,
-        state.senderSequence,
-        state.recipient,
-        state.token.address,
-        state.amount,
-        false,
-        state.nonce
-      ).should.be.fulfilled;
+      const signatures = await signHash([userOne, userTwo, userFour], digest);
+      let claimData = {
+        cosmosSender: state.sender,
+        cosmosSenderSequence: state.senderSequence,
+        ethereumReceiver: state.recipient,
+        tokenAddress: state.token.address,
+        amount: state.amount,
+        doublePeg: false,
+        nonce: state.nonce
+      };
 
-      // Confirm that the user has been minted the correct token
-      const afterUserBalance = Number(
-        await state.token.balanceOf(state.recipient)
-      );
-      afterUserBalance.should.be.bignumber.equal(state.amount);
+      await state.cosmosBridge
+        .connect(userOne)
+        .submitProphecyClaimAggregatedSigs(
+            digest,
+            claimData,
+            signatures
+        );
+
+      // Last nonce should now be 1
+      lastNonceSubmitted = Number(await state.cosmosBridge.lastNonceSubmitted());
+      expect(lastNonceSubmitted).to.be.equal(1);
+
+      balance = Number(await state.token.balanceOf(state.recipient));
+      expect(balance).to.be.equal(state.amount);
     });
 
     it("should unlock eth upon the successful processing of a burn prophecy claim", async function () {
@@ -161,10 +166,10 @@ describe("Test Cosmos Bridge", function () {
       expect(recipientCurrentBalance).to.be.equal(
         "10000"
       );
+      state.nonce = 1;
 
       // Submit a new prophecy claim to the CosmosBridge to make oracle claims upon
-      state.nonce = 1;
-      let receipt = await state.cosmosBridge.connect(userOne).newProphecyClaim(
+      const digest = getDigestNewProphecyClaim([
         state.sender,
         state.senderSequence,
         state.recipient,
@@ -172,27 +177,26 @@ describe("Test Cosmos Bridge", function () {
         state.amount,
         false,
         state.nonce
-      ).should.be.fulfilled;
-      
-      receipt = await state.cosmosBridge.connect(userTwo).newProphecyClaim(
-        state.sender,
-        state.senderSequence,
-        state.recipient,
-        state.ethereumToken,
-        state.amount,
-        false,
-        state.nonce
-      ).should.be.fulfilled;
+      ]);
+      const signatures = await signHash([userOne, userTwo, userFour], digest);
 
-      receipt = await state.cosmosBridge.connect(userFour).newProphecyClaim(
-        state.sender,
-        state.senderSequence,
-        state.recipient,
-        state.ethereumToken,
-        state.amount,
-        false,
-        state.nonce
-      ).should.be.fulfilled;
+      let claimData = {
+        cosmosSender: state.sender,
+        cosmosSenderSequence: state.senderSequence,
+        ethereumReceiver: state.recipient,
+        tokenAddress: state.ethereumToken,
+        amount: state.amount,
+        doublePeg: false,
+        nonce: state.nonce
+      };
+
+      await state.cosmosBridge
+        .connect(userOne)
+        .submitProphecyClaimAggregatedSigs(
+            digest,
+            claimData,
+            signatures
+        );
 
       const recipientEndingBalance = await getBalance(state.recipient);
       const recipientBalance = Web3Utils.fromWei(recipientEndingBalance);

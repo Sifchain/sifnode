@@ -1,4 +1,4 @@
-const { ethers, upgrades, waffle } = require("hardhat");
+const { ethers, upgrades } = require("hardhat");
 const web3 = require("web3")
 
 async function returnContractObjects() {
@@ -7,6 +7,49 @@ async function returnContractObjects() {
     let BridgeToken = await ethers.getContractFactory("BridgeToken");
 
     return {CosmosBridge, BridgeBank, BridgeToken};
+}
+
+function getDigestNewProphecyClaim(data) {
+  if (!Array.isArray(data)) {
+    throw new Error("Input Error: not array");
+  }
+
+  const digest = ethers.utils.keccak256(
+    ethers.utils.defaultAbiCoder.encode(
+      [
+        "bytes",
+        "uint256",
+        "address",
+        "address",
+        "uint256",
+        "bool",
+        "uint128",
+      ],
+      data
+    ),
+  );
+
+  return digest;
+}
+
+async function signHash(signers, hash) {
+  let sigData = [];
+  
+  for (let i = 0; i < signers.length; i++) {
+    let sig = await signers[i].signMessage(ethers.utils.arrayify(hash));
+
+    const splitSig = ethers.utils.splitSignature(sig);
+    sig = {
+      signer: signers[i].address,
+      _v: splitSig.v,
+      _r: splitSig.r,
+      _s: splitSig.s,
+    };
+
+    sigData.push(sig);
+  }
+
+  return sigData;
 }
 
 async function multiTokenSetup(
@@ -186,5 +229,7 @@ async function deployTrollToken() {
 module.exports = {
     multiTokenSetup,
     singleSetup,
-    deployTrollToken
+    deployTrollToken,
+    signHash,
+    getDigestNewProphecyClaim
 };

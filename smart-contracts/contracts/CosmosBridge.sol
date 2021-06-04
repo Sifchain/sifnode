@@ -3,6 +3,7 @@ pragma solidity 0.8.0;
 import "./Oracle.sol";
 import "./BridgeBank/BridgeBank.sol";
 import "./CosmosBridgeStorage.sol";
+import "hardhat/console.sol";
 
 contract CosmosBridge is CosmosBridgeStorage, Oracle {
     bool private _initialized;
@@ -28,7 +29,7 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
         address indexed bridgeTokenAddress
     );
 
-    event LogProphecyCompleted(uint256 prophecyID);
+    event LogProphecyCompleted(uint256 prophecyID, bool success);
 
     /*
      * @dev: Modifier to restrict access to current ValSet validators
@@ -84,172 +85,192 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
     }
 
     function getProphecyID(
-        bytes calldata _cosmosSender,
-        uint256 _cosmosSenderSequence,
-        address payable _ethereumReceiver,
-        address _tokenAddress,
-        uint256 _amount
+        bytes calldata cosmosSender,
+        uint256 cosmosSenderSequence,
+        address payable ethereumReceiver,
+        address tokenAddress,
+        uint256 amount,
+        bool doublePeg,
+        uint128 nonce
     ) public pure returns (uint256) {
         return uint256(
             keccak256(
-                abi.encodePacked(
-                    _cosmosSender,
-                    _cosmosSenderSequence,
-                    _ethereumReceiver,
-                    _tokenAddress,
-                    _amount
+                abi.encode(
+                    cosmosSender,
+                    cosmosSenderSequence,
+                    ethereumReceiver,
+                    tokenAddress,
+                    amount,
+                    doublePeg,
+                    nonce
                 )
             )
         );
     }
 
-    /**
-     * function: newProphecyClaim
-     *       Creates a new burn or lock prophecy claim, adding it to the prophecyClaims mapping.
-     *       Burn claims require that there are enough locked Ethereum assets to complete the prophecy.
-     *       Lock claims have a new token contract deployed or use an existing contract based on symbol.
-     *
-     * @param _cosmosSender sifchain sender's address
-     * @param _cosmosSenderSequence nonce of the cosmos sender
-     * @param _ethereumReceiver ethereum address of the receiver
-     * @param _tokenAddress address of the token to send
-     * @param _amount amount of token to send
-     * @param _doublePeg whether or not this is a double peg transaction
-     *
-     */
-    function newProphecyClaim(
-        bytes calldata _cosmosSender,
-        uint256 _cosmosSenderSequence,
-        address payable _ethereumReceiver,
-        address _tokenAddress,
-        uint256 _amount,
-        bool _doublePeg,
-        uint128 _nonce
-    ) external onlyValidator {
+    function verifySignature(
+        address signer,
+        bytes32 hashDigest,
+        uint8 _v,
+		bytes32 _r,
+		bytes32 _s
+    ) private pure returns (bool) {
+		bytes32 messageDigest = keccak256(abi.encodePacked("\x19Ethereum Signed Message:\n32", hashDigest));
+		return signer == ecrecover(messageDigest, _v, _r, _s);
+	}
+    
+    // this is unfortunately the best we can do to ensure no duplicate validators are calling
+    // it is possible to build a hashmap in memory, but I'm unsure of how much that saves and
+    // it would require some pretty low level work for this very simple function
+    // Alternatively, cast addresses to UINT's and possibly do some bitwise operations
+    // to ensure there are no duplicate numbers
+    function findDup(SignatureData[] calldata validators) public pure returns (bool) {
+        for (uint256 i = 0; i < validators.length; i++) {
+            for (uint256 j = i + 1; j < validators.length; j++) {
+                if (validators[i].signer == validators[j].signer) {
+                    return true;
+                }
+            }
+        }
 
-        uint256 _prophecyID = getProphecyID(
-            _cosmosSender,
-            _cosmosSenderSequence,
-            _ethereumReceiver,
-            _tokenAddress,
-            _amount
+        return false;
+    }
+
+    function getSignedPower(SignatureData[] calldata validators) public view returns(uint256) {
+        uint256 totalPower = 0;
+        for (uint256 i = 0; i < validators.length; i++) {
+            totalPower += getValidatorPower(validators[i].signer);
+        }
+
+        return totalPower;
+    }
+
+    struct SignatureData {
+        address signer;
+        uint8 _v;
+		bytes32 _r;
+		bytes32 _s;
+    }
+
+    struct ClaimData {
+        bytes cosmosSender;
+        uint256 cosmosSenderSequence;
+        address payable ethereumReceiver;
+        address tokenAddress;
+        uint256 amount;
+        bool doublePeg;
+        uint128 nonce;
+    }
+
+    function submitProphecyClaimAggregatedSigs(
+        bytes32 hashDigest,
+        ClaimData calldata claimData,
+        SignatureData[] calldata signatureData
+    ) external {
+
+        uint256 prophecyID = getProphecyID(
+            claimData.cosmosSender,
+            claimData.cosmosSenderSequence,
+            claimData.ethereumReceiver,
+            claimData.tokenAddress,
+            claimData.amount,
+            claimData.doublePeg,
+            claimData.nonce
         );
 
-        // save state of this oracle making a claim
-        newOracleClaim(_prophecyID, msg.sender);
+        require(
+            uint256(hashDigest) == prophecyID,
+            "INV_DATA"
+        );
 
-        uint256 previousNonce = lastNonceSubmitted[msg.sender];
+        // ensure signature lengths are correct
+        require(
+            signatureData.length > 0 && signatureData.length <= validatorCount,
+            "INV_SIG_LEN"
+        );
+
+        // ensure there are no duplicate signers
+        require(
+            !findDup(signatureData), "DUP_SIGNER"
+        );
+
+        // check that all signers are validators and are unique
+        for (uint256 i = 0; i < signatureData.length; i++) {
+            require(isActiveValidator(signatureData[i].signer), "INV_SIGNER");
+            require(
+                verifySignature(
+                    signatureData[i].signer,
+                    hashDigest,
+                    signatureData[i]._v,
+                    signatureData[i]._r,
+                    signatureData[i]._s
+                ) == true,
+                "INV_SIG"
+            );
+        }
+
+        uint256 signedPower = getSignedPower(signatureData);
+
+        require(getProphecyStatus(signedPower), "INV_POW");
+
+        uint256 previousNonce = lastNonceSubmitted;
         require(
             // assert nonce is correct
-            previousNonce < _nonce && previousNonce + 1 == _nonce,
+            previousNonce + 1 == claimData.nonce,
             "INV_ORD"
         );
-        lastNonceSubmitted[msg.sender] = _nonce;
+        lastNonceSubmitted = claimData.nonce;
 
-        // we need to exit gracefully otherwise it would cause ordering
-        // issues and never allow the 4th validator to catch up
-        if (prophecyRedeemed[_prophecyID]) {
-            return ;
-        }
+        emit LogNewProphecyClaim(
+            prophecyID,
+            claimData.ethereumReceiver,
+            claimData.amount
+        );
 
-        if (oracleClaimValidators[_prophecyID] == 0) {
-            emit LogNewProphecyClaim(
-                _prophecyID,
-                _ethereumReceiver,
-                _amount
-            );
-        }
+        // if we are double pegging, then we are going to need to get the address on this chain
+        address tokenAddress = claimData.doublePeg ? sourceAddressToDestinationAddress[claimData.tokenAddress] : claimData.tokenAddress;
 
-        // Process the prophecy
-        (bool claimComplete, , ) = getProphecyThreshold(_prophecyID);
-
-        if (claimComplete) {
-            // you cannot redeem this prophecy again
-            prophecyRedeemed[_prophecyID] = true;
-
-            // if we are double pegging, then we are going to need to get the address on this chain
-            _tokenAddress = _doublePeg ? sourceAddressToDestinationAddress[_tokenAddress] : _tokenAddress;
-
-            completeProphecyClaim(
-                _prophecyID,
-                _ethereumReceiver,
-                _tokenAddress,
-                _amount
-            );
-        }
+        completeProphecyClaim(
+            prophecyID,
+            claimData.ethereumReceiver,
+            tokenAddress,
+            claimData.amount
+        );
     }
-    
+
     /**
-     * @param _symbol symbol of the ERC20 token on the source chain
-     * @param _name name of the ERC20 token on the source chain
-     * @param _sourceChainTokenAddress address of the ERC20 token on the source chain
-     * @param _decimals of the ERC20 token on the source chain
+     * @param symbol symbol of the ERC20 token on the source chain
+     * @param name name of the ERC20 token on the source chain
+     * @param sourceChainTokenAddress address of the ERC20 token on the source chain
+     * @param decimals of the ERC20 token on the source chain
      * @param chainDescriptor descriptor of the source chain
      */
     function createNewBridgeToken(
-        string calldata _symbol,
-        string calldata _name,
-        address _sourceChainTokenAddress,
-        uint8 _decimals,
+        string calldata symbol,
+        string calldata name,
+        address sourceChainTokenAddress,
+        uint8 decimals,
         uint256 chainDescriptor
     ) external onlyValidator {
         // need to make a business decision on what this symbol should be
         // First lock of this asset, deploy new contract and get new symbol/token address
         address tokenAddress = BridgeBank(bridgeBank)
             .createNewBridgeToken(
-                _name,
-                _symbol,
-                _decimals
+                name,
+                symbol,
+                decimals
             );
 
-        sourceAddressToDestinationAddress[_sourceChainTokenAddress] = tokenAddress;
+        sourceAddressToDestinationAddress[sourceChainTokenAddress] = tokenAddress;
 
         emit LogNewBridgeTokenCreated(
-            _decimals,
+            decimals,
             chainDescriptor,
-            _name,
-            _symbol,
-            _sourceChainTokenAddress,
+            name,
+            symbol,
+            sourceChainTokenAddress,
             tokenAddress
         );
-    }
-
-    struct prophecyBundle {
-        bytes _cosmosSender;
-        uint256 _cosmosSenderSequence;
-        address payable _ethereumReceiver;
-        address _tokenAddress;
-        uint256 _amount;
-        bool _doublePeg;
-        uint128 _nonce;
-    }
-
-    function batchSubmitProphecies(
-        prophecyBundle[] calldata _prophecies
-    ) external onlyValidator {
-        for (uint256 i = 0; i < _prophecies.length; i++) {
-            uint256 _prophecyID = getProphecyID(
-                _prophecies[i]._cosmosSender,
-                _prophecies[i]._cosmosSenderSequence,
-                _prophecies[i]._ethereumReceiver,
-                _prophecies[i]._tokenAddress,
-                _prophecies[i]._amount
-            );
-
-            if (prophecyRedeemed[_prophecyID]) {
-                continue;
-            }
-
-            this.newProphecyClaim(
-                _prophecies[i]._cosmosSender,
-                _prophecies[i]._cosmosSenderSequence,
-                _prophecies[i]._ethereumReceiver,
-                _prophecies[i]._tokenAddress,
-                _prophecies[i]._amount,
-                _prophecies[i]._doublePeg,
-                _prophecies[i]._nonce
-            );
-        }
     }
 
     /*
@@ -259,24 +280,21 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
      *       Lock claims mint BridgeTokens on BridgeBank's token whitelist.
      */
     function completeProphecyClaim(
-        uint256 _prophecyID,
+        uint256 prophecyID,
         address payable ethereumReceiver,
-        address _tokenAddress,
+        address tokenAddress,
         uint256 amount
     ) internal {
         (bool success, ) = bridgeBank.call{gas: 120000}(
             abi.encodeWithSignature(
                 "handleUnpeg(address,address,uint256)",
                 ethereumReceiver,
-                _tokenAddress,
+                tokenAddress,
                 amount
             )
         );
 
-        if (success) {
-            // if successful in unpegging, emit event
-            emit LogProphecyCompleted(_prophecyID);
-        }
-        // otherwise, fail silently
+        // prophecy completed and whether or not the call to bridgebank was successful
+        emit LogProphecyCompleted(prophecyID, success);
     }
 }

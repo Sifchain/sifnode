@@ -76,15 +76,6 @@ contract BridgeBank is BankStorage,
         _;
     }
 
-    function getChainID() public view returns (uint256) {
-        uint256 id;
-        assembly {
-            id := chainid()
-        }
-
-        return id;
-    }
-
     /*
      * @dev: Set the token address in whitelist
      *
@@ -220,7 +211,6 @@ contract BridgeBank is BankStorage,
         uint8 decimals = getDecimals(_token);
 
         lockBurnNonce = lockBurnNonce + 1;
-        uint256 _chainid = getChainID();
 
         emit LogBurn(
             msg.sender,
@@ -228,7 +218,6 @@ contract BridgeBank is BankStorage,
             _token,
             _amount,
             lockBurnNonce,
-            _chainid,
             decimals
         );
     }
@@ -290,9 +279,8 @@ contract BridgeBank is BankStorage,
         }
         require(msg.value == 0, "do not send currency if locking tokens");
 
-        uint256 _chainid = getChainID();
         lockBurnNonce += 1;
-        _lockTokens(_recipient, _token, _amount, _chainid, lockBurnNonce);
+        _lockTokens(_recipient, _token, _amount, lockBurnNonce);
     }
 
     function multiLock(
@@ -303,7 +291,6 @@ contract BridgeBank is BankStorage,
         require(_recipient.length == _token.length, "M_P");
         require(_token.length == _amount.length, "M_P");
 
-        uint256 _chainid = getChainID();
         uint256 intermediateLockBurnNonce = lockBurnNonce;
 
         for (uint256 i = 0; i < _recipient.length; i++) {
@@ -314,7 +301,6 @@ contract BridgeBank is BankStorage,
                 _recipient[i],
                 _token[i],
                 _amount[i],
-                _chainid,
                 intermediateLockBurnNonce
             );
         }
@@ -335,8 +321,6 @@ contract BridgeBank is BankStorage,
         require(_token.length == _amount.length, "M_P");
         require(_token.length == _isBurn.length, "M_P");
 
-        uint256 _chainid = getChainID();
-
         uint256 intermediateLockBurnNonce = lockBurnNonce;
 
         for (uint256 i = 0; i < _recipient.length; i++) {
@@ -348,7 +332,6 @@ contract BridgeBank is BankStorage,
                     _recipient[i],
                     _token[i],
                     _amount[i],
-                    _chainid,
                     intermediateLockBurnNonce
                 );
             } else {
@@ -356,7 +339,6 @@ contract BridgeBank is BankStorage,
                     _recipient[i],
                     _token[i],
                     _amount[i],
-                    _chainid,
                     intermediateLockBurnNonce
                 );
             }
@@ -368,7 +350,6 @@ contract BridgeBank is BankStorage,
         bytes calldata _recipient,
         address tokenAddress,
         uint256 tokenAmount,
-        uint256 _chainid,
         uint256 _lockBurnNonce
     ) private {
         IERC20 tokenToTransfer = IERC20(tokenAddress);
@@ -392,7 +373,6 @@ contract BridgeBank is BankStorage,
             tokenAddress,
             tokenAmount,
             _lockBurnNonce,
-            _chainid,
             decimals,
             symbol,
             name
@@ -403,7 +383,6 @@ contract BridgeBank is BankStorage,
         bytes calldata _recipient,
         address tokenAddress,
         uint256 tokenAmount,
-        uint256 _chainid,
         uint256 _lockBurnNonce
     ) private {
         BridgeToken tokenToTransfer = BridgeToken(tokenAddress);
@@ -426,7 +405,6 @@ contract BridgeBank is BankStorage,
             tokenAddress,
             tokenAmount,
             _lockBurnNonce,
-            _chainid,
             decimals
         );
     }
@@ -454,21 +432,17 @@ contract BridgeBank is BankStorage,
         string memory symbol = getSymbol(_token);
 
         lockBurnNonce = lockBurnNonce + 1;
-        uint256 _chainid = getChainID();
 
-        {
-            emit LogLock(
-                msg.sender,
-                _recipient,
-                _token,
-                _amount,
-                lockBurnNonce,
-                _chainid,
-                decimals,
-                symbol,
-                name
-            );
-        }
+        emit LogLock(
+            msg.sender,
+            _recipient,
+            _token,
+            _amount,
+            lockBurnNonce,
+            decimals,
+            symbol,
+            name
+        );
     }
 
     /**
