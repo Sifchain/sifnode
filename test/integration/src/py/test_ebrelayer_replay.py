@@ -78,11 +78,3 @@ def test_transfer_eth_to_ceth_using_replay_blocks(
     ending_balance2 = test_utilities.get_sifchain_addr_balance(request.sifchain_address, request.sifnodecli_node,
                                                                request.sifchain_symbol)
     assert (ending_balance2 == request.amount)
-
-    # now start ebrelayer and do another transfer
-    test_utilities.advance_n_ethereum_blocks(test_utilities.n_wait_blocks + 1, smart_contracts_dir)
-    test_utilities.get_shell_output(f"{integration_dir}/sifchain_start_ebrelayer.sh")
-    burn_lock_functions.transfer_ethereum_to_sifchain(request, 15)
-    ending_balance3 = test_utilities.get_sifchain_addr_balance(request.sifchain_address, request.sifnodecli_node,
-                                                               request.sifchain_symbol)
-    assert (ending_balance3 == request.amount * 2)
