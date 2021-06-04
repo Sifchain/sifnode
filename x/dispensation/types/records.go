@@ -52,6 +52,9 @@ type DistributionRecord struct {
 type DistributionRecords []DistributionRecord
 
 func (records DistributionRecords) String() string {
+	if len(records) == 0 {
+		return ""
+	}
 	var rc string
 	for _, record := range records {
 		rc = rc + record.RecipientAddress.String() + ","

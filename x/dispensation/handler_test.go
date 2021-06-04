@@ -115,4 +115,8 @@ func TestNewHandler_RunDistribution(t *testing.T) {
 	assert.Len(t, records, 10)
 	records = keeper.GetRecordsForNamePending(ctx, distributionName)
 	assert.Len(t, records, (recipients*2)-10)
+	msgRunFalse := types.NewMsgRunDistribution(sdk.AccAddress(ed25519.GenPrivKey().PubKey().Address()), distributionName, types.Airdrop)
+	res, err = handler(ctx, msgRunFalse)
+	require.NoError(t, err)
+	require.NotNil(t, res)
 }
