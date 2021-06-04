@@ -46,7 +46,7 @@
     "@types/lodash": "^4.14.167",
     "babel-jest": "^26.5.2",
     "concurrently": "^5.3.0",
-    "jest": "^24.9.0",
+    "jest": "^27.0.4",
     "jest-websocket-mock": "^2.2.0",
     "tinyify": "^3.0.0",
     "tsify": "^5.0.2",
