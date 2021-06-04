@@ -26,28 +26,640 @@ const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 type NetworkDescriptor int32
 
 const (
-	// Not currently in use
+	// unspecified
 	NetworkDescriptor_NETWORK_DESCRIPTOR_UNSPECIFIED NetworkDescriptor = 0
-	// Ethereum mainnet
-	NetworkDescriptor_NETWORK_DESCRIPTOR_ETHEREUM NetworkDescriptor = 1
-	// Bitcoin mainnet
-	NetworkDescriptor_NETWORK_DESCRIPTOR_BITCOIN NetworkDescriptor = 2
-	// Binance Smart Chain https://www.binance.org/en/smartChain
-	NetworkDescriptor_NETWORK_DESCRIPTOR_BINANCE_SMART_CHAIN NetworkDescriptor = 3
+	// https://ethereum.org
+	NetworkDescriptor_NETWORK_DESCRIPTOR_ETHEREUM_MAINNET NetworkDescriptor = 1
+	// https://optimism.io
+	NetworkDescriptor_NETWORK_DESCRIPTOR_OPTIMISTIC_ETHEREUM NetworkDescriptor = 10
+	// https://forum.poa.network/c/xdai_chain
+	NetworkDescriptor_NETWORK_DESCRIPTOR_XDAI_CHAIN NetworkDescriptor = 100
+	// http://smartbch.org/
+	NetworkDescriptor_NETWORK_DESCRIPTOR_SMART_BITCOIN_CASH NetworkDescriptor = 10000
+	// http://smartbch.org/
+	NetworkDescriptor_NETWORK_DESCRIPTOR_SMART_BITCOIN_CASH_TESTNET NetworkDescriptor = 10001
+	// https://www.klaytn.com/
+	NetworkDescriptor_NETWORK_DESCRIPTOR_KLAYTN_TESTNET_BAOBAB NetworkDescriptor = 1001
+	// https://www.newtonproject.org/
+	NetworkDescriptor_NETWORK_DESCRIPTOR_NEWTON_TESTNET NetworkDescriptor = 1007
+	// https://einc.io
+	NetworkDescriptor_NETWORK_DESCRIPTOR_ETHERINC NetworkDescriptor = 101
+	// https://evrice.com
+	NetworkDescriptor_NETWORK_DESCRIPTOR_EVRICE_NETWORK NetworkDescriptor = 1010
+	// https://www.xixoio.com/
+	NetworkDescriptor_NETWORK_DESCRIPTOR_BLOCKCHAIN_GENESIS_MAINNET NetworkDescriptor = 10101
+	// https://www.newtonproject.org/
+	NetworkDescriptor_NETWORK_DESCRIPTOR_NEWTON NetworkDescriptor = 1012
+	// https://web3games.org/
+	NetworkDescriptor_NETWORK_DESCRIPTOR_WEB3GAMES_TESTNET NetworkDescriptor = 102
+	// https://clover.finance/sakura
+	NetworkDescriptor_NETWORK_DESCRIPTOR_SAKURA NetworkDescriptor = 1022
+	// https://clover.finance
+	NetworkDescriptor_NETWORK_DESCRIPTOR_CLOVER_TESTNET NetworkDescriptor = 1023
+	// https://clover.finance
+	NetworkDescriptor_NETWORK_DESCRIPTOR_CLOVER_MAINNET NetworkDescriptor = 1024
+	// https://thundercore.com
+	NetworkDescriptor_NETWORK_DESCRIPTOR_THUNDERCORE_MAINNET NetworkDescriptor = 108
+	// https://metadium.com
+	NetworkDescriptor_NETWORK_DESCRIPTOR_METADIUM_MAINNET NetworkDescriptor = 11
+	// https://iposlab.com
+	NetworkDescriptor_NETWORK_DESCRIPTOR_IPOS_NETWORK NetworkDescriptor = 1122334455
+	// https://mathchain.org
+	NetworkDescriptor_NETWORK_DESCRIPTOR_MATHCHAIN NetworkDescriptor = 1139
+	// https://mathchain.org
+	NetworkDescriptor_NETWORK_DESCRIPTOR_MATHCHAIN_TESTNET NetworkDescriptor = 1140
+	// https://metadium.com
+	NetworkDescriptor_NETWORK_DESCRIPTOR_METADIUM_TESTNET NetworkDescriptor = 12
+	// https://fuse.io/
+	NetworkDescriptor_NETWORK_DESCRIPTOR_FUSE_MAINNET NetworkDescriptor = 122
+	// https://hecoinfo.com
+	NetworkDescriptor_NETWORK_DESCRIPTOR_HUOBI_ECO_CHAIN_MAINNET NetworkDescriptor = 128
+	// https://moonbeam.network/networks/moonbeam/
+	NetworkDescriptor_NETWORK_DESCRIPTOR_MOONBEAM_POLKADOT NetworkDescriptor = 1284
+	// https://moonbeam.network/networks/moonriver/
+	NetworkDescriptor_NETWORK_DESCRIPTOR_MOONRIVER_KUSAMA NetworkDescriptor = 1285
+	// moonrock
+	NetworkDescriptor_NETWORK_DESCRIPTOR_MOONROCK_ROCOCO NetworkDescriptor = 1286
+	// https://docs.moonbeam.network/networks/testnet/
+	NetworkDescriptor_NETWORK_DESCRIPTOR_MOONBEAM_TESTNET_MOONBASE_ALPHA NetworkDescriptor = 1287
+	// https://diode.io/staging
+	NetworkDescriptor_NETWORK_DESCRIPTOR_DIODE_TESTNET_STAGING NetworkDescriptor = 13
+	// https://ether1.org
+	NetworkDescriptor_NETWORK_DESCRIPTOR_ETHER_1 NetworkDescriptor = 1313114
+	// https://aurora.dev
+	NetworkDescriptor_NETWORK_DESCRIPTOR_AURORA_MAINNET NetworkDescriptor = 1313161554
+	// https://aurora.dev
+	NetworkDescriptor_NETWORK_DESCRIPTOR_AURORA_TESTNET NetworkDescriptor = 1313161555
+	// https://aurora.dev
+	NetworkDescriptor_NETWORK_DESCRIPTOR_AURORA_BETANET NetworkDescriptor = 1313161556
+	// https://xerom.org
+	NetworkDescriptor_NETWORK_DESCRIPTOR_XEROM NetworkDescriptor = 1313500
+	// https://pepchain.io
+	NetworkDescriptor_NETWORK_DESCRIPTOR_PEPCHAIN_CHURCHILL NetworkDescriptor = 13371337
+	// https://matic.network/
+	NetworkDescriptor_NETWORK_DESCRIPTOR_MATIC_MAINNET NetworkDescriptor = 137
+	// https://flare.xyz
+	NetworkDescriptor_NETWORK_DESCRIPTOR_FLARE_MAINNET NetworkDescriptor = 14
+	// https://diode.io/prenet
+	NetworkDescriptor_NETWORK_DESCRIPTOR_DIODE_PRENET NetworkDescriptor = 15
+	// https://github.com/flare_eng/coston
+	NetworkDescriptor_NETWORK_DESCRIPTOR_FLARE_TESTNET_COSTON NetworkDescriptor = 16
+	// https://catechain.com
+	NetworkDescriptor_NETWORK_DESCRIPTOR_CATECOIN_CHAIN_MAINNET NetworkDescriptor = 1618
+	// https://explorer.sirius.lightstreams.io
+	NetworkDescriptor_NETWORK_DESCRIPTOR_LIGHTSTREAMS_TESTNET NetworkDescriptor = 162
+	// https://atheios.com
+	NetworkDescriptor_NETWORK_DESCRIPTOR_ATHEIOS NetworkDescriptor = 1620
+	// https://explorer.lightstreams.io
+	NetworkDescriptor_NETWORK_DESCRIPTOR_LIGHTSTREAMS_MAINNET NetworkDescriptor = 163
+	// https://www.harmony.one/
+	NetworkDescriptor_NETWORK_DESCRIPTOR_HARMONY_MAINNET_SHARD_0 NetworkDescriptor = 1666600000
+	// https://www.harmony.one/
+	NetworkDescriptor_NETWORK_DESCRIPTOR_HARMONY_MAINNET_SHARD_1 NetworkDescriptor = 1666600001
+	// https://www.harmony.one/
+	NetworkDescriptor_NETWORK_DESCRIPTOR_HARMONY_MAINNET_SHARD_2 NetworkDescriptor = 1666600002
+	// https://www.harmony.one/
+	NetworkDescriptor_NETWORK_DESCRIPTOR_HARMONY_MAINNET_SHARD_3 NetworkDescriptor = 1666600003
+	// https://www.harmony.one/
+	NetworkDescriptor_NETWORK_DESCRIPTOR_HARMONY_TESTNET_SHARD_0 NetworkDescriptor = 1666700000
+	// https://www.harmony.one/
+	NetworkDescriptor_NETWORK_DESCRIPTOR_HARMONY_TESTNET_SHARD_1 NetworkDescriptor = 1666700001
+	// https://www.harmony.one/
+	NetworkDescriptor_NETWORK_DESCRIPTOR_HARMONY_TESTNET_SHARD_2 NetworkDescriptor = 1666700002
+	// https://www.harmony.one/
+	NetworkDescriptor_NETWORK_DESCRIPTOR_HARMONY_TESTNET_SHARD_3 NetworkDescriptor = 1666700003
+	// https://www.hoosmartchain.com
+	NetworkDescriptor_NETWORK_DESCRIPTOR_HOO_SMART_CHAIN_TESTNET NetworkDescriptor = 170
+	// https://thundercore.com
+	NetworkDescriptor_NETWORK_DESCRIPTOR_THUNDERCORE_TESTNET NetworkDescriptor = 18
+	// https://iolite.io
+	NetworkDescriptor_NETWORK_DESCRIPTOR_IOLITE NetworkDescriptor = 18289463
+	// https://teslafunds.io
+	NetworkDescriptor_NETWORK_DESCRIPTOR_TESLAFUNDS NetworkDescriptor = 1856
+	// https://egem.io
+	NetworkDescriptor_NETWORK_DESCRIPTOR_ETHERGEM NetworkDescriptor = 1987
+	// https://expanse.tech
+	NetworkDescriptor_NETWORK_DESCRIPTOR_EXPANSE_NETWORK NetworkDescriptor = 2
+	// https://www.elastos.org/
+	NetworkDescriptor_NETWORK_DESCRIPTOR_ELA_ETH_SIDECHAIN_MAINNET NetworkDescriptor = 20
+	// https://akroma.io
+	NetworkDescriptor_NETWORK_DESCRIPTOR_AKROMA NetworkDescriptor = 200625
+	// https://quarkblockchain.org/
+	NetworkDescriptor_NETWORK_DESCRIPTOR_QUARKBLOCKCHAIN NetworkDescriptor = 20181205
+	// https://420integrated.com
+	NetworkDescriptor_NETWORK_DESCRIPTOR_420COIN NetworkDescriptor = 2020
+	// http://edgewa.re
+	NetworkDescriptor_NETWORK_DESCRIPTOR_EDGEWARE_MAINNET NetworkDescriptor = 2021
+	// http://edgewa.re
+	NetworkDescriptor_NETWORK_DESCRIPTOR_BERESHEET_TESTNET NetworkDescriptor = 2022
+	// https://elaeth.io/
+	NetworkDescriptor_NETWORK_DESCRIPTOR_ELA_ETH_SIDECHAIN_TESTNET NetworkDescriptor = 21
+	// https://freighttrust.com
+	NetworkDescriptor_NETWORK_DESCRIPTOR_FREIGHT_TRUST_NETWORK NetworkDescriptor = 211
+	// https://www.elastos.org/
+	NetworkDescriptor_NETWORK_DESCRIPTOR_ELA_DID_SIDECHAIN_MAINNET NetworkDescriptor = 22
+	// https://elaeth.io/
+	NetworkDescriptor_NETWORK_DESCRIPTOR_ELA_DID_SIDECHAIN_TESTNET NetworkDescriptor = 23
+	// https://webchain.network
+	NetworkDescriptor_NETWORK_DESCRIPTOR_WEBCHAIN NetworkDescriptor = 24484
+	// https://energyweb.org
+	NetworkDescriptor_NETWORK_DESCRIPTOR_ENERGY_WEB_CHAIN NetworkDescriptor = 246
+	// https://artis.eco
+	NetworkDescriptor_NETWORK_DESCRIPTOR_ARTIS_SIGMA1 NetworkDescriptor = 246529
+	// https://artis.network
+	NetworkDescriptor_NETWORK_DESCRIPTOR_ARTIS_TESTNET_TAU1 NetworkDescriptor = 246785
+	// https://fantom.foundation
+	NetworkDescriptor_NETWORK_DESCRIPTOR_FANTOM_OPERA NetworkDescriptor = 250
+	// https://testnet.hecoinfo.com
+	NetworkDescriptor_NETWORK_DESCRIPTOR_HUOBI_ECO_CHAIN_TESTNET NetworkDescriptor = 256
+	// https://hpbscan.org/
+	NetworkDescriptor_NETWORK_DESCRIPTOR_HIGH_PERFORMANCE_BLOCKCHAIN NetworkDescriptor = 269
+	// https://auxilium.global
+	NetworkDescriptor_NETWORK_DESCRIPTOR_AUXILIUM_NETWORK_MAINNET NetworkDescriptor = 28945486
+	// https://github.com/ethereum/ropsten
+	NetworkDescriptor_NETWORK_DESCRIPTOR_ETHEREUM_TESTNET_ROPSTEN NetworkDescriptor = 3
+	// https://rsk.co
+	NetworkDescriptor_NETWORK_DESCRIPTOR_RSK_MAINNET NetworkDescriptor = 30
+	// https://rsk.co
+	NetworkDescriptor_NETWORK_DESCRIPTOR_RSK_TESTNET NetworkDescriptor = 31
+	// https://ethersocial.org
+	NetworkDescriptor_NETWORK_DESCRIPTOR_ETHERSOCIAL_NETWORK NetworkDescriptor = 31102
+	// https://scan_testnet.kcc.network
+	NetworkDescriptor_NETWORK_DESCRIPTOR_KUCOIN_COMMUNITY_CHAIN_TESTNET NetworkDescriptor = 322
+	// https://www.fusion.org/
+	NetworkDescriptor_NETWORK_DESCRIPTOR_FUSION_MAINNET NetworkDescriptor = 32659
+	// https://www.goodata.org
+	NetworkDescriptor_NETWORK_DESCRIPTOR_GOODDATA_MAINNET NetworkDescriptor = 33
+	// https://tbwg.io
+	NetworkDescriptor_NETWORK_DESCRIPTOR_TBWG_CHAIN NetworkDescriptor = 35
+	// https://joys.digital
+	NetworkDescriptor_NETWORK_DESCRIPTOR_JOYS_DIGITAL_MAINNET NetworkDescriptor = 35855456
+	// https://valorbit.com
+	NetworkDescriptor_NETWORK_DESCRIPTOR_VALORBIT NetworkDescriptor = 38
+	// https://lisinski.online
+	NetworkDescriptor_NETWORK_DESCRIPTOR_LISINSKI NetworkDescriptor = 385
+	// https://www.energi.world/
+	NetworkDescriptor_NETWORK_DESCRIPTOR_ENERGI_MAINNET NetworkDescriptor = 39797
+	// https://www.rinkeby.io
+	NetworkDescriptor_NETWORK_DESCRIPTOR_ETHEREUM_TESTNET_RINKEBY NetworkDescriptor = 4
+	// https://telos.net
+	NetworkDescriptor_NETWORK_DESCRIPTOR_TELOS_EVM_MAINNET NetworkDescriptor = 40
+	// https://telos.net
+	NetworkDescriptor_NETWORK_DESCRIPTOR_TELOS_EVM_TESTNET NetworkDescriptor = 41
+	// https://kovan_testnet.github.io/website
+	NetworkDescriptor_NETWORK_DESCRIPTOR_ETHEREUM_TESTNET_KOVAN NetworkDescriptor = 42
+	// https://optimism.io
+	NetworkDescriptor_NETWORK_DESCRIPTOR_OPTIMISTIC_ETHEREUM_TESTNET_GOERLI NetworkDescriptor = 420
+	// https://teampeggle.com
+	NetworkDescriptor_NETWORK_DESCRIPTOR_PEGGLECOIN NetworkDescriptor = 42069
+	// https://docs.celo.org/
+	NetworkDescriptor_NETWORK_DESCRIPTOR_CELO_MAINNET NetworkDescriptor = 42220
+	// https://darwinia.network/
+	NetworkDescriptor_NETWORK_DESCRIPTOR_DARWINIA_PANGOLIN_TESTNET NetworkDescriptor = 43
+	// https://athereum.ava.network
+	NetworkDescriptor_NETWORK_DESCRIPTOR_ATHEREUM NetworkDescriptor = 43110
+	// https://cchain.explorer.avax_test.network
+	NetworkDescriptor_NETWORK_DESCRIPTOR_AVALANCHE_FUJI_TESTNET NetworkDescriptor = 43113
+	// https://cchain.explorer.avax.network/
+	NetworkDescriptor_NETWORK_DESCRIPTOR_AVALANCHE_MAINNET NetworkDescriptor = 43114
+	// https://crab.network/
+	NetworkDescriptor_NETWORK_DESCRIPTOR_DARWINIA_CRAB_NETWORK NetworkDescriptor = 44
+	// https://docs.celo.org/
+	NetworkDescriptor_NETWORK_DESCRIPTOR_CELO_ALFAJORES_TESTNET NetworkDescriptor = 44787
+	// https://iotex.io
+	NetworkDescriptor_NETWORK_DESCRIPTOR_IOTEX_NETWORK_MAINNET NetworkDescriptor = 4689
+	// https://iotex.io
+	NetworkDescriptor_NETWORK_DESCRIPTOR_IOTEX_NETWORK_TESTNET NetworkDescriptor = 4690
+	// https://www.energi.world/
+	NetworkDescriptor_NETWORK_DESCRIPTOR_ENERGI_TESTNET NetworkDescriptor = 49797
+	// https://www.rupx.io
+	NetworkDescriptor_NETWORK_DESCRIPTOR_RUPAYA NetworkDescriptor = 499
+	// https://xinfin.org
+	NetworkDescriptor_NETWORK_DESCRIPTOR_XINFIN_NETWORK_MAINNET NetworkDescriptor = 50
+	// https://xinfin.org
+	NetworkDescriptor_NETWORK_DESCRIPTOR_XINFIN_APOTHEM_TESTNET NetworkDescriptor = 51
+	// https://eraswap.info/
+	NetworkDescriptor_NETWORK_DESCRIPTOR_ERASWAP_MAINNET NetworkDescriptor = 5197
+	// http://www.coinex.org/
+	NetworkDescriptor_NETWORK_DESCRIPTOR_COINEX_SMART_CHAIN_MAINNET NetworkDescriptor = 52
+	// http://www.coinex.org/
+	NetworkDescriptor_NETWORK_DESCRIPTOR_COINEX_SMART_CHAIN_TESTNET NetworkDescriptor = 53
+	// https://tao.network
+	NetworkDescriptor_NETWORK_DESCRIPTOR_TAO_NETWORK NetworkDescriptor = 558
+	// https://www.binance.org
+	NetworkDescriptor_NETWORK_DESCRIPTOR_BINANCE_SMART_CHAIN_MAINNET NetworkDescriptor = 56
+	// http://wegochain.io
+	NetworkDescriptor_NETWORK_DESCRIPTOR_WEGOCHAIN_RUBIDIUM_MAINNET NetworkDescriptor = 5869
+	// https://acala.network
+	NetworkDescriptor_NETWORK_DESCRIPTOR_ACALA_MANDALA_TESTNET NetworkDescriptor = 595
+	// https://explorer.jade.builders/?network=kotti
+	NetworkDescriptor_NETWORK_DESCRIPTOR_ETHEREUM_CLASSIC_TESTNET_KOTTI NetworkDescriptor = 6
+	// https://gochain.io
+	NetworkDescriptor_NETWORK_DESCRIPTOR_GOCHAIN NetworkDescriptor = 60
+	// https://ethereumclassic.org
+	NetworkDescriptor_NETWORK_DESCRIPTOR_ETHEREUM_CLASSIC_MAINNET NetworkDescriptor = 61
+	// https://aquachain.github.io
+	NetworkDescriptor_NETWORK_DESCRIPTOR_AQUACHAIN NetworkDescriptor = 61717561
+	// https://ethereumclassic.org
+	NetworkDescriptor_NETWORK_DESCRIPTOR_ETHEREUM_CLASSIC_TESTNET_MORDEN NetworkDescriptor = 62
+	// https://docs.celo.org/
+	NetworkDescriptor_NETWORK_DESCRIPTOR_CELO_BAKLAVA_TESTNET NetworkDescriptor = 62320
+	// https://github.com/eth_classic/mordor/
+	NetworkDescriptor_NETWORK_DESCRIPTOR_ETHEREUM_CLASSIC_TESTNET_MORDOR NetworkDescriptor = 63
+	// https://ellaism.org
+	NetworkDescriptor_NETWORK_DESCRIPTOR_ELLAISM NetworkDescriptor = 64
+	// https://www.okex.com/okexchain
+	NetworkDescriptor_NETWORK_DESCRIPTOR_OKEXCHAIN_TESTNET NetworkDescriptor = 65
+	// https://www.okex.com/okexchain
+	NetworkDescriptor_NETWORK_DESCRIPTOR_OKEXCHAIN_MAINNET NetworkDescriptor = 66
+	// http://test.dbmbp.com
+	NetworkDescriptor_NETWORK_DESCRIPTOR_DBCHAIN_TESTNET NetworkDescriptor = 67
+	// https://www.soterone.com
+	NetworkDescriptor_NETWORK_DESCRIPTOR_SOTERONE_MAINNET NetworkDescriptor = 68
+	// https://karura.network
+	NetworkDescriptor_NETWORK_DESCRIPTOR_KARURA_NETWORK NetworkDescriptor = 686
+	// https://optimism.io
+	NetworkDescriptor_NETWORK_DESCRIPTOR_OPTIMISTIC_ETHEREUM_TESTNET_KOVAN NetworkDescriptor = 69
+	// https://thaichain.io
+	NetworkDescriptor_NETWORK_DESCRIPTOR_THAICHAIN NetworkDescriptor = 7
+	// https://energyweb.org
+	NetworkDescriptor_NETWORK_DESCRIPTOR_ENERGY_WEB_VOLTA_TESTNET NetworkDescriptor = 73799
+	// https://mix_blockchain.org
+	NetworkDescriptor_NETWORK_DESCRIPTOR_MIX NetworkDescriptor = 76
+	// https://poa.network
+	NetworkDescriptor_NETWORK_DESCRIPTOR_POA_NETWORK_SOKOL NetworkDescriptor = 77
+	// https://musicoin.tw
+	NetworkDescriptor_NETWORK_DESCRIPTOR_MUSICOIN NetworkDescriptor = 7762959
+	// https://docs.ethermint.zone
+	NetworkDescriptor_NETWORK_DESCRIPTOR_ETHERMINT_TESTNET NetworkDescriptor = 777
+	// https://primusmoney.com
+	NetworkDescriptor_NETWORK_DESCRIPTOR_PRIMUSCHAIN_MAINNET NetworkDescriptor = 78
+	// https://primusmoney.com
+	NetworkDescriptor_NETWORK_DESCRIPTOR_FIRENZE_TEST_NETWORK NetworkDescriptor = 78110
+	// https://acala.network
+	NetworkDescriptor_NETWORK_DESCRIPTOR_ACALA_NETWORK NetworkDescriptor = 787
+	// https://ubiqsmart.com
+	NetworkDescriptor_NETWORK_DESCRIPTOR_UBIQ_NETWORK_MAINNET NetworkDescriptor = 8
+	// https://scan.genechain.io/
+	NetworkDescriptor_NETWORK_DESCRIPTOR_GENECHAIN NetworkDescriptor = 80
+	// https://matic.network/
+	NetworkDescriptor_NETWORK_DESCRIPTOR_MATIC_TESTNET_MUMBAI NetworkDescriptor = 80001
+	// https://mdgl.io
+	NetworkDescriptor_NETWORK_DESCRIPTOR_MDGL_TESTNET NetworkDescriptor = 8029
+	// https://scan_testnet.genechain.io/
+	NetworkDescriptor_NETWORK_DESCRIPTOR_GENECHAIN_ADENINE_TESTNET NetworkDescriptor = 8080
+	// https://www.meter.io
+	NetworkDescriptor_NETWORK_DESCRIPTOR_METER_MAINNET NetworkDescriptor = 82
+	// https://callisto.network
+	NetworkDescriptor_NETWORK_DESCRIPTOR_CALLISTO_MAINNET NetworkDescriptor = 820
+	// https://callisto.network
+	NetworkDescriptor_NETWORK_DESCRIPTOR_CALLISTO_TESTNET NetworkDescriptor = 821
+	// https://www.klaytn.com/
+	NetworkDescriptor_NETWORK_DESCRIPTOR_KLAYTN_MAINNET_CYPRESS NetworkDescriptor = 8217
+	// https://www.kortho.io/
+	NetworkDescriptor_NETWORK_DESCRIPTOR_KORTHOTEST NetworkDescriptor = 8285
+	// https://www.gatechain.io
+	NetworkDescriptor_NETWORK_DESCRIPTOR_GATECHAIN_TESTNET NetworkDescriptor = 85
+	// https://www.gatechain.io
+	NetworkDescriptor_NETWORK_DESCRIPTOR_GATECHAIN_MAINNET NetworkDescriptor = 86
+	// https://tomocoin.io
+	NetworkDescriptor_NETWORK_DESCRIPTOR_TOMOCHAIN NetworkDescriptor = 88
+	// https://www.wanscan.org
+	NetworkDescriptor_NETWORK_DESCRIPTOR_WANCHAIN NetworkDescriptor = 888
+	// https://bloxberg.org
+	NetworkDescriptor_NETWORK_DESCRIPTOR_BLOXBERG NetworkDescriptor = 8995
+	// https://ethersocial.org
+	NetworkDescriptor_NETWORK_DESCRIPTOR_UBIQ_NETWORK_TESTNET NetworkDescriptor = 9
+	// https://testnet.binance.org/
+	NetworkDescriptor_NETWORK_DESCRIPTOR_BINANCE_SMART_CHAIN_TESTNET NetworkDescriptor = 97
+	// https://nepalblockchain.network
+	NetworkDescriptor_NETWORK_DESCRIPTOR_NEPAL_BLOCKCHAIN_NETWORK NetworkDescriptor = 977
+	// https://poa.network
+	NetworkDescriptor_NETWORK_DESCRIPTOR_POA_NETWORK_CORE NetworkDescriptor = 99
+	// https://joys.digital
+	NetworkDescriptor_NETWORK_DESCRIPTOR_JOYS_DIGITAL_TESTNET NetworkDescriptor = 99415706
+	// https://testnet.wanscan.org
+	NetworkDescriptor_NETWORK_DESCRIPTOR_WANCHAIN_TESTNET NetworkDescriptor = 999
 )
 
 var NetworkDescriptor_name = map[int32]string{
-	0: "NETWORK_DESCRIPTOR_UNSPECIFIED",
-	1: "NETWORK_DESCRIPTOR_ETHEREUM",
-	2: "NETWORK_DESCRIPTOR_BITCOIN",
-	3: "NETWORK_DESCRIPTOR_BINANCE_SMART_CHAIN",
+	0:          "NETWORK_DESCRIPTOR_UNSPECIFIED",
+	1:          "NETWORK_DESCRIPTOR_ETHEREUM_MAINNET",
+	10:         "NETWORK_DESCRIPTOR_OPTIMISTIC_ETHEREUM",
+	100:        "NETWORK_DESCRIPTOR_XDAI_CHAIN",
+	10000:      "NETWORK_DESCRIPTOR_SMART_BITCOIN_CASH",
+	10001:      "NETWORK_DESCRIPTOR_SMART_BITCOIN_CASH_TESTNET",
+	1001:       "NETWORK_DESCRIPTOR_KLAYTN_TESTNET_BAOBAB",
+	1007:       "NETWORK_DESCRIPTOR_NEWTON_TESTNET",
+	101:        "NETWORK_DESCRIPTOR_ETHERINC",
+	1010:       "NETWORK_DESCRIPTOR_EVRICE_NETWORK",
+	10101:      "NETWORK_DESCRIPTOR_BLOCKCHAIN_GENESIS_MAINNET",
+	1012:       "NETWORK_DESCRIPTOR_NEWTON",
+	102:        "NETWORK_DESCRIPTOR_WEB3GAMES_TESTNET",
+	1022:       "NETWORK_DESCRIPTOR_SAKURA",
+	1023:       "NETWORK_DESCRIPTOR_CLOVER_TESTNET",
+	1024:       "NETWORK_DESCRIPTOR_CLOVER_MAINNET",
+	108:        "NETWORK_DESCRIPTOR_THUNDERCORE_MAINNET",
+	11:         "NETWORK_DESCRIPTOR_METADIUM_MAINNET",
+	1122334455: "NETWORK_DESCRIPTOR_IPOS_NETWORK",
+	1139:       "NETWORK_DESCRIPTOR_MATHCHAIN",
+	1140:       "NETWORK_DESCRIPTOR_MATHCHAIN_TESTNET",
+	12:         "NETWORK_DESCRIPTOR_METADIUM_TESTNET",
+	122:        "NETWORK_DESCRIPTOR_FUSE_MAINNET",
+	128:        "NETWORK_DESCRIPTOR_HUOBI_ECO_CHAIN_MAINNET",
+	1284:       "NETWORK_DESCRIPTOR_MOONBEAM_POLKADOT",
+	1285:       "NETWORK_DESCRIPTOR_MOONRIVER_KUSAMA",
+	1286:       "NETWORK_DESCRIPTOR_MOONROCK_ROCOCO",
+	1287:       "NETWORK_DESCRIPTOR_MOONBEAM_TESTNET_MOONBASE_ALPHA",
+	13:         "NETWORK_DESCRIPTOR_DIODE_TESTNET_STAGING",
+	1313114:    "NETWORK_DESCRIPTOR_ETHER_1",
+	1313161554: "NETWORK_DESCRIPTOR_AURORA_MAINNET",
+	1313161555: "NETWORK_DESCRIPTOR_AURORA_TESTNET",
+	1313161556: "NETWORK_DESCRIPTOR_AURORA_BETANET",
+	1313500:    "NETWORK_DESCRIPTOR_XEROM",
+	13371337:   "NETWORK_DESCRIPTOR_PEPCHAIN_CHURCHILL",
+	137:        "NETWORK_DESCRIPTOR_MATIC_MAINNET",
+	14:         "NETWORK_DESCRIPTOR_FLARE_MAINNET",
+	15:         "NETWORK_DESCRIPTOR_DIODE_PRENET",
+	16:         "NETWORK_DESCRIPTOR_FLARE_TESTNET_COSTON",
+	1618:       "NETWORK_DESCRIPTOR_CATECOIN_CHAIN_MAINNET",
+	162:        "NETWORK_DESCRIPTOR_LIGHTSTREAMS_TESTNET",
+	1620:       "NETWORK_DESCRIPTOR_ATHEIOS",
+	163:        "NETWORK_DESCRIPTOR_LIGHTSTREAMS_MAINNET",
+	1666600000: "NETWORK_DESCRIPTOR_HARMONY_MAINNET_SHARD_0",
+	1666600001: "NETWORK_DESCRIPTOR_HARMONY_MAINNET_SHARD_1",
+	1666600002: "NETWORK_DESCRIPTOR_HARMONY_MAINNET_SHARD_2",
+	1666600003: "NETWORK_DESCRIPTOR_HARMONY_MAINNET_SHARD_3",
+	1666700000: "NETWORK_DESCRIPTOR_HARMONY_TESTNET_SHARD_0",
+	1666700001: "NETWORK_DESCRIPTOR_HARMONY_TESTNET_SHARD_1",
+	1666700002: "NETWORK_DESCRIPTOR_HARMONY_TESTNET_SHARD_2",
+	1666700003: "NETWORK_DESCRIPTOR_HARMONY_TESTNET_SHARD_3",
+	170:        "NETWORK_DESCRIPTOR_HOO_SMART_CHAIN_TESTNET",
+	18:         "NETWORK_DESCRIPTOR_THUNDERCORE_TESTNET",
+	18289463:   "NETWORK_DESCRIPTOR_IOLITE",
+	1856:       "NETWORK_DESCRIPTOR_TESLAFUNDS",
+	1987:       "NETWORK_DESCRIPTOR_ETHERGEM",
+	2:          "NETWORK_DESCRIPTOR_EXPANSE_NETWORK",
+	20:         "NETWORK_DESCRIPTOR_ELA_ETH_SIDECHAIN_MAINNET",
+	200625:     "NETWORK_DESCRIPTOR_AKROMA",
+	20181205:   "NETWORK_DESCRIPTOR_QUARKBLOCKCHAIN",
+	2020:       "NETWORK_DESCRIPTOR_420COIN",
+	2021:       "NETWORK_DESCRIPTOR_EDGEWARE_MAINNET",
+	2022:       "NETWORK_DESCRIPTOR_BERESHEET_TESTNET",
+	21:         "NETWORK_DESCRIPTOR_ELA_ETH_SIDECHAIN_TESTNET",
+	211:        "NETWORK_DESCRIPTOR_FREIGHT_TRUST_NETWORK",
+	22:         "NETWORK_DESCRIPTOR_ELA_DID_SIDECHAIN_MAINNET",
+	23:         "NETWORK_DESCRIPTOR_ELA_DID_SIDECHAIN_TESTNET",
+	24484:      "NETWORK_DESCRIPTOR_WEBCHAIN",
+	246:        "NETWORK_DESCRIPTOR_ENERGY_WEB_CHAIN",
+	246529:     "NETWORK_DESCRIPTOR_ARTIS_SIGMA1",
+	246785:     "NETWORK_DESCRIPTOR_ARTIS_TESTNET_TAU1",
+	250:        "NETWORK_DESCRIPTOR_FANTOM_OPERA",
+	256:        "NETWORK_DESCRIPTOR_HUOBI_ECO_CHAIN_TESTNET",
+	269:        "NETWORK_DESCRIPTOR_HIGH_PERFORMANCE_BLOCKCHAIN",
+	28945486:   "NETWORK_DESCRIPTOR_AUXILIUM_NETWORK_MAINNET",
+	3:          "NETWORK_DESCRIPTOR_ETHEREUM_TESTNET_ROPSTEN",
+	30:         "NETWORK_DESCRIPTOR_RSK_MAINNET",
+	31:         "NETWORK_DESCRIPTOR_RSK_TESTNET",
+	31102:      "NETWORK_DESCRIPTOR_ETHERSOCIAL_NETWORK",
+	322:        "NETWORK_DESCRIPTOR_KUCOIN_COMMUNITY_CHAIN_TESTNET",
+	32659:      "NETWORK_DESCRIPTOR_FUSION_MAINNET",
+	33:         "NETWORK_DESCRIPTOR_GOODDATA_MAINNET",
+	35:         "NETWORK_DESCRIPTOR_TBWG_CHAIN",
+	35855456:   "NETWORK_DESCRIPTOR_JOYS_DIGITAL_MAINNET",
+	38:         "NETWORK_DESCRIPTOR_VALORBIT",
+	385:        "NETWORK_DESCRIPTOR_LISINSKI",
+	39797:      "NETWORK_DESCRIPTOR_ENERGI_MAINNET",
+	4:          "NETWORK_DESCRIPTOR_ETHEREUM_TESTNET_RINKEBY",
+	40:         "NETWORK_DESCRIPTOR_TELOS_EVM_MAINNET",
+	41:         "NETWORK_DESCRIPTOR_TELOS_EVM_TESTNET",
+	42:         "NETWORK_DESCRIPTOR_ETHEREUM_TESTNET_KOVAN",
+	420:        "NETWORK_DESCRIPTOR_OPTIMISTIC_ETHEREUM_TESTNET_GOERLI",
+	42069:      "NETWORK_DESCRIPTOR_PEGGLECOIN",
+	42220:      "NETWORK_DESCRIPTOR_CELO_MAINNET",
+	43:         "NETWORK_DESCRIPTOR_DARWINIA_PANGOLIN_TESTNET",
+	43110:      "NETWORK_DESCRIPTOR_ATHEREUM",
+	43113:      "NETWORK_DESCRIPTOR_AVALANCHE_FUJI_TESTNET",
+	43114:      "NETWORK_DESCRIPTOR_AVALANCHE_MAINNET",
+	44:         "NETWORK_DESCRIPTOR_DARWINIA_CRAB_NETWORK",
+	44787:      "NETWORK_DESCRIPTOR_CELO_ALFAJORES_TESTNET",
+	4689:       "NETWORK_DESCRIPTOR_IOTEX_NETWORK_MAINNET",
+	4690:       "NETWORK_DESCRIPTOR_IOTEX_NETWORK_TESTNET",
+	49797:      "NETWORK_DESCRIPTOR_ENERGI_TESTNET",
+	499:        "NETWORK_DESCRIPTOR_RUPAYA",
+	50:         "NETWORK_DESCRIPTOR_XINFIN_NETWORK_MAINNET",
+	51:         "NETWORK_DESCRIPTOR_XINFIN_APOTHEM_TESTNET",
+	5197:       "NETWORK_DESCRIPTOR_ERASWAP_MAINNET",
+	52:         "NETWORK_DESCRIPTOR_COINEX_SMART_CHAIN_MAINNET",
+	53:         "NETWORK_DESCRIPTOR_COINEX_SMART_CHAIN_TESTNET",
+	558:        "NETWORK_DESCRIPTOR_TAO_NETWORK",
+	56:         "NETWORK_DESCRIPTOR_BINANCE_SMART_CHAIN_MAINNET",
+	5869:       "NETWORK_DESCRIPTOR_WEGOCHAIN_RUBIDIUM_MAINNET",
+	595:        "NETWORK_DESCRIPTOR_ACALA_MANDALA_TESTNET",
+	6:          "NETWORK_DESCRIPTOR_ETHEREUM_CLASSIC_TESTNET_KOTTI",
+	60:         "NETWORK_DESCRIPTOR_GOCHAIN",
+	61:         "NETWORK_DESCRIPTOR_ETHEREUM_CLASSIC_MAINNET",
+	61717561:   "NETWORK_DESCRIPTOR_AQUACHAIN",
+	62:         "NETWORK_DESCRIPTOR_ETHEREUM_CLASSIC_TESTNET_MORDEN",
+	62320:      "NETWORK_DESCRIPTOR_CELO_BAKLAVA_TESTNET",
+	63:         "NETWORK_DESCRIPTOR_ETHEREUM_CLASSIC_TESTNET_MORDOR",
+	64:         "NETWORK_DESCRIPTOR_ELLAISM",
+	65:         "NETWORK_DESCRIPTOR_OKEXCHAIN_TESTNET",
+	66:         "NETWORK_DESCRIPTOR_OKEXCHAIN_MAINNET",
+	67:         "NETWORK_DESCRIPTOR_DBCHAIN_TESTNET",
+	68:         "NETWORK_DESCRIPTOR_SOTERONE_MAINNET",
+	686:        "NETWORK_DESCRIPTOR_KARURA_NETWORK",
+	69:         "NETWORK_DESCRIPTOR_OPTIMISTIC_ETHEREUM_TESTNET_KOVAN",
+	7:          "NETWORK_DESCRIPTOR_THAICHAIN",
+	73799:      "NETWORK_DESCRIPTOR_ENERGY_WEB_VOLTA_TESTNET",
+	76:         "NETWORK_DESCRIPTOR_MIX",
+	77:         "NETWORK_DESCRIPTOR_POA_NETWORK_SOKOL",
+	7762959:    "NETWORK_DESCRIPTOR_MUSICOIN",
+	777:        "NETWORK_DESCRIPTOR_ETHERMINT_TESTNET",
+	78:         "NETWORK_DESCRIPTOR_PRIMUSCHAIN_MAINNET",
+	78110:      "NETWORK_DESCRIPTOR_FIRENZE_TEST_NETWORK",
+	787:        "NETWORK_DESCRIPTOR_ACALA_NETWORK",
+	8:          "NETWORK_DESCRIPTOR_UBIQ_NETWORK_MAINNET",
+	80:         "NETWORK_DESCRIPTOR_GENECHAIN",
+	80001:      "NETWORK_DESCRIPTOR_MATIC_TESTNET_MUMBAI",
+	8029:       "NETWORK_DESCRIPTOR_MDGL_TESTNET",
+	8080:       "NETWORK_DESCRIPTOR_GENECHAIN_ADENINE_TESTNET",
+	82:         "NETWORK_DESCRIPTOR_METER_MAINNET",
+	820:        "NETWORK_DESCRIPTOR_CALLISTO_MAINNET",
+	821:        "NETWORK_DESCRIPTOR_CALLISTO_TESTNET",
+	8217:       "NETWORK_DESCRIPTOR_KLAYTN_MAINNET_CYPRESS",
+	8285:       "NETWORK_DESCRIPTOR_KORTHOTEST",
+	85:         "NETWORK_DESCRIPTOR_GATECHAIN_TESTNET",
+	86:         "NETWORK_DESCRIPTOR_GATECHAIN_MAINNET",
+	88:         "NETWORK_DESCRIPTOR_TOMOCHAIN",
+	888:        "NETWORK_DESCRIPTOR_WANCHAIN",
+	8995:       "NETWORK_DESCRIPTOR_BLOXBERG",
+	9:          "NETWORK_DESCRIPTOR_UBIQ_NETWORK_TESTNET",
+	97:         "NETWORK_DESCRIPTOR_BINANCE_SMART_CHAIN_TESTNET",
+	977:        "NETWORK_DESCRIPTOR_NEPAL_BLOCKCHAIN_NETWORK",
+	99:         "NETWORK_DESCRIPTOR_POA_NETWORK_CORE",
+	99415706:   "NETWORK_DESCRIPTOR_JOYS_DIGITAL_TESTNET",
+	999:        "NETWORK_DESCRIPTOR_WANCHAIN_TESTNET",
 }
 
 var NetworkDescriptor_value = map[string]int32{
-	"NETWORK_DESCRIPTOR_UNSPECIFIED":         0,
-	"NETWORK_DESCRIPTOR_ETHEREUM":            1,
-	"NETWORK_DESCRIPTOR_BITCOIN":             2,
-	"NETWORK_DESCRIPTOR_BINANCE_SMART_CHAIN": 3,
+	"NETWORK_DESCRIPTOR_UNSPECIFIED":                        0,
+	"NETWORK_DESCRIPTOR_ETHEREUM_MAINNET":                   1,
+	"NETWORK_DESCRIPTOR_OPTIMISTIC_ETHEREUM":                10,
+	"NETWORK_DESCRIPTOR_XDAI_CHAIN":                         100,
+	"NETWORK_DESCRIPTOR_SMART_BITCOIN_CASH":                 10000,
+	"NETWORK_DESCRIPTOR_SMART_BITCOIN_CASH_TESTNET":         10001,
+	"NETWORK_DESCRIPTOR_KLAYTN_TESTNET_BAOBAB":              1001,
+	"NETWORK_DESCRIPTOR_NEWTON_TESTNET":                     1007,
+	"NETWORK_DESCRIPTOR_ETHERINC":                           101,
+	"NETWORK_DESCRIPTOR_EVRICE_NETWORK":                     1010,
+	"NETWORK_DESCRIPTOR_BLOCKCHAIN_GENESIS_MAINNET":         10101,
+	"NETWORK_DESCRIPTOR_NEWTON":                             1012,
+	"NETWORK_DESCRIPTOR_WEB3GAMES_TESTNET":                  102,
+	"NETWORK_DESCRIPTOR_SAKURA":                             1022,
+	"NETWORK_DESCRIPTOR_CLOVER_TESTNET":                     1023,
+	"NETWORK_DESCRIPTOR_CLOVER_MAINNET":                     1024,
+	"NETWORK_DESCRIPTOR_THUNDERCORE_MAINNET":                108,
+	"NETWORK_DESCRIPTOR_METADIUM_MAINNET":                   11,
+	"NETWORK_DESCRIPTOR_IPOS_NETWORK":                       1122334455,
+	"NETWORK_DESCRIPTOR_MATHCHAIN":                          1139,
+	"NETWORK_DESCRIPTOR_MATHCHAIN_TESTNET":                  1140,
+	"NETWORK_DESCRIPTOR_METADIUM_TESTNET":                   12,
+	"NETWORK_DESCRIPTOR_FUSE_MAINNET":                       122,
+	"NETWORK_DESCRIPTOR_HUOBI_ECO_CHAIN_MAINNET":            128,
+	"NETWORK_DESCRIPTOR_MOONBEAM_POLKADOT":                  1284,
+	"NETWORK_DESCRIPTOR_MOONRIVER_KUSAMA":                   1285,
+	"NETWORK_DESCRIPTOR_MOONROCK_ROCOCO":                    1286,
+	"NETWORK_DESCRIPTOR_MOONBEAM_TESTNET_MOONBASE_ALPHA":    1287,
+	"NETWORK_DESCRIPTOR_DIODE_TESTNET_STAGING":              13,
+	"NETWORK_DESCRIPTOR_ETHER_1":                            1313114,
+	"NETWORK_DESCRIPTOR_AURORA_MAINNET":                     1313161554,
+	"NETWORK_DESCRIPTOR_AURORA_TESTNET":                     1313161555,
+	"NETWORK_DESCRIPTOR_AURORA_BETANET":                     1313161556,
+	"NETWORK_DESCRIPTOR_XEROM":                              1313500,
+	"NETWORK_DESCRIPTOR_PEPCHAIN_CHURCHILL":                 13371337,
+	"NETWORK_DESCRIPTOR_MATIC_MAINNET":                      137,
+	"NETWORK_DESCRIPTOR_FLARE_MAINNET":                      14,
+	"NETWORK_DESCRIPTOR_DIODE_PRENET":                       15,
+	"NETWORK_DESCRIPTOR_FLARE_TESTNET_COSTON":               16,
+	"NETWORK_DESCRIPTOR_CATECOIN_CHAIN_MAINNET":             1618,
+	"NETWORK_DESCRIPTOR_LIGHTSTREAMS_TESTNET":               162,
+	"NETWORK_DESCRIPTOR_ATHEIOS":                            1620,
+	"NETWORK_DESCRIPTOR_LIGHTSTREAMS_MAINNET":               163,
+	"NETWORK_DESCRIPTOR_HARMONY_MAINNET_SHARD_0":            1666600000,
+	"NETWORK_DESCRIPTOR_HARMONY_MAINNET_SHARD_1":            1666600001,
+	"NETWORK_DESCRIPTOR_HARMONY_MAINNET_SHARD_2":            1666600002,
+	"NETWORK_DESCRIPTOR_HARMONY_MAINNET_SHARD_3":            1666600003,
+	"NETWORK_DESCRIPTOR_HARMONY_TESTNET_SHARD_0":            1666700000,
+	"NETWORK_DESCRIPTOR_HARMONY_TESTNET_SHARD_1":            1666700001,
+	"NETWORK_DESCRIPTOR_HARMONY_TESTNET_SHARD_2":            1666700002,
+	"NETWORK_DESCRIPTOR_HARMONY_TESTNET_SHARD_3":            1666700003,
+	"NETWORK_DESCRIPTOR_HOO_SMART_CHAIN_TESTNET":            170,
+	"NETWORK_DESCRIPTOR_THUNDERCORE_TESTNET":                18,
+	"NETWORK_DESCRIPTOR_IOLITE":                             18289463,
+	"NETWORK_DESCRIPTOR_TESLAFUNDS":                         1856,
+	"NETWORK_DESCRIPTOR_ETHERGEM":                           1987,
+	"NETWORK_DESCRIPTOR_EXPANSE_NETWORK":                    2,
+	"NETWORK_DESCRIPTOR_ELA_ETH_SIDECHAIN_MAINNET":          20,
+	"NETWORK_DESCRIPTOR_AKROMA":                             200625,
+	"NETWORK_DESCRIPTOR_QUARKBLOCKCHAIN":                    20181205,
+	"NETWORK_DESCRIPTOR_420COIN":                            2020,
+	"NETWORK_DESCRIPTOR_EDGEWARE_MAINNET":                   2021,
+	"NETWORK_DESCRIPTOR_BERESHEET_TESTNET":                  2022,
+	"NETWORK_DESCRIPTOR_ELA_ETH_SIDECHAIN_TESTNET":          21,
+	"NETWORK_DESCRIPTOR_FREIGHT_TRUST_NETWORK":              211,
+	"NETWORK_DESCRIPTOR_ELA_DID_SIDECHAIN_MAINNET":          22,
+	"NETWORK_DESCRIPTOR_ELA_DID_SIDECHAIN_TESTNET":          23,
+	"NETWORK_DESCRIPTOR_WEBCHAIN":                           24484,
+	"NETWORK_DESCRIPTOR_ENERGY_WEB_CHAIN":                   246,
+	"NETWORK_DESCRIPTOR_ARTIS_SIGMA1":                       246529,
+	"NETWORK_DESCRIPTOR_ARTIS_TESTNET_TAU1":                 246785,
+	"NETWORK_DESCRIPTOR_FANTOM_OPERA":                       250,
+	"NETWORK_DESCRIPTOR_HUOBI_ECO_CHAIN_TESTNET":            256,
+	"NETWORK_DESCRIPTOR_HIGH_PERFORMANCE_BLOCKCHAIN":        269,
+	"NETWORK_DESCRIPTOR_AUXILIUM_NETWORK_MAINNET":           28945486,
+	"NETWORK_DESCRIPTOR_ETHEREUM_TESTNET_ROPSTEN":           3,
+	"NETWORK_DESCRIPTOR_RSK_MAINNET":                        30,
+	"NETWORK_DESCRIPTOR_RSK_TESTNET":                        31,
+	"NETWORK_DESCRIPTOR_ETHERSOCIAL_NETWORK":                31102,
+	"NETWORK_DESCRIPTOR_KUCOIN_COMMUNITY_CHAIN_TESTNET":     322,
+	"NETWORK_DESCRIPTOR_FUSION_MAINNET":                     32659,
+	"NETWORK_DESCRIPTOR_GOODDATA_MAINNET":                   33,
+	"NETWORK_DESCRIPTOR_TBWG_CHAIN":                         35,
+	"NETWORK_DESCRIPTOR_JOYS_DIGITAL_MAINNET":               35855456,
+	"NETWORK_DESCRIPTOR_VALORBIT":                           38,
+	"NETWORK_DESCRIPTOR_LISINSKI":                           385,
+	"NETWORK_DESCRIPTOR_ENERGI_MAINNET":                     39797,
+	"NETWORK_DESCRIPTOR_ETHEREUM_TESTNET_RINKEBY":           4,
+	"NETWORK_DESCRIPTOR_TELOS_EVM_MAINNET":                  40,
+	"NETWORK_DESCRIPTOR_TELOS_EVM_TESTNET":                  41,
+	"NETWORK_DESCRIPTOR_ETHEREUM_TESTNET_KOVAN":             42,
+	"NETWORK_DESCRIPTOR_OPTIMISTIC_ETHEREUM_TESTNET_GOERLI": 420,
+	"NETWORK_DESCRIPTOR_PEGGLECOIN":                         42069,
+	"NETWORK_DESCRIPTOR_CELO_MAINNET":                       42220,
+	"NETWORK_DESCRIPTOR_DARWINIA_PANGOLIN_TESTNET":          43,
+	"NETWORK_DESCRIPTOR_ATHEREUM":                           43110,
+	"NETWORK_DESCRIPTOR_AVALANCHE_FUJI_TESTNET":             43113,
+	"NETWORK_DESCRIPTOR_AVALANCHE_MAINNET":                  43114,
+	"NETWORK_DESCRIPTOR_DARWINIA_CRAB_NETWORK":              44,
+	"NETWORK_DESCRIPTOR_CELO_ALFAJORES_TESTNET":             44787,
+	"NETWORK_DESCRIPTOR_IOTEX_NETWORK_MAINNET":              4689,
+	"NETWORK_DESCRIPTOR_IOTEX_NETWORK_TESTNET":              4690,
+	"NETWORK_DESCRIPTOR_ENERGI_TESTNET":                     49797,
+	"NETWORK_DESCRIPTOR_RUPAYA":                             499,
+	"NETWORK_DESCRIPTOR_XINFIN_NETWORK_MAINNET":             50,
+	"NETWORK_DESCRIPTOR_XINFIN_APOTHEM_TESTNET":             51,
+	"NETWORK_DESCRIPTOR_ERASWAP_MAINNET":                    5197,
+	"NETWORK_DESCRIPTOR_COINEX_SMART_CHAIN_MAINNET":         52,
+	"NETWORK_DESCRIPTOR_COINEX_SMART_CHAIN_TESTNET":         53,
+	"NETWORK_DESCRIPTOR_TAO_NETWORK":                        558,
+	"NETWORK_DESCRIPTOR_BINANCE_SMART_CHAIN_MAINNET":        56,
+	"NETWORK_DESCRIPTOR_WEGOCHAIN_RUBIDIUM_MAINNET":         5869,
+	"NETWORK_DESCRIPTOR_ACALA_MANDALA_TESTNET":              595,
+	"NETWORK_DESCRIPTOR_ETHEREUM_CLASSIC_TESTNET_KOTTI":     6,
+	"NETWORK_DESCRIPTOR_GOCHAIN":                            60,
+	"NETWORK_DESCRIPTOR_ETHEREUM_CLASSIC_MAINNET":           61,
+	"NETWORK_DESCRIPTOR_AQUACHAIN":                          61717561,
+	"NETWORK_DESCRIPTOR_ETHEREUM_CLASSIC_TESTNET_MORDEN":    62,
+	"NETWORK_DESCRIPTOR_CELO_BAKLAVA_TESTNET":               62320,
+	"NETWORK_DESCRIPTOR_ETHEREUM_CLASSIC_TESTNET_MORDOR":    63,
+	"NETWORK_DESCRIPTOR_ELLAISM":                            64,
+	"NETWORK_DESCRIPTOR_OKEXCHAIN_TESTNET":                  65,
+	"NETWORK_DESCRIPTOR_OKEXCHAIN_MAINNET":                  66,
+	"NETWORK_DESCRIPTOR_DBCHAIN_TESTNET":                    67,
+	"NETWORK_DESCRIPTOR_SOTERONE_MAINNET":                   68,
+	"NETWORK_DESCRIPTOR_KARURA_NETWORK":                     686,
+	"NETWORK_DESCRIPTOR_OPTIMISTIC_ETHEREUM_TESTNET_KOVAN":  69,
+	"NETWORK_DESCRIPTOR_THAICHAIN":                          7,
+	"NETWORK_DESCRIPTOR_ENERGY_WEB_VOLTA_TESTNET":           73799,
+	"NETWORK_DESCRIPTOR_MIX":                                76,
+	"NETWORK_DESCRIPTOR_POA_NETWORK_SOKOL":                  77,
+	"NETWORK_DESCRIPTOR_MUSICOIN":                           7762959,
+	"NETWORK_DESCRIPTOR_ETHERMINT_TESTNET":                  777,
+	"NETWORK_DESCRIPTOR_PRIMUSCHAIN_MAINNET":                78,
+	"NETWORK_DESCRIPTOR_FIRENZE_TEST_NETWORK":               78110,
+	"NETWORK_DESCRIPTOR_ACALA_NETWORK":                      787,
+	"NETWORK_DESCRIPTOR_UBIQ_NETWORK_MAINNET":               8,
+	"NETWORK_DESCRIPTOR_GENECHAIN":                          80,
+	"NETWORK_DESCRIPTOR_MATIC_TESTNET_MUMBAI":               80001,
+	"NETWORK_DESCRIPTOR_MDGL_TESTNET":                       8029,
+	"NETWORK_DESCRIPTOR_GENECHAIN_ADENINE_TESTNET":          8080,
+	"NETWORK_DESCRIPTOR_METER_MAINNET":                      82,
+	"NETWORK_DESCRIPTOR_CALLISTO_MAINNET":                   820,
+	"NETWORK_DESCRIPTOR_CALLISTO_TESTNET":                   821,
+	"NETWORK_DESCRIPTOR_KLAYTN_MAINNET_CYPRESS":             8217,
+	"NETWORK_DESCRIPTOR_KORTHOTEST":                         8285,
+	"NETWORK_DESCRIPTOR_GATECHAIN_TESTNET":                  85,
+	"NETWORK_DESCRIPTOR_GATECHAIN_MAINNET":                  86,
+	"NETWORK_DESCRIPTOR_TOMOCHAIN":                          88,
+	"NETWORK_DESCRIPTOR_WANCHAIN":                           888,
+	"NETWORK_DESCRIPTOR_BLOXBERG":                           8995,
+	"NETWORK_DESCRIPTOR_UBIQ_NETWORK_TESTNET":               9,
+	"NETWORK_DESCRIPTOR_BINANCE_SMART_CHAIN_TESTNET":        97,
+	"NETWORK_DESCRIPTOR_NEPAL_BLOCKCHAIN_NETWORK":           977,
+	"NETWORK_DESCRIPTOR_POA_NETWORK_CORE":                   99,
+	"NETWORK_DESCRIPTOR_JOYS_DIGITAL_TESTNET":               99415706,
+	"NETWORK_DESCRIPTOR_WANCHAIN_TESTNET":                   999,
 }
 
 func (x NetworkDescriptor) String() string {
@@ -67,22 +679,137 @@ func init() {
 }
 
 var fileDescriptor_721e8ae3af4d5f0a = []byte{
-	// 260 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xe2, 0xd2, 0x2a, 0xce, 0x4c, 0xcb,
-	0xcb, 0x4f, 0x49, 0xd5, 0xcf, 0x2f, 0x4a, 0x4c, 0xce, 0x49, 0xd5, 0x2f, 0x33, 0xd4, 0xcf, 0x4b,
-	0x2d, 0x29, 0xcf, 0x2f, 0xca, 0x8e, 0x4f, 0x49, 0x2d, 0x4e, 0x2e, 0xca, 0x2c, 0x28, 0xc9, 0x2f,
-	0xd2, 0x2b, 0x28, 0xca, 0x2f, 0xc9, 0x17, 0x12, 0x84, 0xaa, 0xd5, 0x83, 0xa8, 0xd5, 0x2b, 0x33,
-	0x94, 0x12, 0x49, 0xcf, 0x4f, 0xcf, 0x07, 0xcb, 0xea, 0x83, 0x58, 0x10, 0x85, 0x5a, 0x4b, 0x18,
-	0xb9, 0x04, 0xfd, 0x20, 0xa6, 0xb8, 0xc0, 0x0d, 0x11, 0x52, 0xe2, 0x92, 0xf3, 0x73, 0x0d, 0x09,
-	0xf7, 0x0f, 0xf2, 0x8e, 0x77, 0x71, 0x0d, 0x76, 0x0e, 0xf2, 0x0c, 0x08, 0xf1, 0x0f, 0x8a, 0x0f,
-	0xf5, 0x0b, 0x0e, 0x70, 0x75, 0xf6, 0x74, 0xf3, 0x74, 0x75, 0x11, 0x60, 0x10, 0x92, 0xe7, 0x92,
-	0xc6, 0xa2, 0xc6, 0x35, 0xc4, 0xc3, 0x35, 0xc8, 0x35, 0xd4, 0x57, 0x80, 0x51, 0x48, 0x8e, 0x4b,
-	0x0a, 0x8b, 0x02, 0x27, 0xcf, 0x10, 0x67, 0x7f, 0x4f, 0x3f, 0x01, 0x26, 0x21, 0x2d, 0x2e, 0x35,
-	0xac, 0xf2, 0x7e, 0x8e, 0x7e, 0xce, 0xae, 0xf1, 0xc1, 0xbe, 0x8e, 0x41, 0x21, 0xf1, 0xce, 0x1e,
-	0x8e, 0x9e, 0x7e, 0x02, 0xcc, 0x4e, 0x2e, 0x27, 0x1e, 0xc9, 0x31, 0x5e, 0x78, 0x24, 0xc7, 0xf8,
-	0xe0, 0x91, 0x1c, 0xe3, 0x84, 0xc7, 0x72, 0x0c, 0x17, 0x1e, 0xcb, 0x31, 0xdc, 0x78, 0x2c, 0xc7,
-	0x10, 0xa5, 0x95, 0x9e, 0x59, 0x92, 0x51, 0x9a, 0xa4, 0x97, 0x9c, 0x9f, 0xab, 0x1f, 0x9c, 0x99,
-	0x96, 0x9c, 0x91, 0x98, 0x99, 0xa7, 0x0f, 0x0b, 0xa9, 0x0a, 0x58, 0x58, 0x95, 0x54, 0x16, 0xa4,
-	0x16, 0x27, 0xb1, 0x81, 0xfd, 0x6c, 0x0c, 0x08, 0x00, 0x00, 0xff, 0xff, 0x18, 0x87, 0x42, 0xa4,
-	0x4a, 0x01, 0x00, 0x00,
+	// 2103 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x9c, 0x59, 0x5d, 0x6c, 0x1c, 0x47,
+	0x1d, 0xcf, 0xd9, 0xc6, 0x4e, 0x97, 0xb4, 0x9e, 0x8c, 0x4a, 0x81, 0x40, 0x2f, 0x1f, 0xce, 0x97,
+	0x1d, 0x7f, 0xe4, 0xec, 0xa4, 0x54, 0x08, 0xda, 0xfe, 0x77, 0x77, 0x6e, 0x6f, 0x72, 0xbb, 0x33,
+	0x9b, 0x99, 0x59, 0xdf, 0xb9, 0x2f, 0xab, 0xd4, 0x71, 0x52, 0x8b, 0x12, 0x47, 0x8e, 0x29, 0x1f,
+	0x4f, 0x0d, 0x22, 0x85, 0x4a, 0xa0, 0x86, 0x56, 0x11, 0xd0, 0x07, 0x90, 0x68, 0xe1, 0x81, 0x07,
+	0x04, 0x02, 0x0a, 0x3c, 0x11, 0xda, 0x07, 0xda, 0x07, 0xc0, 0x4d, 0x5b, 0xa9, 0x45, 0x8d, 0x48,
+	0x1d, 0x08, 0x14, 0x11, 0x01, 0x49, 0x81, 0x8a, 0x87, 0x16, 0xdd, 0x9d, 0x67, 0xf7, 0xdc, 0xcc,
+	0xd8, 0xe7, 0x3e, 0x25, 0xf2, 0xfd, 0xfe, 0xff, 0xf9, 0x7f, 0x7f, 0xad, 0x33, 0x74, 0x6a, 0xf6,
+	0xd8, 0x89, 0xb9, 0xa3, 0x33, 0x63, 0x73, 0xf3, 0x47, 0xa6, 0x1f, 0x98, 0x19, 0x7b, 0xb0, 0x34,
+	0x76, 0x62, 0x66, 0xe1, 0xb3, 0x73, 0xf3, 0x9f, 0x4a, 0x8f, 0xce, 0x9c, 0x9a, 0x9e, 0x9f, 0x3d,
+	0xb9, 0x30, 0x37, 0x3f, 0x7a, 0x72, 0x7e, 0x6e, 0x61, 0x0e, 0x6f, 0x5e, 0xc6, 0x8e, 0xb6, 0xb0,
+	0xa3, 0x0f, 0x96, 0xb6, 0xdc, 0x7a, 0x7c, 0xee, 0xf8, 0x5c, 0xf3, 0xd7, 0xb1, 0xc6, 0xff, 0x5a,
+	0xc0, 0xa1, 0xc7, 0x0e, 0x3a, 0x9b, 0x59, 0x8b, 0x8b, 0x9f, 0x31, 0xc1, 0x3b, 0x9c, 0x22, 0x23,
+	0xaa, 0xc6, 0x45, 0x35, 0xf5, 0x89, 0xf4, 0x04, 0x8d, 0x15, 0x17, 0x69, 0xc2, 0x64, 0x4c, 0x3c,
+	0x5a, 0xa6, 0xc4, 0x47, 0x1b, 0xf0, 0x1e, 0x67, 0xc0, 0x80, 0x21, 0xaa, 0x42, 0x04, 0x49, 0xa2,
+	0x34, 0x02, 0xca, 0x18, 0x51, 0xa8, 0x80, 0x87, 0x9c, 0xdd, 0x06, 0x20, 0x8f, 0x15, 0x8d, 0xa8,
+	0x54, 0xd4, 0xcb, 0x68, 0x90, 0x83, 0xb7, 0x3b, 0xb7, 0x1b, 0xb0, 0x75, 0x1f, 0x68, 0xea, 0x55,
+	0x80, 0x32, 0x74, 0x14, 0x0f, 0x39, 0xbb, 0x0c, 0x10, 0x19, 0x81, 0x50, 0xa9, 0x4b, 0x95, 0xc7,
+	0x29, 0x4b, 0x3d, 0x90, 0x15, 0x74, 0x96, 0xe1, 0x71, 0x67, 0xa4, 0x23, 0x6c, 0xaa, 0x88, 0x54,
+	0x0d, 0x69, 0xbf, 0xce, 0xf0, 0x88, 0xb3, 0xd7, 0x40, 0x53, 0x0d, 0x61, 0x4a, 0x31, 0x8d, 0x4b,
+	0x5d, 0xe0, 0x2e, 0xb8, 0xe8, 0x8d, 0x3e, 0xbc, 0xdb, 0xd9, 0x6e, 0x80, 0x33, 0x52, 0x53, 0x3c,
+	0x83, 0xa3, 0x7f, 0xf4, 0xe1, 0xad, 0xce, 0x47, 0x6c, 0xe6, 0xa2, 0xcc, 0x43, 0x33, 0x16, 0x46,
+	0x64, 0x52, 0x50, 0x8f, 0xa4, 0xcb, 0xbf, 0xa0, 0x6b, 0x7d, 0x16, 0x9d, 0xdc, 0x90, 0x7b, 0xd5,
+	0xa6, 0x89, 0xd2, 0x80, 0x30, 0x22, 0xa9, 0xcc, 0x3c, 0xf0, 0x6f, 0x86, 0x8b, 0xce, 0x87, 0xad,
+	0x42, 0xa2, 0x37, 0xfb, 0xf0, 0x5e, 0x67, 0xa7, 0xe1, 0xf7, 0x1a, 0x71, 0x27, 0x02, 0x88, 0x88,
+	0xcc, 0xf4, 0x38, 0x66, 0xe1, 0x24, 0xa1, 0x9a, 0x08, 0x40, 0x6f, 0xdb, 0xcc, 0xe1, 0x85, 0x7c,
+	0x92, 0x88, 0x8c, 0xcd, 0x3b, 0x6b, 0xe0, 0xb4, 0xe4, 0x0f, 0x6d, 0xb4, 0x04, 0x8f, 0xaa, 0x24,
+	0xcc, 0x27, 0xc2, 0xe3, 0x82, 0x64, 0xe0, 0x07, 0x2c, 0x11, 0x19, 0x11, 0x05, 0x3e, 0x6d, 0x8b,
+	0xc8, 0xf7, 0xe3, 0x3d, 0xce, 0x56, 0x03, 0x90, 0xc6, 0x5c, 0x66, 0x86, 0xfe, 0xef, 0xd5, 0x73,
+	0xdf, 0xe8, 0xc1, 0xdb, 0x9d, 0x8f, 0x9a, 0x38, 0x82, 0xaa, 0xb4, 0xa2, 0xf1, 0xfa, 0x46, 0x3c,
+	0x68, 0x34, 0x5d, 0x06, 0xc9, 0x74, 0x7e, 0x73, 0xe3, 0x5a, 0xf2, 0x69, 0xe4, 0x26, 0x3c, 0x60,
+	0x94, 0xaf, 0x9c, 0xc8, 0x5c, 0xdb, 0x2f, 0xe0, 0x31, 0x67, 0xc8, 0x00, 0xaa, 0x24, 0xdc, 0xa5,
+	0x29, 0xf1, 0x78, 0x2b, 0x5f, 0x72, 0x53, 0x16, 0x6c, 0x92, 0x72, 0xce, 0x5c, 0x02, 0x51, 0x1a,
+	0xf3, 0xb0, 0x0a, 0x3e, 0x57, 0xe8, 0x4b, 0x0e, 0xde, 0x6b, 0x96, 0x94, 0x73, 0x26, 0x68, 0xc3,
+	0x41, 0xd5, 0x44, 0x42, 0x04, 0xe8, 0x8c, 0x83, 0xf7, 0x38, 0x3b, 0x6c, 0x48, 0xee, 0x55, 0x53,
+	0xc1, 0x3d, 0xee, 0x71, 0xf4, 0xb0, 0x83, 0x3f, 0xe6, 0x8c, 0xaf, 0xf6, 0xba, 0x4e, 0xac, 0xe6,
+	0x1f, 0x40, 0x92, 0x14, 0xc2, 0xb8, 0x02, 0xe8, 0xcb, 0x0e, 0x1e, 0x36, 0xe6, 0xa3, 0x4f, 0xb9,
+	0x4f, 0x32, 0x2a, 0xa9, 0x20, 0xa0, 0x2c, 0x40, 0x37, 0xe3, 0x6d, 0xce, 0x16, 0x5b, 0x9a, 0xa5,
+	0x25, 0xf4, 0x87, 0xc7, 0x62, 0x3c, 0x68, 0x8c, 0x3c, 0x48, 0x04, 0x17, 0x90, 0x99, 0xeb, 0xc2,
+	0x17, 0xcf, 0x5d, 0xeb, 0x59, 0x1d, 0xaa, 0xdd, 0xf5, 0xe2, 0xda, 0x50, 0x97, 0x28, 0x68, 0x40,
+	0x5f, 0x6a, 0x42, 0x8b, 0xce, 0x87, 0x4c, 0x35, 0x8e, 0x08, 0x1e, 0xa1, 0xd7, 0xce, 0xc5, 0x78,
+	0xd8, 0x58, 0xe0, 0x62, 0x12, 0xb7, 0x3c, 0xea, 0x55, 0x12, 0xe1, 0x55, 0x68, 0x18, 0xa2, 0xe7,
+	0x1f, 0xfd, 0x51, 0x2f, 0xde, 0xe5, 0x6c, 0x33, 0xc7, 0x1f, 0xf5, 0x32, 0x6d, 0x1e, 0x29, 0xe0,
+	0x9d, 0x46, 0x58, 0x39, 0x84, 0xb6, 0x0c, 0xba, 0xc5, 0x12, 0x78, 0x2d, 0x5b, 0xc7, 0x82, 0x34,
+	0x40, 0xfd, 0x78, 0x9f, 0xb3, 0xc7, 0xca, 0x4a, 0x3b, 0xc4, 0xe3, 0xb2, 0x51, 0x5a, 0x10, 0x1e,
+	0x75, 0x06, 0x4d, 0x79, 0x0e, 0x8a, 0xb4, 0x8a, 0xef, 0x8a, 0x20, 0xbd, 0xb0, 0x09, 0x0f, 0x1b,
+	0x99, 0x87, 0x34, 0xa8, 0x28, 0xa9, 0x04, 0x81, 0x28, 0x2f, 0x46, 0xdf, 0x2d, 0xe0, 0xad, 0x46,
+	0x6f, 0x83, 0xaa, 0x10, 0xca, 0x25, 0x7a, 0xa9, 0x23, 0x76, 0xfa, 0xf1, 0x27, 0x0b, 0x78, 0xdc,
+	0x9c, 0x52, 0x20, 0x22, 0xce, 0xa6, 0x34, 0x30, 0x95, 0x15, 0x10, 0x7e, 0xba, 0x1f, 0x9d, 0xff,
+	0xe6, 0xab, 0x4f, 0xf4, 0xae, 0x8b, 0xa6, 0x84, 0x7e, 0xbd, 0x6e, 0x9a, 0x71, 0xf4, 0xcc, 0xba,
+	0x69, 0x26, 0xd0, 0xb3, 0x1d, 0xd0, 0x64, 0xc9, 0xb3, 0xac, 0xcf, 0xa5, 0xef, 0xfd, 0x71, 0x9d,
+	0x34, 0x25, 0xf4, 0xfa, 0xba, 0x69, 0xc6, 0xd1, 0xd2, 0xba, 0x69, 0x26, 0xd0, 0xe5, 0x26, 0x8d,
+	0xa5, 0xe4, 0x71, 0xbe, 0xdc, 0xd2, 0x57, 0x56, 0xdc, 0x1f, 0x14, 0x3a, 0xe8, 0x1e, 0x1a, 0x8c,
+	0xf1, 0x36, 0x63, 0x67, 0xa3, 0x3c, 0xa4, 0x8a, 0xa0, 0x9f, 0x7f, 0xff, 0xb5, 0x8d, 0x78, 0x87,
+	0x71, 0x38, 0x51, 0x44, 0x86, 0x50, 0x4e, 0x98, 0x2f, 0xd1, 0xf9, 0x5b, 0xf0, 0x36, 0x7b, 0x9b,
+	0x0f, 0x48, 0x84, 0x9e, 0xed, 0xc7, 0xbb, 0x8d, 0x15, 0x93, 0xd4, 0x63, 0x60, 0x32, 0x6f, 0xf4,
+	0x5d, 0x78, 0xbf, 0x33, 0x6c, 0xc2, 0x85, 0xd0, 0xe0, 0x96, 0x4a, 0xea, 0x93, 0x95, 0xc9, 0x73,
+	0x2b, 0xde, 0x6a, 0xd4, 0x00, 0xaa, 0x82, 0x47, 0x80, 0x7e, 0xfc, 0x9d, 0x4d, 0x78, 0xd0, 0xf8,
+	0xf4, 0xe1, 0x04, 0x44, 0x35, 0x9f, 0x1f, 0xd0, 0xcb, 0xaf, 0xff, 0xfe, 0x26, 0x4b, 0x66, 0x1d,
+	0x18, 0xdf, 0xdf, 0x48, 0x5b, 0xf4, 0xa7, 0x7e, 0x4b, 0x8b, 0x20, 0x7e, 0x40, 0x6a, 0xed, 0x35,
+	0xe5, 0xcf, 0xfd, 0x96, 0xbe, 0xe3, 0x12, 0x41, 0x64, 0x85, 0x10, 0x95, 0xb9, 0xe0, 0x4a, 0x7f,
+	0xc7, 0x3a, 0x6b, 0x92, 0x0f, 0x58, 0xa6, 0xb5, 0xb2, 0x20, 0x8d, 0x14, 0x4f, 0x95, 0x48, 0xa4,
+	0xca, 0x6c, 0xfa, 0x62, 0x61, 0x95, 0x07, 0x7c, 0xea, 0x1b, 0x8c, 0x7a, 0x5b, 0xc7, 0x14, 0x5a,
+	0xa4, 0x0f, 0xe2, 0xed, 0xc6, 0x10, 0xa8, 0x11, 0xb7, 0x65, 0xde, 0xa7, 0x7e, 0x55, 0xb0, 0x19,
+	0x8f, 0x11, 0x11, 0x4c, 0x35, 0x90, 0xcb, 0xc3, 0xee, 0x7f, 0x0a, 0x78, 0x97, 0xb1, 0x22, 0x83,
+	0x50, 0x54, 0xa6, 0x92, 0x06, 0x11, 0x94, 0xd0, 0xe9, 0x87, 0x1b, 0x35, 0x79, 0x97, 0x15, 0xa6,
+	0x73, 0x49, 0x41, 0x52, 0x42, 0xa7, 0xbf, 0xd2, 0x8f, 0x77, 0x9a, 0xc7, 0x0b, 0x60, 0x8a, 0x47,
+	0x29, 0x8f, 0x89, 0x00, 0xf4, 0xbf, 0x42, 0x87, 0xf3, 0x85, 0x56, 0xfb, 0xa1, 0x2e, 0x3c, 0xe1,
+	0x8c, 0x9a, 0x08, 0x68, 0x50, 0x49, 0x63, 0x22, 0xca, 0x5c, 0x44, 0xc0, 0x3c, 0xd2, 0x36, 0xa9,
+	0xa2, 0xaf, 0x75, 0xe1, 0x71, 0x67, 0x9f, 0xb1, 0x6f, 0xd6, 0x69, 0xd8, 0x98, 0x89, 0xf4, 0x6f,
+	0xda, 0x1f, 0xbf, 0x7b, 0xe5, 0xca, 0xcd, 0x78, 0xcc, 0x48, 0x93, 0x6d, 0x1e, 0x5a, 0x5f, 0xc1,
+	0x63, 0xa9, 0x08, 0x43, 0xdd, 0x96, 0x75, 0x46, 0xc8, 0x9c, 0x6f, 0x71, 0x15, 0x8c, 0x56, 0x71,
+	0x2b, 0x1e, 0x36, 0x96, 0x93, 0xe6, 0xc3, 0x92, 0x7b, 0x14, 0xc2, 0x2c, 0xd4, 0xde, 0xbe, 0x56,
+	0xc0, 0x77, 0x38, 0x25, 0xd3, 0x22, 0x91, 0xb4, 0x1a, 0x1f, 0x8f, 0xa2, 0x84, 0x51, 0x35, 0xf5,
+	0x2e, 0x3b, 0x3e, 0xd3, 0x85, 0xf7, 0x18, 0x47, 0x89, 0x72, 0x22, 0x29, 0xcf, 0x03, 0xf3, 0xf1,
+	0x77, 0x0a, 0x96, 0x79, 0x32, 0xe0, 0xdc, 0xf7, 0x41, 0xe5, 0xb3, 0xcc, 0x76, 0xcb, 0x56, 0xa5,
+	0xdc, 0x5a, 0xb0, 0x1c, 0x68, 0x03, 0x78, 0xd4, 0xd8, 0x28, 0x0f, 0xf1, 0x29, 0x99, 0xfa, 0x34,
+	0xa0, 0x0a, 0xc2, 0x8c, 0xdf, 0xa5, 0x5f, 0x7c, 0x75, 0xb3, 0x65, 0x9d, 0x99, 0x84, 0x90, 0x0b,
+	0x97, 0x2a, 0xb4, 0xdb, 0x52, 0x08, 0x43, 0x2a, 0x29, 0x93, 0x55, 0x8a, 0x4e, 0x77, 0x5b, 0xf4,
+	0x6c, 0x26, 0x01, 0xcd, 0x97, 0x97, 0xa7, 0xbb, 0x3a, 0xf6, 0x37, 0x65, 0x55, 0xe2, 0x4e, 0xa1,
+	0x1e, 0xcb, 0x3a, 0xa3, 0x48, 0xc8, 0x65, 0x4a, 0x26, 0xf3, 0x4d, 0x60, 0xef, 0x9a, 0x48, 0xed,
+	0x96, 0x41, 0x3c, 0x62, 0x1c, 0x64, 0x6e, 0x10, 0xa2, 0xca, 0x27, 0x81, 0xa1, 0x21, 0xfc, 0x71,
+	0xe7, 0x60, 0x67, 0x4b, 0x6f, 0x46, 0x19, 0x70, 0x22, 0x42, 0x8a, 0x9e, 0xea, 0xc6, 0x03, 0x46,
+	0x77, 0xc5, 0x24, 0x08, 0xc2, 0xe6, 0xd4, 0x84, 0x5e, 0x7e, 0xae, 0xcb, 0x52, 0x18, 0x3c, 0x12,
+	0xf2, 0x4c, 0xbd, 0xbf, 0x3f, 0x6f, 0xeb, 0x22, 0x3e, 0x88, 0x1a, 0x65, 0x14, 0xd2, 0x18, 0x58,
+	0xc0, 0xc3, 0xb6, 0xf8, 0xdb, 0x67, 0x29, 0x5f, 0xa0, 0x77, 0xf4, 0x2b, 0x8b, 0x0d, 0x87, 0x98,
+	0x6c, 0x01, 0x93, 0x10, 0x02, 0xf3, 0x2a, 0x24, 0x2d, 0x27, 0x87, 0x68, 0xc6, 0xf1, 0x8d, 0xc5,
+	0x2e, 0x3c, 0x64, 0x34, 0x73, 0x4e, 0xa0, 0x25, 0xfe, 0xdb, 0x62, 0x97, 0x6d, 0xde, 0xd7, 0x12,
+	0x7b, 0x02, 0xdc, 0x2c, 0xcd, 0x86, 0x2d, 0xa2, 0x34, 0xcd, 0x00, 0x61, 0x19, 0x0e, 0x71, 0xd1,
+	0xb6, 0xbe, 0x5e, 0xbf, 0xd8, 0x65, 0x69, 0x18, 0x94, 0x2b, 0x52, 0xbf, 0xa1, 0xda, 0xbc, 0xb0,
+	0xb3, 0x23, 0xb8, 0x66, 0x7f, 0x61, 0xe7, 0xea, 0x31, 0xad, 0x71, 0x67, 0xce, 0x74, 0x5b, 0xf6,
+	0x68, 0x91, 0xc4, 0x30, 0x05, 0xe8, 0x7a, 0xb7, 0x25, 0xdc, 0xea, 0x94, 0x95, 0x29, 0xbb, 0x41,
+	0xce, 0xf1, 0xd5, 0xe1, 0x10, 0x73, 0x55, 0x21, 0x79, 0x30, 0x4f, 0x58, 0xb6, 0x36, 0x22, 0x40,
+	0xd6, 0x20, 0xce, 0xd8, 0xfe, 0x76, 0x2f, 0x2e, 0x19, 0x8f, 0x0d, 0x8d, 0x20, 0x24, 0xf5, 0x15,
+	0x43, 0x97, 0xa6, 0x39, 0xd0, 0x39, 0x89, 0x16, 0xe7, 0x20, 0x1e, 0x30, 0xd6, 0x5e, 0x05, 0x3c,
+	0x73, 0xf4, 0x0f, 0x7b, 0xf0, 0xb8, 0xb1, 0xbd, 0xb8, 0x94, 0x35, 0xbb, 0x8a, 0x49, 0x96, 0x3b,
+	0x2d, 0xb7, 0x92, 0x1a, 0x09, 0x78, 0x0b, 0x29, 0x12, 0x97, 0xae, 0xb8, 0x0d, 0x5c, 0x1d, 0xb1,
+	0x78, 0x1c, 0x3c, 0x08, 0x1b, 0x25, 0x95, 0xf9, 0x8d, 0x7f, 0xb3, 0xdd, 0xaf, 0x07, 0x1f, 0x34,
+	0x56, 0xf9, 0x2c, 0xbb, 0xbd, 0x10, 0xa4, 0xa4, 0x5e, 0x5b, 0x7d, 0x50, 0x8a, 0xa2, 0x5e, 0x5c,
+	0x34, 0xce, 0x57, 0xcb, 0x72, 0xa1, 0x4f, 0xac, 0x55, 0xf3, 0x34, 0x5b, 0x2d, 0xf7, 0x27, 0xf1,
+	0x80, 0xf1, 0x54, 0x01, 0x87, 0x13, 0x68, 0xb1, 0xfc, 0xe5, 0x5b, 0x4f, 0xdf, 0x8e, 0xef, 0x30,
+	0x2e, 0xe1, 0x56, 0x61, 0x23, 0x2e, 0x7c, 0xc2, 0xd0, 0x5d, 0x78, 0xc4, 0xd8, 0x1d, 0x9a, 0x59,
+	0xe6, 0x42, 0x35, 0x84, 0xc9, 0xdc, 0x24, 0xff, 0xbc, 0xd2, 0xfd, 0x5e, 0x9e, 0xe1, 0x02, 0xdd,
+	0x6d, 0x31, 0x0a, 0x09, 0x43, 0xa0, 0x32, 0x42, 0xf7, 0x58, 0xaa, 0x35, 0xaf, 0x92, 0xfa, 0xca,
+	0x88, 0x82, 0x35, 0x91, 0xda, 0x6e, 0xae, 0x65, 0x1c, 0xf7, 0xdd, 0x95, 0x1c, 0x3d, 0x4b, 0xb3,
+	0x95, 0x5c, 0x11, 0xc1, 0x59, 0x5e, 0xc1, 0x7c, 0xcb, 0x65, 0xab, 0x0a, 0x22, 0x11, 0x90, 0xc7,
+	0xf3, 0xfb, 0xf0, 0x9d, 0xce, 0x81, 0x75, 0x76, 0x88, 0x56, 0x6f, 0x21, 0x78, 0x9b, 0xd1, 0xd5,
+	0xaa, 0x02, 0xb4, 0xe5, 0xea, 0x3e, 0x5c, 0x32, 0x47, 0x4f, 0x3e, 0x5f, 0x4e, 0xf2, 0x50, 0xe5,
+	0x3e, 0xfb, 0xcd, 0xf9, 0x1e, 0xbc, 0xc5, 0xb9, 0xcd, 0x74, 0x47, 0xa0, 0x75, 0x14, 0x5a, 0xac,
+	0x19, 0xf3, 0x4c, 0x9f, 0x54, 0xf2, 0x2a, 0x0f, 0x51, 0x84, 0x77, 0x18, 0x9b, 0x47, 0x94, 0x48,
+	0xda, 0x6c, 0x5c, 0x8f, 0xfe, 0xf5, 0xd5, 0x6e, 0xcb, 0x3e, 0xd0, 0xd4, 0x36, 0xa2, 0x2c, 0xdf,
+	0x07, 0x1e, 0xe9, 0xb5, 0xec, 0x6f, 0xb1, 0xa0, 0x51, 0x22, 0x57, 0x3a, 0x92, 0x59, 0x62, 0xb4,
+	0x4c, 0x05, 0x61, 0xf7, 0xb6, 0xf6, 0xbc, 0xcc, 0xfa, 0xdf, 0x5e, 0xea, 0xb1, 0xdc, 0x4d, 0x5a,
+	0x69, 0xae, 0x71, 0x8f, 0xf7, 0x5a, 0x8e, 0x1d, 0x89, 0x4b, 0x0f, 0xdf, 0x50, 0x85, 0x37, 0x5a,
+	0x1c, 0x13, 0x10, 0xd6, 0xda, 0x11, 0x50, 0x6c, 0x11, 0xb2, 0x75, 0xad, 0xc9, 0xd2, 0x21, 0x89,
+	0x5c, 0xa0, 0xe8, 0xf4, 0xbf, 0x7a, 0x2c, 0x93, 0x7a, 0xe4, 0x07, 0x61, 0x66, 0xa5, 0x8b, 0x77,
+	0xe1, 0x92, 0xb1, 0xc7, 0x67, 0xcf, 0xa6, 0xe0, 0x13, 0x46, 0x59, 0xbe, 0xeb, 0x9e, 0xbd, 0xdb,
+	0x72, 0x0e, 0x8a, 0x88, 0x6a, 0xbb, 0xbe, 0x0a, 0xcb, 0x9a, 0xe2, 0x41, 0x18, 0x52, 0xa9, 0xf2,
+	0x39, 0xe3, 0xa7, 0xbd, 0x6b, 0x21, 0xf5, 0xcb, 0x3f, 0xeb, 0xb5, 0x1c, 0x84, 0x96, 0xcf, 0xeb,
+	0xfa, 0x8c, 0xe1, 0x4d, 0xc5, 0x82, 0x48, 0x89, 0xbe, 0x75, 0x8f, 0x65, 0xe9, 0xae, 0x72, 0xa1,
+	0x2a, 0xbc, 0xc1, 0x16, 0x5d, 0xb4, 0xd5, 0x85, 0x00, 0xd4, 0xbb, 0x76, 0xb3, 0x64, 0x4d, 0xa4,
+	0x56, 0x69, 0xd2, 0x96, 0x64, 0x3c, 0x5a, 0x2e, 0xd1, 0x75, 0xcb, 0x84, 0x5b, 0x6b, 0x4c, 0x34,
+	0x0d, 0xc0, 0x5b, 0xbd, 0x16, 0x84, 0x1b, 0xf2, 0xba, 0x4b, 0x44, 0x80, 0x9e, 0x2c, 0x77, 0x12,
+	0x5e, 0x5a, 0xf8, 0x9b, 0xd6, 0xd1, 0x01, 0x35, 0xcd, 0x11, 0xbc, 0xdf, 0x58, 0x09, 0x18, 0x89,
+	0x21, 0x6c, 0xff, 0x66, 0xa0, 0x23, 0xfe, 0x85, 0x3e, 0x4b, 0xa1, 0x6b, 0x4f, 0x76, 0x8f, 0x0b,
+	0x82, 0xa6, 0x3b, 0x59, 0x19, 0xb4, 0x1c, 0x4f, 0x5c, 0xfd, 0xc9, 0x98, 0x25, 0x46, 0xb4, 0xbd,
+	0x32, 0xec, 0x5f, 0xfa, 0x5c, 0xff, 0xb9, 0xa5, 0x62, 0x61, 0x71, 0xa9, 0x58, 0xb8, 0xb4, 0x54,
+	0x2c, 0x9c, 0xbd, 0x5c, 0xdc, 0xb0, 0x78, 0xb9, 0xb8, 0xe1, 0x95, 0xcb, 0xc5, 0x0d, 0xf7, 0x0e,
+	0x1d, 0x9f, 0x5d, 0xb8, 0xff, 0x33, 0xf7, 0x8d, 0x4e, 0xcf, 0x7d, 0x7a, 0x4c, 0xce, 0x1e, 0x9b,
+	0xbe, 0xff, 0xc8, 0xec, 0x89, 0x31, 0xfd, 0x5d, 0xec, 0x73, 0xfa, 0xcb, 0xd8, 0xc2, 0xe7, 0x4f,
+	0xce, 0x9c, 0xba, 0xaf, 0xb7, 0xf9, 0x85, 0x6b, 0xe2, 0xff, 0x01, 0x00, 0x00, 0xff, 0xff, 0x95,
+	0x01, 0x06, 0x4d, 0x38, 0x1b, 0x00, 0x00,
 }
