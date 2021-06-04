@@ -8,6 +8,7 @@ import (
 func RegisterCodec(cdc *codec.Codec) {
 	cdc.RegisterConcrete(MsgDistribution{}, "dispensation/create", nil)
 	cdc.RegisterConcrete(MsgCreateClaim{}, "dispensation/claim", nil)
+	cdc.RegisterConcrete(MsgRunDistribution{}, "dispensation/run", nil)
 }
 
 // ModuleCdc defines the module codec

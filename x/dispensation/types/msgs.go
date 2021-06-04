@@ -9,6 +9,8 @@ import (
 
 var (
 	_ sdk.Msg = &MsgDistribution{}
+	_ sdk.Msg = &MsgRunDistribution{}
+	_ sdk.Msg = &MsgCreateClaim{}
 )
 
 // Basic message type to create a new distribution
