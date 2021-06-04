@@ -18,6 +18,8 @@ func NewHandler(k Keeper) sdk.Handler {
 			return handleMsgCreateDistribution(ctx, k, msg)
 		case MsgCreateClaim:
 			return handleMsgCreateClaim(ctx, k, msg)
+		case MsgRunDistribution:
+			return handleMsgRunDistribution(ctx, k, msg)
 		default:
 			errMsg := fmt.Sprintf("unrecognized %s message type: %T", ModuleName, msg)
 			return nil, sdkerrors.Wrap(sdkerrors.ErrUnknownRequest, errMsg)
@@ -25,14 +27,20 @@ func NewHandler(k Keeper) sdk.Handler {
 	}
 }
 
-//handleMsgRunDistribution 
 func handleMsgRunDistribution(ctx sdk.Context, keeper Keeper, msg MsgRunDistribution) (*sdk.Result, error) {
-	_ = k.DistributeDrops(ctx, ctx.BlockHeight(), msg.DistributionName)
-
+	// Not checking whether the distribution exists or not .
+	// We only need to run and execute distribution records
+	// Distribute 10 drops for msg.DistributionName authorized to msg.DistributionRunner
+	records, err := keeper.DistributeDrops(ctx, ctx.BlockHeight(), msg.DistributionName, msg.DistributionRunner, msg.DistributionType)
+	if err != nil {
+		return nil, err
+	}
 	ctx.EventManager().EmitEvents(sdk.Events{
 		sdk.NewEvent(
 			types.EventTypeDistributionRun,
-			sdk.NewAttribute(types.AttributeKeyDistributionName, msg.distributionName),
+			sdk.NewAttribute(types.AttributeKeyDistributionName, msg.DistributionName),
+			sdk.NewAttribute(types.AttributeKeyDistributionRunner, msg.DistributionRunner.String()),
+			sdk.NewAttribute(types.AttributeKeyDistributionList, records.String()),
 		),
 	})
 	return &sdk.Result{Events: ctx.EventManager().Events()}, nil
@@ -56,7 +64,7 @@ func handleMsgCreateDistribution(ctx sdk.Context, keeper Keeper, msg MsgDistribu
 		return nil, err
 	}
 	//Create drops and Store Historical Data
-	err = keeper.CreateDrops(ctx, msg.Output, distributionName, msg.DistributionType)
+	err = keeper.CreateDrops(ctx, msg.Output, distributionName, msg.DistributionType, msg.Runner)
 	if err != nil {
 		return nil, err
 	}

@@ -3,6 +3,7 @@ package keeper_test
 import (
 	"github.com/Sifchain/sifnode/x/dispensation/test"
 	"github.com/Sifchain/sifnode/x/dispensation/types"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"testing"
@@ -14,7 +15,7 @@ func TestKeeper_GetRecordsForName(t *testing.T) {
 	outList := test.GenerateOutputList("1000000000")
 	name := uuid.New().String()
 	for _, rec := range outList {
-		record := types.NewDistributionRecord(name, types.Airdrop, rec.Address, rec.Coins, ctx.BlockHeight(), -1)
+		record := types.NewDistributionRecord(name, types.Airdrop, rec.Address, rec.Coins, ctx.BlockHeight(), -1, sdk.AccAddress{})
 		record.DistributionStatus = types.Pending
 		err := keeper.SetDistributionRecord(ctx, record)
 		assert.NoError(t, err)
@@ -31,7 +32,7 @@ func TestKeeper_GetRecordsForNames(t *testing.T) {
 	outList := test.GenerateOutputList("1000000000")
 	name := uuid.New().String()
 	for _, rec := range outList {
-		record := types.NewDistributionRecord(name, types.LiquidityMining, rec.Address, rec.Coins, ctx.BlockHeight(), -1)
+		record := types.NewDistributionRecord(name, types.LiquidityMining, rec.Address, rec.Coins, ctx.BlockHeight(), -1, sdk.AccAddress{})
 		record.DistributionStatus = types.Pending
 		err := keeper.SetDistributionRecord(ctx, record)
 		assert.NoError(t, err)
@@ -39,7 +40,7 @@ func TestKeeper_GetRecordsForNames(t *testing.T) {
 		assert.NoError(t, err)
 	}
 	for _, rec := range outList {
-		record := types.NewDistributionRecord(name, types.ValidatorSubsidy, rec.Address, rec.Coins, ctx.BlockHeight(), -1)
+		record := types.NewDistributionRecord(name, types.ValidatorSubsidy, rec.Address, rec.Coins, ctx.BlockHeight(), -1, sdk.AccAddress{})
 		record.DistributionStatus = types.Pending
 		err := keeper.SetDistributionRecord(ctx, record)
 		assert.NoError(t, err)
@@ -47,7 +48,7 @@ func TestKeeper_GetRecordsForNames(t *testing.T) {
 		assert.NoError(t, err)
 	}
 	for _, rec := range outList {
-		record := types.NewDistributionRecord(name, types.ValidatorSubsidy, rec.Address, rec.Coins, ctx.BlockHeight(), -1)
+		record := types.NewDistributionRecord(name, types.ValidatorSubsidy, rec.Address, rec.Coins, ctx.BlockHeight(), -1, sdk.AccAddress{})
 		record.DistributionStatus = types.Pending
 		err := keeper.SetDistributionRecord(ctx, record)
 		assert.NoError(t, err)
@@ -68,7 +69,7 @@ func TestKeeper_GetRecordsForRecipient(t *testing.T) {
 	outList := test.GenerateOutputList("1000000000")
 	name := uuid.New().String()
 	for _, rec := range outList {
-		record := types.NewDistributionRecord(name, types.Airdrop, rec.Address, rec.Coins, ctx.BlockHeight(), -1)
+		record := types.NewDistributionRecord(name, types.Airdrop, rec.Address, rec.Coins, ctx.BlockHeight(), -1, sdk.AccAddress{})
 		record.DistributionStatus = types.Pending
 		err := keeper.SetDistributionRecord(ctx, record)
 		assert.NoError(t, err)

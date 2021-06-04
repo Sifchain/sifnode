@@ -46,12 +46,29 @@ type DistributionRecord struct {
 	Coins                       sdk.Coins          `json:"coins"`
 	DistributionStartHeight     int64              `json:"distribution_start_height"`
 	DistributionCompletedHeight int64              `json:"distribution_completed_height"`
+	AuthorizedRunner            sdk.AccAddress     `json:"authorized_runner"`
 }
 
 type DistributionRecords []DistributionRecord
 
-func NewDistributionRecord(distributionName string, distributionType DistributionType, recipientAddress sdk.AccAddress, coins sdk.Coins, start int64, end int64) DistributionRecord {
-	return DistributionRecord{DistributionName: distributionName, DistributionType: distributionType, RecipientAddress: recipientAddress, Coins: coins, DistributionStartHeight: start, DistributionCompletedHeight: end}
+func (records DistributionRecords) String() string {
+	var rc string
+	for _, record := range records {
+		rc = rc + record.RecipientAddress.String() + ","
+	}
+	rc = rc[:len(rc)-1]
+	return rc
+}
+
+func NewDistributionRecord(distributionName string, distributionType DistributionType, recipientAddress sdk.AccAddress, coins sdk.Coins, start int64, end int64, authorizedRunner sdk.AccAddress) DistributionRecord {
+	return DistributionRecord{
+		DistributionName:            distributionName,
+		DistributionType:            distributionType,
+		RecipientAddress:            recipientAddress,
+		Coins:                       coins,
+		DistributionStartHeight:     start,
+		DistributionCompletedHeight: end,
+		AuthorizedRunner:            authorizedRunner}
 }
 
 func (dr DistributionRecord) DoesClaimExist() bool {
