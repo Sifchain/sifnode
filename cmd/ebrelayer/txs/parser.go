@@ -28,7 +28,7 @@ func EthereumEventToEthBridgeClaim(valAddr sdk.ValAddress, event types.EthereumE
 	witnessClaim := ethbridge.EthBridgeClaim{}
 
 	// chainID type casting (*big.Int -> int)
-	chainID := int(event.EthereumChainID.Int64())
+	networkID := event.NetworkID
 
 	bridgeContractAddress := ethbridge.NewEthereumAddress(event.BridgeContractAddress.Hex())
 
@@ -69,7 +69,7 @@ func EthereumEventToEthBridgeClaim(valAddr sdk.ValAddress, event types.EthereumE
 	nonce := int(event.Nonce.Int64())
 
 	// Package the information in a unique EthBridgeClaim
-	witnessClaim.EthereumChainId = int64(chainID)
+	witnessClaim.NetworkId = networkID
 	witnessClaim.BridgeContractAddress = bridgeContractAddress.String()
 	witnessClaim.Nonce = int64(nonce)
 	witnessClaim.TokenContractAddress = tokenContractAddress.String()

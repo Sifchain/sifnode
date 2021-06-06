@@ -21,7 +21,7 @@ var (
 	AttributeKeyPowerType           = "power"
 	AttributeKeyCethReceiverAccount = "ceth_receiver_account"
 
-	AttributeKeyEthereumChainID      = "ethereum_chain_id"
+	// AttributeKeyEthereumChainID      = "ethereum_chain_id"
 	AttributeKeyTokenContract        = "token_contract_address"
 	AttributeKeyCosmosSender         = "cosmos_sender"
 	AttributeKeyCosmosSenderSequence = "cosmos_sender_sequence"

@@ -8,11 +8,11 @@ import (
 
 // NetworkDescriptor define the different network like Ethereum, Binance
 type NetworkDescriptor struct {
-	NetworkID uint32 `json:"network_id"`
+	NetworkID NetworkID `json:"network_id"`
 }
 
 // NewNetworkDescriptor get a new NetworkDescriptor instance
-func NewNetworkDescriptor(networkID uint32) NetworkDescriptor {
+func NewNetworkDescriptor(networkID NetworkID) NetworkDescriptor {
 	return NetworkDescriptor{
 		NetworkID: networkID,
 	}
@@ -28,7 +28,7 @@ func (n NetworkDescriptor) GetPrefix() []byte {
 // GetFromPrefix return a NetworkDescriptor from prefix
 func GetFromPrefix(key []byte) (NetworkDescriptor, error) {
 	if len(key) == 5 {
-		var data uint32
+		var data NetworkID
 		bytebuff := bytes.NewBuffer(key[1:])
 		err := binary.Read(bytebuff, binary.BigEndian, &data)
 		if err == nil {

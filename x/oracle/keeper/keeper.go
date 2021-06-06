@@ -78,7 +78,7 @@ func (k Keeper) setProphecy(ctx sdk.Context, prophecy types.Prophecy) {
 }
 
 // ProcessClaim handle claim
-func (k Keeper) ProcessClaim(ctx sdk.Context, networkID uint32, claim types.Claim) (types.Status, error) {
+func (k Keeper) ProcessClaim(ctx sdk.Context, networkID types.NetworkID, claim types.Claim) (types.Status, error) {
 	logger := k.Logger(ctx)
 	networkDescriptor := types.NewNetworkDescriptor(networkID)
 
@@ -140,7 +140,7 @@ func (k Keeper) checkActiveValidator(ctx sdk.Context, validatorAddress sdk.ValAd
 }
 
 // ProcessUpdateWhiteListValidator processes the update whitelist validator from admin
-func (k Keeper) ProcessUpdateWhiteListValidator(ctx sdk.Context, networkID uint32, cosmosSender sdk.AccAddress, validator sdk.ValAddress, power uint32) error {
+func (k Keeper) ProcessUpdateWhiteListValidator(ctx sdk.Context, networkID types.NetworkID, cosmosSender sdk.AccAddress, validator sdk.ValAddress, power uint32) error {
 	logger := k.Logger(ctx)
 	if !k.IsAdminAccount(ctx, cosmosSender) {
 		logger.Error("cosmos sender is not admin account.")

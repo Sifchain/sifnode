@@ -13,6 +13,7 @@ import (
 
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/types"
 	ethbridge "github.com/Sifchain/sifnode/x/ethbridge/types"
+	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
 )
 
 const (
@@ -45,7 +46,7 @@ var testSDKAmount = sdk.NewIntFromBigInt(testAmount)
 
 // CreateTestLogEthereumEvent creates a sample EthereumEvent event for testing purposes
 func CreateTestLogEthereumEvent(t *testing.T) types.EthereumEvent {
-	testEthereumChainID := big.NewInt(int64(TestEthereumChainID))
+	networkID := oracletypes.NetworkID(TestEthereumChainID)
 	testBridgeContractAddress := common.HexToAddress(TestBridgeContractAddress)
 	// Convert int to [32]byte
 	var testProphecyID []byte
@@ -59,7 +60,7 @@ func CreateTestLogEthereumEvent(t *testing.T) types.EthereumEvent {
 	testAmount := testAmount
 	testNonce := big.NewInt(int64(TestNonce))
 
-	return types.EthereumEvent{EthereumChainID: testEthereumChainID,
+	return types.EthereumEvent{NetworkID: networkID,
 		BridgeContractAddress: testBridgeContractAddress,
 		ID:                    testProphecyID32,
 		From:                  testEthereumSender,

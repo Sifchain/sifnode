@@ -6,8 +6,8 @@ import (
 )
 
 // GetAllWhiteList set the validator list for a network.
-func (k Keeper) GetAllWhiteList(ctx sdk.Context) map[uint32]types.ValidatorWhiteList {
-	result := make(map[uint32]types.ValidatorWhiteList)
+func (k Keeper) GetAllWhiteList(ctx sdk.Context) map[types.NetworkID]types.ValidatorWhiteList {
+	result := make(map[types.NetworkID]types.ValidatorWhiteList)
 	store := ctx.KVStore(k.storeKey)
 	iterator := sdk.KVStorePrefixIterator(store, types.WhiteListValidatorPrefix)
 	defer iterator.Close()

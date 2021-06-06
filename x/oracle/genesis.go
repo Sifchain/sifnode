@@ -14,7 +14,7 @@ func InitGenesis(ctx sdk.Context, keeper keeper.Keeper, data types.GenesisState)
 
 	if data.AddressWhitelist != nil {
 		for networkID, list := range data.AddressWhitelist {
-			keeper.SetOracleWhiteList(ctx, types.NewNetworkDescriptor(networkID), *list)
+			keeper.SetOracleWhiteList(ctx, types.NewNetworkDescriptor(types.NetworkID(networkID)), *list)
 		}
 
 	}
@@ -35,7 +35,7 @@ func ExportGenesis(ctx sdk.Context, keeper keeper.Keeper) *types.GenesisState {
 	wl := make(map[uint32]*types.ValidatorWhiteList)
 
 	for i, value := range whiteList {
-		wl[i] = &types.ValidatorWhiteList{WhiteList: value.WhiteList}
+		wl[uint32(i)] = &types.ValidatorWhiteList{WhiteList: value.WhiteList}
 	}
 	return &types.GenesisState{
 		AddressWhitelist: wl,

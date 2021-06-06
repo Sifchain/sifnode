@@ -7,7 +7,7 @@ import (
 )
 
 const (
-	networkID = uint32(100)
+	networkID = NetworkID(1)
 )
 
 func TestNewNetworkDescriptor(t *testing.T) {

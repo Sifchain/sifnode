@@ -11,15 +11,13 @@ import (
 	sifapp "github.com/Sifchain/sifnode/app"
 )
 
-const networkID = uint32(1)
-
 func TestKeeper_SetValidatorWhiteList(t *testing.T) {
 	app := sifapp.Setup(false)
 	ctx := app.BaseApp.NewContext(false, tmproto.Header{})
 
 	addresses := sifapp.CreateRandomAccounts(2)
 	valAddresses := sifapp.ConvertAddrsToValAddrs(addresses)
-	networkDescriptor := types.NewNetworkDescriptor(networkID)
+	networkDescriptor := types.NewNetworkDescriptor(types.NetworkID(0))
 	whilelist := types.ValidatorWhiteList{WhiteList: make(map[string]uint32)}
 	for _, address := range valAddresses {
 		fmt.Printf("address is %s\n", address.String())
@@ -39,7 +37,7 @@ func TestKeeper_ValidateAddress(t *testing.T) {
 
 	addresses := sifapp.CreateRandomAccounts(2)
 	valAddresses := sifapp.ConvertAddrsToValAddrs(addresses)
-	networkDescriptor := types.NewNetworkDescriptor(networkID)
+	networkDescriptor := types.NewNetworkDescriptor(types.NetworkID(0))
 	whitelist := make(map[string]uint32)
 
 	for _, address := range valAddresses {
@@ -61,7 +59,7 @@ func TestKeeper_GetAllWhiteList(t *testing.T) {
 
 	addresses := sifapp.CreateRandomAccounts(2)
 	valAddresses := sifapp.ConvertAddrsToValAddrs(addresses)
-	networkDescriptor := types.NewNetworkDescriptor(networkID)
+	networkDescriptor := types.NewNetworkDescriptor(types.NetworkID(0))
 	whilelist := types.ValidatorWhiteList{WhiteList: make(map[string]uint32)}
 	for _, address := range valAddresses {
 		fmt.Printf("address is %s\n", address.String())
@@ -71,6 +69,6 @@ func TestKeeper_GetAllWhiteList(t *testing.T) {
 	app.OracleKeeper.SetOracleWhiteList(ctx, networkDescriptor, whilelist)
 
 	allWhiteList := app.OracleKeeper.GetAllWhiteList(ctx)
-	assert.Equal(t, whilelist, allWhiteList[networkID])
+	assert.Equal(t, whilelist, allWhiteList[types.NetworkID(0)])
 
 }

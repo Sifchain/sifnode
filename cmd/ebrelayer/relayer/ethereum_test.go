@@ -10,6 +10,7 @@ import (
 
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/types"
 	ethbridge "github.com/Sifchain/sifnode/x/ethbridge/types"
+	oracle "github.com/Sifchain/sifnode/x/oracle/types"
 )
 
 // EventProcessed check if the event processed by relayer
@@ -23,7 +24,7 @@ func TestEventProcessed(t *testing.T) {
 	})
 
 	processedEvent := types.EthereumEvent{
-		EthereumChainID:       big.NewInt(0),
+		NetworkID:             oracle.NetworkID(1),
 		BridgeContractAddress: common.HexToAddress("0xd88159878c50e4B2b03BB701DD436e4A98D6fBe2"),
 		ID:                    [32]byte{},
 		From:                  common.HexToAddress("0xd88159878c50e4B2b03BB701DD436e4A98D6fBe2"),
@@ -38,7 +39,7 @@ func TestEventProcessed(t *testing.T) {
 	require.Equal(t, true, EventProcessed(bridgeClaims, processedEvent))
 
 	notProcessedEvent := types.EthereumEvent{
-		EthereumChainID:       big.NewInt(0),
+		NetworkID:             oracle.NetworkID(1),
 		BridgeContractAddress: common.HexToAddress("0xd88159878c50e4B2b03BB701DD436e4A98D6fBe2"),
 		ID:                    [32]byte{},
 		From:                  common.HexToAddress("0xd88159878c50e4B2b03BB701DD436e4A98D6fBe2"),

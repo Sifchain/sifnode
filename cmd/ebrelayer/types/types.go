@@ -8,6 +8,8 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 
 	ethbridge "github.com/Sifchain/sifnode/x/ethbridge/types"
+	oracle "github.com/Sifchain/sifnode/x/oracle/types"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
@@ -42,7 +44,7 @@ func (d Event) String() string {
 type EthereumEvent struct {
 	To                    []byte
 	Symbol                string
-	EthereumChainID       *big.Int
+	NetworkID             oracle.NetworkID
 	Value                 *big.Int
 	Nonce                 *big.Int
 	ClaimType             ethbridge.ClaimType
@@ -54,7 +56,7 @@ type EthereumEvent struct {
 
 // Equal two events
 func (e EthereumEvent) Equal(other EthereumEvent) bool {
-	return e.EthereumChainID == other.EthereumChainID &&
+	return e.NetworkID == other.NetworkID &&
 		e.BridgeContractAddress == other.BridgeContractAddress &&
 		bytes.Equal(e.ID[:], other.ID[:]) &&
 		e.From == other.From &&
@@ -67,9 +69,9 @@ func (e EthereumEvent) Equal(other EthereumEvent) bool {
 
 // String implements fmt.Stringer
 func (e EthereumEvent) String() string {
-	return fmt.Sprintf("\nChain ID: %v\nBridge contract address: %v\nToken symbol: %v\nToken "+
+	return fmt.Sprintf("\nNetwork ID: %v\nBridge contract address: %v\nToken symbol: %v\nToken "+
 		"contract address: %v\nSender: %v\nRecipient: %v\nValue: %v\nNonce: %v\nClaim type: %v",
-		e.EthereumChainID, e.BridgeContractAddress.Hex(), e.Symbol, e.Token.Hex(), e.From.Hex(),
+		e.NetworkID, e.BridgeContractAddress.Hex(), e.Symbol, e.Token.Hex(), e.From.Hex(),
 		string(e.To), e.Value, e.Nonce, e.ClaimType.String())
 }
 
