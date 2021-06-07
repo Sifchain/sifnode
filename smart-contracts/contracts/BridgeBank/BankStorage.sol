@@ -1,4 +1,4 @@
-pragma solidity 0.5.16;
+pragma solidity 0.8.0;
 
 import "./CosmosBankStorage.sol";
 import "./EthereumBankStorage.sol";
@@ -9,15 +9,15 @@ contract BankStorage is
     EthereumBankStorage,
     CosmosWhiteListStorage {
 
-    /**
-    * @notice operator address that can update the smart contract
+    /*
+    * @notice [DEPRECATED] operator address that can update the smart contract
     */
-    address public operator;
+    address private operator;
 
-    /**
-    * @notice address of the Oracle smart contract
+    /*
+    * @notice [DEPRECATED] address of the Oracle smart contract
     */
-    address public oracle;
+    address private oracle;
 
     /**
     * @notice address of the Cosmos Bridge smart contract
@@ -29,9 +29,12 @@ contract BankStorage is
     */
     address public owner;
 
-    mapping (string => uint256) public maxTokenAmount;
+    /*
+    * @notice [DEPRECATED] token limit
+    */
+    mapping (string => uint256) private maxTokenAmount;
 
-    /**
+    /*
     * @notice gap of storage for future upgrades
     */
     uint256[100] private ____gap;

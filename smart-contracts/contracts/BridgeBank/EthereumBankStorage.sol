@@ -1,4 +1,4 @@
-pragma solidity 0.5.16;
+pragma solidity 0.8.0;
 
 contract EthereumBankStorage {
 
@@ -7,18 +7,62 @@ contract EthereumBankStorage {
     */
     uint256 public lockBurnNonce;
 
-    /**
-    * @notice how much funds we have stored of a certain token
+    /*
+    * @notice {DEPRECATED}
     */
-    mapping(address => uint256) public lockedFunds;
+    mapping(address => uint256) private lockedFunds;
+
+    /*
+    * @notice {DEPRECATED}
+    */
+    mapping(string => address) private lockedTokenList;
 
     /**
-    * @notice map the token symbol to the token address
+    * @notice contract decimals based off of contract address
     */
-    mapping(string => address) public lockedTokenList;
+    mapping (address => uint8) public contractDecimals;
 
     /**
+    * @notice contract symbol based off of address
+    */
+    mapping (address => string) public contractSymbol;
+
+    /**
+    * @notice contract name based off of address
+    */
+    mapping (address => string) public contractName;
+
+    /*
     * @notice gap of storage for future upgrades
     */
-    uint256[100] private ____gap;
+    uint256[97] private ____gap;
+
+    /*
+     * @dev: Event declarations
+     */
+    event LogBurn(
+        address _from,
+        bytes _to,
+        address _token,
+        uint256 _value,
+        uint256 _nonce,
+        uint256 _decimals
+    );
+
+    event LogLock(
+        address _from,
+        bytes _to,
+        address _token,
+        uint256 _value,
+        uint256 _nonce,
+        uint256 _decimals,
+        string _symbol,
+        string _name
+    );
+
+    event LogUnlock(
+        address _to,
+        address _token,
+        uint256 _value
+    );
 }
