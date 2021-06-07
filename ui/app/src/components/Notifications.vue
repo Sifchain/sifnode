@@ -2,7 +2,7 @@
 import { computed, defineComponent } from "vue";
 import { reactive, ref, Ref } from "@vue/reactivity"; /* eslint-disable-line */
 import { useCore } from "@/hooks/useCore";
-import { AppEvent } from "ui-core/src/api/EventBusService";
+import { AppEvent } from "ui-core/src/services/EventBusService";
 
 // Message?
 type Notification = {
@@ -39,7 +39,7 @@ function parseEventToNotifications(event: AppEvent): Notification | null {
   if (event.type === "PegTransactionPendingEvent") {
     return {
       type: "info",
-      message: "Pegged Transaction Pending",
+      message: "Import Transaction Pending",
       detail: {
         type: "etherscan",
         message: event.payload.hash,
@@ -105,10 +105,10 @@ export default defineComponent({
   name: "Notifications",
   components: {},
   setup() {
-    const { api } = useCore();
+    const { services } = useCore();
     const notifications = reactive<Notification[]>([]);
 
-    api.EventBusService.onAny((event) => {
+    services.bus.onAny((event) => {
       const notification = parseEventToNotifications(event);
       if (notification !== null) notifications.unshift(notification);
     });
@@ -162,10 +162,9 @@ export default defineComponent({
 <style lang="scss" scoped>
 .notifications-container {
   position: fixed;
-  bottom: 0px;
+  bottom: 50px;
   right: 16px;
   height: auto;
-  bottom: 0px;
   .list-enter-active,
   .list-leave-active {
     transition: all 0.5s ease;

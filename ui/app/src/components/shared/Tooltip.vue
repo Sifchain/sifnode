@@ -80,7 +80,7 @@ export default defineComponent({
   background: #f9f9f9;
   border-radius: 4px;
   line-height: 16px;
-  font-size: 14px;
+  font-size: 12px;
   text-align: left;
   font-weight: 400;
   z-index: 10000;

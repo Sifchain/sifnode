@@ -40,6 +40,12 @@ jobs:
           key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
           restore-keys: ${{ runner.os }}-yarn-
 
+      - name: Log into registry
+        run: echo ${{ secrets.GHCR_TOKEN }} | docker login ghcr.io -u $GITHUB_ACTOR --password-stdin
+
+      - name: Pull instant stack image
+        run: docker pull $(cat scripts/latest)
+
       - name: Install dependencies
         run: yarn install --frozen-lockfile --silent
 

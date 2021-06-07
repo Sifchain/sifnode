@@ -8,11 +8,13 @@ import { defineComponent } from "vue";
 export default defineComponent({
   props: {
     success: { type: Boolean, default: false },
+    typeSize: { type: Boolean, default: false },
   },
   setup(props) {
     return {
       classes: computed(() => ({
         success: props.success,
+        typeSize: props.typeSize,
       })),
     };
   },
@@ -42,6 +44,11 @@ export default defineComponent({
     border-right: 0;
     border-bottom: 0;
     border-left: 0;
+  }
+  &.typeSize {
+    width: 16px;
+    height: 16px;
+    opacity: 0.6;
   }
 }
 

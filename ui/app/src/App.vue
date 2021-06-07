@@ -18,7 +18,7 @@
               @click="requestDialog"
               color="success"
               class="connected-button"
-              >Connected</Pill
+              >CONNECTED</Pill
             >
           </template>
         </WithWallet>
@@ -34,8 +34,6 @@ import { defineComponent } from "vue";
 import WithWallet from "@/components/wallet/WithWallet.vue";
 import Header from "./components/shared/Header/Header.vue";
 import Pill from "./components/shared/Pill/Pill.vue";
-import Footer from "./components/shared/Footer/Footer.vue";
-import SifButton from "./components/shared/SifButton.vue";
 import Notifications from "./components/Notifications.vue";
 import { useInitialize } from "./hooks/useInitialize";
 export default defineComponent({
@@ -44,8 +42,6 @@ export default defineComponent({
     Header,
     Notifications,
     WithWallet,
-    SifButton,
-    Footer,
     Pill,
   },
   setup() {
@@ -56,6 +52,15 @@ export default defineComponent({
 </script>
 
 <style lang="scss">
+@import "normalize-scss";
+
+// Import fonts:
+@import url("https://fonts.googleapis.com/css2?family=PT+Serif:ital,wght@0,400;0,700;1,400;1,700&family=Rouge+Script&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap");
+
+@import "@/scss/utilities.scss";
+@import "@/scss/reset.scss";
+
 #app,
 #portal-target,
 #tooltip-target {

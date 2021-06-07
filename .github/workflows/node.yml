@@ -13,7 +13,7 @@ jobs:
       - name: Use Node.js
         uses: actions/setup-node@v2.1.4
         with:
-          node-version: '14.x'
+          node-version: "14.x"
       - name: Set up Go 1.x
         uses: actions/setup-go@v2
         with:
@@ -22,6 +22,12 @@ jobs:
 
       - name: Check out code into the Go module directory
         uses: actions/checkout@v2
+
+      - name: Log into registry
+        run: echo ${{ secrets.GHCR_TOKEN }} | docker login ghcr.io -u $GITHUB_ACTOR --password-stdin
+
+      - name: Pull instant stack image
+        run: docker pull $(cat scripts/latest)
 
       - name: Get dependencies
         run: |

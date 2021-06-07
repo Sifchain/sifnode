@@ -23,9 +23,8 @@ func GenerateQueryData(app *simapp.SimApp, ctx sdk.Context, name string, outList
 	}
 
 	for _, rec := range outList {
-		record := types.NewDistributionRecord(name, rec.Address, rec.Coins, ctx.BlockHeight(), -1)
+		record := types.NewDistributionRecord(name, types.Airdrop, rec.Address, rec.Coins, ctx.BlockHeight(), -1)
 		_ = keeper.SetDistributionRecord(ctx, record)
-
 	}
 
 }
@@ -101,4 +100,34 @@ func TestQueryAllDistributions(t *testing.T) {
 	err = keeper.Codec().UnmarshalJSON(res, &dr)
 	assert.NoError(t, err)
 	assert.Len(t, dr, 10)
+}
+
+func TestQueryClaims(t *testing.T) {
+	app, ctx := test.CreateTestApp(false)
+	keeper := app.DispensationKeeper
+	claimsVS := test.CreateClaimsList(1000, types.ValidatorSubsidy)
+	for _, claim := range claimsVS {
+		err := keeper.SetClaim(ctx, claim)
+		assert.NoError(t, err)
+	}
+	claimsLM := test.CreateClaimsList(1000, types.LiquidityMining)
+	for _, claim := range claimsLM {
+		err := keeper.SetClaim(ctx, claim)
+		assert.NoError(t, err)
+	}
+	// Query by type ValidatorSubsidy
+	queryData := types.QueryUserClaims{UserClaimType: types.ValidatorSubsidy}
+	qp, errRes := app.Codec().MarshalJSON(queryData)
+	require.NoError(t, errRes)
+	query := abci.RequestQuery{
+		Path: "",
+		Data: qp,
+	}
+	querier := dispensation.NewQuerier(keeper)
+	res, err := querier(ctx, []string{types.QueryClaimsByType}, query)
+	assert.NoError(t, err)
+	var dr []types.UserClaim
+	err = keeper.Codec().UnmarshalJSON(res, &dr)
+	assert.NoError(t, err)
+	assert.Len(t, dr, 1000)
 }

@@ -59,20 +59,33 @@ func init() {
 	SetConfig()
 }
 func TestParseInput(t *testing.T) {
-	filename := "input.json"
-	createInput(t, filename)
-	defer removeFile(t, filename)
-	inputs, err := utils.ParseInput(filename)
+	file := "input.json"
+	createInput(t, file)
+	defer removeFile(t, file)
+	inputs, err := utils.ParseInput(file)
 	assert.NoError(t, err)
 	assert.Equal(t, len(inputs), 2)
 }
 
 func TestParseOutput(t *testing.T) {
-	filename := "output.json"
+	file := "output.json"
 	count := 3000
-	createOutput(filename, count)
-	defer removeFile(t, filename)
-	outputs, err := utils.ParseOutput(filename)
+	createOutput(file, count)
+	defer removeFile(t, file)
+	outputs, err := utils.ParseOutput(file)
 	assert.NoError(t, err)
 	assert.Equal(t, len(outputs), count)
+}
+
+func TestTotalOutput(t *testing.T) {
+	file := "output.json"
+	count := 3000
+	createOutput(file, count)
+	defer removeFile(t, file)
+	outputs, err := utils.ParseOutput(file)
+	assert.NoError(t, err)
+	total, err := utils.TotalOutput(outputs)
+	assert.NoError(t, err)
+	num, _ := sdk.NewIntFromString("30000000000000000000000")
+	assert.True(t, total.AmountOf("rowan").Equal(num))
 }

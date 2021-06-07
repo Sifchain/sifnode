@@ -23,10 +23,9 @@ export default defineComponent({
     },
   },
   setup(props) {
-    const { center } = props;
     const iconClasses = {
       "icon-svg": true,
-      "icon-svg-center": center,
+      "icon-svg-center": props.center,
     };
     return { iconClasses };
   },
@@ -34,7 +33,6 @@ export default defineComponent({
     subPageIsActive(input: string) {
       const paths = [input];
       return paths.some((path) => {
-        console.log(this.$route?.path, path);
         return this.$route?.path.indexOf(path) === 0; // current path starts with this path string
       });
     },
@@ -67,6 +65,10 @@ export default defineComponent({
   font-size: 13px;
   width: 65px;
   position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
   .icon-svg {
     position: absolute;
     top: 50%;

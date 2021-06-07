@@ -44,7 +44,7 @@ RUN make install
 #
 # Runtime
 #
-FROM node:14.11.0
+FROM node:14-alpine
 
 EXPOSE 1317
 EXPOSE 7545
@@ -52,7 +52,7 @@ EXPOSE 5000
 EXPOSE 26656
 EXPOSE 26657
 
-RUN apt-get update && apt-get -y install curl jq
+RUN apk update && apk add curl jq bash
 
 # Copy the compiled binaires over.
 COPY --from=build-go /go/bin/ebrelayer /usr/bin/ebrelayer

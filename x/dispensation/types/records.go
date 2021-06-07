@@ -4,17 +4,18 @@ import (
 	"fmt"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"strings"
+	"time"
 )
 
 //This package is used to keep historical data. This will later be used to distribute rewards over different blocks through a gov proposal
 
-type ClaimStatus int64
+type DistributionStatus int64
 
-const Pending ClaimStatus = 1
-const Completed ClaimStatus = 2
+const Pending DistributionStatus = 1
+const Completed DistributionStatus = 2
 
-func (d ClaimStatus) String() string {
-	switch d {
+func (ds DistributionStatus) String() string {
+	switch ds {
 	case Pending:
 		return "Pending"
 	case Completed:
@@ -24,20 +25,39 @@ func (d ClaimStatus) String() string {
 	}
 }
 
+func IsValidStatus(s string) (DistributionStatus, bool) {
+	switch s {
+	case "Pending":
+		return Pending, true
+	case "Completed":
+		return Completed, true
+	default:
+		return -1, false
+	}
+}
+
 // DistributionRecord is created for every recipient for a distribution
-// TODO : Add ClaimStatus to the prefixed key for records
+// TODO : Add DistributionStatus to the prefixed key for records
 type DistributionRecord struct {
-	ClaimStatus
-	DistributionName            string         `json:"distribution_name"`
-	RecipientAddress            sdk.AccAddress `json:"recipient_address"`
-	Coins                       sdk.Coins      `json:"coins"`
-	DistributionStartHeight     int64          `json:"distribution_start_height"`
-	DistributionCompletedHeight int64          `json:"distribution_completed_height"`
+	DistributionStatus          DistributionStatus `json:"distribution_status"`
+	DistributionName            string             `json:"distribution_name"`
+	DistributionType            DistributionType   `json:"distribution_type"`
+	RecipientAddress            sdk.AccAddress     `json:"recipient_address"`
+	Coins                       sdk.Coins          `json:"coins"`
+	DistributionStartHeight     int64              `json:"distribution_start_height"`
+	DistributionCompletedHeight int64              `json:"distribution_completed_height"`
 }
 type DistributionRecords []DistributionRecord
 
-func NewDistributionRecord(distributionName string, recipientAddress sdk.AccAddress, coins sdk.Coins, start int64, end int64) DistributionRecord {
-	return DistributionRecord{DistributionName: distributionName, RecipientAddress: recipientAddress, Coins: coins, DistributionStartHeight: start, DistributionCompletedHeight: end}
+func NewDistributionRecord(distributionName string, distributionType DistributionType, recipientAddress sdk.AccAddress, coins sdk.Coins, start int64, end int64) DistributionRecord {
+	return DistributionRecord{DistributionName: distributionName, DistributionType: distributionType, RecipientAddress: recipientAddress, Coins: coins, DistributionStartHeight: start, DistributionCompletedHeight: end}
+}
+
+func (dr DistributionRecord) DoesClaimExist() bool {
+	if dr.DistributionType == LiquidityMining || dr.DistributionType == ValidatorSubsidy {
+		return true
+	}
+	return false
 }
 
 func (dr DistributionRecord) Validate() bool {
@@ -55,11 +75,12 @@ func (dr DistributionRecord) Validate() bool {
 
 func (dr DistributionRecord) String() string {
 	return strings.TrimSpace(fmt.Sprintf(`DistributionName: %s
+    DistributionType : %s, 
 	RecipientAddress: %s
 	Coins: %s
-    ClaimStatus :%s
+    DistributionStatus :%s
     DistributionStartHeight :%d 
-    DistributionCompletedHeight :%d `, dr.DistributionName, dr.RecipientAddress.String(), dr.Coins.String(), dr.ClaimStatus.String(), dr.DistributionStartHeight, dr.DistributionCompletedHeight))
+    DistributionCompletedHeight :%d `, dr.DistributionName, dr.DistributionType, dr.RecipientAddress.String(), dr.Coins.String(), dr.DistributionStatus.String(), dr.DistributionStartHeight, dr.DistributionCompletedHeight))
 }
 
 func (dr DistributionRecord) Add(dr2 DistributionRecord) DistributionRecord {
@@ -67,16 +88,47 @@ func (dr DistributionRecord) Add(dr2 DistributionRecord) DistributionRecord {
 	return dr
 }
 
+// The same type is also used Claims
 type DistributionType int64
 
 const Airdrop DistributionType = 1
+const LiquidityMining DistributionType = 2
+const ValidatorSubsidy DistributionType = 3
 
-func (d DistributionType) String() string {
-	switch d {
+func (dt DistributionType) String() string {
+	switch dt {
 	case Airdrop:
 		return "Airdrop"
+	case LiquidityMining:
+		return "LiquidityMining"
+	case ValidatorSubsidy:
+		return "ValidatorSubsidy"
 	default:
 		return "Invalid"
+	}
+}
+
+func IsValidDistributionType(distributionType string) (DistributionType, bool) {
+	switch distributionType {
+	case "Airdrop":
+		return Airdrop, true
+	case "LiquidityMining":
+		return LiquidityMining, true
+	case "ValidatorSubsidy":
+		return ValidatorSubsidy, true
+	default:
+		return 0, false
+	}
+}
+
+func IsValidClaim(claimType string) (DistributionType, bool) {
+	switch claimType {
+	case "LiquidityMining":
+		return LiquidityMining, true
+	case "ValidatorSubsidy":
+		return ValidatorSubsidy, true
+	default:
+		return 0, false
 	}
 }
 
@@ -91,13 +143,34 @@ func NewDistribution(t DistributionType, name string) Distribution {
 	return Distribution{DistributionType: t, DistributionName: name}
 }
 
-func (ar Distribution) Validate() bool {
-	if ar.DistributionName == "" {
+func (d Distribution) Validate() bool {
+	if d.DistributionName == "" {
 		return false
 	}
 	return true
 }
 
-func (ar Distribution) String() string {
-	return strings.TrimSpace(fmt.Sprintf(`DistributionName: %s DistributionType :%s`, ar.DistributionName, ar.DistributionType.String()))
+func (d Distribution) String() string {
+	return strings.TrimSpace(fmt.Sprintf(`DistributionName: %s DistributionType :%s`, d.DistributionName, d.DistributionType.String()))
+}
+
+type UserClaim struct {
+	UserAddress   sdk.AccAddress   `json:"user_address"`
+	UserClaimType DistributionType `json:"user_claim_type"`
+	UserClaimTime time.Time        `json:"user_claim_time"`
+}
+
+func NewUserClaim(userAddress sdk.AccAddress, userClaimType DistributionType, time time.Time) UserClaim {
+	return UserClaim{UserAddress: userAddress, UserClaimType: userClaimType, UserClaimTime: time}
+}
+
+func (uc UserClaim) Validate() bool {
+	if uc.UserAddress.Empty() {
+		return false
+	}
+	return true
+}
+
+func (uc UserClaim) String() string {
+	return strings.TrimSpace(fmt.Sprintf(`UserAddress : %s | UserClaimType : %s`, uc.UserAddress.String(), uc.UserClaimType))
 }
