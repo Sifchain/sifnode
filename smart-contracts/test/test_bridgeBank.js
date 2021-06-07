@@ -133,22 +133,6 @@ contract("BridgeBank", function (accounts) {
       this.token = await BridgeToken.new(this.symbol);
       this.amount = 100;
 
-      // Fail to remove the token from the white list if not there yet.
-      await expectRevert(
-          this.bridgeBank.updateEthWhiteList(this.token.address, false, {from: operator}),
-          "!whitelisted"
-      );
-      
-      // Add the token into white list
-      await this.bridgeBank.updateEthWhiteList(this.token.address, true, {
-        from: operator
-      }).should.be.fulfilled;
-
-      // Update the lock/burn limit for this token
-      await this.bridgeBank.updateTokenLockBurnLimit(this.token.address, this.amount, {
-        from: operator
-      }).should.be.fulfilled;
-
       //Load user account with ERC20 tokens for testing
       await this.token.mint(userOne, this.amount, {
         from: operator
@@ -197,126 +181,11 @@ contract("BridgeBank", function (accounts) {
         }
       ).should.be.fulfilled;
 
-
       // Confirm that the user has been minted the correct token
       const afterUserBalance = Number(
         await this.token.balanceOf(this.recipient)
       );
       afterUserBalance.should.be.bignumber.equal(this.amount);
-    });
-
-    it("should not be able to add a token to the whitelist that has the same symbol as an already registered token", async function () {
-      const symbol = "TEST"
-      const newToken = await BridgeToken.new(symbol);
-      (await this.bridgeBank.getTokenInEthWhiteList(newToken.address)).should.be.equal(false)
-      // Fail to add token already there
-      await expectRevert(
-        this.bridgeBank.updateEthWhiteList(newToken.address, true, {from: operator}),
-        "whitelisted"
-      );
-
-      (await this.bridgeBank.getTokenInEthWhiteList(newToken.address)).should.be.equal(false)
-    });
-
-    it("should be able to remove a token from the whitelist", async function () {
-
-      (await this.bridgeBank.getTokenInEthWhiteList(this.token.address)).should.be.equal(true)
-      // Remove the token from the white list
-      await this.bridgeBank.updateEthWhiteList(this.token.address, false, {
-        from: operator
-      }).should.be.fulfilled;
-
-      (await this.bridgeBank.getTokenInEthWhiteList(this.token.address)).should.be.equal(false)
-    });
-  });
-
-  describe("Can't lock the asset if the address not in white list even the same symbol", function () {
-    beforeEach(async function () {
-      // Deploy Valset contract
-      this.initialValidators = [userOne, userTwo, userThree];
-      this.initialPowers = [5, 8, 12];
-      
-      // Deploy CosmosBridge contract
-      this.cosmosBridge = await deployProxy(CosmosBridge, [
-        operator,
-        consensusThreshold,
-        this.initialValidators,
-        this.initialPowers
-      ],
-        {unsafeAllowCustomTypes: true}
-      );
-
-      // Deploy BridgeBank contract
-      this.bridgeBank = await deployProxy(BridgeBank, [
-        operator,
-        this.cosmosBridge.address,
-        operator,
-        operator
-      ],
-      {unsafeAllowCustomTypes: true}
-      );
-
-      this.recipient = web3.utils.utf8ToHex(
-        "sif1nx650s8q9w28f2g3t9ztxyg48ugldptuwzpace"
-      );
-      // This is for Ethereum deposits
-      this.ethereumToken = "0x0000000000000000000000000000000000000000";
-      this.weiAmount = web3.utils.toWei("0.25", "ether");
-      // This is for ERC20 deposits
-      this.symbol = "TEST";
-      this.token = await BridgeToken.new(this.symbol);
-      this.amount = 100;
-
-      // Add the token into white list
-      await this.bridgeBank.updateEthWhiteList(this.token.address, true, {
-        from: operator
-      }).should.be.fulfilled;
-
-      // Update the lock/burn limit for this token
-      await this.bridgeBank.updateTokenLockBurnLimit(this.token.address, this.amount, {
-        from: operator
-      }).should.be.fulfilled;      
-
-      //Load user account with ERC20 tokens for testing
-      await this.token.mint(userOne, 1000, {
-        from: operator
-      }).should.be.fulfilled;
-
-      // Approve tokens to contract
-      await this.token.approve(this.bridgeBank.address, this.amount, {
-        from: userOne
-      }).should.be.fulfilled;
-
-      // This is for other ERC20 with the same symbol
-      this.token2 = await BridgeToken.new(this.symbol);
-      await this.token2.mint(userOne, 1000, {
-        from: operator
-      }).should.be.fulfilled;
-    });
-
-    it("should allow users to lock ERC20 tokens in white list, failed to lock ERC20 tokens not in white list", async function () {
-      // Attempt to lock tokens
-      await this.bridgeBank.lock(
-        this.recipient,
-        this.token.address,
-        this.amount, {
-          from: userOne,
-          value: 0
-        }
-      ).should.be.fulfilled;
-
-      // Attempt to lock tokens
-      await expectRevert(
-        this.bridgeBank.lock(
-          this.recipient,
-          this.token2.address,
-          this.amount, {
-            from: userOne,
-            value: 0
-          }
-        ),
-        'Only token in whitelist can be transferred to cosmos'
-      );
     });
   });
 
@@ -355,21 +224,6 @@ contract("BridgeBank", function (accounts) {
       this.symbol = "TEST";
       this.token = await BridgeToken.new(this.symbol);
       this.amount = 100;
-
-      // Add the token into white list
-      await this.bridgeBank.updateEthWhiteList(this.token.address, true, {
-        from: operator
-      }).should.be.fulfilled;
-
-      // Update the lock/burn limit for this token
-      await this.bridgeBank.updateTokenLockBurnLimit(this.token.address, this.amount, {
-        from: operator
-      }).should.be.fulfilled;
-
-      // Update the lock/burn limit for this token
-      await this.bridgeBank.updateTokenLockBurnLimit(this.ethereumToken, this.weiAmount, {
-        from: operator
-      }).should.be.fulfilled;
 
       //Load user account with ERC20 tokens for testing
       await this.token.mint(userOne, 1000, {
@@ -418,23 +272,6 @@ contract("BridgeBank", function (accounts) {
         }
       ),
         "Invalid len"
-      );
-    });
-
-    it("should not allow users to lock ERC20 tokens if the sifaddress prefix is incorrect", async function () {
-      const invalidSifAddress = web3.utils.utf8ToHex(
-        "zif1gdnl9jj2xgy5n04r7heqxlqvvzcy24zc96ns2f"
-      );
-      // Attempt to lock tokens
-      await expectRevert(this.bridgeBank.lock(
-        invalidSifAddress,
-        this.token.address,
-        this.amount, {
-          from: userOne,
-          value: 0
-        }
-      ),
-        "Invalid sif address"
       );
     });
 
@@ -559,15 +396,6 @@ contract("BridgeBank", function (accounts) {
       this.symbol = "TEST";
       this.token = await BridgeToken.new(this.symbol);
       this.amount = 100;
-
-      // Add the token into white list
-      await this.bridgeBank.updateEthWhiteList(this.token.address, true, {
-        from: operator
-      }).should.be.fulfilled;
-
-      await this.bridgeBank.updateTokenLockBurnLimit(this.token.address, this.amount, {
-        from: operator
-      }).should.be.fulfilled;
 
       //Load user account with ERC20 tokens for testing
       await this.token.mint(userOne, 1000, {

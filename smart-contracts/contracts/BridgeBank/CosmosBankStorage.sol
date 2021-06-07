@@ -1,4 +1,4 @@
-pragma solidity 0.5.16;
+pragma solidity 0.8.0;
 
 contract CosmosBankStorage {
 
@@ -22,18 +22,18 @@ contract CosmosBankStorage {
     * @notice cosmos deposit nonce
     */
     uint256 public cosmosDepositNonce;
-    
-    /**
-    * @notice mapping of symbols to token addresses
-    */
-    mapping(string => address) controlledBridgeTokens;
-    
-    /**
-    * @notice mapping of lowercase symbols to properly capitalized tokens
-    */
-    mapping(string => string) public lowerToUpperTokens;
 
-    /**
+    /*
+    * @notice [DEPRECATED] mapping of symbols to token addresses
+    */
+    mapping(string => address) private controlledBridgeTokens;
+
+    /*
+    * @notice [DEPRECATED] mapping of lowercase symbols to properly capitalized tokens
+    */
+    mapping(string => string) private lowerToUpperTokens;
+
+    /*
     * @notice gap of storage for future upgrades
     */
     uint256[100] private ____gap;

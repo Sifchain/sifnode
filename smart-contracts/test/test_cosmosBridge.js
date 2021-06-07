@@ -38,9 +38,8 @@ contract("CosmosBridge", function (accounts) {
   const defaultTokenPrefix = "e"
   describe("CosmosBridge smart contract deployment", function () {
     beforeEach(async function () {
-      await silenceWarnings();
       // Deploy Valset contract
-      this.initialValidators = [userOne, userTwo, userThree, userFour];
+      this.initialValidators = [userOne.address, userTwo.address, userThree.address, userFour.address];
       this.initialPowers = [30, 20, 21, 29];
       
       // Deploy CosmosBridge contract
@@ -64,22 +63,7 @@ contract("CosmosBridge", function (accounts) {
       );
     });
 
-    it("should allow the operator to set the Bridge Bank", async function () {
-      this.bridgeBank.should.exist;
-
-      await this.cosmosBridge.setBridgeBank(this.bridgeBank.address, {
-        from: operator
-      }).should.be.fulfilled;
-
-      const bridgeBank = await this.cosmosBridge.bridgeBank();
-      bridgeBank.should.be.equal(this.bridgeBank.address);
-    });
-
     it("should not allow the operator to update the Bridge Bank once it has been set", async function () {
-      await this.cosmosBridge.setBridgeBank(this.bridgeBank.address, {
-        from: operator
-      }).should.be.fulfilled;
-
       await this.cosmosBridge
         .setBridgeBank(operator, {
           from: operator
@@ -98,7 +82,12 @@ contract("CosmosBridge", function (accounts) {
       this.ethereumReceiver = userThree;
 
       // Deploy Valset contract
-      this.initialValidators = [userOne, userTwo, userThree, userFour];
+      this.initialValidators = [
+        userOne.address,
+        userTwo.address,
+        userThree.address,
+        userFour.address
+      ];
       this.initialPowers = [30, 20, 21, 29];
       
       // Deploy CosmosBridge contract
@@ -141,30 +130,6 @@ contract("CosmosBridge", function (accounts) {
           }),
           "The Bridge Bank cannot be updated once it has been set"
       );
-
-      // Deploy TEST tokens
-      this.symbol = "TEST";
-      this.actualSymbol = "eTEST"
-      this.token = await BridgeToken.new(this.actualSymbol);
-      this.amount = 100;
-
-      // sifchain address
-      this.cosmosRecipient = web3.utils.utf8ToHex(
-        "sif1nx650s8q9w28f2g3t9ztxyg48ugldptuwzpace"
-      );
-
-      // address 0
-      this.ethereumToken = "0x0000000000000000000000000000000000000000";
-
-      // Add the token into white list
-      await this.bridgeBank.updateEthWhiteList(this.token.address, true, {
-        from: operator
-      }).should.be.fulfilled;
-
-      // Update the lock/burn limit for this token
-      await this.bridgeBank.updateTokenLockBurnLimit(this.token.address, this.amount, {
-        from: operator
-      }).should.be.fulfilled;
     });
 
     it("should allow for the creation of new burn prophecy claims", async function () {
@@ -178,7 +143,7 @@ contract("CosmosBridge", function (accounts) {
         from: userOne
       }).should.be.fulfilled;
 
-      const { logs } = await this.bridgeBank.lock(
+      const tx = await this.bridgeBank.lock(
         this.cosmosRecipient,
         this.token.address,
         this.amount,
@@ -187,6 +152,8 @@ contract("CosmosBridge", function (accounts) {
           value: 0
         }
       ).should.be.fulfilled;
+
+      const logs = await tx.wait();
 
       const event = logs.find(e => e.event === "LogLock");
       event.args._token.should.be.equal(this.token.address);
@@ -405,10 +372,6 @@ contract("CosmosBridge", function (accounts) {
       await this.cosmosBridge.setBridgeBank(this.bridgeBank.address, {
         from: operator
       });
-      // Add the token into white list
-      await this.bridgeBank.addExistingBridgeToken(this.token.address, {
-        from: operator
-      }).should.be.fulfilled;
 
       // Update the lock/burn limit for this token
       await this.bridgeBank.updateTokenLockBurnLimit(this.token.address, this.amount, {
