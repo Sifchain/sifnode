@@ -213,7 +213,6 @@ describe("Test Bridge Bank", function () {
       );
 
       const receipt = await tx.wait();
-      console.log("multilockburn receipt: ", receipt)
 
       // Confirm that the user has the proper balance after the multiLockBurn
       let afterUserBalance = Number(
@@ -238,7 +237,6 @@ describe("Test Bridge Bank", function () {
         0
       );
       const receipt = await tx.wait();
-      console.log("receipt: ", receipt);
 
       await state.token2.connect(userOne).approve(
         state.bridgeBank.address,
