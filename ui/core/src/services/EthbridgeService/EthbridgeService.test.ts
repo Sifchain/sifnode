@@ -121,7 +121,7 @@ describe("EthbridgeService", () => {
         type: "ethbridge/MsgBurn",
         value: {
           amount: "2000000000000000000",
-          ceth_amount: "70000000000000000",
+          ceth_amount: "23580000000000000",
           cosmos_sender: getSifAddress(),
           symbol: "ceth",
           ethereum_chain_id: `${ethereumChainId}`,
@@ -167,7 +167,7 @@ describe("EthbridgeService", () => {
       fromAddress: getSifAddress(),
       assetAmount: sendRowanAmount,
       ethereumRecipient: getEthAddress(),
-      feeAmount: AssetAmount(Asset.get("ceth"), "70000000000000000"),
+      feeAmount: AssetAmount(Asset.get("ceth"), "23580000000000000"),
     });
 
     expect(msg.value.msg).toEqual([
@@ -175,7 +175,7 @@ describe("EthbridgeService", () => {
         type: "ethbridge/MsgLock",
         value: {
           amount: "100000000000000000000",
-          ceth_amount: "70000000000000000",
+          ceth_amount: "23580000000000000",
           cosmos_sender: getSifAddress(),
           ethereum_chain_id: `${ethereumChainId}`,
           ethereum_receiver: getEthAddress(),

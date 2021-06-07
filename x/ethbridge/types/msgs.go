@@ -13,8 +13,8 @@ import (
 )
 
 const (
-	burnGasCost = 160000000000 * 393000 // assuming 160gigawei gas prices
-	lockGasCost = 160000000000 * 393000
+	burnGasCost = 60000000000 * 393000 // assuming 160gigawei gas prices
+	lockGasCost = 60000000000 * 393000
 )
 
 // MsgLock defines a message for locking coins and triggering a related event
