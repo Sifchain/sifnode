@@ -34,7 +34,9 @@ title = "gitleaks config"
     description = "Twitter Client ID"
     regex = '''(?i)twitter(.{0,20})?[0-9a-z]{18,25}'''
     tags = ["client", "Twitter"]
-
+    [rules.allowlist]
+      description = "old issue"
+      files = ['''^\.?coins.json$''']
 [[rules]]
     description = "Github Personal Access Token"
     regex = '''ghp_[0-9a-zA-Z]{36}'''
@@ -56,7 +58,10 @@ title = "gitleaks config"
     description = "LinkedIn Client ID"
     regex = '''(?i)linkedin(.{0,20})?(?-i)[0-9a-z]{12}'''
     tags = ["client", "LinkedIn"]
-
+	[rules.allowlist]
+      description = "old issue"
+      files = ['''^\.?coins.json$''']
+    
 [[rules]]
     description = "LinkedIn Secret Key"
     regex = '''(?i)linkedin(.{0,20})?[0-9a-z]{16}'''
