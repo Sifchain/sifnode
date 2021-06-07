@@ -272,9 +272,7 @@ func TestBurnEthFail(t *testing.T) {
 
 func TestBurnEthSuccess(t *testing.T) {
 	ctx, _, bankKeeper, _, handler, validatorAddresses, _ := CreateTestHandler(t, 0.5, []int64{5})
-	fmt.Printf("++++++ vals is %v \n", validatorAddresses)
 	valAddressVal1Pow5 := validatorAddresses[0]
-	fmt.Printf("++++++ vals is %v \n", valAddressVal1Pow5.String())
 
 	// Initial message to mint some eth
 	coinsToMintAmount := sdk.NewInt(7)
@@ -479,10 +477,8 @@ func CreateTestHandler(t *testing.T, consensusNeeded float64, validatorAmounts [
 	validators := []sdk.ValAddress{}
 	for _, amount := range validatorAmounts {
 		for key, value := range validatorAddresses.WhiteList {
-			fmt.Printf("++++++ key is %s value is %d \n", key, value)
 			if value == uint32(amount) {
 				address, _ := sdk.ValAddressFromBech32(key)
-				fmt.Printf("++++++ addre is %s  \n", address)
 
 				if !contains(validators, address) {
 					validators = append(validators, address)
@@ -490,7 +486,6 @@ func CreateTestHandler(t *testing.T, consensusNeeded float64, validatorAmounts [
 			}
 		}
 	}
-	fmt.Printf("++++++ key value is %v \n", validators)
 
 	return ctx, keeper, bankKeeper, accountKeeper, handler, validators, oracleKeeper
 }
