@@ -1,7 +1,6 @@
 package keeper_test
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/Sifchain/sifnode/x/oracle/types"
@@ -20,7 +19,6 @@ func TestKeeper_SetValidatorWhiteList(t *testing.T) {
 	networkDescriptor := types.NewNetworkDescriptor(types.NetworkID(0))
 	whilelist := types.ValidatorWhiteList{WhiteList: make(map[string]uint32)}
 	for _, address := range valAddresses {
-		fmt.Printf("address is %s\n", address.String())
 		whilelist.GetWhiteList()[address.String()] = 100
 	}
 
@@ -41,7 +39,6 @@ func TestKeeper_ValidateAddress(t *testing.T) {
 	whitelist := make(map[string]uint32)
 
 	for _, address := range valAddresses {
-		fmt.Printf("address is %s\n", address.String())
 		whitelist[address.String()] = 100
 	}
 
@@ -62,7 +59,6 @@ func TestKeeper_GetAllWhiteList(t *testing.T) {
 	networkDescriptor := types.NewNetworkDescriptor(types.NetworkID(0))
 	whilelist := types.ValidatorWhiteList{WhiteList: make(map[string]uint32)}
 	for _, address := range valAddresses {
-		fmt.Printf("address is %s\n", address.String())
 		whilelist.GetWhiteList()[address.String()] = 100
 	}
 

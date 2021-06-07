@@ -10,7 +10,8 @@ import (
 )
 
 const (
-	TestEthereumChainID       = 1
+	// TestEthereumChainID       = 1
+	TestNetworkID             = oracletypes.NetworkID(1)
 	TestBridgeContractAddress = "0xC4cE93a5699c68241fc2fB503Fb0f21724A624BB"
 	TestAddress               = "cosmos1gn8409qq9hnrxde37kuxwx5hrxpfpv8426szuv"
 	TestValidator             = "cosmos1xdp5tvt7lxh8rf9xx07wy2xlagzhq24ha48xtq"
@@ -49,7 +50,7 @@ func CreateTestEthClaim(
 	testCosmosAddress, err1 := sdk.AccAddressFromBech32(TestAddress)
 	require.NoError(t, err1)
 	ethClaim := NewEthBridgeClaim(
-		TestEthereumChainID, testContractAddress, TestNonce, symbol,
+		TestNetworkID, testContractAddress, TestNonce, symbol,
 		testTokenAddress, testEthereumAddress, testCosmosAddress, validatorAddress, amount, claimType)
 	return ethClaim
 }
@@ -58,7 +59,7 @@ func CreateTestBurnMsg(t *testing.T, testCosmosSender string, ethereumReceiver E
 	coinsAmount sdk.Int, coinsSymbol string) MsgBurn {
 	testCosmosAddress, err := sdk.AccAddressFromBech32(TestAddress)
 	require.NoError(t, err)
-	burnEth := NewMsgBurn(TestEthereumChainID, testCosmosAddress, ethereumReceiver, coinsAmount, coinsSymbol, testCethAmount)
+	burnEth := NewMsgBurn(TestNetworkID, testCosmosAddress, ethereumReceiver, coinsAmount, coinsSymbol, testCethAmount)
 	return burnEth
 }
 
@@ -66,7 +67,7 @@ func CreateTestLockMsg(t *testing.T, testCosmosSender string, ethereumReceiver E
 	coinsAmount sdk.Int, coinsSymbol string) MsgLock {
 	testCosmosAddress, err := sdk.AccAddressFromBech32(TestAddress)
 	require.NoError(t, err)
-	lockEth := NewMsgLock(TestEthereumChainID, testCosmosAddress, ethereumReceiver, coinsAmount, coinsSymbol, testCethAmount)
+	lockEth := NewMsgLock(TestNetworkID, testCosmosAddress, ethereumReceiver, coinsAmount, coinsSymbol, testCethAmount)
 	return lockEth
 }
 

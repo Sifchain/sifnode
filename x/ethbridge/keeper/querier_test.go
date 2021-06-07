@@ -15,7 +15,7 @@ import (
 
 //nolint:lll
 const (
-	TestResponseJSON = "{\"id\":\"100x7B95B6EC7EbD73572298cEf32Bb54FA408207359\",\"status\":{\"text\":1},\"claims\":[{\"ethereum_chain_id\":\"1\",\"bridge_contract_address\":\"0xC4cE93a5699c68241fc2fB503Fb0f21724A624BB\",\"symbol\":\"eth\",\"token_contract_address\":\"0x0000000000000000000000000000000000000000\",\"ethereum_sender\":\"0x7B95B6EC7EbD73572298cEf32Bb54FA408207359\",\"cosmos_receiver\":\"cosmos1gn8409qq9hnrxde37kuxwx5hrxpfpv8426szuv\",\"validator_address\":\"cosmosvaloper1353a4uac03etdylz86tyq9ssm3x2704j3a9n7n\",\"amount\":\"10\",\"claim_type\":2}]}"
+	TestResponseJSON = "{\"id\":\"100x7B95B6EC7EbD73572298cEf32Bb54FA408207359\",\"status\":{\"text\":1},\"claims\":[{\"network_id\":1,\"bridge_contract_address\":\"0xC4cE93a5699c68241fc2fB503Fb0f21724A624BB\",\"symbol\":\"eth\",\"token_contract_address\":\"0x0000000000000000000000000000000000000000\",\"ethereum_sender\":\"0x7B95B6EC7EbD73572298cEf32Bb54FA408207359\",\"cosmos_receiver\":\"cosmos1gn8409qq9hnrxde37kuxwx5hrxpfpv8426szuv\",\"validator_address\":\"cosmosvaloper1353a4uac03etdylz86tyq9ssm3x2704j3a9n7n\",\"amount\":\"10\",\"claim_type\":2}]}"
 
 	networkID = 1
 )
@@ -60,7 +60,7 @@ func TestQueryEthProphecy(t *testing.T) {
 	require.Equal(t, NewTestResponseJSON, string(testJSON))
 
 	req := types.NewQueryEthProphecyRequest(
-		types.TestEthereumChainID, testBridgeContractAddress, types.TestNonce,
+		types.TestNetworkID, testBridgeContractAddress, types.TestNonce,
 		types.TestCoinsSymbol, testTokenContractAddress, testEthereumAddress)
 	bz, err2 := encCfg.Amino.MarshalJSON(req)
 	require.Nil(t, err2)
@@ -90,7 +90,7 @@ func TestQueryEthProphecy(t *testing.T) {
 	badEthereumAddress := types.NewEthereumAddress("badEthereumAddress")
 
 	bz2, err6 := encCfg.Amino.MarshalJSON(types.NewQueryEthProphecyRequest(
-		types.TestEthereumChainID, testBridgeContractAddress, 12,
+		types.TestNetworkID, testBridgeContractAddress, 12,
 		types.TestCoinsSymbol, testTokenContractAddress, badEthereumAddress))
 	require.Nil(t, err6)
 
@@ -107,7 +107,7 @@ func TestQueryEthProphecy(t *testing.T) {
 
 	bz3, err8 := encCfg.Amino.MarshalJSON(
 		types.NewQueryEthProphecyRequest(
-			types.TestEthereumChainID, testBridgeContractAddress, 12,
+			types.TestNetworkID, testBridgeContractAddress, 12,
 			types.TestCoinsSymbol, testTokenContractAddress, emptyEthereumAddress))
 
 	require.Nil(t, err8)

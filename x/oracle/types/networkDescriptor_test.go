@@ -16,7 +16,7 @@ func TestNewNetworkDescriptor(t *testing.T) {
 }
 
 func TestGetPrefix(t *testing.T) {
-	prefixOfNetwork100 := []byte{0x0, 0x0, 0x0, 0x0, 0x64}
+	prefixOfNetwork100 := []byte{0x0, 0x0, 0x0, 0x0, 0x01}
 	networkDescriptor := NewNetworkDescriptor(networkID)
 	assert.Equal(t, networkDescriptor.NetworkID, networkID)
 	assert.Equal(t, networkDescriptor.GetPrefix(), prefixOfNetwork100)

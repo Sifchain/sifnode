@@ -158,7 +158,10 @@ func (k Keeper) ProcessUpdateWhiteListValidator(ctx sdk.Context, networkID types
 // left to push it over the threshold required for consensus.
 func (k Keeper) processCompletion(ctx sdk.Context, networkDescriptor types.NetworkDescriptor, prophecy types.Prophecy) types.Prophecy {
 	validators := k.GetOracleWhiteList(ctx, networkDescriptor)
+	fmt.Printf("processCompletion %v \n", validators)
+
 	highestClaim, highestRatio, vetoRatio := validators.GetPowerRatio(prophecy.ClaimValidators)
+	fmt.Printf("processCompletion %s, %f, %f \n", highestClaim, highestRatio, vetoRatio)
 	if highestRatio >= k.consensusNeeded {
 		prophecy.Status.Text = types.StatusText_STATUS_TEXT_SUCCESS
 		prophecy.Status.FinalClaim = highestClaim

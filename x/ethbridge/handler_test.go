@@ -55,7 +55,10 @@ func TestBasicMsgs(t *testing.T) {
 	for _, event := range res.Events {
 		for _, attribute := range event.Attributes {
 			value := string(attribute.Value)
+			fmt.Printf("+++++++++ events is %s %s\n", string(attribute.Key), string(attribute.Value))
+
 			switch key := string(attribute.Key); key {
+
 			case "module":
 				require.Equal(t, value, types.ModuleName)
 			case senderString:
@@ -269,7 +272,9 @@ func TestBurnEthFail(t *testing.T) {
 
 func TestBurnEthSuccess(t *testing.T) {
 	ctx, _, bankKeeper, _, handler, validatorAddresses, _ := CreateTestHandler(t, 0.5, []int64{5})
+	fmt.Printf("++++++ vals is %v \n", validatorAddresses)
 	valAddressVal1Pow5 := validatorAddresses[0]
+	fmt.Printf("++++++ vals is %v \n", valAddressVal1Pow5.String())
 
 	// Initial message to mint some eth
 	coinsToMintAmount := sdk.NewInt(7)
@@ -326,7 +331,8 @@ func TestBurnEthSuccess(t *testing.T) {
 	remainingCoins := mintedCoins.Sub(burnedCoins)
 	senderCoins := bankKeeper.GetAllBalances(ctx, senderAddress)
 	require.True(t, senderCoins.IsEqual(remainingCoins))
-	eventEthereumChainID := ""
+	// eventEthereumChainID := ""
+	networkID := ""
 	eventCosmosSender := ""
 	eventCosmosSenderSequence := ""
 	eventEthereumReceiver := ""
@@ -345,8 +351,10 @@ func TestBurnEthSuccess(t *testing.T) {
 				// require.Equal(t, value, TestAddress)
 			case moduleString:
 				require.Equal(t, value, types.ModuleName)
-			case "ethereum_chain_id":
-				eventEthereumChainID = value
+			case "network_id":
+				networkID = value
+
+				// eventEthereumChainID = value
 			case "cosmos_sender":
 				eventCosmosSender = value
 			case "cosmos_sender_sequence":
@@ -366,7 +374,7 @@ func TestBurnEthSuccess(t *testing.T) {
 			}
 		}
 	}
-	require.Equal(t, eventEthereumChainID, strconv.Itoa(types.TestEthereumChainID))
+	require.Equal(t, networkID, types.TestNetworkID.String())
 	require.Equal(t, eventCosmosSender, senderAddress.String())
 	require.Equal(t, eventCosmosSenderSequence, senderSequence)
 	require.Equal(t, eventEthereumReceiver, ethereumReceiver.String())
@@ -449,6 +457,15 @@ func TestRescueCethMsg(t *testing.T) {
 	require.NotNil(t, res)
 }
 
+func contains(addresses []sdk.ValAddress, address sdk.ValAddress) bool {
+	for _, value := range addresses {
+		if value.Equals(address) {
+			return true
+		}
+	}
+	return false
+}
+
 func CreateTestHandler(t *testing.T, consensusNeeded float64, validatorAmounts []int64) (sdk.Context,
 	ethbridgekeeper.Keeper, bankkeeper.Keeper, authkeeper.AccountKeeper,
 	sdk.Handler, []sdk.ValAddress, oraclekeeper.Keeper) {
@@ -459,5 +476,21 @@ func CreateTestHandler(t *testing.T, consensusNeeded float64, validatorAmounts [
 	keeper.SetCethReceiverAccount(ctx, CethReceiverAccount)
 	handler := ethbridge.NewHandler(keeper)
 
-	return ctx, keeper, bankKeeper, accountKeeper, handler, validatorAddresses.GetAllValidators(), oracleKeeper
+	validators := []sdk.ValAddress{}
+	for _, amount := range validatorAmounts {
+		for key, value := range validatorAddresses.WhiteList {
+			fmt.Printf("++++++ key is %s value is %d \n", key, value)
+			if value == uint32(amount) {
+				address, _ := sdk.ValAddressFromBech32(key)
+				fmt.Printf("++++++ addre is %s  \n", address)
+
+				if !contains(validators, address) {
+					validators = append(validators, address)
+				}
+			}
+		}
+	}
+	fmt.Printf("++++++ key value is %v \n", validators)
+
+	return ctx, keeper, bankKeeper, accountKeeper, handler, validators, oracleKeeper
 }
