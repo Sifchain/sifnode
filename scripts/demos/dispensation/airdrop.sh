@@ -8,7 +8,7 @@
 # ar1 = name for airdrop , needs to be unique for every airdrop . If not the tx gets rejected
 # input.json list of funding addresses  -  Input address must be part of the multisig key
 # output.json list of airdrop receivers.
-sifnodecli tx dispensation create Airdrop output.json --gas 200064128 --from $(sifnodecli keys show sif -a) --yes
+sifnodecli tx dispensation create Airdrop output.json $(sifnodecli keys show sif -a) --from $(sifnodecli keys show sif -a) --yes --gas auto --gas-adjustment=1.5 --gas-prices 1.0rowan
 sleep 8
 sifnodecli q dispensation distributions-all
 #sifnodecli q dispensation records-by-name-all ar1 >> all.json

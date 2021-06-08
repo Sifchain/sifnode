@@ -1,0 +1,653 @@
+[
+    {
+      "ClaimStatus": 2,
+      "distribution_name": "airdrop-1",
+      "recipient_address": "sif100aqf8h4h6gfvttufkdshy52e8sq8me8rzgeaa",
+      "coins": [
+        {
+          "denom": "rowan",
+          "amount": "1115075825000000000000"
+        }
+      ],
+      "distribution_start_height": 1032094,
+      "distribution_completed_height": 1032095
+    },
+    {
+      "ClaimStatus": 2,
+      "distribution_name": "airdrop-1",
+      "recipient_address": "sif100qt2nm394racccl2ykwtrdsakcdhvq3fe37eg",
+      "coins": [
+        {
+          "denom": "rowan",
+          "amount": "1314405889000000000000"
+        }
+      ],
+      "distribution_start_height": 1032094,
+      "distribution_completed_height": 1032095
+    },
+    {
+      "ClaimStatus": 2,
+      "distribution_name": "airdrop-1",
+      "recipient_address": "sif100snz8vss9gqhchg90mcgzkjaju2k76y7h9n6d",
+      "coins": [
+        {
+          "denom": "rowan",
+          "amount": "1314405889000000000000"
+        }
+      ],
+      "distribution_start_height": 1032094,
+      "distribution_completed_height":1032095
+    },
+    {
+      "ClaimStatus": 2,
+      "distribution_name": "airdrop-1",
+      "recipient_address": "sif100vqxs70n99l36rd8n52e03zsdndfvgnrkuas5",
+      "coins": [
+        {
+          "denom": "rowan",
+          "amount": "1314405889000000000000"
+        }
+      ],
+      "distribution_start_height": 1032094,
+      "distribution_completed_height":1032095
+    },
+    {
+      "ClaimStatus": 2,
+      "distribution_name": "airdrop-1",
+      "recipient_address": "sif1023kwrdmrkt56crfm9x7fm02dh8e9tskgrjxz6",
+      "coins": [
+        {
+          "denom": "rowan",
+          "amount": "2898242730000000000000"
+        }
+      ],
+      "distribution_start_height": 1032094,
+      "distribution_completed_height":1032095
+    },
+    {
+      "ClaimStatus": 2,
+      "distribution_name": "airdrop-1",
+      "recipient_address": "sif10240ts0pcmlq6m5n5jkl2tw0x2e7ne7wm6rue3",
+      "coins": [
+        {
+          "denom": "rowan",
+          "amount": "1314405889000000000000"
+        }
+      ],
+      "distribution_start_height": 1032094,
+      "distribution_completed_height":1032095
+    },
+    {
+      "ClaimStatus": 2,
+      "distribution_name": "airdrop-1",
+      "recipient_address": "sif1026syvzcfdmj2dydgakjp73s78pfr9vesmuec3",
+      "coins": [
+        {
+          "denom": "rowan",
+          "amount": "1314405889000000000000"
+        }
+      ],
+      "distribution_start_height": 1032094,
+      "distribution_completed_height":1032095
+    },
+    {
+      "ClaimStatus": 2,
+      "distribution_name": "airdrop-1",
+      "recipient_address": "sif1028764a29lvqmf249lqn5jfe3tdlcsxju9ep85",
+      "coins": [
+        {
+          "denom": "rowan",
+          "amount": "1115075825000000000000"
+        }
+      ],
+      "distribution_start_height": 1032094,
+      "distribution_completed_height":1032095
+    },
+    {
+      "ClaimStatus": 2,
+      "distribution_name": "airdrop-1",
+      "recipient_address": "sif102m77fe2wrxyumrrz55nrerd03vyyjywvpsqnd",
+      "coins": [
+        {
+          "denom": "rowan",
+          "amount": "1314405889000000000000"
+        }
+      ],
+      "distribution_start_height": 1032094,
+      "distribution_completed_height":1032095
+    },
+    {
+      "ClaimStatus": 2,
+      "distribution_name": "airdrop-1",
+      "recipient_address": "sif102uldawsvkene9a5djs8xma233ka6c7dwhyfzj",
+      "coins": [
+        {
+          "denom": "rowan",
+          "amount": "1314405889000000000000"
+        }
+      ],
+      "distribution_start_height": 1032094,
+      "distribution_completed_height":1032095
+    },
+    {
+      "ClaimStatus": 2,
+      "distribution_name": "airdrop-1",
+      "recipient_address": "sif102uur87a3xt2wep6hzpqjujjxau0ge7wzcmdkh",
+      "coins": [
+        {
+          "denom": "rowan",
+          "amount": "1115075825000000000000"
+        }
+      ],
+      "distribution_start_height": 1032094,
+      "distribution_completed_height":1032096
+    },
+    {
+      "ClaimStatus": 2,
+      "distribution_name": "airdrop-1",
+      "recipient_address": "sif102vm3xy6phq8gtfev8rqlhlv86esf4dxmpsa4p",
+      "coins": [
+        {
+          "denom": "rowan",
+          "amount": "1314405889000000000000"
+        }
+      ],
+      "distribution_start_height": 1032094,
+      "distribution_completed_height":1032096
+    },
+    {
+      "ClaimStatus": 2,
+      "distribution_name": "airdrop-1",
+      "recipient_address": "sif102zrguzn95scx077hrawtdfgx735av9539kny4",
+      "coins": [
+        {
+          "denom": "rowan",
+          "amount": "1314405889000000000000"
+        }
+      ],
+      "distribution_start_height": 1032094,
+      "distribution_completed_height":1032096
+    },
+    {
+      "ClaimStatus": 2,
+      "distribution_name": "airdrop-1",
+      "recipient_address": "sif1032qhvrkxkqrypx7qmd345dugcuspeyysxela4",
+      "coins": [
+        {
+          "denom": "rowan",
+          "amount": "1115075825000000000000"
+        }
+      ],
+      "distribution_start_height": 1032094,
+      "distribution_completed_height":1032096
+    },
+    {
+      "ClaimStatus": 2,
+      "distribution_name": "airdrop-1",
+      "recipient_address": "sif10364s6w4pcmcckz6v2panavpfyg528mfcvzsa2",
+      "coins": [
+        {
+          "denom": "rowan",
+          "amount": "1314405889000000000000"
+        }
+      ],
+      "distribution_start_height": 1032094,
+      "distribution_completed_height":1032096
+    },
+    {
+      "ClaimStatus": 2,
+      "distribution_name": "airdrop-1",
+      "recipient_address": "sif103gc8yxcequltqs427u888zlp48ypyann6vsxw",
+      "coins": [
+        {
+          "denom": "rowan",
+          "amount": "1314405889000000000000"
+        }
+      ],
+      "distribution_start_height": 1032094,
+      "distribution_completed_height":1032096
+    },
+    {
+      "ClaimStatus": 2,
+      "distribution_name": "airdrop-1",
+      "recipient_address": "sif103mm85chvwsvwnkyzg39udejs8uqswgvhauu23",
+      "coins": [
+        {
+          "denom": "rowan",
+          "amount": "1314405889000000000000"
+        }
+      ],
+      "distribution_start_height": 1032094,
+      "distribution_completed_height":1032096
+    },
+    {
+      "ClaimStatus": 2,
+      "distribution_name": "airdrop-1",
+      "recipient_address": "sif1040ewepma64um78682sahxqdwyhm73jn80hf3h",
+      "coins": [
+        {
+          "denom": "rowan",
+          "amount": "1115075825000000000000"
+        }
+      ],
+      "distribution_start_height": 1032094,
+      "distribution_completed_height":1032096
+    },
+    {
+      "ClaimStatus": 2,
+      "distribution_name": "airdrop-1",
+      "recipient_address": "sif104anszez88r9gm3y2zq2fns0w9sv6aaendke5r",
+      "coins": [
+        {
+          "denom": "rowan",
+          "amount": "1314405889000000000000"
+        }
+      ],
+      "distribution_start_height": 1032094,
+      "distribution_completed_height":1032096
+    },
+    {
+      "ClaimStatus": 2,
+      "distribution_name": "airdrop-1",
+      "recipient_address": "sif104je9jh8xudpktg4hhfs7zvnt7hkpj0x5uegl4",
+      "coins": [
+        {
+          "denom": "rowan",
+          "amount": "1314405889000000000000"
+        }
+      ],
+      "distribution_start_height": 1032094,
+      "distribution_completed_height":1032096
+    },
+    {
+      "ClaimStatus": 2,
+      "distribution_name": "airdrop-1",
+      "recipient_address": "sif104q2xvf8w0zflfhzj9xe06kt0t065q03rl6h29",
+      "coins": [
+        {
+          "denom": "rowan",
+          "amount": "1115075825000000000000"
+        }
+      ],
+      "distribution_start_height": 1032094,
+      "distribution_completed_height":1032097
+    },
+    {
+      "ClaimStatus": 2,
+      "distribution_name": "airdrop-1",
+      "recipient_address": "sif104tpugfexwmwhm2mc39p3y48vzuax5l2hfj0rf",
+      "coins": [
+        {
+          "denom": "rowan",
+          "amount": "1314405889000000000000"
+        }
+      ],
+      "distribution_start_height": 1032094,
+      "distribution_completed_height":1032097
+    },
+    {
+      "ClaimStatus": 2,
+      "distribution_name": "airdrop-1",
+      "recipient_address": "sif1053jl79yh9x9mdeag2nsvvwev9vsm8dldvxx5m",
+      "coins": [
+        {
+          "denom": "rowan",
+          "amount": "1314405889000000000000"
+        }
+      ],
+      "distribution_start_height": 1032094,
+      "distribution_completed_height":1032097
+    },
+    {
+      "ClaimStatus": 2,
+      "distribution_name": "airdrop-1",
+      "recipient_address": "sif105fsf3xnrgkdkdljacxaafefcr44pkl26x3fcl",
+      "coins": [
+        {
+          "denom": "rowan",
+          "amount": "1314405889000000000000"
+        }
+      ],
+      "distribution_start_height": 1032094,
+      "distribution_completed_height":1032097
+    },
+    {
+      "ClaimStatus": 2,
+      "distribution_name": "airdrop-1",
+      "recipient_address": "sif105h3tnsxeajlp7j9jrw6k629326de6vlw92vdt",
+      "coins": [
+        {
+          "denom": "rowan",
+          "amount": "1115075825000000000000"
+        }
+      ],
+      "distribution_start_height": 1032094,
+      "distribution_completed_height":1032097
+    },
+    {
+      "ClaimStatus": 2,
+      "distribution_name": "airdrop-1",
+      "recipient_address": "sif105k7euh28azzl672vepu7u4akqtvgrr96yqpau",
+      "coins": [
+        {
+          "denom": "rowan",
+          "amount": "1314405889000000000000"
+        }
+      ],
+      "distribution_start_height": 1032094,
+      "distribution_completed_height":1032097
+    },
+    {
+      "ClaimStatus": 2,
+      "distribution_name": "airdrop-1",
+      "recipient_address": "sif1063tav93dwcnvgk7d2ew22le8eghwzwqs5ecxd",
+      "coins": [
+        {
+          "denom": "rowan",
+          "amount": "1314405889000000000000"
+        }
+      ],
+      "distribution_start_height": 1032094,
+      "distribution_completed_height":1032097
+    },
+    {
+      "ClaimStatus": 2,
+      "distribution_name": "airdrop-1",
+      "recipient_address": "sif1068jfs4mhwwtscyxzcgcgugs2qqfm453y9lcaf",
+      "coins": [
+        {
+          "denom": "rowan",
+          "amount": "1115075825000000000000"
+        }
+      ],
+      "distribution_start_height": 1032094,
+      "distribution_completed_height":1032097
+    },
+    {
+      "ClaimStatus": 2,
+      "distribution_name": "airdrop-1",
+      "recipient_address": "sif10695nfrh4e87ujfw3rlpmzh5t464dcjewecs6l",
+      "coins": [
+        {
+          "denom": "rowan",
+          "amount": "1115075825000000000000"
+        }
+      ],
+      "distribution_start_height": 1032094,
+      "distribution_completed_height":1032097
+    },
+    {
+      "ClaimStatus": 2,
+      "distribution_name": "airdrop-1",
+      "recipient_address": "sif106pyaantukw3qf97t2qgxzmjay0r4vfn8uxsrm",
+      "coins": [
+        {
+          "denom": "rowan",
+          "amount": "1314405889000000000000"
+        }
+      ],
+      "distribution_start_height": 1032094,
+      "distribution_completed_height":1032097
+    },
+    {
+      "ClaimStatus": 2,
+      "distribution_name": "airdrop-1",
+      "recipient_address": "sif106x8q2nv7xsg7qrec2zgdf3vvq0t3gn4gysmwy",
+      "coins": [
+        {
+          "denom": "rowan",
+          "amount": "1115075825000000000000"
+        }
+      ],
+      "distribution_start_height": 1032094,
+      "distribution_completed_height":1032098
+    },
+    {
+      "ClaimStatus": 2,
+      "distribution_name": "airdrop-1",
+      "recipient_address": "sif106zre77l5cjzdl8z6dtehp5q5z22a34agx0p0k",
+      "coins": [
+        {
+          "denom": "rowan",
+          "amount": "2898242730000000000000"
+        }
+      ],
+      "distribution_start_height": 1032094,
+      "distribution_completed_height":1032098
+    },
+    {
+      "ClaimStatus": 2,
+      "distribution_name": "airdrop-1",
+      "recipient_address": "sif1070h5whjne6yatsmllta245a7w4wvx2xcnf9tr",
+      "coins": [
+        {
+          "denom": "rowan",
+          "amount": "1115075825000000000000"
+        }
+      ],
+      "distribution_start_height": 1032094,
+      "distribution_completed_height":1032098
+    },
+    {
+      "ClaimStatus": 2,
+      "distribution_name": "airdrop-1",
+      "recipient_address": "sif1072u3s0444hkd2cv5yux875g6pgqzxvm3wpyjv",
+      "coins": [
+        {
+          "denom": "rowan",
+          "amount": "1314405889000000000000"
+        }
+      ],
+      "distribution_start_height": 1032094,
+      "distribution_completed_height":1032098
+    },
+    {
+      "ClaimStatus": 2,
+      "distribution_name": "airdrop-1",
+      "recipient_address": "sif10759cxaj8grn5l3452npjqaqt8s4t76x4s9me8",
+      "coins": [
+        {
+          "denom": "rowan",
+          "amount": "1314405889000000000000"
+        }
+      ],
+      "distribution_start_height": 1032094,
+      "distribution_completed_height":1032098
+    },
+    {
+      "ClaimStatus": 2,
+      "distribution_name": "airdrop-1",
+      "recipient_address": "sif1075nps2tuv0gpv76hprqp6ry2m4qk3mgcxn8fq",
+      "coins": [
+        {
+          "denom": "rowan",
+          "amount": "1314405889000000000000"
+        }
+      ],
+      "distribution_start_height": 1032094,
+      "distribution_completed_height":1032098
+    },
+    {
+      "ClaimStatus": 2,
+      "distribution_name": "airdrop-1",
+      "recipient_address": "sif107hwlun8l80r42ehanas7e9vqnduppnnq6eky7",
+      "coins": [
+        {
+          "denom": "rowan",
+          "amount": "1314405889000000000000"
+        }
+      ],
+      "distribution_start_height": 1032094,
+      "distribution_completed_height":1032098
+    },
+    {
+      "ClaimStatus": 2,
+      "distribution_name": "airdrop-1",
+      "recipient_address": "sif107jzgf0gfs6p7vs9r02pwwj7yzwkk987k86urp",
+      "coins": [
+        {
+          "denom": "rowan",
+          "amount": "1314405889000000000000"
+        }
+      ],
+      "distribution_start_height": 1032094,
+      "distribution_completed_height":1032098
+    },
+    {
+      "ClaimStatus": 2,
+      "distribution_name": "airdrop-1",
+      "recipient_address": "sif107pcz24q7f4p9hmg74q26t2c4wup3vcgaqd2z4",
+      "coins": [
+        {
+          "denom": "rowan",
+          "amount": "2898242730000000000000"
+        }
+      ],
+      "distribution_start_height": 1032094,
+      "distribution_completed_height":1032098
+    },
+    {
+      "ClaimStatus": 2,
+      "distribution_name": "airdrop-1",
+      "recipient_address": "sif107r0ylq95jdantsxr2v376s3mu0ufh6ge0tft8",
+      "coins": [
+        {
+          "denom": "rowan",
+          "amount": "1115075825000000000000"
+        }
+      ],
+      "distribution_start_height": 1032094,
+      "distribution_completed_height":1032098
+    },
+    {
+      "ClaimStatus": 2,
+      "distribution_name": "airdrop-1",
+      "recipient_address": "sif107vdemcsldt9yxzdwwgyn9qv8hnegjlw4rr2l7",
+      "coins": [
+        {
+          "denom": "rowan",
+          "amount": "1314405889000000000000"
+        }
+      ],
+      "distribution_start_height": 1032094,
+      "distribution_completed_height":1032099
+    },
+    {
+      "ClaimStatus": 2,
+      "distribution_name": "airdrop-1",
+      "recipient_address": "sif10905rstxf5tzj0w6gguaa76ma7s32v4864wt5w",
+      "coins": [
+        {
+          "denom": "rowan",
+          "amount": "2429481714000000000000"
+        }
+      ],
+      "distribution_start_height": 1032094,
+      "distribution_completed_height":1032099
+    },
+    {
+      "ClaimStatus": 2,
+      "distribution_name": "airdrop-1",
+      "recipient_address": "sif10922hn2s3cq4r9lnwddyusqf2xmklmcj7mmqhe",
+      "coins": [
+        {
+          "denom": "rowan",
+          "amount": "1314405889000000000000"
+        }
+      ],
+      "distribution_start_height": 1032094,
+      "distribution_completed_height":1032099
+    },
+    {
+      "ClaimStatus": 2,
+      "distribution_name": "airdrop-1",
+      "recipient_address": "sif1096zld6apzqeddjfgs8dwwpxvq68k3h03vhtn8",
+      "coins": [
+        {
+          "denom": "rowan",
+          "amount": "2429481714000000000000"
+        }
+      ],
+      "distribution_start_height": 1032094,
+      "distribution_completed_height":1032099
+    },
+    {
+      "ClaimStatus": 2,
+      "distribution_name": "airdrop-1",
+      "recipient_address": "sif1098nha0z7d43k2uh2as7a3ywx2q3w8wja2hynf",
+      "coins": [
+        {
+          "denom": "rowan",
+          "amount": "1115075825000000000000"
+        }
+      ],
+      "distribution_start_height": 1032094,
+      "distribution_completed_height":1032099
+    },
+    {
+      "ClaimStatus": 2,
+      "distribution_name": "airdrop-1",
+      "recipient_address": "sif109uv0nrgwl6q5adswmgsrrjeqtyxrjhq6nxvfq",
+      "coins": [
+        {
+          "denom": "rowan",
+          "amount": "1783166904000000000000"
+        }
+      ],
+      "distribution_start_height": 1032094,
+      "distribution_completed_height":1032099
+    },
+    {
+      "ClaimStatus": 2,
+      "distribution_name": "airdrop-1",
+      "recipient_address": "sif10acdhl4y7pdwrjayf70m6nf3fputq5u5l9gdh7",
+      "coins": [
+        {
+          "denom": "rowan",
+          "amount": "1314405889000000000000"
+        }
+      ],
+      "distribution_start_height": 1032094,
+      "distribution_completed_height":1032099
+    },
+    {
+      "ClaimStatus": 2,
+      "distribution_name": "airdrop-1",
+      "recipient_address": "sif10acrrtmkyvxqwccrfqe2u0neeqqljn4rfcz2km",
+      "coins": [
+        {
+          "denom": "rowan",
+          "amount": "1314405889000000000000"
+        }
+      ],
+      "distribution_start_height": 1032094,
+      "distribution_completed_height":1032099
+    },
+    {
+      "ClaimStatus": 2,
+      "distribution_name": "airdrop-1",
+      "recipient_address": "sif10ams0ac7wkg56cxlhurac6d22p3ss6yy6qmfk4",
+      "coins": [
+        {
+          "denom": "rowan",
+          "amount": "1314405889000000000000"
+        }
+      ],
+      "distribution_start_height": 1032094,
+      "distribution_completed_height":1032099
+    },
+    {
+      "ClaimStatus": 2,
+      "distribution_name": "airdrop-1",
+      "recipient_address": "sif10arzudz4ydxxvtvfu452y4lhrxdufyv0ehchyj",
+      "coins": [
+        {
+          "denom": "rowan",
+          "amount": "1314405889000000000000"
+        }
+      ],
+      "distribution_start_height": 1032094,
+      "distribution_completed_height":1032099
+    }
+  ]
+
