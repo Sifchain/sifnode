@@ -8,6 +8,7 @@ on:
       # However once features are shipped this should be updated
       - develop
       - master
+      - testnet
 
 jobs:
   build_ui_stack:
@@ -54,13 +55,13 @@ jobs:
       - name: Install dependencies
         run: yarn install --frozen-lockfile --silent
 
-      - name: Build test chains
-        run: yarn chain:build && yarn build
+      - name: Build ui-stack dependencies
+        run: yarn build
 
       - name: Build databases for docker state
-        run: ./scripts/run-stack-save-default-snapshot.sh
+        run: yarn stack --save-snapshot
 
       - name: Build and push docker image
-        run: ./scripts/build-stack-backend-docker.sh
+        run: yarn stack --push
         env:
           CI: true
