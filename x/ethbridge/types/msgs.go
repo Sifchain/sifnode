@@ -71,7 +71,6 @@ func (msg MsgLock) ValidateBasic() error {
 
 	// if you don't pay enough gas, this tx won't go through
 	if msg.CethAmount.LT(sdk.NewInt(lockGasCost)) {
-		fmt.Println("msg.cethamount: ", msg.CethAmount)
 		return ErrCethAmount
 	}
 
@@ -148,7 +147,6 @@ func (msg MsgBurn) ValidateBasic() error {
 	}
 	// check that enough ceth is sent to cover the gas cost.
 	if msg.CethAmount.LT(sdk.NewInt(burnGasCost)) {
-		fmt.Println("msg.cethamount: ", msg.CethAmount)
 		return ErrCethAmount
 	}
 
