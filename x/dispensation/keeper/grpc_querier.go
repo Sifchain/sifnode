@@ -33,8 +33,8 @@ func (q Querier) ClaimsByType(ctx context.Context,
 
 	claims := q.keeper.GetClaimsByType(sdk.UnwrapSDKContext(ctx), request.UserClaimType)
 	Claims := make([]*types.UserClaim, len(claims))
-	for _, c := range claims {
-		Claims = append(Claims, &c)
+	for i := range claims {
+		Claims = append(Claims, &claims[i])
 	}
 	return &types.QueryClaimsResponse{
 		Claims: Claims,

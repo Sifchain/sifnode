@@ -18,8 +18,8 @@ python3 -m pytest -olog_level=$loglevel -v -olog_file=/tmp/log.txt -v \
   ${TEST_INTEGRATION_PY_DIR}/test_rollback_chain.py \
   ${TEST_INTEGRATION_PY_DIR}/test_ebrelayer_replay.py \
   ${TEST_INTEGRATION_PY_DIR}/test_ebrelayer_restart.py \
+  ${TEST_INTEGRATION_PY_DIR}/test_liquidity_pools.py \
 
 echo these tests do not run yet: \
   ${TEST_INTEGRATION_PY_DIR}/test_peggy_fees.py \
-  ${TEST_INTEGRATION_PY_DIR}/test_liquidity_pools.py \
   ${TEST_INTEGRATION_PY_DIR}/test_bulk_transfers.py \

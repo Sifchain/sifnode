@@ -103,6 +103,8 @@ func GetCmdDecommissionPool() *cobra.Command {
 	}
 
 	flags.AddTxFlagsToCmd(cmd)
+	cmd.Flags().StringP(cli.OutputFlag, "o", "text", "Output format (text|json)")
+
 	return cmd
 }
 
@@ -143,6 +145,7 @@ func GetCmdAddLiquidity() *cobra.Command {
 	}
 
 	flags.AddTxFlagsToCmd(cmd)
+	cmd.Flags().StringP(cli.OutputFlag, "o", "text", "Output format (text|json)")
 
 	return cmd
 }
@@ -192,6 +195,7 @@ func GetCmdRemoveLiquidity() *cobra.Command {
 	}
 
 	flags.AddTxFlagsToCmd(cmd)
+	cmd.Flags().StringP(cli.OutputFlag, "o", "text", "Output format (text|json)")
 
 	return cmd
 }
@@ -242,6 +246,7 @@ func GetCmdSwap() *cobra.Command {
 	}
 
 	flags.AddTxFlagsToCmd(cmd)
+	cmd.Flags().StringP(cli.OutputFlag, "o", "text", "Output format (text|json)")
 
 	return cmd
 }
