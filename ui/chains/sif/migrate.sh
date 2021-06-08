@@ -72,3 +72,12 @@ sifnodecli tx clp create-pool \
  --externalAmount 588235000000000000000000 \
  --yes
 
+sleep 5
+
+echo "create liquidity pool from ctest:rowan"
+sifnodecli tx clp create-pool \
+ --from akasha \
+ --symbol ctest \
+ --nativeAmount   10000000000000000000000000 \
+ --externalAmount 10000000000000 \
+ --yes
