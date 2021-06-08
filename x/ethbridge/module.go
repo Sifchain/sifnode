@@ -2,6 +2,8 @@ package ethbridge
 
 import (
 	"encoding/json"
+	"fmt"
+
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 
@@ -48,12 +50,17 @@ func (AppModuleBasic) RegisterLegacyAminoCodec(cdc *codec.LegacyAmino) {
 // DefaultGenesis returns default genesis state as raw bytes for the ethbridge
 // module.
 func (b AppModuleBasic) DefaultGenesis(marshaler codec.JSONMarshaler) json.RawMessage {
-	return marshaler.MustMarshalJSON(&types.GenesisState{})
+	return marshaler.MustMarshalJSON(DefaultGenesis())
 }
 
 // ValidateGenesis performs genesis state validation for the ethbridge module.
 func (b AppModuleBasic) ValidateGenesis(marshaler codec.JSONMarshaler, config sdkclient.TxEncodingConfig, message json.RawMessage) error {
-	return nil
+	var data types.GenesisState
+	err := marshaler.UnmarshalJSON(message, &data)
+	if err != nil {
+		return fmt.Errorf("failed to unmarshal %s genesis state: %w", types.ModuleName, err)
+	}
+	return ValidateGenesis(data)
 }
 
 func (b AppModuleBasic) RegisterGRPCGatewayRoutes(c sdkclient.Context, serveMux *runtime.ServeMux) {
@@ -147,16 +154,20 @@ func (am AppModule) LegacyQuerierHandler(amino *codec.LegacyAmino) sdk.Querier {
 
 // InitGenesis performs genesis initialization for the ethbridge module. It returns
 // no validator updates.
-func (am AppModule) InitGenesis(ctx sdk.Context, marshaler codec.JSONMarshaler, _ json.RawMessage) []abci.ValidatorUpdate {
+func (am AppModule) InitGenesis(ctx sdk.Context, marshaler codec.JSONMarshaler, data json.RawMessage) []abci.ValidatorUpdate {
 	bridgeAccount := authtypes.NewEmptyModuleAccount(ModuleName, authtypes.Burner, authtypes.Minter)
 	am.AccountKeeper.SetModuleAccount(ctx, bridgeAccount)
-	return nil
+
+	var genesisState types.GenesisState
+	marshaler.MustUnmarshalJSON(data, &genesisState)
+
+	return InitGenesis(ctx, am.BridgeKeeper, genesisState)
 }
 
 // ExportGenesis returns the exported genesis state as raw bytes for the ethbridge
 // module.
-func (am AppModule) ExportGenesis(s sdk.Context, marshaler codec.JSONMarshaler) json.RawMessage {
-	return nil
+func (am AppModule) ExportGenesis(ctx sdk.Context, marshaler codec.JSONMarshaler) json.RawMessage {
+	return marshaler.MustMarshalJSON(ExportGenesis(ctx, am.BridgeKeeper))
 }
 
 // BeginBlock returns the begin blocker for the ethbridge module.

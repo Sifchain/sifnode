@@ -3,6 +3,8 @@ package test
 import (
 	"bytes"
 	"encoding/hex"
+	"math/rand"
+	"time"
 
 	"strconv"
 	"testing"
@@ -226,4 +228,70 @@ func NewPubKey(pk string) (res cryptotypes.PubKey) {
 // create a codec used only for testing
 func MakeTestEncodingConfig() simappparams.EncodingConfig {
 	return app.MakeTestEncodingConfig()
+}
+
+const (
+	AddressKey1 = "A58856F0FD53BF058B4909A21AEC019107BA6"
+)
+
+//// returns context and app with params set on account keeper
+func CreateTestApp(isCheckTx bool) (*app.SifchainApp, sdk.Context) {
+	sifapp := app.Setup(isCheckTx)
+	ctx := sifapp.BaseApp.NewContext(isCheckTx, tmproto.Header{})
+
+	sifapp.AccountKeeper.SetParams(ctx, authtypes.DefaultParams())
+	initTokens := sdk.TokensFromConsensusPower(1000)
+
+	_ = app.AddTestAddrs(sifapp, ctx, 6, initTokens)
+
+	return sifapp, ctx
+}
+
+func CreateTestAppEthBridge(isCheckTx bool) (sdk.Context, keeper.Keeper) {
+	sifapp, ctx := CreateTestApp(isCheckTx)
+	return ctx, sifapp.EthbridgeKeeper
+}
+
+func GenerateRandomTokens(numberOfTokens int) []string {
+	var tokenList []string
+	tokens := []string{"ceth", "cbtc", "ceos", "cbch", "cbnb", "cusdt", "cada", "ctrx", "cacoin", "cbcoin", "ccoin", "cdcoin"}
+	rand.Seed(time.Now().Unix())
+	for i := 0; i < numberOfTokens; i++ {
+		// initialize global pseudo random generator
+		randToken := tokens[rand.Intn(len(tokens))]
+
+		tokenList = append(tokenList, randToken)
+	}
+	return tokenList
+}
+
+func GenerateAddress(key string) sdk.AccAddress {
+	if key == "" {
+		key = AddressKey1
+	}
+	var buffer bytes.Buffer
+	buffer.WriteString(key)
+	buffer.WriteString(strconv.Itoa(100))
+	res, _ := sdk.AccAddressFromHex(buffer.String())
+	bech := res.String()
+	addr := buffer.String()
+	res, err := sdk.AccAddressFromHex(addr)
+
+	if err != nil {
+		panic(err)
+	}
+
+	bechexpected := res.String()
+	if bech != bechexpected {
+		panic("Bech encoding doesn't match reference")
+	}
+
+	bechres, err := sdk.AccAddressFromBech32(bech)
+	if err != nil {
+		panic(err)
+	}
+	if !bytes.Equal(bechres, res) {
+		panic("Bech decode and hex decode don't match")
+	}
+	return res
 }

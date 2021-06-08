@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/Sifchain/sifnode/cmd/ebrelayer/txs"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/tx"
 	"log"
@@ -116,8 +117,13 @@ func RunReplayCosmosCmd(_ *cobra.Command, args []string) error {
 	}
 	sugaredLogger := logger.Sugar()
 
+	key, err := txs.LoadPrivateKey()
+	if err != nil {
+		log.Fatalf("failed to load ETHEREUM_PRIVATE_KEY")
+	}
+
 	// Initialize new Cosmos event listener
-	cosmosSub := relayer.NewCosmosSub(tendermintNode, web3Provider, contractAddress, nil, sugaredLogger)
+	cosmosSub := relayer.NewCosmosSub(tendermintNode, web3Provider, contractAddress, key, nil, sugaredLogger)
 
 	cosmosSub.Replay(fromBlock, toBlock, ethFromBlock, ethToBlock)
 
