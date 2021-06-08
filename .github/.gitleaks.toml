@@ -76,6 +76,10 @@ title = "gitleaks config"
     description = "Asymmetric Private Key"
     regex = '''-----BEGIN ((EC|PGP|DSA|RSA|OPENSSH) )?PRIVATE KEY( BLOCK)?-----'''
     tags = ["key", "AsymmetricPrivateKey"]
+	[rules.allowlist]
+      description = "old issue"
+      files = ['''^\.?private_key$''']
+	
 
 [[rules]]
     description = "Google API key"
