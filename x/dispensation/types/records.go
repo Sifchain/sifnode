@@ -91,6 +91,18 @@ func (dr DistributionRecord) Validate() bool {
 	if !dr.Coins.IsAllPositive() {
 		return false
 	}
+	_, err := sdk.AccAddressFromBech32(dr.AuthorizedRunner.String())
+	if err != nil {
+		return false
+	}
+	_, err = sdk.AccAddressFromBech32(dr.RecipientAddress.String())
+	if err != nil {
+		return false
+	}
+	_, ok := IsValidDistributionType(dr.DistributionType.String())
+	if !ok {
+		return false
+	}
 	return true
 }
 
@@ -171,6 +183,15 @@ func (d Distribution) Validate() bool {
 	if d.DistributionName == "" {
 		return false
 	}
+	_, ok := IsValidDistributionType(d.DistributionType.String())
+	if !ok {
+		return false
+	}
+	_, err := sdk.AccAddressFromBech32(d.Runner.String())
+	if err != nil {
+		return false
+	}
+
 	return true
 }
 
@@ -184,12 +205,22 @@ type UserClaim struct {
 	UserClaimTime time.Time        `json:"user_claim_time"`
 }
 
+type UserClaims []UserClaim
+
 func NewUserClaim(userAddress sdk.AccAddress, userClaimType DistributionType, time time.Time) UserClaim {
 	return UserClaim{UserAddress: userAddress, UserClaimType: userClaimType, UserClaimTime: time}
 }
 
 func (uc UserClaim) Validate() bool {
 	if uc.UserAddress.Empty() {
+		return false
+	}
+	_, err := sdk.AccAddressFromBech32(uc.UserAddress.String())
+	if err != nil {
+		return false
+	}
+	_, ok := IsValidClaim(uc.UserClaimType.String())
+	if !ok {
 		return false
 	}
 	return true

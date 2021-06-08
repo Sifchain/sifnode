@@ -46,7 +46,7 @@ func (k Keeper) GetUserClaimsIterator(ctx sdk.Context) sdk.Iterator {
 	return sdk.KVStorePrefixIterator(store, types.UserClaimPrefix)
 }
 
-func (k Keeper) GetClaims(ctx sdk.Context) []types.UserClaim {
+func (k Keeper) GetClaims(ctx sdk.Context) types.UserClaims {
 	var res []types.UserClaim
 	iterator := k.GetUserClaimsIterator(ctx)
 	defer iterator.Close()
