@@ -455,37 +455,15 @@ func TestRescueCethMsg(t *testing.T) {
 	require.NotNil(t, res)
 }
 
-func contains(addresses []sdk.ValAddress, address sdk.ValAddress) bool {
-	for _, value := range addresses {
-		if value.Equals(address) {
-			return true
-		}
-	}
-	return false
-}
-
 func CreateTestHandler(t *testing.T, consensusNeeded float64, validatorAmounts []int64) (sdk.Context,
 	ethbridgekeeper.Keeper, bankkeeper.Keeper, authkeeper.AccountKeeper,
 	sdk.Handler, []sdk.ValAddress, oraclekeeper.Keeper) {
 
-	ctx, keeper, bankKeeper, accountKeeper, oracleKeeper, _, validatorAddresses := test.CreateTestKeepers(t, consensusNeeded, validatorAmounts, "")
+	ctx, keeper, bankKeeper, accountKeeper, oracleKeeper, _, _, validators := test.CreateTestKeepers(t, consensusNeeded, validatorAmounts, "")
 
 	CethReceiverAccount, _ := sdk.AccAddressFromBech32(TestAddress)
 	keeper.SetCethReceiverAccount(ctx, CethReceiverAccount)
 	handler := ethbridge.NewHandler(keeper)
-
-	validators := []sdk.ValAddress{}
-	for _, amount := range validatorAmounts {
-		for key, value := range validatorAddresses.WhiteList {
-			if value == uint32(amount) {
-				address, _ := sdk.ValAddressFromBech32(key)
-
-				if !contains(validators, address) {
-					validators = append(validators, address)
-				}
-			}
-		}
-	}
 
 	return ctx, keeper, bankKeeper, accountKeeper, handler, validators, oracleKeeper
 }

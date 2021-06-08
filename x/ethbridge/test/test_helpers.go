@@ -49,7 +49,7 @@ const (
 
 // CreateTestKeepers greates an Mock App, OracleKeeper, bankKeeper and ValidatorAddresses to be used for test input
 func CreateTestKeepers(t *testing.T, consensusNeeded float64, validatorAmounts []int64, extraMaccPerm string) (sdk.Context, keeper.Keeper, bankkeeper.Keeper, authkeeper.AccountKeeper, oraclekeeper.Keeper,
-	simappparams.EncodingConfig, oracleTypes.ValidatorWhiteList) {
+	simappparams.EncodingConfig, oracleTypes.ValidatorWhiteList, []sdk.ValAddress) {
 
 	PKs := CreateTestPubKeys(500)
 	keyStaking := sdk.NewKVStoreKey(stakingtypes.StoreKey)
@@ -150,11 +150,12 @@ func CreateTestKeepers(t *testing.T, consensusNeeded float64, validatorAmounts [
 	ethbridgeKeeper.SetCethReceiverAccount(ctx, CethReceiverAccount)
 
 	// Setup validators
-	// valAddrs := make([]sdk.ValAddress, len(validatorAmounts))
+	valAddrsInOrder := make([]sdk.ValAddress, len(validatorAmounts))
 	valAddrs := make(map[string]uint32)
 	for i, amount := range validatorAmounts {
 		valPubKey := PKs[i]
 		valAddr := sdk.ValAddress(valPubKey.Address().Bytes())
+		valAddrsInOrder[i] = valAddr
 		valAddrs[valAddr.String()] = uint32(amount)
 		valTokens := sdk.TokensFromConsensusPower(amount)
 		// test how the validator is set from a purely unbonbed pool
@@ -174,7 +175,7 @@ func CreateTestKeepers(t *testing.T, consensusNeeded float64, validatorAmounts [
 	whitelist := oracleTypes.ValidatorWhiteList{WhiteList: valAddrs}
 	oracleKeeper.SetOracleWhiteList(ctx, networkDescriptor, whitelist)
 
-	return ctx, ethbridgeKeeper, bankKeeper, accountKeeper, oracleKeeper, encCfg, whitelist
+	return ctx, ethbridgeKeeper, bankKeeper, accountKeeper, oracleKeeper, encCfg, whitelist, valAddrsInOrder
 }
 
 // nolint: unparam

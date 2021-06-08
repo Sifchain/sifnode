@@ -21,7 +21,7 @@ const (
 )
 
 func TestNewQuerier(t *testing.T) {
-	ctx, keeper, _, _, _, encCfg, _ := test.CreateTestKeepers(t, 0.7, []int64{3, 3}, "")
+	ctx, keeper, _, _, _, encCfg, _, _ := test.CreateTestKeepers(t, 0.7, []int64{3, 3}, "")
 
 	query := abci.RequestQuery{
 		Path: "",
@@ -37,8 +37,7 @@ func TestNewQuerier(t *testing.T) {
 }
 
 func TestQueryEthProphecy(t *testing.T) {
-	ctx, keeper, _, _, oracleKeeper, encCfg, whitelist := test.CreateTestKeepers(t, 0.7, []int64{3, 3}, "")
-	validatorAddresses := whitelist.GetAllValidators()
+	ctx, keeper, _, _, oracleKeeper, encCfg, _, validatorAddresses := test.CreateTestKeepers(t, 0.7, []int64{3, 3}, "")
 	valAddress := validatorAddresses[0]
 	NewTestResponseJSON := strings.Replace(TestResponseJSON, "cosmosvaloper1353a4uac03etdylz86tyq9ssm3x2704j3a9n7n", valAddress.String(), -1)
 	testEthereumAddress := types.NewEthereumAddress(types.TestEthereumAddress)

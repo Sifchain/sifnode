@@ -52,7 +52,7 @@ linters-settings:
   goconst:
     min-occurrences: 4
   dogsled:
-    max-blank-identifiers: 7
+    max-blank-identifiers: 8
   maligned:
     # print struct with more effective memory layout or not, false by default
     suggest-new: true
