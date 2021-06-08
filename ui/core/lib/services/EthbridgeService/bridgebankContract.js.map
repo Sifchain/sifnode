@@ -1,0 +1,1 @@
+{"version":3,"file":"bridgebankContract.js","sourceRoot":"","sources":["../../../src/services/EthbridgeService/bridgebankContract.ts"],"names":[],"mappings":";;;;;;;;;;;;AAGA,MAAM,IAAI,GAAG,OAAO,CAAC,gEAAgE,CAAC,CAAC;AAEvF,SAAsB,qBAAqB,CAAC,IAAU,EAAE,OAAe;;QACrE,OAAO,IAAI,IAAI,CAAC,GAAG,CAAC,QAAQ,CAAC,IAAI,CAAC,GAAgB,EAAE,OAAO,CAAC,CAAC;IAC/D,CAAC;CAAA;AAFD,sDAEC"}

@@ -1,0 +1,14 @@
+import { MetaMaskInpageProvider } from "@metamask/inpage-provider";
+import JSBI from "jsbi";
+import Web3 from "web3";
+import { IpcProvider, WebsocketProvider } from "web3-core";
+import { Address, Asset } from "../../../entities";
+export declare function getTokenContract(web3: Web3, asset: Asset): import("web3-eth-contract").Contract;
+export declare function getTokenBalance(web3: Web3, address: Address, asset: Asset): Promise<import("../../../entities").IAssetAmount>;
+export declare function isEventEmittingProvider(provider?: unknown): provider is WebsocketProvider | IpcProvider;
+export declare type EIPProvider = MetaMaskInpageProvider;
+export declare function isMetaMaskInpageProvider(provider?: unknown): provider is EIPProvider;
+export declare function transferAsset(web3: Web3, fromAddress: Address, toAddress: Address, amount: JSBI, asset?: Asset): Promise<string>;
+export declare function transferToken(web3: Web3, fromAddress: Address, toAddress: Address, amount: JSBI, asset: Asset): Promise<string>;
+export declare function transferEther(web3: Web3, fromAddress: Address, toAddress: Address, amount: JSBI): Promise<string>;
+export declare function getEtheriumBalance(web3: Web3, address: Address): Promise<import("../../../entities").IAssetAmount>;

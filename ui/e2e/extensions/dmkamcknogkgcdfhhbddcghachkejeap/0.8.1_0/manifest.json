@@ -1,0 +1,36 @@
+{
+   "applications": {
+      "gecko": {
+         "id": "keplr-extension@keplr.app",
+         "strict_min_version": "56.0"
+      }
+   },
+   "background": {
+      "persistent": true,
+      "scripts": [ "browser-polyfill.js", "background.bundle.js" ]
+   },
+   "browser_action": {
+      "default_popup": "popup.html",
+      "default_title": "Keplr"
+   },
+   "content_scripts": [ {
+      "all_frames": true,
+      "js": [ "browser-polyfill.js", "contentScripts.bundle.js" ],
+      "matches": [ "\u003Call_urls>" ],
+      "run_at": "document_start"
+   } ],
+   "description": "Keplr is a browser extension wallet for the Inter blockchain ecosystem.",
+   "differential_fingerprint": "1.0cc10f6a90f0a6549371c10212eb3ce389628c5c82f93b2e7437515d6ec2d4c6",
+   "icons": {
+      "128": "assets/icon-128.png",
+      "16": "assets/icon-16.png",
+      "48": "assets/icon-48.png"
+   },
+   "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAuz6vgIeMLGDJFR/tbg5bAxV/7+4wtdM40Ephzun9QSFe1NGbfQwQjagKcJlE06ah7be5iwHUtZfAK1KY22hxIiBfHy5MBkV5iIRuz5achm6EJszyImv8rAB6jIY6aBjn0d2nwQLcAd8OBLR5ppRil7U3riFDGGcrSRuNwoTAfaWQA81AFjewynjmv4erFinFeM6CP209X8Ujz7oLjJeUbLym0lvkj/XHRr2LY7iKClZgipkP2f02252qKULdKzG6qevVE0S0o2N4Rbi6/PHDL+5WS9nBZMUO3jPKYllmzmcgwHdINYfPRHCZ4tpkR7pyQ910URVb/cBrASaGrcQWQwIDAQAB",
+   "manifest_version": 2,
+   "name": "Keplr",
+   "permissions": [ "storage", "notifications", "identity" ],
+   "update_url": "https://clients2.google.com/service/update2/crx",
+   "version": "0.8.1",
+   "web_accessible_resources": [ "injectedScript.bundle.js", "assets/temp-icon.svg" ]
+}
