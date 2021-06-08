@@ -26,7 +26,7 @@ def test_create_online_singlekey_txn(claimType):
     currency = 'rowan'
     sampleamount = '1000rowan'
     
-    # THESE 3 TXNS ARE TO REGISTER NEW ACCOUNTS ON CHAIN
+    # THESE 4 TXNS ARE TO REGISTER NEW ACCOUNTS ON CHAIN
     send_sample_rowan(from_address, runner_address, amount, keyring_backend, chain_id)
     time.sleep(5)
     send_sample_rowan(from_address, distributor_address, amount, keyring_backend, chain_id)
@@ -54,12 +54,6 @@ def test_create_online_singlekey_txn(claimType):
     one_claiming_address = str(d['Output'][0]['address'])
     logging.info(f"one claiming address = {one_claiming_address}")
 
-    # SENDER AND RECIPENT INITIAL BALANCE
-    #sender_initial_balance = int(balance_check(distributor_address, currency))
-    #claiming_address_initial_balance = int(balance_check(one_claiming_address, currency))
-    #logging.info(f"sender initial balance = {sender_initial_balance}")
-    #logging.info(f"one claiming address initial balance = {claiming_address_initial_balance}")
-
     # ACTUAL DISPENSATION TXN; GET TXN HASH
     txhash = str((create_online_singlekey_txn_with_runner(claimType, runner_address, distributor_name, chain_id, sifnodecli_node)))
     logging.info(f"txn hash = {txhash}")
@@ -77,8 +71,7 @@ def test_create_online_singlekey_txn(claimType):
     account_key = str((distributionattributesttags['key']))
     chaintags = list(distributionvaluetags.keys())
     list_of_values = [distributionvaluetags[key] for key in distributionvaluetags]
-    print(chaintags)
-    print(list_of_values)
+ 
     # DISTRIBUTION TXN JSON TAGS ASSERTIONS
     assert str(distributionstartedtag) == 'distribution_started'
     assert str(account_key) == 'module_account'
@@ -88,45 +81,6 @@ def test_create_online_singlekey_txn(claimType):
     assert chaintags[2] == 'distribution_type'
     assert list_of_values[0] == distributor_address
     
-    txn_signer_sender_address = resp['tx']['value']['msg'][0]['value']['distributor']
-    distributionaddresslist = resp['tx']['value']['msg'][0]['value']['output']
-    recipient_dispensation_addresses = []
-    amount_distributed = []
-    for dic in distributionaddresslist:
-        recipient_dispensation_addresses.append(dic['address'])
-        for val in dic['coins']:
-            amount_distributed.append(val['amount'])
-
-    logging.info(f"dispensation txn addresses = {recipient_dispensation_addresses}")
-    logging.info(f"amount distributed = {amount_distributed}")
-
-    total_amount_distributed = sum(int(i) for i in amount_distributed)
-    recipient_with_respective_distributed_amount = dict(zip(recipient_dispensation_addresses, amount_distributed))
-
-    logging.info(
-        f"recipients and their respective distributed amounts = {recipient_with_respective_distributed_amount}")
-    logging.info(f"total amount distributed = {total_amount_distributed}")
-
-    #sender_final_balance = int(balance_check(sifchain_address, currency))
-    #recipient_address_final_balance = int(balance_check(one_claiming_address, currency))
-
-    #logging.info(f"sender initial balance = {sender_initial_balance}")
-    #logging.info(f"sender final balance = {sender_final_balance}")
-
-    claimed_amount_single_recipient = int(recipient_with_respective_distributed_amount[one_claiming_address])
-
-    # BALANCES ASSERTIONS
-    #assert int(total_amount_distributed) == int((sender_initial_balance - sender_final_balance) - int(fee))
-    #assert int(claimed_amount_single_recipient) == (recipient_address_final_balance - claiming_address_initial_balance)
-    #logging.info(
-    #    f"balance transferred including fee from sender's address  = {(sender_initial_balance - sender_final_balance)}")
-    #logging.info(f"total amount distributed  = {total_amount_distributed}")
-
-    #logging.info(f"amount claimed by one recipient  = {claimed_amount_single_recipient}")
-    #logging.info(
-    #    f"balance transferred in one recipient address  = {(recipient_address_final_balance - claiming_address_initial_balance)}")
-
-
 # AUTOMTED TEST TO VALIDATE IF FUNDING ADDRESS DOESN'T HAVE ENOUGH BALANCE
 @pytest.mark.parametrize("claimType", ['ValidatorSubsidy', 'LiquidityMining'])
 def test_insufficient_funds_dispensation_txn(claimType):
@@ -145,7 +99,7 @@ def test_insufficient_funds_dispensation_txn(claimType):
     currency = 'rowan'
     sampleamount = '1000rowan'
 
-    # THESE 3 TXNS ARE TO REGISTER NEW ACCOUNTS ON CHAIN
+    # THESE 4 TXNS ARE TO REGISTER NEW ACCOUNTS ON CHAIN
     send_sample_rowan(from_address, runner_address, amount, keyring_backend, chain_id)
     time.sleep(5)
     send_sample_rowan(from_address, distributor_address, amount, keyring_backend, chain_id)
@@ -169,15 +123,6 @@ def test_insufficient_funds_dispensation_txn(claimType):
     with open("output.json", "r") as f:
         data = f.read()
     d = json.loads(data)
-
-    one_claiming_address = str(d['Output'][0]['address'])
-    logging.info(f"one claiming address = {one_claiming_address}")
-
-    # SENDER AND RECIPENT INITIAL BALANCE
-    sender_initial_balance = int(balance_check(distributor_address, currency))
-    claiming_address_initial_balance = int(balance_check(one_claiming_address, currency))
-    logging.info(f"sender initial balance = {sender_initial_balance}")
-    logging.info(f"one claiming address initial balance = {claiming_address_initial_balance}")
 
     # ACTUAL DISPENSATION TXN; TXN RAISES AN EXCEPTION ABOUT INSUFFICIENT FUNDS, CAPTURED HERE AND TEST IS MARKED PASS
     with pytest.raises(Exception) as execinfo:
