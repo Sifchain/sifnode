@@ -56,7 +56,6 @@ type EthereumSub struct {
 	TxBldr                  authtypes.TxBuilder
 	PrivateKey              *ecdsa.PrivateKey
 	TempPassword            string
-	EventsBuffer            types.EthEventBuffer
 	DB                      *leveldb.DB
 	SugaredLogger           *zap.SugaredLogger
 }
@@ -109,7 +108,6 @@ func NewEthereumSub(inBuf io.Reader, rpcURL string, cdc *codec.Codec, validatorM
 		TxBldr:                  txBldr,
 		PrivateKey:              privateKey,
 		TempPassword:            tempPassword,
-		EventsBuffer:            types.NewEthEventBuffer(),
 		DB:                      db,
 		SugaredLogger:           sugaredLogger,
 	}, nil
