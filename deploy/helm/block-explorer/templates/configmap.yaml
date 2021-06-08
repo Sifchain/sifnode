@@ -293,6 +293,84 @@ data:
                     "displayName": "cOGN",
                     "displayNamePlural": "cOGN",
                     "fraction": 1000000000000000000
+                },
+                {
+                  "denom": "cdaofi",
+                  "displayName": "cCDAOFI",
+                  "displayNamePlural": "cCDAOFI",
+                  "fraction": 1000000000000000000
+                },
+                {
+                  "denom": "clina",
+                  "displayName": "cCLINA",
+                  "displayNamePlural": "cCLINA",
+                  "fraction": 1000000000000000000
+                },
+                {
+                  "denom": "ctshp",
+                  "displayName": "cCTSHP",
+                  "displayNamePlural": "cCTSHP",
+                  "fraction": 1000000000000000000
+                },
+                {
+                  "denom": "cb20",
+                  "displayName": "cCB20",
+                  "displayNamePlural": "cCB20",
+                  "fraction": 1000000000000000000
+                },
+                {
+                  "denom": "cakro",
+                  "displayName": "cCAKRO",
+                  "displayNamePlural": "cCAKRO",
+                  "fraction": 1000000000000000000
+                },
+                {
+                  "denom": "crfuel",
+                  "displayName": "cCRFUEL",
+                  "displayNamePlural": "cCRFUEL",
+                  "fraction": 1000000000000000000
+                },
+                {
+                  "denom": "crly",
+                  "displayName": "cCRLY",
+                  "displayNamePlural": "cCRLY",
+                  "fraction": 1000000000000000000
+                },
+                {
+                  "denom": "cconv",
+                  "displayName": "cCCONV",
+                  "displayNamePlural": "cCCONV",
+                  "fraction": 1000000000000000000
+                },
+                {
+                  "denom": "crndr",
+                  "displayName": "cCRNDR",
+                  "displayNamePlural": "cCRNDR",
+                  "fraction": 1000000000000000000
+                },
+                {
+                  "denom": "cpaid",
+                  "displayName": "cCPAID",
+                  "displayNamePlural": "cCPAID",
+                  "fraction": 1000000000000000000
+                },
+                {
+                  "denom": "ctidal",
+                  "displayName": "cCTIDAL",
+                  "displayNamePlural": "cCTIDAL",
+                  "fraction": 1000000000000000000
+                },
+                {
+                  "denom": "cshib",
+                  "displayName": "cCSHIB",
+                  "displayNamePlural": "cCSHIB",
+                  "fraction": 1000000000000000000
+                },
+                {
+                  "denom": "cleash",
+                  "displayName": "cCLEASH",
+                  "displayNamePlural": "cCLEASH",
+                  "fraction": 1000000000000000000
                 }
             ],
             "gasPrice": 0.02,
