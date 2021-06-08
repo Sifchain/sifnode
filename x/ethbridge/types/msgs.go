@@ -13,7 +13,7 @@ import (
 )
 
 const (
-	burnGasCost = 60000000000 * 393000 // assuming 160gigawei gas prices
+	burnGasCost = 60000000000 * 393000 // assuming 60gigawei gas prices
 	lockGasCost = 60000000000 * 393000
 )
 
