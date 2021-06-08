@@ -7,7 +7,7 @@ import (
 )
 
 type DistributionRecord084 struct {
-	ClaimStatus                 int64
+	ClaimStatus                 int64          `json:"ClaimStatus"`
 	DistributionName            string         `json:"distribution_name"`
 	RecipientAddress            sdk.AccAddress `json:"recipient_address"`
 	Coins                       sdk.Coins      `json:"coins"`

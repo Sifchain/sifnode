@@ -46,14 +46,17 @@ func TestKeeper_CreateAndDistributeDrops(t *testing.T) {
 	moduleBalance, _ := sdk.NewIntFromString("15000000000000000000")
 	assert.True(t, keeper.GetBankKeeper().HasCoins(ctx, types.GetDistributionModuleAddress(), sdk.Coins{sdk.NewCoin("rowan", moduleBalance)}))
 	distributionName := "ar1"
-	err = keeper.CreateDrops(ctx, outputList, distributionName, types.Airdrop)
+	runner := sdk.AccAddress{}
+	err = keeper.CreateDrops(ctx, outputList, distributionName, types.Airdrop, runner)
 	assert.NoError(t, err)
-	err = keeper.CreateDrops(ctx, outputList, distributionName, types.LiquidityMining)
+	err = keeper.CreateDrops(ctx, outputList, distributionName, types.LiquidityMining, runner)
 	assert.NoError(t, err)
-	err = keeper.CreateDrops(ctx, outputList, distributionName, types.LiquidityMining)
+	err = keeper.CreateDrops(ctx, outputList, distributionName, types.LiquidityMining, runner)
 	assert.NoError(t, err)
 
-	err = keeper.DistributeDrops(ctx, 1)
+	_, err = keeper.DistributeDrops(ctx, 1, distributionName, runner, types.Airdrop)
+	assert.NoError(t, err)
+	_, err = keeper.DistributeDrops(ctx, 1, distributionName, runner, types.LiquidityMining)
 	assert.NoError(t, err)
 	completedRecords := keeper.GetRecordsForNameCompleted(ctx, distributionName)
 	assert.Equal(t, 6, len(completedRecords))
@@ -93,10 +96,11 @@ func TestKeeper_CreateAndDistributeDrops_AddressError(t *testing.T) {
 	err = keeper.AccumulateDrops(ctx, fundingAddress, totalCoins)
 	assert.NoError(t, err)
 	distributionName := "ar1"
-	err = keeper.CreateDrops(ctx, outputList, distributionName, types.LiquidityMining)
+	runner := sdk.AccAddress{}
+	err = keeper.CreateDrops(ctx, outputList, distributionName, types.LiquidityMining, runner)
 	assert.NoError(t, err)
 
-	err = keeper.DistributeDrops(ctx, 1)
+	_, err = keeper.DistributeDrops(ctx, 1, distributionName, runner, types.LiquidityMining)
 	assert.NoError(t, err)
 	completedRecords := keeper.GetRecordsForNameCompleted(ctx, distributionName)
 	assert.GreaterOrEqual(t, len(completedRecords), 3)
