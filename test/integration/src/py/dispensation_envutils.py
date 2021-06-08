@@ -254,3 +254,31 @@ def create_offline_singlekey_txn_with_runner(
     json_str = get_shell_output_json(cmd)
     assert(json_str.get("code", 0) == 0)
     return json_str
+
+#CODE TO EXECUTE RUN DISPENSATION CLI
+def run_dispensation(
+        distribution_name,
+        claimType,
+        runner_address,
+        chain_id,
+        sifnodecli_node
+    ):
+    logging.debug(f"RUN DISPENSATION CLI LOGGING")
+    sifchain_fees_entry = f"--gas auto --gas-adjustment=1.5"
+    output = 'output.json'
+    cmd = " ".join([
+        "sifnodecli tx dispensation run",
+        distribution_name,
+        f"{claimType}",
+        f"--from {runner_address}",
+        f"--chain-id={chain_id}",
+        f"{sifnodecli_node}",
+        sifchain_fees_entry,
+        f"--fees 200000rowan",
+        f"--yes -o json"
+        
+    ])
+    json_str = get_shell_output_json(cmd)
+    assert(json_str.get("code", 0) == 0)
+    txn = json_str["txhash"]
+    return txn
