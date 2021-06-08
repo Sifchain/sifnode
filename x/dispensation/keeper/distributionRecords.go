@@ -205,8 +205,8 @@ func (k Keeper) GetRecordsForNamePendingLimited(ctx sdk.Context, distributionNam
 			dr.AuthorizedRunner.Equals(runner) &&
 			dr.DistributionType == distributionType {
 			res = append(res, dr)
+			count = count + 1
 		}
-		count = count + 1
 	}
 	return res
 }
