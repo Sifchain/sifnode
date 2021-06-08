@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	"bytes"
 	"fmt"
 
 	"github.com/tendermint/tendermint/libs/log"
@@ -43,6 +44,22 @@ func (k Keeper) Logger(ctx sdk.Context) log.Logger {
 	return ctx.Logger().With("module", fmt.Sprintf("x/%s", types.ModuleName))
 }
 
+func (k Keeper) GetProphecies(ctx sdk.Context) []types.Prophecy {
+	var prophecies []types.Prophecy
+	store := ctx.KVStore(k.storeKey)
+	iter := store.Iterator([]byte{}, []byte{})
+	for ; iter.Valid(); iter.Next() {
+		key := iter.Key()
+		if bytes.Compare(key, types.AdminAccountPrefix) != 0 &&
+			bytes.Compare(key, types.WhiteListValidatorPrefix) != 0 {
+			var p types.Prophecy
+			k.Cdc.MustUnmarshalBinaryBare(iter.Value(), &p)
+			prophecies = append(prophecies, p)
+		}
+	}
+	return prophecies
+}
+
 // GetProphecy gets the entire prophecy data struct for a given id
 func (k Keeper) GetProphecy(ctx sdk.Context, id string) (types.Prophecy, bool) {
 	store := ctx.KVStore(k.storeKey)
@@ -62,8 +79,8 @@ func (k Keeper) GetProphecy(ctx sdk.Context, id string) (types.Prophecy, bool) {
 	return deSerializedProphecy, true
 }
 
-// setProphecy saves a prophecy with an initial claim
-func (k Keeper) setProphecy(ctx sdk.Context, prophecy types.Prophecy) {
+// SetProphecy saves a prophecy with an initial claim
+func (k Keeper) SetProphecy(ctx sdk.Context, prophecy types.Prophecy) {
 	store := ctx.KVStore(k.storeKey)
 	serializedProphecy, err := prophecy.SerializeForDB()
 	if err != nil {
@@ -124,7 +141,7 @@ func (k Keeper) ProcessClaim(ctx sdk.Context, claim types.Claim, sugaredLogger *
 	prophecy.AddClaim(claim.ValidatorAddress, claim.Content)
 	prophecy = k.processCompletion(ctx, prophecy)
 
-	k.setProphecy(ctx, prophecy)
+	k.SetProphecy(ctx, prophecy)
 	return prophecy.Status, nil
 }
 
