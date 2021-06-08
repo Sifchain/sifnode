@@ -105,7 +105,7 @@ describe("EthbridgeService", () => {
     const recipientBalanceBefore = await getEthBalance();
 
     const amountToSend = AssetAmount(CETH, "2000000000000000000");
-    const feeAmount = AssetAmount(Asset.get("ceth"), "70000000000000000");
+    const feeAmount = AssetAmount(Asset.get("ceth"), "23580000000000000");
 
     const message = await EthbridgeService.burnToEthereum({
       fromAddress: getSifAddress(),
