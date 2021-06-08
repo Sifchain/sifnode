@@ -8,6 +8,7 @@ import (
 
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/txs"
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/types"
+	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
 	tmClient "github.com/tendermint/tendermint/rpc/client/http"
@@ -16,7 +17,7 @@ import (
 
 // ListMissedCosmosEvent defines a Cosmos listener that relays events to Ethereum and Cosmos
 type ListMissedCosmosEvent struct {
-	NetworkID               uint32
+	NetworkID               oracletypes.NetworkID
 	TmProvider              string
 	EthProvider             string
 	RegistryContractAddress common.Address
@@ -26,7 +27,7 @@ type ListMissedCosmosEvent struct {
 }
 
 // NewListMissedCosmosEvent initializes a new CosmosSub
-func NewListMissedCosmosEvent(networkID uint32, tmProvider, ethProvider string, registryContractAddress common.Address,
+func NewListMissedCosmosEvent(networkID oracletypes.NetworkID, tmProvider, ethProvider string, registryContractAddress common.Address,
 	ethereumAddress common.Address, days int64, sugaredLogger *zap.SugaredLogger) ListMissedCosmosEvent {
 	return ListMissedCosmosEvent{
 		NetworkID:               networkID,
