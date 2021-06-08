@@ -1,14 +1,11 @@
 package txs
 
 import (
-	"os"
-	"strconv"
 	"strings"
 	"testing"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/zap"
 
@@ -50,44 +47,6 @@ func TestLogLockToEthBridgeClaim(t *testing.T) {
 	require.NoError(t, err)
 
 	require.Equal(t, expectedEthBridgeClaim, &ethBridgeClaim)
-}
-
-func TestProphecyClaimToSignedOracleClaim(t *testing.T) {
-	// Set ETHEREUM_PRIVATE_KEY env variable
-	if os.Setenv(EthereumPrivateKey, TestPrivHex) != nil {
-		t.Fatal("failed to set env variable")
-	}
-	// Get and load private key from env variables
-	rawKey := os.Getenv(EthereumPrivateKey)
-	privateKey, _ := crypto.HexToECDSA(rawKey)
-
-	// Create new test ProphecyClaimEvent
-	prophecyClaimEvent := CreateTestProphecyClaimEvent(t)
-	// Generate claim message from ProphecyClaim
-	message := GenerateClaimMessage(prophecyClaimEvent)
-
-	// Prepare the message (required for signature verification on contract)
-	prefixedHashedMsg := PrefixMsg(message)
-
-	// Sign the message using the validator's private key
-	signature, err := SignClaim(prefixedHashedMsg, privateKey)
-	require.NoError(t, err)
-
-	var message32 []byte
-	copy(message32[:], message)
-
-	// Set up expected OracleClaim
-	expectedOracleClaim := ethbridge.OracleClaim{
-		ProphecyId: strconv.Itoa(TestProphecyID),
-		Message:    message32,
-		Signature:  signature,
-	}
-
-	// Map the test ProphecyClaim to a signed OracleClaim
-	oracleClaim, err := ProphecyClaimToSignedOracleClaim(prophecyClaimEvent, privateKey)
-	require.NoError(t, err)
-
-	require.Equal(t, expectedOracleClaim, oracleClaim)
 }
 
 func TestBurnEventToCosmosMsg(t *testing.T) {
