@@ -10,8 +10,7 @@ import (
 	"github.com/Sifchain/sifnode/x/dispensation/types/legacy"
 )
 
-func Upgrade086(keeper Keeper) func(ctx sdk.Context, plan upgrade.Plan) {
-
+func MigrateRecords(keeper Keeper) func(ctx sdk.Context, plan upgrade.Plan) {
 	// Migrates distribution records, and distributions to new structure.
 	return func(ctx sdk.Context, plan upgrade.Plan) {
 		UpgradeDistributionRecords(ctx, keeper)
