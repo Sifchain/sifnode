@@ -12,6 +12,7 @@ import (
 	sifapp "github.com/Sifchain/sifnode/app"
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/contract"
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/relayer"
+	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/client/rpc"
@@ -211,7 +212,7 @@ func RunInitRelayerCmd(cmd *cobra.Command, args []string) error {
 	)
 
 	// Initialize new Cosmos event listener
-	cosmosSub := relayer.NewCosmosSub(uint32(networkID), tendermintNode, web3Provider, contractAddress, db, sugaredLogger)
+	cosmosSub := relayer.NewCosmosSub(oracletypes.NetworkID(networkID), tendermintNode, web3Provider, contractAddress, db, sugaredLogger)
 
 	waitForAll := sync.WaitGroup{}
 	waitForAll.Add(2)

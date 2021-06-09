@@ -21,3 +21,14 @@ func TestGetPrefix(t *testing.T) {
 	assert.Equal(t, networkDescriptor.NetworkID, networkID)
 	assert.Equal(t, networkDescriptor.GetPrefix(), prefixOfNetwork100)
 }
+
+func TestNetworkIDValid(t *testing.T) {
+	networkID := NetworkID(0)
+	assert.Equal(t, networkID.IsValid(), false)
+
+	networkID = NetworkID(1)
+	assert.Equal(t, networkID.IsValid(), true)
+
+	networkID = NetworkID(99999)
+	assert.Equal(t, networkID.IsValid(), false)
+}

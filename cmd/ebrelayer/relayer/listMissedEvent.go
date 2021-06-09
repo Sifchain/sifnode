@@ -114,13 +114,13 @@ func (list ListMissedCosmosEvent) ListMissedCosmosEvent() {
 				switch claimType {
 				case types.MsgBurn, types.MsgLock:
 
-					cosmosMsg, networkID, err := txs.BurnLockEventToCosmosMsg(claimType, event.GetAttributes(), list.SugaredLogger)
+					cosmosMsg, err := txs.BurnLockEventToCosmosMsg(claimType, event.GetAttributes(), list.SugaredLogger)
 					if err != nil {
 						log.Println(err.Error())
 						continue
 					}
 
-					if networkID == list.NetworkID && !MessageProcessed(cosmosMsg, ProphecyClaims) {
+					if cosmosMsg.NetworkID == list.NetworkID && !MessageProcessed(cosmosMsg, ProphecyClaims) {
 						log.Printf("missed cosmos event: %s\n", cosmosMsg.String())
 					}
 				}

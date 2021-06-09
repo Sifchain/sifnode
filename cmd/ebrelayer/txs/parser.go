@@ -15,6 +15,7 @@ import (
 
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/types"
 	ethbridge "github.com/Sifchain/sifnode/x/ethbridge/types"
+	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
 )
 
 const (
@@ -105,7 +106,7 @@ func ProphecyClaimToSignedOracleClaim(event types.ProphecyClaimEvent, key *ecdsa
 }
 
 // BurnLockEventToCosmosMsg parses data from a Burn/Lock event witnessed on Cosmos into a CosmosMsg struct
-func BurnLockEventToCosmosMsg(claimType types.Event, attributes []abci.EventAttribute, sugaredLogger *zap.SugaredLogger) (types.CosmosMsg, uint32, error) {
+func BurnLockEventToCosmosMsg(claimType types.Event, attributes []abci.EventAttribute, sugaredLogger *zap.SugaredLogger) (types.CosmosMsg, error) {
 	var cosmosSender []byte
 	var cosmosSenderSequence *big.Int
 	var ethereumReceiver common.Address
@@ -131,7 +132,7 @@ func BurnLockEventToCosmosMsg(claimType types.Event, attributes []abci.EventAttr
 			if !ok {
 				// log.Println("Invalid account sequence:", val)
 				sugaredLogger.Errorw("Invalid account sequence", "account sequence", val)
-				return types.CosmosMsg{}, networkID, errors.New("invalid account sequence: " + val)
+				return types.CosmosMsg{}, errors.New("invalid account sequence: " + val)
 			}
 			cosmosSenderSequence = tempSequence
 		case types.EthereumReceiver.String():
@@ -140,7 +141,7 @@ func BurnLockEventToCosmosMsg(claimType types.Event, attributes []abci.EventAttr
 				// log.Printf("Invalid recipient address: %v", val)
 				sugaredLogger.Errorw("Invalid recipient address", "recipient address", val)
 
-				return types.CosmosMsg{}, networkID, errors.New("invalid recipient address: " + val)
+				return types.CosmosMsg{}, errors.New("invalid recipient address: " + val)
 			}
 			ethereumReceiver = common.HexToAddress(val)
 		case types.Symbol.String():
@@ -149,7 +150,7 @@ func BurnLockEventToCosmosMsg(claimType types.Event, attributes []abci.EventAttr
 				if !strings.Contains(val, defaultSifchainPrefix) {
 					// log.Printf("Can only relay burns of '%v' prefixed coins", defaultSifchainPrefix)
 					sugaredLogger.Errorw("only relay burns prefixed coins", "coin symbol", val)
-					return types.CosmosMsg{}, networkID, errors.New("can only relay burns of '%v' prefixed coins" + defaultSifchainPrefix)
+					return types.CosmosMsg{}, errors.New("can only relay burns of '%v' prefixed coins" + defaultSifchainPrefix)
 				}
 				res := strings.SplitAfter(val, defaultSifchainPrefix)
 				symbol = strings.Join(res[1:], "")
@@ -163,7 +164,7 @@ func BurnLockEventToCosmosMsg(claimType types.Event, attributes []abci.EventAttr
 				// log.Println("Invalid amount:", val)
 				sugaredLogger.Errorw("Invalid amount", "amount", val)
 
-				return types.CosmosMsg{}, networkID, errors.New("invalid amount:" + val)
+				return types.CosmosMsg{}, errors.New("invalid amount:" + val)
 			}
 			amount = tempAmount
 		case types.NetworkID.String():
@@ -171,17 +172,22 @@ func BurnLockEventToCosmosMsg(claimType types.Event, attributes []abci.EventAttr
 			tempNetworkID, err := strconv.ParseUint(val, 10, 32)
 			if err != nil {
 				sugaredLogger.Errorw("network id can't parse", "networkDescriptor", val)
-				return types.CosmosMsg{}, networkID, errors.New("can only relay burns of '%v' prefixed coins" + defaultSifchainPrefix)
+				return types.CosmosMsg{}, errors.New("network id can't parse")
 			}
 			networkID = uint32(tempNetworkID)
+
+			// check if the networkID is valid
+			if !oracletypes.NetworkID(networkID).IsValid() {
+				return types.CosmosMsg{}, errors.New("network id is invalid")
+			}
 		}
 	}
 
 	if attributeNumber < 6 {
 		sugaredLogger.Errorw("message not complete", "attributeNumber", attributeNumber)
-		return types.CosmosMsg{}, networkID, errors.New("message not complete")
+		return types.CosmosMsg{}, errors.New("message not complete")
 	}
-	return types.NewCosmosMsg(claimType, cosmosSender, cosmosSenderSequence, ethereumReceiver, symbol, amount), networkID, nil
+	return types.NewCosmosMsg(oracletypes.NetworkID(networkID), claimType, cosmosSender, cosmosSenderSequence, ethereumReceiver, symbol, amount), nil
 }
 
 // AttributesToEthereumBridgeClaim parses data from event to EthereumBridgeClaim

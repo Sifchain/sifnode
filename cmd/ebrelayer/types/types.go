@@ -112,6 +112,7 @@ func (p ProphecyClaimEvent) String() string {
 
 // CosmosMsg contains data from MsgBurn and MsgLock events
 type CosmosMsg struct {
+	NetworkID            oracle.NetworkID
 	CosmosSender         []byte
 	CosmosSenderSequence *big.Int
 	Symbol               string
@@ -121,9 +122,10 @@ type CosmosMsg struct {
 }
 
 // NewCosmosMsg creates a new CosmosMsg
-func NewCosmosMsg(claimType Event, cosmosSender []byte, cosmosSenderSequence *big.Int, ethereumReceiver common.Address, symbol string,
+func NewCosmosMsg(networkID oracle.NetworkID, claimType Event, cosmosSender []byte, cosmosSenderSequence *big.Int, ethereumReceiver common.Address, symbol string,
 	amount sdk.Int) CosmosMsg {
 	return CosmosMsg{
+		NetworkID:            networkID,
 		ClaimType:            claimType,
 		CosmosSender:         cosmosSender,
 		CosmosSenderSequence: cosmosSenderSequence,
@@ -136,8 +138,8 @@ func NewCosmosMsg(claimType Event, cosmosSender []byte, cosmosSenderSequence *bi
 // String implements fmt.Stringer
 func (c CosmosMsg) String() string {
 	if c.ClaimType == MsgLock {
-		return fmt.Sprintf("\nClaim Type: %v\nCosmos Sender: %v\nCosmos Sender Sequence: %v\nEthereum Recipient: %v"+
-			"\nSymbol: %v\nAmount: %v\n",
+		return fmt.Sprintf("\nNetwork id: %v\nClaim Type: %v\nCosmos Sender: %v\nCosmos Sender Sequence: %v\nEthereum Recipient: %v"+
+			"\nSymbol: %v\nAmount: %v\n", c.NetworkID.String(),
 			c.ClaimType.String(), string(c.CosmosSender), c.CosmosSenderSequence, c.EthereumReceiver.Hex(), c.Symbol, c.Amount)
 	}
 	return fmt.Sprintf("\nClaim Type: %v\nCosmos Sender: %v\nCosmos Sender Sequence: %v\nEthereum Recipient: %v"+

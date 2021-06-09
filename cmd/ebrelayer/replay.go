@@ -14,6 +14,7 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/relayer"
+	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
 )
 
 // RunReplayEthereumCmd executes replayEthereumCmd
@@ -116,14 +117,20 @@ func RunReplayCosmosCmd(_ *cobra.Command, args []string) error {
 		return errors.Errorf("invalid [eth-to-block]: %s", args[7])
 	}
 
+	// check if the networkID is valid
+	if !oracletypes.NetworkID(networkID).IsValid() {
+		return errors.Errorf("network id: %d is invalid", networkID)
+	}
+
 	logger, err := zap.NewProduction()
 	if err != nil {
 		log.Fatalln("failed to init zap logging")
 	}
+
 	sugaredLogger := logger.Sugar()
 
 	// Initialize new Cosmos event listener
-	cosmosSub := relayer.NewCosmosSub(uint32(networkID), tendermintNode, web3Provider, contractAddress, nil, sugaredLogger)
+	cosmosSub := relayer.NewCosmosSub(oracletypes.NetworkID(networkID), tendermintNode, web3Provider, contractAddress, nil, sugaredLogger)
 
 	cosmosSub.Replay(fromBlock, toBlock, ethFromBlock, ethToBlock)
 
@@ -170,7 +177,7 @@ func RunListMissedCosmosEventCmd(_ *cobra.Command, args []string) error {
 	sugaredLogger := logger.Sugar()
 
 	// Initialize new Cosmos event listener
-	listMissedCosmosEvent := relayer.NewListMissedCosmosEvent(uint32(networkID), tendermintNode, web3Provider, contractAddress, relayerEthereumAddress, days, sugaredLogger)
+	listMissedCosmosEvent := relayer.NewListMissedCosmosEvent(oracletypes.NetworkID(networkID), tendermintNode, web3Provider, contractAddress, relayerEthereumAddress, days, sugaredLogger)
 
 	listMissedCosmosEvent.ListMissedCosmosEvent()
 

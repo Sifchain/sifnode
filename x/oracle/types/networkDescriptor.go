@@ -39,3 +39,14 @@ func GetFromPrefix(key []byte) (NetworkDescriptor, error) {
 
 	return NetworkDescriptor{}, errors.New("prefix is invalid")
 }
+
+// IsValid check if the network id is valid
+func (n NetworkID) IsValid() bool {
+
+	if n == NetworkID_NETWORK_ID_UNSPECIFIED {
+		return false
+	}
+
+	_, ok := NetworkID_name[int32(n)]
+	return ok
+}

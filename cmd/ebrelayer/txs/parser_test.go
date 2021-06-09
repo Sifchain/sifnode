@@ -40,7 +40,7 @@ func TestLogLockToEthBridgeClaim(t *testing.T) {
 
 	// Set up expected EthBridgeClaim
 	expectedEthBridgeClaim := ethbridge.NewEthBridgeClaim(
-		TestEthereumChainID, testBridgeContractAddress, TestNonce, strings.ToLower(TestSymbol), testTokenContractAddress,
+		TestNetworkID, testBridgeContractAddress, TestNonce, strings.ToLower(TestSymbol), testTokenContractAddress,
 		testEthereumAddress, testCosmosAddress, testCosmosValidatorBech32Address, testSDKAmount, ethbridge.ClaimType_CLAIM_TYPE_LOCK)
 
 	// Create test ethereum event
@@ -96,7 +96,7 @@ func TestBurnEventToCosmosMsg(t *testing.T) {
 
 	// Create MsgBurn attributes as input parameter
 	cosmosMsgAttributes := CreateCosmosMsgAttributes(t, types.MsgBurn)
-	msgBurn, _, err := BurnLockEventToCosmosMsg(types.MsgBurn, cosmosMsgAttributes, sugaredLogger)
+	msgBurn, err := BurnLockEventToCosmosMsg(types.MsgBurn, cosmosMsgAttributes, sugaredLogger)
 
 	require.Nil(t, err)
 	require.Equal(t, expectedMsgBurn, msgBurn)
@@ -108,7 +108,7 @@ func TestLockEventToCosmosMsg(t *testing.T) {
 
 	// Create MsgLock attributes as input parameter
 	cosmosMsgAttributes := CreateCosmosMsgAttributes(t, types.MsgLock)
-	msgLock, _, err := BurnLockEventToCosmosMsg(types.MsgLock, cosmosMsgAttributes, sugaredLogger)
+	msgLock, err := BurnLockEventToCosmosMsg(types.MsgLock, cosmosMsgAttributes, sugaredLogger)
 
 	require.Nil(t, err)
 	require.Equal(t, expectedMsgLock, msgLock)
@@ -117,7 +117,7 @@ func TestLockEventToCosmosMsg(t *testing.T) {
 func TestFailedBurnEventToCosmosMsg(t *testing.T) {
 	// Create MsgBurn attributes as input parameter
 	cosmosMsgAttributes := CreateCosmosMsgIncompleteAttributes(t, types.MsgBurn)
-	_, _, err := BurnLockEventToCosmosMsg(types.MsgBurn, cosmosMsgAttributes, sugaredLogger)
+	_, err := BurnLockEventToCosmosMsg(types.MsgBurn, cosmosMsgAttributes, sugaredLogger)
 
 	require.Error(t, err)
 }
@@ -125,7 +125,7 @@ func TestFailedBurnEventToCosmosMsg(t *testing.T) {
 func TestFailedLockEventToCosmosMsg(t *testing.T) {
 	// Create MsgLock attributes as input parameter
 	cosmosMsgAttributes := CreateCosmosMsgIncompleteAttributes(t, types.MsgLock)
-	_, _, err := BurnLockEventToCosmosMsg(types.MsgLock, cosmosMsgAttributes, sugaredLogger)
+	_, err := BurnLockEventToCosmosMsg(types.MsgLock, cosmosMsgAttributes, sugaredLogger)
 
 	require.Error(t, err)
 }

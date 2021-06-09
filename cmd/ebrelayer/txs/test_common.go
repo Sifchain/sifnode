@@ -19,7 +19,7 @@ import (
 const (
 	// EthereumPrivateKey config field which holds the user's private key
 	EthereumPrivateKey        = "ETHEREUM_PRIVATE_KEY"
-	TestEthereumChainID       = 1
+	TestNetworkID             = 1
 	TestBridgeContractAddress = "0xd88159878c50e4B2b03BB701DD436e4A98D6fBe2"
 	TestLockClaimType         = 1
 	TestBurnClaimType         = 2
@@ -46,7 +46,7 @@ var testSDKAmount = sdk.NewIntFromBigInt(testAmount)
 
 // CreateTestLogEthereumEvent creates a sample EthereumEvent event for testing purposes
 func CreateTestLogEthereumEvent(t *testing.T) types.EthereumEvent {
-	networkID := oracletypes.NetworkID(TestEthereumChainID)
+	networkID := oracletypes.NetworkID(TestNetworkID)
 	testBridgeContractAddress := common.HexToAddress(TestBridgeContractAddress)
 	// Convert int to [32]byte
 	var testProphecyID []byte
@@ -96,7 +96,7 @@ func CreateTestCosmosMsg(t *testing.T, claimType types.Event) types.CosmosMsg {
 	}
 
 	// Create new Cosmos Msg
-	cosmosMsg := types.NewCosmosMsg(claimType, testCosmosSender, big.NewInt(TestCosmosAddressSequence),
+	cosmosMsg := types.NewCosmosMsg(oracletypes.NetworkID(TestNetworkID), claimType, testCosmosSender, big.NewInt(TestCosmosAddressSequence),
 		testEthereumReceiver, symbol, testAmount)
 
 	return cosmosMsg
@@ -151,7 +151,7 @@ func CreateCosmosMsgAttributes(t *testing.T, claimType types.Event) []abci.Event
 	// (key, value) pairing for "ethereum_chain_id" key
 	pairEthereumChainID := abci.EventAttribute{
 		Key:   []byte("ethereum_chain_id"),
-		Value: []byte(strconv.Itoa(TestEthereumChainID)),
+		Value: []byte(strconv.Itoa(TestNetworkID)),
 	}
 
 	// Assign pairs to attributes array

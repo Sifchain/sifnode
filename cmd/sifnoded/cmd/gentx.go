@@ -40,6 +40,10 @@ the account address or key name. If a key name is given, the address will be loo
 			if err != nil {
 				return fmt.Errorf("failed to pass network descriptor: %w", err)
 			}
+			// check if the networkID is valid
+			if !oracletypes.NetworkID(networkID).IsValid() {
+				return fmt.Errorf("network id: %d is invalid", networkID)
+			}
 
 			addr, err := sdk.ValAddressFromBech32(args[1])
 			if err != nil {

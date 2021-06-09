@@ -7,6 +7,7 @@ import (
 
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/txs"
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/types"
+	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/stretchr/testify/require"
 	"github.com/syndtr/goleveldb/leveldb"
@@ -30,7 +31,7 @@ func TestNewCosmosSub(t *testing.T) {
 
 	sugaredLogger := logger.Sugar()
 	registryContractAddress := common.HexToAddress(contractAddress)
-	sub := NewCosmosSub(networkID, tmProvider, ethProvider, registryContractAddress,
+	sub := NewCosmosSub(oracletypes.NetworkID(networkID), tmProvider, ethProvider, registryContractAddress,
 		db, sugaredLogger)
 	require.NotEqual(t, sub, nil)
 }
