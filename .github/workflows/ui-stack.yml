@@ -1,4 +1,4 @@
-name: Build ui-stack backend and use that stack to run tests against frontend
+name: Frontend compatability testing
 
 on:
   push:
