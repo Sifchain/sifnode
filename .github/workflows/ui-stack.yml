@@ -13,6 +13,8 @@ on:
 
 jobs:
   build_ui_stack:
+    name: Bulid UI Stack Docker Image
+
     defaults:
       run:
         working-directory: ui
@@ -20,7 +22,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Check out code
+      - name: Check out sifnode
         uses: actions/checkout@v2
 
       - name: Use Node.js
@@ -66,6 +68,18 @@ jobs:
         run: yarn stack --push
         env:
           CI: true
+
+  test_ui_repo:
+    name: Test sifnode against UI
+    needs: build_ui_stack
+    defaults:
+      run:
+        working-directory: ui
+
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out sifnode
+        uses: actions/checkout@v2
 
       - name: Save commit hash to env var
         run: echo "SIFNODE_COMMIT_SHA=$GITHUB_SHA" >> $GITHUB_ENV
