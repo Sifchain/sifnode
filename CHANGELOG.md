@@ -1,3 +1,12 @@
+# v0.8.7
+> June 9, 2021
+
+## 🐛 Bug Fixes
+
+- [Sifnode] Claims module updates/bugfixes.
+
+----
+
 # v0.8.5
 > May 25, 2021
 
@@ -8,7 +17,7 @@
 - [UI] Removal of the words Peg and Unpeg. We have updated our language across our entire application to use 'Import' and 'Export' instead. We did this to be more clear with the action that is being done, as well as to prepare for more chains being integrated into Sifchain.
 - [Peggy] Relayer Upgrade - Implementation of Retry Logic.
 - [Sifnode] Claims module - The claims module is done and ready! This will allow users to be able to submit a claim for their liquidity mining & validator subsidy rewards. This unblocks our FE team to finish building in this process into the DEX!
-<!-- - [UI] Included the ability for a user to see their net gain/loss on their liquidity pool position. This includes earnings from swap fees AND any gains or losses associated with changes in the tokens' prices. This number is represented as USDT. -->
+- [UI] Included the ability for a user to see their net gain/loss on their liquidity pool position. This includes earnings from swap fees AND any gains or losses associated with changes in the tokens' prices. This number is represented as USDT.
 
 ## 🐛 Bug Fixes
 
