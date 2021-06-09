@@ -2,12 +2,12 @@ import copy
 import json
 import logging
 
-import pytest
+#import pytest
 
 import burn_lock_functions
 import test_utilities
 from integration_env_credentials import sifchain_cli_credentials_for_test
-from pytest_utilities import generate_minimal_test_account
+#from pytest_utilities import generate_minimal_test_account
 from test_utilities import EthereumToSifchainTransferRequest, SifchaincliCredentials
 
 
@@ -25,7 +25,7 @@ def create_new_sifaddr_and_key():
     return new_addr["address"], new_addr["name"]
 
 
-@pytest.mark.skip(reason="run manually")
+#@pytest.mark.skip(reason="run manually")
 def test_bulk_transfers(
         basic_transfer_request: EthereumToSifchainTransferRequest,
         smart_contracts_dir,
@@ -90,7 +90,7 @@ def test_bulk_transfers(
     manual_advance = False
     if manual_advance:
         test_utilities.advance_n_ethereum_blocks(test_utilities.n_wait_blocks, smart_contracts_dir)
-    test_utilities.wait_for_ethereum_block_number(yarn_result["blockNumber"] + test_utilities.n_wait_blocks, basic_transfer_request);
+    test_utilities.wait_for_ethereum_block_number(yarn_result["blockNumber"] + test_utilities.n_wait_blocks, basic_transfer_request)
     for a in new_addresses:
         test_utilities.wait_for_sif_account(a, basic_transfer_request.sifnodecli_node, 90)
         test_utilities.wait_for_sifchain_addr_balance(a, "ceth", amount, basic_transfer_request.sifnodecli_node, 180)
