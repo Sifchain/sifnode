@@ -1,3 +1,12 @@
+# v0.8.7
+> June 9, 2021
+
+## 🐛 Bug Fixes
+
+- [Sifnode] Claims module updates/bugfixes.
+
+----
+
 # v0.8.5
 > May 25, 2021
 
