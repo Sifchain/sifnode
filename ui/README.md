@@ -8,8 +8,9 @@ This code is managed by the frontend team.
 
 | Script                       | Description                                                                                                                  |
 | ---------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
-| `yarn stack`                 | Launch stack from scratch.                                                                                                   |
+| `yarn stack`                 | Launch stack from scratch building sifnode.                                                                                  |
 | `yarn start`                 | Start the stack from the saved snapshot                                                                                      |
+| `yarn build`                 | Build and prepare the chains                                                                                                 |
 | `yarn stack --save-snapshot` | Launch the stack then save the snapshot files                                                                                |
 | `yarn stack --push`          | Take snapshot files that have already been saved and wrap them in a docker image and push it to the registry for consumption |
 
