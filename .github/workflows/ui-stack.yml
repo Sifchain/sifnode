@@ -9,7 +9,6 @@ on:
       - develop
       - master
       - testnet
-      - ryardley/backend-tests-frontend
 
 jobs:
   build_ui_stack:
