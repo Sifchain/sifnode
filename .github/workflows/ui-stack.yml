@@ -9,7 +9,6 @@ on:
       - develop
       - master
       - testnet
-      - ryardley/438-remove-ui-code
 
 jobs:
   build_ui_stack:
