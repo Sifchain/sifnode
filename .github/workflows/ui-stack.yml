@@ -1,4 +1,4 @@
-name: Build ui-stack backend
+name: Build ui-stack backend and use that stack to run tests against frontend
 
 on:
   push:
@@ -8,6 +8,7 @@ on:
       # However once features are shipped this should be updated
       - develop
       - master
+      - testnet
 
 jobs:
   build_ui_stack:
@@ -18,6 +19,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Check out code
+        uses: actions/checkout@v2
+
       - name: Use Node.js
         uses: actions/setup-node@v2.1.4
         with:
@@ -28,9 +32,6 @@ jobs:
         with:
           go-version: ^1.15
         id: go
-
-      - name: Check out code
-        uses: actions/checkout@v2
 
       - name: Log into registry
         run: echo ${{ secrets.GHCR_TOKEN }} | docker login ghcr.io -u $GITHUB_ACTOR --password-stdin
@@ -54,13 +55,57 @@ jobs:
       - name: Install dependencies
         run: yarn install --frozen-lockfile --silent
 
-      - name: Build test chains
-        run: yarn chain:build && yarn build
+      - name: Build ui-stack dependencies
+        run: yarn build
 
       - name: Build databases for docker state
-        run: ./scripts/run-stack-save-default-snapshot.sh
+        run: yarn stack --save-snapshot
 
       - name: Build and push docker image
-        run: ./scripts/build-stack-backend-docker.sh
+        run: yarn stack --push
+        env:
+          CI: true
+
+      - name: Save commit hash to env var
+        run: echo "SIFNODE_COMMIT_SHA=$GITHUB_SHA" >> $GITHUB_ENV
+
+      - name: Remove node_modules
+        run: rm -rf node_modules
+
+      - name: Check out sifchain-ui
+        uses: actions/checkout@v2
+        with:
+          repository: "Sifchain/sifchain-ui"
+          ref: "develop" # TODO: change to master once we have something deployed on the frontend
+          token: ${{ secrets.GHCR_TOKEN }}
+
+      - name: Ensure we have env vars sharing
+        run: echo "This is the commit -> $SIFNODE_COMMIT_SHA"
+
+      - name: Pull instant stack image
+        run: docker pull ghcr.io/sifchain/sifnode/ui-stack:$SIFNODE_COMMIT_SHA
+
+      - name: Get yarn cache directory path
+        id: yarn-cache-dir-path-2
+        run: echo "::set-output name=dir::$(yarn cache dir)"
+
+      - name: Cache Node.js modules
+        id: yarn-cache-2
+        uses: actions/cache@v2.1.3
+        with:
+          path: ${{ steps.yarn-cache-dir-path-2.outputs.dir }}
+          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: ${{ runner.os }}-yarn-
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile --silent
+
+      - uses: microsoft/playwright-github-action@v1
+
+      - name: Build e2e App
+        run: cd e2e && yarn install --frozen-lockfile
+
+      - name: Run e2e Tests
+        run: yarn build --tag $SIFNODE_COMMIT_SHA && yarn e2e --tag $SIFNODE_COMMIT_SHA
         env:
           CI: true

@@ -8,7 +8,9 @@
 killall sifnoded sifnodecli ebrelayer ganache-cli
 sleep 5
 
+./scripts/_sif-build.sh
+
 yarn concurrently -k -r -s first \
-  "yarn chain:eth" \
-  "yarn chain:sif" \
-  "yarn wait-on http-get://localhost:1317/node_info && yarn chain:migrate && yarn chain:peggy"
+  "./scripts/_eth.sh" \
+  "./scripts/_sif.sh" \
+  "yarn wait-on http-get://localhost:1317/node_info && ./scripts/_migrate.sh && ./scripts/_peggy.sh"
