@@ -16,5 +16,5 @@ enum NetworkID {
   // Bitcoin mainnet
   NETWORK_ID_BITCOIN = 2;
   // Binance Smart Chain https://www.binance.org/en/smartChain
-  NETWORK_ID_BINANCE_SMART_CHAIN = 3;
+  NETWORK_ID_BINANCE_SMART_CHAIN = 56;
 }

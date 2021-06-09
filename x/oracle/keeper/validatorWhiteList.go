@@ -53,12 +53,14 @@ func (k Keeper) GetAllValidators(ctx sdk.Context, networkDescriptor types.Networ
 
 	vl := make([]sdk.ValAddress, len(valAddresses.GetWhiteList()))
 	index := 0
-	for i := range valAddresses.GetWhiteList() {
+	for i, power := range valAddresses.GetWhiteList() {
 		addr, err := sdk.ValAddressFromBech32(i)
 		if err != nil {
 			panic(err)
 		}
-		vl[index] = addr
+		if power > 0 {
+			vl[index] = addr
+		}
 		index++
 	}
 
