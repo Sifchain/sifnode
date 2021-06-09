@@ -9,6 +9,7 @@ on:
       - develop
       - master
       - testnet
+      - ryardley/438-remove-ui-code
 
 jobs:
   build_ui_stack:
@@ -93,8 +94,8 @@ jobs:
           ref: "develop" # TODO: change to master once we have something deployed on the frontend
           token: ${{ secrets.GHCR_TOKEN }}
 
-      - name: Ensure we have env vars sharing
-        run: echo "This is the commit -> $SIFNODE_COMMIT_SHA"
+      - name: Log into registry
+        run: echo ${{ secrets.GHCR_TOKEN }} | docker login ghcr.io -u $GITHUB_ACTOR --password-stdin
 
       - name: Pull instant stack image
         run: docker pull ghcr.io/sifchain/sifnode/ui-stack:$SIFNODE_COMMIT_SHA
