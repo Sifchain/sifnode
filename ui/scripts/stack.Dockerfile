@@ -68,8 +68,6 @@ WORKDIR /sif/ui
 
 COPY ./ui/package.json ./package.json
 COPY ./ui/yarn.lock ./yarn.lock
-COPY ./ui/core/package.json ./core/package.json
-COPY ./ui/core/yarn.lock ./core/yarn.lock
 COPY ./ui/chains/eth/package.json ./chains/eth/package.json
 COPY ./ui/chains/eth/yarn.lock ./chains/eth/yarn.lock
 COPY ./smart-contracts/package.json ../smart-contracts/package.json
@@ -80,9 +78,10 @@ RUN cd ./chains/eth && yarn install --frozen-lockfile --silent
 RUN cd ../smart-contracts && yarn install --frozen-lockfile --silent
 
 COPY ./ui/chains ./chains
-COPY ./ui/core/ ./core
 COPY ./smart-contracts ../smart-contracts
+COPY ./test/test-tables ../test/test-tables
+COPY ./ui/scripts ./scripts
 
-RUN yarn chain:peggy:build && yarn chain:eth:build
+RUN ./scripts/build.sh
 
-CMD yarn concurrently -k -r -s first "yarn chain:eth:revert" "yarn wait-on tcp:localhost:7545 && yarn chain:sif:revert" "yarn wait-on http-get://localhost:1317/node_info tcp:localhost:7545 && yarn chain:peggy:revert"
+CMD ./scripts/start.sh
