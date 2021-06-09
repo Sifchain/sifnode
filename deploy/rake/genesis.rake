@@ -104,7 +104,7 @@ end
 # @param network_config     Name of the file to use to output the config to
 #
 def network_create(chainnet:, validator_count:, build_dir:, seed_ip_address:, network_config:)
-  safe_system("sifgen network create #{chainnet} #{validator_count} #{build_dir} #{seed_ip_address} #{network_config}")
+  safe_system("sifgen network create --mint-amount 999999000000000000000000000rowan,1370000000000000000ibc/FEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACE #{chainnet} #{validator_count} #{build_dir} #{seed_ip_address} #{network_config}")
 end
 
 #
