@@ -79,6 +79,7 @@ RUN cd ../smart-contracts && yarn install --frozen-lockfile --silent
 
 COPY ./ui/chains ./chains
 COPY ./smart-contracts ../smart-contracts
+COPY ./test/test-tables ../test/test-tables
 COPY ./ui/scripts ./scripts
 
 RUN ./scripts/build.sh
