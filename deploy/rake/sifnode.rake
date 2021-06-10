@@ -69,7 +69,7 @@ namespace :standalone do
         --install -n #{args[:namespace]} --create-namespace \
         --set image.tag=#{args[:image_tag]} \
         --set image.repository=#{args[:image]} \
-        -f #{args[:helm_values_file]}
+        -f #{args[:helm_values_file]} --kubeconfig=./kubeconfig
       }
       system(cmd) or exit 1
     end
@@ -82,7 +82,7 @@ namespace :standalone do
         --set sifnode.args.peerAddress=#{args[:peer_address]} \
         --set image.tag=#{args[:image_tag]} \
         --set image.repository=#{args[:image]} \
-        -f #{args[:final_file_name]}
+        -f #{args[:final_file_name]} --kubeconfig=./kubeconfig
       }
       system(cmd) or exit 1
       #:namespace, :image, :image_tag, :peer_address, :template_file_name, :final_file_name,:app_region, :app_env
