@@ -52,6 +52,9 @@ func EthereumEventToEthBridgeClaim(valAddr sdk.ValAddress, event types.EthereumE
 		if symbol == "eth" && !isZeroAddress(event.Token) {
 			return witnessClaim, errors.New("symbol \"eth\" must have null address set as token address")
 		}
+		if symbol == "rowan" {
+			symbol = "erowan"
+		}
 	case ethbridge.ClaimType_CLAIM_TYPE_BURN:
 		if !strings.Contains(symbol, defaultEthereumPrefix) {
 			log.Printf("Can only relay burns of '%v' prefixed tokens", defaultEthereumPrefix)
