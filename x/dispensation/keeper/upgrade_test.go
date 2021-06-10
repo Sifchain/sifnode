@@ -3,11 +3,11 @@ package keeper_test
 
 import (
 	"encoding/json"
-	"fmt"
-	"github.com/stretchr/testify/assert"
 	"io/ioutil"
 	"path/filepath"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/require"
@@ -35,7 +35,7 @@ func TestUpgradeDistributionRecords(t *testing.T) {
 	upgradedRecords := []types.DistributionRecord{
 		{
 			DistributionStatus:          1,
-			DistributionName:            "2_first",
+			DistributionName:            "first",
 			DistributionType:            types.Airdrop,
 			RecipientAddress:            output[0].Address,
 			Coins:                       sdk.NewCoins(sdk.NewCoin("rowan", sdk.NewInt(100))),
@@ -157,10 +157,9 @@ func TestUpgradeDistributionRecords_BetanetData(t *testing.T) {
 	upgradedRecords := []types.DistributionRecord{}
 
 	for _, legacyRecord := range legacyRecords {
-		distributionName := fmt.Sprintf("%d_%s", legacyRecord.DistributionStartHeight, legacyRecord.DistributionName)
 		upgradedRecord := types.DistributionRecord{
 			DistributionStatus:          types.Completed,
-			DistributionName:            distributionName,
+			DistributionName:            legacyRecord.DistributionName,
 			DistributionType:            types.Airdrop,
 			RecipientAddress:            legacyRecord.RecipientAddress,
 			Coins:                       legacyRecord.Coins,
