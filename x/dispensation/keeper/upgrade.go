@@ -1,8 +1,6 @@
 package keeper
 
 import (
-	"fmt"
-
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/upgrade"
 
@@ -62,10 +60,9 @@ func UpgradeDistributionRecords(ctx sdk.Context, keeper Keeper) {
 		bytesValue := iterator.Value()
 		keeper.cdc.MustUnmarshalBinaryBare(bytesValue, &dr)
 
-		distributionName := fmt.Sprintf("%d_%s", dr.DistributionStartHeight, dr.DistributionName)
 		upgraded := types.DistributionRecord{
 			DistributionStatus: types.DistributionStatus(dr.ClaimStatus),
-			DistributionName:   distributionName,
+			DistributionName:   dr.DistributionName,
 			// All distributions so far have been Airdrops.
 			DistributionType:            types.Airdrop,
 			RecipientAddress:            dr.RecipientAddress,
