@@ -476,14 +476,15 @@ def wait_for_sif_account(sif_addr, sifchaincli_node, max_seconds=90):
         except:
             return False
 
-    wait_for_predicate(lambda: fn(), True, max_seconds, f"wait for account {sif_addr}")
+    wait_for_predicate(lambda: fn(), max_seconds, f"wait for account {sif_addr}")
 
 
-def wait_for_predicate(predicate, success_result, max_seconds=90, debug_prefix="") -> int:
+def wait_for_predicate(predicate, max_seconds=90, debug_prefix="") -> int:
     done_at_time = time.time() + max_seconds
     while True:
-        if predicate():
-            return success_result
+        predicate_result = predicate()
+        if predicate_result:
+            return predicate_result
         else:
             t = time.time()
             logging.debug(f"wait_for_predicate: wait for {done_at_time - t} more seconds")
@@ -727,3 +728,13 @@ def build_sifchain_command(
         from_entry,
         sifchain_fees_entry,
     ])
+
+
+def wait_for_ethereum_token(transfer_request: EthereumToSifchainTransferRequest, symbol: str):
+    """waits for a token with symbol returns a result like {"token":"0x82D50AD3C1091866E258Fd0f1a7cC9674609D254","value":true,"symbol":"erowan","name":"erowan","decimals":"18"}"""
+    def token_exists():
+        for token in get_whitelisted_tokens(transfer_request):
+            if token["symbol"] == symbol:
+                return token
+        return None
+    return wait_for_predicate(token_exists)
