@@ -12,8 +12,6 @@ const BigNumber = web3.BigNumber;
 
 const {
   BN,           // Big Number support
-  constants,    // Common constants, like the zero address and largest integers
-  expectEvent,  // Assertions for emitted events
   expectRevert, // Assertions for transactions that should fail
 } = require('@openzeppelin/test-helpers');
 const { expect } = require('chai');
@@ -196,7 +194,6 @@ contract("BridgeBank", function (accounts) {
           from: userOne
         }
       ).should.be.fulfilled;
-
 
       // Confirm that the user has been minted the correct token
       const afterUserBalance = Number(
@@ -475,11 +472,11 @@ contract("BridgeBank", function (accounts) {
         }
       );
 
-      // Confirm deposit balances after lock
+      // Locked funds are deprecated for gas savings now
       const postLockedTokenBalance = await this.bridgeBank.lockedFunds(
         this.token.address
       );
-      Number(postLockedTokenBalance).should.be.bignumber.equal(this.amount);
+      Number(postLockedTokenBalance).should.be.bignumber.equal(0);
     });
   });
 
@@ -919,7 +916,7 @@ contract("BridgeBank", function (accounts) {
 
       const cosmosSender = "0x" + convertToHex("sif12qfvgsq76eghlagyfcfyt9md2s9nunsn40zu2h");
       const senderSequence = 1
-      const symbol = 'Rowan'
+      const symbol = 'eRowan'
       const amount = 100000;
       const nonce = 1;
 

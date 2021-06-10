@@ -208,7 +208,7 @@ contract("CosmosBridge", function (accounts) {
       ).should.be.fulfilled;
     });
 
-    it("should not allow for the creation of a new burn prophecy claim over current amount locked", async function () {
+    it("should not allow for the creation of a new burn prophecy claim with invalid token symbol", async function () {
       await expectRevert(
           this.cosmosBridge.newProphecyClaim(
               CLAIM_TYPE_BURN,
@@ -221,7 +221,7 @@ contract("CosmosBridge", function (accounts) {
                 from: userOne
               }
           ),
-          "Not enough locked assets to complete the proposed prophecy"
+          "Invalid token address"
       );
     });
 
@@ -278,7 +278,7 @@ contract("CosmosBridge", function (accounts) {
         this.cosmosSender,
         ++this.cosmosSenderSequence,
         this.ethereumReceiver,
-        this.symbol.toLowerCase(),
+        this.actualSymbol.toLowerCase(),
         this.amount,
         {
           from: userOne
@@ -288,9 +288,8 @@ contract("CosmosBridge", function (accounts) {
       const event = logs.find(e => e.event === "LogNewProphecyClaim");
 
       Number(event.args._claimType).should.be.equal(CLAIM_TYPE_LOCK);
-
       event.args._ethereumReceiver.should.be.equal(this.ethereumReceiver);
-      event.args._symbol.should.be.equal(defaultTokenPrefix + this.symbol);
+      event.args._symbol.should.be.equal(this.actualSymbol);
       Number(event.args._amount).should.be.equal(this.amount);
     });
 
@@ -480,7 +479,7 @@ contract("CosmosBridge", function (accounts) {
           this.cosmosSender,
           this.cosmosSenderSequence,
           this.ethereumReceiver,
-          this.symbol.toLowerCase(),
+          this.actualSymbol.toLowerCase(),
           this.amount,
           {
             from: this.initialValidators[i]
@@ -494,7 +493,7 @@ contract("CosmosBridge", function (accounts) {
           this.cosmosSender,
           this.cosmosSenderSequence,
           this.ethereumReceiver,
-          this.symbol.toLowerCase(),
+          this.actualSymbol.toLowerCase(),
           this.amount,
           {
             from: this.initialValidators[ (this.initialValidators.length - 1) ]
@@ -507,7 +506,7 @@ contract("CosmosBridge", function (accounts) {
         this.cosmosSender,
         this.cosmosSenderSequence,
         this.ethereumReceiver,
-        this.symbol.toLowerCase(),
+        this.actualSymbol.toLowerCase(),
         this.amount,
       )).toString();
 

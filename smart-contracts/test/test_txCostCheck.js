@@ -274,7 +274,7 @@ contract("Gas Cost Test", function (accounts) {
         this.cosmosSender,
         this.cosmosSenderSequence,
         this.ethereumReceiver,
-        this.passSymbol,
+        this.symbol,
         this.amount,
         {
             from: userOne
@@ -287,7 +287,7 @@ contract("Gas Cost Test", function (accounts) {
       this.cosmosSender,
       this.cosmosSenderSequence,
       this.ethereumReceiver,
-      this.passSymbol,
+      this.symbol,
       this.amount,
       {
         from: userOne,
@@ -309,7 +309,7 @@ contract("Gas Cost Test", function (accounts) {
       this.cosmosSender,
       this.cosmosSenderSequence,
       this.ethereumReceiver,
-      this.passSymbol,
+      this.symbol,
       this.amount,
       {
         from: userTwo,
@@ -324,7 +324,7 @@ contract("Gas Cost Test", function (accounts) {
       this.cosmosSender,
       this.cosmosSenderSequence,
       this.ethereumReceiver,
-      this.passSymbol,
+      this.symbol,
       this.amount,
       {
         from: userThree,
