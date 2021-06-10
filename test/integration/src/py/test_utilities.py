@@ -388,6 +388,13 @@ def send_from_sifchain_to_sifchain(
     return result
 
 
+def transfer_action_for_symbol(sifchain_symbol: str):
+    if sifchain_symbol == "rowan" or "ibc/" in sifchain_symbol:
+        return "lock"
+    else:
+        return "burn"
+
+
 def send_from_sifchain_to_ethereum_cmd(
         transfer_request: EthereumToSifchainTransferRequest,
         credentials: SifchaincliCredentials,
@@ -402,7 +409,7 @@ def send_from_sifchain_to_ethereum_cmd(
     keyring_backend_entry = f"--keyring-backend {credentials.keyring_backend}" if credentials.keyring_backend else ""
     node = f"--node {transfer_request.sifnodecli_node}" if transfer_request.sifnodecli_node else ""
     sifchain_fees_entry = f"--fees {transfer_request.sifchain_fees}" if transfer_request.sifchain_fees else ""
-    direction = "lock" if transfer_request.sifchain_symbol == "rowan" else "burn"
+    direction = transfer_action_for_symbol(transfer_request.sifchain_symbol)
     home_entry = f"--home {credentials.sifnodecli_homedir}" if credentials.sifnodecli_homedir else ""
     from_entry = f"--from {credentials.from_key} " if credentials.from_key else ""
     if not transfer_request.ceth_amount:
