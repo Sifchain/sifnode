@@ -30,7 +30,7 @@ func TestAddGenesisValidatorCmd(t *testing.T) {
 	initCmd.SetErr(initBuf)
 	initCmd.SetArgs([]string{"init", "test", "--home=" + homeDir})
 
-	app.SetConfig(true)
+	app.SetConfig(false)
 	expectedValidatorBech32 := "sifvaloper1rwqp4q88ue83ag3kgnmxxypq0td59df4782tjn"
 	expectedValidator, err := sdk.ValAddressFromBech32(expectedValidatorBech32)
 	require.NoError(t, err)
