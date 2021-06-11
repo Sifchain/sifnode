@@ -220,15 +220,16 @@ contract BridgeBank is BankStorage,
      */
     function mintBridgeTokens(
         address payable _intendedRecipient,
-        address _bridgeTokenAddress,
         string memory _symbol,
         uint256 _amount
     ) public onlyCosmosBridge whenNotPaused {
+        string memory symbol = safeLowerToUpperTokens(_symbol);
+        address tokenAddress = controlledBridgeTokens[symbol];
         return
             mintNewBridgeTokens(
                 _intendedRecipient,
-                _bridgeTokenAddress,
-                _symbol,
+                tokenAddress,
+                symbol,
                 _amount
             );
     }
@@ -291,9 +292,8 @@ contract BridgeBank is BankStorage,
             symbol = BridgeToken(_token).symbol();
         }
 
-        if (_amount > maxTokenAmount[symbol]) {
-            revert("Amount being transferred is over the limit");
-        }
+        require(_amount <= maxTokenAmount[symbol], "Amount being transferred is over the limit");
+
         lockFunds(msg.sender, _recipient, _token, symbol, _amount);
     }
 
@@ -310,26 +310,11 @@ contract BridgeBank is BankStorage,
         string memory _symbol,
         uint256 _amount
     ) public onlyCosmosBridge whenNotPaused {
-        // Confirm that the bank has sufficient locked balances of this token type
-        require(
-            getLockedFunds(_symbol) >= _amount,
-            "!Bank funds"
-        );
+        string memory symbol = safeLowerToUpperTokens(_symbol);
 
         // Confirm that the bank holds sufficient balances to complete the unlock
-        address tokenAddress = lockedTokenList[_symbol];
-        if (tokenAddress == address(0)) {
-            require(
-                ((address(this)).balance) >= _amount,
-                "Insufficient ethereum balance for delivery."
-            );
-        } else {
-            require(
-                BridgeToken(tokenAddress).balanceOf(address(this)) >= _amount,
-                "Insufficient ERC20 token balance for delivery."
-            );
-        }
-        unlockFunds(_recipient, tokenAddress, _symbol, _amount);
+        address tokenAddress = lockedTokenList[symbol];
+        unlockFunds(_recipient, tokenAddress, symbol, _amount);
     }
 
     /*

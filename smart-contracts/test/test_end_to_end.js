@@ -539,7 +539,7 @@ contract("End To End", function (accounts) {
         this.cosmosSender,
         ++this.cosmosSenderSequence,
         this.ethereumReceiver,
-        this.nativeCosmosAssetDenom,
+        this.prefixedNativeCosmosAssetDenom.toLowerCase(),
         this.amountNativeCosmos,
         {
           from: userOne
@@ -548,8 +548,9 @@ contract("End To End", function (accounts) {
 
       // Check that the bridge token is a controlled bridge token
       const bridgeTokenAddr = await this.bridgeBank.getBridgeToken(
-        this.prefixedNativeCosmosAssetDenom
+        this.prefixedNativeCosmosAssetDenom.toLowerCase()
       );
+
       // --------------------------------------------------------
       //  Check receiver's account balance after the claim is processed
       // --------------------------------------------------------
@@ -560,7 +561,7 @@ contract("End To End", function (accounts) {
         this.cosmosSender,
         this.cosmosSenderSequence,
         this.ethereumReceiver,
-        this.nativeCosmosAssetDenom.toLowerCase(),
+        this.prefixedNativeCosmosAssetDenom.toLowerCase(),
         this.amountNativeCosmos,
         {
           from: userTwo
@@ -572,22 +573,10 @@ contract("End To End", function (accounts) {
         this.cosmosSender,
         this.cosmosSenderSequence,
         this.ethereumReceiver,
-        this.nativeCosmosAssetDenom.toLowerCase(),
+        this.prefixedNativeCosmosAssetDenom.toLowerCase(),
         this.amountNativeCosmos,
         {
           from: userThree
-        }
-      ).should.be.fulfilled;
-
-      await this.cosmosBridge.newProphecyClaim(
-        CLAIM_TYPE_LOCK,
-        this.cosmosSender,
-        this.cosmosSenderSequence,
-        this.ethereumReceiver,
-        this.nativeCosmosAssetDenom.toLowerCase(),
-        this.amountNativeCosmos,
-        {
-          from: userFour
         }
       ).should.be.fulfilled;
 
@@ -619,7 +608,7 @@ contract("End To End", function (accounts) {
         this.cosmosSender,
         ++this.cosmosSenderSequence,
         this.ethereumReceiver,
-        this.nativeCosmosAssetDenom.toLowerCase(),
+        this.prefixedNativeCosmosAssetDenom.toLowerCase(),
         this.amountNativeCosmos,
         {
           from: userTwo
@@ -631,7 +620,7 @@ contract("End To End", function (accounts) {
         this.cosmosSender,
         this.cosmosSenderSequence,
         this.ethereumReceiver,
-        this.nativeCosmosAssetDenom.toLowerCase(),
+        this.prefixedNativeCosmosAssetDenom.toLowerCase(),
         this.amountNativeCosmos,
         {
           from: userThree
@@ -643,7 +632,7 @@ contract("End To End", function (accounts) {
         this.cosmosSender,
         this.cosmosSenderSequence,
         this.ethereumReceiver,
-        this.nativeCosmosAssetDenom.toLowerCase(),
+        this.prefixedNativeCosmosAssetDenom.toLowerCase(),
         this.amountNativeCosmos,
         {
           from: userFour
