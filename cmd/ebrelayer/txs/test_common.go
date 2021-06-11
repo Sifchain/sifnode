@@ -150,7 +150,7 @@ func CreateCosmosMsgAttributes(t *testing.T, claimType types.Event) []abci.Event
 
 	// (key, value) pairing for "ethereum_chain_id" key
 	pairEthereumChainID := abci.EventAttribute{
-		Key:   []byte("ethereum_chain_id"),
+		Key:   []byte("network_id"),
 		Value: []byte(strconv.Itoa(TestNetworkID)),
 	}
 
