@@ -82,7 +82,7 @@ namespace :standalone do
         --set sifnode.args.peerAddress=#{args[:peer_address]} \
         --set image.tag=#{args[:image_tag]} \
         --set image.repository=#{args[:image]} \
-        -f #{args[:final_file_name]} --kubeconfig=#{cwd}/../../kubeconfig
+        -f #{args[:final_file_name]} --kubeconfig=/home/runner/work/chainOps/chainOps/sifnode/kubeconfig
       }
 
       system(cmd) or exit 1
