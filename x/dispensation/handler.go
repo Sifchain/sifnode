@@ -7,6 +7,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/pkg/errors"
+	"strconv"
 )
 
 // NewHandler creates an sdk.Handler for all the clp type messages
@@ -35,14 +36,24 @@ func handleMsgRunDistribution(ctx sdk.Context, keeper Keeper, msg MsgRunDistribu
 	if err != nil {
 		return nil, err
 	}
-	ctx.EventManager().EmitEvents(sdk.Events{
-		sdk.NewEvent(
-			types.EventTypeDistributionRun,
-			sdk.NewAttribute(types.AttributeKeyDistributionName, msg.DistributionName),
-			sdk.NewAttribute(types.AttributeKeyDistributionRunner, msg.DistributionRunner.String()),
-			sdk.NewAttribute(types.AttributeKeyDistributionList, records.String()),
-		),
-	})
+
+	var recordEvents []sdk.Event
+	for i, record := range records {
+		ev := sdk.NewEvent(
+			types.EventTypeDistributionRecordsList+strconv.Itoa(i),
+			sdk.NewAttribute(types.AttributeKeyDistributionRecordAddress, record.RecipientAddress.String()),
+			sdk.NewAttribute(types.AttributeKeyDistributionRecordType, record.DistributionType.String()),
+			sdk.NewAttribute(types.AttributeKeyDistributionRecordAmount, record.Coins.String()),
+		)
+		recordEvents = append(recordEvents, ev)
+	}
+	recordEvents = append(recordEvents, sdk.NewEvent(
+		types.EventTypeDistributionRun,
+		sdk.NewAttribute(types.AttributeKeyDistributionName, msg.DistributionName),
+		sdk.NewAttribute(types.AttributeKeyDistributionRunner, msg.DistributionRunner.String()),
+	))
+
+	ctx.EventManager().EmitEvents(recordEvents)
 	return &sdk.Result{Events: ctx.EventManager().Events()}, nil
 }
 
