@@ -82,8 +82,9 @@ namespace :standalone do
         --set sifnode.args.peerAddress=#{args[:peer_address]} \
         --set image.tag=#{args[:image_tag]} \
         --set image.repository=#{args[:image]} \
-        -f #{args[:final_file_name]} --kubeconfig=./kubeconfig
+        -f #{args[:final_file_name]} --kubeconfig=#{cwd}/../../kubeconfig
       }
+
       system(cmd) or exit 1
       #:namespace, :image, :image_tag, :peer_address, :template_file_name, :final_file_name,:app_region, :app_env
       #rake "sifnode:standalone:peer_vault['sifnode', 'sifchain/sifnoded', 'testnet-genesis', '1b02f2eb065031426d37186efff75df268bb9097@54.164.57.141:26656', './deploy/helm/sifnode-vault/template.values.yaml', './deploy/helm/sifnode-vault/generated.values.yaml']"
