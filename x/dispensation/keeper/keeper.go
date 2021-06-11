@@ -48,3 +48,8 @@ func (k Keeper) Exists(ctx sdk.Context, key []byte) bool {
 	store := ctx.KVStore(k.storeKey)
 	return store.Has(key)
 }
+
+func (k Keeper) Set(ctx sdk.Context, key []byte, value []byte) {
+	store := ctx.KVStore(k.storeKey)
+	store.Set(key, value)
+}
