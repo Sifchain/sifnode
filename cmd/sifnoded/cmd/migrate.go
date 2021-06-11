@@ -23,10 +23,13 @@ import (
 	v039ethbridge "github.com/Sifchain/sifnode/x/ethbridge/legacy/v39"
 	v042ethbridge "github.com/Sifchain/sifnode/x/ethbridge/legacy/v42"
 	ethbridgetypes "github.com/Sifchain/sifnode/x/ethbridge/types"
+	v039oracle "github.com/Sifchain/sifnode/x/oracle/legacy/v39"
+	v042oracle "github.com/Sifchain/sifnode/x/oracle/legacy/v42"
+	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
 )
 
 var migrationMap = types.MigrationMap{
-	"v0.8.6": Migrate,
+	"v0.9": Migrate,
 }
 
 // GetMigrationCallback returns a MigrationCallback for a given version.
@@ -58,7 +61,7 @@ func MigrateGenesisDataCmd() *cobra.Command {
 		Long: fmt.Sprintf(`Migrate the source genesis into the target version and print to STDOUT.
 
 Example:
-$ %s migrate v0.8.6 /path/to/genesis.json
+$ %s migrate v0.9 /path/to/genesis.json
 `, version.AppName),
 		Args: cobra.ExactArgs(2),
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -133,7 +136,15 @@ func Migrate(appState types.AppMap, clientCtx client.Context) types.AppMap {
 		newGenesis := v042ethbridge.Migrate(ethbridgeGenesis)
 		appState[ethbridgetypes.ModuleName] = v040Codec.MustMarshalJSON(newGenesis)
 	}
+	// Oracle
+	if appState[v039oracle.ModuleName] != nil {
+		var genesis v039oracle.GenesisState
+		v039Codec.MustUnmarshalJSON(appState[v039oracle.ModuleName], &genesis)
 
+		newGenesis := v042oracle.Migrate(genesis)
+		appState[oracletypes.ModuleName] = v040Codec.MustMarshalJSON(newGenesis)
+	}
+	// Install evidence module genesis
 	if appState[evidencetypes.ModuleName] == nil {
 		appState[evidencetypes.ModuleName] = v040Codec.MustMarshalJSON(evidencetypes.DefaultGenesisState())
 	}

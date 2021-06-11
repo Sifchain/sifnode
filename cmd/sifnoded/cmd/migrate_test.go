@@ -18,16 +18,16 @@ func TestMigrateGenesisDataCmd(t *testing.T) {
 	migrateOutputBuf := new(bytes.Buffer)
 	cmd.SetOut(migrateOutputBuf)
 	// This test file has been run through sifnoded migrate, and IBC state added.
-	cmd.SetArgs([]string{"migrate-data", "v0.8.6", "testdata/v039_exported_migrated_state.json"})
+	cmd.SetArgs([]string{"migrate-data", "v0.9", "testdata/v039_exported_migrated_state.json"})
 
-	app.SetConfig(true)
-
-	err := svrcmd.Execute(cmd, app.DefaultNodeHome)
-	require.NoError(t, err)
+	app.SetConfig(false)
 
 	homeDir, err := ioutil.TempDir("", "")
 	require.NoError(t, err)
 	defer os.RemoveAll(homeDir)
+
+	err = svrcmd.Execute(cmd, homeDir)
+	require.NoError(t, err)
 
 	cmd, _ = NewRootCmd()
 	cmd.SetArgs([]string{"init", "test", "--home=" + homeDir})
