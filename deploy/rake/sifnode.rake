@@ -123,7 +123,5 @@ namespace :standalone do
         }
         system(cmd) or exit 1
     end
-
   end
-  
 end
