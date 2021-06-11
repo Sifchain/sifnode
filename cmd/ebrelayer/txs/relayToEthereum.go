@@ -47,6 +47,10 @@ func RelayProphecyClaimToEthereum(
 
 	amount := claim.Amount.BigInt()
 
+	if claim.Symbol == "rowan" {
+		claim.Symbol = "erowan"
+	}
+
 	tx, err := cosmosBridgeInstance.NewProphecyClaim(
 		auth,
 		uint8(claim.ClaimType),
