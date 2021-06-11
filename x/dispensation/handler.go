@@ -1,3 +1,4 @@
+//nolint
 package dispensation
 
 import (
@@ -37,7 +38,7 @@ func handleMsgRunDistribution(ctx sdk.Context, keeper Keeper, msg MsgRunDistribu
 		return nil, err
 	}
 
-	recordEvents := make([]sdk.Event, 0)
+	var recordEvents []sdk.Event
 	for i, record := range records {
 		ev := sdk.NewEvent(
 			types.EventTypeDistributionRecordsList+strconv.Itoa(i),
