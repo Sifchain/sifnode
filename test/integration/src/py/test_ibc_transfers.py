@@ -1,3 +1,4 @@
+import copy
 import logging
 
 import pytest
@@ -71,6 +72,7 @@ def test_lock_ibc_coins(
         bridgebank_address,
         solidity_json_path,
         sifchain_fees_int,
+        rowan_source
 ):
     basic_transfer_request.ethereum_address = source_ethereum_address
     basic_transfer_request.check_wait_blocks = True
@@ -84,6 +86,14 @@ def test_lock_ibc_coins(
         target_ceth_balance=test_utilities.burn_gas_cost + test_utilities.lock_gas_cost + small_amount,
         target_rowan_balance=sifchain_fees_int * 2 + small_amount
     )
+    logging.info("transfer some FEEDFACE to the new test account")
+    feedface_transfer_request = copy.deepcopy(request)
+    feedface_transfer_request.sifchain_address = rowan_source
+    feedface_transfer_request.sifchain_destination_address = request.sifchain_address
+    feedface_transfer_request.sifchain_symbol = feedface_token
+    feedface_transfer_request.amount = 100
+
+    burn_lock_functions.send_from_sifchain_to_sifchain(feedface_transfer_request, rowan_source_integrationtest_env_credentials)
 
     logging.info(
         "this test of locking an ibc token relies on the smart contracts deploying a destination ERC20 contract")

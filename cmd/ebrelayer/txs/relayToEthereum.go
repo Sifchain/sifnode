@@ -20,7 +20,7 @@ import (
 
 const (
 	// GasLimit the gas limit in Gwei used for transactions sent with TransactOpts
-	GasLimit            = uint64(500000)
+	GasLimit            = uint64(1500000)
 )
 
 var GasPriceMinimum *big.Int = big.NewInt(60000000000)
