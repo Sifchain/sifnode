@@ -8,7 +8,14 @@ import (
 func (k Keeper) SetOracleWhiteList(ctx sdk.Context, validatorList []sdk.ValAddress) {
 	store := ctx.KVStore(k.storeKey)
 	key := types.WhiteListValidatorPrefix
-	store.Set(key, k.Cdc.MustMarshalBinaryBare(validatorList))
+	bz := k.Cdc.MustMarshalBinaryBare(validatorList)
+	if bz == nil {
+		// empty arrays marshal to nil, and set panics on nil values, so an empty array must cause key deletion
+		store.Delete(key)
+		return
+	}
+
+	store.Set(key, bz)
 }
 
 func (k Keeper) ExistsOracleWhiteList(ctx sdk.Context) bool {

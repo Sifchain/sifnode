@@ -8,18 +8,12 @@ import (
 
 func InitGenesis(ctx sdk.Context, keeper Keeper, data types.GenesisState) (res []abci.ValidatorUpdate) {
 
-	if data.AddressWhitelist != nil {
-		keeper.SetOracleWhiteList(ctx, data.AddressWhitelist)
-	}
+	keeper.SetOracleWhiteList(ctx, data.AddressWhitelist)
 
-	if data.AdminAddress != nil {
-		keeper.SetAdminAccount(ctx, data.AdminAddress)
-	}
+	keeper.SetAdminAccount(ctx, data.AdminAddress)
 
-	if data.Prophecies != nil {
-		for _, p := range data.Prophecies {
-			keeper.SetProphecy(ctx, p)
-		}
+	for _, p := range data.Prophecies {
+		keeper.SetProphecy(ctx, p)
 	}
 
 	return []abci.ValidatorUpdate{}

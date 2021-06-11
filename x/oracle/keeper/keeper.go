@@ -47,14 +47,19 @@ func (k Keeper) Logger(ctx sdk.Context) log.Logger {
 func (k Keeper) GetProphecies(ctx sdk.Context) []types.Prophecy {
 	var prophecies []types.Prophecy
 	store := ctx.KVStore(k.storeKey)
-	iter := store.Iterator([]byte{}, []byte{})
+	iter := store.Iterator(nil, nil)
 	for ; iter.Valid(); iter.Next() {
 		key := iter.Key()
+		var dbProphecy types.DBProphecy
 		if bytes.Compare(key, types.AdminAccountPrefix) != 0 &&
 			bytes.Compare(key, types.WhiteListValidatorPrefix) != 0 {
-			var p types.Prophecy
-			k.Cdc.MustUnmarshalBinaryBare(iter.Value(), &p)
-			prophecies = append(prophecies, p)
+			k.Cdc.MustUnmarshalBinaryBare(iter.Value(), &dbProphecy)
+
+			deSerializedProphecy, err := dbProphecy.DeserializeFromDB()
+			if err != nil {
+				panic(err)
+			}
+			prophecies = append(prophecies, deSerializedProphecy)
 		}
 	}
 	return prophecies
@@ -86,7 +91,7 @@ func (k Keeper) SetProphecy(ctx sdk.Context, prophecy types.Prophecy) {
 	if err != nil {
 		panic(err)
 	}
-
+	// TODO use a prophecy prefix.
 	store.Set([]byte(prophecy.ID), k.Cdc.MustMarshalBinaryBare(serializedProphecy))
 }
 
