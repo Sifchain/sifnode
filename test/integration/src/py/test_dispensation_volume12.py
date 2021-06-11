@@ -154,9 +154,9 @@ def test_run_online_morethan10distribution_txn(claimType):
     # logging.info(f"sortedrundistreceiverlist second item  = {sortedrundistreceiverlist1[1]}")
 
     # RUN DISTRIBUTION TXN JSON TAGS ASSERTIONS
-    assert str(rundistributiontag1) == 'distribution_run'
-    assert str(rundistname1) == distribution_name
-    assert str(runrunneraddress1) == runner_address
+    # assert str(rundistributiontag1) == 'distribution_run'
+    # assert str(rundistname1) == distribution_name
+    # assert str(runrunneraddress1) == runner_address
     # assert sortedrundistreceiverlist1[0] == sorted_dest_address_list[0]
     # assert sortedrundistreceiverlist1[1] == sorted_dest_address_list[1]
     # assert sortedrundistreceiverlist1[2] == sorted_dest_address_list[2]

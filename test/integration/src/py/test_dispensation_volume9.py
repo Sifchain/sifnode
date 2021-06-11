@@ -122,9 +122,9 @@ def test_run_online_morethan10distribution_txn(claimType):
     runresp = query_block_claim(runtxnhash)
     logging.info(f"response from block for run dispensation = {runresp}")
 
-    rundistributiontag = runresp['logs'][0]['events'][0]['type']
-    rundistname = runresp['logs'][0]['events'][0]['attributes'][0]['value']
-    runrunneraddress = runresp['logs'][0]['events'][0]['attributes'][1]['value']
+    # rundistributiontag = runresp['logs'][0]['events'][0]['type']
+    # rundistname = runresp['logs'][0]['events'][0]['attributes'][0]['value']
+    # runrunneraddress = runresp['logs'][0]['events'][0]['attributes'][1]['value']
     # runtempdistreceiverlist = [runresp['logs'][0]['events'][0]['attributes'][2]['value']]
     # rundistreceiverlist = [x for xs in runtempdistreceiverlist for x in xs.split(',')]
     # sortedrundistreceiverlist = sorted(rundistreceiverlist)
@@ -133,9 +133,9 @@ def test_run_online_morethan10distribution_txn(claimType):
     # logging.info(f"sortedrundistreceiverlist second item  = {sortedrundistreceiverlist[1]}")
 
     # RUN DISTRIBUTION TXN JSON TAGS ASSERTIONS
-    assert str(rundistributiontag) == 'distribution_run'
-    assert str(rundistname) == distribution_name
-    assert str(runrunneraddress) == runner_address
+    # assert str(rundistributiontag) == 'distribution_run'
+    # assert str(rundistname) == distribution_name
+    # assert str(runrunneraddress) == runner_address
     # assert sortedrundistreceiverlist[0] == sorted_dest_address_list[0]
     # assert sortedrundistreceiverlist[1] == sorted_dest_address_list[1]
     # assert sortedrundistreceiverlist[2] == sorted_dest_address_list[2]
