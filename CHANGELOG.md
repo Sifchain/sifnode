@@ -1,15 +1,6 @@
 # v0.8.7
 > June 9, 2021
-
-## 🐛 Bug Fixes
-
-- [Sifnode] Claims module updates/bugfixes.
-
-----
-
-# v0.8.5
-> May 25, 2021
-
+> 
 ## 🛠 Improvements
 
 - [UI] Introduction of a footer! User's can sign-up for our newsletter, and link to our privacy policy, roadmap, and legal disclaimer. 
