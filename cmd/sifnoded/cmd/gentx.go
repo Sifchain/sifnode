@@ -26,7 +26,7 @@ func AddGenesisValidatorCmd(defaultNodeHome string) *cobra.Command {
 		Long: `add validator to genesis.json. The provided account must specify
 the account address or key name. If a key name is given, the address will be looked up in the local Keybase. 
 `,
-		Args: cobra.ExactArgs(1),
+		Args: cobra.ExactArgs(3),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx := client.GetClientContextFromCmd(cmd)
 			depCdc := clientCtx.JSONMarshaler
@@ -62,6 +62,15 @@ the account address or key name. If a key name is given, the address will be loo
 			}
 
 			oracleGenState := oracletypes.GetGenesisStateFromAppState(cdc, appState)
+			if oracleGenState.AddressWhitelist == nil {
+				oracleGenState.AddressWhitelist = make(map[uint32]*oracletypes.ValidatorWhiteList)
+			}
+
+			_, ok := oracleGenState.AddressWhitelist[uint32(networkID)]
+
+			if !ok {
+				oracleGenState.AddressWhitelist[uint32(networkID)] = &oracletypes.ValidatorWhiteList{WhiteList: make(map[string]uint32)}
+			}
 
 			whiteList := oracleGenState.AddressWhitelist[uint32(networkID)].WhiteList
 			whiteList[addr.String()] = uint32(power)

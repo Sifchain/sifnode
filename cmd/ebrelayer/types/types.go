@@ -173,7 +173,7 @@ const (
 
 // String returns the event type as a string
 func (d CosmosMsgAttributeKey) String() string {
-	return [...]string{"unsupported", "cosmos_sender", "cosmos_sender_sequence", "ethereum_receiver", "amount", "symbol", "ethereum_sender", "ethereum_sender_nonce", "ethereum_chain_id"}[d]
+	return [...]string{"unsupported", "cosmos_sender", "cosmos_sender_sequence", "ethereum_receiver", "amount", "symbol", "ethereum_sender", "ethereum_sender_nonce", "network_id"}[d]
 }
 
 // EthereumBridgeClaim for store the EventTypeCreateClaim from cosmos

@@ -28,6 +28,8 @@ BASEDIR=${BASEDIR} rake genesis:network:scaffold['localnet']
 set_persistant_env_var NETDEF $NETWORKDIR/network-definition.yml $envexportfile
 set_persistant_env_var NETDEF_JSON $datadir/netdef.json $envexportfile
 cat $NETDEF | to_json > $NETDEF_JSON
+set_persistant_env_var NETWORK_ID 5777 $envexportfile
+set_persistant_env_var VALIDATOR_POWER 100 $envexportfile
 
 set_persistant_env_var MONIKER $(cat $NETDEF_JSON | jq -r '.[0].moniker') $envexportfile
 set_persistant_env_var VALIDATOR1_PASSWORD $(cat $NETDEF_JSON | jq -r '.[0].password') $envexportfile

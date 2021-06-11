@@ -17,4 +17,6 @@ enum NetworkID {
   NETWORK_ID_BITCOIN = 2;
   // Binance Smart Chain https://www.binance.org/en/smartChain
   NETWORK_ID_BINANCE_SMART_CHAIN = 56;
+  // Ganache local testnet
+  NETWORK_ID_GANACHE = 5777;
 }
