@@ -50,10 +50,8 @@ def test_burn_ibc_coins(
         solidity_json_path=solidity_json_path
     )
 
-    # send some test account FEEDFACE back to a new ethereum address
-    request.ethereum_address, _ = test_utilities.create_ethereum_address(
-        smart_contracts_dir, ethereum_network
-    )
+    # send some test account FEEDFACE to ethereum
+    request.ethereum_address = source_ethereum_address
     request.sifchain_symbol = feedface_token
     request.ethereum_symbol = new_currency["newtoken_address"]
     request.amount = small_amount
@@ -96,17 +94,18 @@ def test_lock_ibc_coins(
     burn_lock_functions.send_from_sifchain_to_sifchain(feedface_transfer_request, rowan_source_integrationtest_env_credentials)
 
     logging.info(
-        "this test of locking an ibc token relies on the smart contracts deploying a destination ERC20 contract")
-
-    # send some test account FEEDFACE back to a new ethereum address
-    request.ethereum_address, _ = test_utilities.create_ethereum_address(
-        smart_contracts_dir, ethereum_network
-    )
+        "send some test account FEEDFACE back to a new ethereum address, requiring the deployment of a new ERC20 contract")
+    request.ethereum_address = source_ethereum_address
     request.sifchain_symbol = feedface_token
-    logging.warning("not clear what symbol to use for ethereum_symbol")
     request.amount = small_amount
     burn_lock_functions.send_from_sifchain_to_ethereum(request, credentials)
+
     feedface_token_data = test_utilities.wait_for_ethereum_token(request, feedface_token)
     request.ethereum_symbol = feedface_token_data["token"]
-    feedface_ethereum_balance = test_utilities.get_eth_balance(request)
-    assert feedface_ethereum_balance == small_amount
+
+    def wait_for_enough_tokens():
+        return test_utilities.get_eth_balance(request) >= small_amount
+    test_utilities.wait_for_success(wait_for_enough_tokens)
+
+    logging.info("send FEEDFACE back to sifchain")
+    burn_lock_functions.transfer_ethereum_to_sifchain(request)

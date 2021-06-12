@@ -20,10 +20,8 @@ import (
 
 const (
 	// GasLimit the gas limit in Gwei used for transactions sent with TransactOpts
-	GasLimit            = uint64(1500000)
+	GasLimit = uint64(2500000)
 )
-
-var GasPriceMinimum *big.Int = big.NewInt(60000000000)
 
 func sleepThread(seconds time.Duration) {
 	time.Sleep(time.Second * seconds)

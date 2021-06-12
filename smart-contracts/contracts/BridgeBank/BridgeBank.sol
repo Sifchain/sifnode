@@ -128,7 +128,10 @@ contract BridgeBank is BankStorage,
     {
         address newTokenAddress = deployNewBridgeToken(_symbol);
         setTokenInCosmosWhiteList(newTokenAddress, true);
-
+        // Since we control the number of tokens issued, there's no reason to track
+        // limits for tokens that are deployed automatically.  Use MAXINT.
+//        _updateTokenLimits(newTokenAddress, 115792089237316195423570985008687907853269984665640564039457584007913129639935);
+//        maxTokenAmount[_symbol] = 115792089237316195423570985008687907853269984665640564039457584007913129639935;
         return newTokenAddress;
     }
 

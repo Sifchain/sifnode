@@ -444,7 +444,7 @@ def send_from_sifchain_to_ethereum(transfer_request: EthereumToSifchainTransferR
 
 # this does not wait for the transaction to complete
 def send_from_ethereum_to_sifchain(transfer_request: EthereumToSifchainTransferRequest) -> int:
-    direction = "sendBurnTx" if transfer_request.sifchain_symbol == "rowan" else "sendLockTx"
+    direction = "sendBurnTx" if transfer_request.sifchain_symbol == "rowan" or "ibc/" in transfer_request.sifchain_symbol else "sendLockTx"
     command_line = f"yarn -s --cwd {transfer_request.smart_contracts_dir} integrationtest:{direction} " \
                    f"--sifchain_address {transfer_request.sifchain_address} " \
                    f"--symbol {transfer_request.ethereum_symbol} " \
