@@ -138,7 +138,7 @@ func (sub CosmosSub) Start(completionEvent *sync.WaitGroup) {
 			if lastProcessedBlock == 0 {
 				lastProcessedBlock = blockHeight
 			}
-			sub.SugaredLogger.Infow("new transaction witnessed in sifchain client.")
+			sub.SugaredLogger.Infow("new sifchain block witnessed")
 
 			startBlockHeight := lastProcessedBlock + 1
 			sub.SugaredLogger.Infow("cosmos process events for blocks.",
@@ -157,9 +157,12 @@ func (sub CosmosSub) Start(completionEvent *sync.WaitGroup) {
 				}
 
 				for _, txLog := range block.TxsResults {
+					sub.SugaredLogger.Infow("block.TxsResults: ", "block.TxsResults: ", block.TxsResults)
 					for _, event := range txLog.Events {
 
 						claimType := getOracleClaimType(event.GetType())
+
+						sub.SugaredLogger.Infow("claimtype cosmos.go: ", "claimType: ", claimType)
 
 						switch claimType {
 						case types.MsgBurn, types.MsgLock:
@@ -169,6 +172,12 @@ func (sub CosmosSub) Start(completionEvent *sync.WaitGroup) {
 									errorMessageKey, err.Error())
 								continue
 							}
+
+							sub.SugaredLogger.Infow(
+								"Received message from sifchain: ",
+								"msg", cosmosMsg,
+							)
+
 							sub.handleBurnLockMsg(cosmosMsg, claimType)
 						}
 					}
