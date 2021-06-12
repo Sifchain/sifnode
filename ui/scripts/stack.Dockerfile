@@ -19,24 +19,7 @@ COPY go.mod go.sum ./
 RUN go mod download
 RUN go get github.com/cosmos/cosmos-sdk/cosmovisor/cmd/cosmovisor
 
-# Probably dont need all of these...
-COPY ./api ./api
-COPY ./app ./app
-COPY ./cmd ./cmd
-COPY ./deploy ./deploy
-COPY ./log ./log
-COPY ./scripts ./scripts
-COPY ./simapp ./simapp
-COPY ./test ./test
-COPY ./tools ./tools
-COPY ./x ./x
-COPY ./.gitignore ./.gitignore
-COPY ./.golangci.yml ./.golangci.yml
-COPY ./config.yml ./config.yml
-COPY ./Makefile ./Makefile
-COPY ./Rakefile ./Rakefile
-COPY ./setup.sh ./setup.sh
-COPY ./version ./version
+COPY . .
 
 RUN make install
 
