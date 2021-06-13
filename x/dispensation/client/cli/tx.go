@@ -9,13 +9,11 @@ import (
 	"github.com/cosmos/cosmos-sdk/client/context"
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/codec"
-	"github.com/cosmos/cosmos-sdk/crypto/keys"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/cosmos/cosmos-sdk/x/auth"
 	"github.com/cosmos/cosmos-sdk/x/auth/client/utils"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
-	"github.com/tendermint/tendermint/crypto/multisig"
 )
 
 // GetTxCmd returns the transaction commands for this module
@@ -31,6 +29,7 @@ func GetTxCmd(cdc *codec.Codec) *cobra.Command {
 	dispensationTxCmd.AddCommand(flags.PostCommands(
 		GetCmdCreate(cdc),
 		GetCmdClaim(cdc),
+		GetCmdRun(cdc),
 	)...)
 
 	return dispensationTxCmd
@@ -40,54 +39,30 @@ func GetTxCmd(cdc *codec.Codec) *cobra.Command {
 // Airdrop is a type of distribution on the network .
 func GetCmdCreate(cdc *codec.Codec) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "create [MultiSigKeyName] [DistributionName] [DistributionType] [Input JSON File Path] [Output JSON File Path]",
+		Use:   "create [DistributionType] [Output JSON File Path] [AuthorizedRunner]",
 		Short: "Create new distribution",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			inBuf := bufio.NewReader(cmd.InOrStdin())
-			kb, err := keys.NewKeyring(sdk.KeyringServiceName(),
-				viper.GetString(flags.FlagKeyringBackend), viper.GetString(flags.FlagHome), inBuf)
-			if err != nil {
-				return err
-			}
-
-			multisigInfo, err := kb.Get(args[0])
-			if err != nil {
-				return err
-			}
-
-			ko, err := keys.Bech32KeyOutput(multisigInfo)
-			if err != nil {
-				return err
-			}
-			if multisigInfo.GetType() != keys.TypeMulti {
-				return fmt.Errorf("%q must be of type %s: %s", args[0], keys.TypeMulti, multisigInfo.GetType())
-			}
 
 			txBldr := auth.NewTxBuilderFromCLI(inBuf).WithTxEncoder(utils.GetTxEncoder(cdc))
-			cliCtx := context.NewCLIContextWithInputAndFrom(inBuf, ko.Address).WithCodec(cdc)
-			distributionType, ok := types.IsValidDistribution(args[2])
+			cliCtx := context.NewCLIContextWithInput(inBuf).WithCodec(cdc)
+			distributionType, ok := types.IsValidDistributionType(args[0])
 			if !ok {
-				return fmt.Errorf("invalid distribution Type %s: Types supported [Airdrop/LiquidityMining/ValidatorSubsidy]", args[2])
+				return fmt.Errorf("invalid distribution Type %s: Types supported [Airdrop/LiquidityMining/ValidatorSubsidy]", args[0])
 			}
-			inputList, err := dispensationUtils.ParseInput(args[3])
+			outputList, err := dispensationUtils.ParseOutput(args[1])
 			if err != nil {
 				return err
 			}
-			multisigPub := multisigInfo.GetPubKey().(multisig.PubKeyMultisigThreshold)
-			err = dispensationUtils.VerifyInputList(inputList, multisigPub.PubKeys)
+			runner := args[2]
+			runnerAddress, err := sdk.AccAddressFromBech32(runner)
 			if err != nil {
-				return err
+				return errors.Wrapf(err, fmt.Sprintf("Invalid Address for authorised distributor : %s", args[2]))
 			}
-			outputlist, err := dispensationUtils.ParseOutput(args[4])
-			if err != nil {
-				return err
-			}
-			name := args[1]
-			msg := types.NewMsgDistribution(cliCtx.GetFromAddress(), name, distributionType, inputList, outputlist)
+			msg := types.NewMsgDistribution(cliCtx.GetFromAddress(), distributionType, outputList, runnerAddress)
 			return utils.GenerateOrBroadcastMsgs(cliCtx, txBldr, []sdk.Msg{msg})
 		},
 	}
-
 	return cmd
 }
 
@@ -104,6 +79,25 @@ func GetCmdClaim(cdc *codec.Codec) *cobra.Command {
 				return fmt.Errorf("invalid Claim Type %s: Types supported [LiquidityMining/ValidatorSubsidy]", args[0])
 			}
 			msg := types.NewMsgCreateClaim(cliCtx.GetFromAddress(), claimType)
+			return utils.GenerateOrBroadcastMsgs(cliCtx, txBldr, []sdk.Msg{msg})
+		},
+	}
+	return cmd
+}
+
+func GetCmdRun(cdc *codec.Codec) *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "run [DistributionName] [DistributionType]",
+		Short: "run a dispensation by specifying the name / should only be called by the authorized runner",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			inBuf := bufio.NewReader(cmd.InOrStdin())
+			txBldr := auth.NewTxBuilderFromCLI(inBuf).WithTxEncoder(utils.GetTxEncoder(cdc))
+			cliCtx := context.NewCLIContextWithInput(inBuf).WithCodec(cdc)
+			distributionType, ok := types.IsValidDistributionType(args[1])
+			if !ok {
+				return fmt.Errorf("invalid distribution Type %s: Types supported [Airdrop/LiquidityMining/ValidatorSubsidy]", args[0])
+			}
+			msg := types.NewMsgRunDistribution(cliCtx.GetFromAddress(), args[0], distributionType)
 			return utils.GenerateOrBroadcastMsgs(cliCtx, txBldr, []sdk.Msg{msg})
 		},
 	}

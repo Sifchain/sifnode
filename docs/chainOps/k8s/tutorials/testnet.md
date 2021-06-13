@@ -103,7 +103,7 @@ sifnodecli keys show <moniker> --keyring-backend file
 4. Deploy a new node to your cluster and connect to an existing network:
 
 ```
-rake "cluster:sifnode:deploy:peer[<cluster>,<chain_id>,<provider>,<namespace>,<image>,<image_tag>,<moniker>,<mnemonic>,<peer_address>,<genesis_url>]"
+rake "sifnode:standalone:deploy:peer[<cluster>,<chain_id>,<provider>,<namespace>,<image>,<image_tag>,<moniker>,<mnemonic>,<peer_address>,<genesis_url>]"
 ```
 
 where:
@@ -123,7 +123,7 @@ where:
 e.g.:
 
 ```
-rake "cluster:sifnode:deploy:peer[my-cluster,sifchain-testnet,aws,sifnode,sifchain/sifnoded,testnet-genesis,my-node,'my mnemonic',a2864737f01d3977211e2ea624dd348595dd4f73@3.222.8.87:26656,https://rpc-testnet.sifchain.finance/genesis]"
+rake "sifnode:standalone:deploy:peer[my-cluster,sifchain-testnet,aws,sifnode,sifchain/sifnoded,testnet-genesis,my-node,'my mnemonic',a2864737f01d3977211e2ea624dd348595dd4f73@3.222.8.87:26656,https://rpc-testnet.sifchain.finance/genesis]"
 ```
 
 _Please note: the image tag *must* be `testnet-genesis`._
@@ -159,7 +159,7 @@ kubectl -n sifnode logs sifnode-65fbd7798f-6wqhb --kubeconfig ./.live/sifchain-a
 
 In order to become a validator, that is a node which can participate in consensus on the network, you'll need to stake `rowan`.
 
-1. If using testnet, obtain funds from the faucet.
+1. If using the testnet, please request funds via our [faucet discord channel](https://discord.com/invite/geqyCWSU5K).
 
 2. Get the public key of your node:
 

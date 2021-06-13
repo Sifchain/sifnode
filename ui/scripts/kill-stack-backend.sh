@@ -1,1 +1,0 @@
-docker ps -q -f name=sifdevstack01 && docker stop sifdevstack01 && docker rm -f sifdevstack01

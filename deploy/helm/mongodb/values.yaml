@@ -9,3 +9,5 @@ resources:
     memory: 8Gi
   limits:
     memory: 16Gi
+strategyType: Recreate
+
