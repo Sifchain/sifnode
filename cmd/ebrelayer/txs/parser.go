@@ -22,8 +22,10 @@ const (
 )
 
 // EthereumEventToEthBridgeClaim parses and packages an Ethereum event struct with a validator address in an EthBridgeClaim msg
-func EthereumEventToEthBridgeClaim(valAddr sdk.ValAddress, event types.EthereumEvent) (ethbridge.EthBridgeClaim, error) {
+func EthereumEventToEthBridgeClaim(valAddr sdk.ValAddress, event types.EthereumEvent, sugaredLogger *zap.SugaredLogger) (ethbridge.EthBridgeClaim, error) {
 	witnessClaim := ethbridge.EthBridgeClaim{}
+
+	sugaredLogger.Debug("event", event)
 
 	// chainID type casting (*big.Int -> int)
 	chainID := int(event.EthereumChainID.Int64())
@@ -54,12 +56,15 @@ func EthereumEventToEthBridgeClaim(valAddr sdk.ValAddress, event types.EthereumE
 			return witnessClaim, errors.New("symbol \"eth\" must have null address set as token address")
 		}
 	case ethbridge.ClaimType_CLAIM_TYPE_BURN:
-		if !strings.Contains(symbol, defaultEthereumPrefix) {
-			log.Printf("Can only relay burns of '%v' prefixed tokens", defaultEthereumPrefix)
-			return witnessClaim, errors.New("symbol of burn token must start with prefix")
+		// TODO ibc the symbol manipulation is wrong
+		if (len(symbol) < 15) {
+			if !strings.Contains(symbol, defaultEthereumPrefix) {
+				log.Printf("Can only relay burns of '%v' prefixed tokens", defaultEthereumPrefix)
+				return witnessClaim, errors.New("symbol of burn token must start with prefix")
+			}
+			res := strings.SplitAfter(symbol, defaultEthereumPrefix)
+			symbol = strings.Join(res[1:], "")
 		}
-		res := strings.SplitAfter(symbol, defaultEthereumPrefix)
-		symbol = strings.Join(res[1:], "")
 	}
 
 	amount := sdk.NewIntFromBigInt(event.Value)
@@ -78,6 +83,8 @@ func EthereumEventToEthBridgeClaim(valAddr sdk.ValAddress, event types.EthereumE
 	witnessClaim.CosmosReceiver = recipient.String()
 	witnessClaim.Amount = amount
 	witnessClaim.ClaimType = event.ClaimType
+
+	sugaredLogger.Debug("witnessClaim", witnessClaim)
 
 	return witnessClaim, nil
 }
@@ -122,7 +129,8 @@ func BurnLockEventToCosmosMsg(claimType types.Event, attributes []abci.EventAttr
 			ethereumReceiver = common.HexToAddress(val)
 		case types.Symbol.String():
 			attributeNumber++
-			if claimType == types.MsgBurn {
+			// TODO ibc symbols need better definition here
+			if claimType == types.MsgBurn && len(val) < 15 {
 				if !strings.Contains(val, defaultSifchainPrefix) {
 					// log.Printf("Can only relay burns of '%v' prefixed coins", defaultSifchainPrefix)
 					sugaredLogger.Errorw("only relay burns prefixed coins", "coin symbol", val)

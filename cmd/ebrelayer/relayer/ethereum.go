@@ -401,7 +401,7 @@ func (sub EthereumSub) logToEvent(clientChainID *big.Int, contractAddress common
 		event.ClaimType = ethbridge.ClaimType_CLAIM_TYPE_LOCK
 	}
 	sub.SugaredLogger.Infow("receive an event.",
-		"event", event.String())
+		"event", event)
 
 	// Add the event to the record
 	types.NewEventWrite(cLog.TxHash.Hex(), event)
@@ -424,7 +424,7 @@ func (sub EthereumSub) handleEthereumEvent(txFactory tx.Factory, events []types.
 		return err
 	}
 	for _, event := range events {
-		prophecyClaim, err := txs.EthereumEventToEthBridgeClaim(valAddr, event)
+		prophecyClaim, err := txs.EthereumEventToEthBridgeClaim(valAddr, event, sub.SugaredLogger)
 		if err != nil {
 			sub.SugaredLogger.Errorw(".",
 				errorMessageKey, err.Error())
