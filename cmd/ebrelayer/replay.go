@@ -14,6 +14,7 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/relayer"
+	"github.com/Sifchain/sifnode/cmd/ebrelayer/txs"
 	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
 )
 
@@ -82,6 +83,12 @@ func RunReplayCosmosCmd(_ *cobra.Command, args []string) error {
 		return errors.Errorf("%s is invalid network descriptor", args[0])
 	}
 
+	// Load the validator's Ethereum private key from environment variables
+	privateKey, err := txs.LoadPrivateKey()
+	if err != nil {
+		return errors.Errorf("invalid [ETHEREUM_PRIVATE_KEY] environment variable")
+	}
+
 	if len(strings.Trim(args[1], "")) == 0 {
 		return errors.Errorf("invalid [tendermint-node]: %s", args[1])
 	}
@@ -130,7 +137,7 @@ func RunReplayCosmosCmd(_ *cobra.Command, args []string) error {
 	sugaredLogger := logger.Sugar()
 
 	// Initialize new Cosmos event listener
-	cosmosSub := relayer.NewCosmosSub(oracletypes.NetworkID(networkID), tendermintNode, web3Provider, contractAddress, nil, sugaredLogger)
+	cosmosSub := relayer.NewCosmosSub(oracletypes.NetworkID(networkID), privateKey, tendermintNode, web3Provider, contractAddress, nil, sugaredLogger)
 
 	cosmosSub.Replay(fromBlock, toBlock, ethFromBlock, ethToBlock)
 
