@@ -81,7 +81,6 @@ func (k Keeper) setProphecy(ctx sdk.Context, prophecy types.Prophecy) {
 func (k Keeper) ProcessClaim(ctx sdk.Context, networkID types.NetworkID, claim types.Claim) (types.Status, error) {
 	logger := k.Logger(ctx)
 	networkDescriptor := types.NewNetworkDescriptor(networkID)
-	fmt.Printf("++++++++++ network id is %d\n", networkID)
 
 	valAddr, err := sdk.ValAddressFromBech32(claim.ValidatorAddress)
 	if err != nil {

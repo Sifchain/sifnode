@@ -55,7 +55,6 @@ func TestBasicMsgs(t *testing.T) {
 	for _, event := range res.Events {
 		for _, attribute := range event.Attributes {
 			value := string(attribute.Value)
-			fmt.Printf("+++++++++ events is %s %s\n", string(attribute.Key), string(attribute.Value))
 
 			switch key := string(attribute.Key); key {
 
