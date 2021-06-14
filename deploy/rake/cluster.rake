@@ -39,9 +39,9 @@ namespace :cluster do
     puts "Cluster #{path(args)} destroyed successfully"
   end
 
-#moved openapi to openapi:openapi:deploy,prism
+  #moved openapi to openapi:openapi:deploy,prism
 
-#moved sifnode to sifnode:sifnode:*
+  #moved sifnode to sifnode:sifnode:*
 
 
   desc "ebrelayer Operations"
@@ -327,7 +327,7 @@ echo '      sssssssssss    iiiiiiiifffffffff            cccccccccccccccchhhhhhh 
     end
   end
 
-#moved cluster:anchore:scan,scan_by_path to security:anchore
+  #moved cluster:anchore:scan,scan_by_path to security:anchore
 
 
   desc "Generate Temp Secrets For Application Path In Vault"
@@ -661,26 +661,26 @@ metadata:
   namespace :kubernetes do
     desc "Check kubernetes stateful set to match replica count"
     task :stateful_set_status_check, [:APP_NAME, :APP_NAMESPACE, :REPLICA_COUNT] do |t, args|
-        was_successful = false
-        max_loops = 20
-        loop_count = 0
-        until was_successful == true
-            ss_check = `kubectl get statefulset -n #{args[:APP_NAMESPACE]} --kubeconfig=./kubeconfig | grep #{args[:APP_NAME]} | grep "#{args[:REPLICA_COUNT]}/#{args[:REPLICA_COUNT]}"`
-            if ss_check.empty?()
-                loop_count += 1
-                puts "On Loop #{loop_count} of #{max_loops}"
-                if loop_count >= max_loops
-                    puts "Reached Max Loops"
-                    break
-                end
-            else
-                #:SEARCH_PATH "new transaction witnessed in sifchain client."
-                puts "Number of Specified Replicas available."
-                was_successful = true
-                break
-            end
-            sleep(60)
+      was_successful = false
+      max_loops = 20
+      loop_count = 0
+      until was_successful == true
+        ss_check = `kubectl get statefulset -n #{args[:APP_NAMESPACE]} --kubeconfig=./kubeconfig | grep #{args[:APP_NAME]} | grep "#{args[:REPLICA_COUNT]}/#{args[:REPLICA_COUNT]}"`
+        if ss_check.empty?()
+          loop_count += 1
+          puts "On Loop #{loop_count} of #{max_loops}"
+          if loop_count >= max_loops
+            puts "Reached Max Loops"
+            break
+          end
+        else
+          #:SEARCH_PATH "new transaction witnessed in sifchain client."
+          puts "Number of Specified Replicas available."
+          was_successful = true
+          break
         end
+        sleep(60)
+      end
     end
   end
 
@@ -823,9 +823,9 @@ metadata:
     end
   end
 
-#moved cluster:release:reate_github_release_by_branch to github:release_by_branch:create
+  #moved cluster:release:reate_github_release_by_branch to github:release_by_branch:create
 
-#moved cluster:release:create_github_release_by_branch_and_repo to github:release_by_branch_and_repo:create
+  #moved cluster:release:create_github_release_by_branch_and_repo to github:release_by_branch_and_repo:create
 
 
   desc "Deploy Helm Files"
@@ -846,11 +846,11 @@ metadata:
   namespace :utilities do
     desc "Map Variables to Github Variables"
     task :github_variable_map, [:path,:app_env] do |t, args|
-        require 'yaml'
-        yaml_variables = YAML.load(File.read(args[:path]))
-        yaml_variables[args[:app_env]].each do |key, value|
-            %x{ echo "#{key}=#{value}" >> $GITHUB_ENV }
-        end
+      require 'yaml'
+      yaml_variables = YAML.load(File.read(args[:path]))
+      yaml_variables[args[:app_env]].each do |key, value|
+        %x{ echo "#{key}=#{value}" >> $GITHUB_ENV }
+      end
     end
   end
 
@@ -858,77 +858,77 @@ metadata:
   namespace :release do
     desc "Create Release Governance Request."
     task :generate_governance_release_request_nopassphrase, [:upgrade_hours, :block_time, :deposit, :rowan, :chainnet, :release_version, :from, :app_env, :token, :moniker, :mnemonic] do |t, args|
-        require 'rest-client'
-        require 'json'
+      require 'rest-client'
+      require 'json'
 
-        puts "Looking for the Release Handler"
-        release_search = "#{args[:release_version]}"
-        setupHandlers = File.read("app/setupHandlers.go").strip
-        setupHandlers.include?(release_search) ? (puts 'Found') : (exit 1)
+      puts "Looking for the Release Handler"
+      release_search = "#{args[:release_version]}"
+      setupHandlers = File.read("app/setupHandlers.go").strip
+      setupHandlers.include?(release_search) ? (puts 'Found') : (exit 1)
 
-        release_version = "#{args[:app_env]}-#{args[:release_version]}"
-        puts "Calculating Upgrade Block Height"
-        if "#{args[:app_env]}" == "betanet"
-            response = RestClient.get "http://rpc.sifchain.finance/abci_info?"
-            json_response_object = JSON.parse response.body
-        else
-            response = RestClient.get "http://rpc-#{args[:app_env]}.sifchain.finance/abci_info?"
-            json_response_object = JSON.parse response.body
-        end
+      release_version = "#{args[:app_env]}-#{args[:release_version]}"
+      puts "Calculating Upgrade Block Height"
+      if "#{args[:app_env]}" == "betanet"
+        response = RestClient.get "http://rpc.sifchain.finance/abci_info?"
+        json_response_object = JSON.parse response.body
+      else
+        response = RestClient.get "http://rpc-#{args[:app_env]}.sifchain.finance/abci_info?"
+        json_response_object = JSON.parse response.body
+      end
 
-        current_height = json_response_object["result"]["response"]["last_block_height"].to_f
-        average_block_time = "#{args[:block_time]}".to_f
-        average_time = 60 / average_block_time
-        average_time = average_time * 60 * "#{args[:upgrade_hours]}".to_f
-        future_block_height = current_height + average_time + 100
-        block_height = future_block_height.round
-        puts "Block Height #{block_height}"
+      current_height = json_response_object["result"]["response"]["last_block_height"].to_f
+      average_block_time = "#{args[:block_time]}".to_f
+      average_time = 60 / average_block_time
+      average_time = average_time * 60 * "#{args[:upgrade_hours]}".to_f
+      future_block_height = current_height + average_time + 100
+      block_height = future_block_height.round
+      puts "Block Height #{block_height}"
 
-        if "#{args[:app_env]}" == "betanet"
-            sha_token=""
-            headers = {"Accept": "application/vnd.github.v3+json","Authorization":"token #{args[:token]}"}
-            response = RestClient.get 'https://api.github.com/repos/Sifchain/sifnode/releases', headers
-            json_response_job_object = JSON.parse response.body
-            json_response_job_object.each do |release|
-                if release["tag_name"].include?("mainnet-#{args[:release_version]}")
-                    release["assets"].each do |asset|
-                        if asset["name"].include?(".sha256")
-                            response = RestClient.get asset["browser_download_url"], headers
-                            sha_token = response.body.strip
-                        end
-                    end
-                end
+      if "#{args[:app_env]}" == "betanet"
+        sha_token=""
+        headers = {"Accept": "application/vnd.github.v3+json","Authorization":"token #{args[:token]}"}
+        response = RestClient.get 'https://api.github.com/repos/Sifchain/sifnode/releases', headers
+        json_response_job_object = JSON.parse response.body
+        json_response_job_object.each do |release|
+          if release["tag_name"].include?("mainnet-#{args[:release_version]}")
+            release["assets"].each do |asset|
+              if asset["name"].include?(".sha256")
+                response = RestClient.get asset["browser_download_url"], headers
+                sha_token = response.body.strip
+              end
             end
-        else
-            sha_token=""
-            headers = {"Accept": "application/vnd.github.v3+json","Authorization":"token #{args[:token]}"}
-            response = RestClient.get 'https://api.github.com/repos/Sifchain/sifnode/releases', headers
-            json_response_job_object = JSON.parse response.body
-            json_response_job_object.each do |release|
-                if release["tag_name"].include?("#{args[:app_env]}-#{args[:release_version]}")
-                    release["assets"].each do |asset|
-                        if asset["name"].include?(".sha256")
-                            response = RestClient.get asset["browser_download_url"], headers
-                            sha_token = response.body.strip
-                        end
-                    end
-                end
+          end
+        end
+      else
+        sha_token=""
+        headers = {"Accept": "application/vnd.github.v3+json","Authorization":"token #{args[:token]}"}
+        response = RestClient.get 'https://api.github.com/repos/Sifchain/sifnode/releases', headers
+        json_response_job_object = JSON.parse response.body
+        json_response_job_object.each do |release|
+          if release["tag_name"].include?("#{args[:app_env]}-#{args[:release_version]}")
+            release["assets"].each do |asset|
+              if asset["name"].include?(".sha256")
+                response = RestClient.get asset["browser_download_url"], headers
+                sha_token = response.body.strip
+              end
             end
+          end
         end
+      end
 
-        if sha_token.empty?
-            puts "No Sha Found"
-            exit 1
-        end
+      if sha_token.empty?
+        puts "No Sha Found"
+        exit 1
+      end
 
-        puts "Sha found #{sha_token}"
+      puts "Sha found #{sha_token}"
 
-        if "#{args[:app_env]}" == "betanet"
-            governance_request = %Q{
+      if "#{args[:app_env]}" == "betanet"
+        governance_request = %Q{
 
 go run ./cmd/sifnodecli keys add #{args[:moniker]} -i --recover --keyring-backend test <<'EOF'
 #{args[:mnemonic]}
-\r
+        \r
 EOF
 
 go run ./cmd/sifnodecli tx gov submit-proposal software-upgrade #{args[:release_version]} \
@@ -945,14 +945,14 @@ go run ./cmd/sifnodecli tx gov submit-proposal software-upgrade #{args[:release_
             --gas-prices "#{args[:rowan]}"
             sleep 60
              }
-            system(governance_request) or exit 1
-        else
-            puts "create dev net gov request #{sha_token}"
-            governance_request = %Q{
+        system(governance_request) or exit 1
+      else
+        puts "create dev net gov request #{sha_token}"
+        governance_request = %Q{
 
 go run ./cmd/sifnodecli keys add #{args[:moniker]} -i --recover --keyring-backend test <<'EOF'
 #{args[:mnemonic]}
-\r
+        \r
 EOF
 
 go run ./cmd/sifnodecli tx gov submit-proposal software-upgrade #{args[:release_version]} \
@@ -969,8 +969,8 @@ go run ./cmd/sifnodecli tx gov submit-proposal software-upgrade #{args[:release_
        --gas-prices "#{args[:rowan]}"
     sleep 60
 }
-         system(governance_request) or exit 1
-        end
+        system(governance_request) or exit 1
+      end
     end
   end
 
@@ -978,11 +978,11 @@ go run ./cmd/sifnodecli tx gov submit-proposal software-upgrade #{args[:release_
   namespace :release do
     desc "Create Release Governance Request Vote."
     task :generate_vote_no_passphrase, [:rowan, :chainnet, :from, :app_env, :moniker, :mnemonic] do |t, args|
-        if "#{args[:app_env]}" == "betanet"
-            governance_request = %Q{
+      if "#{args[:app_env]}" == "betanet"
+        governance_request = %Q{
 go run ./cmd/sifnodecli keys add #{args[:moniker]} -i --recover --keyring-backend test <<'EOF'
 #{args[:mnemonic]}
-\r
+        \r
 EOF
 
 vote_id=$(go run ./cmd/sifnodecli q gov proposals --node tcp://rpc.sifchain.finance:80 --trust-node -o json | jq --raw-output 'last(.[]).id' --raw-output)
@@ -998,12 +998,12 @@ sleep 15
 exit
 EOF
 }
-            system(governance_request) or exit 1
-        else
-            governance_request = %Q{
+        system(governance_request) or exit 1
+      else
+        governance_request = %Q{
 go run ./cmd/sifnodecli keys add #{args[:moniker]} -i --recover --keyring-backend test <<'EOF'
 #{args[:mnemonic]}
-\r
+        \r
 EOF
 
 vote_id=$(go run ./cmd/sifnodecli q gov proposals --node tcp://rpc-#{args[:app_env]}.sifchain.finance:80 --trust-node -o json | jq --raw-output 'last(.[]).id' --raw-output)
@@ -1017,8 +1017,8 @@ go run ./cmd/sifnodecli tx gov vote ${vote_id} yes \
     --gas-prices "#{args[:rowan]}" -y
 sleep 15
 }
-          system(governance_request) or exit 1
-       end
+        system(governance_request) or exit 1
+      end
     end
   end
 
