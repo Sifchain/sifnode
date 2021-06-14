@@ -371,7 +371,9 @@ func TestBurnEthSuccess(t *testing.T) {
 			}
 		}
 	}
-	require.Equal(t, networkID, types.TestNetworkID.String())
+	TestNetworkIDStr := strconv.Itoa(int(types.TestNetworkID))
+	require.Equal(t, networkID, TestNetworkIDStr)
+
 	require.Equal(t, eventCosmosSender, senderAddress.String())
 	require.Equal(t, eventCosmosSenderSequence, senderSequence)
 	require.Equal(t, eventEthereumReceiver, ethereumReceiver.String())
