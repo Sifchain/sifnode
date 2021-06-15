@@ -6,9 +6,10 @@
 - [UI] Introduction of a footer! User's can sign-up for our newsletter, and link to our privacy policy, roadmap, and legal disclaimer. 
 - [UI] Removal of negative signs in the Pool Stats>Arbitrage as these are confusing and not necessary. 
 - [UI] Removal of the words Peg and Unpeg. We have updated our language across our entire application to use 'Import' and 'Export' instead. We did this to be more clear with the action that is being done, as well as to prepare for more chains being integrated into Sifchain.
-- [Peggy] Relayer Upgrade - Implementation of Retry Logic.
-- [Sifnode] Claims module - The claims module is done and ready! This will allow users to be able to submit a claim for their liquidity mining & validator subsidy rewards. This unblocks our FE team to finish building in this process into the DEX!
 - [UI] Included the ability for a user to see their net gain/loss on their liquidity pool position. This includes earnings from swap fees AND any gains or losses associated with changes in the tokens' prices. This number is represented as USDT.
+- [Peggy] Relayer Upgrade - Implementation of Retry Logic.
+- [Sifnode] Claims module - The claims module is done and ready! This will allow users to be able to submit a claim for their liquidity mining & validator subsidy rewards.
+- [UI] Users can now claim their Liquidity Mining and Validator Subsidy Rewards in the DEX! Feel free to navigate to the 'rewards' tab, see details on your rewards and claim them if desired. We recommend that you keep your liqudity, stake, and rewards untouched until you reach your full maturation date. To read more about this, please reference our documentation [here](https://docs.sifchain.finance/resources/rewards-programs#liquidity-mining-and-validator-subsidy-rewards-on-sifchain)
 
 ## 🐛 Bug Fixes
 
