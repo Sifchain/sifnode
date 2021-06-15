@@ -41,10 +41,28 @@ func (k Keeper) Logger(ctx sdk.Context) log.Logger {
 	return ctx.Logger().With("module", fmt.Sprintf("x/%s", types.ModuleName))
 }
 
+func (k Keeper) GetProphecies(ctx sdk.Context) []types.Prophecy {
+	var prophecies []types.Prophecy
+	store := ctx.KVStore(k.storeKey)
+	iter := store.Iterator(types.ProphecyPrefix, nil)
+	for ; iter.Valid(); iter.Next() {
+		var dbProphecy types.DBProphecy
+		k.cdc.MustUnmarshalBinaryBare(iter.Value(), &dbProphecy)
+
+		deSerializedProphecy, err := dbProphecy.DeserializeFromDB()
+		if err != nil {
+			panic(err)
+		}
+		prophecies = append(prophecies, deSerializedProphecy)
+
+	}
+	return prophecies
+}
+
 // GetProphecy gets the entire prophecy data struct for a given id
 func (k Keeper) GetProphecy(ctx sdk.Context, id string) (types.Prophecy, bool) {
 	store := ctx.KVStore(k.storeKey)
-	bz := store.Get([]byte(id))
+	bz := store.Get([]byte(fmt.Sprintf("%s_%s", types.ProphecyPrefix, id)))
 	if bz == nil {
 		return types.Prophecy{}, false
 	}
@@ -60,15 +78,19 @@ func (k Keeper) GetProphecy(ctx sdk.Context, id string) (types.Prophecy, bool) {
 	return deSerializedProphecy, true
 }
 
-// setProphecy saves a prophecy with an initial claim
-func (k Keeper) setProphecy(ctx sdk.Context, prophecy types.Prophecy) {
-	store := ctx.KVStore(k.storeKey)
-	serializedProphecy, err := prophecy.SerializeForDB()
+// SetProphecy saves a prophecy with an initial claim
+func (k Keeper) SetProphecy(ctx sdk.Context, prophecy types.Prophecy) {
+	dbProphecy, err := prophecy.SerializeForDB()
 	if err != nil {
 		panic(err)
 	}
 
-	store.Set([]byte(prophecy.ID), k.cdc.MustMarshalBinaryBare(&serializedProphecy))
+	k.SetDBProphecy(ctx, dbProphecy)
+}
+
+func (k Keeper) SetDBProphecy(ctx sdk.Context, prophecy types.DBProphecy) {
+	store := ctx.KVStore(k.storeKey)
+	store.Set([]byte(fmt.Sprintf("%s_%s", types.ProphecyPrefix, prophecy.Id)), k.cdc.MustMarshalBinaryBare(&prophecy))
 }
 
 func (k Keeper) EnsureAddressIsInWhitelist(ctx sdk.Context, validatorAddress string) error {
@@ -134,7 +156,7 @@ func (k Keeper) ProcessClaim(ctx sdk.Context, claim types.Claim) (types.Status, 
 	prophecy.AddClaim(valAddr, claim.Content)
 	prophecy = k.processCompletion(ctx, prophecy)
 
-	k.setProphecy(ctx, prophecy)
+	k.SetProphecy(ctx, prophecy)
 	return prophecy.Status, nil
 }
 
