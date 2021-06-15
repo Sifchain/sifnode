@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# Sifchain: Mainnet Genesis Entrypoint (for the Cosmos SDK v0.42).
+# Sifchain: Sifnode Genesis Entrypoint.
 #
 
 #
