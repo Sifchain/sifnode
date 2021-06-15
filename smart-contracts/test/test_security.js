@@ -325,21 +325,13 @@ contract("Security Test", function (accounts) {
 
     it("should not allow a non operator to call the function", async function () {
       await expectRevert(
-        this.bridgeBank.bulkWhitelistUpdateLimits([], [], {from: userOne}),
+        this.bridgeBank.bulkWhitelistUpdateLimits([], {from: userOne}),
         "!operator"
-      );
-    });
-
-    it("should not allow arrays of different sizes", async function () {
-      await expectRevert(
-        this.bridgeBank.bulkWhitelistUpdateLimits([], [1], {from: operator}),
-        "!same length"
       );
     });
 
     it("Should allow bulk whitelisting", async function () {
       const addresses = [];
-      const nums = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 
       // create tokens and address array
       for (let i = 0; i < 10; i++) {
@@ -347,12 +339,12 @@ contract("Security Test", function (accounts) {
         addresses.push(bridgeToken.address);
       }
 
-      await this.bridgeBank.bulkWhitelistUpdateLimits(addresses, nums, {from: operator});
+      await this.bridgeBank.bulkWhitelistUpdateLimits(addresses, {from: operator});
 
       // query each token in the array and make sure that the limit is correct
       for (let i = 0; i < 10; i++) {
-        const limit = Number(await this.bridgeBank.maxTokenAmount("eRowan" + i.toString()));
-        expect(limit).to.be.equal(nums[i]);
+        const isWhitelisted = await this.bridgeBank.getTokenInEthWhiteList(addresses[i]);
+        expect(isWhitelisted).to.be.equal(true);
       }
     });
   });

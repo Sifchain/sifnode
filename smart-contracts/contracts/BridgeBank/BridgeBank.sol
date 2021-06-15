@@ -175,33 +175,12 @@ contract BridgeBank is BankStorage,
         return setTokenInEthWhiteList(_token, _inList);
     }
 
-    // Method that is only for doing the setting of the mapping
-    // private so that it is not inheritable or able to be called
-    // by anyone other than this contract
-    function _updateTokenLimits(address _token, uint256 _amount) private {
-        string memory symbol = _token == address(0) ? "eth" : BridgeToken(_token).symbol();
-        maxTokenAmount[symbol] = _amount;
-    }
-
-    function updateTokenLockBurnLimit(address _token, uint256 _amount)
-        public
+    function bulkWhitelistUpdateLimits(address[] calldata tokenAddresses)
+        external
         onlyOperator
         returns (bool)
     {
-        _updateTokenLimits(_token, _amount);
-        return true;
-    }
-
-    function bulkWhitelistUpdateLimits(
-        address[] calldata tokenAddresses,
-        uint256[] calldata tokenLimit
-        ) external
-        onlyOperator
-        returns (bool)
-    {
-        require(tokenAddresses.length == tokenLimit.length, "!same length");
         for (uint256 i = 0; i < tokenAddresses.length; i++) {
-            _updateTokenLimits(tokenAddresses[i], tokenLimit[i]);
             setTokenInEthWhiteList(tokenAddresses[i], true);
             string memory symbol = BridgeToken(tokenAddresses[i]).symbol();
             lowerToUpperTokens[toLower(symbol)] = symbol;
@@ -248,10 +227,6 @@ contract BridgeBank is BankStorage,
     ) public validSifAddress(_recipient) onlyCosmosTokenWhiteList(_token) whenNotPaused {
         string memory symbol = BridgeToken(_token).symbol();
 
-        if (_amount > maxTokenAmount[symbol]) {
-            revert("Amount being transferred is over the limit for this token");
-        }
-
         BridgeToken(_token).burnFrom(msg.sender, _amount);
         burnFunds(msg.sender, _recipient, _token, symbol, _amount);
     }
@@ -291,8 +266,6 @@ contract BridgeBank is BankStorage,
             );
             symbol = BridgeToken(_token).symbol();
         }
-
-        require(_amount <= maxTokenAmount[symbol], "Amount being transferred is over the limit");
 
         lockFunds(msg.sender, _recipient, _token, symbol, _amount);
     }
