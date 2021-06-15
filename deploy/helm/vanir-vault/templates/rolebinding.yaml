@@ -1,0 +1,16 @@
+{{- if .Values.serviceAccount.create -}}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: {{ include "vanir.fullname" . }}
+  labels:
+  {{ include "vanir.labels" . | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: {{ include "vanir.fullname" . }}
+subjects:
+  - kind: ServiceAccount
+    name: {{ include "vanir.serviceAccountName" . }}
+    namespace: {{ .Release.Namespace }}
+{{- end -}}

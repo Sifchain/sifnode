@@ -1,0 +1,79 @@
+replicaCount: 1
+
+imagePullSecrets:
+  - name: regcred
+
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  create: false
+  annotations: {}
+  name: "vanir"
+
+podSecurityContext: {}
+securityContext: {}
+
+podAnnotations:
+  vault.hashicorp.com/agent-inject: "true"
+  vault.hashicorp.com/agent-inject-status: "update"
+  vault.hashicorp.com/agent-inject-secret--=app_name=-: "kv-v2/-=app_region=-/-=env=-/-=app_name=-/-=app-namespace=-"
+  vault.hashicorp.com/ca-cert: "/run/secrets/kubernetes.io/serviceaccount/ca.crt"
+  vault.hashicorp.com/role: -=app_name=-
+  vault.hashicorp.com/tls-skip-verify: "true"
+  vault.hashicorp.com/agent-inject-template--=app_name=-: |
+    {{- with secret "kv-v2/-=app_region=-/-=env=-/-=app_name=-/-=app-namespace=-" -}}
+      mongo_config_devnet="{{ .Data.data.mongo_config_devnet }}"
+      mongo_config_betanet="{{ .Data.data.mongo_config_betanet }}"
+      mongo_config_testnet="{{ .Data.data.mongo_config_testnet }}"
+      database={{ .Data.data.database }}
+      dbuser={{ .Data.data.dbuser }}
+      dbpassword={{ .Data.data.dbpassword }}
+      dbport={{ .Data.data.dbport }}
+      dbhost={{ .Data.data.dbhost }}
+      RPC_SERVER_URL={{ .Data.data.RPC_SERVER_URL }}
+      LCD_SERVER_URL={{ .Data.data.LCD_SERVER_URL }}
+      TOKEN_LIST_URL={{ .Data.data.TOKEN_LIST_URL }}
+      EVENTS_TABLE_V2="{{ .Data.data.EVENTS_TABLE_V2 }}"
+      PRICES_TABLE="{{ .Data.data.PRICES_TABLE }}"
+      SNAPSHOT_TABLE="{{ .Data.data.SNAPSHOT_TABLE }}"
+      SNAPSHOT_TABLE_DEV="{{ .Data.data.SNAPSHOT_TABLE_DEV }}"
+      SNAPSHOT_VALIDATORS_TABLE="{{ .Data.data.SNAPSHOT_VALIDATORS_TABLE }}"
+      SNAPSHOT_VALIDATORS_TABLE_DEV="{{ .Data.data.SNAPSHOT_VALIDATORS_TABLE_DEV }}"
+      EVENT_TXN_TABLE="{{ .Data.data.EVENT_TXN_TABLE }}"
+      SNAPSHOT_VS_CLAIMS_TABLE="{{ .Data.data.SNAPSHOT_VS_CLAIMS_TABLE }}"
+      SNAPSHOT_LM_CLAIMS_TABLE="{{ .Data.data.SNAPSHOT_LM_CLAIMS_TABLE }}"
+      SNAPSHOT_VS_DISPENSATION ="{{ .Data.data.SNAPSHOT_VS_DISPENSATION }}"
+      SNAPSHOT_LM_DISPENSATION ="{{ .Data.data.SNAPSHOT_LM_DISPENSATION }}"
+      RPC_SERVER_SANDPIT_URL="{{ .Data.data.RPC_SERVER_SANDPIT_URL }}"
+      LCD_SERVER_SANDPIT_URL="{{ .Data.data.LCD_SERVER_SANDPIT_URL }}"
+      hasura_url={{ .Data.data.hasura_url }}
+      hasura_password="{{ .Data.data.hasura_password }}"
+      PNL_ADDRESSES="{{ .Data.data.PNL_ADDRESSES }}"
+    {{- end }}
+
+vanir:
+  args:
+    type: "event_record_continuous"
+    type_name: "events"  #event_record_continuous,snapshot_continuous,add_price_record_continuous
+
+image:
+  repository: sifchain/vanir
+  pullPolicy: Always
+  tag: "latest"
+
+resources:
+  requests:
+    cpu: 500m
+    memory: 1Gi
+  limits:
+    memory: 4Gi
+    cpu: 2
+
+strategyType: Recreate
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
