@@ -39,7 +39,6 @@ func (k Keeper) ExistsOracleWhiteList(ctx sdk.Context, networkDescriptor types.N
 // GetOracleWhiteList return validator list
 func (k Keeper) GetOracleWhiteList(ctx sdk.Context, networkDescriptor types.NetworkDescriptor) types.ValidatorWhiteList {
 	store := ctx.KVStore(k.storeKey)
-	// key := types.WhiteListValidatorPrefix
 	key := networkDescriptor.GetPrefix()
 	bz := store.Get(key)
 	validators := &types.ValidatorWhiteList{}
@@ -51,17 +50,15 @@ func (k Keeper) GetOracleWhiteList(ctx sdk.Context, networkDescriptor types.Netw
 func (k Keeper) GetAllValidators(ctx sdk.Context, networkDescriptor types.NetworkDescriptor) []sdk.ValAddress {
 	valAddresses := k.GetOracleWhiteList(ctx, networkDescriptor)
 
-	vl := make([]sdk.ValAddress, len(valAddresses.GetWhiteList()))
-	index := 0
+	vl := []sdk.ValAddress{}
 	for i, power := range valAddresses.GetWhiteList() {
 		addr, err := sdk.ValAddressFromBech32(i)
 		if err != nil {
 			panic(err)
 		}
 		if power > 0 {
-			vl[index] = addr
+			vl = append(vl, addr)
 		}
-		index++
 	}
 
 	return vl
@@ -72,19 +69,25 @@ func (k Keeper) ValidateAddress(ctx sdk.Context, networkDescriptor types.Network
 	if !k.ExistsOracleWhiteList(ctx, networkDescriptor) {
 		return false
 	}
-	valList := k.GetAllValidators(ctx, networkDescriptor)
+	valAddresses := k.GetOracleWhiteList(ctx, networkDescriptor)
 
-	for _, validator := range valList {
-		if validator.Equals(address) {
+	for i, power := range valAddresses.GetWhiteList() {
+		addr, err := sdk.ValAddressFromBech32(i)
+		if err != nil {
+			panic(err)
+		}
+		if power > 0 && addr.Equals(address) {
 			return true
 		}
 	}
+
 	return false
 }
 
 // UpdateOracleWhiteList validator's power
 func (k Keeper) UpdateOracleWhiteList(ctx sdk.Context, networkDescriptor types.NetworkDescriptor, validator sdk.ValAddress, power uint32) {
 	valList := k.GetOracleWhiteList(ctx, networkDescriptor)
-	valList.GetWhiteList()[validator.String()] = power
+	whiteList := valList.GetWhiteList()
+	whiteList[validator.String()] = power
 	k.SetOracleWhiteList(ctx, networkDescriptor, valList)
 }
