@@ -33,13 +33,11 @@ Which returns
       "user_address": "sif1l7hypmqk2yc334vc6vmdwzp5sdefygj2ad93p5",
       "user_claim_type": "3",
       "user_claim_time": "2021-05-02T02:43:10.593125Z",
-      "locked": false
     },
     {
       "user_address": "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
       "user_claim_type": "3",
       "user_claim_time": "2021-05-02T02:43:10.593125Z",
-      "locked": false
     }
   ],
   "height": "7"
@@ -67,14 +65,14 @@ We can also parse events instead of the using this query . This event would be i
 ```
 After parsing should become 
 ```json
- {"type": "claim_created",
+ {"type": "userClaim_new",
             "attributes": [
               {
-                "key": "claim_creator",
+                "key": "userClaim_creator",
                 "value": "sif1l7hypmqk2yc334vc6vmdwzp5sdefygj2ad93p5"
               },
               {
-                "key": "claim_type",
+                "key": "userClaim_type",
                 "value": "ValidatorSubsidy"
               },
               {
@@ -86,7 +84,7 @@ After parsing should become
 
 ```
 
-### This list obtained above is run through the parsing API(Niko) , which should create a file like below  
+### This list obtained above is run through the parsing API , which should creates an output file 
 ```json
 {
  "Output": [
@@ -113,46 +111,11 @@ After parsing should become
 ```
 
 ### This file is then used to create a distribution
+Create
 ```shell
-sifnodecli tx dispensation create mkey ar1 ValidatorSubsidy input.json output.json --gas 200064128 --generate-only >> offlinetx.json
-# First user signs
-sifnodecli tx sign --multisig $(sifnodecli keys show mkey -a) --from $(sifnodecli keys show sif -a)  offlinetx.json >> sig1.json
-# Second user signs
-sifnodecli tx sign --multisig $(sifnodecli keys show mkey -a) --from $(sifnodecli keys show akasha -a)  offlinetx.json >> sig2.json
-# Multisign created from the above signatures
-sifnodecli tx multisign offlinetx.json mkey sig1.json sig2.json >> signedtx.json
-# transaction broadcast , distribution happens
-sifnodecli tx broadcast signedtx.json
+sifnodecli tx dispensation create ValidatorSubsidy output.json sif1l7hypmqk2yc334vc6vmdwzp5sdefygj2ad93p5 --from sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd --yes --gas auto --gas-adjustment=1.5 --gas-prices 1.0rowan
 ```
-### Post Dispensation
-- Suppose we do the dispensation at height X , The block results should contain this event 
-```json
-  {
-            "type": "distribution_started",
-            "attributes": [
-              {
-                "key": "module_account",
-                "value": "sif1zvwfuvy3nh949rn68haw78rg8jxjevgm2c820c"
-              }
-            ]
-          }
-```
-- This event signifies that the distribution started , and transfers should begin at height X+1 . The transfer events can be used as confirmation to reset account multipliers.
-The sender address for the transfers should be the module account in the distribution_started event . 
-```json
- [
-          {
-            "key": "recipient",
-            "value": "sif1l7hypmqk2yc334vc6vmdwzp5sdefygj2ad93p5"
-          },
-          {
-            "key": "sender",
-            "value": "sif1zvwfuvy3nh949rn68haw78rg8jxjevgm2c820c"
-          },
-          {
-            "key": "amount",
-            "value": "10000000000000000000rowan"
-          }
-        ]
-
+Run
+```shell
+sifnodecli tx dispensation run 2_sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd ValidatorSubsidy --from sif1l7hypmqk2yc334vc6vmdwzp5sdefygj2ad93p5 --yes --gas auto --gas-adjustment=1.5 --gas-prices 1.0rowan
 ```

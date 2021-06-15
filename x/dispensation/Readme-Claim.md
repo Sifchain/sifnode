@@ -24,12 +24,10 @@ type UserClaim struct {
 	UserAddress   sdk.AccAddress   `json:"user_address"`
 	UserClaimType DistributionType `json:"user_claim_type"`
 	UserClaimTime time.Time        `json:"user_claim_time"`
-	Locked        bool             `json:"locked"`
 }
 ```
 ### High Level Flow
 - User creates claims of type LiquidityMining or ValidatorSubsidy.
-- The claims get locked when the associated distribution is created for the claim  
 - The claims are deleted when the user receives the funds . 
 - A user can only have 1 claim of a particular type ,at any point in time .
 
@@ -42,14 +40,14 @@ sifnodecli tx dispensation claim ValidatorSubsidy --from akasha --keyring-backen
 ### Events Emitted
 - The following event is emitted on every claim
 ```json
- {"type": "claim_created",
+ {"type": "userClaim_new",
             "attributes": [
               {
-                "key": "claim_creator",
+                "key": "userClaim_creator",
                 "value": "sif1l7hypmqk2yc334vc6vmdwzp5sdefygj2ad93p5"
               },
               {
-                "key": "claim_type",
+                "key": "userClaim_type",
                 "value": "ValidatorSubsidy"
               },
               {
@@ -73,13 +71,11 @@ Response
       "user_address": "sif1l7hypmqk2yc334vc6vmdwzp5sdefygj2ad93p5",
       "user_claim_type": "3",
       "user_claim_time": "2021-05-02T02:43:10.593125Z",
-      "locked": false
     },
     {
       "user_address": "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
       "user_claim_type": "3",
       "user_claim_time": "2021-05-02T02:43:10.593125Z",
-      "locked": false
     }
   ],
   "height": "7"
