@@ -11,13 +11,13 @@ services:
       CHAINNET: ${CHAINNET0}
       MONIKER: sifnode0
       MNEMONIC: ${MNEMONIC}
-      BIND_IP_ADDRESS: 192.168.65.2
+      BIND_IP_ADDRESS: ${IPADDR0}
     volumes:
       - ./sifnode/root/scripts:/root/scripts:Z
     command: /root/scripts/sifnode.sh
     networks:
       sifchain:
-        ipv4_address: 192.168.65.2
+        ipv4_address: ${IPADDR0}
 
   sifnode1:
     image: sifchain/sifnoded:latest
@@ -29,13 +29,13 @@ services:
       CHAINNET: ${CHAINNET1}
       MONIKER: sifnode1
       MNEMONIC: ${MNEMONIC}
-      BIND_IP_ADDRESS: 192.168.65.3
+      BIND_IP_ADDRESS: ${IPADDR1}
     volumes:
       - ./sifnode/root/scripts:/root/scripts:Z
     command: /root/scripts/sifnode.sh
     networks:
       sifchain:
-        ipv4_address: 192.168.65.3
+        ipv4_address: ${IPADDR1}
 
   ts-relayer:
     image: sifchain/ts-relayer:latest
@@ -46,10 +46,10 @@ services:
       RELAYER_DEST: ${CHAINNET1}
       SIFNODE0_MNEMONIC: ${MNEMONIC}
       SIFNODE1_MNEMONIC: ${MNEMONIC}
-      RPC0: "192.168.65.2:26657"
-      RPC1: "192.168.65.3:26657"
+      RPC0: ${IPADDR0}:26657
+      RPC1: ${IPADDR1}:26657
       PREFIX0: sif
-      PREFIX1: ${PREFIX0}
+      PREFIX1: sif
       GAS_PRICE0: "0.5rowan"
       GAS_PRICE1: "0.5rowan"
     volumes:
@@ -60,7 +60,7 @@ services:
     command: /root/scripts/ts-relayer.sh
     networks:
       sifchain:
-        ipv4_address: 192.168.65.4
+        ipv4_address: ${IPADDR2}
 
 networks:
   sifchain:
@@ -68,4 +68,4 @@ networks:
     ipam:
       driver: default
       config:
-        - subnet: 192.168.65.1/24
+        - subnet: ${SUBNET}
