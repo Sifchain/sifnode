@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+{{- with .Values.podAnnotations }}
+  annotations:
+    {{- toYaml . | nindent 8 }}
+{{- end }}
+  labels:
+    {{- include "vanir.selectorLabels" . | nindent 8 }}
+  name: {{ include "vanir.fullname" . }}-{{ .Values.vanir.args.type_name }}
+spec:
+{{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+{{- end }}
+  strategy:
+    type: {{ .Values.strategyType }}
+  selector:
+    matchLabels:
+      {{- include "sifnode.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+    {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+      labels:
+        {{- include "vanir.selectorLabels" . | nindent 8 }}
+    spec:
+      containers:
+      - name: {{ include "vanir.fullname" . }}-{{ .Values.vanir.args.type_name }}
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        resources:
+          {{- toYaml .Values.resources | nindent 12 }}
+        args:
+        - "{{ .Values.vanir.args.type }}"
+      {{- with .Values.imagePullSecrets }}
+      serviceAccountName: {{ include "vanir.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

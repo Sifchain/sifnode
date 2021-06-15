@@ -53,11 +53,6 @@ namespace :standalone do
 
       system({"KUBECONFIG" => kubeconfig(args)}, cmd)
     end
-
-
-
-
-
   end
 
   desc "Sifnode with Vault"
