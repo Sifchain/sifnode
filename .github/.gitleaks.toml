@@ -10,6 +10,11 @@ title = "gitleaks config"
     regex = '''(?i)aws(.{0,20})?(?-i)['\"][0-9a-zA-Z\/+]{40}['\"]'''
     tags = ["key", "AWS"]
 
+#[[rules]]
+#    description = "Ethereum Private Key"
+#    regex = '''(ETHEREUM_PRIVATE_KEY)=['/"][0-9a-fA-F]{64}['/"]'''
+#    tags = ["key","Ethereum"]
+
 [[rules]]
     description = "AWS MWS key"
     regex = '''amzn\.mws\.[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}'''
