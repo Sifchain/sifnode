@@ -145,6 +145,15 @@ func BurnLockEventToCosmosMsg(claimType types.Event, attributes []abci.EventAttr
 	}
 
 	if attributeNumber < 5 {
+		sugaredLogger.Infow(
+			"current variable values",
+			"cosmosSender", cosmosSender,
+			"cosmosSenderSequence", cosmosSenderSequence,
+			"ethereumReceiver", ethereumReceiver,
+			"symbol", symbol,
+			"amount", amount,
+		)
+
 		sugaredLogger.Errorw("message not complete", "attributeNumber", attributeNumber)
 		return types.CosmosMsg{}, errors.New("message not complete")
 	}
