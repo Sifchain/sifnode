@@ -24,7 +24,7 @@ def test_ebrelayer_restart(
     balance = test_utilities.get_sifchain_addr_balance(request.sifchain_address, request.sifnodecli_node, "ceth")
     logging.info("restart ebrelayer normally, leaving the last block db in place")
     test_utilities.get_shell_output(f"{integration_dir}/sifchain_start_ebrelayer.sh")
-    test_utilities.advance_n_ethereum_blocks(test_utilities.n_wait_blocks, request.smart_contracts_dir)
+    test_utilities.advance_n_ethereum_blocks(test_utilities.n_wait_blocks * 2, request.smart_contracts_dir)
     time.sleep(5)
     assert balance == test_utilities.get_sifchain_addr_balance(request.sifchain_address, request.sifnodecli_node,
                                                                "ceth")
@@ -38,7 +38,15 @@ def test_ethereum_transactions_with_offline_relayer(
         bridgebank_address,
         integration_dir,
 ):
+    logging.debug("need one transaction to make sure ebrelayer writes out relaydb")
+    basic_transfer_request.ethereum_address = source_ethereum_address
+    generate_minimal_test_account(
+        base_transfer_request=basic_transfer_request,
+        target_ceth_balance=100
+    )
+
     logging.info("shut down ebrelayer")
+    time.sleep(10)
     test_utilities.get_shell_output(f"pkill -9 ebrelayer || true")
 
     logging.info("prepare transactions to be sent while ebrelayer is offline")
@@ -67,11 +75,13 @@ def test_ethereum_transactions_with_offline_relayer(
             f"--bridgebank_address {bridgebank_address}"
         ])
     )
-    logging.info(f"bulk result: {yarn_result}")
-
-    logging.info("restart ebrelayer")
+    logging.debug(f"bulk result: {yarn_result}")
+    logging.info("restart ebrelayer with outstanding locks on the ethereum side")
     test_utilities.get_shell_output(f"{integration_dir}/sifchain_start_ebrelayer.sh")
-    test_utilities.advance_n_ethereum_blocks(test_utilities.n_wait_blocks, request.smart_contracts_dir)
+    time.sleep(5)
+    for _ in new_addresses:
+        # ebrelayer only reads blocks if there are new blocks generated
+        test_utilities.advance_n_ethereum_blocks(test_utilities.n_wait_blocks, request.smart_contracts_dir)
     for a in new_addresses:
         test_utilities.wait_for_sif_account(a, basic_transfer_request.sifnodecli_node, 90)
         test_utilities.wait_for_sifchain_addr_balance(a, "ceth", amount, basic_transfer_request.sifnodecli_node, 90)
@@ -96,6 +106,7 @@ def test_sifchain_transactions_with_offline_relayer(
         target_rowan_balance=10 ** 19,
     )
     logging.info("shut down ebrelayer")
+    time.sleep(10)
     test_utilities.get_shell_output(f"pkill -9 ebrelayer || true")
 
     logging.info("prepare transactions to be sent while ebrelayer is offline")
@@ -111,6 +122,8 @@ def test_sifchain_transactions_with_offline_relayer(
     request.sifchain_symbol = "ceth"
     request.ethereum_symbol = "eth"
 
+    logging.info("send transactions while ebrelayer is offline")
+
     for a in new_eth_addrs:
         request.ethereum_address = a["address"]
         sifchain_balance = test_utilities.get_sifchain_addr_balance(request.sifchain_address, request.sifnodecli_node,
@@ -124,7 +137,8 @@ def test_sifchain_transactions_with_offline_relayer(
 
     logging.info("restart ebrelayer")
     test_utilities.get_shell_output(f"{integration_dir}/sifchain_start_ebrelayer.sh")
-    test_utilities.advance_n_ethereum_blocks(test_utilities.n_wait_blocks, request.smart_contracts_dir)
+    time.sleep(15)
+    test_utilities.advance_n_ethereum_blocks(test_utilities.n_wait_blocks * 2, request.smart_contracts_dir)
     for a in new_eth_addrs:
         request.ethereum_address = a["address"]
         test_utilities.wait_for_eth_balance(request, amount, 600)

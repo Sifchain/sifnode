@@ -54,6 +54,7 @@ type CosmosSub struct {
 // NewCosmosSub initializes a new CosmosSub
 func NewCosmosSub(networkID oracletypes.NetworkID, privateKey *ecdsa.PrivateKey, tmProvider, ethProvider string, registryContractAddress common.Address,
 	db *leveldb.DB, sugaredLogger *zap.SugaredLogger) CosmosSub {
+
 	return CosmosSub{
 		NetworkID:               networkID,
 		TmProvider:              tmProvider,
