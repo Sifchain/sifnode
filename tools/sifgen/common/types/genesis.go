@@ -100,7 +100,7 @@ type CLP struct {
 
 type Dispensation struct {
 	DistributionRecords interface{} `json:"distribution_records"`
-	Distributions     interface{}        `json:"distributions"`
+	Distributions       interface{} `json:"distributions"`
 }
 
 type DistributionParams struct {
