@@ -88,7 +88,7 @@ type Capability struct {
 }
 
 type CLPParams struct {
-	MinCreatePoolThreshold string `json:"min_create_pool_threshold"`
+	MinCreatePoolThreshold json.Number `json:"min_create_pool_threshold"`
 }
 
 type CLP struct {
@@ -346,8 +346,8 @@ type AppState struct {
 	Oracle       Oracle        `json:"oracle"`
 	Evidence     EvidenceState `json:"evidence"`
 	Genutil      Genutil       `json:"genutil"`
-	Ethbridge    interface{}   `json:"ethbridge"`
-	Params       interface{}   `json:"params"`
+	Ethbridge    struct{}      `json:"ethbridge"`
+	Params       struct{}      `json:"params"`
 }
 
 type Genesis struct {
