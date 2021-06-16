@@ -1,8 +1,9 @@
-name: Run integration tests 1
+name: Run integration tests 1 for test chain (peg)
 on:
   push:
     paths-ignore:
       - "ui/**"
+
 jobs:
   test:
     timeout-minutes: 40
@@ -21,4 +22,4 @@ jobs:
           source $HOME/.bash_profile
           . test/integration/vagrantenv.sh
           export LOG_LEVEL=DEBUG
-          bash test/integration/execute_integration_tests_against_test_chain.sh
+          bash test/integration/execute_integration_tests_against_test_chain_peg.sh

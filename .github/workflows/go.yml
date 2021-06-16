@@ -47,3 +47,4 @@ jobs:
         token: ${{ secrets.CODECOV_TOKEN }}
         file: ./coverage.txt
         flags: server
+        verbose: true

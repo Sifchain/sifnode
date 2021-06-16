@@ -1,0 +1,7 @@
+core/lib
+app/dist
+node_modules
+chains/eth/build/contracts
+coverage
+e2e/extensions
+e2e/playwright

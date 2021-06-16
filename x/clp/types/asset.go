@@ -62,3 +62,7 @@ func GetSettlementAsset() Asset {
 func GetCLPModuleAddress() sdk.AccAddress {
 	return supply.NewModuleAddress(ModuleName)
 }
+
+func GetDefaultCLPAdmin() sdk.AccAddress {
+	return supply.NewModuleAddress("ClpAdmin")
+}

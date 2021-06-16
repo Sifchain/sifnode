@@ -73,38 +73,40 @@ module.exports = function(deployer, network, accounts) {
         cosmosBridge.address,
         bridgeBank.address
       ],
-      setTxSpecifications(6721975, accounts[0], deployer)
+      setTxSpecifications(3000000, accounts[0], deployer)
     );
 
     if (network === 'mainnet' || network === 'mainnet-fork') {
       return console.log("Network is mainnet, not going to deploy token");
     }
 
-    await cosmosBridge.setBridgeBank(bridgeBank.address, 
-      setTxSpecifications(600000, accounts[0])
-    );
+    if (!network.includes('fork')) {
+      await cosmosBridge.setBridgeBank(bridgeBank.address,
+          setTxSpecifications(600000, accounts[0])
+      );
+    }
 
-    const erowan = await deployer.deploy(eRowan, "erowan", setTxSpecifications(4612388, operator));
+    const erowan = await deployer.deploy(eRowan, "erowan", setTxSpecifications(3000000, operator));
 
-    await erowan.addMinter(BridgeBank.address, setTxSpecifications(4612388, operator));
+    await erowan.addMinter(BridgeBank.address, setTxSpecifications(3000000, operator));
 
-    await bridgeBank.addExistingBridgeToken(erowan.address, setTxSpecifications(4612388, operator));
+    await bridgeBank.addExistingBridgeToken(erowan.address, setTxSpecifications(3000000, operator));
 
     const tokenAddress = "0x0000000000000000000000000000000000000000";
 
     // allow 10 eth to be sent at once
-    await bridgeBank.updateTokenLockBurnLimit(tokenAddress, '10000000000000000000', setTxSpecifications(4612388, operator));
-    await bridgeBank.updateTokenLockBurnLimit(erowan.address, '10000000000000000000', setTxSpecifications(4612388, operator));
-    await erowan.approve(bridgeBank.address, '10000000000000000000', setTxSpecifications(4612388, operator));
+    await bridgeBank.updateTokenLockBurnLimit(tokenAddress, '10000000000000000000', setTxSpecifications(3000000, operator));
+    await bridgeBank.updateTokenLockBurnLimit(erowan.address, '10000000000000000000', setTxSpecifications(3000000, operator));
+    await erowan.approve(bridgeBank.address, '10000000000000000000', setTxSpecifications(3000000, operator));
 
     console.log("erowan token address: ", erowan.address);
 
     const bnAmount = web3.utils.toWei("100", "ether");
 
-    await erowan.mint(operator, bnAmount, setTxSpecifications(4612388, operator));
+    await erowan.mint(operator, bnAmount, setTxSpecifications(3000000, operator));
 
     if (network === "develop") {
-      await erowan.mint(accounts[1], bnAmount, setTxSpecifications(4612388, operator));
+      await erowan.mint(accounts[1], bnAmount, setTxSpecifications(3000000, operator));
     }
 
     return;

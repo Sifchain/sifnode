@@ -320,19 +320,19 @@ Uses Thorchain&#39;s slip based Continuous Liquidity Pool model to calculate tra
 **calcLiquidityFee(X, x, Y):** calculates liquidity fee per Thorchain's CLP model
 ```golang
 {
-  return (x * x * Y ) / ((x + X) * (x + X))
+  return (x * x * Y) / ((x + X) * (x + X))
 }
 ```
-**calcTradeSlip(X, x):** calculates trade slip per Thorchain's CLP model
+**calcPriceImpact(X, x):** calculates price impact per Thorchain's CLP model
 ```golang
 {
-  return x * (2 * X + x) / (X * X)
+  return x / (x + X)
 }
 ```
 **calcSwapResult(X, x, Y):** calculates final swap received token amount
 ```golang
 {
-  return ( x * X * Y ) / ((x + X) * (x + X))
+  return (x * X * Y) / ((x + X) * (x + X))
 }
 ```
 ![](images/SifchainCLPArchitecture/SifchainSwap.png)

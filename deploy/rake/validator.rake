@@ -1,7 +1,7 @@
 desc "validator operations"
 namespace :validator do
   desc "Stake a node so it can participate in consensus"
-  task :stake, [:chainnet, :moniker, :amount, :gas, :pub_key, :node] do |t, args|
+  task :stake, [:chainnet, :moniker, :amount, :gas, :gas_prices, :pub_key, :node] do |t, args|
     node = if args[:node].nil?
              "tcp://127.0.0.1:26657"
            else
@@ -16,7 +16,8 @@ namespace :validator do
             --pubkey=#{args[:pub_key]} \
             --chain-id=#{args[:chainnet]} \
             --min-self-delegation="1" \
-            --gas-prices=#{args[:gas]} \
+            --gas=#{args[:gas]} \
+            --gas-prices=#{args[:gas_prices]} \
             --moniker=#{args[:moniker]} \
             --from=#{args[:moniker]} \
             --keyring-backend=file \
@@ -26,17 +27,32 @@ namespace :validator do
     system(cmd)
   end
 
-  desc "Expose operations"
-  namespace :expose do
-    desc "Expose the Sifnode validator public key"
-    task :pub_key, [:cluster, :provider, :namespace] do |t, args|
+  desc "Key operations"
+  namespace :keys do
+    desc "Print the validator public key"
+    task :public, [:cluster, :provider, :namespace] do |t, args|
       pod_name = pod_name(args)
       if pod_name.nil?
-        puts "Please check the supplied moniker; unable to find any pods!"
+        puts "Unable to find any pods!"
         exit(1)
       end
 
       cmd = %Q{kubectl exec --stdin --tty #{pod_name} -n #{args[:namespace]} -- cosmovisor tendermint show-validator}
+      system({"KUBECONFIG" => kubeconfig(args)}, cmd)
+    end
+  end
+
+  desc "Backup operations"
+  namespace :backup do
+    desc "Backup the validator config"
+    task :config, [:cluster, :provider, :namespace, :save_path] do |t, args|
+      pod_name = pod_name(args)
+      if pod_name.nil?
+        puts "Unable to find any pods!"
+        exit(1)
+      end
+
+      cmd = %Q{kubectl cp #{args[:namespace]}/#{pod_name}:/root/.sifnoded/config #{args[:save_path]}}
       system({"KUBECONFIG" => kubeconfig(args)}, cmd)
     end
   end
