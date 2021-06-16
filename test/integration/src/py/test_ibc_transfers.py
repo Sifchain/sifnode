@@ -100,7 +100,7 @@ def test_lock_ibc_coins(
     request.amount = small_amount
     burn_lock_functions.send_from_sifchain_to_ethereum(request, credentials)
 
-    feedface_token_data = test_utilities.wait_for_ethereum_token(request, feedface_token)
+    feedface_token_data = test_utilities.wait_for_ethereum_token(request, "Face")
     request.ethereum_symbol = feedface_token_data["token"]
 
     def wait_for_enough_tokens():
@@ -108,4 +108,4 @@ def test_lock_ibc_coins(
     test_utilities.wait_for_success(wait_for_enough_tokens)
 
     logging.info("send FEEDFACE back to sifchain")
-    burn_lock_functions.transfer_ethereum_to_sifchain(request)
+    burn_lock_functions.transfer_ethereum_to_sifchain(request, 10)

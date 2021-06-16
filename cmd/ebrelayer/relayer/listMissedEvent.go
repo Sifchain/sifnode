@@ -38,7 +38,7 @@ func NewListMissedCosmosEvent(tmProvider, ethProvider string, registryContractAd
 }
 
 // ListMissedCosmosEvent print all missed cosmos events by this ebrelayer in days
-func (list ListMissedCosmosEvent) ListMissedCosmosEvent() {
+func (list ListMissedCosmosEvent) ListMissedCosmosEvent(symbolTranslator *txs.SymbolTranslator) {
 	log.Println("ListMissedCosmosEvent started")
 	// Start Ethereum client
 	ethClient, err := ethclient.Dial(list.EthProvider)
@@ -111,7 +111,7 @@ func (list ListMissedCosmosEvent) ListMissedCosmosEvent() {
 				switch claimType {
 				case types.MsgBurn, types.MsgLock:
 
-					cosmosMsg, err := txs.BurnLockEventToCosmosMsg(claimType, event.GetAttributes(), list.SugaredLogger)
+					cosmosMsg, err := txs.BurnLockEventToCosmosMsg(claimType, event.GetAttributes(), symbolTranslator, list.SugaredLogger)
 					if err != nil {
 						log.Println(err.Error())
 						continue

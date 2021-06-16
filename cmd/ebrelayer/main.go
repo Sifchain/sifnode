@@ -3,6 +3,8 @@ package main
 import (
 	"fmt"
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/txs"
+	ebrelayertypes "github.com/Sifchain/sifnode/cmd/ebrelayer/types"
+	flag "github.com/spf13/pflag"
 	"log"
 	"net/url"
 	"os"
@@ -82,7 +84,11 @@ func buildRootCmd() *cobra.Command {
 	))
 	rootCmd.PersistentFlags().String(flags.FlagGasPrices, "", "Gas prices to determine the transaction fee (e.g. 10uatom)")
 	rootCmd.PersistentFlags().Float64(flags.FlagGasAdjustment, flags.DefaultGasAdjustment, "gas adjustment")
-
+	rootCmd.PersistentFlags().String(
+		ebrelayertypes.FlagSymbolTranslatorFile,
+		"",
+		"Path to a json file containing an array of sifchain denom => Ethereum symbol pairs",
+	)
 	// Construct Root Command
 	rootCmd.AddCommand(
 		rpc.StatusCommand(),
@@ -193,6 +199,11 @@ func RunInitRelayerCmd(cmd *cobra.Command, args []string) error {
 	sugaredLogger := logger.Sugar()
 	zap.RedirectStdLog(sugaredLogger.Desugar())
 
+	symbolTranslator, err := buildSymbolTranslator(cmd.Flags())
+	if err != nil {
+		return err
+	}
+
 	// Initialize new Ethereum event listener
 	ethSub := relayer.NewEthereumSub(
 		cliContext,
@@ -216,8 +227,8 @@ func RunInitRelayerCmd(cmd *cobra.Command, args []string) error {
 	waitForAll := sync.WaitGroup{}
 	waitForAll.Add(2)
 	txFactory := tx.NewFactoryCLI(cliContext, cmd.Flags())
-	go ethSub.Start(txFactory, &waitForAll)
-	go cosmosSub.Start(&waitForAll)
+	go ethSub.Start(txFactory, &waitForAll, symbolTranslator)
+	go cosmosSub.Start(&waitForAll, symbolTranslator)
 	waitForAll.Wait()
 
 	return nil
@@ -277,6 +288,21 @@ func listMissedCosmosEventCmd() *cobra.Command {
 	}
 
 	return listMissedCosmosEventCmd
+}
+
+func buildSymbolTranslator(flags *flag.FlagSet) (*txs.SymbolTranslator, error) {
+	filename, err := flags.GetString(ebrelayertypes.FlagSymbolTranslatorFile)
+	// If FlagSymbolTranslatorFile isn't specified, just use an empty SymbolTranslator
+	if err != nil || filename == "" {
+		return txs.NewSymbolTranslator(), nil
+	}
+
+	symbolTranslator, err := txs.NewSymbolTranslatorFromJsonFile(filename)
+	if err != nil {
+		return nil, err
+	}
+
+	return symbolTranslator, nil
 }
 
 func main() {

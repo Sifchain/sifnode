@@ -65,7 +65,7 @@ func NewCosmosSub(tmProvider, ethProvider string, registryContractAddress common
 }
 
 // Start a Cosmos chain subscription
-func (sub CosmosSub) Start(completionEvent *sync.WaitGroup) {
+func (sub CosmosSub) Start(completionEvent *sync.WaitGroup, symbolTranslator *txs.SymbolTranslator) {
 	defer completionEvent.Done()
 	time.Sleep(time.Second)
 	client, err := tmClient.New(sub.TmProvider, "/websocket")
@@ -73,7 +73,7 @@ func (sub CosmosSub) Start(completionEvent *sync.WaitGroup) {
 		sub.SugaredLogger.Errorw("failed to initialize a sifchain client.",
 			errorMessageKey, err.Error())
 		completionEvent.Add(1)
-		go sub.Start(completionEvent)
+		go sub.Start(completionEvent, symbolTranslator)
 		return
 	}
 
@@ -81,7 +81,7 @@ func (sub CosmosSub) Start(completionEvent *sync.WaitGroup) {
 		sub.SugaredLogger.Errorw("failed to start a sifchain client.",
 			errorMessageKey, err.Error())
 		completionEvent.Add(1)
-		go sub.Start(completionEvent)
+		go sub.Start(completionEvent, symbolTranslator)
 		return
 	}
 
@@ -95,7 +95,7 @@ func (sub CosmosSub) Start(completionEvent *sync.WaitGroup) {
 			errorMessageKey, err.Error(),
 			"query", query)
 		completionEvent.Add(1)
-		go sub.Start(completionEvent)
+		go sub.Start(completionEvent, symbolTranslator)
 		return
 	}
 
@@ -163,7 +163,7 @@ func (sub CosmosSub) Start(completionEvent *sync.WaitGroup) {
 
 						switch claimType {
 						case types.MsgBurn, types.MsgLock:
-							cosmosMsg, err := txs.BurnLockEventToCosmosMsg(claimType, event.GetAttributes(), sub.SugaredLogger)
+							cosmosMsg, err := txs.BurnLockEventToCosmosMsg(claimType, event.GetAttributes(), symbolTranslator, sub.SugaredLogger)
 							if err != nil {
 								sub.SugaredLogger.Errorw("sifchain client failed in get message from event.",
 									errorMessageKey, err.Error())
@@ -282,7 +282,7 @@ func MessageProcessed(message types.CosmosMsg, prophecyClaims []types.ProphecyCl
 }
 
 // Replay the missed events
-func (sub CosmosSub) Replay(fromBlock int64, toBlock int64, ethFromBlock int64, ethToBlock int64) {
+func (sub CosmosSub) Replay(symbolTranslator *txs.SymbolTranslator, fromBlock int64, toBlock int64, ethFromBlock int64, ethToBlock int64) {
 	// Start Ethereum client
 	ethClient, err := ethclient.Dial(sub.EthProvider)
 	if err != nil {
@@ -344,7 +344,7 @@ func (sub CosmosSub) Replay(fromBlock int64, toBlock int64, ethFromBlock int64, 
 				case types.MsgBurn, types.MsgLock:
 					log.Println("found out a lock burn message")
 
-					cosmosMsg, err := txs.BurnLockEventToCosmosMsg(claimType, event.GetAttributes(), sub.SugaredLogger)
+					cosmosMsg, err := txs.BurnLockEventToCosmosMsg(claimType, event.GetAttributes(), symbolTranslator, sub.SugaredLogger)
 					if err != nil {
 						log.Println(err)
 						continue
@@ -450,9 +450,9 @@ func (sub CosmosSub) handleBurnLockMsg(
 	}
 
 	if i == maxRetries {
-		sub.SugaredLogger.Errorw(
-			"failed to broadcast transaction after 5 attempts",
-			errorMessageKey, err.Error(),
-		)
+		sub.SugaredLogger.Errorw("failed to broadcast transaction after 5 attempts")
+		if err != nil {
+			sub.SugaredLogger.Errorw("error for failed broadcast is", errorMessageKey, err)
+		}
 	}
 }
