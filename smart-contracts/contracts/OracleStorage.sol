@@ -1,4 +1,4 @@
-pragma solidity 0.5.16;
+pragma solidity 0.8.0;
 
 contract OracleStorage {
     /*
@@ -6,10 +6,10 @@ contract OracleStorage {
      */
     address public cosmosBridge;
 
-    /**
-    * @notice Tracks the number of OracleClaims made on an individual BridgeClaim
+    /*
+    * @notice [DEPRECATED] variable
     */
-    address public operator;
+    address private _operator;
 
     /**
     * @notice Tracks the number of OracleClaims made on an individual BridgeClaim
@@ -27,7 +27,17 @@ contract OracleStorage {
     mapping(uint256 => mapping(address => bool)) public hasMadeClaim;
 
     /**
+    * @notice mapping of prophecyid to check if it has been redeemed
+    */
+    mapping(uint256 => bool) public prophecyRedeemed;
+
+    /**
+    * @notice mapping of validator address to last nonce submitted
+    */
+    uint256 public lastNonceSubmitted;
+
+    /*
     * @notice gap of storage for future upgrades
     */
-    uint256[100] private ____gap;
+    uint256[98] private ____gap;
 }
