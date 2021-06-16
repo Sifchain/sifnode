@@ -65,7 +65,4 @@ set_persistant_env_var BRIDGE_BANK_ADDRESS $(cat $BASEDIR/smart-contracts/build/
 rm -rf $SMART_CONTRACTS_DIR/relayerdb
 bash ${BASEDIR}/test/integration/setup_sifchain.sh && . $envexportfile
 
-UPDATE_ADDRESS=0x0000000000000000000000000000000000000000 npx truffle exec scripts/setTokenLockBurnLimit.js 31000000000000000000
-UPDATE_ADDRESS=$BRIDGE_TOKEN_ADDRESS npx truffle exec scripts/setTokenLockBurnLimit.js 10000000000000000000000000
-
 logecho finished $0
