@@ -152,6 +152,11 @@ func RunListMissedCosmosEventCmd(_ *cobra.Command, args []string) error {
 		return errors.Errorf("%s is invalid network descriptor", args[0])
 	}
 
+	// check if the networkID is valid
+	if !oracletypes.NetworkID(networkID).IsValid() {
+		return errors.Errorf("network id: %d is invalid", networkID)
+	}
+
 	if len(strings.Trim(args[1], "")) == 0 {
 		return errors.Errorf("invalid [tendermint-node]: %s", args[1])
 	}
