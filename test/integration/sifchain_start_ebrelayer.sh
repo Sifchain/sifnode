@@ -9,7 +9,6 @@ set -x
 
 # Start in the same directory all the time so relayerdb's location is consistent
 cd ${TEST_INTEGRATION_DIR}
-rm -rf relayerdb
 
 pkill -9 ebrelayer || true
 
