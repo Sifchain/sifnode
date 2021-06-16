@@ -12,7 +12,10 @@ ENV GOOS=linux
 ENV CHAINNET=$chainnet
 
 # cosmovisor
-RUN go get github.com/cosmos/cosmos-sdk/cosmovisor
+WORKDIR /cosmos-sdk
+RUN git clone https://github.com/cosmos/cosmos-sdk .
+RUN make -C ./cosmovisor cosmovisor
+RUN mv ./cosmovisor/cosmovisor /go/bin/
 
 # sifnoded
 WORKDIR /sifchain
