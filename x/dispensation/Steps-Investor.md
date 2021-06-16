@@ -1,14 +1,14 @@
-#Steps to follow by Investor/Distributor 
+# Steps to follow by Investor/Distributor 
 
-##Requirements
+## Requirements
 1 . List of address to distribute to :  For ValidatorSubsidy and LiquidityMining this list will be provided by sifchain ,based on the users who have claimed rewards during the whole week .
 
 2 . Enough funds to distribute : The account balance for the distributor needs to greater than the sum of all the outputs from step 1
 
 3 . Authorized runner address : After creation ,the authorized runner would be responsible for triggering the reward transfers(10 per block)
 
-##Steps
-###Create Dispensation
+## Steps
+### Create Dispensation
 Use the CLI to create a dispensations
 ```shell
 sifnodecli tx dispensation create [Distribution Type Airdrop/ValidatorSubsidy/LiquidityMining] [List of output addresses in JSON format] [Address of authorized runner] --from [Address of invester/This private keys is used to sign the tx] --yes --gas auto --gas-adjustment=1.5 --gas-prices 1.0rowan --node tcp://rpc.sifchain.finance:80 --chain-id sifchain
@@ -50,7 +50,7 @@ The output from the command would contain the relevant event
 }
 ```
 
-###Next Steps 
+### Next Steps 
 - The next step is to run this dispensation. The run transaction needs to be signed by th authorized runner.
 - The authorized runner address would normally be an account owned by sifchain.
 - The steps to be followed by the authorised runner are in the next document

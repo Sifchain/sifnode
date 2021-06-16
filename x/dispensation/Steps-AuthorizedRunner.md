@@ -1,11 +1,11 @@
-#Steps to follow by Authorized Runner
+# Steps to follow by Authorized Runner
 
-##Requirements
+## Requirements
 1. A dispensation should already be created : A dispensation should have been created, and the authorized runner address assigned to it.
 2. Enough funds to pay for gas fees : The authorized runner would need to pay for the gas fee everytime they run a new transaction.
 
-##Steps
-###Run Dispensation
+## Steps
+### Run Dispensation
 Note The run dispensation only executes 10 transfers at a time. 
 If the dispensation contains 3000 records, the authorized runner would need to submit a run transaction `3001/10 = 301 times`
 
