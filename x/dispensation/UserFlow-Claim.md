@@ -20,7 +20,6 @@ type CreateClaimReq struct {
 ```
 
 ### On friday we get a list of all the claims (After Cut-off time) for the week. Any claims submitted after cutoff would be processed next week.
-(This step can be done through CLI on friday , or process events throughout the week . Processing events would be the preferred approach)
 This query through the cli would look like
 ```shell
 sifnodecli q dispensation claims-by-type ValidatorSubsidy --chain-id sifchain --node tcp://rpc.sifchain.finance:80
@@ -44,26 +43,7 @@ Which returns
 }
 
 ```
-We can also parse events instead of the using this query . This event would be in the same block as the one which has the dispensation/createClaim request
-```json
- {"type": "claim_created",
-            "attributes": [
-              {
-                "key": "Y2xhaW1fY3JlYXRvcg==",
-                "value": "c2lmMWw3aHlwbXFrMnljMzM0dmM2dm1kd3pwNXNkZWZ5Z2oyYWQ5M3A1"
-              },
-              {
-                "key": "Y2xhaW1fdHlwZQ==",
-                "value": "VmFsaWRhdG9yU3Vic2lkeQ=="
-              },
-              {
-                "key": "dXNlckNsYWltX2NyZWF0aW9uVGltZQ==",
-                "value": "MjAyMS0wNS0wMlQwMjo0MzoxMC41OTMxMjVa"
-              }
-            ]
-}
-```
-After parsing should become 
+The relevant event would be in the same block as the one which has the dispensation/createClaim request
 ```json
  {"type": "userClaim_new",
             "attributes": [
@@ -84,7 +64,7 @@ After parsing should become
 
 ```
 
-### This list obtained above is run through the parsing API , which should creates an output file 
+### This list obtained above is run through the parsing API ,to get output list
 ```json
 {
  "Output": [
@@ -110,7 +90,7 @@ After parsing should become
 }
 ```
 
-### This file is then used to create a distribution
+### This file is then used to create and run a dispensation
 Create
 ```shell
 sifnodecli tx dispensation create ValidatorSubsidy output.json sif1l7hypmqk2yc334vc6vmdwzp5sdefygj2ad93p5 --from sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd --yes --gas auto --gas-adjustment=1.5 --gas-prices 1.0rowan

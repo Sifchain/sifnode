@@ -4,17 +4,18 @@
 - The module allows a user to create a Claim .
 - A claim is record , stating that the user want to collect their rewards at the end of the week.
 - A claim is deleted once the user is paid out.
-- The claim_create is an auxiliary functionality for the offline calculation api created to calculate user rewards.
+- The `create claim` is the on-chain record for the off-chain components to calculate ValidatorSubsidy and LiquidityMining rewards
 
 ## General use case 
 This is the general use case , the actual implementation might vary a bit
 Any day of the week
  - create claims through this api (on chain)
+Off-Chain components
+ - Create claim snapshots every 200 hours .  
+  `@Niko To add the steps here`
 On friday
-- Run a query to get all claims / Keep reading the events emitted from create_claim
-- This is list is an input for a function (This function is off-chain and not part of this module)  which iterates over the list and creates a json which the dispensation module can use.
-- Run a dispensation of type Liquidity Mining or Validator Subsidy . 
-- After running the above the transfers happen over the next few blocks (10 per block) . An external function (Not part of this module).Reads these events and resets user multipliers accordingly.
+ - Create a dispensation of type Liquidity Mining or Validator Subsidy . 
+ - Run the created dispensation using the authorize runner
 
 
 ## Technicals
