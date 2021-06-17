@@ -9,7 +9,13 @@ module Sifchain
         end
 
         def generate
-          build! ARGS
+          "#{exec} #{build! ARGS}"
+        end
+
+        private
+
+        def exec
+          ::Sifchain::Chainops::Cli::KUBECTL
         end
       end
     end

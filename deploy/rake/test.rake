@@ -1,5 +1,6 @@
-require "./deploy/rake/lib/sifchain/chainops/task"
 require "./deploy/rake/lib/sifchain/chainops/builder"
+require "./deploy/rake/lib/sifchain/chainops/cli"
+require "./deploy/rake/lib/sifchain/chainops/task"
 require "./deploy/rake/lib/sifchain/chainops/test/testing"
 
 namespace :test do
