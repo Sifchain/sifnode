@@ -62,7 +62,7 @@ set_persistant_env_var BRIDGE_TOKEN_ADDRESS $(cat $BASEDIR/smart-contracts/build
 
 set_persistant_env_var BRIDGE_BANK_ADDRESS $(cat $BASEDIR/smart-contracts/build/contracts/BridgeBank.json | jq -r '.networks["5777"].address') $envexportfile required
 
-rm -rf $SMART_CONTRACTS_DIR/relayerdb
+rm -rf /tmp/sifchainrelayerdb
 bash ${BASEDIR}/test/integration/setup_sifchain.sh && . $envexportfile
 
 logecho finished $0

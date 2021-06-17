@@ -29,11 +29,6 @@ import (
 	"go.uber.org/zap"
 )
 
-const (
-	// EnvPrefix defines the environment prefix for the root cmd
-	levelDbFile = "relayerdb"
-)
-
 func buildRootCmd() *cobra.Command {
 	// see cmd/sifnoded/cmd/root.go:37 ; we need to do the
 	// same thing in ebrelayer
@@ -89,6 +84,11 @@ func buildRootCmd() *cobra.Command {
 		"",
 		"Path to a json file containing an array of sifchain denom => Ethereum symbol pairs",
 	)
+	rootCmd.PersistentFlags().String(
+		ebrelayertypes.FlagRelayerDbPath,
+		"./relayerdb",
+		"Path to the relayerdb directory",
+	)
 	// Construct Root Command
 	rootCmd.AddCommand(
 		rpc.StatusCommand(),
@@ -140,6 +140,10 @@ func RunInitRelayerCmd(cmd *cobra.Command, args []string) error {
 	}
 	log.Printf("got result from GetClientQueryContext: %v", cliContext)
 
+	levelDbFile, err := cmd.Flags().GetString(ebrelayertypes.FlagRelayerDbPath)
+	if err != nil {
+		return err
+	}
 	// Open the level db
 	db, err := leveldb.OpenFile(levelDbFile, nil)
 	if err != nil {

@@ -54,5 +54,6 @@ ETHEREUM_PRIVATE_KEY=$EBRELAYER_ETHEREUM_PRIVATE_KEY $runner init $TCP_URL "$ETH
   --node $TCP_URL \
   --keyring-backend test \
   --from $MONIKER \
-  --symbol-translator-file ${TEST_INTEGRATION_DIR}/config/symbol_translator.json
+  --symbol-translator-file ${TEST_INTEGRATION_DIR}/config/symbol_translator.json \
+  --relayerdb-path /tmp/sifchainrelayerdb \
   # --home $CHAINDIR/.sifnoded \
