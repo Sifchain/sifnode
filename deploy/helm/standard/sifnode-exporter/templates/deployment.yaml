@@ -43,6 +43,12 @@ spec:
               mountPath: /root/
           command: ["/bin/sh"]
           args: ["-c", "mkdir -p $HOME/.sifnoded/exports && sifnoded export > $HOME/.sifnoded/exports/`date '+%s'`.json"]
+        - name: sync
+          image: amazon/aws-cli:latest
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          volumeMounts:
+            - name: data
+              mountPath: /root/
         - name: sifgen
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
