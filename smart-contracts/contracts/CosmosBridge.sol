@@ -1,48 +1,40 @@
-pragma solidity 0.5.16;
+pragma solidity 0.8.0;
 
-import "../node_modules/openzeppelin-solidity/contracts/math/SafeMath.sol";
-import "./Valset.sol";
 import "./Oracle.sol";
 import "./BridgeBank/BridgeBank.sol";
 import "./CosmosBridgeStorage.sol";
-
+import "hardhat/console.sol";
 
 contract CosmosBridge is CosmosBridgeStorage, Oracle {
-    using SafeMath for uint256;
-    
     bool private _initialized;
     uint256[100] private ___gap;
 
     /*
      * @dev: Event declarations
      */
-
-    event LogOracleSet(address _oracle);
-
-    event LogBridgeBankSet(address _bridgeBank);
+    event LogBridgeBankSet(address bridgeBank);
 
     event LogNewProphecyClaim(
-        uint256 _prophecyID,
-        ClaimType _claimType,
-        address payable _ethereumReceiver,
-        string _symbol,
-        uint256 _amount
+        uint256 indexed prophecyID,
+        address indexed ethereumReceiver,
+        uint256 indexed amount
     );
 
-    event LogProphecyCompleted(uint256 _prophecyID, ClaimType _claimType);
+    event LogNewBridgeTokenCreated(
+        uint8 decimals,
+        uint256 indexed sourceChainDescriptor,
+        string name,
+        string symbol,
+        address indexed sourceContractAddress,
+        address indexed bridgeTokenAddress
+    );
 
-    /*
-     * @dev: Modifier to restrict access to the operator.
-     */
-    modifier onlyOperator() {
-        require(msg.sender == operator, "Must be the operator.");
-        _;
-    }
+    event LogProphecyCompleted(uint256 prophecyID, bool success);
 
     /*
      * @dev: Modifier to restrict access to current ValSet validators
      */
-    modifier onlyValidator() {
+    modifier onlyValidator {
         require(
             isActiveValidator(msg.sender),
             "Must be an active validator"
@@ -56,12 +48,11 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
     function initialize(
         address _operator,
         uint256 _consensusThreshold,
-        address[] memory _initValidators,
-        uint256[] memory _initPowers
-    ) public {
+        address[] calldata _initValidators,
+        uint256[] calldata _initPowers
+    ) external {
         require(!_initialized, "Initialized");
 
-        COSMOS_NATIVE_ASSET_PREFIX = "e";
         operator = _operator;
         hasBridgeBank = false;
         _initialized = true;
@@ -73,7 +64,7 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
         );
     }
 
-    function changeOperator(address _newOperator) public onlyOperator {
+    function changeOperator(address _newOperator) external onlyOperator {
         require(_newOperator != address(0), "invalid address");
         operator = _newOperator;
     }
@@ -81,7 +72,7 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
     /*
      * @dev: setBridgeBank
      */
-    function setBridgeBank(address payable _bridgeBank) public onlyOperator {
+    function setBridgeBank(address payable _bridgeBank) external onlyOperator {
         require(
             !hasBridgeBank,
             "The Bridge Bank cannot be updated once it has been set"
@@ -94,88 +85,192 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
     }
 
     function getProphecyID(
-        ClaimType _claimType,
-        bytes calldata _cosmosSender,
-        uint256 _cosmosSenderSequence,
-        address payable _ethereumReceiver,
-        string calldata _symbol,
-        uint256 _amount
-    ) external pure returns (uint256) {
-        return uint256(keccak256(abi.encodePacked(_claimType, _cosmosSender, _cosmosSenderSequence, _ethereumReceiver, _symbol, _amount)));
+        bytes calldata cosmosSender,
+        uint256 cosmosSenderSequence,
+        address payable ethereumReceiver,
+        address tokenAddress,
+        uint256 amount,
+        bool doublePeg,
+        uint128 nonce
+    ) public pure returns (uint256) {
+        return uint256(
+            keccak256(
+                abi.encode(
+                    cosmosSender,
+                    cosmosSenderSequence,
+                    ethereumReceiver,
+                    tokenAddress,
+                    amount,
+                    doublePeg,
+                    nonce
+                )
+            )
+        );
     }
 
-    /*
-     * @dev: newProphecyClaim
-     *       Creates a new burn or lock prophecy claim, adding it to the prophecyClaims mapping.
-     *       Burn claims require that there are enough locked Ethereum assets to complete the prophecy.
-     *       Lock claims have a new token contract deployed or use an existing contract based on symbol.
+    function verifySignature(
+        address signer,
+        bytes32 hashDigest,
+        uint8 _v,
+		bytes32 _r,
+		bytes32 _s
+    ) private pure returns (bool) {
+		bytes32 messageDigest = keccak256(abi.encodePacked("\x19Ethereum Signed Message:\n32", hashDigest));
+		return signer == ecrecover(messageDigest, _v, _r, _s);
+	}
+    
+    // this is unfortunately the best we can do to ensure no duplicate validators are calling
+    // it is possible to build a hashmap in memory, but I'm unsure of how much that saves and
+    // it would require some pretty low level work for this very simple function
+    // Alternatively, cast addresses to UINT's and possibly do some bitwise operations
+    // to ensure there are no duplicate numbers
+    function findDup(SignatureData[] calldata validators) public pure returns (bool) {
+        for (uint256 i = 0; i < validators.length; i++) {
+            for (uint256 j = i + 1; j < validators.length; j++) {
+                if (validators[i].signer == validators[j].signer) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    function getSignedPower(SignatureData[] calldata validators) public view returns(uint256) {
+        uint256 totalPower = 0;
+        for (uint256 i = 0; i < validators.length; i++) {
+            totalPower += getValidatorPower(validators[i].signer);
+        }
+
+        return totalPower;
+    }
+
+    struct SignatureData {
+        address signer;
+        uint8 _v;
+		bytes32 _r;
+		bytes32 _s;
+    }
+
+    struct ClaimData {
+        bytes cosmosSender;
+        uint256 cosmosSenderSequence;
+        address payable ethereumReceiver;
+        address tokenAddress;
+        uint256 amount;
+        bool doublePeg;
+        uint128 nonce;
+    }
+
+    function submitProphecyClaimAggregatedSigs(
+        bytes32 hashDigest,
+        ClaimData calldata claimData,
+        SignatureData[] calldata signatureData
+    ) external {
+
+        uint256 prophecyID = getProphecyID(
+            claimData.cosmosSender,
+            claimData.cosmosSenderSequence,
+            claimData.ethereumReceiver,
+            claimData.tokenAddress,
+            claimData.amount,
+            claimData.doublePeg,
+            claimData.nonce
+        );
+
+        require(
+            uint256(hashDigest) == prophecyID,
+            "INV_DATA"
+        );
+
+        // ensure signature lengths are correct
+        require(
+            signatureData.length > 0 && signatureData.length <= validatorCount,
+            "INV_SIG_LEN"
+        );
+
+        // ensure there are no duplicate signers
+        require(
+            !findDup(signatureData), "DUP_SIGNER"
+        );
+
+        // check that all signers are validators and are unique
+        for (uint256 i = 0; i < signatureData.length; i++) {
+            require(isActiveValidator(signatureData[i].signer), "INV_SIGNER");
+            require(
+                verifySignature(
+                    signatureData[i].signer,
+                    hashDigest,
+                    signatureData[i]._v,
+                    signatureData[i]._r,
+                    signatureData[i]._s
+                ) == true,
+                "INV_SIG"
+            );
+        }
+
+        uint256 signedPower = getSignedPower(signatureData);
+
+        require(getProphecyStatus(signedPower), "INV_POW");
+
+        uint256 previousNonce = lastNonceSubmitted;
+        require(
+            // assert nonce is correct
+            previousNonce + 1 == claimData.nonce,
+            "INV_ORD"
+        );
+        lastNonceSubmitted = claimData.nonce;
+
+        emit LogNewProphecyClaim(
+            prophecyID,
+            claimData.ethereumReceiver,
+            claimData.amount
+        );
+
+        // if we are double pegging, then we are going to need to get the address on this chain
+        address tokenAddress = claimData.doublePeg ? sourceAddressToDestinationAddress[claimData.tokenAddress] : claimData.tokenAddress;
+
+        completeProphecyClaim(
+            prophecyID,
+            claimData.ethereumReceiver,
+            tokenAddress,
+            claimData.amount
+        );
+    }
+
+    /**
+     * @param symbol symbol of the ERC20 token on the source chain
+     * @param name name of the ERC20 token on the source chain
+     * @param sourceChainTokenAddress address of the ERC20 token on the source chain
+     * @param decimals of the ERC20 token on the source chain
+     * @param chainDescriptor descriptor of the source chain
      */
-    function newProphecyClaim(
-        ClaimType _claimType,
-        bytes memory _cosmosSender,
-        uint256 _cosmosSenderSequence,
-        address payable _ethereumReceiver,
-        string memory _symbol,
-        uint256 _amount
-    ) public onlyValidator {
-        uint256 _prophecyID = uint256(keccak256(abi.encodePacked(_claimType, _cosmosSender, _cosmosSenderSequence, _ethereumReceiver, _symbol, _amount)));
-        (bool prophecyCompleted, , ) = getProphecyThreshold(_prophecyID);
-        require(!prophecyCompleted, "prophecyCompleted");
-
-        if (oracleClaimValidators[_prophecyID] == 0) {
-            string memory symbol;
-            if (_claimType == ClaimType.Burn) {
-                symbol = BridgeBank(bridgeBank).safeLowerToUpperTokens(_symbol);
-                require(
-                    BridgeBank(bridgeBank).getLockedFunds(symbol) >= _amount,
-                    "Not enough locked assets to complete the proposed prophecy"
-                );
-                address tokenAddress = BridgeBank(bridgeBank).getLockedTokenAddress(symbol);
-                if (tokenAddress == address(0) && uint256(keccak256(abi.encodePacked(symbol))) != uint256(keccak256("eth"))) {
-                    revert("Invalid token address");
-                }
-            } else if (_claimType == ClaimType.Lock) {
-                symbol = concat(COSMOS_NATIVE_ASSET_PREFIX, _symbol); // Add 'e' symbol prefix
-                symbol = BridgeBank(bridgeBank).safeLowerToUpperTokens(symbol);
-                address bridgeTokenAddress = BridgeBank(bridgeBank).getBridgeToken(symbol);
-                if (bridgeTokenAddress == address(0)) {
-                    // First lock of this asset, deploy new contract and get new symbol/token address
-                    BridgeBank(bridgeBank).createNewBridgeToken(symbol);
-                }
-            } else {
-                revert("Invalid claim type, only burn and lock are supported.");
-            }
-
-            emit LogNewProphecyClaim(
-                _prophecyID,
-                _claimType,
-                _ethereumReceiver,
+    function createNewBridgeToken(
+        string calldata symbol,
+        string calldata name,
+        address sourceChainTokenAddress,
+        uint8 decimals,
+        uint256 chainDescriptor
+    ) external onlyValidator {
+        // need to make a business decision on what this symbol should be
+        // First lock of this asset, deploy new contract and get new symbol/token address
+        address tokenAddress = BridgeBank(bridgeBank)
+            .createNewBridgeToken(
+                name,
                 symbol,
-                _amount
+                decimals
             );
-        }
 
-        bool claimComplete = newOracleClaim(_prophecyID, msg.sender);
+        sourceAddressToDestinationAddress[sourceChainTokenAddress] = tokenAddress;
 
-        if (claimComplete) {
-            address tokenAddress;
-            if (_claimType == ClaimType.Lock) {
-                _symbol = concat(COSMOS_NATIVE_ASSET_PREFIX, _symbol);
-                _symbol = BridgeBank(bridgeBank).safeLowerToUpperTokens(_symbol);
-                tokenAddress = BridgeBank(bridgeBank).getBridgeToken(_symbol);
-            } else {
-                _symbol = BridgeBank(bridgeBank).safeLowerToUpperTokens(_symbol);
-                tokenAddress = BridgeBank(bridgeBank).getLockedTokenAddress(_symbol);
-            }
-            completeProphecyClaim(
-                _prophecyID,
-                tokenAddress,
-                _claimType,
-                _ethereumReceiver,
-                _symbol,
-                _amount
-            );
-        }
+        emit LogNewBridgeTokenCreated(
+            decimals,
+            chainDescriptor,
+            name,
+            symbol,
+            sourceChainTokenAddress,
+            tokenAddress
+        );
     }
 
     /*
@@ -185,68 +280,21 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
      *       Lock claims mint BridgeTokens on BridgeBank's token whitelist.
      */
     function completeProphecyClaim(
-        uint256 _prophecyID,
-        address tokenAddress,
-        ClaimType claimType,
-        address payable ethereumReceiver,
-        string memory symbol,
-        uint256 amount
-    ) internal {
-
-        if (claimType == ClaimType.Burn) {
-            unlockTokens(ethereumReceiver, symbol, amount);
-        } else {
-            issueBridgeTokens(ethereumReceiver, tokenAddress, symbol, amount);
-        }
-
-        emit LogProphecyCompleted(_prophecyID, claimType);
-    }
-
-    /*
-     * @dev: issueBridgeTokens
-     *       Issues a request for the BridgeBank to mint new BridgeTokens
-     */
-    function issueBridgeTokens(
+        uint256 prophecyID,
         address payable ethereumReceiver,
         address tokenAddress,
-        string memory symbol,
         uint256 amount
     ) internal {
-        BridgeBank(bridgeBank).mintBridgeTokens(
-            ethereumReceiver,
-            tokenAddress,
-            symbol,
-            amount
+        (bool success, ) = bridgeBank.call{gas: 120000}(
+            abi.encodeWithSignature(
+                "handleUnpeg(address,address,uint256)",
+                ethereumReceiver,
+                tokenAddress,
+                amount
+            )
         );
-    }
 
-    /*
-     * @dev: unlockTokens
-     *       Issues a request for the BridgeBank to unlock funds held on contract
-     */
-    function unlockTokens(
-        address payable ethereumReceiver,
-        string memory symbol,
-        uint256 amount
-    ) internal {
-        BridgeBank(bridgeBank).unlock(
-            ethereumReceiver,
-            symbol,
-            amount
-        );
-    }
-
-    /*
-     * @dev: Performs low gas-comsuption string concatenation
-     *
-     * @param _prefix: start of the string
-     * @param _suffix: end of the string
-     */
-    function concat(string memory _prefix, string memory _suffix)
-        internal
-        pure
-        returns (string memory)
-    {
-        return string(abi.encodePacked(_prefix, _suffix));
+        // prophecy completed and whether or not the call to bridgebank was successful
+        emit LogProphecyCompleted(prophecyID, success);
     }
 }

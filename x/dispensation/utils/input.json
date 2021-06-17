@@ -11,7 +11,7 @@
    "coins": [
     {
      "denom": "rowan",
-     "amount": "10000000000000000000"
+     "amount": "0"
     }
    ]
   },
@@ -20,7 +20,7 @@
    "coins": [
     {
      "denom": "rowan",
-     "amount": "10000000000000000000"
+     "amount": "0"
     }
    ]
   }

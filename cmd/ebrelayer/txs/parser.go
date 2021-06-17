@@ -1,7 +1,6 @@
 package txs
 
 import (
-	"crypto/ecdsa"
 	"errors"
 	"log"
 	"math/big"
@@ -82,27 +81,6 @@ func EthereumEventToEthBridgeClaim(valAddr sdk.ValAddress, event types.EthereumE
 	witnessClaim.ClaimType = event.ClaimType
 
 	return witnessClaim, nil
-}
-
-// ProphecyClaimToSignedOracleClaim packages and signs a prophecy claim's data, returning a new oracle claim
-func ProphecyClaimToSignedOracleClaim(event types.ProphecyClaimEvent, key *ecdsa.PrivateKey) (ethbridge.OracleClaim, error) {
-	oracleClaim := ethbridge.OracleClaim{}
-
-	// Generate a hashed claim message which contains ProphecyClaim's data
-	message := GenerateClaimMessage(event)
-
-	// Sign the message using the validator's private key
-	signature, err := SignClaim(PrefixMsg(message), key)
-	if err != nil {
-		return oracleClaim, err
-	}
-
-	oracleClaim.ProphecyId = event.ProphecyID.String()
-	var message32 []byte
-	copy(message32[:], message)
-	oracleClaim.Message = message32
-	oracleClaim.Signature = signature
-	return oracleClaim, nil
 }
 
 // BurnLockEventToCosmosMsg parses data from a Burn/Lock event witnessed on Cosmos into a CosmosMsg struct

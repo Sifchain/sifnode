@@ -1,4 +1,4 @@
-pragma solidity 0.5.16;
+pragma solidity 0.8.0;
 
 import "./PauserRole.sol";
 
@@ -25,7 +25,7 @@ contract Pausable is PauserRole {
     bool private _paused;
 
 
-    function initialize (address _user) internal {
+    function _pausableInitialize (address _user) internal {
         _addPauser(_user);
         _paused = false;
     }

@@ -1,11 +1,16 @@
-pragma solidity 0.5.16;
+pragma solidity 0.8.0;
 
 
 contract BridgeRegistry {
     address public cosmosBridge;
     address public bridgeBank;
-    address public oracle;
-    address public valset;
+
+    // these variables are now deprecated and are made private
+    // so that the getter helper method is not available.
+    // [DEPRECATED]
+    address private oracle;
+    // [DEPRECATED]
+    address private valset;
 
     bool private _initialized;
 
@@ -13,9 +18,7 @@ contract BridgeRegistry {
 
     event LogContractsRegistered(
         address _cosmosBridge,
-        address _bridgeBank,
-        address _oracle,
-        address _valset
+        address _bridgeBank
     );
 
     function initialize(
@@ -28,6 +31,6 @@ contract BridgeRegistry {
         bridgeBank = _bridgeBank;
         _initialized = true;
 
-        emit LogContractsRegistered(cosmosBridge, bridgeBank, oracle, valset);
+        emit LogContractsRegistered(cosmosBridge, bridgeBank);
     }
 }

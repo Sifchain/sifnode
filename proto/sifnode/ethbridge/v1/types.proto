@@ -48,23 +48,6 @@ enum ClaimType {
   CLAIM_TYPE_LOCK = 2;
 }
 
-// OracleClaim contains data required to make an OracleClaim
-message OracleClaim {
-  string prophecy_id = 1;
-  bytes message = 2;
-  bytes signature = 3;
-}
-
-// ProphecyClaim contains data required to make a ProphecyClaim
-message ProphecyClaim {
-  bytes cosmos_sender = 1;
-  string symbol = 2;
-  string amount = 3;
-  bytes ethereum_receiver = 4;
-  string claim_type = 5;
-  bytes cosmos_sender_sequence = 6;
-}
-
 // GenesisState for ethbridge
 message GenesisState {
   string ceth_receive_account = 1;
