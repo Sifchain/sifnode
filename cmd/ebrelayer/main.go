@@ -301,7 +301,7 @@ func buildSymbolTranslator(flags *flag.FlagSet) (*txs.SymbolTranslator, error) {
 		return txs.NewSymbolTranslator(), nil
 	}
 
-	symbolTranslator, err := txs.NewSymbolTranslatorFromJsonFile(filename)
+	symbolTranslator, err := txs.NewSymbolTranslatorFromJSONFile(filename)
 	if err != nil {
 		return nil, err
 	}

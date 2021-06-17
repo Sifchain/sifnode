@@ -24,15 +24,15 @@ func NewSymbolTranslator() *SymbolTranslator {
 	return &SymbolTranslator{symbolTable: bimap.NewBiMap()}
 }
 
-func NewSymbolTranslatorFromJsonFile(filename string) (*SymbolTranslator, error) {
+func NewSymbolTranslatorFromJSONFile(filename string) (*SymbolTranslator, error) {
 	contents, err := ioutil.ReadFile(filename)
 	if err != nil {
 		return nil, err
 	}
-	return NewSymbolTranslatorFromJsonBytes(contents)
+	return NewSymbolTranslatorFromJSONBytes(contents)
 }
 
-func NewSymbolTranslatorFromJsonBytes(jsonContents []byte) (*SymbolTranslator, error) {
+func NewSymbolTranslatorFromJSONBytes(jsonContents []byte) (*SymbolTranslator, error) {
 	var symbolMap map[string]interface{}
 	err := json.Unmarshal(jsonContents, &symbolMap)
 	if err != nil {

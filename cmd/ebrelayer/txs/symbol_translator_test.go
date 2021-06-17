@@ -11,11 +11,11 @@ const (
 )
 
 func TestNewSymbolTranslatorFromJsonBytes(t *testing.T) {
-	_, err := NewSymbolTranslatorFromJsonBytes([]byte("foo"))
+	_, err := NewSymbolTranslatorFromJSONBytes([]byte("foo"))
 	assert.Error(t, err)
 
 	q := ` {"ibc/FEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACE": "Face"} `
-	x, err := NewSymbolTranslatorFromJsonBytes([]byte(q))
+	x, err := NewSymbolTranslatorFromJSONBytes([]byte(q))
 	assert.NoError(t, err)
 	assert.NotNil(t, x)
 	assert.Equal(t, x.SifchainToEthereum(sifchainDenomFeedface), ethereumSymbolFeeface)
