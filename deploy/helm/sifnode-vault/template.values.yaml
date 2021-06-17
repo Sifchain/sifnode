@@ -7,7 +7,7 @@ fullnameOverride: ""
 serviceAccount:
   create: false
   annotations: {}
-  name: ""
+  name: "sifnode"
 
 podSecurityContext: {}
 
