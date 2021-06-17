@@ -65,7 +65,7 @@ namespace :standalone do
     desc "Deploy a single standalone sifnode on to your cluster"
     task :standalone_vault, [:namespace, :image, :image_tag, :helm_values_file] do |t, args|
       #variable_template_replace(args[:template_file_name], args[:final_file_name])
-      cmd = %Q{helm upgrade sifnode deploy/helm/sifnode-vault \
+      cmd = %Q{helm upgrade sifnode deploy/helm/vault/sifnode \
         --install -n #{args[:namespace]} --create-namespace \
         --set image.tag=#{args[:image_tag]} \
         --set image.repository=#{args[:image]} \
@@ -77,7 +77,7 @@ namespace :standalone do
     # desc "Deploy a single network-aware sifnode on to your cluster"
     # task :peer_vault, [:namespace, :image, :image_tag, :peer_address, :template_file_name, :final_file_name] do |t, args|
     #   variable_template_replace(args[:template_file_name], args[:final_file_name])
-    #   cmd = %Q{helm upgrade sifnode deploy/helm/sifnode-vault \
+    #   cmd = %Q{helm upgrade sifnode deploy/helm/vault/sifnode \
     #     --install -n #{args[:namespace]} --create-namespace \
     #     --set sifnode.args.peerAddress=#{args[:peer_address]} \
     #     --set image.tag=#{args[:image_tag]} \
@@ -85,13 +85,11 @@ namespace :standalone do
     #     -f #{args[:final_file_name]} --kubeconfig=./kubeconfig
     #   }
     #   system(cmd) or exit 1
-    #   #:namespace, :image, :image_tag, :peer_address, :template_file_name, :final_file_name,:app_region, :app_env
-    #   #rake "sifnode:standalone:peer_vault['sifnode', 'sifchain/sifnoded', 'testnet-genesis', '1b02f2eb065031426d37186efff75df268bb9097@54.164.57.141:26656', './deploy/helm/sifnode-vault/template.values.yaml', './deploy/helm/sifnode-vault/generated.values.yaml']"
     # end
 
     desc "Deploy a new sifnode vault to a new cluster"
     task :standalone, [:namespace, :image, :image_tag, :helm_values_file] do |t, args|
-        cmd = %Q{helm upgrade sifnode deploy/helm/sifnode-vault \
+        cmd = %Q{helm upgrade sifnode deploy/helm/vault/sifnode \
           --install -n #{args[:namespace]} --create-namespace \
           --set image.tag=#{args[:image_tag]} \
           --set image.repository=#{args[:image]} \
@@ -114,7 +112,7 @@ namespace :standalone do
 
     desc "Deploy a single network-aware sifnode on to your cluster"
     task :peer_vault, [:namespace, :image, :image_tag, :helm_values_file, :peer_address] do |t, args|
-        cmd = %Q{helm upgrade sifnode deploy/helm/sifnode-vault \
+        cmd = %Q{helm upgrade sifnode deploy/helm/vault/sifnode \
         --install -n #{args[:namespace]} --create-namespace \
         --set sifnode.args.peerAddress=#{args[:peer_address]} \
         --set image.tag=#{args[:image_tag]} \
