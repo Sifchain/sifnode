@@ -79,13 +79,15 @@ func (k Keeper) GetProphecy(ctx sdk.Context, id string) (types.Prophecy, bool) {
 }
 
 // SetProphecy saves a prophecy with an initial claim
-func (k Keeper) SetProphecy(ctx sdk.Context, prophecy types.Prophecy) {
+func (k Keeper) SetProphecy(ctx sdk.Context, prophecy types.Prophecy) error {
 	dbProphecy, err := prophecy.SerializeForDB()
 	if err != nil {
-		panic(err)
+		return err
 	}
 
 	k.SetDBProphecy(ctx, dbProphecy)
+
+	return nil
 }
 
 func (k Keeper) SetDBProphecy(ctx sdk.Context, prophecy types.DBProphecy) {
@@ -156,7 +158,11 @@ func (k Keeper) ProcessClaim(ctx sdk.Context, claim types.Claim) (types.Status, 
 	prophecy.AddClaim(valAddr, claim.Content)
 	prophecy = k.processCompletion(ctx, prophecy)
 
-	k.SetProphecy(ctx, prophecy)
+	err = k.SetProphecy(ctx, prophecy)
+	if err != nil {
+		return types.Status{}, err
+	}
+
 	return prophecy.Status, nil
 }
 
