@@ -8,7 +8,7 @@ module Sifchain
       attr_accessor :args
 
       def build!(arg_map)
-        arg_map.map {|k, v| "#{v} #{args[k]}" }.join(" ")
+        arg_map.map { |k, v| "#{v} #{args[k]}" }.join(" ")
       end
     end
   end
