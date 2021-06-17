@@ -67,10 +67,12 @@ func (k Keeper) AddOracleWhiteList(ctx sdk.Context, validator sdk.ValAddress) {
 func (k Keeper) RemoveOracleWhiteList(ctx sdk.Context, validator sdk.ValAddress) {
 	valList := k.GetOracleWhiteList(ctx)
 
-	for index, item := range valList {
-		if validator.Equals(item) {
-			k.SetOracleWhiteList(ctx, append(valList[:index], valList[index+1]))
-			return
+	var updated []sdk.ValAddress
+	for _, addr := range valList {
+		if !validator.Equals(addr) {
+			updated = append(updated, addr)
 		}
 	}
+
+	k.SetOracleWhiteList(ctx, updated)
 }

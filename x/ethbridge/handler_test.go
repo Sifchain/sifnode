@@ -15,8 +15,8 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/Sifchain/sifnode/x/ethbridge"
-	"github.com/Sifchain/sifnode/x/ethbridge/test"
 	ethbridgekeeper "github.com/Sifchain/sifnode/x/ethbridge/keeper"
+	"github.com/Sifchain/sifnode/x/ethbridge/test"
 	"github.com/Sifchain/sifnode/x/ethbridge/types"
 	oraclekeeper "github.com/Sifchain/sifnode/x/oracle/keeper"
 	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
@@ -439,6 +439,102 @@ func TestRescueCethMsg(t *testing.T) {
 	res, err := handler(ctx, &testRescueCethMsg)
 	require.NoError(t, err)
 	require.NotNil(t, res)
+}
+
+func TestUpdateWhiteListValidator(t *testing.T) {
+	addrs, validatorAddresses := test.CreateTestAddrs(3)
+
+	tt := []struct {
+		name     string
+		sender   sdk.AccAddress
+		expected []sdk.ValAddress
+		msgs     []types.MsgUpdateWhiteListValidator
+	}{
+		{
+			name:     "Add one",
+			sender:   addrs[0],
+			expected: []sdk.ValAddress{validatorAddresses[0]},
+			msgs: []types.MsgUpdateWhiteListValidator{
+				types.CreateTestUpdateWhiteListValidatorMsg(t, addrs[0].String(), validatorAddresses[0].String(), "add"),
+			},
+		},
+		{
+			name:     "Add two",
+			sender:   addrs[0],
+			expected: []sdk.ValAddress{validatorAddresses[0], validatorAddresses[1]},
+			msgs: []types.MsgUpdateWhiteListValidator{
+				types.CreateTestUpdateWhiteListValidatorMsg(t, addrs[0].String(), validatorAddresses[0].String(), "add"),
+				types.CreateTestUpdateWhiteListValidatorMsg(t, addrs[0].String(), validatorAddresses[1].String(), "add"),
+			},
+		},
+		{
+			name:     "Add two remove last",
+			sender:   addrs[0],
+			expected: []sdk.ValAddress{validatorAddresses[0]},
+			msgs: []types.MsgUpdateWhiteListValidator{
+				types.CreateTestUpdateWhiteListValidatorMsg(t, addrs[0].String(), validatorAddresses[0].String(), "add"),
+				types.CreateTestUpdateWhiteListValidatorMsg(t, addrs[0].String(), validatorAddresses[1].String(), "add"),
+				types.CreateTestUpdateWhiteListValidatorMsg(t, addrs[0].String(), validatorAddresses[1].String(), "remove"),
+			},
+		},
+		{
+			name:     "Add two remove first",
+			sender:   addrs[0],
+			expected: []sdk.ValAddress{validatorAddresses[1]},
+			msgs: []types.MsgUpdateWhiteListValidator{
+				types.CreateTestUpdateWhiteListValidatorMsg(t, addrs[0].String(), validatorAddresses[0].String(), "add"),
+				types.CreateTestUpdateWhiteListValidatorMsg(t, addrs[0].String(), validatorAddresses[1].String(), "add"),
+				types.CreateTestUpdateWhiteListValidatorMsg(t, addrs[0].String(), validatorAddresses[0].String(), "remove"),
+			},
+		},
+		{
+			name:     "Remove when none",
+			sender:   addrs[0],
+			expected: []sdk.ValAddress{},
+			msgs: []types.MsgUpdateWhiteListValidator{
+				types.CreateTestUpdateWhiteListValidatorMsg(t, addrs[0].String(), validatorAddresses[0].String(), "remove"),
+			},
+		},
+		{
+			name:     "Add one and remove all",
+			sender:   addrs[0],
+			expected: []sdk.ValAddress{},
+			msgs: []types.MsgUpdateWhiteListValidator{
+				types.CreateTestUpdateWhiteListValidatorMsg(t, addrs[0].String(), validatorAddresses[0].String(), "add"),
+				types.CreateTestUpdateWhiteListValidatorMsg(t, addrs[0].String(), validatorAddresses[0].String(), "remove"),
+			},
+		},
+		{
+			name:     "Add duplicate, remove all instances",
+			sender:   addrs[0],
+			expected: []sdk.ValAddress{},
+			msgs: []types.MsgUpdateWhiteListValidator{
+				types.CreateTestUpdateWhiteListValidatorMsg(t, addrs[0].String(), validatorAddresses[0].String(), "add"),
+				types.CreateTestUpdateWhiteListValidatorMsg(t, addrs[0].String(), validatorAddresses[0].String(), "add"),
+				types.CreateTestUpdateWhiteListValidatorMsg(t, addrs[0].String(), validatorAddresses[0].String(), "remove"),
+			},
+		},
+	}
+
+	for _, tc := range tt {
+		t.Run(tc.name, func(t *testing.T) {
+			ctx, _, _, accountKeeper, handler, _, oracleKeeper := CreateTestHandler(t, 0.5, []int64{5})
+
+			sender := tc.sender
+
+			accountKeeper.SetAccount(ctx, authtypes.NewBaseAccountWithAddress(sender))
+			oracleKeeper.SetAdminAccount(ctx, sender)
+			oracleKeeper.SetOracleWhiteList(ctx, []sdk.ValAddress{})
+
+			for _, msg := range tc.msgs {
+				_, err := handler(ctx, &msg)
+				require.NoError(t, err)
+			}
+
+			wl := oracleKeeper.GetOracleWhiteList(ctx)
+			require.Equal(t, tc.expected, wl)
+		})
+	}
 }
 
 func CreateTestHandler(t *testing.T, consensusNeeded float64, validatorAmounts []int64) (sdk.Context,
