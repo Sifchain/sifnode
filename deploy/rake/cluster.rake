@@ -50,7 +50,7 @@ namespace :cluster do
     task :deploy, [:cluster, :chainnet, :provider, :namespace, :image, :image_tag, :node_host, :eth_websocket_address, :eth_bridge_registry_address, :eth_private_key, :moniker, :mnemonic] do |t, args|
       check_args(args)
 
-      cmd = %Q{helm upgrade ebrelayer #{cwd}/../../deploy/helm/ebrelayer \
+      cmd = %Q{helm upgrade ebrelayer #{cwd}/../../deploy/helm/standard/ebrelayer \
         --install -n #{ns(args)} --create-namespace \
         --set image.repository=#{image_repository(args)} \
         --set image.tag=#{image_tag(args)} \
@@ -73,7 +73,7 @@ namespace :cluster do
     task :deploy, [:app_namespace, :image, :image_tag, :env, :app_name] do |t, args|
       cluster_automation = %Q{
         set +x
-        helm upgrade #{args[:app_name]} deploy/helm/#{args[:app_name]} \
+        helm upgrade #{args[:app_name]} deploy/helm/standard/#{args[:app_name]} \
             --install -n #{args[:app_namespace]} \
             --create-namespace \
             --set image.repository=#{args[:image]} \
@@ -593,7 +593,7 @@ metadata:
     desc "Deploy Helm Files"
     task :helm_deploy_vault, [:app_namespace, :image, :image_tag, :env, :app_name] do |t, args|
       puts "Deploy the Helm Files."
-      deoploy_helm = %Q{helm upgrade #{args[:app_name]} deploy/helm/#{args[:app_name]}-vault --install -n #{args[:app_namespace]} --create-namespace --set image.repository=#{args[:image]} --set image.tag=#{args[:image_tag]} --kubeconfig=./kubeconfig}
+      deoploy_helm = %Q{helm upgrade #{args[:app_name]} deploy/helm/vault/#{args[:app_name]} --install -n #{args[:app_namespace]} --create-namespace --set image.repository=#{args[:image]} --set image.tag=#{args[:image_tag]} --kubeconfig=./kubeconfig}
       system(deoploy_helm) or exit 1
 
       puts "Use kubectl rollout to wait for pods to start."
@@ -615,7 +615,7 @@ metadata:
             helm repo update --kubeconfig=./kubeconfig
             helm upgrade mongodb --install \
             -n mongodb \
-            -f deploy/helm/mongodb/values.yaml \
+            -f deploy/helm/standard/mongodb/values.yaml \
             --set auth.rootPassword="#{args[:ROOT_PASSWORD]}" \
             --set auth.username="#{args[:USERNAME]}" \
             --set auth.password="#{args[:PASSWORD]}" \
@@ -833,7 +833,7 @@ metadata:
     desc "Deploy Helm Files"
     task :helm_deploy, [:app_namespace, :image, :image_tag, :env, :app_name] do |t, args|
       puts "Deploy the Helm Files."
-      deoploy_helm = %Q{helm upgrade #{args[:app_name]} deploy/helm/#{args[:app_name]} --install -n #{args[:app_namespace]} --create-namespace --set image.repository=#{args[:image]} --set image.tag=#{args[:image_tag]} --kubeconfig=./kubeconfig}
+      deoploy_helm = %Q{helm upgrade #{args[:app_name]} deploy/helm/standard/#{args[:app_name]} --install -n #{args[:app_namespace]} --create-namespace --set image.repository=#{args[:image]} --set image.tag=#{args[:image_tag]} --kubeconfig=./kubeconfig}
       system(deoploy_helm) or exit 1
 
       puts "Use kubectl rollout to wait for pods to start."
@@ -1030,7 +1030,7 @@ sleep 15
     task :deploy, [:cluster, :chainnet, :provider, :namespace, :image, :image_tag, :root_url, :genesis_url, :rpc_url, :api_url, :mongo_password] do |t, args|
       check_args(args)
 
-      cmd = %Q{helm upgrade block-explorer #{cwd}/../../deploy/helm/block-explorer \
+      cmd = %Q{helm upgrade block-explorer #{cwd}/../../deploy/helm/standard/block-explorer \
         --install -n #{ns(args)} --create-namespace \
         --set image.repository=#{image_repository(args)} \
         --set image.tag=#{image_tag(args)} \
@@ -1061,14 +1061,14 @@ sleep 15
       end
 
       if args.has_key? :network
-        cmd = %Q{helm upgrade ethereum #{cwd}/../../deploy/helm/ethereum \
+        cmd = %Q{helm upgrade ethereum #{cwd}/../../deploy/helm/standard/ethereum \
             --install -n #{ns(args)} --create-namespace \
             --set geth.args.network='--#{args[:network]}' \
             --set geth.args.networkID=#{network_id} \
             --set ethstats.env.websocketSecret=#{SecureRandom.base64 20}
         }
       else
-        cmd = %Q{helm upgrade ethereum #{cwd}/../../deploy/helm/ethereum \
+        cmd = %Q{helm upgrade ethereum #{cwd}/../../deploy/helm/standard/ethereum \
             --install -n #{ns(args)} --create-namespace \
             --set ethstats.env.webSocketSecret=#{SecureRandom.base64 20}
         }
@@ -1082,7 +1082,7 @@ sleep 15
   namespace :logstash do
     desc "Deploy a logstash node"
     task :deploy, [:cluster, :provider, :namespace, :elasticsearch_username, :elasticsearch_password] do |t, args|
-      cmd = %Q{helm upgrade logstash #{cwd}/../../deploy/helm/logstash \
+      cmd = %Q{helm upgrade logstash #{cwd}/../../deploy/helm/standard/logstash \
             --install -n #{ns(args)} --create-namespace \
             --set logstash.args.cluster=#{args[:cluster]} \
             --set logstash.args.elasticsearchUsername=#{args[:elasticsearch_username]} \
