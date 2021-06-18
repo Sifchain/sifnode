@@ -318,9 +318,9 @@ func (n *Network) generatePeerList(validators []*Validator, idx int) []string {
 
 func (n *Network) setPeers(validators []*Validator) error {
 	for i, validator := range validators {
-		var config common.NodeConfig
+		var config common.ConfigTOML
 
-		configFile := fmt.Sprintf("%s/%s/%s", validator.NodeHomeDir, ConfigDir, utils.ConfigFile)
+		configFile := fmt.Sprintf("%s/%s/%s", validator.NodeHomeDir, ConfigDir, utils.ConfigTOML)
 
 		content, err := ioutil.ReadFile(configFile)
 		if err != nil {

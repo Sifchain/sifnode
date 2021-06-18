@@ -4,6 +4,7 @@ GOBIN?=${GOPATH}/bin
 NOW=$(shell date +'%Y-%m-%d_%T')
 COMMIT:=$(shell git log -1 --format='%H')
 VERSION:=$(shell cat version)
+IMAGE_TAG?=latest
 HTTPS_GIT := https://github.com/sifchain/sifnode.git
 DOCKER := $(shell which docker)
 DOCKER_BUF := $(DOCKER) run --rm -v $(CURDIR):/workspace --workdir /workspace bufbuild/buf
@@ -78,7 +79,10 @@ run:
 	go run ./cmd/sifnoded start
 
 build-image:
-	docker build -t sifchain/$(BINARY):$(IMAGE_TAG) --build-arg chainnet=$(CHAINNET) -f ./cmd/$(BINARY)/Dockerfile .
+	docker build -t sifchain/$(BINARY):$(IMAGE_TAG) -f ./cmd/$(BINARY)/Dockerfile .
+
+build-ts-relayer-image:
+	docker build -t sifchain/ts-relayer:$(IMAGE_TAG) -f ./deploy/docker/localnet/ibc/ts-relayer/Dockerfile .
 
 run-image: build-image
 	docker run sifchain/$(BINARY):$(IMAGE_TAG)

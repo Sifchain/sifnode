@@ -88,7 +88,7 @@ type Capability struct {
 }
 
 type CLPParams struct {
-	MinCreatePoolThreshold string `json:"min_create_pool_threshold"`
+	MinCreatePoolThreshold json.Number `json:"min_create_pool_threshold"`
 }
 
 type CLP struct {

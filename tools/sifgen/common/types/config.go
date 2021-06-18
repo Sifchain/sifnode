@@ -68,13 +68,25 @@ type P2P struct {
 }
 
 type Mempool struct {
-	Recheck     bool   `toml:"recheck"`
-	Broadcast   bool   `toml:"broadcast"`
-	WalDir      string `toml:"wal_dir"`
-	Size        int    `toml:"size"`
-	MaxTxsBytes int    `toml:"max_txs_bytes"`
-	CacheSize   int    `toml:"cache_size"`
-	MaxTxBytes  int    `toml:"max_tx_bytes"`
+	Recheck               bool   `toml:"recheck"`
+	Broadcast             bool   `toml:"broadcast"`
+	WalDir                string `toml:"wal_dir"`
+	Size                  int    `toml:"size"`
+	MaxTxsBytes           int    `toml:"max_txs_bytes"`
+	CacheSize             int    `toml:"cache_size"`
+	KeepInvalidTxsInCache bool   `toml:"keep-invalid-txs-in-cache"`
+	MaxTxBytes            int    `toml:"max_tx_bytes"`
+	MaxBatchBytes         int    `toml:"max_batch_bytes"`
+}
+
+type Statesync struct {
+	Enable        bool   `toml:"enable"`
+	RPCServers    string `toml:"rpc_servers"`
+	TrustHeight   int    `toml:"trust_height"`
+	TrustHash     string `toml:"trust_hash"`
+	TrustPeriod   string `toml:"trust_period"`
+	DiscoveryTime string `toml:"discovery_time"`
+	TempDir       string `toml:"temp_dir"`
 }
 
 type Fastsync struct {
@@ -90,6 +102,7 @@ type Consensus struct {
 	TimeoutPrecommit            string `toml:"timeout_precommit"`
 	TimeoutPrecommitDelta       string `toml:"timeout_precommit_delta"`
 	TimeoutCommit               string `toml:"timeout_commit"`
+	DoubleSignCheckHeight       int    `toml:"double_sign_check_height"`
 	SkipTimeoutCommit           bool   `toml:"skip_timeout_commit"`
 	CreateEmptyBlocks           bool   `toml:"create_empty_blocks"`
 	CreateEmptyBlocksInterval   string `toml:"create_empty_blocks_interval"`
@@ -108,4 +121,29 @@ type Instrumentation struct {
 	PrometheusListenAddr string `toml:"prometheus_listen_addr"`
 	MaxOpenConnections   int    `toml:"max_open_connections"`
 	Namespace            string `toml:"namespace"`
+}
+
+type ConfigTOML struct {
+	ProxyApp               string          `toml:"proxy_app"`
+	Moniker                string          `toml:"moniker"`
+	FastSync               bool            `toml:"fast_sync"`
+	DbBackend              string          `toml:"db_backend"`
+	DbDir                  string          `toml:"db_dir"`
+	LogLevel               string          `toml:"log_level"`
+	LogFormat              string          `toml:"log_format"`
+	GenesisFile            string          `toml:"genesis_file"`
+	PrivValidatorKeyFile   string          `toml:"priv_validator_key_file"`
+	PrivValidatorStateFile string          `toml:"priv_validator_state_file"`
+	PrivValidatorLaddr     string          `toml:"priv_validator_laddr"`
+	NodeKeyFile            string          `toml:"node_key_file"`
+	Abci                   string          `toml:"abci"`
+	FilterPeers            bool            `toml:"filter_peers"`
+	RPC                    RPC             `toml:"rpc"`
+	P2P                    P2P             `toml:"p2p"`
+	Mempool                Mempool         `toml:"mempool"`
+	Statesync              Statesync       `toml:"statesync"`
+	Fastsync               Fastsync        `toml:"fastsync"`
+	Consensus              Consensus       `toml:"consensus"`
+	TxIndex                TxIndex         `toml:"tx_index"`
+	Instrumentation        Instrumentation `toml:"instrumentation"`
 }
