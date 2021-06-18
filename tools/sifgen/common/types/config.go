@@ -70,13 +70,13 @@ type P2P struct {
 type Mempool struct {
 	Recheck               bool   `toml:"recheck"`
 	Broadcast             bool   `toml:"broadcast"`
-	WalDir                string `toml:"wal_dir"`
+	KeepInvalidTxsInCache bool   `toml:"keep-invalid-txs-in-cache"`
 	Size                  int    `toml:"size"`
 	MaxTxsBytes           int    `toml:"max_txs_bytes"`
 	CacheSize             int    `toml:"cache_size"`
-	KeepInvalidTxsInCache bool   `toml:"keep-invalid-txs-in-cache"`
 	MaxTxBytes            int    `toml:"max_tx_bytes"`
 	MaxBatchBytes         int    `toml:"max_batch_bytes"`
+	WalDir                string `toml:"wal_dir"`
 }
 
 type Statesync struct {
@@ -124,9 +124,10 @@ type Instrumentation struct {
 }
 
 type ConfigTOML struct {
+	FastSync               bool            `toml:"fast_sync"`
+	FilterPeers            bool            `toml:"filter_peers"`
 	ProxyApp               string          `toml:"proxy_app"`
 	Moniker                string          `toml:"moniker"`
-	FastSync               bool            `toml:"fast_sync"`
 	DbBackend              string          `toml:"db_backend"`
 	DbDir                  string          `toml:"db_dir"`
 	LogLevel               string          `toml:"log_level"`
@@ -137,7 +138,6 @@ type ConfigTOML struct {
 	PrivValidatorLaddr     string          `toml:"priv_validator_laddr"`
 	NodeKeyFile            string          `toml:"node_key_file"`
 	Abci                   string          `toml:"abci"`
-	FilterPeers            bool            `toml:"filter_peers"`
 	RPC                    RPC             `toml:"rpc"`
 	P2P                    P2P             `toml:"p2p"`
 	Mempool                Mempool         `toml:"mempool"`
