@@ -86,13 +86,17 @@ func (k Keeper) GetProphecy(ctx sdk.Context, id string) (types.Prophecy, bool) {
 
 // SetProphecy saves a prophecy with an initial claim
 func (k Keeper) SetProphecy(ctx sdk.Context, prophecy types.Prophecy) {
-	store := ctx.KVStore(k.storeKey)
 	serializedProphecy, err := prophecy.SerializeForDB()
 	if err != nil {
 		panic(err)
 	}
+	k.SetDBProphecy(ctx, serializedProphecy)
+}
+
+func (k Keeper) SetDBProphecy(ctx sdk.Context, prophecy types.DBProphecy) {
+	store := ctx.KVStore(k.storeKey)
 	// TODO use a prophecy prefix.
-	store.Set([]byte(prophecy.ID), k.Cdc.MustMarshalBinaryBare(serializedProphecy))
+	store.Set([]byte(prophecy.ID), k.Cdc.MustMarshalBinaryBare(prophecy))
 }
 
 // ProcessClaim ...

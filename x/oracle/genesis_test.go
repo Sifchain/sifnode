@@ -10,47 +10,7 @@ import (
 )
 
 func TestInitGenesis(t *testing.T) {
-	addrs, valAddrs := CreateTestAddrs(2)
-
-	tt := []struct {
-		name    string
-		genesis types.GenesisState
-	}{
-		{
-			name:    "Default genesis",
-			genesis: types.DefaultGenesisState(),
-		},
-		{
-			name: "Nil genesis",
-			genesis: GenesisState{
-				AddressWhitelist: nil,
-				AdminAddress:     nil,
-				Prophecies:       nil,
-			},
-		},
-		{
-			name: "Prophecy",
-			genesis: GenesisState{
-				AddressWhitelist: valAddrs,
-				AdminAddress:     addrs[0],
-				Prophecies: []Prophecy{
-					{
-						ID: "asd",
-						Status: types.Status{
-							Text:       PendingStatusText,
-							FinalClaim: "abc",
-						},
-						ClaimValidators: map[string][]sdk.ValAddress{
-							"123": valAddrs,
-						},
-						ValidatorClaims: map[string]string{
-							"321": "4321",
-						},
-					},
-				},
-			},
-		},
-	}
+	tt := getTestGenesisCases(t)
 
 	for _, tc := range tt {
 		t.Run(tc.name, func(t *testing.T) {
@@ -72,14 +32,16 @@ func TestInitGenesis(t *testing.T) {
 			prophecies := keeper.GetProphecies(ctx)
 			require.Equal(t, len(tc.genesis.Prophecies), len(prophecies))
 			for i, p := range tc.genesis.Prophecies {
-				require.Equal(t, p, prophecies[i])
+				dbP, err := prophecies[i].SerializeForDB()
+				require.NoError(t, err)
+				require.Equal(t, p, dbP)
 			}
 		})
 	}
 }
 
 func TestExportGenesis(t *testing.T) {
-	tt := getTestGenesisCases()
+	tt := getTestGenesisCases(t)
 
 	for _, tc := range tt {
 		t.Run(tc.name, func(t *testing.T) {
@@ -109,7 +71,7 @@ func TestExportGenesis(t *testing.T) {
 }
 
 func TestGenesisMarshalling(t *testing.T) {
-	tt := getTestGenesisCases()
+	tt := getTestGenesisCases(t)
 
 	for _, tc := range tt {
 		t.Run(tc.name, func(t *testing.T) {
@@ -151,8 +113,25 @@ type testCase struct {
 	genesis types.GenesisState
 }
 
-func getTestGenesisCases() []testCase {
+func getTestGenesisCases(t *testing.T) []testCase {
 	addrs, valAddrs := CreateTestAddrs(2)
+
+	prophecy := Prophecy{
+		ID: "asd",
+		Status: types.Status{
+			Text:       PendingStatusText,
+			FinalClaim: "abc",
+		},
+		ClaimValidators: map[string][]sdk.ValAddress{
+			"123": valAddrs,
+		},
+		ValidatorClaims: map[string]string{
+			"321": "4321",
+		},
+	}
+
+	dbProphecy, err := prophecy.SerializeForDB()
+	require.NoError(t, err)
 
 	return []testCase{
 		{
@@ -172,21 +151,7 @@ func getTestGenesisCases() []testCase {
 			genesis: GenesisState{
 				AddressWhitelist: valAddrs,
 				AdminAddress:     addrs[0],
-				Prophecies: []Prophecy{
-					{
-						ID: "asd",
-						Status: types.Status{
-							Text:       PendingStatusText,
-							FinalClaim: "abc",
-						},
-						ClaimValidators: map[string][]sdk.ValAddress{
-							"123": valAddrs,
-						},
-						ValidatorClaims: map[string]string{
-							"321": "4321",
-						},
-					},
-				},
+				Prophecies:       []DBProphecy{dbProphecy},
 			},
 		},
 	}

@@ -13,7 +13,7 @@ func InitGenesis(ctx sdk.Context, keeper Keeper, data types.GenesisState) (res [
 	keeper.SetAdminAccount(ctx, data.AdminAddress)
 
 	for _, p := range data.Prophecies {
-		keeper.SetProphecy(ctx, p)
+		keeper.SetDBProphecy(ctx, p)
 	}
 
 	return []abci.ValidatorUpdate{}
@@ -24,9 +24,18 @@ func ExportGenesis(ctx sdk.Context, keeper Keeper) types.GenesisState {
 	adminAddress := keeper.GetAdminAccount(ctx)
 	prophecies := keeper.GetProphecies(ctx)
 
+	dbProphecies := make([]types.DBProphecy, len(prophecies))
+	for i, p := range prophecies {
+		dbP, err := p.SerializeForDB()
+		if err != nil {
+			panic(err)
+		}
+		dbProphecies[i] = dbP
+	}
+
 	return GenesisState{
 		AddressWhitelist: whiteList,
 		AdminAddress:     adminAddress,
-		Prophecies:       prophecies,
+		Prophecies:       dbProphecies,
 	}
 }

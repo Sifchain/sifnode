@@ -10,7 +10,7 @@ import (
 type GenesisState struct {
 	AddressWhitelist []sdk.ValAddress `json:"address_whitelist"`
 	AdminAddress     sdk.AccAddress   `json:"admin_address"`
-	Prophecies       []Prophecy       `json:"prophecies"`
+	Prophecies       []DBProphecy     `json:"prophecies"`
 }
 
 // NewGenesisState creates a default GenesisState instance
@@ -23,7 +23,7 @@ func DefaultGenesisState() GenesisState {
 	return GenesisState{
 		AdminAddress:     sdk.AccAddress{},
 		AddressWhitelist: []sdk.ValAddress{},
-		Prophecies:       []Prophecy{},
+		Prophecies:       []DBProphecy{},
 	}
 }
 
