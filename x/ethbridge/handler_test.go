@@ -444,7 +444,7 @@ func TestRescueCethMsg(t *testing.T) {
 func TestUpdateWhiteListValidator(t *testing.T) {
 	addrs, validatorAddresses := test.CreateTestAddrs(3)
 
-	tt := []struct {
+	testCases := []struct {
 		name     string
 		sender   sdk.AccAddress
 		expected []sdk.ValAddress
@@ -516,23 +516,24 @@ func TestUpdateWhiteListValidator(t *testing.T) {
 		},
 	}
 
-	for _, tc := range tt {
-		t.Run(tc.name, func(t *testing.T) {
+	for i := range testCases {
+		testCase := testCases[i]
+		t.Run(testCase.name, func(t *testing.T) {
 			ctx, _, _, accountKeeper, handler, _, oracleKeeper := CreateTestHandler(t, 0.5, []int64{5})
-
-			sender := tc.sender
+			sender := testCase.sender
 
 			accountKeeper.SetAccount(ctx, authtypes.NewBaseAccountWithAddress(sender))
 			oracleKeeper.SetAdminAccount(ctx, sender)
 			oracleKeeper.SetOracleWhiteList(ctx, []sdk.ValAddress{})
 
-			for _, msg := range tc.msgs {
+			for i := range testCase.msgs {
+				msg := testCase.msgs[i]
 				_, err := handler(ctx, &msg)
 				require.NoError(t, err)
 			}
 
 			wl := oracleKeeper.GetOracleWhiteList(ctx)
-			require.Equal(t, tc.expected, wl)
+			require.Equal(t, testCase.expected, wl)
 		})
 	}
 }
