@@ -22,12 +22,12 @@ podAnnotations:
   vault.hashicorp.com/agent-inject: "true"
   vault.hashicorp.com/agent-init-first: "true"
   vault.hashicorp.com/agent-inject-status: "update"
-  vault.hashicorp.com/agent-inject-secret-sifnode: "kv-v2/-=app_region=-/-=app_env=-/sifnode"
+  vault.hashicorp.com/agent-inject-secret-sifnode: "kv-v2/-=app_region=-/-=app_env=-/sifnode/-=app_namespace=-"
   vault.hashicorp.com/ca-cert: "/run/secrets/kubernetes.io/serviceaccount/ca.crt"
   vault.hashicorp.com/role: sifnode
   vault.hashicorp.com/tls-skip-verify: "true"
   vault.hashicorp.com/agent-inject-template-sifnode: |
-    {{- with secret "kv-v2/-=app_region=-/-=app_env=-/sifnode" -}}
+    {{- with secret "kv-v2/-=app_region=-/-=app_env=-/sifnode/-=app_namespace=-" -}}
       export mnemonic="{{ .Data.data.mnemonic }}"
       export genesisURL="{{ .Data.data.genesisURL }}"
       export mintAmount="{{ .Data.data.mintAmount }}"
