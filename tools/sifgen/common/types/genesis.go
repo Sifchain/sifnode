@@ -332,6 +332,8 @@ type Transfer struct {
 
 type AppState struct {
 	Upgrade      struct{}      `json:"upgrade"`
+	Ethbridge    interface{}   `json:"ethbridge"`
+	Params       interface{}   `json:"params"`
 	Ibc          Ibc           `json:"ibc"`
 	Distribution Distribution  `json:"distribution"`
 	Staking      Staking       `json:"staking"`
@@ -346,8 +348,6 @@ type AppState struct {
 	Oracle       Oracle        `json:"oracle"`
 	Evidence     EvidenceState `json:"evidence"`
 	Genutil      Genutil       `json:"genutil"`
-	Ethbridge    struct{}      `json:"ethbridge"`
-	Params       struct{}      `json:"params"`
 }
 
 type Genesis struct {

@@ -13,12 +13,12 @@ type Telemetry struct {
 type API struct {
 	Enable             bool   `toml:"enable"`
 	Swagger            bool   `toml:"swagger"`
-	Address            string `toml:"address"`
+	EnabledUnsafeCors  bool   `toml:"enabled-unsafe-cors"`
 	MaxOpenConnections int    `toml:"max-open-connections"`
 	RPCReadTimeout     int    `toml:"rpc-read-timeout"`
 	RPCWriteTimeout    int    `toml:"rpc-write-timeout"`
 	RPCMaxBodyBytes    int    `toml:"rpc-max-body-bytes"`
-	EnabledUnsafeCors  bool   `toml:"enabled-unsafe-cors"`
+	Address            string `toml:"address"`
 }
 
 type Grpc struct {
