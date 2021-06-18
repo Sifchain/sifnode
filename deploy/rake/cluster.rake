@@ -511,7 +511,9 @@ metadata:
     app: #{args[:app_name]}
     app.kubernetes.io/managed-by: "Helm"
   annotations:
-    meta.helm.sh/release-namespace: "#{args[:app_name]}"
+    meta.helm.sh/release-namespace: "#{args[:app_namespace]}"
+    meta.helm.sh/release-name: "#{args[:app_name]}"
+
       }
 
       puts "Create Service Account File."
