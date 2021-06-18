@@ -79,12 +79,82 @@ func TestInitGenesis(t *testing.T) {
 }
 
 func TestExportGenesis(t *testing.T) {
+	tt := getTestGenesisCases()
+
+	for _, tc := range tt {
+		t.Run(tc.name, func(t *testing.T) {
+			ctx, keeper, _, _, _, _, _ := CreateTestKeepers(t, 1, []int64{1}, "")
+			_ = InitGenesis(ctx, keeper, tc.genesis)
+			genesis := ExportGenesis(ctx, keeper)
+
+			if len(tc.genesis.AdminAddress) <= 0 {
+				require.Nil(t, genesis.AdminAddress)
+			} else {
+				require.Equal(t, tc.genesis.AdminAddress, genesis.AdminAddress)
+			}
+
+			wl := genesis.AddressWhitelist
+			require.Equal(t, len(tc.genesis.AddressWhitelist), len(wl))
+			for i, addr := range tc.genesis.AddressWhitelist {
+				require.Equal(t, addr, wl[i])
+			}
+
+			prophecies := genesis.Prophecies
+			require.Equal(t, len(tc.genesis.Prophecies), len(prophecies))
+			for i, p := range tc.genesis.Prophecies {
+				require.Equal(t, p, prophecies[i])
+			}
+		})
+	}
+}
+
+func TestGenesisMarshalling(t *testing.T) {
+	tt := getTestGenesisCases()
+
+	for _, tc := range tt {
+		t.Run(tc.name, func(t *testing.T) {
+			ctx, keeper, _, _, _, _, _ := CreateTestKeepers(t, 1, []int64{1}, "")
+			_ = InitGenesis(ctx, keeper, tc.genesis)
+			genesis := ExportGenesis(ctx, keeper)
+
+			genesisData := keeper.Cdc.MustMarshalJSON(genesis)
+
+			var genesisState GenesisState
+			keeper.Cdc.MustUnmarshalJSON(genesisData, &genesisState)
+
+			ctx, keeper, _, _, _, _, _ = CreateTestKeepers(t, 1, []int64{1}, "")
+			_ = InitGenesis(ctx, keeper, genesisState)
+
+			if len(tc.genesis.AdminAddress) <= 0 {
+				require.Nil(t, genesis.AdminAddress)
+			} else {
+				require.Equal(t, tc.genesis.AdminAddress, genesis.AdminAddress)
+			}
+
+			wl := genesis.AddressWhitelist
+			require.Equal(t, len(tc.genesis.AddressWhitelist), len(wl))
+			for i, addr := range tc.genesis.AddressWhitelist {
+				require.Equal(t, addr, wl[i])
+			}
+
+			prophecies := genesis.Prophecies
+			require.Equal(t, len(tc.genesis.Prophecies), len(prophecies))
+			for i, p := range tc.genesis.Prophecies {
+				require.Equal(t, p, prophecies[i])
+			}
+		})
+	}
+}
+
+type testCase struct {
+	name    string
+	genesis types.GenesisState
+}
+
+func getTestGenesisCases() []testCase {
 	addrs, valAddrs := CreateTestAddrs(2)
 
-	tt := []struct {
-		name    string
-		genesis types.GenesisState
-	}{
+	return []testCase{
 		{
 			name:    "Default genesis",
 			genesis: types.DefaultGenesisState(),
@@ -119,31 +189,5 @@ func TestExportGenesis(t *testing.T) {
 				},
 			},
 		},
-	}
-
-	for _, tc := range tt {
-		t.Run(tc.name, func(t *testing.T) {
-			ctx, keeper, _, _, _, _, _ := CreateTestKeepers(t, 1, []int64{1}, "")
-			_ = InitGenesis(ctx, keeper, tc.genesis)
-			genesis := ExportGenesis(ctx, keeper)
-
-			if len(tc.genesis.AdminAddress) <= 0 {
-				require.Nil(t, genesis.AdminAddress)
-			} else {
-				require.Equal(t, tc.genesis.AdminAddress, genesis.AdminAddress)
-			}
-
-			wl := genesis.AddressWhitelist
-			require.Equal(t, len(tc.genesis.AddressWhitelist), len(wl))
-			for i, addr := range tc.genesis.AddressWhitelist {
-				require.Equal(t, addr, wl[i])
-			}
-
-			prophecies := genesis.Prophecies
-			require.Equal(t, len(tc.genesis.Prophecies), len(prophecies))
-			for i, p := range tc.genesis.Prophecies {
-				require.Equal(t, p, prophecies[i])
-			}
-		})
 	}
 }
