@@ -100,7 +100,7 @@ type CLP struct {
 
 type Dispensation struct {
 	DistributionRecords interface{} `json:"distribution_records"`
-	Distributions     interface{}        `json:"distributions"`
+	Distributions       interface{} `json:"distributions"`
 }
 
 type DistributionParams struct {
@@ -332,6 +332,8 @@ type Transfer struct {
 
 type AppState struct {
 	Upgrade      struct{}      `json:"upgrade"`
+	Ethbridge    interface{}   `json:"ethbridge"`
+	Params       interface{}   `json:"params"`
 	Ibc          Ibc           `json:"ibc"`
 	Distribution Distribution  `json:"distribution"`
 	Staking      Staking       `json:"staking"`
@@ -346,8 +348,6 @@ type AppState struct {
 	Oracle       Oracle        `json:"oracle"`
 	Evidence     EvidenceState `json:"evidence"`
 	Genutil      Genutil       `json:"genutil"`
-	Ethbridge    interface{}   `json:"ethbridge"`
-	Params       interface{}   `json:"params"`
 }
 
 type Genesis struct {
