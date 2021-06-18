@@ -25,16 +25,9 @@ message Claim {
 //  Tendermint/Amino does not support maps so we must serialize those variables
 //  into bytes.
 message DBProphecy {
-  string id = 1;
-  Status status = 2 [ (gogoproto.nullable) = false ];
-  bytes claim_validators = 3;
-  bytes validator_claims = 4;
-}
-
-// Status is a struct that contains the status of a given prophecy
-message Status {
-  StatusText text = 1;
-  string final_claim = 2;
+  uint64 id = 1;
+  StatusText status = 2;
+  repeated string claim_validators = 3;
 }
 
 // StatusText is an enum used to represent the status of the prophecy
@@ -45,6 +38,4 @@ enum StatusText {
   STATUS_TEXT_PENDING = 1;
   // Success status
   STATUS_TEXT_SUCCESS = 2;
-  // Failed status
-  STATUS_TEXT_FAILED = 3;
 }

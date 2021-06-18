@@ -30,6 +30,6 @@ message QueryEthProphecyRequest {
 // QueryEthProphecyResponse payload for EthProphecy rpc query
 message QueryEthProphecyResponse {
   string id = 1;
-  sifnode.oracle.v1.Status status = 2;
+  sifnode.oracle.v1.StatusText status = 2;
   repeated EthBridgeClaim claims = 3;
 }
