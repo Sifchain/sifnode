@@ -1116,7 +1116,7 @@ sleep 15
     task :pipeline_deploy, [:appname, :namespace, :args] do |t, args|
       cmd = %Q{helm upgrade #{args[:appname]} \
               #{cwd}/../../deploy/helm/#{args[:appname]} \
-              --install #{args[:namespace]} --create-namespace \
+              --install -n #{args[:namespace]} --create-namespace \
               #{args[:args]} \
               --kubeconfig=./kubeconfig }
 
