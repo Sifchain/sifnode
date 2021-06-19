@@ -8,7 +8,8 @@ import (
 // Aliases
 type (
 	Keys       types.Keys
-	NodeConfig types.NodeConfig
+	ConfigTOML types.ConfigTOML
+	AppTOML    types.AppTOML
 	Genesis    types.Genesis
 )
 

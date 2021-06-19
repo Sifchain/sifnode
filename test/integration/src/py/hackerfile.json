@@ -1,0 +1,44 @@
+{
+    "type": "cosmos-sdk/StdTx",
+    "value": {
+      "msg": [
+        {
+          "type": "dispensation/create",
+          "value": {
+            "Signer": "sif1l7hypmqk2yc334vc6vmdwzp5sdefygj2ad93p5",
+            "distribution_name": "testnetfinaltest23",
+            "distribution_type": "1",
+            "Input": [
+              {
+                "address": "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
+                "coins": [
+                  {
+                    "denom": "rowan",
+                    "amount": "50000000000000000000000"
+                  }
+                ]
+              }
+            ],
+            "Output": [
+              {
+                "address": "sif1l7hypmqk2yc334vc6vmdwzp5sdefygj2ad93p5",
+                "coins": [
+                  {
+                    "denom": "rowan",
+                    "amount": "50000000000000000000000"
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "fee": {
+        "amount": [],
+        "gas": "200064128"
+      },
+      "signatures": null,
+      "memo": ""
+    }
+  }
+  

@@ -68,7 +68,7 @@ func NewKeybase(validatorMoniker, mnemonic, password string) (keyring.Keyring, k
 // NewEthereumSub initializes a new EthereumSub
 func NewEthereumSub(
 	cliCtx client.Context,
-	nodeUrl string,
+	nodeURL string,
 	validatorMoniker,
 	ethProvider string,
 	registryContractAddress common.Address,
@@ -79,7 +79,7 @@ func NewEthereumSub(
 
 	return EthereumSub{
 		EthProvider:             ethProvider,
-		TmProvider:              nodeUrl,
+		TmProvider:              nodeURL,
 		RegistryContractAddress: registryContractAddress,
 		ValidatorName:           validatorMoniker,
 		ValidatorAddress:        validatorAddress,

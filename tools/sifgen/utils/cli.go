@@ -17,7 +17,8 @@ import (
 
 const (
 	GenesisFile = "genesis.json"
-	ConfigFile  = "config.toml"
+	ConfigTOML  = "config.toml"
+	AppTOML     = "app.toml"
 )
 
 var (
@@ -43,6 +44,7 @@ type CLIUtils interface {
 	ExportGenesis() (*string, error)
 	GenesisFilePath() string
 	ConfigFilePath() string
+	AppFilePath() string
 	TransferFunds(string, string, string, string) (*string, error)
 	ValidatorPublicKeyAddress() (*string, error)
 	CreateValidator(string, string, string, string) (*string, error)
@@ -179,7 +181,11 @@ func (c CLI) GenesisFilePath() string {
 }
 
 func (c CLI) ConfigFilePath() string {
-	return fmt.Sprintf("%s/%s", c.configPath, ConfigFile)
+	return fmt.Sprintf("%s/%s", c.configPath, ConfigTOML)
+}
+
+func (c CLI) AppFilePath() string {
+	return fmt.Sprintf("%s/%s", c.configPath, AppTOML)
 }
 
 func (c CLI) TransferFunds(keyPassword, fromAddress, toAddress, coins string) (*string, error) {
