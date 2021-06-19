@@ -1103,6 +1103,19 @@ sleep 15
       system({"KUBECONFIG" => kubeconfig(args)}, cmd)
     end
   end
+
+  desc "deploy helm chart"
+  namespace :helm do
+    desc "Deploy helm chart using arguments passed in"
+    task :pipeline_deploy, [:appname, :args] do |t, args|
+      cmd = %Q{helm upgrade #{args[:appname]} \
+              #{args[:args]} \
+              --kubeconfig=./kubeconfig }
+
+    system(cmd) or exit 1
+    end
+  end
+
 end
 
 #
