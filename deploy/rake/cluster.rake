@@ -1109,6 +1109,7 @@ sleep 15
     desc "Deploy helm chart using arguments passed in"
     task :pipeline_deploy, [:appname, :args] do |t, args|
       cmd = %Q{helm upgrade #{args[:appname]} \
+              #{cwd}/../../deploy/helm/#{:appname} \
               #{args[:args]} \
               --kubeconfig=./kubeconfig }
 
