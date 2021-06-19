@@ -11,9 +11,32 @@ func Migrate(genesis v039oracle.GenesisState) *types.GenesisState {
 		addressWhiteList = append(addressWhiteList, addr.String())
 	}
 
+	var prophecies []*types.DBProphecy
+	for _, legacy := range genesis.Prophecies {
+
+		statusText := types.StatusText_STATUS_TEXT_UNSPECIFIED
+		if legacy.Status.Text == v039oracle.PendingStatusText {
+			statusText = types.StatusText_STATUS_TEXT_PENDING
+		} else if legacy.Status.Text == v039oracle.FailedStatusText {
+			statusText = types.StatusText_STATUS_TEXT_FAILED
+		} else if legacy.Status.Text == v039oracle.SuccessStatusText {
+			statusText = types.StatusText_STATUS_TEXT_SUCCESS
+		}
+
+		prophecies = append(prophecies, &types.DBProphecy{
+			Id: legacy.ID,
+			Status: types.Status{
+				Text:       statusText,
+				FinalClaim: legacy.Status.FinalClaim,
+			},
+			ClaimValidators: legacy.ClaimValidators,
+			ValidatorClaims: legacy.ValidatorClaims,
+		})
+	}
+
 	return &types.GenesisState{
 		AddressWhitelist: addressWhiteList,
 		AdminAddress:     genesis.AdminAddress.String(),
-		// TODO: Add prophecies once defined in 39&42 genesis state
+		Prophecies:       prophecies,
 	}
 }
