@@ -23,9 +23,15 @@ namespace :genesis do
                           args[:seed_ip_address]
                         end
 
+      keyring_backend = if args[:keyring_backend].nil?
+                          "file"
+                        else
+                          args[:keyring_backend]
+                        end
+
       network_create(chainnet: args[:chainnet], validator_count: validator_count, build_dir: "#{cwd}/../networks",
                      seed_ip_address: seed_ip_address, network_config: network_config(args[:chainnet]),
-                     keyring_backend: args[:keyring_backend])
+                     keyring_backend: keyring_backend)
     end
 
     desc "Boot the new scaffolded network in docker-compose"
