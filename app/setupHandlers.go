@@ -18,4 +18,7 @@ func SetupHandlers(app *SifchainApp) {
 	app.UpgradeKeeper.SetUpgradeHandler("0.8.2", func(ctx sdk.Context, plan types.Plan) {})
 	app.UpgradeKeeper.SetUpgradeHandler("0.8.3", func(ctx sdk.Context, plan types.Plan) {})
 	app.UpgradeKeeper.SetUpgradeHandler("0.8.4", func(ctx sdk.Context, plan types.Plan) {})
+	app.UpgradeKeeper.SetUpgradeHandler("0.8.5", func(ctx sdk.Context, plan types.Plan) {})
+	app.UpgradeKeeper.SetUpgradeHandler("0.8.6", func(ctx sdk.Context, plan types.Plan) {})
+	//TODO app.UpgradeKeeper.SetUpgradeHandler("0.8.7", dispensationkeeper.MigrateRecords(app.DispensationKeeper))
 }

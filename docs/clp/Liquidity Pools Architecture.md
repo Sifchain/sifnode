@@ -91,6 +91,8 @@ The following are formulas needed to implement Thorchain's slip-fee CLP model wi
 >slipAdjustment = (1 - ABS((R a - r A)/((r + R) (a + A))))
 >units = ((P (a R + A r))/(2 A R))*slipAdjustment
 
+*Note*: For the first liquidity add during pool creation when R and A are 0: pool units are set to r. This case is further documented in the code sample below.
+
 **Asymmetrical Withdrawal:**
 
 >asymmetry: -10000 = 100% Native Asset, 0 = 50% Native Asset 50% External Asset, 10000 = 100% External Asset
@@ -154,8 +156,14 @@ The creator of the pool contributes tokens and becomes the `Pool`&#39;s first `L
 **calculatePoolUnits(oldPoolUnits, nativeAssetBalance, externalAssetBalance, nativeAssetAmount, externalAssetAmount):**
 ```golang 
 {
-    R = nativeAssetBalance + nativeAssetAmount, A = externalAssetBalance + externalAssetAmount,
-    r = nativeAssetAmount, a = externalAssetAmount
+    if nativeAssetBalance.IsZero() || externalAssetBalance.IsZero() {
+      return nativeAssetAmount, nativeAssetAmount, nil
+    }
+    P = oldPoolUnits
+    R = nativeAssetBalance 
+    A = externalAssetBalance
+    r = nativeAssetAmount
+    a = externalAssetAmount
   	slipAdjDenominator := (r.Add(R)).Mul(a.Add(A))
     var slipAdjustment sdk.Dec
     if R.Mul(a).GT(r.Mul(A)) {
