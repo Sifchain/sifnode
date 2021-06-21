@@ -1,16 +1,18 @@
 package keeper
 
+/*
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/upgrade"
+	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
 
 	"github.com/Sifchain/sifnode/x/dispensation/types"
 	"github.com/Sifchain/sifnode/x/dispensation/types/legacy"
 )
 
-func MigrateRecords(keeper Keeper) func(ctx sdk.Context, plan upgrade.Plan) {
+func MigrateRecords(keeper Keeper) func(ctx sdk.Context, plan upgradetypes.Plan) {
 	// Migrates distribution records, and distributions to new structure.
-	return func(ctx sdk.Context, plan upgrade.Plan) {
+	return func(ctx sdk.Context, plan upgradetypes.Plan) {
 		UpgradeDistributionRecords(ctx, keeper)
 		UpgradeDistributions(ctx, keeper)
 	}
@@ -85,3 +87,4 @@ func UpgradeDistributionRecords(ctx sdk.Context, keeper Keeper) {
 		store.Set([]byte(key), value)
 	}
 }
+*/

@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 
 	sifapp "github.com/Sifchain/sifnode/app"
@@ -19,6 +20,25 @@ func TestKeeper_SetValidatorWhiteList(t *testing.T) {
 	app.OracleKeeper.SetOracleWhiteList(ctx, valAddresses)
 
 	vList := app.OracleKeeper.GetOracleWhiteList(ctx)
+	assert.Equal(t, len(vList), 2)
+	assert.True(t, app.OracleKeeper.ExistsOracleWhiteList(ctx))
+}
+
+func TestKeeper_GetValidatorWhiteList(t *testing.T) {
+	app := sifapp.Setup(false)
+	ctx := app.BaseApp.NewContext(false, tmproto.Header{})
+
+	// Test no panics when loading empty value
+	vList := app.OracleKeeper.GetOracleWhiteList(ctx)
+	require.NotNil(t, vList)
+	require.Equal(t, 0, len(vList))
+
+	addresses := sifapp.CreateRandomAccounts(2)
+	valAddresses := sifapp.ConvertAddrsToValAddrs(addresses)
+
+	app.OracleKeeper.SetOracleWhiteList(ctx, valAddresses)
+
+	vList = app.OracleKeeper.GetOracleWhiteList(ctx)
 	assert.Equal(t, len(vList), 2)
 	assert.True(t, app.OracleKeeper.ExistsOracleWhiteList(ctx))
 }
