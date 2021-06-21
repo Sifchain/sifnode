@@ -12,7 +12,8 @@ import (
 func TestInitGenesis(t *testing.T) {
 	tt := getTestGenesisCases(t)
 
-	for _, tc := range tt {
+	for c := range tt {
+		tc := tt[c]
 		t.Run(tc.name, func(t *testing.T) {
 			ctx, keeper, _, _, _, _, _ := CreateTestKeepers(t, 1, []int64{1}, "")
 			_ = InitGenesis(ctx, keeper, tc.genesis)
@@ -43,7 +44,8 @@ func TestInitGenesis(t *testing.T) {
 func TestExportGenesis(t *testing.T) {
 	tt := getTestGenesisCases(t)
 
-	for _, tc := range tt {
+	for c := range tt {
+		tc := tt[c]
 		t.Run(tc.name, func(t *testing.T) {
 			ctx, keeper, _, _, _, _, _ := CreateTestKeepers(t, 1, []int64{1}, "")
 			_ = InitGenesis(ctx, keeper, tc.genesis)
@@ -73,7 +75,8 @@ func TestExportGenesis(t *testing.T) {
 func TestGenesisMarshalling(t *testing.T) {
 	tt := getTestGenesisCases(t)
 
-	for _, tc := range tt {
+	for c := range tt {
+		tc := tt[c]
 		t.Run(tc.name, func(t *testing.T) {
 			ctx, keeper, _, _, _, _, _ := CreateTestKeepers(t, 1, []int64{1}, "")
 			_ = InitGenesis(ctx, keeper, tc.genesis)
