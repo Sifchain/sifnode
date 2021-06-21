@@ -13,7 +13,7 @@ const ModuleName = "oracle"
 type GenesisState struct {
 	AddressWhitelist []sdk.ValAddress `json:"address_whitelist"`
 	AdminAddress     sdk.AccAddress   `json:"admin_address"`
-	Prophecies       []Prophecy       `json:"prophecies"`
+	Prophecies       []DBProphecy     `json:"prophecies"`
 }
 
 type Prophecy struct {
@@ -27,6 +27,15 @@ type Prophecy struct {
 	ClaimValidators map[string][]sdk.ValAddress `json:"claim_validators"`
 	//This is a mapping from a validator bech32 address to their claim
 	ValidatorClaims map[string]string `json:"validator_claims"`
+}
+
+// DBProphecy is what the prophecy becomes when being saved to the database.
+//  Tendermint/Amino does not support maps so we must serialize those variables into bytes.
+type DBProphecy struct {
+	ID              string `json:"id"`
+	Status          Status `json:"status"`
+	ClaimValidators []byte `json:"claim_validators"`
+	ValidatorClaims []byte `json:"validator_claims"`
 }
 
 type Status struct {

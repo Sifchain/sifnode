@@ -203,11 +203,16 @@ func (srv msgServer) UpdateWhiteListValidator(goCtx context.Context,
 	if account == nil {
 		logger.Error("account is nil.", "CosmosSender", msg.CosmosSender)
 
-		return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.CosmosSender)
+		return nil, sdkerrors.Wrap(sdkerrors.ErrUnknownAddress, msg.CosmosSender)
+	}
+
+	valAddr, err := sdk.ValAddressFromBech32(msg.Validator)
+	if err != nil {
+		return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.Validator)
 	}
 
 	err = srv.Keeper.ProcessUpdateWhiteListValidator(ctx, cosmosSender,
-		sdk.ValAddress(msg.Validator), msg.OperationType)
+		valAddr, msg.OperationType)
 	if err != nil {
 		logger.Error("bridge keeper failed to process update validator.", errorMessageKey, err.Error())
 		return nil, err
