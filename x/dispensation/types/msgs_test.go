@@ -1,5 +1,6 @@
 package types_test
 
+/*
 import (
 	"github.com/Sifchain/sifnode/x/dispensation/test"
 	"github.com/Sifchain/sifnode/x/dispensation/types"
@@ -96,3 +97,5 @@ func TestMsgCreateClaim_ValidateBasic(t *testing.T) {
 	err := msg.ValidateBasic()
 	assert.NoError(t, err)
 }
+
+*/
