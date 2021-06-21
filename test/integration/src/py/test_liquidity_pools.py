@@ -98,7 +98,6 @@ def swap_pool(
         "-y --output json"
     ])
     json_str = get_shell_output_json(cmd)
-    assert(json_str.get("code", 0) == 0)
     txn = get_transaction_result(json_str["txhash"], transfer_request.sifnodecli_node, transfer_request.chain_id)
     tx = txn["tx"]
     logging.debug(f"resulting tx: {tx}")
@@ -131,7 +130,6 @@ def remove_pool_liquidity(
         "-y --output json"
     ])
     json_str = get_shell_output_json(cmd)
-    assert(json_str.get("code", 0) == 0)
     txn = get_transaction_result(json_str["txhash"], transfer_request.sifnodecli_node, transfer_request.chain_id)
     tx = txn["tx"]
     logging.debug(f"resulting tx: {tx}")
@@ -162,7 +160,6 @@ def add_pool_liquidity(
         "-y --output json"
     ])
     json_str = get_shell_output_json(cmd)
-    assert(json_str.get("code", 0) == 0)
     txn = get_transaction_result(json_str["txhash"], transfer_request.sifnodecli_node, transfer_request.chain_id)
     tx = txn["tx"]
     logging.debug(f"resulting tx: {tx}")

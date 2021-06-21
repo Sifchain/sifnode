@@ -106,3 +106,11 @@ func CreateTestRescueCethMsg(t *testing.T, testCosmosSender string, testCethRece
 	MsgRescueCeth := NewMsgRescueCeth(accAddress1, accAddress2, cethAmount)
 	return MsgRescueCeth
 }
+
+func CreateTestUpdateWhiteListValidatorMsg(_ *testing.T, sender string, validator string, operation string) MsgUpdateWhiteListValidator {
+	return MsgUpdateWhiteListValidator{
+		CosmosSender:  sender,
+		Validator:     validator,
+		OperationType: operation,
+	}
+}

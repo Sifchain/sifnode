@@ -8,10 +8,7 @@ import (
 
 // NewGenesisState creates a new GenesisState instance
 func NewGenesisState() GenesisState {
-	return GenesisState{
-		AddressWhitelist: []string{},
-		AdminAddress:     "",
-	}
+	return *DefaultGenesisState()
 }
 
 // DefaultGenesisState gets the raw genesis raw message for testing
@@ -19,6 +16,7 @@ func DefaultGenesisState() *GenesisState {
 	return &GenesisState{
 		AddressWhitelist: []string{},
 		AdminAddress:     "",
+		Prophecies:       []*DBProphecy{},
 	}
 }
 

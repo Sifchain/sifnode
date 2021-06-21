@@ -18,8 +18,8 @@ func ReplaceStakingBondDenom(nodeHomeDir string) error {
 		return err
 	}
 
-	(*genesis).AppState.Staking.Params.BondDenom = common.StakeTokenDenom
-	content, err := json.Marshal(genesis)
+	genesis.AppState.Staking.Params.BondDenom = common.StakeTokenDenom
+	content, err := tmjson.Marshal(genesis)
 	if err != nil {
 		return err
 	}
@@ -37,7 +37,7 @@ func ReplaceCLPMinCreatePoolThreshold(nodeHomeDir string, minCreatePoolThreshold
 		return err
 	}
 
-	(*genesis).AppState.CLP.Params.MinCreatePoolThreshold = fmt.Sprintf("%v", minCreatePoolThreshold)
+	(*genesis).AppState.CLP.Params.MinCreatePoolThreshold = json.Number(fmt.Sprintf("%d", minCreatePoolThreshold))
 	content, err := tmjson.Marshal(genesis)
 	if err != nil {
 		return err
@@ -117,7 +117,7 @@ func readGenesis(nodeHomeDir string) (*common.Genesis, error) {
 		return nil, err
 	}
 
-	if err := json.Unmarshal(body, &genesis); err != nil {
+	if err := tmjson.Unmarshal(body, &genesis); err != nil {
 		return nil, err
 	}
 
