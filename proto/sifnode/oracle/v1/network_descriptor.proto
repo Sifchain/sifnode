@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+package sifnode.oracle.v1;
+
+import "gogoproto/gogo.proto";
+
+option go_package = "github.com/Sifchain/sifnode/x/oracle/types";
+
+// NetworkDescriptor is a unique identifier for all chains that Sifchain
+// enables.
+enum NetworkDescriptor {
+  // unspecified
+  NETWORK_DESCRIPTOR_UNSPECIFIED = 0;
+  // https://ethereum.org
+  NETWORK_DESCRIPTOR_ETHEREUM_MAINNET = 1;
+  // https://www.binance.org
+  NETWORK_DESCRIPTOR_BINANCE_SMART_CHAIN_MAINNET = 56;
+  // https://testnet.binance.org/
+  NETWORK_DESCRIPTOR_BINANCE_SMART_CHAIN_TESTNET = 97;
+  // https://github.com/ethereum/ropsten
+  NETWORK_DESCRIPTOR_ETHEREUM_TESTNET_ROPSTEN = 3;
+}
