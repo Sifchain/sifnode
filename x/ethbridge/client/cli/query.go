@@ -2,7 +2,6 @@ package cli
 
 import (
 	"context"
-	"strconv"
 
 	"github.com/Sifchain/sifnode/x/ethbridge/types"
 	"github.com/cosmos/cosmos-sdk/client"
@@ -12,48 +11,19 @@ import (
 // GetCmdGetEthBridgeProphecy queries information about a specific prophecy
 func GetCmdGetEthBridgeProphecy() *cobra.Command {
 	return &cobra.Command{
-		Use: `prophecy [bridge-registry-contract] [nonce] [symbol] [ethereum-sender]
-		--ethereum-chain-id [ethereum-chain-id] --token-contract-address [token-contract-address]`,
+		Use:   `prophecy [prophecy-id]`,
 		Short: "Query prophecy",
-		Args:  cobra.ExactArgs(4),
+		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx, err := client.GetClientTxContext(cmd)
 			if err != nil {
 				return err
 			}
 
-			flags := cmd.Flags()
-
 			queryClient := types.NewQueryClient(clientCtx)
 
-			ethereumChainID, err := flags.GetInt64(types.FlagEthereumChainID)
-			if err != nil {
-				return err
-			}
-
-			tokenContractString, err := flags.GetString(types.FlagTokenContractAddr)
-			if err != nil {
-				return err
-			}
-			tokenContract := types.NewEthereumAddress(tokenContractString)
-
-			bridgeContract := types.NewEthereumAddress(args[0])
-
-			nonce, err := strconv.Atoi(args[1])
-			if err != nil {
-				return err
-			}
-
-			symbol := args[2]
-			ethereumSender := types.NewEthereumAddress(args[3])
-
 			req := &types.QueryEthProphecyRequest{
-				EthereumChainId:       ethereumChainID,
-				BridgeContractAddress: bridgeContract.String(),
-				Nonce:                 int64(nonce),
-				Symbol:                symbol,
-				TokenContractAddress:  tokenContract.String(),
-				EthereumSender:        ethereumSender.String(),
+				ProphecyId: args[0],
 			}
 
 			res, err := queryClient.EthProphecy(context.Background(), req)

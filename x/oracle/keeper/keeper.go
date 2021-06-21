@@ -49,26 +49,16 @@ func (k Keeper) GetProphecy(ctx sdk.Context, id string) (types.Prophecy, bool) {
 		return types.Prophecy{}, false
 	}
 
-	var dbProphecy types.DBProphecy
-	k.cdc.MustUnmarshalBinaryBare(bz, &dbProphecy)
+	var prophecy types.Prophecy
+	k.cdc.MustUnmarshalBinaryBare(bz, &prophecy)
 
-	deSerializedProphecy, err := dbProphecy.DeserializeFromDB()
-	if err != nil {
-		return types.Prophecy{}, false
-	}
-
-	return deSerializedProphecy, true
+	return prophecy, true
 }
 
 // setProphecy saves a prophecy with an initial claim
 func (k Keeper) setProphecy(ctx sdk.Context, prophecy types.Prophecy) {
 	store := ctx.KVStore(k.storeKey)
-	serializedProphecy, err := prophecy.SerializeForDB()
-	if err != nil {
-		panic(err)
-	}
-
-	store.Set([]byte(prophecy.ID), k.cdc.MustMarshalBinaryBare(&serializedProphecy))
+	store.Set([]byte(prophecy.Id), k.cdc.MustMarshalBinaryBare(&prophecy))
 }
 
 func (k Keeper) EnsureAddressIsInWhitelist(ctx sdk.Context, validatorAddress string) error {
@@ -88,50 +78,39 @@ func (k Keeper) EnsureAddressIsInWhitelist(ctx sdk.Context, validatorAddress str
 	return types.ErrValidatorNotInWhiteList
 }
 
-func (k Keeper) ProcessClaim(ctx sdk.Context, claim types.Claim) (types.Status, error) {
+func (k Keeper) ProcessClaim(ctx sdk.Context, prophecyID, validator string) (types.StatusText, error) {
 	logger := k.Logger(ctx)
 
-	if err := k.EnsureAddressIsInWhitelist(ctx, claim.ValidatorAddress); err != nil {
-		return types.Status{}, err
+	if err := k.EnsureAddressIsInWhitelist(ctx, validator); err != nil {
+		return types.StatusText_STATUS_TEXT_UNSPECIFIED, err
 	}
 
-	valAddr, err := sdk.ValAddressFromBech32(claim.ValidatorAddress)
+	valAddr, err := sdk.ValAddressFromBech32(validator)
 	if err != nil {
-		return types.Status{}, err
+		return types.StatusText_STATUS_TEXT_UNSPECIFIED, err
 	}
 
 	activeValidator := k.checkActiveValidator(ctx, valAddr)
 	if !activeValidator {
 		logger.Error("sifnode oracle keeper ProcessClaim validator not active.")
-		return types.Status{}, types.ErrInvalidValidator
+		return types.StatusText_STATUS_TEXT_UNSPECIFIED, types.ErrInvalidValidator
 	}
 
-	if claim.Id == "" {
-		logger.Error("sifnode oracle keeper ProcessClaim wrong claim id.", "claimID", claim.Id)
-		return types.Status{}, types.ErrInvalidIdentifier
+	if prophecyID == "" {
+		logger.Error("sifnode oracle keeper ProcessClaim wrong claim id.", "claimID", prophecyID)
+		return types.StatusText_STATUS_TEXT_UNSPECIFIED, types.ErrInvalidIdentifier
 	}
 
-	if claim.Content == "" {
-		logger.Error("sifnode oracle keeper ProcessClaim claim content is empty.")
-		return types.Status{}, types.ErrInvalidClaim
-	}
+	prophecy, _ := k.GetProphecy(ctx, prophecyID)
 
-	prophecy, found := k.GetProphecy(ctx, claim.Id)
-	if !found {
-		prophecy = types.NewProphecy(claim.Id)
-	}
-	switch prophecy.Status.Text {
+	switch prophecy.Status {
 	case types.StatusText_STATUS_TEXT_PENDING:
 		// continue processing
 	default:
-		return types.Status{}, types.ErrProphecyFinalized
+		return types.StatusText_STATUS_TEXT_UNSPECIFIED, types.ErrProphecyFinalized
 	}
 
-	if prophecy.ValidatorClaims[claim.ValidatorAddress] != "" {
-		return types.Status{}, types.ErrDuplicateMessage
-	}
-
-	prophecy.AddClaim(valAddr, claim.Content)
+	prophecy.AddClaim(valAddr)
 	prophecy = k.processCompletion(ctx, prophecy)
 
 	k.setProphecy(ctx, prophecy)
@@ -173,18 +152,15 @@ func (k Keeper) ProcessUpdateWhiteListValidator(ctx sdk.Context, cosmosSender sd
 // will never be able to become successful due to not enough validation power being
 // left to push it over the threshold required for consensus.
 func (k Keeper) processCompletion(ctx sdk.Context, prophecy types.Prophecy) types.Prophecy {
-	highestClaim, highestClaimPower, totalClaimsPower, totalPower := prophecy.FindHighestClaim(ctx, k.stakeKeeper, k.GetOracleWhiteList(ctx))
+	_, highestClaimPower, _, totalPower := prophecy.FindHighestClaim(ctx, k.stakeKeeper, k.GetOracleWhiteList(ctx))
 
 	highestConsensusRatio := float64(highestClaimPower) / float64(totalPower)
-	remainingPossibleClaimPower := totalPower - totalClaimsPower
-	highestPossibleClaimPower := highestClaimPower + remainingPossibleClaimPower
-	highestPossibleConsensusRatio := float64(highestPossibleClaimPower) / float64(totalPower)
+	// remainingPossibleClaimPower := totalPower - totalClaimsPower
+	// highestPossibleClaimPower := highestClaimPower + remainingPossibleClaimPower
+	// highestPossibleConsensusRatio := float64(highestPossibleClaimPower) / float64(totalPower)
 
 	if highestConsensusRatio >= k.consensusNeeded {
-		prophecy.Status.Text = types.StatusText_STATUS_TEXT_SUCCESS
-		prophecy.Status.FinalClaim = highestClaim
-	} else if highestPossibleConsensusRatio < k.consensusNeeded {
-		prophecy.Status.Text = types.StatusText_STATUS_TEXT_FAILED
+		prophecy.Status = types.StatusText_STATUS_TEXT_SUCCESS
 	}
 
 	return prophecy

@@ -15,8 +15,8 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/Sifchain/sifnode/x/ethbridge"
-	"github.com/Sifchain/sifnode/x/ethbridge/test"
 	ethbridgekeeper "github.com/Sifchain/sifnode/x/ethbridge/keeper"
+	"github.com/Sifchain/sifnode/x/ethbridge/test"
 	"github.com/Sifchain/sifnode/x/ethbridge/types"
 	oraclekeeper "github.com/Sifchain/sifnode/x/oracle/keeper"
 	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
@@ -218,7 +218,7 @@ func TestNoMintFail(t *testing.T) {
 		for _, attribute := range event.Attributes {
 			value := string(attribute.Value)
 			if string(attribute.Key) == statusString {
-				require.Equal(t, value, oracletypes.StatusText_STATUS_TEXT_FAILED.String())
+				require.Equal(t, value, oracletypes.StatusText_STATUS_TEXT_PENDING.String())
 			}
 		}
 	}

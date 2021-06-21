@@ -44,8 +44,8 @@ func TestQueryEthProphecy(t *testing.T) {
 	initialEthBridgeClaim := types.CreateTestEthClaim(
 		t, testBridgeContractAddress, testTokenContractAddress, valAddress,
 		testEthereumAddress, types.TestCoinsAmount, types.TestCoinsSymbol, types.ClaimType_CLAIM_TYPE_LOCK)
-	oracleClaim, _ := types.CreateOracleClaimFromEthClaim(initialEthBridgeClaim)
-	_, err := oracleKeeper.ProcessClaim(ctx, oracleClaim)
+
+	_, err := oracleKeeper.ProcessClaim(ctx, initialEthBridgeClaim.GetOracleID(), initialEthBridgeClaim.ValidatorAddress)
 	require.NoError(t, err)
 
 	testResponse := types.CreateTestQueryEthProphecyResponse(t, valAddress, types.ClaimType_CLAIM_TYPE_LOCK)
@@ -55,9 +55,7 @@ func TestQueryEthProphecy(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, TestResponseJSON, string(testJSON))
 
-	req := types.NewQueryEthProphecyRequest(
-		types.TestEthereumChainID, testBridgeContractAddress, types.TestNonce,
-		types.TestCoinsSymbol, testTokenContractAddress, testEthereumAddress)
+	req := types.NewQueryEthProphecyRequest(types.TestProphecyID)
 	bz, err2 := encCfg.Amino.MarshalJSON(req)
 	require.Nil(t, err2)
 
@@ -83,11 +81,9 @@ func TestQueryEthProphecy(t *testing.T) {
 	require.NotNil(t, err5)
 
 	// Test error with nonexistent request
-	badEthereumAddress := types.NewEthereumAddress("badEthereumAddress")
+	// badEthereumAddress := types.NewEthereumAddress("badEthereumAddress")
 
-	bz2, err6 := encCfg.Amino.MarshalJSON(types.NewQueryEthProphecyRequest(
-		types.TestEthereumChainID, testBridgeContractAddress, 12,
-		types.TestCoinsSymbol, testTokenContractAddress, badEthereumAddress))
+	bz2, err6 := encCfg.Amino.MarshalJSON(types.NewQueryEthProphecyRequest(types.TestProphecyID))
 	require.Nil(t, err6)
 
 	query2 := abci.RequestQuery{
@@ -99,12 +95,10 @@ func TestQueryEthProphecy(t *testing.T) {
 	require.NotNil(t, err7)
 
 	// Test error with empty address
-	emptyEthereumAddress := types.NewEthereumAddress("")
+	// emptyEthereumAddress := types.NewEthereumAddress("")
 
 	bz3, err8 := encCfg.Amino.MarshalJSON(
-		types.NewQueryEthProphecyRequest(
-			types.TestEthereumChainID, testBridgeContractAddress, 12,
-			types.TestCoinsSymbol, testTokenContractAddress, emptyEthereumAddress))
+		types.NewQueryEthProphecyRequest(types.TestProphecyID))
 
 	require.Nil(t, err8)
 

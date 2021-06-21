@@ -6,9 +6,9 @@ import (
 )
 
 func Migrate(genesis v039oracle.GenesisState) *types.GenesisState {
-	var addressWhiteList []string
-	for _, addr := range genesis.AddressWhitelist {
-		addressWhiteList = append(addressWhiteList, addr.String())
+	addressWhiteList := make([]string, len(genesis.AddressWhitelist))
+	for index, addr := range genesis.AddressWhitelist {
+		addressWhiteList[index] = addr.String()
 	}
 
 	return &types.GenesisState{

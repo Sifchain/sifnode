@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"fmt"
+
 	abci "github.com/tendermint/tendermint/abci/types"
 
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -28,7 +29,7 @@ func NewLegacyQuerier(keeper Keeper, cdc *codec.LegacyAmino) sdk.Querier {
 
 func legacyQueryEthProphecy(ctx sdk.Context, cdc *codec.LegacyAmino, query abci.RequestQuery, keeper Keeper) ([]byte, error) {
 	var req types.QueryEthProphecyRequest
-	
+
 	if err := cdc.UnmarshalJSON(query.Data, &req); err != nil {
 		return nil, sdkerrors.Wrap(types.ErrJSONMarshalling, fmt.Sprintf("failed to parse req: %s", err.Error()))
 	}

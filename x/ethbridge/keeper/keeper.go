@@ -45,40 +45,35 @@ func (k Keeper) Logger(ctx sdk.Context) log.Logger {
 }
 
 // ProcessClaim processes a new claim coming in from a validator
-func (k Keeper) ProcessClaim(ctx sdk.Context, claim *types.EthBridgeClaim) (oracletypes.Status, error) {
-	logger := k.Logger(ctx)
-	oracleClaim, err := types.CreateOracleClaimFromEthClaim(claim)
-	if err != nil {
-		logger.Error("failed to create oracle claim from eth claim.",
-			errorMessageKey, err.Error())
-		return oracletypes.Status{}, err
-	}
+func (k Keeper) ProcessClaim(ctx sdk.Context, claim *types.EthBridgeClaim) (oracletypes.StatusText, error) {
+	// logger := k.Logger(ctx)
+	// oracleClaim, err := types.CreateOracleClaimFromEthClaim(claim)
+	// if err != nil {
+	// 	logger.Error("failed to create oracle claim from eth claim.",
+	// 		errorMessageKey, err.Error())
+	// 	return oracletypes.StatusText_STATUS_TEXT_UNSPECIFIED, err
+	// }
 
-	return k.oracleKeeper.ProcessClaim(ctx, oracleClaim)
+	return k.oracleKeeper.ProcessClaim(ctx, claim.GetOracleID(), claim.ValidatorAddress)
 }
 
 // ProcessSuccessfulClaim processes a claim that has just completed successfully with consensus
-func (k Keeper) ProcessSuccessfulClaim(ctx sdk.Context, claim string) error {
+func (k Keeper) ProcessSuccessfulClaim(ctx sdk.Context, claim *types.EthBridgeClaim) error {
 	logger := k.Logger(ctx)
-	oracleClaim, err := types.CreateOracleClaimFromOracleString(claim)
-	if err != nil {
-		logger.Error("failed to create oracle claim from oracle string.",
-			errorMessageKey, err.Error())
-		return err
-	}
 
-	receiverAddress := oracleClaim.CosmosReceiver
+	// receiverAddress := claim.CosmosReceiver
 
 	var coins sdk.Coins
-	switch oracleClaim.ClaimType {
+	var err error
+	switch claim.ClaimType {
 	case types.ClaimType_CLAIM_TYPE_LOCK:
-		symbol := fmt.Sprintf("%v%v", types.PeggedCoinPrefix, oracleClaim.Symbol)
-		k.AddPeggyToken(ctx, symbol)
+		symbol := fmt.Sprintf("%v%v", types.PeggedCoinPrefix, claim.Symbol)
+		k.AddPeggyToken(ctx, claim.Symbol)
 
-		coins = sdk.Coins{sdk.NewCoin(symbol, oracleClaim.Amount)}
+		coins = sdk.Coins{sdk.NewCoin(symbol, claim.Amount)}
 		err = k.bankKeeper.MintCoins(ctx, types.ModuleName, coins)
 	case types.ClaimType_CLAIM_TYPE_BURN:
-		coins = sdk.Coins{sdk.NewCoin(oracleClaim.Symbol, oracleClaim.Amount)}
+		coins = sdk.Coins{sdk.NewCoin(claim.Symbol, claim.Amount)}
 		err = k.bankKeeper.MintCoins(ctx, types.ModuleName, coins)
 	default:
 		err = types.ErrInvalidClaimType
@@ -91,7 +86,7 @@ func (k Keeper) ProcessSuccessfulClaim(ctx sdk.Context, claim string) error {
 	}
 
 	if err := k.bankKeeper.SendCoinsFromModuleToAccount(
-		ctx, types.ModuleName, receiverAddress, coins,
+		ctx, types.ModuleName, sdk.AccAddress(claim.CosmosReceiver), coins,
 	); err != nil {
 		panic(err)
 	}

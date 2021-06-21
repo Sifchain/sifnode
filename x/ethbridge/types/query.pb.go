@@ -31,15 +31,7 @@ const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
 // QueryEthProphecyRequest payload for EthProphecy rpc query
 type QueryEthProphecyRequest struct {
-	EthereumChainId int64 `protobuf:"varint,1,opt,name=ethereum_chain_id,json=ethereumChainId,proto3" json:"ethereum_chain_id,omitempty"`
-	// bridge_contract_address is an EthereumAddress
-	BridgeContractAddress string `protobuf:"bytes,2,opt,name=bridge_contract_address,json=bridgeContractAddress,proto3" json:"bridge_contract_address,omitempty" yaml:"bridge_registry_contract_address"`
-	Nonce                 int64  `protobuf:"varint,3,opt,name=nonce,proto3" json:"nonce,omitempty"`
-	Symbol                string `protobuf:"bytes,4,opt,name=symbol,proto3" json:"symbol,omitempty"`
-	// token_contract_address is an EthereumAddress
-	TokenContractAddress string `protobuf:"bytes,5,opt,name=token_contract_address,json=tokenContractAddress,proto3" json:"token_contract_address,omitempty"`
-	// ethereum_sender is an EthereumAddress
-	EthereumSender string `protobuf:"bytes,6,opt,name=ethereum_sender,json=ethereumSender,proto3" json:"ethereum_sender,omitempty"`
+	ProphecyId string `protobuf:"bytes,1,opt,name=prophecy_id,json=prophecyId,proto3" json:"prophecy_id,omitempty"`
 }
 
 func (m *QueryEthProphecyRequest) Reset()         { *m = QueryEthProphecyRequest{} }
@@ -75,53 +67,18 @@ func (m *QueryEthProphecyRequest) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_QueryEthProphecyRequest proto.InternalMessageInfo
 
-func (m *QueryEthProphecyRequest) GetEthereumChainId() int64 {
+func (m *QueryEthProphecyRequest) GetProphecyId() string {
 	if m != nil {
-		return m.EthereumChainId
-	}
-	return 0
-}
-
-func (m *QueryEthProphecyRequest) GetBridgeContractAddress() string {
-	if m != nil {
-		return m.BridgeContractAddress
-	}
-	return ""
-}
-
-func (m *QueryEthProphecyRequest) GetNonce() int64 {
-	if m != nil {
-		return m.Nonce
-	}
-	return 0
-}
-
-func (m *QueryEthProphecyRequest) GetSymbol() string {
-	if m != nil {
-		return m.Symbol
-	}
-	return ""
-}
-
-func (m *QueryEthProphecyRequest) GetTokenContractAddress() string {
-	if m != nil {
-		return m.TokenContractAddress
-	}
-	return ""
-}
-
-func (m *QueryEthProphecyRequest) GetEthereumSender() string {
-	if m != nil {
-		return m.EthereumSender
+		return m.ProphecyId
 	}
 	return ""
 }
 
 // QueryEthProphecyResponse payload for EthProphecy rpc query
 type QueryEthProphecyResponse struct {
-	Id     string            `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	Status types.StatusText  `protobuf:"varint,2,opt,name=status,proto3,enum=sifnode.oracle.v1.StatusText" json:"status,omitempty"`
-	Claims []*EthBridgeClaim `protobuf:"bytes,3,rep,name=claims,proto3" json:"claims,omitempty"`
+	ProphecyId      string           `protobuf:"bytes,1,opt,name=prophecy_id,json=prophecyId,proto3" json:"prophecy_id,omitempty"`
+	Status          types.StatusText `protobuf:"varint,2,opt,name=status,proto3,enum=sifnode.oracle.v1.StatusText" json:"status,omitempty"`
+	ClaimValidators []string         `protobuf:"bytes,3,rep,name=claim_validators,json=claimValidators,proto3" json:"claim_validators,omitempty"`
 }
 
 func (m *QueryEthProphecyResponse) Reset()         { *m = QueryEthProphecyResponse{} }
@@ -157,9 +114,9 @@ func (m *QueryEthProphecyResponse) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_QueryEthProphecyResponse proto.InternalMessageInfo
 
-func (m *QueryEthProphecyResponse) GetId() string {
+func (m *QueryEthProphecyResponse) GetProphecyId() string {
 	if m != nil {
-		return m.Id
+		return m.ProphecyId
 	}
 	return ""
 }
@@ -171,9 +128,9 @@ func (m *QueryEthProphecyResponse) GetStatus() types.StatusText {
 	return types.StatusText_STATUS_TEXT_UNSPECIFIED
 }
 
-func (m *QueryEthProphecyResponse) GetClaims() []*EthBridgeClaim {
+func (m *QueryEthProphecyResponse) GetClaimValidators() []string {
 	if m != nil {
-		return m.Claims
+		return m.ClaimValidators
 	}
 	return nil
 }
@@ -186,36 +143,28 @@ func init() {
 func init() { proto.RegisterFile("sifnode/ethbridge/v1/query.proto", fileDescriptor_7077edcf9f792b78) }
 
 var fileDescriptor_7077edcf9f792b78 = []byte{
-	// 464 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x8c, 0x92, 0xc1, 0x6e, 0xd3, 0x30,
-	0x18, 0xc7, 0x9b, 0x96, 0x46, 0x9a, 0x27, 0x15, 0x61, 0x95, 0x2d, 0xaa, 0xb4, 0x50, 0x45, 0x48,
-	0xab, 0x40, 0x73, 0xd4, 0x02, 0x17, 0xc4, 0x85, 0x4e, 0x13, 0xe2, 0x06, 0x29, 0x27, 0x2e, 0x51,
-	0x9a, 0x7c, 0x4b, 0x2c, 0x1a, 0xbb, 0xb3, 0x9d, 0xb2, 0xbc, 0x05, 0x6f, 0xc0, 0x63, 0xf0, 0x0a,
-	0x1c, 0x77, 0xe4, 0x84, 0x50, 0xfb, 0x06, 0x3c, 0x01, 0x8a, 0x9d, 0x4c, 0x53, 0x5b, 0xa4, 0xdd,
-	0xec, 0xef, 0xfb, 0xd9, 0xdf, 0xdf, 0x7f, 0xff, 0xd1, 0x50, 0xd2, 0x4b, 0xc6, 0x13, 0xf0, 0x41,
-	0x65, 0x73, 0x41, 0x93, 0x14, 0xfc, 0xd5, 0xd8, 0xbf, 0x2a, 0x40, 0x94, 0x64, 0x29, 0xb8, 0xe2,
-	0xb8, 0x5f, 0x13, 0xe4, 0x96, 0x20, 0xab, 0xf1, 0xa0, 0x9f, 0xf2, 0x94, 0x6b, 0xc0, 0xaf, 0x56,
-	0x86, 0x1d, 0xec, 0xbf, 0x4d, 0x95, 0x4b, 0x90, 0x35, 0x71, 0xd2, 0x10, 0x5c, 0x44, 0xf1, 0x62,
-	0xbb, 0xed, 0xfd, 0x68, 0xa3, 0xe3, 0x8f, 0xd5, 0xf0, 0x0b, 0x95, 0x7d, 0x10, 0x7c, 0x99, 0x41,
-	0x5c, 0x06, 0x70, 0x55, 0x80, 0x54, 0xf8, 0x19, 0x7a, 0x04, 0x2a, 0x03, 0x01, 0x45, 0x1e, 0xc6,
-	0x59, 0x44, 0x59, 0x48, 0x13, 0xc7, 0x1a, 0x5a, 0xa3, 0x4e, 0xf0, 0xb0, 0x69, 0x9c, 0x57, 0xf5,
-	0xf7, 0x09, 0x8e, 0xd1, 0xb1, 0x99, 0x1f, 0xc6, 0x9c, 0x29, 0x11, 0xc5, 0x2a, 0x8c, 0x92, 0x44,
-	0x80, 0x94, 0x4e, 0x7b, 0x68, 0x8d, 0x0e, 0xa6, 0xcf, 0xff, 0xfe, 0x7e, 0x72, 0x5a, 0x46, 0xf9,
-	0xe2, 0xb5, 0x57, 0x83, 0x02, 0x52, 0x2a, 0x95, 0x28, 0x77, 0x4e, 0x78, 0xc1, 0x63, 0x83, 0x9c,
-	0xd7, 0x8d, 0xb7, 0xa6, 0x8e, 0xfb, 0xa8, 0xcb, 0x38, 0x8b, 0xc1, 0xe9, 0x68, 0x11, 0x66, 0x83,
-	0x8f, 0x90, 0x2d, 0xcb, 0x7c, 0xce, 0x17, 0xce, 0x83, 0x6a, 0x52, 0x50, 0xef, 0xf0, 0x4b, 0x74,
-	0xa4, 0xf8, 0x17, 0x60, 0xbb, 0x8a, 0xba, 0x9a, 0xeb, 0xeb, 0xee, 0xf6, 0x8c, 0x53, 0x74, 0xfb,
-	0xb6, 0x50, 0x02, 0x4b, 0x40, 0x38, 0xb6, 0xc6, 0x7b, 0x4d, 0x79, 0xa6, 0xab, 0xde, 0x77, 0x0b,
-	0x39, 0xbb, 0xce, 0xc9, 0x25, 0x67, 0x12, 0x70, 0x0f, 0xb5, 0x6b, 0xaf, 0x0e, 0x82, 0x36, 0x4d,
-	0xf0, 0x2b, 0x64, 0x4b, 0x15, 0xa9, 0xc2, 0xb8, 0xd1, 0x9b, 0x9c, 0x90, 0xe6, 0x93, 0xcd, 0xb7,
-	0x90, 0xd5, 0x98, 0xcc, 0x34, 0xf0, 0x09, 0xae, 0x55, 0x50, 0xc3, 0xf8, 0x0d, 0xb2, 0xe3, 0x45,
-	0x44, 0x73, 0xe9, 0x74, 0x86, 0x9d, 0xd1, 0xe1, 0xe4, 0x29, 0xd9, 0x97, 0x0d, 0x72, 0xa1, 0xb2,
-	0xa9, 0x31, 0xac, 0x82, 0x83, 0xfa, 0xcc, 0xe4, 0x2b, 0xea, 0x6a, 0x81, 0x98, 0xa1, 0xc3, 0x3b,
-	0x22, 0xf1, 0xd9, 0xfe, 0x5b, 0xfe, 0x13, 0x83, 0x01, 0xb9, 0x2f, 0x6e, 0xde, 0xee, 0xb5, 0xa6,
-	0xef, 0x7e, 0xae, 0x5d, 0xeb, 0x66, 0xed, 0x5a, 0x7f, 0xd6, 0xae, 0xf5, 0x6d, 0xe3, 0xb6, 0x6e,
-	0x36, 0x6e, 0xeb, 0xd7, 0xc6, 0x6d, 0x7d, 0x3e, 0x4b, 0xa9, 0xca, 0x8a, 0x39, 0x89, 0x79, 0xee,
-	0xcf, 0xe8, 0xa5, 0x4e, 0x95, 0xdf, 0x24, 0xf4, 0xfa, 0x4e, 0x8a, 0x75, 0x46, 0xe7, 0xb6, 0x0e,
-	0xe9, 0x8b, 0x7f, 0x01, 0x00, 0x00, 0xff, 0xff, 0x40, 0x4e, 0x2f, 0xcd, 0x35, 0x03, 0x00, 0x00,
+	// 326 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x8c, 0x91, 0xc1, 0x4a, 0xc3, 0x30,
+	0x1c, 0xc6, 0x1b, 0x87, 0x83, 0x65, 0xa0, 0x52, 0x06, 0x96, 0xc1, 0x62, 0xd9, 0x69, 0x1e, 0x96,
+	0xb0, 0x89, 0x17, 0x8f, 0x82, 0x88, 0x37, 0xed, 0xc4, 0x83, 0x97, 0x91, 0xb5, 0x59, 0x1b, 0xd8,
+	0x9a, 0x2e, 0x49, 0xeb, 0xf6, 0x16, 0xbe, 0x80, 0xef, 0xe3, 0x71, 0x47, 0x8f, 0xb2, 0xbd, 0x88,
+	0x2c, 0x6d, 0xc7, 0xd0, 0x89, 0xde, 0xc2, 0x97, 0xdf, 0x3f, 0xf9, 0xfe, 0xdf, 0x07, 0x5d, 0xc5,
+	0xc7, 0xb1, 0x08, 0x18, 0x61, 0x3a, 0x1a, 0x49, 0x1e, 0x84, 0x8c, 0x64, 0x3d, 0x32, 0x4b, 0x99,
+	0x5c, 0xe0, 0x44, 0x0a, 0x2d, 0xec, 0x46, 0x41, 0xe0, 0x2d, 0x81, 0xb3, 0x5e, 0xb3, 0x11, 0x8a,
+	0x50, 0x18, 0x80, 0x6c, 0x4e, 0x39, 0xdb, 0xdc, 0xff, 0x9a, 0x5e, 0x24, 0x4c, 0x15, 0x44, 0xab,
+	0x24, 0x84, 0xa4, 0xfe, 0xe4, 0xfb, 0x75, 0xfb, 0x0a, 0x9e, 0x3e, 0x6c, 0xfe, 0xbe, 0xd1, 0xd1,
+	0xbd, 0x14, 0x49, 0xc4, 0xfc, 0x85, 0xc7, 0x66, 0x29, 0x53, 0xda, 0x3e, 0x83, 0xf5, 0xa4, 0x90,
+	0x86, 0x3c, 0x70, 0x80, 0x0b, 0x3a, 0x35, 0x0f, 0x96, 0xd2, 0x5d, 0xd0, 0x7e, 0x03, 0xd0, 0xf9,
+	0x39, 0xac, 0x12, 0x11, 0x2b, 0xf6, 0xe7, 0xb4, 0x7d, 0x09, 0xab, 0x4a, 0x53, 0x9d, 0x2a, 0xe7,
+	0xc0, 0x05, 0x9d, 0xa3, 0x7e, 0x0b, 0x97, 0x7b, 0xe7, 0x4e, 0x71, 0xd6, 0xc3, 0x03, 0x03, 0x3c,
+	0xb2, 0xb9, 0xf6, 0x0a, 0xd8, 0x3e, 0x87, 0x27, 0xfe, 0x84, 0xf2, 0xe9, 0x30, 0xa3, 0x13, 0x1e,
+	0x50, 0x2d, 0xa4, 0x72, 0x2a, 0x6e, 0xa5, 0x53, 0xf3, 0x8e, 0x8d, 0xfe, 0xb4, 0x95, 0xfb, 0x2f,
+	0xf0, 0xd0, 0xd8, 0xb3, 0x63, 0x58, 0xdf, 0xb1, 0x68, 0x77, 0xf1, 0xbe, 0x84, 0xf1, 0x2f, 0x39,
+	0x34, 0xf1, 0x7f, 0xf1, 0x7c, 0xf3, 0xb6, 0x75, 0x7d, 0xfb, 0xbe, 0x42, 0x60, 0xb9, 0x42, 0xe0,
+	0x73, 0x85, 0xc0, 0xeb, 0x1a, 0x59, 0xcb, 0x35, 0xb2, 0x3e, 0xd6, 0xc8, 0x7a, 0xee, 0x86, 0x5c,
+	0x47, 0xe9, 0x08, 0xfb, 0x62, 0x4a, 0x06, 0x7c, 0xec, 0x47, 0x94, 0xc7, 0xa4, 0x6c, 0x68, 0xbe,
+	0xd3, 0xa2, 0xe9, 0x68, 0x54, 0x35, 0x25, 0x5d, 0x7c, 0x05, 0x00, 0x00, 0xff, 0xff, 0xd4, 0xcd,
+	0xc7, 0x8b, 0x35, 0x02, 0x00, 0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -320,43 +269,12 @@ func (m *QueryEthProphecyRequest) MarshalToSizedBuffer(dAtA []byte) (int, error)
 	_ = i
 	var l int
 	_ = l
-	if len(m.EthereumSender) > 0 {
-		i -= len(m.EthereumSender)
-		copy(dAtA[i:], m.EthereumSender)
-		i = encodeVarintQuery(dAtA, i, uint64(len(m.EthereumSender)))
+	if len(m.ProphecyId) > 0 {
+		i -= len(m.ProphecyId)
+		copy(dAtA[i:], m.ProphecyId)
+		i = encodeVarintQuery(dAtA, i, uint64(len(m.ProphecyId)))
 		i--
-		dAtA[i] = 0x32
-	}
-	if len(m.TokenContractAddress) > 0 {
-		i -= len(m.TokenContractAddress)
-		copy(dAtA[i:], m.TokenContractAddress)
-		i = encodeVarintQuery(dAtA, i, uint64(len(m.TokenContractAddress)))
-		i--
-		dAtA[i] = 0x2a
-	}
-	if len(m.Symbol) > 0 {
-		i -= len(m.Symbol)
-		copy(dAtA[i:], m.Symbol)
-		i = encodeVarintQuery(dAtA, i, uint64(len(m.Symbol)))
-		i--
-		dAtA[i] = 0x22
-	}
-	if m.Nonce != 0 {
-		i = encodeVarintQuery(dAtA, i, uint64(m.Nonce))
-		i--
-		dAtA[i] = 0x18
-	}
-	if len(m.BridgeContractAddress) > 0 {
-		i -= len(m.BridgeContractAddress)
-		copy(dAtA[i:], m.BridgeContractAddress)
-		i = encodeVarintQuery(dAtA, i, uint64(len(m.BridgeContractAddress)))
-		i--
-		dAtA[i] = 0x12
-	}
-	if m.EthereumChainId != 0 {
-		i = encodeVarintQuery(dAtA, i, uint64(m.EthereumChainId))
-		i--
-		dAtA[i] = 0x8
+		dAtA[i] = 0xa
 	}
 	return len(dAtA) - i, nil
 }
@@ -381,16 +299,11 @@ func (m *QueryEthProphecyResponse) MarshalToSizedBuffer(dAtA []byte) (int, error
 	_ = i
 	var l int
 	_ = l
-	if len(m.Claims) > 0 {
-		for iNdEx := len(m.Claims) - 1; iNdEx >= 0; iNdEx-- {
-			{
-				size, err := m.Claims[iNdEx].MarshalToSizedBuffer(dAtA[:i])
-				if err != nil {
-					return 0, err
-				}
-				i -= size
-				i = encodeVarintQuery(dAtA, i, uint64(size))
-			}
+	if len(m.ClaimValidators) > 0 {
+		for iNdEx := len(m.ClaimValidators) - 1; iNdEx >= 0; iNdEx-- {
+			i -= len(m.ClaimValidators[iNdEx])
+			copy(dAtA[i:], m.ClaimValidators[iNdEx])
+			i = encodeVarintQuery(dAtA, i, uint64(len(m.ClaimValidators[iNdEx])))
 			i--
 			dAtA[i] = 0x1a
 		}
@@ -400,10 +313,10 @@ func (m *QueryEthProphecyResponse) MarshalToSizedBuffer(dAtA []byte) (int, error
 		i--
 		dAtA[i] = 0x10
 	}
-	if len(m.Id) > 0 {
-		i -= len(m.Id)
-		copy(dAtA[i:], m.Id)
-		i = encodeVarintQuery(dAtA, i, uint64(len(m.Id)))
+	if len(m.ProphecyId) > 0 {
+		i -= len(m.ProphecyId)
+		copy(dAtA[i:], m.ProphecyId)
+		i = encodeVarintQuery(dAtA, i, uint64(len(m.ProphecyId)))
 		i--
 		dAtA[i] = 0xa
 	}
@@ -427,25 +340,7 @@ func (m *QueryEthProphecyRequest) Size() (n int) {
 	}
 	var l int
 	_ = l
-	if m.EthereumChainId != 0 {
-		n += 1 + sovQuery(uint64(m.EthereumChainId))
-	}
-	l = len(m.BridgeContractAddress)
-	if l > 0 {
-		n += 1 + l + sovQuery(uint64(l))
-	}
-	if m.Nonce != 0 {
-		n += 1 + sovQuery(uint64(m.Nonce))
-	}
-	l = len(m.Symbol)
-	if l > 0 {
-		n += 1 + l + sovQuery(uint64(l))
-	}
-	l = len(m.TokenContractAddress)
-	if l > 0 {
-		n += 1 + l + sovQuery(uint64(l))
-	}
-	l = len(m.EthereumSender)
+	l = len(m.ProphecyId)
 	if l > 0 {
 		n += 1 + l + sovQuery(uint64(l))
 	}
@@ -458,16 +353,16 @@ func (m *QueryEthProphecyResponse) Size() (n int) {
 	}
 	var l int
 	_ = l
-	l = len(m.Id)
+	l = len(m.ProphecyId)
 	if l > 0 {
 		n += 1 + l + sovQuery(uint64(l))
 	}
 	if m.Status != 0 {
 		n += 1 + sovQuery(uint64(m.Status))
 	}
-	if len(m.Claims) > 0 {
-		for _, e := range m.Claims {
-			l = e.Size()
+	if len(m.ClaimValidators) > 0 {
+		for _, s := range m.ClaimValidators {
+			l = len(s)
 			n += 1 + l + sovQuery(uint64(l))
 		}
 	}
@@ -510,27 +405,8 @@ func (m *QueryEthProphecyRequest) Unmarshal(dAtA []byte) error {
 		}
 		switch fieldNum {
 		case 1:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field EthereumChainId", wireType)
-			}
-			m.EthereumChainId = 0
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowQuery
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				m.EthereumChainId |= int64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-		case 2:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field BridgeContractAddress", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field ProphecyId", wireType)
 			}
 			var stringLen uint64
 			for shift := uint(0); ; shift += 7 {
@@ -558,122 +434,7 @@ func (m *QueryEthProphecyRequest) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.BridgeContractAddress = string(dAtA[iNdEx:postIndex])
-			iNdEx = postIndex
-		case 3:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Nonce", wireType)
-			}
-			m.Nonce = 0
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowQuery
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				m.Nonce |= int64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-		case 4:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Symbol", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowQuery
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthQuery
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex < 0 {
-				return ErrInvalidLengthQuery
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.Symbol = string(dAtA[iNdEx:postIndex])
-			iNdEx = postIndex
-		case 5:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field TokenContractAddress", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowQuery
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthQuery
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex < 0 {
-				return ErrInvalidLengthQuery
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.TokenContractAddress = string(dAtA[iNdEx:postIndex])
-			iNdEx = postIndex
-		case 6:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field EthereumSender", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowQuery
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthQuery
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex < 0 {
-				return ErrInvalidLengthQuery
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.EthereumSender = string(dAtA[iNdEx:postIndex])
+			m.ProphecyId = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
 		default:
 			iNdEx = preIndex
@@ -727,7 +488,7 @@ func (m *QueryEthProphecyResponse) Unmarshal(dAtA []byte) error {
 		switch fieldNum {
 		case 1:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Id", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field ProphecyId", wireType)
 			}
 			var stringLen uint64
 			for shift := uint(0); ; shift += 7 {
@@ -755,7 +516,7 @@ func (m *QueryEthProphecyResponse) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.Id = string(dAtA[iNdEx:postIndex])
+			m.ProphecyId = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
 		case 2:
 			if wireType != 0 {
@@ -778,9 +539,9 @@ func (m *QueryEthProphecyResponse) Unmarshal(dAtA []byte) error {
 			}
 		case 3:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Claims", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field ClaimValidators", wireType)
 			}
-			var msglen int
+			var stringLen uint64
 			for shift := uint(0); ; shift += 7 {
 				if shift >= 64 {
 					return ErrIntOverflowQuery
@@ -790,25 +551,23 @@ func (m *QueryEthProphecyResponse) Unmarshal(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				msglen |= int(b&0x7F) << shift
+				stringLen |= uint64(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
 			}
-			if msglen < 0 {
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
 				return ErrInvalidLengthQuery
 			}
-			postIndex := iNdEx + msglen
+			postIndex := iNdEx + intStringLen
 			if postIndex < 0 {
 				return ErrInvalidLengthQuery
 			}
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.Claims = append(m.Claims, &EthBridgeClaim{})
-			if err := m.Claims[len(m.Claims)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
-				return err
-			}
+			m.ClaimValidators = append(m.ClaimValidators, string(dAtA[iNdEx:postIndex]))
 			iNdEx = postIndex
 		default:
 			iNdEx = preIndex

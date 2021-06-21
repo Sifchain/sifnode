@@ -24,6 +24,7 @@ const (
 	AltTestCoinsAmount        = 12
 	AltTestCoinsSymbol        = "eth"
 	TestCoinIntAmount         = 10
+	TestProphecyID            = "test_prophecy_id"
 )
 
 var testCethAmount = sdk.NewInt(65000000000 * 300000)
@@ -77,12 +78,13 @@ func CreateTestQueryEthProphecyResponse(t *testing.T, validatorAddress sdk.ValAd
 	testTokenAddress := NewEthereumAddress(TestTokenContractAddress)
 	ethBridgeClaim := CreateTestEthClaim(t, testContractAddress, testTokenAddress, validatorAddress,
 		testEthereumAddress, TestCoinsAmount, TestCoinsSymbol, claimType)
-	oracleClaim, _ := CreateOracleClaimFromEthClaim(ethBridgeClaim)
-	ethBridgeClaims := []*EthBridgeClaim{ethBridgeClaim}
+	// oracleClaim, _ := CreateOracleClaimFromEthClaim(ethBridgeClaim)
+	ethBridgeClaims := []string{ethBridgeClaim.ValidatorAddress}
+	// ethBridgeClaim.GetOracleID()
 
 	return NewQueryEthProphecyResponse(
-		oracleClaim.Id,
-		oracletypes.NewStatus(oracletypes.StatusText_STATUS_TEXT_PENDING, ""),
+		ethBridgeClaim.GetOracleID(),
+		oracletypes.StatusText_STATUS_TEXT_PENDING,
 		ethBridgeClaims,
 	)
 }

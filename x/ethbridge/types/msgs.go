@@ -2,7 +2,6 @@ package types
 
 import (
 	"encoding/json"
-	"fmt"
 	"strconv"
 	"strings"
 
@@ -376,33 +375,33 @@ func (msg MsgUpdateWhiteListValidator) GetSigners() []sdk.AccAddress {
 }
 
 // MapOracleClaimsToEthBridgeClaims maps a set of generic oracle claim data into EthBridgeClaim objects
-func MapOracleClaimsToEthBridgeClaims(
-	ethereumChainID int64,
-	bridgeContract EthereumAddress,
-	nonce int64,
-	symbol string,
-	tokenContract EthereumAddress,
-	ethereumSender EthereumAddress,
-	oracleValidatorClaims map[string]string,
-	f func(int64, EthereumAddress, int64, EthereumAddress, sdk.ValAddress, string) (*EthBridgeClaim, error),
-) ([]*EthBridgeClaim, error) {
+// func MapOracleClaimsToEthBridgeClaims(
+// 	ethereumChainID int64,
+// 	bridgeContract EthereumAddress,
+// 	nonce int64,
+// 	symbol string,
+// 	tokenContract EthereumAddress,
+// 	ethereumSender EthereumAddress,
+// 	oracleValidatorClaims []string,
+// 	f func(int64, EthereumAddress, int64, EthereumAddress, sdk.ValAddress, string) (*EthBridgeClaim, error),
+// ) ([]*EthBridgeClaim, error) {
 
-	mappedClaims := make([]*EthBridgeClaim, len(oracleValidatorClaims))
-	i := 0
-	for validatorBech32, validatorClaim := range oracleValidatorClaims {
-		validatorAddress, parseErr := sdk.ValAddressFromBech32(validatorBech32)
-		if parseErr != nil {
-			return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, fmt.Sprintf("failed to parse claim: %s", parseErr))
-		}
+// 	mappedClaims := make([]*EthBridgeClaim, len(oracleValidatorClaims))
+// 	i := 0
+// 	for _, validatorClaim := range oracleValidatorClaims {
+// 		validatorAddress, parseErr := sdk.ValAddressFromBech32(validatorClaim)
+// 		if parseErr != nil {
+// 			return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, fmt.Sprintf("failed to parse claim: %s", parseErr))
+// 		}
 
-		mappedClaim, err := f(
-			ethereumChainID, bridgeContract, nonce, ethereumSender, validatorAddress, validatorClaim)
-		if err != nil {
-			return nil, err
-		}
-		mappedClaims[i] = mappedClaim
-		i++
-	}
+// 		mappedClaim, err := f(
+// 			ethereumChainID, bridgeContract, nonce, ethereumSender, validatorAddress, validatorClaim)
+// 		if err != nil {
+// 			return nil, err
+// 		}
+// 		mappedClaims[i] = mappedClaim
+// 		i++
+// 	}
 
-	return mappedClaims, nil
-}
+// 	return mappedClaims, nil
+// }

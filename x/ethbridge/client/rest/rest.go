@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
-	"strings"
 
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/tx"
@@ -25,6 +24,7 @@ const (
 	restSymbol          = "symbol"
 	restTokenContract   = "tokenContract"
 	restEthereumSender  = "ethereumSender"
+	restProphecyID      = "restProphecyID"
 )
 
 type createEthClaimReq struct {
@@ -123,35 +123,9 @@ func getProphecyHandler(cliCtx client.Context, storeName string) http.HandlerFun
 	return func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
 
-		ethereumChainIDString := vars[restEthereumChainID]
-		ethereumChainID, err := strconv.ParseInt(ethereumChainIDString, 10, 64)
-		if err != nil {
-			rest.WriteErrorResponse(w, http.StatusInternalServerError, err.Error())
-			return
-		}
+		restProphecyID := vars[restProphecyID]
 
-		bridgeContract := types.NewEthereumAddress(vars[restBridgeContract])
-
-		nonce := vars[restNonce]
-		nonceString, err := strconv.ParseInt(nonce, 10, 64)
-		if err != nil {
-			rest.WriteErrorResponse(w, http.StatusInternalServerError, err.Error())
-			return
-		}
-
-		tokenContract := types.NewEthereumAddress(vars[restTokenContract])
-
-		symbol := vars[restSymbol]
-		if strings.TrimSpace(symbol) == "" {
-			rest.WriteErrorResponse(w, http.StatusInternalServerError, "symbol is empty")
-			return
-		}
-
-		ethereumSender := types.NewEthereumAddress(vars[restEthereumSender])
-
-		bz, err := cliCtx.LegacyAmino.MarshalJSON(
-			types.NewQueryEthProphecyRequest(
-				ethereumChainID, bridgeContract, nonceString, symbol, tokenContract, ethereumSender))
+		bz, err := cliCtx.LegacyAmino.MarshalJSON(types.NewQueryEthProphecyRequest(restProphecyID))
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusNotFound, err.Error())
 			return

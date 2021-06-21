@@ -2,10 +2,11 @@ package keeper
 
 import (
 	"context"
+	"strconv"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/pkg/errors"
-	"strconv"
 
 	"github.com/Sifchain/sifnode/x/ethbridge/types"
 	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
@@ -145,8 +146,8 @@ func (srv msgServer) CreateEthBridgeClaim(goCtx context.Context, msg *types.MsgC
 			errorMessageKey, err.Error())
 		return nil, err
 	}
-	if status.Text == oracletypes.StatusText_STATUS_TEXT_SUCCESS {
-		if err = srv.Keeper.ProcessSuccessfulClaim(ctx, status.FinalClaim); err != nil {
+	if status == oracletypes.StatusText_STATUS_TEXT_SUCCESS {
+		if err = srv.Keeper.ProcessSuccessfulClaim(ctx, msg.EthBridgeClaim); err != nil {
 			logger.Error("bridge keeper failed to process successful claim.",
 				errorMessageKey, err.Error())
 			return nil, err
@@ -181,7 +182,7 @@ func (srv msgServer) CreateEthBridgeClaim(goCtx context.Context, msg *types.MsgC
 		),
 		sdk.NewEvent(
 			types.EventTypeProphecyStatus,
-			sdk.NewAttribute(types.AttributeKeyStatus, status.Text.String()),
+			sdk.NewAttribute(types.AttributeKeyStatus, status.String()),
 		),
 	})
 

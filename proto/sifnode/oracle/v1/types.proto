@@ -21,11 +21,11 @@ message Claim {
   string content = 3;
 }
 
-// DBProphecy is what the prophecy becomes when being saved to the database.
+// Prophecy is what the prophecy becomes when being saved to the database.
 //  Tendermint/Amino does not support maps so we must serialize those variables
 //  into bytes.
-message DBProphecy {
-  uint64 id = 1;
+message Prophecy {
+  string id = 1;
   StatusText status = 2;
   repeated string claim_validators = 3;
 }
