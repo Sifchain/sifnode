@@ -17,8 +17,14 @@ namespace :genesis do
                           args[:validator_count].to_i
                         end
 
+      seed_ip_address = if args[:seed_ip_address].nil?
+                          "192.168.1.2"
+                        else
+                          args[:seed_ip_address]
+                        end
+
       network_create(chainnet: args[:chainnet], validator_count: validator_count, build_dir: "#{cwd}/../networks",
-                     seed_ip_address: args[:seed_ip_address], network_config: network_config(args[:chainnet]),
+                     seed_ip_address: seed_ip_address, network_config: network_config(args[:chainnet]),
                      keyring_backend: args[:keyring_backend])
     end
 
