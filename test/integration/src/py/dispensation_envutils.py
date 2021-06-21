@@ -196,3 +196,131 @@ def broadcast_async_txn(signedtx):
     json_str = get_shell_output_json(cmd)
     txn = json_str["txhash"]
     return txn
+
+def create_online_singlekey_txn_with_runner(
+        claimType,
+        runner_address,
+        distributor_address,
+        chain_id,
+        sifnodecli_node
+):
+    logging.debug(f"create_online_dispensation")
+    sifchain_fees_entry = f"--gas auto"
+    keyring_backend_entry = f"--keyring-backend test"
+    output = 'output.json'
+    cmd = " ".join([
+        "sifnodecli tx dispensation create",
+        f"{claimType}",
+        output,
+        runner_address,
+        sifchain_fees_entry,
+        f"--fees 150000rowan",
+        f"--from {distributor_address}",
+        f"--chain-id={chain_id}",
+        f"{sifnodecli_node}",
+        keyring_backend_entry,
+        f"--yes -o json"
+
+    ])
+    json_str = get_shell_output_json(cmd)
+    assert (json_str.get("code", 0) == 0)
+    txn = json_str["txhash"]
+    return txn
+
+#CODE TO CREATE A CLI TO CREATE A SINGLE_KEY OFFLINE DISPENSATION TXN
+def create_offline_singlekey_txn_with_runner(
+        claimType,
+        runner_address,
+        distributor_address,
+        chain_id,
+        sifnodecli_node
+    ):
+    logging.debug(f"create_unsigned_offline_dispensation_txn")
+    sifchain_fees_entry = f"--gas auto"
+    keyring_backend_entry = f"--keyring-backend test"
+    output = 'output.json'
+    cmd = " ".join([
+        "sifnodecli tx dispensation create",
+        f"{claimType}",
+        output,
+        runner_address,
+        f"--from {distributor_address}",
+        f"--chain-id={chain_id}",
+        f"{sifnodecli_node}",
+        f"--fees 150000rowan",
+        keyring_backend_entry,
+        f"--generate-only", 
+        f"--yes -o json"
+        
+    ])
+    json_str = get_shell_output_json(cmd)
+    assert(json_str.get("code", 0) == 0)
+    return json_str
+
+#CODE TO EXECUTE RUN DISPENSATION CLI
+def run_dispensation(
+        distribution_name,
+        claimType,
+        runner_address,
+        chain_id,
+        sifnodecli_node
+    ):
+    logging.debug(f"RUN DISPENSATION CLI LOGGING")
+    sifchain_fees_entry = f"--gas auto --gas-adjustment=1.5"
+    keyring_backend_entry = f"--keyring-backend test"
+    output = 'output.json'
+    cmd = " ".join([
+        "sifnodecli tx dispensation run",
+        distribution_name,
+        f"{claimType}",
+        f"--from {runner_address}",
+        f"--chain-id={chain_id}",
+        f"{sifnodecli_node}",
+        sifchain_fees_entry,
+        f"--fees 200000rowan",
+        keyring_backend_entry,
+        f"--yes -o json"
+        
+    ])
+    json_str = get_shell_output_json(cmd)
+    assert(json_str.get("code", 0) == 0)
+    txn = json_str["txhash"]
+    return txn
+
+#CODE TO QUERY A NEW CLAIM 
+def query_created_claim(claimType):
+    cmd = " ".join([
+        "sifnodecli q dispensation claims-by-type",
+        f"{claimType}",
+        "--chain-id localnet",
+        f"-o json"
+    ])
+    json_str = get_shell_output_json(cmd)
+    return json_str
+
+#CODE TO CREATE A NEW CLAIM
+def create_claim(
+        sifchain_address,
+        claimType,
+        keyring_backend,
+        chain_id,
+        sifnodecli_node
+    ):
+    logging.debug(f"create_claim")
+    keyring_backend_entry = f"--keyring-backend {keyring_backend}"     
+    sifchain_fees_entry = f"--fees 100000rowan"
+    cmd = " ".join([
+        "sifnodecli tx dispensation claim",
+        f"{claimType}",
+        f"--from {sifchain_address}",
+        sifchain_fees_entry,
+        f"--chain-id={chain_id}",
+        f"{sifnodecli_node}",
+        keyring_backend_entry,
+        f"--yes -o json" 
+        
+    ])
+    json_str = get_shell_output_json(cmd)
+    assert(json_str.get("code", 0) == 0)
+    txn = json_str["txhash"]
+    return txn
