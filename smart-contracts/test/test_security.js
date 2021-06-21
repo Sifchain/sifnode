@@ -276,6 +276,17 @@ describe("Security Test", function () {
         ),
       ).to.be.revertedWith("Consensus threshold must be positive.");
     });
+
+    it("should not allow a non cosmosbridge account to mint from bridgebank", async function () {
+      state.bridge = await CosmosBridge.deploy();
+      await expect(
+        state.bridgeBank.connect(operator).handleUnpeg(
+          operator.address,
+          state.token1.address,
+          100
+        ),
+      ).to.be.revertedWith("!cosmosbridge");
+    });
   });
 
   describe("Troll token tests", function () {
