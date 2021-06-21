@@ -50,8 +50,14 @@ namespace :genesis do
         exit(1)
       end
 
+      seed_network_address = if args[:seed_network_address].nil?
+                               "192.168.2.0/24"
+                             else
+                               args[:seed_network_address]
+                             end
+
       build_docker_image(args[:chainnet]) if args[:chainnet] != 'localnet'
-      boot_docker_network(chainnet: args[:chainnet], seed_network_address: args[:seed_network_address], eth_config: with_eth)
+      boot_docker_network(chainnet: args[:chainnet], seed_network_address: seed_network_address, eth_config: with_eth)
     end
 
     desc "Reset the state of a network"
