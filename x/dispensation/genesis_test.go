@@ -15,7 +15,7 @@ func TestExportGenesis(t *testing.T) {
 	outList := test.CreatOutputList(1000, "1000000000")
 	name := uuid.New().String()
 	for _, rec := range outList {
-		record := types.NewDistributionRecord(types.DistributionStatus_DISTRIBUTION_STATUS_PENDING, types.DistributionType_DISTRIBUTION_TYPE_AIRDROP, name, rec.Address, rec.Coins, ctx.BlockHeight(), -1)
+		record := types.NewDistributionRecord(types.DistributionStatus_DISTRIBUTION_STATUS_PENDING, types.DistributionType_DISTRIBUTION_TYPE_AIRDROP, name, rec.Address, rec.Coins, ctx.BlockHeight(), -1, "")
 		err := keeper.SetDistributionRecord(ctx, record)
 		assert.NoError(t, err)
 		err = keeper.SetDistribution(ctx, types.NewDistribution(types.DistributionType_DISTRIBUTION_TYPE_AIRDROP, name))
@@ -34,7 +34,7 @@ func TestInitGenesis(t *testing.T) {
 	outList := test.CreatOutputList(1000, "1000000000")
 	name := uuid.New().String()
 	for _, rec := range outList {
-		record := types.NewDistributionRecord(types.DistributionStatus_DISTRIBUTION_STATUS_PENDING, types.DistributionType_DISTRIBUTION_TYPE_AIRDROP, name, rec.Address, rec.Coins, ctx.BlockHeight(), -1)
+		record := types.NewDistributionRecord(types.DistributionStatus_DISTRIBUTION_STATUS_PENDING, types.DistributionType_DISTRIBUTION_TYPE_AIRDROP, name, rec.Address, rec.Coins, ctx.BlockHeight(), -1, "")
 		err := keeper.SetDistributionRecord(ctx, record)
 		assert.NoError(t, err)
 		err = keeper.SetDistribution(ctx, types.NewDistribution(types.DistributionType_DISTRIBUTION_TYPE_AIRDROP, name))
@@ -54,7 +54,7 @@ func TestValidateGenesis(t *testing.T) {
 	outList := test.CreatOutputList(1000, "1000000000")
 	name := uuid.New().String()
 	for _, rec := range outList {
-		record := types.NewDistributionRecord(types.DistributionStatus_DISTRIBUTION_STATUS_PENDING, types.DistributionType_DISTRIBUTION_TYPE_AIRDROP, name, rec.Address, rec.Coins, ctx.BlockHeight(), -1)
+		record := types.NewDistributionRecord(types.DistributionStatus_DISTRIBUTION_STATUS_PENDING, types.DistributionType_DISTRIBUTION_TYPE_AIRDROP, name, rec.Address, rec.Coins, ctx.BlockHeight(), -1, "")
 		err := keeper.SetDistributionRecord(ctx, record)
 		assert.NoError(t, err)
 		err = keeper.SetDistribution(ctx, types.NewDistribution(types.DistributionType_DISTRIBUTION_TYPE_AIRDROP, name))
