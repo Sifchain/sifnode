@@ -21,4 +21,5 @@ var (
 	ErrValidatorNotInWhiteList = sdkerrors.Register(ModuleName, 10, "validator must be in whitelist")
 	ErrNotAdminAccount         = sdkerrors.Register(ModuleName, 11, "update whitelist validator must be admin account")
 	ErrInvalidOperationType    = sdkerrors.Register(ModuleName, 12, "invalid operation type for validator whitelist")
+	ErrInvalidProphecyStatus   = sdkerrors.Register(ModuleName, 13, "invalid prophecy status")
 )

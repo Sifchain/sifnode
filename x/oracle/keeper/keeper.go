@@ -101,20 +101,28 @@ func (k Keeper) ProcessClaim(ctx sdk.Context, prophecyID, validator string) (typ
 		return types.StatusText_STATUS_TEXT_UNSPECIFIED, types.ErrInvalidIdentifier
 	}
 
-	prophecy, _ := k.GetProphecy(ctx, prophecyID)
+	prophecy, ok := k.GetProphecy(ctx, prophecyID)
+	if !ok {
+		prophecy.Id = prophecyID
+		prophecy.Status = types.StatusText_STATUS_TEXT_PENDING
+	}
 
 	switch prophecy.Status {
 	case types.StatusText_STATUS_TEXT_PENDING:
-		// continue processing
+		prophecy.AddClaim(valAddr)
+		prophecy = k.processCompletion(ctx, prophecy)
+		k.setProphecy(ctx, prophecy)
+		return prophecy.Status, nil
+
+	case types.StatusText_STATUS_TEXT_SUCCESS:
+		prophecy.AddClaim(valAddr)
+		k.setProphecy(ctx, prophecy)
+		return prophecy.Status, types.ErrProphecyFinalized
+
 	default:
-		return types.StatusText_STATUS_TEXT_UNSPECIFIED, types.ErrProphecyFinalized
+		return types.StatusText_STATUS_TEXT_UNSPECIFIED, types.ErrInvalidProphecyStatus
 	}
 
-	prophecy.AddClaim(valAddr)
-	prophecy = k.processCompletion(ctx, prophecy)
-
-	k.setProphecy(ctx, prophecy)
-	return prophecy.Status, nil
 }
 
 func (k Keeper) checkActiveValidator(ctx sdk.Context, validatorAddress sdk.ValAddress) bool {
@@ -147,19 +155,10 @@ func (k Keeper) ProcessUpdateWhiteListValidator(ctx sdk.Context, cosmosSender sd
 }
 
 // processCompletion looks at a given prophecy
-// an assesses whether the claim with the highest power on that prophecy has enough
-// power to be considered successful, or alternatively,
-// will never be able to become successful due to not enough validation power being
-// left to push it over the threshold required for consensus.
 func (k Keeper) processCompletion(ctx sdk.Context, prophecy types.Prophecy) types.Prophecy {
-	_, highestClaimPower, _, totalPower := prophecy.FindHighestClaim(ctx, k.stakeKeeper, k.GetOracleWhiteList(ctx))
 
-	highestConsensusRatio := float64(highestClaimPower) / float64(totalPower)
-	// remainingPossibleClaimPower := totalPower - totalClaimsPower
-	// highestPossibleClaimPower := highestClaimPower + remainingPossibleClaimPower
-	// highestPossibleConsensusRatio := float64(highestPossibleClaimPower) / float64(totalPower)
-
-	if highestConsensusRatio >= k.consensusNeeded {
+	voteRate := prophecy.GetVoteRate(ctx)
+	if voteRate >= k.consensusNeeded {
 		prophecy.Status = types.StatusText_STATUS_TEXT_SUCCESS
 	}
 

@@ -83,7 +83,7 @@ func CreateTestQueryEthProphecyResponse(t *testing.T, validatorAddress sdk.ValAd
 	// ethBridgeClaim.GetOracleID()
 
 	return NewQueryEthProphecyResponse(
-		ethBridgeClaim.GetOracleID(),
+		ethBridgeClaim.GetProphecyID(),
 		oracletypes.StatusText_STATUS_TEXT_PENDING,
 		ethBridgeClaims,
 	)

@@ -46,15 +46,7 @@ func (k Keeper) Logger(ctx sdk.Context) log.Logger {
 
 // ProcessClaim processes a new claim coming in from a validator
 func (k Keeper) ProcessClaim(ctx sdk.Context, claim *types.EthBridgeClaim) (oracletypes.StatusText, error) {
-	// logger := k.Logger(ctx)
-	// oracleClaim, err := types.CreateOracleClaimFromEthClaim(claim)
-	// if err != nil {
-	// 	logger.Error("failed to create oracle claim from eth claim.",
-	// 		errorMessageKey, err.Error())
-	// 	return oracletypes.StatusText_STATUS_TEXT_UNSPECIFIED, err
-	// }
-
-	return k.oracleKeeper.ProcessClaim(ctx, claim.GetOracleID(), claim.ValidatorAddress)
+	return k.oracleKeeper.ProcessClaim(ctx, claim.GetProphecyID(), claim.ValidatorAddress)
 }
 
 // ProcessSuccessfulClaim processes a claim that has just completed successfully with consensus
