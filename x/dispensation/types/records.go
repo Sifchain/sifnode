@@ -6,8 +6,18 @@ import (
 
 //This package is used to keep historical data. This will later be used to distribute rewards over different blocks through a gov proposal
 
-func NewDistributionRecord(status DistributionStatus, distributionType DistributionType, distributionName string, recipientAddress string, coins sdk.Coins, start int64, end int64) DistributionRecord {
-	return DistributionRecord{DistributionStatus: status, DistributionType: distributionType, DistributionName: distributionName, RecipientAddress: recipientAddress, Coins: coins, DistributionStartHeight: start, DistributionCompletedHeight: end}
+func NewDistributionRecord(status DistributionStatus, distributionType DistributionType, distributionName string, recipientAddress string, coins sdk.Coins, start int64, end int64, runner string) DistributionRecord {
+	return DistributionRecord{
+		DistributionStatus:          status,
+		AuthorizedRunner:            runner,
+		DistributionType:            distributionType,
+		DistributionName:            distributionName,
+		RecipientAddress:            recipientAddress,
+		Coins:                       coins,
+		DistributionStartHeight:     start,
+		DistributionCompletedHeight: end,
+	}
+
 }
 
 func (dr DistributionRecord) Validate() bool {
@@ -80,7 +90,7 @@ func GetClaimType(claimType string) (DistributionType, bool) {
 	}
 }
 
-func GetDistributionType(distributionType string) (DistributionType, bool) {
+func GetDistributionTypeFromShortString(distributionType string) (DistributionType, bool) {
 	switch distributionType {
 	case "Airdrop":
 		return DistributionType_DISTRIBUTION_TYPE_AIRDROP, true

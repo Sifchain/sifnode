@@ -9,6 +9,7 @@ option go_package = "github.com/Sifchain/sifnode/x/dispensation/types";
 message GenesisState {
   DistributionRecords distribution_records = 1;
   Distributions distributions = 2;
+  UserClaims claims = 3;
 }
 
 // Distribution type enum
@@ -47,6 +48,7 @@ message DistributionRecord {
   ];
   int64 distribution_start_height = 6;
   int64 distribution_completed_height = 7;
+  string authorized_runner = 8;
 }
 
 message DistributionRecords {

@@ -4,9 +4,9 @@ import (
 	"context"
 	"fmt"
 	dispensationUtils "github.com/Sifchain/sifnode/x/dispensation/utils"
-	"github.com/pkg/errors"
-
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/pkg/errors"
+	"strconv"
 
 	"github.com/Sifchain/sifnode/x/dispensation/types"
 )
@@ -42,7 +42,7 @@ func (srv msgServer) CreateDistribution(ctx context.Context,
 	}
 
 	//Create drops and Store Historical Data
-	err = srv.Keeper.CreateDrops(sdkCtx, msg.Output, distributionName, msg.DistributionType)
+	err = srv.Keeper.CreateDrops(sdkCtx, msg.Output, distributionName, msg.DistributionType, msg.AuthorizedRunner)
 	if err != nil {
 		return nil, err
 	}
@@ -81,4 +81,34 @@ func (srv msgServer) CreateUserClaim(ctx context.Context,
 		),
 	})
 	return &types.MsgCreateClaimResponse{}, nil
+}
+
+func (srv msgServer) RunDistribution(ctx context.Context, distribution *types.MsgRunDistribution) (*types.MsgRunDistributionResponse, error) {
+	// Not checking whether the distribution exists or not .
+	// We only need to run and execute distribution records
+	// Distribute 10 drops for msg.DistributionName authorized to msg.DistributionRunner
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	records, err := srv.Keeper.DistributeDrops(sdkCtx, sdkCtx.BlockHeight(), distribution.DistributionName, distribution.AuthorizedRunner, distribution.DistributionType)
+	if err != nil {
+		return nil, err
+	}
+
+	var recordEvents []sdk.Event
+	for i, record := range records.DistributionRecords {
+		ev := sdk.NewEvent(
+			types.EventTypeDistributionRecordsList+strconv.Itoa(i),
+			sdk.NewAttribute(types.AttributeKeyDistributionRecordAddress, record.RecipientAddress),
+			sdk.NewAttribute(types.AttributeKeyDistributionRecordType, record.DistributionType.String()),
+			sdk.NewAttribute(types.AttributeKeyDistributionRecordAmount, record.Coins.String()),
+		)
+		recordEvents = append(recordEvents, ev)
+	}
+	recordEvents = append(recordEvents, sdk.NewEvent(
+		types.EventTypeDistributionRun,
+		sdk.NewAttribute(types.AttributeKeyDistributionName, distribution.DistributionName),
+		sdk.NewAttribute(types.AttributeKeyDistributionRunner, distribution.AuthorizedRunner),
+	))
+
+	sdkCtx.EventManager().EmitEvents(recordEvents)
+	return &types.MsgRunDistributionResponse{}, nil
 }

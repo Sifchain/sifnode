@@ -10,6 +10,7 @@ const (
 	// ModuleName is the name of the module
 	ModuleName                = "dispensation"
 	MsgTypeCreateUserClaim    = "createUserClaim"
+	MsgTypeRunDistribution    = "runDistribution"
 	MsgTypeCreateDistribution = "createDistribution"
 	// StoreKey to be used when creating the KVStore
 	StoreKey = ModuleName

@@ -22,9 +22,9 @@ func TestKeeper_GetClaimsByType(t *testing.T) {
 		assert.NoError(t, err)
 	}
 	fetchList := keeper.GetClaimsByType(ctx, types.DistributionType_DISTRIBUTION_TYPE_VALIDATOR_SUBSIDY)
-	assert.Len(t, fetchList, numberOfClaims)
+	assert.Len(t, fetchList.UserClaims, numberOfClaims)
 	fetchList = keeper.GetClaims(ctx)
-	assert.Len(t, fetchList, numberOfClaims+numberOfClaims)
+	assert.Len(t, fetchList.UserClaims, numberOfClaims+numberOfClaims)
 }
 
 func TestKeeper_GetClaims(t *testing.T) {
@@ -38,7 +38,7 @@ func TestKeeper_GetClaims(t *testing.T) {
 		assert.True(t, keeper.ExistsClaim(ctx, claim.UserAddress, claim.UserClaimType))
 	}
 	fetchList := keeper.GetClaims(ctx)
-	assert.Len(t, fetchList, numberOfClaims)
+	assert.Len(t, fetchList.UserClaims, numberOfClaims)
 }
 
 func TestKeeper_DeleteClaim(t *testing.T) {
@@ -51,10 +51,10 @@ func TestKeeper_DeleteClaim(t *testing.T) {
 		assert.NoError(t, err)
 	}
 	fetchList := keeper.GetClaims(ctx)
-	assert.Len(t, fetchList, numberOfClaims)
+	assert.Len(t, fetchList.UserClaims, numberOfClaims)
 	for _, claim := range claimList {
 		keeper.DeleteClaim(ctx, claim.UserAddress, claim.UserClaimType)
 	}
 	fetchList = keeper.GetClaims(ctx)
-	assert.Len(t, fetchList, 0)
+	assert.Len(t, fetchList.UserClaims, 0)
 }

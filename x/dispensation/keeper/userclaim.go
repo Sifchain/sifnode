@@ -43,8 +43,8 @@ func (k Keeper) GetUserClaimsIterator(ctx sdk.Context) sdk.Iterator {
 	return sdk.KVStorePrefixIterator(store, types.UserClaimPrefix)
 }
 
-func (k Keeper) GetClaims(ctx sdk.Context) []types.UserClaim {
-	var res []types.UserClaim
+func (k Keeper) GetClaims(ctx sdk.Context) *types.UserClaims {
+	var res types.UserClaims
 	iterator := k.GetUserClaimsIterator(ctx)
 	defer func(iterator sdk.Iterator) {
 		err := iterator.Close()
@@ -56,13 +56,13 @@ func (k Keeper) GetClaims(ctx sdk.Context) []types.UserClaim {
 		var dl types.UserClaim
 		bytesValue := iterator.Value()
 		k.cdc.MustUnmarshalBinaryBare(bytesValue, &dl)
-		res = append(res, dl)
+		res.UserClaims = append(res.UserClaims, &dl)
 	}
-	return res
+	return &res
 }
 
-func (k Keeper) GetClaimsByType(ctx sdk.Context, userClaimType types.DistributionType) []types.UserClaim {
-	var res []types.UserClaim
+func (k Keeper) GetClaimsByType(ctx sdk.Context, userClaimType types.DistributionType) *types.UserClaims {
+	var res types.UserClaims
 	iterator := k.GetUserClaimsIterator(ctx)
 	defer func(iterator sdk.Iterator) {
 		err := iterator.Close()
@@ -75,8 +75,8 @@ func (k Keeper) GetClaimsByType(ctx sdk.Context, userClaimType types.Distributio
 		bytesValue := iterator.Value()
 		k.cdc.MustUnmarshalBinaryBare(bytesValue, &dl)
 		if dl.UserClaimType == userClaimType {
-			res = append(res, dl)
+			res.UserClaims = append(res.UserClaims, &dl)
 		}
 	}
-	return res
+	return &res
 }

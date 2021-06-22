@@ -21,7 +21,9 @@ func NewHandler(k Keeper) sdk.Handler {
 		case *types.MsgCreateUserClaim:
 			res, err := msgServer.CreateUserClaim(sdk.WrapSDKContext(ctx), msg)
 			return sdk.WrapServiceResult(ctx, res, err)
-
+		case *types.MsgRunDistribution:
+			res, err := msgServer.RunDistribution(sdk.WrapSDKContext(ctx), msg)
+			return sdk.WrapServiceResult(ctx, res, err)
 		default:
 			errMsg := fmt.Sprintf("unrecognized %s message type: %T", ModuleName, msg)
 			return nil, sdkerrors.Wrap(sdkerrors.ErrUnknownRequest, errMsg)

@@ -154,7 +154,7 @@ func (k Keeper) GetRecordsForRecipient(ctx sdk.Context, recipient string) *types
 	return &res
 }
 
-func (k Keeper) GetRecordsLimitedForStatus(ctx sdk.Context, status types.DistributionStatus) *types.DistributionRecords {
+func (k Keeper) GetLimitedRecordsForStatus(ctx sdk.Context, status types.DistributionStatus) *types.DistributionRecords {
 	var res types.DistributionRecords
 	iterator := k.GetDistributionRecordsIterator(ctx, status)
 	count := 0
@@ -172,6 +172,38 @@ func (k Keeper) GetRecordsLimitedForStatus(ctx sdk.Context, status types.Distrib
 		count++
 		if count == types.MaxRecordsPerBlock {
 			break
+		}
+	}
+	return &res
+}
+
+func (k Keeper) GetLimitedRecordsForRunner(ctx sdk.Context,
+	distributionName string,
+	runner string,
+	distributionType types.DistributionType,
+	status types.DistributionStatus) *types.DistributionRecords {
+	var res types.DistributionRecords
+	iterator := k.GetDistributionRecordsIterator(ctx, status)
+	count := 0
+	defer func(iterator sdk.Iterator) {
+		err := iterator.Close()
+		if err != nil {
+			panic("Failed to close iterator")
+		}
+	}(iterator)
+	for ; iterator.Valid(); iterator.Next() {
+		if count == types.MaxRecordsPerBlock {
+			break
+		}
+		var dr types.DistributionRecord
+		bytesValue := iterator.Value()
+		k.cdc.MustUnmarshalBinaryBare(bytesValue, &dr)
+		if dr.DistributionName == distributionName &&
+			dr.DistributionStatus == types.DistributionStatus_DISTRIBUTION_STATUS_PENDING &&
+			dr.AuthorizedRunner == runner &&
+			dr.DistributionType == distributionType {
+			res.DistributionRecords = append(res.DistributionRecords, &dr)
+			count = count + 1
 		}
 	}
 	return &res

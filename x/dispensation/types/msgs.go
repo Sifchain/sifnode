@@ -7,10 +7,11 @@ import (
 	"github.com/pkg/errors"
 )
 
-func NewMsgCreateDistribution(distributor sdk.AccAddress, DistributionType DistributionType, output []types.Output) MsgCreateDistribution {
+func NewMsgCreateDistribution(distributor sdk.AccAddress, DistributionType DistributionType, output []types.Output, authorizedRunner string) MsgCreateDistribution {
 
 	return MsgCreateDistribution{
 		Distributor:      distributor.String(),
+		AuthorizedRunner: authorizedRunner,
 		DistributionType: DistributionType,
 		Output:           output,
 	}
@@ -38,6 +39,11 @@ func (m MsgCreateDistribution) ValidateBasic() error {
 	_, err := sdk.AccAddressFromBech32(m.Distributor)
 	if err != nil {
 		return errors.Wrapf(ErrInvalid, "Invalid Distributor Address")
+	}
+	// Validator runner
+	_, err = sdk.AccAddressFromBech32(m.AuthorizedRunner)
+	if err != nil {
+		return errors.Wrapf(ErrInvalid, "Invalid Authorized Address")
 	}
 	// Validate individual out records
 	for _, out := range m.Output {
@@ -103,6 +109,53 @@ func (m MsgCreateUserClaim) GetSignBytes() []byte {
 
 func (m MsgCreateUserClaim) GetSigners() []sdk.AccAddress {
 	addr, err := sdk.AccAddressFromBech32(m.UserClaimAddress)
+	// Should never panic as ValidateBasic checks address validity
+	if err != nil {
+		panic(err)
+	}
+	return []sdk.AccAddress{addr}
+}
+
+func NewMsgRunDistribution(runner string, distributionName string, distributionType DistributionType) MsgRunDistribution {
+	return MsgRunDistribution{
+		AuthorizedRunner: runner,
+		DistributionName: distributionName,
+		DistributionType: distributionType,
+	}
+}
+
+func (m MsgRunDistribution) Route() string {
+	return RouterKey
+}
+
+func (m MsgRunDistribution) Type() string {
+	return MsgTypeRunDistribution
+}
+
+func (m MsgRunDistribution) ValidateBasic() error {
+	//Validate DistributionType
+	_, ok := GetDistributionTypeFromShortString(m.DistributionType.String())
+	if !ok {
+		return sdkerrors.Wrap(ErrInvalid, "Invalid Distribution Type")
+	}
+	// Validate distribution Name
+	if m.DistributionName == "" {
+		return sdkerrors.Wrap(ErrInvalid, m.DistributionName)
+	}
+	// Validator runner
+	_, err := sdk.AccAddressFromBech32(m.AuthorizedRunner)
+	if err != nil {
+		return errors.Wrapf(ErrInvalid, "Invalid Runner Address")
+	}
+	return nil
+}
+
+func (m MsgRunDistribution) GetSignBytes() []byte {
+	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(&m))
+}
+
+func (m MsgRunDistribution) GetSigners() []sdk.AccAddress {
+	addr, err := sdk.AccAddressFromBech32(m.AuthorizedRunner)
 	// Should never panic as ValidateBasic checks address validity
 	if err != nil {
 		panic(err)

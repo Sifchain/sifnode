@@ -10,11 +10,12 @@ service Msg {
   rpc CreateDistribution(MsgCreateDistribution)
       returns (MsgCreateDistributionResponse);
   rpc CreateUserClaim(MsgCreateUserClaim) returns (MsgCreateClaimResponse);
+  rpc RunDistribution(MsgRunDistribution) returns (MsgRunDistributionResponse);
 }
 
 message MsgCreateDistribution {
   string distributor = 1;
-  string authorized_runner = 2 ;
+  string authorized_runner = 2;
   DistributionType distribution_type = 3;
   repeated string output = 4
       [ (gogoproto.customtype) =
@@ -31,8 +32,7 @@ message MsgCreateUserClaim {
 }
 
 message MsgRunDistribution {
-  string authorized_runner = 1 ;
-  string distribution_name = 2 ;
-  DistributionType distribution_type =3 ;
- }
-
+  string authorized_runner = 1;
+  string distribution_name = 2;
+  DistributionType distribution_type = 3;
+}

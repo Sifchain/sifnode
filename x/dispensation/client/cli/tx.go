@@ -23,6 +23,7 @@ func GetTxCmd() *cobra.Command {
 	dispensationTxCmd.AddCommand(
 		GetCmdCreate(),
 		GetCmdClaim(),
+		GetCmdRun(),
 	)
 
 	return dispensationTxCmd
@@ -33,11 +34,11 @@ func GetTxCmd() *cobra.Command {
 func GetCmdCreate() *cobra.Command {
 	// Note ,the command only creates a airdrop for now .
 	cmd := &cobra.Command{
-		Use:   "distribute [DistributionType] [Output JSON File Path]",
+		Use:   "create [DistributionType] [Output JSON File Path] [AuthorizedRunner]",
 		Short: "Create new distribution",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx := client.GetClientContextFromCmd(cmd)
-			distributionType, ok := types.GetDistributionType(args[0])
+			distributionType, ok := types.GetDistributionTypeFromShortString(args[0])
 			if !ok {
 				return fmt.Errorf("invalid distribution Type %s: Types supported [Airdrop/LiquidityMining/ValidatorSubsidy]", args[2])
 			}
@@ -45,7 +46,7 @@ func GetCmdCreate() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			msg := types.NewMsgCreateDistribution(clientCtx.GetFromAddress(), distributionType, outputList)
+			msg := types.NewMsgCreateDistribution(clientCtx.GetFromAddress(), distributionType, outputList, args[2])
 			if err := msg.ValidateBasic(); err != nil {
 				return err
 			}
@@ -69,6 +70,26 @@ func GetCmdClaim() *cobra.Command {
 				return fmt.Errorf("invalid Claim Type %s: Types supported [LiquidityMining/ValidatorSubsidy]", args[0])
 			}
 			msg := types.NewMsgCreateUserClaim(clientCtx.GetFromAddress(), claimType)
+			if err := msg.ValidateBasic(); err != nil {
+				return err
+			}
+			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), &msg)
+		},
+	}
+	return cmd
+}
+
+func GetCmdRun() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "run [DistributionName] [DistributionType]",
+		Short: "run limited records dispensation by specifying the name / should only be called by the authorized runner",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			clientCtx := client.GetClientContextFromCmd(cmd)
+			distributionType, ok := types.GetDistributionTypeFromShortString(args[1])
+			if !ok {
+				return fmt.Errorf("invalid distribution Type %s: Types supported [Airdrop/LiquidityMining/ValidatorSubsidy]", args[1])
+			}
+			msg := types.NewMsgRunDistribution(clientCtx.GetFromAddress().String(), args[0], distributionType)
 			if err := msg.ValidateBasic(); err != nil {
 				return err
 			}
