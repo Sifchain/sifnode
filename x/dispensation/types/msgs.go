@@ -27,7 +27,7 @@ func (m MsgCreateDistribution) Type() string {
 
 func (m MsgCreateDistribution) ValidateBasic() error {
 	// Validate distribution Type
-	_, ok := IsValidDistribution(m.DistributionType.String())
+	_, ok := IsValidDistributionType(m.DistributionType.String())
 	if !ok {
 		return sdkerrors.Wrap(ErrInvalid, "Invalid Distribution Type")
 	}
@@ -96,7 +96,7 @@ func (m MsgCreateUserClaim) ValidateBasic() error {
 	if err != nil {
 		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, m.UserClaimAddress)
 	}
-	_, ok := IsValidClaim(m.UserClaimType.String())
+	_, ok := IsValidClaimType(m.UserClaimType.String())
 	if !ok {
 		return sdkerrors.Wrap(ErrInvalid, m.UserClaimType.String())
 	}

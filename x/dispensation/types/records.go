@@ -38,7 +38,7 @@ func (dr DistributionRecord) Add(dr2 DistributionRecord) DistributionRecord {
 	return dr
 }
 
-func (dr DistributionRecord) DoesClaimExist() bool {
+func (dr DistributionRecord) DoesTypeSupportClaim() bool {
 	if dr.DistributionType == DistributionType_DISTRIBUTION_TYPE_LIQUIDITY_MINING || dr.DistributionType == DistributionType_DISTRIBUTION_TYPE_VALIDATOR_SUBSIDY {
 		return true
 	}
@@ -66,16 +66,16 @@ func (ar Distribution) Validate() bool {
 	}
 	return true
 }
-func GetDistributionStatus(status string) DistributionStatus {
+func GetDistributionStatus(status string) (DistributionStatus, bool) {
 	switch status {
 	case "Completed":
-		return DistributionStatus_DISTRIBUTION_STATUS_COMPLETED
+		return DistributionStatus_DISTRIBUTION_STATUS_COMPLETED, true
 	case "Pending":
-		return DistributionStatus_DISTRIBUTION_STATUS_PENDING
+		return DistributionStatus_DISTRIBUTION_STATUS_PENDING, true
 	case "Failed":
-		return DistributionStatus_DISTRIBUTION_STATUS_FAILED
+		return DistributionStatus_DISTRIBUTION_STATUS_FAILED, true
 	default:
-		return DistributionStatus_DISTRIBUTION_STATUS_UNSPECIFIED
+		return DistributionStatus_DISTRIBUTION_STATUS_UNSPECIFIED, false
 	}
 }
 
@@ -102,7 +102,7 @@ func GetDistributionTypeFromShortString(distributionType string) (DistributionTy
 		return DistributionType_DISTRIBUTION_TYPE_UNSPECIFIED, false
 	}
 }
-func IsValidDistribution(distributionType string) (DistributionType, bool) {
+func IsValidDistributionType(distributionType string) (DistributionType, bool) {
 	switch distributionType {
 	case "DISTRIBUTION_TYPE_AIRDROP":
 		return DistributionType_DISTRIBUTION_TYPE_AIRDROP, true
@@ -115,7 +115,7 @@ func IsValidDistribution(distributionType string) (DistributionType, bool) {
 	}
 }
 
-func IsValidClaim(claimType string) (DistributionType, bool) {
+func IsValidClaimType(claimType string) (DistributionType, bool) {
 	switch claimType {
 	case "DISTRIBUTION_TYPE_LIQUIDITY_MINING":
 		return DistributionType_DISTRIBUTION_TYPE_LIQUIDITY_MINING, true

@@ -64,7 +64,7 @@ func (k Keeper) DistributeDrops(ctx sdk.Context, height int64, distributionName 
 			continue
 		}
 		// Use record details to delete associated claim
-		if record.DoesClaimExist() {
+		if record.DoesTypeSupportClaim() {
 			k.DeleteClaim(ctx, record.RecipientAddress, record.DistributionType)
 		}
 		ctx.Logger().Info(fmt.Sprintf("Distributed to : %s | At height : %d | Amount :%s \n", record.RecipientAddress, height, record.Coins.String()))

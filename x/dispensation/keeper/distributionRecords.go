@@ -33,10 +33,7 @@ func (k Keeper) GetDistributionRecord(ctx sdk.Context, airdropName string, recip
 
 func (k Keeper) ExistsDistributionRecord(ctx sdk.Context, airdropName string, recipientAddress string, status types.DistributionStatus, distributionType types.DistributionType) bool {
 	key := types.GetDistributionRecordKey(status, airdropName, recipientAddress, distributionType)
-	if k.Exists(ctx, key) {
-		return true
-	}
-	return false
+	return k.Exists(ctx, key)
 }
 
 func (k Keeper) GetDistributionRecordsIterator(ctx sdk.Context, status types.DistributionStatus) sdk.Iterator {

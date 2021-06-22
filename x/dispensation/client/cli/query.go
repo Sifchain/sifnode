@@ -97,7 +97,10 @@ func GetCmdDistributionRecordForDistName(queryRoute string) *cobra.Command {
 				return err
 			}
 			name := args[0]
-			status := types.GetDistributionStatus(args[1])
+			status, ok := types.GetDistributionStatus(args[1])
+			if !ok {
+				return fmt.Errorf("invalid Status %s: Status supported [Completed/Pending/Failed]", args[0])
+			}
 			params := types.QueryRecordsByDistributionNameRequest{
 				DistributionName: name,
 				Status:           status}
