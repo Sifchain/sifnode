@@ -21,7 +21,6 @@ func (k Keeper) CreateDrops(ctx sdk.Context, output []banktypes.Output, name str
 			}
 			distributionRecord = distributionRecord.Add(*oldRecord)
 		}
-		//distributionRecord.DistributionStatus = types.DistributionStatus_DISTRIBUTION_STATUS_PENDING
 		err := k.SetDistributionRecord(ctx, distributionRecord)
 		if err != nil {
 			return errors.Wrapf(types.ErrFailedOutputs, "error setting distibution record  : %s", distributionRecord.String())
@@ -32,8 +31,8 @@ func (k Keeper) CreateDrops(ctx sdk.Context, output []banktypes.Output, name str
 
 // DistributeDrops is called at the beginning of every block .
 // It checks if any pending records are present , if there are it completes the top 10
-func (k Keeper) DistributeDrops(ctx sdk.Context, height int64, distributionName string, runner string, distributionType types.DistributionType) (*types.DistributionRecords, error) {
-	pendingRecords := k.GetLimitedRecordsForRunner(ctx, distributionName, runner, distributionType, types.DistributionStatus_DISTRIBUTION_STATUS_PENDING)
+func (k Keeper) DistributeDrops(ctx sdk.Context, height int64, distributionName string, authorisedRunner string, distributionType types.DistributionType) (*types.DistributionRecords, error) {
+	pendingRecords := k.GetLimitedRecordsForRunner(ctx, distributionName, authorisedRunner, distributionType, types.DistributionStatus_DISTRIBUTION_STATUS_PENDING)
 	for _, record := range pendingRecords.DistributionRecords {
 		recipientAddress, err := sdk.AccAddressFromBech32(record.RecipientAddress)
 		if err != nil {
@@ -65,7 +64,6 @@ func (k Keeper) DistributeDrops(ctx sdk.Context, height int64, distributionName 
 			continue
 		}
 		// Use record details to delete associated claim
-		// The claim should always be locked at this point in time .
 		if record.DoesClaimExist() {
 			k.DeleteClaim(ctx, record.RecipientAddress, record.DistributionType)
 		}

@@ -179,7 +179,7 @@ func (k Keeper) GetLimitedRecordsForStatus(ctx sdk.Context, status types.Distrib
 
 func (k Keeper) GetLimitedRecordsForRunner(ctx sdk.Context,
 	distributionName string,
-	runner string,
+	authorizedRunner string,
 	distributionType types.DistributionType,
 	status types.DistributionStatus) *types.DistributionRecords {
 	var res types.DistributionRecords
@@ -200,7 +200,7 @@ func (k Keeper) GetLimitedRecordsForRunner(ctx sdk.Context,
 		k.cdc.MustUnmarshalBinaryBare(bytesValue, &dr)
 		if dr.DistributionName == distributionName &&
 			dr.DistributionStatus == types.DistributionStatus_DISTRIBUTION_STATUS_PENDING &&
-			dr.AuthorizedRunner == runner &&
+			dr.AuthorizedRunner == authorizedRunner &&
 			dr.DistributionType == distributionType {
 			res.DistributionRecords = append(res.DistributionRecords, &dr)
 			count = count + 1
@@ -292,7 +292,7 @@ func (k Keeper) ChangeRecordStatus(ctx sdk.Context, dr types.DistributionRecord,
 	// Deleting from old prefix
 	err = k.DeleteDistributionRecord(ctx, dr.DistributionName, dr.RecipientAddress, oldStatus, dr.DistributionType) // Delete the record in the pending prefix so the iteration is cheaper.
 	if err != nil {
-		return errors.Wrapf(types.ErrDistribution, "error deleting pending distribution record  : %s", dr.String())
+		return errors.Wrapf(types.ErrDistribution, "error deleting distribution record  : %s", dr.String())
 	}
 	return nil
 }
