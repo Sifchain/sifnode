@@ -56,6 +56,7 @@ ingress:
       - secret-ws.example.com
 
 persistence:
+  enabled: false
   # snapshotValue: ""
   size: 400Gi
   # storageClassName:
