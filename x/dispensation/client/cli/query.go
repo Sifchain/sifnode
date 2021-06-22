@@ -89,7 +89,7 @@ func GetCmdDistributionRecordForRecipient(queryRoute string) *cobra.Command {
 func GetCmdDistributionRecordForDistName(queryRoute string) *cobra.Command {
 	return &cobra.Command{
 		Use:   "records-by-name [distribution name] [status]",
-		Short: "get a list of all distribution records .Status : [Completed/Pending/All]",
+		Short: "get a list of all distribution records Status : [Completed/Pending/All]",
 		Args:  cobra.ExactArgs(2),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx, err := client.GetClientQueryContext(cmd)
