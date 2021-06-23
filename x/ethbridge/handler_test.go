@@ -472,7 +472,7 @@ func TestUpdateWhiteListValidator(t *testing.T) {
 			sender:   addrs[0],
 			expected: []sdk.ValAddress{validatorAddresses[0]},
 			msgs: []types.MsgUpdateWhiteListValidator{
-				types.CreateTestUpdateWhiteListValidatorMsg(t, addrs[0].String(), validatorAddresses[0].String(), power),
+				types.CreateTestUpdateWhiteListValidatorMsg(t, oracletypes.NetworkID_NETWORK_ID_ETHEREUM, addrs[0].String(), validatorAddresses[0].String(), power),
 			},
 		},
 		{
@@ -480,8 +480,8 @@ func TestUpdateWhiteListValidator(t *testing.T) {
 			sender:   addrs[0],
 			expected: []sdk.ValAddress{validatorAddresses[0], validatorAddresses[1]},
 			msgs: []types.MsgUpdateWhiteListValidator{
-				types.CreateTestUpdateWhiteListValidatorMsg(t, addrs[0].String(), validatorAddresses[0].String(), power),
-				types.CreateTestUpdateWhiteListValidatorMsg(t, addrs[0].String(), validatorAddresses[1].String(), power),
+				types.CreateTestUpdateWhiteListValidatorMsg(t, oracletypes.NetworkID_NETWORK_ID_ETHEREUM, addrs[0].String(), validatorAddresses[0].String(), power),
+				types.CreateTestUpdateWhiteListValidatorMsg(t, oracletypes.NetworkID_NETWORK_ID_ETHEREUM, addrs[0].String(), validatorAddresses[1].String(), power),
 			},
 		},
 		{
@@ -489,9 +489,9 @@ func TestUpdateWhiteListValidator(t *testing.T) {
 			sender:   addrs[0],
 			expected: []sdk.ValAddress{validatorAddresses[0]},
 			msgs: []types.MsgUpdateWhiteListValidator{
-				types.CreateTestUpdateWhiteListValidatorMsg(t, addrs[0].String(), validatorAddresses[0].String(), power),
-				types.CreateTestUpdateWhiteListValidatorMsg(t, addrs[0].String(), validatorAddresses[1].String(), power),
-				types.CreateTestUpdateWhiteListValidatorMsg(t, addrs[0].String(), validatorAddresses[1].String(), zeroPower),
+				types.CreateTestUpdateWhiteListValidatorMsg(t, oracletypes.NetworkID_NETWORK_ID_ETHEREUM, addrs[0].String(), validatorAddresses[0].String(), power),
+				types.CreateTestUpdateWhiteListValidatorMsg(t, oracletypes.NetworkID_NETWORK_ID_ETHEREUM, addrs[0].String(), validatorAddresses[1].String(), power),
+				types.CreateTestUpdateWhiteListValidatorMsg(t, oracletypes.NetworkID_NETWORK_ID_ETHEREUM, addrs[0].String(), validatorAddresses[1].String(), zeroPower),
 			},
 		},
 		{
@@ -499,9 +499,9 @@ func TestUpdateWhiteListValidator(t *testing.T) {
 			sender:   addrs[0],
 			expected: []sdk.ValAddress{validatorAddresses[1]},
 			msgs: []types.MsgUpdateWhiteListValidator{
-				types.CreateTestUpdateWhiteListValidatorMsg(t, addrs[0].String(), validatorAddresses[0].String(), power),
-				types.CreateTestUpdateWhiteListValidatorMsg(t, addrs[0].String(), validatorAddresses[1].String(), power),
-				types.CreateTestUpdateWhiteListValidatorMsg(t, addrs[0].String(), validatorAddresses[0].String(), zeroPower),
+				types.CreateTestUpdateWhiteListValidatorMsg(t, oracletypes.NetworkID_NETWORK_ID_ETHEREUM, addrs[0].String(), validatorAddresses[0].String(), power),
+				types.CreateTestUpdateWhiteListValidatorMsg(t, oracletypes.NetworkID_NETWORK_ID_ETHEREUM, addrs[0].String(), validatorAddresses[1].String(), power),
+				types.CreateTestUpdateWhiteListValidatorMsg(t, oracletypes.NetworkID_NETWORK_ID_ETHEREUM, addrs[0].String(), validatorAddresses[0].String(), zeroPower),
 			},
 		},
 		{
@@ -509,7 +509,7 @@ func TestUpdateWhiteListValidator(t *testing.T) {
 			sender:   addrs[0],
 			expected: []sdk.ValAddress{},
 			msgs: []types.MsgUpdateWhiteListValidator{
-				types.CreateTestUpdateWhiteListValidatorMsg(t, addrs[0].String(), validatorAddresses[0].String(), zeroPower),
+				types.CreateTestUpdateWhiteListValidatorMsg(t, oracletypes.NetworkID_NETWORK_ID_ETHEREUM, addrs[0].String(), validatorAddresses[0].String(), zeroPower),
 			},
 		},
 		{
@@ -517,8 +517,8 @@ func TestUpdateWhiteListValidator(t *testing.T) {
 			sender:   addrs[0],
 			expected: []sdk.ValAddress{},
 			msgs: []types.MsgUpdateWhiteListValidator{
-				types.CreateTestUpdateWhiteListValidatorMsg(t, addrs[0].String(), validatorAddresses[0].String(), power),
-				types.CreateTestUpdateWhiteListValidatorMsg(t, addrs[0].String(), validatorAddresses[0].String(), zeroPower),
+				types.CreateTestUpdateWhiteListValidatorMsg(t, oracletypes.NetworkID_NETWORK_ID_ETHEREUM, addrs[0].String(), validatorAddresses[0].String(), power),
+				types.CreateTestUpdateWhiteListValidatorMsg(t, oracletypes.NetworkID_NETWORK_ID_ETHEREUM, addrs[0].String(), validatorAddresses[0].String(), zeroPower),
 			},
 		},
 		{
@@ -526,14 +526,14 @@ func TestUpdateWhiteListValidator(t *testing.T) {
 			sender:   addrs[0],
 			expected: []sdk.ValAddress{},
 			msgs: []types.MsgUpdateWhiteListValidator{
-				types.CreateTestUpdateWhiteListValidatorMsg(t, addrs[0].String(), validatorAddresses[0].String(), power),
-				types.CreateTestUpdateWhiteListValidatorMsg(t, addrs[0].String(), validatorAddresses[0].String(), power),
-				types.CreateTestUpdateWhiteListValidatorMsg(t, addrs[0].String(), validatorAddresses[0].String(), zeroPower),
+				types.CreateTestUpdateWhiteListValidatorMsg(t, oracletypes.NetworkID_NETWORK_ID_ETHEREUM, addrs[0].String(), validatorAddresses[0].String(), power),
+				types.CreateTestUpdateWhiteListValidatorMsg(t, oracletypes.NetworkID_NETWORK_ID_ETHEREUM, addrs[0].String(), validatorAddresses[0].String(), power),
+				types.CreateTestUpdateWhiteListValidatorMsg(t, oracletypes.NetworkID_NETWORK_ID_ETHEREUM, addrs[0].String(), validatorAddresses[0].String(), zeroPower),
 			},
 		},
 	}
 
-	networkDescriptor := oracletypes.NewNetworkDescriptor(oracletypes.NetworkID(1))
+	networkDescriptor := oracletypes.NewNetworkDescriptor(oracletypes.NetworkID_NETWORK_ID_ETHEREUM)
 
 	for i := range testCases {
 		testCase := testCases[i]
@@ -543,7 +543,7 @@ func TestUpdateWhiteListValidator(t *testing.T) {
 
 			accountKeeper.SetAccount(ctx, authtypes.NewBaseAccountWithAddress(sender))
 			oracleKeeper.SetAdminAccount(ctx, sender)
-			oracleKeeper.SetOracleWhiteList(ctx, networkDescriptor, oracletypes.ValidatorWhiteList{WhiteList: map[string]uint32{}})
+			oracleKeeper.RemoveOracleWhiteList(ctx, networkDescriptor)
 
 			for i := range testCase.msgs {
 				msg := testCase.msgs[i]
@@ -552,7 +552,15 @@ func TestUpdateWhiteListValidator(t *testing.T) {
 			}
 
 			wl := oracleKeeper.GetAllValidators(ctx, networkDescriptor)
-			require.Equal(t, testCase.expected, wl)
+			for _, address := range wl {
+				found := false
+				for _, expected := range testCase.expected {
+					if address.Equals(expected) {
+						found = true
+					}
+				}
+				require.Equal(t, found, true)
+			}
 		})
 	}
 }

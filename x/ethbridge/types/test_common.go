@@ -107,8 +107,9 @@ func CreateTestRescueCethMsg(t *testing.T, testCosmosSender string, testCethRece
 	return MsgRescueCeth
 }
 
-func CreateTestUpdateWhiteListValidatorMsg(_ *testing.T, sender string, validator string, power uint32) MsgUpdateWhiteListValidator {
+func CreateTestUpdateWhiteListValidatorMsg(_ *testing.T, networkID oracletypes.NetworkID, sender string, validator string, power uint32) MsgUpdateWhiteListValidator {
 	return MsgUpdateWhiteListValidator{
+		NetworkId:    networkID,
 		CosmosSender: sender,
 		Validator:    validator,
 		Power:        power,

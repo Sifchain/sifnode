@@ -1,6 +1,8 @@
 package keeper
 
 import (
+	"fmt"
+
 	"github.com/Sifchain/sifnode/x/oracle/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
@@ -93,8 +95,14 @@ func (k Keeper) ValidateAddress(ctx sdk.Context, networkDescriptor types.Network
 
 // UpdateOracleWhiteList validator's power
 func (k Keeper) UpdateOracleWhiteList(ctx sdk.Context, networkDescriptor types.NetworkDescriptor, validator sdk.ValAddress, power uint32) {
+	fmt.Printf("UpdateOracleWhiteList \n")
 	valList := k.GetOracleWhiteList(ctx, networkDescriptor)
 	whiteList := valList.GetWhiteList()
+	if whiteList == nil {
+		whiteList = make(map[string]uint32)
+	}
 	whiteList[validator.String()] = power
+
+	valList = types.ValidatorWhiteList{WhiteList: whiteList}
 	k.SetOracleWhiteList(ctx, networkDescriptor, valList)
 }
