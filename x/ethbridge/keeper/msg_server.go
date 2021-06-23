@@ -2,10 +2,11 @@ package keeper
 
 import (
 	"context"
+	"strconv"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/pkg/errors"
-	"strconv"
 
 	"github.com/Sifchain/sifnode/x/ethbridge/types"
 	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
@@ -203,16 +204,11 @@ func (srv msgServer) UpdateWhiteListValidator(goCtx context.Context,
 	if account == nil {
 		logger.Error("account is nil.", "CosmosSender", msg.CosmosSender)
 
-		return nil, sdkerrors.Wrap(sdkerrors.ErrUnknownAddress, msg.CosmosSender)
-	}
-
-	valAddr, err := sdk.ValAddressFromBech32(msg.Validator)
-	if err != nil {
-		return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.Validator)
+		return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.CosmosSender)
 	}
 
 	err = srv.Keeper.ProcessUpdateWhiteListValidator(ctx, cosmosSender,
-		valAddr, msg.OperationType)
+		sdk.ValAddress(msg.Validator), msg.OperationType)
 	if err != nil {
 		logger.Error("bridge keeper failed to process update validator.", errorMessageKey, err.Error())
 		return nil, err
