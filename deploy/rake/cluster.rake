@@ -509,7 +509,13 @@ metadata:
   namespace: #{args[:app_namespace]}
   labels:
     app: #{args[:app_name]}
+    app.kubernetes.io/managed-by: "Helm"
+  annotations:
+    meta.helm.sh/release-namespace: "#{args[:app_namespace]}"
+    meta.helm.sh/release-name: "#{args[:app_name]}"
+
       }
+
       puts "Create Service Account File."
       puts service_account
       File.open("service_account.yaml", 'w') { |file| file.write(service_account) }
