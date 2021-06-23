@@ -104,7 +104,7 @@ func TestQueryAllDistributions(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Len(t, dr.Distributions, 10)
 }
-/*
+
 func TestQueryClaims(t *testing.T) {
 	testApp, ctx := test.CreateTestApp(false)
 	keeper := testApp.DispensationKeeper
@@ -126,7 +126,6 @@ func TestQueryClaims(t *testing.T) {
 		Path: "",
 		Data: qp,
 	}
-
 	querier := dispensationkeeper.NewLegacyQuerier(keeper)
 	res, err := querier(ctx, []string{types.QueryClaimsByType}, query)
 	assert.NoError(t, err)
@@ -135,4 +134,3 @@ func TestQueryClaims(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Len(t, dr.Claims, 1000)
 }
-*/
