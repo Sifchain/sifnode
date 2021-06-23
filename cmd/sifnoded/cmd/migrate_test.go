@@ -7,10 +7,9 @@ import (
 	"os"
 	"testing"
 
+	"github.com/Sifchain/sifnode/app"
 	svrcmd "github.com/cosmos/cosmos-sdk/server/cmd"
 	"github.com/stretchr/testify/require"
-
-	"github.com/Sifchain/sifnode/app"
 )
 
 func TestMigrateGenesisDataCmd(t *testing.T) {
@@ -32,14 +31,14 @@ func TestMigrateGenesisDataCmd(t *testing.T) {
 	cmd, _ = NewRootCmd()
 	cmd.SetArgs([]string{"init", "test", "--home=" + homeDir})
 	err = svrcmd.Execute(cmd, homeDir)
-	require.NoError(t,err)
+	require.NoError(t, err)
 
 	cmd, _ = NewRootCmd()
 	cmd.SetArgs([]string{"unsafe-reset-all"})
 	err = svrcmd.Execute(cmd, homeDir)
 	require.NoError(t, err)
 
-	ioutil.WriteFile(homeDir + "/config/genesis.json", migrateOutputBuf.Bytes(), fs.ModeExclusive)
+	ioutil.WriteFile(homeDir+"/config/genesis.json", migrateOutputBuf.Bytes(), fs.ModeExclusive)
 
 	cmd, _ = NewRootCmd()
 	cmd.SetArgs([]string{"validate-genesis"})
