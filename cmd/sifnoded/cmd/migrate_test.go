@@ -7,9 +7,10 @@ import (
 	"os"
 	"testing"
 
-	"github.com/Sifchain/sifnode/app"
 	svrcmd "github.com/cosmos/cosmos-sdk/server/cmd"
 	"github.com/stretchr/testify/require"
+
+	"github.com/Sifchain/sifnode/app"
 )
 
 func TestMigrateGenesisDataCmd(t *testing.T) {
