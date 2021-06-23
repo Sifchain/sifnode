@@ -1,12 +1,12 @@
-package faucet
+package trees
 
 import (
 	"encoding/json"
 
-	"github.com/Sifchain/sifnode/x/faucet/client/cli"
-	"github.com/Sifchain/sifnode/x/faucet/client/rest"
-	"github.com/Sifchain/sifnode/x/faucet/keeper"
-	"github.com/Sifchain/sifnode/x/faucet/types"
+	"github.com/Sifchain/sifnode/x/trees/client/cli"
+	"github.com/Sifchain/sifnode/x/trees/client/rest"
+	"github.com/Sifchain/sifnode/x/trees/keeper"
+	"github.com/Sifchain/sifnode/x/trees/types"
 	"github.com/gorilla/mux"
 	"github.com/spf13/cobra"
 
@@ -19,16 +19,11 @@ import (
 )
 
 var (
-	_ module.AppModule      = AppModule{}
 	_ module.AppModuleBasic = AppModuleBasic{}
 )
 
-// AppModuleBasic defines the basic application module used by the faucet module.
 type AppModuleBasic struct{}
 
-var _ module.AppModuleBasic = AppModuleBasic{}
-
-// Name returns the faucet module's name.
 func (AppModuleBasic) Name() string {
 	return types.ModuleName
 }
@@ -51,57 +46,41 @@ func (AppModuleBasic) ValidateGenesis(bz json.RawMessage) error {
 	// if err != nil {
 	// 	return err
 	// }
-	return nil
 	// return types.ValidateGenesis(data)
+	return nil
 }
 
 // RegisterRESTRoutes registers the REST routes for the faucet module.
 func (AppModuleBasic) RegisterRESTRoutes(ctx context.CLIContext, rtr *mux.Router) {
-	if profile == TESTNET {
-		rest.RegisterRoutes(ctx, rtr)
-	}
+	rest.RegisterRoutes(ctx, rtr)
 }
 
 // GetTxCmd returns the root tx command for the faucet module.
 func (AppModuleBasic) GetTxCmd(cdc *codec.Codec) *cobra.Command {
-	if profile == TESTNET {
-		return cli.GetTxCmd(cdc)
-	}
-	return nil
+	return cli.GetTxCmd(cdc)
 }
 
 // GetQueryCmd returns no root query command for the faucet module.
 func (AppModuleBasic) GetQueryCmd(cdc *codec.Codec) *cobra.Command {
-	if profile == TESTNET {
-		return cli.GetQueryCmd(types.StoreKey, cdc)
-	}
-	return nil
+	return cli.GetQueryCmd(types.StoreKey, cdc)
 }
 
-//____________________________________________________________________________
-
-// AppModuleSimulation defines the module simulation functions used by the faucet module.
 type AppModuleSimulation struct{}
 
-// AppModule implements an application module for the faucet module.
-
-//TODO Verify if we can remove supplykeeper and bankkeeper from this struct ,and access it only through keeper.Get{..}() methods
 type AppModule struct {
 	AppModuleBasic
 	AppModuleSimulation
 
-	keeper       keeper.Keeper
-	supplyKeeper types.SupplyKeeper
-	bankKeeper   types.BankKeeper
+	keeper     keeper.Keeper
+	bankKeeper types.BankKeeper
 }
 
 // NewAppModule creates a new AppModule object
-func NewAppModule(keeper keeper.Keeper, bankKeeper types.BankKeeper, supplyKeeper types.SupplyKeeper) AppModule {
+func NewAppModule(keeper keeper.Keeper, bankKeeper types.BankKeeper) AppModule {
 	return AppModule{
 		AppModuleBasic:      AppModuleBasic{},
 		AppModuleSimulation: AppModuleSimulation{},
 		keeper:              keeper,
-		supplyKeeper:        supplyKeeper,
 		bankKeeper:          bankKeeper,
 	}
 }
@@ -122,10 +101,7 @@ func (AppModule) Route() string {
 
 // NewHandler returns an sdk.Handler for the faucet module.
 func (am AppModule) NewHandler() sdk.Handler {
-	if profile == TESTNET {
-		return NewHandler(am.keeper)
-	}
-	return nil
+	return NewHandler(am.keeper)
 }
 
 // QuerierRoute returns the faucet module's querier route name.
@@ -158,11 +134,12 @@ func (am AppModule) ExportGenesis(ctx sdk.Context) json.RawMessage {
 
 // BeginBlock returns the begin blocker for the faucet module.
 func (am AppModule) BeginBlock(ctx sdk.Context, _ abci.RequestBeginBlock) {
-	BeginBlocker(ctx, am.keeper)
+	// BeginBlocker(ctx, am.keeper)
 }
 
 // EndBlock returns the end blocker for the faucet module. It returns no validator
 // updates.
 func (am AppModule) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.ValidatorUpdate {
+	EndBlocker(ctx, am.keeper)
 	return []abci.ValidatorUpdate{}
 }

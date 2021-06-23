@@ -6,8 +6,10 @@
 
 set -x
 
-. /sifnode/test/integration/vagrantenv.sh
-. ${TEST_INTEGRATION_DIR}/shell_utilities.sh
+. $(pwd)/vagrantenv.sh
+. $(pwd)/shell_utilities.sh
+
+CHAINDIR=~
 
 whitelisted_validator=$(yes $VALIDATOR1_PASSWORD | sifnodecli keys show -a --bech val $MONIKER --home $CHAINDIR/.sifnodecli)
 echo $0: whitelisted validator $whitelisted_validator

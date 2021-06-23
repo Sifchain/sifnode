@@ -3,11 +3,12 @@ package genesis
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
+	"net/http"
+
 	"github.com/Sifchain/sifnode/tools/sifgen/common"
 	"github.com/Sifchain/sifnode/tools/sifgen/common/types"
 	"github.com/Sifchain/sifnode/tools/sifgen/utils"
-	"io/ioutil"
-	"net/http"
 )
 
 func ReplaceStakingBondDenom(nodeHomeDir string) error {
@@ -155,6 +156,8 @@ func readGenesis(nodeHomeDir string) (*common.Genesis, error) {
 	}
 
 	if err := json.Unmarshal(body, &genesis); err != nil {
+		fmt.Println(body)
+		fmt.Println("IN here")
 		return nil, err
 	}
 

@@ -2,11 +2,12 @@ package app
 
 import (
 	"encoding/json"
+	"math/big"
+
 	"github.com/Sifchain/sifnode/x/clp"
 	"github.com/Sifchain/sifnode/x/dispensation"
 	"github.com/cosmos/cosmos-sdk/x/auth/vesting"
 	"github.com/tendermint/tendermint/libs/log"
-	"math/big"
 
 	tmos "github.com/tendermint/tendermint/libs/os"
 
@@ -22,6 +23,7 @@ import (
 	"github.com/Sifchain/sifnode/x/ethbridge"
 	"github.com/Sifchain/sifnode/x/faucet"
 	"github.com/Sifchain/sifnode/x/oracle"
+	"github.com/Sifchain/sifnode/x/trees"
 	bam "github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/simapp"
@@ -63,6 +65,7 @@ var (
 		oracle.AppModuleBasic{},
 		ethbridge.AppModuleBasic{},
 		faucet.AppModuleBasic{},
+		trees.AppModuleBasic{},
 		slashing.AppModuleBasic{},
 		dispensation.AppModuleBasic{},
 	)
@@ -124,6 +127,7 @@ type SifchainApp struct {
 	DispensationKeeper dispensation.Keeper
 	mm                 *module.Manager
 	FaucetKeeper       faucet.Keeper
+	TreeKeeper         trees.Keeper
 	sm                 *module.SimulationManager
 }
 
@@ -152,6 +156,7 @@ func NewInitApp(
 		clp.StoreKey,
 		gov.StoreKey,
 		faucet.StoreKey,
+		trees.StoreKey,
 		distr.StoreKey,
 		slashing.StoreKey,
 		dispensation.StoreKey,
@@ -250,6 +255,12 @@ func NewInitApp(
 		keys[faucet.StoreKey],
 		app.BankKeeper)
 
+	app.TreeKeeper = trees.NewKeeper(
+		app.Cdc,
+		keys[trees.StoreKey],
+		app.BankKeeper,
+	)
+
 	// This map defines heights to skip for updates
 	// The mapping represents height to bool. if the value is true for a height that height
 	// will be skipped even if we have a update proposal for it
@@ -285,6 +296,7 @@ func NewInitApp(
 		ethbridge.NewAppModule(app.OracleKeeper, app.SupplyKeeper, app.AccountKeeper, app.EthBridgeKeeper, app.Cdc),
 		clp.NewAppModule(app.ClpKeeper, app.BankKeeper, app.SupplyKeeper),
 		faucet.NewAppModule(app.FaucetKeeper, app.BankKeeper, app.SupplyKeeper),
+		trees.NewAppModule(app.TreeKeeper, app.BankKeeper),
 		gov.NewAppModule(app.GovKeeper, app.AccountKeeper, app.SupplyKeeper),
 		dispensation.NewAppModule(app.DispensationKeeper, app.BankKeeper, app.SupplyKeeper),
 	)
@@ -301,6 +313,7 @@ func NewInitApp(
 	app.mm.SetOrderEndBlockers(
 		staking.ModuleName,
 		gov.ModuleName,
+		trees.ModuleName,
 	)
 
 	// NOTE: The genutils module must occur after staking so that pools are
