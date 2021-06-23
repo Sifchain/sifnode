@@ -79,22 +79,19 @@ func (k Keeper) GetProphecy(ctx sdk.Context, id string) (types.Prophecy, bool) {
 }
 
 // SetProphecy saves a prophecy with an initial claim
-func (k Keeper) SetProphecy(ctx sdk.Context, prophecy types.Prophecy) error {
+func (k Keeper) SetProphecy(ctx sdk.Context, prophecy types.Prophecy) {
 	dbProphecy, err := prophecy.SerializeForDB()
 	if err != nil {
-		return err
+		panic(err)
 	}
 
 	k.SetDBProphecy(ctx, dbProphecy)
-
-	return nil
 }
 
 func (k Keeper) SetDBProphecy(ctx sdk.Context, prophecy types.DBProphecy) {
 	store := ctx.KVStore(k.storeKey)
 	store.Set([]byte(fmt.Sprintf("%s_%s", types.ProphecyPrefix, prophecy.Id)), k.cdc.MustMarshalBinaryBare(&prophecy))
 }
-
 func (k Keeper) EnsureAddressIsInWhitelist(ctx sdk.Context, validatorAddress string) error {
 	// Check if claim from whitelist validators
 	whiteList := k.GetOracleWhiteList(ctx)
@@ -103,43 +100,34 @@ func (k Keeper) EnsureAddressIsInWhitelist(ctx sdk.Context, validatorAddress str
 			return nil
 		}
 	}
-
 	k.Logger(ctx).Error(
 		"sifnode oracle keeper ProcessClaim validator not in whitelist",
 		"address", validatorAddress,
 		"whitelist", whiteList)
-
 	return types.ErrValidatorNotInWhiteList
 }
-
 func (k Keeper) ProcessClaim(ctx sdk.Context, claim types.Claim) (types.Status, error) {
 	logger := k.Logger(ctx)
-
 	if err := k.EnsureAddressIsInWhitelist(ctx, claim.ValidatorAddress); err != nil {
 		return types.Status{}, err
 	}
-
 	valAddr, err := sdk.ValAddressFromBech32(claim.ValidatorAddress)
 	if err != nil {
 		return types.Status{}, err
 	}
-
 	activeValidator := k.checkActiveValidator(ctx, valAddr)
 	if !activeValidator {
 		logger.Error("sifnode oracle keeper ProcessClaim validator not active.")
 		return types.Status{}, types.ErrInvalidValidator
 	}
-
 	if claim.Id == "" {
 		logger.Error("sifnode oracle keeper ProcessClaim wrong claim id.", "claimID", claim.Id)
 		return types.Status{}, types.ErrInvalidIdentifier
 	}
-
 	if claim.Content == "" {
 		logger.Error("sifnode oracle keeper ProcessClaim claim content is empty.")
 		return types.Status{}, types.ErrInvalidClaim
 	}
-
 	prophecy, found := k.GetProphecy(ctx, claim.Id)
 	if !found {
 		prophecy = types.NewProphecy(claim.Id)
@@ -150,19 +138,13 @@ func (k Keeper) ProcessClaim(ctx sdk.Context, claim types.Claim) (types.Status, 
 	default:
 		return types.Status{}, types.ErrProphecyFinalized
 	}
-
 	if prophecy.ValidatorClaims[claim.ValidatorAddress] != "" {
 		return types.Status{}, types.ErrDuplicateMessage
 	}
-
 	prophecy.AddClaim(valAddr, claim.Content)
 	prophecy = k.processCompletion(ctx, prophecy)
 
-	err = k.SetProphecy(ctx, prophecy)
-	if err != nil {
-		return types.Status{}, err
-	}
-
+	k.SetProphecy(ctx, prophecy)
 	return prophecy.Status, nil
 }
 
