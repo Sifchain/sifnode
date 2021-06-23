@@ -1,0 +1,48 @@
+{{ if .Values.ingress.enabled }}
+  {{- $fullName := include "geth.fullname" . -}}
+  {{- $svcProxyPort := ternary .Values.proxy.ws.port .Values.ws.port .Values.proxy.enabled -}}
+  {{- $svcPort := .Values.ws.port -}}
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    kubernetes.io/tls-acme: "true"
+    nginx.org/websocket-services: {{ template "geth.fullname" . }}
+    cert-manager.io/cluster-issuer: {{ .Values.ingress.certmanagerClusterIssuer }}
+  labels:
+    app: {{ template "geth.name" . }}
+    chart: {{ template "geth.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+  name: {{ template "geth.fullname" . }}-geth-ws
+spec:
+  rules:
+  {{- range .Values.ingress.ws.proxyHosts }}
+  - host: {{ . | quote }}
+    http:
+      paths:
+        - backend:
+            serviceName: {{ $fullName }}
+            servicePort: {{ $svcProxyPort }}
+          path: /
+  {{- end }}
+  {{- range .Values.ingress.ws.hosts }}
+  - host: {{ . | quote }}
+    http:
+      paths:
+        - backend:
+            serviceName: {{ $fullName }}
+            servicePort: {{ $svcPort }}
+          path: /
+  {{- end }}
+  tls:
+    - hosts:
+      {{- range .Values.ingress.ws.proxyHosts }}
+      - {{ . | quote }}
+      {{- end }}
+      {{- range .Values.ingress.ws.hosts }}
+      - {{ . | quote }}
+      {{- end }}
+      secretName: {{ $fullName }}-ws-tls
+  {{ end }}
