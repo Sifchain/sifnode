@@ -12,6 +12,32 @@ func Migrate(genesis v039oracle.GenesisState) *types.GenesisState {
 
 	for _, addr := range genesis.AddressWhitelist {
 		whitelist[addr.String()] = defaultPower
+		// var addressWhiteList []string = make([]string, len(genesis.AddressWhitelist))
+		// for i, addr := range genesis.AddressWhitelist {
+		// 	addressWhiteList[i] = addr.String()
+	}
+
+	prophecies := make([]*types.DBProphecy, len(genesis.Prophecies))
+	for index, legacy := range genesis.Prophecies {
+
+		statusText := types.StatusText_STATUS_TEXT_UNSPECIFIED
+		if legacy.Status.Text == v039oracle.PendingStatusText {
+			statusText = types.StatusText_STATUS_TEXT_PENDING
+		} else if legacy.Status.Text == v039oracle.FailedStatusText {
+			statusText = types.StatusText_STATUS_TEXT_FAILED
+		} else if legacy.Status.Text == v039oracle.SuccessStatusText {
+			statusText = types.StatusText_STATUS_TEXT_SUCCESS
+		}
+
+		prophecies[index] = &types.DBProphecy{
+			Id: legacy.ID,
+			Status: types.Status{
+				Text:       statusText,
+				FinalClaim: legacy.Status.FinalClaim,
+			},
+			ClaimValidators: legacy.ClaimValidators,
+			ValidatorClaims: legacy.ValidatorClaims,
+		}
 	}
 	addressWhitelist := make(map[uint32]*types.ValidatorWhiteList)
 	addressWhitelist[uint32(networkID)] = &types.ValidatorWhiteList{WhiteList: whitelist}
@@ -19,6 +45,6 @@ func Migrate(genesis v039oracle.GenesisState) *types.GenesisState {
 	return &types.GenesisState{
 		AddressWhitelist: addressWhitelist,
 		AdminAddress:     genesis.AdminAddress.String(),
-		// TODO: Add prophecies once defined in 39&42 genesis state
+		Prophecies:       prophecies,
 	}
 }

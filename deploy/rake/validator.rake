@@ -8,7 +8,7 @@ namespace :validator do
              args[:node]
            end
 
-    cmd = %Q{sifnodecli tx staking create-validator \
+    cmd = %Q{sifnoded tx staking create-validator \
             --commission-max-change-rate="0.1" \
             --commission-max-rate="0.1" \
             --commission-rate="0.1" \

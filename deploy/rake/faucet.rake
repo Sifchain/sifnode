@@ -4,7 +4,7 @@ namespace :faucet do
   namespace :validator do
     desc "Send funds"
     task :send, [:chainnet, :from_address, :to_address, :amount, :gas, :node] do |t, args|
-      cmd = %Q{sifnodecli tx send #{args[:from_address]} #{args[:to_address]} #{args[:amount]} \
+      cmd = %Q{sifnoded tx bank send #{args[:from_address]} #{args[:to_address]} #{args[:amount]} \
               --node #{node_address(args)} \
               --chain-id #{args[:chainnet]} \
               --gas-prices "#{args[:gas]}" \

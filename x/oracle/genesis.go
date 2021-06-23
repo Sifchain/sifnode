@@ -16,7 +16,6 @@ func InitGenesis(ctx sdk.Context, keeper keeper.Keeper, data types.GenesisState)
 		for networkID, list := range data.AddressWhitelist {
 			keeper.SetOracleWhiteList(ctx, types.NewNetworkDescriptor(types.NetworkID(networkID)), *list)
 		}
-
 	}
 
 	if len(strings.TrimSpace(data.AdminAddress)) != 0 {
@@ -25,6 +24,10 @@ func InitGenesis(ctx sdk.Context, keeper keeper.Keeper, data types.GenesisState)
 			panic(err)
 		}
 		keeper.SetAdminAccount(ctx, adminAddress)
+	}
+
+	for _, dbProphecy := range data.Prophecies {
+		keeper.SetDBProphecy(ctx, *dbProphecy)
 	}
 
 	return []abci.ValidatorUpdate{}
@@ -37,9 +40,21 @@ func ExportGenesis(ctx sdk.Context, keeper keeper.Keeper) *types.GenesisState {
 	for i, value := range whiteList {
 		wl[uint32(i)] = &types.ValidatorWhiteList{WhiteList: value.WhiteList}
 	}
+
+	prophecies := keeper.GetProphecies(ctx)
+	dbProphecies := make([]*types.DBProphecy, len(prophecies))
+	for i, p := range prophecies {
+		dbProphecy, err := p.SerializeForDB()
+		if err != nil {
+			panic(err)
+		}
+		dbProphecies[i] = &dbProphecy
+	}
+
 	return &types.GenesisState{
 		AddressWhitelist: wl,
 		AdminAddress:     keeper.GetAdminAccount(ctx).String(),
+		Prophecies:       dbProphecies,
 	}
 }
 

@@ -107,7 +107,7 @@ $ %s migrate v0.9 /path/to/genesis.json
 
 			_, err = cmd.OutOrStdout().Write(sortedBz)
 			if err != nil {
-				return errors.Wrap(err, "failed to write genesis file")
+				return errors.Wrap(err, "failed to write output")
 			}
 
 			return nil

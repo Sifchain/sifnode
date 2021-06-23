@@ -26,6 +26,8 @@ const (
 	moduleString = "module"
 	statusString = "status"
 	senderString = "sender"
+	power        = 100
+	zeroPower    = 0
 )
 
 var (
@@ -454,6 +456,105 @@ func TestRescueCethMsg(t *testing.T) {
 	res, err := handler(ctx, &testRescueCethMsg)
 	require.NoError(t, err)
 	require.NotNil(t, res)
+}
+
+func TestUpdateWhiteListValidator(t *testing.T) {
+	addrs, validatorAddresses := test.CreateTestAddrs(3)
+
+	testCases := []struct {
+		name     string
+		sender   sdk.AccAddress
+		expected []sdk.ValAddress
+		msgs     []types.MsgUpdateWhiteListValidator
+	}{
+		{
+			name:     "Add one",
+			sender:   addrs[0],
+			expected: []sdk.ValAddress{validatorAddresses[0]},
+			msgs: []types.MsgUpdateWhiteListValidator{
+				types.CreateTestUpdateWhiteListValidatorMsg(t, addrs[0].String(), validatorAddresses[0].String(), power),
+			},
+		},
+		{
+			name:     "Add two",
+			sender:   addrs[0],
+			expected: []sdk.ValAddress{validatorAddresses[0], validatorAddresses[1]},
+			msgs: []types.MsgUpdateWhiteListValidator{
+				types.CreateTestUpdateWhiteListValidatorMsg(t, addrs[0].String(), validatorAddresses[0].String(), power),
+				types.CreateTestUpdateWhiteListValidatorMsg(t, addrs[0].String(), validatorAddresses[1].String(), power),
+			},
+		},
+		{
+			name:     "Add two remove last",
+			sender:   addrs[0],
+			expected: []sdk.ValAddress{validatorAddresses[0]},
+			msgs: []types.MsgUpdateWhiteListValidator{
+				types.CreateTestUpdateWhiteListValidatorMsg(t, addrs[0].String(), validatorAddresses[0].String(), power),
+				types.CreateTestUpdateWhiteListValidatorMsg(t, addrs[0].String(), validatorAddresses[1].String(), power),
+				types.CreateTestUpdateWhiteListValidatorMsg(t, addrs[0].String(), validatorAddresses[1].String(), zeroPower),
+			},
+		},
+		{
+			name:     "Add two remove first",
+			sender:   addrs[0],
+			expected: []sdk.ValAddress{validatorAddresses[1]},
+			msgs: []types.MsgUpdateWhiteListValidator{
+				types.CreateTestUpdateWhiteListValidatorMsg(t, addrs[0].String(), validatorAddresses[0].String(), power),
+				types.CreateTestUpdateWhiteListValidatorMsg(t, addrs[0].String(), validatorAddresses[1].String(), power),
+				types.CreateTestUpdateWhiteListValidatorMsg(t, addrs[0].String(), validatorAddresses[0].String(), zeroPower),
+			},
+		},
+		{
+			name:     "Remove when none",
+			sender:   addrs[0],
+			expected: []sdk.ValAddress{},
+			msgs: []types.MsgUpdateWhiteListValidator{
+				types.CreateTestUpdateWhiteListValidatorMsg(t, addrs[0].String(), validatorAddresses[0].String(), zeroPower),
+			},
+		},
+		{
+			name:     "Add one and remove all",
+			sender:   addrs[0],
+			expected: []sdk.ValAddress{},
+			msgs: []types.MsgUpdateWhiteListValidator{
+				types.CreateTestUpdateWhiteListValidatorMsg(t, addrs[0].String(), validatorAddresses[0].String(), power),
+				types.CreateTestUpdateWhiteListValidatorMsg(t, addrs[0].String(), validatorAddresses[0].String(), zeroPower),
+			},
+		},
+		{
+			name:     "Add duplicate, remove all instances",
+			sender:   addrs[0],
+			expected: []sdk.ValAddress{},
+			msgs: []types.MsgUpdateWhiteListValidator{
+				types.CreateTestUpdateWhiteListValidatorMsg(t, addrs[0].String(), validatorAddresses[0].String(), power),
+				types.CreateTestUpdateWhiteListValidatorMsg(t, addrs[0].String(), validatorAddresses[0].String(), power),
+				types.CreateTestUpdateWhiteListValidatorMsg(t, addrs[0].String(), validatorAddresses[0].String(), zeroPower),
+			},
+		},
+	}
+
+	networkDescriptor := oracletypes.NewNetworkDescriptor(oracletypes.NetworkID(1))
+
+	for i := range testCases {
+		testCase := testCases[i]
+		t.Run(testCase.name, func(t *testing.T) {
+			ctx, _, _, accountKeeper, handler, _, oracleKeeper := CreateTestHandler(t, 0.5, []int64{5})
+			sender := testCase.sender
+
+			accountKeeper.SetAccount(ctx, authtypes.NewBaseAccountWithAddress(sender))
+			oracleKeeper.SetAdminAccount(ctx, sender)
+			oracleKeeper.SetOracleWhiteList(ctx, networkDescriptor, oracletypes.ValidatorWhiteList{WhiteList: map[string]uint32{}})
+
+			for i := range testCase.msgs {
+				msg := testCase.msgs[i]
+				_, err := handler(ctx, &msg)
+				require.NoError(t, err)
+			}
+
+			wl := oracleKeeper.GetAllValidators(ctx, networkDescriptor)
+			require.Equal(t, testCase.expected, wl)
+		})
+	}
 }
 
 func CreateTestHandler(t *testing.T, consensusNeeded float64, validatorAmounts []int64) (sdk.Context,
