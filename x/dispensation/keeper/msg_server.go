@@ -35,6 +35,9 @@ func (srv msgServer) CreateDistribution(ctx context.Context,
 	}
 
 	totalOutput, err := dispensationUtils.TotalOutput(msg.Output)
+	if err != nil {
+		return nil, errors.Wrap(err, "Error calculating required amount from outputs")
+	}
 	//Accumulate all Drops into the ModuleAccount
 	err = srv.Keeper.AccumulateDrops(sdkCtx, msg.Distributor, totalOutput)
 	if err != nil {
@@ -93,7 +96,7 @@ func (srv msgServer) RunDistribution(ctx context.Context, distribution *types.Ms
 		return nil, err
 	}
 
-	var recordEvents []sdk.Event
+	recordEvents := make([]sdk.Event, len(records.DistributionRecords)+1)
 	for i, record := range records.DistributionRecords {
 		ev := sdk.NewEvent(
 			types.EventTypeDistributionRecordsList+strconv.Itoa(i),
@@ -101,13 +104,13 @@ func (srv msgServer) RunDistribution(ctx context.Context, distribution *types.Ms
 			sdk.NewAttribute(types.AttributeKeyDistributionRecordType, record.DistributionType.String()),
 			sdk.NewAttribute(types.AttributeKeyDistributionRecordAmount, record.Coins.String()),
 		)
-		recordEvents = append(recordEvents, ev)
+		recordEvents[i] = ev
 	}
-	recordEvents = append(recordEvents, sdk.NewEvent(
+	recordEvents[len(recordEvents)-1] = sdk.NewEvent(
 		types.EventTypeDistributionRun,
 		sdk.NewAttribute(types.AttributeKeyDistributionName, distribution.DistributionName),
 		sdk.NewAttribute(types.AttributeKeyDistributionRunner, distribution.AuthorizedRunner),
-	))
+	)
 
 	sdkCtx.EventManager().EmitEvents(recordEvents)
 	return &types.MsgRunDistributionResponse{}, nil
