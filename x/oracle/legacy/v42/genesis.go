@@ -11,9 +11,8 @@ func Migrate(genesis v039oracle.GenesisState) *types.GenesisState {
 		addressWhiteList[i] = addr.String()
 	}
 
-	var prophecies []*types.DBProphecy
-	for _, legacy := range genesis.Prophecies {
-
+	prophecies := make([]*types.DBProphecy, len(genesis.Prophecies))
+	for i, legacy := range genesis.Prophecies {
 		statusText := types.StatusText_STATUS_TEXT_UNSPECIFIED
 		if legacy.Status.Text == v039oracle.PendingStatusText {
 			statusText = types.StatusText_STATUS_TEXT_PENDING
@@ -23,7 +22,7 @@ func Migrate(genesis v039oracle.GenesisState) *types.GenesisState {
 			statusText = types.StatusText_STATUS_TEXT_SUCCESS
 		}
 
-		prophecies = append(prophecies, &types.DBProphecy{
+		prophecies[i] = &types.DBProphecy{
 			Id: legacy.ID,
 			Status: types.Status{
 				Text:       statusText,
@@ -31,7 +30,7 @@ func Migrate(genesis v039oracle.GenesisState) *types.GenesisState {
 			},
 			ClaimValidators: legacy.ClaimValidators,
 			ValidatorClaims: legacy.ValidatorClaims,
-		})
+		}
 	}
 
 	return &types.GenesisState{

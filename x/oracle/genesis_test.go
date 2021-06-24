@@ -117,10 +117,9 @@ type testCase struct {
 func testGenesisData(t *testing.T) ([]testCase, []types.Prophecy) {
 	addrs, valAddrs := test.CreateTestAddrs(2)
 
-	whitelist := make([]string, 0, len(valAddrs))
-
-	for _, addr := range valAddrs {
-		whitelist = append(whitelist, addr.String())
+	whitelist := make([]string, len(valAddrs))
+	for i, addr := range valAddrs {
+		whitelist[i] = addr.String()
 	}
 
 	prophecy := types.Prophecy{
