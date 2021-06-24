@@ -53,7 +53,6 @@ func TestExportGenesis(t *testing.T) {
 			ctx, _, _, _, keeper, _, _ := test.CreateTestKeepers(t, 1, []int64{1}, "")
 			_ = oracle.InitGenesis(ctx, keeper, tc.genesis)
 			genesis := oracle.ExportGenesis(ctx, keeper)
-
 			require.Equal(t, tc.genesis.AdminAddress, genesis.AdminAddress)
 
 			wl := genesis.AddressWhitelist
@@ -143,10 +142,6 @@ func testGenesisData(t *testing.T) ([]testCase, []types.Prophecy) {
 		{
 			name:    "Default genesis",
 			genesis: *types.DefaultGenesisState(),
-		},
-		{
-			name:    "Nil genesis",
-			genesis: types.GenesisState{},
 		},
 		{
 			name: "Prophecy",
