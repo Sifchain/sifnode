@@ -12,8 +12,8 @@ import (
 
 func InitGenesis(ctx sdk.Context, keeper keeper.Keeper, data types.GenesisState) (res []abci.ValidatorUpdate) {
 	if data.AddressWhitelist != nil {
-		wl := make([]sdk.ValAddress, len(data.AddressWhitelist))
-		for i, entry := range data.AddressWhitelist {
+		var wl []sdk.ValAddress
+		for _, entry := range data.AddressWhitelist {
 			if len(strings.TrimSpace(entry)) == 0 {
 				continue
 			}
@@ -21,7 +21,7 @@ func InitGenesis(ctx sdk.Context, keeper keeper.Keeper, data types.GenesisState)
 			if err != nil {
 				panic(err)
 			}
-			wl[i] = wlAddress
+			wl = append(wl, wlAddress)
 		}
 
 		keeper.SetOracleWhiteList(ctx, wl)
