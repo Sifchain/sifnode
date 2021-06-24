@@ -168,7 +168,7 @@ read -p "Do you want me to deploy sifnode? y/n [y]:" DEPLOY_SIFNODE
 DEPLOY_SIFNODE=${DEPLOY_SIFNODE:-y}
 if [ "${DEPLOY_SIFNODE}" == "y" ]; then
     echo "=================="
-    rake "sifnode:standalone:deploy:peer_vault[${APP_NAMESPACE}, ${IMAGE_NAME}, ${IMAGE_TAG}, ${PEER_ADDRESS}, ${TEMPLATE_ROOT}/${TEMPLATE_FILE}, ${TEMPLATE_ROOT}/${GENERATED_FILE}]"
+    rake "cluster:sifnode:deploy:peer_vault[${APP_NAMESPACE}, ${IMAGE_NAME}, ${IMAGE_TAG}, ${PEER_ADDRESS}, ${TEMPLATE_ROOT}/${TEMPLATE_FILE}, ${TEMPLATE_ROOT}/${GENERATED_FILE}]"
     echo " "
 
     echo "Remove Generated File"
