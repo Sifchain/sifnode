@@ -15,7 +15,8 @@ import (
 func TestInitGenesis(t *testing.T) {
 	tt, _ := testGenesisData(t)
 
-	for _, tc := range tt {
+	for i := range tt {
+		tc := tt[i]
 		t.Run(tc.name, func(t *testing.T) {
 			ctx, _, _, _, keeper, _, _ := test.CreateTestKeepers(t, 1, []int64{1}, "")
 			_ = oracle.InitGenesis(ctx, keeper, tc.genesis)
@@ -46,7 +47,8 @@ func TestInitGenesis(t *testing.T) {
 func TestExportGenesis(t *testing.T) {
 	tt, _ := testGenesisData(t)
 
-	for _, tc := range tt {
+	for i := range tt {
+		tc := tt[i]
 		t.Run(tc.name, func(t *testing.T) {
 			ctx, _, _, _, keeper, _, _ := test.CreateTestKeepers(t, 1, []int64{1}, "")
 			_ = oracle.InitGenesis(ctx, keeper, tc.genesis)
@@ -114,7 +116,8 @@ type testCase struct {
 func testGenesisData(t *testing.T) ([]testCase, []types.Prophecy) {
 	addrs, valAddrs := test.CreateTestAddrs(2)
 
-	var whitelist []string
+	whitelist := make([]string, 0, len(valAddrs))
+
 	for _, addr := range valAddrs {
 		whitelist = append(whitelist, addr.String())
 	}
