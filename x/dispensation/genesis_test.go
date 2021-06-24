@@ -1,12 +1,13 @@
 package dispensation_test
 
 import (
+	"testing"
+
 	"github.com/Sifchain/sifnode/x/dispensation"
 	"github.com/Sifchain/sifnode/x/dispensation/test"
 	"github.com/Sifchain/sifnode/x/dispensation/types"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
-	"testing"
 )
 
 func TestExportGenesis(t *testing.T) {

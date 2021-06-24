@@ -8,9 +8,9 @@ import (
 
 // This package adds set and get operations for distributions
 
-func (k Keeper) SetDistribution(ctx sdk.Context, ar types.Distribution) error {
-	if !ar.Validate() {
-		return errors.Wrapf(types.ErrInvalid, "Record Details : %s", ar.String())
+func (k Keeper) SetDistribution(ctx sdk.Context, distribution types.Distribution) error {
+	if !distribution.Validate() {
+		return errors.Wrapf(types.ErrInvalid, "Record Details : %s", distribution.String())
 	}
 	store := ctx.KVStore(k.storeKey)
 	key := types.GetDistributionsKey(ar.DistributionName, ar.DistributionType)

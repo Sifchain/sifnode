@@ -4,13 +4,14 @@ package rest
 import (
 	// "bytes"
 	// "net/http"
+	"net/http"
+
 	"github.com/Sifchain/sifnode/x/dispensation/types"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/tx"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/rest"
 	"github.com/gorilla/mux"
-	"net/http"
 )
 
 func RegisterRoutes(cliCtx client.Context, r *mux.Router) {

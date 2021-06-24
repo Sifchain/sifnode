@@ -161,3 +161,39 @@ func (k Keeper) GetRecords(ctx sdk.Context) *types.DistributionRecords {
 	}
 	return &res
 }
+
+func (k Keeper) GetRecordsForNamePendingLimited(ctx sdk.Context, distributionName string, limit int, runner sdk.AccAddress, distributionType types.DistributionType) types.DistributionRecords {
+	var res types.DistributionRecords
+	iterator := k.GetDistributionRecordsIterator(ctx)
+	count := 0
+	defer iterator.Close()
+	for ; iterator.Valid(); iterator.Next() {
+		if count == limit {
+			break
+		}
+		var dr types.DistributionRecord
+		bytesValue := iterator.Value()
+		k.cdc.MustUnmarshalBinaryBare(bytesValue, &dr)
+		if dr.DistributionName == distributionName &&
+			dr.DistributionStatus == types.Pending &&
+			dr.AuthorizedRunner.Equals(runner) &&
+			dr.DistributionType == distributionType {
+			res = append(res, dr)
+			count = count + 1
+		}
+	}
+	return res
+}
+
+func (k Keeper) GetRecords(ctx sdk.Context) types.DistributionRecords {
+	var res types.DistributionRecords
+	iterator := k.GetDistributionRecordsIterator(ctx)
+	defer iterator.Close()
+	for ; iterator.Valid(); iterator.Next() {
+		var dr types.DistributionRecord
+		bytesValue := iterator.Value()
+		k.cdc.MustUnmarshalBinaryBare(bytesValue, &dr)
+		res = append(res, dr)
+	}
+	return res
+}

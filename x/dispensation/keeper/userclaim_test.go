@@ -1,10 +1,11 @@
 package keeper_test
 
 import (
+	"testing"
+
 	"github.com/Sifchain/sifnode/x/dispensation/test"
 	"github.com/Sifchain/sifnode/x/dispensation/types"
 	"github.com/stretchr/testify/assert"
-	"testing"
 )
 
 func TestKeeper_GetClaimsByType(t *testing.T) {

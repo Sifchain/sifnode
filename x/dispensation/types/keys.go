@@ -2,6 +2,7 @@ package types
 
 import (
 	"fmt"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 )
@@ -41,11 +42,20 @@ func GetDistributionRecordKey(status DistributionStatus, name string, recipient 
 		return append(DistributionRecordPrefixCompleted, key...)
 	}
 }
+
+// A distribution faile records is the similar to GetDistributionRecordKey , but uses a different prefix
+func GetDistributionRecordFailedKey(name string, recipient string, distributionType string) []byte {
+	key := []byte(fmt.Sprintf("%s_%s_%s", name, distributionType, recipient))
+	return append(DistributionRecordPrefixFailed, key...)
+}
+
+// A distribution  is unique for name_distributionType
 func GetDistributionsKey(name string, distributionType DistributionType) []byte {
 	key := []byte(fmt.Sprintf("%s_%d", name, distributionType))
 	return append(DistributionsPrefix, key...)
 }
 
+// A claim is unique for userAddress_userClaimType
 func GetUserClaimKey(userAddress string, userClaimType DistributionType) []byte {
 	key := []byte(fmt.Sprintf("%s_%d", userAddress, userClaimType))
 	return append(UserClaimPrefix, key...)

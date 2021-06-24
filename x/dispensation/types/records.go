@@ -20,6 +20,18 @@ func (dr DistributionRecord) Validate() bool {
 	if !dr.Coins.IsAllPositive() {
 		return false
 	}
+	_, err := sdk.AccAddressFromBech32(dr.AuthorizedRunner.String())
+	if err != nil {
+		return false
+	}
+	_, err = sdk.AccAddressFromBech32(dr.RecipientAddress.String())
+	if err != nil {
+		return false
+	}
+	_, ok := IsValidDistributionType(dr.DistributionType.String())
+	if !ok {
+		return false
+	}
 	return true
 }
 
@@ -43,14 +55,23 @@ func (uc UserClaim) IsLocked() bool {
 	return uc.Locked
 }
 
-func NewDistribution(t DistributionType, name string) Distribution {
-	return Distribution{DistributionType: t, DistributionName: name}
+func NewDistribution(t DistributionType, name string, runner sdk.AccAddress) Distribution {
+	return Distribution{DistributionType: t, DistributionName: name, Runner: runner}
 }
 
-func (ar Distribution) Validate() bool {
-	if ar.DistributionName == "" {
+func (d Distribution) Validate() bool {
+	if d.DistributionName == "" {
 		return false
 	}
+	_, ok := IsValidDistributionType(d.DistributionType.String())
+	if !ok {
+		return false
+	}
+	_, err := sdk.AccAddressFromBech32(d.Runner.String())
+	if err != nil {
+		return false
+	}
+
 	return true
 }
 func GetDistributionStatus(status string) DistributionStatus {

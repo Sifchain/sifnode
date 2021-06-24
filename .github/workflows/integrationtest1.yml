@@ -1,4 +1,4 @@
-name: Run integration tests 1
+name: Run integration tests 1 for test chain (peg)
 on:
   push:
     paths-ignore:

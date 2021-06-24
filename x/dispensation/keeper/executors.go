@@ -2,16 +2,14 @@ package keeper
 
 import (
 	"fmt"
-
 	"github.com/Sifchain/sifnode/x/dispensation/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	"github.com/pkg/errors"
 )
 
-//CreateAndDistributeDrops creates new drop Records . These records are then used to facilitate distribution
+//CreateDrops creates new drop Records . These records are then used to facilitate distribution
 // Each Recipient and DropName generate a unique Record
-func (k Keeper) CreateDrops(ctx sdk.Context, output []banktypes.Output, name string, distributionType types.DistributionType) error {
 	for _, receiver := range output {
 		distributionRecord := types.NewDistributionRecord(types.DistributionStatus_DISTRIBUTION_STATUS_PENDING, distributionType, name, receiver.Address, receiver.Coins, ctx.BlockHeight(), -1)
 		if k.ExistsDistributionRecord(ctx, name, receiver.Address, types.DistributionStatus_DISTRIBUTION_STATUS_PENDING) {
@@ -23,22 +21,6 @@ func (k Keeper) CreateDrops(ctx sdk.Context, output []banktypes.Output, name str
 		}
 		distributionRecord.DistributionStatus = types.DistributionStatus_DISTRIBUTION_STATUS_PENDING
 		err := k.SetDistributionRecord(ctx, distributionRecord)
-		if err != nil {
-			return errors.Wrapf(types.ErrFailedOutputs, "error setting distibution record  : %s", distributionRecord.String())
-		}
-		// Lock the user claim so that the user cannot delete the claim while the distribution is in progress.
-		// Claim will not exist if its not a LM/VS drop
-		// IF it is a LM/VS drop the associated claim must always exist .
-		// The users of this module need to make sure they are submitting the proper distribution type when distributing rewards
-		// The same user might be eligible for Airdrop/LM/VS rewards . Based on Distribution type submitted the appropriate claim will be locked.
-		if distributionType == types.DistributionType_DISTRIBUTION_TYPE_LIQUIDITY_MINING || distributionType == types.DistributionType_DISTRIBUTION_TYPE_VALIDATOR_SUBSIDY {
-			err := k.LockClaim(ctx, receiver.Address, distributionType)
-			if err != nil {
-				return errors.Wrap(err, fmt.Sprintf("Unable to verify associated claim for address : %s", receiver.Address))
-			}
-		}
-	}
-	return nil
 }
 
 // DistributeDrops is called at the beginning of every block .
@@ -85,19 +67,22 @@ func (k Keeper) AccumulateDrops(ctx sdk.Context, input []banktypes.Input) error 
 		}
 	}
 	return nil
+
 }
 
 // Verify if the distribution is correct
 // The verification is the for distributionName + distributionType
-func (k Keeper) VerifyDistribution(ctx sdk.Context, distributionName string, distributionType types.DistributionType) error {
+func (k Keeper) VerifyAndSetDistribution(ctx sdk.Context, distributionName string,
+	distributionType types.DistributionType, runner sdk.AccAddress) error {
+
 	if k.ExistsDistribution(ctx, distributionName, distributionType) {
 		return errors.Wrapf(types.ErrDistribution, "airdrop with same name already exists : %s ", distributionName)
 	}
 	// Create distribution only if a distribution with the same name does not exist
-	err := k.SetDistribution(ctx, types.NewDistribution(distributionType, distributionName))
+	err := k.SetDistribution(ctx, types.NewDistribution(distributionType, distributionName, runner))
 	if err != nil {
 		return errors.Wrapf(types.ErrDistribution, "unable to set airdrop :  %s ", distributionName)
-
 	}
+
 	return nil
 }

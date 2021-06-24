@@ -2,9 +2,11 @@ package utils
 
 import (
 	"encoding/json"
-	"github.com/cosmos/cosmos-sdk/x/bank/types"
 	"io/ioutil"
 	"path/filepath"
+
+	"github.com/cosmos/cosmos-sdk/x/bank/types"
+	"github.com/pkg/errors"
 )
 
 type TempInput struct {
@@ -48,4 +50,15 @@ func ParseOutput(fp string) ([]types.Output, error) {
 		return nil, err
 	}
 	return outputs.Out, nil
+}
+
+func TotalOutput(output []bank.Output) (sdk.Coins, error) {
+	if len(output) == 0 {
+		return sdk.Coins{}, errors.Wrapf(bank.ErrNoOutputs, "Outputlist is empty")
+	}
+	total := output[0].Coins
+	for i := 1; i < len(output); i++ {
+		total = total.Add(output[i].Coins...)
+	}
+	return total, nil
 }

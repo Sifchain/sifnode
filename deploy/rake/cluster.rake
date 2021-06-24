@@ -131,40 +131,8 @@ namespace :cluster do
           --set image.repository=#{image_repository(args)}
         }
 
-        system({"KUBECONFIG" => kubeconfig(args)}, cmd)
-      end
+#moved sifnode to sifnode:sifnode:*
 
-      desc "Deploy a single standalone sifnode on to your cluster"
-      task :standalone_vault, [:namespace, :image, :image_tag, :template_file_name, :final_file_name] do |t, args|
-        variable_template_replace(args[:template_file_name], args[:final_file_name])
-        cmd = %Q{helm upgrade sifnode deploy/helm/sifnode-vault \
-          --install -n #{args[:namespace]} --create-namespace \
-          --set image.tag=#{args[:image_tag]} \
-          --set image.repository=#{args[:image]} \
-          -f #{args[:final_file_name]}
-        }
-        puts cmd
-        #system(cmd) or exit 1
-      end
-
-      desc "Deploy a single network-aware sifnode on to your cluster"
-      task :peer_vault, [:namespace, :image, :image_tag, :peer_address, :template_file_name, :final_file_name] do |t, args|
-        variable_template_replace(args[:template_file_name], args[:final_file_name])
-        cmd = %Q{helm upgrade sifnode deploy/helm/sifnode-vault \
-          --install -n #{args[:namespace]} --create-namespace \
-          --set sifnode.args.peerAddress=#{args[:peer_address]} \
-          --set image.tag=#{args[:image_tag]} \
-          --set image.repository=#{args[:image]} \
-          -f #{args[:final_file_name]}
-        }
-        puts cmd
-        system(cmd) or exit 1
-        #:namespace, :image, :image_tag, :peer_address, :template_file_name, :final_file_name,:app_region, :app_env
-        #rake "cluster:sifnode:peer_vault['sifnode', 'sifchain/sifnoded', 'testnet-genesis', '1b02f2eb065031426d37186efff75df268bb9097@54.164.57.141:26656', './deploy/helm/sifnode-vault/template.values.yaml', './deploy/helm/sifnode-vault/generated.values.yaml']"
-      end
-
-    end
-  end
 
   desc "ebrelayer Operations"
   namespace :ebrelayer do
@@ -449,30 +417,7 @@ echo '      sssssssssss    iiiiiiiifffffffff            cccccccccccccccchhhhhhh 
     end
   end
 
-  desc "Anchore Security Docker Vulnerability Scan"
-  namespace :anchore do
-    desc "Deploy a new ebrelayer to an existing cluster"
-    task :scan, [:image, :image_tag, :app_name] do |t, args|
-      cluster_automation = %Q{
-        set +x
-        curl -s https://ci-tools.anchore.io/inline_scan-latest | bash -s -- -f -r -d cmd/#{args[:app_name]}/Dockerfile -p "#{args[:image]}:#{args[:image_tag]}"
-      }
-      system(cluster_automation) or exit 1
-    end
-  end
-
-  desc "Anchore Security Docker Vulnerability Scan"
-  namespace :anchore do
-    desc "Deploy a new ebrelayer to an existing cluster"
-    task :scan_by_path, [:image, :image_tag, :path] do |t, args|
-      cluster_automation = %Q{
-        set +x
-        curl -s https://ci-tools.anchore.io/inline_scan-latest | bash -s -- -t 800 -d #{args[:path]}/Dockerfile -p "#{args[:image]}:#{args[:image_tag]}"
-        #curl -s https://ci-tools.anchore.io/inline_scan-latest | bash -s -- -f -t 800 -d #{args[:path]}/Dockerfile -p "#{args[:image]}:#{args[:image_tag]}"
-      }
-      system(cluster_automation) or exit 1
-    end
-  end
+#moved cluster:anchore:scan,scan_by_path to security:anchore
 
 
   desc "Generate Temp Secrets For Application Path In Vault"
@@ -968,69 +913,10 @@ metadata:
     end
   end
 
-  desc "Create Github Release."
-  namespace :release do
-    desc "Create Github Release."
-    task :create_github_release_by_branch, [:branch, :release, :env, :token] do |t, args|
-      require 'rest-client'
-      require 'json'
-      begin
-        release_hash = { "devnet" => "DevNet", "testnet" =>"TestNet", "betanet" =>"MainNet" }
-        release_target = { "devnet" => "develop", "testnet" =>"testnet", "betanet" =>"master" }
-        release_name = release_hash[args[:env]]
-        if "#{args[:app_env]}" == "betanet"
-          headers = {content_type: :json, "Accept": "application/vnd.github.v3+json", "Authorization":"token #{args[:token]}"}
-          payload = {"tag_name"  =>  "mainnet-#{args[:release]}", "target_commitish"  =>  args[:branch], "name"  =>  "#{release_name} v#{args[:release]}","body"  => "Sifchain MainNet Release v#{args[:release]}","prerelease"  =>  true}.to_json
-          response = RestClient.post 'https://api.github.com/repos/Sifchain/sifnode/releases', payload, headers
-          json_response_job_object = JSON.parse response.body
-          puts json_response_job_object
-        else
-          headers = {content_type: :json, "Accept": "application/vnd.github.v3+json", "Authorization":"token #{args[:token]}"}
-          payload = {"tag_name"  =>  "#{args[:env]}-#{args[:release]}", "target_commitish"  =>  args[:branch], "name"  =>  "#{release_name} v#{args[:release]}","body"  => "Sifchain #{args[:env]} Release v#{args[:release]}","prerelease"  =>  true}.to_json
-          response = RestClient.post 'https://api.github.com/repos/Sifchain/sifnode/releases', payload, headers
-          json_response_job_object = JSON.parse response.body
-          puts json_response_job_object
-        end
-      rescue
-        puts 'Release Already Exists'
-      end
-    end
-  end
+#moved cluster:release:reate_github_release_by_branch to github:release_by_branch:create
 
-  desc "Create create_github_release_by_branch_and_repo."
-  namespace :release do
-    desc "Create create_github_release_by_branch_and_repo."
-    task :create_github_release_by_branch_and_repo, [:branch, :release, :env, :token, :repo] do |t, args|
-      require 'rest-client'
-      require 'json'
-        release_hash = { "develop" => "DevNet", "testnet" =>"TestNet", "master" =>"MainNet" }
-        release_target = { "devnet" => "develop", "testnet" =>"testnet", "betanet" =>"master" }
-        puts release_hash
-        puts args[:env]
-        puts args[:repo]
-        puts args[:branch]
-        puts args[:release]
-        release_name = release_hash[args[:env]]
-        puts "Release Name #{release_name}"
-        if "#{args[:app_env]}" == "betanet"
-          headers = {content_type: :json, "Accept": "application/vnd.github.v3+json", "Authorization":"token #{args[:token]}"}
-          payload = {"tag_name"  =>  "mainnet-#{args[:release]}", "target_commitish"  =>  args[:branch], "name"  =>  "#{release_name} v#{args[:release]}","body"  => "#{args[:repo]} MainNet Release v#{args[:release]}","prerelease"  =>  true}.to_json
-          url = "https://api.github.com/repos/Sifchain/#{args[:repo]}/releases"
-          puts "github api url #{url}"
-          response = RestClient.post url, payload, headers
-          json_response_job_object = JSON.parse response.body
-          puts json_response_job_object
-        else
-          headers = {content_type: :json, "Accept": "application/vnd.github.v3+json", "Authorization":"token #{args[:token]}"}
-          payload = {"tag_name"  =>  "#{args[:env]}-#{args[:release]}", "target_commitish"  =>  args[:branch], "name"  =>  "#{release_name} v#{args[:release]}","body"  => "#{args[:repo]} #{args[:env]} Release v#{args[:release]}","prerelease"  =>  true}.to_json
-          url = "https://api.github.com/repos/Sifchain/#{args[:repo]}/releases"
-          puts "github api url #{url}"
-          response = RestClient.post url, payload, headers
-          json_response_job_object = JSON.parse response.body
-          puts json_response_job_object
-        end
-    end
-  end
+#moved cluster:release:create_github_release_by_branch_and_repo to github:release_by_branch_and_repo:create
+
 
   desc "Deploy Helm Files"
   namespace :vault do
@@ -1043,6 +929,18 @@ metadata:
       puts "Use kubectl rollout to wait for pods to start."
       check_kubernetes_rollout_status = %Q{kubectl rollout status --kubeconfig=./kubeconfig deployment/#{args[:app_name]} -n #{args[:app_namespace]}}
       system(check_kubernetes_rollout_status) or exit 1
+    end
+  end
+
+  desc "Map Variables to Github Variables"
+  namespace :utilities do
+    desc "Map Variables to Github Variables"
+    task :github_variable_map, [:path,:app_env] do |t, args|
+        require 'yaml'
+        yaml_variables = YAML.load(File.read(args[:path]))
+        yaml_variables[args[:app_env]].each do |key, value|
+            %x{ echo "#{key}=#{value}" >> $GITHUB_ENV }
+        end
     end
   end
 
@@ -1117,13 +1015,13 @@ metadata:
 
         if "#{args[:app_env]}" == "betanet"
             governance_request = %Q{
-make CHAINNET=sifchain IMAGE_TAG=keyring BINARY=sifnodecli build-image
-docker run -i sifchain/sifnodecli:keyring sh <<'EOF'
-sifnodecli keys add #{args[:moniker]} -i --recover --keyring-backend test <<'EOF'
+
+go run ./cmd/sifnodecli keys add #{args[:moniker]} -i --recover --keyring-backend test <<'EOF'
 #{args[:mnemonic]}
 \r
 EOF
-sifnodecli tx gov submit-proposal software-upgrade #{args[:release_version]} \
+
+go run ./cmd/sifnodecli tx gov submit-proposal software-upgrade #{args[:release_version]} \
             --from #{args[:from]} \
             --deposit #{args[:deposit]} \
             --upgrade-height #{block_height} \
@@ -1136,20 +1034,18 @@ sifnodecli tx gov submit-proposal software-upgrade #{args[:release_version]} \
             --chain-id #{args[:chainnet]} \
             --gas-prices "#{args[:rowan]}"
             sleep 60
-exit
-EOF
              }
             system(governance_request) or exit 1
         else
             puts "create dev net gov request #{sha_token}"
             governance_request = %Q{
-make CHAINNET=sifchain IMAGE_TAG=keyring BINARY=sifnodecli build-image
-docker run -i sifchain/sifnodecli:keyring sh <<'EOF'
-sifnodecli keys add #{args[:moniker]} -i --recover --keyring-backend test <<'EOF'
+
+go run ./cmd/sifnodecli keys add #{args[:moniker]} -i --recover --keyring-backend test <<'EOF'
 #{args[:mnemonic]}
 \r
 EOF
-    sifnodecli tx gov submit-proposal software-upgrade #{args[:release_version]} \
+
+go run ./cmd/sifnodecli tx gov submit-proposal software-upgrade #{args[:release_version]} \
        --from #{args[:from]} \
        --deposit #{args[:deposit]} \
        --upgrade-height #{block_height} \
@@ -1162,8 +1058,6 @@ EOF
        --chain-id #{args[:chainnet]} \
        --gas-prices "#{args[:rowan]}"
     sleep 60
-    exit
-EOF
 }
          system(governance_request) or exit 1
         end
@@ -1176,13 +1070,13 @@ EOF
     task :generate_vote_no_passphrase, [:rowan, :chainnet, :from, :app_env, :moniker, :mnemonic] do |t, args|
         if "#{args[:app_env]}" == "betanet"
             governance_request = %Q{
-make CHAINNET=sifchain IMAGE_TAG=keyring BINARY=sifnodecli build-image
-docker run -i sifchain/sifnodecli:keyring sh <<'EOF'
-sifnodecli keys add #{args[:moniker]} -i --recover --keyring-backend test <<'EOF'
+go run ./cmd/sifnodecli keys add #{args[:moniker]} -i --recover --keyring-backend test <<'EOF'
 #{args[:mnemonic]}
 \r
 EOF
+
 vote_id=$(go run ./cmd/sifnodecli q gov proposals --node tcp://rpc.sifchain.finance:80 --trust-node -o json | jq --raw-output 'last(.[]).id' --raw-output)
+
 echo "vote_id $vote_id"
 go run ./cmd/sifnodecli tx gov vote ${vote_id} yes \
     --from #{args[:from]} \
@@ -1197,13 +1091,13 @@ EOF
             system(governance_request) or exit 1
         else
             governance_request = %Q{
-make CHAINNET=sifchain IMAGE_TAG=keyring BINARY=sifnodecli build-image
-docker run -i sifchain/sifnodecli:keyring sh <<'EOF'
-sifnodecli keys add #{args[:moniker]} -i --recover --keyring-backend test <<'EOF'
+go run ./cmd/sifnodecli keys add #{args[:moniker]} -i --recover --keyring-backend test <<'EOF'
 #{args[:mnemonic]}
 \r
 EOF
+
 vote_id=$(go run ./cmd/sifnodecli q gov proposals --node tcp://rpc-#{args[:app_env]}.sifchain.finance:80 --trust-node -o json | jq --raw-output 'last(.[]).id' --raw-output)
+
 echo "vote_id $vote_id"
 go run ./cmd/sifnodecli tx gov vote ${vote_id} yes \
     --from #{args[:from]} \
@@ -1212,8 +1106,6 @@ go run ./cmd/sifnodecli tx gov vote ${vote_id} yes \
     --node tcp://rpc-#{args[:app_env]}.sifchain.finance:80 \
     --gas-prices "#{args[:rowan]}" -y
 sleep 15
-exit
-EOF
 }
           system(governance_request) or exit 1
        end

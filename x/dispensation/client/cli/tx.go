@@ -3,13 +3,18 @@ package cli
 import (
 	"bufio"
 	"fmt"
+
 	"github.com/cosmos/cosmos-sdk/client"
+	"github.com/cosmos/cosmos-sdk/client/context"
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/client/tx"
 	"github.com/cosmos/cosmos-sdk/crypto/keyring"
 	"github.com/cosmos/cosmos-sdk/crypto/keys/multisig"
 	"github.com/cosmos/cosmos-sdk/server"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/cosmos-sdk/x/auth/client/utils"
+	"github.com/gogo/protobuf/codec"
+	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"github.com/tendermint/tendermint/libs/cli"
@@ -73,7 +78,7 @@ func GetCmdCreate() *cobra.Command {
 			name := args[1]
 			distributionType, ok := types.IsValidDistribution(args[2])
 			if !ok {
-				return fmt.Errorf("invalid distribution Type %s: Types supported [Airdrop/LiquidityMining/ValidatorSubsidy]", args[2])
+				return fmt.Errorf("invalid distribution Type %s: Types supported [Airdrop/LiquidityMining/ValidatorSubsidy]", args[0])
 			}
 
 			inputList, err := dispensationUtils.ParseInput(args[3])
@@ -84,7 +89,7 @@ func GetCmdCreate() *cobra.Command {
 			multisigPub := multisigInfo.GetPubKey().(*multisig.LegacyAminoPubKey)
 			err = dispensationUtils.VerifyInputList(inputList, multisigPub.PubKeys)
 			if err != nil {
-				return err
+				return errors.Wrapf(err, fmt.Sprintf("Invalid Address for authorised distributor : %s", args[2]))
 			}
 
 			outputlist, err := dispensationUtils.ParseOutput(args[4])
@@ -119,6 +124,25 @@ func GetCmdClaim() *cobra.Command {
 				return err
 			}
 			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), &msg)
+		},
+	}
+	return cmd
+}
+
+func GetCmdRun(cdc *codec.Codec) *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "run [DistributionName] [DistributionType]",
+		Short: "run a dispensation by specifying the name / should only be called by the authorized runner",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			inBuf := bufio.NewReader(cmd.InOrStdin())
+			txBldr := auth.NewTxBuilderFromCLI(inBuf).WithTxEncoder(utils.GetTxEncoder(cdc))
+			cliCtx := context.NewCLIContextWithInput(inBuf).WithCodec(cdc)
+			distributionType, ok := types.IsValidDistributionType(args[1])
+			if !ok {
+				return fmt.Errorf("invalid distribution Type %s: Types supported [Airdrop/LiquidityMining/ValidatorSubsidy]", args[0])
+			}
+			msg := types.NewMsgRunDistribution(cliCtx.GetFromAddress(), args[0], distributionType)
+			return utils.GenerateOrBroadcastMsgs(cliCtx, txBldr, []sdk.Msg{msg})
 		},
 	}
 	return cmd

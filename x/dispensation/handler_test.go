@@ -1,6 +1,8 @@
 package dispensation_test
 
 import (
+	"testing"
+
 	"github.com/Sifchain/sifnode/x/dispensation"
 	"github.com/Sifchain/sifnode/x/dispensation/test"
 	"github.com/Sifchain/sifnode/x/dispensation/types"
@@ -9,7 +11,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/tendermint/tendermint/crypto"
-	"testing"
 )
 
 func TestNewHandler_CreateDistribution(t *testing.T) {
