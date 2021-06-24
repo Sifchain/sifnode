@@ -7,27 +7,27 @@ import (
 
 func Migrate(genesis v039clp.GenesisState) clptypes.GenesisState {
 	whitelist := make([]string, len(genesis.AddressWhitelist))
-	for _, addr := range genesis.AddressWhitelist {
-		whitelist = append(whitelist, addr.String())
+	for i, addr := range genesis.AddressWhitelist {
+		whitelist[i] = addr.String()
 	}
 
 	poolList := make([]*clptypes.Pool, len(genesis.PoolList))
-	for _, pool := range genesis.PoolList {
-		poolList = append(poolList, &clptypes.Pool{
+	for i, pool := range genesis.PoolList {
+		poolList[i] = &clptypes.Pool{
 			ExternalAsset:        &clptypes.Asset{Symbol: pool.ExternalAsset.Symbol},
 			NativeAssetBalance:   pool.NativeAssetBalance,
 			ExternalAssetBalance: pool.ExternalAssetBalance,
 			PoolUnits:            pool.PoolUnits,
-		})
+		}
 	}
 
 	liquidityProviders := make([]*clptypes.LiquidityProvider, len(genesis.LiquidityProviderList))
-	for _, lp := range genesis.LiquidityProviderList {
-		liquidityProviders = append(liquidityProviders, &clptypes.LiquidityProvider{
+	for i, lp := range genesis.LiquidityProviderList {
+		liquidityProviders[i] = &clptypes.LiquidityProvider{
 			Asset:                    &clptypes.Asset{Symbol: lp.Asset.Symbol},
 			LiquidityProviderUnits:   lp.LiquidityProviderUnits,
 			LiquidityProviderAddress: lp.LiquidityProviderAddress.String(),
-		})
+		}
 	}
 
 	return clptypes.GenesisState{

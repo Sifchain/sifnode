@@ -332,7 +332,7 @@ type Transfer struct {
 
 type AppState struct {
 	Upgrade      struct{}      `json:"upgrade"`
-	Ethbridge    interface{}   `json:"ethbridge"`
+	Ethbridge    struct{}      `json:"ethbridge"`
 	Params       interface{}   `json:"params"`
 	Ibc          Ibc           `json:"ibc"`
 	Distribution Distribution  `json:"distribution"`

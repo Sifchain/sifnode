@@ -15,7 +15,8 @@ import (
 func TestInitGenesis(t *testing.T) {
 	tt, _ := testGenesisData(t)
 
-	for _, tc := range tt {
+	for i := range tt {
+		tc := tt[i]
 		t.Run(tc.name, func(t *testing.T) {
 			ctx, _, _, _, keeper, _, _ := test.CreateTestKeepers(t, 1, []int64{1}, "")
 			_ = oracle.InitGenesis(ctx, keeper, tc.genesis)
@@ -46,12 +47,12 @@ func TestInitGenesis(t *testing.T) {
 func TestExportGenesis(t *testing.T) {
 	tt, _ := testGenesisData(t)
 
-	for _, tc := range tt {
+	for i := range tt {
+		tc := tt[i]
 		t.Run(tc.name, func(t *testing.T) {
 			ctx, _, _, _, keeper, _, _ := test.CreateTestKeepers(t, 1, []int64{1}, "")
 			_ = oracle.InitGenesis(ctx, keeper, tc.genesis)
 			genesis := oracle.ExportGenesis(ctx, keeper)
-
 			require.Equal(t, tc.genesis.AdminAddress, genesis.AdminAddress)
 
 			wl := genesis.AddressWhitelist
@@ -72,7 +73,8 @@ func TestExportGenesis(t *testing.T) {
 func TestGenesisMarshalling(t *testing.T) {
 	tt, prophecies := testGenesisData(t)
 
-	for _, tc := range tt {
+	for i := range tt {
+		tc := tt[i]
 		t.Run(tc.name, func(t *testing.T) {
 			ctx, _, _, _, keeper, encCfg, _ := test.CreateTestKeepers(t, 1, []int64{1}, "")
 			_ = oracle.InitGenesis(ctx, keeper, tc.genesis)
@@ -114,9 +116,9 @@ type testCase struct {
 func testGenesisData(t *testing.T) ([]testCase, []types.Prophecy) {
 	addrs, valAddrs := test.CreateTestAddrs(2)
 
-	var whitelist []string
-	for _, addr := range valAddrs {
-		whitelist = append(whitelist, addr.String())
+	whitelist := make([]string, len(valAddrs))
+	for i, addr := range valAddrs {
+		whitelist[i] = addr.String()
 	}
 
 	prophecy := types.Prophecy{
@@ -140,10 +142,6 @@ func testGenesisData(t *testing.T) ([]testCase, []types.Prophecy) {
 		{
 			name:    "Default genesis",
 			genesis: *types.DefaultGenesisState(),
-		},
-		{
-			name:    "Nil genesis",
-			genesis: types.GenesisState{},
 		},
 		{
 			name: "Prophecy",
