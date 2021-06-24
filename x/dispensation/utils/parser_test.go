@@ -78,30 +78,6 @@ func TestParseOutput(t *testing.T) {
 	assert.Equal(t, len(outputs), count)
 }
 
-// TODO Add the following utils as its own separate cmd
-
-func TestAddressFilter(t *testing.T) {
-	var addresStrings []string
-	file, err := filepath.Abs("addrs.json")
-	if err != nil {
-		panic("Err getting filepath :" + err.Error())
-	}
-	o, err := ioutil.ReadFile(file)
-	if err != nil {
-		panic("Err Reading file :" + err.Error())
-	}
-	err = json.Unmarshal(o, &addresStrings)
-	if err != nil {
-		panic("Err Unmarshall :" + err.Error())
-	}
-	for _, add := range addresStrings {
-		_, err := sdk.AccAddressFromBech32(add)
-		if err != nil {
-			fmt.Println("Invalid :", add)
-		}
-	}
-}
-
 func TestSplitBetweenReciepients(t *testing.T) {
 	type funders struct {
 		address           string
@@ -126,7 +102,7 @@ func TestSplitBetweenReciepients(t *testing.T) {
 	}
 	inputList := make([]types.Input, len(investors))
 	var totalPercentage float64
-	for _, investor := range investors {
+	for i, investor := range investors {
 		totalPercentage = totalPercentage + investor.percentageFunding
 		percentage := sdk.NewDec(int64(investor.percentageFunding))
 		denom := sdk.NewDec(100)
@@ -134,7 +110,7 @@ func TestSplitBetweenReciepients(t *testing.T) {
 		add, err := sdk.AccAddressFromBech32(investor.address)
 		assert.NoError(t, err)
 		in := types.NewInput(add, sdk.Coins{sdk.NewCoin("rowan", investor.calculatedAmount)})
-		inputList = append(inputList, in)
+		inputList[i] = in
 	}
 	assert.True(t, totalPercentage == 100.00, "Total Percentage is not 100%")
 	tempInput := utils.TempInput{In: inputList}
