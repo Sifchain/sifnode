@@ -1,13 +1,15 @@
 package types
 
 import (
+	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	crypto "github.com/ethereum/go-ethereum/crypto"
 )
 
 // NewEthBridgeClaim is a constructor function for NewEthBridgeClaim
 func NewEthBridgeClaim(
-	ethereumChainID int64,
+	networkID oracletypes.NetworkID,
 	bridgeContract EthereumAddress,
 	nonce int64,
 	symbol string,
@@ -19,7 +21,7 @@ func NewEthBridgeClaim(
 	claimType ClaimType,
 ) *EthBridgeClaim {
 	return &EthBridgeClaim{
-		EthereumChainId:       ethereumChainID,
+		NetworkId:             networkID,
 		BridgeContractAddress: bridgeContract.String(),
 		Nonce:                 nonce,
 		Symbol:                symbol,

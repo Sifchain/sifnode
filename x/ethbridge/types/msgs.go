@@ -7,6 +7,8 @@ import (
 
 	gethCommon "github.com/ethereum/go-ethereum/common"
 
+	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
@@ -18,10 +20,10 @@ const (
 
 // NewMsgLock is a constructor function for MsgLock
 func NewMsgLock(
-	ethereumChainID int64, cosmosSender sdk.AccAddress,
+	networkID oracletypes.NetworkID, cosmosSender sdk.AccAddress,
 	ethereumReceiver EthereumAddress, amount sdk.Int, symbol string, cethAmount sdk.Int) MsgLock {
 	return MsgLock{
-		EthereumChainId:  ethereumChainID,
+		NetworkId:        networkID,
 		CosmosSender:     cosmosSender.String(),
 		EthereumReceiver: ethereumReceiver.String(),
 		Amount:           amount,
@@ -38,8 +40,8 @@ func (msg MsgLock) Type() string { return "lock" }
 
 // ValidateBasic runs stateless checks on the message
 func (msg MsgLock) ValidateBasic() error {
-	if strconv.FormatInt(msg.EthereumChainId, 10) == "" {
-		return sdkerrors.Wrapf(ErrInvalidEthereumChainID, "%d", msg.EthereumChainId)
+	if strconv.FormatInt(int64(msg.NetworkId), 10) == "" {
+		return sdkerrors.Wrapf(ErrInvalidEthereumChainID, "%d", msg.NetworkId)
 	}
 
 	if msg.CosmosSender == "" {
@@ -86,10 +88,10 @@ func (msg MsgLock) GetSigners() []sdk.AccAddress {
 
 // NewMsgBurn is a constructor function for MsgBurn
 func NewMsgBurn(
-	ethereumChainID int64, cosmosSender sdk.AccAddress,
+	networkID oracletypes.NetworkID, cosmosSender sdk.AccAddress,
 	ethereumReceiver EthereumAddress, amount sdk.Int, symbol string, cethAmount sdk.Int) MsgBurn {
 	return MsgBurn{
-		EthereumChainId:  ethereumChainID,
+		NetworkId:        networkID,
 		CosmosSender:     cosmosSender.String(),
 		EthereumReceiver: ethereumReceiver.String(),
 		Amount:           amount,
@@ -106,8 +108,8 @@ func (msg MsgBurn) Type() string { return "burn" }
 
 // ValidateBasic runs stateless checks on the message
 func (msg MsgBurn) ValidateBasic() error {
-	if msg.EthereumChainId == 0 {
-		return sdkerrors.Wrapf(ErrInvalidEthereumChainID, "%d", msg.EthereumChainId)
+	if msg.NetworkId == 0 {
+		return sdkerrors.Wrapf(ErrInvalidEthereumChainID, "%d", msg.NetworkId)
 	}
 
 	if msg.CosmosSender == "" {
@@ -326,12 +328,13 @@ func (msg MsgRescueCeth) GetSigners() []sdk.AccAddress {
 }
 
 // NewMsgUpdateWhiteListValidator is a constructor function for MsgUpdateWhiteListValidator
-func NewMsgUpdateWhiteListValidator(cosmosSender sdk.AccAddress,
-	validator sdk.ValAddress, operationType string) MsgUpdateWhiteListValidator {
+func NewMsgUpdateWhiteListValidator(networkID oracletypes.NetworkID, cosmosSender sdk.AccAddress,
+	validator sdk.ValAddress, power uint32) MsgUpdateWhiteListValidator {
 	return MsgUpdateWhiteListValidator{
-		CosmosSender:  cosmosSender.String(),
-		Validator:     validator.String(),
-		OperationType: operationType,
+		NetworkId:    networkID,
+		CosmosSender: cosmosSender.String(),
+		Validator:    validator.String(),
+		Power:        power,
 	}
 }
 
@@ -373,35 +376,3 @@ func (msg MsgUpdateWhiteListValidator) GetSigners() []sdk.AccAddress {
 
 	return []sdk.AccAddress{cosmosSender}
 }
-
-// MapOracleClaimsToEthBridgeClaims maps a set of generic oracle claim data into EthBridgeClaim objects
-// func MapOracleClaimsToEthBridgeClaims(
-// 	ethereumChainID int64,
-// 	bridgeContract EthereumAddress,
-// 	nonce int64,
-// 	symbol string,
-// 	tokenContract EthereumAddress,
-// 	ethereumSender EthereumAddress,
-// 	oracleValidatorClaims []string,
-// 	f func(int64, EthereumAddress, int64, EthereumAddress, sdk.ValAddress, string) (*EthBridgeClaim, error),
-// ) ([]*EthBridgeClaim, error) {
-
-// 	mappedClaims := make([]*EthBridgeClaim, len(oracleValidatorClaims))
-// 	i := 0
-// 	for _, validatorClaim := range oracleValidatorClaims {
-// 		validatorAddress, parseErr := sdk.ValAddressFromBech32(validatorClaim)
-// 		if parseErr != nil {
-// 			return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, fmt.Sprintf("failed to parse claim: %s", parseErr))
-// 		}
-
-// 		mappedClaim, err := f(
-// 			ethereumChainID, bridgeContract, nonce, ethereumSender, validatorAddress, validatorClaim)
-// 		if err != nil {
-// 			return nil, err
-// 		}
-// 		mappedClaims[i] = mappedClaim
-// 		i++
-// 	}
-
-// 	return mappedClaims, nil
-// }

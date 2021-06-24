@@ -42,6 +42,8 @@ type Node struct {
 	Key                       *key.Key      `yaml:"-"`
 	Standalone                bool          `yaml:"-"`
 	WithCosmovisor            bool          `yaml:"-"`
+	EnableGrpc                bool          `yaml:"-"`
+	EnableAPI                 bool          `yaml:"-"`
 }
 
 func Reset(chainID string, nodeDir *string) error {
@@ -117,7 +119,12 @@ func (n *Node) networkGenesis() error {
 		return err
 	}
 
-	err = n.replaceConfig()
+	err = n.replaceConfigTOML()
+	if err != nil {
+		return err
+	}
+
+	err = n.replaceAppTOML()
 	if err != nil {
 		return err
 	}
@@ -199,7 +206,12 @@ func (n *Node) seedGenesis() error {
 		return err
 	}
 
-	err = n.replaceConfig()
+	err = n.replaceConfigTOML()
+	if err != nil {
+		return err
+	}
+
+	err = n.replaceAppTOML()
 	if err != nil {
 		return err
 	}
@@ -272,8 +284,8 @@ func (n *Node) saveGenesis(genesis types.Genesis) error {
 	return nil
 }
 
-func (n *Node) replaceConfig() error {
-	config, err := n.parseConfig()
+func (n *Node) replaceConfigTOML() error {
+	config, err := n.parseConfigTOML()
 	if err != nil {
 		return err
 	}
@@ -309,10 +321,51 @@ func (n *Node) replaceConfig() error {
 	return nil
 }
 
-func (n *Node) parseConfig() (common.NodeConfig, error) {
-	var config common.NodeConfig
+func (n *Node) replaceAppTOML() error {
+	config, err := n.parseAppTOML()
+	if err != nil {
+		return err
+	}
+
+	file, err := os.Create(n.CLI.AppFilePath())
+	if err != nil {
+		return err
+	}
+
+	config.API.Enable = n.EnableAPI
+	config.API.EnabledUnsafeCors = true
+	config.Grpc.Enable = n.EnableGrpc
+
+	if err := toml.NewEncoder(file).Encode(config); err != nil {
+		return err
+	}
+
+	if err := file.Close(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (n *Node) parseConfigTOML() (common.ConfigTOML, error) {
+	var config common.ConfigTOML
 
 	content, err := ioutil.ReadFile(n.CLI.ConfigFilePath())
+	if err != nil {
+		return config, err
+	}
+
+	if _, err := toml.Decode(string(content), &config); err != nil {
+		return config, err
+	}
+
+	return config, nil
+}
+
+func (n *Node) parseAppTOML() (common.AppTOML, error) {
+	var config common.AppTOML
+
+	content, err := ioutil.ReadFile(n.CLI.AppFilePath())
 	if err != nil {
 		return config, err
 	}

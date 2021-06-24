@@ -17,7 +17,12 @@ import (
 	"github.com/Sifchain/sifnode/app"
 	sifnodedcmd "github.com/Sifchain/sifnode/cmd/sifnoded/cmd"
 	"github.com/Sifchain/sifnode/x/oracle"
+	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
 )
+
+const NetworkID = "1"
+const Power = "100"
+const TestNetworkID = oracletypes.NetworkID(1)
 
 func TestAddGenesisValidatorCmd(t *testing.T) {
 	homeDir, err := ioutil.TempDir("", "")
@@ -39,13 +44,13 @@ func TestAddGenesisValidatorCmd(t *testing.T) {
 	addValBuf := new(bytes.Buffer)
 	addValCmd.SetOut(addValBuf)
 	addValCmd.SetErr(addValBuf)
-	addValCmd.SetArgs([]string{"add-genesis-validators", expectedValidatorBech32, "--home=" + homeDir})
+	addValCmd.SetArgs([]string{"add-genesis-validators", NetworkID, expectedValidatorBech32, Power, "--home=" + homeDir})
 
 	// Run init
-	err = svrcmd.Execute(initCmd, homeDir);
+	err = svrcmd.Execute(initCmd, homeDir)
 	require.NoError(t, err)
 	// Run add-genesis-validators
-	err = svrcmd.Execute(addValCmd, homeDir);
+	err = svrcmd.Execute(addValCmd, homeDir)
 	require.NoError(t, err)
 	// Load genesis state from temp home dir and parse JSON
 	serverCtx := server.GetServerContextFromCmd(addValCmd)
@@ -61,6 +66,6 @@ func TestAddGenesisValidatorCmd(t *testing.T) {
 	)
 	_ = mm.InitGenesis(ctx, sifapp.AppCodec(), appState)
 	// Assert validator
-	validators := sifapp.OracleKeeper.GetOracleWhiteList(ctx)
-	require.Equal(t, []sdk.ValAddress{expectedValidator}, validators)
+	validators := sifapp.OracleKeeper.GetOracleWhiteList(ctx, oracletypes.NewNetworkDescriptor(TestNetworkID))
+	require.Equal(t, []sdk.ValAddress{expectedValidator}, validators.GetAllValidators())
 }

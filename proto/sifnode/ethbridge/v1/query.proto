@@ -4,6 +4,7 @@ package sifnode.ethbridge.v1;
 import "gogoproto/gogo.proto";
 import "sifnode/ethbridge/v1/types.proto";
 import "sifnode/oracle/v1/types.proto";
+import "sifnode/oracle/v1/network_id.proto";
 
 option go_package = "github.com/Sifchain/sifnode/x/ethbridge/types";
 

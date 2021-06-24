@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -36,15 +37,32 @@ func NewKeeper(
 	}
 }
 
+// GetCdc return keeper's cdc
+func (k Keeper) GetCdc() codec.BinaryMarshaler {
+	return k.cdc
+}
+
 // Logger returns a module-specific logger.
 func (k Keeper) Logger(ctx sdk.Context) log.Logger {
 	return ctx.Logger().With("module", fmt.Sprintf("x/%s", types.ModuleName))
 }
 
+func (k Keeper) GetProphecies(ctx sdk.Context) []types.Prophecy {
+	var prophecies []types.Prophecy
+	store := ctx.KVStore(k.storeKey)
+	iter := store.Iterator(types.ProphecyPrefix, nil)
+	for ; iter.Valid(); iter.Next() {
+		var prophecy types.Prophecy
+		k.cdc.MustUnmarshalBinaryBare(iter.Value(), &prophecy)
+		prophecies = append(prophecies, prophecy)
+	}
+	return prophecies
+}
+
 // GetProphecy gets the entire prophecy data struct for a given id
 func (k Keeper) GetProphecy(ctx sdk.Context, id string) (types.Prophecy, bool) {
 	store := ctx.KVStore(k.storeKey)
-	bz := store.Get([]byte(id))
+	bz := store.Get([]byte(fmt.Sprintf("%s_%s", types.ProphecyPrefix, id)))
 	if bz == nil {
 		return types.Prophecy{}, false
 	}
@@ -55,39 +73,25 @@ func (k Keeper) GetProphecy(ctx sdk.Context, id string) (types.Prophecy, bool) {
 	return prophecy, true
 }
 
-// setProphecy saves a prophecy with an initial claim
-func (k Keeper) setProphecy(ctx sdk.Context, prophecy types.Prophecy) {
+// SetProphecy saves a prophecy with an initial claim
+func (k Keeper) SetProphecy(ctx sdk.Context, prophecy types.Prophecy) {
 	store := ctx.KVStore(k.storeKey)
 	store.Set([]byte(prophecy.Id), k.cdc.MustMarshalBinaryBare(&prophecy))
 }
 
-func (k Keeper) EnsureAddressIsInWhitelist(ctx sdk.Context, validatorAddress string) error {
-	// Check if claim from whitelist validators
-	whiteList := k.GetOracleWhiteList(ctx)
-	for _, address := range whiteList {
-		if address.String() == validatorAddress {
-			return nil
-		}
-	}
-
-	k.Logger(ctx).Error(
-		"sifnode oracle keeper ProcessClaim validator not in whitelist",
-		"address", validatorAddress,
-		"whitelist", whiteList)
-
-	return types.ErrValidatorNotInWhiteList
-}
-
-func (k Keeper) ProcessClaim(ctx sdk.Context, prophecyID, validator string) (types.StatusText, error) {
+func (k Keeper) ProcessClaim(ctx sdk.Context, networkID types.NetworkID, prophecyID, validator string) (types.StatusText, error) {
 	logger := k.Logger(ctx)
 
-	if err := k.EnsureAddressIsInWhitelist(ctx, validator); err != nil {
-		return types.StatusText_STATUS_TEXT_UNSPECIFIED, err
-	}
+	networkDescriptor := types.NewNetworkDescriptor(networkID)
 
 	valAddr, err := sdk.ValAddressFromBech32(validator)
 	if err != nil {
 		return types.StatusText_STATUS_TEXT_UNSPECIFIED, err
+	}
+
+	if !k.ValidateAddress(ctx, networkDescriptor, valAddr) {
+		logger.Error("sifnode oracle keeper ProcessClaim validator not white list.")
+		return types.StatusText_STATUS_TEXT_UNSPECIFIED, errors.New("validator not in white list")
 	}
 
 	activeValidator := k.checkActiveValidator(ctx, valAddr)
@@ -111,12 +115,12 @@ func (k Keeper) ProcessClaim(ctx sdk.Context, prophecyID, validator string) (typ
 	case types.StatusText_STATUS_TEXT_PENDING:
 		prophecy.AddClaim(valAddr)
 		prophecy = k.processCompletion(ctx, prophecy)
-		k.setProphecy(ctx, prophecy)
+		k.SetProphecy(ctx, prophecy)
 		return prophecy.Status, nil
 
 	case types.StatusText_STATUS_TEXT_SUCCESS:
 		prophecy.AddClaim(valAddr)
-		k.setProphecy(ctx, prophecy)
+		k.SetProphecy(ctx, prophecy)
 		return prophecy.Status, types.ErrProphecyFinalized
 
 	default:
@@ -135,22 +139,14 @@ func (k Keeper) checkActiveValidator(ctx sdk.Context, validatorAddress sdk.ValAd
 }
 
 // ProcessUpdateWhiteListValidator processes the update whitelist validator from admin
-func (k Keeper) ProcessUpdateWhiteListValidator(ctx sdk.Context, cosmosSender sdk.AccAddress, validator sdk.ValAddress, operationtype string) error {
+func (k Keeper) ProcessUpdateWhiteListValidator(ctx sdk.Context, networkID types.NetworkID, cosmosSender sdk.AccAddress, validator sdk.ValAddress, power uint32) error {
 	logger := k.Logger(ctx)
 	if !k.IsAdminAccount(ctx, cosmosSender) {
 		logger.Error("cosmos sender is not admin account.")
 		return types.ErrNotAdminAccount
 	}
 
-	switch operationtype {
-	case "add":
-		k.AddOracleWhiteList(ctx, validator)
-	case "remove":
-		k.RemoveOracleWhiteList(ctx, validator)
-	default:
-		return types.ErrInvalidOperationType
-	}
-
+	k.UpdateOracleWhiteList(ctx, types.NewNetworkDescriptor(networkID), validator, power)
 	return nil
 }
 
@@ -161,7 +157,6 @@ func (k Keeper) processCompletion(ctx sdk.Context, prophecy types.Prophecy) type
 	if voteRate >= k.consensusNeeded {
 		prophecy.Status = types.StatusText_STATUS_TEXT_SUCCESS
 	}
-
 	return prophecy
 }
 

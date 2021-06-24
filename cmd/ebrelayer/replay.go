@@ -1,12 +1,12 @@
 package main
 
 import (
-	"github.com/Sifchain/sifnode/cmd/ebrelayer/txs"
-	"github.com/cosmos/cosmos-sdk/client"
-	"github.com/cosmos/cosmos-sdk/client/tx"
 	"log"
 	"strconv"
 	"strings"
+
+	"github.com/cosmos/cosmos-sdk/client"
+	"github.com/cosmos/cosmos-sdk/client/tx"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/pkg/errors"
@@ -14,6 +14,8 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/relayer"
+	"github.com/Sifchain/sifnode/cmd/ebrelayer/txs"
+	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
 )
 
 // RunReplayEthereumCmd executes replayEthereumCmd
@@ -76,54 +78,66 @@ func RunReplayEthereumCmd(cmd *cobra.Command, args []string) error {
 // RunReplayCosmosCmd executes initRelayerCmd
 func RunReplayCosmosCmd(_ *cobra.Command, args []string) error {
 	// Validate and parse arguments
-	if len(strings.Trim(args[0], "")) == 0 {
-		return errors.Errorf("invalid [tendermint-node]: %s", args[0])
-	}
-	tendermintNode := args[0]
-
-	if !relayer.IsWebsocketURL(args[1]) {
-		return errors.Errorf("invalid [web3-provider]: %s", args[1])
-	}
-	web3Provider := args[1]
-
-	if !common.IsHexAddress(args[2]) {
-		return errors.Errorf("invalid [bridge-registry-contract-address]: %s", args[2])
-	}
-	contractAddress := common.HexToAddress(args[2])
-
-	fromBlock, err := strconv.ParseInt(args[3], 10, 64)
+	networkID, err := strconv.Atoi(args[0])
 	if err != nil {
-		return errors.Errorf("invalid [from-block]: %s", args[3])
+		return errors.Errorf("%s is invalid network descriptor", args[0])
 	}
 
-	toBlock, err := strconv.ParseInt(args[4], 10, 64)
+	// Load the validator's Ethereum private key from environment variables
+	privateKey, err := txs.LoadPrivateKey()
 	if err != nil {
-		return errors.Errorf("invalid [to-block]: %s", args[4])
+		return errors.Errorf("invalid [ETHEREUM_PRIVATE_KEY] environment variable")
 	}
 
-	ethFromBlock, err := strconv.ParseInt(args[5], 10, 64)
+	if len(strings.Trim(args[1], "")) == 0 {
+		return errors.Errorf("invalid [tendermint-node]: %s", args[1])
+	}
+	tendermintNode := args[1]
+
+	if !relayer.IsWebsocketURL(args[2]) {
+		return errors.Errorf("invalid [web3-provider]: %s", args[2])
+	}
+	web3Provider := args[2]
+
+	if !common.IsHexAddress(args[3]) {
+		return errors.Errorf("invalid [bridge-registry-contract-address]: %s", args[3])
+	}
+	contractAddress := common.HexToAddress(args[3])
+
+	fromBlock, err := strconv.ParseInt(args[4], 10, 64)
 	if err != nil {
-		return errors.Errorf("invalid [eth-from-block]: %s", args[3])
+		return errors.Errorf("invalid [from-block]: %s", args[4])
 	}
 
-	ethToBlock, err := strconv.ParseInt(args[6], 10, 64)
+	toBlock, err := strconv.ParseInt(args[5], 10, 64)
 	if err != nil {
-		return errors.Errorf("invalid [eth-to-block]: %s", args[4])
+		return errors.Errorf("invalid [to-block]: %s", args[5])
+	}
+
+	ethFromBlock, err := strconv.ParseInt(args[6], 10, 64)
+	if err != nil {
+		return errors.Errorf("invalid [eth-from-block]: %s", args[6])
+	}
+
+	ethToBlock, err := strconv.ParseInt(args[7], 10, 64)
+	if err != nil {
+		return errors.Errorf("invalid [eth-to-block]: %s", args[7])
+	}
+
+	// check if the networkID is valid
+	if !oracletypes.NetworkID(networkID).IsValid() {
+		return errors.Errorf("network id: %d is invalid", networkID)
 	}
 
 	logger, err := zap.NewProduction()
 	if err != nil {
 		log.Fatalln("failed to init zap logging")
 	}
+
 	sugaredLogger := logger.Sugar()
 
-	key, err := txs.LoadPrivateKey()
-	if err != nil {
-		log.Fatalf("failed to load ETHEREUM_PRIVATE_KEY")
-	}
-
 	// Initialize new Cosmos event listener
-	cosmosSub := relayer.NewCosmosSub(tendermintNode, web3Provider, contractAddress, key, nil, sugaredLogger)
+	cosmosSub := relayer.NewCosmosSub(oracletypes.NetworkID(networkID), privateKey, tendermintNode, web3Provider, contractAddress, nil, sugaredLogger)
 
 	cosmosSub.Replay(fromBlock, toBlock, ethFromBlock, ethToBlock)
 
@@ -133,29 +147,39 @@ func RunReplayCosmosCmd(_ *cobra.Command, args []string) error {
 // RunListMissedCosmosEventCmd executes initRelayerCmd
 func RunListMissedCosmosEventCmd(_ *cobra.Command, args []string) error {
 	// Validate and parse arguments
-	if len(strings.Trim(args[0], "")) == 0 {
-		return errors.Errorf("invalid [tendermint-node]: %s", args[0])
+	networkID, err := strconv.Atoi(args[0])
+	if err != nil {
+		return errors.Errorf("%s is invalid network descriptor", args[0])
 	}
-	tendermintNode := args[0]
 
-	if !relayer.IsWebsocketURL(args[1]) {
-		return errors.Errorf("invalid [web3-provider]: %s", args[1])
+	// check if the networkID is valid
+	if !oracletypes.NetworkID(networkID).IsValid() {
+		return errors.Errorf("network id: %d is invalid", networkID)
 	}
-	web3Provider := args[1]
 
-	if !common.IsHexAddress(args[2]) {
-		return errors.Errorf("invalid [bridge-registry-contract-address]: %s", args[2])
+	if len(strings.Trim(args[1], "")) == 0 {
+		return errors.Errorf("invalid [tendermint-node]: %s", args[1])
 	}
-	contractAddress := common.HexToAddress(args[2])
+	tendermintNode := args[1]
+
+	if !relayer.IsWebsocketURL(args[2]) {
+		return errors.Errorf("invalid [web3-provider]: %s", args[2])
+	}
+	web3Provider := args[2]
 
 	if !common.IsHexAddress(args[3]) {
-		return errors.Errorf("invalid [relayer-ethereum-address]: %s", args[3])
+		return errors.Errorf("invalid [bridge-registry-contract-address]: %s", args[3])
 	}
-	relayerEthereumAddress := common.HexToAddress(args[3])
+	contractAddress := common.HexToAddress(args[3])
 
-	days, err := strconv.ParseInt(args[4], 10, 64)
+	if !common.IsHexAddress(args[4]) {
+		return errors.Errorf("invalid [relayer-ethereum-address]: %s", args[4])
+	}
+	relayerEthereumAddress := common.HexToAddress(args[4])
+
+	days, err := strconv.ParseInt(args[5], 10, 64)
 	if err != nil {
-		return errors.Errorf("invalid [days]: %s", args[3])
+		return errors.Errorf("invalid [days]: %s", args[5])
 	}
 
 	logger, err := zap.NewProduction()
@@ -165,7 +189,7 @@ func RunListMissedCosmosEventCmd(_ *cobra.Command, args []string) error {
 	sugaredLogger := logger.Sugar()
 
 	// Initialize new Cosmos event listener
-	listMissedCosmosEvent := relayer.NewListMissedCosmosEvent(tendermintNode, web3Provider, contractAddress, relayerEthereumAddress, days, sugaredLogger)
+	listMissedCosmosEvent := relayer.NewListMissedCosmosEvent(oracletypes.NetworkID(networkID), tendermintNode, web3Provider, contractAddress, relayerEthereumAddress, days, sugaredLogger)
 
 	listMissedCosmosEvent.ListMissedCosmosEvent()
 

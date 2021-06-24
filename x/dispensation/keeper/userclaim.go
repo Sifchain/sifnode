@@ -30,10 +30,7 @@ func (k Keeper) GetClaim(ctx sdk.Context, recipient string, userClaimType types.
 
 func (k Keeper) ExistsClaim(ctx sdk.Context, recipient string, userClaimType types.DistributionType) bool {
 	key := types.GetUserClaimKey(recipient, userClaimType)
-	if k.Exists(ctx, key) {
-		return true
-	}
-	return false
+	return k.Exists(ctx, key)
 }
 func (k Keeper) DeleteClaim(ctx sdk.Context, recipient string, userClaimType types.DistributionType) {
 	store := ctx.KVStore(k.storeKey)

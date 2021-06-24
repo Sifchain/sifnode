@@ -46,7 +46,7 @@ func (k Keeper) Logger(ctx sdk.Context) log.Logger {
 
 // ProcessClaim processes a new claim coming in from a validator
 func (k Keeper) ProcessClaim(ctx sdk.Context, claim *types.EthBridgeClaim) (oracletypes.StatusText, error) {
-	return k.oracleKeeper.ProcessClaim(ctx, claim.GetProphecyID(), claim.ValidatorAddress)
+	return k.oracleKeeper.ProcessClaim(ctx, claim.NetworkId, claim.GetProphecyID(), claim.ValidatorAddress)
 }
 
 // ProcessSuccessfulClaim processes a claim that has just completed successfully with consensus
@@ -169,8 +169,8 @@ func (k Keeper) ProcessLock(ctx sdk.Context, cosmosSender sdk.AccAddress, msg *t
 }
 
 // ProcessUpdateWhiteListValidator processes the update whitelist validator from admin
-func (k Keeper) ProcessUpdateWhiteListValidator(ctx sdk.Context, cosmosSender sdk.AccAddress, validator sdk.ValAddress, operationtype string) error {
-	return k.oracleKeeper.ProcessUpdateWhiteListValidator(ctx, cosmosSender, validator, operationtype)
+func (k Keeper) ProcessUpdateWhiteListValidator(ctx sdk.Context, networkID oracletypes.NetworkID, cosmosSender sdk.AccAddress, validator sdk.ValAddress, power uint32) error {
+	return k.oracleKeeper.ProcessUpdateWhiteListValidator(ctx, networkID, cosmosSender, validator, power)
 }
 
 // ProcessUpdateCethReceiverAccount processes the update whitelist validator from admin

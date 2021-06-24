@@ -127,9 +127,9 @@ var (
 		stakingtypes.NotBondedPoolName: {authtypes.Burner, authtypes.Staking},
 		govtypes.ModuleName:            {authtypes.Burner, authtypes.Staking},
 		ibctransfertypes.ModuleName:    {authtypes.Minter, authtypes.Burner},
-		ethbridgetypes.ModuleName: {authtypes.Minter, authtypes.Burner},
-		clptypes.ModuleName:     {authtypes.Burner, authtypes.Minter},
-		dispensation.ModuleName: {authtypes.Burner, authtypes.Minter},
+		ethbridgetypes.ModuleName:      {authtypes.Minter, authtypes.Burner},
+		clptypes.ModuleName:            {authtypes.Burner, authtypes.Minter},
+		dispensation.ModuleName:        {authtypes.Burner, authtypes.Minter},
 	}
 )
 

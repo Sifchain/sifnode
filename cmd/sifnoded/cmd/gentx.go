@@ -3,8 +3,9 @@ package cmd
 import (
 	"encoding/json"
 	"fmt"
+	"strconv"
+
 	"github.com/cosmos/cosmos-sdk/codec"
-	"log"
 
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
@@ -20,12 +21,12 @@ import (
 func AddGenesisValidatorCmd(defaultNodeHome string) *cobra.Command {
 
 	cmd := &cobra.Command{
-		Use:   "add-genesis-validators [address_or_key_name]",
+		Use:   "add-genesis-validators [network_descriptor] [address_or_key_name] [power]",
 		Short: "add genesis validators to genesis.json",
 		Long: `add validator to genesis.json. The provided account must specify
 the account address or key name. If a key name is given, the address will be looked up in the local Keybase. 
 `,
-		Args: cobra.ExactArgs(1),
+		Args: cobra.ExactArgs(3),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx := client.GetClientContextFromCmd(cmd)
 			depCdc := clientCtx.JSONMarshaler
@@ -35,9 +36,23 @@ the account address or key name. If a key name is given, the address will be loo
 			config := serverCtx.Config
 			config.SetRoot(clientCtx.HomeDir)
 
-			addr, err := sdk.ValAddressFromBech32(args[0])
+			networkID, err := strconv.ParseUint(args[0], 10, 32)
+			if err != nil {
+				return fmt.Errorf("failed to pass network descriptor: %w", err)
+			}
+			// check if the networkID is valid
+			if !oracletypes.NetworkID(networkID).IsValid() {
+				return fmt.Errorf("network id: %d is invalid", networkID)
+			}
+
+			addr, err := sdk.ValAddressFromBech32(args[1])
 			if err != nil {
 				return fmt.Errorf("failed to get validator address: %w", err)
+			}
+
+			power, err := strconv.ParseUint(args[0], 10, 32)
+			if err != nil {
+				return fmt.Errorf("failed to pass network descriptor: %w", err)
 			}
 
 			genFile := config.GenesisFile()
@@ -47,14 +62,18 @@ the account address or key name. If a key name is given, the address will be loo
 			}
 
 			oracleGenState := oracletypes.GetGenesisStateFromAppState(cdc, appState)
-
-			for _, item := range oracleGenState.AddressWhitelist {
-				if item == addr.String() {
-					return fmt.Errorf("address %s already in white list", addr)
-				}
+			if oracleGenState.AddressWhitelist == nil {
+				oracleGenState.AddressWhitelist = make(map[uint32]*oracletypes.ValidatorWhiteList)
 			}
-			log.Printf("AddGenesisValidatorCmd, adding addr: %v to whitelist: %v", addr.String(), oracleGenState.AddressWhitelist)
-			oracleGenState.AddressWhitelist = append(oracleGenState.AddressWhitelist, addr.String())
+
+			_, ok := oracleGenState.AddressWhitelist[uint32(networkID)]
+
+			if !ok {
+				oracleGenState.AddressWhitelist[uint32(networkID)] = &oracletypes.ValidatorWhiteList{WhiteList: make(map[string]uint32)}
+			}
+
+			whiteList := oracleGenState.AddressWhitelist[uint32(networkID)].WhiteList
+			whiteList[addr.String()] = uint32(power)
 
 			oracleGenStateBz, err := json.Marshal(oracleGenState)
 			if err != nil {

@@ -105,7 +105,11 @@ $ %s migrate v0.9 /path/to/genesis.json
 				return errors.Wrap(err, "failed to sort JSON genesis doc")
 			}
 
-			cmd.OutOrStdout().Write(sortedBz)
+			_, err = cmd.OutOrStdout().Write(sortedBz)
+			if err != nil {
+				return errors.Wrap(err, "failed to write output")
+			}
+
 			return nil
 		},
 	}

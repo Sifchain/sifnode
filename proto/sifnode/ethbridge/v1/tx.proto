@@ -3,6 +3,7 @@ package sifnode.ethbridge.v1;
 
 import "gogoproto/gogo.proto";
 import "sifnode/ethbridge/v1/types.proto";
+import "sifnode/oracle/v1/network_id.proto";
 
 option go_package = "github.com/Sifchain/sifnode/x/ethbridge/types";
 
@@ -28,8 +29,8 @@ message MsgLock {
     (gogoproto.moretags) = "yaml:\"amount\""
   ];
   string symbol = 3 [ (gogoproto.moretags) = "yaml:\"symbol\"" ];
-  int64 ethereum_chain_id = 4
-      [ (gogoproto.moretags) = "yaml:\"ethereum_chain_id\"" ];
+  sifnode.oracle.v1.NetworkID network_id = 4
+      [ (gogoproto.moretags) = "yaml:\"network_id\"" ];
   string ethereum_receiver = 5
       [ (gogoproto.moretags) = "yaml:\"ethereum_receiver\"" ];
   string ceth_amount = 6 [
@@ -50,8 +51,8 @@ message MsgBurn {
     (gogoproto.moretags) = "yaml:\"amount\""
   ];
   string symbol = 3 [ (gogoproto.moretags) = "yaml:\"symbol\"" ];
-  int64 ethereum_chain_id = 4
-      [ (gogoproto.moretags) = "yaml:\"ethereum_chain_id\"" ];
+  sifnode.oracle.v1.NetworkID network_id = 4
+      [ (gogoproto.moretags) = "yaml:\"network_id\"" ];
   string ethereum_receiver = 5
       [ (gogoproto.moretags) = "yaml:\"ethereum_receiver\"" ];
   string ceth_amount = 6 [
@@ -72,10 +73,11 @@ message MsgCreateEthBridgeClaimResponse {}
 
 // MsgUpdateWhiteListValidator add or remove validator from whitelist
 message MsgUpdateWhiteListValidator {
-  string cosmos_sender = 1 [ (gogoproto.moretags) = "yaml:\"cosmos_sender\"" ];
-  string validator = 2 [ (gogoproto.moretags) = "yaml:\"validator\"" ];
-  string operation_type = 3
-      [ (gogoproto.moretags) = "yaml:\"operation_type\"" ];
+  sifnode.oracle.v1.NetworkID network_id = 1
+      [ (gogoproto.moretags) = "yaml:\"network_id\"" ];
+  string cosmos_sender = 2 [ (gogoproto.moretags) = "yaml:\"cosmos_sender\"" ];
+  string validator = 3 [ (gogoproto.moretags) = "yaml:\"validator\"" ];
+  uint32 power = 4;
 }
 
 message MsgUpdateWhiteListValidatorResponse {}

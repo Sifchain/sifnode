@@ -55,12 +55,10 @@ func (StatusText) EnumDescriptor() ([]byte, []int) {
 	return fileDescriptor_dac1b931484f4203, []int{0}
 }
 
-// GenesisState - all clp state that must be provided at genesis
-// TODO: Add parameters to Genesis state ,such as minimum liquidity required to
-// create a pool
 type GenesisState struct {
-	AddressWhitelist []string `protobuf:"bytes,1,rep,name=address_whitelist,json=addressWhitelist,proto3" json:"address_whitelist,omitempty"`
-	AdminAddress     string   `protobuf:"bytes,2,opt,name=admin_address,json=adminAddress,proto3" json:"admin_address,omitempty"`
+	AddressWhitelist map[uint32]*ValidatorWhiteList `protobuf:"bytes,1,rep,name=address_whitelist,json=addressWhitelist,proto3" json:"address_whitelist,omitempty" protobuf_key:"varint,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
+	AdminAddress     string                         `protobuf:"bytes,2,opt,name=admin_address,json=adminAddress,proto3" json:"admin_address,omitempty"`
+	Prophecies       []*Prophecy                    `protobuf:"bytes,3,rep,name=prophecies,proto3" json:"prophecies,omitempty"`
 }
 
 func (m *GenesisState) Reset()         { *m = GenesisState{} }
@@ -96,7 +94,7 @@ func (m *GenesisState) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_GenesisState proto.InternalMessageInfo
 
-func (m *GenesisState) GetAddressWhitelist() []string {
+func (m *GenesisState) GetAddressWhitelist() map[uint32]*ValidatorWhiteList {
 	if m != nil {
 		return m.AddressWhitelist
 	}
@@ -110,7 +108,14 @@ func (m *GenesisState) GetAdminAddress() string {
 	return ""
 }
 
-// Claim contrains an arbitrary claim with arbitrary content made by a given
+func (m *GenesisState) GetProphecies() []*Prophecy {
+	if m != nil {
+		return m.Prophecies
+	}
+	return nil
+}
+
+// Claim contains an arbitrary claim with arbitrary content made by a given
 // validator
 type Claim struct {
 	Id               string `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
@@ -235,42 +240,98 @@ func (m *Prophecy) GetClaimValidators() []string {
 	return nil
 }
 
+// ValidatorWhiteList is struct that contains validator and its voting power
+type ValidatorWhiteList struct {
+	WhiteList map[string]uint32 `protobuf:"bytes,1,rep,name=white_list,json=whiteList,proto3" json:"white_list,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"varint,2,opt,name=value,proto3"`
+}
+
+func (m *ValidatorWhiteList) Reset()         { *m = ValidatorWhiteList{} }
+func (m *ValidatorWhiteList) String() string { return proto.CompactTextString(m) }
+func (*ValidatorWhiteList) ProtoMessage()    {}
+func (*ValidatorWhiteList) Descriptor() ([]byte, []int) {
+	return fileDescriptor_dac1b931484f4203, []int{3}
+}
+func (m *ValidatorWhiteList) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *ValidatorWhiteList) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_ValidatorWhiteList.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *ValidatorWhiteList) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_ValidatorWhiteList.Merge(m, src)
+}
+func (m *ValidatorWhiteList) XXX_Size() int {
+	return m.Size()
+}
+func (m *ValidatorWhiteList) XXX_DiscardUnknown() {
+	xxx_messageInfo_ValidatorWhiteList.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_ValidatorWhiteList proto.InternalMessageInfo
+
+func (m *ValidatorWhiteList) GetWhiteList() map[string]uint32 {
+	if m != nil {
+		return m.WhiteList
+	}
+	return nil
+}
+
 func init() {
 	proto.RegisterEnum("sifnode.oracle.v1.StatusText", StatusText_name, StatusText_value)
 	proto.RegisterType((*GenesisState)(nil), "sifnode.oracle.v1.GenesisState")
+	proto.RegisterMapType((map[uint32]*ValidatorWhiteList)(nil), "sifnode.oracle.v1.GenesisState.AddressWhitelistEntry")
 	proto.RegisterType((*Claim)(nil), "sifnode.oracle.v1.Claim")
 	proto.RegisterType((*Prophecy)(nil), "sifnode.oracle.v1.Prophecy")
+	proto.RegisterType((*ValidatorWhiteList)(nil), "sifnode.oracle.v1.ValidatorWhiteList")
+	proto.RegisterMapType((map[string]uint32)(nil), "sifnode.oracle.v1.ValidatorWhiteList.WhiteListEntry")
 }
 
 func init() { proto.RegisterFile("sifnode/oracle/v1/types.proto", fileDescriptor_dac1b931484f4203) }
 
 var fileDescriptor_dac1b931484f4203 = []byte{
-	// 386 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x64, 0x92, 0xc1, 0xae, 0xd2, 0x40,
-	0x18, 0x85, 0xdb, 0x12, 0x51, 0x26, 0x88, 0x65, 0x34, 0xa1, 0xd1, 0xd0, 0x10, 0xdc, 0x20, 0x26,
-	0x6d, 0xd0, 0xf8, 0x00, 0x58, 0x2a, 0x61, 0x43, 0x08, 0x53, 0xd4, 0x68, 0x62, 0x1d, 0xda, 0x81,
-	0x4e, 0x52, 0x3a, 0xa4, 0x33, 0x20, 0x24, 0x3e, 0x84, 0x8f, 0xe5, 0x92, 0xa5, 0x4b, 0x03, 0x2f,
-	0x72, 0xc3, 0xb4, 0xe5, 0xde, 0xc0, 0xae, 0x3d, 0xdf, 0xc9, 0xf9, 0xff, 0xfc, 0x73, 0x40, 0x93,
-	0xd3, 0x45, 0xc2, 0x42, 0x62, 0xb3, 0x14, 0x07, 0x31, 0xb1, 0xb7, 0x3d, 0x5b, 0xec, 0xd7, 0x84,
-	0x5b, 0xeb, 0x94, 0x09, 0x06, 0xeb, 0x39, 0xb6, 0x32, 0x6c, 0x6d, 0x7b, 0x2f, 0x5f, 0x2c, 0xd9,
-	0x92, 0x49, 0x6a, 0x9f, 0xbf, 0x32, 0x63, 0xfb, 0x27, 0xa8, 0x0e, 0x49, 0x42, 0x38, 0xe5, 0x48,
-	0x60, 0x41, 0xe0, 0x5b, 0x50, 0xc7, 0x61, 0x98, 0x12, 0xce, 0xfd, 0x5f, 0x11, 0x15, 0x24, 0xa6,
-	0x5c, 0x18, 0x6a, 0xab, 0xd4, 0xa9, 0x4c, 0xf5, 0x1c, 0x7c, 0x29, 0x74, 0xf8, 0x1a, 0x3c, 0xc5,
-	0xe1, 0x8a, 0x26, 0x7e, 0x4e, 0x0c, 0xad, 0xa5, 0x76, 0x2a, 0xd3, 0xaa, 0x14, 0xfb, 0x99, 0xd6,
-	0xfe, 0x01, 0x1e, 0x39, 0x31, 0xa6, 0x2b, 0x58, 0x03, 0x1a, 0x0d, 0x0d, 0x55, 0x5a, 0x34, 0x1a,
-	0x9e, 0x47, 0x6d, 0x71, 0x4c, 0x43, 0x2c, 0x58, 0x7a, 0x95, 0xa0, 0x5f, 0x40, 0x9e, 0x02, 0x0d,
-	0xf0, 0x38, 0x60, 0x89, 0x20, 0x89, 0x30, 0x4a, 0xd2, 0x52, 0xfc, 0xb6, 0x7f, 0x83, 0x27, 0x93,
-	0x94, 0xad, 0x23, 0x12, 0xec, 0x6f, 0x46, 0x7c, 0x00, 0x65, 0x2e, 0xb0, 0xd8, 0x64, 0xb9, 0xb5,
-	0x77, 0x4d, 0xeb, 0xe6, 0x2e, 0x16, 0x92, 0x06, 0x8f, 0xec, 0xc4, 0x34, 0x37, 0xc3, 0x37, 0x40,
-	0x0f, 0xce, 0x2b, 0xfb, 0x97, 0x35, 0xb8, 0x51, 0x92, 0x37, 0x78, 0x26, 0xf5, 0xcf, 0x17, 0xb9,
-	0xfb, 0x1d, 0x80, 0xfb, 0x00, 0xf8, 0x0a, 0x34, 0x90, 0xd7, 0xf7, 0x66, 0xc8, 0xf7, 0xdc, 0xaf,
-	0x9e, 0x3f, 0x1b, 0xa3, 0x89, 0xeb, 0x8c, 0x3e, 0x8d, 0xdc, 0x81, 0xae, 0xc0, 0x06, 0x78, 0xfe,
-	0x10, 0x4e, 0xdc, 0xf1, 0x60, 0x34, 0x1e, 0xea, 0xea, 0x35, 0x40, 0x33, 0xc7, 0x71, 0x11, 0xd2,
-	0xb5, 0x8f, 0x83, 0xbf, 0x47, 0x53, 0x3d, 0x1c, 0x4d, 0xf5, 0xff, 0xd1, 0x54, 0xff, 0x9c, 0x4c,
-	0xe5, 0x70, 0x32, 0x95, 0x7f, 0x27, 0x53, 0xf9, 0xd6, 0x5d, 0x52, 0x11, 0x6d, 0xe6, 0x56, 0xc0,
-	0x56, 0x36, 0xa2, 0x8b, 0x20, 0xc2, 0x34, 0xb1, 0x8b, 0x4a, 0xec, 0x8a, 0x52, 0xc8, 0x46, 0xcc,
-	0xcb, 0xf2, 0xa5, 0xdf, 0xdf, 0x05, 0x00, 0x00, 0xff, 0xff, 0x2d, 0x52, 0x3a, 0x63, 0x33, 0x02,
-	0x00, 0x00,
+	// 524 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x8c, 0x53, 0xd1, 0x8e, 0xd2, 0x40,
+	0x14, 0xa5, 0x25, 0xbb, 0xca, 0xdd, 0x05, 0xcb, 0xb8, 0x66, 0x1b, 0x36, 0xdb, 0x10, 0x8c, 0x09,
+	0xae, 0x49, 0x9b, 0x45, 0x37, 0x31, 0xae, 0x2f, 0x2b, 0xd4, 0x0d, 0x89, 0x21, 0xa4, 0x05, 0x35,
+	0x9a, 0xd8, 0x0c, 0xed, 0x2c, 0x8c, 0x96, 0x96, 0x74, 0x06, 0x76, 0x49, 0xfc, 0x08, 0xff, 0xc2,
+	0xdf, 0xf0, 0xd1, 0xc7, 0x7d, 0xf4, 0xd1, 0xc0, 0x8f, 0x18, 0xa6, 0x14, 0x2b, 0xf0, 0xe0, 0xdb,
+	0xcc, 0x3d, 0xe7, 0xde, 0x39, 0x67, 0xee, 0xbd, 0x70, 0xcc, 0xe8, 0x55, 0x10, 0x7a, 0xc4, 0x08,
+	0x23, 0xec, 0xfa, 0xc4, 0x98, 0x9c, 0x1a, 0x7c, 0x3a, 0x22, 0x4c, 0x1f, 0x45, 0x21, 0x0f, 0x51,
+	0x71, 0x09, 0xeb, 0x31, 0xac, 0x4f, 0x4e, 0x4b, 0x07, 0xfd, 0xb0, 0x1f, 0x0a, 0xd4, 0x58, 0x9c,
+	0x62, 0x62, 0xe5, 0x87, 0x0c, 0xfb, 0x97, 0x24, 0x20, 0x8c, 0x32, 0x9b, 0x63, 0x4e, 0x50, 0x0f,
+	0x8a, 0xd8, 0xf3, 0x22, 0xc2, 0x98, 0x73, 0x3d, 0xa0, 0x9c, 0xf8, 0x94, 0x71, 0x55, 0x2a, 0x67,
+	0xab, 0x7b, 0xb5, 0x33, 0x7d, 0xa3, 0xaa, 0x9e, 0xce, 0xd5, 0x2f, 0xe2, 0xc4, 0x77, 0x49, 0x9e,
+	0x19, 0xf0, 0x68, 0x6a, 0x29, 0x78, 0x2d, 0x8c, 0x1e, 0x42, 0x1e, 0x7b, 0x43, 0x1a, 0x38, 0x4b,
+	0x44, 0x95, 0xcb, 0x52, 0x35, 0x67, 0xed, 0x8b, 0xe0, 0xb2, 0x08, 0x3a, 0x07, 0x18, 0x45, 0xe1,
+	0x68, 0x40, 0x5c, 0x4a, 0x98, 0x9a, 0x15, 0x0a, 0x8e, 0xb6, 0x28, 0x68, 0xc7, 0xa4, 0xa9, 0x95,
+	0xa2, 0x97, 0x3e, 0xc3, 0x83, 0xad, 0x62, 0x90, 0x02, 0xd9, 0x2f, 0x64, 0xaa, 0x4a, 0x65, 0xa9,
+	0x9a, 0xb7, 0x16, 0x47, 0x74, 0x0e, 0x3b, 0x13, 0xec, 0x8f, 0x89, 0x10, 0xb1, 0x57, 0x7b, 0xb4,
+	0xe5, 0x89, 0xb7, 0xd8, 0xa7, 0x1e, 0xe6, 0x61, 0x24, 0x8a, 0xbd, 0xa1, 0x8c, 0x5b, 0x71, 0xce,
+	0x0b, 0xf9, 0xb9, 0x54, 0xf9, 0x04, 0x3b, 0x75, 0x1f, 0xd3, 0x21, 0x2a, 0x80, 0x4c, 0x3d, 0x51,
+	0x3a, 0x67, 0xc9, 0xd4, 0x43, 0x4f, 0xa0, 0x38, 0x49, 0x32, 0xd7, 0xac, 0x2a, 0x2b, 0x20, 0xb1,
+	0xab, 0xc2, 0x1d, 0x37, 0x0c, 0x38, 0x09, 0xb8, 0x9a, 0x15, 0x94, 0xe4, 0x5a, 0xf9, 0x0a, 0x77,
+	0x13, 0x8f, 0x1b, 0x4f, 0x9c, 0xc1, 0x2e, 0xe3, 0x98, 0x8f, 0xe3, 0xba, 0x85, 0xda, 0xf1, 0x16,
+	0xf5, 0xb6, 0x20, 0x74, 0xc8, 0x0d, 0xb7, 0x96, 0x64, 0xf4, 0x18, 0x14, 0x77, 0x21, 0xd9, 0x59,
+	0xc9, 0x88, 0x7f, 0x38, 0x67, 0xdd, 0x13, 0xf1, 0x95, 0x61, 0x56, 0xf9, 0x2e, 0x01, 0xda, 0xf4,
+	0x8f, 0x6c, 0x00, 0x31, 0x1e, 0x4e, 0x6a, 0x3e, 0x9e, 0xfd, 0xd7, 0xd7, 0xe9, 0xab, 0x53, 0x3c,
+	0x1e, 0xb9, 0xeb, 0xe4, 0x5e, 0x7a, 0x09, 0x85, 0x7f, 0xc1, 0x74, 0xbb, 0x72, 0x71, 0xbb, 0x0e,
+	0xd2, 0xed, 0xca, 0xa7, 0xfa, 0x70, 0xf2, 0x11, 0xe0, 0xaf, 0x55, 0x74, 0x04, 0x87, 0x76, 0xe7,
+	0xa2, 0xd3, 0xb5, 0x9d, 0x8e, 0xf9, 0xbe, 0xe3, 0x74, 0x5b, 0x76, 0xdb, 0xac, 0x37, 0x5f, 0x37,
+	0xcd, 0x86, 0x92, 0x41, 0x87, 0x70, 0x3f, 0x0d, 0xb6, 0xcd, 0x56, 0xa3, 0xd9, 0xba, 0x54, 0xa4,
+	0x75, 0xc0, 0xee, 0xd6, 0xeb, 0xa6, 0x6d, 0x2b, 0xf2, 0xab, 0xc6, 0xcf, 0x99, 0x26, 0xdd, 0xce,
+	0x34, 0xe9, 0xf7, 0x4c, 0x93, 0xbe, 0xcd, 0xb5, 0xcc, 0xed, 0x5c, 0xcb, 0xfc, 0x9a, 0x6b, 0x99,
+	0x0f, 0x27, 0x7d, 0xca, 0x07, 0xe3, 0x9e, 0xee, 0x86, 0x43, 0xc3, 0xa6, 0x57, 0xee, 0x00, 0xd3,
+	0xc0, 0x48, 0xb6, 0xf3, 0x26, 0xd9, 0x4f, 0xb1, 0x9c, 0xbd, 0x5d, 0xb1, 0x74, 0x4f, 0xff, 0x04,
+	0x00, 0x00, 0xff, 0xff, 0x7e, 0x24, 0x89, 0xe7, 0xbe, 0x03, 0x00, 0x00,
 }
 
 func (m *GenesisState) Marshal() (dAtA []byte, err error) {
@@ -293,6 +354,20 @@ func (m *GenesisState) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	_ = i
 	var l int
 	_ = l
+	if len(m.Prophecies) > 0 {
+		for iNdEx := len(m.Prophecies) - 1; iNdEx >= 0; iNdEx-- {
+			{
+				size, err := m.Prophecies[iNdEx].MarshalToSizedBuffer(dAtA[:i])
+				if err != nil {
+					return 0, err
+				}
+				i -= size
+				i = encodeVarintTypes(dAtA, i, uint64(size))
+			}
+			i--
+			dAtA[i] = 0x1a
+		}
+	}
 	if len(m.AdminAddress) > 0 {
 		i -= len(m.AdminAddress)
 		copy(dAtA[i:], m.AdminAddress)
@@ -301,10 +376,25 @@ func (m *GenesisState) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		dAtA[i] = 0x12
 	}
 	if len(m.AddressWhitelist) > 0 {
-		for iNdEx := len(m.AddressWhitelist) - 1; iNdEx >= 0; iNdEx-- {
-			i -= len(m.AddressWhitelist[iNdEx])
-			copy(dAtA[i:], m.AddressWhitelist[iNdEx])
-			i = encodeVarintTypes(dAtA, i, uint64(len(m.AddressWhitelist[iNdEx])))
+		for k := range m.AddressWhitelist {
+			v := m.AddressWhitelist[k]
+			baseI := i
+			if v != nil {
+				{
+					size, err := v.MarshalToSizedBuffer(dAtA[:i])
+					if err != nil {
+						return 0, err
+					}
+					i -= size
+					i = encodeVarintTypes(dAtA, i, uint64(size))
+				}
+				i--
+				dAtA[i] = 0x12
+			}
+			i = encodeVarintTypes(dAtA, i, uint64(k))
+			i--
+			dAtA[i] = 0x8
+			i = encodeVarintTypes(dAtA, i, uint64(baseI-i))
 			i--
 			dAtA[i] = 0xa
 		}
@@ -400,6 +490,46 @@ func (m *Prophecy) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	return len(dAtA) - i, nil
 }
 
+func (m *ValidatorWhiteList) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *ValidatorWhiteList) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *ValidatorWhiteList) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.WhiteList) > 0 {
+		for k := range m.WhiteList {
+			v := m.WhiteList[k]
+			baseI := i
+			i = encodeVarintTypes(dAtA, i, uint64(v))
+			i--
+			dAtA[i] = 0x10
+			i -= len(k)
+			copy(dAtA[i:], k)
+			i = encodeVarintTypes(dAtA, i, uint64(len(k)))
+			i--
+			dAtA[i] = 0xa
+			i = encodeVarintTypes(dAtA, i, uint64(baseI-i))
+			i--
+			dAtA[i] = 0xa
+		}
+	}
+	return len(dAtA) - i, nil
+}
+
 func encodeVarintTypes(dAtA []byte, offset int, v uint64) int {
 	offset -= sovTypes(v)
 	base := offset
@@ -418,14 +548,27 @@ func (m *GenesisState) Size() (n int) {
 	var l int
 	_ = l
 	if len(m.AddressWhitelist) > 0 {
-		for _, s := range m.AddressWhitelist {
-			l = len(s)
-			n += 1 + l + sovTypes(uint64(l))
+		for k, v := range m.AddressWhitelist {
+			_ = k
+			_ = v
+			l = 0
+			if v != nil {
+				l = v.Size()
+				l += 1 + sovTypes(uint64(l))
+			}
+			mapEntrySize := 1 + sovTypes(uint64(k)) + l
+			n += mapEntrySize + 1 + sovTypes(uint64(mapEntrySize))
 		}
 	}
 	l = len(m.AdminAddress)
 	if l > 0 {
 		n += 1 + l + sovTypes(uint64(l))
+	}
+	if len(m.Prophecies) > 0 {
+		for _, e := range m.Prophecies {
+			l = e.Size()
+			n += 1 + l + sovTypes(uint64(l))
+		}
 	}
 	return n
 }
@@ -473,6 +616,23 @@ func (m *Prophecy) Size() (n int) {
 	return n
 }
 
+func (m *ValidatorWhiteList) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if len(m.WhiteList) > 0 {
+		for k, v := range m.WhiteList {
+			_ = k
+			_ = v
+			mapEntrySize := 1 + len(k) + sovTypes(uint64(len(k))) + 1 + sovTypes(uint64(v))
+			n += mapEntrySize + 1 + sovTypes(uint64(mapEntrySize))
+		}
+	}
+	return n
+}
+
 func sovTypes(x uint64) (n int) {
 	return (math_bits.Len64(x|1) + 6) / 7
 }
@@ -512,7 +672,7 @@ func (m *GenesisState) Unmarshal(dAtA []byte) error {
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field AddressWhitelist", wireType)
 			}
-			var stringLen uint64
+			var msglen int
 			for shift := uint(0); ; shift += 7 {
 				if shift >= 64 {
 					return ErrIntOverflowTypes
@@ -522,23 +682,106 @@ func (m *GenesisState) Unmarshal(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
+				msglen |= int(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
 			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
+			if msglen < 0 {
 				return ErrInvalidLengthTypes
 			}
-			postIndex := iNdEx + intStringLen
+			postIndex := iNdEx + msglen
 			if postIndex < 0 {
 				return ErrInvalidLengthTypes
 			}
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.AddressWhitelist = append(m.AddressWhitelist, string(dAtA[iNdEx:postIndex]))
+			if m.AddressWhitelist == nil {
+				m.AddressWhitelist = make(map[uint32]*ValidatorWhiteList)
+			}
+			var mapkey uint32
+			var mapvalue *ValidatorWhiteList
+			for iNdEx < postIndex {
+				entryPreIndex := iNdEx
+				var wire uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return ErrIntOverflowTypes
+					}
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					wire |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				fieldNum := int32(wire >> 3)
+				if fieldNum == 1 {
+					for shift := uint(0); ; shift += 7 {
+						if shift >= 64 {
+							return ErrIntOverflowTypes
+						}
+						if iNdEx >= l {
+							return io.ErrUnexpectedEOF
+						}
+						b := dAtA[iNdEx]
+						iNdEx++
+						mapkey |= uint32(b&0x7F) << shift
+						if b < 0x80 {
+							break
+						}
+					}
+				} else if fieldNum == 2 {
+					var mapmsglen int
+					for shift := uint(0); ; shift += 7 {
+						if shift >= 64 {
+							return ErrIntOverflowTypes
+						}
+						if iNdEx >= l {
+							return io.ErrUnexpectedEOF
+						}
+						b := dAtA[iNdEx]
+						iNdEx++
+						mapmsglen |= int(b&0x7F) << shift
+						if b < 0x80 {
+							break
+						}
+					}
+					if mapmsglen < 0 {
+						return ErrInvalidLengthTypes
+					}
+					postmsgIndex := iNdEx + mapmsglen
+					if postmsgIndex < 0 {
+						return ErrInvalidLengthTypes
+					}
+					if postmsgIndex > l {
+						return io.ErrUnexpectedEOF
+					}
+					mapvalue = &ValidatorWhiteList{}
+					if err := mapvalue.Unmarshal(dAtA[iNdEx:postmsgIndex]); err != nil {
+						return err
+					}
+					iNdEx = postmsgIndex
+				} else {
+					iNdEx = entryPreIndex
+					skippy, err := skipTypes(dAtA[iNdEx:])
+					if err != nil {
+						return err
+					}
+					if (skippy < 0) || (iNdEx+skippy) < 0 {
+						return ErrInvalidLengthTypes
+					}
+					if (iNdEx + skippy) > postIndex {
+						return io.ErrUnexpectedEOF
+					}
+					iNdEx += skippy
+				}
+			}
+			m.AddressWhitelist[mapkey] = mapvalue
 			iNdEx = postIndex
 		case 2:
 			if wireType != 2 {
@@ -571,6 +814,40 @@ func (m *GenesisState) Unmarshal(dAtA []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			m.AdminAddress = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 3:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Prophecies", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTypes
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthTypes
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthTypes
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Prophecies = append(m.Prophecies, &Prophecy{})
+			if err := m.Prophecies[len(m.Prophecies)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
 			iNdEx = postIndex
 		default:
 			iNdEx = preIndex
@@ -850,6 +1127,169 @@ func (m *Prophecy) Unmarshal(dAtA []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			m.ClaimValidators = append(m.ClaimValidators, string(dAtA[iNdEx:postIndex]))
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipTypes(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthTypes
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *ValidatorWhiteList) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowTypes
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: ValidatorWhiteList: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: ValidatorWhiteList: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field WhiteList", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTypes
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthTypes
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthTypes
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if m.WhiteList == nil {
+				m.WhiteList = make(map[string]uint32)
+			}
+			var mapkey string
+			var mapvalue uint32
+			for iNdEx < postIndex {
+				entryPreIndex := iNdEx
+				var wire uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return ErrIntOverflowTypes
+					}
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					wire |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				fieldNum := int32(wire >> 3)
+				if fieldNum == 1 {
+					var stringLenmapkey uint64
+					for shift := uint(0); ; shift += 7 {
+						if shift >= 64 {
+							return ErrIntOverflowTypes
+						}
+						if iNdEx >= l {
+							return io.ErrUnexpectedEOF
+						}
+						b := dAtA[iNdEx]
+						iNdEx++
+						stringLenmapkey |= uint64(b&0x7F) << shift
+						if b < 0x80 {
+							break
+						}
+					}
+					intStringLenmapkey := int(stringLenmapkey)
+					if intStringLenmapkey < 0 {
+						return ErrInvalidLengthTypes
+					}
+					postStringIndexmapkey := iNdEx + intStringLenmapkey
+					if postStringIndexmapkey < 0 {
+						return ErrInvalidLengthTypes
+					}
+					if postStringIndexmapkey > l {
+						return io.ErrUnexpectedEOF
+					}
+					mapkey = string(dAtA[iNdEx:postStringIndexmapkey])
+					iNdEx = postStringIndexmapkey
+				} else if fieldNum == 2 {
+					for shift := uint(0); ; shift += 7 {
+						if shift >= 64 {
+							return ErrIntOverflowTypes
+						}
+						if iNdEx >= l {
+							return io.ErrUnexpectedEOF
+						}
+						b := dAtA[iNdEx]
+						iNdEx++
+						mapvalue |= uint32(b&0x7F) << shift
+						if b < 0x80 {
+							break
+						}
+					}
+				} else {
+					iNdEx = entryPreIndex
+					skippy, err := skipTypes(dAtA[iNdEx:])
+					if err != nil {
+						return err
+					}
+					if (skippy < 0) || (iNdEx+skippy) < 0 {
+						return ErrInvalidLengthTypes
+					}
+					if (iNdEx + skippy) > postIndex {
+						return io.ErrUnexpectedEOF
+					}
+					iNdEx += skippy
+				}
+			}
+			m.WhiteList[mapkey] = mapvalue
 			iNdEx = postIndex
 		default:
 			iNdEx = preIndex

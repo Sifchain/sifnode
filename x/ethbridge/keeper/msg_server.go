@@ -50,7 +50,7 @@ func (srv msgServer) Lock(goCtx context.Context, msg *types.MsgLock) (*types.Msg
 	}
 
 	logger.Info("sifnode emit lock event.",
-		"EthereumChainID", strconv.FormatInt(msg.EthereumChainId, 10),
+		"NetworkId", strconv.FormatInt(int64(msg.NetworkId), 10),
 		"CosmosSender", msg.CosmosSender,
 		"CosmosSenderSequence", strconv.FormatUint(account.GetSequence(), 10),
 		"EthereumReceiver", msg.EthereumReceiver,
@@ -66,7 +66,7 @@ func (srv msgServer) Lock(goCtx context.Context, msg *types.MsgLock) (*types.Msg
 		),
 		sdk.NewEvent(
 			types.EventTypeLock,
-			sdk.NewAttribute(types.AttributeKeyEthereumChainID, strconv.FormatInt(msg.EthereumChainId, 10)),
+			sdk.NewAttribute(types.AttributeKeyNetworkID, strconv.FormatInt(int64(msg.NetworkId), 10)),
 			sdk.NewAttribute(types.AttributeKeyCosmosSender, msg.CosmosSender),
 			sdk.NewAttribute(types.AttributeKeyCosmosSenderSequence, strconv.FormatUint(account.GetSequence(), 10)),
 			sdk.NewAttribute(types.AttributeKeyEthereumReceiver, msg.EthereumReceiver),
@@ -106,7 +106,7 @@ func (srv msgServer) Burn(goCtx context.Context, msg *types.MsgBurn) (*types.Msg
 	}
 
 	logger.Info("sifnode emit burn event.",
-		"EthereumChainID", strconv.FormatInt(msg.EthereumChainId, 10),
+		"NetworkId", strconv.FormatInt(int64(msg.NetworkId), 10),
 		"CosmosSender", msg.CosmosSender,
 		"CosmosSenderSequence", strconv.FormatUint(account.GetSequence(), 10),
 		"EthereumReceiver", msg.EthereumReceiver,
@@ -122,7 +122,7 @@ func (srv msgServer) Burn(goCtx context.Context, msg *types.MsgBurn) (*types.Msg
 		),
 		sdk.NewEvent(
 			types.EventTypeBurn,
-			sdk.NewAttribute(types.AttributeKeyEthereumChainID, strconv.FormatInt(msg.EthereumChainId, 10)),
+			sdk.NewAttribute(types.AttributeKeyNetworkID, strconv.FormatInt(int64(msg.NetworkId), 10)),
 			sdk.NewAttribute(types.AttributeKeyCosmosSender, msg.CosmosSender),
 			sdk.NewAttribute(types.AttributeKeyCosmosSenderSequence, strconv.FormatUint(account.GetSequence(), 10)),
 			sdk.NewAttribute(types.AttributeKeyEthereumReceiver, msg.EthereumReceiver),
@@ -206,21 +206,27 @@ func (srv msgServer) UpdateWhiteListValidator(goCtx context.Context,
 	if account == nil {
 		logger.Error("account is nil.", "CosmosSender", msg.CosmosSender)
 
-		return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.CosmosSender)
+		return nil, sdkerrors.Wrap(sdkerrors.ErrUnknownAddress, msg.CosmosSender)
 	}
 
-	err = srv.Keeper.ProcessUpdateWhiteListValidator(ctx, cosmosSender,
-		sdk.ValAddress(msg.Validator), msg.OperationType)
+	valAddr, err := sdk.ValAddressFromBech32(msg.Validator)
+	if err != nil {
+		return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.Validator)
+	}
+
+	err = srv.Keeper.ProcessUpdateWhiteListValidator(ctx, msg.NetworkId, cosmosSender,
+		valAddr, msg.Power)
 	if err != nil {
 		logger.Error("bridge keeper failed to process update validator.", errorMessageKey, err.Error())
 		return nil, err
 	}
 
 	logger.Info("sifnode emit update whitelist validators event.",
+		"NetworkID", msg.NetworkId,
 		"CosmosSender", msg.CosmosSender,
 		"CosmosSenderSequence", strconv.FormatUint(account.GetSequence(), 10),
 		"Validator", msg.Validator,
-		"OperationType", msg.OperationType)
+		"Power", msg.Power)
 
 	ctx.EventManager().EmitEvents(sdk.Events{
 		sdk.NewEvent(
@@ -230,9 +236,10 @@ func (srv msgServer) UpdateWhiteListValidator(goCtx context.Context,
 		),
 		sdk.NewEvent(
 			types.EventTypeLock,
+			sdk.NewAttribute(types.AttributeKeyNetworkID, strconv.Itoa(int(msg.NetworkId))),
 			sdk.NewAttribute(types.AttributeKeyCosmosSender, msg.CosmosSender),
 			sdk.NewAttribute(types.AttributeKeyValidator, msg.Validator),
-			sdk.NewAttribute(types.AttributeKeyOperationType, msg.OperationType),
+			sdk.NewAttribute(types.AttributeKeyPowerType, strconv.Itoa(int(msg.Power))),
 		),
 	})
 

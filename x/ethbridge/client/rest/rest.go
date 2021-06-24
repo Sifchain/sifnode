@@ -15,35 +15,36 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	"github.com/Sifchain/sifnode/x/ethbridge/types"
+	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
 )
 
 const (
-	restEthereumChainID = "ethereumChainID"
-	restBridgeContract  = "bridgeContract"
-	restNonce           = "nonce"
-	restSymbol          = "symbol"
-	restTokenContract   = "tokenContract"
-	restEthereumSender  = "ethereumSender"
-	restProphecyID      = "restProphecyID"
+	restProphecyID     = "restProphecyID"
+	restNetworkID      = "networkID"
+	restBridgeContract = "bridgeContract"
+	restNonce          = "nonce"
+	restSymbol         = "symbol"
+	restTokenContract  = "tokenContract"
+	restEthereumSender = "ethereumSender"
 )
 
 type createEthClaimReq struct {
-	BaseReq               rest.BaseReq `json:"base_req"`
-	EthereumChainID       int          `json:"ethereum_chain_id"`
-	BridgeContractAddress string       `json:"bridge_registry_contract_address"`
-	Nonce                 int          `json:"nonce"`
-	Symbol                string       `json:"symbol"`
-	TokenContractAddress  string       `json:"token_contract_address"`
-	EthereumSender        string       `json:"ethereum_sender"`
-	CosmosReceiver        string       `json:"cosmos_receiver"`
-	Validator             string       `json:"validator"`
-	Amount                sdk.Int      `json:"amount"`
-	ClaimType             string       `json:"claim_type"`
+	BaseReq               rest.BaseReq          `json:"base_req"`
+	NetworkID             oracletypes.NetworkID `json:"network_id"`
+	BridgeContractAddress string                `json:"bridge_registry_contract_address"`
+	Nonce                 int                   `json:"nonce"`
+	Symbol                string                `json:"symbol"`
+	TokenContractAddress  string                `json:"token_contract_address"`
+	EthereumSender        string                `json:"ethereum_sender"`
+	CosmosReceiver        string                `json:"cosmos_receiver"`
+	Validator             string                `json:"validator"`
+	Amount                sdk.Int               `json:"amount"`
+	ClaimType             string                `json:"claim_type"`
 }
 
 type burnOrLockEthReq struct {
 	BaseReq          rest.BaseReq `json:"base_req"`
-	EthereumChainID  string       `json:"ethereum_chain_id"`
+	NetworkID        string       `json:"network_id"`
 	TokenContract    string       `json:"token_contract_address"`
 	CosmosSender     string       `json:"cosmos_sender"`
 	EthereumReceiver string       `json:"ethereum_receiver"`
@@ -56,7 +57,7 @@ type burnOrLockEthReq struct {
 func RegisterRESTRoutes(cliCtx client.Context, r *mux.Router, storeName string) {
 	getProhechyRoute := fmt.Sprintf(
 		"/%s/prophecies/{%s}/{%s}/{%s}/{%s}/{%s}/{%s}",
-		storeName, restEthereumChainID, restBridgeContract, restNonce,
+		storeName, restNetworkID, restBridgeContract, restNonce,
 		restSymbol, restTokenContract, restEthereumSender)
 
 	r.HandleFunc(fmt.Sprintf("/%s/prophecies", storeName), createClaimHandler(cliCtx)).Methods("POST")
@@ -106,7 +107,7 @@ func createClaimHandler(cliCtx client.Context) http.HandlerFunc {
 
 		// create the message
 		ethBridgeClaim := types.NewEthBridgeClaim(
-			int64(req.EthereumChainID), bridgeContractAddress, int64(req.Nonce), req.Symbol,
+			req.NetworkID, bridgeContractAddress, int64(req.Nonce), req.Symbol,
 			tokenContractAddress, ethereumSender, cosmosReceiver, validator, req.Amount, ct)
 		msg := types.NewMsgCreateEthBridgeClaim(ethBridgeClaim)
 		err = msg.ValidateBasic()
@@ -156,7 +157,7 @@ func burnOrLockHandler(cliCtx client.Context, lockOrBurn string) http.HandlerFun
 			return
 		}
 
-		ethereumChainID, err := strconv.Atoi(req.EthereumChainID)
+		networkID, err := strconv.Atoi(req.NetworkID)
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusInternalServerError, err.Error())
 			return
@@ -174,10 +175,10 @@ func burnOrLockHandler(cliCtx client.Context, lockOrBurn string) http.HandlerFun
 		var msg sdk.Msg
 		switch lockOrBurn {
 		case "lock":
-			msgLock := types.NewMsgLock(int64(ethereumChainID), cosmosSender, ethereumReceiver, req.Amount, req.Symbol, req.CethAmount)
+			msgLock := types.NewMsgLock(oracletypes.NetworkID(networkID), cosmosSender, ethereumReceiver, req.Amount, req.Symbol, req.CethAmount)
 			msg = &msgLock
 		case "burn":
-			msgBurn := types.NewMsgBurn(int64(ethereumChainID), cosmosSender, ethereumReceiver, req.Amount, req.Symbol, req.CethAmount)
+			msgBurn := types.NewMsgBurn(oracletypes.NetworkID(networkID), cosmosSender, ethereumReceiver, req.Amount, req.Symbol, req.CethAmount)
 			msg = &msgBurn
 		}
 		err = msg.ValidateBasic()

@@ -2,6 +2,7 @@ package keeper_test
 
 import (
 	"reflect"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -10,15 +11,16 @@ import (
 	ethbridgekeeper "github.com/Sifchain/sifnode/x/ethbridge/keeper"
 	"github.com/Sifchain/sifnode/x/ethbridge/test"
 	"github.com/Sifchain/sifnode/x/ethbridge/types"
+	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
 )
 
 //nolint:lll
 const (
-	TestResponseJSON = "{\"prophecy_id\":\"W\\ufffdM(\\ufffd\\u0026\\ufffd\\ufffd%\\u0006\\ufffd\\u000b\\ufffd\\u0014\\ufffd\\ufffd\\ufffd\\ufffd\\ufffd\\u000c\\ufffd\\ufffd\\u001a\\u0017\\ufffd\\ufffd:@]\\ufffdy\\ufffd\",\"status\":1,\"claim_validators\":[\"cosmosvaloper1mnfm9c7cdgqnkk66sganp78m0ydmcr4pn7fqfk\"]}"
+	TestResponseJSON = "{\"prophecy_id\":\"\\ufffd\\ufffd\\ufffd\\ufffdE|q\\ufffdrt\\ufffdS\\u0012D\\ufffdUj\\ufffd\\ufffd\\ufffd\\ufffdI\\ufffd\\u0018\\ufffdA9\\n \\ufffdJz\",\"status\":1,\"claim_validators\":[\"cosmosvaloper1mnfm9c7cdgqnkk66sganp78m0ydmcr4pn7fqfk\"]}"
 )
 
 func TestNewQuerier(t *testing.T) {
-	ctx, keeper, _, _, _, encCfg, _ := test.CreateTestKeepers(t, 0.7, []int64{3, 3}, "")
+	ctx, keeper, _, _, _, encCfg, _, _ := test.CreateTestKeepers(t, 0.7, []int64{3, 3}, "")
 
 	query := abci.RequestQuery{
 		Path: "",
@@ -34,18 +36,19 @@ func TestNewQuerier(t *testing.T) {
 }
 
 func TestQueryEthProphecy(t *testing.T) {
-	ctx, keeper, _, _, oracleKeeper, encCfg, validatorAddresses := test.CreateTestKeepers(t, 0.7, []int64{3, 3}, "")
-
+	ctx, keeper, _, _, oracleKeeper, encCfg, _, validatorAddresses := test.CreateTestKeepers(t, 0.7, []int64{3, 3}, "")
 	valAddress := validatorAddresses[0]
+	NewTestResponseJSON := strings.Replace(TestResponseJSON, "cosmosvaloper1353a4uac03etdylz86tyq9ssm3x2704j3a9n7n", valAddress.String(), -1)
 	testEthereumAddress := types.NewEthereumAddress(types.TestEthereumAddress)
 	testBridgeContractAddress := types.NewEthereumAddress(types.TestBridgeContractAddress)
 	testTokenContractAddress := types.NewEthereumAddress(types.TestTokenContractAddress)
+	networkID := oracletypes.NetworkID_NETWORK_ID_ETHEREUM
 
 	initialEthBridgeClaim := types.CreateTestEthClaim(
 		t, testBridgeContractAddress, testTokenContractAddress, valAddress,
 		testEthereumAddress, types.TestCoinsAmount, types.TestCoinsSymbol, types.ClaimType_CLAIM_TYPE_LOCK)
 
-	_, err := oracleKeeper.ProcessClaim(ctx, initialEthBridgeClaim.GetProphecyID(), initialEthBridgeClaim.ValidatorAddress)
+	_, err := oracleKeeper.ProcessClaim(ctx, networkID, initialEthBridgeClaim.GetProphecyID(), initialEthBridgeClaim.ValidatorAddress)
 	require.NoError(t, err)
 
 	testResponse := types.CreateTestQueryEthProphecyResponse(t, valAddress, types.ClaimType_CLAIM_TYPE_LOCK)
@@ -53,7 +56,7 @@ func TestQueryEthProphecy(t *testing.T) {
 	//Test query String()
 	testJSON, err := encCfg.Amino.MarshalJSON(testResponse)
 	require.NoError(t, err)
-	require.Equal(t, TestResponseJSON, string(testJSON))
+	require.Equal(t, NewTestResponseJSON, string(testJSON))
 
 	req := types.NewQueryEthProphecyRequest(initialEthBridgeClaim.GetProphecyID())
 	bz, err2 := encCfg.Amino.MarshalJSON(req)

@@ -13,12 +13,13 @@ import (
 
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/types"
 	ethbridge "github.com/Sifchain/sifnode/x/ethbridge/types"
+	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
 )
 
 const (
 	// EthereumPrivateKey config field which holds the user's private key
 	EthereumPrivateKey        = "ETHEREUM_PRIVATE_KEY"
-	TestEthereumChainID       = 3
+	TestNetworkID             = 1
 	TestBridgeContractAddress = "0xd88159878c50e4B2b03BB701DD436e4A98D6fBe2"
 	TestLockClaimType         = 1
 	TestBurnClaimType         = 2
@@ -45,7 +46,7 @@ var testSDKAmount = sdk.NewIntFromBigInt(testAmount)
 
 // CreateTestLogEthereumEvent creates a sample EthereumEvent event for testing purposes
 func CreateTestLogEthereumEvent(t *testing.T) types.EthereumEvent {
-	testEthereumChainID := big.NewInt(int64(TestEthereumChainID))
+	networkID := oracletypes.NetworkID(TestNetworkID)
 	testBridgeContractAddress := common.HexToAddress(TestBridgeContractAddress)
 	// Convert int to [32]byte
 	var testProphecyID []byte
@@ -59,7 +60,7 @@ func CreateTestLogEthereumEvent(t *testing.T) types.EthereumEvent {
 	testAmount := testAmount
 	testNonce := big.NewInt(int64(TestNonce))
 
-	return types.EthereumEvent{EthereumChainID: testEthereumChainID,
+	return types.EthereumEvent{NetworkID: networkID,
 		BridgeContractAddress: testBridgeContractAddress,
 		ID:                    testProphecyID32,
 		From:                  testEthereumSender,
@@ -95,7 +96,7 @@ func CreateTestCosmosMsg(t *testing.T, claimType types.Event) types.CosmosMsg {
 	}
 
 	// Create new Cosmos Msg
-	cosmosMsg := types.NewCosmosMsg(claimType, testCosmosSender, big.NewInt(TestCosmosAddressSequence),
+	cosmosMsg := types.NewCosmosMsg(oracletypes.NetworkID(TestNetworkID), claimType, testCosmosSender, big.NewInt(TestCosmosAddressSequence),
 		testEthereumReceiver, symbol, testAmount)
 
 	return cosmosMsg
@@ -103,7 +104,7 @@ func CreateTestCosmosMsg(t *testing.T, claimType types.Event) types.CosmosMsg {
 
 // CreateCosmosMsgAttributes creates expected attributes for a MsgBurn/MsgLock for testing purposes
 func CreateCosmosMsgAttributes(t *testing.T, claimType types.Event) []abci.EventAttribute {
-	attributes := [6]abci.EventAttribute{}
+	attributes := [7]abci.EventAttribute{}
 
 	// (key, value) pairing for "cosmos_sender" key
 	pairCosmosSender := abci.EventAttribute{
@@ -147,6 +148,12 @@ func CreateCosmosMsgAttributes(t *testing.T, claimType types.Event) []abci.Event
 		Value: []byte(common.HexToAddress(TestEthTokenAddress).Hex()),
 	}
 
+	// (key, value) pairing for "ethereum_chain_id" key
+	pairEthereumChainID := abci.EventAttribute{
+		Key:   []byte("network_id"),
+		Value: []byte(strconv.Itoa(TestNetworkID)),
+	}
+
 	// Assign pairs to attributes array
 	attributes[0] = pairCosmosSender
 	attributes[1] = pairCosmosSenderSequence
@@ -154,7 +161,7 @@ func CreateCosmosMsgAttributes(t *testing.T, claimType types.Event) []abci.Event
 	attributes[3] = pairTokenContract
 	attributes[4] = pairSymbol
 	attributes[5] = pairAmount
-
+	attributes[6] = pairEthereumChainID
 	return attributes[:]
 }
 

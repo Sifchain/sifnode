@@ -2,14 +2,15 @@ syntax = "proto3";
 package sifnode.ethbridge.v1;
 
 import "gogoproto/gogo.proto";
+import "sifnode/oracle/v1/network_id.proto";
 
 option go_package = "github.com/Sifchain/sifnode/x/ethbridge/types";
 
 // EthBridgeClaim is a structure that contains all the data for a particular
 // bridge claim
 message EthBridgeClaim {
-  int64 ethereum_chain_id = 1
-      [ (gogoproto.moretags) = "yaml:\"ethereum_chain_id\"" ];
+  sifnode.oracle.v1.NetworkID network_id = 1
+      [ (gogoproto.moretags) = "yaml:\"network_id\"" ];
   // bridge_contract_address is an EthereumAddress
   string bridge_contract_address = 2
       [ (gogoproto.moretags) = "yaml:\"bridge_contract_address\"" ];
