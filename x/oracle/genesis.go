@@ -12,8 +12,9 @@ import (
 
 func InitGenesis(ctx sdk.Context, keeper keeper.Keeper, data types.GenesisState) (res []abci.ValidatorUpdate) {
 	if data.AddressWhitelist != nil {
-		var wl []sdk.ValAddress
-		for _, entry := range data.AddressWhitelist {
+		wl := make([]sdk.ValAddress, 0, len(data.AddressWhitelist))
+		for i := range data.AddressWhitelist {
+			entry := data.AddressWhitelist[i]
 			if len(strings.TrimSpace(entry)) == 0 {
 				continue
 			}
