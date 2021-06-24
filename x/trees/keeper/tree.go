@@ -12,7 +12,7 @@ func (k Keeper) CreateTree(ctx sdk.Context, msg types.MsgCreateTree) (string, er
 	count := k.GetTreeCount(ctx)
 	var tree = types.Tree{
 		Name:     msg.Name,
-		Seller:   msg.Seller,
+		Owner:    msg.Seller,
 		Price:    msg.Price,
 		Category: msg.Category,
 		Id:       strconv.FormatInt(count, 10),
@@ -70,7 +70,7 @@ func (k Keeper) HasTree(ctx sdk.Context, id string) bool {
 }
 
 func (k Keeper) GetTreeOwner(ctx sdk.Context, key string) string {
-	return k.GetTree(ctx, key).Seller.String()
+	return k.GetTree(ctx, key).Owner.String()
 }
 
 func (k Keeper) GetAllTrees(ctx sdk.Context) (msgs []types.Tree) {

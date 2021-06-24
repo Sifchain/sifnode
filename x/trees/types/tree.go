@@ -10,7 +10,7 @@ var (
 
 type Tree struct {
 	Name     string         `json:"name"`
-	Seller   sdk.AccAddress `json:"seller"`
+	Owner   sdk.AccAddress `json:"seller"`
 	Price    sdk.Coins      `json:"price"`
 	Category string         `json:"category"`
 	Id       string         `json:"id"`

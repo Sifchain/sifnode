@@ -18,18 +18,15 @@ func (k Keeper) FillLimitOrders(ctx sdk.Context) {
 		var tree types.Tree
 		k.cdc.MustUnmarshalBinaryBare(iterator.Value(), &order)
 		k.cdc.MustUnmarshalBinaryBare(store.Get(types.KeyPrefix(types.TreeKey+order.TreeId)), &tree)
-		ctx.Logger().Error(tree.Id)
-		ctx.Logger().Error(tree.Price.String())
-		ctx.Logger().Error(order.MaxPrice.String())
 		if !tree.Status && !order.Executed {
 			if tree.Price[0].Amount.Int64() < order.MaxPrice[0].Amount.Int64() {
+				tree.Owner = order.Buyer
 				tree.Status = true
 				store.Set(types.KeyPrefix(types.TreeKey+tree.Id), k.cdc.MustMarshalBinaryBare(tree))
 			}
 		}
 		order.Executed = true
 		store.Set(types.GetLimitedOrderKey(tree.Id, order.OrderId), k.cdc.MustMarshalBinaryBare(order))
-
 	}
 }
 
