@@ -18,7 +18,7 @@ import (
 const (
 	GenesisFile = "genesis.json"
 	ConfigTOML  = "config.toml"
-	AppTOML = "app.toml"
+	AppTOML     = "app.toml"
 )
 
 var (

@@ -42,10 +42,10 @@ func TestAddGenesisValidatorCmd(t *testing.T) {
 	addValCmd.SetArgs([]string{"add-genesis-validators", expectedValidatorBech32, "--home=" + homeDir})
 
 	// Run init
-	err = svrcmd.Execute(initCmd, homeDir);
+	err = svrcmd.Execute(initCmd, homeDir)
 	require.NoError(t, err)
 	// Run add-genesis-validators
-	err = svrcmd.Execute(addValCmd, homeDir);
+	err = svrcmd.Execute(addValCmd, homeDir)
 	require.NoError(t, err)
 	// Load genesis state from temp home dir and parse JSON
 	serverCtx := server.GetServerContextFromCmd(addValCmd)
