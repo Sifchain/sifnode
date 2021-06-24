@@ -7,20 +7,30 @@ import (
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/context"
 	"github.com/cosmos/cosmos-sdk/client/flags"
+<<<<<<< HEAD
 	"github.com/cosmos/cosmos-sdk/client/tx"
 	"github.com/cosmos/cosmos-sdk/crypto/keyring"
 	"github.com/cosmos/cosmos-sdk/crypto/keys/multisig"
 	"github.com/cosmos/cosmos-sdk/server"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+=======
+	"github.com/cosmos/cosmos-sdk/codec"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/cosmos-sdk/types/errors"
+	"github.com/cosmos/cosmos-sdk/x/auth"
+>>>>>>> develop
 	"github.com/cosmos/cosmos-sdk/x/auth/client/utils"
 	"github.com/gogo/protobuf/codec"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
+<<<<<<< HEAD
 	"github.com/spf13/viper"
 	"github.com/tendermint/tendermint/libs/cli"
 
 	"github.com/Sifchain/sifnode/x/dispensation/types"
 	dispensationUtils "github.com/Sifchain/sifnode/x/dispensation/utils"
+=======
+>>>>>>> develop
 )
 
 // GetTxCmd returns the transaction commands for this module
@@ -33,10 +43,18 @@ func GetTxCmd() *cobra.Command {
 		RunE:                       client.ValidateCmd,
 	}
 
+<<<<<<< HEAD
 	dispensationTxCmd.AddCommand(
 		GetCmdCreate(),
 		GetCmdClaim(),
 	)
+=======
+	dispensationTxCmd.AddCommand(flags.PostCommands(
+		GetCmdCreate(cdc),
+		GetCmdClaim(cdc),
+		GetCmdRun(cdc),
+	)...)
+>>>>>>> develop
 
 	return dispensationTxCmd
 }
@@ -46,7 +64,11 @@ func GetTxCmd() *cobra.Command {
 func GetCmdCreate() *cobra.Command {
 	// Note ,the command only creates a airdrop for now .
 	cmd := &cobra.Command{
+<<<<<<< HEAD
 		Use:   "distribute [MultiSigKeyName] [DistributionName] [DistributionType] [Input JSON File Path] [Output JSON File Path]",
+=======
+		Use:   "create [DistributionType] [Output JSON File Path] [AuthorizedRunner]",
+>>>>>>> develop
 		Short: "Create new distribution",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx := client.GetClientContextFromCmd(cmd)
@@ -56,6 +78,7 @@ func GetCmdCreate() *cobra.Command {
 			config.SetRoot(viper.GetString(cli.HomeFlag))
 
 			inBuf := bufio.NewReader(cmd.InOrStdin())
+<<<<<<< HEAD
 			keyringBackend, err := cmd.Flags().GetString(flags.FlagKeyringBackend)
 			if err != nil {
 				return err
@@ -106,6 +129,28 @@ func GetCmdCreate() *cobra.Command {
 
 	flags.AddTxFlagsToCmd(cmd)
 
+=======
+
+			txBldr := auth.NewTxBuilderFromCLI(inBuf).WithTxEncoder(utils.GetTxEncoder(cdc))
+			cliCtx := context.NewCLIContextWithInput(inBuf).WithCodec(cdc)
+			distributionType, ok := types.IsValidDistributionType(args[0])
+			if !ok {
+				return fmt.Errorf("invalid distribution Type %s: Types supported [Airdrop/LiquidityMining/ValidatorSubsidy]", args[0])
+			}
+			outputList, err := dispensationUtils.ParseOutput(args[1])
+			if err != nil {
+				return err
+			}
+			runner := args[2]
+			runnerAddress, err := sdk.AccAddressFromBech32(runner)
+			if err != nil {
+				return errors.Wrapf(err, fmt.Sprintf("Invalid Address for authorised distributor : %s", args[2]))
+			}
+			msg := types.NewMsgDistribution(cliCtx.GetFromAddress(), distributionType, outputList, runnerAddress)
+			return utils.GenerateOrBroadcastMsgs(cliCtx, txBldr, []sdk.Msg{msg})
+		},
+	}
+>>>>>>> develop
 	return cmd
 }
 
@@ -124,6 +169,25 @@ func GetCmdClaim() *cobra.Command {
 				return err
 			}
 			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), &msg)
+		},
+	}
+	return cmd
+}
+
+func GetCmdRun(cdc *codec.Codec) *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "run [DistributionName] [DistributionType]",
+		Short: "run a dispensation by specifying the name / should only be called by the authorized runner",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			inBuf := bufio.NewReader(cmd.InOrStdin())
+			txBldr := auth.NewTxBuilderFromCLI(inBuf).WithTxEncoder(utils.GetTxEncoder(cdc))
+			cliCtx := context.NewCLIContextWithInput(inBuf).WithCodec(cdc)
+			distributionType, ok := types.IsValidDistributionType(args[1])
+			if !ok {
+				return fmt.Errorf("invalid distribution Type %s: Types supported [Airdrop/LiquidityMining/ValidatorSubsidy]", args[0])
+			}
+			msg := types.NewMsgRunDistribution(cliCtx.GetFromAddress(), args[0], distributionType)
+			return utils.GenerateOrBroadcastMsgs(cliCtx, txBldr, []sdk.Msg{msg})
 		},
 	}
 	return cmd

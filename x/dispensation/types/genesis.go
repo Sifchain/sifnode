@@ -4,6 +4,15 @@ import (
 	"encoding/json"
 )
 
+<<<<<<< HEAD
+=======
+type GenesisState struct {
+	DistributionRecords DistributionRecords `json:"distribution_records"`
+	Distributions       Distributions       `json:"distributions"`
+	Claims              UserClaims          `json:"claims"`
+}
+
+>>>>>>> develop
 // NewGenesisState creates a new GenesisState instance
 func NewGenesisState() GenesisState {
 	return GenesisState{

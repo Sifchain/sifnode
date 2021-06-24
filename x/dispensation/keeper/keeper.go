@@ -51,6 +51,7 @@ func (k Keeper) Exists(ctx sdk.Context, key []byte) bool {
 	return store.Has(key)
 }
 
+<<<<<<< HEAD
 func (k Keeper) HasCoins(ctx sdk.Context, user sdk.AccAddress, coins sdk.Coins) bool {
 	for _, coin := range coins {
 		if !k.bankKeeper.HasBalance(ctx, user, coin) {
@@ -58,4 +59,9 @@ func (k Keeper) HasCoins(ctx sdk.Context, user sdk.AccAddress, coins sdk.Coins) 
 		}
 	}
 	return true
+=======
+func (k Keeper) Set(ctx sdk.Context, key []byte, value []byte) {
+	store := ctx.KVStore(k.storeKey)
+	store.Set(key, value)
+>>>>>>> develop
 }

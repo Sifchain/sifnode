@@ -14,11 +14,15 @@ import (
 	"github.com/gorilla/mux"
 )
 
+<<<<<<< HEAD
 func RegisterRoutes(cliCtx client.Context, r *mux.Router) {
 	registerTxRoutes(cliCtx, r)
 }
 
 func registerTxRoutes(cliCtx client.Context, r *mux.Router) {
+=======
+func registerTxRoutes(cliCtx context.CLIContext, r *mux.Router) {
+>>>>>>> develop
 	r.HandleFunc(
 		"/dispensation/createClaim",
 		createClaimHandler(cliCtx),

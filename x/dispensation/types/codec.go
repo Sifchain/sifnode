@@ -9,10 +9,17 @@ import (
 )
 
 // RegisterCodec registers concrete types on codec
+<<<<<<< HEAD
 func RegisterLegacyAminoCodec(cdc *codec.LegacyAmino) {
 	cdc.RegisterConcrete(&MsgCreateDistribution{}, "dispensation/MsgCreateDistribution", nil)
 	cdc.RegisterConcrete(&Distribution{}, "dispensation/Distribution", nil)
 	cdc.RegisterConcrete(&MsgCreateUserClaim{}, "dispensation/claim", nil)
+=======
+func RegisterCodec(cdc *codec.Codec) {
+	cdc.RegisterConcrete(MsgDistribution{}, "dispensation/create", nil)
+	cdc.RegisterConcrete(MsgCreateClaim{}, "dispensation/claim", nil)
+	cdc.RegisterConcrete(MsgRunDistribution{}, "dispensation/run", nil)
+>>>>>>> develop
 }
 
 var (

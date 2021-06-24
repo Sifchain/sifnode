@@ -13,8 +13,13 @@ func (k Keeper) SetDistribution(ctx sdk.Context, distribution types.Distribution
 		return errors.Wrapf(types.ErrInvalid, "Record Details : %s", distribution.String())
 	}
 	store := ctx.KVStore(k.storeKey)
+<<<<<<< HEAD
 	key := types.GetDistributionsKey(ar.DistributionName, ar.DistributionType)
 	store.Set(key, k.cdc.MustMarshalBinaryBare(&ar))
+=======
+	key := types.GetDistributionsKey(distribution.DistributionName, distribution.DistributionType)
+	store.Set(key, k.cdc.MustMarshalBinaryBare(distribution))
+>>>>>>> develop
 	return nil
 }
 

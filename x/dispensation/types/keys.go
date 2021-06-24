@@ -19,6 +19,7 @@ const (
 	RouterKey = ModuleName
 
 	// QuerierRoute to be used for querier msgs
+<<<<<<< HEAD
 	QuerierRoute       = ModuleName
 	DefaultParamspace  = ModuleName
 	MaxRecordsPerBlock = 10
@@ -41,6 +42,26 @@ func GetDistributionRecordKey(status DistributionStatus, name string, recipient 
 	default:
 		return append(DistributionRecordPrefixCompleted, key...)
 	}
+=======
+	QuerierRoute      = ModuleName
+	DefaultParamspace = ModuleName
+	TokenSupported    = "rowan"
+)
+
+var (
+	DistributionRecordPrefix = []byte{0x00} // key for storing DistributionRecords
+	DistributionsPrefix      = []byte{0x01} // key for storing airdropRecords
+	// Would need to verify usage for byte 02,03 and 04
+	UserClaimPrefix                = []byte{0x05} // key for storing airdropRecords
+	DistributionRecordPrefixFailed = []byte{0x06} // key for storing DistributionRecords
+)
+
+// A distribution records is unique for name_recipientAddress
+// key format  :  Height_Distributor_Receipient_DistributionType
+func GetDistributionRecordKey(name string, recipient string, distributionType string) []byte {
+	key := []byte(fmt.Sprintf("%s_%s_%s", name, distributionType, recipient))
+	return append(DistributionRecordPrefix, key...)
+>>>>>>> develop
 }
 
 // A distribution faile records is the similar to GetDistributionRecordKey , but uses a different prefix

@@ -2,10 +2,17 @@ package utils_test
 
 import (
 	"encoding/json"
+<<<<<<< HEAD
 	"fmt"
+=======
+	"github.com/Sifchain/sifnode/x/dispensation/test"
+	"github.com/Sifchain/sifnode/x/dispensation/utils"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/cosmos-sdk/x/bank"
+	"github.com/stretchr/testify/assert"
+>>>>>>> develop
 	"io/ioutil"
 	"os"
-	"path/filepath"
 	"testing"
 
 	"github.com/Sifchain/sifnode/x/dispensation/test"
@@ -80,6 +87,7 @@ func TestParseOutput(t *testing.T) {
 	assert.Equal(t, len(outputs), count)
 }
 
+<<<<<<< HEAD
 // TODO Add the following utils as its own separate cmd
 
 func TestAddressFilter(t *testing.T) {
@@ -143,4 +151,17 @@ func TestSplitBetweenReciepients(t *testing.T) {
 	tempInput := utils.TempInput{In: inputList}
 	f, _ := json.MarshalIndent(tempInput, "", " ")
 	_ = ioutil.WriteFile("input.json", f, 0600)
+=======
+func TestTotalOutput(t *testing.T) {
+	file := "output.json"
+	count := 3000
+	createOutput(file, count)
+	defer removeFile(t, file)
+	outputs, err := utils.ParseOutput(file)
+	assert.NoError(t, err)
+	total, err := utils.TotalOutput(outputs)
+	assert.NoError(t, err)
+	num, _ := sdk.NewIntFromString("30000000000000000000000")
+	assert.True(t, total.AmountOf("rowan").Equal(num))
+>>>>>>> develop
 }
