@@ -31,11 +31,10 @@ func (q Querier) AllDistributions(ctx context.Context,
 
 func (q Querier) ClaimsByType(ctx context.Context,
 	request *types.QueryClaimsByTypeRequest) (*types.QueryClaimsResponse, error) {
-
 	claims := q.keeper.GetClaimsByType(sdk.UnwrapSDKContext(ctx), request.UserClaimType)
-	Claims := make([]*types.UserClaim, 0, len(claims))
-	for i := range claims {
-		Claims = append(Claims, &claims[i])
+	Claims := make([]*types.UserClaim, len(claims.UserClaims))
+	for i, claim := range claims.UserClaims {
+		Claims[i] = claim
 	}
 	return &types.QueryClaimsResponse{
 		Claims: Claims,
@@ -43,11 +42,10 @@ func (q Querier) ClaimsByType(ctx context.Context,
 }
 
 func (q Querier) RecordsByDistributionName(ctx context.Context, request *types.QueryRecordsByDistributionNameRequest) (*types.QueryRecordsByDistributionNameResponse, error) {
-	records := new(types.DistributionRecords)
-	*records = q.keeper.GetRecordsForName(sdk.UnwrapSDKContext(ctx), request.DistributionName, request.Status)
+	records := q.keeper.GetRecordsForNameAndStatus(sdk.UnwrapSDKContext(ctx), request.DistributionName, request.Status)
 	if request.Status == types.DistributionStatus_DISTRIBUTION_STATUS_UNSPECIFIED {
 		records.DistributionRecords = append(records.DistributionRecords,
-			q.keeper.GetRecordsForName(sdk.UnwrapSDKContext(ctx), request.DistributionName, types.DistributionStatus_DISTRIBUTION_STATUS_PENDING).DistributionRecords...)
+			q.keeper.GetRecordsForNameAndStatus(sdk.UnwrapSDKContext(ctx), request.DistributionName, types.DistributionStatus_DISTRIBUTION_STATUS_PENDING).DistributionRecords...)
 	}
 	return &types.QueryRecordsByDistributionNameResponse{
 		DistributionRecords: records,
@@ -58,6 +56,6 @@ func (q Querier) RecordsByRecipient(ctx context.Context, request *types.QueryRec
 	records := q.keeper.GetRecordsForRecipient(sdk.UnwrapSDKContext(ctx), request.Address)
 
 	return &types.QueryRecordsByRecipientAddrResponse{
-		DistributionRecords: &records,
+		DistributionRecords: records,
 	}, nil
 }

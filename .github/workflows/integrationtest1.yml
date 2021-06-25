@@ -22,4 +22,10 @@ jobs:
           source $HOME/.bash_profile
           . test/integration/vagrantenv.sh
           export LOG_LEVEL=DEBUG
-          bash test/integration/execute_integration_tests_against_test_chain.sh
+          bash test/integration/execute_integration_tests_against_test_chain_peg.sh
+      - name: Archive logs from test
+        uses: actions/upload-artifact@v2
+        if: always()
+        with:
+          name: testlogs1
+          path: test/integration

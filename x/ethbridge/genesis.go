@@ -37,7 +37,7 @@ func ExportGenesis(ctx sdk.Context, keeper keeper.Keeper) *types.GenesisState {
 	receiveAccount := keeper.GetCethReceiverAccount(ctx)
 
 	return &types.GenesisState{
-		PeggyTokens: peggyTokens.Tokens,
+		PeggyTokens:        peggyTokens.Tokens,
 		CethReceiveAccount: receiveAccount.String(),
 	}
 }

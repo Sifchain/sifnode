@@ -13,8 +13,8 @@ import (
 )
 
 const (
-	burnGasCost = 160000000000 * 393000 // assuming 160gigawei gas prices
-	lockGasCost = 160000000000 * 393000
+	burnGasCost = 60000000000 * 393000 // assuming 60gigawei gas prices
+	lockGasCost = 60000000000 * 393000
 )
 
 // NewMsgLock is a constructor function for MsgLock

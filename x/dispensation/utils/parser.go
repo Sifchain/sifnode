@@ -2,7 +2,9 @@ package utils
 
 import (
 	"encoding/json"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/bank/types"
+	"github.com/pkg/errors"
 	"io/ioutil"
 	"path/filepath"
 )
@@ -48,4 +50,15 @@ func ParseOutput(fp string) ([]types.Output, error) {
 		return nil, err
 	}
 	return outputs.Out, nil
+}
+
+func TotalOutput(output []types.Output) (sdk.Coins, error) {
+	if len(output) == 0 {
+		return sdk.Coins{}, errors.Wrapf(types.ErrNoOutputs, "Outputlist is empty")
+	}
+	total := output[0].Coins
+	for i := 1; i < len(output); i++ {
+		total = total.Add(output[i].Coins...)
+	}
+	return total, nil
 }
