@@ -2,7 +2,7 @@ version: '3'
 
 services:
   sifnode0:
-    image: sifchain/sifnoded:latest
+    image: sifchain/sifnode:latest
     ports:
       - 1317:1317
       - 26656:26656
@@ -20,7 +20,7 @@ services:
         ipv4_address: ${IPADDR0}
 
   sifnode1:
-    image: sifchain/sifnoded:latest
+    image: sifchain/sifnode:latest
     ports:
       - 2317:1317
       - 36656:26656

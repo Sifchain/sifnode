@@ -81,9 +81,6 @@ run:
 build-image:
 	docker build -t sifchain/$(BINARY):$(IMAGE_TAG) -f ./cmd/$(BINARY)/Dockerfile .
 
-build-ts-relayer-image:
-	docker build -t sifchain/ts-relayer:$(IMAGE_TAG) -f ./deploy/docker/localnet/ibc/ts-relayer/Dockerfile .
-
 run-image: build-image
 	docker run sifchain/$(BINARY):$(IMAGE_TAG)
 
