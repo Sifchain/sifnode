@@ -38,7 +38,7 @@ func InitGenesis(ctx sdk.Context, k keeper.Keeper, data types.GenesisState) (res
 			panic(fmt.Sprintf("Pool could not be set : %s", pool.String()))
 		}
 	}
-	for _, lp := range data.LiquidityProviders {
+	for _, lp := range data.LiquidityProviderList {
 		k.SetLiquidityProvider(ctx, lp)
 	}
 
@@ -60,10 +60,10 @@ func ExportGenesis(ctx sdk.Context, keeper keeper.Keeper) types.GenesisState {
 	}
 
 	return types.GenesisState{
-		Params:             params,
-		AddressWhitelist:   wl,
-		PoolList:           poolList,
-		LiquidityProviders: liquidityProviders,
+		Params:                params,
+		AddressWhitelist:      wl,
+		PoolList:              poolList,
+		LiquidityProviderList: liquidityProviders,
 	}
 }
 
@@ -77,7 +77,7 @@ func ValidateGenesis(data types.GenesisState) error {
 			return sdkerrors.Wrap(types.ErrInvalid, fmt.Sprintf("clp: pool is invalid : %s", pool.String()))
 		}
 	}
-	for _, lp := range data.LiquidityProviders {
+	for _, lp := range data.LiquidityProviderList {
 		if !lp.Validate() {
 			return sdkerrors.Wrap(types.ErrInvalid, fmt.Sprintf("clp: liquidityProvider is invalid : %s", lp.String()))
 		}
