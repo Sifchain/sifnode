@@ -4,7 +4,6 @@
 # if we don't sleep there are issues
 sleep 10
 
-# create liquidity pool from catk:rowan
 echo "create liquidity pool from catk:rowan"
 
 
@@ -85,7 +84,7 @@ sifnoded tx clp create-pool \
 sleep 5
 
 echo "create liquidity pool from ctest:rowan"
-sifnodecli tx clp create-pool \
+sifnoded tx clp create-pool \
  --chain-id=sifchain-local \
  --keyring-backend=test \
  --from akasha \
