@@ -86,6 +86,8 @@ sleep 5
 
 echo "create liquidity pool from ctest:rowan"
 sifnodecli tx clp create-pool \
+ --chain-id=sifchain-local \
+ --keyring-backend=test \
  --from akasha \
  --symbol ctest \
  --fees 100000rowan \
