@@ -10,6 +10,7 @@ on:
       - master
       - testnet
       - feature/cosmos-0.42
+      - feature/cosmos-0.42-/bad-merge
 
 jobs:
   build_ui_stack:
