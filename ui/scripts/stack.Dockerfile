@@ -17,7 +17,6 @@ WORKDIR /sif
 
 COPY go.mod go.sum ./
 RUN go mod download
-RUN go get github.com/cosmos/cosmos-sdk/cosmovisor/cmd/cosmovisor
 
 COPY . .
 
