@@ -38,7 +38,4 @@ sifnoded validate-genesis
 
 echo "Starting test chain"
 
-parallelizr "sifnoded start"
-
-
-#sifnoded start --log_level="main:info,state:error,statesync:info,*:error"
+./start.sh
