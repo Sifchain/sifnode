@@ -8,7 +8,7 @@ BRANCH=$(git rev-parse --abbrev-ref HEAD)
 
 IMAGE_ROOT=ghcr.io/sifchain/sifnode/ui-stack
 IMAGE_NAME=$IMAGE_ROOT:$COMMIT
-STABLE_TAG=$IMAGE_ROOT:${BRANCH/\//__}
+STABLE_TAG=$IMAGE_ROOT:${BRANCH//\//__}
 
 ./scripts/ensure-docker-logged-in.sh
 
