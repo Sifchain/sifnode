@@ -1,6 +1,9 @@
 package types
 
 import (
+	"fmt"
+	"strconv"
+
 	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -36,7 +39,17 @@ func NewEthBridgeClaim(
 
 // GetProphecyID compute oracle id, get from keccak256 of the all content in claim
 func (claim *EthBridgeClaim) GetProphecyID() string {
-	allContentString := claim.String()
+	allContentString := fmt.Sprintf("%s%s%s%s%s%s%s%s%s",
+		claim.NetworkId.String(),
+		claim.BridgeContractAddress,
+		strconv.Itoa(int(claim.Nonce)),
+		claim.Symbol,
+		claim.TokenContractAddress,
+		claim.EthereumSender,
+		claim.CosmosReceiver,
+		claim.Amount.String(),
+		claim.ClaimType.String(),
+	)
 	claimBytes := []byte(allContentString)
 	hashBytes := crypto.Keccak256(claimBytes)
 	return string(hashBytes)

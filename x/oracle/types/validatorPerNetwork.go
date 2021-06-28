@@ -25,30 +25,19 @@ func (list *ValidatorWhiteList) ContainValidator(validator sdk.ValAddress) bool 
 }
 
 // GetPowerRatio return the power ratio of input validator address list
-func (list *ValidatorWhiteList) GetPowerRatio(claimValidators map[string][]sdk.ValAddress) (string, float64, float64) {
+func (list *ValidatorWhiteList) GetPowerRatio(claimValidators []string) float64 {
 	var totalPower = uint32(0)
-	for _, value := range list.GetWhiteList() {
+	var votePower = uint32(0)
+	for key, value := range list.GetWhiteList() {
 		totalPower += value
-	}
-
-	var totalClaimPower = uint32(0)
-	var highestClaimPower = uint32(0)
-	var highestString = ""
-
-	for claim, validatorAddresses := range claimValidators {
-		claimPower := uint32(0)
-		for _, address := range validatorAddresses {
-			claimPower += list.GetValidatorPower(address)
-		}
-
-		totalClaimPower += claimPower
-		if claimPower > highestClaimPower {
-			highestClaimPower = claimPower
-			highestString = claim
+		for _, validator := range claimValidators {
+			if key == validator {
+				votePower += value
+			}
 		}
 	}
 
-	return highestString, float64(highestClaimPower) / float64(totalPower), float64(totalClaimPower-highestClaimPower) / float64(totalPower)
+	return float64(votePower) / float64(totalPower)
 }
 
 // GetAllValidators return all validators

@@ -76,7 +76,9 @@ func (k Keeper) GetProphecy(ctx sdk.Context, id string) (types.Prophecy, bool) {
 // SetProphecy saves a prophecy with an initial claim
 func (k Keeper) SetProphecy(ctx sdk.Context, prophecy types.Prophecy) {
 	store := ctx.KVStore(k.storeKey)
-	store.Set([]byte(prophecy.Id), k.cdc.MustMarshalBinaryBare(&prophecy))
+	storePrefix := fmt.Sprintf("%s_%s", types.ProphecyPrefix, prophecy.Id)
+
+	store.Set([]byte(storePrefix), k.cdc.MustMarshalBinaryBare(&prophecy))
 }
 
 func (k Keeper) ProcessClaim(ctx sdk.Context, networkID types.NetworkID, prophecyID, validator string) (types.StatusText, error) {
@@ -107,19 +109,30 @@ func (k Keeper) ProcessClaim(ctx sdk.Context, networkID types.NetworkID, prophec
 
 	prophecy, ok := k.GetProphecy(ctx, prophecyID)
 	if !ok {
+
 		prophecy.Id = prophecyID
 		prophecy.Status = types.StatusText_STATUS_TEXT_PENDING
 	}
 
 	switch prophecy.Status {
 	case types.StatusText_STATUS_TEXT_PENDING:
-		prophecy.AddClaim(valAddr)
-		prophecy = k.processCompletion(ctx, prophecy)
+
+		err = prophecy.AddClaim(valAddr)
+		if err != nil {
+			return types.StatusText_STATUS_TEXT_UNSPECIFIED, err
+
+		}
+
+		prophecy = k.processCompletion(ctx, networkID, prophecy)
 		k.SetProphecy(ctx, prophecy)
 		return prophecy.Status, nil
 
 	case types.StatusText_STATUS_TEXT_SUCCESS:
-		prophecy.AddClaim(valAddr)
+
+		err = prophecy.AddClaim(valAddr)
+		if err != nil {
+			return types.StatusText_STATUS_TEXT_UNSPECIFIED, err
+		}
 		k.SetProphecy(ctx, prophecy)
 		return prophecy.Status, types.ErrProphecyFinalized
 
@@ -151,9 +164,11 @@ func (k Keeper) ProcessUpdateWhiteListValidator(ctx sdk.Context, networkID types
 }
 
 // processCompletion looks at a given prophecy
-func (k Keeper) processCompletion(ctx sdk.Context, prophecy types.Prophecy) types.Prophecy {
+func (k Keeper) processCompletion(ctx sdk.Context, networkID types.NetworkID, prophecy types.Prophecy) types.Prophecy {
+	whiteList := k.GetOracleWhiteList(ctx, types.NewNetworkDescriptor(networkID))
+	voteRate := whiteList.GetPowerRatio(prophecy.ClaimValidators)
+	fmt.Printf("processCompletion oracle vote rate is %f \n", voteRate)
 
-	voteRate := prophecy.GetVoteRate(ctx)
 	if voteRate >= k.consensusNeeded {
 		prophecy.Status = types.StatusText_STATUS_TEXT_SUCCESS
 	}

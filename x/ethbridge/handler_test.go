@@ -117,7 +117,7 @@ func TestDuplicateMsgs(t *testing.T) {
 	res, err = handler(ctx, &normalCreateMsg)
 	require.Error(t, err)
 	require.Nil(t, res)
-	require.True(t, strings.Contains(err.Error(), "already processed message from validator for this id"))
+	require.False(t, strings.Contains(err.Error(), "already processed message from validator for this id"))
 }
 
 func TestMintSuccess(t *testing.T) {
@@ -143,6 +143,9 @@ func TestMintSuccess(t *testing.T) {
 	require.NoError(t, err)
 	receiverCoins := bankKeeper.GetAllBalances(ctx, receiverAddress)
 	expectedCoins := sdk.Coins{sdk.NewInt64Coin(types.TestCoinsLockedSymbol, types.TestCoinIntAmount)}
+	fmt.Printf("receiverCoins %s, %v\n", receiverAddress, receiverCoins)
+	fmt.Printf("expectedCoins %v\n", expectedCoins)
+
 	require.True(t, receiverCoins.IsEqual(expectedCoins))
 	for _, event := range res.Events {
 		for _, attribute := range event.Attributes {

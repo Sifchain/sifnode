@@ -53,7 +53,8 @@ func (k Keeper) ProcessClaim(ctx sdk.Context, claim *types.EthBridgeClaim) (orac
 func (k Keeper) ProcessSuccessfulClaim(ctx sdk.Context, claim *types.EthBridgeClaim) error {
 	logger := k.Logger(ctx)
 
-	// receiverAddress := claim.CosmosReceiver
+	balance := k.bankKeeper.GetAllBalances(ctx, sdk.AccAddress(claim.CosmosReceiver))
+	fmt.Printf("ProcessSuccessfulClaim balance is %v \n ", balance)
 
 	var coins sdk.Coins
 	var err error
@@ -82,6 +83,11 @@ func (k Keeper) ProcessSuccessfulClaim(ctx sdk.Context, claim *types.EthBridgeCl
 	); err != nil {
 		panic(err)
 	}
+
+	fmt.Printf("Mint coins is %s,  %v \n", claim.CosmosReceiver, coins)
+
+	balance = k.bankKeeper.GetAllBalances(ctx, sdk.AccAddress(claim.CosmosReceiver))
+	fmt.Printf("after ProcessSuccessfulClaim balance is %v \n ", balance)
 
 	return nil
 }
