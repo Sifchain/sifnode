@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/Sifchain/sifnode/cmd/ebrelayer/internal/symbol_translator"
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/txs"
 	ebrelayertypes "github.com/Sifchain/sifnode/cmd/ebrelayer/types"
 	flag "github.com/spf13/pflag"
@@ -294,14 +295,14 @@ func listMissedCosmosEventCmd() *cobra.Command {
 	return listMissedCosmosEventCmd
 }
 
-func buildSymbolTranslator(flags *flag.FlagSet) (*txs.SymbolTranslator, error) {
+func buildSymbolTranslator(flags *flag.FlagSet) (*symbol_translator.SymbolTranslator, error) {
 	filename, err := flags.GetString(ebrelayertypes.FlagSymbolTranslatorFile)
 	// If FlagSymbolTranslatorFile isn't specified, just use an empty SymbolTranslator
 	if err != nil || filename == "" {
-		return txs.NewSymbolTranslator(), nil
+		return symbol_translator.NewSymbolTranslator(), nil
 	}
 
-	symbolTranslator, err := txs.NewSymbolTranslatorFromJSONFile(filename)
+	symbolTranslator, err := symbol_translator.NewSymbolTranslatorFromJSONFile(filename)
 	if err != nil {
 		return nil, err
 	}

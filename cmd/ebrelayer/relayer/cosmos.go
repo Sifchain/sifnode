@@ -9,6 +9,7 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
+	"github.com/Sifchain/sifnode/cmd/ebrelayer/internal/symbol_translator"
 	"log"
 	"math/big"
 	"os"
@@ -65,7 +66,7 @@ func NewCosmosSub(tmProvider, ethProvider string, registryContractAddress common
 }
 
 // Start a Cosmos chain subscription
-func (sub CosmosSub) Start(completionEvent *sync.WaitGroup, symbolTranslator *txs.SymbolTranslator) {
+func (sub CosmosSub) Start(completionEvent *sync.WaitGroup, symbolTranslator *symbol_translator.SymbolTranslator) {
 	defer completionEvent.Done()
 	time.Sleep(time.Second)
 	client, err := tmClient.New(sub.TmProvider, "/websocket")
@@ -291,7 +292,7 @@ func MessageProcessed(message types.CosmosMsg, prophecyClaims []types.ProphecyCl
 }
 
 // Replay the missed events
-func (sub CosmosSub) Replay(symbolTranslator *txs.SymbolTranslator, fromBlock int64, toBlock int64, ethFromBlock int64, ethToBlock int64) {
+func (sub CosmosSub) Replay(symbolTranslator *symbol_translator.SymbolTranslator, fromBlock int64, toBlock int64, ethFromBlock int64, ethToBlock int64) {
 	// Start Ethereum client
 	ethClient, err := ethclient.Dial(sub.EthProvider)
 	if err != nil {

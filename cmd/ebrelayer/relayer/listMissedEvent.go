@@ -4,6 +4,7 @@ package relayer
 
 import (
 	"context"
+	"github.com/Sifchain/sifnode/cmd/ebrelayer/internal/symbol_translator"
 	"log"
 
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/txs"
@@ -38,7 +39,7 @@ func NewListMissedCosmosEvent(tmProvider, ethProvider string, registryContractAd
 }
 
 // ListMissedCosmosEvent print all missed cosmos events by this ebrelayer in days
-func (list ListMissedCosmosEvent) ListMissedCosmosEvent(symbolTranslator *txs.SymbolTranslator) {
+func (list ListMissedCosmosEvent) ListMissedCosmosEvent(symbolTranslator *symbol_translator.SymbolTranslator) {
 	log.Println("ListMissedCosmosEvent started")
 	// Start Ethereum client
 	ethClient, err := ethclient.Dial(list.EthProvider)

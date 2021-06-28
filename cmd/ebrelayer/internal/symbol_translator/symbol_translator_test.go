@@ -1,4 +1,4 @@
-package txs
+package symbol_translator
 
 import (
 	"github.com/stretchr/testify/assert"

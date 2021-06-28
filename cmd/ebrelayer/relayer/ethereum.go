@@ -6,6 +6,7 @@ import (
 	"context"
 	"crypto/ecdsa"
 	"fmt"
+	"github.com/Sifchain/sifnode/cmd/ebrelayer/internal/symbol_translator"
 	"log"
 	"math/big"
 	"os"
@@ -90,7 +91,7 @@ func NewEthereumSub(
 }
 
 // Start an Ethereum chain subscription
-func (sub EthereumSub) Start(txFactory tx.Factory, completionEvent *sync.WaitGroup, symbolTranslator *txs.SymbolTranslator) {
+func (sub EthereumSub) Start(txFactory tx.Factory, completionEvent *sync.WaitGroup, symbolTranslator *symbol_translator.SymbolTranslator) {
 	defer completionEvent.Done()
 	time.Sleep(time.Second)
 	ethClient, err := SetupWebsocketEthClient(sub.EthProvider)
@@ -307,7 +308,7 @@ func EventProcessed(bridgeClaims []types.EthereumBridgeClaim, event types.Ethere
 }
 
 // Replay the missed events
-func (sub EthereumSub) Replay(txFactory tx.Factory, fromBlock int64, toBlock int64, cosmosFromBlock int64, cosmosToBlock int64, symbolTranslator *txs.SymbolTranslator) {
+func (sub EthereumSub) Replay(txFactory tx.Factory, fromBlock int64, toBlock int64, cosmosFromBlock int64, cosmosToBlock int64, symbolTranslator *symbol_translator.SymbolTranslator) {
 	log.Printf("ethereum replay for %d block to %d block\n", fromBlock, toBlock)
 
 	bridgeClaims := sub.getAllClaims(cosmosFromBlock, cosmosToBlock)
@@ -417,7 +418,7 @@ func GetValAddressFromKeyring(k keyring.Keyring, keyname string) (sdk.ValAddress
 }
 
 // handleEthereumEvent unpacks an Ethereum event, converts it to a ProphecyClaim, and relays a tx to Cosmos
-func (sub EthereumSub) handleEthereumEvent(txFactory tx.Factory, events []types.EthereumEvent, symbolTranslator *txs.SymbolTranslator) error {
+func (sub EthereumSub) handleEthereumEvent(txFactory tx.Factory, events []types.EthereumEvent, symbolTranslator *symbol_translator.SymbolTranslator) error {
 	var prophecyClaims []*ethbridge.EthBridgeClaim
 	valAddr, err := GetValAddressFromKeyring(txFactory.Keybase(), sub.ValidatorName)
 	if err != nil {

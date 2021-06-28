@@ -1,4 +1,4 @@
-package utilities
+package bimap_with_default
 
 import "github.com/vishalkuo/bimap"
 

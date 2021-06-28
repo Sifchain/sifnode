@@ -1,8 +1,8 @@
-package txs
+package symbol_translator
 
 import (
 	"encoding/json"
-	"github.com/Sifchain/sifnode/x/utilities"
+	bimap2 "github.com/Sifchain/sifnode/cmd/ebrelayer/internal/bimap_with_default"
 	"github.com/vishalkuo/bimap"
 	"io/ioutil"
 )
@@ -13,11 +13,11 @@ type SymbolTranslator struct {
 }
 
 func (s *SymbolTranslator) SifchainToEthereum(denom string) string {
-	return utilities.GetWithDefault(s.symbolTable, denom, denom).(string)
+	return bimap2.GetWithDefault(s.symbolTable, denom, denom).(string)
 }
 
 func (s *SymbolTranslator) EthereumToSifchain(symbol string) string {
-	return utilities.GetInverseWithDefault(s.symbolTable, symbol, symbol).(string)
+	return bimap2.GetInverseWithDefault(s.symbolTable, symbol, symbol).(string)
 }
 
 func NewSymbolTranslator() *SymbolTranslator {
