@@ -47,9 +47,9 @@ func Migrate(state v039dispensation.GenesisState) *types.GenesisState {
 	}
 
 	return &types.GenesisState{
-		DistributionRecords: &types.DistributionRecords{records},
-		Distributions:       &types.Distributions{distributions},
-		Claims:              &types.UserClaims{claims},
+		DistributionRecords: &types.DistributionRecords{DistributionRecords: records},
+		Distributions:       &types.Distributions{Distributions: distributions},
+		Claims:              &types.UserClaims{UserClaims: claims},
 	}
 }
 
