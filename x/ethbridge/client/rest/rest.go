@@ -20,44 +20,44 @@ import (
 )
 
 const (
-	restNetworkID      = "networkID"
-	restBridgeContract = "bridgeContract"
-	restNonce          = "nonce"
-	restSymbol         = "symbol"
-	restTokenContract  = "tokenContract"
-	restEthereumSender = "ethereumSender"
+	restNetworkDescriptor = "networkDescriptor"
+	restBridgeContract    = "bridgeContract"
+	restNonce             = "nonce"
+	restSymbol            = "symbol"
+	restTokenContract     = "tokenContract"
+	restEthereumSender    = "ethereumSender"
 )
 
 type createEthClaimReq struct {
-	BaseReq               rest.BaseReq          `json:"base_req"`
-	NetworkID             oracletypes.NetworkID `json:"network_id"`
-	BridgeContractAddress string                `json:"bridge_registry_contract_address"`
-	Nonce                 int                   `json:"nonce"`
-	Symbol                string                `json:"symbol"`
-	TokenContractAddress  string                `json:"token_contract_address"`
-	EthereumSender        string                `json:"ethereum_sender"`
-	CosmosReceiver        string                `json:"cosmos_receiver"`
-	Validator             string                `json:"validator"`
-	Amount                sdk.Int               `json:"amount"`
-	ClaimType             string                `json:"claim_type"`
+	BaseReq               rest.BaseReq                  `json:"base_req"`
+	NetworkDescriptor     oracletypes.NetworkDescriptor `json:"network_id"`
+	BridgeContractAddress string                        `json:"bridge_registry_contract_address"`
+	Nonce                 int                           `json:"nonce"`
+	Symbol                string                        `json:"symbol"`
+	TokenContractAddress  string                        `json:"token_contract_address"`
+	EthereumSender        string                        `json:"ethereum_sender"`
+	CosmosReceiver        string                        `json:"cosmos_receiver"`
+	Validator             string                        `json:"validator"`
+	Amount                sdk.Int                       `json:"amount"`
+	ClaimType             string                        `json:"claim_type"`
 }
 
 type burnOrLockEthReq struct {
-	BaseReq          rest.BaseReq `json:"base_req"`
-	NetworkID        string       `json:"network_id"`
-	TokenContract    string       `json:"token_contract_address"`
-	CosmosSender     string       `json:"cosmos_sender"`
-	EthereumReceiver string       `json:"ethereum_receiver"`
-	Amount           sdk.Int      `json:"amount"`
-	Symbol           string       `json:"symbol"`
-	CethAmount       sdk.Int      `json:"ceth_amount" yaml:"ceth_amount"`
+	BaseReq           rest.BaseReq `json:"base_req"`
+	NetworkDescriptor string       `json:"network_id"`
+	TokenContract     string       `json:"token_contract_address"`
+	CosmosSender      string       `json:"cosmos_sender"`
+	EthereumReceiver  string       `json:"ethereum_receiver"`
+	Amount            sdk.Int      `json:"amount"`
+	Symbol            string       `json:"symbol"`
+	CethAmount        sdk.Int      `json:"ceth_amount" yaml:"ceth_amount"`
 }
 
 // RegisterRESTRoutes - Central function to define routes that get registered by the main application
 func RegisterRESTRoutes(cliCtx client.Context, r *mux.Router, storeName string) {
 	getProhechyRoute := fmt.Sprintf(
 		"/%s/prophecies/{%s}/{%s}/{%s}/{%s}/{%s}/{%s}",
-		storeName, restNetworkID, restBridgeContract, restNonce,
+		storeName, restNetworkDescriptor, restBridgeContract, restNonce,
 		restSymbol, restTokenContract, restEthereumSender)
 
 	r.HandleFunc(fmt.Sprintf("/%s/prophecies", storeName), createClaimHandler(cliCtx)).Methods("POST")
@@ -107,7 +107,7 @@ func createClaimHandler(cliCtx client.Context) http.HandlerFunc {
 
 		// create the message
 		ethBridgeClaim := types.NewEthBridgeClaim(
-			req.NetworkID, bridgeContractAddress, int64(req.Nonce), req.Symbol,
+			req.NetworkDescriptor, bridgeContractAddress, int64(req.Nonce), req.Symbol,
 			tokenContractAddress, ethereumSender, cosmosReceiver, validator, req.Amount, ct)
 		msg := types.NewMsgCreateEthBridgeClaim(ethBridgeClaim)
 		err = msg.ValidateBasic()
@@ -124,8 +124,8 @@ func getProphecyHandler(cliCtx client.Context, storeName string) http.HandlerFun
 	return func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
 
-		networkIDString := vars[restNetworkID]
-		networkID, err := strconv.ParseInt(networkIDString, 10, 64)
+		networkDescriptorString := vars[restNetworkDescriptor]
+		networkDescriptor, err := strconv.ParseInt(networkDescriptorString, 10, 64)
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusInternalServerError, err.Error())
 			return
@@ -152,7 +152,7 @@ func getProphecyHandler(cliCtx client.Context, storeName string) http.HandlerFun
 
 		bz, err := cliCtx.LegacyAmino.MarshalJSON(
 			types.NewQueryEthProphecyRequest(
-				oracletypes.NetworkID(networkID), bridgeContract, nonceString, symbol, tokenContract, ethereumSender))
+				oracletypes.NetworkDescriptor(networkDescriptor), bridgeContract, nonceString, symbol, tokenContract, ethereumSender))
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusNotFound, err.Error())
 			return
@@ -183,7 +183,7 @@ func burnOrLockHandler(cliCtx client.Context, lockOrBurn string) http.HandlerFun
 			return
 		}
 
-		networkID, err := strconv.Atoi(req.NetworkID)
+		networkDescriptor, err := strconv.Atoi(req.NetworkDescriptor)
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusInternalServerError, err.Error())
 			return
@@ -201,10 +201,10 @@ func burnOrLockHandler(cliCtx client.Context, lockOrBurn string) http.HandlerFun
 		var msg sdk.Msg
 		switch lockOrBurn {
 		case "lock":
-			msgLock := types.NewMsgLock(oracletypes.NetworkID(networkID), cosmosSender, ethereumReceiver, req.Amount, req.Symbol, req.CethAmount)
+			msgLock := types.NewMsgLock(oracletypes.NetworkDescriptor(networkDescriptor), cosmosSender, ethereumReceiver, req.Amount, req.Symbol, req.CethAmount)
 			msg = &msgLock
 		case "burn":
-			msgBurn := types.NewMsgBurn(oracletypes.NetworkID(networkID), cosmosSender, ethereumReceiver, req.Amount, req.Symbol, req.CethAmount)
+			msgBurn := types.NewMsgBurn(oracletypes.NetworkDescriptor(networkDescriptor), cosmosSender, ethereumReceiver, req.Amount, req.Symbol, req.CethAmount)
 			msg = &msgBurn
 		}
 		err = msg.ValidateBasic()

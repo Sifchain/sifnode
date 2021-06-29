@@ -98,7 +98,7 @@ func GetCmdCreateEthBridgeClaim() *cobra.Command {
 			}
 			ct := types.ClaimType(claimType)
 
-			ethBridgeClaim := types.NewEthBridgeClaim(oracletypes.NetworkID(ethereumChainID), bridgeContract, nonce, symbol, tokenContract,
+			ethBridgeClaim := types.NewEthBridgeClaim(oracletypes.NetworkDescriptor(ethereumChainID), bridgeContract, nonce, symbol, tokenContract,
 				ethereumSender, cosmosReceiver, validator, bigIntAmount, ct)
 
 			msg := types.NewMsgCreateEthBridgeClaim(ethBridgeClaim)
@@ -168,7 +168,7 @@ func GetCmdBurn() *cobra.Command {
 				return errors.New("Error parsing ceth amount")
 			}
 
-			msg := types.NewMsgBurn(oracletypes.NetworkID(ethereumChainID), cosmosSender, ethereumReceiver, amount, symbol, cethAmount)
+			msg := types.NewMsgBurn(oracletypes.NetworkDescriptor(ethereumChainID), cosmosSender, ethereumReceiver, amount, symbol, cethAmount)
 			if err := msg.ValidateBasic(); err != nil {
 				return err
 			}
@@ -241,7 +241,7 @@ func GetCmdLock() *cobra.Command {
 				return errors.New("Error parsing ceth amount")
 			}
 
-			msg := types.NewMsgLock(oracletypes.NetworkID(ethereumChainID), cosmosSender, ethereumReceiver, amount, symbol, cethAmount)
+			msg := types.NewMsgLock(oracletypes.NetworkDescriptor(ethereumChainID), cosmosSender, ethereumReceiver, amount, symbol, cethAmount)
 			if err := msg.ValidateBasic(); err != nil {
 				return err
 			}
@@ -272,7 +272,7 @@ func GetCmdUpdateWhiteListValidator() *cobra.Command {
 				return err
 			}
 
-			networkID, err := strconv.Atoi(args[1])
+			networkDescriptor, err := strconv.Atoi(args[1])
 			if err != nil {
 				return errors.New("Error parsing network descriptor")
 			}
@@ -287,7 +287,7 @@ func GetCmdUpdateWhiteListValidator() *cobra.Command {
 				return err
 			}
 
-			msg := types.NewMsgUpdateWhiteListValidator(oracletypes.NetworkID(networkID), cosmosSender, validatorAddress, uint32(power))
+			msg := types.NewMsgUpdateWhiteListValidator(oracletypes.NetworkDescriptor(networkDescriptor), cosmosSender, validatorAddress, uint32(power))
 			if err := msg.ValidateBasic(); err != nil {
 				return err
 			}

@@ -214,7 +214,7 @@ func (sub EthereumSub) Start(txFactory tx.Factory, completionEvent *sync.WaitGro
 			// loop over ethlogs, and build an array of burn/lock events
 			for _, ethLog := range ethLogs {
 				log.Printf("Processed events from block %v", ethLog.BlockNumber)
-				event, isBurnLock, err := sub.logToEvent(oracletypes.NetworkID(networkID.Uint64()), bridgeBankAddress, bridgeBankContractABI, ethLog)
+				event, isBurnLock, err := sub.logToEvent(oracletypes.NetworkDescriptor(networkID.Uint64()), bridgeBankAddress, bridgeBankContractABI, ethLog)
 				if err != nil {
 					sub.SugaredLogger.Errorw("failed to transform from log to event.",
 						errorMessageKey, err.Error())
@@ -352,7 +352,7 @@ func (sub EthereumSub) Replay(txFactory tx.Factory, fromBlock int64, toBlock int
 
 	for _, ethLog := range logs {
 		// Before deal with it, we need check in cosmos if it is already handled by myself bofore.
-		event, isBurnLock, err := sub.logToEvent(oracletypes.NetworkID(networkID.Uint64()), subContractAddress, bridgeBankContractABI, ethLog)
+		event, isBurnLock, err := sub.logToEvent(oracletypes.NetworkDescriptor(networkID.Uint64()), subContractAddress, bridgeBankContractABI, ethLog)
 		if err != nil {
 			log.Println("Failed to get event from ethereum log")
 		} else if isBurnLock {
@@ -371,7 +371,7 @@ func (sub EthereumSub) Replay(txFactory tx.Factory, fromBlock int64, toBlock int
 }
 
 // logToEvent unpacks an Ethereum event
-func (sub EthereumSub) logToEvent(networkID oracletypes.NetworkID, contractAddress common.Address,
+func (sub EthereumSub) logToEvent(networkDescriptor oracletypes.NetworkDescriptor, contractAddress common.Address,
 	contractABI abi.ABI, cLog ctypes.Log) (types.EthereumEvent, bool, error) {
 	// Parse the event's attributes via contract ABI
 	event := types.EthereumEvent{}
@@ -398,7 +398,7 @@ func (sub EthereumSub) logToEvent(networkID oracletypes.NetworkID, contractAddre
 		return event, false, err
 	}
 	event.BridgeContractAddress = contractAddress
-	event.NetworkID = networkID
+	event.NetworkDescriptor = networkDescriptor
 	if eventName == types.LogBurn.String() {
 		event.ClaimType = ethbridge.ClaimType_CLAIM_TYPE_BURN
 	} else {

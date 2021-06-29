@@ -78,7 +78,7 @@ func RunReplayEthereumCmd(cmd *cobra.Command, args []string) error {
 // RunReplayCosmosCmd executes initRelayerCmd
 func RunReplayCosmosCmd(_ *cobra.Command, args []string) error {
 	// Validate and parse arguments
-	networkID, err := strconv.Atoi(args[0])
+	networkDescriptor, err := strconv.Atoi(args[0])
 	if err != nil {
 		return errors.Errorf("%s is invalid network descriptor", args[0])
 	}
@@ -124,9 +124,9 @@ func RunReplayCosmosCmd(_ *cobra.Command, args []string) error {
 		return errors.Errorf("invalid [eth-to-block]: %s", args[7])
 	}
 
-	// check if the networkID is valid
-	if !oracletypes.NetworkID(networkID).IsValid() {
-		return errors.Errorf("network id: %d is invalid", networkID)
+	// check if the networkDescriptor is valid
+	if !oracletypes.NetworkDescriptor(networkDescriptor).IsValid() {
+		return errors.Errorf("network id: %d is invalid", networkDescriptor)
 	}
 
 	logger, err := zap.NewProduction()
@@ -137,7 +137,7 @@ func RunReplayCosmosCmd(_ *cobra.Command, args []string) error {
 	sugaredLogger := logger.Sugar()
 
 	// Initialize new Cosmos event listener
-	cosmosSub := relayer.NewCosmosSub(oracletypes.NetworkID(networkID), privateKey, tendermintNode, web3Provider, contractAddress, nil, sugaredLogger)
+	cosmosSub := relayer.NewCosmosSub(oracletypes.NetworkDescriptor(networkDescriptor), privateKey, tendermintNode, web3Provider, contractAddress, nil, sugaredLogger)
 
 	cosmosSub.Replay(fromBlock, toBlock, ethFromBlock, ethToBlock)
 
@@ -147,14 +147,14 @@ func RunReplayCosmosCmd(_ *cobra.Command, args []string) error {
 // RunListMissedCosmosEventCmd executes initRelayerCmd
 func RunListMissedCosmosEventCmd(_ *cobra.Command, args []string) error {
 	// Validate and parse arguments
-	networkID, err := strconv.Atoi(args[0])
+	networkDescriptor, err := strconv.Atoi(args[0])
 	if err != nil {
 		return errors.Errorf("%s is invalid network descriptor", args[0])
 	}
 
-	// check if the networkID is valid
-	if !oracletypes.NetworkID(networkID).IsValid() {
-		return errors.Errorf("network id: %d is invalid", networkID)
+	// check if the networkDescriptor is valid
+	if !oracletypes.NetworkDescriptor(networkDescriptor).IsValid() {
+		return errors.Errorf("network id: %d is invalid", networkDescriptor)
 	}
 
 	if len(strings.Trim(args[1], "")) == 0 {
@@ -189,7 +189,7 @@ func RunListMissedCosmosEventCmd(_ *cobra.Command, args []string) error {
 	sugaredLogger := logger.Sugar()
 
 	// Initialize new Cosmos event listener
-	listMissedCosmosEvent := relayer.NewListMissedCosmosEvent(oracletypes.NetworkID(networkID), tendermintNode, web3Provider, contractAddress, relayerEthereumAddress, days, sugaredLogger)
+	listMissedCosmosEvent := relayer.NewListMissedCosmosEvent(oracletypes.NetworkDescriptor(networkDescriptor), tendermintNode, web3Provider, contractAddress, relayerEthereumAddress, days, sugaredLogger)
 
 	listMissedCosmosEvent.ListMissedCosmosEvent()
 

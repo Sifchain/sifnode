@@ -4,7 +4,7 @@ package sifnode.ethbridge.v1;
 import "gogoproto/gogo.proto";
 import "sifnode/ethbridge/v1/types.proto";
 import "sifnode/oracle/v1/types.proto";
-import "sifnode/oracle/v1/network_id.proto";
+import "sifnode/oracle/v1/network_descriptor.proto";
 
 option go_package = "github.com/Sifchain/sifnode/x/ethbridge/types";
 
@@ -16,7 +16,7 @@ service Query {
 
 // QueryEthProphecyRequest payload for EthProphecy rpc query
 message QueryEthProphecyRequest {
-  sifnode.oracle.v1.NetworkID network_id = 1;
+  sifnode.oracle.v1.NetworkDescriptor network_descriptor = 1;
   // bridge_contract_address is an EthereumAddress
   string bridge_contract_address = 2
       [ (gogoproto.moretags) = "yaml:\"bridge_registry_contract_address\"" ];

@@ -20,9 +20,9 @@ import (
 	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
 )
 
-const NetworkID = "1"
+const NetworkDescriptor = "1"
 const Power = "100"
-const TestNetworkID = oracletypes.NetworkID(1)
+const TestNetworkDescriptor = oracletypes.NetworkDescriptor(1)
 
 func TestAddGenesisValidatorCmd(t *testing.T) {
 	homeDir, err := ioutil.TempDir("", "")
@@ -44,7 +44,7 @@ func TestAddGenesisValidatorCmd(t *testing.T) {
 	addValBuf := new(bytes.Buffer)
 	addValCmd.SetOut(addValBuf)
 	addValCmd.SetErr(addValBuf)
-	addValCmd.SetArgs([]string{"add-genesis-validators", NetworkID, expectedValidatorBech32, Power, "--home=" + homeDir})
+	addValCmd.SetArgs([]string{"add-genesis-validators", NetworkDescriptor, expectedValidatorBech32, Power, "--home=" + homeDir})
 
 	// Run init
 	err = svrcmd.Execute(initCmd, homeDir)
@@ -66,6 +66,6 @@ func TestAddGenesisValidatorCmd(t *testing.T) {
 	)
 	_ = mm.InitGenesis(ctx, sifapp.AppCodec(), appState)
 	// Assert validator
-	validators := sifapp.OracleKeeper.GetOracleWhiteList(ctx, oracletypes.NewNetworkDescriptor(TestNetworkID))
+	validators := sifapp.OracleKeeper.GetOracleWhiteList(ctx, oracletypes.NewNetworkIdentity(TestNetworkDescriptor))
 	require.Equal(t, []sdk.ValAddress{expectedValidator}, validators.GetAllValidators())
 }

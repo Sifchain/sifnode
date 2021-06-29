@@ -23,9 +23,9 @@ type BankKeeper interface {
 
 // OracleKeeper defines the expected oracle keeper
 type OracleKeeper interface {
-	ProcessClaim(ctx sdk.Context, networkID oracletypes.NetworkID, claim oracletypes.Claim) (oracletypes.Status, error)
+	ProcessClaim(ctx sdk.Context, networkDescriptor oracletypes.NetworkDescriptor, claim oracletypes.Claim) (oracletypes.Status, error)
 	GetProphecy(ctx sdk.Context, id string) (oracletypes.Prophecy, bool)
-	ProcessUpdateWhiteListValidator(ctx sdk.Context, networkID oracletypes.NetworkID, cosmosSender sdk.AccAddress, validator sdk.ValAddress, power uint32) error
+	ProcessUpdateWhiteListValidator(ctx sdk.Context, networkDescriptor oracletypes.NetworkDescriptor, cosmosSender sdk.AccAddress, validator sdk.ValAddress, power uint32) error
 	IsAdminAccount(ctx sdk.Context, cosmosSender sdk.AccAddress) bool
 	GetAdminAccount(ctx sdk.Context) sdk.AccAddress
 	SetAdminAccount(ctx sdk.Context, cosmosSender sdk.AccAddress)

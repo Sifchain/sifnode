@@ -44,7 +44,7 @@ func (d Event) String() string {
 type EthereumEvent struct {
 	To                    []byte
 	Symbol                string
-	NetworkID             oracle.NetworkID
+	NetworkDescriptor     oracle.NetworkDescriptor
 	Value                 *big.Int
 	Nonce                 *big.Int
 	ClaimType             ethbridge.ClaimType
@@ -56,7 +56,7 @@ type EthereumEvent struct {
 
 // Equal two events
 func (e EthereumEvent) Equal(other EthereumEvent) bool {
-	return e.NetworkID == other.NetworkID &&
+	return e.NetworkDescriptor == other.NetworkDescriptor &&
 		e.BridgeContractAddress == other.BridgeContractAddress &&
 		bytes.Equal(e.ID[:], other.ID[:]) &&
 		e.From == other.From &&
@@ -71,7 +71,7 @@ func (e EthereumEvent) Equal(other EthereumEvent) bool {
 func (e EthereumEvent) String() string {
 	return fmt.Sprintf("\nNetwork ID: %v\nBridge contract address: %v\nToken symbol: %v\nToken "+
 		"contract address: %v\nSender: %v\nRecipient: %v\nValue: %v\nNonce: %v\nClaim type: %v",
-		e.NetworkID, e.BridgeContractAddress.Hex(), e.Symbol, e.Token.Hex(), e.From.Hex(),
+		e.NetworkDescriptor, e.BridgeContractAddress.Hex(), e.Symbol, e.Token.Hex(), e.From.Hex(),
 		string(e.To), e.Value, e.Nonce, e.ClaimType.String())
 }
 
@@ -112,7 +112,7 @@ func (p ProphecyClaimEvent) String() string {
 
 // CosmosMsg contains data from MsgBurn and MsgLock events
 type CosmosMsg struct {
-	NetworkID            oracle.NetworkID
+	NetworkDescriptor    oracle.NetworkDescriptor
 	CosmosSender         []byte
 	CosmosSenderSequence *big.Int
 	Symbol               string
@@ -122,10 +122,10 @@ type CosmosMsg struct {
 }
 
 // NewCosmosMsg creates a new CosmosMsg
-func NewCosmosMsg(networkID oracle.NetworkID, claimType Event, cosmosSender []byte, cosmosSenderSequence *big.Int, ethereumReceiver common.Address, symbol string,
+func NewCosmosMsg(networkDescriptor oracle.NetworkDescriptor, claimType Event, cosmosSender []byte, cosmosSenderSequence *big.Int, ethereumReceiver common.Address, symbol string,
 	amount sdk.Int) CosmosMsg {
 	return CosmosMsg{
-		NetworkID:            networkID,
+		NetworkDescriptor:    networkDescriptor,
 		ClaimType:            claimType,
 		CosmosSender:         cosmosSender,
 		CosmosSenderSequence: cosmosSenderSequence,
@@ -139,7 +139,7 @@ func NewCosmosMsg(networkID oracle.NetworkID, claimType Event, cosmosSender []by
 func (c CosmosMsg) String() string {
 	if c.ClaimType == MsgLock {
 		return fmt.Sprintf("\nNetwork id: %v\nClaim Type: %v\nCosmos Sender: %v\nCosmos Sender Sequence: %v\nEthereum Recipient: %v"+
-			"\nSymbol: %v\nAmount: %v\n", c.NetworkID.String(),
+			"\nSymbol: %v\nAmount: %v\n", c.NetworkDescriptor.String(),
 			c.ClaimType.String(), string(c.CosmosSender), c.CosmosSenderSequence, c.EthereumReceiver.Hex(), c.Symbol, c.Amount)
 	}
 	return fmt.Sprintf("\nClaim Type: %v\nCosmos Sender: %v\nCosmos Sender Sequence: %v\nEthereum Recipient: %v"+
@@ -167,8 +167,8 @@ const (
 	EthereumSender
 	// EthereumSenderNonce is ethereum sender nonce
 	EthereumSenderNonce
-	// NetworkID is different blockchain identity
-	NetworkID
+	// NetworkDescriptor is different blockchain identity
+	NetworkDescriptor
 )
 
 // String returns the event type as a string

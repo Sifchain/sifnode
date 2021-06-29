@@ -6,15 +6,12 @@ import (
 )
 
 func Migrate(genesis v039oracle.GenesisState) *types.GenesisState {
-	networkID := types.NetworkID_NETWORK_ID_ETHEREUM
+	networkDescriptor := types.NetworkDescriptor_NETWORK_DESCRIPTOR_ETHEREUM
 	whitelist := make(map[string]uint32)
 	defaultPower := uint32(100)
 
 	for _, addr := range genesis.AddressWhitelist {
 		whitelist[addr.String()] = defaultPower
-		// var addressWhiteList []string = make([]string, len(genesis.AddressWhitelist))
-		// for i, addr := range genesis.AddressWhitelist {
-		// 	addressWhiteList[i] = addr.String()
 	}
 
 	prophecies := make([]*types.DBProphecy, len(genesis.Prophecies))
@@ -40,7 +37,7 @@ func Migrate(genesis v039oracle.GenesisState) *types.GenesisState {
 		}
 	}
 	addressWhitelist := make(map[uint32]*types.ValidatorWhiteList)
-	addressWhitelist[uint32(networkID)] = &types.ValidatorWhiteList{WhiteList: whitelist}
+	addressWhitelist[uint32(networkDescriptor)] = &types.ValidatorWhiteList{WhiteList: whitelist}
 
 	return &types.GenesisState{
 		AddressWhitelist: addressWhitelist,

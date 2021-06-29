@@ -27,7 +27,7 @@ func NewQueryServer(keeper Keeper) types.QueryServer {
 func (srv queryServer) EthProphecy(ctx context.Context, req *types.QueryEthProphecyRequest) (*types.QueryEthProphecyResponse, error) {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 
-	id := strconv.FormatInt(int64(req.NetworkId), 10) + strconv.FormatInt(req.Nonce, 10) + req.EthereumSender
+	id := strconv.FormatInt(int64(req.NetworkDescriptor), 10) + strconv.FormatInt(req.Nonce, 10) + req.EthereumSender
 
 	prophecy, found := srv.Keeper.oracleKeeper.GetProphecy(sdkCtx, id)
 	if !found {
@@ -35,7 +35,7 @@ func (srv queryServer) EthProphecy(ctx context.Context, req *types.QueryEthProph
 	}
 
 	bridgeClaims, err := types.MapOracleClaimsToEthBridgeClaims(
-		req.NetworkId,
+		req.NetworkDescriptor,
 		types.NewEthereumAddress(req.BridgeContractAddress),
 		req.Nonce,
 		req.Symbol,

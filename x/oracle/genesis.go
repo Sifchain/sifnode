@@ -13,8 +13,8 @@ import (
 func InitGenesis(ctx sdk.Context, keeper keeper.Keeper, data types.GenesisState) (res []abci.ValidatorUpdate) {
 
 	if data.AddressWhitelist != nil {
-		for networkID, list := range data.AddressWhitelist {
-			keeper.SetOracleWhiteList(ctx, types.NewNetworkDescriptor(types.NetworkID(networkID)), *list)
+		for networkDescriptor, list := range data.AddressWhitelist {
+			keeper.SetOracleWhiteList(ctx, types.NewNetworkIdentity(types.NetworkDescriptor(networkDescriptor)), *list)
 		}
 	}
 

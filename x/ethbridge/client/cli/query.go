@@ -27,7 +27,7 @@ func GetCmdGetEthBridgeProphecy() *cobra.Command {
 
 			queryClient := types.NewQueryClient(clientCtx)
 
-			networkID, err := flags.GetInt64(types.FlagEthereumChainID)
+			networkDescriptor, err := flags.GetInt64(types.FlagEthereumChainID)
 			if err != nil {
 				return err
 			}
@@ -49,7 +49,7 @@ func GetCmdGetEthBridgeProphecy() *cobra.Command {
 			ethereumSender := types.NewEthereumAddress(args[3])
 
 			req := &types.QueryEthProphecyRequest{
-				NetworkId:             oracletypes.NetworkID(networkID),
+				NetworkDescriptor:     oracletypes.NetworkDescriptor(networkDescriptor),
 				BridgeContractAddress: bridgeContract.String(),
 				Nonce:                 int64(nonce),
 				Symbol:                symbol,

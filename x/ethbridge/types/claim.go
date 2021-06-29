@@ -13,7 +13,7 @@ import (
 
 // NewEthBridgeClaim is a constructor function for NewEthBridgeClaim
 func NewEthBridgeClaim(
-	networkID oracletypes.NetworkID,
+	networkDescriptor oracletypes.NetworkDescriptor,
 	bridgeContract EthereumAddress,
 	nonce int64,
 	symbol string,
@@ -25,7 +25,7 @@ func NewEthBridgeClaim(
 	claimType ClaimType,
 ) *EthBridgeClaim {
 	return &EthBridgeClaim{
-		NetworkId:             networkID,
+		NetworkDescriptor:     networkDescriptor,
 		BridgeContractAddress: bridgeContract.String(),
 		Nonce:                 nonce,
 		Symbol:                symbol,
@@ -66,7 +66,7 @@ func NewOracleClaimContent(
 // For this, we use the Nonce an Ethereum Sender provided,
 // as all validators will see this same data from the smart contract.
 func CreateOracleClaimFromEthClaim(ethClaim *EthBridgeClaim) (oracletypes.Claim, error) {
-	oracleID := strconv.FormatInt(int64(ethClaim.NetworkId), 10) + strconv.FormatInt(ethClaim.Nonce, 10) +
+	oracleID := strconv.FormatInt(int64(ethClaim.NetworkDescriptor), 10) + strconv.FormatInt(ethClaim.Nonce, 10) +
 		ethClaim.EthereumSender
 
 	cosmosReceiver, err := sdk.AccAddressFromBech32(ethClaim.CosmosReceiver)
@@ -88,7 +88,7 @@ func CreateOracleClaimFromEthClaim(ethClaim *EthBridgeClaim) (oracletypes.Claim,
 // CreateEthClaimFromOracleString converts a string
 // from any generic claim from the oracle module into an ethereum bridge specific claim.
 func CreateEthClaimFromOracleString(
-	networkID oracletypes.NetworkID,
+	networkDescriptor oracletypes.NetworkDescriptor,
 	bridgeContract EthereumAddress,
 	nonce int64,
 	ethereumAddress EthereumAddress,
@@ -101,7 +101,7 @@ func CreateEthClaimFromOracleString(
 	}
 
 	return NewEthBridgeClaim(
-		networkID,
+		networkDescriptor,
 		bridgeContract,
 		nonce,
 		oracleClaim.Symbol,

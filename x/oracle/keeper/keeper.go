@@ -102,16 +102,16 @@ func (k Keeper) SetDBProphecy(ctx sdk.Context, prophecy types.DBProphecy) {
 }
 
 // ProcessClaim handle claim
-func (k Keeper) ProcessClaim(ctx sdk.Context, networkID types.NetworkID, claim types.Claim) (types.Status, error) {
+func (k Keeper) ProcessClaim(ctx sdk.Context, networkDescriptor types.NetworkDescriptor, claim types.Claim) (types.Status, error) {
 	logger := k.Logger(ctx)
-	networkDescriptor := types.NewNetworkDescriptor(networkID)
+	networkIdentity := types.NewNetworkIdentity(networkDescriptor)
 
 	valAddr, err := sdk.ValAddressFromBech32(claim.ValidatorAddress)
 	if err != nil {
 		return types.Status{}, err
 	}
 
-	if !k.ValidateAddress(ctx, networkDescriptor, valAddr) {
+	if !k.ValidateAddress(ctx, networkIdentity, valAddr) {
 		logger.Error("sifnode oracle keeper ProcessClaim validator not white list.")
 		return types.Status{}, errors.New("validator not in white list")
 	}
@@ -148,7 +148,7 @@ func (k Keeper) ProcessClaim(ctx sdk.Context, networkID types.NetworkID, claim t
 	}
 
 	prophecy.AddClaim(valAddr, claim.Content)
-	prophecy = k.processCompletion(ctx, networkDescriptor, prophecy)
+	prophecy = k.processCompletion(ctx, networkIdentity, prophecy)
 
 	err = k.SetProphecy(ctx, prophecy)
 	if err != nil {
@@ -168,14 +168,14 @@ func (k Keeper) checkActiveValidator(ctx sdk.Context, validatorAddress sdk.ValAd
 }
 
 // ProcessUpdateWhiteListValidator processes the update whitelist validator from admin
-func (k Keeper) ProcessUpdateWhiteListValidator(ctx sdk.Context, networkID types.NetworkID, cosmosSender sdk.AccAddress, validator sdk.ValAddress, power uint32) error {
+func (k Keeper) ProcessUpdateWhiteListValidator(ctx sdk.Context, networkDescriptor types.NetworkDescriptor, cosmosSender sdk.AccAddress, validator sdk.ValAddress, power uint32) error {
 	logger := k.Logger(ctx)
 	if !k.IsAdminAccount(ctx, cosmosSender) {
 		logger.Error("cosmos sender is not admin account.")
 		return types.ErrNotAdminAccount
 	}
 
-	k.UpdateOracleWhiteList(ctx, types.NewNetworkDescriptor(networkID), validator, power)
+	k.UpdateOracleWhiteList(ctx, types.NewNetworkIdentity(networkDescriptor), validator, power)
 	return nil
 }
 
@@ -184,7 +184,7 @@ func (k Keeper) ProcessUpdateWhiteListValidator(ctx sdk.Context, networkID types
 // power to be considered successful, or alternatively,
 // will never be able to become successful due to not enough validation power being
 // left to push it over the threshold required for consensus.
-func (k Keeper) processCompletion(ctx sdk.Context, networkDescriptor types.NetworkDescriptor, prophecy types.Prophecy) types.Prophecy {
+func (k Keeper) processCompletion(ctx sdk.Context, networkDescriptor types.NetworkIdentity, prophecy types.Prophecy) types.Prophecy {
 	validators := k.GetOracleWhiteList(ctx, networkDescriptor)
 	fmt.Printf("processCompletion %v \n", validators)
 
