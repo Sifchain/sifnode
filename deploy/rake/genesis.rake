@@ -3,7 +3,7 @@ namespace :genesis do
   desc "network operations"
   namespace :network do
     desc "Scaffold a new genesis network for use in docker-compose"
-    task :scaffold, [:chainnet, :validator_count] do |t, args|
+    task :scaffold, [:chainnet, :validator_count, :seed_ip_address, :keyring_backend] do |t, args|
       if args[:chainnet].nil?
         puts "Please provide chainnet argument. ie testnet, mainnet"
         exit 1
@@ -17,12 +17,25 @@ namespace :genesis do
                           args[:validator_count].to_i
                         end
 
+      seed_ip_address = if args[:seed_ip_address].nil?
+                          "192.168.1.2"
+                        else
+                          args[:seed_ip_address]
+                        end
+
+      keyring_backend = if args[:keyring_backend].nil?
+                          "file"
+                        else
+                          args[:keyring_backend]
+                        end
+
       network_create(chainnet: args[:chainnet], validator_count: validator_count, build_dir: "#{cwd}/../networks",
-                     seed_ip_address: "192.168.2.1",network_config: network_config(args[:chainnet]))
+                     seed_ip_address: seed_ip_address, network_config: network_config(args[:chainnet]),
+                     keyring_backend: keyring_backend)
     end
 
     desc "Boot the new scaffolded network in docker-compose"
-    task :boot, [:chainnet, :eth_bridge_registry_address, :eth_keys, :eth_websocket] do |t, args|
+    task :boot, [:chainnet, :seed_network_address, :eth_bridge_registry_address, :eth_keys, :eth_websocket] do |t, args|
       trap('SIGINT') { puts "Exiting..."; exit }
 
       if args[:chainnet].nil?
@@ -30,18 +43,27 @@ namespace :genesis do
         exit(1)
       end
 
-      with_eth = eth_config(eth_bridge_registry_address: args[:eth_bridge_registry_address],
-                            eth_keys: args[:eth_keys].split(" "),
-                            eth_websocket: args[:eth_websocket])
+      with_eth =  if [args[:eth_bridge_registry_address], args[:eth_keys], args[:eth_websocket]].all?
+                    eth_config(eth_bridge_registry_address: args[:eth_bridge_registry_address],
+                               eth_keys: args[:eth_keys].split(" "),
+                               eth_websocket: args[:eth_websocket])
+                  else
+                    ""
+                  end
 
       if !File.exists?(network_config(args[:chainnet]))
         puts "the file #{network_config(args[:chainnet])} does not exist!"
         exit(1)
       end
-      if args[:chainnet] != 'localnet'
-        build_docker_image(args[:chainnet])
-      end
-      boot_docker_network(chainnet: args[:chainnet], seed_network_address: "192.168.2.0/24", eth_config: with_eth)
+
+      seed_network_address = if args[:seed_network_address].nil?
+                               "192.168.2.0/24"
+                             else
+                               args[:seed_network_address]
+                             end
+
+      build_docker_image(args[:chainnet]) if args[:chainnet] != 'localnet'
+      boot_docker_network(chainnet: args[:chainnet], seed_network_address: seed_network_address, eth_config: with_eth)
     end
 
     desc "Reset the state of a network"
@@ -102,9 +124,10 @@ end
 # @param build_dir          Path to the build directory
 # @param seed_ip_address    IPv4 address of the first node
 # @param network_config     Name of the file to use to output the config to
+# @param keyring_backend    Keyring backend
 #
-def network_create(chainnet:, validator_count:, build_dir:, seed_ip_address:, network_config:)
-  safe_system("sifgen network create --mint-amount 999999000000000000000000000rowan,1370000000000000000ibc/FEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACE #{chainnet} #{validator_count} #{build_dir} #{seed_ip_address} #{network_config}")
+def network_create(chainnet:, validator_count:, build_dir:, seed_ip_address:, network_config:, keyring_backend:)
+  safe_system("sifgen network create #{chainnet} #{validator_count} #{build_dir} #{seed_ip_address} #{network_config} --keyring-backend #{keyring_backend}  --mint-amount 999999000000000000000000000rowan,1370000000000000000ibc/FEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACE")
 end
 
 #

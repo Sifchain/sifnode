@@ -11,31 +11,19 @@ import (
 
 //CreateAndDistributeDrops creates new drop Records . These records are then used to facilitate distribution
 // Each Recipient and DropName generate a unique Record
-func (k Keeper) CreateDrops(ctx sdk.Context, output []banktypes.Output, name string, distributionType types.DistributionType) error {
+func (k Keeper) CreateDrops(ctx sdk.Context, output []banktypes.Output, name string, distributionType types.DistributionType, authorisedRunner string) error {
 	for _, receiver := range output {
-		distributionRecord := types.NewDistributionRecord(types.DistributionStatus_DISTRIBUTION_STATUS_PENDING, distributionType, name, receiver.Address, receiver.Coins, ctx.BlockHeight(), -1)
-		if k.ExistsDistributionRecord(ctx, name, receiver.Address, types.DistributionStatus_DISTRIBUTION_STATUS_PENDING) {
-			oldRecord, err := k.GetDistributionRecord(ctx, name, receiver.Address, types.DistributionStatus_DISTRIBUTION_STATUS_PENDING)
+		distributionRecord := types.NewDistributionRecord(types.DistributionStatus_DISTRIBUTION_STATUS_PENDING, distributionType, name, receiver.Address, receiver.Coins, ctx.BlockHeight(), -1, authorisedRunner)
+		if k.ExistsDistributionRecord(ctx, name, receiver.Address, types.DistributionStatus_DISTRIBUTION_STATUS_PENDING, distributionRecord.DistributionType) {
+			oldRecord, err := k.GetDistributionRecord(ctx, name, receiver.Address, types.DistributionStatus_DISTRIBUTION_STATUS_PENDING, distributionRecord.DistributionType)
 			if err != nil {
 				return errors.Wrapf(types.ErrDistribution, "failed appending record for : %s", distributionRecord.RecipientAddress)
 			}
-			distributionRecord.Add(*oldRecord)
+			distributionRecord = distributionRecord.Add(*oldRecord)
 		}
-		distributionRecord.DistributionStatus = types.DistributionStatus_DISTRIBUTION_STATUS_PENDING
 		err := k.SetDistributionRecord(ctx, distributionRecord)
 		if err != nil {
 			return errors.Wrapf(types.ErrFailedOutputs, "error setting distibution record  : %s", distributionRecord.String())
-		}
-		// Lock the user claim so that the user cannot delete the claim while the distribution is in progress.
-		// Claim will not exist if its not a LM/VS drop
-		// IF it is a LM/VS drop the associated claim must always exist .
-		// The users of this module need to make sure they are submitting the proper distribution type when distributing rewards
-		// The same user might be eligible for Airdrop/LM/VS rewards . Based on Distribution type submitted the appropriate claim will be locked.
-		if distributionType == types.DistributionType_DISTRIBUTION_TYPE_LIQUIDITY_MINING || distributionType == types.DistributionType_DISTRIBUTION_TYPE_VALIDATOR_SUBSIDY {
-			err := k.LockClaim(ctx, receiver.Address, distributionType)
-			if err != nil {
-				return errors.Wrap(err, fmt.Sprintf("Unable to verify associated claim for address : %s", receiver.Address))
-			}
 		}
 	}
 	return nil
@@ -43,53 +31,63 @@ func (k Keeper) CreateDrops(ctx sdk.Context, output []banktypes.Output, name str
 
 // DistributeDrops is called at the beginning of every block .
 // It checks if any pending records are present , if there are it completes the top 10
-func (k Keeper) DistributeDrops(ctx sdk.Context, height int64) error {
-	pendingRecords := k.GetRecordsLimited(ctx, types.DistributionStatus_DISTRIBUTION_STATUS_PENDING)
+func (k Keeper) DistributeDrops(ctx sdk.Context, height int64, distributionName string, authorisedRunner string, distributionType types.DistributionType) (*types.DistributionRecords, error) {
+	pendingRecords := k.GetLimitedRecordsForRunner(ctx, distributionName, authorisedRunner, distributionType, types.DistributionStatus_DISTRIBUTION_STATUS_PENDING)
 	for _, record := range pendingRecords.DistributionRecords {
 		recipientAddress, err := sdk.AccAddressFromBech32(record.RecipientAddress)
 		if err != nil {
-			return errors.Wrapf(err, "Invalid address for distribute : %s", record.RecipientAddress)
+			err := errors.Wrapf(err, "Invalid address for distribute : %s", record.RecipientAddress)
+			ctx.Logger().Error(err.Error())
+			continue
 		}
 		err = k.GetBankKeeper().SendCoinsFromModuleToAccount(ctx, types.ModuleName, recipientAddress, record.Coins)
 		if err != nil {
-			return errors.Wrapf(types.ErrFailedOutputs, "for address  : %s", record.RecipientAddress)
+			err := errors.Wrapf(types.ErrFailedOutputs, "for address  : %s", record.RecipientAddress)
+			ctx.Logger().Error(err.Error())
+			err = k.ChangeRecordStatus(ctx, *record, height, types.DistributionStatus_DISTRIBUTION_STATUS_FAILED)
+			if err != nil {
+				panic(fmt.Sprintf("Unable to set Distribution Records to Failed : %s", record.String()))
+			}
+			continue
 		}
-		record.DistributionStatus = types.DistributionStatus_DISTRIBUTION_STATUS_COMPLETED
-		record.DistributionCompletedHeight = height
-		// Setting to completed prefix
-		err = k.SetDistributionRecord(ctx, *record)
+
+		err = k.ChangeRecordStatus(ctx, *record, height, types.DistributionStatus_DISTRIBUTION_STATUS_COMPLETED)
 		if err != nil {
-			return errors.Wrapf(types.ErrDistribution, "error setting distibution record  : %s", record.String())
-		}
-		// Deleting from Pending prefix
-		err = k.DeleteDistributionRecord(ctx, record.DistributionName, record.RecipientAddress, types.DistributionStatus_DISTRIBUTION_STATUS_PENDING) // Delete the record in the pending prefix so the iteration is cheaper.
-		if err != nil {
-			return errors.Wrapf(types.ErrDistribution, "error deleting pending distibution record  : %s", record.String())
+			err := errors.Wrapf(types.ErrFailedOutputs, "error setting distibution record  : %s", record.String())
+			ctx.Logger().Error(err.Error())
+			// If the SetDistributionRecord returns error , that would mean the required amount was transferred to the user , but the record was not set to completed .
+			// In this case we try to take the funds back from the user , and attempt the withdrawal later .
+			err = k.GetBankKeeper().SendCoinsFromAccountToModule(ctx, recipientAddress, types.ModuleName, record.Coins)
+			if err != nil {
+				panic(fmt.Sprintf("Unable to set Distribution Records to completed : %s", record.String()))
+			}
+			continue
 		}
 		// Use record details to delete associated claim
-		// The claim should always be locked at this point in time .
-		if record.DistributionType == types.DistributionType_DISTRIBUTION_TYPE_LIQUIDITY_MINING || record.DistributionType == types.DistributionType_DISTRIBUTION_TYPE_VALIDATOR_SUBSIDY {
+		if record.DoesTypeSupportClaim() {
 			k.DeleteClaim(ctx, record.RecipientAddress, record.DistributionType)
 		}
 		ctx.Logger().Info(fmt.Sprintf("Distributed to : %s | At height : %d | Amount :%s \n", record.RecipientAddress, height, record.Coins.String()))
 	}
-	return nil
+	return pendingRecords, nil
 }
 
 // AccumulateDrops collects funds from a senders account and transfers it to the Dispensation module account
-func (k Keeper) AccumulateDrops(ctx sdk.Context, input []banktypes.Input) error {
-	for _, fundingInput := range input {
-		err := k.GetBankKeeper().SendCoinsFromAccountToModule(ctx, sdk.AccAddress(fundingInput.Address), types.ModuleName, fundingInput.Coins)
-		if err != nil {
-			return errors.Wrapf(types.ErrFailedInputs, "for address  : %s", fundingInput.Address)
-		}
+func (k Keeper) AccumulateDrops(ctx sdk.Context, addr string, amount sdk.Coins) error {
+	address, err := sdk.AccAddressFromBech32(addr)
+	if err != nil {
+		return errors.Wrapf(err, "Invalid address for distribute : %s", addr)
+	}
+	err = k.GetBankKeeper().SendCoinsFromAccountToModule(ctx, address, types.ModuleName, amount)
+	if err != nil {
+		return errors.Wrapf(types.ErrFailedInputs, "for address  : %s", addr)
 	}
 	return nil
 }
 
 // Verify if the distribution is correct
 // The verification is the for distributionName + distributionType
-func (k Keeper) VerifyDistribution(ctx sdk.Context, distributionName string, distributionType types.DistributionType) error {
+func (k Keeper) VerifyAndSetDistribution(ctx sdk.Context, distributionName string, distributionType types.DistributionType) error {
 	if k.ExistsDistribution(ctx, distributionName, distributionType) {
 		return errors.Wrapf(types.ErrDistribution, "airdrop with same name already exists : %s ", distributionName)
 	}

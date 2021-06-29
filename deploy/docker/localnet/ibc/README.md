@@ -7,16 +7,18 @@ This will launch the following:
 
 ## Setup/Build
 
-1. Build a new `sifnode` image:
+1. Switch to the `deploy/docker/localnet/ibc` directory.
+
+2. Build a new `sifnode` image:
 
 ```bash
-make build-image
+SERVICE=sifnode make build-image
 ```
 
-2. Build a new `ts-relayer` image:
+3. Build a new `ts-relayer` image:
 
 ```bash
-make build-ts-relayer-image
+SERVICE=ts-relayer make build-image
 ```
 
 ## Run

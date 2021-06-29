@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"bytes"
-	"io/fs"
 	"io/ioutil"
 	"os"
 	"testing"
@@ -32,14 +31,15 @@ func TestMigrateGenesisDataCmd(t *testing.T) {
 	cmd, _ = NewRootCmd()
 	cmd.SetArgs([]string{"init", "test", "--home=" + homeDir})
 	err = svrcmd.Execute(cmd, homeDir)
-	require.NoError(t,err)
+	require.NoError(t, err)
 
 	cmd, _ = NewRootCmd()
 	cmd.SetArgs([]string{"unsafe-reset-all"})
 	err = svrcmd.Execute(cmd, homeDir)
 	require.NoError(t, err)
 
-	ioutil.WriteFile(homeDir + "/config/genesis.json", migrateOutputBuf.Bytes(), fs.ModeExclusive)
+	err = ioutil.WriteFile(homeDir+"/config/genesis.json", migrateOutputBuf.Bytes(), 0600)
+	require.NoError(t, err)
 
 	cmd, _ = NewRootCmd()
 	cmd.SetArgs([]string{"validate-genesis"})
