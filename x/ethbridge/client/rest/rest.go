@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/Sifchain/sifnode/x/ethbridge/types"
 	"github.com/cosmos/cosmos-sdk/client/context"
 	"github.com/cosmos/cosmos-sdk/types/rest"
 	"github.com/cosmos/cosmos-sdk/x/auth/client/utils"
@@ -13,8 +14,6 @@ import (
 	"github.com/gorilla/mux"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
-
-	"github.com/Sifchain/sifnode/x/ethbridge/types"
 )
 
 const (

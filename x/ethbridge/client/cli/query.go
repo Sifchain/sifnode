@@ -4,13 +4,12 @@ import (
 	"fmt"
 	"strconv"
 
+	"github.com/Sifchain/sifnode/x/ethbridge/types"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
 	"github.com/cosmos/cosmos-sdk/client/context"
 	"github.com/cosmos/cosmos-sdk/codec"
-
-	"github.com/Sifchain/sifnode/x/ethbridge/types"
 )
 
 // GetCmdGetEthBridgeProphecy queries information about a specific prophecy
