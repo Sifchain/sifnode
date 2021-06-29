@@ -23,9 +23,6 @@ module.exports = {
         hardhat: {
             allowUnlimitedContractSize: false,
         },
-        localhost: {
-            url: "http://localhost:7545",
-        }
     },
     solidity: {
         version: "0.8.0",
