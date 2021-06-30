@@ -8,11 +8,15 @@ const deployBridgeRegistry: DeployFunction = async function (hre: HardhatRuntime
     const BridgeRegistry = await hre.ethers.getContractFactory(ContractNames.BridgeRegistry)
     const cosmosBridge = await hre.deployments.get(ContractNames.CosmosBridge)
     const bridgeBank = await hre.deployments.get(ContractNames.BridgeBank)
+    const {operator} = await hre.getNamedAccounts()
 
-    const bridgeRegistry = await hre.upgrades.deployProxy(BridgeRegistry, [
-        cosmosBridge.address,
-        bridgeBank.address
-    ]);
+    const bridgeRegistry = hre.deployments.deploy(ContractNames.BridgeRegistry, {
+        from: operator,
+        args: [
+            cosmosBridge.address,
+            bridgeBank.address
+        ]
+    })
 };
 
 deployBridgeRegistry.tags = [ContractNames.BridgeRegistry]

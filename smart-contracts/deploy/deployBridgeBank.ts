@@ -5,10 +5,14 @@ import '@openzeppelin/hardhat-upgrades';
 import {ContractNames} from "../src/contractNames";
 import {loadDeploymentEnvWithDotenv} from "../src/deploymentEnv";
 import deployBridgeRegistry from "./deployBridgeRegistry";
+import {DeployOptions} from "hardhat-deploy/dist/types";
 
 const deployBridgeBank: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
+    console.log("starting deployBridgeBank")
     const BridgeBank = await hre.ethers.getContractFactory(ContractNames.BridgeBank)
+    console.log("starting deployBridgeBank1")
     const {owner} = await hre.getNamedAccounts()
+    const {operator} = await hre.getNamedAccounts()
     const {pauser} = await hre.getNamedAccounts()
     const {validator1} = await hre.getNamedAccounts()
     const deploymentEnv = loadDeploymentEnvWithDotenv()
@@ -18,9 +22,11 @@ const deployBridgeBank: DeployFunction = async function (hre: HardhatRuntimeEnvi
         owner,
         pauser
     ];
-    const bridgeBank = await hre.upgrades.deployProxy(BridgeBank, bridgeBankArgs);
-    await bridgeBank.deployed()
-    console.log("deployed BridgeBank to: ", bridgeBank.address, bridgeBankArgs);
+    await hre.deployments.deploy(ContractNames.BridgeBank, {
+        from: operator,
+        args: bridgeBankArgs,
+        proxy: true
+    })
 };
 
 deployBridgeBank.tags = [ContractNames.BridgeBank]

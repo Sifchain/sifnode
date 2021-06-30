@@ -2,6 +2,7 @@ import { task } from "hardhat/config";
 import '@openzeppelin/hardhat-upgrades'
 import "@nomiclabs/hardhat-waffle"
 import "hardhat-deploy"
+import "@typechain/hardhat"
 
 // require('hardhat-local-networks-config-plugin')
 // require("hardhat-typechain");
