@@ -95,8 +95,6 @@ module.exports = function(deployer, network, accounts) {
     const tokenAddress = "0x0000000000000000000000000000000000000000";
 
     // allow 10 eth to be sent at once
-    await bridgeBank.updateTokenLockBurnLimit(tokenAddress, '10000000000000000000', setTxSpecifications(3000000, operator));
-    await bridgeBank.updateTokenLockBurnLimit(erowan.address, '10000000000000000000', setTxSpecifications(3000000, operator));
     await erowan.approve(bridgeBank.address, '10000000000000000000', setTxSpecifications(3000000, operator));
 
     console.log("erowan token address: ", erowan.address);

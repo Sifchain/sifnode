@@ -33,6 +33,11 @@ const (
 	CreateEthBridgeClaim
 )
 
+const (
+	FlagSymbolTranslatorFile = "symbol-translator-file"
+	FlagRelayerDbPath        = "relayerdb-path"
+)
+
 // String returns the event type as a string
 func (d Event) String() string {
 	return [...]string{"unsupported", "burn", "lock", "LogLock", "LogBurn", "LogNewProphecyClaim", "newProphecyClaim", "create_claim"}[d]

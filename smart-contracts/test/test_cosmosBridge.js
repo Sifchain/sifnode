@@ -160,11 +160,6 @@ contract("CosmosBridge", function (accounts) {
       await this.bridgeBank.updateEthWhiteList(this.token.address, true, {
         from: operator
       }).should.be.fulfilled;
-
-      // Update the lock/burn limit for this token
-      await this.bridgeBank.updateTokenLockBurnLimit(this.token.address, this.amount, {
-        from: operator
-      }).should.be.fulfilled;
     });
 
     it("should allow for the creation of new burn prophecy claims", async function () {
@@ -208,7 +203,7 @@ contract("CosmosBridge", function (accounts) {
       ).should.be.fulfilled;
     });
 
-    it("should not allow for the creation of a new burn prophecy claim over current amount locked", async function () {
+    it("should not allow for the creation of a new burn prophecy claim with invalid token symbol", async function () {
       await expectRevert(
           this.cosmosBridge.newProphecyClaim(
               CLAIM_TYPE_BURN,
@@ -221,7 +216,7 @@ contract("CosmosBridge", function (accounts) {
                 from: userOne
               }
           ),
-          "Not enough locked assets to complete the proposed prophecy"
+          "Invalid token address"
       );
     });
 
@@ -278,7 +273,7 @@ contract("CosmosBridge", function (accounts) {
         this.cosmosSender,
         ++this.cosmosSenderSequence,
         this.ethereumReceiver,
-        this.symbol.toLowerCase(),
+        this.actualSymbol.toLowerCase(),
         this.amount,
         {
           from: userOne
@@ -288,9 +283,8 @@ contract("CosmosBridge", function (accounts) {
       const event = logs.find(e => e.event === "LogNewProphecyClaim");
 
       Number(event.args._claimType).should.be.equal(CLAIM_TYPE_LOCK);
-
       event.args._ethereumReceiver.should.be.equal(this.ethereumReceiver);
-      event.args._symbol.should.be.equal(defaultTokenPrefix + this.symbol);
+      event.args._symbol.should.be.equal(this.actualSymbol);
       Number(event.args._amount).should.be.equal(this.amount);
     });
 
@@ -309,57 +303,10 @@ contract("CosmosBridge", function (accounts) {
 
     });
 
-    it("should not allow a eth to be locked if the amount is over the limit", async function () {
-      const maxLockAmount = Number(await this.bridgeBank.maxTokenAmount("ETH"));
-      // Calculate and check expected max lock amount
-      maxLockAmount.should.be.equal(Number(0));
-      
-      await expectRevert(
-        this.bridgeBank.lock(
-          this.cosmosRecipient,
-          this.ethereumToken,
-          this.amount, {
-            from: userOne,
-            value: this.amount
-          }
-        ),
-        "Amount being transferred is over the limit"
-      );
-    });
-
-    it("should not allow a token to be locked if the amount is over the limit", async function () {
-      // Update the lock/burn limit for this token
-      await this.bridgeBank.updateTokenLockBurnLimit(this.token.address, 0, {
-        from: operator
-      }).should.be.fulfilled;
-      
+    it("Max token lock amount should be zero", async function () {
       const maxLockAmount = Number(await this.bridgeBank.maxTokenAmount(await this.token.symbol()));
       // Calculate and check expected balances
       maxLockAmount.should.be.equal(Number(0));
-      
-      // Approve tokens to bridge bank contract
-      await this.token.approve(this.bridgeBank.address, this.amount, {
-        from: userOne
-      }).should.be.fulfilled;
-
-      // mint user tokens
-      await this.token.mint(userOne, 2000, {
-        from: operator
-      }).should.be.fulfilled;
-
-      await expectRevert(
-        this.bridgeBank.lock(
-          this.cosmosRecipient,
-          this.token.address,
-          100,
-          {
-            from: userOne,
-            value: 0
-          }
-        ),
-        "Amount being transferred is over the limit"
-      );
-
     });
   });
 
@@ -409,13 +356,7 @@ contract("CosmosBridge", function (accounts) {
       await this.bridgeBank.addExistingBridgeToken(this.token.address, {
         from: operator
       }).should.be.fulfilled;
-
-      // Update the lock/burn limit for this token
-      await this.bridgeBank.updateTokenLockBurnLimit(this.token.address, this.amount, {
-        from: operator
-      }).should.be.fulfilled;
       await this.token.addMinter(this.bridgeBank.address);
-
     });
 
     it("should allow users to check if a prophecy claim is currently active", async function () {
@@ -480,7 +421,7 @@ contract("CosmosBridge", function (accounts) {
           this.cosmosSender,
           this.cosmosSenderSequence,
           this.ethereumReceiver,
-          this.symbol.toLowerCase(),
+          this.actualSymbol.toLowerCase(),
           this.amount,
           {
             from: this.initialValidators[i]
@@ -494,7 +435,7 @@ contract("CosmosBridge", function (accounts) {
           this.cosmosSender,
           this.cosmosSenderSequence,
           this.ethereumReceiver,
-          this.symbol.toLowerCase(),
+          this.actualSymbol.toLowerCase(),
           this.amount,
           {
             from: this.initialValidators[ (this.initialValidators.length - 1) ]
@@ -507,7 +448,7 @@ contract("CosmosBridge", function (accounts) {
         this.cosmosSender,
         this.cosmosSenderSequence,
         this.ethereumReceiver,
-        this.symbol.toLowerCase(),
+        this.actualSymbol.toLowerCase(),
         this.amount,
       )).toString();
 
