@@ -28,9 +28,9 @@ spec:
         imagePullPolicy: {{ .Values.imagePullPolicy }}
         command: ["/bin/sh"]
         {{- if .Values.geth.args.network }}
-        args: ["-c", "geth --http --http.api={{ .Values.geth.args.rpcapi }} --http.corsdomain='*' --http.addr 0.0.0.0 --http.port 8545 {{ .Values.geth.args.network }} --networkid={{ .Values.geth.args.networkID }} --ethstats=${HOSTNAME}:${ETHSTATS_SECRET}@${ETHSTATS_SVC} --ws --ws.addr 0.0.0.0 --ws.origins='*' --ws.port 8546"]
+        args: ["-c", "geth --http --http.api={{ .Values.geth.args.rpcapi }} --http.corsdomain='*' --http.addr 0.0.0.0 --http.port 8545 {{ .Values.geth.args.network }} --networkid={{ .Values.geth.args.networkDescriptor }} --ethstats=${HOSTNAME}:${ETHSTATS_SECRET}@${ETHSTATS_SVC} --ws --ws.addr 0.0.0.0 --ws.origins='*' --ws.port 8546"]
         {{- else }}
-        args: ["-c", "geth --http --http.api={{ .Values.geth.args.rpcapi }} --http.corsdomain='*' --http.addr 0.0.0.0 --http.port 8545 --networkid={{ .Values.geth.args.networkID }} --ethstats=${HOSTNAME}:${ETHSTATS_SECRET}@${ETHSTATS_SVC} --ws --ws.addr 0.0.0.0 --ws.origins='*' --ws.port 8546"]
+        args: ["-c", "geth --http --http.api={{ .Values.geth.args.rpcapi }} --http.corsdomain='*' --http.addr 0.0.0.0 --http.port 8545 --networkid={{ .Values.geth.args.networkDescriptor }} --ethstats=${HOSTNAME}:${ETHSTATS_SECRET}@${ETHSTATS_SVC} --ws --ws.addr 0.0.0.0 --ws.origins='*' --ws.port 8546"]
         {{- end }}
         env:
         - name: ETHSTATS_SVC

@@ -4,7 +4,7 @@ package sifnode.ethbridge.v1;
 import "gogoproto/gogo.proto";
 import "sifnode/ethbridge/v1/types.proto";
 import "sifnode/oracle/v1/types.proto";
-import "sifnode/oracle/v1/network_id.proto";
+import "sifnode/oracle/v1/network_descriptor.proto";
 
 option go_package = "github.com/Sifchain/sifnode/x/ethbridge/types";
 
@@ -15,11 +15,11 @@ service Query {
 }
 
 // QueryEthProphecyRequest payload for EthProphecy rpc query
-message QueryEthProphecyRequest { string prophecy_id = 1; }
+message QueryEthProphecyRequest { bytes prophecy_id = 1; }
 
 // QueryEthProphecyResponse payload for EthProphecy rpc query
 message QueryEthProphecyResponse {
-  string prophecy_id = 1;
+  bytes prophecy_id = 1;
   sifnode.oracle.v1.StatusText status = 2;
   repeated string claim_validators = 3;
 }

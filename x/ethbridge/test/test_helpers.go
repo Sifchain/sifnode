@@ -46,7 +46,7 @@ const (
 	AlternateTestString        = "{value: 7}"
 	AnotherAlternateTestString = "{value: 9}"
 	TestCethReceiverAddress    = "cosmos1gn8409qq9hnrxde37kuxwx5hrxpfpv8426szuv"
-	NetworkID                  = 1
+	NetworkDescriptor          = 1
 )
 
 // CreateTestKeepers greates an Mock App, OracleKeeper, bankKeeper and ValidatorAddresses to be used for test input
@@ -173,7 +173,7 @@ func CreateTestKeepers(t *testing.T, consensusNeeded float64, validatorAmounts [
 		}
 	}
 
-	networkDescriptor := oracleTypes.NewNetworkDescriptor(NetworkID)
+	networkDescriptor := oracleTypes.NewNetworkIdentity(NetworkDescriptor)
 	whitelist := oracleTypes.ValidatorWhiteList{WhiteList: valAddrs}
 	oracleKeeper.SetOracleWhiteList(ctx, networkDescriptor, whitelist)
 

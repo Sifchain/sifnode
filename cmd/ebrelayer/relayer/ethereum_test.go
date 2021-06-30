@@ -24,7 +24,7 @@ func TestEventProcessed(t *testing.T) {
 	})
 
 	processedEvent := types.EthereumEvent{
-		NetworkID:             oracle.NetworkID(1),
+		NetworkDescriptor:     oracle.NetworkDescriptor(1),
 		BridgeContractAddress: common.HexToAddress("0xd88159878c50e4B2b03BB701DD436e4A98D6fBe2"),
 		ID:                    [32]byte{},
 		From:                  common.HexToAddress("0xd88159878c50e4B2b03BB701DD436e4A98D6fBe2"),
@@ -39,7 +39,7 @@ func TestEventProcessed(t *testing.T) {
 	require.Equal(t, true, EventProcessed(bridgeClaims, processedEvent))
 
 	notProcessedEvent := types.EthereumEvent{
-		NetworkID:             oracle.NetworkID(1),
+		NetworkDescriptor:     oracle.NetworkDescriptor(1),
 		BridgeContractAddress: common.HexToAddress("0xd88159878c50e4B2b03BB701DD436e4A98D6fBe2"),
 		ID:                    [32]byte{},
 		From:                  common.HexToAddress("0xd88159878c50e4B2b03BB701DD436e4A98D6fBe2"),

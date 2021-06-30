@@ -13,7 +13,7 @@ import (
 
 //nolint:golint
 func TestInitGenesis(t *testing.T) {
-	networkDescriptor := types.NewNetworkDescriptor(types.NetworkID_NETWORK_ID_ETHEREUM)
+	networkDescriptor := types.NewNetworkIdentity(types.NetworkDescriptor_NETWORK_DESCRIPTOR_ETHEREUM)
 
 	tt, _ := testGenesisData(t)
 
@@ -32,7 +32,7 @@ func TestInitGenesis(t *testing.T) {
 
 			wl := keeper.GetOracleWhiteList(ctx, networkDescriptor).WhiteList
 
-			whiteList, ok := tc.genesis.AddressWhitelist[uint32(types.NetworkID_NETWORK_ID_ETHEREUM)]
+			whiteList, ok := tc.genesis.AddressWhitelist[uint32(types.NetworkDescriptor_NETWORK_DESCRIPTOR_ETHEREUM)]
 
 			if ok {
 				for addr := range whiteList.WhiteList {
@@ -56,7 +56,7 @@ func TestExportGenesis(t *testing.T) {
 	for _, tc := range tt {
 		t.Run(tc.name, func(t *testing.T) {
 			ctx, _, _, _, keeper, _, _, _ := test.CreateTestKeepers(t, 1, []int64{1}, "")
-			networkDescriptor := types.NetworkDescriptor{NetworkID: types.NetworkID_NETWORK_ID_ETHEREUM}
+			networkDescriptor := types.NetworkIdentity{NetworkDescriptor: types.NetworkDescriptor_NETWORK_DESCRIPTOR_ETHEREUM}
 
 			keeper.RemoveOracleWhiteList(ctx, networkDescriptor)
 
@@ -86,7 +86,7 @@ func TestGenesisMarshalling(t *testing.T) {
 	for _, tc := range tt {
 		t.Run(tc.name, func(t *testing.T) {
 			ctx, _, _, _, keeper, encCfg, _, _ := test.CreateTestKeepers(t, 1, []int64{1}, "")
-			networkDescriptor := types.NetworkDescriptor{NetworkID: types.NetworkID_NETWORK_ID_ETHEREUM}
+			networkDescriptor := types.NetworkIdentity{NetworkDescriptor: types.NetworkDescriptor_NETWORK_DESCRIPTOR_ETHEREUM}
 			keeper.RemoveOracleWhiteList(ctx, networkDescriptor)
 
 			_ = oracle.InitGenesis(ctx, keeper, tc.genesis)
@@ -134,7 +134,7 @@ func testGenesisData(t *testing.T) ([]testCase, []types.Prophecy) {
 	whiteList.WhiteList[valAddrs[1].String()] = power
 
 	prophecy := types.Prophecy{
-		Id:              "asd",
+		Id:              []byte("asd"),
 		Status:          types.StatusText_STATUS_TEXT_PENDING,
 		ClaimValidators: []string{valAddrs[0].String()},
 	}
@@ -151,7 +151,7 @@ func testGenesisData(t *testing.T) ([]testCase, []types.Prophecy) {
 		{
 			name: "Prophecy",
 			genesis: types.GenesisState{
-				AddressWhitelist: map[uint32]*types.ValidatorWhiteList{uint32(types.NetworkID_NETWORK_ID_ETHEREUM): &whiteList},
+				AddressWhitelist: map[uint32]*types.ValidatorWhiteList{uint32(types.NetworkDescriptor_NETWORK_DESCRIPTOR_ETHEREUM): &whiteList},
 				AdminAddress:     addrs[0].String(),
 				Prophecies: []*types.Prophecy{
 					&prophecy,

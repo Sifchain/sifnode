@@ -26,11 +26,10 @@ func NewQueryServer(keeper Keeper) types.QueryServer {
 func (srv queryServer) EthProphecy(ctx context.Context, req *types.QueryEthProphecyRequest) (*types.QueryEthProphecyResponse, error) {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 
-	id := req.ProphecyId
-
+	id := req.GetProphecyId()
 	prophecy, found := srv.Keeper.oracleKeeper.GetProphecy(sdkCtx, id)
 	if !found {
-		return nil, sdkerrors.Wrap(oracletypes.ErrProphecyNotFound, id)
+		return nil, sdkerrors.Wrap(oracletypes.ErrProphecyNotFound, string(id))
 	}
 
 	res := types.NewQueryEthProphecyResponse(id, prophecy.Status, prophecy.ClaimValidators)

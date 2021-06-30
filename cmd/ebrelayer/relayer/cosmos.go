@@ -47,16 +47,16 @@ type CosmosSub struct {
 	PrivateKey              *ecdsa.PrivateKey
 	DB                      *leveldb.DB
 	SugaredLogger           *zap.SugaredLogger
-	NetworkID               oracletypes.NetworkID
+	NetworkDescriptor       oracletypes.NetworkDescriptor
 	RegistryContractAddress common.Address
 }
 
 // NewCosmosSub initializes a new CosmosSub
-func NewCosmosSub(networkID oracletypes.NetworkID, privateKey *ecdsa.PrivateKey, tmProvider, ethProvider string, registryContractAddress common.Address,
+func NewCosmosSub(networkDescriptor oracletypes.NetworkDescriptor, privateKey *ecdsa.PrivateKey, tmProvider, ethProvider string, registryContractAddress common.Address,
 	db *leveldb.DB, sugaredLogger *zap.SugaredLogger) CosmosSub {
 
 	return CosmosSub{
-		NetworkID:               networkID,
+		NetworkDescriptor:       networkDescriptor,
 		TmProvider:              tmProvider,
 		PrivateKey:              privateKey,
 		EthProvider:             ethProvider,
@@ -171,7 +171,7 @@ func (sub CosmosSub) Start(completionEvent *sync.WaitGroup) {
 									errorMessageKey, err.Error())
 								continue
 							}
-							if cosmosMsg.NetworkID == sub.NetworkID {
+							if cosmosMsg.NetworkDescriptor == sub.NetworkDescriptor {
 								sub.handleBurnLockMsg(cosmosMsg, claimType)
 							}
 						}
@@ -354,7 +354,7 @@ func (sub CosmosSub) Replay(fromBlock int64, toBlock int64, ethFromBlock int64, 
 						continue
 					}
 					log.Printf("found out a lock burn message%s\n", cosmosMsg.String())
-					if cosmosMsg.NetworkID == sub.NetworkID {
+					if cosmosMsg.NetworkDescriptor == sub.NetworkDescriptor {
 						if !MessageProcessed(cosmosMsg, ProphecyClaims) {
 							sub.handleBurnLockMsg(cosmosMsg, claimType)
 						} else {

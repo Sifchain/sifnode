@@ -23,7 +23,7 @@ func GetCmdGetEthBridgeProphecy() *cobra.Command {
 			queryClient := types.NewQueryClient(clientCtx)
 
 			req := &types.QueryEthProphecyRequest{
-				ProphecyId: args[0],
+				ProphecyId: []byte(args[0]),
 			}
 
 			res, err := queryClient.EthProphecy(context.Background(), req)

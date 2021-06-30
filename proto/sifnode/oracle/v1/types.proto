@@ -23,7 +23,7 @@ message Claim {
 //  Tendermint/Amino does not support maps so we must serialize those variables
 //  into bytes.
 message Prophecy {
-  string id = 1;
+  bytes id = 1;
   StatusText status = 2;
   repeated string claim_validators = 3;
 }

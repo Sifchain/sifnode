@@ -1262,7 +1262,7 @@ EOF
         cmd = %Q{helm upgrade ethereum #{cwd}/../../deploy/helm/ethereum \
             --install -n #{ns(args)} --create-namespace \
             --set geth.args.network='--#{args[:network]}' \
-            --set geth.args.networkID=#{network_id} \
+            --set geth.args.networkDescriptor=#{network_id} \
             --set ethstats.env.websocketSecret=#{SecureRandom.base64 20}
         }
       else

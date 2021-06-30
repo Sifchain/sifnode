@@ -36,13 +36,13 @@ the account address or key name. If a key name is given, the address will be loo
 			config := serverCtx.Config
 			config.SetRoot(clientCtx.HomeDir)
 
-			networkID, err := strconv.ParseUint(args[0], 10, 32)
+			networkDescriptor, err := strconv.ParseUint(args[0], 10, 32)
 			if err != nil {
 				return fmt.Errorf("failed to pass network descriptor: %w", err)
 			}
-			// check if the networkID is valid
-			if !oracletypes.NetworkID(networkID).IsValid() {
-				return fmt.Errorf("network id: %d is invalid", networkID)
+			// check if the networkDescriptor is valid
+			if !oracletypes.NetworkDescriptor(networkDescriptor).IsValid() {
+				return fmt.Errorf("network id: %d is invalid", networkDescriptor)
 			}
 
 			addr, err := sdk.ValAddressFromBech32(args[1])
@@ -66,13 +66,13 @@ the account address or key name. If a key name is given, the address will be loo
 				oracleGenState.AddressWhitelist = make(map[uint32]*oracletypes.ValidatorWhiteList)
 			}
 
-			_, ok := oracleGenState.AddressWhitelist[uint32(networkID)]
+			_, ok := oracleGenState.AddressWhitelist[uint32(networkDescriptor)]
 
 			if !ok {
-				oracleGenState.AddressWhitelist[uint32(networkID)] = &oracletypes.ValidatorWhiteList{WhiteList: make(map[string]uint32)}
+				oracleGenState.AddressWhitelist[uint32(networkDescriptor)] = &oracletypes.ValidatorWhiteList{WhiteList: make(map[string]uint32)}
 			}
 
-			whiteList := oracleGenState.AddressWhitelist[uint32(networkID)].WhiteList
+			whiteList := oracleGenState.AddressWhitelist[uint32(networkDescriptor)].WhiteList
 			whiteList[addr.String()] = uint32(power)
 
 			oracleGenStateBz, err := json.Marshal(oracleGenState)

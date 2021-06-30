@@ -10,14 +10,14 @@ const (
 )
 
 // NewQueryEthProphecyRequest creates a new QueryEthProphecyParams
-func NewQueryEthProphecyRequest(prophecyID string) *QueryEthProphecyRequest {
+func NewQueryEthProphecyRequest(prophecyID []byte) *QueryEthProphecyRequest {
 	return &QueryEthProphecyRequest{
 		ProphecyId: prophecyID,
 	}
 }
 
 // NewQueryEthProphecyResponse creates a new QueryEthProphecyResponse instance
-func NewQueryEthProphecyResponse(id string, status oracletypes.StatusText, claims []string) QueryEthProphecyResponse {
+func NewQueryEthProphecyResponse(id []byte, status oracletypes.StatusText, claims []string) QueryEthProphecyResponse {
 	// claimValidators := []string{}
 	// for _, claim := range claims {
 	// 	claimValidators = append(claimValidators, claim.ValidatorAddress)

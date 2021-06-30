@@ -103,7 +103,7 @@ func buildRootCmd() *cobra.Command {
 func initRelayerCmd() *cobra.Command {
 	//nolint:lll
 	initRelayerCmd := &cobra.Command{
-		Use:     "init [networkID] [tendermintNode] [web3Provider] [bridgeRegistryContractAddress] [validatorMnemonic]",
+		Use:     "init [networkDescriptor] [tendermintNode] [web3Provider] [bridgeRegistryContractAddress] [validatorMnemonic]",
 		Short:   "Validate credentials and initialize subscriptions to both chains",
 		Args:    cobra.ExactArgs(5),
 		Example: "ebrelayer init 1 tcp://localhost:26657 ws://localhost:7545/ 0x30753E4A8aad7F8597332E813735Def5dD395028 mnemonic --chain-id=peggy",
@@ -166,14 +166,14 @@ func RunInitRelayerCmd(cmd *cobra.Command, args []string) error {
 	}
 
 	// Validate and parse arguments
-	networkID, err := strconv.Atoi(args[0])
+	networkDescriptor, err := strconv.Atoi(args[0])
 	if err != nil {
 		return errors.Errorf("%s is invalid network id", args[0])
 	}
 
-	// check if the networkID is valid
-	if !oracletypes.NetworkID(networkID).IsValid() {
-		return errors.Errorf("network id: %d is invalid", networkID)
+	// check if the networkDescriptor is valid
+	if !oracletypes.NetworkDescriptor(networkDescriptor).IsValid() {
+		return errors.Errorf("network id: %d is invalid", networkDescriptor)
 	}
 
 	if len(strings.Trim(args[1], "")) == 0 {
@@ -225,7 +225,7 @@ func RunInitRelayerCmd(cmd *cobra.Command, args []string) error {
 	)
 
 	// Initialize new Cosmos event listener
-	cosmosSub := relayer.NewCosmosSub(oracletypes.NetworkID(networkID), privateKey, tendermintNode, web3Provider, contractAddress, db, sugaredLogger)
+	cosmosSub := relayer.NewCosmosSub(oracletypes.NetworkDescriptor(networkDescriptor), privateKey, tendermintNode, web3Provider, contractAddress, db, sugaredLogger)
 
 	waitForAll := sync.WaitGroup{}
 	waitForAll.Add(2)

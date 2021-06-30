@@ -12,7 +12,7 @@ import (
 
 // NewEthBridgeClaim is a constructor function for NewEthBridgeClaim
 func NewEthBridgeClaim(
-	networkID oracletypes.NetworkID,
+	networkDescriptor oracletypes.NetworkDescriptor,
 	bridgeContract EthereumAddress,
 	nonce int64,
 	symbol string,
@@ -24,7 +24,7 @@ func NewEthBridgeClaim(
 	claimType ClaimType,
 ) *EthBridgeClaim {
 	return &EthBridgeClaim{
-		NetworkId:             networkID,
+		NetworkDescriptor:     networkDescriptor,
 		BridgeContractAddress: bridgeContract.String(),
 		Nonce:                 nonce,
 		Symbol:                symbol,
@@ -38,9 +38,9 @@ func NewEthBridgeClaim(
 }
 
 // GetProphecyID compute oracle id, get from keccak256 of the all content in claim
-func (claim *EthBridgeClaim) GetProphecyID() string {
+func (claim *EthBridgeClaim) GetProphecyID() []byte {
 	allContentString := fmt.Sprintf("%s%s%s%s%s%s%s%s%s",
-		claim.NetworkId.String(),
+		claim.NetworkDescriptor.String(),
 		claim.BridgeContractAddress,
 		strconv.Itoa(int(claim.Nonce)),
 		claim.Symbol,
@@ -52,5 +52,5 @@ func (claim *EthBridgeClaim) GetProphecyID() string {
 	)
 	claimBytes := []byte(allContentString)
 	hashBytes := crypto.Keccak256(claimBytes)
-	return string(hashBytes)
+	return hashBytes
 }

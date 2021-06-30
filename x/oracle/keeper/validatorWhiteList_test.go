@@ -16,7 +16,7 @@ func TestKeeper_SetValidatorWhiteList(t *testing.T) {
 
 	addresses := sifapp.CreateRandomAccounts(2)
 	valAddresses := sifapp.ConvertAddrsToValAddrs(addresses)
-	networkDescriptor := types.NewNetworkDescriptor(types.NetworkID(0))
+	networkDescriptor := types.NewNetworkIdentity(types.NetworkDescriptor(0))
 	whilelist := types.ValidatorWhiteList{WhiteList: make(map[string]uint32)}
 	for _, address := range valAddresses {
 		whilelist.GetWhiteList()[address.String()] = 100
@@ -35,7 +35,7 @@ func TestKeeper_ValidateAddress(t *testing.T) {
 
 	addresses := sifapp.CreateRandomAccounts(2)
 	valAddresses := sifapp.ConvertAddrsToValAddrs(addresses)
-	networkDescriptor := types.NewNetworkDescriptor(types.NetworkID(0))
+	networkDescriptor := types.NewNetworkIdentity(types.NetworkDescriptor(0))
 	whitelist := make(map[string]uint32)
 
 	for _, address := range valAddresses {
@@ -56,7 +56,7 @@ func TestKeeper_GetAllWhiteList(t *testing.T) {
 
 	addresses := sifapp.CreateRandomAccounts(2)
 	valAddresses := sifapp.ConvertAddrsToValAddrs(addresses)
-	networkDescriptor := types.NewNetworkDescriptor(types.NetworkID(0))
+	networkDescriptor := types.NewNetworkIdentity(types.NetworkDescriptor(0))
 	whilelist := types.ValidatorWhiteList{WhiteList: make(map[string]uint32)}
 	for _, address := range valAddresses {
 		whilelist.GetWhiteList()[address.String()] = 100
@@ -65,6 +65,6 @@ func TestKeeper_GetAllWhiteList(t *testing.T) {
 	app.OracleKeeper.SetOracleWhiteList(ctx, networkDescriptor, whilelist)
 
 	allWhiteList := app.OracleKeeper.GetAllWhiteList(ctx)
-	assert.Equal(t, whilelist, allWhiteList[types.NetworkID(0)])
+	assert.Equal(t, whilelist, allWhiteList[types.NetworkDescriptor(0)])
 
 }

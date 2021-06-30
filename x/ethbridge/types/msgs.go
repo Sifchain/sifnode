@@ -20,15 +20,15 @@ const (
 
 // NewMsgLock is a constructor function for MsgLock
 func NewMsgLock(
-	networkID oracletypes.NetworkID, cosmosSender sdk.AccAddress,
+	networkDescriptor oracletypes.NetworkDescriptor, cosmosSender sdk.AccAddress,
 	ethereumReceiver EthereumAddress, amount sdk.Int, symbol string, cethAmount sdk.Int) MsgLock {
 	return MsgLock{
-		NetworkId:        networkID,
-		CosmosSender:     cosmosSender.String(),
-		EthereumReceiver: ethereumReceiver.String(),
-		Amount:           amount,
-		Symbol:           symbol,
-		CethAmount:       cethAmount,
+		NetworkDescriptor: networkDescriptor,
+		CosmosSender:      cosmosSender.String(),
+		EthereumReceiver:  ethereumReceiver.String(),
+		Amount:            amount,
+		Symbol:            symbol,
+		CethAmount:        cethAmount,
 	}
 }
 
@@ -40,8 +40,8 @@ func (msg MsgLock) Type() string { return "lock" }
 
 // ValidateBasic runs stateless checks on the message
 func (msg MsgLock) ValidateBasic() error {
-	if strconv.FormatInt(int64(msg.NetworkId), 10) == "" {
-		return sdkerrors.Wrapf(ErrInvalidEthereumChainID, "%d", msg.NetworkId)
+	if strconv.FormatInt(int64(msg.NetworkDescriptor), 10) == "" {
+		return sdkerrors.Wrapf(ErrInvalidEthereumChainID, "%d", msg.NetworkDescriptor)
 	}
 
 	if msg.CosmosSender == "" {
@@ -88,15 +88,15 @@ func (msg MsgLock) GetSigners() []sdk.AccAddress {
 
 // NewMsgBurn is a constructor function for MsgBurn
 func NewMsgBurn(
-	networkID oracletypes.NetworkID, cosmosSender sdk.AccAddress,
+	networkDescriptor oracletypes.NetworkDescriptor, cosmosSender sdk.AccAddress,
 	ethereumReceiver EthereumAddress, amount sdk.Int, symbol string, cethAmount sdk.Int) MsgBurn {
 	return MsgBurn{
-		NetworkId:        networkID,
-		CosmosSender:     cosmosSender.String(),
-		EthereumReceiver: ethereumReceiver.String(),
-		Amount:           amount,
-		Symbol:           symbol,
-		CethAmount:       cethAmount,
+		NetworkDescriptor: networkDescriptor,
+		CosmosSender:      cosmosSender.String(),
+		EthereumReceiver:  ethereumReceiver.String(),
+		Amount:            amount,
+		Symbol:            symbol,
+		CethAmount:        cethAmount,
 	}
 }
 
@@ -108,8 +108,8 @@ func (msg MsgBurn) Type() string { return "burn" }
 
 // ValidateBasic runs stateless checks on the message
 func (msg MsgBurn) ValidateBasic() error {
-	if msg.NetworkId == 0 {
-		return sdkerrors.Wrapf(ErrInvalidEthereumChainID, "%d", msg.NetworkId)
+	if msg.NetworkDescriptor == 0 {
+		return sdkerrors.Wrapf(ErrInvalidEthereumChainID, "%d", msg.NetworkDescriptor)
 	}
 
 	if msg.CosmosSender == "" {
@@ -328,13 +328,13 @@ func (msg MsgRescueCeth) GetSigners() []sdk.AccAddress {
 }
 
 // NewMsgUpdateWhiteListValidator is a constructor function for MsgUpdateWhiteListValidator
-func NewMsgUpdateWhiteListValidator(networkID oracletypes.NetworkID, cosmosSender sdk.AccAddress,
+func NewMsgUpdateWhiteListValidator(networkDescriptor oracletypes.NetworkDescriptor, cosmosSender sdk.AccAddress,
 	validator sdk.ValAddress, power uint32) MsgUpdateWhiteListValidator {
 	return MsgUpdateWhiteListValidator{
-		NetworkId:    networkID,
-		CosmosSender: cosmosSender.String(),
-		Validator:    validator.String(),
-		Power:        power,
+		NetworkDescriptor: networkDescriptor,
+		CosmosSender:      cosmosSender.String(),
+		Validator:         validator.String(),
+		Power:             power,
 	}
 }
 

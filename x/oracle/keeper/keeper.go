@@ -60,9 +60,11 @@ func (k Keeper) GetProphecies(ctx sdk.Context) []types.Prophecy {
 }
 
 // GetProphecy gets the entire prophecy data struct for a given id
-func (k Keeper) GetProphecy(ctx sdk.Context, id string) (types.Prophecy, bool) {
+func (k Keeper) GetProphecy(ctx sdk.Context, prophecyID []byte) (types.Prophecy, bool) {
+
 	store := ctx.KVStore(k.storeKey)
-	bz := store.Get([]byte(fmt.Sprintf("%s_%s", types.ProphecyPrefix, id)))
+	bz := store.Get(append(types.ProphecyPrefix, prophecyID[:]...))
+
 	if bz == nil {
 		return types.Prophecy{}, false
 	}
@@ -76,22 +78,23 @@ func (k Keeper) GetProphecy(ctx sdk.Context, id string) (types.Prophecy, bool) {
 // SetProphecy saves a prophecy with an initial claim
 func (k Keeper) SetProphecy(ctx sdk.Context, prophecy types.Prophecy) {
 	store := ctx.KVStore(k.storeKey)
-	storePrefix := fmt.Sprintf("%s_%s", types.ProphecyPrefix, prophecy.Id)
 
-	store.Set([]byte(storePrefix), k.cdc.MustMarshalBinaryBare(&prophecy))
+	storePrefix := append(types.ProphecyPrefix, prophecy.Id[:]...)
+
+	store.Set(storePrefix, k.cdc.MustMarshalBinaryBare(&prophecy))
 }
 
-func (k Keeper) ProcessClaim(ctx sdk.Context, networkID types.NetworkID, prophecyID, validator string) (types.StatusText, error) {
+// ProcessClaim handle claim
+func (k Keeper) ProcessClaim(ctx sdk.Context, networkDescriptor types.NetworkDescriptor, prophecyID []byte, validator string) (types.StatusText, error) {
 	logger := k.Logger(ctx)
-
-	networkDescriptor := types.NewNetworkDescriptor(networkID)
+	networkIdentity := types.NewNetworkIdentity(networkDescriptor)
 
 	valAddr, err := sdk.ValAddressFromBech32(validator)
 	if err != nil {
 		return types.StatusText_STATUS_TEXT_UNSPECIFIED, err
 	}
 
-	if !k.ValidateAddress(ctx, networkDescriptor, valAddr) {
+	if !k.ValidateAddress(ctx, networkIdentity, valAddr) {
 		logger.Error("sifnode oracle keeper ProcessClaim validator not white list.")
 		return types.StatusText_STATUS_TEXT_UNSPECIFIED, errors.New("validator not in white list")
 	}
@@ -102,14 +105,13 @@ func (k Keeper) ProcessClaim(ctx sdk.Context, networkID types.NetworkID, prophec
 		return types.StatusText_STATUS_TEXT_UNSPECIFIED, types.ErrInvalidValidator
 	}
 
-	if prophecyID == "" {
+	if len(prophecyID) == 0 {
 		logger.Error("sifnode oracle keeper ProcessClaim wrong claim id.", "claimID", prophecyID)
 		return types.StatusText_STATUS_TEXT_UNSPECIFIED, types.ErrInvalidIdentifier
 	}
 
 	prophecy, ok := k.GetProphecy(ctx, prophecyID)
 	if !ok {
-
 		prophecy.Id = prophecyID
 		prophecy.Status = types.StatusText_STATUS_TEXT_PENDING
 	}
@@ -123,7 +125,7 @@ func (k Keeper) ProcessClaim(ctx sdk.Context, networkID types.NetworkID, prophec
 
 		}
 
-		prophecy = k.processCompletion(ctx, networkID, prophecy)
+		prophecy = k.processCompletion(ctx, networkDescriptor, prophecy)
 		k.SetProphecy(ctx, prophecy)
 		return prophecy.Status, nil
 
@@ -152,22 +154,21 @@ func (k Keeper) checkActiveValidator(ctx sdk.Context, validatorAddress sdk.ValAd
 }
 
 // ProcessUpdateWhiteListValidator processes the update whitelist validator from admin
-func (k Keeper) ProcessUpdateWhiteListValidator(ctx sdk.Context, networkID types.NetworkID, cosmosSender sdk.AccAddress, validator sdk.ValAddress, power uint32) error {
+func (k Keeper) ProcessUpdateWhiteListValidator(ctx sdk.Context, networkDescriptor types.NetworkDescriptor, cosmosSender sdk.AccAddress, validator sdk.ValAddress, power uint32) error {
 	logger := k.Logger(ctx)
 	if !k.IsAdminAccount(ctx, cosmosSender) {
 		logger.Error("cosmos sender is not admin account.")
 		return types.ErrNotAdminAccount
 	}
 
-	k.UpdateOracleWhiteList(ctx, types.NewNetworkDescriptor(networkID), validator, power)
+	k.UpdateOracleWhiteList(ctx, types.NewNetworkIdentity(networkDescriptor), validator, power)
 	return nil
 }
 
 // processCompletion looks at a given prophecy
-func (k Keeper) processCompletion(ctx sdk.Context, networkID types.NetworkID, prophecy types.Prophecy) types.Prophecy {
-	whiteList := k.GetOracleWhiteList(ctx, types.NewNetworkDescriptor(networkID))
+func (k Keeper) processCompletion(ctx sdk.Context, networkDescriptor types.NetworkDescriptor, prophecy types.Prophecy) types.Prophecy {
+	whiteList := k.GetOracleWhiteList(ctx, types.NewNetworkIdentity(networkDescriptor))
 	voteRate := whiteList.GetPowerRatio(prophecy.ClaimValidators)
-	fmt.Printf("processCompletion oracle vote rate is %f \n", voteRate)
 
 	if voteRate >= k.consensusNeeded {
 		prophecy.Status = types.StatusText_STATUS_TEXT_SUCCESS
