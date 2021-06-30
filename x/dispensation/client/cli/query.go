@@ -89,7 +89,7 @@ func GetCmdDistributionRecordForRecipient(queryRoute string) *cobra.Command {
 func GetCmdDistributionRecordForDistName(queryRoute string) *cobra.Command {
 	return &cobra.Command{
 		Use:   "records-by-name [distribution name] [status]",
-		Short: "get a list of all distribution records .Status : [Completed/Pending/All]",
+		Short: "get a list of all distribution records Status : [Completed/Pending/All]",
 		Args:  cobra.ExactArgs(2),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx, err := client.GetClientQueryContext(cmd)
@@ -97,7 +97,10 @@ func GetCmdDistributionRecordForDistName(queryRoute string) *cobra.Command {
 				return err
 			}
 			name := args[0]
-			status := types.GetDistributionStatus(args[1])
+			status, ok := types.GetDistributionStatus(args[1])
+			if !ok {
+				return fmt.Errorf("invalid Status %s: Status supported [Completed/Pending/Failed]", args[0])
+			}
 			params := types.QueryRecordsByDistributionNameRequest{
 				DistributionName: name,
 				Status:           status}
@@ -128,7 +131,7 @@ func GetCmdClaimsByType(queryRoute string) *cobra.Command {
 			if err != nil {
 				return err
 			}
-			claimType, ok := types.IsValidClaim(args[0])
+			claimType, ok := types.GetClaimType(args[0])
 			if !ok {
 				return fmt.Errorf("invalid Claim Type %s: Types supported [LiquidityMining/ValidatorSubsidy]", args[0])
 			}

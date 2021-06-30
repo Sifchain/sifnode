@@ -98,7 +98,7 @@ func CreateTestKeepers(t *testing.T, consensusNeeded float64, validatorAmounts [
 	blacklistedAddrs[bondPool.GetAddress().String()] = true
 
 	maccPerms := map[string][]string{
-		authtypes.FeeCollectorName:          nil,
+		authtypes.FeeCollectorName:     nil,
 		stakingtypes.NotBondedPoolName: {authtypes.Burner, authtypes.Staking},
 		stakingtypes.BondedPoolName:    {authtypes.Burner, authtypes.Staking},
 		types.ModuleName:               {authtypes.Burner, authtypes.Minter},
@@ -112,8 +112,8 @@ func CreateTestKeepers(t *testing.T, consensusNeeded float64, validatorAmounts [
 
 	//accountKeeper gets maccParams in 0.40, module accounts moved from supplykeeper to authkeeper
 	accountKeeper := authkeeper.NewAccountKeeper(
-		encCfg.Marshaler,    // amino codec
-		keyAcc, // target store
+		encCfg.Marshaler, // amino codec
+		keyAcc,           // target store
 		paramsKeeper.Subspace(authtypes.ModuleName),
 		authtypes.ProtoBaseAccount, // prototype,
 		maccPerms,

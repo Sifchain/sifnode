@@ -9,6 +9,7 @@ option go_package = "github.com/Sifchain/sifnode/x/dispensation/types";
 message GenesisState {
   DistributionRecords distribution_records = 1;
   Distributions distributions = 2;
+  UserClaims claims = 3;
 }
 
 // Distribution type enum
@@ -27,10 +28,12 @@ enum DistributionType {
 enum DistributionStatus {
   // Unspecified
   DISTRIBUTION_STATUS_UNSPECIFIED = 0;
-  // Pending claim status
+  // Pending status
   DISTRIBUTION_STATUS_PENDING = 1;
-  // Completed claim status
+  // Completed status
   DISTRIBUTION_STATUS_COMPLETED = 2;
+  // Failed status
+  DISTRIBUTION_STATUS_FAILED = 3;
 }
 
 message DistributionRecord {
@@ -45,6 +48,7 @@ message DistributionRecord {
   ];
   int64 distribution_start_height = 6;
   int64 distribution_completed_height = 7;
+  string authorized_runner = 8;
 }
 
 message DistributionRecords {
@@ -56,13 +60,13 @@ message Distributions { repeated Distribution distributions = 1; }
 message Distribution {
   DistributionType distribution_type = 1;
   string distribution_name = 2;
+  string Runner = 3;
 }
 
 message UserClaim {
   string user_address = 1;
   DistributionType user_claim_type = 2;
-  string user_claim_time = 3;
-  bool locked = 4;
+  string user_claim_time = 3 [(gogoproto.customtype) = "github.com/gogo/protobuf/types.Timestamp"];
 }
 
 message UserClaims { repeated UserClaim user_claims = 1; }

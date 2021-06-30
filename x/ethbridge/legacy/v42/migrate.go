@@ -6,7 +6,7 @@ import (
 )
 
 func Migrate(state v039ethbridge.GenesisState) *types.GenesisState {
-	return  &types.GenesisState{
+	return &types.GenesisState{
 		CethReceiveAccount: state.CethReceiverAccount.String(),
 		PeggyTokens:        state.PeggyTokens,
 	}
