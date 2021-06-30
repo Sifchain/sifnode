@@ -19,6 +19,7 @@
     "ethers": "^5.4.0",
     "hardhat-deploy": "^0.8.9",
     "hardhat-local-networks-config-plugin": "^0.0.6",
+    "ts-node": "^10.0.0",
     "typechain": "^5.1.1",
     "web3": "^1.4.0"
   },
