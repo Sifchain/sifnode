@@ -50,7 +50,7 @@ type burnOrLockEthReq struct {
 	EthereumReceiver  string       `json:"ethereum_receiver"`
 	Amount            sdk.Int      `json:"amount"`
 	Symbol            string       `json:"symbol"`
-	CethAmount        sdk.Int      `json:"ceth_amount" yaml:"ceth_amount"`
+	CethAmount        sdk.Int      `json:"native_token_amount" yaml:"native_token_amount"`
 }
 
 // RegisterRESTRoutes - Central function to define routes that get registered by the main application

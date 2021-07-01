@@ -308,7 +308,7 @@ func TestProcessUpdateCethReceiverAccount(t *testing.T) {
 	require.NoError(t, err)
 
 	err = keeper.ProcessUpdateCethReceiverAccount(ctx, cosmosSender, cosmosSender)
-	require.Equal(t, err.Error(), "only admin account can update ceth receiver account")
+	require.Equal(t, err.Error(), "only admin account can update native_token receiver account")
 
 	oracleKeeper.SetAdminAccount(ctx, cosmosSender)
 
@@ -321,14 +321,14 @@ func TestProcessRescueCeth(t *testing.T) {
 	cosmosSender, err := sdk.AccAddressFromBech32(types.TestAddress)
 	require.NoError(t, err)
 
-	cethAmount := sdk.NewInt(100)
-	err = bankKeeper.MintCoins(ctx, types.ModuleName, sdk.NewCoins(sdk.NewCoin(types.CethSymbol, cethAmount)))
+	nativeTokenAmount := sdk.NewInt(100)
+	err = bankKeeper.MintCoins(ctx, types.ModuleName, sdk.NewCoins(sdk.NewCoin(types.CethSymbol, nativeTokenAmount)))
 	require.NoError(t, err)
 
-	msg := types.NewMsgRescueCeth(cosmosSender, cosmosSender, cethAmount)
+	msg := types.NewMsgRescueCeth(cosmosSender, cosmosSender, nativeTokenAmount)
 
 	err = keeper.ProcessRescueCeth(ctx, &msg)
-	require.Equal(t, err.Error(), "only admin account can call rescue ceth")
+	require.Equal(t, err.Error(), "only admin account can call rescue native_token")
 
 	oracleKeeper.SetAdminAccount(ctx, cosmosSender)
 

@@ -11,7 +11,7 @@ const ModuleName = "ethbridge"
 // GenesisState - all ethbridge state that must be provided at genesis
 type GenesisState struct {
 	PeggyTokens         []string       `json:"peggy_tokens"`
-	CethReceiverAccount sdk.AccAddress `json:"ceth_receiver_account"`
+	CethReceiverAccount sdk.AccAddress `json:"native_token_receiver_account"`
 }
 
 func RegisterLegacyAminoCodec(cdc *codec.LegacyAmino) {

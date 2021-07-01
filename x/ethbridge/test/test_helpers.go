@@ -260,7 +260,7 @@ func CreateTestAppEthBridge(isCheckTx bool) (sdk.Context, keeper.Keeper) {
 
 func GenerateRandomTokens(numberOfTokens int) []string {
 	var tokenList []string
-	tokens := []string{"ceth", "cbtc", "ceos", "cbch", "cbnb", "cusdt", "cada", "ctrx", "cacoin", "cbcoin", "ccoin", "cdcoin"}
+	tokens := []string{"native_token", "cbtc", "ceos", "cbch", "cbnb", "cusdt", "cada", "ctrx", "cacoin", "cbcoin", "ccoin", "cdcoin"}
 	rand.Seed(time.Now().Unix())
 	for i := 0; i < numberOfTokens; i++ {
 		// initialize global pseudo random generator

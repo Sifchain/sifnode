@@ -19,5 +19,5 @@ var (
 	ErrInvalidSymbol          = sdkerrors.Register(ModuleName, 8, "symbol must be 1 character or more")
 	ErrInvalidBurnSymbol      = sdkerrors.Register(ModuleName, 9,
 		fmt.Sprintf("symbol of token to burn must be in the form %v{ethereumSymbol}", PeggedCoinPrefix))
-	ErrCethAmount             = sdkerrors.Register(ModuleName, 10, "not enough ceth provided")
+	ErrNativeTokenAmount = sdkerrors.Register(ModuleName, 10, "not enough native token provided")
 )

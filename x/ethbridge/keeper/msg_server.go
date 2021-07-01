@@ -56,7 +56,7 @@ func (srv msgServer) Lock(goCtx context.Context, msg *types.MsgLock) (*types.Msg
 		"EthereumReceiver", msg.EthereumReceiver,
 		"Amount", msg.Amount.String(),
 		"Symbol", msg.Symbol,
-		"CethAmount", msg.CethAmount.String())
+		"NativeTokenAmount", msg.NativeTokenAmount.String())
 
 	ctx.EventManager().EmitEvents(sdk.Events{
 		sdk.NewEvent(
@@ -72,7 +72,7 @@ func (srv msgServer) Lock(goCtx context.Context, msg *types.MsgLock) (*types.Msg
 			sdk.NewAttribute(types.AttributeKeyEthereumReceiver, msg.EthereumReceiver),
 			sdk.NewAttribute(types.AttributeKeyAmount, msg.Amount.String()),
 			sdk.NewAttribute(types.AttributeKeySymbol, msg.Symbol),
-			sdk.NewAttribute(types.AttributeKeyCethAmount, msg.CethAmount.String()),
+			sdk.NewAttribute(types.AttributeKeyNativeTokenAmount, msg.NativeTokenAmount.String()),
 		),
 	})
 
@@ -112,7 +112,7 @@ func (srv msgServer) Burn(goCtx context.Context, msg *types.MsgBurn) (*types.Msg
 		"EthereumReceiver", msg.EthereumReceiver,
 		"Amount", msg.Amount.String(),
 		"Symbol", msg.Symbol,
-		"CethAmount", msg.CethAmount.String())
+		"NativeTokenAmount", msg.NativeTokenAmount.String())
 
 	ctx.EventManager().EmitEvents(sdk.Events{
 		sdk.NewEvent(
@@ -128,7 +128,7 @@ func (srv msgServer) Burn(goCtx context.Context, msg *types.MsgBurn) (*types.Msg
 			sdk.NewAttribute(types.AttributeKeyEthereumReceiver, msg.EthereumReceiver),
 			sdk.NewAttribute(types.AttributeKeyAmount, msg.Amount.String()),
 			sdk.NewAttribute(types.AttributeKeySymbol, msg.Symbol),
-			sdk.NewAttribute(types.AttributeKeyCethAmount, msg.CethAmount.String()),
+			sdk.NewAttribute(types.AttributeKeyNativeTokenAmount, msg.NativeTokenAmount.String()),
 		),
 	})
 
@@ -257,7 +257,7 @@ func (srv msgServer) UpdateCethReceiverAccount(goCtx context.Context,
 		return nil, err
 	}
 
-	cethReceiverAddress, err := sdk.AccAddressFromBech32(msg.CethReceiverAccount)
+	nativeTokenReceiverAddress, err := sdk.AccAddressFromBech32(msg.CethReceiverAccount)
 	if err != nil {
 		return nil, err
 	}
@@ -270,13 +270,13 @@ func (srv msgServer) UpdateCethReceiverAccount(goCtx context.Context,
 	}
 
 	err = srv.Keeper.ProcessUpdateCethReceiverAccount(ctx,
-		cosmosSender, cethReceiverAddress)
+		cosmosSender, nativeTokenReceiverAddress)
 	if err != nil {
-		logger.Error("keeper failed to process update ceth receiver account.", errorMessageKey, err.Error())
+		logger.Error("keeper failed to process update native_token receiver account.", errorMessageKey, err.Error())
 		return nil, err
 	}
 
-	logger.Info("sifnode emit update ceth receiver account event.",
+	logger.Info("sifnode emit update native_token receiver account event.",
 		"CosmosSender", msg.CosmosSender,
 		"CosmosSenderSequence", strconv.FormatUint(account.GetSequence(), 10),
 		"CethReceiverAccount", msg.CethReceiverAccount)
@@ -313,14 +313,14 @@ func (srv msgServer) RescueCeth(goCtx context.Context, msg *types.MsgRescueCeth)
 	}
 
 	if err := srv.Keeper.ProcessRescueCeth(ctx, msg); err != nil {
-		logger.Error("keeper failed to process rescue ceth message.", errorMessageKey, err.Error())
+		logger.Error("keeper failed to process rescue native_token message.", errorMessageKey, err.Error())
 		return nil, err
 	}
-	logger.Info("sifnode emit rescue ceth event.",
+	logger.Info("sifnode emit rescue native_token event.",
 		"CosmosSender", msg.CosmosSender,
 		"CosmosSenderSequence", strconv.FormatUint(account.GetSequence(), 10),
 		"CosmosReceiver", msg.CosmosReceiver,
-		"CethAmount", msg.CethAmount)
+		"NativeTokenAmount", msg.CethAmount)
 
 	return &types.MsgRescueCethResponse{}, nil
 }

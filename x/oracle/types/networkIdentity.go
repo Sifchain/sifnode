@@ -9,6 +9,7 @@ import (
 // NetworkIdentity define the different network like Ethereum, Binance
 type NetworkIdentity struct {
 	NetworkDescriptor NetworkDescriptor `json:"network_descriptor"`
+	NativeToken       string            `json:"native_token"`
 }
 
 // NewNetworkIdentity get a new NetworkIdentity instance

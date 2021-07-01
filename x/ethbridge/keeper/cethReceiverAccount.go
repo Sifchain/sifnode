@@ -2,20 +2,21 @@ package keeper
 
 import (
 	"bytes"
-	protobuftypes "github.com/gogo/protobuf/types"
+
 	"github.com/Sifchain/sifnode/x/ethbridge/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	protobuftypes "github.com/gogo/protobuf/types"
 )
 
-func (k Keeper) SetCethReceiverAccount(ctx sdk.Context, cethReceiverAccount sdk.AccAddress) {
+func (k Keeper) SetCethReceiverAccount(ctx sdk.Context, nativeTokenReceiverAccount sdk.AccAddress) {
 	store := ctx.KVStore(k.storeKey)
 	key := types.CethReceiverAccountPrefix
-	store.Set(key, k.cdc.MustMarshalBinaryBare(&protobuftypes.StringValue{Value: cethReceiverAccount.String()}))
+	store.Set(key, k.cdc.MustMarshalBinaryBare(&protobuftypes.StringValue{Value: nativeTokenReceiverAccount.String()}))
 }
 
-func (k Keeper) IsCethReceiverAccount(ctx sdk.Context, cethReceiverAccount sdk.AccAddress) bool {
+func (k Keeper) IsCethReceiverAccount(ctx sdk.Context, nativeTokenReceiverAccount sdk.AccAddress) bool {
 	account := k.GetCethReceiverAccount(ctx)
-	return bytes.Equal(account, cethReceiverAccount)
+	return bytes.Equal(account, nativeTokenReceiverAccount)
 }
 
 func (k Keeper) IsCethReceiverAccountSet(ctx sdk.Context) bool {
@@ -40,7 +41,7 @@ func (k Keeper) GetCethReceiverAccount(ctx sdk.Context) sdk.AccAddress {
 
 	accAddress, err := sdk.AccAddressFromBech32(strProto.Value)
 	if err != nil {
-		ctx.Logger().Error(err.Error(), "error decoding cethreceiveaccount")
+		ctx.Logger().Error(err.Error(), "error decoding native_tokenreceiveaccount")
 		return nil
 	}
 

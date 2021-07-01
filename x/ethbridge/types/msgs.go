@@ -21,14 +21,14 @@ const (
 // NewMsgLock is a constructor function for MsgLock
 func NewMsgLock(
 	networkDescriptor oracletypes.NetworkDescriptor, cosmosSender sdk.AccAddress,
-	ethereumReceiver EthereumAddress, amount sdk.Int, symbol string, cethAmount sdk.Int) MsgLock {
+	ethereumReceiver EthereumAddress, amount sdk.Int, symbol string, nativeTokenAmount sdk.Int) MsgLock {
 	return MsgLock{
 		NetworkDescriptor: networkDescriptor,
 		CosmosSender:      cosmosSender.String(),
 		EthereumReceiver:  ethereumReceiver.String(),
 		Amount:            amount,
 		Symbol:            symbol,
-		CethAmount:        cethAmount,
+		NativeTokenAmount: nativeTokenAmount,
 	}
 }
 
@@ -61,8 +61,8 @@ func (msg MsgLock) ValidateBasic() error {
 	}
 
 	// if you don't pay enough gas, this tx won't go through
-	if msg.CethAmount.LT(sdk.NewInt(lockGasCost)) {
-		return ErrCethAmount
+	if msg.NativeTokenAmount.LT(sdk.NewInt(lockGasCost)) {
+		return ErrNativeTokenAmount
 	}
 
 	if len(msg.Symbol) == 0 {
@@ -89,14 +89,14 @@ func (msg MsgLock) GetSigners() []sdk.AccAddress {
 // NewMsgBurn is a constructor function for MsgBurn
 func NewMsgBurn(
 	networkDescriptor oracletypes.NetworkDescriptor, cosmosSender sdk.AccAddress,
-	ethereumReceiver EthereumAddress, amount sdk.Int, symbol string, cethAmount sdk.Int) MsgBurn {
+	ethereumReceiver EthereumAddress, amount sdk.Int, symbol string, nativeTokenAmount sdk.Int) MsgBurn {
 	return MsgBurn{
 		NetworkDescriptor: networkDescriptor,
 		CosmosSender:      cosmosSender.String(),
 		EthereumReceiver:  ethereumReceiver.String(),
 		Amount:            amount,
 		Symbol:            symbol,
-		CethAmount:        cethAmount,
+		NativeTokenAmount: nativeTokenAmount,
 	}
 }
 
@@ -138,9 +138,9 @@ func (msg MsgBurn) ValidateBasic() error {
 		return ErrInvalidBurnSymbol
 	}
 
-	// check that enough ceth is sent to cover the gas cost.
-	if msg.CethAmount.LT(sdk.NewInt(burnGasCost)) {
-		return ErrCethAmount
+	// check that enough native_token is sent to cover the gas cost.
+	if msg.NativeTokenAmount.LT(sdk.NewInt(burnGasCost)) {
+		return ErrNativeTokenAmount
 	}
 
 	symbolSuffix := msg.Symbol[prefixLength:]
@@ -234,10 +234,10 @@ func (msg MsgCreateEthBridgeClaim) GetSigners() []sdk.AccAddress {
 
 // NewMsgUpdateCethReceiverAccount is a constructor function for MsgUpdateCethReceiverAccount
 func NewMsgUpdateCethReceiverAccount(cosmosSender sdk.AccAddress,
-	cethReceiverAccount sdk.AccAddress) MsgUpdateCethReceiverAccount {
+	nativeTokenReceiverAccount sdk.AccAddress) MsgUpdateCethReceiverAccount {
 	return MsgUpdateCethReceiverAccount{
 		CosmosSender:        cosmosSender.String(),
-		CethReceiverAccount: cethReceiverAccount.String(),
+		CethReceiverAccount: nativeTokenReceiverAccount.String(),
 	}
 }
 
@@ -245,7 +245,7 @@ func NewMsgUpdateCethReceiverAccount(cosmosSender sdk.AccAddress,
 func (msg MsgUpdateCethReceiverAccount) Route() string { return RouterKey }
 
 // Type should return the action
-func (msg MsgUpdateCethReceiverAccount) Type() string { return "update_ceth_receiver_account" }
+func (msg MsgUpdateCethReceiverAccount) Type() string { return "update_native_token_receiver_account" }
 
 // ValidateBasic runs stateless checks on the message
 func (msg MsgUpdateCethReceiverAccount) ValidateBasic() error {
@@ -280,11 +280,11 @@ func (msg MsgUpdateCethReceiverAccount) GetSigners() []sdk.AccAddress {
 }
 
 // NewMsgRescueCeth is a constructor function for NewMsgRescueCeth
-func NewMsgRescueCeth(cosmosSender sdk.AccAddress, cosmosReceiver sdk.AccAddress, cethAmount sdk.Int) MsgRescueCeth {
+func NewMsgRescueCeth(cosmosSender sdk.AccAddress, cosmosReceiver sdk.AccAddress, nativeTokenAmount sdk.Int) MsgRescueCeth {
 	return MsgRescueCeth{
 		CosmosSender:   cosmosSender.String(),
 		CosmosReceiver: cosmosReceiver.String(),
-		CethAmount:     cethAmount,
+		CethAmount:     nativeTokenAmount,
 	}
 }
 
@@ -292,7 +292,7 @@ func NewMsgRescueCeth(cosmosSender sdk.AccAddress, cosmosReceiver sdk.AccAddress
 func (msg MsgRescueCeth) Route() string { return RouterKey }
 
 // Type should return the action
-func (msg MsgRescueCeth) Type() string { return "rescue_ceth" }
+func (msg MsgRescueCeth) Type() string { return "rescue_native_token" }
 
 // ValidateBasic runs stateless checks on the message
 func (msg MsgRescueCeth) ValidateBasic() error {

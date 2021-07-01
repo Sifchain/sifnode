@@ -101,11 +101,11 @@ func (k Keeper) ProcessBurn(ctx sdk.Context, cosmosSender sdk.AccAddress, msg *t
 	var coins sdk.Coins
 
 	if k.IsCethReceiverAccountSet(ctx) {
-		coins = sdk.NewCoins(sdk.NewCoin(types.CethSymbol, msg.CethAmount))
+		coins = sdk.NewCoins(sdk.NewCoin(types.CethSymbol, msg.NativeTokenAmount))
 
 		err := k.bankKeeper.SendCoins(ctx, cosmosSender, k.GetCethReceiverAccount(ctx), coins)
 		if err != nil {
-			logger.Error("failed to send ceth from account to account.",
+			logger.Error("failed to send native_token from account to account.",
 				errorMessageKey, err.Error())
 			return err
 		}
@@ -114,15 +114,15 @@ func (k Keeper) ProcessBurn(ctx sdk.Context, cosmosSender sdk.AccAddress, msg *t
 
 	} else {
 		if msg.Symbol == types.CethSymbol {
-			coins = sdk.NewCoins(sdk.NewCoin(types.CethSymbol, msg.CethAmount.Add(msg.Amount)))
+			coins = sdk.NewCoins(sdk.NewCoin(types.CethSymbol, msg.NativeTokenAmount.Add(msg.Amount)))
 		} else {
-			coins = sdk.NewCoins(sdk.NewCoin(msg.Symbol, msg.Amount), sdk.NewCoin(types.CethSymbol, msg.CethAmount))
+			coins = sdk.NewCoins(sdk.NewCoin(msg.Symbol, msg.Amount), sdk.NewCoin(types.CethSymbol, msg.NativeTokenAmount))
 		}
 	}
 
 	err := k.bankKeeper.SendCoinsFromAccountToModule(ctx, cosmosSender, types.ModuleName, coins)
 	if err != nil {
-		logger.Error("failed to send ceth from module to account.",
+		logger.Error("failed to send native_token from module to account.",
 			errorMessageKey, err.Error())
 		return err
 	}
@@ -144,11 +144,11 @@ func (k Keeper) ProcessLock(ctx sdk.Context, cosmosSender sdk.AccAddress, msg *t
 	var coins sdk.Coins
 
 	if k.IsCethReceiverAccountSet(ctx) {
-		coins = sdk.NewCoins(sdk.NewCoin(types.CethSymbol, msg.CethAmount))
+		coins = sdk.NewCoins(sdk.NewCoin(types.CethSymbol, msg.NativeTokenAmount))
 
 		err := k.bankKeeper.SendCoins(ctx, cosmosSender, k.GetCethReceiverAccount(ctx), coins)
 		if err != nil {
-			logger.Error("failed to send ceth from account to account.",
+			logger.Error("failed to send native_token from account to account.",
 				errorMessageKey, err.Error())
 			return err
 		}
@@ -156,7 +156,7 @@ func (k Keeper) ProcessLock(ctx sdk.Context, cosmosSender sdk.AccAddress, msg *t
 		coins = sdk.NewCoins(sdk.NewCoin(msg.Symbol, msg.Amount))
 
 	} else {
-		coins = sdk.NewCoins(sdk.NewCoin(msg.Symbol, msg.Amount), sdk.NewCoin(types.CethSymbol, msg.CethAmount))
+		coins = sdk.NewCoins(sdk.NewCoin(msg.Symbol, msg.Amount), sdk.NewCoin(types.CethSymbol, msg.NativeTokenAmount))
 	}
 
 	err := k.bankKeeper.SendCoinsFromAccountToModule(ctx, cosmosSender, types.ModuleName, coins)
@@ -183,18 +183,18 @@ func (k Keeper) ProcessUpdateWhiteListValidator(ctx sdk.Context, networkDescript
 }
 
 // ProcessUpdateCethReceiverAccount processes the update whitelist validator from admin
-func (k Keeper) ProcessUpdateCethReceiverAccount(ctx sdk.Context, cosmosSender sdk.AccAddress, cethReceiverAccount sdk.AccAddress) error {
+func (k Keeper) ProcessUpdateCethReceiverAccount(ctx sdk.Context, cosmosSender sdk.AccAddress, nativeTokenReceiverAccount sdk.AccAddress) error {
 	logger := k.Logger(ctx)
 	if !k.oracleKeeper.IsAdminAccount(ctx, cosmosSender) {
 		logger.Error("cosmos sender is not admin account.")
-		return errors.New("only admin account can update ceth receiver account")
+		return errors.New("only admin account can update native_token receiver account")
 	}
 
-	k.SetCethReceiverAccount(ctx, cethReceiverAccount)
+	k.SetCethReceiverAccount(ctx, nativeTokenReceiverAccount)
 	return nil
 }
 
-// ProcessRescueCeth transfer ceth from ethbridge module to an account
+// ProcessRescueCeth transfer native_token from ethbridge module to an account
 func (k Keeper) ProcessRescueCeth(ctx sdk.Context, msg *types.MsgRescueCeth) error {
 	logger := k.Logger(ctx)
 
@@ -210,7 +210,7 @@ func (k Keeper) ProcessRescueCeth(ctx sdk.Context, msg *types.MsgRescueCeth) err
 
 	if !k.oracleKeeper.IsAdminAccount(ctx, cosmosSender) {
 		logger.Error("cosmos sender is not admin account.")
-		return errors.New("only admin account can call rescue ceth")
+		return errors.New("only admin account can call rescue native_token")
 	}
 
 	coins := sdk.NewCoins(sdk.NewCoin(types.CethSymbol, msg.CethAmount))

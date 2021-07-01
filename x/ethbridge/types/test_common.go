@@ -20,7 +20,7 @@ const (
 	AltTestEthereumAddress    = "0x7B95B6EC7EbD73572298cEf32Bb54FA408207344"
 	Alt2TestEthereumAddress   = "0x7B95B6EC7EbD73572298cEf32Bb54FA408207333"
 	TestCoinsSymbol           = "eth"
-	TestCoinsLockedSymbol     = "ceth"
+	TestCoinsLockedSymbol     = "native_token"
 	AltTestCoinsAmount        = 12
 	AltTestCoinsSymbol        = "eth"
 	TestCoinIntAmount         = 10
@@ -99,13 +99,13 @@ func CreateTestUpdateCethReceiverAccountMsg(t *testing.T, testCosmosSender strin
 	return msgUpdateCethReceiverAccount
 }
 
-func CreateTestRescueCethMsg(t *testing.T, testCosmosSender string, testCethReceiverAccount string, cethAmount sdk.Int) MsgRescueCeth {
+func CreateTestRescueCethMsg(t *testing.T, testCosmosSender string, testCethReceiverAccount string, nativeTokenAmount sdk.Int) MsgRescueCeth {
 	accAddress1, err := sdk.AccAddressFromBech32(testCosmosSender)
 	require.NoError(t, err)
 	accAddress2, err := sdk.AccAddressFromBech32(testCethReceiverAccount)
 	require.NoError(t, err)
 
-	MsgRescueCeth := NewMsgRescueCeth(accAddress1, accAddress2, cethAmount)
+	MsgRescueCeth := NewMsgRescueCeth(accAddress1, accAddress2, nativeTokenAmount)
 	return MsgRescueCeth
 }
 

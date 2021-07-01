@@ -33,10 +33,10 @@ message MsgLock {
       [ (gogoproto.moretags) = "yaml:\"network_descriptor\"" ];
   string ethereum_receiver = 5
       [ (gogoproto.moretags) = "yaml:\"ethereum_receiver\"" ];
-  string ceth_amount = 6 [
+  string native_token_amount = 6 [
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
     (gogoproto.nullable) = false,
-    (gogoproto.moretags) = "yaml:\"ceth_amount\""
+    (gogoproto.moretags) = "yaml:\"native_token_amount\""
   ];
 }
 
@@ -55,10 +55,10 @@ message MsgBurn {
       [ (gogoproto.moretags) = "yaml:\"network_descriptor\"" ];
   string ethereum_receiver = 5
       [ (gogoproto.moretags) = "yaml:\"ethereum_receiver\"" ];
-  string ceth_amount = 6 [
+  string native_token_amount = 6 [
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
     (gogoproto.nullable) = false,
-    (gogoproto.moretags) = "yaml:\"ceth_amount\""
+    (gogoproto.moretags) = "yaml:\"native_token_amount\""
   ];
 }
 
