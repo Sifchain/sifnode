@@ -1,8 +1,6 @@
 package types
 
 import (
-	"fmt"
-
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
@@ -15,7 +13,6 @@ func (prophecy *Prophecy) AddClaim(address sdk.ValAddress) error {
 	validators := prophecy.ClaimValidators
 	for _, validator := range validators {
 		if validator == address.String() {
-			fmt.Println("AddClaim(address sdk.ValAddress) ")
 			return ErrDuplicateMessage
 		}
 	}

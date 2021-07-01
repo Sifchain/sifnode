@@ -2,7 +2,6 @@ package keeper
 
 import (
 	"context"
-	"fmt"
 	"strconv"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -141,20 +140,15 @@ func (srv msgServer) CreateEthBridgeClaim(goCtx context.Context, msg *types.MsgC
 	logger := srv.Keeper.Logger(ctx)
 
 	status, err := srv.Keeper.ProcessClaim(ctx, msg.EthBridgeClaim)
-	fmt.Println("CreateEthBridgeClaim ")
 
 	if err != nil {
-		fmt.Println("CreateEthBridgeClaim 1")
 		if err != oracletypes.ErrProphecyFinalized {
-			fmt.Println("CreateEthBridgeClaim 2")
 			logger.Error("bridge keeper failed to process claim.",
 				errorMessageKey, err.Error())
 			return nil, err
 		}
 
 	} else if status == oracletypes.StatusText_STATUS_TEXT_SUCCESS {
-		fmt.Println("CreateEthBridgeClaim 3")
-
 		if err = srv.Keeper.ProcessSuccessfulClaim(ctx, msg.EthBridgeClaim); err != nil {
 			logger.Error("bridge keeper failed to process successful claim.",
 				errorMessageKey, err.Error())
