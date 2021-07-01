@@ -159,9 +159,7 @@ func TestMintSuccess(t *testing.T) {
 	//Additional message from third validator fails and does not mint
 	normalCreateMsg = types.CreateTestEthMsg(t, valAddressVal3Pow1, types.ClaimType_CLAIM_TYPE_LOCK)
 	res, err = handler(ctx, &normalCreateMsg)
-	require.Error(t, err)
-	require.Nil(t, res)
-	require.True(t, strings.Contains(err.Error(), "prophecy already finalized"))
+	require.Nil(t, err)
 	receiverCoins = bankKeeper.GetAllBalances(ctx, receiverAddress)
 	expectedCoins = sdk.Coins{sdk.NewInt64Coin(types.TestCoinsLockedSymbol, types.TestCoinIntAmount)}
 	require.True(t, receiverCoins.IsEqual(expectedCoins))
@@ -298,9 +296,8 @@ func TestBurnEthSuccess(t *testing.T) {
 	receiverAddress, err := sdk.AccAddressFromBech32(types.TestAddress)
 	require.NoError(t, err)
 	receiverCoins := bankKeeper.GetAllBalances(ctx, receiverAddress)
-	fmt.Printf("++++++++++++ receiverCoins %s, %s \n", receiverAddress.String(), receiverCoins.String())
 	mintedCoins := sdk.Coins{sdk.NewCoin(coinsToMintSymbolLocked, coinsToMintAmount)}
-	// require.True(t, receiverCoins.IsEqual(mintedCoins))
+	require.True(t, receiverCoins.IsEqual(mintedCoins))
 
 	coinsToMintAmount = sdk.NewInt(65000000000 * 300000)
 	coinsToMintSymbol = "eth"

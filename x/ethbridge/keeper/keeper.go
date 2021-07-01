@@ -28,6 +28,11 @@ type Keeper struct {
 	storeKey      sdk.StoreKey
 }
 
+// GetBankKeeper
+func (k Keeper) GetBankKeeper() types.BankKeeper {
+	return k.bankKeeper
+}
+
 // NewKeeper creates new instances of the oracle Keeper
 func NewKeeper(cdc codec.BinaryMarshaler, bankKeeper types.BankKeeper, oracleKeeper types.OracleKeeper, accountKeeper types.AccountKeeper, storeKey sdk.StoreKey) Keeper {
 	return Keeper{
@@ -53,15 +58,13 @@ func (k Keeper) ProcessClaim(ctx sdk.Context, claim *types.EthBridgeClaim) (orac
 func (k Keeper) ProcessSuccessfulClaim(ctx sdk.Context, claim *types.EthBridgeClaim) error {
 	logger := k.Logger(ctx)
 
-	balance := k.bankKeeper.GetAllBalances(ctx, sdk.AccAddress(claim.CosmosReceiver))
-	fmt.Printf("ProcessSuccessfulClaim balance is %v \n ", balance)
-
 	var coins sdk.Coins
 	var err error
 	switch claim.ClaimType {
 	case types.ClaimType_CLAIM_TYPE_LOCK:
 		symbol := fmt.Sprintf("%v%v", types.PeggedCoinPrefix, claim.Symbol)
-		k.AddPeggyToken(ctx, claim.Symbol)
+		fmt.Printf("++++++ %s added into peggy token list\n", claim.Symbol)
+		k.AddPeggyToken(ctx, symbol)
 
 		coins = sdk.Coins{sdk.NewCoin(symbol, claim.Amount)}
 		err = k.bankKeeper.MintCoins(ctx, types.ModuleName, coins)
@@ -78,18 +81,17 @@ func (k Keeper) ProcessSuccessfulClaim(ctx sdk.Context, claim *types.EthBridgeCl
 		return err
 	}
 
+	receiverAddress, err := sdk.AccAddressFromBech32(claim.CosmosReceiver)
+
+	if err != nil {
+		return err
+	}
+
 	if err := k.bankKeeper.SendCoinsFromModuleToAccount(
-		ctx, types.ModuleName, sdk.AccAddress(claim.CosmosReceiver), coins,
+		ctx, types.ModuleName, receiverAddress, coins,
 	); err != nil {
 		panic(err)
 	}
-
-	fmt.Printf("Mint coins is %s,  %v \n", claim.CosmosReceiver, coins)
-
-	fmt.Printf("Mint coins is %s, \n", sdk.AccAddress(claim.CosmosReceiver).String())
-
-	balance = k.bankKeeper.GetAllBalances(ctx, sdk.AccAddress(claim.CosmosReceiver))
-	fmt.Printf("after ProcessSuccessfulClaim balance is %v \n ", balance)
 
 	return nil
 }
