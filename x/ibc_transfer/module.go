@@ -1,14 +1,14 @@
-package ibc
+package ibc_transfer
 
 import (
 	"encoding/json"
-	"github.com/Sifchain/sifnode/x/ibc/client/cli"
-	"github.com/Sifchain/sifnode/x/ibc/client/rest"
+	"github.com/Sifchain/sifnode/x/ibc_transfer/client/cli"
+	"github.com/Sifchain/sifnode/x/ibc_transfer/client/rest"
 
 	"github.com/cosmos/cosmos-sdk/client"
 	cdctypes "github.com/cosmos/cosmos-sdk/codec/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
-	ibchost "github.com/cosmos/cosmos-sdk/x/ibc/core/24-host"
+	ibc_transfer_types "github.com/cosmos/cosmos-sdk/x/ibc/applications/transfer/types"
 	"github.com/gorilla/mux"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 	"github.com/spf13/cobra"
@@ -83,7 +83,7 @@ type AppModule struct {
 func NewAppModule(keeper Keeper) AppModule {
 	return AppModule{
 		AppModuleBasic:  AppModuleBasic{},
-		cosmosAppModule: NewCosmosAppModule(&keeper),
+		cosmosAppModule: NewCosmosAppModule(keeper),
 		keeper:          keeper,
 	}
 }
@@ -99,7 +99,7 @@ func (am AppModule) RegisterServices(cfg module.Configurator) {
 
 // Name returns the dispensation module's name.
 func (AppModule) Name() string {
-	return ibchost.ModuleName
+	return ibc_transfer_types.ModuleName
 }
 
 // RegisterInvariants registers the dispensation module invariants.
@@ -112,7 +112,7 @@ func (am AppModule) Route() sdk.Route {
 
 // QuerierRoute returns the dispensation module's querier route name.
 func (AppModule) QuerierRoute() string {
-	return ibchost.QuerierRoute
+	return ibc_transfer_types.QuerierRoute
 }
 
 // InitGenesis performs genesis initialization for the dispensation module. It returns

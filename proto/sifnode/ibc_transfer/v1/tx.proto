@@ -1,0 +1,13 @@
+syntax = "proto3";
+package sifnode.ibc_transfer.v1;
+
+option go_package = "github.com/Sifchain/sifnode/x/ibc_transfer/types";
+
+import "gogoproto/gogo.proto";
+import "github.com/cosmos/cosmos-sdk/proto/ibc/applications/transfer/v1/tx.proto";
+
+// Msg defines the ibc/transfer Msg service.
+service Msg {
+  // Transfer defines a rpc handler method for MsgTransfer.
+  rpc Transfer(MsgTransfer) returns (MsgTransferResponse);
+}

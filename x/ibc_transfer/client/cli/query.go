@@ -3,16 +3,15 @@ package cli
 import (
 	"fmt"
 	"github.com/cosmos/cosmos-sdk/client"
-	ibchost "github.com/cosmos/cosmos-sdk/x/ibc/core/24-host"
-
+	ibc_transfer_types "github.com/cosmos/cosmos-sdk/x/ibc/applications/transfer/types"
 	"github.com/spf13/cobra"
 )
 
 func GetQueryCmd() *cobra.Command {
 	// Group dispensation queries under a subcommand
 	queryCmd := &cobra.Command{
-		Use:                        ibchost.ModuleName,
-		Short:                      fmt.Sprintf("Querying commands for the %s module", ibchost.ModuleName),
+		Use:                        ibc_transfer_types.ModuleName,
+		Short:                      fmt.Sprintf("Querying commands for the %s module", ibc_transfer_types.ModuleName),
 		DisableFlagParsing:         true,
 		SuggestionsMinimumDistance: 2,
 		RunE:                       client.ValidateCmd,
