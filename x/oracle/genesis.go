@@ -45,7 +45,8 @@ func ExportGenesis(ctx sdk.Context, keeper keeper.Keeper) *types.GenesisState {
 	propheciesTmp := keeper.GetProphecies(ctx)
 	prophecies := make([]*types.Prophecy, len(propheciesTmp))
 	for index, prophecy := range propheciesTmp {
-		prophecies[index] = &prophecy
+		tmpProphecy := prophecy
+		prophecies[index] = &tmpProphecy
 	}
 
 	return &types.GenesisState{

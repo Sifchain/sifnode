@@ -156,7 +156,7 @@ func TestMintSuccess(t *testing.T) {
 
 	//Additional message from third validator fails and does not mint
 	normalCreateMsg = types.CreateTestEthMsg(t, valAddressVal3Pow1, types.ClaimType_CLAIM_TYPE_LOCK)
-	res, err = handler(ctx, &normalCreateMsg)
+	_, err = handler(ctx, &normalCreateMsg)
 	require.Nil(t, err)
 	receiverCoins = bankKeeper.GetAllBalances(ctx, receiverAddress)
 	expectedCoins = sdk.Coins{sdk.NewInt64Coin(types.TestCoinsLockedSymbol, types.TestCoinIntAmount)}
