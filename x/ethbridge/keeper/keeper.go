@@ -63,7 +63,6 @@ func (k Keeper) ProcessSuccessfulClaim(ctx sdk.Context, claim *types.EthBridgeCl
 	switch claim.ClaimType {
 	case types.ClaimType_CLAIM_TYPE_LOCK:
 		symbol := fmt.Sprintf("%v%v", types.PeggedCoinPrefix, claim.Symbol)
-		fmt.Printf("++++++ %s added into peggy token list\n", claim.Symbol)
 		k.AddPeggyToken(ctx, symbol)
 
 		coins = sdk.Coins{sdk.NewCoin(symbol, claim.Amount)}

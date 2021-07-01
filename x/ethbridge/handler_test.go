@@ -143,8 +143,6 @@ func TestMintSuccess(t *testing.T) {
 	require.NoError(t, err)
 	receiverCoins := bankKeeper.GetAllBalances(ctx, receiverAddress)
 	expectedCoins := sdk.Coins{sdk.NewInt64Coin(types.TestCoinsLockedSymbol, types.TestCoinIntAmount)}
-	fmt.Printf("receiverCoins %s, %v\n", receiverAddress, receiverCoins)
-	fmt.Printf("expectedCoins %v\n", expectedCoins)
 
 	require.True(t, receiverCoins.IsEqual(expectedCoins))
 	for _, event := range res.Events {
@@ -244,7 +242,6 @@ func TestLockFail(t *testing.T) {
 
 	//Initial message
 	normalCreateMsg := types.CreateTestEthMsg(t, valAddress, types.ClaimType_CLAIM_TYPE_LOCK)
-	fmt.Printf("message is %v \n", normalCreateMsg)
 	res, err := handler(ctx, &normalCreateMsg)
 
 	require.Error(t, err)
