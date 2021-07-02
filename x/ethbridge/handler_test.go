@@ -400,7 +400,7 @@ func TestBurnEthSuccess(t *testing.T) {
 		coinsToBurnSymbolPrefixed)
 	_, err = handler(ctx, &lockMsg)
 	require.NotNil(t, err)
-	require.Equal(t, "Pegged token native_tokener can't be lock.", err.Error())
+	require.Equal(t, "Pegged token cether can't be lock.", err.Error())
 
 	// Fourth message OK
 	_, err = handler(ctx, &burnMsg)

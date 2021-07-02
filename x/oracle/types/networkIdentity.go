@@ -16,6 +16,15 @@ type NetworkIdentity struct {
 func NewNetworkIdentity(networkDescriptor NetworkDescriptor) NetworkIdentity {
 	return NetworkIdentity{
 		NetworkDescriptor: networkDescriptor,
+		NativeToken:       "ceth",
+	}
+}
+
+// NewNetworkIdentityWithToken get a new NetworkIdentity instance
+func NewNetworkIdentityWithToken(networkDescriptor NetworkDescriptor, nativeToken string) NetworkIdentity {
+	return NetworkIdentity{
+		NetworkDescriptor: networkDescriptor,
+		NativeToken:       nativeToken,
 	}
 }
 
@@ -24,6 +33,13 @@ func (n NetworkIdentity) GetPrefix() []byte {
 	bytebuf := bytes.NewBuffer([]byte{})
 	_ = binary.Write(bytebuf, binary.BigEndian, n.NetworkDescriptor)
 	return append(WhiteListValidatorPrefix, bytebuf.Bytes()...)
+}
+
+// GetNativeTokenPrefix return storage prefix
+func (n NetworkIdentity) GetNativeTokenPrefix() []byte {
+	bytebuf := bytes.NewBuffer([]byte{})
+	_ = binary.Write(bytebuf, binary.BigEndian, n.NetworkDescriptor)
+	return append(NativeTokenPrefix, bytebuf.Bytes()...)
 }
 
 // GetFromPrefix return a NetworkIdentity from prefix

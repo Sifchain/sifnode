@@ -41,7 +41,7 @@ func (k Keeper) GetCethReceiverAccount(ctx sdk.Context) sdk.AccAddress {
 
 	accAddress, err := sdk.AccAddressFromBech32(strProto.Value)
 	if err != nil {
-		ctx.Logger().Error(err.Error(), "error decoding native_tokenreceiveaccount")
+		ctx.Logger().Error(err.Error(), "error decoding native_token receive account")
 		return nil
 	}
 

@@ -187,14 +187,14 @@ func (k Keeper) ProcessUpdateCethReceiverAccount(ctx sdk.Context, cosmosSender s
 	logger := k.Logger(ctx)
 	if !k.oracleKeeper.IsAdminAccount(ctx, cosmosSender) {
 		logger.Error("cosmos sender is not admin account.")
-		return errors.New("only admin account can update native_token receiver account")
+		return errors.New("only admin account can update ceth receiver account")
 	}
 
 	k.SetCethReceiverAccount(ctx, nativeTokenReceiverAccount)
 	return nil
 }
 
-// ProcessRescueCeth transfer native_token from ethbridge module to an account
+// ProcessRescueCeth transfer ceth from ethbridge module to an account
 func (k Keeper) ProcessRescueCeth(ctx sdk.Context, msg *types.MsgRescueCeth) error {
 	logger := k.Logger(ctx)
 
@@ -210,7 +210,7 @@ func (k Keeper) ProcessRescueCeth(ctx sdk.Context, msg *types.MsgRescueCeth) err
 
 	if !k.oracleKeeper.IsAdminAccount(ctx, cosmosSender) {
 		logger.Error("cosmos sender is not admin account.")
-		return errors.New("only admin account can call rescue native_token")
+		return errors.New("only admin account can call rescue ceth")
 	}
 
 	coins := sdk.NewCoins(sdk.NewCoin(types.CethSymbol, msg.CethAmount))

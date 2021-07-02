@@ -40,3 +40,6 @@ enum StatusText {
   // Success status
   STATUS_TEXT_SUCCESS = 2;
 }
+
+// NativeToken is symbol for each network
+message NativeToken { string native_token = 1; }

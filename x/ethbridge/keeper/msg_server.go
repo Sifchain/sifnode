@@ -272,11 +272,11 @@ func (srv msgServer) UpdateCethReceiverAccount(goCtx context.Context,
 	err = srv.Keeper.ProcessUpdateCethReceiverAccount(ctx,
 		cosmosSender, nativeTokenReceiverAddress)
 	if err != nil {
-		logger.Error("keeper failed to process update native_token receiver account.", errorMessageKey, err.Error())
+		logger.Error("keeper failed to process update ceth receiver account.", errorMessageKey, err.Error())
 		return nil, err
 	}
 
-	logger.Info("sifnode emit update native_token receiver account event.",
+	logger.Info("sifnode emit update ceth receiver account event.",
 		"CosmosSender", msg.CosmosSender,
 		"CosmosSenderSequence", strconv.FormatUint(account.GetSequence(), 10),
 		"CethReceiverAccount", msg.CethReceiverAccount)

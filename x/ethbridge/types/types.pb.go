@@ -219,7 +219,7 @@ func (m *PeggyTokens) GetTokens() []string {
 
 // GenesisState for ethbridge
 type GenesisState struct {
-	CethReceiveAccount string   `protobuf:"bytes,1,opt,name=native_token_receive_account,json=native_tokenReceiveAccount,proto3" json:"native_token_receive_account,omitempty"`
+	CethReceiveAccount string   `protobuf:"bytes,1,opt,name=ceth_receive_account,json=cethReceiveAccount,proto3" json:"ceth_receive_account,omitempty"`
 	PeggyTokens        []string `protobuf:"bytes,2,rep,name=peggy_tokens,json=peggyTokens,proto3" json:"peggy_tokens,omitempty"`
 }
 

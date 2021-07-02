@@ -431,7 +431,7 @@ var xxx_messageInfo_MsgUpdateWhiteListValidatorResponse proto.InternalMessageInf
 
 type MsgUpdateCethReceiverAccount struct {
 	CosmosSender        string `protobuf:"bytes,1,opt,name=cosmos_sender,json=cosmosSender,proto3" json:"cosmos_sender,omitempty"`
-	CethReceiverAccount string `protobuf:"bytes,2,opt,name=native_token_receiver_account,json=native_tokenReceiverAccount,proto3" json:"native_token_receiver_account,omitempty"`
+	CethReceiverAccount string `protobuf:"bytes,2,opt,name=ceth_receiver_account,json=cethReceiverAccount,proto3" json:"ceth_receiver_account,omitempty"`
 }
 
 func (m *MsgUpdateCethReceiverAccount) Reset()         { *m = MsgUpdateCethReceiverAccount{} }
@@ -520,7 +520,7 @@ var xxx_messageInfo_MsgUpdateCethReceiverAccountResponse proto.InternalMessageIn
 type MsgRescueCeth struct {
 	CosmosSender   string                                 `protobuf:"bytes,1,opt,name=cosmos_sender,json=cosmosSender,proto3" json:"cosmos_sender,omitempty"`
 	CosmosReceiver string                                 `protobuf:"bytes,2,opt,name=cosmos_receiver,json=cosmosReceiver,proto3" json:"cosmos_receiver,omitempty"`
-	CethAmount     github_com_cosmos_cosmos_sdk_types.Int `protobuf:"bytes,3,opt,name=native_token_amount,json=native_tokenAmount,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Int" json:"native_token_amount"`
+	CethAmount     github_com_cosmos_cosmos_sdk_types.Int `protobuf:"bytes,3,opt,name=ceth_amount,json=cethAmount,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Int" json:"ceth_amount"`
 }
 
 func (m *MsgRescueCeth) Reset()         { *m = MsgRescueCeth{} }

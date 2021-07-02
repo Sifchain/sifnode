@@ -16,8 +16,8 @@ const (
 	// PeggyTokenKey is the key for peggy token list
 	PeggyTokenKey = StoreKey + "PeggyToken"
 
-	// native_token symbol
-	CethSymbol = "native_token"
+	// ceth symbol
+	CethSymbol = "ceth"
 )
 
 var (
