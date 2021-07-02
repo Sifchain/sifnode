@@ -2,13 +2,13 @@ package ibc_transfer
 
 import (
 	"encoding/json"
-	"github.com/Sifchain/sifnode/x/ibc_transfer/client/cli"
-	"github.com/Sifchain/sifnode/x/ibc_transfer/client/rest"
-
 	"github.com/cosmos/cosmos-sdk/client"
 	cdctypes "github.com/cosmos/cosmos-sdk/codec/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
+	capabilitytypes "github.com/cosmos/cosmos-sdk/x/capability/types"
 	ibc_transfer_types "github.com/cosmos/cosmos-sdk/x/ibc/applications/transfer/types"
+	"github.com/cosmos/cosmos-sdk/x/ibc/core/04-channel/types"
+	porttypes "github.com/cosmos/cosmos-sdk/x/ibc/core/05-port/types"
 	"github.com/gorilla/mux"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 	"github.com/spf13/cobra"
@@ -23,6 +23,7 @@ import (
 var (
 	_ module.AppModule      = AppModule{}
 	_ module.AppModuleBasic = AppModuleBasic{}
+	_ porttypes.IBCModule   = AppModule{}
 )
 
 // AppModuleBasic defines the basic application module used by the dispensation module.
@@ -53,21 +54,23 @@ func (AppModuleBasic) ValidateGenesis(cdc codec.JSONMarshaler, config client.TxE
 
 // RegisterRESTRoutes registers the REST routes for the dispensation module.
 func (AppModuleBasic) RegisterRESTRoutes(ctx client.Context, rtr *mux.Router) {
-	rest.RegisterRoutes(ctx, rtr)
+	CosmosAppModuleBasic{}.RegisterRESTRoutes(ctx, rtr)
 }
 
 func (AppModuleBasic) RegisterGRPCGatewayRoutes(clientCtx client.Context, mux *runtime.ServeMux) {
-	//types.RegisterQueryHandlerClient(context.Background(), mux, types.NewQueryClient(clientCtx))
+	CosmosAppModuleBasic{}.RegisterGRPCGatewayRoutes(clientCtx, mux)
 }
 
 // GetTxCmd returns the root tx command for the dispensation module.
 func (AppModuleBasic) GetTxCmd() *cobra.Command {
-	return cli.GetTxCmd()
+	// Append local TX cmd to this if required
+	return CosmosAppModuleBasic{}.GetTxCmd()
 }
 
 // GetQueryCmd returns no root query command for the dispensation module.
 func (AppModuleBasic) GetQueryCmd() *cobra.Command {
-	return cli.GetQueryCmd()
+	// Append local TX cmd to this if required
+	return CosmosAppModuleBasic{}.GetQueryCmd()
 }
 
 //____________________________________________________________________________
@@ -77,6 +80,42 @@ type AppModule struct {
 	AppModuleBasic
 	cosmosAppModule CosmosAppModule
 	keeper          Keeper
+}
+
+func (am AppModule) OnChanOpenInit(ctx sdk.Context, order types.Order, connectionHops []string, portID string, channelID string, channelCap *capabilitytypes.Capability, counterparty types.Counterparty, version string) error {
+	return am.cosmosAppModule.OnChanOpenInit(ctx, order, connectionHops, portID, channelID, channelCap, counterparty, version)
+}
+
+func (am AppModule) OnChanOpenTry(ctx sdk.Context, order types.Order, connectionHops []string, portID, channelID string, channelCap *capabilitytypes.Capability, counterparty types.Counterparty, version, counterpartyVersion string) error {
+	return am.cosmosAppModule.OnChanOpenTry(ctx, order, connectionHops, portID, channelID, channelCap, counterparty, version, counterpartyVersion)
+}
+
+func (am AppModule) OnChanOpenAck(ctx sdk.Context, portID, channelID string, counterpartyVersion string) error {
+	return am.cosmosAppModule.OnChanOpenAck(ctx, portID, channelID, counterpartyVersion)
+}
+
+func (am AppModule) OnChanOpenConfirm(ctx sdk.Context, portID, channelID string) error {
+	return am.cosmosAppModule.OnChanOpenConfirm(ctx, portID, channelID)
+}
+
+func (am AppModule) OnChanCloseInit(ctx sdk.Context, portID, channelID string) error {
+	return am.cosmosAppModule.OnChanCloseInit(ctx, portID, channelID)
+}
+
+func (am AppModule) OnChanCloseConfirm(ctx sdk.Context, portID, channelID string) error {
+	return am.cosmosAppModule.OnChanOpenConfirm(ctx, portID, channelID)
+}
+
+func (am AppModule) OnRecvPacket(ctx sdk.Context, packet types.Packet) (*sdk.Result, []byte, error) {
+	return OnRecvPacketWhiteListed(am.keeper, ctx, packet)
+}
+
+func (am AppModule) OnAcknowledgementPacket(ctx sdk.Context, packet types.Packet, acknowledgement []byte) (*sdk.Result, error) {
+	return am.cosmosAppModule.OnAcknowledgementPacket(ctx, packet, acknowledgement)
+}
+
+func (am AppModule) OnTimeoutPacket(ctx sdk.Context, packet types.Packet) (*sdk.Result, error) {
+	return am.cosmosAppModule.OnTimeoutPacket(ctx, packet)
 }
 
 // Call this function from app.go
@@ -94,7 +133,7 @@ func (am AppModule) LegacyQuerierHandler(amino *codec.LegacyAmino) sdk.Querier {
 }
 
 func (am AppModule) RegisterServices(cfg module.Configurator) {
-	CosmosAppModule{}.RegisterServices(cfg)
+	am.cosmosAppModule.RegisterServices(cfg)
 }
 
 // Name returns the dispensation module's name.
@@ -107,7 +146,7 @@ func (am AppModule) RegisterInvariants(_ sdk.InvariantRegistry) {}
 
 // Route returns the message routing key for the dispensation module.
 func (am AppModule) Route() sdk.Route {
-	return CosmosAppModule{}.Route()
+	return am.cosmosAppModule.Route()
 }
 
 // QuerierRoute returns the dispensation module's querier route name.
@@ -118,22 +157,24 @@ func (AppModule) QuerierRoute() string {
 // InitGenesis performs genesis initialization for the dispensation module. It returns
 // no validator updates
 func (am AppModule) InitGenesis(ctx sdk.Context, codec codec.JSONMarshaler, data json.RawMessage) []abci.ValidatorUpdate {
-	return CosmosAppModule{}.InitGenesis(ctx, codec, data)
+	return am.cosmosAppModule.InitGenesis(ctx, codec, data)
 }
 
 // ExportGenesis returns the exported genesis state as raw bytes for the dispensation
 // module.
 func (am AppModule) ExportGenesis(ctx sdk.Context, codec codec.JSONMarshaler) json.RawMessage {
-	return CosmosAppModule{}.ExportGenesis(ctx, codec)
+	return am.cosmosAppModule.ExportGenesis(ctx, codec)
 }
 
 // BeginBlock returns the begin blocker for the dispensation module.
 func (am AppModule) BeginBlock(ctx sdk.Context, req abci.RequestBeginBlock) {
-	CosmosAppModule{}.BeginBlock(ctx, req)
+	am.cosmosAppModule.BeginBlock(ctx, req)
 }
 
 // EndBlock returns the end blocker for the dispensation module. It returns no validator
 // updates.
-func (AppModule) EndBlock(ctx sdk.Context, req abci.RequestEndBlock) []abci.ValidatorUpdate {
-	return CosmosAppModule{}.EndBlock(ctx, req)
+func (am AppModule) EndBlock(ctx sdk.Context, req abci.RequestEndBlock) []abci.ValidatorUpdate {
+	return am.cosmosAppModule.EndBlock(ctx, req)
 }
+
+// OnRecvPacketWhiteListed overrides the default implementation to add whitelisting functionality
