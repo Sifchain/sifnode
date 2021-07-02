@@ -51,6 +51,8 @@ flags:
 
 ignore:
   - "docs"
+  - "proto/"
+  - "*.proto"
   - "*.md"
   - "*.rst"
   - "**/test_common.go"
