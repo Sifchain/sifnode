@@ -1,12 +1,13 @@
-package main
+package cmd
 
 import (
-	"github.com/Sifchain/sifnode/cmd/ebrelayer/txs"
-	"github.com/cosmos/cosmos-sdk/client"
-	"github.com/cosmos/cosmos-sdk/client/tx"
 	"log"
 	"strconv"
 	"strings"
+
+	"github.com/Sifchain/sifnode/cmd/ebrelayer/txs"
+	"github.com/cosmos/cosmos-sdk/client"
+	"github.com/cosmos/cosmos-sdk/client/tx"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/pkg/errors"
