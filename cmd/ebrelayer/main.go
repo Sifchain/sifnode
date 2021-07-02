@@ -1,13 +1,14 @@
-package main
+package ebrelayer
 
 import (
 	"fmt"
-	"github.com/Sifchain/sifnode/cmd/ebrelayer/txs"
 	"log"
 	"net/url"
 	"os"
 	"strings"
 	"sync"
+
+	"github.com/Sifchain/sifnode/cmd/ebrelayer/txs"
 
 	sifapp "github.com/Sifchain/sifnode/app"
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/contract"
@@ -32,7 +33,7 @@ const (
 	levelDbFile = "relayerdb"
 )
 
-func buildRootCmd() *cobra.Command {
+func NewRootCmd() *cobra.Command {
 	// see cmd/sifnoded/cmd/root.go:37 ; we need to do the
 	// same thing in ebrelayer
 	encodingConfig := sifapp.MakeTestEncodingConfig()
@@ -280,7 +281,7 @@ func listMissedCosmosEventCmd() *cobra.Command {
 }
 
 func main() {
-	if err := svrcmd.Execute(buildRootCmd(), sifapp.DefaultNodeHome); err != nil {
+	if err := svrcmd.Execute(NewRootCmd(), sifapp.DefaultNodeHome); err != nil {
 		switch e := err.(type) {
 		case server.ErrorCode:
 			os.Exit(e.Code)
