@@ -57,7 +57,7 @@ func CreateClaimsList(count int, claimType dispensation.DistributionType) []disp
 	list := make([]dispensation.UserClaim, count)
 	for i := 0; i < count; i++ {
 		address := sdk.AccAddress(crypto.AddressHash([]byte("User" + strconv.Itoa(i))))
-		claim := dispensation.NewUserClaim(address.String(), claimType, time.Now().String())
+		claim, _ := dispensation.NewUserClaim(address.String(), claimType, time.Now())
 		list[i] = claim
 	}
 	return list
