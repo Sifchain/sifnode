@@ -1,4 +1,4 @@
-package ebrelayer
+package cmd
 
 import (
 	"log"
