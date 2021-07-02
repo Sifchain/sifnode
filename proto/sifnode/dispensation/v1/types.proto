@@ -60,7 +60,7 @@ message Distributions { repeated Distribution distributions = 1; }
 message Distribution {
   DistributionType distribution_type = 1;
   string distribution_name = 2;
-  string Runner = 3;
+  string runner = 3;
 }
 
 message UserClaim {
