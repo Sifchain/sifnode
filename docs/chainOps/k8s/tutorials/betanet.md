@@ -103,7 +103,7 @@ sifnodecli keys show <moniker> --keyring-backend file
 4. Deploy a new node to your cluster and connect to an existing network:
 
 ```
-rake "sifnode:standalone:deploy:peer[<cluster>,<chain_id>,<provider>,<namespace>,<image>,<image_tag>,<moniker>,<mnemonic>,<peer_address>,<genesis_url>]"
+rake "standalone:deploy:peer[<cluster>,<chain_id>,<provider>,<namespace>,<image>,<image_tag>,<moniker>,<mnemonic>,<peer_address>,<genesis_url>]"
 ```
 
 where:
@@ -123,7 +123,7 @@ where:
 e.g.:
 
 ```
-rake "sifnode:standalone:deploy:peer[my-cluster,sifchain,aws,sifnode,sifchain/sifnoded,mainnet-genesis,my-node,'my mnemonic',0d4981bdaf4d5d73bad00af3b1fa9d699e4d3bc0@44.235.108.41:26656,https://rpc.sifchain.finance/genesis]"
+rake "standalone:deploy:peer[my-cluster,sifchain,aws,sifnode,sifchain/sifnoded,mainnet-genesis,my-node,'my mnemonic',0d4981bdaf4d5d73bad00af3b1fa9d699e4d3bc0@44.235.108.41:26656,https://rpc.sifchain.finance/genesis]"
 ```
 
 _Please note: the image tag *must* be `mainnet-genesis`._
