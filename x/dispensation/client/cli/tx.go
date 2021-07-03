@@ -58,7 +58,6 @@ func GetCmdCreate() *cobra.Command {
 	}
 
 	flags.AddTxFlagsToCmd(cmd)
-
 	return cmd
 }
 
@@ -82,7 +81,9 @@ func GetCmdClaim() *cobra.Command {
 			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), &msg)
 		},
 	}
+	flags.AddTxFlagsToCmd(cmd)
 	return cmd
+
 }
 
 func GetCmdRun() *cobra.Command {
@@ -102,5 +103,6 @@ func GetCmdRun() *cobra.Command {
 			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), &msg)
 		},
 	}
+	flags.AddTxFlagsToCmd(cmd)
 	return cmd
 }
