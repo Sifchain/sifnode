@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/Sifchain/sifnode/x/dispensation/types"
 	"github.com/cosmos/cosmos-sdk/client"
+	"github.com/cosmos/cosmos-sdk/client/flags"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/spf13/cobra"
 )
@@ -28,7 +29,8 @@ func GetQueryCmd(queryRoute string) *cobra.Command {
 
 //GetCmdDistributions returns a list of all distributions ever created
 func GetCmdDistributions(queryRoute string) *cobra.Command {
-	return &cobra.Command{
+
+	cmd := &cobra.Command{
 		Use:   "distributions-all",
 		Short: "get a list of all distributions ",
 		Args:  cobra.ExactArgs(0),
@@ -48,11 +50,13 @@ func GetCmdDistributions(queryRoute string) *cobra.Command {
 			return clientCtx.PrintProto(&out)
 		},
 	}
+	flags.AddQueryFlagsToCmd(cmd)
+	return cmd
 }
 
 // GetCmdDistributionRecordForRecipient returns the completed and pending records for the recipient address
 func GetCmdDistributionRecordForRecipient(queryRoute string) *cobra.Command {
-	return &cobra.Command{
+	cmd := &cobra.Command{
 		Use:   "records-by-addr [recipient address]",
 		Short: "get a list of all distribution records ",
 		Args:  cobra.ExactArgs(1),
@@ -83,11 +87,13 @@ func GetCmdDistributionRecordForRecipient(queryRoute string) *cobra.Command {
 			return clientCtx.PrintProto(&out)
 		},
 	}
+	flags.AddQueryFlagsToCmd(cmd)
+	return cmd
 }
 
 //GetCmdDistributionRecordForDistName returns all records for a given distribution name
 func GetCmdDistributionRecordForDistName(queryRoute string) *cobra.Command {
-	return &cobra.Command{
+	cmd := &cobra.Command{
 		Use:   "records-by-name [distribution name] [status]",
 		Short: "get a list of all distribution records Status : [Completed/Pending/All]",
 		Args:  cobra.ExactArgs(2),
@@ -119,10 +125,12 @@ func GetCmdDistributionRecordForDistName(queryRoute string) *cobra.Command {
 			return clientCtx.PrintProto(&out)
 		},
 	}
+	flags.AddQueryFlagsToCmd(cmd)
+	return cmd
 }
 
 func GetCmdClaimsByType(queryRoute string) *cobra.Command {
-	return &cobra.Command{
+	cmd := &cobra.Command{
 		Use:   "claims-by-type [ClaimType]",
 		Short: "get a list of all claims for mentioned type",
 		Args:  cobra.ExactArgs(1),
@@ -156,4 +164,6 @@ func GetCmdClaimsByType(queryRoute string) *cobra.Command {
 			return clientCtx.PrintProto(&out)
 		},
 	}
+	flags.AddQueryFlagsToCmd(cmd)
+	return cmd
 }

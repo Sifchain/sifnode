@@ -12,10 +12,10 @@ sifnodecli tx dispensation claim ValidatorSubsidy --from sif --keyring-backend t
 sleep 8
 sifnodecli q dispensation claims-by-type ValidatorSubsidy
 sleep 8
-sifnodecli tx dispensation create ValidatorSubsidy output.json --gas 200064128 --from $(sifnodecli keys show sif -a) --yes
+sifnoded tx dispensation create ValidatorSubsidy output.json sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd --gas 200064128 --from=sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd --keyring-backend=test --fees 100000rowan --chain-id=sifchain-devnet-042 --node=tcp://rpc-devnet-042.sifchain.finance:80  --yes
 
 sleep 8
-sifnodecli q dispensation distributions-all
+sifnoded q dispensation distributions-all --chain-id=localnet
 #sifnodecli q dispensation records-by-name-all ar1 >> all.json
 #sifnodecli q dispensation records-by-name-pending ar1 >> pending.json
 #sifnodecli q dispensation records-by-name-completed ar1 >> completed.json
