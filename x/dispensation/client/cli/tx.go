@@ -37,7 +37,10 @@ func GetCmdCreate() *cobra.Command {
 		Use:   "create [DistributionType] [Output JSON File Path] [AuthorizedRunner]",
 		Short: "Create new distribution",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			clientCtx := client.GetClientContextFromCmd(cmd)
+			clientCtx, err := client.GetClientTxContext(cmd)
+			if err != nil {
+				return err
+			}
 			distributionType, ok := types.GetDistributionTypeFromShortString(args[0])
 			if !ok {
 				return fmt.Errorf("invalid distribution Type %s: Types supported [Airdrop/LiquidityMining/ValidatorSubsidy]", args[2])
@@ -64,7 +67,10 @@ func GetCmdClaim() *cobra.Command {
 		Use:   "claim [ClaimType]",
 		Short: "Create new Claim",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			clientCtx := client.GetClientContextFromCmd(cmd)
+			clientCtx, err := client.GetClientTxContext(cmd)
+			if err != nil {
+				return err
+			}
 			claimType, ok := types.GetClaimType(args[0])
 			if !ok {
 				return fmt.Errorf("invalid Claim Type %s: Types supported [LiquidityMining/ValidatorSubsidy]", args[0])
