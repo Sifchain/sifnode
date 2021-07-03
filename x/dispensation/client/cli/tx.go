@@ -91,7 +91,10 @@ func GetCmdRun() *cobra.Command {
 		Use:   "run [DistributionName] [DistributionType]",
 		Short: "run limited records dispensation by specifying the name / should only be called by the authorized runner",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			clientCtx := client.GetClientContextFromCmd(cmd)
+			clientCtx, err := client.GetClientTxContext(cmd)
+			if err != nil {
+				return err
+			}
 			distributionType, ok := types.GetDistributionTypeFromShortString(args[1])
 			if !ok {
 				return fmt.Errorf("invalid distribution Type %s: Types supported [Airdrop/LiquidityMining/ValidatorSubsidy]", args[1])
