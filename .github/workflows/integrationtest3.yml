@@ -21,7 +21,8 @@ jobs:
 
       - name: Copy Automation Folder for Test to Execute.
         run: # installs development tools and updates .bash_profile
-          cp -r sifchain-deploy/deploy ./deploy
+          mkdir -p deploy/
+          cp -r sifchain-deploy/ ./deploy
 
       - name: Set up linux environment
         run: # installs development tools and updates .bash_profile
