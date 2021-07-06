@@ -50,7 +50,8 @@ func (k Keeper) Logger(ctx sdk.Context) log.Logger {
 func (k Keeper) GetProphecies(ctx sdk.Context) []types.Prophecy {
 	var prophecies []types.Prophecy
 	store := ctx.KVStore(k.storeKey)
-	iter := store.Iterator(types.ProphecyPrefix, nil)
+	iter := sdk.KVStorePrefixIterator(store, types.ProphecyPrefix)
+	// iter := store.Iterator(types.ProphecyPrefix, types.NativeTokenPrefix)
 	for ; iter.Valid(); iter.Next() {
 		var prophecy types.Prophecy
 		k.cdc.MustUnmarshalBinaryBare(iter.Value(), &prophecy)

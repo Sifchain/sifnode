@@ -99,6 +99,12 @@ func (k Keeper) ProcessSuccessfulClaim(ctx sdk.Context, claim *types.EthBridgeCl
 func (k Keeper) ProcessBurn(ctx sdk.Context, cosmosSender sdk.AccAddress, msg *types.MsgBurn) error {
 	logger := k.Logger(ctx)
 	var coins sdk.Coins
+	networkIdentity := oracletypes.NewNetworkIdentity(msg.NetworkDescriptor)
+	nativeToken, err := k.oracleKeeper.GetNativeToken(ctx, networkIdentity)
+
+	if err != nil {
+		return err
+	}
 
 	if k.IsCethReceiverAccountSet(ctx) {
 		coins = sdk.NewCoins(sdk.NewCoin(types.CethSymbol, msg.NativeTokenAmount))
@@ -116,11 +122,11 @@ func (k Keeper) ProcessBurn(ctx sdk.Context, cosmosSender sdk.AccAddress, msg *t
 		if msg.Symbol == types.CethSymbol {
 			coins = sdk.NewCoins(sdk.NewCoin(types.CethSymbol, msg.NativeTokenAmount.Add(msg.Amount)))
 		} else {
-			coins = sdk.NewCoins(sdk.NewCoin(msg.Symbol, msg.Amount), sdk.NewCoin(types.CethSymbol, msg.NativeTokenAmount))
+			coins = sdk.NewCoins(sdk.NewCoin(msg.Symbol, msg.Amount), sdk.NewCoin(nativeToken, msg.NativeTokenAmount))
 		}
 	}
 
-	err := k.bankKeeper.SendCoinsFromAccountToModule(ctx, cosmosSender, types.ModuleName, coins)
+	err = k.bankKeeper.SendCoinsFromAccountToModule(ctx, cosmosSender, types.ModuleName, coins)
 	if err != nil {
 		logger.Error("failed to send native_token from module to account.",
 			errorMessageKey, err.Error())
@@ -142,6 +148,12 @@ func (k Keeper) ProcessBurn(ctx sdk.Context, cosmosSender sdk.AccAddress, msg *t
 func (k Keeper) ProcessLock(ctx sdk.Context, cosmosSender sdk.AccAddress, msg *types.MsgLock) error {
 	logger := k.Logger(ctx)
 	var coins sdk.Coins
+	networkIdentity := oracletypes.NewNetworkIdentity(msg.NetworkDescriptor)
+	nativeToken, err := k.oracleKeeper.GetNativeToken(ctx, networkIdentity)
+
+	if err != nil {
+		return err
+	}
 
 	if k.IsCethReceiverAccountSet(ctx) {
 		coins = sdk.NewCoins(sdk.NewCoin(types.CethSymbol, msg.NativeTokenAmount))
@@ -156,10 +168,10 @@ func (k Keeper) ProcessLock(ctx sdk.Context, cosmosSender sdk.AccAddress, msg *t
 		coins = sdk.NewCoins(sdk.NewCoin(msg.Symbol, msg.Amount))
 
 	} else {
-		coins = sdk.NewCoins(sdk.NewCoin(msg.Symbol, msg.Amount), sdk.NewCoin(types.CethSymbol, msg.NativeTokenAmount))
+		coins = sdk.NewCoins(sdk.NewCoin(msg.Symbol, msg.Amount), sdk.NewCoin(nativeToken, msg.NativeTokenAmount))
 	}
 
-	err := k.bankKeeper.SendCoinsFromAccountToModule(ctx, cosmosSender, types.ModuleName, coins)
+	err = k.bankKeeper.SendCoinsFromAccountToModule(ctx, cosmosSender, types.ModuleName, coins)
 
 	if err != nil {
 		logger.Error("failed to transfer coin from account to module.",

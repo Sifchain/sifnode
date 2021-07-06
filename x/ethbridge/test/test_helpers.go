@@ -148,6 +148,7 @@ func CreateTestKeepers(t *testing.T, consensusNeeded float64, validatorAmounts [
 	accountKeeper.SetModuleAccount(ctx, notBondedPool)
 
 	ethbridgeKeeper := keeper.NewKeeper(encCfg.Marshaler, bankKeeper, oracleKeeper, accountKeeper, keyEthBridge)
+
 	CethReceiverAccount, _ := sdk.AccAddressFromBech32(TestCethReceiverAddress)
 	ethbridgeKeeper.SetCethReceiverAccount(ctx, CethReceiverAccount)
 
@@ -173,9 +174,11 @@ func CreateTestKeepers(t *testing.T, consensusNeeded float64, validatorAmounts [
 		}
 	}
 
-	networkDescriptor := oracleTypes.NewNetworkIdentity(NetworkDescriptor)
+	networkIdentity := oracleTypes.NewNetworkIdentity(NetworkDescriptor)
+
+	oracleKeeper.SetNativeToken(ctx, networkIdentity, "ceth")
 	whitelist := oracleTypes.ValidatorWhiteList{WhiteList: valAddrs}
-	oracleKeeper.SetOracleWhiteList(ctx, networkDescriptor, whitelist)
+	oracleKeeper.SetOracleWhiteList(ctx, networkIdentity, whitelist)
 
 	return ctx, ethbridgeKeeper, bankKeeper, accountKeeper, oracleKeeper, encCfg, whitelist, valAddrsInOrder
 }

@@ -9,22 +9,12 @@ import (
 // NetworkIdentity define the different network like Ethereum, Binance
 type NetworkIdentity struct {
 	NetworkDescriptor NetworkDescriptor `json:"network_descriptor"`
-	NativeToken       string            `json:"native_token"`
 }
 
 // NewNetworkIdentity get a new NetworkIdentity instance
 func NewNetworkIdentity(networkDescriptor NetworkDescriptor) NetworkIdentity {
 	return NetworkIdentity{
 		NetworkDescriptor: networkDescriptor,
-		NativeToken:       "ceth",
-	}
-}
-
-// NewNetworkIdentityWithToken get a new NetworkIdentity instance
-func NewNetworkIdentityWithToken(networkDescriptor NetworkDescriptor, nativeToken string) NetworkIdentity {
-	return NetworkIdentity{
-		NetworkDescriptor: networkDescriptor,
-		NativeToken:       nativeToken,
 	}
 }
 

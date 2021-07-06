@@ -19,6 +19,7 @@ func TestKeeper_SetNativeToken(t *testing.T) {
 
 	app.OracleKeeper.SetNativeToken(ctx, networkDescriptor, token)
 
-	tokenStored := app.OracleKeeper.GetNativeToken(ctx, networkDescriptor)
+	tokenStored, err := app.OracleKeeper.GetNativeToken(ctx, networkDescriptor)
+	assert.NoError(t, err)
 	assert.Equal(t, token, tokenStored)
 }
