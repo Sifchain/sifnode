@@ -1,0 +1,396 @@
+openapi: 3.0.0
+info:
+  title: Sifnode API
+  version: 0.0.5
+servers:
+# Added by API Auto Mocking Plugin
+- url: https://api.sifchain.finance
+  description: Sifnode API
+tags:
+- name: Dispensation
+  description: Endpoints for Dispensation module
+- name: Ethbridge
+  description: Endpoints for Ethbridge module
+- name: Clp
+  description: Endpoints for Clp module
+paths:
+  /dispensation/createClaim:
+    post:
+      tags:
+      - Dispensation
+      operationId: createClaim
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateClaimReq'
+        description: Created user object
+        required: true
+      responses:
+        "200":
+          description: This endpoint creates distribution claim
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AminoMsg'
+      x-swagger-router-controller: Dispensation
+
+  /ethbridge/burn:
+    post:
+      tags:
+      - Ethbridge
+      operationId: burn
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BurnOrLockReq'
+      responses:
+        "200":
+          description: Burn given amount of token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AminoMsg'
+      x-swagger-router-controller: Ethbridge                
+  /ethbridge/lock:
+    post:
+      tags:
+      - Ethbridge
+      operationId: lock
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BurnOrLockReq'
+      responses:
+        "200":
+          description: Lock given amount of token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AminoMsg'
+      x-swagger-router-controller: Ethbridge
+
+  /clp/getPool/{ticker}:
+    get:
+      tags:
+      - Clp
+      operationId: getPool
+      parameters:
+      - name: ticker
+        in: path
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      responses:
+        "200":
+          description: Get liquidity pool with a given ticker.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RawPool'
+      x-swagger-router-controller: Clp  
+  /clp/getPools:
+    get:
+      tags:
+      - Clp
+      operationId: getPools
+      responses:
+        "200":
+          description: List all liquidity pools.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/RawPool'
+      x-swagger-router-controller: Clp
+  /clp/createPool:
+    post:
+      tags:
+      - Clp
+      operationId: createPool
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LiquidityParams'
+      responses:
+        "200":
+          description: Create liquidity pool.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AminoMsg'
+      x-swagger-router-controller: Clp  
+  /clp/swap:
+    post:
+      tags:
+      - Clp
+      operationId: swap
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SwapParams'
+      responses:
+        "200":
+          description: Swap sent_asset for received_asset.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AminoMsg'
+      x-swagger-router-controller: Clp  
+  /clp/getLiquidityProvider/{symbol}/{lpAddress}:
+    get:
+      tags:
+      - Clp
+      operationId: getLiquidityProvider
+      parameters:
+      - name: symbol
+        in: path
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      - name: lpAddress
+        in: path
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      responses:
+        "200":
+          description: Get liquidity provider based on address and token symbol.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LiquidityDetailsResponse'
+      x-swagger-router-controller: Clp
+  /clp/getAssets:
+    get:
+      tags:
+      - Clp
+      operationId: getAssets
+      responses:
+        "200":
+          description: Get assets of specified liquidity provider.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+      x-swagger-router-controller: Clp
+  /clp/addLiquidity:
+    post:
+      tags:
+      - Clp
+      operationId: addLiquidity
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RemoveLiquidityParams'
+      responses:
+        "200":
+          description: Add given amount of token(s) to the liquidity pool.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AminoMsg'
+      x-swagger-router-controller: Clp  
+  /clp/removeLiquidity:
+    post:
+      tags:
+      - Clp
+      operationId: removeLiquidity
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LiquidityParams'
+      responses:
+        "200":
+          description: Remove given amount of token(s) from the liquidity pool.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AminoMsg'
+      x-swagger-router-controller: Clp  
+
+components:
+  schemas:
+    RemoveLiquidityParams:
+      type: object
+      properties:
+        base_req:
+          $ref: '#/components/schemas/base_req'      
+        external_asset:
+          $ref: '#/components/schemas/asset'    
+        w_basis_points:
+          type: string
+        asymmetry:
+          type: string
+        signer:
+          type: string   
+    LiquidityDetailsResponse:
+      type: object
+      properties:
+        result:
+          $ref: '#/components/schemas/result'       
+        height:
+          type: string   
+    result:
+      type: object
+      properties:
+        native_asset_balance:
+          type: string
+          description: Balance of the native asset.
+        external_asset_balance:
+          type: string
+          description: Balance of the external asset.
+        LiquidityProvider:
+          $ref: '#/components/schemas/LiquidityProvider'          
+    SwapParams:
+      type: object
+      properties:
+        sent_asset:
+          $ref: '#/components/schemas/asset'
+        received_asset:
+          $ref: '#/components/schemas/asset'
+        base_req:
+          $ref: '#/components/schemas/base_req'
+        sent_amount:
+          type: string
+          description: Amount of the asset.
+        signer:
+          type: string
+          description: Address of the signer.
+        min_receiving_amount:
+          type: string
+          description: Min receiving amount.
+    LiquidityParams:
+      type: object
+      properties:
+        base_req:
+          $ref: '#/components/schemas/base_req'
+        external_asset:
+          $ref: '#/components/schemas/asset'
+        native_asset_amount:
+          type: string
+          description: Amount of the native asset.
+        external_asset_amount:
+          type: string
+          description: Amount of the external asset.
+        signer:
+          type: string
+          description: Address of the signer.
+    BurnOrLockReq:
+      type: object
+      properties:
+        base_req:
+          $ref: '#/components/schemas/BaseReq'
+        ethereum_chain_id:
+          type: string
+          description: Id of the ethereum chain.
+        token_contract_address:
+          type: string
+          description: Contract address of the token.
+        cosmos_sender:
+          type: string
+          description: Address of the cosmos sender.
+        ethereum_receiver:
+          type: string
+          description: Address of the ethereum receiver.
+        amount:
+          type: string
+          description: Amount of the token.
+        symbol:
+          type: string
+          description: Symbol of the token.
+        ceth_amount:
+          type: string
+          description: Amount of the ceth token.
+    AminoMsg:
+      type: object
+      properties:
+        type:
+          type: string
+          description: Message type.
+        value:
+          type: string
+          description: Message value represented as a string.
+    RawPool:
+      type: object
+      properties:
+        external_asset:
+          $ref: '#/components/schemas/asset'
+        native_asset_balance:
+          type: string
+          description: Balance of the native asset.
+        external_asset_balance:
+          type: string
+          description: Balance of the external asset.
+        pool_units:
+          type: string
+          description: Units of the pool.
+        pool_address:
+          type: string
+          description: Address of the pool.
+    CreateClaimReq:
+      type: object
+      properties:
+        BaseReq:
+          $ref: '#/components/schemas/BaseReq'
+        Signer:
+          type: string
+        account_number:
+          $ref: '#/components/schemas/DistributionType'
+    LiquidityProvider:
+      type: object
+      properties:
+        liquidity_provider_units:
+          type: string
+        liquidity_provider_address:
+          type: string
+        asset:
+          $ref: '#/components/schemas/asset'
+    base_req:
+      type: object
+      properties:
+        from:
+          type: string
+        chain_id:
+          type: string
+    asset:
+      type: object
+      properties:
+        source_chain:
+          type: string
+          description: Source chain id.
+        symbol:
+          type: string
+          description: Asset symbol.
+        ticker:
+          type: string
+          description: Asset ticker.                    
+    BaseReq:
+      type: object
+      properties:
+        from:
+          type: string
+        chain_id:
+          type: string
+        account_number:
+          type: string
+        sequence:
+          type: string
+    DistributionType:
+      type: integer
+      description: One of the following values - Airdrop (1), LiquidityMining (2), or ValidatorSubsidy (3).
