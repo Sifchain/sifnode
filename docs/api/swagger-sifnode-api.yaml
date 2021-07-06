@@ -172,11 +172,19 @@ paths:
               schema:
                 $ref: '#/components/schemas/LiquidityDetailsResponse'
       x-swagger-router-controller: Clp
-  /clp/getAssets:
+  /clp/getAssets/{lpAddress}:
     get:
       tags:
       - Clp
       operationId: getAssets
+      parameters:
+      - name: lpAddress
+        in: path
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
       responses:
         "200":
           description: Get assets of specified liquidity provider.
