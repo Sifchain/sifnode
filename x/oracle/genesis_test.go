@@ -21,7 +21,6 @@ func TestInitGenesis(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			ctx, _, _, _, keeper, _, _, _ := test.CreateTestKeepers(t, 1, []int64{1}, "")
 			keeper.RemoveOracleWhiteList(ctx, networkDescriptor)
-			prophecies := keeper.GetProphecies(ctx)
 
 			_ = oracle.InitGenesis(ctx, keeper, tc.genesis)
 
@@ -42,7 +41,7 @@ func TestInitGenesis(t *testing.T) {
 				}
 			}
 
-			prophecies = keeper.GetProphecies(ctx)
+			prophecies := keeper.GetProphecies(ctx)
 			require.Equal(t, len(tc.genesis.Prophecies), len(prophecies))
 			for i, p := range tc.genesis.Prophecies {
 				require.Equal(t, *p, prophecies[i])
