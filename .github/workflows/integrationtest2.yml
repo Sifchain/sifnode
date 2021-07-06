@@ -20,7 +20,7 @@ jobs:
           token:  ${{ secrets.GIT_PAT }}
 
       - name: Copy Automation Folder for Test to Execute.
-        run: # installs development tools and updates .bash_profile
+        run: |
           mkdir -p deploy/
           cp -r sifchain-deploy/ ./deploy
 
