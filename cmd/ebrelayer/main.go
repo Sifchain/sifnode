@@ -2,16 +2,19 @@ package main
 
 import (
 	"fmt"
-	"github.com/Sifchain/sifnode/cmd/ebrelayer/txs"
 	"log"
 	"net/url"
 	"os"
+	"strconv"
 	"strings"
 	"sync"
+
+	"github.com/Sifchain/sifnode/cmd/ebrelayer/txs"
 
 	sifapp "github.com/Sifchain/sifnode/app"
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/contract"
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/relayer"
+	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/client/rpc"
@@ -100,10 +103,10 @@ func buildRootCmd() *cobra.Command {
 func initRelayerCmd() *cobra.Command {
 	//nolint:lll
 	initRelayerCmd := &cobra.Command{
-		Use:     "init [tendermintNode] [web3Provider] [bridgeRegistryContractAddress] [validatorMoniker] [validatorMnemonic]",
+		Use:     "init [networkDescriptor] [tendermintNode] [web3Provider] [bridgeRegistryContractAddress] [validatorMnemonic]",
 		Short:   "Validate credentials and initialize subscriptions to both chains",
 		Args:    cobra.ExactArgs(5),
-		Example: "ebrelayer init tcp://localhost:26657 ws://localhost:7545/ 0x30753E4A8aad7F8597332E813735Def5dD395028 validator mnemonic --chain-id=peggy",
+		Example: "ebrelayer init 1 tcp://localhost:26657 ws://localhost:7545/ 0x30753E4A8aad7F8597332E813735Def5dD395028 mnemonic --chain-id=peggy",
 		RunE:    RunInitRelayerCmd,
 	}
 	//flags.AddQueryFlagsToCmd(initRelayerCmd)
@@ -134,6 +137,12 @@ func RunInitRelayerCmd(cmd *cobra.Command, args []string) error {
 	}
 	log.Printf("got result from GetClientQueryContext: %v", cliContext)
 
+	// Load the validator's Ethereum private key from environment variables
+	privateKey, err := txs.LoadPrivateKey()
+	if err != nil {
+		return errors.Errorf("invalid [ETHEREUM_PRIVATE_KEY] environment variable")
+	}
+
 	// Open the level db
 	db, err := leveldb.OpenFile(levelDbFile, nil)
 	if err != nil {
@@ -157,25 +166,35 @@ func RunInitRelayerCmd(cmd *cobra.Command, args []string) error {
 	}
 
 	// Validate and parse arguments
-	if len(strings.Trim(args[0], "")) == 0 {
-		return errors.Errorf("invalid [tendermint-node]: %s", args[0])
+	networkDescriptor, err := strconv.Atoi(args[0])
+	if err != nil {
+		return errors.Errorf("%s is invalid network id", args[0])
 	}
-	tendermintNode := args[0]
 
-	if !relayer.IsWebsocketURL(args[1]) {
-		return errors.Errorf("invalid [web3-provider]: %s", args[1])
+	// check if the networkDescriptor is valid
+	if !oracletypes.NetworkDescriptor(networkDescriptor).IsValid() {
+		return errors.Errorf("network id: %d is invalid", networkDescriptor)
 	}
-	web3Provider := args[1]
 
-	if !common.IsHexAddress(args[2]) {
-		return errors.Errorf("invalid [bridge-registry-contract-address]: %s", args[2])
+	if len(strings.Trim(args[1], "")) == 0 {
+		return errors.Errorf("invalid [tendermint-node]: %s", args[1])
 	}
-	contractAddress := common.HexToAddress(args[2])
+	tendermintNode := args[1]
 
-	if len(strings.Trim(args[3], "")) == 0 {
-		return errors.Errorf("invalid [validator-moniker]: %s", args[3])
+	if !relayer.IsWebsocketURL(args[2]) {
+		return errors.Errorf("invalid [web3-provider]: %s", args[2])
 	}
-	validatorMoniker := args[3]
+	web3Provider := args[2]
+
+	if !common.IsHexAddress(args[3]) {
+		return errors.Errorf("invalid [bridge-registry-contract-address]: %s", args[3])
+	}
+	contractAddress := common.HexToAddress(args[3])
+
+	if len(strings.Trim(args[4], "")) == 0 {
+		return errors.Errorf("invalid [validator-moniker]: %s", args[4])
+	}
+	validatorMoniker := args[4]
 
 	logConfig := zap.NewDevelopmentConfig()
 	logConfig.Sampling = nil
@@ -205,13 +224,8 @@ func RunInitRelayerCmd(cmd *cobra.Command, args []string) error {
 		sugaredLogger,
 	)
 
-	key, err := txs.LoadPrivateKey()
-	if err != nil {
-		log.Fatalf("failed to load ETHEREUM_PRIVATE_KEY")
-	}
-
 	// Initialize new Cosmos event listener
-	cosmosSub := relayer.NewCosmosSub(tendermintNode, web3Provider, contractAddress, key, db, sugaredLogger)
+	cosmosSub := relayer.NewCosmosSub(oracletypes.NetworkDescriptor(networkDescriptor), privateKey, tendermintNode, web3Provider, contractAddress, db, sugaredLogger)
 
 	waitForAll := sync.WaitGroup{}
 	waitForAll.Add(2)

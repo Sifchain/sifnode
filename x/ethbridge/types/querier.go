@@ -11,11 +11,11 @@ const (
 
 // NewQueryEthProphecyRequest creates a new QueryEthProphecyParams
 func NewQueryEthProphecyRequest(
-	ethereumChainID int64, bridgeContractAddress EthereumAddress, nonce int64, symbol string,
+	networkDescriptor oracletypes.NetworkDescriptor, bridgeContractAddress EthereumAddress, nonce int64, symbol string,
 	tokenContractAddress EthereumAddress, ethereumSender EthereumAddress,
 ) *QueryEthProphecyRequest {
 	return &QueryEthProphecyRequest{
-		EthereumChainId:       ethereumChainID,
+		NetworkDescriptor:             networkDescriptor,
 		BridgeContractAddress: bridgeContractAddress.String(),
 		Nonce:                 nonce,
 		Symbol:                symbol,

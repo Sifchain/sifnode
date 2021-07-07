@@ -2,6 +2,7 @@ package keeper_test
 
 import (
 	"reflect"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -14,11 +15,13 @@ import (
 
 //nolint:lll
 const (
-	TestResponseJSON = "{\"id\":\"300x7B95B6EC7EbD73572298cEf32Bb54FA408207359\",\"status\":{\"text\":1},\"claims\":[{\"ethereum_chain_id\":\"3\",\"bridge_contract_address\":\"0xC4cE93a5699c68241fc2fB503Fb0f21724A624BB\",\"symbol\":\"eth\",\"token_contract_address\":\"0x0000000000000000000000000000000000000000\",\"ethereum_sender\":\"0x7B95B6EC7EbD73572298cEf32Bb54FA408207359\",\"cosmos_receiver\":\"cosmos1gn8409qq9hnrxde37kuxwx5hrxpfpv8426szuv\",\"validator_address\":\"cosmosvaloper1mnfm9c7cdgqnkk66sganp78m0ydmcr4pn7fqfk\",\"amount\":\"10\",\"claim_type\":2}]}"
+	TestResponseJSON = "{\"id\":\"100x7B95B6EC7EbD73572298cEf32Bb54FA408207359\",\"status\":{\"text\":1},\"claims\":[{\"network_descriptor\":1,\"bridge_contract_address\":\"0xC4cE93a5699c68241fc2fB503Fb0f21724A624BB\",\"symbol\":\"eth\",\"token_contract_address\":\"0x0000000000000000000000000000000000000000\",\"ethereum_sender\":\"0x7B95B6EC7EbD73572298cEf32Bb54FA408207359\",\"cosmos_receiver\":\"cosmos1gn8409qq9hnrxde37kuxwx5hrxpfpv8426szuv\",\"validator_address\":\"cosmosvaloper1353a4uac03etdylz86tyq9ssm3x2704j3a9n7n\",\"amount\":\"10\",\"claim_type\":2}]}"
+
+	networkDescriptor = 1
 )
 
 func TestNewQuerier(t *testing.T) {
-	ctx, keeper, _, _, _, encCfg, _ := test.CreateTestKeepers(t, 0.7, []int64{3, 3}, "")
+	ctx, keeper, _, _, _, encCfg, _, _ := test.CreateTestKeepers(t, 0.7, []int64{3, 3}, "")
 
 	query := abci.RequestQuery{
 		Path: "",
@@ -34,9 +37,9 @@ func TestNewQuerier(t *testing.T) {
 }
 
 func TestQueryEthProphecy(t *testing.T) {
-	ctx, keeper, _, _, oracleKeeper, encCfg, validatorAddresses := test.CreateTestKeepers(t, 0.7, []int64{3, 3}, "")
-
+	ctx, keeper, _, _, oracleKeeper, encCfg, _, validatorAddresses := test.CreateTestKeepers(t, 0.7, []int64{3, 3}, "")
 	valAddress := validatorAddresses[0]
+	NewTestResponseJSON := strings.Replace(TestResponseJSON, "cosmosvaloper1353a4uac03etdylz86tyq9ssm3x2704j3a9n7n", valAddress.String(), -1)
 	testEthereumAddress := types.NewEthereumAddress(types.TestEthereumAddress)
 	testBridgeContractAddress := types.NewEthereumAddress(types.TestBridgeContractAddress)
 	testTokenContractAddress := types.NewEthereumAddress(types.TestTokenContractAddress)
@@ -45,7 +48,7 @@ func TestQueryEthProphecy(t *testing.T) {
 		t, testBridgeContractAddress, testTokenContractAddress, valAddress,
 		testEthereumAddress, types.TestCoinsAmount, types.TestCoinsSymbol, types.ClaimType_CLAIM_TYPE_LOCK)
 	oracleClaim, _ := types.CreateOracleClaimFromEthClaim(initialEthBridgeClaim)
-	_, err := oracleKeeper.ProcessClaim(ctx, oracleClaim)
+	_, err := oracleKeeper.ProcessClaim(ctx, networkDescriptor, oracleClaim)
 	require.NoError(t, err)
 
 	testResponse := types.CreateTestQueryEthProphecyResponse(t, valAddress, types.ClaimType_CLAIM_TYPE_LOCK)
@@ -53,10 +56,10 @@ func TestQueryEthProphecy(t *testing.T) {
 	//Test query String()
 	testJSON, err := encCfg.Amino.MarshalJSON(testResponse)
 	require.NoError(t, err)
-	require.Equal(t, TestResponseJSON, string(testJSON))
+	require.Equal(t, NewTestResponseJSON, string(testJSON))
 
 	req := types.NewQueryEthProphecyRequest(
-		types.TestEthereumChainID, testBridgeContractAddress, types.TestNonce,
+		types.TestNetworkDescriptor, testBridgeContractAddress, types.TestNonce,
 		types.TestCoinsSymbol, testTokenContractAddress, testEthereumAddress)
 	bz, err2 := encCfg.Amino.MarshalJSON(req)
 	require.Nil(t, err2)
@@ -86,7 +89,7 @@ func TestQueryEthProphecy(t *testing.T) {
 	badEthereumAddress := types.NewEthereumAddress("badEthereumAddress")
 
 	bz2, err6 := encCfg.Amino.MarshalJSON(types.NewQueryEthProphecyRequest(
-		types.TestEthereumChainID, testBridgeContractAddress, 12,
+		types.TestNetworkDescriptor, testBridgeContractAddress, 12,
 		types.TestCoinsSymbol, testTokenContractAddress, badEthereumAddress))
 	require.Nil(t, err6)
 
@@ -103,7 +106,7 @@ func TestQueryEthProphecy(t *testing.T) {
 
 	bz3, err8 := encCfg.Amino.MarshalJSON(
 		types.NewQueryEthProphecyRequest(
-			types.TestEthereumChainID, testBridgeContractAddress, 12,
+			types.TestNetworkDescriptor, testBridgeContractAddress, 12,
 			types.TestCoinsSymbol, testTokenContractAddress, emptyEthereumAddress))
 
 	require.Nil(t, err8)

@@ -2,11 +2,12 @@ package keeper
 
 import (
 	"context"
+	"strconv"
+
 	"github.com/Sifchain/sifnode/x/ethbridge/types"
 	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
-	"strconv"
 )
 
 var _ types.QueryServer = queryServer{}
@@ -26,7 +27,7 @@ func NewQueryServer(keeper Keeper) types.QueryServer {
 func (srv queryServer) EthProphecy(ctx context.Context, req *types.QueryEthProphecyRequest) (*types.QueryEthProphecyResponse, error) {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 
-	id := strconv.FormatInt(req.EthereumChainId, 10) + strconv.FormatInt(req.Nonce, 10) + req.EthereumSender
+	id := strconv.FormatInt(int64(req.NetworkDescriptor), 10) + strconv.FormatInt(req.Nonce, 10) + req.EthereumSender
 
 	prophecy, found := srv.Keeper.oracleKeeper.GetProphecy(sdkCtx, id)
 	if !found {
@@ -34,7 +35,7 @@ func (srv queryServer) EthProphecy(ctx context.Context, req *types.QueryEthProph
 	}
 
 	bridgeClaims, err := types.MapOracleClaimsToEthBridgeClaims(
-		req.EthereumChainId,
+		req.NetworkDescriptor,
 		types.NewEthereumAddress(req.BridgeContractAddress),
 		req.Nonce,
 		req.Symbol,
@@ -51,5 +52,3 @@ func (srv queryServer) EthProphecy(ctx context.Context, req *types.QueryEthProph
 
 	return &res, nil
 }
-
-

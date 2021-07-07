@@ -107,18 +107,18 @@ func TestAddressFilter(t *testing.T) {
 func TestSplitBetweenReciepients(t *testing.T) {
 	t.Skip()
 	type funders struct {
-		address           string
-		percentageFunding float64
-		calculatedAmount  sdk.Int
+		Address           string
+		PercentageFunding float64
+		CalculatedAmount  sdk.Int
 	}
 	var investors []funders
 	investors = append(investors, funders{
-		address:           "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
-		percentageFunding: 50.000,
+		Address:           "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
+		PercentageFunding: 50.000,
 	})
 	investors = append(investors, funders{
-		address:           "sif1l7hypmqk2yc334vc6vmdwzp5sdefygj2ad93p5",
-		percentageFunding: 50.000,
+		Address:           "sif1l7hypmqk2yc334vc6vmdwzp5sdefygj2ad93p5",
+		PercentageFunding: 50.000,
 	})
 	file := "expected_output.json"
 	outputs, err := utils.ParseOutput(file)
@@ -130,13 +130,13 @@ func TestSplitBetweenReciepients(t *testing.T) {
 	inputList := make([]types.Input, len(investors))
 	var totalPercentage float64
 	for _, investor := range investors {
-		totalPercentage = totalPercentage + investor.percentageFunding
-		percentage := sdk.NewDec(int64(investor.percentageFunding))
+		totalPercentage = totalPercentage + investor.PercentageFunding
+		percentage := sdk.NewDec(int64(investor.PercentageFunding))
 		denom := sdk.NewDec(100)
-		investor.calculatedAmount = percentage.Quo(denom).Mul(total).TruncateInt()
-		add, err := sdk.AccAddressFromBech32(investor.address)
+		investor.CalculatedAmount = percentage.Quo(denom).Mul(total).TruncateInt()
+		add, err := sdk.AccAddressFromBech32(investor.Address)
 		assert.NoError(t, err)
-		in := types.NewInput(add, sdk.Coins{sdk.NewCoin("rowan", investor.calculatedAmount)})
+		in := types.NewInput(add, sdk.Coins{sdk.NewCoin("rowan", investor.CalculatedAmount)})
 		inputList = append(inputList, in)
 	}
 	assert.True(t, totalPercentage == 100.00, "Total Percentage is not 100%")

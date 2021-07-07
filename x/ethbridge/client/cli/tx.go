@@ -14,6 +14,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	"github.com/Sifchain/sifnode/x/ethbridge/types"
+	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
 )
 
 // GetCmdCreateEthBridgeClaim is the CLI command for creating a claim on an ethereum prophecy
@@ -97,7 +98,7 @@ func GetCmdCreateEthBridgeClaim() *cobra.Command {
 			}
 			ct := types.ClaimType(claimType)
 
-			ethBridgeClaim := types.NewEthBridgeClaim(int64(ethereumChainID), bridgeContract, nonce, symbol, tokenContract,
+			ethBridgeClaim := types.NewEthBridgeClaim(oracletypes.NetworkDescriptor(ethereumChainID), bridgeContract, nonce, symbol, tokenContract,
 				ethereumSender, cosmosReceiver, validator, bigIntAmount, ct)
 
 			msg := types.NewMsgCreateEthBridgeClaim(ethBridgeClaim)
@@ -167,7 +168,7 @@ func GetCmdBurn() *cobra.Command {
 				return errors.New("Error parsing ceth amount")
 			}
 
-			msg := types.NewMsgBurn(int64(ethereumChainID), cosmosSender, ethereumReceiver, amount, symbol, cethAmount)
+			msg := types.NewMsgBurn(oracletypes.NetworkDescriptor(ethereumChainID), cosmosSender, ethereumReceiver, amount, symbol, cethAmount)
 			if err := msg.ValidateBasic(); err != nil {
 				return err
 			}
@@ -240,7 +241,7 @@ func GetCmdLock() *cobra.Command {
 				return errors.New("Error parsing ceth amount")
 			}
 
-			msg := types.NewMsgLock(int64(ethereumChainID), cosmosSender, ethereumReceiver, amount, symbol, cethAmount)
+			msg := types.NewMsgLock(oracletypes.NetworkDescriptor(ethereumChainID), cosmosSender, ethereumReceiver, amount, symbol, cethAmount)
 			if err := msg.ValidateBasic(); err != nil {
 				return err
 			}
@@ -257,7 +258,7 @@ func GetCmdLock() *cobra.Command {
 // GetCmdUpdateWhiteListValidator is the CLI command for update the validator whitelist
 func GetCmdUpdateWhiteListValidator() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "update_whitelist_validator [cosmos-sender-address] [validator-address] [operation-type] --node [node-address]",
+		Use:   "update_whitelist_validator [cosmos-sender-address] [network-id]  [validator-address] [power] --node [node-address]",
 		Short: "This should be used to update the validator whitelist.",
 		Args:  cobra.ExactArgs(3),
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -271,17 +272,22 @@ func GetCmdUpdateWhiteListValidator() *cobra.Command {
 				return err
 			}
 
-			validatorAddress, err := sdk.ValAddressFromBech32(args[1])
+			networkDescriptor, err := strconv.Atoi(args[1])
+			if err != nil {
+				return errors.New("Error parsing network descriptor")
+			}
+
+			validatorAddress, err := sdk.ValAddressFromBech32(args[2])
 			if err != nil {
 				return err
 			}
 
-			operationType := args[2]
-			if operationType != "add" && operationType != "remove" {
-				return errors.Errorf("invalid [operation-type]: %s", args[2])
+			power, err := strconv.Atoi(args[3])
+			if err != nil {
+				return err
 			}
 
-			msg := types.NewMsgUpdateWhiteListValidator(cosmosSender, validatorAddress, operationType)
+			msg := types.NewMsgUpdateWhiteListValidator(oracletypes.NetworkDescriptor(networkDescriptor), cosmosSender, validatorAddress, uint32(power))
 			if err := msg.ValidateBasic(); err != nil {
 				return err
 			}

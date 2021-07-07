@@ -27,7 +27,7 @@ var (
 )
 
 func TestProcessClaimLock(t *testing.T) {
-	ctx, keeper, _, _, _, _, validatorAddresses := test.CreateTestKeepers(t, 0.7, []int64{3, 3}, "")
+	ctx, keeper, _, _, _, _, _, validatorAddresses := test.CreateTestKeepers(t, 0.7, []int64{3, 3}, "")
 	validator1Pow3 := validatorAddresses[0]
 	validator2Pow3 := validatorAddresses[1]
 
@@ -42,7 +42,7 @@ func TestProcessClaimLock(t *testing.T) {
 	require.Equal(t, claimType, types.ClaimType_CLAIM_TYPE_LOCK)
 
 	ethBridgeClaim := types.NewEthBridgeClaim(
-		5777,
+		1,
 		ethBridgeAddress, // bridge registry
 		nonce,
 		symbol,
@@ -66,7 +66,7 @@ func TestProcessClaimLock(t *testing.T) {
 	// other validator execute
 
 	ethBridgeClaim = types.NewEthBridgeClaim(
-		5777,
+		1,
 		ethBridgeAddress, // bridge registry
 		nonce,
 		symbol,
@@ -84,7 +84,7 @@ func TestProcessClaimLock(t *testing.T) {
 }
 
 func TestProcessClaimBurn(t *testing.T) {
-	ctx, keeper, _, _, _, _, validatorAddresses := test.CreateTestKeepers(t, 0.7, []int64{3, 3}, "")
+	ctx, keeper, _, _, _, _, _, validatorAddresses := test.CreateTestKeepers(t, 0.7, []int64{3, 3}, "")
 	validator1Pow3 := validatorAddresses[0]
 	validator2Pow3 := validatorAddresses[1]
 
@@ -93,7 +93,7 @@ func TestProcessClaimBurn(t *testing.T) {
 	claimType := types.ClaimType_CLAIM_TYPE_BURN
 
 	ethBridgeClaim := types.NewEthBridgeClaim(
-		5777,
+		1,
 		ethBridgeAddress, // bridge registry
 		nonce,
 		symbol,
@@ -117,7 +117,7 @@ func TestProcessClaimBurn(t *testing.T) {
 	// other validator execute
 
 	ethBridgeClaim = types.NewEthBridgeClaim(
-		5777,
+		1,
 		ethBridgeAddress, // bridge registry
 		nonce,
 		symbol,
@@ -135,7 +135,7 @@ func TestProcessClaimBurn(t *testing.T) {
 }
 
 func TestProcessSuccessfulClaimLock(t *testing.T) {
-	ctx, keeper, bankKeeper, _, _, _, _ := test.CreateTestKeepers(t, 0.7, []int64{3, 3}, "")
+	ctx, keeper, bankKeeper, _, _, _, _, _ := test.CreateTestKeepers(t, 0.7, []int64{3, 3}, "")
 
 	receiverCoins := bankKeeper.GetAllBalances(ctx, cosmosReceivers[0])
 	require.Equal(t, receiverCoins, sdk.Coins{})
@@ -162,7 +162,7 @@ func TestProcessSuccessfulClaimLock(t *testing.T) {
 }
 
 func TestProcessSuccessfulClaimBurn(t *testing.T) {
-	ctx, keeper, bankKeeper, _, _, _, _ := test.CreateTestKeepers(t, 0.7, []int64{3, 3}, "")
+	ctx, keeper, bankKeeper, _, _, _, _, _ := test.CreateTestKeepers(t, 0.7, []int64{3, 3}, "")
 
 	receiverCoins := bankKeeper.GetAllBalances(ctx, cosmosReceivers[0])
 	require.Equal(t, receiverCoins, sdk.Coins{})
@@ -189,7 +189,7 @@ func TestProcessSuccessfulClaimBurn(t *testing.T) {
 }
 
 func TestProcessBurn(t *testing.T) {
-	ctx, keeper, bankKeeper, _, _, _, _ := test.CreateTestKeepers(t, 0.7, []int64{3, 3}, "")
+	ctx, keeper, bankKeeper, _, _, _, _, _ := test.CreateTestKeepers(t, 0.7, []int64{3, 3}, "")
 
 	msg := types.NewMsgBurn(1, cosmosReceivers[0], ethereumSender, amount, "stake", amount)
 	coins := sdk.NewCoins(sdk.NewCoin("stake", amount), sdk.NewCoin(types.CethSymbol, amount))
@@ -204,7 +204,7 @@ func TestProcessBurn(t *testing.T) {
 }
 
 func TestProcessBurnCeth(t *testing.T) {
-	ctx, keeper, bankKeeper, _, _, _, _ := test.CreateTestKeepers(t, 0.7, []int64{3, 3}, "")
+	ctx, keeper, bankKeeper, _, _, _, _, _ := test.CreateTestKeepers(t, 0.7, []int64{3, 3}, "")
 
 	msg := types.NewMsgBurn(1, cosmosReceivers[0], ethereumSender, amount, types.CethSymbol, amount)
 	coins := sdk.NewCoins(sdk.NewCoin(types.CethSymbol, doubleAmount))
@@ -219,7 +219,7 @@ func TestProcessBurnCeth(t *testing.T) {
 }
 
 func TestProcessLock(t *testing.T) {
-	ctx, keeper, bankKeeper, _, _, _, _ := test.CreateTestKeepers(t, 0.7, []int64{3, 3}, "")
+	ctx, keeper, bankKeeper, _, _, _, _, _ := test.CreateTestKeepers(t, 0.7, []int64{3, 3}, "")
 
 	receiverCoins := bankKeeper.GetAllBalances(ctx, cosmosReceivers[0])
 	require.Equal(t, receiverCoins, sdk.Coins{})
@@ -242,7 +242,7 @@ func TestProcessLock(t *testing.T) {
 }
 
 func TestProcessBurnWithReceiver(t *testing.T) {
-	ctx, keeper, bankKeeper, _, oracleKeeper, _, _ := test.CreateTestKeepers(t, 0.7, []int64{3, 3}, "")
+	ctx, keeper, bankKeeper, _, oracleKeeper, _, _, _ := test.CreateTestKeepers(t, 0.7, []int64{3, 3}, "")
 	cosmosSender, err := sdk.AccAddressFromBech32(types.TestAddress)
 	require.NoError(t, err)
 	oracleKeeper.SetAdminAccount(ctx, cosmosSender)
@@ -260,7 +260,7 @@ func TestProcessBurnWithReceiver(t *testing.T) {
 }
 
 func TestProcessBurnCethWithReceiver(t *testing.T) {
-	ctx, keeper, bankKeeper, _, oracleKeeper, _, _ := test.CreateTestKeepers(t, 0.7, []int64{3, 3}, "")
+	ctx, keeper, bankKeeper, _, oracleKeeper, _, _, _ := test.CreateTestKeepers(t, 0.7, []int64{3, 3}, "")
 	cosmosSender, err := sdk.AccAddressFromBech32(types.TestAddress)
 	require.NoError(t, err)
 	oracleKeeper.SetAdminAccount(ctx, cosmosSender)
@@ -278,7 +278,7 @@ func TestProcessBurnCethWithReceiver(t *testing.T) {
 }
 
 func TestProcessLockWithReceiver(t *testing.T) {
-	ctx, keeper, bankKeeper, _, oracleKeeper, _, _ := test.CreateTestKeepers(t, 0.7, []int64{3, 3}, "")
+	ctx, keeper, bankKeeper, _, oracleKeeper, _, _, _ := test.CreateTestKeepers(t, 0.7, []int64{3, 3}, "")
 	cosmosSender, err := sdk.AccAddressFromBech32(types.TestAddress)
 	require.NoError(t, err)
 	oracleKeeper.SetAdminAccount(ctx, cosmosSender)
@@ -304,7 +304,7 @@ func TestProcessLockWithReceiver(t *testing.T) {
 }
 
 func TestProcessUpdateCethReceiverAccount(t *testing.T) {
-	ctx, keeper, _, _, oracleKeeper, _, _ := test.CreateTestKeepers(t, 0.7, []int64{3, 3}, "")
+	ctx, keeper, _, _, oracleKeeper, _, _, _ := test.CreateTestKeepers(t, 0.7, []int64{3, 3}, "")
 	cosmosSender, err := sdk.AccAddressFromBech32(types.TestAddress)
 	require.NoError(t, err)
 
@@ -318,7 +318,7 @@ func TestProcessUpdateCethReceiverAccount(t *testing.T) {
 }
 
 func TestProcessRescueCeth(t *testing.T) {
-	ctx, keeper, bankKeeper, _, oracleKeeper, _, _ := test.CreateTestKeepers(t, 0.7, []int64{3, 3}, "")
+	ctx, keeper, bankKeeper, _, oracleKeeper, _, _, _ := test.CreateTestKeepers(t, 0.7, []int64{3, 3}, "")
 	cosmosSender, err := sdk.AccAddressFromBech32(types.TestAddress)
 	require.NoError(t, err)
 

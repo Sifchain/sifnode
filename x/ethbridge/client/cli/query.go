@@ -5,6 +5,7 @@ import (
 	"strconv"
 
 	"github.com/Sifchain/sifnode/x/ethbridge/types"
+	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/spf13/cobra"
 )
@@ -26,7 +27,7 @@ func GetCmdGetEthBridgeProphecy() *cobra.Command {
 
 			queryClient := types.NewQueryClient(clientCtx)
 
-			ethereumChainID, err := flags.GetInt64(types.FlagEthereumChainID)
+			networkDescriptor, err := flags.GetInt64(types.FlagEthereumChainID)
 			if err != nil {
 				return err
 			}
@@ -48,7 +49,7 @@ func GetCmdGetEthBridgeProphecy() *cobra.Command {
 			ethereumSender := types.NewEthereumAddress(args[3])
 
 			req := &types.QueryEthProphecyRequest{
-				EthereumChainId:       ethereumChainID,
+				NetworkDescriptor:     oracletypes.NetworkDescriptor(networkDescriptor),
 				BridgeContractAddress: bridgeContract.String(),
 				Nonce:                 int64(nonce),
 				Symbol:                symbol,
