@@ -3,7 +3,6 @@ package oracle_test
 import (
 	"testing"
 
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/require"
 
 	"github.com/Sifchain/sifnode/x/ethbridge/test"
@@ -45,9 +44,7 @@ func TestInitGenesis(t *testing.T) {
 			prophecies := keeper.GetProphecies(ctx)
 			require.Equal(t, len(tc.genesis.Prophecies), len(prophecies))
 			for i, p := range tc.genesis.Prophecies {
-				serialised, err := prophecies[i].SerializeForDB()
-				require.NoError(t, err)
-				require.Equal(t, p, &serialised)
+				require.Equal(t, *p, prophecies[i])
 			}
 		})
 	}
@@ -117,9 +114,7 @@ func TestGenesisMarshalling(t *testing.T) {
 			require.Equal(t, len(tc.genesis.Prophecies), len(dbProphecies))
 			for i, p := range tc.genesis.Prophecies {
 				require.Equal(t, p, dbProphecies[i])
-				unserialised, err := p.DeserializeFromDB()
-				require.NoError(t, err)
-				require.Equal(t, prophecies[i], unserialised)
+				require.Equal(t, prophecies[i], *p)
 			}
 		})
 	}
@@ -139,21 +134,10 @@ func testGenesisData(t *testing.T) ([]testCase, []types.Prophecy) {
 	whiteList.WhiteList[valAddrs[1].String()] = power
 
 	prophecy := types.Prophecy{
-		ID: "asd",
-		Status: types.Status{
-			Text:       types.StatusText_STATUS_TEXT_PENDING,
-			FinalClaim: "abc",
-		},
-		ClaimValidators: map[string][]sdk.ValAddress{
-			"123": valAddrs,
-		},
-		ValidatorClaims: map[string]string{
-			"321": "4321",
-		},
+		Id:              []byte("asd"),
+		Status:          types.StatusText_STATUS_TEXT_PENDING,
+		ClaimValidators: []string{valAddrs[0].String()},
 	}
-
-	dbProphecy, err := prophecy.SerializeForDB()
-	require.NoError(t, err)
 
 	return []testCase{
 		{
@@ -169,8 +153,8 @@ func testGenesisData(t *testing.T) ([]testCase, []types.Prophecy) {
 			genesis: types.GenesisState{
 				AddressWhitelist: map[uint32]*types.ValidatorWhiteList{uint32(types.NetworkDescriptor_NETWORK_DESCRIPTOR_ETHEREUM): &whiteList},
 				AdminAddress:     addrs[0].String(),
-				Prophecies: []*types.DBProphecy{
-					&dbProphecy,
+				Prophecies: []*types.Prophecy{
+					&prophecy,
 				},
 			},
 		},

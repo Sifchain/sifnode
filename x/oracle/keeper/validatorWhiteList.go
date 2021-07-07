@@ -1,8 +1,6 @@
 package keeper
 
 import (
-	"fmt"
-
 	"github.com/Sifchain/sifnode/x/oracle/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
@@ -46,9 +44,9 @@ func (k Keeper) ExistsOracleWhiteList(ctx sdk.Context, networkDescriptor types.N
 }
 
 // GetOracleWhiteList return validator list
-func (k Keeper) GetOracleWhiteList(ctx sdk.Context, networkDescriptor types.NetworkIdentity) types.ValidatorWhiteList {
+func (k Keeper) GetOracleWhiteList(ctx sdk.Context, networkIdentity types.NetworkIdentity) types.ValidatorWhiteList {
 	store := ctx.KVStore(k.storeKey)
-	key := networkDescriptor.GetPrefix()
+	key := networkIdentity.GetPrefix()
 	bz := store.Get(key)
 	validators := &types.ValidatorWhiteList{}
 	k.cdc.MustUnmarshalBinaryBare(bz, validators)
@@ -56,8 +54,8 @@ func (k Keeper) GetOracleWhiteList(ctx sdk.Context, networkDescriptor types.Netw
 }
 
 // GetAllValidators return validator list
-func (k Keeper) GetAllValidators(ctx sdk.Context, networkDescriptor types.NetworkIdentity) []sdk.ValAddress {
-	valAddresses := k.GetOracleWhiteList(ctx, networkDescriptor)
+func (k Keeper) GetAllValidators(ctx sdk.Context, networkIdentity types.NetworkIdentity) []sdk.ValAddress {
+	valAddresses := k.GetOracleWhiteList(ctx, networkIdentity)
 
 	vl := []sdk.ValAddress{}
 	for i, power := range valAddresses.GetWhiteList() {
@@ -74,11 +72,11 @@ func (k Keeper) GetAllValidators(ctx sdk.Context, networkDescriptor types.Networ
 }
 
 // ValidateAddress is a validator in whitelist
-func (k Keeper) ValidateAddress(ctx sdk.Context, networkDescriptor types.NetworkIdentity, address sdk.ValAddress) bool {
-	if !k.ExistsOracleWhiteList(ctx, networkDescriptor) {
+func (k Keeper) ValidateAddress(ctx sdk.Context, networkIdentity types.NetworkIdentity, address sdk.ValAddress) bool {
+	if !k.ExistsOracleWhiteList(ctx, networkIdentity) {
 		return false
 	}
-	valAddresses := k.GetOracleWhiteList(ctx, networkDescriptor)
+	valAddresses := k.GetOracleWhiteList(ctx, networkIdentity)
 
 	for i, power := range valAddresses.GetWhiteList() {
 		addr, err := sdk.ValAddressFromBech32(i)
@@ -94,9 +92,8 @@ func (k Keeper) ValidateAddress(ctx sdk.Context, networkDescriptor types.Network
 }
 
 // UpdateOracleWhiteList validator's power
-func (k Keeper) UpdateOracleWhiteList(ctx sdk.Context, networkDescriptor types.NetworkIdentity, validator sdk.ValAddress, power uint32) {
-	fmt.Printf("UpdateOracleWhiteList \n")
-	valList := k.GetOracleWhiteList(ctx, networkDescriptor)
+func (k Keeper) UpdateOracleWhiteList(ctx sdk.Context, networkIdentity types.NetworkIdentity, validator sdk.ValAddress, power uint32) {
+	valList := k.GetOracleWhiteList(ctx, networkIdentity)
 	whiteList := valList.GetWhiteList()
 	if whiteList == nil {
 		whiteList = make(map[string]uint32)
@@ -104,5 +101,5 @@ func (k Keeper) UpdateOracleWhiteList(ctx sdk.Context, networkDescriptor types.N
 	whiteList[validator.String()] = power
 
 	valList = types.ValidatorWhiteList{WhiteList: whiteList}
-	k.SetOracleWhiteList(ctx, networkDescriptor, valList)
+	k.SetOracleWhiteList(ctx, networkIdentity, valList)
 }

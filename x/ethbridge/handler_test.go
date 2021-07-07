@@ -117,7 +117,7 @@ func TestDuplicateMsgs(t *testing.T) {
 	res, err = handler(ctx, &normalCreateMsg)
 	require.Error(t, err)
 	require.Nil(t, res)
-	require.True(t, strings.Contains(err.Error(), "already processed message from validator for this id"))
+	require.Equal(t, err.Error(), oracletypes.ErrDuplicateMessage.Error())
 }
 
 func TestMintSuccess(t *testing.T) {
@@ -143,6 +143,7 @@ func TestMintSuccess(t *testing.T) {
 	require.NoError(t, err)
 	receiverCoins := bankKeeper.GetAllBalances(ctx, receiverAddress)
 	expectedCoins := sdk.Coins{sdk.NewInt64Coin(types.TestCoinsLockedSymbol, types.TestCoinIntAmount)}
+
 	require.True(t, receiverCoins.IsEqual(expectedCoins))
 	for _, event := range res.Events {
 		for _, attribute := range event.Attributes {
@@ -155,10 +156,8 @@ func TestMintSuccess(t *testing.T) {
 
 	//Additional message from third validator fails and does not mint
 	normalCreateMsg = types.CreateTestEthMsg(t, valAddressVal3Pow1, types.ClaimType_CLAIM_TYPE_LOCK)
-	res, err = handler(ctx, &normalCreateMsg)
-	require.Error(t, err)
-	require.Nil(t, res)
-	require.True(t, strings.Contains(err.Error(), "prophecy already finalized"))
+	_, err = handler(ctx, &normalCreateMsg)
+	require.Nil(t, err)
 	receiverCoins = bankKeeper.GetAllBalances(ctx, receiverAddress)
 	expectedCoins = sdk.Coins{sdk.NewInt64Coin(types.TestCoinsLockedSymbol, types.TestCoinIntAmount)}
 	require.True(t, receiverCoins.IsEqual(expectedCoins))
@@ -222,7 +221,7 @@ func TestNoMintFail(t *testing.T) {
 		for _, attribute := range event.Attributes {
 			value := string(attribute.Value)
 			if string(attribute.Key) == statusString {
-				require.Equal(t, value, oracletypes.StatusText_STATUS_TEXT_FAILED.String())
+				require.Equal(t, value, oracletypes.StatusText_STATUS_TEXT_PENDING.String())
 			}
 		}
 	}
@@ -243,7 +242,6 @@ func TestLockFail(t *testing.T) {
 
 	//Initial message
 	normalCreateMsg := types.CreateTestEthMsg(t, valAddress, types.ClaimType_CLAIM_TYPE_LOCK)
-	fmt.Printf("message is %v \n", normalCreateMsg)
 	res, err := handler(ctx, &normalCreateMsg)
 
 	require.Error(t, err)

@@ -16,7 +16,7 @@ func DefaultGenesisState() *GenesisState {
 	return &GenesisState{
 		AddressWhitelist: map[uint32]*ValidatorWhiteList{},
 		AdminAddress:     "",
-		Prophecies:       []*DBProphecy{},
+		Prophecies:       []*Prophecy{},
 	}
 }
 

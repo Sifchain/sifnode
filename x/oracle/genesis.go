@@ -26,8 +26,9 @@ func InitGenesis(ctx sdk.Context, keeper keeper.Keeper, data types.GenesisState)
 		keeper.SetAdminAccount(ctx, adminAddress)
 	}
 
-	for _, dbProphecy := range data.Prophecies {
-		keeper.SetDBProphecy(ctx, *dbProphecy)
+	for _, prophecy := range data.Prophecies {
+
+		keeper.SetProphecy(ctx, *prophecy)
 	}
 
 	return []abci.ValidatorUpdate{}
@@ -41,20 +42,17 @@ func ExportGenesis(ctx sdk.Context, keeper keeper.Keeper) *types.GenesisState {
 		wl[uint32(i)] = &types.ValidatorWhiteList{WhiteList: value.WhiteList}
 	}
 
-	prophecies := keeper.GetProphecies(ctx)
-	dbProphecies := make([]*types.DBProphecy, len(prophecies))
-	for i, p := range prophecies {
-		dbProphecy, err := p.SerializeForDB()
-		if err != nil {
-			panic(err)
-		}
-		dbProphecies[i] = &dbProphecy
+	propheciesTmp := keeper.GetProphecies(ctx)
+	prophecies := make([]*types.Prophecy, len(propheciesTmp))
+	for index, prophecy := range propheciesTmp {
+		tmpProphecy := prophecy
+		prophecies[index] = &tmpProphecy
 	}
 
 	return &types.GenesisState{
 		AddressWhitelist: wl,
 		AdminAddress:     keeper.GetAdminAccount(ctx).String(),
-		Prophecies:       dbProphecies,
+		Prophecies:       prophecies,
 	}
 }
 

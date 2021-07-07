@@ -10,25 +10,17 @@ const (
 )
 
 // NewQueryEthProphecyRequest creates a new QueryEthProphecyParams
-func NewQueryEthProphecyRequest(
-	networkDescriptor oracletypes.NetworkDescriptor, bridgeContractAddress EthereumAddress, nonce int64, symbol string,
-	tokenContractAddress EthereumAddress, ethereumSender EthereumAddress,
-) *QueryEthProphecyRequest {
+func NewQueryEthProphecyRequest(prophecyID []byte) *QueryEthProphecyRequest {
 	return &QueryEthProphecyRequest{
-		NetworkDescriptor:             networkDescriptor,
-		BridgeContractAddress: bridgeContractAddress.String(),
-		Nonce:                 nonce,
-		Symbol:                symbol,
-		TokenContractAddress:  tokenContractAddress.String(),
-		EthereumSender:        ethereumSender.String(),
+		ProphecyId: prophecyID,
 	}
 }
 
 // NewQueryEthProphecyResponse creates a new QueryEthProphecyResponse instance
-func NewQueryEthProphecyResponse(id string, status oracletypes.Status, claims []*EthBridgeClaim) QueryEthProphecyResponse {
+func NewQueryEthProphecyResponse(id []byte, status oracletypes.StatusText, claims []string) QueryEthProphecyResponse {
 	return QueryEthProphecyResponse{
-		Id:     id,
-		Status: &status,
-		Claims: claims,
+		ProphecyId:      id,
+		Status:          status,
+		ClaimValidators: claims,
 	}
 }

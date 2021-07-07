@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
-	"strings"
 
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/tx"
@@ -20,6 +19,7 @@ import (
 )
 
 const (
+	restProphecyID        = "restProphecyID"
 	restNetworkDescriptor = "networkDescriptor"
 	restBridgeContract    = "bridgeContract"
 	restNonce             = "nonce"
@@ -30,7 +30,7 @@ const (
 
 type createEthClaimReq struct {
 	BaseReq               rest.BaseReq                  `json:"base_req"`
-	NetworkDescriptor     oracletypes.NetworkDescriptor `json:"network_id"`
+	NetworkDescriptor     oracletypes.NetworkDescriptor `json:"network_descriptor"`
 	BridgeContractAddress string                        `json:"bridge_registry_contract_address"`
 	Nonce                 int                           `json:"nonce"`
 	Symbol                string                        `json:"symbol"`
@@ -44,7 +44,7 @@ type createEthClaimReq struct {
 
 type burnOrLockEthReq struct {
 	BaseReq           rest.BaseReq `json:"base_req"`
-	NetworkDescriptor string       `json:"network_id"`
+	NetworkDescriptor string       `json:"network_descriptor"`
 	TokenContract     string       `json:"token_contract_address"`
 	CosmosSender      string       `json:"cosmos_sender"`
 	EthereumReceiver  string       `json:"ethereum_receiver"`
@@ -124,35 +124,9 @@ func getProphecyHandler(cliCtx client.Context, storeName string) http.HandlerFun
 	return func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
 
-		networkDescriptorString := vars[restNetworkDescriptor]
-		networkDescriptor, err := strconv.ParseInt(networkDescriptorString, 10, 64)
-		if err != nil {
-			rest.WriteErrorResponse(w, http.StatusInternalServerError, err.Error())
-			return
-		}
+		restProphecyID := []byte(vars[restProphecyID])
 
-		bridgeContract := types.NewEthereumAddress(vars[restBridgeContract])
-
-		nonce := vars[restNonce]
-		nonceString, err := strconv.ParseInt(nonce, 10, 64)
-		if err != nil {
-			rest.WriteErrorResponse(w, http.StatusInternalServerError, err.Error())
-			return
-		}
-
-		tokenContract := types.NewEthereumAddress(vars[restTokenContract])
-
-		symbol := vars[restSymbol]
-		if strings.TrimSpace(symbol) == "" {
-			rest.WriteErrorResponse(w, http.StatusInternalServerError, "symbol is empty")
-			return
-		}
-
-		ethereumSender := types.NewEthereumAddress(vars[restEthereumSender])
-
-		bz, err := cliCtx.LegacyAmino.MarshalJSON(
-			types.NewQueryEthProphecyRequest(
-				oracletypes.NetworkDescriptor(networkDescriptor), bridgeContract, nonceString, symbol, tokenContract, ethereumSender))
+		bz, err := cliCtx.LegacyAmino.MarshalJSON(types.NewQueryEthProphecyRequest(restProphecyID))
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusNotFound, err.Error())
 			return

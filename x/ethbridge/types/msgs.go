@@ -2,7 +2,6 @@ package types
 
 import (
 	"encoding/json"
-	"fmt"
 	"strconv"
 	"strings"
 
@@ -376,36 +375,4 @@ func (msg MsgUpdateWhiteListValidator) GetSigners() []sdk.AccAddress {
 	}
 
 	return []sdk.AccAddress{cosmosSender}
-}
-
-// MapOracleClaimsToEthBridgeClaims maps a set of generic oracle claim data into EthBridgeClaim objects
-func MapOracleClaimsToEthBridgeClaims(
-	networkDescriptor oracletypes.NetworkDescriptor,
-	bridgeContract EthereumAddress,
-	nonce int64,
-	symbol string,
-	tokenContract EthereumAddress,
-	ethereumSender EthereumAddress,
-	oracleValidatorClaims map[string]string,
-	f func(oracletypes.NetworkDescriptor, EthereumAddress, int64, EthereumAddress, sdk.ValAddress, string) (*EthBridgeClaim, error),
-) ([]*EthBridgeClaim, error) {
-
-	mappedClaims := make([]*EthBridgeClaim, len(oracleValidatorClaims))
-	i := 0
-	for validatorBech32, validatorClaim := range oracleValidatorClaims {
-		validatorAddress, parseErr := sdk.ValAddressFromBech32(validatorBech32)
-		if parseErr != nil {
-			return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, fmt.Sprintf("failed to parse claim: %s", parseErr))
-		}
-
-		mappedClaim, err := f(
-			networkDescriptor, bridgeContract, nonce, ethereumSender, validatorAddress, validatorClaim)
-		if err != nil {
-			return nil, err
-		}
-		mappedClaims[i] = mappedClaim
-		i++
-	}
-
-	return mappedClaims, nil
 }

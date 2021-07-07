@@ -137,17 +137,19 @@ func (srv msgServer) Burn(goCtx context.Context, msg *types.MsgBurn) (*types.Msg
 }
 func (srv msgServer) CreateEthBridgeClaim(goCtx context.Context, msg *types.MsgCreateEthBridgeClaim) (*types.MsgCreateEthBridgeClaimResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
-
 	logger := srv.Keeper.Logger(ctx)
 
 	status, err := srv.Keeper.ProcessClaim(ctx, msg.EthBridgeClaim)
+
 	if err != nil {
-		logger.Error("bridge keeper failed to process claim.",
-			errorMessageKey, err.Error())
-		return nil, err
-	}
-	if status.Text == oracletypes.StatusText_STATUS_TEXT_SUCCESS {
-		if err = srv.Keeper.ProcessSuccessfulClaim(ctx, status.FinalClaim); err != nil {
+		if err != oracletypes.ErrProphecyFinalized {
+			logger.Error("bridge keeper failed to process claim.",
+				errorMessageKey, err.Error())
+			return nil, err
+		}
+
+	} else if status == oracletypes.StatusText_STATUS_TEXT_SUCCESS {
+		if err = srv.Keeper.ProcessSuccessfulClaim(ctx, msg.EthBridgeClaim); err != nil {
 			logger.Error("bridge keeper failed to process successful claim.",
 				errorMessageKey, err.Error())
 			return nil, err
@@ -182,7 +184,7 @@ func (srv msgServer) CreateEthBridgeClaim(goCtx context.Context, msg *types.MsgC
 		),
 		sdk.NewEvent(
 			types.EventTypeProphecyStatus,
-			sdk.NewAttribute(types.AttributeKeyStatus, status.Text.String()),
+			sdk.NewAttribute(types.AttributeKeyStatus, status.String()),
 		),
 	})
 

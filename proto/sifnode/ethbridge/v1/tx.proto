@@ -74,7 +74,7 @@ message MsgCreateEthBridgeClaimResponse {}
 // MsgUpdateWhiteListValidator add or remove validator from whitelist
 message MsgUpdateWhiteListValidator {
   sifnode.oracle.v1.NetworkDescriptor network_descriptor = 1
-      [ (gogoproto.moretags) = "yaml:\"network_id\"" ];
+      [ (gogoproto.moretags) = "yaml:\"network_descriptor\"" ];
   string cosmos_sender = 2 [ (gogoproto.moretags) = "yaml:\"cosmos_sender\"" ];
   string validator = 3 [ (gogoproto.moretags) = "yaml:\"validator\"" ];
   uint32 power = 4;
