@@ -30,10 +30,9 @@ async function main() {
     ]);
 
     await cosmosBridge.deployed();
-    console.log("deployed cosmos bridge to: ", cosmosBridge.address);
+    console.log("deployed cosmos bridge to: ", cosmosBridge.address, owner, pauser);
 
     const bank = await upgrades.deployProxy(BridgeBank, [
-        operator,
         cosmosBridge.address,
         owner,
         pauser,
