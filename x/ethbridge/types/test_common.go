@@ -78,9 +78,7 @@ func CreateTestQueryEthProphecyResponse(t *testing.T, validatorAddress sdk.ValAd
 	testTokenAddress := NewEthereumAddress(TestTokenContractAddress)
 	ethBridgeClaim := CreateTestEthClaim(t, testContractAddress, testTokenAddress, validatorAddress,
 		testEthereumAddress, TestCoinsAmount, TestCoinsSymbol, claimType)
-	// oracleClaim, _ := CreateOracleClaimFromEthClaim(ethBridgeClaim)
 	ethBridgeClaims := []string{ethBridgeClaim.ValidatorAddress}
-	// ethBridgeClaim.GetOracleID()
 
 	return NewQueryEthProphecyResponse(
 		ethBridgeClaim.GetProphecyID(),

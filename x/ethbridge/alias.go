@@ -23,20 +23,15 @@ const (
 var (
 	// functions aliases
 
-	NewKeeper         = keeper.NewKeeper
-	NewQuerier        = keeper.NewLegacyQuerier
-	NewEthBridgeClaim = types.NewEthBridgeClaim
-	// NewOracleClaimContent             = types.NewOracleClaimContent
-	// CreateOracleClaimFromEthClaim     = types.CreateOracleClaimFromEthClaim
-	// CreateEthClaimFromOracleString    = types.CreateEthClaimFromOracleString
-	// CreateOracleClaimFromOracleString = types.CreateOracleClaimFromOracleString
-	RegisterCodec              = types.RegisterLegacyAminoCodec
-	ErrInvalidEthNonce         = types.ErrInvalidEthNonce
-	ErrInvalidEthAddress       = types.ErrInvalidEthAddress
-	ErrJSONMarshalling         = types.ErrJSONMarshalling
-	NewEthereumAddress         = types.NewEthereumAddress
-	NewMsgCreateEthBridgeClaim = types.NewMsgCreateEthBridgeClaim
-	// MapOracleClaimsToEthBridgeClaims  = types.MapOracleClaimsToEthBridgeClaims
+	NewKeeper                   = keeper.NewKeeper
+	NewQuerier                  = keeper.NewLegacyQuerier
+	NewEthBridgeClaim           = types.NewEthBridgeClaim
+	RegisterCodec               = types.RegisterLegacyAminoCodec
+	ErrInvalidEthNonce          = types.ErrInvalidEthNonce
+	ErrInvalidEthAddress        = types.ErrInvalidEthAddress
+	ErrJSONMarshalling          = types.ErrJSONMarshalling
+	NewEthereumAddress          = types.NewEthereumAddress
+	NewMsgCreateEthBridgeClaim  = types.NewMsgCreateEthBridgeClaim
 	NewQueryEthProphecyParams   = types.NewQueryEthProphecyRequest
 	NewQueryEthProphecyResponse = types.NewQueryEthProphecyResponse
 
@@ -47,9 +42,8 @@ var (
 )
 
 type (
-	Keeper         = keeper.Keeper
-	EthBridgeClaim = types.EthBridgeClaim //nolint:golint
-	// OracleClaimContent           = types.OracleClaimContent
+	Keeper                       = keeper.Keeper
+	EthBridgeClaim               = types.EthBridgeClaim //nolint:golint
 	EthereumAddress              = types.EthereumAddress
 	MsgCreateEthBridgeClaim      = types.MsgCreateEthBridgeClaim
 	MsgBurn                      = types.MsgBurn
