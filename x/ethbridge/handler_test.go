@@ -563,6 +563,27 @@ func TestUpdateWhiteListValidator(t *testing.T) {
 	}
 }
 
+func TestSetNativeTokenMsg(t *testing.T) {
+	ctx, _, _, accountKeeper, handler, _, oracleKeeper := CreateTestHandler(t, 0.5, []int64{5})
+
+	testSetAtiveTokenMsg := types.CreateTestSetAtiveTokenMsg(
+		t, types.TestAddress, oracletypes.NetworkDescriptor_NETWORK_DESCRIPTOR_ETHEREUM, "ceth")
+
+	cosmosSender, err := sdk.AccAddressFromBech32(types.TestAddress)
+	require.NoError(t, err)
+
+	accountKeeper.SetAccount(ctx, authtypes.NewBaseAccountWithAddress(cosmosSender))
+
+	_, err = handler(ctx, &testSetAtiveTokenMsg)
+	require.Error(t, err)
+
+	oracleKeeper.SetAdminAccount(ctx, cosmosSender)
+
+	res, err := handler(ctx, &testSetAtiveTokenMsg)
+	require.NoError(t, err)
+	require.NotNil(t, res)
+}
+
 func CreateTestHandler(t *testing.T, consensusNeeded float64, validatorAmounts []int64) (sdk.Context,
 	ethbridgekeeper.Keeper, bankkeeper.Keeper, authkeeper.AccountKeeper,
 	sdk.Handler, []sdk.ValAddress, oraclekeeper.Keeper) {

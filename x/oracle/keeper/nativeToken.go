@@ -11,7 +11,6 @@ import (
 func (k Keeper) SetNativeToken(ctx sdk.Context, networkIdentity types.NetworkIdentity, token string) {
 	store := ctx.KVStore(k.storeKey)
 	key := networkIdentity.GetNativeTokenPrefix()
-	fmt.Printf("+++ SetNativeToken key is %v\n", key)
 	nativeToken := types.NativeToken{NativeToken: token}
 	store.Set(key, k.cdc.MustMarshalBinaryBare(&nativeToken))
 }

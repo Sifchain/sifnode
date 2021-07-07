@@ -239,7 +239,13 @@ func (k Keeper) ProcessRescueCeth(ctx sdk.Context, msg *types.MsgRescueCeth) err
 // ProcessSetNativeToken processes the set native token from admin
 func (k Keeper) ProcessSetNativeToken(ctx sdk.Context, msg *types.MsgSetNativeToken) error {
 	logger := k.Logger(ctx)
-	if !k.oracleKeeper.IsAdminAccount(ctx, sdk.AccAddress(msg.CosmosSender)) {
+
+	cosmosSender, err := sdk.AccAddressFromBech32(msg.CosmosSender)
+	if err != nil {
+		return err
+	}
+
+	if !k.oracleKeeper.IsAdminAccount(ctx, cosmosSender) {
 		logger.Error("cosmos sender is not admin account.")
 		return errors.New("only admin account can set native token")
 	}

@@ -18,6 +18,7 @@ service Msg {
   rpc UpdateCethReceiverAccount(MsgUpdateCethReceiverAccount)
       returns (MsgUpdateCethReceiverAccountResponse);
   rpc RescueCeth(MsgRescueCeth) returns (MsgRescueCethResponse);
+  rpc SetNativeToken(MsgSetNativeToken) returns (MsgSetNativeTokenResponse);
 }
 
 // MsgLock defines a message for locking coins and triggering a related event
