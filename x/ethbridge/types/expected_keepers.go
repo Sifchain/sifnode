@@ -31,4 +31,5 @@ type OracleKeeper interface {
 	GetAdminAccount(ctx sdk.Context) sdk.AccAddress
 	SetAdminAccount(ctx sdk.Context, cosmosSender sdk.AccAddress)
 	GetNativeToken(ctx sdk.Context, networkIdentity oracletypes.NetworkIdentity) (string, error)
+	ProcessSetNativeToken(ctx sdk.Context, networkDescriptor oracletypes.NetworkDescriptor, nativeToken string) error
 }

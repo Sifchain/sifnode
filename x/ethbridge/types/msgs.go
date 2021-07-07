@@ -2,6 +2,7 @@ package types
 
 import (
 	"encoding/json"
+	"errors"
 	"strconv"
 	"strings"
 
@@ -369,6 +370,54 @@ func (msg MsgUpdateWhiteListValidator) GetSignBytes() []byte {
 
 // GetSigners defines whose signature is required
 func (msg MsgUpdateWhiteListValidator) GetSigners() []sdk.AccAddress {
+	cosmosSender, err := sdk.AccAddressFromBech32(msg.CosmosSender)
+	if err != nil {
+		panic(err)
+	}
+
+	return []sdk.AccAddress{cosmosSender}
+}
+
+// NewMsgSetNativeToken is a constructor function for MsgSetNativeToken
+func NewMsgSetNativeToken(cosmosSender sdk.AccAddress, networkDescriptor oracletypes.NetworkDescriptor, nativeToken string) MsgSetNativeToken {
+	return MsgSetNativeToken{
+		CosmosSender:      cosmosSender.String(),
+		NetworkDescriptor: networkDescriptor,
+		NativeToken:       nativeToken,
+	}
+}
+
+// Route should return the name of the module
+func (msg MsgSetNativeToken) Route() string { return RouterKey }
+
+// Type should return the action
+func (msg MsgSetNativeToken) Type() string { return "set_native_token" }
+
+// ValidateBasic runs stateless checks on the message
+func (msg MsgSetNativeToken) ValidateBasic() error {
+	if msg.CosmosSender == "" {
+		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.CosmosSender)
+	}
+
+	if !msg.NetworkDescriptor.IsValid() {
+		return errors.New("network descriptor is invalid")
+	}
+
+	return nil
+}
+
+// GetSignBytes encodes the message for signing
+func (msg MsgSetNativeToken) GetSignBytes() []byte {
+	b, err := json.Marshal(msg)
+	if err != nil {
+		panic(err)
+	}
+
+	return sdk.MustSortJSON(b)
+}
+
+// GetSigners defines whose signature is required
+func (msg MsgSetNativeToken) GetSigners() []sdk.AccAddress {
 	cosmosSender, err := sdk.AccAddressFromBech32(msg.CosmosSender)
 	if err != nil {
 		panic(err)

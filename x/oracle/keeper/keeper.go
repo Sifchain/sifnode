@@ -177,6 +177,12 @@ func (k Keeper) processCompletion(ctx sdk.Context, networkDescriptor types.Netwo
 	return prophecy
 }
 
+// ProcessSetNativeToken set native token for a network
+func (k Keeper) ProcessSetNativeToken(ctx sdk.Context, networkDescriptor types.NetworkDescriptor, nativeToken string) error {
+	k.SetNativeToken(ctx, types.NewNetworkIdentity(networkDescriptor), nativeToken)
+	return nil
+}
+
 // Exists check if the key exists
 func (k Keeper) Exists(ctx sdk.Context, key []byte) bool {
 	store := ctx.KVStore(k.storeKey)

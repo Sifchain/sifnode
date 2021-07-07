@@ -99,3 +99,12 @@ message MsgRescueCeth {
 }
 
 message MsgRescueCethResponse {}
+
+message MsgSetNativeToken {
+  string cosmos_sender = 1;
+  sifnode.oracle.v1.NetworkDescriptor network_descriptor = 2
+      [ (gogoproto.moretags) = "yaml:\"network_descriptor\"" ];
+  string native_token = 3;
+}
+
+message MsgSetNativeTokenResponse {}

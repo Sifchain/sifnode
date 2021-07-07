@@ -324,3 +324,31 @@ func (srv msgServer) RescueCeth(goCtx context.Context, msg *types.MsgRescueCeth)
 
 	return &types.MsgRescueCethResponse{}, nil
 }
+
+func (srv msgServer) SetNativeToken(goCtx context.Context, msg *types.MsgSetNativeToken) (*types.MsgSetNativeTokenResponse, error) {
+	ctx := sdk.UnwrapSDKContext(goCtx)
+	logger := srv.Keeper.Logger(ctx)
+
+	cosmosSender, err := sdk.AccAddressFromBech32(msg.CosmosSender)
+	if err != nil {
+		return nil, err
+	}
+
+	account := srv.Keeper.accountKeeper.GetAccount(ctx, cosmosSender)
+	if account == nil {
+		logger.Error("account is nil.", "CosmosSender", msg.CosmosSender)
+		return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.CosmosSender)
+	}
+
+	if err := srv.Keeper.ProcessSetNativeToken(ctx, msg); err != nil {
+		logger.Error("keeper failed to process rescue native_token message.", errorMessageKey, err.Error())
+		return nil, err
+	}
+	logger.Info("sifnode emit rescue native_token event.",
+		"CosmosSender", msg.CosmosSender,
+		"CosmosSenderSequence", strconv.FormatUint(account.GetSequence(), 10),
+		"NetworkDescriptor", msg.NetworkDescriptor,
+		"NativeToken", msg.NativeToken)
+
+	return &types.MsgSetNativeTokenResponse{}, nil
+}
