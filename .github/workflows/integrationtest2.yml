@@ -10,19 +10,36 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
+
+      - name: Checkout Sifchain-Deploy Repo
+        uses: actions/checkout@v2
+        with:
+          ref: main
+          repository: Sifchain/sifchain-deploy
+          path: sifchain-deploy
+          token:  ${{ secrets.GIT_PAT }}
+
+      - name: Copy Automation Folder for Test to Execute.
+        run: |
+          mkdir -p deploy/
+          cp -r sifchain-deploy/ ./deploy
+
       - name: Set up linux environment
         run: # installs development tools and updates .bash_profile
           bash test/integration/setup-linux-environment.sh
+
       - name: Setup integration test environment
         run: |
           source $HOME/.bash_profile
           bash test/integration/start-integration-env.sh
+
       - name: Execute test chain integration tests
         run: |
           source $HOME/.bash_profile
           . test/integration/vagrantenv.sh
           export LOG_LEVEL=DEBUG
           bash test/integration/execute_integration_tests_against_any_chain.sh
+
       - name: Archive logs from test
         uses: actions/upload-artifact@v2
         if: always()
