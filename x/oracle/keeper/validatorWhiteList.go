@@ -5,7 +5,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-// GetAllWhiteList set the validator list for a network.
+// GetAllWhiteList get the validators for all networks.
 func (k Keeper) GetAllWhiteList(ctx sdk.Context) map[types.NetworkDescriptor]types.ValidatorWhiteList {
 	result := make(map[types.NetworkDescriptor]types.ValidatorWhiteList)
 	store := ctx.KVStore(k.storeKey)

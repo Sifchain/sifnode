@@ -18,11 +18,6 @@ func NewQueryEthProphecyRequest(prophecyID []byte) *QueryEthProphecyRequest {
 
 // NewQueryEthProphecyResponse creates a new QueryEthProphecyResponse instance
 func NewQueryEthProphecyResponse(id []byte, status oracletypes.StatusText, claims []string) QueryEthProphecyResponse {
-	// claimValidators := []string{}
-	// for _, claim := range claims {
-	// 	claimValidators = append(claimValidators, claim.ValidatorAddress)
-	// }
-
 	return QueryEthProphecyResponse{
 		ProphecyId:      id,
 		Status:          status,
