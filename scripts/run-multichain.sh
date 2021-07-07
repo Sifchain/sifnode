@@ -9,18 +9,24 @@ sifnoded start --home ~/.sifnode-2 --p2p.laddr 0.0.0.0:27656  --grpc.address 0.0
 sifnoded start --home ~/.sifnode-1 --p2p.laddr 0.0.0.0:27655  --grpc.address 0.0.0.0:9090 --address tcp://0.0.0.0:27659 --rpc.laddr tcp://127.0.0.1:27657 >> abci_1.log 2>&1  &
 rm -rf ~/.ibc-setup/last-queried-heights.json
 #Reset connections
-ibc-setup ics20 --mnemonic "race draft rival universe maid cheese steel logic crowd fork comic easy truth drift tomorrow eye buddy head time cash swing swift midnight borrow"
-ibc-relayer start -i -v --poll 10
+ibc-setup ics20 --mnemonic "race draft rival universe maid cheese steel logic crowd fork comic easy truth drift tomorrow eye buddy head time cash swing swift midnight borrow" --home ~/.ibc-12
+ibc-setup ics20 --mnemonic "race draft rival universe maid cheese steel logic crowd fork comic easy truth drift tomorrow eye buddy head time cash swing swift midnight borrow" --home ~/.ibc-31
+ibc-relayer start -i -v --poll 10 --home ~/.ibc-12
+ibc-relayer start -i -v --poll 10 --home ~/.ibc-23
+ibc-relayer start -i -v --poll 10 --home ~/.ibc-31
 #Created channel:
 #  localnet-1: transfer/channel-0 (connection-0)
 #  localnet-2: transfer/channel-0 (connection-0)
 
 #sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd
-#sifnoded q bank balances sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd --node tcp://127.0.0.1:27658
-#sifnoded q bank balances sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd --node tcp://127.0.0.1:27657
+#sifnoded q bank balances sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd --node tcp://127.0.0.1:27665
+#sifnoded q bank balances sif1l7hypmqk2yc334vc6vmdwzp5sdefygj2ad93p5 --node tcp://127.0.0.1:27666
+#sifnoded q bank balances sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd --node tcp://127.0.0.1:27667
 #
-#sifnoded tx ibc-transfer transfer transfer channel-1 sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd 100rowan --node tcp://127.0.0.1:27657 --chain-id=localnet-1 --from=sif --log_level=debug --gas-prices=0.5rowan --keyring-backend test  --home ~/.sifnode-1
-#sifnoded tx ibc-transfer transfer transfer channel-0 sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd 100ibc/E0263CEED41F926DCE9A805F0358074873E478B515A94DF202E6B69E29DA6178 --node tcp://127.0.0.1:27658 --chain-id=localnet-2 --from=sif --log_level=debug --gas-prices=0.5rowan --keyring-backend test  --home ~/.sifnode-2
+#sifnoded tx ibc-transfer transfer transfer channel-0 sif1l7hypmqk2yc334vc6vmdwzp5sdefygj2ad93p5 100rowan --node tcp://127.0.0.1:27665 --chain-id=localnet-1 --from=akasha --log_level=debug --gas-prices=0.5rowan --keyring-backend test  --home ~/.sifnode-1
+#sifnoded tx ibc-transfer transfer transfer channel-0 sif1l7hypmqk2yc334vc6vmdwzp5sdefygj2ad93p5 50ibc/E0263CEED41F926DCE9A805F0358074873E478B515A94DF202E6B69E29DA6178 --node tcp://127.0.0.1:27666 --chain-id=localnet-2 --from=akasha --log_level=debug --gas-prices=0.5rowan --keyring-backend test  --home ~/.sifnode-2
+#sifnoded tx ibc-transfer transfer transfer channel-0 sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd 50ibc/4C2B3D3B398FC7B8FFA3A96314006FF0B38E3BFC4CE90D8EE46E9EB6768A482D --node tcp://127.0.0.1:27666 --chain-id=localnet-2 --from=sif --log_level=debug --gas-prices=0.5rowan --keyring-backend test  --home ~/.sifnode-2
+#sifnoded tx ibc-transfer transfer transfer channel-0 sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd 100ibc/E88F204AF3078655F031629A67CA335460C85BA53173BB20ACB34752E5D93070 --node tcp://127.0.0.1:27667 --chain-id=localnet-3 --from=sif --log_level=debug --gas-prices=0.5rowan --keyring-backend test  --home ~/.sifnode-3
 
 
 Test 1
@@ -59,6 +65,47 @@ Test 5
   Transfer works fine after network is synced (need to add proper channel id)
   Different channel Id creates a different token denom (ibc/<different hash>)
 
+
+
+
+
+
+Transfer 1 [1-2]
+Source Port    :  transfer
+Source Channel :  channel-1
+rpc error: code = InvalidArgument desc = invalid denom trace hash rowan, encoding/hex: invalid byte: U+0072 'r'
+Trace : <nil>
+encoding/hex: invalid byte: U+006E 'n': invalid denomination for cross-chain transfer [cosmos/cosmos-sdk@v0.42.4/x/ibc/applications/transfer/keeper/relay.go:396]
+PATH :
+Denom :  rowan
+
+Transfer 2 [2->3]
+Source Port    :  transfer
+Source Channel :  channel-0
+rpc error: code = InvalidArgument desc = invalid denom trace hash transfer/channel-1/rowan, encoding/hex: invalid byte: U+0074 't'
+Trace : <nil>
+encoding/hex: invalid byte: U+0073 's': invalid denomination for cross-chain transfer [cosmos/cosmos-sdk@v0.42.4/x/ibc/applications/transfer/keeper/relay.go:396]
+PATH :
+Denom :  transfer/channel-1/rowan  [channel-1 is the channel used in trasfer from 1->2]
+
+Trasfer 3[3-1]
+Source Port    :  transfer
+Source Channel :  channel-1
+rpc error: code = InvalidArgument desc = invalid denom trace hash transfer/channel-0/transfer/channel-1/rowan, encoding/hex: invalid byte: U+0074 't'
+Trace : <nil>
+encoding/hex: invalid byte: U+0073 's': invalid denomination for cross-chain transfer [cosmos/cosmos-sdk@v0.42.4/x/ibc/applications/transfer/keeper/relay.go:396]
+PATH :
+Denom :  transfer/channel-0/transfer/channel-1/rowan
+
+
+Trasfer 4 -[2-1]
+Source Port    :  transfer
+Source Channel :  channel-1
+rpc error: code = InvalidArgument desc = invalid denom trace hash transfer/channel-1/rowan, encoding/hex: invalid byte: U+0074 't'
+Trace : <nil>
+encoding/hex: invalid byte: U+0073 's': invalid denomination for cross-chain transfer [cosmos/cosmos-sdk@v0.42.4/x/ibc/applications/transfer/keeper/relay.go:396]
+PATH :
+Denom :  transfer/channel-1/rowan
 
 
 

@@ -14,11 +14,11 @@ func OnRecvPacketWhiteListed(
 	packet channeltypes.Packet,
 ) (*sdk.Result, []byte, error) {
 	var data trasfertypes.FungibleTokenPacketData
-	if !isWhitelisted(data.Denom) {
-		return nil, nil, sdkerrors.Wrapf(sdkerrors.ErrInvalidCoins, "denom not on whitelist")
-	}
 	if err := trasfertypes.ModuleCdc.UnmarshalJSON(packet.GetData(), &data); err != nil {
 		return nil, nil, sdkerrors.Wrapf(sdkerrors.ErrUnknownRequest, "cannot unmarshal ICS-20 transfer packet data: %s", err.Error())
+	}
+	if !isWhitelisted(k, ctx, packet, data) {
+		return nil, nil, sdkerrors.Wrapf(sdkerrors.ErrInvalidCoins, "denom not on whitelist")
 	}
 
 	acknowledgement := channeltypes.NewResultAcknowledgement([]byte{byte(1)})
@@ -45,6 +45,13 @@ func OnRecvPacketWhiteListed(
 	}, acknowledgement.GetBytes(), nil
 }
 
-func isWhitelisted(denom string) bool {
-	return true
+func isWhitelisted(k Keeper, ctx sdk.Context, packet channeltypes.Packet, data trasfertypes.FungibleTokenPacketData) bool {
+	denomTrace := trasfertypes.ParseDenomTrace(data.Denom)
+	return checkWhiteListMap(denomTrace.Hash().String())
+}
+
+func checkWhiteListMap(checkingHash string) bool {
+	whitelist := make(map[string]bool)
+	whitelist["E0263CEED41F926DCE9A805F0358074873E478B515A94DF202E6B69E29DA6178"] = true
+	return whitelist[checkingHash]
 }
