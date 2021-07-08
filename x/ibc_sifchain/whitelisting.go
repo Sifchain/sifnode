@@ -56,6 +56,7 @@ func isWhitelisted(ctx sdk.Context, packet channeltypes.Packet, data transfertyp
 		// For paths Sifchain -> X -> Sifchain return true
 		// For paths Sifchain -> X -> Y -> Sifchain this condition is not triggered
 		// No need to whitelist channel and port, We assume tokens will come back using the same channel they used to go across.
+		// If Sifchain and Chain X have two channels running between them , and Token A uses channel 1 to go from sifchain to chain X . It needs to use channel 1 to come back.
 		fmt.Printf("Returning to source | Denom : %s , SourcePort : %s , SourceChannel : %s ", data.Denom, packet.SourcePort, packet.SourceChannel)
 		return true, nil
 	}
