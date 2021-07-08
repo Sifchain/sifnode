@@ -70,14 +70,20 @@ func (k Keeper) ProcessSuccessfulClaim(ctx sdk.Context, claim string, sugaredLog
 	case types.LockText:
 		symbol := fmt.Sprintf("%v%v", types.PeggedCoinPrefix, oracleClaim.Symbol)
 		k.AddPeggyToken(ctx, symbol)
-
 		coins = sdk.Coins{sdk.NewCoin(symbol, oracleClaim.Amount)}
-		err = k.supplyKeeper.MintCoins(ctx, types.ModuleName, coins)
 	case types.BurnText:
 		coins = sdk.Coins{sdk.NewCoin(oracleClaim.Symbol, oracleClaim.Amount)}
-		err = k.supplyKeeper.MintCoins(ctx, types.ModuleName, coins)
+
 	default:
 		err = types.ErrInvalidClaimType
+		sugaredLogger.Errorw("failed to process successful claim.",
+			errorMessageKey, err.Error())
+		return err
+	}
+
+	// not mint if burn token is rowan
+	if oracleClaim.Symbol != types.NativeSymbol {
+		err = k.supplyKeeper.MintCoins(ctx, types.ModuleName, coins)
 	}
 
 	if err != nil {
@@ -158,13 +164,6 @@ func (k Keeper) ProcessLock(ctx sdk.Context, cosmosSender sdk.AccAddress, msg ty
 		}
 	}
 
-	coins = sdk.NewCoins(sdk.NewCoin(msg.Symbol, msg.Amount))
-	err = k.supplyKeeper.BurnCoins(ctx, types.ModuleName, coins)
-	if err != nil {
-		sugaredLogger.Errorw("failed to burn burned coin.",
-			errorMessageKey, err.Error())
-		return err
-	}
 	return nil
 }
 
