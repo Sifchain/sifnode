@@ -344,11 +344,25 @@ func (srv msgServer) SetNativeToken(goCtx context.Context, msg *types.MsgSetNati
 		logger.Error("keeper failed to process rescue native_token message.", errorMessageKey, err.Error())
 		return nil, err
 	}
-	logger.Info("sifnode emit rescue native_token event.",
+	logger.Info("sifnode emit set native_token event.",
 		"CosmosSender", msg.CosmosSender,
 		"CosmosSenderSequence", strconv.FormatUint(account.GetSequence(), 10),
 		"NetworkDescriptor", msg.NetworkDescriptor,
 		"NativeToken", msg.NativeToken)
+
+	ctx.EventManager().EmitEvents(sdk.Events{
+		sdk.NewEvent(
+			sdk.EventTypeMessage,
+			sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
+			sdk.NewAttribute(sdk.AttributeKeySender, msg.CosmosSender),
+		),
+		sdk.NewEvent(
+			types.EventTypeSetNativeToken,
+			sdk.NewAttribute(types.AttributeKeyCosmosSender, msg.CosmosSender),
+			sdk.NewAttribute(types.AttributeKeyNetworkDescriptor, msg.NetworkDescriptor.String()),
+			sdk.NewAttribute(types.AttributeKeyNativeToken, msg.NativeToken),
+		),
+	})
 
 	return &types.MsgSetNativeTokenResponse{}, nil
 }

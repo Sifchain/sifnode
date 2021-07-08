@@ -7,6 +7,7 @@ var (
 	EventTypeBurn                     = "burn"
 	EventTypeLock                     = "lock"
 	EventTypeUpdateWhiteListValidator = "update_whitelist_validator"
+	EventTypeSetNativeToken           = "set_native_token"
 
 	AttributeKeyEthereumSender      = "ethereum_sender"
 	AttributeKeyEthereumSenderNonce = "ethereum_sender_nonce"
@@ -27,6 +28,8 @@ var (
 	AttributeKeyCosmosSenderSequence = "cosmos_sender_sequence"
 	AttributeKeyEthereumReceiver     = "ethereum_receiver"
 	AttributeKeyNetworkDescriptor    = "network_id"
+	AttributeKeyNativeToken    = "native_token"
+
 
 	AttributeValueCategory = ModuleName
 )

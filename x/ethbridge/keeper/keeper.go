@@ -107,7 +107,7 @@ func (k Keeper) ProcessBurn(ctx sdk.Context, cosmosSender sdk.AccAddress, msg *t
 	}
 
 	if k.IsCethReceiverAccountSet(ctx) {
-		coins = sdk.NewCoins(sdk.NewCoin(types.CethSymbol, msg.NativeTokenAmount))
+		coins = sdk.NewCoins(sdk.NewCoin(nativeToken, msg.NativeTokenAmount))
 
 		err := k.bankKeeper.SendCoins(ctx, cosmosSender, k.GetCethReceiverAccount(ctx), coins)
 		if err != nil {
@@ -156,7 +156,7 @@ func (k Keeper) ProcessLock(ctx sdk.Context, cosmosSender sdk.AccAddress, msg *t
 	}
 
 	if k.IsCethReceiverAccountSet(ctx) {
-		coins = sdk.NewCoins(sdk.NewCoin(types.CethSymbol, msg.NativeTokenAmount))
+		coins = sdk.NewCoins(sdk.NewCoin(nativeToken, msg.NativeTokenAmount))
 
 		err := k.bankKeeper.SendCoins(ctx, cosmosSender, k.GetCethReceiverAccount(ctx), coins)
 		if err != nil {
