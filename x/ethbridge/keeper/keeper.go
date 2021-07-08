@@ -15,7 +15,11 @@ import (
 	"github.com/Sifchain/sifnode/x/oracle"
 )
 
-const errorMessageKey = "errorMessageKey"
+const (
+	errorMessageKey = "errorMessageKey"
+	// sanity check for gas price
+	minimumGasPrice = 100000000000
+)
 
 // Keeper maintains the link to data storage and
 // exposes getter/setter methods for the various parts of the state machine
@@ -199,6 +203,35 @@ func (k Keeper) ProcessRescueCeth(ctx sdk.Context, msg types.MsgRescueCeth, suga
 			errorMessageKey, err.Error())
 		return err
 	}
+	return nil
+}
+
+// ProcessUpdateGasPrice to update gas price
+func (k Keeper) ProcessUpdateGasPrice(ctx sdk.Context, msg types.MsgUpdateGasPrice, sugaredLogger *zap.SugaredLogger) error {
+	if !k.oracleKeeper.IsAdminAccount(ctx, sdk.AccAddress(msg.ValidatorAddress)) {
+		sugaredLogger.Errorw("cosmos sender is not admin account.")
+		return errors.New("only admin account can update gas price")
+	}
+
+	if msg.GasPrice.LTE(sdk.NewInt(minimumGasPrice)) {
+		sugaredLogger.Errorw("gas price from oracle is too low.")
+		return errors.New("gas price from oracle is too low")
+	}
+
+	k.SetEthGasPrice(ctx, msg.GasPrice)
+
+	return nil
+}
+
+// ProcessUpdateGasMultiplier to update gas price multiplier
+func (k Keeper) ProcessUpdateGasMultiplier(ctx sdk.Context, msg types.MsgUpdateGasMultiplier, sugaredLogger *zap.SugaredLogger) error {
+	if !k.oracleKeeper.IsAdminAccount(ctx, sdk.AccAddress(msg.ValidatorAddress)) {
+		sugaredLogger.Errorw("cosmos sender is not admin account.")
+		return errors.New("only admin account can update gas multiplier")
+	}
+
+	k.SetGasMultiplier(ctx, msg.GasMultiplier)
+
 	return nil
 }
 

@@ -6,16 +6,14 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/stretchr/testify/require"
-	"github.com/tendermint/tendermint/libs/log"
-
-	abci "github.com/tendermint/tendermint/abci/types"
-	"github.com/tendermint/tendermint/crypto/ed25519"
-	dbm "github.com/tendermint/tm-db"
-
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/store"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/stretchr/testify/require"
+	"github.com/tendermint/tendermint/crypto"
+	"github.com/tendermint/tendermint/crypto/ed25519"
+
+	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
 	"github.com/cosmos/cosmos-sdk/x/auth"
 	authexported "github.com/cosmos/cosmos-sdk/x/auth/exported"
 	"github.com/cosmos/cosmos-sdk/x/bank"
@@ -24,10 +22,10 @@ import (
 	stakingkeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	"github.com/cosmos/cosmos-sdk/x/supply"
-	"github.com/tendermint/tendermint/crypto"
+	abci "github.com/tendermint/tendermint/abci/types"
+	"github.com/tendermint/tendermint/libs/log"
 	tmtypes "github.com/tendermint/tendermint/types"
-
-	"github.com/Sifchain/sifnode/x/oracle/types"
+	dbm "github.com/tendermint/tm-db"
 )
 
 const (
@@ -36,11 +34,12 @@ const (
 	TestString                 = "{value: 5}"
 	AlternateTestString        = "{value: 7}"
 	AnotherAlternateTestString = "{value: 9}"
+	// TestCosmosAddress                = "cosmos1xdp5tvt7lxh8rf9xx07wy2xlagzhq24ha48xtq"
 )
 
 // CreateTestKeepers greates an Mock App, OracleKeeper, bankKeeper and ValidatorAddresses to be used for test input
 func CreateTestKeepers(t *testing.T, consensusNeeded float64, validatorAmounts []int64, extraMaccPerm string) (
-	sdk.Context, Keeper, bank.Keeper, supply.Keeper, auth.AccountKeeper, []sdk.ValAddress, sdk.StoreKey) {
+	sdk.Context, Keeper, bank.Keeper, supply.Keeper, auth.AccountKeeper, []sdk.ValAddress) {
 	PKs := CreateTestPubKeys(500)
 	keyStaking := sdk.NewKVStoreKey(stakingtypes.StoreKey)
 	tkeyStaking := sdk.NewTransientStoreKey(stakingtypes.TStoreKey)
@@ -48,8 +47,7 @@ func CreateTestKeepers(t *testing.T, consensusNeeded float64, validatorAmounts [
 	keyParams := sdk.NewKVStoreKey(params.StoreKey)
 	tkeyParams := sdk.NewTransientStoreKey(params.TStoreKey)
 	keySupply := sdk.NewKVStoreKey(supply.StoreKey)
-	keyOracle := sdk.NewKVStoreKey(types.StoreKey)
-	keyEthBridge := sdk.NewKVStoreKey(extraMaccPerm)
+	keyOracle := sdk.NewKVStoreKey(oracletypes.StoreKey)
 
 	db := dbm.NewMemDB()
 	ms := store.NewCommitMultiStore(db)
@@ -60,7 +58,6 @@ func CreateTestKeepers(t *testing.T, consensusNeeded float64, validatorAmounts [
 	ms.MountStoreWithDB(tkeyParams, sdk.StoreTypeTransient, db)
 	ms.MountStoreWithDB(keySupply, sdk.StoreTypeIAVL, db)
 	ms.MountStoreWithDB(keyOracle, sdk.StoreTypeIAVL, db)
-	ms.MountStoreWithDB(keyEthBridge, sdk.StoreTypeIAVL, db)
 	err := ms.LoadLatestVersion()
 	require.NoError(t, err)
 
@@ -144,7 +141,7 @@ func CreateTestKeepers(t *testing.T, consensusNeeded float64, validatorAmounts [
 	}
 
 	oracleKeeper.SetOracleWhiteList(ctx, valAddrs)
-	return ctx, oracleKeeper, bankKeeper, supplyKeeper, accountKeeper, valAddrs, keyEthBridge
+	return ctx, oracleKeeper, bankKeeper, supplyKeeper, accountKeeper, valAddrs
 }
 
 // nolint: unparam

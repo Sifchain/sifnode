@@ -23,4 +23,6 @@ const (
 var (
 	PeggyTokenKeyPrefix       = []byte{0x00}
 	CethReceiverAccountPrefix = []byte{0x01}
+	EthGasPricePrefix         = []byte{0x02}
+	GasMultiplierPrefix       = []byte{0x03}
 )

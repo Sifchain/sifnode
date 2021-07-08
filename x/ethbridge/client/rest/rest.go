@@ -60,6 +60,7 @@ func RegisterRESTRoutes(cliCtx context.CLIContext, r *mux.Router, storeName stri
 		getProphecyHandler(cliCtx, storeName)).Methods("GET")
 	r.HandleFunc(fmt.Sprintf("/%s/burn", storeName), burnOrLockHandler(cliCtx, "burn")).Methods("POST")
 	r.HandleFunc(fmt.Sprintf("/%s/lock", storeName), burnOrLockHandler(cliCtx, "lock")).Methods("POST")
+	r.HandleFunc(fmt.Sprintf("/gasPrice"), getGasPriceHandler(cliCtx, storeName)).Methods("GET")
 }
 
 func createClaimHandler(cliCtx context.CLIContext) http.HandlerFunc {
@@ -155,6 +156,22 @@ func getProphecyHandler(cliCtx context.CLIContext, storeName string) http.Handle
 		route := fmt.Sprintf("custom/%s/%s", storeName, types.QueryEthProphecy)
 		res, _, err := cliCtx.QueryWithData(route, bz)
 		if err != nil {
+			rest.WriteErrorResponse(w, http.StatusNotFound, err.Error())
+			return
+		}
+
+		rest.PostProcessResponse(w, cliCtx, res)
+	}
+}
+
+func getGasPriceHandler(cliCtx context.CLIContext, storeName string) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+
+		route := fmt.Sprintf("custom/%s/%s", storeName, types.QueryGasPrice)
+		fmt.Printf("getGasPriceHandler route is %s\n", route)
+		res, _, err := cliCtx.Query(route)
+		if err != nil {
+			fmt.Printf("error is %s\n", err.Error())
 			rest.WriteErrorResponse(w, http.StatusNotFound, err.Error())
 			return
 		}

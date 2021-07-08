@@ -10,6 +10,7 @@ import (
 // query endpoints supported by the oracle Querier
 const (
 	QueryEthProphecy = "prophecies"
+	QueryGasPrice    = "gasPrice"
 )
 
 // QueryEthProphecyParams defines the params for the following queries:
@@ -64,4 +65,9 @@ func (response QueryEthProphecyResponse) String() string {
 	}
 
 	return string(prophecyJSON)
+}
+
+// QueryGasPriceResponse
+type QueryGasPriceResponse struct {
+	GasPrice string `json:"gasPrice"`
 }

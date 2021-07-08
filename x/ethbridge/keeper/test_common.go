@@ -6,13 +6,11 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/stretchr/testify/require"
-	"github.com/tendermint/tendermint/libs/log"
+	"github.com/Sifchain/sifnode/x/ethbridge/types"
+	// "github.com/Sifchain/sifnode/x/oracle"
 
-	abci "github.com/tendermint/tendermint/abci/types"
-	"github.com/tendermint/tendermint/crypto/ed25519"
-	dbm "github.com/tendermint/tm-db"
-
+	oracle "github.com/Sifchain/sifnode/x/oracle"
+	oracleTypes "github.com/Sifchain/sifnode/x/oracle/types"
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/store"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -24,12 +22,13 @@ import (
 	stakingkeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	"github.com/cosmos/cosmos-sdk/x/supply"
+	"github.com/stretchr/testify/require"
+	abci "github.com/tendermint/tendermint/abci/types"
 	"github.com/tendermint/tendermint/crypto"
+	"github.com/tendermint/tendermint/crypto/ed25519"
+	"github.com/tendermint/tendermint/libs/log"
 	tmtypes "github.com/tendermint/tendermint/types"
-
-	"github.com/Sifchain/sifnode/x/ethbridge/types"
-	oracle "github.com/Sifchain/sifnode/x/oracle"
-	oracleTypes "github.com/Sifchain/sifnode/x/oracle/types"
+	dbm "github.com/tendermint/tm-db"
 )
 
 const (
@@ -43,7 +42,7 @@ const (
 
 // CreateTestKeepers greates an Mock App, OracleKeeper, bankKeeper and ValidatorAddresses to be used for test input
 func CreateTestKeepers(t *testing.T, consensusNeeded float64, validatorAmounts []int64, extraMaccPerm string) (
-	sdk.Context, Keeper, bank.Keeper, supply.Keeper, auth.AccountKeeper, []sdk.ValAddress) {
+	sdk.Context, Keeper, oracle.Keeper, bank.Keeper, supply.Keeper, auth.AccountKeeper, []sdk.ValAddress, sdk.StoreKey) {
 	PKs := CreateTestPubKeys(500)
 	keyStaking := sdk.NewKVStoreKey(stakingtypes.StoreKey)
 	tkeyStaking := sdk.NewTransientStoreKey(stakingtypes.TStoreKey)
@@ -124,6 +123,7 @@ func CreateTestKeepers(t *testing.T, consensusNeeded float64, validatorAmounts [
 	stakingKeeper := staking.NewKeeper(cdc, keyStaking, supplyKeeper, paramsKeeper.Subspace(staking.DefaultParamspace))
 	stakingKeeper.SetParams(ctx, stakingtypes.DefaultParams())
 	oracleKeeper := oracle.NewKeeper(cdc, keyOracle, stakingKeeper, consensusNeeded)
+	bridgeKeeper := NewKeeper(cdc, supplyKeeper, oracleKeeper, keyEthBridge)
 
 	// set module accounts
 	err = notBondedPool.SetCoins(totalSupply)
@@ -155,7 +155,7 @@ func CreateTestKeepers(t *testing.T, consensusNeeded float64, validatorAmounts [
 
 	oracleKeeper.SetOracleWhiteList(ctx, valAddrs)
 
-	return ctx, ethbridgeKeeper, bankKeeper, supplyKeeper, accountKeeper, valAddrs
+	return ctx, bridgeKeeper, oracleKeeper, bankKeeper, supplyKeeper, accountKeeper, valAddrs, keyEthBridge
 }
 
 // nolint: unparam

@@ -21,6 +21,16 @@ var (
 	errorMessageKey           = "errorMessage"
 )
 
+// SendGasPrice applies validator's signature to an updateGasPrice message containing
+// information about Ethereum block number and gas price
+func SendGasPrice(cdc *codec.Codec, moniker, password string, validator sdk.ValAddress, blockNumber sdk.Int, gasPrice sdk.Int, cliCtx context.CLIContext,
+	txBldr authtypes.TxBuilder, sugaredLogger *zap.SugaredLogger) error {
+
+	msg := ethbridge.NewMsgUpdateGasPrice(validator, blockNumber, gasPrice)
+
+	return sendMessagesToCosmos(cdc, moniker, password, []sdk.Msg{msg}, cliCtx, txBldr, sugaredLogger)
+}
+
 // RelayToCosmos applies validator's signature to an EthBridgeClaim message containing
 // information about an event on the Ethereum blockchain before relaying to the Bridge
 func RelayToCosmos(cdc *codec.Codec, moniker, password string, claims []types.EthBridgeClaim, cliCtx context.CLIContext,
@@ -44,6 +54,13 @@ func RelayToCosmos(cdc *codec.Codec, moniker, password string, claims []types.Et
 			messages = append(messages, msg)
 		}
 	}
+
+	return sendMessagesToCosmos(cdc, moniker, password, messages, cliCtx, txBldr, sugaredLogger)
+}
+
+// sendMessagesToCosmos send the messages to cosmos
+func sendMessagesToCosmos(cdc *codec.Codec, moniker, password string, messages []sdk.Msg, cliCtx context.CLIContext,
+	txBldr authtypes.TxBuilder, sugaredLogger *zap.SugaredLogger) error {
 
 	// Prepare tx
 	txBldr, err := utils.PrepareTxBuilder(txBldr, cliCtx)

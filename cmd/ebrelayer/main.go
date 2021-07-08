@@ -73,6 +73,7 @@ func init() {
 		replayEthereumCmd(),
 		replayCosmosCmd(),
 		listMissedCosmosEventCmd(),
+		startGasOracle(),
 	)
 }
 
@@ -256,6 +257,19 @@ func listMissedCosmosEventCmd() *cobra.Command {
 	}
 
 	return listMissedCosmosEventCmd
+}
+
+func startGasOracle() *cobra.Command {
+	//nolint:lll
+	startGasOracleCmd := &cobra.Command{
+		Use:     "startGasOracle [tendermintNode] [web3Provider] [validatorMoniker] [validatorMnemonic]",
+		Short:   "start gas oracle service",
+		Args:    cobra.ExactArgs(4),
+		Example: "startGasOracle tcp://localhost:26657 ws://localhost:7545/ validator mnemonic --chain-id=peggy",
+		RunE:    RunStartGasOracleCmd,
+	}
+
+	return startGasOracleCmd
 }
 
 func main() {

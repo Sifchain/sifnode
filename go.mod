@@ -15,6 +15,7 @@ require (
 	github.com/ethereum/go-ethereum v1.9.6
 	github.com/fjl/memsize v0.0.0-20190710130421-bcb5799ab5e5 // indirect
 	github.com/gballet/go-libpcsclite v0.0.0-20191108122812-4678299bea08 // indirect
+	github.com/go-kit/kit v0.10.0
 	github.com/golang/mock v1.4.3 // indirect
 	github.com/golang/protobuf v1.4.3 // indirect
 	github.com/google/go-cmp v0.5.2 // indirect
@@ -26,6 +27,7 @@ require (
 	github.com/joho/godotenv v1.3.0
 	github.com/karalabe/usb v0.0.0-20191104083709-911d15fe12a9 // indirect
 	github.com/kr/text v0.2.0 // indirect
+	github.com/libp2p/go-libp2p-crypto v0.1.0
 	github.com/magiconair/properties v1.8.3 // indirect
 	github.com/mattn/go-colorable v0.1.7 // indirect
 	github.com/mattn/go-runewidth v0.0.4 // indirect

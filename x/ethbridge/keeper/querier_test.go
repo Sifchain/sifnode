@@ -7,9 +7,6 @@ import (
 	"github.com/stretchr/testify/require"
 	abci "github.com/tendermint/tendermint/abci/types"
 
-	"github.com/Sifchain/sifnode/x/oracle"
-	keeperLib "github.com/Sifchain/sifnode/x/oracle/keeper"
-
 	"github.com/Sifchain/sifnode/x/ethbridge/types"
 )
 
@@ -19,15 +16,15 @@ const (
 )
 
 func TestNewQuerier(t *testing.T) {
-	ctx, oracleKeeper, _, _, _, _, _ := oracle.CreateTestKeepers(t, 0.7, []int64{3, 3}, "")
-	cdc := keeperLib.MakeTestCodec()
+	ctx, ethbridgeKeeper, oracleKeeper, _, _, _, _, _ := CreateTestKeepers(t, 0.7, []int64{3, 3}, "")
+	cdc := MakeTestCodec()
 
 	query := abci.RequestQuery{
 		Path: "",
 		Data: []byte{},
 	}
 
-	querier := NewQuerier(oracleKeeper, cdc)
+	querier := NewQuerier(oracleKeeper, cdc, ethbridgeKeeper)
 
 	//Test wrong paths
 	bz, err := querier(ctx, []string{"other"}, query)
@@ -36,8 +33,8 @@ func TestNewQuerier(t *testing.T) {
 }
 
 func TestQueryEthProphecy(t *testing.T) {
-	ctx, oracleKeeper, _, _, _, validatorAddresses, _ := oracle.CreateTestKeepers(t, 0.7, []int64{3, 7}, "")
-	cdc := keeperLib.MakeTestCodec()
+	ctx, _, oracleKeeper, _, _, _, validatorAddresses, _ := CreateTestKeepers(t, 0.7, []int64{3, 7}, "")
+	cdc := MakeTestCodec()
 
 	valAddress := validatorAddresses[0]
 	testEthereumAddress := types.NewEthereumAddress(types.TestEthereumAddress)

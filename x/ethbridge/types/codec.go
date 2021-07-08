@@ -12,6 +12,8 @@ func RegisterCodec(cdc *codec.Codec) {
 	cdc.RegisterConcrete(MsgUpdateWhiteListValidator{}, "ethbridge/MsgUpdateWhiteListValidator", nil)
 	cdc.RegisterConcrete(MsgUpdateCethReceiverAccount{}, "ethbridge/MsgUpdateCethReceiverAccount", nil)
 	cdc.RegisterConcrete(MsgRescueCeth{}, "ethbridge/MsgRescueCeth", nil)
+	cdc.RegisterConcrete(MsgUpdateGasPrice{}, "ethbridge/MsgUpdateGasPrice", nil)
+	cdc.RegisterConcrete(MsgUpdateGasMultiplier{}, "ethbridge/MsgUpdateGasMultiplier", nil)
 
 }
 
