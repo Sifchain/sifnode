@@ -47,11 +47,11 @@ func (k Keeper) Logger(ctx sdk.Context) log.Logger {
 	return ctx.Logger().With("module", fmt.Sprintf("x/%s", types.ModuleName))
 }
 
+// GetProphecies returns all prophecies
 func (k Keeper) GetProphecies(ctx sdk.Context) []types.Prophecy {
 	var prophecies []types.Prophecy
 	store := ctx.KVStore(k.storeKey)
 	iter := sdk.KVStorePrefixIterator(store, types.ProphecyPrefix)
-	// iter := store.Iterator(types.ProphecyPrefix, types.NativeTokenPrefix)
 	for ; iter.Valid(); iter.Next() {
 		var prophecy types.Prophecy
 		k.cdc.MustUnmarshalBinaryBare(iter.Value(), &prophecy)

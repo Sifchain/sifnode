@@ -7,7 +7,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-// SetNativeToken set the validator list for a network.
+// SetNativeToken set the native token for a network.
 func (k Keeper) SetNativeToken(ctx sdk.Context, networkIdentity types.NetworkIdentity, token string) {
 	store := ctx.KVStore(k.storeKey)
 	key := networkIdentity.GetNativeTokenPrefix()
