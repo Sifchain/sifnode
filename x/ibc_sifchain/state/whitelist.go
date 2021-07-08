@@ -1,4 +1,4 @@
-package keeper
+package state
 
 import (
 	"github.com/Sifchain/sifnode/x/ibc_sifchain/types"

@@ -2,7 +2,7 @@ package ibc_sifchain
 
 import (
 	"fmt"
-	"github.com/Sifchain/sifnode/x/ibc_sifchain/keeper"
+	"github.com/Sifchain/sifnode/x/ibc_sifchain/state"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
@@ -66,7 +66,7 @@ func isWhitelisted(ctx sdk.Context, packet channeltypes.Packet, data transfertyp
 	//    b) Token should be a direct transfer it should not have any jumps
 	//    c) The port and channel should have been whitelisted
 	// All the above conditions can be a met by whitelisting the trace hash of the token .
-	whitelist, err := keeper.GetWhiteList(ctx, cdc)
+	whitelist, err := state.GetWhiteList(ctx, cdc)
 	if err != nil {
 		return false, errors.New("Whitelist not present")
 	}
