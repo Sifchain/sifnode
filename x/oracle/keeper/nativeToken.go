@@ -15,7 +15,7 @@ func (k Keeper) SetNativeToken(ctx sdk.Context, networkIdentity types.NetworkIde
 	store.Set(key, k.cdc.MustMarshalBinaryBare(&nativeToken))
 }
 
-// GetNativeToken return validator list
+// GetNativeToken return native token
 func (k Keeper) GetNativeToken(ctx sdk.Context, networkIdentity types.NetworkIdentity) (string, error) {
 	store := ctx.KVStore(k.storeKey)
 	key := networkIdentity.GetNativeTokenPrefix()
