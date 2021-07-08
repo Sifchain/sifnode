@@ -1,4 +1,4 @@
-package ibc_transfer
+package ibc_sifchain
 
 import (
 	ibc_transfer "github.com/cosmos/cosmos-sdk/x/ibc/applications/transfer"

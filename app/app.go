@@ -1,7 +1,7 @@
 package app
 
 import (
-	"github.com/Sifchain/sifnode/x/ibc_transfer"
+	"github.com/Sifchain/sifnode/x/ibc_sifchain"
 	//"github.com/cosmos/cosmos-sdk/x/ibc/applications/transfer"
 	"io"
 	"math/big"
@@ -113,7 +113,7 @@ var (
 		slashing.AppModuleBasic{},
 		evidence.AppModuleBasic{},
 		ibc.AppModuleBasic{},
-		ibc_transfer.CosmosAppModuleBasic{},
+		ibc_sifchain.CosmosAppModuleBasic{},
 
 		clp.AppModuleBasic{},
 		oracle.AppModuleBasic{},
@@ -334,7 +334,7 @@ func NewSifApp(
 		app.IBCKeeper.ChannelKeeper, &app.IBCKeeper.PortKeeper,
 		app.AccountKeeper, app.BankKeeper, scopedTransferKeeper,
 	)
-	transferModule := ibc_transfer.NewAppModule(app.TransferKeeper)
+	transferModule := ibc_sifchain.NewAppModule(app.TransferKeeper, appCodec)
 	//transferModule := transfer.NewAppModule(app.TransferKeeper)
 
 	// NOTE: the IBC mock keeper and application module is used only for testing core IBC. Do

@@ -9,9 +9,9 @@ sifnoded start --home ~/.sifnode-2 --p2p.laddr 0.0.0.0:27656  --grpc.address 0.0
 sifnoded start --home ~/.sifnode-1 --p2p.laddr 0.0.0.0:27655  --grpc.address 0.0.0.0:9090 --address tcp://0.0.0.0:27659 --rpc.laddr tcp://127.0.0.1:27657 >> abci_1.log 2>&1  &
 rm -rf ~/.ibc-setup/last-queried-heights.json
 #Reset connections
-ibc-setup ics20 --mnemonic "race draft rival universe maid cheese steel logic crowd fork comic easy truth drift tomorrow eye buddy head time cash swing swift midnight borrow" --home ~/.ibc-12
+ibc-setup ics20 --mnemonic "race draft rival universe maid cheese steel logic crowd fork comic easy truth drift tomorrow eye buddy head time cash swing swift midnight borrow" --home ~/.ibc-122
 ibc-setup ics20 --mnemonic "race draft rival universe maid cheese steel logic crowd fork comic easy truth drift tomorrow eye buddy head time cash swing swift midnight borrow" --home ~/.ibc-31
-ibc-relayer start -i -v --poll 10 --home ~/.ibc-12
+ibc-relayer start -i -v --poll 10 --home ~/.ibc-122
 ibc-relayer start -i -v --poll 10 --home ~/.ibc-23
 ibc-relayer start -i -v --poll 10 --home ~/.ibc-31
 #Created channel:
@@ -21,12 +21,12 @@ ibc-relayer start -i -v --poll 10 --home ~/.ibc-31
 #sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd
 #sifnoded q bank balances sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd --node tcp://127.0.0.1:27665
 #sifnoded q bank balances sif1l7hypmqk2yc334vc6vmdwzp5sdefygj2ad93p5 --node tcp://127.0.0.1:27666
-#sifnoded q bank balances sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd --node tcp://127.0.0.1:27667
+#sifnoded q bank balances sif1l7hypmqk2yc334vc6vmdwzp5sdefygj2ad93p5 --node tcp://127.0.0.1:27667
 #
 #sifnoded tx ibc-transfer transfer transfer channel-0 sif1l7hypmqk2yc334vc6vmdwzp5sdefygj2ad93p5 100rowan --node tcp://127.0.0.1:27665 --chain-id=localnet-1 --from=akasha --log_level=debug --gas-prices=0.5rowan --keyring-backend test  --home ~/.sifnode-1
-#sifnoded tx ibc-transfer transfer transfer channel-0 sif1l7hypmqk2yc334vc6vmdwzp5sdefygj2ad93p5 50ibc/E0263CEED41F926DCE9A805F0358074873E478B515A94DF202E6B69E29DA6178 --node tcp://127.0.0.1:27666 --chain-id=localnet-2 --from=akasha --log_level=debug --gas-prices=0.5rowan --keyring-backend test  --home ~/.sifnode-2
+#sifnoded tx ibc-transfer transfer transfer channel-2 sif1l7hypmqk2yc334vc6vmdwzp5sdefygj2ad93p5 50ibc/E0263CEED41F926DCE9A805F0358074873E478B515A94DF202E6B69E29DA6178 --node tcp://127.0.0.1:27666 --chain-id=localnet-2 --from=akasha --log_level=debug --gas-prices=0.5rowan --keyring-backend test  --home ~/.sifnode-2
 #sifnoded tx ibc-transfer transfer transfer channel-0 sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd 50ibc/4C2B3D3B398FC7B8FFA3A96314006FF0B38E3BFC4CE90D8EE46E9EB6768A482D --node tcp://127.0.0.1:27666 --chain-id=localnet-2 --from=sif --log_level=debug --gas-prices=0.5rowan --keyring-backend test  --home ~/.sifnode-2
-#sifnoded tx ibc-transfer transfer transfer channel-0 sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd 100ibc/E88F204AF3078655F031629A67CA335460C85BA53173BB20ACB34752E5D93070 --node tcp://127.0.0.1:27667 --chain-id=localnet-3 --from=sif --log_level=debug --gas-prices=0.5rowan --keyring-backend test  --home ~/.sifnode-3
+#sifnoded tx ibc-transfer transfer transfer channel-1 sif1l7hypmqk2yc334vc6vmdwzp5sdefygj2ad93p5 50ibc/5C3977A32007D22B1845B57076D0E27C3159C3067B11B9CEF6FA551D71DAEDD6 --node tcp://127.0.0.1:27667 --chain-id=localnet-3 --from=akasha --log_level=debug --gas-prices=0.5rowan --keyring-backend test  --home ~/.sifnode-3
 
 
 Test 1
@@ -111,3 +111,7 @@ Denom :  transfer/channel-1/rowan
 
 
 
+Transfer  1-2 : rowan : 4CE5019F09EDEBC793F1B90547638F6E00B5E5F4CB37D10585EAF9A3981376FF  / minted : E0263CEED41F926DCE9A805F0358074873E478B515A94DF202E6B69E29DA6178
+Transfer  2-3 : transfer/channel-0/rowan : E0263CEED41F926DCE9A805F0358074873E478B515A94DF202E6B69E29DA6178 minted : 5C3977A32007D22B1845B57076D0E27C3159C3067B11B9CEF6FA551D71DAEDD6
+Transfer  2-1 : Returning to source | Denom : transfer/channel-0/rowan , SourcePort : transfer , SourceChannel : channel-0
+TRasfer   3-1 : transfer/channel-0/transfer/channel-0/rowan : 5C3977A32007D22B1845B57076D0E27C3159C3067B11B9CEF6FA551D71DAEDD6 minted : F3A091ED158AE3605D066E6A27AAEE9AD98ABEA8894CF9F2621D20A3CD381BE3

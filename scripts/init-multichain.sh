@@ -106,4 +106,7 @@ sifnoded start --home ~/.sifnode-1 --p2p.laddr 0.0.0.0:27655  --grpc.address 0.0
 sifnoded start --home ~/.sifnode-2 --p2p.laddr 0.0.0.0:27656  --grpc.address 0.0.0.0:9091 --address tcp://0.0.0.0:27660 --rpc.laddr tcp://127.0.0.1:27666 >> abci_2.log 2>&1  &
 sifnoded start --home ~/.sifnode-3 --p2p.laddr 0.0.0.0:27657  --grpc.address 0.0.0.0:9092 --address tcp://0.0.0.0:27661 --rpc.laddr tcp://127.0.0.1:27667 >> abci_3.log 2>&1  &
 rm -rf ~/.ibc-setup/last-queried-heights.json
+rm -rf ~/.ibc-12/last-queried-heights.json
+rm -rf ~/.ibc-23/last-queried-heights.json
+rm -rf ~/.ibc-31/last-queried-heights.json
 

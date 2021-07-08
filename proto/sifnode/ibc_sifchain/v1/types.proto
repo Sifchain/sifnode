@@ -1,0 +1,9 @@
+syntax = "proto3";
+package sifnode.ibc_sifchain.v1;
+
+import "gogoproto/gogo.proto";
+import "cosmos/base/coin.proto";
+
+option go_package = "github.com/Sifchain/sifnode/x/ibc_sifchain/types";
+
+message WhiteList { map<string, bool> denom_whitelist = 1; }

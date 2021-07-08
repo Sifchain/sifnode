@@ -1,4 +1,4 @@
-package ibc_transfer
+package ibc_sifchain
 
 import (
 	"encoding/json"
@@ -80,6 +80,7 @@ type AppModule struct {
 	AppModuleBasic
 	cosmosAppModule CosmosAppModule
 	keeper          Keeper
+	cdc             codec.BinaryMarshaler
 }
 
 func (am AppModule) OnChanOpenInit(ctx sdk.Context, order types.Order, connectionHops []string, portID string, channelID string, channelCap *capabilitytypes.Capability, counterparty types.Counterparty, version string) error {
@@ -107,7 +108,7 @@ func (am AppModule) OnChanCloseConfirm(ctx sdk.Context, portID, channelID string
 }
 
 func (am AppModule) OnRecvPacket(ctx sdk.Context, packet types.Packet) (*sdk.Result, []byte, error) {
-	return OnRecvPacketWhiteListed(am.keeper, ctx, packet)
+	return OnRecvPacketWhiteListed(am.keeper, ctx, packet, am.cdc)
 }
 
 func (am AppModule) OnAcknowledgementPacket(ctx sdk.Context, packet types.Packet, acknowledgement []byte) (*sdk.Result, error) {
@@ -118,12 +119,12 @@ func (am AppModule) OnTimeoutPacket(ctx sdk.Context, packet types.Packet) (*sdk.
 	return am.cosmosAppModule.OnTimeoutPacket(ctx, packet)
 }
 
-// Call this function from app.go
-func NewAppModule(keeper Keeper) AppModule {
+func NewAppModule(keeper Keeper, cdc codec.BinaryMarshaler) AppModule {
 	return AppModule{
 		AppModuleBasic:  AppModuleBasic{},
 		cosmosAppModule: NewCosmosAppModule(keeper),
 		keeper:          keeper,
+		cdc:             cdc,
 	}
 }
 
