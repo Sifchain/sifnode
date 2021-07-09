@@ -178,8 +178,8 @@ func (k Keeper) processCompletion(ctx sdk.Context, networkDescriptor types.Netwo
 }
 
 // ProcessSetNativeToken set native token for a network
-func (k Keeper) ProcessSetNativeToken(ctx sdk.Context, networkDescriptor types.NetworkDescriptor, nativeToken string) error {
-	k.SetNativeToken(ctx, types.NewNetworkIdentity(networkDescriptor), nativeToken)
+func (k Keeper) ProcessSetNativeToken(ctx sdk.Context, networkDescriptor types.NetworkDescriptor, nativeToken string, gas, lockCost, burnCost sdk.Int) error {
+	k.SetNativeToken(ctx, types.NewNetworkIdentity(networkDescriptor), nativeToken, gas, lockCost, burnCost)
 	return nil
 }
 

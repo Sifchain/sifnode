@@ -28,8 +28,10 @@ var (
 	AttributeKeyCosmosSenderSequence = "cosmos_sender_sequence"
 	AttributeKeyEthereumReceiver     = "ethereum_receiver"
 	AttributeKeyNetworkDescriptor    = "network_id"
-	AttributeKeyNativeToken    = "native_token"
-
+	AttributeKeyNativeToken          = "native_token"
+	AttributeKeyNativeTokenGas       = "native_token_gas"
+	AttributeKeyMinimumLockCost      = "minimum_lock_cost"
+	AttributeKeyMinimumBurnCost      = "minimum_burn_cost"
 
 	AttributeValueCategory = ModuleName
 )

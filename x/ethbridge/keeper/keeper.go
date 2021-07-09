@@ -100,14 +100,18 @@ func (k Keeper) ProcessBurn(ctx sdk.Context, cosmosSender sdk.AccAddress, msg *t
 	logger := k.Logger(ctx)
 	var coins sdk.Coins
 	networkIdentity := oracletypes.NewNetworkIdentity(msg.NetworkDescriptor)
-	nativeToken, err := k.oracleKeeper.GetNativeToken(ctx, networkIdentity)
+	nativeTokenConfig, err := k.oracleKeeper.GetNativeTokenConfig(ctx, networkIdentity)
 
 	if err != nil {
 		return err
 	}
 
+	if msg.NativeTokenAmount.LT(nativeTokenConfig.MinimumLockCost) {
+		return errors.New("native token amount in message less than minimum lock")
+	}
+
 	if k.IsCethReceiverAccountSet(ctx) {
-		coins = sdk.NewCoins(sdk.NewCoin(nativeToken, msg.NativeTokenAmount))
+		coins = sdk.NewCoins(sdk.NewCoin(nativeTokenConfig.NativeToken, msg.NativeTokenAmount))
 
 		err := k.bankKeeper.SendCoins(ctx, cosmosSender, k.GetCethReceiverAccount(ctx), coins)
 		if err != nil {
@@ -122,7 +126,7 @@ func (k Keeper) ProcessBurn(ctx sdk.Context, cosmosSender sdk.AccAddress, msg *t
 		if msg.Symbol == types.CethSymbol {
 			coins = sdk.NewCoins(sdk.NewCoin(types.CethSymbol, msg.NativeTokenAmount.Add(msg.Amount)))
 		} else {
-			coins = sdk.NewCoins(sdk.NewCoin(msg.Symbol, msg.Amount), sdk.NewCoin(nativeToken, msg.NativeTokenAmount))
+			coins = sdk.NewCoins(sdk.NewCoin(msg.Symbol, msg.Amount), sdk.NewCoin(nativeTokenConfig.NativeToken, msg.NativeTokenAmount))
 		}
 	}
 
@@ -149,14 +153,18 @@ func (k Keeper) ProcessLock(ctx sdk.Context, cosmosSender sdk.AccAddress, msg *t
 	logger := k.Logger(ctx)
 	var coins sdk.Coins
 	networkIdentity := oracletypes.NewNetworkIdentity(msg.NetworkDescriptor)
-	nativeToken, err := k.oracleKeeper.GetNativeToken(ctx, networkIdentity)
+	nativeTokenConfig, err := k.oracleKeeper.GetNativeTokenConfig(ctx, networkIdentity)
 
 	if err != nil {
 		return err
 	}
 
+	if msg.NativeTokenAmount.LT(nativeTokenConfig.MinimumLockCost) {
+		return errors.New("native token amount in message less than minimum lock")
+	}
+
 	if k.IsCethReceiverAccountSet(ctx) {
-		coins = sdk.NewCoins(sdk.NewCoin(nativeToken, msg.NativeTokenAmount))
+		coins = sdk.NewCoins(sdk.NewCoin(nativeTokenConfig.NativeToken, msg.NativeTokenAmount))
 
 		err := k.bankKeeper.SendCoins(ctx, cosmosSender, k.GetCethReceiverAccount(ctx), coins)
 		if err != nil {
@@ -168,7 +176,7 @@ func (k Keeper) ProcessLock(ctx sdk.Context, cosmosSender sdk.AccAddress, msg *t
 		coins = sdk.NewCoins(sdk.NewCoin(msg.Symbol, msg.Amount))
 
 	} else {
-		coins = sdk.NewCoins(sdk.NewCoin(msg.Symbol, msg.Amount), sdk.NewCoin(nativeToken, msg.NativeTokenAmount))
+		coins = sdk.NewCoins(sdk.NewCoin(msg.Symbol, msg.Amount), sdk.NewCoin(nativeTokenConfig.NativeToken, msg.NativeTokenAmount))
 	}
 
 	err = k.bankKeeper.SendCoinsFromAccountToModule(ctx, cosmosSender, types.ModuleName, coins)
@@ -249,7 +257,7 @@ func (k Keeper) ProcessSetNativeToken(ctx sdk.Context, msg *types.MsgSetNativeTo
 		logger.Error("cosmos sender is not admin account.")
 		return errors.New("only admin account can set native token")
 	}
-	return k.oracleKeeper.ProcessSetNativeToken(ctx, msg.NetworkDescriptor, msg.NativeToken)
+	return k.oracleKeeper.ProcessSetNativeToken(ctx, msg.NetworkDescriptor, msg.NativeToken, msg.NativeGas, msg.MinimumBurnCost, msg.MinimumLockCost)
 }
 
 // Exists chec if the key existed in db.

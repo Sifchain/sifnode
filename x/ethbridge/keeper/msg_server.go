@@ -348,7 +348,11 @@ func (srv msgServer) SetNativeToken(goCtx context.Context, msg *types.MsgSetNati
 		"CosmosSender", msg.CosmosSender,
 		"CosmosSenderSequence", strconv.FormatUint(account.GetSequence(), 10),
 		"NetworkDescriptor", msg.NetworkDescriptor,
-		"NativeToken", msg.NativeToken)
+		"NativeToken", msg.NativeToken,
+		"NativeTokenGas", msg.NativeGas.String(),
+		"minimum_lock_cost", msg.MinimumLockCost.String(),
+		"minimum_burn_cost", msg.MinimumBurnCost.String(),
+	)
 
 	ctx.EventManager().EmitEvents(sdk.Events{
 		sdk.NewEvent(
@@ -361,6 +365,9 @@ func (srv msgServer) SetNativeToken(goCtx context.Context, msg *types.MsgSetNati
 			sdk.NewAttribute(types.AttributeKeyCosmosSender, msg.CosmosSender),
 			sdk.NewAttribute(types.AttributeKeyNetworkDescriptor, msg.NetworkDescriptor.String()),
 			sdk.NewAttribute(types.AttributeKeyNativeToken, msg.NativeToken),
+			sdk.NewAttribute(types.AttributeKeyNativeTokenGas, msg.NativeGas.String()),
+			sdk.NewAttribute(types.AttributeKeyMinimumLockCost, msg.MinimumLockCost.String()),
+			sdk.NewAttribute(types.AttributeKeyMinimumBurnCost, msg.MinimumBurnCost.String()),
 		),
 	})
 
