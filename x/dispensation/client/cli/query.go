@@ -155,12 +155,9 @@ func GetCmdClaimsByType(queryRoute string) *cobra.Command {
 			if err != nil {
 				return err
 			}
-			var claims types.UserClaims
-			types.ModuleCdc.MustUnmarshalJSON(res, &claims)
-			out := types.QueryClaimsResponse{
-				Claims: claims.UserClaims,
-				Height: height,
-			}
+			var out types.QueryClaimsResponse
+			types.ModuleCdc.MustUnmarshalJSON(res, &out)
+			out.Height = height
 			return clientCtx.PrintProto(&out)
 		},
 	}
