@@ -364,7 +364,7 @@ def add_credentials_arguments(parser: argparse.ArgumentParser) -> argparse.Argum
         type=str,
         nargs=1,
         default=[""],
-        help="--from argument for sifnodecli"
+        help="--from argument for sifnoded"
     )
     parser.add_argument(
         '--sifnodecli_homedir',

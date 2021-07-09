@@ -45,7 +45,7 @@ def build_request() -> (EthereumToSifchainTransferRequest, SifchaincliCredential
 
 # if there's an existing user1 key, just remove it.  Otherwise, adding a duplicate key will just hang
 try:
-    test_utilities.get_shell_output(f"sifnodecli keys delete user1 --home /home/vagrant/.sifnodecli --keyring-backend test -o json")
+    test_utilities.get_shell_output(f"sifnoded keys delete user1 --home /home/vagrant/.sifnoded --keyring-backend test -o json")
 except:
     logging.debug("no key to delete, this is normal in a fresh environment")
 request, credentials = build_request()

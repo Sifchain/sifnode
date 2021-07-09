@@ -33,7 +33,7 @@ def send_sample_rowan(from_address, to_address, amount, keyring_backend, chain_i
     keyring_backend_entry = f"--keyring-backend {keyring_backend}"
     output = 'output.json'
     cmd = " ".join([
-        "sifnodecli tx send",
+        "sifnoded tx send",
         f"{from_address}",
         f"{to_address}",
         f"{amount}",
@@ -51,7 +51,7 @@ def send_sample_rowan(from_address, to_address, amount, keyring_backend, chain_i
 # CODE TO QUERY BLOCK FOR NEW DISPENSATION TXN
 def query_block_claim(txnhash):
     cmd = " ".join([
-        "sifnodecli q tx",
+        "sifnoded q tx",
         f"{txnhash}",
         "--chain-id localnet",
         "-o json"
@@ -64,7 +64,7 @@ def query_block_claim(txnhash):
 def balance_check(address, currency):
     logging.debug(f"check_balance")
     cmd = " ".join([
-        "sifnodecli query account",
+        "sifnoded query account",
         f"{address}",
         f"-o json"
     ])
@@ -87,7 +87,7 @@ def create_online_singlekey_txn(
     keyring_backend_entry = f"--keyring-backend test"
     output = 'output.json'
     cmd = " ".join([
-        "sifnodecli tx dispensation create",
+        "sifnoded tx dispensation create",
         f"{claimType}",
         output,
         sifchain_fees_entry,
@@ -116,7 +116,7 @@ def create_online_singlekey_async_txn(
     keyring_backend_entry = f"--keyring-backend test"
     output = 'output.json'
     cmd = " ".join([
-        "sifnodecli tx dispensation create",
+        "sifnoded tx dispensation create",
         f"{claimType}",
         output,
         sifchain_fees_entry,
@@ -145,7 +145,7 @@ def create_offline_singlekey_txn(
     sifchain_fees_entry = f"--gas auto"
     output = 'output.json'
     cmd = " ".join([
-        "sifnodecli tx dispensation create",
+        "sifnoded tx dispensation create",
         f"{claimType}",
         output,
         f"--from {signing_address}",
@@ -164,7 +164,7 @@ def create_offline_singlekey_txn(
 def sign_txn(signingaddress, offlinetx):
     keyring_backend_entry = f"--keyring-backend test"
     cmd = " ".join([
-        "sifnodecli tx sign",
+        "sifnoded tx sign",
         f"--from {signingaddress}",
         f"{offlinetx}",
         keyring_backend_entry,
@@ -177,7 +177,7 @@ def sign_txn(signingaddress, offlinetx):
 #CODE TO BROADCAST SINGLE SIGNED TXN ON BLOCK
 def broadcast_txn(signedtx):
     cmd = " ".join([
-        "sifnodecli tx broadcast",
+        "sifnoded tx broadcast",
         f"{signedtx}",
         f"--yes -o json"
     ])
@@ -188,7 +188,7 @@ def broadcast_txn(signedtx):
 #CODE TO BROADCAST SINGLE SIGNED TXN ON BLOCK WITH AN ASYNC FLAG
 def broadcast_async_txn(signedtx):
     cmd = " ".join([
-        "sifnodecli tx broadcast",
+        "sifnoded tx broadcast",
         f"{signedtx}",
         f"--broadcast-mode async",
         f"--yes -o json"
@@ -209,7 +209,7 @@ def create_online_singlekey_txn_with_runner(
     keyring_backend_entry = f"--keyring-backend test"
     output = 'output.json'
     cmd = " ".join([
-        "sifnodecli tx dispensation create",
+        "sifnoded tx dispensation create",
         f"{claimType}",
         output,
         runner_address,
@@ -240,7 +240,7 @@ def create_offline_singlekey_txn_with_runner(
     keyring_backend_entry = f"--keyring-backend test"
     output = 'output.json'
     cmd = " ".join([
-        "sifnodecli tx dispensation create",
+        "sifnoded tx dispensation create",
         f"{claimType}",
         output,
         runner_address,
@@ -270,7 +270,7 @@ def run_dispensation(
     keyring_backend_entry = f"--keyring-backend test"
     output = 'output.json'
     cmd = " ".join([
-        "sifnodecli tx dispensation run",
+        "sifnoded tx dispensation run",
         distribution_name,
         f"{claimType}",
         f"--from {runner_address}",
@@ -290,7 +290,7 @@ def run_dispensation(
 #CODE TO QUERY A NEW CLAIM 
 def query_created_claim(claimType):
     cmd = " ".join([
-        "sifnodecli q dispensation claims-by-type",
+        "sifnoded q dispensation claims-by-type",
         f"{claimType}",
         "--chain-id localnet",
         f"-o json"
@@ -310,7 +310,7 @@ def create_claim(
     keyring_backend_entry = f"--keyring-backend {keyring_backend}"     
     sifchain_fees_entry = f"--fees 100000rowan"
     cmd = " ".join([
-        "sifnodecli tx dispensation claim",
+        "sifnoded tx dispensation claim",
         f"{claimType}",
         f"--from {sifchain_address}",
         sifchain_fees_entry,

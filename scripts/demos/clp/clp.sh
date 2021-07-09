@@ -38,7 +38,7 @@ echo "decommission pool"
 sleep 8
 sifnoded tx clp decommission-pool --from sif --symbol ceth --yes
 
-echo "sifnodecli query clp pools "
+echo "sifnoded query clp pools "
 echo "Should list only 1 pool , user has been added as admin"
 
 

@@ -23,7 +23,7 @@ type CreateClaimReq struct {
 (This step can be done through CLI on friday , or process events throughout the week . Processing events would be the preferred approach)
 This query through the cli would look like
 ```shell
-sifnodecli q dispensation claims-by-type ValidatorSubsidy --chain-id sifchain --node tcp://rpc.sifchain.finance:80
+sifnoded q dispensation claims-by-type ValidatorSubsidy --chain-id sifchain --node tcp://rpc.sifchain.finance:80
 ```
 Which returns 
 ```json
@@ -114,15 +114,15 @@ After parsing should become
 
 ### This file is then used to create a distribution
 ```shell
-sifnodecli tx dispensation create mkey ar1 ValidatorSubsidy input.json output.json --gas 200064128 --generate-only >> offlinetx.json
+sifnoded tx dispensation create mkey ar1 ValidatorSubsidy input.json output.json --gas 200064128 --generate-only >> offlinetx.json
 # First user signs
-sifnodecli tx sign --multisig $(sifnodecli keys show mkey -a) --from $(sifnodecli keys show sif -a)  offlinetx.json >> sig1.json
+sifnoded tx sign --multisig $(sifnoded keys show mkey -a) --from $(sifnoded keys show sif -a)  offlinetx.json >> sig1.json
 # Second user signs
-sifnodecli tx sign --multisig $(sifnodecli keys show mkey -a) --from $(sifnodecli keys show akasha -a)  offlinetx.json >> sig2.json
+sifnoded tx sign --multisig $(sifnoded keys show mkey -a) --from $(sifnoded keys show akasha -a)  offlinetx.json >> sig2.json
 # Multisign created from the above signatures
-sifnodecli tx multisign offlinetx.json mkey sig1.json sig2.json >> signedtx.json
+sifnoded tx multisign offlinetx.json mkey sig1.json sig2.json >> signedtx.json
 # transaction broadcast , distribution happens
-sifnodecli tx broadcast signedtx.json
+sifnoded tx broadcast signedtx.json
 ```
 ### Post Dispensation
 - Suppose we do the dispensation at height X , The block results should contain this event 
