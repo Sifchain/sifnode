@@ -1,14 +1,14 @@
 desc "validator operations"
 namespace :validator do
   desc "Stake a node so it can participate in consensus"
-  task :stake, [:chainnet, :moniker, :amount, :gas, :pub_key, :node] do |t, args|
+  task :stake, [:chainnet, :moniker, :amount, :gas, :gas_prices, :pub_key, :node] do |t, args|
     node = if args[:node].nil?
              "tcp://127.0.0.1:26657"
            else
              args[:node]
            end
 
-    cmd = %Q{sifnodecli tx staking create-validator \
+    cmd = %Q{sifnoded tx staking create-validator \
             --commission-max-change-rate="0.1" \
             --commission-max-rate="0.1" \
             --commission-rate="0.1" \
@@ -16,7 +16,8 @@ namespace :validator do
             --pubkey=#{args[:pub_key]} \
             --chain-id=#{args[:chainnet]} \
             --min-self-delegation="1" \
-            --gas-prices=#{args[:gas]} \
+            --gas=#{args[:gas]} \
+            --gas-prices=#{args[:gas_prices]} \
             --moniker=#{args[:moniker]} \
             --from=#{args[:moniker]} \
             --keyring-backend=file \

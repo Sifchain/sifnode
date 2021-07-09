@@ -22,6 +22,7 @@ import (
 	cosmosbridge "github.com/Sifchain/sifnode/cmd/ebrelayer/contract/generated/bindings/cosmosbridge"
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/txs"
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/types"
+	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	ethTypes "github.com/ethereum/go-ethereum/core/types"
@@ -43,20 +44,23 @@ const errorMessageKey = "errorMessage"
 type CosmosSub struct {
 	TmProvider              string
 	EthProvider             string
-	RegistryContractAddress common.Address
 	PrivateKey              *ecdsa.PrivateKey
 	DB                      *leveldb.DB
 	SugaredLogger           *zap.SugaredLogger
+	NetworkDescriptor       oracletypes.NetworkDescriptor
+	RegistryContractAddress common.Address
 }
 
 // NewCosmosSub initializes a new CosmosSub
-func NewCosmosSub(tmProvider, ethProvider string, registryContractAddress common.Address,
-	privateKey *ecdsa.PrivateKey, db *leveldb.DB, sugaredLogger *zap.SugaredLogger) CosmosSub {
+func NewCosmosSub(networkDescriptor oracletypes.NetworkDescriptor, privateKey *ecdsa.PrivateKey, tmProvider, ethProvider string, registryContractAddress common.Address,
+	db *leveldb.DB, sugaredLogger *zap.SugaredLogger) CosmosSub {
+
 	return CosmosSub{
+		NetworkDescriptor:       networkDescriptor,
 		TmProvider:              tmProvider,
+		PrivateKey:              privateKey,
 		EthProvider:             ethProvider,
 		RegistryContractAddress: registryContractAddress,
-		PrivateKey:              privateKey,
 		DB:                      db,
 		SugaredLogger:           sugaredLogger,
 	}
@@ -167,7 +171,9 @@ func (sub CosmosSub) Start(completionEvent *sync.WaitGroup) {
 									errorMessageKey, err.Error())
 								continue
 							}
-							sub.handleBurnLockMsg(cosmosMsg, claimType)
+							if cosmosMsg.NetworkDescriptor == sub.NetworkDescriptor {
+								sub.handleBurnLockMsg(cosmosMsg, claimType)
+							}
 						}
 					}
 				}
@@ -348,11 +354,12 @@ func (sub CosmosSub) Replay(fromBlock int64, toBlock int64, ethFromBlock int64, 
 						continue
 					}
 					log.Printf("found out a lock burn message%s\n", cosmosMsg.String())
-
-					if !MessageProcessed(cosmosMsg, ProphecyClaims) {
-						sub.handleBurnLockMsg(cosmosMsg, claimType)
-					} else {
-						log.Println("lock burn message already processed by me")
+					if cosmosMsg.NetworkDescriptor == sub.NetworkDescriptor {
+						if !MessageProcessed(cosmosMsg, ProphecyClaims) {
+							sub.handleBurnLockMsg(cosmosMsg, claimType)
+						} else {
+							log.Println("lock burn message already processed by me")
+						}
 					}
 				}
 			}
@@ -400,7 +407,7 @@ func tryInitRelayConfig(sub CosmosSub, claimType types.Event) (*ethclient.Client
 func (sub CosmosSub) handleBurnLockMsg(
 	cosmosMsg types.CosmosMsg,
 	claimType types.Event,
-	) {
+) {
 	sub.SugaredLogger.Infow("handle burn lock message.",
 		"cosmosMessage", cosmosMsg.String())
 

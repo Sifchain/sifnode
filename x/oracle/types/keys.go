@@ -17,4 +17,6 @@ const (
 var (
 	WhiteListValidatorPrefix = []byte{0x00}
 	AdminAccountPrefix       = []byte{0x01}
+	ProphecyPrefix           = []byte{0x02}
+	NativeTokenPrefix        = []byte{0x03}
 )

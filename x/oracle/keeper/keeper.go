@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -36,106 +37,112 @@ func NewKeeper(
 	}
 }
 
+// GetCdc return keeper's cdc
+func (k Keeper) GetCdc() codec.BinaryMarshaler {
+	return k.cdc
+}
+
 // Logger returns a module-specific logger.
 func (k Keeper) Logger(ctx sdk.Context) log.Logger {
 	return ctx.Logger().With("module", fmt.Sprintf("x/%s", types.ModuleName))
 }
 
-// GetProphecy gets the entire prophecy data struct for a given id
-func (k Keeper) GetProphecy(ctx sdk.Context, id string) (types.Prophecy, bool) {
+// GetProphecies returns all prophecies
+func (k Keeper) GetProphecies(ctx sdk.Context) []types.Prophecy {
+	var prophecies []types.Prophecy
 	store := ctx.KVStore(k.storeKey)
-	bz := store.Get([]byte(id))
+	iter := sdk.KVStorePrefixIterator(store, types.ProphecyPrefix)
+	for ; iter.Valid(); iter.Next() {
+		var prophecy types.Prophecy
+		k.cdc.MustUnmarshalBinaryBare(iter.Value(), &prophecy)
+		prophecies = append(prophecies, prophecy)
+	}
+	return prophecies
+}
+
+// GetProphecy gets the entire prophecy data struct for a given id
+func (k Keeper) GetProphecy(ctx sdk.Context, prophecyID []byte) (types.Prophecy, bool) {
+
+	store := ctx.KVStore(k.storeKey)
+	bz := store.Get(append(types.ProphecyPrefix, prophecyID[:]...))
+
 	if bz == nil {
 		return types.Prophecy{}, false
 	}
 
-	var dbProphecy types.DBProphecy
-	k.cdc.MustUnmarshalBinaryBare(bz, &dbProphecy)
+	var prophecy types.Prophecy
+	k.cdc.MustUnmarshalBinaryBare(bz, &prophecy)
 
-	deSerializedProphecy, err := dbProphecy.DeserializeFromDB()
-	if err != nil {
-		return types.Prophecy{}, false
-	}
-
-	return deSerializedProphecy, true
+	return prophecy, true
 }
 
-// setProphecy saves a prophecy with an initial claim
-func (k Keeper) setProphecy(ctx sdk.Context, prophecy types.Prophecy) {
+// SetProphecy saves a prophecy with an initial claim
+func (k Keeper) SetProphecy(ctx sdk.Context, prophecy types.Prophecy) {
 	store := ctx.KVStore(k.storeKey)
-	serializedProphecy, err := prophecy.SerializeForDB()
-	if err != nil {
-		panic(err)
-	}
 
-	store.Set([]byte(prophecy.ID), k.cdc.MustMarshalBinaryBare(&serializedProphecy))
+	storePrefix := append(types.ProphecyPrefix, prophecy.Id[:]...)
+
+	store.Set(storePrefix, k.cdc.MustMarshalBinaryBare(&prophecy))
 }
 
-func (k Keeper) EnsureAddressIsInWhitelist(ctx sdk.Context, validatorAddress string) error {
-	// Check if claim from whitelist validators
-	whiteList := k.GetOracleWhiteList(ctx)
-	for _, address := range whiteList {
-		if address.String() == validatorAddress {
-			return nil
-		}
-	}
-
-	k.Logger(ctx).Error(
-		"sifnode oracle keeper ProcessClaim validator not in whitelist",
-		"address", validatorAddress,
-		"whitelist", whiteList)
-
-	return types.ErrValidatorNotInWhiteList
-}
-
-func (k Keeper) ProcessClaim(ctx sdk.Context, claim types.Claim) (types.Status, error) {
+// ProcessClaim handle claim
+func (k Keeper) ProcessClaim(ctx sdk.Context, networkDescriptor types.NetworkDescriptor, prophecyID []byte, validator string) (types.StatusText, error) {
 	logger := k.Logger(ctx)
+	networkIdentity := types.NewNetworkIdentity(networkDescriptor)
 
-	if err := k.EnsureAddressIsInWhitelist(ctx, claim.ValidatorAddress); err != nil {
-		return types.Status{}, err
+	valAddr, err := sdk.ValAddressFromBech32(validator)
+	if err != nil {
+		return types.StatusText_STATUS_TEXT_UNSPECIFIED, err
 	}
 
-	valAddr, err := sdk.ValAddressFromBech32(claim.ValidatorAddress)
-	if err != nil {
-		return types.Status{}, err
+	if !k.ValidateAddress(ctx, networkIdentity, valAddr) {
+		logger.Error("sifnode oracle keeper ProcessClaim validator not white list.")
+		return types.StatusText_STATUS_TEXT_UNSPECIFIED, errors.New("validator not in white list")
 	}
 
 	activeValidator := k.checkActiveValidator(ctx, valAddr)
 	if !activeValidator {
 		logger.Error("sifnode oracle keeper ProcessClaim validator not active.")
-		return types.Status{}, types.ErrInvalidValidator
+		return types.StatusText_STATUS_TEXT_UNSPECIFIED, types.ErrInvalidValidator
 	}
 
-	if claim.Id == "" {
-		logger.Error("sifnode oracle keeper ProcessClaim wrong claim id.", "claimID", claim.Id)
-		return types.Status{}, types.ErrInvalidIdentifier
+	if len(prophecyID) == 0 {
+		logger.Error("sifnode oracle keeper ProcessClaim wrong claim id.", "claimID", prophecyID)
+		return types.StatusText_STATUS_TEXT_UNSPECIFIED, types.ErrInvalidIdentifier
 	}
 
-	if claim.Content == "" {
-		logger.Error("sifnode oracle keeper ProcessClaim claim content is empty.")
-		return types.Status{}, types.ErrInvalidClaim
+	prophecy, ok := k.GetProphecy(ctx, prophecyID)
+	if !ok {
+		prophecy.Id = prophecyID
+		prophecy.Status = types.StatusText_STATUS_TEXT_PENDING
 	}
 
-	prophecy, found := k.GetProphecy(ctx, claim.Id)
-	if !found {
-		prophecy = types.NewProphecy(claim.Id)
-	}
-	switch prophecy.Status.Text {
+	switch prophecy.Status {
 	case types.StatusText_STATUS_TEXT_PENDING:
-		// continue processing
+
+		err = prophecy.AddClaim(valAddr)
+		if err != nil {
+			return types.StatusText_STATUS_TEXT_UNSPECIFIED, err
+
+		}
+
+		prophecy = k.processCompletion(ctx, networkDescriptor, prophecy)
+		k.SetProphecy(ctx, prophecy)
+		return prophecy.Status, nil
+
+	case types.StatusText_STATUS_TEXT_SUCCESS:
+
+		err = prophecy.AddClaim(valAddr)
+		if err != nil {
+			return types.StatusText_STATUS_TEXT_UNSPECIFIED, err
+		}
+		k.SetProphecy(ctx, prophecy)
+		return prophecy.Status, types.ErrProphecyFinalized
+
 	default:
-		return types.Status{}, types.ErrProphecyFinalized
+		return types.StatusText_STATUS_TEXT_UNSPECIFIED, types.ErrInvalidProphecyStatus
 	}
 
-	if prophecy.ValidatorClaims[claim.ValidatorAddress] != "" {
-		return types.Status{}, types.ErrDuplicateMessage
-	}
-
-	prophecy.AddClaim(valAddr, claim.Content)
-	prophecy = k.processCompletion(ctx, prophecy)
-
-	k.setProphecy(ctx, prophecy)
-	return prophecy.Status, nil
 }
 
 func (k Keeper) checkActiveValidator(ctx sdk.Context, validatorAddress sdk.ValAddress) bool {
@@ -148,46 +155,32 @@ func (k Keeper) checkActiveValidator(ctx sdk.Context, validatorAddress sdk.ValAd
 }
 
 // ProcessUpdateWhiteListValidator processes the update whitelist validator from admin
-func (k Keeper) ProcessUpdateWhiteListValidator(ctx sdk.Context, cosmosSender sdk.AccAddress, validator sdk.ValAddress, operationtype string) error {
+func (k Keeper) ProcessUpdateWhiteListValidator(ctx sdk.Context, networkDescriptor types.NetworkDescriptor, cosmosSender sdk.AccAddress, validator sdk.ValAddress, power uint32) error {
 	logger := k.Logger(ctx)
 	if !k.IsAdminAccount(ctx, cosmosSender) {
 		logger.Error("cosmos sender is not admin account.")
 		return types.ErrNotAdminAccount
 	}
 
-	switch operationtype {
-	case "add":
-		k.AddOracleWhiteList(ctx, validator)
-	case "remove":
-		k.RemoveOracleWhiteList(ctx, validator)
-	default:
-		return types.ErrInvalidOperationType
-	}
-
+	k.UpdateOracleWhiteList(ctx, types.NewNetworkIdentity(networkDescriptor), validator, power)
 	return nil
 }
 
 // processCompletion looks at a given prophecy
-// an assesses whether the claim with the highest power on that prophecy has enough
-// power to be considered successful, or alternatively,
-// will never be able to become successful due to not enough validation power being
-// left to push it over the threshold required for consensus.
-func (k Keeper) processCompletion(ctx sdk.Context, prophecy types.Prophecy) types.Prophecy {
-	highestClaim, highestClaimPower, totalClaimsPower, totalPower := prophecy.FindHighestClaim(ctx, k.stakeKeeper, k.GetOracleWhiteList(ctx))
+func (k Keeper) processCompletion(ctx sdk.Context, networkDescriptor types.NetworkDescriptor, prophecy types.Prophecy) types.Prophecy {
+	whiteList := k.GetOracleWhiteList(ctx, types.NewNetworkIdentity(networkDescriptor))
+	voteRate := whiteList.GetPowerRatio(prophecy.ClaimValidators)
 
-	highestConsensusRatio := float64(highestClaimPower) / float64(totalPower)
-	remainingPossibleClaimPower := totalPower - totalClaimsPower
-	highestPossibleClaimPower := highestClaimPower + remainingPossibleClaimPower
-	highestPossibleConsensusRatio := float64(highestPossibleClaimPower) / float64(totalPower)
-
-	if highestConsensusRatio >= k.consensusNeeded {
-		prophecy.Status.Text = types.StatusText_STATUS_TEXT_SUCCESS
-		prophecy.Status.FinalClaim = highestClaim
-	} else if highestPossibleConsensusRatio < k.consensusNeeded {
-		prophecy.Status.Text = types.StatusText_STATUS_TEXT_FAILED
+	if voteRate >= k.consensusNeeded {
+		prophecy.Status = types.StatusText_STATUS_TEXT_SUCCESS
 	}
-
 	return prophecy
+}
+
+// ProcessSetNativeToken set native token for a network
+func (k Keeper) ProcessSetNativeToken(ctx sdk.Context, networkDescriptor types.NetworkDescriptor, nativeToken string, gas, lockCost, burnCost sdk.Int) error {
+	k.SetNativeToken(ctx, types.NewNetworkIdentity(networkDescriptor), nativeToken, gas, lockCost, burnCost)
+	return nil
 }
 
 // Exists check if the key exists

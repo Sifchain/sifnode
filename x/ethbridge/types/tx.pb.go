@@ -6,6 +6,7 @@ package types
 import (
 	context "context"
 	fmt "fmt"
+	types "github.com/Sifchain/sifnode/x/oracle/types"
 	github_com_cosmos_cosmos_sdk_types "github.com/cosmos/cosmos-sdk/types"
 	_ "github.com/gogo/protobuf/gogoproto"
 	grpc1 "github.com/gogo/protobuf/grpc"
@@ -31,12 +32,12 @@ const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
 // MsgLock defines a message for locking coins and triggering a related event
 type MsgLock struct {
-	CosmosSender     string                                 `protobuf:"bytes,1,opt,name=cosmos_sender,json=cosmosSender,proto3" json:"cosmos_sender,omitempty"`
-	Amount           github_com_cosmos_cosmos_sdk_types.Int `protobuf:"bytes,2,opt,name=amount,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Int" json:"amount" yaml:"amount"`
-	Symbol           string                                 `protobuf:"bytes,3,opt,name=symbol,proto3" json:"symbol,omitempty" yaml:"symbol"`
-	EthereumChainId  int64                                  `protobuf:"varint,4,opt,name=ethereum_chain_id,json=ethereumChainId,proto3" json:"ethereum_chain_id,omitempty" yaml:"ethereum_chain_id"`
-	EthereumReceiver string                                 `protobuf:"bytes,5,opt,name=ethereum_receiver,json=ethereumReceiver,proto3" json:"ethereum_receiver,omitempty" yaml:"ethereum_receiver"`
-	CethAmount       github_com_cosmos_cosmos_sdk_types.Int `protobuf:"bytes,6,opt,name=ceth_amount,json=cethAmount,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Int" json:"ceth_amount" yaml:"ceth_amount"`
+	CosmosSender      string                                 `protobuf:"bytes,1,opt,name=cosmos_sender,json=cosmosSender,proto3" json:"cosmos_sender,omitempty"`
+	Amount            github_com_cosmos_cosmos_sdk_types.Int `protobuf:"bytes,2,opt,name=amount,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Int" json:"amount" yaml:"amount"`
+	Symbol            string                                 `protobuf:"bytes,3,opt,name=symbol,proto3" json:"symbol,omitempty" yaml:"symbol"`
+	NetworkDescriptor types.NetworkDescriptor                `protobuf:"varint,4,opt,name=network_descriptor,json=networkDescriptor,proto3,enum=sifnode.oracle.v1.NetworkDescriptor" json:"network_descriptor,omitempty" yaml:"network_descriptor"`
+	EthereumReceiver  string                                 `protobuf:"bytes,5,opt,name=ethereum_receiver,json=ethereumReceiver,proto3" json:"ethereum_receiver,omitempty" yaml:"ethereum_receiver"`
+	NativeTokenAmount github_com_cosmos_cosmos_sdk_types.Int `protobuf:"bytes,6,opt,name=native_token_amount,json=nativeTokenAmount,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Int" json:"native_token_amount" yaml:"native_token_amount"`
 }
 
 func (m *MsgLock) Reset()         { *m = MsgLock{} }
@@ -86,11 +87,11 @@ func (m *MsgLock) GetSymbol() string {
 	return ""
 }
 
-func (m *MsgLock) GetEthereumChainId() int64 {
+func (m *MsgLock) GetNetworkDescriptor() types.NetworkDescriptor {
 	if m != nil {
-		return m.EthereumChainId
+		return m.NetworkDescriptor
 	}
-	return 0
+	return types.NetworkDescriptor_NETWORK_DESCRIPTOR_UNSPECIFIED
 }
 
 func (m *MsgLock) GetEthereumReceiver() string {
@@ -138,12 +139,12 @@ var xxx_messageInfo_MsgLockResponse proto.InternalMessageInfo
 
 // MsgBurn defines a message for burning coins and triggering a related event
 type MsgBurn struct {
-	CosmosSender     string                                 `protobuf:"bytes,1,opt,name=cosmos_sender,json=cosmosSender,proto3" json:"cosmos_sender,omitempty" yaml:"cosmos_sender"`
-	Amount           github_com_cosmos_cosmos_sdk_types.Int `protobuf:"bytes,2,opt,name=amount,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Int" json:"amount" yaml:"amount"`
-	Symbol           string                                 `protobuf:"bytes,3,opt,name=symbol,proto3" json:"symbol,omitempty" yaml:"symbol"`
-	EthereumChainId  int64                                  `protobuf:"varint,4,opt,name=ethereum_chain_id,json=ethereumChainId,proto3" json:"ethereum_chain_id,omitempty" yaml:"ethereum_chain_id"`
-	EthereumReceiver string                                 `protobuf:"bytes,5,opt,name=ethereum_receiver,json=ethereumReceiver,proto3" json:"ethereum_receiver,omitempty" yaml:"ethereum_receiver"`
-	CethAmount       github_com_cosmos_cosmos_sdk_types.Int `protobuf:"bytes,6,opt,name=ceth_amount,json=cethAmount,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Int" json:"ceth_amount" yaml:"ceth_amount"`
+	CosmosSender      string                                 `protobuf:"bytes,1,opt,name=cosmos_sender,json=cosmosSender,proto3" json:"cosmos_sender,omitempty" yaml:"cosmos_sender"`
+	Amount            github_com_cosmos_cosmos_sdk_types.Int `protobuf:"bytes,2,opt,name=amount,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Int" json:"amount" yaml:"amount"`
+	Symbol            string                                 `protobuf:"bytes,3,opt,name=symbol,proto3" json:"symbol,omitempty" yaml:"symbol"`
+	NetworkDescriptor types.NetworkDescriptor                `protobuf:"varint,4,opt,name=network_descriptor,json=networkDescriptor,proto3,enum=sifnode.oracle.v1.NetworkDescriptor" json:"network_descriptor,omitempty" yaml:"network_descriptor"`
+	EthereumReceiver  string                                 `protobuf:"bytes,5,opt,name=ethereum_receiver,json=ethereumReceiver,proto3" json:"ethereum_receiver,omitempty" yaml:"ethereum_receiver"`
+	NativeTokenAmount github_com_cosmos_cosmos_sdk_types.Int `protobuf:"bytes,6,opt,name=native_token_amount,json=nativeTokenAmount,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Int" json:"native_token_amount" yaml:"native_token_amount"`
 }
 
 func (m *MsgBurn) Reset()         { *m = MsgBurn{} }
@@ -193,11 +194,11 @@ func (m *MsgBurn) GetSymbol() string {
 	return ""
 }
 
-func (m *MsgBurn) GetEthereumChainId() int64 {
+func (m *MsgBurn) GetNetworkDescriptor() types.NetworkDescriptor {
 	if m != nil {
-		return m.EthereumChainId
+		return m.NetworkDescriptor
 	}
-	return 0
+	return types.NetworkDescriptor_NETWORK_DESCRIPTOR_UNSPECIFIED
 }
 
 func (m *MsgBurn) GetEthereumReceiver() string {
@@ -325,9 +326,10 @@ var xxx_messageInfo_MsgCreateEthBridgeClaimResponse proto.InternalMessageInfo
 
 // MsgUpdateWhiteListValidator add or remove validator from whitelist
 type MsgUpdateWhiteListValidator struct {
-	CosmosSender  string `protobuf:"bytes,1,opt,name=cosmos_sender,json=cosmosSender,proto3" json:"cosmos_sender,omitempty" yaml:"cosmos_sender"`
-	Validator     string `protobuf:"bytes,2,opt,name=validator,proto3" json:"validator,omitempty" yaml:"validator"`
-	OperationType string `protobuf:"bytes,3,opt,name=operation_type,json=operationType,proto3" json:"operation_type,omitempty" yaml:"operation_type"`
+	NetworkDescriptor types.NetworkDescriptor `protobuf:"varint,1,opt,name=network_descriptor,json=networkDescriptor,proto3,enum=sifnode.oracle.v1.NetworkDescriptor" json:"network_descriptor,omitempty" yaml:"network_descriptor"`
+	CosmosSender      string                  `protobuf:"bytes,2,opt,name=cosmos_sender,json=cosmosSender,proto3" json:"cosmos_sender,omitempty" yaml:"cosmos_sender"`
+	Validator         string                  `protobuf:"bytes,3,opt,name=validator,proto3" json:"validator,omitempty" yaml:"validator"`
+	Power             uint32                  `protobuf:"varint,4,opt,name=power,proto3" json:"power,omitempty"`
 }
 
 func (m *MsgUpdateWhiteListValidator) Reset()         { *m = MsgUpdateWhiteListValidator{} }
@@ -363,6 +365,13 @@ func (m *MsgUpdateWhiteListValidator) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_MsgUpdateWhiteListValidator proto.InternalMessageInfo
 
+func (m *MsgUpdateWhiteListValidator) GetNetworkDescriptor() types.NetworkDescriptor {
+	if m != nil {
+		return m.NetworkDescriptor
+	}
+	return types.NetworkDescriptor_NETWORK_DESCRIPTOR_UNSPECIFIED
+}
+
 func (m *MsgUpdateWhiteListValidator) GetCosmosSender() string {
 	if m != nil {
 		return m.CosmosSender
@@ -377,11 +386,11 @@ func (m *MsgUpdateWhiteListValidator) GetValidator() string {
 	return ""
 }
 
-func (m *MsgUpdateWhiteListValidator) GetOperationType() string {
+func (m *MsgUpdateWhiteListValidator) GetPower() uint32 {
 	if m != nil {
-		return m.OperationType
+		return m.Power
 	}
-	return ""
+	return 0
 }
 
 type MsgUpdateWhiteListValidatorResponse struct {
@@ -597,6 +606,105 @@ func (m *MsgRescueCethResponse) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_MsgRescueCethResponse proto.InternalMessageInfo
 
+type MsgSetNativeToken struct {
+	CosmosSender      string                                 `protobuf:"bytes,1,opt,name=cosmos_sender,json=cosmosSender,proto3" json:"cosmos_sender,omitempty"`
+	NetworkDescriptor types.NetworkDescriptor                `protobuf:"varint,2,opt,name=network_descriptor,json=networkDescriptor,proto3,enum=sifnode.oracle.v1.NetworkDescriptor" json:"network_descriptor,omitempty" yaml:"network_descriptor"`
+	NativeToken       string                                 `protobuf:"bytes,3,opt,name=native_token,json=nativeToken,proto3" json:"native_token,omitempty"`
+	NativeGas         github_com_cosmos_cosmos_sdk_types.Int `protobuf:"bytes,4,opt,name=native_gas,json=nativeGas,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Int" json:"native_gas" yaml:"native_gas"`
+	MinimumLockCost   github_com_cosmos_cosmos_sdk_types.Int `protobuf:"bytes,5,opt,name=minimum_lock_cost,json=minimumLockCost,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Int" json:"minimum_lock_cost" yaml:"minimum_lock_cost"`
+	MinimumBurnCost   github_com_cosmos_cosmos_sdk_types.Int `protobuf:"bytes,6,opt,name=minimum_burn_cost,json=minimumBurnCost,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Int" json:"minimum_burn_cost" yaml:"minimum_burn_cost"`
+}
+
+func (m *MsgSetNativeToken) Reset()         { *m = MsgSetNativeToken{} }
+func (m *MsgSetNativeToken) String() string { return proto.CompactTextString(m) }
+func (*MsgSetNativeToken) ProtoMessage()    {}
+func (*MsgSetNativeToken) Descriptor() ([]byte, []int) {
+	return fileDescriptor_44d60f3dabe1980f, []int{12}
+}
+func (m *MsgSetNativeToken) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *MsgSetNativeToken) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_MsgSetNativeToken.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *MsgSetNativeToken) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MsgSetNativeToken.Merge(m, src)
+}
+func (m *MsgSetNativeToken) XXX_Size() int {
+	return m.Size()
+}
+func (m *MsgSetNativeToken) XXX_DiscardUnknown() {
+	xxx_messageInfo_MsgSetNativeToken.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_MsgSetNativeToken proto.InternalMessageInfo
+
+func (m *MsgSetNativeToken) GetCosmosSender() string {
+	if m != nil {
+		return m.CosmosSender
+	}
+	return ""
+}
+
+func (m *MsgSetNativeToken) GetNetworkDescriptor() types.NetworkDescriptor {
+	if m != nil {
+		return m.NetworkDescriptor
+	}
+	return types.NetworkDescriptor_NETWORK_DESCRIPTOR_UNSPECIFIED
+}
+
+func (m *MsgSetNativeToken) GetNativeToken() string {
+	if m != nil {
+		return m.NativeToken
+	}
+	return ""
+}
+
+type MsgSetNativeTokenResponse struct {
+}
+
+func (m *MsgSetNativeTokenResponse) Reset()         { *m = MsgSetNativeTokenResponse{} }
+func (m *MsgSetNativeTokenResponse) String() string { return proto.CompactTextString(m) }
+func (*MsgSetNativeTokenResponse) ProtoMessage()    {}
+func (*MsgSetNativeTokenResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_44d60f3dabe1980f, []int{13}
+}
+func (m *MsgSetNativeTokenResponse) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *MsgSetNativeTokenResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_MsgSetNativeTokenResponse.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *MsgSetNativeTokenResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MsgSetNativeTokenResponse.Merge(m, src)
+}
+func (m *MsgSetNativeTokenResponse) XXX_Size() int {
+	return m.Size()
+}
+func (m *MsgSetNativeTokenResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_MsgSetNativeTokenResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_MsgSetNativeTokenResponse proto.InternalMessageInfo
+
 func init() {
 	proto.RegisterType((*MsgLock)(nil), "sifnode.ethbridge.v1.MsgLock")
 	proto.RegisterType((*MsgLockResponse)(nil), "sifnode.ethbridge.v1.MsgLockResponse")
@@ -610,61 +718,75 @@ func init() {
 	proto.RegisterType((*MsgUpdateCethReceiverAccountResponse)(nil), "sifnode.ethbridge.v1.MsgUpdateCethReceiverAccountResponse")
 	proto.RegisterType((*MsgRescueCeth)(nil), "sifnode.ethbridge.v1.MsgRescueCeth")
 	proto.RegisterType((*MsgRescueCethResponse)(nil), "sifnode.ethbridge.v1.MsgRescueCethResponse")
+	proto.RegisterType((*MsgSetNativeToken)(nil), "sifnode.ethbridge.v1.MsgSetNativeToken")
+	proto.RegisterType((*MsgSetNativeTokenResponse)(nil), "sifnode.ethbridge.v1.MsgSetNativeTokenResponse")
 }
 
 func init() { proto.RegisterFile("sifnode/ethbridge/v1/tx.proto", fileDescriptor_44d60f3dabe1980f) }
 
 var fileDescriptor_44d60f3dabe1980f = []byte{
-	// 779 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xec, 0x56, 0xcd, 0x6e, 0xd3, 0x40,
-	0x10, 0x8e, 0x49, 0x1b, 0xd4, 0x29, 0xe9, 0x8f, 0x49, 0x55, 0x37, 0x6d, 0xe3, 0xe2, 0xfe, 0x50,
-	0x84, 0x9a, 0xa8, 0x41, 0x1c, 0xa8, 0x84, 0xa0, 0x09, 0x08, 0x2a, 0x35, 0x42, 0x72, 0x81, 0x4a,
-	0x1c, 0xb0, 0x1c, 0x7b, 0x6b, 0x5b, 0x4d, 0xec, 0xc8, 0xbb, 0x09, 0xad, 0xc4, 0x19, 0x21, 0x71,
-	0xe1, 0xc8, 0x53, 0xf4, 0x39, 0x7a, 0xac, 0x38, 0x21, 0x0e, 0x16, 0x6a, 0xdf, 0x20, 0x4f, 0x80,
-	0xbc, 0x6b, 0xbb, 0x89, 0x6a, 0x87, 0x46, 0x5c, 0x38, 0x70, 0x4a, 0x3c, 0xf3, 0x7d, 0xdf, 0xce,
-	0xee, 0xcc, 0xb7, 0x36, 0x2c, 0x62, 0xeb, 0xc0, 0x76, 0x74, 0x54, 0x42, 0xc4, 0xac, 0xbb, 0x96,
-	0x6e, 0xa0, 0x52, 0x67, 0xb3, 0x44, 0x8e, 0x8a, 0x2d, 0xd7, 0x21, 0x0e, 0x9f, 0x0b, 0xd2, 0xc5,
-	0x28, 0x5d, 0xec, 0x6c, 0xe6, 0x73, 0x86, 0x63, 0x38, 0x14, 0x50, 0xf2, 0xff, 0x31, 0x6c, 0x7e,
-	0x29, 0x5e, 0xea, 0xb8, 0x85, 0x30, 0x43, 0x48, 0x27, 0x69, 0xb8, 0x59, 0xc3, 0xc6, 0xae, 0xa3,
-	0x1d, 0xf2, 0xcb, 0x90, 0xd5, 0x1c, 0xdc, 0x74, 0xb0, 0x82, 0x91, 0xad, 0x23, 0x57, 0xe0, 0x96,
-	0xb8, 0xf5, 0x31, 0xf9, 0x16, 0x0b, 0xee, 0xd1, 0x18, 0xbf, 0x0f, 0x19, 0xb5, 0xe9, 0xb4, 0x6d,
-	0x22, 0xdc, 0xf0, 0xb3, 0x95, 0x27, 0xa7, 0x9e, 0x98, 0xfa, 0xe9, 0x89, 0x6b, 0x86, 0x45, 0xcc,
-	0x76, 0xbd, 0xa8, 0x39, 0xcd, 0x12, 0x23, 0x04, 0x3f, 0x1b, 0x58, 0x3f, 0x0c, 0x96, 0xdc, 0xb1,
-	0x49, 0xd7, 0x13, 0xb3, 0xc7, 0x6a, 0xb3, 0xb1, 0x25, 0x31, 0x15, 0x49, 0x0e, 0xe4, 0xf8, 0x7b,
-	0x90, 0xc1, 0xc7, 0xcd, 0xba, 0xd3, 0x10, 0xd2, 0x54, 0x78, 0xfa, 0x12, 0xca, 0xe2, 0x92, 0x1c,
-	0x00, 0xf8, 0x97, 0x30, 0x8d, 0x88, 0x89, 0x5c, 0xd4, 0x6e, 0x2a, 0x9a, 0xa9, 0x5a, 0xb6, 0x62,
-	0xe9, 0xc2, 0xc8, 0x12, 0xb7, 0x9e, 0xae, 0x2c, 0x74, 0x3d, 0x51, 0x60, 0xac, 0x2b, 0x10, 0x49,
-	0x9e, 0x0c, 0x63, 0x55, 0x3f, 0xb4, 0xa3, 0xf3, 0x3b, 0x3d, 0x4a, 0x2e, 0xd2, 0x90, 0xd5, 0x41,
-	0xae, 0x30, 0x4a, 0xd7, 0x8f, 0x53, 0x0a, 0x21, 0x92, 0x3c, 0x15, 0xc6, 0xe4, 0x20, 0xc4, 0x23,
-	0x18, 0xd7, 0x10, 0x31, 0x95, 0xe0, 0x74, 0x32, 0x54, 0xe4, 0xd9, 0xd0, 0xa7, 0xc3, 0xb3, 0x25,
-	0x7b, 0xa4, 0x24, 0x19, 0xfc, 0xa7, 0x6d, 0xf6, 0x30, 0x0d, 0x93, 0x41, 0xbf, 0x64, 0x84, 0x5b,
-	0x8e, 0x8d, 0x91, 0x74, 0xca, 0x7a, 0x58, 0x69, 0xbb, 0x36, 0xff, 0x38, 0xb6, 0x87, 0x15, 0xa1,
-	0xeb, 0x89, 0xb9, 0x40, 0xb9, 0x37, 0x2d, 0xfd, 0xef, 0xee, 0x3f, 0xd8, 0x5d, 0xbf, 0x93, 0x51,
-	0x77, 0x3f, 0x71, 0x30, 0x5b, 0xc3, 0x46, 0xd5, 0x45, 0x2a, 0x41, 0xcf, 0x89, 0x59, 0xa1, 0x3e,
-	0xae, 0x36, 0x54, 0xab, 0xc9, 0x1f, 0x82, 0x5f, 0xa9, 0xc2, 0xac, 0xad, 0x68, 0x7e, 0x8c, 0x36,
-	0x7c, 0xbc, 0xbc, 0x52, 0x8c, 0xbb, 0x26, 0x8a, 0xfd, 0xfc, 0xca, 0x7c, 0xd7, 0x13, 0x67, 0xa3,
-	0x53, 0xe8, 0xd3, 0x91, 0xe4, 0x09, 0xd4, 0x07, 0x96, 0xee, 0x80, 0x98, 0x50, 0x47, 0x54, 0xeb,
-	0x77, 0x0e, 0xe6, 0x6b, 0xd8, 0x78, 0xd3, 0xd2, 0x55, 0x82, 0xf6, 0x4d, 0x8b, 0xa0, 0x5d, 0x0b,
-	0x93, 0xb7, 0x6a, 0xc3, 0xd2, 0x55, 0xe2, 0xb8, 0x7f, 0x3b, 0x9d, 0x65, 0x18, 0xeb, 0x84, 0x5a,
-	0xc1, 0x80, 0xe6, 0xba, 0x9e, 0x38, 0xc5, 0xa8, 0x51, 0x4a, 0x92, 0x2f, 0x61, 0xfc, 0x53, 0x98,
-	0x70, 0x5a, 0xc8, 0x55, 0x89, 0xe5, 0xd8, 0x8a, 0xdf, 0x8a, 0x60, 0x00, 0xe7, 0xba, 0x9e, 0x38,
-	0xc3, 0x88, 0xfd, 0x79, 0x49, 0xce, 0x46, 0x81, 0xd7, 0xfe, 0xf3, 0x2a, 0x2c, 0x0f, 0xd8, 0x53,
-	0xb4, 0xf7, 0x0f, 0xb0, 0x10, 0xc1, 0xaa, 0x88, 0x98, 0xe1, 0xe8, 0x6c, 0x6b, 0x1a, 0x75, 0xc0,
-	0xb5, 0x6e, 0xd7, 0x32, 0xcc, 0xd0, 0xd9, 0x08, 0x47, 0x51, 0x51, 0x19, 0x9b, 0xed, 0x56, 0xbe,
-	0xad, 0x5d, 0x15, 0x96, 0xd6, 0x60, 0x65, 0xd0, 0xc2, 0x51, 0x81, 0x27, 0x1c, 0x64, 0x6b, 0xd8,
-	0x90, 0x11, 0xd6, 0xda, 0x14, 0x78, 0xbd, 0x92, 0xee, 0xc2, 0x64, 0x00, 0x8a, 0x2c, 0xc4, 0x8a,
-	0x99, 0x60, 0xe1, 0xc8, 0x22, 0xaf, 0xfa, 0x2d, 0xc2, 0x8e, 0xb9, 0x38, 0x9c, 0x45, 0xfa, 0xcc,
-	0x30, 0x0b, 0x33, 0x7d, 0xf5, 0x86, 0x3b, 0x29, 0x7f, 0x1b, 0x85, 0x74, 0x0d, 0x1b, 0xfc, 0x2e,
-	0x8c, 0xd0, 0x17, 0xd7, 0x62, 0xfc, 0xb0, 0x07, 0xf7, 0x64, 0x7e, 0x75, 0x60, 0x3a, 0x54, 0xf5,
-	0xd5, 0xe8, 0x15, 0x9a, 0xac, 0xe6, 0xa7, 0x07, 0xa8, 0xf5, 0xda, 0x96, 0xff, 0x08, 0xb9, 0x58,
-	0xcb, 0x6e, 0x24, 0xd2, 0xe3, 0xe0, 0xf9, 0x87, 0x43, 0xc1, 0xa3, 0xd5, 0x3f, 0x73, 0x20, 0x24,
-	0xba, 0x70, 0x33, 0x51, 0x33, 0x89, 0x92, 0x7f, 0x34, 0x34, 0x25, 0x2a, 0xe5, 0x0b, 0x07, 0x73,
-	0xc9, 0xae, 0x28, 0xff, 0x41, 0x38, 0x86, 0x93, 0xdf, 0x1a, 0x9e, 0x13, 0x55, 0xf3, 0x1e, 0xa0,
-	0xd7, 0x00, 0x89, 0x4a, 0x97, 0xa0, 0xfc, 0xfd, 0x6b, 0x80, 0x42, 0xfd, 0xca, 0x8b, 0xd3, 0xf3,
-	0x02, 0x77, 0x76, 0x5e, 0xe0, 0x7e, 0x9d, 0x17, 0xb8, 0xaf, 0x17, 0x85, 0xd4, 0xd9, 0x45, 0x21,
-	0xf5, 0xe3, 0xa2, 0x90, 0x7a, 0xb7, 0xd1, 0xe3, 0x80, 0x3d, 0xeb, 0x80, 0xbe, 0xb6, 0x4a, 0xe1,
-	0xf7, 0xd9, 0x51, 0xcf, 0x17, 0x1a, 0x35, 0x43, 0x3d, 0x43, 0xbf, 0xcf, 0x1e, 0xfc, 0x0e, 0x00,
-	0x00, 0xff, 0xff, 0xd2, 0xd7, 0xd3, 0xbd, 0x0e, 0x0a, 0x00, 0x00,
+	// 975 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xec, 0x57, 0x4f, 0x6f, 0xe3, 0x44,
+	0x14, 0xaf, 0xdb, 0x6e, 0x50, 0x5f, 0xb7, 0xed, 0xc6, 0x9b, 0x55, 0x53, 0x77, 0x1b, 0x77, 0xbd,
+	0x7f, 0x01, 0xd5, 0x51, 0x83, 0x38, 0xb0, 0x12, 0x42, 0x9b, 0x80, 0x56, 0x8b, 0x9a, 0x45, 0x72,
+	0x81, 0x95, 0x38, 0x60, 0x39, 0xce, 0xac, 0x63, 0x12, 0x7b, 0x22, 0xcf, 0x24, 0xdd, 0x4a, 0x7b,
+	0x44, 0x08, 0xc4, 0x85, 0x33, 0x57, 0xee, 0x7c, 0x8e, 0x3d, 0xee, 0x11, 0x71, 0x88, 0x50, 0xfb,
+	0x01, 0x90, 0xf2, 0x09, 0x90, 0x67, 0xc6, 0x13, 0x67, 0x13, 0x97, 0x58, 0xa2, 0x17, 0xb4, 0xa7,
+	0x36, 0x6f, 0x7e, 0xef, 0xf7, 0xfe, 0xf8, 0xf7, 0xde, 0xd8, 0xb0, 0x47, 0xfc, 0xe7, 0x21, 0x6e,
+	0xa3, 0x2a, 0xa2, 0x9d, 0x56, 0xe4, 0xb7, 0x3d, 0x54, 0x1d, 0x1e, 0x56, 0xe9, 0x0b, 0xb3, 0x1f,
+	0x61, 0x8a, 0xd5, 0x92, 0x38, 0x36, 0xe5, 0xb1, 0x39, 0x3c, 0xd4, 0x4a, 0x1e, 0xf6, 0x30, 0x03,
+	0x54, 0xe3, 0xff, 0x38, 0x56, 0xdb, 0x9f, 0x4f, 0x75, 0xda, 0x47, 0x44, 0x20, 0xde, 0x4b, 0x10,
+	0x38, 0x72, 0xdc, 0x1e, 0x3b, 0x0e, 0x11, 0x3d, 0xc1, 0x51, 0xd7, 0x6e, 0x23, 0xe2, 0x46, 0x7e,
+	0x9f, 0xe2, 0x88, 0x63, 0x8d, 0xbf, 0x57, 0xe0, 0x9d, 0x26, 0xf1, 0x8e, 0xb0, 0xdb, 0x55, 0x6f,
+	0xc3, 0x86, 0x8b, 0x49, 0x80, 0x89, 0x4d, 0x50, 0xd8, 0x46, 0x51, 0x59, 0xd9, 0x57, 0x1e, 0xac,
+	0x59, 0x57, 0xb9, 0xf1, 0x98, 0xd9, 0xd4, 0x67, 0x50, 0x70, 0x02, 0x3c, 0x08, 0x69, 0x79, 0x39,
+	0x3e, 0xad, 0x7f, 0xf2, 0x6a, 0xa4, 0x2f, 0xfd, 0x39, 0xd2, 0xef, 0x79, 0x3e, 0xed, 0x0c, 0x5a,
+	0xa6, 0x8b, 0x83, 0x2a, 0x77, 0x10, 0x7f, 0x0e, 0x48, 0xbb, 0x2b, 0xd2, 0x7b, 0x12, 0xd2, 0xf1,
+	0x48, 0xdf, 0x38, 0x75, 0x82, 0xde, 0x43, 0x83, 0xb3, 0x18, 0x96, 0xa0, 0x53, 0xdf, 0x85, 0x02,
+	0x39, 0x0d, 0x5a, 0xb8, 0x57, 0x5e, 0x61, 0xc4, 0xc5, 0x09, 0x94, 0xdb, 0x0d, 0x4b, 0x00, 0xd4,
+	0x08, 0xd4, 0xd9, 0x82, 0xca, 0xab, 0xfb, 0xca, 0x83, 0xcd, 0xda, 0x1d, 0x33, 0xe9, 0x25, 0xaf,
+	0xde, 0x1c, 0x1e, 0x9a, 0x4f, 0x39, 0xf8, 0x53, 0x89, 0xad, 0xef, 0x8d, 0x47, 0xfa, 0x0e, 0x27,
+	0x9f, 0x65, 0x32, 0xac, 0x62, 0xf8, 0xa6, 0x87, 0xfa, 0x04, 0x8a, 0x88, 0x76, 0x50, 0x84, 0x06,
+	0x81, 0x1d, 0x21, 0x17, 0xf9, 0x43, 0x14, 0x95, 0xaf, 0xb0, 0x4c, 0x6f, 0x8e, 0x47, 0x7a, 0x99,
+	0x93, 0xcd, 0x40, 0x0c, 0xeb, 0x5a, 0x62, 0xb3, 0x84, 0x49, 0x7d, 0x09, 0xd7, 0x43, 0x87, 0xfa,
+	0x43, 0x64, 0x53, 0xdc, 0x45, 0xa1, 0x2d, 0xfa, 0x59, 0x60, 0x64, 0x47, 0xb9, 0xfb, 0xa9, 0x89,
+	0x3a, 0x66, 0x29, 0xe3, 0x42, 0x98, 0xf5, 0xcb, 0xd8, 0xf8, 0x88, 0xdb, 0x8a, 0xb0, 0x25, 0x1e,
+	0xb8, 0x85, 0x48, 0x1f, 0x87, 0x04, 0x19, 0x3f, 0xad, 0x32, 0x11, 0xd4, 0x07, 0x51, 0xa8, 0x7e,
+	0x3c, 0x57, 0x04, 0xf5, 0xf2, 0x78, 0xa4, 0x97, 0x78, 0xa0, 0xa9, 0x63, 0xe3, 0xad, 0x3c, 0xfe,
+	0x8f, 0xf2, 0x88, 0xa5, 0x20, 0xe5, 0xf1, 0x83, 0x02, 0xdb, 0x4d, 0xe2, 0x35, 0x22, 0xe4, 0x50,
+	0xf4, 0x19, 0xed, 0xd4, 0xd9, 0xd6, 0x69, 0xf4, 0x1c, 0x3f, 0x50, 0xbb, 0x10, 0x17, 0x60, 0xf3,
+	0x45, 0x64, 0xbb, 0xb1, 0x8d, 0x29, 0x66, 0x3d, 0xd5, 0xe9, 0xf4, 0x52, 0x33, 0xa7, 0xfd, 0xeb,
+	0xbb, 0xe3, 0x91, 0xbe, 0x2d, 0x9b, 0x33, 0xc5, 0x63, 0x58, 0x9b, 0x68, 0x0a, 0x6c, 0xdc, 0x02,
+	0x3d, 0x23, 0x0f, 0x99, 0xeb, 0xaf, 0xcb, 0xb0, 0xdb, 0x24, 0xde, 0x57, 0xfd, 0xb6, 0x43, 0xd1,
+	0xb3, 0x8e, 0x4f, 0xd1, 0x91, 0x4f, 0xe8, 0xd7, 0x4e, 0xcf, 0x6f, 0x3b, 0xf1, 0x73, 0x9a, 0xaf,
+	0x0d, 0xe5, 0x52, 0xb5, 0x31, 0x33, 0x52, 0xcb, 0xb9, 0x46, 0xaa, 0x06, 0x6b, 0xc3, 0x24, 0x7f,
+	0x21, 0xfe, 0xd2, 0x78, 0xa4, 0x5f, 0xe3, 0xae, 0xf2, 0xc8, 0xb0, 0x26, 0x30, 0xb5, 0x04, 0x57,
+	0xfa, 0xf8, 0x04, 0x71, 0xd5, 0x6f, 0x58, 0xfc, 0x87, 0x71, 0x17, 0x6e, 0x5f, 0xd0, 0x1b, 0xd9,
+	0xc3, 0x13, 0xb8, 0x29, 0x61, 0x0d, 0x44, 0x3b, 0x89, 0x32, 0x1f, 0xb9, 0x2e, 0x1b, 0xc5, 0x85,
+	0xee, 0x89, 0x1a, 0xdc, 0x70, 0xe3, 0x27, 0x9a, 0x28, 0xdd, 0x76, 0xb8, 0x37, 0x2f, 0xde, 0xba,
+	0xee, 0xce, 0x12, 0x1b, 0xf7, 0xe0, 0xce, 0x45, 0x81, 0x65, 0x82, 0xbf, 0x2b, 0xb0, 0xd1, 0x24,
+	0x9e, 0x85, 0x88, 0x3b, 0x60, 0xc0, 0xc5, 0x52, 0xba, 0x0f, 0x5b, 0x02, 0x24, 0x27, 0x94, 0x27,
+	0xb3, 0xc9, 0xcd, 0x72, 0x02, 0xbf, 0x80, 0x75, 0x96, 0xbb, 0x98, 0x3c, 0xde, 0x73, 0x33, 0xdf,
+	0xe4, 0x59, 0x10, 0x53, 0x88, 0xa1, 0xda, 0x86, 0x1b, 0x53, 0xf9, 0xca, 0x4a, 0x7e, 0x5b, 0x85,
+	0x62, 0x93, 0x78, 0xc7, 0x88, 0x3e, 0x9d, 0x4c, 0xe2, 0x62, 0xd5, 0xcc, 0x57, 0xf2, 0xf2, 0xa5,
+	0x2a, 0xf9, 0x16, 0x5c, 0x4d, 0xef, 0x11, 0xde, 0x19, 0x6b, 0x3d, 0xb5, 0x45, 0xd4, 0x16, 0x80,
+	0x80, 0x78, 0x0e, 0x61, 0xf2, 0x5b, 0xab, 0x37, 0x72, 0x2f, 0xad, 0xe2, 0xd4, 0xd2, 0xf2, 0x1c,
+	0x62, 0x58, 0x6b, 0xfc, 0xc7, 0x63, 0x87, 0xa8, 0x43, 0x28, 0x06, 0x7e, 0xe8, 0x07, 0x83, 0xc0,
+	0xee, 0x61, 0xb7, 0x6b, 0xbb, 0x98, 0x50, 0xb1, 0x6c, 0x3f, 0xcf, 0x1d, 0x4a, 0xac, 0xe6, 0x19,
+	0x42, 0xc3, 0xda, 0x12, 0xb6, 0xf8, 0xae, 0x6c, 0x60, 0x42, 0xd3, 0x71, 0x5b, 0x83, 0x28, 0xe4,
+	0x71, 0x0b, 0xff, 0x4d, 0x5c, 0x49, 0x38, 0x89, 0x1b, 0x2f, 0xe1, 0x38, 0xae, 0xb1, 0x0b, 0x3b,
+	0x33, 0x22, 0x49, 0x24, 0x54, 0xfb, 0xbe, 0x00, 0x2b, 0x4d, 0xe2, 0xa9, 0x47, 0xb0, 0xca, 0xde,
+	0xe2, 0xf6, 0xe6, 0xef, 0x5d, 0x71, 0xe7, 0x6b, 0x77, 0x2f, 0x3c, 0x4e, 0x58, 0x63, 0x36, 0xf6,
+	0x3a, 0x90, 0xcd, 0x16, 0x1f, 0x5f, 0xc0, 0x96, 0xbe, 0x41, 0xd4, 0x97, 0x50, 0x9a, 0x7b, 0x7b,
+	0x1c, 0x64, 0xba, 0xcf, 0x83, 0x6b, 0x1f, 0xe6, 0x82, 0xcb, 0xe8, 0x3f, 0x2a, 0x50, 0xce, 0xbc,
+	0x10, 0x0e, 0x33, 0x39, 0xb3, 0x5c, 0xb4, 0x8f, 0x72, 0xbb, 0xc8, 0x54, 0x7e, 0x56, 0x60, 0x27,
+	0x7b, 0xb1, 0xd6, 0xfe, 0x85, 0x78, 0x8e, 0x8f, 0xf6, 0x30, 0xbf, 0x8f, 0xcc, 0xe6, 0x5b, 0x80,
+	0xf4, 0x0e, 0xcd, 0x64, 0x9a, 0x80, 0xb4, 0xf7, 0x17, 0x00, 0x49, 0xfe, 0xef, 0x60, 0xf3, 0x8d,
+	0xcd, 0x76, 0x3f, 0xd3, 0x7d, 0x1a, 0xa8, 0x55, 0x17, 0x04, 0x26, 0xb1, 0xea, 0x8f, 0x5f, 0x9d,
+	0x55, 0x94, 0xd7, 0x67, 0x15, 0xe5, 0xaf, 0xb3, 0x8a, 0xf2, 0xcb, 0x79, 0x65, 0xe9, 0xf5, 0x79,
+	0x65, 0xe9, 0x8f, 0xf3, 0xca, 0xd2, 0x37, 0x07, 0xa9, 0x91, 0x3c, 0xf6, 0x9f, 0xbb, 0x1d, 0xc7,
+	0x0f, 0xab, 0xc9, 0x27, 0xd2, 0x8b, 0xd4, 0x67, 0x14, 0x9b, 0xce, 0x56, 0x81, 0x7d, 0x18, 0x7d,
+	0xf0, 0x4f, 0x00, 0x00, 0x00, 0xff, 0xff, 0x73, 0x4c, 0x0f, 0xcb, 0xb3, 0x0d, 0x00, 0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -685,6 +807,7 @@ type MsgClient interface {
 	UpdateWhiteListValidator(ctx context.Context, in *MsgUpdateWhiteListValidator, opts ...grpc.CallOption) (*MsgUpdateWhiteListValidatorResponse, error)
 	UpdateCethReceiverAccount(ctx context.Context, in *MsgUpdateCethReceiverAccount, opts ...grpc.CallOption) (*MsgUpdateCethReceiverAccountResponse, error)
 	RescueCeth(ctx context.Context, in *MsgRescueCeth, opts ...grpc.CallOption) (*MsgRescueCethResponse, error)
+	SetNativeToken(ctx context.Context, in *MsgSetNativeToken, opts ...grpc.CallOption) (*MsgSetNativeTokenResponse, error)
 }
 
 type msgClient struct {
@@ -749,6 +872,15 @@ func (c *msgClient) RescueCeth(ctx context.Context, in *MsgRescueCeth, opts ...g
 	return out, nil
 }
 
+func (c *msgClient) SetNativeToken(ctx context.Context, in *MsgSetNativeToken, opts ...grpc.CallOption) (*MsgSetNativeTokenResponse, error) {
+	out := new(MsgSetNativeTokenResponse)
+	err := c.cc.Invoke(ctx, "/sifnode.ethbridge.v1.Msg/SetNativeToken", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // MsgServer is the server API for Msg service.
 type MsgServer interface {
 	Lock(context.Context, *MsgLock) (*MsgLockResponse, error)
@@ -757,6 +889,7 @@ type MsgServer interface {
 	UpdateWhiteListValidator(context.Context, *MsgUpdateWhiteListValidator) (*MsgUpdateWhiteListValidatorResponse, error)
 	UpdateCethReceiverAccount(context.Context, *MsgUpdateCethReceiverAccount) (*MsgUpdateCethReceiverAccountResponse, error)
 	RescueCeth(context.Context, *MsgRescueCeth) (*MsgRescueCethResponse, error)
+	SetNativeToken(context.Context, *MsgSetNativeToken) (*MsgSetNativeTokenResponse, error)
 }
 
 // UnimplementedMsgServer can be embedded to have forward compatible implementations.
@@ -780,6 +913,9 @@ func (*UnimplementedMsgServer) UpdateCethReceiverAccount(ctx context.Context, re
 }
 func (*UnimplementedMsgServer) RescueCeth(ctx context.Context, req *MsgRescueCeth) (*MsgRescueCethResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RescueCeth not implemented")
+}
+func (*UnimplementedMsgServer) SetNativeToken(ctx context.Context, req *MsgSetNativeToken) (*MsgSetNativeTokenResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SetNativeToken not implemented")
 }
 
 func RegisterMsgServer(s grpc1.Server, srv MsgServer) {
@@ -894,6 +1030,24 @@ func _Msg_RescueCeth_Handler(srv interface{}, ctx context.Context, dec func(inte
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Msg_SetNativeToken_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MsgSetNativeToken)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MsgServer).SetNativeToken(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/sifnode.ethbridge.v1.Msg/SetNativeToken",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MsgServer).SetNativeToken(ctx, req.(*MsgSetNativeToken))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 var _Msg_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "sifnode.ethbridge.v1.Msg",
 	HandlerType: (*MsgServer)(nil),
@@ -922,6 +1076,10 @@ var _Msg_serviceDesc = grpc.ServiceDesc{
 			MethodName: "RescueCeth",
 			Handler:    _Msg_RescueCeth_Handler,
 		},
+		{
+			MethodName: "SetNativeToken",
+			Handler:    _Msg_SetNativeToken_Handler,
+		},
 	},
 	Streams:  []grpc.StreamDesc{},
 	Metadata: "sifnode/ethbridge/v1/tx.proto",
@@ -948,9 +1106,9 @@ func (m *MsgLock) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	var l int
 	_ = l
 	{
-		size := m.CethAmount.Size()
+		size := m.NativeTokenAmount.Size()
 		i -= size
-		if _, err := m.CethAmount.MarshalTo(dAtA[i:]); err != nil {
+		if _, err := m.NativeTokenAmount.MarshalTo(dAtA[i:]); err != nil {
 			return 0, err
 		}
 		i = encodeVarintTx(dAtA, i, uint64(size))
@@ -964,8 +1122,8 @@ func (m *MsgLock) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		i--
 		dAtA[i] = 0x2a
 	}
-	if m.EthereumChainId != 0 {
-		i = encodeVarintTx(dAtA, i, uint64(m.EthereumChainId))
+	if m.NetworkDescriptor != 0 {
+		i = encodeVarintTx(dAtA, i, uint64(m.NetworkDescriptor))
 		i--
 		dAtA[i] = 0x20
 	}
@@ -1040,9 +1198,9 @@ func (m *MsgBurn) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	var l int
 	_ = l
 	{
-		size := m.CethAmount.Size()
+		size := m.NativeTokenAmount.Size()
 		i -= size
-		if _, err := m.CethAmount.MarshalTo(dAtA[i:]); err != nil {
+		if _, err := m.NativeTokenAmount.MarshalTo(dAtA[i:]); err != nil {
 			return 0, err
 		}
 		i = encodeVarintTx(dAtA, i, uint64(size))
@@ -1056,8 +1214,8 @@ func (m *MsgBurn) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		i--
 		dAtA[i] = 0x2a
 	}
-	if m.EthereumChainId != 0 {
-		i = encodeVarintTx(dAtA, i, uint64(m.EthereumChainId))
+	if m.NetworkDescriptor != 0 {
+		i = encodeVarintTx(dAtA, i, uint64(m.NetworkDescriptor))
 		i--
 		dAtA[i] = 0x20
 	}
@@ -1189,26 +1347,29 @@ func (m *MsgUpdateWhiteListValidator) MarshalToSizedBuffer(dAtA []byte) (int, er
 	_ = i
 	var l int
 	_ = l
-	if len(m.OperationType) > 0 {
-		i -= len(m.OperationType)
-		copy(dAtA[i:], m.OperationType)
-		i = encodeVarintTx(dAtA, i, uint64(len(m.OperationType)))
+	if m.Power != 0 {
+		i = encodeVarintTx(dAtA, i, uint64(m.Power))
 		i--
-		dAtA[i] = 0x1a
+		dAtA[i] = 0x20
 	}
 	if len(m.Validator) > 0 {
 		i -= len(m.Validator)
 		copy(dAtA[i:], m.Validator)
 		i = encodeVarintTx(dAtA, i, uint64(len(m.Validator)))
 		i--
-		dAtA[i] = 0x12
+		dAtA[i] = 0x1a
 	}
 	if len(m.CosmosSender) > 0 {
 		i -= len(m.CosmosSender)
 		copy(dAtA[i:], m.CosmosSender)
 		i = encodeVarintTx(dAtA, i, uint64(len(m.CosmosSender)))
 		i--
-		dAtA[i] = 0xa
+		dAtA[i] = 0x12
+	}
+	if m.NetworkDescriptor != 0 {
+		i = encodeVarintTx(dAtA, i, uint64(m.NetworkDescriptor))
+		i--
+		dAtA[i] = 0x8
 	}
 	return len(dAtA) - i, nil
 }
@@ -1366,6 +1527,101 @@ func (m *MsgRescueCethResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	return len(dAtA) - i, nil
 }
 
+func (m *MsgSetNativeToken) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *MsgSetNativeToken) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *MsgSetNativeToken) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	{
+		size := m.MinimumBurnCost.Size()
+		i -= size
+		if _, err := m.MinimumBurnCost.MarshalTo(dAtA[i:]); err != nil {
+			return 0, err
+		}
+		i = encodeVarintTx(dAtA, i, uint64(size))
+	}
+	i--
+	dAtA[i] = 0x32
+	{
+		size := m.MinimumLockCost.Size()
+		i -= size
+		if _, err := m.MinimumLockCost.MarshalTo(dAtA[i:]); err != nil {
+			return 0, err
+		}
+		i = encodeVarintTx(dAtA, i, uint64(size))
+	}
+	i--
+	dAtA[i] = 0x2a
+	{
+		size := m.NativeGas.Size()
+		i -= size
+		if _, err := m.NativeGas.MarshalTo(dAtA[i:]); err != nil {
+			return 0, err
+		}
+		i = encodeVarintTx(dAtA, i, uint64(size))
+	}
+	i--
+	dAtA[i] = 0x22
+	if len(m.NativeToken) > 0 {
+		i -= len(m.NativeToken)
+		copy(dAtA[i:], m.NativeToken)
+		i = encodeVarintTx(dAtA, i, uint64(len(m.NativeToken)))
+		i--
+		dAtA[i] = 0x1a
+	}
+	if m.NetworkDescriptor != 0 {
+		i = encodeVarintTx(dAtA, i, uint64(m.NetworkDescriptor))
+		i--
+		dAtA[i] = 0x10
+	}
+	if len(m.CosmosSender) > 0 {
+		i -= len(m.CosmosSender)
+		copy(dAtA[i:], m.CosmosSender)
+		i = encodeVarintTx(dAtA, i, uint64(len(m.CosmosSender)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *MsgSetNativeTokenResponse) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *MsgSetNativeTokenResponse) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *MsgSetNativeTokenResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	return len(dAtA) - i, nil
+}
+
 func encodeVarintTx(dAtA []byte, offset int, v uint64) int {
 	offset -= sovTx(v)
 	base := offset
@@ -1393,14 +1649,14 @@ func (m *MsgLock) Size() (n int) {
 	if l > 0 {
 		n += 1 + l + sovTx(uint64(l))
 	}
-	if m.EthereumChainId != 0 {
-		n += 1 + sovTx(uint64(m.EthereumChainId))
+	if m.NetworkDescriptor != 0 {
+		n += 1 + sovTx(uint64(m.NetworkDescriptor))
 	}
 	l = len(m.EthereumReceiver)
 	if l > 0 {
 		n += 1 + l + sovTx(uint64(l))
 	}
-	l = m.CethAmount.Size()
+	l = m.NativeTokenAmount.Size()
 	n += 1 + l + sovTx(uint64(l))
 	return n
 }
@@ -1430,14 +1686,14 @@ func (m *MsgBurn) Size() (n int) {
 	if l > 0 {
 		n += 1 + l + sovTx(uint64(l))
 	}
-	if m.EthereumChainId != 0 {
-		n += 1 + sovTx(uint64(m.EthereumChainId))
+	if m.NetworkDescriptor != 0 {
+		n += 1 + sovTx(uint64(m.NetworkDescriptor))
 	}
 	l = len(m.EthereumReceiver)
 	if l > 0 {
 		n += 1 + l + sovTx(uint64(l))
 	}
-	l = m.CethAmount.Size()
+	l = m.NativeTokenAmount.Size()
 	n += 1 + l + sovTx(uint64(l))
 	return n
 }
@@ -1479,6 +1735,9 @@ func (m *MsgUpdateWhiteListValidator) Size() (n int) {
 	}
 	var l int
 	_ = l
+	if m.NetworkDescriptor != 0 {
+		n += 1 + sovTx(uint64(m.NetworkDescriptor))
+	}
 	l = len(m.CosmosSender)
 	if l > 0 {
 		n += 1 + l + sovTx(uint64(l))
@@ -1487,9 +1746,8 @@ func (m *MsgUpdateWhiteListValidator) Size() (n int) {
 	if l > 0 {
 		n += 1 + l + sovTx(uint64(l))
 	}
-	l = len(m.OperationType)
-	if l > 0 {
-		n += 1 + l + sovTx(uint64(l))
+	if m.Power != 0 {
+		n += 1 + sovTx(uint64(m.Power))
 	}
 	return n
 }
@@ -1549,6 +1807,41 @@ func (m *MsgRescueCeth) Size() (n int) {
 }
 
 func (m *MsgRescueCethResponse) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	return n
+}
+
+func (m *MsgSetNativeToken) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.CosmosSender)
+	if l > 0 {
+		n += 1 + l + sovTx(uint64(l))
+	}
+	if m.NetworkDescriptor != 0 {
+		n += 1 + sovTx(uint64(m.NetworkDescriptor))
+	}
+	l = len(m.NativeToken)
+	if l > 0 {
+		n += 1 + l + sovTx(uint64(l))
+	}
+	l = m.NativeGas.Size()
+	n += 1 + l + sovTx(uint64(l))
+	l = m.MinimumLockCost.Size()
+	n += 1 + l + sovTx(uint64(l))
+	l = m.MinimumBurnCost.Size()
+	n += 1 + l + sovTx(uint64(l))
+	return n
+}
+
+func (m *MsgSetNativeTokenResponse) Size() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -1692,9 +1985,9 @@ func (m *MsgLock) Unmarshal(dAtA []byte) error {
 			iNdEx = postIndex
 		case 4:
 			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field EthereumChainId", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field NetworkDescriptor", wireType)
 			}
-			m.EthereumChainId = 0
+			m.NetworkDescriptor = 0
 			for shift := uint(0); ; shift += 7 {
 				if shift >= 64 {
 					return ErrIntOverflowTx
@@ -1704,7 +1997,7 @@ func (m *MsgLock) Unmarshal(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				m.EthereumChainId |= int64(b&0x7F) << shift
+				m.NetworkDescriptor |= types.NetworkDescriptor(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
@@ -1743,7 +2036,7 @@ func (m *MsgLock) Unmarshal(dAtA []byte) error {
 			iNdEx = postIndex
 		case 6:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field CethAmount", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field NativeTokenAmount", wireType)
 			}
 			var stringLen uint64
 			for shift := uint(0); ; shift += 7 {
@@ -1771,7 +2064,7 @@ func (m *MsgLock) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			if err := m.CethAmount.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+			if err := m.NativeTokenAmount.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex
@@ -1975,9 +2268,9 @@ func (m *MsgBurn) Unmarshal(dAtA []byte) error {
 			iNdEx = postIndex
 		case 4:
 			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field EthereumChainId", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field NetworkDescriptor", wireType)
 			}
-			m.EthereumChainId = 0
+			m.NetworkDescriptor = 0
 			for shift := uint(0); ; shift += 7 {
 				if shift >= 64 {
 					return ErrIntOverflowTx
@@ -1987,7 +2280,7 @@ func (m *MsgBurn) Unmarshal(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				m.EthereumChainId |= int64(b&0x7F) << shift
+				m.NetworkDescriptor |= types.NetworkDescriptor(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
@@ -2026,7 +2319,7 @@ func (m *MsgBurn) Unmarshal(dAtA []byte) error {
 			iNdEx = postIndex
 		case 6:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field CethAmount", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field NativeTokenAmount", wireType)
 			}
 			var stringLen uint64
 			for shift := uint(0); ; shift += 7 {
@@ -2054,7 +2347,7 @@ func (m *MsgBurn) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			if err := m.CethAmount.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+			if err := m.NativeTokenAmount.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex
@@ -2295,6 +2588,25 @@ func (m *MsgUpdateWhiteListValidator) Unmarshal(dAtA []byte) error {
 		}
 		switch fieldNum {
 		case 1:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field NetworkDescriptor", wireType)
+			}
+			m.NetworkDescriptor = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.NetworkDescriptor |= types.NetworkDescriptor(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 2:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field CosmosSender", wireType)
 			}
@@ -2326,7 +2638,7 @@ func (m *MsgUpdateWhiteListValidator) Unmarshal(dAtA []byte) error {
 			}
 			m.CosmosSender = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
-		case 2:
+		case 3:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field Validator", wireType)
 			}
@@ -2358,11 +2670,11 @@ func (m *MsgUpdateWhiteListValidator) Unmarshal(dAtA []byte) error {
 			}
 			m.Validator = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
-		case 3:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field OperationType", wireType)
+		case 4:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Power", wireType)
 			}
-			var stringLen uint64
+			m.Power = 0
 			for shift := uint(0); ; shift += 7 {
 				if shift >= 64 {
 					return ErrIntOverflowTx
@@ -2372,24 +2684,11 @@ func (m *MsgUpdateWhiteListValidator) Unmarshal(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
+				m.Power |= uint32(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
 			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthTx
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex < 0 {
-				return ErrInvalidLengthTx
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.OperationType = string(dAtA[iNdEx:postIndex])
-			iNdEx = postIndex
 		default:
 			iNdEx = preIndex
 			skippy, err := skipTx(dAtA[iNdEx:])
@@ -2800,6 +3099,291 @@ func (m *MsgRescueCethResponse) Unmarshal(dAtA []byte) error {
 		}
 		if fieldNum <= 0 {
 			return fmt.Errorf("proto: MsgRescueCethResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		default:
+			iNdEx = preIndex
+			skippy, err := skipTx(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthTx
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *MsgSetNativeToken) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowTx
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: MsgSetNativeToken: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: MsgSetNativeToken: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field CosmosSender", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.CosmosSender = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 2:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field NetworkDescriptor", wireType)
+			}
+			m.NetworkDescriptor = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.NetworkDescriptor |= types.NetworkDescriptor(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 3:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field NativeToken", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.NativeToken = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 4:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field NativeGas", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := m.NativeGas.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 5:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field MinimumLockCost", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := m.MinimumLockCost.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 6:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field MinimumBurnCost", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := m.MinimumBurnCost.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipTx(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthTx
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *MsgSetNativeTokenResponse) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowTx
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: MsgSetNativeTokenResponse: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: MsgSetNativeTokenResponse: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		default:

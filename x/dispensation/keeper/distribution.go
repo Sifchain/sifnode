@@ -32,10 +32,7 @@ func (k Keeper) GetDistribution(ctx sdk.Context, name string, distributionType t
 
 func (k Keeper) ExistsDistribution(ctx sdk.Context, name string, distributionType types.DistributionType) bool {
 	key := types.GetDistributionsKey(name, distributionType)
-	if k.Exists(ctx, key) {
-		return true
-	}
-	return false
+	return k.Exists(ctx, key)
 }
 
 func (k Keeper) GetDistributionIterator(ctx sdk.Context) sdk.Iterator {

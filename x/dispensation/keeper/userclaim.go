@@ -7,6 +7,9 @@ import (
 )
 
 func (k Keeper) SetClaim(ctx sdk.Context, ar types.UserClaim) error {
+	if !ar.Validate() {
+		return errors.Wrapf(types.ErrInvalid, "Claim Details : %s", ar.String())
+	}
 	store := ctx.KVStore(k.storeKey)
 	key := types.GetUserClaimKey(ar.UserAddress, ar.UserClaimType)
 	store.Set(key, k.cdc.MustMarshalBinaryBare(&ar))
@@ -27,10 +30,7 @@ func (k Keeper) GetClaim(ctx sdk.Context, recipient string, userClaimType types.
 
 func (k Keeper) ExistsClaim(ctx sdk.Context, recipient string, userClaimType types.DistributionType) bool {
 	key := types.GetUserClaimKey(recipient, userClaimType)
-	if k.Exists(ctx, key) {
-		return true
-	}
-	return false
+	return k.Exists(ctx, key)
 }
 func (k Keeper) DeleteClaim(ctx sdk.Context, recipient string, userClaimType types.DistributionType) {
 	store := ctx.KVStore(k.storeKey)
@@ -43,39 +43,29 @@ func (k Keeper) GetUserClaimsIterator(ctx sdk.Context) sdk.Iterator {
 	return sdk.KVStorePrefixIterator(store, types.UserClaimPrefix)
 }
 
-func (k Keeper) GetClaims(ctx sdk.Context) types.UserClaims {
-	var res types.UserClaims
+func (k Keeper) GetClaims(ctx sdk.Context) []types.UserClaim {
+	var res []types.UserClaim
 	iterator := k.GetUserClaimsIterator(ctx)
-	defer func(iterator sdk.Iterator) {
-		err := iterator.Close()
-		if err != nil {
-			panic("Failed to close iterator")
-		}
-	}(iterator)
+	defer iterator.Close()
 	for ; iterator.Valid(); iterator.Next() {
 		var dl types.UserClaim
 		bytesValue := iterator.Value()
 		k.cdc.MustUnmarshalBinaryBare(bytesValue, &dl)
-		res.UserClaims = append(res.UserClaims, &dl)
+		res = append(res, dl)
 	}
 	return res
 }
 
-func (k Keeper) GetClaimsByType(ctx sdk.Context, userClaimType types.DistributionType) types.UserClaims {
-	var res types.UserClaims
+func (k Keeper) GetClaimsByType(ctx sdk.Context, userClaimType types.DistributionType) []types.UserClaim {
+	var res []types.UserClaim
 	iterator := k.GetUserClaimsIterator(ctx)
-	defer func(iterator sdk.Iterator) {
-		err := iterator.Close()
-		if err != nil {
-			panic("Failed to close iterator")
-		}
-	}(iterator)
+	defer iterator.Close()
 	for ; iterator.Valid(); iterator.Next() {
 		var dl types.UserClaim
 		bytesValue := iterator.Value()
 		k.cdc.MustUnmarshalBinaryBare(bytesValue, &dl)
 		if dl.UserClaimType == userClaimType {
-			res.UserClaims = append(res.UserClaims, &dl)
+			res = append(res, dl)
 		}
 	}
 	return res

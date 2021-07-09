@@ -18,6 +18,7 @@ import FatInfoTableCell from "@/components/shared/FatInfoTableCell.vue";
 import ActionsPanel from "@/components/actionsPanel/ActionsPanel.vue";
 import { useCurrencyFieldState } from "@/hooks/useCurrencyFieldState";
 import { toConfirmState } from "./utils/toConfirmState";
+import { getMaxAmount } from "./utils/getMaxAmount";
 import { ConfirmState } from "@/types";
 import ConfirmationModal from "@/components/shared/ConfirmationModal.vue";
 import DetailsPanelPool from "@/components/shared/DetailsPanelPool.vue";
@@ -42,7 +43,7 @@ export default defineComponent({
   },
   props: ["title"],
   setup() {
-    const { actions, poolFinder, store } = useCore();
+    const { usecases, poolFinder, store } = useCore();
     const selectedField = ref<"from" | "to" | null>(null);
     const lastFocusedTokenField = ref<"A" | "B" | null>(null);
 
@@ -172,7 +173,7 @@ export default defineComponent({
       if (!tokenBFieldAmount.value)
         throw new Error("Token B field amount is not defined");
       transactionState.value = "signing";
-      const tx = await actions.clp.addLiquidity(
+      const tx = await usecases.clp.addLiquidity(
         tokenBFieldAmount.value,
         tokenAFieldAmount.value,
       );
@@ -294,7 +295,10 @@ export default defineComponent({
           (balance) => balance.asset.symbol === toSymbol.value,
         );
         if (!accountBalance) return;
-        toAmount.value = format(accountBalance.amount, accountBalance.asset);
+        const maxAmount = getMaxAmount(toSymbol, accountBalance);
+        toAmount.value = format(maxAmount, accountBalance.asset, {
+          mantissa: 18,
+        });
       },
       shareOfPoolPercent,
       formatNumber,

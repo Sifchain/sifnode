@@ -13,16 +13,9 @@ import (
 func InitGenesis(ctx sdk.Context, keeper keeper.Keeper, data types.GenesisState) (res []abci.ValidatorUpdate) {
 
 	if data.AddressWhitelist != nil {
-		wl := make([]sdk.ValAddress, len(data.AddressWhitelist))
-		for i, entry := range data.AddressWhitelist {
-			wlAddress, err := sdk.ValAddressFromBech32(entry)
-			if err != nil {
-				panic(err)
-			}
-			wl[i] = wlAddress
+		for networkDescriptor, list := range data.AddressWhitelist {
+			keeper.SetOracleWhiteList(ctx, types.NewNetworkIdentity(types.NetworkDescriptor(networkDescriptor)), *list)
 		}
-
-		keeper.SetOracleWhiteList(ctx, wl)
 	}
 
 	if len(strings.TrimSpace(data.AdminAddress)) != 0 {
@@ -33,17 +26,33 @@ func InitGenesis(ctx sdk.Context, keeper keeper.Keeper, data types.GenesisState)
 		keeper.SetAdminAccount(ctx, adminAddress)
 	}
 
+	for _, prophecy := range data.Prophecies {
+
+		keeper.SetProphecy(ctx, *prophecy)
+	}
+
 	return []abci.ValidatorUpdate{}
 }
 
 func ExportGenesis(ctx sdk.Context, keeper keeper.Keeper) *types.GenesisState {
-	whiteList := keeper.GetOracleWhiteList(ctx)
-	wl := make([]string, len(whiteList), 0)
-	for i, entry := range whiteList {
-		wl[i] = entry.String()
+	whiteList := keeper.GetAllWhiteList(ctx)
+	wl := make(map[uint32]*types.ValidatorWhiteList)
+
+	for i, value := range whiteList {
+		wl[uint32(i)] = &types.ValidatorWhiteList{WhiteList: value.WhiteList}
 	}
+
+	propheciesTmp := keeper.GetProphecies(ctx)
+	prophecies := make([]*types.Prophecy, len(propheciesTmp))
+	for index, prophecy := range propheciesTmp {
+		tmpProphecy := prophecy
+		prophecies[index] = &tmpProphecy
+	}
+
 	return &types.GenesisState{
 		AddressWhitelist: wl,
+		AdminAddress:     keeper.GetAdminAccount(ctx).String(),
+		Prophecies:       prophecies,
 	}
 }
 

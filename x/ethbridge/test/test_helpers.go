@@ -3,6 +3,8 @@ package test
 import (
 	"bytes"
 	"encoding/hex"
+	"math/rand"
+	"time"
 
 	"strconv"
 	"testing"
@@ -44,10 +46,15 @@ const (
 	AlternateTestString        = "{value: 7}"
 	AnotherAlternateTestString = "{value: 9}"
 	TestCethReceiverAddress    = "cosmos1gn8409qq9hnrxde37kuxwx5hrxpfpv8426szuv"
+	NetworkDescriptor          = 1
+	NativeToken                = "ceth"
+	NativeTokenGas             = 1
+	MinimumCost                = 1
 )
 
 // CreateTestKeepers greates an Mock App, OracleKeeper, bankKeeper and ValidatorAddresses to be used for test input
-func CreateTestKeepers(t *testing.T, consensusNeeded float64, validatorAmounts []int64, extraMaccPerm string) (sdk.Context, keeper.Keeper, bankkeeper.Keeper, authkeeper.AccountKeeper, oraclekeeper.Keeper, simappparams.EncodingConfig, []sdk.ValAddress) {
+func CreateTestKeepers(t *testing.T, consensusNeeded float64, validatorAmounts []int64, extraMaccPerm string) (sdk.Context, keeper.Keeper, bankkeeper.Keeper, authkeeper.AccountKeeper, oraclekeeper.Keeper,
+	simappparams.EncodingConfig, oracleTypes.ValidatorWhiteList, []sdk.ValAddress) {
 
 	PKs := CreateTestPubKeys(500)
 	keyStaking := sdk.NewKVStoreKey(stakingtypes.StoreKey)
@@ -96,7 +103,7 @@ func CreateTestKeepers(t *testing.T, consensusNeeded float64, validatorAmounts [
 	blacklistedAddrs[bondPool.GetAddress().String()] = true
 
 	maccPerms := map[string][]string{
-		authtypes.FeeCollectorName:          nil,
+		authtypes.FeeCollectorName:     nil,
 		stakingtypes.NotBondedPoolName: {authtypes.Burner, authtypes.Staking},
 		stakingtypes.BondedPoolName:    {authtypes.Burner, authtypes.Staking},
 		types.ModuleName:               {authtypes.Burner, authtypes.Minter},
@@ -110,8 +117,8 @@ func CreateTestKeepers(t *testing.T, consensusNeeded float64, validatorAmounts [
 
 	//accountKeeper gets maccParams in 0.40, module accounts moved from supplykeeper to authkeeper
 	accountKeeper := authkeeper.NewAccountKeeper(
-		encCfg.Marshaler,    // amino codec
-		keyAcc, // target store
+		encCfg.Marshaler, // amino codec
+		keyAcc,           // target store
 		paramsKeeper.Subspace(authtypes.ModuleName),
 		authtypes.ProtoBaseAccount, // prototype,
 		maccPerms,
@@ -144,15 +151,18 @@ func CreateTestKeepers(t *testing.T, consensusNeeded float64, validatorAmounts [
 	accountKeeper.SetModuleAccount(ctx, notBondedPool)
 
 	ethbridgeKeeper := keeper.NewKeeper(encCfg.Marshaler, bankKeeper, oracleKeeper, accountKeeper, keyEthBridge)
+
 	CethReceiverAccount, _ := sdk.AccAddressFromBech32(TestCethReceiverAddress)
 	ethbridgeKeeper.SetCethReceiverAccount(ctx, CethReceiverAccount)
 
 	// Setup validators
-	valAddrs := make([]sdk.ValAddress, len(validatorAmounts))
+	valAddrsInOrder := make([]sdk.ValAddress, len(validatorAmounts))
+	valAddrs := make(map[string]uint32)
 	for i, amount := range validatorAmounts {
 		valPubKey := PKs[i]
 		valAddr := sdk.ValAddress(valPubKey.Address().Bytes())
-		valAddrs[i] = valAddr
+		valAddrsInOrder[i] = valAddr
+		valAddrs[valAddr.String()] = uint32(amount)
 		valTokens := sdk.TokensFromConsensusPower(amount)
 		// test how the validator is set from a purely unbonbed pool
 		validator, err := stakingtypes.NewValidator(valAddr, valPubKey, stakingtypes.Description{})
@@ -167,9 +177,14 @@ func CreateTestKeepers(t *testing.T, consensusNeeded float64, validatorAmounts [
 		}
 	}
 
-	oracleKeeper.SetOracleWhiteList(ctx, valAddrs)
+	networkIdentity := oracleTypes.NewNetworkIdentity(NetworkDescriptor)
 
-	return ctx, ethbridgeKeeper, bankKeeper, accountKeeper, oracleKeeper, encCfg, valAddrs
+	oracleKeeper.SetNativeToken(ctx, networkIdentity, NativeToken,
+		sdk.NewInt(NativeTokenGas), sdk.NewInt(MinimumCost), sdk.NewInt(MinimumCost))
+	whitelist := oracleTypes.ValidatorWhiteList{WhiteList: valAddrs}
+	oracleKeeper.SetOracleWhiteList(ctx, networkIdentity, whitelist)
+
+	return ctx, ethbridgeKeeper, bankKeeper, accountKeeper, oracleKeeper, encCfg, whitelist, valAddrsInOrder
 }
 
 // nolint: unparam
@@ -226,4 +241,70 @@ func NewPubKey(pk string) (res cryptotypes.PubKey) {
 // create a codec used only for testing
 func MakeTestEncodingConfig() simappparams.EncodingConfig {
 	return app.MakeTestEncodingConfig()
+}
+
+const (
+	AddressKey1 = "A58856F0FD53BF058B4909A21AEC019107BA6"
+)
+
+//// returns context and app with params set on account keeper
+func CreateTestApp(isCheckTx bool) (*app.SifchainApp, sdk.Context) {
+	sifapp := app.Setup(isCheckTx)
+	ctx := sifapp.BaseApp.NewContext(isCheckTx, tmproto.Header{})
+
+	sifapp.AccountKeeper.SetParams(ctx, authtypes.DefaultParams())
+	initTokens := sdk.TokensFromConsensusPower(1000)
+
+	_ = app.AddTestAddrs(sifapp, ctx, 6, initTokens)
+
+	return sifapp, ctx
+}
+
+func CreateTestAppEthBridge(isCheckTx bool) (sdk.Context, keeper.Keeper) {
+	sifapp, ctx := CreateTestApp(isCheckTx)
+	return ctx, sifapp.EthbridgeKeeper
+}
+
+func GenerateRandomTokens(numberOfTokens int) []string {
+	var tokenList []string
+	tokens := []string{"ceth", "cbtc", "ceos", "cbch", "cbnb", "cusdt", "cada", "ctrx", "cacoin", "cbcoin", "ccoin", "cdcoin"}
+	rand.Seed(time.Now().Unix())
+	for i := 0; i < numberOfTokens; i++ {
+		// initialize global pseudo random generator
+		randToken := tokens[rand.Intn(len(tokens))]
+
+		tokenList = append(tokenList, randToken)
+	}
+	return tokenList
+}
+
+func GenerateAddress(key string) sdk.AccAddress {
+	if key == "" {
+		key = AddressKey1
+	}
+	var buffer bytes.Buffer
+	buffer.WriteString(key)
+	buffer.WriteString(strconv.Itoa(100))
+	res, _ := sdk.AccAddressFromHex(buffer.String())
+	bech := res.String()
+	addr := buffer.String()
+	res, err := sdk.AccAddressFromHex(addr)
+
+	if err != nil {
+		panic(err)
+	}
+
+	bechexpected := res.String()
+	if bech != bechexpected {
+		panic("Bech encoding doesn't match reference")
+	}
+
+	bechres, err := sdk.AccAddressFromBech32(bech)
+	if err != nil {
+		panic(err)
+	}
+	if !bytes.Equal(bechres, res) {
+		panic("Bech decode and hex decode don't match")
+	}
+	return res
 }

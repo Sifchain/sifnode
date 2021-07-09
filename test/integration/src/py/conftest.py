@@ -24,9 +24,9 @@ def sifchain_admin_account():
 
 
 @pytest.fixture
-def sifchain_admin_account_credentials():
+def sifchain_admin_account_credentials(sifchain_admin_account):
     return test_utilities.SifchaincliCredentials(
-        from_key="sifnodeadmin"
+        from_key=sifchain_admin_account
     )
 
 

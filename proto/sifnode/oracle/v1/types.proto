@@ -5,15 +5,13 @@ import "gogoproto/gogo.proto";
 
 option go_package = "github.com/Sifchain/sifnode/x/oracle/types";
 
-// GenesisState - all clp state that must be provided at genesis
-// TODO: Add parameters to Genesis state ,such as minimum liquidity required to
-// create a pool
 message GenesisState {
-  repeated string address_whitelist = 1;
+  map<uint32, ValidatorWhiteList> address_whitelist = 1;
   string admin_address = 2;
+  repeated Prophecy prophecies = 3;
 }
 
-// Claim contrains an arbitrary claim with arbitrary content made by a given
+// Claim contains an arbitrary claim with arbitrary content made by a given
 // validator
 message Claim {
   string id = 1;
@@ -21,21 +19,17 @@ message Claim {
   string content = 3;
 }
 
-// DBProphecy is what the prophecy becomes when being saved to the database.
+// Prophecy is what the prophecy becomes when being saved to the database.
 //  Tendermint/Amino does not support maps so we must serialize those variables
 //  into bytes.
-message DBProphecy {
-  string id = 1;
-  Status status = 2 [ (gogoproto.nullable) = false ];
-  bytes claim_validators = 3;
-  bytes validator_claims = 4;
+message Prophecy {
+  bytes id = 1;
+  StatusText status = 2;
+  repeated string claim_validators = 3;
 }
 
-// Status is a struct that contains the status of a given prophecy
-message Status {
-  StatusText text = 1;
-  string final_claim = 2;
-}
+// ValidatorWhiteList is struct that contains validator and its voting power
+message ValidatorWhiteList { map<string, uint32> white_list = 1; }
 
 // StatusText is an enum used to represent the status of the prophecy
 enum StatusText {
@@ -45,6 +39,24 @@ enum StatusText {
   STATUS_TEXT_PENDING = 1;
   // Success status
   STATUS_TEXT_SUCCESS = 2;
-  // Failed status
-  STATUS_TEXT_FAILED = 3;
+}
+
+// NativeTokenConfig is native token config for each network
+message NativeTokenConfig {
+  string native_token = 1;
+  string native_gas = 4 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.nullable) = false,
+    (gogoproto.moretags) = "yaml:\"native_gas\""
+  ];
+  string minimum_lock_cost = 5 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.nullable) = false,
+    (gogoproto.moretags) = "yaml:\"minimum_lock_cost\""
+  ];
+  string minimum_burn_cost = 6 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.nullable) = false,
+    (gogoproto.moretags) = "yaml:\"minimum_burn_cost\""
+  ];
 }

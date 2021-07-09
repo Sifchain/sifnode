@@ -1,7 +1,6 @@
 package keeper_test
 
 import (
-	"encoding/json"
 	"strings"
 	"testing"
 
@@ -27,7 +26,7 @@ var (
 )
 
 func TestProcessClaimLock(t *testing.T) {
-	ctx, keeper, _, _, _, _, validatorAddresses := test.CreateTestKeepers(t, 0.7, []int64{3, 3}, "")
+	ctx, keeper, _, _, _, _, _, validatorAddresses := test.CreateTestKeepers(t, 0.7, []int64{3, 3}, "")
 	validator1Pow3 := validatorAddresses[0]
 	validator2Pow3 := validatorAddresses[1]
 
@@ -42,7 +41,7 @@ func TestProcessClaimLock(t *testing.T) {
 	require.Equal(t, claimType, types.ClaimType_CLAIM_TYPE_LOCK)
 
 	ethBridgeClaim := types.NewEthBridgeClaim(
-		5777,
+		1,
 		ethBridgeAddress, // bridge registry
 		nonce,
 		symbol,
@@ -57,16 +56,16 @@ func TestProcessClaimLock(t *testing.T) {
 	status, err := keeper.ProcessClaim(ctx, ethBridgeClaim)
 
 	require.NoError(t, err)
-	require.Equal(t, status.Text, oracletypes.StatusText_STATUS_TEXT_PENDING)
+	require.Equal(t, status, oracletypes.StatusText_STATUS_TEXT_PENDING)
 	// duplicate execution
-	status, err = keeper.ProcessClaim(ctx, ethBridgeClaim)
+	_, err = keeper.ProcessClaim(ctx, ethBridgeClaim)
 	require.Error(t, err)
 	require.True(t, strings.Contains(err.Error(), "already processed message from validator for this id"))
 
 	// other validator execute
 
 	ethBridgeClaim = types.NewEthBridgeClaim(
-		5777,
+		1,
 		ethBridgeAddress, // bridge registry
 		nonce,
 		symbol,
@@ -79,12 +78,12 @@ func TestProcessClaimLock(t *testing.T) {
 	)
 	status, err = keeper.ProcessClaim(ctx, ethBridgeClaim)
 	require.NoError(t, err)
-	require.Equal(t, status.Text, oracletypes.StatusText_STATUS_TEXT_SUCCESS)
+	require.Equal(t, status, oracletypes.StatusText_STATUS_TEXT_SUCCESS)
 
 }
 
 func TestProcessClaimBurn(t *testing.T) {
-	ctx, keeper, _, _, _, _, validatorAddresses := test.CreateTestKeepers(t, 0.7, []int64{3, 3}, "")
+	ctx, keeper, _, _, _, _, _, validatorAddresses := test.CreateTestKeepers(t, 0.7, []int64{3, 3}, "")
 	validator1Pow3 := validatorAddresses[0]
 	validator2Pow3 := validatorAddresses[1]
 
@@ -93,7 +92,7 @@ func TestProcessClaimBurn(t *testing.T) {
 	claimType := types.ClaimType_CLAIM_TYPE_BURN
 
 	ethBridgeClaim := types.NewEthBridgeClaim(
-		5777,
+		1,
 		ethBridgeAddress, // bridge registry
 		nonce,
 		symbol,
@@ -108,16 +107,16 @@ func TestProcessClaimBurn(t *testing.T) {
 	status, err := keeper.ProcessClaim(ctx, ethBridgeClaim)
 
 	require.NoError(t, err)
-	require.Equal(t, status.Text, oracletypes.StatusText_STATUS_TEXT_PENDING)
+	require.Equal(t, status, oracletypes.StatusText_STATUS_TEXT_PENDING)
 
-	status, err = keeper.ProcessClaim(ctx, ethBridgeClaim)
+	_, err = keeper.ProcessClaim(ctx, ethBridgeClaim)
 	require.Error(t, err)
 	require.True(t, strings.Contains(err.Error(), "already processed message from validator for this id"))
 
 	// other validator execute
 
 	ethBridgeClaim = types.NewEthBridgeClaim(
-		5777,
+		1,
 		ethBridgeAddress, // bridge registry
 		nonce,
 		symbol,
@@ -130,66 +129,66 @@ func TestProcessClaimBurn(t *testing.T) {
 	)
 	status, err = keeper.ProcessClaim(ctx, ethBridgeClaim)
 	require.NoError(t, err)
-	require.Equal(t, status.Text, oracletypes.StatusText_STATUS_TEXT_SUCCESS)
+	require.Equal(t, status, oracletypes.StatusText_STATUS_TEXT_SUCCESS)
 
 }
 
-func TestProcessSuccessfulClaimLock(t *testing.T) {
-	ctx, keeper, bankKeeper, _, _, _, _ := test.CreateTestKeepers(t, 0.7, []int64{3, 3}, "")
+// func TestProcessSuccessfulClaimLock(t *testing.T) {
+// 	ctx, keeper, bankKeeper, _, _, _, _, _ := test.CreateTestKeepers(t, 0.7, []int64{3, 3}, "")
 
-	receiverCoins := bankKeeper.GetAllBalances(ctx, cosmosReceivers[0])
-	require.Equal(t, receiverCoins, sdk.Coins{})
+// 	receiverCoins := bankKeeper.GetAllBalances(ctx, cosmosReceivers[0])
+// 	require.Equal(t, receiverCoins, sdk.Coins{})
 
-	claimType := types.ClaimType_CLAIM_TYPE_LOCK
-	claimContent := types.NewOracleClaimContent(cosmosReceivers[0], amount, symbol, tokenContractAddress, claimType)
+// 	claimType := types.ClaimType_CLAIM_TYPE_LOCK
+// 	claimContent := types.NewOracleClaimContent(cosmosReceivers[0], amount, symbol, tokenContractAddress, claimType)
 
-	claimBytes, err := json.Marshal(claimContent)
-	require.NoError(t, err)
-	claimString := string(claimBytes)
-	err = keeper.ProcessSuccessfulClaim(ctx, claimString)
-	require.NoError(t, err)
+// 	claimBytes, err := json.Marshal(claimContent)
+// 	require.NoError(t, err)
+// 	claimString := string(claimBytes)
+// 	err = keeper.ProcessSuccessfulClaim(ctx, claimString)
+// 	require.NoError(t, err)
 
-	receiverCoins = bankKeeper.GetAllBalances(ctx, cosmosReceivers[0])
+// 	receiverCoins = bankKeeper.GetAllBalances(ctx, cosmosReceivers[0])
 
-	require.Equal(t, receiverCoins.String(), "10cstake")
+// 	require.Equal(t, receiverCoins.String(), "10cstake")
 
-	// duplicate processSuccessClaim
-	err = keeper.ProcessSuccessfulClaim(ctx, claimString)
-	require.NoError(t, err)
+// 	// duplicate processSuccessClaim
+// 	err = keeper.ProcessSuccessfulClaim(ctx, claimString)
+// 	require.NoError(t, err)
 
-	receiverCoins = bankKeeper.GetAllBalances(ctx, cosmosReceivers[0])
-	require.Equal(t, "20cstake", receiverCoins.String())
-}
+// 	receiverCoins = bankKeeper.GetAllBalances(ctx, cosmosReceivers[0])
+// 	require.Equal(t, "20cstake", receiverCoins.String())
+// }
 
-func TestProcessSuccessfulClaimBurn(t *testing.T) {
-	ctx, keeper, bankKeeper, _, _, _, _ := test.CreateTestKeepers(t, 0.7, []int64{3, 3}, "")
+// func TestProcessSuccessfulClaimBurn(t *testing.T) {
+// 	ctx, keeper, bankKeeper, _, _, _, _, _ := test.CreateTestKeepers(t, 0.7, []int64{3, 3}, "")
 
-	receiverCoins := bankKeeper.GetAllBalances(ctx, cosmosReceivers[0])
-	require.Equal(t, receiverCoins, sdk.Coins{})
+// 	receiverCoins := bankKeeper.GetAllBalances(ctx, cosmosReceivers[0])
+// 	require.Equal(t, receiverCoins, sdk.Coins{})
 
-	claimType := types.ClaimType_CLAIM_TYPE_BURN
-	claimContent := types.NewOracleClaimContent(cosmosReceivers[0], amount, symbol, tokenContractAddress, claimType)
+// 	claimType := types.ClaimType_CLAIM_TYPE_BURN
+// 	claimContent := types.NewOracleClaimContent(cosmosReceivers[0], amount, symbol, tokenContractAddress, claimType)
 
-	claimBytes, err := json.Marshal(claimContent)
-	require.NoError(t, err)
-	claimString := string(claimBytes)
-	err = keeper.ProcessSuccessfulClaim(ctx, claimString)
-	require.NoError(t, err)
+// 	claimBytes, err := json.Marshal(claimContent)
+// 	require.NoError(t, err)
+// 	claimString := string(claimBytes)
+// 	err = keeper.ProcessSuccessfulClaim(ctx, claimString)
+// 	require.NoError(t, err)
 
-	receiverCoins = bankKeeper.GetAllBalances(ctx, cosmosReceivers[0])
+// 	receiverCoins = bankKeeper.GetAllBalances(ctx, cosmosReceivers[0])
 
-	require.Equal(t, receiverCoins.String(), "10stake")
+// 	require.Equal(t, receiverCoins.String(), "10stake")
 
-	// duplicate processSuccessClaim
-	err = keeper.ProcessSuccessfulClaim(ctx, claimString)
-	require.NoError(t, err)
+// 	// duplicate processSuccessClaim
+// 	err = keeper.ProcessSuccessfulClaim(ctx, claimString)
+// 	require.NoError(t, err)
 
-	receiverCoins = bankKeeper.GetAllBalances(ctx, cosmosReceivers[0])
-	require.Equal(t, "20stake", receiverCoins.String())
-}
+// 	receiverCoins = bankKeeper.GetAllBalances(ctx, cosmosReceivers[0])
+// 	require.Equal(t, "20stake", receiverCoins.String())
+// }
 
 func TestProcessBurn(t *testing.T) {
-	ctx, keeper, bankKeeper, _, _, _, _ := test.CreateTestKeepers(t, 0.7, []int64{3, 3}, "")
+	ctx, keeper, bankKeeper, _, _, _, _, _ := test.CreateTestKeepers(t, 0.7, []int64{3, 3}, "")
 
 	msg := types.NewMsgBurn(1, cosmosReceivers[0], ethereumSender, amount, "stake", amount)
 	coins := sdk.NewCoins(sdk.NewCoin("stake", amount), sdk.NewCoin(types.CethSymbol, amount))
@@ -204,7 +203,7 @@ func TestProcessBurn(t *testing.T) {
 }
 
 func TestProcessBurnCeth(t *testing.T) {
-	ctx, keeper, bankKeeper, _, _, _, _ := test.CreateTestKeepers(t, 0.7, []int64{3, 3}, "")
+	ctx, keeper, bankKeeper, _, _, _, _, _ := test.CreateTestKeepers(t, 0.7, []int64{3, 3}, "")
 
 	msg := types.NewMsgBurn(1, cosmosReceivers[0], ethereumSender, amount, types.CethSymbol, amount)
 	coins := sdk.NewCoins(sdk.NewCoin(types.CethSymbol, doubleAmount))
@@ -219,7 +218,7 @@ func TestProcessBurnCeth(t *testing.T) {
 }
 
 func TestProcessLock(t *testing.T) {
-	ctx, keeper, bankKeeper, _, _, _, _ := test.CreateTestKeepers(t, 0.7, []int64{3, 3}, "")
+	ctx, keeper, bankKeeper, _, _, _, _, _ := test.CreateTestKeepers(t, 0.7, []int64{3, 3}, "")
 
 	receiverCoins := bankKeeper.GetAllBalances(ctx, cosmosReceivers[0])
 	require.Equal(t, receiverCoins, sdk.Coins{})
@@ -242,7 +241,7 @@ func TestProcessLock(t *testing.T) {
 }
 
 func TestProcessBurnWithReceiver(t *testing.T) {
-	ctx, keeper, bankKeeper, _, oracleKeeper, _, _ := test.CreateTestKeepers(t, 0.7, []int64{3, 3}, "")
+	ctx, keeper, bankKeeper, _, oracleKeeper, _, _, _ := test.CreateTestKeepers(t, 0.7, []int64{3, 3}, "")
 	cosmosSender, err := sdk.AccAddressFromBech32(types.TestAddress)
 	require.NoError(t, err)
 	oracleKeeper.SetAdminAccount(ctx, cosmosSender)
@@ -260,7 +259,7 @@ func TestProcessBurnWithReceiver(t *testing.T) {
 }
 
 func TestProcessBurnCethWithReceiver(t *testing.T) {
-	ctx, keeper, bankKeeper, _, oracleKeeper, _, _ := test.CreateTestKeepers(t, 0.7, []int64{3, 3}, "")
+	ctx, keeper, bankKeeper, _, oracleKeeper, _, _, _ := test.CreateTestKeepers(t, 0.7, []int64{3, 3}, "")
 	cosmosSender, err := sdk.AccAddressFromBech32(types.TestAddress)
 	require.NoError(t, err)
 	oracleKeeper.SetAdminAccount(ctx, cosmosSender)
@@ -278,7 +277,7 @@ func TestProcessBurnCethWithReceiver(t *testing.T) {
 }
 
 func TestProcessLockWithReceiver(t *testing.T) {
-	ctx, keeper, bankKeeper, _, oracleKeeper, _, _ := test.CreateTestKeepers(t, 0.7, []int64{3, 3}, "")
+	ctx, keeper, bankKeeper, _, oracleKeeper, _, _, _ := test.CreateTestKeepers(t, 0.7, []int64{3, 3}, "")
 	cosmosSender, err := sdk.AccAddressFromBech32(types.TestAddress)
 	require.NoError(t, err)
 	oracleKeeper.SetAdminAccount(ctx, cosmosSender)
@@ -304,7 +303,7 @@ func TestProcessLockWithReceiver(t *testing.T) {
 }
 
 func TestProcessUpdateCethReceiverAccount(t *testing.T) {
-	ctx, keeper, _, _, oracleKeeper, _, _ := test.CreateTestKeepers(t, 0.7, []int64{3, 3}, "")
+	ctx, keeper, _, _, oracleKeeper, _, _, _ := test.CreateTestKeepers(t, 0.7, []int64{3, 3}, "")
 	cosmosSender, err := sdk.AccAddressFromBech32(types.TestAddress)
 	require.NoError(t, err)
 
@@ -318,15 +317,15 @@ func TestProcessUpdateCethReceiverAccount(t *testing.T) {
 }
 
 func TestProcessRescueCeth(t *testing.T) {
-	ctx, keeper, bankKeeper, _, oracleKeeper, _, _ := test.CreateTestKeepers(t, 0.7, []int64{3, 3}, "")
+	ctx, keeper, bankKeeper, _, oracleKeeper, _, _, _ := test.CreateTestKeepers(t, 0.7, []int64{3, 3}, "")
 	cosmosSender, err := sdk.AccAddressFromBech32(types.TestAddress)
 	require.NoError(t, err)
 
-	cethAmount := sdk.NewInt(100)
-	err = bankKeeper.MintCoins(ctx, types.ModuleName, sdk.NewCoins(sdk.NewCoin(types.CethSymbol, cethAmount)))
+	nativeTokenAmount := sdk.NewInt(100)
+	err = bankKeeper.MintCoins(ctx, types.ModuleName, sdk.NewCoins(sdk.NewCoin(types.CethSymbol, nativeTokenAmount)))
 	require.NoError(t, err)
 
-	msg := types.NewMsgRescueCeth(cosmosSender, cosmosSender, cethAmount)
+	msg := types.NewMsgRescueCeth(cosmosSender, cosmosSender, nativeTokenAmount)
 
 	err = keeper.ProcessRescueCeth(ctx, &msg)
 	require.Equal(t, err.Error(), "only admin account can call rescue ceth")

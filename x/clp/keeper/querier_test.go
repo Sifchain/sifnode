@@ -70,7 +70,7 @@ func TestQueryGetPool(t *testing.T) {
 	assert.Equal(t, pool.ExternalAsset, p.Pool.ExternalAsset)
 }
 
-func TestQueryErrorPools(t *testing.T) {
+func TestQueryEmptyPools(t *testing.T) {
 	cdc, app, ctx := createTestInput()
 
 	query := abci.RequestQuery{
@@ -81,8 +81,12 @@ func TestQueryErrorPools(t *testing.T) {
 	query.Path = ""
 	query.Data = nil
 	//Test Pools
-	_, err := querier(ctx, []string{types.QueryPools}, query)
-	assert.Error(t, err)
+	qpools, err := querier(ctx, []string{types.QueryPools}, query)
+	assert.NoError(t, err)
+	var poolsRes types.PoolsRes
+	err = cdc.UnmarshalJSON(qpools, &poolsRes)
+	assert.NoError(t, err)
+	assert.Empty(t, poolsRes.Pools)
 }
 
 func TestQueryGetPools(t *testing.T) {

@@ -126,7 +126,6 @@ func TestQueryClaims(t *testing.T) {
 		Path: "",
 		Data: qp,
 	}
-
 	querier := dispensationkeeper.NewLegacyQuerier(keeper)
 	res, err := querier(ctx, []string{types.QueryClaimsByType}, query)
 	assert.NoError(t, err)

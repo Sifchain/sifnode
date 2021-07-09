@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	TestEthereumChainID       = 3
+	TestNetworkDescriptor     = oracletypes.NetworkDescriptor(1)
 	TestBridgeContractAddress = "0xC4cE93a5699c68241fc2fB503Fb0f21724A624BB"
 	TestAddress               = "cosmos1gn8409qq9hnrxde37kuxwx5hrxpfpv8426szuv"
 	TestValidator             = "cosmos1xdp5tvt7lxh8rf9xx07wy2xlagzhq24ha48xtq"
@@ -24,6 +24,7 @@ const (
 	AltTestCoinsAmount        = 12
 	AltTestCoinsSymbol        = "eth"
 	TestCoinIntAmount         = 10
+	TestProphecyID            = "test_prophecy_id"
 )
 
 var testCethAmount = sdk.NewInt(65000000000 * 300000)
@@ -49,7 +50,7 @@ func CreateTestEthClaim(
 	testCosmosAddress, err1 := sdk.AccAddressFromBech32(TestAddress)
 	require.NoError(t, err1)
 	ethClaim := NewEthBridgeClaim(
-		TestEthereumChainID, testContractAddress, TestNonce, symbol,
+		TestNetworkDescriptor, testContractAddress, TestNonce, symbol,
 		testTokenAddress, testEthereumAddress, testCosmosAddress, validatorAddress, amount, claimType)
 	return ethClaim
 }
@@ -58,7 +59,7 @@ func CreateTestBurnMsg(t *testing.T, testCosmosSender string, ethereumReceiver E
 	coinsAmount sdk.Int, coinsSymbol string) MsgBurn {
 	testCosmosAddress, err := sdk.AccAddressFromBech32(TestAddress)
 	require.NoError(t, err)
-	burnEth := NewMsgBurn(TestEthereumChainID, testCosmosAddress, ethereumReceiver, coinsAmount, coinsSymbol, testCethAmount)
+	burnEth := NewMsgBurn(TestNetworkDescriptor, testCosmosAddress, ethereumReceiver, coinsAmount, coinsSymbol, testCethAmount)
 	return burnEth
 }
 
@@ -66,7 +67,7 @@ func CreateTestLockMsg(t *testing.T, testCosmosSender string, ethereumReceiver E
 	coinsAmount sdk.Int, coinsSymbol string) MsgLock {
 	testCosmosAddress, err := sdk.AccAddressFromBech32(TestAddress)
 	require.NoError(t, err)
-	lockEth := NewMsgLock(TestEthereumChainID, testCosmosAddress, ethereumReceiver, coinsAmount, coinsSymbol, testCethAmount)
+	lockEth := NewMsgLock(TestNetworkDescriptor, testCosmosAddress, ethereumReceiver, coinsAmount, coinsSymbol, testCethAmount)
 	return lockEth
 }
 
@@ -77,12 +78,11 @@ func CreateTestQueryEthProphecyResponse(t *testing.T, validatorAddress sdk.ValAd
 	testTokenAddress := NewEthereumAddress(TestTokenContractAddress)
 	ethBridgeClaim := CreateTestEthClaim(t, testContractAddress, testTokenAddress, validatorAddress,
 		testEthereumAddress, TestCoinsAmount, TestCoinsSymbol, claimType)
-	oracleClaim, _ := CreateOracleClaimFromEthClaim(ethBridgeClaim)
-	ethBridgeClaims := []*EthBridgeClaim{ethBridgeClaim}
+	ethBridgeClaims := []string{ethBridgeClaim.ValidatorAddress}
 
 	return NewQueryEthProphecyResponse(
-		oracleClaim.Id,
-		oracletypes.NewStatus(oracletypes.StatusText_STATUS_TEXT_PENDING, ""),
+		ethBridgeClaim.GetProphecyID(),
+		oracletypes.StatusText_STATUS_TEXT_PENDING,
 		ethBridgeClaims,
 	)
 }
@@ -97,12 +97,29 @@ func CreateTestUpdateCethReceiverAccountMsg(t *testing.T, testCosmosSender strin
 	return msgUpdateCethReceiverAccount
 }
 
-func CreateTestRescueCethMsg(t *testing.T, testCosmosSender string, testCethReceiverAccount string, cethAmount sdk.Int) MsgRescueCeth {
+func CreateTestRescueCethMsg(t *testing.T, testCosmosSender string, testCethReceiverAccount string, nativeTokenAmount sdk.Int) MsgRescueCeth {
 	accAddress1, err := sdk.AccAddressFromBech32(testCosmosSender)
 	require.NoError(t, err)
 	accAddress2, err := sdk.AccAddressFromBech32(testCethReceiverAccount)
 	require.NoError(t, err)
 
-	MsgRescueCeth := NewMsgRescueCeth(accAddress1, accAddress2, cethAmount)
+	MsgRescueCeth := NewMsgRescueCeth(accAddress1, accAddress2, nativeTokenAmount)
 	return MsgRescueCeth
+}
+
+func CreateTestUpdateWhiteListValidatorMsg(_ *testing.T, networkDescriptor oracletypes.NetworkDescriptor, sender string, validator string, power uint32) MsgUpdateWhiteListValidator {
+	return MsgUpdateWhiteListValidator{
+		NetworkDescriptor: networkDescriptor,
+		CosmosSender:      sender,
+		Validator:         validator,
+		Power:             power,
+	}
+}
+
+func CreateTestSetAtiveTokenMsg(t *testing.T, testCosmosSender string, networkDescriptor oracletypes.NetworkDescriptor, nativeToken string) MsgSetNativeToken {
+	accAddress, err := sdk.AccAddressFromBech32(testCosmosSender)
+	require.NoError(t, err)
+
+	MsgSetNativeToken := NewMsgSetNativeToken(accAddress, networkDescriptor, nativeToken)
+	return MsgSetNativeToken
 }

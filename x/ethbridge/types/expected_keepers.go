@@ -19,14 +19,18 @@ type BankKeeper interface {
 	MintCoins(ctx sdk.Context, name string, amt sdk.Coins) error
 	BurnCoins(ctx sdk.Context, name string, amt sdk.Coins) error
 	SendCoins(ctx sdk.Context, fromAddr sdk.AccAddress, toAddr sdk.AccAddress, amt sdk.Coins) error
+	GetAllBalances(ctx sdk.Context, addr sdk.AccAddress) sdk.Coins
 }
 
 // OracleKeeper defines the expected oracle keeper
 type OracleKeeper interface {
-	ProcessClaim(ctx sdk.Context, claim oracletypes.Claim) (oracletypes.Status, error)
-	GetProphecy(ctx sdk.Context, id string) (oracletypes.Prophecy, bool)
-	ProcessUpdateWhiteListValidator(ctx sdk.Context, cosmosSender sdk.AccAddress, validator sdk.ValAddress, operationtype string) error
+	ProcessClaim(ctx sdk.Context, networkDescriptor oracletypes.NetworkDescriptor, prophecyID []byte, address string) (oracletypes.StatusText, error)
+	GetProphecy(ctx sdk.Context, prophecyID []byte) (oracletypes.Prophecy, bool)
+	ProcessUpdateWhiteListValidator(ctx sdk.Context, networkDescriptor oracletypes.NetworkDescriptor, cosmosSender sdk.AccAddress, validator sdk.ValAddress, power uint32) error
 	IsAdminAccount(ctx sdk.Context, cosmosSender sdk.AccAddress) bool
 	GetAdminAccount(ctx sdk.Context) sdk.AccAddress
 	SetAdminAccount(ctx sdk.Context, cosmosSender sdk.AccAddress)
+	GetNativeToken(ctx sdk.Context, networkIdentity oracletypes.NetworkIdentity) (string, error)
+	GetNativeTokenConfig(ctx sdk.Context, networkIdentity oracletypes.NetworkIdentity) (oracletypes.NativeTokenConfig, error)
+	ProcessSetNativeToken(ctx sdk.Context, networkDescriptor oracletypes.NetworkDescriptor, nativeToken string, gas, burnCost, lockCost sdk.Int) error
 }

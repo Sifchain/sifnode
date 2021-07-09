@@ -1,13 +1,9 @@
-const { deployProxy, upgradeProxy, silenceWarnings } = require('@openzeppelin/truffle-upgrades');
-const Valset = artifacts.require("Valset");
-const CosmosBridge = artifacts.require("CosmosBridge");
-const Oracle = artifacts.require("Oracle");
-const BridgeBank = artifacts.require("BridgeBank");
-const MockCosmosBridgeUpgrade = artifacts.require("MockCosmosBridgeUpgrade");
+const { upgradeProxy } = require('@openzeppelin/truffle-upgrades');
+const { multiTokenSetup } = require('./helpers/testFixture');
+const { upgrades } = require('hardhat');
+const { use, expect } = require('chai');
 
-const { expectRevert } = require('@openzeppelin/test-helpers');
-
-const EVMRevert = "revert";
+const web3 = require("web3");
 const BigNumber = web3.BigNumber;
 
 require("chai")
@@ -15,112 +11,110 @@ require("chai")
   .use(require("chai-bignumber")(BigNumber))
   .should();
 
-contract("CosmosBridge Upgrade", function (accounts) {
-  // System operator
-  const operator = accounts[0];
-
-  // Initial validator accounts
-  const userOne = accounts[1];
-  const userTwo = accounts[2];
-  const userThree = accounts[3];
-  const userFour = accounts[4];
-
-  // Consensus threshold of 70%
+describe("CosmosBridge Upgrade", function () {
   const consensusThreshold = 70;
+  let userOne;
+  let userTwo;
+  let userThree;
+  let userFour;
+  let accounts;
+  let signerAccounts;
+  let operator;
+  let owner;
+  let initialPowers;
+  let initialValidators;
+  let state;
+  let pauser;
+  let MockCosmosBridgeUpgrade;
+
+  before(async function() {
+    accounts = await ethers.getSigners();
+
+    signerAccounts = accounts.map((e) => { return e.address });
+
+    operator = accounts[0];
+    userOne = accounts[1];
+    userTwo = accounts[2];
+    userFour = accounts[3];
+    userThree = accounts[7].address;
+
+    owner = accounts[5];
+    pauser = accounts[6];
+
+    initialPowers = [25, 25, 25, 25];
+    initialValidators = signerAccounts.slice(0, 4);
+    MockCosmosBridgeUpgrade = await ethers.getContractFactory("MockCosmosBridgeUpgrade");
+    state = {};
+  });
 
   describe("CosmosBridge smart contract deployment", function () {
     beforeEach(async function () {
-      await silenceWarnings();
 
-      // Deploy Valset contract
-      this.initialValidators = [userOne, userTwo, userThree, userFour];
-      this.initialPowers = [30, 20, 21, 29];
+      state.initialValidators = [
+        userOne.address,
+        userTwo.address,
+        userThree,
+        userFour.address
+      ];
 
-      // Deploy CosmosBridge contract
-      this.cosmosBridge = await deployProxy(CosmosBridge, [
+      state.initialPowers = [30, 20, 21, 29];
+
+      state = await multiTokenSetup(
+        state.initialValidators,
+        state.initialPowers,
         operator,
         consensusThreshold,
-        this.initialValidators,
-        this.initialPowers
-      ],
-        {unsafeAllowCustomTypes: true}
+        owner,
+        userOne,
+        userThree,
+        pauser.address
       );
 
-      // Deploy BridgeBank contract
-      this.bridgeBank = await deployProxy(BridgeBank, [
-        operator,
-        this.cosmosBridge.address,
-        operator,
-        operator
-      ],
-      {unsafeAllowCustomTypes: true}
-      );
-
-      this.cosmosBridge = await upgradeProxy(
-          this.cosmosBridge.address,
+      state.cosmosBridge = await upgrades.upgradeProxy(
+          state.cosmosBridge.address,
           MockCosmosBridgeUpgrade,
-          {unsafeAllowCustomTypes: true}
-      )
+      );
     });
 
     it("should be able to mint tokens for a user", async function () {
       const amount = 100000000000;
-      this.cosmosBridge.should.exist;
+      state.cosmosBridge.should.exist;
   
-      await this.cosmosBridge.tokenFaucet({ from: operator});
-      const operatorBalance = await this.cosmosBridge.balanceOf(operator);
+      await state.cosmosBridge.connect(operator).tokenFaucet();
+      const operatorBalance = await state.cosmosBridge.balanceOf(operator.address);
       Number(operatorBalance).should.be.bignumber.equal(amount);
     });
     
     it("should be able to transfer tokens from the operator", async function () {
-      const startingOperatorBalance = await this.cosmosBridge.balanceOf(operator);
+      const startingOperatorBalance = await state.cosmosBridge.balanceOf(operator.address);
       Number(startingOperatorBalance).should.be.bignumber.equal(0);
 
       const amount = 100000000000;
-      this.cosmosBridge.should.exist;
+      state.cosmosBridge.should.exist;
 
-      await this.cosmosBridge.tokenFaucet({ from: operator});
+      await state.cosmosBridge.connect(operator).tokenFaucet();
+      await state.cosmosBridge.connect(operator).transfer(userOne.address, amount);
 
-      await this.cosmosBridge.transfer(userOne, amount, { from: operator});
-      const operatorBalance = await this.cosmosBridge.balanceOf(operator);
-      const userOneBalance = await this.cosmosBridge.balanceOf(userOne);
+      const operatorBalance = await state.cosmosBridge.balanceOf(operator.address);
+      const userOneBalance = await state.cosmosBridge.balanceOf(userOne.address);
       
       Number(operatorBalance).should.be.bignumber.equal(0);
       Number(userOneBalance).should.be.bignumber.equal(amount);
     });
 
     it("should not be able to initialize cosmos bridge a second time", async function () {
-      this.cosmosBridge.should.exist;
+      state.cosmosBridge.should.exist;
 
-      await expectRevert(
-        this.cosmosBridge.initialize(userFour, 50, this.initialValidators, this.initialPowers),
-        "Initialized"
-      )
+      await expect(
+        state.cosmosBridge.initialize(userFour.address, 50, state.initialValidators, state.initialPowers),
+      ).to.be.revertedWith("Initialized");
     });
 
-    describe("CosmosBridge has all previous functionality", function () {
-
-      it("should allow the operator to set the Bridge Bank", async function () {
-        this.bridgeBank.should.exist;
-
-        await this.cosmosBridge.setBridgeBank(this.bridgeBank.address, {
-          from: operator
-        }).should.be.fulfilled;
-
-        const bridgeBank = await this.cosmosBridge.bridgeBank();
-        bridgeBank.should.be.equal(this.bridgeBank.address);
-      });
-
+    describe("Storage Remains Intact", function () {
       it("should not allow the operator to update the Bridge Bank once it has been set", async function () {
-        await this.cosmosBridge.setBridgeBank(operator, {
-          from: operator
-        }).should.be.fulfilled;
-
-        await this.cosmosBridge
-        .setBridgeBank(operator, {
-          from: operator
-        })
-        .should.be.rejectedWith(EVMRevert);
+        await expect(
+          state.cosmosBridge.connect(operator).setBridgeBank(state.bridgeBank.address)
+        ).to.be.revertedWith("The Bridge Bank cannot be updated once it has been set");
       });
     });
   });

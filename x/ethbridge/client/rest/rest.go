@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
-	"strings"
 
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/tx"
@@ -16,47 +15,49 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	"github.com/Sifchain/sifnode/x/ethbridge/types"
+	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
 )
 
 const (
-	restEthereumChainID = "ethereumChainID"
-	restBridgeContract  = "bridgeContract"
-	restNonce           = "nonce"
-	restSymbol          = "symbol"
-	restTokenContract   = "tokenContract"
-	restEthereumSender  = "ethereumSender"
+	restProphecyID        = "restProphecyID"
+	restNetworkDescriptor = "networkDescriptor"
+	restBridgeContract    = "bridgeContract"
+	restNonce             = "nonce"
+	restSymbol            = "symbol"
+	restTokenContract     = "tokenContract"
+	restEthereumSender    = "ethereumSender"
 )
 
 type createEthClaimReq struct {
-	BaseReq               rest.BaseReq `json:"base_req"`
-	EthereumChainID       int          `json:"ethereum_chain_id"`
-	BridgeContractAddress string       `json:"bridge_registry_contract_address"`
-	Nonce                 int          `json:"nonce"`
-	Symbol                string       `json:"symbol"`
-	TokenContractAddress  string       `json:"token_contract_address"`
-	EthereumSender        string       `json:"ethereum_sender"`
-	CosmosReceiver        string       `json:"cosmos_receiver"`
-	Validator             string       `json:"validator"`
-	Amount                sdk.Int      `json:"amount"`
-	ClaimType             string       `json:"claim_type"`
+	BaseReq               rest.BaseReq                  `json:"base_req"`
+	NetworkDescriptor     oracletypes.NetworkDescriptor `json:"network_descriptor"`
+	BridgeContractAddress string                        `json:"bridge_registry_contract_address"`
+	Nonce                 int                           `json:"nonce"`
+	Symbol                string                        `json:"symbol"`
+	TokenContractAddress  string                        `json:"token_contract_address"`
+	EthereumSender        string                        `json:"ethereum_sender"`
+	CosmosReceiver        string                        `json:"cosmos_receiver"`
+	Validator             string                        `json:"validator"`
+	Amount                sdk.Int                       `json:"amount"`
+	ClaimType             string                        `json:"claim_type"`
 }
 
 type burnOrLockEthReq struct {
-	BaseReq          rest.BaseReq `json:"base_req"`
-	EthereumChainID  string       `json:"ethereum_chain_id"`
-	TokenContract    string       `json:"token_contract_address"`
-	CosmosSender     string       `json:"cosmos_sender"`
-	EthereumReceiver string       `json:"ethereum_receiver"`
-	Amount           sdk.Int      `json:"amount"`
-	Symbol           string       `json:"symbol"`
-	CethAmount       sdk.Int      `json:"ceth_amount" yaml:"ceth_amount"`
+	BaseReq           rest.BaseReq `json:"base_req"`
+	NetworkDescriptor string       `json:"network_descriptor"`
+	TokenContract     string       `json:"token_contract_address"`
+	CosmosSender      string       `json:"cosmos_sender"`
+	EthereumReceiver  string       `json:"ethereum_receiver"`
+	Amount            sdk.Int      `json:"amount"`
+	Symbol            string       `json:"symbol"`
+	CethAmount        sdk.Int      `json:"native_token_amount" yaml:"native_token_amount"`
 }
 
 // RegisterRESTRoutes - Central function to define routes that get registered by the main application
 func RegisterRESTRoutes(cliCtx client.Context, r *mux.Router, storeName string) {
 	getProhechyRoute := fmt.Sprintf(
 		"/%s/prophecies/{%s}/{%s}/{%s}/{%s}/{%s}/{%s}",
-		storeName, restEthereumChainID, restBridgeContract, restNonce,
+		storeName, restNetworkDescriptor, restBridgeContract, restNonce,
 		restSymbol, restTokenContract, restEthereumSender)
 
 	r.HandleFunc(fmt.Sprintf("/%s/prophecies", storeName), createClaimHandler(cliCtx)).Methods("POST")
@@ -106,7 +107,7 @@ func createClaimHandler(cliCtx client.Context) http.HandlerFunc {
 
 		// create the message
 		ethBridgeClaim := types.NewEthBridgeClaim(
-			int64(req.EthereumChainID), bridgeContractAddress, int64(req.Nonce), req.Symbol,
+			req.NetworkDescriptor, bridgeContractAddress, int64(req.Nonce), req.Symbol,
 			tokenContractAddress, ethereumSender, cosmosReceiver, validator, req.Amount, ct)
 		msg := types.NewMsgCreateEthBridgeClaim(ethBridgeClaim)
 		err = msg.ValidateBasic()
@@ -123,35 +124,9 @@ func getProphecyHandler(cliCtx client.Context, storeName string) http.HandlerFun
 	return func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
 
-		ethereumChainIDString := vars[restEthereumChainID]
-		ethereumChainID, err := strconv.ParseInt(ethereumChainIDString, 10, 64)
-		if err != nil {
-			rest.WriteErrorResponse(w, http.StatusInternalServerError, err.Error())
-			return
-		}
+		restProphecyID := []byte(vars[restProphecyID])
 
-		bridgeContract := types.NewEthereumAddress(vars[restBridgeContract])
-
-		nonce := vars[restNonce]
-		nonceString, err := strconv.ParseInt(nonce, 10, 64)
-		if err != nil {
-			rest.WriteErrorResponse(w, http.StatusInternalServerError, err.Error())
-			return
-		}
-
-		tokenContract := types.NewEthereumAddress(vars[restTokenContract])
-
-		symbol := vars[restSymbol]
-		if strings.TrimSpace(symbol) == "" {
-			rest.WriteErrorResponse(w, http.StatusInternalServerError, "symbol is empty")
-			return
-		}
-
-		ethereumSender := types.NewEthereumAddress(vars[restEthereumSender])
-
-		bz, err := cliCtx.LegacyAmino.MarshalJSON(
-			types.NewQueryEthProphecyRequest(
-				ethereumChainID, bridgeContract, nonceString, symbol, tokenContract, ethereumSender))
+		bz, err := cliCtx.LegacyAmino.MarshalJSON(types.NewQueryEthProphecyRequest(restProphecyID))
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusNotFound, err.Error())
 			return
@@ -182,7 +157,7 @@ func burnOrLockHandler(cliCtx client.Context, lockOrBurn string) http.HandlerFun
 			return
 		}
 
-		ethereumChainID, err := strconv.Atoi(req.EthereumChainID)
+		networkDescriptor, err := strconv.Atoi(req.NetworkDescriptor)
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusInternalServerError, err.Error())
 			return
@@ -200,10 +175,10 @@ func burnOrLockHandler(cliCtx client.Context, lockOrBurn string) http.HandlerFun
 		var msg sdk.Msg
 		switch lockOrBurn {
 		case "lock":
-			msgLock := types.NewMsgLock(int64(ethereumChainID), cosmosSender, ethereumReceiver, req.Amount, req.Symbol, req.CethAmount)
+			msgLock := types.NewMsgLock(oracletypes.NetworkDescriptor(networkDescriptor), cosmosSender, ethereumReceiver, req.Amount, req.Symbol, req.CethAmount)
 			msg = &msgLock
 		case "burn":
-			msgBurn := types.NewMsgBurn(int64(ethereumChainID), cosmosSender, ethereumReceiver, req.Amount, req.Symbol, req.CethAmount)
+			msgBurn := types.NewMsgBurn(oracletypes.NetworkDescriptor(networkDescriptor), cosmosSender, ethereumReceiver, req.Amount, req.Symbol, req.CethAmount)
 			msg = &msgBurn
 		}
 		err = msg.ValidateBasic()

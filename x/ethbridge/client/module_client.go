@@ -49,6 +49,7 @@ func GetTxCmd() *cobra.Command {
 		cli.GetCmdUpdateWhiteListValidator(),
 		cli.GetCmdUpdateCethReceiverAccount(),
 		cli.GetCmdRescueCeth(),
+		cli.GetCmdSetNativeToken(),
 	)
 
 	return ethBridgeTxCmd

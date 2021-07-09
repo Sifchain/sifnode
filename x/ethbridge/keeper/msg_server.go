@@ -2,10 +2,11 @@ package keeper
 
 import (
 	"context"
+	"strconv"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/pkg/errors"
-	"strconv"
 
 	"github.com/Sifchain/sifnode/x/ethbridge/types"
 	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
@@ -49,13 +50,13 @@ func (srv msgServer) Lock(goCtx context.Context, msg *types.MsgLock) (*types.Msg
 	}
 
 	logger.Info("sifnode emit lock event.",
-		"EthereumChainID", strconv.FormatInt(msg.EthereumChainId, 10),
+		"NetworkId", strconv.FormatInt(int64(msg.NetworkDescriptor), 10),
 		"CosmosSender", msg.CosmosSender,
 		"CosmosSenderSequence", strconv.FormatUint(account.GetSequence(), 10),
 		"EthereumReceiver", msg.EthereumReceiver,
 		"Amount", msg.Amount.String(),
 		"Symbol", msg.Symbol,
-		"CethAmount", msg.CethAmount.String())
+		"NativeTokenAmount", msg.NativeTokenAmount.String())
 
 	ctx.EventManager().EmitEvents(sdk.Events{
 		sdk.NewEvent(
@@ -65,13 +66,13 @@ func (srv msgServer) Lock(goCtx context.Context, msg *types.MsgLock) (*types.Msg
 		),
 		sdk.NewEvent(
 			types.EventTypeLock,
-			sdk.NewAttribute(types.AttributeKeyEthereumChainID, strconv.FormatInt(msg.EthereumChainId, 10)),
+			sdk.NewAttribute(types.AttributeKeyNetworkDescriptor, strconv.FormatInt(int64(msg.NetworkDescriptor), 10)),
 			sdk.NewAttribute(types.AttributeKeyCosmosSender, msg.CosmosSender),
 			sdk.NewAttribute(types.AttributeKeyCosmosSenderSequence, strconv.FormatUint(account.GetSequence(), 10)),
 			sdk.NewAttribute(types.AttributeKeyEthereumReceiver, msg.EthereumReceiver),
 			sdk.NewAttribute(types.AttributeKeyAmount, msg.Amount.String()),
 			sdk.NewAttribute(types.AttributeKeySymbol, msg.Symbol),
-			sdk.NewAttribute(types.AttributeKeyCethAmount, msg.CethAmount.String()),
+			sdk.NewAttribute(types.AttributeKeyNativeTokenAmount, msg.NativeTokenAmount.String()),
 		),
 	})
 
@@ -105,13 +106,13 @@ func (srv msgServer) Burn(goCtx context.Context, msg *types.MsgBurn) (*types.Msg
 	}
 
 	logger.Info("sifnode emit burn event.",
-		"EthereumChainID", strconv.FormatInt(msg.EthereumChainId, 10),
+		"NetworkId", strconv.FormatInt(int64(msg.NetworkDescriptor), 10),
 		"CosmosSender", msg.CosmosSender,
 		"CosmosSenderSequence", strconv.FormatUint(account.GetSequence(), 10),
 		"EthereumReceiver", msg.EthereumReceiver,
 		"Amount", msg.Amount.String(),
 		"Symbol", msg.Symbol,
-		"CethAmount", msg.CethAmount.String())
+		"NativeTokenAmount", msg.NativeTokenAmount.String())
 
 	ctx.EventManager().EmitEvents(sdk.Events{
 		sdk.NewEvent(
@@ -121,13 +122,13 @@ func (srv msgServer) Burn(goCtx context.Context, msg *types.MsgBurn) (*types.Msg
 		),
 		sdk.NewEvent(
 			types.EventTypeBurn,
-			sdk.NewAttribute(types.AttributeKeyEthereumChainID, strconv.FormatInt(msg.EthereumChainId, 10)),
+			sdk.NewAttribute(types.AttributeKeyNetworkDescriptor, strconv.FormatInt(int64(msg.NetworkDescriptor), 10)),
 			sdk.NewAttribute(types.AttributeKeyCosmosSender, msg.CosmosSender),
 			sdk.NewAttribute(types.AttributeKeyCosmosSenderSequence, strconv.FormatUint(account.GetSequence(), 10)),
 			sdk.NewAttribute(types.AttributeKeyEthereumReceiver, msg.EthereumReceiver),
 			sdk.NewAttribute(types.AttributeKeyAmount, msg.Amount.String()),
 			sdk.NewAttribute(types.AttributeKeySymbol, msg.Symbol),
-			sdk.NewAttribute(types.AttributeKeyCethAmount, msg.CethAmount.String()),
+			sdk.NewAttribute(types.AttributeKeyNativeTokenAmount, msg.NativeTokenAmount.String()),
 		),
 	})
 
@@ -136,17 +137,19 @@ func (srv msgServer) Burn(goCtx context.Context, msg *types.MsgBurn) (*types.Msg
 }
 func (srv msgServer) CreateEthBridgeClaim(goCtx context.Context, msg *types.MsgCreateEthBridgeClaim) (*types.MsgCreateEthBridgeClaimResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
-
 	logger := srv.Keeper.Logger(ctx)
 
 	status, err := srv.Keeper.ProcessClaim(ctx, msg.EthBridgeClaim)
+
 	if err != nil {
-		logger.Error("bridge keeper failed to process claim.",
-			errorMessageKey, err.Error())
-		return nil, err
-	}
-	if status.Text == oracletypes.StatusText_STATUS_TEXT_SUCCESS {
-		if err = srv.Keeper.ProcessSuccessfulClaim(ctx, status.FinalClaim); err != nil {
+		if err != oracletypes.ErrProphecyFinalized {
+			logger.Error("bridge keeper failed to process claim.",
+				errorMessageKey, err.Error())
+			return nil, err
+		}
+
+	} else if status == oracletypes.StatusText_STATUS_TEXT_SUCCESS {
+		if err = srv.Keeper.ProcessSuccessfulClaim(ctx, msg.EthBridgeClaim); err != nil {
 			logger.Error("bridge keeper failed to process successful claim.",
 				errorMessageKey, err.Error())
 			return nil, err
@@ -181,7 +184,7 @@ func (srv msgServer) CreateEthBridgeClaim(goCtx context.Context, msg *types.MsgC
 		),
 		sdk.NewEvent(
 			types.EventTypeProphecyStatus,
-			sdk.NewAttribute(types.AttributeKeyStatus, status.Text.String()),
+			sdk.NewAttribute(types.AttributeKeyStatus, status.String()),
 		),
 	})
 
@@ -203,21 +206,27 @@ func (srv msgServer) UpdateWhiteListValidator(goCtx context.Context,
 	if account == nil {
 		logger.Error("account is nil.", "CosmosSender", msg.CosmosSender)
 
-		return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.CosmosSender)
+		return nil, sdkerrors.Wrap(sdkerrors.ErrUnknownAddress, msg.CosmosSender)
 	}
 
-	err = srv.Keeper.ProcessUpdateWhiteListValidator(ctx, cosmosSender,
-		sdk.ValAddress(msg.Validator), msg.OperationType)
+	valAddr, err := sdk.ValAddressFromBech32(msg.Validator)
+	if err != nil {
+		return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.Validator)
+	}
+
+	err = srv.Keeper.ProcessUpdateWhiteListValidator(ctx, msg.NetworkDescriptor, cosmosSender,
+		valAddr, msg.Power)
 	if err != nil {
 		logger.Error("bridge keeper failed to process update validator.", errorMessageKey, err.Error())
 		return nil, err
 	}
 
 	logger.Info("sifnode emit update whitelist validators event.",
+		"NetworkDescriptor", msg.NetworkDescriptor,
 		"CosmosSender", msg.CosmosSender,
 		"CosmosSenderSequence", strconv.FormatUint(account.GetSequence(), 10),
 		"Validator", msg.Validator,
-		"OperationType", msg.OperationType)
+		"Power", msg.Power)
 
 	ctx.EventManager().EmitEvents(sdk.Events{
 		sdk.NewEvent(
@@ -227,9 +236,10 @@ func (srv msgServer) UpdateWhiteListValidator(goCtx context.Context,
 		),
 		sdk.NewEvent(
 			types.EventTypeLock,
+			sdk.NewAttribute(types.AttributeKeyNetworkDescriptor, strconv.Itoa(int(msg.NetworkDescriptor))),
 			sdk.NewAttribute(types.AttributeKeyCosmosSender, msg.CosmosSender),
 			sdk.NewAttribute(types.AttributeKeyValidator, msg.Validator),
-			sdk.NewAttribute(types.AttributeKeyOperationType, msg.OperationType),
+			sdk.NewAttribute(types.AttributeKeyPowerType, strconv.Itoa(int(msg.Power))),
 		),
 	})
 
@@ -247,7 +257,7 @@ func (srv msgServer) UpdateCethReceiverAccount(goCtx context.Context,
 		return nil, err
 	}
 
-	cethReceiverAddress, err := sdk.AccAddressFromBech32(msg.CethReceiverAccount)
+	nativeTokenReceiverAddress, err := sdk.AccAddressFromBech32(msg.CethReceiverAccount)
 	if err != nil {
 		return nil, err
 	}
@@ -260,7 +270,7 @@ func (srv msgServer) UpdateCethReceiverAccount(goCtx context.Context,
 	}
 
 	err = srv.Keeper.ProcessUpdateCethReceiverAccount(ctx,
-		cosmosSender, cethReceiverAddress)
+		cosmosSender, nativeTokenReceiverAddress)
 	if err != nil {
 		logger.Error("keeper failed to process update ceth receiver account.", errorMessageKey, err.Error())
 		return nil, err
@@ -303,14 +313,63 @@ func (srv msgServer) RescueCeth(goCtx context.Context, msg *types.MsgRescueCeth)
 	}
 
 	if err := srv.Keeper.ProcessRescueCeth(ctx, msg); err != nil {
-		logger.Error("keeper failed to process rescue ceth message.", errorMessageKey, err.Error())
+		logger.Error("keeper failed to process rescue native_token message.", errorMessageKey, err.Error())
 		return nil, err
 	}
-	logger.Info("sifnode emit rescue ceth event.",
+	logger.Info("sifnode emit rescue native_token event.",
 		"CosmosSender", msg.CosmosSender,
 		"CosmosSenderSequence", strconv.FormatUint(account.GetSequence(), 10),
 		"CosmosReceiver", msg.CosmosReceiver,
-		"CethAmount", msg.CethAmount)
+		"NativeTokenAmount", msg.CethAmount)
 
 	return &types.MsgRescueCethResponse{}, nil
+}
+
+func (srv msgServer) SetNativeToken(goCtx context.Context, msg *types.MsgSetNativeToken) (*types.MsgSetNativeTokenResponse, error) {
+	ctx := sdk.UnwrapSDKContext(goCtx)
+	logger := srv.Keeper.Logger(ctx)
+
+	cosmosSender, err := sdk.AccAddressFromBech32(msg.CosmosSender)
+	if err != nil {
+		return nil, err
+	}
+
+	account := srv.Keeper.accountKeeper.GetAccount(ctx, cosmosSender)
+	if account == nil {
+		logger.Error("account is nil.", "CosmosSender", msg.CosmosSender)
+		return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.CosmosSender)
+	}
+
+	if err := srv.Keeper.ProcessSetNativeToken(ctx, msg); err != nil {
+		logger.Error("keeper failed to process rescue native_token message.", errorMessageKey, err.Error())
+		return nil, err
+	}
+	logger.Info("sifnode emit set native_token event.",
+		"CosmosSender", msg.CosmosSender,
+		"CosmosSenderSequence", strconv.FormatUint(account.GetSequence(), 10),
+		"NetworkDescriptor", msg.NetworkDescriptor,
+		"NativeToken", msg.NativeToken,
+		"NativeTokenGas", msg.NativeGas.String(),
+		"minimum_lock_cost", msg.MinimumLockCost.String(),
+		"minimum_burn_cost", msg.MinimumBurnCost.String(),
+	)
+
+	ctx.EventManager().EmitEvents(sdk.Events{
+		sdk.NewEvent(
+			sdk.EventTypeMessage,
+			sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
+			sdk.NewAttribute(sdk.AttributeKeySender, msg.CosmosSender),
+		),
+		sdk.NewEvent(
+			types.EventTypeSetNativeToken,
+			sdk.NewAttribute(types.AttributeKeyCosmosSender, msg.CosmosSender),
+			sdk.NewAttribute(types.AttributeKeyNetworkDescriptor, msg.NetworkDescriptor.String()),
+			sdk.NewAttribute(types.AttributeKeyNativeToken, msg.NativeToken),
+			sdk.NewAttribute(types.AttributeKeyNativeTokenGas, msg.NativeGas.String()),
+			sdk.NewAttribute(types.AttributeKeyMinimumLockCost, msg.MinimumLockCost.String()),
+			sdk.NewAttribute(types.AttributeKeyMinimumBurnCost, msg.MinimumBurnCost.String()),
+		),
+	})
+
+	return &types.MsgSetNativeTokenResponse{}, nil
 }
