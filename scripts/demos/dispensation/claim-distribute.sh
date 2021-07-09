@@ -16,9 +16,9 @@ sifnoded tx dispensation create ValidatorSubsidy output.json sif1syavy2npfyt9tcn
 
 sleep 8
 sifnoded q dispensation distributions-all --chain-id=localnet
-#sifnodecli q dispensation records-by-name-all ar1 >> all.json
-#sifnodecli q dispensation records-by-name-pending ar1 >> pending.json
-#sifnodecli q dispensation records-by-name-completed ar1 >> completed.json
-#sifnodecli q dispensation records-by-addr sif1cp23ye3h49nl5ty35vewrtvsgwnuczt03jwg00
+#sifnoded q dispensation records-by-name-all ar1 >> all.json
+#sifnoded q dispensation records-by-name-pending ar1 >> pending.json
+#sifnoded q dispensation records-by-name-completed ar1 >> completed.json
+#sifnoded q dispensation records-by-addr sif1cp23ye3h49nl5ty35vewrtvsgwnuczt03jwg00
 
 

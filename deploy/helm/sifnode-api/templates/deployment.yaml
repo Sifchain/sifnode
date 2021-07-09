@@ -28,7 +28,7 @@ spec:
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           command: ["/bin/sh"]
-          args: ["-c", "sifnodecli rest-server --unsafe-cors --laddr tcp://0.0.0.0:1317 --node {{ .Values.sifnodeApi.args.nodeHost }} --trust-node"]
+          args: ["-c", "sifnoded rest-server --unsafe-cors --laddr tcp://0.0.0.0:1317 --node {{ .Values.sifnodeApi.args.nodeHost }} --trust-node"]
           ports:
             - name: port-1317
               containerPort: 1317

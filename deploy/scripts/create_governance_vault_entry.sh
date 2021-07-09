@@ -57,15 +57,15 @@ fi
 footer
 
 
-header "Building the docker sifnodecli image to test values import as keyring properly."
-make CHAINNET=${CHAINNET} IMAGE_TAG=test BINARY=sifnodecli build-image
+header "Building the docker sifnoded image to test values import as keyring properly."
+make CHAINNET=${CHAINNET} IMAGE_TAG=test BINARY=sifnoded build-image
 footer
 
 
 header "Run a test and import keyring with provided values"
-docker run -e MNEMONIC="${MNEMONIC}" -e MONIKER="${MONIKER}" -i sifchain/sifnodecli:test sh <<'EOF'
-	sifnodecli keys list
-	yes "${MNEMONIC}" | sifnodecli keys add ${MONIKER} -i --recover --keyring-backend test
+docker run -e MNEMONIC="${MNEMONIC}" -e MONIKER="${MONIKER}" -i sifchain/sifnoded:test sh <<'EOF'
+	sifnoded keys list
+	yes "${MNEMONIC}" | sifnoded keys add ${MONIKER} -i --recover --keyring-backend test
 exit
 EOF
 footer

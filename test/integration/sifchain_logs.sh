@@ -6,5 +6,5 @@ basedir=$(dirname $0)
 hashes=$(cat $* | grep "^txhash: " | sed -e "s/txhash: //")
 for i in $hashes
 do
-  sifnodecli q tx --home $CHAINDIR/.sifnodecli $i -o json | jq -c .
+  sifnoded q tx --home $CHAINDIR/.sifnoded $i -o json | jq -c .
 done
