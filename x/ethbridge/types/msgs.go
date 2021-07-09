@@ -14,11 +14,6 @@ import (
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
 
-const (
-	burnGasCost = 160000000000 * 393000 // assuming 160gigawei gas prices
-	lockGasCost = 160000000000 * 393000
-)
-
 // NewMsgLock is a constructor function for MsgLock
 func NewMsgLock(
 	networkDescriptor oracletypes.NetworkDescriptor, cosmosSender sdk.AccAddress,
@@ -59,11 +54,6 @@ func (msg MsgLock) ValidateBasic() error {
 
 	if msg.Amount.LTE(sdk.NewInt(0)) {
 		return ErrInvalidAmount
-	}
-
-	// if you don't pay enough gas, this tx won't go through
-	if msg.NativeTokenAmount.LT(sdk.NewInt(lockGasCost)) {
-		return ErrNativeTokenAmount
 	}
 
 	if len(msg.Symbol) == 0 {
@@ -137,11 +127,6 @@ func (msg MsgBurn) ValidateBasic() error {
 	symbolPrefix := msg.Symbol[:prefixLength]
 	if symbolPrefix != PeggedCoinPrefix {
 		return ErrInvalidBurnSymbol
-	}
-
-	// check that enough native_token is sent to cover the gas cost.
-	if msg.NativeTokenAmount.LT(sdk.NewInt(burnGasCost)) {
-		return ErrNativeTokenAmount
 	}
 
 	symbolSuffix := msg.Symbol[prefixLength:]
