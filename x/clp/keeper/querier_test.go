@@ -4,7 +4,6 @@ import (
 	"testing"
 
 	sifapp "github.com/Sifchain/sifnode/app"
-	"github.com/Sifchain/sifnode/x/clp/keeper"
 	clpkeeper "github.com/Sifchain/sifnode/x/clp/keeper"
 	"github.com/Sifchain/sifnode/x/clp/test"
 	"github.com/Sifchain/sifnode/x/clp/types"
@@ -23,7 +22,7 @@ func createTestInput() (*codec.LegacyAmino, *sifapp.SifchainApp, sdk.Context) {
 	sifapp.SetConfig(false)
 	ctx := app.BaseApp.NewContext(false, tmproto.Header{})
 
-	app.ClpKeeper = keeper.NewKeeper(
+	app.ClpKeeper = clpkeeper.NewKeeper(
 		app.AppCodec(),
 		app.GetKey(types.StoreKey),
 		app.BankKeeper,
