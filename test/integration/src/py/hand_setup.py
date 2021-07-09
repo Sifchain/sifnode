@@ -51,5 +51,5 @@ except:
 request, credentials = build_request()
 # test_utilities.set_lock_burn_limit(smart_contracts_dir, request.ethereum_symbol, request.amount)
 burn_lock_functions.transfer_ethereum_to_sifchain(request)
-test_utilities.get_sifchain_addr_balance(request.sifchain_address, request.sifnodecli_node, "ceth")
+test_utilities.get_sifchain_addr_balance(request.sifchain_address, request.sifnoded_node, "ceth")
 logging.info(f"created account for key {credentials.from_key}")

@@ -94,7 +94,7 @@ def solidity_json_path(smart_contracts_dir):
 
 
 @pytest.fixture
-def sifnodecli_homedir(is_ropsten_testnet):
+def sifnoded_homedir(is_ropsten_testnet):
     if is_ropsten_testnet:
         base = test_utilities.get_required_env_var("HOME")
     else:
@@ -130,7 +130,7 @@ def rowan_source_key(is_ropsten_testnet, rowan_source):
 
 
 @pytest.fixture
-def sifnodecli_node():
+def sifnoded_node():
     return test_utilities.get_optional_env_var("SIFNODE", None)
 
 
@@ -167,9 +167,9 @@ def ropsten_wait_time():
 
 
 @pytest.fixture
-def is_ropsten_testnet(sifnodecli_node):
+def is_ropsten_testnet(sifnoded_node):
     """if sifnode_clinode is set, we're talking to ropsten/sandpit"""
-    return sifnodecli_node
+    return sifnoded_node
 
 
 @pytest.fixture
@@ -261,7 +261,7 @@ def basic_transfer_request(
         bridgebank_address,
         bridgetoken_address,
         ethereum_network,
-        sifnodecli_node,
+        sifnoded_node,
         chain_id,
         sifchain_fees,
         solidity_json_path,
@@ -276,7 +276,7 @@ def basic_transfer_request(
         bridgebank_address=bridgebank_address,
         bridgetoken_address=bridgetoken_address,
         ethereum_network=ethereum_network,
-        sifnodecli_node=sifnodecli_node,
+        sifnoded_node=sifnoded_node,
         manual_block_advance=is_ganache,
         chain_id=chain_id,
         sifchain_fees=sifchain_fees,
@@ -286,7 +286,7 @@ def basic_transfer_request(
 
 @pytest.fixture(scope="function")
 def rowan_source_integrationtest_env_credentials(
-        sifnodecli_homedir,
+        sifnoded_homedir,
         validator_password,
         rowan_source_key,
         is_ganache,
@@ -300,7 +300,7 @@ def rowan_source_integrationtest_env_credentials(
         keyring_backend="file" if is_ganache else "test",
         keyring_passphrase=validator_password,
         from_key=rowan_source,
-        sifnodecli_homedir=sifnodecli_homedir
+        sifnoded_homedir=sifnoded_homedir
     )
 
 

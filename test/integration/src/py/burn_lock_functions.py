@@ -48,7 +48,7 @@ def transfer_ethereum_to_sifchain(transfer_request: EthereumToSifchainTransferRe
     try:
         sifchain_starting_balance = get_sifchain_addr_balance(
             transfer_request.sifchain_address,
-            transfer_request.sifnodecli_node,
+            transfer_request.sifnoded_node,
             transfer_request.sifchain_symbol
         )
     except:
@@ -83,7 +83,7 @@ def transfer_ethereum_to_sifchain(transfer_request: EthereumToSifchainTransferRe
     try:
         sifchain_balance_before_required_elapsed_blocks = get_sifchain_addr_balance(
             transfer_request.sifchain_address,
-            transfer_request.sifnodecli_node,
+            transfer_request.sifnoded_node,
             transfer_request.sifchain_symbol
         )
     except:
@@ -113,14 +113,14 @@ def transfer_ethereum_to_sifchain(transfer_request: EthereumToSifchainTransferRe
     logging.debug(f"wait for account {transfer_request.sifchain_address}")
     wait_for_sif_account(
         sif_addr=transfer_request.sifchain_address,
-        sifchaincli_node=transfer_request.sifnodecli_node,
+        sifchaincli_node=transfer_request.sifnoded_node,
         max_seconds=max_seconds
     )
 
     wait_for_sifchain_addr_balance(
         sifchain_address=transfer_request.sifchain_address,
         symbol=transfer_request.sifchain_symbol,
-        sifchaincli_node=transfer_request.sifnodecli_node,
+        sifchaincli_node=transfer_request.sifnoded_node,
         target_balance=target_balance,
         max_seconds=max_seconds,
         debug_prefix=f"transfer_ethereum_to_sifchain waiting for balance {transfer_request}"
@@ -148,7 +148,7 @@ def transfer_sifchain_to_ethereum(
 
     sifchain_starting_balance = get_sifchain_addr_balance(
         transfer_request.sifchain_address,
-        transfer_request.sifnodecli_node,
+        transfer_request.sifnoded_node,
         transfer_request.sifchain_symbol
     )
 
@@ -173,7 +173,7 @@ def transfer_sifchain_to_ethereum(
 
     sifchain_ending_balance = get_sifchain_addr_balance(
         transfer_request.sifchain_address,
-        transfer_request.sifnodecli_node,
+        transfer_request.sifnoded_node,
         transfer_request.sifchain_symbol
     )
 
@@ -197,7 +197,7 @@ def transfer_sifchain_to_sifchain(
     try:
         sifchain_starting_balance = get_sifchain_addr_balance(
             transfer_request.sifchain_destination_address,
-            transfer_request.sifnodecli_node,
+            transfer_request.sifnoded_node,
             transfer_request.sifchain_symbol
         )
     except Exception as e:
@@ -217,14 +217,14 @@ def transfer_sifchain_to_sifchain(
     target_balance = transfer_request.amount + sifchain_starting_balance
     wait_for_sif_account(
         sif_addr=transfer_request.sifchain_destination_address,
-        sifchaincli_node=transfer_request.sifnodecli_node,
+        sifchaincli_node=transfer_request.sifnoded_node,
         max_seconds=max_seconds
     )
     wait_for_sifchain_addr_balance(
         sifchain_address=transfer_request.sifchain_destination_address,
         symbol=transfer_request.sifchain_symbol,
         target_balance=target_balance,
-        sifchaincli_node=transfer_request.sifnodecli_node,
+        sifchaincli_node=transfer_request.sifnoded_node,
         max_seconds=max_seconds,
         debug_prefix=f"transfer_sifchain_to_sifchain {transfer_request}"
     )
@@ -335,7 +335,7 @@ def transfer_argument_parser() -> argparse.ArgumentParser:
         required=True
     )
     parser.add_argument(
-        '--sifnodecli_node',
+        '--sifnoded_node',
         type=str,
         nargs=1,
         default="tcp://localhost:26657",
@@ -367,7 +367,7 @@ def add_credentials_arguments(parser: argparse.ArgumentParser) -> argparse.Argum
         help="--from argument for sifnoded"
     )
     parser.add_argument(
-        '--sifnodecli_homedir',
+        '--sifnoded_homedir',
         type=str,
         nargs=1,
         required=True,
@@ -408,7 +408,7 @@ def process_args(cmdline: List[str]) -> RequestAndCredentials:
         keyring_passphrase=os.environ.get(args.keyring_passphrase_env_var[0]),
         from_key=args.from_key[0],
         keyring_backend=args.keyring_backend[0],
-        sifnodecli_homedir=args.sifnodecli_homedir[0],
+        sifnoded_homedir=args.sifnoded_homedir[0],
     )
 
     return RequestAndCredentials(transfer_request, credentials, args)
@@ -423,5 +423,5 @@ def create_new_sifaddr(
     yes_subcmd = f"yes {keyring_passphrase} |" if keyring_passphrase else ""
     keyring_backend_subcmd = f"--keyring-backend {credentials.keyring_backend}" if credentials.keyring_backend else ""
     # Note that keys-add prints to stderr
-    cmd = f"{yes_subcmd} {sifnoded_binary} keys add {keyname} --home {credentials.sifnodecli_homedir} {keyring_backend_subcmd} --output json 2>&1"
+    cmd = f"{yes_subcmd} {sifnoded_binary} keys add {keyname} --home {credentials.sifnoded_homedir} {keyring_backend_subcmd} --output json 2>&1"
     return get_shell_output_json(cmd)

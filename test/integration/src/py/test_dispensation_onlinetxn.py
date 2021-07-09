@@ -17,7 +17,7 @@
 #     from_address = 'sifnodeadmin'
 #     keyring_backend = 'test'
 #     chain_id = 'localnet'
-#     sifnodecli_node = 'tcp://127.0.0.1:1317'
+#     sifnoded_node = 'tcp://127.0.0.1:1317'
 #     amount = '10000000rowan'
 #     fee = '50000'
 #     currency = 'rowan'
@@ -52,7 +52,7 @@
 #     logging.info(f"one claiming address = {one_claiming_address}")
 #
 #     # ACTUAL DISPENSATION TXN; GET TXN HASH
-#     txhash = str((create_online_singlekey_txn_with_runner(claimType, runner_address, distributor_name, chain_id, sifnodecli_node)))
+#     txhash = str((create_online_singlekey_txn_with_runner(claimType, runner_address, distributor_name, chain_id, sifnoded_node)))
 #     logging.info(f"txn hash = {txhash}")
 #     time.sleep(5)
 #
@@ -90,7 +90,7 @@
 #     from_address = 'sifnodeadmin'
 #     keyring_backend = 'test'
 #     chain_id = 'localnet'
-#     sifnodecli_node = 'tcp://127.0.0.1:1317'
+#     sifnoded_node = 'tcp://127.0.0.1:1317'
 #     amount = '70000rowan'
 #     fee = '50000'
 #     currency = 'rowan'
@@ -124,7 +124,7 @@
 #     # ACTUAL DISPENSATION TXN; TXN RAISES AN EXCEPTION ABOUT INSUFFICIENT FUNDS, CAPTURED HERE AND TEST IS MARKED PASS
 #     with pytest.raises(Exception) as execinfo:
 #         txhash = str(
-#             (create_online_singlekey_txn_with_runner(claimType, runner_address, distributor_address, chain_id, sifnodecli_node)))
+#             (create_online_singlekey_txn_with_runner(claimType, runner_address, distributor_address, chain_id, sifnoded_node)))
 #         assert str(
 #             execinfo.value) == f"for address  : {distributor_address}: Failed in collecting funds for airdrop: failed to execute message; message index: 0: failed to simulate tx"
 #         logging.info(f"Insufficient Funds Message = {resp['raw_log']}")
@@ -141,7 +141,7 @@
 #     from_address = 'sifnodeadmin'
 #     keyring_backend = 'test'
 #     chain_id = 'localnet'
-#     sifnodecli_node = 'tcp://127.0.0.1:1317'
+#     sifnoded_node = 'tcp://127.0.0.1:1317'
 #     amount = '10000000rowan'
 #     fee = '150000'
 #     currency = 'rowan'
@@ -185,7 +185,7 @@
 #     logging.info(f"one claiming address initial balance = {claiming_address_initial_balance}")
 #
 #     # CREATE DISPENSATION TXN; GET TXN HASH
-#     txhash = str((create_online_singlekey_txn_with_runner(claimType, runner_address, distributor_name, chain_id, sifnodecli_node)))
+#     txhash = str((create_online_singlekey_txn_with_runner(claimType, runner_address, distributor_name, chain_id, sifnoded_node)))
 #     logging.info(f"txn hash for creatng a dispensation = {txhash}")
 #     time.sleep(5)
 #
@@ -210,7 +210,7 @@
 #     logging.info(f"distribution_name = {distribution_name}, distribution_type = {distribution_type}")
 #
 #     # RUN DISPENSATION TXN; GET TXN HASH
-#     runtxnhash = run_dispensation(distribution_name, distribution_type, runner_address,chain_id,sifnodecli_node)
+#     runtxnhash = run_dispensation(distribution_name, distribution_type, runner_address,chain_id,sifnoded_node)
 #     logging.info(f"txn hash for running dispensation = {runtxnhash}")
 #     time.sleep(5)
 #

@@ -12,7 +12,7 @@ import test_utilities
 from pytest_utilities import generate_test_account
 from integration_env_credentials import sifchain_cli_credentials_for_test
 from test_utilities import get_required_env_var, SifchaincliCredentials, get_optional_env_var, ganache_owner_account, \
-    get_shell_output_json, get_shell_output, detect_errors_in_sifnodecli_output, get_transaction_result, amount_in_wei
+    get_shell_output_json, get_shell_output, detect_errors_in_sifnoded_output, get_transaction_result, amount_in_wei
 
 # CODE TO GENERATE RANDOM STRING FOR DISPENSATION NAME AS DISPENSATION NAME IS A UNIQUE KEY
 def id_generator(size=6, chars=string.ascii_uppercase + string.digits):
@@ -80,7 +80,7 @@ def create_online_singlekey_txn(
         claimType,
         signing_address,
         chain_id,
-        sifnodecli_node
+        sifnoded_node
 ):
     logging.debug(f"create_online_dispensation")
     sifchain_fees_entry = f"--gas auto"
@@ -94,7 +94,7 @@ def create_online_singlekey_txn(
         f"--fees 50000rowan",
         f"--from {signing_address}",
         f"--chain-id={chain_id}",
-        f"{sifnodecli_node}",
+        f"{sifnoded_node}",
         keyring_backend_entry,
         f"--yes -o json"
 
@@ -109,7 +109,7 @@ def create_online_singlekey_async_txn(
         claimType,
         signing_address,
         chain_id,
-        sifnodecli_node
+        sifnoded_node
 ):
     logging.debug(f"create_online_dispensation")
     sifchain_fees_entry = f"--gas auto"
@@ -123,7 +123,7 @@ def create_online_singlekey_async_txn(
         f"--fees 50000rowan",
         f"--from {signing_address}",
         f"--chain-id={chain_id}",
-        f"{sifnodecli_node}",
+        f"{sifnoded_node}",
         keyring_backend_entry,
         f"--broadcast-mode async",
         f"--yes -o json"
@@ -139,7 +139,7 @@ def create_offline_singlekey_txn(
         claimType,
         signing_address,
         chain_id,
-        sifnodecli_node
+        sifnoded_node
     ):
     logging.debug(f"create_unsigned_offline_dispensation_txn")
     sifchain_fees_entry = f"--gas auto"
@@ -150,7 +150,7 @@ def create_offline_singlekey_txn(
         output,
         f"--from {signing_address}",
         f"--chain-id={chain_id}",
-        f"{sifnodecli_node}",
+        f"{sifnoded_node}",
         f"--fees 150000rowan",
         f"--generate-only", 
         f"--yes -o json"
@@ -202,7 +202,7 @@ def create_online_singlekey_txn_with_runner(
         runner_address,
         distributor_address,
         chain_id,
-        sifnodecli_node
+        sifnoded_node
 ):
     logging.debug(f"create_online_dispensation")
     sifchain_fees_entry = f"--gas auto"
@@ -217,7 +217,7 @@ def create_online_singlekey_txn_with_runner(
         f"--fees 150000rowan",
         f"--from {distributor_address}",
         f"--chain-id={chain_id}",
-        f"{sifnodecli_node}",
+        f"{sifnoded_node}",
         keyring_backend_entry,
         f"--yes -o json"
 
@@ -233,7 +233,7 @@ def create_offline_singlekey_txn_with_runner(
         runner_address,
         distributor_address,
         chain_id,
-        sifnodecli_node
+        sifnoded_node
     ):
     logging.debug(f"create_unsigned_offline_dispensation_txn")
     sifchain_fees_entry = f"--gas auto"
@@ -246,7 +246,7 @@ def create_offline_singlekey_txn_with_runner(
         runner_address,
         f"--from {distributor_address}",
         f"--chain-id={chain_id}",
-        f"{sifnodecli_node}",
+        f"{sifnoded_node}",
         f"--fees 150000rowan",
         keyring_backend_entry,
         f"--generate-only", 
@@ -263,7 +263,7 @@ def run_dispensation(
         claimType,
         runner_address,
         chain_id,
-        sifnodecli_node
+        sifnoded_node
     ):
     logging.debug(f"RUN DISPENSATION CLI LOGGING")
     sifchain_fees_entry = f"--gas auto --gas-adjustment=1.5"
@@ -275,7 +275,7 @@ def run_dispensation(
         f"{claimType}",
         f"--from {runner_address}",
         f"--chain-id={chain_id}",
-        f"{sifnodecli_node}",
+        f"{sifnoded_node}",
         sifchain_fees_entry,
         f"--fees 200000rowan",
         keyring_backend_entry,
@@ -304,7 +304,7 @@ def create_claim(
         claimType,
         keyring_backend,
         chain_id,
-        sifnodecli_node
+        sifnoded_node
     ):
     logging.debug(f"create_claim")
     keyring_backend_entry = f"--keyring-backend {keyring_backend}"     
@@ -315,7 +315,7 @@ def create_claim(
         f"--from {sifchain_address}",
         sifchain_fees_entry,
         f"--chain-id={chain_id}",
-        f"{sifnodecli_node}",
+        f"{sifnoded_node}",
         keyring_backend_entry,
         f"--yes -o json" 
         
