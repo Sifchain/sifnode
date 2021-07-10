@@ -23,6 +23,7 @@ var (
 func init() {
 	RegisterLegacyAminoCodec(amino)
 	cryptocodec.RegisterCrypto(amino)
+	amino.Seal()
 }
 
 func RegisterInterfaces(registry types.InterfaceRegistry) {
