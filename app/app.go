@@ -90,6 +90,9 @@ import (
 	"github.com/Sifchain/sifnode/x/oracle"
 	oraclekeeper "github.com/Sifchain/sifnode/x/oracle/keeper"
 	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
+	"github.com/Sifchain/sifnode/x/whitelist"
+	whitelistkeeper "github.com/Sifchain/sifnode/x/whitelist/keeper"
+	whitelisttypes "github.com/Sifchain/sifnode/x/whitelist/types"
 )
 
 const appName = "sifnode"
@@ -118,6 +121,7 @@ var (
 		oracle.AppModuleBasic{},
 		ethbridge.AppModuleBasic{},
 		dispensation.AppModuleBasic{},
+		whitelist.AppModuleBasic{},
 	)
 
 	maccPerms = map[string][]string{
@@ -127,9 +131,9 @@ var (
 		stakingtypes.NotBondedPoolName: {authtypes.Burner, authtypes.Staking},
 		govtypes.ModuleName:            {authtypes.Burner, authtypes.Staking},
 		ibctransfertypes.ModuleName:    {authtypes.Minter, authtypes.Burner},
-		ethbridgetypes.ModuleName: {authtypes.Minter, authtypes.Burner},
-		clptypes.ModuleName:     {authtypes.Burner, authtypes.Minter},
-		dispensation.ModuleName: {authtypes.Burner, authtypes.Minter},
+		ethbridgetypes.ModuleName:      {authtypes.Minter, authtypes.Burner},
+		clptypes.ModuleName:            {authtypes.Burner, authtypes.Minter},
+		dispensation.ModuleName:        {authtypes.Burner, authtypes.Minter},
 	}
 )
 
@@ -182,6 +186,7 @@ type SifchainApp struct {
 	OracleKeeper       oraclekeeper.Keeper
 	EthbridgeKeeper    ethbridgekeeper.Keeper
 	DispensationKeeper dispkeeper.Keeper
+	WhitelistKeeper    whitelisttypes.Keeper
 
 	mm *module.Manager
 	sm *module.SimulationManager
@@ -219,6 +224,7 @@ func NewSifApp(
 		ethbridgetypes.StoreKey,
 		clptypes.StoreKey,
 		oracletypes.StoreKey,
+		whitelisttypes.StoreKey,
 	)
 
 	tkeys := sdk.NewTransientStoreKeys(paramstypes.TStoreKey)
@@ -300,6 +306,8 @@ func NewSifApp(
 		app.GetSubspace(disptypes.ModuleName),
 	)
 
+	app.WhitelistKeeper = whitelistkeeper.NewKeeper(appCodec, keys[whitelisttypes.StoreKey])
+
 	// This map defines heights to skip for updates
 	// The mapping represents height to bool. if the value is true for a height that height
 	// will be skipped even if we have a update proposal for it
@@ -375,6 +383,7 @@ func NewSifApp(
 		oracle.NewAppModule(app.OracleKeeper),
 		ethbridge.NewAppModule(app.OracleKeeper, app.BankKeeper, app.AccountKeeper, app.EthbridgeKeeper, &appCodec),
 		dispensation.NewAppModule(app.DispensationKeeper, app.BankKeeper, app.AccountKeeper),
+		whitelist.NewAppModule(app.WhitelistKeeper, &appCodec),
 	)
 
 	// During begin block slashing happens after distr.BeginBlocker so that
@@ -413,6 +422,7 @@ func NewSifApp(
 		oracletypes.ModuleName,
 		ethbridge.ModuleName,
 		dispensation.ModuleName,
+		whitelist.ModuleName,
 	)
 
 	app.mm.RegisterRoutes(app.Router(), app.QueryRouter(), encodingConfig.Amino)
