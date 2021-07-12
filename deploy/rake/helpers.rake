@@ -14,8 +14,8 @@ def check_args(args)
   case args[:provider]
   when "aws"
   when "az"
-    puts "Build me!"
-    exit
+    # puts "Build me!"
+    # exit
   when "gcp"
     puts "Build me!"
     exit
