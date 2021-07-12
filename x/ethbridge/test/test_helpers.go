@@ -45,7 +45,7 @@ const (
 	TestString                     = "{value: 5}"
 	AlternateTestString            = "{value: 7}"
 	AnotherAlternateTestString     = "{value: 9}"
-	TestNativeTokenReceiverAddress = "cosmos1gn8409qq9hnrxde37kuxwx5hrxpfpv8426szuv"
+	TestNativeTokenReceiverAddress = "cosmos1gn8409qq9hnrxde37kuxwx5hrxpfpv8426szuv" //nolint
 	NetworkDescriptor              = 1
 	NativeToken                    = "ceth"
 	NativeTokenGas                 = 1
