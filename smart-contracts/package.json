@@ -37,7 +37,7 @@
     "keccak": "^3.0.1",
     "lodash": "^4.17.19",
     "openzeppelin-solidity": "^4.0.0",
-    "solidity-coverage": "^0.7.11",
+    "solidity-coverage": "^0.7.16",
     "truffle": "^5.1.48",
     "truffle-contract": "^4.0.31",
     "truffle-contract-size": "^2.0.0",
@@ -94,8 +94,8 @@
     "token:mint": "npx truffle exec scripts/mintTestTokens.js",
     "token:approve": "npx truffle exec scripts/sendApproveTx.js",
     "test:setup": "cp .env.example .env",
-    "coverage": "truffle run coverage",
     "compile": "hardhat compile",
-    "test": "npx hardhat test test/testCosmosBridge.js test/testBridgeBank.js test/test_bridgeBankLock.js test/test_valset.js test/test_security.js test/test_upgradeContracts.js test/test_txSignatureAggregation.js"
+    "test": "hardhat test test/testCosmosBridge.js test/testBridgeBank.js test/test_bridgeBankLock.js test/test_valset.js test/test_security.js test/test_upgradeContracts.js test/test_txSignatureAggregation.js",
+    "coverage": "hardhat coverage --testfiles \"test/*.js\" --solcoverjs .solcover.js"
   }
 }

@@ -67,7 +67,86 @@ describe("Test Cosmos Bridge", function () {
     );
   });
 
+  describe("CosmosBridge:Oracle", function () {
+    it("should be able to getProphecyStatus with 1/3 of power", async function () {
+      const status = await state.cosmosBridge.connect(userOne).getProphecyStatus(25);
+      expect(status).to.equal(false);
+    });
+
+    it("should be able to getProphecyStatus with 2/3 of power", async function () {
+      const status = await state.cosmosBridge.getProphecyStatus(50);
+      expect(status).to.equal(false);
+    });
+
+    it("should be able to getProphecyStatus with 3/3 of power", async function () {
+      const status = await state.cosmosBridge.getProphecyStatus(75);
+      expect(status).to.equal(true);
+    });
+
+    it("should be able to getProphecyStatus with 100% of power", async function () {
+      const status = await state.cosmosBridge.getProphecyStatus(100);
+      expect(status).to.equal(true);
+    });
+  });
+
   describe("CosmosBridge", function () {
+    it("Can update the valset", async function () {
+      // Operator resets the valset
+      await state.cosmosBridge.connect(operator).updateValset(
+        [userOne.address, userTwo.address],
+        [50, 50],
+      ).should.be.fulfilled;
+
+      // Confirm that both initial validators are now active validators
+      const isUserOneValidator = await state.cosmosBridge.isActiveValidator(
+        userOne.address
+      );
+      isUserOneValidator.should.be.equal(true);
+      const isUserTwoValidator = await state.cosmosBridge.isActiveValidator(
+        userTwo.address
+      );
+      isUserTwoValidator.should.be.equal(true);
+
+      // Confirm that all both secondary validators are not active validators
+      const isUserThreeValidator = await state.cosmosBridge.isActiveValidator(
+        userThree
+      );
+      isUserThreeValidator.should.be.equal(false);
+      const isUserFourValidator = await state.cosmosBridge.isActiveValidator(
+        userFour.address
+      );
+      isUserFourValidator.should.be.equal(false);
+    });
+
+    it("Can update the validator set", async function () {
+      // Also make sure everything runs fourth time after switching validators a second time.
+      // Operator resets the valset
+      await state.cosmosBridge.connect(operator).updateValset(
+        [userThree, userFour.address],
+        [50, 50],
+      ).should.be.fulfilled;
+
+      // Confirm that both initial validators are no longer an active validators
+      const isUserOneValidator2 = await state.cosmosBridge.isActiveValidator(
+          userOne.address
+      );
+      isUserOneValidator2.should.be.equal(false);
+      const isUserTwoValidator2 = await state.cosmosBridge.isActiveValidator(
+          userTwo.address
+      );
+      isUserTwoValidator2.should.be.equal(false);
+
+      // Confirm that both secondary validators are now active validators
+      const isUserThreeValidator2 = await state.cosmosBridge.isActiveValidator(
+          userThree
+      );
+      isUserThreeValidator2.should.be.equal(true);
+      const isUserFourValidator2 = await state.cosmosBridge.isActiveValidator(
+          userFour.address
+      );
+      isUserFourValidator2.should.be.equal(true);
+    });
+
     it("should return true if a sifchain address prefix is correct", async function () {
       (await state.bridgeBank.VSA(state.sender)).should.be.equal(true);
     });

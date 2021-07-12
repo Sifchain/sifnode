@@ -287,6 +287,19 @@ describe("Security Test", function () {
         ),
       ).to.be.revertedWith("!cosmosbridge");
     });
+
+    it("should not be able to createNewBridgeToken as non validator", async function () {
+      state.bridge = await CosmosBridge.deploy();
+      await expect(
+        state.cosmosBridge.connect(operator).createNewBridgeToken(
+          "atom",
+          "atom",
+          state.token1.address,
+          18,
+          1
+        ),
+      ).to.be.revertedWith("Must be an active validator");
+    });
   });
 
   describe("Troll token tests", function () {
