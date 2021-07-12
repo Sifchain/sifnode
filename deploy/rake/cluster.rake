@@ -5,18 +5,39 @@ namespace :cluster do
   desc "Scaffold new cluster environment configuration"
   task :scaffold, [:cluster, :provider] do |t, args|
     check_args(args)
-
+    
+    provider = args[:provider].downcase
+    supported_providers = ['aws', 'azure', 'az']
+   
+   if supported_providers.count(args[:provider].downcase) == 0
+      puts "Provider #{args[:provider]} is not yet supported."
+      exit
+    end
+   
     # create path location
     system("mkdir -p #{cwd}/../../.live")
     system("mkdir #{path(args)}") or exit
 
-    # create config from template
-    system("go run github.com/belitre/gotpl #{cwd}/../terraform/template/aws/cluster.tf.tpl \
-      --set chainnet=#{args[:cluster]} > #{path(args)}/main.tf")
+    #Create config for AWS
+    if provider == 'aws' then
 
-    system("go run github.com/belitre/gotpl #{cwd}/../terraform/template/aws/.envrc.tpl \
-      --set chainnet=#{args[:cluster]} > #{path(args)}/.envrc")
+      system("go run github.com/belitre/gotpl #{cwd}/../terraform/template/aws/cluster.tf.tpl \
+        --set chainnet=#{args[:cluster]} > #{path(args)}/main.tf")
 
+      system("go run github.com/belitre/gotpl #{cwd}/../terraform/template/aws/.envrc.tpl \
+        --set chainnet=#{args[:cluster]} > #{path(args)}/.envrc")
+    
+    #Create config for Azure
+    elsif provider == 'azure' or provider == 'az' then
+        system("go run github.com/belitre/gotpl #{cwd}/../terraform/template/az/cluster.tf.tpl \
+          --set chainnet=#{args[:cluster]} > #{path(args)}/main.tf")
+
+        system("go run github.com/belitre/gotpl #{cwd}/../terraform/template/az/.envrc.tpl \
+          --set chainnet=#{args[:cluster]} > #{path(args)}/.envrc")
+    else
+      #Spit out some helpful messages.
+    end
+      
     # init terraform
     system("cd #{path(args)} && terraform init")
 
