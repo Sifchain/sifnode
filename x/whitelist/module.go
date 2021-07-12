@@ -53,10 +53,14 @@ func (b AppModuleBasic) DefaultGenesis(marshaler codec.JSONMarshaler) json.RawMe
 // ValidateGenesis performs genesis state validation.
 func (b AppModuleBasic) ValidateGenesis(marshaler codec.JSONMarshaler, _ sdkclient.TxEncodingConfig, message json.RawMessage) error {
 	var data types.GenesisState
-	err := marshaler.UnmarshalJSON(message, &data)
-	if err != nil {
-		return fmt.Errorf("failed to unmarshal %s genesis state: %w", types.ModuleName, err)
+
+	if message != nil {
+		err := marshaler.UnmarshalJSON(message, &data)
+		if err != nil {
+			return fmt.Errorf("failed to unmarshal %s genesis state: %w", types.ModuleName, err)
+		}
 	}
+
 	return nil
 }
 
