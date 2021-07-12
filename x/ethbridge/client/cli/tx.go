@@ -116,8 +116,8 @@ func GetCmdCreateEthBridgeClaim() *cobra.Command {
 func GetCmdBurn() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "burn [cosmos-sender-address] [ethereum-receiver-address] [amount] [symbol] [nativeTokenAmount] --ethereum-chain-id [ethereum-chain-id]",
-		Short: "burn cETH or cERC20 on the Cosmos chain",
-		Long: `This should be used to burn cETH or cERC20. It will burn your coins on the Cosmos Chain, removing them from your account and deducting them from the supply.
+		Short: "burn NativeToken or cERC20 on the Cosmos chain",
+		Long: `This should be used to burn NativeToken or cERC20. It will burn your coins on the Cosmos Chain, removing them from your account and deducting them from the supply.
 		It will also trigger an event on the Cosmos Chain for relayers to watch so that they can trigger the withdrawal of the original ETH/ERC20 to you from the Ethereum contract!`,
 		Args: cobra.ExactArgs(5),
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -301,8 +301,8 @@ func GetCmdUpdateWhiteListValidator() *cobra.Command {
 	return cmd
 }
 
-// GetCmdUpdateCethReceiverAccount is the CLI command to update the sifchain account that receives the native_token proceeds
-func GetCmdUpdateCethReceiverAccount() *cobra.Command {
+// GetCmdUpdateNativeTokenReceiverAccount is the CLI command to update the sifchain account that receives the native_token proceeds
+func GetCmdUpdateNativeTokenReceiverAccount() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "update-native-token-receiver-account [cosmos-sender-address] [native_token_receiver_account]",
 		Short: "This should be used to set the native token receiver account.",
@@ -323,7 +323,7 @@ func GetCmdUpdateCethReceiverAccount() *cobra.Command {
 				return err
 			}
 
-			msg := types.NewMsgUpdateCethReceiverAccount(cosmosSender, nativeTokenReceiverAccount)
+			msg := types.NewMsgUpdateNativeTokenReceiverAccount(cosmosSender, nativeTokenReceiverAccount)
 			if err := msg.ValidateBasic(); err != nil {
 				return err
 			}
@@ -337,12 +337,12 @@ func GetCmdUpdateCethReceiverAccount() *cobra.Command {
 	return cmd
 }
 
-// GetCmdRescueCeth is the CLI command to send the message to transfer native_token from ethbridge module to account
-func GetCmdRescueCeth() *cobra.Command {
+// GetCmdRescueNativeToken is the CLI command to send the message to transfer native_token from ethbridge module to account
+func GetCmdRescueNativeToken() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "rescue-native-token [cosmos-sender-address] [native-token-receiver-account] [native-token-amount]",
+		Use:   "rescue-native-token [cosmos-sender-address] [native-token-receiver-account] [native-token] [native-token-amount]",
 		Short: "This should be used to send native_token from ethbridge to an account.",
-		Args:  cobra.ExactArgs(3),
+		Args:  cobra.ExactArgs(4),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx, err := client.GetClientTxContext(cmd)
 			if err != nil {
@@ -364,7 +364,9 @@ func GetCmdRescueCeth() *cobra.Command {
 				return errors.New("Error parsing native-token amount")
 			}
 
-			msg := types.NewMsgRescueCeth(cosmosSender, nativeTokenReceiverAccount, nativeTokenAmount)
+			nativeToken := args[3]
+
+			msg := types.NewMsgRescueNativeToken(cosmosSender, nativeTokenReceiverAccount, nativeToken, nativeTokenAmount)
 			if err := msg.ValidateBasic(); err != nil {
 				return err
 			}

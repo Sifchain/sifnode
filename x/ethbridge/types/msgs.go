@@ -218,35 +218,37 @@ func (msg MsgCreateEthBridgeClaim) GetSigners() []sdk.AccAddress {
 	return []sdk.AccAddress{sdk.AccAddress(validatorAddress)}
 }
 
-// NewMsgUpdateCethReceiverAccount is a constructor function for MsgUpdateCethReceiverAccount
-func NewMsgUpdateCethReceiverAccount(cosmosSender sdk.AccAddress,
-	nativeTokenReceiverAccount sdk.AccAddress) MsgUpdateCethReceiverAccount {
-	return MsgUpdateCethReceiverAccount{
-		CosmosSender:        cosmosSender.String(),
-		CethReceiverAccount: nativeTokenReceiverAccount.String(),
+// NewMsgUpdateNativeTokenReceiverAccount is a constructor function for MsgUpdateNativeTokenReceiverAccount
+func NewMsgUpdateNativeTokenReceiverAccount(cosmosSender sdk.AccAddress,
+	nativeTokenReceiverAccount sdk.AccAddress) MsgUpdateNativeTokenReceiverAccount {
+	return MsgUpdateNativeTokenReceiverAccount{
+		CosmosSender:               cosmosSender.String(),
+		NativeTokenReceiverAccount: nativeTokenReceiverAccount.String(),
 	}
 }
 
 // Route should return the name of the module
-func (msg MsgUpdateCethReceiverAccount) Route() string { return RouterKey }
+func (msg MsgUpdateNativeTokenReceiverAccount) Route() string { return RouterKey }
 
 // Type should return the action
-func (msg MsgUpdateCethReceiverAccount) Type() string { return "update_native_token_receiver_account" }
+func (msg MsgUpdateNativeTokenReceiverAccount) Type() string {
+	return "update_native_token_receiver_account"
+}
 
 // ValidateBasic runs stateless checks on the message
-func (msg MsgUpdateCethReceiverAccount) ValidateBasic() error {
+func (msg MsgUpdateNativeTokenReceiverAccount) ValidateBasic() error {
 	if msg.CosmosSender == "" {
 		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.CosmosSender)
 	}
 
-	if msg.CethReceiverAccount == "" {
-		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.CethReceiverAccount)
+	if msg.NativeTokenReceiverAccount == "" {
+		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.NativeTokenReceiverAccount)
 	}
 	return nil
 }
 
 // GetSignBytes encodes the message for signing
-func (msg MsgUpdateCethReceiverAccount) GetSignBytes() []byte {
+func (msg MsgUpdateNativeTokenReceiverAccount) GetSignBytes() []byte {
 	b, err := json.Marshal(msg)
 	if err != nil {
 		panic(err)
@@ -256,7 +258,7 @@ func (msg MsgUpdateCethReceiverAccount) GetSignBytes() []byte {
 }
 
 // GetSigners defines whose signature is required
-func (msg MsgUpdateCethReceiverAccount) GetSigners() []sdk.AccAddress {
+func (msg MsgUpdateNativeTokenReceiverAccount) GetSigners() []sdk.AccAddress {
 	cosmosSender, err := sdk.AccAddressFromBech32(msg.CosmosSender)
 	if err != nil {
 		panic(err)
@@ -265,23 +267,24 @@ func (msg MsgUpdateCethReceiverAccount) GetSigners() []sdk.AccAddress {
 	return []sdk.AccAddress{cosmosSender}
 }
 
-// NewMsgRescueCeth is a constructor function for NewMsgRescueCeth
-func NewMsgRescueCeth(cosmosSender sdk.AccAddress, cosmosReceiver sdk.AccAddress, nativeTokenAmount sdk.Int) MsgRescueCeth {
-	return MsgRescueCeth{
-		CosmosSender:   cosmosSender.String(),
-		CosmosReceiver: cosmosReceiver.String(),
-		CethAmount:     nativeTokenAmount,
+// NewMsgRescueNativeToken is a constructor function for NewMsgRescueNativeToken
+func NewMsgRescueNativeToken(cosmosSender sdk.AccAddress, cosmosReceiver sdk.AccAddress, nativeToken string, nativeTokenAmount sdk.Int) MsgRescueNativeToken {
+	return MsgRescueNativeToken{
+		CosmosSender:      cosmosSender.String(),
+		CosmosReceiver:    cosmosReceiver.String(),
+		NativeTokenSymbol: nativeToken,
+		NativeTokenAmount: nativeTokenAmount,
 	}
 }
 
 // Route should return the name of the module
-func (msg MsgRescueCeth) Route() string { return RouterKey }
+func (msg MsgRescueNativeToken) Route() string { return RouterKey }
 
 // Type should return the action
-func (msg MsgRescueCeth) Type() string { return "rescue_native_token" }
+func (msg MsgRescueNativeToken) Type() string { return "rescue_native_token" }
 
 // ValidateBasic runs stateless checks on the message
-func (msg MsgRescueCeth) ValidateBasic() error {
+func (msg MsgRescueNativeToken) ValidateBasic() error {
 	if msg.CosmosSender == "" {
 		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.CosmosSender)
 	}
@@ -294,7 +297,7 @@ func (msg MsgRescueCeth) ValidateBasic() error {
 }
 
 // GetSignBytes encodes the message for signing
-func (msg MsgRescueCeth) GetSignBytes() []byte {
+func (msg MsgRescueNativeToken) GetSignBytes() []byte {
 	b, err := json.Marshal(msg)
 	if err != nil {
 		panic(err)
@@ -304,7 +307,7 @@ func (msg MsgRescueCeth) GetSignBytes() []byte {
 }
 
 // GetSigners defines whose signature is required
-func (msg MsgRescueCeth) GetSigners() []sdk.AccAddress {
+func (msg MsgRescueNativeToken) GetSigners() []sdk.AccAddress {
 	cosmosSender, err := sdk.AccAddressFromBech32(msg.CosmosSender)
 	if err != nil {
 		panic(err)

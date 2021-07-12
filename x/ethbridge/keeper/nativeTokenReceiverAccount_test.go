@@ -15,31 +15,31 @@ const (
 	SecondAddress = "cosmos1xdp5tvt7lxh8rf9xx07wy2xlagzhq24ha48xtq"
 )
 
-func TestSetCethReceiverAccount(t *testing.T) {
+func TestSetNativeTokenReceiverAccount(t *testing.T) {
 	var ctx, keeper, _, _, _, _, _, _ = test.CreateTestKeepers(t, 0.7, []int64{3, 3}, "")
 	testCosmosAddress, err := sdk.AccAddressFromBech32(TestAddress)
 	require.NoError(t, err)
 
-	keeper.SetCethReceiverAccount(ctx, testCosmosAddress)
-	CethReceiverAccount := keeper.GetCethReceiverAccount(ctx)
-	assert.Equal(t, CethReceiverAccount, testCosmosAddress)
+	keeper.SetNativeTokenReceiverAccount(ctx, testCosmosAddress)
+	NativeTokenReceiverAccount := keeper.GetNativeTokenReceiverAccount(ctx)
+	assert.Equal(t, NativeTokenReceiverAccount, testCosmosAddress)
 }
 
-func TestIsCethReceiverAccount(t *testing.T) {
+func TestIsNativeTokenReceiverAccount(t *testing.T) {
 	ctx, keeper, _, _, _, _, _, _ := test.CreateTestKeepers(t, 0.7, []int64{3, 7}, "")
 	testCosmosAddress, err := sdk.AccAddressFromBech32(TestAddress)
 	require.NoError(t, err)
 
-	keeper.SetCethReceiverAccount(ctx, testCosmosAddress)
-	assert.True(t, keeper.IsCethReceiverAccount(ctx, testCosmosAddress))
+	keeper.SetNativeTokenReceiverAccount(ctx, testCosmosAddress)
+	assert.True(t, keeper.IsNativeTokenReceiverAccount(ctx, testCosmosAddress))
 	testCosmosAddress, err = sdk.AccAddressFromBech32(SecondAddress)
 	require.NoError(t, err)
 
-	assert.False(t, keeper.IsCethReceiverAccount(ctx, testCosmosAddress))
+	assert.False(t, keeper.IsNativeTokenReceiverAccount(ctx, testCosmosAddress))
 }
 
-func TestIsCethReceiverAccountSet(t *testing.T) {
+func TestIsNativeTokenReceiverAccountSet(t *testing.T) {
 	ctx, keeper, _, _, _, _, _, _ := test.CreateTestKeepers(t, 0.7, []int64{3, 7}, "")
-	accountSet := keeper.IsCethReceiverAccountSet(ctx)
+	accountSet := keeper.IsNativeTokenReceiverAccountSet(ctx)
 	require.Equal(t, accountSet, true)
 }

@@ -8,25 +8,25 @@ import (
 	protobuftypes "github.com/gogo/protobuf/types"
 )
 
-func (k Keeper) SetCethReceiverAccount(ctx sdk.Context, nativeTokenReceiverAccount sdk.AccAddress) {
+func (k Keeper) SetNativeTokenReceiverAccount(ctx sdk.Context, nativeTokenReceiverAccount sdk.AccAddress) {
 	store := ctx.KVStore(k.storeKey)
-	key := types.CethReceiverAccountPrefix
+	key := types.NativeTokenReceiverAccountPrefix
 	store.Set(key, k.cdc.MustMarshalBinaryBare(&protobuftypes.StringValue{Value: nativeTokenReceiverAccount.String()}))
 }
 
-func (k Keeper) IsCethReceiverAccount(ctx sdk.Context, nativeTokenReceiverAccount sdk.AccAddress) bool {
-	account := k.GetCethReceiverAccount(ctx)
+func (k Keeper) IsNativeTokenReceiverAccount(ctx sdk.Context, nativeTokenReceiverAccount sdk.AccAddress) bool {
+	account := k.GetNativeTokenReceiverAccount(ctx)
 	return bytes.Equal(account, nativeTokenReceiverAccount)
 }
 
-func (k Keeper) IsCethReceiverAccountSet(ctx sdk.Context) bool {
-	account := k.GetCethReceiverAccount(ctx)
+func (k Keeper) IsNativeTokenReceiverAccountSet(ctx sdk.Context) bool {
+	account := k.GetNativeTokenReceiverAccount(ctx)
 	return account != nil
 }
 
-func (k Keeper) GetCethReceiverAccount(ctx sdk.Context) sdk.AccAddress {
+func (k Keeper) GetNativeTokenReceiverAccount(ctx sdk.Context) sdk.AccAddress {
 	store := ctx.KVStore(k.storeKey)
-	key := types.CethReceiverAccountPrefix
+	key := types.NativeTokenReceiverAccountPrefix
 	bz := store.Get(key)
 	if len(bz) == 0 {
 		return nil

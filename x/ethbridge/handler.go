@@ -30,11 +30,11 @@ func NewHandler(k Keeper) sdk.Handler {
 		case *types.MsgUpdateWhiteListValidator:
 			res, err := msgServer.UpdateWhiteListValidator(sdk.WrapSDKContext(ctx), msg)
 			return sdk.WrapServiceResult(ctx, res, err)
-		case *types.MsgUpdateCethReceiverAccount:
-			res, err := msgServer.UpdateCethReceiverAccount(sdk.WrapSDKContext(ctx), msg)
+		case *types.MsgUpdateNativeTokenReceiverAccount:
+			res, err := msgServer.UpdateNativeTokenReceiverAccount(sdk.WrapSDKContext(ctx), msg)
 			return sdk.WrapServiceResult(ctx, res, err)
-		case *types.MsgRescueCeth:
-			res, err := msgServer.RescueCeth(sdk.WrapSDKContext(ctx), msg)
+		case *types.MsgRescueNativeToken:
+			res, err := msgServer.RescueNativeToken(sdk.WrapSDKContext(ctx), msg)
 			return sdk.WrapServiceResult(ctx, res, err)
 		case *types.MsgSetNativeToken:
 			res, err := msgServer.SetNativeToken(sdk.WrapSDKContext(ctx), msg)
