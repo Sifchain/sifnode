@@ -47,8 +47,8 @@ func GetTxCmd() *cobra.Command {
 		cli.GetCmdBurn(),
 		cli.GetCmdLock(),
 		cli.GetCmdUpdateWhiteListValidator(),
-		cli.GetCmdUpdateCethReceiverAccount(),
-		cli.GetCmdRescueCeth(),
+		cli.GetCmdUpdateNativeTokenReceiverAccount(),
+		cli.GetCmdRescueNativeToken(),
 		cli.GetCmdSetNativeToken(),
 	)
 

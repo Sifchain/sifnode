@@ -17,7 +17,6 @@ const (
 	StoreKey         = types.StoreKey
 	QuerierRoute     = types.QuerierRoute
 	RouterKey        = types.RouterKey
-	CethSymbol       = types.CethSymbol
 )
 
 var (
@@ -38,19 +37,19 @@ var (
 	CreateTestEthMsg                   = types.CreateTestEthMsg
 	CreateTestEthClaim                 = types.CreateTestEthClaim
 	CreateTestQueryEthProphecyResponse = types.CreateTestQueryEthProphecyResponse
-	CethReceiverAccountPrefix          = types.CethReceiverAccountPrefix
+	NativeTokenReceiverAccountPrefix   = types.NativeTokenReceiverAccountPrefix
 )
 
 type (
-	Keeper                       = keeper.Keeper
-	EthBridgeClaim               = types.EthBridgeClaim //nolint:golint
-	EthereumAddress              = types.EthereumAddress
-	MsgCreateEthBridgeClaim      = types.MsgCreateEthBridgeClaim
-	MsgBurn                      = types.MsgBurn
-	MsgLock                      = types.MsgLock
-	MsgUpdateWhiteListValidator  = types.MsgUpdateWhiteListValidator
-	MsgUpdateCethReceiverAccount = types.MsgUpdateCethReceiverAccount
-	MsgRescueCeth                = types.MsgRescueCeth
-	QueryEthProphecyParams       = types.QueryEthProphecyRequest
-	QueryEthProphecyResponse     = types.QueryEthProphecyResponse
+	Keeper                              = keeper.Keeper
+	EthBridgeClaim                      = types.EthBridgeClaim //nolint:golint
+	EthereumAddress                     = types.EthereumAddress
+	MsgCreateEthBridgeClaim             = types.MsgCreateEthBridgeClaim
+	MsgBurn                             = types.MsgBurn
+	MsgLock                             = types.MsgLock
+	MsgUpdateWhiteListValidator         = types.MsgUpdateWhiteListValidator
+	MsgUpdateNativeTokenReceiverAccount = types.MsgUpdateNativeTokenReceiverAccount
+	MsgRescueNativeToken                = types.MsgRescueNativeToken
+	QueryEthProphecyParams              = types.QueryEthProphecyRequest
+	QueryEthProphecyResponse            = types.QueryEthProphecyResponse
 )

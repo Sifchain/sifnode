@@ -40,16 +40,16 @@ import (
 )
 
 const (
-	TestID                     = "oracleID"
-	AlternateTestID            = "altOracleID"
-	TestString                 = "{value: 5}"
-	AlternateTestString        = "{value: 7}"
-	AnotherAlternateTestString = "{value: 9}"
-	TestCethReceiverAddress    = "cosmos1gn8409qq9hnrxde37kuxwx5hrxpfpv8426szuv"
-	NetworkDescriptor          = 1
-	NativeToken                = "ceth"
-	NativeTokenGas             = 1
-	MinimumCost                = 1
+	TestID                         = "oracleID"
+	AlternateTestID                = "altOracleID"
+	TestString                     = "{value: 5}"
+	AlternateTestString            = "{value: 7}"
+	AnotherAlternateTestString     = "{value: 9}"
+	TestNativeTokenReceiverAddress = "cosmos1gn8409qq9hnrxde37kuxwx5hrxpfpv8426szuv" //nolint
+	NetworkDescriptor              = 1
+	NativeToken                    = "ceth"
+	NativeTokenGas                 = 1
+	MinimumCost                    = 1
 )
 
 // CreateTestKeepers greates an Mock App, OracleKeeper, bankKeeper and ValidatorAddresses to be used for test input
@@ -152,8 +152,8 @@ func CreateTestKeepers(t *testing.T, consensusNeeded float64, validatorAmounts [
 
 	ethbridgeKeeper := keeper.NewKeeper(encCfg.Marshaler, bankKeeper, oracleKeeper, accountKeeper, keyEthBridge)
 
-	CethReceiverAccount, _ := sdk.AccAddressFromBech32(TestCethReceiverAddress)
-	ethbridgeKeeper.SetCethReceiverAccount(ctx, CethReceiverAccount)
+	NativeTokenReceiverAccount, _ := sdk.AccAddressFromBech32(TestNativeTokenReceiverAddress)
+	ethbridgeKeeper.SetNativeTokenReceiverAccount(ctx, NativeTokenReceiverAccount)
 
 	// Setup validators
 	valAddrsInOrder := make([]sdk.ValAddress, len(validatorAmounts))
@@ -267,7 +267,7 @@ func CreateTestAppEthBridge(isCheckTx bool) (sdk.Context, keeper.Keeper) {
 
 func GenerateRandomTokens(numberOfTokens int) []string {
 	var tokenList []string
-	tokens := []string{"ceth", "cbtc", "ceos", "cbch", "cbnb", "cusdt", "cada", "ctrx", "cacoin", "cbcoin", "ccoin", "cdcoin"}
+	tokens := []string{"NativeToken", "cbtc", "ceos", "cbch", "cbnb", "cusdt", "cada", "ctrx", "cacoin", "cbcoin", "ccoin", "cdcoin"}
 	rand.Seed(time.Now().Unix())
 	for i := 0; i < numberOfTokens; i++ {
 		// initialize global pseudo random generator

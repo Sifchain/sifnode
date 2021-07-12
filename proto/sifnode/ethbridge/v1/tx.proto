@@ -15,9 +15,10 @@ service Msg {
       returns (MsgCreateEthBridgeClaimResponse);
   rpc UpdateWhiteListValidator(MsgUpdateWhiteListValidator)
       returns (MsgUpdateWhiteListValidatorResponse);
-  rpc UpdateCethReceiverAccount(MsgUpdateCethReceiverAccount)
-      returns (MsgUpdateCethReceiverAccountResponse);
-  rpc RescueCeth(MsgRescueCeth) returns (MsgRescueCethResponse);
+  rpc UpdateNativeTokenReceiverAccount(MsgUpdateNativeTokenReceiverAccount)
+      returns (MsgUpdateNativeTokenReceiverAccountResponse);
+  rpc RescueNativeToken(MsgRescueNativeToken)
+      returns (MsgRescueNativeTokenResponse);
   rpc SetNativeToken(MsgSetNativeToken) returns (MsgSetNativeTokenResponse);
 }
 
@@ -83,23 +84,24 @@ message MsgUpdateWhiteListValidator {
 
 message MsgUpdateWhiteListValidatorResponse {}
 
-message MsgUpdateCethReceiverAccount {
+message MsgUpdateNativeTokenReceiverAccount {
   string cosmos_sender = 1;
-  string ceth_receiver_account = 2;
+  string native_token_receiver_account = 2;
 }
 
-message MsgUpdateCethReceiverAccountResponse {}
+message MsgUpdateNativeTokenReceiverAccountResponse {}
 
-message MsgRescueCeth {
+message MsgRescueNativeToken {
   string cosmos_sender = 1;
   string cosmos_receiver = 2;
-  string ceth_amount = 3 [
+  string native_token_symbol = 3;
+  string native_token_amount = 4 [
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
     (gogoproto.nullable) = false
   ];
 }
 
-message MsgRescueCethResponse {}
+message MsgRescueNativeTokenResponse {}
 
 message MsgSetNativeToken {
   string cosmos_sender = 1;

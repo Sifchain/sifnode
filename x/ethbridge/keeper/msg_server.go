@@ -246,8 +246,8 @@ func (srv msgServer) UpdateWhiteListValidator(goCtx context.Context,
 	return &types.MsgUpdateWhiteListValidatorResponse{}, nil
 }
 
-func (srv msgServer) UpdateCethReceiverAccount(goCtx context.Context,
-	msg *types.MsgUpdateCethReceiverAccount) (*types.MsgUpdateCethReceiverAccountResponse, error) {
+func (srv msgServer) UpdateNativeTokenReceiverAccount(goCtx context.Context,
+	msg *types.MsgUpdateNativeTokenReceiverAccount) (*types.MsgUpdateNativeTokenReceiverAccountResponse, error) {
 
 	ctx := sdk.UnwrapSDKContext(goCtx)
 	logger := srv.Keeper.Logger(ctx)
@@ -257,7 +257,7 @@ func (srv msgServer) UpdateCethReceiverAccount(goCtx context.Context,
 		return nil, err
 	}
 
-	nativeTokenReceiverAddress, err := sdk.AccAddressFromBech32(msg.CethReceiverAccount)
+	nativeTokenReceiverAddress, err := sdk.AccAddressFromBech32(msg.NativeTokenReceiverAccount)
 	if err != nil {
 		return nil, err
 	}
@@ -269,17 +269,17 @@ func (srv msgServer) UpdateCethReceiverAccount(goCtx context.Context,
 		return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.CosmosSender)
 	}
 
-	err = srv.Keeper.ProcessUpdateCethReceiverAccount(ctx,
+	err = srv.Keeper.ProcessUpdateNativeTokenReceiverAccount(ctx,
 		cosmosSender, nativeTokenReceiverAddress)
 	if err != nil {
-		logger.Error("keeper failed to process update ceth receiver account.", errorMessageKey, err.Error())
+		logger.Error("keeper failed to process update native token receiver account.", errorMessageKey, err.Error())
 		return nil, err
 	}
 
-	logger.Info("sifnode emit update ceth receiver account event.",
+	logger.Info("sifnode emit update native token receiver account event.",
 		"CosmosSender", msg.CosmosSender,
 		"CosmosSenderSequence", strconv.FormatUint(account.GetSequence(), 10),
-		"CethReceiverAccount", msg.CethReceiverAccount)
+		"NativeTokenReceiverAccount", msg.NativeTokenReceiverAccount)
 
 	ctx.EventManager().EmitEvents(sdk.Events{
 		sdk.NewEvent(
@@ -290,14 +290,14 @@ func (srv msgServer) UpdateCethReceiverAccount(goCtx context.Context,
 		sdk.NewEvent(
 			types.EventTypeLock,
 			sdk.NewAttribute(types.AttributeKeyCosmosSender, msg.CosmosSender),
-			sdk.NewAttribute(types.AttributeKeyCethReceiverAccount, msg.CethReceiverAccount),
+			sdk.NewAttribute(types.AttributeKeyNativeTokenReceiverAccount, msg.NativeTokenReceiverAccount),
 		),
 	})
 
-	return &types.MsgUpdateCethReceiverAccountResponse{}, nil
+	return &types.MsgUpdateNativeTokenReceiverAccountResponse{}, nil
 }
 
-func (srv msgServer) RescueCeth(goCtx context.Context, msg *types.MsgRescueCeth) (*types.MsgRescueCethResponse, error) {
+func (srv msgServer) RescueNativeToken(goCtx context.Context, msg *types.MsgRescueNativeToken) (*types.MsgRescueNativeTokenResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 	logger := srv.Keeper.Logger(ctx)
 
@@ -312,7 +312,7 @@ func (srv msgServer) RescueCeth(goCtx context.Context, msg *types.MsgRescueCeth)
 		return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.CosmosSender)
 	}
 
-	if err := srv.Keeper.ProcessRescueCeth(ctx, msg); err != nil {
+	if err := srv.Keeper.ProcessRescueNativeToken(ctx, msg); err != nil {
 		logger.Error("keeper failed to process rescue native_token message.", errorMessageKey, err.Error())
 		return nil, err
 	}
@@ -320,9 +320,9 @@ func (srv msgServer) RescueCeth(goCtx context.Context, msg *types.MsgRescueCeth)
 		"CosmosSender", msg.CosmosSender,
 		"CosmosSenderSequence", strconv.FormatUint(account.GetSequence(), 10),
 		"CosmosReceiver", msg.CosmosReceiver,
-		"NativeTokenAmount", msg.CethAmount)
+		"NativeTokenAmount", msg.NativeTokenAmount)
 
-	return &types.MsgRescueCethResponse{}, nil
+	return &types.MsgRescueNativeTokenResponse{}, nil
 }
 
 func (srv msgServer) SetNativeToken(goCtx context.Context, msg *types.MsgSetNativeToken) (*types.MsgSetNativeTokenResponse, error) {
