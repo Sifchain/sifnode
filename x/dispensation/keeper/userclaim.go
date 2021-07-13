@@ -55,6 +55,9 @@ func (k Keeper) GetClaims(ctx sdk.Context) *types.UserClaims {
 	for ; iterator.Valid(); iterator.Next() {
 		var dl types.UserClaim
 		bytesValue := iterator.Value()
+		if len(bytesValue) == 0 {
+			continue
+		}
 		k.cdc.MustUnmarshalBinaryBare(bytesValue, &dl)
 		res.UserClaims = append(res.UserClaims, &dl)
 	}
@@ -73,6 +76,9 @@ func (k Keeper) GetClaimsByType(ctx sdk.Context, userClaimType types.Distributio
 	for ; iterator.Valid(); iterator.Next() {
 		var dl types.UserClaim
 		bytesValue := iterator.Value()
+		if len(bytesValue) == 0 {
+			continue
+		}
 		k.cdc.MustUnmarshalBinaryBare(bytesValue, &dl)
 		if dl.UserClaimType == userClaimType {
 			res.UserClaims = append(res.UserClaims, &dl)
