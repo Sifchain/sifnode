@@ -2,6 +2,7 @@ syntax = "proto3";
 package sifnode.oracle.v1;
 
 import "gogoproto/gogo.proto";
+import "sifnode/oracle/v1/network_descriptor.proto";
 
 option go_package = "github.com/Sifchain/sifnode/x/oracle/types";
 
@@ -59,4 +60,12 @@ message NativeTokenConfig {
     (gogoproto.nullable) = false,
     (gogoproto.moretags) = "yaml:\"minimum_burn_cost\""
   ];
+}
+
+// ProphecySignatures include the ethereum addressed and signatures.
+message ProphecySignatures {
+  sifnode.oracle.v1.NetworkDescriptor network_descriptor = 1
+      [ (gogoproto.moretags) = "yaml:\"network_descriptor\"" ];
+  repeated string ethereum_address = 2;
+  repeated string signatures = 3;
 }

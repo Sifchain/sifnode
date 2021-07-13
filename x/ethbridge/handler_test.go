@@ -566,7 +566,7 @@ func TestUpdateWhiteListValidator(t *testing.T) {
 func TestSetNativeTokenMsg(t *testing.T) {
 	ctx, _, _, accountKeeper, handler, _, oracleKeeper := CreateTestHandler(t, 0.5, []int64{5})
 
-	testSetAtiveTokenMsg := types.CreateTestSetAtiveTokenMsg(
+	testSetAtiveTokenMsg := types.CreateTestSetNativeTokenMsg(
 		t, types.TestAddress, oracletypes.NetworkDescriptor_NETWORK_DESCRIPTOR_ETHEREUM, "ceth")
 
 	cosmosSender, err := sdk.AccAddressFromBech32(types.TestAddress)

@@ -47,44 +47,6 @@ func (k Keeper) Logger(ctx sdk.Context) log.Logger {
 	return ctx.Logger().With("module", fmt.Sprintf("x/%s", types.ModuleName))
 }
 
-// GetProphecies returns all prophecies
-func (k Keeper) GetProphecies(ctx sdk.Context) []types.Prophecy {
-	var prophecies []types.Prophecy
-	store := ctx.KVStore(k.storeKey)
-	iter := sdk.KVStorePrefixIterator(store, types.ProphecyPrefix)
-	for ; iter.Valid(); iter.Next() {
-		var prophecy types.Prophecy
-		k.cdc.MustUnmarshalBinaryBare(iter.Value(), &prophecy)
-		prophecies = append(prophecies, prophecy)
-	}
-	return prophecies
-}
-
-// GetProphecy gets the entire prophecy data struct for a given id
-func (k Keeper) GetProphecy(ctx sdk.Context, prophecyID []byte) (types.Prophecy, bool) {
-
-	store := ctx.KVStore(k.storeKey)
-	bz := store.Get(append(types.ProphecyPrefix, prophecyID[:]...))
-
-	if bz == nil {
-		return types.Prophecy{}, false
-	}
-
-	var prophecy types.Prophecy
-	k.cdc.MustUnmarshalBinaryBare(bz, &prophecy)
-
-	return prophecy, true
-}
-
-// SetProphecy saves a prophecy with an initial claim
-func (k Keeper) SetProphecy(ctx sdk.Context, prophecy types.Prophecy) {
-	store := ctx.KVStore(k.storeKey)
-
-	storePrefix := append(types.ProphecyPrefix, prophecy.Id[:]...)
-
-	store.Set(storePrefix, k.cdc.MustMarshalBinaryBare(&prophecy))
-}
-
 // ProcessClaim handle claim
 func (k Keeper) ProcessClaim(ctx sdk.Context, networkDescriptor types.NetworkDescriptor, prophecyID []byte, validator string) (types.StatusText, error) {
 	logger := k.Logger(ctx)
@@ -180,6 +142,17 @@ func (k Keeper) processCompletion(ctx sdk.Context, networkDescriptor types.Netwo
 // ProcessSetNativeToken set native token for a network
 func (k Keeper) ProcessSetNativeToken(ctx sdk.Context, networkDescriptor types.NetworkDescriptor, nativeToken string, gas, lockCost, burnCost sdk.Int) error {
 	k.SetNativeToken(ctx, types.NewNetworkIdentity(networkDescriptor), nativeToken, gas, lockCost, burnCost)
+	return nil
+}
+
+// ProcessSignProphecy deal with the signature from validator
+func (k Keeper) ProcessSignProphecy(ctx sdk.Context, cosmosSender, prophecyID, ethereumAddress, signature string) error {
+	prophecy, ok := k.GetProphecy(ctx, []byte(prophecyID))
+	if !ok {
+		return fmt.Errorf("failed to get prophecy with ID as %s", prophecyID)
+	}
+
+	prophecy.ClaimValidators = append(prophecy.ClaimValidators, cosmosSender)
 	return nil
 }
 

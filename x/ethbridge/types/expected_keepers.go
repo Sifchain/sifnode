@@ -33,4 +33,5 @@ type OracleKeeper interface {
 	GetNativeToken(ctx sdk.Context, networkIdentity oracletypes.NetworkIdentity) (string, error)
 	GetNativeTokenConfig(ctx sdk.Context, networkIdentity oracletypes.NetworkIdentity) (oracletypes.NativeTokenConfig, error)
 	ProcessSetNativeToken(ctx sdk.Context, networkDescriptor oracletypes.NetworkDescriptor, nativeToken string, gas, burnCost, lockCost sdk.Int) error
+	ProcessSignProphecy(ctx sdk.Context, cosmosSender, prophecyID, ethereumAddress, signature string) error
 }

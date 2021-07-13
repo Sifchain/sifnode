@@ -20,6 +20,7 @@ service Msg {
   rpc RescueNativeToken(MsgRescueNativeToken)
       returns (MsgRescueNativeTokenResponse);
   rpc SetNativeToken(MsgSetNativeToken) returns (MsgSetNativeTokenResponse);
+  rpc SignProphecy(MsgSignProphecy) returns (MsgSignProphecyResponse);
 }
 
 // MsgLock defines a message for locking coins and triggering a related event
@@ -126,3 +127,13 @@ message MsgSetNativeToken {
 }
 
 message MsgSetNativeTokenResponse {}
+
+// MsgSignProphecy defines a message for sending signature for prophecy
+message MsgSignProphecy {
+  string cosmos_sender = 1;
+  string prophecy_id = 2;
+  string ethereum_address = 3;
+  string signature = 4;
+}
+
+message MsgSignProphecyResponse {}

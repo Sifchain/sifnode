@@ -373,3 +373,52 @@ func (srv msgServer) SetNativeToken(goCtx context.Context, msg *types.MsgSetNati
 
 	return &types.MsgSetNativeTokenResponse{}, nil
 }
+
+func (srv msgServer) SignProphecy(goCtx context.Context, msg *types.MsgSignProphecy) (*types.MsgSignProphecyResponse, error) {
+	ctx := sdk.UnwrapSDKContext(goCtx)
+	logger := srv.Keeper.Logger(ctx)
+
+	cosmosSender, err := sdk.AccAddressFromBech32(msg.CosmosSender)
+	if err != nil {
+		return nil, err
+	}
+
+	account := srv.Keeper.accountKeeper.GetAccount(ctx, cosmosSender)
+	if account == nil {
+		logger.Error("account is nil.", "CosmosSender", msg.CosmosSender)
+		return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.CosmosSender)
+	}
+
+	if err := srv.Keeper.ProcessSignProphecy(ctx, msg); err != nil {
+		logger.Error("keeper failed to process rescue native_token message.", errorMessageKey, err.Error())
+		return nil, err
+	}
+	// logger.Info("sifnode emit set native_token event.",
+	// 	"CosmosSender", msg.CosmosSender,
+	// 	"CosmosSenderSequence", strconv.FormatUint(account.GetSequence(), 10),
+	// 	"NetworkDescriptor", msg.NetworkDescriptor,
+	// 	"NativeToken", msg.NativeToken,
+	// 	"NativeTokenGas", msg.NativeGas.String(),
+	// 	"minimum_lock_cost", msg.MinimumLockCost.String(),
+	// 	"minimum_burn_cost", msg.MinimumBurnCost.String(),
+	// )
+
+	// ctx.EventManager().EmitEvents(sdk.Events{
+	// 	sdk.NewEvent(
+	// 		sdk.EventTypeMessage,
+	// 		sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
+	// 		sdk.NewAttribute(sdk.AttributeKeySender, msg.CosmosSender),
+	// 	),
+	// 	sdk.NewEvent(
+	// 		types.EventTypeSetNativeToken,
+	// 		sdk.NewAttribute(types.AttributeKeyCosmosSender, msg.CosmosSender),
+	// 		sdk.NewAttribute(types.AttributeKeyNetworkDescriptor, msg.NetworkDescriptor.String()),
+	// 		sdk.NewAttribute(types.AttributeKeyNativeToken, msg.NativeToken),
+	// 		sdk.NewAttribute(types.AttributeKeyNativeTokenGas, msg.NativeGas.String()),
+	// 		sdk.NewAttribute(types.AttributeKeyMinimumLockCost, msg.MinimumLockCost.String()),
+	// 		sdk.NewAttribute(types.AttributeKeyMinimumBurnCost, msg.MinimumBurnCost.String()),
+	// 	),
+	// })
+
+	return &types.MsgSignProphecyResponse{}, nil
+}

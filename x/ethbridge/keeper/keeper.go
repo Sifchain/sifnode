@@ -262,6 +262,12 @@ func (k Keeper) ProcessSetNativeToken(ctx sdk.Context, msg *types.MsgSetNativeTo
 	return k.oracleKeeper.ProcessSetNativeToken(ctx, msg.NetworkDescriptor, msg.NativeToken, msg.NativeGas, msg.MinimumBurnCost, msg.MinimumLockCost)
 }
 
+// ProcessSignProphecy processes the set sign prophecy from validator
+func (k Keeper) ProcessSignProphecy(ctx sdk.Context, msg *types.MsgSignProphecy) error {
+
+	return k.oracleKeeper.ProcessSignProphecy(ctx, msg.CosmosSender, msg.ProphecyId, msg.EthereumAddress, msg.Signature)
+}
+
 // Exists chec if the key existed in db.
 func (k Keeper) Exists(ctx sdk.Context, key []byte) bool {
 	store := ctx.KVStore(k.storeKey)
