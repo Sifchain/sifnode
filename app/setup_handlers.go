@@ -6,5 +6,5 @@ import (
 )
 
 func SetupHandlers(app *SifchainApp) {
-	app.UpgradeKeeper.SetUpgradeHandler("0.9.0-rc.7", func(ctx sdk.Context, plan types.Plan) {})
+	app.UpgradeKeeper.SetUpgradeHandler("0.9.0-hotfix.1", func(ctx sdk.Context, plan types.Plan) {})
 }
