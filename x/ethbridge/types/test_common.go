@@ -116,7 +116,7 @@ func CreateTestUpdateWhiteListValidatorMsg(_ *testing.T, networkDescriptor oracl
 	}
 }
 
-func CreateTestSetAtiveTokenMsg(t *testing.T, testCosmosSender string, networkDescriptor oracletypes.NetworkDescriptor, nativeToken string) MsgSetNativeToken {
+func CreateTestSetNativeTokenMsg(t *testing.T, testCosmosSender string, networkDescriptor oracletypes.NetworkDescriptor, nativeToken string) MsgSetNativeToken {
 	accAddress, err := sdk.AccAddressFromBech32(testCosmosSender)
 	require.NoError(t, err)
 
