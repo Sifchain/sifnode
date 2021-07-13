@@ -1,7 +1,7 @@
 openapi: 3.0.0
 info:
   title: Sifnode API
-  version: 1.0.1
+  version: 1.0.2
 servers:
 # Added by API Auto Mocking Plugin
 - url: https://api.sifchain.finance
@@ -143,23 +143,21 @@ paths:
               schema:
                 $ref: '#/components/schemas/AminoMsg'
       x-swagger-router-controller: Clp  
-  /clp/getLiquidityProvider/{symbol}/{lpAddress}:
+  /clp/getLiquidityProvider:
     get:
       tags:
       - Clp
       operationId: getLiquidityProvider
       parameters:
       - name: symbol
-        in: path
+        in: query
         required: true
-        style: simple
         explode: false
         schema:
           type: string
       - name: lpAddress
-        in: path
+        in: query
         required: true
-        style: simple
         explode: false
         schema:
           type: string
@@ -171,16 +169,15 @@ paths:
               schema:
                 $ref: '#/components/schemas/LiquidityDetailsResponse'
       x-swagger-router-controller: Clp
-  /clp/getAssets/{lpAddress}:
+  /clp/getAssets:
     get:
       tags:
       - Clp
       operationId: getAssets
       parameters:
       - name: lpAddress
-        in: path
+        in: query
         required: true
-        style: simple
         explode: false
         schema:
           type: string
