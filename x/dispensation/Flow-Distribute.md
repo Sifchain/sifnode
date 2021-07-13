@@ -95,16 +95,16 @@
 - They first need add their mnemonic keys to a local wallet .They will generate a multi-sig key using their individual keys. This multi-sig key generation is a one time process only and needs to be done with consent from both amara and zane. For this generation to work both their keys need to be present in the same local wallet.
 ```shell
 #Amara adds her key .
-sifnodecli keys add amara -i
+sifnoded keys add amara -i
 ##will be prompted to create a bip39 passphrase and a keyring passphrase
 # Note the keyring passphrase will be used by zane as well .
 
 # Zane adds his key to the wallet
-sifnodecli keys add zane -i
+sifnoded keys add zane -i
 ```
 - Check local wallet to verify keys 
 ```shell
-sifnodecli keys list --keyring-backend file
+sifnoded keys list --keyring-backend file
 ```
 Sample output ( address will be different )
 ```json
@@ -127,7 +127,7 @@ Sample output ( address will be different )
 ```shell
 # multi-sig-threshold refers to the min signatures required for this multi-sig key to work
 # In this case 2 means that both amara and zane will have to sign for this to work 
-sifnodecli keys add mkey --multisig amara,zane --multisig-threshold 2  
+sifnoded keys add mkey --multisig amara,zane --multisig-threshold 2  
 ```
 - After this step ideally both amara and zane can take a copy of the `mkey` which they can use to create transactions ,and send it over to the other person to sign ( More details on this later). Amara and Zane can then leave ,they would be able to sign and broadcast tx from their own locations.
 ### Create offline tx
@@ -158,12 +158,12 @@ sifnodecli keys add mkey --multisig amara,zane --multisig-threshold 2
 ```
 - Zane decides to create the offline tx . He has the mkey in his local wallet. He runs the following command.Note the tx creator will have to pay for the gas fee
 ```shell
-sifnodecli tx dispensation create mkey airdrop-1 Airdrop input.json output.json --gas 200064128 --gas-prices 1.0rowan --generate-only --from zane --keyring-backend file --node tcp://rpc-mainnet.sifchain.finance:80 --chain-id sifchain-mainnet >> offlinetx.json
+sifnoded tx dispensation create mkey airdrop-1 Airdrop input.json output.json --gas 200064128 --gas-prices 1.0rowan --generate-only --from zane --keyring-backend file --node tcp://rpc-mainnet.sifchain.finance:80 --chain-id sifchain-mainnet >> offlinetx.json
 ```
 
 ### Zane Signs the transaction 
 ```shell
-sifnodecli tx sign --multisig sif1l7hypmqk2yc334vc6vmdwzp5sdefygj2ad93p5 --from zane offlinetx.json --keyring-backend file --node tcp://rpc-mainnet.sifchain.finance:80 --chain-id sifchain-mainnet >> sig-zane.json
+sifnoded tx sign --multisig sif1l7hypmqk2yc334vc6vmdwzp5sdefygj2ad93p5 --from zane offlinetx.json --keyring-backend file --node tcp://rpc-mainnet.sifchain.finance:80 --chain-id sifchain-mainnet >> sig-zane.json
 ```
 Sample sig-zane.json
 ```json
@@ -181,7 +181,7 @@ Sample sig-zane.json
 - Zane then sends the offlinetx.json to amara
 - Amara creates her signature 
 ```shell
-sifnodecli tx sign --multisig sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd --from amara offlinetx.json --keyring-backend file --node tcp://rpc-mainnet.sifchain.finance:80 --chain-id sifchain-mainnet >> sig-amara.json
+sifnoded tx sign --multisig sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd --from amara offlinetx.json --keyring-backend file --node tcp://rpc-mainnet.sifchain.finance:80 --chain-id sifchain-mainnet >> sig-amara.json
 ```
 Sample sig-amara.json
 ```json
@@ -197,12 +197,12 @@ Sample sig-amara.json
 ### Create multi-sig 
 - Either amara or zane can do this step . They just need the two signature files , multi-sig key and the unsigned transaction.
 ```shell
-sifnodecli tx multisign offlinetx.json mkey sig1.json sig2.json --keyring-backend file --node tcp://rpc-mainnet.sifchain.finance:80 --chain-id sifchain-mainnet >> signedtx.json
+sifnoded tx multisign offlinetx.json mkey sig1.json sig2.json --keyring-backend file --node tcp://rpc-mainnet.sifchain.finance:80 --chain-id sifchain-mainnet >> signedtx.json
 ```
 
 ### Broadcast transaction to network
 ```shell
-sifnodecli tx broadcast signedtx.json --node tcp://rpc-mainnet.sifchain.finance:80 --chain-id sifchain-mainnet 
+sifnoded tx broadcast signedtx.json --node tcp://rpc-mainnet.sifchain.finance:80 --chain-id sifchain-mainnet 
 ```
 Sample output
 ```json

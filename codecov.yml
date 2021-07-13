@@ -51,11 +51,14 @@ flags:
 
 ignore:
   - "docs"
+  - "proto/"
+  - "*.proto"
   - "*.md"
   - "*.rst"
   - "**/test_common.go"
   - "**/test_helpers.go"
   - "**/module.go"
   - "**/genesis.go"
+  - "*.pb.go"
   - "scripts/"
   - "contrib"

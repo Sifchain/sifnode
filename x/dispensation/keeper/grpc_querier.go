@@ -32,12 +32,8 @@ func (q Querier) AllDistributions(ctx context.Context,
 func (q Querier) ClaimsByType(ctx context.Context,
 	request *types.QueryClaimsByTypeRequest) (*types.QueryClaimsResponse, error) {
 	claims := q.keeper.GetClaimsByType(sdk.UnwrapSDKContext(ctx), request.UserClaimType)
-	Claims := make([]*types.UserClaim, len(claims.UserClaims))
-	for i, claim := range claims.UserClaims {
-		Claims[i] = claim
-	}
 	return &types.QueryClaimsResponse{
-		Claims: Claims,
+		Claims: claims.UserClaims,
 	}, nil
 }
 
