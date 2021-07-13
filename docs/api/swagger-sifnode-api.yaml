@@ -1,7 +1,7 @@
 openapi: 3.0.0
 info:
   title: Sifnode API
-  version: 0.0.5
+  version: 1.0.1
 servers:
 # Added by API Auto Mocking Plugin
 - url: https://api.sifchain.finance
@@ -52,7 +52,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/AminoMsg'
-      x-swagger-router-controller: Ethbridge                
+      x-swagger-router-controller: Ethbridge
   /ethbridge/lock:
     post:
       tags:
@@ -72,16 +72,15 @@ paths:
                 $ref: '#/components/schemas/AminoMsg'
       x-swagger-router-controller: Ethbridge
 
-  /clp/getPool/{ticker}:
+  /clp/getPool:
     get:
       tags:
       - Clp
       operationId: getPool
       parameters:
-      - name: ticker
-        in: path
+      - name: symbol
+        in: query
         required: true
-        style: simple
         explode: false
         schema:
           type: string
@@ -92,7 +91,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/RawPool'
-      x-swagger-router-controller: Clp  
+      x-swagger-router-controller: Clp
   /clp/getPools:
     get:
       tags:
@@ -125,7 +124,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/AminoMsg'
-      x-swagger-router-controller: Clp  
+      x-swagger-router-controller: Clp
   /clp/swap:
     post:
       tags:
@@ -212,7 +211,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/AminoMsg'
-      x-swagger-router-controller: Clp  
+      x-swagger-router-controller: Clp
   /clp/removeLiquidity:
     post:
       tags:
@@ -230,7 +229,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/AminoMsg'
-      x-swagger-router-controller: Clp  
+      x-swagger-router-controller: Clp
 
 components:
   schemas:
@@ -238,33 +237,39 @@ components:
       type: object
       properties:
         base_req:
-          $ref: '#/components/schemas/base_req'      
+          $ref: '#/components/schemas/base_req'
         external_asset:
-          $ref: '#/components/schemas/asset'    
+          $ref: '#/components/schemas/asset'
         w_basis_points:
           type: string
+          example: '10000'
         asymmetry:
           type: string
+          example: '0'
         signer:
-          type: string   
+          type: string
+          example: 'sifj890868767868969837739example'
     LiquidityDetailsResponse:
       type: object
       properties:
         result:
-          $ref: '#/components/schemas/result'       
+          $ref: '#/components/schemas/result'
         height:
-          type: string   
+          type: string
+          example: '321232'
     result:
       type: object
       properties:
         native_asset_balance:
           type: string
           description: Balance of the native asset.
+          example: '100123456123456123456'
         external_asset_balance:
           type: string
           description: Balance of the external asset.
+          example: '50123456123456123456'
         LiquidityProvider:
-          $ref: '#/components/schemas/LiquidityProvider'          
+          $ref: '#/components/schemas/LiquidityProvider'
     SwapParams:
       type: object
       properties:
@@ -277,12 +282,15 @@ components:
         sent_amount:
           type: string
           description: Amount of the asset.
+          example: '11123456123456123456'
         signer:
           type: string
           description: Address of the signer.
+          example: 'sifj890868767868969837739example'
         min_receiving_amount:
           type: string
           description: Min receiving amount.
+          example: '10123456123456123456'
     LiquidityParams:
       type: object
       properties:
@@ -293,12 +301,15 @@ components:
         native_asset_amount:
           type: string
           description: Amount of the native asset.
+          example: '20123456123456123456'
         external_asset_amount:
           type: string
           description: Amount of the external asset.
+          example: '10123456123456123456'
         signer:
           type: string
           description: Address of the signer.
+          example: 'sifj890868767868969837739example'
     BurnOrLockReq:
       type: object
       properties:
@@ -307,24 +318,31 @@ components:
         ethereum_chain_id:
           type: string
           description: Id of the ethereum chain.
+          example: '0x01'
         token_contract_address:
           type: string
           description: Contract address of the token.
+          example: '0x123456789ABCDEFFEDCBA987654321'
         cosmos_sender:
           type: string
           description: Address of the cosmos sender.
+          example: 'sifj890868767868969837739example'
         ethereum_receiver:
           type: string
           description: Address of the ethereum receiver.
+          example: '0x0123456789ABCDEF0FEDCBA9876543210'
         amount:
           type: string
           description: Amount of the token.
+          example: '10123456123456123456'
         symbol:
           type: string
           description: Symbol of the token.
+          example: 'ETH'
         ceth_amount:
           type: string
           description: Amount of the ceth token.
+          example: '123456123456123456'
     AminoMsg:
       type: object
       properties:
@@ -334,6 +352,9 @@ components:
         value:
           type: string
           description: Message value represented as a string.
+      example:
+        type: 'swap'
+        value: '123456'
     RawPool:
       type: object
       properties:
@@ -342,15 +363,19 @@ components:
         native_asset_balance:
           type: string
           description: Balance of the native asset.
+          example: '20123456123456123456'
         external_asset_balance:
           type: string
           description: Balance of the external asset.
+          example: '10123456123456123456'
         pool_units:
           type: string
           description: Units of the pool.
+          example: '30123456123456123456'
         pool_address:
           type: string
           description: Address of the pool.
+          example: 'jk32l4j3l4j3l2j4l324jlhggfv3'
     CreateClaimReq:
       type: object
       properties:
@@ -358,6 +383,7 @@ components:
           $ref: '#/components/schemas/BaseReq'
         Signer:
           type: string
+          example: 'sif142ulelgzh0p6wphzhlzuxvt95h7red9lm4rwne'
         account_number:
           $ref: '#/components/schemas/DistributionType'
     LiquidityProvider:
@@ -365,8 +391,10 @@ components:
       properties:
         liquidity_provider_units:
           type: string
+          example: '123456'
         liquidity_provider_address:
           type: string
+          example: 'sif142ulelgzh0p6wphzhlzuxvt95h7red9lm4rwne'
         asset:
           $ref: '#/components/schemas/asset'
     base_req:
@@ -376,6 +404,9 @@ components:
           type: string
         chain_id:
           type: string
+      example:
+        from: 'sif142ulelgzh0p6wphzhlzuxvt95h7red9lm4rwne'
+        chain_id: 'sifchain-devnet-042'
     asset:
       type: object
       properties:
@@ -387,7 +418,11 @@ components:
           description: Asset symbol.
         ticker:
           type: string
-          description: Asset ticker.                    
+          description: Asset ticker.
+      example:
+        source_chain: 'ROWAN'
+        symbol: 'ETHROWAN'
+        ticker: 'ETH'
     BaseReq:
       type: object
       properties:
@@ -399,6 +434,12 @@ components:
           type: string
         sequence:
           type: string
+      example:
+        from: 'sif142ulelgzh0p6wphzhlzuxvt95h7red9lm4rwne'
+        chain_id: 'sifchain-devnet-042'
+        account_number: '1'
+        sequence: '0'
     DistributionType:
       type: integer
       description: One of the following values - Airdrop (1), LiquidityMining (2), or ValidatorSubsidy (3).
+      example: 1
