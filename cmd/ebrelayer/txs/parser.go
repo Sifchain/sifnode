@@ -47,6 +47,7 @@ func EthereumEventToEthBridgeClaim(valAddr sdk.ValAddress, event types.EthereumE
 
 	// Symbol formatted to lowercase
 	symbol := strings.ToLower(event.Symbol)
+
 	switch event.ClaimType {
 	case ethbridge.ClaimType_CLAIM_TYPE_LOCK:
 		if symbol == "eth" && !isZeroAddress(event.Token) {
@@ -131,6 +132,9 @@ func BurnLockEventToCosmosMsg(claimType types.Event, attributes []abci.EventAttr
 				symbol = strings.Join(res[1:], "")
 			} else {
 				symbol = val
+				if symbol == "rowan" {
+					symbol = "erowan"
+				}
 			}
 		case types.Amount.String():
 			attributeNumber++
@@ -146,6 +150,15 @@ func BurnLockEventToCosmosMsg(claimType types.Event, attributes []abci.EventAttr
 	}
 
 	if attributeNumber < 5 {
+		sugaredLogger.Infow(
+			"current variable values",
+			"cosmosSender", cosmosSender,
+			"cosmosSenderSequence", cosmosSenderSequence,
+			"ethereumReceiver", ethereumReceiver,
+			"symbol", symbol,
+			"amount", amount,
+		)
+
 		sugaredLogger.Errorw("message not complete", "attributeNumber", attributeNumber)
 		return types.CosmosMsg{}, errors.New("message not complete")
 	}

@@ -69,7 +69,18 @@ contract Valset is ValsetStorage {
         currentValsetVersion = 0;
         _initialized = true;
 
-        updateValset(_initValidators, _initPowers);
+        require(
+            _initValidators.length == _initPowers.length,
+            "Every validator must have a corresponding power"
+        );
+
+        resetValset();
+
+        for (uint256 i = 0; i < _initValidators.length; i++) {
+            addValidatorInternal(_initValidators[i], _initPowers[i]);
+        }
+
+        emit LogValsetUpdated(currentValsetVersion, validatorCount, totalPower);
     }
 
     /*
@@ -149,7 +160,7 @@ contract Valset is ValsetStorage {
 
         resetValset();
 
-        for (uint256 i = 0; i < _validators.length; i = i.add(1)) {
+        for (uint256 i = 0; i < _validators.length; i++) {
             addValidatorInternal(_validators[i], _powers[i]);
         }
 

@@ -115,9 +115,6 @@ func (sub EthereumSub) Start(txFactory tx.Factory, completionEvent *sync.WaitGro
 		return
 	}
 
-	// We will check logs for new events
-	logs := make(chan ctypes.Log)
-	defer close(logs)
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	defer close(quit)
