@@ -1,10 +1,10 @@
 openapi: 3.0.0
 info:
   title: Sifnode API
-  version: 1.0.1
+  version: 1.1.0
 servers:
 # Added by API Auto Mocking Plugin
-- url: https://api.sifchain.finance
+- url: https://api-devnet-042.sifchain.finance
   description: Sifnode API
 tags:
 - name: Dispensation
@@ -24,7 +24,7 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/CreateClaimReq'
-        description: Created user object
+        description: Created dispensation claim
         required: true
       responses:
         "200":
@@ -32,7 +32,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AminoMsg'
+                $ref: '#/components/schemas/Msg'
       x-swagger-router-controller: Dispensation
 
   /ethbridge/burn:
@@ -51,7 +51,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AminoMsg'
+                $ref: '#/components/schemas/Msg'
       x-swagger-router-controller: Ethbridge
   /ethbridge/lock:
     post:
@@ -69,7 +69,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AminoMsg'
+                $ref: '#/components/schemas/Msg'
       x-swagger-router-controller: Ethbridge
 
   /clp/getPool:
@@ -123,7 +123,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AminoMsg'
+                $ref: '#/components/schemas/Msg'
       x-swagger-router-controller: Clp
   /clp/swap:
     post:
@@ -141,7 +141,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AminoMsg'
+                $ref: '#/components/schemas/Msg'
       x-swagger-router-controller: Clp  
   /clp/getLiquidityProvider:
     get:
@@ -207,7 +207,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AminoMsg'
+                $ref: '#/components/schemas/Msg'
       x-swagger-router-controller: Clp
   /clp/removeLiquidity:
     post:
@@ -225,7 +225,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AminoMsg'
+                $ref: '#/components/schemas/Msg'
       x-swagger-router-controller: Clp
 
 components:
@@ -236,7 +236,7 @@ components:
         base_req:
           $ref: '#/components/schemas/base_req'
         external_asset:
-          $ref: '#/components/schemas/asset'
+          $ref: '#/components/schemas/external_asset'
         w_basis_points:
           type: string
           example: '10000'
@@ -271,9 +271,9 @@ components:
       type: object
       properties:
         sent_asset:
-          $ref: '#/components/schemas/asset'
+          $ref: '#/components/schemas/external_asset'
         received_asset:
-          $ref: '#/components/schemas/asset'
+          $ref: '#/components/schemas/native_asset'
         base_req:
           $ref: '#/components/schemas/base_req'
         sent_amount:
@@ -294,7 +294,7 @@ components:
         base_req:
           $ref: '#/components/schemas/base_req'
         external_asset:
-          $ref: '#/components/schemas/asset'
+          $ref: '#/components/schemas/external_asset'
         native_asset_amount:
           type: string
           description: Amount of the native asset.
@@ -315,7 +315,7 @@ components:
         ethereum_chain_id:
           type: string
           description: Id of the ethereum chain.
-          example: '0x01'
+          example: '0'
         token_contract_address:
           type: string
           description: Contract address of the token.
@@ -335,12 +335,12 @@ components:
         symbol:
           type: string
           description: Symbol of the token.
-          example: 'ETH'
+          example: 'ceth'
         ceth_amount:
           type: string
           description: Amount of the ceth token.
           example: '123456123456123456'
-    AminoMsg:
+    Msg:
       type: object
       properties:
         type:
@@ -350,13 +350,13 @@ components:
           type: string
           description: Message value represented as a string.
       example:
-        type: 'swap'
-        value: '123456'
+        type: 'message type'
+        value: 'message value'
     RawPool:
       type: object
       properties:
         external_asset:
-          $ref: '#/components/schemas/asset'
+          $ref: '#/components/schemas/external_asset'
         native_asset_balance:
           type: string
           description: Balance of the native asset.
@@ -376,12 +376,12 @@ components:
     CreateClaimReq:
       type: object
       properties:
-        BaseReq:
+        base_req:
           $ref: '#/components/schemas/BaseReq'
-        Signer:
+        claim_creator:
           type: string
           example: 'sif142ulelgzh0p6wphzhlzuxvt95h7red9lm4rwne'
-        ClaimType:
+        claim_type:
           $ref: '#/components/schemas/DistributionType'
     LiquidityProvider:
       type: object
@@ -393,7 +393,7 @@ components:
           type: string
           example: 'sif142ulelgzh0p6wphzhlzuxvt95h7red9lm4rwne'
         asset:
-          $ref: '#/components/schemas/asset'
+          $ref: '#/components/schemas/external_asset'
     base_req:
       type: object
       properties:
@@ -404,7 +404,7 @@ components:
       example:
         from: 'sif142ulelgzh0p6wphzhlzuxvt95h7red9lm4rwne'
         chain_id: 'sifchain-devnet-042'
-    asset:
+    external_asset:
       type: object
       properties:
         source_chain:
@@ -420,6 +420,22 @@ components:
         source_chain: 'ROWAN'
         symbol: 'ceth'
         ticker: 'ETH'
+    native_asset:
+      type: object
+      properties:
+        source_chain:
+          type: string
+          description: Source chain id.
+        symbol:
+          type: string
+          description: Asset symbol.
+        ticker:
+          type: string
+          description: Asset ticker.
+      example:
+        source_chain: 'ROWAN'
+        symbol: 'rowan'
+        ticker: 'ROWAN'
     BaseReq:
       type: object
       properties:
@@ -438,5 +454,13 @@ components:
         sequence: '0'
     DistributionType:
       type: integer
-      description: One of the following values - Airdrop (1), LiquidityMining (2), or ValidatorSubsidy (3).
-      example: 1
+      enum:
+        - 1
+        - 2
+        - 3
+      description: >
+            Distribution type:
+             * 1 - Airdrop
+             * 2 - LiquidityMining
+             * 3 - ValidatorSubsidy
+      example: 2
