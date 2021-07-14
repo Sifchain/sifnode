@@ -1,7 +1,7 @@
 openapi: 3.0.0
 info:
   title: Sifnode API
-  version: 1.0.2
+  version: 1.0.1
 servers:
 # Added by API Auto Mocking Plugin
 - url: https://api.sifchain.finance
@@ -200,7 +200,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/RemoveLiquidityParams'
+              $ref: '#/components/schemas/LiquidityParams'
       responses:
         "200":
           description: Add given amount of token(s) to the liquidity pool.
@@ -218,7 +218,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/LiquidityParams'
+              $ref: '#/components/schemas/RemoveLiquidityParams'
       responses:
         "200":
           description: Remove given amount of token(s) from the liquidity pool.
@@ -245,7 +245,7 @@ components:
           example: '0'
         signer:
           type: string
-          example: 'sifj890868767868969837739example'
+          example: 'sif142ulelgzh0p6wphzhlzuxvt95h7red9lm4rwne'
     LiquidityDetailsResponse:
       type: object
       properties:
@@ -283,7 +283,7 @@ components:
         signer:
           type: string
           description: Address of the signer.
-          example: 'sifj890868767868969837739example'
+          example: 'sif142ulelgzh0p6wphzhlzuxvt95h7red9lm4rwne'
         min_receiving_amount:
           type: string
           description: Min receiving amount.
@@ -306,7 +306,7 @@ components:
         signer:
           type: string
           description: Address of the signer.
-          example: 'sifj890868767868969837739example'
+          example: 'sif142ulelgzh0p6wphzhlzuxvt95h7red9lm4rwne'
     BurnOrLockReq:
       type: object
       properties:
@@ -323,7 +323,7 @@ components:
         cosmos_sender:
           type: string
           description: Address of the cosmos sender.
-          example: 'sifj890868767868969837739example'
+          example: 'sif142ulelgzh0p6wphzhlzuxvt95h7red9lm4rwne'
         ethereum_receiver:
           type: string
           description: Address of the ethereum receiver.
@@ -381,7 +381,7 @@ components:
         Signer:
           type: string
           example: 'sif142ulelgzh0p6wphzhlzuxvt95h7red9lm4rwne'
-        account_number:
+        ClaimType:
           $ref: '#/components/schemas/DistributionType'
     LiquidityProvider:
       type: object
@@ -418,7 +418,7 @@ components:
           description: Asset ticker.
       example:
         source_chain: 'ROWAN'
-        symbol: 'ETHROWAN'
+        symbol: 'ceth'
         ticker: 'ETH'
     BaseReq:
       type: object
