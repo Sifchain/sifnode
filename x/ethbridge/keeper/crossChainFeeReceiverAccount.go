@@ -8,15 +8,15 @@ import (
 	protobuftypes "github.com/gogo/protobuf/types"
 )
 
-func (k Keeper) SetCrossChainFeeReceiverAccount(ctx sdk.Context, nativeTokenReceiverAccount sdk.AccAddress) {
+func (k Keeper) SetCrossChainFeeReceiverAccount(ctx sdk.Context, crossChainFeeReceiverAccount sdk.AccAddress) {
 	store := ctx.KVStore(k.storeKey)
 	key := types.CrossChainFeeReceiverAccountPrefix
-	store.Set(key, k.cdc.MustMarshalBinaryBare(&protobuftypes.StringValue{Value: nativeTokenReceiverAccount.String()}))
+	store.Set(key, k.cdc.MustMarshalBinaryBare(&protobuftypes.StringValue{Value: crossChainFeeReceiverAccount.String()}))
 }
 
-func (k Keeper) IsCrossChainFeeReceiverAccount(ctx sdk.Context, nativeTokenReceiverAccount sdk.AccAddress) bool {
+func (k Keeper) IsCrossChainFeeReceiverAccount(ctx sdk.Context, crossChainFeeReceiverAccount sdk.AccAddress) bool {
 	account := k.GetCrossChainFeeReceiverAccount(ctx)
-	return bytes.Equal(account, nativeTokenReceiverAccount)
+	return bytes.Equal(account, crossChainFeeReceiverAccount)
 }
 
 func (k Keeper) IsCrossChainFeeReceiverAccountSet(ctx sdk.Context) bool {

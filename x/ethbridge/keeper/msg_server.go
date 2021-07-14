@@ -77,9 +77,9 @@ func (srv msgServer) Burn(goCtx context.Context, msg *types.MsgBurn) (*types.Msg
 	logger := srv.Keeper.Logger(ctx)
 
 	if !srv.Keeper.ExistsPeggyToken(ctx, msg.Symbol) {
-		logger.Error("Native token can't be burn.",
+		logger.Error("crosschain fee can't be burn.",
 			"tokenSymbol", msg.Symbol)
-		return nil, errors.Errorf("Native token %s can't be burn.", msg.Symbol)
+		return nil, errors.Errorf("crosschain fee %s can't be burn.", msg.Symbol)
 	}
 
 	cosmosSender, err := sdk.AccAddressFromBech32(msg.CosmosSender)
@@ -243,7 +243,7 @@ func (srv msgServer) UpdateCrossChainFeeReceiverAccount(goCtx context.Context,
 		return nil, err
 	}
 
-	nativeTokenReceiverAddress, err := sdk.AccAddressFromBech32(msg.CrosschainFeeReceiver)
+	crossChainFeeReceiverAddress, err := sdk.AccAddressFromBech32(msg.CrosschainFeeReceiver)
 	if err != nil {
 		return nil, err
 	}
@@ -256,7 +256,7 @@ func (srv msgServer) UpdateCrossChainFeeReceiverAccount(goCtx context.Context,
 	}
 
 	err = srv.Keeper.ProcessUpdateCrossChainFeeReceiverAccount(ctx,
-		cosmosSender, nativeTokenReceiverAddress)
+		cosmosSender, crossChainFeeReceiverAddress)
 	if err != nil {
 		logger.Error("keeper failed to process update crosschain fee receiver account.", errorMessageKey, err.Error())
 		return nil, err
@@ -299,10 +299,10 @@ func (srv msgServer) RescueCrossChainFee(goCtx context.Context, msg *types.MsgRe
 	}
 
 	if err := srv.Keeper.RescueCrossChainFees(ctx, msg); err != nil {
-		logger.Error("keeper failed to process rescue native_token message.", errorMessageKey, err.Error())
+		logger.Error("keeper failed to process rescue crosschain_fee message.", errorMessageKey, err.Error())
 		return nil, err
 	}
-	logger.Info("sifnode emit rescue native_token event.",
+	logger.Info("sifnode emit rescue crosschain_fee event.",
 		"CosmosSender", msg.CosmosSender,
 		"CosmosSenderSequence", strconv.FormatUint(account.GetSequence(), 10),
 		"CosmosReceiver", msg.CosmosReceiver,
