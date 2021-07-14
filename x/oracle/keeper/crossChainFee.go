@@ -37,10 +37,10 @@ func (k Keeper) GetCrossChainFeeConfig(ctx sdk.Context, networkIdentity types.Ne
 
 // GetCrossChainFee return crosschain fee
 func (k Keeper) GetCrossChainFee(ctx sdk.Context, networkIdentity types.NetworkIdentity) (string, error) {
-	nativeTokenConfig, err := k.GetCrossChainFeeConfig(ctx, networkIdentity)
+	crossChainFeeConfig, err := k.GetCrossChainFeeConfig(ctx, networkIdentity)
 	if err != nil {
 		return "", err
 	}
 
-	return nativeTokenConfig.FeeCurrency, nil
+	return crossChainFeeConfig.FeeCurrency, nil
 }

@@ -142,7 +142,7 @@ func TestMintSuccess(t *testing.T) {
 	receiverAddress, err := sdk.AccAddressFromBech32(types.TestAddress)
 	require.NoError(t, err)
 	receiverCoins := bankKeeper.GetAllBalances(ctx, receiverAddress)
-	expectedCoins := sdk.Coins{sdk.NewInt64Coin(types.TestNativeCoinsSymbol, types.TestCoinIntAmount)}
+	expectedCoins := sdk.Coins{sdk.NewInt64Coin(types.TestCrossChainFeeSymbol, types.TestCoinIntAmount)}
 
 	require.True(t, receiverCoins.IsEqual(expectedCoins))
 	for _, event := range res.Events {
@@ -159,7 +159,7 @@ func TestMintSuccess(t *testing.T) {
 	_, err = handler(ctx, &normalCreateMsg)
 	require.Nil(t, err)
 	receiverCoins = bankKeeper.GetAllBalances(ctx, receiverAddress)
-	expectedCoins = sdk.Coins{sdk.NewInt64Coin(types.TestNativeCoinsSymbol, types.TestCoinIntAmount)}
+	expectedCoins = sdk.Coins{sdk.NewInt64Coin(types.TestCrossChainFeeSymbol, types.TestCoinIntAmount)}
 	require.True(t, receiverCoins.IsEqual(expectedCoins))
 }
 
@@ -362,7 +362,7 @@ func TestBurnEthSuccess(t *testing.T) {
 				eventAmount = value
 			case "symbol":
 				eventSymbol = value
-			case "native_token_amount":
+			case "cross_chain_fee_amount":
 				var ok bool
 				eventCrossChainFeeAmount, ok = sdk.NewIntFromString(value)
 				require.Equal(t, ok, true)
@@ -438,7 +438,7 @@ func TestRescueCrossChainFeeMsg(t *testing.T) {
 	require.NoError(t, err)
 
 	testRescueCrossChainFeeMsg := types.CreateTestRescueCrossChainFeeMsg(
-		t, types.TestAddress, types.TestAddress, types.TestNativeCoinsSymbol, sdk.NewInt(10000))
+		t, types.TestAddress, types.TestAddress, types.TestCrossChainFeeSymbol, sdk.NewInt(10000))
 
 	cosmosSender, err := sdk.AccAddressFromBech32(types.TestAddress)
 	require.NoError(t, err)

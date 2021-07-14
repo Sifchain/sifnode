@@ -20,7 +20,7 @@ const (
 	AltTestEthereumAddress    = "0x7B95B6EC7EbD73572298cEf32Bb54FA408207344"
 	Alt2TestEthereumAddress   = "0x7B95B6EC7EbD73572298cEf32Bb54FA408207333"
 	TestCoinsSymbol           = "eth"
-	TestNativeCoinsSymbol     = "ceth"
+	TestCrossChainFeeSymbol   = "ceth"
 	AltTestCoinsAmount        = 12
 	AltTestCoinsSymbol        = "eth"
 	TestCoinIntAmount         = 10
@@ -97,13 +97,13 @@ func CreateTestUpdateCrossChainFeeReceiverAccountMsg(t *testing.T, testCosmosSen
 	return msgUpdateCrossChainFeeReceiverAccount
 }
 
-func CreateTestRescueCrossChainFeeMsg(t *testing.T, testCosmosSender string, testCrossChainFeeReceiverAccount string, nativeToken string, nativeTokenAmount sdk.Int) MsgRescueCrossChainFee {
+func CreateTestRescueCrossChainFeeMsg(t *testing.T, testCosmosSender string, testCrossChainFeeReceiverAccount string, crossChainFee string, crossChainFeeAmount sdk.Int) MsgRescueCrossChainFee {
 	accAddress1, err := sdk.AccAddressFromBech32(testCosmosSender)
 	require.NoError(t, err)
 	accAddress2, err := sdk.AccAddressFromBech32(testCrossChainFeeReceiverAccount)
 	require.NoError(t, err)
 
-	MsgRescueCrossChainFee := NewMsgRescueCrossChainFee(accAddress1, accAddress2, nativeToken, nativeTokenAmount)
+	MsgRescueCrossChainFee := NewMsgRescueCrossChainFee(accAddress1, accAddress2, crossChainFee, crossChainFeeAmount)
 	return MsgRescueCrossChainFee
 }
 
@@ -116,10 +116,10 @@ func CreateTestUpdateWhiteListValidatorMsg(_ *testing.T, networkDescriptor oracl
 	}
 }
 
-func CreateTestSetCrossChainFeeMsg(t *testing.T, testCosmosSender string, networkDescriptor oracletypes.NetworkDescriptor, nativeToken string) MsgSetFeeInfo {
+func CreateTestSetCrossChainFeeMsg(t *testing.T, testCosmosSender string, networkDescriptor oracletypes.NetworkDescriptor, crossChainFee string) MsgSetFeeInfo {
 	accAddress, err := sdk.AccAddressFromBech32(testCosmosSender)
 	require.NoError(t, err)
 
-	msgSetFeeInfo := NewMsgSetFeeInfo(accAddress, networkDescriptor, nativeToken)
+	msgSetFeeInfo := NewMsgSetFeeInfo(accAddress, networkDescriptor, crossChainFee)
 	return msgSetFeeInfo
 }
