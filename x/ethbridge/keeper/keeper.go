@@ -204,7 +204,7 @@ func (k Keeper) ProcessUpdateWhiteListValidator(ctx sdk.Context, networkDescript
 	return k.oracleKeeper.ProcessUpdateWhiteListValidator(ctx, networkDescriptor, cosmosSender, validator, power)
 }
 
-// ProcessUpdateCrossChainFeeReceiverAccount processes the update whitelist validator from admin
+// ProcessUpdateCrossChainFeeReceiverAccount processes the update crosschain fee receiver account from admin
 func (k Keeper) ProcessUpdateCrossChainFeeReceiverAccount(ctx sdk.Context, cosmosSender sdk.AccAddress, crosschainFeeReceiverAccount sdk.AccAddress) error {
 	logger := k.Logger(ctx)
 	if !k.oracleKeeper.IsAdminAccount(ctx, cosmosSender) {
