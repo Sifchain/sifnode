@@ -273,6 +273,10 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
         uint8 decimals,
         uint256 chainDescriptor
     ) external onlyValidator {
+        require(
+            sourceAddressToDestinationAddress[sourceChainTokenAddress] == address(0),
+            "INV_SRC_ADDR"
+        );
         // need to make a business decision on what this symbol should be
         // First lock of this asset, deploy new contract and get new symbol/token address
         address tokenAddress = BridgeBank(bridgeBank)

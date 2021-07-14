@@ -13,7 +13,7 @@ contract CosmosBank is CosmosBankStorage {
     /*
      * @dev: Event declarations
      */
-    event LogNewBridgeToken(address _token, string _symbol);
+    event LogNewBridgeToken(address indexed _token, string indexed _symbol);
 
     event LogBridgeTokenMint(
         address _token,
@@ -51,10 +51,8 @@ contract CosmosBank is CosmosBankStorage {
     /*
      * @dev: Mints new cosmos tokens
      *
-     * @param _cosmosSender: The sender's Cosmos address in bytes.
-     * @param _ethereumRecipient: The intended recipient's Ethereum address.
-     * @param _cosmosTokenAddress: The currency type
-     * @param _symbol: comsos token symbol
+     * @param _intendedRecipient: The intended recipient's Ethereum address.
+     * @param _bridgeTokenAddress: The currency type
      * @param _amount: number of comsos tokens to be minted
      */
     function mintNewBridgeTokens(

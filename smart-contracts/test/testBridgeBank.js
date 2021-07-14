@@ -124,20 +124,29 @@ describe("Test Bridge Bank", function () {
             value: state.weiAmount
           },
         ),
-      ).to.be.revertedWith("do not send currency if locking tokens");
+      ).to.be.revertedWith("INV_NATIVE_SEND");
     });
   });
+
   describe("BridgeBank single lock burn transactions", function () {
-    it("should not allow users to lock Ethereum in the bridge bank if sending tokens", async function () {
-        await expect(
-          state.bridgeBank.connect(userOne).lock(
-            state.sender,
-            state.token.address,
-            state.weiAmount + 1, {
-              value: state.weiAmount
-            },
-          ),
-        ).to.be.revertedWith("do not send currency if locking tokens");
-      });
+    it("should allow a user to burn tokens from the bridge bank", async function () {
+      const BridgeToken = await ethers.getContractFactory("BridgeToken");
+      const bridgeToken = await BridgeToken.deploy("rowan", "rowan", 18);
+
+      await bridgeToken.connect(operator).mint(userOne.address, state.amount);
+      await bridgeToken.connect(userOne).approve(state.bridgeBank.address, state.amount);
+      await state.bridgeBank.connect(owner).addExistingBridgeToken(bridgeToken.address);
+  
+      await state.bridgeBank.connect(userOne).burn(
+        state.sender,
+        bridgeToken.address,
+        state.amount
+      );
+
+      const afterUserBalance = Number(
+        await bridgeToken.balanceOf(userOne.address)
+      );
+      afterUserBalance.should.be.bignumber.equal(0);
+    });
   });
 });

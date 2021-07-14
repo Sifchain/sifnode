@@ -204,7 +204,7 @@ describe("Test Bridge Bank", function () {
         state.amount
       );
 
-      // Attempt to lock tokens
+      // Lock & burn tokens
       const tx = await state.bridgeBank.connect(userOne).multiLockBurn(
         [state.sender, state.sender, state.sender],
         [state.token1.address, state.token2.address, state.rowan.address],
@@ -212,7 +212,7 @@ describe("Test Bridge Bank", function () {
         [false, false, true]
       );
 
-      const receipt = await tx.wait();
+      await tx.wait();
 
       // Confirm that the user has the proper balance after the multiLockBurn
       let afterUserBalance = Number(
@@ -315,7 +315,7 @@ describe("Test Bridge Bank", function () {
           [state.token1.address, state.token2.address, state.token3.address],
           [state.amount, state.amount, state.amount]
         )
-      ).to.be.revertedWith("INV_ADR");
+      ).to.be.revertedWith("INV_SIF_ADDR");
     });
 
     it("should not allow user to multi-lock when bridgebank is paused", async function () {
@@ -378,7 +378,7 @@ describe("Test Bridge Bank", function () {
           [state.amount, state.amount, state.amount],
           [false, false, false]
         )
-      ).to.be.revertedWith("INV_ADR");
+      ).to.be.revertedWith("INV_SIF_ADDR");
     });
 
     it("should not allow user to multi-lock/burn when bridgebank is paused", async function () {

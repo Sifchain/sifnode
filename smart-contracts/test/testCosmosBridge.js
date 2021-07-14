@@ -90,6 +90,28 @@ describe("Test Cosmos Bridge", function () {
   });
 
   describe("CosmosBridge", function () {
+    it("should be able to createNewBridgeToken as a validator", async function () {
+      // assert that the cosmos bridge token has not been created
+      let bridgeToken = await state.cosmosBridge.sourceAddressToDestinationAddress(
+        state.token.address
+      );
+      expect(bridgeToken).to.be.equal(state.ethereumToken);
+
+      await state.cosmosBridge.connect(userOne).createNewBridgeToken(
+        "atom",
+        "atom",
+        state.token.address,
+        18,
+        1,
+      );
+
+      // now assert that the bridge token has been created
+      bridgeToken = await state.cosmosBridge.sourceAddressToDestinationAddress(
+        state.token.address
+      );
+      expect(bridgeToken).to.not.be.equal(state.ethereumToken);
+    });
+
     it("Can update the valset", async function () {
       // Operator resets the valset
       await state.cosmosBridge.connect(operator).updateValset(

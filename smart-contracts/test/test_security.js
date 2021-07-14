@@ -231,7 +231,7 @@ describe("Security Test", function () {
           bridgeToken.address,
           amount
         ),
-      ).to.be.revertedWith("Only token in whitelist can be transferred to cosmos");
+      ).to.be.revertedWith("Only token in whitelist can be burned");
     });
   });
 
@@ -299,6 +299,25 @@ describe("Security Test", function () {
           1
         ),
       ).to.be.revertedWith("Must be an active validator");
+    });
+
+    it("should not be able to createNewBridgeToken as a validator if a bridgetoken with the same source address already exists", async function () {
+      await state.cosmosBridge.connect(userOne).createNewBridgeToken(
+        "atom",
+        "atom",
+        state.token1.address,
+        18,
+        1
+      );
+      await expect(
+        state.cosmosBridge.connect(userOne).createNewBridgeToken(
+          "atom",
+          "atom",
+          state.token1.address,
+          18,
+          1
+        ),
+      ).to.be.revertedWith("INV_SRC_ADDR");
     });
   });
 
