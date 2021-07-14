@@ -21,7 +21,7 @@ import (
 //nolint:lll
 func GetCmdCreateEthBridgeClaim() *cobra.Command {
 	return &cobra.Command{
-		Use:   "create-claim [bridge-registry-contract] [nonce] [symbol] [ethereum-sender-address] [cosmos-receiver-address] [validator-address] [amount] [claim-type] --ethereum-chain-id [ethereum-chain-id] --token-contract-address [token-contract-address]",
+		Use:   "create-claim [bridge-registry-contract] [nonce] [symbol] [ethereum-sender-address] [cosmos-receiver-address] [validator-address] [amount] [claim-type] --network-descriptor [network-descriptor] --token-contract-address [token-contract-address]",
 		Short: "create a claim on an ethereum prophecy",
 		Args:  cobra.ExactArgs(8),
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -115,7 +115,7 @@ func GetCmdCreateEthBridgeClaim() *cobra.Command {
 //nolint:lll
 func GetCmdBurn() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "burn [cosmos-sender-address] [ethereum-receiver-address] [amount] [symbol] [crossChainFeeAmount] --ethereum-chain-id [ethereum-chain-id]",
+		Use:   "burn [cosmos-sender-address] [ethereum-receiver-address] [amount] [symbol] [crossChainFeeAmount] --network-descriptor [network-descriptor]",
 		Short: "burn CrossChainFee or cERC20 on the Cosmos chain",
 		Long: `This should be used to burn CrossChainFee or cERC20. It will burn your coins on the Cosmos Chain, removing them from your account and deducting them from the supply.
 		It will also trigger an event on the Cosmos Chain for relayers to watch so that they can trigger the withdrawal of the original ETH/ERC20 to you from the Ethereum contract!`,
@@ -186,7 +186,7 @@ func GetCmdBurn() *cobra.Command {
 func GetCmdLock() *cobra.Command {
 	//nolint:lll
 	cmd := &cobra.Command{
-		Use:   "lock [cosmos-sender-address] [ethereum-receiver-address] [amount] [symbol] [crossChainFeeAmount] --ethereum-chain-id [ethereum-chain-id]",
+		Use:   "lock [cosmos-sender-address] [ethereum-receiver-address] [amount] [symbol] [crossChainFeeAmount] --network-descriptor [network-descriptor]",
 		Short: "This should be used to lock Cosmos-originating coins (eg: ATOM). It will lock up your coins in the supply module, removing them from your account. It will also trigger an event on the Cosmos Chain for relayers to watch so that they can trigger the minting of the pegged token on Etherum to you!",
 		Args:  cobra.ExactArgs(5),
 		RunE: func(cmd *cobra.Command, args []string) error {
