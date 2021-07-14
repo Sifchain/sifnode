@@ -115,7 +115,7 @@ func GetCmdCreateEthBridgeClaim() *cobra.Command {
 //nolint:lll
 func GetCmdBurn() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "burn [cosmos-sender-address] [ethereum-receiver-address] [amount] [symbol] [crossChainFeeAmount] --network-descriptor [network-descriptor]",
+		Use:   "burn [cosmos-sender-address] [ethereum-receiver-address] [amount] [symbol] [crossChainFee] --network-descriptor [network-descriptor]",
 		Short: "burn CrossChainFee or cERC20 on the Cosmos chain",
 		Long: `This should be used to burn CrossChainFee or cERC20. It will burn your coins on the Cosmos Chain, removing them from your account and deducting them from the supply.
 		It will also trigger an event on the Cosmos Chain for relayers to watch so that they can trigger the withdrawal of the original ETH/ERC20 to you from the Ethereum contract!`,
@@ -163,12 +163,12 @@ func GetCmdBurn() *cobra.Command {
 
 			symbol := args[3]
 
-			crossChainFeeAmount, ok := sdk.NewIntFromString(args[4])
+			crossChainFee, ok := sdk.NewIntFromString(args[4])
 			if !ok {
 				return errors.New("Error parsing cross-chain-fee amount")
 			}
 
-			msg := types.NewMsgBurn(oracletypes.NetworkDescriptor(ethereumChainID), cosmosSender, ethereumReceiver, amount, symbol, crossChainFeeAmount)
+			msg := types.NewMsgBurn(oracletypes.NetworkDescriptor(ethereumChainID), cosmosSender, ethereumReceiver, amount, symbol, crossChainFee)
 			if err := msg.ValidateBasic(); err != nil {
 				return err
 			}
@@ -186,7 +186,7 @@ func GetCmdBurn() *cobra.Command {
 func GetCmdLock() *cobra.Command {
 	//nolint:lll
 	cmd := &cobra.Command{
-		Use:   "lock [cosmos-sender-address] [ethereum-receiver-address] [amount] [symbol] [crossChainFeeAmount] --network-descriptor [network-descriptor]",
+		Use:   "lock [cosmos-sender-address] [ethereum-receiver-address] [amount] [symbol] [crossChainFee] --network-descriptor [network-descriptor]",
 		Short: "This should be used to lock Cosmos-originating coins (eg: ATOM). It will lock up your coins in the supply module, removing them from your account. It will also trigger an event on the Cosmos Chain for relayers to watch so that they can trigger the minting of the pegged token on Etherum to you!",
 		Args:  cobra.ExactArgs(5),
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -236,12 +236,12 @@ func GetCmdLock() *cobra.Command {
 
 			symbol := args[3]
 
-			crossChainFeeAmount, ok := sdk.NewIntFromString(args[4])
+			crossChainFee, ok := sdk.NewIntFromString(args[4])
 			if !ok {
 				return errors.New("Error parsing cross-chain-fee amount")
 			}
 
-			msg := types.NewMsgLock(oracletypes.NetworkDescriptor(ethereumChainID), cosmosSender, ethereumReceiver, amount, symbol, crossChainFeeAmount)
+			msg := types.NewMsgLock(oracletypes.NetworkDescriptor(ethereumChainID), cosmosSender, ethereumReceiver, amount, symbol, crossChainFee)
 			if err := msg.ValidateBasic(); err != nil {
 				return err
 			}
@@ -359,14 +359,14 @@ func GetCmdRescueCrossChainFee() *cobra.Command {
 				return err
 			}
 
-			crossChainFeeAmount, ok := sdk.NewIntFromString(args[2])
+			crossChainFee, ok := sdk.NewIntFromString(args[2])
 			if !ok {
 				return errors.New("Error parsing cross-chain-fee amount")
 			}
 
-			crossChainFee := args[3]
+			crosschainFeeSymbol := args[3]
 
-			msg := types.NewMsgRescueCrossChainFee(cosmosSender, crossChainFeeReceiverAccount, crossChainFee, crossChainFeeAmount)
+			msg := types.NewMsgRescueCrossChainFee(cosmosSender, crossChainFeeReceiverAccount, crosschainFeeSymbol, crossChainFee)
 			if err := msg.ValidateBasic(); err != nil {
 				return err
 			}

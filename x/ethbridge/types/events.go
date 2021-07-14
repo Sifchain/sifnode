@@ -13,7 +13,7 @@ var (
 	AttributeKeyEthereumSenderNonce          = "ethereum_sender_nonce"
 	AttributeKeyCosmosReceiver               = "cosmos_receiver"
 	AttributeKeyAmount                       = "amount"
-	AttributeKeyCrossChainFeeAmount          = "cross_chain_fee_amount"
+	AttributeKeycrossChainFee                = "cross_chain_fee_amount"
 	AttributeKeySymbol                       = "symbol"
 	AttributeKeyCoins                        = "coins"
 	AttributeKeyStatus                       = "status"

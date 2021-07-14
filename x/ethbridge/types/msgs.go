@@ -17,14 +17,14 @@ import (
 // NewMsgLock is a constructor function for MsgLock
 func NewMsgLock(
 	networkDescriptor oracletypes.NetworkDescriptor, cosmosSender sdk.AccAddress,
-	ethereumReceiver EthereumAddress, amount sdk.Int, symbol string, crosschainFeeAmount sdk.Int) MsgLock {
+	ethereumReceiver EthereumAddress, amount sdk.Int, symbol string, crossChainFee sdk.Int) MsgLock {
 	return MsgLock{
-		NetworkDescriptor:   networkDescriptor,
-		CosmosSender:        cosmosSender.String(),
-		EthereumReceiver:    ethereumReceiver.String(),
-		Amount:              amount,
-		Symbol:              symbol,
-		CrosschainFeeAmount: crosschainFeeAmount,
+		NetworkDescriptor: networkDescriptor,
+		CosmosSender:      cosmosSender.String(),
+		EthereumReceiver:  ethereumReceiver.String(),
+		Amount:            amount,
+		Symbol:            symbol,
+		CrosschainFee:     crossChainFee,
 	}
 }
 
@@ -80,14 +80,14 @@ func (msg MsgLock) GetSigners() []sdk.AccAddress {
 // NewMsgBurn is a constructor function for MsgBurn
 func NewMsgBurn(
 	networkDescriptor oracletypes.NetworkDescriptor, cosmosSender sdk.AccAddress,
-	ethereumReceiver EthereumAddress, amount sdk.Int, symbol string, crossChainFeeAmount sdk.Int) MsgBurn {
+	ethereumReceiver EthereumAddress, amount sdk.Int, symbol string, crosschainFee sdk.Int) MsgBurn {
 	return MsgBurn{
-		NetworkDescriptor:   networkDescriptor,
-		CosmosSender:        cosmosSender.String(),
-		EthereumReceiver:    ethereumReceiver.String(),
-		Amount:              amount,
-		Symbol:              symbol,
-		CrosschainFeeAmount: crossChainFeeAmount,
+		NetworkDescriptor: networkDescriptor,
+		CosmosSender:      cosmosSender.String(),
+		EthereumReceiver:  ethereumReceiver.String(),
+		Amount:            amount,
+		Symbol:            symbol,
+		CrosschainFee:     crosschainFee,
 	}
 }
 
@@ -268,12 +268,12 @@ func (msg MsgUpdateCrossChainFeeReceiverAccount) GetSigners() []sdk.AccAddress {
 }
 
 // NewMsgRescueCrossChainFee is a constructor function for NewMsgRescueCrossChainFee
-func NewMsgRescueCrossChainFee(cosmosSender sdk.AccAddress, cosmosReceiver sdk.AccAddress, crosschainFeeSymbol string, crosschainFeeAmount sdk.Int) MsgRescueCrossChainFee {
+func NewMsgRescueCrossChainFee(cosmosSender sdk.AccAddress, cosmosReceiver sdk.AccAddress, crosschainFeeSymbol string, crosschainFee sdk.Int) MsgRescueCrossChainFee {
 	return MsgRescueCrossChainFee{
 		CosmosSender:        cosmosSender.String(),
 		CosmosReceiver:      cosmosReceiver.String(),
 		CrosschainFeeSymbol: crosschainFeeSymbol,
-		CrosschainFeeAmount: crosschainFeeAmount,
+		CrosschainFee:       crosschainFee,
 	}
 }
 

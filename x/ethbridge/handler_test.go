@@ -335,7 +335,7 @@ func TestBurnEthSuccess(t *testing.T) {
 	eventEthereumReceiver := ""
 	eventAmount := ""
 	eventSymbol := ""
-	eventCrossChainFeeAmount := sdk.NewInt(0)
+	eventcrossChainFee := sdk.NewInt(0)
 	for _, event := range res.Events {
 		for _, attribute := range event.Attributes {
 			value := string(attribute.Value)
@@ -364,7 +364,7 @@ func TestBurnEthSuccess(t *testing.T) {
 				eventSymbol = value
 			case "cross_chain_fee_amount":
 				var ok bool
-				eventCrossChainFeeAmount, ok = sdk.NewIntFromString(value)
+				eventcrossChainFee, ok = sdk.NewIntFromString(value)
 				require.Equal(t, ok, true)
 			default:
 				require.Fail(t, fmt.Sprintf("unrecognized event %s", key))
@@ -379,7 +379,7 @@ func TestBurnEthSuccess(t *testing.T) {
 	require.Equal(t, eventEthereumReceiver, ethereumReceiver.String())
 	require.Equal(t, eventAmount, coinsToBurnAmount.String())
 	require.Equal(t, eventSymbol, coinsToBurnSymbolPrefixed)
-	require.Equal(t, eventCrossChainFeeAmount, sdk.NewInt(65000000000*300000))
+	require.Equal(t, eventcrossChainFee, sdk.NewInt(65000000000*300000))
 
 	coinsToMintAmount = sdk.NewInt(65000000000 * 300000)
 	coinsToMintSymbol = "eth"

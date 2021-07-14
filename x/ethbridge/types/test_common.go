@@ -27,7 +27,7 @@ const (
 	TestProphecyID            = "test_prophecy_id"
 )
 
-var testCrossChainFeeAmount = sdk.NewInt(65000000000 * 300000)
+var testcrossChainFee = sdk.NewInt(65000000000 * 300000)
 var TestCoinsAmount = sdk.NewInt(10)
 var AltTestCoinsAmountSDKInt = sdk.NewInt(12)
 
@@ -59,7 +59,7 @@ func CreateTestBurnMsg(t *testing.T, testCosmosSender string, ethereumReceiver E
 	coinsAmount sdk.Int, coinsSymbol string) MsgBurn {
 	testCosmosAddress, err := sdk.AccAddressFromBech32(TestAddress)
 	require.NoError(t, err)
-	burnEth := NewMsgBurn(TestNetworkDescriptor, testCosmosAddress, ethereumReceiver, coinsAmount, coinsSymbol, testCrossChainFeeAmount)
+	burnEth := NewMsgBurn(TestNetworkDescriptor, testCosmosAddress, ethereumReceiver, coinsAmount, coinsSymbol, testcrossChainFee)
 	return burnEth
 }
 
@@ -67,7 +67,7 @@ func CreateTestLockMsg(t *testing.T, testCosmosSender string, ethereumReceiver E
 	coinsAmount sdk.Int, coinsSymbol string) MsgLock {
 	testCosmosAddress, err := sdk.AccAddressFromBech32(TestAddress)
 	require.NoError(t, err)
-	lockEth := NewMsgLock(TestNetworkDescriptor, testCosmosAddress, ethereumReceiver, coinsAmount, coinsSymbol, testCrossChainFeeAmount)
+	lockEth := NewMsgLock(TestNetworkDescriptor, testCosmosAddress, ethereumReceiver, coinsAmount, coinsSymbol, testcrossChainFee)
 	return lockEth
 }
 
@@ -97,13 +97,13 @@ func CreateTestUpdateCrossChainFeeReceiverAccountMsg(t *testing.T, testCosmosSen
 	return msgUpdateCrossChainFeeReceiverAccount
 }
 
-func CreateTestRescueCrossChainFeeMsg(t *testing.T, testCosmosSender string, testCrossChainFeeReceiverAccount string, crossChainFee string, crossChainFeeAmount sdk.Int) MsgRescueCrossChainFee {
+func CreateTestRescueCrossChainFeeMsg(t *testing.T, testCosmosSender string, testCrossChainFeeReceiverAccount string, crosschainFeeSymbol string, crosschainFee sdk.Int) MsgRescueCrossChainFee {
 	accAddress1, err := sdk.AccAddressFromBech32(testCosmosSender)
 	require.NoError(t, err)
 	accAddress2, err := sdk.AccAddressFromBech32(testCrossChainFeeReceiverAccount)
 	require.NoError(t, err)
 
-	MsgRescueCrossChainFee := NewMsgRescueCrossChainFee(accAddress1, accAddress2, crossChainFee, crossChainFeeAmount)
+	MsgRescueCrossChainFee := NewMsgRescueCrossChainFee(accAddress1, accAddress2, crosschainFeeSymbol, crosschainFee)
 	return MsgRescueCrossChainFee
 }
 

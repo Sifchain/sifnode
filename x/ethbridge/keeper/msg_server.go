@@ -65,7 +65,7 @@ func (srv msgServer) Lock(goCtx context.Context, msg *types.MsgLock) (*types.Msg
 			sdk.NewAttribute(types.AttributeKeyEthereumReceiver, msg.EthereumReceiver),
 			sdk.NewAttribute(types.AttributeKeyAmount, msg.Amount.String()),
 			sdk.NewAttribute(types.AttributeKeySymbol, msg.Symbol),
-			sdk.NewAttribute(types.AttributeKeyCrossChainFeeAmount, msg.CrosschainFeeAmount.String()),
+			sdk.NewAttribute(types.AttributeKeycrossChainFee, msg.CrosschainFee.String()),
 		),
 	})
 
@@ -114,7 +114,7 @@ func (srv msgServer) Burn(goCtx context.Context, msg *types.MsgBurn) (*types.Msg
 			sdk.NewAttribute(types.AttributeKeyEthereumReceiver, msg.EthereumReceiver),
 			sdk.NewAttribute(types.AttributeKeyAmount, msg.Amount.String()),
 			sdk.NewAttribute(types.AttributeKeySymbol, msg.Symbol),
-			sdk.NewAttribute(types.AttributeKeyCrossChainFeeAmount, msg.CrosschainFeeAmount.String()),
+			sdk.NewAttribute(types.AttributeKeycrossChainFee, msg.CrosschainFee.String()),
 		),
 	})
 
@@ -306,7 +306,7 @@ func (srv msgServer) RescueCrossChainFee(goCtx context.Context, msg *types.MsgRe
 		"CosmosSender", msg.CosmosSender,
 		"CosmosSenderSequence", strconv.FormatUint(account.GetSequence(), 10),
 		"CosmosReceiver", msg.CosmosReceiver,
-		"CrossChainFeeAmount", msg.CrosschainFeeAmount)
+		"crossChainFee", msg.CrosschainFee)
 
 	return &types.MsgRescueCrossChainFeeResponse{}, nil
 }

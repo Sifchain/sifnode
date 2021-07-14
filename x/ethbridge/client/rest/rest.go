@@ -43,14 +43,14 @@ type createEthClaimReq struct {
 }
 
 type burnOrLockEthReq struct {
-	BaseReq             rest.BaseReq `json:"base_req"`
-	NetworkDescriptor   string       `json:"network_descriptor"`
-	TokenContract       string       `json:"token_contract_address"`
-	CosmosSender        string       `json:"cosmos_sender"`
-	EthereumReceiver    string       `json:"ethereum_receiver"`
-	Amount              sdk.Int      `json:"amount"`
-	Symbol              string       `json:"symbol"`
-	CrossChainFeeAmount sdk.Int      `json:"cross_chain_fee_amount" yaml:"cross_chain_fee_amount"`
+	BaseReq           rest.BaseReq `json:"base_req"`
+	NetworkDescriptor string       `json:"network_descriptor"`
+	TokenContract     string       `json:"token_contract_address"`
+	CosmosSender      string       `json:"cosmos_sender"`
+	EthereumReceiver  string       `json:"ethereum_receiver"`
+	Amount            sdk.Int      `json:"amount"`
+	Symbol            string       `json:"symbol"`
+	CrosschainFee     sdk.Int      `json:"cross_chain_fee_amount" yaml:"cross_chain_fee_amount"`
 }
 
 // RegisterRESTRoutes - Central function to define routes that get registered by the main application
@@ -175,10 +175,10 @@ func burnOrLockHandler(cliCtx client.Context, lockOrBurn string) http.HandlerFun
 		var msg sdk.Msg
 		switch lockOrBurn {
 		case "lock":
-			msgLock := types.NewMsgLock(oracletypes.NetworkDescriptor(networkDescriptor), cosmosSender, ethereumReceiver, req.Amount, req.Symbol, req.CrossChainFeeAmount)
+			msgLock := types.NewMsgLock(oracletypes.NetworkDescriptor(networkDescriptor), cosmosSender, ethereumReceiver, req.Amount, req.Symbol, req.CrosschainFee)
 			msg = &msgLock
 		case "burn":
-			msgBurn := types.NewMsgBurn(oracletypes.NetworkDescriptor(networkDescriptor), cosmosSender, ethereumReceiver, req.Amount, req.Symbol, req.CrossChainFeeAmount)
+			msgBurn := types.NewMsgBurn(oracletypes.NetworkDescriptor(networkDescriptor), cosmosSender, ethereumReceiver, req.Amount, req.Symbol, req.CrosschainFee)
 			msg = &msgBurn
 		}
 		err = msg.ValidateBasic()

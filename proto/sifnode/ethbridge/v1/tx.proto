@@ -35,10 +35,10 @@ message MsgLock {
       [ (gogoproto.moretags) = "yaml:\"network_descriptor\"" ];
   string ethereum_receiver = 5
       [ (gogoproto.moretags) = "yaml:\"ethereum_receiver\"" ];
-  string crosschain_fee_amount = 6 [
+  string crosschain_fee = 6 [
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
     (gogoproto.nullable) = false,
-    (gogoproto.moretags) = "yaml:\"crosschain_fee_amount\""
+    (gogoproto.moretags) = "yaml:\"crosschain_fee\""
   ];
 }
 
@@ -57,10 +57,10 @@ message MsgBurn {
       [ (gogoproto.moretags) = "yaml:\"network_descriptor\"" ];
   string ethereum_receiver = 5
       [ (gogoproto.moretags) = "yaml:\"ethereum_receiver\"" ];
-  string crosschain_fee_amount = 6 [
+  string crosschain_fee = 6 [
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
     (gogoproto.nullable) = false,
-    (gogoproto.moretags) = "yaml:\"crosschain_fee_amount\""
+    (gogoproto.moretags) = "yaml:\"crosschain_fee\""
   ];
 }
 
@@ -95,7 +95,7 @@ message MsgRescueCrossChainFee {
   string cosmos_sender = 1;
   string cosmos_receiver = 2;
   string crosschain_fee_symbol = 3;
-  string crosschain_fee_amount = 4 [
+  string crosschain_fee = 4 [
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
     (gogoproto.nullable) = false
   ];

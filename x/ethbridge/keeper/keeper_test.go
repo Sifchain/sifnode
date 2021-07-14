@@ -347,11 +347,11 @@ func TestRescueCrossChainFees(t *testing.T) {
 	crossChainFeeConfig, _ := oracleKeeper.GetCrossChainFeeConfig(ctx, networkIdentity)
 	crossChainFee := crossChainFeeConfig.FeeCurrency
 
-	crossChainFeeAmount := sdk.NewInt(100)
-	err = bankKeeper.MintCoins(ctx, types.ModuleName, sdk.NewCoins(sdk.NewCoin(crossChainFee, crossChainFeeAmount)))
+	crosschainFee := sdk.NewInt(100)
+	err = bankKeeper.MintCoins(ctx, types.ModuleName, sdk.NewCoins(sdk.NewCoin(crossChainFee, crosschainFee)))
 	require.NoError(t, err)
 
-	msg := types.NewMsgRescueCrossChainFee(cosmosSender, cosmosSender, crossChainFee, crossChainFeeAmount)
+	msg := types.NewMsgRescueCrossChainFee(cosmosSender, cosmosSender, crossChainFee, crosschainFee)
 
 	err = keeper.RescueCrossChainFees(ctx, &msg)
 	require.Equal(t, err.Error(), "only admin account can call rescue CrossChainFee")
