@@ -13,7 +13,7 @@ import { isSupportedEVMChain } from "../utils";
 import { SubscribeToUnconfirmedPegTxs } from "./subscribeToUnconfirmedPegTxs";
 import { SubscribeToTx } from "./utils/subscribeToTx";
 
-function isOriginallySifchainNativeToken(asset: Asset) {
+function isOriginallySifchainCrossChainFee(asset: Asset) {
   return ["erowan", "rowan"].includes(asset.symbol);
 }
 
@@ -77,7 +77,7 @@ export default ({
     },
 
     calculateUnpegFee(asset: IAsset) {
-      const feeNumber = isOriginallySifchainNativeToken(asset)
+      const feeNumber = isOriginallySifchainCrossChainFee(asset)
         ? "70000000000000000"
         : "70000000000000000";
 
@@ -85,7 +85,7 @@ export default ({
     },
 
     async unpeg(assetAmount: IAssetAmount) {
-      const lockOrBurnFn = isOriginallySifchainNativeToken(assetAmount.asset)
+      const lockOrBurnFn = isOriginallySifchainCrossChainFee(assetAmount.asset)
         ? services.ethbridge.lockToEthereum
         : services.ethbridge.burnToEthereum;
 
@@ -150,7 +150,7 @@ export default ({
 
       const subscribeToTx = SubscribeToTx(ctx);
 
-      const lockOrBurnFn = isOriginallySifchainNativeToken(assetAmount.asset)
+      const lockOrBurnFn = isOriginallySifchainCrossChainFee(assetAmount.asset)
         ? services.ethbridge.burnToSifchain
         : services.ethbridge.lockToSifchain;
 

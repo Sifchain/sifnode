@@ -8,25 +8,25 @@ import (
 	protobuftypes "github.com/gogo/protobuf/types"
 )
 
-func (k Keeper) SetNativeTokenReceiverAccount(ctx sdk.Context, nativeTokenReceiverAccount sdk.AccAddress) {
+func (k Keeper) SetCrossChainFeeReceiverAccount(ctx sdk.Context, nativeTokenReceiverAccount sdk.AccAddress) {
 	store := ctx.KVStore(k.storeKey)
-	key := types.NativeTokenReceiverAccountPrefix
+	key := types.CrossChainFeeReceiverAccountPrefix
 	store.Set(key, k.cdc.MustMarshalBinaryBare(&protobuftypes.StringValue{Value: nativeTokenReceiverAccount.String()}))
 }
 
-func (k Keeper) IsNativeTokenReceiverAccount(ctx sdk.Context, nativeTokenReceiverAccount sdk.AccAddress) bool {
-	account := k.GetNativeTokenReceiverAccount(ctx)
+func (k Keeper) IsCrossChainFeeReceiverAccount(ctx sdk.Context, nativeTokenReceiverAccount sdk.AccAddress) bool {
+	account := k.GetCrossChainFeeReceiverAccount(ctx)
 	return bytes.Equal(account, nativeTokenReceiverAccount)
 }
 
-func (k Keeper) IsNativeTokenReceiverAccountSet(ctx sdk.Context) bool {
-	account := k.GetNativeTokenReceiverAccount(ctx)
+func (k Keeper) IsCrossChainFeeReceiverAccountSet(ctx sdk.Context) bool {
+	account := k.GetCrossChainFeeReceiverAccount(ctx)
 	return account != nil
 }
 
-func (k Keeper) GetNativeTokenReceiverAccount(ctx sdk.Context) sdk.AccAddress {
+func (k Keeper) GetCrossChainFeeReceiverAccount(ctx sdk.Context) sdk.AccAddress {
 	store := ctx.KVStore(k.storeKey)
-	key := types.NativeTokenReceiverAccountPrefix
+	key := types.CrossChainFeeReceiverAccountPrefix
 	bz := store.Get(key)
 	if len(bz) == 0 {
 		return nil
@@ -41,7 +41,7 @@ func (k Keeper) GetNativeTokenReceiverAccount(ctx sdk.Context) sdk.AccAddress {
 
 	accAddress, err := sdk.AccAddressFromBech32(strProto.Value)
 	if err != nil {
-		ctx.Logger().Error(err.Error(), "error decoding native_token receive account")
+		ctx.Logger().Error(err.Error(), "error decoding crosschain fee receive account")
 		return nil
 	}
 

@@ -11,7 +11,7 @@ import (
 	sifapp "github.com/Sifchain/sifnode/app"
 )
 
-func TestKeeper_SetNativeToken(t *testing.T) {
+func TestKeeper_SetCrossChainFee(t *testing.T) {
 	app := sifapp.Setup(false)
 	ctx := app.BaseApp.NewContext(false, tmproto.Header{})
 
@@ -21,9 +21,9 @@ func TestKeeper_SetNativeToken(t *testing.T) {
 	lockCost := sdk.NewInt(0)
 	burnCost := sdk.NewInt(0)
 
-	app.OracleKeeper.SetNativeToken(ctx, networkDescriptor, token, gas, lockCost, burnCost)
+	app.OracleKeeper.SetCrossChainFee(ctx, networkDescriptor, token, gas, lockCost, burnCost)
 
-	tokenStored, err := app.OracleKeeper.GetNativeToken(ctx, networkDescriptor)
+	tokenStored, err := app.OracleKeeper.GetCrossChainFee(ctx, networkDescriptor)
 	assert.NoError(t, err)
 	assert.Equal(t, token, tokenStored)
 }

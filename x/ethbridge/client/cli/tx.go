@@ -116,8 +116,8 @@ func GetCmdCreateEthBridgeClaim() *cobra.Command {
 func GetCmdBurn() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "burn [cosmos-sender-address] [ethereum-receiver-address] [amount] [symbol] [nativeTokenAmount] --ethereum-chain-id [ethereum-chain-id]",
-		Short: "burn NativeToken or cERC20 on the Cosmos chain",
-		Long: `This should be used to burn NativeToken or cERC20. It will burn your coins on the Cosmos Chain, removing them from your account and deducting them from the supply.
+		Short: "burn CrossChainFee or cERC20 on the Cosmos chain",
+		Long: `This should be used to burn CrossChainFee or cERC20. It will burn your coins on the Cosmos Chain, removing them from your account and deducting them from the supply.
 		It will also trigger an event on the Cosmos Chain for relayers to watch so that they can trigger the withdrawal of the original ETH/ERC20 to you from the Ethereum contract!`,
 		Args: cobra.ExactArgs(5),
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -301,8 +301,8 @@ func GetCmdUpdateWhiteListValidator() *cobra.Command {
 	return cmd
 }
 
-// GetCmdUpdateNativeTokenReceiverAccount is the CLI command to update the sifchain account that receives the native_token proceeds
-func GetCmdUpdateNativeTokenReceiverAccount() *cobra.Command {
+// GetCmdUpdateCrossChainFeeReceiverAccount is the CLI command to update the sifchain account that receives the native_token proceeds
+func GetCmdUpdateCrossChainFeeReceiverAccount() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "update-native-token-receiver-account [cosmos-sender-address] [native_token_receiver_account]",
 		Short: "This should be used to set the native token receiver account.",
@@ -323,7 +323,7 @@ func GetCmdUpdateNativeTokenReceiverAccount() *cobra.Command {
 				return err
 			}
 
-			msg := types.NewMsgUpdateNativeTokenReceiverAccount(cosmosSender, nativeTokenReceiverAccount)
+			msg := types.NewMsgUpdateCrossChainFeeReceiverAccount(cosmosSender, nativeTokenReceiverAccount)
 			if err := msg.ValidateBasic(); err != nil {
 				return err
 			}
@@ -337,8 +337,8 @@ func GetCmdUpdateNativeTokenReceiverAccount() *cobra.Command {
 	return cmd
 }
 
-// GetCmdRescueNativeToken is the CLI command to send the message to transfer native_token from ethbridge module to account
-func GetCmdRescueNativeToken() *cobra.Command {
+// GetCmdRescueCrossChainFee is the CLI command to send the message to transfer native_token from ethbridge module to account
+func GetCmdRescueCrossChainFee() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "rescue-native-token [cosmos-sender-address] [native-token-receiver-account] [native-token] [native-token-amount]",
 		Short: "This should be used to send native_token from ethbridge to an account.",
@@ -366,7 +366,7 @@ func GetCmdRescueNativeToken() *cobra.Command {
 
 			nativeToken := args[3]
 
-			msg := types.NewMsgRescueNativeToken(cosmosSender, nativeTokenReceiverAccount, nativeToken, nativeTokenAmount)
+			msg := types.NewMsgRescueCrossChainFee(cosmosSender, nativeTokenReceiverAccount, nativeToken, nativeTokenAmount)
 			if err := msg.ValidateBasic(); err != nil {
 				return err
 			}
@@ -380,8 +380,8 @@ func GetCmdRescueNativeToken() *cobra.Command {
 	return cmd
 }
 
-// GetCmdSetNativeToken is the CLI command to send the message to set native token for network
-func GetCmdSetNativeToken() *cobra.Command {
+// GetCmdSetCrossChainFee is the CLI command to send the message to set native token for network
+func GetCmdSetCrossChainFee() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "set-native-token [cosmos-sender-address] [network-id] [native-token]",
 		Short: "This should be used to set native token for a network.",
@@ -404,7 +404,7 @@ func GetCmdSetNativeToken() *cobra.Command {
 
 			nativeToken := args[2]
 
-			msg := types.NewMsgSetNativeToken(cosmosSender, oracletypes.NetworkDescriptor(networkDescriptor), nativeToken)
+			msg := types.NewMsgSetFeeInfo(cosmosSender, oracletypes.NetworkDescriptor(networkDescriptor), nativeToken)
 			if err := msg.ValidateBasic(); err != nil {
 				return err
 			}

@@ -32,12 +32,12 @@ const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
 // MsgLock defines a message for locking coins and triggering a related event
 type MsgLock struct {
-	CosmosSender      string                                 `protobuf:"bytes,1,opt,name=cosmos_sender,json=cosmosSender,proto3" json:"cosmos_sender,omitempty"`
-	Amount            github_com_cosmos_cosmos_sdk_types.Int `protobuf:"bytes,2,opt,name=amount,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Int" json:"amount" yaml:"amount"`
-	Symbol            string                                 `protobuf:"bytes,3,opt,name=symbol,proto3" json:"symbol,omitempty" yaml:"symbol"`
-	NetworkDescriptor types.NetworkDescriptor                `protobuf:"varint,4,opt,name=network_descriptor,json=networkDescriptor,proto3,enum=sifnode.oracle.v1.NetworkDescriptor" json:"network_descriptor,omitempty" yaml:"network_descriptor"`
-	EthereumReceiver  string                                 `protobuf:"bytes,5,opt,name=ethereum_receiver,json=ethereumReceiver,proto3" json:"ethereum_receiver,omitempty" yaml:"ethereum_receiver"`
-	NativeTokenAmount github_com_cosmos_cosmos_sdk_types.Int `protobuf:"bytes,6,opt,name=native_token_amount,json=nativeTokenAmount,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Int" json:"native_token_amount" yaml:"native_token_amount"`
+	CosmosSender        string                                 `protobuf:"bytes,1,opt,name=cosmos_sender,json=cosmosSender,proto3" json:"cosmos_sender,omitempty"`
+	Amount              github_com_cosmos_cosmos_sdk_types.Int `protobuf:"bytes,2,opt,name=amount,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Int" json:"amount" yaml:"amount"`
+	Symbol              string                                 `protobuf:"bytes,3,opt,name=symbol,proto3" json:"symbol,omitempty" yaml:"symbol"`
+	NetworkDescriptor   types.NetworkDescriptor                `protobuf:"varint,4,opt,name=network_descriptor,json=networkDescriptor,proto3,enum=sifnode.oracle.v1.NetworkDescriptor" json:"network_descriptor,omitempty" yaml:"network_descriptor"`
+	EthereumReceiver    string                                 `protobuf:"bytes,5,opt,name=ethereum_receiver,json=ethereumReceiver,proto3" json:"ethereum_receiver,omitempty" yaml:"ethereum_receiver"`
+	CrosschainFeeAmount github_com_cosmos_cosmos_sdk_types.Int `protobuf:"bytes,6,opt,name=crosschain_fee_amount,json=crosschainFeeAmount,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Int" json:"crosschain_fee_amount" yaml:"crosschain_fee_amount"`
 }
 
 func (m *MsgLock) Reset()         { *m = MsgLock{} }
@@ -139,12 +139,12 @@ var xxx_messageInfo_MsgLockResponse proto.InternalMessageInfo
 
 // MsgBurn defines a message for burning coins and triggering a related event
 type MsgBurn struct {
-	CosmosSender      string                                 `protobuf:"bytes,1,opt,name=cosmos_sender,json=cosmosSender,proto3" json:"cosmos_sender,omitempty" yaml:"cosmos_sender"`
-	Amount            github_com_cosmos_cosmos_sdk_types.Int `protobuf:"bytes,2,opt,name=amount,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Int" json:"amount" yaml:"amount"`
-	Symbol            string                                 `protobuf:"bytes,3,opt,name=symbol,proto3" json:"symbol,omitempty" yaml:"symbol"`
-	NetworkDescriptor types.NetworkDescriptor                `protobuf:"varint,4,opt,name=network_descriptor,json=networkDescriptor,proto3,enum=sifnode.oracle.v1.NetworkDescriptor" json:"network_descriptor,omitempty" yaml:"network_descriptor"`
-	EthereumReceiver  string                                 `protobuf:"bytes,5,opt,name=ethereum_receiver,json=ethereumReceiver,proto3" json:"ethereum_receiver,omitempty" yaml:"ethereum_receiver"`
-	NativeTokenAmount github_com_cosmos_cosmos_sdk_types.Int `protobuf:"bytes,6,opt,name=native_token_amount,json=nativeTokenAmount,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Int" json:"native_token_amount" yaml:"native_token_amount"`
+	CosmosSender        string                                 `protobuf:"bytes,1,opt,name=cosmos_sender,json=cosmosSender,proto3" json:"cosmos_sender,omitempty" yaml:"cosmos_sender"`
+	Amount              github_com_cosmos_cosmos_sdk_types.Int `protobuf:"bytes,2,opt,name=amount,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Int" json:"amount" yaml:"amount"`
+	Symbol              string                                 `protobuf:"bytes,3,opt,name=symbol,proto3" json:"symbol,omitempty" yaml:"symbol"`
+	NetworkDescriptor   types.NetworkDescriptor                `protobuf:"varint,4,opt,name=network_descriptor,json=networkDescriptor,proto3,enum=sifnode.oracle.v1.NetworkDescriptor" json:"network_descriptor,omitempty" yaml:"network_descriptor"`
+	EthereumReceiver    string                                 `protobuf:"bytes,5,opt,name=ethereum_receiver,json=ethereumReceiver,proto3" json:"ethereum_receiver,omitempty" yaml:"ethereum_receiver"`
+	CrosschainFeeAmount github_com_cosmos_cosmos_sdk_types.Int `protobuf:"bytes,6,opt,name=crosschain_fee_amount,json=crosschainFeeAmount,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Int" json:"crosschain_fee_amount" yaml:"crosschain_fee_amount"`
 }
 
 func (m *MsgBurn) Reset()         { *m = MsgBurn{} }
@@ -429,23 +429,23 @@ func (m *MsgUpdateWhiteListValidatorResponse) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_MsgUpdateWhiteListValidatorResponse proto.InternalMessageInfo
 
-type MsgUpdateNativeTokenReceiverAccount struct {
-	CosmosSender               string `protobuf:"bytes,1,opt,name=cosmos_sender,json=cosmosSender,proto3" json:"cosmos_sender,omitempty"`
-	NativeTokenReceiverAccount string `protobuf:"bytes,2,opt,name=native_token_receiver_account,json=nativeTokenReceiverAccount,proto3" json:"native_token_receiver_account,omitempty"`
+type MsgUpdateCrossChainFeeReceiverAccount struct {
+	CosmosSender          string `protobuf:"bytes,1,opt,name=cosmos_sender,json=cosmosSender,proto3" json:"cosmos_sender,omitempty"`
+	CrosschainFeeReceiver string `protobuf:"bytes,2,opt,name=crosschain_fee_receiver,json=crosschainFeeReceiver,proto3" json:"crosschain_fee_receiver,omitempty"`
 }
 
-func (m *MsgUpdateNativeTokenReceiverAccount) Reset()         { *m = MsgUpdateNativeTokenReceiverAccount{} }
-func (m *MsgUpdateNativeTokenReceiverAccount) String() string { return proto.CompactTextString(m) }
-func (*MsgUpdateNativeTokenReceiverAccount) ProtoMessage()    {}
-func (*MsgUpdateNativeTokenReceiverAccount) Descriptor() ([]byte, []int) {
+func (m *MsgUpdateCrossChainFeeReceiverAccount) Reset()         { *m = MsgUpdateCrossChainFeeReceiverAccount{} }
+func (m *MsgUpdateCrossChainFeeReceiverAccount) String() string { return proto.CompactTextString(m) }
+func (*MsgUpdateCrossChainFeeReceiverAccount) ProtoMessage()    {}
+func (*MsgUpdateCrossChainFeeReceiverAccount) Descriptor() ([]byte, []int) {
 	return fileDescriptor_44d60f3dabe1980f, []int{8}
 }
-func (m *MsgUpdateNativeTokenReceiverAccount) XXX_Unmarshal(b []byte) error {
+func (m *MsgUpdateCrossChainFeeReceiverAccount) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *MsgUpdateNativeTokenReceiverAccount) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *MsgUpdateCrossChainFeeReceiverAccount) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_MsgUpdateNativeTokenReceiverAccount.Marshal(b, m, deterministic)
+		return xxx_messageInfo_MsgUpdateCrossChainFeeReceiverAccount.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -455,51 +455,51 @@ func (m *MsgUpdateNativeTokenReceiverAccount) XXX_Marshal(b []byte, deterministi
 		return b[:n], nil
 	}
 }
-func (m *MsgUpdateNativeTokenReceiverAccount) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_MsgUpdateNativeTokenReceiverAccount.Merge(m, src)
+func (m *MsgUpdateCrossChainFeeReceiverAccount) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MsgUpdateCrossChainFeeReceiverAccount.Merge(m, src)
 }
-func (m *MsgUpdateNativeTokenReceiverAccount) XXX_Size() int {
+func (m *MsgUpdateCrossChainFeeReceiverAccount) XXX_Size() int {
 	return m.Size()
 }
-func (m *MsgUpdateNativeTokenReceiverAccount) XXX_DiscardUnknown() {
-	xxx_messageInfo_MsgUpdateNativeTokenReceiverAccount.DiscardUnknown(m)
+func (m *MsgUpdateCrossChainFeeReceiverAccount) XXX_DiscardUnknown() {
+	xxx_messageInfo_MsgUpdateCrossChainFeeReceiverAccount.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_MsgUpdateNativeTokenReceiverAccount proto.InternalMessageInfo
+var xxx_messageInfo_MsgUpdateCrossChainFeeReceiverAccount proto.InternalMessageInfo
 
-func (m *MsgUpdateNativeTokenReceiverAccount) GetCosmosSender() string {
+func (m *MsgUpdateCrossChainFeeReceiverAccount) GetCosmosSender() string {
 	if m != nil {
 		return m.CosmosSender
 	}
 	return ""
 }
 
-func (m *MsgUpdateNativeTokenReceiverAccount) GetNativeTokenReceiverAccount() string {
+func (m *MsgUpdateCrossChainFeeReceiverAccount) GetCrosschainFeeReceiver() string {
 	if m != nil {
-		return m.NativeTokenReceiverAccount
+		return m.CrosschainFeeReceiver
 	}
 	return ""
 }
 
-type MsgUpdateNativeTokenReceiverAccountResponse struct {
+type MsgUpdateCrossChainFeeReceiverAccountResponse struct {
 }
 
-func (m *MsgUpdateNativeTokenReceiverAccountResponse) Reset() {
-	*m = MsgUpdateNativeTokenReceiverAccountResponse{}
+func (m *MsgUpdateCrossChainFeeReceiverAccountResponse) Reset() {
+	*m = MsgUpdateCrossChainFeeReceiverAccountResponse{}
 }
-func (m *MsgUpdateNativeTokenReceiverAccountResponse) String() string {
+func (m *MsgUpdateCrossChainFeeReceiverAccountResponse) String() string {
 	return proto.CompactTextString(m)
 }
-func (*MsgUpdateNativeTokenReceiverAccountResponse) ProtoMessage() {}
-func (*MsgUpdateNativeTokenReceiverAccountResponse) Descriptor() ([]byte, []int) {
+func (*MsgUpdateCrossChainFeeReceiverAccountResponse) ProtoMessage() {}
+func (*MsgUpdateCrossChainFeeReceiverAccountResponse) Descriptor() ([]byte, []int) {
 	return fileDescriptor_44d60f3dabe1980f, []int{9}
 }
-func (m *MsgUpdateNativeTokenReceiverAccountResponse) XXX_Unmarshal(b []byte) error {
+func (m *MsgUpdateCrossChainFeeReceiverAccountResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *MsgUpdateNativeTokenReceiverAccountResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *MsgUpdateCrossChainFeeReceiverAccountResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_MsgUpdateNativeTokenReceiverAccountResponse.Marshal(b, m, deterministic)
+		return xxx_messageInfo_MsgUpdateCrossChainFeeReceiverAccountResponse.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -509,37 +509,37 @@ func (m *MsgUpdateNativeTokenReceiverAccountResponse) XXX_Marshal(b []byte, dete
 		return b[:n], nil
 	}
 }
-func (m *MsgUpdateNativeTokenReceiverAccountResponse) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_MsgUpdateNativeTokenReceiverAccountResponse.Merge(m, src)
+func (m *MsgUpdateCrossChainFeeReceiverAccountResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MsgUpdateCrossChainFeeReceiverAccountResponse.Merge(m, src)
 }
-func (m *MsgUpdateNativeTokenReceiverAccountResponse) XXX_Size() int {
+func (m *MsgUpdateCrossChainFeeReceiverAccountResponse) XXX_Size() int {
 	return m.Size()
 }
-func (m *MsgUpdateNativeTokenReceiverAccountResponse) XXX_DiscardUnknown() {
-	xxx_messageInfo_MsgUpdateNativeTokenReceiverAccountResponse.DiscardUnknown(m)
+func (m *MsgUpdateCrossChainFeeReceiverAccountResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_MsgUpdateCrossChainFeeReceiverAccountResponse.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_MsgUpdateNativeTokenReceiverAccountResponse proto.InternalMessageInfo
+var xxx_messageInfo_MsgUpdateCrossChainFeeReceiverAccountResponse proto.InternalMessageInfo
 
-type MsgRescueNativeToken struct {
-	CosmosSender      string                                 `protobuf:"bytes,1,opt,name=cosmos_sender,json=cosmosSender,proto3" json:"cosmos_sender,omitempty"`
-	CosmosReceiver    string                                 `protobuf:"bytes,2,opt,name=cosmos_receiver,json=cosmosReceiver,proto3" json:"cosmos_receiver,omitempty"`
-	NativeTokenSymbol string                                 `protobuf:"bytes,3,opt,name=native_token_symbol,json=nativeTokenSymbol,proto3" json:"native_token_symbol,omitempty"`
-	NativeTokenAmount github_com_cosmos_cosmos_sdk_types.Int `protobuf:"bytes,4,opt,name=native_token_amount,json=nativeTokenAmount,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Int" json:"native_token_amount"`
+type MsgRescueCrossChainFee struct {
+	CosmosSender        string                                 `protobuf:"bytes,1,opt,name=cosmos_sender,json=cosmosSender,proto3" json:"cosmos_sender,omitempty"`
+	CosmosReceiver      string                                 `protobuf:"bytes,2,opt,name=cosmos_receiver,json=cosmosReceiver,proto3" json:"cosmos_receiver,omitempty"`
+	CrosschainFeeSymbol string                                 `protobuf:"bytes,3,opt,name=crosschain_fee_symbol,json=crosschainFeeSymbol,proto3" json:"crosschain_fee_symbol,omitempty"`
+	CrosschainFeeAmount github_com_cosmos_cosmos_sdk_types.Int `protobuf:"bytes,4,opt,name=crosschain_fee_amount,json=crosschainFeeAmount,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Int" json:"crosschain_fee_amount"`
 }
 
-func (m *MsgRescueNativeToken) Reset()         { *m = MsgRescueNativeToken{} }
-func (m *MsgRescueNativeToken) String() string { return proto.CompactTextString(m) }
-func (*MsgRescueNativeToken) ProtoMessage()    {}
-func (*MsgRescueNativeToken) Descriptor() ([]byte, []int) {
+func (m *MsgRescueCrossChainFee) Reset()         { *m = MsgRescueCrossChainFee{} }
+func (m *MsgRescueCrossChainFee) String() string { return proto.CompactTextString(m) }
+func (*MsgRescueCrossChainFee) ProtoMessage()    {}
+func (*MsgRescueCrossChainFee) Descriptor() ([]byte, []int) {
 	return fileDescriptor_44d60f3dabe1980f, []int{10}
 }
-func (m *MsgRescueNativeToken) XXX_Unmarshal(b []byte) error {
+func (m *MsgRescueCrossChainFee) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *MsgRescueNativeToken) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *MsgRescueCrossChainFee) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_MsgRescueNativeToken.Marshal(b, m, deterministic)
+		return xxx_messageInfo_MsgRescueCrossChainFee.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -549,54 +549,54 @@ func (m *MsgRescueNativeToken) XXX_Marshal(b []byte, deterministic bool) ([]byte
 		return b[:n], nil
 	}
 }
-func (m *MsgRescueNativeToken) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_MsgRescueNativeToken.Merge(m, src)
+func (m *MsgRescueCrossChainFee) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MsgRescueCrossChainFee.Merge(m, src)
 }
-func (m *MsgRescueNativeToken) XXX_Size() int {
+func (m *MsgRescueCrossChainFee) XXX_Size() int {
 	return m.Size()
 }
-func (m *MsgRescueNativeToken) XXX_DiscardUnknown() {
-	xxx_messageInfo_MsgRescueNativeToken.DiscardUnknown(m)
+func (m *MsgRescueCrossChainFee) XXX_DiscardUnknown() {
+	xxx_messageInfo_MsgRescueCrossChainFee.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_MsgRescueNativeToken proto.InternalMessageInfo
+var xxx_messageInfo_MsgRescueCrossChainFee proto.InternalMessageInfo
 
-func (m *MsgRescueNativeToken) GetCosmosSender() string {
+func (m *MsgRescueCrossChainFee) GetCosmosSender() string {
 	if m != nil {
 		return m.CosmosSender
 	}
 	return ""
 }
 
-func (m *MsgRescueNativeToken) GetCosmosReceiver() string {
+func (m *MsgRescueCrossChainFee) GetCosmosReceiver() string {
 	if m != nil {
 		return m.CosmosReceiver
 	}
 	return ""
 }
 
-func (m *MsgRescueNativeToken) GetNativeTokenSymbol() string {
+func (m *MsgRescueCrossChainFee) GetCrosschainFeeSymbol() string {
 	if m != nil {
-		return m.NativeTokenSymbol
+		return m.CrosschainFeeSymbol
 	}
 	return ""
 }
 
-type MsgRescueNativeTokenResponse struct {
+type MsgRescueCrossChainFeeResponse struct {
 }
 
-func (m *MsgRescueNativeTokenResponse) Reset()         { *m = MsgRescueNativeTokenResponse{} }
-func (m *MsgRescueNativeTokenResponse) String() string { return proto.CompactTextString(m) }
-func (*MsgRescueNativeTokenResponse) ProtoMessage()    {}
-func (*MsgRescueNativeTokenResponse) Descriptor() ([]byte, []int) {
+func (m *MsgRescueCrossChainFeeResponse) Reset()         { *m = MsgRescueCrossChainFeeResponse{} }
+func (m *MsgRescueCrossChainFeeResponse) String() string { return proto.CompactTextString(m) }
+func (*MsgRescueCrossChainFeeResponse) ProtoMessage()    {}
+func (*MsgRescueCrossChainFeeResponse) Descriptor() ([]byte, []int) {
 	return fileDescriptor_44d60f3dabe1980f, []int{11}
 }
-func (m *MsgRescueNativeTokenResponse) XXX_Unmarshal(b []byte) error {
+func (m *MsgRescueCrossChainFeeResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *MsgRescueNativeTokenResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *MsgRescueCrossChainFeeResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_MsgRescueNativeTokenResponse.Marshal(b, m, deterministic)
+		return xxx_messageInfo_MsgRescueCrossChainFeeResponse.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -606,39 +606,39 @@ func (m *MsgRescueNativeTokenResponse) XXX_Marshal(b []byte, deterministic bool)
 		return b[:n], nil
 	}
 }
-func (m *MsgRescueNativeTokenResponse) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_MsgRescueNativeTokenResponse.Merge(m, src)
+func (m *MsgRescueCrossChainFeeResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MsgRescueCrossChainFeeResponse.Merge(m, src)
 }
-func (m *MsgRescueNativeTokenResponse) XXX_Size() int {
+func (m *MsgRescueCrossChainFeeResponse) XXX_Size() int {
 	return m.Size()
 }
-func (m *MsgRescueNativeTokenResponse) XXX_DiscardUnknown() {
-	xxx_messageInfo_MsgRescueNativeTokenResponse.DiscardUnknown(m)
+func (m *MsgRescueCrossChainFeeResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_MsgRescueCrossChainFeeResponse.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_MsgRescueNativeTokenResponse proto.InternalMessageInfo
+var xxx_messageInfo_MsgRescueCrossChainFeeResponse proto.InternalMessageInfo
 
-type MsgSetNativeToken struct {
+type MsgSetFeeInfo struct {
 	CosmosSender      string                                 `protobuf:"bytes,1,opt,name=cosmos_sender,json=cosmosSender,proto3" json:"cosmos_sender,omitempty"`
 	NetworkDescriptor types.NetworkDescriptor                `protobuf:"varint,2,opt,name=network_descriptor,json=networkDescriptor,proto3,enum=sifnode.oracle.v1.NetworkDescriptor" json:"network_descriptor,omitempty" yaml:"network_descriptor"`
-	NativeToken       string                                 `protobuf:"bytes,3,opt,name=native_token,json=nativeToken,proto3" json:"native_token,omitempty"`
-	NativeGas         github_com_cosmos_cosmos_sdk_types.Int `protobuf:"bytes,4,opt,name=native_gas,json=nativeGas,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Int" json:"native_gas" yaml:"native_gas"`
+	FeeCurrency       string                                 `protobuf:"bytes,3,opt,name=fee_currency,json=feeCurrency,proto3" json:"fee_currency,omitempty"`
+	FeeCurrencyGas    github_com_cosmos_cosmos_sdk_types.Int `protobuf:"bytes,4,opt,name=fee_currency_gas,json=feeCurrencyGas,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Int" json:"fee_currency_gas" yaml:"fee_currency_gas"`
 	MinimumLockCost   github_com_cosmos_cosmos_sdk_types.Int `protobuf:"bytes,5,opt,name=minimum_lock_cost,json=minimumLockCost,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Int" json:"minimum_lock_cost" yaml:"minimum_lock_cost"`
 	MinimumBurnCost   github_com_cosmos_cosmos_sdk_types.Int `protobuf:"bytes,6,opt,name=minimum_burn_cost,json=minimumBurnCost,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Int" json:"minimum_burn_cost" yaml:"minimum_burn_cost"`
 }
 
-func (m *MsgSetNativeToken) Reset()         { *m = MsgSetNativeToken{} }
-func (m *MsgSetNativeToken) String() string { return proto.CompactTextString(m) }
-func (*MsgSetNativeToken) ProtoMessage()    {}
-func (*MsgSetNativeToken) Descriptor() ([]byte, []int) {
+func (m *MsgSetFeeInfo) Reset()         { *m = MsgSetFeeInfo{} }
+func (m *MsgSetFeeInfo) String() string { return proto.CompactTextString(m) }
+func (*MsgSetFeeInfo) ProtoMessage()    {}
+func (*MsgSetFeeInfo) Descriptor() ([]byte, []int) {
 	return fileDescriptor_44d60f3dabe1980f, []int{12}
 }
-func (m *MsgSetNativeToken) XXX_Unmarshal(b []byte) error {
+func (m *MsgSetFeeInfo) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *MsgSetNativeToken) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *MsgSetFeeInfo) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_MsgSetNativeToken.Marshal(b, m, deterministic)
+		return xxx_messageInfo_MsgSetFeeInfo.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -648,54 +648,54 @@ func (m *MsgSetNativeToken) XXX_Marshal(b []byte, deterministic bool) ([]byte, e
 		return b[:n], nil
 	}
 }
-func (m *MsgSetNativeToken) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_MsgSetNativeToken.Merge(m, src)
+func (m *MsgSetFeeInfo) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MsgSetFeeInfo.Merge(m, src)
 }
-func (m *MsgSetNativeToken) XXX_Size() int {
+func (m *MsgSetFeeInfo) XXX_Size() int {
 	return m.Size()
 }
-func (m *MsgSetNativeToken) XXX_DiscardUnknown() {
-	xxx_messageInfo_MsgSetNativeToken.DiscardUnknown(m)
+func (m *MsgSetFeeInfo) XXX_DiscardUnknown() {
+	xxx_messageInfo_MsgSetFeeInfo.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_MsgSetNativeToken proto.InternalMessageInfo
+var xxx_messageInfo_MsgSetFeeInfo proto.InternalMessageInfo
 
-func (m *MsgSetNativeToken) GetCosmosSender() string {
+func (m *MsgSetFeeInfo) GetCosmosSender() string {
 	if m != nil {
 		return m.CosmosSender
 	}
 	return ""
 }
 
-func (m *MsgSetNativeToken) GetNetworkDescriptor() types.NetworkDescriptor {
+func (m *MsgSetFeeInfo) GetNetworkDescriptor() types.NetworkDescriptor {
 	if m != nil {
 		return m.NetworkDescriptor
 	}
 	return types.NetworkDescriptor_NETWORK_DESCRIPTOR_UNSPECIFIED
 }
 
-func (m *MsgSetNativeToken) GetNativeToken() string {
+func (m *MsgSetFeeInfo) GetFeeCurrency() string {
 	if m != nil {
-		return m.NativeToken
+		return m.FeeCurrency
 	}
 	return ""
 }
 
-type MsgSetNativeTokenResponse struct {
+type MsgSetFeeInfoResponse struct {
 }
 
-func (m *MsgSetNativeTokenResponse) Reset()         { *m = MsgSetNativeTokenResponse{} }
-func (m *MsgSetNativeTokenResponse) String() string { return proto.CompactTextString(m) }
-func (*MsgSetNativeTokenResponse) ProtoMessage()    {}
-func (*MsgSetNativeTokenResponse) Descriptor() ([]byte, []int) {
+func (m *MsgSetFeeInfoResponse) Reset()         { *m = MsgSetFeeInfoResponse{} }
+func (m *MsgSetFeeInfoResponse) String() string { return proto.CompactTextString(m) }
+func (*MsgSetFeeInfoResponse) ProtoMessage()    {}
+func (*MsgSetFeeInfoResponse) Descriptor() ([]byte, []int) {
 	return fileDescriptor_44d60f3dabe1980f, []int{13}
 }
-func (m *MsgSetNativeTokenResponse) XXX_Unmarshal(b []byte) error {
+func (m *MsgSetFeeInfoResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *MsgSetNativeTokenResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *MsgSetFeeInfoResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_MsgSetNativeTokenResponse.Marshal(b, m, deterministic)
+		return xxx_messageInfo_MsgSetFeeInfoResponse.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -705,17 +705,17 @@ func (m *MsgSetNativeTokenResponse) XXX_Marshal(b []byte, deterministic bool) ([
 		return b[:n], nil
 	}
 }
-func (m *MsgSetNativeTokenResponse) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_MsgSetNativeTokenResponse.Merge(m, src)
+func (m *MsgSetFeeInfoResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MsgSetFeeInfoResponse.Merge(m, src)
 }
-func (m *MsgSetNativeTokenResponse) XXX_Size() int {
+func (m *MsgSetFeeInfoResponse) XXX_Size() int {
 	return m.Size()
 }
-func (m *MsgSetNativeTokenResponse) XXX_DiscardUnknown() {
-	xxx_messageInfo_MsgSetNativeTokenResponse.DiscardUnknown(m)
+func (m *MsgSetFeeInfoResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_MsgSetFeeInfoResponse.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_MsgSetNativeTokenResponse proto.InternalMessageInfo
+var xxx_messageInfo_MsgSetFeeInfoResponse proto.InternalMessageInfo
 
 func init() {
 	proto.RegisterType((*MsgLock)(nil), "sifnode.ethbridge.v1.MsgLock")
@@ -726,80 +726,81 @@ func init() {
 	proto.RegisterType((*MsgCreateEthBridgeClaimResponse)(nil), "sifnode.ethbridge.v1.MsgCreateEthBridgeClaimResponse")
 	proto.RegisterType((*MsgUpdateWhiteListValidator)(nil), "sifnode.ethbridge.v1.MsgUpdateWhiteListValidator")
 	proto.RegisterType((*MsgUpdateWhiteListValidatorResponse)(nil), "sifnode.ethbridge.v1.MsgUpdateWhiteListValidatorResponse")
-	proto.RegisterType((*MsgUpdateNativeTokenReceiverAccount)(nil), "sifnode.ethbridge.v1.MsgUpdateNativeTokenReceiverAccount")
-	proto.RegisterType((*MsgUpdateNativeTokenReceiverAccountResponse)(nil), "sifnode.ethbridge.v1.MsgUpdateNativeTokenReceiverAccountResponse")
-	proto.RegisterType((*MsgRescueNativeToken)(nil), "sifnode.ethbridge.v1.MsgRescueNativeToken")
-	proto.RegisterType((*MsgRescueNativeTokenResponse)(nil), "sifnode.ethbridge.v1.MsgRescueNativeTokenResponse")
-	proto.RegisterType((*MsgSetNativeToken)(nil), "sifnode.ethbridge.v1.MsgSetNativeToken")
-	proto.RegisterType((*MsgSetNativeTokenResponse)(nil), "sifnode.ethbridge.v1.MsgSetNativeTokenResponse")
+	proto.RegisterType((*MsgUpdateCrossChainFeeReceiverAccount)(nil), "sifnode.ethbridge.v1.MsgUpdateCrossChainFeeReceiverAccount")
+	proto.RegisterType((*MsgUpdateCrossChainFeeReceiverAccountResponse)(nil), "sifnode.ethbridge.v1.MsgUpdateCrossChainFeeReceiverAccountResponse")
+	proto.RegisterType((*MsgRescueCrossChainFee)(nil), "sifnode.ethbridge.v1.MsgRescueCrossChainFee")
+	proto.RegisterType((*MsgRescueCrossChainFeeResponse)(nil), "sifnode.ethbridge.v1.MsgRescueCrossChainFeeResponse")
+	proto.RegisterType((*MsgSetFeeInfo)(nil), "sifnode.ethbridge.v1.MsgSetFeeInfo")
+	proto.RegisterType((*MsgSetFeeInfoResponse)(nil), "sifnode.ethbridge.v1.MsgSetFeeInfoResponse")
 }
 
 func init() { proto.RegisterFile("sifnode/ethbridge/v1/tx.proto", fileDescriptor_44d60f3dabe1980f) }
 
 var fileDescriptor_44d60f3dabe1980f = []byte{
-	// 977 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xec, 0x57, 0x41, 0x6f, 0xdc, 0x44,
-	0x14, 0x8e, 0x93, 0xed, 0xa2, 0xbc, 0x36, 0x49, 0xd7, 0xac, 0xd4, 0xad, 0xd3, 0xac, 0x53, 0x97,
-	0xd2, 0x52, 0x14, 0xaf, 0x12, 0xc4, 0x01, 0x24, 0x84, 0xb2, 0x01, 0x55, 0x45, 0xd9, 0x1e, 0x1c,
-	0xa0, 0x12, 0x07, 0x2c, 0xaf, 0x77, 0xea, 0x35, 0xbb, 0xf6, 0xac, 0x3c, 0xb3, 0xdb, 0x46, 0xea,
-	0x19, 0xc1, 0x01, 0x89, 0x33, 0x27, 0x24, 0xee, 0xfc, 0x8e, 0x1e, 0x7b, 0x44, 0x1c, 0x56, 0x28,
-	0xf9, 0x01, 0x48, 0x2b, 0x7e, 0x00, 0xf2, 0xcc, 0x78, 0xe2, 0x8d, 0xed, 0x74, 0x8d, 0xc8, 0x05,
-	0x71, 0x4a, 0xf6, 0xbd, 0xef, 0x7d, 0xef, 0xcd, 0xf3, 0xf7, 0xde, 0xd8, 0xb0, 0x45, 0xfc, 0xa7,
-	0x21, 0xee, 0xa1, 0x16, 0xa2, 0xfd, 0x6e, 0xe4, 0xf7, 0x3c, 0xd4, 0x9a, 0xec, 0xb6, 0xe8, 0x73,
-	0x73, 0x14, 0x61, 0x8a, 0xd5, 0xba, 0x70, 0x9b, 0xd2, 0x6d, 0x4e, 0x76, 0xb5, 0xba, 0x87, 0x3d,
-	0xcc, 0x00, 0xad, 0xf8, 0x3f, 0x8e, 0xd5, 0xb6, 0xf3, 0xa9, 0x8e, 0x47, 0x88, 0x08, 0xc4, 0x83,
-	0x04, 0x81, 0x23, 0xc7, 0x1d, 0x32, 0x77, 0x88, 0xe8, 0x33, 0x1c, 0x0d, 0xec, 0x1e, 0x22, 0x6e,
-	0xe4, 0x8f, 0x28, 0x8e, 0x38, 0xd6, 0xf8, 0x73, 0x05, 0xde, 0xe8, 0x10, 0xef, 0x10, 0xbb, 0x03,
-	0xf5, 0x0e, 0xac, 0xb9, 0x98, 0x04, 0x98, 0xd8, 0x04, 0x85, 0x3d, 0x14, 0x35, 0x94, 0x6d, 0xe5,
-	0xfe, 0xaa, 0x75, 0x8d, 0x1b, 0x8f, 0x98, 0x4d, 0x7d, 0x02, 0x55, 0x27, 0xc0, 0xe3, 0x90, 0x36,
-	0x96, 0x63, 0x6f, 0xfb, 0xe3, 0x97, 0x53, 0x7d, 0xe9, 0xf7, 0xa9, 0xfe, 0xb6, 0xe7, 0xd3, 0xfe,
-	0xb8, 0x6b, 0xba, 0x38, 0x68, 0xf1, 0x00, 0xf1, 0x67, 0x87, 0xf4, 0x06, 0xa2, 0xbc, 0x47, 0x21,
-	0x9d, 0x4d, 0xf5, 0xb5, 0x63, 0x27, 0x18, 0x7e, 0x68, 0x70, 0x16, 0xc3, 0x12, 0x74, 0xea, 0x3b,
-	0x50, 0x25, 0xc7, 0x41, 0x17, 0x0f, 0x1b, 0x2b, 0x8c, 0xb8, 0x76, 0x06, 0xe5, 0x76, 0xc3, 0x12,
-	0x00, 0x35, 0x02, 0x35, 0x7b, 0xa0, 0x46, 0x65, 0x5b, 0xb9, 0xbf, 0xbe, 0xf7, 0x96, 0x99, 0xf4,
-	0x92, 0x9f, 0xde, 0x9c, 0xec, 0x9a, 0x8f, 0x39, 0xf8, 0x13, 0x89, 0x6d, 0x6f, 0xcd, 0xa6, 0xfa,
-	0x4d, 0x4e, 0x9e, 0x65, 0x32, 0xac, 0x5a, 0x78, 0x3e, 0x42, 0x7d, 0x04, 0x35, 0x44, 0xfb, 0x28,
-	0x42, 0xe3, 0xc0, 0x8e, 0x90, 0x8b, 0xfc, 0x09, 0x8a, 0x1a, 0x57, 0x58, 0xa5, 0xb7, 0x66, 0x53,
-	0xbd, 0xc1, 0xc9, 0x32, 0x10, 0xc3, 0xba, 0x9e, 0xd8, 0x2c, 0x61, 0x52, 0x5f, 0xc0, 0x9b, 0xa1,
-	0x43, 0xfd, 0x09, 0xb2, 0x29, 0x1e, 0xa0, 0xd0, 0x16, 0xfd, 0xac, 0x32, 0xb2, 0xc3, 0xd2, 0xfd,
-	0xd4, 0xc4, 0x39, 0xb2, 0x94, 0xf1, 0x41, 0x98, 0xf5, 0xf3, 0xd8, 0xb8, 0xcf, 0x6d, 0x35, 0xd8,
-	0x10, 0x0f, 0xdc, 0x42, 0x64, 0x84, 0x43, 0x82, 0x8c, 0xef, 0x2b, 0x4c, 0x04, 0xed, 0x71, 0x14,
-	0xaa, 0x1f, 0xe5, 0x8a, 0xa0, 0xdd, 0x98, 0x4d, 0xf5, 0x3a, 0x4f, 0x34, 0xe7, 0x36, 0xfe, 0x97,
-	0xc7, 0x7f, 0x51, 0x1e, 0xb1, 0x14, 0xa4, 0x3c, 0xbe, 0x55, 0xe0, 0x46, 0x87, 0x78, 0x07, 0x11,
-	0x72, 0x28, 0xfa, 0x94, 0xf6, 0xdb, 0x6c, 0xeb, 0x1c, 0x0c, 0x1d, 0x3f, 0x50, 0x07, 0x10, 0x1f,
-	0xc0, 0xe6, 0x8b, 0xc8, 0x76, 0x63, 0x1b, 0x53, 0xcc, 0xd5, 0x54, 0xa7, 0xd3, 0x4b, 0xcd, 0x9c,
-	0x8f, 0x6f, 0x6f, 0xce, 0xa6, 0xfa, 0x0d, 0xd9, 0x9c, 0x39, 0x1e, 0xc3, 0x5a, 0x47, 0x73, 0x60,
-	0xe3, 0x36, 0xe8, 0x05, 0x75, 0xc8, 0x5a, 0x7f, 0x5a, 0x86, 0xcd, 0x0e, 0xf1, 0xbe, 0x18, 0xf5,
-	0x1c, 0x8a, 0x9e, 0xf4, 0x7d, 0x8a, 0x0e, 0x7d, 0x42, 0xbf, 0x74, 0x86, 0x7e, 0xcf, 0x89, 0x9f,
-	0x53, 0xbe, 0x36, 0x94, 0x4b, 0xd5, 0x46, 0x66, 0xa4, 0x96, 0x4b, 0x8d, 0xd4, 0x1e, 0xac, 0x4e,
-	0x92, 0xfa, 0x85, 0xf8, 0xeb, 0xb3, 0xa9, 0x7e, 0x9d, 0x87, 0x4a, 0x97, 0x61, 0x9d, 0xc1, 0xd4,
-	0x3a, 0x5c, 0x19, 0xe1, 0x67, 0x88, 0xab, 0x7e, 0xcd, 0xe2, 0x3f, 0x8c, 0xbb, 0x70, 0xe7, 0x82,
-	0xde, 0xc8, 0x1e, 0xfe, 0xa0, 0xa4, 0x70, 0x8f, 0xcf, 0x14, 0x92, 0x28, 0x74, 0xdf, 0x75, 0xd9,
-	0x48, 0x2e, 0x74, 0x5f, 0xec, 0xc3, 0xd6, 0x9c, 0xf4, 0x12, 0xe5, 0xdb, 0x0e, 0x67, 0xe1, 0xcd,
-	0xb0, 0xb4, 0xb0, 0x30, 0x8f, 0xb1, 0x03, 0xef, 0x2e, 0x50, 0x8e, 0x2c, 0xff, 0x2f, 0x05, 0xea,
-	0x1d, 0xe2, 0x59, 0x88, 0xb8, 0xe3, 0x34, 0x7e, 0xb1, 0x7a, 0xef, 0xc1, 0x86, 0x00, 0xc9, 0x31,
-	0xe6, 0x15, 0xae, 0x73, 0xb3, 0x1c, 0x53, 0xf3, 0xdc, 0x98, 0xa6, 0xb7, 0xd3, 0xdc, 0x60, 0x1d,
-	0xf1, 0xad, 0xf4, 0x75, 0xfe, 0x58, 0x57, 0xd8, 0x03, 0x35, 0xcb, 0x8d, 0x75, 0xde, 0xe0, 0x36,
-	0xe1, 0x56, 0xde, 0xa9, 0x65, 0x5b, 0x7e, 0xa9, 0x40, 0xad, 0x43, 0xbc, 0x23, 0x44, 0x4b, 0xf7,
-	0x24, 0x7f, 0x68, 0x96, 0x2f, 0x75, 0x68, 0x6e, 0xc3, 0xb5, 0x74, 0xbb, 0x44, 0x5f, 0xaf, 0xa6,
-	0xce, 0xad, 0x76, 0x01, 0x04, 0xc4, 0x73, 0x88, 0x68, 0xe4, 0x41, 0xe9, 0xfd, 0x58, 0x9b, 0xdb,
-	0x8f, 0x9e, 0x43, 0x0c, 0x6b, 0x95, 0xff, 0x78, 0xe8, 0x10, 0x75, 0x02, 0xb5, 0xc0, 0x0f, 0xfd,
-	0x60, 0x1c, 0xd8, 0x43, 0xec, 0x0e, 0x6c, 0x17, 0x13, 0x2a, 0xf6, 0xfa, 0x67, 0xa5, 0x53, 0x89,
-	0x5b, 0x20, 0x43, 0x68, 0x58, 0x1b, 0xc2, 0x16, 0x5f, 0xcb, 0x07, 0x98, 0xd0, 0x74, 0xde, 0xee,
-	0x38, 0x0a, 0x79, 0xde, 0xea, 0xbf, 0x93, 0x57, 0x12, 0x9e, 0xe5, 0x8d, 0xf7, 0x7d, 0x9c, 0xd7,
-	0xd8, 0x84, 0x9b, 0x19, 0x91, 0x24, 0x12, 0xda, 0xfb, 0xb5, 0x0a, 0x2b, 0x1d, 0xe2, 0xa9, 0x87,
-	0x50, 0x61, 0x2f, 0x8c, 0x5b, 0xf9, 0x2b, 0x5e, 0xbc, 0x5e, 0x68, 0x77, 0x2f, 0x74, 0x27, 0xac,
-	0x31, 0x1b, 0x7b, 0xf3, 0x28, 0x66, 0x8b, 0xdd, 0x17, 0xb0, 0xa5, 0x2f, 0x2b, 0xf5, 0x05, 0xd4,
-	0x73, 0x2f, 0xaa, 0x9d, 0xc2, 0xf0, 0x3c, 0xb8, 0xf6, 0x7e, 0x29, 0xb8, 0xcc, 0xfe, 0x9d, 0x02,
-	0x8d, 0xc2, 0xbb, 0x67, 0xb7, 0x90, 0xb3, 0x28, 0x44, 0xfb, 0xa0, 0x74, 0x88, 0x2c, 0xe5, 0x67,
-	0x05, 0xb6, 0x5f, 0xbb, 0xc2, 0x5f, 0xc7, 0x5f, 0x1c, 0xaa, 0xed, 0xff, 0xe3, 0x50, 0x59, 0x22,
-	0x81, 0x5a, 0x76, 0x4b, 0x3f, 0x28, 0xe4, 0xcd, 0x60, 0xb5, 0xbd, 0xc5, 0xb1, 0x32, 0xe9, 0x37,
-	0xb0, 0x7e, 0x6e, 0x07, 0xde, 0x2b, 0x64, 0x99, 0x07, 0x6a, 0xad, 0x05, 0x81, 0x49, 0xae, 0xf6,
-	0xc3, 0x97, 0x27, 0x4d, 0xe5, 0xd5, 0x49, 0x53, 0xf9, 0xe3, 0xa4, 0xa9, 0xfc, 0x78, 0xda, 0x5c,
-	0x7a, 0x75, 0xda, 0x5c, 0xfa, 0xed, 0xb4, 0xb9, 0xf4, 0xd5, 0x4e, 0x6a, 0x78, 0x8f, 0xfc, 0xa7,
-	0x6e, 0xdf, 0xf1, 0xc3, 0x56, 0xf2, 0xdd, 0xf6, 0x3c, 0xf5, 0x6d, 0xc7, 0xe6, 0xb8, 0x5b, 0x65,
-	0x5f, 0x6b, 0xef, 0xfd, 0x1d, 0x00, 0x00, 0xff, 0xff, 0x76, 0xcc, 0xc0, 0x30, 0x48, 0x0e, 0x00,
-	0x00,
+	// 996 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xec, 0x57, 0x4f, 0x8f, 0xdb, 0x44,
+	0x14, 0x5f, 0xef, 0x6e, 0x83, 0xfa, 0xda, 0xfd, 0x13, 0x37, 0xcb, 0x86, 0xb4, 0x1b, 0x6f, 0xa7,
+	0x2c, 0x94, 0x3f, 0xeb, 0x68, 0x97, 0x3f, 0x12, 0x20, 0x84, 0x9a, 0x40, 0xab, 0x45, 0x9b, 0x1e,
+	0xbc, 0x82, 0x4a, 0x1c, 0xb0, 0x1c, 0x67, 0xe2, 0x58, 0x89, 0x3d, 0x91, 0xc7, 0x49, 0x1b, 0x89,
+	0x13, 0x42, 0x88, 0x63, 0xcf, 0x7c, 0x00, 0x8e, 0x88, 0x8f, 0xd1, 0x63, 0x8f, 0x88, 0x43, 0x84,
+	0x76, 0xbf, 0x41, 0x0e, 0x1c, 0x11, 0xf2, 0xcc, 0x78, 0xe2, 0x24, 0xf6, 0x92, 0x08, 0x7a, 0x41,
+	0x9c, 0x76, 0xf3, 0xde, 0xef, 0xfd, 0xde, 0x9b, 0xe7, 0xdf, 0x7b, 0x63, 0xc3, 0x1e, 0x75, 0x5b,
+	0x3e, 0x69, 0xe2, 0x0a, 0x0e, 0xdb, 0x8d, 0xc0, 0x6d, 0x3a, 0xb8, 0x32, 0x38, 0xaa, 0x84, 0x4f,
+	0xf4, 0x5e, 0x40, 0x42, 0xa2, 0x16, 0x84, 0x5b, 0x97, 0x6e, 0x7d, 0x70, 0x54, 0x2a, 0x38, 0xc4,
+	0x21, 0x0c, 0x50, 0x89, 0xfe, 0xe3, 0xd8, 0xd2, 0x7e, 0x3a, 0xd5, 0xb0, 0x87, 0xa9, 0x40, 0xbc,
+	0x19, 0x23, 0x48, 0x60, 0xd9, 0x5d, 0xe6, 0xf6, 0x71, 0xf8, 0x98, 0x04, 0x1d, 0xb3, 0x89, 0xa9,
+	0x1d, 0xb8, 0xbd, 0x90, 0x04, 0x1c, 0x8b, 0xfe, 0x58, 0x83, 0x97, 0xea, 0xd4, 0x39, 0x25, 0x76,
+	0x47, 0xbd, 0x03, 0x1b, 0x36, 0xa1, 0x1e, 0xa1, 0x26, 0xc5, 0x7e, 0x13, 0x07, 0x45, 0x65, 0x5f,
+	0xb9, 0x7b, 0xd5, 0xb8, 0xce, 0x8d, 0x67, 0xcc, 0xa6, 0x3e, 0x82, 0x9c, 0xe5, 0x91, 0xbe, 0x1f,
+	0x16, 0x57, 0x23, 0x6f, 0xf5, 0x93, 0x67, 0x23, 0x6d, 0xe5, 0xb7, 0x91, 0xf6, 0x9a, 0xe3, 0x86,
+	0xed, 0x7e, 0x43, 0xb7, 0x89, 0x57, 0xe1, 0x01, 0xe2, 0xcf, 0x21, 0x6d, 0x76, 0x44, 0x79, 0x27,
+	0x7e, 0x38, 0x1e, 0x69, 0x1b, 0x43, 0xcb, 0xeb, 0x7e, 0x88, 0x38, 0x0b, 0x32, 0x04, 0x9d, 0xfa,
+	0x06, 0xe4, 0xe8, 0xd0, 0x6b, 0x90, 0x6e, 0x71, 0x8d, 0x11, 0xe7, 0x27, 0x50, 0x6e, 0x47, 0x86,
+	0x00, 0xa8, 0x01, 0xa8, 0xf3, 0x07, 0x2a, 0xae, 0xef, 0x2b, 0x77, 0x37, 0x8f, 0x5f, 0xd5, 0xe3,
+	0x5e, 0xf2, 0xd3, 0xeb, 0x83, 0x23, 0xfd, 0x21, 0x07, 0x7f, 0x2a, 0xb1, 0xd5, 0xbd, 0xf1, 0x48,
+	0x7b, 0x85, 0x93, 0xcf, 0x33, 0x21, 0x23, 0xef, 0xcf, 0x46, 0xa8, 0x27, 0x90, 0xc7, 0x61, 0x1b,
+	0x07, 0xb8, 0xef, 0x99, 0x01, 0xb6, 0xb1, 0x3b, 0xc0, 0x41, 0xf1, 0x0a, 0xab, 0xf4, 0xd6, 0x78,
+	0xa4, 0x15, 0x39, 0xd9, 0x1c, 0x04, 0x19, 0xdb, 0xb1, 0xcd, 0x10, 0x26, 0xf5, 0x5b, 0x05, 0x76,
+	0xec, 0x80, 0x50, 0x6a, 0xb7, 0x2d, 0xd7, 0x37, 0x5b, 0x18, 0x9b, 0xa2, 0xa5, 0x39, 0xc6, 0xf7,
+	0x70, 0xe9, 0x96, 0xde, 0xe2, 0xd9, 0x53, 0x49, 0x91, 0x71, 0x63, 0x62, 0xbf, 0x8f, 0xf1, 0x3d,
+	0x6e, 0xcd, 0xc3, 0x96, 0x78, 0xee, 0x06, 0xa6, 0x3d, 0xe2, 0x53, 0x8c, 0x9e, 0xae, 0x33, 0x2d,
+	0x54, 0xfb, 0x81, 0xaf, 0x7e, 0x9c, 0xaa, 0x85, 0x6a, 0x71, 0x3c, 0xd2, 0x0a, 0x22, 0x59, 0xd2,
+	0x8d, 0xfe, 0x57, 0xc9, 0x7f, 0x58, 0x25, 0x91, 0x22, 0xa4, 0x4a, 0xbe, 0x57, 0x60, 0xb7, 0x4e,
+	0x9d, 0x5a, 0x80, 0xad, 0x10, 0x7f, 0x16, 0xb6, 0xab, 0x6c, 0x07, 0xd5, 0xba, 0x96, 0xeb, 0xa9,
+	0x1d, 0x88, 0xce, 0x61, 0xf2, 0xb5, 0x64, 0xda, 0x91, 0x8d, 0x09, 0xe7, 0x5a, 0xa2, 0xe1, 0xc9,
+	0x15, 0xa7, 0x4f, 0xc7, 0x57, 0x6f, 0x8e, 0x47, 0xda, 0xae, 0xec, 0xd1, 0x14, 0x0f, 0x32, 0x36,
+	0xf1, 0x14, 0x18, 0xdd, 0x06, 0x2d, 0xa3, 0x0e, 0x59, 0xeb, 0x8f, 0xab, 0x70, 0xb3, 0x4e, 0x9d,
+	0x2f, 0x7a, 0x4d, 0x2b, 0xc4, 0x8f, 0xda, 0x6e, 0x88, 0x4f, 0x5d, 0x1a, 0x7e, 0x69, 0x75, 0xdd,
+	0xa6, 0x15, 0x3d, 0xae, 0x74, 0x89, 0x28, 0x2f, 0x54, 0x22, 0x73, 0x93, 0xb5, 0xba, 0xd4, 0x64,
+	0x1d, 0xc3, 0xd5, 0x41, 0x5c, 0xbf, 0x98, 0x81, 0xc2, 0x78, 0xa4, 0x6d, 0xf3, 0x50, 0xe9, 0x42,
+	0xc6, 0x04, 0xa6, 0x16, 0xe0, 0x4a, 0x8f, 0x3c, 0xc6, 0x5c, 0xfc, 0x1b, 0x06, 0xff, 0x81, 0x0e,
+	0xe0, 0xce, 0x25, 0xbd, 0x91, 0x3d, 0xfc, 0x4e, 0x81, 0x03, 0x89, 0xab, 0x45, 0x1a, 0xa9, 0x09,
+	0x8d, 0xc4, 0x52, 0xbd, 0x67, 0xdb, 0x6c, 0x36, 0x17, 0xba, 0x3f, 0xde, 0x87, 0xdd, 0x19, 0x01,
+	0xca, 0x39, 0x61, 0x8d, 0x30, 0x76, 0xa6, 0x74, 0x18, 0xe7, 0x40, 0x15, 0x38, 0x5c, 0xa8, 0x0a,
+	0x59, 0xf7, 0x9f, 0x0a, 0xbc, 0x5c, 0xa7, 0x8e, 0x81, 0xa9, 0xdd, 0x9f, 0x8e, 0x58, 0xac, 0xd0,
+	0xd7, 0x61, 0x4b, 0x80, 0x66, 0x0a, 0xdc, 0xe4, 0x66, 0x39, 0xa8, 0xc7, 0x73, 0x73, 0x9a, 0xdc,
+	0x50, 0x33, 0x73, 0x75, 0xc6, 0x77, 0x53, 0x23, 0x6b, 0xb6, 0xd7, 0xd9, 0x13, 0xd5, 0x97, 0x9b,
+	0xed, 0xf4, 0xd9, 0xdd, 0x87, 0x72, 0xfa, 0xf9, 0x65, 0x8b, 0x7e, 0x59, 0x87, 0x8d, 0x3a, 0x75,
+	0xce, 0x70, 0x78, 0x1f, 0xe3, 0x13, 0xbf, 0x45, 0x16, 0xeb, 0x4c, 0xfa, 0xd4, 0xac, 0xbe, 0xd0,
+	0xa9, 0xb9, 0x0d, 0xd7, 0xa3, 0x2e, 0xd9, 0xfd, 0x20, 0xc0, 0xbe, 0x3d, 0x14, 0xbd, 0xbd, 0xd6,
+	0xc2, 0xb8, 0x26, 0x4c, 0x2a, 0x85, 0xed, 0x24, 0xc4, 0x74, 0x2c, 0x2a, 0xda, 0x79, 0xb2, 0xf4,
+	0xaa, 0x14, 0x4b, 0x68, 0x96, 0x0f, 0x19, 0x9b, 0x89, 0x8c, 0x0f, 0x2c, 0xaa, 0x0e, 0x20, 0xef,
+	0xb9, 0xbe, 0xeb, 0xf5, 0x3d, 0xb3, 0x4b, 0xec, 0x8e, 0x69, 0x13, 0x1a, 0x8a, 0x85, 0xff, 0xf9,
+	0xd2, 0x59, 0xc5, 0xf5, 0x30, 0x47, 0x88, 0x8c, 0x2d, 0x61, 0x8b, 0xee, 0xeb, 0x1a, 0xa1, 0x61,
+	0x32, 0x6f, 0xa3, 0x1f, 0xf8, 0x3c, 0x6f, 0xee, 0xdf, 0xc9, 0x2b, 0x09, 0x27, 0x79, 0xa3, 0x1b,
+	0x20, 0xca, 0x8b, 0x76, 0x61, 0x67, 0x4a, 0x31, 0xb1, 0x96, 0x8e, 0x7f, 0xce, 0xc1, 0x5a, 0x9d,
+	0x3a, 0xea, 0x29, 0xac, 0xb3, 0x97, 0xc9, 0xbd, 0xf4, 0x85, 0x2f, 0xde, 0x39, 0x4a, 0x07, 0x97,
+	0xba, 0x63, 0xd6, 0x88, 0x8d, 0xbd, 0x8e, 0x64, 0xb3, 0x45, 0xee, 0x4b, 0xd8, 0x92, 0x57, 0x97,
+	0xfa, 0x0d, 0x14, 0x52, 0xaf, 0xad, 0xc3, 0xcc, 0xf0, 0x34, 0x78, 0xe9, 0xbd, 0xa5, 0xe0, 0x32,
+	0xfb, 0x0f, 0x0a, 0x14, 0x33, 0x6f, 0xa2, 0xa3, 0x4c, 0xce, 0xac, 0x90, 0xd2, 0x07, 0x4b, 0x87,
+	0xc8, 0x52, 0x7e, 0x52, 0x00, 0x2d, 0xb0, 0xd0, 0x3f, 0xfa, 0x9b, 0x0c, 0x97, 0x05, 0x97, 0x6a,
+	0xff, 0x20, 0x58, 0x16, 0x3a, 0x84, 0x1b, 0x69, 0x0b, 0xfc, 0xed, 0x4c, 0xee, 0x14, 0x74, 0xe9,
+	0xdd, 0x65, 0xd0, 0x32, 0xf5, 0xd7, 0x00, 0xc9, 0xc5, 0x98, 0xc9, 0x31, 0x01, 0x95, 0xde, 0x5a,
+	0x00, 0x14, 0xf3, 0x57, 0x1f, 0x3c, 0x3b, 0x2f, 0x2b, 0xcf, 0xcf, 0xcb, 0xca, 0xef, 0xe7, 0x65,
+	0xe5, 0xe9, 0x45, 0x79, 0xe5, 0xf9, 0x45, 0x79, 0xe5, 0xd7, 0x8b, 0xf2, 0xca, 0x57, 0x87, 0x89,
+	0xc1, 0x3d, 0x73, 0x5b, 0x6c, 0xad, 0x57, 0xe2, 0x6f, 0xba, 0x27, 0x89, 0xef, 0x3e, 0x36, 0xc3,
+	0x8d, 0x1c, 0xfb, 0x92, 0x7b, 0xe7, 0xaf, 0x00, 0x00, 0x00, 0xff, 0xff, 0xb2, 0x29, 0x41, 0x81,
+	0x64, 0x0e, 0x00, 0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -818,9 +819,9 @@ type MsgClient interface {
 	Burn(ctx context.Context, in *MsgBurn, opts ...grpc.CallOption) (*MsgBurnResponse, error)
 	CreateEthBridgeClaim(ctx context.Context, in *MsgCreateEthBridgeClaim, opts ...grpc.CallOption) (*MsgCreateEthBridgeClaimResponse, error)
 	UpdateWhiteListValidator(ctx context.Context, in *MsgUpdateWhiteListValidator, opts ...grpc.CallOption) (*MsgUpdateWhiteListValidatorResponse, error)
-	UpdateNativeTokenReceiverAccount(ctx context.Context, in *MsgUpdateNativeTokenReceiverAccount, opts ...grpc.CallOption) (*MsgUpdateNativeTokenReceiverAccountResponse, error)
-	RescueNativeToken(ctx context.Context, in *MsgRescueNativeToken, opts ...grpc.CallOption) (*MsgRescueNativeTokenResponse, error)
-	SetNativeToken(ctx context.Context, in *MsgSetNativeToken, opts ...grpc.CallOption) (*MsgSetNativeTokenResponse, error)
+	UpdateCrossChainFeeReceiverAccount(ctx context.Context, in *MsgUpdateCrossChainFeeReceiverAccount, opts ...grpc.CallOption) (*MsgUpdateCrossChainFeeReceiverAccountResponse, error)
+	RescueCrossChainFee(ctx context.Context, in *MsgRescueCrossChainFee, opts ...grpc.CallOption) (*MsgRescueCrossChainFeeResponse, error)
+	SetFeeInfo(ctx context.Context, in *MsgSetFeeInfo, opts ...grpc.CallOption) (*MsgSetFeeInfoResponse, error)
 }
 
 type msgClient struct {
@@ -867,27 +868,27 @@ func (c *msgClient) UpdateWhiteListValidator(ctx context.Context, in *MsgUpdateW
 	return out, nil
 }
 
-func (c *msgClient) UpdateNativeTokenReceiverAccount(ctx context.Context, in *MsgUpdateNativeTokenReceiverAccount, opts ...grpc.CallOption) (*MsgUpdateNativeTokenReceiverAccountResponse, error) {
-	out := new(MsgUpdateNativeTokenReceiverAccountResponse)
-	err := c.cc.Invoke(ctx, "/sifnode.ethbridge.v1.Msg/UpdateNativeTokenReceiverAccount", in, out, opts...)
+func (c *msgClient) UpdateCrossChainFeeReceiverAccount(ctx context.Context, in *MsgUpdateCrossChainFeeReceiverAccount, opts ...grpc.CallOption) (*MsgUpdateCrossChainFeeReceiverAccountResponse, error) {
+	out := new(MsgUpdateCrossChainFeeReceiverAccountResponse)
+	err := c.cc.Invoke(ctx, "/sifnode.ethbridge.v1.Msg/UpdateCrossChainFeeReceiverAccount", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *msgClient) RescueNativeToken(ctx context.Context, in *MsgRescueNativeToken, opts ...grpc.CallOption) (*MsgRescueNativeTokenResponse, error) {
-	out := new(MsgRescueNativeTokenResponse)
-	err := c.cc.Invoke(ctx, "/sifnode.ethbridge.v1.Msg/RescueNativeToken", in, out, opts...)
+func (c *msgClient) RescueCrossChainFee(ctx context.Context, in *MsgRescueCrossChainFee, opts ...grpc.CallOption) (*MsgRescueCrossChainFeeResponse, error) {
+	out := new(MsgRescueCrossChainFeeResponse)
+	err := c.cc.Invoke(ctx, "/sifnode.ethbridge.v1.Msg/RescueCrossChainFee", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *msgClient) SetNativeToken(ctx context.Context, in *MsgSetNativeToken, opts ...grpc.CallOption) (*MsgSetNativeTokenResponse, error) {
-	out := new(MsgSetNativeTokenResponse)
-	err := c.cc.Invoke(ctx, "/sifnode.ethbridge.v1.Msg/SetNativeToken", in, out, opts...)
+func (c *msgClient) SetFeeInfo(ctx context.Context, in *MsgSetFeeInfo, opts ...grpc.CallOption) (*MsgSetFeeInfoResponse, error) {
+	out := new(MsgSetFeeInfoResponse)
+	err := c.cc.Invoke(ctx, "/sifnode.ethbridge.v1.Msg/SetFeeInfo", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -900,9 +901,9 @@ type MsgServer interface {
 	Burn(context.Context, *MsgBurn) (*MsgBurnResponse, error)
 	CreateEthBridgeClaim(context.Context, *MsgCreateEthBridgeClaim) (*MsgCreateEthBridgeClaimResponse, error)
 	UpdateWhiteListValidator(context.Context, *MsgUpdateWhiteListValidator) (*MsgUpdateWhiteListValidatorResponse, error)
-	UpdateNativeTokenReceiverAccount(context.Context, *MsgUpdateNativeTokenReceiverAccount) (*MsgUpdateNativeTokenReceiverAccountResponse, error)
-	RescueNativeToken(context.Context, *MsgRescueNativeToken) (*MsgRescueNativeTokenResponse, error)
-	SetNativeToken(context.Context, *MsgSetNativeToken) (*MsgSetNativeTokenResponse, error)
+	UpdateCrossChainFeeReceiverAccount(context.Context, *MsgUpdateCrossChainFeeReceiverAccount) (*MsgUpdateCrossChainFeeReceiverAccountResponse, error)
+	RescueCrossChainFee(context.Context, *MsgRescueCrossChainFee) (*MsgRescueCrossChainFeeResponse, error)
+	SetFeeInfo(context.Context, *MsgSetFeeInfo) (*MsgSetFeeInfoResponse, error)
 }
 
 // UnimplementedMsgServer can be embedded to have forward compatible implementations.
@@ -921,14 +922,14 @@ func (*UnimplementedMsgServer) CreateEthBridgeClaim(ctx context.Context, req *Ms
 func (*UnimplementedMsgServer) UpdateWhiteListValidator(ctx context.Context, req *MsgUpdateWhiteListValidator) (*MsgUpdateWhiteListValidatorResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateWhiteListValidator not implemented")
 }
-func (*UnimplementedMsgServer) UpdateNativeTokenReceiverAccount(ctx context.Context, req *MsgUpdateNativeTokenReceiverAccount) (*MsgUpdateNativeTokenReceiverAccountResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method UpdateNativeTokenReceiverAccount not implemented")
+func (*UnimplementedMsgServer) UpdateCrossChainFeeReceiverAccount(ctx context.Context, req *MsgUpdateCrossChainFeeReceiverAccount) (*MsgUpdateCrossChainFeeReceiverAccountResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateCrossChainFeeReceiverAccount not implemented")
 }
-func (*UnimplementedMsgServer) RescueNativeToken(ctx context.Context, req *MsgRescueNativeToken) (*MsgRescueNativeTokenResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method RescueNativeToken not implemented")
+func (*UnimplementedMsgServer) RescueCrossChainFee(ctx context.Context, req *MsgRescueCrossChainFee) (*MsgRescueCrossChainFeeResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RescueCrossChainFee not implemented")
 }
-func (*UnimplementedMsgServer) SetNativeToken(ctx context.Context, req *MsgSetNativeToken) (*MsgSetNativeTokenResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method SetNativeToken not implemented")
+func (*UnimplementedMsgServer) SetFeeInfo(ctx context.Context, req *MsgSetFeeInfo) (*MsgSetFeeInfoResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SetFeeInfo not implemented")
 }
 
 func RegisterMsgServer(s grpc1.Server, srv MsgServer) {
@@ -1007,56 +1008,56 @@ func _Msg_UpdateWhiteListValidator_Handler(srv interface{}, ctx context.Context,
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Msg_UpdateNativeTokenReceiverAccount_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(MsgUpdateNativeTokenReceiverAccount)
+func _Msg_UpdateCrossChainFeeReceiverAccount_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MsgUpdateCrossChainFeeReceiverAccount)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(MsgServer).UpdateNativeTokenReceiverAccount(ctx, in)
+		return srv.(MsgServer).UpdateCrossChainFeeReceiverAccount(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/sifnode.ethbridge.v1.Msg/UpdateNativeTokenReceiverAccount",
+		FullMethod: "/sifnode.ethbridge.v1.Msg/UpdateCrossChainFeeReceiverAccount",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MsgServer).UpdateNativeTokenReceiverAccount(ctx, req.(*MsgUpdateNativeTokenReceiverAccount))
+		return srv.(MsgServer).UpdateCrossChainFeeReceiverAccount(ctx, req.(*MsgUpdateCrossChainFeeReceiverAccount))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Msg_RescueNativeToken_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(MsgRescueNativeToken)
+func _Msg_RescueCrossChainFee_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MsgRescueCrossChainFee)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(MsgServer).RescueNativeToken(ctx, in)
+		return srv.(MsgServer).RescueCrossChainFee(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/sifnode.ethbridge.v1.Msg/RescueNativeToken",
+		FullMethod: "/sifnode.ethbridge.v1.Msg/RescueCrossChainFee",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MsgServer).RescueNativeToken(ctx, req.(*MsgRescueNativeToken))
+		return srv.(MsgServer).RescueCrossChainFee(ctx, req.(*MsgRescueCrossChainFee))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Msg_SetNativeToken_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(MsgSetNativeToken)
+func _Msg_SetFeeInfo_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MsgSetFeeInfo)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(MsgServer).SetNativeToken(ctx, in)
+		return srv.(MsgServer).SetFeeInfo(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/sifnode.ethbridge.v1.Msg/SetNativeToken",
+		FullMethod: "/sifnode.ethbridge.v1.Msg/SetFeeInfo",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MsgServer).SetNativeToken(ctx, req.(*MsgSetNativeToken))
+		return srv.(MsgServer).SetFeeInfo(ctx, req.(*MsgSetFeeInfo))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -1082,16 +1083,16 @@ var _Msg_serviceDesc = grpc.ServiceDesc{
 			Handler:    _Msg_UpdateWhiteListValidator_Handler,
 		},
 		{
-			MethodName: "UpdateNativeTokenReceiverAccount",
-			Handler:    _Msg_UpdateNativeTokenReceiverAccount_Handler,
+			MethodName: "UpdateCrossChainFeeReceiverAccount",
+			Handler:    _Msg_UpdateCrossChainFeeReceiverAccount_Handler,
 		},
 		{
-			MethodName: "RescueNativeToken",
-			Handler:    _Msg_RescueNativeToken_Handler,
+			MethodName: "RescueCrossChainFee",
+			Handler:    _Msg_RescueCrossChainFee_Handler,
 		},
 		{
-			MethodName: "SetNativeToken",
-			Handler:    _Msg_SetNativeToken_Handler,
+			MethodName: "SetFeeInfo",
+			Handler:    _Msg_SetFeeInfo_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
@@ -1119,9 +1120,9 @@ func (m *MsgLock) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	var l int
 	_ = l
 	{
-		size := m.NativeTokenAmount.Size()
+		size := m.CrosschainFeeAmount.Size()
 		i -= size
-		if _, err := m.NativeTokenAmount.MarshalTo(dAtA[i:]); err != nil {
+		if _, err := m.CrosschainFeeAmount.MarshalTo(dAtA[i:]); err != nil {
 			return 0, err
 		}
 		i = encodeVarintTx(dAtA, i, uint64(size))
@@ -1211,9 +1212,9 @@ func (m *MsgBurn) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	var l int
 	_ = l
 	{
-		size := m.NativeTokenAmount.Size()
+		size := m.CrosschainFeeAmount.Size()
 		i -= size
-		if _, err := m.NativeTokenAmount.MarshalTo(dAtA[i:]); err != nil {
+		if _, err := m.CrosschainFeeAmount.MarshalTo(dAtA[i:]); err != nil {
 			return 0, err
 		}
 		i = encodeVarintTx(dAtA, i, uint64(size))
@@ -1410,7 +1411,7 @@ func (m *MsgUpdateWhiteListValidatorResponse) MarshalToSizedBuffer(dAtA []byte) 
 	return len(dAtA) - i, nil
 }
 
-func (m *MsgUpdateNativeTokenReceiverAccount) Marshal() (dAtA []byte, err error) {
+func (m *MsgUpdateCrossChainFeeReceiverAccount) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -1420,20 +1421,20 @@ func (m *MsgUpdateNativeTokenReceiverAccount) Marshal() (dAtA []byte, err error)
 	return dAtA[:n], nil
 }
 
-func (m *MsgUpdateNativeTokenReceiverAccount) MarshalTo(dAtA []byte) (int, error) {
+func (m *MsgUpdateCrossChainFeeReceiverAccount) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *MsgUpdateNativeTokenReceiverAccount) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *MsgUpdateCrossChainFeeReceiverAccount) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
 	_ = l
-	if len(m.NativeTokenReceiverAccount) > 0 {
-		i -= len(m.NativeTokenReceiverAccount)
-		copy(dAtA[i:], m.NativeTokenReceiverAccount)
-		i = encodeVarintTx(dAtA, i, uint64(len(m.NativeTokenReceiverAccount)))
+	if len(m.CrosschainFeeReceiver) > 0 {
+		i -= len(m.CrosschainFeeReceiver)
+		copy(dAtA[i:], m.CrosschainFeeReceiver)
+		i = encodeVarintTx(dAtA, i, uint64(len(m.CrosschainFeeReceiver)))
 		i--
 		dAtA[i] = 0x12
 	}
@@ -1447,7 +1448,7 @@ func (m *MsgUpdateNativeTokenReceiverAccount) MarshalToSizedBuffer(dAtA []byte) 
 	return len(dAtA) - i, nil
 }
 
-func (m *MsgUpdateNativeTokenReceiverAccountResponse) Marshal() (dAtA []byte, err error) {
+func (m *MsgUpdateCrossChainFeeReceiverAccountResponse) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -1457,12 +1458,12 @@ func (m *MsgUpdateNativeTokenReceiverAccountResponse) Marshal() (dAtA []byte, er
 	return dAtA[:n], nil
 }
 
-func (m *MsgUpdateNativeTokenReceiverAccountResponse) MarshalTo(dAtA []byte) (int, error) {
+func (m *MsgUpdateCrossChainFeeReceiverAccountResponse) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *MsgUpdateNativeTokenReceiverAccountResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *MsgUpdateCrossChainFeeReceiverAccountResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
@@ -1470,7 +1471,7 @@ func (m *MsgUpdateNativeTokenReceiverAccountResponse) MarshalToSizedBuffer(dAtA 
 	return len(dAtA) - i, nil
 }
 
-func (m *MsgRescueNativeToken) Marshal() (dAtA []byte, err error) {
+func (m *MsgRescueCrossChainFee) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -1480,30 +1481,30 @@ func (m *MsgRescueNativeToken) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *MsgRescueNativeToken) MarshalTo(dAtA []byte) (int, error) {
+func (m *MsgRescueCrossChainFee) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *MsgRescueNativeToken) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *MsgRescueCrossChainFee) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
 	_ = l
 	{
-		size := m.NativeTokenAmount.Size()
+		size := m.CrosschainFeeAmount.Size()
 		i -= size
-		if _, err := m.NativeTokenAmount.MarshalTo(dAtA[i:]); err != nil {
+		if _, err := m.CrosschainFeeAmount.MarshalTo(dAtA[i:]); err != nil {
 			return 0, err
 		}
 		i = encodeVarintTx(dAtA, i, uint64(size))
 	}
 	i--
 	dAtA[i] = 0x22
-	if len(m.NativeTokenSymbol) > 0 {
-		i -= len(m.NativeTokenSymbol)
-		copy(dAtA[i:], m.NativeTokenSymbol)
-		i = encodeVarintTx(dAtA, i, uint64(len(m.NativeTokenSymbol)))
+	if len(m.CrosschainFeeSymbol) > 0 {
+		i -= len(m.CrosschainFeeSymbol)
+		copy(dAtA[i:], m.CrosschainFeeSymbol)
+		i = encodeVarintTx(dAtA, i, uint64(len(m.CrosschainFeeSymbol)))
 		i--
 		dAtA[i] = 0x1a
 	}
@@ -1524,7 +1525,7 @@ func (m *MsgRescueNativeToken) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	return len(dAtA) - i, nil
 }
 
-func (m *MsgRescueNativeTokenResponse) Marshal() (dAtA []byte, err error) {
+func (m *MsgRescueCrossChainFeeResponse) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -1534,12 +1535,12 @@ func (m *MsgRescueNativeTokenResponse) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *MsgRescueNativeTokenResponse) MarshalTo(dAtA []byte) (int, error) {
+func (m *MsgRescueCrossChainFeeResponse) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *MsgRescueNativeTokenResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *MsgRescueCrossChainFeeResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
@@ -1547,7 +1548,7 @@ func (m *MsgRescueNativeTokenResponse) MarshalToSizedBuffer(dAtA []byte) (int, e
 	return len(dAtA) - i, nil
 }
 
-func (m *MsgSetNativeToken) Marshal() (dAtA []byte, err error) {
+func (m *MsgSetFeeInfo) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -1557,12 +1558,12 @@ func (m *MsgSetNativeToken) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *MsgSetNativeToken) MarshalTo(dAtA []byte) (int, error) {
+func (m *MsgSetFeeInfo) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *MsgSetNativeToken) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *MsgSetFeeInfo) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
@@ -1588,19 +1589,19 @@ func (m *MsgSetNativeToken) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i--
 	dAtA[i] = 0x2a
 	{
-		size := m.NativeGas.Size()
+		size := m.FeeCurrencyGas.Size()
 		i -= size
-		if _, err := m.NativeGas.MarshalTo(dAtA[i:]); err != nil {
+		if _, err := m.FeeCurrencyGas.MarshalTo(dAtA[i:]); err != nil {
 			return 0, err
 		}
 		i = encodeVarintTx(dAtA, i, uint64(size))
 	}
 	i--
 	dAtA[i] = 0x22
-	if len(m.NativeToken) > 0 {
-		i -= len(m.NativeToken)
-		copy(dAtA[i:], m.NativeToken)
-		i = encodeVarintTx(dAtA, i, uint64(len(m.NativeToken)))
+	if len(m.FeeCurrency) > 0 {
+		i -= len(m.FeeCurrency)
+		copy(dAtA[i:], m.FeeCurrency)
+		i = encodeVarintTx(dAtA, i, uint64(len(m.FeeCurrency)))
 		i--
 		dAtA[i] = 0x1a
 	}
@@ -1619,7 +1620,7 @@ func (m *MsgSetNativeToken) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	return len(dAtA) - i, nil
 }
 
-func (m *MsgSetNativeTokenResponse) Marshal() (dAtA []byte, err error) {
+func (m *MsgSetFeeInfoResponse) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -1629,12 +1630,12 @@ func (m *MsgSetNativeTokenResponse) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *MsgSetNativeTokenResponse) MarshalTo(dAtA []byte) (int, error) {
+func (m *MsgSetFeeInfoResponse) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *MsgSetNativeTokenResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *MsgSetFeeInfoResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
@@ -1676,7 +1677,7 @@ func (m *MsgLock) Size() (n int) {
 	if l > 0 {
 		n += 1 + l + sovTx(uint64(l))
 	}
-	l = m.NativeTokenAmount.Size()
+	l = m.CrosschainFeeAmount.Size()
 	n += 1 + l + sovTx(uint64(l))
 	return n
 }
@@ -1713,7 +1714,7 @@ func (m *MsgBurn) Size() (n int) {
 	if l > 0 {
 		n += 1 + l + sovTx(uint64(l))
 	}
-	l = m.NativeTokenAmount.Size()
+	l = m.CrosschainFeeAmount.Size()
 	n += 1 + l + sovTx(uint64(l))
 	return n
 }
@@ -1781,7 +1782,7 @@ func (m *MsgUpdateWhiteListValidatorResponse) Size() (n int) {
 	return n
 }
 
-func (m *MsgUpdateNativeTokenReceiverAccount) Size() (n int) {
+func (m *MsgUpdateCrossChainFeeReceiverAccount) Size() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -1791,14 +1792,14 @@ func (m *MsgUpdateNativeTokenReceiverAccount) Size() (n int) {
 	if l > 0 {
 		n += 1 + l + sovTx(uint64(l))
 	}
-	l = len(m.NativeTokenReceiverAccount)
+	l = len(m.CrosschainFeeReceiver)
 	if l > 0 {
 		n += 1 + l + sovTx(uint64(l))
 	}
 	return n
 }
 
-func (m *MsgUpdateNativeTokenReceiverAccountResponse) Size() (n int) {
+func (m *MsgUpdateCrossChainFeeReceiverAccountResponse) Size() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -1807,7 +1808,7 @@ func (m *MsgUpdateNativeTokenReceiverAccountResponse) Size() (n int) {
 	return n
 }
 
-func (m *MsgRescueNativeToken) Size() (n int) {
+func (m *MsgRescueCrossChainFee) Size() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -1821,16 +1822,16 @@ func (m *MsgRescueNativeToken) Size() (n int) {
 	if l > 0 {
 		n += 1 + l + sovTx(uint64(l))
 	}
-	l = len(m.NativeTokenSymbol)
+	l = len(m.CrosschainFeeSymbol)
 	if l > 0 {
 		n += 1 + l + sovTx(uint64(l))
 	}
-	l = m.NativeTokenAmount.Size()
+	l = m.CrosschainFeeAmount.Size()
 	n += 1 + l + sovTx(uint64(l))
 	return n
 }
 
-func (m *MsgRescueNativeTokenResponse) Size() (n int) {
+func (m *MsgRescueCrossChainFeeResponse) Size() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -1839,7 +1840,7 @@ func (m *MsgRescueNativeTokenResponse) Size() (n int) {
 	return n
 }
 
-func (m *MsgSetNativeToken) Size() (n int) {
+func (m *MsgSetFeeInfo) Size() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -1852,11 +1853,11 @@ func (m *MsgSetNativeToken) Size() (n int) {
 	if m.NetworkDescriptor != 0 {
 		n += 1 + sovTx(uint64(m.NetworkDescriptor))
 	}
-	l = len(m.NativeToken)
+	l = len(m.FeeCurrency)
 	if l > 0 {
 		n += 1 + l + sovTx(uint64(l))
 	}
-	l = m.NativeGas.Size()
+	l = m.FeeCurrencyGas.Size()
 	n += 1 + l + sovTx(uint64(l))
 	l = m.MinimumLockCost.Size()
 	n += 1 + l + sovTx(uint64(l))
@@ -1865,7 +1866,7 @@ func (m *MsgSetNativeToken) Size() (n int) {
 	return n
 }
 
-func (m *MsgSetNativeTokenResponse) Size() (n int) {
+func (m *MsgSetFeeInfoResponse) Size() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -2060,7 +2061,7 @@ func (m *MsgLock) Unmarshal(dAtA []byte) error {
 			iNdEx = postIndex
 		case 6:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field NativeTokenAmount", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field CrosschainFeeAmount", wireType)
 			}
 			var stringLen uint64
 			for shift := uint(0); ; shift += 7 {
@@ -2088,7 +2089,7 @@ func (m *MsgLock) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			if err := m.NativeTokenAmount.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+			if err := m.CrosschainFeeAmount.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex
@@ -2343,7 +2344,7 @@ func (m *MsgBurn) Unmarshal(dAtA []byte) error {
 			iNdEx = postIndex
 		case 6:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field NativeTokenAmount", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field CrosschainFeeAmount", wireType)
 			}
 			var stringLen uint64
 			for shift := uint(0); ; shift += 7 {
@@ -2371,7 +2372,7 @@ func (m *MsgBurn) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			if err := m.NativeTokenAmount.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+			if err := m.CrosschainFeeAmount.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex
@@ -2784,7 +2785,7 @@ func (m *MsgUpdateWhiteListValidatorResponse) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *MsgUpdateNativeTokenReceiverAccount) Unmarshal(dAtA []byte) error {
+func (m *MsgUpdateCrossChainFeeReceiverAccount) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -2807,10 +2808,10 @@ func (m *MsgUpdateNativeTokenReceiverAccount) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: MsgUpdateNativeTokenReceiverAccount: wiretype end group for non-group")
+			return fmt.Errorf("proto: MsgUpdateCrossChainFeeReceiverAccount: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: MsgUpdateNativeTokenReceiverAccount: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: MsgUpdateCrossChainFeeReceiverAccount: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
@@ -2847,7 +2848,7 @@ func (m *MsgUpdateNativeTokenReceiverAccount) Unmarshal(dAtA []byte) error {
 			iNdEx = postIndex
 		case 2:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field NativeTokenReceiverAccount", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field CrosschainFeeReceiver", wireType)
 			}
 			var stringLen uint64
 			for shift := uint(0); ; shift += 7 {
@@ -2875,7 +2876,7 @@ func (m *MsgUpdateNativeTokenReceiverAccount) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.NativeTokenReceiverAccount = string(dAtA[iNdEx:postIndex])
+			m.CrosschainFeeReceiver = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
 		default:
 			iNdEx = preIndex
@@ -2898,7 +2899,7 @@ func (m *MsgUpdateNativeTokenReceiverAccount) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *MsgUpdateNativeTokenReceiverAccountResponse) Unmarshal(dAtA []byte) error {
+func (m *MsgUpdateCrossChainFeeReceiverAccountResponse) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -2921,10 +2922,10 @@ func (m *MsgUpdateNativeTokenReceiverAccountResponse) Unmarshal(dAtA []byte) err
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: MsgUpdateNativeTokenReceiverAccountResponse: wiretype end group for non-group")
+			return fmt.Errorf("proto: MsgUpdateCrossChainFeeReceiverAccountResponse: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: MsgUpdateNativeTokenReceiverAccountResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: MsgUpdateCrossChainFeeReceiverAccountResponse: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		default:
@@ -2948,7 +2949,7 @@ func (m *MsgUpdateNativeTokenReceiverAccountResponse) Unmarshal(dAtA []byte) err
 	}
 	return nil
 }
-func (m *MsgRescueNativeToken) Unmarshal(dAtA []byte) error {
+func (m *MsgRescueCrossChainFee) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -2971,10 +2972,10 @@ func (m *MsgRescueNativeToken) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: MsgRescueNativeToken: wiretype end group for non-group")
+			return fmt.Errorf("proto: MsgRescueCrossChainFee: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: MsgRescueNativeToken: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: MsgRescueCrossChainFee: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
@@ -3043,7 +3044,7 @@ func (m *MsgRescueNativeToken) Unmarshal(dAtA []byte) error {
 			iNdEx = postIndex
 		case 3:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field NativeTokenSymbol", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field CrosschainFeeSymbol", wireType)
 			}
 			var stringLen uint64
 			for shift := uint(0); ; shift += 7 {
@@ -3071,11 +3072,11 @@ func (m *MsgRescueNativeToken) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.NativeTokenSymbol = string(dAtA[iNdEx:postIndex])
+			m.CrosschainFeeSymbol = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
 		case 4:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field NativeTokenAmount", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field CrosschainFeeAmount", wireType)
 			}
 			var stringLen uint64
 			for shift := uint(0); ; shift += 7 {
@@ -3103,7 +3104,7 @@ func (m *MsgRescueNativeToken) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			if err := m.NativeTokenAmount.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+			if err := m.CrosschainFeeAmount.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex
@@ -3128,7 +3129,7 @@ func (m *MsgRescueNativeToken) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *MsgRescueNativeTokenResponse) Unmarshal(dAtA []byte) error {
+func (m *MsgRescueCrossChainFeeResponse) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -3151,10 +3152,10 @@ func (m *MsgRescueNativeTokenResponse) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: MsgRescueNativeTokenResponse: wiretype end group for non-group")
+			return fmt.Errorf("proto: MsgRescueCrossChainFeeResponse: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: MsgRescueNativeTokenResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: MsgRescueCrossChainFeeResponse: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		default:
@@ -3178,7 +3179,7 @@ func (m *MsgRescueNativeTokenResponse) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *MsgSetNativeToken) Unmarshal(dAtA []byte) error {
+func (m *MsgSetFeeInfo) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -3201,10 +3202,10 @@ func (m *MsgSetNativeToken) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: MsgSetNativeToken: wiretype end group for non-group")
+			return fmt.Errorf("proto: MsgSetFeeInfo: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: MsgSetNativeToken: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: MsgSetFeeInfo: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
@@ -3260,7 +3261,7 @@ func (m *MsgSetNativeToken) Unmarshal(dAtA []byte) error {
 			}
 		case 3:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field NativeToken", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field FeeCurrency", wireType)
 			}
 			var stringLen uint64
 			for shift := uint(0); ; shift += 7 {
@@ -3288,11 +3289,11 @@ func (m *MsgSetNativeToken) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.NativeToken = string(dAtA[iNdEx:postIndex])
+			m.FeeCurrency = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
 		case 4:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field NativeGas", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field FeeCurrencyGas", wireType)
 			}
 			var stringLen uint64
 			for shift := uint(0); ; shift += 7 {
@@ -3320,7 +3321,7 @@ func (m *MsgSetNativeToken) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			if err := m.NativeGas.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+			if err := m.FeeCurrencyGas.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex
@@ -3413,7 +3414,7 @@ func (m *MsgSetNativeToken) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *MsgSetNativeTokenResponse) Unmarshal(dAtA []byte) error {
+func (m *MsgSetFeeInfoResponse) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -3436,10 +3437,10 @@ func (m *MsgSetNativeTokenResponse) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: MsgSetNativeTokenResponse: wiretype end group for non-group")
+			return fmt.Errorf("proto: MsgSetFeeInfoResponse: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: MsgSetNativeTokenResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: MsgSetFeeInfoResponse: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		default:

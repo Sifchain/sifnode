@@ -49,14 +49,7 @@ func (srv msgServer) Lock(goCtx context.Context, msg *types.MsgLock) (*types.Msg
 		return nil, err
 	}
 
-	logger.Info("sifnode emit lock event.",
-		"NetworkId", strconv.FormatInt(int64(msg.NetworkDescriptor), 10),
-		"CosmosSender", msg.CosmosSender,
-		"CosmosSenderSequence", strconv.FormatUint(account.GetSequence(), 10),
-		"EthereumReceiver", msg.EthereumReceiver,
-		"Amount", msg.Amount.String(),
-		"Symbol", msg.Symbol,
-		"NativeTokenAmount", msg.NativeTokenAmount.String())
+	logger.Info("sifnode emit lock event.", "message", msg)
 
 	ctx.EventManager().EmitEvents(sdk.Events{
 		sdk.NewEvent(
@@ -72,7 +65,7 @@ func (srv msgServer) Lock(goCtx context.Context, msg *types.MsgLock) (*types.Msg
 			sdk.NewAttribute(types.AttributeKeyEthereumReceiver, msg.EthereumReceiver),
 			sdk.NewAttribute(types.AttributeKeyAmount, msg.Amount.String()),
 			sdk.NewAttribute(types.AttributeKeySymbol, msg.Symbol),
-			sdk.NewAttribute(types.AttributeKeyNativeTokenAmount, msg.NativeTokenAmount.String()),
+			sdk.NewAttribute(types.AttributeKeyCrossChainFeeAmount, msg.CrosschainFeeAmount.String()),
 		),
 	})
 
@@ -105,14 +98,7 @@ func (srv msgServer) Burn(goCtx context.Context, msg *types.MsgBurn) (*types.Msg
 		return nil, err
 	}
 
-	logger.Info("sifnode emit burn event.",
-		"NetworkId", strconv.FormatInt(int64(msg.NetworkDescriptor), 10),
-		"CosmosSender", msg.CosmosSender,
-		"CosmosSenderSequence", strconv.FormatUint(account.GetSequence(), 10),
-		"EthereumReceiver", msg.EthereumReceiver,
-		"Amount", msg.Amount.String(),
-		"Symbol", msg.Symbol,
-		"NativeTokenAmount", msg.NativeTokenAmount.String())
+	logger.Info("sifnode emit burn event.", "message", msg)
 
 	ctx.EventManager().EmitEvents(sdk.Events{
 		sdk.NewEvent(
@@ -128,7 +114,7 @@ func (srv msgServer) Burn(goCtx context.Context, msg *types.MsgBurn) (*types.Msg
 			sdk.NewAttribute(types.AttributeKeyEthereumReceiver, msg.EthereumReceiver),
 			sdk.NewAttribute(types.AttributeKeyAmount, msg.Amount.String()),
 			sdk.NewAttribute(types.AttributeKeySymbol, msg.Symbol),
-			sdk.NewAttribute(types.AttributeKeyNativeTokenAmount, msg.NativeTokenAmount.String()),
+			sdk.NewAttribute(types.AttributeKeyCrossChainFeeAmount, msg.CrosschainFeeAmount.String()),
 		),
 	})
 
@@ -246,8 +232,8 @@ func (srv msgServer) UpdateWhiteListValidator(goCtx context.Context,
 	return &types.MsgUpdateWhiteListValidatorResponse{}, nil
 }
 
-func (srv msgServer) UpdateNativeTokenReceiverAccount(goCtx context.Context,
-	msg *types.MsgUpdateNativeTokenReceiverAccount) (*types.MsgUpdateNativeTokenReceiverAccountResponse, error) {
+func (srv msgServer) UpdateCrossChainFeeReceiverAccount(goCtx context.Context,
+	msg *types.MsgUpdateCrossChainFeeReceiverAccount) (*types.MsgUpdateCrossChainFeeReceiverAccountResponse, error) {
 
 	ctx := sdk.UnwrapSDKContext(goCtx)
 	logger := srv.Keeper.Logger(ctx)
@@ -257,7 +243,7 @@ func (srv msgServer) UpdateNativeTokenReceiverAccount(goCtx context.Context,
 		return nil, err
 	}
 
-	nativeTokenReceiverAddress, err := sdk.AccAddressFromBech32(msg.NativeTokenReceiverAccount)
+	nativeTokenReceiverAddress, err := sdk.AccAddressFromBech32(msg.CrosschainFeeReceiver)
 	if err != nil {
 		return nil, err
 	}
@@ -269,17 +255,17 @@ func (srv msgServer) UpdateNativeTokenReceiverAccount(goCtx context.Context,
 		return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.CosmosSender)
 	}
 
-	err = srv.Keeper.ProcessUpdateNativeTokenReceiverAccount(ctx,
+	err = srv.Keeper.ProcessUpdateCrossChainFeeReceiverAccount(ctx,
 		cosmosSender, nativeTokenReceiverAddress)
 	if err != nil {
-		logger.Error("keeper failed to process update native token receiver account.", errorMessageKey, err.Error())
+		logger.Error("keeper failed to process update crosschain fee receiver account.", errorMessageKey, err.Error())
 		return nil, err
 	}
 
-	logger.Info("sifnode emit update native token receiver account event.",
+	logger.Info("sifnode emit update crosschain fee receiver account event.",
 		"CosmosSender", msg.CosmosSender,
 		"CosmosSenderSequence", strconv.FormatUint(account.GetSequence(), 10),
-		"NativeTokenReceiverAccount", msg.NativeTokenReceiverAccount)
+		"CrossChainFeeReceiverAccount", msg.CrosschainFeeReceiver)
 
 	ctx.EventManager().EmitEvents(sdk.Events{
 		sdk.NewEvent(
@@ -290,14 +276,14 @@ func (srv msgServer) UpdateNativeTokenReceiverAccount(goCtx context.Context,
 		sdk.NewEvent(
 			types.EventTypeLock,
 			sdk.NewAttribute(types.AttributeKeyCosmosSender, msg.CosmosSender),
-			sdk.NewAttribute(types.AttributeKeyNativeTokenReceiverAccount, msg.NativeTokenReceiverAccount),
+			sdk.NewAttribute(types.AttributeKeyCrossChainFeeReceiverAccount, msg.CrosschainFeeReceiver),
 		),
 	})
 
-	return &types.MsgUpdateNativeTokenReceiverAccountResponse{}, nil
+	return &types.MsgUpdateCrossChainFeeReceiverAccountResponse{}, nil
 }
 
-func (srv msgServer) RescueNativeToken(goCtx context.Context, msg *types.MsgRescueNativeToken) (*types.MsgRescueNativeTokenResponse, error) {
+func (srv msgServer) RescueCrossChainFee(goCtx context.Context, msg *types.MsgRescueCrossChainFee) (*types.MsgRescueCrossChainFeeResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 	logger := srv.Keeper.Logger(ctx)
 
@@ -312,7 +298,7 @@ func (srv msgServer) RescueNativeToken(goCtx context.Context, msg *types.MsgResc
 		return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.CosmosSender)
 	}
 
-	if err := srv.Keeper.ProcessRescueNativeToken(ctx, msg); err != nil {
+	if err := srv.Keeper.RescueCrossChainFees(ctx, msg); err != nil {
 		logger.Error("keeper failed to process rescue native_token message.", errorMessageKey, err.Error())
 		return nil, err
 	}
@@ -320,12 +306,12 @@ func (srv msgServer) RescueNativeToken(goCtx context.Context, msg *types.MsgResc
 		"CosmosSender", msg.CosmosSender,
 		"CosmosSenderSequence", strconv.FormatUint(account.GetSequence(), 10),
 		"CosmosReceiver", msg.CosmosReceiver,
-		"NativeTokenAmount", msg.NativeTokenAmount)
+		"CrossChainFeeAmount", msg.CrosschainFeeAmount)
 
-	return &types.MsgRescueNativeTokenResponse{}, nil
+	return &types.MsgRescueCrossChainFeeResponse{}, nil
 }
 
-func (srv msgServer) SetNativeToken(goCtx context.Context, msg *types.MsgSetNativeToken) (*types.MsgSetNativeTokenResponse, error) {
+func (srv msgServer) SetFeeInfo(goCtx context.Context, msg *types.MsgSetFeeInfo) (*types.MsgSetFeeInfoResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 	logger := srv.Keeper.Logger(ctx)
 
@@ -340,19 +326,12 @@ func (srv msgServer) SetNativeToken(goCtx context.Context, msg *types.MsgSetNati
 		return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.CosmosSender)
 	}
 
-	if err := srv.Keeper.ProcessSetNativeToken(ctx, msg); err != nil {
-		logger.Error("keeper failed to process rescue native_token message.", errorMessageKey, err.Error())
+	if err := srv.Keeper.SetFeeInfo(ctx, msg); err != nil {
+		logger.Error("keeper failed to process rescue crosschain fee message.", errorMessageKey, err.Error())
 		return nil, err
 	}
-	logger.Info("sifnode emit set native_token event.",
-		"CosmosSender", msg.CosmosSender,
-		"CosmosSenderSequence", strconv.FormatUint(account.GetSequence(), 10),
-		"NetworkDescriptor", msg.NetworkDescriptor,
-		"NativeToken", msg.NativeToken,
-		"NativeTokenGas", msg.NativeGas.String(),
-		"minimum_lock_cost", msg.MinimumLockCost.String(),
-		"minimum_burn_cost", msg.MinimumBurnCost.String(),
-	)
+	logger.Info("sifnode emit set crosschain fee event.",
+		"Message", msg)
 
 	ctx.EventManager().EmitEvents(sdk.Events{
 		sdk.NewEvent(
@@ -361,15 +340,15 @@ func (srv msgServer) SetNativeToken(goCtx context.Context, msg *types.MsgSetNati
 			sdk.NewAttribute(sdk.AttributeKeySender, msg.CosmosSender),
 		),
 		sdk.NewEvent(
-			types.EventTypeSetNativeToken,
+			types.EventTypeSetCrossChainFee,
 			sdk.NewAttribute(types.AttributeKeyCosmosSender, msg.CosmosSender),
 			sdk.NewAttribute(types.AttributeKeyNetworkDescriptor, msg.NetworkDescriptor.String()),
-			sdk.NewAttribute(types.AttributeKeyNativeToken, msg.NativeToken),
-			sdk.NewAttribute(types.AttributeKeyNativeTokenGas, msg.NativeGas.String()),
+			sdk.NewAttribute(types.AttributeKeyCrossChainFee, msg.FeeCurrency),
+			sdk.NewAttribute(types.AttributeKeyCrossChainFeeGas, msg.FeeCurrencyGas.String()),
 			sdk.NewAttribute(types.AttributeKeyMinimumLockCost, msg.MinimumLockCost.String()),
 			sdk.NewAttribute(types.AttributeKeyMinimumBurnCost, msg.MinimumBurnCost.String()),
 		),
 	})
 
-	return &types.MsgSetNativeTokenResponse{}, nil
+	return &types.MsgSetFeeInfoResponse{}, nil
 }

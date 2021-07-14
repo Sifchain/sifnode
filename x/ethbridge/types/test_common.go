@@ -27,7 +27,7 @@ const (
 	TestProphecyID            = "test_prophecy_id"
 )
 
-var testNativeTokenAmount = sdk.NewInt(65000000000 * 300000)
+var testCrossChainFeeAmount = sdk.NewInt(65000000000 * 300000)
 var TestCoinsAmount = sdk.NewInt(10)
 var AltTestCoinsAmountSDKInt = sdk.NewInt(12)
 
@@ -59,7 +59,7 @@ func CreateTestBurnMsg(t *testing.T, testCosmosSender string, ethereumReceiver E
 	coinsAmount sdk.Int, coinsSymbol string) MsgBurn {
 	testCosmosAddress, err := sdk.AccAddressFromBech32(TestAddress)
 	require.NoError(t, err)
-	burnEth := NewMsgBurn(TestNetworkDescriptor, testCosmosAddress, ethereumReceiver, coinsAmount, coinsSymbol, testNativeTokenAmount)
+	burnEth := NewMsgBurn(TestNetworkDescriptor, testCosmosAddress, ethereumReceiver, coinsAmount, coinsSymbol, testCrossChainFeeAmount)
 	return burnEth
 }
 
@@ -67,7 +67,7 @@ func CreateTestLockMsg(t *testing.T, testCosmosSender string, ethereumReceiver E
 	coinsAmount sdk.Int, coinsSymbol string) MsgLock {
 	testCosmosAddress, err := sdk.AccAddressFromBech32(TestAddress)
 	require.NoError(t, err)
-	lockEth := NewMsgLock(TestNetworkDescriptor, testCosmosAddress, ethereumReceiver, coinsAmount, coinsSymbol, testNativeTokenAmount)
+	lockEth := NewMsgLock(TestNetworkDescriptor, testCosmosAddress, ethereumReceiver, coinsAmount, coinsSymbol, testCrossChainFeeAmount)
 	return lockEth
 }
 
@@ -87,24 +87,24 @@ func CreateTestQueryEthProphecyResponse(t *testing.T, validatorAddress sdk.ValAd
 	)
 }
 
-func CreateTestUpdateNativeTokenReceiverAccountMsg(t *testing.T, testCosmosSender string, testNativeTokenReceiverAccount string) MsgUpdateNativeTokenReceiverAccount {
+func CreateTestUpdateCrossChainFeeReceiverAccountMsg(t *testing.T, testCosmosSender string, testCrossChainFeeReceiverAccount string) MsgUpdateCrossChainFeeReceiverAccount {
 	accAddress1, err := sdk.AccAddressFromBech32(testCosmosSender)
 	require.NoError(t, err)
-	accAddress2, err := sdk.AccAddressFromBech32(testNativeTokenReceiverAccount)
+	accAddress2, err := sdk.AccAddressFromBech32(testCrossChainFeeReceiverAccount)
 	require.NoError(t, err)
 
-	msgUpdateNativeTokenReceiverAccount := NewMsgUpdateNativeTokenReceiverAccount(accAddress1, accAddress2)
-	return msgUpdateNativeTokenReceiverAccount
+	msgUpdateCrossChainFeeReceiverAccount := NewMsgUpdateCrossChainFeeReceiverAccount(accAddress1, accAddress2)
+	return msgUpdateCrossChainFeeReceiverAccount
 }
 
-func CreateTestRescueNativeTokenMsg(t *testing.T, testCosmosSender string, testNativeTokenReceiverAccount string, nativeToken string, nativeTokenAmount sdk.Int) MsgRescueNativeToken {
+func CreateTestRescueCrossChainFeeMsg(t *testing.T, testCosmosSender string, testCrossChainFeeReceiverAccount string, nativeToken string, nativeTokenAmount sdk.Int) MsgRescueCrossChainFee {
 	accAddress1, err := sdk.AccAddressFromBech32(testCosmosSender)
 	require.NoError(t, err)
-	accAddress2, err := sdk.AccAddressFromBech32(testNativeTokenReceiverAccount)
+	accAddress2, err := sdk.AccAddressFromBech32(testCrossChainFeeReceiverAccount)
 	require.NoError(t, err)
 
-	MsgRescueNativeToken := NewMsgRescueNativeToken(accAddress1, accAddress2, nativeToken, nativeTokenAmount)
-	return MsgRescueNativeToken
+	MsgRescueCrossChainFee := NewMsgRescueCrossChainFee(accAddress1, accAddress2, nativeToken, nativeTokenAmount)
+	return MsgRescueCrossChainFee
 }
 
 func CreateTestUpdateWhiteListValidatorMsg(_ *testing.T, networkDescriptor oracletypes.NetworkDescriptor, sender string, validator string, power uint32) MsgUpdateWhiteListValidator {
@@ -116,10 +116,10 @@ func CreateTestUpdateWhiteListValidatorMsg(_ *testing.T, networkDescriptor oracl
 	}
 }
 
-func CreateTestSetNativeTokenMsg(t *testing.T, testCosmosSender string, networkDescriptor oracletypes.NetworkDescriptor, nativeToken string) MsgSetNativeToken {
+func CreateTestSetCrossChainFeeMsg(t *testing.T, testCosmosSender string, networkDescriptor oracletypes.NetworkDescriptor, nativeToken string) MsgSetFeeInfo {
 	accAddress, err := sdk.AccAddressFromBech32(testCosmosSender)
 	require.NoError(t, err)
 
-	MsgSetNativeToken := NewMsgSetNativeToken(accAddress, networkDescriptor, nativeToken)
-	return MsgSetNativeToken
+	msgSetFeeInfo := NewMsgSetFeeInfo(accAddress, networkDescriptor, nativeToken)
+	return msgSetFeeInfo
 }

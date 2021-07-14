@@ -11,8 +11,8 @@ func RegisterLegacyAminoCodec(cdc *codec.LegacyAmino) {
 	cdc.RegisterConcrete(MsgBurn{}, "ethbridge/MsgBurn", nil)
 	cdc.RegisterConcrete(MsgLock{}, "ethbridge/MsgLock", nil)
 	cdc.RegisterConcrete(MsgUpdateWhiteListValidator{}, "ethbridge/MsgUpdateWhiteListValidator", nil)
-	cdc.RegisterConcrete(MsgUpdateNativeTokenReceiverAccount{}, "ethbridge/MsgUpdateNativeTokenReceiverAccount", nil)
-	cdc.RegisterConcrete(MsgRescueNativeToken{}, "ethbridge/MsgRescueNativeToken", nil)
+	cdc.RegisterConcrete(MsgUpdateCrossChainFeeReceiverAccount{}, "ethbridge/MsgUpdateCrossChainFeeReceiverAccount", nil)
+	cdc.RegisterConcrete(MsgRescueCrossChainFee{}, "ethbridge/MsgRescueCrossChainFee", nil)
 
 }
 

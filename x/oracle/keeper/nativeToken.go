@@ -7,40 +7,40 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-// SetNativeToken set the native token for a network.
-func (k Keeper) SetNativeToken(ctx sdk.Context, networkIdentity types.NetworkIdentity, token string, gas, lockCost, burnCost sdk.Int) {
+// SetCrossChainFee set the crosschain fee for a network.
+func (k Keeper) SetCrossChainFee(ctx sdk.Context, networkIdentity types.NetworkIdentity, token string, gas, lockCost, burnCost sdk.Int) {
 	store := ctx.KVStore(k.storeKey)
-	key := networkIdentity.GetNativeTokenPrefix()
-	nativeToken := types.NativeTokenConfig{
-		NativeToken:     token,
-		NativeGas:       gas,
+	key := networkIdentity.GetCrossChainFeePrefix()
+	crossChainFee := types.CrossChainFeeConfig{
+		FeeCurrency:     token,
+		FeeCurrencyGas:  gas,
 		MinimumLockCost: lockCost,
 		MinimumBurnCost: burnCost,
 	}
-	store.Set(key, k.cdc.MustMarshalBinaryBare(&nativeToken))
+	store.Set(key, k.cdc.MustMarshalBinaryBare(&crossChainFee))
 }
 
-// GetNativeTokenConfig return native token config
-func (k Keeper) GetNativeTokenConfig(ctx sdk.Context, networkIdentity types.NetworkIdentity) (types.NativeTokenConfig, error) {
+// GetCrossChainFeeConfig return crosschain fee config
+func (k Keeper) GetCrossChainFeeConfig(ctx sdk.Context, networkIdentity types.NetworkIdentity) (types.CrossChainFeeConfig, error) {
 	store := ctx.KVStore(k.storeKey)
-	key := networkIdentity.GetNativeTokenPrefix()
+	key := networkIdentity.GetCrossChainFeePrefix()
 
 	if !store.Has(key) {
-		return types.NativeTokenConfig{}, fmt.Errorf("%s%s", "native token not set for ", networkIdentity.NetworkDescriptor.String())
+		return types.CrossChainFeeConfig{}, fmt.Errorf("%s%s", "crosschain fee not set for ", networkIdentity.NetworkDescriptor.String())
 	}
 
 	bz := store.Get(key)
-	nativeTokenConfig := &types.NativeTokenConfig{}
-	k.cdc.MustUnmarshalBinaryBare(bz, nativeTokenConfig)
-	return *nativeTokenConfig, nil
+	crossChainFeeConfig := &types.CrossChainFeeConfig{}
+	k.cdc.MustUnmarshalBinaryBare(bz, crossChainFeeConfig)
+	return *crossChainFeeConfig, nil
 }
 
-// GetNativeToken return native token
-func (k Keeper) GetNativeToken(ctx sdk.Context, networkIdentity types.NetworkIdentity) (string, error) {
-	nativeTokenConfig, err := k.GetNativeTokenConfig(ctx, networkIdentity)
+// GetCrossChainFee return crosschain fee
+func (k Keeper) GetCrossChainFee(ctx sdk.Context, networkIdentity types.NetworkIdentity) (string, error) {
+	nativeTokenConfig, err := k.GetCrossChainFeeConfig(ctx, networkIdentity)
 	if err != nil {
 		return "", err
 	}
 
-	return nativeTokenConfig.NativeToken, nil
+	return nativeTokenConfig.FeeCurrency, nil
 }

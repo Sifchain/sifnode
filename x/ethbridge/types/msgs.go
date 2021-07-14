@@ -17,14 +17,14 @@ import (
 // NewMsgLock is a constructor function for MsgLock
 func NewMsgLock(
 	networkDescriptor oracletypes.NetworkDescriptor, cosmosSender sdk.AccAddress,
-	ethereumReceiver EthereumAddress, amount sdk.Int, symbol string, nativeTokenAmount sdk.Int) MsgLock {
+	ethereumReceiver EthereumAddress, amount sdk.Int, symbol string, crosschainFeeAmount sdk.Int) MsgLock {
 	return MsgLock{
-		NetworkDescriptor: networkDescriptor,
-		CosmosSender:      cosmosSender.String(),
-		EthereumReceiver:  ethereumReceiver.String(),
-		Amount:            amount,
-		Symbol:            symbol,
-		NativeTokenAmount: nativeTokenAmount,
+		NetworkDescriptor:   networkDescriptor,
+		CosmosSender:        cosmosSender.String(),
+		EthereumReceiver:    ethereumReceiver.String(),
+		Amount:              amount,
+		Symbol:              symbol,
+		CrosschainFeeAmount: crosschainFeeAmount,
 	}
 }
 
@@ -80,14 +80,14 @@ func (msg MsgLock) GetSigners() []sdk.AccAddress {
 // NewMsgBurn is a constructor function for MsgBurn
 func NewMsgBurn(
 	networkDescriptor oracletypes.NetworkDescriptor, cosmosSender sdk.AccAddress,
-	ethereumReceiver EthereumAddress, amount sdk.Int, symbol string, nativeTokenAmount sdk.Int) MsgBurn {
+	ethereumReceiver EthereumAddress, amount sdk.Int, symbol string, crossChainFeeAmount sdk.Int) MsgBurn {
 	return MsgBurn{
-		NetworkDescriptor: networkDescriptor,
-		CosmosSender:      cosmosSender.String(),
-		EthereumReceiver:  ethereumReceiver.String(),
-		Amount:            amount,
-		Symbol:            symbol,
-		NativeTokenAmount: nativeTokenAmount,
+		NetworkDescriptor:   networkDescriptor,
+		CosmosSender:        cosmosSender.String(),
+		EthereumReceiver:    ethereumReceiver.String(),
+		Amount:              amount,
+		Symbol:              symbol,
+		CrosschainFeeAmount: crossChainFeeAmount,
 	}
 }
 
@@ -218,37 +218,37 @@ func (msg MsgCreateEthBridgeClaim) GetSigners() []sdk.AccAddress {
 	return []sdk.AccAddress{sdk.AccAddress(validatorAddress)}
 }
 
-// NewMsgUpdateNativeTokenReceiverAccount is a constructor function for MsgUpdateNativeTokenReceiverAccount
-func NewMsgUpdateNativeTokenReceiverAccount(cosmosSender sdk.AccAddress,
-	nativeTokenReceiverAccount sdk.AccAddress) MsgUpdateNativeTokenReceiverAccount {
-	return MsgUpdateNativeTokenReceiverAccount{
-		CosmosSender:               cosmosSender.String(),
-		NativeTokenReceiverAccount: nativeTokenReceiverAccount.String(),
+// NewMsgUpdateCrossChainFeeReceiverAccount is a constructor function for MsgUpdateCrossChainFeeReceiverAccount
+func NewMsgUpdateCrossChainFeeReceiverAccount(cosmosSender sdk.AccAddress,
+	crosschainFeeReceiver sdk.AccAddress) MsgUpdateCrossChainFeeReceiverAccount {
+	return MsgUpdateCrossChainFeeReceiverAccount{
+		CosmosSender:          cosmosSender.String(),
+		CrosschainFeeReceiver: crosschainFeeReceiver.String(),
 	}
 }
 
 // Route should return the name of the module
-func (msg MsgUpdateNativeTokenReceiverAccount) Route() string { return RouterKey }
+func (msg MsgUpdateCrossChainFeeReceiverAccount) Route() string { return RouterKey }
 
 // Type should return the action
-func (msg MsgUpdateNativeTokenReceiverAccount) Type() string {
-	return "update_native_token_receiver_account"
+func (msg MsgUpdateCrossChainFeeReceiverAccount) Type() string {
+	return "update_crosschain_fee_receiver_account"
 }
 
 // ValidateBasic runs stateless checks on the message
-func (msg MsgUpdateNativeTokenReceiverAccount) ValidateBasic() error {
+func (msg MsgUpdateCrossChainFeeReceiverAccount) ValidateBasic() error {
 	if msg.CosmosSender == "" {
 		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.CosmosSender)
 	}
 
-	if msg.NativeTokenReceiverAccount == "" {
-		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.NativeTokenReceiverAccount)
+	if msg.CrosschainFeeReceiver == "" {
+		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.CrosschainFeeReceiver)
 	}
 	return nil
 }
 
 // GetSignBytes encodes the message for signing
-func (msg MsgUpdateNativeTokenReceiverAccount) GetSignBytes() []byte {
+func (msg MsgUpdateCrossChainFeeReceiverAccount) GetSignBytes() []byte {
 	b, err := json.Marshal(msg)
 	if err != nil {
 		panic(err)
@@ -258,7 +258,7 @@ func (msg MsgUpdateNativeTokenReceiverAccount) GetSignBytes() []byte {
 }
 
 // GetSigners defines whose signature is required
-func (msg MsgUpdateNativeTokenReceiverAccount) GetSigners() []sdk.AccAddress {
+func (msg MsgUpdateCrossChainFeeReceiverAccount) GetSigners() []sdk.AccAddress {
 	cosmosSender, err := sdk.AccAddressFromBech32(msg.CosmosSender)
 	if err != nil {
 		panic(err)
@@ -267,24 +267,24 @@ func (msg MsgUpdateNativeTokenReceiverAccount) GetSigners() []sdk.AccAddress {
 	return []sdk.AccAddress{cosmosSender}
 }
 
-// NewMsgRescueNativeToken is a constructor function for NewMsgRescueNativeToken
-func NewMsgRescueNativeToken(cosmosSender sdk.AccAddress, cosmosReceiver sdk.AccAddress, nativeToken string, nativeTokenAmount sdk.Int) MsgRescueNativeToken {
-	return MsgRescueNativeToken{
-		CosmosSender:      cosmosSender.String(),
-		CosmosReceiver:    cosmosReceiver.String(),
-		NativeTokenSymbol: nativeToken,
-		NativeTokenAmount: nativeTokenAmount,
+// NewMsgRescueCrossChainFee is a constructor function for NewMsgRescueCrossChainFee
+func NewMsgRescueCrossChainFee(cosmosSender sdk.AccAddress, cosmosReceiver sdk.AccAddress, crosschainFeeSymbol string, crosschainFeeAmount sdk.Int) MsgRescueCrossChainFee {
+	return MsgRescueCrossChainFee{
+		CosmosSender:        cosmosSender.String(),
+		CosmosReceiver:      cosmosReceiver.String(),
+		CrosschainFeeSymbol: crosschainFeeSymbol,
+		CrosschainFeeAmount: crosschainFeeAmount,
 	}
 }
 
 // Route should return the name of the module
-func (msg MsgRescueNativeToken) Route() string { return RouterKey }
+func (msg MsgRescueCrossChainFee) Route() string { return RouterKey }
 
 // Type should return the action
-func (msg MsgRescueNativeToken) Type() string { return "rescue_native_token" }
+func (msg MsgRescueCrossChainFee) Type() string { return "rescue_crosschain_fee" }
 
 // ValidateBasic runs stateless checks on the message
-func (msg MsgRescueNativeToken) ValidateBasic() error {
+func (msg MsgRescueCrossChainFee) ValidateBasic() error {
 	if msg.CosmosSender == "" {
 		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.CosmosSender)
 	}
@@ -297,7 +297,7 @@ func (msg MsgRescueNativeToken) ValidateBasic() error {
 }
 
 // GetSignBytes encodes the message for signing
-func (msg MsgRescueNativeToken) GetSignBytes() []byte {
+func (msg MsgRescueCrossChainFee) GetSignBytes() []byte {
 	b, err := json.Marshal(msg)
 	if err != nil {
 		panic(err)
@@ -307,7 +307,7 @@ func (msg MsgRescueNativeToken) GetSignBytes() []byte {
 }
 
 // GetSigners defines whose signature is required
-func (msg MsgRescueNativeToken) GetSigners() []sdk.AccAddress {
+func (msg MsgRescueCrossChainFee) GetSigners() []sdk.AccAddress {
 	cosmosSender, err := sdk.AccAddressFromBech32(msg.CosmosSender)
 	if err != nil {
 		panic(err)
@@ -366,23 +366,23 @@ func (msg MsgUpdateWhiteListValidator) GetSigners() []sdk.AccAddress {
 	return []sdk.AccAddress{cosmosSender}
 }
 
-// NewMsgSetNativeToken is a constructor function for MsgSetNativeToken
-func NewMsgSetNativeToken(cosmosSender sdk.AccAddress, networkDescriptor oracletypes.NetworkDescriptor, nativeToken string) MsgSetNativeToken {
-	return MsgSetNativeToken{
+// NewMsgSetFeeInfo is a constructor function for MsgSetFeeInfo
+func NewMsgSetFeeInfo(cosmosSender sdk.AccAddress, networkDescriptor oracletypes.NetworkDescriptor, feeCurrency string) MsgSetFeeInfo {
+	return MsgSetFeeInfo{
 		CosmosSender:      cosmosSender.String(),
 		NetworkDescriptor: networkDescriptor,
-		NativeToken:       nativeToken,
+		FeeCurrency:       feeCurrency,
 	}
 }
 
 // Route should return the name of the module
-func (msg MsgSetNativeToken) Route() string { return RouterKey }
+func (msg MsgSetFeeInfo) Route() string { return RouterKey }
 
 // Type should return the action
-func (msg MsgSetNativeToken) Type() string { return "set_native_token" }
+func (msg MsgSetFeeInfo) Type() string { return "set_crosschain_fee_info" }
 
 // ValidateBasic runs stateless checks on the message
-func (msg MsgSetNativeToken) ValidateBasic() error {
+func (msg MsgSetFeeInfo) ValidateBasic() error {
 	if msg.CosmosSender == "" {
 		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.CosmosSender)
 	}
@@ -395,7 +395,7 @@ func (msg MsgSetNativeToken) ValidateBasic() error {
 }
 
 // GetSignBytes encodes the message for signing
-func (msg MsgSetNativeToken) GetSignBytes() []byte {
+func (msg MsgSetFeeInfo) GetSignBytes() []byte {
 	b, err := json.Marshal(msg)
 	if err != nil {
 		panic(err)
@@ -405,7 +405,7 @@ func (msg MsgSetNativeToken) GetSignBytes() []byte {
 }
 
 // GetSigners defines whose signature is required
-func (msg MsgSetNativeToken) GetSigners() []sdk.AccAddress {
+func (msg MsgSetFeeInfo) GetSigners() []sdk.AccAddress {
 	cosmosSender, err := sdk.AccAddressFromBech32(msg.CosmosSender)
 	if err != nil {
 		panic(err)

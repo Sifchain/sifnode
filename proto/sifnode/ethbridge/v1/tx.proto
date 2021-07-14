@@ -15,11 +15,11 @@ service Msg {
       returns (MsgCreateEthBridgeClaimResponse);
   rpc UpdateWhiteListValidator(MsgUpdateWhiteListValidator)
       returns (MsgUpdateWhiteListValidatorResponse);
-  rpc UpdateNativeTokenReceiverAccount(MsgUpdateNativeTokenReceiverAccount)
-      returns (MsgUpdateNativeTokenReceiverAccountResponse);
-  rpc RescueNativeToken(MsgRescueNativeToken)
-      returns (MsgRescueNativeTokenResponse);
-  rpc SetNativeToken(MsgSetNativeToken) returns (MsgSetNativeTokenResponse);
+  rpc UpdateCrossChainFeeReceiverAccount(MsgUpdateCrossChainFeeReceiverAccount)
+      returns (MsgUpdateCrossChainFeeReceiverAccountResponse);
+  rpc RescueCrossChainFee(MsgRescueCrossChainFee)
+      returns (MsgRescueCrossChainFeeResponse);
+  rpc SetFeeInfo(MsgSetFeeInfo) returns (MsgSetFeeInfoResponse);
 }
 
 // MsgLock defines a message for locking coins and triggering a related event
@@ -35,10 +35,10 @@ message MsgLock {
       [ (gogoproto.moretags) = "yaml:\"network_descriptor\"" ];
   string ethereum_receiver = 5
       [ (gogoproto.moretags) = "yaml:\"ethereum_receiver\"" ];
-  string native_token_amount = 6 [
+  string crosschain_fee_amount = 6 [
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
     (gogoproto.nullable) = false,
-    (gogoproto.moretags) = "yaml:\"native_token_amount\""
+    (gogoproto.moretags) = "yaml:\"crosschain_fee_amount\""
   ];
 }
 
@@ -57,10 +57,10 @@ message MsgBurn {
       [ (gogoproto.moretags) = "yaml:\"network_descriptor\"" ];
   string ethereum_receiver = 5
       [ (gogoproto.moretags) = "yaml:\"ethereum_receiver\"" ];
-  string native_token_amount = 6 [
+  string crosschain_fee_amount = 6 [
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
     (gogoproto.nullable) = false,
-    (gogoproto.moretags) = "yaml:\"native_token_amount\""
+    (gogoproto.moretags) = "yaml:\"crosschain_fee_amount\""
   ];
 }
 
@@ -84,34 +84,34 @@ message MsgUpdateWhiteListValidator {
 
 message MsgUpdateWhiteListValidatorResponse {}
 
-message MsgUpdateNativeTokenReceiverAccount {
+message MsgUpdateCrossChainFeeReceiverAccount {
   string cosmos_sender = 1;
-  string native_token_receiver_account = 2;
+  string crosschain_fee_receiver = 2;
 }
 
-message MsgUpdateNativeTokenReceiverAccountResponse {}
+message MsgUpdateCrossChainFeeReceiverAccountResponse {}
 
-message MsgRescueNativeToken {
+message MsgRescueCrossChainFee {
   string cosmos_sender = 1;
   string cosmos_receiver = 2;
-  string native_token_symbol = 3;
-  string native_token_amount = 4 [
+  string crosschain_fee_symbol = 3;
+  string crosschain_fee_amount = 4 [
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
     (gogoproto.nullable) = false
   ];
 }
 
-message MsgRescueNativeTokenResponse {}
+message MsgRescueCrossChainFeeResponse {}
 
-message MsgSetNativeToken {
+message MsgSetFeeInfo {
   string cosmos_sender = 1;
   sifnode.oracle.v1.NetworkDescriptor network_descriptor = 2
       [ (gogoproto.moretags) = "yaml:\"network_descriptor\"" ];
-  string native_token = 3;
-  string native_gas = 4 [
+  string fee_currency = 3;
+  string fee_currency_gas = 4 [
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
     (gogoproto.nullable) = false,
-    (gogoproto.moretags) = "yaml:\"native_gas\""
+    (gogoproto.moretags) = "yaml:\"fee_currency_gas\""
   ];
   string minimum_lock_cost = 5 [
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
@@ -125,4 +125,4 @@ message MsgSetNativeToken {
   ];
 }
 
-message MsgSetNativeTokenResponse {}
+message MsgSetFeeInfoResponse {}
