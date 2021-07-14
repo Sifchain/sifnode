@@ -51,12 +51,14 @@ type CosmosSub struct {
 
 // NewCosmosSub initializes a new CosmosSub
 func NewCosmosSub(tmProvider, ethProvider string, registryContractAddress common.Address,
-	privateKey *ecdsa.PrivateKey, db *leveldb.DB, sugaredLogger *zap.SugaredLogger) CosmosSub {
+	key *ecdsa.PrivateKey,
+	db *leveldb.DB, sugaredLogger *zap.SugaredLogger) CosmosSub {
+
 	return CosmosSub{
 		TmProvider:              tmProvider,
 		EthProvider:             ethProvider,
 		RegistryContractAddress: registryContractAddress,
-		PrivateKey:              privateKey,
+		PrivateKey:              key,
 		DB:                      db,
 		SugaredLogger:           sugaredLogger,
 	}
@@ -144,7 +146,9 @@ func (sub CosmosSub) Start(completionEvent *sync.WaitGroup) {
 
 			for blockNumber := startBlockHeight; blockNumber <= blockHeight; {
 				tmpBlockNumber := blockNumber
-				block, err := client.BlockResults(&tmpBlockNumber)
+
+				ctx := context.Background()
+				block, err := client.BlockResults(ctx, &tmpBlockNumber)
 
 				if err != nil {
 					sub.SugaredLogger.Errorw("sifchain client failed to get a block.",
@@ -152,8 +156,8 @@ func (sub CosmosSub) Start(completionEvent *sync.WaitGroup) {
 					continue
 				}
 
-				for _, log := range block.TxsResults {
-					for _, event := range log.Events {
+				for _, txLog := range block.TxsResults {
+					for _, event := range txLog.Events {
 
 						claimType := getOracleClaimType(event.GetType())
 
@@ -319,7 +323,10 @@ func (sub CosmosSub) Replay(fromBlock int64, toBlock int64, ethFromBlock int64, 
 
 	for blockNumber := fromBlock; blockNumber < toBlock; {
 		tmpBlockNumber := blockNumber
-		block, err := client.BlockResults(&tmpBlockNumber)
+
+		ctx := context.Background()
+		block, err := client.BlockResults(ctx, &tmpBlockNumber)
+
 		blockNumber++
 		log.Printf("Replay start to process block %d\n", blockNumber)
 
@@ -392,16 +399,18 @@ func tryInitRelayConfig(sub CosmosSub, claimType types.Event) (*ethclient.Client
 }
 
 // Parses event data from the msg, event, builds a new ProphecyClaim, and relays it to Ethereum
-func (sub CosmosSub) handleBurnLockMsg(cosmosMsg types.CosmosMsg, claimType types.Event) {
+func (sub CosmosSub) handleBurnLockMsg(
+	cosmosMsg types.CosmosMsg,
+	claimType types.Event,
+) {
 	sub.SugaredLogger.Infow("handle burn lock message.",
 		"cosmosMessage", cosmosMsg.String())
 
-	prophecyClaim := txs.CosmosMsgToProphecyClaim(cosmosMsg)
+	sub.SugaredLogger.Infow(
+		"get the prophecy claim.",
+		"cosmosMsg", cosmosMsg,
+	)
 
-	sub.SugaredLogger.Infow("get the prophecy claim.",
-		"CosmosSender", prophecyClaim.CosmosSender,
-		"CosmosSenderSequence", prophecyClaim.CosmosSenderSequence)
-		
 	client, auth, target, err := tryInitRelayConfig(sub, claimType)
 	if err != nil {
 		sub.SugaredLogger.Errorw("failed in init relay config.",
@@ -419,9 +428,10 @@ func (sub CosmosSub) handleBurnLockMsg(cosmosMsg types.CosmosMsg, claimType type
 
 	maxRetries := 5
 	i := 0
+
 	for i < maxRetries {
 		err = txs.RelayProphecyClaimToEthereum(
-			prophecyClaim,
+			cosmosMsg,
 			sub.SugaredLogger,
 			client,
 			auth,

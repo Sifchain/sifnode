@@ -1,37 +1,47 @@
 package ethbridge
 
 import (
-	"github.com/Sifchain/sifnode/x/ethbridge/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	abci "github.com/tendermint/tendermint/abci/types"
+
+	"github.com/Sifchain/sifnode/x/ethbridge/keeper"
+	"github.com/Sifchain/sifnode/x/ethbridge/types"
 )
 
-// InitGenesis import genesis data from GenesisState
-func InitGenesis(ctx sdk.Context, keeper Keeper, data types.GenesisState) (res []abci.ValidatorUpdate) {
+func DefaultGenesis() *types.GenesisState {
+	return &types.GenesisState{}
+}
 
-	for _, token := range data.PeggyTokens {
-		keeper.AddPeggyToken(ctx, token)
+func InitGenesis(ctx sdk.Context, keeper keeper.Keeper, data types.GenesisState) (res []abci.ValidatorUpdate) {
+	// SetCethReceiverAccount
+	if data.CethReceiveAccount != "" {
+		receiveAccount, err := sdk.AccAddressFromBech32(data.CethReceiveAccount)
+		if err != nil {
+			panic(err)
+		}
+		keeper.SetCethReceiverAccount(ctx, receiveAccount)
 	}
 
-	if data.CethReceiverAccount != nil {
-		keeper.SetCethReceiverAccount(ctx, data.CethReceiverAccount)
+	// AddPeggyTokens
+	if data.PeggyTokens != nil {
+		for _, tokenStr := range data.PeggyTokens {
+			keeper.AddPeggyToken(ctx, tokenStr)
+		}
 	}
 
 	return []abci.ValidatorUpdate{}
 }
 
-// ExportGenesis export data into genesis
-func ExportGenesis(ctx sdk.Context, keeper Keeper) types.GenesisState {
-	tokens := keeper.GetPeggyToken(ctx)
-	cethReceiverAccount := keeper.GetCethReceiverAccount(ctx)
+func ExportGenesis(ctx sdk.Context, keeper keeper.Keeper) *types.GenesisState {
+	peggyTokens := keeper.GetPeggyToken(ctx)
+	receiveAccount := keeper.GetCethReceiverAccount(ctx)
 
-	return types.GenesisState{
-		PeggyTokens:         tokens,
-		CethReceiverAccount: cethReceiverAccount,
+	return &types.GenesisState{
+		PeggyTokens:        peggyTokens.Tokens,
+		CethReceiveAccount: receiveAccount.String(),
 	}
 }
 
-// ValidateGenesis validates the ethbridge genesis parameters
 func ValidateGenesis(data types.GenesisState) error {
 	return nil
 }

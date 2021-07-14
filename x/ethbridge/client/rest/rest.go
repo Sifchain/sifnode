@@ -6,9 +6,10 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/cosmos/cosmos-sdk/client/context"
+	"github.com/cosmos/cosmos-sdk/client"
+	"github.com/cosmos/cosmos-sdk/client/tx"
+
 	"github.com/cosmos/cosmos-sdk/types/rest"
-	"github.com/cosmos/cosmos-sdk/x/auth/client/utils"
 
 	"github.com/gorilla/mux"
 
@@ -52,21 +53,23 @@ type burnOrLockEthReq struct {
 }
 
 // RegisterRESTRoutes - Central function to define routes that get registered by the main application
-func RegisterRESTRoutes(cliCtx context.CLIContext, r *mux.Router, storeName string) {
+func RegisterRESTRoutes(cliCtx client.Context, r *mux.Router, storeName string) {
+	getProhechyRoute := fmt.Sprintf(
+		"/%s/prophecies/{%s}/{%s}/{%s}/{%s}/{%s}/{%s}",
+		storeName, restEthereumChainID, restBridgeContract, restNonce,
+		restSymbol, restTokenContract, restEthereumSender)
+
 	r.HandleFunc(fmt.Sprintf("/%s/prophecies", storeName), createClaimHandler(cliCtx)).Methods("POST")
-	r.HandleFunc(
-		fmt.Sprintf("/%s/prophecies/{%s}/{%s}/{%s}/{%s}/{%s}/{%s}",
-			storeName, restEthereumChainID, restBridgeContract, restNonce, restSymbol, restTokenContract, restEthereumSender),
-		getProphecyHandler(cliCtx, storeName)).Methods("GET")
+	r.HandleFunc(getProhechyRoute, getProphecyHandler(cliCtx, storeName)).Methods("GET")
 	r.HandleFunc(fmt.Sprintf("/%s/burn", storeName), burnOrLockHandler(cliCtx, "burn")).Methods("POST")
 	r.HandleFunc(fmt.Sprintf("/%s/lock", storeName), burnOrLockHandler(cliCtx, "lock")).Methods("POST")
 }
 
-func createClaimHandler(cliCtx context.CLIContext) http.HandlerFunc {
+func createClaimHandler(cliCtx client.Context) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var req createEthClaimReq
 
-		if !rest.ReadRESTReq(w, r, cliCtx.Codec, &req) {
+		if !rest.ReadRESTReq(w, r, cliCtx.LegacyAmino, &req) {
 			rest.WriteErrorResponse(w, http.StatusBadRequest, "failed to parse request")
 			return
 		}
@@ -93,16 +96,18 @@ func createClaimHandler(cliCtx context.CLIContext) http.HandlerFunc {
 			return
 		}
 
-		claimType, err := types.StringToClaimType(req.ClaimType)
-		if err != nil {
+		claimType, exist := types.ClaimType_value[req.ClaimType]
+		if !exist {
 			rest.WriteErrorResponse(w, http.StatusBadRequest, types.ErrInvalidClaimType.Error())
 			return
 		}
 
+		ct := types.ClaimType(claimType)
+
 		// create the message
 		ethBridgeClaim := types.NewEthBridgeClaim(
-			req.EthereumChainID, bridgeContractAddress, req.Nonce, req.Symbol,
-			tokenContractAddress, ethereumSender, cosmosReceiver, validator, req.Amount, claimType)
+			int64(req.EthereumChainID), bridgeContractAddress, int64(req.Nonce), req.Symbol,
+			tokenContractAddress, ethereumSender, cosmosReceiver, validator, req.Amount, ct)
 		msg := types.NewMsgCreateEthBridgeClaim(ethBridgeClaim)
 		err = msg.ValidateBasic()
 		if err != nil {
@@ -110,16 +115,16 @@ func createClaimHandler(cliCtx context.CLIContext) http.HandlerFunc {
 			return
 		}
 
-		utils.WriteGenerateStdTxResponse(w, cliCtx, baseReq, []sdk.Msg{msg})
+		tx.WriteGeneratedTxResponse(cliCtx, w, req.BaseReq, &msg)
 	}
 }
 
-func getProphecyHandler(cliCtx context.CLIContext, storeName string) http.HandlerFunc {
+func getProphecyHandler(cliCtx client.Context, storeName string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
 
-		ethereumChainID := vars[restEthereumChainID]
-		ethereumChainIDString, err := strconv.Atoi(ethereumChainID)
+		ethereumChainIDString := vars[restEthereumChainID]
+		ethereumChainID, err := strconv.ParseInt(ethereumChainIDString, 10, 64)
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusInternalServerError, err.Error())
 			return
@@ -128,7 +133,7 @@ func getProphecyHandler(cliCtx context.CLIContext, storeName string) http.Handle
 		bridgeContract := types.NewEthereumAddress(vars[restBridgeContract])
 
 		nonce := vars[restNonce]
-		nonceString, err := strconv.Atoi(nonce)
+		nonceString, err := strconv.ParseInt(nonce, 10, 64)
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusInternalServerError, err.Error())
 			return
@@ -144,9 +149,9 @@ func getProphecyHandler(cliCtx context.CLIContext, storeName string) http.Handle
 
 		ethereumSender := types.NewEthereumAddress(vars[restEthereumSender])
 
-		bz, err := cliCtx.Codec.MarshalJSON(
-			types.NewQueryEthProphecyParams(
-				ethereumChainIDString, bridgeContract, nonceString, symbol, tokenContract, ethereumSender))
+		bz, err := cliCtx.LegacyAmino.MarshalJSON(
+			types.NewQueryEthProphecyRequest(
+				ethereumChainID, bridgeContract, nonceString, symbol, tokenContract, ethereumSender))
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusNotFound, err.Error())
 			return
@@ -163,11 +168,11 @@ func getProphecyHandler(cliCtx context.CLIContext, storeName string) http.Handle
 	}
 }
 
-func burnOrLockHandler(cliCtx context.CLIContext, lockOrBurn string) http.HandlerFunc {
+func burnOrLockHandler(cliCtx client.Context, lockOrBurn string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var req burnOrLockEthReq
 
-		if !rest.ReadRESTReq(w, r, cliCtx.Codec, &req) {
+		if !rest.ReadRESTReq(w, r, cliCtx.LegacyAmino, &req) {
 			rest.WriteErrorResponse(w, http.StatusBadRequest, "failed to parse request")
 			return
 		}
@@ -195,9 +200,11 @@ func burnOrLockHandler(cliCtx context.CLIContext, lockOrBurn string) http.Handle
 		var msg sdk.Msg
 		switch lockOrBurn {
 		case "lock":
-			msg = types.NewMsgLock(ethereumChainID, cosmosSender, ethereumReceiver, req.Amount, req.Symbol, req.CethAmount)
+			msgLock := types.NewMsgLock(int64(ethereumChainID), cosmosSender, ethereumReceiver, req.Amount, req.Symbol, req.CethAmount)
+			msg = &msgLock
 		case "burn":
-			msg = types.NewMsgBurn(ethereumChainID, cosmosSender, ethereumReceiver, req.Amount, req.Symbol, req.CethAmount)
+			msgBurn := types.NewMsgBurn(int64(ethereumChainID), cosmosSender, ethereumReceiver, req.Amount, req.Symbol, req.CethAmount)
+			msg = &msgBurn
 		}
 		err = msg.ValidateBasic()
 		if err != nil {
@@ -205,6 +212,6 @@ func burnOrLockHandler(cliCtx context.CLIContext, lockOrBurn string) http.Handle
 			return
 		}
 
-		utils.WriteGenerateStdTxResponse(w, cliCtx, baseReq, []sdk.Msg{msg})
+		tx.WriteGeneratedTxResponse(cliCtx, w, req.BaseReq, msg)
 	}
 }

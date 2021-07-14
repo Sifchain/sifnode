@@ -2,25 +2,27 @@ package types
 
 import (
 	"github.com/cosmos/cosmos-sdk/codec"
+	cryptocodec "github.com/cosmos/cosmos-sdk/crypto/codec"
 )
 
-// RegisterCodec registers concrete types on the Amino codec
-func RegisterCodec(cdc *codec.Codec) {
-	cdc.RegisterConcrete(MsgCreateEthBridgeClaim{}, "ethbridge/MsgCreateEthBridgeClaim", nil)
-	cdc.RegisterConcrete(MsgBurn{}, "ethbridge/MsgBurn", nil)
-	cdc.RegisterConcrete(MsgLock{}, "ethbridge/MsgLock", nil)
-	cdc.RegisterConcrete(MsgUpdateWhiteListValidator{}, "ethbridge/MsgUpdateWhiteListValidator", nil)
-	cdc.RegisterConcrete(MsgUpdateCethReceiverAccount{}, "ethbridge/MsgUpdateCethReceiverAccount", nil)
-	cdc.RegisterConcrete(MsgRescueCeth{}, "ethbridge/MsgRescueCeth", nil)
+// RegisterLegacyAminoCodec registers concrete types on the Amino codec
+func RegisterLegacyAminoCodec(cdc *codec.LegacyAmino) {
+	cdc.RegisterConcrete(&MsgCreateEthBridgeClaim{}, "ethbridge/MsgCreateEthBridgeClaim", nil)
+	cdc.RegisterConcrete(&MsgBurn{}, "ethbridge/MsgBurn", nil)
+	cdc.RegisterConcrete(&MsgLock{}, "ethbridge/MsgLock", nil)
+	cdc.RegisterConcrete(&MsgUpdateWhiteListValidator{}, "ethbridge/MsgUpdateWhiteListValidator", nil)
+	cdc.RegisterConcrete(&MsgUpdateCethReceiverAccount{}, "ethbridge/MsgUpdateCethReceiverAccount", nil)
+	cdc.RegisterConcrete(&MsgRescueCeth{}, "ethbridge/MsgRescueCeth", nil)
 
 }
 
-// ModuleCdc defines the module codec
-var ModuleCdc *codec.Codec
+var (
+	amino     = codec.NewLegacyAmino()
+	ModuleCdc = codec.NewAminoCodec(amino)
+)
 
 func init() {
-	ModuleCdc = codec.New()
-	RegisterCodec(ModuleCdc)
-	codec.RegisterCrypto(ModuleCdc)
-	ModuleCdc.Seal()
+	RegisterLegacyAminoCodec(amino)
+	cryptocodec.RegisterCrypto(amino)
+	amino.Seal()
 }

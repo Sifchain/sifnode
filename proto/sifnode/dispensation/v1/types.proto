@@ -1,0 +1,72 @@
+syntax = "proto3";
+package sifnode.dispensation.v1;
+
+import "gogoproto/gogo.proto";
+import "cosmos/base/coin.proto";
+
+option go_package = "github.com/Sifchain/sifnode/x/dispensation/types";
+
+message GenesisState {
+  DistributionRecords distribution_records = 1;
+  Distributions distributions = 2;
+  UserClaims claims = 3;
+}
+
+// Distribution type enum
+enum DistributionType {
+  // Unspecified distribution type
+  DISTRIBUTION_TYPE_UNSPECIFIED = 0;
+  // Airdrop distribution type
+  DISTRIBUTION_TYPE_AIRDROP = 1;
+  // Validator Subsidy distribution type
+  DISTRIBUTION_TYPE_VALIDATOR_SUBSIDY = 2;
+  // Liquidity mining distribution type
+  DISTRIBUTION_TYPE_LIQUIDITY_MINING = 3;
+}
+
+// Claim status enum
+enum DistributionStatus {
+  // Unspecified
+  DISTRIBUTION_STATUS_UNSPECIFIED = 0;
+  // Pending status
+  DISTRIBUTION_STATUS_PENDING = 1;
+  // Completed status
+  DISTRIBUTION_STATUS_COMPLETED = 2;
+  // Failed status
+  DISTRIBUTION_STATUS_FAILED = 3;
+}
+
+message DistributionRecord {
+  DistributionStatus distribution_status = 1;
+  DistributionType distribution_type = 2;
+  string distribution_name = 3;
+  string recipient_address = 4;
+  repeated cosmos.base.v1beta1.Coin coins = 5 [
+    (gogoproto.nullable) = false,
+    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins",
+    (gogoproto.moretags) = "yaml:\"coins\""
+  ];
+  int64 distribution_start_height = 6;
+  int64 distribution_completed_height = 7;
+  string authorized_runner = 8;
+}
+
+message DistributionRecords {
+  repeated DistributionRecord distribution_records = 1;
+}
+
+message Distributions { repeated Distribution distributions = 1; }
+
+message Distribution {
+  DistributionType distribution_type = 1;
+  string distribution_name = 2;
+  string runner = 3;
+}
+
+message UserClaim {
+  string user_address = 1;
+  DistributionType user_claim_type = 2;
+  string user_claim_time = 3 [(gogoproto.customtype) = "github.com/gogo/protobuf/types.Timestamp"];
+}
+
+message UserClaims { repeated UserClaim user_claims = 1; }

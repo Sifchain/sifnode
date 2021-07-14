@@ -5,10 +5,8 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/cosmos/cosmos-sdk/codec"
+	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-
-	"github.com/Sifchain/sifnode/x/oracle"
 )
 
 const (
@@ -47,7 +45,7 @@ func CreateTestEthMsg(t *testing.T, validatorAddress sdk.ValAddress, claimType C
 func CreateTestEthClaim(
 	t *testing.T, testContractAddress EthereumAddress, testTokenAddress EthereumAddress,
 	validatorAddress sdk.ValAddress, testEthereumAddress EthereumAddress, amount sdk.Int, symbol string, claimType ClaimType,
-) EthBridgeClaim {
+) *EthBridgeClaim {
 	testCosmosAddress, err1 := sdk.AccAddressFromBech32(TestAddress)
 	require.NoError(t, err1)
 	ethClaim := NewEthBridgeClaim(
@@ -72,20 +70,19 @@ func CreateTestLockMsg(t *testing.T, testCosmosSender string, ethereumReceiver E
 	return lockEth
 }
 
-func CreateTestQueryEthProphecyResponse(
-	cdc *codec.Codec, t *testing.T, validatorAddress sdk.ValAddress, claimType ClaimType,
+func CreateTestQueryEthProphecyResponse(t *testing.T, validatorAddress sdk.ValAddress, claimType ClaimType,
 ) QueryEthProphecyResponse {
 	testEthereumAddress := NewEthereumAddress(TestEthereumAddress)
 	testContractAddress := NewEthereumAddress(TestBridgeContractAddress)
 	testTokenAddress := NewEthereumAddress(TestTokenContractAddress)
 	ethBridgeClaim := CreateTestEthClaim(t, testContractAddress, testTokenAddress, validatorAddress,
 		testEthereumAddress, TestCoinsAmount, TestCoinsSymbol, claimType)
-	oracleClaim, _ := CreateOracleClaimFromEthClaim(cdc, ethBridgeClaim)
-	ethBridgeClaims := []EthBridgeClaim{ethBridgeClaim}
+	oracleClaim, _ := CreateOracleClaimFromEthClaim(ethBridgeClaim)
+	ethBridgeClaims := []*EthBridgeClaim{ethBridgeClaim}
 
 	return NewQueryEthProphecyResponse(
-		oracleClaim.ID,
-		oracle.NewStatus(oracle.PendingStatusText, ""),
+		oracleClaim.Id,
+		oracletypes.NewStatus(oracletypes.StatusText_STATUS_TEXT_PENDING, ""),
 		ethBridgeClaims,
 	)
 }
@@ -108,4 +105,12 @@ func CreateTestRescueCethMsg(t *testing.T, testCosmosSender string, testCethRece
 
 	MsgRescueCeth := NewMsgRescueCeth(accAddress1, accAddress2, cethAmount)
 	return MsgRescueCeth
+}
+
+func CreateTestUpdateWhiteListValidatorMsg(_ *testing.T, sender string, validator string, operation string) MsgUpdateWhiteListValidator {
+	return MsgUpdateWhiteListValidator{
+		CosmosSender:  sender,
+		Validator:     validator,
+		OperationType: operation,
+	}
 }

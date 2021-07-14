@@ -27,6 +27,7 @@ wait_for_rpc
 
 echo TEST_INTEGRATION_DIR is $TEST_INTEGRATION_DIR
 USER1ADDR=nothing python3 $TEST_INTEGRATION_PY_DIR/wait_for_sif_account.py $NETDEF_JSON $VALIDATOR1_ADDR
+sleep 10
 
 echo ETHEREUM_WEBSOCKET_ADDRESS $ETHEREUM_WEBSOCKET_ADDRESS
 echo BRIDGE_REGISTRY_ADDRESS $BRIDGE_REGISTRY_ADDRESS
@@ -40,11 +41,17 @@ else
   runner="dlv exec $GOBIN/ebrelayer -- "
 fi
 
-ETHEREUM_PRIVATE_KEY=$EBRELAYER_ETHEREUM_PRIVATE_KEY $runner init tcp://0.0.0.0:26657 "$ETHEREUM_WEBSOCKET_ADDRESS" \
+TCP_URL=tcp://0.0.0.0:26657
+
+yes | sifnoded keys delete $MONIKER --keyring-backend test || true
+echo $MNEMONIC | sifnoded keys add $MONIKER --keyring-backend test --recover
+
+ETHEREUM_PRIVATE_KEY=$EBRELAYER_ETHEREUM_PRIVATE_KEY $runner init $TCP_URL "$ETHEREUM_WEBSOCKET_ADDRESS" \
   "$BRIDGE_REGISTRY_ADDRESS" \
   "$MONIKER" \
   "$MNEMONIC" \
-  --chain-id "$CHAINNET" \
-  --home $CHAINDIR/.sifnodecli \
-  --gas 5000000000000 \
-  --gas-prices 0.5rowan
+  --chain-id $CHAINNET \
+  --node $TCP_URL \
+  --keyring-backend test \
+  --from $MONIKER \
+  # --home $CHAINDIR/.sifnoded \

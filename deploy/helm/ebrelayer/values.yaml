@@ -5,14 +5,31 @@ nameOverride: ""
 fullnameOverride: ""
 
 serviceAccount:
-  create: true
+  #create: true
   annotations: {}
-  name: ""
+  name: "-=app_name=-"
 
-podAnnotations: {}
+podAnnotations:
+  vault.hashicorp.com/agent-inject: "true"
+  vault.hashicorp.com/agent-inject-status: "update"
+  vault.hashicorp.com/agent-inject-secret--=app_name=-: "kv-v2/-=region=-/-=env=-/-=app_name=-"
+  vault.hashicorp.com/ca-cert: "/run/secrets/kubernetes.io/serviceaccount/ca.crt"
+  vault.hashicorp.com/role: -=app_name=-
+  vault.hashicorp.com/tls-skip-verify: "true"
+  vault.hashicorp.com/agent-inject-template--=app_name=-: |
+    {{- with secret "kv-v2/-=region=-/-=env=-/-=app_name=-" -}}
+    export chainnet={{ .Data.data.chainnet }}
+    export ethBridgeRegistryAddress={{ .Data.data.ethBridgeRegistryAddress }}
+    export ETHEREUM_PRIVATE_KEY={{ .Data.data.ethPrivateKey }}
+    export ethWebsocketAddress={{ .Data.data.ethWebsocketAddress }}
+    export gas={{ .Data.data.gas }}
+    export gasPrices={{ .Data.data.gasPrices }}
+    export mnemonic="{{ .Data.data.mnemonic }}"
+    export moniker={{ .Data.data.moniker }}
+    export nodeHost={{ .Data.data.nodeHost }}
+    {{- end }}
 
 podSecurityContext: {}
-
 securityContext: {}
 
 image:
@@ -21,17 +38,8 @@ image:
   tag: "testnet"
 
 ebrelayer:
-  args:
-    nodeHost: ""
-    ethWebsocketAddress: ""
-    ethBridgeRegistryAddress: ""
-    mnemonic: ""
-    gas: "5000000000000"
-    gasPrices: "0.5rowan"
   env:
-    chainnet: ""
-    moniker: ""
-    ethPrivateKey: ""
+    updateforce: "force_update_change_this"
 
 persistence:
   enabled: true
@@ -42,7 +50,7 @@ ingress:
   enabled: false
   annotations: {}
   hosts:
-    - host: ebrelayer.local
+    - host: -=app_name=-.local
       paths: []
   tls: []
 

@@ -92,15 +92,15 @@ def test_bulk_transfers(
         test_utilities.advance_n_ethereum_blocks(test_utilities.n_wait_blocks, smart_contracts_dir)
     test_utilities.wait_for_ethereum_block_number(yarn_result["blockNumber"] + test_utilities.n_wait_blocks, basic_transfer_request);
     for a in new_addresses:
-        test_utilities.wait_for_sif_account(a, basic_transfer_request.sifnodecli_node, 90)
-        test_utilities.wait_for_sifchain_addr_balance(a, "ceth", amount, basic_transfer_request.sifnodecli_node, 180)
-        test_utilities.wait_for_sifchain_addr_balance(a, "rowan", amount, basic_transfer_request.sifnodecli_node, 180)
+        test_utilities.wait_for_sif_account(a, basic_transfer_request.sifnoded_node, 90)
+        test_utilities.wait_for_sifchain_addr_balance(a, "ceth", amount, basic_transfer_request.sifnoded_node, 180)
+        test_utilities.wait_for_sifchain_addr_balance(a, "rowan", amount, basic_transfer_request.sifnoded_node, 180)
     text_file = open("pfile.cmds", "w")
     simple_credentials = SifchaincliCredentials(
         keyring_passphrase=None,
         keyring_backend="test",
         from_key=None,
-        sifnodecli_homedir=None
+        sifnoded_homedir=None
     )
     logging.info(f"all accounts are on sifchain and have the correct balance")
     for sifaddr, ethaddr in zip(new_addresses_and_keys, new_eth_addrs):

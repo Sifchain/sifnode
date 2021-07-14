@@ -94,7 +94,7 @@
 
 - Check local wallet to verify keys 
 ```shell
-sifnodecli keys list --keyring-backend file
+sifnoded keys list --keyring-backend file
 ```
 Sample output ( address will be different )
 ```json
@@ -112,7 +112,7 @@ Amara wants to create an Airdrop which will be executed by Zane. The create tran
 
 Amara can assign Zane `sif1l7hypmqk2yc334vc6vmdwzp5sdefygj2ad93p5` to be the authorized runner during the create transactions
 ```shell
-sifnodecli tx dispensation create Airdrop output.json sif1l7hypmqk2yc334vc6vmdwzp5sdefygj2ad93p5 --from sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd --yes --gas auto --gas-adjustment=1.5 --gas-prices 1.0rowan
+sifnoded tx dispensation create Airdrop output.json sif1l7hypmqk2yc334vc6vmdwzp5sdefygj2ad93p5 --from sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd --yes --gas auto --gas-adjustment=1.5 --gas-prices 1.0rowan
 ```
 Sample output
 ```json
@@ -127,7 +127,7 @@ Sample output
 Zane can now run the dispensation transactions (The configuration is set to distribute 10 rewards every block)
 Distribution name is automatically assigned to Height_DistributerAddress `2_sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd`
 ```shell
-sifnodecli tx dispensation run 2_sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd Airdrop --from sif1l7hypmqk2yc334vc6vmdwzp5sdefygj2ad93p5 --yes --gas auto --gas-adjustment=1.5 --gas-prices 1.0rowan
+sifnoded tx dispensation run 2_sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd Airdrop --from sif1l7hypmqk2yc334vc6vmdwzp5sdefygj2ad93p5 --yes --gas auto --gas-adjustment=1.5 --gas-prices 1.0rowan
 ```
 Sample output
 ```json

@@ -22,7 +22,7 @@ type CreateClaimReq struct {
 ### On friday we get a list of all the claims (After Cut-off time) for the week. Any claims submitted after cutoff would be processed next week.
 This query through the cli would look like
 ```shell
-sifnodecli q dispensation claims-by-type ValidatorSubsidy --chain-id sifchain --node tcp://rpc.sifchain.finance:80
+sifnoded q dispensation claims-by-type ValidatorSubsidy --chain-id sifchain --node tcp://rpc.sifchain.finance:80
 ```
 Which returns 
 ```json
@@ -93,9 +93,9 @@ The relevant event would be in the same block as the one which has the dispensat
 ### This file is then used to create and run a dispensation
 Create
 ```shell
-sifnodecli tx dispensation create ValidatorSubsidy output.json sif1l7hypmqk2yc334vc6vmdwzp5sdefygj2ad93p5 --from sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd --yes --gas auto --gas-adjustment=1.5 --gas-prices 1.0rowan
+sifnoded tx dispensation create ValidatorSubsidy output.json sif1l7hypmqk2yc334vc6vmdwzp5sdefygj2ad93p5 --from sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd --yes --gas auto --gas-adjustment=1.5 --gas-prices 1.0rowan
 ```
 Run
 ```shell
-sifnodecli tx dispensation run 2_sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd ValidatorSubsidy --from sif1l7hypmqk2yc334vc6vmdwzp5sdefygj2ad93p5 --yes --gas auto --gas-adjustment=1.5 --gas-prices 1.0rowan
+sifnoded tx dispensation run 2_sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd ValidatorSubsidy --from sif1l7hypmqk2yc334vc6vmdwzp5sdefygj2ad93p5 --yes --gas auto --gas-adjustment=1.5 --gas-prices 1.0rowan
 ```

@@ -12,7 +12,7 @@ import test_utilities
 from pytest_utilities import generate_test_account
 from integration_env_credentials import sifchain_cli_credentials_for_test
 from test_utilities import get_required_env_var, SifchaincliCredentials, get_optional_env_var, ganache_owner_account, \
-    get_shell_output_json, get_shell_output, detect_errors_in_sifnodecli_output, get_transaction_result, amount_in_wei
+    get_shell_output_json, get_shell_output, detect_errors_in_sifnoded_output, get_transaction_result, amount_in_wei
 
 # CODE TO GENERATE RANDOM STRING FOR DISPENSATION NAME AS DISPENSATION NAME IS A UNIQUE KEY
 def id_generator(size=6, chars=string.ascii_uppercase + string.digits):
@@ -33,7 +33,7 @@ def send_sample_rowan(from_address, to_address, amount, keyring_backend, chain_i
     keyring_backend_entry = f"--keyring-backend {keyring_backend}"
     output = 'output.json'
     cmd = " ".join([
-        "sifnodecli tx send",
+        "sifnoded tx send",
         f"{from_address}",
         f"{to_address}",
         f"{amount}",
@@ -51,7 +51,7 @@ def send_sample_rowan(from_address, to_address, amount, keyring_backend, chain_i
 # CODE TO QUERY BLOCK FOR NEW DISPENSATION TXN
 def query_block_claim(txnhash):
     cmd = " ".join([
-        "sifnodecli q tx",
+        "sifnoded q tx",
         f"{txnhash}",
         "--chain-id localnet",
         "-o json"
@@ -64,7 +64,7 @@ def query_block_claim(txnhash):
 def balance_check(address, currency):
     logging.debug(f"check_balance")
     cmd = " ".join([
-        "sifnodecli query account",
+        "sifnoded query account",
         f"{address}",
         f"-o json"
     ])
@@ -80,21 +80,21 @@ def create_online_singlekey_txn(
         claimType,
         signing_address,
         chain_id,
-        sifnodecli_node
+        sifnoded_node
 ):
     logging.debug(f"create_online_dispensation")
     sifchain_fees_entry = f"--gas auto"
     keyring_backend_entry = f"--keyring-backend test"
     output = 'output.json'
     cmd = " ".join([
-        "sifnodecli tx dispensation create",
+        "sifnoded tx dispensation create",
         f"{claimType}",
         output,
         sifchain_fees_entry,
         f"--fees 50000rowan",
         f"--from {signing_address}",
         f"--chain-id={chain_id}",
-        f"{sifnodecli_node}",
+        f"{sifnoded_node}",
         keyring_backend_entry,
         f"--yes -o json"
 
@@ -109,21 +109,21 @@ def create_online_singlekey_async_txn(
         claimType,
         signing_address,
         chain_id,
-        sifnodecli_node
+        sifnoded_node
 ):
     logging.debug(f"create_online_dispensation")
     sifchain_fees_entry = f"--gas auto"
     keyring_backend_entry = f"--keyring-backend test"
     output = 'output.json'
     cmd = " ".join([
-        "sifnodecli tx dispensation create",
+        "sifnoded tx dispensation create",
         f"{claimType}",
         output,
         sifchain_fees_entry,
         f"--fees 50000rowan",
         f"--from {signing_address}",
         f"--chain-id={chain_id}",
-        f"{sifnodecli_node}",
+        f"{sifnoded_node}",
         keyring_backend_entry,
         f"--broadcast-mode async",
         f"--yes -o json"
@@ -139,18 +139,18 @@ def create_offline_singlekey_txn(
         claimType,
         signing_address,
         chain_id,
-        sifnodecli_node
+        sifnoded_node
     ):
     logging.debug(f"create_unsigned_offline_dispensation_txn")
     sifchain_fees_entry = f"--gas auto"
     output = 'output.json'
     cmd = " ".join([
-        "sifnodecli tx dispensation create",
+        "sifnoded tx dispensation create",
         f"{claimType}",
         output,
         f"--from {signing_address}",
         f"--chain-id={chain_id}",
-        f"{sifnodecli_node}",
+        f"{sifnoded_node}",
         f"--fees 150000rowan",
         f"--generate-only", 
         f"--yes -o json"
@@ -164,7 +164,7 @@ def create_offline_singlekey_txn(
 def sign_txn(signingaddress, offlinetx):
     keyring_backend_entry = f"--keyring-backend test"
     cmd = " ".join([
-        "sifnodecli tx sign",
+        "sifnoded tx sign",
         f"--from {signingaddress}",
         f"{offlinetx}",
         keyring_backend_entry,
@@ -177,7 +177,7 @@ def sign_txn(signingaddress, offlinetx):
 #CODE TO BROADCAST SINGLE SIGNED TXN ON BLOCK
 def broadcast_txn(signedtx):
     cmd = " ".join([
-        "sifnodecli tx broadcast",
+        "sifnoded tx broadcast",
         f"{signedtx}",
         f"--yes -o json"
     ])
@@ -188,7 +188,7 @@ def broadcast_txn(signedtx):
 #CODE TO BROADCAST SINGLE SIGNED TXN ON BLOCK WITH AN ASYNC FLAG
 def broadcast_async_txn(signedtx):
     cmd = " ".join([
-        "sifnodecli tx broadcast",
+        "sifnoded tx broadcast",
         f"{signedtx}",
         f"--broadcast-mode async",
         f"--yes -o json"
@@ -202,14 +202,14 @@ def create_online_singlekey_txn_with_runner(
         runner_address,
         distributor_address,
         chain_id,
-        sifnodecli_node
+        sifnoded_node
 ):
     logging.debug(f"create_online_dispensation")
     sifchain_fees_entry = f"--gas auto"
     keyring_backend_entry = f"--keyring-backend test"
     output = 'output.json'
     cmd = " ".join([
-        "sifnodecli tx dispensation create",
+        "sifnoded tx dispensation create",
         f"{claimType}",
         output,
         runner_address,
@@ -217,7 +217,7 @@ def create_online_singlekey_txn_with_runner(
         f"--fees 150000rowan",
         f"--from {distributor_address}",
         f"--chain-id={chain_id}",
-        f"{sifnodecli_node}",
+        f"{sifnoded_node}",
         keyring_backend_entry,
         f"--yes -o json"
 
@@ -233,20 +233,20 @@ def create_offline_singlekey_txn_with_runner(
         runner_address,
         distributor_address,
         chain_id,
-        sifnodecli_node
+        sifnoded_node
     ):
     logging.debug(f"create_unsigned_offline_dispensation_txn")
     sifchain_fees_entry = f"--gas auto"
     keyring_backend_entry = f"--keyring-backend test"
     output = 'output.json'
     cmd = " ".join([
-        "sifnodecli tx dispensation create",
+        "sifnoded tx dispensation create",
         f"{claimType}",
         output,
         runner_address,
         f"--from {distributor_address}",
         f"--chain-id={chain_id}",
-        f"{sifnodecli_node}",
+        f"{sifnoded_node}",
         f"--fees 150000rowan",
         keyring_backend_entry,
         f"--generate-only", 
@@ -263,19 +263,19 @@ def run_dispensation(
         claimType,
         runner_address,
         chain_id,
-        sifnodecli_node
+        sifnoded_node
     ):
     logging.debug(f"RUN DISPENSATION CLI LOGGING")
     sifchain_fees_entry = f"--gas auto --gas-adjustment=1.5"
     keyring_backend_entry = f"--keyring-backend test"
     output = 'output.json'
     cmd = " ".join([
-        "sifnodecli tx dispensation run",
+        "sifnoded tx dispensation run",
         distribution_name,
         f"{claimType}",
         f"--from {runner_address}",
         f"--chain-id={chain_id}",
-        f"{sifnodecli_node}",
+        f"{sifnoded_node}",
         sifchain_fees_entry,
         f"--fees 200000rowan",
         keyring_backend_entry,
@@ -290,7 +290,7 @@ def run_dispensation(
 #CODE TO QUERY A NEW CLAIM 
 def query_created_claim(claimType):
     cmd = " ".join([
-        "sifnodecli q dispensation claims-by-type",
+        "sifnoded q dispensation claims-by-type",
         f"{claimType}",
         "--chain-id localnet",
         f"-o json"
@@ -304,18 +304,18 @@ def create_claim(
         claimType,
         keyring_backend,
         chain_id,
-        sifnodecli_node
+        sifnoded_node
     ):
     logging.debug(f"create_claim")
     keyring_backend_entry = f"--keyring-backend {keyring_backend}"     
     sifchain_fees_entry = f"--fees 100000rowan"
     cmd = " ".join([
-        "sifnodecli tx dispensation claim",
+        "sifnoded tx dispensation claim",
         f"{claimType}",
         f"--from {sifchain_address}",
         sifchain_fees_entry,
         f"--chain-id={chain_id}",
-        f"{sifnodecli_node}",
+        f"{sifnoded_node}",
         keyring_backend_entry,
         f"--yes -o json" 
         

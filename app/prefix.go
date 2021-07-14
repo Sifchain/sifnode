@@ -16,10 +16,12 @@ var (
 	ConsNodePubKeyPrefix   = AccountAddressPrefix + "valconspub"
 )
 
-func SetConfig() {
+func SetConfig(seal bool) {
 	config := sdk.GetConfig()
 	config.SetBech32PrefixForAccount(AccountAddressPrefix, AccountPubKeyPrefix)
 	config.SetBech32PrefixForValidator(ValidatorAddressPrefix, ValidatorPubKeyPrefix)
 	config.SetBech32PrefixForConsensusNode(ConsNodeAddressPrefix, ConsNodePubKeyPrefix)
-	config.Seal()
+	if seal {
+		config.Seal()
+	}
 }

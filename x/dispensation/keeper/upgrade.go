@@ -1,16 +1,18 @@
 package keeper
 
+/* TODO Update this for 42 branch.
+
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/cosmos/cosmos-sdk/x/upgrade"
+	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
 
 	"github.com/Sifchain/sifnode/x/dispensation/types"
 	"github.com/Sifchain/sifnode/x/dispensation/types/legacy"
 )
 
-func MigrateRecords(keeper Keeper) func(ctx sdk.Context, plan upgrade.Plan) {
+func MigrateRecords(keeper Keeper) func(ctx sdk.Context, plan upgradetypes.Plan) {
 	// Migrates distribution records, and distributions to new structure.
-	return func(ctx sdk.Context, plan upgrade.Plan) {
+	return func(ctx sdk.Context, plan upgradetypes.Plan) {
 		UpgradeDistributionRecords(ctx, keeper)
 		UpgradeDistributions(ctx, keeper)
 	}
@@ -64,16 +66,21 @@ func UpgradeDistributionRecords(ctx sdk.Context, keeper Keeper) {
 			DistributionStatus: types.DistributionStatus(dr.ClaimStatus),
 			DistributionName:   dr.DistributionName,
 			// All distributions so far have been Airdrops.
-			DistributionType:            types.Airdrop,
-			RecipientAddress:            dr.RecipientAddress,
+			DistributionType:            types.DistributionType_DISTRIBUTION_TYPE_AIRDROP,
+			RecipientAddress:            dr.RecipientAddress.String(),
 			Coins:                       dr.Coins,
 			DistributionStartHeight:     dr.DistributionStartHeight,
 			DistributionCompletedHeight: dr.DistributionCompletedHeight,
 		}
 
-		key := types.GetDistributionRecordKey(upgraded.DistributionName, upgraded.RecipientAddress.String(), upgraded.DistributionType.String())
+		key := types.GetDistributionRecordKey(
+			types.DistributionStatus(dr.ClaimStatus),
+			upgraded.DistributionName,
+			upgraded.RecipientAddress,
+			upgraded.DistributionType,
+		)
 		drKeysForDeletion = append(drKeysForDeletion, string(iterator.Key()))
-		drKeysForSetting[string(key)] = keeper.cdc.MustMarshalBinaryBare(upgraded)
+		drKeysForSetting[string(key)] = keeper.cdc.MustMarshalBinaryBare(&upgraded)
 	}
 
 	store := ctx.KVStore(keeper.storeKey)
@@ -85,3 +92,5 @@ func UpgradeDistributionRecords(ctx sdk.Context, keeper Keeper) {
 		store.Set([]byte(key), value)
 	}
 }
+
+*/

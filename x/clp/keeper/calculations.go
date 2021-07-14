@@ -3,9 +3,10 @@ package keeper
 import (
 	"fmt"
 
-	"github.com/Sifchain/sifnode/x/clp/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/errors"
+
+	"github.com/Sifchain/sifnode/x/clp/types"
 )
 
 //------------------------------------------------------------------------------------------------------------------

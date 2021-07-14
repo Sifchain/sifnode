@@ -2,17 +2,17 @@ package rest
 
 import (
 	"fmt"
-	"github.com/Sifchain/sifnode/x/clp/types"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	"net/http"
 
+	"github.com/cosmos/cosmos-sdk/client"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/cosmos-sdk/types/rest"
 	"github.com/gorilla/mux"
 
-	"github.com/cosmos/cosmos-sdk/client/context"
-	"github.com/cosmos/cosmos-sdk/types/rest"
+	"github.com/Sifchain/sifnode/x/clp/types"
 )
 
-func registerQueryRoutes(cliCtx context.CLIContext, r *mux.Router) {
+func registerQueryRoutes(cliCtx client.Context, r *mux.Router) {
 	r.HandleFunc(
 		"/clp/getPool",
 		getPoolHandler(cliCtx),
@@ -35,7 +35,7 @@ func registerQueryRoutes(cliCtx context.CLIContext, r *mux.Router) {
 	).Methods("GET")
 }
 
-func getPoolHandler(cliCtx context.CLIContext) http.HandlerFunc {
+func getPoolHandler(cliCtx client.Context) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		cliCtx, ok := rest.ParseQueryHeightOrReturnBadRequest(w, cliCtx, r)
 		if !ok {
@@ -44,10 +44,10 @@ func getPoolHandler(cliCtx context.CLIContext) http.HandlerFunc {
 		//Generate Router
 		route := fmt.Sprintf("custom/%s/%s", types.QuerierRoute, types.QueryPool)
 		//Generate Params
-		var params types.QueryReqGetPool
+		var params types.PoolReq
 		params.Symbol = r.URL.Query().Get("symbol")
 
-		bz, err := cliCtx.Codec.MarshalJSON(params)
+		bz, err := cliCtx.LegacyAmino.MarshalJSON(params)
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
 			return
@@ -63,7 +63,7 @@ func getPoolHandler(cliCtx context.CLIContext) http.HandlerFunc {
 	}
 }
 
-func getLiquidityProviderHandler(cliCtx context.CLIContext) http.HandlerFunc {
+func getLiquidityProviderHandler(cliCtx client.Context) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		cliCtx, ok := rest.ParseQueryHeightOrReturnBadRequest(w, cliCtx, r)
 		if !ok {
@@ -71,15 +71,15 @@ func getLiquidityProviderHandler(cliCtx context.CLIContext) http.HandlerFunc {
 		}
 
 		route := fmt.Sprintf("custom/%s/%s", types.QuerierRoute, types.QueryLiquidityProvider)
-		var params types.QueryReqLiquidityProvider
+		var params types.LiquidityProviderReq
 		params.Symbol = r.URL.Query().Get("symbol")
 		addressString := r.URL.Query().Get("lpAddress")
 		lpAddess, err := sdk.AccAddressFromBech32(addressString)
 		if err != nil {
 			return
 		}
-		params.LpAddress = lpAddess
-		bz, err := cliCtx.Codec.MarshalJSON(params)
+		params.LpAddress = lpAddess.String()
+		bz, err := cliCtx.LegacyAmino.MarshalJSON(params)
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
 			return
@@ -95,7 +95,7 @@ func getLiquidityProviderHandler(cliCtx context.CLIContext) http.HandlerFunc {
 	}
 }
 
-func getPoolsHandler(cliCtx context.CLIContext) http.HandlerFunc {
+func getPoolsHandler(cliCtx client.Context) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		cliCtx, ok := rest.ParseQueryHeightOrReturnBadRequest(w, cliCtx, r)
 		if !ok {
@@ -115,7 +115,7 @@ func getPoolsHandler(cliCtx context.CLIContext) http.HandlerFunc {
 	}
 }
 
-func getAssetsHandler(cliCtx context.CLIContext) http.HandlerFunc {
+func getAssetsHandler(cliCtx client.Context) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		cliCtx, ok := rest.ParseQueryHeightOrReturnBadRequest(w, cliCtx, r)
 		if !ok {
@@ -123,30 +123,34 @@ func getAssetsHandler(cliCtx context.CLIContext) http.HandlerFunc {
 		}
 
 		route := fmt.Sprintf("custom/%s/%s", types.QuerierRoute, types.QueryAssetList)
-		var params types.QueryReqGetAssetList
+		var params types.AssetListReq
 		addressString := r.URL.Query().Get("lpAddress")
+
 		lpAddess, err := sdk.AccAddressFromBech32(addressString)
 		if err != nil {
 			return
 		}
-		params.LpAddress = lpAddess
-		bz, err := cliCtx.Codec.MarshalJSON(params)
+
+		params.LpAddress = lpAddess.String()
+		bz, err := cliCtx.LegacyAmino.MarshalJSON(params)
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
 			return
 		}
+
 		res, height, err := cliCtx.QueryWithData(route, bz)
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusInternalServerError, err.Error())
 			return
 		}
+
 		cliCtx = cliCtx.WithHeight(height)
 		rest.PostProcessResponse(w, cliCtx, res)
 	}
 }
 
 //http://localhost:1317/clp/getLpList?symbol=catk
-func getLpListHandler(cliCtx context.CLIContext) http.HandlerFunc {
+func getLpListHandler(cliCtx client.Context) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		cliCtx, ok := rest.ParseQueryHeightOrReturnBadRequest(w, cliCtx, r)
 		if !ok {
@@ -154,14 +158,16 @@ func getLpListHandler(cliCtx context.CLIContext) http.HandlerFunc {
 		}
 
 		route := fmt.Sprintf("custom/%s/%s", types.QuerierRoute, types.QueryLPList)
-		var params types.QueryReqGetLiquidityProviderList
+		var params types.LiquidityProviderListReq
 		assetSymbol := r.URL.Query().Get("symbol")
 		params.Symbol = assetSymbol
-		bz, err := cliCtx.Codec.MarshalJSON(params)
+
+		bz, err := cliCtx.LegacyAmino.MarshalJSON(params)
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
 			return
 		}
+
 		res, height, err := cliCtx.QueryWithData(route, bz)
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusInternalServerError, err.Error())

@@ -1,21 +1,20 @@
 package keeper
 
 import (
-	"github.com/Sifchain/sifnode/x/oracle/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
+
+	"github.com/Sifchain/sifnode/x/oracle/types"
 )
 
 func (k Keeper) SetOracleWhiteList(ctx sdk.Context, validatorList []sdk.ValAddress) {
 	store := ctx.KVStore(k.storeKey)
 	key := types.WhiteListValidatorPrefix
-	bz := k.Cdc.MustMarshalBinaryBare(validatorList)
-	if bz == nil {
-		// empty arrays marshal to nil, and set panics on nil values, so an empty array must cause key deletion
-		store.Delete(key)
-		return
+	valList := make([]string, len(validatorList))
+	for i, entry := range validatorList {
+		valList[i] = entry.String()
 	}
-
-	store.Set(key, bz)
+	store.Set(key, k.cdc.MustMarshalBinaryBare(&stakingtypes.ValAddresses{Addresses: valList}))
 }
 
 func (k Keeper) ExistsOracleWhiteList(ctx sdk.Context) bool {
@@ -24,12 +23,23 @@ func (k Keeper) ExistsOracleWhiteList(ctx sdk.Context) bool {
 }
 
 //
-func (k Keeper) GetOracleWhiteList(ctx sdk.Context) (valList []sdk.ValAddress) {
+func (k Keeper) GetOracleWhiteList(ctx sdk.Context) []sdk.ValAddress {
 	store := ctx.KVStore(k.storeKey)
 	key := types.WhiteListValidatorPrefix
 	bz := store.Get(key)
-	k.Cdc.MustUnmarshalBinaryBare(bz, &valList)
-	return
+	valAddresses := &stakingtypes.ValAddresses{}
+	k.cdc.MustUnmarshalBinaryBare(bz, valAddresses)
+
+	vl := make([]sdk.ValAddress, len(valAddresses.Addresses))
+	for i, entry := range valAddresses.Addresses {
+		addr, err := sdk.ValAddressFromBech32(entry)
+		if err != nil {
+			panic(err)
+		}
+		vl[i] = addr
+	}
+
+	return vl
 }
 
 // ValidateAddress is a validator in whitelist
@@ -57,10 +67,12 @@ func (k Keeper) AddOracleWhiteList(ctx sdk.Context, validator sdk.ValAddress) {
 func (k Keeper) RemoveOracleWhiteList(ctx sdk.Context, validator sdk.ValAddress) {
 	valList := k.GetOracleWhiteList(ctx)
 
-	for index, item := range valList {
-		if validator.Equals(item) {
-			k.SetOracleWhiteList(ctx, append(valList[:index], valList[index+1]))
-			return
+	var updated []sdk.ValAddress
+	for _, addr := range valList {
+		if !validator.Equals(addr) {
+			updated = append(updated, addr)
 		}
 	}
+
+	k.SetOracleWhiteList(ctx, updated)
 }

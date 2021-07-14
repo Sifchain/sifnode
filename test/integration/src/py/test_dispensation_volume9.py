@@ -27,7 +27,7 @@
 #     from_address = 'sifnodeadmin'
 #     keyring_backend = 'test'
 #     chain_id = 'localnet'
-#     sifnodecli_node = 'tcp://127.0.0.1:1317'
+#     sifnoded_node = 'tcp://127.0.0.1:1317'
 #     amount = '100000000rowan'
 #     fee = '150000'
 #     currency = 'rowan'
@@ -101,7 +101,7 @@
 #     logging.info(f"one claiming address initial balance = {claiming_address_initial_balance}")
 #
 #     # CREATE DISPENSATION TXN; GET TXN HASH
-#     txhash = str((create_online_singlekey_txn_with_runner(claimType, runner_address, distributor_name, chain_id, sifnodecli_node)))
+#     txhash = str((create_online_singlekey_txn_with_runner(claimType, runner_address, distributor_name, chain_id, sifnoded_node)))
 #     logging.info(f"txn hash for creatng a dispensation = {txhash}")
 #     time.sleep(5)
 #
@@ -114,7 +114,7 @@
 #     logging.info(f"distribution_name = {distribution_name}, distribution_type = {distribution_type}")
 #
 #     # RUN DISPENSATION TXN; GET TXN HASH
-#     runtxnhash = run_dispensation(distribution_name, distribution_type, runner_address,chain_id,sifnodecli_node)
+#     runtxnhash = run_dispensation(distribution_name, distribution_type, runner_address,chain_id,sifnoded_node)
 #     logging.info(f"txn hash for running dispensation = {runtxnhash}")
 #     time.sleep(5)
 #

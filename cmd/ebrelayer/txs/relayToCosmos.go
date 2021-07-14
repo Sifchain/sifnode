@@ -3,107 +3,71 @@ package txs
 // DONTCOVER
 
 import (
-	"log"
-	"sync/atomic"
-
-	"github.com/Sifchain/sifnode/x/ethbridge"
 	"github.com/Sifchain/sifnode/x/ethbridge/types"
-	"github.com/cosmos/cosmos-sdk/client/context"
-	"github.com/cosmos/cosmos-sdk/codec"
-	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/cosmos/cosmos-sdk/x/auth/client/utils"
-	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
+	"github.com/cosmos/cosmos-sdk/client"
+	"github.com/cosmos/cosmos-sdk/client/tx"
 	"go.uber.org/zap"
+
+	// tx "github.com/cosmos/cosmos-sdk/client/tx"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 var (
-	nextSequenceNumber uint64 = 0
-	errorMessageKey           = "errorMessage"
+	errorMessageKey = "errorMessage"
 )
 
 // RelayToCosmos applies validator's signature to an EthBridgeClaim message containing
 // information about an event on the Ethereum blockchain before relaying to the Bridge
-func RelayToCosmos(cdc *codec.Codec, moniker, password string, claims []types.EthBridgeClaim, cliCtx context.CLIContext,
-	txBldr authtypes.TxBuilder, sugaredLogger *zap.SugaredLogger) error {
+func RelayToCosmos(factory tx.Factory, claims []*types.EthBridgeClaim, cliCtx client.Context, sugaredLogger *zap.SugaredLogger) error {
 	var messages []sdk.Msg
 
-	sugaredLogger.Infow("relay prophecies to cosmos.",
+	sugaredLogger.Infow(
+		"relay prophecies to cosmos.",
 		"claimAmount", len(claims),
-		"nextSequenceNumber", nextSequenceNumber)
+	)
 
 	for _, claim := range claims {
 		// Packages the claim as a Tendermint message
-		msg := ethbridge.NewMsgCreateEthBridgeClaim(claim)
+		msg := types.NewMsgCreateEthBridgeClaim(claim)
 
 		err := msg.ValidateBasic()
 		if err != nil {
-			sugaredLogger.Errorw("failed to get message from claim.",
-				errorMessageKey, err.Error())
+			sugaredLogger.Errorw(
+				"failed to get message from claim.",
+				"message", msg,
+				errorMessageKey, err.Error(),
+			)
 			continue
 		} else {
-			messages = append(messages, msg)
+			messages = append(messages, &msg)
 		}
 	}
 
-	// Prepare tx
-	txBldr, err := utils.PrepareTxBuilder(txBldr, cliCtx)
-	if err != nil {
-		sugaredLogger.Errorw("failed to get tx builder.",
-			errorMessageKey, err.Error(),
-			"transactionBuilder", txBldr)
-		return err
-	}
+	sugaredLogger.Infow("RelayToCosmos building, signing, and broadcasting", "messages", messages)
+	// TODO this WithGas isn't correct
+	// TODO we need to investigate retries
+	// TODO we need to investigate what happens when the transaction has already been completed
+	err := tx.BroadcastTx(
+		cliCtx,
+		factory.
+			WithGas(1000000000000000000).
+			WithFees("500000000000000000rowan"),
+		messages...,
+	)
 
-	sugaredLogger.Infow("relay sequenceNumber from builder.",
-		"nextSequenceNumber", txBldr.Sequence())
-
-	// If we start to control sequence
-	if nextSequenceNumber > 0 {
-		txBldr.WithSequence(nextSequenceNumber)
-		sugaredLogger.Infow("txBldr.WithSequence(nextSequenceNumber) passed")
-	}
-
-	log.Println("building and signing")
-	// Build and sign the transaction
-	txBytes, err := txBldr.BuildAndSign(moniker, password, messages)
-	if err != nil {
-		sugaredLogger.Errorw("failed to sign transaction.",
-			errorMessageKey, err.Error())
-		return err
-	}
-
-	log.Println("built tx, now broadcasting")
 	// Broadcast to a Tendermint node
-	res, err := cliCtx.BroadcastTxAsync(txBytes)
+	// open question as to how we handle this situation.
+	//    do we retry, 
+	//        if so, how many times do we try?
 	if err != nil {
-		sugaredLogger.Errorw("failed to broadcast tx to sifchain.",
-			errorMessageKey, err.Error())
-		return err
-	}
-	log.Println("Broadcasted tx without error")
-
-	if err = cliCtx.PrintOutput(res); err != nil {
-		sugaredLogger.Errorw("failed to print out result.",
-			errorMessageKey, err.Error())
+		sugaredLogger.Errorw(
+			"failed to broadcast tx to sifchain.",
+			errorMessageKey, err.Error(),
+		)
 		return err
 	}
 
-	// start to control sequence number after first successful tx
-	if nextSequenceNumber == 0 {
-		setNextSequenceNumber(txBldr.Sequence() + 1)
-	} else {
-		incrementNextSequenceNumber()
-	}
-	sugaredLogger.Infow("relay next sequenceNumber from memory.",
-		"nextSequenceNumber", nextSequenceNumber)
+	sugaredLogger.Infow("Broadcasted tx without error")
 
 	return nil
-}
-
-func incrementNextSequenceNumber() {
-	atomic.AddUint64(&nextSequenceNumber, 1)
-}
-
-func setNextSequenceNumber(sequenceNumber uint64) {
-	atomic.StoreUint64(&nextSequenceNumber, sequenceNumber)
 }

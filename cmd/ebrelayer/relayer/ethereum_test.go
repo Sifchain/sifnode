@@ -4,11 +4,12 @@ import (
 	"math/big"
 	"testing"
 
-	"github.com/Sifchain/sifnode/cmd/ebrelayer/types"
-	ethbridge "github.com/Sifchain/sifnode/x/ethbridge/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/stretchr/testify/require"
+
+	"github.com/Sifchain/sifnode/cmd/ebrelayer/types"
+	ethbridge "github.com/Sifchain/sifnode/x/ethbridge/types"
 )
 
 // EventProcessed check if the event processed by relayer
@@ -31,7 +32,7 @@ func TestEventProcessed(t *testing.T) {
 		Symbol:                "rewan",
 		Value:                 big.NewInt(1),
 		Nonce:                 big.NewInt(1),
-		ClaimType:             ethbridge.LockText,
+		ClaimType:             ethbridge.ClaimType_CLAIM_TYPE_LOCK,
 	}
 
 	require.Equal(t, true, EventProcessed(bridgeClaims, processedEvent))
@@ -46,7 +47,7 @@ func TestEventProcessed(t *testing.T) {
 		Symbol:                "rewan",
 		Value:                 big.NewInt(1),
 		Nonce:                 big.NewInt(10),
-		ClaimType:             ethbridge.LockText,
+		ClaimType:             ethbridge.ClaimType_CLAIM_TYPE_LOCK,
 	}
 
 	require.Equal(t, false, EventProcessed(bridgeClaims, notProcessedEvent))

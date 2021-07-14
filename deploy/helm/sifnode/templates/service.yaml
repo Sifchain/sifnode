@@ -12,6 +12,16 @@ metadata:
 spec:
   type: {{ .Values.service.type }}
   ports:
+    {{- if .Values.sifnode.args.enableAPI }}
+    - port: 1317
+      protocol: TCP
+      name: api
+    {{- end }}
+    {{- if .Values.sifnode.args.enableGrpc }}
+    - port: 9090
+      protocol: TCP
+      name: grpc
+    {{- end }}
     - port: 26656
       protocol: TCP
       name: p2p

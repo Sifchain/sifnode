@@ -1,9 +1,5 @@
 package types
 
-import (
-	sdk "github.com/cosmos/cosmos-sdk/types"
-)
-
 const (
 	QueryAllDistributions   = "distributions"
 	QueryRecordsByDistrName = "records_by_name"
@@ -11,21 +7,12 @@ const (
 	QueryClaimsByType       = "claims_by_type"
 )
 
-type QueryRecordsByDistributionName struct {
-	DistributionName string             `json:"distribution_name"`
-	Status           DistributionStatus `json:"status"`
+func NewQueryRecordsByDistributionName(distributionName string, status DistributionStatus) QueryRecordsByDistributionNameRequest {
+	return QueryRecordsByDistributionNameRequest{DistributionName: distributionName, Status: status}
 }
 
-func NewQueryRecordsByDistributionName(distributionName string, status DistributionStatus) QueryRecordsByDistributionName {
-	return QueryRecordsByDistributionName{DistributionName: distributionName, Status: status}
-}
-
-type QueryRecordsByRecipientAddr struct {
-	Address sdk.AccAddress `json:"address"`
-}
-
-func NewQueryRecordsByRecipientAddr(address sdk.AccAddress) QueryRecordsByRecipientAddr {
-	return QueryRecordsByRecipientAddr{Address: address}
+func NewQueryRecordsByRecipientAddr(address string) QueryRecordsByRecipientAddrRequest {
+	return QueryRecordsByRecipientAddrRequest{Address: address}
 }
 
 type QueryUserClaims struct {

@@ -3,49 +3,39 @@ package types
 import (
 	"bytes"
 	"fmt"
-	"github.com/cosmos/cosmos-sdk/x/params"
+
+	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 )
 
 // Default parameter namespace
 const (
-	DefaultParamspace                  = ModuleName
-	DefaultMinCreatePoolThreshold uint = 100
+	DefaultParamspace                    = ModuleName
+	DefaultMinCreatePoolThreshold uint64 = 100
 )
 
 // Parameter store keys
 var (
 	KeyMinCreatePoolThreshold = []byte("MinCreatePoolThreshold")
 )
-var _ params.ParamSet = (*Params)(nil)
+
+var _ paramtypes.ParamSet = (*Params)(nil)
 
 // ParamKeyTable for clp module
-func ParamKeyTable() params.KeyTable {
-	return params.NewKeyTable().RegisterParamSet(&Params{})
-}
-
-// Params - used for initializing default parameter for clp at genesis
-type Params struct {
-	MinCreatePoolThreshold uint `json:"min_create_pool_threshold"`
+func ParamKeyTable() paramtypes.KeyTable {
+	return paramtypes.NewKeyTable().RegisterParamSet(&Params{})
 }
 
 // NewParams creates a new Params object
-func NewParams(minThreshold uint) Params {
+func NewParams(minThreshold uint64) Params {
 	return Params{
 		MinCreatePoolThreshold: minThreshold,
 	}
 }
 
-// String implements the stringer interface for Params
-func (p Params) String() string {
-	return fmt.Sprintf(`
-	MinCreatePoolThreshold : %d
-	`, p.MinCreatePoolThreshold)
-}
-
 // ParamSetPairs - Implements params.ParamSet
-func (p *Params) ParamSetPairs() params.ParamSetPairs {
-	return params.ParamSetPairs{
-		params.NewParamSetPair(KeyMinCreatePoolThreshold, &p.MinCreatePoolThreshold, validateMinCreatePoolThreshold),
+func (p *Params) ParamSetPairs() paramtypes.ParamSetPairs {
+	return paramtypes.ParamSetPairs{
+		paramtypes.NewParamSetPair(KeyMinCreatePoolThreshold, &p.MinCreatePoolThreshold, validateMinCreatePoolThreshold),
 	}
 }
 
@@ -54,15 +44,12 @@ func DefaultParams() Params {
 	return NewParams(DefaultMinCreatePoolThreshold)
 }
 
-func (p Params) Validate() bool {
-	if err := validateMinCreatePoolThreshold(p.MinCreatePoolThreshold); err != nil {
-		return false
-	}
-	return true
+func (p Params) Validate() error {
+	return validateMinCreatePoolThreshold(p.MinCreatePoolThreshold)
 }
 
 func validateMinCreatePoolThreshold(i interface{}) error {
-	v, ok := i.(uint)
+	v, ok := i.(uint64)
 	if !ok {
 		return fmt.Errorf("invalid parameter type: %T", i)
 	}

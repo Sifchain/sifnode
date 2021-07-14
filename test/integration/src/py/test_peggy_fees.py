@@ -38,7 +38,7 @@ def test_rescue_ceth(
     logging.info("get the starting balance for the ethbridge module - that's where fees should be going")
     ethbridge_module_balance = test_utilities.get_sifchain_addr_balance(
         ethbridge_module_address,
-        basic_transfer_request.sifnodecli_node,
+        basic_transfer_request.sifnoded_node,
         "ceth"
     )
     test_account_request.amount = small_amount
@@ -50,7 +50,7 @@ def test_rescue_ceth(
         ethbridge_module_address,
         "ceth",
         ethbridge_module_balance + test_utilities.burn_gas_cost,
-        test_account_request.sifnodecli_node
+        test_account_request.sifnoded_node
     )
     logging.info(f"rescue ceth into {test_account_request.sifchain_address}")
     test_utilities.rescue_ceth(
@@ -64,7 +64,7 @@ def test_rescue_ceth(
         test_account_request.sifchain_address,
         "ceth",
         test_utilities.burn_gas_cost,
-        test_account_request.sifnodecli_node,
+        test_account_request.sifnoded_node,
         max_seconds=10,
         debug_prefix="wait for rescue ceth"
     )
@@ -103,7 +103,7 @@ def test_ceth_receiver_account(
         bridgetoken_address=bridgetoken_address,
     )
     received_ceth_charges = test_utilities.get_sifchain_addr_balance(ceth_rescue_account,
-                                                                     basic_transfer_request.sifnodecli_node, "ceth")
+                                                                     basic_transfer_request.sifnoded_node, "ceth")
     assert received_ceth_charges == test_utilities.burn_gas_cost
 
 
@@ -137,10 +137,10 @@ def test_fee_charged_to_transfer_rowan_to_erowan(
     # get the starting ceth balance, transfer some rowan to erowan, get the ending ceth
     # balance.  The difference is the fee charged and should be equal to request.ceth_amount
 
-    starting_ceth_balance = test_utilities.get_sifchain_addr_balance(request.sifchain_address, request.sifnodecli_node,
+    starting_ceth_balance = test_utilities.get_sifchain_addr_balance(request.sifchain_address, request.sifnoded_node,
                                                                      "ceth")
     burn_lock_functions.transfer_sifchain_to_ethereum(request, credentials)
-    ending_ceth_balance = test_utilities.get_sifchain_addr_balance(request.sifchain_address, request.sifnodecli_node,
+    ending_ceth_balance = test_utilities.get_sifchain_addr_balance(request.sifchain_address, request.sifnoded_node,
                                                                    "ceth")
     fee = starting_ceth_balance - ending_ceth_balance
     assert fee == test_utilities.lock_gas_cost
@@ -177,7 +177,7 @@ def test_do_not_transfer_if_fee_allowed_is_too_low(
     with pytest.raises(Exception):
         request.ceth_amount = test_utilities.lock_gas_cost - 1
         burn_lock_functions.transfer_sifchain_to_ethereum(request, credentials)
-    ending_ceth_balance = test_utilities.get_sifchain_addr_balance(request.sifchain_address, request.sifnodecli_node,
+    ending_ceth_balance = test_utilities.get_sifchain_addr_balance(request.sifchain_address, request.sifnoded_node,
                                                                    "ceth")
     assert ending_ceth_balance == target_ceth_balance
 
@@ -185,6 +185,6 @@ def test_do_not_transfer_if_fee_allowed_is_too_low(
     with pytest.raises(Exception):
         request.ceth_amount = target_ceth_balance + 1
         burn_lock_functions.transfer_sifchain_to_ethereum(request, credentials)
-    ending_ceth_balance = test_utilities.get_sifchain_addr_balance(request.sifchain_address, request.sifnodecli_node,
+    ending_ceth_balance = test_utilities.get_sifchain_addr_balance(request.sifchain_address, request.sifnoded_node,
                                                                    "ceth")
     assert ending_ceth_balance == target_ceth_balance

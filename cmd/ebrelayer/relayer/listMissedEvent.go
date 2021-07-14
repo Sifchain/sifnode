@@ -71,7 +71,8 @@ func (list ListMissedCosmosEvent) ListMissedCosmosEvent() {
 		return
 	}
 
-	block, err := client.Block(nil)
+	ctx := context.Background()
+	block, err := client.Block(ctx, nil)
 	if err != nil {
 		log.Printf("%s \n", err.Error())
 		return
@@ -94,7 +95,8 @@ func (list ListMissedCosmosEvent) ListMissedCosmosEvent() {
 
 	for blockNumber := cosmosFromHeight; blockNumber < currentCosmosHeight; {
 		tmpBlockNumber := blockNumber
-		block, err := client.BlockResults(&tmpBlockNumber)
+
+		block, err := client.BlockResults(ctx, &tmpBlockNumber)
 		blockNumber++
 
 		if err != nil {

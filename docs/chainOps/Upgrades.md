@@ -11,7 +11,7 @@ Upgrades on the Sifnodes themselves are automated, however there are several act
 3. Submit an upgrade proposal to the network:
 
 ```
-sifnodecli tx gov submit-proposal software-upgrade <upgrade_name> \
+sifnoded tx gov submit-proposal software-upgrade <upgrade_name> \
     --from <from> \
     --deposit <deposit> \
     --upgrade-height <height> \
@@ -35,7 +35,7 @@ Where:
 e.g.:
 
 ```
-sifnodecli tx gov submit-proposal software-upgrade sifnoded \
+sifnoded tx gov submit-proposal software-upgrade sifnoded \
     --from my-node-moniker \
     --deposit 10000000000rowan \
     --upgrade-height 123456789 \
@@ -49,7 +49,7 @@ sifnodecli tx gov submit-proposal software-upgrade sifnoded \
 To vote on a proposal, simply run:
 
 ```
-sifnodecli tx gov vote <proposal_id> yes \
+sifnoded tx gov vote <proposal_id> yes \
     --from <from> \
     --keyring-backend file \
     --chain-id <chain_id>
@@ -64,7 +64,7 @@ sifnodecli tx gov vote <proposal_id> yes \
 e.g.:
  
 ```
-sifnodecli tx gov vote 1 yes \
+sifnoded tx gov vote 1 yes \
     --from my-node-moniker \
     --keyring-backend file \
     --chain-id sifchain

@@ -23,7 +23,7 @@
 #     from_address = 'sifnodeadmin'
 #     keyring_backend = 'test'
 #     chain_id = 'localnet'
-#     sifnodecli_node = 'tcp://127.0.0.1:1317'
+#     sifnoded_node = 'tcp://127.0.0.1:1317'
 #     amount = '10000000rowan'
 #     fee = '50000'
 #     currency = 'rowan'
@@ -55,7 +55,7 @@
 #     d = json.loads(data)
 #
 #
-#     response = (create_offline_singlekey_txn_with_runner(claimType,runner_address,distributor_address,chain_id,sifnodecli_node))
+#     response = (create_offline_singlekey_txn_with_runner(claimType,runner_address,distributor_address,chain_id,sifnoded_node))
 #
 #     distributiontypetag = response['value']['msg'][0]['type']
 #     distributionvaluetags = response['value']['msg'][0]['value']
@@ -83,7 +83,7 @@
 #     from_address = 'sifnodeadmin'
 #     keyring_backend = 'test'
 #     chain_id = 'localnet'
-#     sifnodecli_node = 'tcp://127.0.0.1:1317'
+#     sifnoded_node = 'tcp://127.0.0.1:1317'
 #     amount = '10000000rowan'
 #     fee='50000'
 #     currency = 'rowan'
@@ -114,7 +114,7 @@
 #         data = f.read()
 #     d = json.loads(data)
 #
-#     response = (create_offline_singlekey_txn_with_runner(claimType,runner_address,distributor_address,chain_id,sifnodecli_node))
+#     response = (create_offline_singlekey_txn_with_runner(claimType,runner_address,distributor_address,chain_id,sifnoded_node))
 #     with open("sample.json", "w") as outfile:
 #         json.dump(response, outfile)
 #
@@ -153,7 +153,7 @@
 #     from_address = 'sifnodeadmin'
 #     keyring_backend = 'test'
 #     chain_id = 'localnet'
-#     sifnodecli_node = 'tcp://127.0.0.1:1317'
+#     sifnoded_node = 'tcp://127.0.0.1:1317'
 #     amount = '10000000rowan'
 #     fee = '150000'
 #     currency = 'rowan'
@@ -196,7 +196,7 @@
 #     logging.info(f"sender initial balance = {sender_initial_balance}")
 #     logging.info(f"one claiming address initial balance = {claiming_address_initial_balance}")
 #
-#     response = (create_offline_singlekey_txn_with_runner(claimType,runner_address,distributor_address,chain_id,sifnodecli_node))
+#     response = (create_offline_singlekey_txn_with_runner(claimType,runner_address,distributor_address,chain_id,sifnoded_node))
 #     with open("sample.json", "w") as outfile:
 #         json.dump(response, outfile)
 #
@@ -227,7 +227,7 @@
 #     logging.info(f"distribution_name = {distribution_name}, distribution_type = {distribution_type}")
 #
 #     # RUN DISPENSATION TXN; GET TXN HASH
-#     runtxnhash = run_dispensation(distribution_name, distribution_type, runner_address,chain_id,sifnodecli_node)
+#     runtxnhash = run_dispensation(distribution_name, distribution_type, runner_address,chain_id,sifnoded_node)
 #     logging.info(f"txn hash for running dispensation = {runtxnhash}")
 #     time.sleep(5)
 #

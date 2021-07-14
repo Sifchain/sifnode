@@ -35,13 +35,11 @@ jobs:
         run: |
           echo ${{ env.CHAINNET }}
           make CHAINNET=${{ env.CHAINNET }} IMAGE_TAG=${{ env.GITHUB_REF_SLUG }} BINARY=sifnoded build-image
-          make CHAINNET=${{ env.CHAINNET }} IMAGE_TAG=${{ env.GITHUB_REF_SLUG }} BINARY=sifnodecli build-image
           make CHAINNET=${{ env.CHAINNET }} IMAGE_TAG=${{ env.GITHUB_REF_SLUG }} BINARY=ebrelayer build-image
 
       - name: Push docker images
         run: |
           docker push sifchain/sifnoded:${{ env.GITHUB_REF_SLUG }}
-          docker push sifchain/sifnodecli:${{ env.GITHUB_REF_SLUG }}
           docker push sifchain/ebrelayer:${{ env.GITHUB_REF_SLUG }}
 
       - name: Release a new sifnoded binary

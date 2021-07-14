@@ -4,6 +4,10 @@ GOBIN?=${GOPATH}/bin
 NOW=$(shell date +'%Y-%m-%d_%T')
 COMMIT:=$(shell git log -1 --format='%H')
 VERSION:=$(shell cat version)
+IMAGE_TAG?=latest
+HTTPS_GIT := https://github.com/sifchain/sifnode.git
+DOCKER := $(shell which docker)
+DOCKER_BUF := $(DOCKER) run --rm -v $(CURDIR):/workspace --workdir /workspace bufbuild/buf
 
 ifeq (mainnet,${CHAINNET})
 	BUILD_TAGS=mainnet
@@ -18,14 +22,14 @@ build_tags_comma_sep := $(subst $(whitespace),$(comma),$(BUILD_TAGS))
 
 ldflags = -X github.com/cosmos/cosmos-sdk/version.Name=sifchain \
 		  -X github.com/cosmos/cosmos-sdk/version.ServerName=sifnoded \
-		  -X github.com/cosmos/cosmos-sdk/version.ClientName=sifnodecli \
+		  -X github.com/cosmos/cosmos-sdk/version.ClientName=sifnoded \
 		  -X github.com/cosmos/cosmos-sdk/version.Version=$(VERSION) \
 		  -X github.com/cosmos/cosmos-sdk/version.Commit=$(COMMIT) \
 		  -X "github.com/cosmos/cosmos-sdk/version.BuildTags=$(build_tags_comma_sep)"
 
-BUILD_FLAGS := -ldflags '$(ldflags)' -tags ${BUILD_TAGS} -a
+BUILD_FLAGS := -ldflags '$(ldflags)' -tags ${BUILD_TAGS}
 
-BINARIES=./cmd/sifnodecli ./cmd/sifnoded ./cmd/sifgen ./cmd/sifcrg ./cmd/ebrelayer
+BINARIES=./cmd/sifnoded ./cmd/sifgen ./cmd/ebrelayer
 
 all: lint install
 
@@ -38,7 +42,7 @@ init:
 	./scripts/init.sh
 
 start:
-	sifnodecli rest-server & sifnoded start
+	sifnoded start
 
 lint-pre:
 	@test -z $(gofmt -l .)
@@ -52,6 +56,9 @@ lint-verbose: lint-pre
 
 install: go.sum
 	go install ${BUILD_FLAGS} ${BINARIES}
+
+build-sifd: go.sum
+	go build  ${BUILD_FLAGS} ./cmd/sifnoded
 
 clean-config:
 	@rm -rf ~/.sifnode*
@@ -72,7 +79,7 @@ run:
 	go run ./cmd/sifnoded start
 
 build-image:
-	docker build -t sifchain/$(BINARY):$(IMAGE_TAG) --build-arg chainnet=$(CHAINNET) -f ./cmd/$(BINARY)/Dockerfile .
+	docker build -t sifchain/$(BINARY):$(IMAGE_TAG) -f ./cmd/$(BINARY)/Dockerfile .
 
 run-image: build-image
 	docker run sifchain/$(BINARY):$(IMAGE_TAG)
@@ -89,3 +96,38 @@ init-run-noInstall:
 rollback:
 	./scripts/rollback.sh
 
+###############################################################################
+###                                Protobuf                                 ###
+###############################################################################
+
+proto-all: proto-format proto-lint proto-gen
+
+proto-gen:
+	@echo "Generating Protobuf files"
+	$(DOCKER) run --rm -v $(CURDIR):/workspace --workdir /workspace tendermintdev/sdk-proto-gen sh ./scripts/protocgen.sh
+.PHONY: proto-gen
+
+proto-format:
+	@echo "Formatting Protobuf files"
+	$(DOCKER) run --rm -v $(CURDIR):/workspace \
+	--workdir /workspace tendermintdev/docker-build-proto \
+	find ./ -not -path "./third_party/*" -name *.proto -exec clang-format -i {} \;
+.PHONY: proto-format
+
+# This generates the SDK's custom wrapper for google.protobuf.Any. It should only be run manually when needed
+proto-gen-any:
+	$(DOCKER) run --rm -v $(CURDIR):/workspace --workdir /workspace tendermintdev/sdk-proto-gen sh ./scripts/protocgen-any.sh
+.PHONY: proto-gen-any
+
+proto-swagger-gen:
+	@./scripts/protoc-swagger-gen.sh
+.PHONY: proto-swagger-gen
+
+proto-lint:
+	$(DOCKER_BUF) lint --error-format=json
+.PHONY: proto-lint
+
+proto-check-breaking:
+	# we should turn this back on after our first release
+	# $(DOCKER_BUF) breaking --against $(HTTPS_GIT)#branch=master
+.PHONY: proto-check-breaking

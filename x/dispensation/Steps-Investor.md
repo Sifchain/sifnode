@@ -11,11 +11,11 @@
 ### Create Dispensation
 Use the CLI to create a dispensations
 ```shell
-sifnodecli tx dispensation create [Distribution Type Airdrop/ValidatorSubsidy/LiquidityMining] [List of output addresses in JSON format] [Address of authorized runner] --from [Address of invester/This private keys is used to sign the tx] --yes --gas auto --gas-adjustment=1.5 --gas-prices 1.0rowan --node tcp://rpc.sifchain.finance:80 --chain-id sifchain
+sifnoded tx dispensation create [Distribution Type Airdrop/ValidatorSubsidy/LiquidityMining] [List of output addresses in JSON format] [Address of authorized runner] --from [Address of invester/This private keys is used to sign the tx] --yes --gas auto --gas-adjustment=1.5 --gas-prices 1.0rowan --node tcp://rpc.sifchain.finance:80 --chain-id sifchain
 ```
 sample command
 ```shell
-sifnodecli tx dispensation create LiquidityMining output.json sif1l7hypmqk2yc334vc6vmdwzp5sdefygj2ad93p5 --from sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd --yes --gas auto --gas-adjustment=1.5 --gas-prices 1.0rowan --node tcp://rpc.sifchain.finance:80 --chain-id sifchain
+sifnoded tx dispensation create LiquidityMining output.json sif1l7hypmqk2yc334vc6vmdwzp5sdefygj2ad93p5 --from sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd --yes --gas auto --gas-adjustment=1.5 --gas-prices 1.0rowan --node tcp://rpc.sifchain.finance:80 --chain-id sifchain
 ```
 sample output
 ```json
@@ -27,7 +27,7 @@ sample output
 ```
 The Tx hash can then be used to query the blockchain and get the distribution name
 ```shell
-sifnodecli q tx A9D019E1080ECD6A012B20B3058534AC6643BD17634F181FBE7F8F5C43B94D8E --node tcp://rpc.sifchain.finance:80 --chain-id sifchain
+sifnoded q tx A9D019E1080ECD6A012B20B3058534AC6643BD17634F181FBE7F8F5C43B94D8E --node tcp://rpc.sifchain.finance:80 --chain-id sifchain
 ```
 The output from the command would contain the relevant event 
 ```json

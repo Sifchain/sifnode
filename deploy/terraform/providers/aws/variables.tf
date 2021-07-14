@@ -104,11 +104,6 @@ variable "efs_pv_sifnoded_name" {
   default     = "efs-sifnoded"
 }
 
-variable "efs_pv_sifnodecli_name" {
-  description = "The name of the PV object"
-  default     = "efs-sifnodecli"
-}
-
 variable "efs_pv_storageclass" {
   description = "The name of the storageclass for the EFS driver"
   default     = "efs-sc"

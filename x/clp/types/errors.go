@@ -10,7 +10,6 @@ var (
 	ErrLiquidityProviderDoesNotExist   = sdkerrors.Register(ModuleName, 3, "liquidity Provider does not exist")
 	ErrInValidAsset                    = sdkerrors.Register(ModuleName, 4, "asset is invalid")
 	ErrInValidAmount                   = sdkerrors.Register(ModuleName, 5, "amount is invalid")
-	ErrPoolListIsEmpty                 = sdkerrors.Register(ModuleName, 6, "poolList Is Empty")
 	ErrTotalAmountTooLow               = sdkerrors.Register(ModuleName, 7, "total amount is less than minimum threshold")
 	ErrNotEnoughAssetTokens            = sdkerrors.Register(ModuleName, 8, "not enough received asset tokens to swap")
 	ErrInvalidAsymmetry                = sdkerrors.Register(ModuleName, 9, "Asymmetry has to be between -10000 and 10000")

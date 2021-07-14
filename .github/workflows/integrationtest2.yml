@@ -23,3 +23,9 @@ jobs:
           . test/integration/vagrantenv.sh
           export LOG_LEVEL=DEBUG
           bash test/integration/execute_integration_tests_against_any_chain.sh
+      - name: Archive logs from test
+        uses: actions/upload-artifact@v2
+        if: always()
+        with:
+          name: testlogs2
+          path: test/integration

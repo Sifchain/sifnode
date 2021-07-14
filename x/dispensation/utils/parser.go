@@ -3,20 +3,20 @@ package utils
 import (
 	"encoding/json"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/cosmos/cosmos-sdk/types/errors"
-	"github.com/cosmos/cosmos-sdk/x/bank"
+	"github.com/cosmos/cosmos-sdk/x/bank/types"
+	"github.com/pkg/errors"
 	"io/ioutil"
 	"path/filepath"
 )
 
 type TempInput struct {
-	In []bank.Input `json:"Input"`
+	In []types.Input `json:"Input"`
 }
 type TempOutput struct {
-	Out []bank.Output `json:"Output"`
+	Out []types.Output `json:"Output"`
 }
 
-func ParseInput(fp string) ([]bank.Input, error) {
+func ParseInput(fp string) ([]types.Input, error) {
 	var inputs TempInput
 	file, err := filepath.Abs(fp)
 	if err != nil {
@@ -34,7 +34,7 @@ func ParseInput(fp string) ([]bank.Input, error) {
 	return inputs.In, nil
 }
 
-func ParseOutput(fp string) ([]bank.Output, error) {
+func ParseOutput(fp string) ([]types.Output, error) {
 	var outputs TempOutput
 	file, err := filepath.Abs(fp)
 	if err != nil {
@@ -52,9 +52,9 @@ func ParseOutput(fp string) ([]bank.Output, error) {
 	return outputs.Out, nil
 }
 
-func TotalOutput(output []bank.Output) (sdk.Coins, error) {
+func TotalOutput(output []types.Output) (sdk.Coins, error) {
 	if len(output) == 0 {
-		return sdk.Coins{}, errors.Wrapf(bank.ErrNoOutputs, "Outputlist is empty")
+		return sdk.Coins{}, errors.Wrapf(types.ErrNoOutputs, "Outputlist is empty")
 	}
 	total := output[0].Coins
 	for i := 1; i < len(output); i++ {

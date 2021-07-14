@@ -5,9 +5,9 @@ import (
 )
 
 // ModuleCdc defines the module codec
-var ModuleCdc *codec.Codec
+var ModuleCdc *codec.LegacyAmino
 
 func init() {
-	ModuleCdc = codec.New()
+	ModuleCdc = codec.NewLegacyAmino()
 	ModuleCdc.Seal()
 }

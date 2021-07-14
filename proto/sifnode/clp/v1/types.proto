@@ -1,0 +1,40 @@
+
+syntax = "proto3";
+package sifnode.clp.v1;
+
+import "gogoproto/gogo.proto";
+
+option go_package = "github.com/Sifchain/sifnode/x/clp/types";
+
+message Asset { string symbol = 1; }
+
+message Pool {
+  Asset external_asset = 1;
+  string native_asset_balance = 2 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Uint",
+    (gogoproto.nullable) = false,
+    (gogoproto.moretags) = "yaml:\"native_asset_balance\""
+  ];
+  string external_asset_balance = 3 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Uint",
+    (gogoproto.nullable) = false,
+    (gogoproto.moretags) = "yaml:\"external_asset_balance\""
+  ];
+  string pool_units = 4 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Uint",
+    (gogoproto.nullable) = false,
+    (gogoproto.moretags) = "yaml:\"pool_units\""
+  ];
+}
+
+message LiquidityProvider {
+  Asset asset = 1;
+  string liquidity_provider_units = 2 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Uint",
+    (gogoproto.nullable) = false,
+    (gogoproto.moretags) = "yaml:\"liquidity_provider_units\""
+  ];
+  string liquidity_provider_address = 3;
+}
+
+message WhiteList { repeated string validator_list = 1; }
