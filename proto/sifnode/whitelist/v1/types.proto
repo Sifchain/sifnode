@@ -1,0 +1,21 @@
+syntax = "proto3";
+package sifnode.whitelist.v1;
+
+import "gogoproto/gogo.proto";
+
+option go_package = "github.com/Sifchain/sifnode/x/whitelist/types";
+
+message GenesisState {
+  string admin_account = 1;
+  DenomWhitelist whitelist = 2;
+}
+
+message DenomWhitelist {
+  repeated DenomWhitelistEntry denom_whitelist_entries = 1;
+}
+
+message DenomWhitelistEntry {
+  bool is_whitelisted = 1;
+  string denom = 2;
+  int64 units = 3;
+}
