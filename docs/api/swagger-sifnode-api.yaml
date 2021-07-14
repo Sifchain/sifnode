@@ -8,27 +8,27 @@ servers:
   description: Sifnode API
 tags:
 - name: Dispensation
-  description: Endpoints for Dispensation module
+  description: Endpoints for Dispensation module.
 - name: Ethbridge
-  description: Endpoints for Ethbridge module
+  description: Endpoints for Ethbridge module.
 - name: Clp
-  description: Endpoints for Clp module
+  description: Endpoints for Clp module.
 paths:
   /dispensation/createClaim:
     post:
       tags:
       - Dispensation
       operationId: createClaim
+      description: Create dispensation claim.
       requestBody:
         content:
           application/json:
             schema:
               $ref: '#/components/schemas/CreateClaimReq'
-        description: Created dispensation claim
         required: true
       responses:
         "200":
-          description: This endpoint creates distribution claim
+          description: Dispensation claim created successfully.
           content:
             application/json:
               schema:
@@ -40,6 +40,7 @@ paths:
       tags:
       - Ethbridge
       operationId: burn
+      description: Burn specified token.
       requestBody:
         content:
           application/json:
@@ -47,7 +48,7 @@ paths:
               $ref: '#/components/schemas/BurnOrLockReq'
       responses:
         "200":
-          description: Burn given amount of token
+          description: Message of type ethbridge/MsgBurn.
           content:
             application/json:
               schema:
@@ -58,6 +59,7 @@ paths:
       tags:
       - Ethbridge
       operationId: lock
+      description: Lock specified token.
       requestBody:
         content:
           application/json:
@@ -65,7 +67,7 @@ paths:
               $ref: '#/components/schemas/BurnOrLockReq'
       responses:
         "200":
-          description: Lock given amount of token
+          description: Message of type ethbridge/MsgLock.
           content:
             application/json:
               schema:
@@ -77,6 +79,7 @@ paths:
       tags:
       - Clp
       operationId: getPool
+      description: Get pool with specified token symbol.
       parameters:
       - name: symbol
         in: query
@@ -86,7 +89,7 @@ paths:
           type: string
       responses:
         "200":
-          description: Get liquidity pool with a given ticker.
+          description: Pool object with specified token symbol.
           content:
             application/json:
               schema:
@@ -97,9 +100,10 @@ paths:
       tags:
       - Clp
       operationId: getPools
+      description: List all pools.
       responses:
         "200":
-          description: List all liquidity pools.
+          description: List of all pools.
           content:
             application/json:
               schema:
@@ -112,6 +116,7 @@ paths:
       tags:
       - Clp
       operationId: createPool
+      description: Create pool.
       requestBody:
         content:
           application/json:
@@ -119,7 +124,7 @@ paths:
               $ref: '#/components/schemas/LiquidityParams'
       responses:
         "200":
-          description: Create liquidity pool.
+          description: Message of type clp/CreatePool.
           content:
             application/json:
               schema:
@@ -130,6 +135,7 @@ paths:
       tags:
       - Clp
       operationId: swap
+      description: Swap specified tokens.
       requestBody:
         content:
           application/json:
@@ -137,7 +143,7 @@ paths:
               $ref: '#/components/schemas/SwapParams'
       responses:
         "200":
-          description: Swap sent_asset for received_asset.
+          description: Message of type clp/Swap.
           content:
             application/json:
               schema:
@@ -148,6 +154,7 @@ paths:
       tags:
       - Clp
       operationId: getLiquidityProvider
+      description: Get liquidity provider with specified address and symbol.
       parameters:
       - name: symbol
         in: query
@@ -163,7 +170,7 @@ paths:
           type: string
       responses:
         "200":
-          description: Get liquidity provider based on address and token symbol.
+          description: Liquidity provider object with additional data.
           content:
             application/json:
               schema:
@@ -174,6 +181,7 @@ paths:
       tags:
       - Clp
       operationId: getAssets
+      description: List all assets for specified liquidity provider address.
       parameters:
       - name: lpAddress
         in: query
@@ -183,7 +191,7 @@ paths:
           type: string
       responses:
         "200":
-          description: Get assets of specified liquidity provider.
+          description: Array of asset symbols.
           content:
             application/json:
               schema:
@@ -196,6 +204,7 @@ paths:
       tags:
       - Clp
       operationId: addLiquidity
+      description: Add liquidity to the pool with specified symbol.
       requestBody:
         content:
           application/json:
@@ -203,7 +212,7 @@ paths:
               $ref: '#/components/schemas/LiquidityParams'
       responses:
         "200":
-          description: Add given amount of token(s) to the liquidity pool.
+          description: Message of type clp/AddLiquidity.
           content:
             application/json:
               schema:
@@ -214,6 +223,7 @@ paths:
       tags:
       - Clp
       operationId: removeLiquidity
+      description: Remove liquidity from the pool with specified symbol.
       requestBody:
         content:
           application/json:
@@ -221,7 +231,7 @@ paths:
               $ref: '#/components/schemas/RemoveLiquidityParams'
       responses:
         "200":
-          description: Remove given amount of token(s) from the liquidity pool.
+          description: Message of type clp/RemoveLiquidity.
           content:
             application/json:
               schema:
@@ -315,7 +325,7 @@ components:
         ethereum_chain_id:
           type: string
           description: Id of the ethereum chain.
-          example: '0'
+          example: '1'
         token_contract_address:
           type: string
           description: Contract address of the token.
