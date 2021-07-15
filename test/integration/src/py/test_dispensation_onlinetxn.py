@@ -19,18 +19,16 @@ def test_create_online_singlekey_txn(claimType):
     chain_id = 'localnet'
     sifnoded_node = 'tcp://127.0.0.1:1317'
     amount = '10000000rowan'
-    fee = '50000'
-    currency = 'rowan'
     sampleamount = '1000rowan'
 
     # THESE 4 TXNS ARE TO REGISTER NEW ACCOUNTS ON CHAIN
-    send_sample_rowan(from_address, runner_address, amount, keyring_backend, chain_id)
+    send_sample_rowan(from_address, runner_address, amount, keyring_backend, chain_id, "")
     time.sleep(5)
-    send_sample_rowan(from_address, distributor_address, amount, keyring_backend, chain_id)
+    send_sample_rowan(from_address, distributor_address, amount, keyring_backend, chain_id, "")
     time.sleep(5)
-    send_sample_rowan(from_address, destaddress1, sampleamount, keyring_backend, chain_id)
+    send_sample_rowan(from_address, destaddress1, sampleamount, keyring_backend, chain_id, "")
     time.sleep(5)
-    send_sample_rowan(from_address, destaddress2, sampleamount, keyring_backend, chain_id)
+    send_sample_rowan(from_address, destaddress2, sampleamount, keyring_backend, chain_id, "")
     time.sleep(5)
 
     # CREATING TEST DATA HERE MIMICKING OUTPUT.JSON TO BE SUPPLIED BY NIKO'S API
@@ -92,18 +90,16 @@ def test_insufficient_funds_dispensation_txn(claimType):
     chain_id = 'localnet'
     sifnoded_node = 'tcp://127.0.0.1:1317'
     amount = '70000rowan'
-    fee = '50000'
-    currency = 'rowan'
     sampleamount = '1000rowan'
 
     # THESE 4 TXNS ARE TO REGISTER NEW ACCOUNTS ON CHAIN
-    send_sample_rowan(from_address, runner_address, amount, keyring_backend, chain_id)
+    send_sample_rowan(from_address, runner_address, amount, keyring_backend, chain_id, "")
     time.sleep(5)
-    send_sample_rowan(from_address, distributor_address, amount, keyring_backend, chain_id)
+    send_sample_rowan(from_address, distributor_address, amount, keyring_backend, chain_id, "")
     time.sleep(5)
-    send_sample_rowan(from_address, destaddress1, sampleamount, keyring_backend, chain_id)
+    send_sample_rowan(from_address, destaddress1, sampleamount, keyring_backend, chain_id, "")
     time.sleep(5)
-    send_sample_rowan(from_address, destaddress2, sampleamount, keyring_backend, chain_id)
+    send_sample_rowan(from_address, destaddress2, sampleamount, keyring_backend, chain_id, "")
     time.sleep(5)
 
     # CREATING TEST DATA HERE MIMICKING OUTPUT.JSON TO BE SUPPLIED BY NIKO'S API
@@ -148,13 +144,13 @@ def test_run_online_singlekey_txn(claimType):
     sampleamount = '1000rowan'
 
     # THESE 4 TXNS ARE TO REGISTER NEW ACCOUNTS ON CHAIN
-    send_sample_rowan(from_address, runner_address, amount, keyring_backend, chain_id)
+    send_sample_rowan(from_address, runner_address, amount, keyring_backend, chain_id, "")
     time.sleep(5)
-    send_sample_rowan(from_address, distributor_address, amount, keyring_backend, chain_id)
+    send_sample_rowan(from_address, distributor_address, amount, keyring_backend, chain_id, "")
     time.sleep(5)
-    send_sample_rowan(from_address, destaddress1, sampleamount, keyring_backend, chain_id)
+    send_sample_rowan(from_address, destaddress1, sampleamount, keyring_backend, chain_id, "")
     time.sleep(5)
-    send_sample_rowan(from_address, destaddress2, sampleamount, keyring_backend, chain_id)
+    send_sample_rowan(from_address, destaddress2, sampleamount, keyring_backend, chain_id, "")
     time.sleep(5)
 
     sorted_dest_address_list = sorted([destaddress1,destaddress2])

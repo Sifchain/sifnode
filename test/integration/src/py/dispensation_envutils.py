@@ -27,11 +27,10 @@ def create_new_sifaddr_and_key():
 
 
 # CODE TO SEND SOME SAMPLE TOKEN TO NEW ADDRESS
-def send_sample_rowan(from_address, to_address, amount, keyring_backend, chain_id):
+def send_sample_rowan(from_address, to_address, amount, keyring_backend, chain_id, offline):
     logging.debug(f"transfer_rowan")
     sifchain_fees_entry = f"--fees 150000rowan"
     keyring_backend_entry = f"--keyring-backend {keyring_backend}"
-    output = 'output.json'
     cmd = " ".join([
         "sifnoded tx send",
         f"{from_address}",
@@ -40,8 +39,8 @@ def send_sample_rowan(from_address, to_address, amount, keyring_backend, chain_i
         keyring_backend_entry,
         sifchain_fees_entry,
         f"--chain-id {chain_id}",
-        f"--yes -o json"
-
+        f"--yes",
+        f"{offline}"
     ])
     json_str = get_shell_output_json(cmd)
     assert (json_str.get("code", 0) == 0)
