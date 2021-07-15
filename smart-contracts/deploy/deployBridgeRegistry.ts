@@ -5,7 +5,6 @@ import '@openzeppelin/hardhat-upgrades';
 import {ContractNames} from "../src/contractNames";
 
 const deployBridgeRegistry: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
-    const BridgeRegistry = await hre.ethers.getContractFactory(ContractNames.BridgeRegistry)
     const cosmosBridge = await hre.deployments.get(ContractNames.CosmosBridge)
     const bridgeBank = await hre.deployments.get(ContractNames.BridgeBank)
     const {operator} = await hre.getNamedAccounts()

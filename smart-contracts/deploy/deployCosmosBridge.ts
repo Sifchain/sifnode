@@ -1,14 +1,9 @@
-import {DeployFunction} from 'hardhat-deploy/types';
 import {HardhatRuntimeEnvironment} from 'hardhat/types';
-import '@openzeppelin/hardhat-upgrades';
-
+import {DeployFunction} from 'hardhat-deploy/types';
 import {ContractNames} from "../src/contractNames";
 import {loadDeploymentEnvWithDotenv} from "../src/deploymentEnv";
-import {CosmosBridge} from "../build";
-import {getUnnamedAccounts, ethers} from 'hardhat';
 
 const deployCosmosBridge: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
-    const CosmosBridgeFactory = await hre.ethers.getContractFactory("CosmosBridge")
     const {operator} = await hre.getNamedAccounts()
     const {validator1} = await hre.getNamedAccounts()
     const deploymentEnv = loadDeploymentEnvWithDotenv()

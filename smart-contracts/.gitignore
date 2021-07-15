@@ -4,3 +4,4 @@ node_modules/
 flat/
 .env
 venv
+/.idea/

@@ -7,9 +7,9 @@ import {loadDeploymentEnvWithDotenv} from "../src/deploymentEnv";
 import deployBridgeRegistry from "./deployBridgeRegistry";
 import {DeployOptions} from "hardhat-deploy/dist/types";
 
-const deployBridgeBank: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
+const deployBridgeBank: DeployFunction = async function (hre: HardhatRuntimeEnvironment): Promise<void> {
     console.log("starting deployBridgeBank")
-    const BridgeBank = await hre.ethers.getContractFactory(ContractNames.BridgeBank)
+    // const BridgeBank = await hre.ethers.getContractFactory(ContractNames.BridgeBank)
     console.log("starting deployBridgeBank1")
     const {owner} = await hre.getNamedAccounts()
     const {operator} = await hre.getNamedAccounts()
