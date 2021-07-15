@@ -67,7 +67,6 @@ func (k Keeper) GetClaims(ctx sdk.Context) *types.UserClaims {
 			// Logging data out for investigation
 			continue
 		}
-		//k.cdc.MustUnmarshalBinaryBare(bytesValue, &dl)
 		res.UserClaims = append(res.UserClaims, &dl)
 	}
 	return &res
