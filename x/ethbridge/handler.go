@@ -3,6 +3,7 @@ package ethbridge
 
 import (
 	"fmt"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 
@@ -29,11 +30,14 @@ func NewHandler(k Keeper) sdk.Handler {
 		case *types.MsgUpdateWhiteListValidator:
 			res, err := msgServer.UpdateWhiteListValidator(sdk.WrapSDKContext(ctx), msg)
 			return sdk.WrapServiceResult(ctx, res, err)
-		case *types.MsgUpdateCethReceiverAccount:
-			res, err := msgServer.UpdateCethReceiverAccount(sdk.WrapSDKContext(ctx), msg)
+		case *types.MsgUpdateCrossChainFeeReceiverAccount:
+			res, err := msgServer.UpdateCrossChainFeeReceiverAccount(sdk.WrapSDKContext(ctx), msg)
 			return sdk.WrapServiceResult(ctx, res, err)
-		case *types.MsgRescueCeth:
-			res, err := msgServer.RescueCeth(sdk.WrapSDKContext(ctx), msg)
+		case *types.MsgRescueCrossChainFee:
+			res, err := msgServer.RescueCrossChainFee(sdk.WrapSDKContext(ctx), msg)
+			return sdk.WrapServiceResult(ctx, res, err)
+		case *types.MsgSetFeeInfo:
+			res, err := msgServer.SetFeeInfo(sdk.WrapSDKContext(ctx), msg)
 			return sdk.WrapServiceResult(ctx, res, err)
 		default:
 			errMsg := fmt.Sprintf("unrecognized ethbridge message type: %v", msg.Type())

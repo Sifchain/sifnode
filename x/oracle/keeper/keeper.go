@@ -47,10 +47,11 @@ func (k Keeper) Logger(ctx sdk.Context) log.Logger {
 	return ctx.Logger().With("module", fmt.Sprintf("x/%s", types.ModuleName))
 }
 
+// GetProphecies returns all prophecies
 func (k Keeper) GetProphecies(ctx sdk.Context) []types.Prophecy {
 	var prophecies []types.Prophecy
 	store := ctx.KVStore(k.storeKey)
-	iter := store.Iterator(types.ProphecyPrefix, nil)
+	iter := sdk.KVStorePrefixIterator(store, types.ProphecyPrefix)
 	for ; iter.Valid(); iter.Next() {
 		var prophecy types.Prophecy
 		k.cdc.MustUnmarshalBinaryBare(iter.Value(), &prophecy)
@@ -174,6 +175,12 @@ func (k Keeper) processCompletion(ctx sdk.Context, networkDescriptor types.Netwo
 		prophecy.Status = types.StatusText_STATUS_TEXT_SUCCESS
 	}
 	return prophecy
+}
+
+// SetFeeInfo set crosschain fee for a network
+func (k Keeper) SetFeeInfo(ctx sdk.Context, networkDescriptor types.NetworkDescriptor, crossChainFee string, gas, lockCost, burnCost sdk.Int) error {
+	k.SetCrossChainFee(ctx, types.NewNetworkIdentity(networkDescriptor), crossChainFee, gas, lockCost, burnCost)
+	return nil
 }
 
 // Exists check if the key exists

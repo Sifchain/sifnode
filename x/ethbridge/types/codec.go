@@ -3,7 +3,6 @@ package types
 import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	cryptocodec "github.com/cosmos/cosmos-sdk/crypto/codec"
-
 )
 
 // RegisterLegacyAminoCodec registers concrete types on the Amino codec
@@ -12,8 +11,8 @@ func RegisterLegacyAminoCodec(cdc *codec.LegacyAmino) {
 	cdc.RegisterConcrete(MsgBurn{}, "ethbridge/MsgBurn", nil)
 	cdc.RegisterConcrete(MsgLock{}, "ethbridge/MsgLock", nil)
 	cdc.RegisterConcrete(MsgUpdateWhiteListValidator{}, "ethbridge/MsgUpdateWhiteListValidator", nil)
-	cdc.RegisterConcrete(MsgUpdateCethReceiverAccount{}, "ethbridge/MsgUpdateCethReceiverAccount", nil)
-	cdc.RegisterConcrete(MsgRescueCeth{}, "ethbridge/MsgRescueCeth", nil)
+	cdc.RegisterConcrete(MsgUpdateCrossChainFeeReceiverAccount{}, "ethbridge/MsgUpdateCrossChainFeeReceiverAccount", nil)
+	cdc.RegisterConcrete(MsgRescueCrossChainFee{}, "ethbridge/MsgRescueCrossChainFee", nil)
 
 }
 

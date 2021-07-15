@@ -14,7 +14,8 @@ type ParamSubspace interface {
 	SetParamSet(ctx sdk.Context, ps paramtypes.ParamSet)
 }
 
-type BankKeeper interface {	SubtractCoins(ctx sdk.Context, addr sdk.AccAddress, amt sdk.Coins) error
+type BankKeeper interface {
+	SubtractCoins(ctx sdk.Context, addr sdk.AccAddress, amt sdk.Coins) error
 	SendCoins(ctx sdk.Context, fromAddr sdk.AccAddress, toAddr sdk.AccAddress, amt sdk.Coins) error
 	AddCoins(ctx sdk.Context, addr sdk.AccAddress, amt sdk.Coins) error
 	SendCoinsFromModuleToAccount(ctx sdk.Context, senderModule string, recipientAddr sdk.AccAddress, amt sdk.Coins) error
@@ -23,7 +24,8 @@ type BankKeeper interface {	SubtractCoins(ctx sdk.Context, addr sdk.AccAddress, 
 	BurnCoins(ctx sdk.Context, name string, amt sdk.Coins) error
 	GetBalance(ctx sdk.Context, addr sdk.AccAddress, denom string) sdk.Coin
 	HasBalance(ctx sdk.Context, addr sdk.AccAddress, amt sdk.Coin) bool
-
+	SetBalance(ctx sdk.Context, addr sdk.AccAddress, balance sdk.Coin) error
+	IterateAllBalances(ctx sdk.Context, cb func(sdk.AccAddress, sdk.Coin) bool)
 }
 
 type AuthKeeper interface {
