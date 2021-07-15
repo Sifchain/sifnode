@@ -12,6 +12,9 @@ option go_package = "github.com/Sifchain/sifnode/x/ethbridge/types";
 service Query {
   // EthProphecy queries an EthProphecy
   rpc EthProphecy(QueryEthProphecyRequest) returns (QueryEthProphecyResponse) {}
+  // CrosschainFeeConfig queries crosschain fee config for a network
+  rpc CrosschainFeeConfig(QueryCrosschainFeeConfigRequest)
+      returns (QueryCrosschainFeeConfigResponse) {}
 }
 
 // QueryEthProphecyRequest payload for EthProphecy rpc query
@@ -22,4 +25,14 @@ message QueryEthProphecyResponse {
   bytes prophecy_id = 1;
   sifnode.oracle.v1.StatusText status = 2;
   repeated string claim_validators = 3;
+}
+
+// QueryCrosschainFeeConfigRequest payload for EthProphecy rpc query
+message QueryCrosschainFeeConfigRequest {
+  sifnode.oracle.v1.NetworkDescriptor network_descriptor = 1;
+}
+
+// QueryCrosschainFeeConfigResponse payload for EthProphecy rpc query
+message QueryCrosschainFeeConfigResponse {
+  sifnode.oracle.v1.CrossChainFeeConfig crosschain_fee_config = 1;
 }
