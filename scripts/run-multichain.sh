@@ -9,9 +9,9 @@ sifnoded start --home ~/.sifnode-2 --p2p.laddr 0.0.0.0:27656  --grpc.address 0.0
 sifnoded start --home ~/.sifnode-1 --p2p.laddr 0.0.0.0:27655  --grpc.address 0.0.0.0:9090 --address tcp://0.0.0.0:27659 --rpc.laddr tcp://127.0.0.1:27657 >> abci_1.log 2>&1  &
 rm -rf ~/.ibc-setup/last-queried-heights.json
 #Reset connections
-ibc-setup ics20 --mnemonic "race draft rival universe maid cheese steel logic crowd fork comic easy truth drift tomorrow eye buddy head time cash swing swift midnight borrow" --home ~/.ibc-122
+ibc-setup ics20 --mnemonic "race draft rival universe maid cheese steel logic crowd fork comic easy truth drift tomorrow eye buddy head time cash swing swift midnight borrow" --home ~/.ibc-12
 ibc-setup ics20 --mnemonic "race draft rival universe maid cheese steel logic crowd fork comic easy truth drift tomorrow eye buddy head time cash swing swift midnight borrow" --home ~/.ibc-31
-ibc-relayer start -i -v --poll 10 --home ~/.ibc-122
+ibc-relayer start -i -v --poll 10 --home ~/.ibc-12
 ibc-relayer start -i -v --poll 10 --home ~/.ibc-23
 ibc-relayer start -i -v --poll 10 --home ~/.ibc-31
 #Created channel:
