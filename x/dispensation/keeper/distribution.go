@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	"fmt"
 	"github.com/Sifchain/sifnode/x/dispensation/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/pkg/errors"
@@ -47,7 +48,14 @@ func (k Keeper) GetDistributions(ctx sdk.Context) *types.Distributions {
 	for ; iterator.Valid(); iterator.Next() {
 		var dl types.Distribution
 		bytesValue := iterator.Value()
-		k.cdc.MustUnmarshalBinaryBare(bytesValue, &dl)
+		err := k.cdc.UnmarshalBinaryBare(bytesValue, &dl)
+		if err != nil {
+			ctx.Logger().Error(fmt.Sprintf("Unmarshal failed for distribution bytes : %s ", bytesValue))
+			// Not panicking here .
+			// Distributions data is not that important . We can ignore a distribution if it is causing an issue for chain upgrade .
+			// Logging data out for investigation
+			continue
+		}
 		res.Distributions = append(res.Distributions, &dl)
 	}
 	return &res
