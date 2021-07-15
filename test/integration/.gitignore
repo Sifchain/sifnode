@@ -3,3 +3,6 @@ vagrantenv.sh
 /watcher_pids.txt
 sandpit.log
 ../../smart-contracts/combined.log
+/gocache
+/configs
+/logs

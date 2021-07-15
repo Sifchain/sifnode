@@ -22,6 +22,7 @@ def do_currency_test(
         rowan_source_integrationtest_env_transfer_request: EthereumToSifchainTransferRequest,
         ethereum_network,
         solidity_json_path,
+        operator_address
 ):
     amount = amount_in_wei(9)
     logging.info(f"create new currency")
@@ -32,7 +33,9 @@ def do_currency_test(
         18,
         smart_contracts_dir=smart_contracts_dir,
         bridgebank_address=bridgebank_address,
-        solidity_json_path=solidity_json_path
+        solidity_json_path=solidity_json_path,
+        operator_address=operator_address,
+        ethereum_network=ethereum_network
     )
 
     logging.info(f"create test account to use with new currency {new_currency_symbol}")
@@ -47,8 +50,10 @@ def do_currency_test(
     test_amount = 39000
     logging.info(f"transfer some of the new currency {new_currency_symbol} to the test sifchain address")
     request.ethereum_symbol = new_currency["newtoken_address"]
+    request.ethereum_address = operator_address
     request.sifchain_symbol = ("c" + new_currency["newtoken_symbol"]).lower()
     request.amount = test_amount
+    request.ethereum_private_key_env_var = "OPERATOR_PRIVATE_KEY"
     burn_lock_functions.transfer_ethereum_to_sifchain(request)
 
     logging.info("send some new currency to ethereum")
@@ -67,6 +72,7 @@ def test_transfer_tokens_with_some_currency(
         rowan_source_integrationtest_env_transfer_request: EthereumToSifchainTransferRequest,
         ethereum_network,
         solidity_json_path,
+        operator_address
 ):
     new_currency_symbol = ("a" + get_shell_output("uuidgen").replace("-", ""))[:4]
     do_currency_test(
@@ -76,7 +82,8 @@ def test_transfer_tokens_with_some_currency(
         rowan_source_integrationtest_env_credentials,
         rowan_source_integrationtest_env_transfer_request,
         ethereum_network,
-        solidity_json_path=solidity_json_path
+        solidity_json_path=solidity_json_path,
+        operator_address=operator_address,
     )
 
 
@@ -88,6 +95,7 @@ def test_three_letter_currency_with_capitals_in_name(
         rowan_source_integrationtest_env_transfer_request: EthereumToSifchainTransferRequest,
         ethereum_network,
         solidity_json_path,
+        operator_address
 ):
     new_currency_symbol = ("F" + get_shell_output("uuidgen").replace("-", ""))[:3]
     do_currency_test(
@@ -97,5 +105,6 @@ def test_three_letter_currency_with_capitals_in_name(
         rowan_source_integrationtest_env_credentials,
         rowan_source_integrationtest_env_transfer_request,
         ethereum_network,
-        solidity_json_path=solidity_json_path
+        solidity_json_path=solidity_json_path,
+        operator_address=operator_address
     )

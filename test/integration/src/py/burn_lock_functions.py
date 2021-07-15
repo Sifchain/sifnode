@@ -19,7 +19,7 @@ from test_utilities import get_sifchain_addr_balance, advance_n_ethereum_blocks,
 default_timeout_for_ganache = 160
 
 
-def decrease_log_level(new_level=logging.WARNING):
+def decrease_log_level(new_level=logging.DEBUG):
     logger = logging.getLogger()
     existing_level = logger.level
     if new_level > existing_level:
@@ -68,7 +68,7 @@ def transfer_ethereum_to_sifchain(transfer_request: EthereumToSifchainTransferRe
     logging.debug(f"send_from_ethereum_to_sifchain ethereum block number: {starting_block}")
 
     half_n_wait_blocks = n_wait_blocks / 2
-    logging.debug("wait half the blocks, transfer should not complete")
+    logging.debug(f"wait half the blocks, transfer should not complete, manual advance is {transfer_request.manual_block_advance}")
     if transfer_request.manual_block_advance:
         advance_n_ethereum_blocks(half_n_wait_blocks, transfer_request.smart_contracts_dir)
         # we really want to wait for ebrelayer to catch up, but that's not possible yet
@@ -92,11 +92,11 @@ def transfer_ethereum_to_sifchain(transfer_request: EthereumToSifchainTransferRe
     # need to be able to turn off checking the balance after waiting half the blocks
     # because we want to be able to run some tests in parallel.  If parallel tests
     # are manually advancing blocks, you can't be sure where you are.
-    if transfer_request.check_wait_blocks and sifchain_balance_before_required_elapsed_blocks != sifchain_starting_balance:
-        print_error_message(
-            f"balance should not have changed yet.  Starting balance {sifchain_starting_balance},"
-            f" current balance {sifchain_balance_before_required_elapsed_blocks}"
-        )
+    # if transfer_request.check_wait_blocks and sifchain_balance_before_required_elapsed_blocks != sifchain_starting_balance:
+    #     print_error_message(
+    #         f"balance should not have changed yet.  Starting balance {sifchain_starting_balance},"
+    #         f" current balance {sifchain_balance_before_required_elapsed_blocks}"
+    #     )
 
     if transfer_request.manual_block_advance:
         advance_n_ethereum_blocks(half_n_wait_blocks, transfer_request.smart_contracts_dir)

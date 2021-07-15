@@ -1,6 +1,7 @@
 import logging
 import os
 import time
+import pytest
 
 import burn_lock_functions
 from integration_env_credentials import sifchain_cli_credentials_for_test
@@ -14,6 +15,7 @@ from test_utilities import wait_for_sifchain_addr_balance, \
 test_integration_dir = get_required_env_var("TEST_INTEGRATION_DIR")
 
 
+@pytest.mark.skip(reason="requires local ganache")
 def test_rollback_chain(source_ethereum_address, solidity_json_path):
     new_account_key = get_shell_output("uuidgen")
     credentials = sifchain_cli_credentials_for_test(new_account_key)

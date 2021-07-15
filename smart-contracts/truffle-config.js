@@ -24,6 +24,13 @@ module.exports = {
       gas: 6721975, // Truffle default development block gas limit
       gasPrice: 200000000000
     },
+    mydocker: {
+      host: "ganache",
+      port: 7545, // Match default network 'ganache'
+      network_id: 5777,
+      gas: 6721975, // Truffle default development block gas limit
+      gasPrice: 200000000000
+    },
     ropsten: {
       provider: function () {
         return new HDWalletProvider(
@@ -33,6 +40,15 @@ module.exports = {
       },
       network_id: 3,
       gas: 6000000
+    },
+    dynamic: {
+      provider: function () {
+        return new HDWalletProvider(
+            process.env.ETHEREUM_PRIVATE_KEY,
+            process.env.ETHEREUM_WEBSOCKET_ADDRESS
+        );
+      },
+      network_id: process.env.ETHEREUM_NETWORK_ID,
     },
     mainnet: {
       provider: function () {

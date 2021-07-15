@@ -11,6 +11,7 @@ from pytest_utilities import generate_test_account, generate_minimal_test_accoun
 from test_utilities import EthereumToSifchainTransferRequest
 
 
+@pytest.mark.skip(reason="requires local ganache")
 def test_ebrelayer_restart(
         basic_transfer_request: EthereumToSifchainTransferRequest,
         source_ethereum_address: str,
@@ -31,6 +32,7 @@ def test_ebrelayer_restart(
 
 
 @pytest.mark.usefixtures("ensure_relayer_restart")
+@pytest.mark.skip(reason="requires local ganache")
 def test_ethereum_transactions_with_offline_relayer(
         basic_transfer_request: EthereumToSifchainTransferRequest,
         smart_contracts_dir,
@@ -78,6 +80,7 @@ def test_ethereum_transactions_with_offline_relayer(
 
 
 @pytest.mark.usefixtures("ensure_relayer_restart")
+@pytest.mark.skip(reason="requires local ganache")
 def test_sifchain_transactions_with_offline_relayer(
         basic_transfer_request: EthereumToSifchainTransferRequest,
         rowan_source_integrationtest_env_credentials: test_utilities.SifchaincliCredentials,

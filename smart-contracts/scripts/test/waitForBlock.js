@@ -21,7 +21,7 @@ module.exports = async (cb) => {
     const web3 = contractUtilites.buildWeb3(this, argv, logging);
 
     let waitTime = 2000;
-    switch (argv.ethereum_network) {
+    switch (argv.network) {
         case "ropsten":
         case "mainnet":
             waitTime = 60000;

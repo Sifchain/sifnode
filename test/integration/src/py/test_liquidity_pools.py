@@ -8,7 +8,7 @@ import burn_lock_functions
 from burn_lock_functions import EthereumToSifchainTransferRequest
 import test_utilities
 from pytest_utilities import generate_test_account
-from test_utilities import get_required_env_var, SifchaincliCredentials, get_optional_env_var, ganache_owner_account, \
+from test_utilities import get_required_env_var, SifchaincliCredentials, get_optional_env_var, \
     get_shell_output_json, get_shell_output, detect_errors_in_sifnodecli_output, get_transaction_result, amount_in_wei
 
 
@@ -548,6 +548,8 @@ def test_pools(
     request.ethereum_symbol = new_currency["newtoken_address"]
     request.sifchain_symbol = sifchain_symbol
     request.amount = target_new_currency_balance
+    request.ethereum_address = operator_address
+    request.ethereum_private_key_env_var = "OPERATOR_PRIVATE_KEY"
     burn_lock_functions.transfer_ethereum_to_sifchain(request)
 
     sifaddress = request.sifchain_address
@@ -567,6 +569,8 @@ def test_pools(
     request2.ethereum_symbol = new_currency["newtoken_address"]
     request2.sifchain_symbol = sifchain_symbol
     request2.amount = target_new_currency_balance
+    request2.ethereum_address = operator_address
+    request2.ethereum_private_key_env_var = "OPERATOR_PRIVATE_KEY"
     burn_lock_functions.transfer_ethereum_to_sifchain(request2)
 
     sifaddress2 = request2.sifchain_address

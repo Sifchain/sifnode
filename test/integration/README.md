@@ -1,3 +1,44 @@
+# Containers
+
+## ganache, geth
+
+configs
+- Ethereum addresses and private keys, loaded with eth
+  
+daemons
+- An ethereum server
+
+## sifnoded
+
+configs
+- sifchain credentials for validators and the admin user
+
+daemons
+- sifnoded
+
+## golang
+
+configs
+- json is written after golang code has been compiled
+
+daemons
+- none; the container exits after building
+
+## smartcontractrunner
+
+configs
+- credentials and addresses for
+    - operator
+    - each validator
+    - ethereum_address as a place to get tokens
+    
+effects
+- Compiles and deploys smart contracts
+- puts the resulting json artifacts into a known location
+
+## ebrelayer
+
+
 # Running the Integration Test Suite
 
 ## Tooling
@@ -43,6 +84,7 @@ You can control the log level and which tests are run
 with standard pytest options:
 
 ```
+python3 -m pytest -olog_cli=true -olog_level=DEBUG -olog_file=/tmp/log.txt -v src/py/test_eth_transfers
 python3 -m pytest -olog_cli=true -olog_level=DEBUG -olog_file=/tmp/log.txt -v src/py/test_rowan_transfers.py::test_transfer_rowan_to_erowan
 ```
 If you have a clean Ubuntu environment, these two commands will set up everything you need:

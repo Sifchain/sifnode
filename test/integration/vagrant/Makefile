@@ -83,3 +83,24 @@ sifdocker-start:
 
 sifdocker-sh:
 	docker exec -ti sifdocker bash
+
+gethdocker-start:
+	docker run -d --rm -p 9091:8545 -p 9092:8546 --name gethdocker -v $(shell pwd)/../../..:/sifnode sifdocker bash -c "/sifnode/test/integration/setupgeth.sh 0xBBe52eeA1cB7324092900E5b0De8C346422b591D"
+
+extra:
+	# install web3, used for passsword extraction
+	curl -LSs https://raw.githubusercontent.com/gochain/web3/master/install.sh | sh
+
+
+#const fs = require("fs");
+#const keythereum = require("keythereum");
+#
+#const KEYSTORE = "KeystoreFileName";
+#const PASSWORD = "YourPassword";
+#
+#const keyObject = JSON.parse(fs.readFileSync(KEYSTORE, {encoding: "utf8"}));
+#const privateKey = keythereum.recover(PASSWORD, keyObject).toString("hex");
+#console.log(`0x${keyObject.address}: 0x${privateKey}`);
+
+#geth attach /tmp/gethdata/geth.ipc --exec 'eth.sendTransaction({from:eth.coinbase, to:"0xBBe52eeA1cB7324092900E5b0De8C346422b591D", value:100000000000000000000})'
+#geth attach /tmp/gethdata/geth.ipc --exec 'eth.getBalance("0xBBe52eeA1cB7324092900E5b0De8C346422b591D")'

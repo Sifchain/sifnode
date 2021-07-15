@@ -3,8 +3,6 @@
 # $0 block-delay-time [default is none, always generate a block]
 #   block-delay-time is passed to ganache as -b block-delay-time
 
-set -xv
-
 block_delay=$1
 if [ ! -z "$block_delay" ]
 then
@@ -16,6 +14,8 @@ fi
 
 set_persistant_env_var GANACHE_LOG $datadir/logs/ganache.$(filenamedate).txt $envexportfile
 set_persistant_env_var GANACHE_KEYS_JSON $datadir/ganachekeys.json $envexportfile
+
+rm -f $GANACHE_KEYS_JSON
 
 mkdir -p $(dirname $GANACHE_LOG)
 
@@ -34,4 +34,7 @@ sleep 5
 
 while ! nc -z localhost 7545; do
   sleep 5
+done
+while [ ! -f $GANACHE_KEYS_JSON ]; do
+  sleep 1
 done

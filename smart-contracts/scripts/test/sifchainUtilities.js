@@ -47,7 +47,7 @@ const amountYargOption = {
 };
 
 const ethereumNetworkYargOption = {
-    'ethereum_network': {
+    'network': {
         describe: "can be ropsten or mainnet",
         default: "http://localhost:7545",
     },
@@ -81,6 +81,10 @@ const sharedYargOptions = {
     'json_path': {
         describe: 'path to the json files',
         default: "../build/contracts",
+    },
+    'network': {
+        describe: 'used for the initial connection to ganache, should be identical to ethereum_network',
+        default: "",
     },
 };
 
