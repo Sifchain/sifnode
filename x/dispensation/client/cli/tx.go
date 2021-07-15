@@ -71,10 +71,10 @@ func GetCmdClaim() *cobra.Command {
 		Short: "Create new Claim",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx, err := client.GetClientTxContext(cmd)
-			err = cobra.ExactArgs(1)(cmd, args)
 			if err != nil {
 				return err
 			}
+			err = cobra.ExactArgs(1)(cmd, args)
 			if err != nil {
 				return err
 			}
