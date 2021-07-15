@@ -690,6 +690,21 @@ def update_ceth_receiver_account(
     logging.critical(f"update_ceth_receiver_account result: {result}")
 
 
+def update_whitelist_validator(
+        admin_account: str,
+        validator_account: str,
+        transfer_request: EthereumToSifchainTransferRequest,
+        credentials: SifchaincliCredentials
+):
+    cmd = build_sifchain_command(
+        f"{sifnoded_binary} tx ethbridge update_whitelist_validator -y {admin_account} {validator_account} add",
+        transfer_request=transfer_request,
+        credentials=credentials
+    )
+    result = get_shell_output(cmd)
+    logging.debug(f"update_whitelist_validator result: {result}")
+
+
 def rescue_ceth(
         receiver_account: str,
         admin_account: str,
