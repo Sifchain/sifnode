@@ -41,6 +41,10 @@ func GetCmdCreate() *cobra.Command {
 			if err != nil {
 				return err
 			}
+			err = cobra.ExactArgs(3)(cmd, args)
+			if err != nil {
+				return err
+			}
 			distributionType, ok := types.GetDistributionTypeFromShortString(args[0])
 			if !ok {
 				return fmt.Errorf("invalid distribution Type %s: Types supported [Airdrop/LiquidityMining/ValidatorSubsidy]", args[2])
@@ -67,6 +71,10 @@ func GetCmdClaim() *cobra.Command {
 		Short: "Create new Claim",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx, err := client.GetClientTxContext(cmd)
+			err = cobra.ExactArgs(1)(cmd, args)
+			if err != nil {
+				return err
+			}
 			if err != nil {
 				return err
 			}
@@ -92,6 +100,10 @@ func GetCmdRun() *cobra.Command {
 		Short: "run limited records dispensation by specifying the name / should only be called by the authorized runner",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx, err := client.GetClientTxContext(cmd)
+			if err != nil {
+				return err
+			}
+			err = cobra.ExactArgs(2)(cmd, args)
 			if err != nil {
 				return err
 			}
