@@ -21,7 +21,7 @@ import (
 //nolint:lll
 func GetCmdCreateEthBridgeClaim() *cobra.Command {
 	return &cobra.Command{
-		Use:   "create-claim [bridge-registry-contract] [nonce] [symbol] [ethereum-sender-address] [cosmos-receiver-address] [validator-address] [amount] [claim-type] --ethereum-chain-id [ethereum-chain-id] --token-contract-address [token-contract-address]",
+		Use:   "create-claim [bridge-registry-contract] [nonce] [symbol] [ethereum-sender-address] [cosmos-receiver-address] [validator-address] [amount] [claim-type] --network-descriptor [network-descriptor] --token-contract-address [token-contract-address]",
 		Short: "create a claim on an ethereum prophecy",
 		Args:  cobra.ExactArgs(8),
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -115,9 +115,9 @@ func GetCmdCreateEthBridgeClaim() *cobra.Command {
 //nolint:lll
 func GetCmdBurn() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "burn [cosmos-sender-address] [ethereum-receiver-address] [amount] [symbol] [nativeTokenAmount] --ethereum-chain-id [ethereum-chain-id]",
-		Short: "burn NativeToken or cERC20 on the Cosmos chain",
-		Long: `This should be used to burn NativeToken or cERC20. It will burn your coins on the Cosmos Chain, removing them from your account and deducting them from the supply.
+		Use:   "burn [cosmos-sender-address] [ethereum-receiver-address] [amount] [symbol] [crossChainFee] --network-descriptor [network-descriptor]",
+		Short: "burn CrossChainFee or cERC20 on the Cosmos chain",
+		Long: `This should be used to burn CrossChainFee or cERC20. It will burn your coins on the Cosmos Chain, removing them from your account and deducting them from the supply.
 		It will also trigger an event on the Cosmos Chain for relayers to watch so that they can trigger the withdrawal of the original ETH/ERC20 to you from the Ethereum contract!`,
 		Args: cobra.ExactArgs(5),
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -163,12 +163,12 @@ func GetCmdBurn() *cobra.Command {
 
 			symbol := args[3]
 
-			nativeTokenAmount, ok := sdk.NewIntFromString(args[4])
+			crossChainFee, ok := sdk.NewIntFromString(args[4])
 			if !ok {
-				return errors.New("Error parsing native-token amount")
+				return errors.New("Error parsing cross-chain-fee amount")
 			}
 
-			msg := types.NewMsgBurn(oracletypes.NetworkDescriptor(ethereumChainID), cosmosSender, ethereumReceiver, amount, symbol, nativeTokenAmount)
+			msg := types.NewMsgBurn(oracletypes.NetworkDescriptor(ethereumChainID), cosmosSender, ethereumReceiver, amount, symbol, crossChainFee)
 			if err := msg.ValidateBasic(); err != nil {
 				return err
 			}
@@ -186,7 +186,7 @@ func GetCmdBurn() *cobra.Command {
 func GetCmdLock() *cobra.Command {
 	//nolint:lll
 	cmd := &cobra.Command{
-		Use:   "lock [cosmos-sender-address] [ethereum-receiver-address] [amount] [symbol] [nativeTokenAmount] --ethereum-chain-id [ethereum-chain-id]",
+		Use:   "lock [cosmos-sender-address] [ethereum-receiver-address] [amount] [symbol] [crossChainFee] --network-descriptor [network-descriptor]",
 		Short: "This should be used to lock Cosmos-originating coins (eg: ATOM). It will lock up your coins in the supply module, removing them from your account. It will also trigger an event on the Cosmos Chain for relayers to watch so that they can trigger the minting of the pegged token on Etherum to you!",
 		Args:  cobra.ExactArgs(5),
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -236,12 +236,12 @@ func GetCmdLock() *cobra.Command {
 
 			symbol := args[3]
 
-			nativeTokenAmount, ok := sdk.NewIntFromString(args[4])
+			crossChainFee, ok := sdk.NewIntFromString(args[4])
 			if !ok {
-				return errors.New("Error parsing native-token amount")
+				return errors.New("Error parsing cross-chain-fee amount")
 			}
 
-			msg := types.NewMsgLock(oracletypes.NetworkDescriptor(ethereumChainID), cosmosSender, ethereumReceiver, amount, symbol, nativeTokenAmount)
+			msg := types.NewMsgLock(oracletypes.NetworkDescriptor(ethereumChainID), cosmosSender, ethereumReceiver, amount, symbol, crossChainFee)
 			if err := msg.ValidateBasic(); err != nil {
 				return err
 			}
@@ -301,11 +301,11 @@ func GetCmdUpdateWhiteListValidator() *cobra.Command {
 	return cmd
 }
 
-// GetCmdUpdateNativeTokenReceiverAccount is the CLI command to update the sifchain account that receives the native_token proceeds
-func GetCmdUpdateNativeTokenReceiverAccount() *cobra.Command {
+// GetCmdUpdateCrossChainFeeReceiverAccount is the CLI command to update the sifchain account that receives the cross-chain-fee proceeds
+func GetCmdUpdateCrossChainFeeReceiverAccount() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "update-native-token-receiver-account [cosmos-sender-address] [native_token_receiver_account]",
-		Short: "This should be used to set the native token receiver account.",
+		Use:   "update-cross-chain-fee-receiver-account [cosmos-sender-address] [cross-chain-fee-receiver-account]",
+		Short: "This should be used to set the crosschain fee receiver account.",
 		Args:  cobra.ExactArgs(2),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx, err := client.GetClientTxContext(cmd)
@@ -318,12 +318,12 @@ func GetCmdUpdateNativeTokenReceiverAccount() *cobra.Command {
 				return err
 			}
 
-			nativeTokenReceiverAccount, err := sdk.AccAddressFromBech32(args[1])
+			crossChainFeeReceiverAccount, err := sdk.AccAddressFromBech32(args[1])
 			if err != nil {
 				return err
 			}
 
-			msg := types.NewMsgUpdateNativeTokenReceiverAccount(cosmosSender, nativeTokenReceiverAccount)
+			msg := types.NewMsgUpdateCrossChainFeeReceiverAccount(cosmosSender, crossChainFeeReceiverAccount)
 			if err := msg.ValidateBasic(); err != nil {
 				return err
 			}
@@ -337,11 +337,11 @@ func GetCmdUpdateNativeTokenReceiverAccount() *cobra.Command {
 	return cmd
 }
 
-// GetCmdRescueNativeToken is the CLI command to send the message to transfer native_token from ethbridge module to account
-func GetCmdRescueNativeToken() *cobra.Command {
+// GetCmdRescueCrossChainFee is the CLI command to send the message to transfer cross-chain-fee from ethbridge module to account
+func GetCmdRescueCrossChainFee() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "rescue-native-token [cosmos-sender-address] [native-token-receiver-account] [native-token] [native-token-amount]",
-		Short: "This should be used to send native_token from ethbridge to an account.",
+		Use:   "rescue-cross-chain-fee [cosmos-sender-address] [cross-chain-fee-receiver-account] [cross-chain-fee] [cross-chain-fee-amount]",
+		Short: "This should be used to send cross-chain-fee from ethbridge to an account.",
 		Args:  cobra.ExactArgs(4),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx, err := client.GetClientTxContext(cmd)
@@ -354,19 +354,19 @@ func GetCmdRescueNativeToken() *cobra.Command {
 				return err
 			}
 
-			nativeTokenReceiverAccount, err := sdk.AccAddressFromBech32(args[1])
+			crossChainFeeReceiverAccount, err := sdk.AccAddressFromBech32(args[1])
 			if err != nil {
 				return err
 			}
 
-			nativeTokenAmount, ok := sdk.NewIntFromString(args[2])
+			crossChainFee, ok := sdk.NewIntFromString(args[2])
 			if !ok {
-				return errors.New("Error parsing native-token amount")
+				return errors.New("Error parsing cross-chain-fee amount")
 			}
 
-			nativeToken := args[3]
+			crosschainFeeSymbol := args[3]
 
-			msg := types.NewMsgRescueNativeToken(cosmosSender, nativeTokenReceiverAccount, nativeToken, nativeTokenAmount)
+			msg := types.NewMsgRescueCrossChainFee(cosmosSender, crossChainFeeReceiverAccount, crosschainFeeSymbol, crossChainFee)
 			if err := msg.ValidateBasic(); err != nil {
 				return err
 			}
@@ -380,11 +380,11 @@ func GetCmdRescueNativeToken() *cobra.Command {
 	return cmd
 }
 
-// GetCmdSetNativeToken is the CLI command to send the message to set native token for network
-func GetCmdSetNativeToken() *cobra.Command {
+// GetCmdSetCrossChainFee is the CLI command to send the message to set crosschain fee for network
+func GetCmdSetCrossChainFee() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "set-native-token [cosmos-sender-address] [network-id] [native-token]",
-		Short: "This should be used to set native token for a network.",
+		Use:   "set-cross-chain-fee [cosmos-sender-address] [network-id] [cross-chain-fee]",
+		Short: "This should be used to set crosschain fee for a network.",
 		Args:  cobra.ExactArgs(3),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx, err := client.GetClientTxContext(cmd)
@@ -402,9 +402,9 @@ func GetCmdSetNativeToken() *cobra.Command {
 				return errors.New("Error parsing network descriptor")
 			}
 
-			nativeToken := args[2]
+			crossChainFee := args[2]
 
-			msg := types.NewMsgSetNativeToken(cosmosSender, oracletypes.NetworkDescriptor(networkDescriptor), nativeToken)
+			msg := types.NewMsgSetFeeInfo(cosmosSender, oracletypes.NetworkDescriptor(networkDescriptor), crossChainFee)
 			if err := msg.ValidateBasic(); err != nil {
 				return err
 			}

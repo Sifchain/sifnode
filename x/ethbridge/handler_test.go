@@ -142,7 +142,7 @@ func TestMintSuccess(t *testing.T) {
 	receiverAddress, err := sdk.AccAddressFromBech32(types.TestAddress)
 	require.NoError(t, err)
 	receiverCoins := bankKeeper.GetAllBalances(ctx, receiverAddress)
-	expectedCoins := sdk.Coins{sdk.NewInt64Coin(types.TestNativeCoinsSymbol, types.TestCoinIntAmount)}
+	expectedCoins := sdk.Coins{sdk.NewInt64Coin(types.TestCrossChainFeeSymbol, types.TestCoinIntAmount)}
 
 	require.True(t, receiverCoins.IsEqual(expectedCoins))
 	for _, event := range res.Events {
@@ -159,7 +159,7 @@ func TestMintSuccess(t *testing.T) {
 	_, err = handler(ctx, &normalCreateMsg)
 	require.Nil(t, err)
 	receiverCoins = bankKeeper.GetAllBalances(ctx, receiverAddress)
-	expectedCoins = sdk.Coins{sdk.NewInt64Coin(types.TestNativeCoinsSymbol, types.TestCoinIntAmount)}
+	expectedCoins = sdk.Coins{sdk.NewInt64Coin(types.TestCrossChainFeeSymbol, types.TestCoinIntAmount)}
 	require.True(t, receiverCoins.IsEqual(expectedCoins))
 }
 
@@ -335,7 +335,7 @@ func TestBurnEthSuccess(t *testing.T) {
 	eventEthereumReceiver := ""
 	eventAmount := ""
 	eventSymbol := ""
-	eventNativeTokenAmount := sdk.NewInt(0)
+	eventcrossChainFee := sdk.NewInt(0)
 	for _, event := range res.Events {
 		for _, attribute := range event.Attributes {
 			value := string(attribute.Value)
@@ -362,9 +362,9 @@ func TestBurnEthSuccess(t *testing.T) {
 				eventAmount = value
 			case "symbol":
 				eventSymbol = value
-			case "native_token_amount":
+			case "cross_chain_fee_amount":
 				var ok bool
-				eventNativeTokenAmount, ok = sdk.NewIntFromString(value)
+				eventcrossChainFee, ok = sdk.NewIntFromString(value)
 				require.Equal(t, ok, true)
 			default:
 				require.Fail(t, fmt.Sprintf("unrecognized event %s", key))
@@ -379,7 +379,7 @@ func TestBurnEthSuccess(t *testing.T) {
 	require.Equal(t, eventEthereumReceiver, ethereumReceiver.String())
 	require.Equal(t, eventAmount, coinsToBurnAmount.String())
 	require.Equal(t, eventSymbol, coinsToBurnSymbolPrefixed)
-	require.Equal(t, eventNativeTokenAmount, sdk.NewInt(65000000000*300000))
+	require.Equal(t, eventcrossChainFee, sdk.NewInt(65000000000*300000))
 
 	coinsToMintAmount = sdk.NewInt(65000000000 * 300000)
 	coinsToMintSymbol = "eth"
@@ -412,7 +412,7 @@ func TestBurnEthSuccess(t *testing.T) {
 	require.Nil(t, res)
 }
 
-func TestUpdateNativeTokenReceiverAccountMsg(t *testing.T) {
+func TestUpdateCrossChainFeeReceiverAccountMsg(t *testing.T) {
 	ctx, _, bankKeeper, accountKeeper, handler, _, oracleKeeper := CreateTestHandler(t, 0.5, []int64{5})
 	coins := sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, sdk.NewInt(10000)))
 
@@ -423,35 +423,35 @@ func TestUpdateNativeTokenReceiverAccountMsg(t *testing.T) {
 	err = bankKeeper.AddCoins(ctx, cosmosSender, coins)
 	require.NoError(t, err)
 
-	testUpdateNativeTokenReceiverAccountMsg := types.CreateTestUpdateNativeTokenReceiverAccountMsg(
+	testUpdateCrossChainFeeReceiverAccountMsg := types.CreateTestUpdateCrossChainFeeReceiverAccountMsg(
 		t, types.TestAddress, types.TestAddress)
 
-	res, err := handler(ctx, &testUpdateNativeTokenReceiverAccountMsg)
+	res, err := handler(ctx, &testUpdateCrossChainFeeReceiverAccountMsg)
 	require.NoError(t, err)
 	require.NotNil(t, res)
 }
 
-func TestRescueNativeTokenMsg(t *testing.T) {
+func TestRescueCrossChainFeeMsg(t *testing.T) {
 	ctx, _, bankKeeper, accountKeeper, handler, _, oracleKeeper := CreateTestHandler(t, 0.5, []int64{5})
 	coins := sdk.NewCoins(sdk.NewCoin("ceth", sdk.NewInt(10000)))
 	err := bankKeeper.MintCoins(ctx, types.ModuleName, coins)
 	require.NoError(t, err)
 
-	testRescueNativeTokenMsg := types.CreateTestRescueNativeTokenMsg(
-		t, types.TestAddress, types.TestAddress, types.TestNativeCoinsSymbol, sdk.NewInt(10000))
+	testRescueCrossChainFeeMsg := types.CreateTestRescueCrossChainFeeMsg(
+		t, types.TestAddress, types.TestAddress, types.TestCrossChainFeeSymbol, sdk.NewInt(10000))
 
 	cosmosSender, err := sdk.AccAddressFromBech32(types.TestAddress)
 	require.NoError(t, err)
 
 	accountKeeper.SetAccount(ctx, authtypes.NewBaseAccountWithAddress(cosmosSender))
 
-	_, err = handler(ctx, &testRescueNativeTokenMsg)
+	_, err = handler(ctx, &testRescueCrossChainFeeMsg)
 	require.Error(t, err)
 
 	oracleKeeper.SetAdminAccount(ctx, cosmosSender)
 	_ = bankKeeper.AddCoins(ctx, cosmosSender, coins)
 
-	res, err := handler(ctx, &testRescueNativeTokenMsg)
+	res, err := handler(ctx, &testRescueCrossChainFeeMsg)
 	require.NoError(t, err)
 	require.NotNil(t, res)
 }
@@ -563,10 +563,10 @@ func TestUpdateWhiteListValidator(t *testing.T) {
 	}
 }
 
-func TestSetNativeTokenMsg(t *testing.T) {
+func TestSetCrossChainFeeMsg(t *testing.T) {
 	ctx, _, _, accountKeeper, handler, _, oracleKeeper := CreateTestHandler(t, 0.5, []int64{5})
 
-	testSetAtiveTokenMsg := types.CreateTestSetAtiveTokenMsg(
+	testSetAtiveTokenMsg := types.CreateTestSetCrossChainFeeMsg(
 		t, types.TestAddress, oracletypes.NetworkDescriptor_NETWORK_DESCRIPTOR_ETHEREUM, "ceth")
 
 	cosmosSender, err := sdk.AccAddressFromBech32(types.TestAddress)
@@ -590,8 +590,8 @@ func CreateTestHandler(t *testing.T, consensusNeeded float64, validatorAmounts [
 
 	ctx, keeper, bankKeeper, accountKeeper, oracleKeeper, _, _, validators := test.CreateTestKeepers(t, consensusNeeded, validatorAmounts, "")
 
-	NativeTokenReceiverAccount, _ := sdk.AccAddressFromBech32(TestAddress)
-	keeper.SetNativeTokenReceiverAccount(ctx, NativeTokenReceiverAccount)
+	CrossChainFeeReceiverAccount, _ := sdk.AccAddressFromBech32(TestAddress)
+	keeper.SetCrossChainFeeReceiverAccount(ctx, CrossChainFeeReceiverAccount)
 	handler := ethbridge.NewHandler(keeper)
 
 	return ctx, keeper, bankKeeper, accountKeeper, handler, validators, oracleKeeper

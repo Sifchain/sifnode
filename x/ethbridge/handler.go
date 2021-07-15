@@ -30,14 +30,14 @@ func NewHandler(k Keeper) sdk.Handler {
 		case *types.MsgUpdateWhiteListValidator:
 			res, err := msgServer.UpdateWhiteListValidator(sdk.WrapSDKContext(ctx), msg)
 			return sdk.WrapServiceResult(ctx, res, err)
-		case *types.MsgUpdateNativeTokenReceiverAccount:
-			res, err := msgServer.UpdateNativeTokenReceiverAccount(sdk.WrapSDKContext(ctx), msg)
+		case *types.MsgUpdateCrossChainFeeReceiverAccount:
+			res, err := msgServer.UpdateCrossChainFeeReceiverAccount(sdk.WrapSDKContext(ctx), msg)
 			return sdk.WrapServiceResult(ctx, res, err)
-		case *types.MsgRescueNativeToken:
-			res, err := msgServer.RescueNativeToken(sdk.WrapSDKContext(ctx), msg)
+		case *types.MsgRescueCrossChainFee:
+			res, err := msgServer.RescueCrossChainFee(sdk.WrapSDKContext(ctx), msg)
 			return sdk.WrapServiceResult(ctx, res, err)
-		case *types.MsgSetNativeToken:
-			res, err := msgServer.SetNativeToken(sdk.WrapSDKContext(ctx), msg)
+		case *types.MsgSetFeeInfo:
+			res, err := msgServer.SetFeeInfo(sdk.WrapSDKContext(ctx), msg)
 			return sdk.WrapServiceResult(ctx, res, err)
 		default:
 			errMsg := fmt.Sprintf("unrecognized ethbridge message type: %v", msg.Type())

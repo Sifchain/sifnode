@@ -25,11 +25,11 @@ func (n NetworkIdentity) GetPrefix() []byte {
 	return append(WhiteListValidatorPrefix, bytebuf.Bytes()...)
 }
 
-// GetNativeTokenPrefix return storage prefix
-func (n NetworkIdentity) GetNativeTokenPrefix() []byte {
+// GetCrossChainFeePrefix return storage prefix
+func (n NetworkIdentity) GetCrossChainFeePrefix() []byte {
 	bytebuf := bytes.NewBuffer([]byte{})
 	_ = binary.Write(bytebuf, binary.BigEndian, n.NetworkDescriptor)
-	return append(NativeTokenPrefix, bytebuf.Bytes()...)
+	return append(CrossChainFeePrefix, bytebuf.Bytes()...)
 }
 
 // GetFromPrefix return a NetworkIdentity from prefix

@@ -148,7 +148,7 @@ func CreateCosmosMsgAttributes(t *testing.T, claimType types.Event) []abci.Event
 		Value: []byte(common.HexToAddress(TestEthTokenAddress).Hex()),
 	}
 
-	// (key, value) pairing for "ethereum_chain_id" key
+	// (key, value) pairing for "network-descriptor" key
 	pairEthereumChainID := abci.EventAttribute{
 		Key:   []byte("network_id"),
 		Value: []byte(strconv.Itoa(TestNetworkDescriptor)),

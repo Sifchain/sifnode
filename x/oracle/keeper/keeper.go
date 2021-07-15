@@ -177,9 +177,9 @@ func (k Keeper) processCompletion(ctx sdk.Context, networkDescriptor types.Netwo
 	return prophecy
 }
 
-// ProcessSetNativeToken set native token for a network
-func (k Keeper) ProcessSetNativeToken(ctx sdk.Context, networkDescriptor types.NetworkDescriptor, nativeToken string, gas, lockCost, burnCost sdk.Int) error {
-	k.SetNativeToken(ctx, types.NewNetworkIdentity(networkDescriptor), nativeToken, gas, lockCost, burnCost)
+// SetFeeInfo set crosschain fee for a network
+func (k Keeper) SetFeeInfo(ctx sdk.Context, networkDescriptor types.NetworkDescriptor, crossChainFee string, gas, lockCost, burnCost sdk.Int) error {
+	k.SetCrossChainFee(ctx, types.NewNetworkIdentity(networkDescriptor), crossChainFee, gas, lockCost, burnCost)
 	return nil
 }
 

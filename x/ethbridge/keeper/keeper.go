@@ -100,23 +100,23 @@ func (k Keeper) ProcessBurn(ctx sdk.Context, cosmosSender sdk.AccAddress, msg *t
 	logger := k.Logger(ctx)
 	var coins sdk.Coins
 	networkIdentity := oracletypes.NewNetworkIdentity(msg.NetworkDescriptor)
-	nativeTokenConfig, err := k.oracleKeeper.GetNativeTokenConfig(ctx, networkIdentity)
+	crossChainFeeConfig, err := k.oracleKeeper.GetCrossChainFeeConfig(ctx, networkIdentity)
 
 	if err != nil {
 		return err
 	}
 
-	minimumBurn := nativeTokenConfig.MinimumBurnCost.Mul(nativeTokenConfig.NativeGas)
-	if msg.NativeTokenAmount.LT(minimumBurn) {
-		return errors.New("native token amount in message less than minimum burn")
+	minimumBurn := crossChainFeeConfig.MinimumBurnCost.Mul(crossChainFeeConfig.FeeCurrencyGas)
+	if msg.CrosschainFee.LT(minimumBurn) {
+		return errors.New("crosschain fee amount in message less than minimum burn")
 	}
 
-	if k.IsNativeTokenReceiverAccountSet(ctx) {
-		coins = sdk.NewCoins(sdk.NewCoin(nativeTokenConfig.NativeToken, msg.NativeTokenAmount))
+	if k.IsCrossChainFeeReceiverAccountSet(ctx) {
+		coins = sdk.NewCoins(sdk.NewCoin(crossChainFeeConfig.FeeCurrency, msg.CrosschainFee))
 
-		err := k.bankKeeper.SendCoins(ctx, cosmosSender, k.GetNativeTokenReceiverAccount(ctx), coins)
+		err := k.bankKeeper.SendCoins(ctx, cosmosSender, k.GetCrossChainFeeReceiverAccount(ctx), coins)
 		if err != nil {
-			logger.Error("failed to send native_token from account to account.",
+			logger.Error("failed to send crosschain fee from account to account.",
 				errorMessageKey, err.Error())
 			return err
 		}
@@ -124,16 +124,16 @@ func (k Keeper) ProcessBurn(ctx sdk.Context, cosmosSender sdk.AccAddress, msg *t
 		coins = sdk.NewCoins(sdk.NewCoin(msg.Symbol, msg.Amount))
 
 	} else {
-		if msg.Symbol == nativeTokenConfig.NativeToken {
-			coins = sdk.NewCoins(sdk.NewCoin(nativeTokenConfig.NativeToken, msg.NativeTokenAmount.Add(msg.Amount)))
+		if msg.Symbol == crossChainFeeConfig.FeeCurrency {
+			coins = sdk.NewCoins(sdk.NewCoin(crossChainFeeConfig.FeeCurrency, msg.CrosschainFee.Add(msg.Amount)))
 		} else {
-			coins = sdk.NewCoins(sdk.NewCoin(msg.Symbol, msg.Amount), sdk.NewCoin(nativeTokenConfig.NativeToken, msg.NativeTokenAmount))
+			coins = sdk.NewCoins(sdk.NewCoin(msg.Symbol, msg.Amount), sdk.NewCoin(crossChainFeeConfig.FeeCurrency, msg.CrosschainFee))
 		}
 	}
 
 	err = k.bankKeeper.SendCoinsFromAccountToModule(ctx, cosmosSender, types.ModuleName, coins)
 	if err != nil {
-		logger.Error("failed to send native_token from module to account.",
+		logger.Error("failed to send crosschain fee from module to account.",
 			errorMessageKey, err.Error())
 		return err
 	}
@@ -154,23 +154,23 @@ func (k Keeper) ProcessLock(ctx sdk.Context, cosmosSender sdk.AccAddress, msg *t
 	logger := k.Logger(ctx)
 	var coins sdk.Coins
 	networkIdentity := oracletypes.NewNetworkIdentity(msg.NetworkDescriptor)
-	nativeTokenConfig, err := k.oracleKeeper.GetNativeTokenConfig(ctx, networkIdentity)
+	crossChainFeeConfig, err := k.oracleKeeper.GetCrossChainFeeConfig(ctx, networkIdentity)
 
 	if err != nil {
 		return err
 	}
 
-	minimumLock := nativeTokenConfig.MinimumLockCost.Mul(nativeTokenConfig.NativeGas)
-	if msg.NativeTokenAmount.LT(minimumLock) {
-		return errors.New("native token amount in message less than minimum lock")
+	minimumLock := crossChainFeeConfig.MinimumLockCost.Mul(crossChainFeeConfig.FeeCurrencyGas)
+	if msg.CrosschainFee.LT(minimumLock) {
+		return errors.New("crosschain fee amount in message less than minimum lock")
 	}
 
-	if k.IsNativeTokenReceiverAccountSet(ctx) {
-		coins = sdk.NewCoins(sdk.NewCoin(nativeTokenConfig.NativeToken, msg.NativeTokenAmount))
+	if k.IsCrossChainFeeReceiverAccountSet(ctx) {
+		coins = sdk.NewCoins(sdk.NewCoin(crossChainFeeConfig.FeeCurrency, msg.CrosschainFee))
 
-		err := k.bankKeeper.SendCoins(ctx, cosmosSender, k.GetNativeTokenReceiverAccount(ctx), coins)
+		err := k.bankKeeper.SendCoins(ctx, cosmosSender, k.GetCrossChainFeeReceiverAccount(ctx), coins)
 		if err != nil {
-			logger.Error("failed to send native_token from account to account.",
+			logger.Error("failed to send crosschain fee from account to account.",
 				errorMessageKey, err.Error())
 			return err
 		}
@@ -178,7 +178,7 @@ func (k Keeper) ProcessLock(ctx sdk.Context, cosmosSender sdk.AccAddress, msg *t
 		coins = sdk.NewCoins(sdk.NewCoin(msg.Symbol, msg.Amount))
 
 	} else {
-		coins = sdk.NewCoins(sdk.NewCoin(msg.Symbol, msg.Amount), sdk.NewCoin(nativeTokenConfig.NativeToken, msg.NativeTokenAmount))
+		coins = sdk.NewCoins(sdk.NewCoin(msg.Symbol, msg.Amount), sdk.NewCoin(crossChainFeeConfig.FeeCurrency, msg.CrosschainFee))
 	}
 
 	err = k.bankKeeper.SendCoinsFromAccountToModule(ctx, cosmosSender, types.ModuleName, coins)
@@ -204,20 +204,20 @@ func (k Keeper) ProcessUpdateWhiteListValidator(ctx sdk.Context, networkDescript
 	return k.oracleKeeper.ProcessUpdateWhiteListValidator(ctx, networkDescriptor, cosmosSender, validator, power)
 }
 
-// ProcessUpdateNativeTokenReceiverAccount processes the update whitelist validator from admin
-func (k Keeper) ProcessUpdateNativeTokenReceiverAccount(ctx sdk.Context, cosmosSender sdk.AccAddress, nativeTokenReceiverAccount sdk.AccAddress) error {
+// ProcessUpdateCrossChainFeeReceiverAccount processes the update crosschain fee receiver account from admin
+func (k Keeper) ProcessUpdateCrossChainFeeReceiverAccount(ctx sdk.Context, cosmosSender sdk.AccAddress, crosschainFeeReceiverAccount sdk.AccAddress) error {
 	logger := k.Logger(ctx)
 	if !k.oracleKeeper.IsAdminAccount(ctx, cosmosSender) {
 		logger.Error("cosmos sender is not admin account.")
-		return errors.New("only admin account can update NativeToken receiver account")
+		return errors.New("only admin account can update CrossChainFee receiver account")
 	}
 
-	k.SetNativeTokenReceiverAccount(ctx, nativeTokenReceiverAccount)
+	k.SetCrossChainFeeReceiverAccount(ctx, crosschainFeeReceiverAccount)
 	return nil
 }
 
-// ProcessRescueNativeToken transfer NativeToken from ethbridge module to an account
-func (k Keeper) ProcessRescueNativeToken(ctx sdk.Context, msg *types.MsgRescueNativeToken) error {
+// RescueCrossChainFees transfer CrossChainFee from ethbridge module to an account
+func (k Keeper) RescueCrossChainFees(ctx sdk.Context, msg *types.MsgRescueCrossChainFee) error {
 	logger := k.Logger(ctx)
 
 	cosmosSender, err := sdk.AccAddressFromBech32(msg.CosmosSender)
@@ -232,10 +232,10 @@ func (k Keeper) ProcessRescueNativeToken(ctx sdk.Context, msg *types.MsgRescueNa
 
 	if !k.oracleKeeper.IsAdminAccount(ctx, cosmosSender) {
 		logger.Error("cosmos sender is not admin account.")
-		return errors.New("only admin account can call rescue NativeToken")
+		return errors.New("only admin account can call rescue CrossChainFee")
 	}
 
-	coins := sdk.NewCoins(sdk.NewCoin(msg.NativeTokenSymbol, msg.NativeTokenAmount))
+	coins := sdk.NewCoins(sdk.NewCoin(msg.CrosschainFeeSymbol, msg.CrosschainFee))
 	err = k.bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, cosmosReceiver, coins)
 
 	if err != nil {
@@ -246,8 +246,8 @@ func (k Keeper) ProcessRescueNativeToken(ctx sdk.Context, msg *types.MsgRescueNa
 	return nil
 }
 
-// ProcessSetNativeToken processes the set native token from admin
-func (k Keeper) ProcessSetNativeToken(ctx sdk.Context, msg *types.MsgSetNativeToken) error {
+// SetFeeInfo processes the set crosschain fee from admin
+func (k Keeper) SetFeeInfo(ctx sdk.Context, msg *types.MsgSetFeeInfo) error {
 	logger := k.Logger(ctx)
 
 	cosmosSender, err := sdk.AccAddressFromBech32(msg.CosmosSender)
@@ -257,9 +257,9 @@ func (k Keeper) ProcessSetNativeToken(ctx sdk.Context, msg *types.MsgSetNativeTo
 
 	if !k.oracleKeeper.IsAdminAccount(ctx, cosmosSender) {
 		logger.Error("cosmos sender is not admin account.")
-		return errors.New("only admin account can set native token")
+		return errors.New("only admin account can set crosschain fee")
 	}
-	return k.oracleKeeper.ProcessSetNativeToken(ctx, msg.NetworkDescriptor, msg.NativeToken, msg.NativeGas, msg.MinimumBurnCost, msg.MinimumLockCost)
+	return k.oracleKeeper.SetFeeInfo(ctx, msg.NetworkDescriptor, msg.FeeCurrency, msg.FeeCurrencyGas, msg.MinimumBurnCost, msg.MinimumLockCost)
 }
 
 // Exists chec if the key existed in db.

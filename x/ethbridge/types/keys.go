@@ -18,6 +18,6 @@ const (
 )
 
 var (
-	PeggyTokenKeyPrefix              = []byte{0x00}
-	NativeTokenReceiverAccountPrefix = []byte{0x01}
+	PeggyTokenKeyPrefix                = []byte{0x00}
+	CrossChainFeeReceiverAccountPrefix = []byte{0x01}
 )

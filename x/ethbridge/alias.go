@@ -37,19 +37,19 @@ var (
 	CreateTestEthMsg                   = types.CreateTestEthMsg
 	CreateTestEthClaim                 = types.CreateTestEthClaim
 	CreateTestQueryEthProphecyResponse = types.CreateTestQueryEthProphecyResponse
-	NativeTokenReceiverAccountPrefix   = types.NativeTokenReceiverAccountPrefix
+	CrossChainFeeReceiverAccountPrefix = types.CrossChainFeeReceiverAccountPrefix
 )
 
 type (
-	Keeper                              = keeper.Keeper
-	EthBridgeClaim                      = types.EthBridgeClaim //nolint:golint
-	EthereumAddress                     = types.EthereumAddress
-	MsgCreateEthBridgeClaim             = types.MsgCreateEthBridgeClaim
-	MsgBurn                             = types.MsgBurn
-	MsgLock                             = types.MsgLock
-	MsgUpdateWhiteListValidator         = types.MsgUpdateWhiteListValidator
-	MsgUpdateNativeTokenReceiverAccount = types.MsgUpdateNativeTokenReceiverAccount
-	MsgRescueNativeToken                = types.MsgRescueNativeToken
-	QueryEthProphecyParams              = types.QueryEthProphecyRequest
-	QueryEthProphecyResponse            = types.QueryEthProphecyResponse
+	Keeper                                = keeper.Keeper
+	EthBridgeClaim                        = types.EthBridgeClaim //nolint:golint
+	EthereumAddress                       = types.EthereumAddress
+	MsgCreateEthBridgeClaim               = types.MsgCreateEthBridgeClaim
+	MsgBurn                               = types.MsgBurn
+	MsgLock                               = types.MsgLock
+	MsgUpdateWhiteListValidator           = types.MsgUpdateWhiteListValidator
+	MsgUpdateCrossChainFeeReceiverAccount = types.MsgUpdateCrossChainFeeReceiverAccount
+	MsgRescueCrossChainFee                = types.MsgRescueCrossChainFee
+	QueryEthProphecyParams                = types.QueryEthProphecyRequest
+	QueryEthProphecyResponse              = types.QueryEthProphecyResponse
 )
