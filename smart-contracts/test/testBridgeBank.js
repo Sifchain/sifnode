@@ -85,6 +85,28 @@ describe("Test Bridge Bank", function () {
       afterUserBalance.should.be.bignumber.equal(0);
     });
 
+    it("should not allow user to lock ERC20 tokens", async function () {
+      const FakeToken = await ethers.getContractFactory("FakeERC20");
+      const fakeToken = await FakeToken.deploy();
+
+      // Approve and lock tokens
+      await expect(state.bridgeBank.connect(userOne).lock(state.sender, fakeToken.address, state.amount))
+        .to.emit(state.bridgeBank, 'LogLock')
+        .withArgs(userOne.address, state.sender, fakeToken.address, state.amount, "3", 18, "", "");
+
+      /*
+                  msg.sender,
+            recipient,
+            tokenAddress,
+            tokenAmount,
+            _lockBurnNonce,
+            decimals,
+            symbol,
+            name
+        );
+      */
+    });
+
     it("should allow users to lock Ethereum in the bridge bank", async function () {
       const tx = await state.bridgeBank.connect(userOne).lock(
         state.sender,
