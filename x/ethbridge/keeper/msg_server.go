@@ -49,14 +49,7 @@ func (srv msgServer) Lock(goCtx context.Context, msg *types.MsgLock) (*types.Msg
 		return nil, err
 	}
 
-	logger.Info("sifnode emit lock event.",
-		"NetworkId", strconv.FormatInt(int64(msg.NetworkDescriptor), 10),
-		"CosmosSender", msg.CosmosSender,
-		"CosmosSenderSequence", strconv.FormatUint(account.GetSequence(), 10),
-		"EthereumReceiver", msg.EthereumReceiver,
-		"Amount", msg.Amount.String(),
-		"Symbol", msg.Symbol,
-		"CethAmount", msg.CethAmount.String())
+	logger.Info("sifnode emit lock event.", "message", msg)
 
 	ctx.EventManager().EmitEvents(sdk.Events{
 		sdk.NewEvent(
@@ -72,7 +65,7 @@ func (srv msgServer) Lock(goCtx context.Context, msg *types.MsgLock) (*types.Msg
 			sdk.NewAttribute(types.AttributeKeyEthereumReceiver, msg.EthereumReceiver),
 			sdk.NewAttribute(types.AttributeKeyAmount, msg.Amount.String()),
 			sdk.NewAttribute(types.AttributeKeySymbol, msg.Symbol),
-			sdk.NewAttribute(types.AttributeKeyCethAmount, msg.CethAmount.String()),
+			sdk.NewAttribute(types.AttributeKeycrossChainFee, msg.CrosschainFee.String()),
 		),
 	})
 
@@ -84,9 +77,9 @@ func (srv msgServer) Burn(goCtx context.Context, msg *types.MsgBurn) (*types.Msg
 	logger := srv.Keeper.Logger(ctx)
 
 	if !srv.Keeper.ExistsPeggyToken(ctx, msg.Symbol) {
-		logger.Error("Native token can't be burn.",
+		logger.Error("crosschain fee can't be burn.",
 			"tokenSymbol", msg.Symbol)
-		return nil, errors.Errorf("Native token %s can't be burn.", msg.Symbol)
+		return nil, errors.Errorf("crosschain fee %s can't be burn.", msg.Symbol)
 	}
 
 	cosmosSender, err := sdk.AccAddressFromBech32(msg.CosmosSender)
@@ -105,14 +98,7 @@ func (srv msgServer) Burn(goCtx context.Context, msg *types.MsgBurn) (*types.Msg
 		return nil, err
 	}
 
-	logger.Info("sifnode emit burn event.",
-		"NetworkId", strconv.FormatInt(int64(msg.NetworkDescriptor), 10),
-		"CosmosSender", msg.CosmosSender,
-		"CosmosSenderSequence", strconv.FormatUint(account.GetSequence(), 10),
-		"EthereumReceiver", msg.EthereumReceiver,
-		"Amount", msg.Amount.String(),
-		"Symbol", msg.Symbol,
-		"CethAmount", msg.CethAmount.String())
+	logger.Info("sifnode emit burn event.", "message", msg)
 
 	ctx.EventManager().EmitEvents(sdk.Events{
 		sdk.NewEvent(
@@ -128,7 +114,7 @@ func (srv msgServer) Burn(goCtx context.Context, msg *types.MsgBurn) (*types.Msg
 			sdk.NewAttribute(types.AttributeKeyEthereumReceiver, msg.EthereumReceiver),
 			sdk.NewAttribute(types.AttributeKeyAmount, msg.Amount.String()),
 			sdk.NewAttribute(types.AttributeKeySymbol, msg.Symbol),
-			sdk.NewAttribute(types.AttributeKeyCethAmount, msg.CethAmount.String()),
+			sdk.NewAttribute(types.AttributeKeycrossChainFee, msg.CrosschainFee.String()),
 		),
 	})
 
@@ -246,8 +232,8 @@ func (srv msgServer) UpdateWhiteListValidator(goCtx context.Context,
 	return &types.MsgUpdateWhiteListValidatorResponse{}, nil
 }
 
-func (srv msgServer) UpdateCethReceiverAccount(goCtx context.Context,
-	msg *types.MsgUpdateCethReceiverAccount) (*types.MsgUpdateCethReceiverAccountResponse, error) {
+func (srv msgServer) UpdateCrossChainFeeReceiverAccount(goCtx context.Context,
+	msg *types.MsgUpdateCrossChainFeeReceiverAccount) (*types.MsgUpdateCrossChainFeeReceiverAccountResponse, error) {
 
 	ctx := sdk.UnwrapSDKContext(goCtx)
 	logger := srv.Keeper.Logger(ctx)
@@ -257,7 +243,7 @@ func (srv msgServer) UpdateCethReceiverAccount(goCtx context.Context,
 		return nil, err
 	}
 
-	cethReceiverAddress, err := sdk.AccAddressFromBech32(msg.CethReceiverAccount)
+	crossChainFeeReceiverAddress, err := sdk.AccAddressFromBech32(msg.CrosschainFeeReceiver)
 	if err != nil {
 		return nil, err
 	}
@@ -269,17 +255,17 @@ func (srv msgServer) UpdateCethReceiverAccount(goCtx context.Context,
 		return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.CosmosSender)
 	}
 
-	err = srv.Keeper.ProcessUpdateCethReceiverAccount(ctx,
-		cosmosSender, cethReceiverAddress)
+	err = srv.Keeper.ProcessUpdateCrossChainFeeReceiverAccount(ctx,
+		cosmosSender, crossChainFeeReceiverAddress)
 	if err != nil {
-		logger.Error("keeper failed to process update ceth receiver account.", errorMessageKey, err.Error())
+		logger.Error("keeper failed to process update crosschain fee receiver account.", errorMessageKey, err.Error())
 		return nil, err
 	}
 
-	logger.Info("sifnode emit update ceth receiver account event.",
+	logger.Info("sifnode emit update crosschain fee receiver account event.",
 		"CosmosSender", msg.CosmosSender,
 		"CosmosSenderSequence", strconv.FormatUint(account.GetSequence(), 10),
-		"CethReceiverAccount", msg.CethReceiverAccount)
+		"CrossChainFeeReceiverAccount", msg.CrosschainFeeReceiver)
 
 	ctx.EventManager().EmitEvents(sdk.Events{
 		sdk.NewEvent(
@@ -290,14 +276,14 @@ func (srv msgServer) UpdateCethReceiverAccount(goCtx context.Context,
 		sdk.NewEvent(
 			types.EventTypeLock,
 			sdk.NewAttribute(types.AttributeKeyCosmosSender, msg.CosmosSender),
-			sdk.NewAttribute(types.AttributeKeyCethReceiverAccount, msg.CethReceiverAccount),
+			sdk.NewAttribute(types.AttributeKeyCrossChainFeeReceiverAccount, msg.CrosschainFeeReceiver),
 		),
 	})
 
-	return &types.MsgUpdateCethReceiverAccountResponse{}, nil
+	return &types.MsgUpdateCrossChainFeeReceiverAccountResponse{}, nil
 }
 
-func (srv msgServer) RescueCeth(goCtx context.Context, msg *types.MsgRescueCeth) (*types.MsgRescueCethResponse, error) {
+func (srv msgServer) RescueCrossChainFee(goCtx context.Context, msg *types.MsgRescueCrossChainFee) (*types.MsgRescueCrossChainFeeResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 	logger := srv.Keeper.Logger(ctx)
 
@@ -312,15 +298,57 @@ func (srv msgServer) RescueCeth(goCtx context.Context, msg *types.MsgRescueCeth)
 		return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.CosmosSender)
 	}
 
-	if err := srv.Keeper.ProcessRescueCeth(ctx, msg); err != nil {
-		logger.Error("keeper failed to process rescue ceth message.", errorMessageKey, err.Error())
+	if err := srv.Keeper.RescueCrossChainFees(ctx, msg); err != nil {
+		logger.Error("keeper failed to process rescue crosschain_fee message.", errorMessageKey, err.Error())
 		return nil, err
 	}
-	logger.Info("sifnode emit rescue ceth event.",
+	logger.Info("sifnode emit rescue crosschain_fee event.",
 		"CosmosSender", msg.CosmosSender,
 		"CosmosSenderSequence", strconv.FormatUint(account.GetSequence(), 10),
 		"CosmosReceiver", msg.CosmosReceiver,
-		"CethAmount", msg.CethAmount)
+		"crossChainFee", msg.CrosschainFee)
 
-	return &types.MsgRescueCethResponse{}, nil
+	return &types.MsgRescueCrossChainFeeResponse{}, nil
+}
+
+func (srv msgServer) SetFeeInfo(goCtx context.Context, msg *types.MsgSetFeeInfo) (*types.MsgSetFeeInfoResponse, error) {
+	ctx := sdk.UnwrapSDKContext(goCtx)
+	logger := srv.Keeper.Logger(ctx)
+
+	cosmosSender, err := sdk.AccAddressFromBech32(msg.CosmosSender)
+	if err != nil {
+		return nil, err
+	}
+
+	account := srv.Keeper.accountKeeper.GetAccount(ctx, cosmosSender)
+	if account == nil {
+		logger.Error("account is nil.", "CosmosSender", msg.CosmosSender)
+		return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.CosmosSender)
+	}
+
+	if err := srv.Keeper.SetFeeInfo(ctx, msg); err != nil {
+		logger.Error("keeper failed to process rescue crosschain fee message.", errorMessageKey, err.Error())
+		return nil, err
+	}
+	logger.Info("sifnode emit set crosschain fee event.",
+		"Message", msg)
+
+	ctx.EventManager().EmitEvents(sdk.Events{
+		sdk.NewEvent(
+			sdk.EventTypeMessage,
+			sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
+			sdk.NewAttribute(sdk.AttributeKeySender, msg.CosmosSender),
+		),
+		sdk.NewEvent(
+			types.EventTypeSetCrossChainFee,
+			sdk.NewAttribute(types.AttributeKeyCosmosSender, msg.CosmosSender),
+			sdk.NewAttribute(types.AttributeKeyNetworkDescriptor, msg.NetworkDescriptor.String()),
+			sdk.NewAttribute(types.AttributeKeyCrossChainFee, msg.FeeCurrency),
+			sdk.NewAttribute(types.AttributeKeyCrossChainFeeGas, msg.FeeCurrencyGas.String()),
+			sdk.NewAttribute(types.AttributeKeyMinimumLockCost, msg.MinimumLockCost.String()),
+			sdk.NewAttribute(types.AttributeKeyMinimumBurnCost, msg.MinimumBurnCost.String()),
+		),
+	})
+
+	return &types.MsgSetFeeInfoResponse{}, nil
 }

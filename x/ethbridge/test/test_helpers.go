@@ -40,13 +40,16 @@ import (
 )
 
 const (
-	TestID                     = "oracleID"
-	AlternateTestID            = "altOracleID"
-	TestString                 = "{value: 5}"
-	AlternateTestString        = "{value: 7}"
-	AnotherAlternateTestString = "{value: 9}"
-	TestCethReceiverAddress    = "cosmos1gn8409qq9hnrxde37kuxwx5hrxpfpv8426szuv"
-	NetworkDescriptor          = 1
+	TestID                           = "oracleID"
+	AlternateTestID                  = "altOracleID"
+	TestString                       = "{value: 5}"
+	AlternateTestString              = "{value: 7}"
+	AnotherAlternateTestString       = "{value: 9}"
+	TestCrossChainFeeReceiverAddress = "cosmos1gn8409qq9hnrxde37kuxwx5hrxpfpv8426szuv" //nolint
+	NetworkDescriptor                = 1
+	CrossChainFee                    = "ceth"
+	CrossChainFeeGas                 = 1
+	MinimumCost                      = 1
 )
 
 // CreateTestKeepers greates an Mock App, OracleKeeper, bankKeeper and ValidatorAddresses to be used for test input
@@ -148,8 +151,9 @@ func CreateTestKeepers(t *testing.T, consensusNeeded float64, validatorAmounts [
 	accountKeeper.SetModuleAccount(ctx, notBondedPool)
 
 	ethbridgeKeeper := keeper.NewKeeper(encCfg.Marshaler, bankKeeper, oracleKeeper, accountKeeper, keyEthBridge)
-	CethReceiverAccount, _ := sdk.AccAddressFromBech32(TestCethReceiverAddress)
-	ethbridgeKeeper.SetCethReceiverAccount(ctx, CethReceiverAccount)
+
+	CrossChainFeeReceiverAccount, _ := sdk.AccAddressFromBech32(TestCrossChainFeeReceiverAddress)
+	ethbridgeKeeper.SetCrossChainFeeReceiverAccount(ctx, CrossChainFeeReceiverAccount)
 
 	// Setup validators
 	valAddrsInOrder := make([]sdk.ValAddress, len(validatorAmounts))
@@ -173,9 +177,12 @@ func CreateTestKeepers(t *testing.T, consensusNeeded float64, validatorAmounts [
 		}
 	}
 
-	networkDescriptor := oracleTypes.NewNetworkIdentity(NetworkDescriptor)
+	networkIdentity := oracleTypes.NewNetworkIdentity(NetworkDescriptor)
+
+	oracleKeeper.SetCrossChainFee(ctx, networkIdentity, CrossChainFee,
+		sdk.NewInt(CrossChainFeeGas), sdk.NewInt(MinimumCost), sdk.NewInt(MinimumCost))
 	whitelist := oracleTypes.ValidatorWhiteList{WhiteList: valAddrs}
-	oracleKeeper.SetOracleWhiteList(ctx, networkDescriptor, whitelist)
+	oracleKeeper.SetOracleWhiteList(ctx, networkIdentity, whitelist)
 
 	return ctx, ethbridgeKeeper, bankKeeper, accountKeeper, oracleKeeper, encCfg, whitelist, valAddrsInOrder
 }

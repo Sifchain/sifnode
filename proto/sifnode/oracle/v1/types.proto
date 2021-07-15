@@ -40,3 +40,23 @@ enum StatusText {
   // Success status
   STATUS_TEXT_SUCCESS = 2;
 }
+
+// CrossChainFeeConfig is crosschain fee config for each network
+message CrossChainFeeConfig {
+  string fee_currency = 1;
+  string fee_currency_gas = 2 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.nullable) = false,
+    (gogoproto.moretags) = "yaml:\"fee_currency_gas\""
+  ];
+  string minimum_lock_cost = 3 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.nullable) = false,
+    (gogoproto.moretags) = "yaml:\"minimum_lock_cost\""
+  ];
+  string minimum_burn_cost = 4 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.nullable) = false,
+    (gogoproto.moretags) = "yaml:\"minimum_burn_cost\""
+  ];
+}
