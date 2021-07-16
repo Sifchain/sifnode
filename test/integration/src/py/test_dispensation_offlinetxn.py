@@ -23,7 +23,6 @@ def test_create_offline_singlekey_txn(claimType):
     from_address = 'sifnodeadmin'
     keyring_backend = 'test'
     chain_id = 'localnet'
-    sifnoded_node = 'tcp://127.0.0.1:1317'
     amount = '10000000rowan'
     sampleamount = '1000rowan'
 
@@ -52,8 +51,7 @@ def test_create_offline_singlekey_txn(claimType):
         data = f.read()
     d = json.loads(data)
 
-
-    response = (create_offline_singlekey_txn_with_runner(claimType,runner_address,distributor_address,chain_id,sifnoded_node))
+    response = (create_offline_singlekey_txn_with_runner(claimType,runner_address,distributor_address,chain_id))
 
     distributiontypetag = response['value']['msg'][0]['type']
     distributionvaluetags = response['value']['msg'][0]['value']
@@ -68,7 +66,7 @@ def test_create_offline_singlekey_txn(claimType):
     try:
         os.remove('output.json')
     except OSError as e:
-        print ("Error: %s - %s." % (e.filename, e.strerror))
+        print("Error: %s - %s." % (e.filename, e.strerror))
 
 
 #TEST CODE TO ASSERT TAGS GENERATED ON A BLOCK WHEN A NEW SIGNED DISPENSATION IS BROADCASTED on BLOCKCHAIN
@@ -81,7 +79,6 @@ def test_broadcast_txn(claimType):
     from_address = 'sifnodeadmin'
     keyring_backend = 'test'
     chain_id = 'localnet'
-    sifnoded_node = 'tcp://127.0.0.1:1317'
     amount = '10000000rowan'
     sampleamount = '1000rowan'
 
@@ -110,7 +107,7 @@ def test_broadcast_txn(claimType):
         data = f.read()
     d = json.loads(data)
 
-    response = (create_offline_singlekey_txn_with_runner(claimType,runner_address,distributor_address,chain_id,sifnoded_node))
+    response = (create_offline_singlekey_txn_with_runner(claimType,runner_address,distributor_address,chain_id))
     with open("sample.json", "w") as outfile:
         json.dump(response, outfile)
 
@@ -135,7 +132,8 @@ def test_broadcast_txn(claimType):
         os.remove('sample.json')
         os.remove('output.json')
     except OSError as e:
-            print ("Error: %s - %s." % (e.filename, e.strerror))
+        print("Error: %s - %s." % (e.filename, e.strerror))
+
 
 # AUTOMATED TEST TO VALIDATE ONLINE TXN
 @pytest.mark.parametrize("claimType", ['ValidatorSubsidy','LiquidityMining'])
@@ -192,7 +190,7 @@ def test_run_offline_singlekey_txn(claimType):
     logging.info(f"sender initial balance = {sender_initial_balance}")
     logging.info(f"one claiming address initial balance = {claiming_address_initial_balance}")
 
-    response = (create_offline_singlekey_txn_with_runner(claimType,runner_address,distributor_address,chain_id,sifnoded_node))
+    response = (create_offline_singlekey_txn_with_runner(claimType,runner_address,distributor_address,chain_id))
     with open("sample.json", "w") as outfile:
         json.dump(response, outfile)
 
@@ -205,7 +203,6 @@ def test_run_offline_singlekey_txn(claimType):
     resp = query_block_claim(txhashbcast)
     one_claiming_address = str(d['Output'][0]['address'])
     logging.info(f"one claiming address = {one_claiming_address}")
-
 
     # READ DISPENSATION TXN JSON TAGS
     distributionstartedtag = resp['logs'][0]['events'][0]['type']

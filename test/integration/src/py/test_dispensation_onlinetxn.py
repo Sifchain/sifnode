@@ -5,6 +5,7 @@ import pytest
 from dispensation_envutils import create_online_singlekey_txn, create_new_sifaddr_and_key, send_sample_rowan, balance_check, \
 query_block_claim, create_online_singlekey_txn_with_runner, run_dispensation
 
+
 # AUTOMATED TEST TO VALIDATE ONLINE TXN
 @pytest.mark.parametrize("claimType", ['ValidatorSubsidy','LiquidityMining'])
 def test_create_online_singlekey_txn(claimType):
@@ -17,7 +18,6 @@ def test_create_online_singlekey_txn(claimType):
     from_address = 'sifnodeadmin'
     keyring_backend = 'test'
     chain_id = 'localnet'
-    sifnoded_node = 'tcp://127.0.0.1:1317'
     amount = '10000000rowan'
     sampleamount = '1000rowan'
 
@@ -50,7 +50,7 @@ def test_create_online_singlekey_txn(claimType):
     logging.info(f"one claiming address = {one_claiming_address}")
 
     # ACTUAL DISPENSATION TXN; GET TXN HASH
-    txhash = str((create_online_singlekey_txn_with_runner(claimType, runner_address, distributor_name, chain_id, sifnoded_node)))
+    txhash = str((create_online_singlekey_txn_with_runner(claimType, runner_address, distributor_name, chain_id)))
     logging.info(f"txn hash = {txhash}")
     time.sleep(5)
 
@@ -76,6 +76,7 @@ def test_create_online_singlekey_txn(claimType):
     assert chaintags[2] == 'distribution_type'
     assert list_of_values[0] == distributor_address
 
+
 # AUTOMTED TEST TO VALIDATE IF FUNDING ADDRESS DOESN'T HAVE ENOUGH BALANCE
 @pytest.mark.parametrize("claimType", ['ValidatorSubsidy', 'LiquidityMining'])
 def test_insufficient_funds_dispensation_txn(claimType):
@@ -88,7 +89,6 @@ def test_insufficient_funds_dispensation_txn(claimType):
     from_address = 'sifnodeadmin'
     keyring_backend = 'test'
     chain_id = 'localnet'
-    sifnoded_node = 'tcp://127.0.0.1:1317'
     amount = '70000rowan'
     sampleamount = '1000rowan'
 
@@ -120,10 +120,10 @@ def test_insufficient_funds_dispensation_txn(claimType):
     # ACTUAL DISPENSATION TXN; TXN RAISES AN EXCEPTION ABOUT INSUFFICIENT FUNDS, CAPTURED HERE AND TEST IS MARKED PASS
     with pytest.raises(Exception) as execinfo:
         txhash = str(
-            (create_online_singlekey_txn_with_runner(claimType, runner_address, distributor_address, chain_id, sifnoded_node)))
+            (create_online_singlekey_txn_with_runner(claimType, runner_address, distributor_address, chain_id)))
         assert str(
             execinfo.value) == f"for address  : {distributor_address}: Failed in collecting funds for airdrop: failed to execute message; message index: 0: failed to simulate tx"
-        logging.info(f"Insufficient Funds Message = {resp['raw_log']}")
+        logging.info(f"Insufficient Funds Message = {txhash}")
 
 # AUTOMATED TEST TO VALIDATE ONLINE RUN DISPENSATION TXN
 @pytest.mark.parametrize("claimType", ['ValidatorSubsidy','LiquidityMining'])
