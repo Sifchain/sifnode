@@ -1,6 +1,8 @@
 package keeper_test
 
 import (
+	"encoding/json"
+	"fmt"
 	"reflect"
 	"strings"
 	"testing"
@@ -17,7 +19,8 @@ import (
 //nolint:lll
 const (
 	// TestResponseJSON = "{\"prophecy_id\":\"\\ufffd\\ufffd\\ufffd\\ufffdE|q\\ufffdrt\\ufffdS\\u0012D\\ufffdUj\\ufffd\\ufffd\\ufffd\\ufffdI\\ufffd\\u0018\\ufffdA9\\n \\ufffdJz\",\"status\":1,\"claim_validators\":[\"cosmosvaloper1mnfm9c7cdgqnkk66sganp78m0ydmcr4pn7fqfk\"]}"
-	TestResponseJSON = "{\"prophecy_id\":\"xy7EH/x26sNeLf62aTOQAqo3H9Fnrl19yDlub31XG5o=\",\"status\":1,\"claim_validators\":[\"cosmosvaloper1mnfm9c7cdgqnkk66sganp78m0ydmcr4pn7fqfk\"]}"
+	TestResponseJSON              = "{\"prophecy_id\":\"xy7EH/x26sNeLf62aTOQAqo3H9Fnrl19yDlub31XG5o=\",\"status\":1,\"claim_validators\":[\"cosmosvaloper1mnfm9c7cdgqnkk66sganp78m0ydmcr4pn7fqfk\"]}"
+	TestCrossChainFeeResponseJSON = "{\"fee_currency\":\"ceth\",\"fee_currency_gas\":\"1\",\"minimum_lock_cost\":\"1\",\"minimum_burn_cost\":\"1\"}"
 )
 
 func TestNewQuerier(t *testing.T) {
@@ -146,4 +149,35 @@ func TestQueryEthProphecy(t *testing.T) {
 
 	_, err9 := querier(ctx, []string{types.QueryEthProphecy}, query3)
 	require.NotNil(t, err9)
+}
+
+func TestQueryCrosschainFeeConfig(t *testing.T) {
+	ctx, keeper, _, _, _, encCfg, _, _ := test.CreateTestKeepers(t, 0.7, []int64{3, 3}, "")
+	networkID := oracletypes.NetworkDescriptor_NETWORK_DESCRIPTOR_ETHEREUM
+
+	//Test query String()
+	_, err := encCfg.Amino.MarshalJSON(TestCrossChainFeeResponseJSON)
+	require.NoError(t, err)
+	req := types.NewQueryCrosschainFeeConfigRequest(networkID)
+
+	bz, err2 := encCfg.Amino.MarshalJSON(req)
+	require.Nil(t, err2)
+	path := fmt.Sprintf("%s/%s", "/custom/ethbridge/crosschainFeeConfig", networkID.String())
+
+	query := abci.RequestQuery{
+		Path: path,
+		Data: bz,
+	}
+
+	//Test query
+	querier := ethbridgekeeper.NewLegacyQuerier(keeper, encCfg.Amino)
+	res, err3 := querier(ctx, []string{types.QueryCrosschainFeeConfig}, query)
+	require.Nil(t, err3)
+
+	var crosschainFeeConfigResponse types.QueryCrosschainFeeConfigResponse
+	err4 := encCfg.Amino.UnmarshalJSON(res, &crosschainFeeConfigResponse)
+	require.Nil(t, err4)
+	config, err4 := json.Marshal(crosschainFeeConfigResponse.GetCrosschainFeeConfig())
+	require.Nil(t, err4)
+	require.Equal(t, string(config), TestCrossChainFeeResponseJSON)
 }

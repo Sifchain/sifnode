@@ -46,7 +46,7 @@ const (
 	AlternateTestString              = "{value: 7}"
 	AnotherAlternateTestString       = "{value: 9}"
 	TestCrossChainFeeReceiverAddress = "cosmos1gn8409qq9hnrxde37kuxwx5hrxpfpv8426szuv" //nolint
-	NetworkDescriptor                = 1
+	NetworkDescriptor                = oracleTypes.NetworkDescriptor_NETWORK_DESCRIPTOR_ETHEREUM
 	CrossChainFee                    = "ceth"
 	CrossChainFeeGas                 = 1
 	MinimumCost                      = 1

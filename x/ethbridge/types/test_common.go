@@ -123,3 +123,4 @@ func CreateTestSetCrossChainFeeMsg(t *testing.T, testCosmosSender string, networ
 	msgSetFeeInfo := NewMsgSetFeeInfo(accAddress, networkDescriptor, crossChainFee)
 	return msgSetFeeInfo
 }
+
