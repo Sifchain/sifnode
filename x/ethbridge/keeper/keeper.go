@@ -99,13 +99,24 @@ func (k Keeper) ProcessSuccessfulClaim(ctx sdk.Context, claim *types.EthBridgeCl
 func (k Keeper) ProcessBurn(ctx sdk.Context, cosmosSender sdk.AccAddress, msg *types.MsgBurn) error {
 	logger := k.Logger(ctx)
 	var coins sdk.Coins
+	networkIdentity := oracletypes.NewNetworkIdentity(msg.NetworkDescriptor)
+	crossChainFeeConfig, err := k.oracleKeeper.GetCrossChainFeeConfig(ctx, networkIdentity)
 
-	if k.IsCethReceiverAccountSet(ctx) {
-		coins = sdk.NewCoins(sdk.NewCoin(types.CethSymbol, msg.CethAmount))
+	if err != nil {
+		return err
+	}
 
-		err := k.bankKeeper.SendCoins(ctx, cosmosSender, k.GetCethReceiverAccount(ctx), coins)
+	minimumBurn := crossChainFeeConfig.MinimumBurnCost.Mul(crossChainFeeConfig.FeeCurrencyGas)
+	if msg.CrosschainFee.LT(minimumBurn) {
+		return errors.New("crosschain fee amount in message less than minimum burn")
+	}
+
+	if k.IsCrossChainFeeReceiverAccountSet(ctx) {
+		coins = sdk.NewCoins(sdk.NewCoin(crossChainFeeConfig.FeeCurrency, msg.CrosschainFee))
+
+		err := k.bankKeeper.SendCoins(ctx, cosmosSender, k.GetCrossChainFeeReceiverAccount(ctx), coins)
 		if err != nil {
-			logger.Error("failed to send ceth from account to account.",
+			logger.Error("failed to send crosschain fee from account to account.",
 				errorMessageKey, err.Error())
 			return err
 		}
@@ -113,16 +124,16 @@ func (k Keeper) ProcessBurn(ctx sdk.Context, cosmosSender sdk.AccAddress, msg *t
 		coins = sdk.NewCoins(sdk.NewCoin(msg.Symbol, msg.Amount))
 
 	} else {
-		if msg.Symbol == types.CethSymbol {
-			coins = sdk.NewCoins(sdk.NewCoin(types.CethSymbol, msg.CethAmount.Add(msg.Amount)))
+		if msg.Symbol == crossChainFeeConfig.FeeCurrency {
+			coins = sdk.NewCoins(sdk.NewCoin(crossChainFeeConfig.FeeCurrency, msg.CrosschainFee.Add(msg.Amount)))
 		} else {
-			coins = sdk.NewCoins(sdk.NewCoin(msg.Symbol, msg.Amount), sdk.NewCoin(types.CethSymbol, msg.CethAmount))
+			coins = sdk.NewCoins(sdk.NewCoin(msg.Symbol, msg.Amount), sdk.NewCoin(crossChainFeeConfig.FeeCurrency, msg.CrosschainFee))
 		}
 	}
 
-	err := k.bankKeeper.SendCoinsFromAccountToModule(ctx, cosmosSender, types.ModuleName, coins)
+	err = k.bankKeeper.SendCoinsFromAccountToModule(ctx, cosmosSender, types.ModuleName, coins)
 	if err != nil {
-		logger.Error("failed to send ceth from module to account.",
+		logger.Error("failed to send crosschain fee from module to account.",
 			errorMessageKey, err.Error())
 		return err
 	}
@@ -142,13 +153,24 @@ func (k Keeper) ProcessBurn(ctx sdk.Context, cosmosSender sdk.AccAddress, msg *t
 func (k Keeper) ProcessLock(ctx sdk.Context, cosmosSender sdk.AccAddress, msg *types.MsgLock) error {
 	logger := k.Logger(ctx)
 	var coins sdk.Coins
+	networkIdentity := oracletypes.NewNetworkIdentity(msg.NetworkDescriptor)
+	crossChainFeeConfig, err := k.oracleKeeper.GetCrossChainFeeConfig(ctx, networkIdentity)
 
-	if k.IsCethReceiverAccountSet(ctx) {
-		coins = sdk.NewCoins(sdk.NewCoin(types.CethSymbol, msg.CethAmount))
+	if err != nil {
+		return err
+	}
 
-		err := k.bankKeeper.SendCoins(ctx, cosmosSender, k.GetCethReceiverAccount(ctx), coins)
+	minimumLock := crossChainFeeConfig.MinimumLockCost.Mul(crossChainFeeConfig.FeeCurrencyGas)
+	if msg.CrosschainFee.LT(minimumLock) {
+		return errors.New("crosschain fee amount in message less than minimum lock")
+	}
+
+	if k.IsCrossChainFeeReceiverAccountSet(ctx) {
+		coins = sdk.NewCoins(sdk.NewCoin(crossChainFeeConfig.FeeCurrency, msg.CrosschainFee))
+
+		err := k.bankKeeper.SendCoins(ctx, cosmosSender, k.GetCrossChainFeeReceiverAccount(ctx), coins)
 		if err != nil {
-			logger.Error("failed to send ceth from account to account.",
+			logger.Error("failed to send crosschain fee from account to account.",
 				errorMessageKey, err.Error())
 			return err
 		}
@@ -156,10 +178,10 @@ func (k Keeper) ProcessLock(ctx sdk.Context, cosmosSender sdk.AccAddress, msg *t
 		coins = sdk.NewCoins(sdk.NewCoin(msg.Symbol, msg.Amount))
 
 	} else {
-		coins = sdk.NewCoins(sdk.NewCoin(msg.Symbol, msg.Amount), sdk.NewCoin(types.CethSymbol, msg.CethAmount))
+		coins = sdk.NewCoins(sdk.NewCoin(msg.Symbol, msg.Amount), sdk.NewCoin(crossChainFeeConfig.FeeCurrency, msg.CrosschainFee))
 	}
 
-	err := k.bankKeeper.SendCoinsFromAccountToModule(ctx, cosmosSender, types.ModuleName, coins)
+	err = k.bankKeeper.SendCoinsFromAccountToModule(ctx, cosmosSender, types.ModuleName, coins)
 
 	if err != nil {
 		logger.Error("failed to transfer coin from account to module.",
@@ -182,20 +204,20 @@ func (k Keeper) ProcessUpdateWhiteListValidator(ctx sdk.Context, networkDescript
 	return k.oracleKeeper.ProcessUpdateWhiteListValidator(ctx, networkDescriptor, cosmosSender, validator, power)
 }
 
-// ProcessUpdateCethReceiverAccount processes the update whitelist validator from admin
-func (k Keeper) ProcessUpdateCethReceiverAccount(ctx sdk.Context, cosmosSender sdk.AccAddress, cethReceiverAccount sdk.AccAddress) error {
+// ProcessUpdateCrossChainFeeReceiverAccount processes the update crosschain fee receiver account from admin
+func (k Keeper) ProcessUpdateCrossChainFeeReceiverAccount(ctx sdk.Context, cosmosSender sdk.AccAddress, crosschainFeeReceiverAccount sdk.AccAddress) error {
 	logger := k.Logger(ctx)
 	if !k.oracleKeeper.IsAdminAccount(ctx, cosmosSender) {
 		logger.Error("cosmos sender is not admin account.")
-		return errors.New("only admin account can update ceth receiver account")
+		return errors.New("only admin account can update CrossChainFee receiver account")
 	}
 
-	k.SetCethReceiverAccount(ctx, cethReceiverAccount)
+	k.SetCrossChainFeeReceiverAccount(ctx, crosschainFeeReceiverAccount)
 	return nil
 }
 
-// ProcessRescueCeth transfer ceth from ethbridge module to an account
-func (k Keeper) ProcessRescueCeth(ctx sdk.Context, msg *types.MsgRescueCeth) error {
+// RescueCrossChainFees transfer CrossChainFee from ethbridge module to an account
+func (k Keeper) RescueCrossChainFees(ctx sdk.Context, msg *types.MsgRescueCrossChainFee) error {
 	logger := k.Logger(ctx)
 
 	cosmosSender, err := sdk.AccAddressFromBech32(msg.CosmosSender)
@@ -210,10 +232,10 @@ func (k Keeper) ProcessRescueCeth(ctx sdk.Context, msg *types.MsgRescueCeth) err
 
 	if !k.oracleKeeper.IsAdminAccount(ctx, cosmosSender) {
 		logger.Error("cosmos sender is not admin account.")
-		return errors.New("only admin account can call rescue ceth")
+		return errors.New("only admin account can call rescue CrossChainFee")
 	}
 
-	coins := sdk.NewCoins(sdk.NewCoin(types.CethSymbol, msg.CethAmount))
+	coins := sdk.NewCoins(sdk.NewCoin(msg.CrosschainFeeSymbol, msg.CrosschainFee))
 	err = k.bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, cosmosReceiver, coins)
 
 	if err != nil {
@@ -222,6 +244,22 @@ func (k Keeper) ProcessRescueCeth(ctx sdk.Context, msg *types.MsgRescueCeth) err
 		return err
 	}
 	return nil
+}
+
+// SetFeeInfo processes the set crosschain fee from admin
+func (k Keeper) SetFeeInfo(ctx sdk.Context, msg *types.MsgSetFeeInfo) error {
+	logger := k.Logger(ctx)
+
+	cosmosSender, err := sdk.AccAddressFromBech32(msg.CosmosSender)
+	if err != nil {
+		return err
+	}
+
+	if !k.oracleKeeper.IsAdminAccount(ctx, cosmosSender) {
+		logger.Error("cosmos sender is not admin account.")
+		return errors.New("only admin account can set crosschain fee")
+	}
+	return k.oracleKeeper.SetFeeInfo(ctx, msg.NetworkDescriptor, msg.FeeCurrency, msg.FeeCurrencyGas, msg.MinimumBurnCost, msg.MinimumLockCost)
 }
 
 // Exists chec if the key existed in db.

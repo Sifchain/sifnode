@@ -15,12 +15,9 @@ const (
 
 	// PeggyTokenKey is the key for peggy token list
 	PeggyTokenKey = StoreKey + "PeggyToken"
-
-	// ceth symbol
-	CethSymbol = "ceth"
 )
 
 var (
-	PeggyTokenKeyPrefix       = []byte{0x00}
-	CethReceiverAccountPrefix = []byte{0x01}
+	PeggyTokenKeyPrefix                = []byte{0x00}
+	CrossChainFeeReceiverAccountPrefix = []byte{0x01}
 )

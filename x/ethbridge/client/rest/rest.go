@@ -50,7 +50,7 @@ type burnOrLockEthReq struct {
 	EthereumReceiver  string       `json:"ethereum_receiver"`
 	Amount            sdk.Int      `json:"amount"`
 	Symbol            string       `json:"symbol"`
-	CethAmount        sdk.Int      `json:"ceth_amount" yaml:"ceth_amount"`
+	CrosschainFee     sdk.Int      `json:"cross_chain_fee_amount" yaml:"cross_chain_fee_amount"`
 }
 
 // RegisterRESTRoutes - Central function to define routes that get registered by the main application
@@ -60,8 +60,11 @@ func RegisterRESTRoutes(cliCtx client.Context, r *mux.Router, storeName string) 
 		storeName, restNetworkDescriptor, restBridgeContract, restNonce,
 		restSymbol, restTokenContract, restEthereumSender)
 
+	getCrosschainFeeConfigRoute := fmt.Sprintf("/%s/crosschainFeeConfig/{%s}", storeName, restNetworkDescriptor)
+
 	r.HandleFunc(fmt.Sprintf("/%s/prophecies", storeName), createClaimHandler(cliCtx)).Methods("POST")
 	r.HandleFunc(getProhechyRoute, getProphecyHandler(cliCtx, storeName)).Methods("GET")
+	r.HandleFunc(getCrosschainFeeConfigRoute, getCrosschainFeeConfigHandler(cliCtx, storeName)).Methods("GET")
 	r.HandleFunc(fmt.Sprintf("/%s/burn", storeName), burnOrLockHandler(cliCtx, "burn")).Methods("POST")
 	r.HandleFunc(fmt.Sprintf("/%s/lock", storeName), burnOrLockHandler(cliCtx, "lock")).Methods("POST")
 }
@@ -175,10 +178,10 @@ func burnOrLockHandler(cliCtx client.Context, lockOrBurn string) http.HandlerFun
 		var msg sdk.Msg
 		switch lockOrBurn {
 		case "lock":
-			msgLock := types.NewMsgLock(oracletypes.NetworkDescriptor(networkDescriptor), cosmosSender, ethereumReceiver, req.Amount, req.Symbol, req.CethAmount)
+			msgLock := types.NewMsgLock(oracletypes.NetworkDescriptor(networkDescriptor), cosmosSender, ethereumReceiver, req.Amount, req.Symbol, req.CrosschainFee)
 			msg = &msgLock
 		case "burn":
-			msgBurn := types.NewMsgBurn(oracletypes.NetworkDescriptor(networkDescriptor), cosmosSender, ethereumReceiver, req.Amount, req.Symbol, req.CethAmount)
+			msgBurn := types.NewMsgBurn(oracletypes.NetworkDescriptor(networkDescriptor), cosmosSender, ethereumReceiver, req.Amount, req.Symbol, req.CrosschainFee)
 			msg = &msgBurn
 		}
 		err = msg.ValidateBasic()
@@ -188,5 +191,33 @@ func burnOrLockHandler(cliCtx client.Context, lockOrBurn string) http.HandlerFun
 		}
 
 		tx.WriteGeneratedTxResponse(cliCtx, w, req.BaseReq, msg)
+	}
+}
+
+func getCrosschainFeeConfigHandler(cliCtx client.Context, storeName string) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		vars := mux.Vars(r)
+
+		restNetworkDescriptor := vars[restNetworkDescriptor]
+
+		networkDescriptor, err := strconv.Atoi(restNetworkDescriptor)
+		if err != nil {
+			rest.WriteErrorResponse(w, http.StatusNotFound, err.Error())
+		}
+
+		bz, err := cliCtx.LegacyAmino.MarshalJSON(types.NewQueryCrosschainFeeConfigRequest(oracletypes.NetworkDescriptor(networkDescriptor)))
+		if err != nil {
+			rest.WriteErrorResponse(w, http.StatusNotFound, err.Error())
+			return
+		}
+
+		route := fmt.Sprintf("custom/%s/%s", storeName, types.QueryCrosschainFeeConfig)
+		res, _, err := cliCtx.QueryWithData(route, bz)
+		if err != nil {
+			rest.WriteErrorResponse(w, http.StatusNotFound, err.Error())
+			return
+		}
+
+		rest.PostProcessResponse(w, cliCtx, res)
 	}
 }
