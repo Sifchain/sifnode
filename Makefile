@@ -22,7 +22,7 @@ build_tags_comma_sep := $(subst $(whitespace),$(comma),$(BUILD_TAGS))
 
 ldflags = -X github.com/cosmos/cosmos-sdk/version.Name=sifchain \
 		  -X github.com/cosmos/cosmos-sdk/version.ServerName=sifnoded \
-		  -X github.com/cosmos/cosmos-sdk/version.ClientName=sifnodecli \
+		  -X github.com/cosmos/cosmos-sdk/version.ClientName=sifnoded \
 		  -X github.com/cosmos/cosmos-sdk/version.Version=$(VERSION) \
 		  -X github.com/cosmos/cosmos-sdk/version.Commit=$(COMMIT) \
 		  -X "github.com/cosmos/cosmos-sdk/version.BuildTags=$(build_tags_comma_sep)"
@@ -80,9 +80,6 @@ run:
 
 build-image:
 	docker build -t sifchain/$(BINARY):$(IMAGE_TAG) -f ./cmd/$(BINARY)/Dockerfile .
-
-build-ts-relayer-image:
-	docker build -t sifchain/ts-relayer:$(IMAGE_TAG) -f ./deploy/docker/localnet/ibc/ts-relayer/Dockerfile .
 
 run-image: build-image
 	docker run sifchain/$(BINARY):$(IMAGE_TAG)

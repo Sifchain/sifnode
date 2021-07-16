@@ -51,7 +51,7 @@ and your node will start synchronizing with the network. Please note that this m
 You can verify that you're connected by running:
 
 ```
-sifnodecli q tendermint-validator-set --node tcp://rpc-testnet.sifchain.finance:80 --trust-node
+sifnoded q tendermint-validator-set --node tcp://rpc-testnet.sifchain.finance:80 --trust-node
 ```
 
 and you should see the following primary validator node/s for Sifchain:
@@ -106,7 +106,7 @@ docker exec -ti mainnet_sifnode_1 sh
 3. Run the following command to become a validator: 
 
 ```
-sifnodecli tx staking create-validator \
+sifnoded tx staking create-validator \
     --commission-max-change-rate="0.1" \
     --commission-max-rate="0.1" \
     --commission-rate="0.1" \
@@ -133,7 +133,7 @@ Where:
 e.g.:
 
 ```
-sifnodecli tx staking create-validator \
+sifnoded tx staking create-validator \
     --commission-max-change-rate="0.1" \
     --commission-max-rate="0.1" \
     --commission-rate="0.1" \

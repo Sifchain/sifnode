@@ -47,4 +47,4 @@ def test_can_mint_token_and_peg_it_for_everything_in_whitelist(
             # don't stop if one of them fails
             logging.info(f"failed to mint and send for {t}, error was {e}")
     logging.info(f"sent new batch of tokens to {rowan_source}")
-    test_utilities.get_sifchain_addr_balance(rowan_source, request.sifnodecli_node, "rowan")
+    test_utilities.get_sifchain_addr_balance(rowan_source, request.sifnoded_node, "rowan")

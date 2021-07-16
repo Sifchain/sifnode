@@ -109,5 +109,6 @@ run() {
   ibc-relayer start -v --poll 10
 }
 
+echo "wait 30s for sifnodes to warm up" && sleep 30
 setup
 run
