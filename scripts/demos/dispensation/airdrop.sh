@@ -8,8 +8,8 @@
 # ar1 = name for airdrop , needs to be unique for every airdrop . If not the tx gets rejected
 # input.json list of funding addresses  -  Input address must be part of the multisig key
 # output.json list of airdrop receivers.
-sifnoded tx dispensation create ValidatorSubsidy output.json sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd --from sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd --yes --gas auto --gas-adjustment=1.5 --gas-prices 1.0rowan --chain-id=localnet --keyring-backend=test
-sifnoded tx dispensation run 32_sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd --from sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd --yes --gas auto --gas-adjustment=1.5 --gas-prices 1.0rowan --chain-id=localnet --keyring-backend=test
+sifnoded tx dispensation create ValidatorSubsidy output.json sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd --from sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd --yes --fees 150000rowan --chain-id=localnet --keyring-backend=test
+sifnoded tx dispensation run 32_sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd --from sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd --yes --fees 150000rowan --chain-id=localnet --keyring-backend=test
 sleep 8
 sifnoded q dispensation distributions-all -chain-id localnet
 #sifnoded q dispensation records-by-name-all ar1 >> all.json

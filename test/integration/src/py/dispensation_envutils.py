@@ -233,7 +233,7 @@ def create_offline_singlekey_txn_with_runner(
         chain_id
     ):
     logging.debug(f"create_unsigned_offline_dispensation_txn")
-    sifchain_fees_entry = f"--fees 150000rowan"
+    sifchain_fees_entry = f"--fees 1500000rowan"
     sifchain_gas_entry = f"--gas auto"
     keyring_backend_entry = f"--keyring-backend test"
     output = 'output.json'
@@ -245,7 +245,7 @@ def create_offline_singlekey_txn_with_runner(
         f"--from {distributor_address}",
         f"--chain-id {chain_id}",
         sifchain_fees_entry,
-        sifchain_gas_entry,
+        # sifchain_gas_entry,
         keyring_backend_entry,
         f"--generate-only", 
         f"--yes -o json",
