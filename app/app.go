@@ -342,7 +342,7 @@ func NewSifApp(
 		app.IBCKeeper.ChannelKeeper, &app.IBCKeeper.PortKeeper,
 		app.AccountKeeper, app.BankKeeper, scopedTransferKeeper,
 	)
-	transferModule := ibc_sifchain.NewAppModule(app.TransferKeeper, appCodec)
+	transferModule := ibc_sifchain.NewAppModule(app.TransferKeeper, appCodec, app.WhitelistKeeper)
 	//transferModule := transfer.NewAppModule(app.TransferKeeper)
 
 	// NOTE: the IBC mock keeper and application module is used only for testing core IBC. Do
@@ -381,7 +381,7 @@ func NewSifApp(
 		evidence.NewAppModule(app.EvidenceKeeper),
 		ibc.NewAppModule(app.IBCKeeper),
 		transferModule,
-		clp.NewAppModule(app.ClpKeeper, app.BankKeeper),
+		clp.NewAppModule(app.ClpKeeper, app.BankKeeper, app.WhitelistKeeper),
 		oracle.NewAppModule(app.OracleKeeper),
 		ethbridge.NewAppModule(app.OracleKeeper, app.BankKeeper, app.AccountKeeper, app.EthbridgeKeeper, &appCodec),
 		dispensation.NewAppModule(app.DispensationKeeper, app.BankKeeper, app.AccountKeeper),

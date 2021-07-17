@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	whitelisttypes "github.com/Sifchain/sifnode/x/whitelist/types"
 
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -90,16 +91,18 @@ func (AppModuleBasic) GetQueryCmd() *cobra.Command {
 type AppModule struct {
 	AppModuleBasic
 
-	keeper     keeper.Keeper
-	bankKeeper types.BankKeeper
+	keeper          keeper.Keeper
+	bankKeeper      types.BankKeeper
+	whitelistKeeper whitelisttypes.Keeper
 }
 
 // NewAppModule creates a new AppModule object
-func NewAppModule(k keeper.Keeper, bankKeeper types.BankKeeper) AppModule {
+func NewAppModule(k keeper.Keeper, bankKeeper types.BankKeeper, whitelistKeeper whitelisttypes.Keeper) AppModule {
 	return AppModule{
-		AppModuleBasic: AppModuleBasic{},
-		keeper:         k,
-		bankKeeper:     bankKeeper,
+		AppModuleBasic:  AppModuleBasic{},
+		keeper:          k,
+		bankKeeper:      bankKeeper,
+		whitelistKeeper: whitelistKeeper,
 	}
 }
 

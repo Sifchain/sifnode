@@ -2,33 +2,31 @@ package ibc_sifchain
 
 import (
 	"fmt"
-	"github.com/Sifchain/sifnode/x/ibc_sifchain/state"
-	"github.com/cosmos/cosmos-sdk/codec"
+	whitelisttypes "github.com/Sifchain/sifnode/x/whitelist/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	transfertypes "github.com/cosmos/cosmos-sdk/x/ibc/applications/transfer/types"
 	channeltypes "github.com/cosmos/cosmos-sdk/x/ibc/core/04-channel/types"
-	"github.com/pkg/errors"
 )
 
 func OnRecvPacketWhiteListed(
 	k Keeper,
 	ctx sdk.Context,
 	packet channeltypes.Packet,
-	cdc codec.BinaryMarshaler,
+	whitelistKeeper whitelisttypes.Keeper,
 ) (*sdk.Result, []byte, error) {
 	var data transfertypes.FungibleTokenPacketData
 	if err := transfertypes.ModuleCdc.UnmarshalJSON(packet.GetData(), &data); err != nil {
 		return nil, nil, sdkerrors.Wrapf(sdkerrors.ErrUnknownRequest, "cannot unmarshal ICS-20 transfer packet data: %s", err.Error())
 	}
-	ok, err := isWhitelisted(ctx, packet, data, cdc)
-	if !ok || err != nil {
-		return nil, nil, sdkerrors.Wrapf(sdkerrors.ErrInvalidCoins, "denom not on whitelist")
+	denom, ok := GetMintedDenomFromPacket(packet, data)
+	if !(ok && whitelistKeeper.GetDenom(ctx, denom).IsWhitelisted) {
+		return nil, nil, sdkerrors.Wrapf(sdkerrors.ErrInvalidCoins, "Denom not on whitelist")
 	}
 
 	acknowledgement := channeltypes.NewResultAcknowledgement([]byte{byte(1)})
 
-	err = k.OnRecvPacket(ctx, packet, data)
+	err := k.OnRecvPacket(ctx, packet, data)
 	if err != nil {
 		acknowledgement = channeltypes.NewErrorAcknowledgement(err.Error())
 	}
@@ -50,30 +48,24 @@ func OnRecvPacketWhiteListed(
 	}, acknowledgement.GetBytes(), nil
 }
 
-func isWhitelisted(ctx sdk.Context, packet channeltypes.Packet, data transfertypes.FungibleTokenPacketData, cdc codec.BinaryMarshaler) (bool, error) {
+func GetMintedDenomFromPacket(packet channeltypes.Packet, data transfertypes.FungibleTokenPacketData) (string, bool) {
+	// Note: Code and comments taken from SDK transfer keeper,
+	// used here only to determine the token that will be minted.
+
 	if transfertypes.ReceiverChainIsSource(packet.GetSourcePort(), packet.GetSourceChannel(), data.Denom) {
-		// token originated on sifchain and is now being returned. This is allowed
-		// For paths Sifchain -> X -> Sifchain return true
-		// For paths Sifchain -> X -> Y -> Sifchain this condition is not triggered
-		// No need to whitelist channel and port, We assume tokens will come back using the same channel they used to go across.
-		// If Sifchain and Chain X have two channels running between them , and Token A uses channel 1 to go from sifchain to chain X . It needs to use channel 1 to come back.
-		fmt.Printf("Returning to source | Denom : %s , SourcePort : %s , SourceChannel : %s ", data.Denom, packet.SourcePort, packet.SourceChannel)
-		return true, nil
+
+		return "", true
 	}
-	// Token did not originate on sifchain
-	// In this case allow if all the conditions are met
-	//    a) Token should belong to whitelist
-	//    b) Token should be a direct transfer it should not have any jumps
-	//    c) The port and channel should have been whitelisted
-	// All the above conditions can be a met by whitelisting the trace hash of the token .
-	whitelist, err := state.GetWhiteList(ctx, cdc)
-	if err != nil {
-		return false, errors.New("Whitelist not present")
-	}
-	denomTrace := transfertypes.ParseDenomTrace(data.Denom)
-	if !whitelist.DenomWhitelist[denomTrace.Hash().String()] {
-		return false, errors.New("< Token Channel Port > not present in whitelist")
-	}
-	fmt.Printf("Received whitelisted token %s , Hash %s ", data.Denom, denomTrace.Hash().String())
-	return true, nil
+
+	// sender chain is the source, mint vouchers
+
+	// since SendPacket did not prefix the denomination, we must prefix denomination here
+	sourcePrefix := transfertypes.GetDenomPrefix(packet.GetDestPort(), packet.GetDestChannel())
+	// NOTE: sourcePrefix contains the trailing "/"
+	prefixedDenom := sourcePrefix + data.Denom
+
+	// construct the denomination trace from the full raw denomination
+	denomTrace := transfertypes.ParseDenomTrace(prefixedDenom)
+
+	return denomTrace.IBCDenom(), false
 }

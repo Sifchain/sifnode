@@ -2,6 +2,7 @@ package ibc_sifchain
 
 import (
 	"encoding/json"
+	whitelisttypes "github.com/Sifchain/sifnode/x/whitelist/types"
 	"github.com/cosmos/cosmos-sdk/client"
 	cdctypes "github.com/cosmos/cosmos-sdk/codec/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
@@ -80,6 +81,7 @@ type AppModule struct {
 	AppModuleBasic
 	cosmosAppModule CosmosAppModule
 	keeper          Keeper
+	whitelistKeeper whitelisttypes.Keeper
 	cdc             codec.BinaryMarshaler
 }
 
@@ -108,7 +110,7 @@ func (am AppModule) OnChanCloseConfirm(ctx sdk.Context, portID, channelID string
 }
 
 func (am AppModule) OnRecvPacket(ctx sdk.Context, packet types.Packet) (*sdk.Result, []byte, error) {
-	return OnRecvPacketWhiteListed(am.keeper, ctx, packet, am.cdc)
+	return OnRecvPacketWhiteListed(am.keeper, ctx, packet, am.whitelistKeeper)
 }
 
 func (am AppModule) OnAcknowledgementPacket(ctx sdk.Context, packet types.Packet, acknowledgement []byte) (*sdk.Result, error) {
@@ -119,11 +121,12 @@ func (am AppModule) OnTimeoutPacket(ctx sdk.Context, packet types.Packet) (*sdk.
 	return am.cosmosAppModule.OnTimeoutPacket(ctx, packet)
 }
 
-func NewAppModule(keeper Keeper, cdc codec.BinaryMarshaler) AppModule {
+func NewAppModule(keeper Keeper, cdc codec.BinaryMarshaler, whitelistKeeper whitelisttypes.Keeper) AppModule {
 	return AppModule{
 		AppModuleBasic:  AppModuleBasic{},
 		cosmosAppModule: NewCosmosAppModule(keeper),
 		keeper:          keeper,
+		whitelistKeeper: whitelistKeeper,
 		cdc:             cdc,
 	}
 }
