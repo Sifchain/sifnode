@@ -34,7 +34,7 @@ def send_sample_rowan(from_address, to_address, amount, keyring_backend, chain_i
     sifchain_fees_entry = f"--fees 150000rowan"
     keyring_backend_entry = f"--keyring-backend {keyring_backend}"
     cmd = " ".join([
-        "sifnoded tx send",
+        "sifnoded tx bank send",
         f"{from_address}",
         f"{to_address}",
         f"{amount}",
