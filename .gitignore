@@ -21,3 +21,9 @@ relayerdb
 venv/
 
 smart-contracts/artifacts/
+smart-contracts/coverage/*
+smart-contracts/coverage.json
+smart-contracts/test/build/*
+smart-contracts/cache/*
+
+node_modules/

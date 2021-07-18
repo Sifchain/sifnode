@@ -187,6 +187,33 @@ describe("Test Bridge Bank", function () {
       afterUserBalance.should.be.bignumber.equal(state.amount);
     });
 
+    it("should not allow user to multi-burn ERC20 tokens that are not cosmos native assets", async function () {
+      await state.token1.connect(userOne).approve(
+        state.bridgeBank.address,
+        state.amount
+      );
+
+      await state.token2.connect(userOne).approve(
+        state.bridgeBank.address,
+        state.amount
+      );
+
+      await state.token3.connect(userOne).approve(
+        state.bridgeBank.address,
+        state.amount
+      );
+
+      // Attempt to lock tokens
+      await expect(
+        state.bridgeBank.connect(userOne).multiLockBurn(
+          [state.sender, state.sender, state.sender],
+          [state.token1.address,state.token2.address,state.token3.address],
+          [state.amount, state.amount, state.amount],
+          [true, false, false]
+        ),
+      ).to.be.revertedWith("Only token in whitelist can be burned");
+    });
+
     it("should allow user to multi-lock and burn ERC20 tokens and rowan with multiLockBurn method", async function () {
       await state.token1.connect(userOne).approve(
         state.bridgeBank.address,
@@ -204,7 +231,7 @@ describe("Test Bridge Bank", function () {
         state.amount
       );
 
-      // Attempt to lock tokens
+      // Lock & burn tokens
       const tx = await state.bridgeBank.connect(userOne).multiLockBurn(
         [state.sender, state.sender, state.sender],
         [state.token1.address, state.token2.address, state.rowan.address],
@@ -212,7 +239,7 @@ describe("Test Bridge Bank", function () {
         [false, false, true]
       );
 
-      const receipt = await tx.wait();
+      await tx.wait();
 
       // Confirm that the user has the proper balance after the multiLockBurn
       let afterUserBalance = Number(
@@ -315,7 +342,7 @@ describe("Test Bridge Bank", function () {
           [state.token1.address, state.token2.address, state.token3.address],
           [state.amount, state.amount, state.amount]
         )
-      ).to.be.revertedWith("INV_ADR");
+      ).to.be.revertedWith("INV_SIF_ADDR");
     });
 
     it("should not allow user to multi-lock when bridgebank is paused", async function () {
@@ -369,6 +396,18 @@ describe("Test Bridge Bank", function () {
       ).to.be.revertedWith("M_P");
     });
 
+    it("should revert when multi-lock parameters are malformed, not enough booleans", async function () {
+      // Attempt to lock tokens
+      await expect(
+        state.bridgeBank.connect(userOne).multiLockBurn(
+          [state.sender, state.sender],
+          [state.token1.address, state.token2.address],
+          [state.amount, state.amount],
+          [false, false, false]
+        )
+      ).to.be.revertedWith("M_P");
+    });
+
     it("should revert when multi-lock parameters are malformed, invalid sif addresses", async function () {
       // Attempt to lock tokens
       await expect(
@@ -378,7 +417,7 @@ describe("Test Bridge Bank", function () {
           [state.amount, state.amount, state.amount],
           [false, false, false]
         )
-      ).to.be.revertedWith("INV_ADR");
+      ).to.be.revertedWith("INV_SIF_ADDR");
     });
 
     it("should not allow user to multi-lock/burn when bridgebank is paused", async function () {
