@@ -42,13 +42,13 @@ enum StatusText {
   STATUS_TEXT_SUCCESS = 2;
 }
 
-// NativeTokenConfig is native token config for each network
-message NativeTokenConfig {
-  string native_token = 1;
-  string native_gas = 2 [
+// CrossChainFeeConfig is crosschain fee config for each network
+message CrossChainFeeConfig {
+  string fee_currency = 1;
+  string fee_currency_gas = 2 [
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
     (gogoproto.nullable) = false,
-    (gogoproto.moretags) = "yaml:\"native_gas\""
+    (gogoproto.moretags) = "yaml:\"fee_currency_gas\""
   ];
   string minimum_lock_cost = 3 [
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",

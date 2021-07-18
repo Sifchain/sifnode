@@ -40,16 +40,16 @@ import (
 )
 
 const (
-	TestID                         = "oracleID"
-	AlternateTestID                = "altOracleID"
-	TestString                     = "{value: 5}"
-	AlternateTestString            = "{value: 7}"
-	AnotherAlternateTestString     = "{value: 9}"
-	TestNativeTokenReceiverAddress = "cosmos1gn8409qq9hnrxde37kuxwx5hrxpfpv8426szuv" //nolint
-	NetworkDescriptor              = 1
-	NativeToken                    = "ceth"
-	NativeTokenGas                 = 1
-	MinimumCost                    = 1
+	TestID                           = "oracleID"
+	AlternateTestID                  = "altOracleID"
+	TestString                       = "{value: 5}"
+	AlternateTestString              = "{value: 7}"
+	AnotherAlternateTestString       = "{value: 9}"
+	TestCrossChainFeeReceiverAddress = "cosmos1gn8409qq9hnrxde37kuxwx5hrxpfpv8426szuv" //nolint
+	NetworkDescriptor                = 1
+	CrossChainFee                    = "ceth"
+	CrossChainFeeGas                 = 1
+	MinimumCost                      = 1
 )
 
 // CreateTestKeepers greates an Mock App, OracleKeeper, bankKeeper and ValidatorAddresses to be used for test input
@@ -152,8 +152,8 @@ func CreateTestKeepers(t *testing.T, consensusNeeded float64, validatorAmounts [
 
 	ethbridgeKeeper := keeper.NewKeeper(encCfg.Marshaler, bankKeeper, oracleKeeper, accountKeeper, keyEthBridge)
 
-	NativeTokenReceiverAccount, _ := sdk.AccAddressFromBech32(TestNativeTokenReceiverAddress)
-	ethbridgeKeeper.SetNativeTokenReceiverAccount(ctx, NativeTokenReceiverAccount)
+	CrossChainFeeReceiverAccount, _ := sdk.AccAddressFromBech32(TestCrossChainFeeReceiverAddress)
+	ethbridgeKeeper.SetCrossChainFeeReceiverAccount(ctx, CrossChainFeeReceiverAccount)
 
 	// Setup validators
 	valAddrsInOrder := make([]sdk.ValAddress, len(validatorAmounts))
@@ -179,8 +179,8 @@ func CreateTestKeepers(t *testing.T, consensusNeeded float64, validatorAmounts [
 
 	networkIdentity := oracleTypes.NewNetworkIdentity(NetworkDescriptor)
 
-	oracleKeeper.SetNativeToken(ctx, networkIdentity, NativeToken,
-		sdk.NewInt(NativeTokenGas), sdk.NewInt(MinimumCost), sdk.NewInt(MinimumCost))
+	oracleKeeper.SetCrossChainFee(ctx, networkIdentity, CrossChainFee,
+		sdk.NewInt(CrossChainFeeGas), sdk.NewInt(MinimumCost), sdk.NewInt(MinimumCost))
 	whitelist := oracleTypes.ValidatorWhiteList{WhiteList: valAddrs}
 	oracleKeeper.SetOracleWhiteList(ctx, networkIdentity, whitelist)
 

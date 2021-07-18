@@ -7,7 +7,7 @@ import (
 
 func Migrate(state v039ethbridge.GenesisState) *types.GenesisState {
 	return &types.GenesisState{
-		NativeTokenReceiveAccount: state.NativeTokenReceiverAccount.String(),
-		PeggyTokens:               state.PeggyTokens,
+		CrosschainFeeReceiveAccount: state.CethReceiverAccount.String(),
+		PeggyTokens:                 state.PeggyTokens,
 	}
 }

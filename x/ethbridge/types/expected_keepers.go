@@ -30,8 +30,8 @@ type OracleKeeper interface {
 	IsAdminAccount(ctx sdk.Context, cosmosSender sdk.AccAddress) bool
 	GetAdminAccount(ctx sdk.Context) sdk.AccAddress
 	SetAdminAccount(ctx sdk.Context, cosmosSender sdk.AccAddress)
-	GetNativeToken(ctx sdk.Context, networkIdentity oracletypes.NetworkIdentity) (string, error)
-	GetNativeTokenConfig(ctx sdk.Context, networkIdentity oracletypes.NetworkIdentity) (oracletypes.NativeTokenConfig, error)
-	ProcessSetNativeToken(ctx sdk.Context, networkDescriptor oracletypes.NetworkDescriptor, nativeToken string, gas, burnCost, lockCost sdk.Int) error
 	ProcessSignProphecy(ctx sdk.Context, cosmosSender, prophecyID, ethereumAddress, signature string) error
+	GetCrossChainFee(ctx sdk.Context, networkIdentity oracletypes.NetworkIdentity) (string, error)
+	GetCrossChainFeeConfig(ctx sdk.Context, networkIdentity oracletypes.NetworkIdentity) (oracletypes.CrossChainFeeConfig, error)
+	SetFeeInfo(ctx sdk.Context, networkDescriptor oracletypes.NetworkDescriptor, feeCurrency string, gas, burnCost, lockCost sdk.Int) error
 }
