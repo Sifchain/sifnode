@@ -71,51 +71,51 @@ contract BridgeBank is BankStorage,
     /*
      * @dev: Modifier to only allow valid sif addresses
      */
-    modifier validSifAddress(bytes calldata _sifAddress) {
-        require(verifySifAddress(_sifAddress) == true, "Invalid sif address");
+    modifier validSifAddress(bytes calldata sifAddress) {
+        require(verifySifAddress(sifAddress) == true, "INV_SIF_ADDR");
         _;
     }
 
     /*
      * @dev: Set the token address in whitelist
      *
-     * @param _token: ERC 20's address
-     * @param _inList: set the _token in list or not
-     * @return: new value of if _token in whitelist
+     * @param token: ERC 20's address
+     * @param inList: set the token in list or not
+     * @return: new value of if token in whitelist
      */
-    function setTokenInCosmosWhiteList(address _token, bool _inList)
+    function setTokenInCosmosWhiteList(address token, bool inList)
         internal returns (bool)
     {
-        _cosmosTokenWhiteList[_token] = _inList;
-        emit LogWhiteListUpdate(_token, _inList);
-        return _inList;
+        _cosmosTokenWhiteList[token] = inList;
+        emit LogWhiteListUpdate(token, inList);
+        return inList;
     }
 
-    function changeOwner(address _newOwner) public onlyOwner {
-        require(_newOwner != address(0), "invalid address");
-        owner = _newOwner;
+    function changeOwner(address newOwner) public onlyOwner {
+        require(newOwner != address(0), "invalid address");
+        owner = newOwner;
     }
 
     /*
      * @dev: function to validate if a sif address has a correct prefix
      */
-    function verifySifPrefix(bytes calldata _sifAddress) private pure returns (bool) {
+    function verifySifPrefix(bytes calldata sifAddress) private pure returns (bool) {
         bytes3 sifInHex = 0x736966;
 
         for (uint256 i = 0; i < sifInHex.length; i++) {
-            if (sifInHex[i] != _sifAddress[i]) {
+            if (sifInHex[i] != sifAddress[i]) {
                 return false;
             }
         }
         return true;
     }
 
-    function verifySifAddressLength(bytes calldata _sifAddress) private pure returns (bool) {
-        return _sifAddress.length == 42;
+    function verifySifAddressLength(bytes calldata sifAddress) private pure returns (bool) {
+        return sifAddress.length == 42;
     }
 
-    function verifySifAddress(bytes calldata _sifAddress) private pure returns (bool) {
-        return verifySifAddressLength(_sifAddress) && verifySifPrefix(_sifAddress);
+    function verifySifAddress(bytes calldata sifAddress) private pure returns (bool) {
+        return verifySifAddressLength(sifAddress) && verifySifPrefix(sifAddress);
     }
 
     // function used only for testing
@@ -130,14 +130,14 @@ contract BridgeBank is BankStorage,
      * @return: The new BridgeToken contract's address
      */
     function createNewBridgeToken(
-        string calldata _name,
-        string calldata _symbol,
-        uint8 _decimals
+        string calldata name,
+        string calldata symbol,
+        uint8 decimals
     ) external onlyCosmosBridge returns (address) {
         address newTokenAddress = deployNewBridgeToken(
-            _name,
-            _symbol,
-            _decimals
+            name,
+            symbol,
+            decimals
         );
         setTokenInCosmosWhiteList(newTokenAddress, true);
 
@@ -147,42 +147,111 @@ contract BridgeBank is BankStorage,
     /*
      * @dev: Creates a new BridgeToken
      *
-     * @param _symbol: The new BridgeToken's symbol
-     * @return: The new BridgeToken contract's address
+     * @param contractAddress: The new BridgeToken's address
      */
     function addExistingBridgeToken(
-        address _contractAddress    
+        address contractAddress    
     ) external onlyOwner returns (bool) {
-        return setTokenInCosmosWhiteList(_contractAddress, true);
+        return setTokenInCosmosWhiteList(contractAddress, true);
     }
 
     function handleUnpeg(
-        address payable _ethereumReceiver,
-        address _tokenAddress,
-        uint256 _amount   
+        address payable ethereumReceiver,
+        address tokenAddress,
+        uint256 amount
     ) external onlyCosmosBridge whenNotPaused {
         // if this is a bridge controlled token, then we need to mint
-        if (getCosmosTokenInWhiteList(_tokenAddress)) {
-            return mintNewBridgeTokens(
-                _ethereumReceiver,
-                _tokenAddress,
-                _amount
+        if (getCosmosTokenInWhiteList(tokenAddress)) {
+            mintNewBridgeTokens(
+                ethereumReceiver,
+                tokenAddress,
+                amount
             );
         } else {
             // if this is an external token, we unlock
-            return unlock(_ethereumReceiver, _tokenAddress, _amount);
+            unlock(ethereumReceiver, tokenAddress, amount);
         }
     }
 
-    function getDecimals(address _token) private returns (uint8) {
-        uint8 decimals = contractDecimals[_token];
+    /*
+     * @dev: Burns BridgeTokens representing native Cosmos assets.
+     *
+     * @param recipient: bytes representation of destination address.
+     * @param token: token address in origin chain (0x0 if ethereum)
+     * @param amount: value of deposit
+     */
+    function burn(
+        bytes calldata recipient,
+        address token,
+        uint256 amount
+    ) external validSifAddress(recipient) onlyCosmosTokenWhiteList(token) whenNotPaused {
+        // burn the tokens
+        BridgeToken(token).burnFrom(msg.sender, amount);
+        
+        // decimals defaults to 18 if call to decimals fails
+        uint8 decimals = getDecimals(token);
+
+        lockBurnNonce = lockBurnNonce + 1;
+
+        emit LogBurn(
+            msg.sender,
+            recipient,
+            token,
+            amount,
+            lockBurnNonce,
+            decimals
+        );
+    }
+
+    function getName(address token) private returns (string memory) {
+        string memory name = contractName[token];
+
+        // check to see if we already have this name stored in the smart contract
+        if (keccak256(abi.encodePacked(name)) != keccak256(abi.encodePacked(""))) {
+            return name;
+        }
+
+        try BridgeToken(token).name() returns (string memory _name) {
+            name = _name;
+            contractName[token] = _name;
+        } catch {
+            // if we can't access the decimals function of this token,
+            // assume that it has 18 decimals
+            name = "";
+        }
+
+        return name;
+    }
+
+    function getSymbol(address token) private returns (string memory) {
+        string memory symbol = contractSymbol[token];
+
+        // check to see if we already have this name stored in the smart contract
+        if (keccak256(abi.encodePacked(symbol)) != keccak256(abi.encodePacked(""))) {
+            return symbol;
+        }
+
+        try BridgeToken(token).symbol() returns (string memory _symbol) {
+            symbol = _symbol;
+            contractSymbol[token] = _symbol;
+        } catch {
+            // if we can't access the decimals function of this token,
+            // assume that it has 18 decimals
+            symbol = "";
+        }
+
+        return symbol;
+    }
+
+    function getDecimals(address token) private returns (uint8) {
+        uint8 decimals = contractDecimals[token];
         if (decimals > 0) {
             return decimals;
         }
 
-        try BridgeToken(_token).decimals() returns (uint8 _decimals) {
+        try BridgeToken(token).decimals() returns (uint8 _decimals) {
             decimals = _decimals;
-            contractDecimals[_token] = _decimals;
+            contractDecimals[token] = _decimals;
         } catch {
             // if we can't access the decimals function of this token,
             // assume that it has 18 decimals
@@ -193,152 +262,101 @@ contract BridgeBank is BankStorage,
     }
 
     /*
-     * @dev: Burns BridgeTokens representing native Cosmos assets.
-     *
-     * @param _recipient: bytes representation of destination address.
-     * @param _token: token address in origin chain (0x0 if ethereum)
-     * @param _amount: value of deposit
-     */
-    function burn(
-        bytes calldata _recipient,
-        address _token,
-        uint256 _amount
-    ) external validSifAddress(_recipient) onlyCosmosTokenWhiteList(_token) whenNotPaused {
-        // burn the tokens
-        BridgeToken(_token).burnFrom(msg.sender, _amount);
-        
-        // decimals defaults to 18 if call to decimals fails
-        uint8 decimals = getDecimals(_token);
-
-        lockBurnNonce = lockBurnNonce + 1;
-
-        emit LogBurn(
-            msg.sender,
-            _recipient,
-            _token,
-            _amount,
-            lockBurnNonce,
-            decimals
-        );
-    }
-
-    function getName(address _token) private returns (string memory) {
-        string memory name = contractName[_token];
-
-        // check to see if we already have this name stored in the smart contract
-        if (keccak256(abi.encodePacked(name)) != keccak256(abi.encodePacked(""))) {
-            return name;
-        }
-
-        try BridgeToken(_token).name() returns (string memory _name) {
-            name = _name;
-            contractName[_token] = _name;
-        } catch {
-            // if we can't access the decimals function of this token,
-            // assume that it has 18 decimals
-            name = "";
-        }
-
-        return name;
-    }
-
-    function getSymbol(address _token) private returns (string memory) {
-        string memory symbol = contractSymbol[_token];
-
-        // check to see if we already have this name stored in the smart contract
-        if (keccak256(abi.encodePacked(symbol)) != keccak256(abi.encodePacked(""))) {
-            return symbol;
-        }
-
-        try BridgeToken(_token).symbol() returns (string memory _symbol) {
-            symbol = _symbol;
-            contractSymbol[_token] = _symbol;
-        } catch {
-            // if we can't access the decimals function of this token,
-            // assume that it has 18 decimals
-            symbol = "";
-        }
-
-        return symbol;
-    }
-
-    /*
      * @dev: Locks received Ethereum/ERC20 funds.
      *
-     * @param _recipient: bytes representation of destination address.
-     * @param _token: token address in origin chain (0x0 if ethereum)
-     * @param _amount: value of deposit
+     * @param recipient: bytes representation of destination address.
+     * @param token: token address in origin chain (0x0 if ethereum)
+     * @param amount: value of deposit
      */
     function lock(
-        bytes calldata _recipient,
-        address _token,
-        uint256 _amount
-    ) external payable validSifAddress(_recipient) whenNotPaused {
-        if (_token == address(0)) {
-            return handleNativeCurrencyLock(_recipient, _amount);
+        bytes calldata recipient,
+        address token,
+        uint256 amount
+    ) external payable validSifAddress(recipient) whenNotPaused {
+        if (token == address(0)) {
+            return handleNativeCurrencyLock(recipient, amount);
         }
-        require(msg.value == 0, "do not send currency if locking tokens");
+        require(msg.value == 0, "INV_NATIVE_SEND");
 
         lockBurnNonce += 1;
-        _lockTokens(_recipient, _token, _amount, lockBurnNonce);
+        _lockTokens(recipient, token, amount, lockBurnNonce);
     }
 
+    /**
+     * Locks multiple tokens in the bridge contract in a single tx.
+     * This is used to handle the case where the user is sending tokens
+     *
+     * @param recipient: bytes representation of destination address.
+     * @param token: token address
+     * @param amount: value of deposit
+     */
     function multiLock(
-        bytes[] calldata _recipient,
-        address[] calldata _token,
-        uint256[] calldata _amount
+        bytes[] calldata recipient,
+        address[] calldata token,
+        uint256[] calldata amount
     ) external whenNotPaused {
-        require(_recipient.length == _token.length, "M_P");
-        require(_token.length == _amount.length, "M_P");
+        require(recipient.length == token.length, "M_P");
+        require(token.length == amount.length, "M_P");
 
+        // use intermediate lock burn nonce to distinguish between different lock calls
+        // this alows us to track the lock calls in the logs
+        // and to prevent double locking
+        // (i.e. if a user calls lock twice with the same amount, we don't want to lock twice)
+        // This pattern of using the intermediate value will save us gas
+        // by utilizing the stack for all intermediate values
         uint256 intermediateLockBurnNonce = lockBurnNonce;
 
-        for (uint256 i = 0; i < _recipient.length; i++) {
-            require(verifySifAddress(_recipient[i]), "INV_ADR");
+        for (uint256 i = 0; i < recipient.length; i++) {
             intermediateLockBurnNonce++;
 
             _lockTokens(
-                _recipient[i],
-                _token[i],
-                _amount[i],
+                recipient[i],
+                token[i],
+                amount[i],
                 intermediateLockBurnNonce
             );
         }
         lockBurnNonce = intermediateLockBurnNonce;
     }
 
-    // multi-lock burn. For locking ERC20 tokens and rowan
-    // not for beginner users
+    /**
+     * Locks multiple tokens in the bridge contract in a single tx.
+     * This is used to handle the case where the user is sending tokens
+     *
+     * @param recipient: bytes representation of destination address.
+     * @param token: token address
+     * @param amount: value of deposit
+     * @param isBurn: value of deposit
+     */
     function multiLockBurn(
-        bytes[] calldata _recipient,
-        address[] calldata _token,
-        uint256[] calldata _amount,
-        bool[] calldata _isBurn
+        bytes[] calldata recipient,
+        address[] calldata token,
+        uint256[] calldata amount,
+        bool[] calldata isBurn
     ) external whenNotPaused {
         // all array inputs must be of the same length
         // else throw malformed params error
-        require(_recipient.length == _token.length, "M_P");
-        require(_token.length == _amount.length, "M_P");
-        require(_token.length == _isBurn.length, "M_P");
+        require(recipient.length == token.length, "M_P");
+        require(token.length == amount.length, "M_P");
+        require(token.length == isBurn.length, "M_P");
 
         uint256 intermediateLockBurnNonce = lockBurnNonce;
 
-        for (uint256 i = 0; i < _recipient.length; i++) {
-            require(verifySifAddress(_recipient[i]), "INV_ADR");
+        for (uint256 i = 0; i < recipient.length; i++) {
             intermediateLockBurnNonce++;
 
-            if (_isBurn[i]) {
+            if (isBurn[i]) {
                 _burnTokens(
-                    _recipient[i],
-                    _token[i],
-                    _amount[i],
+                    recipient[i],
+                    token[i],
+                    amount[i],
                     intermediateLockBurnNonce
                 );
             } else {
                 _lockTokens(
-                    _recipient[i],
-                    _token[i],
-                    _amount[i],
+                    recipient[i],
+                    token[i],
+                    amount[i],
                     intermediateLockBurnNonce
                 );
             }
@@ -347,11 +365,11 @@ contract BridgeBank is BankStorage,
     }
 
     function _lockTokens(
-        bytes calldata _recipient,
+        bytes calldata recipient,
         address tokenAddress,
         uint256 tokenAmount,
         uint256 _lockBurnNonce
-    ) private {
+    ) private onlyTokenNotInCosmosWhiteList(tokenAddress) validSifAddress(recipient) {
         IERC20 tokenToTransfer = IERC20(tokenAddress);
         // lock tokens
         tokenToTransfer.safeTransferFrom(
@@ -369,7 +387,7 @@ contract BridgeBank is BankStorage,
 
         emit LogLock(
             msg.sender,
-            _recipient,
+            recipient,
             tokenAddress,
             tokenAmount,
             _lockBurnNonce,
@@ -380,11 +398,11 @@ contract BridgeBank is BankStorage,
     }
 
     function _burnTokens(
-        bytes calldata _recipient,
+        bytes calldata recipient,
         address tokenAddress,
         uint256 tokenAmount,
         uint256 _lockBurnNonce
-    ) private {
+    ) private onlyCosmosTokenWhiteList(tokenAddress) validSifAddress(recipient) {
         BridgeToken tokenToTransfer = BridgeToken(tokenAddress);
         // burn tokens
         tokenToTransfer.burnFrom(
@@ -401,7 +419,7 @@ contract BridgeBank is BankStorage,
 
         emit LogBurn(
             msg.sender,
-            _recipient,
+            recipient,
             tokenAddress,
             tokenAmount,
             _lockBurnNonce,
@@ -410,34 +428,34 @@ contract BridgeBank is BankStorage,
     }
 
     /*
-     * @dev: Locks received Ethereum/ERC20 funds.
+     * Locks received Ethereum/ERC20 funds.
      *
-     * @param _recipient: bytes representation of destination address.
-     * @param _token: token address in origin chain (0x0 if ethereum)
-     * @param _amount: value of deposit
+     * @param recipient: bytes representation of destination address.
+     * @param token: token address in origin chain (0x0 if ethereum)
+     * @param amount: value of deposit
      */
     function handleNativeCurrencyLock(
-        bytes calldata _recipient,
-        uint256 _amount
-    ) internal {
-        require(msg.value == _amount, "amount mismatch");
+        bytes calldata recipient,
+        uint256 amount
+    ) internal validSifAddress(recipient) {
+        require(msg.value == amount, "amount mismatch");
 
-        address _token = address(0);
+        address token = address(0);
 
         // decimals defaults to 18 if call to decimals fails
         uint8 decimals = 18;
 
         // Get name and symbol
-        string memory name = getName(_token);
-        string memory symbol = getSymbol(_token);
+        string memory name = getName(token);
+        string memory symbol = getSymbol(token);
 
         lockBurnNonce = lockBurnNonce + 1;
 
         emit LogLock(
             msg.sender,
-            _recipient,
-            _token,
-            _amount,
+            recipient,
+            token,
+            amount,
             lockBurnNonce,
             decimals,
             symbol,
@@ -447,24 +465,24 @@ contract BridgeBank is BankStorage,
 
     /**
      *
-     * @param _recipient: recipient's Ethereum address
-     * @param _token: token contract address
-     * @param _amount: wei amount or ERC20 token count
+     * @param recipient: recipient's Ethereum address
+     * @param token: token contract address
+     * @param amount: wei amount or ERC20 token count
      */
     function unlock(
-        address payable _recipient,
-        address _token,
-        uint256 _amount
-    ) public onlyCosmosBridge whenNotPaused {
+        address payable recipient,
+        address token,
+        uint256 amount
+    ) internal {
         // Transfer funds to intended recipient
-        if (_token == address(0)) {
-            (bool success,) = _recipient.call{value: _amount}("");
+        if (token == address(0)) {
+            (bool success,) = recipient.call{value: amount}("");
             require(success, "error sending ether");
         } else {
-            IERC20 tokenToTransfer = IERC20(_token);
-            tokenToTransfer.safeTransfer(_recipient, _amount);
+            IERC20 tokenToTransfer = IERC20(token);
+            tokenToTransfer.safeTransfer(recipient, amount);
         }
 
-        emit LogUnlock(_recipient, _token, _amount);
+        emit LogUnlock(recipient, token, amount);
     }
 }

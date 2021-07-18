@@ -26,7 +26,18 @@ contract CosmosWhiteList is CosmosWhiteListStorage {
     modifier onlyCosmosTokenWhiteList(address _token) {
         require(
             getCosmosTokenInWhiteList(_token),
-            "Only token in whitelist can be transferred to cosmos"
+            "Only token in whitelist can be burned"
+        );
+        _;
+    }
+
+    /*
+     * @dev: Modifier to restrict erc20 can be locked
+     */
+    modifier onlyTokenNotInCosmosWhiteList(address _token) {
+        require(
+            !getCosmosTokenInWhiteList(_token),
+            "Only token not in whitelist can be locked"
         );
         _;
     }
