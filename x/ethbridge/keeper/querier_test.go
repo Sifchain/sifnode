@@ -18,7 +18,6 @@ import (
 
 //nolint:lll
 const (
-	// TestResponseJSON = "{\"prophecy_id\":\"\\ufffd\\ufffd\\ufffd\\ufffdE|q\\ufffdrt\\ufffdS\\u0012D\\ufffdUj\\ufffd\\ufffd\\ufffd\\ufffdI\\ufffd\\u0018\\ufffdA9\\n \\ufffdJz\",\"status\":1,\"claim_validators\":[\"cosmosvaloper1mnfm9c7cdgqnkk66sganp78m0ydmcr4pn7fqfk\"]}"
 	TestResponseJSON              = "{\"prophecy_id\":\"xy7EH/x26sNeLf62aTOQAqo3H9Fnrl19yDlub31XG5o=\",\"status\":1,\"claim_validators\":[\"cosmosvaloper1mnfm9c7cdgqnkk66sganp78m0ydmcr4pn7fqfk\"]}"
 	TestCrossChainFeeResponseJSON = "{\"fee_currency\":\"ceth\",\"fee_currency_gas\":\"1\",\"minimum_lock_cost\":\"1\",\"minimum_burn_cost\":\"1\"}"
 )
