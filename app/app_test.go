@@ -50,5 +50,5 @@ func TestSimAppExportAndBlockedAddrs(t *testing.T) {
 
 func TestReadTokenMapJson(t *testing.T) {
 	jsonData := readTokenMapJSON()
-	require.Equal(t, jsonData, map[string]string{"ceth": "coin/0x00000000000000000000/01/18"})
+	require.Equal(t, jsonData, map[string]string{"ceth": "0x00000000000000000000181"})
 }
