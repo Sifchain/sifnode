@@ -47,31 +47,6 @@ contract Oracle is OracleStorage, Valset {
     }
 
     /*
-     * @dev: newOracleClaim
-     *       Allows validators to make new OracleClaims on an existing Prophecy
-     */
-    function newOracleClaim(
-        uint256 _prophecyID,
-        address validatorAddress
-    ) internal
-        returns (bool)
-    {
-        // Confirm that this address has not already made an oracle claim on this prophecy
-        require(
-            !hasMadeClaim[_prophecyID][validatorAddress],
-            "Cannot make duplicate oracle claims from the same address."
-        );
-
-        hasMadeClaim[_prophecyID][validatorAddress] = true;
-        oracleClaimValidators[_prophecyID] = oracleClaimValidators[_prophecyID] + getValidatorPower(validatorAddress);
-
-        emit LogNewOracleClaim(
-            _prophecyID,
-            validatorAddress
-        );
-    }
-
-    /*
      * @dev: processProphecy
      *       Calculates the status of a prophecy. The claim is considered valid if the
      *       combined active signatory validator powers pass the consensus threshold.
