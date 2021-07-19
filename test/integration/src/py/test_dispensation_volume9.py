@@ -27,7 +27,6 @@ def test_run_online_morethan10distribution_txn(claimType):
     from_address = 'sifnodeadmin'
     keyring_backend = 'test'
     chain_id = 'localnet'
-    sifnoded_node = 'tcp://127.0.0.1:1317'
     amount = '100000000rowan'
     fee = '150000'
     currency = 'rowan'
@@ -57,7 +56,7 @@ def test_run_online_morethan10distribution_txn(claimType):
     send_sample_rowan(from_address, destaddress9, sampleamount, keyring_backend, chain_id, "")
     time.sleep(5)
 
-    sorted_dest_address_list = sorted([destaddress1,destaddress2,destaddress3,destaddress4,destaddress5,destaddress6,destaddress7,destaddress8,destaddress9])
+    sorted_dest_address_list = sorted([destaddress1, destaddress2, destaddress3, destaddress4, destaddress5, destaddress6, destaddress7, destaddress8, destaddress9])
     logging.info(f"sorted_dest_address_list = {sorted_dest_address_list}")
 
     # CREATING TEST DATA HERE MIMICKING OUTPUT.JSON TO BE SUPPLIED BY NIKO'S API
@@ -89,8 +88,8 @@ def test_run_online_morethan10distribution_txn(claimType):
     # READ OUTPUT.JSON WITH CLAIMING ADDRESSES AND AMOUNT
     with open("output.json", "r") as f:
         data = f.read()
-    d = json.loads(data)
 
+    d = json.loads(data)
     one_claiming_address = str(d['Output'][0]['address'])
     logging.info(f"one claiming address = {one_claiming_address}")
 
@@ -107,7 +106,6 @@ def test_run_online_morethan10distribution_txn(claimType):
 
     # QUERY BLOCK USING TXN HASH
     resp = query_block_claim(txhash)
-
     distribution_name = resp['logs'][0]['events'][0]['attributes'][1]['value']
     distribution_type = resp['logs'][0]['events'][0]['attributes'][2]['value']
     logging.info(f"distribution_name = {distribution_name}, distribution_type = {distribution_type}")
@@ -120,30 +118,14 @@ def test_run_online_morethan10distribution_txn(claimType):
     # QUERY BLOCK USING TXN HASH
     runresp = query_block_claim(runtxnhash)
     logging.info(f"response from block for run dispensation = {runresp}")
-
-    # rundistributiontag = runresp['logs'][0]['events'][0]['type']
-    # rundistname = runresp['logs'][0]['events'][0]['attributes'][0]['value']
-    # runrunneraddress = runresp['logs'][0]['events'][0]['attributes'][1]['value']
-    # runtempdistreceiverlist = [runresp['logs'][0]['events'][0]['attributes'][2]['value']]
-    # rundistreceiverlist = [x for xs in runtempdistreceiverlist for x in xs.split(',')]
-    # sortedrundistreceiverlist = sorted(rundistreceiverlist)
-    # logging.info(f"sortedrundistreceiverlist = {sortedrundistreceiverlist}")
-    # logging.info(f"sortedrundistreceiverlist first item = {sortedrundistreceiverlist[0]}")
-    # logging.info(f"sortedrundistreceiverlist second item  = {sortedrundistreceiverlist[1]}")
+    rundistributiontag = runresp['logs'][0]['events'][2]['type']
+    rundistname = runresp['logs'][0]['events'][2]['attributes'][0]['value']
+    runrunneraddress = runresp['logs'][0]['events'][2]['attributes'][1]['value']
 
     # RUN DISTRIBUTION TXN JSON TAGS ASSERTIONS
-    # assert str(rundistributiontag) == 'distribution_run'
-    # assert str(rundistname) == distribution_name
-    # assert str(runrunneraddress) == runner_address
-    # assert sortedrundistreceiverlist[0] == sorted_dest_address_list[0]
-    # assert sortedrundistreceiverlist[1] == sorted_dest_address_list[1]
-    # assert sortedrundistreceiverlist[2] == sorted_dest_address_list[2]
-    # assert sortedrundistreceiverlist[3] == sorted_dest_address_list[3]
-    # assert sortedrundistreceiverlist[4] == sorted_dest_address_list[4]
-    # assert sortedrundistreceiverlist[5] == sorted_dest_address_list[5]
-    # assert sortedrundistreceiverlist[6] == sorted_dest_address_list[6]
-    # assert sortedrundistreceiverlist[7] == sorted_dest_address_list[7]
-    # assert sortedrundistreceiverlist[8] == sorted_dest_address_list[8]
+    assert str(rundistributiontag) == 'distribution_run'
+    assert str(rundistname) == distribution_name
+    assert str(runrunneraddress) == runner_address
 
     # READING TAGS FROM RUN DISPENSATION CMD
     temprundistamount1 = runresp['logs'][0]['events'][0]['attributes'][2]['value']
@@ -165,10 +147,14 @@ def test_run_online_morethan10distribution_txn(claimType):
     temprundistamount9 = runresp['logs'][0]['events'][8]['attributes'][2]['value']
     logging.info(f"temp amount distributed 9 = {temprundistamount9}")
 
-    my_List = [temprundistamount1, temprundistamount2, temprundistamount3, temprundistamount4, temprundistamount5, temprundistamount6, temprundistamount7, temprundistamount8, temprundistamount9]
-    logging.info(f"my list = {my_List}")
-    rundistamount = [int(i[:-5]) for i in my_List]
+    my_list = [temprundistamount1, temprundistamount2, temprundistamount3, temprundistamount4, temprundistamount5, temprundistamount6, temprundistamount7, temprundistamount8, temprundistamount9]
+    logging.info(f"my list = {my_list}")
+    rundistamount = [int(i[:-5]) for i in my_list]
     logging.info(f"temp amount distributed 2 = {rundistamount}")
+    amount_distributed = [rundistamount[0], rundistamount[1], rundistamount[2], rundistamount[3], rundistamount[4], rundistamount[5], rundistamount[6], rundistamount[7], rundistamount[8]]
+    logging.info(f"amount distributed = {amount_distributed}")
+    total_amount_distributed = sum(int(i) for i in amount_distributed)
+
     runrecipientaddress1 = runresp['logs'][0]['events'][0]['attributes'][0]['value']
     runrecipientaddress2 = runresp['logs'][0]['events'][1]['attributes'][0]['value']
     runrecipientaddress3 = runresp['logs'][0]['events'][2]['attributes'][0]['value']
@@ -178,26 +164,30 @@ def test_run_online_morethan10distribution_txn(claimType):
     runrecipientaddress7 = runresp['logs'][0]['events'][6]['attributes'][0]['value']
     runrecipientaddress8 = runresp['logs'][0]['events'][7]['attributes'][0]['value']
     runrecipientaddress9 = runresp['logs'][0]['events'][8]['attributes'][0]['value']
-
-    amount_distributed = [rundistamount[0], rundistamount[1], rundistamount[2], rundistamount[3], rundistamount[4], rundistamount[5], rundistamount[6], rundistamount[7], rundistamount[8]]
     recipient_dispensation_addresses = [runrecipientaddress1, runrecipientaddress2, runrecipientaddress3, runrecipientaddress4, runrecipientaddress5, runrecipientaddress6, runrecipientaddress7, runrecipientaddress8, runrecipientaddress9]
     logging.info(f"dispensation txn addresses = {recipient_dispensation_addresses}")
-    logging.info(f"amount distributed = {amount_distributed}")
+    sortedrundistreceiverlist = sorted(recipient_dispensation_addresses)
+    logging.info(f"sortedrundistreceiverlist = {sortedrundistreceiverlist}")
 
-    total_amount_distributed = sum(int(i) for i in amount_distributed)
+    assert sortedrundistreceiverlist[0] == sorted_dest_address_list[0]
+    assert sortedrundistreceiverlist[1] == sorted_dest_address_list[1]
+    assert sortedrundistreceiverlist[2] == sorted_dest_address_list[2]
+    assert sortedrundistreceiverlist[3] == sorted_dest_address_list[3]
+    assert sortedrundistreceiverlist[4] == sorted_dest_address_list[4]
+    assert sortedrundistreceiverlist[5] == sorted_dest_address_list[5]
+    assert sortedrundistreceiverlist[6] == sorted_dest_address_list[6]
+    assert sortedrundistreceiverlist[7] == sorted_dest_address_list[7]
+    assert sortedrundistreceiverlist[8] == sorted_dest_address_list[8]
+
     recipient_with_respective_distributed_amount = dict(zip(recipient_dispensation_addresses, amount_distributed))
-
     logging.info(
         f"recipients and their respective distributed amounts = {recipient_with_respective_distributed_amount}")
     logging.info(f"total amount distributed = {total_amount_distributed}")
-
+    claimed_amount_single_recipient = int(recipient_with_respective_distributed_amount[one_claiming_address])
     sender_final_balance = int(balance_check(distributor_address, currency))
     recipient_address_final_balance = int(balance_check(one_claiming_address, currency))
-
     logging.info(f"sender initial balance = {sender_initial_balance}")
     logging.info(f"sender final balance = {sender_final_balance}")
-
-    claimed_amount_single_recipient = int(recipient_with_respective_distributed_amount[one_claiming_address])
 
     # BALANCES ASSERTIONS
     assert int(total_amount_distributed) == int((sender_initial_balance - sender_final_balance) - int(fee))
@@ -205,7 +195,6 @@ def test_run_online_morethan10distribution_txn(claimType):
     logging.info(
         f"balance transferred including fee from sender's address  = {(sender_initial_balance - sender_final_balance)}")
     logging.info(f"total amount distributed  = {total_amount_distributed}")
-
     logging.info(f"amount claimed by one recipient  = {claimed_amount_single_recipient}")
     logging.info(
         f"balance transferred in one recipient address  = {(recipient_address_final_balance - claiming_address_initial_balance)}")

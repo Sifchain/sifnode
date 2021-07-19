@@ -10,14 +10,14 @@ query_block_claim, create_claim, query_created_claim
 
 
 # TEST CODE TO ASSERT TAGS GENERATED ON A BLOCK WHEN A NEW CLAIM IS CREATED
-@pytest.mark.parametrize("claimType", ['ValidatorSubsidy','LiquidityMining'])
+@pytest.mark.parametrize("claimType", ['ValidatorSubsidy', 'LiquidityMining'])
 def test_create_new_claim(claimType):
     sifchain_address, sifchain_name = create_new_sifaddr_and_key()
     keyring_backend = 'test'
     chain_id = 'localnet'
     from_address = 'sifnodeadmin'
     amount = '10000000rowan'
-    send_sample_rowan(from_address, sifchain_address, amount, keyring_backend, chain_id,"")
+    send_sample_rowan(from_address, sifchain_address, amount, keyring_backend, chain_id, "")
     time.sleep(5)
     txnhash = (create_claim(sifchain_address, claimType, keyring_backend, chain_id))
     logging.info(f"txnhash= ${txnhash}")
@@ -42,7 +42,7 @@ def test_create_new_claim(claimType):
 
 
 # TEST CODE TO ASSERT TAGS RETURNED BY A CLAIM QUERY COMMAND
-@pytest.mark.parametrize("claimType", ['ValidatorSubsidy','LiquidityMining'])
+@pytest.mark.parametrize("claimType", ['ValidatorSubsidy', 'LiquidityMining'])
 def test_query_created_claim(claimType):
     queryresponse = query_created_claim(claimType)
     queryresponse = query_created_claim(claimType)

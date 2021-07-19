@@ -10,7 +10,7 @@ from dispensation_envutils import create_offline_singlekey_txn, create_new_sifad
 
 
 #TEST CODE TO ASSERT TAGS GENERATED ON A BLOCK WHEN A NEW UNSIGNED DISPENSATION IS CREATED
-@pytest.mark.parametrize("claimType", ['ValidatorSubsidy','LiquidityMining'])
+@pytest.mark.parametrize("claimType", ['ValidatorSubsidy', 'LiquidityMining'])
 def test_create_offline_singlekey_txn(claimType):
     distributor_address, distributor_name = create_new_sifaddr_and_key()
     runner_address, runner_name = create_new_sifaddr_and_key()
@@ -39,15 +39,15 @@ def test_create_offline_singlekey_txn(claimType):
     #CREATING TEST DATA HERE MIMICKING OUTPUT.JSON TO BE SUPPLIED BY NIKO'S API
     dict1 = {"denom": "rowan","amount": "5000"}
     dict2 = {"denom": "rowan","amount": "7000"}
-    dict3 = {"address": destaddress1,"coins":[dict1]}
-    dict4 = {"address": destaddress2,"coins":[dict2]}
-    dict5 = {"Output":[dict3,dict4]}
+    dict3 = {"address": destaddress1, "coins": [dict1]}
+    dict4 = {"address": destaddress2, "coins": [dict2]}
+    dict5 = {"Output": [dict3,dict4]}
     data = json.dumps(dict5)
-    with open("output.json","w") as f:
+    with open("output.json", "w") as f:
         f.write(data)
 
     #READ OUTPUT.JSON WITH CLAIMING ADDRESSES AND AMOUNT
-    with open("output.json","r") as f:
+    with open("output.json", "r") as f:
         data = f.read()
     d = json.loads(data)
 
@@ -78,7 +78,7 @@ def test_create_offline_singlekey_txn(claimType):
 
 
 #TEST CODE TO ASSERT TAGS GENERATED ON A BLOCK WHEN A NEW SIGNED DISPENSATION IS BROADCASTED on BLOCKCHAIN
-@pytest.mark.parametrize("claimType", ['ValidatorSubsidy','LiquidityMining'])
+@pytest.mark.parametrize("claimType", ['ValidatorSubsidy', 'LiquidityMining'])
 def test_broadcast_txn(claimType):
     distributor_address, distributor_name = create_new_sifaddr_and_key()
     runner_address, runner_name = create_new_sifaddr_and_key()
@@ -103,15 +103,15 @@ def test_broadcast_txn(claimType):
     #CREATING TEST DATA HERE MIMICKING OUTPUT.JSON TO BE SUPPLIED BY NIKO'S API
     dict1 = {"denom": "rowan","amount": "5000"}
     dict2 = {"denom": "rowan","amount": "7000"}
-    dict3 = {"address": destaddress1, "coins":[dict1]}
-    dict4 = {"address": destaddress2, "coins":[dict2]}
-    dict5 = {"Output":[dict3,dict4]}
+    dict3 = {"address": destaddress1, "coins": [dict1]}
+    dict4 = {"address": destaddress2, "coins": [dict2]}
+    dict5 = {"Output": [dict3,dict4]}
     data = json.dumps(dict5)
     with open("output.json", "w") as f:
         f.write(data)
 
     #READ OUTPUT.JSON WITH CLAIMING ADDRESSES AND AMOUNT
-    with open("output.json","r") as f:
+    with open("output.json", "r") as f:
         data = f.read()
     d = json.loads(data)
 
@@ -126,8 +126,8 @@ def test_broadcast_txn(claimType):
 
     txhashbcast = broadcast_txn('signed.json')
     time.sleep(5)
-    resp = query_block_claim(txhashbcast)
 
+    resp = query_block_claim(txhashbcast)
     distribution_msg = resp['tx']['body']['messages'][0]
     msg_type = distribution_msg['@type']
     distributor = distribution_msg['distributor']
@@ -154,7 +154,7 @@ def test_broadcast_txn(claimType):
 
 
 # AUTOMATED TEST TO VALIDATE ONLINE TXN
-@pytest.mark.parametrize("claimType", ['ValidatorSubsidy','LiquidityMining'])
+@pytest.mark.parametrize("claimType", ['ValidatorSubsidy', 'LiquidityMining'])
 def test_run_offline_singlekey_txn(claimType):
     distributor_address, distributor_name = create_new_sifaddr_and_key()
     runner_address, runner_name = create_new_sifaddr_and_key()
@@ -184,11 +184,11 @@ def test_run_offline_singlekey_txn(claimType):
     logging.info(f"sorted_dest_address_list = {sorted_dest_address_list}")
 
     # CREATING TEST DATA HERE MIMICKING OUTPUT.JSON TO BE SUPPLIED BY NIKO'S API
-    dict1 = {"denom": "rowan","amount": "5000"}
-    dict2 = {"denom": "rowan","amount": "7000"}
-    dict3 = {"address": destaddress1,"coins":[dict1]}
-    dict4 = {"address": destaddress2,"coins":[dict2]}
-    dict5 = {"Output":[dict3,dict4]}
+    dict1 = {"denom": "rowan", "amount": "5000"}
+    dict2 = {"denom": "rowan", "amount": "7000"}
+    dict3 = {"address": destaddress1, "coins": [dict1]}
+    dict4 = {"address": destaddress2, "coins": [dict2]}
+    dict5 = {"Output": [dict3,dict4]}
     data = json.dumps(dict5)
     with open("output.json","w") as f:
         f.write(data)

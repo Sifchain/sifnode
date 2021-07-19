@@ -8,7 +8,7 @@ query_block_claim, create_online_singlekey_txn_with_runner, run_dispensation
 
 
 # AUTOMATED TEST TO VALIDATE ONLINE TXN
-@pytest.mark.parametrize("claimType", ['ValidatorSubsidy','LiquidityMining'])
+@pytest.mark.parametrize("claimType", ['ValidatorSubsidy', 'LiquidityMining'])
 def test_create_online_singlekey_txn(claimType):
     distributor_address, distributor_name = create_new_sifaddr_and_key()
     runner_address, runner_name = create_new_sifaddr_and_key()
@@ -45,8 +45,8 @@ def test_create_online_singlekey_txn(claimType):
     # READ OUTPUT.JSON WITH CLAIMING ADDRESSES AND AMOUNT
     with open("output.json", "r") as f:
         data = f.read()
-    d = json.loads(data)
 
+    d = json.loads(data)
     one_claiming_address = str(d['Output'][0]['address'])
     logging.info(f"one claiming address = {one_claiming_address}")
 
@@ -122,7 +122,6 @@ def test_insufficient_funds_dispensation_txn(claimType):
     # READ OUTPUT.JSON WITH CLAIMING ADDRESSES AND AMOUNT
     with open("output.json", "r") as f:
         data = f.read()
-    d = json.loads(data)
 
     # ACTUAL DISPENSATION TXN; TXN RAISES AN EXCEPTION ABOUT INSUFFICIENT FUNDS, CAPTURED HERE AND TEST IS MARKED PASS
     with pytest.raises(Exception) as execinfo:
@@ -140,7 +139,7 @@ def test_insufficient_funds_dispensation_txn(claimType):
 
 
 # AUTOMATED TEST TO VALIDATE ONLINE RUN DISPENSATION TXN
-@pytest.mark.parametrize("claimType", ['ValidatorSubsidy','LiquidityMining'])
+@pytest.mark.parametrize("claimType", ['ValidatorSubsidy', 'LiquidityMining'])
 def test_run_online_singlekey_txn(claimType):
     distributor_address, distributor_name = create_new_sifaddr_and_key()
     runner_address, runner_name = create_new_sifaddr_and_key()
@@ -230,7 +229,6 @@ def test_run_online_singlekey_txn(claimType):
     # QUERY BLOCK USING TXN HASH
     runresp = query_block_claim(runtxnhash)
     logging.info(f"response from block for run dispensation = {runresp}")
-
     rundistributiontag = runresp['logs'][0]['events'][2]['type']
     rundistname = runresp['logs'][0]['events'][2]['attributes'][0]['value']
     runrunneraddress = runresp['logs'][0]['events'][2]['attributes'][1]['value']
