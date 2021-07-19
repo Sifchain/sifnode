@@ -242,12 +242,6 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
         );
         lastNonceSubmitted = claimData.nonce;
 
-        emit LogNewProphecyClaim(
-            prophecyID,
-            claimData.ethereumReceiver,
-            claimData.amount
-        );
-
         // if we are double pegging, then we are going to need to get the address on this chain
         address tokenAddress = claimData.doublePeg ? sourceAddressToDestinationAddress[claimData.tokenAddress] : claimData.tokenAddress;
 
@@ -255,6 +249,12 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
             prophecyID,
             claimData.ethereumReceiver,
             tokenAddress,
+            claimData.amount
+        );
+
+        emit LogNewProphecyClaim(
+            prophecyID,
+            claimData.ethereumReceiver,
             claimData.amount
         );
     }
