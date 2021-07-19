@@ -51,7 +51,7 @@ def test_create_offline_singlekey_txn(claimType):
         data = f.read()
     d = json.loads(data)
 
-    response = (create_offline_singlekey_txn_with_runner(claimType,runner_address,distributor_address,chain_id))
+    response = (create_offline_singlekey_txn_with_runner(claimType, runner_address, distributor_address, chain_id))
     distribution_msg = response['body']['messages'][0]
     msg_type = distribution_msg['@type']
     distributor = distribution_msg['distributor']

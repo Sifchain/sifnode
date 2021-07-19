@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"fmt"
+
 	"github.com/Sifchain/sifnode/x/dispensation/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/pkg/errors"
@@ -61,10 +62,8 @@ func (k Keeper) GetClaims(ctx sdk.Context) *types.UserClaims {
 		}
 		err := k.cdc.UnmarshalBinaryBare(bytesValue, &dl)
 		if err != nil {
+			// Log unmarshal claim error instead of panic.
 			ctx.Logger().Error(fmt.Sprintf("Unmarshal failed for user claim bytes : %s ", bytesValue))
-			// Not panicking here .
-			// User claims data is not that important . We can ignore a claim if it is causing an issue for chain upgrade .
-			// Logging data out for investigation
 			continue
 		}
 		res.UserClaims = append(res.UserClaims, &dl)
