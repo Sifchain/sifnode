@@ -65,16 +65,14 @@ def query_block_claim(txn_hash):
 def balance_check(address, currency):
     logging.debug(f"check_balance")
     cmd = " ".join([
-        "sifnoded query account",
+        "sifnoded query bank balances",
         f"{address}",
+        f"--denom {currency}",
         f"-o json"
     ])
     json_str = get_shell_output_json(cmd)
-    amountbalance = json_str['value']['coins']
-    for i in amountbalance:
-        if i['denom'] == currency:
-            balance = i['amount']
-    return (balance)
+    balance = json_str['amount']
+    return balance
 
 
 #CODE TO CREATE A CLI TO CREATE A SINGLE_KEY ONLINE DISPENSATION TXN
@@ -204,7 +202,7 @@ def create_online_singlekey_txn_with_runner(
 ):
     logging.debug(f"create_online_dispensation")
     sifchain_fees_entry = f"--fees 150000rowan"
-    sifchain_gas_entry = f"--gas auto"
+    sifchain_gas_entry = f"--gas auto --gas-adjustment=1.5"
     keyring_backend_entry = f"--keyring-backend test"
     output = 'output.json'
     cmd = " ".join([
@@ -234,7 +232,7 @@ def create_offline_singlekey_txn_with_runner(
     ):
     logging.debug(f"create_unsigned_offline_dispensation_txn")
     sifchain_fees_entry = f"--fees 1500000rowan"
-    sifchain_gas_entry = f"--gas auto"
+    sifchain_gas_entry = f"--gas auto --gas-adjustment=1.5"
     keyring_backend_entry = f"--keyring-backend test"
     output = 'output.json'
     cmd = " ".join([

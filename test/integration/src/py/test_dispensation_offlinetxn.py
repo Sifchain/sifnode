@@ -52,17 +52,24 @@ def test_create_offline_singlekey_txn(claimType):
     d = json.loads(data)
 
     response = (create_offline_singlekey_txn_with_runner(claimType,runner_address,distributor_address,chain_id))
+    distribution_msg = response['body']['messages'][0]
+    msg_type = distribution_msg['@type']
+    distributor = distribution_msg['distributor']
+    authorized_runner = distribution_msg['authorized_runner']
+    distribution_type = distribution_msg['distribution_type']
+    logging.info(f"dispensation create message= {msg_type}, type={distribution_type}")
 
-    distributiontypetag = response['value']['msg'][0]['type']
-    distributionvaluetags = response['value']['msg'][0]['value']
-    actuallisttags = list(distributionvaluetags.keys())
-    logging.info(f"dispensation create message= {distributiontypetag}")
-    logging.info(f"dispensation message tags list= {actuallisttags}")
+    assert str(msg_type) == '/sifnode.dispensation.v1.MsgCreateDistribution'
+    assert str(distributor) == distributor_address
+    assert str(authorized_runner) == runner_address
+    assert str(distribution_type) in ['DISTRIBUTION_TYPE_VALIDATOR_SUBSIDY', 'DISTRIBUTION_TYPE_LIQUIDITY_MINING']
 
-    assert str(distributiontypetag) == 'dispensation/create'
-    assert actuallisttags[0] == 'distributor'
-    assert actuallisttags[1] == 'runner'
-    assert actuallisttags[2] == 'distribution_type'
+    distribution_msg_keys = list(distribution_msg.keys())
+    assert distribution_msg_keys[0] == '@type'
+    assert distribution_msg_keys[1] == 'distributor'
+    assert distribution_msg_keys[2] == 'authorized_runner'
+    assert distribution_msg_keys[3] == 'distribution_type'
+
     try:
         os.remove('output.json')
     except OSError as e:
@@ -108,6 +115,7 @@ def test_broadcast_txn(claimType):
     d = json.loads(data)
 
     response = (create_offline_singlekey_txn_with_runner(claimType,runner_address,distributor_address,chain_id))
+
     with open("sample.json", "w") as outfile:
         json.dump(response, outfile)
 
@@ -118,15 +126,25 @@ def test_broadcast_txn(claimType):
     txhashbcast = broadcast_txn('signed.json')
     time.sleep(5)
     resp = query_block_claim(txhashbcast)
-    distypebcast = (resp['tx']['value']['msg'][0]['type'])
-    disvalsbcast = (resp['tx']['value']['msg'][0]['value'])
-    list_of_values = [disvalsbcast[key] for key in disvalsbcast]
-    broadcasttags = list(disvalsbcast.keys())
-    assert str(distypebcast) == 'dispensation/create'
-    assert broadcasttags[0] == 'distributor'
-    assert broadcasttags[1] == 'runner'
-    assert broadcasttags[2] == 'distribution_type'
-    assert list_of_values[0] == distributor_address
+
+    distribution_msg = resp['tx']['body']['messages'][0]
+    msg_type = distribution_msg['@type']
+    distributor = distribution_msg['distributor']
+    authorized_runner = distribution_msg['authorized_runner']
+    distribution_type = distribution_msg['distribution_type']
+    logging.info(f"dispensation create message= {msg_type}, type={distribution_type}")
+
+    assert str(msg_type) == '/sifnode.dispensation.v1.MsgCreateDistribution'
+    assert str(distributor) == distributor_address
+    assert str(authorized_runner) == runner_address
+    assert str(distribution_type) in ['DISTRIBUTION_TYPE_VALIDATOR_SUBSIDY', 'DISTRIBUTION_TYPE_LIQUIDITY_MINING']
+
+    distribution_msg_keys = list(distribution_msg.keys())
+    assert distribution_msg_keys[0] == '@type'
+    assert distribution_msg_keys[1] == 'distributor'
+    assert distribution_msg_keys[2] == 'authorized_runner'
+    assert distribution_msg_keys[3] == 'distribution_type'
+
     try:
         os.remove('signed.json')
         os.remove('sample.json')
@@ -204,23 +222,30 @@ def test_run_offline_singlekey_txn(claimType):
     one_claiming_address = str(d['Output'][0]['address'])
     logging.info(f"one claiming address = {one_claiming_address}")
 
-    # READ DISPENSATION TXN JSON TAGS
-    distributionstartedtag = resp['logs'][0]['events'][0]['type']
-    distributionattributesttags = resp['logs'][0]['events'][0]['attributes'][0]
-    distributiontypetag = resp['tx']['value']['msg'][0]['type']
-    distributionvaluetags = resp['tx']['value']['msg'][0]['value']
-    account_key = str((distributionattributesttags['key']))
-    chaintags = list(distributionvaluetags.keys())
-    list_of_values = [distributionvaluetags[key] for key in distributionvaluetags]
-    logging.info(f"tag = {chaintags}")
-    logging.info(f"list_of_values = {list_of_values}")
+    distribution_msg = resp['tx']['body']['messages'][0]
+    msg_type = distribution_msg['@type']
+    distributor = distribution_msg['distributor']
+    authorized_runner = distribution_msg['authorized_runner']
+    distribution_type = distribution_msg['distribution_type']
+    logging.info(f"dispensation create message= {msg_type}, type={distribution_type}")
+
+    assert str(msg_type) == '/sifnode.dispensation.v1.MsgCreateDistribution'
+    assert str(distributor) == distributor_address
+    assert str(authorized_runner) == runner_address
+    assert str(distribution_type) in ['DISTRIBUTION_TYPE_VALIDATOR_SUBSIDY', 'DISTRIBUTION_TYPE_LIQUIDITY_MINING']
+
+    distribution_msg_keys = list(distribution_msg.keys())
+    assert distribution_msg_keys[0] == '@type'
+    assert distribution_msg_keys[1] == 'distributor'
+    assert distribution_msg_keys[2] == 'authorized_runner'
+    assert distribution_msg_keys[3] == 'distribution_type'
 
     distribution_name = resp['logs'][0]['events'][0]['attributes'][1]['value']
     distribution_type = resp['logs'][0]['events'][0]['attributes'][2]['value']
     logging.info(f"distribution_name = {distribution_name}, distribution_type = {distribution_type}")
 
     # RUN DISPENSATION TXN; GET TXN HASH
-    runtxnhash = run_dispensation(distribution_name, distribution_type, runner_address,chain_id,sifnoded_node)
+    runtxnhash = run_dispensation(distribution_name, claimType, runner_address, chain_id)
     logging.info(f"txn hash for running dispensation = {runtxnhash}")
     time.sleep(5)
 
@@ -231,19 +256,35 @@ def test_run_offline_singlekey_txn(claimType):
     rundistributiontag = runresp['logs'][0]['events'][0]['type']
     rundistname = runresp['logs'][0]['events'][0]['attributes'][0]['value']
     runrunneraddress = runresp['logs'][0]['events'][0]['attributes'][1]['value']
-    # runtempdistreceiverlist = [runresp['logs'][0]['events'][0]['attributes'][2]['value']]
-    # rundistreceiverlist = [x for xs in runtempdistreceiverlist for x in xs.split(',')]
-    # sortedrundistreceiverlist = sorted(rundistreceiverlist)
-    # logging.info(f"sortedrundistreceiverlist = {sortedrundistreceiverlist}")
-    # logging.info(f"sortedrundistreceiverlist first item = {sortedrundistreceiverlist[0]}")
-    # logging.info(f"sortedrundistreceiverlist second item  = {sortedrundistreceiverlist[1]}")
+    runtempdistreceiverlist = [runresp['logs'][0]['events'][0]['attributes'][2]['value']]
+    rundistreceiverlist = [x for xs in runtempdistreceiverlist for x in xs.split(',')]
+    sortedrundistreceiverlist = sorted(rundistreceiverlist)
+    logging.info(f"sortedrundistreceiverlist = {sortedrundistreceiverlist}")
+    logging.info(f"sortedrundistreceiverlist first item = {sortedrundistreceiverlist[0]}")
 
     # RUN DISTRIBUTION TXN JSON TAGS ASSERTIONS
-    # assert str(rundistributiontag) == 'distribution_run'
-    # assert str(rundistname) == distribution_name
-    # assert str(runrunneraddress) == runner_address
-    # assert sortedrundistreceiverlist[0] == sorted_dest_address_list[0]
-    # assert sortedrundistreceiverlist[1] == sorted_dest_address_list[1]
+    assert str(rundistributiontag) == 'distribution_run'
+    assert str(rundistname) == claimType
+    assert str(runrunneraddress) == runner_address
+    assert sortedrundistreceiverlist[0] == sorted_dest_address_list[0]
+    
+    run_distr_msg = runresp['tx']['body']['messages'][0]
+    run_msg_type = run_distr_msg['@type']
+    run_distributor = run_distr_msg['distributor']
+    run_authorized_runner = run_distr_msg['authorized_runner']
+    run_distribution_type = run_distr_msg['distribution_type']
+    logging.info(f"dispensation run message= {run_msg_type}, type={run_distribution_type}")
+
+    assert str(run_msg_type) == '/sifnode.dispensation.v1.MsgRunDistribution'
+    assert str(run_distributor) == distributor_address
+    assert str(run_authorized_runner) == runner_address
+    assert str(run_distribution_type) in ['DISTRIBUTION_TYPE_VALIDATOR_SUBSIDY', 'DISTRIBUTION_TYPE_LIQUIDITY_MINING']
+
+    run_distr_msg_keys = list(run_distr_msg.keys())
+    assert run_distr_msg_keys[0] == '@type'
+    assert run_distr_msg_keys[1] == 'distributor'
+    assert run_distr_msg_keys[2] == 'authorized_runner'
+    assert run_distr_msg_keys[3] == 'distribution_type'
 
     # READING TAGS FROM RUN DISPENSATION CMD
     temprundistamount1 = runresp['logs'][0]['events'][2]['attributes'][2]['value']

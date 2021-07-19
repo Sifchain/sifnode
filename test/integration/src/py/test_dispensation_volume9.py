@@ -101,20 +101,20 @@ def test_run_online_morethan10distribution_txn(claimType):
     logging.info(f"one claiming address initial balance = {claiming_address_initial_balance}")
 
     # CREATE DISPENSATION TXN; GET TXN HASH
-    txhash = str((create_online_singlekey_txn_with_runner(claimType, runner_address, distributor_name, chain_id, sifnoded_node)))
+    txhash = str((create_online_singlekey_txn_with_runner(claimType, runner_address, distributor_name, chain_id)))
     logging.info(f"txn hash for creatng a dispensation = {txhash}")
     time.sleep(5)
 
     # QUERY BLOCK USING TXN HASH
     resp = query_block_claim(txhash)
-
+    logging.info(f"resp= {resp}")
 
     distribution_name = resp['logs'][0]['events'][0]['attributes'][1]['value']
     distribution_type = resp['logs'][0]['events'][0]['attributes'][2]['value']
     logging.info(f"distribution_name = {distribution_name}, distribution_type = {distribution_type}")
 
     # RUN DISPENSATION TXN; GET TXN HASH
-    runtxnhash = run_dispensation(distribution_name, distribution_type, runner_address,chain_id,sifnoded_node)
+    runtxnhash = run_dispensation(distribution_name, claimType, runner_address, chain_id)
     logging.info(f"txn hash for running dispensation = {runtxnhash}")
     time.sleep(5)
 
