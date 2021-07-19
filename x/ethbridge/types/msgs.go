@@ -3,10 +3,12 @@ package types
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"strconv"
 	"strings"
 
 	gethCommon "github.com/ethereum/go-ethereum/common"
+	crypto "github.com/ethereum/go-ethereum/crypto"
 
 	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
 
@@ -75,6 +77,23 @@ func (msg MsgLock) GetSigners() []sdk.AccAddress {
 	}
 
 	return []sdk.AccAddress{cosmosSender}
+}
+
+// GetProphecyID get prophecy ID for lock message
+func (msg MsgLock) GetProphecyID(doublePeggy bool, sequence, globalNonce uint64) []byte {
+
+	allContentString := fmt.Sprintf("%s%s%s%s%s%s%s",
+		msg.CosmosSender,
+		strconv.FormatUint(sequence, 10),
+		msg.EthereumReceiver,
+		msg.Symbol,
+		msg.Amount,
+		strconv.FormatBool(doublePeggy),
+		strconv.FormatUint(globalNonce, 10),
+	)
+	claimBytes := []byte(allContentString)
+	hashBytes := crypto.Keccak256(claimBytes)
+	return hashBytes
 }
 
 // NewMsgBurn is a constructor function for MsgBurn
@@ -150,6 +169,23 @@ func (msg MsgBurn) GetSigners() []sdk.AccAddress {
 	}
 
 	return []sdk.AccAddress{cosmosSender}
+}
+
+// GetProphecyID get prophecy ID for lock message
+func (msg MsgBurn) GetProphecyID(doublePeggy bool, sequence, globalNonce uint64) []byte {
+
+	allContentString := fmt.Sprintf("%s%s%s%s%s%s%s",
+		msg.CosmosSender,
+		strconv.FormatUint(sequence, 10),
+		msg.EthereumReceiver,
+		msg.Symbol,
+		msg.Amount,
+		strconv.FormatBool(doublePeggy),
+		strconv.FormatUint(globalNonce, 10),
+	)
+	claimBytes := []byte(allContentString)
+	hashBytes := crypto.Keccak256(claimBytes)
+	return hashBytes
 }
 
 // NewMsgCreateEthBridgeClaim is a constructor function for MsgCreateBridgeClaim

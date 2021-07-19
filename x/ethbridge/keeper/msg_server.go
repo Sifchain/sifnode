@@ -44,7 +44,7 @@ func (srv msgServer) Lock(goCtx context.Context, msg *types.MsgLock) (*types.Msg
 		return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.CosmosSender)
 	}
 
-	if err := srv.Keeper.ProcessLock(ctx, cosmosSender, msg); err != nil {
+	if err := srv.Keeper.ProcessLock(ctx, cosmosSender, account.GetSequence(), msg); err != nil {
 		logger.Error("bridge keeper failed to process lock.", errorMessageKey, err.Error())
 		return nil, err
 	}
@@ -93,7 +93,7 @@ func (srv msgServer) Burn(goCtx context.Context, msg *types.MsgBurn) (*types.Msg
 		return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.CosmosSender)
 	}
 
-	if err := srv.Keeper.ProcessBurn(ctx, cosmosSender, msg); err != nil {
+	if err := srv.Keeper.ProcessBurn(ctx, cosmosSender, account.GetSequence(), msg); err != nil {
 		logger.Error("bridge keeper failed to process burn.", errorMessageKey, err.Error())
 		return nil, err
 	}
@@ -372,15 +372,8 @@ func (srv msgServer) SignProphecy(goCtx context.Context, msg *types.MsgSignProph
 		logger.Error("keeper failed to process rescue native_token message.", errorMessageKey, err.Error())
 		return nil, err
 	}
-	// logger.Info("sifnode emit set native_token event.",
-	// 	"CosmosSender", msg.CosmosSender,
-	// 	"CosmosSenderSequence", strconv.FormatUint(account.GetSequence(), 10),
-	// 	"NetworkDescriptor", msg.NetworkDescriptor,
-	// 	"NativeToken", msg.NativeToken,
-	// 	"NativeTokenGas", msg.NativeGas.String(),
-	// 	"minimum_lock_cost", msg.MinimumLockCost.String(),
-	// 	"minimum_burn_cost", msg.MinimumBurnCost.String(),
-	// )
+	logger.Info("sifnode emit set native_token event.",
+		"Message", msg)
 
 	// ctx.EventManager().EmitEvents(sdk.Events{
 	// 	sdk.NewEvent(

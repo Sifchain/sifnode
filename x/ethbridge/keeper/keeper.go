@@ -28,6 +28,11 @@ type Keeper struct {
 	storeKey      sdk.StoreKey
 }
 
+// GetAccountKeeper
+func (k Keeper) GetAccountKeeper() types.AccountKeeper {
+	return k.accountKeeper
+}
+
 // GetBankKeeper
 func (k Keeper) GetBankKeeper() types.BankKeeper {
 	return k.bankKeeper
@@ -96,7 +101,7 @@ func (k Keeper) ProcessSuccessfulClaim(ctx sdk.Context, claim *types.EthBridgeCl
 }
 
 // ProcessBurn processes the burn of bridged coins from the given sender
-func (k Keeper) ProcessBurn(ctx sdk.Context, cosmosSender sdk.AccAddress, msg *types.MsgBurn) error {
+func (k Keeper) ProcessBurn(ctx sdk.Context, cosmosSender sdk.AccAddress, senderSequence uint64, msg *types.MsgBurn) error {
 	logger := k.Logger(ctx)
 	var coins sdk.Coins
 	networkIdentity := oracletypes.NewNetworkIdentity(msg.NetworkDescriptor)
@@ -146,11 +151,17 @@ func (k Keeper) ProcessBurn(ctx sdk.Context, cosmosSender sdk.AccAddress, msg *t
 		return err
 	}
 
+	// global sequence will be implemented in other feature
+	glocalSequence := uint64(0)
+
+	prophecyID := msg.GetProphecyID(false, senderSequence, glocalSequence)
+	k.oracleKeeper.SetProphecyWithInitValue(ctx, prophecyID)
+
 	return nil
 }
 
 // ProcessLock processes the lockup of cosmos coins from the given sender
-func (k Keeper) ProcessLock(ctx sdk.Context, cosmosSender sdk.AccAddress, msg *types.MsgLock) error {
+func (k Keeper) ProcessLock(ctx sdk.Context, cosmosSender sdk.AccAddress, senderSequence uint64, msg *types.MsgLock) error {
 	logger := k.Logger(ctx)
 	var coins sdk.Coins
 	networkIdentity := oracletypes.NewNetworkIdentity(msg.NetworkDescriptor)

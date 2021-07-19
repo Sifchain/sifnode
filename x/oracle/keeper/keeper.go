@@ -6,6 +6,8 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	gethCommon "github.com/ethereum/go-ethereum/common"
+	gethCrypto "github.com/ethereum/go-ethereum/crypto"
 	"github.com/tendermint/tendermint/libs/log"
 
 	"github.com/Sifchain/sifnode/x/oracle/types"
@@ -145,11 +147,32 @@ func (k Keeper) SetFeeInfo(ctx sdk.Context, networkDescriptor types.NetworkDescr
 	return nil
 }
 
+// SetProphecyWithInitValue set the prophecy in keeper
+func (k Keeper) SetProphecyWithInitValue(ctx sdk.Context, prophecyID []byte) {
+	prophecy := types.Prophecy{
+		Id:              prophecyID,
+		Status:          types.StatusText_STATUS_TEXT_PENDING,
+		ClaimValidators: []string{},
+	}
+	k.SetProphecy(ctx, prophecy)
+}
+
 // ProcessSignProphecy deal with the signature from validator
 func (k Keeper) ProcessSignProphecy(ctx sdk.Context, cosmosSender, prophecyID, ethereumAddress, signature string) error {
 	prophecy, ok := k.GetProphecy(ctx, []byte(prophecyID))
 	if !ok {
 		return fmt.Errorf("failed to get prophecy with ID as %s", prophecyID)
+	}
+
+	// verify the signature
+	publicKey, err := gethCrypto.Ecrecover([]byte(prophecyID), gethCommon.FromHex(signature))
+	if err != nil {
+		return err
+	}
+
+	ok = gethCrypto.VerifySignature(publicKey, []byte(prophecyID), []byte(signature))
+	if !ok {
+		return errors.New("incorrect signature")
 	}
 
 	prophecy.ClaimValidators = append(prophecy.ClaimValidators, cosmosSender)

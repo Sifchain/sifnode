@@ -199,7 +199,10 @@ func TestProcessBurn(t *testing.T) {
 	_ = bankKeeper.MintCoins(ctx, types.ModuleName, coins)
 	_ = bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, cosmosReceivers[0], coins)
 
-	err := keeper.ProcessBurn(ctx, cosmosReceivers[0], &msg)
+	account := keeper.GetAccountKeeper().GetAccount(ctx, cosmosReceivers[0])
+	require.Nil(t, account)
+
+	err := keeper.ProcessBurn(ctx, cosmosReceivers[0], account.GetSequence(), &msg)
 	require.NoError(t, err)
 
 	receiverCoins := bankKeeper.GetAllBalances(ctx, cosmosReceivers[0])
@@ -217,7 +220,9 @@ func TestProcessBurnCrossChainFee(t *testing.T) {
 	_ = bankKeeper.MintCoins(ctx, types.ModuleName, coins)
 	_ = bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, cosmosReceivers[0], coins)
 
-	err := keeper.ProcessBurn(ctx, cosmosReceivers[0], &msg)
+	account := keeper.GetAccountKeeper().GetAccount(ctx, cosmosReceivers[0])
+	require.Nil(t, account)
+	err := keeper.ProcessBurn(ctx, cosmosReceivers[0], account.GetSequence(), &msg)
 	require.NoError(t, err)
 
 	receiverCoins := bankKeeper.GetAllBalances(ctx, cosmosReceivers[0])
@@ -235,14 +240,16 @@ func TestProcessLock(t *testing.T) {
 
 	msg := types.NewMsgLock(1, cosmosReceivers[0], ethereumSender, amount, "stake", amount)
 
-	err := keeper.ProcessLock(ctx, cosmosReceivers[0], &msg)
+	account := keeper.GetAccountKeeper().GetAccount(ctx, cosmosReceivers[0])
+	require.Nil(t, account)
+	err := keeper.ProcessLock(ctx, cosmosReceivers[0], account.GetSequence(), &msg)
 	require.ErrorIs(t, err, sdkerrors.ErrInsufficientFunds)
 
 	coins := sdk.NewCoins(sdk.NewCoin("stake", amount), sdk.NewCoin(crossChainFee, amount))
 	_ = bankKeeper.MintCoins(ctx, types.ModuleName, coins)
 	_ = bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, cosmosReceivers[0], coins)
 
-	err = keeper.ProcessLock(ctx, cosmosReceivers[0], &msg)
+	err = keeper.ProcessLock(ctx, cosmosReceivers[0], account.GetSequence(), &msg)
 	require.NoError(t, err)
 
 	receiverCoins = bankKeeper.GetAllBalances(ctx, cosmosReceivers[0])
@@ -265,7 +272,9 @@ func TestProcessBurnWithReceiver(t *testing.T) {
 	_ = bankKeeper.MintCoins(ctx, types.ModuleName, coins)
 	_ = bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, cosmosReceivers[0], coins)
 
-	err = keeper.ProcessBurn(ctx, cosmosReceivers[0], &msg)
+	account := keeper.GetAccountKeeper().GetAccount(ctx, cosmosReceivers[0])
+	require.Nil(t, account)
+	err = keeper.ProcessBurn(ctx, cosmosReceivers[0], account.GetSequence(), &msg)
 	require.NoError(t, err)
 
 	receiverCoins := bankKeeper.GetAllBalances(ctx, cosmosReceivers[0])
@@ -287,7 +296,9 @@ func TestProcessBurnCrossChainFeeWithReceiver(t *testing.T) {
 	_ = bankKeeper.MintCoins(ctx, types.ModuleName, coins)
 	_ = bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, cosmosReceivers[0], coins)
 
-	err = keeper.ProcessBurn(ctx, cosmosReceivers[0], &msg)
+	account := keeper.GetAccountKeeper().GetAccount(ctx, cosmosReceivers[0])
+	require.Nil(t, account)
+	err = keeper.ProcessBurn(ctx, cosmosReceivers[0], account.GetSequence(), &msg)
 	require.NoError(t, err)
 
 	receiverCoins := bankKeeper.GetAllBalances(ctx, cosmosReceivers[0])
@@ -309,14 +320,16 @@ func TestProcessLockWithReceiver(t *testing.T) {
 
 	msg := types.NewMsgLock(1, cosmosReceivers[0], ethereumSender, amount, "stake", amount)
 
-	err = keeper.ProcessLock(ctx, cosmosReceivers[0], &msg)
+	account := keeper.GetAccountKeeper().GetAccount(ctx, cosmosReceivers[0])
+	require.Nil(t, account)
+	err = keeper.ProcessLock(ctx, cosmosReceivers[0], account.GetSequence(), &msg)
 	require.ErrorIs(t, err, sdkerrors.ErrInsufficientFunds)
 
 	coins := sdk.NewCoins(sdk.NewCoin("stake", amount), sdk.NewCoin(crossChainFee, amount))
 	_ = bankKeeper.MintCoins(ctx, types.ModuleName, coins)
 	_ = bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, cosmosReceivers[0], coins)
 
-	err = keeper.ProcessLock(ctx, cosmosReceivers[0], &msg)
+	err = keeper.ProcessLock(ctx, cosmosReceivers[0], account.GetSequence(), &msg)
 	require.NoError(t, err)
 
 	receiverCoins = bankKeeper.GetAllBalances(ctx, cosmosReceivers[0])
