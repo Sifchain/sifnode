@@ -8,12 +8,12 @@ import (
 
 func InitGenesis(ctx sdk.Context, keeper Keeper, data types.GenesisState) (res []abci.ValidatorUpdate) {
 
-	if data.AddressWhitelist != nil {
-		keeper.SetOracleWhiteList(ctx, data.AddressWhitelist)
-	}
+	keeper.SetOracleWhiteList(ctx, data.AddressWhitelist)
 
-	if data.AdminAddress != nil {
-		keeper.SetAdminAccount(ctx, data.AdminAddress)
+	keeper.SetAdminAccount(ctx, data.AdminAddress)
+
+	for _, p := range data.Prophecies {
+		keeper.SetDBProphecy(ctx, p)
 	}
 
 	return []abci.ValidatorUpdate{}
@@ -21,12 +21,21 @@ func InitGenesis(ctx sdk.Context, keeper Keeper, data types.GenesisState) (res [
 
 func ExportGenesis(ctx sdk.Context, keeper Keeper) types.GenesisState {
 	whiteList := keeper.GetOracleWhiteList(ctx)
+	adminAddress := keeper.GetAdminAccount(ctx)
+	prophecies := keeper.GetProphecies(ctx)
+
+	dbProphecies := make([]types.DBProphecy, len(prophecies))
+	for i, p := range prophecies {
+		dbP, err := p.SerializeForDB()
+		if err != nil {
+			panic(err)
+		}
+		dbProphecies[i] = dbP
+	}
+
 	return GenesisState{
 		AddressWhitelist: whiteList,
+		AdminAddress:     adminAddress,
+		Prophecies:       dbProphecies,
 	}
-}
-
-// ValidateGenesis validates the oracle genesis parameters
-func ValidateGenesis(data GenesisState) error {
-	return nil
 }
