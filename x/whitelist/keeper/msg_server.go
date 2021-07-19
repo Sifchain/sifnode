@@ -25,7 +25,7 @@ func (m msgServer) UpdateWhitelist(ctx context.Context, req *types.MsgUpdateWhit
 		return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, "unauthorised signer")
 	}
 
-	m.keeper.SetDenom(sdk.UnwrapSDKContext(ctx), req.From, req.Units)
+	m.keeper.SetDenom(sdk.UnwrapSDKContext(ctx), req.From, req.Decimals)
 
 	return &types.MsgUpdateWhitelistResponse{}, nil
 }

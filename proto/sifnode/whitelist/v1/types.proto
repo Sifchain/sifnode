@@ -17,5 +17,5 @@ message DenomWhitelist {
 message DenomWhitelistEntry {
   bool is_whitelisted = 1;
   string denom = 2;
-  int64 units = 3;
+  int64 decimals = 3;
 }

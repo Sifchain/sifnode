@@ -12,7 +12,7 @@ service Msg {
 message MsgUpdateWhitelist {
   string from = 1;
   string denom = 2;
-  int64 units = 3;
+  int64 decimals = 3;
 }
 
 message MsgUpdateWhitelistResponse {

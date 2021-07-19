@@ -51,6 +51,12 @@ func (k keeper) GetAdminAccount(ctx sdk.Context) (adminAccount sdk.AccAddress) {
 	return adminAccount
 }
 
+func (k keeper) IsDenomWhitelisted(ctx sdk.Context, denom string) (bool, int64) {
+	d := k.GetDenom(ctx, denom)
+
+	return d.IsWhitelisted, d.Decimals
+}
+
 func (k keeper) GetDenom(ctx sdk.Context, denom string) types.DenomWhitelistEntry {
 	wl := k.GetDenomWhitelist(ctx)
 
@@ -67,14 +73,14 @@ func (k keeper) GetDenom(ctx sdk.Context, denom string) types.DenomWhitelistEntr
 	}
 }
 
-func (k keeper) SetDenom(ctx sdk.Context, denom string, exp int64) {
+func (k keeper) SetDenom(ctx sdk.Context, denom string, decimals int64) {
 	wl := k.GetDenomWhitelist(ctx)
 
 	var exists bool
 	for i := range wl.DenomWhitelistEntries {
 		if wl.DenomWhitelistEntries[i].Denom == denom {
 			exists = true
-			wl.DenomWhitelistEntries[i].Units = exp
+			wl.DenomWhitelistEntries[i].Decimals = decimals
 		}
 	}
 
@@ -82,7 +88,7 @@ func (k keeper) SetDenom(ctx sdk.Context, denom string, exp int64) {
 		wl.DenomWhitelistEntries = append(wl.DenomWhitelistEntries, &types.DenomWhitelistEntry{
 			IsWhitelisted: true,
 			Denom:         denom,
-			Units:         exp,
+			Decimals:      decimals,
 		})
 	}
 
