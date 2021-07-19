@@ -1,31 +1,20 @@
-pragma solidity 0.8.0;
+pragma solidity 0.5.16;
 
-import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
+import "../../node_modules/openzeppelin-solidity/contracts/token/ERC20/ERC20Mintable.sol";
+import "../../node_modules/openzeppelin-solidity/contracts/token/ERC20/ERC20Burnable.sol";
+import "../../node_modules/openzeppelin-solidity/contracts/token/ERC20/ERC20Detailed.sol";
+
 
 /**
  * @title BridgeToken
  * @dev Mintable, ERC20Burnable, ERC20 compatible BankToken for use by BridgeBank
  **/
 
-contract BridgeToken is ERC20Burnable, Ownable {
-
-    uint8 private _decimals;
-
-    constructor(string memory _name, string memory _symbol, uint8 _tokenDecimals)
+contract BridgeToken is ERC20Mintable, ERC20Burnable, ERC20Detailed {
+    constructor(string memory _symbol)
         public
-        ERC20(_name, _symbol)
-        Ownable()
+        ERC20Detailed(_symbol, _symbol, 18)
     {
-       _decimals = _tokenDecimals;
-    }
-
-    function mint(address user, uint256 amount) public onlyOwner returns (bool) {
-        _mint(user, amount);
-        return true;
-    }
-
-    function decimals() public override view returns (uint8) {
-        return _decimals;
+        // Intentionally left blank
     }
 }
