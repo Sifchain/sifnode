@@ -220,50 +220,48 @@ def test_run_online_singlekey_txn(claimType):
     runresp = query_block_claim(runtxnhash)
     logging.info(f"response from block for run dispensation = {runresp}")
 
-    rundistributiontag = runresp['logs'][0]['events'][0]['type']
-    rundistname = runresp['logs'][0]['events'][0]['attributes'][0]['value']
-    runrunneraddress = runresp['logs'][0]['events'][0]['attributes'][1]['value']
-    runtempdistreceiverlist = [runresp['logs'][0]['events'][0]['attributes'][2]['value']]
-    rundistreceiverlist = [x for xs in runtempdistreceiverlist for x in xs.split(',')]
+    rundistributiontag = runresp['logs'][0]['events'][2]['type']
+    rundistname = runresp['logs'][0]['events'][2]['attributes'][0]['value']
+    runrunneraddress = runresp['logs'][0]['events'][2]['attributes'][1]['value']
+    rundistreceiverlist = [runresp['logs'][0]['events'][4]['attributes'][0]['value'], runresp['logs'][0]['events'][4]['attributes'][3]['value']]
     sortedrundistreceiverlist = sorted(rundistreceiverlist)
     logging.info(f"sortedrundistreceiverlist = {sortedrundistreceiverlist}")
     logging.info(f"sortedrundistreceiverlist first item = {sortedrundistreceiverlist[0]}")
+    logging.info(f"sortedrundistreceiverlist second item = {sortedrundistreceiverlist[1]}")
 
     # RUN DISTRIBUTION TXN JSON TAGS ASSERTIONS
     assert str(rundistributiontag) == 'distribution_run'
     assert str(rundistname) == distribution_name
     assert str(runrunneraddress) == runner_address
     assert sortedrundistreceiverlist[0] == sorted_dest_address_list[0]
+    assert sortedrundistreceiverlist[1] == sorted_dest_address_list[1]
 
     run_distr_msg = runresp['tx']['body']['messages'][0]
     run_msg_type = run_distr_msg['@type']
-    run_distributor = run_distr_msg['distributor']
     run_authorized_runner = run_distr_msg['authorized_runner']
     run_distribution_type = run_distr_msg['distribution_type']
     logging.info(f"dispensation run message= {run_msg_type}, type={run_distribution_type}")
 
     assert str(run_msg_type) == '/sifnode.dispensation.v1.MsgRunDistribution'
-    assert str(run_distributor) == distributor_address
     assert str(run_authorized_runner) == runner_address
     assert str(run_distribution_type) in ['DISTRIBUTION_TYPE_VALIDATOR_SUBSIDY', 'DISTRIBUTION_TYPE_LIQUIDITY_MINING']
 
     run_distr_msg_keys = list(run_distr_msg.keys())
     assert run_distr_msg_keys[0] == '@type'
-    assert run_distr_msg_keys[1] == 'distributor'
-    assert run_distr_msg_keys[2] == 'authorized_runner'
-    assert run_distr_msg_keys[3] == 'distribution_type'
+    assert run_distr_msg_keys[1] == 'authorized_runner'
+    assert run_distr_msg_keys[2] == 'distribution_type'
 
     # READING TAGS FROM RUN DISPENSATION CMD
-    temprundistamount1 = runresp['logs'][0]['events'][2]['attributes'][2]['value']
+    temprundistamount1 = runresp['logs'][0]['events'][4]['attributes'][2]['value']
     logging.info(f"temp amount distributed 1 = {temprundistamount1}")
-    temprundistamount2 = runresp['logs'][0]['events'][2]['attributes'][5]['value']
+    temprundistamount2 = runresp['logs'][0]['events'][4]['attributes'][5]['value']
     logging.info(f"temp amount distributed 2 = {temprundistamount2}")
     my_List = [temprundistamount1, temprundistamount2]
     logging.info(f"my list = {my_List}")
     rundistamount = [int(i[:-5]) for i in my_List]
     logging.info(f"temp amount distributed 2 = {rundistamount}")
-    runrecipientaddress1 = runresp['logs'][0]['events'][2]['attributes'][0]['value']
-    runrecipientaddress2 = runresp['logs'][0]['events'][2]['attributes'][3]['value']
+    runrecipientaddress1 = runresp['logs'][0]['events'][4]['attributes'][0]['value']
+    runrecipientaddress2 = runresp['logs'][0]['events'][4]['attributes'][3]['value']
     amount_distributed = [rundistamount[0], rundistamount[1]]
     recipient_dispensation_addresses = [runrecipientaddress1, runrecipientaddress2]
     logging.info(f"dispensation txn addresses = {recipient_dispensation_addresses}")
