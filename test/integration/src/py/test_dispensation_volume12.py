@@ -122,7 +122,6 @@ def test_run_online_morethan10distribution_txn(claimType):
 
     # QUERY BLOCK USING TXN HASH
     resp = query_block_claim(txhash)
-    logging.info(f"resp= {resp}")
 
     distribution_name = resp['logs'][0]['events'][0]['attributes'][1]['value']
     distribution_type = resp['logs'][0]['events'][0]['attributes'][2]['value']

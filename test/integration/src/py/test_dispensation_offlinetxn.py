@@ -57,7 +57,6 @@ def test_create_offline_singlekey_txn(claimType):
     distributor = distribution_msg['distributor']
     authorized_runner = distribution_msg['authorized_runner']
     distribution_type = distribution_msg['distribution_type']
-    logging.info(f"dispensation create message= {msg_type}, type={distribution_type}")
 
     assert str(msg_type) == '/sifnode.dispensation.v1.MsgCreateDistribution'
     assert str(distributor) == distributor_address
@@ -134,7 +133,6 @@ def test_broadcast_txn(claimType):
     distributor = distribution_msg['distributor']
     authorized_runner = distribution_msg['authorized_runner']
     distribution_type = distribution_msg['distribution_type']
-    logging.info(f"dispensation create message= {msg_type}, type={distribution_type}")
 
     assert str(msg_type) == '/sifnode.dispensation.v1.MsgCreateDistribution'
     assert str(distributor) == distributor_address
@@ -212,14 +210,10 @@ def test_run_offline_singlekey_txn(claimType):
     response = (create_offline_singlekey_txn_with_runner(claimType, runner_address, distributor_address, chain_id))
     with open("sample.json", "w") as outfile:
         json.dump(response, outfile)
-    current_sender_balance = int(balance_check(distributor_address, currency))
-    logging.info(f"sender current balance = {current_sender_balance}")
 
     sigresponse = sign_txn(distributor_name, 'sample.json')
     with open("signed.json", "w") as sigfile:
         json.dump(sigresponse, sigfile)
-    current_sender_balance = int(balance_check(distributor_address, currency))
-    logging.info(f"sender current balance = {current_sender_balance}")
 
     txhashbcast = broadcast_txn('signed.json')
     time.sleep(5)
@@ -227,15 +221,11 @@ def test_run_offline_singlekey_txn(claimType):
     one_claiming_address = str(d['Output'][0]['address'])
     logging.info(f"one claiming address = {one_claiming_address}")
 
-    current_sender_balance = int(balance_check(distributor_address, currency))
-    logging.info(f"sender current balance = {current_sender_balance}")
-
     distribution_msg = resp['tx']['body']['messages'][0]
     msg_type = distribution_msg['@type']
     distributor = distribution_msg['distributor']
     authorized_runner = distribution_msg['authorized_runner']
     distribution_type = distribution_msg['distribution_type']
-    logging.info(f"dispensation create message= {msg_type}, type={distribution_type}")
 
     assert str(msg_type) == '/sifnode.dispensation.v1.MsgCreateDistribution'
     assert str(distributor) == distributor_address
@@ -257,15 +247,9 @@ def test_run_offline_singlekey_txn(claimType):
     logging.info(f"txn hash for running dispensation = {runtxnhash}")
     time.sleep(5)
 
-    current_sender_balance = int(balance_check(distributor_address, currency))
-    logging.info(f"sender current balance = {current_sender_balance}")
-
     # QUERY BLOCK USING TXN HASH
     runresp = query_block_claim(runtxnhash)
     logging.info(f"response from block for run dispensation = {runresp}")
-
-    current_sender_balance = int(balance_check(distributor_address, currency))
-    logging.info(f"sender current balance = {current_sender_balance}")
 
     rundistributiontag = runresp['logs'][0]['events'][2]['type']
     rundistname = runresp['logs'][0]['events'][2]['attributes'][0]['value']
@@ -287,7 +271,6 @@ def test_run_offline_singlekey_txn(claimType):
     run_msg_type = run_distr_msg['@type']
     run_authorized_runner = run_distr_msg['authorized_runner']
     run_distribution_type = run_distr_msg['distribution_type']
-    logging.info(f"dispensation run message= {run_msg_type}, type={run_distribution_type}")
 
     assert str(run_msg_type) == '/sifnode.dispensation.v1.MsgRunDistribution'
     assert str(run_authorized_runner) == runner_address

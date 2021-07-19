@@ -64,7 +64,6 @@ def test_create_online_singlekey_txn(claimType):
     distributor = distribution_msg['distributor']
     authorized_runner = distribution_msg['authorized_runner']
     distribution_type = distribution_msg['distribution_type']
-    logging.info(f"dispensation create message= {msg_type}, type={distribution_type}")
 
     assert str(msg_type) == '/sifnode.dispensation.v1.MsgCreateDistribution'
     assert str(distributor) == distributor_address
@@ -201,14 +200,12 @@ def test_run_online_singlekey_txn(claimType):
 
     # QUERY BLOCK USING TXN HASH
     resp = query_block_claim(txhash)
-    logging.info(f"resp= {resp}")
 
     distribution_msg = resp['tx']['body']['messages'][0]
     msg_type = distribution_msg['@type']
     distributor = distribution_msg['distributor']
     authorized_runner = distribution_msg['authorized_runner']
     distribution_type = distribution_msg['distribution_type']
-    logging.info(f"dispensation create message= {msg_type}, type={distribution_type}")
 
     assert str(msg_type) == '/sifnode.dispensation.v1.MsgCreateDistribution'
     assert str(distributor) == distributor_address
@@ -254,7 +251,6 @@ def test_run_online_singlekey_txn(claimType):
     run_msg_type = run_distr_msg['@type']
     run_authorized_runner = run_distr_msg['authorized_runner']
     run_distribution_type = run_distr_msg['distribution_type']
-    logging.info(f"dispensation run message= {run_msg_type}, type={run_distribution_type}")
 
     assert str(run_msg_type) == '/sifnode.dispensation.v1.MsgRunDistribution'
     assert str(run_authorized_runner) == runner_address

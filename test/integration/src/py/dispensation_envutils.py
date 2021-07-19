@@ -110,7 +110,8 @@ def create_online_singlekey_async_txn(
         chain_id
 ):
     logging.debug(f"create_online_dispensation")
-    sifchain_fees_entry = f"--gas auto"
+    sifchain_fees_entry = f"--fees 150000rowan"
+    sifchain_gas_entry = f"--gas auto --gas-adjustment=1.5"
     keyring_backend_entry = f"--keyring-backend test"
     output = 'output.json'
     cmd = " ".join([
@@ -118,7 +119,7 @@ def create_online_singlekey_async_txn(
         f"{claimType}",
         output,
         sifchain_fees_entry,
-        f"--fees 50000rowan",
+        sifchain_gas_entry,
         f"--from {signing_address}",
         f"--chain-id {chain_id}",
         keyring_backend_entry,
@@ -138,6 +139,8 @@ def create_offline_singlekey_txn(
         chain_id,
     ):
     logging.debug(f"create_unsigned_offline_dispensation_txn")
+    sifchain_fees_entry = f"--fees 150000rowan"
+    sifchain_gas_entry = f"--gas auto --gas-adjustment=1.5"
     output = 'output.json'
     cmd = " ".join([
         "sifnoded tx dispensation create",
@@ -145,7 +148,8 @@ def create_offline_singlekey_txn(
         output,
         f"--from {signing_address}",
         f"--chain-id {chain_id}",
-        f"--fees 150000rowan",
+        sifchain_fees_entry,
+        sifchain_gas_entry,
         f"--generate-only", 
         f"--yes -o json"  
     ])
@@ -231,7 +235,7 @@ def create_offline_singlekey_txn_with_runner(
         chain_id
     ):
     logging.debug(f"create_unsigned_offline_dispensation_txn")
-    sifchain_fees_entry = f"--fees 1500000rowan"
+    sifchain_fees_entry = f"--fees 150000rowan"
     sifchain_gas_entry = f"--gas auto --gas-adjustment=1.5"
     keyring_backend_entry = f"--keyring-backend test"
     output = 'output.json'
