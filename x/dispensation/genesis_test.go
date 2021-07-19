@@ -1,12 +1,15 @@
 package dispensation_test
 
 import (
+	"testing"
+
 	"github.com/Sifchain/sifnode/x/dispensation"
 	"github.com/Sifchain/sifnode/x/dispensation/test"
 	"github.com/Sifchain/sifnode/x/dispensation/types"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
-	"testing"
+	"github.com/tendermint/tendermint/crypto"
 )
 
 func TestExportGenesis(t *testing.T) {
@@ -15,11 +18,12 @@ func TestExportGenesis(t *testing.T) {
 	outList := test.CreatOutputList(1000, "1000000000")
 	claimList := test.CreateClaimsList(10000, types.DistributionType_DISTRIBUTION_TYPE_VALIDATOR_SUBSIDY)
 	name := uuid.New().String()
+	authorisedRunner := sdk.AccAddress(crypto.AddressHash([]byte("Runner")))
 	for _, rec := range outList {
 		record := types.NewDistributionRecord(types.DistributionStatus_DISTRIBUTION_STATUS_PENDING, types.DistributionType_DISTRIBUTION_TYPE_AIRDROP, name, rec.Address, rec.Coins, ctx.BlockHeight(), -1, "")
 		err := keeper.SetDistributionRecord(ctx, record)
 		assert.NoError(t, err)
-		err = keeper.SetDistribution(ctx, types.NewDistribution(types.DistributionType_DISTRIBUTION_TYPE_AIRDROP, name))
+		err = keeper.SetDistribution(ctx, types.NewDistribution(types.DistributionType_DISTRIBUTION_TYPE_AIRDROP, name, authorisedRunner.String()))
 		assert.NoError(t, err)
 	}
 	for _, claim := range claimList {
@@ -40,11 +44,12 @@ func TestInitGenesis(t *testing.T) {
 	outList := test.CreatOutputList(1000, "1000000000")
 	claimList := test.CreateClaimsList(10000, types.DistributionType_DISTRIBUTION_TYPE_VALIDATOR_SUBSIDY)
 	name := uuid.New().String()
+	authorisedRunner := sdk.AccAddress(crypto.AddressHash([]byte("Runner")))
 	for _, rec := range outList {
 		record := types.NewDistributionRecord(types.DistributionStatus_DISTRIBUTION_STATUS_PENDING, types.DistributionType_DISTRIBUTION_TYPE_AIRDROP, name, rec.Address, rec.Coins, ctx.BlockHeight(), -1, "")
 		err := keeper.SetDistributionRecord(ctx, record)
 		assert.NoError(t, err)
-		err = keeper.SetDistribution(ctx, types.NewDistribution(types.DistributionType_DISTRIBUTION_TYPE_AIRDROP, name))
+		err = keeper.SetDistribution(ctx, types.NewDistribution(types.DistributionType_DISTRIBUTION_TYPE_AIRDROP, name, authorisedRunner.String()))
 		assert.NoError(t, err)
 	}
 	for _, claim := range claimList {
@@ -67,11 +72,12 @@ func TestValidateGenesis(t *testing.T) {
 	outList := test.CreatOutputList(1000, "1000000000")
 	claimList := test.CreateClaimsList(10000, types.DistributionType_DISTRIBUTION_TYPE_VALIDATOR_SUBSIDY)
 	name := uuid.New().String()
+	authorisedRunner := sdk.AccAddress(crypto.AddressHash([]byte("Runner")))
 	for _, rec := range outList {
-		record := types.NewDistributionRecord(types.DistributionStatus_DISTRIBUTION_STATUS_PENDING, types.DistributionType_DISTRIBUTION_TYPE_AIRDROP, name, rec.Address, rec.Coins, ctx.BlockHeight(), -1, "")
+		record := types.NewDistributionRecord(types.DistributionStatus_DISTRIBUTION_STATUS_PENDING, types.DistributionType_DISTRIBUTION_TYPE_AIRDROP, name, rec.Address, rec.Coins, ctx.BlockHeight(), -1, authorisedRunner.String())
 		err := keeper.SetDistributionRecord(ctx, record)
 		assert.NoError(t, err)
-		err = keeper.SetDistribution(ctx, types.NewDistribution(types.DistributionType_DISTRIBUTION_TYPE_AIRDROP, name))
+		err = keeper.SetDistribution(ctx, types.NewDistribution(types.DistributionType_DISTRIBUTION_TYPE_AIRDROP, name, authorisedRunner.String()))
 		assert.NoError(t, err)
 	}
 	for _, claim := range claimList {

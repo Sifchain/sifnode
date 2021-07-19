@@ -1,6 +1,8 @@
 package keeper
 
 import (
+	"fmt"
+
 	"github.com/Sifchain/sifnode/x/dispensation/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/pkg/errors"
@@ -13,15 +15,15 @@ func (k Keeper) SetDistribution(ctx sdk.Context, ar types.Distribution) error {
 		return errors.Wrapf(types.ErrInvalid, "Record Details : %s", ar.String())
 	}
 	store := ctx.KVStore(k.storeKey)
-	key := types.GetDistributionsKey(ar.DistributionName, ar.DistributionType)
+	key := types.GetDistributionsKey(ar.DistributionName, ar.DistributionType, ar.Runner)
 	store.Set(key, k.cdc.MustMarshalBinaryBare(&ar))
 	return nil
 }
 
-func (k Keeper) GetDistribution(ctx sdk.Context, name string, distributionType types.DistributionType) (*types.Distribution, error) {
+func (k Keeper) GetDistribution(ctx sdk.Context, name string, distributionType types.DistributionType, authorisedRunner string) (*types.Distribution, error) {
 	var ar types.Distribution
 	store := ctx.KVStore(k.storeKey)
-	key := types.GetDistributionsKey(name, distributionType)
+	key := types.GetDistributionsKey(name, distributionType, authorisedRunner)
 	if !k.Exists(ctx, key) {
 		return &ar, errors.Wrapf(types.ErrInvalid, "Record Does not Exist : %s", ar.String())
 	}
@@ -30,8 +32,8 @@ func (k Keeper) GetDistribution(ctx sdk.Context, name string, distributionType t
 	return &ar, nil
 }
 
-func (k Keeper) ExistsDistribution(ctx sdk.Context, name string, distributionType types.DistributionType) bool {
-	key := types.GetDistributionsKey(name, distributionType)
+func (k Keeper) ExistsDistribution(ctx sdk.Context, name string, distributionType types.DistributionType, authorisedRunner string) bool {
+	key := types.GetDistributionsKey(name, distributionType, authorisedRunner)
 	return k.Exists(ctx, key)
 }
 
@@ -47,7 +49,12 @@ func (k Keeper) GetDistributions(ctx sdk.Context) *types.Distributions {
 	for ; iterator.Valid(); iterator.Next() {
 		var dl types.Distribution
 		bytesValue := iterator.Value()
-		k.cdc.MustUnmarshalBinaryBare(bytesValue, &dl)
+		err := k.cdc.UnmarshalBinaryBare(bytesValue, &dl)
+		if err != nil {
+			// Log unmarshal distribution error instead of panic.
+			ctx.Logger().Error(fmt.Sprintf("Unmarshal failed for distribution bytes : %s ", bytesValue))
+			continue
+		}
 		res.Distributions = append(res.Distributions, &dl)
 	}
 	return &res

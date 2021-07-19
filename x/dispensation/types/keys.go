@@ -2,6 +2,7 @@ package types
 
 import (
 	"fmt"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 )
@@ -46,8 +47,8 @@ func GetDistributionRecordKey(status DistributionStatus, name string, recipient 
 		return append(DistributionRecordPrefixCompleted, key...)
 	}
 }
-func GetDistributionsKey(name string, distributionType DistributionType) []byte {
-	key := []byte(fmt.Sprintf("%s_%d", name, distributionType))
+func GetDistributionsKey(name string, distributionType DistributionType, authorisedRunner string) []byte {
+	key := []byte(fmt.Sprintf("%s_%d_%s", name, distributionType, authorisedRunner))
 	return append(DistributionsPrefix, key...)
 }
 

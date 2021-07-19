@@ -1,6 +1,8 @@
 package keeper
 
 import (
+	"fmt"
+
 	"github.com/Sifchain/sifnode/x/dispensation/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/pkg/errors"
@@ -58,7 +60,12 @@ func (k Keeper) GetClaims(ctx sdk.Context) *types.UserClaims {
 		if len(bytesValue) == 0 {
 			continue
 		}
-		k.cdc.MustUnmarshalBinaryBare(bytesValue, &dl)
+		err := k.cdc.UnmarshalBinaryBare(bytesValue, &dl)
+		if err != nil {
+			// Log unmarshal claim error instead of panic.
+			ctx.Logger().Error(fmt.Sprintf("Unmarshal failed for user claim bytes : %s ", bytesValue))
+			continue
+		}
 		res.UserClaims = append(res.UserClaims, &dl)
 	}
 	return &res

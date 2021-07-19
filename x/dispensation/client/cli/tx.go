@@ -8,6 +8,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/client/tx"
 	"github.com/spf13/cobra"
+	tmcli "github.com/tendermint/tendermint/libs/cli"
 )
 
 // GetTxCmd returns the transaction commands for this module
@@ -41,6 +42,10 @@ func GetCmdCreate() *cobra.Command {
 			if err != nil {
 				return err
 			}
+			err = cobra.ExactArgs(3)(cmd, args)
+			if err != nil {
+				return err
+			}
 			distributionType, ok := types.GetDistributionTypeFromShortString(args[0])
 			if !ok {
 				return fmt.Errorf("invalid distribution Type %s: Types supported [Airdrop/LiquidityMining/ValidatorSubsidy]", args[2])
@@ -58,6 +63,7 @@ func GetCmdCreate() *cobra.Command {
 	}
 
 	flags.AddTxFlagsToCmd(cmd)
+	cmd.Flags().StringP(tmcli.OutputFlag, "o", "text", "Output format (text|json)")
 	return cmd
 }
 
@@ -67,6 +73,10 @@ func GetCmdClaim() *cobra.Command {
 		Short: "Create new Claim",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx, err := client.GetClientTxContext(cmd)
+			if err != nil {
+				return err
+			}
+			err = cobra.ExactArgs(1)(cmd, args)
 			if err != nil {
 				return err
 			}
@@ -82,6 +92,7 @@ func GetCmdClaim() *cobra.Command {
 		},
 	}
 	flags.AddTxFlagsToCmd(cmd)
+	cmd.Flags().StringP(tmcli.OutputFlag, "o", "text", "Output format (text|json)")
 	return cmd
 
 }
@@ -92,6 +103,10 @@ func GetCmdRun() *cobra.Command {
 		Short: "run limited records dispensation by specifying the name / should only be called by the authorized runner",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx, err := client.GetClientTxContext(cmd)
+			if err != nil {
+				return err
+			}
+			err = cobra.ExactArgs(2)(cmd, args)
 			if err != nil {
 				return err
 			}
@@ -107,5 +122,6 @@ func GetCmdRun() *cobra.Command {
 		},
 	}
 	flags.AddTxFlagsToCmd(cmd)
+	cmd.Flags().StringP(tmcli.OutputFlag, "o", "text", "Output format (text|json)")
 	return cmd
 }
