@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+set +x
 
 function header (){
     echo "======================"
@@ -11,5 +12,14 @@ function footer (){
     echo ""
 }
 
-read -p "What AWS profile do you want to use: \n $(cat ~/.aws/config | grep "\[profile" | grep -v "#") [devnet]:" AWS_PROFILE
-AWS_PROFILE=${AWS_PROFILE:-devnet}
+function log(){
+    echo " "
+    echo $(date) - $1
+    echo " "
+}
+
+function get_cluster_id(){
+    echo " "
+    echo $(date) - $1
+    echo " "
+}

@@ -1,13 +1,15 @@
 name: gitleaks
 
-#on: [push,pull_request]
-on:
-  workflow_dispatch:
+on: [push,pull_request]
   
 jobs:
   gitleaks:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v2
+      with:
+        fetch-depth: '0'
     - name: gitleaks-action
       uses: zricethezav/gitleaks-action@master
+      with:
+        config-path: .github/.gitleaks.toml

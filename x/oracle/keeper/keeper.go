@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	"bytes"
 	"fmt"
 
 	"github.com/tendermint/tendermint/libs/log"
@@ -43,6 +44,27 @@ func (k Keeper) Logger(ctx sdk.Context) log.Logger {
 	return ctx.Logger().With("module", fmt.Sprintf("x/%s", types.ModuleName))
 }
 
+func (k Keeper) GetProphecies(ctx sdk.Context) []types.Prophecy {
+	var prophecies []types.Prophecy
+	store := ctx.KVStore(k.storeKey)
+	iter := store.Iterator(nil, nil)
+	for ; iter.Valid(); iter.Next() {
+		key := iter.Key()
+		var dbProphecy types.DBProphecy
+		if bytes.Compare(key, types.AdminAccountPrefix) != 0 &&
+			bytes.Compare(key, types.WhiteListValidatorPrefix) != 0 {
+			k.Cdc.MustUnmarshalBinaryBare(iter.Value(), &dbProphecy)
+
+			deSerializedProphecy, err := dbProphecy.DeserializeFromDB()
+			if err != nil {
+				panic(err)
+			}
+			prophecies = append(prophecies, deSerializedProphecy)
+		}
+	}
+	return prophecies
+}
+
 // GetProphecy gets the entire prophecy data struct for a given id
 func (k Keeper) GetProphecy(ctx sdk.Context, id string) (types.Prophecy, bool) {
 	store := ctx.KVStore(k.storeKey)
@@ -62,15 +84,19 @@ func (k Keeper) GetProphecy(ctx sdk.Context, id string) (types.Prophecy, bool) {
 	return deSerializedProphecy, true
 }
 
-// setProphecy saves a prophecy with an initial claim
-func (k Keeper) setProphecy(ctx sdk.Context, prophecy types.Prophecy) {
-	store := ctx.KVStore(k.storeKey)
+// SetProphecy saves a prophecy with an initial claim
+func (k Keeper) SetProphecy(ctx sdk.Context, prophecy types.Prophecy) {
 	serializedProphecy, err := prophecy.SerializeForDB()
 	if err != nil {
 		panic(err)
 	}
+	k.SetDBProphecy(ctx, serializedProphecy)
+}
 
-	store.Set([]byte(prophecy.ID), k.Cdc.MustMarshalBinaryBare(serializedProphecy))
+func (k Keeper) SetDBProphecy(ctx sdk.Context, prophecy types.DBProphecy) {
+	store := ctx.KVStore(k.storeKey)
+	// TODO use a prophecy prefix.
+	store.Set([]byte(prophecy.ID), k.Cdc.MustMarshalBinaryBare(prophecy))
 }
 
 // ProcessClaim ...
@@ -124,7 +150,7 @@ func (k Keeper) ProcessClaim(ctx sdk.Context, claim types.Claim, sugaredLogger *
 	prophecy.AddClaim(claim.ValidatorAddress, claim.Content)
 	prophecy = k.processCompletion(ctx, prophecy)
 
-	k.setProphecy(ctx, prophecy)
+	k.SetProphecy(ctx, prophecy)
 	return prophecy.Status, nil
 }
 

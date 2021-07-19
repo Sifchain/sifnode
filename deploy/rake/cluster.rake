@@ -509,7 +509,13 @@ metadata:
   namespace: #{args[:app_namespace]}
   labels:
     app: #{args[:app_name]}
+    app.kubernetes.io/managed-by: "Helm"
+  annotations:
+    meta.helm.sh/release-namespace: "#{args[:app_namespace]}"
+    meta.helm.sh/release-name: "#{args[:app_name]}"
+
       }
+
       puts "Create Service Account File."
       puts service_account
       File.open("service_account.yaml", 'w') { |file| file.write(service_account) }
@@ -1103,6 +1109,23 @@ sleep 15
       system({"KUBECONFIG" => kubeconfig(args)}, cmd)
     end
   end
+
+  desc "deploy helm chart"
+  namespace :helm do
+    desc "Deploy helm chart using arguments passed in"
+    task :pipeline_deploy, [:appname, :namespace, :args] do |t, args|
+      cmd = %Q{helm upgrade #{args[:appname]} \
+#{cwd}/../../deploy/helm/#{args[:appname]} \
+--install -n #{args[:namespace]} --create-namespace \
+#{args[:args]} \
+--kubeconfig=./kubeconfig }
+
+      puts cmd
+
+    system(cmd) or exit 1
+    end
+  end
+
 end
 
 #
