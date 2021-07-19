@@ -6,7 +6,7 @@ import pytest
 import string
 import random
 from dispensation_envutils import create_offline_singlekey_txn, create_new_sifaddr_and_key, send_sample_rowan, balance_check, \
-     query_block_claim,sign_txn,broadcast_txn,create_offline_singlekey_txn_with_runner, run_dispensation
+     query_block_claim, sign_txn, broadcast_txn, create_offline_singlekey_txn_with_runner, run_dispensation
 
 
 #TEST CODE TO ASSERT TAGS GENERATED ON A BLOCK WHEN A NEW UNSIGNED DISPENSATION IS CREATED
@@ -71,6 +71,8 @@ def test_create_offline_singlekey_txn(claimType):
     assert distribution_msg_keys[3] == 'distribution_type'
 
     try:
+        os.remove('signed.json')
+        os.remove('sample.json')
         os.remove('output.json')
     except OSError as e:
         print("Error: %s - %s." % (e.filename, e.strerror))
@@ -90,23 +92,23 @@ def test_broadcast_txn(claimType):
     sampleamount = '1000rowan'
 
     #THESE 4 TXNS ARE TO REGISTER NEW ACCOUNTS ON CHAIN
-    send_sample_rowan(from_address,runner_address,amount,keyring_backend,chain_id, "--offline")
+    send_sample_rowan(from_address, runner_address, amount, keyring_backend, chain_id, "--offline")
     time.sleep(5)
-    send_sample_rowan(from_address,distributor_address,amount,keyring_backend,chain_id, "--offline")
+    send_sample_rowan(from_address, distributor_address, amount, keyring_backend, chain_id, "--offline")
     time.sleep(5)
-    send_sample_rowan(from_address,destaddress1,sampleamount,keyring_backend,chain_id, "--offline")
+    send_sample_rowan(from_address, destaddress1, sampleamount, keyring_backend, chain_id, "--offline")
     time.sleep(5)
-    send_sample_rowan(from_address,destaddress2,sampleamount,keyring_backend,chain_id, "--offline")
+    send_sample_rowan(from_address, destaddress2, sampleamount, keyring_backend, chain_id, "--offline")
     time.sleep(5)
 
     #CREATING TEST DATA HERE MIMICKING OUTPUT.JSON TO BE SUPPLIED BY NIKO'S API
     dict1 = {"denom": "rowan","amount": "5000"}
     dict2 = {"denom": "rowan","amount": "7000"}
-    dict3 = {"address": destaddress1,"coins":[dict1]}
-    dict4 = {"address": destaddress2,"coins":[dict2]}
+    dict3 = {"address": destaddress1, "coins":[dict1]}
+    dict4 = {"address": destaddress2, "coins":[dict2]}
     dict5 = {"Output":[dict3,dict4]}
     data = json.dumps(dict5)
-    with open("output.json","w") as f:
+    with open("output.json", "w") as f:
         f.write(data)
 
     #READ OUTPUT.JSON WITH CLAIMING ADDRESSES AND AMOUNT
@@ -114,7 +116,7 @@ def test_broadcast_txn(claimType):
         data = f.read()
     d = json.loads(data)
 
-    response = (create_offline_singlekey_txn_with_runner(claimType,runner_address,distributor_address,chain_id))
+    response = (create_offline_singlekey_txn_with_runner(claimType, runner_address, distributor_address, chain_id))
 
     with open("sample.json", "w") as outfile:
         json.dump(response, outfile)
@@ -165,7 +167,6 @@ def test_run_offline_singlekey_txn(claimType):
     from_address = 'sifnodeadmin'
     keyring_backend = 'test'
     chain_id = 'localnet'
-    sifnoded_node = 'tcp://127.0.0.1:1317'
     amount = '10000000rowan'
     fee = '150000'
     currency = 'rowan'
@@ -184,7 +185,7 @@ def test_run_offline_singlekey_txn(claimType):
     sorted_dest_address_list = sorted([destaddress1,destaddress2])
     logging.info(f"sorted_dest_address_list = {sorted_dest_address_list}")
 
-     #CREATING TEST DATA HERE MIMICKING OUTPUT.JSON TO BE SUPPLIED BY NIKO'S API
+    # CREATING TEST DATA HERE MIMICKING OUTPUT.JSON TO BE SUPPLIED BY NIKO'S API
     dict1 = {"denom": "rowan","amount": "5000"}
     dict2 = {"denom": "rowan","amount": "7000"}
     dict3 = {"address": destaddress1,"coins":[dict1]}
@@ -194,7 +195,7 @@ def test_run_offline_singlekey_txn(claimType):
     with open("output.json","w") as f:
         f.write(data)
 
-    #READ OUTPUT.JSON WITH CLAIMING ADDRESSES AND AMOUNT
+    # READ OUTPUT.JSON WITH CLAIMING ADDRESSES AND AMOUNT
     with open("output.json","r") as f:
         data = f.read()
     d = json.loads(data)
@@ -208,19 +209,26 @@ def test_run_offline_singlekey_txn(claimType):
     logging.info(f"sender initial balance = {sender_initial_balance}")
     logging.info(f"one claiming address initial balance = {claiming_address_initial_balance}")
 
-    response = (create_offline_singlekey_txn_with_runner(claimType,runner_address,distributor_address,chain_id))
+    response = (create_offline_singlekey_txn_with_runner(claimType, runner_address, distributor_address, chain_id))
     with open("sample.json", "w") as outfile:
         json.dump(response, outfile)
+    current_sender_balance = int(balance_check(distributor_address, currency))
+    logging.info(f"sender current balance = {current_sender_balance}")
 
     sigresponse = sign_txn(distributor_name, 'sample.json')
     with open("signed.json", "w") as sigfile:
         json.dump(sigresponse, sigfile)
+    current_sender_balance = int(balance_check(distributor_address, currency))
+    logging.info(f"sender current balance = {current_sender_balance}")
 
     txhashbcast = broadcast_txn('signed.json')
     time.sleep(5)
     resp = query_block_claim(txhashbcast)
     one_claiming_address = str(d['Output'][0]['address'])
     logging.info(f"one claiming address = {one_claiming_address}")
+
+    current_sender_balance = int(balance_check(distributor_address, currency))
+    logging.info(f"sender current balance = {current_sender_balance}")
 
     distribution_msg = resp['tx']['body']['messages'][0]
     msg_type = distribution_msg['@type']
@@ -249,9 +257,15 @@ def test_run_offline_singlekey_txn(claimType):
     logging.info(f"txn hash for running dispensation = {runtxnhash}")
     time.sleep(5)
 
+    current_sender_balance = int(balance_check(distributor_address, currency))
+    logging.info(f"sender current balance = {current_sender_balance}")
+
     # QUERY BLOCK USING TXN HASH
     runresp = query_block_claim(runtxnhash)
     logging.info(f"response from block for run dispensation = {runresp}")
+
+    current_sender_balance = int(balance_check(distributor_address, currency))
+    logging.info(f"sender current balance = {current_sender_balance}")
 
     rundistributiontag = runresp['logs'][0]['events'][2]['type']
     rundistname = runresp['logs'][0]['events'][2]['attributes'][0]['value']
@@ -282,16 +296,17 @@ def test_run_offline_singlekey_txn(claimType):
     run_distr_msg_keys = list(run_distr_msg.keys())
     assert run_distr_msg_keys[0] == '@type'
     assert run_distr_msg_keys[1] == 'authorized_runner'
-    assert run_distr_msg_keys[2] == 'distribution_type'
+    assert run_distr_msg_keys[2] == 'distribution_name'
+    assert run_distr_msg_keys[3] == 'distribution_type'
 
     # READING TAGS FROM RUN DISPENSATION CMD
     temprundistamount1 = runresp['logs'][0]['events'][4]['attributes'][2]['value']
     logging.info(f"temp amount distributed 1 = {temprundistamount1}")
     temprundistamount2 = runresp['logs'][0]['events'][4]['attributes'][5]['value']
     logging.info(f"temp amount distributed 2 = {temprundistamount2}")
-    my_List = [temprundistamount1, temprundistamount2]
-    logging.info(f"my list = {my_List}")
-    rundistamount = [int(i[:-5]) for i in my_List]
+    my_list = [temprundistamount1, temprundistamount2]
+    logging.info(f"my list = {my_list}")
+    rundistamount = [int(i[:-5]) for i in my_list]
     logging.info(f"temp amount distributed 2 = {rundistamount}")
     runrecipientaddress1 = runresp['logs'][0]['events'][4]['attributes'][0]['value']
     runrecipientaddress2 = runresp['logs'][0]['events'][4]['attributes'][3]['value']

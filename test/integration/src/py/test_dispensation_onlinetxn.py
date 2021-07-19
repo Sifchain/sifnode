@@ -1,4 +1,5 @@
 import logging
+import os
 import time
 import json
 import pytest
@@ -76,6 +77,13 @@ def test_create_online_singlekey_txn(claimType):
     assert distribution_msg_keys[2] == 'authorized_runner'
     assert distribution_msg_keys[3] == 'distribution_type'
 
+    try:
+        os.remove('signed.json')
+        os.remove('sample.json')
+        os.remove('output.json')
+    except OSError as e:
+        print("Error: %s - %s." % (e.filename, e.strerror))
+
 
 # AUTOMTED TEST TO VALIDATE IF FUNDING ADDRESS DOESN'T HAVE ENOUGH BALANCE
 @pytest.mark.parametrize("claimType", ['ValidatorSubsidy', 'LiquidityMining'])
@@ -124,6 +132,13 @@ def test_insufficient_funds_dispensation_txn(claimType):
         assert str(
             execinfo.value) == f"for address  : {distributor_address}: Failed in collecting funds for airdrop: failed to execute message; message index: 0: failed to simulate tx"
         logging.info(f"Insufficient Funds Message = {txhash}")
+    try:
+        os.remove('signed.json')
+        os.remove('sample.json')
+        os.remove('output.json')
+    except OSError as e:
+        print("Error: %s - %s." % (e.filename, e.strerror))
+
 
 # AUTOMATED TEST TO VALIDATE ONLINE RUN DISPENSATION TXN
 @pytest.mark.parametrize("claimType", ['ValidatorSubsidy','LiquidityMining'])
@@ -137,7 +152,6 @@ def test_run_online_singlekey_txn(claimType):
     from_address = 'sifnodeadmin'
     keyring_backend = 'test'
     chain_id = 'localnet'
-    sifnoded_node = 'tcp://127.0.0.1:1317'
     amount = '10000000rowan'
     fee = '150000'
     currency = 'rowan'
@@ -249,16 +263,17 @@ def test_run_online_singlekey_txn(claimType):
     run_distr_msg_keys = list(run_distr_msg.keys())
     assert run_distr_msg_keys[0] == '@type'
     assert run_distr_msg_keys[1] == 'authorized_runner'
-    assert run_distr_msg_keys[2] == 'distribution_type'
+    assert run_distr_msg_keys[2] == 'distribution_name'
+    assert run_distr_msg_keys[3] == 'distribution_type'
 
     # READING TAGS FROM RUN DISPENSATION CMD
     temprundistamount1 = runresp['logs'][0]['events'][4]['attributes'][2]['value']
     logging.info(f"temp amount distributed 1 = {temprundistamount1}")
     temprundistamount2 = runresp['logs'][0]['events'][4]['attributes'][5]['value']
     logging.info(f"temp amount distributed 2 = {temprundistamount2}")
-    my_List = [temprundistamount1, temprundistamount2]
-    logging.info(f"my list = {my_List}")
-    rundistamount = [int(i[:-5]) for i in my_List]
+    my_list = [temprundistamount1, temprundistamount2]
+    logging.info(f"my list = {my_list}")
+    rundistamount = [int(i[:-5]) for i in my_list]
     logging.info(f"temp amount distributed 2 = {rundistamount}")
     runrecipientaddress1 = runresp['logs'][0]['events'][4]['attributes'][0]['value']
     runrecipientaddress2 = runresp['logs'][0]['events'][4]['attributes'][3]['value']
@@ -292,3 +307,10 @@ def test_run_online_singlekey_txn(claimType):
     logging.info(f"amount claimed by one recipient  = {claimed_amount_single_recipient}")
     logging.info(
         f"balance transferred in one recipient address  = {(recipient_address_final_balance - claiming_address_initial_balance)}")
+
+    try:
+        os.remove('signed.json')
+        os.remove('sample.json')
+        os.remove('output.json')
+    except OSError as e:
+        print("Error: %s - %s." % (e.filename, e.strerror))

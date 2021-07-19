@@ -243,11 +243,10 @@ def create_offline_singlekey_txn_with_runner(
         f"--from {distributor_address}",
         f"--chain-id {chain_id}",
         sifchain_fees_entry,
-        # sifchain_gas_entry,
+        sifchain_gas_entry,
         keyring_backend_entry,
         f"--generate-only", 
-        f"--yes -o json",
-        # f"--offline"
+        f"--yes -o json"
     ])
     json_str = get_shell_output_json(cmd)
     assert(json_str.get("code", 0) == 0)
