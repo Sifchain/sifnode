@@ -19,15 +19,26 @@ func OnRecvPacketWhiteListed(
 		return nil, nil, sdkerrors.Wrapf(sdkerrors.ErrUnknownRequest, "cannot unmarshal ICS-20 transfer packet data: %s", err.Error())
 	}
 
-	denom := GetMintedDenomFromPacket(packet, data)
-	isWhitelisted := IsWhitelisted(ctx, denom)
-
-	isReturning := IsRecvPacketReturning(packet, data)
-	if !(isReturning || isWhitelisted) {
+	if !isRecvPacketAllowed(ctx, packet, data) {
 		return nil, nil, sdkerrors.Wrapf(sdkerrors.ErrInvalidCoins, "denom not on whitelist")
 	}
 
 	return sdkAppModule.OnRecvPacket(ctx, packet)
+}
+
+func isRecvPacketAllowed(ctx sdk.Context,
+	packet channeltypes.Packet, data transfertypes.FungibleTokenPacketData) bool {
+
+	isReturning := IsRecvPacketReturning(packet, data)
+
+	denom := GetMintedDenomFromPacket(packet, data)
+	isWhitelisted := IsWhitelisted(ctx, denom)
+
+	if isReturning || isWhitelisted {
+		return true
+	}
+
+	return false
 }
 
 func GetMintedDenomFromPacket(packet channeltypes.Packet, data transfertypes.FungibleTokenPacketData) string {
