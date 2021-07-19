@@ -304,13 +304,15 @@ def create_claim(
         chain_id
     ):
     logging.debug(f"create_claim")
-    keyring_backend_entry = f"--keyring-backend {keyring_backend}"     
+    keyring_backend_entry = f"--keyring-backend {keyring_backend}"
+    sifchain_gas_entry = f"--gas auto --gas-adjustment=1.5"
     sifchain_fees_entry = f"--fees 100000rowan"
     cmd = " ".join([
         "sifnoded tx dispensation claim",
         f"{claimType}",
         f"--from {sifchain_address}",
         sifchain_fees_entry,
+        sifchain_gas_entry,
         f"--chain-id {chain_id}",
         keyring_backend_entry,
         f"--yes -o json"
