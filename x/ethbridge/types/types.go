@@ -16,6 +16,7 @@ func RegisterInterfaces(registry cdctypes.InterfaceRegistry) {
 		&MsgUpdateWhiteListValidator{},
 		&MsgUpdateCrossChainFeeReceiverAccount{},
 		&MsgRescueCrossChainFee{},
+		&MsgSetFeeInfo{},
 	)
 
 	msgservice.RegisterMsgServiceDesc(registry, &_Msg_serviceDesc)
