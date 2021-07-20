@@ -67,6 +67,31 @@ func (k keeper) GetDenom(ctx sdk.Context, denom string) types.DenomWhitelistEntr
 	}
 }
 
+func (k keeper) GetNormalizationFactor(ctx sdk.Context, denom string) (sdk.Dec, bool) {
+	wl := k.GetDenomWhitelist(ctx)
+	normalizationFactor := sdk.NewDec(1)
+	ok := false
+	nf := int64(0)
+	for i := range wl.DenomWhitelistEntries {
+		if wl.DenomWhitelistEntries[i].Denom == denom &&
+			wl.DenomWhitelistEntries[i] != nil {
+			ok = true
+			nf = wl.DenomWhitelistEntries[i].Units
+		}
+	}
+	adjustExternalToken := false
+	if ok {
+		adjustExternalToken = true
+		diffFactor := 18 - nf
+		if diffFactor < 0 {
+			diffFactor = nf - 18
+			adjustExternalToken = false
+		}
+		normalizationFactor = sdk.NewDec(10).Power(uint64(diffFactor))
+	}
+	return normalizationFactor, adjustExternalToken
+}
+
 func (k keeper) SetDenom(ctx sdk.Context, denom string, exp int64) {
 	wl := k.GetDenomWhitelist(ctx)
 

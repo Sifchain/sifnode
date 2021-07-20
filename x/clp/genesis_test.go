@@ -14,44 +14,44 @@ import (
 )
 
 func TestExportGenesis(t *testing.T) {
-	ctx, keeper := test.CreateTestAppClp(false)
+	ctx, app := test.CreateTestAppClp(false)
 	// pop
 	// Generate State
-	poolscount, lpCount := CreateState(ctx, keeper, t)
-	state := clp.ExportGenesis(ctx, keeper)
+	poolscount, lpCount := CreateState(ctx, app.ClpKeeper, t)
+	state := clp.ExportGenesis(ctx, app.ClpKeeper)
 	assert.Equal(t, len(state.PoolList), poolscount)
 	assert.Equal(t, len(state.LiquidityProviders), lpCount)
 
 }
 
 func TestInitGenesis(t *testing.T) {
-	ctx1, keeper1 := test.CreateTestAppClp(false)
-	ctx2, keeper2 := test.CreateTestAppClp(false)
+	ctx1, app1 := test.CreateTestAppClp(false)
+	ctx2, app2 := test.CreateTestAppClp(false)
 	// Generate State
-	poolscount, lpCount := CreateState(ctx1, keeper1, t)
-	state := clp.ExportGenesis(ctx1, keeper1)
+	poolscount, lpCount := CreateState(ctx1, app1.ClpKeeper, t)
+	state := clp.ExportGenesis(ctx1, app1.ClpKeeper)
 	assert.Equal(t, len(state.PoolList), poolscount)
 	assert.Equal(t, len(state.LiquidityProviders), lpCount)
-	state2 := clp.ExportGenesis(ctx2, keeper2)
+	state2 := clp.ExportGenesis(ctx2, app2.ClpKeeper)
 	assert.Equal(t, len(state2.PoolList), 0)
 	assert.Equal(t, len(state2.LiquidityProviders), 0)
 
-	valUpdates := clp.InitGenesis(ctx2, keeper2, state)
+	valUpdates := clp.InitGenesis(ctx2, app2.ClpKeeper, state)
 	assert.Equal(t, len(valUpdates), 0)
 
-	poollist := keeper2.GetPools(ctx2)
+	poollist := app2.ClpKeeper.GetPools(ctx2)
 	assert.Equal(t, len(poollist), poolscount)
-	lpList := keeper2.GetLiquidityProviders(ctx2)
+	lpList := app2.ClpKeeper.GetLiquidityProviders(ctx2)
 	assert.Equal(t, len(lpList), lpCount)
-	assert.Equal(t, keeper2.GetParams(ctx2).MinCreatePoolThreshold, types.DefaultMinCreatePoolThreshold)
-	assert.Equal(t, keeper2.GetParams(ctx2).MinCreatePoolThreshold, keeper1.GetParams(ctx1).MinCreatePoolThreshold)
+	assert.Equal(t, app2.ClpKeeper.GetParams(ctx2).MinCreatePoolThreshold, types.DefaultMinCreatePoolThreshold)
+	assert.Equal(t, app2.ClpKeeper.GetParams(ctx2).MinCreatePoolThreshold, app1.ClpKeeper.GetParams(ctx1).MinCreatePoolThreshold)
 }
 
 func TestValidateGenesis(t *testing.T) {
-	ctx, keeper := test.CreateTestAppClp(false)
+	ctx, app := test.CreateTestAppClp(false)
 	// Generate State
-	poolscount, lpCount := CreateState(ctx, keeper, t)
-	state := clp.ExportGenesis(ctx, keeper)
+	poolscount, lpCount := CreateState(ctx, app.ClpKeeper, t)
+	state := clp.ExportGenesis(ctx, app.ClpKeeper)
 	assert.Equal(t, len(state.PoolList), poolscount)
 	assert.Equal(t, len(state.LiquidityProviders), lpCount)
 	err := clp.ValidateGenesis(state)

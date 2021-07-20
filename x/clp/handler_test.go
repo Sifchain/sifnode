@@ -14,8 +14,8 @@ import (
 )
 
 func TestHandler(t *testing.T) {
-	ctx, keeper := test.CreateTestAppClp(false)
-	handler := clp.NewHandler(keeper)
+	ctx, app := test.CreateTestAppClp(false)
+	handler := clp.NewHandler(app.ClpKeeper, app.WhitelistKeeper)
 	res, err := handler(ctx, nil)
 	require.Error(t, err)
 	require.Nil(t, res)
@@ -23,8 +23,8 @@ func TestHandler(t *testing.T) {
 }
 
 func TestCreatePool(t *testing.T) {
-	ctx, keeper := test.CreateTestAppClp(false)
-	handler := clp.NewHandler(keeper)
+	ctx, app := test.CreateTestAppClp(false)
+	handler := clp.NewHandler(app.ClpKeeper, app.WhitelistKeeper)
 	signer := test.GenerateAddress("")
 	//Parameters for create pool
 	initialBalance := sdk.NewUintFromString("100000000000000000000") // Initial account balance for all assets created
@@ -33,16 +33,16 @@ func TestCreatePool(t *testing.T) {
 	asset := clptypes.NewAsset("eth")
 	externalCoin := sdk.NewCoin(asset.Symbol, sdk.Int(initialBalance))
 	nativeCoin := sdk.NewCoin(clptypes.NativeSymbol, sdk.Int(initialBalance))
-	_ = keeper.GetBankKeeper().AddCoins(ctx, signer, sdk.Coins{externalCoin, nativeCoin})
+	_ = app.ClpKeeper.GetBankKeeper().AddCoins(ctx, signer, sdk.Coins{externalCoin, nativeCoin})
 
-	ok := keeper.HasBalance(ctx, signer, externalCoin)
+	ok := app.ClpKeeper.HasBalance(ctx, signer, externalCoin)
 	assert.True(t, ok, "")
-	ok = keeper.HasBalance(ctx, signer, nativeCoin)
-	assert.True(t, ok, "")
-
+	ok = app.ClpKeeper.HasBalance(ctx, signer, nativeCoin)
 	assert.True(t, ok, "")
 
-	MinThreshold := sdk.NewUint(keeper.GetParams(ctx).MinCreatePoolThreshold)
+	assert.True(t, ok, "")
+
+	MinThreshold := sdk.NewUint(app.ClpKeeper.GetParams(ctx).MinCreatePoolThreshold)
 	// Will fail if we are below minimum
 	msgCreatePool := clptypes.NewMsgCreatePool(signer, asset, MinThreshold.Sub(sdk.NewUint(1)), sdk.ZeroUint())
 	res, err := handler(ctx, &msgCreatePool) //clp.handleMsgCreatePool(ctx, keeper, msgCreatePool)
@@ -68,16 +68,17 @@ func TestCreatePool(t *testing.T) {
 
 	externalCoin = sdk.NewCoin(asset.Symbol, sdk.Int(initialBalance.Sub(poolBalance)))
 	nativeCoin = sdk.NewCoin(clptypes.NativeSymbol, sdk.Int(initialBalance.Sub(poolBalance)))
-	ok = keeper.HasBalance(ctx, signer, externalCoin)
+	ok = app.ClpKeeper.HasBalance(ctx, signer, externalCoin)
 	assert.True(t, ok, "")
-	ok = keeper.HasBalance(ctx, signer, nativeCoin)
+	ok = app.ClpKeeper.HasBalance(ctx, signer, nativeCoin)
 	assert.True(t, ok, "")
 }
 
 func TestAddLiquidity(t *testing.T) {
-	ctx, keeper := test.CreateTestAppClp(false)
+	ctx, app := test.CreateTestAppClp(false)
 	signer := test.GenerateAddress("")
-	handler := clp.NewHandler(keeper)
+	clpKeeper := app.ClpKeeper
+	handler := clp.NewHandler(clpKeeper, app.WhitelistKeeper)
 	//Parameters for add liquidity
 	initialBalance := sdk.NewUintFromString("100000000000000000000") // Initial account balance for all assets created
 	poolBalance := sdk.NewUintFromString("1000000000000000000")      // Amount funded to pool , This same amount is used both for native and external asset
@@ -86,7 +87,7 @@ func TestAddLiquidity(t *testing.T) {
 	asset := clptypes.NewAsset("eth")
 	externalCoin := sdk.NewCoin(asset.Symbol, sdk.Int(initialBalance))
 	nativeCoin := sdk.NewCoin(clptypes.NativeSymbol, sdk.Int(initialBalance))
-	_ = keeper.GetBankKeeper().AddCoins(ctx, signer, sdk.Coins{externalCoin, nativeCoin})
+	_ = clpKeeper.GetBankKeeper().AddCoins(ctx, signer, sdk.Coins{externalCoin, nativeCoin})
 
 	msg := clptypes.NewMsgAddLiquidity(signer, asset, addLiquidityAmount, addLiquidityAmount)
 	res, err := handler(ctx, &msg)
@@ -104,27 +105,29 @@ func TestAddLiquidity(t *testing.T) {
 	externalCoin = sdk.NewCoin(asset.Symbol, sdk.Int(initialBalance.Sub(addLiquidityAmount).Sub(addLiquidityAmount)))
 	nativeCoin = sdk.NewCoin(clptypes.NativeSymbol, sdk.Int(initialBalance.Sub(addLiquidityAmount).Sub(sdk.ZeroUint())))
 
-	ok := keeper.HasBalance(ctx, signer, externalCoin)
+	ok := clpKeeper.HasBalance(ctx, signer, externalCoin)
 	assert.True(t, ok, "")
-	ok = keeper.HasBalance(ctx, signer, nativeCoin)
+	ok = clpKeeper.HasBalance(ctx, signer, nativeCoin)
 	assert.True(t, ok, "")
 
 	signer2 := test.GenerateAddress(test.AddressKey2)
-	_ = keeper.GetBankKeeper().AddCoins(ctx, signer2, sdk.Coins{externalCoin, nativeCoin})
+	_ = clpKeeper.GetBankKeeper().AddCoins(ctx, signer2, sdk.Coins{externalCoin, nativeCoin})
 	msg = clptypes.NewMsgAddLiquidity(signer2, asset, addLiquidityAmount, addLiquidityAmount)
 	res, err = handler(ctx, &msg)
 	require.NoError(t, err)
 	require.NotNil(t, res)
 
-	lpList := keeper.GetLiquidityProvidersForAsset(ctx, asset)
+	lpList := clpKeeper.GetLiquidityProvidersForAsset(ctx, asset)
 	assert.Equal(t, 2, len(lpList))
 
 }
 
 func TestAddLiquidity_LargeValue(t *testing.T) {
-	ctx, keeper := test.CreateTestAppClp(false)
+	ctx, app := test.CreateTestAppClp(false)
 	signer := test.GenerateAddress("")
-	handler := clp.NewHandler(keeper)
+	clpKeeper := app.ClpKeeper
+	handler := clp.NewHandler(clpKeeper, app.WhitelistKeeper)
+
 	//Parameters for add liquidity
 	poolBalanceRowan := sdk.NewUintFromString("162057826929020210025062784")
 	poolBalanceCacoin := sdk.NewUintFromString("1000000000000000000000") // Amount funded to pool , This same amount is used both for native and external asset
@@ -134,7 +137,7 @@ func TestAddLiquidity_LargeValue(t *testing.T) {
 	asset := clptypes.NewAsset("cacoin")
 	externalCoin := sdk.NewCoin(asset.Symbol, sdk.Int(poolBalanceCacoin).Add(sdk.Int(addLiquidityAmountCaCoin)))
 	nativeCoin := sdk.NewCoin(clptypes.NativeSymbol, sdk.Int(poolBalanceRowan).Add(sdk.Int(addLiquidityAmountRowan)))
-	_ = keeper.GetBankKeeper().AddCoins(ctx, signer, sdk.Coins{externalCoin, nativeCoin})
+	_ = clpKeeper.GetBankKeeper().AddCoins(ctx, signer, sdk.Coins{externalCoin, nativeCoin})
 
 	msgCreatePool := clptypes.NewMsgCreatePool(signer, asset, poolBalanceRowan, poolBalanceCacoin)
 	res, err := handler(ctx, &msgCreatePool)
@@ -149,10 +152,11 @@ func TestAddLiquidity_LargeValue(t *testing.T) {
 }
 
 func TestRemoveLiquidity(t *testing.T) {
-	ctx, keeper := test.CreateTestAppClp(false)
+	ctx, app := test.CreateTestAppClp(false)
 	signer := test.GenerateAddress("")
 	newLP := test.GenerateAddress(test.AddressKey2)
-	handler := clp.NewHandler(keeper)
+	clpKeeper := app.ClpKeeper
+	handler := clp.NewHandler(clpKeeper, app.WhitelistKeeper)
 	externalDenom := "eth"
 	initialBalance := sdk.NewUintFromString("100000000000000000000000") // Initial account balance for all assets created
 	poolBalance := sdk.NewUintFromString("10000000000000000000")        // Amount funded to pool , This same amount is used both for native and external asset
@@ -163,8 +167,8 @@ func TestRemoveLiquidity(t *testing.T) {
 
 	externalCoin := sdk.NewCoin(asset.Symbol, sdk.Int(initialBalance))
 	nativeCoin := sdk.NewCoin(clptypes.NativeSymbol, sdk.Int(initialBalance))
-	_ = keeper.GetBankKeeper().AddCoins(ctx, signer, sdk.Coins{externalCoin, nativeCoin})
-	_ = keeper.GetBankKeeper().AddCoins(ctx, newLP, sdk.Coins{externalCoin, nativeCoin})
+	_ = clpKeeper.GetBankKeeper().AddCoins(ctx, signer, sdk.Coins{externalCoin, nativeCoin})
+	_ = clpKeeper.GetBankKeeper().AddCoins(ctx, newLP, sdk.Coins{externalCoin, nativeCoin})
 
 	msg := clptypes.NewMsgRemoveLiquidity(signer, asset, wBasis, asymmetry)
 	res, err := handler(ctx, &msg)
@@ -177,49 +181,49 @@ func TestRemoveLiquidity(t *testing.T) {
 	res, err = handler(ctx, &msgCreatePool)
 	require.NoError(t, err)
 	require.NotNil(t, res)
-	coins := CalculateWithdraw(t, keeper, ctx, asset, signer.String(), wBasis.String(), asymmetry)
+	coins := CalculateWithdraw(t, clpKeeper, ctx, asset, signer.String(), wBasis.String(), asymmetry)
 	msg = clptypes.NewMsgRemoveLiquidity(signer, asset, wBasis, asymmetry)
 	res, err = handler(ctx, &msg)
 	require.NoError(t, err)
 	require.NotNil(t, res)
 	for _, coin := range coins {
-		ok := keeper.HasBalance(ctx, signer, coin)
+		ok := clpKeeper.HasBalance(ctx, signer, coin)
 		assert.True(t, ok, "")
 	}
 
 	wBasis = sdk.NewInt(1000)
 	asymmetry = sdk.NewInt(10000)
-	coins = CalculateWithdraw(t, keeper, ctx, asset, signer.String(), wBasis.String(), asymmetry)
+	coins = CalculateWithdraw(t, clpKeeper, ctx, asset, signer.String(), wBasis.String(), asymmetry)
 	msg = clptypes.NewMsgRemoveLiquidity(signer, asset, wBasis, asymmetry)
 	res, err = handler(ctx, &msg)
 	require.NoError(t, err)
 	require.NotNil(t, res)
 	for _, coin := range coins {
-		ok := keeper.HasBalance(ctx, signer, coin)
+		ok := clpKeeper.HasBalance(ctx, signer, coin)
 		assert.True(t, ok, "")
 	}
 
 	wBasis = sdk.NewInt(1000)
 	asymmetry = sdk.ZeroInt()
-	coins = CalculateWithdraw(t, keeper, ctx, asset, signer.String(), wBasis.String(), asymmetry)
+	coins = CalculateWithdraw(t, clpKeeper, ctx, asset, signer.String(), wBasis.String(), asymmetry)
 	msg = clptypes.NewMsgRemoveLiquidity(signer, asset, wBasis, asymmetry)
 	res, err = handler(ctx, &msg)
 	require.NoError(t, err)
 	require.NotNil(t, res)
 	for _, coin := range coins {
-		ok := keeper.HasBalance(ctx, signer, coin)
+		ok := clpKeeper.HasBalance(ctx, signer, coin)
 		assert.True(t, ok, "")
 	}
 
 	wBasis = sdk.NewInt(1000)
 	asymmetry = sdk.NewInt(-10000)
-	coins = CalculateWithdraw(t, keeper, ctx, asset, signer.String(), wBasis.String(), asymmetry)
+	coins = CalculateWithdraw(t, clpKeeper, ctx, asset, signer.String(), wBasis.String(), asymmetry)
 	msg = clptypes.NewMsgRemoveLiquidity(signer, asset, wBasis, asymmetry)
 	res, err = handler(ctx, &msg)
 	require.NoError(t, err)
 	require.NotNil(t, res)
 	for _, coin := range coins {
-		ok := keeper.HasBalance(ctx, signer, coin)
+		ok := clpKeeper.HasBalance(ctx, signer, coin)
 		assert.True(t, ok, "")
 	}
 
@@ -252,9 +256,10 @@ func TestRemoveLiquidity(t *testing.T) {
 }
 
 func TestSwap(t *testing.T) {
-	ctx, keeper := test.CreateTestAppClp(false)
+	ctx, app := test.CreateTestAppClp(false)
 	signer := test.GenerateAddress("")
-	handler := clp.NewHandler(keeper)
+	clpKeeper := app.ClpKeeper
+	handler := clp.NewHandler(clpKeeper, app.WhitelistKeeper)
 	assetEth := clptypes.NewAsset("eth")
 	assetDash := clptypes.NewAsset("dash")
 
@@ -270,8 +275,8 @@ func TestSwap(t *testing.T) {
 	externalCoin2 := sdk.NewCoin(assetDash.Symbol, sdk.Int(initialBalance))
 	nativeCoin := sdk.NewCoin(clptypes.NativeSymbol, sdk.Int(initialBalance))
 	// Signer is given ETH and RWN (Signer will creat pool and become LP)
-	_ = keeper.GetBankKeeper().AddCoins(ctx, signer, sdk.Coins{externalCoin1, nativeCoin})
-	_ = keeper.GetBankKeeper().AddCoins(ctx, signer, sdk.Coins{externalCoin2})
+	_ = clpKeeper.GetBankKeeper().AddCoins(ctx, signer, sdk.Coins{externalCoin1, nativeCoin})
+	_ = clpKeeper.GetBankKeeper().AddCoins(ctx, signer, sdk.Coins{externalCoin2})
 
 	msg := clptypes.NewMsgSwap(signer, assetEth, assetDash, sdk.NewUint(1), sdk.NewUint(10))
 	res, err := handler(ctx, &msg)
@@ -286,7 +291,7 @@ func TestSwap(t *testing.T) {
 	res, err = handler(ctx, &msgCreatePool)
 	require.NoError(t, err)
 	require.NotNil(t, res)
-	receivedAmount := CalculateSwapReceived(t, keeper, ctx, assetEth, assetDash, swapSentAssetETH)
+	receivedAmount := CalculateSwapReceived(t, clpKeeper, ctx, assetEth, assetDash, swapSentAssetETH)
 
 	msg = clptypes.NewMsgSwap(signer, assetEth, assetDash, swapSentAssetETH, receivedAmount)
 	res, err = handler(ctx, &msg)
@@ -300,11 +305,11 @@ func TestSwap(t *testing.T) {
 	// Created one pool and Received swap amount
 	CoinsExt2 := sdk.NewCoin(assetDash.Symbol, sdk.Int(initialBalance.Sub(sdk.Uint(sdk.Int(poolBalance))).Add(sdk.Uint(sdk.Int(receivedAmount)))))
 
-	ok := keeper.HasBalance(ctx, signer, CoinsExt1)
+	ok := clpKeeper.HasBalance(ctx, signer, CoinsExt1)
 	assert.True(t, ok, "")
-	ok = keeper.HasBalance(ctx, signer, CoinsNative)
+	ok = clpKeeper.HasBalance(ctx, signer, CoinsNative)
 	assert.True(t, ok, "")
-	ok = keeper.HasBalance(ctx, signer, CoinsExt2)
+	ok = clpKeeper.HasBalance(ctx, signer, CoinsExt2)
 	assert.True(t, ok, "")
 
 	msg = clptypes.NewMsgSwap(signer, assetEth, assetDash, swapSentAssetETH, swapSentAssetETH)
@@ -315,10 +320,10 @@ func TestSwap(t *testing.T) {
 }
 
 func TestDecommisionPool(t *testing.T) {
-	ctx, keeper := test.CreateTestAppClp(false)
+	ctx, app := test.CreateTestAppClp(false)
 	signer := test.GenerateAddress("")
-
-	handler := clp.NewHandler(keeper)
+	clpKeeper := app.ClpKeeper
+	handler := clp.NewHandler(clpKeeper, app.WhitelistKeeper)
 
 	//Parameters for Decommission
 	initialBalance := sdk.NewUintFromString("100000000000000000000") // Initial account balance for all assets created
@@ -328,7 +333,7 @@ func TestDecommisionPool(t *testing.T) {
 	externalCoin := sdk.NewCoin(asset.Symbol, sdk.Int(initialBalance))
 	nativeCoin := sdk.NewCoin(clptypes.NativeSymbol, sdk.Int(initialBalance))
 	// Signer is given ETH and RWN ( Signer will creat pool and become LP)
-	_ = keeper.GetBankKeeper().AddCoins(ctx, signer, sdk.Coins{externalCoin, nativeCoin})
+	_ = clpKeeper.GetBankKeeper().AddCoins(ctx, signer, sdk.Coins{externalCoin, nativeCoin})
 
 	msgCreatePool := clptypes.NewMsgCreatePool(signer, asset, poolBalance, poolBalance)
 	res, err := handler(ctx, &msgCreatePool)
@@ -339,9 +344,9 @@ func TestDecommisionPool(t *testing.T) {
 	lpNewBalance := initialBalance.Sub(sdk.Uint(sdk.Int(poolBalance)))
 	lpCoinsExt := sdk.NewCoin(asset.Symbol, sdk.Int(lpNewBalance))
 	lpCoinsNative := sdk.NewCoin(clptypes.NativeSymbol, sdk.Int(lpNewBalance))
-	ok := keeper.HasBalance(ctx, signer, lpCoinsExt)
+	ok := clpKeeper.HasBalance(ctx, signer, lpCoinsExt)
 	assert.True(t, ok, "")
-	ok = keeper.HasBalance(ctx, signer, lpCoinsNative)
+	ok = clpKeeper.HasBalance(ctx, signer, lpCoinsNative)
 	assert.True(t, ok, "")
 
 	msgrm := clptypes.NewMsgRemoveLiquidity(signer, asset, sdk.NewInt(5001), sdk.NewInt(1))
@@ -355,7 +360,7 @@ func TestDecommisionPool(t *testing.T) {
 	require.Error(t, err)
 
 	v := test.GenerateWhitelistAddress("")
-	keeper.SetClpWhiteList(ctx, []sdk.AccAddress{v})
+	clpKeeper.SetClpWhiteList(ctx, []sdk.AccAddress{v})
 
 	msg = clptypes.NewMsgDecommissionPool(signer, asset.Symbol)
 	res, err = handler(ctx, &msg)
@@ -372,9 +377,9 @@ func TestDecommisionPool(t *testing.T) {
 
 	lpCoinsExt = sdk.NewCoin(asset.Symbol, sdk.Int(lpNewBalance))
 	lpCoinsNative = sdk.NewCoin(clptypes.NativeSymbol, sdk.Int(lpNewBalance))
-	ok = keeper.HasBalance(ctx, signer, lpCoinsExt)
+	ok = clpKeeper.HasBalance(ctx, signer, lpCoinsExt)
 	assert.True(t, ok, "")
-	ok = keeper.HasBalance(ctx, signer, lpCoinsNative)
+	ok = clpKeeper.HasBalance(ctx, signer, lpCoinsNative)
 	assert.True(t, ok, "")
 }
 

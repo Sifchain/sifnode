@@ -18,6 +18,7 @@ type BankKeeper interface {
 type Keeper interface {
 	IsAdminAccount(ctx sdk.Context, adminAccount sdk.AccAddress) bool
 	GetDenom(ctx sdk.Context, denom string) DenomWhitelistEntry
+	GetNormalizationFactor(ctx sdk.Context, denom string) (sdk.Dec, bool)
 	SetDenom(ctx sdk.Context, denom string, exp int64)
 	InitGenesis(ctx sdk.Context, state GenesisState) []abci.ValidatorUpdate
 	ExportGenesis(ctx sdk.Context) *GenesisState
