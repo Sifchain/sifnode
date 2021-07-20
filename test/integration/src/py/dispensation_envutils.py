@@ -41,8 +41,7 @@ def send_sample_rowan(from_address, to_address, amount, keyring_backend, chain_i
         keyring_backend_entry,
         sifchain_fees_entry,
         f"--chain-id {chain_id}",
-        f"--yes",
-        # f"{offline}"
+        f"--yes"
     ])
     json_str = get_shell_output_json(cmd)
     assert (json_str.get("code", 0) == 0)
@@ -295,6 +294,7 @@ def query_created_claim(claimType):
     ])
     json_str = get_shell_output_json(cmd)
     return json_str
+
 
 #CODE TO CREATE A NEW CLAIM
 def create_claim(

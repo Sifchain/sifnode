@@ -64,17 +64,16 @@ def test_create_online_singlekey_txn(claimType):
     distributor = distribution_msg['distributor']
     authorized_runner = distribution_msg['authorized_runner']
     distribution_type = distribution_msg['distribution_type']
-
-    assert str(msg_type) == '/sifnode.dispensation.v1.MsgCreateDistribution'
-    assert str(distributor) == distributor_address
-    assert str(authorized_runner) == runner_address
-    assert str(distribution_type) in ['DISTRIBUTION_TYPE_VALIDATOR_SUBSIDY', 'DISTRIBUTION_TYPE_LIQUIDITY_MINING']
-
     distribution_msg_keys = list(distribution_msg.keys())
+
     assert distribution_msg_keys[0] == '@type'
     assert distribution_msg_keys[1] == 'distributor'
     assert distribution_msg_keys[2] == 'authorized_runner'
     assert distribution_msg_keys[3] == 'distribution_type'
+    assert str(msg_type) == '/sifnode.dispensation.v1.MsgCreateDistribution'
+    assert str(distributor) == distributor_address
+    assert str(authorized_runner) == runner_address
+    assert str(distribution_type) in ['DISTRIBUTION_TYPE_VALIDATOR_SUBSIDY', 'DISTRIBUTION_TYPE_LIQUIDITY_MINING']
 
     try:
         os.remove('signed.json')
@@ -125,11 +124,10 @@ def test_insufficient_funds_dispensation_txn(claimType):
 
     # ACTUAL DISPENSATION TXN; TXN RAISES AN EXCEPTION ABOUT INSUFFICIENT FUNDS, CAPTURED HERE AND TEST IS MARKED PASS
     with pytest.raises(Exception) as execinfo:
-        txhash = str(
-            (create_online_singlekey_txn_with_runner(claimType, runner_address, distributor_address, chain_id)))
-        assert str(
-            execinfo.value) == f"for address  : {distributor_address}: Failed in collecting funds for airdrop: failed to execute message; message index: 0: failed to simulate tx"
+        txhash = str((create_online_singlekey_txn_with_runner(claimType, runner_address, distributor_address, chain_id)))
+        assert str(execinfo.value) == f"for address  : {distributor_address}: Failed in collecting funds for airdrop: failed to execute message; message index: 0: failed to simulate tx"
         logging.info(f"Insufficient Funds Message = {txhash}")
+
     try:
         os.remove('signed.json')
         os.remove('sample.json')
@@ -181,8 +179,8 @@ def test_run_online_singlekey_txn(claimType):
     # READ OUTPUT.JSON WITH CLAIMING ADDRESSES AND AMOUNT
     with open("output.json", "r") as f:
         data = f.read()
-    d = json.loads(data)
 
+    d = json.loads(data)
     one_claiming_address = str(d['Output'][0]['address'])
     logging.info(f"one claiming address = {one_claiming_address}")
 
@@ -278,29 +276,21 @@ def test_run_online_singlekey_txn(claimType):
 
     total_amount_distributed = sum(int(i) for i in amount_distributed)
     recipient_with_respective_distributed_amount = dict(zip(recipient_dispensation_addresses, amount_distributed))
-
-    logging.info(
-        f"recipients and their respective distributed amounts = {recipient_with_respective_distributed_amount}")
+    logging.info(f"recipients and their respective distributed amounts = {recipient_with_respective_distributed_amount}")
     logging.info(f"total amount distributed = {total_amount_distributed}")
-
+    claimed_amount_single_recipient = int(recipient_with_respective_distributed_amount[one_claiming_address])
     sender_final_balance = int(balance_check(distributor_address, currency))
     recipient_address_final_balance = int(balance_check(one_claiming_address, currency))
-
     logging.info(f"sender initial balance = {sender_initial_balance}")
     logging.info(f"sender final balance = {sender_final_balance}")
-
-    claimed_amount_single_recipient = int(recipient_with_respective_distributed_amount[one_claiming_address])
 
     # BALANCES ASSERTIONS
     assert int(total_amount_distributed) == int((sender_initial_balance - sender_final_balance) - int(fee))
     assert int(claimed_amount_single_recipient) == (recipient_address_final_balance - claiming_address_initial_balance)
-    logging.info(
-        f"balance transferred including fee from sender's address  = {(sender_initial_balance - sender_final_balance)}")
+    logging.info(f"balance transferred including fee from sender's address  = {(sender_initial_balance - sender_final_balance)}")
     logging.info(f"total amount distributed  = {total_amount_distributed}")
-
     logging.info(f"amount claimed by one recipient  = {claimed_amount_single_recipient}")
-    logging.info(
-        f"balance transferred in one recipient address  = {(recipient_address_final_balance - claiming_address_initial_balance)}")
+    logging.info(f"balance transferred in one recipient address  = {(recipient_address_final_balance - claiming_address_initial_balance)}")
 
     try:
         os.remove('signed.json')

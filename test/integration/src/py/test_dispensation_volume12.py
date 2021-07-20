@@ -139,9 +139,9 @@ def test_run_online_morethan10distribution_txn(claimType):
     runresp2 = query_block_claim(runtxnhash2)
     logging.info(f"response from block for run dispensation = {runresp2}")
 
-    rundistributiontag1 = runresp1['logs'][0]['events'][2]['type']
-    rundistname1 = runresp1['logs'][0]['events'][2]['attributes'][0]['value']
-    runrunneraddress1 = runresp1['logs'][0]['events'][2]['attributes'][1]['value']
+    rundistributiontag1 = runresp1['logs'][0]['events'][10]['type']
+    rundistname1 = runresp1['logs'][0]['events'][10]['attributes'][0]['value']
+    runrunneraddress1 = runresp1['logs'][0]['events'][10]['attributes'][1]['value']
 
     assert str(rundistributiontag1) == 'distribution_run'
     assert str(rundistname1) == distribution_name
@@ -210,8 +210,7 @@ def test_run_online_morethan10distribution_txn(claimType):
     assert sortedrundistreceiverlist1[9] == sorted_dest_address_list[9]
 
     recipient_with_respective_distributed_amount = dict(zip(recipient_dispensation_addresses, amount_distributed))
-    logging.info(
-        f"recipients and their respective distributed amounts = {recipient_with_respective_distributed_amount}")
+    logging.info(f"recipients and their respective distributed amounts = {recipient_with_respective_distributed_amount}")
     logging.info(f"total amount distributed = {total_amount_distributed}")
     claimed_amount_single_recipient = int(recipient_with_respective_distributed_amount[one_claiming_address])
     sender_final_balance = int(balance_check(distributor_address, currency))
@@ -222,9 +221,7 @@ def test_run_online_morethan10distribution_txn(claimType):
     # BALANCES ASSERTIONS
     assert int(total_amount_distributed) == int((sender_initial_balance - sender_final_balance) - int(fee))
     assert int(claimed_amount_single_recipient) == (recipient_address_final_balance - claiming_address_initial_balance)
-    logging.info(
-        f"balance transferred including fee from sender's address  = {(sender_initial_balance - sender_final_balance)}")
+    logging.info(f"balance transferred including fee from sender's address  = {(sender_initial_balance - sender_final_balance)}")
     logging.info(f"total amount distributed  = {total_amount_distributed}")
     logging.info(f"amount claimed by one recipient  = {claimed_amount_single_recipient}")
-    logging.info(
-        f"balance transferred in one recipient address  = {(recipient_address_final_balance - claiming_address_initial_balance)}")
+    logging.info(f"balance transferred in one recipient address  = {(recipient_address_final_balance - claiming_address_initial_balance)}")
