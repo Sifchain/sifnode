@@ -3,10 +3,11 @@ package keeper
 import (
 	"context"
 	"fmt"
+	"strconv"
+
 	dispensationUtils "github.com/Sifchain/sifnode/x/dispensation/utils"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/pkg/errors"
-	"strconv"
 
 	"github.com/Sifchain/sifnode/x/dispensation/types"
 )
@@ -29,7 +30,7 @@ func (srv msgServer) CreateDistribution(ctx context.Context,
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	distributionName := fmt.Sprintf("%d_%s", sdkCtx.BlockHeight(), msg.Distributor)
 	// Verify if distribution already exists
-	err := srv.Keeper.VerifyAndSetDistribution(sdkCtx, distributionName, msg.DistributionType)
+	err := srv.Keeper.VerifyAndSetDistribution(sdkCtx, distributionName, msg.DistributionType, msg.AuthorizedRunner)
 	if err != nil {
 		return nil, err
 	}

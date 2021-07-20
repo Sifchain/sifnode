@@ -16,7 +16,7 @@ podSecurityContext: {}
 securityContext: {}
 
 image:
-  repository: sifchain/sifnodecli
+  repository: sifchain/sifnoded
   pullPolicy: Always
   tag: "testnet"
 

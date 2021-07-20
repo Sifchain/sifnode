@@ -60,11 +60,11 @@ source payments/payment-20210420
 3. Transfer the funds:
 
 ```
-sifnodecli tx send $treasury_address $recipient $amount --node tcp://rpc.sifchain.finance:80 --gas-prices 0.5rowan --keyring-backend file --chain-id sifchain
+sifnoded tx send $treasury_address $recipient $amount --node tcp://rpc.sifchain.finance:80 --gas-prices 0.5rowan --keyring-backend file --chain-id sifchain
 ```
 
 4. Verify that the transfer was successful:
 
 ```
-sifnodecli q account $recipient --node tcp://rpc.sifchain.finance:80 --trust-node
+sifnoded q account $recipient --node tcp://rpc.sifchain.finance:80 --trust-node
 ```

@@ -13,6 +13,7 @@ func RegisterLegacyAminoCodec(cdc *codec.LegacyAmino) {
 	cdc.RegisterConcrete(&MsgCreateDistribution{}, "dispensation/MsgCreateDistribution", nil)
 	cdc.RegisterConcrete(&Distribution{}, "dispensation/Distribution", nil)
 	cdc.RegisterConcrete(&MsgCreateUserClaim{}, "dispensation/claim", nil)
+	cdc.RegisterConcrete(&MsgRunDistribution{}, "dispensation/MsgRunDistribution", nil)
 }
 
 var (
@@ -23,6 +24,7 @@ var (
 func init() {
 	RegisterLegacyAminoCodec(amino)
 	cryptocodec.RegisterCrypto(amino)
+	amino.Seal()
 }
 
 func RegisterInterfaces(registry types.InterfaceRegistry) {
@@ -30,6 +32,7 @@ func RegisterInterfaces(registry types.InterfaceRegistry) {
 		(*sdk.Msg)(nil),
 		&MsgCreateDistribution{},
 		&MsgCreateUserClaim{},
+		&MsgRunDistribution{},
 	)
 
 	msgservice.RegisterMsgServiceDesc(registry, &_Msg_serviceDesc)

@@ -9,7 +9,7 @@ def sifchain_cli_credentials_for_test(key: str) -> SifchaincliCredentials:
         keyring_passphrase="",
         keyring_backend="test",
         from_key=key,
-        sifnodecli_homedir=f"""{get_required_env_var("HOME")}/.sifnoded"""
+        sifnoded_homedir=f"""{get_required_env_var("HOME")}/.sifnoded"""
     )
 
 

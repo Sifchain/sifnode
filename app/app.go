@@ -314,6 +314,7 @@ func NewSifApp(
 	// will be skipped even if we have a update proposal for it
 	skipUpgradeHeights[0] = true
 	app.UpgradeKeeper = upgradekeeper.NewKeeper(skipUpgradeHeights, keys[upgradetypes.StoreKey], appCodec, DefaultNodeHome)
+	SetupHandlers(app)
 
 	// Create IBC Keeper
 	app.IBCKeeper = ibckeeper.NewKeeper(

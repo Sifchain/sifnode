@@ -35,15 +35,14 @@ func (m MsgCreateDistribution) ValidateBasic() error {
 	if len(m.Output) == 0 {
 		return errors.Wrapf(ErrInvalid, "Outputlist cannot be empty")
 	}
-	// Validator distributor
 	_, err := sdk.AccAddressFromBech32(m.Distributor)
 	if err != nil {
-		return errors.Wrapf(ErrInvalid, "Invalid Distributor Address")
+		return errors.Wrapf(ErrInvalid, "Invalid Distributor Address : %s", m.Distributor)
 	}
 	// Validator runner
 	_, err = sdk.AccAddressFromBech32(m.AuthorizedRunner)
 	if err != nil {
-		return errors.Wrapf(ErrInvalid, "Invalid Authorized Address")
+		return errors.Wrapf(ErrInvalid, "Invalid Authorized Address : %s", m.AuthorizedRunner)
 	}
 	// Validate individual out records
 	for _, out := range m.Output {
@@ -134,7 +133,7 @@ func (m MsgRunDistribution) Type() string {
 
 func (m MsgRunDistribution) ValidateBasic() error {
 	//Validate DistributionType
-	_, ok := GetDistributionTypeFromShortString(m.DistributionType.String())
+	_, ok := IsValidDistributionType(m.DistributionType.String())
 	if !ok {
 		return sdkerrors.Wrap(ErrInvalid, "Invalid Distribution Type")
 	}

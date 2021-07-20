@@ -45,11 +45,26 @@ func GetCmdCreatePool() *cobra.Command {
 				return err
 			}
 
-			asset := types.NewAsset(viper.GetString(FlagAssetSymbol))
-			externalAmount := viper.GetString(FlagExternalAssetAmount)
-			nativeAmount := viper.GetString(FlagNativeAssetAmount)
+			flags := cmd.Flags()
+
+			assetSymbol, err := flags.GetString(FlagAssetSymbol)
+			if err != nil {
+				return err
+			}
+
+			externalAmount, err := flags.GetString(FlagExternalAssetAmount)
+			if err != nil {
+				return err
+			}
+
+			nativeAmount, err := flags.GetString(FlagNativeAssetAmount)
+			if err != nil {
+				return err
+			}
+
 			signer := clientCtx.GetFromAddress()
 
+			asset := types.NewAsset(assetSymbol)
 			msg := types.NewMsgCreatePool(signer, asset, sdk.NewUintFromString(nativeAmount), sdk.NewUintFromString(externalAmount))
 			if err := msg.ValidateBasic(); err != nil {
 				return err
