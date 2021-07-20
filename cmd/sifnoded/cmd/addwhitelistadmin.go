@@ -23,9 +23,8 @@ func AddGenesisWhitelisterAdminCmd(defaultNodeHome string) *cobra.Command {
 		Use:   "add-genesis-whitelister-admin [address_or_key_name]",
 		Short: "Add a genesis account to genesis.json that has permission to edit token whitelist.",
 		Long: `Add a genesis account to genesis.json. The provided account must specify
-the account address or key name and a list of initial coins. If a key name is given,
-the address will be looked up in the local Keybase. The list of initial tokens must
-contain valid denominations. Accounts may optionally be supplied with vesting parameters.
+the account address or key name. If a key name is given,
+the address will be looked up in the local Keybase.
 `,
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
