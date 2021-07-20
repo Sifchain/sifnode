@@ -1,0 +1,20 @@
+syntax = "proto3";
+package sifnode.whitelist.v1;
+
+import "gogoproto/gogo.proto";
+
+option go_package = "github.com/Sifchain/sifnode/x/whitelist/types";
+
+service Msg {
+  rpc UpdateWhitelist(MsgUpdateWhitelist) returns (MsgUpdateWhitelistResponse) {}
+}
+
+message MsgUpdateWhitelist {
+  string from = 1;
+  string denom = 2;
+  int64 decimals = 3;
+}
+
+message MsgUpdateWhitelistResponse {
+
+}
