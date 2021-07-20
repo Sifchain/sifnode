@@ -302,6 +302,12 @@ describe("Security Test", function () {
     });
 
     it("should not be able to createNewBridgeToken as a validator if a bridgetoken with the same source address already exists", async function () {
+      // assert that the cosmos bridge token has not been created
+      let bridgeToken = await state.cosmosBridge.sourceAddressToDestinationAddress(
+        state.token1.address
+      );
+      expect(bridgeToken).to.be.equal(state.ethereumToken);
+
       await state.cosmosBridge.connect(userOne).createNewBridgeToken(
         "atom",
         "atom",
@@ -309,6 +315,13 @@ describe("Security Test", function () {
         18,
         1
       );
+
+      // now assert that the bridge token has been created
+      bridgeToken = await state.cosmosBridge.sourceAddressToDestinationAddress(
+        state.token1.address
+      );
+      expect(bridgeToken).to.not.be.equal(state.ethereumToken);
+
       await expect(
         state.cosmosBridge.connect(userOne).createNewBridgeToken(
           "atom",
