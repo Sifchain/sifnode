@@ -3,6 +3,9 @@ import "@nomiclabs/hardhat-ethers"
 import "@typechain/hardhat"
 import "reflect-metadata"; // needed by tsyringe
 import {HardhatUserConfig} from "hardhat/config";
+require('solidity-coverage');
+require("hardhat-gas-reporter");
+require('hardhat-contract-sizer');
 
 const config:HardhatUserConfig ={
     networks: {
