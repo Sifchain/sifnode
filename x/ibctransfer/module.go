@@ -19,6 +19,8 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+
+	whitelisttypes "github.com/Sifchain/sifnode/x/whitelist/types"
 )
 
 // Type check to ensure the interface is properly implemented
@@ -29,7 +31,7 @@ var (
 )
 
 // AppModuleBasic defines the basic application module.
-type AppModuleBasic struct{
+type AppModuleBasic struct {
 	cosmosAppModule transfer.AppModule
 }
 
@@ -82,6 +84,7 @@ func (am AppModuleBasic) GetQueryCmd() *cobra.Command {
 // AppModule implements an application module for the dispensation module.
 type AppModule struct {
 	AppModuleBasic
+	whitelistKeeper whitelisttypes.Keeper
 	cdc             codec.BinaryMarshaler
 }
 
@@ -110,7 +113,7 @@ func (am AppModule) OnChanCloseConfirm(ctx sdk.Context, portID, channelID string
 }
 
 func (am AppModule) OnRecvPacket(ctx sdk.Context, packet types.Packet) (*sdk.Result, []byte, error) {
-	return OnRecvPacketWhiteListed(ctx, am.cosmosAppModule, packet)
+	return OnRecvPacketWhiteListed(ctx, am.cosmosAppModule, am.whitelistKeeper, packet)
 }
 
 func (am AppModule) OnAcknowledgementPacket(ctx sdk.Context, packet types.Packet, acknowledgement []byte) (*sdk.Result, error) {
@@ -121,11 +124,12 @@ func (am AppModule) OnTimeoutPacket(ctx sdk.Context, packet types.Packet) (*sdk.
 	return am.cosmosAppModule.OnTimeoutPacket(ctx, packet)
 }
 
-func NewAppModule(keeper sdktransferkeeper.Keeper, cdc codec.BinaryMarshaler) AppModule {
+func NewAppModule(keeper sdktransferkeeper.Keeper, whitelistKeeper whitelisttypes.Keeper, cdc codec.BinaryMarshaler) AppModule {
 	return AppModule{
-		AppModuleBasic:  AppModuleBasic{
+		AppModuleBasic: AppModuleBasic{
 			cosmosAppModule: transfer.NewAppModule(keeper),
 		},
+		whitelistKeeper: whitelistKeeper,
 		cdc:             cdc,
 	}
 }

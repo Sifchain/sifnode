@@ -342,7 +342,7 @@ func NewSifApp(
 		app.IBCKeeper.ChannelKeeper, &app.IBCKeeper.PortKeeper,
 		app.AccountKeeper, app.BankKeeper, scopedTransferKeeper,
 	)
-	transferModule := ibctransferoverride.NewAppModule(app.TransferKeeper, appCodec)
+	transferModule := ibctransferoverride.NewAppModule(app.TransferKeeper, app.WhitelistKeeper, appCodec)
 
 	// NOTE: the IBC mock keeper and application module is used only for testing core IBC. Do
 	// note replicate if you do not need to test core IBC or light clients.

@@ -6,11 +6,14 @@ import (
 	transfer "github.com/cosmos/cosmos-sdk/x/ibc/applications/transfer"
 	transfertypes "github.com/cosmos/cosmos-sdk/x/ibc/applications/transfer/types"
 	channeltypes "github.com/cosmos/cosmos-sdk/x/ibc/core/04-channel/types"
+
+	whitelisttypes "github.com/Sifchain/sifnode/x/whitelist/types"
 )
 
 func OnRecvPacketWhiteListed(
 	ctx sdk.Context,
 	sdkAppModule transfer.AppModule,
+	whitelistKeeper whitelisttypes.Keeper,
 	packet channeltypes.Packet,
 ) (*sdk.Result, []byte, error) {
 
@@ -19,20 +22,20 @@ func OnRecvPacketWhiteListed(
 		return nil, nil, sdkerrors.Wrapf(sdkerrors.ErrUnknownRequest, "cannot unmarshal ICS-20 transfer packet data: %s", err.Error())
 	}
 
-	if !isRecvPacketAllowed(ctx, packet, data) {
+	if !isRecvPacketAllowed(ctx, whitelistKeeper, packet, data) {
 		return nil, nil, sdkerrors.Wrapf(sdkerrors.ErrInvalidCoins, "denom not on whitelist")
 	}
 
 	return sdkAppModule.OnRecvPacket(ctx, packet)
 }
 
-func isRecvPacketAllowed(ctx sdk.Context,
+func isRecvPacketAllowed(ctx sdk.Context, whitelistKeeper whitelisttypes.Keeper,
 	packet channeltypes.Packet, data transfertypes.FungibleTokenPacketData) bool {
 
 	isReturning := IsRecvPacketReturning(packet, data)
 
 	denom := GetMintedDenomFromPacket(packet, data)
-	isWhitelisted := IsWhitelisted(ctx, denom)
+	isWhitelisted := IsWhitelisted(ctx, whitelistKeeper, denom)
 
 	if isReturning || isWhitelisted {
 		return true
@@ -93,7 +96,7 @@ func IsRecvPacketReturning(packet channeltypes.Packet, data transfertypes.Fungib
 	return false
 }
 
-func IsWhitelisted(ctx sdk.Context, denom string) bool {
+func IsWhitelisted(ctx sdk.Context, whitelistKeeper whitelisttypes.Keeper, denom string) bool {
 	// In the case that token did not originate on sifchain,
 	// allow if all the following conditions are met:
 	//    a) Token should belong to whitelist
@@ -101,7 +104,5 @@ func IsWhitelisted(ctx sdk.Context, denom string) bool {
 	//    c) The port and channel should have been whitelisted
 	// All the above conditions can be a met by whitelisting the ibc/token that is minted on chain.
 
-	// TODO: Pass in whitelistkeeper here and lookup exact denom once token channels are set in whitelist.
-
-	return true
+	return whitelistKeeper.IsDenomWhitelisted(ctx, denom)
 }

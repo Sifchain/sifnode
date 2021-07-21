@@ -8,6 +8,9 @@ import (
 	channeltypes "github.com/cosmos/cosmos-sdk/x/ibc/core/04-channel/types"
 	"github.com/stretchr/testify/require"
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
+
+	"github.com/Sifchain/sifnode/x/ethbridge/test"
+	whitelistkeeper "github.com/Sifchain/sifnode/x/whitelist/keeper"
 )
 
 func TestIsRecvPacketAllowed(t *testing.T) {
@@ -24,7 +27,9 @@ func TestIsRecvPacketAllowed(t *testing.T) {
 		Denom: "transfer/channel-0/atom",
 	}
 
-	got := isRecvPacketAllowed(ctx, packet, data)
+	enc := test.MakeTestEncodingConfig()
+	wl := whitelistkeeper.NewKeeper(enc.Marshaler, sdk.NewKVStoreKey(""))
+	got := isRecvPacketAllowed(ctx, wl, packet, data)
 	require.Equal(t, got, true)
 }
 

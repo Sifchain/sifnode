@@ -51,10 +51,10 @@ func (k keeper) GetAdminAccount(ctx sdk.Context) (adminAccount sdk.AccAddress) {
 	return adminAccount
 }
 
-func (k keeper) IsDenomWhitelisted(ctx sdk.Context, denom string) (bool, int64) {
+func (k keeper) IsDenomWhitelisted(ctx sdk.Context, denom string) bool {
 	d := k.GetDenom(ctx, denom)
 
-	return d.IsWhitelisted, d.Decimals
+	return d.IsWhitelisted
 }
 
 func (k keeper) GetDenom(ctx sdk.Context, denom string) types.DenomWhitelistEntry {
