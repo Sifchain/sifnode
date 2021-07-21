@@ -101,19 +101,19 @@ func (k Keeper) ProcessSuccessfulClaim(ctx sdk.Context, claim *types.EthBridgeCl
 }
 
 // ProcessBurn processes the burn of bridged coins from the given sender
-func (k Keeper) ProcessBurn(ctx sdk.Context, cosmosSender sdk.AccAddress, senderSequence uint64, msg *types.MsgBurn) error {
+func (k Keeper) ProcessBurn(ctx sdk.Context, cosmosSender sdk.AccAddress, senderSequence uint64, msg *types.MsgBurn) ([]byte, error) {
 	logger := k.Logger(ctx)
 	var coins sdk.Coins
 	networkIdentity := oracletypes.NewNetworkIdentity(msg.NetworkDescriptor)
 	crossChainFeeConfig, err := k.oracleKeeper.GetCrossChainFeeConfig(ctx, networkIdentity)
 
 	if err != nil {
-		return err
+		return []byte{}, err
 	}
 
 	minimumBurn := crossChainFeeConfig.MinimumBurnCost.Mul(crossChainFeeConfig.FeeCurrencyGas)
 	if msg.CrosschainFee.LT(minimumBurn) {
-		return errors.New("crosschain fee amount in message less than minimum burn")
+		return []byte{}, errors.New("crosschain fee amount in message less than minimum burn")
 	}
 
 	if k.IsCrossChainFeeReceiverAccountSet(ctx) {
@@ -123,7 +123,7 @@ func (k Keeper) ProcessBurn(ctx sdk.Context, cosmosSender sdk.AccAddress, sender
 		if err != nil {
 			logger.Error("failed to send crosschain fee from account to account.",
 				errorMessageKey, err.Error())
-			return err
+			return []byte{}, err
 		}
 
 		coins = sdk.NewCoins(sdk.NewCoin(msg.Symbol, msg.Amount))
@@ -140,7 +140,7 @@ func (k Keeper) ProcessBurn(ctx sdk.Context, cosmosSender sdk.AccAddress, sender
 	if err != nil {
 		logger.Error("failed to send crosschain fee from module to account.",
 			errorMessageKey, err.Error())
-		return err
+		return []byte{}, err
 	}
 
 	coins = sdk.NewCoins(sdk.NewCoin(msg.Symbol, msg.Amount))
@@ -148,7 +148,7 @@ func (k Keeper) ProcessBurn(ctx sdk.Context, cosmosSender sdk.AccAddress, sender
 	if err != nil {
 		logger.Error("failed to burn locked coin.",
 			errorMessageKey, err.Error())
-		return err
+		return []byte{}, err
 	}
 
 	// global sequence will be implemented in other feature
@@ -157,23 +157,23 @@ func (k Keeper) ProcessBurn(ctx sdk.Context, cosmosSender sdk.AccAddress, sender
 	prophecyID := msg.GetProphecyID(false, senderSequence, glocalSequence)
 	k.oracleKeeper.SetProphecyWithInitValue(ctx, prophecyID)
 
-	return nil
+	return prophecyID, nil
 }
 
 // ProcessLock processes the lockup of cosmos coins from the given sender
-func (k Keeper) ProcessLock(ctx sdk.Context, cosmosSender sdk.AccAddress, senderSequence uint64, msg *types.MsgLock) error {
+func (k Keeper) ProcessLock(ctx sdk.Context, cosmosSender sdk.AccAddress, senderSequence uint64, msg *types.MsgLock) ([]byte, error) {
 	logger := k.Logger(ctx)
 	var coins sdk.Coins
 	networkIdentity := oracletypes.NewNetworkIdentity(msg.NetworkDescriptor)
 	crossChainFeeConfig, err := k.oracleKeeper.GetCrossChainFeeConfig(ctx, networkIdentity)
 
 	if err != nil {
-		return err
+		return []byte{}, err
 	}
 
 	minimumLock := crossChainFeeConfig.MinimumLockCost.Mul(crossChainFeeConfig.FeeCurrencyGas)
 	if msg.CrosschainFee.LT(minimumLock) {
-		return errors.New("crosschain fee amount in message less than minimum lock")
+		return []byte{}, errors.New("crosschain fee amount in message less than minimum lock")
 	}
 
 	if k.IsCrossChainFeeReceiverAccountSet(ctx) {
@@ -183,7 +183,7 @@ func (k Keeper) ProcessLock(ctx sdk.Context, cosmosSender sdk.AccAddress, sender
 		if err != nil {
 			logger.Error("failed to send crosschain fee from account to account.",
 				errorMessageKey, err.Error())
-			return err
+			return []byte{}, err
 		}
 
 		coins = sdk.NewCoins(sdk.NewCoin(msg.Symbol, msg.Amount))
@@ -197,7 +197,7 @@ func (k Keeper) ProcessLock(ctx sdk.Context, cosmosSender sdk.AccAddress, sender
 	if err != nil {
 		logger.Error("failed to transfer coin from account to module.",
 			errorMessageKey, err.Error())
-		return err
+		return []byte{}, err
 	}
 
 	coins = sdk.NewCoins(sdk.NewCoin(msg.Symbol, msg.Amount))
@@ -205,9 +205,16 @@ func (k Keeper) ProcessLock(ctx sdk.Context, cosmosSender sdk.AccAddress, sender
 	if err != nil {
 		logger.Error("failed to burn burned coin.",
 			errorMessageKey, err.Error())
-		return err
+		return []byte{}, err
 	}
-	return nil
+
+	// global sequence will be implemented in other feature
+	glocalSequence := uint64(0)
+
+	prophecyID := msg.GetProphecyID(false, senderSequence, glocalSequence)
+	k.oracleKeeper.SetProphecyWithInitValue(ctx, prophecyID)
+
+	return prophecyID, nil
 }
 
 // ProcessUpdateWhiteListValidator processes the update whitelist validator from admin
@@ -274,9 +281,8 @@ func (k Keeper) SetFeeInfo(ctx sdk.Context, msg *types.MsgSetFeeInfo) error {
 }
 
 // ProcessSignProphecy processes the set sign prophecy from validator
-func (k Keeper) ProcessSignProphecy(ctx sdk.Context, msg *types.MsgSignProphecy) error {
-
-	return k.oracleKeeper.ProcessSignProphecy(ctx, msg.CosmosSender, msg.ProphecyId, msg.EthereumAddress, msg.Signature)
+func (k Keeper) ProcessSignProphecy(ctx sdk.Context, msg *types.MsgSignProphecy) (oracletypes.StatusText, error) {
+	return k.oracleKeeper.ProcessSignProphecy(ctx, msg.NetworkDescriptor, msg.ProphecyId, msg.CosmosSender, msg.EthereumAddress, msg.Signature)
 }
 
 // Exists chec if the key existed in db.

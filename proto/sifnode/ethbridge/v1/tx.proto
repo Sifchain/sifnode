@@ -131,9 +131,11 @@ message MsgSetFeeInfoResponse {}
 // MsgSignProphecy defines a message for sending signature for prophecy
 message MsgSignProphecy {
   string cosmos_sender = 1;
-  string prophecy_id = 2;
-  string ethereum_address = 3;
-  string signature = 4;
+  sifnode.oracle.v1.NetworkDescriptor network_descriptor = 2
+      [ (gogoproto.moretags) = "yaml:\"network_descriptor\"" ];
+  bytes prophecy_id = 3;
+  string ethereum_address = 4;
+  string signature = 5;
 }
 
 message MsgSignProphecyResponse {}

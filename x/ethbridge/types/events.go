@@ -8,6 +8,8 @@ var (
 	EventTypeLock                     = "lock"
 	EventTypeUpdateWhiteListValidator = "update_whitelist_validator"
 	EventTypeSetCrossChainFee         = "set_cross_chain_fee"
+	EventTypeSignProphecy             = "sign_prophecy"
+	EventTypeProphecyCompleted        = "prophecy_completed"
 
 	AttributeKeyEthereumSender               = "ethereum_sender"
 	AttributeKeyEthereumSenderNonce          = "ethereum_sender_nonce"
@@ -31,6 +33,7 @@ var (
 	AttributeKeyCrossChainFeeGas     = "cross_chain_fee_gas"
 	AttributeKeyMinimumLockCost      = "minimum_lock_cost"
 	AttributeKeyMinimumBurnCost      = "minimum_burn_cost"
+	AttributeKeyProphecyID           = "prophecy_id"
 
 	AttributeValueCategory = ModuleName
 )

@@ -62,10 +62,28 @@ message CrossChainFeeConfig {
   ];
 }
 
-// ProphecySignatures include the ethereum addressed and signatures.
-message ProphecySignatures {
+// ProphecyInfo include the ethereum addressed and signatures.
+message ProphecyInfo {
   sifnode.oracle.v1.NetworkDescriptor network_descriptor = 1
       [ (gogoproto.moretags) = "yaml:\"network_descriptor\"" ];
-  repeated string ethereum_address = 2;
-  repeated string signatures = 3;
+  uint64 block_number = 2;
+  bytes prophecy_id = 3;
+  string cosmos_sender = 4;
+  uint64 cosmos_sender_sequence = 5;
+  string ethereum_receiver = 6;
+  string token_symbol = 7;
+  string token_amount = 8 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.nullable) = false,
+    (gogoproto.moretags) = "yaml:\"token_amount\""
+  ];
+  bool double_peg = 9;
+  uint64 global_nonce = 10;
+  string crosschain_fee = 11 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.nullable) = false,
+    (gogoproto.moretags) = "yaml:\"crosschain_fee\""
+  ];
+  repeated string ethereum_address = 12;
+  repeated string signatures = 13;
 }

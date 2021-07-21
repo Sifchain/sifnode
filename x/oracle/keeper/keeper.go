@@ -22,6 +22,7 @@ type Keeper struct {
 	stakeKeeper types.StakingKeeper
 	// TODO: use this as param instead
 	consensusNeeded float64 // The minimum % of stake needed to sign claims in order for consensus to occur
+	currentHeight   int64
 }
 
 // NewKeeper creates new instances of the oracle Keeper
@@ -37,6 +38,10 @@ func NewKeeper(
 		stakeKeeper:     stakeKeeper,
 		consensusNeeded: consensusNeeded,
 	}
+}
+
+func (k Keeper) UpdateCurrentHeight(height int64) {
+	k.currentHeight = height
 }
 
 // GetCdc return keeper's cdc
@@ -75,6 +80,11 @@ func (k Keeper) ProcessClaim(ctx sdk.Context, networkDescriptor types.NetworkDes
 		return types.StatusText_STATUS_TEXT_UNSPECIFIED, types.ErrInvalidIdentifier
 	}
 
+	return k.AppendValidatorToProphecy(ctx, networkDescriptor, prophecyID, valAddr)
+
+}
+
+func (k Keeper) AppendValidatorToProphecy(ctx sdk.Context, networkDescriptor types.NetworkDescriptor, prophecyID []byte, validator sdk.ValAddress) (types.StatusText, error) {
 	prophecy, ok := k.GetProphecy(ctx, prophecyID)
 	if !ok {
 		prophecy.Id = prophecyID
@@ -84,7 +94,7 @@ func (k Keeper) ProcessClaim(ctx sdk.Context, networkDescriptor types.NetworkDes
 	switch prophecy.Status {
 	case types.StatusText_STATUS_TEXT_PENDING:
 
-		err = prophecy.AddClaim(valAddr)
+		err := prophecy.AddClaim(validator)
 		if err != nil {
 			return types.StatusText_STATUS_TEXT_UNSPECIFIED, err
 
@@ -96,7 +106,7 @@ func (k Keeper) ProcessClaim(ctx sdk.Context, networkDescriptor types.NetworkDes
 
 	case types.StatusText_STATUS_TEXT_SUCCESS:
 
-		err = prophecy.AddClaim(valAddr)
+		err := prophecy.AddClaim(validator)
 		if err != nil {
 			return types.StatusText_STATUS_TEXT_UNSPECIFIED, err
 		}
@@ -106,7 +116,6 @@ func (k Keeper) ProcessClaim(ctx sdk.Context, networkDescriptor types.NetworkDes
 	default:
 		return types.StatusText_STATUS_TEXT_UNSPECIFIED, types.ErrInvalidProphecyStatus
 	}
-
 }
 
 func (k Keeper) checkActiveValidator(ctx sdk.Context, validatorAddress sdk.ValAddress) bool {
@@ -158,25 +167,31 @@ func (k Keeper) SetProphecyWithInitValue(ctx sdk.Context, prophecyID []byte) {
 }
 
 // ProcessSignProphecy deal with the signature from validator
-func (k Keeper) ProcessSignProphecy(ctx sdk.Context, cosmosSender, prophecyID, ethereumAddress, signature string) error {
+func (k Keeper) ProcessSignProphecy(ctx sdk.Context, networkDescriptor types.NetworkDescriptor, prophecyID []byte, cosmosSender, ethereumAddress, signature string) (types.StatusText, error) {
 	prophecy, ok := k.GetProphecy(ctx, []byte(prophecyID))
 	if !ok {
-		return fmt.Errorf("failed to get prophecy with ID as %s", prophecyID)
+		return types.StatusText_STATUS_TEXT_UNSPECIFIED, types.ErrProphecyNotFound
 	}
 
 	// verify the signature
 	publicKey, err := gethCrypto.Ecrecover([]byte(prophecyID), gethCommon.FromHex(signature))
 	if err != nil {
-		return err
+		return prophecy.Status, err
 	}
 
 	ok = gethCrypto.VerifySignature(publicKey, []byte(prophecyID), []byte(signature))
 	if !ok {
-		return errors.New("incorrect signature")
+		return prophecy.Status, errors.New("incorrect signature")
 	}
 
-	prophecy.ClaimValidators = append(prophecy.ClaimValidators, cosmosSender)
-	return nil
+	valAddr, err := sdk.ValAddressFromBech32(cosmosSender)
+	if err != nil {
+		return prophecy.Status, err
+	}
+
+	// prophecy.ClaimValidators = append(prophecy.ClaimValidators, cosmosSender)
+	k.AppendSignature(ctx, prophecyID, ethereumAddress, signature)
+	return k.AppendValidatorToProphecy(ctx, networkDescriptor, prophecyID, valAddr)
 }
 
 // Exists check if the key exists

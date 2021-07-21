@@ -44,12 +44,29 @@ func (srv msgServer) Lock(goCtx context.Context, msg *types.MsgLock) (*types.Msg
 		return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.CosmosSender)
 	}
 
-	if err := srv.Keeper.ProcessLock(ctx, cosmosSender, account.GetSequence(), msg); err != nil {
+	prophecyID, err := srv.Keeper.ProcessLock(ctx, cosmosSender, account.GetSequence(), msg)
+
+	if err != nil {
 		logger.Error("bridge keeper failed to process lock.", errorMessageKey, err.Error())
 		return nil, err
 	}
 
 	logger.Info("sifnode emit lock event.", "message", msg)
+
+	srv.oracleKeeper.SetProphecyInfo(ctx,
+		prophecyID,
+		msg.NetworkDescriptor,
+
+		cosmosSender.String(),
+		account.GetSequence(),
+		msg.EthereumReceiver,
+		msg.Symbol,
+		msg.Amount,
+		msg.CrosschainFee,
+		// TODO decide the double peggy and global nonce
+		false,
+		0,
+	)
 
 	ctx.EventManager().EmitEvents(sdk.Events{
 		sdk.NewEvent(
@@ -60,12 +77,7 @@ func (srv msgServer) Lock(goCtx context.Context, msg *types.MsgLock) (*types.Msg
 		sdk.NewEvent(
 			types.EventTypeLock,
 			sdk.NewAttribute(types.AttributeKeyNetworkDescriptor, strconv.FormatInt(int64(msg.NetworkDescriptor), 10)),
-			sdk.NewAttribute(types.AttributeKeyCosmosSender, msg.CosmosSender),
-			sdk.NewAttribute(types.AttributeKeyCosmosSenderSequence, strconv.FormatUint(account.GetSequence(), 10)),
-			sdk.NewAttribute(types.AttributeKeyEthereumReceiver, msg.EthereumReceiver),
-			sdk.NewAttribute(types.AttributeKeyAmount, msg.Amount.String()),
-			sdk.NewAttribute(types.AttributeKeySymbol, msg.Symbol),
-			sdk.NewAttribute(types.AttributeKeycrossChainFee, msg.CrosschainFee.String()),
+			sdk.NewAttribute(types.AttributeKeyProphecyID, string(prophecyID[:])),
 		),
 	})
 
@@ -93,12 +105,28 @@ func (srv msgServer) Burn(goCtx context.Context, msg *types.MsgBurn) (*types.Msg
 		return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.CosmosSender)
 	}
 
-	if err := srv.Keeper.ProcessBurn(ctx, cosmosSender, account.GetSequence(), msg); err != nil {
+	prophecyID, err := srv.Keeper.ProcessBurn(ctx, cosmosSender, account.GetSequence(), msg)
+
+	if err != nil {
 		logger.Error("bridge keeper failed to process burn.", errorMessageKey, err.Error())
 		return nil, err
 	}
 
 	logger.Info("sifnode emit burn event.", "message", msg)
+
+	srv.oracleKeeper.SetProphecyInfo(ctx,
+		prophecyID,
+		msg.NetworkDescriptor,
+		cosmosSender.String(),
+		account.GetSequence(),
+		msg.EthereumReceiver,
+		msg.Symbol,
+		msg.Amount,
+		msg.CrosschainFee,
+		// TODO decide the double peggy and global nonce
+		false,
+		0,
+	)
 
 	ctx.EventManager().EmitEvents(sdk.Events{
 		sdk.NewEvent(
@@ -109,12 +137,7 @@ func (srv msgServer) Burn(goCtx context.Context, msg *types.MsgBurn) (*types.Msg
 		sdk.NewEvent(
 			types.EventTypeBurn,
 			sdk.NewAttribute(types.AttributeKeyNetworkDescriptor, strconv.FormatInt(int64(msg.NetworkDescriptor), 10)),
-			sdk.NewAttribute(types.AttributeKeyCosmosSender, msg.CosmosSender),
-			sdk.NewAttribute(types.AttributeKeyCosmosSenderSequence, strconv.FormatUint(account.GetSequence(), 10)),
-			sdk.NewAttribute(types.AttributeKeyEthereumReceiver, msg.EthereumReceiver),
-			sdk.NewAttribute(types.AttributeKeyAmount, msg.Amount.String()),
-			sdk.NewAttribute(types.AttributeKeySymbol, msg.Symbol),
-			sdk.NewAttribute(types.AttributeKeycrossChainFee, msg.CrosschainFee.String()),
+			sdk.NewAttribute(types.AttributeKeyProphecyID, string(prophecyID[:])),
 		),
 	})
 
@@ -368,29 +391,50 @@ func (srv msgServer) SignProphecy(goCtx context.Context, msg *types.MsgSignProph
 		return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.CosmosSender)
 	}
 
-	if err := srv.Keeper.ProcessSignProphecy(ctx, msg); err != nil {
+	status, err := srv.Keeper.ProcessSignProphecy(ctx, msg)
+
+	if err != nil && err != oracletypes.ErrProphecyFinalized {
 		logger.Error("keeper failed to process rescue native_token message.", errorMessageKey, err.Error())
 		return nil, err
 	}
-	logger.Info("sifnode emit set native_token event.",
+
+	logger.Info("sifnode received the sign prophecy message.",
 		"Message", msg)
 
-	// ctx.EventManager().EmitEvents(sdk.Events{
-	// 	sdk.NewEvent(
-	// 		sdk.EventTypeMessage,
-	// 		sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
-	// 		sdk.NewAttribute(sdk.AttributeKeySender, msg.CosmosSender),
-	// 	),
-	// 	sdk.NewEvent(
-	// 		types.EventTypeSetNativeToken,
-	// 		sdk.NewAttribute(types.AttributeKeyCosmosSender, msg.CosmosSender),
-	// 		sdk.NewAttribute(types.AttributeKeyNetworkDescriptor, msg.NetworkDescriptor.String()),
-	// 		sdk.NewAttribute(types.AttributeKeyNativeToken, msg.NativeToken),
-	// 		sdk.NewAttribute(types.AttributeKeyNativeTokenGas, msg.NativeGas.String()),
-	// 		sdk.NewAttribute(types.AttributeKeyMinimumLockCost, msg.MinimumLockCost.String()),
-	// 		sdk.NewAttribute(types.AttributeKeyMinimumBurnCost, msg.MinimumBurnCost.String()),
-	// 	),
-	// })
+	// if already completed before, not emit the EventTypeProphecyCompleted again
+	if err == oracletypes.ErrProphecyFinalized {
+		ctx.EventManager().EmitEvents(sdk.Events{
+			sdk.NewEvent(
+				sdk.EventTypeMessage,
+				sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
+				sdk.NewAttribute(sdk.AttributeKeySender, msg.CosmosSender),
+			),
+			sdk.NewEvent(
+				types.EventTypeSignProphecy,
+				sdk.NewAttribute(types.AttributeKeyCosmosSender, msg.CosmosSender),
+				sdk.NewAttribute(types.AttributeKeyNetworkDescriptor, msg.NetworkDescriptor.String()),
+				sdk.NewAttribute(types.AttributeKeyProphecyID, string(msg.ProphecyId)),
+			),
+		})
+	} else if status == oracletypes.StatusText_STATUS_TEXT_SUCCESS {
+		ctx.EventManager().EmitEvents(sdk.Events{
+			sdk.NewEvent(
+				sdk.EventTypeMessage,
+				sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
+				sdk.NewAttribute(sdk.AttributeKeySender, msg.CosmosSender),
+			),
+			sdk.NewEvent(
+				types.EventTypeSignProphecy,
+				sdk.NewAttribute(types.AttributeKeyCosmosSender, msg.CosmosSender),
+				sdk.NewAttribute(types.AttributeKeyNetworkDescriptor, msg.NetworkDescriptor.String()),
+				sdk.NewAttribute(types.AttributeKeyProphecyID, string(msg.ProphecyId)),
+			),
+			sdk.NewEvent(
+				types.EventTypeProphecyCompleted,
+				sdk.NewAttribute(types.AttributeKeyProphecyID, string(msg.ProphecyId)),
+			),
+		})
+	}
 
 	return &types.MsgSignProphecyResponse{}, nil
 }
