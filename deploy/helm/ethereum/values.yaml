@@ -29,7 +29,7 @@ geth:
   args:
     rpcapi: 'eth,net,web3'
     network:
-    networkID: 1
+    networkDescriptor: 1
   persistence:
     enabled: true
     size: 750Gi

@@ -12,19 +12,11 @@ import (
 
 func InitGenesis(ctx sdk.Context, keeper keeper.Keeper, data types.GenesisState) (res []abci.ValidatorUpdate) {
 
-	var wl []sdk.ValAddress
-	for _, addr := range data.AddressWhitelist {
-		if len(strings.TrimSpace(addr)) == 0 {
-			continue
+	if data.AddressWhitelist != nil {
+		for networkDescriptor, list := range data.AddressWhitelist {
+			keeper.SetOracleWhiteList(ctx, types.NewNetworkIdentity(types.NetworkDescriptor(networkDescriptor)), *list)
 		}
-		wlAddress, err := sdk.ValAddressFromBech32(addr)
-		if err != nil {
-			panic(err)
-		}
-		wl = append(wl, wlAddress)
 	}
-
-	keeper.SetOracleWhiteList(ctx, wl)
 
 	if len(strings.TrimSpace(data.AdminAddress)) != 0 {
 		adminAddress, err := sdk.AccAddressFromBech32(data.AdminAddress)
@@ -34,36 +26,33 @@ func InitGenesis(ctx sdk.Context, keeper keeper.Keeper, data types.GenesisState)
 		keeper.SetAdminAccount(ctx, adminAddress)
 	}
 
-	for _, dbProphecy := range data.Prophecies {
-		keeper.SetDBProphecy(ctx, *dbProphecy)
+	for _, prophecy := range data.Prophecies {
+
+		keeper.SetProphecy(ctx, *prophecy)
 	}
 
 	return []abci.ValidatorUpdate{}
 }
 
 func ExportGenesis(ctx sdk.Context, keeper keeper.Keeper) *types.GenesisState {
-	whiteList := keeper.GetOracleWhiteList(ctx)
-	wl := make([]string, len(whiteList))
-	for i, entry := range whiteList {
-		wl[i] = entry.String()
+	whiteList := keeper.GetAllWhiteList(ctx)
+	wl := make(map[uint32]*types.ValidatorWhiteList)
+
+	for i, value := range whiteList {
+		wl[uint32(i)] = &types.ValidatorWhiteList{WhiteList: value.WhiteList}
 	}
 
-	adminAcc := keeper.GetAdminAccount(ctx)
-
-	prophecies := keeper.GetProphecies(ctx)
-	dbProphecies := make([]*types.DBProphecy, len(prophecies))
-	for i, p := range prophecies {
-		dbProphecy, err := p.SerializeForDB()
-		if err != nil {
-			panic(err)
-		}
-		dbProphecies[i] = &dbProphecy
+	propheciesTmp := keeper.GetProphecies(ctx)
+	prophecies := make([]*types.Prophecy, len(propheciesTmp))
+	for index, prophecy := range propheciesTmp {
+		tmpProphecy := prophecy
+		prophecies[index] = &tmpProphecy
 	}
 
 	return &types.GenesisState{
 		AddressWhitelist: wl,
-		AdminAddress:     adminAcc.String(),
-		Prophecies:       dbProphecies,
+		AdminAddress:     keeper.GetAdminAccount(ctx).String(),
+		Prophecies:       prophecies,
 	}
 }
 

@@ -40,16 +40,21 @@ import (
 )
 
 const (
-	TestID                     = "oracleID"
-	AlternateTestID            = "altOracleID"
-	TestString                 = "{value: 5}"
-	AlternateTestString        = "{value: 7}"
-	AnotherAlternateTestString = "{value: 9}"
-	TestCethReceiverAddress    = "cosmos1gn8409qq9hnrxde37kuxwx5hrxpfpv8426szuv"
+	TestID                           = "oracleID"
+	AlternateTestID                  = "altOracleID"
+	TestString                       = "{value: 5}"
+	AlternateTestString              = "{value: 7}"
+	AnotherAlternateTestString       = "{value: 9}"
+	TestCrossChainFeeReceiverAddress = "cosmos1gn8409qq9hnrxde37kuxwx5hrxpfpv8426szuv" //nolint
+	NetworkDescriptor                = 1
+	CrossChainFee                    = "ceth"
+	CrossChainFeeGas                 = 1
+	MinimumCost                      = 1
 )
 
 // CreateTestKeepers greates an Mock App, OracleKeeper, bankKeeper and ValidatorAddresses to be used for test input
-func CreateTestKeepers(t *testing.T, consensusNeeded float64, validatorAmounts []int64, extraMaccPerm string) (sdk.Context, keeper.Keeper, bankkeeper.Keeper, authkeeper.AccountKeeper, oraclekeeper.Keeper, simappparams.EncodingConfig, []sdk.ValAddress) {
+func CreateTestKeepers(t *testing.T, consensusNeeded float64, validatorAmounts []int64, extraMaccPerm string) (sdk.Context, keeper.Keeper, bankkeeper.Keeper, authkeeper.AccountKeeper, oraclekeeper.Keeper,
+	simappparams.EncodingConfig, oracleTypes.ValidatorWhiteList, []sdk.ValAddress) {
 
 	PKs := CreateTestPubKeys(500)
 	keyStaking := sdk.NewKVStoreKey(stakingtypes.StoreKey)
@@ -98,7 +103,7 @@ func CreateTestKeepers(t *testing.T, consensusNeeded float64, validatorAmounts [
 	blacklistedAddrs[bondPool.GetAddress().String()] = true
 
 	maccPerms := map[string][]string{
-		authtypes.FeeCollectorName:          nil,
+		authtypes.FeeCollectorName:     nil,
 		stakingtypes.NotBondedPoolName: {authtypes.Burner, authtypes.Staking},
 		stakingtypes.BondedPoolName:    {authtypes.Burner, authtypes.Staking},
 		types.ModuleName:               {authtypes.Burner, authtypes.Minter},
@@ -112,8 +117,8 @@ func CreateTestKeepers(t *testing.T, consensusNeeded float64, validatorAmounts [
 
 	//accountKeeper gets maccParams in 0.40, module accounts moved from supplykeeper to authkeeper
 	accountKeeper := authkeeper.NewAccountKeeper(
-		encCfg.Marshaler,    // amino codec
-		keyAcc, // target store
+		encCfg.Marshaler, // amino codec
+		keyAcc,           // target store
 		paramsKeeper.Subspace(authtypes.ModuleName),
 		authtypes.ProtoBaseAccount, // prototype,
 		maccPerms,
@@ -146,15 +151,18 @@ func CreateTestKeepers(t *testing.T, consensusNeeded float64, validatorAmounts [
 	accountKeeper.SetModuleAccount(ctx, notBondedPool)
 
 	ethbridgeKeeper := keeper.NewKeeper(encCfg.Marshaler, bankKeeper, oracleKeeper, accountKeeper, keyEthBridge)
-	CethReceiverAccount, _ := sdk.AccAddressFromBech32(TestCethReceiverAddress)
-	ethbridgeKeeper.SetCethReceiverAccount(ctx, CethReceiverAccount)
+
+	CrossChainFeeReceiverAccount, _ := sdk.AccAddressFromBech32(TestCrossChainFeeReceiverAddress)
+	ethbridgeKeeper.SetCrossChainFeeReceiverAccount(ctx, CrossChainFeeReceiverAccount)
 
 	// Setup validators
-	valAddrs := make([]sdk.ValAddress, len(validatorAmounts))
+	valAddrsInOrder := make([]sdk.ValAddress, len(validatorAmounts))
+	valAddrs := make(map[string]uint32)
 	for i, amount := range validatorAmounts {
 		valPubKey := PKs[i]
 		valAddr := sdk.ValAddress(valPubKey.Address().Bytes())
-		valAddrs[i] = valAddr
+		valAddrsInOrder[i] = valAddr
+		valAddrs[valAddr.String()] = uint32(amount)
 		valTokens := sdk.TokensFromConsensusPower(amount)
 		// test how the validator is set from a purely unbonbed pool
 		validator, err := stakingtypes.NewValidator(valAddr, valPubKey, stakingtypes.Description{})
@@ -169,9 +177,14 @@ func CreateTestKeepers(t *testing.T, consensusNeeded float64, validatorAmounts [
 		}
 	}
 
-	oracleKeeper.SetOracleWhiteList(ctx, valAddrs)
+	networkIdentity := oracleTypes.NewNetworkIdentity(NetworkDescriptor)
 
-	return ctx, ethbridgeKeeper, bankKeeper, accountKeeper, oracleKeeper, encCfg, valAddrs
+	oracleKeeper.SetCrossChainFee(ctx, networkIdentity, CrossChainFee,
+		sdk.NewInt(CrossChainFeeGas), sdk.NewInt(MinimumCost), sdk.NewInt(MinimumCost))
+	whitelist := oracleTypes.ValidatorWhiteList{WhiteList: valAddrs}
+	oracleKeeper.SetOracleWhiteList(ctx, networkIdentity, whitelist)
+
+	return ctx, ethbridgeKeeper, bankKeeper, accountKeeper, oracleKeeper, encCfg, whitelist, valAddrsInOrder
 }
 
 // nolint: unparam

@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	TestEthereumChainID       = 3
+	TestNetworkDescriptor     = oracletypes.NetworkDescriptor(1)
 	TestBridgeContractAddress = "0xC4cE93a5699c68241fc2fB503Fb0f21724A624BB"
 	TestAddress               = "cosmos1gn8409qq9hnrxde37kuxwx5hrxpfpv8426szuv"
 	TestValidator             = "cosmos1xdp5tvt7lxh8rf9xx07wy2xlagzhq24ha48xtq"
@@ -20,13 +20,14 @@ const (
 	AltTestEthereumAddress    = "0x7B95B6EC7EbD73572298cEf32Bb54FA408207344"
 	Alt2TestEthereumAddress   = "0x7B95B6EC7EbD73572298cEf32Bb54FA408207333"
 	TestCoinsSymbol           = "eth"
-	TestCoinsLockedSymbol     = "ceth"
+	TestCrossChainFeeSymbol   = "ceth"
 	AltTestCoinsAmount        = 12
 	AltTestCoinsSymbol        = "eth"
 	TestCoinIntAmount         = 10
+	TestProphecyID            = "test_prophecy_id"
 )
 
-var testCethAmount = sdk.NewInt(65000000000 * 300000)
+var testcrossChainFee = sdk.NewInt(65000000000 * 300000)
 var TestCoinsAmount = sdk.NewInt(10)
 var AltTestCoinsAmountSDKInt = sdk.NewInt(12)
 
@@ -49,7 +50,7 @@ func CreateTestEthClaim(
 	testCosmosAddress, err1 := sdk.AccAddressFromBech32(TestAddress)
 	require.NoError(t, err1)
 	ethClaim := NewEthBridgeClaim(
-		TestEthereumChainID, testContractAddress, TestNonce, symbol,
+		TestNetworkDescriptor, testContractAddress, TestNonce, symbol,
 		testTokenAddress, testEthereumAddress, testCosmosAddress, validatorAddress, amount, claimType)
 	return ethClaim
 }
@@ -58,7 +59,7 @@ func CreateTestBurnMsg(t *testing.T, testCosmosSender string, ethereumReceiver E
 	coinsAmount sdk.Int, coinsSymbol string) MsgBurn {
 	testCosmosAddress, err := sdk.AccAddressFromBech32(TestAddress)
 	require.NoError(t, err)
-	burnEth := NewMsgBurn(TestEthereumChainID, testCosmosAddress, ethereumReceiver, coinsAmount, coinsSymbol, testCethAmount)
+	burnEth := NewMsgBurn(TestNetworkDescriptor, testCosmosAddress, ethereumReceiver, coinsAmount, coinsSymbol, testcrossChainFee)
 	return burnEth
 }
 
@@ -66,7 +67,7 @@ func CreateTestLockMsg(t *testing.T, testCosmosSender string, ethereumReceiver E
 	coinsAmount sdk.Int, coinsSymbol string) MsgLock {
 	testCosmosAddress, err := sdk.AccAddressFromBech32(TestAddress)
 	require.NoError(t, err)
-	lockEth := NewMsgLock(TestEthereumChainID, testCosmosAddress, ethereumReceiver, coinsAmount, coinsSymbol, testCethAmount)
+	lockEth := NewMsgLock(TestNetworkDescriptor, testCosmosAddress, ethereumReceiver, coinsAmount, coinsSymbol, testcrossChainFee)
 	return lockEth
 }
 
@@ -77,40 +78,48 @@ func CreateTestQueryEthProphecyResponse(t *testing.T, validatorAddress sdk.ValAd
 	testTokenAddress := NewEthereumAddress(TestTokenContractAddress)
 	ethBridgeClaim := CreateTestEthClaim(t, testContractAddress, testTokenAddress, validatorAddress,
 		testEthereumAddress, TestCoinsAmount, TestCoinsSymbol, claimType)
-	oracleClaim, _ := CreateOracleClaimFromEthClaim(ethBridgeClaim)
-	ethBridgeClaims := []*EthBridgeClaim{ethBridgeClaim}
+	ethBridgeClaims := []string{ethBridgeClaim.ValidatorAddress}
 
 	return NewQueryEthProphecyResponse(
-		oracleClaim.Id,
-		oracletypes.NewStatus(oracletypes.StatusText_STATUS_TEXT_PENDING, ""),
+		ethBridgeClaim.GetProphecyID(),
+		oracletypes.StatusText_STATUS_TEXT_PENDING,
 		ethBridgeClaims,
 	)
 }
 
-func CreateTestUpdateCethReceiverAccountMsg(t *testing.T, testCosmosSender string, testCethReceiverAccount string) MsgUpdateCethReceiverAccount {
+func CreateTestUpdateCrossChainFeeReceiverAccountMsg(t *testing.T, testCosmosSender string, testCrossChainFeeReceiverAccount string) MsgUpdateCrossChainFeeReceiverAccount {
 	accAddress1, err := sdk.AccAddressFromBech32(testCosmosSender)
 	require.NoError(t, err)
-	accAddress2, err := sdk.AccAddressFromBech32(testCethReceiverAccount)
+	accAddress2, err := sdk.AccAddressFromBech32(testCrossChainFeeReceiverAccount)
 	require.NoError(t, err)
 
-	msgUpdateCethReceiverAccount := NewMsgUpdateCethReceiverAccount(accAddress1, accAddress2)
-	return msgUpdateCethReceiverAccount
+	msgUpdateCrossChainFeeReceiverAccount := NewMsgUpdateCrossChainFeeReceiverAccount(accAddress1, accAddress2)
+	return msgUpdateCrossChainFeeReceiverAccount
 }
 
-func CreateTestRescueCethMsg(t *testing.T, testCosmosSender string, testCethReceiverAccount string, cethAmount sdk.Int) MsgRescueCeth {
+func CreateTestRescueCrossChainFeeMsg(t *testing.T, testCosmosSender string, testCrossChainFeeReceiverAccount string, crosschainFeeSymbol string, crosschainFee sdk.Int) MsgRescueCrossChainFee {
 	accAddress1, err := sdk.AccAddressFromBech32(testCosmosSender)
 	require.NoError(t, err)
-	accAddress2, err := sdk.AccAddressFromBech32(testCethReceiverAccount)
+	accAddress2, err := sdk.AccAddressFromBech32(testCrossChainFeeReceiverAccount)
 	require.NoError(t, err)
 
-	MsgRescueCeth := NewMsgRescueCeth(accAddress1, accAddress2, cethAmount)
-	return MsgRescueCeth
+	MsgRescueCrossChainFee := NewMsgRescueCrossChainFee(accAddress1, accAddress2, crosschainFeeSymbol, crosschainFee)
+	return MsgRescueCrossChainFee
 }
 
-func CreateTestUpdateWhiteListValidatorMsg(_ *testing.T, sender string, validator string, operation string) MsgUpdateWhiteListValidator {
+func CreateTestUpdateWhiteListValidatorMsg(_ *testing.T, networkDescriptor oracletypes.NetworkDescriptor, sender string, validator string, power uint32) MsgUpdateWhiteListValidator {
 	return MsgUpdateWhiteListValidator{
-		CosmosSender:  sender,
-		Validator:     validator,
-		OperationType: operation,
+		NetworkDescriptor: networkDescriptor,
+		CosmosSender:      sender,
+		Validator:         validator,
+		Power:             power,
 	}
+}
+
+func CreateTestSetCrossChainFeeMsg(t *testing.T, testCosmosSender string, networkDescriptor oracletypes.NetworkDescriptor, crossChainFee string) MsgSetFeeInfo {
+	accAddress, err := sdk.AccAddressFromBech32(testCosmosSender)
+	require.NoError(t, err)
+
+	msgSetFeeInfo := NewMsgSetFeeInfo(accAddress, networkDescriptor, crossChainFee)
+	return msgSetFeeInfo
 }

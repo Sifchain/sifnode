@@ -231,7 +231,7 @@ describe("Security Test", function () {
           bridgeToken.address,
           amount
         ),
-      ).to.be.revertedWith("Only token in whitelist can be transferred to cosmos");
+      ).to.be.revertedWith("Only token in whitelist can be burned");
     });
   });
 
@@ -286,6 +286,51 @@ describe("Security Test", function () {
           100
         ),
       ).to.be.revertedWith("!cosmosbridge");
+    });
+
+    it("should not be able to createNewBridgeToken as non validator", async function () {
+      state.bridge = await CosmosBridge.deploy();
+      await expect(
+        state.cosmosBridge.connect(operator).createNewBridgeToken(
+          "atom",
+          "atom",
+          state.token1.address,
+          18,
+          1
+        ),
+      ).to.be.revertedWith("Must be an active validator");
+    });
+
+    it("should not be able to createNewBridgeToken as a validator if a bridgetoken with the same source address already exists", async function () {
+      // assert that the cosmos bridge token has not been created
+      let bridgeToken = await state.cosmosBridge.sourceAddressToDestinationAddress(
+        state.token1.address
+      );
+      expect(bridgeToken).to.be.equal(state.ethereumToken);
+
+      await state.cosmosBridge.connect(userOne).createNewBridgeToken(
+        "atom",
+        "atom",
+        state.token1.address,
+        18,
+        1
+      );
+
+      // now assert that the bridge token has been created
+      bridgeToken = await state.cosmosBridge.sourceAddressToDestinationAddress(
+        state.token1.address
+      );
+      expect(bridgeToken).to.not.be.equal(state.ethereumToken);
+
+      await expect(
+        state.cosmosBridge.connect(userOne).createNewBridgeToken(
+          "atom",
+          "atom",
+          state.token1.address,
+          18,
+          1
+        ),
+      ).to.be.revertedWith("INV_SRC_ADDR");
     });
   });
 

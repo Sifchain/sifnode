@@ -5,3 +5,4 @@ flat/
 .env
 venv
 /.idea/
+test/coverage/

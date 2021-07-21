@@ -2,32 +2,29 @@ package types
 
 import (
 	"encoding/json"
-	"fmt"
+	"errors"
 	"strconv"
 	"strings"
 
 	gethCommon "github.com/ethereum/go-ethereum/common"
 
+	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
 
-const (
-	burnGasCost = 160000000000 * 393000 // assuming 160gigawei gas prices
-	lockGasCost = 160000000000 * 393000
-)
-
 // NewMsgLock is a constructor function for MsgLock
 func NewMsgLock(
-	ethereumChainID int64, cosmosSender sdk.AccAddress,
-	ethereumReceiver EthereumAddress, amount sdk.Int, symbol string, cethAmount sdk.Int) MsgLock {
+	networkDescriptor oracletypes.NetworkDescriptor, cosmosSender sdk.AccAddress,
+	ethereumReceiver EthereumAddress, amount sdk.Int, symbol string, crossChainFee sdk.Int) MsgLock {
 	return MsgLock{
-		EthereumChainId:  ethereumChainID,
-		CosmosSender:     cosmosSender.String(),
-		EthereumReceiver: ethereumReceiver.String(),
-		Amount:           amount,
-		Symbol:           symbol,
-		CethAmount:       cethAmount,
+		NetworkDescriptor: networkDescriptor,
+		CosmosSender:      cosmosSender.String(),
+		EthereumReceiver:  ethereumReceiver.String(),
+		Amount:            amount,
+		Symbol:            symbol,
+		CrosschainFee:     crossChainFee,
 	}
 }
 
@@ -39,8 +36,8 @@ func (msg MsgLock) Type() string { return "lock" }
 
 // ValidateBasic runs stateless checks on the message
 func (msg MsgLock) ValidateBasic() error {
-	if strconv.FormatInt(msg.EthereumChainId, 10) == "" {
-		return sdkerrors.Wrapf(ErrInvalidEthereumChainID, "%d", msg.EthereumChainId)
+	if strconv.FormatInt(int64(msg.NetworkDescriptor), 10) == "" {
+		return sdkerrors.Wrapf(ErrInvalidEthereumChainID, "%d", msg.NetworkDescriptor)
 	}
 
 	if msg.CosmosSender == "" {
@@ -57,11 +54,6 @@ func (msg MsgLock) ValidateBasic() error {
 
 	if msg.Amount.LTE(sdk.NewInt(0)) {
 		return ErrInvalidAmount
-	}
-
-	// if you don't pay enough gas, this tx won't go through
-	if msg.CethAmount.LT(sdk.NewInt(lockGasCost)) {
-		return ErrCethAmount
 	}
 
 	if len(msg.Symbol) == 0 {
@@ -87,15 +79,15 @@ func (msg MsgLock) GetSigners() []sdk.AccAddress {
 
 // NewMsgBurn is a constructor function for MsgBurn
 func NewMsgBurn(
-	ethereumChainID int64, cosmosSender sdk.AccAddress,
-	ethereumReceiver EthereumAddress, amount sdk.Int, symbol string, cethAmount sdk.Int) MsgBurn {
+	networkDescriptor oracletypes.NetworkDescriptor, cosmosSender sdk.AccAddress,
+	ethereumReceiver EthereumAddress, amount sdk.Int, symbol string, crosschainFee sdk.Int) MsgBurn {
 	return MsgBurn{
-		EthereumChainId:  ethereumChainID,
-		CosmosSender:     cosmosSender.String(),
-		EthereumReceiver: ethereumReceiver.String(),
-		Amount:           amount,
-		Symbol:           symbol,
-		CethAmount:       cethAmount,
+		NetworkDescriptor: networkDescriptor,
+		CosmosSender:      cosmosSender.String(),
+		EthereumReceiver:  ethereumReceiver.String(),
+		Amount:            amount,
+		Symbol:            symbol,
+		CrosschainFee:     crosschainFee,
 	}
 }
 
@@ -107,8 +99,8 @@ func (msg MsgBurn) Type() string { return "burn" }
 
 // ValidateBasic runs stateless checks on the message
 func (msg MsgBurn) ValidateBasic() error {
-	if msg.EthereumChainId == 0 {
-		return sdkerrors.Wrapf(ErrInvalidEthereumChainID, "%d", msg.EthereumChainId)
+	if msg.NetworkDescriptor == 0 {
+		return sdkerrors.Wrapf(ErrInvalidEthereumChainID, "%d", msg.NetworkDescriptor)
 	}
 
 	if msg.CosmosSender == "" {
@@ -135,11 +127,6 @@ func (msg MsgBurn) ValidateBasic() error {
 	symbolPrefix := msg.Symbol[:prefixLength]
 	if symbolPrefix != PeggedCoinPrefix {
 		return ErrInvalidBurnSymbol
-	}
-
-	// check that enough ceth is sent to cover the gas cost.
-	if msg.CethAmount.LT(sdk.NewInt(burnGasCost)) {
-		return ErrCethAmount
 	}
 
 	symbolSuffix := msg.Symbol[prefixLength:]
@@ -231,35 +218,37 @@ func (msg MsgCreateEthBridgeClaim) GetSigners() []sdk.AccAddress {
 	return []sdk.AccAddress{sdk.AccAddress(validatorAddress)}
 }
 
-// NewMsgUpdateCethReceiverAccount is a constructor function for MsgUpdateCethReceiverAccount
-func NewMsgUpdateCethReceiverAccount(cosmosSender sdk.AccAddress,
-	cethReceiverAccount sdk.AccAddress) MsgUpdateCethReceiverAccount {
-	return MsgUpdateCethReceiverAccount{
-		CosmosSender:        cosmosSender.String(),
-		CethReceiverAccount: cethReceiverAccount.String(),
+// NewMsgUpdateCrossChainFeeReceiverAccount is a constructor function for MsgUpdateCrossChainFeeReceiverAccount
+func NewMsgUpdateCrossChainFeeReceiverAccount(cosmosSender sdk.AccAddress,
+	crosschainFeeReceiver sdk.AccAddress) MsgUpdateCrossChainFeeReceiverAccount {
+	return MsgUpdateCrossChainFeeReceiverAccount{
+		CosmosSender:          cosmosSender.String(),
+		CrosschainFeeReceiver: crosschainFeeReceiver.String(),
 	}
 }
 
 // Route should return the name of the module
-func (msg MsgUpdateCethReceiverAccount) Route() string { return RouterKey }
+func (msg MsgUpdateCrossChainFeeReceiverAccount) Route() string { return RouterKey }
 
 // Type should return the action
-func (msg MsgUpdateCethReceiverAccount) Type() string { return "update_ceth_receiver_account" }
+func (msg MsgUpdateCrossChainFeeReceiverAccount) Type() string {
+	return "update_crosschain_fee_receiver_account"
+}
 
 // ValidateBasic runs stateless checks on the message
-func (msg MsgUpdateCethReceiverAccount) ValidateBasic() error {
+func (msg MsgUpdateCrossChainFeeReceiverAccount) ValidateBasic() error {
 	if msg.CosmosSender == "" {
 		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.CosmosSender)
 	}
 
-	if msg.CethReceiverAccount == "" {
-		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.CethReceiverAccount)
+	if msg.CrosschainFeeReceiver == "" {
+		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.CrosschainFeeReceiver)
 	}
 	return nil
 }
 
 // GetSignBytes encodes the message for signing
-func (msg MsgUpdateCethReceiverAccount) GetSignBytes() []byte {
+func (msg MsgUpdateCrossChainFeeReceiverAccount) GetSignBytes() []byte {
 	b, err := json.Marshal(msg)
 	if err != nil {
 		panic(err)
@@ -269,7 +258,7 @@ func (msg MsgUpdateCethReceiverAccount) GetSignBytes() []byte {
 }
 
 // GetSigners defines whose signature is required
-func (msg MsgUpdateCethReceiverAccount) GetSigners() []sdk.AccAddress {
+func (msg MsgUpdateCrossChainFeeReceiverAccount) GetSigners() []sdk.AccAddress {
 	cosmosSender, err := sdk.AccAddressFromBech32(msg.CosmosSender)
 	if err != nil {
 		panic(err)
@@ -278,23 +267,24 @@ func (msg MsgUpdateCethReceiverAccount) GetSigners() []sdk.AccAddress {
 	return []sdk.AccAddress{cosmosSender}
 }
 
-// NewMsgRescueCeth is a constructor function for NewMsgRescueCeth
-func NewMsgRescueCeth(cosmosSender sdk.AccAddress, cosmosReceiver sdk.AccAddress, cethAmount sdk.Int) MsgRescueCeth {
-	return MsgRescueCeth{
-		CosmosSender:   cosmosSender.String(),
-		CosmosReceiver: cosmosReceiver.String(),
-		CethAmount:     cethAmount,
+// NewMsgRescueCrossChainFee is a constructor function for NewMsgRescueCrossChainFee
+func NewMsgRescueCrossChainFee(cosmosSender sdk.AccAddress, cosmosReceiver sdk.AccAddress, crosschainFeeSymbol string, crosschainFee sdk.Int) MsgRescueCrossChainFee {
+	return MsgRescueCrossChainFee{
+		CosmosSender:        cosmosSender.String(),
+		CosmosReceiver:      cosmosReceiver.String(),
+		CrosschainFeeSymbol: crosschainFeeSymbol,
+		CrosschainFee:       crosschainFee,
 	}
 }
 
 // Route should return the name of the module
-func (msg MsgRescueCeth) Route() string { return RouterKey }
+func (msg MsgRescueCrossChainFee) Route() string { return RouterKey }
 
 // Type should return the action
-func (msg MsgRescueCeth) Type() string { return "rescue_ceth" }
+func (msg MsgRescueCrossChainFee) Type() string { return "rescue_crosschain_fee" }
 
 // ValidateBasic runs stateless checks on the message
-func (msg MsgRescueCeth) ValidateBasic() error {
+func (msg MsgRescueCrossChainFee) ValidateBasic() error {
 	if msg.CosmosSender == "" {
 		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.CosmosSender)
 	}
@@ -307,7 +297,7 @@ func (msg MsgRescueCeth) ValidateBasic() error {
 }
 
 // GetSignBytes encodes the message for signing
-func (msg MsgRescueCeth) GetSignBytes() []byte {
+func (msg MsgRescueCrossChainFee) GetSignBytes() []byte {
 	b, err := json.Marshal(msg)
 	if err != nil {
 		panic(err)
@@ -317,7 +307,7 @@ func (msg MsgRescueCeth) GetSignBytes() []byte {
 }
 
 // GetSigners defines whose signature is required
-func (msg MsgRescueCeth) GetSigners() []sdk.AccAddress {
+func (msg MsgRescueCrossChainFee) GetSigners() []sdk.AccAddress {
 	cosmosSender, err := sdk.AccAddressFromBech32(msg.CosmosSender)
 	if err != nil {
 		panic(err)
@@ -327,12 +317,13 @@ func (msg MsgRescueCeth) GetSigners() []sdk.AccAddress {
 }
 
 // NewMsgUpdateWhiteListValidator is a constructor function for MsgUpdateWhiteListValidator
-func NewMsgUpdateWhiteListValidator(cosmosSender sdk.AccAddress,
-	validator sdk.ValAddress, operationType string) MsgUpdateWhiteListValidator {
+func NewMsgUpdateWhiteListValidator(networkDescriptor oracletypes.NetworkDescriptor, cosmosSender sdk.AccAddress,
+	validator sdk.ValAddress, power uint32) MsgUpdateWhiteListValidator {
 	return MsgUpdateWhiteListValidator{
-		CosmosSender:  cosmosSender.String(),
-		Validator:     validator.String(),
-		OperationType: operationType,
+		NetworkDescriptor: networkDescriptor,
+		CosmosSender:      cosmosSender.String(),
+		Validator:         validator.String(),
+		Power:             power,
 	}
 }
 
@@ -375,34 +366,50 @@ func (msg MsgUpdateWhiteListValidator) GetSigners() []sdk.AccAddress {
 	return []sdk.AccAddress{cosmosSender}
 }
 
-// MapOracleClaimsToEthBridgeClaims maps a set of generic oracle claim data into EthBridgeClaim objects
-func MapOracleClaimsToEthBridgeClaims(
-	ethereumChainID int64,
-	bridgeContract EthereumAddress,
-	nonce int64,
-	symbol string,
-	tokenContract EthereumAddress,
-	ethereumSender EthereumAddress,
-	oracleValidatorClaims map[string]string,
-	f func(int64, EthereumAddress, int64, EthereumAddress, sdk.ValAddress, string) (*EthBridgeClaim, error),
-) ([]*EthBridgeClaim, error) {
+// NewMsgSetFeeInfo is a constructor function for MsgSetFeeInfo
+func NewMsgSetFeeInfo(cosmosSender sdk.AccAddress, networkDescriptor oracletypes.NetworkDescriptor, feeCurrency string) MsgSetFeeInfo {
+	return MsgSetFeeInfo{
+		CosmosSender:      cosmosSender.String(),
+		NetworkDescriptor: networkDescriptor,
+		FeeCurrency:       feeCurrency,
+	}
+}
 
-	mappedClaims := make([]*EthBridgeClaim, len(oracleValidatorClaims))
-	i := 0
-	for validatorBech32, validatorClaim := range oracleValidatorClaims {
-		validatorAddress, parseErr := sdk.ValAddressFromBech32(validatorBech32)
-		if parseErr != nil {
-			return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, fmt.Sprintf("failed to parse claim: %s", parseErr))
-		}
+// Route should return the name of the module
+func (msg MsgSetFeeInfo) Route() string { return RouterKey }
 
-		mappedClaim, err := f(
-			ethereumChainID, bridgeContract, nonce, ethereumSender, validatorAddress, validatorClaim)
-		if err != nil {
-			return nil, err
-		}
-		mappedClaims[i] = mappedClaim
-		i++
+// Type should return the action
+func (msg MsgSetFeeInfo) Type() string { return "set_crosschain_fee_info" }
+
+// ValidateBasic runs stateless checks on the message
+func (msg MsgSetFeeInfo) ValidateBasic() error {
+	if msg.CosmosSender == "" {
+		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.CosmosSender)
 	}
 
-	return mappedClaims, nil
+	if !msg.NetworkDescriptor.IsValid() {
+		return errors.New("network descriptor is invalid")
+	}
+
+	return nil
+}
+
+// GetSignBytes encodes the message for signing
+func (msg MsgSetFeeInfo) GetSignBytes() []byte {
+	b, err := json.Marshal(msg)
+	if err != nil {
+		panic(err)
+	}
+
+	return sdk.MustSortJSON(b)
+}
+
+// GetSigners defines whose signature is required
+func (msg MsgSetFeeInfo) GetSigners() []sdk.AccAddress {
+	cosmosSender, err := sdk.AccAddressFromBech32(msg.CosmosSender)
+	if err != nil {
+		panic(err)
+	}
+
+	return []sdk.AccAddress{cosmosSender}
 }

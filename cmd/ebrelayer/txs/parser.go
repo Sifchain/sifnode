@@ -4,6 +4,7 @@ import (
 	"errors"
 	"log"
 	"math/big"
+	"strconv"
 	"strings"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -13,6 +14,7 @@ import (
 
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/types"
 	ethbridge "github.com/Sifchain/sifnode/x/ethbridge/types"
+	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
 )
 
 const (
@@ -26,7 +28,7 @@ func EthereumEventToEthBridgeClaim(valAddr sdk.ValAddress, event types.EthereumE
 	witnessClaim := ethbridge.EthBridgeClaim{}
 
 	// chainID type casting (*big.Int -> int)
-	chainID := int(event.EthereumChainID.Int64())
+	networkDescriptor := event.NetworkDescriptor
 
 	bridgeContractAddress := ethbridge.NewEthereumAddress(event.BridgeContractAddress.Hex())
 
@@ -67,7 +69,7 @@ func EthereumEventToEthBridgeClaim(valAddr sdk.ValAddress, event types.EthereumE
 	nonce := int(event.Nonce.Int64())
 
 	// Package the information in a unique EthBridgeClaim
-	witnessClaim.EthereumChainId = int64(chainID)
+	witnessClaim.NetworkDescriptor = networkDescriptor
 	witnessClaim.BridgeContractAddress = bridgeContractAddress.String()
 	witnessClaim.Nonce = int64(nonce)
 	witnessClaim.TokenContractAddress = tokenContractAddress.String()
@@ -88,6 +90,7 @@ func BurnLockEventToCosmosMsg(claimType types.Event, attributes []abci.EventAttr
 	var ethereumReceiver common.Address
 	var symbol string
 	var amount sdk.Int
+	var networkDescriptor uint32
 
 	attributeNumber := 0
 
@@ -142,14 +145,27 @@ func BurnLockEventToCosmosMsg(claimType types.Event, attributes []abci.EventAttr
 				return types.CosmosMsg{}, errors.New("invalid amount:" + val)
 			}
 			amount = tempAmount
+		case types.NetworkDescriptor.String():
+			attributeNumber++
+			tempNetworkDescriptor, err := strconv.ParseUint(val, 10, 32)
+			if err != nil {
+				sugaredLogger.Errorw("network id can't parse", "networkDescriptor", val)
+				return types.CosmosMsg{}, errors.New("network id can't parse")
+			}
+			networkDescriptor = uint32(tempNetworkDescriptor)
+
+			// check if the networkDescriptor is valid
+			if !oracletypes.NetworkDescriptor(networkDescriptor).IsValid() {
+				return types.CosmosMsg{}, errors.New("network id is invalid")
+			}
 		}
 	}
 
-	if attributeNumber < 5 {
+	if attributeNumber < 6 {
 		sugaredLogger.Errorw("message not complete", "attributeNumber", attributeNumber)
 		return types.CosmosMsg{}, errors.New("message not complete")
 	}
-	return types.NewCosmosMsg(claimType, cosmosSender, cosmosSenderSequence, ethereumReceiver, symbol, amount), nil
+	return types.NewCosmosMsg(oracletypes.NetworkDescriptor(networkDescriptor), claimType, cosmosSender, cosmosSenderSequence, ethereumReceiver, symbol, amount), nil
 }
 
 // AttributesToEthereumBridgeClaim parses data from event to EthereumBridgeClaim

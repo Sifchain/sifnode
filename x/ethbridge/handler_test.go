@@ -26,10 +26,12 @@ const (
 	moduleString = "module"
 	statusString = "status"
 	senderString = "sender"
+	power        = 100
+	zeroPower    = 0
 )
 
 var (
-	UnregisteredValidatorAddress = sdk.ValAddress("cosmos1xdp5tvt7lxh8rf9xx07wy2xlagzhq24ha48xtq")
+	UnregisteredValidatorAddress = "cosmos1xdp5tvt7lxh8rf9xx07wy2xlagzhq24ha48xtq"
 	TestAccAddress               = "cosmos1xdp5tvt7lxh8rf9xx07wy2xlagzhq24ha48xtq"
 	TestAddress                  = "cosmos1xdp5tvt7lxh8rf9xx07wy2xlagzhq24ha48xtq"
 )
@@ -55,7 +57,9 @@ func TestBasicMsgs(t *testing.T) {
 	for _, event := range res.Events {
 		for _, attribute := range event.Attributes {
 			value := string(attribute.Value)
+
 			switch key := string(attribute.Key); key {
+
 			case "module":
 				require.Equal(t, value, types.ModuleName)
 			case senderString:
@@ -113,7 +117,7 @@ func TestDuplicateMsgs(t *testing.T) {
 	res, err = handler(ctx, &normalCreateMsg)
 	require.Error(t, err)
 	require.Nil(t, res)
-	require.True(t, strings.Contains(err.Error(), "already processed message from validator for this id"))
+	require.Equal(t, err.Error(), oracletypes.ErrDuplicateMessage.Error())
 }
 
 func TestMintSuccess(t *testing.T) {
@@ -138,7 +142,8 @@ func TestMintSuccess(t *testing.T) {
 	receiverAddress, err := sdk.AccAddressFromBech32(types.TestAddress)
 	require.NoError(t, err)
 	receiverCoins := bankKeeper.GetAllBalances(ctx, receiverAddress)
-	expectedCoins := sdk.Coins{sdk.NewInt64Coin(types.TestCoinsLockedSymbol, types.TestCoinIntAmount)}
+	expectedCoins := sdk.Coins{sdk.NewInt64Coin(types.TestCrossChainFeeSymbol, types.TestCoinIntAmount)}
+
 	require.True(t, receiverCoins.IsEqual(expectedCoins))
 	for _, event := range res.Events {
 		for _, attribute := range event.Attributes {
@@ -151,12 +156,10 @@ func TestMintSuccess(t *testing.T) {
 
 	//Additional message from third validator fails and does not mint
 	normalCreateMsg = types.CreateTestEthMsg(t, valAddressVal3Pow1, types.ClaimType_CLAIM_TYPE_LOCK)
-	res, err = handler(ctx, &normalCreateMsg)
-	require.Error(t, err)
-	require.Nil(t, res)
-	require.True(t, strings.Contains(err.Error(), "prophecy already finalized"))
+	_, err = handler(ctx, &normalCreateMsg)
+	require.Nil(t, err)
 	receiverCoins = bankKeeper.GetAllBalances(ctx, receiverAddress)
-	expectedCoins = sdk.Coins{sdk.NewInt64Coin(types.TestCoinsLockedSymbol, types.TestCoinIntAmount)}
+	expectedCoins = sdk.Coins{sdk.NewInt64Coin(types.TestCrossChainFeeSymbol, types.TestCoinIntAmount)}
 	require.True(t, receiverCoins.IsEqual(expectedCoins))
 }
 
@@ -218,7 +221,7 @@ func TestNoMintFail(t *testing.T) {
 		for _, attribute := range event.Attributes {
 			value := string(attribute.Value)
 			if string(attribute.Key) == statusString {
-				require.Equal(t, value, oracletypes.StatusText_STATUS_TEXT_FAILED.String())
+				require.Equal(t, value, oracletypes.StatusText_STATUS_TEXT_PENDING.String())
 			}
 		}
 	}
@@ -233,26 +236,33 @@ func TestLockFail(t *testing.T) {
 	//Setup
 	ctx, _, _, _, handler, _, _ := CreateTestHandler(t, 0.7, []int64{2, 7, 1})
 
+	addAddress, err := sdk.AccAddressFromBech32(UnregisteredValidatorAddress)
+	require.NoError(t, err)
+	valAddress := sdk.ValAddress(addAddress)
+
 	//Initial message
-	normalCreateMsg := types.CreateTestEthMsg(t, UnregisteredValidatorAddress, types.ClaimType_CLAIM_TYPE_LOCK)
+	normalCreateMsg := types.CreateTestEthMsg(t, valAddress, types.ClaimType_CLAIM_TYPE_LOCK)
 	res, err := handler(ctx, &normalCreateMsg)
 
 	require.Error(t, err)
 	require.Nil(t, res)
-	require.Equal(t, err.Error(), "validator must be in whitelist")
+	require.Equal(t, err.Error(), "validator not in white list")
 }
 
 func TestBurnFail(t *testing.T) {
 	//Setup
 	ctx, _, _, _, handler, _, _ := CreateTestHandler(t, 0.7, []int64{2, 7, 1})
+	addAddress, err := sdk.AccAddressFromBech32(UnregisteredValidatorAddress)
+	require.NoError(t, err)
 
+	valAddress := sdk.ValAddress(addAddress)
 	//Initial message
-	normalCreateMsg := types.CreateTestEthMsg(t, UnregisteredValidatorAddress, types.ClaimType_CLAIM_TYPE_BURN)
+	normalCreateMsg := types.CreateTestEthMsg(t, valAddress, types.ClaimType_CLAIM_TYPE_BURN)
 	res, err := handler(ctx, &normalCreateMsg)
 
 	require.Error(t, err)
 	require.Nil(t, res)
-	require.Equal(t, err.Error(), "validator must be in whitelist")
+	require.Equal(t, err.Error(), "validator not in white list")
 }
 
 func TestBurnEthFail(t *testing.T) {
@@ -318,13 +328,14 @@ func TestBurnEthSuccess(t *testing.T) {
 	remainingCoins := mintedCoins.Sub(burnedCoins)
 	senderCoins := bankKeeper.GetAllBalances(ctx, senderAddress)
 	require.True(t, senderCoins.IsEqual(remainingCoins))
-	eventEthereumChainID := ""
+	// eventEthereumChainID := ""
+	networkDescriptor := ""
 	eventCosmosSender := ""
 	eventCosmosSenderSequence := ""
 	eventEthereumReceiver := ""
 	eventAmount := ""
 	eventSymbol := ""
-	eventCethAmount := sdk.NewInt(0)
+	eventcrossChainFee := sdk.NewInt(0)
 	for _, event := range res.Events {
 		for _, attribute := range event.Attributes {
 			value := string(attribute.Value)
@@ -337,8 +348,10 @@ func TestBurnEthSuccess(t *testing.T) {
 				// require.Equal(t, value, TestAddress)
 			case moduleString:
 				require.Equal(t, value, types.ModuleName)
-			case "ethereum_chain_id":
-				eventEthereumChainID = value
+			case "network_id":
+				networkDescriptor = value
+
+				// eventEthereumChainID = value
 			case "cosmos_sender":
 				eventCosmosSender = value
 			case "cosmos_sender_sequence":
@@ -349,22 +362,24 @@ func TestBurnEthSuccess(t *testing.T) {
 				eventAmount = value
 			case "symbol":
 				eventSymbol = value
-			case "ceth_amount":
+			case "cross_chain_fee_amount":
 				var ok bool
-				eventCethAmount, ok = sdk.NewIntFromString(value)
+				eventcrossChainFee, ok = sdk.NewIntFromString(value)
 				require.Equal(t, ok, true)
 			default:
 				require.Fail(t, fmt.Sprintf("unrecognized event %s", key))
 			}
 		}
 	}
-	require.Equal(t, eventEthereumChainID, strconv.Itoa(types.TestEthereumChainID))
+	TestNetworkDescriptorStr := strconv.Itoa(int(types.TestNetworkDescriptor))
+	require.Equal(t, networkDescriptor, TestNetworkDescriptorStr)
+
 	require.Equal(t, eventCosmosSender, senderAddress.String())
 	require.Equal(t, eventCosmosSenderSequence, senderSequence)
 	require.Equal(t, eventEthereumReceiver, ethereumReceiver.String())
 	require.Equal(t, eventAmount, coinsToBurnAmount.String())
 	require.Equal(t, eventSymbol, coinsToBurnSymbolPrefixed)
-	require.Equal(t, eventCethAmount, sdk.NewInt(65000000000*300000))
+	require.Equal(t, eventcrossChainFee, sdk.NewInt(65000000000*300000))
 
 	coinsToMintAmount = sdk.NewInt(65000000000 * 300000)
 	coinsToMintSymbol = "eth"
@@ -397,7 +412,7 @@ func TestBurnEthSuccess(t *testing.T) {
 	require.Nil(t, res)
 }
 
-func TestUpdateCethReceiverAccountMsg(t *testing.T) {
+func TestUpdateCrossChainFeeReceiverAccountMsg(t *testing.T) {
 	ctx, _, bankKeeper, accountKeeper, handler, _, oracleKeeper := CreateTestHandler(t, 0.5, []int64{5})
 	coins := sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, sdk.NewInt(10000)))
 
@@ -408,35 +423,35 @@ func TestUpdateCethReceiverAccountMsg(t *testing.T) {
 	err = bankKeeper.AddCoins(ctx, cosmosSender, coins)
 	require.NoError(t, err)
 
-	testUpdateCethReceiverAccountMsg := types.CreateTestUpdateCethReceiverAccountMsg(
+	testUpdateCrossChainFeeReceiverAccountMsg := types.CreateTestUpdateCrossChainFeeReceiverAccountMsg(
 		t, types.TestAddress, types.TestAddress)
 
-	res, err := handler(ctx, &testUpdateCethReceiverAccountMsg)
+	res, err := handler(ctx, &testUpdateCrossChainFeeReceiverAccountMsg)
 	require.NoError(t, err)
 	require.NotNil(t, res)
 }
 
-func TestRescueCethMsg(t *testing.T) {
+func TestRescueCrossChainFeeMsg(t *testing.T) {
 	ctx, _, bankKeeper, accountKeeper, handler, _, oracleKeeper := CreateTestHandler(t, 0.5, []int64{5})
-	coins := sdk.NewCoins(sdk.NewCoin(types.CethSymbol, sdk.NewInt(10000)))
+	coins := sdk.NewCoins(sdk.NewCoin("ceth", sdk.NewInt(10000)))
 	err := bankKeeper.MintCoins(ctx, types.ModuleName, coins)
 	require.NoError(t, err)
 
-	testRescueCethMsg := types.CreateTestRescueCethMsg(
-		t, types.TestAddress, types.TestAddress, sdk.NewInt(10000))
+	testRescueCrossChainFeeMsg := types.CreateTestRescueCrossChainFeeMsg(
+		t, types.TestAddress, types.TestAddress, types.TestCrossChainFeeSymbol, sdk.NewInt(10000))
 
 	cosmosSender, err := sdk.AccAddressFromBech32(types.TestAddress)
 	require.NoError(t, err)
 
 	accountKeeper.SetAccount(ctx, authtypes.NewBaseAccountWithAddress(cosmosSender))
 
-	_, err = handler(ctx, &testRescueCethMsg)
+	_, err = handler(ctx, &testRescueCrossChainFeeMsg)
 	require.Error(t, err)
 
 	oracleKeeper.SetAdminAccount(ctx, cosmosSender)
 	_ = bankKeeper.AddCoins(ctx, cosmosSender, coins)
 
-	res, err := handler(ctx, &testRescueCethMsg)
+	res, err := handler(ctx, &testRescueCrossChainFeeMsg)
 	require.NoError(t, err)
 	require.NotNil(t, res)
 }
@@ -455,7 +470,7 @@ func TestUpdateWhiteListValidator(t *testing.T) {
 			sender:   addrs[0],
 			expected: []sdk.ValAddress{validatorAddresses[0]},
 			msgs: []types.MsgUpdateWhiteListValidator{
-				types.CreateTestUpdateWhiteListValidatorMsg(t, addrs[0].String(), validatorAddresses[0].String(), "add"),
+				types.CreateTestUpdateWhiteListValidatorMsg(t, oracletypes.NetworkDescriptor_NETWORK_DESCRIPTOR_ETHEREUM, addrs[0].String(), validatorAddresses[0].String(), power),
 			},
 		},
 		{
@@ -463,8 +478,8 @@ func TestUpdateWhiteListValidator(t *testing.T) {
 			sender:   addrs[0],
 			expected: []sdk.ValAddress{validatorAddresses[0], validatorAddresses[1]},
 			msgs: []types.MsgUpdateWhiteListValidator{
-				types.CreateTestUpdateWhiteListValidatorMsg(t, addrs[0].String(), validatorAddresses[0].String(), "add"),
-				types.CreateTestUpdateWhiteListValidatorMsg(t, addrs[0].String(), validatorAddresses[1].String(), "add"),
+				types.CreateTestUpdateWhiteListValidatorMsg(t, oracletypes.NetworkDescriptor_NETWORK_DESCRIPTOR_ETHEREUM, addrs[0].String(), validatorAddresses[0].String(), power),
+				types.CreateTestUpdateWhiteListValidatorMsg(t, oracletypes.NetworkDescriptor_NETWORK_DESCRIPTOR_ETHEREUM, addrs[0].String(), validatorAddresses[1].String(), power),
 			},
 		},
 		{
@@ -472,9 +487,9 @@ func TestUpdateWhiteListValidator(t *testing.T) {
 			sender:   addrs[0],
 			expected: []sdk.ValAddress{validatorAddresses[0]},
 			msgs: []types.MsgUpdateWhiteListValidator{
-				types.CreateTestUpdateWhiteListValidatorMsg(t, addrs[0].String(), validatorAddresses[0].String(), "add"),
-				types.CreateTestUpdateWhiteListValidatorMsg(t, addrs[0].String(), validatorAddresses[1].String(), "add"),
-				types.CreateTestUpdateWhiteListValidatorMsg(t, addrs[0].String(), validatorAddresses[1].String(), "remove"),
+				types.CreateTestUpdateWhiteListValidatorMsg(t, oracletypes.NetworkDescriptor_NETWORK_DESCRIPTOR_ETHEREUM, addrs[0].String(), validatorAddresses[0].String(), power),
+				types.CreateTestUpdateWhiteListValidatorMsg(t, oracletypes.NetworkDescriptor_NETWORK_DESCRIPTOR_ETHEREUM, addrs[0].String(), validatorAddresses[1].String(), power),
+				types.CreateTestUpdateWhiteListValidatorMsg(t, oracletypes.NetworkDescriptor_NETWORK_DESCRIPTOR_ETHEREUM, addrs[0].String(), validatorAddresses[1].String(), zeroPower),
 			},
 		},
 		{
@@ -482,9 +497,9 @@ func TestUpdateWhiteListValidator(t *testing.T) {
 			sender:   addrs[0],
 			expected: []sdk.ValAddress{validatorAddresses[1]},
 			msgs: []types.MsgUpdateWhiteListValidator{
-				types.CreateTestUpdateWhiteListValidatorMsg(t, addrs[0].String(), validatorAddresses[0].String(), "add"),
-				types.CreateTestUpdateWhiteListValidatorMsg(t, addrs[0].String(), validatorAddresses[1].String(), "add"),
-				types.CreateTestUpdateWhiteListValidatorMsg(t, addrs[0].String(), validatorAddresses[0].String(), "remove"),
+				types.CreateTestUpdateWhiteListValidatorMsg(t, oracletypes.NetworkDescriptor_NETWORK_DESCRIPTOR_ETHEREUM, addrs[0].String(), validatorAddresses[0].String(), power),
+				types.CreateTestUpdateWhiteListValidatorMsg(t, oracletypes.NetworkDescriptor_NETWORK_DESCRIPTOR_ETHEREUM, addrs[0].String(), validatorAddresses[1].String(), power),
+				types.CreateTestUpdateWhiteListValidatorMsg(t, oracletypes.NetworkDescriptor_NETWORK_DESCRIPTOR_ETHEREUM, addrs[0].String(), validatorAddresses[0].String(), zeroPower),
 			},
 		},
 		{
@@ -492,7 +507,7 @@ func TestUpdateWhiteListValidator(t *testing.T) {
 			sender:   addrs[0],
 			expected: []sdk.ValAddress{},
 			msgs: []types.MsgUpdateWhiteListValidator{
-				types.CreateTestUpdateWhiteListValidatorMsg(t, addrs[0].String(), validatorAddresses[0].String(), "remove"),
+				types.CreateTestUpdateWhiteListValidatorMsg(t, oracletypes.NetworkDescriptor_NETWORK_DESCRIPTOR_ETHEREUM, addrs[0].String(), validatorAddresses[0].String(), zeroPower),
 			},
 		},
 		{
@@ -500,8 +515,8 @@ func TestUpdateWhiteListValidator(t *testing.T) {
 			sender:   addrs[0],
 			expected: []sdk.ValAddress{},
 			msgs: []types.MsgUpdateWhiteListValidator{
-				types.CreateTestUpdateWhiteListValidatorMsg(t, addrs[0].String(), validatorAddresses[0].String(), "add"),
-				types.CreateTestUpdateWhiteListValidatorMsg(t, addrs[0].String(), validatorAddresses[0].String(), "remove"),
+				types.CreateTestUpdateWhiteListValidatorMsg(t, oracletypes.NetworkDescriptor_NETWORK_DESCRIPTOR_ETHEREUM, addrs[0].String(), validatorAddresses[0].String(), power),
+				types.CreateTestUpdateWhiteListValidatorMsg(t, oracletypes.NetworkDescriptor_NETWORK_DESCRIPTOR_ETHEREUM, addrs[0].String(), validatorAddresses[0].String(), zeroPower),
 			},
 		},
 		{
@@ -509,12 +524,14 @@ func TestUpdateWhiteListValidator(t *testing.T) {
 			sender:   addrs[0],
 			expected: []sdk.ValAddress{},
 			msgs: []types.MsgUpdateWhiteListValidator{
-				types.CreateTestUpdateWhiteListValidatorMsg(t, addrs[0].String(), validatorAddresses[0].String(), "add"),
-				types.CreateTestUpdateWhiteListValidatorMsg(t, addrs[0].String(), validatorAddresses[0].String(), "add"),
-				types.CreateTestUpdateWhiteListValidatorMsg(t, addrs[0].String(), validatorAddresses[0].String(), "remove"),
+				types.CreateTestUpdateWhiteListValidatorMsg(t, oracletypes.NetworkDescriptor_NETWORK_DESCRIPTOR_ETHEREUM, addrs[0].String(), validatorAddresses[0].String(), power),
+				types.CreateTestUpdateWhiteListValidatorMsg(t, oracletypes.NetworkDescriptor_NETWORK_DESCRIPTOR_ETHEREUM, addrs[0].String(), validatorAddresses[0].String(), power),
+				types.CreateTestUpdateWhiteListValidatorMsg(t, oracletypes.NetworkDescriptor_NETWORK_DESCRIPTOR_ETHEREUM, addrs[0].String(), validatorAddresses[0].String(), zeroPower),
 			},
 		},
 	}
+
+	networkDescriptor := oracletypes.NewNetworkIdentity(oracletypes.NetworkDescriptor_NETWORK_DESCRIPTOR_ETHEREUM)
 
 	for i := range testCases {
 		testCase := testCases[i]
@@ -524,7 +541,7 @@ func TestUpdateWhiteListValidator(t *testing.T) {
 
 			accountKeeper.SetAccount(ctx, authtypes.NewBaseAccountWithAddress(sender))
 			oracleKeeper.SetAdminAccount(ctx, sender)
-			oracleKeeper.SetOracleWhiteList(ctx, []sdk.ValAddress{})
+			oracleKeeper.RemoveOracleWhiteList(ctx, networkDescriptor)
 
 			for i := range testCase.msgs {
 				msg := testCase.msgs[i]
@@ -532,21 +549,50 @@ func TestUpdateWhiteListValidator(t *testing.T) {
 				require.NoError(t, err)
 			}
 
-			wl := oracleKeeper.GetOracleWhiteList(ctx)
-			require.Equal(t, testCase.expected, wl)
+			wl := oracleKeeper.GetAllValidators(ctx, networkDescriptor)
+			for _, address := range wl {
+				found := false
+				for _, expected := range testCase.expected {
+					if address.Equals(expected) {
+						found = true
+					}
+				}
+				require.Equal(t, found, true)
+			}
 		})
 	}
+}
+
+func TestSetCrossChainFeeMsg(t *testing.T) {
+	ctx, _, _, accountKeeper, handler, _, oracleKeeper := CreateTestHandler(t, 0.5, []int64{5})
+
+	testSetAtiveTokenMsg := types.CreateTestSetCrossChainFeeMsg(
+		t, types.TestAddress, oracletypes.NetworkDescriptor_NETWORK_DESCRIPTOR_ETHEREUM, "ceth")
+
+	cosmosSender, err := sdk.AccAddressFromBech32(types.TestAddress)
+	require.NoError(t, err)
+
+	accountKeeper.SetAccount(ctx, authtypes.NewBaseAccountWithAddress(cosmosSender))
+
+	_, err = handler(ctx, &testSetAtiveTokenMsg)
+	require.Error(t, err)
+
+	oracleKeeper.SetAdminAccount(ctx, cosmosSender)
+
+	res, err := handler(ctx, &testSetAtiveTokenMsg)
+	require.NoError(t, err)
+	require.NotNil(t, res)
 }
 
 func CreateTestHandler(t *testing.T, consensusNeeded float64, validatorAmounts []int64) (sdk.Context,
 	ethbridgekeeper.Keeper, bankkeeper.Keeper, authkeeper.AccountKeeper,
 	sdk.Handler, []sdk.ValAddress, oraclekeeper.Keeper) {
 
-	ctx, keeper, bankKeeper, accountKeeper, oracleKeeper, _, validatorAddresses := test.CreateTestKeepers(t, consensusNeeded, validatorAmounts, "")
+	ctx, keeper, bankKeeper, accountKeeper, oracleKeeper, _, _, validators := test.CreateTestKeepers(t, consensusNeeded, validatorAmounts, "")
 
-	CethReceiverAccount, _ := sdk.AccAddressFromBech32(TestAddress)
-	keeper.SetCethReceiverAccount(ctx, CethReceiverAccount)
+	CrossChainFeeReceiverAccount, _ := sdk.AccAddressFromBech32(TestAddress)
+	keeper.SetCrossChainFeeReceiverAccount(ctx, CrossChainFeeReceiverAccount)
 	handler := ethbridge.NewHandler(keeper)
 
-	return ctx, keeper, bankKeeper, accountKeeper, handler, validatorAddresses, oracleKeeper
+	return ctx, keeper, bankKeeper, accountKeeper, handler, validators, oracleKeeper
 }

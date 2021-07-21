@@ -37,7 +37,7 @@ func TestLogLockToEthBridgeClaim(t *testing.T) {
 
 	// Set up expected EthBridgeClaim
 	expectedEthBridgeClaim := ethbridge.NewEthBridgeClaim(
-		TestEthereumChainID, testBridgeContractAddress, TestNonce, strings.ToLower(TestSymbol), testTokenContractAddress,
+		TestNetworkDescriptor, testBridgeContractAddress, TestNonce, strings.ToLower(TestSymbol), testTokenContractAddress,
 		testEthereumAddress, testCosmosAddress, testCosmosValidatorBech32Address, testSDKAmount, ethbridge.ClaimType_CLAIM_TYPE_LOCK)
 
 	// Create test ethereum event

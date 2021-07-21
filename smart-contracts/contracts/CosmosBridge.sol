@@ -162,11 +162,32 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
         uint128 nonce;
     }
 
+    function batchSubmitProphecyClaimAggregatedSigs(
+        bytes32[] calldata sigs,
+        ClaimData[] calldata claims,
+        SignatureData[][] calldata signatureData
+    ) external {
+        require(sigs.length == claims.length, "INV_CLM_LEN");
+        require(sigs.length == signatureData.length, "INV_SIG_LEN");
+
+        for (uint256 i = 0; i < sigs.length; i++) {
+            _submitProphecyClaimAggregatedSigs(sigs[i], claims[i], signatureData[i]);
+        }
+    }
+
     function submitProphecyClaimAggregatedSigs(
         bytes32 hashDigest,
         ClaimData calldata claimData,
         SignatureData[] calldata signatureData
     ) external {
+        _submitProphecyClaimAggregatedSigs(hashDigest, claimData, signatureData);
+    }
+
+    function _submitProphecyClaimAggregatedSigs(
+        bytes32 hashDigest,
+        ClaimData calldata claimData,
+        SignatureData[] calldata signatureData
+    ) private {
 
         uint256 prophecyID = getProphecyID(
             claimData.cosmosSender,
@@ -221,12 +242,6 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
         );
         lastNonceSubmitted = claimData.nonce;
 
-        emit LogNewProphecyClaim(
-            prophecyID,
-            claimData.ethereumReceiver,
-            claimData.amount
-        );
-
         // if we are double pegging, then we are going to need to get the address on this chain
         address tokenAddress = claimData.doublePeg ? sourceAddressToDestinationAddress[claimData.tokenAddress] : claimData.tokenAddress;
 
@@ -234,6 +249,12 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
             prophecyID,
             claimData.ethereumReceiver,
             tokenAddress,
+            claimData.amount
+        );
+
+        emit LogNewProphecyClaim(
+            prophecyID,
+            claimData.ethereumReceiver,
             claimData.amount
         );
     }
@@ -252,6 +273,10 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
         uint8 decimals,
         uint256 chainDescriptor
     ) external onlyValidator {
+        require(
+            sourceAddressToDestinationAddress[sourceChainTokenAddress] == address(0),
+            "INV_SRC_ADDR"
+        );
         // need to make a business decision on what this symbol should be
         // First lock of this asset, deploy new contract and get new symbol/token address
         address tokenAddress = BridgeBank(bridgeBank)

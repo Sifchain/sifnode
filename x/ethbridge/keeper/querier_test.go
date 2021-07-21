@@ -2,6 +2,7 @@ package keeper_test
 
 import (
 	"reflect"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -10,15 +11,17 @@ import (
 	ethbridgekeeper "github.com/Sifchain/sifnode/x/ethbridge/keeper"
 	"github.com/Sifchain/sifnode/x/ethbridge/test"
 	"github.com/Sifchain/sifnode/x/ethbridge/types"
+	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
 )
 
 //nolint:lll
 const (
-	TestResponseJSON = "{\"id\":\"300x7B95B6EC7EbD73572298cEf32Bb54FA408207359\",\"status\":{\"text\":1},\"claims\":[{\"ethereum_chain_id\":\"3\",\"bridge_contract_address\":\"0xC4cE93a5699c68241fc2fB503Fb0f21724A624BB\",\"symbol\":\"eth\",\"token_contract_address\":\"0x0000000000000000000000000000000000000000\",\"ethereum_sender\":\"0x7B95B6EC7EbD73572298cEf32Bb54FA408207359\",\"cosmos_receiver\":\"cosmos1gn8409qq9hnrxde37kuxwx5hrxpfpv8426szuv\",\"validator_address\":\"cosmosvaloper1mnfm9c7cdgqnkk66sganp78m0ydmcr4pn7fqfk\",\"amount\":\"10\",\"claim_type\":2}]}"
+	// TestResponseJSON = "{\"prophecy_id\":\"\\ufffd\\ufffd\\ufffd\\ufffdE|q\\ufffdrt\\ufffdS\\u0012D\\ufffdUj\\ufffd\\ufffd\\ufffd\\ufffdI\\ufffd\\u0018\\ufffdA9\\n \\ufffdJz\",\"status\":1,\"claim_validators\":[\"cosmosvaloper1mnfm9c7cdgqnkk66sganp78m0ydmcr4pn7fqfk\"]}"
+	TestResponseJSON = "{\"prophecy_id\":\"xy7EH/x26sNeLf62aTOQAqo3H9Fnrl19yDlub31XG5o=\",\"status\":1,\"claim_validators\":[\"cosmosvaloper1mnfm9c7cdgqnkk66sganp78m0ydmcr4pn7fqfk\"]}"
 )
 
 func TestNewQuerier(t *testing.T) {
-	ctx, keeper, _, _, _, encCfg, _ := test.CreateTestKeepers(t, 0.7, []int64{3, 3}, "")
+	ctx, keeper, _, _, _, encCfg, _, _ := test.CreateTestKeepers(t, 0.7, []int64{3, 3}, "")
 
 	query := abci.RequestQuery{
 		Path: "",
@@ -33,31 +36,63 @@ func TestNewQuerier(t *testing.T) {
 	require.Nil(t, bz)
 }
 
-func TestQueryEthProphecy(t *testing.T) {
-	ctx, keeper, _, _, oracleKeeper, encCfg, validatorAddresses := test.CreateTestKeepers(t, 0.7, []int64{3, 3}, "")
-
+func TestParseEthProphecy(t *testing.T) {
+	ctx, _, _, _, oracleKeeper, encCfg, _, validatorAddresses := test.CreateTestKeepers(t, 0.7, []int64{3, 3}, "")
 	valAddress := validatorAddresses[0]
+	NewTestResponseJSON := strings.Replace(TestResponseJSON, "cosmosvaloper1353a4uac03etdylz86tyq9ssm3x2704j3a9n7n", valAddress.String(), -1)
 	testEthereumAddress := types.NewEthereumAddress(types.TestEthereumAddress)
 	testBridgeContractAddress := types.NewEthereumAddress(types.TestBridgeContractAddress)
 	testTokenContractAddress := types.NewEthereumAddress(types.TestTokenContractAddress)
+	networkID := oracletypes.NetworkDescriptor_NETWORK_DESCRIPTOR_ETHEREUM
 
 	initialEthBridgeClaim := types.CreateTestEthClaim(
 		t, testBridgeContractAddress, testTokenContractAddress, valAddress,
 		testEthereumAddress, types.TestCoinsAmount, types.TestCoinsSymbol, types.ClaimType_CLAIM_TYPE_LOCK)
-	oracleClaim, _ := types.CreateOracleClaimFromEthClaim(initialEthBridgeClaim)
-	_, err := oracleKeeper.ProcessClaim(ctx, oracleClaim)
-	require.NoError(t, err)
 
+	_, err := oracleKeeper.ProcessClaim(ctx, networkID, initialEthBridgeClaim.GetProphecyID(), initialEthBridgeClaim.ValidatorAddress)
+	require.NoError(t, err)
+	testResponse := types.CreateTestQueryEthProphecyResponse(t, valAddress, types.ClaimType_CLAIM_TYPE_LOCK)
+	testJSON, err := encCfg.Amino.MarshalJSON(testResponse)
+	require.NoError(t, err)
+	require.Equal(t, NewTestResponseJSON, string(testJSON))
+
+	req := types.NewQueryEthProphecyRequest(initialEthBridgeClaim.GetProphecyID())
+	oldID := req.ProphecyId
+
+	bz, err2 := encCfg.Amino.MarshalJSON(req)
+	require.Nil(t, err2)
+
+	var decodedReq types.QueryEthProphecyRequest
+
+	encCfg.Amino.MustUnmarshalJSON(bz, &decodedReq)
+	newID := decodedReq.ProphecyId
+	require.Equal(t, oldID, newID)
+}
+
+func TestQueryEthProphecy(t *testing.T) {
+	ctx, keeper, _, _, oracleKeeper, encCfg, _, validatorAddresses := test.CreateTestKeepers(t, 0.7, []int64{3, 3}, "")
+	valAddress := validatorAddresses[0]
+	NewTestResponseJSON := strings.Replace(TestResponseJSON, "cosmosvaloper1353a4uac03etdylz86tyq9ssm3x2704j3a9n7n", valAddress.String(), -1)
+	testEthereumAddress := types.NewEthereumAddress(types.TestEthereumAddress)
+	testBridgeContractAddress := types.NewEthereumAddress(types.TestBridgeContractAddress)
+	testTokenContractAddress := types.NewEthereumAddress(types.TestTokenContractAddress)
+	networkID := oracletypes.NetworkDescriptor_NETWORK_DESCRIPTOR_ETHEREUM
+
+	initialEthBridgeClaim := types.CreateTestEthClaim(
+		t, testBridgeContractAddress, testTokenContractAddress, valAddress,
+		testEthereumAddress, types.TestCoinsAmount, types.TestCoinsSymbol, types.ClaimType_CLAIM_TYPE_LOCK)
+
+	_, err := oracleKeeper.ProcessClaim(ctx, networkID, initialEthBridgeClaim.GetProphecyID(), initialEthBridgeClaim.ValidatorAddress)
+	require.NoError(t, err)
 	testResponse := types.CreateTestQueryEthProphecyResponse(t, valAddress, types.ClaimType_CLAIM_TYPE_LOCK)
 
 	//Test query String()
 	testJSON, err := encCfg.Amino.MarshalJSON(testResponse)
 	require.NoError(t, err)
-	require.Equal(t, TestResponseJSON, string(testJSON))
+	require.Equal(t, NewTestResponseJSON, string(testJSON))
 
-	req := types.NewQueryEthProphecyRequest(
-		types.TestEthereumChainID, testBridgeContractAddress, types.TestNonce,
-		types.TestCoinsSymbol, testTokenContractAddress, testEthereumAddress)
+	req := types.NewQueryEthProphecyRequest(initialEthBridgeClaim.GetProphecyID())
+
 	bz, err2 := encCfg.Amino.MarshalJSON(req)
 	require.Nil(t, err2)
 
@@ -83,11 +118,9 @@ func TestQueryEthProphecy(t *testing.T) {
 	require.NotNil(t, err5)
 
 	// Test error with nonexistent request
-	badEthereumAddress := types.NewEthereumAddress("badEthereumAddress")
+	// badEthereumAddress := types.NewEthereumAddress("badEthereumAddress")
 
-	bz2, err6 := encCfg.Amino.MarshalJSON(types.NewQueryEthProphecyRequest(
-		types.TestEthereumChainID, testBridgeContractAddress, 12,
-		types.TestCoinsSymbol, testTokenContractAddress, badEthereumAddress))
+	bz2, err6 := encCfg.Amino.MarshalJSON(types.NewQueryEthProphecyRequest([]byte(types.TestProphecyID)))
 	require.Nil(t, err6)
 
 	query2 := abci.RequestQuery{
@@ -99,12 +132,10 @@ func TestQueryEthProphecy(t *testing.T) {
 	require.NotNil(t, err7)
 
 	// Test error with empty address
-	emptyEthereumAddress := types.NewEthereumAddress("")
+	// emptyEthereumAddress := types.NewEthereumAddress("")
 
 	bz3, err8 := encCfg.Amino.MarshalJSON(
-		types.NewQueryEthProphecyRequest(
-			types.TestEthereumChainID, testBridgeContractAddress, 12,
-			types.TestCoinsSymbol, testTokenContractAddress, emptyEthereumAddress))
+		types.NewQueryEthProphecyRequest([]byte(types.TestProphecyID)))
 
 	require.Nil(t, err8)
 
