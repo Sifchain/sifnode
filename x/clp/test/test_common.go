@@ -14,7 +14,6 @@ import (
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 
 	sifapp "github.com/Sifchain/sifnode/app"
-	"github.com/Sifchain/sifnode/x/clp/keeper"
 	"github.com/Sifchain/sifnode/x/clp/types"
 )
 
@@ -38,10 +37,10 @@ func CreateTestApp(isCheckTx bool) (*sifapp.SifchainApp, sdk.Context) {
 	return app, ctx
 }
 
-func CreateTestAppClp(isCheckTx bool) (sdk.Context, keeper.Keeper) {
+func CreateTestAppClp(isCheckTx bool) (sdk.Context, *sifapp.SifchainApp) {
 	ctx, app := GetSimApp(isCheckTx)
 	sifapp.SetConfig(false)
-	return ctx, app.ClpKeeper
+	return ctx, app
 }
 
 func GetSimApp(isCheckTx bool) (sdk.Context, *sifapp.SifchainApp) {

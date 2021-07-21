@@ -380,7 +380,7 @@ func NewSifApp(
 		evidence.NewAppModule(app.EvidenceKeeper),
 		ibc.NewAppModule(app.IBCKeeper),
 		transferModule,
-		clp.NewAppModule(app.ClpKeeper, app.BankKeeper),
+		clp.NewAppModule(app.ClpKeeper, app.BankKeeper, app.WhitelistKeeper),
 		oracle.NewAppModule(app.OracleKeeper),
 		ethbridge.NewAppModule(app.OracleKeeper, app.BankKeeper, app.AccountKeeper, app.EthbridgeKeeper, &appCodec),
 		dispensation.NewAppModule(app.DispensationKeeper, app.BankKeeper, app.AccountKeeper),
