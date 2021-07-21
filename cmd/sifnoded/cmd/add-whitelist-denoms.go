@@ -44,9 +44,9 @@ func AddWhiteListDenoms(defaultNodeHome string) *cobra.Command {
 			}
 
 			whitelistGenState := whitelisttypes.GetGenesisStateFromAppState(cdc, appState)
-			// Append New Entries to existing list
-			whitelistGenState.Whitelist.DenomWhitelistEntries = append(whitelistGenState.Whitelist.DenomWhitelistEntries, whitelist.DenomWhitelistEntries...)
-
+			// TODO :Append New Entries to existing list
+			//whitelistGenState.Whitelist.DenomWhitelistEntries = append(whitelistGenState.Whitelist.DenomWhitelistEntries, whitelist.DenomWhitelistEntries...)
+			whitelistGenState.Whitelist = &whitelist
 			whitelistGenStateBz, err := json.Marshal(whitelistGenState)
 			if err != nil {
 				return fmt.Errorf("failed to marshal auth genesis state: %w", err)
