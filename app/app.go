@@ -45,7 +45,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/gov"
 	govkeeper "github.com/cosmos/cosmos-sdk/x/gov/keeper"
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
-	"github.com/cosmos/cosmos-sdk/x/ibc/applications/transfer"
 	ibctransferkeeper "github.com/cosmos/cosmos-sdk/x/ibc/applications/transfer/keeper"
 	ibctransfertypes "github.com/cosmos/cosmos-sdk/x/ibc/applications/transfer/types"
 	ibc "github.com/cosmos/cosmos-sdk/x/ibc/core"
@@ -87,6 +86,7 @@ import (
 	"github.com/Sifchain/sifnode/x/ethbridge"
 	ethbridgekeeper "github.com/Sifchain/sifnode/x/ethbridge/keeper"
 	ethbridgetypes "github.com/Sifchain/sifnode/x/ethbridge/types"
+	ibctransferoverride "github.com/Sifchain/sifnode/x/ibctransfer"
 	"github.com/Sifchain/sifnode/x/oracle"
 	oraclekeeper "github.com/Sifchain/sifnode/x/oracle/keeper"
 	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
@@ -115,7 +115,7 @@ var (
 		slashing.AppModuleBasic{},
 		evidence.AppModuleBasic{},
 		ibc.AppModuleBasic{},
-		transfer.AppModuleBasic{},
+		ibctransferoverride.AppModuleBasic{},
 
 		clp.AppModuleBasic{},
 		oracle.AppModuleBasic{},
@@ -342,7 +342,7 @@ func NewSifApp(
 		app.IBCKeeper.ChannelKeeper, &app.IBCKeeper.PortKeeper,
 		app.AccountKeeper, app.BankKeeper, scopedTransferKeeper,
 	)
-	transferModule := transfer.NewAppModule(app.TransferKeeper)
+	transferModule := ibctransferoverride.NewAppModule(app.TransferKeeper, appCodec)
 
 	// NOTE: the IBC mock keeper and application module is used only for testing core IBC. Do
 	// note replicate if you do not need to test core IBC or light clients.
