@@ -75,6 +75,7 @@ func initRootCmd(rootCmd *cobra.Command, encodingConfig params.EncodingConfig) {
 		MigrateGenesisDataCmd(),
 		AddGenesisAccountCmd(app.DefaultNodeHome),
 		AddGenesisCLPAdminCmd(app.DefaultNodeHome),
+		AddWhiteListDenoms(app.DefaultNodeHome),
 		AddGenesisWhitelisterAdminCmd(app.DefaultNodeHome),
 		AddGenesisValidatorCmd(app.DefaultNodeHome),
 		SetGenesisOracleAdminCmd(app.DefaultNodeHome),
