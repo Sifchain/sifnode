@@ -1,6 +1,31 @@
-A1=0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266
-A2=0x70997970C51812dc3A010C7d01b50e0d17dc79C8
-A3=0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC
+# Makefile
 
-go:
-	PAUSER=${A3} OWNER=${A1} OPERATOR=${A1} INITIAL_VALIDATOR_ADDRESSES=${A2} CONSENSUS_THRESHOLD=100 INITIAL_VALIDATOR_POWERS=100 npx hardhat run --show-stack-traces --network localhost scripts/deploy.js
+SHELL:=/bin/bash
+
+setup:
+	python3 -m venv venv ; source ./venv/bin/activate ; pip3 install -r requirements.txt
+	yarn
+
+# Run slither over entire directory
+# `make slither`
+slither: setup
+	slither . || true
+
+# Simple static analysis in a human-readable report over entire directory
+# `make slither-pretty-summary`
+slither-pretty-summary: setup
+	slither . --print human-summary
+
+# Check for ERC 20|223|777|721|165|1820 conformance
+# `make conformance CONTRACT=./contracts/ContractFile.sol CONTRACT_NAME=ContractName`
+erc-conformance: setup
+	slither-check-erc ${CONTRACT} ${CONTRACT_NAME}
+
+.PHONY: clean clean-smartcontracts clean-node
+clean: clean-node clean-smartcontracts
+
+clean-smartcontracts:
+	rm -rf build .openzepplin
+
+clean-node:
+	rm -rf node_modules
