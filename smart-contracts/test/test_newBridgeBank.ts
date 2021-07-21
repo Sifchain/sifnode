@@ -85,7 +85,7 @@ describe("BridgeBank", () => {
                 {
                     value: 0
                 }
-            )).to.be.revertedWith("Invalid sif address")
+            )).to.be.revertedWith("INV_SIF_ADDR")
         })
 
         it("should lock eth", async () => {
