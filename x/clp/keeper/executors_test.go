@@ -43,13 +43,14 @@ func TestKeeper_CreatePoolAndProvideLiquidity(t *testing.T) {
 	keeper := app.ClpKeeper
 	handler := clp.NewHandler(keeper)
 	signer := test.GenerateAddress("")
-	initialBalance := sdk.NewUintFromString("700000000000000000000")
+	initialBalance := sdk.NewUintFromString("30000000000000000000")
 	nativeAmount := sdk.NewUintFromString("2000000000000000000")
 	externalAmount := sdk.NewUintFromString("5000000000000000000")
-	asset := types.NewAsset("dai") // cusdt, cusdc, c1inch - ok; usdt, usdc, 1inch - error, TODO: investigate, might be a critical issue
+	asset := types.NewAsset("cusdt")
 	externalCoin := sdk.NewCoin(asset.Symbol, sdk.Int(initialBalance))
 	nativeCoin := sdk.NewCoin(types.NativeSymbol, sdk.Int(initialBalance))
-	err := app.BankKeeper.AddCoins(ctx, signer, sdk.Coins{externalCoin, nativeCoin})
+	coins := sdk.NewCoins(sdk.Coins{externalCoin, nativeCoin}...)
+	err := app.BankKeeper.AddCoins(ctx, signer, coins)
 	assert.NoError(t, err)
 
 	ok := keeper.HasBalance(ctx, signer, externalCoin)
