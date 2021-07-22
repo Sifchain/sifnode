@@ -1,4 +1,4 @@
-package sifgen
+package main
 
 import (
 	"fmt"
@@ -13,12 +13,6 @@ import (
 )
 
 func main() {
-	rootCmd := NewRootCmd()
-
-	_ = rootCmd.Execute()
-}
-
-func NewRootCmd() *cobra.Command {
 	rootCmd := &cobra.Command{Use: "sifgen"}
 
 	_networkCmd := networkCmd()
@@ -51,8 +45,7 @@ func NewRootCmd() *cobra.Command {
 	_keyCmd.AddCommand(keyGenerateMnemonicCmd(), keyRecoverFromMnemonicCmd())
 
 	rootCmd.AddCommand(_networkCmd, _nodeCmd, _keyCmd)
-
-	return rootCmd
+	_ = rootCmd.Execute()
 }
 
 func networkCmd() *cobra.Command {
