@@ -123,20 +123,14 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
         require(!prophecyCompleted, "prophecyCompleted");
 
         if (oracleClaimValidators[_prophecyID] == 0) {
-            string memory symbol;
+            string memory symbol = BridgeBank(bridgeBank).safeLowerToUpperTokens(_symbol);
+
             if (_claimType == ClaimType.Burn) {
-                symbol = BridgeBank(bridgeBank).safeLowerToUpperTokens(_symbol);
-                require(
-                    BridgeBank(bridgeBank).getLockedFunds(symbol) >= _amount,
-                    "Not enough locked assets to complete the proposed prophecy"
-                );
                 address tokenAddress = BridgeBank(bridgeBank).getLockedTokenAddress(symbol);
                 if (tokenAddress == address(0) && uint256(keccak256(abi.encodePacked(symbol))) != uint256(keccak256("eth"))) {
                     revert("Invalid token address");
                 }
             } else if (_claimType == ClaimType.Lock) {
-                symbol = concat(COSMOS_NATIVE_ASSET_PREFIX, _symbol); // Add 'e' symbol prefix
-                symbol = BridgeBank(bridgeBank).safeLowerToUpperTokens(symbol);
                 address bridgeTokenAddress = BridgeBank(bridgeBank).getBridgeToken(symbol);
                 if (bridgeTokenAddress == address(0)) {
                     // First lock of this asset, deploy new contract and get new symbol/token address
@@ -158,18 +152,8 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
         bool claimComplete = newOracleClaim(_prophecyID, msg.sender);
 
         if (claimComplete) {
-            address tokenAddress;
-            if (_claimType == ClaimType.Lock) {
-                _symbol = concat(COSMOS_NATIVE_ASSET_PREFIX, _symbol);
-                _symbol = BridgeBank(bridgeBank).safeLowerToUpperTokens(_symbol);
-                tokenAddress = BridgeBank(bridgeBank).getBridgeToken(_symbol);
-            } else {
-                _symbol = BridgeBank(bridgeBank).safeLowerToUpperTokens(_symbol);
-                tokenAddress = BridgeBank(bridgeBank).getLockedTokenAddress(_symbol);
-            }
             completeProphecyClaim(
                 _prophecyID,
-                tokenAddress,
                 _claimType,
                 _ethereumReceiver,
                 _symbol,
@@ -186,7 +170,6 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
      */
     function completeProphecyClaim(
         uint256 _prophecyID,
-        address tokenAddress,
         ClaimType claimType,
         address payable ethereumReceiver,
         string memory symbol,
@@ -196,7 +179,7 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
         if (claimType == ClaimType.Burn) {
             unlockTokens(ethereumReceiver, symbol, amount);
         } else {
-            issueBridgeTokens(ethereumReceiver, tokenAddress, symbol, amount);
+            issueBridgeTokens(ethereumReceiver, symbol, amount);
         }
 
         emit LogProphecyCompleted(_prophecyID, claimType);
@@ -208,13 +191,11 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
      */
     function issueBridgeTokens(
         address payable ethereumReceiver,
-        address tokenAddress,
         string memory symbol,
         uint256 amount
     ) internal {
         BridgeBank(bridgeBank).mintBridgeTokens(
             ethereumReceiver,
-            tokenAddress,
             symbol,
             amount
         );
@@ -234,19 +215,5 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
             symbol,
             amount
         );
-    }
-
-    /*
-     * @dev: Performs low gas-comsuption string concatenation
-     *
-     * @param _prefix: start of the string
-     * @param _suffix: end of the string
-     */
-    function concat(string memory _prefix, string memory _suffix)
-        internal
-        pure
-        returns (string memory)
-    {
-        return string(abi.encodePacked(_prefix, _suffix));
     }
 }

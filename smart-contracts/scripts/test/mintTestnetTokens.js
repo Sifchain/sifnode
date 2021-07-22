@@ -36,10 +36,6 @@ module.exports = async cb => {
 
         const bridgeBankContract = await contractUtilites.buildContract(this, argv, logging, "BridgeBank", argv.bridgebank_address);
 
-        await bridgeBankContract.updateTokenLockBurnLimit(argv.symbol, sifchainUtilities.SOLIDITY_MAX_INT, {
-            from: argv.operator_address
-        });
-
         const result = {
             destination: token_destination,
             amount: amount.toString(10),

@@ -127,7 +127,7 @@ end
 # @param keyring_backend    Keyring backend
 #
 def network_create(chainnet:, validator_count:, build_dir:, seed_ip_address:, network_config:, keyring_backend:)
-  safe_system("sifgen network create #{chainnet} #{validator_count} #{build_dir} #{seed_ip_address} #{network_config} --keyring-backend #{keyring_backend}")
+  safe_system("sifgen network create #{chainnet} #{validator_count} #{build_dir} #{seed_ip_address} #{network_config} --keyring-backend #{keyring_backend}  --mint-amount 999999000000000000000000000rowan,1370000000000000000ibc/FEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACE")
 end
 
 #

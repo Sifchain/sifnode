@@ -7,6 +7,7 @@
 #
 
 set -e
+set -x
 
 . $TEST_INTEGRATION_DIR/vagrantenv.sh
 . ${TEST_INTEGRATION_DIR}/shell_utilities.sh
@@ -46,6 +47,8 @@ TCP_URL=tcp://0.0.0.0:26657
 yes | sifnoded keys delete $MONIKER --keyring-backend test || true
 echo $MNEMONIC | sifnoded keys add $MONIKER --keyring-backend test --recover
 
+set_persistant_env_var EBRELAYER_DB "${TEST_INTEGRATION_DIR}/sifchainrelayerdb" $envexportfile
+
 ETHEREUM_PRIVATE_KEY=$EBRELAYER_ETHEREUM_PRIVATE_KEY $runner init $TCP_URL "$ETHEREUM_WEBSOCKET_ADDRESS" \
   "$BRIDGE_REGISTRY_ADDRESS" \
   "$MONIKER" \
@@ -54,4 +57,6 @@ ETHEREUM_PRIVATE_KEY=$EBRELAYER_ETHEREUM_PRIVATE_KEY $runner init $TCP_URL "$ETH
   --node $TCP_URL \
   --keyring-backend test \
   --from $MONIKER \
+  --symbol-translator-file ${TEST_INTEGRATION_DIR}/config/symbol_translator.json \
+  --relayerdb-path "$EBRELAYER_DB" \
   # --home $CHAINDIR/.sifnoded \
