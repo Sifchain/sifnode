@@ -16,7 +16,7 @@ import (
 
 func TestHandler(t *testing.T) {
 	ctx, app := test.CreateTestAppClp(false)
-	handler := clp.NewHandler(app.ClpKeeper, app.WhitelistKeeper)
+	handler := clp.NewHandler(app.ClpKeeper)
 	res, err := handler(ctx, nil)
 	require.Error(t, err)
 	require.Nil(t, res)
@@ -25,7 +25,7 @@ func TestHandler(t *testing.T) {
 
 func TestCreatePool(t *testing.T) {
 	ctx, app := test.CreateTestAppClp(false)
-	handler := clp.NewHandler(app.ClpKeeper, app.WhitelistKeeper)
+	handler := clp.NewHandler(app.ClpKeeper)
 	signer := test.GenerateAddress("")
 	//Parameters for create pool
 	initialBalance := sdk.NewUintFromString("100000000000000000000") // Initial account balance for all assets created
@@ -79,7 +79,7 @@ func TestAddLiquidity(t *testing.T) {
 	ctx, app := test.CreateTestAppClp(false)
 	signer := test.GenerateAddress("")
 	clpKeeper := app.ClpKeeper
-	handler := clp.NewHandler(clpKeeper, app.WhitelistKeeper)
+	handler := clp.NewHandler(clpKeeper)
 	//Parameters for add liquidity
 	initialBalance := sdk.NewUintFromString("100000000000000000000") // Initial account balance for all assets created
 	poolBalance := sdk.NewUintFromString("1000000000000000000")      // Amount funded to pool , This same amount is used both for native and external asset
@@ -127,7 +127,7 @@ func TestAddLiquidity_LargeValue(t *testing.T) {
 	ctx, app := test.CreateTestAppClp(false)
 	signer := test.GenerateAddress("")
 	clpKeeper := app.ClpKeeper
-	handler := clp.NewHandler(clpKeeper, app.WhitelistKeeper)
+	handler := clp.NewHandler(clpKeeper)
 
 	//Parameters for add liquidity
 	poolBalanceRowan := sdk.NewUintFromString("162057826929020210025062784")
@@ -158,7 +158,7 @@ func TestRemoveLiquidity(t *testing.T) {
 	newLP := test.GenerateAddress(test.AddressKey2)
 	clpKeeper := app.ClpKeeper
 	whitelistKeeper := app.WhitelistKeeper
-	handler := clp.NewHandler(clpKeeper, app.WhitelistKeeper)
+	handler := clp.NewHandler(clpKeeper)
 	externalDenom := "eth"
 	initialBalance := sdk.NewUintFromString("100000000000000000000000") // Initial account balance for all assets created
 	poolBalance := sdk.NewUintFromString("10000000000000000000")        // Amount funded to pool , This same amount is used both for native and external asset
@@ -262,7 +262,7 @@ func TestSwap(t *testing.T) {
 	signer := test.GenerateAddress("")
 	clpKeeper := app.ClpKeeper
 	whitelistKeeper := app.WhitelistKeeper
-	handler := clp.NewHandler(clpKeeper, app.WhitelistKeeper)
+	handler := clp.NewHandler(clpKeeper)
 	assetEth := clptypes.NewAsset("eth")
 	assetDash := clptypes.NewAsset("dash")
 
@@ -326,7 +326,7 @@ func TestDecommisionPool(t *testing.T) {
 	ctx, app := test.CreateTestAppClp(false)
 	signer := test.GenerateAddress("")
 	clpKeeper := app.ClpKeeper
-	handler := clp.NewHandler(clpKeeper, app.WhitelistKeeper)
+	handler := clp.NewHandler(clpKeeper)
 
 	//Parameters for Decommission
 	initialBalance := sdk.NewUintFromString("100000000000000000000") // Initial account balance for all assets created

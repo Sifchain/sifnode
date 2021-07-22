@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	whitelisttypes "github.com/Sifchain/sifnode/x/whitelist/types"
 
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -91,18 +90,16 @@ func (AppModuleBasic) GetQueryCmd() *cobra.Command {
 type AppModule struct {
 	AppModuleBasic
 
-	keeper          keeper.Keeper
-	bankKeeper      types.BankKeeper
-	whitelistKeeper whitelisttypes.Keeper
+	keeper     keeper.Keeper
+	bankKeeper types.BankKeeper
 }
 
 // NewAppModule creates a new AppModule object
-func NewAppModule(k keeper.Keeper, bankKeeper types.BankKeeper, whitelistKeeper whitelisttypes.Keeper) AppModule {
+func NewAppModule(k keeper.Keeper, bankKeeper types.BankKeeper) AppModule {
 	return AppModule{
-		AppModuleBasic:  AppModuleBasic{},
-		keeper:          k,
-		bankKeeper:      bankKeeper,
-		whitelistKeeper: whitelistKeeper,
+		AppModuleBasic: AppModuleBasic{},
+		keeper:         k,
+		bankKeeper:     bankKeeper,
 	}
 }
 
@@ -116,7 +113,7 @@ func (am AppModule) RegisterInvariants(_ sdk.InvariantRegistry) {}
 
 // Route returns the message routing key for the staking module.
 func (am AppModule) Route() sdk.Route {
-	return sdk.NewRoute(types.RouterKey, NewHandler(am.keeper, am.whitelistKeeper))
+	return sdk.NewRoute(types.RouterKey, NewHandler(am.keeper))
 }
 
 // QuerierRoute returns the clp module's querier route name.
@@ -131,7 +128,7 @@ func (am AppModule) LegacyQuerierHandler(legacyQuerierCdc *codec.LegacyAmino) sd
 
 // RegisterServices registers module services.
 func (am AppModule) RegisterServices(cfg module.Configurator) {
-	types.RegisterMsgServer(cfg.MsgServer(), keeper.NewMsgServerImpl(am.keeper, am.whitelistKeeper))
+	types.RegisterMsgServer(cfg.MsgServer(), keeper.NewMsgServerImpl(am.keeper))
 	querier := keeper.Querier{Keeper: am.keeper}
 	types.RegisterQueryServer(cfg.QueryServer(), querier)
 }

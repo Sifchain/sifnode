@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	whitelisttypes "github.com/Sifchain/sifnode/x/whitelist/types"
 	"strconv"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -15,13 +14,12 @@ import (
 
 type msgServer struct {
 	Keeper
-	whitelistKeeper whitelisttypes.Keeper
 }
 
 // NewMsgServerImpl returns an implementation of the clp MsgServer interface
 // for the provided Keeper.
-func NewMsgServerImpl(keeper Keeper, wk whitelisttypes.Keeper) types.MsgServer {
-	return &msgServer{Keeper: keeper, whitelistKeeper: wk}
+func NewMsgServerImpl(keeper Keeper) types.MsgServer {
+	return &msgServer{Keeper: keeper}
 }
 
 var _ types.MsgServer = msgServer{}

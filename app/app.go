@@ -281,7 +281,7 @@ func NewSifApp(
 		stakingtypes.NewMultiStakingHooks(app.DistrKeeper.Hooks(), app.SlashingKeeper.Hooks()),
 	)
 
-	app.ClpKeeper = clpkeeper.NewKeeper(appCodec, keys[clptypes.StoreKey], app.BankKeeper, app.AccountKeeper, app.GetSubspace(clptypes.ModuleName))
+	app.ClpKeeper = clpkeeper.NewKeeper(appCodec, keys[clptypes.StoreKey], app.BankKeeper, app.AccountKeeper, app.WhitelistKeeper, app.GetSubspace(clptypes.ModuleName))
 
 	app.OracleKeeper = oraclekeeper.NewKeeper(
 		appCodec,
@@ -380,7 +380,7 @@ func NewSifApp(
 		evidence.NewAppModule(app.EvidenceKeeper),
 		ibc.NewAppModule(app.IBCKeeper),
 		transferModule,
-		clp.NewAppModule(app.ClpKeeper, app.BankKeeper, app.WhitelistKeeper),
+		clp.NewAppModule(app.ClpKeeper, app.BankKeeper),
 		oracle.NewAppModule(app.OracleKeeper),
 		ethbridge.NewAppModule(app.OracleKeeper, app.BankKeeper, app.AccountKeeper, app.EthbridgeKeeper, &appCodec),
 		dispensation.NewAppModule(app.DispensationKeeper, app.BankKeeper, app.AccountKeeper),

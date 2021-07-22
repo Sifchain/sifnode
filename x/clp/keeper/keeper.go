@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"fmt"
+	whitelisttypes "github.com/Sifchain/sifnode/x/whitelist/types"
 
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -13,26 +14,28 @@ import (
 
 // Keeper of the clp store
 type Keeper struct {
-	storeKey   sdk.StoreKey
-	cdc        codec.BinaryMarshaler
-	bankKeeper types.BankKeeper
-	authKeeper types.AuthKeeper
-	paramstore paramtypes.Subspace
+	storeKey        sdk.StoreKey
+	cdc             codec.BinaryMarshaler
+	bankKeeper      types.BankKeeper
+	authKeeper      types.AuthKeeper
+	whitelistKeeper whitelisttypes.Keeper
+	paramstore      paramtypes.Subspace
 }
 
 // NewKeeper creates a clp keeper
-func NewKeeper(cdc codec.BinaryMarshaler, key sdk.StoreKey, bankkeeper types.BankKeeper, accountKeeper types.AuthKeeper, ps paramtypes.Subspace) Keeper {
+func NewKeeper(cdc codec.BinaryMarshaler, key sdk.StoreKey, bankkeeper types.BankKeeper, accountKeeper types.AuthKeeper, whitelistKeeper whitelisttypes.Keeper, ps paramtypes.Subspace) Keeper {
 	// set KeyTable if it has not already been set
 	if !ps.HasKeyTable() {
 		ps = ps.WithKeyTable(types.ParamKeyTable())
 	}
 
 	keeper := Keeper{
-		storeKey:   key,
-		cdc:        cdc,
-		bankKeeper: bankkeeper,
-		authKeeper: accountKeeper,
-		paramstore: ps,
+		storeKey:        key,
+		cdc:             cdc,
+		bankKeeper:      bankkeeper,
+		authKeeper:      accountKeeper,
+		whitelistKeeper: whitelistKeeper,
+		paramstore:      ps,
 	}
 	return keeper
 }
