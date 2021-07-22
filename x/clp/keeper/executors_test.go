@@ -49,7 +49,7 @@ func TestKeeper_CreatePoolAndProvideLiquidity(t *testing.T) {
 	asset := types.NewAsset("cusdt")
 	externalCoin := sdk.NewCoin(asset.Symbol, sdk.Int(initialBalance))
 	nativeCoin := sdk.NewCoin(types.NativeSymbol, sdk.Int(initialBalance))
-	coins := sdk.NewCoins(sdk.Coins{externalCoin, nativeCoin}...)
+	coins := sdk.NewCoins(externalCoin, nativeCoin)
 	err := app.BankKeeper.AddCoins(ctx, signer, coins)
 	assert.NoError(t, err)
 

@@ -27,7 +27,7 @@ func TestKeeper_AccumulateDrops(t *testing.T) {
 	err := keeper.AccumulateDrops(ctx, distributor.Address, distributor.Coins)
 	assert.NoError(t, err)
 	moduleBalance, _ := sdk.NewIntFromString(rowanAmount)
-	assert.True(t, keeper.HasCoins(ctx, types.GetDistributionModuleAddress(), sdk.Coins{sdk.NewCoin("rowan", moduleBalance)}))
+	assert.True(t, keeper.HasCoins(ctx, types.GetDistributionModuleAddress(), sdk.NewCoins(sdk.NewCoin("rowan", moduleBalance))))
 
 }
 
@@ -49,7 +49,7 @@ func TestKeeper_CreateAndDistributeDrops(t *testing.T) {
 	err = keeper.AccumulateDrops(ctx, inputList[0].Address, totalCoins)
 	assert.NoError(t, err)
 	moduleBalance, _ := sdk.NewIntFromString("15000000000000000000")
-	assert.True(t, keeper.HasCoins(ctx, types.GetDistributionModuleAddress(), sdk.Coins{sdk.NewCoin("rowan", moduleBalance)}))
+	assert.True(t, keeper.HasCoins(ctx, types.GetDistributionModuleAddress(), sdk.NewCoins(sdk.NewCoin("rowan", moduleBalance))))
 	distributionName := "ar1"
 	runner := ""
 	err = keeper.CreateDrops(ctx, outputList, distributionName, types.DistributionType_DISTRIBUTION_TYPE_AIRDROP, runner)
@@ -80,9 +80,9 @@ func TestKeeper_CreateAndDistributeDrops(t *testing.T) {
 func TestKeeper_VerifyDistribution(t *testing.T) {
 	app, ctx := test.CreateTestApp(false)
 	keeper := app.DispensationKeeper
-	authorisedRunner := sdk.AccAddress(crypto.AddressHash([]byte("Runner")))
-	err := keeper.VerifyAndSetDistribution(ctx, "AR1", types.DistributionType_DISTRIBUTION_TYPE_AIRDROP, authorisedRunner.String())
+	authorizedRunner := sdk.AccAddress(crypto.AddressHash([]byte("Runner")))
+	err := keeper.VerifyAndSetDistribution(ctx, "AR1", types.DistributionType_DISTRIBUTION_TYPE_AIRDROP, authorizedRunner.String())
 	assert.NoError(t, err)
-	err = keeper.VerifyAndSetDistribution(ctx, "AR1", types.DistributionType_DISTRIBUTION_TYPE_AIRDROP, authorisedRunner.String())
+	err = keeper.VerifyAndSetDistribution(ctx, "AR1", types.DistributionType_DISTRIBUTION_TYPE_AIRDROP, authorizedRunner.String())
 	assert.Error(t, err)
 }

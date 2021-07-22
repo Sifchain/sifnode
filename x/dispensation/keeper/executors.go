@@ -11,9 +11,9 @@ import (
 
 //CreateAndDistributeDrops creates new drop Records . These records are then used to facilitate distribution
 // Each Recipient and DropName generate a unique Record
-func (k Keeper) CreateDrops(ctx sdk.Context, output []banktypes.Output, name string, distributionType types.DistributionType, authorisedRunner string) error {
+func (k Keeper) CreateDrops(ctx sdk.Context, output []banktypes.Output, name string, distributionType types.DistributionType, authorizedRunner string) error {
 	for _, receiver := range output {
-		distributionRecord := types.NewDistributionRecord(types.DistributionStatus_DISTRIBUTION_STATUS_PENDING, distributionType, name, receiver.Address, receiver.Coins, ctx.BlockHeight(), -1, authorisedRunner)
+		distributionRecord := types.NewDistributionRecord(types.DistributionStatus_DISTRIBUTION_STATUS_PENDING, distributionType, name, receiver.Address, receiver.Coins, ctx.BlockHeight(), -1, authorizedRunner)
 		if k.ExistsDistributionRecord(ctx, name, receiver.Address, types.DistributionStatus_DISTRIBUTION_STATUS_PENDING, distributionRecord.DistributionType) {
 			oldRecord, err := k.GetDistributionRecord(ctx, name, receiver.Address, types.DistributionStatus_DISTRIBUTION_STATUS_PENDING, distributionRecord.DistributionType)
 			if err != nil {
@@ -31,8 +31,8 @@ func (k Keeper) CreateDrops(ctx sdk.Context, output []banktypes.Output, name str
 
 // DistributeDrops is called at the beginning of every block .
 // It checks if any pending records are present , if there are it completes the top 10
-func (k Keeper) DistributeDrops(ctx sdk.Context, height int64, distributionName string, authorisedRunner string, distributionType types.DistributionType) (*types.DistributionRecords, error) {
-	pendingRecords := k.GetLimitedRecordsForRunner(ctx, distributionName, authorisedRunner, distributionType, types.DistributionStatus_DISTRIBUTION_STATUS_PENDING)
+func (k Keeper) DistributeDrops(ctx sdk.Context, height int64, distributionName string, authorizedRunner string, distributionType types.DistributionType) (*types.DistributionRecords, error) {
+	pendingRecords := k.GetLimitedRecordsForRunner(ctx, distributionName, authorizedRunner, distributionType, types.DistributionStatus_DISTRIBUTION_STATUS_PENDING)
 	for _, record := range pendingRecords.DistributionRecords {
 		recipientAddress, err := sdk.AccAddressFromBech32(record.RecipientAddress)
 		if err != nil {
@@ -87,12 +87,12 @@ func (k Keeper) AccumulateDrops(ctx sdk.Context, addr string, amount sdk.Coins) 
 
 // Verify if the distribution is correct
 // The verification is the for distributionName + distributionType
-func (k Keeper) VerifyAndSetDistribution(ctx sdk.Context, distributionName string, distributionType types.DistributionType, authorisedRunner string) error {
-	if k.ExistsDistribution(ctx, distributionName, distributionType, authorisedRunner) {
+func (k Keeper) VerifyAndSetDistribution(ctx sdk.Context, distributionName string, distributionType types.DistributionType, authorizedRunner string) error {
+	if k.ExistsDistribution(ctx, distributionName, distributionType, authorizedRunner) {
 		return errors.Wrapf(types.ErrDistribution, "airdrop with same name already exists : %s ", distributionName)
 	}
 	// Create distribution only if a distribution with the same name does not exist
-	err := k.SetDistribution(ctx, types.NewDistribution(distributionType, distributionName, authorisedRunner))
+	err := k.SetDistribution(ctx, types.NewDistribution(distributionType, distributionName, authorizedRunner))
 	if err != nil {
 		return errors.Wrapf(types.ErrDistribution, "unable to set airdrop :  %s ", distributionName)
 
