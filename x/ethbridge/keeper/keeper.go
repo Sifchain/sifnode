@@ -151,7 +151,7 @@ func (k Keeper) ProcessBurn(ctx sdk.Context, cosmosSender sdk.AccAddress, sender
 		return []byte{}, err
 	}
 
-	// global sequence will be implemented in other feature
+	// TODO global sequence will be implemented in other feature
 	glocalSequence := uint64(0)
 
 	prophecyID := msg.GetProphecyID(false, senderSequence, glocalSequence)

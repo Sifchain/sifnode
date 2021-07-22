@@ -8,6 +8,7 @@ import (
 	"github.com/Sifchain/sifnode/x/oracle/types"
 )
 
+// ProphecyLiftTime is used to clean outdated prophecy info from keeper
 const ProphecyLiftTime = 1000
 
 // GetProphecies returns all prophecies

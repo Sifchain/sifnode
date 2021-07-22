@@ -82,50 +82,17 @@ func (msg MsgLock) GetSigners() []sdk.AccAddress {
 
 // GetProphecyID get prophecy ID for lock message
 func (msg MsgLock) GetProphecyID(doublePeggy bool, sequence, globalNonce uint64) []byte {
-	bytesTy, _ := abi.NewType("bytes", nil)
-	boolTy, _ := abi.NewType("bool", nil)
-	uint128Ty, _ := abi.NewType("uint128", nil)
-	uint256Ty, _ := abi.NewType("uint256", nil)
-	addressTy, _ := abi.NewType("address", nil)
+	return ComputeProphecyID(
+		msg.CosmosSender,
+		sequence,
 
-	arguments := abi.Arguments{
-		{
-			Type: bytesTy,
-		},
-		{
-			Type: uint256Ty,
-		},
-		{
-			Type: addressTy,
-		},
-		{
-			Type: addressTy,
-		},
-		{
-			Type: uint256Ty,
-		},
-		{
-			Type: boolTy,
-		},
-		{
-			Type: uint128Ty,
-		},
-	}
-
-	bytes, _ := arguments.Pack(
-		[]byte(msg.CosmosSender),
-		big.NewInt(int64(sequence)),
-
-		gethCommon.HexToAddress(msg.EthereumReceiver),
+		msg.EthereumReceiver,
 		// TODO need get the token address from token's symbol
-		gethCommon.HexToAddress(msg.EthereumReceiver),
-		big.NewInt(msg.Amount.Int64()),
+		msg.EthereumReceiver,
+		msg.Amount,
 		doublePeggy,
-		big.NewInt(int64(globalNonce)),
+		globalNonce,
 	)
-
-	hashBytes := crypto.Keccak256(bytes)
-	return hashBytes
 }
 
 // NewMsgBurn is a constructor function for MsgBurn
@@ -206,6 +173,23 @@ func (msg MsgBurn) GetSigners() []sdk.AccAddress {
 // GetProphecyID get prophecy ID for lock message
 func (msg MsgBurn) GetProphecyID(doublePeggy bool, sequence, globalNonce uint64) []byte {
 
+	return ComputeProphecyID(
+		msg.CosmosSender,
+		sequence,
+
+		msg.EthereumReceiver,
+		// TODO need get the token address from token's symbol
+		msg.EthereumReceiver,
+		msg.Amount,
+		doublePeggy,
+		globalNonce,
+	)
+}
+
+// ComputeProphecyID compute the prophecy id
+func ComputeProphecyID(cosmosSender string, sequence uint64, ethereumReceiver string, tokenAddress string, amount sdk.Int,
+	doublePeggy bool, globalNonce uint64) []byte {
+
 	bytesTy, _ := abi.NewType("bytes", nil)
 	boolTy, _ := abi.NewType("bool", nil)
 	uint128Ty, _ := abi.NewType("uint128", nil)
@@ -237,13 +221,13 @@ func (msg MsgBurn) GetProphecyID(doublePeggy bool, sequence, globalNonce uint64)
 	}
 
 	bytes, _ := arguments.Pack(
-		[]byte(msg.CosmosSender),
+		[]byte(cosmosSender),
 		big.NewInt(int64(sequence)),
 
-		gethCommon.HexToAddress(msg.EthereumReceiver),
+		gethCommon.HexToAddress(ethereumReceiver),
 		// TODO need get the token address from token's symbol
-		gethCommon.HexToAddress(msg.EthereumReceiver),
-		big.NewInt(msg.Amount.Int64()),
+		gethCommon.HexToAddress(ethereumReceiver),
+		big.NewInt(amount.Int64()),
 		doublePeggy,
 		big.NewInt(int64(globalNonce)),
 	)
