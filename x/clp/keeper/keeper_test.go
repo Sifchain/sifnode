@@ -32,7 +32,6 @@ func TestKeeper_Errors(t *testing.T) {
 }
 
 func TestKeeper_SetPool(t *testing.T) {
-
 	pool := test.GenerateRandomPool(1)[0]
 	ctx, keeper := test.CreateTestAppClp(false)
 	err := keeper.SetPool(ctx, &pool)
