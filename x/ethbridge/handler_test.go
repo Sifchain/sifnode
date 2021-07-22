@@ -324,48 +324,23 @@ func TestBurnEthSuccess(t *testing.T) {
 	require.NotNil(t, res)
 	senderAddress := receiverAddress
 	burnedCoins := sdk.Coins{sdk.NewCoin(coinsToBurnSymbolPrefixed, coinsToBurnAmount)}
-	senderSequence := "0"
 	remainingCoins := mintedCoins.Sub(burnedCoins)
 	senderCoins := bankKeeper.GetAllBalances(ctx, senderAddress)
 	require.True(t, senderCoins.IsEqual(remainingCoins))
-	// eventEthereumChainID := ""
 	networkDescriptor := ""
-	eventCosmosSender := ""
-	eventCosmosSenderSequence := ""
-	eventEthereumReceiver := ""
-	eventAmount := ""
-	eventSymbol := ""
-	eventcrossChainFee := sdk.NewInt(0)
 	for _, event := range res.Events {
 		for _, attribute := range event.Attributes {
 			value := string(attribute.Value)
 			switch key := string(attribute.Key); key {
+			case "prophecy_id":
 			case senderString:
-				// multiple recipient in burn, skip the comparison
-				// require.Equal(t, value, senderAddress.String())
 			case "recipient":
-				// multiple recipient in burn, skip the comparison
-				// require.Equal(t, value, TestAddress)
+
 			case moduleString:
 				require.Equal(t, value, types.ModuleName)
 			case "network_id":
 				networkDescriptor = value
-
-				// eventEthereumChainID = value
-			case "cosmos_sender":
-				eventCosmosSender = value
-			case "cosmos_sender_sequence":
-				eventCosmosSenderSequence = value
-			case "ethereum_receiver":
-				eventEthereumReceiver = value
 			case "amount":
-				eventAmount = value
-			case "symbol":
-				eventSymbol = value
-			case "cross_chain_fee_amount":
-				var ok bool
-				eventcrossChainFee, ok = sdk.NewIntFromString(value)
-				require.Equal(t, ok, true)
 			default:
 				require.Fail(t, fmt.Sprintf("unrecognized event %s", key))
 			}
@@ -373,13 +348,6 @@ func TestBurnEthSuccess(t *testing.T) {
 	}
 	TestNetworkDescriptorStr := strconv.Itoa(int(types.TestNetworkDescriptor))
 	require.Equal(t, networkDescriptor, TestNetworkDescriptorStr)
-
-	require.Equal(t, eventCosmosSender, senderAddress.String())
-	require.Equal(t, eventCosmosSenderSequence, senderSequence)
-	require.Equal(t, eventEthereumReceiver, ethereumReceiver.String())
-	require.Equal(t, eventAmount, coinsToBurnAmount.String())
-	require.Equal(t, eventSymbol, coinsToBurnSymbolPrefixed)
-	require.Equal(t, eventcrossChainFee, sdk.NewInt(65000000000*300000))
 
 	coinsToMintAmount = sdk.NewInt(65000000000 * 300000)
 	coinsToMintSymbol = "eth"

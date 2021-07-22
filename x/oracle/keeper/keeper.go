@@ -168,18 +168,18 @@ func (k Keeper) SetProphecyWithInitValue(ctx sdk.Context, prophecyID []byte) {
 
 // ProcessSignProphecy deal with the signature from validator
 func (k Keeper) ProcessSignProphecy(ctx sdk.Context, networkDescriptor types.NetworkDescriptor, prophecyID []byte, cosmosSender, ethereumAddress, signature string) (types.StatusText, error) {
-	prophecy, ok := k.GetProphecy(ctx, []byte(prophecyID))
+	prophecy, ok := k.GetProphecy(ctx, prophecyID)
 	if !ok {
 		return types.StatusText_STATUS_TEXT_UNSPECIFIED, types.ErrProphecyNotFound
 	}
 
 	// verify the signature
-	publicKey, err := gethCrypto.Ecrecover([]byte(prophecyID), gethCommon.FromHex(signature))
+	publicKey, err := gethCrypto.Ecrecover(prophecyID, gethCommon.FromHex(signature))
 	if err != nil {
 		return prophecy.Status, err
 	}
 
-	ok = gethCrypto.VerifySignature(publicKey, []byte(prophecyID), []byte(signature))
+	ok = gethCrypto.VerifySignature(publicKey, prophecyID, []byte(signature))
 	if !ok {
 		return prophecy.Status, errors.New("incorrect signature")
 	}
@@ -189,8 +189,11 @@ func (k Keeper) ProcessSignProphecy(ctx sdk.Context, networkDescriptor types.Net
 		return prophecy.Status, err
 	}
 
-	// prophecy.ClaimValidators = append(prophecy.ClaimValidators, cosmosSender)
-	k.AppendSignature(ctx, prophecyID, ethereumAddress, signature)
+	err = k.AppendSignature(ctx, prophecyID, ethereumAddress, signature)
+	if err != nil {
+		return prophecy.Status, err
+	}
+
 	return k.AppendValidatorToProphecy(ctx, networkDescriptor, prophecyID, valAddr)
 }
 

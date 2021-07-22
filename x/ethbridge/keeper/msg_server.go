@@ -53,7 +53,7 @@ func (srv msgServer) Lock(goCtx context.Context, msg *types.MsgLock) (*types.Msg
 
 	logger.Info("sifnode emit lock event.", "message", msg)
 
-	srv.oracleKeeper.SetProphecyInfo(ctx,
+	err = srv.oracleKeeper.SetProphecyInfo(ctx,
 		prophecyID,
 		msg.NetworkDescriptor,
 
@@ -67,6 +67,11 @@ func (srv msgServer) Lock(goCtx context.Context, msg *types.MsgLock) (*types.Msg
 		false,
 		0,
 	)
+
+	if err != nil {
+		logger.Error("bridge keeper failed to set prophecy info.", errorMessageKey, err.Error())
+		return nil, err
+	}
 
 	ctx.EventManager().EmitEvents(sdk.Events{
 		sdk.NewEvent(
@@ -114,7 +119,7 @@ func (srv msgServer) Burn(goCtx context.Context, msg *types.MsgBurn) (*types.Msg
 
 	logger.Info("sifnode emit burn event.", "message", msg)
 
-	srv.oracleKeeper.SetProphecyInfo(ctx,
+	err = srv.oracleKeeper.SetProphecyInfo(ctx,
 		prophecyID,
 		msg.NetworkDescriptor,
 		cosmosSender.String(),
@@ -127,6 +132,11 @@ func (srv msgServer) Burn(goCtx context.Context, msg *types.MsgBurn) (*types.Msg
 		false,
 		0,
 	)
+
+	if err != nil {
+		logger.Error("bridge keeper failed to set prophecy info.", errorMessageKey, err.Error())
+		return nil, err
+	}
 
 	ctx.EventManager().EmitEvents(sdk.Events{
 		sdk.NewEvent(
@@ -181,6 +191,10 @@ func (srv msgServer) CreateEthBridgeClaim(goCtx context.Context, msg *types.MsgC
 			sdk.NewAttribute(sdk.AttributeKeySender, msg.EthBridgeClaim.ValidatorAddress),
 		),
 		sdk.NewEvent(
+			types.EventTypeProphecyStatus,
+			sdk.NewAttribute(types.AttributeKeyStatus, status.String()),
+		),
+		sdk.NewEvent(
 			types.EventTypeCreateClaim,
 			sdk.NewAttribute(types.AttributeKeyCosmosSender, msg.EthBridgeClaim.ValidatorAddress),
 			sdk.NewAttribute(types.AttributeKeyEthereumSender, msg.EthBridgeClaim.EthereumSender),
@@ -190,10 +204,6 @@ func (srv msgServer) CreateEthBridgeClaim(goCtx context.Context, msg *types.MsgC
 			sdk.NewAttribute(types.AttributeKeySymbol, msg.EthBridgeClaim.Symbol),
 			sdk.NewAttribute(types.AttributeKeyTokenContract, msg.EthBridgeClaim.TokenContractAddress),
 			sdk.NewAttribute(types.AttributeKeyClaimType, msg.EthBridgeClaim.ClaimType.String()),
-		),
-		sdk.NewEvent(
-			types.EventTypeProphecyStatus,
-			sdk.NewAttribute(types.AttributeKeyStatus, status.String()),
 		),
 	})
 
@@ -424,13 +434,13 @@ func (srv msgServer) SignProphecy(goCtx context.Context, msg *types.MsgSignProph
 				sdk.NewAttribute(sdk.AttributeKeySender, msg.CosmosSender),
 			),
 			sdk.NewEvent(
-				types.EventTypeSignProphecy,
-				sdk.NewAttribute(types.AttributeKeyCosmosSender, msg.CosmosSender),
-				sdk.NewAttribute(types.AttributeKeyNetworkDescriptor, msg.NetworkDescriptor.String()),
+				types.EventTypeProphecyCompleted,
 				sdk.NewAttribute(types.AttributeKeyProphecyID, string(msg.ProphecyId)),
 			),
 			sdk.NewEvent(
-				types.EventTypeProphecyCompleted,
+				types.EventTypeSignProphecy,
+				sdk.NewAttribute(types.AttributeKeyCosmosSender, msg.CosmosSender),
+				sdk.NewAttribute(types.AttributeKeyNetworkDescriptor, msg.NetworkDescriptor.String()),
 				sdk.NewAttribute(types.AttributeKeyProphecyID, string(msg.ProphecyId)),
 			),
 		})

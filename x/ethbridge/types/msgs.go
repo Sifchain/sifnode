@@ -3,10 +3,11 @@ package types
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
+	"math/big"
 	"strconv"
 	"strings"
 
+	"github.com/ethereum/go-ethereum/accounts/abi"
 	gethCommon "github.com/ethereum/go-ethereum/common"
 	crypto "github.com/ethereum/go-ethereum/crypto"
 
@@ -81,18 +82,49 @@ func (msg MsgLock) GetSigners() []sdk.AccAddress {
 
 // GetProphecyID get prophecy ID for lock message
 func (msg MsgLock) GetProphecyID(doublePeggy bool, sequence, globalNonce uint64) []byte {
+	bytesTy, _ := abi.NewType("bytes", nil)
+	boolTy, _ := abi.NewType("bool", nil)
+	uint128Ty, _ := abi.NewType("uint128", nil)
+	uint256Ty, _ := abi.NewType("uint256", nil)
+	addressTy, _ := abi.NewType("address", nil)
 
-	allContentString := fmt.Sprintf("%s%s%s%s%s%s%s",
-		msg.CosmosSender,
-		strconv.FormatUint(sequence, 10),
-		msg.EthereumReceiver,
-		msg.Symbol,
-		msg.Amount,
-		strconv.FormatBool(doublePeggy),
-		strconv.FormatUint(globalNonce, 10),
+	arguments := abi.Arguments{
+		{
+			Type: bytesTy,
+		},
+		{
+			Type: uint256Ty,
+		},
+		{
+			Type: addressTy,
+		},
+		{
+			Type: addressTy,
+		},
+		{
+			Type: uint256Ty,
+		},
+		{
+			Type: boolTy,
+		},
+		{
+			Type: uint128Ty,
+		},
+	}
+
+	bytes, _ := arguments.Pack(
+		[]byte(msg.CosmosSender),
+		big.NewInt(int64(sequence)),
+
+		gethCommon.HexToAddress(msg.EthereumReceiver),
+		// TODO need get the token address from token's symbol
+		gethCommon.HexToAddress(msg.EthereumReceiver),
+		big.NewInt(msg.Amount.Int64()),
+		doublePeggy,
+		big.NewInt(int64(globalNonce)),
 	)
-	claimBytes := []byte(allContentString)
-	hashBytes := crypto.Keccak256(claimBytes)
+
+	hashBytes := crypto.Keccak256(bytes)
 	return hashBytes
 }
 
@@ -174,17 +206,49 @@ func (msg MsgBurn) GetSigners() []sdk.AccAddress {
 // GetProphecyID get prophecy ID for lock message
 func (msg MsgBurn) GetProphecyID(doublePeggy bool, sequence, globalNonce uint64) []byte {
 
-	allContentString := fmt.Sprintf("%s%s%s%s%s%s%s",
-		msg.CosmosSender,
-		strconv.FormatUint(sequence, 10),
-		msg.EthereumReceiver,
-		msg.Symbol,
-		msg.Amount,
-		strconv.FormatBool(doublePeggy),
-		strconv.FormatUint(globalNonce, 10),
+	bytesTy, _ := abi.NewType("bytes", nil)
+	boolTy, _ := abi.NewType("bool", nil)
+	uint128Ty, _ := abi.NewType("uint128", nil)
+	uint256Ty, _ := abi.NewType("uint256", nil)
+	addressTy, _ := abi.NewType("address", nil)
+
+	arguments := abi.Arguments{
+		{
+			Type: bytesTy,
+		},
+		{
+			Type: uint256Ty,
+		},
+		{
+			Type: addressTy,
+		},
+		{
+			Type: addressTy,
+		},
+		{
+			Type: uint256Ty,
+		},
+		{
+			Type: boolTy,
+		},
+		{
+			Type: uint128Ty,
+		},
+	}
+
+	bytes, _ := arguments.Pack(
+		[]byte(msg.CosmosSender),
+		big.NewInt(int64(sequence)),
+
+		gethCommon.HexToAddress(msg.EthereumReceiver),
+		// TODO need get the token address from token's symbol
+		gethCommon.HexToAddress(msg.EthereumReceiver),
+		big.NewInt(msg.Amount.Int64()),
+		doublePeggy,
+		big.NewInt(int64(globalNonce)),
 	)
-	claimBytes := []byte(allContentString)
-	hashBytes := crypto.Keccak256(claimBytes)
+
+	hashBytes := crypto.Keccak256(bytes)
 	return hashBytes
 }
 
@@ -409,6 +473,45 @@ func NewMsgSetFeeInfo(cosmosSender sdk.AccAddress, networkDescriptor oracletypes
 		NetworkDescriptor: networkDescriptor,
 		FeeCurrency:       feeCurrency,
 	}
+}
+
+// Route should return the name of the module
+func (msg MsgSignProphecy) Route() string { return RouterKey }
+
+// Type should return the action
+func (msg MsgSignProphecy) Type() string { return "set_crosschain_fee_info" }
+
+// ValidateBasic runs stateless checks on the message
+func (msg MsgSignProphecy) ValidateBasic() error {
+	if msg.CosmosSender == "" {
+		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.CosmosSender)
+	}
+
+	if !msg.NetworkDescriptor.IsValid() {
+		return errors.New("network descriptor is invalid")
+	}
+
+	return nil
+}
+
+// GetSignBytes encodes the message for signing
+func (msg MsgSignProphecy) GetSignBytes() []byte {
+	b, err := json.Marshal(msg)
+	if err != nil {
+		panic(err)
+	}
+
+	return sdk.MustSortJSON(b)
+}
+
+// GetSigners defines whose signature is required
+func (msg MsgSignProphecy) GetSigners() []sdk.AccAddress {
+	cosmosSender, err := sdk.AccAddressFromBech32(msg.CosmosSender)
+	if err != nil {
+		panic(err)
+	}
+
+	return []sdk.AccAddress{cosmosSender}
 }
 
 // Route should return the name of the module
