@@ -2,7 +2,6 @@ package keeper
 
 import (
 	"bytes"
-
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	gogotypes "github.com/gogo/protobuf/types"
@@ -114,29 +113,4 @@ func (k keeper) GetDenomWhitelist(ctx sdk.Context) types.DenomWhitelist {
 	k.cdc.MustUnmarshalBinaryBare(bz, &whitelist)
 
 	return whitelist
-}
-
-func (k keeper) GetNormalizationFactor(ctx sdk.Context, denom string) (sdk.Dec, bool) {
-	wl := k.GetDenomWhitelist(ctx)
-	normalizationFactor := sdk.NewDec(1)
-	ok := false
-	nf := int64(0)
-	for i := range wl.DenomWhitelistEntries {
-		if wl.DenomWhitelistEntries[i].Denom == denom &&
-			wl.DenomWhitelistEntries[i] != nil {
-			ok = true
-			nf = wl.DenomWhitelistEntries[i].Decimals
-		}
-	}
-	adjustExternalToken := false
-	if ok {
-		adjustExternalToken = true
-		diffFactor := 18 - nf
-		if diffFactor < 0 {
-			diffFactor = nf - 18
-			adjustExternalToken = false
-		}
-		normalizationFactor = sdk.NewDec(10).Power(uint64(diffFactor))
-	}
-	return normalizationFactor, adjustExternalToken
 }

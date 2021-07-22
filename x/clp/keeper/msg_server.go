@@ -143,7 +143,7 @@ func (k msgServer) Swap(goCtx context.Context, msg *types.MsgSwap) (*types.MsgSw
 	// If its one way we can skip this if condition and add balance to users account from outpool
 
 	if !msg.SentAsset.Equals(nativeAsset) && !msg.ReceivedAsset.Equals(nativeAsset) {
-		normalizationFactor, adjustExternalToken := k.whitelistKeeper.GetNormalizationFactor(ctx, inPool.ExternalAsset.Symbol)
+		normalizationFactor, adjustExternalToken := k.GetNormalizationFactor(ctx, inPool.ExternalAsset.Symbol)
 		emitAmount, lp, ts, finalPool, err := SwapOne(*sentAsset, sentAmount, nativeAsset, inPool, normalizationFactor, adjustExternalToken)
 		if err != nil {
 			return nil, err
@@ -171,7 +171,7 @@ func (k msgServer) Swap(goCtx context.Context, msg *types.MsgSwap) (*types.MsgSw
 	}
 
 	// Calculating amount user receives
-	normalizationFactor, adjustExternalToken := k.whitelistKeeper.GetNormalizationFactor(ctx, outPool.ExternalAsset.Symbol)
+	normalizationFactor, adjustExternalToken := k.GetNormalizationFactor(ctx, outPool.ExternalAsset.Symbol)
 	emitAmount, lp, ts, finalPool, err := SwapOne(*sentAsset, sentAmount, *receivedAsset, outPool, normalizationFactor, adjustExternalToken)
 	if err != nil {
 		return nil, err
@@ -204,7 +204,7 @@ func (k msgServer) Swap(goCtx context.Context, msg *types.MsgSwap) (*types.MsgSw
 	}
 	if liquidityFeeNative.GT(sdk.ZeroUint()) {
 		liquidityFeeExternal = liquidityFeeExternal.Add(lp)
-		normalizationFactor, adjustExternalToken := k.whitelistKeeper.GetNormalizationFactor(ctx, outPool.ExternalAsset.Symbol)
+		normalizationFactor, adjustExternalToken := k.GetNormalizationFactor(ctx, outPool.ExternalAsset.Symbol)
 		firstSwapFeeInOutputAsset := GetSwapFee(liquidityFeeNative, *msg.ReceivedAsset, outPool, normalizationFactor, adjustExternalToken)
 		totalLiquidityFee = liquidityFeeExternal.Add(firstSwapFeeInOutputAsset)
 	} else {
@@ -275,7 +275,7 @@ func (k msgServer) RemoveLiquidity(goCtx context.Context, msg *types.MsgRemoveLi
 
 	// Swapping between Native and External based on Asymmetry
 	if msg.Asymmetry.IsPositive() {
-		normalizationFactor, adjustExternalToken := k.whitelistKeeper.GetNormalizationFactor(ctx, pool.ExternalAsset.Symbol)
+		normalizationFactor, adjustExternalToken := k.GetNormalizationFactor(ctx, pool.ExternalAsset.Symbol)
 		swapResult, _, _, swappedPool, err := SwapOne(types.GetSettlementAsset(), swapAmount, *msg.ExternalAsset, pool, normalizationFactor, adjustExternalToken)
 		if err != nil {
 			return nil, sdkerrors.Wrap(types.ErrUnableToSwap, err.Error())
@@ -297,7 +297,7 @@ func (k msgServer) RemoveLiquidity(goCtx context.Context, msg *types.MsgRemoveLi
 		pool = swappedPool
 	}
 	if msg.Asymmetry.IsNegative() {
-		normalizationFactor, adjustExternalToken := k.whitelistKeeper.GetNormalizationFactor(ctx, pool.ExternalAsset.Symbol)
+		normalizationFactor, adjustExternalToken := k.GetNormalizationFactor(ctx, pool.ExternalAsset.Symbol)
 		swapResult, _, _, swappedPool, err := SwapOne(*msg.ExternalAsset, swapAmount, types.GetSettlementAsset(), pool, normalizationFactor, adjustExternalToken)
 		if err != nil {
 			return nil, sdkerrors.Wrap(types.ErrUnableToSwap, err.Error())
@@ -359,7 +359,7 @@ func (k msgServer) CreatePool(goCtx context.Context, msg *types.MsgCreatePool) (
 
 	nativeBalance := msg.NativeAssetAmount
 	externalBalance := msg.ExternalAssetAmount
-	normalizationFactor, adjustExternalToken := k.whitelistKeeper.GetNormalizationFactor(ctx, msg.ExternalAsset.Symbol)
+	normalizationFactor, adjustExternalToken := k.GetNormalizationFactor(ctx, msg.ExternalAsset.Symbol)
 	poolUnits, lpunits, err := CalculatePoolUnits(sdk.ZeroUint(), sdk.ZeroUint(), sdk.ZeroUint(), nativeBalance, externalBalance, normalizationFactor, adjustExternalToken)
 	if err != nil {
 		return nil, sdkerrors.Wrap(types.ErrUnableToCreatePool, err.Error())
@@ -407,7 +407,7 @@ func (k msgServer) AddLiquidity(goCtx context.Context, msg *types.MsgAddLiquidit
 	if err != nil {
 		return nil, types.ErrPoolDoesNotExist
 	}
-	normalizationFactor, adjustExternalToken := k.whitelistKeeper.GetNormalizationFactor(ctx, msg.ExternalAsset.Symbol)
+	normalizationFactor, adjustExternalToken := k.GetNormalizationFactor(ctx, msg.ExternalAsset.Symbol)
 	newPoolUnits, lpUnits, err := CalculatePoolUnits(
 		pool.PoolUnits,
 		pool.NativeAssetBalance,

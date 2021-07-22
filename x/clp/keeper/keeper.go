@@ -69,3 +69,20 @@ func (k Keeper) SendCoins(ctx sdk.Context, from sdk.AccAddress, to sdk.AccAddres
 func (k Keeper) HasBalance(ctx sdk.Context, addr sdk.AccAddress, coin sdk.Coin) bool {
 	return k.bankKeeper.HasBalance(ctx, addr, coin)
 }
+
+func (k Keeper) GetNormalizationFactor(ctx sdk.Context, denom string) (sdk.Dec, bool) {
+	normalizationFactor := sdk.NewDec(1)
+	entry := k.whitelistKeeper.GetDenom(ctx, denom)
+	adjustExternalToken := false
+	if entry.IsWhitelisted && entry.Decimals != 18 {
+		adjustExternalToken = true
+		nf := entry.Decimals
+		diffFactor := 18 - nf
+		if diffFactor < 0 {
+			diffFactor = nf - 18
+			adjustExternalToken = false
+		}
+		normalizationFactor = sdk.NewDec(10).Power(uint64(diffFactor))
+	}
+	return normalizationFactor, adjustExternalToken
+}

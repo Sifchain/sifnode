@@ -397,14 +397,14 @@ func CalculateWithdraw(t *testing.T, keeper clpkeeper.Keeper, ctx sdk.Context, a
 	externalAssetCoin := sdk.Coin{}
 	nativeAssetCoin := sdk.Coin{}
 	if asymmetry.IsPositive() {
-		normalizationFactor, adjustExternalToken := wk.GetNormalizationFactor(ctx, pool.ExternalAsset.Symbol)
+		normalizationFactor, adjustExternalToken := keeper.GetNormalizationFactor(ctx, pool.ExternalAsset.Symbol)
 		swapResult, _, _, _, err := clpkeeper.SwapOne(clptypes.GetSettlementAsset(), swapAmount, asset, pool, normalizationFactor, adjustExternalToken)
 		assert.NoError(t, err)
 		externalAssetCoin = sdk.NewCoin(asset.Symbol, sdk.Int(withdrawExternalAssetAmount.Add(swapResult)))
 		nativeAssetCoin = sdk.NewCoin(clptypes.GetSettlementAsset().Symbol, sdk.Int(withdrawNativeAssetAmount))
 	}
 	if asymmetry.IsNegative() {
-		normalizationFactor, adjustExternalToken := wk.GetNormalizationFactor(ctx, pool.ExternalAsset.Symbol)
+		normalizationFactor, adjustExternalToken := keeper.GetNormalizationFactor(ctx, pool.ExternalAsset.Symbol)
 		swapResult, _, _, _, err := clpkeeper.SwapOne(asset, swapAmount, clptypes.GetSettlementAsset(), pool, normalizationFactor, adjustExternalToken)
 		assert.NoError(t, err)
 		externalAssetCoin = sdk.NewCoin(asset.Symbol, sdk.Int(withdrawExternalAssetAmount))
@@ -424,10 +424,10 @@ func CalculateSwapReceived(t *testing.T, keeper clpkeeper.Keeper, ctx sdk.Contex
 	assert.NoError(t, err)
 	outPool, err := keeper.GetPool(ctx, assetReceived.Symbol)
 	assert.NoError(t, err)
-	normalizationFactor, adjustExternalToken := wk.GetNormalizationFactor(ctx, inPool.ExternalAsset.Symbol)
+	normalizationFactor, adjustExternalToken := keeper.GetNormalizationFactor(ctx, inPool.ExternalAsset.Symbol)
 	emitAmount, _, _, _, err := clpkeeper.SwapOne(assetSent, swapAmount, clptypes.GetSettlementAsset(), inPool, normalizationFactor, adjustExternalToken)
 	assert.NoError(t, err)
-	normalizationFactor, adjustExternalToken = wk.GetNormalizationFactor(ctx, outPool.ExternalAsset.Symbol)
+	normalizationFactor, adjustExternalToken = keeper.GetNormalizationFactor(ctx, outPool.ExternalAsset.Symbol)
 	emitAmount2, _, _, _, err := clpkeeper.SwapOne(clptypes.GetSettlementAsset(), emitAmount, assetReceived, outPool, normalizationFactor, adjustExternalToken)
 	assert.NoError(t, err)
 	return emitAmount2
