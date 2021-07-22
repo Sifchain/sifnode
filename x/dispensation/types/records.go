@@ -1,7 +1,10 @@
 package types
 
 import (
+	"time"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	gogotypes "github.com/gogo/protobuf/types"
 )
 
 //This package is used to keep historical data. This will later be used to distribute rewards over different blocks through a gov proposal
@@ -45,8 +48,12 @@ func (dr DistributionRecord) DoesTypeSupportClaim() bool {
 	return false
 }
 
-func NewUserClaim(userAddress string, userClaimType DistributionType, time string) UserClaim {
-	return UserClaim{UserAddress: userAddress, UserClaimType: userClaimType, UserClaimTime: time}
+func NewUserClaim(userAddress string, userClaimType DistributionType, t time.Time) (UserClaim, error) {
+	tProto, err := gogotypes.TimestampProto(t)
+	if err != nil {
+		return UserClaim{}, err
+	}
+	return UserClaim{UserAddress: userAddress, UserClaimType: userClaimType, UserClaimTime: tProto}, nil
 }
 
 func (uc UserClaim) Validate() bool {
@@ -56,8 +63,8 @@ func (uc UserClaim) Validate() bool {
 	return true
 }
 
-func NewDistribution(t DistributionType, name string) Distribution {
-	return Distribution{DistributionType: t, DistributionName: name}
+func NewDistribution(t DistributionType, name string, authorisedRunner string) Distribution {
+	return Distribution{DistributionType: t, DistributionName: name, Runner: authorisedRunner}
 }
 
 func (ar Distribution) Validate() bool {

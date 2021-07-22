@@ -35,7 +35,7 @@ class EthereumToSifchainTransferRequest:
     n_wait_blocks: int = n_wait_blocks
     bridgebank_address: str = ""
     bridgetoken_address: str = ""
-    sifnodecli_node: str = "tcp://localhost:26657"
+    sifnoded_node: str = "tcp://localhost:26657"
     solidity_json_path: str = ""
     # set to true if you want to fail if the balance changes before
     # the block waiting period has elapsed.  If you're runing
@@ -70,7 +70,7 @@ class SifchaincliCredentials:
     keyring_passphrase: str = None
     keyring_backend: str = "test"
     from_key: str = None
-    sifnodecli_homedir: str = None
+    sifnoded_homedir: str = None
 
     def printable_entries(self):
         return {**(self.__dict__), "keyring_passphrase": "** hidden **"}
@@ -243,8 +243,8 @@ def mint_tokens(transfer_request: EthereumToSifchainTransferRequest, operator_ad
     return run_yarn_command(command_line)
 
 
-def get_sifchain_addr_balance(sifaddress, sifnodecli_node, denom):
-    node = f"--node {sifnodecli_node}" if sifnodecli_node else ""
+def get_sifchain_addr_balance(sifaddress, sifnoded_node, denom):
+    node = f"--node {sifnoded_node}" if sifnoded_node else ""
     command_line = f"{sifnoded_binary} query bank balances {node} {sifaddress} --output json --limit 100000000"
     json_str = get_shell_output_json(command_line)
     coins = json_str["balances"]
@@ -276,8 +276,8 @@ def wait_for_successful_command(command_line, max_seconds=80):
     )
 
 
-def get_transaction_result(tx_hash, sifnodecli_node, chain_id):
-    node = f"--node {sifnodecli_node}" if sifnodecli_node else ""
+def get_transaction_result(tx_hash, sifnoded_node, chain_id):
+    node = f"--node {sifnoded_node}" if sifnoded_node else ""
     chain_id_entry = f"--chain-id {chain_id}" if chain_id else ""
     command_line = f"{sifnoded_binary} q tx {node} {tx_hash} {chain_id_entry} --output json"
     json_str = wait_for_successful_command(command_line, max_seconds=30)
@@ -328,7 +328,7 @@ def wait_for_sifchain_addr_balance(
         max_seconds=90,
         debug_prefix=""
 ):
-    normalized_symbol = symbol
+    normalized_symbol = normalize_symbol(symbol)
     if not max_seconds:
         max_seconds = 90
     logging.debug(f"wait_for_sifchain_addr_balance for node {sifchaincli_node}, {normalized_symbol}, {target_balance}")
@@ -340,7 +340,7 @@ def wait_for_sifchain_addr_balance(
     )
 
 
-def detect_errors_in_sifnodecli_output(result):
+def detect_errors_in_sifnoded_output(result):
     result_lines = result.split("\n")
     for line in result_lines:
         line: str
@@ -356,9 +356,9 @@ def send_from_sifchain_to_sifchain_cmd(
     yes_entry = f"yes {credentials.keyring_passphrase} | " if credentials.keyring_passphrase else ""
     keyring_backend_entry = f"--keyring-backend {credentials.keyring_backend}" if credentials.keyring_backend else ""
     chain_id_entry = f"--chain-id {transfer_request.chain_id}" if transfer_request.chain_id else ""
-    node = f"--node {transfer_request.sifnodecli_node}" if transfer_request.sifnodecli_node else ""
+    node = f"--node {transfer_request.sifnoded_node}" if transfer_request.sifnoded_node else ""
     sifchain_fees_entry = f"--fees {transfer_request.sifchain_fees}" if transfer_request.sifchain_fees else ""
-    home_entry = f"--home {credentials.sifnodecli_homedir}" if credentials.sifnodecli_homedir else ""
+    home_entry = f"--home {credentials.sifnoded_homedir}" if credentials.sifnoded_homedir else ""
     cmd = " ".join([
         yes_entry,
         f"{sifnoded_binary} tx bank send",
@@ -382,17 +382,10 @@ def send_from_sifchain_to_sifchain(
 ):
     cmd = send_from_sifchain_to_sifchain_cmd(transfer_request, credentials)
     result = get_shell_output_json(cmd)
-    # detect_errors_in_sifnodecli_output(result)
+    # detect_errors_in_sifnoded_output(result)
     time.sleep(4)
-    # get_transaction_result(result["txhash"], transfer_request.sifnodecli_node, transfer_request.chain_id)
+    # get_transaction_result(result["txhash"], transfer_request.sifnoded_node, transfer_request.chain_id)
     return result
-
-
-def transfer_action_for_symbol(sifchain_symbol: str):
-    if sifchain_symbol == "rowan" or "ibc/" in sifchain_symbol:
-        return "lock"
-    else:
-        return "burn"
 
 
 def send_from_sifchain_to_ethereum_cmd(
@@ -407,10 +400,10 @@ def send_from_sifchain_to_ethereum_cmd(
     assert transfer_request.amount > 0
     yes_entry = f"yes {credentials.keyring_passphrase} | " if credentials.keyring_passphrase else ""
     keyring_backend_entry = f"--keyring-backend {credentials.keyring_backend}" if credentials.keyring_backend else ""
-    node = f"--node {transfer_request.sifnodecli_node}" if transfer_request.sifnodecli_node else ""
+    node = f"--node {transfer_request.sifnoded_node}" if transfer_request.sifnoded_node else ""
     sifchain_fees_entry = f"--fees {transfer_request.sifchain_fees}" if transfer_request.sifchain_fees else ""
-    direction = transfer_action_for_symbol(transfer_request.sifchain_symbol)
-    home_entry = f"--home {credentials.sifnodecli_homedir}" if credentials.sifnodecli_homedir else ""
+    direction = "lock" if transfer_request.sifchain_symbol == "rowan" else "burn"
+    home_entry = f"--home {credentials.sifnoded_homedir}" if credentials.sifnoded_homedir else ""
     from_entry = f"--from {credentials.from_key} " if credentials.from_key else ""
     if not transfer_request.ceth_amount:
         if direction == "lock":
@@ -438,13 +431,13 @@ def send_from_sifchain_to_ethereum(transfer_request: EthereumToSifchainTransferR
                                    credentials: SifchaincliCredentials):
     command_line = send_from_sifchain_to_ethereum_cmd(transfer_request, credentials)
     result = get_shell_output(command_line)
-    detect_errors_in_sifnodecli_output(result)
+    detect_errors_in_sifnoded_output(result)
     return result
 
 
 # this does not wait for the transaction to complete
 def send_from_ethereum_to_sifchain(transfer_request: EthereumToSifchainTransferRequest) -> int:
-    direction = "sendBurnTx" if transfer_request.sifchain_symbol == "rowan" or "ibc/" in transfer_request.sifchain_symbol else "sendLockTx"
+    direction = "sendBurnTx" if transfer_request.sifchain_symbol == "rowan" else "sendLockTx"
     command_line = f"yarn -s --cwd {transfer_request.smart_contracts_dir} integrationtest:{direction} " \
                    f"--sifchain_address {transfer_request.sifchain_address} " \
                    f"--symbol {transfer_request.ethereum_symbol} " \
@@ -483,15 +476,14 @@ def wait_for_sif_account(sif_addr, sifchaincli_node, max_seconds=90):
         except:
             return False
 
-    wait_for_predicate(lambda: fn(), max_seconds, f"wait for account {sif_addr}")
+    wait_for_predicate(lambda: fn(), True, max_seconds, f"wait for account {sif_addr}")
 
 
-def wait_for_predicate(predicate, max_seconds=90, debug_prefix="") -> int:
+def wait_for_predicate(predicate, success_result, max_seconds=90, debug_prefix="") -> int:
     done_at_time = time.time() + max_seconds
     while True:
-        predicate_result = predicate()
-        if predicate_result:
-            return predicate_result
+        if predicate():
+            return success_result
         else:
             t = time.time()
             logging.debug(f"wait_for_predicate: wait for {done_at_time - t} more seconds")
@@ -721,8 +713,8 @@ def build_sifchain_command(
     yes_entry = f"yes {credentials.keyring_passphrase} | " if credentials.keyring_passphrase else ""
     keyring_backend_entry = f"--keyring-backend {credentials.keyring_backend}" if credentials.keyring_backend else ""
     chain_id_entry = f"--chain-id {transfer_request.chain_id}" if transfer_request.chain_id else ""
-    node_entry = f"--node {transfer_request.sifnodecli_node}" if transfer_request.sifnodecli_node else ""
-    home_entry = f"--home {credentials.sifnodecli_homedir}" if credentials.sifnodecli_homedir else ""
+    node_entry = f"--node {transfer_request.sifnoded_node}" if transfer_request.sifnoded_node else ""
+    home_entry = f"--home {credentials.sifnoded_homedir}" if credentials.sifnoded_homedir else ""
     from_entry = f"--from {credentials.from_key} " if credentials.from_key else ""
     sifchain_fees_entry = f"--fees {transfer_request.sifchain_fees}" if transfer_request.sifchain_fees else ""
     return " ".join([
@@ -735,13 +727,3 @@ def build_sifchain_command(
         from_entry,
         sifchain_fees_entry,
     ])
-
-
-def wait_for_ethereum_token(transfer_request: EthereumToSifchainTransferRequest, symbol: str):
-    """waits for a token with symbol returns a result like {"token":"0x82D50AD3C1091866E258Fd0f1a7cC9674609D254","value":true,"symbol":"erowan","name":"erowan","decimals":"18"}"""
-    def token_exists():
-        for token in get_whitelisted_tokens(transfer_request):
-            if token["symbol"] == symbol:
-                return token
-        return None
-    return wait_for_predicate(token_exists)

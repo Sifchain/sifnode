@@ -3,10 +3,11 @@ package keeper
 import (
 	"context"
 	"fmt"
+	"strconv"
+
 	dispensationUtils "github.com/Sifchain/sifnode/x/dispensation/utils"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/pkg/errors"
-	"strconv"
 
 	"github.com/Sifchain/sifnode/x/dispensation/types"
 )
@@ -29,7 +30,7 @@ func (srv msgServer) CreateDistribution(ctx context.Context,
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	distributionName := fmt.Sprintf("%d_%s", sdkCtx.BlockHeight(), msg.Distributor)
 	// Verify if distribution already exists
-	err := srv.Keeper.VerifyAndSetDistribution(sdkCtx, distributionName, msg.DistributionType)
+	err := srv.Keeper.VerifyAndSetDistribution(sdkCtx, distributionName, msg.DistributionType, msg.AuthorizedRunner)
 	if err != nil {
 		return nil, err
 	}
@@ -70,8 +71,11 @@ func (srv msgServer) CreateUserClaim(ctx context.Context,
 		sdkCtx.Logger().Info("Claim already exists for user :", claim.UserClaimAddress)
 		return nil, errors.Wrap(types.ErrInvalid, "Claim already exists for user")
 	}
-	newClaim := types.NewUserClaim(claim.UserClaimAddress, claim.UserClaimType, sdkCtx.BlockTime().UTC().String())
-	err := srv.Keeper.SetClaim(sdkCtx, newClaim)
+	newClaim, err := types.NewUserClaim(claim.UserClaimAddress, claim.UserClaimType, sdkCtx.BlockTime())
+	if err != nil {
+		return nil, err
+	}
+	err = srv.Keeper.SetClaim(sdkCtx, newClaim)
 	if err != nil {
 		return nil, err
 	}
@@ -80,7 +84,7 @@ func (srv msgServer) CreateUserClaim(ctx context.Context,
 			types.EventTypeClaimCreated,
 			sdk.NewAttribute(types.AttributeKeyClaimUser, newClaim.UserAddress),
 			sdk.NewAttribute(types.AttributeKeyClaimType, newClaim.UserClaimType.String()),
-			sdk.NewAttribute(types.AttributeKeyClaimTime, newClaim.UserClaimTime),
+			sdk.NewAttribute(types.AttributeKeyClaimTime, newClaim.UserClaimTime.String()),
 		),
 	})
 	return &types.MsgCreateClaimResponse{}, nil

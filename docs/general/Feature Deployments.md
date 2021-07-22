@@ -52,7 +52,7 @@ The command will display those running services in the provided namespace:
 ```
 NAME         TYPE           CLUSTER-IP     EXTERNAL-IP                                                               PORT(S)          AGE
 sifnoded     LoadBalancer   172.20.199.3   a5ffd81a54d214554aa2b2dd91e80030-2091375959.us-west-2.elb.amazonaws.com   1317:30336/TCP   20h
-sifnodecli   LoadBalancer   172.20.99.92   a63326ebdec3747f1b1d40fc7efaa5bb-299351102.us-west-2.elb.amazonaws.com    26656-26657:30840-30841/TCP   20h
+sifnoded   LoadBalancer   172.20.99.92   a63326ebdec3747f1b1d40fc7efaa5bb-299351102.us-west-2.elb.amazonaws.com    26656-26657:30840-30841/TCP   20h
 ```
 
 You can then use the `EXTERNAL-IP` address to interact with the services, on the standard RPC/P2P (26656/26657) and rest (1317) ports.

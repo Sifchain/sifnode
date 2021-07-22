@@ -1,12 +1,14 @@
 package keeper_test
 
 import (
+	"testing"
+
 	"github.com/Sifchain/sifnode/x/dispensation/test"
 	"github.com/Sifchain/sifnode/x/dispensation/types"
 	dispensationUtils "github.com/Sifchain/sifnode/x/dispensation/utils"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/assert"
-	"testing"
+	"github.com/tendermint/tendermint/crypto"
 )
 
 func TestKeeper_AccumulateDrops(t *testing.T) {
@@ -78,8 +80,9 @@ func TestKeeper_CreateAndDistributeDrops(t *testing.T) {
 func TestKeeper_VerifyDistribution(t *testing.T) {
 	app, ctx := test.CreateTestApp(false)
 	keeper := app.DispensationKeeper
-	err := keeper.VerifyAndSetDistribution(ctx, "AR1", types.DistributionType_DISTRIBUTION_TYPE_AIRDROP)
+	authorisedRunner := sdk.AccAddress(crypto.AddressHash([]byte("Runner")))
+	err := keeper.VerifyAndSetDistribution(ctx, "AR1", types.DistributionType_DISTRIBUTION_TYPE_AIRDROP, authorisedRunner.String())
 	assert.NoError(t, err)
-	err = keeper.VerifyAndSetDistribution(ctx, "AR1", types.DistributionType_DISTRIBUTION_TYPE_AIRDROP)
+	err = keeper.VerifyAndSetDistribution(ctx, "AR1", types.DistributionType_DISTRIBUTION_TYPE_AIRDROP, authorisedRunner.String())
 	assert.Error(t, err)
 }

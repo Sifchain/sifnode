@@ -35,13 +35,13 @@ Key files related to API changes:
 
 CLI commands and related code has undergone various changes, and improvements, including syntax modifications, fixes, and refactoring.
 
-**sifnodecli** and **sifnoded** have been combined into **sifnoded** , so all commands previously executed through sifnodecli are now executed through **sifnoded**. Aside from the merge into sidnoded, command syntax remains largely unchanged. The changes to scripts in **scripts/demo** are minimal beyond the shift from sifnodecli to sifnoded.
+**sifnoded** and **sifnoded** have been combined into **sifnoded** , so all commands previously executed through sifnoded are now executed through **sifnoded**. Aside from the merge into sidnoded, command syntax remains largely unchanged. The changes to scripts in **scripts/demo** are minimal beyond the shift from sifnoded to sifnoded.
 
 Syntax changes:
 
 - **send** tx is now under the **bank** route rather than a root **tx** command
 
-  - **Old:** sifnodecli tx send [from\_key\_or\_address] [to\_address] [amount] [flags]
+  - **Old:** sifnoded tx send [from\_key\_or\_address] [to\_address] [amount] [flags]
   - **New:** sifnoded tx bank send [from\_key\_or\_address] [to\_address] [amount] [flags]
 
 Commands are no longer added in **cmd/sifnoded/main.go** , each route is now added in the following files:

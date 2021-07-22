@@ -97,7 +97,7 @@ rake "keys:import[my-node]"
 3. Check that it's been imported accordingly:
 
 ```
-sifnodecli keys show <moniker> --keyring-backend file 
+sifnoded keys show <moniker> --keyring-backend file 
 ```
 
 4. Deploy a new node to your cluster and connect to an existing network:
@@ -206,13 +206,13 @@ rake "validator:stake[sifchain,my-node,10000000rowan,300000,0.5rowan,<public_key
 4. It may take several blocks before your node appears as a validator on the network, but you can always check by running:
 
 ```
-sifnodecli q tendermint-validator-set --node <node_rpc_address> --trust-node
+sifnoded q tendermint-validator-set --node <node_rpc_address> --trust-node
 ```
 
 e.g.:
 
 ```
-sifnodecli q tendermint-validator-set --node tcp://rpc.sifchain.finance:80 --trust-node
+sifnoded q tendermint-validator-set --node tcp://rpc.sifchain.finance:80 --trust-node
 ```
 
 ## Additional Resources
