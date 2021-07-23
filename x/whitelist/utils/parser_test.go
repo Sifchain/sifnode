@@ -2,7 +2,7 @@ package utils
 
 import (
 	"encoding/json"
-	types2 "github.com/Sifchain/sifnode/x/whitelist/types"
+	"github.com/Sifchain/sifnode/x/whitelist/types"
 	"github.com/stretchr/testify/assert"
 	"io/ioutil"
 	"os"
@@ -10,13 +10,13 @@ import (
 )
 
 func createInput(t *testing.T, filename string) {
-	denomEntry := types2.DenomWhitelistEntry{
+	denomEntry := types.DenomWhitelistEntry{
 		IsWhitelisted: true,
 		Denom:         "ceth",
 		Decimals:      18,
 	}
-	denomEntryList := []*types2.DenomWhitelistEntry{&denomEntry}
-	list := types2.DenomWhitelist{DenomWhitelistEntries: denomEntryList}
+	denomEntryList := []*types.DenomWhitelistEntry{&denomEntry}
+	list := types.DenomWhitelist{DenomWhitelistEntries: denomEntryList}
 	file, err := json.MarshalIndent(list, "", " ")
 	assert.NoError(t, err)
 	_ = ioutil.WriteFile(filename, file, 0600)
