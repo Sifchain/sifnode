@@ -62,7 +62,7 @@ func (k keeper) GetDenom(ctx sdk.Context, denom string) types.DenomWhitelistEntr
 	wl := k.GetDenomWhitelist(ctx)
 
 	for i := range wl.DenomWhitelistEntries {
-		if strings.ToLower(wl.DenomWhitelistEntries[i].Denom) == strings.ToLower(denom) &&
+		if strings.EqualFold(wl.DenomWhitelistEntries[i].Denom, strings.ToLower(denom)) &&
 			wl.DenomWhitelistEntries[i] != nil {
 			return *wl.DenomWhitelistEntries[i]
 		}

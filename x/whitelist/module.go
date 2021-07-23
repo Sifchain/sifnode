@@ -66,7 +66,6 @@ func (b AppModuleBasic) ValidateGenesis(marshaler codec.JSONMarshaler, _ sdkclie
 
 func (b AppModuleBasic) RegisterGRPCGatewayRoutes(_ sdkclient.Context, _ *runtime.ServeMux) {
 	// TODO: Register grpc gateway
-	return
 }
 
 // RegisterRESTRoutes registers the REST routes.

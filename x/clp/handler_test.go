@@ -1,8 +1,9 @@
 package clp_test
 
 import (
-	whitelisttypes "github.com/Sifchain/sifnode/x/whitelist/types"
 	"testing"
+
+	whitelisttypes "github.com/Sifchain/sifnode/x/whitelist/types"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/assert"
@@ -77,7 +78,7 @@ func TestCreatePool(t *testing.T) {
 	newAsset := clptypes.NewAsset("Asset")
 	// Not whitelisted
 	msgNonWhitelisted := clptypes.NewMsgCreatePool(signer, clptypes.NewAsset(newAsset.Symbol), poolBalance, poolBalance)
-	res, err = handler(ctx, &msgNonWhitelisted)
+	_, err = handler(ctx, &msgNonWhitelisted)
 	require.Error(t, err)
 	// Whitelist Asset
 	app.WhitelistKeeper.SetDenom(ctx, newAsset.Symbol, 18)
@@ -137,7 +138,7 @@ func TestAddLiquidity(t *testing.T) {
 
 	newAsset := clptypes.NewAsset("Asset")
 	msgNonWhitelisted := clptypes.NewMsgAddLiquidity(signer, newAsset, sdk.NewUint(1000), sdk.NewUint(1000))
-	res, err = handler(ctx, &msgNonWhitelisted)
+	_, err = handler(ctx, &msgNonWhitelisted)
 	require.Error(t, err)
 
 }
@@ -340,10 +341,10 @@ func TestSwap(t *testing.T) {
 	require.Nil(t, res)
 
 	msgE := clptypes.NewMsgSwap(signer, assetEth, clptypes.NewAsset("Asset"), swapSentAssetETH, swapSentAssetETH)
-	res, err = handler(ctx, &msgE)
+	_, err = handler(ctx, &msgE)
 	assert.Error(t, err)
 	msgE = clptypes.NewMsgSwap(signer, clptypes.NewAsset("Asset"), assetDash, swapSentAssetETH, swapSentAssetETH)
-	res, err = handler(ctx, &msgE)
+	_, err = handler(ctx, &msgE)
 	assert.Error(t, err)
 
 }
