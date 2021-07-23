@@ -76,6 +76,7 @@ func (k Keeper) GetNormalizationFactor(ctx sdk.Context, denom string) (sdk.Dec, 
 	adjustExternalToken := false
 	if entry.IsWhitelisted && entry.Decimals != 18 {
 		adjustExternalToken = true
+		// TODO: Update this function to properly use entry.Decimals instead of previous nf map values.
 		nf := entry.Decimals
 		diffFactor := 18 - nf
 		if diffFactor < 0 {
