@@ -16,7 +16,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func AddWhiteListDenoms(defaultNodeHome string) *cobra.Command {
+func SetGenesisDenomWhitelist(defaultNodeHome string) *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:   "set-gen-denom-whitelist [path to json file]",

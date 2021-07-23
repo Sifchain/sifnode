@@ -18,9 +18,9 @@ import (
 	whitelisttypes "github.com/Sifchain/sifnode/x/whitelist/types"
 )
 
-func AddGenesisWhitelisterAdminCmd(defaultNodeHome string) *cobra.Command {
+func SetGenesisWhitelisterAdminCmd(defaultNodeHome string) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "add-genesis-whitelister-admin [address_or_key_name]",
+		Use:   "set-genesis-whitelister-admin [address_or_key_name]",
 		Short: "Add a genesis account to genesis.json that has permission to edit token whitelist.",
 		Long: `Add a genesis account to genesis.json. The provided account must specify
 the account address or key name. If a key name is given,
