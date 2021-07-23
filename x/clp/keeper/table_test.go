@@ -1,19 +1,48 @@
-package keeper
+package keeper_test
 
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
-	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/stretchr/testify/assert"
 	"io/ioutil"
 	"testing"
+
+	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/stretchr/testify/assert"
+
+	sifapp "github.com/Sifchain/sifnode/app"
+	clpkeeper "github.com/Sifchain/sifnode/x/clp/keeper"
+	clptest "github.com/Sifchain/sifnode/x/clp/test"
+	whitelisttypes "github.com/Sifchain/sifnode/x/whitelist/types"
 )
 
-// THe normalization has been shifted to a different module , so these tests cannot remain pure anymore , unless we add normalization factor to the json file directly
-// Using a stub now for providing hardcoded values of normalization-factor and adjustment flag
-// The stub implementation can be replaced with DenomWhitelist types
+func createTestAppForTestTables() (sdk.Context, *sifapp.SifchainApp) {
+	wl := whitelisttypes.DenomWhitelist{
+		// TODO: Update to correct values and ensure tests pass.
+		DenomWhitelistEntries: []*whitelisttypes.DenomWhitelistEntry{
+			{Denom: "cel", Decimals: 18},
+			{Denom: "ausc", Decimals: 18},
+			{Denom: "usdt", Decimals: 18},
+			{Denom: "usdc", Decimals: 18},
+			{Denom: "cro", Decimals: 18},
+			{Denom: "cdai", Decimals: 18},
+			{Denom: "wbtc", Decimals: 18},
+			{Denom: "ceth", Decimals: 18},
+			{Denom: "renbtc", Decimals: 18},
+			{Denom: "cusdc", Decimals: 18},
+			{Denom: "husd", Decimals: 18},
+			{Denom: "ampl", Decimals: 18},
+		},
+	}
 
+	ctx, app := clptest.CreateTestAppClp(false)
+	for _, entry := range wl.DenomWhitelistEntries {
+		app.WhitelistKeeper.SetDenom(ctx, entry.Denom, entry.Decimals)
+	}
+
+	return ctx, app
+}
+
+// TODO: Remove once below tests pass with correct decimal values in whitelist.
 func GetNormalizationMap() map[string]int64 {
 	m := make(map[string]int64)
 	m["cel"] = 4
@@ -29,21 +58,6 @@ func GetNormalizationMap() map[string]int64 {
 	m["husd"] = 8
 	m["ampl"] = 9
 	return m
-}
-func GetNormalizationFactorStub(denom string) (sdk.Dec, bool) {
-	normalizationFactor := sdk.NewDec(1)
-	nf, ok := GetNormalizationMap()[denom[1:]]
-	adjustExternalToken := false
-	if ok {
-		adjustExternalToken = true
-		diffFactor := 18 - nf
-		if diffFactor < 0 {
-			diffFactor = nf - 18
-			adjustExternalToken = false
-		}
-		normalizationFactor = sdk.NewDec(10).Power(uint64(diffFactor))
-	}
-	return normalizationFactor, adjustExternalToken
 }
 
 func TestCalculatePoolUnits(t *testing.T) {
@@ -67,11 +81,12 @@ func TestCalculatePoolUnits(t *testing.T) {
 	err = json.Unmarshal(file, &test)
 	assert.NoError(t, err)
 
+	ctx, app := createTestAppForTestTables()
+
 	testcases := test.TestType
-	errCount := 0
 	for _, test := range testcases {
-		nf, ad := GetNormalizationFactorStub(test.Symbol)
-		_, stakeUnits, _ := CalculatePoolUnits(
+		nf, ad := app.ClpKeeper.GetNormalizationFactor(ctx, test.Symbol)
+		_, stakeUnits, _ := clpkeeper.CalculatePoolUnits(
 			sdk.NewUintFromString(test.PoolUnitsBalance),
 			sdk.NewUintFromString(test.NativeBalance),
 			sdk.NewUintFromString(test.ExternalBalance),
@@ -79,10 +94,7 @@ func TestCalculatePoolUnits(t *testing.T) {
 			sdk.NewUintFromString(test.ExternalAdded),
 			nf, ad,
 		)
-		if !stakeUnits.Equal(sdk.NewUintFromString(test.Expected)) {
-			fmt.Printf("Pool_Units | Expected : %s | Got : %s \n", test.Expected, stakeUnits.String())
-			errCount++
-		}
+		assert.True(t, stakeUnits.Equal(sdk.NewUintFromString(test.Expected)))
 	}
 }
 
@@ -104,21 +116,19 @@ func TestCalculateSwapResult(t *testing.T) {
 	err = json.Unmarshal(file, &test)
 	assert.NoError(t, err)
 
+	ctx, app := createTestAppForTestTables()
+
 	testcases := test.TestType
-	errCount := 0
 	for _, test := range testcases {
-		nf, ad := GetNormalizationFactorStub("cusdt")
-		Yy, _ := calcSwapResult(
+		nf, ad := app.ClpKeeper.GetNormalizationFactor(ctx, "cusdt")
+		Yy, _ := clpkeeper.CalcSwapResult(
 			true,
 			nf,
 			ad,
 			sdk.NewUintFromString(test.X),
 			sdk.NewUintFromString(test.Xx),
 			sdk.NewUintFromString(test.Y))
-		if !Yy.Equal(sdk.NewUintFromString(test.Expected)) {
-			fmt.Printf("SingleSwap-Result | Expected : %s | Got : %s \n", test.Expected, Yy.String())
-			errCount++
-		}
+		assert.True(t, Yy.Equal(sdk.NewUintFromString(test.Expected)))
 	}
 }
 
@@ -140,20 +150,18 @@ func TestCalculateSwapLiquidityFee(t *testing.T) {
 	err = json.Unmarshal(file, &test)
 	assert.NoError(t, err)
 
+	ctx, app := createTestAppForTestTables()
+
 	testcases := test.TestType
-	errCount := 0
 	for _, test := range testcases {
-		nf, ad := GetNormalizationFactorStub("ceth")
-		Yy, _ := calcLiquidityFee(
+		nf, ad := app.ClpKeeper.GetNormalizationFactor(ctx, "ceth")
+		Yy, _ := clpkeeper.CalcLiquidityFee(
 			true,
 			nf, ad,
 			sdk.NewUintFromString(test.X),
 			sdk.NewUintFromString(test.Xx),
 			sdk.NewUintFromString(test.Y))
-		if !Yy.Equal(sdk.NewUintFromString(test.Expected)) {
-			fmt.Printf("SingleSwap-Liquidityfees | Expected : %s | Got : %s \n", test.Expected, Yy.String())
-			errCount++
-		}
+		assert.True(t, Yy.Equal(sdk.NewUintFromString(test.Expected)))
 	}
 }
 
@@ -177,28 +185,26 @@ func TestCalculateDoubleSwapResult(t *testing.T) {
 	err = json.Unmarshal(file, &test)
 	assert.NoError(t, err)
 
+	ctx, app := createTestAppForTestTables()
+
 	testcases := test.TestType
-	errCount := 0
 	for _, test := range testcases {
-		nf, ad := GetNormalizationFactorStub("cusdt")
-		Ay, _ := calcSwapResult(
+		nf, ad := app.ClpKeeper.GetNormalizationFactor(ctx, "cusdt")
+		Ay, _ := clpkeeper.CalcSwapResult(
 			true,
 			nf, ad,
 			sdk.NewUintFromString(test.AX),
 			sdk.NewUintFromString(test.Ax),
 			sdk.NewUintFromString(test.AY))
-		nf, ad = GetNormalizationFactorStub("cusdt")
-		By, _ := calcSwapResult(
+		nf, ad = app.ClpKeeper.GetNormalizationFactor(ctx, "cusdt")
+		By, _ := clpkeeper.CalcSwapResult(
 			true,
 			nf, ad,
 			sdk.NewUintFromString(test.BX),
 			Ay,
 			sdk.NewUintFromString(test.BY))
 
-		if !By.Equal(sdk.NewUintFromString(test.Expected)) {
-			fmt.Printf("Doubleswap_Result | Expected : %s | Got : %s \n", test.Expected, By.String())
-			errCount++
-		}
+		assert.True(t, By.Equal(sdk.NewUintFromString(test.Expected)))
 	}
 }
 
@@ -223,11 +229,12 @@ func TestCalculatePoolUnitsAfterUpgrade(t *testing.T) {
 	err = json.Unmarshal(file, &test)
 	assert.NoError(t, err)
 
+	ctx, app := createTestAppForTestTables()
+
 	testcases := test.TestType
-	errCount := 0
 	for _, test := range testcases {
-		nf, ad := GetNormalizationFactorStub(test.Symbol)
-		_, stakeUnits, _ := CalculatePoolUnits(
+		nf, ad := app.ClpKeeper.GetNormalizationFactor(ctx, test.Symbol)
+		_, stakeUnits, _ := clpkeeper.CalculatePoolUnits(
 			sdk.NewUintFromString(test.PoolUnitsBalance),
 			sdk.NewUintFromString(test.NativeBalance),
 			sdk.NewUintFromString(test.ExternalBalance),
@@ -236,9 +243,6 @@ func TestCalculatePoolUnitsAfterUpgrade(t *testing.T) {
 			nf,
 			ad,
 		)
-		if !stakeUnits.Equal(sdk.NewUintFromString(test.Expected)) {
-			fmt.Printf("Pool_Units_After_Upgrade | Expected : %s | Got : %s \n", test.Expected, stakeUnits.String())
-			errCount++
-		}
+		assert.True(t, stakeUnits.Equal(sdk.NewUintFromString(test.Expected)))
 	}
 }
