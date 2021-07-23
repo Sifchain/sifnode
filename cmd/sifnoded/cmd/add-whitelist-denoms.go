@@ -19,7 +19,7 @@ import (
 func AddWhiteListDenoms(defaultNodeHome string) *cobra.Command {
 
 	cmd := &cobra.Command{
-		Use:   "add-whitelist-denoms [path to json file]",
+		Use:   "set-gen-denom-whitelist [path to json file]",
 		Short: "Add a list of denoms to the whitelist",
 		Long:  `Add a list of denoms to the whitelist , this list can only be edited by the admin in future`,
 		Args:  cobra.ExactArgs(1),
