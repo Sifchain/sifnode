@@ -18,7 +18,7 @@ type Keeper struct {
 	cdc             codec.BinaryMarshaler
 	bankKeeper      types.BankKeeper
 	authKeeper      types.AuthKeeper
-	whitelistKeeper whitelisttypes.Keeper
+	whitelistKeeper types.WhitelistKeeper
 	paramstore      paramtypes.Subspace
 }
 
