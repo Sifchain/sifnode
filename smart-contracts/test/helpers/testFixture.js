@@ -62,7 +62,8 @@ async function multiTokenSetup(
     userOne,
     userThree,
     pauser,
-    chainId
+    chainId,
+    chainIdMismatch = false
   ) {
     const state = {}
 
@@ -91,7 +92,7 @@ async function multiTokenSetup(
       state.cosmosBridge.address,
       owner.address,
       pauser,
-      chainId
+      chainIdMismatch ? state.wrongChainId : chainId
     ]);
     await state.bridgeBank.deployed();
 
@@ -153,7 +154,8 @@ async function singleSetup(
     userOne,
     userThree,
     pauser,
-    chainId
+    chainId,
+    chainIdMismatch = false
     ) {
     const state = {};
     // Deploy Valset contract
@@ -181,7 +183,7 @@ async function singleSetup(
       state.cosmosBridge.address,
       owner.address,
       pauser,
-      chainId
+      chainIdMismatch ? state.wrongChainId : chainId
     ]);
     await state.bridgeBank.deployed();
 
