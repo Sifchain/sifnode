@@ -10,7 +10,7 @@ from dispensation_envutils import create_offline_singlekey_txn, create_new_sifad
 
 
 #TEST CODE TO ASSERT TAGS GENERATED ON A BLOCK WHEN A NEW UNSIGNED DISPENSATION IS CREATED
-@pytest.mark.parametrize("claimType", ['ValidatorSubsidy','LiquidityMining'])
+@pytest.mark.parametrize("claimType", ['ValidatorSubsidy', 'LiquidityMining'])
 def test_create_offline_singlekey_txn(claimType):
     distributor_address, distributor_name = create_new_sifaddr_and_key()
     runner_address, runner_name = create_new_sifaddr_and_key()
@@ -39,35 +39,34 @@ def test_create_offline_singlekey_txn(claimType):
     #CREATING TEST DATA HERE MIMICKING OUTPUT.JSON TO BE SUPPLIED BY NIKO'S API
     dict1 = {"denom": "rowan","amount": "5000"}
     dict2 = {"denom": "rowan","amount": "7000"}
-    dict3 = {"address": destaddress1,"coins":[dict1]}
-    dict4 = {"address": destaddress2,"coins":[dict2]}
-    dict5 = {"Output":[dict3,dict4]}
+    dict3 = {"address": destaddress1, "coins": [dict1]}
+    dict4 = {"address": destaddress2, "coins": [dict2]}
+    dict5 = {"Output": [dict3, dict4]}
     data = json.dumps(dict5)
-    with open("output.json","w") as f:
+    with open("output.json", "w") as f:
         f.write(data)
 
     #READ OUTPUT.JSON WITH CLAIMING ADDRESSES AND AMOUNT
-    with open("output.json","r") as f:
+    with open("output.json", "r") as f:
         data = f.read()
-    d = json.loads(data)
 
+    d = json.loads(data)
     response = (create_offline_singlekey_txn_with_runner(claimType, runner_address, distributor_address, chain_id))
     distribution_msg = response['body']['messages'][0]
     msg_type = distribution_msg['@type']
     distributor = distribution_msg['distributor']
     authorized_runner = distribution_msg['authorized_runner']
     distribution_type = distribution_msg['distribution_type']
-
-    assert str(msg_type) == '/sifnode.dispensation.v1.MsgCreateDistribution'
-    assert str(distributor) == distributor_address
-    assert str(authorized_runner) == runner_address
-    assert str(distribution_type) in ['DISTRIBUTION_TYPE_VALIDATOR_SUBSIDY', 'DISTRIBUTION_TYPE_LIQUIDITY_MINING']
-
     distribution_msg_keys = list(distribution_msg.keys())
+
     assert distribution_msg_keys[0] == '@type'
     assert distribution_msg_keys[1] == 'distributor'
     assert distribution_msg_keys[2] == 'authorized_runner'
     assert distribution_msg_keys[3] == 'distribution_type'
+    assert str(msg_type) == '/sifnode.dispensation.v1.MsgCreateDistribution'
+    assert str(distributor) == distributor_address
+    assert str(authorized_runner) == runner_address
+    assert str(distribution_type) in ['DISTRIBUTION_TYPE_VALIDATOR_SUBSIDY', 'DISTRIBUTION_TYPE_LIQUIDITY_MINING']
 
     try:
         os.remove('signed.json')
@@ -78,7 +77,7 @@ def test_create_offline_singlekey_txn(claimType):
 
 
 #TEST CODE TO ASSERT TAGS GENERATED ON A BLOCK WHEN A NEW SIGNED DISPENSATION IS BROADCASTED on BLOCKCHAIN
-@pytest.mark.parametrize("claimType", ['ValidatorSubsidy','LiquidityMining'])
+@pytest.mark.parametrize("claimType", ['ValidatorSubsidy', 'LiquidityMining'])
 def test_broadcast_txn(claimType):
     distributor_address, distributor_name = create_new_sifaddr_and_key()
     runner_address, runner_name = create_new_sifaddr_and_key()
@@ -103,18 +102,18 @@ def test_broadcast_txn(claimType):
     #CREATING TEST DATA HERE MIMICKING OUTPUT.JSON TO BE SUPPLIED BY NIKO'S API
     dict1 = {"denom": "rowan","amount": "5000"}
     dict2 = {"denom": "rowan","amount": "7000"}
-    dict3 = {"address": destaddress1, "coins":[dict1]}
-    dict4 = {"address": destaddress2, "coins":[dict2]}
-    dict5 = {"Output":[dict3,dict4]}
+    dict3 = {"address": destaddress1, "coins": [dict1]}
+    dict4 = {"address": destaddress2, "coins": [dict2]}
+    dict5 = {"Output": [dict3, dict4]}
     data = json.dumps(dict5)
     with open("output.json", "w") as f:
         f.write(data)
 
     #READ OUTPUT.JSON WITH CLAIMING ADDRESSES AND AMOUNT
-    with open("output.json","r") as f:
+    with open("output.json", "r") as f:
         data = f.read()
-    d = json.loads(data)
 
+    d = json.loads(data)
     response = (create_offline_singlekey_txn_with_runner(claimType, runner_address, distributor_address, chain_id))
 
     with open("sample.json", "w") as outfile:
@@ -126,24 +125,23 @@ def test_broadcast_txn(claimType):
 
     txhashbcast = broadcast_txn('signed.json')
     time.sleep(5)
-    resp = query_block_claim(txhashbcast)
 
+    resp = query_block_claim(txhashbcast)
     distribution_msg = resp['tx']['body']['messages'][0]
     msg_type = distribution_msg['@type']
     distributor = distribution_msg['distributor']
     authorized_runner = distribution_msg['authorized_runner']
     distribution_type = distribution_msg['distribution_type']
-
-    assert str(msg_type) == '/sifnode.dispensation.v1.MsgCreateDistribution'
-    assert str(distributor) == distributor_address
-    assert str(authorized_runner) == runner_address
-    assert str(distribution_type) in ['DISTRIBUTION_TYPE_VALIDATOR_SUBSIDY', 'DISTRIBUTION_TYPE_LIQUIDITY_MINING']
-
     distribution_msg_keys = list(distribution_msg.keys())
+
     assert distribution_msg_keys[0] == '@type'
     assert distribution_msg_keys[1] == 'distributor'
     assert distribution_msg_keys[2] == 'authorized_runner'
     assert distribution_msg_keys[3] == 'distribution_type'
+    assert str(msg_type) == '/sifnode.dispensation.v1.MsgCreateDistribution'
+    assert str(distributor) == distributor_address
+    assert str(authorized_runner) == runner_address
+    assert str(distribution_type) in ['DISTRIBUTION_TYPE_VALIDATOR_SUBSIDY', 'DISTRIBUTION_TYPE_LIQUIDITY_MINING']
 
     try:
         os.remove('signed.json')
@@ -154,7 +152,7 @@ def test_broadcast_txn(claimType):
 
 
 # AUTOMATED TEST TO VALIDATE ONLINE TXN
-@pytest.mark.parametrize("claimType", ['ValidatorSubsidy','LiquidityMining'])
+@pytest.mark.parametrize("claimType", ['ValidatorSubsidy', 'LiquidityMining'])
 def test_run_offline_singlekey_txn(claimType):
     distributor_address, distributor_name = create_new_sifaddr_and_key()
     runner_address, runner_name = create_new_sifaddr_and_key()
@@ -184,11 +182,11 @@ def test_run_offline_singlekey_txn(claimType):
     logging.info(f"sorted_dest_address_list = {sorted_dest_address_list}")
 
     # CREATING TEST DATA HERE MIMICKING OUTPUT.JSON TO BE SUPPLIED BY NIKO'S API
-    dict1 = {"denom": "rowan","amount": "5000"}
-    dict2 = {"denom": "rowan","amount": "7000"}
-    dict3 = {"address": destaddress1,"coins":[dict1]}
-    dict4 = {"address": destaddress2,"coins":[dict2]}
-    dict5 = {"Output":[dict3,dict4]}
+    dict1 = {"denom": "rowan", "amount": "5000"}
+    dict2 = {"denom": "rowan", "amount": "7000"}
+    dict3 = {"address": destaddress1, "coins": [dict1]}
+    dict4 = {"address": destaddress2, "coins": [dict2]}
+    dict5 = {"Output": [dict3, dict4]}
     data = json.dumps(dict5)
     with open("output.json","w") as f:
         f.write(data)
@@ -196,8 +194,8 @@ def test_run_offline_singlekey_txn(claimType):
     # READ OUTPUT.JSON WITH CLAIMING ADDRESSES AND AMOUNT
     with open("output.json","r") as f:
         data = f.read()
-    d = json.loads(data)
 
+    d = json.loads(data)
     one_claiming_address = str(d['Output'][0]['address'])
     logging.info(f"one claiming address = {one_claiming_address}")
 
@@ -226,17 +224,16 @@ def test_run_offline_singlekey_txn(claimType):
     distributor = distribution_msg['distributor']
     authorized_runner = distribution_msg['authorized_runner']
     distribution_type = distribution_msg['distribution_type']
-
-    assert str(msg_type) == '/sifnode.dispensation.v1.MsgCreateDistribution'
-    assert str(distributor) == distributor_address
-    assert str(authorized_runner) == runner_address
-    assert str(distribution_type) in ['DISTRIBUTION_TYPE_VALIDATOR_SUBSIDY', 'DISTRIBUTION_TYPE_LIQUIDITY_MINING']
-
     distribution_msg_keys = list(distribution_msg.keys())
+
     assert distribution_msg_keys[0] == '@type'
     assert distribution_msg_keys[1] == 'distributor'
     assert distribution_msg_keys[2] == 'authorized_runner'
     assert distribution_msg_keys[3] == 'distribution_type'
+    assert str(msg_type) == '/sifnode.dispensation.v1.MsgCreateDistribution'
+    assert str(distributor) == distributor_address
+    assert str(authorized_runner) == runner_address
+    assert str(distribution_type) in ['DISTRIBUTION_TYPE_VALIDATOR_SUBSIDY', 'DISTRIBUTION_TYPE_LIQUIDITY_MINING']
 
     distribution_name = resp['logs'][0]['events'][0]['attributes'][1]['value']
     distribution_type = resp['logs'][0]['events'][0]['attributes'][2]['value']
@@ -271,16 +268,15 @@ def test_run_offline_singlekey_txn(claimType):
     run_msg_type = run_distr_msg['@type']
     run_authorized_runner = run_distr_msg['authorized_runner']
     run_distribution_type = run_distr_msg['distribution_type']
-
-    assert str(run_msg_type) == '/sifnode.dispensation.v1.MsgRunDistribution'
-    assert str(run_authorized_runner) == runner_address
-    assert str(run_distribution_type) in ['DISTRIBUTION_TYPE_VALIDATOR_SUBSIDY', 'DISTRIBUTION_TYPE_LIQUIDITY_MINING']
-
     run_distr_msg_keys = list(run_distr_msg.keys())
+
     assert run_distr_msg_keys[0] == '@type'
     assert run_distr_msg_keys[1] == 'authorized_runner'
     assert run_distr_msg_keys[2] == 'distribution_name'
     assert run_distr_msg_keys[3] == 'distribution_type'
+    assert str(run_msg_type) == '/sifnode.dispensation.v1.MsgRunDistribution'
+    assert str(run_authorized_runner) == runner_address
+    assert str(run_distribution_type) in ['DISTRIBUTION_TYPE_VALIDATOR_SUBSIDY', 'DISTRIBUTION_TYPE_LIQUIDITY_MINING']
 
     # READING TAGS FROM RUN DISPENSATION CMD
     temprundistamount1 = runresp['logs'][0]['events'][4]['attributes'][2]['value']
@@ -300,26 +296,18 @@ def test_run_offline_singlekey_txn(claimType):
 
     total_amount_distributed = sum(int(i) for i in amount_distributed)
     recipient_with_respective_distributed_amount = dict(zip(recipient_dispensation_addresses, amount_distributed))
-
-    logging.info(
-        f"recipients and their respective distributed amounts = {recipient_with_respective_distributed_amount}")
+    logging.info(f"recipients and their respective distributed amounts = {recipient_with_respective_distributed_amount}")
     logging.info(f"total amount distributed = {total_amount_distributed}")
-
+    claimed_amount_single_recipient = int(recipient_with_respective_distributed_amount[one_claiming_address])
     sender_final_balance = int(balance_check(distributor_address, currency))
     recipient_address_final_balance = int(balance_check(one_claiming_address, currency))
-
     logging.info(f"sender initial balance = {sender_initial_balance}")
     logging.info(f"sender final balance = {sender_final_balance}")
-
-    claimed_amount_single_recipient = int(recipient_with_respective_distributed_amount[one_claiming_address])
 
     # BALANCES ASSERTIONS
     assert int(total_amount_distributed) == int((sender_initial_balance - sender_final_balance) - int(fee))
     assert int(claimed_amount_single_recipient) == (recipient_address_final_balance - claiming_address_initial_balance)
-    logging.info(
-        f"balance transferred including fee from sender's address  = {(sender_initial_balance - sender_final_balance)}")
+    logging.info(f"balance transferred including fee from sender's address  = {(sender_initial_balance - sender_final_balance)}")
     logging.info(f"total amount distributed  = {total_amount_distributed}")
-
     logging.info(f"amount claimed by one recipient  = {claimed_amount_single_recipient}")
-    logging.info(
-        f"balance transferred in one recipient address  = {(recipient_address_final_balance - claiming_address_initial_balance)}")
+    logging.info(f"balance transferred in one recipient address  = {(recipient_address_final_balance - claiming_address_initial_balance)}")

@@ -41,8 +41,7 @@ def send_sample_rowan(from_address, to_address, amount, keyring_backend, chain_i
         keyring_backend_entry,
         sifchain_fees_entry,
         f"--chain-id {chain_id}",
-        f"--yes",
-        # f"{offline}"
+        f"--yes"
     ])
     json_str = get_shell_output_json(cmd)
     assert (json_str.get("code", 0) == 0)
@@ -296,6 +295,7 @@ def query_created_claim(claimType):
     json_str = get_shell_output_json(cmd)
     return json_str
 
+
 #CODE TO CREATE A NEW CLAIM
 def create_claim(
         sifchain_address,
@@ -304,13 +304,15 @@ def create_claim(
         chain_id
     ):
     logging.debug(f"create_claim")
-    keyring_backend_entry = f"--keyring-backend {keyring_backend}"     
+    keyring_backend_entry = f"--keyring-backend {keyring_backend}"
+    sifchain_gas_entry = f"--gas auto --gas-adjustment=1.5"
     sifchain_fees_entry = f"--fees 100000rowan"
     cmd = " ".join([
         "sifnoded tx dispensation claim",
         f"{claimType}",
         f"--from {sifchain_address}",
         sifchain_fees_entry,
+        sifchain_gas_entry,
         f"--chain-id {chain_id}",
         keyring_backend_entry,
         f"--yes -o json"
