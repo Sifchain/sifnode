@@ -3,8 +3,6 @@ package clp_test
 import (
 	"testing"
 
-	whitelisttypes "github.com/Sifchain/sifnode/x/whitelist/types"
-
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -177,7 +175,6 @@ func TestRemoveLiquidity(t *testing.T) {
 	signer := test.GenerateAddress("")
 	newLP := test.GenerateAddress(test.AddressKey2)
 	clpKeeper := app.ClpKeeper
-	whitelistKeeper := app.WhitelistKeeper
 	handler := clp.NewHandler(clpKeeper)
 	externalDenom := "eth"
 	initialBalance := sdk.NewUintFromString("100000000000000000000000") // Initial account balance for all assets created
@@ -203,7 +200,7 @@ func TestRemoveLiquidity(t *testing.T) {
 	res, err = handler(ctx, &msgCreatePool)
 	require.NoError(t, err)
 	require.NotNil(t, res)
-	coins := CalculateWithdraw(t, clpKeeper, ctx, asset, signer.String(), wBasis.String(), asymmetry, whitelistKeeper)
+	coins := CalculateWithdraw(t, clpKeeper, ctx, asset, signer.String(), wBasis.String(), asymmetry)
 	msg = clptypes.NewMsgRemoveLiquidity(signer, asset, wBasis, asymmetry)
 	res, err = handler(ctx, &msg)
 	require.NoError(t, err)
@@ -215,7 +212,7 @@ func TestRemoveLiquidity(t *testing.T) {
 
 	wBasis = sdk.NewInt(1000)
 	asymmetry = sdk.NewInt(10000)
-	coins = CalculateWithdraw(t, clpKeeper, ctx, asset, signer.String(), wBasis.String(), asymmetry, whitelistKeeper)
+	coins = CalculateWithdraw(t, clpKeeper, ctx, asset, signer.String(), wBasis.String(), asymmetry)
 	msg = clptypes.NewMsgRemoveLiquidity(signer, asset, wBasis, asymmetry)
 	res, err = handler(ctx, &msg)
 	require.NoError(t, err)
@@ -227,7 +224,7 @@ func TestRemoveLiquidity(t *testing.T) {
 
 	wBasis = sdk.NewInt(1000)
 	asymmetry = sdk.ZeroInt()
-	coins = CalculateWithdraw(t, clpKeeper, ctx, asset, signer.String(), wBasis.String(), asymmetry, whitelistKeeper)
+	coins = CalculateWithdraw(t, clpKeeper, ctx, asset, signer.String(), wBasis.String(), asymmetry)
 	msg = clptypes.NewMsgRemoveLiquidity(signer, asset, wBasis, asymmetry)
 	res, err = handler(ctx, &msg)
 	require.NoError(t, err)
@@ -239,7 +236,7 @@ func TestRemoveLiquidity(t *testing.T) {
 
 	wBasis = sdk.NewInt(1000)
 	asymmetry = sdk.NewInt(-10000)
-	coins = CalculateWithdraw(t, clpKeeper, ctx, asset, signer.String(), wBasis.String(), asymmetry, whitelistKeeper)
+	coins = CalculateWithdraw(t, clpKeeper, ctx, asset, signer.String(), wBasis.String(), asymmetry)
 	msg = clptypes.NewMsgRemoveLiquidity(signer, asset, wBasis, asymmetry)
 	res, err = handler(ctx, &msg)
 	require.NoError(t, err)
@@ -281,7 +278,6 @@ func TestSwap(t *testing.T) {
 	ctx, app := test.CreateTestAppClp(false)
 	signer := test.GenerateAddress("")
 	clpKeeper := app.ClpKeeper
-	whitelistKeeper := app.WhitelistKeeper
 	handler := clp.NewHandler(clpKeeper)
 	assetEth := clptypes.NewAsset("eth")
 	assetDash := clptypes.NewAsset("dash")
@@ -314,7 +310,7 @@ func TestSwap(t *testing.T) {
 	res, err = handler(ctx, &msgCreatePool)
 	require.NoError(t, err)
 	require.NotNil(t, res)
-	receivedAmount := CalculateSwapReceived(t, clpKeeper, ctx, assetEth, assetDash, swapSentAssetETH, whitelistKeeper)
+	receivedAmount := CalculateSwapReceived(t, clpKeeper, ctx, assetEth, assetDash, swapSentAssetETH)
 
 	msg = clptypes.NewMsgSwap(signer, assetEth, assetDash, swapSentAssetETH, receivedAmount)
 	res, err = handler(ctx, &msg)
@@ -413,7 +409,7 @@ func TestDecommisionPool(t *testing.T) {
 	assert.True(t, ok, "")
 }
 
-func CalculateWithdraw(t *testing.T, keeper clpkeeper.Keeper, ctx sdk.Context, asset clptypes.Asset, signer string, wBasisPoints string, asymmetry sdk.Int, wk whitelisttypes.Keeper) sdk.Coins {
+func CalculateWithdraw(t *testing.T, keeper clpkeeper.Keeper, ctx sdk.Context, asset clptypes.Asset, signer string, wBasisPoints string, asymmetry sdk.Int) sdk.Coins {
 	pool, err := keeper.GetPool(ctx, asset.Symbol)
 	assert.NoError(t, err)
 	lp, err := keeper.GetLiquidityProvider(ctx, asset.Symbol, signer)
@@ -446,7 +442,7 @@ func CalculateWithdraw(t *testing.T, keeper clpkeeper.Keeper, ctx sdk.Context, a
 
 }
 
-func CalculateSwapReceived(t *testing.T, keeper clpkeeper.Keeper, ctx sdk.Context, assetSent clptypes.Asset, assetReceived clptypes.Asset, swapAmount sdk.Uint, wk whitelisttypes.Keeper) sdk.Uint {
+func CalculateSwapReceived(t *testing.T, keeper clpkeeper.Keeper, ctx sdk.Context, assetSent clptypes.Asset, assetReceived clptypes.Asset, swapAmount sdk.Uint) sdk.Uint {
 	inPool, err := keeper.GetPool(ctx, assetSent.Symbol)
 	assert.NoError(t, err)
 	outPool, err := keeper.GetPool(ctx, assetReceived.Symbol)
