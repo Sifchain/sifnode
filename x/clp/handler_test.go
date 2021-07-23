@@ -73,6 +73,20 @@ func TestCreatePool(t *testing.T) {
 	assert.True(t, ok, "")
 	ok = app.ClpKeeper.HasBalance(ctx, signer, nativeCoin)
 	assert.True(t, ok, "")
+
+	newAsset := clptypes.NewAsset("Asset")
+	// Not whitelisted
+	msgNonWhitelisted := clptypes.NewMsgCreatePool(signer, clptypes.NewAsset(newAsset.Symbol), poolBalance, poolBalance)
+	res, err = handler(ctx, &msgNonWhitelisted)
+	require.Error(t, err)
+	// Whitelist Asset
+	app.WhitelistKeeper.SetDenom(ctx, newAsset.Symbol, 18)
+	newAssetCoin := sdk.NewCoin(newAsset.Symbol, sdk.Int(initialBalance))
+	_ = app.ClpKeeper.GetBankKeeper().AddCoins(ctx, signer, sdk.Coins{newAssetCoin}.Sort())
+	// Create Pool
+	res, err = handler(ctx, &msgNonWhitelisted)
+	require.NoError(t, err)
+	require.NotNil(t, res)
 }
 
 func TestAddLiquidity(t *testing.T) {
@@ -120,6 +134,11 @@ func TestAddLiquidity(t *testing.T) {
 
 	lpList := clpKeeper.GetLiquidityProvidersForAsset(ctx, asset)
 	assert.Equal(t, 2, len(lpList))
+
+	newAsset := clptypes.NewAsset("Asset")
+	msgNonWhitelisted := clptypes.NewMsgAddLiquidity(signer, newAsset, sdk.NewUint(1000), sdk.NewUint(1000))
+	res, err = handler(ctx, &msgNonWhitelisted)
+	require.Error(t, err)
 
 }
 
@@ -319,6 +338,13 @@ func TestSwap(t *testing.T) {
 	res, err = handler(ctx, &msg)
 	require.ErrorIs(t, err, clptypes.ErrReceivedAmountBelowExpected)
 	require.Nil(t, res)
+
+	msgE := clptypes.NewMsgSwap(signer, assetEth, clptypes.NewAsset("Asset"), swapSentAssetETH, swapSentAssetETH)
+	res, err = handler(ctx, &msgE)
+	assert.Error(t, err)
+	msgE = clptypes.NewMsgSwap(signer, clptypes.NewAsset("Asset"), assetDash, swapSentAssetETH, swapSentAssetETH)
+	res, err = handler(ctx, &msgE)
+	assert.Error(t, err)
 
 }
 
