@@ -124,10 +124,10 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
     // it would require some pretty low level work for this very simple function
     // Alternatively, cast addresses to UINT's and possibly do some bitwise operations
     // to ensure there are no duplicate numbers
-    function findDup(SignatureData[] calldata validators) public pure returns (bool) {
-        for (uint256 i = 0; i < validators.length; i++) {
-            for (uint256 j = i + 1; j < validators.length; j++) {
-                if (validators[i].signer == validators[j].signer) {
+    function findDup(SignatureData[] calldata validators_) public pure returns (bool) {
+        for (uint256 i = 0; i < validators_.length; i++) {
+            for (uint256 j = i + 1; j < validators_.length; j++) {
+                if (validators_[i].signer == validators_[j].signer) {
                     return true;
                 }
             }
@@ -136,13 +136,13 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
         return false;
     }
 
-    function getSignedPower(SignatureData[] calldata validators) public view returns(uint256) {
-        uint256 totalPower = 0;
-        for (uint256 i = 0; i < validators.length; i++) {
-            totalPower += getValidatorPower(validators[i].signer);
+    function getSignedPower(SignatureData[] calldata validators_) public view returns(uint256) {
+        uint256 totalPower_ = 0;
+        for (uint256 i = 0; i < validators_.length; i++) {
+            totalPower_ += getValidatorPower(validators_[i].signer);
         }
 
-        return totalPower;
+        return totalPower_;
     }
 
     struct SignatureData {
@@ -183,6 +183,7 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
         _submitProphecyClaimAggregatedSigs(hashDigest, claimData, signatureData);
     }
 
+    // Essentially, each tx to the submitProphecyClaimAggregatedSigs needs to include a chainid or other unique identifier that only the smart contract on that chain has. If the chain identifier in the smart contract and the chain identifier in the message do not match, the transaction should fail.
     function _submitProphecyClaimAggregatedSigs(
         bytes32 hashDigest,
         ClaimData calldata claimData,
