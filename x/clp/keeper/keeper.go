@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"fmt"
+
 	whitelisttypes "github.com/Sifchain/sifnode/x/whitelist/types"
 
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -72,12 +73,14 @@ func (k Keeper) HasBalance(ctx sdk.Context, addr sdk.AccAddress, coin sdk.Coin) 
 
 func (k Keeper) GetNormalizationFactor(ctx sdk.Context, denom string) (sdk.Dec, bool) {
 	normalizationFactor := sdk.NewDec(1)
-	entry := k.whitelistKeeper.GetDenom(ctx, denom)
 	adjustExternalToken := false
-	if entry.IsWhitelisted && entry.Decimals != 18 {
+	entry := k.whitelistKeeper.GetDenom(ctx, denom)
+	if !entry.IsWhitelisted {
+		return normalizationFactor, adjustExternalToken
+	}
+	nf := entry.Decimals
+	if nf != 18 {
 		adjustExternalToken = true
-		// TODO: Update this function to properly use entry.Decimals instead of previous nf map values.
-		nf := entry.Decimals
 		diffFactor := 18 - nf
 		if diffFactor < 0 {
 			diffFactor = nf - 18

@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"fmt"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/errors"
 
@@ -137,22 +138,24 @@ func CalculateWithdrawal(poolUnits sdk.Uint, nativeAssetBalance string,
 // slipAdjustment = (1 - ABS((R a - r A)/((r + R) (a + A))))
 // units = ((P (a R + A r))/(2 A R))*slidAdjustment
 
-func CalculatePoolUnits(oldPoolUnits, nativeAssetBalance, externalAssetBalance,
-	nativeAssetAmount, externalAssetAmount sdk.Uint, normalizationFactor sdk.Dec, adjustExternalToken bool) (sdk.Uint, sdk.Uint, error) {
+func CalculatePoolUnits(oldPoolUnits, nativeAssetBalance, externalAssetBalance, nativeAssetAmount,
+	externalAssetAmount sdk.Uint, normalizationFactor sdk.Dec, adjustExternalToken bool) (sdk.Uint, sdk.Uint, error) {
+	nf := sdk.NewUintFromBigInt(normalizationFactor.RoundInt().BigInt())
+
 	if adjustExternalToken {
-		externalAssetAmount = externalAssetAmount.Mul(sdk.NewUintFromBigInt(normalizationFactor.RoundInt().BigInt())) // Convert token which are not E18 to E18 format
-		externalAssetBalance = externalAssetBalance.Mul(sdk.NewUintFromBigInt(normalizationFactor.RoundInt().BigInt()))
+		externalAssetAmount = externalAssetAmount.Mul(nf) // Convert token which are not E18 to E18 format
+		externalAssetBalance = externalAssetBalance.Mul(nf)
 	} else {
-		nativeAssetAmount = nativeAssetAmount.Mul(sdk.NewUintFromBigInt(normalizationFactor.RoundInt().BigInt()))
-		nativeAssetBalance = nativeAssetBalance.Mul(sdk.NewUintFromBigInt(normalizationFactor.RoundInt().BigInt()))
+		nativeAssetAmount = nativeAssetAmount.Mul(nf)
+		nativeAssetBalance = nativeAssetBalance.Mul(nf)
 	}
 
-	inputs := []sdk.Uint{oldPoolUnits, nativeAssetBalance, externalAssetBalance,
-		nativeAssetAmount, externalAssetAmount}
+	inputs := []sdk.Uint{oldPoolUnits, nativeAssetBalance, externalAssetBalance, nativeAssetAmount, externalAssetAmount}
 
 	if nativeAssetAmount.IsZero() && externalAssetAmount.IsZero() {
 		return sdk.ZeroUint(), sdk.ZeroUint(), types.ErrAmountTooLow
 	}
+
 	minLen := GetMinLen(inputs)
 
 	if nativeAssetBalance.Add(nativeAssetAmount).IsZero() {
@@ -216,25 +219,25 @@ func CalcLiquidityFee(toRowan bool, normalizationFactor sdk.Dec, adjustExternalT
 	if !ValidateZero([]sdk.Uint{X, x, Y}) {
 		return sdk.ZeroUint(), nil
 	}
+
+	nf := sdk.NewUintFromBigInt(normalizationFactor.RoundInt().BigInt())
 	if adjustExternalToken {
 		if toRowan {
-			X = X.Mul(sdk.NewUintFromBigInt(normalizationFactor.RoundInt().BigInt()))
-			x = x.Mul(sdk.NewUintFromBigInt(normalizationFactor.RoundInt().BigInt()))
+			X = X.Mul(nf)
+			x = x.Mul(nf)
 		} else {
-			Y = Y.Mul(sdk.NewUintFromBigInt(normalizationFactor.RoundInt().BigInt()))
+			Y = Y.Mul(nf)
 		}
 	} else {
 		if toRowan {
-			Y = Y.Mul(sdk.NewUintFromBigInt(normalizationFactor.RoundInt().BigInt()))
+			Y = Y.Mul(nf)
 		} else {
-			X = X.Mul(sdk.NewUintFromBigInt(normalizationFactor.RoundInt().BigInt()))
-			x = x.Mul(sdk.NewUintFromBigInt(normalizationFactor.RoundInt().BigInt()))
+			X = X.Mul(nf)
+			x = x.Mul(nf)
 		}
 	}
 
-	// Assuming the max supply for any token in the world to be 1 trillion
-	minLen := int64(6)
-
+	minLen := GetMinLen([]sdk.Uint{X, x, Y})
 	Xd := ReducePrecision(sdk.NewDecFromBigInt(X.BigInt()), minLen)
 	xd := ReducePrecision(sdk.NewDecFromBigInt(x.BigInt()), minLen)
 	Yd := ReducePrecision(sdk.NewDecFromBigInt(Y.BigInt()), minLen)
@@ -256,19 +259,21 @@ func CalcSwapResult(toRowan bool, normalizationFactor sdk.Dec, adjustExternalTok
 	if !ValidateZero([]sdk.Uint{X, x, Y}) {
 		return sdk.ZeroUint(), nil
 	}
+
+	nf := sdk.NewUintFromBigInt(normalizationFactor.RoundInt().BigInt())
 	if adjustExternalToken {
 		if toRowan {
-			X = X.Mul(sdk.NewUintFromBigInt(normalizationFactor.RoundInt().BigInt()))
-			x = x.Mul(sdk.NewUintFromBigInt(normalizationFactor.RoundInt().BigInt()))
+			X = X.Mul(nf)
+			x = x.Mul(nf)
 		} else {
-			Y = Y.Mul(sdk.NewUintFromBigInt(normalizationFactor.RoundInt().BigInt()))
+			Y = Y.Mul(nf)
 		}
 	} else {
 		if toRowan {
-			Y = Y.Mul(sdk.NewUintFromBigInt(normalizationFactor.RoundInt().BigInt()))
+			Y = Y.Mul(nf)
 		} else {
-			X = X.Mul(sdk.NewUintFromBigInt(normalizationFactor.RoundInt().BigInt()))
-			x = x.Mul(sdk.NewUintFromBigInt(normalizationFactor.RoundInt().BigInt()))
+			X = X.Mul(nf)
+			x = x.Mul(nf)
 		}
 	}
 
@@ -280,7 +285,6 @@ func CalcSwapResult(toRowan bool, normalizationFactor sdk.Dec, adjustExternalTok
 	s := xd.Add(Xd)
 	d := s.Mul(s)
 	y := xd.Mul(Xd).Mul(Yd).Quo(d)
-
 	y = IncreasePrecision(y, minLen)
 	if !toRowan {
 		y = y.Quo(normalizationFactor)
@@ -301,6 +305,12 @@ func CalculateAllAssetsForLP(pool types.Pool, lp types.LiquidityProvider) (sdk.U
 	poolUnits := pool.PoolUnits
 	nativeAssetBalance := pool.NativeAssetBalance
 	externalAssetBalance := pool.ExternalAssetBalance
-	return CalculateWithdrawal(poolUnits, nativeAssetBalance.String(), externalAssetBalance.String(),
-		lp.LiquidityProviderUnits.String(), sdk.NewInt(types.MaxWbasis).String(), sdk.ZeroInt())
+	return CalculateWithdrawal(
+		poolUnits,
+		nativeAssetBalance.String(),
+		externalAssetBalance.String(),
+		lp.LiquidityProviderUnits.String(),
+		sdk.NewInt(types.MaxWbasis).String(),
+		sdk.ZeroInt(),
+	)
 }
