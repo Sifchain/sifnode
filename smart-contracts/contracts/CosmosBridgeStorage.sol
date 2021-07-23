@@ -58,8 +58,13 @@ contract CosmosBridgeStorage {
         uint256 amount;
     }
 
+    /**
+    * @notice chain descriptor
+    */
+    uint256 public chainId;
+
     /*
     * @notice gap of storage for future upgrades
     */
-    uint256[99] private ____gap;
+    uint256[98] private ____gap;
 }

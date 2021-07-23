@@ -33,8 +33,13 @@ contract CosmosBankStorage {
     */
     mapping(string => string) private lowerToUpperTokens;
 
+    /**
+    * @notice chain descriptor
+    */
+    uint256 public chainId;
+
     /*
     * @notice gap of storage for future upgrades
     */
-    uint256[100] private ____gap;
+    uint256[99] private ____gap;
 }

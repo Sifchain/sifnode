@@ -28,6 +28,7 @@ describe("submitProphecyClaimAggregatedSigs Security", function () {
   const consensusThreshold = 70;
   let initialPowers;
   let initialValidators;
+  let chainId;
   let state;
 
   before(async function() {
@@ -49,6 +50,8 @@ describe("submitProphecyClaimAggregatedSigs Security", function () {
       userThree.address,
       userFour.address
     ];
+
+    chainId = 1;
   });
 
   beforeEach(async function () {
@@ -61,7 +64,8 @@ describe("submitProphecyClaimAggregatedSigs Security", function () {
       owner,
       userOne,
       userThree,
-      pauser
+      pauser,
+      chainId
     );
 
     // Lock tokens on contract
@@ -87,7 +91,8 @@ describe("submitProphecyClaimAggregatedSigs Security", function () {
         state.troll.address,
         state.amount,
         false,
-        state.nonce
+        state.nonce,
+        state.chainId
       ]);
 
       let claimData = {
@@ -97,7 +102,8 @@ describe("submitProphecyClaimAggregatedSigs Security", function () {
         tokenAddress: state.troll.address,
         amount: state.amount,
         doublePeg: false,
-        nonce: state.nonce
+        nonce: state.nonce,
+        chainId: state.chainId
       };
 
       await expect(
@@ -121,7 +127,8 @@ describe("submitProphecyClaimAggregatedSigs Security", function () {
         state.troll.address,
         state.amount,
         false,
-        state.nonce + 1
+        state.nonce + 1,
+        state.chainId
       ]);
 
       const signatures = await signHash([userOne, userTwo, userFour], digest);
@@ -132,7 +139,8 @@ describe("submitProphecyClaimAggregatedSigs Security", function () {
         tokenAddress: state.troll.address,
         amount: state.amount,
         doublePeg: false,
-        nonce: state.nonce
+        nonce: state.nonce,
+        chainId: state.chainId
       };
 
       await expect(
@@ -156,7 +164,8 @@ describe("submitProphecyClaimAggregatedSigs Security", function () {
         state.troll.address,
         state.amount,
         false,
-        state.nonce
+        state.nonce,
+        state.chainId
       ]);
 
       const signatures = await signHash([userOne, userTwo, userFour, userFour], digest);
@@ -167,7 +176,8 @@ describe("submitProphecyClaimAggregatedSigs Security", function () {
         tokenAddress: state.troll.address,
         amount: state.amount,
         doublePeg: false,
-        nonce: state.nonce
+        nonce: state.nonce,
+        chainId: state.chainId
       };
 
       await expect(
@@ -191,7 +201,8 @@ describe("submitProphecyClaimAggregatedSigs Security", function () {
         state.troll.address,
         state.amount,
         false,
-        state.nonce
+        state.nonce,
+        state.chainId
       ]);
 
       const signatures = await signHash([userOne, userTwo, operator], digest);
@@ -202,7 +213,8 @@ describe("submitProphecyClaimAggregatedSigs Security", function () {
         tokenAddress: state.troll.address,
         amount: state.amount,
         doublePeg: false,
-        nonce: state.nonce
+        nonce: state.nonce,
+        chainId: state.chainId
       };
 
       await expect(
@@ -226,7 +238,8 @@ describe("submitProphecyClaimAggregatedSigs Security", function () {
         state.troll.address,
         state.amount,
         false,
-        state.nonce
+        state.nonce,
+        state.chainId
       ]);
 
       const invalidDigest = getDigestNewProphecyClaim([
@@ -236,7 +249,8 @@ describe("submitProphecyClaimAggregatedSigs Security", function () {
         state.troll.address,
         state.amount,
         false,
-        state.nonce + 1
+        state.nonce + 1,
+        state.chainId
       ]);
 
       const signatures = await signHash([userOne, userTwo], digest);
@@ -252,7 +266,8 @@ describe("submitProphecyClaimAggregatedSigs Security", function () {
         tokenAddress: state.troll.address,
         amount: state.amount,
         doublePeg: false,
-        nonce: state.nonce
+        nonce: state.nonce,
+        chainId: state.chainId
       };
 
       await expect(
@@ -276,7 +291,8 @@ describe("submitProphecyClaimAggregatedSigs Security", function () {
         state.troll.address,
         state.amount,
         false,
-        state.nonce
+        state.nonce,
+        state.chainId
       ]);
 
       const signatures = await signHash([userOne, userTwo], digest);
@@ -288,7 +304,8 @@ describe("submitProphecyClaimAggregatedSigs Security", function () {
         tokenAddress: state.troll.address,
         amount: state.amount,
         doublePeg: false,
-        nonce: state.nonce
+        nonce: state.nonce,
+        chainId: state.chainId
       };
 
       await expect(
@@ -312,7 +329,8 @@ describe("submitProphecyClaimAggregatedSigs Security", function () {
         state.troll.address,
         state.amount,
         false,
-        state.nonce
+        state.nonce,
+        state.chainId
       ]);
 
       const signatures = await signHash([userOne, userTwo, userFour], digest);
@@ -324,7 +342,8 @@ describe("submitProphecyClaimAggregatedSigs Security", function () {
         tokenAddress: state.troll.address,
         amount: state.amount,
         doublePeg: false,
-        nonce: state.nonce
+        nonce: state.nonce,
+        chainId: state.chainId
       };
 
       await expect(
@@ -348,7 +367,8 @@ describe("submitProphecyClaimAggregatedSigs Security", function () {
         state.troll.address,
         state.amount,
         false,
-        state.nonce
+        state.nonce,
+        state.chainId
       ]);
 
       const signatures = await signHash([userOne, userTwo, userFour], digest);
@@ -360,7 +380,8 @@ describe("submitProphecyClaimAggregatedSigs Security", function () {
         tokenAddress: state.troll.address,
         amount: state.amount,
         doublePeg: false,
-        nonce: state.nonce
+        nonce: state.nonce,
+        chainId: state.chainId
       };
 
       state.cosmosBridge

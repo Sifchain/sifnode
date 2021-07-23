@@ -46,7 +46,8 @@ contract EthereumBankStorage {
         address _token,
         uint256 _value,
         uint256 _nonce,
-        uint256 _decimals
+        uint256 _decimals,
+        uint256 _chainId
     );
 
     event LogLock(
@@ -57,7 +58,8 @@ contract EthereumBankStorage {
         uint256 _nonce,
         uint256 _decimals,
         string _symbol,
-        string _name
+        string _name,
+        uint256 _chainId
     );
 
     event LogUnlock(

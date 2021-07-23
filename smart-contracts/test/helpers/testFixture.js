@@ -24,6 +24,7 @@ function getDigestNewProphecyClaim(data) {
         "uint256",
         "bool",
         "uint128",
+        "uint256"
       ],
       data
     ),
@@ -60,7 +61,8 @@ async function multiTokenSetup(
     owner,
     userOne,
     userThree,
-    pauser
+    pauser,
+    chainId
   ) {
     const state = {}
 
@@ -70,12 +72,17 @@ async function multiTokenSetup(
 
     const { CosmosBridge, BridgeBank, BridgeToken } = await returnContractObjects();
 
+    // Chain descriptor
+    state.chainId = chainId;
+    state.wrongChainId = chainId + 1;
+
     // Deploy CosmosBridge contract
     state.cosmosBridge = await upgrades.deployProxy(CosmosBridge, [
       operator.address,
       consensusThreshold,
       initialValidators,
-      initialPowers
+      initialPowers,
+      chainId
     ]);
     await state.cosmosBridge.deployed();
 
@@ -83,7 +90,8 @@ async function multiTokenSetup(
     state.bridgeBank = await upgrades.deployProxy(BridgeBank, [
       state.cosmosBridge.address,
       owner.address,
-      pauser
+      pauser,
+      chainId
     ]);
     await state.bridgeBank.deployed();
 
@@ -144,7 +152,8 @@ async function singleSetup(
     owner,
     userOne,
     userThree,
-    pauser
+    pauser,
+    chainId
     ) {
     const state = {};
     // Deploy Valset contract
@@ -153,12 +162,17 @@ async function singleSetup(
 
     const { CosmosBridge, BridgeBank, BridgeToken } = await returnContractObjects();
 
+    // Chain descriptor
+    state.chainId = chainId;
+    state.wrongChainId = chainId + 1;
+
     // Deploy CosmosBridge contract
     state.cosmosBridge = await upgrades.deployProxy(CosmosBridge, [
       operator.address,
       consensusThreshold,
       initialValidators,
-      initialPowers
+      initialPowers,
+      chainId
     ]);
     await state.cosmosBridge.deployed();
 
@@ -166,7 +180,8 @@ async function singleSetup(
     state.bridgeBank = await upgrades.deployProxy(BridgeBank, [
       state.cosmosBridge.address,
       owner.address,
-      pauser
+      pauser,
+      chainId
     ]);
     await state.bridgeBank.deployed();
 

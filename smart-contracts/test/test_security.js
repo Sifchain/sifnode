@@ -30,6 +30,7 @@ describe("Security Test", function () {
   const consensusThreshold = 70;
   let initialPowers;
   let initialValidators;
+  let chainId;
   // track the state of the deployed contracts
   let state;
   let CosmosBridge;
@@ -58,6 +59,8 @@ describe("Security Test", function () {
       accounts[2].address,
       accounts[3].address,
     ];
+
+    chainId = 1;
   });
 
   describe("BridgeBank Security", function () {
@@ -70,7 +73,8 @@ describe("Security Test", function () {
         owner,
         userOne,
         userThree,
-        pauser.address
+        pauser.address,
+        chainId
       );
     });
 
@@ -205,7 +209,8 @@ describe("Security Test", function () {
         owner,
         userOne,
         userThree,
-        pauser.address
+        pauser.address,
+        chainId
       );
     });
 
@@ -248,7 +253,8 @@ describe("Security Test", function () {
         owner,
         userOne,
         userThree,
-        pauser.address
+        pauser.address,
+        chainId
       );
     });
 
@@ -260,7 +266,8 @@ describe("Security Test", function () {
           operator.address,
           101,
           state.initialValidators,
-          state.initialPowers
+          state.initialPowers,
+          state.chainId
         ),
       ).to.be.revertedWith("Invalid consensus threshold.");
     });
@@ -272,7 +279,8 @@ describe("Security Test", function () {
           operator.address,
           0,
           state.initialValidators,
-          state.initialPowers
+          state.initialPowers,
+          state.chainId
         ),
       ).to.be.revertedWith("Consensus threshold must be positive.");
     });
@@ -344,7 +352,8 @@ describe("Security Test", function () {
         owner,
         userOne,
         userThree,
-        pauser.address
+        pauser.address,
+        chainId
       );
 
       TrollToken = await deployTrollToken();
@@ -362,7 +371,8 @@ describe("Security Test", function () {
         state.troll.address,
         state.amount,
         false,
-        state.nonce
+        state.nonce,
+        state.chainId
       ]);
 
       const signatures = await signHash([userOne, userTwo, userFour], digest);
@@ -373,7 +383,8 @@ describe("Security Test", function () {
         tokenAddress: state.troll.address,
         amount: state.amount,
         doublePeg: false,
-        nonce: state.nonce
+        nonce: state.nonce,
+        chainId: state.chainId
       };
 
       await expect(
@@ -413,7 +424,8 @@ describe("Security Test", function () {
         state.troll.address,
         state.amount,
         false,
-        state.nonce
+        state.nonce,
+        state.chainId
       ]);
 
       const signatures = await signHash([userOne, userTwo, userFour], digest);
@@ -424,7 +436,8 @@ describe("Security Test", function () {
         tokenAddress: state.troll.address,
         amount: state.amount,
         doublePeg: false,
-        nonce: state.nonce
+        nonce: state.nonce,
+        chainId: state.chainId
       };
 
       await state.cosmosBridge

@@ -30,6 +30,7 @@ describe("Test Bridge Bank", function () {
   const consensusThreshold = 75;
   let initialPowers;
   let initialValidators;
+  let chainId;
   // track the state of the deployed contracts
   let state;
 
@@ -49,6 +50,8 @@ describe("Test Bridge Bank", function () {
 
     initialPowers = [25, 25, 25, 25];
     initialValidators = signerAccounts.slice(0, 4);
+
+    chainId = 1;
   });
 
   beforeEach(async function () {
@@ -60,7 +63,8 @@ describe("Test Bridge Bank", function () {
       owner,
       userOne,
       userThree,
-      pauser.address
+      pauser.address,
+      chainId
     );
   });
 

@@ -36,6 +36,7 @@ export class CosmosBridgeArguments {
         readonly consensusThreshold: number,
         readonly initialValidators: Array<EthereumAddress>,
         readonly initialPowers: Array<number>,
+        readonly chainId: number,
     ) {
     }
 
@@ -44,7 +45,8 @@ export class CosmosBridgeArguments {
             this.operator.address,
             this.consensusThreshold,
             this.initialValidators.map(x => x.address),
-            this.initialPowers
+            this.initialPowers,
+            this.chainId
         ]
     }
 }
@@ -72,14 +74,15 @@ export class CosmosBridgeProxy {
     }
 }
 
-export function defaultCosmosBridgeArguments(sifchainAccounts: SifchainAccounts, power: number = 100): CosmosBridgeArguments {
+export function defaultCosmosBridgeArguments(sifchainAccounts: SifchainAccounts, power: number = 100, chainId: number = 1): CosmosBridgeArguments {
     const powers = sifchainAccounts.validatatorAccounts.map(x => power)
     const threshold = powers.reduce((acc, x) => acc + x)
     return new CosmosBridgeArguments(
         new NotNativeCurrencyAddress(sifchainAccounts.operatorAccount.address),
         threshold,
         sifchainAccounts.validatatorAccounts.map(x => new NotNativeCurrencyAddress(x.address)),
-        powers
+        powers,
+        chainId
     )
 }
 
@@ -99,7 +102,8 @@ export function defaultCosmosBridgeArguments(sifchainAccounts: SifchainAccounts,
 export class BridgeBankArguments {
     constructor(
         private readonly cosmosBridgeProxy: CosmosBridgeProxy,
-        private readonly sifchainAccountsPromise: SifchainAccountsPromise
+        private readonly sifchainAccountsPromise: SifchainAccountsPromise,
+        //private readonly chainId: number // todo: pass a number here
     ) {
     }
 
@@ -109,7 +113,8 @@ export class BridgeBankArguments {
         const result = [
             cosmosBridge.address,
             accts.ownerAccount.address,
-            accts.pauserAccount.address
+            accts.pauserAccount.address,
+            1 // todo: use the number passed to the constructor instead
         ]
         return result
     }

@@ -27,6 +27,7 @@ describe("Gas Cost Tests", function () {
   const consensusThreshold = 70;
   let initialPowers;
   let initialValidators;
+  let chainId;
   let state;
 
   before(async function() {
@@ -48,6 +49,8 @@ describe("Gas Cost Tests", function () {
       userThree.address,
       userFour.address
     ];
+
+    chainId = 1;
   });
 
   beforeEach(async function () {
@@ -60,7 +63,8 @@ describe("Gas Cost Tests", function () {
       owner,
       userOne,
       userThree,
-      pauser
+      pauser,
+      chainId
     );
 
     // Lock tokens on contract
@@ -88,7 +92,8 @@ describe("Gas Cost Tests", function () {
         state.token1.address,
         state.amount,
         false,
-        state.nonce
+        state.nonce,
+        state.chainId
       ]);
 
       let validators = accounts.slice(1, 5);
@@ -102,7 +107,8 @@ describe("Gas Cost Tests", function () {
         tokenAddress: state.token1.address,
         amount: state.amount,
         doublePeg: false,
-        nonce: state.nonce
+        nonce: state.nonce,
+        chainId: state.chainId
       };
 
       let tx = await state.cosmosBridge
@@ -142,7 +148,8 @@ describe("Gas Cost Tests", function () {
         state.rowan.address,
         state.amount,
         false,
-        state.nonce
+        state.nonce,
+        state.chainId
       ]);
 
       let validators = accounts.slice(1, 5);
@@ -156,7 +163,8 @@ describe("Gas Cost Tests", function () {
           tokenAddress: state.rowan.address,
           amount: state.amount,
           doublePeg: false,
-          nonce: state.nonce
+          nonce: state.nonce,
+          chainId: state.chainId
       };
 
       let tx = await state.cosmosBridge

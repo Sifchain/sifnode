@@ -22,7 +22,7 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
 
     event LogNewBridgeTokenCreated(
         uint8 decimals,
-        uint256 indexed sourceChainDescriptor,
+        uint256 indexed sourcechainId,
         string name,
         string symbol,
         address indexed sourceContractAddress,
@@ -49,11 +49,13 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
         address _operator,
         uint256 _consensusThreshold,
         address[] calldata _initValidators,
-        uint256[] calldata _initPowers
+        uint256[] calldata _initPowers,
+        uint256 _chainId
     ) external {
         require(!_initialized, "Initialized");
 
         operator = _operator;
+        chainId = _chainId;
         hasBridgeBank = false;
         _initialized = true;
         Oracle._initialize(
@@ -91,7 +93,8 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
         address tokenAddress,
         uint256 amount,
         bool doublePeg,
-        uint128 nonce
+        uint128 nonce,
+        uint256 chainId
     ) public pure returns (uint256) {
         return uint256(
             keccak256(
@@ -102,7 +105,8 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
                     tokenAddress,
                     amount,
                     doublePeg,
-                    nonce
+                    nonce,
+                    chainId
                 )
             )
         );
@@ -160,6 +164,7 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
         uint256 amount;
         bool doublePeg;
         uint128 nonce;
+        uint256 chainId;
     }
 
     function batchSubmitProphecyClaimAggregatedSigs(
@@ -197,7 +202,8 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
             claimData.tokenAddress,
             claimData.amount,
             claimData.doublePeg,
-            claimData.nonce
+            claimData.nonce,
+            claimData.chainId
         );
 
         require(
@@ -211,6 +217,11 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
             "INV_SIG_LEN"
         );
 
+        // ensure the chainId matches
+        if (!claimData.doublePeg) {
+            require(_verifychainId(claimData.chainId), "INV_CHAIN_ID");
+        }
+        
         // ensure there are no duplicate signers
         require(
             !findDup(signatureData), "DUP_SIGNER"
@@ -260,19 +271,25 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
         );
     }
 
+    function _verifychainId(uint256 _chainId) internal returns(bool) {
+        //uint256 expectedChainId = BridgeBank(bridgeBank).chainId();
+
+        return _chainId == BridgeBank(bridgeBank).chainId();
+    }
+
     /**
      * @param symbol symbol of the ERC20 token on the source chain
      * @param name name of the ERC20 token on the source chain
      * @param sourceChainTokenAddress address of the ERC20 token on the source chain
      * @param decimals of the ERC20 token on the source chain
-     * @param chainDescriptor descriptor of the source chain
+     * @param _chainId descriptor of the source chain
      */
     function createNewBridgeToken(
         string calldata symbol,
         string calldata name,
         address sourceChainTokenAddress,
         uint8 decimals,
-        uint256 chainDescriptor
+        uint256 _chainId
     ) external onlyValidator {
         require(
             sourceAddressToDestinationAddress[sourceChainTokenAddress] == address(0),
@@ -291,7 +308,7 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
 
         emit LogNewBridgeTokenCreated(
             decimals,
-            chainDescriptor,
+            _chainId,
             name,
             symbol,
             sourceChainTokenAddress,
