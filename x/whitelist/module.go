@@ -1,8 +1,10 @@
 package whitelist
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/Sifchain/sifnode/x/whitelist/client/cli"
 
 	sdkclient "github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -14,7 +16,6 @@ import (
 	"github.com/spf13/cobra"
 	abci "github.com/tendermint/tendermint/abci/types"
 
-	"github.com/Sifchain/sifnode/x/whitelist/client"
 	"github.com/Sifchain/sifnode/x/whitelist/handler"
 	"github.com/Sifchain/sifnode/x/whitelist/keeper"
 	"github.com/Sifchain/sifnode/x/whitelist/types"
@@ -64,24 +65,26 @@ func (b AppModuleBasic) ValidateGenesis(marshaler codec.JSONMarshaler, _ sdkclie
 	return nil
 }
 
-func (b AppModuleBasic) RegisterGRPCGatewayRoutes(_ sdkclient.Context, _ *runtime.ServeMux) {
-	// TODO: Register grpc gateway
-	return
+func (b AppModuleBasic) RegisterGRPCGatewayRoutes(clientCtx sdkclient.Context, mux *runtime.ServeMux) {
+	err := types.RegisterQueryHandlerClient(context.Background(), mux, types.NewQueryClient(clientCtx))
+	if err != nil {
+		panic(err)
+	}
 }
 
 // RegisterRESTRoutes registers the REST routes.
 func (b AppModuleBasic) RegisterRESTRoutes(_ sdkclient.Context, _ *mux.Router) {
-	// client.RegisterRESTRoutes(ctx, router, types.StoreKey)
+	//client.RegisterRESTRoutes(ctx, router, types.StoreKey)
 }
 
 // GetTxCmd returns the root tx command.
 func (b AppModuleBasic) GetTxCmd() *cobra.Command {
-	return client.GetTxCmd()
+	return cli.GetTxCmd()
 }
 
 // GetQueryCmd returns no root query command.
 func (AppModuleBasic) GetQueryCmd() *cobra.Command {
-	return nil
+	return cli.GetQueryCmd()
 }
 
 //____________________________________________________________________________
@@ -146,7 +149,7 @@ func (AppModule) QuerierRoute() string {
 
 // Deprecated: LegacyQuerierHandler use RegisterServices
 func (am AppModule) LegacyQuerierHandler(_ *codec.LegacyAmino) sdk.Querier {
-	return nil
+	return keeper.NewLegacyQuerier(am.Keeper)
 }
 
 // InitGenesis performs genesis initialization. It returns

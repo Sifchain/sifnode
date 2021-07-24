@@ -22,4 +22,5 @@ type Keeper interface {
 	SetDenom(ctx sdk.Context, denom string, exp int64)
 	InitGenesis(ctx sdk.Context, state GenesisState) []abci.ValidatorUpdate
 	ExportGenesis(ctx sdk.Context) *GenesisState
+	GetDenomWhitelist(ctx sdk.Context) DenomWhitelist
 }

@@ -32,4 +32,5 @@ func RegisterInterfaces(registry cdctypes.InterfaceRegistry) {
 func init() {
 	RegisterLegacyAminoCodec(amino)
 	cryptocodec.RegisterCrypto(amino)
+	amino.Seal()
 }
