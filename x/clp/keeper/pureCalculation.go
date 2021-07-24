@@ -37,13 +37,17 @@ func GetMinLen(inputs []sdk.Uint) int64 {
 			maxInputLen = currentLen
 		}
 	}
+	if minLen <= 6 {
+		return int64(6)
+	}
 	if maxInputLen >= 27 {
 		lenDiff := maxInputLen - 27
-		if lenDiff > minLen {
-			return int64(minLen - 1)
-		} else {
+		if lenDiff < minLen {
+			if lenDiff <= 6 {
+				return int64(6)
+			}
 			return int64(lenDiff)
 		}
 	}
-	return int64(1)
+	return int64(minLen - 1)
 }
