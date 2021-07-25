@@ -104,7 +104,7 @@ type AppModule struct {
 
 func (am AppModule) RegisterServices(cfg module.Configurator) {
 	types.RegisterMsgServer(cfg.MsgServer(), keeper.NewMsgServerImpl(am.Keeper))
-	// types.RegisterQueryServer(cfg.QueryServer(), keeper.NewQueryServer(am.Keeper))
+	types.RegisterQueryServer(cfg.QueryServer(), keeper.NewQueryServer(am.Keeper))
 }
 
 // NewAppModule creates a new AppModule object

@@ -10,18 +10,17 @@ import (
 )
 
 func GetQueryCmd() *cobra.Command {
-	// Group dispensation queries under a subcommand
-	dispensationQueryCmd := &cobra.Command{
+	cmd := &cobra.Command{
 		Use:                        types.ModuleName,
 		Short:                      fmt.Sprintf("Querying commands for the %s module", types.ModuleName),
 		DisableFlagParsing:         true,
 		SuggestionsMinimumDistance: 2,
 		RunE:                       client.ValidateCmd,
 	}
-	dispensationQueryCmd.AddCommand(
+	cmd.AddCommand(
 		GetCmdQueryDenoms(),
 	)
-	return dispensationQueryCmd
+	return cmd
 }
 
 func GetCmdQueryDenoms() *cobra.Command {

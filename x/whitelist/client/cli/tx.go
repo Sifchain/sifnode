@@ -24,7 +24,6 @@ func GetTxCmd() *cobra.Command {
 }
 
 func GetCmdUpdate() *cobra.Command {
-	// Note ,the command only creates a airdrop for now .
 	cmd := &cobra.Command{
 		Use:   "add [Denom] [Decimals]",
 		Short: "Add new deon to the whitelist",
