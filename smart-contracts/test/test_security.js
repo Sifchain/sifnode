@@ -30,7 +30,7 @@ describe("Security Test", function () {
   const consensusThreshold = 70;
   let initialPowers;
   let initialValidators;
-  let chainId;
+  let networkDescriptor;
   // track the state of the deployed contracts
   let state;
   let CosmosBridge;
@@ -60,7 +60,7 @@ describe("Security Test", function () {
       accounts[3].address,
     ];
 
-    chainId = 1;
+    networkDescriptor = 1;
   });
 
   describe("BridgeBank Security", function () {
@@ -74,7 +74,7 @@ describe("Security Test", function () {
         userOne,
         userThree,
         pauser.address,
-        chainId
+        networkDescriptor
       );
     });
 
@@ -210,7 +210,7 @@ describe("Security Test", function () {
         userOne,
         userThree,
         pauser.address,
-        chainId
+        networkDescriptor
       );
     });
 
@@ -254,7 +254,7 @@ describe("Security Test", function () {
         userOne,
         userThree,
         pauser.address,
-        chainId
+        networkDescriptor
       );
     });
 
@@ -267,7 +267,7 @@ describe("Security Test", function () {
           101,
           state.initialValidators,
           state.initialPowers,
-          state.chainId
+          state.networkDescriptor
         ),
       ).to.be.revertedWith("Invalid consensus threshold.");
     });
@@ -280,7 +280,7 @@ describe("Security Test", function () {
           0,
           state.initialValidators,
           state.initialPowers,
-          state.chainId
+          state.networkDescriptor
         ),
       ).to.be.revertedWith("Consensus threshold must be positive.");
     });
@@ -353,7 +353,7 @@ describe("Security Test", function () {
         userOne,
         userThree,
         pauser.address,
-        chainId
+        networkDescriptor
       );
 
       TrollToken = await deployTrollToken();
@@ -372,7 +372,7 @@ describe("Security Test", function () {
         state.amount,
         false,
         state.nonce,
-        state.chainId
+        state.networkDescriptor
       ]);
 
       const signatures = await signHash([userOne, userTwo, userFour], digest);
@@ -384,7 +384,7 @@ describe("Security Test", function () {
         amount: state.amount,
         doublePeg: false,
         nonce: state.nonce,
-        chainId: state.chainId
+        networkDescriptor: state.networkDescriptor
       };
 
       await expect(
@@ -425,7 +425,7 @@ describe("Security Test", function () {
         state.amount,
         false,
         state.nonce,
-        state.chainId
+        state.networkDescriptor
       ]);
 
       const signatures = await signHash([userOne, userTwo, userFour], digest);
@@ -437,7 +437,7 @@ describe("Security Test", function () {
         amount: state.amount,
         doublePeg: false,
         nonce: state.nonce,
-        chainId: state.chainId
+        networkDescriptor: state.networkDescriptor
       };
 
       await state.cosmosBridge

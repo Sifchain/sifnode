@@ -25,7 +25,7 @@ describe("Test Chain Id Mismatch", function () {
   const consensusThreshold = 75;
   let initialPowers;
   let initialValidators;
-  let chainId;
+  let networkDescriptor;
   let state;
 
   before(async function() {
@@ -45,7 +45,7 @@ describe("Test Chain Id Mismatch", function () {
     initialPowers = [25, 25, 25, 25];
     initialValidators = signerAccounts.slice(0, 4);
 
-    chainId = 1;
+    networkDescriptor = 1;
   });
 
   beforeEach(async function () {
@@ -58,7 +58,7 @@ describe("Test Chain Id Mismatch", function () {
       userOne,
       userThree,
       pauser,
-      chainId,
+      networkDescriptor,
       true // force chain id mismatch
     );
   });
@@ -74,7 +74,7 @@ describe("Test Chain Id Mismatch", function () {
         state.amount,
         false,
         state.nonce,
-        state.chainId
+        state.networkDescriptor
       ]);
 
       const signatures = await signHash([userOne, userTwo, userFour], digest);
@@ -86,7 +86,7 @@ describe("Test Chain Id Mismatch", function () {
         amount: state.amount,
         doublePeg: false,
         nonce: state.nonce,
-        chainId: state.chainId
+        networkDescriptor: state.networkDescriptor
       };
 
       await expect(state.cosmosBridge
@@ -108,7 +108,7 @@ describe("Test Chain Id Mismatch", function () {
         state.amount,
         false,
         state.nonce,
-        state.chainId
+        state.networkDescriptor
       ]);
       const signatures = await signHash([userOne, userTwo, userFour], digest);
 
@@ -120,7 +120,7 @@ describe("Test Chain Id Mismatch", function () {
         amount: state.amount,
         doublePeg: false,
         nonce: state.nonce,
-        chainId: state.chainId
+        networkDescriptor: state.networkDescriptor
       };
 
       await expect(state.cosmosBridge

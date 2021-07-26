@@ -23,7 +23,7 @@ describe("CosmosBridge Upgrade", function () {
   let owner;
   let initialPowers;
   let initialValidators;
-  let chainId;
+  let networkDescriptor;
   let state;
   let pauser;
   let MockCosmosBridgeUpgrade;
@@ -44,7 +44,7 @@ describe("CosmosBridge Upgrade", function () {
 
     initialPowers = [25, 25, 25, 25];
     initialValidators = signerAccounts.slice(0, 4);
-    chainId = 1;
+    networkDescriptor = 1;
     MockCosmosBridgeUpgrade = await ethers.getContractFactory("MockCosmosBridgeUpgrade");
     state = {};
   });
@@ -70,7 +70,7 @@ describe("CosmosBridge Upgrade", function () {
         userOne,
         userThree,
         pauser.address,
-        chainId
+        networkDescriptor
       );
 
       state.cosmosBridge = await upgrades.upgradeProxy(
@@ -109,7 +109,7 @@ describe("CosmosBridge Upgrade", function () {
       state.cosmosBridge.should.exist;
 
       await expect(
-        state.cosmosBridge.initialize(userFour.address, 50, state.initialValidators, state.initialPowers, state.chainId),
+        state.cosmosBridge.initialize(userFour.address, 50, state.initialValidators, state.initialPowers, state.networkDescriptor),
       ).to.be.revertedWith("Initialized");
     });
 

@@ -36,7 +36,7 @@ contract BridgeBank is BankStorage,
         address _cosmosBridgeAddress,
         address _owner,
         address _pauser,
-        uint256 _chainId
+        uint256 networkDescriptor_
     ) public {
         require(!_initialized, "Init");
 
@@ -45,7 +45,7 @@ contract BridgeBank is BankStorage,
 
         cosmosBridge = _cosmosBridgeAddress;
         owner = _owner;
-        chainId = _chainId;
+        networkDescriptor = networkDescriptor_;
         _initialized = true;
         contractName[address(0)] = "Ethereum";
         contractSymbol[address(0)] = "ETH";
@@ -202,7 +202,7 @@ contract BridgeBank is BankStorage,
             amount,
             lockBurnNonce,
             decimals,
-            chainId
+            networkDescriptor
         );
     }
 
@@ -398,7 +398,7 @@ contract BridgeBank is BankStorage,
             decimals,
             symbol,
             name,
-            chainId
+            networkDescriptor
         );
     }
 
@@ -429,7 +429,7 @@ contract BridgeBank is BankStorage,
             tokenAmount,
             _lockBurnNonce,
             decimals,
-            chainId
+            networkDescriptor
         );
     }
 
@@ -466,7 +466,7 @@ contract BridgeBank is BankStorage,
             decimals,
             symbol,
             name,
-            chainId
+            networkDescriptor
         );
     }
 

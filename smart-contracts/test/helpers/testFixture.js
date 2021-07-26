@@ -62,8 +62,8 @@ async function multiTokenSetup(
     userOne,
     userThree,
     pauser,
-    chainId,
-    chainIdMismatch = false
+    networkDescriptor,
+    networkDescriptorMismatch = false
   ) {
     const state = {}
 
@@ -74,7 +74,7 @@ async function multiTokenSetup(
     const { CosmosBridge, BridgeBank, BridgeToken } = await returnContractObjects();
 
     // Chain descriptor
-    state.chainId = chainId;
+    state.networkDescriptor = networkDescriptor;
 
     // Deploy CosmosBridge contract
     state.cosmosBridge = await upgrades.deployProxy(CosmosBridge, [
@@ -82,7 +82,7 @@ async function multiTokenSetup(
       consensusThreshold,
       initialValidators,
       initialPowers,
-      chainId
+      networkDescriptor
     ]);
     await state.cosmosBridge.deployed();
 
@@ -91,7 +91,7 @@ async function multiTokenSetup(
       state.cosmosBridge.address,
       owner.address,
       pauser,
-      chainIdMismatch ? state.chainId + 1 : chainId
+      networkDescriptorMismatch ? state.networkDescriptor + 1 : networkDescriptor
     ]);
     await state.bridgeBank.deployed();
 
@@ -153,8 +153,8 @@ async function singleSetup(
     userOne,
     userThree,
     pauser,
-    chainId,
-    chainIdMismatch = false
+    networkDescriptor,
+    networkDescriptorMismatch = false
     ) {
     const state = {};
     // Deploy Valset contract
@@ -164,7 +164,7 @@ async function singleSetup(
     const { CosmosBridge, BridgeBank, BridgeToken } = await returnContractObjects();
 
     // Chain descriptor
-    state.chainId = chainId;
+    state.networkDescriptor = networkDescriptor;
 
     // Deploy CosmosBridge contract
     state.cosmosBridge = await upgrades.deployProxy(CosmosBridge, [
@@ -172,7 +172,7 @@ async function singleSetup(
       consensusThreshold,
       initialValidators,
       initialPowers,
-      chainId
+      networkDescriptor
     ]);
     await state.cosmosBridge.deployed();
 
@@ -181,7 +181,7 @@ async function singleSetup(
       state.cosmosBridge.address,
       owner.address,
       pauser,
-      chainIdMismatch ? state.chainId + 1 : chainId
+      networkDescriptorMismatch ? state.networkDescriptor + 1 : networkDescriptor
     ]);
     await state.bridgeBank.deployed();
 

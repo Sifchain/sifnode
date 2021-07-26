@@ -22,7 +22,7 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
 
     event LogNewBridgeTokenCreated(
         uint8 decimals,
-        uint256 indexed sourcechainId,
+        uint256 indexed nourceNetworkDescriptor,
         string name,
         string symbol,
         address indexed sourceContractAddress,
@@ -50,12 +50,12 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
         uint256 _consensusThreshold,
         address[] calldata _initValidators,
         uint256[] calldata _initPowers,
-        uint256 _chainId
+        uint256 networkDescriptor_
     ) external {
         require(!_initialized, "Initialized");
 
         operator = _operator;
-        chainId = _chainId;
+        networkDescriptor = networkDescriptor_;
         hasBridgeBank = false;
         _initialized = true;
         Oracle._initialize(
@@ -94,7 +94,7 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
         uint256 amount,
         bool doublePeg,
         uint128 nonce,
-        uint256 _chainId
+        uint256 networkDescriptor
     ) public pure returns (uint256) {
         return uint256(
             keccak256(
@@ -106,7 +106,7 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
                     amount,
                     doublePeg,
                     nonce,
-                    _chainId
+                    networkDescriptor
                 )
             )
         );
@@ -164,7 +164,7 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
         uint256 amount;
         bool doublePeg;
         uint128 nonce;
-        uint256 chainId;
+        uint256 networkDescriptor;
     }
 
     function batchSubmitProphecyClaimAggregatedSigs(
@@ -188,7 +188,7 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
         _submitProphecyClaimAggregatedSigs(hashDigest, claimData, signatureData);
     }
 
-    // Essentially, each tx to the submitProphecyClaimAggregatedSigs needs to include a chainid or other unique identifier that only the smart contract on that chain has. If the chain identifier in the smart contract and the chain identifier in the message do not match, the transaction should fail.
+    // Essentially, each tx to the submitProphecyClaimAggregatedSigs needs to include a networkDescriptor or other unique identifier that only the smart contract on that chain has. If the chain identifier in the smart contract and the chain identifier in the message do not match, the transaction should fail.
     function _submitProphecyClaimAggregatedSigs(
         bytes32 hashDigest,
         ClaimData calldata claimData,
@@ -203,7 +203,7 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
             claimData.amount,
             claimData.doublePeg,
             claimData.nonce,
-            claimData.chainId
+            claimData.networkDescriptor
         );
 
         require(
@@ -217,9 +217,9 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
             "INV_SIG_LEN"
         );
 
-        // ensure the chainId matches
+        // ensure the networkDescriptor matches
         if (!claimData.doublePeg) {
-            require(_verifychainId(claimData.chainId), "INV_CHAIN_ID");
+            require(nverifyNetworkDescriptor(claimData.networkDescriptor), "INV_CHAIN_ID");
         }
         
         // ensure there are no duplicate signers
@@ -271,8 +271,8 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
         );
     }
 
-    function _verifychainId(uint256 _chainId) internal returns(bool) {
-        return _chainId == BridgeBank(bridgeBank).chainId();
+    function nverifyNetworkDescriptor(uint256 networkDescriptor) internal returns(bool) {
+        return networkDescriptor == BridgeBank(bridgeBank).networkDescriptor();
     }
 
     /**
@@ -280,14 +280,14 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
      * @param name name of the ERC20 token on the source chain
      * @param sourceChainTokenAddress address of the ERC20 token on the source chain
      * @param decimals of the ERC20 token on the source chain
-     * @param _chainId descriptor of the source chain
+     * @param networkDescriptor descriptor of the source chain
      */
     function createNewBridgeToken(
         string calldata symbol,
         string calldata name,
         address sourceChainTokenAddress,
         uint8 decimals,
-        uint256 _chainId
+        uint256 networkDescriptor
     ) external onlyValidator {
         require(
             sourceAddressToDestinationAddress[sourceChainTokenAddress] == address(0),
@@ -306,7 +306,7 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
 
         emit LogNewBridgeTokenCreated(
             decimals,
-            _chainId,
+            networkDescriptor,
             name,
             symbol,
             sourceChainTokenAddress,

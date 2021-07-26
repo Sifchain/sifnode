@@ -1,9 +1,9 @@
 import {inject, injectable, instanceCachingFactory, registry, singleton} from "tsyringe";
-import type {Contract} from 'ethers';
+import type {BigNumberish, Contract} from 'ethers';
 import {BigNumber, ContractFactory} from "ethers";
 import {HardhatRuntimeEnvironment} from "hardhat/types";
 import {EthereumAddress, NotNativeCurrencyAddress} from "../ethereumAddress";
-import {HardhatRuntimeEnvironmentToken,} from "./injectionTokens";
+import {HardhatRuntimeEnvironmentToken, NetworkDescriptorToken,} from "./injectionTokens";
 import {SifchainAccounts, SifchainAccountsPromise} from "./sifchainAccounts";
 import {
     BridgeBank,
@@ -36,7 +36,7 @@ export class CosmosBridgeArguments {
         readonly consensusThreshold: number,
         readonly initialValidators: Array<EthereumAddress>,
         readonly initialPowers: Array<number>,
-        readonly chainId: number,
+        readonly networkDescriptor: number,
     ) {
     }
 
@@ -46,7 +46,7 @@ export class CosmosBridgeArguments {
             this.consensusThreshold,
             this.initialValidators.map(x => x.address),
             this.initialPowers,
-            this.chainId
+            this.networkDescriptor
         ]
     }
 }
@@ -74,7 +74,7 @@ export class CosmosBridgeProxy {
     }
 }
 
-export function defaultCosmosBridgeArguments(sifchainAccounts: SifchainAccounts, power: number = 100, chainId: number = 1): CosmosBridgeArguments {
+export function defaultCosmosBridgeArguments(sifchainAccounts: SifchainAccounts, power: number = 100, networkDescriptor: number = 1): CosmosBridgeArguments {
     const powers = sifchainAccounts.validatatorAccounts.map(x => power)
     const threshold = powers.reduce((acc, x) => acc + x)
     return new CosmosBridgeArguments(
@@ -82,7 +82,7 @@ export function defaultCosmosBridgeArguments(sifchainAccounts: SifchainAccounts,
         threshold,
         sifchainAccounts.validatatorAccounts.map(x => new NotNativeCurrencyAddress(x.address)),
         powers,
-        chainId
+        networkDescriptor
     )
 }
 
@@ -95,6 +95,10 @@ export function defaultCosmosBridgeArguments(sifchainAccounts: SifchainAccounts,
                 return defaultCosmosBridgeArguments(accts)
             }))
         })
+    },
+    {
+        token: NetworkDescriptorToken,
+        useValue: 1
     }
 ])
 
@@ -103,7 +107,7 @@ export class BridgeBankArguments {
     constructor(
         private readonly cosmosBridgeProxy: CosmosBridgeProxy,
         private readonly sifchainAccountsPromise: SifchainAccountsPromise,
-        //private readonly chainId: number // todo: pass a number here
+        @inject(NetworkDescriptorToken) private readonly networkDescriptor: number
     ) {
     }
 
@@ -114,7 +118,7 @@ export class BridgeBankArguments {
             cosmosBridge.address,
             accts.ownerAccount.address,
             accts.pauserAccount.address,
-            1 // todo: use the number passed to the constructor instead
+            this.networkDescriptor
         ]
         return result
     }

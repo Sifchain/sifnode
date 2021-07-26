@@ -28,7 +28,7 @@ describe("submitProphecyClaimAggregatedSigs Security", function () {
   const consensusThreshold = 70;
   let initialPowers;
   let initialValidators;
-  let chainId;
+  let networkDescriptor;
   let state;
 
   before(async function() {
@@ -51,7 +51,7 @@ describe("submitProphecyClaimAggregatedSigs Security", function () {
       userFour.address
     ];
 
-    chainId = 1;
+    networkDescriptor = 1;
   });
 
   beforeEach(async function () {
@@ -65,7 +65,7 @@ describe("submitProphecyClaimAggregatedSigs Security", function () {
       userOne,
       userThree,
       pauser,
-      chainId
+      networkDescriptor
     );
 
     // Lock tokens on contract
@@ -92,7 +92,7 @@ describe("submitProphecyClaimAggregatedSigs Security", function () {
         state.amount,
         false,
         state.nonce,
-        state.chainId
+        state.networkDescriptor
       ]);
 
       let claimData = {
@@ -103,7 +103,7 @@ describe("submitProphecyClaimAggregatedSigs Security", function () {
         amount: state.amount,
         doublePeg: false,
         nonce: state.nonce,
-        chainId: state.chainId
+        networkDescriptor: state.networkDescriptor
       };
 
       await expect(
@@ -128,7 +128,7 @@ describe("submitProphecyClaimAggregatedSigs Security", function () {
         state.amount,
         false,
         state.nonce + 1,
-        state.chainId
+        state.networkDescriptor
       ]);
 
       const signatures = await signHash([userOne, userTwo, userFour], digest);
@@ -140,7 +140,7 @@ describe("submitProphecyClaimAggregatedSigs Security", function () {
         amount: state.amount,
         doublePeg: false,
         nonce: state.nonce,
-        chainId: state.chainId
+        networkDescriptor: state.networkDescriptor
       };
 
       await expect(
@@ -165,7 +165,7 @@ describe("submitProphecyClaimAggregatedSigs Security", function () {
         state.amount,
         false,
         state.nonce,
-        state.chainId
+        state.networkDescriptor
       ]);
 
       const signatures = await signHash([userOne, userTwo, userFour, userFour], digest);
@@ -177,7 +177,7 @@ describe("submitProphecyClaimAggregatedSigs Security", function () {
         amount: state.amount,
         doublePeg: false,
         nonce: state.nonce,
-        chainId: state.chainId
+        networkDescriptor: state.networkDescriptor
       };
 
       await expect(
@@ -202,7 +202,7 @@ describe("submitProphecyClaimAggregatedSigs Security", function () {
         state.amount,
         false,
         state.nonce,
-        state.chainId
+        state.networkDescriptor
       ]);
 
       const signatures = await signHash([userOne, userTwo, operator], digest);
@@ -214,7 +214,7 @@ describe("submitProphecyClaimAggregatedSigs Security", function () {
         amount: state.amount,
         doublePeg: false,
         nonce: state.nonce,
-        chainId: state.chainId
+        networkDescriptor: state.networkDescriptor
       };
 
       await expect(
@@ -239,7 +239,7 @@ describe("submitProphecyClaimAggregatedSigs Security", function () {
         state.amount,
         false,
         state.nonce,
-        state.chainId
+        state.networkDescriptor
       ]);
 
       const invalidDigest = getDigestNewProphecyClaim([
@@ -250,7 +250,7 @@ describe("submitProphecyClaimAggregatedSigs Security", function () {
         state.amount,
         false,
         state.nonce + 1,
-        state.chainId
+        state.networkDescriptor
       ]);
 
       const signatures = await signHash([userOne, userTwo], digest);
@@ -267,7 +267,7 @@ describe("submitProphecyClaimAggregatedSigs Security", function () {
         amount: state.amount,
         doublePeg: false,
         nonce: state.nonce,
-        chainId: state.chainId
+        networkDescriptor: state.networkDescriptor
       };
 
       await expect(
@@ -292,7 +292,7 @@ describe("submitProphecyClaimAggregatedSigs Security", function () {
         state.amount,
         false,
         state.nonce,
-        state.chainId
+        state.networkDescriptor
       ]);
 
       const signatures = await signHash([userOne, userTwo], digest);
@@ -305,7 +305,7 @@ describe("submitProphecyClaimAggregatedSigs Security", function () {
         amount: state.amount,
         doublePeg: false,
         nonce: state.nonce,
-        chainId: state.chainId
+        networkDescriptor: state.networkDescriptor
       };
 
       await expect(
@@ -330,7 +330,7 @@ describe("submitProphecyClaimAggregatedSigs Security", function () {
         state.amount,
         false,
         state.nonce,
-        state.chainId
+        state.networkDescriptor
       ]);
 
       const signatures = await signHash([userOne, userTwo, userFour], digest);
@@ -343,7 +343,7 @@ describe("submitProphecyClaimAggregatedSigs Security", function () {
         amount: state.amount,
         doublePeg: false,
         nonce: state.nonce,
-        chainId: state.chainId
+        networkDescriptor: state.networkDescriptor
       };
 
       await expect(
@@ -368,7 +368,7 @@ describe("submitProphecyClaimAggregatedSigs Security", function () {
         state.amount,
         false,
         state.nonce,
-        state.chainId
+        state.networkDescriptor
       ]);
 
       const signatures = await signHash([userOne, userTwo, userFour], digest);
@@ -381,7 +381,7 @@ describe("submitProphecyClaimAggregatedSigs Security", function () {
         amount: state.amount,
         doublePeg: false,
         nonce: state.nonce,
-        chainId: state.chainId
+        networkDescriptor: state.networkDescriptor
       };
 
       state.cosmosBridge

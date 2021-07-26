@@ -24,7 +24,7 @@ describe("Test Valset", function () {
   const consensusThreshold = 80;
   let initialPowers;
   let initialValidators;
-  let chainId;
+  let networkDescriptor;
   // track the state of the deployed contracts
   let state;
 
@@ -47,7 +47,7 @@ describe("Test Valset", function () {
       initialPowers = [25, 25, 25, 25];
       initialValidators = signerAccounts.slice(0, 4);
 
-      chainId = 1;
+      networkDescriptor = 1;
     });
 
     beforeEach(async function () {
@@ -62,7 +62,7 @@ describe("Test Valset", function () {
         userOne,
         userThree,
         pauser,
-        chainId
+        networkDescriptor
       );
     });
 
@@ -129,7 +129,7 @@ describe("Test Valset", function () {
           userOne,
           userThree,
           pauser,
-          chainId
+          networkDescriptor
         );
 
         state.userTwoPower = 11;
@@ -236,7 +236,7 @@ describe("Test Valset", function () {
           userOne,
           userThree,
           pauser,
-          chainId
+          networkDescriptor
         );
 
         state.userTwoPower = 11;
@@ -309,7 +309,7 @@ describe("Test Valset", function () {
           userOne,
           userThree,
           pauser,
-          chainId
+          networkDescriptor
         );
       });
 
@@ -378,7 +378,7 @@ describe("Test Valset", function () {
           userOne,
           userThree,
           pauser,
-          chainId
+          networkDescriptor
         );
 
         state.secondValidators = [userThree, accounts[4].address, accounts[5].address];
@@ -513,7 +513,7 @@ describe("Test Valset", function () {
         userOne,
         userThree,
         pauser,
-        chainId
+        networkDescriptor
       );
 
       state.secondValidators = [userThree];

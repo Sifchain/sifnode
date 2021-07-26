@@ -30,7 +30,7 @@ describe("Test Bridge Bank", function () {
   const consensusThreshold = 75;
   let initialPowers;
   let initialValidators;
-  let chainId;
+  let networkDescriptor;
   let state;
 
   before(async function() {
@@ -50,7 +50,7 @@ describe("Test Bridge Bank", function () {
     initialPowers = [25, 25, 25, 25];
     initialValidators = signerAccounts.slice(0, 4);
 
-    chainId = 1;
+    networkDescriptor = 1;
   });
 
   beforeEach(async function () {
@@ -63,7 +63,7 @@ describe("Test Bridge Bank", function () {
         userOne,
         userThree,
         pauser,
-        chainId
+        networkDescriptor
     );
   });
 
@@ -96,7 +96,7 @@ describe("Test Bridge Bank", function () {
       // Approve and lock tokens
       await expect(state.bridgeBank.connect(userOne).lock(state.sender, fakeToken.address, state.amount))
         .to.emit(state.bridgeBank, 'LogLock')
-        .withArgs(userOne.address, state.sender, fakeToken.address, state.amount, "3", 18, "", "", state.chainId);
+        .withArgs(userOne.address, state.sender, fakeToken.address, state.amount, "3", 18, "", "", state.networkDescriptor);
 
       /*
                   msg.sender,

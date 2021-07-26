@@ -34,7 +34,7 @@ describe("Test Cosmos Bridge", function () {
   const consensusThreshold = 75;
   let initialPowers;
   let initialValidators;
-  let chainId;
+  let networkDescriptor;
   let state;
 
   before(async function() {
@@ -54,7 +54,7 @@ describe("Test Cosmos Bridge", function () {
     initialPowers = [25, 25, 25, 25];
     initialValidators = signerAccounts.slice(0, 4);
 
-    chainId = 1;
+    networkDescriptor = 1;
   });
 
   beforeEach(async function () {
@@ -67,7 +67,7 @@ describe("Test Cosmos Bridge", function () {
       userOne,
       userThree,
       pauser,
-      chainId
+      networkDescriptor
     );
   });
 
@@ -234,7 +234,7 @@ describe("Test Cosmos Bridge", function () {
         state.amount,
         false,
         state.nonce,
-        state.chainId
+        state.networkDescriptor
       ]);
 
       const signatures = await signHash([userOne, userTwo, userFour], digest);
@@ -246,7 +246,7 @@ describe("Test Cosmos Bridge", function () {
         amount: state.amount,
         doublePeg: false,
         nonce: state.nonce,
-        chainId: state.chainId
+        networkDescriptor: state.networkDescriptor
       };
 
       await state.cosmosBridge
@@ -284,7 +284,7 @@ describe("Test Cosmos Bridge", function () {
         state.amount,
         false,
         state.nonce,
-        state.chainId
+        state.networkDescriptor
       ]);
       const signatures = await signHash([userOne, userTwo, userFour], digest);
 
@@ -296,7 +296,7 @@ describe("Test Cosmos Bridge", function () {
         amount: state.amount,
         doublePeg: false,
         nonce: state.nonce,
-        chainId: state.chainId
+        networkDescriptor: state.networkDescriptor
       };
 
       await state.cosmosBridge

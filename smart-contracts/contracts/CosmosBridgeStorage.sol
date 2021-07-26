@@ -59,9 +59,9 @@ contract CosmosBridgeStorage {
     }
 
     /**
-    * @notice chain descriptor
+    * @notice network descriptor
     */
-    uint256 public chainId;
+    uint256 public networkDescriptor;
 
     /*
     * @notice gap of storage for future upgrades
