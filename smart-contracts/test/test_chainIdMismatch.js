@@ -13,7 +13,7 @@ require("chai")
 
 use(solidity);
 
-describe.only("Test Chain Id Mismatch", function () {
+describe("Test Chain Id Mismatch", function () {
   let userOne;
   let userTwo;
   let userThree;
