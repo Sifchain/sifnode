@@ -1,7 +1,10 @@
 package txs
 
 import (
+	"crypto/sha256"
+	"encoding/hex"
 	"errors"
+	"fmt"
 	"log"
 	"math/big"
 	"strconv"
@@ -79,7 +82,35 @@ func EthereumEventToEthBridgeClaim(valAddr sdk.ValAddress, event types.EthereumE
 	witnessClaim.CosmosReceiver = recipient.String()
 	witnessClaim.Amount = amount
 	witnessClaim.ClaimType = event.ClaimType
+	witnessClaim.XDecimals = int32(event.Decimals)
+	witnessClaim.XTokenName = event.Name
 
+	/**
+		 * Metadata Denom Naming Convention:
+		 * For all pegged ERC20 assets, their respective token names on sifchain will be composed of the
+		 * following four elements: prefix to define the object type (coin, nft, etc), network descriptor,
+		 * ERC20 token address, and the decimals of that token. Fields will not be separated by any delimiter
+		 * character. A pegged ERC20 asset with token address 0xbF45BFc92ebD305d4C0baf8395c4299bdFCE9EA2, a
+		 * network descriptor of 2, 9 decimals, a name of “wBTC” and symbol “WBTC” will add all of the strings
+		 * together to get this output:
+	   *    0xbF45BFc92ebD305d4C0baf8395c4299bdFCE9EA229wBTCWBTC
+	   *
+		 * Then, that data will be hashed with SHA256 to produce the following hash:
+	   *    179e6a6f8ab6efb5fa1f3992aef69f855628cfd27868a1be0525f40b456494ff
+		 *
+	*/
+	// No Prefix Yet....
+	// "{Network Descriptor}{ERC20 Token Address}{Decimals}{Token Name}{Token Symbol}"
+	denomHashedString := fmt.Sprintf("%s%s%d%s%s",
+		networkDescriptor,
+		witnessClaim.TokenContractAddress,
+		witnessClaim.XDecimals,
+		witnessClaim.XTokenName,
+		witnessClaim.Symbol,
+	)
+
+	denomHash := sha256.Sum256([]byte(denomHashedString))
+	witnessClaim.XDenomHash = hex.EncodeToString(denomHash[:])
 	return witnessClaim, nil
 }
 
