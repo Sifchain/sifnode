@@ -272,8 +272,6 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
     }
 
     function _verifychainId(uint256 _chainId) internal returns(bool) {
-        //uint256 expectedChainId = BridgeBank(bridgeBank).chainId();
-
         return _chainId == BridgeBank(bridgeBank).chainId();
     }
 
