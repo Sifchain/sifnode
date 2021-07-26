@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"bytes"
+	"strings"
 
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -61,7 +62,7 @@ func (k keeper) GetDenom(ctx sdk.Context, denom string) types.DenomWhitelistEntr
 	wl := k.GetDenomWhitelist(ctx)
 
 	for i := range wl.DenomWhitelistEntries {
-		if wl.DenomWhitelistEntries[i].Denom == denom &&
+		if strings.EqualFold(wl.DenomWhitelistEntries[i].Denom, strings.ToLower(denom)) &&
 			wl.DenomWhitelistEntries[i] != nil {
 			return *wl.DenomWhitelistEntries[i]
 		}
@@ -75,6 +76,8 @@ func (k keeper) GetDenom(ctx sdk.Context, denom string) types.DenomWhitelistEntr
 
 func (k keeper) SetDenom(ctx sdk.Context, denom string, decimals int64) {
 	wl := k.GetDenomWhitelist(ctx)
+
+	denom = strings.ToLower(denom)
 
 	var exists bool
 	for i := range wl.DenomWhitelistEntries {

@@ -1,19 +1,36 @@
-package keeper
+package keeper_test
 
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"testing"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/assert"
+
+	sifapp "github.com/Sifchain/sifnode/app"
+	clpkeeper "github.com/Sifchain/sifnode/x/clp/keeper"
+	clptest "github.com/Sifchain/sifnode/x/clp/test"
+	whitelisttypes "github.com/Sifchain/sifnode/x/whitelist/types"
 )
+
+func getDenomWhiteListEntries() whitelisttypes.DenomWhitelist {
+	return whitelisttypes.DefaultWhitelist()
+}
+
+func createTestAppForTestTables() (sdk.Context, *sifapp.SifchainApp) {
+	wl := getDenomWhiteListEntries()
+	ctx, app := clptest.CreateTestAppClp(false)
+	for _, entry := range wl.DenomWhitelistEntries {
+		app.WhitelistKeeper.SetDenom(ctx, entry.Denom, entry.Decimals)
+	}
+	return ctx, app
+}
 
 func TestCalculatePoolUnits(t *testing.T) {
 	type TestCase struct {
-	    Symbol           string `json:"symbol"`
+		Symbol           string `json:"symbol"`
 		NativeAdded      string `json:"r"`
 		ExternalAdded    string `json:"a"`
 		NativeBalance    string `json:"R"`
@@ -32,20 +49,23 @@ func TestCalculatePoolUnits(t *testing.T) {
 	err = json.Unmarshal(file, &test)
 	assert.NoError(t, err)
 
+	ctx, app := createTestAppForTestTables()
+
 	testcases := test.TestType
-	errCount := 0
 	for _, test := range testcases {
-		_, stakeUnits, _ := CalculatePoolUnits(
-			test.Symbol,
-			sdk.NewUintFromString(test.PoolUnitsBalance),
-			sdk.NewUintFromString(test.NativeBalance),
-			sdk.NewUintFromString(test.ExternalBalance),
-			sdk.NewUintFromString(test.NativeAdded),
-			sdk.NewUintFromString(test.ExternalAdded),
-		)
-		if !stakeUnits.Equal(sdk.NewUintFromString(test.Expected)) {
-			fmt.Printf("Pool_Units | Expected : %s | Got : %s \n", test.Expected, stakeUnits.String())
-			errCount++
+		wl := getDenomWhiteListEntries()
+		for _, entry := range wl.DenomWhitelistEntries {
+			nf, ad := app.ClpKeeper.GetNormalizationFactor(ctx, entry.Denom)
+			_, stakeUnits, _ := clpkeeper.CalculatePoolUnits(
+				sdk.NewUintFromString(test.PoolUnitsBalance),
+				sdk.NewUintFromString(test.NativeBalance),
+				sdk.NewUintFromString(test.ExternalBalance),
+				sdk.NewUintFromString(test.NativeAdded),
+				sdk.NewUintFromString(test.ExternalAdded),
+				nf,
+				ad,
+			)
+			assert.True(t, stakeUnits.Equal(sdk.NewUintFromString(test.Expected)))
 		}
 	}
 }
@@ -68,17 +88,22 @@ func TestCalculateSwapResult(t *testing.T) {
 	err = json.Unmarshal(file, &test)
 	assert.NoError(t, err)
 
+	ctx, app := createTestAppForTestTables()
+
 	testcases := test.TestType
-	errCount := 0
 	for _, test := range testcases {
-		Yy, _ := calcSwapResult("cusdt",
-			true,
-			sdk.NewUintFromString(test.X),
-			sdk.NewUintFromString(test.Xx),
-			sdk.NewUintFromString(test.Y))
-		if !Yy.Equal(sdk.NewUintFromString(test.Expected)) {
-			fmt.Printf("SingleSwap-Result | Expected : %s | Got : %s \n", test.Expected, Yy.String())
-			errCount++
+		wl := getDenomWhiteListEntries()
+		for _, entry := range wl.DenomWhitelistEntries {
+			nf, ad := app.ClpKeeper.GetNormalizationFactor(ctx, entry.Denom)
+			Yy, _ := clpkeeper.CalcSwapResult(
+				true,
+				nf,
+				ad,
+				sdk.NewUintFromString(test.X),
+				sdk.NewUintFromString(test.Xx),
+				sdk.NewUintFromString(test.Y),
+			)
+			assert.True(t, Yy.Equal(sdk.NewUintFromString(test.Expected)))
 		}
 	}
 }
@@ -101,17 +126,22 @@ func TestCalculateSwapLiquidityFee(t *testing.T) {
 	err = json.Unmarshal(file, &test)
 	assert.NoError(t, err)
 
+	ctx, app := createTestAppForTestTables()
+
 	testcases := test.TestType
-	errCount := 0
 	for _, test := range testcases {
-		Yy, _ := calcLiquidityFee("ceth",
-			true,
-			sdk.NewUintFromString(test.X),
-			sdk.NewUintFromString(test.Xx),
-			sdk.NewUintFromString(test.Y))
-		if !Yy.Equal(sdk.NewUintFromString(test.Expected)) {
-			fmt.Printf("SingleSwap-Liquidityfees | Expected : %s | Got : %s \n", test.Expected, Yy.String())
-			errCount++
+		wl := getDenomWhiteListEntries()
+		for _, entry := range wl.DenomWhitelistEntries {
+			nf, ad := app.ClpKeeper.GetNormalizationFactor(ctx, entry.Denom)
+			Yy, _ := clpkeeper.CalcLiquidityFee(
+				true,
+				nf,
+				ad,
+				sdk.NewUintFromString(test.X),
+				sdk.NewUintFromString(test.Xx),
+				sdk.NewUintFromString(test.Y),
+			)
+			assert.True(t, Yy.Equal(sdk.NewUintFromString(test.Expected)))
 		}
 	}
 }
@@ -136,24 +166,30 @@ func TestCalculateDoubleSwapResult(t *testing.T) {
 	err = json.Unmarshal(file, &test)
 	assert.NoError(t, err)
 
+	ctx, app := createTestAppForTestTables()
+
 	testcases := test.TestType
-	errCount := 0
 	for _, test := range testcases {
-		Ay, _ := calcSwapResult("cusdt",
-			true,
-			sdk.NewUintFromString(test.AX),
-			sdk.NewUintFromString(test.Ax),
-			sdk.NewUintFromString(test.AY))
-
-		By, _ := calcSwapResult("cusdt",
-			true,
-			sdk.NewUintFromString(test.BX),
-			Ay,
-			sdk.NewUintFromString(test.BY))
-
-		if !By.Equal(sdk.NewUintFromString(test.Expected)) {
-			fmt.Printf("Doubleswap_Result | Expected : %s | Got : %s \n", test.Expected, By.String())
-			errCount++
+		wl := getDenomWhiteListEntries()
+		for _, entry := range wl.DenomWhitelistEntries {
+			nf, ad := app.ClpKeeper.GetNormalizationFactor(ctx, entry.Denom)
+			Ay, _ := clpkeeper.CalcSwapResult(
+				true,
+				nf,
+				ad,
+				sdk.NewUintFromString(test.AX),
+				sdk.NewUintFromString(test.Ax),
+				sdk.NewUintFromString(test.AY),
+			)
+			By, _ := clpkeeper.CalcSwapResult(
+				false,
+				nf,
+				ad,
+				sdk.NewUintFromString(test.BX),
+				Ay,
+				sdk.NewUintFromString(test.BY),
+			)
+			assert.True(t, By.Equal(sdk.NewUintFromString(test.Expected)))
 		}
 	}
 }
@@ -179,20 +215,20 @@ func TestCalculatePoolUnitsAfterUpgrade(t *testing.T) {
 	err = json.Unmarshal(file, &test)
 	assert.NoError(t, err)
 
+	ctx, app := createTestAppForTestTables()
+
 	testcases := test.TestType
-	errCount := 0
 	for _, test := range testcases {
-		_, stakeUnits, _ := CalculatePoolUnits(
-			test.Symbol,
+		nf, ad := app.ClpKeeper.GetNormalizationFactor(ctx, test.Symbol)
+		_, stakeUnits, _ := clpkeeper.CalculatePoolUnits(
 			sdk.NewUintFromString(test.PoolUnitsBalance),
 			sdk.NewUintFromString(test.NativeBalance),
 			sdk.NewUintFromString(test.ExternalBalance),
 			sdk.NewUintFromString(test.NativeAdded),
 			sdk.NewUintFromString(test.ExternalAdded),
+			nf,
+			ad,
 		)
-		if !stakeUnits.Equal(sdk.NewUintFromString(test.Expected)) {
-			fmt.Printf("Pool_Units_After_Upgrade | Expected : %s | Got : %s \n", test.Expected, stakeUnits.String())
-			errCount++
-		}
+		assert.True(t, stakeUnits.Equal(sdk.NewUintFromString(test.Expected)))
 	}
 }

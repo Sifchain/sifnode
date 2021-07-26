@@ -3,6 +3,8 @@ package keeper
 import (
 	"fmt"
 
+	whitelisttypes "github.com/Sifchain/sifnode/x/whitelist/types"
+
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
@@ -13,26 +15,28 @@ import (
 
 // Keeper of the clp store
 type Keeper struct {
-	storeKey   sdk.StoreKey
-	cdc        codec.BinaryMarshaler
-	bankKeeper types.BankKeeper
-	authKeeper types.AuthKeeper
-	paramstore paramtypes.Subspace
+	storeKey        sdk.StoreKey
+	cdc             codec.BinaryMarshaler
+	bankKeeper      types.BankKeeper
+	authKeeper      types.AuthKeeper
+	whitelistKeeper types.WhitelistKeeper
+	paramstore      paramtypes.Subspace
 }
 
 // NewKeeper creates a clp keeper
-func NewKeeper(cdc codec.BinaryMarshaler, key sdk.StoreKey, bankkeeper types.BankKeeper, accountKeeper types.AuthKeeper, ps paramtypes.Subspace) Keeper {
+func NewKeeper(cdc codec.BinaryMarshaler, key sdk.StoreKey, bankkeeper types.BankKeeper, accountKeeper types.AuthKeeper, whitelistKeeper whitelisttypes.Keeper, ps paramtypes.Subspace) Keeper {
 	// set KeyTable if it has not already been set
 	if !ps.HasKeyTable() {
 		ps = ps.WithKeyTable(types.ParamKeyTable())
 	}
 
 	keeper := Keeper{
-		storeKey:   key,
-		cdc:        cdc,
-		bankKeeper: bankkeeper,
-		authKeeper: accountKeeper,
-		paramstore: ps,
+		storeKey:        key,
+		cdc:             cdc,
+		bankKeeper:      bankkeeper,
+		authKeeper:      accountKeeper,
+		whitelistKeeper: whitelistKeeper,
+		paramstore:      ps,
 	}
 	return keeper
 }
@@ -65,4 +69,24 @@ func (k Keeper) SendCoins(ctx sdk.Context, from sdk.AccAddress, to sdk.AccAddres
 
 func (k Keeper) HasBalance(ctx sdk.Context, addr sdk.AccAddress, coin sdk.Coin) bool {
 	return k.bankKeeper.HasBalance(ctx, addr, coin)
+}
+
+func (k Keeper) GetNormalizationFactor(ctx sdk.Context, denom string) (sdk.Dec, bool) {
+	normalizationFactor := sdk.NewDec(1)
+	adjustExternalToken := false
+	entry := k.whitelistKeeper.GetDenom(ctx, denom)
+	if !entry.IsWhitelisted {
+		return normalizationFactor, adjustExternalToken
+	}
+	nf := entry.Decimals
+	if nf != 18 {
+		adjustExternalToken = true
+		diffFactor := 18 - nf
+		if diffFactor < 0 {
+			diffFactor = nf - 18
+			adjustExternalToken = false
+		}
+		normalizationFactor = sdk.NewDec(10).Power(uint64(diffFactor))
+	}
+	return normalizationFactor, adjustExternalToken
 }
