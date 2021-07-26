@@ -20,10 +20,20 @@ func (m *MsgUpdateWhitelist) ValidateBasic() error {
 	if m.Denom == "" {
 		return errors.New("no denom specified")
 	}
+	coin := sdk.Coin{
+		Denom:  m.Denom,
+		Amount: sdk.OneInt(),
+	}
+	if !coin.IsValid() {
+		return errors.New("Denom is not valid")
+	}
 
 	_, err := sdk.AccAddressFromBech32(m.From)
 	if err != nil {
 		return sdkerrors.Wrap(err, "invalid from address")
+	}
+	if m.Decimals < 0 {
+		return errors.New("Decimals cannot be negative")
 	}
 
 	return nil
