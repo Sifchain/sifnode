@@ -11,12 +11,12 @@ func TestMsgUpdateWhitelist_ValidateBasic(t *testing.T) {
 	admin := sdk.AccAddress("addr1_______________")
 	tests := []struct {
 		name      string
-		msg       types.MsgUpdateWhitelist
+		msg       types.MsgRegister
 		assertion assert.ErrorAssertionFunc
 	}{
 		{
 			name: "Valid Test",
-			msg: types.MsgUpdateWhitelist{
+			msg: types.MsgRegister{
 				From:     admin.String(),
 				Denom:    "TestDenom",
 				Decimals: 18,
@@ -25,7 +25,7 @@ func TestMsgUpdateWhitelist_ValidateBasic(t *testing.T) {
 		},
 		{
 			name: "Denom Missing",
-			msg: types.MsgUpdateWhitelist{
+			msg: types.MsgRegister{
 				From:     admin.String(),
 				Denom:    "",
 				Decimals: 18,
@@ -34,7 +34,7 @@ func TestMsgUpdateWhitelist_ValidateBasic(t *testing.T) {
 		},
 		{
 			name: "Negative Decimals",
-			msg: types.MsgUpdateWhitelist{
+			msg: types.MsgRegister{
 				From:     admin.String(),
 				Denom:    "TestDenom",
 				Decimals: -1,
@@ -43,7 +43,7 @@ func TestMsgUpdateWhitelist_ValidateBasic(t *testing.T) {
 		},
 		{
 			name: "Empty from",
-			msg: types.MsgUpdateWhitelist{
+			msg: types.MsgRegister{
 				From:     "",
 				Denom:    "TestDenom",
 				Decimals: 0,
@@ -52,7 +52,7 @@ func TestMsgUpdateWhitelist_ValidateBasic(t *testing.T) {
 		},
 		{
 			name: "Invalid Denom",
-			msg: types.MsgUpdateWhitelist{
+			msg: types.MsgRegister{
 				From:     admin.String(),
 				Denom:    "Test%%%$$%%Denom",
 				Decimals: 0,

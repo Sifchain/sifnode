@@ -14,10 +14,10 @@ func NewQueryServer(k types.Keeper) types.QueryServer {
 	return Querier{k}
 }
 
-func (q Querier) Denoms(c context.Context, _ *types.QueryDenomsRequest) (*types.QueryDenomsResponse, error) {
+func (q Querier) Entries(c context.Context, _ *types.QueryEntriesRequest) (*types.QueryEntriesResponse, error) {
 	ctx := sdk.UnwrapSDKContext(c)
 	wl := q.GetDenomWhitelist(ctx)
-	return &types.QueryDenomsResponse{List: &wl}, nil
+	return &types.QueryEntriesResponse{List: &wl}, nil
 }
 
 var _ types.QueryServer = Querier{}

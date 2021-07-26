@@ -15,15 +15,15 @@ var (
 
 // RegisterLegacyAminoCodec registers concrete types on the Amino codec
 func RegisterLegacyAminoCodec(cdc *codec.LegacyAmino) {
-	cdc.RegisterConcrete(&MsgUpdateWhitelist{}, "MsgUpdateWhitelist", nil)
-	cdc.RegisterConcrete(&MsgUpdateWhitelistResponse{}, "MsgUpdateWhitelistResponse", nil)
+	cdc.RegisterConcrete(&MsgRegister{}, "MsgRegister", nil)
+	cdc.RegisterConcrete(&MsgRegisterResponse{}, "MsgRegisterResponse", nil)
 }
 
 func RegisterInterfaces(registry cdctypes.InterfaceRegistry) {
 	registry.RegisterImplementations(
 		(*sdk.Msg)(nil),
 
-		&MsgUpdateWhitelist{},
+		&MsgRegister{},
 	)
 
 	msgservice.RegisterMsgServiceDesc(registry, &_Msg_serviceDesc)

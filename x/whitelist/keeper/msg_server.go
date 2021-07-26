@@ -12,8 +12,8 @@ type msgServer struct {
 	keeper types.Keeper
 }
 
-func (m msgServer) UpdateWhitelist(ctx context.Context, req *types.MsgUpdateWhitelist) (
-	*types.MsgUpdateWhitelistResponse, error) {
+func (m msgServer) Register(ctx context.Context, req *types.MsgRegister) (
+	*types.MsgRegisterResponse, error) {
 
 	addr, err := sdk.AccAddressFromBech32(req.From)
 	if err != nil {
@@ -25,7 +25,7 @@ func (m msgServer) UpdateWhitelist(ctx context.Context, req *types.MsgUpdateWhit
 
 	m.keeper.SetDenom(sdk.UnwrapSDKContext(ctx), req.From, req.Decimals)
 
-	return &types.MsgUpdateWhitelistResponse{}, nil
+	return &types.MsgRegisterResponse{}, nil
 }
 
 // NewMsgServerImpl returns an implementation of MsgServer interface

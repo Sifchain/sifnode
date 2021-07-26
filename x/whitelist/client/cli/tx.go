@@ -1,7 +1,7 @@
 package cli
 
 import (
-	types2 "github.com/Sifchain/sifnode/x/whitelist/types"
+	"github.com/Sifchain/sifnode/x/whitelist/types"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/client/tx"
@@ -40,7 +40,7 @@ func GetCmdUpdate() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			msg := types2.MsgUpdateWhitelist{
+			msg := types.MsgRegister{
 				From:     clientCtx.GetFromAddress().String(),
 				Denom:    args[0],
 				Decimals: int64(decimals),

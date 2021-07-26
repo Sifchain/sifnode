@@ -33,7 +33,7 @@ type AuthKeeper interface {
 }
 
 type WhitelistKeeper interface {
-	GetDenom(ctx sdk.Context, denom string) types.DenomWhitelistEntry
+	GetDenom(ctx sdk.Context, denom string) types.RegistryEntry
 	SetDenom(ctx sdk.Context, denom string, exp int64)
 	IsDenomWhitelisted(ctx sdk.Context, denom string) bool
 }

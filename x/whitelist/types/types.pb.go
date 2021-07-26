@@ -24,8 +24,8 @@ var _ = math.Inf
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
 type GenesisState struct {
-	AdminAccount string          `protobuf:"bytes,1,opt,name=admin_account,json=adminAccount,proto3" json:"admin_account,omitempty"`
-	Whitelist    *DenomWhitelist `protobuf:"bytes,2,opt,name=whitelist,proto3" json:"whitelist,omitempty"`
+	AdminAccount string    `protobuf:"bytes,1,opt,name=admin_account,json=adminAccount,proto3" json:"admin_account,omitempty"`
+	Registry     *Registry `protobuf:"bytes,2,opt,name=registry,proto3" json:"registry,omitempty"`
 }
 
 func (m *GenesisState) Reset()         { *m = GenesisState{} }
@@ -68,29 +68,29 @@ func (m *GenesisState) GetAdminAccount() string {
 	return ""
 }
 
-func (m *GenesisState) GetWhitelist() *DenomWhitelist {
+func (m *GenesisState) GetRegistry() *Registry {
 	if m != nil {
-		return m.Whitelist
+		return m.Registry
 	}
 	return nil
 }
 
-type DenomWhitelist struct {
-	DenomWhitelistEntries []*DenomWhitelistEntry `protobuf:"bytes,1,rep,name=denom_whitelist_entries,json=denomWhitelistEntries,proto3" json:"denom_whitelist_entries,omitempty"`
+type Registry struct {
+	Entries []*RegistryEntry `protobuf:"bytes,1,rep,name=entries,proto3" json:"entries,omitempty"`
 }
 
-func (m *DenomWhitelist) Reset()         { *m = DenomWhitelist{} }
-func (m *DenomWhitelist) String() string { return proto.CompactTextString(m) }
-func (*DenomWhitelist) ProtoMessage()    {}
-func (*DenomWhitelist) Descriptor() ([]byte, []int) {
+func (m *Registry) Reset()         { *m = Registry{} }
+func (m *Registry) String() string { return proto.CompactTextString(m) }
+func (*Registry) ProtoMessage()    {}
+func (*Registry) Descriptor() ([]byte, []int) {
 	return fileDescriptor_2f18f56a2888c4dc, []int{1}
 }
-func (m *DenomWhitelist) XXX_Unmarshal(b []byte) error {
+func (m *Registry) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *DenomWhitelist) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *Registry) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_DenomWhitelist.Marshal(b, m, deterministic)
+		return xxx_messageInfo_Registry.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -100,26 +100,26 @@ func (m *DenomWhitelist) XXX_Marshal(b []byte, deterministic bool) ([]byte, erro
 		return b[:n], nil
 	}
 }
-func (m *DenomWhitelist) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_DenomWhitelist.Merge(m, src)
+func (m *Registry) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_Registry.Merge(m, src)
 }
-func (m *DenomWhitelist) XXX_Size() int {
+func (m *Registry) XXX_Size() int {
 	return m.Size()
 }
-func (m *DenomWhitelist) XXX_DiscardUnknown() {
-	xxx_messageInfo_DenomWhitelist.DiscardUnknown(m)
+func (m *Registry) XXX_DiscardUnknown() {
+	xxx_messageInfo_Registry.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_DenomWhitelist proto.InternalMessageInfo
+var xxx_messageInfo_Registry proto.InternalMessageInfo
 
-func (m *DenomWhitelist) GetDenomWhitelistEntries() []*DenomWhitelistEntry {
+func (m *Registry) GetEntries() []*RegistryEntry {
 	if m != nil {
-		return m.DenomWhitelistEntries
+		return m.Entries
 	}
 	return nil
 }
 
-type DenomWhitelistEntry struct {
+type RegistryEntry struct {
 	IsWhitelisted  bool   `protobuf:"varint,1,opt,name=is_whitelisted,json=isWhitelisted,proto3" json:"is_whitelisted,omitempty"`
 	Decimals       int64  `protobuf:"varint,2,opt,name=decimals,proto3" json:"decimals,omitempty"`
 	Denom          string `protobuf:"bytes,3,opt,name=denom,proto3" json:"denom,omitempty"`
@@ -130,21 +130,21 @@ type DenomWhitelistEntry struct {
 	Network        string `protobuf:"bytes,8,opt,name=network,proto3" json:"network,omitempty"`
 	Address        string `protobuf:"bytes,9,opt,name=address,proto3" json:"address,omitempty"`
 	ExternalSymbol string `protobuf:"bytes,10,opt,name=external_symbol,json=externalSymbol,proto3" json:"external_symbol,omitempty"`
-	TransferLimit  int64  `protobuf:"varint,11,opt,name=transfer_limit,json=transferLimit,proto3" json:"transfer_limit,omitempty"`
+	TransferLimit  string `protobuf:"bytes,11,opt,name=transfer_limit,json=transferLimit,proto3" json:"transfer_limit,omitempty"`
 }
 
-func (m *DenomWhitelistEntry) Reset()         { *m = DenomWhitelistEntry{} }
-func (m *DenomWhitelistEntry) String() string { return proto.CompactTextString(m) }
-func (*DenomWhitelistEntry) ProtoMessage()    {}
-func (*DenomWhitelistEntry) Descriptor() ([]byte, []int) {
+func (m *RegistryEntry) Reset()         { *m = RegistryEntry{} }
+func (m *RegistryEntry) String() string { return proto.CompactTextString(m) }
+func (*RegistryEntry) ProtoMessage()    {}
+func (*RegistryEntry) Descriptor() ([]byte, []int) {
 	return fileDescriptor_2f18f56a2888c4dc, []int{2}
 }
-func (m *DenomWhitelistEntry) XXX_Unmarshal(b []byte) error {
+func (m *RegistryEntry) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *DenomWhitelistEntry) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *RegistryEntry) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_DenomWhitelistEntry.Marshal(b, m, deterministic)
+		return xxx_messageInfo_RegistryEntry.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -154,134 +154,133 @@ func (m *DenomWhitelistEntry) XXX_Marshal(b []byte, deterministic bool) ([]byte,
 		return b[:n], nil
 	}
 }
-func (m *DenomWhitelistEntry) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_DenomWhitelistEntry.Merge(m, src)
+func (m *RegistryEntry) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_RegistryEntry.Merge(m, src)
 }
-func (m *DenomWhitelistEntry) XXX_Size() int {
+func (m *RegistryEntry) XXX_Size() int {
 	return m.Size()
 }
-func (m *DenomWhitelistEntry) XXX_DiscardUnknown() {
-	xxx_messageInfo_DenomWhitelistEntry.DiscardUnknown(m)
+func (m *RegistryEntry) XXX_DiscardUnknown() {
+	xxx_messageInfo_RegistryEntry.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_DenomWhitelistEntry proto.InternalMessageInfo
+var xxx_messageInfo_RegistryEntry proto.InternalMessageInfo
 
-func (m *DenomWhitelistEntry) GetIsWhitelisted() bool {
+func (m *RegistryEntry) GetIsWhitelisted() bool {
 	if m != nil {
 		return m.IsWhitelisted
 	}
 	return false
 }
 
-func (m *DenomWhitelistEntry) GetDecimals() int64 {
+func (m *RegistryEntry) GetDecimals() int64 {
 	if m != nil {
 		return m.Decimals
 	}
 	return 0
 }
 
-func (m *DenomWhitelistEntry) GetDenom() string {
+func (m *RegistryEntry) GetDenom() string {
 	if m != nil {
 		return m.Denom
 	}
 	return ""
 }
 
-func (m *DenomWhitelistEntry) GetBaseDenom() string {
+func (m *RegistryEntry) GetBaseDenom() string {
 	if m != nil {
 		return m.BaseDenom
 	}
 	return ""
 }
 
-func (m *DenomWhitelistEntry) GetPath() string {
+func (m *RegistryEntry) GetPath() string {
 	if m != nil {
 		return m.Path
 	}
 	return ""
 }
 
-func (m *DenomWhitelistEntry) GetDisplayName() string {
+func (m *RegistryEntry) GetDisplayName() string {
 	if m != nil {
 		return m.DisplayName
 	}
 	return ""
 }
 
-func (m *DenomWhitelistEntry) GetDisplaySymbol() string {
+func (m *RegistryEntry) GetDisplaySymbol() string {
 	if m != nil {
 		return m.DisplaySymbol
 	}
 	return ""
 }
 
-func (m *DenomWhitelistEntry) GetNetwork() string {
+func (m *RegistryEntry) GetNetwork() string {
 	if m != nil {
 		return m.Network
 	}
 	return ""
 }
 
-func (m *DenomWhitelistEntry) GetAddress() string {
+func (m *RegistryEntry) GetAddress() string {
 	if m != nil {
 		return m.Address
 	}
 	return ""
 }
 
-func (m *DenomWhitelistEntry) GetExternalSymbol() string {
+func (m *RegistryEntry) GetExternalSymbol() string {
 	if m != nil {
 		return m.ExternalSymbol
 	}
 	return ""
 }
 
-func (m *DenomWhitelistEntry) GetTransferLimit() int64 {
+func (m *RegistryEntry) GetTransferLimit() string {
 	if m != nil {
 		return m.TransferLimit
 	}
-	return 0
+	return ""
 }
 
 func init() {
 	proto.RegisterType((*GenesisState)(nil), "sifnode.whitelist.v1.GenesisState")
-	proto.RegisterType((*DenomWhitelist)(nil), "sifnode.whitelist.v1.DenomWhitelist")
-	proto.RegisterType((*DenomWhitelistEntry)(nil), "sifnode.whitelist.v1.DenomWhitelistEntry")
+	proto.RegisterType((*Registry)(nil), "sifnode.whitelist.v1.Registry")
+	proto.RegisterType((*RegistryEntry)(nil), "sifnode.whitelist.v1.RegistryEntry")
 }
 
 func init() { proto.RegisterFile("sifnode/whitelist/v1/types.proto", fileDescriptor_2f18f56a2888c4dc) }
 
 var fileDescriptor_2f18f56a2888c4dc = []byte{
-	// 450 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x8c, 0x92, 0xcd, 0x6e, 0xd3, 0x40,
-	0x10, 0xc7, 0xe3, 0xa6, 0x1f, 0xc9, 0xe4, 0x03, 0x69, 0x09, 0x62, 0x55, 0x09, 0x2b, 0x04, 0x2a,
-	0xc2, 0x01, 0x5b, 0x2d, 0x4f, 0x40, 0x05, 0xea, 0x05, 0x71, 0x70, 0x0e, 0x95, 0xb8, 0x58, 0x1b,
-	0xef, 0x24, 0x59, 0x61, 0xef, 0x46, 0xde, 0x6d, 0xd3, 0xbc, 0x05, 0x8f, 0xc5, 0xb1, 0x47, 0x8e,
-	0x28, 0x79, 0x00, 0x5e, 0x01, 0x79, 0x6c, 0x27, 0x20, 0x7a, 0xe8, 0xcd, 0xf3, 0xfb, 0xff, 0x3c,
-	0xb3, 0xbb, 0x1a, 0x18, 0x5a, 0x35, 0xd3, 0x46, 0x62, 0xb8, 0x5a, 0x28, 0x87, 0xa9, 0xb2, 0x2e,
-	0xbc, 0x3d, 0x0f, 0xdd, 0x7a, 0x89, 0x36, 0x58, 0xe6, 0xc6, 0x19, 0x36, 0xa8, 0x8c, 0x60, 0x67,
-	0x04, 0xb7, 0xe7, 0xa7, 0x83, 0xb9, 0x99, 0x1b, 0x12, 0xc2, 0xe2, 0xab, 0x74, 0x47, 0x2b, 0xe8,
-	0x5e, 0xa1, 0x46, 0xab, 0xec, 0xc4, 0x09, 0x87, 0xec, 0x15, 0xf4, 0x84, 0xcc, 0x94, 0x8e, 0x45,
-	0x92, 0x98, 0x1b, 0xed, 0xb8, 0x37, 0xf4, 0xc6, 0xed, 0xa8, 0x4b, 0xf0, 0x43, 0xc9, 0xd8, 0x25,
-	0xb4, 0x77, 0xad, 0xf9, 0xc1, 0xd0, 0x1b, 0x77, 0x2e, 0x5e, 0x07, 0x0f, 0x0d, 0x0d, 0x3e, 0xa2,
-	0x36, 0xd9, 0x75, 0x4d, 0xa2, 0xfd, 0x6f, 0x23, 0x0b, 0xfd, 0x7f, 0x43, 0x26, 0xe0, 0xb9, 0x2c,
-	0x48, 0xbc, 0x93, 0x62, 0xd4, 0x2e, 0x57, 0x68, 0xb9, 0x37, 0x6c, 0x8e, 0x3b, 0x17, 0x6f, 0x1f,
-	0x33, 0xe3, 0x93, 0x76, 0xf9, 0x3a, 0x7a, 0x26, 0xff, 0x83, 0x0a, 0xed, 0xe8, 0xf7, 0x01, 0x3c,
-	0x7d, 0x40, 0x67, 0x67, 0xd0, 0x57, 0x76, 0x3f, 0x17, 0x25, 0x5d, 0xbb, 0x15, 0xf5, 0x94, 0xbd,
-	0xde, 0x43, 0x76, 0x0a, 0x2d, 0x89, 0x89, 0xca, 0x44, 0x6a, 0xe9, 0xda, 0xcd, 0x68, 0x57, 0xb3,
-	0x01, 0x1c, 0xd1, 0x4c, 0xde, 0xa4, 0x07, 0x2b, 0x0b, 0xf6, 0x02, 0x60, 0x2a, 0x2c, 0xc6, 0x65,
-	0x74, 0x48, 0x51, 0xbb, 0x20, 0x74, 0x0a, 0xc6, 0xe0, 0x70, 0x29, 0xdc, 0x82, 0x1f, 0x51, 0x40,
-	0xdf, 0xec, 0x25, 0x74, 0xa5, 0xb2, 0xcb, 0x54, 0xac, 0x63, 0x2d, 0x32, 0xe4, 0xc7, 0x94, 0x75,
-	0x2a, 0xf6, 0x45, 0x64, 0x58, 0x1c, 0xb7, 0x56, 0xec, 0x3a, 0x9b, 0x9a, 0x94, 0x9f, 0x90, 0xd4,
-	0xab, 0xe8, 0x84, 0x20, 0xe3, 0x70, 0xa2, 0xd1, 0xad, 0x4c, 0xfe, 0x8d, 0xb7, 0x28, 0xaf, 0xcb,
-	0x22, 0x11, 0x52, 0xe6, 0x68, 0x2d, 0x6f, 0x97, 0x49, 0x55, 0xb2, 0x37, 0xf0, 0x04, 0xef, 0x1c,
-	0xe6, 0x5a, 0xa4, 0x75, 0x6f, 0x20, 0xa3, 0x5f, 0xe3, 0xaa, 0xf9, 0x19, 0xf4, 0x5d, 0x2e, 0xb4,
-	0x9d, 0x61, 0x1e, 0xa7, 0x2a, 0x53, 0x8e, 0x77, 0xe8, 0x45, 0x7a, 0x35, 0xfd, 0x5c, 0xc0, 0xcb,
-	0xab, 0x1f, 0x1b, 0xdf, 0xbb, 0xdf, 0xf8, 0xde, 0xaf, 0x8d, 0xef, 0x7d, 0xdf, 0xfa, 0x8d, 0xfb,
-	0xad, 0xdf, 0xf8, 0xb9, 0xf5, 0x1b, 0x5f, 0xdf, 0xcd, 0x95, 0x5b, 0xdc, 0x4c, 0x83, 0xc4, 0x64,
-	0xe1, 0x44, 0xcd, 0x92, 0x85, 0x50, 0x3a, 0xac, 0x77, 0xfb, 0xee, 0xaf, 0xed, 0xa6, 0xd5, 0x9e,
-	0x1e, 0xd3, 0xbe, 0xbe, 0xff, 0x13, 0x00, 0x00, 0xff, 0xff, 0xc2, 0xce, 0xf1, 0x6e, 0xff, 0x02,
-	0x00, 0x00,
+	// 439 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x7c, 0x92, 0xcd, 0x8a, 0x13, 0x41,
+	0x10, 0xc7, 0x33, 0x9b, 0xdd, 0xcd, 0xa4, 0xf2, 0x21, 0x34, 0x39, 0x34, 0x0b, 0x0e, 0x31, 0xcb,
+	0x62, 0x2e, 0xce, 0xb0, 0xeb, 0x4d, 0xf0, 0xa0, 0x28, 0x8b, 0x20, 0x1e, 0x26, 0x07, 0xc1, 0xcb,
+	0xd0, 0x99, 0xa9, 0x24, 0x8d, 0x33, 0xdd, 0xa1, 0xbb, 0xf7, 0x23, 0x6f, 0xe1, 0x63, 0x79, 0xdc,
+	0xa3, 0x47, 0x49, 0x4e, 0xbe, 0x85, 0x4c, 0xcd, 0x87, 0x0a, 0xb2, 0xb7, 0xae, 0xdf, 0xff, 0x57,
+	0x35, 0x35, 0x50, 0x30, 0xb5, 0x72, 0xa5, 0x74, 0x86, 0xd1, 0xdd, 0x46, 0x3a, 0xcc, 0xa5, 0x75,
+	0xd1, 0xed, 0x65, 0xe4, 0x76, 0x5b, 0xb4, 0xe1, 0xd6, 0x68, 0xa7, 0xd9, 0xa4, 0x36, 0xc2, 0xd6,
+	0x08, 0x6f, 0x2f, 0xcf, 0x26, 0x6b, 0xbd, 0xd6, 0x24, 0x44, 0xe5, 0xab, 0x72, 0x67, 0x1a, 0x86,
+	0xd7, 0xa8, 0xd0, 0x4a, 0xbb, 0x70, 0xc2, 0x21, 0x3b, 0x87, 0x91, 0xc8, 0x0a, 0xa9, 0x12, 0x91,
+	0xa6, 0xfa, 0x46, 0x39, 0xee, 0x4d, 0xbd, 0x79, 0x3f, 0x1e, 0x12, 0x7c, 0x53, 0x31, 0xf6, 0x0a,
+	0x7c, 0x83, 0x6b, 0x69, 0x9d, 0xd9, 0xf1, 0xa3, 0xa9, 0x37, 0x1f, 0x5c, 0x05, 0xe1, 0xff, 0xbe,
+	0x19, 0xc6, 0xb5, 0x15, 0xb7, 0xfe, 0xec, 0x03, 0xf8, 0x0d, 0x65, 0xaf, 0xa1, 0x87, 0xca, 0x19,
+	0x89, 0x96, 0x7b, 0xd3, 0xee, 0x7c, 0x70, 0x75, 0xfe, 0xf8, 0x98, 0xf7, 0xaa, 0x9c, 0xd5, 0xf4,
+	0xcc, 0x7e, 0x1d, 0xc1, 0xe8, 0x9f, 0x88, 0x5d, 0xc0, 0x58, 0xda, 0xa4, 0xed, 0xc5, 0x8c, 0xd6,
+	0xf7, 0xe3, 0x91, 0xb4, 0x9f, 0xff, 0x40, 0x76, 0x06, 0x7e, 0x86, 0xa9, 0x2c, 0x44, 0x6e, 0x69,
+	0xff, 0x6e, 0xdc, 0xd6, 0x6c, 0x02, 0x27, 0x19, 0x2a, 0x5d, 0xf0, 0x2e, 0xfd, 0x78, 0x55, 0xb0,
+	0xa7, 0x00, 0x4b, 0x61, 0x31, 0xa9, 0xa2, 0x63, 0x8a, 0xfa, 0x25, 0x79, 0x47, 0x31, 0x83, 0xe3,
+	0xad, 0x70, 0x1b, 0x7e, 0x42, 0x01, 0xbd, 0xd9, 0x33, 0x18, 0x66, 0xd2, 0x6e, 0x73, 0xb1, 0x4b,
+	0x94, 0x28, 0x90, 0x9f, 0x52, 0x36, 0xa8, 0xd9, 0x27, 0x51, 0x60, 0xb9, 0x6e, 0xa3, 0xd8, 0x5d,
+	0xb1, 0xd4, 0x39, 0xef, 0x91, 0x34, 0xaa, 0xe9, 0x82, 0x20, 0xe3, 0xd0, 0x53, 0xe8, 0xee, 0xb4,
+	0xf9, 0xca, 0x7d, 0xca, 0x9b, 0xb2, 0x4c, 0x44, 0x96, 0x19, 0xb4, 0x96, 0xf7, 0xab, 0xa4, 0x2e,
+	0xd9, 0x73, 0x78, 0x82, 0xf7, 0x0e, 0x8d, 0x12, 0x79, 0x33, 0x1b, 0xc8, 0x18, 0x37, 0xb8, 0x1e,
+	0x7e, 0x01, 0x63, 0x67, 0x84, 0xb2, 0x2b, 0x34, 0x49, 0x2e, 0x0b, 0xe9, 0xf8, 0xa0, 0xda, 0xa1,
+	0xa1, 0x1f, 0x4b, 0xf8, 0xf6, 0xfa, 0xfb, 0x3e, 0xf0, 0x1e, 0xf6, 0x81, 0xf7, 0x73, 0x1f, 0x78,
+	0xdf, 0x0e, 0x41, 0xe7, 0xe1, 0x10, 0x74, 0x7e, 0x1c, 0x82, 0xce, 0x97, 0x17, 0x6b, 0xe9, 0x36,
+	0x37, 0xcb, 0x30, 0xd5, 0x45, 0xb4, 0x90, 0xab, 0x74, 0x23, 0xa4, 0x8a, 0x9a, 0x1b, 0xbd, 0xff,
+	0xeb, 0x4a, 0xe9, 0x44, 0x97, 0xa7, 0x74, 0x77, 0x2f, 0x7f, 0x07, 0x00, 0x00, 0xff, 0xff, 0x92,
+	0x7f, 0x4d, 0x8d, 0xc7, 0x02, 0x00, 0x00,
 }
 
 func (m *GenesisState) Marshal() (dAtA []byte, err error) {
@@ -304,9 +303,9 @@ func (m *GenesisState) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	_ = i
 	var l int
 	_ = l
-	if m.Whitelist != nil {
+	if m.Registry != nil {
 		{
-			size, err := m.Whitelist.MarshalToSizedBuffer(dAtA[:i])
+			size, err := m.Registry.MarshalToSizedBuffer(dAtA[:i])
 			if err != nil {
 				return 0, err
 			}
@@ -326,7 +325,7 @@ func (m *GenesisState) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	return len(dAtA) - i, nil
 }
 
-func (m *DenomWhitelist) Marshal() (dAtA []byte, err error) {
+func (m *Registry) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -336,20 +335,20 @@ func (m *DenomWhitelist) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *DenomWhitelist) MarshalTo(dAtA []byte) (int, error) {
+func (m *Registry) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *DenomWhitelist) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *Registry) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
 	_ = l
-	if len(m.DenomWhitelistEntries) > 0 {
-		for iNdEx := len(m.DenomWhitelistEntries) - 1; iNdEx >= 0; iNdEx-- {
+	if len(m.Entries) > 0 {
+		for iNdEx := len(m.Entries) - 1; iNdEx >= 0; iNdEx-- {
 			{
-				size, err := m.DenomWhitelistEntries[iNdEx].MarshalToSizedBuffer(dAtA[:i])
+				size, err := m.Entries[iNdEx].MarshalToSizedBuffer(dAtA[:i])
 				if err != nil {
 					return 0, err
 				}
@@ -363,7 +362,7 @@ func (m *DenomWhitelist) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	return len(dAtA) - i, nil
 }
 
-func (m *DenomWhitelistEntry) Marshal() (dAtA []byte, err error) {
+func (m *RegistryEntry) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -373,20 +372,22 @@ func (m *DenomWhitelistEntry) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *DenomWhitelistEntry) MarshalTo(dAtA []byte) (int, error) {
+func (m *RegistryEntry) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *DenomWhitelistEntry) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *RegistryEntry) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
 	_ = l
-	if m.TransferLimit != 0 {
-		i = encodeVarintTypes(dAtA, i, uint64(m.TransferLimit))
+	if len(m.TransferLimit) > 0 {
+		i -= len(m.TransferLimit)
+		copy(dAtA[i:], m.TransferLimit)
+		i = encodeVarintTypes(dAtA, i, uint64(len(m.TransferLimit)))
 		i--
-		dAtA[i] = 0x58
+		dAtA[i] = 0x5a
 	}
 	if len(m.ExternalSymbol) > 0 {
 		i -= len(m.ExternalSymbol)
@@ -483,21 +484,21 @@ func (m *GenesisState) Size() (n int) {
 	if l > 0 {
 		n += 1 + l + sovTypes(uint64(l))
 	}
-	if m.Whitelist != nil {
-		l = m.Whitelist.Size()
+	if m.Registry != nil {
+		l = m.Registry.Size()
 		n += 1 + l + sovTypes(uint64(l))
 	}
 	return n
 }
 
-func (m *DenomWhitelist) Size() (n int) {
+func (m *Registry) Size() (n int) {
 	if m == nil {
 		return 0
 	}
 	var l int
 	_ = l
-	if len(m.DenomWhitelistEntries) > 0 {
-		for _, e := range m.DenomWhitelistEntries {
+	if len(m.Entries) > 0 {
+		for _, e := range m.Entries {
 			l = e.Size()
 			n += 1 + l + sovTypes(uint64(l))
 		}
@@ -505,7 +506,7 @@ func (m *DenomWhitelist) Size() (n int) {
 	return n
 }
 
-func (m *DenomWhitelistEntry) Size() (n int) {
+func (m *RegistryEntry) Size() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -549,8 +550,9 @@ func (m *DenomWhitelistEntry) Size() (n int) {
 	if l > 0 {
 		n += 1 + l + sovTypes(uint64(l))
 	}
-	if m.TransferLimit != 0 {
-		n += 1 + sovTypes(uint64(m.TransferLimit))
+	l = len(m.TransferLimit)
+	if l > 0 {
+		n += 1 + l + sovTypes(uint64(l))
 	}
 	return n
 }
@@ -624,7 +626,7 @@ func (m *GenesisState) Unmarshal(dAtA []byte) error {
 			iNdEx = postIndex
 		case 2:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Whitelist", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field Registry", wireType)
 			}
 			var msglen int
 			for shift := uint(0); ; shift += 7 {
@@ -651,10 +653,10 @@ func (m *GenesisState) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			if m.Whitelist == nil {
-				m.Whitelist = &DenomWhitelist{}
+			if m.Registry == nil {
+				m.Registry = &Registry{}
 			}
-			if err := m.Whitelist.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+			if err := m.Registry.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex
@@ -679,7 +681,7 @@ func (m *GenesisState) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *DenomWhitelist) Unmarshal(dAtA []byte) error {
+func (m *Registry) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -702,15 +704,15 @@ func (m *DenomWhitelist) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: DenomWhitelist: wiretype end group for non-group")
+			return fmt.Errorf("proto: Registry: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: DenomWhitelist: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: Registry: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field DenomWhitelistEntries", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field Entries", wireType)
 			}
 			var msglen int
 			for shift := uint(0); ; shift += 7 {
@@ -737,8 +739,8 @@ func (m *DenomWhitelist) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.DenomWhitelistEntries = append(m.DenomWhitelistEntries, &DenomWhitelistEntry{})
-			if err := m.DenomWhitelistEntries[len(m.DenomWhitelistEntries)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+			m.Entries = append(m.Entries, &RegistryEntry{})
+			if err := m.Entries[len(m.Entries)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex
@@ -763,7 +765,7 @@ func (m *DenomWhitelist) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *DenomWhitelistEntry) Unmarshal(dAtA []byte) error {
+func (m *RegistryEntry) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -786,10 +788,10 @@ func (m *DenomWhitelistEntry) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: DenomWhitelistEntry: wiretype end group for non-group")
+			return fmt.Errorf("proto: RegistryEntry: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: DenomWhitelistEntry: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: RegistryEntry: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
@@ -1088,10 +1090,10 @@ func (m *DenomWhitelistEntry) Unmarshal(dAtA []byte) error {
 			m.ExternalSymbol = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
 		case 11:
-			if wireType != 0 {
+			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field TransferLimit", wireType)
 			}
-			m.TransferLimit = 0
+			var stringLen uint64
 			for shift := uint(0); ; shift += 7 {
 				if shift >= 64 {
 					return ErrIntOverflowTypes
@@ -1101,11 +1103,24 @@ func (m *DenomWhitelistEntry) Unmarshal(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				m.TransferLimit |= int64(b&0x7F) << shift
+				stringLen |= uint64(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
 			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTypes
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTypes
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.TransferLimit = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
 		default:
 			iNdEx = preIndex
 			skippy, err := skipTypes(dAtA[iNdEx:])

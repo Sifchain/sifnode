@@ -9,12 +9,12 @@ option go_package = "github.com/Sifchain/sifnode/x/whitelist/types";
 
 // Query defines the gRPC querier service.
 service Query {
-  rpc Denoms(QueryDenomsRequest) returns (QueryDenomsResponse) {
-    option (google.api.http).get = "/sifchain/whitelist/v1beta1/denoms";
+  rpc Entries(QueryEntriesRequest) returns (QueryEntriesResponse) {
+    option (google.api.http).get = "/sifchain/whitelist/v1beta1/entries";
   }
 }
 
-message QueryDenomsResponse {
-    DenomWhitelist list = 1;
+message QueryEntriesResponse {
+    Registry list = 1;
 }
-message QueryDenomsRequest {}
+message QueryEntriesRequest {}

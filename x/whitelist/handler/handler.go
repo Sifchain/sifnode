@@ -16,8 +16,8 @@ func NewHandler(k types.Keeper) sdk.Handler {
 	return func(ctx sdk.Context, msg sdk.Msg) (*sdk.Result, error) {
 		ctx = ctx.WithEventManager(sdk.NewEventManager())
 		switch msg := msg.(type) {
-		case *types.MsgUpdateWhitelist:
-			res, err := msgServer.UpdateWhitelist(sdk.WrapSDKContext(ctx), msg)
+		case *types.MsgRegister:
+			res, err := msgServer.Register(sdk.WrapSDKContext(ctx), msg)
 			return sdk.WrapServiceResult(ctx, res, err)
 		default:
 			errMsg := fmt.Sprintf("unrecognized message type: %v", msg.Type())

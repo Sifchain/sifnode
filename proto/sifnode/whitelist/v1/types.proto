@@ -7,14 +7,14 @@ option go_package = "github.com/Sifchain/sifnode/x/whitelist/types";
 
 message GenesisState {
   string admin_account = 1;
-  DenomWhitelist whitelist = 2;
+  Registry registry = 2;
 }
 
-message DenomWhitelist {
-  repeated DenomWhitelistEntry denom_whitelist_entries = 1;
+message Registry {
+  repeated RegistryEntry entries = 1;
 }
 
-message DenomWhitelistEntry {
+message RegistryEntry {
   bool is_whitelisted = 1;
   int64 decimals = 2;
   string denom = 3;
@@ -25,5 +25,5 @@ message DenomWhitelistEntry {
   string network = 8;
   string address = 9;
   string external_symbol = 10;
-  int64 transfer_limit = 11;
+  string transfer_limit = 11;
 }

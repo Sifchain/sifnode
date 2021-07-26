@@ -30,9 +30,9 @@ func GetGenesisStateFromAppState(marshaler codec.JSONMarshaler, appState map[str
 	return genesisState
 }
 
-func DefaultWhitelist() DenomWhitelist {
-	return DenomWhitelist{
-		DenomWhitelistEntries: []*DenomWhitelistEntry{
+func DefaultWhitelist() Registry {
+	return Registry{
+		Entries: []*RegistryEntry{
 			{Denom: "ccel", Decimals: 4},
 			{Denom: "causc", Decimals: 6},
 			{Denom: "cusdt", Decimals: 6},

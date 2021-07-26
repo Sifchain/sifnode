@@ -10,13 +10,13 @@ import (
 )
 
 func createInput(t *testing.T, filename string) {
-	denomEntry := types.DenomWhitelistEntry{
+	denomEntry := types.RegistryEntry{
 		IsWhitelisted: true,
 		Denom:         "ceth",
 		Decimals:      18,
 	}
-	denomEntryList := []*types.DenomWhitelistEntry{&denomEntry}
-	list := types.DenomWhitelist{DenomWhitelistEntries: denomEntryList}
+	denomEntryList := []*types.RegistryEntry{&denomEntry}
+	list := types.Registry{Entries: denomEntryList}
 	file, err := json.MarshalIndent(list, "", " ")
 	assert.NoError(t, err)
 	_ = ioutil.WriteFile(filename, file, 0600)
@@ -28,5 +28,5 @@ func TestParseDenoms(t *testing.T) {
 	createInput(t, filepath)
 	whitelist, err := ParseDenoms(filepath)
 	assert.NoError(t, err)
-	assert.Len(t, whitelist.DenomWhitelistEntries, 1)
+	assert.Len(t, whitelist.Entries, 1)
 }

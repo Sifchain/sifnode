@@ -11,7 +11,7 @@ func NewLegacyQuerier(keeper types.Keeper) sdk.Querier {
 	querier := Querier{keeper}
 	return func(ctx sdk.Context, path []string, req abci.RequestQuery) (res []byte, err error) {
 		switch path[0] {
-		case types.QueryDenoms:
+		case types.QueryEntries:
 			return queryDenoms(ctx, querier)
 
 		default:
@@ -20,7 +20,7 @@ func NewLegacyQuerier(keeper types.Keeper) sdk.Querier {
 	}
 }
 func queryDenoms(ctx sdk.Context, querier Querier) ([]byte, error) {
-	res, err := querier.Denoms(sdk.WrapSDKContext(ctx), &types.QueryDenomsRequest{})
+	res, err := querier.Entries(sdk.WrapSDKContext(ctx), &types.QueryEntriesRequest{})
 	if err != nil {
 		return nil, err
 	}

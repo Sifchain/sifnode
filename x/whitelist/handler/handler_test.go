@@ -14,13 +14,13 @@ func TestNewHandler(t *testing.T) {
 	handler := whitelist.NewHandler(app.WhitelistKeeper)
 	tests := []struct {
 		name           string
-		msg            types.MsgUpdateWhitelist
+		msg            types.MsgRegister
 		errorAssertion assert.ErrorAssertionFunc
 		valueAssertion assert.ValueAssertionFunc
 	}{
 		{
 			name: "Valid Test",
-			msg: types.MsgUpdateWhitelist{
+			msg: types.MsgRegister{
 				From:     admin,
 				Denom:    "TestDenom",
 				Decimals: 18,
@@ -30,7 +30,7 @@ func TestNewHandler(t *testing.T) {
 		},
 		{
 			name: "Non Admin Account",
-			msg: types.MsgUpdateWhitelist{
+			msg: types.MsgRegister{
 				From:     sdk.AccAddress("addr2_______________").String(),
 				Denom:    "TestDenom",
 				Decimals: 18,

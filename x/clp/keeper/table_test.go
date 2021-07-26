@@ -15,14 +15,14 @@ import (
 	whitelisttypes "github.com/Sifchain/sifnode/x/whitelist/types"
 )
 
-func getDenomWhiteListEntries() whitelisttypes.DenomWhitelist {
+func getDenomWhiteListEntries() whitelisttypes.Registry {
 	return whitelisttypes.DefaultWhitelist()
 }
 
 func createTestAppForTestTables() (sdk.Context, *sifapp.SifchainApp) {
 	wl := getDenomWhiteListEntries()
 	ctx, app := clptest.CreateTestAppClp(false)
-	for _, entry := range wl.DenomWhitelistEntries {
+	for _, entry := range wl.Entries {
 		app.WhitelistKeeper.SetDenom(ctx, entry.Denom, entry.Decimals)
 	}
 	return ctx, app
@@ -54,7 +54,7 @@ func TestCalculatePoolUnits(t *testing.T) {
 	testcases := test.TestType
 	for _, test := range testcases {
 		wl := getDenomWhiteListEntries()
-		for _, entry := range wl.DenomWhitelistEntries {
+		for _, entry := range wl.Entries {
 			nf, ad := app.ClpKeeper.GetNormalizationFactor(ctx, entry.Denom)
 			_, stakeUnits, _ := clpkeeper.CalculatePoolUnits(
 				sdk.NewUintFromString(test.PoolUnitsBalance),
@@ -93,7 +93,7 @@ func TestCalculateSwapResult(t *testing.T) {
 	testcases := test.TestType
 	for _, test := range testcases {
 		wl := getDenomWhiteListEntries()
-		for _, entry := range wl.DenomWhitelistEntries {
+		for _, entry := range wl.Entries {
 			nf, ad := app.ClpKeeper.GetNormalizationFactor(ctx, entry.Denom)
 			Yy, _ := clpkeeper.CalcSwapResult(
 				true,
@@ -131,7 +131,7 @@ func TestCalculateSwapLiquidityFee(t *testing.T) {
 	testcases := test.TestType
 	for _, test := range testcases {
 		wl := getDenomWhiteListEntries()
-		for _, entry := range wl.DenomWhitelistEntries {
+		for _, entry := range wl.Entries {
 			nf, ad := app.ClpKeeper.GetNormalizationFactor(ctx, entry.Denom)
 			Yy, _ := clpkeeper.CalcLiquidityFee(
 				true,
@@ -171,7 +171,7 @@ func TestCalculateDoubleSwapResult(t *testing.T) {
 	testcases := test.TestType
 	for _, test := range testcases {
 		wl := getDenomWhiteListEntries()
-		for _, entry := range wl.DenomWhitelistEntries {
+		for _, entry := range wl.Entries {
 			nf, ad := app.ClpKeeper.GetNormalizationFactor(ctx, entry.Denom)
 			Ay, _ := clpkeeper.CalcSwapResult(
 				true,

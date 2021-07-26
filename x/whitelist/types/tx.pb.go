@@ -28,24 +28,25 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
-type MsgUpdateWhitelist struct {
-	From     string `protobuf:"bytes,1,opt,name=from,proto3" json:"from,omitempty"`
-	Denom    string `protobuf:"bytes,2,opt,name=denom,proto3" json:"denom,omitempty"`
-	Decimals int64  `protobuf:"varint,3,opt,name=decimals,proto3" json:"decimals,omitempty"`
+type MsgRegister struct {
+	From     string         `protobuf:"bytes,1,opt,name=from,proto3" json:"from,omitempty"`
+	Denom    string         `protobuf:"bytes,2,opt,name=denom,proto3" json:"denom,omitempty"`
+	Decimals int64          `protobuf:"varint,3,opt,name=decimals,proto3" json:"decimals,omitempty"`
+	Entry    *RegistryEntry `protobuf:"bytes,4,opt,name=entry,proto3" json:"entry,omitempty"`
 }
 
-func (m *MsgUpdateWhitelist) Reset()         { *m = MsgUpdateWhitelist{} }
-func (m *MsgUpdateWhitelist) String() string { return proto.CompactTextString(m) }
-func (*MsgUpdateWhitelist) ProtoMessage()    {}
-func (*MsgUpdateWhitelist) Descriptor() ([]byte, []int) {
+func (m *MsgRegister) Reset()         { *m = MsgRegister{} }
+func (m *MsgRegister) String() string { return proto.CompactTextString(m) }
+func (*MsgRegister) ProtoMessage()    {}
+func (*MsgRegister) Descriptor() ([]byte, []int) {
 	return fileDescriptor_54b6ca421e01b902, []int{0}
 }
-func (m *MsgUpdateWhitelist) XXX_Unmarshal(b []byte) error {
+func (m *MsgRegister) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *MsgUpdateWhitelist) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *MsgRegister) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_MsgUpdateWhitelist.Marshal(b, m, deterministic)
+		return xxx_messageInfo_MsgRegister.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -55,54 +56,61 @@ func (m *MsgUpdateWhitelist) XXX_Marshal(b []byte, deterministic bool) ([]byte, 
 		return b[:n], nil
 	}
 }
-func (m *MsgUpdateWhitelist) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_MsgUpdateWhitelist.Merge(m, src)
+func (m *MsgRegister) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MsgRegister.Merge(m, src)
 }
-func (m *MsgUpdateWhitelist) XXX_Size() int {
+func (m *MsgRegister) XXX_Size() int {
 	return m.Size()
 }
-func (m *MsgUpdateWhitelist) XXX_DiscardUnknown() {
-	xxx_messageInfo_MsgUpdateWhitelist.DiscardUnknown(m)
+func (m *MsgRegister) XXX_DiscardUnknown() {
+	xxx_messageInfo_MsgRegister.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_MsgUpdateWhitelist proto.InternalMessageInfo
+var xxx_messageInfo_MsgRegister proto.InternalMessageInfo
 
-func (m *MsgUpdateWhitelist) GetFrom() string {
+func (m *MsgRegister) GetFrom() string {
 	if m != nil {
 		return m.From
 	}
 	return ""
 }
 
-func (m *MsgUpdateWhitelist) GetDenom() string {
+func (m *MsgRegister) GetDenom() string {
 	if m != nil {
 		return m.Denom
 	}
 	return ""
 }
 
-func (m *MsgUpdateWhitelist) GetDecimals() int64 {
+func (m *MsgRegister) GetDecimals() int64 {
 	if m != nil {
 		return m.Decimals
 	}
 	return 0
 }
 
-type MsgUpdateWhitelistResponse struct {
+func (m *MsgRegister) GetEntry() *RegistryEntry {
+	if m != nil {
+		return m.Entry
+	}
+	return nil
 }
 
-func (m *MsgUpdateWhitelistResponse) Reset()         { *m = MsgUpdateWhitelistResponse{} }
-func (m *MsgUpdateWhitelistResponse) String() string { return proto.CompactTextString(m) }
-func (*MsgUpdateWhitelistResponse) ProtoMessage()    {}
-func (*MsgUpdateWhitelistResponse) Descriptor() ([]byte, []int) {
+type MsgRegisterResponse struct {
+}
+
+func (m *MsgRegisterResponse) Reset()         { *m = MsgRegisterResponse{} }
+func (m *MsgRegisterResponse) String() string { return proto.CompactTextString(m) }
+func (*MsgRegisterResponse) ProtoMessage()    {}
+func (*MsgRegisterResponse) Descriptor() ([]byte, []int) {
 	return fileDescriptor_54b6ca421e01b902, []int{1}
 }
-func (m *MsgUpdateWhitelistResponse) XXX_Unmarshal(b []byte) error {
+func (m *MsgRegisterResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *MsgUpdateWhitelistResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *MsgRegisterResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_MsgUpdateWhitelistResponse.Marshal(b, m, deterministic)
+		return xxx_messageInfo_MsgRegisterResponse.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -112,43 +120,46 @@ func (m *MsgUpdateWhitelistResponse) XXX_Marshal(b []byte, deterministic bool) (
 		return b[:n], nil
 	}
 }
-func (m *MsgUpdateWhitelistResponse) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_MsgUpdateWhitelistResponse.Merge(m, src)
+func (m *MsgRegisterResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MsgRegisterResponse.Merge(m, src)
 }
-func (m *MsgUpdateWhitelistResponse) XXX_Size() int {
+func (m *MsgRegisterResponse) XXX_Size() int {
 	return m.Size()
 }
-func (m *MsgUpdateWhitelistResponse) XXX_DiscardUnknown() {
-	xxx_messageInfo_MsgUpdateWhitelistResponse.DiscardUnknown(m)
+func (m *MsgRegisterResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_MsgRegisterResponse.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_MsgUpdateWhitelistResponse proto.InternalMessageInfo
+var xxx_messageInfo_MsgRegisterResponse proto.InternalMessageInfo
 
 func init() {
-	proto.RegisterType((*MsgUpdateWhitelist)(nil), "sifnode.whitelist.v1.MsgUpdateWhitelist")
-	proto.RegisterType((*MsgUpdateWhitelistResponse)(nil), "sifnode.whitelist.v1.MsgUpdateWhitelistResponse")
+	proto.RegisterType((*MsgRegister)(nil), "sifnode.whitelist.v1.MsgRegister")
+	proto.RegisterType((*MsgRegisterResponse)(nil), "sifnode.whitelist.v1.MsgRegisterResponse")
 }
 
 func init() { proto.RegisterFile("sifnode/whitelist/v1/tx.proto", fileDescriptor_54b6ca421e01b902) }
 
 var fileDescriptor_54b6ca421e01b902 = []byte{
-	// 255 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xe2, 0x92, 0x2d, 0xce, 0x4c, 0xcb,
-	0xcb, 0x4f, 0x49, 0xd5, 0x2f, 0xcf, 0xc8, 0x2c, 0x49, 0xcd, 0xc9, 0x2c, 0x2e, 0xd1, 0x2f, 0x33,
-	0xd4, 0x2f, 0xa9, 0xd0, 0x2b, 0x28, 0xca, 0x2f, 0xc9, 0x17, 0x12, 0x81, 0x4a, 0xeb, 0xc1, 0xa5,
-	0xf5, 0xca, 0x0c, 0xa5, 0x44, 0xd2, 0xf3, 0xd3, 0xf3, 0xc1, 0x0a, 0xf4, 0x41, 0x2c, 0x88, 0x5a,
-	0xa5, 0x28, 0x2e, 0x21, 0xdf, 0xe2, 0xf4, 0xd0, 0x82, 0x94, 0xc4, 0x92, 0xd4, 0x70, 0x98, 0x72,
-	0x21, 0x21, 0x2e, 0x96, 0xb4, 0xa2, 0xfc, 0x5c, 0x09, 0x46, 0x05, 0x46, 0x0d, 0xce, 0x20, 0x30,
-	0x5b, 0x48, 0x84, 0x8b, 0x35, 0x25, 0x35, 0x2f, 0x3f, 0x57, 0x82, 0x09, 0x2c, 0x08, 0xe1, 0x08,
-	0x49, 0x71, 0x71, 0xa4, 0xa4, 0x26, 0x67, 0xe6, 0x26, 0xe6, 0x14, 0x4b, 0x30, 0x2b, 0x30, 0x6a,
-	0x30, 0x07, 0xc1, 0xf9, 0x4a, 0x32, 0x5c, 0x52, 0x98, 0x66, 0x07, 0xa5, 0x16, 0x17, 0xe4, 0xe7,
-	0x15, 0xa7, 0x1a, 0x95, 0x71, 0x31, 0xfb, 0x16, 0xa7, 0x0b, 0xe5, 0x73, 0xf1, 0xa3, 0xdb, 0xae,
-	0xa1, 0x87, 0xcd, 0x03, 0x7a, 0x98, 0x66, 0x49, 0x19, 0x10, 0xab, 0x12, 0x66, 0xab, 0x12, 0x83,
-	0x93, 0xfb, 0x89, 0x47, 0x72, 0x8c, 0x17, 0x1e, 0xc9, 0x31, 0x3e, 0x78, 0x24, 0xc7, 0x38, 0xe1,
-	0xb1, 0x1c, 0xc3, 0x85, 0xc7, 0x72, 0x0c, 0x37, 0x1e, 0xcb, 0x31, 0x44, 0xe9, 0xa6, 0x67, 0x96,
-	0x64, 0x94, 0x26, 0xe9, 0x25, 0xe7, 0xe7, 0xea, 0x07, 0x67, 0xa6, 0x25, 0x67, 0x24, 0x66, 0xe6,
-	0xe9, 0xc3, 0x82, 0xba, 0x02, 0x29, 0xb0, 0x4b, 0x2a, 0x0b, 0x52, 0x8b, 0x93, 0xd8, 0xc0, 0x21,
-	0x68, 0x0c, 0x08, 0x00, 0x00, 0xff, 0xff, 0xd3, 0xad, 0xb0, 0x2d, 0x8e, 0x01, 0x00, 0x00,
+	// 290 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x84, 0x90, 0x3f, 0x4f, 0x83, 0x40,
+	0x18, 0xc6, 0x39, 0x69, 0x4d, 0xbd, 0x6e, 0x27, 0x26, 0x84, 0xc4, 0x0b, 0xe2, 0x82, 0x83, 0x77,
+	0x69, 0x9d, 0x5c, 0x4d, 0x8c, 0x53, 0x17, 0xdc, 0xba, 0x51, 0x38, 0x8e, 0x4b, 0x0a, 0x47, 0xb8,
+	0xb3, 0x96, 0x2f, 0x61, 0xfc, 0x58, 0x8e, 0x1d, 0x1d, 0x0d, 0x7c, 0x11, 0x53, 0xb0, 0x84, 0x81,
+	0xc4, 0xed, 0xfd, 0xf3, 0x7b, 0xdf, 0xe7, 0xc9, 0x03, 0xaf, 0x95, 0x48, 0x72, 0x19, 0x33, 0xfa,
+	0x9e, 0x0a, 0xcd, 0xb6, 0x42, 0x69, 0xba, 0x5b, 0x50, 0xbd, 0x27, 0x45, 0x29, 0xb5, 0x44, 0xd6,
+	0xdf, 0x9a, 0xf4, 0x6b, 0xb2, 0x5b, 0x38, 0x16, 0x97, 0x5c, 0xb6, 0x00, 0x3d, 0x56, 0x1d, 0xeb,
+	0xb8, 0xe3, 0xaf, 0xaa, 0x82, 0xa9, 0x8e, 0xf0, 0x3e, 0x00, 0x9c, 0xaf, 0x14, 0x0f, 0x18, 0x17,
+	0x4a, 0xb3, 0x12, 0x21, 0x38, 0x49, 0x4a, 0x99, 0xd9, 0xc0, 0x05, 0xfe, 0x45, 0xd0, 0xd6, 0xc8,
+	0x82, 0xd3, 0x98, 0xe5, 0x32, 0xb3, 0xcf, 0xda, 0x61, 0xd7, 0x20, 0x07, 0xce, 0x62, 0x16, 0x89,
+	0x2c, 0xdc, 0x2a, 0xdb, 0x74, 0x81, 0x6f, 0x06, 0x7d, 0x8f, 0x1e, 0xe1, 0x94, 0xe5, 0xba, 0xac,
+	0xec, 0x89, 0x0b, 0xfc, 0xf9, 0xf2, 0x96, 0x8c, 0x79, 0x26, 0x9d, 0x68, 0x59, 0x3d, 0x1f, 0xd1,
+	0xa0, 0xbb, 0xf0, 0xae, 0xe0, 0xe5, 0xc0, 0x4f, 0xc0, 0x54, 0x21, 0x73, 0xc5, 0x96, 0x21, 0x34,
+	0x57, 0x8a, 0xa3, 0x35, 0x9c, 0xf5, 0x56, 0x6f, 0xc6, 0xbf, 0x0e, 0xae, 0x9d, 0xbb, 0x7f, 0x91,
+	0x93, 0x80, 0x67, 0x3c, 0xbd, 0x7c, 0xd5, 0x18, 0x1c, 0x6a, 0x0c, 0x7e, 0x6a, 0x0c, 0x3e, 0x1b,
+	0x6c, 0x1c, 0x1a, 0x6c, 0x7c, 0x37, 0xd8, 0x58, 0xdf, 0x73, 0xa1, 0xd3, 0xb7, 0x0d, 0x89, 0x64,
+	0x46, 0x5f, 0x45, 0x12, 0xa5, 0xa1, 0xc8, 0xe9, 0x29, 0xda, 0xfd, 0x20, 0xdc, 0x36, 0xd9, 0xcd,
+	0x79, 0x1b, 0xed, 0xc3, 0x6f, 0x00, 0x00, 0x00, 0xff, 0xff, 0xfa, 0x33, 0x96, 0xfd, 0xc9, 0x01,
+	0x00, 0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -163,7 +174,7 @@ const _ = grpc.SupportPackageIsVersion4
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
 type MsgClient interface {
-	UpdateWhitelist(ctx context.Context, in *MsgUpdateWhitelist, opts ...grpc.CallOption) (*MsgUpdateWhitelistResponse, error)
+	Register(ctx context.Context, in *MsgRegister, opts ...grpc.CallOption) (*MsgRegisterResponse, error)
 }
 
 type msgClient struct {
@@ -174,9 +185,9 @@ func NewMsgClient(cc grpc1.ClientConn) MsgClient {
 	return &msgClient{cc}
 }
 
-func (c *msgClient) UpdateWhitelist(ctx context.Context, in *MsgUpdateWhitelist, opts ...grpc.CallOption) (*MsgUpdateWhitelistResponse, error) {
-	out := new(MsgUpdateWhitelistResponse)
-	err := c.cc.Invoke(ctx, "/sifnode.whitelist.v1.Msg/UpdateWhitelist", in, out, opts...)
+func (c *msgClient) Register(ctx context.Context, in *MsgRegister, opts ...grpc.CallOption) (*MsgRegisterResponse, error) {
+	out := new(MsgRegisterResponse)
+	err := c.cc.Invoke(ctx, "/sifnode.whitelist.v1.Msg/Register", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -185,35 +196,35 @@ func (c *msgClient) UpdateWhitelist(ctx context.Context, in *MsgUpdateWhitelist,
 
 // MsgServer is the server API for Msg service.
 type MsgServer interface {
-	UpdateWhitelist(context.Context, *MsgUpdateWhitelist) (*MsgUpdateWhitelistResponse, error)
+	Register(context.Context, *MsgRegister) (*MsgRegisterResponse, error)
 }
 
 // UnimplementedMsgServer can be embedded to have forward compatible implementations.
 type UnimplementedMsgServer struct {
 }
 
-func (*UnimplementedMsgServer) UpdateWhitelist(ctx context.Context, req *MsgUpdateWhitelist) (*MsgUpdateWhitelistResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method UpdateWhitelist not implemented")
+func (*UnimplementedMsgServer) Register(ctx context.Context, req *MsgRegister) (*MsgRegisterResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Register not implemented")
 }
 
 func RegisterMsgServer(s grpc1.Server, srv MsgServer) {
 	s.RegisterService(&_Msg_serviceDesc, srv)
 }
 
-func _Msg_UpdateWhitelist_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(MsgUpdateWhitelist)
+func _Msg_Register_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MsgRegister)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(MsgServer).UpdateWhitelist(ctx, in)
+		return srv.(MsgServer).Register(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/sifnode.whitelist.v1.Msg/UpdateWhitelist",
+		FullMethod: "/sifnode.whitelist.v1.Msg/Register",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MsgServer).UpdateWhitelist(ctx, req.(*MsgUpdateWhitelist))
+		return srv.(MsgServer).Register(ctx, req.(*MsgRegister))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -223,15 +234,15 @@ var _Msg_serviceDesc = grpc.ServiceDesc{
 	HandlerType: (*MsgServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "UpdateWhitelist",
-			Handler:    _Msg_UpdateWhitelist_Handler,
+			MethodName: "Register",
+			Handler:    _Msg_Register_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
 	Metadata: "sifnode/whitelist/v1/tx.proto",
 }
 
-func (m *MsgUpdateWhitelist) Marshal() (dAtA []byte, err error) {
+func (m *MsgRegister) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -241,16 +252,28 @@ func (m *MsgUpdateWhitelist) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *MsgUpdateWhitelist) MarshalTo(dAtA []byte) (int, error) {
+func (m *MsgRegister) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *MsgUpdateWhitelist) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *MsgRegister) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
 	_ = l
+	if m.Entry != nil {
+		{
+			size, err := m.Entry.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintTx(dAtA, i, uint64(size))
+		}
+		i--
+		dAtA[i] = 0x22
+	}
 	if m.Decimals != 0 {
 		i = encodeVarintTx(dAtA, i, uint64(m.Decimals))
 		i--
@@ -273,7 +296,7 @@ func (m *MsgUpdateWhitelist) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	return len(dAtA) - i, nil
 }
 
-func (m *MsgUpdateWhitelistResponse) Marshal() (dAtA []byte, err error) {
+func (m *MsgRegisterResponse) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -283,12 +306,12 @@ func (m *MsgUpdateWhitelistResponse) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *MsgUpdateWhitelistResponse) MarshalTo(dAtA []byte) (int, error) {
+func (m *MsgRegisterResponse) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *MsgUpdateWhitelistResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *MsgRegisterResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
@@ -307,7 +330,7 @@ func encodeVarintTx(dAtA []byte, offset int, v uint64) int {
 	dAtA[offset] = uint8(v)
 	return base
 }
-func (m *MsgUpdateWhitelist) Size() (n int) {
+func (m *MsgRegister) Size() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -324,10 +347,14 @@ func (m *MsgUpdateWhitelist) Size() (n int) {
 	if m.Decimals != 0 {
 		n += 1 + sovTx(uint64(m.Decimals))
 	}
+	if m.Entry != nil {
+		l = m.Entry.Size()
+		n += 1 + l + sovTx(uint64(l))
+	}
 	return n
 }
 
-func (m *MsgUpdateWhitelistResponse) Size() (n int) {
+func (m *MsgRegisterResponse) Size() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -342,7 +369,7 @@ func sovTx(x uint64) (n int) {
 func sozTx(x uint64) (n int) {
 	return sovTx(uint64((x << 1) ^ uint64((int64(x) >> 63))))
 }
-func (m *MsgUpdateWhitelist) Unmarshal(dAtA []byte) error {
+func (m *MsgRegister) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -365,10 +392,10 @@ func (m *MsgUpdateWhitelist) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: MsgUpdateWhitelist: wiretype end group for non-group")
+			return fmt.Errorf("proto: MsgRegister: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: MsgUpdateWhitelist: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: MsgRegister: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
@@ -454,6 +481,42 @@ func (m *MsgUpdateWhitelist) Unmarshal(dAtA []byte) error {
 					break
 				}
 			}
+		case 4:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Entry", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if m.Entry == nil {
+				m.Entry = &RegistryEntry{}
+			}
+			if err := m.Entry.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
 		default:
 			iNdEx = preIndex
 			skippy, err := skipTx(dAtA[iNdEx:])
@@ -475,7 +538,7 @@ func (m *MsgUpdateWhitelist) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *MsgUpdateWhitelistResponse) Unmarshal(dAtA []byte) error {
+func (m *MsgRegisterResponse) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -498,10 +561,10 @@ func (m *MsgUpdateWhitelistResponse) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: MsgUpdateWhitelistResponse: wiretype end group for non-group")
+			return fmt.Errorf("proto: MsgRegisterResponse: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: MsgUpdateWhitelistResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: MsgRegisterResponse: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		default:

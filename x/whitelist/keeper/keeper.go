@@ -58,17 +58,17 @@ func (k keeper) IsDenomWhitelisted(ctx sdk.Context, denom string) bool {
 	return d.IsWhitelisted
 }
 
-func (k keeper) GetDenom(ctx sdk.Context, denom string) types.DenomWhitelistEntry {
+func (k keeper) GetDenom(ctx sdk.Context, denom string) types.RegistryEntry {
 	wl := k.GetDenomWhitelist(ctx)
 
-	for i := range wl.DenomWhitelistEntries {
-		if strings.EqualFold(wl.DenomWhitelistEntries[i].Denom, strings.ToLower(denom)) &&
-			wl.DenomWhitelistEntries[i] != nil {
-			return *wl.DenomWhitelistEntries[i]
+	for i := range wl.Entries {
+		if strings.EqualFold(wl.Entries[i].Denom, strings.ToLower(denom)) &&
+			wl.Entries[i] != nil {
+			return *wl.Entries[i]
 		}
 	}
 
-	return types.DenomWhitelistEntry{
+	return types.RegistryEntry{
 		IsWhitelisted: false,
 		Denom:         denom,
 	}
@@ -80,15 +80,15 @@ func (k keeper) SetDenom(ctx sdk.Context, denom string, decimals int64) {
 	denom = strings.ToLower(denom)
 
 	var exists bool
-	for i := range wl.DenomWhitelistEntries {
-		if wl.DenomWhitelistEntries[i].Denom == denom {
+	for i := range wl.Entries {
+		if wl.Entries[i].Denom == denom {
 			exists = true
-			wl.DenomWhitelistEntries[i].Decimals = decimals
+			wl.Entries[i].Decimals = decimals
 		}
 	}
 
 	if !exists {
-		wl.DenomWhitelistEntries = append(wl.DenomWhitelistEntries, &types.DenomWhitelistEntry{
+		wl.Entries = append(wl.Entries, &types.RegistryEntry{
 			IsWhitelisted: true,
 			Denom:         denom,
 			Decimals:      decimals,
@@ -98,7 +98,7 @@ func (k keeper) SetDenom(ctx sdk.Context, denom string, decimals int64) {
 	k.SetDenomWhitelist(ctx, wl)
 }
 
-func (k keeper) SetDenomWhitelist(ctx sdk.Context, wl types.DenomWhitelist) {
+func (k keeper) SetDenomWhitelist(ctx sdk.Context, wl types.Registry) {
 	store := ctx.KVStore(k.storeKey)
 
 	bz := k.cdc.MustMarshalBinaryBare(&wl)
@@ -106,12 +106,12 @@ func (k keeper) SetDenomWhitelist(ctx sdk.Context, wl types.DenomWhitelist) {
 	store.Set(types.WhitelistStorePrefix, bz)
 }
 
-func (k keeper) GetDenomWhitelist(ctx sdk.Context) types.DenomWhitelist {
-	var whitelist types.DenomWhitelist
+func (k keeper) GetDenomWhitelist(ctx sdk.Context) types.Registry {
+	var whitelist types.Registry
 	store := ctx.KVStore(k.storeKey)
 	bz := store.Get(types.WhitelistStorePrefix)
 	if len(bz) == 0 {
-		return types.DenomWhitelist{}
+		return types.Registry{}
 	}
 
 	k.cdc.MustUnmarshalBinaryBare(bz, &whitelist)

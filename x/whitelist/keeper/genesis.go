@@ -16,8 +16,8 @@ func (k keeper) InitGenesis(ctx sdk.Context, state types.GenesisState) []abci.Va
 		k.SetAdminAccount(ctx, addr)
 	}
 
-	if state.Whitelist != nil {
-		k.SetDenomWhitelist(ctx, *state.Whitelist)
+	if state.Registry != nil {
+		k.SetDenomWhitelist(ctx, *state.Registry)
 	}
 
 	return []abci.ValidatorUpdate{}
@@ -28,6 +28,6 @@ func (k keeper) ExportGenesis(ctx sdk.Context) *types.GenesisState {
 
 	return &types.GenesisState{
 		AdminAccount: k.GetAdminAccount(ctx).String(),
-		Whitelist:    &wl,
+		Registry:     &wl,
 	}
 }

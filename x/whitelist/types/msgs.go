@@ -6,17 +6,17 @@ import (
 	"github.com/pkg/errors"
 )
 
-var _ sdk.Msg = &MsgUpdateWhitelist{}
+var _ sdk.Msg = &MsgRegister{}
 
-func (m *MsgUpdateWhitelist) Route() string {
+func (m *MsgRegister) Route() string {
 	return RouterKey
 }
 
-func (m *MsgUpdateWhitelist) Type() string {
-	return "update"
+func (m *MsgRegister) Type() string {
+	return "register"
 }
 
-func (m *MsgUpdateWhitelist) ValidateBasic() error {
+func (m *MsgRegister) ValidateBasic() error {
 	if m.Denom == "" {
 		return errors.New("no denom specified")
 	}
@@ -39,11 +39,11 @@ func (m *MsgUpdateWhitelist) ValidateBasic() error {
 	return nil
 }
 
-func (m *MsgUpdateWhitelist) GetSignBytes() []byte {
+func (m *MsgRegister) GetSignBytes() []byte {
 	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(m))
 }
 
-func (m *MsgUpdateWhitelist) GetSigners() []sdk.AccAddress {
+func (m *MsgRegister) GetSigners() []sdk.AccAddress {
 	addr, err := sdk.AccAddressFromBech32(m.From)
 	if err != nil {
 		panic(err)

@@ -51,10 +51,10 @@ func (mr *MockKeeperMockRecorder) ExportGenesis(ctx interface{}) *gomock.Call {
 }
 
 // GetDenom mocks base method.
-func (m *MockKeeper) GetDenom(ctx types0.Context, denom string) types.DenomWhitelistEntry {
+func (m *MockKeeper) GetDenom(ctx types0.Context, denom string) types.RegistryEntry {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetDenom", ctx, denom)
-	ret0, _ := ret[0].(types.DenomWhitelistEntry)
+	ret0, _ := ret[0].(types.RegistryEntry)
 	return ret0
 }
 
@@ -65,10 +65,10 @@ func (mr *MockKeeperMockRecorder) GetDenom(ctx, denom interface{}) *gomock.Call 
 }
 
 // GetDenomWhitelist mocks base method.
-func (m *MockKeeper) GetDenomWhitelist(ctx types0.Context) types.DenomWhitelist {
+func (m *MockKeeper) GetDenomWhitelist(ctx types0.Context) types.Registry {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetDenomWhitelist", ctx)
-	ret0, _ := ret[0].(types.DenomWhitelist)
+	ret0, _ := ret[0].(types.Registry)
 	return ret0
 }
 

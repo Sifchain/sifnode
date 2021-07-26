@@ -35,7 +35,7 @@ func GetCmdQueryDenoms() *cobra.Command {
 				return err
 			}
 			queryClient := types.NewQueryClient(clientCtx)
-			res, err := queryClient.Denoms(context.Background(), &types.QueryDenomsRequest{})
+			res, err := queryClient.Entries(context.Background(), &types.QueryEntriesRequest{})
 			if err != nil {
 				return err
 			}

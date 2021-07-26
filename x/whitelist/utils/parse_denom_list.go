@@ -7,8 +7,8 @@ import (
 	"path/filepath"
 )
 
-func ParseDenoms(dir string) (whitelisttypes.DenomWhitelist, error) {
-	var denoms whitelisttypes.DenomWhitelist
+func ParseDenoms(dir string) (whitelisttypes.Registry, error) {
+	var denoms whitelisttypes.Registry
 	file, err := filepath.Abs(dir)
 	if err != nil {
 		return denoms, err

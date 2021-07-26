@@ -19,7 +19,7 @@ func CreateTestApp(isCheckTx bool) (*sifapp.SifchainApp, sdk.Context, string) {
 	admin := sdk.AccAddress("addr1_______________")
 	state := whitelisttypes.GenesisState{
 		AdminAccount: admin.String(),
-		Whitelist:    nil,
+		Registry:     nil,
 	}
 	app.WhitelistKeeper.InitGenesis(ctx, state)
 	return app, ctx, admin.String()
