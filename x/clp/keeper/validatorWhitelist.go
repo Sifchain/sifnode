@@ -7,6 +7,8 @@ import (
 	"github.com/Sifchain/sifnode/x/clp/types"
 )
 
+// Rename this feature to clp admin list to avoid confusion with Whitelist module
+
 func (k Keeper) SetClpWhiteList(ctx sdk.Context, validatorList []sdk.AccAddress) {
 	store := ctx.KVStore(k.storeKey)
 	key := types.WhiteListValidatorPrefix

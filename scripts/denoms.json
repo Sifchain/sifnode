@@ -1,0 +1,19 @@
+{
+ "denom_whitelist_entries": [
+  {
+   "is_whitelisted": true,
+   "denom": "ceth",
+   "decimals": 18
+  },
+  {
+   "is_whitelisted": true,
+   "denom": "cdash",
+   "decimals": 18
+  },
+  {
+   "is_whitelisted": true,
+   "denom": "rowan",
+   "decimals": 18
+  }
+ ]
+}

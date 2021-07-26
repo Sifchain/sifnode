@@ -231,8 +231,8 @@ def test_pools(
         source_ethereum_address,
         sifchain_fees_int
 ):
-    # max symbol length in clp is 10
-    new_currency_symbol = ("a" + get_shell_output("uuidgen").replace("-", ""))[:8]
+    # max symbol length in clp is 71
+    new_currency_symbol = "96D7172B711F7F925DFC7579C6CCC3C80B762187215ABD082CDE99F81153DC80"
     target_new_currency_balance = 5 * 10 ** 18
     logging.info(f"create new currency")
     new_currency = test_utilities.create_new_currency(

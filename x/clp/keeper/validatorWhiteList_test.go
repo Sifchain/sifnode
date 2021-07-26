@@ -10,11 +10,12 @@ import (
 func TestKeeper_SetValidatorWhiteList(t *testing.T) {
 	v1 := test.GenerateWhitelistAddress("")
 	v2 := test.GenerateWhitelistAddress(test.AddressKey2)
-	ctx, keeper := test.CreateTestAppClp(false)
-	keeper.SetClpWhiteList(ctx, []sdk.AccAddress{v1, v2})
-	vList := keeper.GetClpWhiteList(ctx)
+	ctx, app := test.CreateTestAppClp(false)
+	clpKeeper := app.ClpKeeper
+	clpKeeper.SetClpWhiteList(ctx, []sdk.AccAddress{v1, v2})
+	vList := clpKeeper.GetClpWhiteList(ctx)
 	assert.Equal(t, len(vList), 2)
-	assert.True(t, keeper.ExistsClpWhiteList(ctx))
+	assert.True(t, clpKeeper.ExistsClpWhiteList(ctx))
 }
 
 func TestKeeper_ValidateAddress(t *testing.T) {
@@ -22,11 +23,12 @@ func TestKeeper_ValidateAddress(t *testing.T) {
 	signer2 := test.GenerateAddress(test.AddressKey3)
 	v1 := test.GenerateWhitelistAddress("")
 	v2 := test.GenerateWhitelistAddress(test.AddressKey2)
-	ctx, keeper := test.CreateTestAppClp(false)
-	keeper.SetClpWhiteList(ctx, []sdk.AccAddress{v1, v2})
-	vList := keeper.GetClpWhiteList(ctx)
+	ctx, app := test.CreateTestAppClp(false)
+	clpKeeper := app.ClpKeeper
+	clpKeeper.SetClpWhiteList(ctx, []sdk.AccAddress{v1, v2})
+	vList := clpKeeper.GetClpWhiteList(ctx)
 	assert.Equal(t, len(vList), 2)
-	assert.True(t, keeper.ExistsClpWhiteList(ctx))
-	assert.True(t, keeper.ValidateAddress(ctx, signer))
-	assert.False(t, keeper.ValidateAddress(ctx, signer2))
+	assert.True(t, clpKeeper.ExistsClpWhiteList(ctx))
+	assert.True(t, clpKeeper.ValidateAddress(ctx, signer))
+	assert.False(t, clpKeeper.ValidateAddress(ctx, signer2))
 }

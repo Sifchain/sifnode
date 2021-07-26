@@ -1,6 +1,7 @@
 package app
 
 import (
+	whitelistkeeper "github.com/Sifchain/sifnode/x/whitelist/keeper"
 	"io"
 	"math/big"
 	"net/http"
@@ -91,7 +92,6 @@ import (
 	oraclekeeper "github.com/Sifchain/sifnode/x/oracle/keeper"
 	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
 	"github.com/Sifchain/sifnode/x/whitelist"
-	whitelistkeeper "github.com/Sifchain/sifnode/x/whitelist/keeper"
 	whitelisttypes "github.com/Sifchain/sifnode/x/whitelist/types"
 )
 
@@ -274,14 +274,14 @@ func NewSifApp(
 	app.SlashingKeeper = slashingkeeper.NewKeeper(
 		appCodec, keys[slashingtypes.StoreKey], &stakingKeeper, app.GetSubspace(slashingtypes.ModuleName),
 	)
-
+	app.WhitelistKeeper = whitelistkeeper.NewKeeper(appCodec, keys[whitelisttypes.StoreKey])
 	// register the staking hooks
 	// NOTE: stakingKeeper above is passed by reference, so that it will contain these hooks
 	app.StakingKeeper = *stakingKeeper.SetHooks(
 		stakingtypes.NewMultiStakingHooks(app.DistrKeeper.Hooks(), app.SlashingKeeper.Hooks()),
 	)
 
-	app.ClpKeeper = clpkeeper.NewKeeper(appCodec, keys[clptypes.StoreKey], app.BankKeeper, app.AccountKeeper, app.GetSubspace(clptypes.ModuleName))
+	app.ClpKeeper = clpkeeper.NewKeeper(appCodec, keys[clptypes.StoreKey], app.BankKeeper, app.AccountKeeper, app.WhitelistKeeper, app.GetSubspace(clptypes.ModuleName))
 
 	app.OracleKeeper = oraclekeeper.NewKeeper(
 		appCodec,
@@ -305,8 +305,6 @@ func NewSifApp(
 		app.AccountKeeper,
 		app.GetSubspace(disptypes.ModuleName),
 	)
-
-	app.WhitelistKeeper = whitelistkeeper.NewKeeper(appCodec, keys[whitelisttypes.StoreKey])
 
 	// This map defines heights to skip for updates
 	// The mapping represents height to bool. if the value is true for a height that height
