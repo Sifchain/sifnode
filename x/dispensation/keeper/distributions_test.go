@@ -24,12 +24,12 @@ func TestKeeper_GetDistributions(t *testing.T) {
 	assert.Len(t, list.Distributions, 0)
 	for i := 0; i < 10; i++ {
 		name := uuid.New().String()
-		authorisedRunner := sdk.AccAddress(crypto.AddressHash([]byte("Runner" + strconv.Itoa(i))))
+		authorizedRunner := sdk.AccAddress(crypto.AddressHash([]byte("Runner" + strconv.Itoa(i))))
 		selectType := distributionTypes[r.Intn(len(distributionTypes))]
-		distribution := types.NewDistribution(selectType, name, authorisedRunner.String())
+		distribution := types.NewDistribution(selectType, name, authorizedRunner.String())
 		err := keeper.SetDistribution(ctx, distribution)
 		assert.NoError(t, err)
-		_, err = keeper.GetDistribution(ctx, name, selectType, authorisedRunner.String())
+		_, err = keeper.GetDistribution(ctx, name, selectType, authorizedRunner.String())
 		assert.NoError(t, err)
 	}
 	list = keeper.GetDistributions(ctx)
@@ -40,12 +40,12 @@ func TestKeeper_FailGetDistributionIfNotSet(t *testing.T) {
 	app, ctx := test.CreateTestApp(false)
 	keeper := app.DispensationKeeper
 	list := keeper.GetDistributions(ctx)
-	authorisedRunner := sdk.AccAddress(crypto.AddressHash([]byte("Runner")))
+	authorizedRunner := sdk.AccAddress(crypto.AddressHash([]byte("Runner")))
 	assert.Len(t, list.Distributions, 0)
 	for i := 0; i < 5; i++ {
 		name := uuid.New().String()
 		selectType := types.DistributionType_DISTRIBUTION_TYPE_AIRDROP
-		_, err := keeper.GetDistribution(ctx, name, selectType, authorisedRunner.String())
+		_, err := keeper.GetDistribution(ctx, name, selectType, authorizedRunner.String())
 		assert.Error(t, err)
 	}
 	list = keeper.GetDistributions(ctx)
@@ -56,14 +56,14 @@ func TestKeeper_GetDistribution(t *testing.T) {
 	app, ctx := test.CreateTestApp(false)
 	keeper := app.DispensationKeeper
 	name := uuid.New().String()
-	authorisedRunner := sdk.AccAddress(crypto.AddressHash([]byte("Runner")))
+	authorizedRunner := sdk.AccAddress(crypto.AddressHash([]byte("Runner")))
 	selectType := types.DistributionType_DISTRIBUTION_TYPE_AIRDROP
-	distribution := types.NewDistribution(selectType, name, authorisedRunner.String())
+	distribution := types.NewDistribution(selectType, name, authorizedRunner.String())
 	assert.Equal(t, distribution.DistributionName, name)
 	assert.Equal(t, distribution.DistributionType, selectType)
 	err := keeper.SetDistribution(ctx, distribution)
 	assert.NoError(t, err)
-	distr, err := keeper.GetDistribution(ctx, name, selectType, authorisedRunner.String())
+	distr, err := keeper.GetDistribution(ctx, name, selectType, authorizedRunner.String())
 	assert.NoError(t, err)
 	assert.Equal(t, distr.DistributionName, name)
 	assert.Equal(t, distr.DistributionType, selectType)

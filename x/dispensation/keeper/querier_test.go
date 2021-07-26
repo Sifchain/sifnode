@@ -19,10 +19,10 @@ import (
 
 func GenerateQueryData(app *app.SifchainApp, ctx sdk.Context, name string, outList []bank.Output) {
 	keeper := app.DispensationKeeper
-	authorisedRunner := sdk.AccAddress(crypto.AddressHash([]byte("Runner")))
+	authorizedRunner := sdk.AccAddress(crypto.AddressHash([]byte("Runner")))
 	for i := 0; i < 10; i++ {
 		name := uuid.New().String()
-		distribution := types.NewDistribution(types.DistributionType_DISTRIBUTION_TYPE_AIRDROP, name, authorisedRunner.String())
+		distribution := types.NewDistribution(types.DistributionType_DISTRIBUTION_TYPE_AIRDROP, name, authorizedRunner.String())
 		_ = keeper.SetDistribution(ctx, distribution)
 	}
 
