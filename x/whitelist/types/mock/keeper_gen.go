@@ -64,6 +64,20 @@ func (mr *MockKeeperMockRecorder) GetDenom(ctx, denom interface{}) *gomock.Call 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetDenom", reflect.TypeOf((*MockKeeper)(nil).GetDenom), ctx, denom)
 }
 
+// GetDenomWhitelist mocks base method.
+func (m *MockKeeper) GetDenomWhitelist(ctx types0.Context) types.DenomWhitelist {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetDenomWhitelist", ctx)
+	ret0, _ := ret[0].(types.DenomWhitelist)
+	return ret0
+}
+
+// GetDenomWhitelist indicates an expected call of GetDenomWhitelist.
+func (mr *MockKeeperMockRecorder) GetDenomWhitelist(ctx interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetDenomWhitelist", reflect.TypeOf((*MockKeeper)(nil).GetDenomWhitelist), ctx)
+}
+
 // InitGenesis mocks base method.
 func (m *MockKeeper) InitGenesis(ctx types0.Context, state types.GenesisState) []types1.ValidatorUpdate {
 	m.ctrl.T.Helper()
