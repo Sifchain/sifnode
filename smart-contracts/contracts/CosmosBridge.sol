@@ -219,7 +219,7 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
 
         // ensure the networkDescriptor matches
         if (!claimData.doublePeg) {
-            require(nverifyNetworkDescriptor(claimData.networkDescriptor), "INV_NET_DESC");
+            require(verifyNetworkDescriptor(claimData.networkDescriptor), "INV_NET_DESC");
         }
         
         // ensure there are no duplicate signers
@@ -271,7 +271,7 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
         );
     }
 
-    function nverifyNetworkDescriptor(uint256 networkDescriptor_) internal returns(bool) {
+    function verifyNetworkDescriptor(uint256 networkDescriptor_) internal returns(bool) {
         return networkDescriptor_ == BridgeBank(bridgeBank).networkDescriptor();
     }
 
