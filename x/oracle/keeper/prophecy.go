@@ -118,7 +118,7 @@ func (k Keeper) AppendSignature(ctx sdk.Context, prophecyID []byte, ethereumAddr
 	return nil
 }
 
-// Clean up outdated prophecy
+// CleanUpProphecy clean up outdated prophecy
 func (k Keeper) CleanUpProphecy(ctx sdk.Context) {
 	var prophecyInfo types.ProphecyInfo
 	currentHeight := uint64(k.currentHeight)

@@ -56,7 +56,6 @@ func (srv msgServer) Lock(goCtx context.Context, msg *types.MsgLock) (*types.Msg
 	err = srv.oracleKeeper.SetProphecyInfo(ctx,
 		prophecyID,
 		msg.NetworkDescriptor,
-
 		cosmosSender.String(),
 		account.GetSequence(),
 		msg.EthereumReceiver,
@@ -401,7 +400,7 @@ func (srv msgServer) SignProphecy(goCtx context.Context, msg *types.MsgSignProph
 		return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.CosmosSender)
 	}
 
-	status, err := srv.Keeper.ProcessSignProphecy(ctx, msg)
+	err = srv.Keeper.ProcessSignProphecy(ctx, msg)
 
 	if err != nil && err != oracletypes.ErrProphecyFinalized {
 		logger.Error("keeper failed to process rescue native_token message.", errorMessageKey, err.Error())
@@ -411,40 +410,19 @@ func (srv msgServer) SignProphecy(goCtx context.Context, msg *types.MsgSignProph
 	logger.Info("sifnode received the sign prophecy message.",
 		"Message", msg)
 
-	// if already completed before, not emit the EventTypeProphecyCompleted again
-	if err == oracletypes.ErrProphecyFinalized {
-		ctx.EventManager().EmitEvents(sdk.Events{
-			sdk.NewEvent(
-				sdk.EventTypeMessage,
-				sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
-				sdk.NewAttribute(sdk.AttributeKeySender, msg.CosmosSender),
-			),
-			sdk.NewEvent(
-				types.EventTypeSignProphecy,
-				sdk.NewAttribute(types.AttributeKeyCosmosSender, msg.CosmosSender),
-				sdk.NewAttribute(types.AttributeKeyNetworkDescriptor, msg.NetworkDescriptor.String()),
-				sdk.NewAttribute(types.AttributeKeyProphecyID, string(msg.ProphecyId)),
-			),
-		})
-	} else if status == oracletypes.StatusText_STATUS_TEXT_SUCCESS {
-		ctx.EventManager().EmitEvents(sdk.Events{
-			sdk.NewEvent(
-				sdk.EventTypeMessage,
-				sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
-				sdk.NewAttribute(sdk.AttributeKeySender, msg.CosmosSender),
-			),
-			sdk.NewEvent(
-				types.EventTypeProphecyCompleted,
-				sdk.NewAttribute(types.AttributeKeyProphecyID, string(msg.ProphecyId)),
-			),
-			sdk.NewEvent(
-				types.EventTypeSignProphecy,
-				sdk.NewAttribute(types.AttributeKeyCosmosSender, msg.CosmosSender),
-				sdk.NewAttribute(types.AttributeKeyNetworkDescriptor, msg.NetworkDescriptor.String()),
-				sdk.NewAttribute(types.AttributeKeyProphecyID, string(msg.ProphecyId)),
-			),
-		})
-	}
+	ctx.EventManager().EmitEvents(sdk.Events{
+		sdk.NewEvent(
+			sdk.EventTypeMessage,
+			sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
+			sdk.NewAttribute(sdk.AttributeKeySender, msg.CosmosSender),
+		),
+		sdk.NewEvent(
+			types.EventTypeSignProphecy,
+			sdk.NewAttribute(types.AttributeKeyCosmosSender, msg.CosmosSender),
+			sdk.NewAttribute(types.AttributeKeyNetworkDescriptor, msg.NetworkDescriptor.String()),
+			sdk.NewAttribute(types.AttributeKeyProphecyID, string(msg.ProphecyId)),
+		),
+	})
 
 	return &types.MsgSignProphecyResponse{}, nil
 }

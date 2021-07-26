@@ -53,6 +53,15 @@ type burnOrLockEthReq struct {
 	CrosschainFee     sdk.Int      `json:"cross_chain_fee_amount" yaml:"cross_chain_fee_amount"`
 }
 
+type signProphecyReq struct {
+	BaseReq           rest.BaseReq `json:"base_req"`
+	NetworkDescriptor string       `json:"network_descriptor"`
+	CosmosSender      string       `json:"cosmos_sender"`
+	EthereumAddress   string       `json:"ethereum_receiver"`
+	Signature         string       `json:"signature"`
+	ProphecyID        string       `json:"prophecy_id"`
+}
+
 // RegisterRESTRoutes - Central function to define routes that get registered by the main application
 func RegisterRESTRoutes(cliCtx client.Context, r *mux.Router, storeName string) {
 	getProhechyRoute := fmt.Sprintf(
@@ -64,6 +73,8 @@ func RegisterRESTRoutes(cliCtx client.Context, r *mux.Router, storeName string) 
 	r.HandleFunc(getProhechyRoute, getProphecyHandler(cliCtx, storeName)).Methods("GET")
 	r.HandleFunc(fmt.Sprintf("/%s/burn", storeName), burnOrLockHandler(cliCtx, "burn")).Methods("POST")
 	r.HandleFunc(fmt.Sprintf("/%s/lock", storeName), burnOrLockHandler(cliCtx, "lock")).Methods("POST")
+	r.HandleFunc(fmt.Sprintf("/%s/signProphecy", storeName), signProphecyHandler(cliCtx)).Methods("POST")
+
 }
 
 func createClaimHandler(cliCtx client.Context) http.HandlerFunc {
@@ -188,5 +199,48 @@ func burnOrLockHandler(cliCtx client.Context, lockOrBurn string) http.HandlerFun
 		}
 
 		tx.WriteGeneratedTxResponse(cliCtx, w, req.BaseReq, msg)
+	}
+}
+
+func signProphecyHandler(cliCtx client.Context) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		var req signProphecyReq
+
+		if !rest.ReadRESTReq(w, r, cliCtx.LegacyAmino, &req) {
+			rest.WriteErrorResponse(w, http.StatusBadRequest, "failed to parse request")
+			return
+		}
+
+		baseReq := req.BaseReq.Sanitize()
+		if !baseReq.ValidateBasic(w) {
+			return
+		}
+
+		networkDescriptor, err := strconv.Atoi(req.NetworkDescriptor)
+		if err != nil {
+			rest.WriteErrorResponse(w, http.StatusInternalServerError, err.Error())
+			return
+		}
+
+		_, err = sdk.AccAddressFromBech32(req.CosmosSender)
+		if err != nil {
+			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
+			return
+		}
+
+		prophecyID := req.ProphecyID
+		ethereumAddress := req.EthereumAddress
+		signature := req.Signature
+
+		// create the message
+		msg := types.NewMsgSignProphecy(req.CosmosSender, oracletypes.NetworkDescriptor(networkDescriptor), []byte(prophecyID), ethereumAddress, signature)
+
+		err = msg.ValidateBasic()
+		if err != nil {
+			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
+			return
+		}
+
+		tx.WriteGeneratedTxResponse(cliCtx, w, req.BaseReq, &msg)
 	}
 }

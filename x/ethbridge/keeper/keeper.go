@@ -281,7 +281,7 @@ func (k Keeper) SetFeeInfo(ctx sdk.Context, msg *types.MsgSetFeeInfo) error {
 }
 
 // ProcessSignProphecy processes the set sign prophecy from validator
-func (k Keeper) ProcessSignProphecy(ctx sdk.Context, msg *types.MsgSignProphecy) (oracletypes.StatusText, error) {
+func (k Keeper) ProcessSignProphecy(ctx sdk.Context, msg *types.MsgSignProphecy) error {
 	return k.oracleKeeper.ProcessSignProphecy(ctx, msg.NetworkDescriptor, msg.ProphecyId, msg.CosmosSender, msg.EthereumAddress, msg.Signature)
 }
 

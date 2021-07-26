@@ -7,14 +7,12 @@ import (
 	"strconv"
 	"strings"
 
+	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	gethCommon "github.com/ethereum/go-ethereum/common"
 	crypto "github.com/ethereum/go-ethereum/crypto"
-
-	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
-
-	sdk "github.com/cosmos/cosmos-sdk/types"
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
 
 // NewMsgLock is a constructor function for MsgLock
@@ -462,8 +460,19 @@ func NewMsgSetFeeInfo(cosmosSender sdk.AccAddress, networkDescriptor oracletypes
 // Route should return the name of the module
 func (msg MsgSignProphecy) Route() string { return RouterKey }
 
+// NewMsgSignProphecy is a constructor function for MsgSignProphecy
+func NewMsgSignProphecy(cosmosSender string, networkDescriptor oracletypes.NetworkDescriptor, prophecyID []byte, ethereumAddress, signature string) MsgSignProphecy {
+	return MsgSignProphecy{
+		CosmosSender:      cosmosSender,
+		NetworkDescriptor: networkDescriptor,
+		ProphecyId:        prophecyID,
+		EthereumAddress:   ethereumAddress,
+		Signature:         signature,
+	}
+}
+
 // Type should return the action
-func (msg MsgSignProphecy) Type() string { return "set_crosschain_fee_info" }
+func (msg MsgSignProphecy) Type() string { return "sign_prophecy" }
 
 // ValidateBasic runs stateless checks on the message
 func (msg MsgSignProphecy) ValidateBasic() error {

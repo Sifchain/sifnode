@@ -9,7 +9,6 @@ var (
 	EventTypeUpdateWhiteListValidator = "update_whitelist_validator"
 	EventTypeSetCrossChainFee         = "set_cross_chain_fee"
 	EventTypeSignProphecy             = "sign_prophecy"
-	EventTypeProphecyCompleted        = "prophecy_completed"
 
 	AttributeKeyEthereumSender               = "ethereum_sender"
 	AttributeKeyEthereumSenderNonce          = "ethereum_sender_nonce"

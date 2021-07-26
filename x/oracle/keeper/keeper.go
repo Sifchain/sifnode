@@ -3,6 +3,8 @@ package keeper
 import (
 	"errors"
 	"fmt"
+	"strconv"
+	"strings"
 
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -84,6 +86,7 @@ func (k Keeper) ProcessClaim(ctx sdk.Context, networkDescriptor types.NetworkDes
 
 }
 
+// AppendValidatorToProphecy append the validator's signature to prophecy
 func (k Keeper) AppendValidatorToProphecy(ctx sdk.Context, networkDescriptor types.NetworkDescriptor, prophecyID []byte, validator sdk.ValAddress) (types.StatusText, error) {
 	prophecy, ok := k.GetProphecy(ctx, prophecyID)
 	if !ok {
@@ -102,6 +105,7 @@ func (k Keeper) AppendValidatorToProphecy(ctx sdk.Context, networkDescriptor typ
 
 		prophecy = k.processCompletion(ctx, networkDescriptor, prophecy)
 		k.SetProphecy(ctx, prophecy)
+
 		return prophecy.Status, nil
 
 	case types.StatusText_STATUS_TEXT_SUCCESS:
@@ -167,34 +171,64 @@ func (k Keeper) SetProphecyWithInitValue(ctx sdk.Context, prophecyID []byte) {
 }
 
 // ProcessSignProphecy deal with the signature from validator
-func (k Keeper) ProcessSignProphecy(ctx sdk.Context, networkDescriptor types.NetworkDescriptor, prophecyID []byte, cosmosSender, ethereumAddress, signature string) (types.StatusText, error) {
+func (k Keeper) ProcessSignProphecy(ctx sdk.Context, networkDescriptor types.NetworkDescriptor, prophecyID []byte, cosmosSender, ethereumAddress, signature string) error {
 	prophecy, ok := k.GetProphecy(ctx, prophecyID)
 	if !ok {
-		return types.StatusText_STATUS_TEXT_UNSPECIFIED, types.ErrProphecyNotFound
+		return types.ErrProphecyNotFound
 	}
 
 	// verify the signature
 	publicKey, err := gethCrypto.Ecrecover(prophecyID, gethCommon.FromHex(signature))
 	if err != nil {
-		return prophecy.Status, err
+		return err
 	}
 
 	ok = gethCrypto.VerifySignature(publicKey, prophecyID, []byte(signature))
 	if !ok {
-		return prophecy.Status, errors.New("incorrect signature")
+		return errors.New("incorrect signature")
 	}
 
 	valAddr, err := sdk.ValAddressFromBech32(cosmosSender)
 	if err != nil {
-		return prophecy.Status, err
+		return err
 	}
 
 	err = k.AppendSignature(ctx, prophecyID, ethereumAddress, signature)
 	if err != nil {
-		return prophecy.Status, err
+		return err
 	}
+	oldStatus := prophecy.Status
 
-	return k.AppendValidatorToProphecy(ctx, networkDescriptor, prophecyID, valAddr)
+	newStatus, err := k.AppendValidatorToProphecy(ctx, networkDescriptor, prophecyID, valAddr)
+
+	// emit the event when status from pending to success
+	if oldStatus == types.StatusText_STATUS_TEXT_PENDING && newStatus == types.StatusText_STATUS_TEXT_SUCCESS {
+		prophecyInfo, ok := k.GetProphecyInfo(ctx, prophecyID)
+		if !ok {
+			return errors.New("prophecy info not available in keeper")
+		}
+
+		ctx.EventManager().EmitEvents(sdk.Events{
+
+			sdk.NewEvent(
+				types.EventTypeProphecyCompleted,
+				sdk.NewAttribute(types.AttributeKeyProphecyID, string(prophecyID)),
+				sdk.NewAttribute(types.AttributeKeyNetworkDescriptor, prophecyInfo.NetworkDescriptor.String()),
+				sdk.NewAttribute(types.AttributeKeyCosmosSender, prophecyInfo.CosmosSender),
+				sdk.NewAttribute(types.AttributeKeyCosmosSenderSequence, strconv.FormatInt(int64(prophecyInfo.CosmosSenderSequence), 10)),
+				sdk.NewAttribute(types.AttributeKeyEthereumReceiver, prophecyInfo.EthereumReceiver),
+				// TODO get the token address from denom
+				sdk.NewAttribute(types.AttributeKeyTokenContractAddress, prophecyInfo.EthereumReceiver),
+				sdk.NewAttribute(types.AttributeKeyAmount, strconv.FormatInt(prophecyInfo.TokenAmount.Int64(), 10)),
+				sdk.NewAttribute(types.AttributeKeyDoublePeggy, strconv.FormatBool(prophecyInfo.DoublePeg)),
+				sdk.NewAttribute(types.AttributeKeyGlobalNonce, strconv.FormatInt(int64(prophecyInfo.GlobalNonce), 10)),
+				sdk.NewAttribute(types.AttributeKeycrossChainFee, strconv.FormatInt(prophecyInfo.CrosschainFee.Int64(), 10)),
+				sdk.NewAttribute(types.AttributeKeySignatures, strings.Join(prophecyInfo.Signatures, ",")),
+				sdk.NewAttribute(types.AttributeKeyEthereumAddresses, strings.Join(prophecyInfo.EthereumAddress, ",")),
+			),
+		})
+	}
+	return err
 }
 
 // Exists check if the key exists

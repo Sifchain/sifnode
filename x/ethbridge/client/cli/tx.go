@@ -417,3 +417,43 @@ func GetCmdSetCrossChainFee() *cobra.Command {
 
 	return cmd
 }
+
+// GetCmdSignProphecy is the CLI command to send the message to sign a prophecy
+func GetCmdSignProphecy() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "sign signature [cosmos-sender-address] [network-id] [prophecy-id] [ethereum-address] [signature]",
+		Short: "This should be used to sign a prophecy.",
+		Args:  cobra.ExactArgs(5),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			clientCtx, err := client.GetClientTxContext(cmd)
+			if err != nil {
+				return err
+			}
+
+			_, err = sdk.AccAddressFromBech32(args[0])
+			if err != nil {
+				return err
+			}
+
+			networkDescriptor, err := strconv.Atoi(args[1])
+			if err != nil {
+				return errors.New("Error parsing network descriptor")
+			}
+
+			prophecyID := args[2]
+			ethereumAddress := args[3]
+			signature := args[4]
+
+			msg := types.NewMsgSignProphecy(args[0], oracletypes.NetworkDescriptor(networkDescriptor), []byte(prophecyID), ethereumAddress, signature)
+			if err := msg.ValidateBasic(); err != nil {
+				return err
+			}
+
+			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), &msg)
+		},
+	}
+
+	flags.AddTxFlagsToCmd(cmd)
+
+	return cmd
+}
