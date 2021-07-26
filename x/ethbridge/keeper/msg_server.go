@@ -50,7 +50,7 @@ func (srv msgServer) Lock(goCtx context.Context, msg *types.MsgLock) (*types.Msg
 	}
 
 	logger.Info("sifnode emit lock event.", "message", msg)
-	globalNonce := srv.Keeper.GetAndUpdateBlobalNonce(ctx, msg.NetworkDescriptor)
+	globalNonce := srv.Keeper.GetAndUpdateGlobalNonce(ctx, msg.NetworkDescriptor)
 
 	ctx.EventManager().EmitEvents(sdk.Events{
 		sdk.NewEvent(
@@ -101,7 +101,7 @@ func (srv msgServer) Burn(goCtx context.Context, msg *types.MsgBurn) (*types.Msg
 	}
 
 	logger.Info("sifnode emit burn event.", "message", msg)
-	globalNonce := srv.Keeper.GetAndUpdateBlobalNonce(ctx, msg.NetworkDescriptor)
+	globalNonce := srv.Keeper.GetAndUpdateGlobalNonce(ctx, msg.NetworkDescriptor)
 
 	ctx.EventManager().EmitEvents(sdk.Events{
 		sdk.NewEvent(

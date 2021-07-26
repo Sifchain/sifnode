@@ -9,17 +9,17 @@ import (
 	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
 )
 
-func TestGetAndUpdateBlobalNonce(t *testing.T) {
+func TestGetAndUpdateGlobalNonce(t *testing.T) {
 	var ctx, keeper, _, _, _, _, _, _ = test.CreateTestKeepers(t, 0.7, []int64{3, 3}, "")
 	networkDescriptor := oracletypes.NetworkDescriptor_NETWORK_DESCRIPTOR_ETHEREUM
 
 	// test the init value
 	zeroGlobalNonce := uint64(0)
-	globalNonce := keeper.GetAndUpdateBlobalNonce(ctx, networkDescriptor)
+	globalNonce := keeper.GetAndUpdateGlobalNonce(ctx, networkDescriptor)
 	assert.Equal(t, globalNonce, zeroGlobalNonce)
 
 	// test the second value
 	oneGlobalNonce := uint64(1)
-	globalNonce = keeper.GetAndUpdateBlobalNonce(ctx, networkDescriptor)
+	globalNonce = keeper.GetAndUpdateGlobalNonce(ctx, networkDescriptor)
 	assert.Equal(t, globalNonce, oneGlobalNonce)
 }
