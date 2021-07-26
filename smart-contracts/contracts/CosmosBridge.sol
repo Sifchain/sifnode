@@ -94,7 +94,7 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
         uint256 amount,
         bool doublePeg,
         uint128 nonce,
-        uint256 chainId
+        uint256 _chainId
     ) public pure returns (uint256) {
         return uint256(
             keccak256(
@@ -106,7 +106,7 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
                     amount,
                     doublePeg,
                     nonce,
-                    chainId
+                    _chainId
                 )
             )
         );
