@@ -2,8 +2,6 @@ package keeper
 
 import (
 	"context"
-	"fmt"
-
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 
@@ -21,7 +19,6 @@ func (m msgServer) UpdateWhitelist(ctx context.Context, req *types.MsgUpdateWhit
 	if err != nil {
 		return nil, err
 	}
-	fmt.Println("Checking admin")
 	if !m.keeper.IsAdminAccount(sdk.UnwrapSDKContext(ctx), addr) {
 		return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, "unauthorised signer")
 	}
