@@ -75,7 +75,6 @@ async function multiTokenSetup(
 
     // Chain descriptor
     state.chainId = chainId;
-    state.wrongChainId = chainId + 1;
 
     // Deploy CosmosBridge contract
     state.cosmosBridge = await upgrades.deployProxy(CosmosBridge, [
@@ -92,7 +91,7 @@ async function multiTokenSetup(
       state.cosmosBridge.address,
       owner.address,
       pauser,
-      chainIdMismatch ? state.wrongChainId : chainId
+      chainIdMismatch ? state.chainId + 1 : chainId
     ]);
     await state.bridgeBank.deployed();
 
@@ -166,7 +165,6 @@ async function singleSetup(
 
     // Chain descriptor
     state.chainId = chainId;
-    state.wrongChainId = chainId + 1;
 
     // Deploy CosmosBridge contract
     state.cosmosBridge = await upgrades.deployProxy(CosmosBridge, [
@@ -183,7 +181,7 @@ async function singleSetup(
       state.cosmosBridge.address,
       owner.address,
       pauser,
-      chainIdMismatch ? state.wrongChainId : chainId
+      chainIdMismatch ? state.chainId + 1 : chainId
     ]);
     await state.bridgeBank.deployed();
 
