@@ -14,12 +14,13 @@ func (k Keeper) GetAndUpdateGlobalNonce(ctx sdk.Context, networkDescriptor oracl
 	store := ctx.KVStore(k.storeKey)
 
 	if !k.ExistsGlobalNonce(ctx, prefix) {
-		nextGlobalNonce := uint64(1)
+		// global nonce start from 1
+		nextGlobalNonce := uint64(2)
 		bs := make([]byte, 8)
 		binary.LittleEndian.PutUint64(bs, nextGlobalNonce)
 
 		store.Set(prefix, bs)
-		return uint64(0)
+		return uint64(1)
 	}
 
 	value := store.Get(prefix)
