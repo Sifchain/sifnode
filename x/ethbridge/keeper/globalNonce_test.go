@@ -14,12 +14,12 @@ func TestGetAndUpdateGlobalNonce(t *testing.T) {
 	networkDescriptor := oracletypes.NetworkDescriptor_NETWORK_DESCRIPTOR_ETHEREUM
 
 	// test the init value
-	zeroGlobalNonce := uint64(1)
+	globalNonceOne := uint64(1)
 	globalNonce := keeper.GetAndUpdateGlobalNonce(ctx, networkDescriptor)
-	assert.Equal(t, globalNonce, zeroGlobalNonce)
+	assert.Equal(t, globalNonce, globalNonceOne)
 
 	// test the second value
-	oneGlobalNonce := uint64(2)
+	globalNonceTwo := uint64(2)
 	globalNonce = keeper.GetAndUpdateGlobalNonce(ctx, networkDescriptor)
-	assert.Equal(t, globalNonce, oneGlobalNonce)
+	assert.Equal(t, globalNonce, globalNonceTwo)
 }
