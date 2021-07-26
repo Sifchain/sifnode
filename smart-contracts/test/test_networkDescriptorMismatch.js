@@ -13,7 +13,7 @@ require("chai")
 
 use(solidity);
 
-describe("Test Chain Id Mismatch", function () {
+describe("Test Network Descriptor Mismatch", function () {
   let userOne;
   let userTwo;
   let userThree;
@@ -64,7 +64,7 @@ describe("Test Chain Id Mismatch", function () {
   });
 
   describe("CosmosBridge", function () {
-    it("should not allow unlocking tokens upon the processing of a burn prophecy claim with the wrong chain id", async function () {
+    it("should not allow unlocking tokens upon the processing of a burn prophecy claim with the wrong network descriptor", async function () {
       state.nonce = 1;
       const digest = getDigestNewProphecyClaim([
         state.sender,
@@ -95,10 +95,10 @@ describe("Test Chain Id Mismatch", function () {
             digest,
             claimData,
             signatures
-        )).to.be.revertedWith("INV_CHAIN_ID");
+        )).to.be.revertedWith("INV_NET_DESC");
     });
 
-    it("should not allow unlocking native tokens upon the processing of a burn prophecy claim with the wrong chain id", async function () {
+    it("should not allow unlocking native tokens upon the processing of a burn prophecy claim with the wrong network descriptor", async function () {
       state.nonce = 1;
       const digest = getDigestNewProphecyClaim([
         state.sender,
@@ -129,7 +129,7 @@ describe("Test Chain Id Mismatch", function () {
             digest,
             claimData,
             signatures
-        )).to.be.revertedWith("INV_CHAIN_ID");
+        )).to.be.revertedWith("INV_NET_DESC");
     });
   });
 });

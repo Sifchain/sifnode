@@ -219,7 +219,7 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
 
         // ensure the networkDescriptor matches
         if (!claimData.doublePeg) {
-            require(nverifyNetworkDescriptor(claimData.networkDescriptor), "INV_CHAIN_ID");
+            require(nverifyNetworkDescriptor(claimData.networkDescriptor), "INV_NET_DESC");
         }
         
         // ensure there are no duplicate signers
