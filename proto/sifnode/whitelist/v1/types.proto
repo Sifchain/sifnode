@@ -16,6 +16,14 @@ message DenomWhitelist {
 
 message DenomWhitelistEntry {
   bool is_whitelisted = 1;
-  string denom = 2;
-  int64 decimals = 3;
+  int64 decimals = 2;
+  string denom = 3;
+  string base_denom = 4;
+  string path = 5;
+  string display_name = 6;
+  string display_symbol = 7;
+  string network = 8;
+  string address = 9;
+  string external_symbol = 10;
+  int64 transfer_limit = 11;
 }

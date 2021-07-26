@@ -120,9 +120,17 @@ func (m *DenomWhitelist) GetDenomWhitelistEntries() []*DenomWhitelistEntry {
 }
 
 type DenomWhitelistEntry struct {
-	IsWhitelisted bool   `protobuf:"varint,1,opt,name=is_whitelisted,json=isWhitelisted,proto3" json:"is_whitelisted,omitempty"`
-	Denom         string `protobuf:"bytes,2,opt,name=denom,proto3" json:"denom,omitempty"`
-	Decimals      int64  `protobuf:"varint,3,opt,name=decimals,proto3" json:"decimals,omitempty"`
+	IsWhitelisted  bool   `protobuf:"varint,1,opt,name=is_whitelisted,json=isWhitelisted,proto3" json:"is_whitelisted,omitempty"`
+	Decimals       int64  `protobuf:"varint,2,opt,name=decimals,proto3" json:"decimals,omitempty"`
+	Denom          string `protobuf:"bytes,3,opt,name=denom,proto3" json:"denom,omitempty"`
+	BaseDenom      string `protobuf:"bytes,4,opt,name=base_denom,json=baseDenom,proto3" json:"base_denom,omitempty"`
+	Path           string `protobuf:"bytes,5,opt,name=path,proto3" json:"path,omitempty"`
+	DisplayName    string `protobuf:"bytes,6,opt,name=display_name,json=displayName,proto3" json:"display_name,omitempty"`
+	DisplaySymbol  string `protobuf:"bytes,7,opt,name=display_symbol,json=displaySymbol,proto3" json:"display_symbol,omitempty"`
+	Network        string `protobuf:"bytes,8,opt,name=network,proto3" json:"network,omitempty"`
+	Address        string `protobuf:"bytes,9,opt,name=address,proto3" json:"address,omitempty"`
+	ExternalSymbol string `protobuf:"bytes,10,opt,name=external_symbol,json=externalSymbol,proto3" json:"external_symbol,omitempty"`
+	TransferLimit  int64  `protobuf:"varint,11,opt,name=transfer_limit,json=transferLimit,proto3" json:"transfer_limit,omitempty"`
 }
 
 func (m *DenomWhitelistEntry) Reset()         { *m = DenomWhitelistEntry{} }
@@ -165,6 +173,13 @@ func (m *DenomWhitelistEntry) GetIsWhitelisted() bool {
 	return false
 }
 
+func (m *DenomWhitelistEntry) GetDecimals() int64 {
+	if m != nil {
+		return m.Decimals
+	}
+	return 0
+}
+
 func (m *DenomWhitelistEntry) GetDenom() string {
 	if m != nil {
 		return m.Denom
@@ -172,9 +187,58 @@ func (m *DenomWhitelistEntry) GetDenom() string {
 	return ""
 }
 
-func (m *DenomWhitelistEntry) GetDecimals() int64 {
+func (m *DenomWhitelistEntry) GetBaseDenom() string {
 	if m != nil {
-		return m.Decimals
+		return m.BaseDenom
+	}
+	return ""
+}
+
+func (m *DenomWhitelistEntry) GetPath() string {
+	if m != nil {
+		return m.Path
+	}
+	return ""
+}
+
+func (m *DenomWhitelistEntry) GetDisplayName() string {
+	if m != nil {
+		return m.DisplayName
+	}
+	return ""
+}
+
+func (m *DenomWhitelistEntry) GetDisplaySymbol() string {
+	if m != nil {
+		return m.DisplaySymbol
+	}
+	return ""
+}
+
+func (m *DenomWhitelistEntry) GetNetwork() string {
+	if m != nil {
+		return m.Network
+	}
+	return ""
+}
+
+func (m *DenomWhitelistEntry) GetAddress() string {
+	if m != nil {
+		return m.Address
+	}
+	return ""
+}
+
+func (m *DenomWhitelistEntry) GetExternalSymbol() string {
+	if m != nil {
+		return m.ExternalSymbol
+	}
+	return ""
+}
+
+func (m *DenomWhitelistEntry) GetTransferLimit() int64 {
+	if m != nil {
+		return m.TransferLimit
 	}
 	return 0
 }
@@ -188,27 +252,36 @@ func init() {
 func init() { proto.RegisterFile("sifnode/whitelist/v1/types.proto", fileDescriptor_2f18f56a2888c4dc) }
 
 var fileDescriptor_2f18f56a2888c4dc = []byte{
-	// 319 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x8c, 0x91, 0xcd, 0x4e, 0x32, 0x31,
-	0x14, 0x86, 0xe9, 0x47, 0x3e, 0x03, 0xe5, 0x67, 0x51, 0x31, 0x4e, 0x58, 0x4c, 0x26, 0xa8, 0xc9,
-	0xb8, 0x70, 0x26, 0xe0, 0x15, 0x48, 0x34, 0xec, 0xcb, 0x82, 0xc4, 0x0d, 0x29, 0xd3, 0x03, 0x9c,
-	0x84, 0x69, 0x09, 0x2d, 0x20, 0x77, 0xe1, 0x65, 0xb9, 0x64, 0xe9, 0xd2, 0xc0, 0x8d, 0x18, 0x8a,
-	0x0c, 0x1a, 0x59, 0xb8, 0x9b, 0xf3, 0xcc, 0xd3, 0xf3, 0xe6, 0xe4, 0xa5, 0x81, 0xc1, 0xa1, 0xd2,
-	0x12, 0xe2, 0xe5, 0x18, 0x2d, 0x4c, 0xd0, 0xd8, 0x78, 0xd1, 0x8c, 0xed, 0x6a, 0x0a, 0x26, 0x9a,
-	0xce, 0xb4, 0xd5, 0xac, 0xf6, 0x65, 0x44, 0x99, 0x11, 0x2d, 0x9a, 0xf5, 0xda, 0x48, 0x8f, 0xb4,
-	0x13, 0xe2, 0xdd, 0xd7, 0xde, 0x6d, 0x2c, 0x69, 0xb9, 0x03, 0x0a, 0x0c, 0x9a, 0xae, 0x15, 0x16,
-	0xd8, 0x15, 0xad, 0x08, 0x99, 0xa2, 0xea, 0x8b, 0x24, 0xd1, 0x73, 0x65, 0x3d, 0x12, 0x90, 0xb0,
-	0xc8, 0xcb, 0x0e, 0x3e, 0xec, 0x19, 0x6b, 0xd3, 0x62, 0xb6, 0xda, 0xfb, 0x17, 0x90, 0xb0, 0xd4,
-	0xba, 0x8e, 0x4e, 0x85, 0x46, 0x8f, 0xa0, 0x74, 0xda, 0x3b, 0x10, 0x7e, 0x7c, 0xd6, 0x30, 0xb4,
-	0xfa, 0xf3, 0x27, 0x13, 0xf4, 0x52, 0xee, 0x48, 0x3f, 0x93, 0xfa, 0xa0, 0xec, 0x0c, 0xc1, 0x78,
-	0x24, 0xc8, 0x87, 0xa5, 0xd6, 0xed, 0x5f, 0x32, 0x9e, 0x94, 0x9d, 0xad, 0xf8, 0x85, 0xfc, 0x05,
-	0x11, 0x4c, 0x43, 0xd1, 0xf3, 0x13, 0x36, 0xbb, 0xa1, 0x55, 0x34, 0xc7, 0x58, 0x90, 0xee, 0xea,
-	0x02, 0xaf, 0xa0, 0xe9, 0x1d, 0x21, 0xab, 0xd1, 0xff, 0x6e, 0xad, 0x3b, 0xb9, 0xc8, 0xf7, 0x03,
-	0xab, 0xd3, 0x82, 0x84, 0x04, 0x53, 0x31, 0x31, 0x5e, 0x3e, 0x20, 0x61, 0x9e, 0x67, 0x73, 0xbb,
-	0xf3, 0xb6, 0xf1, 0xc9, 0x7a, 0xe3, 0x93, 0x8f, 0x8d, 0x4f, 0x5e, 0xb7, 0x7e, 0x6e, 0xbd, 0xf5,
-	0x73, 0xef, 0x5b, 0x3f, 0xf7, 0x7c, 0x37, 0x42, 0x3b, 0x9e, 0x0f, 0xa2, 0x44, 0xa7, 0x71, 0x17,
-	0x87, 0xc9, 0x58, 0xa0, 0x8a, 0x0f, 0xcd, 0xbe, 0x7c, 0xeb, 0xd6, 0x15, 0x3b, 0x38, 0x73, 0x6d,
-	0xdd, 0x7f, 0x06, 0x00, 0x00, 0xff, 0xff, 0x80, 0xd6, 0xe9, 0xaa, 0xfd, 0x01, 0x00, 0x00,
+	// 450 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x8c, 0x92, 0xcd, 0x6e, 0xd3, 0x40,
+	0x10, 0xc7, 0xe3, 0xa6, 0x1f, 0xc9, 0xe4, 0x03, 0x69, 0x09, 0x62, 0x55, 0x09, 0x2b, 0x04, 0x2a,
+	0xc2, 0x01, 0x5b, 0x2d, 0x4f, 0x40, 0x05, 0xea, 0x05, 0x71, 0x70, 0x0e, 0x95, 0xb8, 0x58, 0x1b,
+	0xef, 0x24, 0x59, 0x61, 0xef, 0x46, 0xde, 0x6d, 0xd3, 0xbc, 0x05, 0x8f, 0xc5, 0xb1, 0x47, 0x8e,
+	0x28, 0x79, 0x00, 0x5e, 0x01, 0x79, 0x6c, 0x27, 0x20, 0x7a, 0xe8, 0xcd, 0xf3, 0xfb, 0xff, 0x3c,
+	0xb3, 0xbb, 0x1a, 0x18, 0x5a, 0x35, 0xd3, 0x46, 0x62, 0xb8, 0x5a, 0x28, 0x87, 0xa9, 0xb2, 0x2e,
+	0xbc, 0x3d, 0x0f, 0xdd, 0x7a, 0x89, 0x36, 0x58, 0xe6, 0xc6, 0x19, 0x36, 0xa8, 0x8c, 0x60, 0x67,
+	0x04, 0xb7, 0xe7, 0xa7, 0x83, 0xb9, 0x99, 0x1b, 0x12, 0xc2, 0xe2, 0xab, 0x74, 0x47, 0x2b, 0xe8,
+	0x5e, 0xa1, 0x46, 0xab, 0xec, 0xc4, 0x09, 0x87, 0xec, 0x15, 0xf4, 0x84, 0xcc, 0x94, 0x8e, 0x45,
+	0x92, 0x98, 0x1b, 0xed, 0xb8, 0x37, 0xf4, 0xc6, 0xed, 0xa8, 0x4b, 0xf0, 0x43, 0xc9, 0xd8, 0x25,
+	0xb4, 0x77, 0xad, 0xf9, 0xc1, 0xd0, 0x1b, 0x77, 0x2e, 0x5e, 0x07, 0x0f, 0x0d, 0x0d, 0x3e, 0xa2,
+	0x36, 0xd9, 0x75, 0x4d, 0xa2, 0xfd, 0x6f, 0x23, 0x0b, 0xfd, 0x7f, 0x43, 0x26, 0xe0, 0xb9, 0x2c,
+	0x48, 0xbc, 0x93, 0x62, 0xd4, 0x2e, 0x57, 0x68, 0xb9, 0x37, 0x6c, 0x8e, 0x3b, 0x17, 0x6f, 0x1f,
+	0x33, 0xe3, 0x93, 0x76, 0xf9, 0x3a, 0x7a, 0x26, 0xff, 0x83, 0x0a, 0xed, 0xe8, 0xf7, 0x01, 0x3c,
+	0x7d, 0x40, 0x67, 0x67, 0xd0, 0x57, 0x76, 0x3f, 0x17, 0x25, 0x5d, 0xbb, 0x15, 0xf5, 0x94, 0xbd,
+	0xde, 0x43, 0x76, 0x0a, 0x2d, 0x89, 0x89, 0xca, 0x44, 0x6a, 0xe9, 0xda, 0xcd, 0x68, 0x57, 0xb3,
+	0x01, 0x1c, 0xd1, 0x4c, 0xde, 0xa4, 0x07, 0x2b, 0x0b, 0xf6, 0x02, 0x60, 0x2a, 0x2c, 0xc6, 0x65,
+	0x74, 0x48, 0x51, 0xbb, 0x20, 0x74, 0x0a, 0xc6, 0xe0, 0x70, 0x29, 0xdc, 0x82, 0x1f, 0x51, 0x40,
+	0xdf, 0xec, 0x25, 0x74, 0xa5, 0xb2, 0xcb, 0x54, 0xac, 0x63, 0x2d, 0x32, 0xe4, 0xc7, 0x94, 0x75,
+	0x2a, 0xf6, 0x45, 0x64, 0x58, 0x1c, 0xb7, 0x56, 0xec, 0x3a, 0x9b, 0x9a, 0x94, 0x9f, 0x90, 0xd4,
+	0xab, 0xe8, 0x84, 0x20, 0xe3, 0x70, 0xa2, 0xd1, 0xad, 0x4c, 0xfe, 0x8d, 0xb7, 0x28, 0xaf, 0xcb,
+	0x22, 0x11, 0x52, 0xe6, 0x68, 0x2d, 0x6f, 0x97, 0x49, 0x55, 0xb2, 0x37, 0xf0, 0x04, 0xef, 0x1c,
+	0xe6, 0x5a, 0xa4, 0x75, 0x6f, 0x20, 0xa3, 0x5f, 0xe3, 0xaa, 0xf9, 0x19, 0xf4, 0x5d, 0x2e, 0xb4,
+	0x9d, 0x61, 0x1e, 0xa7, 0x2a, 0x53, 0x8e, 0x77, 0xe8, 0x45, 0x7a, 0x35, 0xfd, 0x5c, 0xc0, 0xcb,
+	0xab, 0x1f, 0x1b, 0xdf, 0xbb, 0xdf, 0xf8, 0xde, 0xaf, 0x8d, 0xef, 0x7d, 0xdf, 0xfa, 0x8d, 0xfb,
+	0xad, 0xdf, 0xf8, 0xb9, 0xf5, 0x1b, 0x5f, 0xdf, 0xcd, 0x95, 0x5b, 0xdc, 0x4c, 0x83, 0xc4, 0x64,
+	0xe1, 0x44, 0xcd, 0x92, 0x85, 0x50, 0x3a, 0xac, 0x77, 0xfb, 0xee, 0xaf, 0xed, 0xa6, 0xd5, 0x9e,
+	0x1e, 0xd3, 0xbe, 0xbe, 0xff, 0x13, 0x00, 0x00, 0xff, 0xff, 0xc2, 0xce, 0xf1, 0x6e, 0xff, 0x02,
+	0x00, 0x00,
 }
 
 func (m *GenesisState) Marshal() (dAtA []byte, err error) {
@@ -310,17 +383,71 @@ func (m *DenomWhitelistEntry) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	_ = i
 	var l int
 	_ = l
-	if m.Decimals != 0 {
-		i = encodeVarintTypes(dAtA, i, uint64(m.Decimals))
+	if m.TransferLimit != 0 {
+		i = encodeVarintTypes(dAtA, i, uint64(m.TransferLimit))
 		i--
-		dAtA[i] = 0x18
+		dAtA[i] = 0x58
+	}
+	if len(m.ExternalSymbol) > 0 {
+		i -= len(m.ExternalSymbol)
+		copy(dAtA[i:], m.ExternalSymbol)
+		i = encodeVarintTypes(dAtA, i, uint64(len(m.ExternalSymbol)))
+		i--
+		dAtA[i] = 0x52
+	}
+	if len(m.Address) > 0 {
+		i -= len(m.Address)
+		copy(dAtA[i:], m.Address)
+		i = encodeVarintTypes(dAtA, i, uint64(len(m.Address)))
+		i--
+		dAtA[i] = 0x4a
+	}
+	if len(m.Network) > 0 {
+		i -= len(m.Network)
+		copy(dAtA[i:], m.Network)
+		i = encodeVarintTypes(dAtA, i, uint64(len(m.Network)))
+		i--
+		dAtA[i] = 0x42
+	}
+	if len(m.DisplaySymbol) > 0 {
+		i -= len(m.DisplaySymbol)
+		copy(dAtA[i:], m.DisplaySymbol)
+		i = encodeVarintTypes(dAtA, i, uint64(len(m.DisplaySymbol)))
+		i--
+		dAtA[i] = 0x3a
+	}
+	if len(m.DisplayName) > 0 {
+		i -= len(m.DisplayName)
+		copy(dAtA[i:], m.DisplayName)
+		i = encodeVarintTypes(dAtA, i, uint64(len(m.DisplayName)))
+		i--
+		dAtA[i] = 0x32
+	}
+	if len(m.Path) > 0 {
+		i -= len(m.Path)
+		copy(dAtA[i:], m.Path)
+		i = encodeVarintTypes(dAtA, i, uint64(len(m.Path)))
+		i--
+		dAtA[i] = 0x2a
+	}
+	if len(m.BaseDenom) > 0 {
+		i -= len(m.BaseDenom)
+		copy(dAtA[i:], m.BaseDenom)
+		i = encodeVarintTypes(dAtA, i, uint64(len(m.BaseDenom)))
+		i--
+		dAtA[i] = 0x22
 	}
 	if len(m.Denom) > 0 {
 		i -= len(m.Denom)
 		copy(dAtA[i:], m.Denom)
 		i = encodeVarintTypes(dAtA, i, uint64(len(m.Denom)))
 		i--
-		dAtA[i] = 0x12
+		dAtA[i] = 0x1a
+	}
+	if m.Decimals != 0 {
+		i = encodeVarintTypes(dAtA, i, uint64(m.Decimals))
+		i--
+		dAtA[i] = 0x10
 	}
 	if m.IsWhitelisted {
 		i--
@@ -387,12 +514,43 @@ func (m *DenomWhitelistEntry) Size() (n int) {
 	if m.IsWhitelisted {
 		n += 2
 	}
+	if m.Decimals != 0 {
+		n += 1 + sovTypes(uint64(m.Decimals))
+	}
 	l = len(m.Denom)
 	if l > 0 {
 		n += 1 + l + sovTypes(uint64(l))
 	}
-	if m.Decimals != 0 {
-		n += 1 + sovTypes(uint64(m.Decimals))
+	l = len(m.BaseDenom)
+	if l > 0 {
+		n += 1 + l + sovTypes(uint64(l))
+	}
+	l = len(m.Path)
+	if l > 0 {
+		n += 1 + l + sovTypes(uint64(l))
+	}
+	l = len(m.DisplayName)
+	if l > 0 {
+		n += 1 + l + sovTypes(uint64(l))
+	}
+	l = len(m.DisplaySymbol)
+	if l > 0 {
+		n += 1 + l + sovTypes(uint64(l))
+	}
+	l = len(m.Network)
+	if l > 0 {
+		n += 1 + l + sovTypes(uint64(l))
+	}
+	l = len(m.Address)
+	if l > 0 {
+		n += 1 + l + sovTypes(uint64(l))
+	}
+	l = len(m.ExternalSymbol)
+	if l > 0 {
+		n += 1 + l + sovTypes(uint64(l))
+	}
+	if m.TransferLimit != 0 {
+		n += 1 + sovTypes(uint64(m.TransferLimit))
 	}
 	return n
 }
@@ -655,6 +813,25 @@ func (m *DenomWhitelistEntry) Unmarshal(dAtA []byte) error {
 			}
 			m.IsWhitelisted = bool(v != 0)
 		case 2:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Decimals", wireType)
+			}
+			m.Decimals = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTypes
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.Decimals |= int64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 3:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field Denom", wireType)
 			}
@@ -686,11 +863,11 @@ func (m *DenomWhitelistEntry) Unmarshal(dAtA []byte) error {
 			}
 			m.Denom = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
-		case 3:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Decimals", wireType)
+		case 4:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field BaseDenom", wireType)
 			}
-			m.Decimals = 0
+			var stringLen uint64
 			for shift := uint(0); ; shift += 7 {
 				if shift >= 64 {
 					return ErrIntOverflowTypes
@@ -700,7 +877,231 @@ func (m *DenomWhitelistEntry) Unmarshal(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				m.Decimals |= int64(b&0x7F) << shift
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTypes
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTypes
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.BaseDenom = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 5:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Path", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTypes
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTypes
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTypes
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Path = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 6:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field DisplayName", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTypes
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTypes
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTypes
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.DisplayName = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 7:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field DisplaySymbol", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTypes
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTypes
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTypes
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.DisplaySymbol = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 8:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Network", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTypes
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTypes
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTypes
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Network = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 9:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Address", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTypes
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTypes
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTypes
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Address = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 10:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field ExternalSymbol", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTypes
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTypes
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTypes
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.ExternalSymbol = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 11:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field TransferLimit", wireType)
+			}
+			m.TransferLimit = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTypes
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.TransferLimit |= int64(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
