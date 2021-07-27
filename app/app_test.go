@@ -50,5 +50,6 @@ func TestSimAppExportAndBlockedAddrs(t *testing.T) {
 
 func TestReadTokenMapJson(t *testing.T) {
 	jsonData := readTokenMapJSON()
-	require.Equal(t, jsonData, map[string]string{"ceth": "0x00000000000000000000181"})
+	// ba6973c40816e27ad5019d6ae10c67ccb0eef1d67ac0bd2c17425a17680eba3f is the hash of 0x00000000000000000000181
+	require.Equal(t, jsonData, map[string]string{"ceth": "ba6973c40816e27ad5019d6ae10c67ccb0eef1d67ac0bd2c17425a17680eba3f"})
 }
