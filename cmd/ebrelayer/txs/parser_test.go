@@ -1,11 +1,8 @@
 package txs
 
 import (
-	"fmt"
 	"strings"
 	"testing"
-
-	"crypto/sha256"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/common"
@@ -38,15 +35,7 @@ func TestLogLockToEthBridgeClaim(t *testing.T) {
 	require.NoError(t, err)
 	testCosmosValidatorBech32Address := sdk.ValAddress(testRawCosmosValidatorAddress)
 	// Calculate Denom Hash String
-	denomHashedString := fmt.Sprintf("%d%s%d%s%s",
-		TestNetworkDescriptor,
-		testTokenContractAddress,
-		TestDecimals,
-		TestName,
-		TestSymbol,
-	)
-
-	denomHash := sha256.Sum256([]byte(denomHashedString))
+	denomHash := ethbridge.GetDenomHash(TestNetworkDescriptor, TestEthTokenAddress, TestDecimals, TestName, TestSymbol)
 
 	// Set up expected EthBridgeClaim
 	expectedEthBridgeClaim := ethbridge.NewEthBridgeClaim(
@@ -60,6 +49,21 @@ func TestLogLockToEthBridgeClaim(t *testing.T) {
 	require.NoError(t, err)
 
 	require.Equal(t, expectedEthBridgeClaim, &ethBridgeClaim)
+}
+
+func TestDenomHashHandCrafted(t *testing.T) {
+	// Precalculate an address
+	expectedDenom := "BTC"
+	actualDenom := ethbridge.GetDenomHash(2, "0xbF45BFc92ebD305d4C0baf8395c4299bdFCE9EA2", 9, "wBTC", "WBTC")
+
+	require.Equal(t, expectedDenom, actualDenom)
+}
+
+func TestDenomCalculated(t *testing.T) {
+	expectedDenom := "7ab5ab7aa7d978577efb3b68b9115976ec8e0312d04062350f4b40822a3870ce"
+	actualDenom := ethbridge.GetDenomHash(1, "0x0000000000000000000000000000000000000000", 18, "Ethereum", "ETH")
+
+	require.Equal(t, expectedDenom, actualDenom)
 }
 
 func TestBurnEventToCosmosMsg(t *testing.T) {

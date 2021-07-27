@@ -62,12 +62,20 @@ func CreateTestLogEthereumEvent(t *testing.T) types.EthereumEvent {
 	testAmount := testAmount
 	testNonce := big.NewInt(int64(TestNonce))
 
-	return types.EthereumEvent{NetworkDescriptor: networkDescriptor,
+	return types.EthereumEvent{
+		NetworkDescriptor:     networkDescriptor,
 		BridgeContractAddress: testBridgeContractAddress,
 		ID:                    testProphecyID32,
 		From:                  testEthereumSender,
-		To:                    testCosmosRecipient, Token: testTokenAddress,
-		Symbol: TestSymbol, Value: testAmount, Nonce: testNonce, ClaimType: ethbridge.ClaimType_CLAIM_TYPE_LOCK}
+		To:                    testCosmosRecipient,
+		Token:                 testTokenAddress,
+		Symbol:                TestSymbol,
+		Value:                 testAmount,
+		Nonce:                 testNonce,
+		ClaimType:             ethbridge.ClaimType_CLAIM_TYPE_LOCK,
+		Name:                  TestName,
+		Decimals:              TestDecimals,
+	}
 }
 
 // CreateTestProphecyClaimEvent creates a sample ProphecyClaimEvent for testing purposes
