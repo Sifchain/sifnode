@@ -132,6 +132,18 @@ func (mr *MockKeeperMockRecorder) RemoveToken(ctx, denom interface{}) *gomock.Ca
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemoveToken", reflect.TypeOf((*MockKeeper)(nil).RemoveToken), ctx, denom)
 }
 
+// SetAdminAccount mocks base method.
+func (m *MockKeeper) SetAdminAccount(ctx types0.Context, adminAccount types0.AccAddress) {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "SetAdminAccount", ctx, adminAccount)
+}
+
+// SetAdminAccount indicates an expected call of SetAdminAccount.
+func (mr *MockKeeperMockRecorder) SetAdminAccount(ctx, adminAccount interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetAdminAccount", reflect.TypeOf((*MockKeeper)(nil).SetAdminAccount), ctx, adminAccount)
+}
+
 // SetToken mocks base method.
 func (m *MockKeeper) SetToken(ctx types0.Context, entry *types.RegistryEntry) {
 	m.ctrl.T.Helper()
