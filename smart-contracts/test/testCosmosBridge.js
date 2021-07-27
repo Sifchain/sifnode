@@ -38,14 +38,14 @@ describe("Test Cosmos Bridge", function () {
 
   before(async function() {
     accounts = await ethers.getSigners();
-    
+
     signerAccounts = accounts.map((e) => { return e.address });
 
     operator = accounts[0];
     userOne = accounts[1];
     userTwo = accounts[2];
     userFour = accounts[3];
-    userThree = accounts[7].address;
+    userThree = accounts[9].address;
 
     owner = accounts[5];
     pauser = accounts[6].address;
@@ -200,7 +200,7 @@ describe("Test Cosmos Bridge", function () {
         expect(
           await state.cosmosBridge.isActiveValidator(address)
         ).to.be.true;
-        
+
         expect(
           (await state.cosmosBridge.getValidatorPower(address)).toString()
         ).to.equal("25");

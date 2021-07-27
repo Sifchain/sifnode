@@ -13,9 +13,15 @@ module.exports.loadEnv = function() {
     }
 
     if (process.env.OWNER.length === 0) {
-      return console.error(
-        "Must provide owner address as environment variable."
-      );
+        return console.error(
+            "Must provide owner address as environment variable."
+        );
+    }
+
+    if (process.env.PAUSER.length === 0) {
+        return console.error(
+            "Must provide pauser address as environment variable."
+        );
     }
     let owner = process.env.OWNER;
     let pauser = process.env.PAUSER;
