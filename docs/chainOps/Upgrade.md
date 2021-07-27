@@ -78,7 +78,7 @@ git clone ssh://git@github.com/Sifchain/sifchain-deploy-public ./deploy
 export CLUSTER_NAME=<cluster_name>
 export KUBECONFIG=./.live/${CLUSTER_NAME}/kubeconfig_${CLUSTER_NAME}
 
-helm upgrade sifnode helm/standalone/sifnode \
+helm upgrade sifnode ./deploy/helm/standalone/sifnode \
 --set sifnode.env.chainnet=sifchain \
 --install -n sifnode --create-namespace \
 --set sifnode.args.enableRpc="true" \
@@ -112,7 +112,7 @@ kubectl get pods -n sifnode
 3. Once terminated, you can perform the upgrade by running:
 
 ```bash
-helm upgrade sifnode helm/standalone/sifnode \
+helm upgrade sifnode ./deploy/helm/standalone/sifnode \
 --install -n sifnode --create-namespace \
 --set sifnode.args.enableRpc="true" \
 --set sifnode.args.enableExternalRpc="false" \
