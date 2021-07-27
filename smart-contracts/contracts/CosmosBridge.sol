@@ -23,7 +23,7 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
 
     event LogNewBridgeTokenCreated(
         uint8 decimals,
-        uint256 indexed nourceNetworkDescriptor,
+        uint256 indexed sourcechainId,
         string name,
         string symbol,
         address indexed sourceContractAddress,
@@ -95,7 +95,7 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
         uint256 amount,
         bool doublePeg,
         uint128 nonce,
-        uint256 networkDescriptor
+        uint256 _networkDescriptor
     ) public pure returns (uint256) {
         return uint256(
             keccak256(
@@ -107,7 +107,7 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
                     amount,
                     doublePeg,
                     nonce,
-                    networkDescriptor
+                    _networkDescriptor
                 )
             )
         );
@@ -272,8 +272,8 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
         );
     }
 
-    function verifyNetworkDescriptor(uint256 networkDescriptor_) internal returns(bool) {
-        return networkDescriptor_ == BridgeBank(bridgeBank).networkDescriptor();
+    function verifyNetworkDescriptor(uint256 _networkDescriptor) internal returns(bool) {
+        return _networkDescriptor == BridgeBank(bridgeBank).networkDescriptor();
     }
 
     /**
@@ -281,14 +281,14 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
      * @param name name of the ERC20 token on the source chain
      * @param sourceChainTokenAddress address of the ERC20 token on the source chain
      * @param decimals of the ERC20 token on the source chain
-     * @param networkDescriptor descriptor of the source chain
+     * @param _networkDescriptor descriptor of the source chain
      */
     function createNewBridgeToken(
         string calldata symbol,
         string calldata name,
         address sourceChainTokenAddress,
         uint8 decimals,
-        uint256 networkDescriptor
+        uint256 _networkDescriptor
     ) external onlyValidator {
         require(
             sourceAddressToDestinationAddress[sourceChainTokenAddress] == address(0),
@@ -307,7 +307,7 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
 
         emit LogNewBridgeTokenCreated(
             decimals,
-            networkDescriptor,
+            _networkDescriptor,
             name,
             symbol,
             sourceChainTokenAddress,
