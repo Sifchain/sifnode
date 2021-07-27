@@ -49,6 +49,7 @@ func TestHandleRegister(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			res, err := h(ctx, &tt.msg)
 			tt.errorAssertion(t, err)
@@ -98,6 +99,7 @@ func TestHandleDeregister(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			res, err := h(ctx, &tt.msg)
 			tt.errorAssertion(t, err)

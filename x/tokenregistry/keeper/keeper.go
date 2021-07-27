@@ -74,7 +74,7 @@ func (k keeper) GetDenom(ctx sdk.Context, denom string) types.RegistryEntry {
 func (k keeper) SetToken(ctx sdk.Context, entry *types.RegistryEntry) {
 	wl := k.GetDenomWhitelist(ctx)
 
-	entry.Denom = strings.ToLower(entry.Denom)
+	entry.Sanitize()
 
 	for i := range wl.Entries {
 		if wl.Entries[i] != nil && strings.EqualFold(wl.Entries[i].Denom, entry.Denom) {

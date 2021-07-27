@@ -1,5 +1,7 @@
 package types
 
+import "strings"
+
 const (
 	// ModuleName is the name of the whitelist module
 	ModuleName = "tokenregistry"
@@ -13,3 +15,7 @@ const (
 	// RouterKey is the msg router key
 	RouterKey = ModuleName
 )
+
+func (r *RegistryEntry) Sanitize() {
+	r.Path = strings.Trim(r.Path, "/")
+}

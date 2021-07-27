@@ -33,6 +33,7 @@ func GetGenesisStateFromAppState(marshaler codec.JSONMarshaler, appState map[str
 func DefaultRegistry() Registry {
 	return Registry{
 		Entries: []*RegistryEntry{
+			{IsWhitelisted: true, Denom: "rowan", Decimals: 18},
 			{IsWhitelisted: true, Denom: "ccel", Decimals: 4},
 			{IsWhitelisted: true, Denom: "causc", Decimals: 6},
 			{IsWhitelisted: true, Denom: "cusdt", Decimals: 6},
