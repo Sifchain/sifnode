@@ -3,8 +3,6 @@
   <component name="ChangeListManager">
     <list default="true" id="ebe2b9a8-cdf0-4f99-941f-843a74719a8a" name="Default Changelist" comment="working">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.openzeppelin/mainnet.json" beforeDir="false" afterPath="$PROJECT_DIR$/.openzeppelin/mainnet.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/hardhat.config.ts" beforeDir="false" afterPath="$PROJECT_DIR$/hardhat.config.ts" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -25,6 +23,7 @@
   <component name="HighlightingSettingsPerFile">
     <setting file="file://$PROJECT_DIR$/src/tsyringe/contracts.ts" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/contracts/BridgeBank/BridgeBank.sol" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/hardhat.config.ts" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/test/test_eRowanMigration.ts" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/test/test_newBridgeBank.ts" root0="FORCE_HIGHLIGHTING" />
   </component>
@@ -79,7 +78,14 @@
       <option name="project" value="LOCAL" />
       <updated>1627324088785</updated>
     </task>
-    <option name="localTasksCounter" value="3" />
+    <task id="LOCAL-00003" summary="working">
+      <created>1627404928552</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1627404928552</updated>
+    </task>
+    <option name="localTasksCounter" value="4" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
