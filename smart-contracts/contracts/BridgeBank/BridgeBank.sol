@@ -33,7 +33,9 @@ contract BridgeBank is BankStorage,
     /*
      * @dev: Initializer
      */
+     //! Add OPERATOR! it changes all tests bc of the initialize function
     function initialize(
+        address _operator,
         address _cosmosBridgeAddress,
         address _owner,
         address _pauser,
@@ -42,14 +44,24 @@ contract BridgeBank is BankStorage,
         require(!_initialized, "Init");
 
         CosmosWhiteList._cosmosWhitelistInitialize();
+        EthereumWhiteList.initialize();
         Pausable._pausableInitialize(_pauser);
 
+        operator = _operator;
         cosmosBridge = _cosmosBridgeAddress;
         owner = _owner;
         networkDescriptor = networkDescriptor_;
         _initialized = true;
         contractName[address(0)] = "Ethereum";
         contractSymbol[address(0)] = "ETH";
+    }
+
+    /*
+     * @dev: Modifier to restrict access to operator
+     */
+    modifier onlyOperator() {
+        require(msg.sender == operator, "!operator");
+        _;
     }
 
     /*
@@ -80,6 +92,29 @@ contract BridgeBank is BankStorage,
     }
 
     /*
+     * @dev: Set the token address in Eth whitelist
+     *
+     * @param _token: ERC 20's address
+     * @param _inList: set the _token in list or not
+     * @return: new value of if _token in whitelist
+     */
+    function updateEthWhiteList(address _token, bool _inList)
+        public
+        onlyOperator
+        returns (bool)
+    {
+        // Do not allow a token with the same address to be whitelisted
+        if (_inList) {
+            // if we want to add it to the whitelist, make sure it's not there yet
+            require(!getTokenInEthWhiteList(_token), "whitelisted");
+        } else {
+            // if we want to de-whitelist it, make sure that the token is already whitelisted 
+            require(getTokenInEthWhiteList(_token), "!whitelisted");
+        }
+        return setTokenInEthWhiteList(_token, _inList);
+    }
+
+    /*
      * @dev: Set the token address in whitelist
      *
      * @param token: ERC 20's address
@@ -98,6 +133,12 @@ contract BridgeBank is BankStorage,
         require(newOwner != address(0), "invalid address");
         owner = newOwner;
     }
+
+    function changeOperator(address _newOperator) public onlyOperator {
+        require(_newOperator != address(0), "invalid address");
+        operator = _newOperator;
+    }
+
 
     /*
      * @dev: function to validate if a sif address has a correct prefix
@@ -374,7 +415,7 @@ contract BridgeBank is BankStorage,
         address tokenAddress,
         uint256 tokenAmount,
         uint256 _lockBurnNonce
-    ) private onlyTokenNotInCosmosWhiteList(tokenAddress) validSifAddress(recipient) {
+    ) private onlyEthTokenWhiteList(tokenAddress) onlyTokenNotInCosmosWhiteList(tokenAddress) validSifAddress(recipient) {
         IERC20 tokenToTransfer = IERC20(tokenAddress);
         // lock tokens
         tokenToTransfer.safeTransferFrom(

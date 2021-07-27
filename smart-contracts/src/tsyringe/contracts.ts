@@ -67,7 +67,10 @@ export class CosmosBridgeProxy {
     ) {
         this.contract = sifchainContractFactories.cosmosBridge.then(async cosmosBridgeFactory => {
             const args = await cosmosBridgeArgumentsPromise.cosmosBridgeArguments
-            const cosmosBridgeProxy = await hardhatRuntimeEnvironment.upgrades.deployProxy(cosmosBridgeFactory, args.asArray())
+            const cosmosBridgeProxy = await hardhatRuntimeEnvironment.upgrades.deployProxy(cosmosBridgeFactory,
+                args.asArray(),
+                { initializer: 'initialize(address,uint256,address[],uint256[],uint256)' }
+            )
             await cosmosBridgeProxy.deployed()
             return cosmosBridgeProxy
         })
@@ -115,6 +118,7 @@ export class BridgeBankArguments {
         const cosmosBridge = await this.cosmosBridgeProxy.contract
         const accts = await this.sifchainAccountsPromise.accounts
         const result = [
+            accts.operatorAccount.address,
             cosmosBridge.address,
             accts.ownerAccount.address,
             accts.pauserAccount.address,
@@ -136,7 +140,10 @@ export class BridgeBankProxy {
     ) {
         this.contract = sifchainContractFactories.bridgeBank.then(async bridgeBankFactory => {
             const bridgeBankArguments = await this.bridgeBankArguments.asArray()
-            const bridgeBankProxy = await h.upgrades.deployProxy(bridgeBankFactory, bridgeBankArguments) as BridgeBank
+            const bridgeBankProxy = await h.upgrades.deployProxy(bridgeBankFactory,
+                bridgeBankArguments,
+                { initializer: 'initialize(address,address,address,address,uint256)' }
+            ) as BridgeBank
             await bridgeBankProxy.deployed()
             return bridgeBankProxy
         })

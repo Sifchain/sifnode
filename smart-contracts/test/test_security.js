@@ -95,6 +95,26 @@ describe("Security Test", function () {
       expect((await state.bridgeBank.owner())).to.be.equal(owner.address);
     });
 
+    it("should be able to change BridgeBank's operator", async function () {
+      expect((await state.bridgeBank.operator())).to.be.equal(operator.address);
+      await expect(
+        state.bridgeBank.connect(operator)
+          .changeOperator(userTwo.address),
+      ).to.be.fulfilled;
+
+      expect((await state.bridgeBank.operator())).to.be.equal(userTwo.address);
+    });
+
+    it("should not be able to change BridgeBank's operator if the caller is not the operator", async function () {
+      expect((await state.bridgeBank.operator())).to.be.equal(operator.address);
+      await expect(
+        state.bridgeBank.connect(userOne)
+          .changeOperator(userTwo.address),
+      ).to.be.revertedWith("!operator");
+
+      expect((await state.bridgeBank.operator())).to.be.equal(operator.address);
+    });
+
     it("should not be able to change the operator if the caller is not the operator", async function () {
       expect((await state.cosmosBridge.operator())).to.be.equal(operator.address);
       await expect(
@@ -399,6 +419,11 @@ describe("Security Test", function () {
     });
 
     it("should allow users to unpeg troll token, but then does not receive", async function () {
+      // Add the token into white list
+      await state.bridgeBank.connect(operator)
+      .updateEthWhiteList(state.troll.address, true)
+      .should.be.fulfilled;
+
       // approve and lock tokens
       await state.troll.connect(userOne).approve(
         state.bridgeBank.address,

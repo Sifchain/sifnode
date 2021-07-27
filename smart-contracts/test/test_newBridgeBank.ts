@@ -47,6 +47,7 @@ describe("BridgeBank", () => {
 
     describe("locking and burning", function () {
         let sender: SignerWithAddress;
+        let operator: SignerWithAddress;
         let accounts: SifchainAccounts;
         let amount: BigNumber
         let smallAmount: BigNumber
@@ -57,6 +58,7 @@ describe("BridgeBank", () => {
         before('create test token', async () => {
             accounts = await container.resolve(SifchainAccountsPromise).accounts
             sender = accounts.availableAccounts[0]
+            operator = accounts.operatorAccount
             amount = hardhat.ethers.utils.parseEther("100") as BigNumber
             smallAmount = amount.div(100)
             const testTokenFactory = (await container.resolve(SifchainContractFactories).bridgeToken).connect(sender)
@@ -66,6 +68,9 @@ describe("BridgeBank", () => {
         })
 
         it("should lock a test token", async () => {
+            // Add the token into white list
+            await bridgeBank.connect(operator).updateEthWhiteList(testToken.address, true)
+
             const recipient = web3.utils.utf8ToHex("sif1nx650s8q9w28f2g3t9ztxyg48ugldptuwzpace")
             await expect(() => bridgeBank.connect(sender).lock(
                 recipient,

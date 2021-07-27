@@ -68,6 +68,11 @@ describe("submitProphecyClaimAggregatedSigs Security", function () {
       networkDescriptor
     );
 
+    // Add the token into white list
+    await state.bridgeBank.connect(operator)
+    .updateEthWhiteList(state.token1.address, true)
+    .should.be.fulfilled;
+
     // Lock tokens on contract
     await state.bridgeBank.connect(userOne).lock(
       state.sender,

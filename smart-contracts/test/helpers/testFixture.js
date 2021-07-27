@@ -83,16 +83,19 @@ async function multiTokenSetup(
       initialValidators,
       initialPowers,
       networkDescriptor
-    ]);
+    ],
+    { initializer: 'initialize(address,uint256,address[],uint256[],uint256)' });
     await state.cosmosBridge.deployed();
 
     // Deploy BridgeBank contract
     state.bridgeBank = await upgrades.deployProxy(BridgeBank, [
+      operator.address,
       state.cosmosBridge.address,
       owner.address,
       pauser,
       networkDescriptorMismatch ? state.networkDescriptor + 1 : networkDescriptor
-    ]);
+    ],
+    { initializer: 'initialize(address,address,address,address,uint256)' });
     await state.bridgeBank.deployed();
 
     // Operator sets Bridge Bank
@@ -173,16 +176,19 @@ async function singleSetup(
       initialValidators,
       initialPowers,
       networkDescriptor
-    ]);
+    ],
+    { initializer: 'initialize(address,uint256,address[],uint256[],uint256)' });
     await state.cosmosBridge.deployed();
 
     // Deploy BridgeBank contract
     state.bridgeBank = await upgrades.deployProxy(BridgeBank, [
+      operator.address,
       state.cosmosBridge.address,
       owner.address,
       pauser,
       networkDescriptorMismatch ? state.networkDescriptor + 1 : networkDescriptor
-    ]);
+    ],
+    { initializer: 'initialize(address,address,address,address,uint256)' });
     await state.bridgeBank.deployed();
 
     // Operator sets Bridge Bank
@@ -215,6 +221,11 @@ async function singleSetup(
     // Approve tokens to contract
     await state.token.connect(userOne).approve(state.bridgeBank.address, state.amount).should.be.fulfilled;
       
+    // Add the token into white list
+    await state.bridgeBank.connect(operator)
+    .updateEthWhiteList(state.token.address, true)
+    .should.be.fulfilled;
+
     // Lock tokens on contract
     await state.bridgeBank.connect(userOne).lock(
       state.sender,

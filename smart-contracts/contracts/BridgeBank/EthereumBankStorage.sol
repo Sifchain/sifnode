@@ -14,9 +14,9 @@ contract EthereumBankStorage {
     mapping(address => uint256) private lockedFunds;
 
     /*
-    * @notice {DEPRECATED}
+    * @notice map the token symbol to the token address
     */
-    mapping(string => address) private lockedTokenList;
+    mapping(string => address) public lockedTokenList;
 
     /**
     * @notice contract decimals based off of contract address

@@ -91,7 +91,12 @@ describe("Test Bridge Bank", function () {
 
     it("should not allow user to lock ERC20 tokens", async function () {
       const FakeToken = await ethers.getContractFactory("FakeERC20");
-      const fakeToken = await FakeToken.deploy();
+      fakeToken = await FakeToken.deploy();
+      
+      // Add the token into white list
+      await state.bridgeBank.connect(operator)
+      .updateEthWhiteList(fakeToken.address, true)
+      .should.be.fulfilled;
 
       // Approve and lock tokens
       await expect(state.bridgeBank.connect(userOne).lock(state.sender, fakeToken.address, state.amount))
@@ -99,16 +104,19 @@ describe("Test Bridge Bank", function () {
         .withArgs(userOne.address, state.sender, fakeToken.address, state.amount, "3", 18, "", "", state.networkDescriptor);
 
       /*
-                  msg.sender,
+            msg.sender,
             recipient,
             tokenAddress,
             tokenAmount,
             _lockBurnNonce,
             decimals,
             symbol,
-            name
+            name,
+            networkDescriptor
         );
       */
+
+        // todo: what exactly is this test supposed to do?
     });
 
     it("should allow users to lock Ethereum in the bridge bank", async function () {
