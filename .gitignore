@@ -18,3 +18,6 @@ anchore-reports
 .vercel
 nohup.out
 relayerdb
+venv/
+
+deploy

@@ -1,43 +1,37 @@
 package app
 
 import (
-	"github.com/stretchr/testify/assert"
+	"encoding/json"
 	"os"
 	"testing"
 
 	"github.com/stretchr/testify/require"
-	"github.com/tendermint/tendermint/libs/log"
-	"github.com/tendermint/tm-db"
-
-	"github.com/cosmos/cosmos-sdk/codec"
 	abci "github.com/tendermint/tendermint/abci/types"
+	"github.com/tendermint/tendermint/libs/log"
+	dbm "github.com/tendermint/tm-db"
 )
 
-func TestExport(t *testing.T) {
-	db := db.NewMemDB()
-	app := NewInitApp(log.NewTMLogger(log.NewSyncWriter(os.Stdout)), db, nil, true, 0)
-	err := setGenesis(app)
-	assert.NoError(t, err)
-	_, _, err = app.ExportAppStateAndValidators(false, []string{})
-	require.NoError(t, err, "ExportAppStateAndValidators should not have an error")
+func TestGetMaccPerms(t *testing.T) {
+	dup := GetMaccPerms()
+	require.Equal(t, maccPerms, dup, "duplicated module account permissions differed from actual module account permissions")
 }
 
-// ensure that black listed addresses are properly set in bank keeper
-func TestBlackListedAddrs(t *testing.T) {
-	db := db.NewMemDB()
-	app := NewInitApp(log.NewTMLogger(log.NewSyncWriter(os.Stdout)), db, nil, true, 0)
+func TestSimAppExportAndBlockedAddrs(t *testing.T) {
+	encCfg := MakeTestEncodingConfig()
+	db := dbm.NewMemDB()
+	app := NewSifApp(log.NewTMLogger(log.NewSyncWriter(os.Stdout)), db, nil, true, map[int64]bool{}, DefaultNodeHome, 0, encCfg, EmptyAppOptions{})
 
 	for acc := range maccPerms {
-		require.True(t, app.BankKeeper.BlacklistedAddr(app.SupplyKeeper.GetModuleAddress(acc)))
+		require.True(
+			t,
+			app.BankKeeper.BlockedAddr(app.AccountKeeper.GetModuleAddress(acc)),
+			"ensure that blocked addresses are properly set in bank keeper",
+		)
 	}
-}
 
-func setGenesis(app *SifchainApp) error {
-	genesisState := NewDefaultGenesisState()
-	stateBytes, err := codec.MarshalJSONIndent(app.Cdc, genesisState)
-	if err != nil {
-		return err
-	}
+	genesisState := NewDefaultGenesisState(encCfg.Marshaler)
+	stateBytes, err := json.MarshalIndent(genesisState, "", "  ")
+	require.NoError(t, err)
 
 	// Initialize the chain
 	app.InitChain(
@@ -47,5 +41,9 @@ func setGenesis(app *SifchainApp) error {
 		},
 	)
 	app.Commit()
-	return nil
+
+	// Making a new app object with the db, so that initchain hasn't been called
+	app2 := NewSifApp(log.NewTMLogger(log.NewSyncWriter(os.Stdout)), db, nil, true, map[int64]bool{}, DefaultNodeHome, 0, encCfg, EmptyAppOptions{})
+	_, err = app2.ExportAppStateAndValidators(false, []string{})
+	require.NoError(t, err, "ExportAppStateAndValidators should not have an error")
 }

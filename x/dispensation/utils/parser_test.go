@@ -2,14 +2,15 @@ package utils_test
 
 import (
 	"encoding/json"
-	"github.com/Sifchain/sifnode/x/dispensation/test"
-	"github.com/Sifchain/sifnode/x/dispensation/utils"
-	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/cosmos/cosmos-sdk/x/bank"
-	"github.com/stretchr/testify/assert"
 	"io/ioutil"
 	"os"
 	"testing"
+
+	"github.com/Sifchain/sifnode/x/dispensation/test"
+	"github.com/Sifchain/sifnode/x/dispensation/utils"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/cosmos-sdk/x/bank/types"
+	"github.com/stretchr/testify/assert"
 )
 
 const (
@@ -37,8 +38,8 @@ func createInput(t *testing.T, filename string) {
 	assert.NoError(t, err)
 	out, err := sdk.AccAddressFromBech32("sif1l7hypmqk2yc334vc6vmdwzp5sdefygj2ad93p5")
 	assert.NoError(t, err)
-	coin := sdk.Coins{sdk.NewCoin("rowan", sdk.NewInt(10))}
-	inputList := []bank.Input{bank.NewInput(in, coin), bank.NewInput(out, coin)}
+	coin := sdk.NewCoins(sdk.NewCoin("rowan", sdk.NewInt(10)))
+	inputList := []types.Input{types.NewInput(in, coin), types.NewInput(out, coin)}
 	tempInput := utils.TempInput{In: inputList}
 	file, _ := json.MarshalIndent(tempInput, "", " ")
 	_ = ioutil.WriteFile(filename, file, 0600)
@@ -75,17 +76,4 @@ func TestParseOutput(t *testing.T) {
 	outputs, err := utils.ParseOutput(file)
 	assert.NoError(t, err)
 	assert.Equal(t, len(outputs), count)
-}
-
-func TestTotalOutput(t *testing.T) {
-	file := "output.json"
-	count := 3000
-	createOutput(file, count)
-	defer removeFile(t, file)
-	outputs, err := utils.ParseOutput(file)
-	assert.NoError(t, err)
-	total, err := utils.TotalOutput(outputs)
-	assert.NoError(t, err)
-	num, _ := sdk.NewIntFromString("30000000000000000000000")
-	assert.True(t, total.AmountOf("rowan").Equal(num))
 }

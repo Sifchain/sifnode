@@ -9,7 +9,7 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/common"
-	tmKv "github.com/tendermint/tendermint/libs/kv"
+	abci "github.com/tendermint/tendermint/abci/types"
 
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/types"
 	ethbridge "github.com/Sifchain/sifnode/x/ethbridge/types"
@@ -20,8 +20,8 @@ const (
 	EthereumPrivateKey        = "ETHEREUM_PRIVATE_KEY"
 	TestEthereumChainID       = 3
 	TestBridgeContractAddress = "0xd88159878c50e4B2b03BB701DD436e4A98D6fBe2"
-	TestLockClaimType         = 0
-	TestBurnClaimType         = 1
+	TestLockClaimType         = 1
+	TestBurnClaimType         = 2
 	TestProphecyID            = 20
 	TestNonce                 = 19
 	TestEthTokenAddress       = "0x0000000000000000000000000000000000000000"
@@ -64,7 +64,7 @@ func CreateTestLogEthereumEvent(t *testing.T) types.EthereumEvent {
 		ID:                    testProphecyID32,
 		From:                  testEthereumSender,
 		To:                    testCosmosRecipient, Token: testTokenAddress,
-		Symbol: TestSymbol, Value: testAmount, Nonce: testNonce, ClaimType: ethbridge.LockText}
+		Symbol: TestSymbol, Value: testAmount, Nonce: testNonce, ClaimType: ethbridge.ClaimType_CLAIM_TYPE_LOCK}
 }
 
 // CreateTestProphecyClaimEvent creates a sample ProphecyClaimEvent for testing purposes
@@ -102,23 +102,23 @@ func CreateTestCosmosMsg(t *testing.T, claimType types.Event) types.CosmosMsg {
 }
 
 // CreateCosmosMsgAttributes creates expected attributes for a MsgBurn/MsgLock for testing purposes
-func CreateCosmosMsgAttributes(t *testing.T, claimType types.Event) []tmKv.Pair {
-	attributes := [6]tmKv.Pair{}
+func CreateCosmosMsgAttributes(t *testing.T, claimType types.Event) []abci.EventAttribute {
+	attributes := [6]abci.EventAttribute{}
 
 	// (key, value) pairing for "cosmos_sender" key
-	pairCosmosSender := tmKv.Pair{
+	pairCosmosSender := abci.EventAttribute{
 		Key:   []byte("cosmos_sender"),
 		Value: []byte(TestCosmosAddress1),
 	}
 
 	// (key, value) pairing for "cosmos_sender_sequence" key
-	pairCosmosSenderSequence := tmKv.Pair{
+	pairCosmosSenderSequence := abci.EventAttribute{
 		Key:   []byte("cosmos_sender_sequence"),
 		Value: []byte(strconv.Itoa(TestCosmosAddressSequence)),
 	}
 
 	// (key, value) pairing for "ethereum_receiver" key
-	pairEthereumReceiver := tmKv.Pair{
+	pairEthereumReceiver := abci.EventAttribute{
 		Key:   []byte("ethereum_receiver"),
 		Value: []byte(common.HexToAddress(TestEthereumAddress1).Hex()), // .Bytes() doesn't seem to work here
 	}
@@ -130,19 +130,19 @@ func CreateCosmosMsgAttributes(t *testing.T, claimType types.Event) []tmKv.Pair 
 	} else {
 		symbol = TestSymbol
 	}
-	pairSymbol := tmKv.Pair{
+	pairSymbol := abci.EventAttribute{
 		Key:   []byte("symbol"),
 		Value: []byte(symbol),
 	}
 
 	// (key, value) pairing for "amount" key
-	pairAmount := tmKv.Pair{
+	pairAmount := abci.EventAttribute{
 		Key:   []byte("amount"),
 		Value: []byte(testAmount.String()),
 	}
 
 	// (key, value) pairing for "token_contract_address" key
-	pairTokenContract := tmKv.Pair{
+	pairTokenContract := abci.EventAttribute{
 		Key:   []byte("token_contract_address"),
 		Value: []byte(common.HexToAddress(TestEthTokenAddress).Hex()),
 	}
@@ -159,22 +159,22 @@ func CreateCosmosMsgAttributes(t *testing.T, claimType types.Event) []tmKv.Pair 
 }
 
 // CreateCosmosMsgIncompleteAttributes creates a MsgBurn/MsgLock for testing purposes missing some attributes
-func CreateCosmosMsgIncompleteAttributes(t *testing.T, claimType types.Event) []tmKv.Pair {
-	attributes := [3]tmKv.Pair{}
+func CreateCosmosMsgIncompleteAttributes(t *testing.T, claimType types.Event) []abci.EventAttribute {
+	attributes := [3]abci.EventAttribute{}
 	// (key, value) pairing for "cosmos_sender" key
-	pairCosmosSender := tmKv.Pair{
+	pairCosmosSender := abci.EventAttribute{
 		Key:   []byte("cosmos_sender"),
 		Value: []byte(TestCosmosAddress1),
 	}
 
 	// (key, value) pairing for "cosmos_sender_sequence" key
-	pairCosmosSenderSequence := tmKv.Pair{
+	pairCosmosSenderSequence := abci.EventAttribute{
 		Key:   []byte("cosmos_sender_sequence"),
 		Value: []byte(strconv.Itoa(TestCosmosAddressSequence)),
 	}
 
 	// (key, value) pairing for "ethereum_receiver" key
-	pairEthereumReceiver := tmKv.Pair{
+	pairEthereumReceiver := abci.EventAttribute{
 		Key:   []byte("ethereum_receiver"),
 		Value: []byte(common.HexToAddress(TestEthereumAddress1).Hex()), // .Bytes() doesn't seem to work here
 	}
@@ -188,23 +188,23 @@ func CreateCosmosMsgIncompleteAttributes(t *testing.T, claimType types.Event) []
 }
 
 // CreateEthereumBridgeClaimAttributes creates some attributes for ethereum bridge claim
-func CreateEthereumBridgeClaimAttributes(t *testing.T) []tmKv.Pair {
-	attributes := [3]tmKv.Pair{}
+func CreateEthereumBridgeClaimAttributes(t *testing.T) []abci.EventAttribute {
+	attributes := [3]abci.EventAttribute{}
 
 	// (key, value) pairing for "cosmos_sender" key
-	pairCosmosSender := tmKv.Pair{
+	pairCosmosSender := abci.EventAttribute{
 		Key:   []byte("cosmos_sender"),
 		Value: []byte(TestCosmosValAddress),
 	}
 
 	// (key, value) pairing for "cosmos_sender_sequence" key
-	pairCosmosSenderSequence := tmKv.Pair{
+	pairCosmosSenderSequence := abci.EventAttribute{
 		Key:   []byte("cosmos_sender_sequence"),
 		Value: []byte(strconv.Itoa(TestCosmosAddressSequence)),
 	}
 
 	// (key, value) pairing for "ethereum_receiver" key
-	pairEthereumReceiver := tmKv.Pair{
+	pairEthereumReceiver := abci.EventAttribute{
 		Key:   []byte("ethereum_sender"),
 		Value: []byte(common.HexToAddress(TestEthereumAddress1).Hex()), // .Bytes() doesn't seem to work here
 	}
@@ -218,23 +218,23 @@ func CreateEthereumBridgeClaimAttributes(t *testing.T) []tmKv.Pair {
 }
 
 // CreateInvalidCosmosSenderEthereumBridgeClaimAttributes creates some invalide attributes for ethereum bridge claim
-func CreateInvalidCosmosSenderEthereumBridgeClaimAttributes(t *testing.T) []tmKv.Pair {
-	attributes := [3]tmKv.Pair{}
+func CreateInvalidCosmosSenderEthereumBridgeClaimAttributes(t *testing.T) []abci.EventAttribute {
+	attributes := [3]abci.EventAttribute{}
 
 	// (key, value) pairing for "cosmos_sender" key
-	pairCosmosSender := tmKv.Pair{
+	pairCosmosSender := abci.EventAttribute{
 		Key:   []byte("cosmos_sender"),
 		Value: []byte(TestEthereumAddress1),
 	}
 
 	// (key, value) pairing for "cosmos_sender_sequence" key
-	pairCosmosSenderSequence := tmKv.Pair{
+	pairCosmosSenderSequence := abci.EventAttribute{
 		Key:   []byte("cosmos_sender_sequence"),
 		Value: []byte(strconv.Itoa(TestCosmosAddressSequence)),
 	}
 
 	// (key, value) pairing for "ethereum_receiver" key
-	pairEthereumReceiver := tmKv.Pair{
+	pairEthereumReceiver := abci.EventAttribute{
 		Key:   []byte("ethereum_sender"),
 		Value: []byte(common.HexToAddress(TestEthereumAddress1).Hex()), // .Bytes() doesn't seem to work here
 	}
@@ -248,23 +248,23 @@ func CreateInvalidCosmosSenderEthereumBridgeClaimAttributes(t *testing.T) []tmKv
 }
 
 // CreateInvalidEthereumSenderEthereumBridgeClaimAttributes creates some attributes for ethereum bridge claim
-func CreateInvalidEthereumSenderEthereumBridgeClaimAttributes(t *testing.T) []tmKv.Pair {
-	attributes := [3]tmKv.Pair{}
+func CreateInvalidEthereumSenderEthereumBridgeClaimAttributes(t *testing.T) []abci.EventAttribute {
+	attributes := [3]abci.EventAttribute{}
 
 	// (key, value) pairing for "cosmos_sender" key
-	pairCosmosSender := tmKv.Pair{
+	pairCosmosSender := abci.EventAttribute{
 		Key:   []byte("cosmos_sender"),
 		Value: []byte(TestCosmosValAddress),
 	}
 
 	// (key, value) pairing for "cosmos_sender_sequence" key
-	pairCosmosSenderSequence := tmKv.Pair{
+	pairCosmosSenderSequence := abci.EventAttribute{
 		Key:   []byte("cosmos_sender_sequence"),
 		Value: []byte(strconv.Itoa(TestCosmosAddressSequence)),
 	}
 
 	// (key, value) pairing for "ethereum_receiver" key
-	pairEthereumReceiver := tmKv.Pair{
+	pairEthereumReceiver := abci.EventAttribute{
 		Key:   []byte("ethereum_sender"),
 		Value: []byte(TestCosmosValAddress), // .Bytes() doesn't seem to work here
 	}
@@ -278,23 +278,23 @@ func CreateInvalidEthereumSenderEthereumBridgeClaimAttributes(t *testing.T) []tm
 }
 
 // CreateInvalidSequenceEthereumBridgeClaimAttributes creates some attributes for ethereum bridge claim
-func CreateInvalidSequenceEthereumBridgeClaimAttributes(t *testing.T) []tmKv.Pair {
-	attributes := [3]tmKv.Pair{}
+func CreateInvalidSequenceEthereumBridgeClaimAttributes(t *testing.T) []abci.EventAttribute {
+	attributes := [3]abci.EventAttribute{}
 
 	// (key, value) pairing for "cosmos_sender" key
-	pairCosmosSender := tmKv.Pair{
+	pairCosmosSender := abci.EventAttribute{
 		Key:   []byte("cosmos_sender"),
 		Value: []byte(TestCosmosValAddress),
 	}
 
 	// (key, value) pairing for "cosmos_sender_sequence" key
-	pairCosmosSenderSequence := tmKv.Pair{
+	pairCosmosSenderSequence := abci.EventAttribute{
 		Key:   []byte("cosmos_sender_sequence"),
 		Value: []byte(TestCosmosValAddress),
 	}
 
 	// (key, value) pairing for "ethereum_receiver" key
-	pairEthereumReceiver := tmKv.Pair{
+	pairEthereumReceiver := abci.EventAttribute{
 		Key:   []byte("ethereum_sender"),
 		Value: []byte("wrong sequence"), // .Bytes() doesn't seem to work here
 	}

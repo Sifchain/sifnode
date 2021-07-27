@@ -12,7 +12,6 @@ import (
 
 const (
 	NodeHomeDir   = ".sifnoded"
-	CLIHomeDir    = ".sifnodecli"
 	ConfigDir     = "config"
 	GentxsDir     = "gentxs"
 	ValidatorsDir = "validators"
@@ -25,8 +24,6 @@ type Validator struct {
 	IPv4Address               string `yaml:"ipv4_address"`
 	HomeDir                   string `yaml:"-"`
 	NodeHomeDir               string `yaml:"-"`
-	CLIHomeDir                string `yaml:"-"`
-	CLIConfigDir              string `yaml:"-"`
 	Moniker                   string `yaml:"moniker"`
 	Password                  string `yaml:"password"`
 	Address                   string `yaml:"address"`
@@ -42,16 +39,14 @@ func NewValidator(rootDir, chainID string, seed bool, lastIPv4Addr string) *Vali
 	homeDir := fmt.Sprintf("%s/%s/%s/%s", rootDir, ValidatorsDir, chainID, moniker)
 
 	return &Validator{
-		IPv4Address:  nextIP(lastIPv4Addr),
-		ChainID:      chainID,
-		HomeDir:      homeDir,
-		NodeHomeDir:  fmt.Sprintf("%s/%s", homeDir, NodeHomeDir),
-		CLIHomeDir:   fmt.Sprintf("%s/%s", homeDir, CLIHomeDir),
-		CLIConfigDir: fmt.Sprintf("%s/%s/%s", homeDir, CLIHomeDir, ConfigDir),
-		Moniker:      moniker,
-		Password:     generatePassword(),
-		Mnemonic:     generateMnemonic(),
-		Seed:         seed,
+		IPv4Address: nextIP(lastIPv4Addr),
+		ChainID:     chainID,
+		HomeDir:     homeDir,
+		NodeHomeDir: fmt.Sprintf("%s/%s", homeDir, NodeHomeDir),
+		Moniker:     moniker,
+		Password:    generatePassword(),
+		Mnemonic:    generateMnemonic(),
+		Seed:        seed,
 	}
 }
 

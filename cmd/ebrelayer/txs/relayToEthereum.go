@@ -9,15 +9,13 @@ import (
 	"math/big"
 	"time"
 
-	ctypes "github.com/ethereum/go-ethereum/core/types"
-
-	"github.com/ethereum/go-ethereum/accounts/abi/bind"
-	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/ethclient"
-	"go.uber.org/zap"
-
 	cosmosbridge "github.com/Sifchain/sifnode/cmd/ebrelayer/contract/generated/bindings/cosmosbridge"
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/types"
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"github.com/ethereum/go-ethereum/common"
+	ctypes "github.com/ethereum/go-ethereum/core/types"
+	"github.com/ethereum/go-ethereum/ethclient"
+	"go.uber.org/zap"
 )
 
 const (
@@ -33,12 +31,12 @@ func sleepThread(seconds time.Duration) {
 
 // RelayProphecyClaimToEthereum relays the provided ProphecyClaim to CosmosBridge contract on the Ethereum network
 func RelayProphecyClaimToEthereum(
-	claim ProphecyClaim,
+	claim types.CosmosMsg,
 	sugaredLogger *zap.SugaredLogger,
 	client *ethclient.Client,
 	auth *bind.TransactOpts,
 	cosmosBridgeInstance *cosmosbridge.CosmosBridge,
-	) error {
+) error {
 
 	// Send transaction
 	sugaredLogger.Infow(
@@ -47,13 +45,19 @@ func RelayProphecyClaimToEthereum(
 		"CosmosSenderSequence", claim.CosmosSenderSequence,
 	)
 
+	amount := claim.Amount.BigInt()
+
 	tx, err := cosmosBridgeInstance.NewProphecyClaim(
-		auth, uint8(claim.ClaimType), claim.CosmosSender,
-		claim.CosmosSenderSequence, claim.EthereumReceiver,
-		claim.Symbol, claim.Amount.BigInt(),
+		auth,
+		uint8(claim.ClaimType),
+		claim.CosmosSender,
+		claim.CosmosSenderSequence,
+		claim.EthereumReceiver,
+		claim.Symbol,
+		amount,
 	)
-	
-	// sleep 2 seconds to wait for tx to go through.
+
+	// sleep 2 seconds to wait for tx to go through before querying.
 	sleepThread(2)
 
 	if err != nil {
@@ -70,7 +74,7 @@ func RelayProphecyClaimToEthereum(
 	for i < maxRetries {
 		// Get the transaction receipt
 		receipt, err = client.TransactionReceipt(context.Background(), tx.Hash())
-	
+
 		if err != nil {
 			sleepThread(1)
 		} else {
@@ -91,19 +95,19 @@ func RelayProphecyClaimToEthereum(
 	return nil
 }
 
-// initRelayConfig set up Ethereum client, validator's transaction auth, and the target contract's address
+// InitRelayConfig set up Ethereum client, validator's transaction auth, and the target contract's address
 func InitRelayConfig(
 	provider string,
 	registry common.Address,
 	event types.Event,
 	key *ecdsa.PrivateKey,
 	sugaredLogger *zap.SugaredLogger,
-	) (
-		*ethclient.Client,
-		*bind.TransactOpts,
-		common.Address,
-		error,
-	) {
+) (
+	*ethclient.Client,
+	*bind.TransactOpts,
+	common.Address,
+	error,
+) {
 	// Start Ethereum client
 	client, err := ethclient.Dial(provider)
 	if err != nil {

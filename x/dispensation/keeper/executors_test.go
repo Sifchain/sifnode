@@ -1,30 +1,33 @@
 package keeper_test
 
 import (
+	"testing"
+
 	"github.com/Sifchain/sifnode/x/dispensation/test"
 	"github.com/Sifchain/sifnode/x/dispensation/types"
 	dispensationUtils "github.com/Sifchain/sifnode/x/dispensation/utils"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/cosmos/cosmos-sdk/x/bank"
 	"github.com/stretchr/testify/assert"
-	"github.com/tendermint/tendermint/crypto/ed25519"
-	"testing"
+	"github.com/tendermint/tendermint/crypto"
 )
 
 func TestKeeper_AccumulateDrops(t *testing.T) {
 	app, ctx := test.CreateTestApp(false)
 	keeper := app.DispensationKeeper
 	rowanAmount := "15000000000000000000"
-	inputList := test.GenerateInputList(rowanAmount)
+	inputList := test.CreateInputList(3, rowanAmount)
 	//outputList := test.GenerateOutputList("10000000000000000000")
 	for _, in := range inputList {
-		_, err := keeper.GetBankKeeper().AddCoins(ctx, in.Address, in.Coins)
+		address, err := sdk.AccAddressFromBech32(in.Address)
+		assert.NoError(t, err)
+		err = keeper.GetBankKeeper().AddCoins(ctx, address, in.Coins)
 		assert.NoError(t, err)
 	}
-	err := keeper.AccumulateDrops(ctx, inputList[0].Address, inputList[0].Coins)
+	distributor := inputList[0]
+	err := keeper.AccumulateDrops(ctx, distributor.Address, distributor.Coins)
 	assert.NoError(t, err)
 	moduleBalance, _ := sdk.NewIntFromString(rowanAmount)
-	assert.True(t, keeper.GetBankKeeper().HasCoins(ctx, types.GetDistributionModuleAddress(), sdk.Coins{sdk.NewCoin("rowan", moduleBalance)}))
+	assert.True(t, keeper.HasCoins(ctx, types.GetDistributionModuleAddress(), sdk.NewCoins(sdk.NewCoin("rowan", moduleBalance))))
 
 }
 
@@ -32,10 +35,12 @@ func TestKeeper_CreateAndDistributeDrops(t *testing.T) {
 	app, ctx := test.CreateTestApp(false)
 	keeper := app.DispensationKeeper
 	outputAmount := "10000000000000000000"
-	inputList := test.GenerateInputList("90000000000000000000")
-	outputList := test.GenerateOutputList(outputAmount)
+	inputList := test.CreateInputList(3, "90000000000000000000")
+	outputList := test.CreatOutputList(3, outputAmount)
 	for _, in := range inputList {
-		_, err := keeper.GetBankKeeper().AddCoins(ctx, in.Address, in.Coins)
+		address, err := sdk.AccAddressFromBech32(in.Address)
+		assert.NoError(t, err)
+		err = keeper.GetBankKeeper().AddCoins(ctx, address, in.Coins)
 		assert.NoError(t, err)
 	}
 	totalCoins, err := dispensationUtils.TotalOutput(outputList)
@@ -44,75 +49,40 @@ func TestKeeper_CreateAndDistributeDrops(t *testing.T) {
 	err = keeper.AccumulateDrops(ctx, inputList[0].Address, totalCoins)
 	assert.NoError(t, err)
 	moduleBalance, _ := sdk.NewIntFromString("15000000000000000000")
-	assert.True(t, keeper.GetBankKeeper().HasCoins(ctx, types.GetDistributionModuleAddress(), sdk.Coins{sdk.NewCoin("rowan", moduleBalance)}))
+	assert.True(t, keeper.HasCoins(ctx, types.GetDistributionModuleAddress(), sdk.NewCoins(sdk.NewCoin("rowan", moduleBalance))))
 	distributionName := "ar1"
-	runner := sdk.AccAddress{}
-	err = keeper.CreateDrops(ctx, outputList, distributionName, types.Airdrop, runner)
+	runner := ""
+	err = keeper.CreateDrops(ctx, outputList, distributionName, types.DistributionType_DISTRIBUTION_TYPE_AIRDROP, runner)
 	assert.NoError(t, err)
-	err = keeper.CreateDrops(ctx, outputList, distributionName, types.LiquidityMining, runner)
+	err = keeper.CreateDrops(ctx, outputList, distributionName, types.DistributionType_DISTRIBUTION_TYPE_LIQUIDITY_MINING, runner)
 	assert.NoError(t, err)
-	err = keeper.CreateDrops(ctx, outputList, distributionName, types.LiquidityMining, runner)
+	err = keeper.CreateDrops(ctx, outputList, distributionName, types.DistributionType_DISTRIBUTION_TYPE_LIQUIDITY_MINING, runner)
 	assert.NoError(t, err)
 
-	_, err = keeper.DistributeDrops(ctx, 1, distributionName, runner, types.Airdrop)
+	_, err = keeper.DistributeDrops(ctx, 1, distributionName, runner, types.DistributionType_DISTRIBUTION_TYPE_AIRDROP)
 	assert.NoError(t, err)
-	_, err = keeper.DistributeDrops(ctx, 1, distributionName, runner, types.LiquidityMining)
+	_, err = keeper.DistributeDrops(ctx, 1, distributionName, runner, types.DistributionType_DISTRIBUTION_TYPE_LIQUIDITY_MINING)
 	assert.NoError(t, err)
-	completedRecords := keeper.GetRecordsForNameCompleted(ctx, distributionName)
-	assert.Equal(t, 6, len(completedRecords))
-	recordsLM := keeper.GetRecordsForNameAndType(ctx, distributionName, types.LiquidityMining)
-	assert.Equal(t, 3, len(recordsLM))
-	recordsAD := keeper.GetRecordsForNameAndType(ctx, distributionName, types.Airdrop)
-	assert.Equal(t, 3, len(recordsAD))
+	completedRecords := keeper.GetRecordsForNameAndStatus(ctx, distributionName, types.DistributionStatus_DISTRIBUTION_STATUS_COMPLETED)
+	assert.Equal(t, 6, len(completedRecords.DistributionRecords))
+	recordsLM := keeper.GetRecordsForNameStatusAndType(ctx, distributionName, types.DistributionStatus_DISTRIBUTION_STATUS_COMPLETED, types.DistributionType_DISTRIBUTION_TYPE_LIQUIDITY_MINING)
+	assert.Equal(t, 3, len(recordsLM.DistributionRecords))
+	recordsAD := keeper.GetRecordsForNameStatusAndType(ctx, distributionName, types.DistributionStatus_DISTRIBUTION_STATUS_COMPLETED, types.DistributionType_DISTRIBUTION_TYPE_AIRDROP)
+	assert.Equal(t, 3, len(recordsAD.DistributionRecords))
 	doubleOutputAmount, ok := sdk.NewIntFromString("20000000000000000000")
 	assert.True(t, ok)
 	for i := 0; i < len(outputList); i++ {
-		assert.True(t, recordsLM[i].Coins.IsAllGT(recordsAD[i].Coins))
-		assert.True(t, recordsLM[i].Coins.AmountOf("rowan").Equal(doubleOutputAmount))
+		assert.True(t, recordsLM.DistributionRecords[i].Coins.IsAllGT(recordsAD.DistributionRecords[i].Coins))
+		assert.True(t, recordsLM.DistributionRecords[i].Coins.AmountOf("rowan").Equal(doubleOutputAmount))
 	}
-}
-
-func TestKeeper_CreateAndDistributeDrops_AddressError(t *testing.T) {
-	app, ctx := test.CreateTestApp(false)
-	keeper := app.DispensationKeeper
-	outputAmount := "10000000000000000000"
-
-	outputList := test.GenerateOutputList(outputAmount)
-
-	newCoins, _ := sdk.NewIntFromString("900000")
-	newAddressCoins := sdk.NewCoins(sdk.NewCoin("rowan", newCoins))
-	totalCoins, err := dispensationUtils.TotalOutput(outputList)
-	assert.NoError(t, err)
-
-	// New address added after total Coins is calculated
-	// This means total coins is less than that the amount required for distribution
-	outputList = append(outputList, bank.NewOutput(sdk.AccAddress(ed25519.GenPrivKey().PubKey().Address()),
-		newAddressCoins))
-	outputList = append(outputList, bank.NewOutput(sdk.AccAddress(ed25519.GenPrivKey().PubKey().Address()),
-		newAddressCoins))
-	fundingAddress := sdk.AccAddress(ed25519.GenPrivKey().PubKey().Address())
-	_, err = keeper.GetBankKeeper().AddCoins(ctx, fundingAddress, totalCoins)
-	assert.NoError(t, err)
-	err = keeper.AccumulateDrops(ctx, fundingAddress, totalCoins)
-	assert.NoError(t, err)
-	distributionName := "ar1"
-	runner := sdk.AccAddress{}
-	err = keeper.CreateDrops(ctx, outputList, distributionName, types.LiquidityMining, runner)
-	assert.NoError(t, err)
-
-	_, err = keeper.DistributeDrops(ctx, 1, distributionName, runner, types.LiquidityMining)
-	assert.NoError(t, err)
-	completedRecords := keeper.GetRecordsForNameCompleted(ctx, distributionName)
-	assert.GreaterOrEqual(t, len(completedRecords), 3)
-	failedRecords := keeper.GetRecordsForNameAllFailed(ctx, distributionName)
-	assert.LessOrEqual(t, len(failedRecords), 2)
 }
 
 func TestKeeper_VerifyDistribution(t *testing.T) {
 	app, ctx := test.CreateTestApp(false)
 	keeper := app.DispensationKeeper
-	err := keeper.VerifyAndSetDistribution(ctx, "AR1", types.Airdrop, sdk.AccAddress{})
+	authorizedRunner := sdk.AccAddress(crypto.AddressHash([]byte("Runner")))
+	err := keeper.VerifyAndSetDistribution(ctx, "AR1", types.DistributionType_DISTRIBUTION_TYPE_AIRDROP, authorizedRunner.String())
 	assert.NoError(t, err)
-	err = keeper.VerifyAndSetDistribution(ctx, "AR1", types.Airdrop, sdk.AccAddress{})
+	err = keeper.VerifyAndSetDistribution(ctx, "AR1", types.DistributionType_DISTRIBUTION_TYPE_AIRDROP, authorizedRunner.String())
 	assert.Error(t, err)
 }
