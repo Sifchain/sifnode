@@ -26,7 +26,7 @@ mkdir -p ./deploy/docker/scripts
 wget -O ./deploy/docker/scripts/entrypoint.sh https://raw.githubusercontent.com/Sifchain/sifchain-deploy-public/master/docker/scripts/entrypoint.sh
 chmod +x ./deploy/docker/scripts/entrypoint.sh
 
-TIMESTAMP=<timestamp> GAS_PRICE="0.5rowan" docker-compose -f ./deloy/docker/mainnet/docker-compose.yml up
+TIMESTAMP=<timestamp> GAS_PRICE="0.5rowan" docker-compose -f ./deploy/docker/mainnet/docker-compose.yml up
 ```
 
 Replace `<timestamp>` with the timestamp that is announced on Discord. The above will also replace your existing `docker-compose.yml` and `entrypoint.sh` with slightly modified versions, to allow your node to halt and be upgraded. You will see a number of warnings about values being empty when you restart your node; you can safely ignore these.
