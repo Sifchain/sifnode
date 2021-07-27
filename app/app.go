@@ -1,7 +1,7 @@
 package app
 
 import (
-	whitelistkeeper "github.com/Sifchain/sifnode/x/whitelist/keeper"
+	whitelistkeeper "github.com/Sifchain/sifnode/x/tokenregistry/keeper"
 	"io"
 	"math/big"
 	"net/http"
@@ -91,8 +91,8 @@ import (
 	"github.com/Sifchain/sifnode/x/oracle"
 	oraclekeeper "github.com/Sifchain/sifnode/x/oracle/keeper"
 	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
-	"github.com/Sifchain/sifnode/x/whitelist"
-	whitelisttypes "github.com/Sifchain/sifnode/x/whitelist/types"
+	"github.com/Sifchain/sifnode/x/tokenregistry"
+	whitelisttypes "github.com/Sifchain/sifnode/x/tokenregistry/types"
 )
 
 const appName = "sifnode"
@@ -121,7 +121,7 @@ var (
 		oracle.AppModuleBasic{},
 		ethbridge.AppModuleBasic{},
 		dispensation.AppModuleBasic{},
-		whitelist.AppModuleBasic{},
+		tokenregistry.AppModuleBasic{},
 	)
 
 	maccPerms = map[string][]string{
@@ -382,7 +382,7 @@ func NewSifApp(
 		oracle.NewAppModule(app.OracleKeeper),
 		ethbridge.NewAppModule(app.OracleKeeper, app.BankKeeper, app.AccountKeeper, app.EthbridgeKeeper, &appCodec),
 		dispensation.NewAppModule(app.DispensationKeeper, app.BankKeeper, app.AccountKeeper),
-		whitelist.NewAppModule(app.WhitelistKeeper, &appCodec),
+		tokenregistry.NewAppModule(app.WhitelistKeeper, &appCodec),
 	)
 
 	// During begin block slashing happens after distr.BeginBlocker so that
@@ -421,7 +421,7 @@ func NewSifApp(
 		oracletypes.ModuleName,
 		ethbridge.ModuleName,
 		dispensation.ModuleName,
-		whitelist.ModuleName,
+		tokenregistry.ModuleName,
 	)
 
 	app.mm.RegisterRoutes(app.Router(), app.QueryRouter(), encodingConfig.Amino)

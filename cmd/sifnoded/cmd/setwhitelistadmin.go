@@ -15,7 +15,7 @@ import (
 	genutiltypes "github.com/cosmos/cosmos-sdk/x/genutil/types"
 	"github.com/spf13/cobra"
 
-	whitelisttypes "github.com/Sifchain/sifnode/x/whitelist/types"
+	whitelisttypes "github.com/Sifchain/sifnode/x/tokenregistry/types"
 )
 
 func SetGenesisWhitelisterAdminCmd(defaultNodeHome string) *cobra.Command {

@@ -7,7 +7,7 @@ import (
 	transfertypes "github.com/cosmos/cosmos-sdk/x/ibc/applications/transfer/types"
 	channeltypes "github.com/cosmos/cosmos-sdk/x/ibc/core/04-channel/types"
 
-	whitelisttypes "github.com/Sifchain/sifnode/x/whitelist/types"
+	whitelisttypes "github.com/Sifchain/sifnode/x/tokenregistry/types"
 )
 
 func OnRecvPacketWhiteListed(

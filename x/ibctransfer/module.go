@@ -20,7 +20,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	whitelisttypes "github.com/Sifchain/sifnode/x/whitelist/types"
+	whitelisttypes "github.com/Sifchain/sifnode/x/tokenregistry/types"
 )
 
 // Type check to ensure the interface is properly implemented

@@ -1,0 +1,29 @@
+syntax = "proto3";
+package sifnode.tokenregistry.v1;
+
+import "gogoproto/gogo.proto";
+
+option go_package = "github.com/Sifchain/sifnode/x/tokenregistry/types";
+
+message GenesisState {
+  string admin_account = 1;
+  Registry registry = 2;
+}
+
+message Registry {
+  repeated RegistryEntry entries = 1;
+}
+
+message RegistryEntry {
+  bool is_whitelisted = 1;
+  int64 decimals = 2;
+  string denom = 3;
+  string base_denom = 4;
+  string path = 5;
+  string display_name = 6;
+  string display_symbol = 7;
+  string network = 8;
+  string address = 9;
+  string external_symbol = 10;
+  string transfer_limit = 11;
+}

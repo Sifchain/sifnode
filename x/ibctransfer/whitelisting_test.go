@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/require"
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 
-	whitelistmocks "github.com/Sifchain/sifnode/x/whitelist/types/mock"
+	whitelistmocks "github.com/Sifchain/sifnode/x/tokenregistry/types/mock"
 )
 
 func TestIsRecvPacketAllowed(t *testing.T) {

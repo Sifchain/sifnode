@@ -3,7 +3,7 @@ package keeper
 import (
 	"fmt"
 
-	whitelisttypes "github.com/Sifchain/sifnode/x/whitelist/types"
+	whitelisttypes "github.com/Sifchain/sifnode/x/tokenregistry/types"
 
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"

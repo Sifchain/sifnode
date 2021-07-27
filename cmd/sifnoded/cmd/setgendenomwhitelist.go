@@ -3,8 +3,8 @@ package cmd
 import (
 	"encoding/json"
 	"fmt"
-	whitelisttypes "github.com/Sifchain/sifnode/x/whitelist/types"
-	whitelistutils "github.com/Sifchain/sifnode/x/whitelist/utils"
+	whitelisttypes "github.com/Sifchain/sifnode/x/tokenregistry/types"
+	whitelistutils "github.com/Sifchain/sifnode/x/tokenregistry/utils"
 
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"

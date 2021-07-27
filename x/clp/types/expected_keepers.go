@@ -1,7 +1,7 @@
 package types
 
 import (
-	"github.com/Sifchain/sifnode/x/whitelist/types"
+	"github.com/Sifchain/sifnode/x/tokenregistry/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"

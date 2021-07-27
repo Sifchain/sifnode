@@ -1,0 +1,20 @@
+syntax = "proto3";
+package sifnode.tokenregistry.v1;
+
+import "gogoproto/gogo.proto";
+import "google/api/annotations.proto";
+import "sifnode/tokenregistry/v1/types.proto";
+
+option go_package = "github.com/Sifchain/sifnode/x/tokenregistry/types";
+
+// Query defines the gRPC querier service.
+service Query {
+  rpc Entries(QueryEntriesRequest) returns (QueryEntriesResponse) {
+    option (google.api.http).get = "/sifchain/tokenregistry/v1beta1/entries";
+  }
+}
+
+message QueryEntriesResponse {
+    Registry list = 1;
+}
+message QueryEntriesRequest {}

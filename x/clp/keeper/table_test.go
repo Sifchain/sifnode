@@ -12,7 +12,7 @@ import (
 	sifapp "github.com/Sifchain/sifnode/app"
 	clpkeeper "github.com/Sifchain/sifnode/x/clp/keeper"
 	clptest "github.com/Sifchain/sifnode/x/clp/test"
-	whitelisttypes "github.com/Sifchain/sifnode/x/whitelist/types"
+	whitelisttypes "github.com/Sifchain/sifnode/x/tokenregistry/types"
 )
 
 func getDenomWhiteListEntries() whitelisttypes.Registry {
