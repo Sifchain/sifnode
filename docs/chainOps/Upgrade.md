@@ -46,6 +46,7 @@ GENESIS_TIME=<time> \
 VERSION="0.9.0" \
 CURRENT_VERSION="0.8.8" \
 DATA_MIGRATE_VERSION="0.9" \
+GAS_PRICE="0.5rowan" \
 docker-compose -f ./deploy/docker/mainnet/docker-compose.yml up
 ```
 
