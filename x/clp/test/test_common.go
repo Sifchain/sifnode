@@ -15,6 +15,7 @@ import (
 
 	sifapp "github.com/Sifchain/sifnode/app"
 	"github.com/Sifchain/sifnode/x/clp/types"
+	tokenregistrytypes "github.com/Sifchain/sifnode/x/tokenregistry/types"
 )
 
 // Constants for test scripts only .
@@ -40,11 +41,11 @@ func CreateTestApp(isCheckTx bool) (*sifapp.SifchainApp, sdk.Context) {
 func CreateTestAppClp(isCheckTx bool) (sdk.Context, *sifapp.SifchainApp) {
 	ctx, app := GetSimApp(isCheckTx)
 	sifapp.SetConfig(false)
-	app.TokenRegistryKeeper.SetDenom(ctx, "ceth", 18)
-	app.TokenRegistryKeeper.SetDenom(ctx, "cdash", 18)
-	app.TokenRegistryKeeper.SetDenom(ctx, "eth", 18)
-	app.TokenRegistryKeeper.SetDenom(ctx, "cacoin", 18)
-	app.TokenRegistryKeeper.SetDenom(ctx, "dash", 18)
+	app.TokenRegistryKeeper.SetToken(ctx, &tokenregistrytypes.RegistryEntry{IsWhitelisted: true, Denom: "ceth", Decimals: 18})
+	app.TokenRegistryKeeper.SetToken(ctx, &tokenregistrytypes.RegistryEntry{IsWhitelisted: true, Denom: "cdash", Decimals: 18})
+	app.TokenRegistryKeeper.SetToken(ctx, &tokenregistrytypes.RegistryEntry{IsWhitelisted: true, Denom: "eth", Decimals: 18})
+	app.TokenRegistryKeeper.SetToken(ctx, &tokenregistrytypes.RegistryEntry{IsWhitelisted: true, Denom: "cacoin", Decimals: 18})
+	app.TokenRegistryKeeper.SetToken(ctx, &tokenregistrytypes.RegistryEntry{IsWhitelisted: true, Denom: "dash", Decimals: 18})
 	return ctx, app
 }
 

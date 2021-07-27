@@ -120,14 +120,26 @@ func (mr *MockKeeperMockRecorder) IsDenomWhitelisted(ctx, denom interface{}) *go
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsDenomWhitelisted", reflect.TypeOf((*MockKeeper)(nil).IsDenomWhitelisted), ctx, denom)
 }
 
-// SetDenom mocks base method.
-func (m *MockKeeper) SetDenom(ctx types0.Context, denom string, exp int64) {
+// RemoveToken mocks base method.
+func (m *MockKeeper) RemoveToken(ctx types0.Context, denom string) {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "SetDenom", ctx, denom, exp)
+	m.ctrl.Call(m, "RemoveToken", ctx, denom)
 }
 
-// SetDenom indicates an expected call of SetDenom.
-func (mr *MockKeeperMockRecorder) SetDenom(ctx, denom, exp interface{}) *gomock.Call {
+// RemoveToken indicates an expected call of RemoveToken.
+func (mr *MockKeeperMockRecorder) RemoveToken(ctx, denom interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetDenom", reflect.TypeOf((*MockKeeper)(nil).SetDenom), ctx, denom, exp)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemoveToken", reflect.TypeOf((*MockKeeper)(nil).RemoveToken), ctx, denom)
+}
+
+// SetToken mocks base method.
+func (m *MockKeeper) SetToken(ctx types0.Context, entry *types.RegistryEntry) {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "SetToken", ctx, entry)
+}
+
+// SetToken indicates an expected call of SetToken.
+func (mr *MockKeeperMockRecorder) SetToken(ctx, entry interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetToken", reflect.TypeOf((*MockKeeper)(nil).SetToken), ctx, entry)
 }

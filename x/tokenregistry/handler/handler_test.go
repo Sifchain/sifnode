@@ -21,9 +21,11 @@ func TestNewHandler(t *testing.T) {
 		{
 			name: "Valid Test",
 			msg: types.MsgRegister{
-				From:     admin,
-				Denom:    "TestDenom",
-				Decimals: 18,
+				From: admin,
+				Entry: &types.RegistryEntry{
+					Denom:    "TestDenom",
+					Decimals: 18,
+				},
 			},
 			errorAssertion: assert.NoError,
 			valueAssertion: assert.NotNil,
@@ -31,9 +33,11 @@ func TestNewHandler(t *testing.T) {
 		{
 			name: "Non Admin Account",
 			msg: types.MsgRegister{
-				From:     sdk.AccAddress("addr2_______________").String(),
-				Denom:    "TestDenom",
-				Decimals: 18,
+				From: sdk.AccAddress("addr2_______________").String(),
+				Entry: &types.RegistryEntry{
+					Denom:    "TestDenom",
+					Decimals: 18,
+				},
 			},
 			errorAssertion: assert.Error,
 			valueAssertion: assert.Nil,
