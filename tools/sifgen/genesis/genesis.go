@@ -3,11 +3,13 @@ package genesis
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/Sifchain/sifnode/tools/sifgen/common"
-	"github.com/Sifchain/sifnode/tools/sifgen/common/types"
-	"github.com/Sifchain/sifnode/tools/sifgen/utils"
 	"io/ioutil"
-	"net/http"
+	"time"
+
+	tmjson "github.com/tendermint/tendermint/libs/json"
+
+	"github.com/Sifchain/sifnode/tools/sifgen/common"
+	"github.com/Sifchain/sifnode/tools/sifgen/utils"
 )
 
 func ReplaceStakingBondDenom(nodeHomeDir string) error {
@@ -16,8 +18,9 @@ func ReplaceStakingBondDenom(nodeHomeDir string) error {
 		return err
 	}
 
-	(*genesis).AppState.Staking.Params.BondDenom = common.StakeTokenDenom
-	content, err := json.Marshal(genesis)
+	genesis.AppState.Staking.Params.BondDenom = common.StakeTokenDenom
+
+	content, err := tmjson.Marshal(genesis)
 	if err != nil {
 		return err
 	}
@@ -29,14 +32,14 @@ func ReplaceStakingBondDenom(nodeHomeDir string) error {
 	return nil
 }
 
-func ReplaceCLPMinCreatePoolThreshold(nodeHomeDir, minCreatePoolThreshold string) error {
+func ReplaceCLPMinCreatePoolThreshold(nodeHomeDir string, minCreatePoolThreshold uint64) error {
 	genesis, err := readGenesis(nodeHomeDir)
 	if err != nil {
 		return err
 	}
 
-	(*genesis).AppState.CLP.Params.MinCreatePoolThreshold = minCreatePoolThreshold
-	content, err := json.Marshal(genesis)
+	(*genesis).AppState.CLP.Params.MinCreatePoolThreshold = json.Number(fmt.Sprintf("%d", minCreatePoolThreshold))
+	content, err := tmjson.Marshal(genesis)
 	if err != nil {
 		return err
 	}
@@ -55,7 +58,7 @@ func ReplaceGovDepositParamsMinDeposit(nodeHomeDir, tokenDenom string) error {
 	}
 
 	(*genesis).AppState.Gov.DepositParams.MinDeposit[0].Denom = tokenDenom
-	content, err := json.Marshal(genesis)
+	content, err := tmjson.Marshal(genesis)
 	if err != nil {
 		return err
 	}
@@ -67,14 +70,14 @@ func ReplaceGovDepositParamsMinDeposit(nodeHomeDir, tokenDenom string) error {
 	return nil
 }
 
-func ReplaceGovDepositParamsMaxDepositPeriod(nodeHomeDir, period string) error {
+func ReplaceGovDepositParamsMaxDepositPeriod(nodeHomeDir string, period time.Duration) error {
 	genesis, err := readGenesis(nodeHomeDir)
 	if err != nil {
 		return err
 	}
 
-	(*genesis).AppState.Gov.DepositParams.MaxDepositPeriod = period
-	content, err := json.Marshal(genesis)
+	(*genesis).AppState.Gov.DepositParams.MaxDepositPeriod = fmt.Sprintf("%v", period)
+	content, err := tmjson.Marshal(genesis)
 	if err != nil {
 		return err
 	}
@@ -86,53 +89,14 @@ func ReplaceGovDepositParamsMaxDepositPeriod(nodeHomeDir, period string) error {
 	return nil
 }
 
-func ReplaceGovVotingParamsVotingPeriod(nodeHomeDir, period string) error {
+func ReplaceGovVotingParamsVotingPeriod(nodeHomeDir string, period time.Duration) error {
 	genesis, err := readGenesis(nodeHomeDir)
 	if err != nil {
 		return err
 	}
 
-	(*genesis).AppState.Gov.VotingParams.VotingPeriod = period
-	content, err := json.Marshal(genesis)
-	if err != nil {
-		return err
-	}
-
-	if err := writeGenesis(nodeHomeDir, content); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func InitializeCLP(nodeHomeDir, clpConfigURL string) error {
-	genesis, err := readGenesis(nodeHomeDir)
-	if err != nil {
-		return err
-	}
-
-	response, err := http.Get(fmt.Sprintf("%v", clpConfigURL))
-	if err != nil {
-		return err
-	}
-
-	defer response.Body.Close()
-
-	body, err := ioutil.ReadAll(response.Body)
-	if err != nil {
-		return err
-	}
-
-	var pools types.CLP
-	if err := json.Unmarshal(body, &pools); err != nil {
-		return err
-	}
-
-	(*genesis).AppState.CLP.PoolList = pools.PoolList
-	(*genesis).AppState.CLP.LiquidityProviderList = pools.LiquidityProviderList
-	(*genesis).AppState.CLP.CLPModuleAddress = pools.CLPModuleAddress
-
-	content, err := json.Marshal(genesis)
+	(*genesis).AppState.Gov.VotingParams.VotingPeriod = fmt.Sprintf("%v", period)
+	content, err := tmjson.Marshal(genesis)
 	if err != nil {
 		return err
 	}

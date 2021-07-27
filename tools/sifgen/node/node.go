@@ -3,12 +3,13 @@ package node
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/Sifchain/sifnode/app"
 	"io/ioutil"
 	"net/http"
 	"os"
 	"strings"
+	"time"
 
+	"github.com/Sifchain/sifnode/app"
 	"github.com/Sifchain/sifnode/tools/sifgen/common"
 	"github.com/Sifchain/sifnode/tools/sifgen/genesis"
 	"github.com/Sifchain/sifnode/tools/sifgen/key"
@@ -16,32 +17,33 @@ import (
 	"github.com/Sifchain/sifnode/tools/sifgen/utils"
 
 	"github.com/BurntSushi/toml"
+	"github.com/cosmos/cosmos-sdk/crypto/keyring"
 	"github.com/sethvargo/go-password/password"
 	"gopkg.in/yaml.v3"
 )
 
 type Node struct {
-	CLI                       utils.CLI `yaml:"-"`
-	AdminCLPAddresses         []string  `yaml:"admin_clp_addresses"`
-	ChainID                   string    `yaml:"chain_id"`
-	Moniker                   string    `yaml:"moniker"`
-	Mnemonic                  string    `yaml:"mnemonic"`
-	AdminOracleAddress        string    `yaml:"admin_oracle_address"`
-	IPAddr                    string    `yaml:"ip_address"`
-	Address                   string    `yaml:"address"`
-	Password                  string    `yaml:"password"`
-	BondAmount                string    `yaml:"-"`
-	MintAmount                string    `yaml:"-"`
-	FaucetAmount              string    `yaml:"-"`
-	MinCLPCreatePoolThreshold string    `yaml:"-"`
-	GovMaxDepositPeriod       string    `yaml:"-"`
-	GovVotingPeriod           string    `yaml:"-"`
-	CLPConfigURL              string    `yaml:"-"`
-	PeerAddress               string    `yaml:"-"`
-	GenesisURL                string    `yaml:"-"`
-	Key                       *key.Key  `yaml:"-"`
-	Standalone                bool      `yaml:"-"`
-	WithCosmovisor            bool      `yaml:"-"`
+	CLI                       utils.CLI     `yaml:"-"`
+	AdminCLPAddresses         []string      `yaml:"admin_clp_addresses"`
+	ChainID                   string        `yaml:"chain_id"`
+	Moniker                   string        `yaml:"moniker"`
+	Mnemonic                  string        `yaml:"mnemonic"`
+	AdminOracleAddress        string        `yaml:"admin_oracle_address"`
+	IPAddr                    string        `yaml:"ip_address"`
+	Address                   string        `yaml:"address"`
+	Password                  string        `yaml:"password"`
+	BondAmount                string        `yaml:"-"`
+	MintAmount                string        `yaml:"-"`
+	MinCLPCreatePoolThreshold uint64        `yaml:"-"`
+	GovMaxDepositPeriod       time.Duration `yaml:"-"`
+	GovVotingPeriod           time.Duration `yaml:"-"`
+	PeerAddress               string        `yaml:"-"`
+	GenesisURL                string        `yaml:"-"`
+	Key                       *key.Key      `yaml:"-"`
+	Standalone                bool          `yaml:"-"`
+	WithCosmovisor            bool          `yaml:"-"`
+	EnableGrpc                bool          `yaml:"-"`
+	EnableAPI                 bool          `yaml:"-"`
 }
 
 func Reset(chainID string, nodeDir *string) error {
@@ -52,7 +54,7 @@ func Reset(chainID string, nodeDir *string) error {
 		directory = *nodeDir
 	}
 
-	_, err := utils.NewCLI(chainID).ResetState(directory)
+	_, err := utils.NewCLI(chainID, keyring.BackendFile).ResetState(directory)
 	if err != nil {
 		return err
 	}
@@ -87,26 +89,6 @@ func (n *Node) setup() error {
 		return err
 	}
 
-	_, err = n.CLI.SetKeyRingStorage()
-	if err != nil {
-		return err
-	}
-
-	_, err = n.CLI.SetConfigChainID(n.ChainID)
-	if err != nil {
-		return err
-	}
-
-	_, err = n.CLI.SetConfigIndent(true)
-	if err != nil {
-		return err
-	}
-
-	_, err = n.CLI.SetConfigTrustNode(true)
-	if err != nil {
-		return err
-	}
-
 	if err := n.generatePassword(); err != nil {
 		return err
 	}
@@ -137,7 +119,12 @@ func (n *Node) networkGenesis() error {
 		return err
 	}
 
-	err = n.replaceConfig()
+	err = n.replaceConfigTOML()
+	if err != nil {
+		return err
+	}
+
+	err = n.replaceAppTOML()
 	if err != nil {
 		return err
 	}
@@ -151,23 +138,20 @@ func (n *Node) seedGenesis() error {
 		return err
 	}
 
-	if n.ChainID != "sifchain" {
-		_, err = n.CLI.AddFaucet(n.FaucetAmount)
-		if err != nil {
-			return err
+	if len(n.AdminCLPAddresses) != 0 {
+		for _, adminAddress := range n.AdminCLPAddresses {
+			_, err := n.CLI.AddGenesisCLPAdmin(adminAddress, common.DefaultNodeHome)
+			if err != nil {
+				return err
+			}
 		}
 	}
 
-	for _, adminAddress := range n.AdminCLPAddresses {
-		_, err := n.CLI.AddGenesisCLPAdmin(adminAddress, common.DefaultNodeHome)
+	if n.AdminOracleAddress != "" {
+		_, err = n.CLI.SetGenesisOracleAdmin(n.AdminOracleAddress, common.DefaultNodeHome)
 		if err != nil {
 			return err
 		}
-	}
-
-	_, err = n.CLI.SetGenesisOracleAdmin(n.AdminOracleAddress, common.DefaultNodeHome)
-	if err != nil {
-		return err
 	}
 
 	gentxDir, err := ioutil.TempDir("", "gentx")
@@ -188,11 +172,11 @@ func (n *Node) seedGenesis() error {
 		n.Password,
 		n.BondAmount,
 		common.DefaultNodeHome,
-		common.DefaultCLIHome,
 		outputFile,
 		strings.TrimSuffix(*nodeID, "\n"),
 		strings.TrimSuffix(*pubKey, "\n"),
-		n.IPAddr)
+		n.IPAddr,
+		n.ChainID)
 	if err != nil {
 		return err
 	}
@@ -222,13 +206,12 @@ func (n *Node) seedGenesis() error {
 		return err
 	}
 
-	if n.CLPConfigURL != "" {
-		if err = genesis.InitializeCLP(common.DefaultNodeHome, n.CLPConfigURL); err != nil {
-			return err
-		}
+	err = n.replaceConfigTOML()
+	if err != nil {
+		return err
 	}
 
-	err = n.replaceConfig()
+	err = n.replaceAppTOML()
 	if err != nil {
 		return err
 	}
@@ -248,7 +231,7 @@ func (n *Node) generatePassword() error {
 }
 
 func (n *Node) generateNodeKeyAddress() error {
-	output, err := n.CLI.AddKey(n.Moniker, n.Mnemonic, n.Password, common.DefaultCLIHome)
+	output, err := n.CLI.AddKey(n.Moniker, n.Mnemonic, n.Password, common.DefaultNodeHome)
 	if err != nil {
 		return err
 	}
@@ -301,8 +284,8 @@ func (n *Node) saveGenesis(genesis types.Genesis) error {
 	return nil
 }
 
-func (n *Node) replaceConfig() error {
-	config, err := n.parseConfig()
+func (n *Node) replaceConfigTOML() error {
+	config, err := n.parseConfigTOML()
 	if err != nil {
 		return err
 	}
@@ -338,10 +321,51 @@ func (n *Node) replaceConfig() error {
 	return nil
 }
 
-func (n *Node) parseConfig() (common.NodeConfig, error) {
-	var config common.NodeConfig
+func (n *Node) replaceAppTOML() error {
+	config, err := n.parseAppTOML()
+	if err != nil {
+		return err
+	}
+
+	file, err := os.Create(n.CLI.AppFilePath())
+	if err != nil {
+		return err
+	}
+
+	config.API.Enable = n.EnableAPI
+	config.API.EnabledUnsafeCors = true
+	config.Grpc.Enable = n.EnableGrpc
+
+	if err := toml.NewEncoder(file).Encode(config); err != nil {
+		return err
+	}
+
+	if err := file.Close(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (n *Node) parseConfigTOML() (common.ConfigTOML, error) {
+	var config common.ConfigTOML
 
 	content, err := ioutil.ReadFile(n.CLI.ConfigFilePath())
+	if err != nil {
+		return config, err
+	}
+
+	if _, err := toml.Decode(string(content), &config); err != nil {
+		return config, err
+	}
+
+	return config, nil
+}
+
+func (n *Node) parseAppTOML() (common.AppTOML, error) {
+	var config common.AppTOML
+
+	content, err := ioutil.ReadFile(n.CLI.AppFilePath())
 	if err != nil {
 		return config, err
 	}

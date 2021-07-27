@@ -3,43 +3,35 @@ package types
 import (
 	"encoding/json"
 	"fmt"
+	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
 	"strconv"
 
-	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
-
-	"github.com/Sifchain/sifnode/x/oracle"
 )
 
-// EthBridgeClaim is a structure that contains all the data for a particular bridge claim
-type EthBridgeClaim struct {
-	EthereumChainID       int             `json:"ethereum_chain_id" yaml:"ethereum_chain_id"`
-	BridgeContractAddress EthereumAddress `json:"bridge_registry_contract_address" yaml:"bridge_registry_contract_address"`
-	Nonce                 int             `json:"nonce" yaml:"nonce"`
-	Symbol                string          `json:"symbol" yaml:"symbol"`
-	TokenContractAddress  EthereumAddress `json:"token_contract_address" yaml:"token_contract_address"`
-	EthereumSender        EthereumAddress `json:"ethereum_sender" yaml:"ethereum_sender"`
-	CosmosReceiver        sdk.AccAddress  `json:"cosmos_receiver" yaml:"cosmos_receiver"`
-	ValidatorAddress      sdk.ValAddress  `json:"validator_address" yaml:"validator_address"`
-	Amount                sdk.Int         `json:"amount" yaml:"amount"`
-	ClaimType             ClaimType       `json:"claim_type" yaml:"claim_type"`
-}
-
 // NewEthBridgeClaim is a constructor function for NewEthBridgeClaim
-func NewEthBridgeClaim(ethereumChainID int, bridgeContract EthereumAddress,
-	nonce int, symbol string, tokenContact EthereumAddress, ethereumSender EthereumAddress,
-	cosmosReceiver sdk.AccAddress, validator sdk.ValAddress, amount sdk.Int, claimType ClaimType,
-) EthBridgeClaim {
-	return EthBridgeClaim{
-		EthereumChainID:       ethereumChainID,
-		BridgeContractAddress: bridgeContract,
+func NewEthBridgeClaim(
+	ethereumChainID int64,
+	bridgeContract EthereumAddress,
+	nonce int64,
+	symbol string,
+	tokenContact EthereumAddress,
+	ethereumSender EthereumAddress,
+	cosmosReceiver sdk.AccAddress,
+	validator sdk.ValAddress,
+	amount sdk.Int,
+	claimType ClaimType,
+) *EthBridgeClaim {
+	return &EthBridgeClaim{
+		EthereumChainId:       ethereumChainID,
+		BridgeContractAddress: bridgeContract.String(),
 		Nonce:                 nonce,
 		Symbol:                symbol,
-		TokenContractAddress:  tokenContact,
-		EthereumSender:        ethereumSender,
-		CosmosReceiver:        cosmosReceiver,
-		ValidatorAddress:      validator,
+		TokenContractAddress:  tokenContact.String(),
+		EthereumSender:        ethereumSender.String(),
+		CosmosReceiver:        cosmosReceiver.String(),
+		ValidatorAddress:      validator.String(),
 		Amount:                amount,
 		ClaimType:             claimType,
 	}
@@ -72,28 +64,39 @@ func NewOracleClaimContent(
 // must be created in a deterministic way that all validators can follow.
 // For this, we use the Nonce an Ethereum Sender provided,
 // as all validators will see this same data from the smart contract.
-func CreateOracleClaimFromEthClaim(cdc *codec.Codec, ethClaim EthBridgeClaim) (oracle.Claim, error) {
-	oracleID := strconv.Itoa(ethClaim.EthereumChainID) + strconv.Itoa(ethClaim.Nonce) + ethClaim.EthereumSender.String()
-	claimContent := NewOracleClaimContent(ethClaim.CosmosReceiver, ethClaim.Amount,
-		ethClaim.Symbol, ethClaim.TokenContractAddress, ethClaim.ClaimType)
+func CreateOracleClaimFromEthClaim(ethClaim *EthBridgeClaim) (oracletypes.Claim, error) {
+	oracleID := strconv.FormatInt(ethClaim.EthereumChainId, 10) + strconv.FormatInt(ethClaim.Nonce, 10) +
+		ethClaim.EthereumSender
+
+	cosmosReceiver, err := sdk.AccAddressFromBech32(ethClaim.CosmosReceiver)
+	if err != nil {
+		return oracletypes.Claim{}, err
+	}
+
+	claimContent := NewOracleClaimContent(cosmosReceiver, ethClaim.Amount,
+		ethClaim.Symbol, NewEthereumAddress(ethClaim.TokenContractAddress), ethClaim.ClaimType)
 	claimBytes, err := json.Marshal(claimContent)
 	if err != nil {
-		return oracle.Claim{}, err
+		return oracletypes.Claim{}, err
 	}
 	claimString := string(claimBytes)
-	claim := oracle.NewClaim(oracleID, ethClaim.ValidatorAddress, claimString)
+	claim := oracletypes.NewClaim(oracleID, ethClaim.ValidatorAddress, claimString)
 	return claim, nil
 }
 
 // CreateEthClaimFromOracleString converts a string
 // from any generic claim from the oracle module into an ethereum bridge specific claim.
 func CreateEthClaimFromOracleString(
-	ethereumChainID int, bridgeContract EthereumAddress, nonce int,
-	ethereumAddress EthereumAddress, validator sdk.ValAddress, oracleClaimString string,
-) (EthBridgeClaim, error) {
+	ethereumChainID int64,
+	bridgeContract EthereumAddress,
+	nonce int64,
+	ethereumAddress EthereumAddress,
+	validator sdk.ValAddress,
+	oracleClaimString string,
+) (*EthBridgeClaim, error) {
 	oracleClaim, err := CreateOracleClaimFromOracleString(oracleClaimString)
 	if err != nil {
-		return EthBridgeClaim{}, err
+		return nil, err
 	}
 
 	return NewEthBridgeClaim(

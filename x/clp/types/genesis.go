@@ -2,18 +2,10 @@ package types
 
 import (
 	"encoding/json"
-	"github.com/cosmos/cosmos-sdk/codec"
-	sdk "github.com/cosmos/cosmos-sdk/types"
-)
+	"fmt"
 
-// GenesisState - all clp state that must be provided at genesis
-//TODO: Add parameters to Genesis state ,such as minimum liquidity required to create a pool
-type GenesisState struct {
-	Params                Params             `json:"params" yaml:"params"`
-	AddressWhitelist      []sdk.AccAddress   `json:"address_whitelist"`
-	PoolList              Pools              `json:"pool_list"`
-	LiquidityProviderList LiquidityProviders `json:"liquidity_provider_list"`
-}
+	"github.com/cosmos/cosmos-sdk/codec"
+)
 
 // NewGenesisState creates a new GenesisState instance
 func NewGenesisState(params Params) GenesisState {
@@ -24,18 +16,21 @@ func NewGenesisState(params Params) GenesisState {
 }
 
 // DefaultGenesisState gets the raw genesis raw message for testing
-func DefaultGenesisState() GenesisState {
+func DefaultGenesisState() *GenesisState {
 	admin := GetDefaultCLPAdmin()
-	return GenesisState{
+	return &GenesisState{
 		Params:           DefaultParams(),
-		AddressWhitelist: []sdk.AccAddress{admin},
+		AddressWhitelist: []string{admin.String()},
 	}
 }
 
-func GetGenesisStateFromAppState(cdc *codec.Codec, appState map[string]json.RawMessage) GenesisState {
+func GetGenesisStateFromAppState(marshaler codec.JSONMarshaler, appState map[string]json.RawMessage) GenesisState {
 	var genesisState GenesisState
 	if appState[ModuleName] != nil {
-		cdc.MustUnmarshalJSON(appState[ModuleName], &genesisState)
+		err := marshaler.UnmarshalJSON(appState[ModuleName], &genesisState)
+		if err != nil {
+			panic(fmt.Sprintf("Failed to get genesis state from app state: %s", err.Error()))
+		}
 	}
 	return genesisState
 }

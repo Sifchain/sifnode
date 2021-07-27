@@ -1,14 +1,11 @@
 package txs
 
 import (
-	"math/big"
-	"os"
 	"strings"
 	"testing"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/zap"
 
@@ -41,7 +38,7 @@ func TestLogLockToEthBridgeClaim(t *testing.T) {
 	// Set up expected EthBridgeClaim
 	expectedEthBridgeClaim := ethbridge.NewEthBridgeClaim(
 		TestEthereumChainID, testBridgeContractAddress, TestNonce, strings.ToLower(TestSymbol), testTokenContractAddress,
-		testEthereumAddress, testCosmosAddress, testCosmosValidatorBech32Address, testSDKAmount, TestLockClaimType)
+		testEthereumAddress, testCosmosAddress, testCosmosValidatorBech32Address, testSDKAmount, ethbridge.ClaimType_CLAIM_TYPE_LOCK)
 
 	// Create test ethereum event
 	ethereumEvent := CreateTestLogEthereumEvent(t)
@@ -49,43 +46,7 @@ func TestLogLockToEthBridgeClaim(t *testing.T) {
 	ethBridgeClaim, err := EthereumEventToEthBridgeClaim(testCosmosValidatorBech32Address, ethereumEvent)
 	require.NoError(t, err)
 
-	require.Equal(t, expectedEthBridgeClaim, ethBridgeClaim)
-}
-
-func TestProphecyClaimToSignedOracleClaim(t *testing.T) {
-	// Set ETHEREUM_PRIVATE_KEY env variable
-	os.Setenv(EthereumPrivateKey, TestPrivHex)
-	// Get and load private key from env variables
-	rawKey := os.Getenv(EthereumPrivateKey)
-	privateKey, _ := crypto.HexToECDSA(rawKey)
-
-	// Create new test ProphecyClaimEvent
-	prophecyClaimEvent := CreateTestProphecyClaimEvent(t)
-	// Generate claim message from ProphecyClaim
-	message := GenerateClaimMessage(prophecyClaimEvent)
-
-	// Prepare the message (required for signature verification on contract)
-	prefixedHashedMsg := PrefixMsg(message)
-
-	// Sign the message using the validator's private key
-	signature, err := SignClaim(prefixedHashedMsg, privateKey)
-	require.NoError(t, err)
-
-	var message32 [32]byte
-	copy(message32[:], message)
-
-	// Set up expected OracleClaim
-	expectedOracleClaim := OracleClaim{
-		ProphecyID: big.NewInt(int64(TestProphecyID)),
-		Message:    message32,
-		Signature:  signature,
-	}
-
-	// Map the test ProphecyClaim to a signed OracleClaim
-	oracleClaim, err := ProphecyClaimToSignedOracleClaim(prophecyClaimEvent, privateKey)
-	require.NoError(t, err)
-
-	require.Equal(t, expectedOracleClaim, oracleClaim)
+	require.Equal(t, expectedEthBridgeClaim, &ethBridgeClaim)
 }
 
 func TestBurnEventToCosmosMsg(t *testing.T) {
@@ -126,46 +87,6 @@ func TestFailedLockEventToCosmosMsg(t *testing.T) {
 	_, err := BurnLockEventToCosmosMsg(types.MsgLock, cosmosMsgAttributes, sugaredLogger)
 
 	require.Error(t, err)
-}
-
-func TestMsgBurnToProphecyClaim(t *testing.T) {
-	// Parse expected symbol
-	res := strings.SplitAfter(strings.ToLower(TestSymbol), defaultSifchainPrefix)
-	symbol := strings.Join(res[1:], "")
-
-	// Set up expected ProphecyClaim
-	expectedProphecyClaim := ProphecyClaim{
-		ClaimType:            types.MsgBurn,
-		CosmosSender:         []byte(TestCosmosAddress1),
-		CosmosSenderSequence: big.NewInt(1),
-		EthereumReceiver:     common.HexToAddress(TestEthereumAddress1),
-		Symbol:               symbol,
-		Amount:               testSDKAmount,
-	}
-
-	// Create a MsgBurn as input parameter
-	testCosmosMsgBurn := CreateTestCosmosMsg(t, types.MsgBurn)
-	prophecyClaim := CosmosMsgToProphecyClaim(testCosmosMsgBurn)
-
-	require.Equal(t, expectedProphecyClaim, prophecyClaim)
-}
-
-func TestMsgLockToProphecyClaim(t *testing.T) {
-	// Set up expected ProphecyClaim
-	expectedProphecyClaim := ProphecyClaim{
-		ClaimType:            types.MsgLock,
-		CosmosSender:         []byte(TestCosmosAddress1),
-		CosmosSenderSequence: big.NewInt(1),
-		EthereumReceiver:     common.HexToAddress(TestEthereumAddress1),
-		Symbol:               TestSymbol,
-		Amount:               testSDKAmount,
-	}
-
-	// Create a MsgLock as input parameter
-	testCosmosMsgLock := CreateTestCosmosMsg(t, types.MsgLock)
-	prophecyClaim := CosmosMsgToProphecyClaim(testCosmosMsgLock)
-
-	require.Equal(t, expectedProphecyClaim, prophecyClaim)
 }
 
 func TestIsZeroAddress(t *testing.T) {

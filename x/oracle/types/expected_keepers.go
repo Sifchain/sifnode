@@ -2,7 +2,7 @@ package types // noalias
 
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/cosmos/cosmos-sdk/x/staking"
+	staking "github.com/cosmos/cosmos-sdk/x/staking/types"
 )
 
 // StakingKeeper defines the expected staking keeper

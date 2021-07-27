@@ -1,0 +1,48 @@
+syntax = "proto3";
+package sifnode.dispensation.v1;
+
+import "gogoproto/gogo.proto";
+import "sifnode/dispensation/v1/types.proto";
+
+option go_package = "github.com/Sifchain/sifnode/x/dispensation/types";
+
+service Query {
+  rpc AllDistributions(QueryAllDistributionsRequest)
+      returns (QueryAllDistributionsResponse) {}
+  rpc RecordsByDistributionName(QueryRecordsByDistributionNameRequest)
+      returns (QueryRecordsByDistributionNameResponse) {}
+  rpc RecordsByRecipient(QueryRecordsByRecipientAddrRequest)
+      returns (QueryRecordsByRecipientAddrResponse) {}
+  rpc ClaimsByType(QueryClaimsByTypeRequest) returns (QueryClaimsResponse) {}
+}
+
+message QueryAllDistributionsRequest {}
+
+message QueryAllDistributionsResponse {
+  repeated Distribution distributions = 1;
+  int64 height = 2;
+}
+
+message QueryRecordsByDistributionNameRequest {
+  string distribution_name = 1;
+  sifnode.dispensation.v1.DistributionStatus status = 2;
+}
+
+message QueryRecordsByDistributionNameResponse {
+  DistributionRecords distribution_records = 1;
+  int64 height = 2;
+}
+
+message QueryRecordsByRecipientAddrRequest { string address = 1; }
+
+message QueryRecordsByRecipientAddrResponse {
+  DistributionRecords distribution_records = 1;
+  int64 height = 2;
+}
+
+message QueryClaimsByTypeRequest { DistributionType user_claim_type = 1; }
+
+message QueryClaimsResponse {
+  repeated UserClaim claims = 1;
+  int64 height = 2;
+}

@@ -8,26 +8,33 @@ import (
 	abci "github.com/tendermint/tendermint/abci/types"
 )
 
-// TODO Add import and export state
 func InitGenesis(ctx sdk.Context, keeper Keeper, data types.GenesisState) (res []abci.ValidatorUpdate) {
-	for _, record := range data.DistributionRecords {
-		err := keeper.SetDistributionRecord(ctx, record)
-		if err != nil {
-			panic(fmt.Sprintf("Error setting distribution record during init genesis : %s", record.String()))
+	if data.DistributionRecords != nil {
+		for _, record := range data.DistributionRecords.DistributionRecords {
+			err := keeper.SetDistributionRecord(ctx, *record)
+			if err != nil {
+				panic(fmt.Sprintf("Error setting distribution record during init genesis : %s", record.String()))
+			}
 		}
 	}
-	for _, dist := range data.Distributions {
-		err := keeper.SetDistribution(ctx, dist)
-		if err != nil {
-			panic(fmt.Sprintf("Error setting distribution during init genesis : %s", dist.String()))
+	if data.Distributions != nil {
+		for _, dist := range data.Distributions.Distributions {
+			err := keeper.SetDistribution(ctx, *dist)
+			if err != nil {
+				panic(fmt.Sprintf("Error setting distribution during init genesis : %s", dist.String()))
+			}
 		}
 	}
-	for _, claim := range data.Claims {
-		err := keeper.SetClaim(ctx, claim)
-		if err != nil {
-			panic(fmt.Sprintf("Error setting claim during init genesis : %s", claim.String()))
+
+	if data.Claims != nil {
+		for _, claim := range data.Claims.UserClaims {
+			err := keeper.SetClaim(ctx, *claim)
+			if err != nil {
+				panic(fmt.Sprintf("Error setting claim during init genesis : %s", claim.String()))
+			}
 		}
 	}
+
 	return []abci.ValidatorUpdate{}
 }
 
@@ -40,20 +47,28 @@ func ExportGenesis(ctx sdk.Context, keeper Keeper) types.GenesisState {
 }
 
 func ValidateGenesis(data GenesisState) error {
-	for _, record := range data.DistributionRecords {
-		if !record.Validate() {
-			return errors.Wrap(types.ErrInvalid, fmt.Sprintf("Record is invalid : %s", record.String()))
+	if data.DistributionRecords != nil {
+		for _, record := range data.DistributionRecords.DistributionRecords {
+			if !record.Validate() {
+				return errors.Wrap(types.ErrInvalid, fmt.Sprintf("Record is invalid : %s", record.String()))
+			}
+		}
+
+	}
+	if data.Distributions != nil {
+		for _, dist := range data.Distributions.Distributions {
+			if !dist.Validate() {
+				return errors.Wrap(types.ErrInvalid, fmt.Sprintf("Distribution is invalid : %s", dist.String()))
+			}
 		}
 	}
-	for _, dist := range data.Distributions {
-		if !dist.Validate() {
-			return errors.Wrap(types.ErrInvalid, fmt.Sprintf("Distribution is invalid : %s", dist.String()))
+	if data.Claims != nil {
+		for _, claim := range data.Claims.UserClaims {
+			if !claim.Validate() {
+				return errors.Wrap(types.ErrInvalid, fmt.Sprintf("Claim is invalid : %s", claim.String()))
+			}
 		}
 	}
-	for _, claim := range data.Claims {
-		if !claim.Validate() {
-			return errors.Wrap(types.ErrInvalid, fmt.Sprintf("Claim is invalid : %s", claim.String()))
-		}
-	}
+
 	return nil
 }

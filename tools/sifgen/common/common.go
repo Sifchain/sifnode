@@ -8,14 +8,13 @@ import (
 // Aliases
 type (
 	Keys       types.Keys
-	NodeConfig types.NodeConfig
-	CLIConfig  types.CLIConfig
+	ConfigTOML types.ConfigTOML
+	AppTOML    types.AppTOML
 	Genesis    types.Genesis
 )
 
 var (
 	DefaultNodeHome = app.DefaultNodeHome
-	DefaultCLIHome  = app.DefaultCLIHome
 	StakeTokenDenom = types.StakeTokenDenom
 
 	P2PPort             = 26656
