@@ -13,7 +13,7 @@ Sifchain will publish the time at which your node should halt, via Discord.
 2. Checkout the latest code:
 
 ```bash
-git pull && git checkout master
+git checkout master && git pull
 ```
 
 If you previously launched your standalone validator with the `rake "genesis:sifnode:boot..."` command, you'll notice that when you pull down the latest updates, your `./deploy` folder is now empty (apart from your validator config). This is intentional, as we have moved the deployment helm charts and rake tasks to another repository. 
@@ -38,7 +38,7 @@ Once the upgrade time has been reached, your node will automatically halt. If yo
 To upgrade your node, run (from the root of the sifnode repository):
 
 ```bash
-CHAINNET=sifchain-1
+CHAINNET=sifchain-1 \
 UPGRADE_NODE=true \
 INITIAL_HEIGHT=<height> \
 COSMOS_SDK_VERSION="0.40" \
@@ -62,7 +62,7 @@ Like the standalone solution above, Sifchain will publish the time at which your
 1. Checkout the latest code:
 
 ```bash
-git pull && git checkout master
+git checkout master && git pull
 ```
 
 2. Checkout the new `sifnode-deploy-public` repository (from the root of where you checked out the sifnode repository to), as these rake tasks and helm charts have been moved to a new repository:
