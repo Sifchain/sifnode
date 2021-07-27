@@ -1,0 +1,169 @@
+{
+  "fileName": "OwnableMock.sol",
+  "contractName": "OwnableMock",
+  "source": "pragma solidity ^0.5.0;\n\nimport \"../ownership/Ownable.sol\";\n\ncontract OwnableMock is Ownable {\n    // solhint-disable-previous-line no-empty-blocks\n}\n",
+  "sourcePath": "contracts/mocks/OwnableMock.sol",
+  "sourceMap": "61:88:90:-;;;698:17:112;718:12;:10;;;:12;;:::i;:::-;698:32;;749:9;740:6;;:18;;;;;;;;;;;;;;;;;;806:9;773:43;;802:1;773:43;;;;;;;;;;;;664:159;61:88:90;;788:96:0;833:15;867:10;860:17;;788:96;:::o;61:88:90:-;;;;;;;",
+  "deployedSourceMap": "61:88:90:-;;;;8:9:-1;5:2;;;30:1;27;20:12;5:2;61:88:90;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;1684:137:112;;;:::i;:::-;;899:77;;;:::i;:::-;;;;;;;;;;;;;;;;;;;;;;;1250:92;;;:::i;:::-;;;;;;;;;;;;;;;;;;;;;;;1970:107;;;;;;13:2:-1;8:3;5:11;2:2;;;29:1;26;19:12;2:2;1970:107:112;;;;;;;;;;;;;;;;;;;:::i;:::-;;1684:137;1103:9;:7;:9::i;:::-;1095:54;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;1782:1;1745:40;;1766:6;;;;;;;;;;;1745:40;;;;;;;;;;;;1812:1;1795:6;;:19;;;;;;;;;;;;;;;;;;1684:137::o;899:77::-;937:7;963:6;;;;;;;;;;;956:13;;899:77;:::o;1250:92::-;1290:4;1329:6;;;;;;;;;;;1313:22;;:12;:10;:12::i;:::-;:22;;;1306:29;;1250:92;:::o;1970:107::-;1103:9;:7;:9::i;:::-;1095:54;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;2042:28;2061:8;2042:18;:28::i;:::-;1970:107;:::o;788:96:0:-;833:15;867:10;860:17;;788:96;:::o;2178:225:112:-;2271:1;2251:22;;:8;:22;;;;2243:73;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;2360:8;2331:38;;2352:6;;;;;;;;;;;2331:38;;;;;;;;;;;;2388:8;2379:6;;:17;;;;;;;;;;;;;;;;;;2178:225;:::o",
+  "abi": [
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "previousOwner",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "newOwner",
+          "type": "address"
+        }
+      ],
+      "name": "OwnershipTransferred",
+      "type": "event"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "isOwner",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "owner",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [],
+      "name": "renounceOwnership",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "newOwner",
+          "type": "address"
+        }
+      ],
+      "name": "transferOwnership",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    }
+  ],
+  "ast": {
+    "absolutePath": "contracts/mocks/OwnableMock.sol",
+    "exportedSymbols": {
+      "OwnableMock": [
+        7417
+      ]
+    },
+    "id": 7418,
+    "nodeType": "SourceUnit",
+    "nodes": [
+      {
+        "id": 7413,
+        "literals": [
+          "solidity",
+          "^",
+          "0.5",
+          ".0"
+        ],
+        "nodeType": "PragmaDirective",
+        "src": "0:23:90"
+      },
+      {
+        "absolutePath": "contracts/ownership/Ownable.sol",
+        "file": "../ownership/Ownable.sol",
+        "id": 7414,
+        "nodeType": "ImportDirective",
+        "scope": 7418,
+        "sourceUnit": 8706,
+        "src": "25:34:90",
+        "symbolAliases": [],
+        "unitAlias": ""
+      },
+      {
+        "baseContracts": [
+          {
+            "arguments": null,
+            "baseName": {
+              "contractScope": null,
+              "id": 7415,
+              "name": "Ownable",
+              "nodeType": "UserDefinedTypeName",
+              "referencedDeclaration": 8705,
+              "src": "85:7:90",
+              "typeDescriptions": {
+                "typeIdentifier": "t_contract$_Ownable_$8705",
+                "typeString": "contract Ownable"
+              }
+            },
+            "id": 7416,
+            "nodeType": "InheritanceSpecifier",
+            "src": "85:7:90"
+          }
+        ],
+        "contractDependencies": [
+          26,
+          8705
+        ],
+        "contractKind": "contract",
+        "documentation": null,
+        "fullyImplemented": true,
+        "id": 7417,
+        "linearizedBaseContracts": [
+          7417,
+          8705,
+          26
+        ],
+        "name": "OwnableMock",
+        "nodeType": "ContractDefinition",
+        "nodes": [],
+        "scope": 7418,
+        "src": "61:88:90"
+      }
+    ],
+    "src": "0:150:90"
+  },
+  "bytecode": "0x608060405260006100146100b760201b60201c565b9050806000806101000a81548173ffffffffffffffffffffffffffffffffffffffff021916908373ffffffffffffffffffffffffffffffffffffffff1602179055508073ffffffffffffffffffffffffffffffffffffffff16600073ffffffffffffffffffffffffffffffffffffffff167f8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e060405160405180910390a3506100bf565b600033905090565b6104f8806100ce6000396000f3fe608060405234801561001057600080fd5b506004361061004c5760003560e01c8063715018a6146100515780638da5cb5b1461005b5780638f32d59b146100a5578063f2fde38b146100c7575b600080fd5b61005961010b565b005b610063610244565b604051808273ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff16815260200191505060405180910390f35b6100ad61026d565b604051808215151515815260200191505060405180910390f35b610109600480360360208110156100dd57600080fd5b81019080803573ffffffffffffffffffffffffffffffffffffffff1690602001909291905050506102cb565b005b61011361026d565b610185576040517f08c379a00000000000000000000000000000000000000000000000000000000081526004018080602001828103825260208152602001807f4f776e61626c653a2063616c6c6572206973206e6f7420746865206f776e657281525060200191505060405180910390fd5b600073ffffffffffffffffffffffffffffffffffffffff166000809054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff167f8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e060405160405180910390a360008060006101000a81548173ffffffffffffffffffffffffffffffffffffffff021916908373ffffffffffffffffffffffffffffffffffffffff160217905550565b60008060009054906101000a900473ffffffffffffffffffffffffffffffffffffffff16905090565b60008060009054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff166102af610351565b73ffffffffffffffffffffffffffffffffffffffff1614905090565b6102d361026d565b610345576040517f08c379a00000000000000000000000000000000000000000000000000000000081526004018080602001828103825260208152602001807f4f776e61626c653a2063616c6c6572206973206e6f7420746865206f776e657281525060200191505060405180910390fd5b61034e81610359565b50565b600033905090565b600073ffffffffffffffffffffffffffffffffffffffff168173ffffffffffffffffffffffffffffffffffffffff1614156103df576040517f08c379a000000000000000000000000000000000000000000000000000000000815260040180806020018281038252602681526020018061049e6026913960400191505060405180910390fd5b8073ffffffffffffffffffffffffffffffffffffffff166000809054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff167f8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e060405160405180910390a3806000806101000a81548173ffffffffffffffffffffffffffffffffffffffff021916908373ffffffffffffffffffffffffffffffffffffffff1602179055505056fe4f776e61626c653a206e6577206f776e657220697320746865207a65726f2061646472657373a265627a7a72315820cdf5dd40ae5d0eecf24d9a9cb167874c262de7feb314991e9844da219ea05e1f64736f6c63430005110032",
+  "deployedBytecode": "0x608060405234801561001057600080fd5b506004361061004c5760003560e01c8063715018a6146100515780638da5cb5b1461005b5780638f32d59b146100a5578063f2fde38b146100c7575b600080fd5b61005961010b565b005b610063610244565b604051808273ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff16815260200191505060405180910390f35b6100ad61026d565b604051808215151515815260200191505060405180910390f35b610109600480360360208110156100dd57600080fd5b81019080803573ffffffffffffffffffffffffffffffffffffffff1690602001909291905050506102cb565b005b61011361026d565b610185576040517f08c379a00000000000000000000000000000000000000000000000000000000081526004018080602001828103825260208152602001807f4f776e61626c653a2063616c6c6572206973206e6f7420746865206f776e657281525060200191505060405180910390fd5b600073ffffffffffffffffffffffffffffffffffffffff166000809054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff167f8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e060405160405180910390a360008060006101000a81548173ffffffffffffffffffffffffffffffffffffffff021916908373ffffffffffffffffffffffffffffffffffffffff160217905550565b60008060009054906101000a900473ffffffffffffffffffffffffffffffffffffffff16905090565b60008060009054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff166102af610351565b73ffffffffffffffffffffffffffffffffffffffff1614905090565b6102d361026d565b610345576040517f08c379a00000000000000000000000000000000000000000000000000000000081526004018080602001828103825260208152602001807f4f776e61626c653a2063616c6c6572206973206e6f7420746865206f776e657281525060200191505060405180910390fd5b61034e81610359565b50565b600033905090565b600073ffffffffffffffffffffffffffffffffffffffff168173ffffffffffffffffffffffffffffffffffffffff1614156103df576040517f08c379a000000000000000000000000000000000000000000000000000000000815260040180806020018281038252602681526020018061049e6026913960400191505060405180910390fd5b8073ffffffffffffffffffffffffffffffffffffffff166000809054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff167f8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e060405160405180910390a3806000806101000a81548173ffffffffffffffffffffffffffffffffffffffff021916908373ffffffffffffffffffffffffffffffffffffffff1602179055505056fe4f776e61626c653a206e6577206f776e657220697320746865207a65726f2061646472657373a265627a7a72315820cdf5dd40ae5d0eecf24d9a9cb167874c262de7feb314991e9844da219ea05e1f64736f6c63430005110032",
+  "compiler": {
+    "name": "solc",
+    "version": "0.5.17+commit.d19bba13.Emscripten.clang",
+    "optimizer": {
+      "enabled": false,
+      "runs": 200
+    },
+    "evmVersion": "petersburg"
+  }
+}

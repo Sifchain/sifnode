@@ -1,0 +1,196 @@
+{
+  "fileName": "IERC1820Implementer.sol",
+  "contractName": "IERC1820Implementer",
+  "source": "pragma solidity ^0.5.0;\n\n/**\n * @dev Interface for an ERC1820 implementer, as defined in the\n * https://eips.ethereum.org/EIPS/eip-1820#interface-implementation-erc1820implementerinterface[EIP].\n * Used by contracts that will be registered as implementers in the\n * {IERC1820Registry}.\n */\ninterface IERC1820Implementer {\n    /**\n     * @dev Returns a special value (`ERC1820_ACCEPT_MAGIC`) if this contract\n     * implements `interfaceHash` for `account`.\n     *\n     * See {IERC1820Registry-setInterfaceImplementer}.\n     */\n    function canImplementInterfaceForAddress(bytes32 interfaceHash, address account) external view returns (bytes32);\n}\n",
+  "sourcePath": "contracts/introspection/IERC1820Implementer.sol",
+  "sourceMap": "",
+  "deployedSourceMap": "",
+  "abi": [
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "interfaceHash",
+          "type": "bytes32"
+        },
+        {
+          "internalType": "address",
+          "name": "account",
+          "type": "address"
+        }
+      ],
+      "name": "canImplementInterfaceForAddress",
+      "outputs": [
+        {
+          "internalType": "bytes32",
+          "name": "",
+          "type": "bytes32"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    }
+  ],
+  "ast": {
+    "absolutePath": "contracts/introspection/IERC1820Implementer.sol",
+    "exportedSymbols": {
+      "IERC1820Implementer": [
+        4874
+      ]
+    },
+    "id": 4875,
+    "nodeType": "SourceUnit",
+    "nodes": [
+      {
+        "id": 4864,
+        "literals": [
+          "solidity",
+          "^",
+          "0.5",
+          ".0"
+        ],
+        "nodeType": "PragmaDirective",
+        "src": "0:23:41"
+      },
+      {
+        "baseContracts": [],
+        "contractDependencies": [],
+        "contractKind": "interface",
+        "documentation": "@dev Interface for an ERC1820 implementer, as defined in the\nhttps://eips.ethereum.org/EIPS/eip-1820#interface-implementation-erc1820implementerinterface[EIP].\nUsed by contracts that will be registered as implementers in the\n{IERC1820Registry}.",
+        "fullyImplemented": false,
+        "id": 4874,
+        "linearizedBaseContracts": [
+          4874
+        ],
+        "name": "IERC1820Implementer",
+        "nodeType": "ContractDefinition",
+        "nodes": [
+          {
+            "body": null,
+            "documentation": "@dev Returns a special value (`ERC1820_ACCEPT_MAGIC`) if this contract\nimplements `interfaceHash` for `account`.\n     * See {IERC1820Registry-setInterfaceImplementer}.",
+            "id": 4873,
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "canImplementInterfaceForAddress",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 4869,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 4866,
+                  "name": "interfaceHash",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 4873,
+                  "src": "572:21:41",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bytes32",
+                    "typeString": "bytes32"
+                  },
+                  "typeName": {
+                    "id": 4865,
+                    "name": "bytes32",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "572:7:41",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bytes32",
+                      "typeString": "bytes32"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 4868,
+                  "name": "account",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 4873,
+                  "src": "595:15:41",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 4867,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "595:7:41",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "571:40:41"
+            },
+            "returnParameters": {
+              "id": 4872,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 4871,
+                  "name": "",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 4873,
+                  "src": "635:7:41",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bytes32",
+                    "typeString": "bytes32"
+                  },
+                  "typeName": {
+                    "id": 4870,
+                    "name": "bytes32",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "635:7:41",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bytes32",
+                      "typeString": "bytes32"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "634:9:41"
+            },
+            "scope": 4874,
+            "src": "531:113:41",
+            "stateMutability": "view",
+            "superFunction": null,
+            "visibility": "external"
+          }
+        ],
+        "scope": 4875,
+        "src": "290:356:41"
+      }
+    ],
+    "src": "0:647:41"
+  },
+  "bytecode": "0x",
+  "deployedBytecode": "0x",
+  "compiler": {
+    "name": "solc",
+    "version": "0.5.17+commit.d19bba13.Emscripten.clang",
+    "optimizer": {
+      "enabled": false,
+      "runs": 200
+    },
+    "evmVersion": "petersburg"
+  }
+}

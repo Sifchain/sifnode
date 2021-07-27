@@ -1,6 +1,6 @@
 pragma solidity 0.5.16;
 
-import "../node_modules/openzeppelin-solidity/contracts/math/SafeMath.sol";
+import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 import "./Valset.sol";
 import "./Oracle.sol";
 import "./BridgeBank/BridgeBank.sol";
@@ -9,7 +9,7 @@ import "./CosmosBridgeStorage.sol";
 
 contract CosmosBridge is CosmosBridgeStorage, Oracle {
     using SafeMath for uint256;
-    
+
     bool private _initialized;
     uint256[100] private ___gap;
 

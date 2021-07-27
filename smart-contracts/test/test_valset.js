@@ -1,89 +1,111 @@
-const CosmosBridge = artifacts.require("CosmosBridge");
-
-const { deployProxy, silenceWarnings } = require('@openzeppelin/truffle-upgrades');
+const { ethers } = require("hardhat");
+const web3 = require("web3");
+const { use, expect } = require("chai");
 
 const EVMRevert = "revert";
 const BigNumber = web3.BigNumber;
 
-const {
-  expectRevert, // Assertions for transactions that should fail
-} = require('@openzeppelin/test-helpers');
+const { singleSetup } = require('./helpers/testFixture');
 
 require("chai")
   .use(require("chai-as-promised"))
   .use(require("chai-bignumber")(BigNumber))
   .should();
 
-contract("Valset", function (accounts) {
-  const operator = accounts[0];
+describe("Test Valset", function () {
+  let userOne;
+  let userTwo;
+  let userThree;
+  let userFour;
+  let accounts;
+  let signerAccounts;
+  let operator;
+  let owner;
   const consensusThreshold = 80;
-
-  const userOne = accounts[1];
-  const userTwo = accounts[2];
-  const userThree = accounts[3];
+  let initialPowers;
+  let initialValidators;
+  // track the state of the deployed contracts
+  let state;
 
   describe("Valset contract deployment", function () {
+
+    before(async function() {
+      accounts = await ethers.getSigners();
+    
+      signerAccounts = accounts.map((e) => { return e.address });
+  
+      operator = accounts[0];
+      userOne = accounts[1];
+      userTwo = accounts[2];
+      userFour = accounts[3];
+      userThree = accounts[7].address;
+  
+      owner = accounts[5];
+      pauser = accounts[6].address;
+  
+      initialPowers = [25, 25, 25, 25];
+      initialValidators = signerAccounts.slice(0, 4);
+    });
+
     beforeEach(async function () {
-      await silenceWarnings();
-
-      this.initialValidators = [userOne, userTwo, userThree];
-      this.initialPowers = [5, 8, 12];
-
-      // Deploy CosmosBridge contract
-      this.cosmosBridge = await deployProxy(CosmosBridge, [
+      let initialValidators = [userOne.address, userTwo.address, userThree];
+      let initialPowers = [5, 8, 12];
+      state = await singleSetup(
+        initialValidators,
+        initialPowers,
         operator,
         consensusThreshold,
-        this.initialValidators,
-        this.initialPowers
-      ],
-        {unsafeAllowCustomTypes: true}
+        owner,
+        userOne,
+        userThree,
+        pauser
       );
     });
 
     it("should deploy the Valset and correctly set the current valset version", async function () {
-      this.cosmosBridge.should.exist;
+      state.cosmosBridge.should.exist;
 
-      const valsetValsetVersion = await this.cosmosBridge.currentValsetVersion();
+      const valsetValsetVersion = await state.cosmosBridge.currentValsetVersion();
       Number(valsetValsetVersion).should.be.bignumber.equal(1);
     });
 
     it("should correctly set initial validators and initial validator count", async function () {
-      const userOneValidator = await this.cosmosBridge.isActiveValidator.call(
-        userOne
+      const userOneValidator = await state.cosmosBridge.isActiveValidator(
+        userOne.address
       );
-      const userTwoValidator = await this.cosmosBridge.isActiveValidator.call(
-        userTwo
+      const userTwoValidator = await state.cosmosBridge.isActiveValidator(
+        userTwo.address
       );
-      const userThreeValidator = await this.cosmosBridge.isActiveValidator.call(
+      const userThreeValidator = await state.cosmosBridge.isActiveValidator(
         userThree
       );
-      const valsetValidatorCount = await this.cosmosBridge.validatorCount();
+      const valsetValidatorCount = await state.cosmosBridge.validatorCount();
 
       userOneValidator.should.be.equal(true);
       userTwoValidator.should.be.equal(true);
       userThreeValidator.should.be.equal(true);
       Number(valsetValidatorCount).should.be.bignumber.equal(
-        this.initialValidators.length
+        state.initialValidators.length
       );
     });
 
     it("should correctly set initial validator powers ", async function () {
-      const userOnePower = await this.cosmosBridge.getValidatorPower.call(userOne);
-      const userTwoPower = await this.cosmosBridge.getValidatorPower.call(userTwo);
-      const userThreePower = await this.cosmosBridge.getValidatorPower.call(
+      const userOnePower = await state.cosmosBridge.getValidatorPower(userOne.address);
+      const userTwoPower = await state.cosmosBridge.getValidatorPower(userTwo.address);
+      const userThreePower = await state.cosmosBridge.getValidatorPower(
         userThree
       );
 
-      Number(userOnePower).should.be.bignumber.equal(this.initialPowers[0]);
-      Number(userTwoPower).should.be.bignumber.equal(this.initialPowers[1]);
-      Number(userThreePower).should.be.bignumber.equal(this.initialPowers[2]);
+      Number(userOnePower).should.be.bignumber.equal(state.initialPowers[0]);
+      Number(userTwoPower).should.be.bignumber.equal(state.initialPowers[1]);
+      Number(userThreePower).should.be.bignumber.equal(state.initialPowers[2]);
     });
 
     it("should correctly set the initial total power", async function () {
-      const valsetTotalPower = await this.cosmosBridge.totalPower();
+      const valsetTotalPower = await state.cosmosBridge.totalPower();
 
       Number(valsetTotalPower).should.be.bignumber.equal(
-        this.initialPowers[0] + this.initialPowers[1] + this.initialPowers[2]
+        state.initialPowers[0] + state.initialPowers[1] + state.initialPowers[2]
       );
     });
   });
@@ -91,538 +113,452 @@ contract("Valset", function (accounts) {
   describe("Dynamic validator set", function () {
     describe("Adding validators", function () {
       beforeEach(async function () {
-        this.initialValidators = [userOne];
-        this.initialPowers = [5];
+        state.initialValidators = [userOne.address];
+        state.initialPowers = [5];
 
-        this.userTwoPower = 11;
-        this.userThreePower = 44;
-
-        // Deploy CosmosBridge contract
-        this.cosmosBridge = await deployProxy(CosmosBridge, [
+        state = await singleSetup(
+          state.initialValidators,
+          state.initialPowers,
           operator,
           consensusThreshold,
-          this.initialValidators,
-          this.initialPowers
-        ],
-          {unsafeAllowCustomTypes: true}
+          owner,
+          userOne,
+          userThree,
+          pauser
         );
-      });
 
+        state.userTwoPower = 11;
+        state.userThreePower = 44;
+      });
+      
       it("should correctly update the valset when the operator adds a new validator", async function () {
         // Confirm initial validator count
-        const priorValsetValidatorCount = await this.cosmosBridge.validatorCount();
+        const priorValsetValidatorCount = await state.cosmosBridge.validatorCount();
         Number(priorValsetValidatorCount).should.be.bignumber.equal(1);
 
         // Confirm initial total power
-        const priorTotalPower = await this.cosmosBridge.totalPower();
+        const priorTotalPower = await state.cosmosBridge.totalPower();
+
         Number(priorTotalPower).should.be.bignumber.equal(
-          this.initialPowers[0]
+          state.initialPowers[0]
         );
 
         // Operator adds a validator
-        await this.cosmosBridge.addValidator(userTwo, this.userTwoPower, {
-          from: operator
-        }).should.be.fulfilled;
+        await state.cosmosBridge.connect(operator)
+          .addValidator(userTwo.address, state.userTwoPower)
+          .should.be.fulfilled;
 
         // Confirm that userTwo has been set as a validator
-        const isUserTwoValidator = await this.cosmosBridge.isActiveValidator.call(
-          userTwo
+        const isUserTwoValidator = await state.cosmosBridge.isActiveValidator(
+          userTwo.address
         );
         isUserTwoValidator.should.be.equal(true);
 
         // Confirm that userTwo's power has been correctly set
-        const userTwoSetPower = await this.cosmosBridge.getValidatorPower.call(
-          userTwo
+        const userTwoSetPower = await state.cosmosBridge.getValidatorPower(
+          userTwo.address
         );
-        Number(userTwoSetPower).should.be.bignumber.equal(this.userTwoPower);
+        Number(userTwoSetPower).should.be.bignumber.equal(state.userTwoPower);
 
         // Confirm updated validator count
-        const postValsetValidatorCount = await this.cosmosBridge.validatorCount();
+        const postValsetValidatorCount = await state.cosmosBridge.validatorCount();
         Number(postValsetValidatorCount).should.be.bignumber.equal(2);
 
         // Confirm updated total power
-        const postTotalPower = await this.cosmosBridge.totalPower();
+        const postTotalPower = await state.cosmosBridge.totalPower();
         Number(postTotalPower).should.be.bignumber.equal(
-          this.initialPowers[0] + this.userTwoPower
+          state.initialPowers[0] + state.userTwoPower
         );
       });
 
-      it("should emit a LogValidatorAdded event upon the addition of a new validator", async function () {
+      it("should be able to add a new validator and get its power", async function () {
         // Get the event logs from the addition of a new validator
-        const { logs } = await this.cosmosBridge.addValidator(
-          userTwo,
-          this.userTwoPower,
-          {
-            from: operator
-          }
+        await state.cosmosBridge.connect(operator).addValidator(
+          userTwo.address,
+          state.userTwoPower
         );
-        const event = logs.find(e => e.event === "LogValidatorAdded");
 
-        // Confirm that the event data is correct
-        event.args._validator.should.be.equal(userTwo);
-        Number(event.args._power).should.be.bignumber.equal(this.userTwoPower);
-        Number(event.args._currentValsetVersion).should.be.bignumber.equal(1);
-        Number(event.args._validatorCount).should.be.bignumber.equal(2);
-        Number(event.args._totalPower).should.be.bignumber.equal(
-          this.initialPowers[0] + this.userTwoPower
+        const userTwoSetPower = await state.cosmosBridge.getValidatorPower(
+          userTwo.address
         );
+        Number(userTwoSetPower).should.be.bignumber.equal(state.userTwoPower);
       });
 
       it("should allow the operator to add multiple new validators", async function () {
         // Fail if not operator
-        await expectRevert(
-            this.cosmosBridge.addValidator(userTwo, this.userTwoPower, {from: userThree}),
-            "Must be the operator."
-        );
+        await expect(
+            state.cosmosBridge.connect(userOne)
+              .addValidator(userTwo.address, state.userTwoPower),
+        ).to.be.revertedWith("Must be the operator.");
 
-        await this.cosmosBridge.addValidator(userTwo, this.userTwoPower, {
-          from: operator
-        }).should.be.fulfilled;
-        await this.cosmosBridge.addValidator(userThree, this.userThreePower, {
-          from: operator
-        }).should.be.fulfilled;
-        await this.cosmosBridge.addValidator(accounts[4], 77, {
-          from: operator
-        }).should.be.fulfilled;
-        await this.cosmosBridge.addValidator(accounts[5], 23, {
-          from: operator
-        }).should.be.fulfilled;
+        await state.cosmosBridge.connect(operator)
+          .addValidator(userTwo.address, state.userTwoPower)
+          .should.be.fulfilled;
+        await state.cosmosBridge.connect(operator)
+          .addValidator(userThree, state.userThreePower)
+          .should.be.fulfilled;
+        await state.cosmosBridge.connect(operator)
+          .addValidator(accounts[4].address, 77)
+          .should.be.fulfilled;
+        await state.cosmosBridge.connect(operator)
+          .addValidator(accounts[5].address, 23)
+          .should.be.fulfilled;
 
         // Confirm updated validator count
-        const postValsetValidatorCount = await this.cosmosBridge.validatorCount();
+        const postValsetValidatorCount = await state.cosmosBridge.validatorCount();
         Number(postValsetValidatorCount).should.be.bignumber.equal(5);
 
         // Confirm updated total power
-        const valsetTotalPower = await this.cosmosBridge.totalPower();
+        const valsetTotalPower = await state.cosmosBridge.totalPower();
         Number(valsetTotalPower).should.be.bignumber.equal(
-          this.initialPowers[0] + this.userTwoPower + this.userThreePower + 100 // (23 + 77)
+          state.initialPowers[0] + state.userTwoPower + state.userThreePower + 100 // (23 + 77)
         );
       });
     });
 
     describe("Updating validator's power", function () {
       beforeEach(async function () {
-        this.initialValidators = [userOne];
-        this.initialPowers = [5];
-
-        this.userTwoPower = 11;
-        this.userThreePower = 44;
+        state.initialValidators = [userOne.address];
+        state.initialPowers = [5];
 
         // Deploy CosmosBridge contract
-        this.cosmosBridge = await deployProxy(CosmosBridge, [
+        state = await singleSetup(
+          state.initialValidators,
+          state.initialPowers,
           operator,
           consensusThreshold,
-          this.initialValidators,
-          this.initialPowers
-        ],
-          {unsafeAllowCustomTypes: true}
+          owner,
+          userOne,
+          userThree,
+          pauser
         );
+
+        state.userTwoPower = 11;
+        state.userThreePower = 44;
       });
 
       it("should allow the operator to update a validator's power", async function () {
         const NEW_POWER = 515;
 
         // Confirm userOne's initial power
-        const userOneInitialPower = await this.cosmosBridge.getValidatorPower.call(
-          userOne
+        const userOneInitialPower = await state.cosmosBridge.getValidatorPower(
+          userOne.address
         );
+
         Number(userOneInitialPower).should.be.bignumber.equal(
-          this.initialPowers[0]
+          state.initialPowers[0]
         );
 
         // Confirm initial total power
-        const priorTotalPower = await this.cosmosBridge.totalPower();
+        const priorTotalPower = await state.cosmosBridge.totalPower();
         Number(priorTotalPower).should.be.bignumber.equal(
-          this.initialPowers[0]
+          state.initialPowers[0]
         );
 
         // Fail if not operator
-        await expectRevert(
-            this.cosmosBridge.updateValidatorPower(userOne, NEW_POWER, {from: userTwo}),
-            "Must be the operator."
-        );
+        await expect(
+          state.cosmosBridge.connect(userTwo)
+            .updateValidatorPower(userOne.address, NEW_POWER),
+        ).to.be.revertedWith("Must be the operator.");
 
         // Operator updates the validator's initial power
-        await this.cosmosBridge.updateValidatorPower(userOne, NEW_POWER, {
-          from: operator
-        }).should.be.fulfilled;
+        await state.cosmosBridge.connect(operator)
+          .updateValidatorPower(userOne.address, NEW_POWER)
+          .should.be.fulfilled;
 
         // Confirm userOne's power has increased
-        const userOnePostPower = await this.cosmosBridge.getValidatorPower.call(
-          userOne
+        const userOnePostPower = await state.cosmosBridge.getValidatorPower(
+          userOne.address
         );
         Number(userOnePostPower).should.be.bignumber.equal(NEW_POWER);
 
         // Confirm total power has been updated
-        const postTotalPower = await this.cosmosBridge.totalPower();
+        const postTotalPower = await state.cosmosBridge.totalPower();
         Number(postTotalPower).should.be.bignumber.equal(NEW_POWER);
       });
 
-      it("should emit a LogValidatorPowerUpdated event upon the update of a validator's power", async function () {
+      it("should update of a validator's power", async function () {
         const NEW_POWER = 111;
 
-        // Get the event logs from the update of a validator's power
-        const { logs } = await this.cosmosBridge.updateValidatorPower(
-          userOne,
-          NEW_POWER,
-          {
-            from: operator
-          }
-        );
-        const event = logs.find(e => e.event === "LogValidatorPowerUpdated");
+        await state.cosmosBridge.connect(operator)
+          .updateValidatorPower(userOne.address, NEW_POWER);
 
-        // Confirm that the event data is correct
-        event.args._validator.should.be.equal(userOne);
-        Number(event.args._power).should.be.bignumber.equal(NEW_POWER);
-        Number(event.args._currentValsetVersion).should.be.bignumber.equal(1);
-        Number(event.args._validatorCount).should.be.bignumber.equal(1);
-        Number(event.args._totalPower).should.be.bignumber.equal(NEW_POWER);
+        const userTwoPower = await state.cosmosBridge.getValidatorPower(userOne.address);
+        Number(userTwoPower).should.be.bignumber.equal(NEW_POWER);
       });
     });
 
     describe("Removing validators", function () {
       beforeEach(async function () {
-        this.initialValidators = [userOne, userTwo];
-        this.initialPowers = [33, 21];
+        state.initialValidators = [userOne.address, userTwo.address];
+        state.initialPowers = [33, 21];
 
         // Deploy CosmosBridge contract
-        this.cosmosBridge = await deployProxy(CosmosBridge, [
+        state = await singleSetup(
+          state.initialValidators,
+          state.initialPowers,
           operator,
           consensusThreshold,
-          this.initialValidators,
-          this.initialPowers
-        ],
-          {unsafeAllowCustomTypes: true}
+          owner,
+          userOne,
+          userThree,
+          pauser
         );
       });
 
       it("should correctly update the valset when the operator removes a validator", async function () {
         // Confirm initial validator count
-        const priorValsetValidatorCount = await this.cosmosBridge.validatorCount();
+        const priorValsetValidatorCount = await state.cosmosBridge.validatorCount();
         Number(priorValsetValidatorCount).should.be.bignumber.equal(
-          this.initialValidators.length
+          state.initialValidators.length
         );
 
         // Confirm initial total power
-        const priorTotalPower = await this.cosmosBridge.totalPower();
+        const priorTotalPower = await state.cosmosBridge.totalPower();
         Number(priorTotalPower).should.be.bignumber.equal(
-          this.initialPowers[0] + this.initialPowers[1]
+          state.initialPowers[0] + state.initialPowers[1]
         );
 
         // Fail if not operator
-        await expectRevert(
-            this.cosmosBridge.removeValidator(userTwo, {from: userOne}),
-            "Must be the operator."
-        );
+        await expect(
+          state.cosmosBridge.connect(userOne)
+            .removeValidator(userTwo.address),
+        ).to.be.revertedWith("Must be the operator.");
 
         // Operator removes a validator
-        await this.cosmosBridge.removeValidator(userTwo, {
-          from: operator
-        }).should.be.fulfilled;
+        await state.cosmosBridge.connect(operator)
+          .removeValidator(userTwo.address)
+          .should.be.fulfilled;
 
         // Confirm that userTwo is no longer an active validator
-        const isUserTwoValidator = await this.cosmosBridge.isActiveValidator.call(
-          userTwo
-        );
+        const isUserTwoValidator = await state.cosmosBridge.isActiveValidator(userTwo.address);
         isUserTwoValidator.should.be.equal(false);
 
         // Confirm that userTwo's power has been reset
-        const userTwoPower = await this.cosmosBridge.getValidatorPower.call(userTwo);
+        const userTwoPower = await state.cosmosBridge.getValidatorPower(userTwo.address);
         Number(userTwoPower).should.be.bignumber.equal(0);
 
         // Confirm updated validator count
-        const postValsetValidatorCount = await this.cosmosBridge.validatorCount();
+        const postValsetValidatorCount = await state.cosmosBridge.validatorCount();
         Number(postValsetValidatorCount).should.be.bignumber.equal(1);
 
         // Confirm updated total power
-        const postTotalPower = await this.cosmosBridge.totalPower();
-        Number(postTotalPower).should.be.bignumber.equal(this.initialPowers[0]);
+        const postTotalPower = await state.cosmosBridge.totalPower();
+        Number(postTotalPower).should.be.bignumber.equal(state.initialPowers[0]);
       });
 
       it("should emit a LogValidatorRemoved event upon the removal of a validator", async function () {
         // Get the event logs from the update of a validator's power
-        const { logs } = await this.cosmosBridge.removeValidator(userTwo, {
-          from: operator
-        });
-        const event = logs.find(e => e.event === "LogValidatorRemoved");
+        await state.cosmosBridge.connect(operator)
+          .removeValidator(userTwo.address);
 
-        // Confirm that the event data is correct
-        event.args._validator.should.be.equal(userTwo);
-        Number(event.args._power).should.be.bignumber.equal(0);
-        Number(event.args._currentValsetVersion).should.be.bignumber.equal(1);
-        Number(event.args._validatorCount).should.be.bignumber.equal(1);
-        Number(event.args._totalPower).should.be.bignumber.equal(
-          this.initialPowers[0]
-        );
+        const userTwoActive = await state.cosmosBridge.isActiveValidator(userTwo.address);
+        expect(userTwoActive).to.be.equal(false);
       });
     });
 
     describe("Updating the entire valset", function () {
       beforeEach(async function () {
-        this.initialValidators = [userOne, userTwo];
-        this.initialPowers = [33, 21];
+        state.initialValidators = [userOne.address, userTwo.address];
+        state.initialPowers = [33, 21];
 
-        this.secondValidators = [userThree, accounts[4], accounts[5]];
-        this.secondPowers = [4, 19, 50];
-
-        // Deploy CosmosBridge contract
-        this.cosmosBridge = await deployProxy(CosmosBridge, [
+        state = await singleSetup(
+          state.initialValidators,
+          state.initialPowers,
           operator,
           consensusThreshold,
-          this.initialValidators,
-          this.initialPowers
-        ],
-          {unsafeAllowCustomTypes: true}
+          owner,
+          userOne,
+          userThree,
+          pauser
         );
+
+        state.secondValidators = [userThree, accounts[4].address, accounts[5].address];
+        state.secondPowers = [4, 19, 50];
       });
 
       it("should correctly update the valset", async function () {
         // Confirm current valset version number
-        const priorValsetVersion = await this.cosmosBridge.currentValsetVersion();
+        const priorValsetVersion = await state.cosmosBridge.currentValsetVersion();
         Number(priorValsetVersion).should.be.bignumber.equal(1);
 
         // Confirm initial validator count
-        const priorValsetValidatorCount = await this.cosmosBridge.validatorCount();
+        const priorValsetValidatorCount = await state.cosmosBridge.validatorCount();
         Number(priorValsetValidatorCount).should.be.bignumber.equal(
-          this.initialValidators.length
+          state.initialValidators.length
         );
 
         // Confirm initial total power
-        const priorTotalPower = await this.cosmosBridge.totalPower();
+        const priorTotalPower = await state.cosmosBridge.totalPower();
         Number(priorTotalPower).should.be.bignumber.equal(
-          this.initialPowers[0] + this.initialPowers[1]
+          state.initialPowers[0] + state.initialPowers[1]
         );
 
         // Fail if not operator
-        await expectRevert(
-            this.cosmosBridge.updateValset(
-                this.secondValidators,
-                this.secondPowers,
-                {
-                  from: userOne
-                }
-            ),
-            "Must be the operator."
-        );
+        await expect(
+          state.cosmosBridge.connect(userOne).updateValset(
+            state.secondValidators,
+            state.secondPowers,
+          ),
+        ).to.be.revertedWith("Must be the operator.");
 
         // Operator resets the valset
-        await this.cosmosBridge.updateValset(
-          this.secondValidators,
-          this.secondPowers,
-          {
-            from: operator
-          }
+        await state.cosmosBridge.connect(operator).updateValset(
+          state.secondValidators,
+          state.secondPowers
         ).should.be.fulfilled;
 
         // Confirm that both initial validators are no longer an active validators
-        const isUserOneValidator = await this.cosmosBridge.isActiveValidator.call(
-          userOne
+        const isUserOneValidator = await state.cosmosBridge.isActiveValidator(
+          userOne.address
         );
         isUserOneValidator.should.be.equal(false);
-        const isUserTwoValidator = await this.cosmosBridge.isActiveValidator.call(
-          userTwo
+
+        const isUserTwoValidator = await state.cosmosBridge.isActiveValidator(
+          userTwo.address
         );
         isUserTwoValidator.should.be.equal(false);
 
         // Confirm that all three secondary validators are now active validators
-        const isUserThreeValidator = await this.cosmosBridge.isActiveValidator.call(
+        const isUserThreeValidator = await state.cosmosBridge.isActiveValidator(
           userThree
         );
         isUserThreeValidator.should.be.equal(true);
-        const isUserFourValidator = await this.cosmosBridge.isActiveValidator.call(
-          accounts[4]
+        const isUserFourValidator = await state.cosmosBridge.isActiveValidator(
+          accounts[4].address
         );
         isUserFourValidator.should.be.equal(true);
-        const isUserFiveValidator = await this.cosmosBridge.isActiveValidator.call(
-          accounts[5]
+        const isUserFiveValidator = await state.cosmosBridge.isActiveValidator(
+          accounts[5].address
         );
         isUserFiveValidator.should.be.equal(true);
 
         // Confirm updated valset version number
-        const postValsetVersion = await this.cosmosBridge.currentValsetVersion();
+        const postValsetVersion = await state.cosmosBridge.currentValsetVersion();
         Number(postValsetVersion).should.be.bignumber.equal(2);
 
         // Confirm updated validator count
-        const postValsetValidatorCount = await this.cosmosBridge.validatorCount();
+        const postValsetValidatorCount = await state.cosmosBridge.validatorCount();
         Number(postValsetValidatorCount).should.be.bignumber.equal(
-          this.secondValidators.length
+          state.secondValidators.length
         );
 
         // Confirm updated total power
-        const postTotalPower = await this.cosmosBridge.totalPower();
+        const postTotalPower = await state.cosmosBridge.totalPower();
         Number(postTotalPower).should.be.bignumber.equal(
-          this.secondPowers[0] + this.secondPowers[1] + this.secondPowers[2]
+          state.secondPowers[0] + state.secondPowers[1] + state.secondPowers[2]
         );
       });
 
       it("should allow active validators to remain active if they are included in the new valset", async function () {
         // Confirm that both initial validators are no longer an active validators
-        const isUserOneValidatorFirstValsetVersion = await this.cosmosBridge.isActiveValidator.call(
-          userOne
+        const isUserOneValidatorFirstValsetVersion = await state.cosmosBridge.isActiveValidator(
+          userOne.address
         );
         isUserOneValidatorFirstValsetVersion.should.be.equal(true);
 
         // Operator resets the valset
-        await this.cosmosBridge.updateValset(
-          [this.initialValidators[0]],
-          [this.initialPowers[0]],
-          {
-            from: operator
-          }
+        await state.cosmosBridge.connect(operator).updateValset(
+          [state.initialValidators[0]],
+          [state.initialPowers[0]],
         ).should.be.fulfilled;
 
         // Confirm that both initial validators are no longer an active validators
-        const isUserOneValidatorSecondValsetVersion = await this.cosmosBridge.isActiveValidator.call(
-          userOne
+        const isUserOneValidatorSecondValsetVersion = await state.cosmosBridge.isActiveValidator(
+          userOne.address
         );
         isUserOneValidatorSecondValsetVersion.should.be.equal(true);
       });
 
       it("should emit LogValsetReset and LogValsetUpdated events upon the update of the valset", async function () {
         // Get the event logs from the valset update
-        const { logs } = await this.cosmosBridge.updateValset(
-          this.secondValidators,
-          this.secondPowers,
-          {
-            from: operator
-          }
+        await state.cosmosBridge.connect(operator).updateValset(
+          state.secondValidators,
+          state.secondPowers,
         ).should.be.fulfilled;
 
-        // Get the LogValsetReset event
-        const eventLogValsetReset = logs.find(
-          e => e.event === "LogValsetReset"
-        );
+        for (let i = 0; i < state.secondValidators.length; i++) {
+          const isWhitelisted = await state.cosmosBridge
+            .isActiveValidator(state.secondValidators[i]);
 
-        // Confirm that the LogValsetReset event data is correct
-        Number(
-          eventLogValsetReset.args._newValsetVersion
-        ).should.be.bignumber.equal(2);
-        Number(
-          eventLogValsetReset.args._validatorCount
-        ).should.be.bignumber.equal(0);
-        Number(eventLogValsetReset.args._totalPower).should.be.bignumber.equal(
-          0
-        );
+          const validatorPower = await state.cosmosBridge
+            .getValidatorPower(state.secondValidators[i]);
 
-        // Get the LogValsetUpdated event
-        const eventLogValasetUpdated = logs.find(
-          e => e.event === "LogValsetUpdated"
-        );
-
-        // Confirm that the LogValsetUpdated event data is correct
-        Number(
-          eventLogValasetUpdated.args._newValsetVersion
-        ).should.be.bignumber.equal(2);
-        Number(
-          eventLogValasetUpdated.args._validatorCount
-        ).should.be.bignumber.equal(this.secondValidators.length);
-        Number(
-          eventLogValasetUpdated.args._totalPower
-        ).should.be.bignumber.equal(
-          this.secondPowers[0] + this.secondPowers[1] + this.secondPowers[2]
-        );
+          expect(isWhitelisted).to.be.equal(true);
+          expect(Number(validatorPower)).to.be.equal(state.secondPowers[i]);
+        }
       });
     });
   });
 
   describe("Gas recovery", function () {
     beforeEach(async function () {
-      this.initialValidators = [userOne, userTwo];
-      this.initialPowers = [50, 60];
+      state.initialValidators = [userOne.address, userTwo.address];
+      state.initialPowers = [50, 60];
 
-      this.secondValidators = [userThree];
-      this.secondPowers = [5];
-
-      // Deploy CosmosBridge contract
-      this.cosmosBridge = await deployProxy(CosmosBridge, [
+      state = await singleSetup(
+        state.initialValidators,
+        state.initialPowers,
         operator,
         consensusThreshold,
-        this.initialValidators,
-        this.initialPowers
-      ],
-        {unsafeAllowCustomTypes: true}
+        owner,
+        userOne,
+        userThree,
+        pauser
       );
+
+      state.secondValidators = [userThree];
+      state.secondPowers = [5];
     });
 
     it("should not allow the gas recovery of storage in use by active validators", async function () {
       // Operator attempts to recover gas from userOne's storage slot
-      await this.cosmosBridge
-        .recoverGas(1, userOne, {
-          from: operator
-        })
+      await state.cosmosBridge.connect(operator)
+        .recoverGas(1, userOne.address)
         .should.be.rejectedWith(EVMRevert);
     });
 
     it("should allow the gas recovery of inactive validator storage", async function () {
       // Confirm that both initial validators are active validators
-      const isUserOneValidatorPrior = await this.cosmosBridge.isActiveValidator.call(
-        userOne
+      const isUserOneValidatorPrior = await state.cosmosBridge.isActiveValidator(
+        userOne.address
       );
       isUserOneValidatorPrior.should.be.equal(true);
-      const isUserTwoValidatorPrior = await this.cosmosBridge.isActiveValidator.call(
-        userTwo
+      const isUserTwoValidatorPrior = await state.cosmosBridge.isActiveValidator(
+        userTwo.address
       );
       isUserTwoValidatorPrior.should.be.equal(true);
 
       // Operator updates the valset, making userOne and userTwo inactive validators
-      await this.cosmosBridge.updateValset(this.secondValidators, this.secondPowers, {
-        from: operator
-      }).should.be.fulfilled;
+      await state.cosmosBridge.connect(operator)
+        .updateValset(state.secondValidators, state.secondPowers)
+        .should.be.fulfilled;
 
       // Confirm that both initial validators are no longer an active validators
-      const isUserOneValidatorPost = await this.cosmosBridge.isActiveValidator.call(
-        userOne
+      const isUserOneValidatorPost = await state.cosmosBridge.isActiveValidator(
+        userOne.address
       );
       isUserOneValidatorPost.should.be.equal(false);
-      const isUserTwoValidatorPost = await this.cosmosBridge.isActiveValidator.call(
-        userTwo
+      const isUserTwoValidatorPost = await state.cosmosBridge.isActiveValidator(
+        userTwo.address
       );
       isUserTwoValidatorPost.should.be.equal(false);
 
       // Fail if not operator
-      await expectRevert(
-          this.cosmosBridge.recoverGas(1, userOne, {from: userTwo}),
-          "Must be the operator."
-      );
+      await expect(
+        state.cosmosBridge.connect(userTwo)
+        .recoverGas(1, userOne.address),
+      ).to.be.revertedWith("Must be the operator.");
 
       // Operator recovers gas from inactive validator userOne
-      await this.cosmosBridge.recoverGas(1, userOne, {
-        from: operator
-      }).should.be.fulfilled;
+      await state.cosmosBridge.connect(operator)
+        .recoverGas(1, userOne.address)
+        .should.be.fulfilled;
 
-      // Operator recovers gas from inactive validator userTwo
-      await this.cosmosBridge.recoverGas(1, userTwo, {
-        from: operator
-      }).should.be.fulfilled;
-    });
-  });
-
-  describe("Signature verification", function () {
-    beforeEach(async function () {
-      // Create hash using Solidity's Sha3 hashing function
-      this.cosmosBridgeNonce = 3;
-      this.cosmosSender = web3.utils.utf8ToHex(
-        "sif1nx650s8q9w28f2g3t9ztxyg48ugldptuwzpace"
-      );
-      this.nonce = 17;
-      this.message = web3.utils.soliditySha3(
-        { t: "uint256", v: this.cosmosBridgeNonce },
-        { t: "bytes", v: this.cosmosSender },
-        { t: "uint256", v: this.nonce }
-      );
-
-      this.initialValidators = [userOne, userTwo, userThree];
-      this.initialPowers = [5, 8, 12];
-
-      // Deploy CosmosBridge contract
-      this.cosmosBridge = await deployProxy(CosmosBridge, [
-        operator,
-        consensusThreshold,
-        this.initialValidators,
-        this.initialPowers
-      ],
-        {unsafeAllowCustomTypes: true}
-      );
+      // Operator recovers gas from inactive validator userOne
+      await state.cosmosBridge.connect(operator)
+        .recoverGas(1, userTwo.address)
+        .should.be.fulfilled;
     });
   });
 });

@@ -8,6 +8,7 @@ import "../Oracle.sol";
 import "../CosmosBridge.sol";
 import "./BankStorage.sol";
 import "./Pausable.sol";
+import "../interfaces/IBridgeToken.sol";
 
 /*
  * @title BridgeBank
@@ -15,7 +16,7 @@ import "./Pausable.sol";
  *      CosmosBank manages the minting and burning of tokens which
  *      represent Cosmos based assets, while EthereumBank manages
  *      the locking and unlocking of Ethereum and ERC20 token assets
- *      based on Ethereum. WhiteList records the ERC20 token address 
+ *      based on Ethereum. WhiteList records the ERC20 token address
  *      list that can be locked.
  **/
 
@@ -67,7 +68,7 @@ contract BridgeBank is BankStorage,
      * @dev: Modifier to restrict access to operator
      */
     modifier onlyOwner() {
-        require(msg.sender == owner, "!owner");
+        require(msg.sender == owner, "x!owner");
         _;
     }
 
@@ -159,14 +160,14 @@ contract BridgeBank is BankStorage,
     {
         string memory symbol = BridgeToken(_token).symbol();
         address listAddress = lockedTokenList[symbol];
-        
+
         // Do not allow a token with the same symbol to be whitelisted
         if (_inList) {
             // if we want to add it to the whitelist, make sure that the address
             // is 0, meaning we have not seen that symbol in the whitelist before
             require(listAddress == address(0), "whitelisted");
         } else {
-            // if we want to de-whitelist it, make sure that the symbol is 
+            // if we want to de-whitelist it, make sure that the symbol is
             // in fact stored in our locked token list before we set to false
             require(uint256(listAddress) > 0, "!whitelisted");
         }
@@ -294,4 +295,31 @@ contract BridgeBank is BankStorage,
     * Don't need to do anything to handle these tokens
     */
     function tokenFallback(address _from, uint _value, bytes memory _data) public {}
+
+
+    function setRowanTokens(IBridgeToken erowan, IBridgeToken rowan) public onlyOperator {
+        Rowan = rowan;
+        eRowan = erowan;
+    }
+
+    /**
+    * @dev executes the migration from eRowan to Rowan. Users need to give allowance to this contract to burn eRowan before executing
+    * this transaction.
+    * @param amount the amount of eRowan to be migrated
+    */
+    function migrateFromeRowan(uint256 amount) external {
+        totalMigrated += amount;
+        // burn the users eRowan
+        eRowan.burnFrom(msg.sender, amount);
+        // mint the user rowan
+        Rowan.mint(msg.sender, amount);
+        emit RowanMigrated(msg.sender, amount);
+    }
+
+    uint256 public totalMigrated;
+    IBridgeToken public Rowan;
+    IBridgeToken public eRowan;
+
+    event RowanMigrated(address indexed account, uint256 indexed amount);
+
 }
