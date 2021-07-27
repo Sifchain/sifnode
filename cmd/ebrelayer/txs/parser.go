@@ -82,8 +82,8 @@ func EthereumEventToEthBridgeClaim(valAddr sdk.ValAddress, event types.EthereumE
 	witnessClaim.CosmosReceiver = recipient.String()
 	witnessClaim.Amount = amount
 	witnessClaim.ClaimType = event.ClaimType
-	witnessClaim.XDecimals = int32(event.Decimals)
-	witnessClaim.XTokenName = event.Name
+	witnessClaim.Decimals = int32(event.Decimals)
+	witnessClaim.TokenName = event.Name
 
 	/**
 		 * Metadata Denom Naming Convention:
@@ -101,16 +101,28 @@ func EthereumEventToEthBridgeClaim(valAddr sdk.ValAddress, event types.EthereumE
 	*/
 	// No Prefix Yet....
 	// "{Network Descriptor}{ERC20 Token Address}{Decimals}{Token Name}{Token Symbol}"
-	denomHashedString := fmt.Sprintf("%s%s%d%s%s",
+	denomHashedString := fmt.Sprintf("%d%s%d%s%s",
 		networkDescriptor,
 		witnessClaim.TokenContractAddress,
-		witnessClaim.XDecimals,
-		witnessClaim.XTokenName,
+		witnessClaim.Decimals,
+		witnessClaim.TokenName,
 		witnessClaim.Symbol,
 	)
 
 	denomHash := sha256.Sum256([]byte(denomHashedString))
-	witnessClaim.XDenomHash = hex.EncodeToString(denomHash[:])
+	witnessClaim.DenomHash = hex.EncodeToString(denomHash[:])
+
+	// Lookup for human readable denoms reference implementation
+	denomOverrideTable := map[string]string{
+		// Example entry, this table could be its own file and imported for
+		// code that needs to reference it
+		"0xbF45BFc92ebD305d4C0baf8395c4299bdFCE9EA229wBTCWBTC": "btc",
+	}
+	humanReadableDenom, overridePresent := denomOverrideTable[denomHashedString]
+	if overridePresent {
+		witnessClaim.DenomHash = humanReadableDenom
+	}
+
 	return witnessClaim, nil
 }
 

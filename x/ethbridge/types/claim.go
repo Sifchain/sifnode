@@ -22,6 +22,9 @@ func NewEthBridgeClaim(
 	validator sdk.ValAddress,
 	amount sdk.Int,
 	claimType ClaimType,
+	tokenName string,
+	decimals int32,
+	denomHash string,
 ) *EthBridgeClaim {
 	return &EthBridgeClaim{
 		NetworkDescriptor:     networkDescriptor,
@@ -34,12 +37,15 @@ func NewEthBridgeClaim(
 		ValidatorAddress:      validator.String(),
 		Amount:                amount,
 		ClaimType:             claimType,
+		TokenName:             tokenName,
+		Decimals:              decimals,
+		DenomHash:             denomHash,
 	}
 }
 
 // GetProphecyID compute oracle id, get from keccak256 of the all content in claim
 func (claim *EthBridgeClaim) GetProphecyID() []byte {
-	allContentString := fmt.Sprintf("%s%s%s%s%s%s%s%s%s",
+	allContentString := fmt.Sprintf("%s%s%s%s%s%s%s%s%s%s%s%s",
 		claim.NetworkDescriptor.String(),
 		claim.BridgeContractAddress,
 		strconv.Itoa(int(claim.Nonce)),
@@ -49,6 +55,9 @@ func (claim *EthBridgeClaim) GetProphecyID() []byte {
 		claim.CosmosReceiver,
 		claim.Amount.String(),
 		claim.ClaimType.String(),
+		claim.TokenName,
+		strconv.Itoa(int(claim.Decimals)),
+		claim.DenomHash,
 	)
 	claimBytes := []byte(allContentString)
 	hashBytes := crypto.Keccak256(claimBytes)

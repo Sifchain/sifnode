@@ -27,6 +27,8 @@ const (
 	TestNonce                 = 19
 	TestEthTokenAddress       = "0x0000000000000000000000000000000000000000"
 	TestSymbol                = "CETH"
+	TestName                  = "Ethereum"
+	TestDecimals              = 18
 	TestEthereumAddress1      = "0x7B95B6EC7EbD73572298cEf32Bb54FA408207359"
 	TestEthereumAddress2      = "0xc230f38FF05860753840e0d7cbC66128ad308B67"
 	TestCosmosAddress1        = "cosmos1gn8409qq9hnrxde37kuxwx5hrxpfpv8426szuv"

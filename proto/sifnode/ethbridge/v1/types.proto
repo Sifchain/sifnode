@@ -35,16 +35,13 @@ message EthBridgeClaim {
   ];
   ClaimType claim_type = 10;
   // Name of coin different then symbol
-  optional string token_name = 11
-      [ (gogoproto.moretags) = "yaml:\"token_name\"" ];
+  string token_name = 11 [ (gogoproto.moretags) = "yaml:\"token_name\"" ];
   // Number of decimals in ERC20 token
-  optional int32 decimals = 12
-      [ (gogoproto.moretags) = "yaml:\"token_decimals\"" ];
+  int32 decimals = 12 [ (gogoproto.moretags) = "yaml:\"token_decimals\"" ];
   // The hashed concatination of ERC20 address, network descriptor
   // Token decimals, name and symbol
   // Marked optional because messages sent by the relayer may not be hashed
-  optional string denom_hash = 13
-      [ (gogoproto.moretags) = "yaml:\"denom_hash\"" ];
+  string denom_hash = 13 [ (gogoproto.moretags) = "yaml:\"denom_hash\"" ];
 }
 
 message PeggyTokens { repeated string tokens = 1; }

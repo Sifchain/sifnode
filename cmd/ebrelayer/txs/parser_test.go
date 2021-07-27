@@ -1,8 +1,11 @@
 package txs
 
 import (
+	"fmt"
 	"strings"
 	"testing"
+
+	"crypto/sha256"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/common"
@@ -34,11 +37,21 @@ func TestLogLockToEthBridgeClaim(t *testing.T) {
 	testRawCosmosValidatorAddress, err := sdk.AccAddressFromBech32(TestCosmosAddress2)
 	require.NoError(t, err)
 	testCosmosValidatorBech32Address := sdk.ValAddress(testRawCosmosValidatorAddress)
+	// Calculate Denom Hash String
+	denomHashedString := fmt.Sprintf("%d%s%d%s%s",
+		TestNetworkDescriptor,
+		testTokenContractAddress,
+		TestDecimals,
+		TestName,
+		TestSymbol,
+	)
+
+	denomHash := sha256.Sum256([]byte(denomHashedString))
 
 	// Set up expected EthBridgeClaim
 	expectedEthBridgeClaim := ethbridge.NewEthBridgeClaim(
 		TestNetworkDescriptor, testBridgeContractAddress, TestNonce, strings.ToLower(TestSymbol), testTokenContractAddress,
-		testEthereumAddress, testCosmosAddress, testCosmosValidatorBech32Address, testSDKAmount, ethbridge.ClaimType_CLAIM_TYPE_LOCK)
+		testEthereumAddress, testCosmosAddress, testCosmosValidatorBech32Address, testSDKAmount, ethbridge.ClaimType_CLAIM_TYPE_LOCK, TestName, TestDecimals, denomHash)
 
 	// Create test ethereum event
 	ethereumEvent := CreateTestLogEthereumEvent(t)
