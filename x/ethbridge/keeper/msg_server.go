@@ -52,6 +52,7 @@ func (srv msgServer) Lock(goCtx context.Context, msg *types.MsgLock) (*types.Msg
 	}
 
 	logger.Info("sifnode emit lock event.", "message", msg)
+	globalNonce := srv.Keeper.GetAndUpdateGlobalNonce(ctx, msg.NetworkDescriptor)
 
 	err = srv.oracleKeeper.SetProphecyInfo(ctx,
 		prophecyID,
@@ -64,7 +65,7 @@ func (srv msgServer) Lock(goCtx context.Context, msg *types.MsgLock) (*types.Msg
 		msg.CrosschainFee,
 		// TODO decide the double peggy and global nonce
 		false,
-		0,
+		globalNonce,
 	)
 
 	if err != nil {
@@ -117,6 +118,7 @@ func (srv msgServer) Burn(goCtx context.Context, msg *types.MsgBurn) (*types.Msg
 	}
 
 	logger.Info("sifnode emit burn event.", "message", msg)
+	globalNonce := srv.Keeper.GetAndUpdateGlobalNonce(ctx, msg.NetworkDescriptor)
 
 	err = srv.oracleKeeper.SetProphecyInfo(ctx,
 		prophecyID,
@@ -129,7 +131,7 @@ func (srv msgServer) Burn(goCtx context.Context, msg *types.MsgBurn) (*types.Msg
 		msg.CrosschainFee,
 		// TODO decide the double peggy and global nonce
 		false,
-		0,
+		globalNonce,
 	)
 
 	if err != nil {

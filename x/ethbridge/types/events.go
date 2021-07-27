@@ -33,6 +33,7 @@ var (
 	AttributeKeyMinimumLockCost      = "minimum_lock_cost"
 	AttributeKeyMinimumBurnCost      = "minimum_burn_cost"
 	AttributeKeyProphecyID           = "prophecy_id"
+	AttributeKeyGlobalNonce          = "global_nonce"
 
 	AttributeValueCategory = ModuleName
 )

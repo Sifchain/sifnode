@@ -333,6 +333,7 @@ func TestBurnEthSuccess(t *testing.T) {
 			value := string(attribute.Value)
 			switch key := string(attribute.Key); key {
 			case "prophecy_id":
+			case "global_nonce":
 			case senderString:
 			case "recipient":
 
