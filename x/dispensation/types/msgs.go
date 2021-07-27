@@ -3,38 +3,29 @@ package types
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
-	"github.com/cosmos/cosmos-sdk/x/bank"
+	"github.com/cosmos/cosmos-sdk/x/bank/types"
 	"github.com/pkg/errors"
 )
 
-var (
-	_ sdk.Msg = &MsgDistribution{}
-	_ sdk.Msg = &MsgRunDistribution{}
-	_ sdk.Msg = &MsgCreateClaim{}
-)
+func NewMsgCreateDistribution(distributor sdk.AccAddress, DistributionType DistributionType, output []types.Output, authorizedRunner string) MsgCreateDistribution {
 
-// Basic message type to create a new distribution
-
-type MsgDistribution struct {
-	Distributor      sdk.AccAddress   `json:"distributor"`
-	Runner           sdk.AccAddress   `json:"runner"`
-	DistributionType DistributionType `json:"distribution_type"`
-	Output           []bank.Output    `json:"output"`
+	return MsgCreateDistribution{
+		Distributor:      distributor.String(),
+		AuthorizedRunner: authorizedRunner,
+		DistributionType: DistributionType,
+		Output:           output,
+	}
 }
 
-func NewMsgDistribution(distributor sdk.AccAddress, DistributionType DistributionType, output []bank.Output, runner sdk.AccAddress) MsgDistribution {
-	return MsgDistribution{Distributor: distributor, DistributionType: DistributionType, Output: output, Runner: runner}
-}
-
-func (m MsgDistribution) Route() string {
+func (m MsgCreateDistribution) Route() string {
 	return RouterKey
 }
 
-func (m MsgDistribution) Type() string {
-	return "airdrop"
+func (m MsgCreateDistribution) Type() string {
+	return MsgTypeCreateDistribution
 }
 
-func (m MsgDistribution) ValidateBasic() error {
+func (m MsgCreateDistribution) ValidateBasic() error {
 	// Validate distribution Type
 	_, ok := IsValidDistributionType(m.DistributionType.String())
 	if !ok {
@@ -44,19 +35,18 @@ func (m MsgDistribution) ValidateBasic() error {
 	if len(m.Output) == 0 {
 		return errors.Wrapf(ErrInvalid, "Outputlist cannot be empty")
 	}
-	// Validator distributor
-	_, err := sdk.AccAddressFromBech32(m.Distributor.String())
+	_, err := sdk.AccAddressFromBech32(m.Distributor)
 	if err != nil {
-		return errors.Wrapf(ErrInvalid, "Invalid Distributor Address")
+		return errors.Wrapf(ErrInvalid, "Invalid Distributor Address : %s", m.Distributor)
 	}
-	// Validator Runner
-	_, err = sdk.AccAddressFromBech32(m.Runner.String())
+	// Validator runner
+	_, err = sdk.AccAddressFromBech32(m.AuthorizedRunner)
 	if err != nil {
-		return errors.Wrapf(ErrInvalid, "Invalid Runner Address")
+		return errors.Wrapf(ErrInvalid, "Invalid Authorized Address : %s", m.AuthorizedRunner)
 	}
 	// Validate individual out records
 	for _, out := range m.Output {
-		_, err := sdk.AccAddressFromBech32(out.Address.String())
+		_, err := sdk.AccAddressFromBech32(out.Address)
 		if err != nil {
 			return errors.Wrapf(ErrInvalid, "Invalid Recipient Address")
 		}
@@ -73,27 +63,63 @@ func (m MsgDistribution) ValidateBasic() error {
 	return nil
 }
 
-func (m MsgDistribution) GetSignBytes() []byte {
-	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(m))
+func NewMsgCreateUserClaim(userClaimAddress sdk.AccAddress, claimType DistributionType) MsgCreateUserClaim {
+	return MsgCreateUserClaim{
+		UserClaimAddress: userClaimAddress.String(),
+		UserClaimType:    claimType,
+	}
+}
+func (m MsgCreateDistribution) GetSignBytes() []byte {
+	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(&m))
 }
 
-func (m MsgDistribution) GetSigners() []sdk.AccAddress {
-	return []sdk.AccAddress{m.Distributor}
+func (m MsgCreateDistribution) GetSigners() []sdk.AccAddress {
+	addr, err := sdk.AccAddressFromBech32(m.Distributor)
+	if err != nil {
+		panic(err)
+	}
+
+	return []sdk.AccAddress{addr}
 }
 
-// Run distribution
-
-type MsgRunDistribution struct {
-	DistributionRunner sdk.AccAddress   `json:"distribution_runner"`
-	DistributionName   string           `json:"distribution_name"`
-	DistributionType   DistributionType `json:"distribution_type"`
+func (m MsgCreateUserClaim) Route() string {
+	return RouterKey
 }
 
-func NewMsgRunDistribution(runner sdk.AccAddress, distributionName string, distributionType DistributionType) MsgRunDistribution {
+func (m MsgCreateUserClaim) Type() string {
+	return MsgTypeCreateUserClaim
+}
+
+func (m MsgCreateUserClaim) ValidateBasic() error {
+	_, err := sdk.AccAddressFromBech32(m.UserClaimAddress)
+	if err != nil {
+		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, m.UserClaimAddress)
+	}
+	_, ok := IsValidClaimType(m.UserClaimType.String())
+	if !ok {
+		return sdkerrors.Wrap(ErrInvalid, m.UserClaimType.String())
+	}
+	return nil
+}
+
+func (m MsgCreateUserClaim) GetSignBytes() []byte {
+	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(&m))
+}
+
+func (m MsgCreateUserClaim) GetSigners() []sdk.AccAddress {
+	addr, err := sdk.AccAddressFromBech32(m.UserClaimAddress)
+	// Should never panic as ValidateBasic checks address validity
+	if err != nil {
+		panic(err)
+	}
+	return []sdk.AccAddress{addr}
+}
+
+func NewMsgRunDistribution(runner string, distributionName string, distributionType DistributionType) MsgRunDistribution {
 	return MsgRunDistribution{
-		DistributionRunner: runner,
-		DistributionName:   distributionName,
-		DistributionType:   distributionType,
+		AuthorizedRunner: runner,
+		DistributionName: distributionName,
+		DistributionType: distributionType,
 	}
 }
 
@@ -102,7 +128,7 @@ func (m MsgRunDistribution) Route() string {
 }
 
 func (m MsgRunDistribution) Type() string {
-	return "run_distribution"
+	return MsgTypeRunDistribution
 }
 
 func (m MsgRunDistribution) ValidateBasic() error {
@@ -116,7 +142,7 @@ func (m MsgRunDistribution) ValidateBasic() error {
 		return sdkerrors.Wrap(ErrInvalid, m.DistributionName)
 	}
 	// Validator runner
-	_, err := sdk.AccAddressFromBech32(m.DistributionRunner.String())
+	_, err := sdk.AccAddressFromBech32(m.AuthorizedRunner)
 	if err != nil {
 		return errors.Wrapf(ErrInvalid, "Invalid Runner Address")
 	}
@@ -124,47 +150,14 @@ func (m MsgRunDistribution) ValidateBasic() error {
 }
 
 func (m MsgRunDistribution) GetSignBytes() []byte {
-	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(m))
+	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(&m))
 }
 
 func (m MsgRunDistribution) GetSigners() []sdk.AccAddress {
-	return []sdk.AccAddress{m.DistributionRunner}
-}
-
-// Create a user claim
-type MsgCreateClaim struct {
-	UserClaimAddress sdk.AccAddress   `json:"user_claim_address"`
-	UserClaimType    DistributionType `json:"user_claim_type"`
-}
-
-func NewMsgCreateClaim(Signer sdk.AccAddress, userClaimType DistributionType) MsgCreateClaim {
-	return MsgCreateClaim{UserClaimAddress: Signer, UserClaimType: userClaimType}
-}
-
-func (m MsgCreateClaim) Route() string {
-	return RouterKey
-}
-
-func (m MsgCreateClaim) Type() string {
-	return "createClaim"
-}
-
-// Validation for claim type
-func (m MsgCreateClaim) ValidateBasic() error {
-	if m.UserClaimAddress.Empty() {
-		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, m.UserClaimAddress.String())
+	addr, err := sdk.AccAddressFromBech32(m.AuthorizedRunner)
+	// Should never panic as ValidateBasic checks address validity
+	if err != nil {
+		panic(err)
 	}
-	_, ok := IsValidClaim(m.UserClaimType.String())
-	if !ok {
-		return sdkerrors.Wrap(ErrInvalid, m.UserClaimType.String())
-	}
-	return nil
-}
-
-func (m MsgCreateClaim) GetSignBytes() []byte {
-	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(m))
-}
-
-func (m MsgCreateClaim) GetSigners() []sdk.AccAddress {
-	return []sdk.AccAddress{m.UserClaimAddress}
+	return []sdk.AccAddress{addr}
 }

@@ -3,10 +3,10 @@ package types
 import (
 	"bytes"
 	"encoding/json"
-
-	"github.com/cosmos/cosmos-sdk/x/staking"
+	"fmt"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	staking "github.com/cosmos/cosmos-sdk/x/staking/types"
 )
 
 // DefaultConsensusNeeded defines the default consensus value required for a
@@ -32,15 +32,6 @@ type Prophecy struct {
 	ValidatorClaims map[string]string `json:"validator_claims"`
 }
 
-// DBProphecy is what the prophecy becomes when being saved to the database.
-//  Tendermint/Amino does not support maps so we must serialize those variables into bytes.
-type DBProphecy struct {
-	ID              string `json:"id"`
-	Status          Status `json:"status"`
-	ClaimValidators []byte `json:"claim_validators"`
-	ValidatorClaims []byte `json:"validator_claims"`
-}
-
 // SerializeForDB serializes a prophecy into a DBProphecy
 // TODO: Using gob here may mean that different tendermint clients in different languages may serialize/store
 // prophecies in their db in different ways -
@@ -58,7 +49,7 @@ func (prophecy Prophecy) SerializeForDB() (DBProphecy, error) {
 	}
 
 	return DBProphecy{
-		ID:              prophecy.ID,
+		Id:              prophecy.ID,
 		Status:          prophecy.Status,
 		ClaimValidators: claimValidators,
 		ValidatorClaims: validatorClaims,
@@ -78,7 +69,7 @@ func (dbProphecy DBProphecy) DeserializeFromDB() (Prophecy, error) {
 	}
 
 	return Prophecy{
-		ID:              dbProphecy.ID,
+		ID:              dbProphecy.Id,
 		Status:          dbProphecy.Status,
 		ClaimValidators: claimValidators,
 		ValidatorClaims: validatorClaims,
@@ -107,7 +98,10 @@ func inWhiteList(validator staking.Validator, whiteListValidatorAddresses []sdk.
 // all claims and returns the highest claim, power for that claim, total power claimed on the prophecy overall.
 // and the total power of all whitelist validators.
 func (prophecy Prophecy) FindHighestClaim(ctx sdk.Context, stakeKeeper StakingKeeper, whiteListValidatorAddresses []sdk.ValAddress) (string, int64, int64, int64) {
+	fmt.Println("sifnode oracle prophecy FindHighestClaim")
 	validators := stakeKeeper.GetBondedValidatorsByPower(ctx)
+
+	fmt.Printf("sifnode oracle prophecy FindHighestClaim validators length is %d\n", len(validators))
 
 	// Compute the total power of white list validators
 	totalPower := int64(0)
@@ -117,10 +111,12 @@ func (prophecy Prophecy) FindHighestClaim(ctx sdk.Context, stakeKeeper StakingKe
 		}
 	}
 
+	fmt.Printf("sifnode oracle prophecy FindHighestClaim totalPower is %d\n", totalPower)
+
 	//Index the validators by address for looking when scanning through claims
 	validatorsByAddress := make(map[string]staking.Validator)
 	for _, validator := range validators {
-		validatorsByAddress[validator.OperatorAddress.String()] = validator
+		validatorsByAddress[validator.OperatorAddress] = validator
 	}
 
 	totalClaimsPower := int64(0)
@@ -131,6 +127,8 @@ func (prophecy Prophecy) FindHighestClaim(ctx sdk.Context, stakeKeeper StakingKe
 		claimPower := int64(0)
 
 		for _, validatorAddr := range validatorAddrs {
+			fmt.Printf("sifnode oracle prophecy FindHighestClaim validator is %s\n", validatorAddr.String())
+
 			validator, found := validatorsByAddress[validatorAddr.String()]
 			if found {
 				// Note: If claim validator is not found in the current validator set, we assume it is no longer
@@ -139,6 +137,8 @@ func (prophecy Prophecy) FindHighestClaim(ctx sdk.Context, stakeKeeper StakingKe
 			}
 		}
 		totalClaimsPower += claimPower
+		fmt.Printf("sifnode oracle prophecy FindHighestClaim totalClaimsPower is %d\n", totalClaimsPower)
+		fmt.Printf("sifnode oracle prophecy FindHighestClaim claimPower is %d\n", claimPower)
 
 		if claimPower > highestClaimPower {
 			highestClaimPower = claimPower
@@ -152,16 +152,10 @@ func (prophecy Prophecy) FindHighestClaim(ctx sdk.Context, stakeKeeper StakingKe
 func NewProphecy(id string) Prophecy {
 	return Prophecy{
 		ID:              id,
-		Status:          NewStatus(PendingStatusText, ""),
+		Status:          NewStatus(StatusText_STATUS_TEXT_PENDING, ""),
 		ClaimValidators: make(map[string][]sdk.ValAddress),
 		ValidatorClaims: make(map[string]string),
 	}
-}
-
-// Status is a struct that contains the status of a given prophecy
-type Status struct {
-	Text       StatusText `json:"text"`
-	FinalClaim string     `json:"final_claim"`
 }
 
 // NewStatus returns a new Status with the given data contained

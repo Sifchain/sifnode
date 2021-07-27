@@ -24,20 +24,20 @@ var (
 	// functions aliases
 
 	NewKeeper                         = keeper.NewKeeper
-	NewQuerier                        = keeper.NewQuerier
+	NewQuerier                        = keeper.NewLegacyQuerier
 	NewEthBridgeClaim                 = types.NewEthBridgeClaim
 	NewOracleClaimContent             = types.NewOracleClaimContent
 	CreateOracleClaimFromEthClaim     = types.CreateOracleClaimFromEthClaim
 	CreateEthClaimFromOracleString    = types.CreateEthClaimFromOracleString
 	CreateOracleClaimFromOracleString = types.CreateOracleClaimFromOracleString
-	RegisterCodec                     = types.RegisterCodec
+	RegisterCodec                     = types.RegisterLegacyAminoCodec
 	ErrInvalidEthNonce                = types.ErrInvalidEthNonce
 	ErrInvalidEthAddress              = types.ErrInvalidEthAddress
 	ErrJSONMarshalling                = types.ErrJSONMarshalling
 	NewEthereumAddress                = types.NewEthereumAddress
 	NewMsgCreateEthBridgeClaim        = types.NewMsgCreateEthBridgeClaim
 	MapOracleClaimsToEthBridgeClaims  = types.MapOracleClaimsToEthBridgeClaims
-	NewQueryEthProphecyParams         = types.NewQueryEthProphecyParams
+	NewQueryEthProphecyParams         = types.NewQueryEthProphecyRequest
 	NewQueryEthProphecyResponse       = types.NewQueryEthProphecyResponse
 
 	CreateTestEthMsg                   = types.CreateTestEthMsg
@@ -57,6 +57,6 @@ type (
 	MsgUpdateWhiteListValidator  = types.MsgUpdateWhiteListValidator
 	MsgUpdateCethReceiverAccount = types.MsgUpdateCethReceiverAccount
 	MsgRescueCeth                = types.MsgRescueCeth
-	QueryEthProphecyParams       = types.QueryEthProphecyParams
+	QueryEthProphecyParams       = types.QueryEthProphecyRequest
 	QueryEthProphecyResponse     = types.QueryEthProphecyResponse
 )

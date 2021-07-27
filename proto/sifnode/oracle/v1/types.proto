@@ -1,0 +1,48 @@
+syntax = "proto3";
+package sifnode.oracle.v1;
+
+import "gogoproto/gogo.proto";
+
+option go_package = "github.com/Sifchain/sifnode/x/oracle/types";
+
+message GenesisState {
+  repeated string address_whitelist = 1;
+  string admin_address = 2;
+  repeated DBProphecy prophecies = 3;
+}
+
+// Claim contains an arbitrary claim with arbitrary content made by a given
+// validator
+message Claim {
+  string id = 1;
+  string validator_address = 2;
+  string content = 3;
+}
+
+// DBProphecy is what the prophecy becomes when being saved to the database.
+//  Tendermint/Amino does not support maps so we must serialize those variables
+//  into bytes.
+message DBProphecy {
+  string id = 1;
+  Status status = 2 [ (gogoproto.nullable) = false ];
+  bytes claim_validators = 3;
+  bytes validator_claims = 4;
+}
+
+// Status is a struct that contains the status of a given prophecy
+message Status {
+  StatusText text = 1;
+  string final_claim = 2;
+}
+
+// StatusText is an enum used to represent the status of the prophecy
+enum StatusText {
+  // Default value
+  STATUS_TEXT_UNSPECIFIED = 0;
+  // Pending status
+  STATUS_TEXT_PENDING = 1;
+  // Success status
+  STATUS_TEXT_SUCCESS = 2;
+  // Failed status
+  STATUS_TEXT_FAILED = 3;
+}

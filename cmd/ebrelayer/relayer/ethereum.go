@@ -6,7 +6,6 @@ import (
 	"context"
 	"crypto/ecdsa"
 	"fmt"
-	"io"
 	"log"
 	"math/big"
 	"os"
@@ -15,21 +14,18 @@ import (
 	"syscall"
 	"time"
 
-	sdkContext "github.com/cosmos/cosmos-sdk/client/context"
-	"github.com/cosmos/cosmos-sdk/codec"
-	"github.com/cosmos/cosmos-sdk/crypto/keys"
-	"github.com/cosmos/cosmos-sdk/crypto/keys/hd"
+	"github.com/cosmos/cosmos-sdk/client/tx"
+
+	"github.com/cosmos/cosmos-sdk/client"
+	"github.com/cosmos/cosmos-sdk/crypto/hd"
+	"github.com/cosmos/cosmos-sdk/crypto/keyring"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/cosmos/cosmos-sdk/x/auth/client/utils"
-	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
 	ctypes "github.com/ethereum/go-ethereum/core/types"
-	"github.com/sethvargo/go-password/password"
 	"github.com/syndtr/goleveldb/leveldb"
-	"github.com/tendermint/go-amino"
-	tmClient "github.com/tendermint/tendermint/rpc/client/http"
+	tmclient "github.com/tendermint/tendermint/rpc/client/http"
 	"go.uber.org/zap"
 
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/contract"
@@ -46,121 +42,76 @@ const (
 
 // EthereumSub is an Ethereum listener that can relay txs to Cosmos and Ethereum
 type EthereumSub struct {
-	Cdc                     *codec.Codec
 	EthProvider             string
 	TmProvider              string
 	RegistryContractAddress common.Address
 	ValidatorName           string
 	ValidatorAddress        sdk.ValAddress
-	CliCtx                  sdkContext.CLIContext
-	TxBldr                  authtypes.TxBuilder
+	CliCtx                  client.Context
 	PrivateKey              *ecdsa.PrivateKey
-	TempPassword            string
 	DB                      *leveldb.DB
 	SugaredLogger           *zap.SugaredLogger
 }
 
 // NewKeybase create a new keybase instance
-func NewKeybase(validatorMoniker, mnemonic, password string) (keys.Keybase, keys.Info, error) {
-	keybase := keys.NewInMemory()
+func NewKeybase(validatorMoniker, mnemonic, password string) (keyring.Keyring, keyring.Info, error) {
+	kr := keyring.NewInMemory()
 	hdpath := *hd.NewFundraiserParams(0, sdk.CoinType, 0)
-	info, err := keybase.CreateAccount(validatorMoniker, mnemonic, "", password, hdpath.String(), keys.Secp256k1)
+	info, err := kr.NewAccount(validatorMoniker, mnemonic, password, hdpath.String(), hd.Secp256k1)
 	if err != nil {
 		return nil, nil, err
 	}
 
-	return keybase, info, nil
+	return kr, info, nil
 }
 
 // NewEthereumSub initializes a new EthereumSub
-func NewEthereumSub(inBuf io.Reader, rpcURL string, cdc *codec.Codec, validatorMoniker, chainID, ethProvider string,
-	registryContractAddress common.Address, privateKey *ecdsa.PrivateKey, mnemonic string, db *leveldb.DB, sugaredLogger *zap.SugaredLogger) (EthereumSub, error) {
-
-	tempPassword, _ := password.Generate(32, 5, 0, false, false)
-	keybase, info, err := NewKeybase(validatorMoniker, mnemonic, tempPassword)
-	if err != nil {
-		sugaredLogger.Errorw("failed to initialize a new key base.",
-			errorMessageKey, err.Error())
-		return EthereumSub{}, err
-	}
-
-	validatorAddress := sdk.ValAddress(info.GetAddress())
-
-	// Load CLI context and Tx builder
-	cliCtx, err := LoadTendermintCLIContext(cdc, validatorAddress, validatorMoniker, rpcURL, chainID, sugaredLogger)
-	if err != nil {
-		return EthereumSub{}, err
-	}
-
-	txBldr := authtypes.NewTxBuilderFromCLI(inBuf).
-		WithTxEncoder(utils.GetTxEncoder(cdc)).
-		WithChainID(chainID).
-		WithKeybase(keybase)
+func NewEthereumSub(
+	cliCtx client.Context,
+	nodeURL string,
+	validatorMoniker,
+	ethProvider string,
+	registryContractAddress common.Address,
+	validatorAddress sdk.ValAddress,
+	db *leveldb.DB,
+	sugaredLogger *zap.SugaredLogger,
+) EthereumSub {
 
 	return EthereumSub{
-		Cdc:                     cdc,
 		EthProvider:             ethProvider,
-		TmProvider:              rpcURL,
+		TmProvider:              nodeURL,
 		RegistryContractAddress: registryContractAddress,
 		ValidatorName:           validatorMoniker,
 		ValidatorAddress:        validatorAddress,
 		CliCtx:                  cliCtx,
-		TxBldr:                  txBldr,
-		PrivateKey:              privateKey,
-		TempPassword:            tempPassword,
 		DB:                      db,
 		SugaredLogger:           sugaredLogger,
-	}, nil
-}
-
-// LoadTendermintCLIContext : loads CLI context for tendermint txs
-func LoadTendermintCLIContext(appCodec *amino.Codec, validatorAddress sdk.ValAddress, validatorName string,
-	rpcURL string, chainID string, sugaredLogger *zap.SugaredLogger) (sdkContext.CLIContext, error) {
-	// Create the new CLI context
-	cliCtx := sdkContext.NewCLIContext().
-		WithCodec(appCodec).
-		WithFromAddress(sdk.AccAddress(validatorAddress)).
-		WithFromName(validatorName)
-
-	if rpcURL != "" {
-		cliCtx = cliCtx.WithNodeURI(rpcURL)
 	}
-	cliCtx.SkipConfirm = true
-
-	// Confirm that the validator's address exists
-	accountRetriever := authtypes.NewAccountRetriever(cliCtx)
-	err := accountRetriever.EnsureExists(sdk.AccAddress(validatorAddress))
-	if err != nil {
-		sugaredLogger.Errorw("validator address not exists.",
-			errorMessageKey, err.Error())
-		return sdkContext.CLIContext{}, err
-	}
-	return cliCtx, nil
 }
 
 // Start an Ethereum chain subscription
-func (sub EthereumSub) Start(completionEvent *sync.WaitGroup) {
+func (sub EthereumSub) Start(txFactory tx.Factory, completionEvent *sync.WaitGroup) {
 	defer completionEvent.Done()
 	time.Sleep(time.Second)
-	client, err := SetupWebsocketEthClient(sub.EthProvider)
+	ethClient, err := SetupWebsocketEthClient(sub.EthProvider)
 	if err != nil {
 		sub.SugaredLogger.Errorw("SetupWebsocketEthClient failed.",
 			errorMessageKey, err.Error())
 
 		completionEvent.Add(1)
-		go sub.Start(completionEvent)
+		go sub.Start(txFactory, completionEvent)
 		return
 	}
-	defer client.Close()
+	defer ethClient.Close()
 	sub.SugaredLogger.Infow("Started Ethereum websocket with provider:",
 		"Ethereum provider", sub.EthProvider)
 
-	clientChainID, err := client.NetworkID(context.Background())
+	clientChainID, err := ethClient.NetworkID(context.Background())
 	if err != nil {
 		sub.SugaredLogger.Errorw("failed to get network ID.",
 			errorMessageKey, err.Error())
 		completionEvent.Add(1)
-		go sub.Start(completionEvent)
+		go sub.Start(txFactory, completionEvent)
 		return
 	}
 
@@ -172,7 +123,7 @@ func (sub EthereumSub) Start(completionEvent *sync.WaitGroup) {
 	defer close(quit)
 
 	// get the bridgebank address from the registry contract
-	bridgeBankAddress, err := txs.GetAddressFromBridgeRegistry(client, sub.RegistryContractAddress, txs.BridgeBank, sub.SugaredLogger)
+	bridgeBankAddress, err := txs.GetAddressFromBridgeRegistry(ethClient, sub.RegistryContractAddress, txs.BridgeBank, sub.SugaredLogger)
 	if err != nil {
 		log.Fatal("Error getting bridgebank address: ", err.Error())
 	}
@@ -182,7 +133,7 @@ func (sub EthereumSub) Start(completionEvent *sync.WaitGroup) {
 	// Listen the new header
 	heads := make(chan *ctypes.Header)
 	defer close(heads)
-	subHead, err := client.SubscribeNewHead(context.Background(), heads)
+	subHead, err := ethClient.SubscribeNewHead(context.Background(), heads)
 	if err != nil {
 		sub.SugaredLogger.Errorw("failed to subscribe new head.",
 			errorMessageKey, err.Error())
@@ -210,7 +161,7 @@ func (sub EthereumSub) Start(completionEvent *sync.WaitGroup) {
 			sub.SugaredLogger.Errorw("failed to subscribe ethereum header.",
 				errorMessageKey, err.Error())
 			completionEvent.Add(1)
-			go sub.Start(completionEvent)
+			go sub.Start(txFactory, completionEvent)
 			return
 		case newHead := <-heads:
 			sub.SugaredLogger.Infow("receive new ethereum header.",
@@ -238,7 +189,7 @@ func (sub EthereumSub) Start(completionEvent *sync.WaitGroup) {
 				"endingBlock", endingBlock)
 
 			// query event data from this specific block range
-			ethLogs, err := client.FilterLogs(context.Background(), ethereum.FilterQuery{
+			ethLogs, err := ethClient.FilterLogs(context.Background(), ethereum.FilterQuery{
 				FromBlock: lastProcessedBlock,
 				ToBlock:   endingBlock,
 				Addresses: []common.Address{bridgeBankAddress},
@@ -276,7 +227,7 @@ func (sub EthereumSub) Start(completionEvent *sync.WaitGroup) {
 			}
 
 			if len(events) > 0 {
-				if err := sub.handleEthereumEvent(events); err != nil {
+				if err := sub.handleEthereumEvent(txFactory, events); err != nil {
 					sub.SugaredLogger.Errorw("failed to handle ethereum event.",
 						errorMessageKey, err.Error())
 				}
@@ -299,22 +250,25 @@ func (sub EthereumSub) getAllClaims(fromBlock int64, toBlock int64) []types.Ethe
 	log.Printf("Replay get all ethereum bridge claim from block %d to block %d\n", fromBlock, toBlock)
 
 	var claimArray []types.EthereumBridgeClaim
-	client, err := tmClient.New(sub.TmProvider, "/websocket")
+	tmClient, err := tmclient.New(sub.TmProvider, "/websocket")
 	if err != nil {
 		log.Printf("failed to initialize a client, error is %s\n", err.Error())
 		return claimArray
 	}
 
-	if err := client.Start(); err != nil {
+	if err := tmClient.Start(); err != nil {
 		log.Printf("failed to start a client, error is %s\n", err.Error())
 		return claimArray
 	}
 
-	defer client.Stop() //nolint:errcheck
+	defer tmClient.Stop() //nolint:errcheck
 
 	for blockNumber := fromBlock; blockNumber < toBlock; {
 		tmpBlockNumber := blockNumber
-		block, err := client.BlockResults(&tmpBlockNumber)
+
+		ctx := context.Background()
+		block, err := tmClient.BlockResults(ctx, &tmpBlockNumber)
+
 		blockNumber++
 		log.Printf("Replay start to process block %d\n", blockNumber)
 
@@ -356,27 +310,27 @@ func EventProcessed(bridgeClaims []types.EthereumBridgeClaim, event types.Ethere
 }
 
 // Replay the missed events
-func (sub EthereumSub) Replay(fromBlock int64, toBlock int64, cosmosFromBlock int64, cosmosToBlock int64) {
+func (sub EthereumSub) Replay(txFactory tx.Factory, fromBlock int64, toBlock int64, cosmosFromBlock int64, cosmosToBlock int64) {
 	log.Printf("ethereum replay for %d block to %d block\n", fromBlock, toBlock)
 
 	bridgeClaims := sub.getAllClaims(cosmosFromBlock, cosmosToBlock)
 	log.Printf("found out %d bridgeClaims\n", len(bridgeClaims))
 
-	client, err := SetupRPCEthClient(sub.EthProvider)
+	c, err := SetupRPCEthClient(sub.EthProvider)
 	if err != nil {
 		log.Printf("failed to connect ethereum node, error is %s\n", err.Error())
 		return
 	}
-	defer client.Close()
+	defer c.Close()
 
-	clientChainID, err := client.NetworkID(context.Background())
+	clientChainID, err := c.NetworkID(context.Background())
 	if err != nil {
 		log.Printf("failed to get chain ID, error is %s\n", err.Error())
 		return
 	}
 
 	// Get the contract address for this subscription
-	subContractAddress, err := txs.GetAddressFromBridgeRegistry(client, sub.RegistryContractAddress, txs.BridgeBank, sub.SugaredLogger)
+	subContractAddress, err := txs.GetAddressFromBridgeRegistry(c, sub.RegistryContractAddress, txs.BridgeBank, sub.SugaredLogger)
 	if err != nil {
 		log.Printf("failed to get contract address, error is %s\n", err.Error())
 		return
@@ -389,7 +343,7 @@ func (sub EthereumSub) Replay(fromBlock int64, toBlock int64, cosmosFromBlock in
 		ToBlock:   big.NewInt(toBlock),
 	}
 
-	logs, err := client.FilterLogs(context.Background(), subQuery)
+	logs, err := c.FilterLogs(context.Background(), subQuery)
 	if err != nil {
 		log.Printf("failed to get filter log, error is %s\n", err.Error())
 		return
@@ -403,11 +357,11 @@ func (sub EthereumSub) Replay(fromBlock int64, toBlock int64, cosmosFromBlock in
 		} else if isBurnLock {
 			log.Println(fmt.Sprintf("found out a burn lock event"))
 			if !EventProcessed(bridgeClaims, event) {
-				err := sub.handleEthereumEvent([]types.EthereumEvent{event})
-				time.Sleep(transactionInterval)
+				err := sub.handleEthereumEvent(txFactory, []types.EthereumEvent{event})
 				if err != nil {
 					log.Printf("failed to handle ethereum event, error is %s\n", err.Error())
 				}
+				time.Sleep(transactionInterval)
 			} else {
 				log.Println("event already processed by me.")
 			}
@@ -445,9 +399,9 @@ func (sub EthereumSub) logToEvent(clientChainID *big.Int, contractAddress common
 	event.BridgeContractAddress = contractAddress
 	event.EthereumChainID = clientChainID
 	if eventName == types.LogBurn.String() {
-		event.ClaimType = ethbridge.BurnText
+		event.ClaimType = ethbridge.ClaimType_CLAIM_TYPE_BURN
 	} else {
-		event.ClaimType = ethbridge.LockText
+		event.ClaimType = ethbridge.ClaimType_CLAIM_TYPE_LOCK
 	}
 	sub.SugaredLogger.Infow("receive an event.",
 		"event", event.String())
@@ -457,17 +411,28 @@ func (sub EthereumSub) logToEvent(clientChainID *big.Int, contractAddress common
 	return event, true, nil
 }
 
-// handleEthereumEvent unpacks an Ethereum event, converts it to a ProphecyClaim, and relays a tx to Cosmos
-func (sub EthereumSub) handleEthereumEvent(events []types.EthereumEvent) error {
-	var prophecyClaims []ethbridge.EthBridgeClaim
+func GetValAddressFromKeyring(k keyring.Keyring, keyname string) (sdk.ValAddress, error) {
+	keyInfo, err := k.Key(keyname)
+	if err != nil {
+		return nil, err
+	}
+	return sdk.ValAddress(keyInfo.GetAddress()), nil
+}
 
+// handleEthereumEvent unpacks an Ethereum event, converts it to a ProphecyClaim, and relays a tx to Cosmos
+func (sub EthereumSub) handleEthereumEvent(txFactory tx.Factory, events []types.EthereumEvent) error {
+	var prophecyClaims []*ethbridge.EthBridgeClaim
+	valAddr, err := GetValAddressFromKeyring(txFactory.Keybase(), sub.ValidatorName)
+	if err != nil {
+		return err
+	}
 	for _, event := range events {
-		prophecyClaim, err := txs.EthereumEventToEthBridgeClaim(sub.ValidatorAddress, event)
+		prophecyClaim, err := txs.EthereumEventToEthBridgeClaim(valAddr, event)
 		if err != nil {
 			sub.SugaredLogger.Errorw(".",
 				errorMessageKey, err.Error())
 		} else {
-			prophecyClaims = append(prophecyClaims, prophecyClaim)
+			prophecyClaims = append(prophecyClaims, &prophecyClaim)
 		}
 	}
 	sub.SugaredLogger.Infow("relay prophecy claims to cosmos.",
@@ -477,5 +442,5 @@ func (sub EthereumSub) handleEthereumEvent(events []types.EthereumEvent) error {
 		return nil
 	}
 
-	return txs.RelayToCosmos(sub.Cdc, sub.ValidatorName, sub.TempPassword, prophecyClaims, sub.CliCtx, sub.TxBldr, sub.SugaredLogger)
+	return txs.RelayToCosmos(txFactory, prophecyClaims, sub.CliCtx, sub.SugaredLogger)
 }

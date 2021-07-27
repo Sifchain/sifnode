@@ -2,9 +2,11 @@
 
 ## Overview
 - The module allows a user to create a Distribution which can be of Type [Airdrop/LiquidityMining/ValidatorSubsidy]. 
-- It accepts a output list and an autorized runner .
+- It accepts an input and output list .
+- This transaction needs to signed by at-least all addresses of the input list ( can be set to more ,but not less)
+- The module accumulates  funds from  the input address list and distributes it among the output list .
 - The records are created in the same block.
-- The distribution process can be manually executed by the authorized runner.
+- The distribution process starts in the next block with 10 distributions per block.
 
 
 
@@ -14,19 +16,17 @@
 ```go
 package records
 type DistributionType int64
-const DistributionTypeUnknown DistributionType = 0
+
 const Airdrop DistributionType = 1
 const LiquidityMining DistributionType = 2
 const ValidatorSubsidy DistributionType = 3
 
 type Distribution struct {
-	DistributionType DistributionType `json:"distribution_type"`
-	DistributionName string           `json:"distribution_name"`
-	Runner           sdk.AccAddress   `json:"runner"`
+    DistributionType DistributionType `json:"distribution_type"`
+    DistributionName string           `json:"distribution_name"`
 }
 ```
-This is stored in the keeper with the key DistributionName_DistributionType for historical records. 
-The Distribution name is BlockHeight_Distributor ,Therefore, the combination BlockHeight_Distributor_DistributionType needs to be unique
+This is stored in the keeper with the key DistributionType_DistributionName for historical records. Therefore, the combination of type and name needs to be unique
 
 - Distribution records are created for processing individual transfers to recipients
 
@@ -38,8 +38,6 @@ type DistributionStatus int64
 const Pending DistributionStatus = 1
 const Completed DistributionStatus = 2
 
-
-
 type DistributionRecord struct {
 	DistributionStatus          DistributionStatus `json:"distribution_status"`
 	DistributionName            string             `json:"distribution_name"`
@@ -48,219 +46,114 @@ type DistributionRecord struct {
 	Coins                       sdk.Coins          `json:"coins"`
 	DistributionStartHeight     int64              `json:"distribution_start_height"`
 	DistributionCompletedHeight int64              `json:"distribution_completed_height"`
-	AuthorizedRunner            sdk.AccAddress     `json:"authorized_runner"`
 }
 ```
 This record is also stored in the keeper for historical records .
 
 ### High Level Flow
-- The `create tx` sends required funds (sum of outputs ) from the distributor address to a module account.
-- The program iterates over the output addresses and creates individual records for them in the keeper .
-- The `run tx`  iterates over these records and completes 10 records per block .
+- After the sanity checks are cleared , the program iterates over the input addresses and sends all funds from these address to a module account.
+- The program iterates over the output addresses and creates individual records for them in the keeper .( This design would need to be changed in the future to save gas costs)
+- In case of type LiquidityMining or ValidatorSubsidy the program also checks is the associated claim for the record is present .
+- The begin block iterates over these records and completes 10 records per block .
 - Complete refers to sending the specified amount from the  module account to the recipient.
 - In case of type LiquidityMining or ValidatorSubsidy the program also deletes the associated claim.
 
-### Events Emitted
-- A `create_tx` emits a distribution_started event .
+
+### User flow 
+ The set of user commands to use this module 
+```shell
+#Multisig Key - It is a key composed of two or more keys (N) , with a signing threshold (K) ,such that the transaction needs K out of N votes to go through.
+
+#create airdrop
+#mkey        : multisig key
+#ar1         : name of airdrop , needs to be unique for every airdrop. If not the tx gets rejected
+#input.json  : list of funding addresses  -  Input address must be part of the multisig key
+#output.json : list of airdrop receivers.
+
+sifnoded tx dispensation create mkey ar1 input.json output.json --gas 200064128 --generate-only >> offlinetx.json
+
+#First user signs
+sifnoded tx sign --multisig $(sifnoded keys show mkey -a) --from $(sifnoded keys show sif -a)  offlinetx.json >> sig1.json
+
+#Second user signs
+sifnoded tx sign --multisig $(sifnoded keys show mkey -a) --from $(sifnoded keys show akasha -a)  offlinetx.json >> sig2.json
+
+#Multisign created from the above signatures
+sifnoded tx multisign offlinetx.json mkey sig1.json sig2.json >> signedtx.json
+
+#transaction broadcast , distribution happens
+sifnoded tx broadcast signedtx.json
+```
+
+### Events Emitted 
+Transfer events are emitted for each transfer . There are two type of transfers in a distribution
+- Transfer for address in the input list to the Dispensation Module Address.
+
 ```json
 {
-        "type": "distribution_started",
-        "attributes": [
-        {
-        "key": "module_account",
-        "value": "sif1zvwfuvy3nh949rn68haw78rg8jxjevgm2c820c"
-        },
-        {
-        "key": "distribution_name",
-        "value": "1158855_sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd"
-        },
-        {
-        "key": "distribution_type",
-        "value": "LiquidityMining"
-        }
-]
+  "type": "transfer",
+  "attributes": [
+    {
+      "key": "recipient",
+      "value": "sif1zvwfuvy3nh949rn68haw78rg8jxjevgm2c820c"
+    },
+    {
+      "key": "sender",
+      "value": "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd"
+    },
+    {
+      "key": "amount",
+      "value": "15000000000000000000rowan"
+    }
+  ]
 }
 ```
-- The `run tx` emits a list of records rewarded in that block in its events , and a distribution_run event .
-```shell
- {
-          "type": "distribution_record_0",
-          "attributes": [
-            {
-              "key": "recipient_address",
-              "value": "sif12jcegqefrulfcxp565lyjyv4s2ja82ndpjrcse"
-            },
-            {
-              "key": "type",
-              "value": "Airdrop"
-            },
-            {
-              "key": "amount",
-              "value": "11000rowan"
-            }
-          ]
-        },
-        {
-          "type": "distribution_record_1",
-          "attributes": [
-            {
-              "key": "recipient_address",
-              "value": "sif15pp0lqwq7squk9rdjejfdcqkf07apmcu2ym2zp"
-            },
-            {
-              "key": "type",
-              "value": "Airdrop"
-            },
-            {
-              "key": "amount",
-              "value": "8000rowan"
-            }
-          ]
-        },
-        {
-          "type": "distribution_record_2",
-          "attributes": [
-            {
-              "key": "recipient_address",
-              "value": "sif17pnxcmm2de3j4v3wmzwzrwx0vz5trchc2ysfmt"
-            },
-            {
-              "key": "type",
-              "value": "Airdrop"
-            },
-            {
-              "key": "amount",
-              "value": "9000rowan"
-            }
-          ]
-        },
-        {
-          "type": "distribution_record_3",
-          "attributes": [
-            {
-              "key": "recipient_address",
-              "value": "sif18ejp2jzgue7a4jfes3qq3l9n7q6yvztlk85ypu"
-            },
-            {
-              "key": "type",
-              "value": "Airdrop"
-            },
-            {
-              "key": "amount",
-              "value": "5000rowan"
-            }
-          ]
-        },
-        {
-          "type": "distribution_record_4",
-          "attributes": [
-            {
-              "key": "recipient_address",
-              "value": "sif199t07akr2cv6rhr8rlw50v4sz9lmkwyl42xlw4"
-            },
-            {
-              "key": "type",
-              "value": "Airdrop"
-            },
-            {
-              "key": "amount",
-              "value": "12000rowan"
-            }
-          ]
-        },
-        {
-          "type": "distribution_record_5",
-          "attributes": [
-            {
-              "key": "recipient_address",
-              "value": "sif1dfn94fp0z0dg3cvte4pqgjkj5rucr8x2j5avt6"
-            },
-            {
-              "key": "type",
-              "value": "Airdrop"
-            },
-            {
-              "key": "amount",
-              "value": "14000rowan"
-            }
-          ]
-        },
-        {
-          "type": "distribution_record_6",
-          "attributes": [
-            {
-              "key": "recipient_address",
-              "value": "sif1kxgqfh3a5wpzvqlu5tys2prs2wf5xemzzlpyfs"
-            },
-            {
-              "key": "type",
-              "value": "Airdrop"
-            },
-            {
-              "key": "amount",
-              "value": "7000rowan"
-            }
-          ]
-        },
-        {
-          "type": "distribution_record_7",
-          "attributes": [
-            {
-              "key": "recipient_address",
-              "value": "sif1pyu5ctnumet3s0hpy3jlqk32pgfsvr46v7v7uj"
-            },
-            {
-              "key": "type",
-              "value": "Airdrop"
-            },
-            {
-              "key": "amount",
-              "value": "13000rowan"
-            }
-          ]
-        },
-        {
-          "type": "distribution_record_8",
-          "attributes": [
-            {
-              "key": "recipient_address",
-              "value": "sif1vm3g7fepdrygfwwc5gdfc9mv2zmvlkdga87fhv"
-            },
-            {
-              "key": "type",
-              "value": "Airdrop"
-            },
-            {
-              "key": "amount",
-              "value": "10000rowan"
-            }
-          ]
-        },
-        {
-          "type": "distribution_run",
-          "attributes": [
-            {
-              "key": "distribution_name",
-              "value": "3_sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd"
-            },
-            {
-              "key": "distribution_runner",
-              "value": "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd"
-            }
-          ]
-        }
+- Transfer of funds from the Dispensation Module Address to recipients in the output list
+```json
+{
+  "type": "transfer",
+  "attributes": [
+    {
+      "key": "recipient",
+      "value": "sif1p6z0ze9mztfd8cx5z9g6pndmzdrtxnsfesnn97"
+    },
+    {
+      "key": "sender",
+      "value": "sif1zvwfuvy3nh949rn68haw78rg8jxjevgm2c820c"
+    },
+    {
+      "key": "amount",
+      "value": "10000000000000000000rowan"
+    }
+  ]
+}
 ```
+
+
+- A distribution started event is emitted in the block in which the distribution is created .The distribution process starts from the next block
+```json
+ {
+  "type": "distribution_started",
+  "attributes": [
+    {
+      "key": "module_account",
+      "value": "sif1zvwfuvy3nh949rn68haw78rg8jxjevgm2c820c"
+    }
+  ]
+}
+```
+
 
 ### Queries supported
 ```shell
 #Query all distributions
-sifnodecli q dispensation distributions-all
+sifnoded q dispensation distributions-all
 #Query all distribution records by distribution name 
-sifnodecli q dispensation records-by-name-all ar1
+sifnoded q dispensation records-by-name-all ar1
 #Query pending distribution records by distribution name 
-sifnodecli q dispensation records-by-name-pending ar1
+sifnoded q dispensation records-by-name-pending ar1
 #Query completed distribution records by distribution name
-sifnodecli q dispensation records-by-name-completed ar1
+sifnoded q dispensation records-by-name-completed ar1
 #Query distribution records by address
-sifnodecli q dispensation records-by-addr sif1cp23ye3h49nl5ty35vewrtvsgwnuczt03jwg00
+sifnoded q dispensation records-by-addr sif1cp23ye3h49nl5ty35vewrtvsgwnuczt03jwg00
 ```

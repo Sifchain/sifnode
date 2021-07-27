@@ -38,7 +38,7 @@ func GetETHAsset() Asset {
 }
 
 func GetWrongAsset() Asset {
-	return NewAsset("deadbeeefdeadbeeef")
+	return NewAsset("01234567890123456789012345678901234567890123456789012345678901234567890123456789")
 }
 
 func TestNewMsgCreatePool(t *testing.T) {

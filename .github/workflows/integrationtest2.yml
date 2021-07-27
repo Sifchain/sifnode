@@ -10,6 +10,11 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
+      - uses: actions/checkout@v2
+        with:
+          repository: Sifchain/sifchain-deploy
+          path: deploy
+          token: "${{ secrets.GIT_PAT }}"
       - name: Set up linux environment
         run: # installs development tools and updates .bash_profile
           bash test/integration/setup-linux-environment.sh
@@ -23,3 +28,9 @@ jobs:
           . test/integration/vagrantenv.sh
           export LOG_LEVEL=DEBUG
           bash test/integration/execute_integration_tests_against_any_chain.sh
+      - name: Archive logs from test
+        uses: actions/upload-artifact@v2
+        if: always()
+        with:
+          name: testlogs2
+          path: test/integration

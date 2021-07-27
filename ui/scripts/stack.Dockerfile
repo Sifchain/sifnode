@@ -17,7 +17,6 @@ WORKDIR /sif
 
 COPY go.mod go.sum ./
 RUN go mod download
-RUN go get github.com/cosmos/cosmos-sdk/cosmovisor/cmd/cosmovisor
 
 COPY . .
 
@@ -39,9 +38,7 @@ RUN apk update && apk add curl jq bash
 
 # Copy the compiled binaires over.
 COPY --from=build-go /go/bin/ebrelayer /usr/bin/ebrelayer
-COPY --from=build-go /go/bin/cosmovisor /usr/bin/cosmovisor
 COPY --from=build-go /go/bin/sifnoded /usr/bin/sifnoded
-COPY --from=build-go /go/bin/sifnodecli /usr/bin/sifnodecli
 COPY --from=build-go /go/bin/sifgen /usr/bin/sifgen
 
 # Required for ebrelayer
