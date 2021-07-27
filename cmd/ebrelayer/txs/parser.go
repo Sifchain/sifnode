@@ -82,7 +82,7 @@ func EthereumEventToEthBridgeClaim(valAddr sdk.ValAddress, event types.EthereumE
 	witnessClaim.CosmosReceiver = recipient.String()
 	witnessClaim.Amount = amount
 	witnessClaim.ClaimType = event.ClaimType
-	witnessClaim.Decimals = int32(event.Decimals)
+	witnessClaim.Decimals = event.Decimals
 	witnessClaim.TokenName = event.Name
 
 	/**
