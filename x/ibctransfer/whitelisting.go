@@ -7,13 +7,13 @@ import (
 	transfertypes "github.com/cosmos/cosmos-sdk/x/ibc/applications/transfer/types"
 	channeltypes "github.com/cosmos/cosmos-sdk/x/ibc/core/04-channel/types"
 
-	whitelisttypes "github.com/Sifchain/sifnode/x/tokenregistry/types"
+	tokenregistrytypes "github.com/Sifchain/sifnode/x/tokenregistry/types"
 )
 
 func OnRecvPacketWhiteListed(
 	ctx sdk.Context,
 	sdkAppModule transfer.AppModule,
-	whitelistKeeper whitelisttypes.Keeper,
+	whitelistKeeper tokenregistrytypes.Keeper,
 	packet channeltypes.Packet,
 ) (*sdk.Result, []byte, error) {
 
@@ -29,7 +29,7 @@ func OnRecvPacketWhiteListed(
 	return sdkAppModule.OnRecvPacket(ctx, packet)
 }
 
-func isRecvPacketAllowed(ctx sdk.Context, whitelistKeeper whitelisttypes.Keeper,
+func isRecvPacketAllowed(ctx sdk.Context, whitelistKeeper tokenregistrytypes.Keeper,
 	packet channeltypes.Packet, data transfertypes.FungibleTokenPacketData) bool {
 
 	isReturning := IsRecvPacketReturning(packet, data)
@@ -96,7 +96,7 @@ func IsRecvPacketReturning(packet channeltypes.Packet, data transfertypes.Fungib
 	return false
 }
 
-func IsWhitelisted(ctx sdk.Context, whitelistKeeper whitelisttypes.Keeper, denom string) bool {
+func IsWhitelisted(ctx sdk.Context, whitelistKeeper tokenregistrytypes.Keeper, denom string) bool {
 	// In the case that token did not originate on sifchain,
 	// allow if all the following conditions are met:
 	//    a) Token should belong to whitelist

@@ -40,11 +40,11 @@ func CreateTestApp(isCheckTx bool) (*sifapp.SifchainApp, sdk.Context) {
 func CreateTestAppClp(isCheckTx bool) (sdk.Context, *sifapp.SifchainApp) {
 	ctx, app := GetSimApp(isCheckTx)
 	sifapp.SetConfig(false)
-	app.WhitelistKeeper.SetDenom(ctx, "ceth", 18)
-	app.WhitelistKeeper.SetDenom(ctx, "cdash", 18)
-	app.WhitelistKeeper.SetDenom(ctx, "eth", 18)
-	app.WhitelistKeeper.SetDenom(ctx, "cacoin", 18)
-	app.WhitelistKeeper.SetDenom(ctx, "dash", 18)
+	app.TokenRegistryKeeper.SetDenom(ctx, "ceth", 18)
+	app.TokenRegistryKeeper.SetDenom(ctx, "cdash", 18)
+	app.TokenRegistryKeeper.SetDenom(ctx, "eth", 18)
+	app.TokenRegistryKeeper.SetDenom(ctx, "cacoin", 18)
+	app.TokenRegistryKeeper.SetDenom(ctx, "dash", 18)
 	return ctx, app
 }
 

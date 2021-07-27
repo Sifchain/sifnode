@@ -12,18 +12,18 @@ import (
 	sifapp "github.com/Sifchain/sifnode/app"
 	clpkeeper "github.com/Sifchain/sifnode/x/clp/keeper"
 	clptest "github.com/Sifchain/sifnode/x/clp/test"
-	whitelisttypes "github.com/Sifchain/sifnode/x/tokenregistry/types"
+	tokenregistrytypes "github.com/Sifchain/sifnode/x/tokenregistry/types"
 )
 
-func getDenomWhiteListEntries() whitelisttypes.Registry {
-	return whitelisttypes.DefaultWhitelist()
+func getDenomWhiteListEntries() tokenregistrytypes.Registry {
+	return tokenregistrytypes.DefaultWhitelist()
 }
 
 func createTestAppForTestTables() (sdk.Context, *sifapp.SifchainApp) {
 	wl := getDenomWhiteListEntries()
 	ctx, app := clptest.CreateTestAppClp(false)
 	for _, entry := range wl.Entries {
-		app.WhitelistKeeper.SetDenom(ctx, entry.Denom, entry.Decimals)
+		app.TokenRegistryKeeper.SetDenom(ctx, entry.Denom, entry.Decimals)
 	}
 	return ctx, app
 }

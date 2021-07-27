@@ -2,13 +2,13 @@ package utils
 
 import (
 	"encoding/json"
-	whitelisttypes "github.com/Sifchain/sifnode/x/tokenregistry/types"
+	tokenregistrytypes "github.com/Sifchain/sifnode/x/tokenregistry/types"
 	"io/ioutil"
 	"path/filepath"
 )
 
-func ParseDenoms(dir string) (whitelisttypes.Registry, error) {
-	var denoms whitelisttypes.Registry
+func ParseDenoms(dir string) (tokenregistrytypes.Registry, error) {
+	var denoms tokenregistrytypes.Registry
 	file, err := filepath.Abs(dir)
 	if err != nil {
 		return denoms, err

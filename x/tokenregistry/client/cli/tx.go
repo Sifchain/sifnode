@@ -12,21 +12,21 @@ import (
 
 // GetTxCmd returns the transaction commands for this module
 func GetTxCmd() *cobra.Command {
-	whiteListcmd := &cobra.Command{
-		Use:   "whitelist",
-		Short: "Token whitelist transactions subcommands",
+	cmd := &cobra.Command{
+		Use:   types.ModuleName,
+		Short: "Token registry transactions sub-commands",
 	}
 
-	whiteListcmd.AddCommand(
-		GetCmdUpdate(),
+	cmd.AddCommand(
+		GetCmdRegister(),
 	)
-	return whiteListcmd
+	return cmd
 }
 
-func GetCmdUpdate() *cobra.Command {
+func GetCmdRegister() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "add [Denom] [Decimals]",
-		Short: "Add new deon to the whitelist",
+		Use:   "register [Denom] [Decimals]",
+		Short: "Add / update token on the registry",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx, err := client.GetClientTxContext(cmd)
 			if err != nil {

@@ -1,7 +1,7 @@
 package handler_test
 
 import (
-	whitelist "github.com/Sifchain/sifnode/x/tokenregistry/handler"
+	"github.com/Sifchain/sifnode/x/tokenregistry/handler"
 	"github.com/Sifchain/sifnode/x/tokenregistry/test"
 	"github.com/Sifchain/sifnode/x/tokenregistry/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -11,7 +11,7 @@ import (
 
 func TestNewHandler(t *testing.T) {
 	app, ctx, admin := test.CreateTestApp(false)
-	handler := whitelist.NewHandler(app.WhitelistKeeper)
+	h := handler.NewHandler(app.TokenRegistryKeeper)
 	tests := []struct {
 		name           string
 		msg            types.MsgRegister
@@ -41,7 +41,7 @@ func TestNewHandler(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			res, err := handler(ctx, &tt.msg)
+			res, err := h(ctx, &tt.msg)
 			tt.errorAssertion(t, err)
 			tt.valueAssertion(t, res)
 		})

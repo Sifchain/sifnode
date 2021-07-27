@@ -18,16 +18,15 @@ func GetQueryCmd() *cobra.Command {
 		RunE:                       client.ValidateCmd,
 	}
 	cmd.AddCommand(
-		GetCmdQueryDenoms(),
+		GetCmdQueryEntries(),
 	)
 	return cmd
 }
 
-func GetCmdQueryDenoms() *cobra.Command {
-
+func GetCmdQueryEntries() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "denoms",
-		Short: "query the complete whitelist",
+		Use:   "entries",
+		Short: "query the complete token registry",
 		Args:  cobra.ExactArgs(0),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx, err := client.GetClientQueryContext(cmd)

@@ -79,7 +79,7 @@ func TestCreatePool(t *testing.T) {
 	_, err = handler(ctx, &msgNonWhitelisted)
 	require.Error(t, err)
 	// Whitelist Asset
-	app.WhitelistKeeper.SetDenom(ctx, newAsset.Symbol, 18)
+	app.TokenRegistryKeeper.SetDenom(ctx, newAsset.Symbol, 18)
 	newAssetCoin := sdk.NewCoin(newAsset.Symbol, sdk.Int(initialBalance))
 	_ = app.ClpKeeper.GetBankKeeper().AddCoins(ctx, signer, sdk.Coins{newAssetCoin}.Sort())
 	// Create Pool

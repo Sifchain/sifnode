@@ -3,7 +3,7 @@ package cmd
 import (
 	"encoding/json"
 	"fmt"
-	whitelisttypes "github.com/Sifchain/sifnode/x/tokenregistry/types"
+	tokenregistrytypes "github.com/Sifchain/sifnode/x/tokenregistry/types"
 	whitelistutils "github.com/Sifchain/sifnode/x/tokenregistry/utils"
 
 	"github.com/cosmos/cosmos-sdk/client"
@@ -43,7 +43,7 @@ func SetGenesisDenomWhitelist(defaultNodeHome string) *cobra.Command {
 				return fmt.Errorf("failed to unmarshal genesis state: %w", err)
 			}
 
-			whitelistGenState := whitelisttypes.GetGenesisStateFromAppState(cdc, appState)
+			whitelistGenState := tokenregistrytypes.GetGenesisStateFromAppState(cdc, appState)
 			// TODO :Append New Entries to existing list
 			//whitelistGenState.Registry.Entries = append(whitelistGenState.Registry.Entries, whitelist.Entries...)
 			whitelistGenState.Registry = &whitelist
@@ -52,7 +52,7 @@ func SetGenesisDenomWhitelist(defaultNodeHome string) *cobra.Command {
 				return fmt.Errorf("failed to marshal auth genesis state: %w", err)
 			}
 
-			appState[whitelisttypes.ModuleName] = whitelistGenStateBz
+			appState[tokenregistrytypes.ModuleName] = whitelistGenStateBz
 
 			appStateJSON, err := json.Marshal(appState)
 			if err != nil {

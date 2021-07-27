@@ -15,7 +15,7 @@ import (
 	genutiltypes "github.com/cosmos/cosmos-sdk/x/genutil/types"
 	"github.com/spf13/cobra"
 
-	whitelisttypes "github.com/Sifchain/sifnode/x/tokenregistry/types"
+	tokenregistrytypes "github.com/Sifchain/sifnode/x/tokenregistry/types"
 )
 
 func SetGenesisWhitelisterAdminCmd(defaultNodeHome string) *cobra.Command {
@@ -65,7 +65,7 @@ the address will be looked up in the local Keybase.
 				return fmt.Errorf("failed to unmarshal genesis state: %w", err)
 			}
 
-			state := whitelisttypes.UnmarshalGenesis(cdc, appState[whitelisttypes.ModuleName])
+			state := tokenregistrytypes.UnmarshalGenesis(cdc, appState[tokenregistrytypes.ModuleName])
 			state.AdminAccount = addr.String()
 
 			stateBz, err := json.Marshal(state)
@@ -73,7 +73,7 @@ the address will be looked up in the local Keybase.
 				return fmt.Errorf("failed to marshal auth genesis state: %w", err)
 			}
 
-			appState[whitelisttypes.ModuleName] = stateBz
+			appState[tokenregistrytypes.ModuleName] = stateBz
 
 			appStateJSON, err := json.Marshal(appState)
 			if err != nil {
