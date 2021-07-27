@@ -95,7 +95,7 @@ func (k keeper) RemoveToken(ctx sdk.Context, denom string) {
 
 	updated := make([]*types.RegistryEntry, 0)
 	for _, t := range registry.Entries {
-		if t != nil && strings.EqualFold(t.Denom, denom) {
+		if t != nil && !strings.EqualFold(t.Denom, denom) {
 			updated = append(updated, t)
 		}
 	}
