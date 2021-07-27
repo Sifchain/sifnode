@@ -1,8 +1,0 @@
-Get the application URL by running these commands:
-
-** PLEASE NOTE: It may take a few minutes for the Load Balancer IP to be available. **
-
-You can watch the status by running: 'kubectl get --namespace {{ .Release.Namespace }} svc -w {{ include "cryptoeconomics.fullname" . }}'
-
-export SERVICE_HOST=$(kubectl get svc --namespace {{ .Release.Namespace }} {{ include "cryptoeconomics.fullname" . }} --template "{{"{{ range (index .status.loadBalancer.ingress 0) }}{{.}}{{ end }}"}}")
-echo http://$SERVICE_HOST
