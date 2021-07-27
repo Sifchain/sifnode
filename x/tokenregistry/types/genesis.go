@@ -49,7 +49,7 @@ func DefaultRegistry() Registry {
 			{IsWhitelisted: true, Denom: "cdai", Decimals: 18},
 			{IsWhitelisted: true, Denom: "cyfi", Decimals: 18},
 			{IsWhitelisted: true, Denom: "czrx", Decimals: 18},
-			{IsWhitelisted: true, Denom: "cwscrt", Decimals: 18}, // Update to 6 along with test tables.
+			{IsWhitelisted: true, Denom: "cwscrt", Decimals: 6},
 			{IsWhitelisted: true, Denom: "cwfil", Decimals: 18},
 			{IsWhitelisted: true, Denom: "cwbtc", Decimals: 18},
 			{IsWhitelisted: true, Denom: "cuni", Decimals: 18},
