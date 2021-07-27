@@ -75,7 +75,7 @@ func buildRootCmd() *cobra.Command {
 
 	log.SetFlags(log.Lshortfile)
 
-	sifapp.SetConfig(true)
+	// sifapp.SetConfig(true)
 
 	// Add --chain-id to persistent flags and mark it required
 	rootCmd.PersistentFlags().String(flags.FlagChainID, "", "Chain ID of tendermint node")
@@ -95,7 +95,6 @@ func buildRootCmd() *cobra.Command {
 		replayCosmosCmd(),
 		listMissedCosmosEventCmd(),
 	)
-
 	return rootCmd
 }
 
