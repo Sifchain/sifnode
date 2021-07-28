@@ -104,7 +104,7 @@ func GetDenomHash(
 	denomOverrideTable := map[string]string{
 		// Example entry, this table could be its own file and imported for
 		// code that needs to reference it
-		"20xbF45BFc92ebD305d4C0baf8395c4299bdFCE9EA229wBTCWBTC": "BTC",
+		"20xbF45BFc92ebD305d4C0baf8395c4299bdFCE9EA29wBTCWBTC": "BTC",
 	}
 	humanReadableDenom, overridePresent := denomOverrideTable[denomHashedString]
 	if overridePresent {
