@@ -3,22 +3,22 @@
     {
       "is_whitelisted": true,
       "denom": "ceth",
-      "decimals": 18
+      "decimals": "18"
     },
     {
       "is_whitelisted": true,
       "denom": "cdash",
-      "decimals": 18
+      "decimals": "18"
     },
     {
       "is_whitelisted": true,
       "denom": "rowan",
-      "decimals": 18
+      "decimals": "18"
     },
     {
       "is_whitelisted": true,
       "denom": "c96d7172b711f7f925dfc7579c6ccc3c80b762187215abd082cde99f81153dc80",
-      "decimals": 18
+      "decimals": "18"
     }
   ]
 }

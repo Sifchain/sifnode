@@ -1,13 +1,15 @@
 package utils
 
 import (
-	"encoding/json"
-	tokenregistrytypes "github.com/Sifchain/sifnode/x/tokenregistry/types"
+	"github.com/cosmos/cosmos-sdk/codec"
+
 	"io/ioutil"
 	"path/filepath"
+
+	tokenregistrytypes "github.com/Sifchain/sifnode/x/tokenregistry/types"
 )
 
-func ParseDenoms(dir string) (tokenregistrytypes.Registry, error) {
+func ParseDenoms(codec codec.JSONMarshaler, dir string) (tokenregistrytypes.Registry, error) {
 	var denoms tokenregistrytypes.Registry
 	file, err := filepath.Abs(dir)
 	if err != nil {
@@ -18,7 +20,7 @@ func ParseDenoms(dir string) (tokenregistrytypes.Registry, error) {
 		return denoms, err
 	}
 
-	err = json.Unmarshal(o, &denoms)
+	err = codec.UnmarshalJSON(o, &denoms)
 	if err != nil {
 		return denoms, err
 	}

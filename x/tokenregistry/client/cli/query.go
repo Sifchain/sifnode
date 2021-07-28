@@ -3,12 +3,14 @@ package cli
 import (
 	"context"
 	"fmt"
-	"github.com/Sifchain/sifnode/x/tokenregistry/types"
+	"strings"
+
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	transfertypes "github.com/cosmos/cosmos-sdk/x/ibc/applications/transfer/types"
 	"github.com/spf13/cobra"
-	"strings"
+
+	"github.com/Sifchain/sifnode/x/tokenregistry/types"
 )
 
 func GetQueryCmd() *cobra.Command {
@@ -45,7 +47,7 @@ func GetCmdQueryEntries() *cobra.Command {
 				return err
 			}
 
-			return clientCtx.PrintProto(res.Registry)
+			return clientCtx.PrintBytes(clientCtx.JSONMarshaler.MustMarshalJSON(res.Registry))
 		},
 	}
 

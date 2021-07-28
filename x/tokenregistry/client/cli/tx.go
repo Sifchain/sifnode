@@ -34,12 +34,12 @@ func GetCmdRegister() *cobra.Command {
 				return err
 			}
 
-			err = cobra.ExactArgs(2)(cmd, args)
+			err = cobra.ExactArgs(1)(cmd, args)
 			if err != nil {
 				return err
 			}
 
-			registry, err := whitelistutils.ParseDenoms(args[0])
+			registry, err := whitelistutils.ParseDenoms(clientCtx.JSONMarshaler, args[0])
 			if err != nil {
 				return err
 			} else if len(registry.Entries) != 1 {
