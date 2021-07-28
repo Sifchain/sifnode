@@ -1,8 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="dd13056d-032d-453a-835f-ec8dae75bbb9" name="Changes" comment="sort of working">
-      <change beforePath="$PROJECT_DIR$/test/test_eRowanMigration.ts" beforeDir="false" afterPath="$PROJECT_DIR$/test/test_bridgeBankMigration.ts" afterDir="false" />
+    <list default="true" id="dd13056d-032d-453a-835f-ec8dae75bbb9" name="Changes" comment="working bridgeBankMigration">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.openzeppelin/mainnet.json" beforeDir="false" afterPath="$PROJECT_DIR$/.openzeppelin/mainnet.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/tsyringe/contracts.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/tsyringe/contracts.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/test_bridgeBankMigration.ts" beforeDir="false" afterPath="$PROJECT_DIR$/test/test_bridgeBankMigration.ts" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -32,6 +35,7 @@
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$/test" />
     <property name="nodejs_package_manager_path" value="yarn" />
+    <property name="restartRequiresConfirmation" value="false" />
     <property name="settings.editor.selected.configurable" value="editor.preferences.fonts.default" />
     <property name="ts.external.directory.path" value="$APPLICATION_HOME_DIR$/plugins/JavaScriptLanguage/jsLanguageServicesImpl/external" />
     <property name="vue.rearranger.settings.migration" value="true" />
@@ -44,16 +48,16 @@
       <recent name="$PROJECT_DIR$/test" />
     </key>
   </component>
-  <component name="RunManager" selected="Node.js.erowanmigration">
-    <configuration name="erowanmigration" type="NodeJSConfigurationType" application-parameters="test test/test_eRowanMigration.ts" node-parameters="node_modules/.bin/hardhat" working-dir="$PROJECT_DIR$">
+  <component name="RunManager" selected="Node.js.test_newBridgeBank.ts">
+    <configuration name="test_bridgeBankMigration.ts" type="NodeJSConfigurationType" application-parameters="test test/test_bridgeBankMigration.ts" node-parameters="node_modules/.bin/hardhat" working-dir="$PROJECT_DIR$">
       <envs>
         <env name="ALCHEMY_URL" value="https://eth-mainnet.alchemyapi.io/v2/x4YoKdIFoqysvsttnz81U4JHqlVPxsEH" />
       </envs>
       <method v="2" />
     </configuration>
     <list>
+      <item itemvalue="Node.js.test_bridgeBankMigration.ts" />
       <item itemvalue="Node.js.test_newBridgeBank.ts" />
-      <item itemvalue="Node.js.erowanmigration" />
     </list>
   </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
@@ -65,8 +69,19 @@
       <option name="presentableId" value="Default" />
       <updated>1627429744749</updated>
       <workItem from="1627429746054" duration="4350000" />
-      <workItem from="1627444617862" duration="344000" />
+      <workItem from="1627444617862" duration="787000" />
+      <workItem from="1627445732684" duration="91000" />
+      <workItem from="1627445828400" duration="158000" />
+      <workItem from="1627445990785" duration="1765000" />
     </task>
+    <task id="LOCAL-00001" summary="rename">
+      <created>1627444976349</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1627444976349</updated>
+    </task>
+    <option name="localTasksCounter" value="2" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -86,6 +101,26 @@
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="sort of working" />
-    <option name="LAST_COMMIT_MESSAGE" value="sort of working" />
+    <MESSAGE value="rename" />
+    <MESSAGE value="working bridgeBankMigration" />
+    <option name="LAST_COMMIT_MESSAGE" value="working bridgeBankMigration" />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" type="javascript">
+          <url>file://$PROJECT_DIR$/test/test_bridgeBankMigration.ts</url>
+          <line>24</line>
+          <properties lambdaOrdinal="-1" />
+          <option name="timeStamp" value="3" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="javascript">
+          <url>file://$PROJECT_DIR$/test/test_bridgeBankMigration.ts</url>
+          <line>50</line>
+          <properties lambdaOrdinal="-1" />
+          <option name="timeStamp" value="7" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
   </component>
 </project>

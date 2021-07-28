@@ -21,24 +21,23 @@ describe("BridgeBank with eRowan migration functionality", () => {
         container.register(HardhatRuntimeEnvironmentToken, {useValue: hardhat})
     })
 
-    describe("with updated BridgeBank contract", async () => {
+    before('use mainnet data', async () => {
+        await setupSifchainMainnetDeployment(container, hardhat)
+    })
+
+    describe("upgrade the BridgeBank contract", async () => {
         let existingRowanToken: BridgeToken
         let existingBridgeBank: BridgeBank
         let newBridgeBank: BridgeBank
         let newRowanToken: BridgeToken
         let upgradeAdmin: string
 
-        it("should upgrade BridgeBank, maintaining stored values", async () => {
+        it("should maintain existing values", async () => {
             existingRowanToken = await container.resolve(DeployedBridgeToken).contract
             existingBridgeBank = await container.resolve(DeployedBridgeBank).contract
             const bridgeBankFactory = await container.resolve(SifchainContractFactories).bridgeBank
             upgradeAdmin = container.resolve(BridgeBankMainnetUpgradeAdmin) as string
 
-            // What values are stored?
-            // whitelist
-            // operator
-            // oracle
-            // cosmos
             const existingOperator = await existingBridgeBank.operator()
             const existingOracle = await existingBridgeBank.oracle()
             const existingCosmosBridge = await existingBridgeBank.cosmosBridge()

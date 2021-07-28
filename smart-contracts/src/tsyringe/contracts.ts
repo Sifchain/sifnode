@@ -30,7 +30,6 @@ export class SifchainContractFactories {
         this.bridgeRegistry = hre.ethers.getContractFactory("BridgeRegistry").then((x: ContractFactory) => x as BridgeRegistry__factory)
         this.bridgeToken = hre.ethers.getContractFactory("BridgeToken").then((x: ContractFactory) => x as BridgeToken__factory)
         this.bridgeTokenG2 = hre.ethers.getContractFactory("BridgeTokenG2").then((x: ContractFactory) => x as BridgeTokenG2__factory)
-        console.log("completehere SifchainContractFactories")
     }
 }
 
@@ -129,7 +128,6 @@ export class BridgeBankProxy {
         private sifchainContractFactories: SifchainContractFactories,
         private bridgeBankArguments: BridgeBankArguments,
     ) {
-        console.log("in BridgeBankProxy")
         this.contract = sifchainContractFactories.bridgeBank.then(async bridgeBankFactory => {
             const bridgeBankArguments = await this.bridgeBankArguments.asArray()
             const bridgeBankProxy = await h.upgrades.deployProxy(bridgeBankFactory, bridgeBankArguments, {initializer: "initialize(address,address,address,address)"}) as BridgeBank
@@ -196,7 +194,6 @@ export class BridgeTokenSetup {
         const accounts = await sifchainAccounts.accounts
         const muchRowan = BigNumber.from(100000000).mul(BigNumber.from(10).pow(18))
         await erowan.mint(accounts.operatorAccount.address, muchRowan)
-        console.log("fnord2")
         return true
     }
 
