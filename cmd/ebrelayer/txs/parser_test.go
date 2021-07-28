@@ -56,7 +56,7 @@ func TestDenomHashHandCrafted(t *testing.T) {
 }
 
 func TestDenomCalculated(t *testing.T) {
-	expectedDenom := "7ab5ab7aa7d978577efb3b68b9115976ec8e0312d04062350f4b40822a3870ce"
+	expectedDenom := "50c964aff4509857248783aa7a6c2cc403fb71bf0991d4645ebce6293e258619"
 	actualDenom := ethbridge.GetDenomHash(1, "0x0000000000000000000000000000000000000000", 18, "Ethereum", "ETH")
 
 	require.Equal(t, expectedDenom, actualDenom)
