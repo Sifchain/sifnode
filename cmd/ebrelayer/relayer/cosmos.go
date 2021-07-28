@@ -167,7 +167,7 @@ func (sub CosmosSub) Start(completionEvent *sync.WaitGroup) {
 						case types.MsgBurn, types.MsgLock:
 							cosmosMsg, err := txs.BurnLockEventToCosmosMsg(claimType, event.GetAttributes(), sub.SugaredLogger)
 							if err != nil {
-								sub.SugaredLogger.Errorw("sifchain client failed in get message from event.",
+								sub.SugaredLogger.Errorw("sifchain client failed in get burn lock message from event.",
 									errorMessageKey, err.Error())
 								continue
 							}
@@ -177,16 +177,14 @@ func (sub CosmosSub) Start(completionEvent *sync.WaitGroup) {
 						case types.ProphecyCompleted:
 							prophecyInfo, err := txs.ProphecyCompletedEventToProphecyInfo(claimType, event.GetAttributes(), sub.SugaredLogger)
 							if err != nil {
-								sub.SugaredLogger.Errorw("sifchain client failed in get message from event.",
+								sub.SugaredLogger.Errorw("sifchain client failed in get prophecy completed message from event.",
 									errorMessageKey, err.Error())
 								continue
 							}
 							if prophecyInfo.NetworkDescriptor == sub.NetworkDescriptor {
 								sub.handleProphecyCompleted(prophecyInfo, claimType)
 							}
-
 						}
-
 					}
 				}
 
@@ -481,11 +479,8 @@ func (sub CosmosSub) handleProphecyCompleted(
 	prophecyInfo types.ProphecyInfo,
 	claimType types.Event,
 ) {
-	sub.SugaredLogger.Infow("handle burn lock message.",
-		"cosmosMessage", prophecyInfo)
-
 	sub.SugaredLogger.Infow(
-		"get the prophecy claim.",
+		"get the prophecy completed message.",
 		"cosmosMsg", prophecyInfo,
 	)
 
@@ -518,7 +513,7 @@ func (sub CosmosSub) handleProphecyCompleted(
 
 		if err != nil {
 			sub.SugaredLogger.Errorw(
-				"failed to send new prophecyclaim to ethereum",
+				"failed to send new prophecy completed to ethereum",
 				errorMessageKey, err.Error(),
 			)
 		} else {

@@ -177,6 +177,16 @@ func (k Keeper) ProcessSignProphecy(ctx sdk.Context, networkDescriptor types.Net
 		return types.ErrProphecyNotFound
 	}
 
+	whiteList := k.GetOracleWhiteList(ctx, types.NewNetworkIdentity(networkDescriptor))
+	power, ok := whiteList.WhiteList[cosmosSender]
+	if !ok {
+		return errors.New("message sender to sign prophecy not in the whitelist")
+	}
+
+	if power == 0 {
+		return errors.New("message sender to sign prophecy without vote power")
+	}
+
 	// verify the signature
 	publicKey, err := gethCrypto.Ecrecover(prophecyID, gethCommon.FromHex(signature))
 	if err != nil {

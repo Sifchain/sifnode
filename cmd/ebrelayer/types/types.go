@@ -171,11 +171,32 @@ const (
 	EthereumSenderNonce
 	// NetworkDescriptor is different blockchain identity
 	NetworkDescriptor
+	// EthereumAddresses all relayer's ethereum addresses
+	EthereumAddresses
+	// Signatures all relayer's signature against one prophecy
+	Signatures
+	// ProphecyID id of prophecy
+	ProphecyID
+	// DoublePeg indicates if the token is double pegged
+	DoublePeg
+	// GlobalNonce an increment value for lock/burn
+	GlobalNonce
 )
 
 // String returns the event type as a string
 func (d CosmosMsgAttributeKey) String() string {
-	return [...]string{"unsupported", "cosmos_sender", "cosmos_sender_sequence", "ethereum_receiver", "amount", "symbol", "ethereum_sender", "ethereum_sender_nonce", "network_id"}[d]
+	return [...]string{"unsupported",
+		"cosmos_sender",
+		"cosmos_sender_sequence",
+		"ethereum_receiver", "amount",
+		"symbol", "ethereum_sender",
+		"ethereum_sender_nonce",
+		"network_id",
+		"ethereum_addresses",
+		"signatures",
+		"prophecy_id",
+		"double_peg",
+		"global_nonce"}[d]
 }
 
 // EthereumBridgeClaim for store the EventTypeCreateClaim from cosmos
@@ -195,7 +216,7 @@ type ProphecyClaimUnique struct {
 type ProphecyInfo struct {
 	TokenAmount          big.Int
 	ProphecyID           []byte
-	EthereumAddress      []string
+	EthereumAddresses    []string
 	Signatures           []string
 	CosmosSender         string
 	EthereumReceiver     string

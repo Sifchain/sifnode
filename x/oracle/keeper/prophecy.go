@@ -9,7 +9,7 @@ import (
 )
 
 // ProphecyLiftTime is used to clean outdated prophecy info from keeper
-const ProphecyLiftTime = 1000
+const ProphecyLiftTime = 520000
 
 // GetProphecies returns all prophecies
 func (k Keeper) GetProphecies(ctx sdk.Context) []types.Prophecy {

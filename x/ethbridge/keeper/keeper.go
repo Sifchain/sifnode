@@ -152,9 +152,9 @@ func (k Keeper) ProcessBurn(ctx sdk.Context, cosmosSender sdk.AccAddress, sender
 	}
 
 	// TODO global sequence will be implemented in other feature
-	glocalSequence := uint64(0)
+	globalSequence := uint64(0)
 
-	prophecyID := msg.GetProphecyID(false, senderSequence, glocalSequence)
+	prophecyID := msg.GetProphecyID(false, senderSequence, globalSequence)
 	k.oracleKeeper.SetProphecyWithInitValue(ctx, prophecyID)
 
 	return prophecyID, nil
