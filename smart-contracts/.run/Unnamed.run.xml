@@ -1,0 +1,8 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="test_newBridgeBank.ts" type="NodeJSConfigurationType" application-parameters="test test/test_newBridgeBank.ts" node-parameters="node_modules/.bin/hardhat" working-dir="$PROJECT_DIR$">
+    <envs>
+      <env name="ALCHEMY_URL" value="https://eth-mainnet.alchemyapi.io/v2/x4YoKdIFoqysvsttnz81U4JHqlVPxsEH" />
+    </envs>
+    <method v="2" />
+  </configuration>
+</component>

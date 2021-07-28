@@ -77,7 +77,7 @@ contract CosmosBank is CosmosBankStorage, ToLower {
      *
      * @param _symbol: The BridgeToken's symbol
      *
-     * @note the Rowan token symbol needs to be "Rowan" so that it integrates correctly with the cosmos bridge
+     * @note the Rowan token symbol needs to be "Rowan" so that it integrates correctly with the cosmos bridge 
      */
     function useExistingBridgeToken(address _contractAddress)
         internal

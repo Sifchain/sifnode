@@ -1,8 +1,25 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="ebe2b9a8-cdf0-4f99-941f-843a74719a8a" name="Default Changelist" comment="working">
+    <list default="true" id="dd13056d-032d-453a-835f-ec8dae75bbb9" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/test/test_BridgeBankErowanMigrationMethods.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/test/test_newInfo.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/.gitignore" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/contracts/BridgeBank/BridgeBank.sol" beforeDir="false" afterPath="$PROJECT_DIR$/contracts/BridgeBank/BridgeBank.sol" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/contracts/BridgeBank/CosmosBank.sol" beforeDir="false" afterPath="$PROJECT_DIR$/contracts/BridgeBank/CosmosBank.sol" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/contracts/BridgeBank/SifchainTestToken.sol" beforeDir="false" afterPath="$PROJECT_DIR$/contracts/BridgeBank/SifchainTestToken.sol" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/contracts/CosmosBridge.sol" beforeDir="false" afterPath="$PROJECT_DIR$/contracts/CosmosBridge.sol" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/package-lock.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/hardhatFunctions.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/hardhatFunctions.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/test_eRowanMigration.ts" beforeDir="false" afterPath="$PROJECT_DIR$/test/test_eRowanMigration.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/test_security.js" beforeDir="false" afterPath="$PROJECT_DIR$/test/test_security.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/test_upgradeContracts.js" beforeDir="false" afterPath="$PROJECT_DIR$/test/test_upgradeContracts.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/test_valset.js" beforeDir="false" afterPath="$PROJECT_DIR$/test/test_valset.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/yarn.lock" beforeDir="false" afterPath="$PROJECT_DIR$/yarn.lock" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -20,72 +37,52 @@
       <filtered-out-file-type name="COMMIT_BY_MESSAGE" />
     </file-type-list>
   </component>
-  <component name="HighlightingSettingsPerFile">
-    <setting file="file://$PROJECT_DIR$/src/tsyringe/contracts.ts" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/contracts/BridgeBank/BridgeBank.sol" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/hardhat.config.ts" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/test/test_eRowanMigration.ts" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/test/test_newBridgeBank.ts" root0="FORCE_HIGHLIGHTING" />
-  </component>
-  <component name="ProjectId" id="1vrT1fSpUEVKNlK93535e6yqkAK" />
+  <component name="ProjectId" id="1vv5VS6B4kuoGhmZh7Sc4GmSB1F" />
   <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
   <component name="ProjectViewState">
-    <option name="autoscrollFromSource" value="true" />
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
   <component name="PropertiesComponent">
-    <property name="ASKED_ADD_EXTERNAL_FILES" value="true" />
     <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
-    <property name="last_opened_file_path" value="$USER_HOME$/.docker/config.json" />
-    <property name="restartRequiresConfirmation" value="false" />
-    <property name="settings.editor.selected.configurable" value="preferences.lookFeel" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/test" />
+    <property name="nodejs_package_manager_path" value="yarn" />
+    <property name="settings.editor.selected.configurable" value="editor.preferences.fonts.default" />
+    <property name="ts.external.directory.path" value="$APPLICATION_HOME_DIR$/plugins/JavaScriptLanguage/jsLanguageServicesImpl/external" />
     <property name="vue.rearranger.settings.migration" value="true" />
   </component>
-  <component name="RunManager">
-    <configuration name="test_newBridgeBank.ts" type="NodeJSConfigurationType" application-parameters="test test/test_newBridgeBank.ts" path-to-node="$USER_HOME$/.nvm/versions/node/v15.3.0/bin/node" node-parameters="node_modules/.bin/hardhat" working-dir="$PROJECT_DIR$">
+  <component name="ReaderModeSettings">
+    <option name="showLigatures" value="true" />
+  </component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/test" />
+    </key>
+  </component>
+  <component name="RunManager" selected="Node.js.erowanmigration">
+    <configuration name="erowanmigration" type="NodeJSConfigurationType" application-parameters="test test/test_eRowanMigration.ts" node-parameters="node_modules/.bin/hardhat" working-dir="$PROJECT_DIR$">
       <envs>
         <env name="ALCHEMY_URL" value="https://eth-mainnet.alchemyapi.io/v2/x4YoKdIFoqysvsttnz81U4JHqlVPxsEH" />
       </envs>
       <method v="2" />
     </configuration>
+    <list>
+      <item itemvalue="Node.js.test_newBridgeBank.ts" />
+      <item itemvalue="Node.js.erowanmigration" />
+    </list>
   </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
-      <changelist id="ebe2b9a8-cdf0-4f99-941f-843a74719a8a" name="Default Changelist" comment="" />
-      <created>1627318994045</created>
+      <changelist id="dd13056d-032d-453a-835f-ec8dae75bbb9" name="Changes" comment="" />
+      <created>1627429744749</created>
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
-      <updated>1627318994045</updated>
-      <workItem from="1627318995169" duration="361000" />
-      <workItem from="1627319508577" duration="9000000" />
-      <workItem from="1627343948663" duration="599000" />
+      <updated>1627429744749</updated>
+      <workItem from="1627429746054" duration="4350000" />
     </task>
-    <task id="LOCAL-00001" summary="working">
-      <created>1627323698726</created>
-      <option name="number" value="00001" />
-      <option name="presentableId" value="LOCAL-00001" />
-      <option name="project" value="LOCAL" />
-      <updated>1627323698726</updated>
-    </task>
-    <task id="LOCAL-00002" summary="working">
-      <created>1627324088785</created>
-      <option name="number" value="00002" />
-      <option name="presentableId" value="LOCAL-00002" />
-      <option name="project" value="LOCAL" />
-      <updated>1627324088785</updated>
-    </task>
-    <task id="LOCAL-00003" summary="working">
-      <created>1627404928552</created>
-      <option name="number" value="00003" />
-      <option name="presentableId" value="LOCAL-00003" />
-      <option name="project" value="LOCAL" />
-      <updated>1627404928552</updated>
-    </task>
-    <option name="localTasksCounter" value="4" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -101,21 +98,5 @@
         </entry>
       </map>
     </option>
-    <option name="oldMeFiltersMigrated" value="true" />
-  </component>
-  <component name="VcsManagerConfiguration">
-    <MESSAGE value="working" />
-    <option name="LAST_COMMIT_MESSAGE" value="working" />
-  </component>
-  <component name="XDebuggerManager">
-    <breakpoint-manager>
-      <breakpoints>
-        <line-breakpoint enabled="true" type="javascript">
-          <url>file://$PROJECT_DIR$/src/tsyringe/contracts.ts</url>
-          <line>193</line>
-          <option name="timeStamp" value="7" />
-        </line-breakpoint>
-      </breakpoints>
-    </breakpoint-manager>
   </component>
 </project>

@@ -1,12 +1,20 @@
-const web3 = require("web3");
+const { deployProxy, silenceWarnings } = require('@openzeppelin/truffle-upgrades');
+
+const Valset = artifacts.require("Valset");
+const CosmosBridge = artifacts.require("CosmosBridge");
+const Oracle = artifacts.require("Oracle");
+const BridgeToken = artifacts.require("BridgeToken");
+const BridgeBank = artifacts.require("BridgeBank");
+
+const Web3Utils = require("web3-utils");
+const EVMRevert = "revert";
 const BigNumber = web3.BigNumber;
-const { expect } = require('chai');
+
 const {
-  signHash,
-  multiTokenSetup,
-  deployTrollToken,
-  getDigestNewProphecyClaim,
-} = require("./helpers/testFixture");
+  BN,
+  expectRevert, // Assertions for transactions that should fail
+} = require('@openzeppelin/test-helpers');
+const { expect } = require('chai');
 
 const NULL_ADDRESS = "0x0000000000000000000000000000000000000000";
 const sifRecipient = web3.utils.utf8ToHex(
@@ -18,195 +26,207 @@ require("chai")
   .use(require("chai-bignumber")(BigNumber))
   .should();
 
-describe("Security Test", function () {
-  let userOne;
-  let userTwo;
-  let userThree;
-  let userFour;
-  let accounts;
-  let signerAccounts;
-  let operator;
-  let owner;
+contract("Security Test", function (accounts) {
+  // System operator
+  const operator = accounts[0];
+
+  // Initial validator accounts
+  const userOne = accounts[1];
+  const userTwo = accounts[2];
+  const userThree = accounts[3];
+
+  // Consensus threshold of 70%
   const consensusThreshold = 70;
-  let initialPowers;
-  let initialValidators;
-  // track the state of the deployed contracts
-  let state;
-  let CosmosBridge;
-  let BridgeToken;
-  let TrollToken;
-
-  before(async function() {
-    CosmosBridge = await ethers.getContractFactory("CosmosBridge");
-    BridgeToken = await ethers.getContractFactory("BridgeToken");
-    accounts = await ethers.getSigners();
-    signerAccounts = accounts.map((e) => { return e.address });
-
-    operator = accounts[0];
-    userOne = accounts[1];
-    userTwo = accounts[2];
-    userFour = accounts[3];
-    userThree = accounts[7].address;
-
-    owner = accounts[5];
-    pauser = accounts[6];
-
-    initialPowers = [25, 25, 25, 25];
-    initialValidators = [
-      accounts[0].address,
-      accounts[1].address,
-      accounts[2].address,
-      accounts[3].address,
-    ];
-  });
 
   describe("BridgeBank Security", function () {
     beforeEach(async function () {
-      state = await multiTokenSetup(
-        initialValidators,
-        initialPowers,
+      await silenceWarnings();
+
+      // Deploy Valset contract
+      this.initialValidators = [userOne, userTwo, userThree];
+      this.initialPowers = [5, 8, 12];
+
+      // Deploy CosmosBridge contract
+      this.cosmosBridge = await deployProxy(CosmosBridge, [
         operator,
         consensusThreshold,
-        owner,
-        userOne,
-        userThree,
-        pauser.address
+        this.initialValidators,
+        this.initialPowers
+      ],
+        {unsafeAllowCustomTypes: true}
       );
+
+      // Deploy BridgeBank contract
+      this.bridgeBank = await deployProxy(BridgeBank, [
+        operator,
+        this.cosmosBridge.address,
+        operator,
+        operator
+      ],
+      {unsafeAllowCustomTypes: true}
+      );
+
+      this.token = await BridgeToken.new("erowan");
+
+      await this.bridgeBank.addExistingBridgeToken(this.token.address, { from: operator });
+    });
+
+    it("should deploy the BridgeBank, correctly setting the operator and valset", async function () {
+      this.bridgeBank.should.exist;
+
+      const bridgeBankOperator = await this.bridgeBank.operator();
+      bridgeBankOperator.should.be.equal(operator);
     });
 
     it("should be able to change the owner", async function () {
-      expect(await state.bridgeBank.owner()).to.be.equal(owner.address);
-      await state.bridgeBank.connect(owner).changeOwner(userTwo.address);
-      expect(await state.bridgeBank.owner()).to.be.equal(userTwo.address);
+      expect(await this.bridgeBank.owner()).to.be.equal(operator);
+      await this.bridgeBank.changeOwner(userTwo, { from: operator });
+      expect(await this.bridgeBank.owner()).to.be.equal(userTwo);
     });
 
     it("should not be able to change the owner if the caller is not the owner", async function () {
-      expect(await state.bridgeBank.owner()).to.be.equal(owner.address);
+      expect(await this.bridgeBank.owner()).to.be.equal(operator);
+      await expectRevert(
+        this.bridgeBank.changeOwner(userTwo, { from: userThree }),
+        "!owner"
+      );
+      expect((await this.bridgeBank.owner())).to.be.equal(operator);
+    });
 
-      await expect(
-        state.bridgeBank.connect(accounts[7])
-          .changeOwner(userTwo.address),
-      ).to.be.revertedWith("!owner");
-
-      expect((await state.bridgeBank.owner())).to.be.equal(owner.address);
+    it("should be able to change the operator", async function () {
+      expect((await this.bridgeBank.operator())).to.be.equal(operator);
+      await this.bridgeBank.changeOperator(userTwo, { from: operator });
+      expect((await this.bridgeBank.operator())).to.be.equal(userTwo);
     });
 
     it("should not be able to change the operator if the caller is not the operator", async function () {
-      expect((await state.cosmosBridge.operator())).to.be.equal(operator.address);
-      await expect(
-        state.cosmosBridge.connect(userOne)
-          .changeOperator(userTwo.address),
-      ).to.be.revertedWith("Must be the operator.");
-
-      expect((await state.cosmosBridge.operator())).to.be.equal(operator.address);
+      expect((await this.bridgeBank.operator())).to.be.equal(operator);
+      await expectRevert(
+        this.bridgeBank.changeOperator(userTwo, { from: userThree }),
+        "!operator"
+      );
+      expect((await this.bridgeBank.operator())).to.be.equal(operator);
     });
 
     it("should correctly set initial values", async function () {
       // CosmosBank initial values
-      // bridgeTokenCount is deprecated
-      const bridgeTokenCount = Number(await state.bridgeBank.bridgeTokenCount());
-      bridgeTokenCount.should.be.bignumber.equal(0);
+      const bridgeTokenCount = Number(await this.bridgeBank.bridgeTokenCount());
+      bridgeTokenCount.should.be.bignumber.equal(1);
     });
 
     it("should be able to pause the contract", async function () {
-      await state.bridgeBank.connect(pauser).pause();
-      expect(await state.bridgeBank.paused()).to.be.true;
+      await this.bridgeBank.pause();
+      expect(await this.bridgeBank.paused()).to.be.true;
     });
 
     it("should not be able to pause the contract if you are not the owner", async function () {
-      await expect(
-        state.bridgeBank.connect(userOne).pause(),
-      ).to.be.revertedWith("PauserRole: caller does not have the Pauser role");
-
-      expect(await state.bridgeBank.paused()).to.be.false;
+      await expectRevert(
+        this.bridgeBank.pause({ from: userOne }),
+        "PauserRole: caller does not have the Pauser role"
+      );
+      expect(await this.bridgeBank.paused()).to.be.false;
     });
 
     it("should be able to add a new pauser if you are a pauser", async function () {
-      expect(await state.bridgeBank.pausers(pauser.address)).to.be.true;
-      expect(await state.bridgeBank.pausers(userOne.address)).to.be.false;
-
-      await state.bridgeBank.connect(pauser).addPauser(userOne.address);
-
-      expect(await state.bridgeBank.pausers(pauser.address)).to.be.true;
-      expect(await state.bridgeBank.pausers(userOne.address)).to.be.true;
+      expect(await this.bridgeBank.pausers(operator)).to.be.true;
+      expect(await this.bridgeBank.pausers(userOne)).to.be.false;
+      await this.bridgeBank.addPauser(userOne, { from: operator })
+      expect(await this.bridgeBank.pausers(operator)).to.be.true;
+      expect(await this.bridgeBank.pausers(userOne)).to.be.true;
     });
 
     it("should be able to renounce yourself as pauser", async function () {
-      expect(await state.bridgeBank.pausers(pauser.address)).to.be.true;
-      expect(await state.bridgeBank.pausers(userOne.address)).to.be.false;
-
-      await state.bridgeBank.connect(pauser).addPauser(userOne.address);
-      expect(await state.bridgeBank.pausers(pauser.address)).to.be.true;
-      expect(await state.bridgeBank.pausers(userOne.address)).to.be.true;
-
-      await state.bridgeBank.connect(userOne).renouncePauser();
-      expect(await state.bridgeBank.pausers(userOne.address)).to.be.false;
+      expect(await this.bridgeBank.pausers(operator)).to.be.true;
+      expect(await this.bridgeBank.pausers(userOne)).to.be.false;
+      await this.bridgeBank.addPauser(userOne, { from: operator })
+      expect(await this.bridgeBank.pausers(operator)).to.be.true;
+      expect(await this.bridgeBank.pausers(userOne)).to.be.true;
+      await this.bridgeBank.renouncePauser({ from: userOne });
+      expect(await this.bridgeBank.pausers(userOne)).to.be.false;
     });
 
     it("should be able to pause and then unpause the contract", async function () {
       // CosmosBank initial values
-      await expect(
-        state.bridgeBank.connect(pauser).unpause(),
-      ).to.be.revertedWith("Pausable: not paused");
-
-      await state.bridgeBank.connect(pauser).pause();
-      await expect(
-        state.bridgeBank.connect(pauser).pause(),
-      ).to.be.revertedWith("Pausable: paused");
-
-      expect(await state.bridgeBank.paused()).to.be.true;
-      await state.bridgeBank.connect(pauser).unpause();
-
-      expect(await state.bridgeBank.paused()).to.be.false;
+      await expectRevert(
+        this.bridgeBank.unpause(),
+        "Pausable: not paused"
+      );
+      await this.bridgeBank.pause();
+      await expectRevert(
+        this.bridgeBank.pause(),
+        "Pausable: paused"
+      );
+      expect(await this.bridgeBank.paused()).to.be.true;
+      await this.bridgeBank.unpause();
+      expect(await this.bridgeBank.paused()).to.be.false;
     });
     
     it("should not be able to lock when contract is paused", async function () {
-      await state.bridgeBank.connect(pauser).pause();
-      expect(await state.bridgeBank.paused()).to.be.true;
+      await this.bridgeBank.pause();
+      expect(await this.bridgeBank.paused()).to.be.true;
 
-      await expect(
-        state.bridgeBank.connect(userOne)
-          .lock(sifRecipient, NULL_ADDRESS, 100),
-      ).to.be.revertedWith("Pausable: paused");
+      await expectRevert(
+        this.bridgeBank.lock(sifRecipient, NULL_ADDRESS, 100),
+        "Pausable: paused"
+      );
     });
     
     it("should not be able to burn when contract is paused", async function () {
-      await state.bridgeBank.connect(pauser).pause();
-      expect(await state.bridgeBank.paused()).to.be.true;
+      await this.bridgeBank.pause();
+      expect(await this.bridgeBank.paused()).to.be.true;
 
-      await expect(
-        state.bridgeBank.connect(userOne)
-          .burn(sifRecipient, state.rowan.address, 100),
-      ).to.be.revertedWith("Pausable: paused");
+      await expectRevert(
+        this.bridgeBank.burn(sifRecipient, this.token.address, 100),
+        "Pausable: paused"
+      );
+    });
+
+    it("should not allow a user to send ethereum directly to the contract", async function () {
+      await this.bridgeBank
+        .send(Web3Utils.toWei("0.25", "ether"), {
+          from: userOne
+        })
+        .should.be.rejectedWith(EVMRevert);
     });
   });
 
-  // state entire scenario is mimicking the mainnet scenario where there will be
+  // This entire scenario is mimicking the mainnet scenario where there will be
   // cosmos assets on sifchain, and then we hook into an existing ERC20 contract on mainnet
   // that is eRowan. Then we will try to transfer rowan to eRowan to ensure that
   // everything is set up correctly.
-  // We will do state by making a new prophecy claim, validating it with the validators
+  // We will do this by making a new prophecy claim, validating it with the validators
   // Then ensure that the prohpecy claim paid out the person that it was supposed to
   describe("Bridge token burning", function () {
     before(async function () {
-      // state test needs to create a new token contract that will
+      // this test needs to create a new token contract that will
       // effectively be able to be treated as if it was a cosmos native asset
       // even though it was created on top of ethereum
 
       // Deploy Valset contract
-      state.initialValidators = [userOne.address, userTwo.address, userThree];
-      state.initialPowers = [33, 33, 33];
+      this.initialValidators = [userOne, userTwo, userThree];
+      this.initialPowers = [33, 33, 33];
 
-      state = await multiTokenSetup(
-        state.initialValidators,
-        state.initialPowers,
+      // Deploy CosmosBridge contract
+      this.cosmosBridge = await deployProxy(CosmosBridge, [
         operator,
         consensusThreshold,
-        owner,
-        userOne,
-        userThree,
-        pauser.address
+        this.initialValidators,
+        this.initialPowers
+      ],
+        {unsafeAllowCustomTypes: true}
       );
+
+      // Deploy BridgeBank contract
+      this.bridgeBank = await deployProxy(BridgeBank, [
+        operator,
+        this.cosmosBridge.address,
+        operator,
+        operator
+      ],
+      {unsafeAllowCustomTypes: true}
+      );
+
+      await this.cosmosBridge.setBridgeBank(this.bridgeBank.address, {from: operator})
     });
 
     it("should not allow burning of non whitelisted token address", async function () {
@@ -218,231 +238,114 @@ describe("Security Test", function () {
         return hex;
       }
 
+      const symbol = 'eRowan'
       const amount = 100000;
       const sifAddress = "0x" + convertToHex("sif12qfvgsq76eghlagyfcfyt9md2s9nunsn40zu2h");
       
       // create new fake eRowan token
-      const bridgeToken = await BridgeToken.deploy("rowan", "rowan", 18);
+      const bridgeToken = await BridgeToken.new("eRowan");
 
       // Attempt to burn tokens
-      await expect(
-        state.bridgeBank.connect(operator).burn(
-          sifAddress,
-          bridgeToken.address,
-          amount
+      await expectRevert(
+        this.bridgeBank.burn(
+            sifAddress,
+            bridgeToken.address,
+            amount, { from: operator }
         ),
-      ).to.be.revertedWith("Only token in whitelist can be burned");
+        "Only token in whitelist can be transferred to cosmos"
+      );
     });
   });
 
   describe("Consensus Threshold Limits", function () {
     beforeEach(async function () {
-      state.initialValidators = [userOne.address, userTwo.address, userThree];
-      state.initialPowers = [33, 33, 33];
-
-      state = await multiTokenSetup(
-        state.initialValidators,
-        state.initialPowers,
-        operator,
-        consensusThreshold,
-        owner,
-        userOne,
-        userThree,
-        pauser.address
-      );
+      this.initialValidators = [userOne, userTwo, userThree];
+      this.initialPowers = [33, 33, 33];
     });
 
     it("should not allow initialization of CosmosBridge with a consensus threshold over 100", async function () {
-      state.bridge = await CosmosBridge.deploy();
-
-      await expect(
-        state.bridge.connect(operator).initialize(
-          operator.address,
+      this.bridge = await CosmosBridge.new();
+      await expectRevert(
+        this.bridge.initialize(
+          operator,
           101,
-          state.initialValidators,
-          state.initialPowers
+          this.initialValidators,
+          this.initialPowers
         ),
-      ).to.be.revertedWith("Invalid consensus threshold.");
+        "Invalid consensus threshold."
+      );
     });
 
     it("should not allow initialization of oracle with a consensus threshold of 0", async function () {
-      state.bridge = await CosmosBridge.deploy();
-      await expect(
-        state.bridge.connect(operator).initialize(
-          operator.address,
+      this.bridge = await CosmosBridge.new();
+      await expectRevert(
+        this.bridge.initialize(
+          operator,
           0,
-          state.initialValidators,
-          state.initialPowers
+          this.initialValidators,
+          this.initialPowers
         ),
-      ).to.be.revertedWith("Consensus threshold must be positive.");
-    });
-
-    it("should not allow a non cosmosbridge account to mint from bridgebank", async function () {
-      state.bridge = await CosmosBridge.deploy();
-      await expect(
-        state.bridgeBank.connect(operator).handleUnpeg(
-          operator.address,
-          state.token1.address,
-          100
-        ),
-      ).to.be.revertedWith("!cosmosbridge");
-    });
-
-    it("should not be able to createNewBridgeToken as non validator", async function () {
-      state.bridge = await CosmosBridge.deploy();
-      await expect(
-        state.cosmosBridge.connect(operator).createNewBridgeToken(
-          "atom",
-          "atom",
-          state.token1.address,
-          18,
-          1
-        ),
-      ).to.be.revertedWith("Must be an active validator");
-    });
-
-    it("should not be able to createNewBridgeToken as a validator if a bridgetoken with the same source address already exists", async function () {
-      // assert that the cosmos bridge token has not been created
-      let bridgeToken = await state.cosmosBridge.sourceAddressToDestinationAddress(
-        state.token1.address
+        "Consensus threshold must be positive."
       );
-      expect(bridgeToken).to.be.equal(state.ethereumToken);
-
-      await state.cosmosBridge.connect(userOne).createNewBridgeToken(
-        "atom",
-        "atom",
-        state.token1.address,
-        18,
-        1
-      );
-
-      // now assert that the bridge token has been created
-      bridgeToken = await state.cosmosBridge.sourceAddressToDestinationAddress(
-        state.token1.address
-      );
-      expect(bridgeToken).to.not.be.equal(state.ethereumToken);
-
-      await expect(
-        state.cosmosBridge.connect(userOne).createNewBridgeToken(
-          "atom",
-          "atom",
-          state.token1.address,
-          18,
-          1
-        ),
-      ).to.be.revertedWith("INV_SRC_ADDR");
     });
   });
 
-  describe("Troll token tests", function () {
-    beforeEach(async function () {
-      state = await multiTokenSetup(
-        initialValidators,
-        initialPowers,
+  describe("Bulk whitelist and limit add", function () {
+    before(async function () {
+      // this test needs to create a new token contract that will
+      // effectively be able to be treated as if it was a cosmos native asset
+      // even though it was created on top of ethereum
+
+      // Deploy Valset contract
+      this.initialValidators = [userOne, userTwo, userThree];
+      this.initialPowers = [33, 33, 33];
+
+      // Deploy CosmosBridge contract
+      this.cosmosBridge = await deployProxy(CosmosBridge, [
         operator,
         consensusThreshold,
-        owner,
-        userOne,
-        userThree,
-        pauser.address
+        this.initialValidators,
+        this.initialPowers
+      ],
+        {unsafeAllowCustomTypes: true}
       );
 
-      TrollToken = await deployTrollToken();
-      state.troll = TrollToken;
-      await state.troll.mint(userOne.address, 100);
+      // Deploy BridgeBank contract
+      this.bridgeBank = await deployProxy(BridgeBank, [
+        operator,
+        this.cosmosBridge.address,
+        operator,
+        operator
+      ],
+      {unsafeAllowCustomTypes: true}
+      );
+
+      await this.cosmosBridge.setBridgeBank(this.bridgeBank.address, {from: operator});
     });
 
-    it("should revert when prophecyclaim is submitted out of order", async function () {
-      state.recipient = userOne.address;
-      state.nonce = 10;
-      const digest = getDigestNewProphecyClaim([
-        state.sender,
-        state.senderSequence,
-        state.recipient,
-        state.troll.address,
-        state.amount,
-        false,
-        state.nonce
-      ]);
-
-      const signatures = await signHash([userOne, userTwo, userFour], digest);
-      let claimData = {
-        cosmosSender: state.sender,
-        cosmosSenderSequence: state.senderSequence,
-        ethereumReceiver: state.recipient,
-        tokenAddress: state.troll.address,
-        amount: state.amount,
-        doublePeg: false,
-        nonce: state.nonce
-      };
-
-      await expect(
-        state.cosmosBridge
-          .connect(userOne)
-          .submitProphecyClaimAggregatedSigs(
-            digest,
-            claimData,
-            signatures
-          )
-      ).to.be.revertedWith("INV_ORD");
+    it("should not allow a non operator to call the function", async function () {
+      await expectRevert(
+        this.bridgeBank.bulkWhitelistUpdateLimits([], {from: userOne}),
+        "!operator"
+      );
     });
 
-    it("should allow users to unpeg troll token, but then does not receive", async function () {
-      // approve and lock tokens
-      await state.troll.connect(userOne).approve(
-        state.bridgeBank.address,
-        state.amount
-      );
+    it("Should allow bulk whitelisting", async function () {
+      const addresses = [];
 
-      // Attempt to lock tokens
-      await state.bridgeBank.connect(userOne).lock(
-        state.sender,
-        state.troll.address,
-        state.amount
-      );
+      // create tokens and address array
+      for (let i = 0; i < 10; i++) {
+        const bridgeToken = await BridgeToken.new("eRowan" + i.toString());
+        addresses.push(bridgeToken.address);
+      }
 
-      let endingBalance = Number(await state.troll.balanceOf(userOne.address));
-      expect(endingBalance).to.be.equal(0);
+      await this.bridgeBank.bulkWhitelistUpdateLimits(addresses, {from: operator});
 
-      state.recipient = userOne.address;
-      state.nonce = 1;
-      const digest = getDigestNewProphecyClaim([
-        state.sender,
-        state.senderSequence,
-        state.recipient,
-        state.troll.address,
-        state.amount,
-        false,
-        state.nonce
-      ]);
-
-      const signatures = await signHash([userOne, userTwo, userFour], digest);
-      let claimData = {
-        cosmosSender: state.sender,
-        cosmosSenderSequence: state.senderSequence,
-        ethereumReceiver: state.recipient,
-        tokenAddress: state.troll.address,
-        amount: state.amount,
-        doublePeg: false,
-        nonce: state.nonce
-      };
-
-      await state.cosmosBridge
-        .connect(userOne)
-        .submitProphecyClaimAggregatedSigs(
-            digest,
-            claimData,
-            signatures
-        );
-
-      // user should not receive funds as troll token just burns gas
-      endingBalance = Number(await state.troll.balanceOf(userOne.address));
-      expect(endingBalance).to.be.equal(0);
-
-
-      // Last nonce should now be 1
-      let lastNonceSubmitted = Number(await state.cosmosBridge.lastNonceSubmitted());
-      expect(lastNonceSubmitted).to.be.equal(1);
+      // query each token in the array and make sure that the limit is correct
+      for (let i = 0; i < 10; i++) {
+        const isWhitelisted = await this.bridgeBank.getTokenInEthWhiteList(addresses[i]);
+        expect(isWhitelisted).to.be.equal(true);
+      }
     });
   });
 });

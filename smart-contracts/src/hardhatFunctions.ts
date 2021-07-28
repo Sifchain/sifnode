@@ -47,6 +47,32 @@ export async function impersonateAccount<T>(
     return result
 }
 
+export async function startImpersonateAccount<T>(
+    hre: HardhatRuntimeEnvironment,
+    address: string,
+    newBalance: BigNumberish | undefined,
+) {
+    await hre.network.provider.request({
+        method: "hardhat_impersonateAccount",
+        params: [address]
+    });
+    if (newBalance) {
+        await setNewEthBalance(hre, address, newBalance)
+    }
+    const signer = await hre.ethers.getSigner(address)
+    return signer
+}
+
+export async function stopImpersonateAccount<T>(
+    hre: HardhatRuntimeEnvironment,
+    address: string,
+) {
+    await hre.network.provider.request({
+        method: "hardhat_stopImpersonatingAccount",
+        params: [address],
+    });
+}
+
 export async function setNewEthBalance(
     hre: HardhatRuntimeEnvironment,
     address: string,

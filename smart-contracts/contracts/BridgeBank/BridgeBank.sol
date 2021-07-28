@@ -16,7 +16,7 @@ import "../interfaces/IBridgeToken.sol";
  *      CosmosBank manages the minting and burning of tokens which
  *      represent Cosmos based assets, while EthereumBank manages
  *      the locking and unlocking of Ethereum and ERC20 token assets
- *      based on Ethereum. WhiteList records the ERC20 token address
+ *      based on Ethereum. WhiteList records the ERC20 token address 
  *      list that can be locked.
  **/
 
@@ -68,7 +68,7 @@ contract BridgeBank is BankStorage,
      * @dev: Modifier to restrict access to operator
      */
     modifier onlyOwner() {
-        require(msg.sender == owner, "x!owner");
+        require(msg.sender == owner, "!owner");
         _;
     }
 
@@ -160,14 +160,14 @@ contract BridgeBank is BankStorage,
     {
         string memory symbol = BridgeToken(_token).symbol();
         address listAddress = lockedTokenList[symbol];
-
+        
         // Do not allow a token with the same symbol to be whitelisted
         if (_inList) {
             // if we want to add it to the whitelist, make sure that the address
             // is 0, meaning we have not seen that symbol in the whitelist before
             require(listAddress == address(0), "whitelisted");
         } else {
-            // if we want to de-whitelist it, make sure that the symbol is
+            // if we want to de-whitelist it, make sure that the symbol is 
             // in fact stored in our locked token list before we set to false
             require(uint256(listAddress) > 0, "!whitelisted");
         }
