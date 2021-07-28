@@ -71,6 +71,7 @@ func TestMsgUpdateWhitelist_ValidateBasic(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			tt.assertion(t, tt.msg.ValidateBasic(), "")
 		})

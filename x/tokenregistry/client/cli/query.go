@@ -169,7 +169,7 @@ func GetCmdGenerateEntry() *cobra.Command {
 
 			if initialDenom != "" {
 				denom = initialDenom
-			} else {
+			} else if denom == "" {
 				denom = baseDenom
 			}
 
@@ -220,8 +220,8 @@ func GetCmdGenerateEntry() *cobra.Command {
 	cmd.Flags().String(flagAddress, "",
 		"Contract address i.e in EVM cases")
 
-	cmd.MarkFlagRequired(flagBaseDenom)
-	cmd.MarkFlagRequired(flagDecimals)
+	_ = cmd.MarkFlagRequired(flagBaseDenom)
+	_ = cmd.MarkFlagRequired(flagDecimals)
 
 	return cmd
 }

@@ -29,7 +29,7 @@ func TestQueryEntries(t *testing.T) {
 
 	res := types.QueryEntriesResponse{}
 
-	app.AppCodec().UnmarshalJSON(resBz, &res)
+	app.AppCodec().MustUnmarshalJSON(resBz, &res)
 	require.Len(t, res.Registry.Entries, 1)
 	require.Equal(t, &expectedRegistry, res.Registry)
 }
