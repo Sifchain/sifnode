@@ -20,7 +20,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	whitelisttypes "github.com/Sifchain/sifnode/x/whitelist/types"
+	tokenregistrytypes "github.com/Sifchain/sifnode/x/tokenregistry/types"
 )
 
 // Type check to ensure the interface is properly implemented
@@ -84,7 +84,7 @@ func (am AppModuleBasic) GetQueryCmd() *cobra.Command {
 // AppModule implements an application module for the dispensation module.
 type AppModule struct {
 	AppModuleBasic
-	whitelistKeeper whitelisttypes.Keeper
+	whitelistKeeper tokenregistrytypes.Keeper
 	cdc             codec.BinaryMarshaler
 }
 
@@ -124,7 +124,7 @@ func (am AppModule) OnTimeoutPacket(ctx sdk.Context, packet types.Packet) (*sdk.
 	return am.cosmosAppModule.OnTimeoutPacket(ctx, packet)
 }
 
-func NewAppModule(keeper sdktransferkeeper.Keeper, whitelistKeeper whitelisttypes.Keeper, cdc codec.BinaryMarshaler) AppModule {
+func NewAppModule(keeper sdktransferkeeper.Keeper, whitelistKeeper tokenregistrytypes.Keeper, cdc codec.BinaryMarshaler) AppModule {
 	return AppModule{
 		AppModuleBasic: AppModuleBasic{
 			cosmosAppModule: transfer.NewAppModule(keeper),

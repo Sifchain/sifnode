@@ -1,0 +1,22 @@
+syntax = "proto3";
+package sifnode.tokenregistry.v1;
+
+import "gogoproto/gogo.proto";
+import "sifnode/tokenregistry/v1/types.proto";
+
+option go_package = "github.com/Sifchain/sifnode/x/tokenregistry/types";
+
+service Msg {
+  rpc Register(MsgRegister) returns (MsgRegisterResponse) {}
+}
+
+message MsgRegister {
+  string from = 1;
+  string denom = 2;
+  int64 decimals = 3;
+  RegistryEntry entry = 4;
+}
+
+message MsgRegisterResponse {
+
+}

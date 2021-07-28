@@ -1,7 +1,7 @@
 package types
 
 import (
-	"github.com/Sifchain/sifnode/x/whitelist/types"
+	"github.com/Sifchain/sifnode/x/tokenregistry/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
@@ -32,8 +32,8 @@ type AuthKeeper interface {
 	GetModuleAccount(ctx sdk.Context, moduleName string) authtypes.ModuleAccountI
 }
 
-type WhitelistKeeper interface {
-	GetDenom(ctx sdk.Context, denom string) types.DenomWhitelistEntry
+type TokenRegistryKeeper interface {
+	GetDenom(ctx sdk.Context, denom string) types.RegistryEntry
 	SetDenom(ctx sdk.Context, denom string, exp int64)
 	IsDenomWhitelisted(ctx sdk.Context, denom string) bool
 }

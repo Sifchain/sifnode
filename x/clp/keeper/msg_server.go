@@ -101,7 +101,7 @@ func (k msgServer) Swap(goCtx context.Context, msg *types.MsgSwap) (*types.MsgSw
 	var (
 		priceImpact sdk.Uint
 	)
-	if !(k.whitelistKeeper.IsDenomWhitelisted(ctx, msg.ReceivedAsset.Symbol) || (k.whitelistKeeper.IsDenomWhitelisted(ctx, msg.SentAsset.Symbol))) {
+	if !(k.tokenRegistryKeeper.IsDenomWhitelisted(ctx, msg.ReceivedAsset.Symbol) || (k.tokenRegistryKeeper.IsDenomWhitelisted(ctx, msg.SentAsset.Symbol))) {
 		return nil, types.ErrTokenNotSupported
 	}
 	liquidityFeeNative := sdk.ZeroUint()
@@ -233,7 +233,7 @@ func (k msgServer) Swap(goCtx context.Context, msg *types.MsgSwap) (*types.MsgSw
 
 func (k msgServer) RemoveLiquidity(goCtx context.Context, msg *types.MsgRemoveLiquidity) (*types.MsgRemoveLiquidityResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
-	if !k.whitelistKeeper.IsDenomWhitelisted(ctx, msg.ExternalAsset.Symbol) {
+	if !k.tokenRegistryKeeper.IsDenomWhitelisted(ctx, msg.ExternalAsset.Symbol) {
 		return nil, types.ErrTokenNotSupported
 	}
 	pool, err := k.Keeper.GetPool(ctx, msg.ExternalAsset.Symbol)
@@ -349,7 +349,7 @@ func (k msgServer) CreatePool(goCtx context.Context, msg *types.MsgCreatePool) (
 	if msg.NativeAssetAmount.LT(MinThreshold) { // Need to verify
 		return nil, types.ErrTotalAmountTooLow
 	}
-	if !k.whitelistKeeper.IsDenomWhitelisted(ctx, msg.ExternalAsset.Symbol) {
+	if !k.tokenRegistryKeeper.IsDenomWhitelisted(ctx, msg.ExternalAsset.Symbol) {
 		return nil, types.ErrTokenNotSupported
 	}
 	// Check if pool already exists
@@ -399,7 +399,7 @@ func (k msgServer) CreatePool(goCtx context.Context, msg *types.MsgCreatePool) (
 
 func (k msgServer) AddLiquidity(goCtx context.Context, msg *types.MsgAddLiquidity) (*types.MsgAddLiquidityResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
-	if !k.whitelistKeeper.IsDenomWhitelisted(ctx, msg.ExternalAsset.Symbol) {
+	if !k.tokenRegistryKeeper.IsDenomWhitelisted(ctx, msg.ExternalAsset.Symbol) {
 		return nil, types.ErrTokenNotSupported
 	}
 	// Get pool
