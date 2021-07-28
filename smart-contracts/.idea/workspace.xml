@@ -1,25 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="dd13056d-032d-453a-835f-ec8dae75bbb9" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/test/test_BridgeBankErowanMigrationMethods.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/test/test_newInfo.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.gitignore" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/BridgeBank/BridgeBank.sol" beforeDir="false" afterPath="$PROJECT_DIR$/contracts/BridgeBank/BridgeBank.sol" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/BridgeBank/CosmosBank.sol" beforeDir="false" afterPath="$PROJECT_DIR$/contracts/BridgeBank/CosmosBank.sol" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/BridgeBank/SifchainTestToken.sol" beforeDir="false" afterPath="$PROJECT_DIR$/contracts/BridgeBank/SifchainTestToken.sol" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/CosmosBridge.sol" beforeDir="false" afterPath="$PROJECT_DIR$/contracts/CosmosBridge.sol" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/package-lock.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/hardhatFunctions.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/hardhatFunctions.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/test_eRowanMigration.ts" beforeDir="false" afterPath="$PROJECT_DIR$/test/test_eRowanMigration.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/test_security.js" beforeDir="false" afterPath="$PROJECT_DIR$/test/test_security.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/test_upgradeContracts.js" beforeDir="false" afterPath="$PROJECT_DIR$/test/test_upgradeContracts.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/test_valset.js" beforeDir="false" afterPath="$PROJECT_DIR$/test/test_valset.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/yarn.lock" beforeDir="false" afterPath="$PROJECT_DIR$/yarn.lock" afterDir="false" />
+    <list default="true" id="dd13056d-032d-453a-835f-ec8dae75bbb9" name="Changes" comment="sort of working">
+      <change beforePath="$PROJECT_DIR$/test/test_eRowanMigration.ts" beforeDir="false" afterPath="$PROJECT_DIR$/test/test_bridgeBankMigration.ts" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -82,6 +65,7 @@
       <option name="presentableId" value="Default" />
       <updated>1627429744749</updated>
       <workItem from="1627429746054" duration="4350000" />
+      <workItem from="1627444617862" duration="344000" />
     </task>
     <servers />
   </component>
@@ -98,5 +82,10 @@
         </entry>
       </map>
     </option>
+    <option name="oldMeFiltersMigrated" value="true" />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="sort of working" />
+    <option name="LAST_COMMIT_MESSAGE" value="sort of working" />
   </component>
 </project>
