@@ -1,9 +1,11 @@
-package utils
+package utils_test
 
 import (
 	"encoding/json"
 	"github.com/Sifchain/sifnode/x/tokenregistry/test"
 	"github.com/Sifchain/sifnode/x/tokenregistry/types"
+	"github.com/Sifchain/sifnode/x/tokenregistry/utils"
+
 	"github.com/stretchr/testify/assert"
 	"io/ioutil"
 	"os"
@@ -28,7 +30,7 @@ func TestParseDenoms(t *testing.T) {
 	filepath := "denoms.json"
 	defer os.Remove(filepath)
 	createInput(t, filepath)
-	whitelist, err := ParseDenoms(app.AppCodec(), filepath)
+	whitelist, err := utils.ParseDenoms(app.AppCodec(), filepath)
 	assert.NoError(t, err)
 	assert.Len(t, whitelist.Entries, 1)
 }

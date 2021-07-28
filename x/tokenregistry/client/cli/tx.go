@@ -20,6 +20,7 @@ func GetTxCmd() *cobra.Command {
 
 	cmd.AddCommand(
 		GetCmdRegister(),
+		GetCmdDeregister(),
 	)
 	return cmd
 }
