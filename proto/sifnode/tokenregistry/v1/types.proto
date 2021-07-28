@@ -20,10 +20,12 @@ message RegistryEntry {
   string denom = 3;
   string base_denom = 4;
   string path = 5;
-  string display_name = 6;
-  string display_symbol = 7;
-  string network = 8;
-  string address = 9;
-  string external_symbol = 10;
-  string transfer_limit = 11;
+  string src_channel = 6;
+  string dest_channel = 7;
+  string display_name = 8;
+  string display_symbol = 9;
+  string network = 10;
+  string address = 11;
+  string external_symbol = 12;
+  string transfer_limit = 13;
 }

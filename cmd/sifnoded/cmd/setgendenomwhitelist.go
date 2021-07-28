@@ -33,7 +33,7 @@ func SetGenesisDenomWhitelist(defaultNodeHome string) *cobra.Command {
 			config.SetRoot(clientCtx.HomeDir)
 			genFile := config.GenesisFile()
 			// Get input list
-			whitelist, err := whitelistutils.ParseDenoms(args[0])
+			whitelist, err := whitelistutils.ParseDenoms(clientCtx.JSONMarshaler, args[0])
 			if err != nil {
 				return err
 			}

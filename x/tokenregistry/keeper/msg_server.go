@@ -19,13 +19,32 @@ func (m msgServer) Register(ctx context.Context, req *types.MsgRegister) (
 	if err != nil {
 		return nil, err
 	}
+
 	if !m.keeper.IsAdminAccount(sdk.UnwrapSDKContext(ctx), addr) {
 		return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, "unauthorised signer")
 	}
 
-	m.keeper.SetDenom(sdk.UnwrapSDKContext(ctx), req.From, req.Decimals)
+	m.keeper.SetToken(sdk.UnwrapSDKContext(ctx), req.Entry)
 
 	return &types.MsgRegisterResponse{}, nil
+}
+
+func (m msgServer) Deregister(ctx context.Context, req *types.MsgDeregister) (
+	*types.MsgDeregisterResponse, error) {
+
+	addr, err := sdk.AccAddressFromBech32(req.From)
+	if err != nil {
+		return nil, err
+	}
+
+	if !m.keeper.IsAdminAccount(sdk.UnwrapSDKContext(ctx), addr) {
+		return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, "unauthorised signer")
+	}
+
+	m.keeper.RemoveToken(sdk.UnwrapSDKContext(ctx), req.Denom)
+
+	return &types.MsgDeregisterResponse{}, nil
+
 }
 
 // NewMsgServerImpl returns an implementation of MsgServer interface

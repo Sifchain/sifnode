@@ -16,14 +16,14 @@ import (
 )
 
 func getDenomWhiteListEntries() tokenregistrytypes.Registry {
-	return tokenregistrytypes.DefaultWhitelist()
+	return tokenregistrytypes.DefaultRegistry()
 }
 
 func createTestAppForTestTables() (sdk.Context, *sifapp.SifchainApp) {
 	wl := getDenomWhiteListEntries()
 	ctx, app := clptest.CreateTestAppClp(false)
 	for _, entry := range wl.Entries {
-		app.TokenRegistryKeeper.SetDenom(ctx, entry.Denom, entry.Decimals)
+		app.TokenRegistryKeeper.SetToken(ctx, entry)
 	}
 	return ctx, app
 }
@@ -229,6 +229,6 @@ func TestCalculatePoolUnitsAfterUpgrade(t *testing.T) {
 			nf,
 			ad,
 		)
-		assert.True(t, stakeUnits.Equal(sdk.NewUintFromString(test.Expected)))
+		assert.True(t, stakeUnits.Equal(sdk.NewUintFromString(test.Expected)), "denom: %s got: %s expected: %s", test.Symbol, stakeUnits, test.Expected)
 	}
 }

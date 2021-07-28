@@ -15,12 +15,10 @@ type keeper struct {
 	cdc codec.BinaryMarshaler
 
 	storeKey sdk.StoreKey
-	// bankKeeper    types.BankKeeper
 }
 
 func NewKeeper(cdc codec.Marshaler, storeKey sdk.StoreKey) types.Keeper {
 	return keeper{
-		// bankKeeper: bankKeeper,
 		cdc:      cdc,
 		storeKey: storeKey,
 	}
@@ -62,8 +60,7 @@ func (k keeper) GetDenom(ctx sdk.Context, denom string) types.RegistryEntry {
 	wl := k.GetDenomWhitelist(ctx)
 
 	for i := range wl.Entries {
-		if strings.EqualFold(wl.Entries[i].Denom, strings.ToLower(denom)) &&
-			wl.Entries[i] != nil {
+		if wl.Entries[i] != nil && strings.EqualFold(wl.Entries[i].Denom, denom) {
 			return *wl.Entries[i]
 		}
 	}
@@ -74,28 +71,38 @@ func (k keeper) GetDenom(ctx sdk.Context, denom string) types.RegistryEntry {
 	}
 }
 
-func (k keeper) SetDenom(ctx sdk.Context, denom string, decimals int64) {
+func (k keeper) SetToken(ctx sdk.Context, entry *types.RegistryEntry) {
 	wl := k.GetDenomWhitelist(ctx)
 
-	denom = strings.ToLower(denom)
+	entry.Sanitize()
 
-	var exists bool
 	for i := range wl.Entries {
-		if wl.Entries[i].Denom == denom {
-			exists = true
-			wl.Entries[i].Decimals = decimals
+		if wl.Entries[i] != nil && strings.EqualFold(wl.Entries[i].Denom, entry.Denom) {
+			wl.Entries[i] = entry
+
+			k.SetDenomWhitelist(ctx, wl)
+			return
 		}
 	}
 
-	if !exists {
-		wl.Entries = append(wl.Entries, &types.RegistryEntry{
-			IsWhitelisted: true,
-			Denom:         denom,
-			Decimals:      decimals,
-		})
-	}
+	wl.Entries = append(wl.Entries, entry)
 
 	k.SetDenomWhitelist(ctx, wl)
+}
+
+func (k keeper) RemoveToken(ctx sdk.Context, denom string) {
+	registry := k.GetDenomWhitelist(ctx)
+
+	updated := make([]*types.RegistryEntry, 0)
+	for _, t := range registry.Entries {
+		if t != nil && !strings.EqualFold(t.Denom, denom) {
+			updated = append(updated, t)
+		}
+	}
+
+	k.SetDenomWhitelist(ctx, types.Registry{
+		Entries: updated,
+	})
 }
 
 func (k keeper) SetDenomWhitelist(ctx sdk.Context, wl types.Registry) {
@@ -110,6 +117,7 @@ func (k keeper) GetDenomWhitelist(ctx sdk.Context) types.Registry {
 	var whitelist types.Registry
 	store := ctx.KVStore(k.storeKey)
 	bz := store.Get(types.WhitelistStorePrefix)
+
 	if len(bz) == 0 {
 		return types.Registry{}
 	}

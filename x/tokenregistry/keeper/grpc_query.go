@@ -17,7 +17,7 @@ func NewQueryServer(k types.Keeper) types.QueryServer {
 func (q Querier) Entries(c context.Context, _ *types.QueryEntriesRequest) (*types.QueryEntriesResponse, error) {
 	ctx := sdk.UnwrapSDKContext(c)
 	wl := q.GetDenomWhitelist(ctx)
-	return &types.QueryEntriesResponse{List: &wl}, nil
+	return &types.QueryEntriesResponse{Registry: &wl}, nil
 }
 
 var _ types.QueryServer = Querier{}

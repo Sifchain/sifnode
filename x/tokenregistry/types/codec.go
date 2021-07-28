@@ -17,6 +17,8 @@ var (
 func RegisterLegacyAminoCodec(cdc *codec.LegacyAmino) {
 	cdc.RegisterConcrete(&MsgRegister{}, "MsgRegister", nil)
 	cdc.RegisterConcrete(&MsgRegisterResponse{}, "MsgRegisterResponse", nil)
+	cdc.RegisterConcrete(&MsgDeregister{}, "MsgDeregister", nil)
+	cdc.RegisterConcrete(&MsgDeregisterResponse{}, "MsgDeregisterResponse", nil)
 }
 
 func RegisterInterfaces(registry cdctypes.InterfaceRegistry) {
@@ -24,6 +26,7 @@ func RegisterInterfaces(registry cdctypes.InterfaceRegistry) {
 		(*sdk.Msg)(nil),
 
 		&MsgRegister{},
+		&MsgDeregister{},
 	)
 
 	msgservice.RegisterMsgServiceDesc(registry, &_Msg_serviceDesc)
