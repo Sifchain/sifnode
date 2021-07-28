@@ -314,5 +314,165 @@ describe("Test Cosmos Bridge", function () {
         "10000.0000000000000001"
       );
     });
+
+    it("should deploy a new token upon the successful processing of a double-pegged burn prophecy claim", async function () {
+      state.nonce = 1;
+      const digest = getDigestNewProphecyClaim([
+        state.sender,
+        state.senderSequence,
+        state.recipient,
+        state.token.address,
+        state.amount,
+        true,
+        state.nonce,
+        state.networkDescriptor
+      ]);
+
+      const signatures = await signHash([userOne, userTwo, userFour], digest);
+      let claimData = {
+        cosmosSender: state.sender,
+        cosmosSenderSequence: state.senderSequence,
+        ethereumReceiver: state.recipient,
+        tokenAddress: state.token.address,
+        amount: state.amount,
+        doublePeg: true,
+        nonce: state.nonce,
+        networkDescriptor: state.networkDescriptor
+      };
+
+      // BridgeBank is responsible for deploying the new token.
+      // Hence, we take its nonce to calculate the to-be-deployed contract's address.
+      // In our tests, we know this nonce will always be 1, so we skip fetching the actual nonce
+      // const bridgeBankNonce = await ethers.getDefaultProvider().getTransactionCount(state.bridgeBank.address) + 1;
+      const expectedAddress = ethers.utils.getContractAddress({ from: state.bridgeBank.address, nonce: 1 });
+
+      await expect(state.cosmosBridge
+        .connect(userOne)
+        .submitProphecyClaimAggregatedSigs(
+            digest,
+            claimData,
+            signatures
+        )).to.emit(state.cosmosBridge, 'LogNewBridgeTokenCreated')
+        .withArgs(18, state.networkDescriptor, state.name, state.symbol, state.token.address, expectedAddress);
+
+      const newlyCreatedTokenAddress = await state.cosmosBridge.sourceAddressToDestinationAddress(state.token.address);
+      expect(newlyCreatedTokenAddress).to.be.equal(expectedAddress);
+
+      /* @SOL
+        emit LogNewBridgeTokenCreated(
+          decimals,
+          networkDescriptor,
+          name,
+          symbol,
+          sourceChainTokenAddress,
+          tokenAddress
+        );
+      */
+    });
+
+    it("should NOT deploy a new token upon the successful processing of a normal burn prophecy claim", async function () {
+      state.nonce = 1;
+      const digest = getDigestNewProphecyClaim([
+        state.sender,
+        state.senderSequence,
+        state.recipient,
+        state.token.address,
+        state.amount,
+        false,
+        state.nonce,
+        state.networkDescriptor
+      ]);
+
+      const signatures = await signHash([userOne, userTwo, userFour], digest);
+      let claimData = {
+        cosmosSender: state.sender,
+        cosmosSenderSequence: state.senderSequence,
+        ethereumReceiver: state.recipient,
+        tokenAddress: state.token.address,
+        amount: state.amount,
+        doublePeg: false,
+        nonce: state.nonce,
+        networkDescriptor: state.networkDescriptor
+      };
+
+      await state.cosmosBridge
+        .connect(userOne)
+        .submitProphecyClaimAggregatedSigs(digest, claimData, signatures);
+
+      const newlyCreatedTokenAddress = await state.cosmosBridge.sourceAddressToDestinationAddress(state.token.address);
+      expect(newlyCreatedTokenAddress).to.be.equal('0x0000000000000000000000000000000000000000');
+    });
+
+    it("should NOT deploy a new token upon the successful processing of a double-pegged burn prophecy claim for an already managed token", async function () {
+      state.nonce = 1;
+      const digest = getDigestNewProphecyClaim([
+        state.sender,
+        state.senderSequence,
+        state.recipient,
+        state.token.address,
+        state.amount,
+        true,
+        state.nonce,
+        state.networkDescriptor
+      ]);
+
+      const signatures = await signHash([userOne, userTwo, userFour], digest);
+      let claimData = {
+        cosmosSender: state.sender,
+        cosmosSenderSequence: state.senderSequence,
+        ethereumReceiver: state.recipient,
+        tokenAddress: state.token.address,
+        amount: state.amount,
+        doublePeg: true,
+        nonce: state.nonce,
+        networkDescriptor: state.networkDescriptor
+      };
+
+      const expectedAddress = ethers.utils.getContractAddress({ from: state.bridgeBank.address, nonce: 1 });
+      await expect(state.cosmosBridge
+        .connect(userOne)
+        .submitProphecyClaimAggregatedSigs(
+            digest,
+            claimData,
+            signatures
+        )).to.emit(state.cosmosBridge, 'LogNewBridgeTokenCreated')
+        .withArgs(18, state.networkDescriptor, state.name, state.symbol, state.token.address, expectedAddress);
+
+      const newlyCreatedTokenAddress = await state.cosmosBridge.sourceAddressToDestinationAddress(state.token.address);
+      expect(newlyCreatedTokenAddress).to.be.equal(expectedAddress);
+
+      // Everything again, but this time submitProphecyClaimAggregatedSigs should NOT emit the event
+      const digest2 = getDigestNewProphecyClaim([
+        state.sender,
+        state.senderSequence + 1,
+        state.recipient,
+        state.token.address,
+        state.amount,
+        true,
+        state.nonce + 1,
+        state.networkDescriptor
+      ]);
+
+      const signatures2 = await signHash([userOne, userTwo, userFour], digest2);
+      let claimData2 = {
+        cosmosSender: state.sender,
+        cosmosSenderSequence: state.senderSequence + 1,
+        ethereumReceiver: state.recipient,
+        tokenAddress: state.token.address,
+        amount: state.amount,
+        doublePeg: true,
+        nonce: state.nonce + 1,
+        networkDescriptor: state.networkDescriptor
+      };
+
+      
+      await expect(state.cosmosBridge
+        .connect(userOne)
+        .submitProphecyClaimAggregatedSigs(
+            digest2,
+            claimData2,
+            signatures2
+        )).to.not.emit(state.cosmosBridge, 'LogNewBridgeTokenCreated');
+    });
   });
 });

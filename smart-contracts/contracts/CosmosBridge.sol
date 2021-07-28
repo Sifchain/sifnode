@@ -255,8 +255,18 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
         );
         lastNonceSubmitted = claimData.nonce;
 
-        // if we are double pegging, then we are going to need to get the address on this chain
-        address tokenAddress = claimData.doublePeg ? sourceAddressToDestinationAddress[claimData.tokenAddress] : claimData.tokenAddress;
+        // if we are double pegging AND we don't control the token, we deploy a new smart contract
+        address tokenAddress;
+        if(claimData.doublePeg && !_isManagedToken(claimData.tokenAddress)) {
+            string memory name;
+            string memory symbol;
+            uint8 decimals;
+            (name, symbol, decimals) = BridgeBank(bridgeBank).getTokenData(claimData.tokenAddress);
+            tokenAddress = _createNewBridgeToken(symbol, name, claimData.tokenAddress, decimals, claimData.networkDescriptor);
+        } else {
+            // if we are double pegging and already control the token, then we are going to need to get the address on this chain
+            tokenAddress = claimData.doublePeg ? sourceAddressToDestinationAddress[claimData.tokenAddress] : claimData.tokenAddress;
+        }
 
         completeProphecyClaim(
             prophecyID,
@@ -270,6 +280,10 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
             claimData.ethereumReceiver,
             claimData.amount
         );
+    }
+
+    function _isManagedToken(address tokenAddress) private returns(bool) {
+        return sourceAddressToDestinationAddress[tokenAddress] != address(0);
     }
 
     function verifyNetworkDescriptor(uint256 _networkDescriptor) internal returns(bool) {
@@ -289,7 +303,23 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
         address sourceChainTokenAddress,
         uint8 decimals,
         uint256 _networkDescriptor
-    ) external onlyValidator {
+    ) external onlyValidator returns(address) {
+        return _createNewBridgeToken(
+            symbol,
+            name,
+            sourceChainTokenAddress,
+            decimals,
+            _networkDescriptor
+        );
+    }
+
+    function _createNewBridgeToken(
+        string memory symbol,
+        string memory name,
+        address sourceChainTokenAddress,
+        uint8 decimals,
+        uint256 _networkDescriptor
+    ) internal returns(address) {
         require(
             sourceAddressToDestinationAddress[sourceChainTokenAddress] == address(0),
             "INV_SRC_ADDR"
@@ -313,6 +343,8 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
             sourceChainTokenAddress,
             tokenAddress
         );
+
+        return tokenAddress;
     }
 
     /*
