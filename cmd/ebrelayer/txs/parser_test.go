@@ -34,13 +34,10 @@ func TestLogLockToEthBridgeClaim(t *testing.T) {
 	testRawCosmosValidatorAddress, err := sdk.AccAddressFromBech32(TestCosmosAddress2)
 	require.NoError(t, err)
 	testCosmosValidatorBech32Address := sdk.ValAddress(testRawCosmosValidatorAddress)
-	// Calculate Denom Hash String
-	denomHash := ethbridge.GetDenomHash(TestNetworkDescriptor, TestEthTokenAddress, TestDecimals, TestName, TestSymbol)
-
 	// Set up expected EthBridgeClaim
 	expectedEthBridgeClaim := ethbridge.NewEthBridgeClaim(
 		TestNetworkDescriptor, testBridgeContractAddress, TestNonce, strings.ToLower(TestSymbol), testTokenContractAddress,
-		testEthereumAddress, testCosmosAddress, testCosmosValidatorBech32Address, testSDKAmount, ethbridge.ClaimType_CLAIM_TYPE_LOCK, TestName, TestDecimals, denomHash)
+		testEthereumAddress, testCosmosAddress, testCosmosValidatorBech32Address, testSDKAmount, ethbridge.ClaimType_CLAIM_TYPE_LOCK, TestName, TestDecimals)
 
 	// Create test ethereum event
 	ethereumEvent := CreateTestLogEthereumEvent(t)

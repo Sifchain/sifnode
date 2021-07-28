@@ -18,7 +18,7 @@ func NewEthBridgeClaim(
 	bridgeContract EthereumAddress,
 	nonce int64,
 	symbol string,
-	tokenContact EthereumAddress,
+	tokenContract EthereumAddress,
 	ethereumSender EthereumAddress,
 	cosmosReceiver sdk.AccAddress,
 	validator sdk.ValAddress,
@@ -26,14 +26,14 @@ func NewEthBridgeClaim(
 	claimType ClaimType,
 	tokenName string,
 	decimals int32,
-	denomHash string,
 ) *EthBridgeClaim {
+	denomHash := GetDenomHash(networkDescriptor, tokenContract.String(), decimals, tokenName, symbol)
 	return &EthBridgeClaim{
 		NetworkDescriptor:     networkDescriptor,
 		BridgeContractAddress: bridgeContract.String(),
 		Nonce:                 nonce,
 		Symbol:                symbol,
-		TokenContractAddress:  tokenContact.String(),
+		TokenContractAddress:  tokenContract.String(),
 		EthereumSender:        ethereumSender.String(),
 		CosmosReceiver:        cosmosReceiver.String(),
 		ValidatorAddress:      validator.String(),

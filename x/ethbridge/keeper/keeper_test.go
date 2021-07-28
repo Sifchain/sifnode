@@ -41,7 +41,6 @@ func TestProcessClaimLock(t *testing.T) {
 
 	claimType := types.ClaimType_CLAIM_TYPE_LOCK
 	require.Equal(t, claimType, types.ClaimType_CLAIM_TYPE_LOCK)
-	denomHash := types.GetDenomHash(1, tokenContractAddress.String(), int32(decimals), name, symbol)
 	ethBridgeClaim := types.NewEthBridgeClaim(
 		1,
 		ethBridgeAddress, // bridge registry
@@ -55,7 +54,6 @@ func TestProcessClaimLock(t *testing.T) {
 		claimType,
 		name,
 		int32(decimals),
-		denomHash,
 	)
 
 	status, err := keeper.ProcessClaim(ctx, ethBridgeClaim)
@@ -81,7 +79,6 @@ func TestProcessClaimLock(t *testing.T) {
 		claimType,
 		name,
 		int32(decimals),
-		denomHash,
 	)
 	status, err = keeper.ProcessClaim(ctx, ethBridgeClaim)
 	require.NoError(t, err)
@@ -98,8 +95,6 @@ func TestProcessClaimBurn(t *testing.T) {
 
 	claimType := types.ClaimType_CLAIM_TYPE_BURN
 
-	denomHash := types.GetDenomHash(1, tokenContractAddress.String(), int32(decimals), name, symbol)
-
 	ethBridgeClaim := types.NewEthBridgeClaim(
 		1,
 		ethBridgeAddress, // bridge registry
@@ -113,7 +108,6 @@ func TestProcessClaimBurn(t *testing.T) {
 		claimType,
 		name,
 		int32(decimals),
-		denomHash,
 	)
 
 	status, err := keeper.ProcessClaim(ctx, ethBridgeClaim)
@@ -140,7 +134,6 @@ func TestProcessClaimBurn(t *testing.T) {
 		claimType,
 		name,
 		int32(decimals),
-		denomHash,
 	)
 	status, err = keeper.ProcessClaim(ctx, ethBridgeClaim)
 	require.NoError(t, err)

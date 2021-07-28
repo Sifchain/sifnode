@@ -52,10 +52,9 @@ func CreateTestEthClaim(
 ) *EthBridgeClaim {
 	testCosmosAddress, err1 := sdk.AccAddressFromBech32(TestAddress)
 	require.NoError(t, err1)
-	denomHash := GetDenomHash(TestNetworkDescriptor, testContractAddress.String(), testDecimals, testName, symbol)
 	ethClaim := NewEthBridgeClaim(
 		TestNetworkDescriptor, testContractAddress, TestNonce, symbol,
-		testTokenAddress, testEthereumAddress, testCosmosAddress, validatorAddress, amount, claimType, testName, testDecimals, denomHash)
+		testTokenAddress, testEthereumAddress, testCosmosAddress, validatorAddress, amount, claimType, testName, testDecimals)
 	return ethClaim
 }
 
