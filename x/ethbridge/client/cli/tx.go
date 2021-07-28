@@ -21,9 +21,9 @@ import (
 //nolint:lll
 func GetCmdCreateEthBridgeClaim() *cobra.Command {
 	return &cobra.Command{
-		Use:   "create-claim [bridge-registry-contract] [nonce] [symbol] [ethereum-sender-address] [cosmos-receiver-address] [validator-address] [amount] [claim-type] --network-descriptor [network-descriptor] --token-contract-address [token-contract-address]",
+		Use:   "create-claim [bridge-registry-contract] [nonce] [symbol] [name] [decimals] [ethereum-sender-address] [cosmos-receiver-address] [validator-address] [amount] [claim-type] --network-descriptor [network-descriptor] --token-contract-address [token-contract-address]",
 		Short: "create a claim on an ethereum prophecy",
-		Args:  cobra.ExactArgs(8),
+		Args:  cobra.ExactArgs(10),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx, err := client.GetClientTxContext(cmd)
 			if err != nil {
@@ -64,26 +64,35 @@ func GetCmdCreateEthBridgeClaim() *cobra.Command {
 			}
 
 			symbol := args[2]
-			ethereumSender := types.NewEthereumAddress(args[3])
-			if !common.IsHexAddress(args[3]) {
-				return errors.Errorf("invalid [ethereum-sender-address]: %s", args[0])
-			}
-			cosmosReceiver, err := sdk.AccAddressFromBech32(args[4])
+
+			name := args[3]
+
+			decimals, err := strconv.ParseInt(args[4], 10, 32)
 			if err != nil {
 				return err
 			}
 
-			validator, err := sdk.ValAddressFromBech32(args[5])
+			ethereumSender := types.NewEthereumAddress(args[5])
+			if !common.IsHexAddress(args[5]) {
+				return errors.Errorf("invalid [ethereum-sender-address]: %s", args[0])
+			}
+
+			cosmosReceiver, err := sdk.AccAddressFromBech32(args[6])
+			if err != nil {
+				return err
+			}
+
+			validator, err := sdk.ValAddressFromBech32(args[7])
 			if err != nil {
 				return err
 			}
 
 			var digitCheck = regexp.MustCompile(`^[0-9]+$`)
-			if !digitCheck.MatchString(args[6]) {
+			if !digitCheck.MatchString(args[8]) {
 				return types.ErrInvalidAmount
 			}
 
-			bigIntAmount, ok := sdk.NewIntFromString(args[6])
+			bigIntAmount, ok := sdk.NewIntFromString(args[8])
 			if !ok {
 				return types.ErrInvalidAmount
 			}
@@ -92,14 +101,18 @@ func GetCmdCreateEthBridgeClaim() *cobra.Command {
 				return types.ErrInvalidAmount
 			}
 
-			claimType, exist := types.ClaimType_value[args[7]]
+			claimType, exist := types.ClaimType_value[args[9]]
 			if !exist {
 				return err
 			}
 			ct := types.ClaimType(claimType)
 
-			ethBridgeClaim := types.NewEthBridgeClaim(oracletypes.NetworkDescriptor(ethereumChainID), bridgeContract, nonce, symbol, tokenContract,
-				ethereumSender, cosmosReceiver, validator, bigIntAmount, ct)
+			networkDescriptor := oracletypes.NetworkDescriptor(ethereumChainID)
+
+			denomHash := types.GetDenomHash(networkDescriptor, tokenContractString, int32(decimals), name, symbol)
+
+			ethBridgeClaim := types.NewEthBridgeClaim(networkDescriptor, bridgeContract, nonce, symbol, tokenContract,
+				ethereumSender, cosmosReceiver, validator, bigIntAmount, ct, name, int32(decimals), denomHash)
 
 			msg := types.NewMsgCreateEthBridgeClaim(ethBridgeClaim)
 			if err := msg.ValidateBasic(); err != nil {

@@ -52,7 +52,6 @@ func TestLogLockToEthBridgeClaim(t *testing.T) {
 }
 
 func TestDenomHashHandCrafted(t *testing.T) {
-	// Precalculate an address
 	expectedDenom := "BTC"
 	actualDenom := ethbridge.GetDenomHash(2, "0xbF45BFc92ebD305d4C0baf8395c4299bdFCE9EA2", 9, "wBTC", "WBTC")
 

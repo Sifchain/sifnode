@@ -40,7 +40,7 @@ func CreateTestEthMsg(t *testing.T, validatorAddress sdk.ValAddress, claimType C
 	testTokenAddress := NewEthereumAddress(TestTokenContractAddress)
 	ethClaim := CreateTestEthClaim(
 		t, testContractAddress, testTokenAddress, validatorAddress,
-		testEthereumAddress, TestCoinsAmount, TestCoinsSymbol, claimType)
+		testEthereumAddress, TestCoinsAmount, TestCoinsSymbol, claimType, TestDecimals, TestName)
 	ethMsg := NewMsgCreateEthBridgeClaim(ethClaim)
 	return ethMsg
 }
@@ -48,12 +48,14 @@ func CreateTestEthMsg(t *testing.T, validatorAddress sdk.ValAddress, claimType C
 func CreateTestEthClaim(
 	t *testing.T, testContractAddress EthereumAddress, testTokenAddress EthereumAddress,
 	validatorAddress sdk.ValAddress, testEthereumAddress EthereumAddress, amount sdk.Int, symbol string, claimType ClaimType,
+	testDecimals int32, testName string,
 ) *EthBridgeClaim {
 	testCosmosAddress, err1 := sdk.AccAddressFromBech32(TestAddress)
 	require.NoError(t, err1)
+	denomHash := GetDenomHash(TestNetworkDescriptor, testContractAddress.String(), testDecimals, testName, symbol)
 	ethClaim := NewEthBridgeClaim(
 		TestNetworkDescriptor, testContractAddress, TestNonce, symbol,
-		testTokenAddress, testEthereumAddress, testCosmosAddress, validatorAddress, amount, claimType)
+		testTokenAddress, testEthereumAddress, testCosmosAddress, validatorAddress, amount, claimType, testName, testDecimals, denomHash)
 	return ethClaim
 }
 
@@ -79,7 +81,7 @@ func CreateTestQueryEthProphecyResponse(t *testing.T, validatorAddress sdk.ValAd
 	testContractAddress := NewEthereumAddress(TestBridgeContractAddress)
 	testTokenAddress := NewEthereumAddress(TestTokenContractAddress)
 	ethBridgeClaim := CreateTestEthClaim(t, testContractAddress, testTokenAddress, validatorAddress,
-		testEthereumAddress, TestCoinsAmount, TestCoinsSymbol, claimType)
+		testEthereumAddress, TestCoinsAmount, TestCoinsSymbol, claimType, TestDecimals, TestName)
 	ethBridgeClaims := []string{ethBridgeClaim.ValidatorAddress}
 
 	return NewQueryEthProphecyResponse(
