@@ -75,6 +75,7 @@
     "peggy:burn": "npx truffle exec scripts/sendBurnTx.js",
     "peggy:check": "npx truffle exec scripts/sendCheckProphecy.js",
     "peggy:getTokenBalance": "npx truffle exec scripts/getTokenBalance.js",
+    "peggy:deployWithoutProxies": "npx truffle exec scripts/deployWithoutProxies.js",
     "token:address": "npx truffle exec scripts/getTokenContractAddress.js",
     "token:mint": "npx truffle exec scripts/mintTestTokens.js",
     "token:approve": "npx truffle exec scripts/sendApproveTx.js",
