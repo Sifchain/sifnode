@@ -1,12 +1,15 @@
 package ibctransfer
 
 import (
+	"fmt"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	transfer "github.com/cosmos/cosmos-sdk/x/ibc/applications/transfer"
 	transfertypes "github.com/cosmos/cosmos-sdk/x/ibc/applications/transfer/types"
 	channeltypes "github.com/cosmos/cosmos-sdk/x/ibc/core/04-channel/types"
 
+	"github.com/Sifchain/sifnode/x/ethbridge/types"
 	tokenregistrytypes "github.com/Sifchain/sifnode/x/tokenregistry/types"
 )
 
@@ -23,7 +26,24 @@ func OnRecvPacketWhiteListed(
 	}
 
 	if !isRecvPacketAllowed(ctx, whitelistKeeper, packet, data) {
-		return nil, nil, sdkerrors.Wrapf(sdkerrors.ErrInvalidCoins, "denom not on whitelist")
+		acknowledgement := channeltypes.NewErrorAcknowledgement(
+			sdkerrors.Wrapf(sdkerrors.ErrInvalidCoins, "denom not on whitelist").Error(),
+		)
+
+		ctx.EventManager().EmitEvent(
+			sdk.NewEvent(
+				transfertypes.EventTypePacket,
+				sdk.NewAttribute(sdk.AttributeKeyModule, types.ModuleName),
+				sdk.NewAttribute(transfertypes.AttributeKeyReceiver, data.Receiver),
+				sdk.NewAttribute(transfertypes.AttributeKeyDenom, data.Denom),
+				sdk.NewAttribute(transfertypes.AttributeKeyAmount, fmt.Sprintf("%d", data.Amount)),
+				sdk.NewAttribute(transfertypes.AttributeKeyAckSuccess, fmt.Sprintf("%t", false)),
+			),
+		)
+
+		return &sdk.Result{
+			Events: ctx.EventManager().Events().ToABCIEvents(),
+		}, acknowledgement.GetBytes(), nil
 	}
 
 	return sdkAppModule.OnRecvPacket(ctx, packet)
