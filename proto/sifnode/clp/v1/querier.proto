@@ -89,11 +89,15 @@ message LiquidityProviderListReq {
   option (gogoproto.goproto_getters) = false;
 
   string symbol = 1;
+  // pagination defines an optional pagination for the request.
+  cosmos.base.query.v1beta1.PageRequest pagination = 2;
 }
 
 message LiquidityProviderListRes {
   repeated sifnode.clp.v1.LiquidityProvider liquidity_providers = 1;
   int64 height = 2;
+  // pagination defines the pagination in the response.
+  cosmos.base.query.v1beta1.PageResponse pagination = 3;
 }
 
 message LiquidityProvidersReq {

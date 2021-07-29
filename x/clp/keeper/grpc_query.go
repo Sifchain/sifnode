@@ -2,7 +2,6 @@ package keeper
 
 import (
 	"context"
-
 	"github.com/cosmos/cosmos-sdk/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/query"
@@ -45,12 +44,15 @@ func (k Querier) GetPools(c context.Context, req *types.PoolsReq) (*types.PoolsR
 
 	ctx := sdk.UnwrapSDKContext(c)
 
-	pools := k.Keeper.GetPools(ctx)
-
+	pools, pageRes, err := k.Keeper.GetPoolsPaginated(ctx, req.Pagination)
+	if err != nil {
+		return nil, err
+	}
 	return &types.PoolsRes{
 		Pools:            pools,
 		Height:           ctx.BlockHeight(),
 		ClpModuleAddress: types.GetCLPModuleAddress().String(),
+		Pagination:       pageRes,
 	}, nil
 }
 
@@ -105,21 +107,25 @@ func (k Querier) GetLiquidityProviderList(c context.Context, req *types.Liquidit
 	if req == nil {
 		return nil, status.Error(codes.InvalidArgument, "empty request")
 	}
-
 	ctx := sdk.UnwrapSDKContext(c)
 
 	searchingAsset := types.NewAsset(req.Symbol)
-	lpList := k.GetLiquidityProvidersForAsset(ctx, searchingAsset)
+	lpList, pageRes, err := k.GetLiquidityProvidersForAssetPaginated(ctx, searchingAsset, req.Pagination)
+	if err != nil {
+		return nil, err
+	}
 
-	lpl := make([]*types.LiquidityProvider, len(lpList))
+	liquidityProviders := make([]*types.LiquidityProvider, len(lpList))
+
 	for i, lp := range lpList {
 		lp := lp
-		lpl[i] = &lp
+		liquidityProviders[i] = &lp
 	}
 
 	return &types.LiquidityProviderListRes{
-		LiquidityProviders: lpl,
+		LiquidityProviders: liquidityProviders,
 		Height:             ctx.BlockHeight(),
+		Pagination:         pageRes,
 	}, nil
 }
 

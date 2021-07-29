@@ -2,7 +2,11 @@ package keeper
 
 import (
 	"github.com/Sifchain/sifnode/x/clp/types"
+	"github.com/cosmos/cosmos-sdk/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/cosmos-sdk/types/query"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 func (k Keeper) SetLiquidityProvider(ctx sdk.Context, lp *types.LiquidityProvider) {
@@ -84,6 +88,31 @@ func (k Keeper) GetLiquidityProvidersForAsset(ctx sdk.Context, asset types.Asset
 		}
 	}
 	return lpList
+}
+
+func (k Keeper) GetLiquidityProvidersForAssetPaginated(ctx sdk.Context, asset types.Asset, pagination *query.PageRequest) ([]types.LiquidityProvider, *query.PageResponse, error) {
+	var lpList []types.LiquidityProvider
+	store := ctx.KVStore(k.storeKey)
+	lpStore := prefix.NewStore(store, types.LiquidityProviderPrefix)
+	pageRes, err := query.FilteredPaginate(lpStore, pagination, func(key []byte, value []byte, accumulate bool) (bool, error) {
+		var lp types.LiquidityProvider
+		err := k.cdc.UnmarshalBinaryBare(value, &lp)
+		if err != nil {
+			return false, err
+		}
+		if !lp.Asset.Equals(asset) {
+			return false, nil
+		}
+		if accumulate {
+			lpList = append(lpList, lp)
+		}
+
+		return true, nil
+	})
+	if err != nil {
+		return nil, &query.PageResponse{}, status.Error(codes.Internal, err.Error())
+	}
+	return lpList, pageRes, nil
 }
 
 func (k Keeper) GetAllLiquidityProviders(ctx sdk.Context) []types.LiquidityProvider {
