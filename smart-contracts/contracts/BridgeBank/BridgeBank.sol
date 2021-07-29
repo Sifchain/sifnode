@@ -33,7 +33,6 @@ contract BridgeBank is BankStorage,
     /*
      * @dev: Initializer
      */
-     //! Add OPERATOR! it changes all tests bc of the initialize function
     function initialize(
         address _operator,
         address _cosmosBridgeAddress,
