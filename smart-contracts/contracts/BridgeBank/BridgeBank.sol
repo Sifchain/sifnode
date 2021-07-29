@@ -9,6 +9,8 @@ import "../CosmosBridge.sol";
 import "./BankStorage.sol";
 import "./Pausable.sol";
 import "../interfaces/IBridgeToken.sol";
+import "hardhat/console.sol";
+
 
 /*
  * @title BridgeBank
@@ -297,9 +299,10 @@ contract BridgeBank is BankStorage,
     function tokenFallback(address _from, uint _value, bytes memory _data) public {}
 
 
-    function setRowanTokens(IBridgeToken erowan, IBridgeToken rowan) public onlyOperator {
-        Rowan = rowan;
-        eRowan = erowan;
+    function setRowanTokens(ERC20Burnable erowan, ERC20 rowan) public onlyOperator {
+        oldERowan = erowan;
+        newRowan = rowan;
+        emit RowanMigrationAddressSet(address(erowan), address(rowan));
     }
 
     /**
@@ -307,19 +310,20 @@ contract BridgeBank is BankStorage,
     * this transaction.
     * @param amount the amount of eRowan to be migrated
     */
-    function migrateFromeRowan(uint256 amount) external {
+    function migrateToRowan(uint256 amount) external {
         totalMigrated += amount;
         // burn the users eRowan
-        eRowan.burnFrom(msg.sender, amount);
-        // mint the user rowan
-        Rowan.mint(msg.sender, amount);
+        oldERowan.burnFrom(msg.sender, amount);
+        //send the user rowan
+        newRowan.transfer(msg.sender, amount);
+
         emit RowanMigrated(msg.sender, amount);
     }
 
     uint256 public totalMigrated;
-    IBridgeToken public Rowan;
-    IBridgeToken public eRowan;
+    ERC20 public newRowan;
+    ERC20Burnable public oldERowan;
 
     event RowanMigrated(address indexed account, uint256 indexed amount);
-
+    event RowanMigrationAddressSet(address indexed erowan, address indexed rowan);
 }

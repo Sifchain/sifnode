@@ -8,3 +8,5 @@ export const DeploymentDirectory = Symbol("DeploymentDirectory")
 export const DeploymentChainId = Symbol("DeploymentChainId")
 
 export const BridgeBankMainnetUpgradeAdmin = Symbol("BridgeBankMainnetUpgradeAdmin")
+
+export const CosmosBridgeMainnetUpgradeAdmin = Symbol("CosmosBridgeMainnetUpgradeAdmin")

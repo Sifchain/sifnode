@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import {BaseContract, ContractFactory} from "ethers";
 import {HardhatRuntimeEnvironment} from "hardhat/types";
-import {inject, injectable} from "tsyringe";
+import {inject, injectable, singleton} from "tsyringe";
 import {
     DeploymentChainId,
     DeploymentDirectory,
@@ -49,28 +49,28 @@ export class DeployableContract<T extends BaseContract> {
     }
 }
 
-@injectable()
+@singleton()
 export class DeployedBridgeBank extends DeployableContract<BridgeBank> {
     contractName() {
         return "BridgeBank"
     }
 }
 
-@injectable()
+@singleton()
 export class DeployedBridgeToken extends DeployableContract<BridgeToken> {
     contractName() {
         return "BridgeToken"
     }
 }
 
-@injectable()
+@singleton()
 export class DeployedBridgeRegistry extends DeployableContract<BridgeRegistry> {
     contractName() {
         return "BridgeRegistry"
     }
 }
 
-@injectable()
+@singleton()
 export class DeployedCosmosBridge extends DeployableContract<CosmosBridge> {
     contractName() {
         return "CosmosBridge"

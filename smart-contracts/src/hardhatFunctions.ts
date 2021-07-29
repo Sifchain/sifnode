@@ -1,26 +1,16 @@
-import * as fs from 'fs';
-import {BaseContract, BigNumber, BigNumberish, ContractFactory} from "ethers";
+import {BigNumber, BigNumberish} from "ethers";
 import {HardhatRuntimeEnvironment} from "hardhat/types";
-import {DependencyContainer, inject, injectable} from "tsyringe";
+import {DependencyContainer} from "tsyringe";
 import {
     BridgeBankMainnetUpgradeAdmin,
+    CosmosBridgeMainnetUpgradeAdmin,
     DeploymentChainId,
     DeploymentDirectory,
-    DeploymentName,
-    HardhatRuntimeEnvironmentToken
+    DeploymentName
 } from "./tsyringe/injectionTokens";
-import {
-    BridgeBank,
-    BridgeRegistry,
-    BridgeToken,
-    BridgeToken__factory,
-    CosmosBridge,
-    ERC20
-} from "../build";
-import * as path from "path"
+import {BridgeToken, BridgeToken__factory, ERC20} from "../build";
 import {SignerWithAddress} from "@nomiclabs/hardhat-ethers/signers";
-import {EthereumAddress, NotNativeCurrencyAddress} from "./ethereumAddress";
-import * as hardhat from "hardhat";
+import {NotNativeCurrencyAddress} from "./ethereumAddress";
 import {DeployedBridgeToken} from "./contractSupport";
 
 export const eRowanMainnetAddress = "0x07bac35846e5ed502aa91adf6a9e7aa210f2dcbe"
@@ -50,8 +40,8 @@ export async function impersonateAccount<T>(
 export async function startImpersonateAccount<T>(
     hre: HardhatRuntimeEnvironment,
     address: string,
-    newBalance: BigNumberish | undefined,
-) {
+    newBalance?: BigNumberish
+): Promise<SignerWithAddress> {
     await hre.network.provider.request({
         method: "hardhat_impersonateAccount",
         params: [address]
@@ -59,8 +49,7 @@ export async function startImpersonateAccount<T>(
     if (newBalance) {
         await setNewEthBalance(hre, address, newBalance)
     }
-    const signer = await hre.ethers.getSigner(address)
-    return signer
+    return await hre.ethers.getSigner(address)
 }
 
 export async function stopImpersonateAccount<T>(
@@ -96,6 +85,8 @@ export async function setupSifchainMainnetDeployment(c: DependencyContainer, hre
         contractName: () => "BridgeToken"
     }
     c.register(BridgeBankMainnetUpgradeAdmin, {useValue: "0x7c6c6ea036e56efad829af5070c8fb59dc163d88"})
+    //TODO this is probably the wrong address?
+    c.register(CosmosBridgeMainnetUpgradeAdmin, {useValue: "0x7c6c6ea036e56efad829af5070c8fb59dc163d88"})
     c.register(DeployedBridgeToken, {useValue: syntheticBridgeToken as DeployedBridgeToken})
 }
 

@@ -1,5 +1,5 @@
 import chai, {expect} from "chai"
-import {BigNumber, BigNumberish, ContractFactory} from "ethers"
+import {BigNumber, BigNumberish, Contract, ContractFactory} from "ethers"
 import {solidity} from "ethereum-waffle"
 import web3 from "web3"
 import * as ethereumAddress from "../src/ethereumAddress"
@@ -83,7 +83,7 @@ describe("BridgeBank", () => {
 
         it("should lock a test token", async () => {
             const recipient = web3.utils.utf8ToHex("sif1nx650s8q9w28f2g3t9ztxyg48ugldptuwzpace")
-            bridgeBank.updateEthWhiteList(testToken.address, true)
+            await bridgeBank.updateEthWhiteList(testToken.address, true)
             await expect(() => bridgeBank.connect(sender).lock(
                 recipient,
                 testToken.address,
@@ -117,32 +117,96 @@ describe("BridgeBank", () => {
         })
     })
 
+    // /**
+    //  * Parses transaction events from the logs in a transaction receipt
+    //  * @param {TransactionReceipt} receipt Transaction receipt containing the events in the logs
+    //  * @returns {{[eventName: string]: TransactionEvent}}
+    //  */
+    // function getTransactionEvents(receipt: ContractRe): {[eventName: string]: TransactionEvent}
+    // {
+    //     const txEvents: {[eventName: string]: TransactionEvent}  = {}
+    //
+    //     // for each log in the transaction receipt
+    //     for (const log of receipt.logs)
+    //     {
+    //         // for each event in the ABI
+    //         for (const abiEvent of Object.values(this.contract.interface.events))
+    //         {
+    //             // if the hash of the ABI event equals the tx receipt log
+    //             if (abiEvent.topics[0] == log.topics[0])
+    //             {
+    //                 // Parse the event from the log topics and data
+    //                 txEvents[abiEvent.name] = abiEvent.parse(log.topics, log.data)
+    //
+    //                 // stop looping through the ABI events
+    //                 break
+    //             }
+    //         }
+    //     }
+    //
+    //     return txEvents
+    // }
+    //
     describe("erowan to rowan migration", async () => {
         let sender: SignerWithAddress;
         let accounts: SifchainAccounts;
         let newRowanToken: BridgeToken
-        const amount = 10000
+        const amount = BigNumber.from(100000)
 
-        before('create test token', async () => {
+        before('create new rowan token', async () => {
             accounts = await container.resolve(SifchainAccountsPromise).accounts
             sender = accounts.availableAccounts[0]
-            const testTokenFactory = (await container.resolve(SifchainContractFactories).bridgeToken).connect(sender)
-            newRowanToken = await testTokenFactory.deploy("test")
+            const bridgeTokenFactory = (await container.resolve(SifchainContractFactories).bridgeToken).connect(sender)
+            newRowanToken = await bridgeTokenFactory.deploy("Rowan")
         })
 
         it("should be able to call setRowanTokens", async () => {
             const erowan = await container.resolve(RowanContract).contract
-            await bridgeBank.setRowanTokens(erowan.address, newRowanToken.address)
-            await bridgeBank
+            expect(await bridgeBank.setRowanTokens(erowan.address, newRowanToken.address))
+                .to.emit(bridgeBank, "RowanMigrationAddressSet")
+                .withArgs(erowan.address, newRowanToken.address)
         })
 
         it("should be able to exchange erowan for rowan", async () => {
-            // const erowan = await container.resolve(RowanContract).contract
-            // await bridgeBank.setRowanTokens(erowan.address, newRowanToken.address)
-            // await erowan.connect(accounts.ownerAccount).mint(sender.address, amount)
-            // await erowan.connect(sender).approve(bridgeBank.address, hardhat.ethers.constants.MaxUint256)
-            // await bridgeBank.connect(sender).migrateFromeRowan(10)
+            const erowan = await container.resolve(RowanContract).contract
+            await bridgeBank.updateEthWhiteList(newRowanToken.address, true)
+            await bridgeBank.setRowanTokens(erowan.address, newRowanToken.address)
+            // give the sending account some erowan to start with
+            await erowan.connect(accounts.ownerAccount).mint(sender.address, amount)
+            // allow the sending account to use the bridgebank to exchange erowan for rowan
+            await erowan.connect(sender).approve(bridgeBank.address, hardhat.ethers.constants.MaxUint256)
+            const smallAmount = amount.div(10)
+            let contractTransaction = await bridgeBank.connect(sender).migrateToRowan(smallAmount);
+            expect(contractTransaction)
+                .to.emit(bridgeBank, "RowanMigrated")
+            await expect( () => {
+                 bridgeBank.connect(sender).migrateToRowan(smallAmount)
+            }).to.changeTokenBalance(newRowanToken, sender, smallAmount)
         })
+
+        it("should change balances correctly", async () => {
+            // const existingRowanToken = await container.resolve(DeployedBridgeToken).contract
+            // existingRowanToken.approve(acc)
+            // const bbevents = await bridgeBank.queryFilter({address: undefined} as EventFilter, 12865480)
+            // // const events = await existingRowanToken.queryFilter({address: undefined} as EventFilter, 12865480, 12865480)
+            // console.log("printme: ", await existingRowanToken.name(), bbevents)
+        })
+        it("should fire correct events")
+        it("should do nothing before setRowanTokens is called", async () => {
+            // const accounts = await container.resolve(SifchainAccountsPromise).accounts
+            // const testAccount = accounts.availableAccounts[0]
+            // await impersonateAccount(
+            //     hardhat,
+            //     await newBridgeBank.operator(),
+            //     hardhat.ethers.utils.parseEther("10"),
+            //     async impersonatedBridgeBankOperator => {
+            //         let bb = newBridgeBank.connect(impersonatedBridgeBankOperator);
+            //         await newRowanToken.mint(testAccount.address, 100)
+            //         await bb.mintBridgeTokens(testAccount.address, "erowan", 100)
+            //     }
+            // )
+        })
+        it("should be able to terminate after some circumstances") // Do we want to leave this open forever?
     })
 })
 
