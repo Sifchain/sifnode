@@ -102,10 +102,10 @@ func buildRootCmd() *cobra.Command {
 func initRelayerCmd() *cobra.Command {
 	//nolint:lll
 	initRelayerCmd := &cobra.Command{
-		Use:     "init [networkDescriptor] [tendermintNode] [web3Provider] [bridgeRegistryContractAddress] [validatorMnemonic]",
+		Use:     "init [networkDescriptor] [tendermintNode] [web3Provider] [bridgeRegistryContractAddress] [validatorMnemonic] [signatureAggregator]",
 		Short:   "Validate credentials and initialize subscriptions to both chains",
-		Args:    cobra.ExactArgs(5),
-		Example: "ebrelayer init 1 tcp://localhost:26657 ws://localhost:7545/ 0x30753E4A8aad7F8597332E813735Def5dD395028 mnemonic --chain-id=peggy",
+		Args:    cobra.ExactArgs(6),
+		Example: "ebrelayer init 1 tcp://localhost:26657 ws://localhost:7545/ 0x30753E4A8aad7F8597332E813735Def5dD395028 mnemonic false --chain-id=peggy",
 		RunE:    RunInitRelayerCmd,
 	}
 	//flags.AddQueryFlagsToCmd(initRelayerCmd)
@@ -195,6 +195,15 @@ func RunInitRelayerCmd(cmd *cobra.Command, args []string) error {
 	}
 	validatorMoniker := args[4]
 
+	var signatureAggregator bool
+	if args[5] == "true" {
+		signatureAggregator = true
+	} else if args[5] == "false" {
+		signatureAggregator = false
+	} else {
+		return errors.Errorf("invalid bool string: %s", args[5])
+	}
+
 	logConfig := zap.NewDevelopmentConfig()
 	logConfig.Sampling = nil
 	logger, err := logConfig.Build()
@@ -224,7 +233,7 @@ func RunInitRelayerCmd(cmd *cobra.Command, args []string) error {
 	)
 
 	// Initialize new Cosmos event listener
-	cosmosSub := relayer.NewCosmosSub(oracletypes.NetworkDescriptor(networkDescriptor), privateKey, tendermintNode, web3Provider, contractAddress, db, sugaredLogger)
+	cosmosSub := relayer.NewCosmosSub(oracletypes.NetworkDescriptor(networkDescriptor), privateKey, tendermintNode, web3Provider, contractAddress, db, signatureAggregator, sugaredLogger)
 
 	waitForAll := sync.WaitGroup{}
 	waitForAll.Add(2)

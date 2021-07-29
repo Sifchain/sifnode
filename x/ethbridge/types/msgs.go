@@ -83,7 +83,6 @@ func (msg MsgLock) GetProphecyID(doublePeggy bool, sequence, globalNonce uint64)
 	return ComputeProphecyID(
 		msg.CosmosSender,
 		sequence,
-
 		msg.EthereumReceiver,
 		// TODO need get the token address from token's symbol
 		msg.EthereumReceiver,
@@ -174,7 +173,6 @@ func (msg MsgBurn) GetProphecyID(doublePeggy bool, sequence, globalNonce uint64)
 	return ComputeProphecyID(
 		msg.CosmosSender,
 		sequence,
-
 		msg.EthereumReceiver,
 		// TODO need get the token address from token's symbol
 		msg.EthereumReceiver,

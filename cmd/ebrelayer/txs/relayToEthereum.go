@@ -99,7 +99,6 @@ func RelayProphecyClaimToEthereum(
 func InitRelayConfig(
 	provider string,
 	registry common.Address,
-	event types.Event,
 	key *ecdsa.PrivateKey,
 	sugaredLogger *zap.SugaredLogger,
 ) (
@@ -164,17 +163,7 @@ func InitRelayConfig(
 	sugaredLogger.Infow("nonce before send transaction.",
 		"transactOptsAuth.Nonce", transactOptsAuth.Nonce)
 
-	var targetContract ContractRegistry
-	switch event {
-	// ProphecyClaims are sent to the CosmosBridge contract
-	case types.MsgBurn, types.MsgLock:
-		targetContract = CosmosBridge
-	// OracleClaims are sent to the Oracle contract
-	case types.LogNewProphecyClaim:
-		targetContract = Oracle
-	default:
-		panic("invalid target contract address")
-	}
+	targetContract := CosmosBridge
 
 	// Get the specific contract's address
 	target, err := GetAddressFromBridgeRegistry(client, registry, targetContract, sugaredLogger)

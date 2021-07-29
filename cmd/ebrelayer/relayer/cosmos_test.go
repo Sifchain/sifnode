@@ -35,7 +35,7 @@ func TestNewCosmosSub(t *testing.T) {
 	sugaredLogger := logger.Sugar()
 	registryContractAddress := common.HexToAddress(contractAddress)
 	sub := NewCosmosSub(oracletypes.NetworkDescriptor(networkDescriptor), privateKey, tmProvider, ethProvider, registryContractAddress,
-		db, sugaredLogger)
+		db, false, sugaredLogger)
 	require.NotEqual(t, sub, nil)
 }
 

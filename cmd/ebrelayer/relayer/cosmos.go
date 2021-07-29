@@ -49,11 +49,12 @@ type CosmosSub struct {
 	SugaredLogger           *zap.SugaredLogger
 	NetworkDescriptor       oracletypes.NetworkDescriptor
 	RegistryContractAddress common.Address
+	SignatureAggregator     bool
 }
 
 // NewCosmosSub initializes a new CosmosSub
 func NewCosmosSub(networkDescriptor oracletypes.NetworkDescriptor, privateKey *ecdsa.PrivateKey, tmProvider, ethProvider string, registryContractAddress common.Address,
-	db *leveldb.DB, sugaredLogger *zap.SugaredLogger) CosmosSub {
+	db *leveldb.DB, signatureAggregator bool, sugaredLogger *zap.SugaredLogger) CosmosSub {
 
 	return CosmosSub{
 		NetworkDescriptor:       networkDescriptor,
@@ -62,6 +63,7 @@ func NewCosmosSub(networkDescriptor oracletypes.NetworkDescriptor, privateKey *e
 		EthProvider:             ethProvider,
 		RegistryContractAddress: registryContractAddress,
 		DB:                      db,
+		SignatureAggregator:     signatureAggregator,
 		SugaredLogger:           sugaredLogger,
 	}
 }
@@ -165,24 +167,31 @@ func (sub CosmosSub) Start(completionEvent *sync.WaitGroup) {
 
 						switch claimType {
 						case types.MsgBurn, types.MsgLock:
-							cosmosMsg, err := txs.BurnLockEventToCosmosMsg(claimType, event.GetAttributes(), sub.SugaredLogger)
-							if err != nil {
-								sub.SugaredLogger.Errorw("sifchain client failed in get burn lock message from event.",
-									errorMessageKey, err.Error())
-								continue
+							// the relayer for signature aggregator not handle burn and lock
+							if !sub.SignatureAggregator {
+								cosmosMsg, err := txs.BurnLockEventToCosmosMsg(claimType, event.GetAttributes(), sub.SugaredLogger)
+								if err != nil {
+									sub.SugaredLogger.Errorw("sifchain client failed in get burn lock message from event.",
+										errorMessageKey, err.Error())
+									continue
+								}
+								if cosmosMsg.NetworkDescriptor == sub.NetworkDescriptor {
+									sub.handleBurnLockMsg(cosmosMsg, claimType)
+								}
 							}
-							if cosmosMsg.NetworkDescriptor == sub.NetworkDescriptor {
-								sub.handleBurnLockMsg(cosmosMsg, claimType)
-							}
+
 						case types.ProphecyCompleted:
-							prophecyInfo, err := txs.ProphecyCompletedEventToProphecyInfo(claimType, event.GetAttributes(), sub.SugaredLogger)
-							if err != nil {
-								sub.SugaredLogger.Errorw("sifchain client failed in get prophecy completed message from event.",
-									errorMessageKey, err.Error())
-								continue
-							}
-							if prophecyInfo.NetworkDescriptor == sub.NetworkDescriptor {
-								sub.handleProphecyCompleted(prophecyInfo, claimType)
+							// the relayer for signature aggregator just handle the
+							if sub.SignatureAggregator {
+								prophecyInfo, err := txs.ProphecyCompletedEventToProphecyInfo(claimType, event.GetAttributes(), sub.SugaredLogger)
+								if err != nil {
+									sub.SugaredLogger.Errorw("sifchain client failed in get prophecy completed message from event.",
+										errorMessageKey, err.Error())
+									continue
+								}
+								if prophecyInfo.NetworkDescriptor == sub.NetworkDescriptor {
+									sub.handleProphecyCompleted(prophecyInfo, claimType)
+								}
 							}
 						}
 					}
@@ -393,13 +402,12 @@ func getOracleClaimType(eventType string) types.Event {
 	return claimType
 }
 
-func tryInitRelayConfig(sub CosmosSub, claimType types.Event) (*ethclient.Client, *bind.TransactOpts, common.Address, error) {
+func tryInitRelayConfig(sub CosmosSub) (*ethclient.Client, *bind.TransactOpts, common.Address, error) {
 
 	for i := 0; i < 5; i++ {
 		client, auth, target, err := txs.InitRelayConfig(
 			sub.EthProvider,
 			sub.RegistryContractAddress,
-			claimType,
 			sub.PrivateKey,
 			sub.SugaredLogger,
 		)
@@ -428,7 +436,7 @@ func (sub CosmosSub) handleBurnLockMsg(
 		"cosmosMsg", cosmosMsg,
 	)
 
-	client, auth, target, err := tryInitRelayConfig(sub, claimType)
+	client, auth, target, err := tryInitRelayConfig(sub)
 	if err != nil {
 		sub.SugaredLogger.Errorw("failed in init relay config.",
 			errorMessageKey, err.Error())
@@ -458,62 +466,6 @@ func (sub CosmosSub) handleBurnLockMsg(
 		if err != nil {
 			sub.SugaredLogger.Errorw(
 				"failed to send new prophecyclaim to ethereum",
-				errorMessageKey, err.Error(),
-			)
-		} else {
-			break
-		}
-		i++
-	}
-
-	if i == maxRetries {
-		sub.SugaredLogger.Errorw(
-			"failed to broadcast transaction after 5 attempts",
-			errorMessageKey, err.Error(),
-		)
-	}
-}
-
-// Parses event data from the msg, event, builds a new ProphecyClaim, and relays it to Ethereum
-func (sub CosmosSub) handleProphecyCompleted(
-	prophecyInfo types.ProphecyInfo,
-	claimType types.Event,
-) {
-	sub.SugaredLogger.Infow(
-		"get the prophecy completed message.",
-		"cosmosMsg", prophecyInfo,
-	)
-
-	client, auth, target, err := tryInitRelayConfig(sub, claimType)
-	if err != nil {
-		sub.SugaredLogger.Errorw("failed in init relay config.",
-			errorMessageKey, err.Error())
-		return
-	}
-
-	// Initialize CosmosBridge instance
-	cosmosBridgeInstance, err := cosmosbridge.NewCosmosBridge(target, client)
-	if err != nil {
-		sub.SugaredLogger.Errorw("failed to get cosmosBridge instance.",
-			errorMessageKey, err.Error())
-		return
-	}
-
-	maxRetries := 5
-	i := 0
-
-	for i < maxRetries {
-		err = txs.RelayProphecyCompletedToEthereum(
-			prophecyInfo,
-			sub.SugaredLogger,
-			client,
-			auth,
-			cosmosBridgeInstance,
-		)
-
-		if err != nil {
-			sub.SugaredLogger.Errorw(
-				"failed to send new prophecy completed to ethereum",
 				errorMessageKey, err.Error(),
 			)
 		} else {

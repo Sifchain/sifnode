@@ -137,7 +137,7 @@ func RunReplayCosmosCmd(_ *cobra.Command, args []string) error {
 	sugaredLogger := logger.Sugar()
 
 	// Initialize new Cosmos event listener
-	cosmosSub := relayer.NewCosmosSub(oracletypes.NetworkDescriptor(networkDescriptor), privateKey, tendermintNode, web3Provider, contractAddress, nil, sugaredLogger)
+	cosmosSub := relayer.NewCosmosSub(oracletypes.NetworkDescriptor(networkDescriptor), privateKey, tendermintNode, web3Provider, contractAddress, nil, true, sugaredLogger)
 
 	cosmosSub.Replay(fromBlock, toBlock, ethFromBlock, ethToBlock)
 
