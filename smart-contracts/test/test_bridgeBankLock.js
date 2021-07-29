@@ -660,6 +660,36 @@ describe("Test Bridge Bank", function () {
       )).to.be.revertedWith("Only token in whitelist can be transferred to cosmos");
     });
 
-    
+    it("should not allow the operator to add a token to the whitelist if it's in cosmosWhitelist", async function () {
+      // assert that the cosmos bridge token has not been created
+      let bridgeToken = await state.cosmosBridge.sourceAddressToDestinationAddress(
+        state.token1.address
+      );
+      expect(bridgeToken).to.be.equal(state.ethereumToken);
+
+      await state.cosmosBridge.connect(userOne).createNewBridgeToken(
+        state.symbol,
+        state.name,
+        state.token1.address,
+        18,
+        1,
+      );
+
+      // now assert that the bridge token has been created
+      bridgeToken = await state.cosmosBridge.sourceAddressToDestinationAddress(
+        state.token1.address
+      );
+      expect(bridgeToken).to.not.be.equal(state.ethereumToken);
+
+      // assert the bridgeToken is in cosmosWhitelist
+      
+
+      // Try adding the token into white list
+      await expect(state.bridgeBank.connect(operator)
+        .updateEthWhiteList(state.token1.address, true))
+        .to.be.revertedWith('whitelisted');
+
+      expect(await state.bridgeBank.getTokenInEthWhiteList(state.token1.address)).to.be.equal(false);
+    });
   });
 });
