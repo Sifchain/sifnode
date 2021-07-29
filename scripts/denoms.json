@@ -1,5 +1,5 @@
 {
- "denom_whitelist_entries": [
+ "entries": [
   {
    "is_whitelisted": true,
    "denom": "ceth",
