@@ -1,6 +1,8 @@
 package keeper
 
 import (
+	"fmt"
+
 	"github.com/Sifchain/sifnode/x/clp/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
@@ -71,8 +73,8 @@ func (k Keeper) DestroyLiquidityProvider(ctx sdk.Context, symbol string, lpAddre
 	store.Delete(key)
 }
 
-func (k Keeper) GetLiquidityProvidersForAsset(ctx sdk.Context, asset types.Asset) []types.LiquidityProvider {
-	var lpList []types.LiquidityProvider
+func (k Keeper) GetLiquidityProvidersForAsset(ctx sdk.Context, asset types.Asset) []*types.LiquidityProvider {
+	var lpList []*types.LiquidityProvider
 	iterator := k.GetLiquidityProviderIterator(ctx)
 	defer iterator.Close()
 	for ; iterator.Valid(); iterator.Next() {
@@ -80,9 +82,11 @@ func (k Keeper) GetLiquidityProvidersForAsset(ctx sdk.Context, asset types.Asset
 		bytesValue := iterator.Value()
 		k.cdc.MustUnmarshalBinaryBare(bytesValue, &lp)
 		if lp.Asset.Equals(asset) {
-			lpList = append(lpList, lp)
+			lpList = append(lpList, &lp)
 		}
 	}
+	fmt.Println("GetLiquidityProvidersForAsset ==>> lplist size: ", len(lpList))
+
 	return lpList
 }
 

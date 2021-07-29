@@ -54,7 +54,7 @@ func (k msgServer) DecommissionPool(goCtx context.Context, msg *types.MsgDecommi
 	// iterate over Lp list and refund them there tokens
 	// Return both RWN and EXTERNAL ASSET
 	for _, lp := range lpList {
-		withdrawNativeAsset, withdrawExternalAsset, _, _ := CalculateAllAssetsForLP(pool, lp)
+		withdrawNativeAsset, withdrawExternalAsset, _, _ := CalculateAllAssetsForLP(pool, *lp)
 		poolUnits = poolUnits.Sub(lp.LiquidityProviderUnits)
 		nativeAssetBalance = nativeAssetBalance.Sub(withdrawNativeAsset)
 		externalAssetBalance = externalAssetBalance.Sub(withdrawExternalAsset)
@@ -70,7 +70,7 @@ func (k msgServer) DecommissionPool(goCtx context.Context, msg *types.MsgDecommi
 		withdrawNativeCoins := sdk.NewCoin(types.GetSettlementAsset().Symbol, withdrawNativeAssetInt)
 		withdrawExternalCoins := sdk.NewCoin(msg.Symbol, withdrawExternalAssetInt)
 		refundingCoins := sdk.NewCoins(withdrawExternalCoins, withdrawNativeCoins)
-		err := k.Keeper.RemoveLiquidityProvider(ctx, refundingCoins, lp)
+		err := k.Keeper.RemoveLiquidityProvider(ctx, refundingCoins, *lp)
 		if err != nil {
 			return nil, sdkerrors.Wrap(types.ErrUnableToRemoveLiquidityProvider, err.Error())
 		}

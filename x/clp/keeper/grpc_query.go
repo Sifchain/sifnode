@@ -111,14 +111,8 @@ func (k Querier) GetLiquidityProviderList(c context.Context, req *types.Liquidit
 	searchingAsset := types.NewAsset(req.Symbol)
 	lpList := k.GetLiquidityProvidersForAsset(ctx, searchingAsset)
 
-	lpl := make([]*types.LiquidityProvider, len(lpList))
-	for i, lp := range lpList {
-		lp := lp
-		lpl[i] = &lp
-	}
-
 	return &types.LiquidityProviderListRes{
-		LiquidityProviders: lpl,
+		LiquidityProviders: lpList,
 		Height:             ctx.BlockHeight(),
 	}, nil
 }
