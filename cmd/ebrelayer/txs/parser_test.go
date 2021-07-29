@@ -48,20 +48,6 @@ func TestLogLockToEthBridgeClaim(t *testing.T) {
 	require.Equal(t, expectedEthBridgeClaim, &ethBridgeClaim)
 }
 
-func TestDenomHashHandCrafted(t *testing.T) {
-	expectedDenom := "BTC"
-	actualDenom := ethbridge.GetDenomHash(2, "0xbF45BFc92ebD305d4C0baf8395c4299bdFCE9EA2", 9, "wBTC", "WBTC")
-
-	require.Equal(t, expectedDenom, actualDenom)
-}
-
-func TestDenomCalculated(t *testing.T) {
-	expectedDenom := "50c964aff4509857248783aa7a6c2cc403fb71bf0991d4645ebce6293e258619"
-	actualDenom := ethbridge.GetDenomHash(1, "0x0000000000000000000000000000000000000000", 18, "Ethereum", "ETH")
-
-	require.Equal(t, expectedDenom, actualDenom)
-}
-
 func TestBurnEventToCosmosMsg(t *testing.T) {
 	// Set up expected MsgBurn
 	expectedMsgBurn := CreateTestCosmosMsg(t, types.MsgBurn)
