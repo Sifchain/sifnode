@@ -80,12 +80,18 @@ func (k Keeper) GetLiquidityProvidersForAsset(ctx sdk.Context, asset types.Asset
 	for ; iterator.Valid(); iterator.Next() {
 		var lp types.LiquidityProvider
 		bytesValue := iterator.Value()
+		if !(len(bytesValue) > 0) {
+			panic("GetLiquidityProvidersForAsset ==>> len(bytesValue) <= 0")
+		}
 		k.cdc.MustUnmarshalBinaryBare(bytesValue, &lp)
+		if lp.Asset == nil {
+			panic(fmt.Sprintf("GetLiquidityProvidersForAsset ==>> lp.Asset == nil, len(bytesValue): %d", len(bytesValue)))
+		}
 		if lp.Asset.Equals(asset) {
 			lpList = append(lpList, &lp)
 		}
 	}
-	fmt.Println("GetLiquidityProvidersForAsset ==>> lplist size: ", len(lpList))
+	fmt.Println("GetLiquidityProvidersForAsset ==>> len(lplist): ", len(lpList))
 
 	return lpList
 }
