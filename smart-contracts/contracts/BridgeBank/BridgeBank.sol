@@ -39,7 +39,7 @@ contract BridgeBank is BankStorage,
         address _cosmosBridgeAddress,
         address _owner,
         address _pauser,
-        uint256 networkDescriptor_
+        uint256 _networkDescriptor
     ) public {
         require(!_initialized, "Init");
 
@@ -50,7 +50,7 @@ contract BridgeBank is BankStorage,
         operator = _operator;
         cosmosBridge = _cosmosBridgeAddress;
         owner = _owner;
-        networkDescriptor = networkDescriptor_;
+        networkDescriptor = _networkDescriptor;
         _initialized = true;
         contractName[address(0)] = "Ethereum";
         contractSymbol[address(0)] = "ETH";
