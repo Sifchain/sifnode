@@ -14,7 +14,7 @@ import {SignerWithAddress} from "@nomiclabs/hardhat-ethers/signers";
 
 chai.use(solidity)
 
-describe("BridgeBank and CosmosBridge after updating to latest smart contracts", () => {
+describe("BridgeBank and CosmosBridge - updating to latest smart contracts", () => {
     let deployedBridgeBank: BridgeBank
 
     before('register HardhatRuntimeEnvironmentToken', () => {
@@ -25,8 +25,8 @@ describe("BridgeBank and CosmosBridge after updating to latest smart contracts",
         await setupSifchainMainnetDeployment(container, hardhat)
     })
 
-    describe("upgrade the BridgeBank contract and make sure stored values are unchanged", async () => {
-        it("should maintain existing values", async () => {
+    describe("upgraded BridgeBank", async () => {
+        it("should maintain existing stored values", async () => {
             const existingBridgeBank = await container.resolve(DeployedBridgeBank).contract
             const bridgeBankFactory = await container.resolve(SifchainContractFactories).bridgeBank
             const upgradeAdmin = container.resolve(BridgeBankMainnetUpgradeAdmin) as string
@@ -38,8 +38,8 @@ describe("BridgeBank and CosmosBridge after updating to latest smart contracts",
 
 
             const newBridgeBank = await impersonateAccount(hardhat, upgradeAdmin, hardhat.ethers.utils.parseEther("10"), async fakeDeployer => {
-                const signedBBFactory = bridgeBankFactory.connect(fakeDeployer)
-                return await hardhat.upgrades.upgradeProxy(existingBridgeBank, signedBBFactory) as BridgeBank
+                const signedBridgeBankFactory = bridgeBankFactory.connect(fakeDeployer)
+                return await hardhat.upgrades.upgradeProxy(existingBridgeBank, signedBridgeBankFactory) as BridgeBank
             })
 
             expect(existingOperator).to.equal(await newBridgeBank.operator())
@@ -47,38 +47,6 @@ describe("BridgeBank and CosmosBridge after updating to latest smart contracts",
             expect(existingCosmosBridge).to.equal(await newBridgeBank.cosmosBridge())
             expect(existingOwner).to.equal(await newBridgeBank.owner())
         })
-
-        async function executeNewProphecyClaim(
-            claimType: "burn" | "lock",
-            ethereumReceiver: string,
-            symbol: string,
-            amount: BigNumberish,
-            validators: Array<SignerWithAddress>
-        ): Promise<readonly ContractTransaction[]> {
-            const cosmosSender = web3.utils.utf8ToHex("sif1nx650s8q9w28f2g3t9ztxyg48ugldptuwzpace")
-            const cosmosBridge = await container.resolve(DeployedCosmosBridge).contract as CosmosBridge
-            const claimTypeValue = {
-                "burn": 1,
-                "lock": 2
-            }[claimType]
-            const result = new Array<ContractTransaction>()
-            for (const validator of validators) {
-                try {
-                    const tx = await cosmosBridge.connect(validator).newProphecyClaim(
-                        claimTypeValue,
-                        cosmosSender,
-                        17,
-                        ethereumReceiver,
-                        symbol,
-                        amount
-                    )
-                    result.push(tx)
-                } catch (e) {
-                    // we expect one of these to fail since the prophecy completes before all validators submit their prophecy claim
-                }
-            }
-            return result
-        }
 
         // TODO this function should track validators added and removed and pay attention to resets.
         // None of those have happened yet on mainnet, so we'll just use validators added.
@@ -88,32 +56,57 @@ describe("BridgeBank and CosmosBridge after updating to latest smart contracts",
         }
 
         it("should burn ceth via existing validators", async () => {
-            const existingBridgeBank = await container.resolve(DeployedBridgeBank).contract
-            const accounts = await container.resolve(SifchainAccountsPromise).accounts
-            const cosmosBridge = await container.resolve(DeployedCosmosBridge).contract as CosmosBridge
+            const existingCosmosBridge = await container.resolve(DeployedCosmosBridge).contract as CosmosBridge
+            const existingValidators = await currentValidators(existingCosmosBridge)
 
             const upgradeAdmin = container.resolve(BridgeBankMainnetUpgradeAdmin) as string
 
-            let newBridgeBank: BridgeBank
-            let newCosmosBridge: CosmosBridge
-
             await impersonateAccount(hardhat, upgradeAdmin, hardhat.ethers.utils.parseEther("10"), async fakeDeployer => {
+                const amount = BigNumber.from(100)
+                const accounts = await container.resolve(SifchainAccountsPromise).accounts
                 const bridgeBankFactory = await container.resolve(SifchainContractFactories).bridgeBank
                 const signedBBFactory = bridgeBankFactory.connect(fakeDeployer)
-                newBridgeBank = await hardhat.upgrades.upgradeProxy(existingBridgeBank, signedBBFactory) as BridgeBank
+                const existingBridgeBank = await container.resolve(DeployedBridgeBank).contract
+                const operator = await startImpersonateAccount(hardhat, await existingBridgeBank.operator())
+                const newBridgeBank = (await hardhat.upgrades.upgradeProxy(existingBridgeBank, signedBBFactory) as BridgeBank).connect(operator)
                 const cosmosBridgeFactory = (await container.resolve(SifchainContractFactories).cosmosBridge).connect(fakeDeployer)
-                newCosmosBridge = (await hardhat.upgrades.upgradeProxy(cosmosBridge, cosmosBridgeFactory, {unsafeAllowCustomTypes: true}) as CosmosBridge).connect(fakeDeployer)
-                // Deploy CosmosBridge
-            })
+                const newCosmosBridge = (await hardhat.upgrades.upgradeProxy(existingCosmosBridge, cosmosBridgeFactory, {unsafeAllowCustomTypes: true}) as CosmosBridge).connect(operator)
+                const testTokenFactory = (await container.resolve(SifchainContractFactories).bridgeToken).connect(operator)
+                const testToken = await testTokenFactory.deploy("test")
+                await testToken.mint(operator.address, amount)
+                await testToken.connect(operator).approve(newBridgeBank.address, amount)
 
-            const validators = await currentValidators(cosmosBridge)
-            const receiver = accounts.availableAccounts[0]
-            const amount = BigNumber.from(100)
-            const impersonatedValidators = await Promise.all(validators.map(v => startImpersonateAccount(hardhat, v)))
-            const startingBalance = await receiver.getBalance()
-            const prophecyResult = await executeNewProphecyClaim("burn", receiver.address, "eth", amount, impersonatedValidators)
-            expect(prophecyResult.length).to.equal(validators.length - 1, "we expected one of the validators to fail after the prophecy was completed")
-            expect(await receiver.getBalance()).to.equal(startingBalance.add(amount))
+                const validators = await currentValidators(existingCosmosBridge)
+                expect(validators).to.deep.equal(existingValidators, "validators should not have changed")
+                const receiver = accounts.availableAccounts[0]
+                const impersonatedValidators = await Promise.all(validators.map(v => startImpersonateAccount(hardhat, v)))
+
+                {
+                    const startingBalance = await receiver.getBalance()
+                    const prophecyResult = await executeNewProphecyClaimWithTestValues("burn", receiver.address, "eth", amount, newCosmosBridge, impersonatedValidators)
+                    console.log("canaryhere")
+                    expect(prophecyResult.length).to.equal(validators.length - 1, "we expected one of the validators to fail after the prophecy was completed")
+                    expect(await receiver.getBalance()).to.equal(startingBalance.add(amount))
+                }
+                {
+                    // need to add a test token so we can burn it
+                    const recipient = web3.utils.utf8ToHex("sif1nx650s8q9w28f2g3t9ztxyg48ugldptuwzpace")
+                    await newBridgeBank.updateEthWhiteList(testToken.address, true)
+                    await newBridgeBank.lock(
+                        recipient,
+                        testToken.address,
+                        amount,
+                        {
+                            value: 0
+                        }
+                    )
+
+                    const startingBalance = await testToken.balanceOf(receiver.address)
+                    const prophecyResult = await executeNewProphecyClaimWithTestValues("burn", receiver.address, "test", amount, newCosmosBridge, impersonatedValidators)
+                    expect(prophecyResult.length).to.equal(validators.length - 1, "we expected one of the validators to fail after the prophecy was completed")
+                    expect(await testToken.balanceOf(receiver.address)).to.equal(startingBalance.add(amount))
+                }
+            })
         })
 
         describe("should impersonate all four relayers", async () => {
@@ -123,3 +116,40 @@ describe("BridgeBank and CosmosBridge after updating to latest smart contracts",
         })
     })
 })
+
+let sequenceNumber = BigNumber.from(0)
+
+async function executeNewProphecyClaimWithTestValues(
+    claimType: "burn" | "lock",
+    ethereumReceiver: string,
+    symbol: string,
+    amount: BigNumberish,
+    cosmosBridge: CosmosBridge,
+    validators: Array<SignerWithAddress>
+): Promise<readonly ContractTransaction[]> {
+    const cosmosSender = web3.utils.utf8ToHex("sif1nx650s8q9w28f2g3t9ztxyg48ugldptuwzpace")
+    const claimTypeValue = {
+        "burn": 1,
+        "lock": 2
+    }[claimType]
+    const result = new Array<ContractTransaction>()
+    for (const validator of validators) {
+        try {
+            const tx = await cosmosBridge.connect(validator).newProphecyClaim(
+                claimTypeValue,
+                cosmosSender,
+                sequenceNumber,
+                ethereumReceiver,
+                symbol,
+                amount
+            )
+            result.push(tx)
+        } catch (e) {
+            console.log("errorris: ", e)
+            // we expect one of these to fail since the prophecy completes before all validators submit their prophecy claim
+            // and we only return the successful transactions
+        }
+    }
+    sequenceNumber = sequenceNumber.add(1)
+    return result
+}
