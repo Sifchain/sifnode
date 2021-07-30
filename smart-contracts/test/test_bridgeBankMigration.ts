@@ -2,18 +2,11 @@ import chai, {expect} from "chai"
 import {solidity} from "ethereum-waffle"
 import {container} from "tsyringe";
 import {SifchainContractFactories} from "../src/tsyringe/contracts";
-import {BridgeBank, BridgeToken, CosmosBridge} from "../build";
-import {
-    BridgeBankMainnetUpgradeAdmin,
-    HardhatRuntimeEnvironmentToken
-} from "../src/tsyringe/injectionTokens";
+import {BridgeBank, CosmosBridge} from "../build";
+import {BridgeBankMainnetUpgradeAdmin, HardhatRuntimeEnvironmentToken} from "../src/tsyringe/injectionTokens";
 import * as hardhat from "hardhat";
-import {DeployedBridgeBank, DeployedBridgeToken, DeployedCosmosBridge} from "../src/contractSupport";
-import {
-    impersonateAccount,
-    setupSifchainMainnetDeployment,
-    startImpersonateAccount
-} from "../src/hardhatFunctions"
+import {DeployedBridgeBank, DeployedCosmosBridge} from "../src/contractSupport";
+import {impersonateAccount, setupSifchainMainnetDeployment, startImpersonateAccount} from "../src/hardhatFunctions"
 import {SifchainAccountsPromise} from "../src/tsyringe/sifchainAccounts";
 import web3 from "web3";
 import {BigNumber, BigNumberish, ContractTransaction} from "ethers";
@@ -32,30 +25,21 @@ describe("BridgeBank and CosmosBridge after updating to latest smart contracts",
         await setupSifchainMainnetDeployment(container, hardhat)
     })
 
-    describe("upgrade the BridgeBank contract", async () => {
-        let existingRowanToken: BridgeToken
-        let existingBridgeBank: BridgeBank
-        let newBridgeBank: BridgeBank
-        let newCosmosBridge: CosmosBridge
-        let newRowanToken: BridgeToken
-        let upgradeAdmin: string
-
+    describe("upgrade the BridgeBank contract and make sure stored values are unchanged", async () => {
         it("should maintain existing values", async () => {
-            existingRowanToken = await container.resolve(DeployedBridgeToken).contract
-            existingBridgeBank = await container.resolve(DeployedBridgeBank).contract
+            const existingBridgeBank = await container.resolve(DeployedBridgeBank).contract
             const bridgeBankFactory = await container.resolve(SifchainContractFactories).bridgeBank
-            upgradeAdmin = container.resolve(BridgeBankMainnetUpgradeAdmin) as string
+            const upgradeAdmin = container.resolve(BridgeBankMainnetUpgradeAdmin) as string
 
             const existingOperator = await existingBridgeBank.operator()
             const existingOracle = await existingBridgeBank.oracle()
             const existingCosmosBridge = await existingBridgeBank.cosmosBridge()
             const existingOwner = await existingBridgeBank.owner()
 
-            await impersonateAccount(hardhat, upgradeAdmin, hardhat.ethers.utils.parseEther("10"), async fakeDeployer => {
-                const signedBBFactory = bridgeBankFactory.connect(fakeDeployer)
-                newBridgeBank = await hardhat.upgrades.upgradeProxy(existingBridgeBank, signedBBFactory) as BridgeBank
 
-                // Deploy CosmosBridge
+            const newBridgeBank = await impersonateAccount(hardhat, upgradeAdmin, hardhat.ethers.utils.parseEther("10"), async fakeDeployer => {
+                const signedBBFactory = bridgeBankFactory.connect(fakeDeployer)
+                return await hardhat.upgrades.upgradeProxy(existingBridgeBank, signedBBFactory) as BridgeBank
             })
 
             expect(existingOperator).to.equal(await newBridgeBank.operator())
@@ -104,15 +88,14 @@ describe("BridgeBank and CosmosBridge after updating to latest smart contracts",
         }
 
         it("should burn ceth via existing validators", async () => {
+            const existingBridgeBank = await container.resolve(DeployedBridgeBank).contract
             const accounts = await container.resolve(SifchainAccountsPromise).accounts
             const cosmosBridge = await container.resolve(DeployedCosmosBridge).contract as CosmosBridge
 
             const upgradeAdmin = container.resolve(BridgeBankMainnetUpgradeAdmin) as string
 
-            const existingOperator = await existingBridgeBank.operator()
-            const existingOracle = await existingBridgeBank.oracle()
-            const existingCosmosBridge = await existingBridgeBank.cosmosBridge()
-            const existingOwner = await existingBridgeBank.owner()
+            let newBridgeBank: BridgeBank
+            let newCosmosBridge: CosmosBridge
 
             await impersonateAccount(hardhat, upgradeAdmin, hardhat.ethers.utils.parseEther("10"), async fakeDeployer => {
                 const bridgeBankFactory = await container.resolve(SifchainContractFactories).bridgeBank
