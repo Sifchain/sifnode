@@ -44,6 +44,39 @@ contract BridgeBank is BankStorage,
 
         CosmosWhiteList._cosmosWhitelistInitialize();
         EthereumWhiteList.initialize();
+
+        _initialize(
+            _operator,
+            _cosmosBridgeAddress,
+            _owner,
+            _pauser,
+            _networkDescriptor
+        );
+    }
+
+    function reinitialize(
+        address _operator,
+        address _cosmosBridgeAddress,
+        address _owner,
+        address _pauser,
+        uint256 _networkDescriptor
+    ) public onlyOperator {
+        _initialize(
+            _operator,
+            _cosmosBridgeAddress,
+            _owner,
+            _pauser,
+            _networkDescriptor
+        );
+    }
+
+    function _initialize(
+        address _operator,
+        address _cosmosBridgeAddress,
+        address _owner,
+        address _pauser,
+        uint256 _networkDescriptor
+    ) private {
         Pausable._pausableInitialize(_pauser);
 
         operator = _operator;
