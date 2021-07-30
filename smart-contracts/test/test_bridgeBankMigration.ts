@@ -5,7 +5,7 @@ import {SifchainContractFactories} from "../src/tsyringe/contracts";
 import {BridgeBank, CosmosBridge} from "../build";
 import {BridgeBankMainnetUpgradeAdmin, HardhatRuntimeEnvironmentToken} from "../src/tsyringe/injectionTokens";
 import * as hardhat from "hardhat";
-import {DeployedBridgeBank, DeployedCosmosBridge} from "../src/contractSupport";
+import {DeployedBridgeBank, DeployedBridgeToken, DeployedCosmosBridge} from "../src/contractSupport";
 import {impersonateAccount, setupSifchainMainnetDeployment, startImpersonateAccount} from "../src/hardhatFunctions"
 import {SifchainAccountsPromise} from "../src/tsyringe/sifchainAccounts";
 import web3 from "web3";
@@ -82,6 +82,15 @@ describe("BridgeBank and CosmosBridge - updating to latest smart contracts", () 
                 const impersonatedValidators = await Promise.all(validators.map(v => startImpersonateAccount(hardhat, v)))
 
                 {
+                    // it("should turn rowan to erowan in a lock")
+
+                    const rowanContract = await container.resolve(DeployedBridgeToken).contract
+                    const startingBalance = await rowanContract.balanceOf(receiver.address)
+                    const prophecyResult = await executeNewProphecyClaimWithTestValues("lock", receiver.address, "erowan", amount, newCosmosBridge, impersonatedValidators)
+                    expect(prophecyResult.length).to.equal(validators.length - 1, "we expected one of the validators to fail after the prophecy was completed")
+                    expect(await rowanContract.balanceOf(receiver.address)).to.equal(startingBalance.add(amount))
+                }
+                {
                     // it("should turn ceth to eth using burn")
 
                     const startingBalance = await receiver.getBalance()
@@ -113,7 +122,6 @@ describe("BridgeBank and CosmosBridge - updating to latest smart contracts", () 
         })
 
         describe("should impersonate all four relayers", async () => {
-            it("should turn rowan to erowan in a lock")
         })
     })
 })
