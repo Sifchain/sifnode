@@ -55,7 +55,7 @@ describe("BridgeBank and CosmosBridge - updating to latest smart contracts", () 
             return validatorsAdded.map(t => t.args[0])
         }
 
-        it("should burn ceth via existing validators", async () => {
+        it("should lock and burn via existing validators", async () => {
             const existingCosmosBridge = await container.resolve(DeployedCosmosBridge).contract as CosmosBridge
             const existingValidators = await currentValidators(existingCosmosBridge)
 
@@ -82,13 +82,16 @@ describe("BridgeBank and CosmosBridge - updating to latest smart contracts", () 
                 const impersonatedValidators = await Promise.all(validators.map(v => startImpersonateAccount(hardhat, v)))
 
                 {
+                    // it("should turn ceth to eth using burn")
+
                     const startingBalance = await receiver.getBalance()
                     const prophecyResult = await executeNewProphecyClaimWithTestValues("burn", receiver.address, "eth", amount, newCosmosBridge, impersonatedValidators)
-                    console.log("canaryhere")
                     expect(prophecyResult.length).to.equal(validators.length - 1, "we expected one of the validators to fail after the prophecy was completed")
                     expect(await receiver.getBalance()).to.equal(startingBalance.add(amount))
                 }
                 {
+                    // it("should turn random ERC20 pegged token back to unlock that token on mainnet")
+
                     // need to add a test token so we can burn it
                     const recipient = web3.utils.utf8ToHex("sif1nx650s8q9w28f2g3t9ztxyg48ugldptuwzpace")
                     await newBridgeBank.updateEthWhiteList(testToken.address, true)
@@ -110,9 +113,7 @@ describe("BridgeBank and CosmosBridge - updating to latest smart contracts", () 
         })
 
         describe("should impersonate all four relayers", async () => {
-            it("should turn ceth to eth in an unlock")
             it("should turn rowan to erowan in a lock")
-            it("should turn random ERC20 pegged token back to unlock that token on mainnet")
         })
     })
 })
@@ -145,7 +146,6 @@ async function executeNewProphecyClaimWithTestValues(
             )
             result.push(tx)
         } catch (e) {
-            console.log("errorris: ", e)
             // we expect one of these to fail since the prophecy completes before all validators submit their prophecy claim
             // and we only return the successful transactions
         }
