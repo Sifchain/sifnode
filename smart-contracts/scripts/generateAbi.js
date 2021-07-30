@@ -19,8 +19,8 @@
  
  async function exec() {
      // creates the dir if it doesn't already exist
-     if (!fs.existsSync(builtPath + '/abi')){
-         fs.mkdirSync(builtPath + '/abi');
+     if (!fs.existsSync(builtPath + abiPath)){
+         fs.mkdirSync(builtPath + abiPath);
      }
  
      // fetch all files from the build folder
