@@ -36,6 +36,7 @@ describe("BridgeBank with eRowan migration functionality", () => {
         let existingRowanToken: BridgeToken
         let existingBridgeBank: BridgeBank
         let newBridgeBank: BridgeBank
+        let newCosmosBridge: CosmosBridge
         let newRowanToken: BridgeToken
         let upgradeAdmin: string
 
@@ -87,8 +88,6 @@ describe("BridgeBank with eRowan migration functionality", () => {
                         symbol,
                         amount
                     )
-                    await tx.wait()
-                    console.log("submittednewProph", tx)
                     result.push(tx)
                 } catch (e) {
                     // we expect one of these to fail since the prophecy completes before all validators submit their prophecy claim
@@ -109,15 +108,30 @@ describe("BridgeBank with eRowan migration functionality", () => {
         it("should burn ceth via existing validators", async () => {
             const accounts = await container.resolve(SifchainAccountsPromise).accounts
             const cosmosBridge = await container.resolve(DeployedCosmosBridge).contract as CosmosBridge
-            // const cosmosBridgeFactory = (await container.resolve(SifchainContractFactories).bridgeToken).connect(sender)
+
+            const upgradeAdmin = container.resolve(BridgeBankMainnetUpgradeAdmin) as string
+
+            const existingOperator = await existingBridgeBank.operator()
+            const existingOracle = await existingBridgeBank.oracle()
+            const existingCosmosBridge = await existingBridgeBank.cosmosBridge()
+            const existingOwner = await existingBridgeBank.owner()
+
+            await impersonateAccount(hardhat, upgradeAdmin, hardhat.ethers.utils.parseEther("10"), async fakeDeployer => {
+                const bridgeBankFactory = await container.resolve(SifchainContractFactories).bridgeBank
+                const signedBBFactory = bridgeBankFactory.connect(fakeDeployer)
+                newBridgeBank = await hardhat.upgrades.upgradeProxy(existingBridgeBank, signedBBFactory) as BridgeBank
+                const cosmosBridgeFactory = (await container.resolve(SifchainContractFactories).cosmosBridge).connect(fakeDeployer)
+                newCosmosBridge = (await hardhat.upgrades.upgradeProxy(cosmosBridge, cosmosBridgeFactory, {unsafeAllowCustomTypes: true}) as CosmosBridge).connect(fakeDeployer)
+                // Deploy CosmosBridge
+            })
+
             const validators = await currentValidators(cosmosBridge)
             const receiver = accounts.availableAccounts[0]
             const amount = BigNumber.from(100)
             const impersonatedValidators = await Promise.all(validators.map(v => startImpersonateAccount(hardhat, v)))
             const startingBalance = await receiver.getBalance()
             const prophecyResult = await executeNewProphecyClaim("burn", receiver.address, "eth", amount, impersonatedValidators)
-            console.log("prophecyResult:", prophecyResult)
-            expect(prophecyResult.length).to.equal(validators.length - 1)
+            expect(prophecyResult.length).to.equal(validators.length - 1, "we expected one of the validators to fail after the prophecy was completed")
             expect(await receiver.getBalance()).to.equal(startingBalance.add(amount))
         })
 
