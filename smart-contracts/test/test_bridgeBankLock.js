@@ -682,7 +682,11 @@ describe("Test Bridge Bank", function () {
       expect(bridgeToken).to.not.be.equal(state.ethereumToken);
 
       // assert the bridgeToken is in cosmosWhitelist
-      // todo
+      // todo: fix this test
+      const isInCosmosWhitelist = await state.bridgeBank.getCosmosTokenInWhiteList(
+        state.token1.address
+      );
+      expect(isInCosmosWhitelist).to.be.equal(true);
 
       // Try adding the token into white list
       await expect(state.bridgeBank.connect(operator)

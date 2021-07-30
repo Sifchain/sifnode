@@ -82,7 +82,7 @@ async function multiTokenSetup(
       consensusThreshold,
       initialValidators,
       initialPowers,
-      networkDescriptor
+      networkDescriptorMismatch ? state.networkDescriptor + 1 : networkDescriptor
     ],
     { initializer: 'initialize(address,uint256,address[],uint256[],uint256)' });
     await state.cosmosBridge.deployed();
@@ -93,7 +93,7 @@ async function multiTokenSetup(
       state.cosmosBridge.address,
       owner.address,
       pauser,
-      networkDescriptorMismatch ? state.networkDescriptor + 1 : networkDescriptor
+      networkDescriptorMismatch ? state.networkDescriptor + 2 : networkDescriptor
     ],
     { initializer: 'initialize(address,address,address,address,uint256)' });
     await state.bridgeBank.deployed();
@@ -175,7 +175,7 @@ async function singleSetup(
       consensusThreshold,
       initialValidators,
       initialPowers,
-      networkDescriptor
+      networkDescriptorMismatch ? state.networkDescriptor + 1 : networkDescriptor
     ],
     { initializer: 'initialize(address,uint256,address[],uint256[],uint256)' });
     await state.cosmosBridge.deployed();
@@ -186,7 +186,7 @@ async function singleSetup(
       state.cosmosBridge.address,
       owner.address,
       pauser,
-      networkDescriptorMismatch ? state.networkDescriptor + 1 : networkDescriptor
+      networkDescriptorMismatch ? state.networkDescriptor + 2 : networkDescriptor
     ],
     { initializer: 'initialize(address,address,address,address,uint256)' });
     await state.bridgeBank.deployed();

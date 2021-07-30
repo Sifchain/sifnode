@@ -273,7 +273,7 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
     }
 
     function verifyNetworkDescriptor(uint256 _networkDescriptor) internal returns(bool) {
-        return _networkDescriptor == BridgeBank(bridgeBank).networkDescriptor();
+        return _networkDescriptor == networkDescriptor;
     }
 
     /**

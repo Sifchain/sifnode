@@ -59,7 +59,7 @@ describe("Test Network Descriptor Mismatch", function () {
       userThree,
       pauser,
       networkDescriptor,
-      true // force chain id mismatch
+      true // force networkDescriptor mismatch
     );
   });
 
