@@ -239,7 +239,7 @@ func RunInitRelayerCmd(cmd *cobra.Command, args []string) error {
 	waitForAll.Add(2)
 	txFactory := tx.NewFactoryCLI(cliContext, cmd.Flags())
 	go ethSub.Start(txFactory, &waitForAll)
-	go cosmosSub.Start(&waitForAll)
+	go cosmosSub.Start(txFactory, &waitForAll)
 	waitForAll.Wait()
 
 	return nil

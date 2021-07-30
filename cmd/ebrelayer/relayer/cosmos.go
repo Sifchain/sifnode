@@ -23,6 +23,7 @@ import (
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/txs"
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/types"
 	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
+	"github.com/cosmos/cosmos-sdk/client/tx"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	ethTypes "github.com/ethereum/go-ethereum/core/types"
@@ -69,7 +70,7 @@ func NewCosmosSub(networkDescriptor oracletypes.NetworkDescriptor, privateKey *e
 }
 
 // Start a Cosmos chain subscription
-func (sub CosmosSub) Start(completionEvent *sync.WaitGroup) {
+func (sub CosmosSub) Start(txFactory tx.Factory, completionEvent *sync.WaitGroup) {
 	defer completionEvent.Done()
 	time.Sleep(time.Second)
 	client, err := tmClient.New(sub.TmProvider, "/websocket")
@@ -77,7 +78,7 @@ func (sub CosmosSub) Start(completionEvent *sync.WaitGroup) {
 		sub.SugaredLogger.Errorw("failed to initialize a sifchain client.",
 			errorMessageKey, err.Error())
 		completionEvent.Add(1)
-		go sub.Start(completionEvent)
+		go sub.Start(txFactory, completionEvent)
 		return
 	}
 
@@ -85,7 +86,7 @@ func (sub CosmosSub) Start(completionEvent *sync.WaitGroup) {
 		sub.SugaredLogger.Errorw("failed to start a sifchain client.",
 			errorMessageKey, err.Error())
 		completionEvent.Add(1)
-		go sub.Start(completionEvent)
+		go sub.Start(txFactory, completionEvent)
 		return
 	}
 
@@ -99,7 +100,7 @@ func (sub CosmosSub) Start(completionEvent *sync.WaitGroup) {
 			errorMessageKey, err.Error(),
 			"query", query)
 		completionEvent.Add(1)
-		go sub.Start(completionEvent)
+		go sub.Start(txFactory, completionEvent)
 		return
 	}
 
@@ -176,7 +177,7 @@ func (sub CosmosSub) Start(completionEvent *sync.WaitGroup) {
 									continue
 								}
 								if cosmosMsg.NetworkDescriptor == sub.NetworkDescriptor {
-									sub.handleBurnLockMsg(cosmosMsg, claimType)
+									sub.handleBurnLockMsg(cosmosMsg)
 								}
 							}
 
@@ -375,7 +376,7 @@ func (sub CosmosSub) Replay(fromBlock int64, toBlock int64, ethFromBlock int64, 
 					log.Printf("found out a lock burn message%s\n", cosmosMsg.String())
 					if cosmosMsg.NetworkDescriptor == sub.NetworkDescriptor {
 						if !MessageProcessed(cosmosMsg, ProphecyClaims) {
-							sub.handleBurnLockMsg(cosmosMsg, claimType)
+							sub.handleBurnLockMsg(cosmosMsg)
 						} else {
 							log.Println("lock burn message already processed by me")
 						}
@@ -426,7 +427,6 @@ func tryInitRelayConfig(sub CosmosSub) (*ethclient.Client, *bind.TransactOpts, c
 // Parses event data from the msg, event, builds a new ProphecyClaim, and relays it to Ethereum
 func (sub CosmosSub) handleBurnLockMsg(
 	cosmosMsg types.CosmosMsg,
-	claimType types.Event,
 ) {
 	sub.SugaredLogger.Infow("handle burn lock message.",
 		"cosmosMessage", cosmosMsg.String())
