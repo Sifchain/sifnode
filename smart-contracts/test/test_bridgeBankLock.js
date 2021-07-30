@@ -682,18 +682,17 @@ describe("Test Bridge Bank", function () {
       expect(bridgeToken).to.not.be.equal(state.ethereumToken);
 
       // assert the bridgeToken is in cosmosWhitelist
-      // todo: fix this test
       const isInCosmosWhitelist = await state.bridgeBank.getCosmosTokenInWhiteList(
-        state.token1.address
+        bridgeToken
       );
       expect(isInCosmosWhitelist).to.be.equal(true);
 
       // Try adding the token into white list
       await expect(state.bridgeBank.connect(operator)
-        .updateEthWhiteList(state.token1.address, true))
+        .updateEthWhiteList(bridgeToken, true))
         .to.be.revertedWith('whitelisted');
 
-      expect(await state.bridgeBank.getTokenInEthWhiteList(state.token1.address)).to.be.equal(false);
+      expect(await state.bridgeBank.getTokenInEthWhiteList(bridgeToken)).to.be.equal(false);
     });
   });
 });
