@@ -58,6 +58,12 @@ class Command:
     def get_user_home(self, *paths):
         return os.path.join(os.environ["HOME"], *paths)
 
+    def tar_create(self, path, tar_path, compression=None):
+        comp_opts = {"gz": "z"}
+        comp = comp_opts[compression] if compression in comp_opts else ""
+        args = ["tar", "cf" + comp, tar_path, "."]
+        self.execst(args, cwd=path)
+
 
 class Ganache(Command):
     def start_ganache_cli(self, mnemonic=None, db=None, port=None, host=None, network_id=None, gas_price=None, gas_limit=None):
@@ -73,7 +79,7 @@ class Ganache(Command):
 
 
 class Sifnoded(Command):
-    def sifnoded_init_test(self, moniker, chain_id):
+    def sifnoded_init(self, moniker, chain_id):
         args = ["sifnoded", "init", moniker, "--chain-id={}".format(chain_id)]
         self.execst(args)
 
@@ -160,9 +166,48 @@ class UIPlaybook:
     def __init__(self, cmd):
         self.cmd = cmd
 
-    def ui_sif_launch(self):
+    def eth_start(self):
+        return
+
+    def run(self):
+        # self.cmd.yarn([], cwd=project_dir())  # TODO Where?
+        # ganache_cli_proc = self.eth_start()
+        # print(repr(ganache_cli_proc))
+        # self.ui_sif_launch()
+        # sifnoded_proc = self.ui_sif_start()
+        # print(repr(sifnoded_proc))
+        # self.cmd.sif_wait_up("localhost", 1317)
+        self.stack_save_snapshot()
+
+    def stack_save_snapshot(self):
+        # ui-stack.yml
+        # cd .; go get -v -t -d ./...
+        # cd ui; yarn install --frozen-lockfile --silent
+        # Compile smart contracts:
+        # cd ui; yarn build
+
+        keyring_backend = "test"
+
+        # yarn stack --save-snapshot -> ui/scripts/stack.sh -> ui/scripts/stack-save-snapshot.sh
+        # rm ui/node_modules/.migrate-complete
+
+        # yarn stack --save-snapshot -> ui/scripts/stack.sh -> ui/scripts/stack-save-snapshot.sh => ui/scripts/stack-launch.sh
+        # ui/scripts/stack-launch.sh -> ui/scripts/_sif-build.sh -> ui/chains/sif/build.sh
+        # killall sifnoded
+        # rm $(which sifnoded)
         self.cmd.rmdir(self.cmd.get_user_home(".sifnoded"))
-        self.cmd.sifnoded_init_test("test", UIPlaybook.CHAIN_ID)
+        self.cmd(["make", "install"], project_dir())
+
+        # ui/scripts/stack-launch.sh -> ui/scripts/_eth.sh -> ui/chains/etc/launch.sh
+        self.cmd.rmdir(self.cmd.get_user_home(".ganachedb"))
+        self.cmd.yarn([], cwd=project_dir("ui/chains/eth"))  # Installs ui/chains/eth/node_modules
+        # Note that this runs ganache-cli from $PATH whereas scripts start it with yarn in ui/chains/eth
+        ganache_proc = self.cmd.start_ganache_cli(mnemonic=UIPlaybook.ETHEREUM_ROOT_MNEMONIC,
+            db=self.cmd.get_user_home(".ganachedb"), port=7545, network_id=5777, gas_price=20000000000,
+            gas_limit=6721975, host="0.0.0.0")
+
+        # ui/scripts/stack-launch.sh -> ui/scripts/_sif.sh -> ui/chains/sif/launch.sh
+        self.cmd.sifnoded_init("test", UIPlaybook.CHAIN_ID)
         self.cmd.copy_file(project_dir("ui", "chains", "sif", "app.toml"), self.cmd.get_user_home(".sifnoded", "config", "app.toml"))
         log.info(f"Generating deterministic account - {UIPlaybook.SHADOWFIEND_NAME}...")
         shadowfiend_account = self.cmd.sifnoded_generate_deterministic_account(UIPlaybook.SHADOWFIEND_NAME, UIPlaybook.SHADOWFIEND_MNEMONIC)
@@ -187,31 +232,32 @@ class UIPlaybook:
         shadowfiend_address_bech_val = self.cmd.sifnoded_keys_show(UIPlaybook.SHADOWFIEND_NAME, bech="val")[0]["address"]
         self.cmd.sifnoded_add_genesis_validators(shadowfiend_address_bech_val)
 
-        amount = "1000000000000000000000000stake"
-        self.cmd.execst(["sifnoded", "gentx", UIPlaybook.SHADOWFIEND_NAME, amount, "--chain-id={}".format(UIPlaybook.CHAIN_ID), "--keyring-backend=test"])
+        amount = sif_format_amount(10**24, "stake")
+        self.cmd.execst(["sifnoded", "gentx", UIPlaybook.SHADOWFIEND_NAME, amount, "--chain-id={}".format(UIPlaybook.CHAIN_ID), "--keyring-backend={}".format(keyring_backend)])
 
-        log.info("Validating genesis file...")
+        log.info("Collecting genesis txs...")
         self.cmd.execst(["sifnoded", "collect-gentxs"])
-        log.info("Starting test chain...")
+        log.info("Validating genesis file...")
         self.cmd.execst(["sifnoded", "validate-genesis"])
 
-    def ui_sif_start(self):
-        return self.cmd.sifnoded_launch(minimum_gas_prices=[0.5, "rowan"])
+        log.info("Starting test chain...")
+        sifnoded_proc = self.cmd.sifnoded_launch(minimum_gas_prices=[0.5, "rowan"])
 
-    def migrate(self):
-        # peggy
+        # sifnoded must be up before continuing
+        self.cmd.sif_wait_up("localhost", 1317)
+
+        # ui/scripts/_migrate.sh -> ui/chains/peggy/migrate.sh
         smart_contracts_dir = project_dir("smart-contracts")
         self.cmd.copy_file(os.path.join(smart_contracts_dir, ".env.ui.example"), os.path.join(smart_contracts_dir, ".env"))
-        self.cmd.yarn(cwd=smart_contracts_dir)
+        self.cmd.yarn([], cwd=smart_contracts_dir)
         self.cmd.yarn(["migrate"], cwd=smart_contracts_dir)
 
-        # eth
+        # ui/scripts/_migrate.sh -> ui/chains/eth/migrate.sh
         # send through atk and btk tokens to eth chain
-        self.cmd.yarn(["migrate"], cwd=project_dir("ui", "chains", "eth"))
+        self.cmd.yarn(["migrate"], cwd=project_dir("ui/chains/eth"))
 
-        # sif
+        # ui/scripts/_migrate.sh -> ui/chains/sif/migrate.sh
         # Original scripts say "if we don't sleep there are issues"
-        keyring_backend = "test"
         time.sleep(10)
         log.info("Creating liquidity pool from catk:rowan...")
         self.cmd.sifnoded_tx_clp_create_pool(UIPlaybook.CHAIN_ID, keyring_backend, "akasha", "catk", [10**5, "rowan"], 10**25, 10**25)
@@ -233,10 +279,10 @@ class UIPlaybook:
         log.info("Creating liquidity pool from ctest:rowan...")
         self.cmd.sifnoded_tx_clp_create_pool(UIPlaybook.CHAIN_ID, keyring_backend, "akasha", "ctest", [10**5, "rowan"], 10**25, 10**13)
 
+        # ui/scripts/_migrate.sh -> ui/chains/post_migrate.sh
         def get_smart_contract_address(path):
             return json.loads(self.cmd.read_text_file(project_dir(path)))["networks"]["5777"]["address"]
 
-        # post_migrate.sh
         atk_address, btk_address, usdc_address, link_address = [
             get_smart_contract_address(project_dir(f"ui/chains/eth/build/contracts/{x}.json"))
             for x in ["AliceToken", "BobToken", "UsdCoin", "LinkCoin"]
@@ -265,32 +311,49 @@ class UIPlaybook:
         set_token_lock_burn_limit(btk_address, 10**25)
         set_token_lock_burn_limit(usdc_address, 10**25)
         set_token_lock_burn_limit(link_address, 10**25)
+        # signal migrate-complete
 
         # Whitelist test tokens
         for addr in [atk_address, btk_address, usdc_address, link_address]:
             self.cmd.yarn(["peggy:whitelist", addr, "true"], cwd=smart_contracts_dir)
 
-        # Peggy
+        # ui/scripts/stack-launch.sh -> ui/scripts/_peggy.sh -> ui/chains/peggy/launch.sh
+        # rm -rf ui/chains/peggy/relayerdb
         ethereum_private_key = smart_contracts_env_ui_example_vars["ETHEREUM_PRIVATE_KEY"]
-        self.cmd.ebrelayer_init(ethereum_private_key, "tcp://localhost:26657", "ws://localhost:7545/",
+        ebrelayer_proc = self.cmd.ebrelayer_init(ethereum_private_key, "tcp://localhost:26657", "ws://localhost:7545/",
             bridge_registry_address, UIPlaybook.SHADOWFIEND_NAME, UIPlaybook.SHADOWFIEND_MNEMONIC,
             "--chain-id={}".format(UIPlaybook.CHAIN_ID), 5*10**12, [0.5, "rowan"])
 
-    def eth_start(self):
-        return self.cmd.start_ganache_cli(mnemonic=UIPlaybook.ETHEREUM_ROOT_MNEMONIC,
-            db=self.cmd.get_user_home(".ganachedb"), port=7545, network_id=5777, gas_price=20000000000,
-            gas_limit=6721975, host="0.0.0.0")
+        # At this point we have 3 running processes - ganache_proc, sifnoded_proc and ebrelayer_proc
+        # await sif-node-up and migrate-complete
 
-    def run(self):
-        self.cmd.yarn([], cwd=project_dir())  # TODO Where?
+        time.sleep(30)
+        # ui/scripts/_snapshot.sh
 
-        ganache_cli_proc = self.eth_start()
-        print(repr(ganache_cli_proc))
-        self.ui_sif_launch()
-        sifnoded_proc = self.ui_sif_start()
-        print(repr(sifnoded_proc))
-        self.cmd.sif_wait_up("localhost", 1317)
-        self.migrate()
+        # ui/scripts/stack-pause.sh
+        # killall sifnoded sifnoded ebrelayer ganache-cli
+        sifnoded_proc.kill()
+        ebrelayer_proc.kill()
+        ganache_proc.kill()
+        time.sleep(10)
+
+        # ui/chains/peggy/snapshot.sh:
+        # mkdir -p ui/chains/snapshots
+        # mkdir -p ui/chains/peggy/relayerdb
+        # cd ui/chains/peggy/relayerdb && tar -zcvf ui/chains/snapshots/peggy.tar.gz
+        self.cmd.tar_create(project_dir("ui/chains/peggy/relayerdb"), project_dir("ui/chains/snapshots/peggy.tar.gz"), compression="gz")
+        # mkdir -p smart-contracts/build
+        # cd smart-contracts/build && tar -zcvf ui/chains/snapshots/peggy_build.tar.gz
+        self.cmd.tar_create(project_dir("smart-contracts/build"), project_dir("ui/chains/snapshots/peggy_build.tar.gz"), compression="gz")
+
+        # ui/chains/sif/snapshot.sh:
+        # mkdir -p ui/chains/snapshots
+        # cd ~/.sifnoded && tar -zcvf ui/chains/snapshots/sif.tar.gz
+        self.cmd.tar_create(self.cmd.get_user_home(".sifnoded"), project_dir("ui/chains/snapshots/sif.tar.gz"), compression="gz")
+
+        # ui/chains/etc/snapshot.sh:
+        # cd ~/.ganachedb && tar -zcvf ui/chains/snapshots/eth.tar.gz
+        self.cmd.tar_create(self.cmd.get_user_home(".ganachedb"), project_dir("ui/chains/snapshots/eth.tar.gz"), compression="gz")
 
 
 def main():
