@@ -51,12 +51,12 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
         uint256 _consensusThreshold,
         address[] calldata _initValidators,
         uint256[] calldata _initPowers,
-        uint256 networkDescriptor_
+        uint256 _networkDescriptor
     ) external {
         require(!_initialized, "Initialized");
 
         operator = _operator;
-        networkDescriptor = networkDescriptor_;
+        networkDescriptor = _networkDescriptor;
         hasBridgeBank = false;
         _initialized = true;
         Oracle._initialize(
