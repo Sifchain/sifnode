@@ -46,7 +46,7 @@
              const parsed = JSON.parse(data);
              
              // write the abi to a file
-             fs.writeFileSync(builtPath + `/abi/${strippedFilename}.abi`, JSON.stringify(parsed.abi));
+             fs.writeFileSync(builtPath + abiPath + `/${strippedFilename}.abi`, JSON.stringify(parsed.abi));
          } catch(e) {
              console.log({e});
          }
