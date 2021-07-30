@@ -21,7 +21,7 @@ import {SignerWithAddress} from "@nomiclabs/hardhat-ethers/signers";
 
 chai.use(solidity)
 
-describe("BridgeBank with eRowan migration functionality", () => {
+describe("BridgeBank and CosmosBridge after updating to latest smart contracts", () => {
     let deployedBridgeBank: BridgeBank
 
     before('register HardhatRuntimeEnvironmentToken', () => {
@@ -97,11 +97,9 @@ describe("BridgeBank with eRowan migration functionality", () => {
         }
 
         // TODO this function should track validators added and removed and pay attention to resets.
-        // None of those have happened yet though, so we'll just use validators added.
+        // None of those have happened yet on mainnet, so we'll just use validators added.
         async function currentValidators(cosmosBridge: CosmosBridge): Promise<readonly string[]> {
             const validatorsAdded = await cosmosBridge.queryFilter(cosmosBridge.filters.LogValidatorAdded())
-            const validatorsRemoved = await cosmosBridge.queryFilter(cosmosBridge.filters.LogValidatorRemoved())
-            const x = await cosmosBridge.queryFilter(cosmosBridge.filters.LogValsetReset())
             return validatorsAdded.map(t => t.args[0])
         }
 

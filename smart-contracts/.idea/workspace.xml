@@ -1,398 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="dd13056d-032d-453a-835f-ec8dae75bbb9" name="Changes" comment="working test_newBridgeBank.ts">
+    <list default="true" id="dd13056d-032d-453a-835f-ec8dae75bbb9" name="Changes" comment="small test changes">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.openzeppelin/mainnet.json" beforeDir="false" afterPath="$PROJECT_DIR$/.openzeppelin/mainnet.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/BridgeBank/BridgeBank.sol" beforeDir="false" afterPath="$PROJECT_DIR$/contracts/BridgeBank/BridgeBank.sol" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/contracts/BridgeBank/BridgeTokenG2.sol" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/contracts/CosmosBridge.sol" beforeDir="false" afterPath="$PROJECT_DIR$/contracts/CosmosBridge.sol" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/CHANGELOG.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/LICENSE" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/README.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/build/contracts/Address.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/build/contracts/AddressImpl.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/build/contracts/AllowanceCrowdsale.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/build/contracts/AllowanceCrowdsaleImpl.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/build/contracts/Arrays.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/build/contracts/ArraysImpl.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/build/contracts/CappedCrowdsale.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/build/contracts/CappedCrowdsaleImpl.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/build/contracts/CapperRole.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/build/contracts/CapperRoleMock.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/build/contracts/ConditionalEscrow.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/build/contracts/ConditionalEscrowMock.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/build/contracts/Context.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/build/contracts/ContextMock.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/build/contracts/ContextMockCaller.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/build/contracts/Counters.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/build/contracts/CountersImpl.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/build/contracts/Create2.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/build/contracts/Create2Impl.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/build/contracts/Crowdsale.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/build/contracts/CrowdsaleMock.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/build/contracts/ECDSA.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/build/contracts/ECDSAMock.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/build/contracts/ERC165.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/build/contracts/ERC165Checker.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/build/contracts/ERC165CheckerMock.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/build/contracts/ERC165InterfacesSupported.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/build/contracts/ERC165Mock.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/build/contracts/ERC165NotSupported.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/build/contracts/ERC1820Implementer.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/build/contracts/ERC1820ImplementerMock.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/build/contracts/ERC20.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/build/contracts/ERC20Burnable.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/build/contracts/ERC20BurnableMock.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/build/contracts/ERC20Capped.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/build/contracts/ERC20Detailed.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/build/contracts/ERC20DetailedMock.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/build/contracts/ERC20Metadata.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/build/contracts/ERC20MetadataMock.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/build/contracts/ERC20Migrator.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/build/contracts/ERC20Mintable.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/build/contracts/ERC20MintableMock.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/build/contracts/ERC20Mock.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/build/contracts/ERC20NoReturnMock.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/build/contracts/ERC20Pausable.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/build/contracts/ERC20PausableMock.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/build/contracts/ERC20ReturnFalseMock.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/build/contracts/ERC20ReturnTrueMock.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/build/contracts/ERC20Snapshot.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/build/contracts/ERC20SnapshotMock.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/build/contracts/ERC721.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/build/contracts/ERC721Burnable.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/build/contracts/ERC721Enumerable.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/build/contracts/ERC721Full.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/build/contracts/ERC721FullMock.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/build/contracts/ERC721GSNRecipientMock.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/build/contracts/ERC721Holder.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/build/contracts/ERC721Metadata.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/build/contracts/ERC721MetadataMintable.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/build/contracts/ERC721Mintable.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/build/contracts/ERC721MintableBurnableImpl.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/build/contracts/ERC721Mock.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/build/contracts/ERC721Pausable.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/build/contracts/ERC721PausableMock.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/build/contracts/ERC721ReceiverMock.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/build/contracts/ERC777.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/build/contracts/ERC777Mock.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/build/contracts/ERC777SenderRecipientMock.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/build/contracts/EnumerableSet.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/build/contracts/EnumerableSetMock.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/build/contracts/Escrow.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/build/contracts/EtherReceiverMock.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/build/contracts/FinalizableCrowdsale.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/build/contracts/FinalizableCrowdsaleImpl.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/build/contracts/GSNRecipient.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/build/contracts/GSNRecipientERC20Fee.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/build/contracts/GSNRecipientERC20FeeMock.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/build/contracts/GSNRecipientMock.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/build/contracts/GSNRecipientSignature.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/build/contracts/GSNRecipientSignatureMock.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/build/contracts/IERC165.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/build/contracts/IERC1820Implementer.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/build/contracts/IERC1820Registry.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/build/contracts/IERC20.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/build/contracts/IERC721.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/build/contracts/IERC721Enumerable.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/build/contracts/IERC721Full.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/build/contracts/IERC721Metadata.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/build/contracts/IERC721Receiver.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/build/contracts/IERC777.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/build/contracts/IERC777Recipient.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/build/contracts/IERC777Sender.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/build/contracts/IRelayHub.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/build/contracts/IRelayRecipient.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/build/contracts/IncreasingPriceCrowdsale.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/build/contracts/IncreasingPriceCrowdsaleImpl.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/build/contracts/IndividuallyCappedCrowdsale.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/build/contracts/IndividuallyCappedCrowdsaleImpl.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/build/contracts/Math.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/build/contracts/MathMock.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/build/contracts/MerkleProof.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/build/contracts/MerkleProofWrapper.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/build/contracts/MintedCrowdsale.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/build/contracts/MintedCrowdsaleImpl.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/build/contracts/MinterRole.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/build/contracts/MinterRoleMock.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/build/contracts/Ownable.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/build/contracts/OwnableInterfaceId.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/build/contracts/OwnableMock.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/build/contracts/Pausable.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/build/contracts/PausableCrowdsale.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/build/contracts/PausableCrowdsaleImpl.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/build/contracts/PausableMock.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/build/contracts/PauserRole.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/build/contracts/PauserRoleMock.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/build/contracts/PaymentSplitter.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/build/contracts/PostDeliveryCrowdsale.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/build/contracts/PostDeliveryCrowdsaleImpl.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/build/contracts/PullPayment.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/build/contracts/PullPaymentMock.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/build/contracts/ReentrancyAttack.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/build/contracts/ReentrancyGuard.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/build/contracts/ReentrancyMock.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/build/contracts/RefundEscrow.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/build/contracts/RefundableCrowdsale.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/build/contracts/RefundableCrowdsaleImpl.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/build/contracts/RefundablePostDeliveryCrowdsale.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/build/contracts/RefundablePostDeliveryCrowdsaleImpl.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/build/contracts/Roles.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/build/contracts/RolesMock.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/build/contracts/SafeCast.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/build/contracts/SafeCastMock.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/build/contracts/SafeERC20.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/build/contracts/SafeERC20Wrapper.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/build/contracts/SafeMath.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/build/contracts/SafeMathMock.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/build/contracts/SampleCrowdsale.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/build/contracts/SampleCrowdsaleToken.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/build/contracts/Secondary.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/build/contracts/SecondaryMock.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/build/contracts/SignedSafeMath.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/build/contracts/SignedSafeMathMock.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/build/contracts/SignerRole.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/build/contracts/SignerRoleMock.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/build/contracts/SimpleToken.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/build/contracts/Strings.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/build/contracts/StringsMock.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/build/contracts/SupportsInterfaceWithLookupMock.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/build/contracts/TimedCrowdsale.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/build/contracts/TimedCrowdsaleImpl.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/build/contracts/TokenTimelock.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/build/contracts/TokenVesting.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/build/contracts/WhitelistAdminRole.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/build/contracts/WhitelistAdminRoleMock.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/build/contracts/WhitelistCrowdsale.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/build/contracts/WhitelistCrowdsaleImpl.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/build/contracts/WhitelistedRole.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/build/contracts/WhitelistedRoleMock.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/build/contracts/__unstable__ERC20PrimaryAdmin.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/build/contracts/__unstable__TokenVault.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/GSN/Context.sol" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/GSN/GSNRecipient.sol" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/GSN/GSNRecipientERC20Fee.sol" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/GSN/GSNRecipientSignature.sol" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/GSN/IRelayHub.sol" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/GSN/IRelayRecipient.sol" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/GSN/README.adoc" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/README.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/access/README.adoc" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/access/Roles.sol" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/access/roles/CapperRole.sol" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/access/roles/MinterRole.sol" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/access/roles/PauserRole.sol" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/access/roles/SignerRole.sol" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/access/roles/WhitelistAdminRole.sol" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/access/roles/WhitelistedRole.sol" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/build/contracts/AccessControl.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/build/contracts/AccessControlMock.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/build/contracts/Address.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/build/contracts/AddressImpl.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/build/contracts/Arrays.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/build/contracts/ArraysImpl.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/build/contracts/ConditionalEscrow.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/build/contracts/ConditionalEscrowMock.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/build/contracts/Context.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/build/contracts/ContextMock.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/build/contracts/ContextMockCaller.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/build/contracts/Counters.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/build/contracts/CountersImpl.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/build/contracts/Create2.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/build/contracts/Create2Impl.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/build/contracts/ECDSA.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/build/contracts/ECDSAMock.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/build/contracts/ERC165.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/build/contracts/ERC165Checker.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/build/contracts/ERC165CheckerMock.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/build/contracts/ERC165InterfacesSupported.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/build/contracts/ERC165Mock.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/build/contracts/ERC165NotSupported.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/build/contracts/ERC1820Implementer.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/build/contracts/ERC1820ImplementerMock.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/build/contracts/ERC20.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/build/contracts/ERC20Burnable.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/build/contracts/ERC20BurnableMock.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/build/contracts/ERC20Capped.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/build/contracts/ERC20CappedMock.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/build/contracts/ERC20DecimalsMock.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/build/contracts/ERC20Detailed.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/build/contracts/ERC20DetailedMock.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/build/contracts/ERC20MinterPauser.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/build/contracts/ERC20Mock.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/build/contracts/ERC20NoReturnMock.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/build/contracts/ERC20Pausable.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/build/contracts/ERC20PausableMock.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/build/contracts/ERC20PresetMinterPauser.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/build/contracts/ERC20ReturnFalseMock.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/build/contracts/ERC20ReturnTrueMock.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/build/contracts/ERC20Snapshot.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/build/contracts/ERC20SnapshotMock.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/build/contracts/ERC721.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/build/contracts/ERC721Burnable.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/build/contracts/ERC721BurnableMock.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/build/contracts/ERC721Enumerable.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/build/contracts/ERC721Full.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/build/contracts/ERC721FullMock.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/build/contracts/ERC721GSNRecipientMock.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/build/contracts/ERC721Holder.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/build/contracts/ERC721Metadata.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/build/contracts/ERC721MinterPauser.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/build/contracts/ERC721Mock.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/build/contracts/ERC721Pausable.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/build/contracts/ERC721PausableMock.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/build/contracts/ERC721PresetMinterPauserAutoId.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/build/contracts/ERC721ReceiverMock.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/build/contracts/ERC777.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/build/contracts/ERC777Mock.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/build/contracts/ERC777SenderRecipientMock.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/build/contracts/EnumerableMap.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/build/contracts/EnumerableMapMock.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/build/contracts/EnumerableSet.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/build/contracts/EnumerableSetMock.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/build/contracts/Escrow.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/build/contracts/EtherReceiverMock.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/build/contracts/GSNRecipient.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/build/contracts/GSNRecipientERC20Fee.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/build/contracts/GSNRecipientERC20FeeMock.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/build/contracts/GSNRecipientMock.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/build/contracts/GSNRecipientSignature.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/build/contracts/GSNRecipientSignatureMock.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/build/contracts/IERC165.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/build/contracts/IERC1820Implementer.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/build/contracts/IERC1820Registry.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/build/contracts/IERC20.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/build/contracts/IERC721.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/build/contracts/IERC721Enumerable.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/build/contracts/IERC721Full.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/build/contracts/IERC721Metadata.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/build/contracts/IERC721Receiver.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/build/contracts/IERC777.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/build/contracts/IERC777Recipient.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/build/contracts/IERC777Sender.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/build/contracts/IRelayHub.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/build/contracts/IRelayRecipient.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/build/contracts/Math.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/build/contracts/MathMock.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/build/contracts/MerkleProof.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/build/contracts/MerkleProofWrapper.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/build/contracts/Ownable.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/build/contracts/OwnableMock.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/build/contracts/Pausable.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/build/contracts/PausableMock.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/build/contracts/PaymentSplitter.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/build/contracts/PullPayment.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/build/contracts/PullPaymentMock.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/build/contracts/ReentrancyAttack.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/build/contracts/ReentrancyGuard.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/build/contracts/ReentrancyMock.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/build/contracts/RefundEscrow.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/build/contracts/SafeCast.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/build/contracts/SafeCastMock.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/build/contracts/SafeERC20.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/build/contracts/SafeERC20Wrapper.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/build/contracts/SafeMath.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/build/contracts/SafeMathMock.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/build/contracts/SignedSafeMath.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/build/contracts/SignedSafeMathMock.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/build/contracts/Strings.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/build/contracts/StringsMock.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/build/contracts/SupportsInterfaceWithLookupMock.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/build/contracts/TokenTimelock.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/build/contracts/TokenVesting.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/build/contracts/__unstable__ERC20Owned.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/crowdsale/Crowdsale.sol" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/crowdsale/README.adoc" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/crowdsale/distribution/FinalizableCrowdsale.sol" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/crowdsale/distribution/PostDeliveryCrowdsale.sol" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/crowdsale/distribution/RefundableCrowdsale.sol" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/crowdsale/distribution/RefundablePostDeliveryCrowdsale.sol" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/crowdsale/emission/AllowanceCrowdsale.sol" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/crowdsale/emission/MintedCrowdsale.sol" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/crowdsale/price/IncreasingPriceCrowdsale.sol" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/crowdsale/validation/CappedCrowdsale.sol" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/crowdsale/validation/IndividuallyCappedCrowdsale.sol" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/crowdsale/validation/PausableCrowdsale.sol" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/crowdsale/validation/TimedCrowdsale.sol" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/crowdsale/validation/WhitelistCrowdsale.sol" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/cryptography/ECDSA.sol" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/cryptography/MerkleProof.sol" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/cryptography/README.adoc" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/drafts/Counters.sol" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/drafts/ERC1046/ERC20Metadata.sol" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/drafts/ERC20Migrator.sol" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/drafts/ERC20Snapshot.sol" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/drafts/README.adoc" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/drafts/SignedSafeMath.sol" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/drafts/Strings.sol" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/drafts/TokenVesting.sol" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/introspection/ERC165.sol" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/introspection/ERC165Checker.sol" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/introspection/ERC1820Implementer.sol" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/introspection/IERC165.sol" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/introspection/IERC1820Implementer.sol" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/introspection/IERC1820Registry.sol" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/introspection/README.adoc" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/lifecycle/Pausable.sol" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/lifecycle/README.adoc" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/math/Math.sol" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/math/README.adoc" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/math/SafeMath.sol" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/ownership/Ownable.sol" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/ownership/README.adoc" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/ownership/Secondary.sol" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/package.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/payment/PaymentSplitter.sol" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/payment/PullPayment.sol" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/payment/README.adoc" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/payment/escrow/ConditionalEscrow.sol" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/payment/escrow/Escrow.sol" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/payment/escrow/RefundEscrow.sol" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/token/ERC20/ERC20.sol" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/token/ERC20/ERC20Burnable.sol" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/token/ERC20/ERC20Capped.sol" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/token/ERC20/ERC20Detailed.sol" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/token/ERC20/ERC20Mintable.sol" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/token/ERC20/ERC20Pausable.sol" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/token/ERC20/IERC20.sol" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/token/ERC20/README.adoc" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/token/ERC20/SafeERC20.sol" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/token/ERC20/TokenTimelock.sol" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/token/ERC721/ERC721.sol" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/token/ERC721/ERC721Burnable.sol" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/token/ERC721/ERC721Enumerable.sol" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/token/ERC721/ERC721Full.sol" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/token/ERC721/ERC721Holder.sol" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/token/ERC721/ERC721Metadata.sol" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/token/ERC721/ERC721MetadataMintable.sol" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/token/ERC721/ERC721Mintable.sol" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/token/ERC721/ERC721Pausable.sol" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/token/ERC721/IERC721.sol" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/token/ERC721/IERC721Enumerable.sol" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/token/ERC721/IERC721Full.sol" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/token/ERC721/IERC721Metadata.sol" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/token/ERC721/IERC721Receiver.sol" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/token/ERC721/README.adoc" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/token/ERC777/ERC777.sol" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/token/ERC777/IERC777.sol" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/token/ERC777/IERC777Recipient.sol" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/token/ERC777/IERC777Sender.sol" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/token/ERC777/README.adoc" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/utils/Address.sol" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/utils/Arrays.sol" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/utils/Create2.sol" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/utils/EnumerableSet.sol" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/utils/README.adoc" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/utils/ReentrancyGuard.sol" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/contracts/utils/SafeCast.sol" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/package.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/openzeppelin-solidity/test/behaviors/access/roles/PublicRole.behavior.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/contracts/Oracle.sol" beforeDir="false" afterPath="$PROJECT_DIR$/contracts/Oracle.sol" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/contracts/Valset.sol" beforeDir="false" afterPath="$PROJECT_DIR$/contracts/Valset.sol" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/contractSupport.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/contractSupport.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/hardhatFunctions.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/hardhatFunctions.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/tsyringe/injectionTokens.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/tsyringe/injectionTokens.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/test_BridgeBankErowanMigrationMethods.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/tsyringe/contracts.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/tsyringe/contracts.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/test/test_bridgeBankMigration.ts" beforeDir="false" afterPath="$PROJECT_DIR$/test/test_bridgeBankMigration.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/test_newBridgeBank.ts" beforeDir="false" afterPath="$PROJECT_DIR$/test/test_newBridgeBank.ts" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -472,7 +91,12 @@
       <workItem from="1627499259473" duration="5901000" />
       <workItem from="1627508924271" duration="5596000" />
       <workItem from="1627572219358" duration="614000" />
-      <workItem from="1627573064582" duration="4301000" />
+      <workItem from="1627573064582" duration="6823000" />
+      <workItem from="1627590654596" duration="1883000" />
+      <workItem from="1627599328315" duration="3417000" />
+      <workItem from="1627661940695" duration="3032000" />
+      <workItem from="1627665670258" duration="2783000" />
+      <workItem from="1627677568523" duration="550000" />
     </task>
     <task id="LOCAL-00001" summary="rename">
       <created>1627444976349</created>
@@ -488,7 +112,14 @@
       <option name="project" value="LOCAL" />
       <updated>1627447867578</updated>
     </task>
-    <option name="localTasksCounter" value="3" />
+    <task id="LOCAL-00003" summary="small test changes">
+      <created>1627662661016</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1627662661016</updated>
+    </task>
+    <option name="localTasksCounter" value="4" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -511,18 +142,7 @@
     <MESSAGE value="rename" />
     <MESSAGE value="working bridgeBankMigration" />
     <MESSAGE value="working test_newBridgeBank.ts" />
-    <option name="LAST_COMMIT_MESSAGE" value="working test_newBridgeBank.ts" />
-  </component>
-  <component name="XDebuggerManager">
-    <breakpoint-manager>
-      <breakpoints>
-        <line-breakpoint enabled="true" type="javascript">
-          <url>file://$PROJECT_DIR$/test/test_bridgeBankMigration.ts</url>
-          <line>96</line>
-          <properties lambdaOrdinal="-1" />
-          <option name="timeStamp" value="12" />
-        </line-breakpoint>
-      </breakpoints>
-    </breakpoint-manager>
+    <MESSAGE value="small test changes" />
+    <option name="LAST_COMMIT_MESSAGE" value="small test changes" />
   </component>
 </project>

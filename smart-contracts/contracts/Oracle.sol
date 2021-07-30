@@ -78,7 +78,7 @@ contract Oracle is OracleStorage, Valset {
         hasMadeClaim[_prophecyID][validatorAddress] = true;
         // oracleClaimValidators[_prophecyID].push(validatorAddress);
         oracleClaimValidators[_prophecyID] = oracleClaimValidators[_prophecyID].add(
-            this.getValidatorPower(validatorAddress)
+            getValidatorPower(validatorAddress)
         );
         emit LogNewOracleClaim(
             _prophecyID,

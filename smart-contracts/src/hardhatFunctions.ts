@@ -78,8 +78,11 @@ export async function setupSifchainMainnetDeployment(c: DependencyContainer, hre
     c.register(DeploymentDirectory, {useValue: "./deployments"})
     c.register(DeploymentName, {useValue: "sifchain"})
     c.register(DeploymentChainId, {useValue: 1})
-    const btf = await hre.ethers.getContractFactory("BridgeToken") as BridgeToken__factory
-    const existingRowanToken: BridgeToken = await btf.attach(eRowanMainnetAddress)
+    const bridgeTokenFactory = await hre.ethers.getContractFactory("BridgeToken") as BridgeToken__factory
+
+    // BrideToken for Rowan doesn't have a json file in deployments, so we need to build DeployedBridgeToken by hand
+    // instead of using
+    const existingRowanToken: BridgeToken = await bridgeTokenFactory.attach(eRowanMainnetAddress)
     const syntheticBridgeToken = {
         contract: Promise.resolve(existingRowanToken),
         contractName: () => "BridgeToken"

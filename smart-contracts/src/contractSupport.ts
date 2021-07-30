@@ -56,7 +56,8 @@ export class DeployedBridgeBank extends DeployableContract<BridgeBank> {
     }
 }
 
-@singleton()
+// Note that this class isn't injectable, since we don't have the right
+// json artifacts for BridgeToken
 export class DeployedBridgeToken extends DeployableContract<BridgeToken> {
     contractName() {
         return "BridgeToken"

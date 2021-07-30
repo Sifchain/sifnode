@@ -22,14 +22,12 @@ export class SifchainContractFactories {
     cosmosBridge: Promise<CosmosBridge__factory>
     bridgeRegistry: Promise<BridgeRegistry__factory>
     bridgeToken: Promise<BridgeToken__factory>
-    bridgeTokenG2: Promise<BridgeTokenG2__factory>
 
     constructor(@inject(HardhatRuntimeEnvironmentToken) hre: HardhatRuntimeEnvironment) {
         this.bridgeBank = hre.ethers.getContractFactory("BridgeBank").then((x: ContractFactory) => x as BridgeBank__factory)
         this.cosmosBridge = hre.ethers.getContractFactory("CosmosBridge").then((x: ContractFactory) => x as CosmosBridge__factory)
         this.bridgeRegistry = hre.ethers.getContractFactory("BridgeRegistry").then((x: ContractFactory) => x as BridgeRegistry__factory)
         this.bridgeToken = hre.ethers.getContractFactory("BridgeToken").then((x: ContractFactory) => x as BridgeToken__factory)
-        this.bridgeTokenG2 = hre.ethers.getContractFactory("BridgeTokenG2").then((x: ContractFactory) => x as BridgeTokenG2__factory)
     }
 }
 
