@@ -421,8 +421,8 @@ describe("Security Test", function () {
     it("should allow users to unpeg troll token, but then does not receive", async function () {
       // Add the token into white list
       await state.bridgeBank.connect(operator)
-      .updateEthWhiteList(state.troll.address, true)
-      .should.be.fulfilled;
+        .updateEthWhiteList(state.troll.address, true)
+        .should.be.fulfilled;
 
       // approve and lock tokens
       await state.troll.connect(userOne).approve(
@@ -476,7 +476,6 @@ describe("Security Test", function () {
       // user should not receive funds as troll token just burns gas
       endingBalance = Number(await state.troll.balanceOf(userOne.address));
       expect(endingBalance).to.be.equal(0);
-
 
       // Last nonce should now be 1
       let lastNonceSubmitted = Number(await state.cosmosBridge.lastNonceSubmitted());
