@@ -6,3 +6,4 @@ flat/
 venv
 /artifacts/
 /cache/
+/.idea/
