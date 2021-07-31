@@ -3,13 +3,13 @@ import logging
 import os
 import shutil
 import subprocess
-import yaml  # pip install pyyaml
-import urllib.request
+import sys
 import time
+import urllib.request
+import yaml  # pip install pyyaml
 
 
 log = logging.getLogger(__name__)
-
 
 def stdout_lines(res):
     return res[1].splitlines()
@@ -36,17 +36,29 @@ def http_get(url):
         return r.read()
 
 def popen(args, env=None):
+    if env:
+        env = dict_merge(os.environ, env)
     return subprocess.Popen(args, env=env)
+
+def dict_merge(*dicts):
+    result = {}
+    for d in dicts:
+        for k, v in d.items():
+            result[k] = v
+    return result
 
 NULL_ADDRESS = "0x0000000000000000000000000000000000000000"
 
 
 class Command:
-    def execst(self, args, cwd=None, env=None, stdin=None, binary=False):
+    def execst(self, args, cwd=None, env=None, stdin=None, binary=False, pipe=True):
         if stdin is not None:
             if type(stdin) == list:
                 stdin = "".join([line + "\n" for line in stdin])
-        popen = subprocess.Popen(args, cwd=cwd, env=env, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=not binary)
+        p = subprocess.PIPE if pipe else None
+        if env:
+            env = dict_merge(os.environ, env)
+        popen = subprocess.Popen(args, cwd=cwd, env=env, stdin=subprocess.PIPE, stdout=p, stderr=p, text=not binary)
         stdout_data, stderr_data = popen.communicate(input=stdin)
         if popen.returncode != 0:
             raise Exception("Command '{}' exited with returncode {}: {}".format(" ".join(args), popen.returncode, repr(stderr_data)))
@@ -55,6 +67,9 @@ class Command:
     def read_text_file(self, path):
         with open(path, "rt") as f:
             return f.read()  # TODO Convert to exec
+
+    def mkdir(self, path):
+        os.makedirs(path, exist_ok=True)
 
     def rmdir(self, path):
         if os.path.exists(path):
@@ -66,11 +81,23 @@ class Command:
     def get_user_home(self, *paths):
         return os.path.join(os.environ["HOME"], *paths)
 
+    def mktempdir(self):
+        return exactly_one(stdout_lines(self.execst(["mktemp", "-d"])))
+
     def tar_create(self, path, tar_path, compression=None):
         comp_opts = {"gz": "z"}
         comp = comp_opts[compression] if compression in comp_opts else ""
-        args = ["tar", "cf" + comp, tar_path, "."]
-        self.execst(args, cwd=path)
+        # tar on 9p filesystem reports "file shrank by ... bytes" and exits with errorcode 1
+        tar_quirks = True
+        if tar_quirks:
+            tmpdir = self.mktempdir()
+            try:
+                shutil.copytree(path, tmpdir, dirs_exist_ok=True)
+                self.execst(["tar", "cf" + comp, tar_path, "."], cwd=tmpdir)
+            finally:
+                self.rmdir(tmpdir)
+        else:
+            self.execst(["tar", "cf" + comp, tar_path, "."], cwd=path)
 
 
 class Ganache(Command):
@@ -89,7 +116,8 @@ class Ganache(Command):
 class Sifnoded(Command):
     def sifnoded_init(self, moniker, chain_id):
         args = ["sifnoded", "init", moniker, "--chain-id={}".format(chain_id)]
-        self.execst(args)
+        res = self.execst(args)
+        return json.loads(res[2])  # output is on stderr
 
     def sifnoded_generate_deterministic_account(self, name, mnemonic):
         args = ["sifnoded", "keys", "add", name, "--keyring-backend={}".format("test"), "--recover"]
@@ -108,7 +136,7 @@ class Sifnoded(Command):
     def sifnoded_add_genesis_account(self, address, tokens):
         tokens_str = ",".join([sif_format_amount(amount, denom) for amount, denom in tokens])
         args = ["sifnoded", "add-genesis-account", address, tokens_str]
-        self.execst(args)
+        self.execst(args, pipe=False)
 
     def sifnoded_add_genesis_validators(self, address):
         args = ["sifnoded", "add-genesis-validators", address]
@@ -120,7 +148,8 @@ class Sifnoded(Command):
             "--keyring-backend={}".format(keyring_backend), "--from", from_name, "--symbol", symbol, "--fees",
             sif_format_amount(*fees), "--nativeAmount", str(native_amount), "--externalAmount", str(external_amount),
             "--yes"]
-        self.execst(args)
+        res = self.execst(args)
+        return yaml_load(res[1])
 
     def sifnoded_launch(self, minimum_gas_prices=None):
         args = ["sifnoded", "start"] + \
@@ -137,8 +166,8 @@ class Integrator(Ganache, Sifnoded, Command):
         validator_moniker, validator_mnemonic, chain_id, gas, gas_prices):
         env = {"ETHEREUM_PRIVATE_KEY": ethereum_private_key}
         args = ["ebrelayer", "init", tendermind_node, web3_provider, bridge_registry_contract_address,
-            validator_moniker, validator_mnemonic, "--chain-id={}".format(chain_id), "--gas", str(gas), "--gas-prices",
-            sif_format_amount(*gas_prices)]
+            validator_moniker, " ".join(validator_mnemonic), "--chain-id={}".format(chain_id), "--gas", str(gas),
+            "--gas-prices", sif_format_amount(*gas_prices)]
         return popen(args, env=env)
 
     def sif_wait_up(self, host, port):
@@ -150,7 +179,7 @@ class Integrator(Ganache, Sifnoded, Command):
                 time.sleep(1)
 
     def yarn(self, args, cwd=None, env=None):
-        return self.execst(["yarn"] + args, cwd=cwd, env=env)
+        return self.execst(["yarn"] + args, cwd=cwd, env=env, pipe=False)
 
 
 class UIPlaybook:
@@ -192,7 +221,7 @@ class UIPlaybook:
         # killall sifnoded
         # rm $(which sifnoded)
         self.cmd.rmdir(self.sifnoded_path)
-        self.cmd(["make", "install"], project_dir())
+        self.cmd.execst(["make", "install"], cwd=project_dir(), pipe=False)
 
         # ui/scripts/stack-launch.sh -> ui/scripts/_eth.sh -> ui/chains/etc/launch.sh
         self.cmd.rmdir(self.ganache_db_path)
@@ -311,10 +340,11 @@ class UIPlaybook:
 
         # Whitelist test tokens
         for addr in [atk_address, btk_address, usdc_address, link_address]:
-            self.cmd.yarn(["peggy:whitelist", addr, "true"], cwd=smart_contracts_dir)
+            self.cmd.yarn(["peggy:whiteList", addr, "true"], cwd=smart_contracts_dir)
 
         # ui/scripts/stack-launch.sh -> ui/scripts/_peggy.sh -> ui/chains/peggy/launch.sh
         # rm -rf ui/chains/peggy/relayerdb
+        # ebrelayer is in $GOBIN, gets installed by "make install"
         ethereum_private_key = smart_contracts_env_ui_example_vars["ETHEREUM_PRIVATE_KEY"]
         ebrelayer_proc = self.cmd.ebrelayer_init(ethereum_private_key, "tcp://localhost:26657", "ws://localhost:7545/",
             bridge_registry_address, self.shadowfiend_name, self.shadowfiend_mnemonic, f"--chain-id={self.chain_id}",
@@ -334,7 +364,7 @@ class UIPlaybook:
         time.sleep(10)
 
         snapshots_dir = project_dir("ui/chains/snapshots")
-        self.cmd.mkdir(snapshots_dir)
+        self.cmd.mkdir(snapshots_dir)  # TODO self.cmd.rmdir(snapshots_dir)
         # ui/chains/peggy/snapshot.sh:
         # mkdir -p ui/chains/peggy/relayerdb
         self.cmd.tar_create(project_dir("ui/chains/peggy/relayerdb"), os.path.join(snapshots_dir, "peggy.tar.gz"), compression="gz")
@@ -363,6 +393,7 @@ class UIPlaybook:
         running_in_ci = bool(os.environ.get("CI"))
 
         if running_in_ci:
+            res = self.cmd.execst(["git", "status", "--porcelain", "--untracked-files=no"], cwd=project_dir())
             # # reverse grep for go.mod because on CI this can be altered by installing go dependencies
             # if [[ -z "$CI" && ! -z "$(git status --porcelain --untracked-files=no)" ]]; then
             #   echo "Git workspace must be clean to save git commit hash"
@@ -375,7 +406,7 @@ class UIPlaybook:
         log.info(f"New image name: {image_name}")
 
         self.cmd.execst(["docker", "build", "-f", project_dir("ui/scripts/stack.Dockerfile"), "-t", image_name, "."],
-            cwd=project_dir(), env={"DOCKER_BUILDKIT", "1"})
+            cwd=project_dir(), env={"DOCKER_BUILDKIT": "1"}, pipe=False)
 
         if running_in_ci:
             log.info(f"Tagging image as {stable_tag}...")
@@ -385,6 +416,7 @@ class UIPlaybook:
 
 
 def main():
+    logging.basicConfig(stream=sys.stdout, level=logging.DEBUG, format="%(message)s")
     cmd = Integrator()
     ui_playbook = UIPlaybook(cmd)
     ui_playbook.stack_save_snapshot()
