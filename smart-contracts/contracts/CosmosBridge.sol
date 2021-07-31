@@ -5,7 +5,6 @@ import "./Valset.sol";
 import "./Oracle.sol";
 import "./BridgeBank/BridgeBank.sol";
 import "./CosmosBridgeStorage.sol";
-import "hardhat/console.sol";
 
 
 contract CosmosBridge is CosmosBridgeStorage, Oracle {
