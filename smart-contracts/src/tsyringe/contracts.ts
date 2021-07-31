@@ -12,7 +12,6 @@ import {
     BridgeRegistry__factory,
     BridgeToken,
     BridgeToken__factory,
-    BridgeTokenG2__factory,
     CosmosBridge__factory
 } from "../../build";
 
