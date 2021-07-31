@@ -76,7 +76,13 @@ func RunReplayEthereumCmd(cmd *cobra.Command, args []string) error {
 }
 
 // RunReplayCosmosCmd executes initRelayerCmd
-func RunReplayCosmosCmd(_ *cobra.Command, args []string) error {
+func RunReplayCosmosCmd(cmd *cobra.Command, args []string) error {
+	cliContext, err := client.GetClientTxContext(cmd)
+
+	if err != nil {
+		return err
+	}
+
 	// Validate and parse arguments
 	networkDescriptor, err := strconv.Atoi(args[0])
 	if err != nil {
@@ -104,22 +110,24 @@ func RunReplayCosmosCmd(_ *cobra.Command, args []string) error {
 	}
 	contractAddress := common.HexToAddress(args[3])
 
-	fromBlock, err := strconv.ParseInt(args[4], 10, 64)
+	validatorMoniker := args[4]
+
+	fromBlock, err := strconv.ParseInt(args[5], 10, 64)
 	if err != nil {
 		return errors.Errorf("invalid [from-block]: %s", args[4])
 	}
 
-	toBlock, err := strconv.ParseInt(args[5], 10, 64)
+	toBlock, err := strconv.ParseInt(args[6], 10, 64)
 	if err != nil {
 		return errors.Errorf("invalid [to-block]: %s", args[5])
 	}
 
-	ethFromBlock, err := strconv.ParseInt(args[6], 10, 64)
+	ethFromBlock, err := strconv.ParseInt(args[7], 10, 64)
 	if err != nil {
 		return errors.Errorf("invalid [eth-from-block]: %s", args[6])
 	}
 
-	ethToBlock, err := strconv.ParseInt(args[7], 10, 64)
+	ethToBlock, err := strconv.ParseInt(args[8], 10, 64)
 	if err != nil {
 		return errors.Errorf("invalid [eth-to-block]: %s", args[7])
 	}
@@ -129,6 +137,8 @@ func RunReplayCosmosCmd(_ *cobra.Command, args []string) error {
 		return errors.Errorf("network id: %d is invalid", networkDescriptor)
 	}
 
+	txFactory := tx.NewFactoryCLI(cliContext, cmd.Flags())
+
 	logger, err := zap.NewProduction()
 	if err != nil {
 		log.Fatalln("failed to init zap logging")
@@ -137,9 +147,11 @@ func RunReplayCosmosCmd(_ *cobra.Command, args []string) error {
 	sugaredLogger := logger.Sugar()
 
 	// Initialize new Cosmos event listener
-	cosmosSub := relayer.NewCosmosSub(oracletypes.NetworkDescriptor(networkDescriptor), privateKey, tendermintNode, web3Provider, contractAddress, nil, true, sugaredLogger)
+	cosmosSub := relayer.NewCosmosSub(oracletypes.NetworkDescriptor(networkDescriptor),
+		privateKey, tendermintNode, web3Provider, contractAddress, nil, cliContext,
+		validatorMoniker, true, sugaredLogger)
 
-	cosmosSub.Replay(fromBlock, toBlock, ethFromBlock, ethToBlock)
+	cosmosSub.Replay(txFactory, fromBlock, toBlock, ethFromBlock, ethToBlock)
 
 	return nil
 }

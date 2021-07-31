@@ -83,21 +83,10 @@ func CreateTestProphecyClaimEvent(t *testing.T) types.ProphecyClaimEvent {
 
 // CreateTestCosmosMsg creates a sample Cosmos Msg for testing purposes
 func CreateTestCosmosMsg(t *testing.T, claimType types.Event) types.CosmosMsg {
-	testCosmosSender := []byte(TestCosmosAddress1)
-	testEthereumReceiver := common.HexToAddress(TestEthereumAddress1)
-	testAmount := testSDKAmount
-
-	var symbol string
-	if claimType == types.MsgBurn {
-		res := strings.SplitAfter(strings.ToLower(TestSymbol), defaultSifchainPrefix)
-		symbol = strings.Join(res[1:], "")
-	} else {
-		symbol = TestSymbol
-	}
+	prophecyID := []byte{}
 
 	// Create new Cosmos Msg
-	cosmosMsg := types.NewCosmosMsg(oracletypes.NetworkDescriptor(TestNetworkDescriptor), claimType, testCosmosSender, big.NewInt(TestCosmosAddressSequence),
-		testEthereumReceiver, symbol, testAmount)
+	cosmosMsg := types.NewCosmosMsg(oracletypes.NetworkDescriptor(TestNetworkDescriptor), prophecyID)
 
 	return cosmosMsg
 }

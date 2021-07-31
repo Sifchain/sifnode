@@ -114,39 +114,21 @@ func (p ProphecyClaimEvent) String() string {
 
 // CosmosMsg contains data from MsgBurn and MsgLock events
 type CosmosMsg struct {
-	NetworkDescriptor    oracle.NetworkDescriptor
-	CosmosSender         []byte
-	CosmosSenderSequence *big.Int
-	Symbol               string
-	Amount               sdk.Int
-	EthereumReceiver     common.Address
-	ClaimType            Event
+	NetworkDescriptor oracle.NetworkDescriptor
+	ProphecyID        []byte
 }
 
 // NewCosmosMsg creates a new CosmosMsg
-func NewCosmosMsg(networkDescriptor oracle.NetworkDescriptor, claimType Event, cosmosSender []byte, cosmosSenderSequence *big.Int, ethereumReceiver common.Address, symbol string,
-	amount sdk.Int) CosmosMsg {
+func NewCosmosMsg(networkDescriptor oracle.NetworkDescriptor, prophecyID []byte) CosmosMsg {
 	return CosmosMsg{
-		NetworkDescriptor:    networkDescriptor,
-		ClaimType:            claimType,
-		CosmosSender:         cosmosSender,
-		CosmosSenderSequence: cosmosSenderSequence,
-		EthereumReceiver:     ethereumReceiver,
-		Symbol:               symbol,
-		Amount:               amount,
+		NetworkDescriptor: networkDescriptor,
+		ProphecyID:        prophecyID,
 	}
 }
 
 // String implements fmt.Stringer
 func (c CosmosMsg) String() string {
-	if c.ClaimType == MsgLock {
-		return fmt.Sprintf("\nNetwork id: %v\nClaim Type: %v\nCosmos Sender: %v\nCosmos Sender Sequence: %v\nEthereum Recipient: %v"+
-			"\nSymbol: %v\nAmount: %v\n", c.NetworkDescriptor.String(),
-			c.ClaimType.String(), string(c.CosmosSender), c.CosmosSenderSequence, c.EthereumReceiver.Hex(), c.Symbol, c.Amount)
-	}
-	return fmt.Sprintf("\nClaim Type: %v\nCosmos Sender: %v\nCosmos Sender Sequence: %v\nEthereum Recipient: %v"+
-		"\nSymbol: %v\nAmount: %v\n",
-		c.ClaimType.String(), string(c.CosmosSender), c.CosmosSenderSequence, c.EthereumReceiver.Hex(), c.Symbol, c.Amount)
+	return fmt.Sprintf("\nNetwork id: %v\nProphecy ID: %v\n", c.NetworkDescriptor.String(), c.ProphecyID)
 }
 
 // CosmosMsgAttributeKey enum containing supported attribute keys
@@ -208,8 +190,7 @@ type EthereumBridgeClaim struct {
 
 // ProphecyClaimUnique for data part of ProphecyClaim transaction in Ethereum
 type ProphecyClaimUnique struct {
-	CosmosSenderSequence *big.Int
-	CosmosSender         []byte
+	ProphecyID []byte
 }
 
 // ProphecyInfo store all data needed for smart contract call

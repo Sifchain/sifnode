@@ -233,7 +233,7 @@ func RunInitRelayerCmd(cmd *cobra.Command, args []string) error {
 	)
 
 	// Initialize new Cosmos event listener
-	cosmosSub := relayer.NewCosmosSub(oracletypes.NetworkDescriptor(networkDescriptor), privateKey, tendermintNode, web3Provider, contractAddress, db, signatureAggregator, sugaredLogger)
+	cosmosSub := relayer.NewCosmosSub(oracletypes.NetworkDescriptor(networkDescriptor), privateKey, tendermintNode, web3Provider, contractAddress, db, cliContext, validatorMoniker, signatureAggregator, sugaredLogger)
 
 	waitForAll := sync.WaitGroup{}
 	waitForAll.Add(2)
@@ -278,10 +278,10 @@ func replayEthereumCmd() *cobra.Command {
 func replayCosmosCmd() *cobra.Command {
 	//nolint:lll
 	replayCosmosCmd := &cobra.Command{
-		Use:     "replayCosmos [tendermintNode] [web3Provider] [bridgeRegistryContractAddress] [fromBlock] [toBlock] [ethFromBlock] [ethToBlock]",
+		Use:     "replayCosmos [tendermintNode] [web3Provider] [bridgeRegistryContractAddress] [validatorMoniker] [fromBlock] [toBlock] [ethFromBlock] [ethToBlock]",
 		Short:   "replay missed cosmos events",
-		Args:    cobra.ExactArgs(7),
-		Example: "replayCosmos tcp://localhost:26657 ws://localhost:7545/ 0x30753E4A8aad7F8597332E813735Def5dD395028 100 200 100 200",
+		Args:    cobra.ExactArgs(8),
+		Example: "replayCosmos tcp://localhost:26657 ws://localhost:7545/ 0x30753E4A8aad7F8597332E813735Def5dD395028 validator 100 200 100 200",
 		RunE:    RunReplayCosmosCmd,
 	}
 

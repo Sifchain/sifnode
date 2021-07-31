@@ -2,12 +2,12 @@ package relayer
 
 import (
 	"log"
-	"math/big"
 	"testing"
 
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/txs"
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/types"
 	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
+	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/stretchr/testify/require"
@@ -21,9 +21,12 @@ const (
 	contractAddress   = "0x00"
 	networkDescriptor = uint32(1)
 	privateKeyStr     = "ae6ae8e5ccbfb04590405997ee2d52d2b330726137b875053c36d94e974d162f"
+	validatorMoniker  = "validatorMoniker"
 )
 
 func TestNewCosmosSub(t *testing.T) {
+	cliContext, _ := client.GetClientTxContext(nil)
+
 	db, err := leveldb.OpenFile("relayerdb", nil)
 	require.Equal(t, err, nil)
 	privateKey, _ := crypto.HexToECDSA(privateKeyStr)
@@ -35,7 +38,7 @@ func TestNewCosmosSub(t *testing.T) {
 	sugaredLogger := logger.Sugar()
 	registryContractAddress := common.HexToAddress(contractAddress)
 	sub := NewCosmosSub(oracletypes.NetworkDescriptor(networkDescriptor), privateKey, tmProvider, ethProvider, registryContractAddress,
-		db, false, sugaredLogger)
+		db, cliContext, validatorMoniker, false, sugaredLogger)
 	require.NotEqual(t, sub, nil)
 }
 
@@ -43,8 +46,7 @@ func TestMessageProcessed(t *testing.T) {
 	message := txs.CreateTestCosmosMsg(t, types.MsgBurn)
 	var claims []types.ProphecyClaimUnique
 	claims = append(claims, types.ProphecyClaimUnique{
-		CosmosSender:         []byte(txs.TestCosmosAddress1),
-		CosmosSenderSequence: big.NewInt(txs.TestCosmosAddressSequence),
+		ProphecyID: []byte{},
 	})
 
 	processed := MessageProcessed(message, claims)
@@ -55,8 +57,7 @@ func TestMessageNotProcessed(t *testing.T) {
 	message := txs.CreateTestCosmosMsg(t, types.MsgBurn)
 	var claims []types.ProphecyClaimUnique
 	claims = append(claims, types.ProphecyClaimUnique{
-		CosmosSender:         []byte(txs.TestCosmosAddress1),
-		CosmosSenderSequence: big.NewInt(txs.TestCosmosAddressSequence + 1),
+		ProphecyID: []byte{},
 	})
 
 	processed := MessageProcessed(message, claims)

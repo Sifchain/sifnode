@@ -3,12 +3,11 @@ package txs
 // DONTCOVER
 
 import (
-	"github.com/Sifchain/sifnode/x/ethbridge/types"
+	ethbridge "github.com/Sifchain/sifnode/x/ethbridge/types"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/tx"
 	"go.uber.org/zap"
 
-	// tx "github.com/cosmos/cosmos-sdk/client/tx"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
@@ -18,7 +17,7 @@ var (
 
 // RelayToCosmos applies validator's signature to an EthBridgeClaim message containing
 // information about an event on the Ethereum blockchain before relaying to the Bridge
-func RelayToCosmos(factory tx.Factory, claims []*types.EthBridgeClaim, cliCtx client.Context, sugaredLogger *zap.SugaredLogger) error {
+func RelayToCosmos(factory tx.Factory, claims []*ethbridge.EthBridgeClaim, cliCtx client.Context, sugaredLogger *zap.SugaredLogger) error {
 	var messages []sdk.Msg
 
 	sugaredLogger.Infow(
@@ -28,7 +27,7 @@ func RelayToCosmos(factory tx.Factory, claims []*types.EthBridgeClaim, cliCtx cl
 
 	for _, claim := range claims {
 		// Packages the claim as a Tendermint message
-		msg := types.NewMsgCreateEthBridgeClaim(claim)
+		msg := ethbridge.NewMsgCreateEthBridgeClaim(claim)
 
 		err := msg.ValidateBasic()
 		if err != nil {
@@ -57,7 +56,7 @@ func RelayToCosmos(factory tx.Factory, claims []*types.EthBridgeClaim, cliCtx cl
 
 	// Broadcast to a Tendermint node
 	// open question as to how we handle this situation.
-	//    do we retry, 
+	//    do we retry,
 	//        if so, how many times do we try?
 	if err != nil {
 		sugaredLogger.Errorw(
@@ -70,4 +69,37 @@ func RelayToCosmos(factory tx.Factory, claims []*types.EthBridgeClaim, cliCtx cl
 	sugaredLogger.Infow("Broadcasted tx without error")
 
 	return nil
+}
+
+// SignProphecyToCosmos broadcast the sign prophecy message to cosmos
+func SignProphecyToCosmos(factory tx.Factory, signProphecy ethbridge.MsgSignProphecy, cliCtx client.Context, sugaredLogger *zap.SugaredLogger) {
+	var messages []sdk.Msg
+
+	messages = append(messages, &signProphecy)
+
+	sugaredLogger.Infow("RelayToCosmos building, signing, and broadcasting", "messages", messages)
+	// TODO this WithGas isn't correct
+	// TODO we need to investigate retries
+	// TODO we need to investigate what happens when the transaction has already been completed
+	err := tx.BroadcastTx(
+		cliCtx,
+		factory.
+			WithGas(1000000000000000000).
+			WithFees("500000000000000000rowan"),
+		messages...,
+	)
+
+	// Broadcast to a Tendermint node
+	// open question as to how we handle this situation.
+	//    do we retry,
+	//        if so, how many times do we try?
+	if err != nil {
+		sugaredLogger.Errorw(
+			"failed to broadcast tx to sifchain.",
+			errorMessageKey, err.Error(),
+		)
+	}
+
+	sugaredLogger.Infow("Broadcasted tx without error")
+
 }

@@ -6,23 +6,22 @@ import (
 	"bytes"
 	"context"
 	"crypto/ecdsa"
-	"encoding/hex"
 	"errors"
 	"fmt"
 	"log"
 	"math/big"
 	"os"
 	"os/signal"
-	"strconv"
 	"sync"
 	"syscall"
 	"time"
 
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/contract"
-	cosmosbridge "github.com/Sifchain/sifnode/cmd/ebrelayer/contract/generated/bindings/cosmosbridge"
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/txs"
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/types"
+	ebrelayertypes "github.com/Sifchain/sifnode/x/ethbridge/types"
 	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
+	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/tx"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
@@ -50,12 +49,14 @@ type CosmosSub struct {
 	SugaredLogger           *zap.SugaredLogger
 	NetworkDescriptor       oracletypes.NetworkDescriptor
 	RegistryContractAddress common.Address
+	CliContext              client.Context
+	ValidatorName           string
 	SignatureAggregator     bool
 }
 
 // NewCosmosSub initializes a new CosmosSub
 func NewCosmosSub(networkDescriptor oracletypes.NetworkDescriptor, privateKey *ecdsa.PrivateKey, tmProvider, ethProvider string, registryContractAddress common.Address,
-	db *leveldb.DB, signatureAggregator bool, sugaredLogger *zap.SugaredLogger) CosmosSub {
+	db *leveldb.DB, cliContext client.Context, validatorName string, signatureAggregator bool, sugaredLogger *zap.SugaredLogger) CosmosSub {
 
 	return CosmosSub{
 		NetworkDescriptor:       networkDescriptor,
@@ -64,7 +65,9 @@ func NewCosmosSub(networkDescriptor oracletypes.NetworkDescriptor, privateKey *e
 		EthProvider:             ethProvider,
 		RegistryContractAddress: registryContractAddress,
 		DB:                      db,
+		CliContext:              cliContext,
 		SignatureAggregator:     signatureAggregator,
+		ValidatorName:           validatorName,
 		SugaredLogger:           sugaredLogger,
 	}
 }
@@ -177,7 +180,7 @@ func (sub CosmosSub) Start(txFactory tx.Factory, completionEvent *sync.WaitGroup
 									continue
 								}
 								if cosmosMsg.NetworkDescriptor == sub.NetworkDescriptor {
-									sub.handleBurnLockMsg(cosmosMsg)
+									sub.handleBurnLockMsg(txFactory, cosmosMsg)
 								}
 							}
 
@@ -273,32 +276,23 @@ func GetAllProphecyClaim(client *ethclient.Client, ethereumAddress common.Addres
 
 // MyDecode decode data in ProphecyClaim transaction
 func MyDecode(data []byte) (types.ProphecyClaimUnique, error) {
+	// TODO the transaction in ethereum chagned, need new encoder
+
 	if len(data) < 32*7+42 {
 		return types.ProphecyClaimUnique{}, errors.New("tx data length not enough")
 	}
 
-	src := data[64:96]
-	dst := make([]byte, hex.EncodedLen(len(src)))
-	hex.Encode(dst, src)
-
-	sequence, err := strconv.ParseUint(string(dst), 16, 32)
-	if err != nil {
-		return types.ProphecyClaimUnique{}, err
-	}
-
-	// the length of sifnode acc account is 42
-
+	// TODO data must be encoded from tx
 	return types.ProphecyClaimUnique{
-		CosmosSenderSequence: big.NewInt(int64(sequence)),
-		CosmosSender:         data[32*7 : 32*7+42],
+		ProphecyID: []byte{},
 	}, nil
 }
 
 // MessageProcessed check if cosmogs message already processed
 func MessageProcessed(message types.CosmosMsg, prophecyClaims []types.ProphecyClaimUnique) bool {
 	for _, prophecyClaim := range prophecyClaims {
-		if bytes.Compare(message.CosmosSender, prophecyClaim.CosmosSender) == 0 &&
-			message.CosmosSenderSequence.Cmp(prophecyClaim.CosmosSenderSequence) == 0 {
+		if bytes.Compare(message.ProphecyID, prophecyClaim.ProphecyID) == 0 {
+
 			return true
 		}
 	}
@@ -306,7 +300,7 @@ func MessageProcessed(message types.CosmosMsg, prophecyClaims []types.ProphecyCl
 }
 
 // Replay the missed events
-func (sub CosmosSub) Replay(fromBlock int64, toBlock int64, ethFromBlock int64, ethToBlock int64) {
+func (sub CosmosSub) Replay(txFactory tx.Factory, fromBlock int64, toBlock int64, ethFromBlock int64, ethToBlock int64) {
 	// Start Ethereum client
 	ethClient, err := ethclient.Dial(sub.EthProvider)
 	if err != nil {
@@ -376,7 +370,7 @@ func (sub CosmosSub) Replay(fromBlock int64, toBlock int64, ethFromBlock int64, 
 					log.Printf("found out a lock burn message%s\n", cosmosMsg.String())
 					if cosmosMsg.NetworkDescriptor == sub.NetworkDescriptor {
 						if !MessageProcessed(cosmosMsg, ProphecyClaims) {
-							sub.handleBurnLockMsg(cosmosMsg)
+							sub.handleBurnLockMsg(txFactory, cosmosMsg)
 						} else {
 							log.Println("lock burn message already processed by me")
 						}
@@ -426,6 +420,7 @@ func tryInitRelayConfig(sub CosmosSub) (*ethclient.Client, *bind.TransactOpts, c
 
 // Parses event data from the msg, event, builds a new ProphecyClaim, and relays it to Ethereum
 func (sub CosmosSub) handleBurnLockMsg(
+	txFactory tx.Factory,
 	cosmosMsg types.CosmosMsg,
 ) {
 	sub.SugaredLogger.Infow("handle burn lock message.",
@@ -436,48 +431,17 @@ func (sub CosmosSub) handleBurnLockMsg(
 		"cosmosMsg", cosmosMsg,
 	)
 
-	client, auth, target, err := tryInitRelayConfig(sub)
+	valAddr, err := GetValAddressFromKeyring(txFactory.Keybase(), sub.ValidatorName)
 	if err != nil {
-		sub.SugaredLogger.Errorw("failed in init relay config.",
-			errorMessageKey, err.Error())
-		return
-	}
-
-	// Initialize CosmosBridge instance
-	cosmosBridgeInstance, err := cosmosbridge.NewCosmosBridge(target, client)
-	if err != nil {
-		sub.SugaredLogger.Errorw("failed to get cosmosBridge instance.",
-			errorMessageKey, err.Error())
-		return
-	}
-
-	maxRetries := 5
-	i := 0
-
-	for i < maxRetries {
-		err = txs.RelayProphecyClaimToEthereum(
-			cosmosMsg,
-			sub.SugaredLogger,
-			client,
-			auth,
-			cosmosBridgeInstance,
-		)
-
-		if err != nil {
-			sub.SugaredLogger.Errorw(
-				"failed to send new prophecyclaim to ethereum",
-				errorMessageKey, err.Error(),
-			)
-		} else {
-			break
-		}
-		i++
-	}
-
-	if i == maxRetries {
-		sub.SugaredLogger.Errorw(
-			"failed to broadcast transaction after 5 attempts",
-			errorMessageKey, err.Error(),
+		sub.SugaredLogger.Infow(
+			"get the prophecy claim.",
+			"cosmosMsg", err,
 		)
 	}
+
+	signProphecy := ebrelayertypes.NewMsgSignProphecy(valAddr.String(), cosmosMsg.NetworkDescriptor,
+		cosmosMsg.ProphecyID, "", "")
+
+	txs.SignProphecyToCosmos(txFactory, signProphecy, sub.CliContext, sub.SugaredLogger)
+
 }
