@@ -230,6 +230,18 @@ class Integrator(Ganache, Sifnoded, Command):
         self.execst(["make", "clean-smartcontracts"], cwd=self.smart_contracts_dir)
         self.yarn(["install"], cwd=self.smart_contracts_dir)
 
+    def _check_env_vs_file(self, env, env_path):
+        if (not self.exists(env_path)) or (env is None):
+            return
+        fenv = self.primitive_parse_env_file(env_path)
+        for k, v in env.items():
+            if k in fenv:
+                if env[k] == fenv[k]:
+                    log.warning(f"Variable '{k}' specified both as a parameter and in '{env_path}'")
+                else:
+                    log.warning(f"Variable '{k}' has different values, parameter: {env[k]}, in '{env_path}': "
+                        f"{fenv[k]}. According to observation, value from parameter will be used.")
+
     def deploy_smart_contracts_for_integration_tests(self, network_name, consensus_threshold=None, operator=None,
         owner=None, initial_validator_addresses=None, initial_validator_powers=None, pauser=None,
         mainnet_gas_price=None, env_file=None
@@ -250,19 +262,11 @@ class Integrator(Ganache, Sifnoded, Command):
         if mainnet_gas_price is not None:
             env["MAINNET_GAS_PRICE"] = mainnet_gas_price
 
-        env_path = project_dir("smart-contracts/.env")
+        env_path = os.path.join(self.smart_contracts_dir, ".env")
         if env_file is not None:
             self.copy_file(env_file, env_path)
 
-        if self.exists(env_path):
-            fenv = self.primitive_parse_env_file(env_file)
-            for k, v in env.items():
-                if k in fenv:
-                    if env[k] == fenv[k]:
-                        log.warning(f"Variable '{k}' specified both as a parameter and in '{env_path}'")
-                    else:
-                        log.warning(f"Variable '{k}' has different values, parameter: {env[k]}, in '{env_path}': "
-                            f"{fenv[k]}. According to observation, value from parameter will be used.")
+        self._check_env_vs_file(env, env_path)
 
         # TODO ui scripts use just "yarn; yarn migrate" alias "npx truffle migrate --reset",
         self.execst(["npx", "truffle", "deploy", "--network", network_name, "--reset"], env=env,
@@ -281,6 +285,24 @@ class Integrator(Ganache, Sifnoded, Command):
         return [self.get_smart_contract_address(os.path.join(
             self.smart_contracts_dir, f"build/contracts/{x}.json"), network_id)
             for x in ["BridgeToken", "BridgeRegistry", "BridgeBank"]]
+
+    def truffle_exec(self, script_name, *script_args, env=None):
+        self._check_env_vs_file(env, os.path.join(self.smart_contracts_dir, ".env"))
+        script_path = os.path.join(self.smart_contracts_dir, f"scripts/{script_name}.js")
+        # Hint: call web3 directly, avoid npx + truffle + script
+        # Maybe: self.cmd.yarn(["integrationtest:setTokenLockBurnLimit", str(amount)])
+        self.execst(["npx", "truffle", "exec", script_path] + list(script_args), env=env, cwd=self.smart_contracts_dir)
+
+    def set_token_lock_burn_limit(self, update_address, amount, ethereum_private_key, infura_project_id, local_provider):
+        env = {
+            "ETHEREUM_PRIVATE_KEY": ethereum_private_key,
+            "UPDATE_ADDRESS": update_address,
+            "INFURA_PROJECT_ID": infura_project_id,
+            "LOCAL_PROVIDER": local_provider,
+        }
+        # Needs: ETHEREUM_PRIVATE_KEY, INFURA_PROJECT_ID, LOCAL_PROVIDER, UPDATE_ADDRESS
+        self.truffle_exec("setTokenLockBurnLimit", str(amount), env=env)
+
 
 class UIStackPlaybook:
     def __init__(self, cmd):
@@ -419,20 +441,23 @@ class UIStackPlaybook:
             "LOCAL_PROVIDER": "http://localhost:7545",
         }
 
-        def set_token_lock_burn_limit(update_address, amount):
-            env = smart_contracts_env_ui_example_vars.copy()
-            env["UPDATE_ADDRESS"] = update_address
-            # Needs: ETHEREUM_PRIVATE_KEY, INFURA_PROJECT_ID, LOCAL_PROVIDER, UPDATE_ADDRESS
-            # Hint: call web3 directly, avoid npx + truffle + script
-            # Maybe: self.cmd.yarn(["integrationtest:setTokenLockBurnLimit", str(amount)])
-            self.cmd.execst(["npx", "truffle", "exec", "scripts/setTokenLockBurnLimit.js", str(amount)], env=env, cwd=self.cmd.smart_contracts_dir)
+        burn_limits = [
+            [NULL_ADDRESS, 31 * 10 ** 18],
+            [bridge_token_address, 10 ** 25],
+            [atk_address, 10 ** 25],
+            [btk_address, 10 ** 25],
+            [usdc_address, 10 ** 25],
+            [link_address, 10 ** 25],
+        ]
+        for address, amount in burn_limits:
+            self.cmd.set_token_lock_burn_limit(
+                address,
+                amount,
+                smart_contracts_env_ui_example_vars["ETHEREUM_PRIVATE_KEY"],
+                smart_contracts_env_ui_example_vars["INFURA_PROJECT_ID"],
+                smart_contracts_env_ui_example_vars["LOCAL_PROVIDER"]
+            )
 
-        set_token_lock_burn_limit(NULL_ADDRESS, 31*10**18)
-        set_token_lock_burn_limit(bridge_token_address, 10**25)
-        set_token_lock_burn_limit(atk_address, 10**25)
-        set_token_lock_burn_limit(btk_address, 10**25)
-        set_token_lock_burn_limit(usdc_address, 10**25)
-        set_token_lock_burn_limit(link_address, 10**25)
         # signal migrate-complete
 
         # Whitelist test tokens
@@ -569,11 +594,29 @@ class IntegrationTestsPlaybook:
         assert ebrelayer_ethereum_addr == "0x5aeda56215b167893e80b4fe645ba6d5bab767de"
         assert ebrelayer_ethereum_private_key == "8d5366123cb560bb606379f90a0bfd4769eecc0557f1b362dcae9012b548b1e5"
 
+        env_file = project_dir("test/integration/.env.ciExample")
         self.cmd.deploy_smart_contracts_for_integration_tests(self.network_name, owner=self.owner, pauser=self.pauser,
-            initial_validator_addresses=[ebrelayer_ethereum_addr],
-            env_file=project_dir("test/integration/.env.ciExample"))
+            initial_validator_addresses=[ebrelayer_ethereum_addr], env_file=env_file)
 
         bridge_token_address, bridge_registry_address, bridge_bank = self.cmd.get_bridge_smart_contract_addresses(self.network_id)
+
+        burn_limits = [
+            [NULL_ADDRESS, 31*10**18],
+            [bridge_token_address, 10**25],
+        ]
+        env_file_vars = self.cmd.primitive_parse_env_file(env_file)
+        for address, amount in burn_limits:
+            self.cmd.set_token_lock_burn_limit(
+                address,
+                amount,
+                env_file_vars["ETHEREUM_PRIVATE_KEY"],
+                env_file_vars["INFURA_PROJECT_ID"],
+                env_file_vars["LOCAL_PROVIDER"]
+            )
+
+        # test/integration/setup_sifchain.sh:
+        # TODO
+
         return
 
 
@@ -581,10 +624,10 @@ def main():
     logging.basicConfig(stream=sys.stdout, level=logging.DEBUG, format="%(message)s")
     cmd = Integrator()
     ui_playbook = UIStackPlaybook(cmd)
-    ui_playbook.stack_save_snapshot()
-    ui_playbook.stack_push()
+    # ui_playbook.stack_save_snapshot()
+    # ui_playbook.stack_push()
     it_playbook = IntegrationTestsPlaybook(cmd)
-    # it_playbook.run()
+    it_playbook.run()
 
 if __name__ == "__main__":
     main()
