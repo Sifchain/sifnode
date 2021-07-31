@@ -12,7 +12,15 @@ log = logging.getLogger(__name__)
 
 
 def stdout_lines(res):
-    return res[0].splitlines()
+    return res[1].splitlines()
+
+def exactly_one(items):
+    if len(items) == 0:
+        raise ValueError("Zero items")
+    elif len(items) > 1:
+        raise ValueError("Multiple items")
+    else:
+        return items[0]
 
 def project_dir(*paths):
     return os.path.abspath(os.path.join(os.path.normpath(os.path.join(__file__, *([os.path.pardir]*3))), *paths))
@@ -146,22 +154,6 @@ class Integrator(Ganache, Sifnoded, Command):
 
 
 class UIPlaybook:
-    # From ui/chains/credentials.sh
-    SHADOWFIEND_NAME = "shadowfiend"
-    SHADOWFIEND_MNEMONIC = ["race", "draft", "rival", "universe", "maid", "cheese", "steel", "logic", "crowd", "fork",
-        "comic", "easy", "truth", "drift", "tomorrow", "eye", "buddy", "head", "time", "cash", "swing", "swift",
-        "midnight", "borrow"]
-    AKASHA_NAME = "akasha"
-    AKASHA_MNEMONIC = ["hand", "inmate", "canvas", "head", "lunar", "naive", "increase", "recycle", "dog", "ecology",
-        "inhale", "december", "wide", "bubble", "hockey", "dice", "worth", "gravity", "ketchup", "feed", "balance",
-        "parent", "secret", "orchard"]
-    JUNIPER_NAME = "juniper"
-    JUNIPER_MNEMONIC = ["clump", "genre", "baby", "drum", "canvas", "uncover", "firm", "liberty", "verb", "moment",
-        "access", "draft", "erupt", "fog", "alter", "gadget", "elder", "elephant", "divide", "biology", "choice",
-        "sentence", "oppose", "avoid"]
-    ETHEREUM_ROOT_MNEMONIC = ["candy", "maple", "cake", "sugar", "pudding", "cream", "honey", "rich", "smooth",
-        "crumble", "sweet", "treat"]
-
     def __init__(self, cmd):
         self.cmd = cmd
         self.chain_id = "sifchain-local"
@@ -169,9 +161,21 @@ class UIPlaybook:
         self.ganache_db_path = self.cmd.get_user_home(".ganachedb")
         self.sifnoded_path = self.cmd.get_user_home(".sifnoded")
 
-    def run(self):
-        self.stack_save_snapshot()
-        self.stack_push()
+        # From ui/chains/credentials.sh
+        self.shadowfiend_name = "shadowfiend"
+        self.shadowfiend_mnemonic = ["race", "draft", "rival", "universe", "maid", "cheese", "steel", "logic", "crowd",
+            "fork", "comic", "easy", "truth", "drift", "tomorrow", "eye", "buddy", "head", "time", "cash", "swing",
+            "swift", "midnight", "borrow"]
+        self.akasha_name = "akasha"
+        self.akasha_mnemonic = ["hand", "inmate", "canvas", "head", "lunar", "naive", "increase", "recycle", "dog",
+            "ecology", "inhale", "december", "wide", "bubble", "hockey", "dice", "worth", "gravity", "ketchup", "feed",
+            "balance", "parent", "secret", "orchard"]
+        self.juniper_name = "juniper"
+        self.juniper_mnemonic = ["clump", "genre", "baby", "drum", "canvas", "uncover", "firm", "liberty", "verb",
+            "moment", "access", "draft", "erupt", "fog", "alter", "gadget", "elder", "elephant", "divide", "biology",
+            "choice", "sentence", "oppose", "avoid"]
+        self.ethereum_root_mnemonic = ["candy", "maple", "cake", "sugar", "pudding", "cream", "honey", "rich", "smooth",
+            "crumble", "sweet", "treat"]
 
     def stack_save_snapshot(self):
         # ui-stack.yml
@@ -194,24 +198,24 @@ class UIPlaybook:
         self.cmd.rmdir(self.ganache_db_path)
         self.cmd.yarn([], cwd=project_dir("ui/chains/eth"))  # Installs ui/chains/eth/node_modules
         # Note that this runs ganache-cli from $PATH whereas scripts start it with yarn in ui/chains/eth
-        ganache_proc = self.cmd.start_ganache_cli(mnemonic=UIPlaybook.ETHEREUM_ROOT_MNEMONIC, db=self.ganache_db_path,
+        ganache_proc = self.cmd.start_ganache_cli(mnemonic=self.ethereum_root_mnemonic, db=self.ganache_db_path,
             port=7545, network_id=5777, gas_price=20000000000, gas_limit=6721975, host="0.0.0.0")
 
         # ui/scripts/stack-launch.sh -> ui/scripts/_sif.sh -> ui/chains/sif/launch.sh
         self.cmd.sifnoded_init("test", self.chain_id)
         self.cmd.copy_file(project_dir("ui/chains/sif/app.toml"), os.path.join(self.sifnoded_path, "config/app.toml"))
-        log.info(f"Generating deterministic account - {UIPlaybook.SHADOWFIEND_NAME}...")
-        shadowfiend_account = self.cmd.sifnoded_generate_deterministic_account(UIPlaybook.SHADOWFIEND_NAME, UIPlaybook.SHADOWFIEND_MNEMONIC)
-        log.info(f"Generating deterministic account - {UIPlaybook.AKASHA_NAME}...")
-        akasha_account = self.cmd.sifnoded_generate_deterministic_account(UIPlaybook.AKASHA_NAME, UIPlaybook.AKASHA_MNEMONIC)
-        log.info(f"Generating deterministic account - {UIPlaybook.JUNIPER_NAME}...")
-        juniper_account = self.cmd.sifnoded_generate_deterministic_account(UIPlaybook.JUNIPER_NAME, UIPlaybook.JUNIPER_MNEMONIC)
+        log.info(f"Generating deterministic account - {self.shadowfiend_name}...")
+        shadowfiend_account = self.cmd.sifnoded_generate_deterministic_account(self.shadowfiend_name, self.shadowfiend_mnemonic)
+        log.info(f"Generating deterministic account - {self.akasha_name}...")
+        akasha_account = self.cmd.sifnoded_generate_deterministic_account(self.akasha_name, self.akasha_mnemonic)
+        log.info(f"Generating deterministic account - {self.juniper_name}...")
+        juniper_account = self.cmd.sifnoded_generate_deterministic_account(self.juniper_name, self.juniper_mnemonic)
         shadowfiend_address = shadowfiend_account["address"]
         akasha_address = akasha_account["address"]
         juniper_address = juniper_account["address"]
-        assert shadowfiend_address == self.cmd.sifnoded_keys_show(UIPlaybook.SHADOWFIEND_NAME)[0]["address"]
-        assert akasha_address == self.cmd.sifnoded_keys_show(UIPlaybook.AKASHA_NAME)[0]["address"]
-        assert juniper_address == self.cmd.sifnoded_keys_show(UIPlaybook.JUNIPER_NAME)[0]["address"]
+        assert shadowfiend_address == self.cmd.sifnoded_keys_show(self.shadowfiend_name)[0]["address"]
+        assert akasha_address == self.cmd.sifnoded_keys_show(self.akasha_name)[0]["address"]
+        assert juniper_address == self.cmd.sifnoded_keys_show(self.juniper_name)[0]["address"]
 
         tokens_shadowfiend = [[10**29, "rowan"], [10**29, "catk"], [10**29, "cbtk"], [10**29, "ceth"], [10**29, "cusdc"], [10**29, "clink"], [10**26, "stake"]]
         tokens_akasha = [[10**29, "rowan"], [10**29, "catk"], [10**29, "cbtk"], [10**29, "ceth"], [10**29, "cusdc"], [10**29, "clink"], [10**26, "stake"]]
@@ -220,11 +224,11 @@ class UIPlaybook:
         self.cmd.sifnoded_add_genesis_account(akasha_address, tokens_akasha)
         self.cmd.sifnoded_add_genesis_account(juniper_address, tokens_juniper)
 
-        shadowfiend_address_bech_val = self.cmd.sifnoded_keys_show(UIPlaybook.SHADOWFIEND_NAME, bech="val")[0]["address"]
+        shadowfiend_address_bech_val = self.cmd.sifnoded_keys_show(self.shadowfiend_name, bech="val")[0]["address"]
         self.cmd.sifnoded_add_genesis_validators(shadowfiend_address_bech_val)
 
         amount = sif_format_amount(10**24, "stake")
-        self.cmd.execst(["sifnoded", "gentx", UIPlaybook.SHADOWFIEND_NAME, amount, f"--chain-id={self.chain_id}",
+        self.cmd.execst(["sifnoded", "gentx", self.shadowfiend_name, amount, f"--chain-id={self.chain_id}",
             f"--keyring-backend={self.keyring_backend}"])
 
         log.info("Collecting genesis txs...")
@@ -313,8 +317,8 @@ class UIPlaybook:
         # rm -rf ui/chains/peggy/relayerdb
         ethereum_private_key = smart_contracts_env_ui_example_vars["ETHEREUM_PRIVATE_KEY"]
         ebrelayer_proc = self.cmd.ebrelayer_init(ethereum_private_key, "tcp://localhost:26657", "ws://localhost:7545/",
-            bridge_registry_address, UIPlaybook.SHADOWFIEND_NAME, UIPlaybook.SHADOWFIEND_MNEMONIC,
-            "--chain-id={}".format(self.chain_id), 5*10**12, [0.5, "rowan"])
+            bridge_registry_address, self.shadowfiend_name, self.shadowfiend_mnemonic, f"--chain-id={self.chain_id}",
+            5*10**12, [0.5, "rowan"])
 
         # At this point we have 3 running processes - ganache_proc, sifnoded_proc and ebrelayer_proc
         # await sif-node-up and migrate-complete
@@ -346,13 +350,45 @@ class UIPlaybook:
     def stack_push(self):
         # ui/scripts/stack-push.sh
         # $PWD=ui
-        pass
+
+        # User must be logged in to Docker hub:
+        # ~/.docker/config.json must exist and .auths['ghcr.io'].auth != null
+        commit = exactly_one(stdout_lines(self.cmd.execst(["git", "rev-parse", "HEAD"], cwd=project_dir())))
+        branch = exactly_one(stdout_lines(self.cmd.execst(["git", "rev-parse", "--abbrev-ref", "HEAD"], cwd=project_dir())))
+
+        image_root = "ghcr.io/sifchain/sifnode/ui-stack"
+        image_name = "{}:{}".format(image_root, commit)
+        stable_tag = "{}:{}".format(image_root, branch.replace("/", "__"))
+
+        running_in_ci = bool(os.environ.get("CI"))
+
+        if running_in_ci:
+            # # reverse grep for go.mod because on CI this can be altered by installing go dependencies
+            # if [[ -z "$CI" && ! -z "$(git status --porcelain --untracked-files=no)" ]]; then
+            #   echo "Git workspace must be clean to save git commit hash"
+            #   exit 1
+            # fi
+            pass
+
+        log.info("Github Registry Login found.")
+        log.info("Building new container...")
+        log.info(f"New image name: {image_name}")
+
+        self.cmd.execst(["docker", "build", "-f", project_dir("ui/scripts/stack.Dockerfile"), "-t", image_name, "."],
+            cwd=project_dir(), env={"DOCKER_BUILDKIT", "1"})
+
+        if running_in_ci:
+            log.info(f"Tagging image as {stable_tag}...")
+            self.cmd.execst(["docker", "tag", image_name, stable_tag])
+            self.cmd.execst(["docker", "push", image_name])
+            self.cmd.execst(["docker", "push", stable_tag])
 
 
 def main():
     cmd = Integrator()
     ui_playbook = UIPlaybook(cmd)
-    ui_playbook.run()
+    ui_playbook.stack_save_snapshot()
+    ui_playbook.stack_push()
 
 if __name__ == "__main__":
     main()
