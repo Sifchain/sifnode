@@ -1,6 +1,7 @@
 import json
 import logging
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -64,6 +65,9 @@ class Command:
             raise Exception("Command '{}' exited with returncode {}: {}".format(" ".join(args), popen.returncode, repr(stderr_data)))
         return popen.returncode, stdout_data, stderr_data
 
+    def rm(self, path):
+        os.remove(path)
+
     def read_text_file(self, path):
         with open(path, "rt") as f:
             return f.read()  # TODO Convert to exec
@@ -78,11 +82,17 @@ class Command:
     def copy_file(self, src, dst):
         shutil.copy(src, dst)
 
+    def exists(self, path):
+        return os.path.exists(path)
+
     def get_user_home(self, *paths):
         return os.path.join(os.environ["HOME"], *paths)
 
     def mktempdir(self):
         return exactly_one(stdout_lines(self.execst(["mktemp", "-d"])))
+
+    def mktempfile(self):
+        return exactly_one(stdout_lines(self.execst(["mktemp"])))
 
     def tar_create(self, path, tar_path, compression=None):
         comp_opts = {"gz": "z"}
@@ -101,7 +111,8 @@ class Command:
 
 
 class Ganache(Command):
-    def start_ganache_cli(self, mnemonic=None, db=None, port=None, host=None, network_id=None, gas_price=None, gas_limit=None):
+    def start_ganache_cli(self, mnemonic=None, db=None, port=None, host=None, network_id=None, gas_price=None,
+        gas_limit=None, block_time=None, account_keys_path=None, popen_args=None):
         args = ["ganache-cli"] + \
             (["--mnemonic", " ".join(mnemonic)] if mnemonic else []) + \
             (["--db", db] if db else []) + \
@@ -109,8 +120,10 @@ class Ganache(Command):
             (["--host", host] if host else []) + \
             (["--networkId", str(network_id)] if network_id is not None else []) + \
             (["--gasPrice", str(gas_price)] if gas_price is not None else []) + \
-            (["--gasLimit", str(gas_limit)] if gas_limit is not None else [])
-        return popen(args)
+            (["--gasLimit", str(gas_limit)] if gas_limit is not None else []) + \
+            (["--blockTime", str(block_time)] if block_time is not None else []) + \
+            (["--account_keys_path", account_keys_path] if account_keys_path is not None else [])
+        return popen(args, **(popen_args if popen_args is not None else dict()))
 
 
 class Sifnoded(Command):
@@ -162,6 +175,9 @@ class Sifnoded(Command):
 
 
 class Integrator(Ganache, Sifnoded, Command):
+    def __init__(self):
+        self.smart_contracts_dir = project_dir("smart-contracts")
+
     def ebrelayer_init(self, ethereum_private_key, tendermind_node, web3_provider, bridge_registry_contract_address,
         validator_moniker, validator_mnemonic, chain_id, gas, gas_prices):
         env = {"ETHEREUM_PRIVATE_KEY": ethereum_private_key}
@@ -181,11 +197,97 @@ class Integrator(Ganache, Sifnoded, Command):
     def yarn(self, args, cwd=None, env=None):
         return self.execst(["yarn"] + args, cwd=cwd, env=env, pipe=False)
 
+    def primitive_parse_env_file(self, path):
+        def split(lines):
+            result = dict()
+            for line in lines:
+                m = patt.match(line)
+                result[m[1]] = m[2]
+            return result
 
-class UIPlaybook:
+        tmp1 = self.mktempfile()
+        tmp2 = self.mktempfile()
+        try:
+            self.execst(["bash", "-c", "set -o posix; IFS=' '; set > {}; source {}; set > {}".format(tmp1, path, tmp2)])
+            t1 = self.read_text_file(tmp1).splitlines()
+            t2 = self.read_text_file(tmp2).splitlines()
+        finally:
+            self.rm(tmp1)
+            self.rm(tmp2)
+        patt = re.compile("^(.*?)=(.*)$")
+        d1 = split(t1)
+        d2 = split(t2)
+        result = dict()
+        for k, v in d2.items():
+            if (k in d1) and (d1[k] == d2[k]):
+                continue
+            if k in ["_", "BASH_ARGC"]:
+                continue
+            result[k] = v
+        return result
+
+    def build_smart_contracts_for_integration_tests(self):
+        self.execst(["make", "clean-smartcontracts"], cwd=self.smart_contracts_dir)
+        self.yarn(["install"], cwd=self.smart_contracts_dir)
+
+    def deploy_smart_contracts_for_integration_tests(self, network_name, consensus_threshold=None, operator=None,
+        owner=None, initial_validator_addresses=None, initial_validator_powers=None, pauser=None,
+        mainnet_gas_price=None, env_file=None
+    ):
+        env = {}
+        if consensus_threshold is not None:  # required
+            env["CONSENSUS_THRESHOLD"] = str(consensus_threshold)
+        if operator is not None:  # required
+            env["OPERATOR"] = operator
+        if owner is not None:  # required
+            env["OWNER"] = owner
+        if initial_validator_addresses is not None:
+            env["INITIAL_VALIDATOR_ADDRESSES"] = ",".join(initial_validator_addresses)
+        if initial_validator_powers is not None:
+            env["INITIAL_VALIDATOR_POWERS"] = ",".join(initial_validator_powers)
+        if pauser is not None:
+            env["PAUSER"] = pauser
+        if mainnet_gas_price is not None:
+            env["MAINNET_GAS_PRICE"] = mainnet_gas_price
+
+        env_path = project_dir("smart-contracts/.env")
+        if env_file is not None:
+            self.copy_file(env_file, env_path)
+
+        if self.exists(env_path):
+            fenv = self.primitive_parse_env_file(env_file)
+            for k, v in env.items():
+                if k in fenv:
+                    if env[k] == fenv[k]:
+                        log.warning(f"Variable '{k}' specified both as a parameter and in '{env_path}'")
+                    else:
+                        log.warning(f"Variable '{k}' has different values, parameter: {env[k]}, in '{env_path}': "
+                            f"{fenv[k]}. According to observation, value from parameter will be used.")
+
+        # TODO ui scripts use just "yarn; yarn migrate" alias "npx truffle migrate --reset",
+        self.execst(["npx", "truffle", "deploy", "--network", network_name, "--reset"], env=env,
+            cwd=self.smart_contracts_dir, pipe=False)
+
+    def deploy_smart_contracts_for_ui_stack(self):
+        self.copy_file(os.path.join(self.smart_contracts_dir, ".env.ui.example"), os.path.join(self.smart_contracts_dir, ".env"))
+        # TODO Might not be neccessary
+        self.yarn([], cwd=self.smart_contracts_dir)
+        self.yarn(["migrate"], cwd=self.smart_contracts_dir)
+
+    def get_smart_contract_address(self, compiled_json_path, network_id):
+        return json.loads(self.read_text_file(compiled_json_path))["networks"][str(network_id)]["address"]
+
+    def get_bridge_smart_contract_addresses(self, network_id):
+        return [self.get_smart_contract_address(os.path.join(
+            self.smart_contracts_dir, f"build/contracts/{x}.json"), network_id)
+            for x in ["BridgeToken", "BridgeRegistry", "BridgeBank"]]
+
+class UIStackPlaybook:
     def __init__(self, cmd):
         self.cmd = cmd
         self.chain_id = "sifchain-local"
+        self.network_name = "develop"
+        self.network_id = 5777
         self.keyring_backend = "test"
         self.ganache_db_path = self.cmd.get_user_home(".ganachedb")
         self.sifnoded_path = self.cmd.get_user_home(".sifnoded")
@@ -228,7 +330,7 @@ class UIPlaybook:
         self.cmd.yarn([], cwd=project_dir("ui/chains/eth"))  # Installs ui/chains/eth/node_modules
         # Note that this runs ganache-cli from $PATH whereas scripts start it with yarn in ui/chains/eth
         ganache_proc = self.cmd.start_ganache_cli(mnemonic=self.ethereum_root_mnemonic, db=self.ganache_db_path,
-            port=7545, network_id=5777, gas_price=20000000000, gas_limit=6721975, host="0.0.0.0")
+            port=7545, network_id=self.network_id, gas_price=20000000000, gas_limit=6721975, host="0.0.0.0")
 
         # ui/scripts/stack-launch.sh -> ui/scripts/_sif.sh -> ui/chains/sif/launch.sh
         self.cmd.sifnoded_init("test", self.chain_id)
@@ -272,10 +374,7 @@ class UIPlaybook:
         self.cmd.sif_wait_up("localhost", 1317)
 
         # ui/scripts/_migrate.sh -> ui/chains/peggy/migrate.sh
-        smart_contracts_dir = project_dir("smart-contracts")
-        self.cmd.copy_file(os.path.join(smart_contracts_dir, ".env.ui.example"), os.path.join(smart_contracts_dir, ".env"))
-        self.cmd.yarn([], cwd=smart_contracts_dir)
-        self.cmd.yarn(["migrate"], cwd=smart_contracts_dir)
+        self.cmd.deploy_smart_contracts_for_ui_stack()
 
         # ui/scripts/_migrate.sh -> ui/chains/eth/migrate.sh
         # send through atk and btk tokens to eth chain
@@ -305,15 +404,13 @@ class UIPlaybook:
         self.cmd.sifnoded_tx_clp_create_pool(self.chain_id, self.keyring_backend, "akasha", "ctest", [10**5, "rowan"], 10**25, 10**13)
 
         # ui/scripts/_migrate.sh -> ui/chains/post_migrate.sh
-        def get_smart_contract_address(path):
-            return json.loads(self.cmd.read_text_file(project_dir(path)))["networks"]["5777"]["address"]
 
         atk_address, btk_address, usdc_address, link_address = [
-            get_smart_contract_address(project_dir(f"ui/chains/eth/build/contracts/{x}.json"))
+            self.cmd.get_smart_contract_address(project_dir(f"ui/chains/eth/build/contracts/{x}.json"), self.network_id)
             for x in ["AliceToken", "BobToken", "UsdCoin", "LinkCoin"]
         ]
-        bridge_token_address = get_smart_contract_address(project_dir("smart-contracts/build/contracts/BridgeToken.json"))
-        bridge_registry_address = get_smart_contract_address(project_dir("smart-contracts/build/contracts/BridgeRegistry.json"))
+
+        bridge_token_address, bridge_registry_address, bridge_bank = self.cmd.get_bridge_smart_contract_addresses(self.network_id)
 
         # From smart-contracts/.env.ui.example
         smart_contracts_env_ui_example_vars = {
@@ -328,7 +425,7 @@ class UIPlaybook:
             # Needs: ETHEREUM_PRIVATE_KEY, INFURA_PROJECT_ID, LOCAL_PROVIDER, UPDATE_ADDRESS
             # Hint: call web3 directly, avoid npx + truffle + script
             # Maybe: self.cmd.yarn(["integrationtest:setTokenLockBurnLimit", str(amount)])
-            self.cmd.execst(["npx", "truffle", "exec", "scripts/setTokenLockBurnLimit.js", str(amount)], env=env, cwd=smart_contracts_dir)
+            self.cmd.execst(["npx", "truffle", "exec", "scripts/setTokenLockBurnLimit.js", str(amount)], env=env, cwd=self.cmd.smart_contracts_dir)
 
         set_token_lock_burn_limit(NULL_ADDRESS, 31*10**18)
         set_token_lock_burn_limit(bridge_token_address, 10**25)
@@ -340,7 +437,7 @@ class UIPlaybook:
 
         # Whitelist test tokens
         for addr in [atk_address, btk_address, usdc_address, link_address]:
-            self.cmd.yarn(["peggy:whiteList", addr, "true"], cwd=smart_contracts_dir)
+            self.cmd.yarn(["peggy:whiteList", addr, "true"], cwd=self.cmd.smart_contracts_dir)
 
         # ui/scripts/stack-launch.sh -> ui/scripts/_peggy.sh -> ui/chains/peggy/launch.sh
         # rm -rf ui/chains/peggy/relayerdb
@@ -383,6 +480,8 @@ class UIPlaybook:
 
         # User must be logged in to Docker hub:
         # ~/.docker/config.json must exist and .auths['ghcr.io'].auth != null
+        log.info("Github Registry Login found.")
+
         commit = exactly_one(stdout_lines(self.cmd.execst(["git", "rev-parse", "HEAD"], cwd=project_dir())))
         branch = exactly_one(stdout_lines(self.cmd.execst(["git", "rev-parse", "--abbrev-ref", "HEAD"], cwd=project_dir())))
 
@@ -401,7 +500,6 @@ class UIPlaybook:
             # fi
             pass
 
-        log.info("Github Registry Login found.")
         log.info("Building new container...")
         log.info(f"New image name: {image_name}")
 
@@ -415,12 +513,78 @@ class UIPlaybook:
             self.cmd.execst(["docker", "push", stable_tag])
 
 
+class IntegrationTestsPlaybook:
+    def __init__(self, cmd):
+        self.cmd = cmd
+        self.ethereum_private_key = "c87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3"
+        self.owner = "0x627306090abaB3A6e1400e9345bC60c78a8BEf57"
+        # we may eventually switch things so PAUSER and OWNER aren't the same account, but for now they're the same
+        self.pauser = self.owner
+        # set_persistant_env_var BASEDIR $(fullpath $BASEDIR) $envexportfile
+        # set_persistant_env_var SIFCHAIN_BIN $BASEDIR/cmd $envexportfile
+        # set_persistant_env_var envexportfile $(fullpath $envexportfile) $envexportfile
+        # set_persistant_env_var TEST_INTEGRATION_DIR ${BASEDIR}/test/integration $envexportfile
+        # set_persistant_env_var TEST_INTEGRATION_PY_DIR ${BASEDIR}/test/integration/src/py $envexportfile
+        # set_persistant_env_var SMART_CONTRACTS_DIR ${BASEDIR}/smart-contracts $envexportfile
+        # set_persistant_env_var datadir ${TEST_INTEGRATION_DIR}/vagrant/data $envexportfile
+        # set_persistant_env_var CONTAINER_NAME integration_sifnode1_1 $envexportfile
+        # set_persistant_env_var NETWORKDIR $BASEDIR/deploy/networks $envexportfile
+        # set_persistant_env_var GANACHE_DB_DIR $(mktemp -d /tmp/ganachedb.XXXX) $envexportfile
+        # set_persistant_env_var ETHEREUM_WEBSOCKET_ADDRESS ws://localhost:7545/ $envexportfile
+        # set_persistant_env_var CHAINNET localnet $envexportfile
+        self.network_name = "develop"
+        self.network_id = 5777
+
+    def run(self):
+        integration_tests_dir = project_dir("test/integration")
+        data_dir = project_dir("test/integration/vagrant/data")
+
+        # make go binaries (a lot of nonsense!)
+        self.cmd.execst(["make"], cwd=integration_tests_dir, env={"BASEDIR": project_dir()})
+
+        self.cmd.build_smart_contracts_for_integration_tests()
+
+        # test/integration/ganache-start.sh:
+        # 1. pkill -9 -f ganache-cli || true
+        # 2. while nc -z localhost 7545; do sleep 1; done
+        # 3. nohup tmux new-session -d -s my_session "ganache-cli ${block_delay} -h 0.0.0.0 --mnemonic \
+        #     'candy maple cake sugar pudding cream honey rich smooth crumble sweet treat' \
+        #     --networkId '5777' --port '7545' --db ${GANACHE_DB_DIR} --account_keys_path $GANACHE_KEYS_JSON \
+        #     > $GANACHE_LOG 2>&1"
+        # 4. sleep 5
+        # 5. while ! nc -z localhost 4545; do sleep 5; done
+        # GANACHE_LOG=ui/test/integration/vagrant/data/logs/ganache.$(filenamedate).txt
+        mnemonic = ["candy", "maple", "cake", "sugar", "pudding", "cream", "honey", "rich", "smooth", "crumble", "sweet", "treat"]
+        block_time = None  # TODO
+        account_keys_path = os.path.join(data_dir, "ganachekeys.json")
+        ganache_db_path = self.cmd.mktempdir()
+        self.cmd.start_ganache_cli(block_time=block_time, host="0.0.0.0", mnemonic=mnemonic, network_id=self.network_id,
+            port=7545, db=ganache_db_path, account_keys_path=account_keys_path)
+
+        ganache_keys = json.loads(self.cmd.read_text_file(account_keys_path))
+        ebrelayer_ethereum_addr = list(ganache_keys["private_keys"].keys())[9]
+        ebrelayer_ethereum_private_key = ganache_keys["private_keys"][ebrelayer_ethereum_addr]
+        # TODO Check for possible non-determinism of dict().keys() ordering (c.f. test/integration/vagrantenv.sh)
+        # TODO ebrelayer_ethereum_private_key is NOT the same as in test/integration/.env.ciExample
+        assert ebrelayer_ethereum_addr == "0x5aeda56215b167893e80b4fe645ba6d5bab767de"
+        assert ebrelayer_ethereum_private_key == "8d5366123cb560bb606379f90a0bfd4769eecc0557f1b362dcae9012b548b1e5"
+
+        self.cmd.deploy_smart_contracts_for_integration_tests(self.network_name, owner=self.owner, pauser=self.pauser,
+            initial_validator_addresses=[ebrelayer_ethereum_addr],
+            env_file=project_dir("test/integration/.env.ciExample"))
+
+        bridge_token_address, bridge_registry_address, bridge_bank = self.cmd.get_bridge_smart_contract_addresses(self.network_id)
+        return
+
+
 def main():
     logging.basicConfig(stream=sys.stdout, level=logging.DEBUG, format="%(message)s")
     cmd = Integrator()
-    ui_playbook = UIPlaybook(cmd)
+    ui_playbook = UIStackPlaybook(cmd)
     ui_playbook.stack_save_snapshot()
     ui_playbook.stack_push()
+    it_playbook = IntegrationTestsPlaybook(cmd)
+    # it_playbook.run()
 
 if __name__ == "__main__":
     main()
