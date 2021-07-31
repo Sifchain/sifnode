@@ -161,23 +161,17 @@ class UIPlaybook:
         "sentence", "oppose", "avoid"]
     ETHEREUM_ROOT_MNEMONIC = ["candy", "maple", "cake", "sugar", "pudding", "cream", "honey", "rich", "smooth",
         "crumble", "sweet", "treat"]
-    CHAIN_ID = "sifchain-local"
 
     def __init__(self, cmd):
         self.cmd = cmd
-
-    def eth_start(self):
-        return
+        self.chain_id = "sifchain-local"
+        self.keyring_backend = "test"
+        self.ganache_db_path = self.cmd.get_user_home(".ganachedb")
+        self.sifnoded_path = self.cmd.get_user_home(".sifnoded")
 
     def run(self):
-        # self.cmd.yarn([], cwd=project_dir())  # TODO Where?
-        # ganache_cli_proc = self.eth_start()
-        # print(repr(ganache_cli_proc))
-        # self.ui_sif_launch()
-        # sifnoded_proc = self.ui_sif_start()
-        # print(repr(sifnoded_proc))
-        # self.cmd.sif_wait_up("localhost", 1317)
         self.stack_save_snapshot()
+        self.stack_push()
 
     def stack_save_snapshot(self):
         # ui-stack.yml
@@ -186,8 +180,6 @@ class UIPlaybook:
         # Compile smart contracts:
         # cd ui; yarn build
 
-        keyring_backend = "test"
-
         # yarn stack --save-snapshot -> ui/scripts/stack.sh -> ui/scripts/stack-save-snapshot.sh
         # rm ui/node_modules/.migrate-complete
 
@@ -195,32 +187,31 @@ class UIPlaybook:
         # ui/scripts/stack-launch.sh -> ui/scripts/_sif-build.sh -> ui/chains/sif/build.sh
         # killall sifnoded
         # rm $(which sifnoded)
-        self.cmd.rmdir(self.cmd.get_user_home(".sifnoded"))
+        self.cmd.rmdir(self.sifnoded_path)
         self.cmd(["make", "install"], project_dir())
 
         # ui/scripts/stack-launch.sh -> ui/scripts/_eth.sh -> ui/chains/etc/launch.sh
-        self.cmd.rmdir(self.cmd.get_user_home(".ganachedb"))
+        self.cmd.rmdir(self.ganache_db_path)
         self.cmd.yarn([], cwd=project_dir("ui/chains/eth"))  # Installs ui/chains/eth/node_modules
         # Note that this runs ganache-cli from $PATH whereas scripts start it with yarn in ui/chains/eth
-        ganache_proc = self.cmd.start_ganache_cli(mnemonic=UIPlaybook.ETHEREUM_ROOT_MNEMONIC,
-            db=self.cmd.get_user_home(".ganachedb"), port=7545, network_id=5777, gas_price=20000000000,
-            gas_limit=6721975, host="0.0.0.0")
+        ganache_proc = self.cmd.start_ganache_cli(mnemonic=UIPlaybook.ETHEREUM_ROOT_MNEMONIC, db=self.ganache_db_path,
+            port=7545, network_id=5777, gas_price=20000000000, gas_limit=6721975, host="0.0.0.0")
 
         # ui/scripts/stack-launch.sh -> ui/scripts/_sif.sh -> ui/chains/sif/launch.sh
-        self.cmd.sifnoded_init("test", UIPlaybook.CHAIN_ID)
-        self.cmd.copy_file(project_dir("ui", "chains", "sif", "app.toml"), self.cmd.get_user_home(".sifnoded", "config", "app.toml"))
+        self.cmd.sifnoded_init("test", self.chain_id)
+        self.cmd.copy_file(project_dir("ui/chains/sif/app.toml"), os.path.join(self.sifnoded_path, "config/app.toml"))
         log.info(f"Generating deterministic account - {UIPlaybook.SHADOWFIEND_NAME}...")
         shadowfiend_account = self.cmd.sifnoded_generate_deterministic_account(UIPlaybook.SHADOWFIEND_NAME, UIPlaybook.SHADOWFIEND_MNEMONIC)
         log.info(f"Generating deterministic account - {UIPlaybook.AKASHA_NAME}...")
         akasha_account = self.cmd.sifnoded_generate_deterministic_account(UIPlaybook.AKASHA_NAME, UIPlaybook.AKASHA_MNEMONIC)
         log.info(f"Generating deterministic account - {UIPlaybook.JUNIPER_NAME}...")
         juniper_account = self.cmd.sifnoded_generate_deterministic_account(UIPlaybook.JUNIPER_NAME, UIPlaybook.JUNIPER_MNEMONIC)
-        # shadowfiend_address = self.sifnoded_keys_show(SHADOWFIEND_NAME)[0]["address"]
-        # akasha_address = self.sifnoded_keys_show(AKASHA_NAME)[0]["address"]
-        # juniper_address = self.sifnoded_keys_show(JUNIPER_NAME)[0]["address"]
         shadowfiend_address = shadowfiend_account["address"]
         akasha_address = akasha_account["address"]
         juniper_address = juniper_account["address"]
+        assert shadowfiend_address == self.cmd.sifnoded_keys_show(UIPlaybook.SHADOWFIEND_NAME)[0]["address"]
+        assert akasha_address == self.cmd.sifnoded_keys_show(UIPlaybook.AKASHA_NAME)[0]["address"]
+        assert juniper_address == self.cmd.sifnoded_keys_show(UIPlaybook.JUNIPER_NAME)[0]["address"]
 
         tokens_shadowfiend = [[10**29, "rowan"], [10**29, "catk"], [10**29, "cbtk"], [10**29, "ceth"], [10**29, "cusdc"], [10**29, "clink"], [10**26, "stake"]]
         tokens_akasha = [[10**29, "rowan"], [10**29, "catk"], [10**29, "cbtk"], [10**29, "ceth"], [10**29, "cusdc"], [10**29, "clink"], [10**26, "stake"]]
@@ -233,7 +224,8 @@ class UIPlaybook:
         self.cmd.sifnoded_add_genesis_validators(shadowfiend_address_bech_val)
 
         amount = sif_format_amount(10**24, "stake")
-        self.cmd.execst(["sifnoded", "gentx", UIPlaybook.SHADOWFIEND_NAME, amount, "--chain-id={}".format(UIPlaybook.CHAIN_ID), "--keyring-backend={}".format(keyring_backend)])
+        self.cmd.execst(["sifnoded", "gentx", UIPlaybook.SHADOWFIEND_NAME, amount, f"--chain-id={self.chain_id}",
+            f"--keyring-backend={self.keyring_backend}"])
 
         log.info("Collecting genesis txs...")
         self.cmd.execst(["sifnoded", "collect-gentxs"])
@@ -260,24 +252,24 @@ class UIPlaybook:
         # Original scripts say "if we don't sleep there are issues"
         time.sleep(10)
         log.info("Creating liquidity pool from catk:rowan...")
-        self.cmd.sifnoded_tx_clp_create_pool(UIPlaybook.CHAIN_ID, keyring_backend, "akasha", "catk", [10**5, "rowan"], 10**25, 10**25)
+        self.cmd.sifnoded_tx_clp_create_pool(self.chain_id, self.keyring_backend, "akasha", "catk", [10**5, "rowan"], 10**25, 10**25)
         time.sleep(5)
         log.info("Creating liquidity pool from cbtk:rowan...")
-        self.cmd.sifnoded_tx_clp_create_pool(UIPlaybook.CHAIN_ID, keyring_backend, "akasha", "cbtk", [10**5, "rowan"], 10**25, 10**25)
+        self.cmd.sifnoded_tx_clp_create_pool(self.chain_id, self.keyring_backend, "akasha", "cbtk", [10**5, "rowan"], 10**25, 10**25)
         # should now be able to swap from catk:cbtk
         time.sleep(5)
         log.info("Creating liquidity pool from ceth:rowan...")
-        self.cmd.sifnoded_tx_clp_create_pool(UIPlaybook.CHAIN_ID, keyring_backend, "akasha", "ceth", [10**5, "rowan"], 10**25, 83*10**20)
+        self.cmd.sifnoded_tx_clp_create_pool(self.chain_id, self.keyring_backend, "akasha", "ceth", [10**5, "rowan"], 10**25, 83*10**20)
         # should now be able to swap from x:ceth
         time.sleep(5)
         log.info("Creating liquidity pool from cusdc:rowan...")
-        self.cmd.sifnoded_tx_clp_create_pool(UIPlaybook.CHAIN_ID, keyring_backend, "akasha", "cusdc", [10**5, "rowan"], 10**25, 10**25)
+        self.cmd.sifnoded_tx_clp_create_pool(self.chain_id, self.keyring_backend, "akasha", "cusdc", [10**5, "rowan"], 10**25, 10**25)
         time.sleep(5)
         log.info("Creating liquidity pool from clink:rowan...")
-        self.cmd.sifnoded_tx_clp_create_pool(UIPlaybook.CHAIN_ID, keyring_backend, "akasha", "clink", [10**5, "rowan"], 10**25, 588235*10**18)
+        self.cmd.sifnoded_tx_clp_create_pool(self.chain_id, self.keyring_backend, "akasha", "clink", [10**5, "rowan"], 10**25, 588235*10**18)
         time.sleep(5)
         log.info("Creating liquidity pool from ctest:rowan...")
-        self.cmd.sifnoded_tx_clp_create_pool(UIPlaybook.CHAIN_ID, keyring_backend, "akasha", "ctest", [10**5, "rowan"], 10**25, 10**13)
+        self.cmd.sifnoded_tx_clp_create_pool(self.chain_id, self.keyring_backend, "akasha", "ctest", [10**5, "rowan"], 10**25, 10**13)
 
         # ui/scripts/_migrate.sh -> ui/chains/post_migrate.sh
         def get_smart_contract_address(path):
@@ -322,7 +314,7 @@ class UIPlaybook:
         ethereum_private_key = smart_contracts_env_ui_example_vars["ETHEREUM_PRIVATE_KEY"]
         ebrelayer_proc = self.cmd.ebrelayer_init(ethereum_private_key, "tcp://localhost:26657", "ws://localhost:7545/",
             bridge_registry_address, UIPlaybook.SHADOWFIEND_NAME, UIPlaybook.SHADOWFIEND_MNEMONIC,
-            "--chain-id={}".format(UIPlaybook.CHAIN_ID), 5*10**12, [0.5, "rowan"])
+            "--chain-id={}".format(self.chain_id), 5*10**12, [0.5, "rowan"])
 
         # At this point we have 3 running processes - ganache_proc, sifnoded_proc and ebrelayer_proc
         # await sif-node-up and migrate-complete
@@ -330,30 +322,31 @@ class UIPlaybook:
         time.sleep(30)
         # ui/scripts/_snapshot.sh
 
-        # ui/scripts/stack-pause.sh
+        # ui/scripts/stack-pause.sh:
         # killall sifnoded sifnoded ebrelayer ganache-cli
         sifnoded_proc.kill()
         ebrelayer_proc.kill()
         ganache_proc.kill()
         time.sleep(10)
 
+        snapshots_dir = project_dir("ui/chains/snapshots")
+        self.cmd.mkdir(snapshots_dir)
         # ui/chains/peggy/snapshot.sh:
-        # mkdir -p ui/chains/snapshots
         # mkdir -p ui/chains/peggy/relayerdb
-        # cd ui/chains/peggy/relayerdb && tar -zcvf ui/chains/snapshots/peggy.tar.gz
-        self.cmd.tar_create(project_dir("ui/chains/peggy/relayerdb"), project_dir("ui/chains/snapshots/peggy.tar.gz"), compression="gz")
+        self.cmd.tar_create(project_dir("ui/chains/peggy/relayerdb"), os.path.join(snapshots_dir, "peggy.tar.gz"), compression="gz")
         # mkdir -p smart-contracts/build
-        # cd smart-contracts/build && tar -zcvf ui/chains/snapshots/peggy_build.tar.gz
-        self.cmd.tar_create(project_dir("smart-contracts/build"), project_dir("ui/chains/snapshots/peggy_build.tar.gz"), compression="gz")
+        self.cmd.tar_create(project_dir("smart-contracts/build"), os.path.join(snapshots_dir, "peggy_build.tar.gz"), compression="gz")
 
         # ui/chains/sif/snapshot.sh:
-        # mkdir -p ui/chains/snapshots
-        # cd ~/.sifnoded && tar -zcvf ui/chains/snapshots/sif.tar.gz
-        self.cmd.tar_create(self.cmd.get_user_home(".sifnoded"), project_dir("ui/chains/snapshots/sif.tar.gz"), compression="gz")
+        self.cmd.tar_create(self.sifnoded_path, os.path.join(snapshots_dir, "sif.tar.gz"), compression="gz")
 
         # ui/chains/etc/snapshot.sh:
-        # cd ~/.ganachedb && tar -zcvf ui/chains/snapshots/eth.tar.gz
-        self.cmd.tar_create(self.cmd.get_user_home(".ganachedb"), project_dir("ui/chains/snapshots/eth.tar.gz"), compression="gz")
+        self.cmd.tar_create(self.ganache_db_path, os.path.join(snapshots_dir, "eth.tar.gz"), compression="gz")
+
+    def stack_push(self):
+        # ui/scripts/stack-push.sh
+        # $PWD=ui
+        pass
 
 
 def main():
