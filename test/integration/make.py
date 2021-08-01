@@ -52,7 +52,7 @@ NULL_ADDRESS = "0x0000000000000000000000000000000000000000"
 
 
 class Command:
-    def execst(self, args, cwd=None, env=None, stdin=None, binary=False, pipe=True):
+    def execst(self, args, cwd=None, env=None, stdin=None, binary=False, pipe=True, check_exit=True):
         if stdin is not None:
             if type(stdin) == list:
                 stdin = "".join([line + "\n" for line in stdin])
@@ -61,7 +61,7 @@ class Command:
             env = dict_merge(os.environ, env)
         popen = subprocess.Popen(args, cwd=cwd, env=env, stdin=subprocess.PIPE, stdout=p, stderr=p, text=not binary)
         stdout_data, stderr_data = popen.communicate(input=stdin)
-        if popen.returncode != 0:
+        if check_exit and (popen.returncode != 0):
             raise Exception("Command '{}' exited with returncode {}: {}".format(" ".join(args), popen.returncode, repr(stderr_data)))
         return popen.returncode, stdout_data, stderr_data
 
@@ -564,6 +564,10 @@ class IntegrationTestsPlaybook:
         integration_tests_dir = project_dir("test/integration")
         data_dir = project_dir("test/integration/vagrant/data")
 
+        chainnet = "localnet"
+        tcp_url = "tcp://0.0.0.0:26657"
+        ethereum_websocket_address = "ws://localhost:7545/"
+
         # make go binaries (a lot of nonsense!)
         self.cmd.execst(["make"], cwd=integration_tests_dir, env={"BASEDIR": project_dir()})
 
@@ -600,6 +604,7 @@ class IntegrationTestsPlaybook:
 
         bridge_token_address, bridge_registry_address, bridge_bank = self.cmd.get_bridge_smart_contract_addresses(self.network_id)
 
+        # TODO This should be last (after return from setup_sifchain.sh)
         burn_limits = [
             [NULL_ADDRESS, 31*10**18],
             [bridge_token_address, 10**25],
@@ -615,14 +620,52 @@ class IntegrationTestsPlaybook:
             )
 
         # test/integration/setup_sifchain.sh:
-        # TODO
+        networks_dir = project_dir("deploy/networks")
+        self.cmd.rmdir(networks_dir)  # networks_dir has many directories without write permission, so change those before deleting it
+        self.cmd.mkdir(networks_dir)
+        self.cmd.execst(["rake", f"genesis:network:scaffold[{chainnet}]"], env={"BASEDIR": project_dir()}, pipe=False)
+        netdef = exactly_one(yaml_load(self.cmd.read_text_file(project_dir(networks_dir, "network-definition.yml"))))
+
+        moniker = netdef["moniker"]
+        validator1_address = netdef["address"]
+        validator1_password = netdef["password"]
+        mnemonic = netdef["mnemonic"]
+        chaindir = os.path.join(networks_dir, f"validators/{chainnet}/{moniker}")
+        # SIFNODED_LOG=$datadir/logs/sifnoded.log
+
+        # test/integration/sifchain_start_daemon.sh:
+        sifchaind_home = os.path.join(chaindir, ".sifnoded")
+        whitelisted_validator = exactly_one(stdout_lines(self.cmd.execst(["sifnoded", "keys", "show",
+            "--keyring-backend", "file", "-a", "--bech", "val", moniker, "--home", sifchaind_home],
+            stdin=[validator1_password])))
+        self.cmd.execst(["sifnoded", "add-genesis-validators", whitelisted_validator, "--home", sifchaind_home])
+        adminuser_addr = json.loads(self.cmd.execst(["sifnoded", "keys", "add", "sifnodeadmin", "--keyring-backend",
+            "test", "--output", "json"], stdin=["y"])[1])["address"]
+        self.cmd.execst(["sifnoded", "add-genesis-account", adminuser_addr, sif_format_amount(10**20, "rowan"),
+            "--home", sifchaind_home], pipe=False)
+        self.cmd.execst(["sifnoded", "set-genesis-oracle-admin", adminuser_addr, "--home", sifchaind_home], pipe=False)
+        sifnoded_proc = popen(["sifnoded", "start", "--minimum-gas-prices", sif_format_amount(0.5, "rowan"),
+            "--rpc.laddr", tcp_url, "--home", sifchaind_home])
+
+        rest_server_proc = popen(["sifnoded", "rest-server", "--laddr", "tcp://0.0.0.0:1317"])  # TODO cwd
+
+        # test/integration/sifchain_start_ebrelayer.sh -> test/integration/sifchain_run_ebrelayer.sh
+        # TODO wait_for_rpc
+        # TODO src/py/test_utilities.py: wait_for_sif_account {netdef_json} {validator1_addr}
+        res = self.cmd.execst(["sifnoded", "keys", "delete", moniker, "--keyring-backend", "test"], stdin=["y"])  # TODO The specified key could not be found in the keyring
+        res = self.cmd.execst(["sifnoded", "keys", "add", moniker, "--keyring-backend", "test", "--recover"], stdin=[mnemonic])
 
         return
+
 
 
 def main():
     logging.basicConfig(stream=sys.stdout, level=logging.DEBUG, format="%(message)s")
     cmd = Integrator()
+    cmd.execst(["pkill", "node"], check_exit=False)
+    cmd.execst(["pkill", "ebrelayer"], check_exit=False)
+    cmd.execst(["pkill", "sifnoded"], check_exit=False)
+    time.sleep(3)
     ui_playbook = UIStackPlaybook(cmd)
     # ui_playbook.stack_save_snapshot()
     # ui_playbook.stack_push()
