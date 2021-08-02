@@ -20,10 +20,10 @@ func (k Keeper) SetDistribution(ctx sdk.Context, ar types.Distribution) error {
 	return nil
 }
 
-func (k Keeper) GetDistribution(ctx sdk.Context, name string, distributionType types.DistributionType, authorisedRunner string) (*types.Distribution, error) {
+func (k Keeper) GetDistribution(ctx sdk.Context, name string, distributionType types.DistributionType, authorizedRunner string) (*types.Distribution, error) {
 	var ar types.Distribution
 	store := ctx.KVStore(k.storeKey)
-	key := types.GetDistributionsKey(name, distributionType, authorisedRunner)
+	key := types.GetDistributionsKey(name, distributionType, authorizedRunner)
 	if !k.Exists(ctx, key) {
 		return &ar, errors.Wrapf(types.ErrInvalid, "Record Does not Exist : %s", ar.String())
 	}
@@ -32,8 +32,8 @@ func (k Keeper) GetDistribution(ctx sdk.Context, name string, distributionType t
 	return &ar, nil
 }
 
-func (k Keeper) ExistsDistribution(ctx sdk.Context, name string, distributionType types.DistributionType, authorisedRunner string) bool {
-	key := types.GetDistributionsKey(name, distributionType, authorisedRunner)
+func (k Keeper) ExistsDistribution(ctx sdk.Context, name string, distributionType types.DistributionType, authorizedRunner string) bool {
+	key := types.GetDistributionsKey(name, distributionType, authorizedRunner)
 	return k.Exists(ctx, key)
 }
 

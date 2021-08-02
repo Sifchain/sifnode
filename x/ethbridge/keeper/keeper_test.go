@@ -138,7 +138,7 @@ func TestProcessSuccessfulClaimLock(t *testing.T) {
 	ctx, keeper, bankKeeper, _, _, _, _ := test.CreateTestKeepers(t, 0.7, []int64{3, 3}, "")
 
 	receiverCoins := bankKeeper.GetAllBalances(ctx, cosmosReceivers[0])
-	require.Equal(t, receiverCoins, sdk.Coins{})
+	require.Equal(t, receiverCoins, sdk.NewCoins())
 
 	claimType := types.ClaimType_CLAIM_TYPE_LOCK
 	claimContent := types.NewOracleClaimContent(cosmosReceivers[0], amount, symbol, tokenContractAddress, claimType)
@@ -165,7 +165,7 @@ func TestProcessSuccessfulClaimBurn(t *testing.T) {
 	ctx, keeper, bankKeeper, _, _, _, _ := test.CreateTestKeepers(t, 0.7, []int64{3, 3}, "")
 
 	receiverCoins := bankKeeper.GetAllBalances(ctx, cosmosReceivers[0])
-	require.Equal(t, receiverCoins, sdk.Coins{})
+	require.Equal(t, receiverCoins, sdk.NewCoins())
 
 	claimType := types.ClaimType_CLAIM_TYPE_BURN
 	claimContent := types.NewOracleClaimContent(cosmosReceivers[0], amount, symbol, tokenContractAddress, claimType)
@@ -222,7 +222,7 @@ func TestProcessLock(t *testing.T) {
 	ctx, keeper, bankKeeper, _, _, _, _ := test.CreateTestKeepers(t, 0.7, []int64{3, 3}, "")
 
 	receiverCoins := bankKeeper.GetAllBalances(ctx, cosmosReceivers[0])
-	require.Equal(t, receiverCoins, sdk.Coins{})
+	require.Equal(t, receiverCoins, sdk.NewCoins())
 
 	msg := types.NewMsgLock(1, cosmosReceivers[0], ethereumSender, amount, "stake", amount)
 
@@ -284,7 +284,7 @@ func TestProcessLockWithReceiver(t *testing.T) {
 	oracleKeeper.SetAdminAccount(ctx, cosmosSender)
 
 	receiverCoins := bankKeeper.GetAllBalances(ctx, cosmosReceivers[0])
-	require.Equal(t, receiverCoins, sdk.Coins{})
+	require.Equal(t, receiverCoins, sdk.NewCoins())
 
 	msg := types.NewMsgLock(1, cosmosReceivers[0], ethereumSender, amount, "stake", amount)
 

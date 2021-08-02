@@ -33,7 +33,6 @@ func TestKeeper_Errors(t *testing.T) {
 }
 
 func TestKeeper_SetPool(t *testing.T) {
-
 	pool := test.GenerateRandomPool(1)[0]
 	ctx, app := test.CreateTestAppClp(false)
 	clpKeeper := app.ClpKeeper
@@ -115,11 +114,11 @@ func TestKeeper_BankKeeper(t *testing.T) {
 	sendingBalance := sdk.NewUint(1000)
 	nativeCoin := sdk.NewCoin(types.NativeSymbol, sdk.Int(initialBalance))
 	sendingCoin := sdk.NewCoin(types.NativeSymbol, sdk.Int(sendingBalance))
-	err := clpKeeper.GetBankKeeper().AddCoins(ctx, user1, sdk.Coins{nativeCoin})
+	err := keeper.GetBankKeeper().AddCoins(ctx, user1, sdk.NewCoins(nativeCoin))
 	assert.NoError(t, err)
-	assert.True(t, clpKeeper.HasBalance(ctx, user1, nativeCoin))
-	assert.NoError(t, clpKeeper.SendCoins(ctx, user1, user2, sdk.Coins{sendingCoin}))
-	assert.True(t, clpKeeper.HasBalance(ctx, user2, sendingCoin))
+	assert.True(t, keeper.HasBalance(ctx, user1, nativeCoin))
+	assert.NoError(t, keeper.SendCoins(ctx, user1, user2, sdk.NewCoins(sendingCoin)))
+	assert.True(t, keeper.HasBalance(ctx, user2, sendingCoin))
 }
 
 func TestKeeper_GetAssetsForLiquidityProvider(t *testing.T) {

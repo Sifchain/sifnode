@@ -68,7 +68,7 @@ func (k msgServer) DecommissionPool(goCtx context.Context, msg *types.MsgDecommi
 		}
 		withdrawNativeCoins := sdk.NewCoin(types.GetSettlementAsset().Symbol, withdrawNativeAssetInt)
 		withdrawExternalCoins := sdk.NewCoin(msg.Symbol, withdrawExternalAssetInt)
-		refundingCoins := sdk.Coins{withdrawExternalCoins, withdrawNativeCoins}
+		refundingCoins := sdk.NewCoins(withdrawExternalCoins, withdrawNativeCoins)
 		err := k.Keeper.RemoveLiquidityProvider(ctx, refundingCoins, lp)
 		if err != nil {
 			return nil, sdkerrors.Wrap(types.ErrUnableToRemoveLiquidityProvider, err.Error())

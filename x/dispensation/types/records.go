@@ -63,8 +63,8 @@ func (uc UserClaim) Validate() bool {
 	return true
 }
 
-func NewDistribution(t DistributionType, name string, authorisedRunner string) Distribution {
-	return Distribution{DistributionType: t, DistributionName: name, Runner: authorisedRunner}
+func NewDistribution(t DistributionType, name string, authorizedRunner string) Distribution {
+	return Distribution{DistributionType: t, DistributionName: name, Runner: authorizedRunner}
 }
 
 func (ar Distribution) Validate() bool {
