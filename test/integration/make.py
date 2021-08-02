@@ -275,7 +275,7 @@ class Integrator(Ganache, Sifnoded, Command):
         if initial_validator_addresses is not None:
             env["INITIAL_VALIDATOR_ADDRESSES"] = ",".join(initial_validator_addresses)
         if initial_validator_powers is not None:
-            env["INITIAL_VALIDATOR_POWERS"] = ",".join(initial_validator_powers)
+            env["INITIAL_VALIDATOR_POWERS"] = ",".join([str(x) for x in initial_validator_powers])
         if pauser is not None:
             env["PAUSER"] = pauser
         if mainnet_gas_price is not None:
@@ -578,6 +578,9 @@ class IntegrationTestsPlaybook:
         # set_persistant_env_var CHAINNET localnet $envexportfile
         self.network_name = "develop"
         self.network_id = 5777
+        self.using_ganache_gui = False
+        self.snapshots_dir = self.cmd.get_user_home(".sifnode-snapshots")
+        self.state_vars = {}
 
     def run(self):
         test_integration_dir = project_dir("test/integration")
@@ -592,40 +595,55 @@ class IntegrationTestsPlaybook:
 
         self.cmd.build_smart_contracts_for_integration_tests()
 
-        # test/integration/ganache-start.sh:
-        # 1. pkill -9 -f ganache-cli || true
-        # 2. while nc -z localhost 7545; do sleep 1; done
-        # 3. nohup tmux new-session -d -s my_session "ganache-cli ${block_delay} -h 0.0.0.0 --mnemonic \
-        #     'candy maple cake sugar pudding cream honey rich smooth crumble sweet treat' \
-        #     --networkId '5777' --port '7545' --db ${GANACHE_DB_DIR} --account_keys_path $GANACHE_KEYS_JSON \
-        #     > $GANACHE_LOG 2>&1"
-        # 4. sleep 5
-        # 5. while ! nc -z localhost 4545; do sleep 5; done
-        # GANACHE_LOG=ui/test/integration/vagrant/data/logs/ganache.$(filenamedate).txt
-        validator_mnemonic = ["candy", "maple", "cake", "sugar", "pudding", "cream", "honey", "rich", "smooth", "crumble", "sweet", "treat"]
-        block_time = None  # TODO
-        account_keys_path = os.path.join(data_dir, "ganachekeys.json")
-        ganache_db_path = self.cmd.mktempdir()
-        ganache_proc = self.cmd.start_ganache_cli(block_time=block_time, host="0.0.0.0", mnemonic=validator_mnemonic,
-            network_id=self.network_id, port=7545, db=ganache_db_path, account_keys_path=account_keys_path)
+        if self.using_ganache_gui:
+            ebrelayer_ethereum_addr = "0x8e2bE12daDbCcbf7c98DBb59f98f22DFF0eF3F2c"
+            ebrelayer_ethereum_private_key = "2eaddbc0bca859ff5b09c5a48a2feaeaf464f7cbf8ddbfa4a32a625a8322fe99"
+            ganache_proc = None
+        else:
+            # test/integration/ganache-start.sh:
+            # 1. pkill -9 -f ganache-cli || true
+            # 2. while nc -z localhost 7545; do sleep 1; done
+            # 3. nohup tmux new-session -d -s my_session "ganache-cli ${block_delay} -h 0.0.0.0 --mnemonic \
+            #     'candy maple cake sugar pudding cream honey rich smooth crumble sweet treat' \
+            #     --networkId '5777' --port '7545' --db ${GANACHE_DB_DIR} --account_keys_path $GANACHE_KEYS_JSON \
+            #     > $GANACHE_LOG 2>&1"
+            # 4. sleep 5
+            # 5. while ! nc -z localhost 4545; do sleep 5; done
+            # GANACHE_LOG=ui/test/integration/vagrant/data/logs/ganache.$(filenamedate).txt
+            validator_mnemonic = ["candy", "maple", "cake", "sugar", "pudding", "cream", "honey", "rich", "smooth", "crumble", "sweet", "treat"]
+            block_time = None  # TODO
+            account_keys_path = os.path.join(data_dir, "ganachekeys.json")
+            ganache_db_path = self.cmd.mktempdir()
+            self.state_vars["GANACHE_DB_PATH"] = ganache_db_path
+            ganache_proc = self.cmd.start_ganache_cli(block_time=block_time, host="0.0.0.0", mnemonic=validator_mnemonic,
+                network_id=self.network_id, port=7545, db=ganache_db_path, account_keys_path=account_keys_path)
 
-        self.cmd.wait_for_file(account_keys_path)
-        time.sleep(2)
+            self.cmd.wait_for_file(account_keys_path)  # Created by ganache-cli
+            time.sleep(2)
 
-        ganache_keys = json.loads(self.cmd.read_text_file(account_keys_path))
-        ebrelayer_ethereum_addr = list(ganache_keys["private_keys"].keys())[9]
-        ebrelayer_ethereum_private_key = ganache_keys["private_keys"][ebrelayer_ethereum_addr]
-        # TODO Check for possible non-determinism of dict().keys() ordering (c.f. test/integration/vagrantenv.sh)
-        # TODO ebrelayer_ethereum_private_key is NOT the same as in test/integration/.env.ciExample
-        assert ebrelayer_ethereum_addr == "0x5aeda56215b167893e80b4fe645ba6d5bab767de"
-        assert ebrelayer_ethereum_private_key == "8d5366123cb560bb606379f90a0bfd4769eecc0557f1b362dcae9012b548b1e5"
+            ganache_keys = json.loads(self.cmd.read_text_file(account_keys_path))
+            ebrelayer_ethereum_addr = list(ganache_keys["private_keys"].keys())[9]
+            ebrelayer_ethereum_private_key = ganache_keys["private_keys"][ebrelayer_ethereum_addr]
+            # TODO Check for possible non-determinism of dict().keys() ordering (c.f. test/integration/vagrantenv.sh)
+            # TODO ebrelayer_ethereum_private_key is NOT the same as in test/integration/.env.ciExample
+            assert ebrelayer_ethereum_addr == "0x5aeda56215b167893e80b4fe645ba6d5bab767de"
+            assert ebrelayer_ethereum_private_key == "8d5366123cb560bb606379f90a0bfd4769eecc0557f1b362dcae9012b548b1e5"
 
         env_file = project_dir("test/integration/.env.ciExample")
+        env_vars = self.cmd.primitive_parse_env_file(env_file)
         self.cmd.deploy_smart_contracts_for_integration_tests(self.network_name, owner=self.owner, pauser=self.pauser,
+            operator=env_vars["OPERATOR"], consensus_threshold=int(env_vars["CONSENSUS_THRESHOLD"]),
+            initial_validator_powers=[int(x) for x in env_vars["INITIAL_VALIDATOR_POWERS"].split(",")],
             initial_validator_addresses=[ebrelayer_ethereum_addr], env_file=env_file)
 
         bridge_token_sc_addr, bridge_registry_sc_addr, bridge_bank_sc_addr = \
             self.cmd.get_bridge_smart_contract_addresses(self.network_id)
+
+        # # Proof of concept: restart ganache-cli
+        # time.sleep(10)
+        # ganache_proc.kill()
+        # ganache_proc = self.cmd.start_ganache_cli(block_time=block_time, host="0.0.0.0", mnemonic=validator_mnemonic,
+        #     network_id=self.network_id, port=7545, db=ganache_db_path, account_keys_path=account_keys_path)
 
         # TODO This should be last (after return from setup_sifchain.sh)
         burn_limits = [
@@ -639,7 +657,7 @@ class IntegrationTestsPlaybook:
                 amount,
                 env_file_vars["ETHEREUM_PRIVATE_KEY"],  # != ebrelayer_ethereum_private_key
                 env_file_vars["INFURA_PROJECT_ID"],
-                env_file_vars["LOCAL_PROVIDER"]
+                env_file_vars["LOCAL_PROVIDER"],  # for web3.js to connect to ganache
             )
 
         # test/integration/setup_sifchain.sh:
@@ -692,13 +710,19 @@ class IntegrationTestsPlaybook:
 
         return ganache_proc, sifnoded_proc, ebrelayer_proc
 
+    def create_snapshot(self, snapshot_name):
+        self.cmd.mkdir(self.snapshots_dir)
+        named_snapshot_dir = os.path.join(self.snapshots_dir, snapshot_name)
+        self.cmd.mkdir(named_snapshot_dir)
+        ganache_db_path = self.state_vars["GANACHE_DB_PATH"]
+        self.cmd.tar_create(ganache_db_path, os.path.join(named_snapshot_dir, "ganache.tar.gz"), compression="gz")
+        self.cmd.tar_create(project_dir("deploy/networks"), os.path.join(named_snapshot_dir, "networks.tar.gz"), compression="gz")
+        self.cmd.tar_create(project_dir("smart-contracts/build"), os.path.join(named_snapshot_dir, "smart-contracts.tar.gz"), compression="gz")
 
 
-def main():
-    logging.basicConfig(stream=sys.stdout, level=logging.DEBUG, format="%(message)s")
-    cmd = Integrator()
-    # Reset state:
+def cleanup_and_reset_state():
     # pkill node; pkill ebrelayer; pkill sifnoded; rm -rvf $HOME/.sifnoded; rm -rvf ./vagrant/data; mkdir vagrant/data
+    cmd = Command()
     cmd.execst(["pkill", "node"], check_exit=False)
     cmd.execst(["pkill", "ebrelayer"], check_exit=False)
     cmd.execst(["pkill", "sifnoded"], check_exit=False)
@@ -706,11 +730,21 @@ def main():
     cmd.rmdir(project_dir("test/integration/vagrant/data"))
     cmd.mkdir(project_dir("test/integration/vagrant/data"))
     time.sleep(3)
+
+
+def main():
+    logging.basicConfig(stream=sys.stdout, level=logging.DEBUG, format="%(message)s")
+    cleanup_and_reset_state()
+    cmd = Integrator()
     ui_playbook = UIStackPlaybook(cmd)
     # ui_playbook.stack_save_snapshot()
     # ui_playbook.stack_push()
     it_playbook = IntegrationTestsPlaybook(cmd)
-    it_playbook.run()
+    processes = it_playbook.run()
+    for p in processes:
+        if p is not None:
+            p.kill()
+    it_playbook.create_snapshot("test_snapshot_1")
 
 
 if __name__ == "__main__":
