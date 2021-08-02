@@ -40,6 +40,8 @@ type createEthClaimReq struct {
 	Validator             string                        `json:"validator"`
 	Amount                sdk.Int                       `json:"amount"`
 	ClaimType             string                        `json:"claim_type"`
+	Decimals              int                           `json:"token_decimals"`
+	TokenName             string                        `json:"token_name"`
 }
 
 type burnOrLockEthReq struct {
@@ -108,7 +110,7 @@ func createClaimHandler(cliCtx client.Context) http.HandlerFunc {
 		// create the message
 		ethBridgeClaim := types.NewEthBridgeClaim(
 			req.NetworkDescriptor, bridgeContractAddress, int64(req.Nonce), req.Symbol,
-			tokenContractAddress, ethereumSender, cosmosReceiver, validator, req.Amount, ct)
+			tokenContractAddress, ethereumSender, cosmosReceiver, validator, req.Amount, ct, req.TokenName, int32(req.Decimals))
 		msg := types.NewMsgCreateEthBridgeClaim(ethBridgeClaim)
 		err = msg.ValidateBasic()
 		if err != nil {

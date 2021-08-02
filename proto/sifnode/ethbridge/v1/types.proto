@@ -34,6 +34,10 @@ message EthBridgeClaim {
     (gogoproto.moretags) = "yaml:\"amount\""
   ];
   ClaimType claim_type = 10;
+  // Name of coin different then symbol
+  string token_name = 11 [ (gogoproto.moretags) = "yaml:\"token_name\"" ];
+  // Number of decimals in ERC20 token
+  int32 decimals = 12 [ (gogoproto.moretags) = "yaml:\"token_decimals\"" ];
 }
 
 // Coin Metadata Modlue structure for storing
