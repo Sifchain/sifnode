@@ -38,6 +38,10 @@ message EthBridgeClaim {
   string token_name = 11 [ (gogoproto.moretags) = "yaml:\"token_name\"" ];
   // Number of decimals in ERC20 token
   int32 decimals = 12 [ (gogoproto.moretags) = "yaml:\"token_decimals\"" ];
+  // The hashed concatination of ERC20 address, network descriptor
+  // Token decimals, name and symbol
+  // Marked optional because messages sent by the relayer may not be hashed
+  string denom_hash = 13 [ (gogoproto.moretags) = "yaml:\"denom_hash\"" ];
 }
 
 // Coin Metadata Modlue structure for storing
