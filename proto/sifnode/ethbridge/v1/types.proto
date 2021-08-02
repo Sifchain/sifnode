@@ -36,6 +36,17 @@ message EthBridgeClaim {
   ClaimType claim_type = 10;
 }
 
+// Coin Metadata Modlue structure for storing
+// new tokens and fetching queries
+message TokenMetadata {
+  int32 decimals = 1 [ (gogoproto.moretags) = "yaml:\"token_decimals\"" ];
+  string name = 2 [ (gogoproto.moretags) = "yaml:\"token_name\"" ];
+  string symbol = 3 [ (gogoproto.moretags) = "yaml:\"token_symbol\"" ];
+  string token_address = 4 [ (gogoproto.moretags) = "yaml:\"token_address\"" ];
+  sifnode.oracle.v1.NetworkDescriptor network_descriptor = 5
+      [ (gogoproto.moretags) = "yaml:\"network_descriptor\"" ];
+}
+
 message PeggyTokens { repeated string tokens = 1; }
 
 // Claim type enum

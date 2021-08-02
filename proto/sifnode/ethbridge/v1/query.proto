@@ -23,3 +23,22 @@ message QueryEthProphecyResponse {
   sifnode.oracle.v1.StatusText status = 2;
   repeated string claim_validators = 3;
 }
+
+// Denom needed to request metadata for token
+message TokenMetadataRequest {
+  string denom = 1 [
+    (gogoproto.moretags) = "yaml:\"token_denom\"",
+    (gogoproto.nullable) = false
+  ];
+}
+
+// Message returned from a TokenMetadata Response
+message TokenMetadataResponse {
+  sifnode.ethbridge.v1.TokenMetadata metadata = 1
+      [ (gogoproto.moretags) = "yaml:\"metadata\"" ];
+}
+
+service TokenMetadataService {
+  // Metadata Query Service to fetch token metadata from token denom
+  rpc Search(TokenMetadataRequest) returns (TokenMetadataResponse) {}
+}
