@@ -102,6 +102,8 @@ func (k Querier) GetAssetList(c context.Context, req *types.AssetListReq) (*type
 }
 
 func (k Querier) GetLiquidityProviderList(c context.Context, req *types.LiquidityProviderListReq) (*types.LiquidityProviderListRes, error) {
+	return nil, status.Error(codes.Unavailable, "temporarily unavailable")
+
 	if req == nil {
 		return nil, status.Error(codes.InvalidArgument, "empty request")
 	}

@@ -22,8 +22,8 @@ func NewQuerier(keeper Keeper, legacyQuerierCdc *codec.LegacyAmino) sdk.Querier 
 			return queryLiquidityProvider(ctx, path[1:], req, legacyQuerierCdc, querier)
 		case types.QueryAssetList:
 			return queryAssetList(ctx, path[1:], req, keeper, legacyQuerierCdc)
-		case types.QueryLPList:
-			return queryLPList(ctx, path[1:], req, keeper, legacyQuerierCdc)
+		//case types.QueryLPList:
+		//	return queryLPList(ctx, path[1:], req, keeper, legacyQuerierCdc)
 		case types.QueryAllLP:
 			return queryAllLP(ctx, path[1:], keeper, legacyQuerierCdc)
 		default:

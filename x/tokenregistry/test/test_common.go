@@ -10,6 +10,7 @@ import (
 )
 
 func CreateTestApp(isCheckTx bool) (*sifapp.SifchainApp, sdk.Context, string) {
+	sifapp.SetConfig(false)
 	app := sifapp.Setup(isCheckTx)
 	ctx := app.BaseApp.NewContext(isCheckTx, tmproto.Header{})
 	app.AccountKeeper.SetParams(ctx, authtypes.DefaultParams())
