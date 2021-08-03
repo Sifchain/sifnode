@@ -142,12 +142,12 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
     }
 
     function getSignedPower(SignatureData[] calldata _validators) public view returns(uint256) {
-        uint256 totalPower_ = 0;
+        uint256 _totalPower = 0;
         for (uint256 i = 0; i < _validators.length; i++) {
-            totalPower_ += getValidatorPower(_validators[i].signer);
+            _totalPower += getValidatorPower(_validators[i].signer);
         }
 
-        return totalPower_;
+        return _totalPower;
     }
 
     struct SignatureData {
@@ -288,29 +288,6 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
 
     function verifyNetworkDescriptor(uint256 _networkDescriptor) internal returns(bool) {
         return _networkDescriptor == networkDescriptor;
-    }
-
-    /**
-     * @param symbol symbol of the ERC20 token on the source chain
-     * @param name name of the ERC20 token on the source chain
-     * @param sourceChainTokenAddress address of the ERC20 token on the source chain
-     * @param decimals of the ERC20 token on the source chain
-     * @param _networkDescriptor descriptor of the source chain
-     */
-    function createNewBridgeToken(
-        string calldata symbol,
-        string calldata name,
-        address sourceChainTokenAddress,
-        uint8 decimals,
-        uint256 _networkDescriptor
-    ) external onlyValidator returns(address) {
-        return _createNewBridgeToken(
-            symbol,
-            name,
-            sourceChainTokenAddress,
-            decimals,
-            _networkDescriptor
-        );
     }
 
     function _createNewBridgeToken(
