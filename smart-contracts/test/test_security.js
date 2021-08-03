@@ -3,12 +3,12 @@ const BigNumber = web3.BigNumber;
 const { expect } = require('chai');
 const {
   signHash,
+  singleSetup,
   multiTokenSetup,
   deployTrollToken,
   getDigestNewProphecyClaim,
 } = require("./helpers/testFixture");
 
-const NULL_ADDRESS = "0x0000000000000000000000000000000000000000";
 const sifRecipient = web3.utils.utf8ToHex(
   "sif1nx650s8q9w28f2g3t9ztxyg48ugldptuwzpace"
 );
@@ -78,17 +78,45 @@ describe("Security Test", function () {
       );
     });
 
-    it("should allow operator to call reinitalize after initialization", async function () {
+    it("should allow operator to call reinitialize after initialization, setting the correct values", async function () {
+      // Change all values to test if the state actually changed
       await expect(state.bridgeBank.connect(operator).reinitialize(
-        operator.address,
-        state.cosmosBridge.address,
-        owner.address,
-        pauser.address,
-        state.networkDescriptor
+        accounts[3].address, // was operator.address
+        accounts[4].address, // was state.cosmosBridge.address
+        accounts[5].address, // was owner.address
+        accounts[6].address, // was pauser.address
+        state.networkDescriptor + 1 // was state.networkDescriptor
       )).to.be.fulfilled;
+
+      expect(await state.bridgeBank.operator()).to.equal(accounts[3].address);
+      expect(await state.bridgeBank.cosmosBridge()).to.equal(accounts[4].address);
+      expect(await state.bridgeBank.owner()).to.equal(accounts[5].address);
+      expect(await state.bridgeBank.pausers(accounts[6].address)).to.equal(true);
+      expect(await state.bridgeBank.networkDescriptor()).to.equal(state.networkDescriptor + 1);
+
+      // Expect to keep the previous pauser too
+      expect(await state.bridgeBank.pausers(pauser.address)).to.equal(true);
     });
 
-    it("should not allow user to call reinitalize after initialization", async function () {
+    it("should not allow operator to call reinitialize a second time", async function () {
+        await expect(state.bridgeBank.connect(operator).reinitialize(
+          operator.address,
+          state.cosmosBridge.address,
+          owner.address,
+          pauser.address,
+          state.networkDescriptor
+        )).to.be.fulfilled;
+
+        await expect(state.bridgeBank.connect(operator).reinitialize(
+            operator.address,
+            state.cosmosBridge.address,
+            owner.address,
+            pauser.address,
+            state.networkDescriptor
+          )).to.be.rejectedWith('Already reinitialized');
+      });
+
+    it("should not allow user to call reinitialize", async function () {
       await expect(state.bridgeBank.connect(userOne).reinitialize(
         operator.address,
         state.cosmosBridge.address,
@@ -210,7 +238,7 @@ describe("Security Test", function () {
 
       await expect(
         state.bridgeBank.connect(userOne)
-          .lock(sifRecipient, NULL_ADDRESS, 100),
+          .lock(sifRecipient, state.constants.zeroAddress, 100),
       ).to.be.revertedWith("Pausable: paused");
     });
     
@@ -379,6 +407,93 @@ describe("Security Test", function () {
           1
         ),
       ).to.be.revertedWith("INV_SRC_ADDR");
+    });
+  });
+
+  describe("Network Descriptor Mismatch", function () {
+    beforeEach(async function () {
+      state = await singleSetup(
+        initialValidators,
+        initialPowers,
+        operator,
+        consensusThreshold,
+        owner,
+        userOne,
+        userThree,
+        pauser.address,
+        networkDescriptor,
+        true // force networkDescriptor mismatch
+      );
+    });
+
+    it("should not allow unlocking tokens upon the processing of a burn prophecy claim with the wrong network descriptor", async function () {
+      state.nonce = 1;
+      const digest = getDigestNewProphecyClaim([
+        state.sender,
+        state.senderSequence,
+        state.recipient,
+        state.token.address,
+        state.amount,
+        false,
+        state.nonce,
+        state.networkDescriptor
+      ]);
+
+      const signatures = await signHash([userOne, userTwo, userFour], digest);
+
+      let claimData = {
+        cosmosSender: state.sender,
+        cosmosSenderSequence: state.senderSequence,
+        ethereumReceiver: state.recipient,
+        tokenAddress: state.token.address,
+        amount: state.amount,
+        doublePeg: false,
+        nonce: state.nonce,
+        networkDescriptor: state.networkDescriptor
+      };
+
+      await expect(state.cosmosBridge
+        .connect(userOne)
+        .submitProphecyClaimAggregatedSigs(
+            digest,
+            claimData,
+            signatures
+        )).to.be.revertedWith("INV_NET_DESC");
+    });
+  
+    it("should not allow unlocking native tokens upon the processing of a burn prophecy claim with the wrong network descriptor", async function () {
+      state.nonce = 1;
+      const digest = getDigestNewProphecyClaim([
+          state.sender,
+          state.senderSequence,
+          state.recipient,
+          state.ethereumToken,
+          state.amount,
+          false,
+          state.nonce,
+          state.networkDescriptor
+      ]);
+
+      const signatures = await signHash([userOne, userTwo, userFour], digest);
+      
+      let claimData = {
+        cosmosSender: state.sender,
+        cosmosSenderSequence: state.senderSequence,
+        ethereumReceiver: state.recipient,
+        tokenAddress: state.ethereumToken,
+        amount: state.amount,
+        doublePeg: false,
+        nonce: state.nonce,
+        networkDescriptor: state.networkDescriptor
+      };
+
+      await expect(state.cosmosBridge
+        .connect(userOne)
+        .submitProphecyClaimAggregatedSigs(
+          digest,
+          claimData,
+          signatures
+        )).to.be.revertedWith("INV_NET_DESC");
     });
   });
 

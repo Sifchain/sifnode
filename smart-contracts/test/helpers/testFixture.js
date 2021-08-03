@@ -1,5 +1,7 @@
 const { ethers, upgrades } = require("hardhat");
-const web3 = require("web3")
+const web3 = require("web3");
+
+const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
 
 async function returnContractObjects() {
     let CosmosBridge = await ethers.getContractFactory("CosmosBridge");
@@ -66,6 +68,11 @@ async function multiTokenSetup(
     networkDescriptorMismatch = false
   ) {
     const state = {}
+
+    // Setup constants:
+    state.constants = {
+      zeroAddress: ZERO_ADDRESS
+    }
 
     // Deploy Valset contract
     state.initialValidators = initialValidators;
@@ -160,6 +167,12 @@ async function singleSetup(
     networkDescriptorMismatch = false
     ) {
     const state = {};
+
+    // Setup constants:
+    state.constants = {
+      zeroAddress: ZERO_ADDRESS
+    }
+
     // Deploy Valset contract
     state.initialValidators = initialValidators;
     state.initialPowers = initialPowers;
