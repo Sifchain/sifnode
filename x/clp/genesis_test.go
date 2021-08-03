@@ -16,9 +16,9 @@ import (
 func TestExportGenesis(t *testing.T) {
 	ctx, keeper := test.CreateTestAppClp(false)
 	// Generate State
-	poolscount, lpCount := CreateState(ctx, keeper, t)
+	poolsCount, lpCount := CreateState(ctx, keeper, t)
 	state := clp.ExportGenesis(ctx, keeper)
-	assert.Equal(t, len(state.PoolList), poolscount)
+	assert.Equal(t, len(state.PoolList), poolsCount)
 	assert.Equal(t, len(state.LiquidityProviders), lpCount)
 }
 

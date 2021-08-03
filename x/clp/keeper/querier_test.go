@@ -240,16 +240,14 @@ func TestQueryAllLPs(t *testing.T) {
 	//Set Data
 	_, _, lp := SetData(keeper, ctx)
 	querier := clpkeeper.NewQuerier(keeper, cdc)
-	req := types.LiquidityProvidersReq{}
-	queryData, err := cdc.MarshalJSON(req)
-	require.NoError(t, err)
-	query.Data = queryData
+	query.Path = ""
+	query.Data = nil
 	resBz, err := querier(ctx, []string{types.QueryAllLP}, query)
-	require.NoError(t, err)
-	res := types.LiquidityProvidersRes{}
-	err = cdc.UnmarshalJSON(resBz, &res.LiquidityProviders)
-	require.NoError(t, err)
-	require.Equal(t, []*types.LiquidityProvider{&lp}, res.LiquidityProviders)
+	assert.NoError(t, err)
+	var lpRes types.LiquidityProvidersRes
+	err = cdc.UnmarshalJSON(resBz, &lpRes)
+	assert.NoError(t, err)
+	assert.Equal(t, []*types.LiquidityProvider{&lp}, lpRes.LiquidityProviders)
 }
 
 func SetData(keeper clpkeeper.Keeper, ctx sdk.Context) (types.Pool, []types.Pool, types.LiquidityProvider) {

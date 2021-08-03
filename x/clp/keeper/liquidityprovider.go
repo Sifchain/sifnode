@@ -3,8 +3,6 @@ package keeper
 import (
 	"github.com/Sifchain/sifnode/x/clp/types"
 
-	"fmt"
-
 	"github.com/cosmos/cosmos-sdk/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/query"
@@ -53,10 +51,8 @@ func (k Keeper) GetLiquidityProviderIterator(ctx sdk.Context) sdk.Iterator {
 
 func (k Keeper) GetAssetsForLiquidityProvider(ctx sdk.Context, lpAddress sdk.AccAddress) []types.Asset {
 	var assetList []types.Asset
-
 	iterator := k.GetLiquidityProviderIterator(ctx)
 	defer iterator.Close()
-
 	for ; iterator.Valid(); iterator.Next() {
 		var lp types.LiquidityProvider
 		bytesValue := iterator.Value()
@@ -65,7 +61,6 @@ func (k Keeper) GetAssetsForLiquidityProvider(ctx sdk.Context, lpAddress sdk.Acc
 			assetList = append(assetList, *lp.Asset) //todo: test nil panics
 		}
 	}
-
 	return assetList
 }
 
@@ -96,46 +91,35 @@ func (k Keeper) GetLiquidityProvidersForAsset(ctx sdk.Context, asset types.Asset
 
 func (k Keeper) GetLiquidityProvidersForAssetPaginated(ctx sdk.Context, asset types.Asset, pagination *query.PageRequest) ([]*types.LiquidityProvider, *query.PageResponse, error) {
 	var lpList []*types.LiquidityProvider
-	logger := k.Logger(ctx).With("func", "GetLiquidityProvidersForAssetPaginated")
-
 	store := ctx.KVStore(k.storeKey)
 	lpStore := prefix.NewStore(store, types.LiquidityProviderPrefix)
-
 	pageRes, err := query.FilteredPaginate(lpStore, pagination, func(key []byte, value []byte, accumulate bool) (bool, error) {
 		var lp types.LiquidityProvider
 		if len(value) <= 0 {
-			logger.Info(fmt.Sprintf("cannot unmarshall empty liquidity provider for key %s", key))
 			return false, nil
 		}
-
 		err := k.cdc.UnmarshalBinaryBare(value, &lp)
 		if err != nil {
 			return false, err
 		}
-
 		if lp.Asset == nil {
-			logger.Info(fmt.Sprintf("skipping liquidity provider as asset is nil for key %s", key))
 			return false, nil
 		}
-
 		if !lp.Asset.Equals(asset) {
 			return false, nil
 		}
-
 		if accumulate {
 			lpList = append(lpList, &lp)
 		}
-
 		return true, nil
 	})
-
 	if err != nil {
 		return nil, &query.PageResponse{}, status.Error(codes.Internal, err.Error())
 	}
-
 	return lpList, pageRes, nil
 }
 
+// Deprecated: GetAllLiquidityProviders use GetAllLiquidityProvidersPaginated
 func (k Keeper) GetAllLiquidityProviders(ctx sdk.Context) []types.LiquidityProvider {
 	var lpList []types.LiquidityProvider
 	iterator := k.GetLiquidityProviderIterator(ctx)
@@ -145,7 +129,25 @@ func (k Keeper) GetAllLiquidityProviders(ctx sdk.Context) []types.LiquidityProvi
 		bytesValue := iterator.Value()
 		k.cdc.MustUnmarshalBinaryBare(bytesValue, &lp)
 		lpList = append(lpList, lp)
-
 	}
 	return lpList
+}
+
+func (k Keeper) GetAllLiquidityProvidersPaginated(ctx sdk.Context, pagination *query.PageRequest) ([]*types.LiquidityProvider, *query.PageResponse, error) {
+	var lpList []*types.LiquidityProvider
+	store := ctx.KVStore(k.storeKey)
+	lpStore := prefix.NewStore(store, types.LiquidityProviderPrefix)
+	pageRes, err := query.Paginate(lpStore, pagination, func(key []byte, value []byte) error {
+		var liquidityProvider types.LiquidityProvider
+		err := k.cdc.UnmarshalBinaryBare(value, &liquidityProvider)
+		if err != nil {
+			return err
+		}
+		lpList = append(lpList, &liquidityProvider)
+		return nil
+	})
+	if err != nil {
+		return nil, &query.PageResponse{}, status.Error(codes.Internal, err.Error())
+	}
+	return lpList, pageRes, nil
 }

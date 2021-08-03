@@ -77,7 +77,6 @@ func (k Keeper) GetPoolsPaginated(ctx sdk.Context, pagination *query.PageRequest
 			return err
 		}
 		poolList = append(poolList, &pool)
-
 		return nil
 	})
 	if err != nil {

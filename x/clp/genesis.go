@@ -45,7 +45,7 @@ func ExportGenesis(ctx sdk.Context, keeper keeper.Keeper) types.GenesisState {
 	params := keeper.GetParams(ctx)
 	var poolList []*types.Pool
 	poolList, _, _ = keeper.GetPoolsPaginated(ctx, &query.PageRequest{})
-	liquidityProviders := keeper.GetLiquidityProviders(ctx)
+	liquidityProviders, _, _ := keeper.GetAllLiquidityProvidersPaginated(ctx, &query.PageRequest{})
 	whiteList := keeper.GetClpWhiteList(ctx)
 	wl := make([]string, len(whiteList))
 	for i, entry := range whiteList {
