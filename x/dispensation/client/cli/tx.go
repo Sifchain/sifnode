@@ -8,7 +8,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/client/tx"
 	"github.com/spf13/cobra"
-	tmcli "github.com/tendermint/tendermint/libs/cli"
 )
 
 // GetTxCmd returns the transaction commands for this module
@@ -63,7 +62,7 @@ func GetCmdCreate() *cobra.Command {
 	}
 
 	flags.AddTxFlagsToCmd(cmd)
-	cmd.Flags().StringP(tmcli.OutputFlag, "o", "text", "Output format (text|json)")
+
 	return cmd
 }
 
@@ -92,7 +91,7 @@ func GetCmdClaim() *cobra.Command {
 		},
 	}
 	flags.AddTxFlagsToCmd(cmd)
-	cmd.Flags().StringP(tmcli.OutputFlag, "o", "text", "Output format (text|json)")
+
 	return cmd
 
 }
@@ -122,6 +121,6 @@ func GetCmdRun() *cobra.Command {
 		},
 	}
 	flags.AddTxFlagsToCmd(cmd)
-	cmd.Flags().StringP(tmcli.OutputFlag, "o", "text", "Output format (text|json)")
+
 	return cmd
 }
