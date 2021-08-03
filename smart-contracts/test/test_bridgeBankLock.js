@@ -79,8 +79,8 @@ describe("Test Bridge Bank", function () {
     it("should allow user to lock ERC20 tokens", async function () {
       // Add the token into white list
       await state.bridgeBank.connect(operator)
-      .updateEthWhiteList(state.token1.address, true)
-      .should.be.fulfilled;
+        .updateEthWhiteList(state.token1.address, true)
+        .should.be.fulfilled;
 
       await state.token1.connect(userOne).approve(
         state.bridgeBank.address,
@@ -124,16 +124,16 @@ describe("Test Bridge Bank", function () {
     it("should allow user to multi-lock ERC20 tokens", async function () {
       // Add the tokens into white list
       await state.bridgeBank.connect(operator)
-      .updateEthWhiteList(state.token1.address, true)
-      .should.be.fulfilled;
+        .updateEthWhiteList(state.token1.address, true)
+        .should.be.fulfilled;
 
       await state.bridgeBank.connect(operator)
-      .updateEthWhiteList(state.token2.address, true)
-      .should.be.fulfilled;
+        .updateEthWhiteList(state.token2.address, true)
+        .should.be.fulfilled;
 
       await state.bridgeBank.connect(operator)
-      .updateEthWhiteList(state.token3.address, true)
-      .should.be.fulfilled;
+        .updateEthWhiteList(state.token3.address, true)
+        .should.be.fulfilled;
 
       await state.token1.connect(userOne).approve(
         state.bridgeBank.address,
@@ -177,16 +177,16 @@ describe("Test Bridge Bank", function () {
     it("should allow user to multi-lock ERC20 tokens with multiLockBurn method", async function () {
       // Add the tokens into white list
       await state.bridgeBank.connect(operator)
-      .updateEthWhiteList(state.token1.address, true)
-      .should.be.fulfilled;
+        .updateEthWhiteList(state.token1.address, true)
+        .should.be.fulfilled;
 
       await state.bridgeBank.connect(operator)
-      .updateEthWhiteList(state.token2.address, true)
-      .should.be.fulfilled;
+        .updateEthWhiteList(state.token2.address, true)
+        .should.be.fulfilled;
 
       await state.bridgeBank.connect(operator)
-      .updateEthWhiteList(state.token3.address, true)
-      .should.be.fulfilled;
+        .updateEthWhiteList(state.token3.address, true)
+        .should.be.fulfilled;
 
       await state.token1.connect(userOne).approve(
         state.bridgeBank.address,
@@ -258,12 +258,12 @@ describe("Test Bridge Bank", function () {
     it("should allow user to multi-lock and burn ERC20 tokens and rowan with multiLockBurn method", async function () {
       // Add the tokens into white list
       await state.bridgeBank.connect(operator)
-      .updateEthWhiteList(state.token1.address, true)
-      .should.be.fulfilled;
+        .updateEthWhiteList(state.token1.address, true)
+        .should.be.fulfilled;
 
       await state.bridgeBank.connect(operator)
-      .updateEthWhiteList(state.token2.address, true)
-      .should.be.fulfilled;
+        .updateEthWhiteList(state.token2.address, true)
+        .should.be.fulfilled;
 
       await state.token1.connect(userOne).approve(
         state.bridgeBank.address,
@@ -311,16 +311,16 @@ describe("Test Bridge Bank", function () {
     it("should not allow user to multi-lock ERC20 tokens if one token is not fully approved", async function () {
       // Add the tokens into white list
       await state.bridgeBank.connect(operator)
-      .updateEthWhiteList(state.token1.address, true)
-      .should.be.fulfilled;
+        .updateEthWhiteList(state.token1.address, true)
+        .should.be.fulfilled;
 
       await state.bridgeBank.connect(operator)
-      .updateEthWhiteList(state.token2.address, true)
-      .should.be.fulfilled;
+        .updateEthWhiteList(state.token2.address, true)
+        .should.be.fulfilled;
 
       await state.bridgeBank.connect(operator)
-      .updateEthWhiteList(state.token3.address, true)
-      .should.be.fulfilled;
+        .updateEthWhiteList(state.token3.address, true)
+        .should.be.fulfilled;
 
       const tx = await state.token1.connect(userOne).approve(
         state.bridgeBank.address,
@@ -400,16 +400,16 @@ describe("Test Bridge Bank", function () {
     it("should not allow user to multi-lock when parameters are malformed, invalid sif addresses", async function () {
       // Add the tokens into white list
       await state.bridgeBank.connect(operator)
-      .updateEthWhiteList(state.token1.address, true)
-      .should.be.fulfilled;
+        .updateEthWhiteList(state.token1.address, true)
+        .should.be.fulfilled;
 
       await state.bridgeBank.connect(operator)
-      .updateEthWhiteList(state.token2.address, true)
-      .should.be.fulfilled;
+        .updateEthWhiteList(state.token2.address, true)
+        .should.be.fulfilled;
 
       await state.bridgeBank.connect(operator)
-      .updateEthWhiteList(state.token3.address, true)
-      .should.be.fulfilled;
+        .updateEthWhiteList(state.token3.address, true)
+        .should.be.fulfilled;
 
       // Attempt to lock tokens
       await expect(
@@ -487,16 +487,16 @@ describe("Test Bridge Bank", function () {
     it("should revert when multi-lock parameters are malformed, invalid sif addresses", async function () {
       // Add the tokens into white list
       await state.bridgeBank.connect(operator)
-      .updateEthWhiteList(state.token1.address, true)
-      .should.be.fulfilled;
+        .updateEthWhiteList(state.token1.address, true)
+        .should.be.fulfilled;
 
       await state.bridgeBank.connect(operator)
-      .updateEthWhiteList(state.token2.address, true)
-      .should.be.fulfilled;
+        .updateEthWhiteList(state.token2.address, true)
+        .should.be.fulfilled;
 
       await state.bridgeBank.connect(operator)
-      .updateEthWhiteList(state.token3.address, true)
-      .should.be.fulfilled;
+        .updateEthWhiteList(state.token3.address, true)
+        .should.be.fulfilled;
 
       // Attempt to lock tokens
       await expect(
@@ -527,9 +527,9 @@ describe("Test Bridge Bank", function () {
     it("should allow the operator to add a token to the whitelist", async function () {
       // Add the tokens into white list
       await expect(state.bridgeBank.connect(operator)
-      .updateEthWhiteList(state.token1.address, true))
-      .to.emit(state.bridgeBank, 'LogWhiteListUpdate')
-      .withArgs(state.token1.address, true);
+        .updateEthWhiteList(state.token1.address, true))
+        .to.emit(state.bridgeBank, 'LogWhiteListUpdate')
+        .withArgs(state.token1.address, true);
 
       expect(await state.bridgeBank.getTokenInEthWhiteList(state.token1.address)).to.be.equal(true);
     });
@@ -537,8 +537,8 @@ describe("Test Bridge Bank", function () {
     it("should not allow user to add a token to the whitelist", async function () {
       // Add the tokens into white list
       await expect(state.bridgeBank.connect(userOne)
-      .updateEthWhiteList(state.token1.address, true))
-      .to.be.revertedWith("!operator");
+        .updateEthWhiteList(state.token1.address, true))
+        .to.be.revertedWith("!operator");
 
       expect(await state.bridgeBank.getTokenInEthWhiteList(state.token1.address)).to.be.equal(false);
     });
@@ -546,14 +546,14 @@ describe("Test Bridge Bank", function () {
     it("should allow the operator to remove a token from the whitelist", async function () {
       // Add the tokens into white list
       await state.bridgeBank.connect(operator)
-      .updateEthWhiteList(state.token1.address, true)
-      .should.be.fulfilled;
+        .updateEthWhiteList(state.token1.address, true)
+        .should.be.fulfilled;
 
       // Remove the token from whitelist
       await expect(state.bridgeBank.connect(operator)
-      .updateEthWhiteList(state.token1.address, false))
-      .to.emit(state.bridgeBank, 'LogWhiteListUpdate')
-      .withArgs(state.token1.address, false);
+        .updateEthWhiteList(state.token1.address, false))
+        .to.emit(state.bridgeBank, 'LogWhiteListUpdate')
+        .withArgs(state.token1.address, false);
 
       expect(await state.bridgeBank.getTokenInEthWhiteList(state.token1.address)).to.be.equal(false);
     });
@@ -561,12 +561,12 @@ describe("Test Bridge Bank", function () {
     it("should not allow user to remove a token from the whitelist", async function () {
       // Add the tokens into white list
       await state.bridgeBank.connect(operator)
-      .updateEthWhiteList(state.token1.address, true)
-      .should.be.fulfilled;
+        .updateEthWhiteList(state.token1.address, true)
+        .should.be.fulfilled;
 
       await expect(state.bridgeBank.connect(userOne)
-      .updateEthWhiteList(state.token1.address, false))
-      .to.be.revertedWith("!operator");
+        .updateEthWhiteList(state.token1.address, false))
+        .to.be.revertedWith("!operator");
 
       expect(await state.bridgeBank.getTokenInEthWhiteList(state.token1.address)).to.be.equal(true);
     });
@@ -660,6 +660,39 @@ describe("Test Bridge Bank", function () {
       )).to.be.revertedWith("Only token in whitelist can be transferred to cosmos");
     });
 
-    
+    it("should not allow the operator to add a token to the whitelist if it's in cosmosWhitelist", async function () {
+      // assert that the cosmos bridge token has not been created
+      let bridgeToken = await state.cosmosBridge.sourceAddressToDestinationAddress(
+        state.token1.address
+      );
+      expect(bridgeToken).to.be.equal(state.ethereumToken);
+
+      await state.cosmosBridge.connect(userOne).createNewBridgeToken(
+        state.symbol,
+        state.name,
+        state.token1.address,
+        18,
+        1,
+      );
+
+      // now assert that the bridge token has been created
+      bridgeToken = await state.cosmosBridge.sourceAddressToDestinationAddress(
+        state.token1.address
+      );
+      expect(bridgeToken).to.not.be.equal(state.ethereumToken);
+
+      // assert the bridgeToken is in cosmosWhitelist
+      const isInCosmosWhitelist = await state.bridgeBank.getCosmosTokenInWhiteList(
+        bridgeToken
+      );
+      expect(isInCosmosWhitelist).to.be.equal(true);
+
+      // Try adding the token into white list
+      await expect(state.bridgeBank.connect(operator)
+        .updateEthWhiteList(bridgeToken, true))
+        .to.be.revertedWith('whitelisted');
+
+      expect(await state.bridgeBank.getTokenInEthWhiteList(bridgeToken)).to.be.equal(false);
+    });
   });
 });

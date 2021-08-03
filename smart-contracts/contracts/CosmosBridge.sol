@@ -51,12 +51,12 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
         uint256 _consensusThreshold,
         address[] calldata _initValidators,
         uint256[] calldata _initPowers,
-        uint256 networkDescriptor_
+        uint256 _networkDescriptor
     ) external {
         require(!_initialized, "Initialized");
 
         operator = _operator;
-        networkDescriptor = networkDescriptor_;
+        networkDescriptor = _networkDescriptor;
         hasBridgeBank = false;
         _initialized = true;
         Oracle._initialize(
@@ -129,10 +129,10 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
     // it would require some pretty low level work for this very simple function
     // Alternatively, cast addresses to UINT's and possibly do some bitwise operations
     // to ensure there are no duplicate numbers
-    function findDup(SignatureData[] calldata validators_) public pure returns (bool) {
-        for (uint256 i = 0; i < validators_.length; i++) {
-            for (uint256 j = i + 1; j < validators_.length; j++) {
-                if (validators_[i].signer == validators_[j].signer) {
+    function findDup(SignatureData[] calldata _validators) public pure returns (bool) {
+        for (uint256 i = 0; i < _validators.length; i++) {
+            for (uint256 j = i + 1; j < _validators.length; j++) {
+                if (_validators[i].signer == _validators[j].signer) {
                     return true;
                 }
             }
@@ -141,10 +141,10 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
         return false;
     }
 
-    function getSignedPower(SignatureData[] calldata validators_) public view returns(uint256) {
+    function getSignedPower(SignatureData[] calldata _validators) public view returns(uint256) {
         uint256 totalPower_ = 0;
-        for (uint256 i = 0; i < validators_.length; i++) {
-            totalPower_ += getValidatorPower(validators_[i].signer);
+        for (uint256 i = 0; i < _validators.length; i++) {
+            totalPower_ += getValidatorPower(_validators[i].signer);
         }
 
         return totalPower_;
@@ -287,7 +287,7 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
     }
 
     function verifyNetworkDescriptor(uint256 _networkDescriptor) internal returns(bool) {
-        return _networkDescriptor == BridgeBank(bridgeBank).networkDescriptor();
+        return _networkDescriptor == networkDescriptor;
     }
 
     /**

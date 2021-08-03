@@ -33,24 +33,56 @@ contract BridgeBank is BankStorage,
     /*
      * @dev: Initializer
      */
-     //! Add OPERATOR! it changes all tests bc of the initialize function
     function initialize(
         address _operator,
         address _cosmosBridgeAddress,
         address _owner,
         address _pauser,
-        uint256 networkDescriptor_
+        uint256 _networkDescriptor
     ) public {
         require(!_initialized, "Init");
 
         CosmosWhiteList._cosmosWhitelistInitialize();
         EthereumWhiteList.initialize();
+
+        _initialize(
+            _operator,
+            _cosmosBridgeAddress,
+            _owner,
+            _pauser,
+            _networkDescriptor
+        );
+    }
+
+    function reinitialize(
+        address _operator,
+        address _cosmosBridgeAddress,
+        address _owner,
+        address _pauser,
+        uint256 _networkDescriptor
+    ) public onlyOperator {
+        _initialize(
+            _operator,
+            _cosmosBridgeAddress,
+            _owner,
+            _pauser,
+            _networkDescriptor
+        );
+    }
+
+    function _initialize(
+        address _operator,
+        address _cosmosBridgeAddress,
+        address _owner,
+        address _pauser,
+        uint256 _networkDescriptor
+    ) private {
         Pausable._pausableInitialize(_pauser);
 
         operator = _operator;
         cosmosBridge = _cosmosBridgeAddress;
         owner = _owner;
-        networkDescriptor = networkDescriptor_;
+        networkDescriptor = _networkDescriptor;
         _initialized = true;
         contractName[address(0)] = "Ethereum";
         contractSymbol[address(0)] = "ETH";
@@ -106,7 +138,10 @@ contract BridgeBank is BankStorage,
         // Do not allow a token with the same address to be whitelisted
         if (_inList) {
             // if we want to add it to the whitelist, make sure it's not there yet
-            require(!getTokenInEthWhiteList(_token), "whitelisted");
+            require(
+                !getTokenInEthWhiteList(_token) && !getCosmosTokenInWhiteList(_token),
+                "whitelisted"
+            );
         } else {
             // if we want to de-whitelist it, make sure that the token is already whitelisted 
             require(getTokenInEthWhiteList(_token), "!whitelisted");
