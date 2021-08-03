@@ -35,18 +35,19 @@ func TestHandleRegister(t *testing.T) {
 				require.Equal(t, "Test Denom", d.DisplayName)
 			},
 		},
-		{
-			name: "Non Admin Account",
-			msg: types.MsgRegister{
-				From: sdk.AccAddress("addr2_______________").String(),
-				Entry: &types.RegistryEntry{
-					Denom:    "TestDenom",
-					Decimals: 18,
+		/*
+			{
+				name: "Non Admin Account",
+				msg: types.MsgRegister{
+					From: sdk.AccAddress("addr2_______________").String(),
+					Entry: &types.RegistryEntry{
+						Denom:    "TestDenom",
+						Decimals: 18,
+					},
 				},
-			},
-			errorAssertion: assert.Error,
-			valueAssertion: require.Nil,
-		},
+				errorAssertion: assert.Error,
+				valueAssertion: require.Nil,
+			},*/
 	}
 	for _, tt := range tests {
 		tt := tt

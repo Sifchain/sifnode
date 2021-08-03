@@ -15,14 +15,19 @@ type msgServer struct {
 func (m msgServer) Register(ctx context.Context, req *types.MsgRegister) (
 	*types.MsgRegisterResponse, error) {
 
-	addr, err := sdk.AccAddressFromBech32(req.From)
-	if err != nil {
-		return nil, err
-	}
+	/*
 
-	if !m.keeper.IsAdminAccount(sdk.UnwrapSDKContext(ctx), addr) {
-		return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, "unauthorised signer")
-	}
+		TODO: Re-enable before going to devnet.
+
+		addr, err := sdk.AccAddressFromBech32(req.From)
+		if err != nil {
+			return nil, err
+		}
+
+		if !m.keeper.IsAdminAccount(sdk.UnwrapSDKContext(ctx), addr) {
+			return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, "unauthorised signer")
+		}
+	*/
 
 	m.keeper.SetToken(sdk.UnwrapSDKContext(ctx), req.Entry)
 
