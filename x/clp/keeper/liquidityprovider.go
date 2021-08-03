@@ -102,8 +102,6 @@ func (k Keeper) GetLiquidityProvidersForAssetPaginated(ctx sdk.Context, asset ty
 
 	pageRes, err := query.FilteredPaginate(lpStore, pagination, func(key []byte, value []byte, accumulate bool) (bool, error) {
 		var lp types.LiquidityProvider
-		logger.Info(fmt.Sprintf("attempting to load liquidity provider for %s", key))
-
 		if len(value) <= 0 {
 			logger.Info(fmt.Sprintf("cannot unmarshall empty liquidity provider for key %s", key))
 			return false, nil
@@ -129,11 +127,10 @@ func (k Keeper) GetLiquidityProvidersForAssetPaginated(ctx sdk.Context, asset ty
 
 		return true, nil
 	})
+
 	if err != nil {
 		return nil, &query.PageResponse{}, status.Error(codes.Internal, err.Error())
 	}
-
-	logger.Info(fmt.Sprintf("returning liquidity provider for asset %s with %d results", asset.Symbol, pageRes.Total))
 
 	return lpList, pageRes, nil
 }
