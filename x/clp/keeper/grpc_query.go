@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"context"
+
 	"github.com/cosmos/cosmos-sdk/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/query"
@@ -108,22 +109,13 @@ func (k Querier) GetLiquidityProviderList(c context.Context, req *types.Liquidit
 		return nil, status.Error(codes.InvalidArgument, "empty request")
 	}
 	ctx := sdk.UnwrapSDKContext(c)
-
 	searchingAsset := types.NewAsset(req.Symbol)
-	lpList, pageRes, err := k.GetLiquidityProvidersForAssetPaginated(ctx, searchingAsset, req.Pagination)
+	lpList, pageRes, err := k.Keeper.GetLiquidityProvidersForAssetPaginated(ctx, searchingAsset, req.Pagination)
 	if err != nil {
 		return nil, err
 	}
-
-	liquidityProviders := make([]*types.LiquidityProvider, len(lpList))
-
-	for i, lp := range lpList {
-		lp := lp
-		liquidityProviders[i] = &lp
-	}
-
 	return &types.LiquidityProviderListRes{
-		LiquidityProviders: liquidityProviders,
+		LiquidityProviders: lpList,
 		Height:             ctx.BlockHeight(),
 		Pagination:         pageRes,
 	}, nil

@@ -230,7 +230,7 @@ func TestQueryLPList(t *testing.T) {
 		Path: "",
 		Data: []byte{},
 	}
-	//Set Data
+
 	_, _, lp := SetData(keeper, ctx)
 	querier := clpkeeper.NewQuerier(keeper, cdc)
 
@@ -238,16 +238,17 @@ func TestQueryLPList(t *testing.T) {
 		Symbol: lp.Asset.Symbol,
 	}
 
-	queryData, err := cdc.MarshalJSON(req)
-	require.NoError(t, err)
+	queryData, errRes := cdc.MarshalJSON(req)
+	require.NoError(t, errRes)
+	query.Path = ""
 	query.Data = queryData
 
-	resBz, err := querier(ctx, []string{types.QueryLPList}, query)
-	require.NoError(t, err)
+	qLpList, err := querier(ctx, []string{types.QueryLPList}, query)
+	assert.NoError(t, err)
 
 	res := types.LiquidityProviderListRes{}
-	err = cdc.UnmarshalJSON(resBz, &res.LiquidityProviders)
-	require.NoError(t, err)
+	err = cdc.UnmarshalJSON(qLpList, &res)
+	assert.NoError(t, err)
 	require.Equal(t, []*types.LiquidityProvider{&lp}, res.LiquidityProviders)
 }
 

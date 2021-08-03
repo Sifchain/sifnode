@@ -80,7 +80,7 @@ func TestKeeper_SetLiquidityProvider(t *testing.T) {
 	assert.NoError(t, err, "Error in get liquidityProvider")
 	assert.Equal(t, getlp, lp)
 	lpList := keeper.GetLiquidityProvidersForAsset(ctx, *lp.Asset)
-	assert.Equal(t, lp, lpList[0])
+	assert.Equal(t, &lp, lpList[0])
 }
 
 func TestKeeper_DestroyLiquidityProvider(t *testing.T) {

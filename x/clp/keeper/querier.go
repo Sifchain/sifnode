@@ -23,7 +23,7 @@ func NewQuerier(keeper Keeper, legacyQuerierCdc *codec.LegacyAmino) sdk.Querier 
 		case types.QueryAssetList:
 			return queryAssetList(ctx, path[1:], req, keeper, legacyQuerierCdc)
 		case types.QueryLPList:
-			return queryLPList(ctx, path[1:], req, keeper, legacyQuerierCdc)
+			return queryLPList(ctx, path[1:], req, keeper, legacyQuerierCdc, querier)
 		case types.QueryAllLP:
 			return queryAllLP(ctx, path[1:], keeper, legacyQuerierCdc)
 		default:
@@ -112,20 +112,25 @@ func queryAssetList(ctx sdk.Context, path []string, req abci.RequestQuery, keepe
 	return res, nil
 }
 
-func queryLPList(ctx sdk.Context, path []string, req abci.RequestQuery, keeper Keeper, legacyQuerierCdc *codec.LegacyAmino) ([]byte, error) {
+func queryLPList(ctx sdk.Context, path []string, req abci.RequestQuery, keeper Keeper, legacyQuerierCdc *codec.LegacyAmino, querier Querier) ([]byte, error) {
 	var params types.LiquidityProviderListReq
+
 	err := legacyQuerierCdc.UnmarshalJSON(req.Data, &params)
 	if err != nil {
 		return nil, sdkerrors.Wrap(sdkerrors.ErrJSONUnmarshal, err.Error())
 	}
-	searchingAsset := types.NewAsset(params.Symbol)
-	lpList := keeper.GetLiquidityProvidersForAsset(ctx, searchingAsset)
-	res, err := codec.MarshalJSONIndent(legacyQuerierCdc, lpList)
+
+	res, err := querier.GetLiquidityProviderList(sdk.WrapSDKContext(ctx), &params)
+	if err != nil {
+		return nil, err
+	}
+
+	bz, err := codec.MarshalJSONIndent(legacyQuerierCdc, res)
 	if err != nil {
 		return nil, sdkerrors.Wrap(sdkerrors.ErrJSONMarshal, err.Error())
 	}
 
-	return res, nil
+	return bz, nil
 }
 
 func queryAllLP(ctx sdk.Context, path []string, keeper Keeper, legacyQuerierCdc *codec.LegacyAmino) ([]byte, error) {
