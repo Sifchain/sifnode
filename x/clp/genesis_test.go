@@ -71,6 +71,7 @@ func CreateState(ctx sdk.Context, keeper keeper.Keeper, t *testing.T) (int, int)
 	// Setting Liquidity providers
 	lpList := test.GenerateRandomLP(10)
 	for _, lp := range lpList {
+		lp := lp
 		keeper.SetLiquidityProvider(ctx, &lp)
 	}
 	v1 := test.GenerateWhitelistAddress("")
