@@ -168,6 +168,52 @@ func AttributesToEthereumBridgeClaim(attributes []abci.EventAttribute) (types.Et
 	}, nil
 }
 
+// AttributesToCosmosSignProphecyClaim parses data from event to EthereumBridgeClaim
+func AttributesToCosmosSignProphecyClaim(attributes []abci.EventAttribute) (types.CosmosSignProphecyClaim, error) {
+	var cosmosSender sdk.ValAddress
+	var networkDescriptor oracletypes.NetworkDescriptor
+	var prophecyID []byte
+	var err error
+	attributeNumber := 0
+
+	for _, attribute := range attributes {
+		key := string(attribute.GetKey())
+		val := string(attribute.GetValue())
+
+		// Set variable based on the attribute's key
+		switch key {
+		case types.CosmosSender.String():
+			cosmosSender, err = sdk.ValAddressFromBech32(val)
+			if err != nil {
+				return types.CosmosSignProphecyClaim{}, err
+			}
+
+		case types.NetworkDescriptor.String():
+			attributeNumber++
+			tempNetworkDescriptor, err := strconv.ParseUint(val, 10, 32)
+			if err != nil {
+				log.Printf("network id can't parse networkDescriptor is %s\n", val)
+				return types.CosmosSignProphecyClaim{}, errors.New("network id can't parse")
+			}
+			networkDescriptor = oracletypes.NetworkDescriptor(uint32(tempNetworkDescriptor))
+
+			// check if the networkDescriptor is valid
+			if !networkDescriptor.IsValid() {
+				return types.CosmosSignProphecyClaim{}, errors.New("network id is invalid")
+			}
+
+		case types.ProphecyID.String():
+			prophecyID = []byte(val)
+		}
+	}
+
+	return types.CosmosSignProphecyClaim{
+		CosmosSender:      cosmosSender,
+		NetworkDescriptor: networkDescriptor,
+		ProphecyID:        prophecyID,
+	}, nil
+}
+
 // isZeroAddress checks an Ethereum address and returns a bool which indicates if it is the null address
 func isZeroAddress(address common.Address) bool {
 	return address == common.HexToAddress(nullAddress)

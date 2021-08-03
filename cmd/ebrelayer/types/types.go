@@ -35,11 +35,13 @@ const (
 	CreateEthBridgeClaim
 	// ProphecyCompleted is Cosmos event EventTypeProphecyCompleted
 	ProphecyCompleted
+	// SubmitProphecyClaimAggregatedSigs is Ethereum method name
+	SubmitProphecyClaimAggregatedSigs
 )
 
 // String returns the event type as a string
 func (d Event) String() string {
-	return [...]string{"unsupported", "burn", "lock", "LogLock", "LogBurn", "LogNewProphecyClaim", "newProphecyClaim", "create_claim", "prophecy_completed"}[d]
+	return [...]string{"unsupported", "burn", "lock", "LogLock", "LogBurn", "LogNewProphecyClaim", "newProphecyClaim", "create_claim", "prophecy_completed", "submitProphecyClaimAggregatedSigs"}[d]
 }
 
 // EthereumEvent struct is used by LogLock and LogBurn
@@ -191,6 +193,12 @@ type EthereumBridgeClaim struct {
 // ProphecyClaimUnique for data part of ProphecyClaim transaction in Ethereum
 type ProphecyClaimUnique struct {
 	ProphecyID []byte
+}
+
+type CosmosSignProphecyClaim struct {
+	CosmosSender      sdk.ValAddress
+	NetworkDescriptor oracle.NetworkDescriptor
+	ProphecyID        []byte
 }
 
 // ProphecyInfo store all data needed for smart contract call

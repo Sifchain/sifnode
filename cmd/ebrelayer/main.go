@@ -75,7 +75,7 @@ func buildRootCmd() *cobra.Command {
 
 	log.SetFlags(log.Lshortfile)
 
-	// sifapp.SetConfig(true)
+	sifapp.SetConfig(true)
 
 	// Add --chain-id to persistent flags and mark it required
 	rootCmd.PersistentFlags().String(flags.FlagChainID, "", "Chain ID of tendermint node")
@@ -92,7 +92,8 @@ func buildRootCmd() *cobra.Command {
 		initRelayerCmd(),
 		generateBindingsCmd(),
 		replayEthereumCmd(),
-		replayCosmosCmd(),
+		replayCosmosBurnLockCmd(),
+		replayCosmosSignatureAggregationCmd(),
 		listMissedCosmosEventCmd(),
 	)
 	return rootCmd
@@ -275,17 +276,30 @@ func replayEthereumCmd() *cobra.Command {
 	return replayEthereumCmd
 }
 
-func replayCosmosCmd() *cobra.Command {
+func replayCosmosBurnLockCmd() *cobra.Command {
 	//nolint:lll
-	replayCosmosCmd := &cobra.Command{
-		Use:     "replayCosmos [tendermintNode] [web3Provider] [bridgeRegistryContractAddress] [validatorMoniker] [fromBlock] [toBlock] [ethFromBlock] [ethToBlock]",
+	replayCosmosBurnLockCmd := &cobra.Command{
+		Use:     "replayCosmosBurnLock [tendermintNode] [web3Provider] [bridgeRegistryContractAddress] [validatorMoniker] [fromBlock] [toBlock]",
+		Short:   "replay missed cosmos events",
+		Args:    cobra.ExactArgs(6),
+		Example: "replayCosmos tcp://localhost:26657 ws://localhost:7545/ 0x30753E4A8aad7F8597332E813735Def5dD395028 validator 100 200",
+		RunE:    RunReplayCosmosBurnLockCmd,
+	}
+
+	return replayCosmosBurnLockCmd
+}
+
+func replayCosmosSignatureAggregationCmd() *cobra.Command {
+	//nolint:lll
+	replayCosmosSignatureAggregationCmd := &cobra.Command{
+		Use:     "replayCosmosBurnLock [tendermintNode] [web3Provider] [bridgeRegistryContractAddress] [validatorMoniker] [fromBlock] [toBlock] [ethFromBlock] [ethToBlock]",
 		Short:   "replay missed cosmos events",
 		Args:    cobra.ExactArgs(8),
 		Example: "replayCosmos tcp://localhost:26657 ws://localhost:7545/ 0x30753E4A8aad7F8597332E813735Def5dD395028 validator 100 200 100 200",
-		RunE:    RunReplayCosmosCmd,
+		RunE:    RunReplayCosmosSignatureAggregationCmd,
 	}
 
-	return replayCosmosCmd
+	return replayCosmosSignatureAggregationCmd
 }
 
 func listMissedCosmosEventCmd() *cobra.Command {
