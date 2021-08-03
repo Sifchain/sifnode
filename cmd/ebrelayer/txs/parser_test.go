@@ -55,7 +55,7 @@ func TestBurnEventToCosmosMsg(t *testing.T) {
 
 	// Create MsgBurn attributes as input parameter
 	cosmosMsgAttributes := CreateCosmosMsgAttributes(t, types.MsgBurn)
-	msgBurn, err := BurnLockEventToCosmosMsg(types.MsgBurn, cosmosMsgAttributes, sugaredLogger)
+	msgBurn, err := BurnLockEventToCosmosMsg(cosmosMsgAttributes, sugaredLogger)
 
 	require.Nil(t, err)
 	require.Equal(t, expectedMsgBurn, msgBurn)
@@ -67,7 +67,7 @@ func TestLockEventToCosmosMsg(t *testing.T) {
 
 	// Create MsgLock attributes as input parameter
 	cosmosMsgAttributes := CreateCosmosMsgAttributes(t, types.MsgLock)
-	msgLock, err := BurnLockEventToCosmosMsg(types.MsgLock, cosmosMsgAttributes, sugaredLogger)
+	msgLock, err := BurnLockEventToCosmosMsg(cosmosMsgAttributes, sugaredLogger)
 
 	require.Nil(t, err)
 	require.Equal(t, expectedMsgLock, msgLock)
@@ -76,7 +76,7 @@ func TestLockEventToCosmosMsg(t *testing.T) {
 func TestFailedBurnEventToCosmosMsg(t *testing.T) {
 	// Create MsgBurn attributes as input parameter
 	cosmosMsgAttributes := CreateCosmosMsgIncompleteAttributes(t, types.MsgBurn)
-	_, err := BurnLockEventToCosmosMsg(types.MsgBurn, cosmosMsgAttributes, sugaredLogger)
+	_, err := BurnLockEventToCosmosMsg(cosmosMsgAttributes, sugaredLogger)
 
 	require.Error(t, err)
 }
@@ -84,7 +84,7 @@ func TestFailedBurnEventToCosmosMsg(t *testing.T) {
 func TestFailedLockEventToCosmosMsg(t *testing.T) {
 	// Create MsgLock attributes as input parameter
 	cosmosMsgAttributes := CreateCosmosMsgIncompleteAttributes(t, types.MsgLock)
-	_, err := BurnLockEventToCosmosMsg(types.MsgLock, cosmosMsgAttributes, sugaredLogger)
+	_, err := BurnLockEventToCosmosMsg(cosmosMsgAttributes, sugaredLogger)
 
 	require.Error(t, err)
 }

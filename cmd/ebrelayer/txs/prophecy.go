@@ -16,7 +16,7 @@ import (
 )
 
 // ProphecyCompletedEventToProphecyInfo parses data from a prophecy completed event witnessed on Cosmos
-func ProphecyCompletedEventToProphecyInfo(claimType types.Event, attributes []abci.EventAttribute, sugaredLogger *zap.SugaredLogger) (types.ProphecyInfo, error) {
+func ProphecyCompletedEventToProphecyInfo(attributes []abci.EventAttribute, sugaredLogger *zap.SugaredLogger) (types.ProphecyInfo, error) {
 	var prophecyID []byte
 	var cosmosSender []byte
 	var cosmosSenderSequence *big.Int
@@ -81,16 +81,7 @@ func ProphecyCompletedEventToProphecyInfo(claimType types.Event, attributes []ab
 
 		case types.Symbol.String():
 			attributeNumber++
-			if claimType == types.MsgBurn {
-				if !strings.Contains(val, defaultSifchainPrefix) {
-					sugaredLogger.Errorw("only relay burns prefixed coins", "coin symbol", val)
-					return types.ProphecyInfo{}, errors.New("can only relay burns of '%v' prefixed coins" + defaultSifchainPrefix)
-				}
-				res := strings.SplitAfter(val, defaultSifchainPrefix)
-				symbol = strings.Join(res[1:], "")
-			} else {
-				symbol = val
-			}
+			symbol = val
 
 		case types.Amount.String():
 			attributeNumber++

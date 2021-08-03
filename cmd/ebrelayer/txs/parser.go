@@ -2,6 +2,7 @@ package txs
 
 import (
 	"errors"
+	"fmt"
 	"log"
 	"strconv"
 	"strings"
@@ -18,7 +19,6 @@ import (
 
 const (
 	nullAddress           = "0x0000000000000000000000000000000000000000"
-	defaultSifchainPrefix = "c"
 	defaultEthereumPrefix = "e"
 )
 
@@ -83,7 +83,7 @@ func EthereumEventToEthBridgeClaim(valAddr sdk.ValAddress, event types.EthereumE
 }
 
 // BurnLockEventToCosmosMsg parses data from a Burn/Lock event witnessed on Cosmos into a CosmosMsg struct
-func BurnLockEventToCosmosMsg(claimType types.Event, attributes []abci.EventAttribute, sugaredLogger *zap.SugaredLogger) (types.CosmosMsg, error) {
+func BurnLockEventToCosmosMsg(attributes []abci.EventAttribute, sugaredLogger *zap.SugaredLogger) (types.CosmosMsg, error) {
 	var prophecyID []byte
 	var networkDescriptor uint32
 
@@ -93,9 +93,12 @@ func BurnLockEventToCosmosMsg(claimType types.Event, attributes []abci.EventAttr
 		key := string(attribute.GetKey())
 		val := string(attribute.GetValue())
 
+		fmt.Printf(" key is %v, value is %v\n", key, val)
+
 		// Set variable based on the attribute's key
 		switch key {
 		case types.ProphecyID.String():
+			fmt.Printf(" prophecy id is %v\n", val)
 			prophecyID = []byte(val)
 			attributeNumber++
 

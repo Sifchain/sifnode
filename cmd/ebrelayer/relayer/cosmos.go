@@ -173,7 +173,7 @@ func (sub CosmosSub) Start(txFactory tx.Factory, completionEvent *sync.WaitGroup
 						case types.MsgBurn, types.MsgLock:
 							// the relayer for signature aggregator not handle burn and lock
 							if !sub.SignatureAggregator {
-								cosmosMsg, err := txs.BurnLockEventToCosmosMsg(claimType, event.GetAttributes(), sub.SugaredLogger)
+								cosmosMsg, err := txs.BurnLockEventToCosmosMsg(event.GetAttributes(), sub.SugaredLogger)
 								if err != nil {
 									sub.SugaredLogger.Errorw("sifchain client failed in get burn lock message from event.",
 										errorMessageKey, err.Error())
@@ -185,16 +185,16 @@ func (sub CosmosSub) Start(txFactory tx.Factory, completionEvent *sync.WaitGroup
 							}
 
 						case types.ProphecyCompleted:
-							// the relayer for signature aggregator just handle the
+							// the relayer for signature aggregator just handle the prophecy completed
 							if sub.SignatureAggregator {
-								prophecyInfo, err := txs.ProphecyCompletedEventToProphecyInfo(claimType, event.GetAttributes(), sub.SugaredLogger)
+								prophecyInfo, err := txs.ProphecyCompletedEventToProphecyInfo(event.GetAttributes(), sub.SugaredLogger)
 								if err != nil {
 									sub.SugaredLogger.Errorw("sifchain client failed in get prophecy completed message from event.",
 										errorMessageKey, err.Error())
 									continue
 								}
 								if prophecyInfo.NetworkDescriptor == sub.NetworkDescriptor {
-									sub.handleProphecyCompleted(prophecyInfo, claimType)
+									sub.handleProphecyCompleted(prophecyInfo)
 								}
 							}
 						}
@@ -362,7 +362,7 @@ func (sub CosmosSub) Replay(txFactory tx.Factory, fromBlock int64, toBlock int64
 				case types.MsgBurn, types.MsgLock:
 					log.Println("found out a lock burn message")
 
-					cosmosMsg, err := txs.BurnLockEventToCosmosMsg(claimType, event.GetAttributes(), sub.SugaredLogger)
+					cosmosMsg, err := txs.BurnLockEventToCosmosMsg(event.GetAttributes(), sub.SugaredLogger)
 					if err != nil {
 						log.Println(err)
 						continue

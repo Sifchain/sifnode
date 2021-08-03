@@ -12,7 +12,6 @@ var prophecyInfoBuffer = map[uint64]types.ProphecyInfo{}
 // Parses event data from the msg, event, builds a new ProphecyClaim, and relays it to Ethereum
 func (sub CosmosSub) handleProphecyCompleted(
 	prophecyInfo types.ProphecyInfo,
-	claimType types.Event,
 ) {
 	sub.SugaredLogger.Infow(
 		"get the prophecy completed message.",

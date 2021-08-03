@@ -114,7 +114,7 @@ func (list ListMissedCosmosEvent) ListMissedCosmosEvent() {
 				switch claimType {
 				case types.MsgBurn, types.MsgLock:
 
-					cosmosMsg, err := txs.BurnLockEventToCosmosMsg(claimType, event.GetAttributes(), list.SugaredLogger)
+					cosmosMsg, err := txs.BurnLockEventToCosmosMsg(event.GetAttributes(), list.SugaredLogger)
 					if err != nil {
 						log.Println(err.Error())
 						continue

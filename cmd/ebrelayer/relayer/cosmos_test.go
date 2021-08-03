@@ -12,6 +12,7 @@ import (
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/stretchr/testify/require"
 	"github.com/syndtr/goleveldb/leveldb"
+
 	"go.uber.org/zap"
 )
 
@@ -25,7 +26,6 @@ const (
 )
 
 func TestNewCosmosSub(t *testing.T) {
-	cliContext, _ := client.GetClientTxContext(nil)
 
 	db, err := leveldb.OpenFile("relayerdb", nil)
 	require.Equal(t, err, nil)
@@ -38,7 +38,7 @@ func TestNewCosmosSub(t *testing.T) {
 	sugaredLogger := logger.Sugar()
 	registryContractAddress := common.HexToAddress(contractAddress)
 	sub := NewCosmosSub(oracletypes.NetworkDescriptor(networkDescriptor), privateKey, tmProvider, ethProvider, registryContractAddress,
-		db, cliContext, validatorMoniker, false, sugaredLogger)
+		db, client.Context{}, validatorMoniker, false, sugaredLogger)
 	require.NotEqual(t, sub, nil)
 }
 
@@ -56,9 +56,6 @@ func TestMessageProcessed(t *testing.T) {
 func TestMessageNotProcessed(t *testing.T) {
 	message := txs.CreateTestCosmosMsg(t, types.MsgBurn)
 	var claims []types.ProphecyClaimUnique
-	claims = append(claims, types.ProphecyClaimUnique{
-		ProphecyID: []byte{},
-	})
 
 	processed := MessageProcessed(message, claims)
 	require.Equal(t, processed, false)
