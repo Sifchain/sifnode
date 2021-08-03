@@ -15,8 +15,6 @@ contract CosmosWhiteList is CosmosWhiteListStorage {
      * @dev: Event declarations
      * @notice: This event is in EthereumWhitelist.sol
      */
-    // event LogWhiteListUpdate(address _token, bool _value);
-
     function _cosmosWhitelistInitialize() internal {
         require(!_initialized, "Initialized");
         _initialized = true;
