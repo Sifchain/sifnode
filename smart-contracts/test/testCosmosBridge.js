@@ -215,6 +215,11 @@ describe("Test Cosmos Bridge", function () {
       expect(await state.bridgeBank.pausers(pauser)).to.be.true;
     });
 
+    it("Should deploy cosmos bridge and bridge bank, correctly setting the networkDescriptor", async function () {
+        expect(await state.cosmosBridge.networkDescriptor()).to.equal(state.networkDescriptor);
+        expect(await state.bridgeBank.networkDescriptor()).to.equal(state.networkDescriptor);
+    });
+
     it("should unlock tokens upon the successful processing of a burn prophecy claim", async function () {
       const beforeUserBalance = Number(
         await state.token.balanceOf(state.recipient)
@@ -357,17 +362,6 @@ describe("Test Cosmos Bridge", function () {
 
       const newlyCreatedTokenAddress = await state.cosmosBridge.sourceAddressToDestinationAddress(state.token.address);
       expect(newlyCreatedTokenAddress).to.be.equal(expectedAddress);
-
-      /* @SOL
-        emit LogNewBridgeTokenCreated(
-          decimals,
-          networkDescriptor,
-          name,
-          symbol,
-          sourceChainTokenAddress,
-          tokenAddress
-        );
-      */
     });
 
     it("should NOT deploy a new token upon the successful processing of a normal burn prophecy claim", async function () {
@@ -400,7 +394,7 @@ describe("Test Cosmos Bridge", function () {
         .submitProphecyClaimAggregatedSigs(digest, claimData, signatures);
 
       const newlyCreatedTokenAddress = await state.cosmosBridge.sourceAddressToDestinationAddress(state.token.address);
-      expect(newlyCreatedTokenAddress).to.be.equal('0x0000000000000000000000000000000000000000');
+      expect(newlyCreatedTokenAddress).to.be.equal(state.constants.zeroAddress);
     });
 
     it("should NOT deploy a new token upon the successful processing of a double-pegged burn prophecy claim for an already managed token", async function () {
