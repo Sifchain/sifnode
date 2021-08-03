@@ -29,6 +29,7 @@ contract BridgeBank is BankStorage,
     using SafeERC20 for IERC20;
 
     bool private _initialized;
+    bool private _reinitialized;
 
     /*
      * @dev: Initializer
@@ -44,6 +45,11 @@ contract BridgeBank is BankStorage,
 
         CosmosWhiteList._cosmosWhitelistInitialize();
         EthereumWhiteList.initialize();
+
+        contractName[address(0)] = "Ethereum";
+        contractSymbol[address(0)] = "ETH";
+
+        _initialized = true;
 
         _initialize(
             _operator,
@@ -61,6 +67,10 @@ contract BridgeBank is BankStorage,
         address _pauser,
         uint256 _networkDescriptor
     ) public onlyOperator {
+        require(!_reinitialized, "Already reinitialized");
+
+        _reinitialized = true;
+
         _initialize(
             _operator,
             _cosmosBridgeAddress,
@@ -83,9 +93,6 @@ contract BridgeBank is BankStorage,
         cosmosBridge = _cosmosBridgeAddress;
         owner = _owner;
         networkDescriptor = _networkDescriptor;
-        _initialized = true;
-        contractName[address(0)] = "Ethereum";
-        contractSymbol[address(0)] = "ETH";
     }
 
     /*
@@ -138,10 +145,8 @@ contract BridgeBank is BankStorage,
         // Do not allow a token with the same address to be whitelisted
         if (_inList) {
             // if we want to add it to the whitelist, make sure it's not there yet
-            require(
-                !getTokenInEthWhiteList(_token) && !getCosmosTokenInWhiteList(_token),
-                "whitelisted"
-            );
+            require(!getTokenInEthWhiteList(_token), "whitelisted");
+            require(!getCosmosTokenInWhiteList(_token), "whitelisted");
         } else {
             // if we want to de-whitelist it, make sure that the token is already whitelisted 
             require(getTokenInEthWhiteList(_token), "!whitelisted");
@@ -455,7 +460,7 @@ contract BridgeBank is BankStorage,
         address tokenAddress,
         uint256 tokenAmount,
         uint256 _lockBurnNonce
-    ) private onlyEthTokenWhiteList(tokenAddress) onlyTokenNotInCosmosWhiteList(tokenAddress) validSifAddress(recipient) {
+    ) private onlyEthTokenWhiteList(tokenAddress) validSifAddress(recipient) {
         IERC20 tokenToTransfer = IERC20(tokenAddress);
         // lock tokens
         tokenToTransfer.safeTransferFrom(
