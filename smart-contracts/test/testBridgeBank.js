@@ -95,28 +95,13 @@ describe("Test Bridge Bank", function () {
       
       // Add the token into white list
       await state.bridgeBank.connect(operator)
-      .updateEthWhiteList(fakeToken.address, true)
-      .should.be.fulfilled;
+        .updateEthWhiteList(fakeToken.address, true)
+        .should.be.fulfilled;
 
       // Approve and lock tokens
       await expect(state.bridgeBank.connect(userOne).lock(state.sender, fakeToken.address, state.amount))
         .to.emit(state.bridgeBank, 'LogLock')
         .withArgs(userOne.address, state.sender, fakeToken.address, state.amount, "3", 18, "", "", state.networkDescriptor);
-
-      /*
-            msg.sender,
-            recipient,
-            tokenAddress,
-            tokenAmount,
-            _lockBurnNonce,
-            decimals,
-            symbol,
-            name,
-            networkDescriptor
-        );
-      */
-
-        // todo: what exactly is this test supposed to do?
     });
 
     it("should allow users to lock Ethereum in the bridge bank", async function () {
