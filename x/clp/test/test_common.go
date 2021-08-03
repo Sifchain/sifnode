@@ -30,11 +30,9 @@ const (
 func CreateTestApp(isCheckTx bool) (*sifapp.SifchainApp, sdk.Context) {
 	app := sifapp.Setup(isCheckTx)
 	ctx := app.BaseApp.NewContext(isCheckTx, tmproto.Header{})
-
 	app.AccountKeeper.SetParams(ctx, authtypes.DefaultParams())
 	initTokens := sdk.TokensFromConsensusPower(1000)
 	_ = sifapp.AddTestAddrs(app, ctx, 6, initTokens)
-
 	return app, ctx
 }
 
@@ -70,20 +68,16 @@ func GenerateRandomLP(numberOfLp int) []types.LiquidityProvider {
 	var lpList []types.LiquidityProvider
 	tokens := []string{"ceth", "cbtc", "ceos", "cbch", "cbnb", "cusdt", "cada", "ctrx"}
 	rand.Seed(time.Now().Unix())
-
 	for i := 0; i < numberOfLp; i++ {
 		externalToken := tokens[rand.Intn(len(tokens))]
 		asset := types.NewAsset(trimFirstRune(externalToken))
-
 		lpAddess, err := sdk.AccAddressFromBech32("sif1azpar20ck9lpys89r8x7zc8yu0qzgvtp48ng5v")
 		if err != nil {
 			panic(err)
 		}
-
 		lp := types.NewLiquidityProvider(&asset, sdk.NewUint(1), lpAddess)
 		lpList = append(lpList, lp)
 	}
-
 	return lpList
 }
 
@@ -103,16 +97,13 @@ func GenerateAddress(key string) sdk.AccAddress {
 	bech := res.String()
 	addr := buffer.String()
 	res, err := sdk.AccAddressFromHex(addr)
-
 	if err != nil {
 		panic(err)
 	}
-
 	bechexpected := res.String()
 	if bech != bechexpected {
 		panic("Bech encoding doesn't match reference")
 	}
-
 	bechres, err := sdk.AccAddressFromBech32(bech)
 	if err != nil {
 		panic(err)
@@ -134,16 +125,13 @@ func GenerateWhitelistAddress(key string) sdk.AccAddress {
 	bech := res.String()
 	addr := buffer.String()
 	res, err := sdk.AccAddressFromHex(addr)
-
 	if err != nil {
 		panic(err)
 	}
-
 	bechexpected := res.String()
 	if bech != bechexpected {
 		panic("Bech encoding doesn't match reference")
 	}
-
 	bechres, err := sdk.AccAddressFromBech32(bech)
 	if err != nil {
 		panic(err)

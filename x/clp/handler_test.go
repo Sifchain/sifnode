@@ -20,7 +20,6 @@ func TestHandler(t *testing.T) {
 	res, err := handler(ctx, nil)
 	require.Error(t, err)
 	require.Nil(t, res)
-
 }
 
 func TestCreatePool(t *testing.T) {
@@ -146,7 +145,6 @@ func TestAddLiquidity_LargeValue(t *testing.T) {
 	res, err = handler(ctx, &msg)
 	require.NoError(t, err)
 	require.NotNil(t, res)
-
 }
 
 func TestRemoveLiquidity(t *testing.T) {
@@ -249,7 +247,6 @@ func TestRemoveLiquidity(t *testing.T) {
 	res, err = handler(ctx, &msg)
 	require.NoError(t, err)
 	require.NotNil(t, res, "Can withdraw now as new LP has added liquidity")
-
 }
 
 func TestSwap(t *testing.T) {
@@ -312,7 +309,6 @@ func TestSwap(t *testing.T) {
 	res, err = handler(ctx, &msg)
 	require.ErrorIs(t, err, clptypes.ErrReceivedAmountBelowExpected)
 	require.Nil(t, res)
-
 }
 
 func TestDecommisionPool(t *testing.T) {
