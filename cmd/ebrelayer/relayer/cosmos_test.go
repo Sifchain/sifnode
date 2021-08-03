@@ -49,7 +49,7 @@ func TestMessageProcessed(t *testing.T) {
 		ProphecyID: []byte{},
 	})
 
-	processed := MessageProcessed(message, claims)
+	processed := MessageProcessed(message.ProphecyID, claims)
 	require.Equal(t, processed, true)
 }
 
@@ -57,7 +57,7 @@ func TestMessageNotProcessed(t *testing.T) {
 	message := txs.CreateTestCosmosMsg(t, types.MsgBurn)
 	var claims []types.ProphecyClaimUnique
 
-	processed := MessageProcessed(message, claims)
+	processed := MessageProcessed(message.ProphecyID, claims)
 	require.Equal(t, processed, false)
 }
 

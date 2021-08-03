@@ -215,3 +215,7 @@ type ProphecyInfo struct {
 	NetworkDescriptor    oracle.NetworkDescriptor
 	DoublePeg            bool
 }
+
+func (info *ProphecyInfo) String() string {
+	return fmt.Sprintf("%#v\n", info)
+}

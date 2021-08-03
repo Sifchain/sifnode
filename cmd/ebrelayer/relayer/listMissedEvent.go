@@ -112,15 +112,15 @@ func (list ListMissedCosmosEvent) ListMissedCosmosEvent() {
 				claimType := getOracleClaimType(event.GetType())
 
 				switch claimType {
-				case types.MsgBurn, types.MsgLock:
+				case types.ProphecyCompleted:
 
-					cosmosMsg, err := txs.BurnLockEventToCosmosMsg(event.GetAttributes(), list.SugaredLogger)
+					cosmosMsg, err := txs.ProphecyCompletedEventToProphecyInfo(event.GetAttributes(), list.SugaredLogger)
 					if err != nil {
 						log.Println(err.Error())
 						continue
 					}
 
-					if cosmosMsg.NetworkDescriptor == list.NetworkDescriptor && !MessageProcessed(cosmosMsg, ProphecyClaims) {
+					if cosmosMsg.NetworkDescriptor == list.NetworkDescriptor && !MessageProcessed(cosmosMsg.ProphecyID, ProphecyClaims) {
 						log.Printf("missed cosmos event: %s\n", cosmosMsg.String())
 					}
 				}
