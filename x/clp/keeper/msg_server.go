@@ -8,6 +8,7 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+	"github.com/cosmos/cosmos-sdk/types/query"
 
 	"github.com/Sifchain/sifnode/x/clp/types"
 )
@@ -47,7 +48,10 @@ func (k msgServer) DecommissionPool(goCtx context.Context, msg *types.MsgDecommi
 	if pool.ExternalAsset == nil {
 		return nil, errors.New("nill external asset")
 	}
-	lpList := k.Keeper.GetLiquidityProvidersForAsset(ctx, *pool.ExternalAsset)
+	lpList, _, err := k.Keeper.GetLiquidityProvidersForAssetPaginated(ctx, *pool.ExternalAsset, &query.PageRequest{})
+	if err != nil {
+		return nil, sdkerrors.Wrap(types.ErrLiquidityProviderDoesNotExist, err.Error())
+	}
 	poolUnits := pool.PoolUnits
 	nativeAssetBalance := pool.NativeAssetBalance
 	externalAssetBalance := pool.ExternalAssetBalance

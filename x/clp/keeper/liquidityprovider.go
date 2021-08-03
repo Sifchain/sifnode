@@ -78,6 +78,7 @@ func (k Keeper) DestroyLiquidityProvider(ctx sdk.Context, symbol string, lpAddre
 	store.Delete(key)
 }
 
+// Deprecated: GetLiquidityProvidersForAsset use GetLiquidityProvidersForAssetPaginated
 func (k Keeper) GetLiquidityProvidersForAsset(ctx sdk.Context, asset types.Asset) []*types.LiquidityProvider {
 	var lpList []*types.LiquidityProvider
 	iterator := k.GetLiquidityProviderIterator(ctx)
