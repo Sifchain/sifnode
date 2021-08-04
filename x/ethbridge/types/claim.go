@@ -100,15 +100,5 @@ func GetDenomHash(
 	rawDenomHash := sha256.Sum256([]byte(denomHashedString))
 	denomHash := hex.EncodeToString(rawDenomHash[:])
 
-	// Lookup for human readable denoms reference implementation
-	denomOverrideTable := map[string]string{
-		// Example entry, this table could be its own file and imported for
-		// code that needs to reference it
-		"20xbF45BFc92ebD305d4C0baf8395c4299bdFCE9EA29wBTCWBTC": "BTC",
-	}
-	humanReadableDenom, overridePresent := denomOverrideTable[denomHashedString]
-	if overridePresent {
-		denomHash = humanReadableDenom
-	}
 	return denomHash
 }

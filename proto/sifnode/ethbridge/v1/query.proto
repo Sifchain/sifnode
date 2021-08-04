@@ -26,10 +26,7 @@ message QueryEthProphecyResponse {
 
 // Denom needed to request metadata for token
 message TokenMetadataRequest {
-  string denom = 1 [
-    (gogoproto.moretags) = "yaml:\"token_denom\"",
-    (gogoproto.nullable) = false
-  ];
+  string denom = 1 [ (gogoproto.moretags) = "yaml:\"token_denom\"" ];
 }
 
 // Message returned from a TokenMetadata Response
