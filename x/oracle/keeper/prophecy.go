@@ -54,7 +54,6 @@ func (k Keeper) GetProphecyInfo(ctx sdk.Context, prophecyID []byte) (types.Proph
 	var prophecySignatures types.ProphecyInfo
 	store := ctx.KVStore(k.storeKey)
 
-	// storePrefix := append(types.SignaturePrefix, prophecyID[:]...)
 	bz := store.Get(append(types.SignaturePrefix, prophecyID[:]...))
 	if bz == nil {
 		return types.ProphecyInfo{}, false

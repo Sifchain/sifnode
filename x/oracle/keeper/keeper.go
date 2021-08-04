@@ -195,7 +195,7 @@ func (k Keeper) ProcessSignProphecy(ctx sdk.Context, networkDescriptor types.Net
 
 	ok = gethCrypto.VerifySignature(publicKey, prophecyID, []byte(signature))
 	if !ok {
-		return errors.New("incorrect signature")
+		return errors.New("incorrect ethereum signature")
 	}
 
 	valAddr, err := sdk.ValAddressFromBech32(cosmosSender)

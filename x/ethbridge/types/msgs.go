@@ -89,6 +89,7 @@ func (msg MsgLock) GetProphecyID(doublePeggy bool, sequence, globalNonce uint64)
 		msg.Amount,
 		doublePeggy,
 		globalNonce,
+		msg.NetworkDescriptor,
 	)
 }
 
@@ -179,12 +180,13 @@ func (msg MsgBurn) GetProphecyID(doublePeggy bool, sequence, globalNonce uint64)
 		msg.Amount,
 		doublePeggy,
 		globalNonce,
+		msg.NetworkDescriptor,
 	)
 }
 
 // ComputeProphecyID compute the prophecy id
 func ComputeProphecyID(cosmosSender string, sequence uint64, ethereumReceiver string, tokenAddress string, amount sdk.Int,
-	doublePeggy bool, globalNonce uint64) []byte {
+	doublePeggy bool, globalNonce uint64, networkDescriptor oracletypes.NetworkDescriptor) []byte {
 
 	bytesTy, _ := abi.NewType("bytes", nil)
 	boolTy, _ := abi.NewType("bool", nil)
@@ -214,6 +216,9 @@ func ComputeProphecyID(cosmosSender string, sequence uint64, ethereumReceiver st
 		{
 			Type: uint128Ty,
 		},
+		{
+			Type: uint256Ty,
+		},
 	}
 
 	bytes, _ := arguments.Pack(
@@ -226,6 +231,7 @@ func ComputeProphecyID(cosmosSender string, sequence uint64, ethereumReceiver st
 		big.NewInt(amount.Int64()),
 		doublePeggy,
 		big.NewInt(int64(globalNonce)),
+		big.NewInt(int64(networkDescriptor)),
 	)
 
 	hashBytes := crypto.Keccak256(bytes)
