@@ -2,7 +2,6 @@ package keeper
 
 import (
 	"context"
-	"math"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/query"
@@ -41,7 +40,7 @@ func (k Querier) GetPools(c context.Context, req *types.PoolsReq) (*types.PoolsR
 	}
 	ctx := sdk.UnwrapSDKContext(c)
 	pageReq := query.PageRequest{
-		Limit: uint64(math.MaxUint64),
+		Limit: uint64(100),
 	}
 	pools, pageRes, err := k.Keeper.GetPoolsPaginated(ctx, &pageReq)
 	if err != nil {
