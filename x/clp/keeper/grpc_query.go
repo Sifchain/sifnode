@@ -2,18 +2,21 @@ package keeper
 
 import (
 	"context"
+	"fmt"
+	"github.com/cosmos/cosmos-sdk/types/query"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/cosmos/cosmos-sdk/types/query"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
 	"github.com/Sifchain/sifnode/x/clp/types"
 )
 
+const MaxPageLimit = 200
+
 // Querier is used as Keeper will have duplicate methods if used directly, and gRPC names take precedence over keeper
 type Querier struct {
-	Keeper
+	Keeper Keeper
 }
 
 var _ types.QueryServer = Querier{}
@@ -38,11 +41,20 @@ func (k Querier) GetPools(c context.Context, req *types.PoolsReq) (*types.PoolsR
 	if req == nil {
 		return nil, status.Error(codes.InvalidArgument, "empty request")
 	}
-	ctx := sdk.UnwrapSDKContext(c)
-	pageReq := query.PageRequest{
-		Limit: uint64(100),
+
+	if req.Pagination == nil {
+		req.Pagination = &query.PageRequest{
+			Limit: MaxPageLimit,
+		}
 	}
-	pools, pageRes, err := k.Keeper.GetPoolsPaginated(ctx, &pageReq)
+
+	if req.Pagination.Limit > MaxPageLimit {
+		return nil, status.Error(codes.InvalidArgument, fmt.Sprintf("page size greater than max %d", MaxPageLimit))
+	}
+
+	ctx := sdk.UnwrapSDKContext(c)
+
+	pools, pageRes, err := k.Keeper.GetPoolsPaginated(ctx, req.Pagination)
 	if err != nil {
 		return nil, err
 	}
@@ -76,19 +88,28 @@ func (k Querier) GetAssetList(c context.Context, req *types.AssetListReq) (*type
 	if req == nil {
 		return nil, status.Error(codes.InvalidArgument, "empty request")
 	}
+
+	if req.Pagination == nil {
+		req.Pagination = &query.PageRequest{
+			Limit: MaxPageLimit,
+		}
+	}
+
+	if req.Pagination.Limit > MaxPageLimit {
+		return nil, status.Error(codes.InvalidArgument, fmt.Sprintf("page size greater than max %d", MaxPageLimit))
+	}
+
 	ctx := sdk.UnwrapSDKContext(c)
 	addr, err := sdk.AccAddressFromBech32(req.LpAddress)
 	if err != nil {
 		return nil, err
 	}
-	assetList := k.GetAssetsForLiquidityProvider(ctx, addr)
-	al := make([]*types.Asset, len(assetList))
-	for i := range assetList {
-		asset := assetList[i]
-		al = append(al, &asset)
+	assetList, _, err := k.Keeper.GetAssetsForLiquidityProviderPaginated(ctx, addr, &query.PageRequest{Limit: MaxPageLimit})
+	if err != nil {
+		return nil, err
 	}
 	return &types.AssetListRes{
-		Assets: al,
+		Assets: assetList,
 	}, nil
 }
 
@@ -96,15 +117,25 @@ func (k Querier) GetLiquidityProviderList(c context.Context, req *types.Liquidit
 	if req == nil {
 		return nil, status.Error(codes.InvalidArgument, "empty request")
 	}
+
+	if req.Pagination == nil {
+		req.Pagination = &query.PageRequest{
+			Limit: MaxPageLimit,
+		}
+	}
+
+	if req.Pagination.Limit > MaxPageLimit {
+		return nil, status.Error(codes.InvalidArgument, fmt.Sprintf("page size greater than max %d", MaxPageLimit))
+	}
+
 	ctx := sdk.UnwrapSDKContext(c)
 	searchingAsset := types.NewAsset(req.Symbol)
-	pageReq := query.PageRequest{
-		Limit: uint64(100),
-	}
-	lpList, pageRes, err := k.Keeper.GetLiquidityProvidersForAssetPaginated(ctx, searchingAsset, &pageReq)
+
+	lpList, pageRes, err := k.Keeper.GetLiquidityProvidersForAssetPaginated(ctx, searchingAsset, req.Pagination)
 	if err != nil {
 		return nil, err
 	}
+
 	return &types.LiquidityProviderListRes{
 		LiquidityProviders: lpList,
 		Height:             ctx.BlockHeight(),
@@ -116,11 +147,20 @@ func (k Querier) GetLiquidityProviders(c context.Context, req *types.LiquidityPr
 	if req == nil {
 		return nil, status.Error(codes.InvalidArgument, "empty request")
 	}
-	ctx := sdk.UnwrapSDKContext(c)
-	pageReq := query.PageRequest{
-		Limit: uint64(100),
+
+	if req.Pagination == nil {
+		req.Pagination = &query.PageRequest{
+			Limit: MaxPageLimit,
+		}
 	}
-	lpList, pageRes, err := k.Keeper.GetAllLiquidityProvidersPaginated(ctx, &pageReq)
+
+	if req.Pagination.Limit > MaxPageLimit {
+		return nil, status.Error(codes.InvalidArgument, fmt.Sprintf("page size greater than max %d", MaxPageLimit))
+	}
+
+	ctx := sdk.UnwrapSDKContext(c)
+
+	lpList, pageRes, err := k.Keeper.GetAllLiquidityProvidersPaginated(ctx, req.Pagination)
 	if err != nil {
 		return nil, err
 	}

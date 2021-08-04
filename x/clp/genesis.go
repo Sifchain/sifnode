@@ -45,11 +45,12 @@ func InitGenesis(ctx sdk.Context, k keeper.Keeper, data types.GenesisState) (res
 func ExportGenesis(ctx sdk.Context, keeper keeper.Keeper) types.GenesisState {
 	params := keeper.GetParams(ctx)
 	var poolList []*types.Pool
-	req := query.PageRequest{
+	poolList, _, _ = keeper.GetPoolsPaginated(ctx, &query.PageRequest{
 		Limit: uint64(math.MaxUint64),
-	}
-	poolList, _, _ = keeper.GetPoolsPaginated(ctx, &req)
-	liquidityProviders, _, _ := keeper.GetAllLiquidityProvidersPaginated(ctx, &req)
+	})
+	liquidityProviders, _, _ := keeper.GetAllLiquidityProvidersPaginated(ctx, &query.PageRequest{
+		Limit: uint64(math.MaxUint64),
+	})
 	whiteList := keeper.GetClpWhiteList(ctx)
 	wl := make([]string, len(whiteList))
 	for i, entry := range whiteList {

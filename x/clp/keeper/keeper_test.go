@@ -1,6 +1,7 @@
 package keeper_test
 
 import (
+	"math"
 	"testing"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -126,7 +127,8 @@ func TestKeeper_GetAssetsForLiquidityProvider(t *testing.T) {
 	}
 	lpaddr, err := sdk.AccAddressFromBech32(lpList[0].LiquidityProviderAddress)
 	require.NoError(t, err)
-	assetList := keeper.GetAssetsForLiquidityProvider(ctx, lpaddr)
+	assetList, _, err := keeper.GetAssetsForLiquidityProviderPaginated(ctx, lpaddr, &query.PageRequest{Limit: math.MaxUint64})
+	assert.NoError(t, err)
 	assert.LessOrEqual(t, len(assetList), len(lpList))
 }
 

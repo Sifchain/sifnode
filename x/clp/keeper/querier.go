@@ -11,20 +11,21 @@ import (
 // NewQuerier is the module level router for state queries
 func NewQuerier(keeper Keeper, legacyQuerierCdc *codec.LegacyAmino) sdk.Querier {
 	querier := Querier{keeper}
+
 	return func(ctx sdk.Context, path []string, req abci.RequestQuery) ([]byte, error) {
 		switch path[0] {
 		case types.QueryPool:
 			return queryPool(ctx, path[1:], req, legacyQuerierCdc, querier)
 		case types.QueryPools:
-			return queryPools(ctx, path[1:], legacyQuerierCdc, querier)
+			return queryPools(ctx, path[1:], req, legacyQuerierCdc, querier)
 		case types.QueryLiquidityProvider:
 			return queryLiquidityProvider(ctx, path[1:], req, legacyQuerierCdc, querier)
 		case types.QueryAssetList:
-			return queryAssetList(ctx, path[1:], req, keeper, legacyQuerierCdc)
+			return queryAssetList(ctx, path[1:], req, legacyQuerierCdc, querier)
 		case types.QueryLPList:
-			return queryLPList(ctx, path[1:], req, keeper, legacyQuerierCdc, querier)
+			return queryLPList(ctx, path[1:], req, legacyQuerierCdc, querier)
 		case types.QueryAllLP:
-			return queryAllLP(ctx, path[1:], keeper, legacyQuerierCdc, querier)
+			return queryAllLP(ctx, path[1:], req, legacyQuerierCdc, querier)
 		default:
 			return nil, sdkerrors.Wrap(sdkerrors.ErrUnknownRequest, "unknown clp query endpoint")
 		}
@@ -48,7 +49,7 @@ func queryPool(ctx sdk.Context, path []string, req abci.RequestQuery, legacyQuer
 	return bz, nil
 }
 
-func queryPools(ctx sdk.Context, path []string, legacyQuerierCdc *codec.LegacyAmino, querier Querier) ([]byte, error) {
+func queryPools(ctx sdk.Context, path []string, req abci.RequestQuery, legacyQuerierCdc *codec.LegacyAmino, querier Querier) ([]byte, error) {
 	res, err := querier.GetPools(sdk.WrapSDKContext(ctx), &types.PoolsReq{})
 	if err != nil {
 		return nil, err
@@ -77,25 +78,24 @@ func queryLiquidityProvider(ctx sdk.Context, path []string, req abci.RequestQuer
 	return bz, nil
 }
 
-func queryAssetList(ctx sdk.Context, path []string, req abci.RequestQuery, keeper Keeper, legacyQuerierCdc *codec.LegacyAmino) ([]byte, error) {
+func queryAssetList(ctx sdk.Context, path []string, req abci.RequestQuery, legacyQuerierCdc *codec.LegacyAmino, querier Querier) ([]byte, error) {
 	var params types.AssetListReq
 	err := legacyQuerierCdc.UnmarshalJSON(req.Data, &params)
 	if err != nil {
 		return nil, sdkerrors.Wrap(sdkerrors.ErrJSONUnmarshal, err.Error())
 	}
-	addr, err := sdk.AccAddressFromBech32(params.LpAddress)
+	res, err := querier.GetAssetList(sdk.WrapSDKContext(ctx), &params)
 	if err != nil {
 		return nil, err
 	}
-	assetList := keeper.GetAssetsForLiquidityProvider(ctx, addr)
-	res, err := codec.MarshalJSONIndent(legacyQuerierCdc, assetList)
+	bz, err := codec.MarshalJSONIndent(legacyQuerierCdc, res.Assets)
 	if err != nil {
 		return nil, sdkerrors.Wrap(sdkerrors.ErrJSONMarshal, err.Error())
 	}
-	return res, nil
+	return bz, nil
 }
 
-func queryLPList(ctx sdk.Context, path []string, req abci.RequestQuery, keeper Keeper, legacyQuerierCdc *codec.LegacyAmino, querier Querier) ([]byte, error) {
+func queryLPList(ctx sdk.Context, path []string, req abci.RequestQuery, legacyQuerierCdc *codec.LegacyAmino, querier Querier) ([]byte, error) {
 	var params types.LiquidityProviderListReq
 	err := legacyQuerierCdc.UnmarshalJSON(req.Data, &params)
 	if err != nil {
@@ -105,19 +105,19 @@ func queryLPList(ctx sdk.Context, path []string, req abci.RequestQuery, keeper K
 	if err != nil {
 		return nil, err
 	}
-	bz, err := codec.MarshalJSONIndent(legacyQuerierCdc, res)
+	bz, err := codec.MarshalJSONIndent(legacyQuerierCdc, res.LiquidityProviders)
 	if err != nil {
 		return nil, sdkerrors.Wrap(sdkerrors.ErrJSONMarshal, err.Error())
 	}
 	return bz, nil
 }
 
-func queryAllLP(ctx sdk.Context, path []string, keeper Keeper, legacyQuerierCdc *codec.LegacyAmino, querier Querier) ([]byte, error) {
+func queryAllLP(ctx sdk.Context, path []string, req abci.RequestQuery, legacyQuerierCdc *codec.LegacyAmino, querier Querier) ([]byte, error) {
 	res, err := querier.GetLiquidityProviders(sdk.WrapSDKContext(ctx), &types.LiquidityProvidersReq{})
 	if err != nil {
 		return nil, err
 	}
-	bz, err := codec.MarshalJSONIndent(legacyQuerierCdc, res)
+	bz, err := codec.MarshalJSONIndent(legacyQuerierCdc, res.LiquidityProviders)
 	if err != nil {
 		return nil, sdkerrors.Wrap(sdkerrors.ErrJSONMarshal, err.Error())
 	}

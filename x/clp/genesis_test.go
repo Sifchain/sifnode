@@ -1,6 +1,7 @@
 package clp_test
 
 import (
+	"github.com/ethereum/go-ethereum/common/math"
 	"testing"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -38,7 +39,8 @@ func TestInitGenesis(t *testing.T) {
 	poolsList, _, err := keeper2.GetPoolsPaginated(ctx2, &query.PageRequest{})
 	assert.NoError(t, err)
 	assert.Equal(t, len(poolsList), poolsCount)
-	lpList := keeper2.GetLiquidityProviders(ctx2)
+	lpList, _, err := keeper2.GetAllLiquidityProvidersPaginated(ctx2, &query.PageRequest{Limit: math.MaxUint64})
+	assert.NoError(t, err)
 	assert.Equal(t, len(lpList), lpCount)
 	assert.Equal(t, keeper2.GetParams(ctx2).MinCreatePoolThreshold, types.DefaultMinCreatePoolThreshold)
 	assert.Equal(t, keeper2.GetParams(ctx2).MinCreatePoolThreshold, keeper1.GetParams(ctx1).MinCreatePoolThreshold)
@@ -78,7 +80,8 @@ func CreateState(ctx sdk.Context, keeper keeper.Keeper, t *testing.T) (int, int)
 	keeper.SetClpWhiteList(ctx, []sdk.AccAddress{v1})
 	accAddr, err := sdk.AccAddressFromBech32(lpList[1].LiquidityProviderAddress)
 	assert.NoError(t, err)
-	assetList := keeper.GetAssetsForLiquidityProvider(ctx, accAddr)
+	assetList, _, err := keeper.GetAssetsForLiquidityProviderPaginated(ctx, accAddr, &query.PageRequest{Limit: math.MaxUint64})
+	assert.NoError(t, err)
 	assert.LessOrEqual(t, len(assetList), len(lpList))
 	lpCount := len(assetList)
 	return poolsCount, lpCount

@@ -49,10 +49,9 @@ func (k msgServer) DecommissionPool(goCtx context.Context, msg *types.MsgDecommi
 	if pool.ExternalAsset == nil {
 		return nil, errors.New("nill external asset")
 	}
-	req := query.PageRequest{
+	lpList, _, err := k.Keeper.GetLiquidityProvidersForAssetPaginated(ctx, *pool.ExternalAsset, &query.PageRequest{
 		Limit: uint64(math.MaxUint64),
-	}
-	lpList, _, err := k.Keeper.GetLiquidityProvidersForAssetPaginated(ctx, *pool.ExternalAsset, &req)
+	})
 	if err != nil {
 		return nil, sdkerrors.Wrap(types.ErrLiquidityProviderDoesNotExist, err.Error())
 	}

@@ -225,7 +225,7 @@ func TestQueryLPList(t *testing.T) {
 	qLpList, err := querier(ctx, []string{types.QueryLPList}, query)
 	assert.NoError(t, err)
 	res := types.LiquidityProviderListRes{}
-	err = cdc.UnmarshalJSON(qLpList, &res)
+	err = cdc.UnmarshalJSON(qLpList, &res.LiquidityProviders)
 	assert.NoError(t, err)
 	require.Equal(t, []*types.LiquidityProvider{&lp}, res.LiquidityProviders)
 }
@@ -245,7 +245,7 @@ func TestQueryAllLPs(t *testing.T) {
 	resBz, err := querier(ctx, []string{types.QueryAllLP}, query)
 	assert.NoError(t, err)
 	var lpRes types.LiquidityProvidersRes
-	err = cdc.UnmarshalJSON(resBz, &lpRes)
+	err = cdc.UnmarshalJSON(resBz, &lpRes.LiquidityProviders)
 	assert.NoError(t, err)
 	assert.Equal(t, []*types.LiquidityProvider{&lp}, lpRes.LiquidityProviders)
 }
