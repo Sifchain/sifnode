@@ -2,8 +2,10 @@ package keeper
 
 import (
 	"context"
+	"math"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/cosmos-sdk/types/query"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
@@ -38,7 +40,10 @@ func (k Querier) GetPools(c context.Context, req *types.PoolsReq) (*types.PoolsR
 		return nil, status.Error(codes.InvalidArgument, "empty request")
 	}
 	ctx := sdk.UnwrapSDKContext(c)
-	pools, pageRes, err := k.Keeper.GetPoolsPaginated(ctx, req.Pagination)
+	pageReq := query.PageRequest{
+		Limit: uint64(math.MaxUint64),
+	}
+	pools, pageRes, err := k.Keeper.GetPoolsPaginated(ctx, &pageReq)
 	if err != nil {
 		return nil, err
 	}
@@ -94,7 +99,10 @@ func (k Querier) GetLiquidityProviderList(c context.Context, req *types.Liquidit
 	}
 	ctx := sdk.UnwrapSDKContext(c)
 	searchingAsset := types.NewAsset(req.Symbol)
-	lpList, pageRes, err := k.Keeper.GetLiquidityProvidersForAssetPaginated(ctx, searchingAsset, req.Pagination)
+	pageReq := query.PageRequest{
+		Limit: uint64(100),
+	}
+	lpList, pageRes, err := k.Keeper.GetLiquidityProvidersForAssetPaginated(ctx, searchingAsset, &pageReq)
 	if err != nil {
 		return nil, err
 	}
@@ -110,7 +118,10 @@ func (k Querier) GetLiquidityProviders(c context.Context, req *types.LiquidityPr
 		return nil, status.Error(codes.InvalidArgument, "empty request")
 	}
 	ctx := sdk.UnwrapSDKContext(c)
-	lpList, pageRes, err := k.Keeper.GetAllLiquidityProvidersPaginated(ctx, req.Pagination)
+	pageReq := query.PageRequest{
+		Limit: uint64(100),
+	}
+	lpList, pageRes, err := k.Keeper.GetAllLiquidityProvidersPaginated(ctx, &pageReq)
 	if err != nil {
 		return nil, err
 	}

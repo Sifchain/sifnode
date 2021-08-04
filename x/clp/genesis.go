@@ -2,6 +2,7 @@ package clp
 
 import (
 	"fmt"
+	"math"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
@@ -44,8 +45,11 @@ func InitGenesis(ctx sdk.Context, k keeper.Keeper, data types.GenesisState) (res
 func ExportGenesis(ctx sdk.Context, keeper keeper.Keeper) types.GenesisState {
 	params := keeper.GetParams(ctx)
 	var poolList []*types.Pool
-	poolList, _, _ = keeper.GetPoolsPaginated(ctx, &query.PageRequest{})
-	liquidityProviders, _, _ := keeper.GetAllLiquidityProvidersPaginated(ctx, &query.PageRequest{})
+	req := query.PageRequest{
+		Limit: uint64(math.MaxUint64),
+	}
+	poolList, _, _ = keeper.GetPoolsPaginated(ctx, &req)
+	liquidityProviders, _, _ := keeper.GetAllLiquidityProvidersPaginated(ctx, &req)
 	whiteList := keeper.GetClpWhiteList(ctx)
 	wl := make([]string, len(whiteList))
 	for i, entry := range whiteList {

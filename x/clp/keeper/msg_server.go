@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"math"
 	"strconv"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -48,7 +49,10 @@ func (k msgServer) DecommissionPool(goCtx context.Context, msg *types.MsgDecommi
 	if pool.ExternalAsset == nil {
 		return nil, errors.New("nill external asset")
 	}
-	lpList, _, err := k.Keeper.GetLiquidityProvidersForAssetPaginated(ctx, *pool.ExternalAsset, &query.PageRequest{})
+	req := query.PageRequest{
+		Limit: uint64(math.MaxUint64),
+	}
+	lpList, _, err := k.Keeper.GetLiquidityProvidersForAssetPaginated(ctx, *pool.ExternalAsset, &req)
 	if err != nil {
 		return nil, sdkerrors.Wrap(types.ErrLiquidityProviderDoesNotExist, err.Error())
 	}
