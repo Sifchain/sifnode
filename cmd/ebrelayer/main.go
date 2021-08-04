@@ -279,10 +279,10 @@ func replayEthereumCmd() *cobra.Command {
 func replayCosmosBurnLockCmd() *cobra.Command {
 	//nolint:lll
 	replayCosmosBurnLockCmd := &cobra.Command{
-		Use:     "replayCosmosBurnLock [tendermintNode] [web3Provider] [bridgeRegistryContractAddress] [validatorMoniker] [fromBlock] [toBlock]",
+		Use:     "replayCosmosBurnLock [tendermintNode] [web3Provider] [bridgeRegistryContractAddress] [validatorMoniker]",
 		Short:   "replay missed cosmos events",
-		Args:    cobra.ExactArgs(6),
-		Example: "replayCosmos tcp://localhost:26657 ws://localhost:7545/ 0x30753E4A8aad7F8597332E813735Def5dD395028 validator 100 200",
+		Args:    cobra.ExactArgs(4),
+		Example: "replayCosmos tcp://localhost:26657 ws://localhost:7545/ 0x30753E4A8aad7F8597332E813735Def5dD395028 validator",
 		RunE:    RunReplayCosmosBurnLockCmd,
 	}
 
@@ -292,10 +292,10 @@ func replayCosmosBurnLockCmd() *cobra.Command {
 func replayCosmosSignatureAggregationCmd() *cobra.Command {
 	//nolint:lll
 	replayCosmosSignatureAggregationCmd := &cobra.Command{
-		Use:     "replayCosmosBurnLock [tendermintNode] [web3Provider] [bridgeRegistryContractAddress] [validatorMoniker] [fromBlock] [toBlock] [ethFromBlock] [ethToBlock]",
+		Use:     "replayCosmosSignatureAggregation [tendermintNode] [web3Provider] [bridgeRegistryContractAddress] [validatorMoniker]",
 		Short:   "replay missed cosmos events",
-		Args:    cobra.ExactArgs(8),
-		Example: "replayCosmos tcp://localhost:26657 ws://localhost:7545/ 0x30753E4A8aad7F8597332E813735Def5dD395028 validator 100 200 100 200",
+		Args:    cobra.ExactArgs(4),
+		Example: "replayCosmos tcp://localhost:26657 ws://localhost:7545/ 0x30753E4A8aad7F8597332E813735Def5dD395028 validator",
 		RunE:    RunReplayCosmosSignatureAggregationCmd,
 	}
 

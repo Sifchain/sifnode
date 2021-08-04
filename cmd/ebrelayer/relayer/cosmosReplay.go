@@ -7,6 +7,7 @@ import (
 	"math/big"
 
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/contract"
+	cosmosbridge "github.com/Sifchain/sifnode/cmd/ebrelayer/contract/generated/bindings/cosmosbridge"
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/txs"
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/types"
 	"github.com/cosmos/cosmos-sdk/client/tx"
@@ -18,8 +19,11 @@ import (
 	tmClient "github.com/tendermint/tendermint/rpc/client/http"
 )
 
+// ProphecyLiftTime signature info life time on chain
+const ProphecyLiftTime = 520000
+
 // ReplayBurnLock the missed burn lock events
-func (sub CosmosSub) ReplayBurnLock(txFactory tx.Factory, fromBlock int64, toBlock int64) {
+func (sub CosmosSub) ReplayBurnLock(txFactory tx.Factory) {
 	client, err := tmClient.New(sub.TmProvider, "/websocket")
 	if err != nil {
 		log.Printf("failed to initialize a client, error as %s\n", err)
@@ -31,17 +35,33 @@ func (sub CosmosSub) ReplayBurnLock(txFactory tx.Factory, fromBlock int64, toBlo
 		return
 	}
 
+	fromBlock, toBlock, err := GetScanBlockScope(client)
+	if err != nil {
+		log.Printf("failed to get the scaned block scope, error as %s\n", err)
+		return
+	}
+
 	accAddr, err := GetAccAddressFromKeyring(txFactory.Keybase(), sub.ValidatorName)
 	if err != nil {
 		log.Printf("failed to get the account address, error as %s\n", err)
 		return
 	}
 
-	ProphecyClaims := sub.getAllSignSigature(accAddr, fromBlock, toBlock)
+	ProphecyClaims := sub.getAllSignSigature(client, accAddr, fromBlock, toBlock)
 
-	log.Printf("found out %d prophecy claims I sent from %d to %d block\n", len(ProphecyClaims), fromBlock, toBlock)
+	sub.ReplayBurnLockWithBlocks(txFactory, client, accAddr, ProphecyClaims, fromBlock, toBlock)
+}
 
-	defer client.Stop() //nolint:errcheck
+// ReplayBurnLockWithBlocks replay the missed burn lock events
+func (sub CosmosSub) ReplayBurnLockWithBlocks(
+	txFactory tx.Factory,
+	client *tmClient.HTTP,
+	accAddr sdk.AccAddress,
+	ProphecyClaims []types.ProphecyClaimUnique,
+	fromBlock int64,
+	toBlock int64) {
+
+	log.Printf("ReplayBurnLockWithBlocks from %d to %d block\n", fromBlock, toBlock)
 
 	for blockNumber := fromBlock; blockNumber < toBlock; {
 		tmpBlockNumber := blockNumber
@@ -85,33 +105,8 @@ func (sub CosmosSub) ReplayBurnLock(txFactory tx.Factory, fromBlock int64, toBlo
 	}
 }
 
-// ReplaySignatureAggregation to check missed ProphecyCompleted events
-func (sub CosmosSub) ReplaySignatureAggregation(txFactory tx.Factory, fromBlock int64, toBlock int64, ethFromBlock int64, ethToBlock int64) {
-	// Start Ethereum client
-	ethClient, err := ethclient.Dial(sub.EthProvider)
-	if err != nil {
-		log.Printf("%s \n", err.Error())
-		return
-	}
-
-	clientChainID, err := ethClient.NetworkID(context.Background())
-	if err != nil {
-		log.Printf("%s \n", err.Error())
-		return
-	}
-	log.Printf("clientChainID is %d \n", clientChainID)
-
-	// Load the validator's ethereum address
-	mySender, err := txs.LoadSender()
-	if err != nil {
-		log.Println(err)
-		return
-	}
-
-	ProphecyClaims := GetAllProphecyClaim(ethClient, mySender, ethFromBlock, ethToBlock)
-
-	log.Printf("found out %d prophecy claims I sent from %d to %d block\n", len(ProphecyClaims), ethFromBlock, ethToBlock)
-
+// ReplaySignatureAggregation replay the missed signature aggregation events
+func (sub CosmosSub) ReplaySignatureAggregation(txFactory tx.Factory) {
 	client, err := tmClient.New(sub.TmProvider, "/websocket")
 	if err != nil {
 		log.Printf("failed to initialize a client, error as %s\n", err)
@@ -123,7 +118,24 @@ func (sub CosmosSub) ReplaySignatureAggregation(txFactory tx.Factory, fromBlock 
 		return
 	}
 
-	defer client.Stop() //nolint:errcheck
+	fromBlock, toBlock, err := GetScanBlockScope(client)
+	if err != nil {
+		log.Printf("failed to get the scaned block scope, error as %s\n", err)
+		return
+	}
+
+	lastSubmittedNonce, err := sub.GetLastNonceSubmitted()
+	if err != nil {
+		log.Printf("failed to get the last submitted nonce, error as %s\n", err)
+		return
+	}
+
+	sub.ReplaySignatureAggregationWithScope(txFactory, client, fromBlock, toBlock, lastSubmittedNonce.Uint64())
+
+}
+
+// ReplaySignatureAggregationWithScope to check missed ProphecyCompleted events
+func (sub CosmosSub) ReplaySignatureAggregationWithScope(txFactory tx.Factory, client *tmClient.HTTP, fromBlock int64, toBlock int64, lastSubmittedNonce uint64) {
 
 	// scan cosmos blocks
 	for blockNumber := fromBlock; blockNumber < toBlock; {
@@ -154,7 +166,8 @@ func (sub CosmosSub) ReplaySignatureAggregation(txFactory tx.Factory, fromBlock 
 							errorMessageKey, err.Error())
 						continue
 					}
-					if prophecyInfo.NetworkDescriptor == sub.NetworkDescriptor {
+					if prophecyInfo.NetworkDescriptor == sub.NetworkDescriptor &&
+						prophecyInfo.GlobalNonce > lastSubmittedNonce {
 						sub.handleProphecyCompleted(prophecyInfo)
 					}
 				}
@@ -225,28 +238,15 @@ func GetAllProphecyClaim(client *ethclient.Client, ethereumAddress common.Addres
 }
 
 // getAllSignSigature
-func (sub CosmosSub) getAllSignSigature(accAddress sdk.AccAddress, fromBlock int64, toBlock int64) []types.ProphecyClaimUnique {
+func (sub CosmosSub) getAllSignSigature(client *tmClient.HTTP, accAddress sdk.AccAddress, fromBlock int64, toBlock int64) []types.ProphecyClaimUnique {
 	log.Printf("Replay get all ethereum bridge claim from block %d to block %d\n", fromBlock, toBlock)
-
-	var claimArray []types.ProphecyClaimUnique
-	tmClient, err := tmClient.New(sub.TmProvider, "/websocket")
-	if err != nil {
-		log.Printf("failed to initialize a cosmos client, error is %s\n", err.Error())
-		return claimArray
-	}
-
-	if err := tmClient.Start(); err != nil {
-		log.Printf("failed to start a cosmos client, error is %s\n", err.Error())
-		return claimArray
-	}
-
-	defer tmClient.Stop() //nolint:errcheck
+	claims := []types.ProphecyClaimUnique{}
 
 	for blockNumber := fromBlock; blockNumber < toBlock; {
 		tmpBlockNumber := blockNumber
 
 		ctx := context.Background()
-		block, err := tmClient.BlockResults(ctx, &tmpBlockNumber)
+		block, err := client.BlockResults(ctx, &tmpBlockNumber)
 
 		blockNumber++
 		log.Printf("Replay start to process block %d\n", blockNumber)
@@ -267,7 +267,7 @@ func (sub CosmosSub) getAllSignSigature(accAddress sdk.AccAddress, fromBlock int
 
 					// Check if sender is me
 					if claim.CosmosSender.Equals(accAddress) {
-						claimArray = append(claimArray, types.ProphecyClaimUnique{
+						claims = append(claims, types.ProphecyClaimUnique{
 							ProphecyID: claim.ProphecyID,
 						})
 					}
@@ -276,7 +276,43 @@ func (sub CosmosSub) getAllSignSigature(accAddress sdk.AccAddress, fromBlock int
 		}
 	}
 
-	return claimArray
+	return claims
+}
+
+// GetLastNonceSubmitted get last nonce submitted in cosmos bridge contract
+func (sub CosmosSub) GetLastNonceSubmitted() (*big.Int, error) {
+	client, _, target, err := tryInitRelayConfig(sub)
+	if err != nil {
+		sub.SugaredLogger.Errorw("failed in init relay config.",
+			errorMessageKey, err.Error())
+		return nil, err
+	}
+
+	// Initialize CosmosBridge instance
+	cosmosBridgeInstance, err := cosmosbridge.NewCosmosBridge(target, client)
+	if err != nil {
+		sub.SugaredLogger.Errorw("failed to get cosmosBridge instance.",
+			errorMessageKey, err.Error())
+		return nil, err
+	}
+	return cosmosBridgeInstance.LastNonceSubmitted(nil)
+
+}
+
+// GetScanBlockScope get the block scope for scan
+func GetScanBlockScope(client *tmClient.HTTP) (int64, int64, error) {
+	currentBlock, err := client.BlockResults(context.Background(), nil)
+	if err != nil {
+		return 0, 0, err
+	}
+	toBlock := currentBlock.Height
+	var fromBlock int64
+	if toBlock > ProphecyLiftTime {
+		fromBlock = toBlock - ProphecyLiftTime
+	} else {
+		fromBlock = 0
+	}
+	return fromBlock, toBlock, nil
 }
 
 // GetAccAddressFromKeyring get the address from key ring and keyname

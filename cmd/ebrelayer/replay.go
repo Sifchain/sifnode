@@ -112,16 +112,6 @@ func RunReplayCosmosBurnLockCmd(cmd *cobra.Command, args []string) error {
 
 	validatorMoniker := args[4]
 
-	fromBlock, err := strconv.ParseInt(args[5], 10, 64)
-	if err != nil {
-		return errors.Errorf("invalid [from-block]: %s", args[4])
-	}
-
-	toBlock, err := strconv.ParseInt(args[6], 10, 64)
-	if err != nil {
-		return errors.Errorf("invalid [to-block]: %s", args[5])
-	}
-
 	// check if the networkDescriptor is valid
 	if !oracletypes.NetworkDescriptor(networkDescriptor).IsValid() {
 		return errors.Errorf("network id: %d is invalid", networkDescriptor)
@@ -141,7 +131,7 @@ func RunReplayCosmosBurnLockCmd(cmd *cobra.Command, args []string) error {
 		privateKey, tendermintNode, web3Provider, contractAddress, nil, cliContext,
 		validatorMoniker, true, sugaredLogger)
 
-	cosmosSub.ReplayBurnLock(txFactory, fromBlock, toBlock)
+	cosmosSub.ReplayBurnLock(txFactory)
 
 	return nil
 }
@@ -183,26 +173,6 @@ func RunReplayCosmosSignatureAggregationCmd(cmd *cobra.Command, args []string) e
 
 	validatorMoniker := args[4]
 
-	fromBlock, err := strconv.ParseInt(args[5], 10, 64)
-	if err != nil {
-		return errors.Errorf("invalid [from-block]: %s", args[4])
-	}
-
-	toBlock, err := strconv.ParseInt(args[6], 10, 64)
-	if err != nil {
-		return errors.Errorf("invalid [to-block]: %s", args[5])
-	}
-
-	ethFromBlock, err := strconv.ParseInt(args[7], 10, 64)
-	if err != nil {
-		return errors.Errorf("invalid [eth-from-block]: %s", args[6])
-	}
-
-	ethToBlock, err := strconv.ParseInt(args[8], 10, 64)
-	if err != nil {
-		return errors.Errorf("invalid [eth-to-block]: %s", args[7])
-	}
-
 	// check if the networkDescriptor is valid
 	if !oracletypes.NetworkDescriptor(networkDescriptor).IsValid() {
 		return errors.Errorf("network id: %d is invalid", networkDescriptor)
@@ -222,7 +192,7 @@ func RunReplayCosmosSignatureAggregationCmd(cmd *cobra.Command, args []string) e
 		privateKey, tendermintNode, web3Provider, contractAddress, nil, cliContext,
 		validatorMoniker, true, sugaredLogger)
 
-	cosmosSub.ReplaySignatureAggregation(txFactory, fromBlock, toBlock, ethFromBlock, ethToBlock)
+	cosmosSub.ReplaySignatureAggregation(txFactory)
 
 	return nil
 }
