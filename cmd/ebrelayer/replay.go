@@ -18,7 +18,7 @@ import (
 	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
 )
 
-// RunReplayEthereumCmd executes replayEthereumCmd
+// RunReplayEthereumCmd executes replayEthereumCmd to replay all missed events from ethereum
 func RunReplayEthereumCmd(cmd *cobra.Command, args []string) error {
 	cliContext, err := client.GetClientTxContext(cmd)
 
@@ -38,26 +38,25 @@ func RunReplayEthereumCmd(cmd *cobra.Command, args []string) error {
 		return errors.Errorf("invalid [validator-moniker]: %s", args[2])
 	}
 	validatorMoniker := args[3]
-	//mnemonic := args[4]
 
-	fromBlock, err := strconv.ParseInt(args[5], 10, 64)
+	fromBlock, err := strconv.ParseInt(args[4], 10, 64)
 	if err != nil {
-		return errors.Errorf("invalid [from-block]: %s", args[5])
+		return errors.Errorf("invalid [from-block]: %s", args[4])
 	}
 
-	toBlock, err := strconv.ParseInt(args[6], 10, 64)
+	toBlock, err := strconv.ParseInt(args[5], 10, 64)
 	if err != nil {
-		return errors.Errorf("invalid [to-block]: %s", args[6])
+		return errors.Errorf("invalid [to-block]: %s", args[5])
 	}
 
-	cosmosFromBlock, err := strconv.ParseInt(args[7], 10, 64)
+	cosmosFromBlock, err := strconv.ParseInt(args[6], 10, 64)
 	if err != nil {
-		return errors.Errorf("invalid [from-block]: %s", args[7])
+		return errors.Errorf("invalid [from-block]: %s", args[6])
 	}
 
-	cosmosToBlock, err := strconv.ParseInt(args[8], 10, 64)
+	cosmosToBlock, err := strconv.ParseInt(args[7], 10, 64)
 	if err != nil {
-		return errors.Errorf("invalid [to-block]: %s", args[8])
+		return errors.Errorf("invalid [to-block]: %s", args[7])
 	}
 
 	logger, err := zap.NewProduction()
@@ -75,7 +74,7 @@ func RunReplayEthereumCmd(cmd *cobra.Command, args []string) error {
 	return nil
 }
 
-// RunReplayCosmosBurnLockCmd executes initRelayerCmd
+// RunReplayCosmosBurnLockCmd replay missed burn lock events from cosmos
 func RunReplayCosmosBurnLockCmd(cmd *cobra.Command, args []string) error {
 	cliContext, err := client.GetClientTxContext(cmd)
 
@@ -136,7 +135,7 @@ func RunReplayCosmosBurnLockCmd(cmd *cobra.Command, args []string) error {
 	return nil
 }
 
-// RunReplayCosmosSignatureAggregationCmd executes initRelayerCmd
+// RunReplayCosmosSignatureAggregationCmd replay all missed signature aggregation completed events
 func RunReplayCosmosSignatureAggregationCmd(cmd *cobra.Command, args []string) error {
 	cliContext, err := client.GetClientTxContext(cmd)
 
@@ -197,7 +196,7 @@ func RunReplayCosmosSignatureAggregationCmd(cmd *cobra.Command, args []string) e
 	return nil
 }
 
-// RunListMissedCosmosEventCmd executes initRelayerCmd
+// RunListMissedCosmosEventCmd get all missed signature aggregation completed events
 func RunListMissedCosmosEventCmd(_ *cobra.Command, args []string) error {
 	// Validate and parse arguments
 	networkDescriptor, err := strconv.Atoi(args[0])
@@ -236,7 +235,6 @@ func RunListMissedCosmosEventCmd(_ *cobra.Command, args []string) error {
 	}
 	sugaredLogger := logger.Sugar()
 
-	// Initialize new Cosmos event listener
 	listMissedCosmosEvent := relayer.NewListMissedCosmosEvent(oracletypes.NetworkDescriptor(networkDescriptor), tendermintNode, web3Provider, contractAddress, relayerEthereumAddress, sugaredLogger)
 
 	listMissedCosmosEvent.ListMissedCosmosEvent()
