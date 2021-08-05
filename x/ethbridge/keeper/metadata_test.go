@@ -35,7 +35,7 @@ func TestGetAddTokenMetadata(t *testing.T) {
 	)
 	require.Equal(t, expectedDenom, resultDenom)
 	result = keeper.GetTokenMetadata(ctx, resultDenom)
-	require.Equal(t, expected, result)
+	require.Equal(t, testMetadata, result)
 }
 
 func TestExistsTokenMetadata(t *testing.T) {
