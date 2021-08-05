@@ -18,7 +18,7 @@ func (k Keeper) GetTokenMetadata(ctx sdk.Context, denomHash string) types.TokenM
 }
 
 // Add new token metadata information
-func (k Keeper) AddTokenMetadata(ctx sdk.Context, metadata types.TokenMetadata) {
+func (k Keeper) AddTokenMetadata(ctx sdk.Context, metadata types.TokenMetadata) string {
 	denomHash := types.GetDenomHash(
 		metadata.NetworkDescriptor,
 		metadata.TokenAddress,
@@ -30,6 +30,7 @@ func (k Keeper) AddTokenMetadata(ctx sdk.Context, metadata types.TokenMetadata) 
 	store := ctx.KVStore(k.storeKey)
 	value := k.cdc.MustMarshalBinaryBare(&metadata)
 	store.Set(key, value)
+	return denomHash
 }
 
 // Searches the keeper to determine if a specific token has

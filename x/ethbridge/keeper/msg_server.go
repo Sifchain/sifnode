@@ -142,31 +142,45 @@ func (srv msgServer) CreateEthBridgeClaim(goCtx context.Context, msg *types.MsgC
 		}
 	}
 
+	claim := msg.EthBridgeClaim
+
+	metadata := types.TokenMetadata{
+		Decimals:          claim.Decimals,
+		Name:              claim.TokenName,
+		Symbol:            claim.Symbol,
+		TokenAddress:      claim.TokenContractAddress,
+		NetworkDescriptor: claim.NetworkDescriptor,
+	}
+
+	if !srv.Keeper.ExistsTokenMetadata(ctx, claim.DenomHash) {
+		srv.Keeper.AddTokenMetadata(ctx, metadata)
+	}
+
 	logger.Info("sifnode emit create event.",
-		"CosmosSender", msg.EthBridgeClaim.ValidatorAddress,
-		"EthereumSender", msg.EthBridgeClaim.EthereumSender,
-		"EthereumSenderNonce", strconv.FormatInt(msg.EthBridgeClaim.Nonce, 10),
-		"CosmosReceiver", msg.EthBridgeClaim.CosmosReceiver,
-		"Amount", msg.EthBridgeClaim.Amount.String(),
-		"Symbol", msg.EthBridgeClaim.Symbol,
-		"ClaimType", msg.EthBridgeClaim.ClaimType.String())
+		"CosmosSender", claim.ValidatorAddress,
+		"EthereumSender", claim.EthereumSender,
+		"EthereumSenderNonce", strconv.FormatInt(claim.Nonce, 10),
+		"CosmosReceiver", claim.CosmosReceiver,
+		"Amount", claim.Amount.String(),
+		"Symbol", claim.Symbol,
+		"ClaimType", claim.ClaimType.String())
 
 	ctx.EventManager().EmitEvents(sdk.Events{
 		sdk.NewEvent(
 			sdk.EventTypeMessage,
 			sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
-			sdk.NewAttribute(sdk.AttributeKeySender, msg.EthBridgeClaim.ValidatorAddress),
+			sdk.NewAttribute(sdk.AttributeKeySender, claim.ValidatorAddress),
 		),
 		sdk.NewEvent(
 			types.EventTypeCreateClaim,
-			sdk.NewAttribute(types.AttributeKeyCosmosSender, msg.EthBridgeClaim.ValidatorAddress),
-			sdk.NewAttribute(types.AttributeKeyEthereumSender, msg.EthBridgeClaim.EthereumSender),
-			sdk.NewAttribute(types.AttributeKeyEthereumSenderNonce, strconv.FormatInt(msg.EthBridgeClaim.Nonce, 10)),
-			sdk.NewAttribute(types.AttributeKeyCosmosReceiver, msg.EthBridgeClaim.CosmosReceiver),
-			sdk.NewAttribute(types.AttributeKeyAmount, msg.EthBridgeClaim.Amount.String()),
-			sdk.NewAttribute(types.AttributeKeySymbol, msg.EthBridgeClaim.Symbol),
-			sdk.NewAttribute(types.AttributeKeyTokenContract, msg.EthBridgeClaim.TokenContractAddress),
-			sdk.NewAttribute(types.AttributeKeyClaimType, msg.EthBridgeClaim.ClaimType.String()),
+			sdk.NewAttribute(types.AttributeKeyCosmosSender, claim.ValidatorAddress),
+			sdk.NewAttribute(types.AttributeKeyEthereumSender, claim.EthereumSender),
+			sdk.NewAttribute(types.AttributeKeyEthereumSenderNonce, strconv.FormatInt(claim.Nonce, 10)),
+			sdk.NewAttribute(types.AttributeKeyCosmosReceiver, claim.CosmosReceiver),
+			sdk.NewAttribute(types.AttributeKeyAmount, claim.Amount.String()),
+			sdk.NewAttribute(types.AttributeKeySymbol, claim.Symbol),
+			sdk.NewAttribute(types.AttributeKeyTokenContract, claim.TokenContractAddress),
+			sdk.NewAttribute(types.AttributeKeyClaimType, claim.ClaimType.String()),
 		),
 		sdk.NewEvent(
 			types.EventTypeProphecyStatus,

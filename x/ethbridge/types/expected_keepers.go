@@ -34,3 +34,9 @@ type OracleKeeper interface {
 	GetCrossChainFeeConfig(ctx sdk.Context, networkIdentity oracletypes.NetworkIdentity) (oracletypes.CrossChainFeeConfig, error)
 	SetFeeInfo(ctx sdk.Context, networkDescriptor oracletypes.NetworkDescriptor, feeCurrency string, gas, burnCost, lockCost sdk.Int) error
 }
+
+type MetadataKeeper interface {
+	GetTokenMetadata(ctx sdk.Context, denomHash string) TokenMetadata
+	AddTokenMetadata(ctx sdk.Context, metadata TokenMetadata)
+	ExistsTokenMetadata(ctx sdk.Context, denomHash string) bool
+}
