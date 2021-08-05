@@ -223,7 +223,6 @@ func TestQueryAssetList(t *testing.T) {
 	require.Equal(t, []*types.Asset{lp.Asset}, res.Assets)
 }
 
-/*
 func TestQueryLPList(t *testing.T) {
 	cdc, app, ctx := createTestInput()
 
@@ -252,7 +251,6 @@ func TestQueryLPList(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, []*types.LiquidityProvider{&lp}, res.LiquidityProviders)
 }
-*/
 
 func TestQueryAllLPs(t *testing.T) {
 	cdc, app, ctx := createTestInput()
