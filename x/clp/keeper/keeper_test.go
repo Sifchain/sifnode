@@ -90,7 +90,7 @@ func TestKeeper_SetLiquidityProvider(t *testing.T) {
 	assert.Equal(t, getlp, lp)
 	lpList, _, err := clpKeeper.GetLiquidityProvidersForAssetPaginated(ctx, *lp.Asset, &query.PageRequest{})
 	assert.NoError(t, err)
-	assert.Equal(t, lp, lpList[0])
+	assert.Equal(t, &lp, lpList[0])
 }
 
 func TestKeeper_DestroyLiquidityProvider(t *testing.T) {
@@ -138,6 +138,7 @@ func TestKeeper_GetAssetsForLiquidityProvider(t *testing.T) {
 	lpaddr, err := sdk.AccAddressFromBech32(lpList[0].LiquidityProviderAddress)
 	require.NoError(t, err)
 	assetList, _, err := clpKeeper.GetAssetsForLiquidityProviderPaginated(ctx, lpaddr, &query.PageRequest{Limit: math.MaxUint64})
+	require.NoError(t, err)
 	assert.LessOrEqual(t, len(assetList), len(lpList))
 }
 
