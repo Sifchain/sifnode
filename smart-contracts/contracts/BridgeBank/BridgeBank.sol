@@ -347,11 +347,6 @@ contract BridgeBank is BankStorage,
         return decimals;
     }
 
-    // Saves some gas when we need to query name, symbol, and decimals at once
-    function getTokenData(address token) public returns(string memory, string memory, uint8){
-        return (getName(token), getSymbol(token), getDecimals(token));
-    }
-
     /*
      * @dev: Locks received Ethereum/ERC20 funds.
      *
