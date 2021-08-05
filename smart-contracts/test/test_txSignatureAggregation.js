@@ -1,7 +1,6 @@
 const {
   multiTokenSetup,
-  signHash,
-  getDigestNewProphecyClaim
+  getValidClaim
 } = require('./helpers/testFixture');
 
 const web3 = require("web3");
@@ -90,42 +89,33 @@ describe("Gas Cost Tests", function () {
       expect(lastNonceSubmitted).to.be.equal(0);
 
       state.nonce = 1;
-      const digest = getDigestNewProphecyClaim([
-        state.sender,
-        state.senderSequence,
-        state.recipient.address,
-        state.token1.address,
-        state.amount,
-        false,
-        state.nonce,
-        state.networkDescriptor
-      ]);
 
-      let validators = accounts.slice(1, 5);
-      const signatures = await signHash(validators, digest);
-      let sum = 0;
-
-      let claimData = {
-        cosmosSender: state.sender,
-        cosmosSenderSequence: state.senderSequence,
-        ethereumReceiver: state.recipient.address,
+      const { digest, claimData, signatures } = await getValidClaim({
+        state,
+        sender: state.sender,
+        senderSequence: state.senderSequence,
+        recipientAddress: state.recipient.address,
         tokenAddress: state.token1.address,
         amount: state.amount,
-        doublePeg: false,
+        isDoublePeg: false,
         nonce: state.nonce,
-        networkDescriptor: state.networkDescriptor
-      };
+        networkDescriptor: state.networkDescriptor,
+        tokenName: state.name,
+        tokenSymbol: state.symbol,
+        tokenDecimals: state.decimals,
+        validators: accounts.slice(1, 5),
+      });
 
-      let tx = await state.cosmosBridge
+      const tx = await state.cosmosBridge
         .connect(userOne)
         .submitProphecyClaimAggregatedSigs(
             digest,
             claimData,
             signatures
         );
-      let receipt = await tx.wait();
-      sum += Number(receipt.gasUsed);
+      const receipt = await tx.wait();
 
+      const sum = Number(receipt.gasUsed);
       console.log("~~~~~~~~~~~~\nTotal: ", sum);
 
       // Bridge claim should be completed
@@ -146,42 +136,29 @@ describe("Gas Cost Tests", function () {
       expect(lastNonceSubmitted).to.be.equal(0);
 
       state.nonce = 1;
-      const digest = getDigestNewProphecyClaim([
-        state.sender,
-        state.senderSequence,
-        state.recipient.address,
-        state.rowan.address,
-        state.amount,
-        false,
-        state.nonce,
-        state.networkDescriptor
-      ]);
 
-      let validators = accounts.slice(1, 5);
-      const signatures = await signHash(validators, digest);
-      let sum = 0;
+      const { digest, claimData, signatures } = await getValidClaim({
+        state,
+        sender: state.sender,
+        senderSequence: state.senderSequence,
+        recipientAddress: state.recipient.address,
+        tokenAddress: state.rowan.address,
+        amount: state.amount,
+        isDoublePeg: false,
+        nonce: state.nonce,
+        networkDescriptor: state.networkDescriptor,
+        tokenName: state.name,
+        tokenSymbol: state.symbol,
+        tokenDecimals: state.decimals,
+        validators: accounts.slice(1, 5),
+      });
 
-      let claimData = {
-          cosmosSender: state.sender,
-          cosmosSenderSequence: state.senderSequence,
-          ethereumReceiver: state.recipient.address,
-          tokenAddress: state.rowan.address,
-          amount: state.amount,
-          doublePeg: false,
-          nonce: state.nonce,
-          networkDescriptor: state.networkDescriptor
-      };
-
-      let tx = await state.cosmosBridge
+      const tx = await state.cosmosBridge
         .connect(userOne)
-        .submitProphecyClaimAggregatedSigs(
-            digest,
-            claimData,
-            signatures
-        );
-      let receipt = await tx.wait();
-      sum += Number(receipt.gasUsed);
+        .submitProphecyClaimAggregatedSigs(digest, claimData, signatures);
+      const receipt = await tx.wait();
 
+      const sum = Number(receipt.gasUsed);
       console.log("~~~~~~~~~~~~\nTotal: ", sum);
 
       // Last nonce should now be 1
@@ -199,13 +176,13 @@ describe("Gas Cost Tests", function () {
  * 
  * 
 Unlock Gas Cost With 4 Validators
-tx0  182434
+tx0  165769
 ~~~~~~~~~~~~
-Total:  182434
+Total:  165769
 
 Mint Gas Cost With 4 Validators
-tx0  198100
+tx0  181728
 ~~~~~~~~~~~~
-Total:  198100
+Total:  181728
  * 
  */

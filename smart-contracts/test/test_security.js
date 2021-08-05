@@ -363,51 +363,6 @@ describe("Security Test", function () {
         ),
       ).to.be.revertedWith("!cosmosbridge");
     });
-
-    it("should not be able to createNewBridgeToken as non validator", async function () {
-      state.bridge = await CosmosBridge.deploy();
-      await expect(
-        state.cosmosBridge.connect(operator).createNewBridgeToken(
-          "atom",
-          "atom",
-          state.token1.address,
-          18,
-          1
-        ),
-      ).to.be.revertedWith("Must be an active validator");
-    });
-
-    it("should not be able to createNewBridgeToken as a validator if a bridgetoken with the same source address already exists", async function () {
-      // assert that the cosmos bridge token has not been created
-      let bridgeToken = await state.cosmosBridge.sourceAddressToDestinationAddress(
-        state.token1.address
-      );
-      expect(bridgeToken).to.be.equal(state.ethereumToken);
-
-      await state.cosmosBridge.connect(userOne).createNewBridgeToken(
-        "atom",
-        "atom",
-        state.token1.address,
-        18,
-        1
-      );
-
-      // now assert that the bridge token has been created
-      bridgeToken = await state.cosmosBridge.sourceAddressToDestinationAddress(
-        state.token1.address
-      );
-      expect(bridgeToken).to.not.be.equal(state.ethereumToken);
-
-      await expect(
-        state.cosmosBridge.connect(userOne).createNewBridgeToken(
-          "atom",
-          "atom",
-          state.token1.address,
-          18,
-          1
-        ),
-      ).to.be.revertedWith("INV_SRC_ADDR");
-    });
   });
 
   describe("Network Descriptor Mismatch", function () {
@@ -428,6 +383,7 @@ describe("Security Test", function () {
 
     it("should not allow unlocking tokens upon the processing of a burn prophecy claim with the wrong network descriptor", async function () {
       state.nonce = 1;
+
       const digest = getDigestNewProphecyClaim([
         state.sender,
         state.senderSequence,
@@ -436,7 +392,10 @@ describe("Security Test", function () {
         state.amount,
         false,
         state.nonce,
-        state.networkDescriptor
+        state.networkDescriptor,
+        state.name,
+        state.symbol,
+        state.decimals,
       ]);
 
       const signatures = await signHash([userOne, userTwo, userFour], digest);
@@ -449,7 +408,10 @@ describe("Security Test", function () {
         amount: state.amount,
         doublePeg: false,
         nonce: state.nonce,
-        networkDescriptor: state.networkDescriptor
+        networkDescriptor: state.networkDescriptor,
+        tokenName: state.name,
+        tokenSymbol: state.symbol,
+        tokenDecimals: state.decimals,
       };
 
       await expect(state.cosmosBridge
@@ -471,7 +433,10 @@ describe("Security Test", function () {
           state.amount,
           false,
           state.nonce,
-          state.networkDescriptor
+          state.networkDescriptor,
+          state.name,
+          state.symbol,
+          state.decimals,
       ]);
 
       const signatures = await signHash([userOne, userTwo, userFour], digest);
@@ -484,7 +449,10 @@ describe("Security Test", function () {
         amount: state.amount,
         doublePeg: false,
         nonce: state.nonce,
-        networkDescriptor: state.networkDescriptor
+        networkDescriptor: state.networkDescriptor,
+        tokenName: state.name,
+        tokenSymbol: state.symbol,
+        tokenDecimals: state.decimals,
       };
 
       await expect(state.cosmosBridge
@@ -527,7 +495,10 @@ describe("Security Test", function () {
         state.amount,
         false,
         state.nonce,
-        state.networkDescriptor
+        state.networkDescriptor,
+        "Troll",
+        "TRL",
+        state.decimals
       ]);
 
       const signatures = await signHash([userOne, userTwo, userFour], digest);
@@ -539,7 +510,10 @@ describe("Security Test", function () {
         amount: state.amount,
         doublePeg: false,
         nonce: state.nonce,
-        networkDescriptor: state.networkDescriptor
+        networkDescriptor: state.networkDescriptor,
+        tokenName: "Troll",
+        tokenSymbol: "TRL",
+        tokenDecimals: state.decimals
       };
 
       await expect(
@@ -585,7 +559,10 @@ describe("Security Test", function () {
         state.amount,
         false,
         state.nonce,
-        state.networkDescriptor
+        state.networkDescriptor,
+        "Troll",
+        "TRL",
+        state.decimals,
       ]);
 
       const signatures = await signHash([userOne, userTwo, userFour], digest);
@@ -597,7 +574,10 @@ describe("Security Test", function () {
         amount: state.amount,
         doublePeg: false,
         nonce: state.nonce,
-        networkDescriptor: state.networkDescriptor
+        networkDescriptor: state.networkDescriptor,
+        tokenName: "Troll",
+        tokenSymbol: "TRL",
+        tokenDecimals: state.decimals,
       };
 
       await state.cosmosBridge

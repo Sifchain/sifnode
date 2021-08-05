@@ -2,7 +2,8 @@ const {
   signHash,
   multiTokenSetup,
   deployTrollToken,
-  getDigestNewProphecyClaim
+  getDigestNewProphecyClaim,
+  getValidClaim
 } = require('./helpers/testFixture');
 
 const web3 = require("web3");
@@ -89,27 +90,22 @@ describe("submitProphecyClaimAggregatedSigs Security", function () {
     it("no signatures are provided", async function () {
       state.recipient = userOne.address;
       state.nonce = 10;
-      const digest = getDigestNewProphecyClaim([
-        state.sender,
-        state.senderSequence,
-        state.recipient,
-        state.troll.address,
-        state.amount,
-        false,
-        state.nonce,
-        state.networkDescriptor
-      ]);
 
-      let claimData = {
-        cosmosSender: state.sender,
-        cosmosSenderSequence: state.senderSequence,
-        ethereumReceiver: state.recipient,
+      const { digest, claimData } = await getValidClaim({
+        state,
+        sender: state.sender,
+        senderSequence: state.senderSequence,
+        recipientAddress: state.recipient,
         tokenAddress: state.troll.address,
         amount: state.amount,
-        doublePeg: false,
+        isDoublePeg: false,
         nonce: state.nonce,
-        networkDescriptor: state.networkDescriptor
-      };
+        networkDescriptor: state.networkDescriptor,
+        tokenName: state.name,
+        tokenSymbol: state.symbol,
+        tokenDecimals: state.decimals,
+        validators: [userOne, userTwo, userFour],
+      });
 
       await expect(
         state.cosmosBridge
@@ -133,7 +129,10 @@ describe("submitProphecyClaimAggregatedSigs Security", function () {
         state.amount,
         false,
         state.nonce + 1,
-        state.networkDescriptor
+        state.networkDescriptor,
+        state.name,
+        state.symbol,
+        state.decimals
       ]);
 
       const signatures = await signHash([userOne, userTwo, userFour], digest);
@@ -145,7 +144,10 @@ describe("submitProphecyClaimAggregatedSigs Security", function () {
         amount: state.amount,
         doublePeg: false,
         nonce: state.nonce,
-        networkDescriptor: state.networkDescriptor
+        networkDescriptor: state.networkDescriptor,
+        tokenName: state.name,
+        tokenSymbol: state.symbol,
+        tokenDecimals: state.decimals
       };
 
       await expect(
@@ -162,28 +164,22 @@ describe("submitProphecyClaimAggregatedSigs Security", function () {
     it("there are duplicate signers", async function () {
       state.recipient = userOne.address;
       state.nonce = 1;
-      const digest = getDigestNewProphecyClaim([
-        state.sender,
-        state.senderSequence,
-        state.recipient,
-        state.troll.address,
-        state.amount,
-        false,
-        state.nonce,
-        state.networkDescriptor
-      ]);
 
-      const signatures = await signHash([userOne, userTwo, userFour, userFour], digest);
-      let claimData = {
-        cosmosSender: state.sender,
-        cosmosSenderSequence: state.senderSequence,
-        ethereumReceiver: state.recipient,
+      const { digest, claimData, signatures } = await getValidClaim({
+        state,
+        sender: state.sender,
+        senderSequence: state.senderSequence,
+        recipientAddress: state.recipient,
         tokenAddress: state.troll.address,
         amount: state.amount,
-        doublePeg: false,
+        isDoublePeg: false,
         nonce: state.nonce,
-        networkDescriptor: state.networkDescriptor
-      };
+        networkDescriptor: state.networkDescriptor,
+        tokenName: state.name,
+        tokenSymbol: state.symbol,
+        tokenDecimals: state.decimals,
+        validators: [userOne, userTwo, userFour, userFour],
+      });
 
       await expect(
         state.cosmosBridge
@@ -199,28 +195,22 @@ describe("submitProphecyClaimAggregatedSigs Security", function () {
     it("there is an invalid signer", async function () {
       state.recipient = userOne.address;
       state.nonce = 1;
-      const digest = getDigestNewProphecyClaim([
-        state.sender,
-        state.senderSequence,
-        state.recipient,
-        state.troll.address,
-        state.amount,
-        false,
-        state.nonce,
-        state.networkDescriptor
-      ]);
 
-      const signatures = await signHash([userOne, userTwo, operator], digest);
-      let claimData = {
-        cosmosSender: state.sender,
-        cosmosSenderSequence: state.senderSequence,
-        ethereumReceiver: state.recipient,
+      const { digest, claimData, signatures } = await getValidClaim({
+        state,
+        sender: state.sender,
+        senderSequence: state.senderSequence,
+        recipientAddress: state.recipient,
         tokenAddress: state.troll.address,
         amount: state.amount,
-        doublePeg: false,
+        isDoublePeg: false,
         nonce: state.nonce,
-        networkDescriptor: state.networkDescriptor
-      };
+        networkDescriptor: state.networkDescriptor,
+        tokenName: state.name,
+        tokenSymbol: state.symbol,
+        tokenDecimals: state.decimals,
+        validators: [userOne, userTwo, operator],
+      });
 
       await expect(
         state.cosmosBridge
@@ -244,7 +234,10 @@ describe("submitProphecyClaimAggregatedSigs Security", function () {
         state.amount,
         false,
         state.nonce,
-        state.networkDescriptor
+        state.networkDescriptor,
+        state.name,
+        state.symbol,
+        state.decimals
       ]);
 
       const invalidDigest = getDigestNewProphecyClaim([
@@ -255,7 +248,10 @@ describe("submitProphecyClaimAggregatedSigs Security", function () {
         state.amount,
         false,
         state.nonce + 1,
-        state.networkDescriptor
+        state.networkDescriptor,
+        state.name,
+        state.symbol,
+        state.decimals
       ]);
 
       const signatures = await signHash([userOne, userTwo], digest);
@@ -272,7 +268,10 @@ describe("submitProphecyClaimAggregatedSigs Security", function () {
         amount: state.amount,
         doublePeg: false,
         nonce: state.nonce,
-        networkDescriptor: state.networkDescriptor
+        networkDescriptor: state.networkDescriptor,
+        tokenName: state.name,
+        tokenSymbol: state.symbol,
+        tokenDecimals: state.decimals,
       };
 
       await expect(
@@ -289,29 +288,22 @@ describe("submitProphecyClaimAggregatedSigs Security", function () {
     it("there is not enough power to complete prophecy", async function () {
       state.recipient = userOne.address;
       state.nonce = 1;
-      const digest = getDigestNewProphecyClaim([
-        state.sender,
-        state.senderSequence,
-        state.recipient,
-        state.troll.address,
-        state.amount,
-        false,
-        state.nonce,
-        state.networkDescriptor
-      ]);
 
-      const signatures = await signHash([userOne, userTwo], digest);
-
-      let claimData = {
-        cosmosSender: state.sender,
-        cosmosSenderSequence: state.senderSequence,
-        ethereumReceiver: state.recipient,
+      const { digest, claimData, signatures } = await getValidClaim({
+        state,
+        sender: state.sender,
+        senderSequence: state.senderSequence,
+        recipientAddress: state.recipient,
         tokenAddress: state.troll.address,
         amount: state.amount,
-        doublePeg: false,
+        isDoublePeg: false,
         nonce: state.nonce,
-        networkDescriptor: state.networkDescriptor
-      };
+        networkDescriptor: state.networkDescriptor,
+        tokenName: state.name,
+        tokenSymbol: state.symbol,
+        tokenDecimals: state.decimals,
+        validators: [userOne, userTwo],
+      });
 
       await expect(
         state.cosmosBridge
@@ -327,29 +319,22 @@ describe("submitProphecyClaimAggregatedSigs Security", function () {
     it("prophecy is in an invalid order", async function () {
       state.recipient = userOne.address;
       state.nonce = 2;
-      const digest = getDigestNewProphecyClaim([
-        state.sender,
-        state.senderSequence,
-        state.recipient,
-        state.troll.address,
-        state.amount,
-        false,
-        state.nonce,
-        state.networkDescriptor
-      ]);
 
-      const signatures = await signHash([userOne, userTwo, userFour], digest);
-
-      let claimData = {
-        cosmosSender: state.sender,
-        cosmosSenderSequence: state.senderSequence,
-        ethereumReceiver: state.recipient,
+      const { digest, claimData, signatures } = await getValidClaim({
+        state,
+        sender: state.sender,
+        senderSequence: state.senderSequence,
+        recipientAddress: state.recipient,
         tokenAddress: state.troll.address,
         amount: state.amount,
-        doublePeg: false,
+        isDoublePeg: false,
         nonce: state.nonce,
-        networkDescriptor: state.networkDescriptor
-      };
+        networkDescriptor: state.networkDescriptor,
+        tokenName: state.name,
+        tokenSymbol: state.symbol,
+        tokenDecimals: state.decimals,
+        validators: [userOne, userTwo, userFour],
+      });
 
       await expect(
         state.cosmosBridge
@@ -365,29 +350,22 @@ describe("submitProphecyClaimAggregatedSigs Security", function () {
     it("prophecy is already redeemed", async function () {
       state.recipient = userOne.address;
       state.nonce = 1;
-      const digest = getDigestNewProphecyClaim([
-        state.sender,
-        state.senderSequence,
-        state.recipient,
-        state.troll.address,
-        state.amount,
-        false,
-        state.nonce,
-        state.networkDescriptor
-      ]);
 
-      const signatures = await signHash([userOne, userTwo, userFour], digest);
-
-      let claimData = {
-        cosmosSender: state.sender,
-        cosmosSenderSequence: state.senderSequence,
-        ethereumReceiver: state.recipient,
+      const { digest, claimData, signatures } = await getValidClaim({
+        state,
+        sender: state.sender,
+        senderSequence: state.senderSequence,
+        recipientAddress: state.recipient,
         tokenAddress: state.troll.address,
         amount: state.amount,
-        doublePeg: false,
+        isDoublePeg: false,
         nonce: state.nonce,
-        networkDescriptor: state.networkDescriptor
-      };
+        networkDescriptor: state.networkDescriptor,
+        tokenName: state.name,
+        tokenSymbol: state.symbol,
+        tokenDecimals: state.decimals,
+        validators: [userOne, userTwo, userFour],
+      });
 
       state.cosmosBridge
         .connect(userOne)
