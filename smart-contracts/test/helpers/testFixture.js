@@ -26,7 +26,10 @@ function getDigestNewProphecyClaim(data) {
         "uint256",
         "bool",
         "uint128",
-        "uint256"
+        "uint256",
+        "string",
+        "string",
+        "uint8"
       ],
       data
     ),
@@ -117,7 +120,8 @@ async function multiTokenSetup(
     state.recipient = userThree;
     state.name = "TEST COIN";
     state.symbol = "TEST";
-    state.ethereumToken = "0x0000000000000000000000000000000000000000";
+    state.decimals = 18;
+    state.ethereumToken = state.constants.zeroAddress;
     state.weiAmount = web3.utils.toWei("0.25", "ether");
     state.amount = 100;
 
@@ -134,9 +138,9 @@ async function multiTokenSetup(
     // Add rowan as an existing bridge token
     await state.bridgeBank.connect(owner).addExistingBridgeToken(state.rowan.address);
 
-    state.token1 = await BridgeToken.deploy(state.name, state.symbol, 18);
-    state.token2 = await BridgeToken.deploy(state.name, state.symbol, 18);
-    state.token3 = await BridgeToken.deploy(state.name, state.symbol, 18);
+    state.token1 = await BridgeToken.deploy(state.name, state.symbol, state.decimals);
+    state.token2 = await BridgeToken.deploy(state.name, state.symbol, state.decimals);
+    state.token3 = await BridgeToken.deploy(state.name, state.symbol, state.decimals);
 
     await state.token1.deployed();
     await state.token2.deployed();
@@ -215,13 +219,14 @@ async function singleSetup(
     state.recipient = userThree;
     state.name = "TEST COIN";
     state.symbol = "TEST";
-    state.ethereumToken = "0x0000000000000000000000000000000000000000";
+    state.decimals = 18;
+    state.ethereumToken = state.constants.zeroAddress;
     state.weiAmount = web3.utils.toWei("0.25", "ether");
 
     state.token = await BridgeToken.deploy(
       state.name,
       state.symbol,
-      18
+      state.decimals
     );
 
     state.rowan = await BridgeToken.deploy("rowan", "rowan", 18);
@@ -265,10 +270,68 @@ async function deployTrollToken() {
   return troll;
 }
 
+/**
+ * Creates a valid claim using default values whenever a parameter is missing
+ * Prefer passing all parameters for the sake of clarity
+ * @returns { digest, signatures, claimData }
+ */
+async function getValidClaim({
+    state,
+    sender,
+    senderSequence,
+    recipientAddress,
+    tokenAddress,
+    amount,
+    isDoublePeg,
+    nonce,
+    networkDescriptor,
+    tokenName,
+    tokenSymbol,
+    tokenDecimals,
+    validators,
+}) {
+    const digest = getDigestNewProphecyClaim([
+        sender || state.sender,
+        senderSequence || state.senderSequence,
+        recipientAddress || state.recipient.address,
+        tokenAddress || state.token?.address || state.token1?.address,
+        amount || state.amount,
+        isDoublePeg || false,
+        nonce || state.nonce,
+        networkDescriptor || state.networkDescriptor,
+        tokenName || state.name,
+        tokenSymbol || state.symbol,
+        tokenDecimals || state.decimals
+    ]);
+
+    const signatures = await signHash(validators, digest);
+
+    const claimData = {
+        cosmosSender: sender || state.sender,
+        cosmosSenderSequence: senderSequence || state.senderSequence,
+        ethereumReceiver: recipientAddress || state.recipient.address,
+        tokenAddress: tokenAddress || state.token?.address || state.token1?.address,
+        amount: amount || state.amount,
+        doublePeg: isDoublePeg || false,
+        nonce: nonce || state.nonce,
+        networkDescriptor: networkDescriptor || state.networkDescriptor,
+        tokenName: tokenName || state.name,
+        tokenSymbol: tokenSymbol || state.symbol,
+        tokenDecimals: tokenDecimals || state.decimals
+    };
+
+    return {
+        digest,
+        signatures,
+        claimData,
+    };
+}
+
 module.exports = {
     multiTokenSetup,
     singleSetup,
     deployTrollToken,
     signHash,
-    getDigestNewProphecyClaim
+    getDigestNewProphecyClaim,
+    getValidClaim
 };
