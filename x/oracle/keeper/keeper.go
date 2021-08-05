@@ -203,13 +203,17 @@ func (k Keeper) ProcessSignProphecy(ctx sdk.Context, networkDescriptor types.Net
 		return err
 	}
 
+	oldStatus := prophecy.Status
+
+	newStatus, err := k.AppendValidatorToProphecy(ctx, networkDescriptor, prophecyID, valAddr)
+	if err != nil {
+		return err
+	}
+
 	err = k.AppendSignature(ctx, prophecyID, ethereumAddress, signature)
 	if err != nil {
 		return err
 	}
-	oldStatus := prophecy.Status
-
-	newStatus, err := k.AppendValidatorToProphecy(ctx, networkDescriptor, prophecyID, valAddr)
 
 	// emit the event when status from pending to success
 	if oldStatus == types.StatusText_STATUS_TEXT_PENDING && newStatus == types.StatusText_STATUS_TEXT_SUCCESS {
@@ -238,7 +242,7 @@ func (k Keeper) ProcessSignProphecy(ctx sdk.Context, networkDescriptor types.Net
 			),
 		})
 	}
-	return err
+	return nil
 }
 
 // Exists check if the key exists

@@ -1,12 +1,10 @@
 package relayer
 
 import (
-	"bytes"
 	"context"
 	"log"
 	"math/big"
 
-	"github.com/Sifchain/sifnode/cmd/ebrelayer/contract"
 	cosmosbridge "github.com/Sifchain/sifnode/cmd/ebrelayer/contract/generated/bindings/cosmosbridge"
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/txs"
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/types"
@@ -14,7 +12,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/crypto/keyring"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/common"
-	ethTypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
 	tmClient "github.com/tendermint/tendermint/rpc/client/http"
 	"go.uber.org/zap"
@@ -23,7 +20,7 @@ import (
 // ProphecyLiftTime signature info life time on chain
 const ProphecyLiftTime = 520000
 
-// ReplayBurnLock the missed burn lock events
+// ReplayBurnLock the missed burn lock events from cosmos
 func (sub CosmosSub) ReplayBurnLock(txFactory tx.Factory) {
 	client, err := tmClient.New(sub.TmProvider, "/websocket")
 	if err != nil {
@@ -53,7 +50,7 @@ func (sub CosmosSub) ReplayBurnLock(txFactory tx.Factory) {
 	sub.ReplayBurnLockWithBlocks(txFactory, client, accAddr, ProphecyClaims, fromBlock, toBlock)
 }
 
-// ReplayBurnLockWithBlocks replay the missed burn lock events
+// ReplayBurnLockWithBlocks replay the missed burn lock events from cosmos
 func (sub CosmosSub) ReplayBurnLockWithBlocks(
 	txFactory tx.Factory,
 	client *tmClient.HTTP,
@@ -106,20 +103,21 @@ func (sub CosmosSub) ReplayBurnLockWithBlocks(
 	}
 }
 
-// ReplaySignatureAggregation replay the missed signature aggregation events
+// ReplaySignatureAggregation replay the missed signature aggregation events from cosmos
 func (sub CosmosSub) ReplaySignatureAggregation(txFactory tx.Factory) {
-	client, err := tmClient.New(sub.TmProvider, "/websocket")
+	// start the cosmos client
+	tmClient, err := tmClient.New(sub.TmProvider, "/websocket")
 	if err != nil {
 		log.Printf("failed to initialize a client, error as %s\n", err)
 		return
 	}
 
-	if err := client.Start(); err != nil {
+	if err := tmClient.Start(); err != nil {
 		log.Printf("failed to start a client, error as %s\n", err)
 		return
 	}
 
-	fromBlock, toBlock, err := GetScanBlockScope(client)
+	fromBlock, toBlock, err := GetScanBlockScope(tmClient)
 	if err != nil {
 		log.Printf("failed to get the scaned block scope, error as %s\n", err)
 		return
@@ -128,7 +126,7 @@ func (sub CosmosSub) ReplaySignatureAggregation(txFactory tx.Factory) {
 	// Start Ethereum client
 	ethClient, err := ethclient.Dial(sub.EthProvider)
 	if err != nil {
-		log.Printf("%s \n", err.Error())
+		log.Printf("failed to connect to Ethereum node, error as %s\n", err)
 		return
 	}
 
@@ -144,13 +142,7 @@ func (sub CosmosSub) ReplaySignatureAggregation(txFactory tx.Factory) {
 		return
 	}
 
-	if err != nil {
-		log.Printf("failed to get the last submitted nonce, error as %s\n", err)
-		return
-	}
-
-	sub.ReplaySignatureAggregationWithScope(txFactory, client, fromBlock, toBlock, lastSubmittedNonce.Uint64())
-
+	sub.ReplaySignatureAggregationWithScope(txFactory, tmClient, fromBlock, toBlock, lastSubmittedNonce.Uint64())
 }
 
 // ReplaySignatureAggregationWithScope to check missed ProphecyCompleted events
@@ -195,68 +187,7 @@ func (sub CosmosSub) ReplaySignatureAggregationWithScope(txFactory tx.Factory, c
 	}
 }
 
-// GetAllProphecyClaim get all prophecy claims from smart contract
-func GetAllProphecyClaim(client *ethclient.Client, ethereumAddress common.Address, ethFromBlock int64, ethToBlock int64) []types.ProphecyClaimUnique {
-	log.Printf("getAllProphecyClaim from %d block to %d block\n", ethFromBlock, ethToBlock)
-
-	var prophecyClaimArray []types.ProphecyClaimUnique
-
-	// Used to recover address from transaction, the clientChainID doesn't work in ganache, hardcoded to 1
-	eIP155Signer := ethTypes.NewEIP155Signer(big.NewInt(1))
-
-	CosmosBridgeContractABI := contract.LoadABI(txs.CosmosBridge)
-	methodID := CosmosBridgeContractABI.Methods[types.SubmitProphecyClaimAggregatedSigs.String()].ID()
-
-	for blockNumber := ethFromBlock; blockNumber < ethToBlock; {
-		log.Printf("getAllProphecyClaim current blockNumber is %d\n", blockNumber)
-
-		block, err := client.BlockByNumber(context.Background(), big.NewInt(blockNumber))
-		if err != nil {
-			log.Printf("failed to get block from ethereum, block number is %d\n", blockNumber)
-			blockNumber++
-			continue
-		}
-
-		for _, tx := range block.Transactions() {
-			// recover sender from tx
-			sender, err := eIP155Signer.Sender(tx)
-			if err != nil {
-				log.Println("failed to recover sender from tx")
-				continue
-			}
-
-			// compare tx sender with my ethereum account
-			if sender != ethereumAddress {
-				// the prophecy claim not sent by me
-				continue
-			}
-
-			if len(tx.Data()) < 4 {
-				log.Println("the tx is not a smart contract call")
-				continue
-			}
-
-			// compare method id to check if it is NewProphecyClaim method
-			if bytes.Compare(tx.Data()[0:4], methodID) != 0 {
-				continue
-			}
-
-			// decode data via a hardcode method since the abi unpack failed
-			prophecyClaim, err := MyDecode(tx.Data()[4:])
-			if err != nil {
-				log.Printf("decode prophecy claim failed with %s \n", err.Error())
-				continue
-			}
-
-			// put matched prophecyClaim into result
-			prophecyClaimArray = append(prophecyClaimArray, prophecyClaim)
-		}
-		blockNumber++
-	}
-	return prophecyClaimArray
-}
-
-// getAllSignSigature
+// getAllSignSigature returns all sign signature messages by check events
 func (sub CosmosSub) getAllSignSigature(client *tmClient.HTTP, accAddress sdk.AccAddress, fromBlock int64, toBlock int64) []types.ProphecyClaimUnique {
 	log.Printf("Replay get all ethereum bridge claim from block %d to block %d\n", fromBlock, toBlock)
 	claims := []types.ProphecyClaimUnique{}

@@ -387,6 +387,7 @@ func (srv msgServer) SetFeeInfo(goCtx context.Context, msg *types.MsgSetFeeInfo)
 	return &types.MsgSetFeeInfoResponse{}, nil
 }
 
+// SignProphecy relayer sign the prophecy ID and send to Sifchain after receive the burn/lock events
 func (srv msgServer) SignProphecy(goCtx context.Context, msg *types.MsgSignProphecy) (*types.MsgSignProphecyResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 	logger := srv.Keeper.Logger(ctx)
@@ -404,6 +405,7 @@ func (srv msgServer) SignProphecy(goCtx context.Context, msg *types.MsgSignProph
 
 	err = srv.Keeper.ProcessSignProphecy(ctx, msg)
 
+	// if error is ErrProphecyFinalized, will continue and emit event, not return error.
 	if err != nil && err != oracletypes.ErrProphecyFinalized {
 		logger.Error("keeper failed to process rescue native_token message.", errorMessageKey, err.Error())
 		return nil, err

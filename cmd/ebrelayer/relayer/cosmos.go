@@ -211,20 +211,6 @@ func (sub CosmosSub) Start(txFactory tx.Factory, completionEvent *sync.WaitGroup
 	}
 }
 
-// MyDecode decode data in ProphecyClaim transaction
-func MyDecode(data []byte) (types.ProphecyClaimUnique, error) {
-	// TODO the transaction in ethereum chagned, need new encoder
-
-	if len(data) < 32*7+42 {
-		return types.ProphecyClaimUnique{}, errors.New("tx data length not enough")
-	}
-
-	// TODO data must be encoded from tx
-	return types.ProphecyClaimUnique{
-		ProphecyID: []byte{},
-	}, nil
-}
-
 // MessageProcessed check if cosmogs message already processed
 func MessageProcessed(prophecyID []byte, prophecyClaims []types.ProphecyClaimUnique) bool {
 	for _, prophecyClaim := range prophecyClaims {

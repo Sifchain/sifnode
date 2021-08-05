@@ -60,9 +60,3 @@ func TestMessageNotProcessed(t *testing.T) {
 	processed := MessageProcessed(message.ProphecyID, claims)
 	require.Equal(t, processed, false)
 }
-
-func TestMyDecode(t *testing.T) {
-	wrongData := []byte("wrongDatawrongDatawrongDatawrongDatawrongDatawrongDatawrongDatawrongDatawrongDatawrongDatawrongDatawrongDatawrongDatawrongDatawrongDatawrongData")
-	_, err := MyDecode(wrongData)
-	require.Error(t, err)
-}
