@@ -49,7 +49,7 @@ func TestLogLockToEthBridgeClaim(t *testing.T) {
 }
 
 func TestDenomCalculated(t *testing.T) {
-	expectedDenom := "50c964aff4509857248783aa7a6c2cc403fb71bf0991d4645ebce6293e258619"
+	expectedDenom := "55cbdb67a80a963d4bce4a6f28c5bdf0f712114c88aeb72ac91b5660d9af085a"
 	actualDenom := ethbridge.GetDenomHash(1, "0x0000000000000000000000000000000000000000", 18, "Ethereum", "ETH")
 
 	require.Equal(t, expectedDenom, actualDenom)

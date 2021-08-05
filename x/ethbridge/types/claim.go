@@ -5,6 +5,7 @@ import (
 	"encoding/hex"
 	"fmt"
 	"strconv"
+	"strings"
 
 	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
 
@@ -91,10 +92,10 @@ func GetDenomHash(
 	// "{Network Descriptor}{ERC20 Token Address}{Decimals}{Token Name}{Token Symbol}"
 	denomHashedString := fmt.Sprintf("%d%s%d%s%s",
 		networkDescriptor,
-		tokenContractAddress,
+		strings.ToLower(tokenContractAddress),
 		decimals,
-		tokenName,
-		symbol,
+		strings.ToLower(tokenName),
+		strings.ToLower(symbol),
 	)
 
 	rawDenomHash := sha256.Sum256([]byte(denomHashedString))
