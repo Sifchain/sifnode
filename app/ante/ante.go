@@ -43,23 +43,34 @@ func NewReduceGasPriceDecorator() ReduceGasPriceDecorator {
 // AnteHandle reduces the gas price to a lower value which is hardcoded.The ReduceGasPriceDecorator should only be used for specific transaction types to lower the fee cost.
 func (r ReduceGasPriceDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate bool, next sdk.AnteHandler) (newCtx sdk.Context, err error) {
 	msgs := tx.GetMsgs()
-	// If number of messages is greater than one ,the second message will be able to get away with a lower tx fee
-	if len(msgs) > 1 && msgs[0].Type() == disptypes.MsgTypeCreateDistribution {
-		return ctx, errors.New("Create Dispensation cannot be part of a multi message transaction")
-	}
-	if len(msgs) == 0 {
-		return ctx, errors.New("Transaction must have atleast one message")
+
+	var found bool
+	for i := range msgs {
+		if msgs[i].Type() == disptypes.MsgTypeCreateDistribution || msgs[i].Type() == disptypes.MsgTypeRunDistribution {
+			found = true
+		}
 	}
 
-	if msgs[0].Type() == disptypes.MsgTypeCreateDistribution {
-		loweredGasPrice := sdk.DecCoin{
-			Denom:  "rowan",
-			Amount: sdk.MustNewDecFromStr("0.00000005"),
-		}
-		if !loweredGasPrice.IsValid() {
-			return ctx, sdkerrors.Wrap(sdkerrors.ErrLogic, "unable to lower gas price")
-		}
-		ctx = ctx.WithMinGasPrices(sdk.NewDecCoins(loweredGasPrice))
+	// Pass earlier if not a dispensation tx.
+	if !found {
+		return next(ctx, tx, simulate)
 	}
+
+	// If number of messages is greater than one, the other messages will be able to get away with a lower tx fee
+	if len(msgs) != 1 {
+		return ctx, errors.New("transaction for dispensation create / run must have exactly one message")
+	}
+
+	loweredGasPrice := sdk.DecCoin{
+		Denom:  "rowan",
+		Amount: sdk.MustNewDecFromStr("0.00000005"),
+	}
+
+	if !loweredGasPrice.IsValid() {
+		return ctx, sdkerrors.Wrap(sdkerrors.ErrLogic, "unable to lower gas price")
+	}
+
+	ctx = ctx.WithMinGasPrices(sdk.NewDecCoins(loweredGasPrice))
+
 	return next(ctx, tx, simulate)
 }
