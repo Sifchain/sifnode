@@ -17,6 +17,7 @@ import (
 	ethTypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
 	tmClient "github.com/tendermint/tendermint/rpc/client/http"
+	"go.uber.org/zap"
 )
 
 // ProphecyLiftTime signature info life time on chain
@@ -124,7 +125,25 @@ func (sub CosmosSub) ReplaySignatureAggregation(txFactory tx.Factory) {
 		return
 	}
 
-	lastSubmittedNonce, err := sub.GetLastNonceSubmitted()
+	// Start Ethereum client
+	ethClient, err := ethclient.Dial(sub.EthProvider)
+	if err != nil {
+		log.Printf("%s \n", err.Error())
+		return
+	}
+
+	cosmosBridgeAddress, err := txs.GetAddressFromBridgeRegistry(ethClient, sub.RegistryContractAddress, txs.CosmosBridge, sub.SugaredLogger)
+	if err != nil {
+		log.Printf("failed to get the cosmos bridge address, error as %s\n", err)
+		return
+	}
+
+	lastSubmittedNonce, err := GetLastNonceSubmitted(ethClient, cosmosBridgeAddress, sub.SugaredLogger)
+	if err != nil {
+		log.Printf("failed to get the last submitted nonce, error as %s\n", err)
+		return
+	}
+
 	if err != nil {
 		log.Printf("failed to get the last submitted nonce, error as %s\n", err)
 		return
@@ -280,23 +299,16 @@ func (sub CosmosSub) getAllSignSigature(client *tmClient.HTTP, accAddress sdk.Ac
 }
 
 // GetLastNonceSubmitted get last nonce submitted in cosmos bridge contract
-func (sub CosmosSub) GetLastNonceSubmitted() (*big.Int, error) {
-	client, _, target, err := tryInitRelayConfig(sub)
-	if err != nil {
-		sub.SugaredLogger.Errorw("failed in init relay config.",
-			errorMessageKey, err.Error())
-		return nil, err
-	}
+func GetLastNonceSubmitted(client *ethclient.Client, cosmosBridgeAddress common.Address, sugaredLogger *zap.SugaredLogger) (*big.Int, error) {
 
 	// Initialize CosmosBridge instance
-	cosmosBridgeInstance, err := cosmosbridge.NewCosmosBridge(target, client)
+	cosmosBridgeInstance, err := cosmosbridge.NewCosmosBridge(cosmosBridgeAddress, client)
 	if err != nil {
-		sub.SugaredLogger.Errorw("failed to get cosmosBridge instance.",
+		sugaredLogger.Errorw("failed to get cosmosBridge instance.",
 			errorMessageKey, err.Error())
 		return nil, err
 	}
 	return cosmosBridgeInstance.LastNonceSubmitted(nil)
-
 }
 
 // GetScanBlockScope get the block scope for scan

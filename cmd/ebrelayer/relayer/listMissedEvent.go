@@ -15,27 +15,25 @@ import (
 	"go.uber.org/zap"
 )
 
-// ListMissedCosmosEvent defines a Cosmos listener that relays events to Ethereum and Cosmos
+// ListMissedCosmosEvent defines structre that get all not processed signature aggregation completed messages
 type ListMissedCosmosEvent struct {
 	NetworkDescriptor       oracletypes.NetworkDescriptor
 	TmProvider              string
 	EthProvider             string
 	RegistryContractAddress common.Address
 	EthereumAddress         common.Address
-	Days                    int64
 	SugaredLogger           *zap.SugaredLogger
 }
 
 // NewListMissedCosmosEvent initializes a new CosmosSub
 func NewListMissedCosmosEvent(networkDescriptor oracletypes.NetworkDescriptor, tmProvider, ethProvider string, registryContractAddress common.Address,
-	ethereumAddress common.Address, days int64, sugaredLogger *zap.SugaredLogger) ListMissedCosmosEvent {
+	ethereumAddress common.Address, sugaredLogger *zap.SugaredLogger) ListMissedCosmosEvent {
 	return ListMissedCosmosEvent{
 		NetworkDescriptor:       networkDescriptor,
 		TmProvider:              tmProvider,
 		EthProvider:             ethProvider,
 		RegistryContractAddress: registryContractAddress,
 		EthereumAddress:         ethereumAddress,
-		Days:                    days,
 		SugaredLogger:           sugaredLogger,
 	}
 }
@@ -50,57 +48,52 @@ func (list ListMissedCosmosEvent) ListMissedCosmosEvent() {
 		return
 	}
 
-	header, err := ethClient.HeaderByNumber(context.Background(), nil)
+	cosmosBridgeAddress, err := txs.GetAddressFromBridgeRegistry(ethClient, list.RegistryContractAddress, txs.CosmosBridge, list.SugaredLogger)
 	if err != nil {
-		log.Printf("%s \n", err.Error())
+		log.Printf("failed to get the cosmos bridge address, error as %s\n", err)
 		return
 	}
 
-	currentEthHeight := header.Number.Int64()
-	// estimate blocks by one block every 15 seconds
-	blocks := 4 * 60 * 24 * list.Days
-	ethFromHeight := currentEthHeight - blocks
-	if ethFromHeight < 0 {
-		ethFromHeight = 0
+	lastSubmittedNonce, err := GetLastNonceSubmitted(ethClient, cosmosBridgeAddress, list.SugaredLogger)
+	if err != nil {
+		log.Printf("failed to get the last submitted nonce, error as %s\n", err)
+		return
 	}
 
-	ProphecyClaims := GetAllProphecyClaim(ethClient, list.EthereumAddress, ethFromHeight, currentEthHeight)
-
-	log.Printf("found out %d prophecy claims I sent from %d to %d block\n", len(ProphecyClaims), ethFromHeight, currentEthHeight)
-
-	client, err := tmClient.New(list.TmProvider, "/websocket")
+	tmClient, err := tmClient.New(list.TmProvider, "/websocket")
 	if err != nil {
 		log.Printf("failed to initialize a client %s\n", err.Error())
 		return
 	}
 
 	ctx := context.Background()
-	block, err := client.Block(ctx, nil)
+	block, err := tmClient.Block(ctx, nil)
 	if err != nil {
 		log.Printf("%s \n", err.Error())
 		return
 	}
 
 	currentCosmosHeight := block.Block.Header.Height
-	// estimate blocks by one block every 6 seconds
-	blocks = 10 * 60 * 24 * list.Days
-	cosmosFromHeight := currentCosmosHeight - blocks
-	if cosmosFromHeight < 0 {
-		cosmosFromHeight = 0
+	var toBlock int64
+	if currentCosmosHeight > ProphecyLiftTime {
+		toBlock = currentCosmosHeight - ProphecyLiftTime
+	} else {
+		toBlock = 0
 	}
 
-	if err := client.Start(); err != nil {
+	if err := tmClient.Start(); err != nil {
 		log.Printf("failed to start a client %s\n", err.Error())
 		return
 	}
 
-	defer client.Stop() //nolint:errcheck
+	defer tmClient.Stop() //nolint:errcheck
 
-	for blockNumber := cosmosFromHeight; blockNumber < currentCosmosHeight; {
+	for blockNumber := currentCosmosHeight; blockNumber > toBlock; {
+		endLoop := false
 		tmpBlockNumber := blockNumber
 
-		block, err := client.BlockResults(ctx, &tmpBlockNumber)
-		blockNumber++
+		block, err := tmClient.BlockResults(ctx, &tmpBlockNumber)
+		blockNumber--
 
 		if err != nil {
 			continue
@@ -120,11 +113,19 @@ func (list ListMissedCosmosEvent) ListMissedCosmosEvent() {
 						continue
 					}
 
-					if cosmosMsg.NetworkDescriptor == list.NetworkDescriptor && !MessageProcessed(cosmosMsg.ProphecyID, ProphecyClaims) {
+					if cosmosMsg.GlobalNonce <= lastSubmittedNonce.Uint64() {
+						endLoop = true
+					} else if cosmosMsg.NetworkDescriptor == list.NetworkDescriptor {
 						log.Printf("missed cosmos event: %s\n", cosmosMsg.String())
 					}
 				}
 			}
 		}
+
+		// exit from loop, not check previous block anymore
+		if endLoop {
+			break
+		}
+
 	}
 }
