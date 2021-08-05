@@ -95,7 +95,10 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
         uint256 amount,
         bool doublePeg,
         uint128 nonce,
-        uint256 _networkDescriptor
+        uint256 _networkDescriptor,
+        string memory tokenName,
+        string memory tokenSymbol,
+        uint8 tokenDecimals
     ) public pure returns (uint256) {
         return uint256(
             keccak256(
@@ -107,7 +110,10 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
                     amount,
                     doublePeg,
                     nonce,
-                    _networkDescriptor
+                    _networkDescriptor,
+                    tokenName,
+                    tokenSymbol,
+                    tokenDecimals
                 )
             )
         );
@@ -166,6 +172,9 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
         bool doublePeg;
         uint128 nonce;
         uint256 networkDescriptor;
+        string tokenName;
+        string tokenSymbol;
+        uint8 tokenDecimals;
     }
 
     function batchSubmitProphecyClaimAggregatedSigs(
@@ -204,7 +213,10 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
             claimData.amount,
             claimData.doublePeg,
             claimData.nonce,
-            claimData.networkDescriptor
+            claimData.networkDescriptor,
+            claimData.tokenName,
+            claimData.tokenSymbol,
+            claimData.tokenDecimals
         );
 
         require(
@@ -258,11 +270,13 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
         // if we are double pegging AND we don't control the token, we deploy a new smart contract
         address tokenAddress;
         if(claimData.doublePeg && !_isManagedToken(claimData.tokenAddress)) {
-            string memory name;
-            string memory symbol;
-            uint8 decimals;
-            (name, symbol, decimals) = BridgeBank(bridgeBank).getTokenData(claimData.tokenAddress);
-            tokenAddress = _createNewBridgeToken(symbol, name, claimData.tokenAddress, decimals, claimData.networkDescriptor);
+            tokenAddress = _createNewBridgeToken(
+                claimData.tokenSymbol,
+                claimData.tokenName,
+                claimData.tokenAddress,
+                claimData.tokenDecimals,
+                claimData.networkDescriptor
+            );
         } else {
             // if we are double pegging and already control the token, then we are going to need to get the address on this chain
             tokenAddress = claimData.doublePeg ? sourceAddressToDestinationAddress[claimData.tokenAddress] : claimData.tokenAddress;
