@@ -35,7 +35,6 @@ func createTestInput() (*codec.LegacyAmino, *sifapp.SifchainApp, sdk.Context) {
 
 func TestQueryErrorPool(t *testing.T) {
 	cdc, app, ctx := createTestInput()
-
 	keeper := app.ClpKeeper
 	//Set Data
 	pool, _, _ := SetData(keeper, ctx)
@@ -65,7 +64,6 @@ func TestQueryErrorPool(t *testing.T) {
 
 func TestQueryGetPool(t *testing.T) {
 	cdc, app, ctx := createTestInput()
-
 	keeper := app.ClpKeeper
 	query := abci.RequestQuery{
 		Path: "",
@@ -92,7 +90,6 @@ func TestQueryGetPool(t *testing.T) {
 
 func TestQueryEmptyPools(t *testing.T) {
 	cdc, app, ctx := createTestInput()
-
 	query := abci.RequestQuery{
 		Path: "",
 		Data: []byte{},
@@ -111,7 +108,6 @@ func TestQueryEmptyPools(t *testing.T) {
 
 func TestQueryGetPools(t *testing.T) {
 	cdc, app, ctx := createTestInput()
-
 	query := abci.RequestQuery{
 		Path: "",
 		Data: []byte{},
@@ -125,7 +121,6 @@ func TestQueryGetPools(t *testing.T) {
 	qpools, err := querier(ctx, []string{types.QueryPools}, query)
 	assert.NoError(t, err)
 	var poolsRes types.PoolsRes
-
 	err = cdc.UnmarshalJSON(qpools, &poolsRes)
 	assert.NoError(t, err)
 	assert.Greater(t, len(poolsRes.Pools), 0, "More than one pool added")
@@ -134,7 +129,6 @@ func TestQueryGetPools(t *testing.T) {
 
 func TestQueryErrorLiquidityProvider(t *testing.T) {
 	cdc, app, ctx := createTestInput()
-
 	keeper := app.ClpKeeper
 	query := abci.RequestQuery{
 		Path: "",
@@ -146,10 +140,8 @@ func TestQueryErrorLiquidityProvider(t *testing.T) {
 	//Set Data
 	_, _, lp := SetData(keeper, ctx)
 	//Test Get Liquidity Provider
-
 	addr, err := sdk.AccAddressFromBech32(lp.LiquidityProviderAddress)
 	assert.NoError(t, err)
-
 	queryLp := types.LiquidityProviderReq{
 		Symbol:    "", //lp.Asset.Ticker,
 		LpAddress: addr.String(),
@@ -164,7 +156,6 @@ func TestQueryErrorLiquidityProvider(t *testing.T) {
 
 func TestQueryGetLiquidityProvider(t *testing.T) {
 	cdc, app, ctx := createTestInput()
-
 	keeper := app.ClpKeeper
 	query := abci.RequestQuery{
 		Path: "",
@@ -176,7 +167,6 @@ func TestQueryGetLiquidityProvider(t *testing.T) {
 	//Test Get Liquidity Provider
 	addr, err := sdk.AccAddressFromBech32(lp.LiquidityProviderAddress)
 	assert.NoError(t, err)
-
 	queryLp := types.LiquidityProviderReq{
 		Symbol:    lp.Asset.Symbol,
 		LpAddress: addr.String(),
@@ -191,12 +181,10 @@ func TestQueryGetLiquidityProvider(t *testing.T) {
 	err = cdc.UnmarshalJSON(qliquidityprovider, &l)
 	assert.NoError(t, err)
 	assert.Equal(t, lp.Asset, l.LiquidityProvider.Asset)
-
 }
 
 func TestQueryAssetList(t *testing.T) {
 	cdc, app, ctx := createTestInput()
-
 	keeper := app.ClpKeeper
 	query := abci.RequestQuery{
 		Path: "",
@@ -205,18 +193,14 @@ func TestQueryAssetList(t *testing.T) {
 	//Set Data
 	_, _, lp := SetData(keeper, ctx)
 	querier := clpkeeper.NewQuerier(keeper, cdc)
-
 	req := types.AssetListReq{
 		LpAddress: lp.LiquidityProviderAddress,
 	}
-
 	queryData, err := cdc.MarshalJSON(req)
 	require.NoError(t, err)
 	query.Data = queryData
-
 	resBz, err := querier(ctx, []string{types.QueryAssetList}, query)
 	require.NoError(t, err)
-
 	res := types.AssetListRes{}
 	err = cdc.UnmarshalJSON(resBz, &res.Assets)
 	require.NoError(t, err)
@@ -225,36 +209,30 @@ func TestQueryAssetList(t *testing.T) {
 
 func TestQueryLPList(t *testing.T) {
 	cdc, app, ctx := createTestInput()
-
 	keeper := app.ClpKeeper
 	query := abci.RequestQuery{
 		Path: "",
 		Data: []byte{},
 	}
-	//Set Data
 	_, _, lp := SetData(keeper, ctx)
 	querier := clpkeeper.NewQuerier(keeper, cdc)
-
 	req := types.LiquidityProviderListReq{
 		Symbol: lp.Asset.Symbol,
 	}
-
-	queryData, err := cdc.MarshalJSON(req)
-	require.NoError(t, err)
+	queryData, errRes := cdc.MarshalJSON(req)
+	require.NoError(t, errRes)
+	query.Path = ""
 	query.Data = queryData
-
-	resBz, err := querier(ctx, []string{types.QueryLPList}, query)
-	require.NoError(t, err)
-
+	qLpList, err := querier(ctx, []string{types.QueryLPList}, query)
+	assert.NoError(t, err)
 	res := types.LiquidityProviderListRes{}
-	err = cdc.UnmarshalJSON(resBz, &res.LiquidityProviders)
-	require.NoError(t, err)
+	err = cdc.UnmarshalJSON(qLpList, &res.LiquidityProviders)
+	assert.NoError(t, err)
 	require.Equal(t, []*types.LiquidityProvider{&lp}, res.LiquidityProviders)
 }
 
 func TestQueryAllLPs(t *testing.T) {
 	cdc, app, ctx := createTestInput()
-
 	keeper := app.ClpKeeper
 	query := abci.RequestQuery{
 		Path: "",
@@ -263,20 +241,14 @@ func TestQueryAllLPs(t *testing.T) {
 	//Set Data
 	_, _, lp := SetData(keeper, ctx)
 	querier := clpkeeper.NewQuerier(keeper, cdc)
-
-	req := types.LiquidityProvidersReq{}
-
-	queryData, err := cdc.MarshalJSON(req)
-	require.NoError(t, err)
-	query.Data = queryData
-
+	query.Path = ""
+	query.Data = nil
 	resBz, err := querier(ctx, []string{types.QueryAllLP}, query)
-	require.NoError(t, err)
-
-	res := types.LiquidityProvidersRes{}
-	err = cdc.UnmarshalJSON(resBz, &res.LiquidityProviders)
-	require.NoError(t, err)
-	require.Equal(t, []*types.LiquidityProvider{&lp}, res.LiquidityProviders)
+	assert.NoError(t, err)
+	var lpRes types.LiquidityProvidersRes
+	err = cdc.UnmarshalJSON(resBz, &lpRes.LiquidityProviders)
+	assert.NoError(t, err)
+	assert.Equal(t, []*types.LiquidityProvider{&lp}, lpRes.LiquidityProviders)
 }
 
 func SetData(keeper clpkeeper.Keeper, ctx sdk.Context) (types.Pool, []types.Pool, types.LiquidityProvider) {

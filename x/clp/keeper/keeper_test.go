@@ -1,9 +1,11 @@
 package keeper_test
 
 import (
+	"math"
 	"testing"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/cosmos-sdk/types/query"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -20,7 +22,8 @@ func TestKeeper_Errors(t *testing.T) {
 	pool.ExternalAsset.Symbol = ""
 	err := clpKeeper.SetPool(ctx, &pool)
 	assert.Error(t, err)
-	getpools := clpKeeper.GetPools(ctx)
+	getpools, _, err := clpKeeper.GetPoolsPaginated(ctx, &query.PageRequest{})
+	assert.NoError(t, err)
 	assert.Equal(t, len(getpools), 0, "No pool added")
 
 	lp := test.GenerateRandomLP(1)[0]
@@ -53,7 +56,8 @@ func TestKeeper_GetPools(t *testing.T) {
 		err := clpKeeper.SetPool(ctx, &pool)
 		assert.NoError(t, err)
 	}
-	getpools := clpKeeper.GetPools(ctx)
+	getpools, _, err := clpKeeper.GetPoolsPaginated(ctx, &query.PageRequest{})
+	assert.NoError(t, err)
 	assert.Greater(t, len(getpools), 0, "More than one pool added")
 	assert.LessOrEqual(t, len(getpools), len(pools), "Set pool will ignore duplicates")
 }
@@ -84,7 +88,8 @@ func TestKeeper_SetLiquidityProvider(t *testing.T) {
 	getlp, err := clpKeeper.GetLiquidityProvider(ctx, lp.Asset.Symbol, lp.LiquidityProviderAddress)
 	assert.NoError(t, err, "Error in get liquidityProvider")
 	assert.Equal(t, getlp, lp)
-	lpList := clpKeeper.GetLiquidityProvidersForAsset(ctx, *lp.Asset)
+	lpList, _, err := clpKeeper.GetLiquidityProvidersForAssetPaginated(ctx, *lp.Asset, &query.PageRequest{})
+	assert.NoError(t, err)
 	assert.Equal(t, lp, lpList[0])
 }
 
@@ -132,7 +137,7 @@ func TestKeeper_GetAssetsForLiquidityProvider(t *testing.T) {
 
 	lpaddr, err := sdk.AccAddressFromBech32(lpList[0].LiquidityProviderAddress)
 	require.NoError(t, err)
-	assetList := clpKeeper.GetAssetsForLiquidityProvider(ctx, lpaddr)
+	assetList, _, err := clpKeeper.GetAssetsForLiquidityProviderPaginated(ctx, lpaddr, &query.PageRequest{Limit: math.MaxUint64})
 	assert.LessOrEqual(t, len(assetList), len(lpList))
 }
 

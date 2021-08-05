@@ -4,10 +4,12 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"math"
 	"strconv"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+	"github.com/cosmos/cosmos-sdk/types/query"
 
 	"github.com/Sifchain/sifnode/x/clp/types"
 )
@@ -46,14 +48,19 @@ func (k msgServer) DecommissionPool(goCtx context.Context, msg *types.MsgDecommi
 	if pool.ExternalAsset == nil {
 		return nil, errors.New("nill external asset")
 	}
-	lpList := k.Keeper.GetLiquidityProvidersForAsset(ctx, *pool.ExternalAsset)
+	lpList, _, err := k.Keeper.GetLiquidityProvidersForAssetPaginated(ctx, *pool.ExternalAsset, &query.PageRequest{
+		Limit: uint64(math.MaxUint64),
+	})
+	if err != nil {
+		return nil, sdkerrors.Wrap(types.ErrLiquidityProviderDoesNotExist, err.Error())
+	}
 	poolUnits := pool.PoolUnits
 	nativeAssetBalance := pool.NativeAssetBalance
 	externalAssetBalance := pool.ExternalAssetBalance
 	// iterate over Lp list and refund them there tokens
 	// Return both RWN and EXTERNAL ASSET
 	for _, lp := range lpList {
-		withdrawNativeAsset, withdrawExternalAsset, _, _ := CalculateAllAssetsForLP(pool, lp)
+		withdrawNativeAsset, withdrawExternalAsset, _, _ := CalculateAllAssetsForLP(pool, *lp)
 		poolUnits = poolUnits.Sub(lp.LiquidityProviderUnits)
 		nativeAssetBalance = nativeAssetBalance.Sub(withdrawNativeAsset)
 		externalAssetBalance = externalAssetBalance.Sub(withdrawExternalAsset)
@@ -69,7 +76,7 @@ func (k msgServer) DecommissionPool(goCtx context.Context, msg *types.MsgDecommi
 		withdrawNativeCoins := sdk.NewCoin(types.GetSettlementAsset().Symbol, withdrawNativeAssetInt)
 		withdrawExternalCoins := sdk.NewCoin(msg.Symbol, withdrawExternalAssetInt)
 		refundingCoins := sdk.NewCoins(withdrawExternalCoins, withdrawNativeCoins)
-		err := k.Keeper.RemoveLiquidityProvider(ctx, refundingCoins, lp)
+		err := k.Keeper.RemoveLiquidityProvider(ctx, refundingCoins, *lp)
 		if err != nil {
 			return nil, sdkerrors.Wrap(types.ErrUnableToRemoveLiquidityProvider, err.Error())
 		}

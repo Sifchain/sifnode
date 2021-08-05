@@ -1,10 +1,11 @@
 package clp_test
 
 import (
-	"fmt"
+	"math"
 	"testing"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/cosmos-sdk/types/query"
 	"github.com/stretchr/testify/assert"
 
 	"github.com/Sifchain/sifnode/x/clp"
@@ -39,9 +40,11 @@ func TestInitGenesis(t *testing.T) {
 	valUpdates := clp.InitGenesis(ctx2, app2.ClpKeeper, state)
 	assert.Equal(t, len(valUpdates), 0)
 
-	poollist := app2.ClpKeeper.GetPools(ctx2)
-	assert.Equal(t, len(poollist), poolscount)
-	lpList := app2.ClpKeeper.GetLiquidityProviders(ctx2)
+	poolsList, _, err := app2.ClpKeeper.GetPoolsPaginated(ctx2, &query.PageRequest{Limit: math.MaxUint64})
+	assert.NoError(t, err)
+	assert.Equal(t, len(poolsList), poolscount)
+	lpList, _, err := app2.ClpKeeper.GetAllLiquidityProvidersPaginated(ctx2, &query.PageRequest{Limit: math.MaxUint64})
+	assert.NoError(t, err)
 	assert.Equal(t, len(lpList), lpCount)
 	assert.Equal(t, app2.ClpKeeper.GetParams(ctx2).MinCreatePoolThreshold, types.DefaultMinCreatePoolThreshold)
 	assert.Equal(t, app2.ClpKeeper.GetParams(ctx2).MinCreatePoolThreshold, app1.ClpKeeper.GetParams(ctx1).MinCreatePoolThreshold)
@@ -67,27 +70,24 @@ func CreateState(ctx sdk.Context, keeper keeper.Keeper, t *testing.T) (int, int)
 		err := keeper.SetPool(ctx, &pool)
 		assert.NoError(t, err)
 	}
-	getpools := keeper.GetPools(ctx)
-	assert.Greater(t, len(getpools), 0, "More than one pool added")
-	assert.LessOrEqual(t, len(getpools), len(pools), "Set pool will ignore duplicates")
-
-	poolscount := len(getpools)
-
-	//Setting Liquidity providers
+	poolsList, _, err := keeper.GetPoolsPaginated(ctx, &query.PageRequest{})
+	assert.NoError(t, err)
+	poolsCount := len(poolsList)
+	assert.Greater(t, poolsCount, 0, "More than one pool added")
+	assert.LessOrEqual(t, poolsCount, len(pools), "Set pool will ignore duplicates")
+	// Setting Liquidity providers
 	lpList := test.GenerateRandomLP(10)
 	for _, lp := range lpList {
 		lp := lp
 		keeper.SetLiquidityProvider(ctx, &lp)
 	}
-	fmt.Println(lpList[1])
-
 	v1 := test.GenerateWhitelistAddress("")
 	keeper.SetClpWhiteList(ctx, []sdk.AccAddress{v1})
 	accAddr, err := sdk.AccAddressFromBech32(lpList[1].LiquidityProviderAddress)
 	assert.NoError(t, err)
-
-	assetList := keeper.GetAssetsForLiquidityProvider(ctx, accAddr)
+	assetList, _, err := keeper.GetAssetsForLiquidityProviderPaginated(ctx, accAddr, &query.PageRequest{Limit: math.MaxUint64})
+	assert.NoError(t, err)
 	assert.LessOrEqual(t, len(assetList), len(lpList))
 	lpCount := len(assetList)
-	return poolscount, lpCount
+	return poolsCount, lpCount
 }

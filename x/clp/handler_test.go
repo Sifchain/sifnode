@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/cosmos-sdk/types/query"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
@@ -20,7 +21,6 @@ func TestHandler(t *testing.T) {
 	res, err := handler(ctx, nil)
 	require.Error(t, err)
 	require.Nil(t, res)
-
 }
 
 func TestCreatePool(t *testing.T) {
@@ -132,7 +132,8 @@ func TestAddLiquidity(t *testing.T) {
 	require.NoError(t, err)
 	require.NotNil(t, res)
 
-	lpList := clpKeeper.GetLiquidityProvidersForAsset(ctx, asset)
+	lpList, _, err := clpKeeper.GetLiquidityProvidersForAssetPaginated(ctx, asset, &query.PageRequest{})
+	require.NoError(t, err)
 	assert.Equal(t, 2, len(lpList))
 
 	newAsset := clptypes.NewAsset("Asset")

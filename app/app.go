@@ -78,6 +78,7 @@ import (
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 	dbm "github.com/tendermint/tm-db"
 
+	sifchainAnte "github.com/Sifchain/sifnode/app/ante"
 	"github.com/Sifchain/sifnode/x/clp"
 	clpkeeper "github.com/Sifchain/sifnode/x/clp/keeper"
 	clptypes "github.com/Sifchain/sifnode/x/clp/types"
@@ -437,7 +438,7 @@ func NewSifApp(
 	app.SetEndBlocker(app.EndBlocker)
 
 	app.SetAnteHandler(
-		ante.NewAnteHandler(
+		sifchainAnte.NewAnteHandler(
 			app.AccountKeeper, app.BankKeeper, ante.DefaultSigVerificationGasConsumer,
 			encodingConfig.TxConfig.SignModeHandler(),
 		),
