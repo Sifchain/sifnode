@@ -722,6 +722,7 @@ class IntegrationTestsPlaybook:
 
 
 def cleanup_and_reset_state():
+    # git checkout 4cb7322b6b282babd93a0d0aedda837c9134e84e deploy
     # pkill node; pkill ebrelayer; pkill sifnoded; rm -rvf $HOME/.sifnoded; rm -rvf ./vagrant/data; mkdir vagrant/data
     cmd = Command()
     cmd.execst(["pkill", "node"], check_exit=False)
@@ -729,7 +730,9 @@ def cleanup_and_reset_state():
     cmd.execst(["pkill", "sifnoded"], check_exit=False)
     cmd.rmdir(cmd.get_user_home(".sifnoded"))
     cmd.rmdir(project_dir("test/integration/vagrant/data"))
-    cmd.mkdir(project_dir("test/integration/vagrant/data"))
+    cmd.rmdir(project_dir("test/integration/relayerdb"))
+    cmd.rmdir(project_dir("test/integration/.pytest_cache"))
+    cmd.rmdir(project_dir("relayerdb"))
     time.sleep(3)
 
 
