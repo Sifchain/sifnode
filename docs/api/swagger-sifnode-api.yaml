@@ -1,7 +1,7 @@
 openapi: 3.0.0
 info:
   title: Sifnode API
-  version: 1.1.0
+  version: 1.1.1
 servers:
 # Added by API Auto Mocking Plugin
 - url: https://api-devnet-042.sifchain.finance
@@ -175,6 +175,29 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/LiquidityDetailsResponse'
+      x-swagger-router-controller: Clp
+  /clp/getLpList:
+    get:
+      tags:
+      - Clp
+      operationId: getLpList
+      description: Get liquidity providers list for specified asset symbol.
+      parameters:
+      - name: symbol
+        in: query
+        required: true
+        explode: false
+        schema:
+          type: string
+      responses:
+        "200":
+          description: Liquidity providers list with additional data.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/LiquidityProvider'
       x-swagger-router-controller: Clp
   /clp/getAssets:
     get:

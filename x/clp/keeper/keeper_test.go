@@ -1,9 +1,11 @@
 package keeper_test
 
 import (
+	"math"
 	"testing"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/cosmos-sdk/types/query"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -19,9 +21,9 @@ func TestKeeper_Errors(t *testing.T) {
 	pool.ExternalAsset.Symbol = ""
 	err := keeper.SetPool(ctx, &pool)
 	assert.Error(t, err)
-	getpools := keeper.GetPools(ctx)
-	assert.Equal(t, len(getpools), 0, "No pool added")
-
+	poolsList, _, err := keeper.GetPoolsPaginated(ctx, &query.PageRequest{})
+	assert.NoError(t, err)
+	assert.Equal(t, len(poolsList), 0, "No pool added")
 	lp := test.GenerateRandomLP(1)[0]
 	lp.Asset.Symbol = ""
 	keeper.SetLiquidityProvider(ctx, &lp)
@@ -50,9 +52,10 @@ func TestKeeper_GetPools(t *testing.T) {
 		err := keeper.SetPool(ctx, &pool)
 		assert.NoError(t, err)
 	}
-	getpools := keeper.GetPools(ctx)
-	assert.Greater(t, len(getpools), 0, "More than one pool added")
-	assert.LessOrEqual(t, len(getpools), len(pools), "Set pool will ignore duplicates")
+	poolsList, _, err := keeper.GetPoolsPaginated(ctx, &query.PageRequest{})
+	assert.NoError(t, err)
+	assert.Greater(t, len(poolsList), 0, "More than one pool added")
+	assert.LessOrEqual(t, len(poolsList), len(pools), "Set pool will ignore duplicates")
 }
 
 func TestKeeper_DestroyPool(t *testing.T) {
@@ -79,8 +82,9 @@ func TestKeeper_SetLiquidityProvider(t *testing.T) {
 	getlp, err := keeper.GetLiquidityProvider(ctx, lp.Asset.Symbol, lp.LiquidityProviderAddress)
 	assert.NoError(t, err, "Error in get liquidityProvider")
 	assert.Equal(t, getlp, lp)
-	lpList := keeper.GetLiquidityProvidersForAsset(ctx, *lp.Asset)
-	assert.Equal(t, lp, lpList[0])
+	lpList, _, err := keeper.GetLiquidityProvidersForAssetPaginated(ctx, *lp.Asset, &query.PageRequest{})
+	assert.NoError(t, err)
+	assert.Equal(t, &lp, lpList[0])
 }
 
 func TestKeeper_DestroyLiquidityProvider(t *testing.T) {
@@ -116,22 +120,20 @@ func TestKeeper_BankKeeper(t *testing.T) {
 
 func TestKeeper_GetAssetsForLiquidityProvider(t *testing.T) {
 	ctx, keeper := test.CreateTestAppClp(false)
-
 	lpList := test.GenerateRandomLP(10)
 	for i := range lpList {
 		lp := lpList[i]
 		keeper.SetLiquidityProvider(ctx, &lp)
 	}
-
 	lpaddr, err := sdk.AccAddressFromBech32(lpList[0].LiquidityProviderAddress)
 	require.NoError(t, err)
-	assetList := keeper.GetAssetsForLiquidityProvider(ctx, lpaddr)
+	assetList, _, err := keeper.GetAssetsForLiquidityProviderPaginated(ctx, lpaddr, &query.PageRequest{Limit: math.MaxUint64})
+	assert.NoError(t, err)
 	assert.LessOrEqual(t, len(assetList), len(lpList))
 }
 
 func TestKeeper_GetModuleAccount(t *testing.T) {
 	ctx, keeper := test.CreateTestAppClp(false)
-
 	moduleAccount := keeper.GetAuthKeeper().GetModuleAccount(ctx, types.ModuleName)
 	assert.Equal(t, moduleAccount.GetName(), types.ModuleName)
 	assert.Equal(t, moduleAccount.GetPermissions(), []string{authtypes.Burner, authtypes.Minter})
