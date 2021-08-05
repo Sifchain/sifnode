@@ -340,6 +340,7 @@ func TestBurnEthSuccess(t *testing.T) {
 		for _, attribute := range event.Attributes {
 			value := string(attribute.Value)
 			switch key := string(attribute.Key); key {
+			case "global_nonce":
 			case senderString:
 				// multiple recipient in burn, skip the comparison
 				// require.Equal(t, value, senderAddress.String())
