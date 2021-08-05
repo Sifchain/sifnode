@@ -2,7 +2,7 @@ pragma solidity 0.5.16;
 
 import "./BridgeToken.sol";
 import "./EthereumBankStorage.sol";
-import "../../node_modules/openzeppelin-solidity/contracts/token/ERC20/SafeERC20.sol";
+import "openzeppelin-solidity/contracts/token/ERC20/SafeERC20.sol";
 /*
  *  @title: EthereumBank
  *  @dev: Ethereum bank which locks Ethereum/ERC20 token deposits, and unlocks
