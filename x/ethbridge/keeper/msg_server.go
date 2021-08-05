@@ -167,7 +167,9 @@ func (srv msgServer) CreateEthBridgeClaim(goCtx context.Context, msg *types.MsgC
 		"CosmosReceiver", claim.CosmosReceiver,
 		"Amount", claim.Amount.String(),
 		"Symbol", claim.Symbol,
-		"ClaimType", claim.ClaimType.String())
+		"ClaimType", claim.ClaimType.String(),
+		"DenomHash", claim.DenomHash,
+	)
 
 	ctx.EventManager().EmitEvents(sdk.Events{
 		sdk.NewEvent(
