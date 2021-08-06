@@ -1,6 +1,7 @@
 package app
 
 import (
+	tokenregistrykeeper "github.com/Sifchain/sifnode/x/tokenregistry/keeper"
 	"io"
 	"math/big"
 	"net/http"
@@ -90,9 +91,8 @@ import (
 	"github.com/Sifchain/sifnode/x/oracle"
 	oraclekeeper "github.com/Sifchain/sifnode/x/oracle/keeper"
 	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
-	"github.com/Sifchain/sifnode/x/whitelist"
-	whitelistkeeper "github.com/Sifchain/sifnode/x/whitelist/keeper"
-	whitelisttypes "github.com/Sifchain/sifnode/x/whitelist/types"
+	"github.com/Sifchain/sifnode/x/tokenregistry"
+	tokenregistrytypes "github.com/Sifchain/sifnode/x/tokenregistry/types"
 )
 
 const appName = "sifnode"
@@ -121,7 +121,7 @@ var (
 		oracle.AppModuleBasic{},
 		ethbridge.AppModuleBasic{},
 		dispensation.AppModuleBasic{},
-		whitelist.AppModuleBasic{},
+		tokenregistry.AppModuleBasic{},
 	)
 
 	maccPerms = map[string][]string{
@@ -182,11 +182,11 @@ type SifchainApp struct {
 	ScopedTransferKeeper capabilitykeeper.ScopedKeeper
 	ScopedIBCMockKeeper  capabilitykeeper.ScopedKeeper
 
-	ClpKeeper          clpkeeper.Keeper
-	OracleKeeper       oraclekeeper.Keeper
-	EthbridgeKeeper    ethbridgekeeper.Keeper
-	DispensationKeeper dispkeeper.Keeper
-	WhitelistKeeper    whitelisttypes.Keeper
+	ClpKeeper           clpkeeper.Keeper
+	OracleKeeper        oraclekeeper.Keeper
+	EthbridgeKeeper     ethbridgekeeper.Keeper
+	DispensationKeeper  dispkeeper.Keeper
+	TokenRegistryKeeper tokenregistrytypes.Keeper
 
 	mm *module.Manager
 	sm *module.SimulationManager
@@ -224,7 +224,7 @@ func NewSifApp(
 		ethbridgetypes.StoreKey,
 		clptypes.StoreKey,
 		oracletypes.StoreKey,
-		whitelisttypes.StoreKey,
+		tokenregistrytypes.StoreKey,
 	)
 
 	tkeys := sdk.NewTransientStoreKeys(paramstypes.TStoreKey)
@@ -274,14 +274,14 @@ func NewSifApp(
 	app.SlashingKeeper = slashingkeeper.NewKeeper(
 		appCodec, keys[slashingtypes.StoreKey], &stakingKeeper, app.GetSubspace(slashingtypes.ModuleName),
 	)
-
+	app.TokenRegistryKeeper = tokenregistrykeeper.NewKeeper(appCodec, keys[tokenregistrytypes.StoreKey])
 	// register the staking hooks
 	// NOTE: stakingKeeper above is passed by reference, so that it will contain these hooks
 	app.StakingKeeper = *stakingKeeper.SetHooks(
 		stakingtypes.NewMultiStakingHooks(app.DistrKeeper.Hooks(), app.SlashingKeeper.Hooks()),
 	)
 
-	app.ClpKeeper = clpkeeper.NewKeeper(appCodec, keys[clptypes.StoreKey], app.BankKeeper, app.AccountKeeper, app.GetSubspace(clptypes.ModuleName))
+	app.ClpKeeper = clpkeeper.NewKeeper(appCodec, keys[clptypes.StoreKey], app.BankKeeper, app.AccountKeeper, app.TokenRegistryKeeper, app.GetSubspace(clptypes.ModuleName))
 
 	app.OracleKeeper = oraclekeeper.NewKeeper(
 		appCodec,
@@ -305,8 +305,6 @@ func NewSifApp(
 		app.AccountKeeper,
 		app.GetSubspace(disptypes.ModuleName),
 	)
-
-	app.WhitelistKeeper = whitelistkeeper.NewKeeper(appCodec, keys[whitelisttypes.StoreKey])
 
 	// This map defines heights to skip for updates
 	// The mapping represents height to bool. if the value is true for a height that height
@@ -342,7 +340,7 @@ func NewSifApp(
 		app.IBCKeeper.ChannelKeeper, &app.IBCKeeper.PortKeeper,
 		app.AccountKeeper, app.BankKeeper, scopedTransferKeeper,
 	)
-	transferModule := ibctransferoverride.NewAppModule(app.TransferKeeper, appCodec)
+	transferModule := ibctransferoverride.NewAppModule(app.TransferKeeper, app.TokenRegistryKeeper, appCodec)
 
 	// NOTE: the IBC mock keeper and application module is used only for testing core IBC. Do
 	// note replicate if you do not need to test core IBC or light clients.
@@ -384,7 +382,7 @@ func NewSifApp(
 		oracle.NewAppModule(app.OracleKeeper),
 		ethbridge.NewAppModule(app.OracleKeeper, app.BankKeeper, app.AccountKeeper, app.EthbridgeKeeper, &appCodec),
 		dispensation.NewAppModule(app.DispensationKeeper, app.BankKeeper, app.AccountKeeper),
-		whitelist.NewAppModule(app.WhitelistKeeper, &appCodec),
+		tokenregistry.NewAppModule(app.TokenRegistryKeeper, &appCodec),
 	)
 
 	// During begin block slashing happens after distr.BeginBlocker so that
@@ -423,7 +421,7 @@ func NewSifApp(
 		oracletypes.ModuleName,
 		ethbridge.ModuleName,
 		dispensation.ModuleName,
-		whitelist.ModuleName,
+		tokenregistry.ModuleName,
 	)
 
 	app.mm.RegisterRoutes(app.Router(), app.QueryRouter(), encodingConfig.Amino)

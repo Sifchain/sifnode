@@ -1,16 +1,22 @@
 package ibctransfer
 
 import (
+	"fmt"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	transfer "github.com/cosmos/cosmos-sdk/x/ibc/applications/transfer"
 	transfertypes "github.com/cosmos/cosmos-sdk/x/ibc/applications/transfer/types"
 	channeltypes "github.com/cosmos/cosmos-sdk/x/ibc/core/04-channel/types"
+
+	"github.com/Sifchain/sifnode/x/ethbridge/types"
+	tokenregistrytypes "github.com/Sifchain/sifnode/x/tokenregistry/types"
 )
 
 func OnRecvPacketWhiteListed(
 	ctx sdk.Context,
 	sdkAppModule transfer.AppModule,
+	whitelistKeeper tokenregistrytypes.Keeper,
 	packet channeltypes.Packet,
 ) (*sdk.Result, []byte, error) {
 
@@ -19,20 +25,37 @@ func OnRecvPacketWhiteListed(
 		return nil, nil, sdkerrors.Wrapf(sdkerrors.ErrUnknownRequest, "cannot unmarshal ICS-20 transfer packet data: %s", err.Error())
 	}
 
-	if !isRecvPacketAllowed(ctx, packet, data) {
-		return nil, nil, sdkerrors.Wrapf(sdkerrors.ErrInvalidCoins, "denom not on whitelist")
+	if !isRecvPacketAllowed(ctx, whitelistKeeper, packet, data) {
+		acknowledgement := channeltypes.NewErrorAcknowledgement(
+			sdkerrors.Wrapf(sdkerrors.ErrInvalidCoins, "denom not on whitelist").Error(),
+		)
+
+		ctx.EventManager().EmitEvent(
+			sdk.NewEvent(
+				transfertypes.EventTypePacket,
+				sdk.NewAttribute(sdk.AttributeKeyModule, types.ModuleName),
+				sdk.NewAttribute(transfertypes.AttributeKeyReceiver, data.Receiver),
+				sdk.NewAttribute(transfertypes.AttributeKeyDenom, data.Denom),
+				sdk.NewAttribute(transfertypes.AttributeKeyAmount, fmt.Sprintf("%d", data.Amount)),
+				sdk.NewAttribute(transfertypes.AttributeKeyAckSuccess, fmt.Sprintf("%t", false)),
+			),
+		)
+
+		return &sdk.Result{
+			Events: ctx.EventManager().Events().ToABCIEvents(),
+		}, acknowledgement.GetBytes(), nil
 	}
 
 	return sdkAppModule.OnRecvPacket(ctx, packet)
 }
 
-func isRecvPacketAllowed(ctx sdk.Context,
+func isRecvPacketAllowed(ctx sdk.Context, whitelistKeeper tokenregistrytypes.Keeper,
 	packet channeltypes.Packet, data transfertypes.FungibleTokenPacketData) bool {
 
 	isReturning := IsRecvPacketReturning(packet, data)
 
 	denom := GetMintedDenomFromPacket(packet, data)
-	isWhitelisted := IsWhitelisted(ctx, denom)
+	isWhitelisted := IsWhitelisted(ctx, whitelistKeeper, denom)
 
 	if isReturning || isWhitelisted {
 		return true
@@ -93,7 +116,7 @@ func IsRecvPacketReturning(packet channeltypes.Packet, data transfertypes.Fungib
 	return false
 }
 
-func IsWhitelisted(ctx sdk.Context, denom string) bool {
+func IsWhitelisted(ctx sdk.Context, whitelistKeeper tokenregistrytypes.Keeper, denom string) bool {
 	// In the case that token did not originate on sifchain,
 	// allow if all the following conditions are met:
 	//    a) Token should belong to whitelist
@@ -101,7 +124,5 @@ func IsWhitelisted(ctx sdk.Context, denom string) bool {
 	//    c) The port and channel should have been whitelisted
 	// All the above conditions can be a met by whitelisting the ibc/token that is minted on chain.
 
-	// TODO: Pass in whitelistkeeper here and lookup exact denom once token channels are set in whitelist.
-
-	return true
+	return whitelistKeeper.IsDenomWhitelisted(ctx, denom)
 }
