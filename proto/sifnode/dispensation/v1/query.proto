@@ -3,6 +3,7 @@ package sifnode.dispensation.v1;
 
 import "gogoproto/gogo.proto";
 import "sifnode/dispensation/v1/types.proto";
+import "cosmos/base/query/v1beta1/pagination.proto";
 
 option go_package = "github.com/Sifchain/sifnode/x/dispensation/types";
 
@@ -16,33 +17,46 @@ service Query {
   rpc ClaimsByType(QueryClaimsByTypeRequest) returns (QueryClaimsResponse) {}
 }
 
-message QueryAllDistributionsRequest {}
+message QueryAllDistributionsRequest {
+  cosmos.base.query.v1beta1.PageRequest pagination = 1;
+}
 
 message QueryAllDistributionsResponse {
   repeated Distribution distributions = 1;
   int64 height = 2;
+  cosmos.base.query.v1beta1.PageResponse pagination = 3;
 }
 
 message QueryRecordsByDistributionNameRequest {
   string distribution_name = 1;
   sifnode.dispensation.v1.DistributionStatus status = 2;
+  cosmos.base.query.v1beta1.PageRequest pagination = 3;
 }
 
 message QueryRecordsByDistributionNameResponse {
   DistributionRecords distribution_records = 1;
   int64 height = 2;
+  cosmos.base.query.v1beta1.PageResponse pagination = 3;
 }
 
-message QueryRecordsByRecipientAddrRequest { string address = 1; }
+message QueryRecordsByRecipientAddrRequest {
+  string address = 1;
+  cosmos.base.query.v1beta1.PageRequest pagination = 2;
+}
 
 message QueryRecordsByRecipientAddrResponse {
   DistributionRecords distribution_records = 1;
   int64 height = 2;
+  cosmos.base.query.v1beta1.PageResponse pagination = 3;
 }
 
-message QueryClaimsByTypeRequest { DistributionType user_claim_type = 1; }
+message QueryClaimsByTypeRequest {
+  DistributionType user_claim_type = 1;
+  cosmos.base.query.v1beta1.PageRequest pagination = 2;
+}
 
 message QueryClaimsResponse {
   repeated UserClaim claims = 1;
   int64 height = 2;
+  cosmos.base.query.v1beta1.PageResponse pagination = 3;
 }

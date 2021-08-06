@@ -6,6 +6,7 @@ package types
 import (
 	context "context"
 	fmt "fmt"
+	query "github.com/cosmos/cosmos-sdk/types/query"
 	_ "github.com/gogo/protobuf/gogoproto"
 	grpc1 "github.com/gogo/protobuf/grpc"
 	proto "github.com/gogo/protobuf/proto"
@@ -29,6 +30,7 @@ var _ = math.Inf
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
 type QueryAllDistributionsRequest struct {
+	Pagination *query.PageRequest `protobuf:"bytes,1,opt,name=pagination,proto3" json:"pagination,omitempty"`
 }
 
 func (m *QueryAllDistributionsRequest) Reset()         { *m = QueryAllDistributionsRequest{} }
@@ -64,9 +66,17 @@ func (m *QueryAllDistributionsRequest) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_QueryAllDistributionsRequest proto.InternalMessageInfo
 
+func (m *QueryAllDistributionsRequest) GetPagination() *query.PageRequest {
+	if m != nil {
+		return m.Pagination
+	}
+	return nil
+}
+
 type QueryAllDistributionsResponse struct {
-	Distributions []*Distribution `protobuf:"bytes,1,rep,name=distributions,proto3" json:"distributions,omitempty"`
-	Height        int64           `protobuf:"varint,2,opt,name=height,proto3" json:"height,omitempty"`
+	Distributions []*Distribution     `protobuf:"bytes,1,rep,name=distributions,proto3" json:"distributions,omitempty"`
+	Height        int64               `protobuf:"varint,2,opt,name=height,proto3" json:"height,omitempty"`
+	Pagination    *query.PageResponse `protobuf:"bytes,3,opt,name=pagination,proto3" json:"pagination,omitempty"`
 }
 
 func (m *QueryAllDistributionsResponse) Reset()         { *m = QueryAllDistributionsResponse{} }
@@ -116,9 +126,17 @@ func (m *QueryAllDistributionsResponse) GetHeight() int64 {
 	return 0
 }
 
+func (m *QueryAllDistributionsResponse) GetPagination() *query.PageResponse {
+	if m != nil {
+		return m.Pagination
+	}
+	return nil
+}
+
 type QueryRecordsByDistributionNameRequest struct {
 	DistributionName string             `protobuf:"bytes,1,opt,name=distribution_name,json=distributionName,proto3" json:"distribution_name,omitempty"`
 	Status           DistributionStatus `protobuf:"varint,2,opt,name=status,proto3,enum=sifnode.dispensation.v1.DistributionStatus" json:"status,omitempty"`
+	Pagination       *query.PageRequest `protobuf:"bytes,3,opt,name=pagination,proto3" json:"pagination,omitempty"`
 }
 
 func (m *QueryRecordsByDistributionNameRequest) Reset()         { *m = QueryRecordsByDistributionNameRequest{} }
@@ -168,9 +186,17 @@ func (m *QueryRecordsByDistributionNameRequest) GetStatus() DistributionStatus {
 	return DistributionStatus_DISTRIBUTION_STATUS_UNSPECIFIED
 }
 
+func (m *QueryRecordsByDistributionNameRequest) GetPagination() *query.PageRequest {
+	if m != nil {
+		return m.Pagination
+	}
+	return nil
+}
+
 type QueryRecordsByDistributionNameResponse struct {
 	DistributionRecords *DistributionRecords `protobuf:"bytes,1,opt,name=distribution_records,json=distributionRecords,proto3" json:"distribution_records,omitempty"`
 	Height              int64                `protobuf:"varint,2,opt,name=height,proto3" json:"height,omitempty"`
+	Pagination          *query.PageResponse  `protobuf:"bytes,3,opt,name=pagination,proto3" json:"pagination,omitempty"`
 }
 
 func (m *QueryRecordsByDistributionNameResponse) Reset() {
@@ -222,8 +248,16 @@ func (m *QueryRecordsByDistributionNameResponse) GetHeight() int64 {
 	return 0
 }
 
+func (m *QueryRecordsByDistributionNameResponse) GetPagination() *query.PageResponse {
+	if m != nil {
+		return m.Pagination
+	}
+	return nil
+}
+
 type QueryRecordsByRecipientAddrRequest struct {
-	Address string `protobuf:"bytes,1,opt,name=address,proto3" json:"address,omitempty"`
+	Address    string             `protobuf:"bytes,1,opt,name=address,proto3" json:"address,omitempty"`
+	Pagination *query.PageRequest `protobuf:"bytes,2,opt,name=pagination,proto3" json:"pagination,omitempty"`
 }
 
 func (m *QueryRecordsByRecipientAddrRequest) Reset()         { *m = QueryRecordsByRecipientAddrRequest{} }
@@ -266,9 +300,17 @@ func (m *QueryRecordsByRecipientAddrRequest) GetAddress() string {
 	return ""
 }
 
+func (m *QueryRecordsByRecipientAddrRequest) GetPagination() *query.PageRequest {
+	if m != nil {
+		return m.Pagination
+	}
+	return nil
+}
+
 type QueryRecordsByRecipientAddrResponse struct {
 	DistributionRecords *DistributionRecords `protobuf:"bytes,1,opt,name=distribution_records,json=distributionRecords,proto3" json:"distribution_records,omitempty"`
 	Height              int64                `protobuf:"varint,2,opt,name=height,proto3" json:"height,omitempty"`
+	Pagination          *query.PageResponse  `protobuf:"bytes,3,opt,name=pagination,proto3" json:"pagination,omitempty"`
 }
 
 func (m *QueryRecordsByRecipientAddrResponse) Reset()         { *m = QueryRecordsByRecipientAddrResponse{} }
@@ -318,8 +360,16 @@ func (m *QueryRecordsByRecipientAddrResponse) GetHeight() int64 {
 	return 0
 }
 
+func (m *QueryRecordsByRecipientAddrResponse) GetPagination() *query.PageResponse {
+	if m != nil {
+		return m.Pagination
+	}
+	return nil
+}
+
 type QueryClaimsByTypeRequest struct {
-	UserClaimType DistributionType `protobuf:"varint,1,opt,name=user_claim_type,json=userClaimType,proto3,enum=sifnode.dispensation.v1.DistributionType" json:"user_claim_type,omitempty"`
+	UserClaimType DistributionType   `protobuf:"varint,1,opt,name=user_claim_type,json=userClaimType,proto3,enum=sifnode.dispensation.v1.DistributionType" json:"user_claim_type,omitempty"`
+	Pagination    *query.PageRequest `protobuf:"bytes,2,opt,name=pagination,proto3" json:"pagination,omitempty"`
 }
 
 func (m *QueryClaimsByTypeRequest) Reset()         { *m = QueryClaimsByTypeRequest{} }
@@ -362,9 +412,17 @@ func (m *QueryClaimsByTypeRequest) GetUserClaimType() DistributionType {
 	return DistributionType_DISTRIBUTION_TYPE_UNSPECIFIED
 }
 
+func (m *QueryClaimsByTypeRequest) GetPagination() *query.PageRequest {
+	if m != nil {
+		return m.Pagination
+	}
+	return nil
+}
+
 type QueryClaimsResponse struct {
-	Claims []*UserClaim `protobuf:"bytes,1,rep,name=claims,proto3" json:"claims,omitempty"`
-	Height int64        `protobuf:"varint,2,opt,name=height,proto3" json:"height,omitempty"`
+	Claims     []*UserClaim        `protobuf:"bytes,1,rep,name=claims,proto3" json:"claims,omitempty"`
+	Height     int64               `protobuf:"varint,2,opt,name=height,proto3" json:"height,omitempty"`
+	Pagination *query.PageResponse `protobuf:"bytes,3,opt,name=pagination,proto3" json:"pagination,omitempty"`
 }
 
 func (m *QueryClaimsResponse) Reset()         { *m = QueryClaimsResponse{} }
@@ -414,6 +472,13 @@ func (m *QueryClaimsResponse) GetHeight() int64 {
 	return 0
 }
 
+func (m *QueryClaimsResponse) GetPagination() *query.PageResponse {
+	if m != nil {
+		return m.Pagination
+	}
+	return nil
+}
+
 func init() {
 	proto.RegisterType((*QueryAllDistributionsRequest)(nil), "sifnode.dispensation.v1.QueryAllDistributionsRequest")
 	proto.RegisterType((*QueryAllDistributionsResponse)(nil), "sifnode.dispensation.v1.QueryAllDistributionsResponse")
@@ -430,42 +495,48 @@ func init() {
 }
 
 var fileDescriptor_395b1a3b0bf5b135 = []byte{
-	// 549 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xc4, 0x55, 0xcd, 0x6e, 0xd3, 0x40,
-	0x10, 0xce, 0x52, 0x08, 0x62, 0x4a, 0x4b, 0xd9, 0x56, 0x10, 0x2c, 0xb0, 0x22, 0x57, 0x45, 0x41,
-	0xad, 0x6c, 0x62, 0x04, 0x07, 0x40, 0x45, 0x4d, 0x39, 0x81, 0x84, 0x54, 0x17, 0x2e, 0x5c, 0x22,
-	0xc7, 0xbb, 0x4d, 0x56, 0x8a, 0x7f, 0xe2, 0x5d, 0x57, 0xf8, 0x0c, 0x0f, 0x00, 0x47, 0x2e, 0x95,
-	0x78, 0x08, 0xde, 0x81, 0x63, 0x8f, 0x1c, 0x51, 0xf2, 0x22, 0xc8, 0x6b, 0x3b, 0x38, 0x6d, 0x9d,
-	0x9a, 0x5e, 0x7a, 0xcb, 0xc6, 0xdf, 0xdf, 0x8c, 0x66, 0x34, 0xb0, 0xce, 0xd9, 0x81, 0xe7, 0x13,
-	0x6a, 0x10, 0xc6, 0x03, 0xea, 0x71, 0x5b, 0x30, 0xdf, 0x33, 0x0e, 0xdb, 0xc6, 0x28, 0xa2, 0x61,
-	0xac, 0x07, 0xa1, 0x2f, 0x7c, 0x7c, 0x37, 0x03, 0xe9, 0x45, 0x90, 0x7e, 0xd8, 0x56, 0xd6, 0xfa,
-	0x7e, 0xdf, 0x97, 0x18, 0x23, 0xf9, 0x95, 0xc2, 0x95, 0x52, 0x4d, 0x11, 0x07, 0x94, 0xa7, 0x20,
-	0x4d, 0x85, 0xfb, 0x7b, 0x89, 0xc5, 0xce, 0x70, 0xf8, 0x9a, 0x71, 0x11, 0xb2, 0x5e, 0x94, 0xc0,
-	0xb8, 0x45, 0x47, 0x11, 0xe5, 0x42, 0xfb, 0x82, 0xe0, 0x41, 0x09, 0x80, 0x07, 0xbe, 0xc7, 0x29,
-	0x7e, 0x0b, 0x4b, 0xa4, 0xf8, 0xa1, 0x81, 0x9a, 0x0b, 0xad, 0x45, 0x73, 0x43, 0x2f, 0x49, 0xab,
-	0x17, 0x65, 0xac, 0x59, 0x2e, 0xbe, 0x03, 0xf5, 0x01, 0x65, 0xfd, 0x81, 0x68, 0x5c, 0x69, 0xa2,
-	0xd6, 0x82, 0x95, 0xbd, 0xb4, 0xef, 0x08, 0x36, 0x64, 0x0c, 0x8b, 0x3a, 0x7e, 0x48, 0x78, 0x27,
-	0x2e, 0xaa, 0xbc, 0xb3, 0x5d, 0x9a, 0x05, 0xc6, 0x9b, 0x70, 0xbb, 0x28, 0xd9, 0xf5, 0x6c, 0x97,
-	0x36, 0x50, 0x13, 0xb5, 0x6e, 0x58, 0x2b, 0xe4, 0x04, 0x07, 0xef, 0x42, 0x9d, 0x0b, 0x5b, 0x44,
-	0x5c, 0xda, 0x2d, 0x9b, 0x9b, 0x95, 0x42, 0xef, 0x4b, 0x8a, 0x95, 0x51, 0xb5, 0x1f, 0x08, 0x1e,
-	0x9e, 0x97, 0x2d, 0xeb, 0x55, 0x17, 0xd6, 0x66, 0xc2, 0x85, 0x29, 0x43, 0xe6, 0x5b, 0x34, 0xb7,
-	0xaa, 0xb5, 0x2c, 0xe5, 0x58, 0xab, 0xe4, 0xf4, 0x9f, 0xa5, 0xfd, 0xdb, 0x06, 0x6d, 0x36, 0xa2,
-	0x45, 0x1d, 0x16, 0x30, 0xea, 0x89, 0x1d, 0x42, 0xc2, 0xbc, 0x77, 0x0d, 0xb8, 0x6e, 0x13, 0x12,
-	0x52, 0xce, 0xb3, 0x8e, 0xe5, 0x4f, 0xed, 0x08, 0xc1, 0xfa, 0x5c, 0x81, 0xcb, 0x2e, 0xd0, 0x85,
-	0x86, 0xcc, 0xb7, 0x3b, 0xb4, 0x99, 0xcb, 0x3b, 0xf1, 0xfb, 0x38, 0x98, 0x8e, 0xc4, 0x1e, 0xdc,
-	0x8a, 0x38, 0x0d, 0xbb, 0x4e, 0xf2, 0xad, 0x9b, 0x4c, 0xbf, 0xcc, 0xb3, 0x6c, 0x3e, 0xaa, 0x94,
-	0x47, 0x4a, 0x2d, 0x25, 0x0a, 0x52, 0x3c, 0x79, 0x6a, 0x0c, 0x56, 0x0b, 0x76, 0xd3, 0xf2, 0x9f,
-	0x43, 0x5d, 0x9a, 0xe4, 0x4b, 0xa0, 0x95, 0x1a, 0x7c, 0xc8, 0xe5, 0xac, 0x8c, 0x51, 0x56, 0x99,
-	0xf9, 0xf3, 0x2a, 0x5c, 0x93, 0x5e, 0xf8, 0x33, 0x82, 0x95, 0x93, 0x6b, 0x88, 0x9f, 0x96, 0x5a,
-	0xcc, 0xdb, 0x6b, 0xe5, 0xd9, 0xff, 0xd2, 0xd2, 0x0a, 0xb5, 0x1a, 0x3e, 0x42, 0x70, 0xaf, 0x74,
-	0xd2, 0xf1, 0xf6, 0x7c, 0xdd, 0xf3, 0xd6, 0x57, 0x79, 0x75, 0x61, 0xfe, 0x34, 0xe0, 0x37, 0x04,
-	0xf8, 0xf4, 0x98, 0xe2, 0x17, 0x15, 0x95, 0xcf, 0xda, 0x0c, 0xe5, 0xe5, 0xc5, 0xc8, 0xd3, 0x4c,
-	0x23, 0xb8, 0x59, 0x9c, 0x4c, 0xdc, 0x9e, 0xaf, 0x77, 0xc6, 0x14, 0x2b, 0x5b, 0x55, 0x28, 0xff,
-	0x2c, 0x3b, 0x6f, 0x7e, 0x8d, 0x55, 0x74, 0x3c, 0x56, 0xd1, 0x9f, 0xb1, 0x8a, 0xbe, 0x4e, 0xd4,
-	0xda, 0xf1, 0x44, 0xad, 0xfd, 0x9e, 0xa8, 0xb5, 0x8f, 0x8f, 0xfb, 0x4c, 0x0c, 0xa2, 0x9e, 0xee,
-	0xf8, 0xae, 0xb1, 0xcf, 0x0e, 0x9c, 0x81, 0xcd, 0x3c, 0x23, 0x3f, 0x16, 0x9f, 0x66, 0xcf, 0x85,
-	0xbc, 0x15, 0xbd, 0xba, 0x3c, 0x16, 0x4f, 0xfe, 0x06, 0x00, 0x00, 0xff, 0xff, 0xa0, 0x93, 0x1a,
-	0x83, 0xa7, 0x06, 0x00, 0x00,
+	// 643 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xdc, 0x56, 0xc1, 0x6e, 0xd3, 0x40,
+	0x10, 0xcd, 0x36, 0x10, 0xc4, 0x94, 0x96, 0xb2, 0xad, 0x20, 0x58, 0x60, 0x55, 0xa9, 0x5a, 0x0a,
+	0xad, 0x6c, 0x12, 0x04, 0x07, 0x40, 0xa0, 0xa6, 0x08, 0x24, 0x90, 0x10, 0x75, 0xe1, 0xc2, 0x25,
+	0x72, 0xec, 0x8d, 0xb3, 0x52, 0x62, 0x3b, 0xde, 0x75, 0x44, 0xce, 0x48, 0x9c, 0xe1, 0x07, 0xf8,
+	0x08, 0xa4, 0xfe, 0x03, 0x17, 0xa4, 0x1e, 0x39, 0x42, 0x72, 0x40, 0xe2, 0x2b, 0x90, 0xd7, 0x76,
+	0x6a, 0xa7, 0x75, 0x12, 0x22, 0x7a, 0xe1, 0x96, 0xcd, 0xce, 0x9b, 0x79, 0x6f, 0x5e, 0x76, 0x32,
+	0xb0, 0xc6, 0x68, 0xc3, 0x76, 0x4c, 0xa2, 0x9a, 0x94, 0xb9, 0xc4, 0x66, 0x3a, 0xa7, 0x8e, 0xad,
+	0x76, 0xcb, 0x6a, 0xc7, 0x27, 0x5e, 0x4f, 0x71, 0x3d, 0x87, 0x3b, 0xf8, 0x4a, 0x14, 0xa4, 0x24,
+	0x83, 0x94, 0x6e, 0x59, 0x5a, 0xb1, 0x1c, 0xcb, 0x11, 0x31, 0x6a, 0xf0, 0x29, 0x0c, 0x97, 0x32,
+	0x73, 0xf2, 0x9e, 0x4b, 0x58, 0x14, 0x74, 0xcb, 0x70, 0x58, 0xdb, 0x61, 0x6a, 0x5d, 0x67, 0x24,
+	0x2c, 0xa6, 0x76, 0xcb, 0x75, 0xc2, 0xf5, 0xb2, 0xea, 0xea, 0x16, 0xb5, 0xc3, 0x1a, 0x22, 0xb6,
+	0xd4, 0x80, 0x6b, 0x7b, 0x41, 0xc4, 0x4e, 0xab, 0xf5, 0x84, 0x32, 0xee, 0xd1, 0xba, 0x1f, 0xdc,
+	0x32, 0x8d, 0x74, 0x7c, 0xc2, 0x38, 0x7e, 0x0a, 0x70, 0x84, 0x29, 0xa2, 0x55, 0xb4, 0x39, 0x5f,
+	0xd9, 0x50, 0xc2, 0x02, 0x4a, 0x50, 0x40, 0x09, 0xd5, 0x44, 0x05, 0x94, 0x57, 0xba, 0x45, 0x22,
+	0xac, 0x96, 0x40, 0x96, 0xbe, 0x21, 0xb8, 0x9e, 0x51, 0x88, 0xb9, 0x8e, 0xcd, 0x08, 0x7e, 0x01,
+	0x0b, 0x66, 0xf2, 0xa2, 0x88, 0x56, 0xf3, 0x9b, 0xf3, 0x95, 0x75, 0x25, 0xa3, 0x43, 0x4a, 0x32,
+	0x8d, 0x96, 0xc6, 0xe2, 0xcb, 0x50, 0x68, 0x12, 0x6a, 0x35, 0x79, 0x71, 0x6e, 0x15, 0x6d, 0xe6,
+	0xb5, 0xe8, 0x84, 0x9f, 0xa5, 0xe4, 0xe4, 0x85, 0x9c, 0x1b, 0x13, 0xe5, 0x84, 0x0c, 0x53, 0x7a,
+	0x7e, 0x22, 0x58, 0x17, 0x7a, 0x34, 0x62, 0x38, 0x9e, 0xc9, 0xaa, 0xbd, 0x24, 0x9d, 0x97, 0x7a,
+	0x3b, 0xee, 0x02, 0xde, 0x82, 0x4b, 0x49, 0x6e, 0x35, 0x5b, 0x6f, 0x13, 0xd1, 0xc8, 0xf3, 0xda,
+	0x92, 0x39, 0x82, 0xc1, 0xbb, 0x50, 0x60, 0x5c, 0xe7, 0x3e, 0x13, 0xbc, 0x17, 0x2b, 0x5b, 0x53,
+	0xa9, 0xdf, 0x17, 0x10, 0x2d, 0x82, 0x8e, 0x78, 0x96, 0x9f, 0xd9, 0xb3, 0xdf, 0x08, 0x36, 0x26,
+	0x69, 0x8c, 0xcc, 0xab, 0xc1, 0x4a, 0x4a, 0xa4, 0x17, 0x22, 0xa2, 0x1f, 0xcc, 0xf6, 0x74, 0x1e,
+	0x86, 0x18, 0x6d, 0xd9, 0x3c, 0xfe, 0xe5, 0xe9, 0x1b, 0xfa, 0x01, 0x41, 0x29, 0x2d, 0x56, 0x23,
+	0x06, 0x75, 0x29, 0xb1, 0xf9, 0x8e, 0x69, 0x7a, 0xb1, 0x9b, 0x45, 0x38, 0xa7, 0x9b, 0xa6, 0x47,
+	0x18, 0x8b, 0x3c, 0x8c, 0x8f, 0x23, 0x5d, 0x9f, 0x9b, 0xb9, 0xeb, 0xbf, 0x10, 0xac, 0x8d, 0x25,
+	0xf2, 0xdf, 0xb4, 0xfc, 0x00, 0x41, 0x51, 0x28, 0xdd, 0x6d, 0xe9, 0xb4, 0xcd, 0xaa, 0xbd, 0xd7,
+	0x3d, 0x77, 0xf8, 0x6c, 0xf6, 0xe0, 0xa2, 0xcf, 0x88, 0x57, 0x33, 0x82, 0xbb, 0x5a, 0x30, 0xde,
+	0x84, 0xb2, 0xc5, 0xca, 0xcd, 0xa9, 0x94, 0x89, 0x54, 0x0b, 0x41, 0x06, 0x91, 0x3c, 0x38, 0xfe,
+	0x33, 0x87, 0xbe, 0x20, 0x58, 0x4e, 0xf0, 0x1e, 0x3a, 0x72, 0x1f, 0x0a, 0x82, 0x6d, 0x3c, 0xba,
+	0x4a, 0x99, 0x4c, 0xdf, 0xc4, 0xbc, 0xb4, 0x08, 0x71, 0xea, 0xcd, 0xae, 0x1c, 0x9c, 0x81, 0xb3,
+	0x82, 0x34, 0x7e, 0x8f, 0x60, 0x69, 0x74, 0x0a, 0xe3, 0xbb, 0x99, 0x5c, 0xc7, 0xfd, 0x3d, 0x48,
+	0xf7, 0xfe, 0x16, 0x16, 0x32, 0x2b, 0xe5, 0xf0, 0x67, 0x04, 0x57, 0x33, 0xe7, 0x0a, 0x7e, 0x34,
+	0x3e, 0xef, 0xa4, 0xa1, 0x2b, 0x3d, 0x9e, 0x19, 0x3f, 0x24, 0xf8, 0x09, 0x01, 0x3e, 0xfe, 0x04,
+	0xf1, 0x83, 0x29, 0x33, 0x9f, 0x34, 0x3d, 0xa4, 0x87, 0xb3, 0x81, 0x87, 0x9c, 0x3a, 0x70, 0x21,
+	0xf9, 0x56, 0x70, 0x79, 0x7c, 0xbe, 0x13, 0xde, 0x95, 0xb4, 0x3d, 0x0d, 0xe4, 0xa8, 0x64, 0xf5,
+	0xf9, 0xd7, 0xbe, 0x8c, 0x0e, 0xfb, 0x32, 0xfa, 0xd1, 0x97, 0xd1, 0xc7, 0x81, 0x9c, 0x3b, 0x1c,
+	0xc8, 0xb9, 0xef, 0x03, 0x39, 0xf7, 0xf6, 0xb6, 0x45, 0x79, 0xd3, 0xaf, 0x2b, 0x86, 0xd3, 0x56,
+	0xf7, 0x69, 0xc3, 0x68, 0xea, 0xd4, 0x56, 0xe3, 0xfd, 0xe4, 0x5d, 0x7a, 0x43, 0x11, 0xeb, 0x49,
+	0xbd, 0x20, 0x76, 0x8e, 0x3b, 0x7f, 0x02, 0x00, 0x00, 0xff, 0xff, 0x3b, 0x91, 0xb4, 0x37, 0x1a,
+	0x09, 0x00, 0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -676,6 +747,18 @@ func (m *QueryAllDistributionsRequest) MarshalToSizedBuffer(dAtA []byte) (int, e
 	_ = i
 	var l int
 	_ = l
+	if m.Pagination != nil {
+		{
+			size, err := m.Pagination.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintQuery(dAtA, i, uint64(size))
+		}
+		i--
+		dAtA[i] = 0xa
+	}
 	return len(dAtA) - i, nil
 }
 
@@ -699,6 +782,18 @@ func (m *QueryAllDistributionsResponse) MarshalToSizedBuffer(dAtA []byte) (int, 
 	_ = i
 	var l int
 	_ = l
+	if m.Pagination != nil {
+		{
+			size, err := m.Pagination.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintQuery(dAtA, i, uint64(size))
+		}
+		i--
+		dAtA[i] = 0x1a
+	}
 	if m.Height != 0 {
 		i = encodeVarintQuery(dAtA, i, uint64(m.Height))
 		i--
@@ -741,6 +836,18 @@ func (m *QueryRecordsByDistributionNameRequest) MarshalToSizedBuffer(dAtA []byte
 	_ = i
 	var l int
 	_ = l
+	if m.Pagination != nil {
+		{
+			size, err := m.Pagination.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintQuery(dAtA, i, uint64(size))
+		}
+		i--
+		dAtA[i] = 0x1a
+	}
 	if m.Status != 0 {
 		i = encodeVarintQuery(dAtA, i, uint64(m.Status))
 		i--
@@ -776,6 +883,18 @@ func (m *QueryRecordsByDistributionNameResponse) MarshalToSizedBuffer(dAtA []byt
 	_ = i
 	var l int
 	_ = l
+	if m.Pagination != nil {
+		{
+			size, err := m.Pagination.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintQuery(dAtA, i, uint64(size))
+		}
+		i--
+		dAtA[i] = 0x1a
+	}
 	if m.Height != 0 {
 		i = encodeVarintQuery(dAtA, i, uint64(m.Height))
 		i--
@@ -816,6 +935,18 @@ func (m *QueryRecordsByRecipientAddrRequest) MarshalToSizedBuffer(dAtA []byte) (
 	_ = i
 	var l int
 	_ = l
+	if m.Pagination != nil {
+		{
+			size, err := m.Pagination.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintQuery(dAtA, i, uint64(size))
+		}
+		i--
+		dAtA[i] = 0x12
+	}
 	if len(m.Address) > 0 {
 		i -= len(m.Address)
 		copy(dAtA[i:], m.Address)
@@ -846,6 +977,18 @@ func (m *QueryRecordsByRecipientAddrResponse) MarshalToSizedBuffer(dAtA []byte) 
 	_ = i
 	var l int
 	_ = l
+	if m.Pagination != nil {
+		{
+			size, err := m.Pagination.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintQuery(dAtA, i, uint64(size))
+		}
+		i--
+		dAtA[i] = 0x1a
+	}
 	if m.Height != 0 {
 		i = encodeVarintQuery(dAtA, i, uint64(m.Height))
 		i--
@@ -886,6 +1029,18 @@ func (m *QueryClaimsByTypeRequest) MarshalToSizedBuffer(dAtA []byte) (int, error
 	_ = i
 	var l int
 	_ = l
+	if m.Pagination != nil {
+		{
+			size, err := m.Pagination.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintQuery(dAtA, i, uint64(size))
+		}
+		i--
+		dAtA[i] = 0x12
+	}
 	if m.UserClaimType != 0 {
 		i = encodeVarintQuery(dAtA, i, uint64(m.UserClaimType))
 		i--
@@ -914,6 +1069,18 @@ func (m *QueryClaimsResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	_ = i
 	var l int
 	_ = l
+	if m.Pagination != nil {
+		{
+			size, err := m.Pagination.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintQuery(dAtA, i, uint64(size))
+		}
+		i--
+		dAtA[i] = 0x1a
+	}
 	if m.Height != 0 {
 		i = encodeVarintQuery(dAtA, i, uint64(m.Height))
 		i--
@@ -953,6 +1120,10 @@ func (m *QueryAllDistributionsRequest) Size() (n int) {
 	}
 	var l int
 	_ = l
+	if m.Pagination != nil {
+		l = m.Pagination.Size()
+		n += 1 + l + sovQuery(uint64(l))
+	}
 	return n
 }
 
@@ -971,6 +1142,10 @@ func (m *QueryAllDistributionsResponse) Size() (n int) {
 	if m.Height != 0 {
 		n += 1 + sovQuery(uint64(m.Height))
 	}
+	if m.Pagination != nil {
+		l = m.Pagination.Size()
+		n += 1 + l + sovQuery(uint64(l))
+	}
 	return n
 }
 
@@ -986,6 +1161,10 @@ func (m *QueryRecordsByDistributionNameRequest) Size() (n int) {
 	}
 	if m.Status != 0 {
 		n += 1 + sovQuery(uint64(m.Status))
+	}
+	if m.Pagination != nil {
+		l = m.Pagination.Size()
+		n += 1 + l + sovQuery(uint64(l))
 	}
 	return n
 }
@@ -1003,6 +1182,10 @@ func (m *QueryRecordsByDistributionNameResponse) Size() (n int) {
 	if m.Height != 0 {
 		n += 1 + sovQuery(uint64(m.Height))
 	}
+	if m.Pagination != nil {
+		l = m.Pagination.Size()
+		n += 1 + l + sovQuery(uint64(l))
+	}
 	return n
 }
 
@@ -1014,6 +1197,10 @@ func (m *QueryRecordsByRecipientAddrRequest) Size() (n int) {
 	_ = l
 	l = len(m.Address)
 	if l > 0 {
+		n += 1 + l + sovQuery(uint64(l))
+	}
+	if m.Pagination != nil {
+		l = m.Pagination.Size()
 		n += 1 + l + sovQuery(uint64(l))
 	}
 	return n
@@ -1032,6 +1219,10 @@ func (m *QueryRecordsByRecipientAddrResponse) Size() (n int) {
 	if m.Height != 0 {
 		n += 1 + sovQuery(uint64(m.Height))
 	}
+	if m.Pagination != nil {
+		l = m.Pagination.Size()
+		n += 1 + l + sovQuery(uint64(l))
+	}
 	return n
 }
 
@@ -1043,6 +1234,10 @@ func (m *QueryClaimsByTypeRequest) Size() (n int) {
 	_ = l
 	if m.UserClaimType != 0 {
 		n += 1 + sovQuery(uint64(m.UserClaimType))
+	}
+	if m.Pagination != nil {
+		l = m.Pagination.Size()
+		n += 1 + l + sovQuery(uint64(l))
 	}
 	return n
 }
@@ -1061,6 +1256,10 @@ func (m *QueryClaimsResponse) Size() (n int) {
 	}
 	if m.Height != 0 {
 		n += 1 + sovQuery(uint64(m.Height))
+	}
+	if m.Pagination != nil {
+		l = m.Pagination.Size()
+		n += 1 + l + sovQuery(uint64(l))
 	}
 	return n
 }
@@ -1100,6 +1299,42 @@ func (m *QueryAllDistributionsRequest) Unmarshal(dAtA []byte) error {
 			return fmt.Errorf("proto: QueryAllDistributionsRequest: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Pagination", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if m.Pagination == nil {
+				m.Pagination = &query.PageRequest{}
+			}
+			if err := m.Pagination.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
 		default:
 			iNdEx = preIndex
 			skippy, err := skipQuery(dAtA[iNdEx:])
@@ -1203,6 +1438,42 @@ func (m *QueryAllDistributionsResponse) Unmarshal(dAtA []byte) error {
 					break
 				}
 			}
+		case 3:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Pagination", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if m.Pagination == nil {
+				m.Pagination = &query.PageResponse{}
+			}
+			if err := m.Pagination.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
 		default:
 			iNdEx = preIndex
 			skippy, err := skipQuery(dAtA[iNdEx:])
@@ -1304,6 +1575,42 @@ func (m *QueryRecordsByDistributionNameRequest) Unmarshal(dAtA []byte) error {
 					break
 				}
 			}
+		case 3:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Pagination", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if m.Pagination == nil {
+				m.Pagination = &query.PageRequest{}
+			}
+			if err := m.Pagination.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
 		default:
 			iNdEx = preIndex
 			skippy, err := skipQuery(dAtA[iNdEx:])
@@ -1409,6 +1716,42 @@ func (m *QueryRecordsByDistributionNameResponse) Unmarshal(dAtA []byte) error {
 					break
 				}
 			}
+		case 3:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Pagination", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if m.Pagination == nil {
+				m.Pagination = &query.PageResponse{}
+			}
+			if err := m.Pagination.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
 		default:
 			iNdEx = preIndex
 			skippy, err := skipQuery(dAtA[iNdEx:])
@@ -1490,6 +1833,42 @@ func (m *QueryRecordsByRecipientAddrRequest) Unmarshal(dAtA []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			m.Address = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Pagination", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if m.Pagination == nil {
+				m.Pagination = &query.PageRequest{}
+			}
+			if err := m.Pagination.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
 			iNdEx = postIndex
 		default:
 			iNdEx = preIndex
@@ -1596,6 +1975,42 @@ func (m *QueryRecordsByRecipientAddrResponse) Unmarshal(dAtA []byte) error {
 					break
 				}
 			}
+		case 3:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Pagination", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if m.Pagination == nil {
+				m.Pagination = &query.PageResponse{}
+			}
+			if err := m.Pagination.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
 		default:
 			iNdEx = preIndex
 			skippy, err := skipQuery(dAtA[iNdEx:])
@@ -1665,6 +2080,42 @@ func (m *QueryClaimsByTypeRequest) Unmarshal(dAtA []byte) error {
 					break
 				}
 			}
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Pagination", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if m.Pagination == nil {
+				m.Pagination = &query.PageRequest{}
+			}
+			if err := m.Pagination.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
 		default:
 			iNdEx = preIndex
 			skippy, err := skipQuery(dAtA[iNdEx:])
@@ -1768,6 +2219,42 @@ func (m *QueryClaimsResponse) Unmarshal(dAtA []byte) error {
 					break
 				}
 			}
+		case 3:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Pagination", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if m.Pagination == nil {
+				m.Pagination = &query.PageResponse{}
+			}
+			if err := m.Pagination.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
 		default:
 			iNdEx = preIndex
 			skippy, err := skipQuery(dAtA[iNdEx:])

@@ -3,8 +3,12 @@ package keeper
 import (
 	"fmt"
 	"github.com/Sifchain/sifnode/x/dispensation/types"
+	"github.com/cosmos/cosmos-sdk/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/errors"
+	"github.com/cosmos/cosmos-sdk/types/query"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 // This package adds set and get operations for DistributionRecord
@@ -39,16 +43,11 @@ func (k Keeper) ExistsDistributionRecord(ctx sdk.Context, airdropName string, re
 
 func (k Keeper) GetDistributionRecordsIterator(ctx sdk.Context, status types.DistributionStatus) sdk.Iterator {
 	store := ctx.KVStore(k.storeKey)
-	switch status {
-	case types.DistributionStatus_DISTRIBUTION_STATUS_PENDING:
-		return sdk.KVStorePrefixIterator(store, types.DistributionRecordPrefixPending)
-	case types.DistributionStatus_DISTRIBUTION_STATUS_COMPLETED:
-		return sdk.KVStorePrefixIterator(store, types.DistributionRecordPrefixCompleted)
-	case types.DistributionStatus_DISTRIBUTION_STATUS_FAILED:
-		return sdk.KVStorePrefixIterator(store, types.DistributionRecordPrefixFailed)
-	default:
-		return nil
+	prefix := types.GetPrefixFromStatus(status)
+	if prefix != nil {
+		return sdk.KVStorePrefixIterator(store, prefix)
 	}
+	return nil
 }
 
 func (k Keeper) DeleteDistributionRecord(ctx sdk.Context, distributionName string, recipientAddress string, status types.DistributionStatus, distributionType types.DistributionType) error {
@@ -80,6 +79,33 @@ func (k Keeper) GetRecordsForNameAndStatus(ctx sdk.Context, name string, status 
 		}
 	}
 	return &res
+}
+
+func (k Keeper) GetRecordsForNameAndStatusPaginated(ctx sdk.Context, name string, s types.DistributionStatus, pagination *query.PageRequest) (*types.DistributionRecords, *query.PageResponse, error) {
+	var res types.DistributionRecords
+	store := ctx.KVStore(k.storeKey)
+	recordsStore := prefix.NewStore(store, types.GetPrefixFromStatus(s))
+	pageRes, err := query.FilteredPaginate(recordsStore, pagination, func(key []byte, value []byte, accumulate bool) (bool, error) {
+		var dr types.DistributionRecord
+		if len(value) <= 0 {
+			return false, nil
+		}
+		err := k.cdc.UnmarshalBinaryBare(value, &dr)
+		if err != nil {
+			return false, err
+		}
+		if dr.DistributionName != name {
+			return false, nil
+		}
+		if accumulate {
+			res.DistributionRecords = append(res.DistributionRecords, &dr)
+		}
+		return true, nil
+	})
+	if err != nil {
+		return nil, &query.PageResponse{}, status.Error(codes.Internal, err.Error())
+	}
+	return &res, pageRes, nil
 }
 
 func (k Keeper) GetRecordsForNameStatusAndType(ctx sdk.Context, name string, status types.DistributionStatus, distributionType types.DistributionType) *types.DistributionRecords {

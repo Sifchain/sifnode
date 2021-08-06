@@ -2,10 +2,16 @@ package keeper
 
 import (
 	"context"
+	"fmt"
+	"github.com/cosmos/cosmos-sdk/types/query"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 
 	"github.com/Sifchain/sifnode/x/dispensation/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
+
+const MaxPageLimit = 200
 
 type Querier struct {
 	keeper Keeper
@@ -20,12 +26,31 @@ func NewQuerier(k Keeper) Querier {
 var _ types.QueryServer = Querier{}
 
 func (q Querier) AllDistributions(ctx context.Context,
-	_ *types.QueryAllDistributionsRequest) (*types.QueryAllDistributionsResponse, error) {
+	req *types.QueryAllDistributionsRequest) (*types.QueryAllDistributionsResponse, error) {
 
-	list := q.keeper.GetDistributions(sdk.UnwrapSDKContext(ctx))
+	if req == nil {
+		return nil, status.Error(codes.InvalidArgument, "empty request")
+	}
 
+	if req.Pagination == nil {
+		req.Pagination = &query.PageRequest{
+			Limit: MaxPageLimit,
+		}
+	}
+
+	if req.Pagination.Limit > MaxPageLimit {
+		return nil, status.Error(codes.InvalidArgument, fmt.Sprintf("page size greater than max %d", MaxPageLimit))
+	}
+
+	c := sdk.UnwrapSDKContext(ctx)
+	list, pageRes, err := q.keeper.GetDistributionsPaginated(sdk.UnwrapSDKContext(ctx), req.Pagination)
+	if err != nil {
+		return nil, err
+	}
 	return &types.QueryAllDistributionsResponse{
 		Distributions: list.Distributions,
+		Height:        c.BlockHeight(),
+		Pagination:    pageRes,
 	}, nil
 }
 
@@ -38,13 +63,29 @@ func (q Querier) ClaimsByType(ctx context.Context,
 }
 
 func (q Querier) RecordsByDistributionName(ctx context.Context, request *types.QueryRecordsByDistributionNameRequest) (*types.QueryRecordsByDistributionNameResponse, error) {
-	records := q.keeper.GetRecordsForNameAndStatus(sdk.UnwrapSDKContext(ctx), request.DistributionName, request.Status)
-	if request.Status == types.DistributionStatus_DISTRIBUTION_STATUS_UNSPECIFIED {
-		records.DistributionRecords = append(records.DistributionRecords,
-			q.keeper.GetRecordsForNameAndStatus(sdk.UnwrapSDKContext(ctx), request.DistributionName, types.DistributionStatus_DISTRIBUTION_STATUS_PENDING).DistributionRecords...)
+	if request == nil {
+		return nil, status.Error(codes.InvalidArgument, "empty request")
+	}
+
+	if request.Pagination == nil {
+		request.Pagination = &query.PageRequest{
+			Limit: MaxPageLimit,
+		}
+	}
+
+	if request.Pagination.Limit > MaxPageLimit {
+		return nil, status.Error(codes.InvalidArgument, fmt.Sprintf("page size greater than max %d", MaxPageLimit))
+	}
+
+	c := sdk.UnwrapSDKContext(ctx)
+	records, pageRes, err := q.keeper.GetRecordsForNameAndStatusPaginated(sdk.UnwrapSDKContext(ctx), request.DistributionName, request.Status, request.Pagination)
+	if err != nil {
+		return nil, err
 	}
 	return &types.QueryRecordsByDistributionNameResponse{
 		DistributionRecords: records,
+		Height:              c.BlockHeight(),
+		Pagination:          pageRes,
 	}, nil
 }
 

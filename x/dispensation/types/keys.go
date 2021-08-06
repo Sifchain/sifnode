@@ -60,3 +60,16 @@ func GetUserClaimKey(userAddress string, userClaimType DistributionType) []byte 
 func GetDistributionModuleAddress() sdk.AccAddress {
 	return authtypes.NewModuleAddress(ModuleName)
 }
+
+func GetPrefixFromStatus(status DistributionStatus) []byte {
+	switch status {
+	case DistributionStatus_DISTRIBUTION_STATUS_PENDING:
+		return DistributionRecordPrefixPending
+	case DistributionStatus_DISTRIBUTION_STATUS_COMPLETED:
+		return DistributionRecordPrefixCompleted
+	case DistributionStatus_DISTRIBUTION_STATUS_FAILED:
+		return DistributionRecordPrefixFailed
+	default:
+		return nil
+	}
+}

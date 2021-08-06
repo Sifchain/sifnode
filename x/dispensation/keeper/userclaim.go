@@ -93,3 +93,26 @@ func (k Keeper) GetClaimsByType(ctx sdk.Context, userClaimType types.Distributio
 	}
 	return &res
 }
+
+func (k Keeper) GetClaimsByTypePaginated(ctx sdk.Context, userClaimType types.DistributionType) *types.UserClaims {
+	var res types.UserClaims
+	iterator := k.GetUserClaimsIterator(ctx)
+	defer func(iterator sdk.Iterator) {
+		err := iterator.Close()
+		if err != nil {
+			panic("Failed to close iterator")
+		}
+	}(iterator)
+	for ; iterator.Valid(); iterator.Next() {
+		var dl types.UserClaim
+		bytesValue := iterator.Value()
+		if len(bytesValue) == 0 {
+			continue
+		}
+		k.cdc.MustUnmarshalBinaryBare(bytesValue, &dl)
+		if dl.UserClaimType == userClaimType {
+			res.UserClaims = append(res.UserClaims, &dl)
+		}
+	}
+	return &res
+}

@@ -2,6 +2,10 @@ package keeper
 
 import (
 	"fmt"
+	"github.com/cosmos/cosmos-sdk/store/prefix"
+	"github.com/cosmos/cosmos-sdk/types/query"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 
 	"github.com/Sifchain/sifnode/x/dispensation/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -58,4 +62,23 @@ func (k Keeper) GetDistributions(ctx sdk.Context) *types.Distributions {
 		res.Distributions = append(res.Distributions, &dl)
 	}
 	return &res
+}
+
+func (k Keeper) GetDistributionsPaginated(ctx sdk.Context, pagination *query.PageRequest) (*types.Distributions, *query.PageResponse, error) {
+	var res types.Distributions
+	store := ctx.KVStore(k.storeKey)
+	distributionsStore := prefix.NewStore(store, types.DistributionsPrefix)
+	pageRes, err := query.Paginate(distributionsStore, pagination, func(key []byte, value []byte) error {
+		var dl types.Distribution
+		err := k.cdc.UnmarshalBinaryBare(value, &dl)
+		if err != nil {
+			return err
+		}
+		res.Distributions = append(res.Distributions, &dl)
+		return nil
+	})
+	if err != nil {
+		return nil, &query.PageResponse{}, status.Error(codes.Internal, err.Error())
+	}
+	return &res, pageRes, nil
 }
