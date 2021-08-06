@@ -13,7 +13,7 @@ import (
 
 func TestCalculatePoolUnits(t *testing.T) {
 	type TestCase struct {
-	    Symbol           string `json:"symbol"`
+		Symbol           string `json:"symbol"`
 		NativeAdded      string `json:"r"`
 		ExternalAdded    string `json:"a"`
 		NativeBalance    string `json:"R"`
@@ -26,12 +26,10 @@ func TestCalculatePoolUnits(t *testing.T) {
 	}
 	file, err := ioutil.ReadFile("../../../test/test-tables/pool_units_after_upgrade.json")
 	assert.NoError(t, err)
-
 	file = bytes.TrimPrefix(file, []byte("\xef\xbb\xbf"))
 	var test Test
 	err = json.Unmarshal(file, &test)
 	assert.NoError(t, err)
-
 	testcases := test.TestType
 	errCount := 0
 	for _, test := range testcases {
@@ -62,12 +60,10 @@ func TestCalculateSwapResult(t *testing.T) {
 	}
 	file, err := ioutil.ReadFile("../../../test/test-tables/singleswap_result.json")
 	assert.NoError(t, err)
-
 	file = bytes.TrimPrefix(file, []byte("\xef\xbb\xbf"))
 	var test Test
 	err = json.Unmarshal(file, &test)
 	assert.NoError(t, err)
-
 	testcases := test.TestType
 	errCount := 0
 	for _, test := range testcases {
@@ -75,7 +71,8 @@ func TestCalculateSwapResult(t *testing.T) {
 			true,
 			sdk.NewUintFromString(test.X),
 			sdk.NewUintFromString(test.Xx),
-			sdk.NewUintFromString(test.Y))
+			sdk.NewUintFromString(test.Y),
+		)
 		if !Yy.Equal(sdk.NewUintFromString(test.Expected)) {
 			fmt.Printf("SingleSwap-Result | Expected : %s | Got : %s \n", test.Expected, Yy.String())
 			errCount++
@@ -95,12 +92,10 @@ func TestCalculateSwapLiquidityFee(t *testing.T) {
 	}
 	file, err := ioutil.ReadFile("../../../test/test-tables/singleswap_liquidityfees.json")
 	assert.NoError(t, err)
-
 	file = bytes.TrimPrefix(file, []byte("\xef\xbb\xbf"))
 	var test Test
 	err = json.Unmarshal(file, &test)
 	assert.NoError(t, err)
-
 	testcases := test.TestType
 	errCount := 0
 	for _, test := range testcases {
@@ -130,12 +125,10 @@ func TestCalculateDoubleSwapResult(t *testing.T) {
 	}
 	file, err := ioutil.ReadFile("../../../test/test-tables/doubleswap_result.json")
 	assert.NoError(t, err)
-
 	file = bytes.TrimPrefix(file, []byte("\xef\xbb\xbf"))
 	var test Test
 	err = json.Unmarshal(file, &test)
 	assert.NoError(t, err)
-
 	testcases := test.TestType
 	errCount := 0
 	for _, test := range testcases {
@@ -143,14 +136,14 @@ func TestCalculateDoubleSwapResult(t *testing.T) {
 			true,
 			sdk.NewUintFromString(test.AX),
 			sdk.NewUintFromString(test.Ax),
-			sdk.NewUintFromString(test.AY))
-
+			sdk.NewUintFromString(test.AY),
+		)
 		By, _ := calcSwapResult("cusdt",
 			true,
 			sdk.NewUintFromString(test.BX),
 			Ay,
-			sdk.NewUintFromString(test.BY))
-
+			sdk.NewUintFromString(test.BY),
+		)
 		if !By.Equal(sdk.NewUintFromString(test.Expected)) {
 			fmt.Printf("Doubleswap_Result | Expected : %s | Got : %s \n", test.Expected, By.String())
 			errCount++
@@ -173,12 +166,10 @@ func TestCalculatePoolUnitsAfterUpgrade(t *testing.T) {
 	}
 	file, err := ioutil.ReadFile("../../../test/test-tables/pool_units_after_upgrade.json")
 	assert.NoError(t, err)
-
 	file = bytes.TrimPrefix(file, []byte("\xef\xbb\xbf"))
 	var test Test
 	err = json.Unmarshal(file, &test)
 	assert.NoError(t, err)
-
 	testcases := test.TestType
 	errCount := 0
 	for _, test := range testcases {

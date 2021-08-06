@@ -50,7 +50,6 @@ func (srv msgServer) CreateDistribution(ctx context.Context,
 	if err != nil {
 		return nil, err
 	}
-
 	sdkCtx.EventManager().EmitEvents(sdk.Events{
 		sdk.NewEvent(
 			types.EventTypeDistributionStarted,
