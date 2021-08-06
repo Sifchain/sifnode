@@ -157,6 +157,15 @@ func (srv msgServer) CreateEthBridgeClaim(goCtx context.Context, msg *types.MsgC
 	}
 
 	if !srv.Keeper.ExistsTokenMetadata(ctx, claim.DenomHash) {
+		// If this is the first time we see this token its not
+		// double pegged correct?
+		metadataMapping := types.TokenMetadataMapping{
+			DoublePegged:  false,
+			SourceAddress: claim.TokenContractAddress,
+		}
+		networkMapping := make(map[string]*types.TokenMetadataMapping)
+		networkMapping[claim.NetworkDescriptor.String()] = &metadataMapping
+		metadata.NetworkMapping = networkMapping
 		srv.Keeper.AddTokenMetadata(ctx, metadata)
 	}
 

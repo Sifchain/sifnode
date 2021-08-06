@@ -53,6 +53,17 @@ message TokenMetadata {
   string token_address = 4 [ (gogoproto.moretags) = "yaml:\"token_address\"" ];
   sifnode.oracle.v1.NetworkDescriptor network_descriptor = 5
       [ (gogoproto.moretags) = "yaml:\"network_descriptor\"" ];
+  map<string, TokenMetadataMapping> network_mapping = 6
+      [ (gogoproto.moretags) = "yaml:\"network_mapping\"" ];
+}
+
+// Inside nested mapping by network descriptor for
+// the token metadata module
+message TokenMetadataMapping {
+  bool double_pegged = 1
+      [ (gogoproto.moretags) = "yaml:\"token_double_pegged\"" ];
+  string source_address = 2
+      [ (gogoproto.moretags) = "yaml:\"token_source_address\"" ];
 }
 
 message PeggyTokens { repeated string tokens = 1; }
