@@ -2,7 +2,11 @@ package keeper
 
 import (
 	"github.com/Sifchain/sifnode/x/clp/types"
+	"github.com/cosmos/cosmos-sdk/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/cosmos-sdk/types/query"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 func (k Keeper) SetPool(ctx sdk.Context, pool *types.Pool) error {
@@ -23,10 +27,7 @@ func (k Keeper) ValidatePool(pool types.Pool) bool {
 		return false
 	}
 	_, err := types.GetPoolKey(pool.ExternalAsset.Symbol, types.GetSettlementAsset().Symbol)
-	if err != nil {
-		return false
-	}
-	return true
+	return err == nil
 }
 func (k Keeper) GetPool(ctx sdk.Context, symbol string) (types.Pool, error) {
 	var pool types.Pool
@@ -51,6 +52,7 @@ func (k Keeper) ExistsPool(ctx sdk.Context, symbol string) bool {
 	return k.Exists(ctx, key)
 }
 
+// Deprecated: GetPools use GetPoolsPaginated
 func (k Keeper) GetPools(ctx sdk.Context) []*types.Pool {
 	var poolList []*types.Pool
 	iterator := k.GetPoolsIterator(ctx)
@@ -62,6 +64,25 @@ func (k Keeper) GetPools(ctx sdk.Context) []*types.Pool {
 		poolList = append(poolList, &pool)
 	}
 	return poolList
+}
+
+func (k Keeper) GetPoolsPaginated(ctx sdk.Context, pagination *query.PageRequest) ([]*types.Pool, *query.PageResponse, error) {
+	var poolList []*types.Pool
+	store := ctx.KVStore(k.storeKey)
+	poolStore := prefix.NewStore(store, types.PoolPrefix)
+	pageRes, err := query.Paginate(poolStore, pagination, func(key []byte, value []byte) error {
+		var pool types.Pool
+		err := k.cdc.UnmarshalBinaryBare(value, &pool)
+		if err != nil {
+			return err
+		}
+		poolList = append(poolList, &pool)
+		return nil
+	})
+	if err != nil {
+		return nil, &query.PageResponse{}, status.Error(codes.Internal, err.Error())
+	}
+	return poolList, pageRes, nil
 }
 
 func (k Keeper) DestroyPool(ctx sdk.Context, symbol string) error {

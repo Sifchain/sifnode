@@ -78,6 +78,7 @@ import (
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 	dbm "github.com/tendermint/tm-db"
 
+	sifchainAnte "github.com/Sifchain/sifnode/app/ante"
 	"github.com/Sifchain/sifnode/x/clp"
 	clpkeeper "github.com/Sifchain/sifnode/x/clp/keeper"
 	clptypes "github.com/Sifchain/sifnode/x/clp/types"
@@ -127,9 +128,9 @@ var (
 		stakingtypes.NotBondedPoolName: {authtypes.Burner, authtypes.Staking},
 		govtypes.ModuleName:            {authtypes.Burner, authtypes.Staking},
 		ibctransfertypes.ModuleName:    {authtypes.Minter, authtypes.Burner},
-		ethbridgetypes.ModuleName: {authtypes.Minter, authtypes.Burner},
-		clptypes.ModuleName:     {authtypes.Burner, authtypes.Minter},
-		dispensation.ModuleName: {authtypes.Burner, authtypes.Minter},
+		ethbridgetypes.ModuleName:      {authtypes.Minter, authtypes.Burner},
+		clptypes.ModuleName:            {authtypes.Burner, authtypes.Minter},
+		dispensation.ModuleName:        {authtypes.Burner, authtypes.Minter},
 	}
 )
 
@@ -429,7 +430,7 @@ func NewSifApp(
 	app.SetEndBlocker(app.EndBlocker)
 
 	app.SetAnteHandler(
-		ante.NewAnteHandler(
+		sifchainAnte.NewAnteHandler(
 			app.AccountKeeper, app.BankKeeper, ante.DefaultSigVerificationGasConsumer,
 			encodingConfig.TxConfig.SignModeHandler(),
 		),
