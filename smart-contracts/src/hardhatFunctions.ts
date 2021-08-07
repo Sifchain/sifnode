@@ -80,7 +80,7 @@ export async function setupSifchainMainnetDeployment(c: DependencyContainer, hre
     c.register(DeploymentChainId, {useValue: 1})
     const bridgeTokenFactory = await hre.ethers.getContractFactory("BridgeToken") as BridgeToken__factory
 
-    // BrideToken for Rowan doesn't have a json file in deployments, so we need to build DeployedBridgeToken by hand
+    // BridgeToken for Rowan doesn't have a json file in deployments, so we need to build DeployedBridgeToken by hand
     // instead of using
     const existingRowanToken: BridgeToken = await bridgeTokenFactory.attach(eRowanMainnetAddress)
     const syntheticBridgeToken = {
@@ -91,6 +91,12 @@ export async function setupSifchainMainnetDeployment(c: DependencyContainer, hre
     //TODO this is probably the wrong address?
     c.register(CosmosBridgeMainnetUpgradeAdmin, {useValue: "0x7c6c6ea036e56efad829af5070c8fb59dc163d88"})
     c.register(DeployedBridgeToken, {useValue: syntheticBridgeToken as DeployedBridgeToken})
+}
+
+export async function setupRopstenDeployment(c: DependencyContainer, hre: HardhatRuntimeEnvironment, deploymentName: string) {
+    c.register(DeploymentDirectory, {useValue: "./deployments"})
+    c.register(DeploymentName, {useValue: deploymentName})
+    c.register(DeploymentChainId, {useValue: 3})
 }
 
 export async function approveThenDo<T>(

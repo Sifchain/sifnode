@@ -6,7 +6,12 @@ import {BridgeBank, CosmosBridge} from "../build";
 import {BridgeBankMainnetUpgradeAdmin, HardhatRuntimeEnvironmentToken} from "../src/tsyringe/injectionTokens";
 import * as hardhat from "hardhat";
 import {DeployedBridgeBank, DeployedBridgeToken, DeployedCosmosBridge} from "../src/contractSupport";
-import {impersonateAccount, setupSifchainMainnetDeployment, startImpersonateAccount} from "../src/hardhatFunctions"
+import {
+    getProxyAdmin,
+    impersonateAccount,
+    setupSifchainMainnetDeployment,
+    startImpersonateAccount
+} from "../src/hardhatFunctions"
 import {SifchainAccountsPromise} from "../src/tsyringe/sifchainAccounts";
 import web3 from "web3";
 import {BigNumber, BigNumberish, ContractTransaction} from "ethers";
