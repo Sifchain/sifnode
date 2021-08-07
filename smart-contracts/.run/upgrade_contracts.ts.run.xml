@@ -1,0 +1,5 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="upgrade_contracts.ts" type="NodeJSConfigurationType" application-parameters="--network ropsten run scripts/upgrade_contracts.ts" path-to-node="$USER_HOME$/.nvm/versions/node/v16.6.1/bin/node" node-parameters="node_modules/.bin/hardhat" working-dir="$PROJECT_DIR$">
+    <method v="2" />
+  </configuration>
+</component>

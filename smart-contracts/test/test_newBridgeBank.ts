@@ -6,11 +6,11 @@ import * as ethereumAddress from "../src/ethereumAddress"
 import {container, DependencyContainer} from "tsyringe";
 import {
     BridgeBankProxy,
-    BridgeTokenSetup,
+    BridgeTokenSetup, CosmosBridgeProxy,
     RowanContract,
     SifchainContractFactories
 } from "../src/tsyringe/contracts";
-import {BridgeBank, BridgeBank__factory, BridgeToken} from "../build";
+import {BridgeBank, BridgeBank__factory, BridgeToken, CosmosBridge} from "../build";
 import {SifchainAccounts, SifchainAccountsPromise} from "../src/tsyringe/sifchainAccounts";
 import {
     DeploymentChainId,
@@ -20,13 +20,16 @@ import {
 } from "../src/tsyringe/injectionTokens";
 import * as hardhat from "hardhat";
 import {SignerWithAddress} from "@nomiclabs/hardhat-ethers/signers";
-import {DeployedBridgeBank} from "../src/contractSupport";
+import {DeployedBridgeBank, DeployedBridgeToken} from "../src/contractSupport";
 import {HardhatRuntimeEnvironment} from "hardhat/types";
 import {impersonateAccount, setupSifchainMainnetDeployment} from "../src/hardhatFunctions";
+import {buildTestToken} from "../src/sifchainHelpers";
 
 chai.use(solidity)
 
 describe("BridgeBank", () => {
+    const recipient = web3.utils.utf8ToHex("sif1nx650s8q9w28f2g3t9ztxyg48ugldptuwzpace")
+
     let bridgeBank: BridgeBank
 
     before('register HardhatRuntimeEnvironmentToken', () => {
@@ -67,7 +70,6 @@ describe("BridgeBank", () => {
         let amount: BigNumber
         let smallAmount: BigNumber
         let testToken: BridgeToken
-        const recipient = web3.utils.utf8ToHex("sif1nx650s8q9w28f2g3t9ztxyg48ugldptuwzpace")
         const invalidRecipient = web3.utils.utf8ToHex("esif1nx650s8q9w28f2g3t9ztxyg48ugldptuwzpace")
 
         before('create test token', async () => {
@@ -115,6 +117,29 @@ describe("BridgeBank", () => {
                 }
             )).to.changeEtherBalance(sender, smallAmount.mul(-1), {includeFee: false})
         })
+    })
+
+    it("should allow swapping erowan for rowan", async () => {
+        const amount = 17
+
+        const accounts = await container.resolve(SifchainAccountsPromise).accounts
+        const migrator = accounts.availableAccounts[0]
+        const bridgeBank = await container.resolve(BridgeBankProxy).contract
+        const cosmosBridge = await container.resolve(CosmosBridgeProxy).contract as CosmosBridge
+        await container.resolve(BridgeTokenSetup).complete
+        const erowan = await container.resolve(RowanContract).contract
+        await erowan.mint(migrator.address, 10000)
+        await erowan.connect(migrator).approve(bridgeBank.address, hardhat.ethers.constants.MaxUint256)
+        await bridgeBank.connect(migrator).burn(recipient, erowan.address, amount)
+        const newRowanToken = await buildTestToken(hardhat, bridgeBank, "Rowan", accounts.ownerAccount, 1)
+        await newRowanToken.addMinter(bridgeBank.address)
+        await newRowanToken.mint(migrator.address, amount)
+        await bridgeBank.connect(accounts.ownerAccount).addExistingBridgeToken(erowan.address)
+        await bridgeBank.connect(accounts.ownerAccount).addExistingBridgeToken(newRowanToken.address)
+        const tx = await bridgeBank.connect(migrator).migrateERowan(10)
+        const wx = await tx.wait()
+        await expect(() => bridgeBank.connect(migrator).migrateERowan(amount))
+            .to.changeTokenBalance(newRowanToken, migrator, amount)
     })
 })
 

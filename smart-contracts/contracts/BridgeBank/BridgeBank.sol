@@ -8,6 +8,7 @@ import "../Oracle.sol";
 import "../CosmosBridge.sol";
 import "./BankStorage.sol";
 import "./Pausable.sol";
+import "hardhat/console.sol";
 
 /*
  * @title BridgeBank
@@ -15,7 +16,7 @@ import "./Pausable.sol";
  *      CosmosBank manages the minting and burning of tokens which
  *      represent Cosmos based assets, while EthereumBank manages
  *      the locking and unlocking of Ethereum and ERC20 token assets
- *      based on Ethereum. WhiteList records the ERC20 token address 
+ *      based on Ethereum. WhiteList records the ERC20 token address
  *      list that can be locked.
  **/
 
@@ -159,14 +160,14 @@ contract BridgeBank is BankStorage,
     {
         string memory symbol = BridgeToken(_token).symbol();
         address listAddress = lockedTokenList[symbol];
-        
+
         // Do not allow a token with the same symbol to be whitelisted
         if (_inList) {
             // if we want to add it to the whitelist, make sure that the address
             // is 0, meaning we have not seen that symbol in the whitelist before
             require(listAddress == address(0), "whitelisted");
         } else {
-            // if we want to de-whitelist it, make sure that the symbol is 
+            // if we want to de-whitelist it, make sure that the symbol is
             // in fact stored in our locked token list before we set to false
             require(uint256(listAddress) > 0, "!whitelisted");
         }
@@ -287,6 +288,23 @@ contract BridgeBank is BankStorage,
         // Confirm that the bank holds sufficient balances to complete the unlock
         address tokenAddress = lockedTokenList[symbol];
         unlockFunds(_recipient, tokenAddress, symbol, _amount);
+    }
+
+    event LogMigrateRowan(
+        address migrator,
+        uint256 amount,
+        address previousToken,
+        address newToken
+    );
+
+    function migrateERowan(
+        uint256 amount
+    ) public whenNotPaused {
+        address previousToken = controlledBridgeTokens["erowan"];
+        address newToken = controlledBridgeTokens["Rowan"];
+        BridgeToken(previousToken).burnFrom(msg.sender, amount);
+        BridgeToken(newToken).mint(msg.sender, amount);
+        emit LogMigrateRowan(msg.sender, amount, previousToken, newToken);
     }
 
     /*
