@@ -1,7 +1,7 @@
 /**
  * Upgrades BridgeBank and CosmosBridge
  * 
- * Expected usage (option 1): yarn peggy:upgradeProxies 'sifchain-testnet' --network ropsten --skip-dry-run
+ * Expected usage (option 1): yarn peggy:upgradeProxies sifchain-testnet --network ropsten --skip-dry-run
  * Expected usage (option 2): truffle migrate -f 5 --to 5 sifchain-testnet --network ropsten --skip-dry-run
  * Change 'sifchain-testnet' to the desired deployment
  */
@@ -34,6 +34,8 @@ const state = {
 };
 
 function setup() {
+  console.log('Expected usage: yarn peggy:upgradeProxies sifchain-testnet --network ropsten --skip-dry-run');
+
   const folder = c.argv[7]; // something like 'sifchain-testnet'
   const basePathForDeployedContracts = `${deploymentsPath}/${folder}/`;
   const basePathForTruffleArtifacts = `../${deploymentsPath}/${folder}/`;
