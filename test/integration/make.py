@@ -15,6 +15,9 @@ log = logging.getLogger(__name__)
 def stdout_lines(res):
     return res[1].splitlines()
 
+def joinlines(lines):
+    return "".join([x + os.linesep for x in lines])
+
 def exactly_one(items):
     if len(items) == 0:
         raise ValueError("Zero items")
@@ -66,7 +69,8 @@ class Command:
         return popen.returncode, stdout_data, stderr_data
 
     def rm(self, path):
-        os.remove(path)
+        if os.path.exists(path):
+            os.remove(path)
 
     def read_text_file(self, path):
         with open(path, "rt") as f:
@@ -561,6 +565,7 @@ class UIStackPlaybook:
 class IntegrationTestsPlaybook:
     def __init__(self, cmd):
         self.cmd = cmd
+        # Fixed, set in start-integration-env.sh
         self.ethereum_private_key = "c87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3"
         self.owner = "0x627306090abaB3A6e1400e9345bC60c78a8BEf57"
         # we may eventually switch things so PAUSER and OWNER aren't the same account, but for now they're the same
@@ -582,23 +587,25 @@ class IntegrationTestsPlaybook:
         self.using_ganache_gui = False
         self.snapshots_dir = self.cmd.get_user_home(".sifnode-snapshots")
         self.state_vars = {}
+        self.test_integration_dir = project_dir("test/integration")
+        self.data_dir = project_dir("test/integration/vagrant/data")
 
     def run(self):
-        test_integration_dir = project_dir("test/integration")
-        data_dir = project_dir("test/integration/vagrant/data")
+        self.cmd.mkdir(self.data_dir)
 
         chainnet = "localnet"
         tcp_url = "tcp://0.0.0.0:26657"
         ethereum_websocket_address = "ws://localhost:7545/"
 
         # make go binaries (a lot of nonsense!)
-        self.cmd.execst(["make"], cwd=test_integration_dir, env={"BASEDIR": project_dir()})
+        self.cmd.execst(["make"], cwd=self.test_integration_dir, env={"BASEDIR": project_dir()})
 
         self.cmd.build_smart_contracts_for_integration_tests()
 
         if self.using_ganache_gui:
             ebrelayer_ethereum_addr = "0x8e2bE12daDbCcbf7c98DBb59f98f22DFF0eF3F2c"
             ebrelayer_ethereum_private_key = "2eaddbc0bca859ff5b09c5a48a2feaeaf464f7cbf8ddbfa4a32a625a8322fe99"
+            ganache_db_path = None
             ganache_proc = None
         else:
             # test/integration/ganache-start.sh:
@@ -613,7 +620,7 @@ class IntegrationTestsPlaybook:
             # GANACHE_LOG=ui/test/integration/vagrant/data/logs/ganache.$(filenamedate).txt
             validator_mnemonic = ["candy", "maple", "cake", "sugar", "pudding", "cream", "honey", "rich", "smooth", "crumble", "sweet", "treat"]
             block_time = None  # TODO
-            account_keys_path = os.path.join(data_dir, "ganachekeys.json")
+            account_keys_path = os.path.join(self.data_dir, "ganachekeys.json")
             ganache_db_path = self.cmd.mktempdir()
             self.state_vars["GANACHE_DB_PATH"] = ganache_db_path
             ganache_proc = self.cmd.start_ganache_cli(block_time=block_time, host="0.0.0.0", mnemonic=validator_mnemonic,
@@ -667,7 +674,7 @@ class IntegrationTestsPlaybook:
         self.cmd.mkdir(networks_dir)
         self.cmd.execst(["rake", f"genesis:network:scaffold[{chainnet}]"], env={"BASEDIR": project_dir()}, pipe=False)
         netdef = exactly_one(yaml_load(self.cmd.read_text_file(project_dir(networks_dir, "network-definition.yml"))))
-        netdef_json = os.path.join(data_dir, "netdef.json")
+        netdef_json = os.path.join(self.data_dir, "netdef.json")
         self.cmd.write_text_file(netdef_json, json.dumps(netdef))
 
         validator_moniker = netdef["moniker"]
@@ -695,21 +702,66 @@ class IntegrationTestsPlaybook:
         rest_server_proc = popen(["sifnoded", "rest-server", "--laddr", "tcp://0.0.0.0:1317"])  # TODO cwd
 
         # test/integration/sifchain_start_ebrelayer.sh -> test/integration/sifchain_run_ebrelayer.sh
+        # This script is also called from tests
+
         while not self.cmd.tcp_probe_connect("localhost", 26657):
             time.sleep(1)
-        self.cmd.execst(["python3", os.path.join(test_integration_dir, "src/py/wait_for_sif_account.py"),
-            netdef_json, validator1_address], env={"USER1ADDR": "nothing"})
+        self.wait_for_sif_account(netdef_json, validator1_address)
         time.sleep(10)
-        # Error: The specified item could not be found in the keyring
-        # res = self.cmd.execst(["sifnoded", "keys", "delete", moniker, "--keyring-backend", "test"], stdin=["y"])
-        self.cmd.sifnoded_keys_add([validator_moniker, "--keyring-backend", "test", "--recover"],
-            stdin=[" ".join(validator_mnemonic)])
-
+        self.remove_and_add_sifnoded_keys(validator_moniker, validator_mnemonic)
         ebrelayer_proc = self.cmd.ebrelayer_init(ebrelayer_ethereum_private_key, tcp_url, ethereum_websocket_address,
             bridge_registry_sc_addr, validator_moniker, validator_mnemonic, chainnet, node=tcp_url,
             keyring_backend="test", sign_with=validator_moniker)
 
-        return ganache_proc, sifnoded_proc, ebrelayer_proc
+        vagrantenv_path = project_dir("test/integration/vagrantenv.sh")
+        vagrantenv = {
+            "ETHEREUM_PRIVATE_KEY": self.ethereum_private_key,
+            "OWNER": self.owner,
+            "PAUSER": self.pauser,
+            "BASEDIR": project_dir(),
+            # export SIFCHAIN_BIN="/home/jurez/work/projects/sif/sifnode/local/cmd"
+            "envexportfile": vagrantenv_path,
+            # export TEST_INTEGRATION_DIR="/home/jurez/work/projects/sif/sifnode/local/test/integration"
+            # export TEST_INTEGRATION_PY_DIR="/home/jurez/work/projects/sif/sifnode/local/test/integration/src/py"
+            "SMART_CONTRACTS_DIR": project_dir("smart-contracts"),
+            # export datadir="/home/jurez/work/projects/sif/sifnode/local/test/integration/vagrant/data"
+            # export CONTAINER_NAME="integration_sifnode1_1"
+            "NETWORKDIR": networks_dir,
+            # export ETHEREUM_WEBSOCKET_ADDRESS="ws://localhost:7545/"
+            # export CHAINNET="localnet"
+            "GANACHE_DB_DIR": ganache_db_path,
+            # export GANACHE_KEYS_JSON="/home/jurez/work/projects/sif/sifnode/local/test/integration/vagrant/data/ganachekeys.json"
+            # export EBRELAYER_ETHEREUM_ADDR="0x5aeda56215b167893e80b4fe645ba6d5bab767de"
+            # export EBRELAYER_ETHEREUM_PRIVATE_KEY="8d5366123cb560bb606379f90a0bfd4769eecc0557f1b362dcae9012b548b1e5"
+            # # BRIDGE_REGISTRY_ADDRESS and ETHEREUM_CONTRACT_ADDRESS are synonyms
+            "BRIDGE_REGISTRY_ADDRESS": bridge_registry_sc_addr,
+            "BRIDGE_TOKEN_ADDRESS": bridge_token_sc_addr,
+            "BRIDGE_BANK_ADDRESS": bridge_bank_sc_addr,
+            "NETDEF": os.path.join(networks_dir, "network-definition.yml"),
+            "NETDEF_JSON": project_dir("test/integration/vagrant/data/netdef.json"),
+            "MONIKER": validator_moniker,
+            "VALIDATOR1_PASSWORD": validator1_password,
+            "VALIDATOR1_ADDR": validator1_address,
+            "MNEMONIC": " ".join(validator_mnemonic),
+            "CHAINDIR": os.path.join(networks_dir, "validators", chainnet, validator_moniker),
+            "SIFCHAIN_ADMIN_ACCOUNT": adminuser_addr,  # Needed by test_peggy_fees.py (via conftest.py)
+        }
+        self.cmd.write_text_file(vagrantenv_path, joinlines([f"{k}=\"{v}\"" for k, v in vagrantenv.items()]))
+
+        return vagrantenv, (ganache_proc, sifnoded_proc, ebrelayer_proc, rest_server_proc)
+
+    def wait_for_sif_account(self, netdef_json, validator1_address):
+        return self.cmd.execst(["python3", os.path.join(self.test_integration_dir, "src/py/wait_for_sif_account.py"),
+            netdef_json, validator1_address], env={"USER1ADDR": "nothing"})
+
+    def remove_and_add_sifnoded_keys(self, validator_moniker, validator_mnemonic):
+        # Error: The specified item could not be found in the keyring
+        # This is not neccessary during start-integration-env.sh (as the key does not exist yet), but is neccessary
+        # during tests that restart ebrelayer
+        # res = self.cmd.execst(["sifnoded", "keys", "delete", moniker, "--keyring-backend", "test"], stdin=["y"])
+        self.cmd.execst(["sifnoded", "keys", "delete", validator_moniker, "--keyring-backend", "test"], stdin=["y"], check_exit=False)
+        self.cmd.sifnoded_keys_add([validator_moniker, "--keyring-backend", "test", "--recover"],
+            stdin=[" ".join(validator_mnemonic)])
 
     def create_snapshot(self, snapshot_name):
         self.cmd.mkdir(self.snapshots_dir)
@@ -728,11 +780,21 @@ def cleanup_and_reset_state():
     cmd.execst(["pkill", "node"], check_exit=False)
     cmd.execst(["pkill", "ebrelayer"], check_exit=False)
     cmd.execst(["pkill", "sifnoded"], check_exit=False)
-    cmd.rmdir(cmd.get_user_home(".sifnoded"))
-    cmd.rmdir(project_dir("test/integration/vagrant/data"))
+
+    # rm -rvf /tmp/tmp.xxxx (ganache DB, unique for every run)
     cmd.rmdir(project_dir("test/integration/relayerdb"))
-    cmd.rmdir(project_dir("test/integration/.pytest_cache"))
-    cmd.rmdir(project_dir("relayerdb"))
+    cmd.rmdir(project_dir("smart-contracts/build"))
+    cmd.rmdir(project_dir("test/integration/vagrant/data"))
+
+    # Not sure if this is needed too
+    cmd.rmdir(cmd.get_user_home(".sifnoded"))
+
+    # Additional cleanup (not neccessary to make it work)
+    # cmd.rm(project_dir("smart-contracts/combined.log"))
+    # cmd.rmdir(project_dir("test/integration/.pytest_cache"))
+    # cmd,rm(project_dir("smart-contracts/.env"))
+    # cmd.rmdir(project_dir("deploy/networks"))
+    # cmd.rmdir(project_dir("smart-contracts/.openzeppelin"))
     time.sleep(3)
 
 
@@ -744,7 +806,7 @@ def main():
     # ui_playbook.stack_save_snapshot()
     # ui_playbook.stack_push()
     it_playbook = IntegrationTestsPlaybook(cmd)
-    processes = it_playbook.run()
+    _, processes = it_playbook.run()
     for p in processes:
         if p is not None:
             p.kill()
