@@ -622,7 +622,6 @@ class IntegrationTestsPlaybook:
             block_time = None  # TODO
             account_keys_path = os.path.join(self.data_dir, "ganachekeys.json")
             ganache_db_path = self.cmd.mktempdir()
-            self.state_vars["GANACHE_DB_PATH"] = ganache_db_path
             ganache_proc = self.cmd.start_ganache_cli(block_time=block_time, host="0.0.0.0", mnemonic=validator_mnemonic,
                 network_id=self.network_id, port=7545, db=ganache_db_path, account_keys_path=account_keys_path)
 
@@ -699,6 +698,7 @@ class IntegrationTestsPlaybook:
         sifnoded_proc = popen(["sifnoded", "start", "--minimum-gas-prices", sif_format_amount(0.5, "rowan"),
             "--rpc.laddr", tcp_url, "--home", sifchaind_home])
 
+        # TODO Process exits immediately with returncode 1
         rest_server_proc = popen(["sifnoded", "rest-server", "--laddr", "tcp://0.0.0.0:1317"])  # TODO cwd
 
         # test/integration/sifchain_start_ebrelayer.sh -> test/integration/sifchain_run_ebrelayer.sh
@@ -714,7 +714,7 @@ class IntegrationTestsPlaybook:
             keyring_backend="test", sign_with=validator_moniker)
 
         vagrantenv_path = project_dir("test/integration/vagrantenv.sh")
-        vagrantenv = {
+        self.state_vars = {
             "ETHEREUM_PRIVATE_KEY": self.ethereum_private_key,
             "OWNER": self.owner,
             "PAUSER": self.pauser,
@@ -746,9 +746,9 @@ class IntegrationTestsPlaybook:
             "CHAINDIR": os.path.join(networks_dir, "validators", chainnet, validator_moniker),
             "SIFCHAIN_ADMIN_ACCOUNT": adminuser_addr,  # Needed by test_peggy_fees.py (via conftest.py)
         }
-        self.cmd.write_text_file(vagrantenv_path, joinlines([f"{k}=\"{v}\"" for k, v in vagrantenv.items()]))
+        self.cmd.write_text_file(vagrantenv_path, joinlines([f"{k}=\"{v}\"" for k, v in self.state_vars.items()]))
 
-        return vagrantenv, (ganache_proc, sifnoded_proc, ebrelayer_proc, rest_server_proc)
+        return ganache_proc, sifnoded_proc, ebrelayer_proc, rest_server_proc
 
     def wait_for_sif_account(self, netdef_json, validator1_address):
         return self.cmd.execst(["python3", os.path.join(self.test_integration_dir, "src/py/wait_for_sif_account.py"),
@@ -766,11 +766,14 @@ class IntegrationTestsPlaybook:
     def create_snapshot(self, snapshot_name):
         self.cmd.mkdir(self.snapshots_dir)
         named_snapshot_dir = os.path.join(self.snapshots_dir, snapshot_name)
+        if self.cmd.exists(named_snapshot_dir):
+            raise Exception(f"Directory '{named_snapshot_dir}' already exists")
         self.cmd.mkdir(named_snapshot_dir)
-        ganache_db_path = self.state_vars["GANACHE_DB_PATH"]
+        ganache_db_path = self.state_vars["GANACHE_DB_DIR"]
         self.cmd.tar_create(ganache_db_path, os.path.join(named_snapshot_dir, "ganache.tar.gz"), compression="gz")
         self.cmd.tar_create(project_dir("deploy/networks"), os.path.join(named_snapshot_dir, "networks.tar.gz"), compression="gz")
         self.cmd.tar_create(project_dir("smart-contracts/build"), os.path.join(named_snapshot_dir, "smart-contracts.tar.gz"), compression="gz")
+        self.cmd.write_text_file(os.path.join(named_snapshot_dir, "vagrantenv.json"), json.dumps(self.state_vars, indent=4))
 
 
 def cleanup_and_reset_state():
@@ -806,7 +809,7 @@ def main():
     # ui_playbook.stack_save_snapshot()
     # ui_playbook.stack_push()
     it_playbook = IntegrationTestsPlaybook(cmd)
-    _, processes = it_playbook.run()
+    processes = it_playbook.run()
     for p in processes:
         if p is not None:
             p.kill()
@@ -815,3 +818,37 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
+# Trace of test_utilities.py get_required_env_var/get_optional_env_var:
+#
+# BASEDIR (required), value=/home/jurez/work/projects/sif/sifnode/local
+# BRIDGE_BANK_ADDRESS (optional), value=0x30753E4A8aad7F8597332E813735Def5dD395028
+# BRIDGE_BANK_ADDRESS (required), value=0x30753E4A8aad7F8597332E813735Def5dD395028
+# BRIDGE_REGISTRY_ADDRESS (required), value=0xf204a4Ef082f5c04bB89F7D5E6568B796096735a
+# BRIDGE_TOKEN_ADDRESS (optional), value=0x82D50AD3C1091866E258Fd0f1a7cC9674609D254
+# BRIDGE_TOKEN_ADDRESS (required), value=0x82D50AD3C1091866E258Fd0f1a7cC9674609D254
+# CHAINDIR (required), 3x value
+# CHAINNET (required), value=localnet
+# DEPLOYMENT_NAME (optional), value=None
+# ETHEREUM_ADDRESS (optional), value=None
+# ETHEREUM_NETWORK (optional), value=None
+# ETHEREUM_NETWORK_ID (optional), value=None
+# ETHEREUM_WEBSOCKET_ADDRESS (required), value=ws://localhost:7545/
+# GANACHE_KEYS_FILE (optional), value=None
+# HOME (required), value=/home/jurez
+# MNEMONIC (required), value=future tattoo gesture artist tomato accuse chuckle polar ivory strategy rail flower apart virus burger rhythm either describe habit attend absurd aspect predict parent
+# MONIKER (required), value=wandering-flower
+# OPERATOR_ADDRESS (optional), value=None
+# OPERATOR_PRIVATE_KEY (optional), value=None
+# OPERATOR_PRIVATE_KEY (optional), value=c87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3
+# ROWAN_SOURCE (optional), value=None
+# ROWAN_SOURCE_KEY (optional), value=None
+# SIFCHAIN_ADMIN_ACCOUNT (required), value=sif1896ner48vrg8m05k48ykc6yydlxc4yvm23hp5m
+# SIFNODE (optional), value=None
+# SMART_CONTRACTS_DIR (required), 2x value
+# SMART_CONTRACT_ARTIFACT_DIR (optional), value=None
+# SOLIDITY_JSON_PATH (optional), value=None
+# TEST_INTEGRATION_DIR (required), value=/home/jurez/work/projects/sif/sifnode/local/test/integration
+# VALIDATOR1_ADDR (optional), 3x value
+# VALIDATOR1_PASSWORD (optional), 3x value
