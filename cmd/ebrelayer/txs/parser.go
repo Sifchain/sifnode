@@ -122,7 +122,14 @@ func BurnLockEventToCosmosMsg(claimType types.Event, attributes []abci.EventAttr
 			attributeNumber++
 			switch claimType {
 			case types.MsgLock:
-				symbol = symbolTranslator.SifchainToEthereum(val)
+				// Rowan is special and shouldn't run through the symbol translation system.
+				// We normally have an erowan <=> rowan mapping, but we want to transition
+				// away from erowan and use the new Rowan token.
+				if val == "rowan" {
+					symbol = val
+				} else {
+					symbol = symbolTranslator.SifchainToEthereum(val)
+				}
 			case types.MsgBurn:
 				if !strings.Contains(val, defaultSifchainPrefix) {
 					// log.Printf("Can only relay burns of '%v' prefixed coins", defaultSifchainPrefix)
