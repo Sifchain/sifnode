@@ -145,8 +145,8 @@ contract BridgeBank is BankStorage,
         // Do not allow a token with the same address to be whitelisted
         if (_inList) {
             // if we want to add it to the whitelist, make sure it's not there yet
-            require(!getTokenInEthWhiteList(_token), "whitelisted");
-            require(!getCosmosTokenInWhiteList(_token), "whitelisted");
+            require(!getTokenInEthWhiteList(_token), "already in eth whitelist");
+            require(!getCosmosTokenInWhiteList(_token), "already in cosmos whitelist");
         } else {
             // if we want to de-whitelist it, make sure that the token is already whitelisted 
             require(getTokenInEthWhiteList(_token), "!whitelisted");

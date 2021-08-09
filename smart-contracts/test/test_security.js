@@ -392,10 +392,7 @@ describe("Security Test", function () {
         state.amount,
         false,
         state.nonce,
-        state.networkDescriptor,
-        state.name,
-        state.symbol,
-        state.decimals,
+        state.networkDescriptor
       ]);
 
       const signatures = await signHash([userOne, userTwo, userFour], digest);
@@ -433,10 +430,7 @@ describe("Security Test", function () {
           state.amount,
           false,
           state.nonce,
-          state.networkDescriptor,
-          state.name,
-          state.symbol,
-          state.decimals,
+          state.networkDescriptor
       ]);
 
       const signatures = await signHash([userOne, userTwo, userFour], digest);
@@ -495,10 +489,7 @@ describe("Security Test", function () {
         state.amount,
         false,
         state.nonce,
-        state.networkDescriptor,
-        "Troll",
-        "TRL",
-        state.decimals
+        state.networkDescriptor
       ]);
 
       const signatures = await signHash([userOne, userTwo, userFour], digest);
@@ -559,10 +550,7 @@ describe("Security Test", function () {
         state.amount,
         false,
         state.nonce,
-        state.networkDescriptor,
-        "Troll",
-        "TRL",
-        state.decimals,
+        state.networkDescriptor
       ]);
 
       const signatures = await signHash([userOne, userTwo, userFour], digest);

@@ -95,10 +95,7 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
         uint256 amount,
         bool doublePeg,
         uint128 nonce,
-        uint256 _networkDescriptor,
-        string memory tokenName,
-        string memory tokenSymbol,
-        uint8 tokenDecimals
+        uint256 _networkDescriptor
     ) public pure returns (uint256) {
         return uint256(
             keccak256(
@@ -110,10 +107,7 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
                     amount,
                     doublePeg,
                     nonce,
-                    _networkDescriptor,
-                    tokenName,
-                    tokenSymbol,
-                    tokenDecimals
+                    _networkDescriptor
                 )
             )
         );
@@ -159,8 +153,8 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
     struct SignatureData {
         address signer;
         uint8 _v;
-		bytes32 _r;
-		bytes32 _s;
+		    bytes32 _r;
+		    bytes32 _s;
     }
 
     struct ClaimData {
@@ -198,7 +192,10 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
         _submitProphecyClaimAggregatedSigs(hashDigest, claimData, signatureData);
     }
 
-    // Essentially, each tx to the submitProphecyClaimAggregatedSigs needs to include a networkDescriptor or other unique identifier that only the smart contract on that chain has. If the chain identifier in the smart contract and the chain identifier in the message do not match, the transaction should fail.
+    // Essentially, each tx to the submitProphecyClaimAggregatedSigs needs to include a
+    // networkDescriptor or other unique identifier that only the smart contract on that chain has.
+    // If the chain identifier in the smart contract and the chain identifier in the message do not
+    // match, the transaction should fail.
     function _submitProphecyClaimAggregatedSigs(
         bytes32 hashDigest,
         ClaimData calldata claimData,
@@ -213,10 +210,7 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
             claimData.amount,
             claimData.doublePeg,
             claimData.nonce,
-            claimData.networkDescriptor,
-            claimData.tokenName,
-            claimData.tokenSymbol,
-            claimData.tokenDecimals
+            claimData.networkDescriptor
         );
 
         require(

@@ -26,10 +26,7 @@ function getDigestNewProphecyClaim(data) {
         "uint256",
         "bool",
         "uint128",
-        "uint256",
-        "string",
-        "string",
-        "uint8"
+        "uint256"
       ],
       data
     ),
@@ -298,10 +295,7 @@ async function getValidClaim({
         amount || state.amount,
         isDoublePeg || false,
         nonce || state.nonce,
-        networkDescriptor || state.networkDescriptor,
-        tokenName || state.name,
-        tokenSymbol || state.symbol,
-        tokenDecimals || state.decimals
+        networkDescriptor || state.networkDescriptor
     ]);
 
     const signatures = await signHash(validators, digest);
