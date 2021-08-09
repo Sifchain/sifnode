@@ -755,9 +755,11 @@ class IntegrationTestsPlaybook:
     def write_vagrantenv_sh(self):
         env = dict_merge(self.state_vars, {
             # For running test/integration/execute_integration_tests_against_*.sh
-            "TEST_INTEGRATION": project_dir("test/integration"),
+            "TEST_INTEGRATION_DIR": project_dir("test/integration"),
             "TEST_INTEGRATION_PY_DIR": project_dir("test/integration/src/py"),
             "SMART_CONTRACTS_DIR": self.cmd.smart_contracts_dir,
+            "datadir": self.data_dir,  # Needed by test_rollback_chain.py that calls ganache_start.sh
+            "GANACHE_KEYS_JSON": os.path.join(self.data_dir, "ganachekeys.json"),  # Needed by test_rollback_chain.py that calls ganache_start.sh
         })
         vagrantenv_path = project_dir("test/integration/vagrantenv.sh")
         self.cmd.write_text_file(vagrantenv_path, joinlines([f"export {k}=\"{v}\"" for k, v in env.items()]))
@@ -863,6 +865,7 @@ def main(argv):
         for p in processes:
             if p is not None:
                 p.kill()
+                p.wait()
         processes1 = it_playbook.restart_processes()
         it_playbook.create_snapshot(snapshot_name)
     elif what == "restore_snapshot":
