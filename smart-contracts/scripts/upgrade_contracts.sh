@@ -6,6 +6,9 @@ set -e
 #
 #    scripts/update_contracts.sh $DEPLOYMENT_NAME $network
 #
+# For example,
+#
+#    scripts/update_contracts.sh sifchain-testnet-042-ibc ropsten
 #
 # must run this from the smart-contracts directory, and must update .env with
 # the appropriate values for:
