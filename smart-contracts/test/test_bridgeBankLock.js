@@ -708,7 +708,7 @@ describe("Test Bridge Bank", function () {
       // Try adding the token into white list
       await expect(state.bridgeBank.connect(operator)
         .updateEthWhiteList(bridgeToken, true))
-        .to.be.revertedWith('whitelisted');
+        .to.be.revertedWith('already in eth whitelist');
     });
   });
 });
