@@ -44,8 +44,8 @@ async function main() {
     const existingBridgeBank = await container.resolve(DeployedBridgeBank).contract
     const existingCosmosBridge = await container.resolve(DeployedCosmosBridge).contract
 
-    await hardhat.upgrades.upgradeProxy(existingBridgeBank, bridgeBankFactory.connect(proxyAdmin).gasLimit(2000000))
-    await hardhat.upgrades.upgradeProxy(existingCosmosBridge, cosmosBridgeFactory.connect(proxyAdmin).gasLimit(2000000))
+    await hardhat.upgrades.upgradeProxy(existingBridgeBank, bridgeBankFactory.connect(proxyAdmin))
+    await hardhat.upgrades.upgradeProxy(existingCosmosBridge, cosmosBridgeFactory.connect(proxyAdmin))
 }
 
 main()
