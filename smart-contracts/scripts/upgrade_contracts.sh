@@ -20,6 +20,6 @@ set -e
 
 deploymentDir=deployments/$1/
 rm -f .openzeppelin/
-ln -s $deploymentDir .
+ln -s $deploymentDir/.openzeppelin .openzeppelin
 npx hardhat run scripts/upgrade_contracts.ts --network $2
 git commit -m "update deployment" $deploymentDir
