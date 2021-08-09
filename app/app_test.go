@@ -47,3 +47,9 @@ func TestSimAppExportAndBlockedAddrs(t *testing.T) {
 	_, err = app2.ExportAppStateAndValidators(false, []string{})
 	require.NoError(t, err, "ExportAppStateAndValidators should not have an error")
 }
+
+func TestReadTokenMapJson(t *testing.T) {
+	jsonData := readTokenMapJSON()
+	// ba6973c40816e27ad5019d6ae10c67ccb0eef1d67ac0bd2c17425a17680eba3f is the hash of 0x00000000000000000000181
+	require.Equal(t, jsonData, map[string]string{"ceth": "ba6973c40816e27ad5019d6ae10c67ccb0eef1d67ac0bd2c17425a17680eba3f"})
+}
