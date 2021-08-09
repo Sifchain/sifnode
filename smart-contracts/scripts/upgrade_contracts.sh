@@ -4,7 +4,7 @@ set -e
 
 # usage:
 #
-#    scripts/update_contracts.sh $DEPLOYMENT_NAME
+#    scripts/update_contracts.sh $DEPLOYMENT_NAME $network
 #
 #
 # must run this from the smart-contracts directory, and must update .env with
@@ -18,5 +18,5 @@ set -e
 deploymentDir=deployments/$1/
 rm -f .openzeppelin/
 ln -s $deploymentDir .
-npx hardhat run scripts/upgrade_contracts.ts --network ropsten
+npx hardhat run scripts/upgrade_contracts.ts --network $2
 git commit -m "update deployment" $deploymentDir
