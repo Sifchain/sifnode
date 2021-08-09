@@ -589,13 +589,14 @@ class IntegrationTestsPlaybook:
         self.state_vars = {}
         self.test_integration_dir = project_dir("test/integration")
         self.data_dir = project_dir("test/integration/vagrant/data")
+        self.chainnet = "localnet"
+        self.tcp_url = "tcp://0.0.0.0:26657"
+        self.ethereum_websocket_address = "ws://localhost:7545/"
+        self.ganache_mnemonic = ["candy", "maple", "cake", "sugar", "pudding", "cream", "honey", "rich", "smooth",
+                "crumble", "sweet", "treat"]
 
     def run(self):
         self.cmd.mkdir(self.data_dir)
-
-        chainnet = "localnet"
-        tcp_url = "tcp://0.0.0.0:26657"
-        ethereum_websocket_address = "ws://localhost:7545/"
 
         # make go binaries (a lot of nonsense!)
         self.cmd.execst(["make"], cwd=self.test_integration_dir, env={"BASEDIR": project_dir()})
@@ -618,12 +619,12 @@ class IntegrationTestsPlaybook:
             # 4. sleep 5
             # 5. while ! nc -z localhost 4545; do sleep 5; done
             # GANACHE_LOG=ui/test/integration/vagrant/data/logs/ganache.$(filenamedate).txt
-            validator_mnemonic = ["candy", "maple", "cake", "sugar", "pudding", "cream", "honey", "rich", "smooth", "crumble", "sweet", "treat"]
             block_time = None  # TODO
             account_keys_path = os.path.join(self.data_dir, "ganachekeys.json")
             ganache_db_path = self.cmd.mktempdir()
-            ganache_proc = self.cmd.start_ganache_cli(block_time=block_time, host="0.0.0.0", mnemonic=validator_mnemonic,
-                network_id=self.network_id, port=7545, db=ganache_db_path, account_keys_path=account_keys_path)
+            ganache_proc = self.cmd.start_ganache_cli(block_time=block_time, host="0.0.0.0",
+                mnemonic=self.ganache_mnemonic, network_id=self.network_id, port=7545, db=ganache_db_path,
+                account_keys_path=account_keys_path)
 
             self.cmd.wait_for_file(account_keys_path)  # Created by ganache-cli
             time.sleep(2)
@@ -671,7 +672,7 @@ class IntegrationTestsPlaybook:
         networks_dir = project_dir("deploy/networks")
         self.cmd.rmdir(networks_dir)  # networks_dir has many directories without write permission, so change those before deleting it
         self.cmd.mkdir(networks_dir)
-        self.cmd.execst(["rake", f"genesis:network:scaffold[{chainnet}]"], env={"BASEDIR": project_dir()}, pipe=False)
+        self.cmd.execst(["rake", f"genesis:network:scaffold[{self.chainnet}]"], env={"BASEDIR": project_dir()}, pipe=False)
         netdef = exactly_one(yaml_load(self.cmd.read_text_file(project_dir(networks_dir, "network-definition.yml"))))
         netdef_json = os.path.join(self.data_dir, "netdef.json")
         self.cmd.write_text_file(netdef_json, json.dumps(netdef))
@@ -680,7 +681,7 @@ class IntegrationTestsPlaybook:
         validator1_address = netdef["address"]
         validator1_password = netdef["password"]
         validator_mnemonic = netdef["mnemonic"].split(" ")
-        chaindir = os.path.join(networks_dir, f"validators/{chainnet}/{validator_moniker}")
+        chaindir = os.path.join(networks_dir, f"validators/{self.chainnet}/{validator_moniker}")
         # SIFNODED_LOG=$datadir/logs/sifnoded.log
 
         # test/integration/sifchain_start_daemon.sh:
@@ -696,9 +697,10 @@ class IntegrationTestsPlaybook:
             "--home", sifchaind_home], pipe=False)
         self.cmd.execst(["sifnoded", "set-genesis-oracle-admin", adminuser_addr, "--home", sifchaind_home], pipe=False)
         sifnoded_proc = popen(["sifnoded", "start", "--minimum-gas-prices", sif_format_amount(0.5, "rowan"),
-            "--rpc.laddr", tcp_url, "--home", sifchaind_home])
+            "--rpc.laddr", self.tcp_url, "--home", sifchaind_home])
 
         # TODO Process exits immediately with returncode 1
+        # TODO Why does it not stop start-integration-env.sh?
         rest_server_proc = popen(["sifnoded", "rest-server", "--laddr", "tcp://0.0.0.0:1317"])  # TODO cwd
 
         # test/integration/sifchain_start_ebrelayer.sh -> test/integration/sifchain_run_ebrelayer.sh
@@ -709,9 +711,9 @@ class IntegrationTestsPlaybook:
         self.wait_for_sif_account(netdef_json, validator1_address)
         time.sleep(10)
         self.remove_and_add_sifnoded_keys(validator_moniker, validator_mnemonic)
-        ebrelayer_proc = self.cmd.ebrelayer_init(ebrelayer_ethereum_private_key, tcp_url, ethereum_websocket_address,
-            bridge_registry_sc_addr, validator_moniker, validator_mnemonic, chainnet, node=tcp_url,
-            keyring_backend="test", sign_with=validator_moniker)
+        ebrelayer_proc = self.cmd.ebrelayer_init(ebrelayer_ethereum_private_key, self.tcp_url,
+            self.ethereum_websocket_address, bridge_registry_sc_addr, validator_moniker, validator_mnemonic,
+            self.chainnet, node=self.tcp_url, keyring_backend="test", sign_with=validator_moniker)
 
         vagrantenv_path = project_dir("test/integration/vagrantenv.sh")
         self.state_vars = {
@@ -743,12 +745,22 @@ class IntegrationTestsPlaybook:
             "VALIDATOR1_PASSWORD": validator1_password,
             "VALIDATOR1_ADDR": validator1_address,
             "MNEMONIC": " ".join(validator_mnemonic),
-            "CHAINDIR": os.path.join(networks_dir, "validators", chainnet, validator_moniker),
+            "CHAINDIR": os.path.join(networks_dir, "validators", self.chainnet, validator_moniker),
             "SIFCHAIN_ADMIN_ACCOUNT": adminuser_addr,  # Needed by test_peggy_fees.py (via conftest.py)
         }
-        self.cmd.write_text_file(vagrantenv_path, joinlines([f"{k}=\"{v}\"" for k, v in self.state_vars.items()]))
+        self.write_vagrantenv_sh()
 
         return ganache_proc, sifnoded_proc, ebrelayer_proc, rest_server_proc
+
+    def write_vagrantenv_sh(self):
+        env = dict_merge(self.state_vars, {
+            # For running test/integration/execute_integration_tests_against_*.sh
+            "TEST_INTEGRATION": project_dir("test/integration"),
+            "TEST_INTEGRATION_PY_DIR": project_dir("test/integration/src/py"),
+            "SMART_CONTRACTS_DIR": self.cmd.smart_contracts_dir,
+        })
+        vagrantenv_path = project_dir("test/integration/vagrantenv.sh")
+        self.cmd.write_text_file(vagrantenv_path, joinlines([f"export {k}=\"{v}\"" for k, v in env.items()]))
 
     def wait_for_sif_account(self, netdef_json, validator1_address):
         return self.cmd.execst(["python3", os.path.join(self.test_integration_dir, "src/py/wait_for_sif_account.py"),
@@ -774,6 +786,39 @@ class IntegrationTestsPlaybook:
         self.cmd.tar_create(project_dir("deploy/networks"), os.path.join(named_snapshot_dir, "networks.tar.gz"), compression="gz")
         self.cmd.tar_create(project_dir("smart-contracts/build"), os.path.join(named_snapshot_dir, "smart-contracts.tar.gz"), compression="gz")
         self.cmd.write_text_file(os.path.join(named_snapshot_dir, "vagrantenv.json"), json.dumps(self.state_vars, indent=4))
+
+    def restart_processes(self):
+        block_time = None
+        ganache_db_path = self.state_vars["GANACHE_DB_DIR"]
+        account_keys_path = None
+        ganache_proc = self.cmd.start_ganache_cli(block_time=block_time, host="0.0.0.0", mnemonic=self.ganache_mnemonic,
+            network_id=self.network_id, port=7545, db=ganache_db_path, account_keys_path=account_keys_path)
+
+        validator_moniker = self.state_vars["MONIKER"]
+        networks_dir = project_dir("deploy/networks")
+        chaindir = os.path.join(networks_dir, f"validators/{self.chainnet}/{validator_moniker}")
+        sifchaind_home = os.path.join(chaindir, ".sifnoded")
+        sifnoded_proc = popen(["sifnoded", "start", "--minimum-gas-prices", sif_format_amount(0.5, "rowan"),
+            "--rpc.laddr", self.tcp_url, "--home", sifchaind_home])
+
+        bridge_token_sc_addr, bridge_registry_sc_addr, bridge_bank_sc_addr = \
+            self.cmd.get_bridge_smart_contract_addresses(self.network_id)
+
+        validator_mnemonic = self.state_vars["MNEMONIC"].split(" ")
+        account_keys_path = os.path.join(self.data_dir, "ganachekeys.json")
+        ganache_keys = json.loads(self.cmd.read_text_file(account_keys_path))
+        ebrelayer_ethereum_addr = list(ganache_keys["private_keys"].keys())[9]
+        ebrelayer_ethereum_private_key = ganache_keys["private_keys"][ebrelayer_ethereum_addr]
+
+        ebrelayer_proc = self.cmd.ebrelayer_init(ebrelayer_ethereum_private_key, self.tcp_url,
+            self.ethereum_websocket_address, bridge_registry_sc_addr, validator_moniker, validator_mnemonic,
+            self.chainnet, node=self.tcp_url, keyring_backend="test", sign_with=validator_moniker)
+
+        return ganache_proc, sifnoded_proc, ebrelayer_proc, None
+
+    def restore_snapshot(self, snapshot_name):
+        named_snapshot_dir = os.path.join(self.snapshots_dir, snapshot_name)
+        self.state_vars = json.loads(self.cmd.read_text_file(os.path.join(named_snapshot_dir, "vagrantenv.json")))
 
 
 def cleanup_and_reset_state():
@@ -801,23 +846,35 @@ def cleanup_and_reset_state():
     time.sleep(3)
 
 
-def main():
+def main(argv):
     logging.basicConfig(stream=sys.stdout, level=logging.DEBUG, format="%(message)s")
-    cleanup_and_reset_state()
+    what = argv[0] if argv else None
     cmd = Integrator()
-    ui_playbook = UIStackPlaybook(cmd)
-    # ui_playbook.stack_save_snapshot()
-    # ui_playbook.stack_push()
-    it_playbook = IntegrationTestsPlaybook(cmd)
-    processes = it_playbook.run()
-    for p in processes:
-        if p is not None:
-            p.kill()
-    it_playbook.create_snapshot("test_snapshot_1")
+    if what == "run_ui_playbook":
+        ui_playbook = UIStackPlaybook(cmd)
+        ui_playbook.stack_save_snapshot()
+        ui_playbook.stack_push()
+    elif what == "create_snapshot":
+        snapshot_name = argv[1]
+        cleanup_and_reset_state()
+        cmd = Integrator()
+        it_playbook = IntegrationTestsPlaybook(cmd)
+        processes = it_playbook.run()
+        for p in processes:
+            if p is not None:
+                p.kill()
+        processes1 = it_playbook.restart_processes()
+        it_playbook.create_snapshot(snapshot_name)
+    elif what == "restore_snapshot":
+        snapshot_name = argv[1]
+        it_playbook = IntegrationTestsPlaybook(cmd)
+        it_playbook.restore_snapshot(snapshot_name)
+    else:
+        raise Exception("Missing/unknown command")
 
 
 if __name__ == "__main__":
-    main()
+    main(sys.argv[1:])
 
 
 # Trace of test_utilities.py get_required_env_var/get_optional_env_var:
