@@ -31,6 +31,8 @@ var (
 	AttributeKeyCrossChainFeeGas     = "cross_chain_fee_gas"
 	AttributeKeyMinimumLockCost      = "minimum_lock_cost"
 	AttributeKeyMinimumBurnCost      = "minimum_burn_cost"
+	AttributeKeyGlobalNonce    = "global_nonce"
+
 
 	AttributeValueCategory = ModuleName
 )
