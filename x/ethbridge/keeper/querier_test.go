@@ -17,7 +17,7 @@ import (
 //nolint:lll
 const (
 	// TestResponseJSON = "{\"prophecy_id\":\"\\ufffd\\ufffd\\ufffd\\ufffdE|q\\ufffdrt\\ufffdS\\u0012D\\ufffdUj\\ufffd\\ufffd\\ufffd\\ufffdI\\ufffd\\u0018\\ufffdA9\\n \\ufffdJz\",\"status\":1,\"claim_validators\":[\"cosmosvaloper1mnfm9c7cdgqnkk66sganp78m0ydmcr4pn7fqfk\"]}"
-	TestResponseJSON = "{\"prophecy_id\":\"5uRTwZrfMTpayUeVCMTAUOLvsUGkUDVAASJty1fk0BM=\",\"status\":1,\"claim_validators\":[\"cosmosvaloper1mnfm9c7cdgqnkk66sganp78m0ydmcr4pn7fqfk\"]}"
+	TestResponseJSON = "{\"prophecy_id\":\"FY9NHxf33a/BfHbkaF2YISRX2C3D2Fi2Rr7ROXLiIBc=\",\"status\":1,\"claim_validators\":[\"cosmosvaloper1mnfm9c7cdgqnkk66sganp78m0ydmcr4pn7fqfk\"]}"
 )
 
 func TestNewQuerier(t *testing.T) {

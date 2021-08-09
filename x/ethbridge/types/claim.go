@@ -99,7 +99,7 @@ func GetDenomHash(
 	)
 
 	rawDenomHash := sha256.Sum256([]byte(denomHashedString))
-	denomHash := hex.EncodeToString(rawDenomHash[:])
+	denomHash := "sif" + hex.EncodeToString(rawDenomHash[:])
 
 	return denomHash
 }

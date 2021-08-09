@@ -63,6 +63,7 @@ func (e EthereumEvent) Equal(other EthereumEvent) bool {
 		bytes.Equal(e.ID[:], other.ID[:]) &&
 		e.From == other.From &&
 		bytes.Equal(e.To, other.To) &&
+		e.Token == other.Token &&
 		e.Symbol == other.Symbol &&
 		e.Name == other.Name &&
 		e.Decimals == other.Decimals &&
