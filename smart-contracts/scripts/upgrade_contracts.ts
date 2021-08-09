@@ -6,6 +6,18 @@ import {setupRopstenDeployment, setupSifchainMainnetDeployment} from "../src/har
 import {SifchainContractFactories} from "../src/tsyringe/contracts";
 import * as dotenv from "dotenv";
 
+// Usage
+//
+// npx hardhat run scripts/upgrade_contracts.ts
+//
+// Uses these environment variables:
+// (using the dotenv plugin, so you can have them in a .env file also)
+//
+// MAINNET_URL=https://eth-mainnet.alchemyapi.io/v2/...
+// ROPSTEN_URL=https://eth-ropsten.alchemyapi.io/v2/...
+// ROPSTEN_PROXY_ADMIN_PRIVATE_KEY=aaaa...
+// DEPLOYMENT_NAME="sifchain-testnet-042-ibc"
+
 async function main() {
     const [proxyAdmin] = await hardhat.ethers.getSigners();
 
