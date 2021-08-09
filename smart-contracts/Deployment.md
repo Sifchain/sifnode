@@ -2,7 +2,7 @@
 
 ## Setup
 Before we start this guide, you must have the following dependencies installed on your system:
-- node v14.11.0
+- node v16.6.1
 - yarn 1.22.10
 - latest version of truffle
 
