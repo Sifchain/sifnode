@@ -5,11 +5,11 @@
  * 
  * When you execute one of the commands above, hardhat will compile all contracts
  * Then, this script will run and save each contract's abi to the folder 
- * smart-contracts/build/generated/abi
+ * cmd/ebrelayer/contract/generated/abi
  * And save each contract's binary to the folder 
- * smart-contracts/build/generated/bin
+ * cmd/ebrelayer/contract/generated/bin
  * And save the generated go files to the folder 
- * smart-contracts/build/generated/go
+ * cmd/ebrelayer/contract/generated/bindings
  */
 
  const fs = require('fs');
@@ -22,7 +22,6 @@
  
  // where to save the generated files (BASE_TARGET_DIR/TARGET_XXX_FOLDER):
  const BASE_TARGET_DIR = '../cmd/ebrelayer/contract/generated'
- //const BASE_TARGET_DIR = './build/generated'
  
  // where to save the ABI files (BASE_TARGET_DIR/TARGET_ABI_DIR):
  const TARGET_ABI_DIR = 'abi';
