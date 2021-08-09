@@ -29,6 +29,7 @@ const config: HardhatUserConfig = {
         ropsten: {
             url: ropstenUrl,
             accounts: [ropstenProxyAdminKey],
+            gas: 2000000
         },
         mainnet: {
             url: mainnetUrl,
