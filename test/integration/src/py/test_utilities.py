@@ -16,6 +16,7 @@ highest_gas_cost = max(burn_gas_cost, lock_gas_cost)
 
 sifnoded_binary = "sifnoded"
 
+
 @dataclass
 class EthereumToSifchainTransferRequest:
     sifchain_address: str = ""
@@ -137,7 +138,8 @@ def get_shell_output_json(command_line):
         result = json.loads(output)
         return result
     except:
-        logging.critical(f"failed to decode json.  cmd is: {command_line}, output is: {output}")
+        logging.critical(
+            f"failed to decode json.  cmd is: {command_line}, output is: {output}")
         raise
 
 
@@ -149,7 +151,8 @@ def get_shell_output_yaml(command_line):
         result = yaml.safe_load(output)
         return result
     except:
-        logging.critical(f"failed to decode json.  cmd is: {command_line}, output is: {output}")
+        logging.critical(
+            f"failed to decode json.  cmd is: {command_line}, output is: {output}")
         raise
 
 
@@ -164,12 +167,22 @@ def run_yarn_command(command_line):
     try:
         return json.loads(json_line)
     except Exception as e:
-        raise Exception(f"json error from command:\n{command_line}\noutput:\n{lines}\noriginal exception: {e}")
+        raise Exception(
+            f"json error from command:\n{command_line}\noutput:\n{lines}\noriginal exception: {e}")
 
+# Gets the Token Metadata from a denom hash
+
+
+def get_token_metadata(denomHash):
+    command_line = f"{sifnoded_binary} query ethbridge metadata {denomHash}"
+    return get_shell_output(command_line)
 
 # converts a key to a sif address.
+
+
 def get_user_account(user, network_password):
-    command_line = "yes " + network_password + f" | {sifnoded_binary} keys show " + user + " -a"
+    command_line = "yes " + network_password + \
+        f" | {sifnoded_binary} keys show " + user + " -a"
     return get_shell_output(command_line)
 
 
@@ -331,9 +344,11 @@ def wait_for_sifchain_addr_balance(
     normalized_symbol = normalize_symbol(symbol)
     if not max_seconds:
         max_seconds = 90
-    logging.debug(f"wait_for_sifchain_addr_balance for node {sifchaincli_node}, {normalized_symbol}, {target_balance}")
+    logging.debug(
+        f"wait_for_sifchain_addr_balance for node {sifchaincli_node}, {normalized_symbol}, {target_balance}")
     return wait_for_balance(
-        lambda: int(get_sifchain_addr_balance(sifchain_address, sifchaincli_node, normalized_symbol)),
+        lambda: int(get_sifchain_addr_balance(
+            sifchain_address, sifchaincli_node, normalized_symbol)),
         int(target_balance),
         max_seconds,
         debug_prefix
@@ -352,7 +367,8 @@ def send_from_sifchain_to_sifchain_cmd(
         transfer_request: EthereumToSifchainTransferRequest,
         credentials: SifchaincliCredentials
 ):
-    logging.debug(f"send_from_sifchain_to_sifchain {transfer_request} {credentials}")
+    logging.debug(
+        f"send_from_sifchain_to_sifchain {transfer_request} {credentials}")
     yes_entry = f"yes {credentials.keyring_passphrase} | " if credentials.keyring_passphrase else ""
     keyring_backend_entry = f"--keyring-backend {credentials.keyring_backend}" if credentials.keyring_backend else ""
     chain_id_entry = f"--chain-id {transfer_request.chain_id}" if transfer_request.chain_id else ""
@@ -429,7 +445,8 @@ def send_from_sifchain_to_ethereum_cmd(
 
 def send_from_sifchain_to_ethereum(transfer_request: EthereumToSifchainTransferRequest,
                                    credentials: SifchaincliCredentials):
-    command_line = send_from_sifchain_to_ethereum_cmd(transfer_request, credentials)
+    command_line = send_from_sifchain_to_ethereum_cmd(
+        transfer_request, credentials)
     result = get_shell_output(command_line)
     detect_errors_in_sifnodecli_output(result)
     return result
@@ -476,7 +493,8 @@ def wait_for_sif_account(sif_addr, sifchaincli_node, max_seconds=90):
         except:
             return False
 
-    wait_for_predicate(lambda: fn(), True, max_seconds, f"wait for account {sif_addr}")
+    wait_for_predicate(lambda: fn(), True, max_seconds,
+                       f"wait for account {sif_addr}")
 
 
 def wait_for_predicate(predicate, success_result, max_seconds=90, debug_prefix="") -> int:
@@ -486,7 +504,8 @@ def wait_for_predicate(predicate, success_result, max_seconds=90, debug_prefix="
             return success_result
         else:
             t = time.time()
-            logging.debug(f"wait_for_predicate: wait for {done_at_time - t} more seconds")
+            logging.debug(
+                f"wait_for_predicate: wait for {done_at_time - t} more seconds")
             if t >= done_at_time:
                 msg = f"{debug_prefix} wait_for_predicate failed"
                 logging.debug(msg)

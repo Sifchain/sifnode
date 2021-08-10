@@ -1,17 +1,30 @@
 import logging
 
 import pytest
+import hashlib
 
 import burn_lock_functions
 import test_utilities
 from burn_lock_functions import EthereumToSifchainTransferRequest
 from pytest_utilities import generate_test_account
 from test_utilities import get_required_env_var, get_shell_output, amount_in_wei, \
-    SifchaincliCredentials
+    SifchaincliCredentials, get_token_metadata
 
 smart_contracts_dir = get_required_env_var("SMART_CONTRACTS_DIR")
 bridgebank_address = get_required_env_var("BRIDGE_BANK_ADDRESS")
 bridgetoken_address = get_required_env_var("BRIDGE_TOKEN_ADDRESS")
+
+
+def calculate_denom_hash(token):
+    network_descriptor = 1
+    token_contract_address = token["newtoken_address"].lower()
+    decimals = int(token["decimals"])
+    token_name = token["newtoken_name"].lower()
+    token_symbol = token["newtoken_symbol"].lower()
+    denom_string = f"{network_descriptor}{token_contract_address}{decimals}{token_name}{token_symbol}"
+    denom_hash = "sif" + \
+        hashlib.sha256(denom_string.encode('utf-8')).hexdigest()
+    return denom_hash
 
 
 def do_currency_test(
@@ -35,7 +48,8 @@ def do_currency_test(
         solidity_json_path=solidity_json_path
     )
 
-    logging.info(f"create test account to use with new currency {new_currency_symbol}")
+    logging.info(
+        f"create test account to use with new currency {new_currency_symbol}")
     basic_transfer_request.ethereum_address = source_ethereum_address
     request, credentials = generate_test_account(
         basic_transfer_request,
@@ -45,7 +59,8 @@ def do_currency_test(
         target_rowan_balance=10 ** 18
     )
     test_amount = 39000
-    logging.info(f"transfer some of the new currency {new_currency_symbol} to the test sifchain address")
+    logging.info(
+        f"transfer some of the new currency {new_currency_symbol} to the test sifchain address")
     request.ethereum_symbol = new_currency["newtoken_address"]
     request.sifchain_symbol = ("c" + new_currency["newtoken_symbol"]).lower()
     request.amount = test_amount
@@ -58,6 +73,15 @@ def do_currency_test(
     request.amount = test_amount - 1
     burn_lock_functions.transfer_sifchain_to_ethereum(request, credentials)
 
+    # Validate that the new token metadata is available to the metadata module
+    denom_hash = calculate_denom_hash(new_currency)
+    token_metadata = get_token_metadata(denom_hash)
+    assert int(token_metadata["decimals"]) == int(new_currency["decimals"])
+    assert token_metadata["name"] == new_currency["newtoken_name"]
+    assert token_metadata["symbol"] == new_currency["newtoken_symbol"]
+    assert token_metadata["token_address"] == new_currency["newtoken_address"]
+    assert int(token_metadata["network_descriptor"]) == 1
+
 
 @pytest.mark.usefixtures("operator_private_key")
 def test_transfer_tokens_with_some_currency(
@@ -68,7 +92,8 @@ def test_transfer_tokens_with_some_currency(
         ethereum_network,
         solidity_json_path,
 ):
-    new_currency_symbol = ("a" + get_shell_output("uuidgen").replace("-", ""))[:4]
+    new_currency_symbol = (
+        "a" + get_shell_output("uuidgen").replace("-", ""))[:4]
     do_currency_test(
         new_currency_symbol,
         basic_transfer_request,
@@ -89,7 +114,8 @@ def test_three_letter_currency_with_capitals_in_name(
         ethereum_network,
         solidity_json_path,
 ):
-    new_currency_symbol = ("F" + get_shell_output("uuidgen").replace("-", ""))[:3]
+    new_currency_symbol = (
+        "F" + get_shell_output("uuidgen").replace("-", ""))[:3]
     do_currency_test(
         new_currency_symbol,
         basic_transfer_request,
