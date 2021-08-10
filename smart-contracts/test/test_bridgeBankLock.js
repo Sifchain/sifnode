@@ -5,7 +5,7 @@ const BigNumber = web3.BigNumber;
 const { ethers, upgrades } = require("hardhat");
 const { use, expect } = require("chai");
 const { solidity } = require("ethereum-waffle");
-const { multiTokenSetup, getValidClaim } = require("./helpers/testFixture");
+const { multiTokenSetup } = require("./helpers/testFixture");
 
 require("chai")
   .use(require("chai-as-promised"))
@@ -658,57 +658,6 @@ describe("Test Bridge Bank", function () {
         [state.amount, state.amount, state.amount],
         [false, false, true]
       )).to.be.revertedWith("Only token in whitelist can be transferred to cosmos");
-    });
-
-    it("should not allow the operator to add a token to the whitelist if it's in cosmosWhitelist", async function () {
-      // assert that the cosmos bridge token has not been created
-      let bridgeToken = await state.cosmosBridge.sourceAddressToDestinationAddress(
-        state.token1.address
-      );
-      expect(bridgeToken).to.be.equal(state.ethereumToken);
-
-      // to create a new token we send a new double-peg prophecyClaim
-      state.nonce = 1;
-      const { digest, claimData, signatures } = await getValidClaim({
-        state,
-        sender: state.sender,
-        senderSequence: state.senderSequence,
-        recipientAddress: state.recipient,
-        tokenAddress: state.token1.address,
-        amount: state.amount,
-        isDoublePeg: true,
-        nonce: state.nonce,
-        networkDescriptor: state.networkDescriptor,
-        tokenName: state.name,
-        tokenSymbol: state.symbol,
-        tokenDecimals: state.decimals,
-        validators: [userOne, userTwo, userFour],
-      });
-
-      const expectedAddress = ethers.utils.getContractAddress({ from: state.bridgeBank.address, nonce: 1 });
-
-      await expect(state.cosmosBridge
-        .connect(userOne)
-        .submitProphecyClaimAggregatedSigs(
-            digest,
-            claimData,
-            signatures
-        )).to.emit(state.cosmosBridge, 'LogNewBridgeTokenCreated')
-        .withArgs(state.decimals, state.networkDescriptor, state.name, state.symbol, state.token1.address, expectedAddress);
-
-      const newlyCreatedTokenAddress = await state.cosmosBridge.sourceAddressToDestinationAddress(state.token1.address);
-      expect(newlyCreatedTokenAddress).to.be.equal(expectedAddress);
-
-      // now assert that the bridge token has been created and is in cosmosWhitelist
-      const isInCosmosWhitelist = await state.bridgeBank.getCosmosTokenInWhiteList(
-        expectedAddress
-      );
-      expect(isInCosmosWhitelist).to.be.true;
-      
-      // Try adding the token into white list
-      await expect(state.bridgeBank.connect(operator)
-        .updateEthWhiteList(bridgeToken, true))
-        .to.be.revertedWith('already in eth whitelist');
-    });
+    });    
   });
 });
