@@ -271,9 +271,11 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
                 claimData.tokenDecimals,
                 claimData.networkDescriptor
             );
-        } else {
+        } else if(claimData.doublePeg) {
             // if we are double pegging and already control the token, then we are going to need to get the address on this chain
-            tokenAddress = claimData.doublePeg ? sourceAddressToDestinationAddress[claimData.tokenAddress] : claimData.tokenAddress;
+            tokenAddress = sourceAddressToDestinationAddress[claimData.tokenAddress];
+        } else {
+            tokenAddress = claimData.tokenAddress;
         }
 
         completeProphecyClaim(
