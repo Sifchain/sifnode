@@ -97,15 +97,26 @@ def print_error_message(error_message):
     raise Exception(error_message)
 
 
-def get_required_env_var(name, why: str = "by the system"):
+def get_env_var(name):
     result = os.environ.get(name)
+    if result is None:
+        tmp = os.environ.get("VAGRANT_ENV_JSON")
+        if tmp:
+            import json
+            with open(tmp, "rt") as f:
+                env = json.loads(f.read())
+            result = env.get(name)
+    return result
+
+def get_required_env_var(name, why: str = "by the system"):
+    result = get_env_var(name)
     if not result:
         print_error_message(f"{name} env var is required {why}")
     return result
 
 
 def get_optional_env_var(name: str, default_value: str):
-    result = os.environ.get(name)
+    result = get_env_var(name)
     return result if result else default_value
 
 
@@ -165,6 +176,15 @@ def run_yarn_command(command_line):
         return json.loads(json_line)
     except Exception as e:
         raise Exception(f"json error from command:\n{command_line}\noutput:\n{lines}\noriginal exception: {e}")
+
+
+def kill_ebrelayer():
+    return get_shell_output("pkill -9 ebrelayer || true")
+
+
+def start_ebrelayer():
+    integration_dir = get_required_env_var("TEST_INTEGRATION_DIR")
+    return get_shell_output(f"{integration_dir}/sifchain_start_ebrelayer.sh")
 
 
 # converts a key to a sif address.

@@ -51,6 +51,9 @@ def dict_merge(*dicts):
             result[k] = v
     return result
 
+def format_as_shell_env_vars(env, export=True):
+    return ["{}{}=\"{}\"".format("export " if export else "", k, v) for k, v in env.items()]
+
 NULL_ADDRESS = "0x0000000000000000000000000000000000000000"
 
 
@@ -733,8 +736,8 @@ class IntegrationTestsPlaybook:
             # export CHAINNET="localnet"
             "GANACHE_DB_DIR": ganache_db_path,
             # export GANACHE_KEYS_JSON="/home/jurez/work/projects/sif/sifnode/local/test/integration/vagrant/data/ganachekeys.json"
-            # export EBRELAYER_ETHEREUM_ADDR="0x5aeda56215b167893e80b4fe645ba6d5bab767de"
-            # export EBRELAYER_ETHEREUM_PRIVATE_KEY="8d5366123cb560bb606379f90a0bfd4769eecc0557f1b362dcae9012b548b1e5"
+            "EBRELAYER_ETHEREUM_ADDR": ebrelayer_ethereum_addr,
+            "EBRELAYER_ETHEREUM_PRIVATE_KEY": ebrelayer_ethereum_private_key,  # Needed by sifchain_run_ebrelayer.sh
             # # BRIDGE_REGISTRY_ADDRESS and ETHEREUM_CONTRACT_ADDRESS are synonyms
             "BRIDGE_REGISTRY_ADDRESS": bridge_registry_sc_addr,
             "BRIDGE_TOKEN_ADDRESS": bridge_token_sc_addr,
@@ -753,6 +756,38 @@ class IntegrationTestsPlaybook:
         return ganache_proc, sifnoded_proc, ebrelayer_proc, rest_server_proc
 
     def write_vagrantenv_sh(self):
+        # Trace of test_utilities.py get_required_env_var/get_optional_env_var:
+        #
+        # BASEDIR (required), value=/home/jurez/work/projects/sif/sifnode/local
+        # BRIDGE_BANK_ADDRESS (optional), value=0x30753E4A8aad7F8597332E813735Def5dD395028
+        # BRIDGE_BANK_ADDRESS (required), value=0x30753E4A8aad7F8597332E813735Def5dD395028
+        # BRIDGE_REGISTRY_ADDRESS (required), value=0xf204a4Ef082f5c04bB89F7D5E6568B796096735a
+        # BRIDGE_TOKEN_ADDRESS (optional), value=0x82D50AD3C1091866E258Fd0f1a7cC9674609D254
+        # BRIDGE_TOKEN_ADDRESS (required), value=0x82D50AD3C1091866E258Fd0f1a7cC9674609D254
+        # CHAINDIR (required), 3x value
+        # CHAINNET (required), value=localnet
+        # DEPLOYMENT_NAME (optional), value=None
+        # ETHEREUM_ADDRESS (optional), value=None
+        # ETHEREUM_NETWORK (optional), value=None
+        # ETHEREUM_NETWORK_ID (optional), value=None
+        # ETHEREUM_WEBSOCKET_ADDRESS (required), value=ws://localhost:7545/
+        # GANACHE_KEYS_FILE (optional), value=None
+        # HOME (required), value=/home/jurez
+        # MNEMONIC (required), value=future tattoo gesture artist tomato accuse chuckle polar ivory strategy rail flower apart virus burger rhythm either describe habit attend absurd aspect predict parent
+        # MONIKER (required), value=wandering-flower
+        # OPERATOR_ADDRESS (optional), value=None
+        # OPERATOR_PRIVATE_KEY (optional), value=None
+        # OPERATOR_PRIVATE_KEY (optional), value=c87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3
+        # ROWAN_SOURCE (optional), value=None
+        # ROWAN_SOURCE_KEY (optional), value=None
+        # SIFCHAIN_ADMIN_ACCOUNT (required), value=sif1896ner48vrg8m05k48ykc6yydlxc4yvm23hp5m
+        # SIFNODE (optional), value=None
+        # SMART_CONTRACTS_DIR (required), 2x value
+        # SMART_CONTRACT_ARTIFACT_DIR (optional), value=None
+        # SOLIDITY_JSON_PATH (optional), value=None
+        # TEST_INTEGRATION_DIR (required), value=/home/jurez/work/projects/sif/sifnode/local/test/integration
+        # VALIDATOR1_ADDR (optional), 3x value
+        # VALIDATOR1_PASSWORD (optional), 3x value
         env = dict_merge(self.state_vars, {
             # For running test/integration/execute_integration_tests_against_*.sh
             "TEST_INTEGRATION_DIR": project_dir("test/integration"),
@@ -760,9 +795,12 @@ class IntegrationTestsPlaybook:
             "SMART_CONTRACTS_DIR": self.cmd.smart_contracts_dir,
             "datadir": self.data_dir,  # Needed by test_rollback_chain.py that calls ganache_start.sh
             "GANACHE_KEYS_JSON": os.path.join(self.data_dir, "ganachekeys.json"),  # Needed by test_rollback_chain.py that calls ganache_start.sh
+            "ETHEREUM_WEBSOCKET_ADDRESS": self.ethereum_websocket_address,   # Needed by test_ebrelayer_replay.py (and possibly others)
+            "CHAINNET": self.chainnet,   # Needed by test_ebrelayer_replay.py (and possibly others)
         })
         vagrantenv_path = project_dir("test/integration/vagrantenv.sh")
-        self.cmd.write_text_file(vagrantenv_path, joinlines([f"export {k}=\"{v}\"" for k, v in env.items()]))
+        self.cmd.write_text_file(vagrantenv_path, joinlines(format_as_shell_env_vars(env)))
+        self.cmd.write_text_file(project_dir("test/integration/vagrantenv.json"), json.dumps(env))
 
     def wait_for_sif_account(self, netdef_json, validator1_address):
         return self.cmd.execst(["python3", os.path.join(self.test_integration_dir, "src/py/wait_for_sif_account.py"),
@@ -878,37 +916,3 @@ def main(argv):
 
 if __name__ == "__main__":
     main(sys.argv[1:])
-
-
-# Trace of test_utilities.py get_required_env_var/get_optional_env_var:
-#
-# BASEDIR (required), value=/home/jurez/work/projects/sif/sifnode/local
-# BRIDGE_BANK_ADDRESS (optional), value=0x30753E4A8aad7F8597332E813735Def5dD395028
-# BRIDGE_BANK_ADDRESS (required), value=0x30753E4A8aad7F8597332E813735Def5dD395028
-# BRIDGE_REGISTRY_ADDRESS (required), value=0xf204a4Ef082f5c04bB89F7D5E6568B796096735a
-# BRIDGE_TOKEN_ADDRESS (optional), value=0x82D50AD3C1091866E258Fd0f1a7cC9674609D254
-# BRIDGE_TOKEN_ADDRESS (required), value=0x82D50AD3C1091866E258Fd0f1a7cC9674609D254
-# CHAINDIR (required), 3x value
-# CHAINNET (required), value=localnet
-# DEPLOYMENT_NAME (optional), value=None
-# ETHEREUM_ADDRESS (optional), value=None
-# ETHEREUM_NETWORK (optional), value=None
-# ETHEREUM_NETWORK_ID (optional), value=None
-# ETHEREUM_WEBSOCKET_ADDRESS (required), value=ws://localhost:7545/
-# GANACHE_KEYS_FILE (optional), value=None
-# HOME (required), value=/home/jurez
-# MNEMONIC (required), value=future tattoo gesture artist tomato accuse chuckle polar ivory strategy rail flower apart virus burger rhythm either describe habit attend absurd aspect predict parent
-# MONIKER (required), value=wandering-flower
-# OPERATOR_ADDRESS (optional), value=None
-# OPERATOR_PRIVATE_KEY (optional), value=None
-# OPERATOR_PRIVATE_KEY (optional), value=c87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3
-# ROWAN_SOURCE (optional), value=None
-# ROWAN_SOURCE_KEY (optional), value=None
-# SIFCHAIN_ADMIN_ACCOUNT (required), value=sif1896ner48vrg8m05k48ykc6yydlxc4yvm23hp5m
-# SIFNODE (optional), value=None
-# SMART_CONTRACTS_DIR (required), 2x value
-# SMART_CONTRACT_ARTIFACT_DIR (optional), value=None
-# SOLIDITY_JSON_PATH (optional), value=None
-# TEST_INTEGRATION_DIR (required), value=/home/jurez/work/projects/sif/sifnode/local/test/integration
-# VALIDATOR1_ADDR (optional), 3x value
-# VALIDATOR1_PASSWORD (optional), 3x value

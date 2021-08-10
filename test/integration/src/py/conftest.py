@@ -251,7 +251,7 @@ def ensure_relayer_restart(integration_dir, smart_contracts_dir):
     logging.info("restart ebrelayer after advancing wait blocks - avoids any interaction with replaying blocks")
     original_log_level = decrease_log_level(new_level=logging.WARNING)
     test_utilities.advance_n_ethereum_blocks(test_utilities.n_wait_blocks + 1, smart_contracts_dir)
-    test_utilities.get_shell_output(f"{integration_dir}/sifchain_start_ebrelayer.sh")
+    test_utilities.start_ebrelayer()
     force_log_level(original_log_level)
 
 
