@@ -77,3 +77,17 @@ export class DeployedCosmosBridge extends DeployableContract<CosmosBridge> {
         return "CosmosBridge"
     }
 }
+
+/**
+ * Throws an exception if name is not present in process.env
+ *
+ * @param name
+ */
+export function requiredEnvVar(name: string): string {
+    const result = process.env[name]
+    if (typeof result === 'string') {
+        return result
+    } else {
+        throw `No setting for ${name} in environment`
+    }
+}
