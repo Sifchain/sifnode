@@ -4,7 +4,9 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+
 	"github.com/Sifchain/sifnode/x/tokenregistry/client/cli"
+	"github.com/Sifchain/sifnode/x/tokenregistry/client/rest"
 
 	sdkclient "github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -73,8 +75,8 @@ func (b AppModuleBasic) RegisterGRPCGatewayRoutes(clientCtx sdkclient.Context, m
 }
 
 // RegisterRESTRoutes registers the REST routes.
-func (b AppModuleBasic) RegisterRESTRoutes(_ sdkclient.Context, _ *mux.Router) {
-	//client.RegisterRESTRoutes(ctx, router, types.StoreKey)
+func (b AppModuleBasic) RegisterRESTRoutes(ctx sdkclient.Context, router *mux.Router) {
+	rest.RegisterRESTRoutes(ctx, router)
 }
 
 // GetTxCmd returns the root tx command.
