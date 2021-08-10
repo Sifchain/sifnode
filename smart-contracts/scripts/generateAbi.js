@@ -69,9 +69,11 @@
  
      // create go bindings for this contract
      const targetGoDirectory = `${BASE_TARGET_DIR}/${TARGET_GO_DIR}/${internalPath}`;
-     createDir(targetGoDirectory);
      const targetGoFileName = `${targetGoDirectory}/${strippedFilename}.go`;
-     await exec(`abigen --abi ${targetAbiFileName} --pkg ${strippedFilename} --type ${strippedFilename} --out ${targetGoFileName}`);
+     if (fs.existsSync(targetGoFileName)) {
+      createDir(targetGoDirectory);
+      await exec(`abigen --abi ${targetAbiFileName} --pkg ${internalPath} --type ${internalPath} --out ${targetGoFileName}`);
+     }
    }
  
    printSuccess();
