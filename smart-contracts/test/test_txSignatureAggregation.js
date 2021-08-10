@@ -176,13 +176,13 @@ describe("Gas Cost Tests", function () {
  * 
  * 
 Unlock Gas Cost With 4 Validators
-tx0  165769
+tx0  173990
 ~~~~~~~~~~~~
-Total:  165769
+Total:  173990
 
 Mint Gas Cost With 4 Validators
-tx0  181728
+tx0  179737
 ~~~~~~~~~~~~
-Total:  181728
+Total:  179737
  * 
  */
