@@ -27,7 +27,7 @@ var (
 )
 
 // BridgeRegistryABI is the input ABI used to generate the binding from.
-const BridgeRegistryABI = "[{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"_cosmosBridge\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"_bridgeBank\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"_oracle\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"_valset\",\"type\":\"address\"}],\"name\":\"LogContractsRegistered\",\"type\":\"event\"},{\"constant\":true,\"inputs\":[],\"name\":\"bridgeBank\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"cosmosBridge\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"address\",\"name\":\"_cosmosBridge\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"_bridgeBank\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"_oracle\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"_valset\",\"type\":\"address\"}],\"name\":\"initialize\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"oracle\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"valset\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"}]"
+const BridgeRegistryABI = "[{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"_cosmosBridge\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"_bridgeBank\",\"type\":\"address\"}],\"name\":\"LogContractsRegistered\",\"type\":\"event\"},{\"inputs\":[],\"name\":\"bridgeBank\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"cosmosBridge\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_cosmosBridge\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"_bridgeBank\",\"type\":\"address\"}],\"name\":\"initialize\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]"
 
 // BridgeRegistry is an auto generated Go binding around an Ethereum contract.
 type BridgeRegistry struct {
@@ -223,77 +223,25 @@ func (_BridgeRegistry *BridgeRegistryCallerSession) CosmosBridge() (common.Addre
 	return _BridgeRegistry.Contract.CosmosBridge(&_BridgeRegistry.CallOpts)
 }
 
-// Oracle is a free data retrieval call binding the contract method 0x7dc0d1d0.
+// Initialize is a paid mutator transaction binding the contract method 0x485cc955.
 //
-// Solidity: function oracle() view returns(address)
-func (_BridgeRegistry *BridgeRegistryCaller) Oracle(opts *bind.CallOpts) (common.Address, error) {
-	var (
-		ret0 = new(common.Address)
-	)
-	out := ret0
-	err := _BridgeRegistry.contract.Call(opts, out, "oracle")
-	return *ret0, err
+// Solidity: function initialize(address _cosmosBridge, address _bridgeBank) returns()
+func (_BridgeRegistry *BridgeRegistryTransactor) Initialize(opts *bind.TransactOpts, _cosmosBridge common.Address, _bridgeBank common.Address) (*types.Transaction, error) {
+	return _BridgeRegistry.contract.Transact(opts, "initialize", _cosmosBridge, _bridgeBank)
 }
 
-// Oracle is a free data retrieval call binding the contract method 0x7dc0d1d0.
+// Initialize is a paid mutator transaction binding the contract method 0x485cc955.
 //
-// Solidity: function oracle() view returns(address)
-func (_BridgeRegistry *BridgeRegistrySession) Oracle() (common.Address, error) {
-	return _BridgeRegistry.Contract.Oracle(&_BridgeRegistry.CallOpts)
+// Solidity: function initialize(address _cosmosBridge, address _bridgeBank) returns()
+func (_BridgeRegistry *BridgeRegistrySession) Initialize(_cosmosBridge common.Address, _bridgeBank common.Address) (*types.Transaction, error) {
+	return _BridgeRegistry.Contract.Initialize(&_BridgeRegistry.TransactOpts, _cosmosBridge, _bridgeBank)
 }
 
-// Oracle is a free data retrieval call binding the contract method 0x7dc0d1d0.
+// Initialize is a paid mutator transaction binding the contract method 0x485cc955.
 //
-// Solidity: function oracle() view returns(address)
-func (_BridgeRegistry *BridgeRegistryCallerSession) Oracle() (common.Address, error) {
-	return _BridgeRegistry.Contract.Oracle(&_BridgeRegistry.CallOpts)
-}
-
-// Valset is a free data retrieval call binding the contract method 0x7f54af0c.
-//
-// Solidity: function valset() view returns(address)
-func (_BridgeRegistry *BridgeRegistryCaller) Valset(opts *bind.CallOpts) (common.Address, error) {
-	var (
-		ret0 = new(common.Address)
-	)
-	out := ret0
-	err := _BridgeRegistry.contract.Call(opts, out, "valset")
-	return *ret0, err
-}
-
-// Valset is a free data retrieval call binding the contract method 0x7f54af0c.
-//
-// Solidity: function valset() view returns(address)
-func (_BridgeRegistry *BridgeRegistrySession) Valset() (common.Address, error) {
-	return _BridgeRegistry.Contract.Valset(&_BridgeRegistry.CallOpts)
-}
-
-// Valset is a free data retrieval call binding the contract method 0x7f54af0c.
-//
-// Solidity: function valset() view returns(address)
-func (_BridgeRegistry *BridgeRegistryCallerSession) Valset() (common.Address, error) {
-	return _BridgeRegistry.Contract.Valset(&_BridgeRegistry.CallOpts)
-}
-
-// Initialize is a paid mutator transaction binding the contract method 0xf8c8765e.
-//
-// Solidity: function initialize(address _cosmosBridge, address _bridgeBank, address _oracle, address _valset) returns()
-func (_BridgeRegistry *BridgeRegistryTransactor) Initialize(opts *bind.TransactOpts, _cosmosBridge common.Address, _bridgeBank common.Address, _oracle common.Address, _valset common.Address) (*types.Transaction, error) {
-	return _BridgeRegistry.contract.Transact(opts, "initialize", _cosmosBridge, _bridgeBank, _oracle, _valset)
-}
-
-// Initialize is a paid mutator transaction binding the contract method 0xf8c8765e.
-//
-// Solidity: function initialize(address _cosmosBridge, address _bridgeBank, address _oracle, address _valset) returns()
-func (_BridgeRegistry *BridgeRegistrySession) Initialize(_cosmosBridge common.Address, _bridgeBank common.Address, _oracle common.Address, _valset common.Address) (*types.Transaction, error) {
-	return _BridgeRegistry.Contract.Initialize(&_BridgeRegistry.TransactOpts, _cosmosBridge, _bridgeBank, _oracle, _valset)
-}
-
-// Initialize is a paid mutator transaction binding the contract method 0xf8c8765e.
-//
-// Solidity: function initialize(address _cosmosBridge, address _bridgeBank, address _oracle, address _valset) returns()
-func (_BridgeRegistry *BridgeRegistryTransactorSession) Initialize(_cosmosBridge common.Address, _bridgeBank common.Address, _oracle common.Address, _valset common.Address) (*types.Transaction, error) {
-	return _BridgeRegistry.Contract.Initialize(&_BridgeRegistry.TransactOpts, _cosmosBridge, _bridgeBank, _oracle, _valset)
+// Solidity: function initialize(address _cosmosBridge, address _bridgeBank) returns()
+func (_BridgeRegistry *BridgeRegistryTransactorSession) Initialize(_cosmosBridge common.Address, _bridgeBank common.Address) (*types.Transaction, error) {
+	return _BridgeRegistry.Contract.Initialize(&_BridgeRegistry.TransactOpts, _cosmosBridge, _bridgeBank)
 }
 
 // BridgeRegistryLogContractsRegisteredIterator is returned from FilterLogContractsRegistered and is used to iterate over the raw logs and unpacked data for LogContractsRegistered events raised by the BridgeRegistry contract.
@@ -367,14 +315,12 @@ func (it *BridgeRegistryLogContractsRegisteredIterator) Close() error {
 type BridgeRegistryLogContractsRegistered struct {
 	CosmosBridge common.Address
 	BridgeBank   common.Address
-	Oracle       common.Address
-	Valset       common.Address
 	Raw          types.Log // Blockchain specific contextual infos
 }
 
-// FilterLogContractsRegistered is a free log retrieval operation binding the contract event 0x039b733f31259b106f1d278c726870d5b28c7db22957d63df8dbaa70bd3a032a.
+// FilterLogContractsRegistered is a free log retrieval operation binding the contract event 0x92dfba95e9983de6d83edc8a8119697aa166907b921bf4a1e290f1ee89999255.
 //
-// Solidity: event LogContractsRegistered(address _cosmosBridge, address _bridgeBank, address _oracle, address _valset)
+// Solidity: event LogContractsRegistered(address _cosmosBridge, address _bridgeBank)
 func (_BridgeRegistry *BridgeRegistryFilterer) FilterLogContractsRegistered(opts *bind.FilterOpts) (*BridgeRegistryLogContractsRegisteredIterator, error) {
 
 	logs, sub, err := _BridgeRegistry.contract.FilterLogs(opts, "LogContractsRegistered")
@@ -384,9 +330,9 @@ func (_BridgeRegistry *BridgeRegistryFilterer) FilterLogContractsRegistered(opts
 	return &BridgeRegistryLogContractsRegisteredIterator{contract: _BridgeRegistry.contract, event: "LogContractsRegistered", logs: logs, sub: sub}, nil
 }
 
-// WatchLogContractsRegistered is a free log subscription operation binding the contract event 0x039b733f31259b106f1d278c726870d5b28c7db22957d63df8dbaa70bd3a032a.
+// WatchLogContractsRegistered is a free log subscription operation binding the contract event 0x92dfba95e9983de6d83edc8a8119697aa166907b921bf4a1e290f1ee89999255.
 //
-// Solidity: event LogContractsRegistered(address _cosmosBridge, address _bridgeBank, address _oracle, address _valset)
+// Solidity: event LogContractsRegistered(address _cosmosBridge, address _bridgeBank)
 func (_BridgeRegistry *BridgeRegistryFilterer) WatchLogContractsRegistered(opts *bind.WatchOpts, sink chan<- *BridgeRegistryLogContractsRegistered) (event.Subscription, error) {
 
 	logs, sub, err := _BridgeRegistry.contract.WatchLogs(opts, "LogContractsRegistered")
@@ -421,9 +367,9 @@ func (_BridgeRegistry *BridgeRegistryFilterer) WatchLogContractsRegistered(opts 
 	}), nil
 }
 
-// ParseLogContractsRegistered is a log parse operation binding the contract event 0x039b733f31259b106f1d278c726870d5b28c7db22957d63df8dbaa70bd3a032a.
+// ParseLogContractsRegistered is a log parse operation binding the contract event 0x92dfba95e9983de6d83edc8a8119697aa166907b921bf4a1e290f1ee89999255.
 //
-// Solidity: event LogContractsRegistered(address _cosmosBridge, address _bridgeBank, address _oracle, address _valset)
+// Solidity: event LogContractsRegistered(address _cosmosBridge, address _bridgeBank)
 func (_BridgeRegistry *BridgeRegistryFilterer) ParseLogContractsRegistered(log types.Log) (*BridgeRegistryLogContractsRegistered, error) {
 	event := new(BridgeRegistryLogContractsRegistered)
 	if err := _BridgeRegistry.contract.UnpackLog(event, "LogContractsRegistered", log); err != nil {

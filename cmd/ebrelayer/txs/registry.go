@@ -73,10 +73,6 @@ func GetAddressFromBridgeRegistry(client *ethclient.Client, registry common.Addr
 
 	var address common.Address
 	switch target {
-	case Valset:
-		address, err = registryInstance.Valset(&auth)
-	case Oracle:
-		address, err = registryInstance.Oracle(&auth)
 	case BridgeBank:
 		address, err = registryInstance.BridgeBank(&auth)
 	case CosmosBridge:
