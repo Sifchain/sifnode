@@ -24,7 +24,11 @@ contract ValsetStorage {
     mapping(address => mapping(uint256 => bool)) public validators;
 
     /*
-     * @dev: operator address
+     * @dev: operator address that can:
+     *   Set BridgeBank's address (if it's not already set)
+     *   Add new Validators, remove Validators, and update Validators' powers
+     *   Call the function `recoverGas(uint256,address)`
+     *   Change the operator
      */
     address public operator;
 
