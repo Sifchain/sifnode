@@ -1,7 +1,7 @@
 package rest
 
 import (
-	"context"
+	"fmt"
 	"net/http"
 
 	"github.com/Sifchain/sifnode/x/tokenregistry/types"
@@ -13,7 +13,7 @@ import (
 func RegisterRESTRoutes(cliCtx client.Context, r *mux.Router) {
 	r.HandleFunc(
 		"/tokenregistry/entries",
-		createTokenRegistryEntriesHandler(cliCtx),
+		getTokenRegistryHandler(cliCtx),
 	).Methods("GET")
 }
 
@@ -21,23 +21,29 @@ type QueryEntriesRequest struct {
 	BaseReq rest.BaseReq `json:"base_req"`
 }
 
-func createTokenRegistryEntriesHandler(cliCtx client.Context) http.HandlerFunc {
+func getTokenRegistryHandler(cliCtx client.Context) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		var req QueryEntriesRequest
-		if !rest.ReadRESTReq(w, r, cliCtx.LegacyAmino, &req) {
-			rest.WriteErrorResponse(w, http.StatusBadRequest, "failed to parse request")
+		cliCtx, ok := rest.ParseQueryHeightOrReturnBadRequest(w, cliCtx, r)
+		if !ok {
 			return
 		}
-		baseReq := req.BaseReq.Sanitize()
-		if !baseReq.ValidateBasic(w) {
-			return
-		}
-		queryClient := types.NewQueryClient(cliCtx)
-		res, err := queryClient.Entries(context.Background(), &types.QueryEntriesRequest{})
+
+		route := fmt.Sprintf("custom/%s/%s", types.QuerierRoute, types.QueryEntries)
+
+		bz, height, err := cliCtx.QueryWithData(route, nil)
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
 			return
 		}
+
+		var res types.QueryEntriesResponse
+		err = types.ModuleCdc.UnmarshalJSON(bz, &res)
+		if err != nil {
+			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
+			return
+		}
+
+		cliCtx = cliCtx.WithHeight(height)
 		rest.PostProcessResponse(w, cliCtx, res)
 	}
 }
