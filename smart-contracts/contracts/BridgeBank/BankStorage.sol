@@ -11,7 +11,10 @@ contract BankStorage is
     CosmosWhiteListStorage {
 
     /*
-    * @notice operator address that can update the smart contract
+    * @notice operator address that can:
+    *   Reinitialize BridgeBank
+    *   Update Eth whitelist
+    *   Change the operator
     */
     address public operator;
 
