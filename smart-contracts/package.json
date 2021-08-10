@@ -86,6 +86,7 @@
     "peggy:burn": "npx truffle exec scripts/sendBurnTx.js",
     "peggy:check": "npx truffle exec scripts/sendCheckProphecy.js",
     "peggy:getTokenBalance": "npx truffle exec scripts/getTokenBalance.js",
+    "peggy:generateAbi": "npx hardhat compile --force && node scripts/generateAbi.js",
     "token:address": "npx truffle exec scripts/getTokenContractAddress.js",
     "token:mint": "npx truffle exec scripts/mintTestTokens.js",
     "token:approve": "npx truffle exec scripts/sendApproveTx.js",
