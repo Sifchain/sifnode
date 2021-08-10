@@ -322,6 +322,11 @@ describe("Test Cosmos Bridge", function () {
     it("should NOT deploy a new token upon the successful processing of a normal burn prophecy claim", async function () {
       state.nonce = 1;
 
+      const beforeUserBalance = Number(
+        await state.token.balanceOf(state.recipient)
+      );
+      beforeUserBalance.should.be.bignumber.equal(Number(0));
+
       const { digest, claimData, signatures } = await getValidClaim({
         state,
         sender: state.sender,
@@ -344,6 +349,10 @@ describe("Test Cosmos Bridge", function () {
 
       const newlyCreatedTokenAddress = await state.cosmosBridge.sourceAddressToDestinationAddress(state.token.address);
       expect(newlyCreatedTokenAddress).to.be.equal(state.constants.zeroAddress);
+
+      // assert that the recipient's balance of the token went up by the amount we specified in the claim
+      balance = Number(await state.token.balanceOf(state.recipient));
+      expect(balance).to.be.equal(state.amount);
     });
 
     it("should NOT deploy a new token upon the successful processing of a double-pegged burn prophecy claim for an already managed token", async function () {
