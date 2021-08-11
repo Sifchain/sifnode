@@ -59,6 +59,6 @@ ignore:
   - "**/test_helpers.go"
   - "**/module.go"
   - "**/genesis.go"
-  - "*.pb.go"
+  - "**/*.pb.go"
   - "scripts/"
   - "contrib"
