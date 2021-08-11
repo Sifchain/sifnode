@@ -86,6 +86,8 @@
     "peggy:burn": "npx truffle exec scripts/sendBurnTx.js",
     "peggy:check": "npx truffle exec scripts/sendCheckProphecy.js",
     "peggy:getTokenBalance": "npx truffle exec scripts/getTokenBalance.js",
+    "peggy:spinUpMainnetFork": "npx hardhat node --fork https://eth-mainnet.alchemyapi.io/v2/x4YoKdIFoqysvsttnz81U4JHqlVPxsEH",
+    "peggy:testProxyUpgrade": "node test/mainnet/test_proxyUpgrade.js",
     "token:address": "npx truffle exec scripts/getTokenContractAddress.js",
     "token:mint": "npx truffle exec scripts/mintTestTokens.js",
     "token:approve": "npx truffle exec scripts/sendApproveTx.js",
