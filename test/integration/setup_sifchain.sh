@@ -22,7 +22,7 @@ then
   rm -rf $NETWORKDIR && mkdir $NETWORKDIR
 fi
 mkdir -p $NETWORKDIR
-sifgen network create localnet 1 $NETWORKDIR 192.168.1.2 $NETWORKDIR/network-definition.yml --keyring-backend file  --mint-amount 999999000000000000000000000rowan,1370000000000000000ibc/FEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACE
+sifgen network create localnet 1 $NETWORKDIR 192.168.1.2 $NETWORKDIR/network-definition.yml --keyring-backend test  --mint-amount 999999000000000000000000000rowan,1370000000000000000ibc/FEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACE
 
 set_persistant_env_var NETDEF $NETWORKDIR/network-definition.yml $envexportfile
 set_persistant_env_var NETDEF_JSON $datadir/netdef.json $envexportfile
