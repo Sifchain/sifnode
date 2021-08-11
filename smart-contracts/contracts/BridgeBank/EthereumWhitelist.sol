@@ -10,13 +10,13 @@ contract EthereumWhiteList {
     bool private _initialized;
 
     /*
-    * @notice mapping to keep track of whitelisted tokens
-    */
+     * @notice mapping to keep track of whitelisted tokens
+     */
     mapping(address => bool) private _ethereumTokenWhiteList;
 
     /*
-    * @notice gap of storage for future upgrades
-    */
+     * @notice gap of storage for future upgrades
+     */
     uint256[100] private ____gap;
 
     /*
@@ -36,7 +36,7 @@ contract EthereumWhiteList {
     modifier onlyEthTokenWhiteList(address _token) {
         require(
             getTokenInEthWhiteList(_token),
-            "Only token in whitelist can be transferred to cosmos"
+            "Only token in eth whitelist can be transferred to cosmos"
         );
         _;
     }

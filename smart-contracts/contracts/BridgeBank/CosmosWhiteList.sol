@@ -26,7 +26,7 @@ contract CosmosWhiteList is CosmosWhiteListStorage {
     modifier onlyCosmosTokenWhiteList(address _token) {
         require(
             getCosmosTokenInWhiteList(_token),
-            "Only token in whitelist can be burned"
+            "Only token in cosmos whitelist can be burned"
         );
         _;
     }
@@ -48,7 +48,11 @@ contract CosmosWhiteList is CosmosWhiteListStorage {
      * @param _token: ERC 20's address
      * @return: if _token in whitelist
      */
-    function getCosmosTokenInWhiteList(address _token) public view returns (bool) {
+    function getCosmosTokenInWhiteList(address _token)
+        public
+        view
+        returns (bool)
+    {
         return _cosmosTokenWhiteList[_token];
     }
 }

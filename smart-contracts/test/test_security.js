@@ -38,7 +38,7 @@ describe("Security Test", function () {
   let BridgeToken;
   let TrollToken;
 
-  before(async function() {
+  before(async function () {
     CosmosBridge = await ethers.getContractFactory("CosmosBridge");
     BridgeToken = await ethers.getContractFactory("BridgeToken");
     accounts = await ethers.getSigners();
@@ -100,22 +100,22 @@ describe("Security Test", function () {
     });
 
     it("should not allow operator to call reinitialize a second time", async function () {
-        await expect(state.bridgeBank.connect(operator).reinitialize(
-          operator.address,
-          state.cosmosBridge.address,
-          owner.address,
-          pauser.address,
-          state.networkDescriptor
-        )).to.be.fulfilled;
+      await expect(state.bridgeBank.connect(operator).reinitialize(
+        operator.address,
+        state.cosmosBridge.address,
+        owner.address,
+        pauser.address,
+        state.networkDescriptor
+      )).to.be.fulfilled;
 
-        await expect(state.bridgeBank.connect(operator).reinitialize(
-            operator.address,
-            state.cosmosBridge.address,
-            owner.address,
-            pauser.address,
-            state.networkDescriptor
-          )).to.be.rejectedWith('Already reinitialized');
-      });
+      await expect(state.bridgeBank.connect(operator).reinitialize(
+        operator.address,
+        state.cosmosBridge.address,
+        owner.address,
+        pauser.address,
+        state.networkDescriptor
+      )).to.be.rejectedWith('Already reinitialized');
+    });
 
     it("should not allow user to call reinitialize", async function () {
       await expect(state.bridgeBank.connect(userOne).reinitialize(
@@ -232,7 +232,7 @@ describe("Security Test", function () {
 
       expect(await state.bridgeBank.paused()).to.be.false;
     });
-    
+
     it("should not be able to lock when contract is paused", async function () {
       await state.bridgeBank.connect(pauser).pause();
       expect(await state.bridgeBank.paused()).to.be.true;
@@ -242,7 +242,7 @@ describe("Security Test", function () {
           .lock(sifRecipient, state.constants.zeroAddress, 100),
       ).to.be.revertedWith("Pausable: paused");
     });
-    
+
     it("should not be able to burn when contract is paused", async function () {
       await state.bridgeBank.connect(pauser).pause();
       expect(await state.bridgeBank.paused()).to.be.true;
@@ -287,14 +287,14 @@ describe("Security Test", function () {
       function convertToHex(str) {
         let hex = '';
         for (let i = 0; i < str.length; i++) {
-            hex += '' + str.charCodeAt(i).toString(16);
+          hex += '' + str.charCodeAt(i).toString(16);
         }
         return hex;
       }
 
       const amount = 100000;
       const sifAddress = "0x" + convertToHex("sif12qfvgsq76eghlagyfcfyt9md2s9nunsn40zu2h");
-      
+
       // create new fake eRowan token
       const bridgeToken = await BridgeToken.deploy("rowan", "rowan", 18);
 
@@ -305,7 +305,7 @@ describe("Security Test", function () {
           bridgeToken.address,
           amount
         ),
-      ).to.be.revertedWith("Only token in whitelist can be burned");
+      ).to.be.revertedWith("Only token in cosmos whitelist can be burned");
     });
   });
 
@@ -415,27 +415,27 @@ describe("Security Test", function () {
       await expect(state.cosmosBridge
         .connect(userOne)
         .submitProphecyClaimAggregatedSigs(
-            digest,
-            claimData,
-            signatures
+          digest,
+          claimData,
+          signatures
         )).to.be.revertedWith("INV_NET_DESC");
     });
-  
+
     it("should not allow unlocking native tokens upon the processing of a burn prophecy claim with the wrong network descriptor", async function () {
       state.nonce = 1;
       const digest = getDigestNewProphecyClaim([
-          state.sender,
-          state.senderSequence,
-          state.recipient,
-          state.ethereumToken,
-          state.amount,
-          false,
-          state.nonce,
-          state.networkDescriptor
+        state.sender,
+        state.senderSequence,
+        state.recipient,
+        state.ethereumToken,
+        state.amount,
+        false,
+        state.nonce,
+        state.networkDescriptor
       ]);
 
       const signatures = await signHash([userOne, userTwo, userFour], digest);
-      
+
       let claimData = {
         cosmosSender: state.sender,
         cosmosSenderSequence: state.senderSequence,
@@ -572,9 +572,9 @@ describe("Security Test", function () {
       await state.cosmosBridge
         .connect(userOne)
         .submitProphecyClaimAggregatedSigs(
-            digest,
-            claimData,
-            signatures
+          digest,
+          claimData,
+          signatures
         );
 
       // user should not receive funds as troll token just burns gas
@@ -616,9 +616,9 @@ describe("Security Test", function () {
       await expect(state.cosmosBridge
         .connect(userOne)
         .submitProphecyClaimAggregatedSigs(
-            digest,
-            claimData,
-            signatures
+          digest,
+          claimData,
+          signatures
         )).to.emit(state.cosmosBridge, 'LogNewBridgeTokenCreated')
         .withArgs(state.decimals, state.networkDescriptor, state.name, state.symbol, state.token1.address, expectedAddress);
 
@@ -630,7 +630,7 @@ describe("Security Test", function () {
         expectedAddress
       );
       expect(isInCosmosWhitelist).to.be.true;
-      
+
       // Try adding the token into white list
       await expect(state.bridgeBank.connect(operator)
         .updateEthWhiteList(expectedAddress, true))
