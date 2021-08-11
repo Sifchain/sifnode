@@ -87,7 +87,7 @@ const sharedYargOptions = {
 function processArgs(context, args = {}) {
     const yargs = context.require('yargs/yargs')
     const {hideBin} = context.require('yargs/helpers')
-    const result = yargs(hideBin(process.argv))
+    const result = yargs(process.argv.slice(4))
         .options(args)
         .strict()
         .argv
