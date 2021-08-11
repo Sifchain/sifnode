@@ -23,7 +23,6 @@ var (
 	ethBridgeAddress     = types.NewEthereumAddress(strings.ToLower("0x30753E4A8aad7F8597332E813735Def5dD395028"))
 	ethereumSender       = types.NewEthereumAddress("0x627306090abaB3A6e1400e9345bC60c78a8BEf57")
 	networkDescriptor    = oracletypes.NetworkDescriptor_NETWORK_DESCRIPTOR_ETHEREUM
-	//BadValidatorAddress                        = sdk.ValAddress(CreateTestPubKeys(1)[0].Address().Bytes())
 )
 
 func TestProcessClaimLock(t *testing.T) {
