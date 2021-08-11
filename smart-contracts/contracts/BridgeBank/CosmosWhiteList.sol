@@ -48,11 +48,7 @@ contract CosmosWhiteList is CosmosWhiteListStorage {
      * @param _token: ERC 20's address
      * @return: if _token in whitelist
      */
-    function getCosmosTokenInWhiteList(address _token)
-        public
-        view
-        returns (bool)
-    {
+    function getCosmosTokenInWhiteList(address _token) public view returns (bool) {
         return _cosmosTokenWhiteList[_token];
     }
 }
