@@ -130,7 +130,7 @@ func RunReplayCosmosBurnLockCmd(cmd *cobra.Command, args []string) error {
 		privateKey, tendermintNode, web3Provider, contractAddress, nil, cliContext,
 		validatorMoniker, true, sugaredLogger)
 
-	cosmosSub.ReplayBurnLock(txFactory)
+	cosmosSub.ReplayCosmosBurnLock(txFactory)
 
 	return nil
 }

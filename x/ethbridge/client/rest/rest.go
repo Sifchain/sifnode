@@ -54,12 +54,12 @@ type burnOrLockEthReq struct {
 }
 
 type signProphecyReq struct {
-	BaseReq           rest.BaseReq `json:"base_req"`
-	NetworkDescriptor string       `json:"network_descriptor"`
-	CosmosSender      string       `json:"cosmos_sender"`
-	EthereumAddress   string       `json:"ethereum_receiver"`
-	Signature         string       `json:"signature"`
-	ProphecyID        string       `json:"prophecy_id"`
+	BaseReq               rest.BaseReq `json:"base_req"`
+	NetworkDescriptor     string       `json:"network_descriptor"`
+	CosmosSender          string       `json:"cosmos_sender"`
+	EthereumSignerAddress string       `json:"ethereum_signer_address"`
+	Signature             string       `json:"signature"`
+	ProphecyID            string       `json:"prophecy_id"`
 }
 
 // RegisterRESTRoutes - Central function to define routes that get registered by the main application
@@ -229,7 +229,7 @@ func signProphecyHandler(cliCtx client.Context) http.HandlerFunc {
 		}
 
 		prophecyID := req.ProphecyID
-		ethereumAddress := req.EthereumAddress
+		ethereumAddress := req.EthereumSignerAddress
 		signature := req.Signature
 
 		// create the message

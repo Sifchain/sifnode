@@ -20,8 +20,8 @@ import (
 // ProphecyLiftTime signature info life time on chain
 const ProphecyLiftTime = 520000
 
-// ReplayBurnLock the missed burn lock events from cosmos
-func (sub CosmosSub) ReplayBurnLock(txFactory tx.Factory) {
+// ReplayCosmosBurnLock the missed burn lock events from cosmos
+func (sub CosmosSub) ReplayCosmosBurnLock(txFactory tx.Factory) {
 	client, err := tmClient.New(sub.TmProvider, "/websocket")
 	if err != nil {
 		log.Printf("failed to initialize a client, error as %s\n", err)
@@ -33,7 +33,7 @@ func (sub CosmosSub) ReplayBurnLock(txFactory tx.Factory) {
 		return
 	}
 
-	fromBlock, toBlock, err := GetScanBlockScope(client)
+	fromBlock, toBlock, err := GetScannedBlockScope(client)
 	if err != nil {
 		log.Printf("failed to get the scaned block scope, error as %s\n", err)
 		return
@@ -47,11 +47,11 @@ func (sub CosmosSub) ReplayBurnLock(txFactory tx.Factory) {
 
 	ProphecyClaims := sub.getAllSignSigature(client, accAddr, fromBlock, toBlock)
 
-	sub.ReplayBurnLockWithBlocks(txFactory, client, accAddr, ProphecyClaims, fromBlock, toBlock)
+	sub.ReplayCosmosBurnLockWithBlocks(txFactory, client, accAddr, ProphecyClaims, fromBlock, toBlock)
 }
 
-// ReplayBurnLockWithBlocks replay the missed burn lock events from cosmos
-func (sub CosmosSub) ReplayBurnLockWithBlocks(
+// ReplayCosmosBurnLockWithBlocks replay the missed burn lock events from cosmos
+func (sub CosmosSub) ReplayCosmosBurnLockWithBlocks(
 	txFactory tx.Factory,
 	client *tmClient.HTTP,
 	accAddr sdk.AccAddress,
@@ -59,7 +59,7 @@ func (sub CosmosSub) ReplayBurnLockWithBlocks(
 	fromBlock int64,
 	toBlock int64) {
 
-	log.Printf("ReplayBurnLockWithBlocks from %d to %d block\n", fromBlock, toBlock)
+	log.Printf("ReplayCosmosBurnLockWithBlocks from %d to %d block\n", fromBlock, toBlock)
 
 	for blockNumber := fromBlock; blockNumber < toBlock; {
 		tmpBlockNumber := blockNumber
@@ -117,7 +117,7 @@ func (sub CosmosSub) ReplaySignatureAggregation(txFactory tx.Factory) {
 		return
 	}
 
-	fromBlock, toBlock, err := GetScanBlockScope(tmClient)
+	fromBlock, toBlock, err := GetScannedBlockScope(tmClient)
 	if err != nil {
 		log.Printf("failed to get the scaned block scope, error as %s\n", err)
 		return
@@ -242,8 +242,8 @@ func GetLastNonceSubmitted(client *ethclient.Client, cosmosBridgeAddress common.
 	return cosmosBridgeInstance.LastNonceSubmitted(nil)
 }
 
-// GetScanBlockScope get the block scope for scan
-func GetScanBlockScope(client *tmClient.HTTP) (int64, int64, error) {
+// GetScannedBlockScope get the block scope for scan
+func GetScannedBlockScope(client *tmClient.HTTP) (int64, int64, error) {
 	currentBlock, err := client.BlockResults(context.Background(), nil)
 	if err != nil {
 		return 0, 0, err

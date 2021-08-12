@@ -27,7 +27,7 @@ func ProphecyCompletedEventToProphecyInfo(attributes []abci.EventAttribute, suga
 	var doublePeg bool
 	var globalNonce uint64
 
-	var ethereumAddresses []string
+	var ethereumSignerAddresses []string
 	var signatures []string
 
 	attributeNumber := 0
@@ -114,7 +114,7 @@ func ProphecyCompletedEventToProphecyInfo(attributes []abci.EventAttribute, suga
 
 		case types.EthereumAddresses.String():
 			attributeNumber++
-			ethereumAddresses = strings.Split(val, ",")
+			ethereumSignerAddresses = strings.Split(val, ",")
 
 		case types.Signatures.String():
 			attributeNumber++
@@ -128,16 +128,16 @@ func ProphecyCompletedEventToProphecyInfo(attributes []abci.EventAttribute, suga
 	}
 
 	return types.ProphecyInfo{
-		ProphecyID:           prophecyID,
-		NetworkDescriptor:    oracletypes.NetworkDescriptor(networkDescriptor),
-		CosmosSender:         string(cosmosSender),
-		CosmosSenderSequence: cosmosSenderSequence.Uint64(),
-		EthereumReceiver:     ethereumReceiver.String(),
-		TokenSymbol:          symbol,
-		TokenAmount:          amount,
-		DoublePeg:            doublePeg,
-		GlobalNonce:          globalNonce,
-		EthereumAddresses:    ethereumAddresses,
-		Signatures:           signatures,
+		ProphecyID:              prophecyID,
+		NetworkDescriptor:       oracletypes.NetworkDescriptor(networkDescriptor),
+		CosmosSender:            string(cosmosSender),
+		CosmosSenderSequence:    cosmosSenderSequence.Uint64(),
+		EthereumReceiver:        ethereumReceiver.String(),
+		TokenSymbol:             symbol,
+		TokenAmount:             amount,
+		DoublePeg:               doublePeg,
+		GlobalNonce:             globalNonce,
+		EthereumSignerAddresses: ethereumSignerAddresses,
+		Signatures:              signatures,
 	}, nil
 }

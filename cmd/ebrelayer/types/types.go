@@ -203,17 +203,17 @@ type CosmosSignProphecyClaim struct {
 
 // ProphecyInfo store all data needed for smart contract call
 type ProphecyInfo struct {
-	TokenAmount          big.Int
-	ProphecyID           []byte
-	EthereumAddresses    []string
-	Signatures           []string
-	CosmosSender         string
-	EthereumReceiver     string
-	TokenSymbol          string
-	CosmosSenderSequence uint64
-	GlobalNonce          uint64
-	NetworkDescriptor    oracle.NetworkDescriptor
-	DoublePeg            bool
+	TokenAmount             big.Int
+	ProphecyID              []byte
+	EthereumSignerAddresses []string
+	Signatures              []string
+	CosmosSender            string
+	EthereumReceiver        string
+	TokenSymbol             string
+	CosmosSenderSequence    uint64
+	GlobalNonce             uint64
+	NetworkDescriptor       oracle.NetworkDescriptor
+	DoublePeg               bool
 }
 
 func (info *ProphecyInfo) String() string {

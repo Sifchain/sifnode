@@ -136,9 +136,9 @@ func RelayProphecyCompletedToEthereum(
 		Nonce:                big.NewInt(int64(prophecyInfo.GlobalNonce)),
 	}
 
-	var signatureData = make([]cosmosbridge.CosmosBridgeSignatureData, len(prophecyInfo.EthereumAddresses))
+	var signatureData = make([]cosmosbridge.CosmosBridgeSignatureData, len(prophecyInfo.EthereumSignerAddresses))
 
-	for index, address := range prophecyInfo.EthereumAddresses {
+	for index, address := range prophecyInfo.EthereumSignerAddresses {
 		signature := []byte(prophecyInfo.Signatures[index])
 		var r [32]byte
 		var s [32]byte

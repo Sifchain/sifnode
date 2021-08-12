@@ -423,6 +423,7 @@ func (srv msgServer) SignProphecy(goCtx context.Context, msg *types.MsgSignProph
 		sdk.NewEvent(
 			types.EventTypeSignProphecy,
 			sdk.NewAttribute(types.AttributeKeyCosmosSender, msg.CosmosSender),
+			sdk.NewAttribute(types.AttributeKeyCosmosSenderSequence, strconv.FormatUint(account.GetSequence(), 10)),
 			sdk.NewAttribute(types.AttributeKeyNetworkDescriptor, msg.NetworkDescriptor.String()),
 			sdk.NewAttribute(types.AttributeKeyProphecyID, string(msg.ProphecyId)),
 		),
