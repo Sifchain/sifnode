@@ -17,7 +17,6 @@ coverage:
       default:
         flags:
           - server
-          - ui
       server:
         target: 50%
         flags:
@@ -25,12 +24,7 @@ coverage:
         paths:
           - "x/"
           - "!x/**/client/" # ignore client package
-      ui:
-        target: 70%
-        flags:
-          - ui
-        paths:
-          - "ui/core/src"
+          - "!**/*.pb.go"
     changes: false
 
 comment:
@@ -43,11 +37,8 @@ flags:
     paths:
       - "x/"
       - "!x/**/client/" # ignore client package
-    carryforward: true
-  ui:
-    paths:
-      - "ui/core/src"
-    carryforward: true
+      - "!**/*.pb.go"
+    carryforward: false
 
 ignore:
   - "docs"
@@ -59,6 +50,7 @@ ignore:
   - "**/test_helpers.go"
   - "**/module.go"
   - "**/genesis.go"
+  - "x/**/*.pb.go"
   - "**/*.pb.go"
   - "scripts/"
   - "contrib"
