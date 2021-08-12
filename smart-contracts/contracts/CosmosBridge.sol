@@ -201,6 +201,12 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
         ClaimData calldata claimData,
         SignatureData[] calldata signatureData
     ) private {
+        uint256 previousNonce = lastNonceSubmitted;
+        require(
+            // assert nonce is correct
+            previousNonce + 1 == claimData.nonce,
+            "INV_ORD"
+        );
 
         uint256 prophecyID = getProphecyID(
             claimData.cosmosSender,
@@ -250,15 +256,9 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
         }
 
         uint256 signedPower = getSignedPower(signatureData);
-
         require(getProphecyStatus(signedPower), "INV_POW");
+        //require(getProphecyStatus(getSignedPower(signatureData)), "INV_POW");
 
-        uint256 previousNonce = lastNonceSubmitted;
-        require(
-            // assert nonce is correct
-            previousNonce + 1 == claimData.nonce,
-            "INV_ORD"
-        );
         lastNonceSubmitted = claimData.nonce;
 
         // if we are double pegging AND we don't control the token, we deploy a new smart contract

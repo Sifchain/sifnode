@@ -89,7 +89,7 @@ describe("submitProphecyClaimAggregatedSigs Security", function () {
   describe("should revert when", function () {
     it("no signatures are provided", async function () {
       state.recipient = userOne.address;
-      state.nonce = 10;
+      state.nonce = 1;
 
       const { digest, claimData } = await getValidClaim({
         state,
@@ -120,7 +120,7 @@ describe("submitProphecyClaimAggregatedSigs Security", function () {
     
     it("hash digest doesn't match provided data", async function () {
       state.recipient = userOne.address;
-      state.nonce = 10;
+      state.nonce = 1;
       const digest = getDigestNewProphecyClaim([
         state.sender,
         state.senderSequence,
