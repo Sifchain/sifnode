@@ -4,11 +4,11 @@ const web3 = require("web3");
 const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
 
 async function returnContractObjects() {
-    let CosmosBridge = await ethers.getContractFactory("CosmosBridge");
-    let BridgeBank = await ethers.getContractFactory("BridgeBank");
-    let BridgeToken = await ethers.getContractFactory("BridgeToken");
+  let CosmosBridge = await ethers.getContractFactory("CosmosBridge");
+  let BridgeBank = await ethers.getContractFactory("BridgeBank");
+  let BridgeToken = await ethers.getContractFactory("BridgeToken");
 
-    return {CosmosBridge, BridgeBank, BridgeToken};
+  return { CosmosBridge, BridgeBank, BridgeToken };
 }
 
 function getDigestNewProphecyClaim(data) {
@@ -37,7 +37,7 @@ function getDigestNewProphecyClaim(data) {
 
 async function signHash(signers, hash) {
   let sigData = [];
-  
+
   for (let i = 0; i < signers.length; i++) {
     let sig = await signers[i].signMessage(ethers.utils.arrayify(hash));
 
@@ -56,208 +56,186 @@ async function signHash(signers, hash) {
 }
 
 async function multiTokenSetup(
+  initialValidators,
+  initialPowers,
+  operator,
+  consensusThreshold,
+  owner,
+  userOne,
+  userThree,
+  pauser,
+  networkDescriptor,
+  networkDescriptorMismatch = false
+) {
+  const state = {
+    constants: {
+      zeroAddress: ZERO_ADDRESS
+    },
     initialValidators,
     initialPowers,
-    operator,
+    networkDescriptor
+  }
+
+  const { CosmosBridge, BridgeBank, BridgeToken } = await returnContractObjects();
+
+  // Deploy CosmosBridge contract
+  state.cosmosBridge = await upgrades.deployProxy(CosmosBridge, [
+    operator.address,
     consensusThreshold,
-    owner,
-    userOne,
-    userThree,
+    initialValidators,
+    initialPowers,
+    networkDescriptorMismatch ? state.networkDescriptor + 1 : networkDescriptor
+  ], { initializer: 'initialize(address,uint256,address[],uint256[],uint256)' });
+  await state.cosmosBridge.deployed();
+
+  // Deploy BridgeBank contract
+  state.bridgeBank = await upgrades.deployProxy(BridgeBank, [
+    operator.address,
+    state.cosmosBridge.address,
+    owner.address,
     pauser,
-    networkDescriptor,
-    networkDescriptorMismatch = false
-  ) {
-    const state = {}
+    networkDescriptorMismatch ? state.networkDescriptor + 2 : networkDescriptor
+  ], { initializer: 'initialize(address,address,address,address,uint256)' });
+  await state.bridgeBank.deployed();
 
-    // Setup constants:
-    state.constants = {
-      zeroAddress: ZERO_ADDRESS
-    }
+  // Operator sets Bridge Bank
+  await state.cosmosBridge.connect(operator).setBridgeBank(state.bridgeBank.address);
 
-    // Deploy Valset contract
-    state.initialValidators = initialValidators;
-    state.initialPowers = initialPowers;
+  // state is for ERC20 deposits
+  state.sender = web3.utils.utf8ToHex("sif1nx650s8q9w28f2g3t9ztxyg48ugldptuwzpace");
+  state.cosmosSender = state.sender;
+  state.senderSequence = 1;
+  state.recipient = userThree;
+  state.name = "TEST COIN";
+  state.symbol = "TEST";
+  state.decimals = 18;
+  state.ethereumToken = state.constants.zeroAddress;
+  state.weiAmount = web3.utils.toWei("0.25", "ether");
+  state.amount = 100;
 
-    const { CosmosBridge, BridgeBank, BridgeToken } = await returnContractObjects();
+  state.rowan = await BridgeToken.deploy("rowan", "rowan", 18);
 
-    // Chain descriptor
-    state.networkDescriptor = networkDescriptor;
+  await state.rowan.deployed();
+  // mint tokens
+  await state.rowan.connect(operator).mint(userOne.address, state.amount * 2);
+  // add bridgebank as owner of the rowan contract
+  await state.rowan.transferOwnership(state.bridgeBank.address);
 
-    // Deploy CosmosBridge contract
-    state.cosmosBridge = await upgrades.deployProxy(CosmosBridge, [
-      operator.address,
-      consensusThreshold,
-      initialValidators,
-      initialPowers,
-      networkDescriptorMismatch ? state.networkDescriptor + 1 : networkDescriptor
-    ],
-    { initializer: 'initialize(address,uint256,address[],uint256[],uint256)' });
-    await state.cosmosBridge.deployed();
+  await state.rowan.connect(userOne).approve(state.bridgeBank.address, state.amount * 2);
 
-    // Deploy BridgeBank contract
-    state.bridgeBank = await upgrades.deployProxy(BridgeBank, [
-      operator.address,
-      state.cosmosBridge.address,
-      owner.address,
-      pauser,
-      networkDescriptorMismatch ? state.networkDescriptor + 2 : networkDescriptor
-    ],
-    { initializer: 'initialize(address,address,address,address,uint256)' });
-    await state.bridgeBank.deployed();
+  // Add rowan as an existing bridge token
+  await state.bridgeBank.connect(owner).addExistingBridgeToken(state.rowan.address);
 
-    // Operator sets Bridge Bank
-    await state.cosmosBridge.connect(operator).setBridgeBank(state.bridgeBank.address);
+  state.token1 = await BridgeToken.deploy(state.name, state.symbol, state.decimals);
+  state.token2 = await BridgeToken.deploy(state.name, state.symbol, state.decimals);
+  state.token3 = await BridgeToken.deploy(state.name, state.symbol, state.decimals);
 
-    // state is for ERC20 deposits
-    state.sender = web3.utils.utf8ToHex(
-      "sif1nx650s8q9w28f2g3t9ztxyg48ugldptuwzpace"
-    );
-    state.cosmosSender = state.sender;
-    state.senderSequence = 1;
-    state.recipient = userThree;
-    state.name = "TEST COIN";
-    state.symbol = "TEST";
-    state.decimals = 18;
-    state.ethereumToken = state.constants.zeroAddress;
-    state.weiAmount = web3.utils.toWei("0.25", "ether");
-    state.amount = 100;
+  await state.token1.deployed();
+  await state.token2.deployed();
+  await state.token3.deployed();
 
-    state.rowan = await BridgeToken.deploy("rowan", "rowan", 18);
+  //Load user account with ERC20 tokens for testing
+  await state.token1.connect(operator).mint(userOne.address, state.amount * 2);
+  await state.token2.connect(operator).mint(userOne.address, state.amount * 2);
+  await state.token3.connect(operator).mint(userOne.address, state.amount * 2);
 
-    await state.rowan.deployed();
-    // mint tokens
-    await state.rowan.connect(operator).mint(userOne.address, state.amount * 2);
-    // add bridgebank as owner of the rowan contract
-    await state.rowan.transferOwnership(state.bridgeBank.address);
+  await state.token1.connect(userOne).approve(state.bridgeBank.address, state.amount * 2);
+  await state.token2.connect(userOne).approve(state.bridgeBank.address, state.amount * 2);
+  await state.token3.connect(userOne).approve(state.bridgeBank.address, state.amount * 2);
 
-    await state.rowan.connect(userOne).approve(state.bridgeBank.address, state.amount * 2);
-
-    // Add rowan as an existing bridge token
-    await state.bridgeBank.connect(owner).addExistingBridgeToken(state.rowan.address);
-
-    state.token1 = await BridgeToken.deploy(state.name, state.symbol, state.decimals);
-    state.token2 = await BridgeToken.deploy(state.name, state.symbol, state.decimals);
-    state.token3 = await BridgeToken.deploy(state.name, state.symbol, state.decimals);
-
-    await state.token1.deployed();
-    await state.token2.deployed();
-    await state.token3.deployed();
-
-    //Load user account with ERC20 tokens for testing
-    await state.token1.connect(operator).mint(userOne.address, state.amount * 2);
-    await state.token2.connect(operator).mint(userOne.address, state.amount * 2);
-    await state.token3.connect(operator).mint(userOne.address, state.amount * 2);
-
-    await state.token1.connect(userOne).approve(state.bridgeBank.address, state.amount * 2);
-    await state.token2.connect(userOne).approve(state.bridgeBank.address, state.amount * 2);
-    await state.token3.connect(userOne).approve(state.bridgeBank.address, state.amount * 2);
-
-    return state;
+  return state;
 }
 
 async function singleSetup(
+  initialValidators,
+  initialPowers,
+  operator,
+  consensusThreshold,
+  owner,
+  userOne,
+  userThree,
+  pauser,
+  networkDescriptor,
+  networkDescriptorMismatch = false
+) {
+  const state = {
+    constants: {
+      zeroAddress: ZERO_ADDRESS
+    },
     initialValidators,
     initialPowers,
-    operator,
+    networkDescriptor
+  }
+
+  const { CosmosBridge, BridgeBank, BridgeToken } = await returnContractObjects();
+
+  // Deploy CosmosBridge contract
+  state.cosmosBridge = await upgrades.deployProxy(CosmosBridge, [
+    operator.address,
     consensusThreshold,
-    owner,
-    userOne,
-    userThree,
+    initialValidators,
+    initialPowers,
+    networkDescriptorMismatch ? state.networkDescriptor + 1 : networkDescriptor
+  ], { initializer: 'initialize(address,uint256,address[],uint256[],uint256)' });
+  await state.cosmosBridge.deployed();
+
+  // Deploy BridgeBank contract
+  state.bridgeBank = await upgrades.deployProxy(BridgeBank, [
+    operator.address,
+    state.cosmosBridge.address,
+    owner.address,
     pauser,
-    networkDescriptor,
-    networkDescriptorMismatch = false
-    ) {
-    const state = {};
+    networkDescriptorMismatch ? state.networkDescriptor + 2 : networkDescriptor
+  ], { initializer: 'initialize(address,address,address,address,uint256)' });
+  await state.bridgeBank.deployed();
 
-    // Setup constants:
-    state.constants = {
-      zeroAddress: ZERO_ADDRESS
+  // Operator sets Bridge Bank
+  await state.cosmosBridge.connect(operator).setBridgeBank(state.bridgeBank.address);
+
+  // state is for ERC20 deposits
+  state.sender = web3.utils.utf8ToHex("sif1nx650s8q9w28f2g3t9ztxyg48ugldptuwzpace");
+  state.senderSequence = 1;
+  state.recipient = userThree;
+  state.name = "TEST COIN";
+  state.symbol = "TEST";
+  state.decimals = 18;
+  state.ethereumToken = state.constants.zeroAddress;
+  state.weiAmount = web3.utils.toWei("0.25", "ether");
+  state.amount = 100;
+
+  state.token = await BridgeToken.deploy(state.name, state.symbol, state.decimals);
+  await state.token.deployed();
+
+  //Load user account with ERC20 tokens for testing
+  await state.token.connect(operator).mint(userOne.address, state.amount * 2);
+
+  // Approve tokens to contract
+  await state.token.connect(userOne).approve(state.bridgeBank.address, state.amount).should.be.fulfilled;
+
+  state.rowan = await BridgeToken.deploy("rowan", "rowan", 18);
+
+  // Add the token into white list
+  await state.bridgeBank.connect(operator)
+    .updateEthWhiteList(state.token.address, true)
+    .should.be.fulfilled;
+
+  // Lock tokens on contract
+  await state.bridgeBank.connect(userOne).lock(
+    state.sender,
+    state.token.address,
+    state.amount
+  ).should.be.fulfilled;
+
+  // Lock tokens on contract
+  await state.bridgeBank.connect(userOne).lock(
+    state.sender,
+    state.ethereumToken,
+    state.amount, {
+      value: state.amount
     }
+  ).should.be.fulfilled;
 
-    // Deploy Valset contract
-    state.initialValidators = initialValidators;
-    state.initialPowers = initialPowers;
-
-    const { CosmosBridge, BridgeBank, BridgeToken } = await returnContractObjects();
-
-    // Chain descriptor
-    state.networkDescriptor = networkDescriptor;
-
-    // Deploy CosmosBridge contract
-    state.cosmosBridge = await upgrades.deployProxy(CosmosBridge, [
-      operator.address,
-      consensusThreshold,
-      initialValidators,
-      initialPowers,
-      networkDescriptorMismatch ? state.networkDescriptor + 1 : networkDescriptor
-    ],
-    { initializer: 'initialize(address,uint256,address[],uint256[],uint256)' });
-    await state.cosmosBridge.deployed();
-
-    // Deploy BridgeBank contract
-    state.bridgeBank = await upgrades.deployProxy(BridgeBank, [
-      operator.address,
-      state.cosmosBridge.address,
-      owner.address,
-      pauser,
-      networkDescriptorMismatch ? state.networkDescriptor + 2 : networkDescriptor
-    ],
-    { initializer: 'initialize(address,address,address,address,uint256)' });
-    await state.bridgeBank.deployed();
-
-    // Operator sets Bridge Bank
-    await state.cosmosBridge.connect(operator).setBridgeBank(state.bridgeBank.address);
-
-    // state is for ERC20 deposits
-    state.sender = web3.utils.utf8ToHex(
-      "sif1nx650s8q9w28f2g3t9ztxyg48ugldptuwzpace"
-    );
-    state.senderSequence = 1;
-    state.recipient = userThree;
-    state.name = "TEST COIN";
-    state.symbol = "TEST";
-    state.decimals = 18;
-    state.ethereumToken = state.constants.zeroAddress;
-    state.weiAmount = web3.utils.toWei("0.25", "ether");
-
-    state.token = await BridgeToken.deploy(
-      state.name,
-      state.symbol,
-      state.decimals
-    );
-
-    state.rowan = await BridgeToken.deploy("rowan", "rowan", 18);
-
-    await state.token.deployed();
-    state.amount = 100;
-    //Load user account with ERC20 tokens for testing
-    await state.token.connect(operator).mint(userOne.address, state.amount * 2);
-
-    // Approve tokens to contract
-    await state.token.connect(userOne).approve(state.bridgeBank.address, state.amount).should.be.fulfilled;
-      
-    // Add the token into white list
-    await state.bridgeBank.connect(operator)
-      .updateEthWhiteList(state.token.address, true)
-      .should.be.fulfilled;
-
-    // Lock tokens on contract
-    await state.bridgeBank.connect(userOne).lock(
-      state.sender,
-      state.token.address,
-      state.amount
-    ).should.be.fulfilled;
-
-    // Lock tokens on contract
-    await state.bridgeBank.connect(userOne).lock(
-      state.sender,
-      state.ethereumToken,
-      state.amount, {
-        value: state.amount
-      }
-    ).should.be.fulfilled;
-
-    return state;
+  return state;
 }
 
 async function deployTrollToken() {
@@ -273,59 +251,59 @@ async function deployTrollToken() {
  * @returns { digest, signatures, claimData }
  */
 async function getValidClaim({
-    state,
-    sender,
-    senderSequence,
-    recipientAddress,
-    tokenAddress,
-    amount,
-    isDoublePeg,
-    nonce,
-    networkDescriptor,
-    tokenName,
-    tokenSymbol,
-    tokenDecimals,
-    validators,
+  state,
+  sender,
+  senderSequence,
+  recipientAddress,
+  tokenAddress,
+  amount,
+  isDoublePeg,
+  nonce,
+  networkDescriptor,
+  tokenName,
+  tokenSymbol,
+  tokenDecimals,
+  validators,
 }) {
-    const digest = getDigestNewProphecyClaim([
-        sender || state.sender,
-        senderSequence || state.senderSequence,
-        recipientAddress || state.recipient.address,
-        tokenAddress || state.token?.address || state.token1?.address,
-        amount || state.amount,
-        isDoublePeg || false,
-        nonce || state.nonce,
-        networkDescriptor || state.networkDescriptor
-    ]);
+  const digest = getDigestNewProphecyClaim([
+    sender || state.sender,
+    senderSequence || state.senderSequence,
+    recipientAddress || state.recipient.address,
+    tokenAddress || state.token?.address || state.token1?.address,
+    amount || state.amount,
+    isDoublePeg || false,
+    nonce || state.nonce,
+    networkDescriptor || state.networkDescriptor
+  ]);
 
-    const signatures = await signHash(validators, digest);
+  const signatures = await signHash(validators, digest);
 
-    const claimData = {
-        cosmosSender: sender || state.sender,
-        cosmosSenderSequence: senderSequence || state.senderSequence,
-        ethereumReceiver: recipientAddress || state.recipient.address,
-        tokenAddress: tokenAddress || state.token?.address || state.token1?.address,
-        amount: amount || state.amount,
-        doublePeg: isDoublePeg || false,
-        nonce: nonce || state.nonce,
-        networkDescriptor: networkDescriptor || state.networkDescriptor,
-        tokenName: tokenName || state.name,
-        tokenSymbol: tokenSymbol || state.symbol,
-        tokenDecimals: tokenDecimals || state.decimals
-    };
+  const claimData = {
+    cosmosSender: sender || state.sender,
+    cosmosSenderSequence: senderSequence || state.senderSequence,
+    ethereumReceiver: recipientAddress || state.recipient.address,
+    tokenAddress: tokenAddress || state.token?.address || state.token1?.address,
+    amount: amount || state.amount,
+    doublePeg: isDoublePeg || false,
+    nonce: nonce || state.nonce,
+    networkDescriptor: networkDescriptor || state.networkDescriptor,
+    tokenName: tokenName || state.name,
+    tokenSymbol: tokenSymbol || state.symbol,
+    tokenDecimals: tokenDecimals || state.decimals
+  };
 
-    return {
-        digest,
-        signatures,
-        claimData,
-    };
+  return {
+    digest,
+    signatures,
+    claimData,
+  };
 }
 
 module.exports = {
-    multiTokenSetup,
-    singleSetup,
-    deployTrollToken,
-    signHash,
-    getDigestNewProphecyClaim,
-    getValidClaim
+  multiTokenSetup,
+  singleSetup,
+  deployTrollToken,
+  signHash,
+  getDigestNewProphecyClaim,
+  getValidClaim
 };
