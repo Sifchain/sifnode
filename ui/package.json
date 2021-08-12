@@ -10,7 +10,7 @@
   },
   "devDependencies": {
     "@openzeppelin/contracts": "^3.2.0",
-    "@openzeppelin/test-helpers": "^0.5.10",
+    "@openzeppelin/test-helpers": "^0.5.13",
     "concurrently": "^5.3.0",
     "ganache-cli": "^6.12.0",
     "truffle": "^5.1.48",

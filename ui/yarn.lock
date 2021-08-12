@@ -276,10 +276,10 @@
   resolved "https://registry.yarnpkg.com/@openzeppelin/contracts/-/contracts-3.2.0.tgz#3e6b3a7662d8ed64271ade96ef42655db983fd9d"
   integrity sha512-bUOmkSoPkjnUyMiKo6RYnb0VHBk5D9KKDAgNLzF41aqAM3TeE0yGdFF5dVRcV60pZdJLlyFT/jjXIZCWyyEzAQ==
 
-"@openzeppelin/test-helpers@^0.5.10":
-  version "0.5.10"
-  resolved "https://registry.yarnpkg.com/@openzeppelin/test-helpers/-/test-helpers-0.5.10.tgz#0a6ab9fd0810085e8114f9f33aed4102e848f27f"
-  integrity sha512-agXr5Rn/q0MCDaU0ioYMGQVjY32Ln3Ae3cyQKtESuKdDoEZ7g3Y7x4eUbT779OE9nQ+xQCytmVqjKvZvajURug==
+"@openzeppelin/test-helpers@^0.5.13":
+  version "0.5.13"
+  resolved "https://registry.yarnpkg.com/@openzeppelin/test-helpers/-/test-helpers-0.5.13.tgz#d208bdbf0f7ad3cbe579d0b8434074c5f60d8e73"
+  integrity sha512-H9LUHM0nqZVObWyzJrXJ9FLDgtcBZZK0L+LhA0wdcvK3M4Um2LpLX4KbP/mUYcgvHK03pK7Ub4T6RYp3Vjy/mg==
   dependencies:
     "@openzeppelin/contract-loader" "^0.6.2"
     "@truffle/contract" "^4.0.35"
