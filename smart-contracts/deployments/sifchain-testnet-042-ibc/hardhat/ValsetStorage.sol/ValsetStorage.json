@@ -1,0 +1,123 @@
+{
+  "_format": "hh-sol-artifact-1",
+  "contractName": "ValsetStorage",
+  "sourceName": "contracts/ValsetStorage.sol",
+  "abi": [
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "currentValsetVersion",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "operator",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "name": "powers",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "totalPower",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "validatorCount",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "name": "validators",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    }
+  ],
+  "bytecode": "0x608060405234801561001057600080fd5b506101b4806100206000396000f3fe608060405234801561001057600080fd5b50600436106100625760003560e01c80630f43a6771461006757806345aaf18c14610081578063570ca735146100c1578063850f43dd146100e55780638d56c37d14610111578063db3ad22c14610119575b600080fd5b61006f610121565b60408051918252519081900360200190f35b6100ad6004803603604081101561009757600080fd5b506001600160a01b038135169060200135610127565b604080519115158252519081900360200190f35b6100c9610147565b604080516001600160a01b039092168252519081900360200190f35b61006f600480360360408110156100fb57600080fd5b506001600160a01b038135169060200135610156565b61006f610173565b61006f610179565b60025481565b600360209081526000928352604080842090915290825290205460ff1681565b6004546001600160a01b031681565b600560209081526000928352604080842090915290825290205481565b60015481565b6000548156fea265627a7a7231582018dda684781b210b9e2e248ee18b02fd03edcf19c9103a57168013024cf78fcb64736f6c63430005100032",
+  "deployedBytecode": "0x608060405234801561001057600080fd5b50600436106100625760003560e01c80630f43a6771461006757806345aaf18c14610081578063570ca735146100c1578063850f43dd146100e55780638d56c37d14610111578063db3ad22c14610119575b600080fd5b61006f610121565b60408051918252519081900360200190f35b6100ad6004803603604081101561009757600080fd5b506001600160a01b038135169060200135610127565b604080519115158252519081900360200190f35b6100c9610147565b604080516001600160a01b039092168252519081900360200190f35b61006f600480360360408110156100fb57600080fd5b506001600160a01b038135169060200135610156565b61006f610173565b61006f610179565b60025481565b600360209081526000928352604080842090915290825290205460ff1681565b6004546001600160a01b031681565b600560209081526000928352604080842090915290825290205481565b60015481565b6000548156fea265627a7a7231582018dda684781b210b9e2e248ee18b02fd03edcf19c9103a57168013024cf78fcb64736f6c63430005100032",
+  "linkReferences": {},
+  "deployedLinkReferences": {}
+}

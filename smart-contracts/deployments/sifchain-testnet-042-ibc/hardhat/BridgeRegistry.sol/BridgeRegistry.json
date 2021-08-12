@@ -1,0 +1,122 @@
+{
+  "_format": "hh-sol-artifact-1",
+  "contractName": "BridgeRegistry",
+  "sourceName": "contracts/BridgeRegistry.sol",
+  "abi": [
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "address",
+          "name": "_cosmosBridge",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "address",
+          "name": "_bridgeBank",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "address",
+          "name": "_oracle",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "address",
+          "name": "_valset",
+          "type": "address"
+        }
+      ],
+      "name": "LogContractsRegistered",
+      "type": "event"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "bridgeBank",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "cosmosBridge",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_cosmosBridge",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "_bridgeBank",
+          "type": "address"
+        }
+      ],
+      "name": "initialize",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "oracle",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "valset",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    }
+  ],
+  "bytecode": "0x608060405234801561001057600080fd5b5061021b806100206000396000f3fe608060405234801561001057600080fd5b50600436106100575760003560e01c80630e41f3731461005c578063485cc955146100805780637dc0d1d0146100b05780637f54af0c146100b8578063b0e9ef71146100c0575b600080fd5b6100646100c8565b604080516001600160a01b039092168252519081900360200190f35b6100ae6004803603604081101561009657600080fd5b506001600160a01b03813581169160200135166100d7565b005b6100646101b9565b6100646101c8565b6100646101d7565b6001546001600160a01b031681565b600354600160a01b900460ff1615610124576040805162461bcd60e51b815260206004820152600b60248201526a125b9a5d1a585b1a5e995960aa1b604482015290519081900360640190fd5b600080546001600160a01b038085166001600160a01b0319928316179283905560018054858316931692909217918290556003805460ff60a01b1916600160a01b17908190556002546040805195841686529383166020860152821684840152166060830152517f039b733f31259b106f1d278c726870d5b28c7db22957d63df8dbaa70bd3a032a9181900360800190a15050565b6002546001600160a01b031681565b6003546001600160a01b031681565b6000546001600160a01b03168156fea265627a7a7231582023b7297efcf71270f65e160ac2a1c4ec8aac3cb0773ae45bce0a4b33f07ed18364736f6c63430005100032",
+  "deployedBytecode": "0x608060405234801561001057600080fd5b50600436106100575760003560e01c80630e41f3731461005c578063485cc955146100805780637dc0d1d0146100b05780637f54af0c146100b8578063b0e9ef71146100c0575b600080fd5b6100646100c8565b604080516001600160a01b039092168252519081900360200190f35b6100ae6004803603604081101561009657600080fd5b506001600160a01b03813581169160200135166100d7565b005b6100646101b9565b6100646101c8565b6100646101d7565b6001546001600160a01b031681565b600354600160a01b900460ff1615610124576040805162461bcd60e51b815260206004820152600b60248201526a125b9a5d1a585b1a5e995960aa1b604482015290519081900360640190fd5b600080546001600160a01b038085166001600160a01b0319928316179283905560018054858316931692909217918290556003805460ff60a01b1916600160a01b17908190556002546040805195841686529383166020860152821684840152166060830152517f039b733f31259b106f1d278c726870d5b28c7db22957d63df8dbaa70bd3a032a9181900360800190a15050565b6002546001600160a01b031681565b6003546001600160a01b031681565b6000546001600160a01b03168156fea265627a7a7231582023b7297efcf71270f65e160ac2a1c4ec8aac3cb0773ae45bce0a4b33f07ed18364736f6c63430005100032",
+  "linkReferences": {},
+  "deployedLinkReferences": {}
+}
