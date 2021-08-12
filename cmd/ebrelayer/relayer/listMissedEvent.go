@@ -75,8 +75,8 @@ func (list ListMissedCosmosEvent) ListMissedCosmosEvent() {
 
 	currentCosmosHeight := block.Block.Header.Height
 	var toBlock int64
-	if currentCosmosHeight > ProphecyLiftTime {
-		toBlock = currentCosmosHeight - ProphecyLiftTime
+	if currentCosmosHeight > ProphecyLifeTime {
+		toBlock = currentCosmosHeight - ProphecyLifeTime
 	} else {
 		toBlock = 0
 	}

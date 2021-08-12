@@ -17,8 +17,8 @@ import (
 	"go.uber.org/zap"
 )
 
-// ProphecyLiftTime signature info life time on chain
-const ProphecyLiftTime = 520000
+// ProphecyLifeTime signature info life time on chain
+const ProphecyLifeTime = 520000
 
 // ReplayCosmosBurnLock the missed burn lock events from cosmos
 func (sub CosmosSub) ReplayCosmosBurnLock(txFactory tx.Factory) {
@@ -250,8 +250,8 @@ func GetScannedBlockScope(client *tmClient.HTTP) (int64, int64, error) {
 	}
 	toBlock := currentBlock.Height
 	var fromBlock int64
-	if toBlock > ProphecyLiftTime {
-		fromBlock = toBlock - ProphecyLiftTime
+	if toBlock > ProphecyLifeTime {
+		fromBlock = toBlock - ProphecyLifeTime
 	} else {
 		fromBlock = 0
 	}

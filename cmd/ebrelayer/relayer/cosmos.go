@@ -181,20 +181,6 @@ func (sub CosmosSub) Start(txFactory tx.Factory, completionEvent *sync.WaitGroup
 									sub.handleBurnLockMsg(txFactory, cosmosMsg)
 								}
 							}
-
-						case types.ProphecyCompleted:
-							// the relayer for signature aggregator just handle the prophecy completed
-							if sub.SignatureAggregator {
-								prophecyInfo, err := txs.ProphecyCompletedEventToProphecyInfo(event.GetAttributes(), sub.SugaredLogger)
-								if err != nil {
-									sub.SugaredLogger.Errorw("sifchain client failed in get prophecy completed message from event.",
-										errorMessageKey, err.Error())
-									continue
-								}
-								if prophecyInfo.NetworkDescriptor == sub.NetworkDescriptor {
-									sub.handleProphecyCompleted(prophecyInfo)
-								}
-							}
 						}
 					}
 				}
