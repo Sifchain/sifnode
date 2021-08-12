@@ -244,18 +244,16 @@ async function deployTrollToken() {
 }
 
 /**
- * Creates a valid claim using default values whenever a parameter is missing
- * Prefer passing all parameters for the sake of clarity
+ * Creates a valid claim
  * @returns { digest, signatures, claimData }
  */
 async function getValidClaim({
-  state,
   sender,
   senderSequence,
   recipientAddress,
   tokenAddress,
   amount,
-  isDoublePeg,
+  doublePeg,
   nonce,
   networkDescriptor,
   tokenName,
@@ -264,30 +262,30 @@ async function getValidClaim({
   validators,
 }) {
   const digest = getDigestNewProphecyClaim([
-    sender || state.sender,
-    senderSequence || state.senderSequence,
-    recipientAddress || state.recipient.address,
-    tokenAddress || state.token?.address || state.token1?.address,
-    amount || state.amount,
-    isDoublePeg || false,
-    nonce || state.nonce,
-    networkDescriptor || state.networkDescriptor
+    sender,
+    senderSequence,
+    recipientAddress,
+    tokenAddress,
+    amount,
+    doublePeg,
+    nonce,
+    networkDescriptor,
   ]);
 
   const signatures = await signHash(validators, digest);
 
   const claimData = {
-    cosmosSender: sender || state.sender,
-    cosmosSenderSequence: senderSequence || state.senderSequence,
-    ethereumReceiver: recipientAddress || state.recipient.address,
-    tokenAddress: tokenAddress || state.token?.address || state.token1?.address,
-    amount: amount || state.amount,
-    doublePeg: isDoublePeg || false,
-    nonce: nonce || state.nonce,
-    networkDescriptor: networkDescriptor || state.networkDescriptor,
-    tokenName: tokenName || state.name,
-    tokenSymbol: tokenSymbol || state.symbol,
-    tokenDecimals: tokenDecimals || state.decimals
+    cosmosSender: sender,
+    cosmosSenderSequence: senderSequence,
+    ethereumReceiver: recipientAddress,
+    tokenAddress,
+    amount,
+    doublePeg,
+    nonce,
+    networkDescriptor,
+    tokenName,
+    tokenSymbol,
+    tokenDecimals,
   };
 
   return {

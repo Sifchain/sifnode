@@ -92,13 +92,12 @@ describe("submitProphecyClaimAggregatedSigs Security", function () {
       state.nonce = 1;
 
       const { digest, claimData } = await getValidClaim({
-        state,
         sender: state.sender,
         senderSequence: state.senderSequence,
         recipientAddress: state.recipient,
         tokenAddress: state.troll.address,
         amount: state.amount,
-        isDoublePeg: false,
+        doublePeg: false,
         nonce: state.nonce,
         networkDescriptor: state.networkDescriptor,
         tokenName: state.name,
@@ -163,13 +162,12 @@ describe("submitProphecyClaimAggregatedSigs Security", function () {
       state.nonce = 1;
 
       const { digest, claimData, signatures } = await getValidClaim({
-        state,
         sender: state.sender,
         senderSequence: state.senderSequence,
         recipientAddress: state.recipient,
         tokenAddress: state.troll.address,
         amount: state.amount,
-        isDoublePeg: false,
+        doublePeg: false,
         nonce: state.nonce,
         networkDescriptor: state.networkDescriptor,
         tokenName: state.name,
@@ -194,13 +192,12 @@ describe("submitProphecyClaimAggregatedSigs Security", function () {
       state.nonce = 1;
 
       const { digest, claimData, signatures } = await getValidClaim({
-        state,
         sender: state.sender,
         senderSequence: state.senderSequence,
         recipientAddress: state.recipient,
         tokenAddress: state.troll.address,
         amount: state.amount,
-        isDoublePeg: false,
+        doublePeg: false,
         nonce: state.nonce,
         networkDescriptor: state.networkDescriptor,
         tokenName: state.name,
@@ -281,13 +278,12 @@ describe("submitProphecyClaimAggregatedSigs Security", function () {
       state.nonce = 1;
 
       const { digest, claimData, signatures } = await getValidClaim({
-        state,
         sender: state.sender,
         senderSequence: state.senderSequence,
         recipientAddress: state.recipient,
         tokenAddress: state.troll.address,
         amount: state.amount,
-        isDoublePeg: false,
+        doublePeg: false,
         nonce: state.nonce,
         networkDescriptor: state.networkDescriptor,
         tokenName: state.name,
@@ -312,13 +308,12 @@ describe("submitProphecyClaimAggregatedSigs Security", function () {
       state.nonce = 2;
 
       const { digest, claimData, signatures } = await getValidClaim({
-        state,
         sender: state.sender,
         senderSequence: state.senderSequence,
         recipientAddress: state.recipient,
         tokenAddress: state.troll.address,
         amount: state.amount,
-        isDoublePeg: false,
+        doublePeg: false,
         nonce: state.nonce,
         networkDescriptor: state.networkDescriptor,
         tokenName: state.name,
@@ -343,13 +338,12 @@ describe("submitProphecyClaimAggregatedSigs Security", function () {
       state.nonce = 1;
 
       const { digest, claimData, signatures } = await getValidClaim({
-        state,
         sender: state.sender,
         senderSequence: state.senderSequence,
         recipientAddress: state.recipient,
         tokenAddress: state.troll.address,
         amount: state.amount,
-        isDoublePeg: false,
+        doublePeg: false,
         nonce: state.nonce,
         networkDescriptor: state.networkDescriptor,
         tokenName: state.name,

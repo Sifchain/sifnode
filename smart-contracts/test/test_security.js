@@ -596,13 +596,12 @@ describe("Security Test", function () {
       // to create a new token we send a new double-peg prophecyClaim
       state.nonce = 1;
       const { digest, claimData, signatures } = await getValidClaim({
-        state,
         sender: state.sender,
         senderSequence: state.senderSequence,
         recipientAddress: state.recipient,
         tokenAddress: state.token1.address,
         amount: state.amount,
-        isDoublePeg: true,
+        doublePeg: true,
         nonce: state.nonce,
         networkDescriptor: state.networkDescriptor,
         tokenName: state.name,

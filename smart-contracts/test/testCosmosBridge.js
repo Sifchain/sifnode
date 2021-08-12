@@ -210,13 +210,12 @@ describe("Test Cosmos Bridge", function () {
       state.nonce = 1;
 
       const { digest, claimData, signatures } = await getValidClaim({
-        state,
         sender: state.sender,
         senderSequence: state.senderSequence,
         recipientAddress: state.recipient,
         tokenAddress: state.token.address,
         amount: state.amount,
-        isDoublePeg: false,
+        doublePeg: false,
         nonce: state.nonce,
         networkDescriptor: state.networkDescriptor,
         tokenName: state.name,
@@ -252,13 +251,12 @@ describe("Test Cosmos Bridge", function () {
       state.nonce = 1;
 
       const { digest, claimData, signatures } = await getValidClaim({
-        state,
         sender: state.sender,
         senderSequence: state.senderSequence,
         recipientAddress: state.recipient,
         tokenAddress: state.constants.zeroAddress,
         amount: state.amount,
-        isDoublePeg: false,
+        doublePeg: false,
         nonce: state.nonce,
         networkDescriptor: state.networkDescriptor,
         tokenName: "Ether",
@@ -289,13 +287,12 @@ describe("Test Cosmos Bridge", function () {
       state.nonce = 1;
 
       const { digest, claimData, signatures } = await getValidClaim({
-        state,
         sender: state.sender,
         senderSequence: state.senderSequence,
         recipientAddress: state.recipient,
         tokenAddress: state.token.address,
         amount: state.amount,
-        isDoublePeg: true,
+        doublePeg: true,
         nonce: state.nonce,
         networkDescriptor: state.networkDescriptor,
         tokenName: state.name,
@@ -328,13 +325,12 @@ describe("Test Cosmos Bridge", function () {
       beforeUserBalance.should.be.bignumber.equal(Number(0));
 
       const { digest, claimData, signatures } = await getValidClaim({
-        state,
         sender: state.sender,
         senderSequence: state.senderSequence,
         recipientAddress: state.recipient,
         tokenAddress: state.token.address,
         amount: state.amount,
-        isDoublePeg: false,
+        doublePeg: false,
         nonce: state.nonce,
         networkDescriptor: state.networkDescriptor,
         tokenName: state.name,
@@ -359,13 +355,12 @@ describe("Test Cosmos Bridge", function () {
       state.nonce = 1;
 
       const { digest, claimData, signatures } = await getValidClaim({
-        state,
         sender: state.sender,
         senderSequence: state.senderSequence,
         recipientAddress: state.recipient,
         tokenAddress: state.token.address,
         amount: state.amount,
-        isDoublePeg: true,
+        doublePeg: true,
         nonce: state.nonce,
         networkDescriptor: state.networkDescriptor,
         tokenName: state.name,
@@ -389,13 +384,12 @@ describe("Test Cosmos Bridge", function () {
 
       // Everything again, but this time submitProphecyClaimAggregatedSigs should NOT emit the event
       const { digest: digest2, claimData: claimData2, signatures: signatures2 } = await getValidClaim({
-        state,
         sender: state.sender,
         senderSequence: state.senderSequence + 1,
         recipientAddress: state.recipient,
         tokenAddress: state.token.address,
         amount: state.amount,
-        isDoublePeg: true,
+        doublePeg: true,
         nonce: state.nonce + 1,
         networkDescriptor: state.networkDescriptor,
         tokenName: state.name,
