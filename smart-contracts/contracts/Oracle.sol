@@ -1,6 +1,6 @@
 pragma solidity 0.5.16;
 
-import "../node_modules/openzeppelin-solidity/contracts/math/SafeMath.sol";
+import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 import "./Valset.sol";
 import "./OracleStorage.sol";
 import "./Valset.sol";
@@ -78,7 +78,7 @@ contract Oracle is OracleStorage, Valset {
         hasMadeClaim[_prophecyID][validatorAddress] = true;
         // oracleClaimValidators[_prophecyID].push(validatorAddress);
         oracleClaimValidators[_prophecyID] = oracleClaimValidators[_prophecyID].add(
-            this.getValidatorPower(validatorAddress)
+            getValidatorPower(validatorAddress)
         );
         emit LogNewOracleClaim(
             _prophecyID,

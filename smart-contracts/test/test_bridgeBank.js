@@ -12,8 +12,6 @@ const BigNumber = web3.BigNumber;
 
 const {
   BN,           // Big Number support
-  constants,    // Common constants, like the zero address and largest integers
-  expectEvent,  // Assertions for emitted events
   expectRevert, // Assertions for transactions that should fail
 } = require('@openzeppelin/test-helpers');
 const { expect } = require('chai');
@@ -144,11 +142,6 @@ contract("BridgeBank", function (accounts) {
         from: operator
       }).should.be.fulfilled;
 
-      // Update the lock/burn limit for this token
-      await this.bridgeBank.updateTokenLockBurnLimit(this.token.address, this.amount, {
-        from: operator
-      }).should.be.fulfilled;
-
       //Load user account with ERC20 tokens for testing
       await this.token.mint(userOne, this.amount, {
         from: operator
@@ -196,7 +189,6 @@ contract("BridgeBank", function (accounts) {
           from: userOne
         }
       ).should.be.fulfilled;
-
 
       // Confirm that the user has been minted the correct token
       const afterUserBalance = Number(
@@ -270,12 +262,7 @@ contract("BridgeBank", function (accounts) {
       // Add the token into white list
       await this.bridgeBank.updateEthWhiteList(this.token.address, true, {
         from: operator
-      }).should.be.fulfilled;
-
-      // Update the lock/burn limit for this token
-      await this.bridgeBank.updateTokenLockBurnLimit(this.token.address, this.amount, {
-        from: operator
-      }).should.be.fulfilled;      
+      }).should.be.fulfilled;   
 
       //Load user account with ERC20 tokens for testing
       await this.token.mint(userOne, 1000, {
@@ -358,16 +345,6 @@ contract("BridgeBank", function (accounts) {
 
       // Add the token into white list
       await this.bridgeBank.updateEthWhiteList(this.token.address, true, {
-        from: operator
-      }).should.be.fulfilled;
-
-      // Update the lock/burn limit for this token
-      await this.bridgeBank.updateTokenLockBurnLimit(this.token.address, this.amount, {
-        from: operator
-      }).should.be.fulfilled;
-
-      // Update the lock/burn limit for this token
-      await this.bridgeBank.updateTokenLockBurnLimit(this.ethereumToken, this.weiAmount, {
         from: operator
       }).should.be.fulfilled;
 
@@ -475,11 +452,11 @@ contract("BridgeBank", function (accounts) {
         }
       );
 
-      // Confirm deposit balances after lock
+      // Locked funds are deprecated for gas savings now
       const postLockedTokenBalance = await this.bridgeBank.lockedFunds(
         this.token.address
       );
-      Number(postLockedTokenBalance).should.be.bignumber.equal(this.amount);
+      Number(postLockedTokenBalance).should.be.bignumber.equal(0);
     });
   });
 
@@ -526,15 +503,6 @@ contract("BridgeBank", function (accounts) {
       this.weiAmount = web3.utils.toWei("0.25", "ether");
       this.halfWeiAmount = web3.utils.toWei("0.125", "ether");
       this.eth = web3.utils.toWei("1", "ether");
-      //Load contract with ethereum so it can complete items
-      // await this.bridgeBank.send(web3.utils.toWei("1", "ether"), {
-      //   from: operator
-      // }).should.be.fulfilled;
-
-      // Update the lock/burn limit for this token
-      await this.bridgeBank.updateTokenLockBurnLimit(this.ethereumToken, this.eth, {
-        from: operator
-      }).should.be.fulfilled;
 
       // Lock Ethereum (this is to increase contract's balances and locked funds mapping)
       await this.bridgeBank.lock(
@@ -562,10 +530,6 @@ contract("BridgeBank", function (accounts) {
 
       // Add the token into white list
       await this.bridgeBank.updateEthWhiteList(this.token.address, true, {
-        from: operator
-      }).should.be.fulfilled;
-
-      await this.bridgeBank.updateTokenLockBurnLimit(this.token.address, this.amount, {
         from: operator
       }).should.be.fulfilled;
 
@@ -878,9 +842,6 @@ contract("BridgeBank", function (accounts) {
 
       const tokenAddress = await this.bridgeBank.getBridgeToken(symbol);
       tokenAddress.should.be.equal(this.token.address);
-      await this.bridgeBank.updateTokenLockBurnLimit(this.token.address, 100000, {
-        from: operator
-      }).should.be.fulfilled;
     });
 
     it("should burn eRowan to create rowan on sifchain", async function () {
@@ -919,7 +880,7 @@ contract("BridgeBank", function (accounts) {
 
       const cosmosSender = "0x" + convertToHex("sif12qfvgsq76eghlagyfcfyt9md2s9nunsn40zu2h");
       const senderSequence = 1
-      const symbol = 'Rowan'
+      const symbol = 'eRowan'
       const amount = 100000;
       const nonce = 1;
 

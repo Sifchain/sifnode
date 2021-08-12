@@ -1,6 +1,7 @@
 package app
 
 import (
+	tokenregistrykeeper "github.com/Sifchain/sifnode/x/tokenregistry/keeper"
 	"io"
 	"math/big"
 	"net/http"
@@ -45,7 +46,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/gov"
 	govkeeper "github.com/cosmos/cosmos-sdk/x/gov/keeper"
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
-	"github.com/cosmos/cosmos-sdk/x/ibc/applications/transfer"
 	ibctransferkeeper "github.com/cosmos/cosmos-sdk/x/ibc/applications/transfer/keeper"
 	ibctransfertypes "github.com/cosmos/cosmos-sdk/x/ibc/applications/transfer/types"
 	ibc "github.com/cosmos/cosmos-sdk/x/ibc/core"
@@ -88,9 +88,12 @@ import (
 	"github.com/Sifchain/sifnode/x/ethbridge"
 	ethbridgekeeper "github.com/Sifchain/sifnode/x/ethbridge/keeper"
 	ethbridgetypes "github.com/Sifchain/sifnode/x/ethbridge/types"
+	ibctransferoverride "github.com/Sifchain/sifnode/x/ibctransfer"
 	"github.com/Sifchain/sifnode/x/oracle"
 	oraclekeeper "github.com/Sifchain/sifnode/x/oracle/keeper"
 	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
+	"github.com/Sifchain/sifnode/x/tokenregistry"
+	tokenregistrytypes "github.com/Sifchain/sifnode/x/tokenregistry/types"
 )
 
 const appName = "sifnode"
@@ -113,12 +116,13 @@ var (
 		slashing.AppModuleBasic{},
 		evidence.AppModuleBasic{},
 		ibc.AppModuleBasic{},
-		transfer.AppModuleBasic{},
+		ibctransferoverride.AppModuleBasic{},
 
 		clp.AppModuleBasic{},
 		oracle.AppModuleBasic{},
 		ethbridge.AppModuleBasic{},
 		dispensation.AppModuleBasic{},
+		tokenregistry.AppModuleBasic{},
 	)
 
 	maccPerms = map[string][]string{
@@ -179,10 +183,11 @@ type SifchainApp struct {
 	ScopedTransferKeeper capabilitykeeper.ScopedKeeper
 	ScopedIBCMockKeeper  capabilitykeeper.ScopedKeeper
 
-	ClpKeeper          clpkeeper.Keeper
-	OracleKeeper       oraclekeeper.Keeper
-	EthbridgeKeeper    ethbridgekeeper.Keeper
-	DispensationKeeper dispkeeper.Keeper
+	ClpKeeper           clpkeeper.Keeper
+	OracleKeeper        oraclekeeper.Keeper
+	EthbridgeKeeper     ethbridgekeeper.Keeper
+	DispensationKeeper  dispkeeper.Keeper
+	TokenRegistryKeeper tokenregistrytypes.Keeper
 
 	mm *module.Manager
 	sm *module.SimulationManager
@@ -220,6 +225,7 @@ func NewSifApp(
 		ethbridgetypes.StoreKey,
 		clptypes.StoreKey,
 		oracletypes.StoreKey,
+		tokenregistrytypes.StoreKey,
 	)
 
 	tkeys := sdk.NewTransientStoreKeys(paramstypes.TStoreKey)
@@ -269,14 +275,14 @@ func NewSifApp(
 	app.SlashingKeeper = slashingkeeper.NewKeeper(
 		appCodec, keys[slashingtypes.StoreKey], &stakingKeeper, app.GetSubspace(slashingtypes.ModuleName),
 	)
-
+	app.TokenRegistryKeeper = tokenregistrykeeper.NewKeeper(appCodec, keys[tokenregistrytypes.StoreKey])
 	// register the staking hooks
 	// NOTE: stakingKeeper above is passed by reference, so that it will contain these hooks
 	app.StakingKeeper = *stakingKeeper.SetHooks(
 		stakingtypes.NewMultiStakingHooks(app.DistrKeeper.Hooks(), app.SlashingKeeper.Hooks()),
 	)
 
-	app.ClpKeeper = clpkeeper.NewKeeper(appCodec, keys[clptypes.StoreKey], app.BankKeeper, app.AccountKeeper, app.GetSubspace(clptypes.ModuleName))
+	app.ClpKeeper = clpkeeper.NewKeeper(appCodec, keys[clptypes.StoreKey], app.BankKeeper, app.AccountKeeper, app.TokenRegistryKeeper, app.GetSubspace(clptypes.ModuleName))
 
 	app.OracleKeeper = oraclekeeper.NewKeeper(
 		appCodec,
@@ -335,7 +341,7 @@ func NewSifApp(
 		app.IBCKeeper.ChannelKeeper, &app.IBCKeeper.PortKeeper,
 		app.AccountKeeper, app.BankKeeper, scopedTransferKeeper,
 	)
-	transferModule := transfer.NewAppModule(app.TransferKeeper)
+	transferModule := ibctransferoverride.NewAppModule(app.TransferKeeper, app.TokenRegistryKeeper, appCodec)
 
 	// NOTE: the IBC mock keeper and application module is used only for testing core IBC. Do
 	// note replicate if you do not need to test core IBC or light clients.
@@ -377,12 +383,14 @@ func NewSifApp(
 		oracle.NewAppModule(app.OracleKeeper),
 		ethbridge.NewAppModule(app.OracleKeeper, app.BankKeeper, app.AccountKeeper, app.EthbridgeKeeper, &appCodec),
 		dispensation.NewAppModule(app.DispensationKeeper, app.BankKeeper, app.AccountKeeper),
+		tokenregistry.NewAppModule(app.TokenRegistryKeeper, &appCodec),
 	)
 
 	// During begin block slashing happens after distr.BeginBlocker so that
 	// there is nothing left over in the validator fee pool, so as to keep the
 	// CanWithdrawInvariant invariant.
 	app.mm.SetOrderBeginBlockers(
+		capabilitytypes.ModuleName,
 		distrtypes.ModuleName,
 		slashingtypes.ModuleName,
 		upgradetypes.ModuleName,
@@ -415,6 +423,7 @@ func NewSifApp(
 		oracletypes.ModuleName,
 		ethbridge.ModuleName,
 		dispensation.ModuleName,
+		tokenregistry.ModuleName,
 	)
 
 	app.mm.RegisterRoutes(app.Router(), app.QueryRouter(), encodingConfig.Amino)

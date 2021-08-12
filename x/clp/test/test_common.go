@@ -14,8 +14,8 @@ import (
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 
 	sifapp "github.com/Sifchain/sifnode/app"
-	"github.com/Sifchain/sifnode/x/clp/keeper"
 	"github.com/Sifchain/sifnode/x/clp/types"
+	tokenregistrytypes "github.com/Sifchain/sifnode/x/tokenregistry/types"
 )
 
 // Constants for test scripts only .
@@ -36,10 +36,15 @@ func CreateTestApp(isCheckTx bool) (*sifapp.SifchainApp, sdk.Context) {
 	return app, ctx
 }
 
-func CreateTestAppClp(isCheckTx bool) (sdk.Context, keeper.Keeper) {
+func CreateTestAppClp(isCheckTx bool) (sdk.Context, *sifapp.SifchainApp) {
 	ctx, app := GetSimApp(isCheckTx)
 	sifapp.SetConfig(false)
-	return ctx, app.ClpKeeper
+	app.TokenRegistryKeeper.SetToken(ctx, &tokenregistrytypes.RegistryEntry{IsWhitelisted: true, Denom: "ceth", Decimals: 18})
+	app.TokenRegistryKeeper.SetToken(ctx, &tokenregistrytypes.RegistryEntry{IsWhitelisted: true, Denom: "cdash", Decimals: 18})
+	app.TokenRegistryKeeper.SetToken(ctx, &tokenregistrytypes.RegistryEntry{IsWhitelisted: true, Denom: "eth", Decimals: 18})
+	app.TokenRegistryKeeper.SetToken(ctx, &tokenregistrytypes.RegistryEntry{IsWhitelisted: true, Denom: "cacoin", Decimals: 18})
+	app.TokenRegistryKeeper.SetToken(ctx, &tokenregistrytypes.RegistryEntry{IsWhitelisted: true, Denom: "dash", Decimals: 18})
+	return ctx, app
 }
 
 func GetSimApp(isCheckTx bool) (sdk.Context, *sifapp.SifchainApp) {
