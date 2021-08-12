@@ -25,6 +25,7 @@ coverage:
           - "x/"
           - "!x/**/client/" # ignore client package
           - "!**/*.pb.go"
+          - "!**/*.pb.gw.go"
     changes: false
 
 comment:
@@ -52,5 +53,6 @@ ignore:
   - "**/genesis.go"
   - "x/**/*.pb.go"
   - "**/*.pb.go"
+  - "**/*.pq.gw.go"
   - "scripts/"
   - "contrib"
