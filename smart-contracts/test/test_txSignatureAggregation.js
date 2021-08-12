@@ -169,6 +169,42 @@ describe("Gas Cost Tests", function () {
       balance = Number(await state.rowan.balanceOf(state.recipient.address));
       expect(balance).to.be.equal(state.amount);
     });
+
+    it("should allow us to check the cost of creating a new BridgeToken", async function () {
+      state.nonce = 1;
+
+      const { digest, claimData, signatures } = await getValidClaim({
+        state,
+        sender: state.sender,
+        senderSequence: state.senderSequence,
+        recipientAddress: state.recipient.address,
+        tokenAddress: state.token1.address,
+        amount: state.amount,
+        isDoublePeg: true,
+        nonce: state.nonce,
+        networkDescriptor: state.networkDescriptor,
+        tokenName: state.name,
+        tokenSymbol: state.symbol,
+        tokenDecimals: state.decimals,
+        validators: accounts.slice(1, 5),
+      });
+
+      const expectedAddress = ethers.utils.getContractAddress({ from: state.bridgeBank.address, nonce: 1 });
+
+      const tx = await state.cosmosBridge
+        .connect(userOne)
+        .submitProphecyClaimAggregatedSigs(
+            digest,
+            claimData,
+            signatures
+        );
+
+      const receipt = await tx.wait();
+      console.log("~~~~~~~~~~~~\nTotal: ", Number(receipt.gasUsed));
+
+      const newlyCreatedTokenAddress = await state.cosmosBridge.sourceAddressToDestinationAddress(state.token1.address);
+      expect(newlyCreatedTokenAddress).to.be.equal(expectedAddress);
+    });
   });
 });
 
@@ -184,5 +220,10 @@ Mint Gas Cost With 4 Validators
 tx0  179737
 ~~~~~~~~~~~~
 Total:  179737
+
+Create new BridgeToken Gas Cost With 4 Validators
+tx0  1162781
+~~~~~~~~~~~~
+Total:  1162781
  * 
  */
