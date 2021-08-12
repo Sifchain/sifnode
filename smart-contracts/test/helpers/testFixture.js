@@ -109,7 +109,6 @@ async function multiTokenSetup(
   state.name = "TEST COIN";
   state.symbol = "TEST";
   state.decimals = 18;
-  state.ethereumToken = state.constants.zeroAddress;
   state.weiAmount = web3.utils.toWei("0.25", "ether");
   state.amount = 100;
 
@@ -199,7 +198,6 @@ async function singleSetup(
   state.name = "TEST COIN";
   state.symbol = "TEST";
   state.decimals = 18;
-  state.ethereumToken = state.constants.zeroAddress;
   state.weiAmount = web3.utils.toWei("0.25", "ether");
   state.amount = 100;
 
@@ -229,7 +227,7 @@ async function singleSetup(
   // Lock tokens on contract
   await state.bridgeBank.connect(userOne).lock(
     state.sender,
-    state.ethereumToken,
+    state.constants.zeroAddress,
     state.amount, {
       value: state.amount
     }

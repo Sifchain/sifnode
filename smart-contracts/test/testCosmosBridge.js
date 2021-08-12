@@ -256,7 +256,7 @@ describe("Test Cosmos Bridge", function () {
         sender: state.sender,
         senderSequence: state.senderSequence,
         recipientAddress: state.recipient,
-        tokenAddress: state.ethereumToken,
+        tokenAddress: state.constants.zeroAddress,
         amount: state.amount,
         isDoublePeg: false,
         nonce: state.nonce,

@@ -104,7 +104,7 @@ describe("Test Bridge Bank", function () {
     it("should allow users to lock Ethereum in the bridge bank", async function () {
       const tx = await state.bridgeBank.connect(userOne).lock(
         state.sender,
-        state.ethereumToken,
+        state.constants.zeroAddress,
         state.weiAmount, {
         value: state.weiAmount
       }
