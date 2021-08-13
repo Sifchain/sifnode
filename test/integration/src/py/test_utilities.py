@@ -3,6 +3,7 @@ import logging
 import os
 import subprocess
 import time
+import hashlib
 from dataclasses import dataclass
 from functools import lru_cache
 
@@ -479,6 +480,27 @@ currency_pairs = {
     "rowan": "erowan",
     "erowan": "rowan"
 }
+
+
+def calculate_denom_hash(
+        network_descriptor: int,
+        token_contract_address: str,
+        decimals: int,
+        token_name: str,
+        token_symbol: str) -> str:
+        '''
+        Takes in token information and generates the denom hash for metadata module
+        and IBC. Returns string.
+        '''
+    network_descriptor = int(network_descriptor)
+    token_contract_address = token_contract_address.lower()
+    decimals = int(decimals)
+    token_name = token_name.lower()
+    token_symbol = token_symbol.lower()
+    denom_string = f"{network_descriptor}{token_contract_address}{decimals}{token_name}{token_symbol}"
+    denom_hash = "sif" + \
+        hashlib.sha256(denom_string.encode('utf-8')).hexdigest()
+    return denom_hash
 
 
 def mirror_of(currency):

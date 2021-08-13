@@ -6,7 +6,8 @@ import (
 
 // query endpoints supported by the oracle Querier
 const (
-	QueryEthProphecy = "prophecies"
+	QueryEthProphecy         = "prophecies"
+	QueryCrosschainFeeConfig = "crosschainFeeConfig"
 )
 
 // NewQueryEthProphecyRequest creates a new QueryEthProphecyParams
@@ -22,5 +23,19 @@ func NewQueryEthProphecyResponse(id []byte, status oracletypes.StatusText, claim
 		ProphecyId:      id,
 		Status:          status,
 		ClaimValidators: claims,
+	}
+}
+
+// NewQueryCrosschainFeeConfigRequest creates a new QueryEthProphecyParams
+func NewQueryCrosschainFeeConfigRequest(networkDescriptor oracletypes.NetworkDescriptor) *QueryCrosschainFeeConfigRequest {
+	return &QueryCrosschainFeeConfigRequest{
+		NetworkDescriptor: networkDescriptor,
+	}
+}
+
+// NewQueryCrosschainFeeConfigResponse creates a new QueryEthProphecyResponse instance
+func NewQueryCrosschainFeeConfigResponse(crosschainFeeConfig oracletypes.CrossChainFeeConfig) QueryCrosschainFeeConfigResponse {
+	return QueryCrosschainFeeConfigResponse{
+		CrosschainFeeConfig: &crosschainFeeConfig,
 	}
 }

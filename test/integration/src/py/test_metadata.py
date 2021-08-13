@@ -8,23 +8,11 @@ import test_utilities
 from burn_lock_functions import EthereumToSifchainTransferRequest
 from pytest_utilities import generate_test_account
 from test_utilities import get_required_env_var, get_shell_output, amount_in_wei, \
-    SifchaincliCredentials, get_token_metadata
+    SifchaincliCredentials, get_token_metadata, calculate_denom_hash
 
 smart_contracts_dir = get_required_env_var("SMART_CONTRACTS_DIR")
 bridgebank_address = get_required_env_var("BRIDGE_BANK_ADDRESS")
 bridgetoken_address = get_required_env_var("BRIDGE_TOKEN_ADDRESS")
-
-
-def calculate_denom_hash(token):
-    network_descriptor = 1
-    token_contract_address = token["newtoken_address"].lower()
-    decimals = int(token["decimals"])
-    token_name = token["newtoken_name"].lower()
-    token_symbol = token["newtoken_symbol"].lower()
-    denom_string = f"{network_descriptor}{token_contract_address}{decimals}{token_name}{token_symbol}"
-    denom_hash = "sif" + \
-        hashlib.sha256(denom_string.encode('utf-8')).hexdigest()
-    return denom_hash
 
 
 def do_currency_test(
@@ -74,13 +62,19 @@ def do_currency_test(
     burn_lock_functions.transfer_sifchain_to_ethereum(request, credentials)
 
     # Validate that the new token metadata is available to the metadata module
-    denom_hash = calculate_denom_hash(new_currency)
+    network_descriptor = 1
+    token_contract_address = new_currency["newtoken_address"]
+    decimals = int(new_currency["newtoken_decimals"])
+    token_name = new_currency["newtoken_name"]
+    token_symbol = new_currency["newtoken_symbol"]
+    denom_hash = calculate_denom_hash(
+        network_descriptor, token_contract_address, decimals, token_name, token_symbol)
     token_metadata = get_token_metadata(denom_hash)
-    assert int(token_metadata["decimals"]) == int(new_currency["decimals"])
-    assert token_metadata["name"] == new_currency["newtoken_name"]
-    assert token_metadata["symbol"] == new_currency["newtoken_symbol"]
-    assert token_metadata["token_address"] == new_currency["newtoken_address"]
-    assert int(token_metadata["network_descriptor"]) == 1
+    assert int(token_metadata["decimals"]) == decimals
+    assert token_metadata["name"] == token_name
+    assert token_metadata["symbol"] == token_symbol
+    assert token_metadata["token_address"] == token_contract_address
+    assert int(token_metadata["network_descriptor"]) == network_descriptor
 
 
 @pytest.mark.usefixtures("operator_private_key")
