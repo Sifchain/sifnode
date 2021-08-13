@@ -36,3 +36,18 @@ func (srv queryServer) EthProphecy(ctx context.Context, req *types.QueryEthProph
 
 	return &res, nil
 }
+
+func (srv queryServer) CrosschainFeeConfig(ctx context.Context, req *types.QueryCrosschainFeeConfigRequest) (*types.QueryCrosschainFeeConfigResponse, error) {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+
+	networkDescriptor := req.GetNetworkDescriptor()
+	networkIdentity := oracletypes.NewNetworkIdentity(networkDescriptor)
+	crosschainFeeConfig, err := srv.Keeper.oracleKeeper.GetCrossChainFeeConfig(sdkCtx, networkIdentity)
+	if err != nil {
+		return nil, sdkerrors.Wrap(oracletypes.ErrProphecyNotFound, networkDescriptor.String())
+	}
+
+	res := types.NewQueryCrosschainFeeConfigResponse(crosschainFeeConfig)
+
+	return &res, nil
+}
