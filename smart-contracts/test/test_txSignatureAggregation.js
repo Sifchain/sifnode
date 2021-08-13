@@ -7,12 +7,21 @@ const web3 = require("web3");
 const { expect } = require('chai');
 const BigNumber = web3.BigNumber;
 
+// Set `use` to `true` to compare a new implementation with the previous gas costs;
+// Please set the previous gas costs accordingly in this object
+const gasProfiling = {
+  use: true,
+  lock: 173978,
+  mint: 179749,
+  newBb: 1162769
+}
+
 require("chai")
   .use(require("chai-as-promised"))
   .use(require("chai-bignumber")(BigNumber))
   .should();
 
-describe("Gas Cost Tests", function () {
+describe.only("Gas Cost Tests", function () {
   let userOne;
   let userTwo;
   let userThree;
@@ -116,6 +125,9 @@ describe("Gas Cost Tests", function () {
 
       const sum = Number(receipt.gasUsed);
       console.log("~~~~~~~~~~~~\nTotal: ", sum);
+      if(gasProfiling.use) {
+        console.log("Improvement: ", gasProfiling.lock - sum);
+      }
 
       // Bridge claim should be completed
       // Last nonce should now be 1
@@ -158,6 +170,9 @@ describe("Gas Cost Tests", function () {
 
       const sum = Number(receipt.gasUsed);
       console.log("~~~~~~~~~~~~\nTotal: ", sum);
+      if(gasProfiling.use) {
+        console.log("Improvement: ", gasProfiling.mint - sum);
+      }
 
       // Last nonce should now be 1
       lastNonceSubmitted = Number(await state.cosmosBridge.lastNonceSubmitted());
@@ -198,6 +213,9 @@ describe("Gas Cost Tests", function () {
 
       const receipt = await tx.wait();
       console.log("~~~~~~~~~~~~\nTotal: ", Number(receipt.gasUsed));
+      if(gasProfiling.use) {
+        console.log("Improvement: ", gasProfiling.newBb - Number(receipt.gasUsed));
+      }
 
       const newlyCreatedTokenAddress = await state.cosmosBridge.sourceAddressToDestinationAddress(state.token1.address);
       expect(newlyCreatedTokenAddress).to.be.equal(expectedAddress);
