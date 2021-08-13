@@ -2,15 +2,21 @@ package ibctransfer
 
 import (
 	"encoding/json"
+	// "context"
 
 	"github.com/cosmos/cosmos-sdk/client"
 	cdctypes "github.com/cosmos/cosmos-sdk/codec/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
+	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 	capabilitytypes "github.com/cosmos/cosmos-sdk/x/capability/types"
 	"github.com/cosmos/cosmos-sdk/x/ibc/applications/transfer"
 	sdktransferkeeper "github.com/cosmos/cosmos-sdk/x/ibc/applications/transfer/keeper"
+
+	"github.com/Sifchain/sifnode/x/ibctransfer/keeper"
 	"github.com/cosmos/cosmos-sdk/x/ibc/core/04-channel/types"
 	porttypes "github.com/cosmos/cosmos-sdk/x/ibc/core/05-port/types"
+
+	// sdktransfertypes "github.com/cosmos/cosmos-sdk/x/ibc/applications/transfer/types"
 	"github.com/gorilla/mux"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 	"github.com/spf13/cobra"
@@ -81,10 +87,12 @@ func (am AppModuleBasic) GetQueryCmd() *cobra.Command {
 
 //____________________________________________________________________________
 
-// AppModule implements an application module for the dispensation module.
+// AppModule implements an application module for the ibctransfer module.
 type AppModule struct {
 	AppModuleBasic
 	whitelistKeeper tokenregistrytypes.Keeper
+	bankKeeper      bankkeeper.Keeper
+	keeper          keeper.Keeper
 	cdc             codec.BinaryMarshaler
 }
 
@@ -113,7 +121,7 @@ func (am AppModule) OnChanCloseConfirm(ctx sdk.Context, portID, channelID string
 }
 
 func (am AppModule) OnRecvPacket(ctx sdk.Context, packet types.Packet) (*sdk.Result, []byte, error) {
-	return OnRecvPacketWhiteListed(ctx, am.cosmosAppModule, am.whitelistKeeper, packet)
+	return OnRecvPacketWhiteListed(ctx, am.cosmosAppModule, am.whitelistKeeper, am.bankKeeper, packet)
 }
 
 func (am AppModule) OnAcknowledgementPacket(ctx sdk.Context, packet types.Packet, acknowledgement []byte) (*sdk.Result, error) {
@@ -124,12 +132,13 @@ func (am AppModule) OnTimeoutPacket(ctx sdk.Context, packet types.Packet) (*sdk.
 	return am.cosmosAppModule.OnTimeoutPacket(ctx, packet)
 }
 
-func NewAppModule(keeper sdktransferkeeper.Keeper, whitelistKeeper tokenregistrytypes.Keeper, cdc codec.BinaryMarshaler) AppModule {
+func NewAppModule(keeper keeper.Keeper, sdktransferkeeper sdktransferkeeper.Keeper, whitelistKeeper tokenregistrytypes.Keeper, cdc codec.BinaryMarshaler) AppModule {
 	return AppModule{
 		AppModuleBasic: AppModuleBasic{
-			cosmosAppModule: transfer.NewAppModule(keeper),
+			cosmosAppModule: transfer.NewAppModule(sdktransferkeeper),
 		},
 		whitelistKeeper: whitelistKeeper,
+		keeper:          keeper,
 		cdc:             cdc,
 	}
 }
@@ -141,6 +150,9 @@ func (am AppModule) LegacyQuerierHandler(amino *codec.LegacyAmino) sdk.Querier {
 
 func (am AppModule) RegisterServices(cfg module.Configurator) {
 	am.cosmosAppModule.RegisterServices(cfg)
+	// ChangeDenom(cfg, am.cosmosAppModule, am.whitelistKeeper, am.keeper)
+	// sdktransfertypes.RegisterMsgServer(cfg.MsgServer(), am.keeper)
+	// sdktransfertypes.RegisterQueryServer(cfg.QueryServer(), am.keeper)
 }
 
 // Name returns the dispensation module's name.

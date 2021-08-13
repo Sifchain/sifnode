@@ -17,6 +17,7 @@ func OnRecvPacketWhiteListed(
 	ctx sdk.Context,
 	sdkAppModule transfer.AppModule,
 	whitelistKeeper tokenregistrytypes.Keeper,
+	bankKeeper types.BankKeeper,
 	packet channeltypes.Packet,
 ) (*sdk.Result, []byte, error) {
 
@@ -33,7 +34,7 @@ func OnRecvPacketWhiteListed(
 		ctx.EventManager().EmitEvent(
 			sdk.NewEvent(
 				transfertypes.EventTypePacket,
-				sdk.NewAttribute(sdk.AttributeKeyModule, types.ModuleName),
+				sdk.NewAttribute(sdk.AttributeKeyModule, types.ModuleName), // is this ethbridge on purpose?
 				sdk.NewAttribute(transfertypes.AttributeKeyReceiver, data.Receiver),
 				sdk.NewAttribute(transfertypes.AttributeKeyDenom, data.Denom),
 				sdk.NewAttribute(transfertypes.AttributeKeyAmount, fmt.Sprintf("%d", data.Amount)),
@@ -45,8 +46,72 @@ func OnRecvPacketWhiteListed(
 			Events: ctx.EventManager().Events().ToABCIEvents(),
 		}, acknowledgement.GetBytes(), nil
 	}
+	// get result of transfer recieve
+	recvResult, resBytes, err := sdkAppModule.OnRecvPacket(ctx, packet)
+	// if no error and packet is returning and needs conversion: convert
+	if err != nil && IsRecvPacketReturning(packet, data) && checkRecvConvert(ctx, whitelistKeeper, packet, data) {
 
-	return sdkAppModule.OnRecvPacket(ctx, packet)
+		recvResult, err = convertRecvDenom(ctx, whitelistKeeper, bankKeeper, packet, data)
+
+	}
+
+	// otherwise return
+	return recvResult, resBytes, err
+}
+
+func checkRecvConvert(ctx sdk.Context, whitelistKeeper tokenregistrytypes.Keeper,
+	packet channeltypes.Packet, data transfertypes.FungibleTokenPacketData) bool {
+	denom := GetMintedDenomFromPacket(packet, data)
+	// get token registry entry for received token
+	registryEntry := whitelistKeeper.GetIBCDenom(ctx, denom)
+	return registryEntry.IBCDecimals != nil && registryEntry.Decimals > 10
+}
+
+func convertRecvDenom(ctx sdk.Context, whitelistKeeper tokenregistrytypes.Keeper, bankKeeper types.BankKeeper,
+	packet channeltypes.Packet, data transfertypes.FungibleTokenPacketData) (*sdk.Result, error) {
+	denom := GetMintedDenomFromPacket(packet, data)
+	// get token registry entry for received token
+	registryEntry := whitelistKeeper.GetIBCDenom(ctx, denom)
+	// check if registry entry has an IBC decimal field
+	// calculate conversion
+	convAmount := data.Amount * (10 * *(uint64(registryEntry.Decimals) - uint64(registryEntry.IBCDecimals)))
+	convToken := sdk.NewCoin(registryEntry.Denom, sdk.NewIntFromUint64(convAmount))
+	// decode the receiver address
+	receiver, err := sdk.AccAddressFromBech32(data.Receiver)
+	if err != nil {
+		return nil, err
+	}
+	// send ibcdenom coins from account to module
+	ibcToken := sdk.NewCoin(denom, sdk.NewIntFromUint64(data.Amount))
+	err = bankKeeper.SendCoinsFromAccountToModule(ctx, receiver, transfertypes.ModuleName, sdk.NewCoins(ibcToken))
+	if err != nil {
+		return nil, err
+	}
+	// send coins from module account to address
+	err = bankKeeper.SendCoinsFromModuleToAccount(ctx, transfertypes.ModuleName, receiver, sdk.NewCoins(convToken))
+	if err != nil {
+		return nil, err
+	}
+	// burn ibcdenom coins
+	err = bankKeeper.BurnCoins(ctx, transfertypes.ModuleName, sdk.NewCoins(ibcToken))
+	if err != nil {
+		return nil, err
+	}
+
+	ctx.EventManager().EmitEvent(
+		sdk.NewEvent(
+			transfertypes.EventTypePacket,
+			sdk.NewAttribute(sdk.AttributeKeyModule, types.ModuleName),
+			sdk.NewAttribute(transfertypes.AttributeKeyReceiver, data.Receiver),
+			sdk.NewAttribute(transfertypes.AttributeKeyDenom, convToken.Denom),
+			sdk.NewAttribute(transfertypes.AttributeKeyAmount, fmt.Sprintf("%d", convToken.Amount)),
+			// sdk.NewAttribute(transfertypes.AttributeKeyAckSuccess, fmt.Sprintf("%t", err == nil)),  ??
+		),
+	)
+
+	return &sdk.Result{
+		Events: ctx.EventManager().Events().ToABCIEvents(),
+	}, nil
 }
 
 func isRecvPacketAllowed(ctx sdk.Context, whitelistKeeper tokenregistrytypes.Keeper,
