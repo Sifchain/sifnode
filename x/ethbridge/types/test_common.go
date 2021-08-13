@@ -20,6 +20,8 @@ const (
 	AltTestEthereumAddress    = "0x7B95B6EC7EbD73572298cEf32Bb54FA408207344"
 	Alt2TestEthereumAddress   = "0x7B95B6EC7EbD73572298cEf32Bb54FA408207333"
 	TestCoinsSymbol           = "eth"
+	TestName                  = "Ethereum"
+	TestDecimals              = 18
 	TestCrossChainFeeSymbol   = "ceth"
 	AltTestCoinsAmount        = 12
 	AltTestCoinsSymbol        = "eth"
@@ -38,7 +40,7 @@ func CreateTestEthMsg(t *testing.T, validatorAddress sdk.ValAddress, claimType C
 	testTokenAddress := NewEthereumAddress(TestTokenContractAddress)
 	ethClaim := CreateTestEthClaim(
 		t, testContractAddress, testTokenAddress, validatorAddress,
-		testEthereumAddress, TestCoinsAmount, TestCoinsSymbol, claimType)
+		testEthereumAddress, TestCoinsAmount, TestCoinsSymbol, claimType, TestDecimals, TestName)
 	ethMsg := NewMsgCreateEthBridgeClaim(ethClaim)
 	return ethMsg
 }
@@ -46,12 +48,13 @@ func CreateTestEthMsg(t *testing.T, validatorAddress sdk.ValAddress, claimType C
 func CreateTestEthClaim(
 	t *testing.T, testContractAddress EthereumAddress, testTokenAddress EthereumAddress,
 	validatorAddress sdk.ValAddress, testEthereumAddress EthereumAddress, amount sdk.Int, symbol string, claimType ClaimType,
+	testDecimals int32, testName string,
 ) *EthBridgeClaim {
 	testCosmosAddress, err1 := sdk.AccAddressFromBech32(TestAddress)
 	require.NoError(t, err1)
 	ethClaim := NewEthBridgeClaim(
 		TestNetworkDescriptor, testContractAddress, TestNonce, symbol,
-		testTokenAddress, testEthereumAddress, testCosmosAddress, validatorAddress, amount, claimType)
+		testTokenAddress, testEthereumAddress, testCosmosAddress, validatorAddress, amount, claimType, testName, testDecimals)
 	return ethClaim
 }
 
@@ -77,7 +80,7 @@ func CreateTestQueryEthProphecyResponse(t *testing.T, validatorAddress sdk.ValAd
 	testContractAddress := NewEthereumAddress(TestBridgeContractAddress)
 	testTokenAddress := NewEthereumAddress(TestTokenContractAddress)
 	ethBridgeClaim := CreateTestEthClaim(t, testContractAddress, testTokenAddress, validatorAddress,
-		testEthereumAddress, TestCoinsAmount, TestCoinsSymbol, claimType)
+		testEthereumAddress, TestCoinsAmount, TestCoinsSymbol, claimType, TestDecimals, TestName)
 	ethBridgeClaims := []string{ethBridgeClaim.ValidatorAddress}
 
 	return NewQueryEthProphecyResponse(

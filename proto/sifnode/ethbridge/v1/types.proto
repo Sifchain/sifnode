@@ -34,6 +34,25 @@ message EthBridgeClaim {
     (gogoproto.moretags) = "yaml:\"amount\""
   ];
   ClaimType claim_type = 10;
+  // Name of coin different then symbol
+  string token_name = 11 [ (gogoproto.moretags) = "yaml:\"token_name\"" ];
+  // Number of decimals in ERC20 token
+  int32 decimals = 12 [ (gogoproto.moretags) = "yaml:\"token_decimals\"" ];
+  // The hashed concatination of ERC20 address, network descriptor
+  // Token decimals, name and symbol
+  // Marked optional because messages sent by the relayer may not be hashed
+  string denom_hash = 13 [ (gogoproto.moretags) = "yaml:\"denom_hash\"" ];
+}
+
+// Coin Metadata Modlue structure for storing
+// new tokens and fetching queries
+message TokenMetadata {
+  int32 decimals = 1 [ (gogoproto.moretags) = "yaml:\"token_decimals\"" ];
+  string name = 2 [ (gogoproto.moretags) = "yaml:\"token_name\"" ];
+  string symbol = 3 [ (gogoproto.moretags) = "yaml:\"token_symbol\"" ];
+  string token_address = 4 [ (gogoproto.moretags) = "yaml:\"token_address\"" ];
+  sifnode.oracle.v1.NetworkDescriptor network_descriptor = 5
+      [ (gogoproto.moretags) = "yaml:\"network_descriptor\"" ];
 }
 
 message PeggyTokens { repeated string tokens = 1; }
