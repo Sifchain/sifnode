@@ -240,6 +240,9 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
             !findDup(signatureData), "DUP_SIGNER"
         );
 
+        // update the nonce
+        lastNonceSubmitted = claimData.nonce;
+
         // check that all signers are validators and are unique
         for (uint256 i = 0; i < signatureData.length; i++) {
             require(isActiveValidator(signatureData[i].signer), "INV_SIGNER");
@@ -257,9 +260,6 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
 
         uint256 signedPower = getSignedPower(signatureData);
         require(getProphecyStatus(signedPower), "INV_POW");
-        //require(getProphecyStatus(getSignedPower(signatureData)), "INV_POW");
-
-        lastNonceSubmitted = claimData.nonce;
 
         // if we are double pegging AND we don't control the token, we deploy a new smart contract
         address tokenAddress;
@@ -301,8 +301,8 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
     }
 
     function _createNewBridgeToken(
-        string memory symbol,
-        string memory name,
+        string calldata symbol,
+        string calldata name,
         address sourceChainTokenAddress,
         uint8 decimals,
         uint256 _networkDescriptor
