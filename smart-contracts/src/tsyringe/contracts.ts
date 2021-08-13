@@ -1,9 +1,9 @@
 import {inject, injectable, instanceCachingFactory, registry, singleton} from "tsyringe";
-import type {Contract} from 'ethers';
+import type {BigNumberish, Contract} from 'ethers';
 import {BigNumber, ContractFactory} from "ethers";
 import {HardhatRuntimeEnvironment} from "hardhat/types";
 import {EthereumAddress, NotNativeCurrencyAddress} from "../ethereumAddress";
-import {HardhatRuntimeEnvironmentToken,} from "./injectionTokens";
+import {HardhatRuntimeEnvironmentToken, NetworkDescriptorToken,} from "./injectionTokens";
 import {SifchainAccounts, SifchainAccountsPromise} from "./sifchainAccounts";
 import {
     BridgeBank,
@@ -36,6 +36,7 @@ export class CosmosBridgeArguments {
         readonly consensusThreshold: number,
         readonly initialValidators: Array<EthereumAddress>,
         readonly initialPowers: Array<number>,
+        readonly networkDescriptor: number,
     ) {
     }
 
@@ -44,7 +45,8 @@ export class CosmosBridgeArguments {
             this.operator.address,
             this.consensusThreshold,
             this.initialValidators.map(x => x.address),
-            this.initialPowers
+            this.initialPowers,
+            this.networkDescriptor
         ]
     }
 }
@@ -65,21 +67,25 @@ export class CosmosBridgeProxy {
     ) {
         this.contract = sifchainContractFactories.cosmosBridge.then(async cosmosBridgeFactory => {
             const args = await cosmosBridgeArgumentsPromise.cosmosBridgeArguments
-            const cosmosBridgeProxy = await hardhatRuntimeEnvironment.upgrades.deployProxy(cosmosBridgeFactory, args.asArray())
+            const cosmosBridgeProxy = await hardhatRuntimeEnvironment.upgrades.deployProxy(cosmosBridgeFactory,
+                args.asArray(),
+                { initializer: 'initialize(address,uint256,address[],uint256[],uint256)' }
+            )
             await cosmosBridgeProxy.deployed()
             return cosmosBridgeProxy
         })
     }
 }
 
-export function defaultCosmosBridgeArguments(sifchainAccounts: SifchainAccounts, power: number = 100): CosmosBridgeArguments {
+export function defaultCosmosBridgeArguments(sifchainAccounts: SifchainAccounts, power: number = 100, networkDescriptor: number = 1): CosmosBridgeArguments {
     const powers = sifchainAccounts.validatatorAccounts.map(x => power)
     const threshold = powers.reduce((acc, x) => acc + x)
     return new CosmosBridgeArguments(
         new NotNativeCurrencyAddress(sifchainAccounts.operatorAccount.address),
         threshold,
         sifchainAccounts.validatatorAccounts.map(x => new NotNativeCurrencyAddress(x.address)),
-        powers
+        powers,
+        networkDescriptor
     )
 }
 
@@ -92,6 +98,10 @@ export function defaultCosmosBridgeArguments(sifchainAccounts: SifchainAccounts,
                 return defaultCosmosBridgeArguments(accts)
             }))
         })
+    },
+    {
+        token: NetworkDescriptorToken,
+        useValue: 1
     }
 ])
 
@@ -99,7 +109,8 @@ export function defaultCosmosBridgeArguments(sifchainAccounts: SifchainAccounts,
 export class BridgeBankArguments {
     constructor(
         private readonly cosmosBridgeProxy: CosmosBridgeProxy,
-        private readonly sifchainAccountsPromise: SifchainAccountsPromise
+        private readonly sifchainAccountsPromise: SifchainAccountsPromise,
+        @inject(NetworkDescriptorToken) private readonly networkDescriptor: number
     ) {
     }
 
@@ -107,9 +118,11 @@ export class BridgeBankArguments {
         const cosmosBridge = await this.cosmosBridgeProxy.contract
         const accts = await this.sifchainAccountsPromise.accounts
         const result = [
+            accts.operatorAccount.address,
             cosmosBridge.address,
             accts.ownerAccount.address,
-            accts.pauserAccount.address
+            accts.pauserAccount.address,
+            this.networkDescriptor
         ]
         return result
     }
@@ -127,7 +140,10 @@ export class BridgeBankProxy {
     ) {
         this.contract = sifchainContractFactories.bridgeBank.then(async bridgeBankFactory => {
             const bridgeBankArguments = await this.bridgeBankArguments.asArray()
-            const bridgeBankProxy = await h.upgrades.deployProxy(bridgeBankFactory, bridgeBankArguments) as BridgeBank
+            const bridgeBankProxy = await h.upgrades.deployProxy(bridgeBankFactory,
+                bridgeBankArguments,
+                { initializer: 'initialize(address,address,address,address,uint256)' }
+            ) as BridgeBank
             await bridgeBankProxy.deployed()
             return bridgeBankProxy
         })

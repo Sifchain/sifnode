@@ -5,7 +5,7 @@ const BigNumber = web3.BigNumber;
 const { ethers } = require("hardhat");
 const { use, expect } = require("chai");
 const { solidity } = require("ethereum-waffle");
-const { singleSetup } = require("./helpers/testFixture");
+const { setup } = require("./helpers/testFixture");
 
 require("chai")
   .use(require("chai-as-promised"))
@@ -30,6 +30,7 @@ describe("Test Bridge Bank", function () {
   const consensusThreshold = 75;
   let initialPowers;
   let initialValidators;
+  let networkDescriptor;
   let state;
 
   before(async function() {
@@ -41,26 +42,30 @@ describe("Test Bridge Bank", function () {
     userOne = accounts[1];
     userTwo = accounts[2];
     userFour = accounts[3];
-    userThree = accounts[7].address;
+    userThree = accounts[7];
 
     owner = accounts[5];
-    pauser = accounts[6].address;
+    pauser = accounts[6];
 
     initialPowers = [25, 25, 25, 25];
     initialValidators = signerAccounts.slice(0, 4);
+
+    networkDescriptor = 1;
   });
 
   beforeEach(async function () {
-    state = await singleSetup(
+    state = await setup({
         initialValidators,
         initialPowers,
         operator,
         consensusThreshold,
         owner,
-        userOne,
-        userThree,
-        pauser
-    );
+        user: userOne,
+        recipient: userThree,
+        pauser,
+        networkDescriptor,
+        lockTokensOnBridgeBank: true
+    });
   });
 
   describe("BridgeBank single lock burn transactions", function () {
@@ -87,30 +92,23 @@ describe("Test Bridge Bank", function () {
 
     it("should not allow user to lock ERC20 tokens", async function () {
       const FakeToken = await ethers.getContractFactory("FakeERC20");
-      const fakeToken = await FakeToken.deploy();
+      fakeToken = await FakeToken.deploy();
+      
+      // Add the token into white list
+      await state.bridgeBank.connect(operator)
+        .updateEthWhiteList(fakeToken.address, true)
+        .should.be.fulfilled;
 
       // Approve and lock tokens
       await expect(state.bridgeBank.connect(userOne).lock(state.sender, fakeToken.address, state.amount))
         .to.emit(state.bridgeBank, 'LogLock')
-        .withArgs(userOne.address, state.sender, fakeToken.address, state.amount, "3", 18, "", "");
-
-      /*
-                  msg.sender,
-            recipient,
-            tokenAddress,
-            tokenAmount,
-            _lockBurnNonce,
-            decimals,
-            symbol,
-            name
-        );
-      */
+        .withArgs(userOne.address, state.sender, fakeToken.address, state.amount, "3", 18, "", "", state.networkDescriptor);
     });
 
     it("should allow users to lock Ethereum in the bridge bank", async function () {
       const tx = await state.bridgeBank.connect(userOne).lock(
         state.sender,
-        state.ethereumToken,
+        state.constants.zeroAddress,
         state.weiAmount, {
           value: state.weiAmount
         }
@@ -129,7 +127,7 @@ describe("Test Bridge Bank", function () {
       await expect(
         state.bridgeBank.connect(userOne).lock(
           state.sender,
-          state.ethereumToken,
+          state.constants.zeroAddress,
           state.weiAmount + 1, {
             value: state.weiAmount
           },

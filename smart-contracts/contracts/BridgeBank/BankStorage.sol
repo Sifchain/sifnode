@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: Apache-2.0
 pragma solidity 0.8.0;
 
 import "./CosmosBankStorage.sol";
@@ -10,9 +11,12 @@ contract BankStorage is
     CosmosWhiteListStorage {
 
     /*
-    * @notice [DEPRECATED] operator address that can update the smart contract
+    * @notice operator address that can:
+    *   Reinitialize BridgeBank
+    *   Update Eth whitelist
+    *   Change the operator
     */
-    address private operator;
+    address public operator;
 
     /*
     * @notice [DEPRECATED] address of the Oracle smart contract
