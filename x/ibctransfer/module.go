@@ -16,7 +16,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/ibc/core/04-channel/types"
 	porttypes "github.com/cosmos/cosmos-sdk/x/ibc/core/05-port/types"
 
-	// sdktransfertypes "github.com/cosmos/cosmos-sdk/x/ibc/applications/transfer/types"
+	sdktransfertypes "github.com/cosmos/cosmos-sdk/x/ibc/applications/transfer/types"
 	"github.com/gorilla/mux"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 	"github.com/spf13/cobra"
@@ -90,10 +90,10 @@ func (am AppModuleBasic) GetQueryCmd() *cobra.Command {
 // AppModule implements an application module for the ibctransfer module.
 type AppModule struct {
 	AppModuleBasic
-	whitelistKeeper tokenregistrytypes.Keeper
-	bankKeeper      bankkeeper.Keeper
-	keeper          keeper.Keeper
-	cdc             codec.BinaryMarshaler
+	sdkTransferKeeper sdktransferkeeper.Keeper
+	whitelistKeeper   tokenregistrytypes.Keeper
+	bankKeeper        bankkeeper.Keeper
+	cdc               codec.BinaryMarshaler
 }
 
 func (am AppModule) OnChanOpenInit(ctx sdk.Context, order types.Order, connectionHops []string, portID string, channelID string, channelCap *capabilitytypes.Capability, counterparty types.Counterparty, version string) error {
@@ -132,14 +132,14 @@ func (am AppModule) OnTimeoutPacket(ctx sdk.Context, packet types.Packet) (*sdk.
 	return am.cosmosAppModule.OnTimeoutPacket(ctx, packet)
 }
 
-func NewAppModule(keeper keeper.Keeper, sdktransferkeeper sdktransferkeeper.Keeper, whitelistKeeper tokenregistrytypes.Keeper, cdc codec.BinaryMarshaler) AppModule {
+func NewAppModule(sdkTransferKeeper sdktransferkeeper.Keeper, whitelistKeeper tokenregistrytypes.Keeper, cdc codec.BinaryMarshaler) AppModule {
 	return AppModule{
 		AppModuleBasic: AppModuleBasic{
-			cosmosAppModule: transfer.NewAppModule(sdktransferkeeper),
+			cosmosAppModule: transfer.NewAppModule(sdkTransferKeeper),
 		},
-		whitelistKeeper: whitelistKeeper,
-		keeper:          keeper,
-		cdc:             cdc,
+		sdkTransferKeeper: sdkTransferKeeper,
+		whitelistKeeper:   whitelistKeeper,
+		cdc:               cdc,
 	}
 }
 
@@ -149,10 +149,9 @@ func (am AppModule) LegacyQuerierHandler(amino *codec.LegacyAmino) sdk.Querier {
 }
 
 func (am AppModule) RegisterServices(cfg module.Configurator) {
-	am.cosmosAppModule.RegisterServices(cfg)
 	// ChangeDenom(cfg, am.cosmosAppModule, am.whitelistKeeper, am.keeper)
-	// sdktransfertypes.RegisterMsgServer(cfg.MsgServer(), am.keeper)
-	// sdktransfertypes.RegisterQueryServer(cfg.QueryServer(), am.keeper)
+	sdktransfertypes.RegisterMsgServer(cfg.MsgServer(), keeper.NewMsgServerImpl())
+	sdktransfertypes.RegisterQueryServer(cfg.QueryServer(), am.sdkTransferKeeper)
 }
 
 // Name returns the dispensation module's name.
