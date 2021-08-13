@@ -209,18 +209,18 @@ describe("Gas Cost Tests", function () {
  * 
  * 
 Unlock Gas Cost With 4 Validators
-tx0  173990
+tx0  173978
 ~~~~~~~~~~~~
-Total:  173990
+Total:  173978
 
 Mint Gas Cost With 4 Validators
-tx0  179737
+tx0  179749
 ~~~~~~~~~~~~
-Total:  179737
+Total:  179749
 
 Create new BridgeToken Gas Cost With 4 Validators
-tx0  1162781
+tx0  1162769
 ~~~~~~~~~~~~
-Total:  1162781
+Total:  1162769
  * 
  */
