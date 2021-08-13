@@ -5,7 +5,7 @@ const BigNumber = web3.BigNumber;
 const { ethers, upgrades } = require("hardhat");
 const { use, expect } = require("chai");
 const { solidity } = require("ethereum-waffle");
-const { multiTokenSetup } = require("./helpers/testFixture");
+const { setup, batchAddTokensToEthWhitelist } = require("./helpers/testFixture");
 
 require("chai")
   .use(require("chai-as-promised"))
@@ -55,17 +55,17 @@ describe("Test Bridge Bank", function () {
   });
 
   beforeEach(async function () {
-    state = await multiTokenSetup(
+    state = await setup({
       initialValidators,
       initialPowers,
       operator,
       consensusThreshold,
       owner,
-      userOne,
-      userThree,
-      pauser.address,
+      user: userOne,
+      recipient: userThree,
+      pauser,
       networkDescriptor
-    );
+    });
   });
 
   describe("BridgeBank", function () {
@@ -81,11 +81,6 @@ describe("Test Bridge Bank", function () {
       await state.bridgeBank.connect(operator)
         .updateEthWhiteList(state.token1.address, true)
         .should.be.fulfilled;
-
-      await state.token1.connect(userOne).approve(
-        state.bridgeBank.address,
-        state.amount
-      );
 
       // Attempt to lock tokens
       await state.bridgeBank.connect(userOne).lock(
@@ -123,32 +118,11 @@ describe("Test Bridge Bank", function () {
   describe("Multi Lock ERC20 Tokens", function () {
     it("should allow user to multi-lock ERC20 tokens", async function () {
       // Add the tokens into white list
-      await state.bridgeBank.connect(operator)
-        .updateEthWhiteList(state.token1.address, true)
-        .should.be.fulfilled;
-
-      await state.bridgeBank.connect(operator)
-        .updateEthWhiteList(state.token2.address, true)
-        .should.be.fulfilled;
-
-      await state.bridgeBank.connect(operator)
-        .updateEthWhiteList(state.token3.address, true)
-        .should.be.fulfilled;
-
-      await state.token1.connect(userOne).approve(
-        state.bridgeBank.address,
-        state.amount
-      );
-
-      await state.token2.connect(userOne).approve(
-        state.bridgeBank.address,
-        state.amount
-      );
-
-      await state.token3.connect(userOne).approve(
-        state.bridgeBank.address,
-        state.amount
-      );
+      await batchAddTokensToEthWhitelist(state, [
+        state.token1.address,
+        state.token2.address,
+        state.token3.address,
+      ]);
 
       // Attempt to lock tokens
       await state.bridgeBank.connect(userOne).multiLock(
@@ -176,33 +150,12 @@ describe("Test Bridge Bank", function () {
 
     it("should allow user to multi-lock ERC20 tokens with multiLockBurn method", async function () {
       // Add the tokens into white list
-      await state.bridgeBank.connect(operator)
-        .updateEthWhiteList(state.token1.address, true)
-        .should.be.fulfilled;
-
-      await state.bridgeBank.connect(operator)
-        .updateEthWhiteList(state.token2.address, true)
-        .should.be.fulfilled;
-
-      await state.bridgeBank.connect(operator)
-        .updateEthWhiteList(state.token3.address, true)
-        .should.be.fulfilled;
-
-      await state.token1.connect(userOne).approve(
-        state.bridgeBank.address,
-        state.amount
-      );
-
-      await state.token2.connect(userOne).approve(
-        state.bridgeBank.address,
-        state.amount
-      );
-
-      await state.token3.connect(userOne).approve(
-        state.bridgeBank.address,
-        state.amount
-      );
-
+      await batchAddTokensToEthWhitelist(state, [
+        state.token1.address,
+        state.token2.address,
+        state.token3.address,
+      ]);
+      
       // Attempt to lock tokens
       await state.bridgeBank.connect(userOne).multiLockBurn(
         [state.sender, state.sender, state.sender],
@@ -229,21 +182,6 @@ describe("Test Bridge Bank", function () {
     });
 
     it("should not allow user to multi-burn ERC20 tokens that are not cosmos native assets", async function () {
-      await state.token1.connect(userOne).approve(
-        state.bridgeBank.address,
-        state.amount
-      );
-
-      await state.token2.connect(userOne).approve(
-        state.bridgeBank.address,
-        state.amount
-      );
-
-      await state.token3.connect(userOne).approve(
-        state.bridgeBank.address,
-        state.amount
-      );
-
       // Attempt to lock tokens
       await expect(
         state.bridgeBank.connect(userOne).multiLockBurn(
@@ -257,23 +195,10 @@ describe("Test Bridge Bank", function () {
 
     it("should allow user to multi-lock and burn ERC20 tokens and rowan with multiLockBurn method", async function () {
       // Add the tokens into white list
-      await state.bridgeBank.connect(operator)
-        .updateEthWhiteList(state.token1.address, true)
-        .should.be.fulfilled;
-
-      await state.bridgeBank.connect(operator)
-        .updateEthWhiteList(state.token2.address, true)
-        .should.be.fulfilled;
-
-      await state.token1.connect(userOne).approve(
-        state.bridgeBank.address,
-        state.amount
-      );
-
-      await state.token2.connect(userOne).approve(
-        state.bridgeBank.address,
-        state.amount
-      );
+      await batchAddTokensToEthWhitelist(state, [
+        state.token1.address,
+        state.token2.address,
+      ]);
 
       // approve bridgebank to spend rowan
       await state.rowan.connect(userOne).approve(
@@ -310,33 +235,17 @@ describe("Test Bridge Bank", function () {
 
     it("should not allow user to multi-lock ERC20 tokens if one token is not fully approved", async function () {
       // Add the tokens into white list
-      await state.bridgeBank.connect(operator)
-        .updateEthWhiteList(state.token1.address, true)
-        .should.be.fulfilled;
-
-      await state.bridgeBank.connect(operator)
-        .updateEthWhiteList(state.token2.address, true)
-        .should.be.fulfilled;
-
-      await state.bridgeBank.connect(operator)
-        .updateEthWhiteList(state.token3.address, true)
-        .should.be.fulfilled;
-
+      await batchAddTokensToEthWhitelist(state, [
+        state.token1.address,
+        state.token2.address,
+        state.token3.address,
+      ]);
+      
       const tx = await state.token1.connect(userOne).approve(
         state.bridgeBank.address,
         0
       );
       const receipt = await tx.wait();
-
-      await state.token2.connect(userOne).approve(
-        state.bridgeBank.address,
-        state.amount
-      );
-
-      await state.token3.connect(userOne).approve(
-        state.bridgeBank.address,
-        state.amount
-      );
 
       // Attempt to lock tokens
       await expect(
@@ -399,18 +308,12 @@ describe("Test Bridge Bank", function () {
 
     it("should not allow user to multi-lock when parameters are malformed, invalid sif addresses", async function () {
       // Add the tokens into white list
-      await state.bridgeBank.connect(operator)
-        .updateEthWhiteList(state.token1.address, true)
-        .should.be.fulfilled;
-
-      await state.bridgeBank.connect(operator)
-        .updateEthWhiteList(state.token2.address, true)
-        .should.be.fulfilled;
-
-      await state.bridgeBank.connect(operator)
-        .updateEthWhiteList(state.token3.address, true)
-        .should.be.fulfilled;
-
+      await batchAddTokensToEthWhitelist(state, [
+        state.token1.address,
+        state.token2.address,
+        state.token3.address,
+      ]);
+      
       // Attempt to lock tokens
       await expect(
         state.bridgeBank.connect(userOne).multiLock(
@@ -486,18 +389,12 @@ describe("Test Bridge Bank", function () {
 
     it("should revert when multi-lock parameters are malformed, invalid sif addresses", async function () {
       // Add the tokens into white list
-      await state.bridgeBank.connect(operator)
-        .updateEthWhiteList(state.token1.address, true)
-        .should.be.fulfilled;
-
-      await state.bridgeBank.connect(operator)
-        .updateEthWhiteList(state.token2.address, true)
-        .should.be.fulfilled;
-
-      await state.bridgeBank.connect(operator)
-        .updateEthWhiteList(state.token3.address, true)
-        .should.be.fulfilled;
-
+      await batchAddTokensToEthWhitelist(state, [
+        state.token1.address,
+        state.token2.address,
+        state.token3.address,
+      ]);
+      
       // Attempt to lock tokens
       await expect(
         state.bridgeBank.connect(userOne).multiLockBurn(
@@ -572,11 +469,6 @@ describe("Test Bridge Bank", function () {
     });
 
     it("should not allow user to lock ERC20 tokens that are not in eth whitelist", async function () {
-      await state.token1.connect(userOne).approve(
-        state.bridgeBank.address,
-        state.amount
-      );
-
       // Attempt to lock tokens
       await expect(state.bridgeBank.connect(userOne).lock(
         state.sender,
@@ -586,21 +478,6 @@ describe("Test Bridge Bank", function () {
     });
 
     it("should not allow user to multi-lock ERC20 tokens that are not in eth whitelist", async function () {
-      await state.token1.connect(userOne).approve(
-        state.bridgeBank.address,
-        state.amount
-      );
-
-      await state.token2.connect(userOne).approve(
-        state.bridgeBank.address,
-        state.amount
-      );
-
-      await state.token3.connect(userOne).approve(
-        state.bridgeBank.address,
-        state.amount
-      );
-
       // Attempt to lock tokens
       await expect(state.bridgeBank.connect(userOne).multiLock(
         [state.sender, state.sender, state.sender],
@@ -610,21 +487,6 @@ describe("Test Bridge Bank", function () {
     });
 
     it("should not allow user to multi-lock ERC20 tokens that are not in eth whitelist with multiLockBurn method", async function () {
-      await state.token1.connect(userOne).approve(
-        state.bridgeBank.address,
-        state.amount
-      );
-
-      await state.token2.connect(userOne).approve(
-        state.bridgeBank.address,
-        state.amount
-      );
-
-      await state.token3.connect(userOne).approve(
-        state.bridgeBank.address,
-        state.amount
-      );
-
       // Attempt to lock tokens
       await expect(state.bridgeBank.connect(userOne).multiLockBurn(
         [state.sender, state.sender, state.sender],
@@ -635,16 +497,6 @@ describe("Test Bridge Bank", function () {
     });
 
     it("should not allow user to multi-lock and burn ERC20 tokens not in eth whitelist and rowan with multiLockBurn method", async function () {
-      await state.token1.connect(userOne).approve(
-        state.bridgeBank.address,
-        state.amount
-      );
-
-      await state.token2.connect(userOne).approve(
-        state.bridgeBank.address,
-        state.amount
-      );
-
       // approve bridgebank to spend rowan
       await state.rowan.connect(userOne).approve(
         state.bridgeBank.address,

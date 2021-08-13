@@ -5,7 +5,7 @@ const BigNumber = web3.BigNumber;
 const { ethers } = require("hardhat");
 const { use, expect } = require("chai");
 const { solidity } = require("ethereum-waffle");
-const { singleSetup } = require("./helpers/testFixture");
+const { setup } = require("./helpers/testFixture");
 
 require("chai")
   .use(require("chai-as-promised"))
@@ -42,10 +42,10 @@ describe("Test Bridge Bank", function () {
     userOne = accounts[1];
     userTwo = accounts[2];
     userFour = accounts[3];
-    userThree = accounts[7].address;
+    userThree = accounts[7];
 
     owner = accounts[5];
-    pauser = accounts[6].address;
+    pauser = accounts[6];
 
     initialPowers = [25, 25, 25, 25];
     initialValidators = signerAccounts.slice(0, 4);
@@ -54,17 +54,18 @@ describe("Test Bridge Bank", function () {
   });
 
   beforeEach(async function () {
-    state = await singleSetup(
+    state = await setup({
         initialValidators,
         initialPowers,
         operator,
         consensusThreshold,
         owner,
-        userOne,
-        userThree,
+        user: userOne,
+        recipient: userThree,
         pauser,
-        networkDescriptor
-    );
+        networkDescriptor,
+        lockTokensOnBridgeBank: true
+    });
   });
 
   describe("BridgeBank single lock burn transactions", function () {

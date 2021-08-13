@@ -1,6 +1,6 @@
 const {
   signHash,
-  multiTokenSetup,
+  setup,
   deployTrollToken,
   getDigestNewProphecyClaim,
   getValidClaim
@@ -42,7 +42,7 @@ describe("submitProphecyClaimAggregatedSigs Security", function () {
     userFour = accounts[4];
 
     owner = accounts[5];
-    pauser = accounts[6].address;
+    pauser = accounts[6];
 
     initialPowers = [25, 25, 25, 25];
     initialValidators = [
@@ -57,17 +57,17 @@ describe("submitProphecyClaimAggregatedSigs Security", function () {
 
   beforeEach(async function () {
     // Deploy Valset contract
-    state = await multiTokenSetup(
+    state = await setup({
       initialValidators,
       initialPowers,
       operator,
       consensusThreshold,
       owner,
-      userOne,
-      userThree,
+      user: userOne,
+      recipient: userThree,
       pauser,
       networkDescriptor
-    );
+    });
 
     // Add the token into white list
     await state.bridgeBank.connect(operator)
@@ -88,13 +88,13 @@ describe("submitProphecyClaimAggregatedSigs Security", function () {
 
   describe("should revert when", function () {
     it("no signatures are provided", async function () {
-      state.recipient = userOne.address;
+      state.recipient = userOne;
       state.nonce = 1;
 
       const { digest, claimData } = await getValidClaim({
         sender: state.sender,
         senderSequence: state.senderSequence,
-        recipientAddress: state.recipient,
+        recipientAddress: state.recipient.address,
         tokenAddress: state.troll.address,
         amount: state.amount,
         doublePeg: false,
@@ -118,12 +118,12 @@ describe("submitProphecyClaimAggregatedSigs Security", function () {
     });
     
     it("hash digest doesn't match provided data", async function () {
-      state.recipient = userOne.address;
+      state.recipient = userOne;
       state.nonce = 1;
       const digest = getDigestNewProphecyClaim([
         state.sender,
         state.senderSequence,
-        state.recipient,
+        state.recipient.address,
         state.troll.address,
         state.amount,
         false,
@@ -135,7 +135,7 @@ describe("submitProphecyClaimAggregatedSigs Security", function () {
       let claimData = {
         cosmosSender: state.sender,
         cosmosSenderSequence: state.senderSequence,
-        ethereumReceiver: state.recipient,
+        ethereumReceiver: state.recipient.address,
         tokenAddress: state.troll.address,
         amount: state.amount,
         doublePeg: false,
@@ -158,13 +158,13 @@ describe("submitProphecyClaimAggregatedSigs Security", function () {
     });
 
     it("there are duplicate signers", async function () {
-      state.recipient = userOne.address;
+      state.recipient = userOne;
       state.nonce = 1;
 
       const { digest, claimData, signatures } = await getValidClaim({
         sender: state.sender,
         senderSequence: state.senderSequence,
-        recipientAddress: state.recipient,
+        recipientAddress: state.recipient.address,
         tokenAddress: state.troll.address,
         amount: state.amount,
         doublePeg: false,
@@ -188,13 +188,13 @@ describe("submitProphecyClaimAggregatedSigs Security", function () {
     });
 
     it("there is an invalid signer", async function () {
-      state.recipient = userOne.address;
+      state.recipient = userOne;
       state.nonce = 1;
 
       const { digest, claimData, signatures } = await getValidClaim({
         sender: state.sender,
         senderSequence: state.senderSequence,
-        recipientAddress: state.recipient,
+        recipientAddress: state.recipient.address,
         tokenAddress: state.troll.address,
         amount: state.amount,
         doublePeg: false,
@@ -218,12 +218,12 @@ describe("submitProphecyClaimAggregatedSigs Security", function () {
     });
 
     it("there is a signature that signs invalid data", async function () {
-      state.recipient = userOne.address;
+      state.recipient = userOne;
       state.nonce = 1;
       const digest = getDigestNewProphecyClaim([
         state.sender,
         state.senderSequence,
-        state.recipient,
+        state.recipient.address,
         state.troll.address,
         state.amount,
         false,
@@ -234,7 +234,7 @@ describe("submitProphecyClaimAggregatedSigs Security", function () {
       const invalidDigest = getDigestNewProphecyClaim([
         state.sender,
         state.senderSequence,
-        state.recipient,
+        state.recipient.address,
         state.troll.address,
         state.amount,
         false,
@@ -251,7 +251,7 @@ describe("submitProphecyClaimAggregatedSigs Security", function () {
       let claimData = {
         cosmosSender: state.sender,
         cosmosSenderSequence: state.senderSequence,
-        ethereumReceiver: state.recipient,
+        ethereumReceiver: state.recipient.address,
         tokenAddress: state.troll.address,
         amount: state.amount,
         doublePeg: false,
@@ -274,13 +274,13 @@ describe("submitProphecyClaimAggregatedSigs Security", function () {
     });
 
     it("there is not enough power to complete prophecy", async function () {
-      state.recipient = userOne.address;
+      state.recipient = userOne;
       state.nonce = 1;
 
       const { digest, claimData, signatures } = await getValidClaim({
         sender: state.sender,
         senderSequence: state.senderSequence,
-        recipientAddress: state.recipient,
+        recipientAddress: state.recipient.address,
         tokenAddress: state.troll.address,
         amount: state.amount,
         doublePeg: false,
@@ -304,13 +304,13 @@ describe("submitProphecyClaimAggregatedSigs Security", function () {
     });
 
     it("prophecy is in an invalid order", async function () {
-      state.recipient = userOne.address;
+      state.recipient = userOne;
       state.nonce = 2;
 
       const { digest, claimData, signatures } = await getValidClaim({
         sender: state.sender,
         senderSequence: state.senderSequence,
-        recipientAddress: state.recipient,
+        recipientAddress: state.recipient.address,
         tokenAddress: state.troll.address,
         amount: state.amount,
         doublePeg: false,
@@ -334,13 +334,13 @@ describe("submitProphecyClaimAggregatedSigs Security", function () {
     });
 
     it("prophecy is already redeemed", async function () {
-      state.recipient = userOne.address;
+      state.recipient = userOne;
       state.nonce = 1;
 
       const { digest, claimData, signatures } = await getValidClaim({
         sender: state.sender,
         senderSequence: state.senderSequence,
-        recipientAddress: state.recipient,
+        recipientAddress: state.recipient.address,
         tokenAddress: state.troll.address,
         amount: state.amount,
         doublePeg: false,

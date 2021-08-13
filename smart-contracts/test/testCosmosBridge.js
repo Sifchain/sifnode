@@ -5,10 +5,7 @@ const BigNumber = web3.BigNumber;
 const { ethers } = require("hardhat");
 const { use, expect } = require("chai");
 const { solidity } = require("ethereum-waffle");
-const {
-  singleSetup,
-  getValidClaim
-} = require("./helpers/testFixture");
+const { setup, getValidClaim} = require("./helpers/testFixture");
 
 require("chai")
   .use(require("chai-as-promised"))
@@ -45,10 +42,10 @@ describe("Test Cosmos Bridge", function () {
     userOne = accounts[1];
     userTwo = accounts[2];
     userFour = accounts[3];
-    userThree = accounts[9].address;
+    userThree = accounts[9];
 
     owner = accounts[5];
-    pauser = accounts[6].address;
+    pauser = accounts[6];
 
     initialPowers = [25, 25, 25, 25];
     initialValidators = signerAccounts.slice(0, 4);
@@ -57,17 +54,18 @@ describe("Test Cosmos Bridge", function () {
   });
 
   beforeEach(async function () {
-    state = await singleSetup(
+    state = await setup({
       initialValidators,
       initialPowers,
       operator,
       consensusThreshold,
       owner,
-      userOne,
-      userThree,
+      user: userOne,
+      recipient: userThree,
       pauser,
-      networkDescriptor
-    );
+      networkDescriptor,
+      lockTokensOnBridgeBank: true
+    });
   });
 
   describe("CosmosBridge:Oracle", function () {
@@ -112,7 +110,7 @@ describe("Test Cosmos Bridge", function () {
 
       // Confirm that all both secondary validators are not active validators
       const isUserThreeValidator = await state.cosmosBridge.isActiveValidator(
-        userThree
+        userThree.address
       );
       isUserThreeValidator.should.be.equal(false);
       const isUserFourValidator = await state.cosmosBridge.isActiveValidator(
@@ -125,7 +123,7 @@ describe("Test Cosmos Bridge", function () {
       // Also make sure everything runs fourth time after switching validators a second time.
       // Operator resets the valset
       await state.cosmosBridge.connect(operator).updateValset(
-        [userThree, userFour.address],
+        [userThree.address, userFour.address],
         [50, 50],
       ).should.be.fulfilled;
 
@@ -141,7 +139,7 @@ describe("Test Cosmos Bridge", function () {
 
       // Confirm that both secondary validators are now active validators
       const isUserThreeValidator2 = await state.cosmosBridge.isActiveValidator(
-          userThree
+          userThree.address
       );
       isUserThreeValidator2.should.be.equal(true);
       const isUserFourValidator2 = await state.cosmosBridge.isActiveValidator(
@@ -189,7 +187,7 @@ describe("Test Cosmos Bridge", function () {
 
       expect(await state.bridgeBank.cosmosBridge()).to.be.equal(state.cosmosBridge.address);
       expect(await state.bridgeBank.owner()).to.be.equal(owner.address);
-      expect(await state.bridgeBank.pausers(pauser)).to.be.true;
+      expect(await state.bridgeBank.pausers(pauser.address)).to.be.true;
     });
 
     it("Should deploy cosmos bridge and bridge bank, correctly setting the networkDescriptor", async function () {
@@ -199,7 +197,7 @@ describe("Test Cosmos Bridge", function () {
 
     it("should unlock tokens upon the successful processing of a burn prophecy claim", async function () {
       const beforeUserBalance = Number(
-        await state.token.balanceOf(state.recipient)
+        await state.token.balanceOf(state.recipient.address)
       );
       beforeUserBalance.should.be.bignumber.equal(Number(0));
 
@@ -212,7 +210,7 @@ describe("Test Cosmos Bridge", function () {
       const { digest, claimData, signatures } = await getValidClaim({
         sender: state.sender,
         senderSequence: state.senderSequence,
-        recipientAddress: state.recipient,
+        recipientAddress: state.recipient.address,
         tokenAddress: state.token.address,
         amount: state.amount,
         doublePeg: false,
@@ -236,13 +234,13 @@ describe("Test Cosmos Bridge", function () {
       lastNonceSubmitted = Number(await state.cosmosBridge.lastNonceSubmitted());
       expect(lastNonceSubmitted).to.be.equal(1);
 
-      balance = Number(await state.token.balanceOf(state.recipient));
+      balance = Number(await state.token.balanceOf(state.recipient.address));
       expect(balance).to.be.equal(state.amount);
     });
 
     it("should unlock eth upon the successful processing of a burn prophecy claim", async function () {
       // assert recipient balance before receiving proceeds from newProphecyClaim is correct
-      const recipientStartingBalance = await getBalance(state.recipient);
+      const recipientStartingBalance = await getBalance(state.recipient.address);
       const recipientCurrentBalance = Web3Utils.fromWei(recipientStartingBalance);
 
       expect(recipientCurrentBalance).to.be.equal(
@@ -253,7 +251,7 @@ describe("Test Cosmos Bridge", function () {
       const { digest, claimData, signatures } = await getValidClaim({
         sender: state.sender,
         senderSequence: state.senderSequence,
-        recipientAddress: state.recipient,
+        recipientAddress: state.recipient.address,
         tokenAddress: state.constants.zeroAddress,
         amount: state.amount,
         doublePeg: false,
@@ -275,7 +273,7 @@ describe("Test Cosmos Bridge", function () {
             signatures
         );
 
-      const recipientEndingBalance = await getBalance(state.recipient);
+      const recipientEndingBalance = await getBalance(state.recipient.address);
       const recipientBalance = Web3Utils.fromWei(recipientEndingBalance);
 
       expect(recipientBalance).to.be.equal(
@@ -289,7 +287,7 @@ describe("Test Cosmos Bridge", function () {
       const { digest, claimData, signatures } = await getValidClaim({
         sender: state.sender,
         senderSequence: state.senderSequence,
-        recipientAddress: state.recipient,
+        recipientAddress: state.recipient.address,
         tokenAddress: state.token.address,
         amount: state.amount,
         doublePeg: true,
@@ -320,14 +318,14 @@ describe("Test Cosmos Bridge", function () {
       state.nonce = 1;
 
       const beforeUserBalance = Number(
-        await state.token.balanceOf(state.recipient)
+        await state.token.balanceOf(state.recipient.address)
       );
       beforeUserBalance.should.be.bignumber.equal(Number(0));
 
       const { digest, claimData, signatures } = await getValidClaim({
         sender: state.sender,
         senderSequence: state.senderSequence,
-        recipientAddress: state.recipient,
+        recipientAddress: state.recipient.address,
         tokenAddress: state.token.address,
         amount: state.amount,
         doublePeg: false,
@@ -347,7 +345,7 @@ describe("Test Cosmos Bridge", function () {
       expect(newlyCreatedTokenAddress).to.be.equal(state.constants.zeroAddress);
 
       // assert that the recipient's balance of the token went up by the amount we specified in the claim
-      balance = Number(await state.token.balanceOf(state.recipient));
+      balance = Number(await state.token.balanceOf(state.recipient.address));
       expect(balance).to.be.equal(state.amount);
     });
 
@@ -357,7 +355,7 @@ describe("Test Cosmos Bridge", function () {
       const { digest, claimData, signatures } = await getValidClaim({
         sender: state.sender,
         senderSequence: state.senderSequence,
-        recipientAddress: state.recipient,
+        recipientAddress: state.recipient.address,
         tokenAddress: state.token.address,
         amount: state.amount,
         doublePeg: true,
@@ -386,7 +384,7 @@ describe("Test Cosmos Bridge", function () {
       const { digest: digest2, claimData: claimData2, signatures: signatures2 } = await getValidClaim({
         sender: state.sender,
         senderSequence: state.senderSequence + 1,
-        recipientAddress: state.recipient,
+        recipientAddress: state.recipient.address,
         tokenAddress: state.token.address,
         amount: state.amount,
         doublePeg: true,

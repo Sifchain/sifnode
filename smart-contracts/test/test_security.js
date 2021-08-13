@@ -3,8 +3,7 @@ const BigNumber = web3.BigNumber;
 const { expect } = require('chai');
 const {
   signHash,
-  singleSetup,
-  multiTokenSetup,
+  setup,
   deployTrollToken,
   getDigestNewProphecyClaim,
   getValidClaim
@@ -48,7 +47,7 @@ describe("Security Test", function () {
     userOne = accounts[1];
     userTwo = accounts[2];
     userFour = accounts[3];
-    userThree = accounts[7].address;
+    userThree = accounts[7];
 
     owner = accounts[5];
     pauser = accounts[6];
@@ -66,17 +65,17 @@ describe("Security Test", function () {
 
   describe("BridgeBank Security", function () {
     beforeEach(async function () {
-      state = await multiTokenSetup(
+      state = await setup({
         initialValidators,
         initialPowers,
         operator,
         consensusThreshold,
         owner,
-        userOne,
-        userThree,
-        pauser.address,
+        user: userOne,
+        recipient: userThree,
+        pauser,
         networkDescriptor
-      );
+      });
     });
 
     it("should allow operator to call reinitialize after initialization, setting the correct values", async function () {
@@ -267,20 +266,17 @@ describe("Security Test", function () {
       // even though it was created on top of ethereum
 
       // Deploy Valset contract
-      state.initialValidators = [userOne.address, userTwo.address, userThree];
-      state.initialPowers = [33, 33, 33];
-
-      state = await multiTokenSetup(
-        state.initialValidators,
-        state.initialPowers,
+      state = await setup({
+        initialValidators: [userOne.address, userTwo.address, userThree.address],
+        initialPowers: [33, 33, 33],
         operator,
         consensusThreshold,
         owner,
-        userOne,
-        userThree,
-        pauser.address,
+        user: userOne,
+        recipient: userThree,
+        pauser,
         networkDescriptor
-      );
+      });
     });
 
     it("should not allow burning of non whitelisted token address", async function () {
@@ -311,20 +307,17 @@ describe("Security Test", function () {
 
   describe("Consensus Threshold Limits", function () {
     beforeEach(async function () {
-      state.initialValidators = [userOne.address, userTwo.address, userThree];
-      state.initialPowers = [33, 33, 33];
-
-      state = await multiTokenSetup(
-        state.initialValidators,
-        state.initialPowers,
+      state = await setup({
+        initialValidators: [userOne.address, userTwo.address, userThree.address],
+        initialPowers: [33, 33, 33],
         operator,
         consensusThreshold,
         owner,
-        userOne,
-        userThree,
-        pauser.address,
+        user: userOne,
+        recipient: userThree,
+        pauser,
         networkDescriptor
-      );
+      });
     });
 
     it("should not allow initialization of CosmosBridge with a consensus threshold over 100", async function () {
@@ -368,18 +361,18 @@ describe("Security Test", function () {
 
   describe("Network Descriptor Mismatch", function () {
     beforeEach(async function () {
-      state = await singleSetup(
+      state = await setup({
         initialValidators,
         initialPowers,
         operator,
         consensusThreshold,
         owner,
-        userOne,
-        userThree,
-        pauser.address,
+        user: userOne,
+        recipient: userThree,
+        pauser,
         networkDescriptor,
-        true // force networkDescriptor mismatch
-      );
+        networkDescriptorMismatch: true,
+      });
     });
 
     it("should not allow unlocking tokens upon the processing of a burn prophecy claim with the wrong network descriptor", async function () {
@@ -388,7 +381,7 @@ describe("Security Test", function () {
       const digest = getDigestNewProphecyClaim([
         state.sender,
         state.senderSequence,
-        state.recipient,
+        state.recipient.address,
         state.token.address,
         state.amount,
         false,
@@ -401,7 +394,7 @@ describe("Security Test", function () {
       let claimData = {
         cosmosSender: state.sender,
         cosmosSenderSequence: state.senderSequence,
-        ethereumReceiver: state.recipient,
+        ethereumReceiver: state.recipient.address,
         tokenAddress: state.token.address,
         amount: state.amount,
         doublePeg: false,
@@ -426,7 +419,7 @@ describe("Security Test", function () {
       const digest = getDigestNewProphecyClaim([
         state.sender,
         state.senderSequence,
-        state.recipient,
+        state.recipient.address,
         state.constants.zeroAddress,
         state.amount,
         false,
@@ -439,7 +432,7 @@ describe("Security Test", function () {
       let claimData = {
         cosmosSender: state.sender,
         cosmosSenderSequence: state.senderSequence,
-        ethereumReceiver: state.recipient,
+        ethereumReceiver: state.recipient.address,
         tokenAddress: state.constants.zeroAddress,
         amount: state.amount,
         doublePeg: false,
@@ -462,17 +455,17 @@ describe("Security Test", function () {
 
   describe("Troll token tests", function () {
     beforeEach(async function () {
-      state = await multiTokenSetup(
+      state = await setup({
         initialValidators,
         initialPowers,
         operator,
         consensusThreshold,
         owner,
-        userOne,
-        userThree,
-        pauser.address,
+        user: userOne,
+        recipient: userThree,
+        pauser,
         networkDescriptor
-      );
+      });
 
       TrollToken = await deployTrollToken();
       state.troll = TrollToken;
@@ -598,7 +591,7 @@ describe("Security Test", function () {
       const { digest, claimData, signatures } = await getValidClaim({
         sender: state.sender,
         senderSequence: state.senderSequence,
-        recipientAddress: state.recipient,
+        recipientAddress: state.recipient.address,
         tokenAddress: state.token1.address,
         amount: state.amount,
         doublePeg: true,

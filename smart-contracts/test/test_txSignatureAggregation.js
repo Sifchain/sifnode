@@ -1,5 +1,5 @@
 const {
-  multiTokenSetup,
+  setup,
   getValidClaim
 } = require('./helpers/testFixture');
 
@@ -39,7 +39,7 @@ describe("Gas Cost Tests", function () {
     userFour = accounts[4];
 
     owner = accounts[5];
-    pauser = accounts[6].address;
+    pauser = accounts[6];
 
     initialPowers = [25, 25, 25, 25];
     initialValidators = [
@@ -54,17 +54,17 @@ describe("Gas Cost Tests", function () {
 
   beforeEach(async function () {
     // Deploy Valset contract
-    state = await multiTokenSetup(
+    state = await setup({
       initialValidators,
       initialPowers,
       operator,
       consensusThreshold,
       owner,
-      userOne,
-      userThree,
+      user: userOne,
+      recipient: userThree,
       pauser,
       networkDescriptor
-    );
+    });
 
     // Add the token into white list
     await state.bridgeBank.connect(operator)
@@ -79,7 +79,7 @@ describe("Gas Cost Tests", function () {
     ).should.be.fulfilled;
   });
 
-  describe("Unlock Gas Cost With 4 Validators", function () {
+  describe("Gas Cost With 4 Validators", function () {
     it("should allow us to check the cost of submitting a prophecy claim lock", async function () {
       let balance = Number(await state.token1.balanceOf(state.recipient.address));
       expect(balance).to.be.equal(0);
