@@ -21,7 +21,7 @@ import (
 
 const (
 	// GasLimit the gas limit in Gwei used for transactions sent with TransactOpts
-	GasLimit = uint64(500000)
+	GasLimit = uint64(1000000)
 )
 
 func sleepThread(seconds time.Duration) {
@@ -163,6 +163,105 @@ func RelayProphecyCompletedToEthereum(
 		id,
 		claimData,
 		signatureData,
+	)
+
+	// sleep 2 seconds to wait for tx to go through before querying.
+	sleepThread(2)
+
+	if err != nil {
+		return err
+	}
+
+	sugaredLogger.Infow("get SubmitProphecyClaimAggregatedSigs tx hash:", "TransactionHash", tx.Hash().Hex())
+
+	var receipt *ethereumtypes.Receipt
+	maxRetries := 60
+	i := 0
+	// if there is an error getting the tx, or if the tx fails, retry 60 times
+	for i < maxRetries {
+		// Get the transaction receipt
+		receipt, err = client.TransactionReceipt(context.Background(), tx.Hash())
+
+		if err != nil {
+			sleepThread(1)
+		} else {
+			break
+		}
+		i++
+	}
+
+	if i == maxRetries {
+		return errors.New("hit max tx receipt query retries")
+	}
+
+	sugaredLogger.Infow(
+		"Successfully received transaction receipt after retry",
+		"txReceipt", receipt,
+	)
+
+	return nil
+}
+
+// RelayBatchProphecyCompletedToEthereum send the prophecy aggregation to CosmosBridge contract on the Ethereum network
+func RelayBatchProphecyCompletedToEthereum(
+	batchProphecyInfo []types.ProphecyInfo,
+	sugaredLogger *zap.SugaredLogger,
+	client *ethclient.Client,
+	auth *bind.TransactOpts,
+	cosmosBridgeInstance *cosmosbridge.CosmosBridge,
+) error {
+
+	if len(batchProphecyInfo) == 0 {
+		return nil
+	}
+
+	batchLen := len(batchProphecyInfo)
+	batchClaimData := make([]cosmosbridge.CosmosBridgeClaimData, batchLen)
+	batchSignatureData := make([][]cosmosbridge.CosmosBridgeSignatureData, batchLen)
+	batchID := make([][32]byte, batchLen)
+
+	for index, prophecyInfo := range batchProphecyInfo {
+		claimData := cosmosbridge.CosmosBridgeClaimData{
+			CosmosSender:         []byte(prophecyInfo.CosmosSender),
+			CosmosSenderSequence: big.NewInt(int64(prophecyInfo.CosmosSenderSequence)),
+			EthereumReceiver:     common.HexToAddress(prophecyInfo.EthereumReceiver),
+			TokenAddress:         common.HexToAddress(prophecyInfo.TokenSymbol),
+			Amount:               &prophecyInfo.TokenAmount,
+			DoublePeg:            prophecyInfo.DoublePeg,
+			Nonce:                big.NewInt(int64(prophecyInfo.GlobalNonce)),
+		}
+		batchClaimData[index] = claimData
+
+		var signatureData = make([]cosmosbridge.CosmosBridgeSignatureData, len(prophecyInfo.EthereumSignerAddresses))
+
+		for index, address := range prophecyInfo.EthereumSignerAddresses {
+			signature := []byte(prophecyInfo.Signatures[index])
+			var r [32]byte
+			var s [32]byte
+			copy(r[:], signature[1:33])
+			copy(s[:], signature[33:65])
+
+			tmpSignature := cosmosbridge.CosmosBridgeSignatureData{
+				Signer: common.HexToAddress(address),
+				V:      signature[0],
+				R:      r,
+				S:      s,
+			}
+
+			signatureData[index] = tmpSignature
+		}
+
+		batchSignatureData[index] = signatureData
+		var id [32]byte
+		copy(id[:], prophecyInfo.ProphecyID)
+		batchID[index] = id
+	}
+
+	tx, err := cosmosBridgeInstance.BatchSubmitProphecyClaimAggregatedSigs(
+		auth,
+		batchID,
+		batchClaimData,
+		batchSignatureData,
 	)
 
 	// sleep 2 seconds to wait for tx to go through before querying.
