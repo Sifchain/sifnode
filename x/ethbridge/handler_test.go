@@ -36,6 +36,22 @@ var (
 	TestAddress                  = "cosmos1xdp5tvt7lxh8rf9xx07wy2xlagzhq24ha48xtq"
 )
 
+var testMetadata1 = types.TokenMetadata{
+	Decimals:          18,
+	Name:              "ether",
+	NetworkDescriptor: oracletypes.NetworkDescriptor_NETWORK_DESCRIPTOR_ETHEREUM,
+	Symbol:            "ether",
+	TokenAddress:      "0x0123456789ABCDEF",
+}
+
+var testMetadata2 = types.TokenMetadata{
+	Decimals:          18,
+	Name:              "cether",
+	NetworkDescriptor: oracletypes.NetworkDescriptor_NETWORK_DESCRIPTOR_ETHEREUM,
+	Symbol:            "cether",
+	TokenAddress:      "0x0123456789ABCDEF",
+}
+
 func TestBasicMsgs(t *testing.T) {
 	//Setup
 	ctx, _, _, _, handler, validatorAddresses, _ := CreateTestHandler(t, 0.7, []int64{3, 7})
@@ -270,12 +286,15 @@ func TestBurnEthFail(t *testing.T) {
 }
 
 func TestBurnEthSuccess(t *testing.T) {
-	ctx, _, bankKeeper, _, handler, validatorAddresses, _ := CreateTestHandler(t, 0.5, []int64{5})
+	ctx, keeper, bankKeeper, _, handler, validatorAddresses, _ := CreateTestHandler(t, 0.5, []int64{5})
 	valAddressVal1Pow5 := validatorAddresses[0]
 
 	// Initial message to mint some eth
 	coinsToMintAmount := sdk.NewInt(7)
 	coinsToMintSymbol := "ether"
+	keeper.AddTokenMetadataViaSymbol(ctx, testMetadata1)
+	keeper.AddTokenMetadataViaSymbol(ctx, testMetadata2)
+
 	coinsToMintSymbolLocked := fmt.Sprintf("%v%v", types.PeggedCoinPrefix, coinsToMintSymbol)
 
 	testTokenContractAddress := types.NewEthereumAddress(types.TestTokenContractAddress)

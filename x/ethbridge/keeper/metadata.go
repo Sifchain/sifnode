@@ -38,3 +38,12 @@ func (k Keeper) AddTokenMetadata(ctx sdk.Context, metadata types.TokenMetadata) 
 func (k Keeper) ExistsTokenMetadata(ctx sdk.Context, denomHash string) bool {
 	return k.Exists(ctx, []byte(denomHash))
 }
+
+// Add new token metadata information, its symbol as key.
+func (k Keeper) AddTokenMetadataViaSymbol(ctx sdk.Context, metadata types.TokenMetadata) {
+
+	key := []byte(metadata.Symbol)
+	store := ctx.KVStore(k.storeKey)
+	value := k.cdc.MustMarshalBinaryBare(&metadata)
+	store.Set(key, value)
+}

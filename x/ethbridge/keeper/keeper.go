@@ -118,7 +118,7 @@ func (k Keeper) ProcessBurn(ctx sdk.Context, cosmosSender sdk.AccAddress, sender
 
 	tokenMetadata, ok := k.GetTokenMetadata(ctx, msg.Symbol)
 	if !ok {
-		return []byte{}, errors.New("token metadata not available")
+		return []byte{}, fmt.Errorf("token metadata not available for %s", msg.Symbol)
 	}
 
 	if k.IsCrossChainFeeReceiverAccountSet(ctx) {
@@ -176,6 +176,11 @@ func (k Keeper) ProcessLock(ctx sdk.Context, cosmosSender sdk.AccAddress, sender
 		return []byte{}, err
 	}
 
+	tokenMetadata, ok := k.GetTokenMetadata(ctx, msg.Symbol)
+	if !ok {
+		return []byte{}, fmt.Errorf("token metadata not available for %s", msg.Symbol)
+	}
+
 	minimumLock := crossChainFeeConfig.MinimumLockCost.Mul(crossChainFeeConfig.FeeCurrencyGas)
 	if msg.CrosschainFee.LT(minimumLock) {
 		return []byte{}, errors.New("crosschain fee amount in message less than minimum lock")
@@ -216,7 +221,7 @@ func (k Keeper) ProcessLock(ctx sdk.Context, cosmosSender sdk.AccAddress, sender
 	// global sequence will be implemented in other feature
 	glocalSequence := uint64(0)
 
-	prophecyID := msg.GetProphecyID(false, senderSequence, glocalSequence)
+	prophecyID := msg.GetProphecyID(false, senderSequence, glocalSequence, tokenMetadata.TokenAddress)
 	k.oracleKeeper.SetProphecyWithInitValue(ctx, prophecyID)
 
 	return prophecyID, nil

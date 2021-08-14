@@ -79,13 +79,12 @@ func (msg MsgLock) GetSigners() []sdk.AccAddress {
 }
 
 // GetProphecyID get prophecy ID for lock message
-func (msg MsgLock) GetProphecyID(doublePeggy bool, sequence, globalNonce uint64) []byte {
+func (msg MsgLock) GetProphecyID(doublePeggy bool, sequence, globalNonce uint64, tokenAddress string) []byte {
 	return ComputeProphecyID(
 		msg.CosmosSender,
 		sequence,
 		msg.EthereumReceiver,
-		// TODO need get the token address from token's symbol
-		msg.EthereumReceiver,
+		tokenAddress,
 		msg.Amount,
 		doublePeggy,
 		globalNonce,
