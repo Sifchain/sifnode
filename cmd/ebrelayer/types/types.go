@@ -48,6 +48,8 @@ func (d Event) String() string {
 type EthereumEvent struct {
 	To                    []byte
 	Symbol                string
+	Name                  string
+	Decimals              int32
 	NetworkDescriptor     oracle.NetworkDescriptor
 	Value                 *big.Int
 	Nonce                 *big.Int
@@ -65,7 +67,10 @@ func (e EthereumEvent) Equal(other EthereumEvent) bool {
 		bytes.Equal(e.ID[:], other.ID[:]) &&
 		e.From == other.From &&
 		bytes.Equal(e.To, other.To) &&
+		e.Token == other.Token &&
 		e.Symbol == other.Symbol &&
+		e.Name == other.Name &&
+		e.Decimals == other.Decimals &&
 		e.Value.Cmp(other.Value) == 0 &&
 		e.Nonce.Cmp(other.Nonce) == 0 &&
 		e.ClaimType == other.ClaimType

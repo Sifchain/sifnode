@@ -14,11 +14,12 @@ import (
 )
 
 var (
-	cosmosReceivers, _ = test.CreateTestAddrs(1)
-	amount             = sdk.NewInt(10)
-	doubleAmount       = sdk.NewInt(20)
-
+	cosmosReceivers, _   = test.CreateTestAddrs(1)
+	amount               = sdk.NewInt(10)
+	doubleAmount         = sdk.NewInt(20)
+	decimals             = 18
 	symbol               = "stake"
+	name                 = "STAKE"
 	tokenContractAddress = types.NewEthereumAddress("0xbbbbca6a901c926f240b89eacb641d8aec7aeafd")
 	ethBridgeAddress     = types.NewEthereumAddress(strings.ToLower("0x30753E4A8aad7F8597332E813735Def5dD395028"))
 	ethereumSender       = types.NewEthereumAddress("0x627306090abaB3A6e1400e9345bC60c78a8BEf57")
@@ -39,7 +40,6 @@ func TestProcessClaimLock(t *testing.T) {
 
 	claimType := types.ClaimType_CLAIM_TYPE_LOCK
 	require.Equal(t, claimType, types.ClaimType_CLAIM_TYPE_LOCK)
-
 	ethBridgeClaim := types.NewEthBridgeClaim(
 		1,
 		ethBridgeAddress, // bridge registry
@@ -51,6 +51,8 @@ func TestProcessClaimLock(t *testing.T) {
 		validator1Pow3,
 		amount,
 		claimType,
+		name,
+		int32(decimals),
 	)
 
 	status, err := keeper.ProcessClaim(ctx, ethBridgeClaim)
@@ -63,7 +65,6 @@ func TestProcessClaimLock(t *testing.T) {
 	require.True(t, strings.Contains(err.Error(), "already processed message from validator for this id"))
 
 	// other validator execute
-
 	ethBridgeClaim = types.NewEthBridgeClaim(
 		1,
 		ethBridgeAddress, // bridge registry
@@ -75,6 +76,8 @@ func TestProcessClaimLock(t *testing.T) {
 		validator2Pow3,
 		amount,
 		claimType,
+		name,
+		int32(decimals),
 	)
 	status, err = keeper.ProcessClaim(ctx, ethBridgeClaim)
 	require.NoError(t, err)
@@ -102,6 +105,8 @@ func TestProcessClaimBurn(t *testing.T) {
 		validator1Pow3,
 		amount,
 		claimType,
+		name,
+		int32(decimals),
 	)
 
 	status, err := keeper.ProcessClaim(ctx, ethBridgeClaim)
@@ -126,6 +131,8 @@ func TestProcessClaimBurn(t *testing.T) {
 		validator2Pow3,
 		amount,
 		claimType,
+		name,
+		int32(decimals),
 	)
 	status, err = keeper.ProcessClaim(ctx, ethBridgeClaim)
 	require.NoError(t, err)

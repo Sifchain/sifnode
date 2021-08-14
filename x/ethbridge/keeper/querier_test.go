@@ -18,7 +18,7 @@ import (
 
 //nolint:lll
 const (
-	TestResponseJSON              = "{\"prophecy_id\":\"xy7EH/x26sNeLf62aTOQAqo3H9Fnrl19yDlub31XG5o=\",\"status\":1,\"claim_validators\":[\"cosmosvaloper1mnfm9c7cdgqnkk66sganp78m0ydmcr4pn7fqfk\"]}"
+	TestResponseJSON              = "{\"prophecy_id\":\"FY9NHxf33a/BfHbkaF2YISRX2C3D2Fi2Rr7ROXLiIBc=\",\"status\":1,\"claim_validators\":[\"cosmosvaloper1mnfm9c7cdgqnkk66sganp78m0ydmcr4pn7fqfk\"]}"
 	TestCrossChainFeeResponseJSON = "{\"fee_currency\":\"ceth\",\"fee_currency_gas\":\"1\",\"minimum_lock_cost\":\"1\",\"minimum_burn_cost\":\"1\"}"
 )
 
@@ -49,7 +49,7 @@ func TestParseEthProphecy(t *testing.T) {
 
 	initialEthBridgeClaim := types.CreateTestEthClaim(
 		t, testBridgeContractAddress, testTokenContractAddress, valAddress,
-		testEthereumAddress, types.TestCoinsAmount, types.TestCoinsSymbol, types.ClaimType_CLAIM_TYPE_LOCK)
+		testEthereumAddress, types.TestCoinsAmount, types.TestCoinsSymbol, types.ClaimType_CLAIM_TYPE_LOCK, types.TestDecimals, types.TestName)
 
 	_, err := oracleKeeper.ProcessClaim(ctx, networkID, initialEthBridgeClaim.GetProphecyID(), initialEthBridgeClaim.ValidatorAddress)
 	require.NoError(t, err)
@@ -82,7 +82,7 @@ func TestQueryEthProphecy(t *testing.T) {
 
 	initialEthBridgeClaim := types.CreateTestEthClaim(
 		t, testBridgeContractAddress, testTokenContractAddress, valAddress,
-		testEthereumAddress, types.TestCoinsAmount, types.TestCoinsSymbol, types.ClaimType_CLAIM_TYPE_LOCK)
+		testEthereumAddress, types.TestCoinsAmount, types.TestCoinsSymbol, types.ClaimType_CLAIM_TYPE_LOCK, types.TestDecimals, types.TestName)
 
 	_, err := oracleKeeper.ProcessClaim(ctx, networkID, initialEthBridgeClaim.GetProphecyID(), initialEthBridgeClaim.ValidatorAddress)
 	require.NoError(t, err)

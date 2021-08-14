@@ -25,7 +25,10 @@ func GetQueryCmd() *cobra.Command {
 
 	flags.AddQueryFlagsToCmd(ethBridgeQueryCmd)
 
-	ethBridgeQueryCmd.AddCommand(cli.GetCmdGetEthBridgeProphecy())
+	ethBridgeQueryCmd.AddCommand(
+		cli.GetCmdGetEthBridgeProphecy(),
+		cli.GetCmdGetTokenMetadata(),
+	)
 
 	return ethBridgeQueryCmd
 }

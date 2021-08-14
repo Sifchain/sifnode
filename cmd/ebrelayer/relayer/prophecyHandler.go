@@ -2,8 +2,6 @@ package relayer
 
 import (
 	"context"
-	"fmt"
-	"log"
 	"os"
 	"os/signal"
 	"sync"
@@ -16,8 +14,9 @@ import (
 	"github.com/cosmos/cosmos-sdk/client/tx"
 	"github.com/ethereum/go-ethereum/ethclient"
 	tmClient "github.com/tendermint/tendermint/rpc/client/http"
-	tmTypes "github.com/tendermint/tendermint/types"
 )
+
+const wakeupTimer = 60
 
 // StartProphecyHandler start Cosmos chain subscription and process prophecy completed message
 func (sub CosmosSub) StartProphecyHandler(txFactory tx.Factory, completionEvent *sync.WaitGroup) {
@@ -42,24 +41,7 @@ func (sub CosmosSub) StartProphecyHandler(txFactory tx.Factory, completionEvent 
 
 	defer client.Stop() //nolint:errcheck
 
-	// Subscribe to all new blocks
-	query := "tm.event = 'NewBlock'"
-	results, err := client.Subscribe(context.Background(), "test", query, 1000)
-	if err != nil {
-		sub.SugaredLogger.Errorw("sifchain client failed to subscribe to query.",
-			errorMessageKey, err.Error(),
-			"query", query)
-		completionEvent.Add(1)
-		go sub.Start(txFactory, completionEvent)
-		return
-	}
-
-	defer func() {
-		if err := client.Unsubscribe(context.Background(), "test", query); err != nil {
-			sub.SugaredLogger.Errorw("sifchain client failed to unsubscribe query.",
-				errorMessageKey, err.Error())
-		}
-	}()
+	t := time.NewTicker(time.Second * wakeupTimer)
 
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
@@ -68,55 +50,26 @@ func (sub CosmosSub) StartProphecyHandler(txFactory tx.Factory, completionEvent 
 	for {
 		select {
 		case <-quit:
-			log.Println("we receive the quit signal and exit")
+			sub.SugaredLogger.Warn("we receive the quit signal and exit")
 			return
 
-		case e := <-results:
-			data, ok := e.Data.(tmTypes.EventDataNewBlock)
-			if !ok {
-				sub.SugaredLogger.Errorw("sifchain client failed to extract event data from new block.",
-					"EventDataNewBlock", fmt.Sprintf("%v", e.Data))
-			}
-			blockHeight := data.Block.Height
-
-			ctx := context.Background()
-			block, err := client.BlockResults(ctx, &blockHeight)
-
-			if err != nil {
-				sub.SugaredLogger.Errorw("sifchain client failed to get a block.",
-					errorMessageKey, err.Error())
-				continue
-			}
-
-			for _, txLog := range block.TxsResults {
-				for _, event := range txLog.Events {
-
-					claimType := getOracleClaimType(event.GetType())
-
-					if claimType == types.ProphecyCompleted {
-
-						prophecyInfo, err := txs.ProphecyCompletedEventToProphecyInfo(event.GetAttributes(), sub.SugaredLogger)
-						if err != nil {
-							sub.SugaredLogger.Errorw("sifchain client failed in get prophecy completed message from event.",
-								errorMessageKey, err.Error())
-							continue
-						}
-						if prophecyInfo.NetworkDescriptor == sub.NetworkDescriptor {
-							sub.handleNewProphecyCompleted(client, uint64(blockHeight), prophecyInfo)
-						}
-
-					}
-				}
-			}
-
+		case <-t.C:
+			sub.SugaredLogger.Info("timer triggered, start to check cosmos message")
+			sub.handleNewProphecyCompleted(client)
 		}
 	}
 }
 
 // Parses event data from the msg, event, builds a new ProphecyClaim, and relays it to Ethereum
-func (sub CosmosSub) handleNewProphecyCompleted(client *tmClient.HTTP, currentBlock uint64,
-	prophecyInfo types.ProphecyInfo,
-) {
+func (sub CosmosSub) handleNewProphecyCompleted(client *tmClient.HTTP) {
+	ctx := context.Background()
+	currentBlock, err := client.Block(ctx, nil)
+	if err != nil {
+		sub.SugaredLogger.Errorw("failed to get the latest block from cosmos.",
+			errorMessageKey, err.Error())
+		return
+	}
+
 	// Start Ethereum client
 	ethClient, err := ethclient.Dial(sub.EthProvider)
 	if err != nil {
@@ -140,31 +93,16 @@ func (sub CosmosSub) handleNewProphecyCompleted(client *tmClient.HTTP, currentBl
 		return
 	}
 
-	// compare the nonce in info with contract
-	if prophecyInfo.GlobalNonce <= lastSubmittedNonce.Uint64() {
-		sub.SugaredLogger.Errorw("incoming new global nonce less than last submitted nonce in smart contract.",
-			"global nonce from cosmos event", prophecyInfo.GlobalNonce,
-			"last committed nonce in smart contract", lastSubmittedNonce.Uint64())
-		return
-	}
-
-	// get prophecy info list from cosmos events
-	if prophecyInfo.GlobalNonce == lastSubmittedNonce.Uint64()+1 {
-		sub.handleProphecyCompleted(prophecyInfo)
-		return
-	}
-
-	prophecyInfoMap := sub.getProphecies(client, currentBlock, prophecyInfo.GlobalNonce, lastSubmittedNonce.Uint64())
 	// put the latest one into map
-	prophecyInfoMap[prophecyInfo.GlobalNonce] = prophecyInfo
+	maxGlobalNonce, prophecyInfoMap := sub.getUnhandledProphecies(client, uint64(currentBlock.Block.Height), lastSubmittedNonce.Uint64())
 
 	nonce := lastSubmittedNonce.Uint64() + 1
-	for nonce <= prophecyInfo.GlobalNonce {
+	for nonce <= maxGlobalNonce {
 		prophecy, ok := prophecyInfoMap[nonce]
 		// must deal prophecy in order, if any one missed in the map, just discontinue
 		if !ok {
 			sub.SugaredLogger.Errorw("can't get global nonce via scanning the blocks.",
-				"get global is ", nonce)
+				"expected global nonce is ", nonce)
 			return
 		}
 		if !sub.handleProphecyCompleted(prophecy) {
@@ -173,78 +111,10 @@ func (sub CosmosSub) handleNewProphecyCompleted(client *tmClient.HTTP, currentBl
 		}
 		nonce++
 	}
-
-}
-
-func (sub CosmosSub) getProphecies(client *tmClient.HTTP, currentBlock uint64, currentGlobalNonce uint64, lastSubmittedNonce uint64) map[uint64]types.ProphecyInfo {
-	// return variable
-	prophecyInfoMap := map[uint64]types.ProphecyInfo{}
-
-	// determine the last possible block we will scan according to prophecy life time
-	var endBlock uint64
-	if currentBlock > ProphecyLifeTime {
-		endBlock = currentBlock - ProphecyLifeTime
-
-	} else {
-		endBlock = 0
-	}
-
-	ctx := context.Background()
-	// if found the next one
-	found := false
-	for currentBlock > endBlock {
-		// not go to priviouos block if found.
-		if found {
-			break
-		}
-		currentBlock = currentBlock - 1
-		tmpBlock := int64(currentBlock)
-		block, err := client.BlockResults(ctx, &tmpBlock)
-
-		if err != nil {
-			sub.SugaredLogger.Errorw("sifchain client failed to get a block.",
-				errorMessageKey, err.Error())
-			continue
-		}
-
-		for _, txLog := range block.TxsResults {
-			for _, event := range txLog.Events {
-
-				claimType := getOracleClaimType(event.GetType())
-
-				if claimType == types.ProphecyCompleted {
-
-					prophecyInfo, err := txs.ProphecyCompletedEventToProphecyInfo(event.GetAttributes(), sub.SugaredLogger)
-					if err != nil {
-						sub.SugaredLogger.Errorw("sifchain client failed in get prophecy completed message from event.",
-							errorMessageKey, err.Error())
-						continue
-					}
-					if prophecyInfo.NetworkDescriptor == sub.NetworkDescriptor {
-						// put not processed prophecy into map
-						if prophecyInfo.GlobalNonce > lastSubmittedNonce {
-							prophecyInfoMap[prophecyInfo.GlobalNonce] = prophecyInfo
-
-						}
-						// already found the minimum global nonce not processeed
-						if prophecyInfo.GlobalNonce <= lastSubmittedNonce+1 {
-							found = true
-						}
-					}
-
-				}
-			}
-		}
-	}
-
-	return prophecyInfoMap
-
 }
 
 // Parses event data from the msg, event, builds a new ProphecyClaim, and relays it to Ethereum
-func (sub CosmosSub) handleProphecyCompleted(
-	prophecyInfo types.ProphecyInfo,
-) bool {
+func (sub CosmosSub) handleProphecyCompleted(prophecyInfo types.ProphecyInfo) bool {
 	sub.SugaredLogger.Infow(
 		"get the prophecy completed message.",
 		"cosmosMsg", prophecyInfo,
@@ -297,5 +167,74 @@ func (sub CosmosSub) handleProphecyCompleted(
 	}
 
 	return true
+
+}
+
+func (sub CosmosSub) getUnhandledProphecies(client *tmClient.HTTP, currentBlock uint64, lastSubmittedNonce uint64) (uint64, map[uint64]types.ProphecyInfo) {
+	// return variable
+	prophecyInfoMap := map[uint64]types.ProphecyInfo{}
+	maxGlobalNonce := uint64(0)
+
+	// determine the last possible block we will scan according to prophecy life time
+	var endBlock uint64
+	if currentBlock > ProphecyLifeTime {
+		endBlock = currentBlock - ProphecyLifeTime
+
+	} else {
+		endBlock = 0
+	}
+
+	ctx := context.Background()
+	// if found the next one
+	found := false
+	for currentBlock > endBlock {
+		// not go to priviouos block if found.
+		if found {
+			break
+		}
+		tmpBlock := int64(currentBlock)
+		block, err := client.BlockResults(ctx, &tmpBlock)
+
+		if err != nil {
+			sub.SugaredLogger.Errorw("sifchain client failed to get a block.",
+				errorMessageKey, err.Error())
+			continue
+		}
+
+		for _, txLog := range block.TxsResults {
+			for _, event := range txLog.Events {
+
+				claimType := getOracleClaimType(event.GetType())
+
+				if claimType == types.ProphecyCompleted {
+
+					prophecyInfo, err := txs.ProphecyCompletedEventToProphecyInfo(event.GetAttributes(), sub.SugaredLogger)
+					if err != nil {
+						sub.SugaredLogger.Errorw("sifchain client failed in get prophecy completed message from event.",
+							errorMessageKey, err.Error())
+						continue
+					}
+					if prophecyInfo.NetworkDescriptor == sub.NetworkDescriptor {
+						// put not processed prophecy into map
+						if prophecyInfo.GlobalNonce > lastSubmittedNonce {
+							prophecyInfoMap[prophecyInfo.GlobalNonce] = prophecyInfo
+							if prophecyInfo.GlobalNonce > maxGlobalNonce {
+								// record the max global nonce
+								maxGlobalNonce = prophecyInfo.GlobalNonce
+
+							}
+							// already found the minimum global nonce not processeed
+							if prophecyInfo.GlobalNonce <= lastSubmittedNonce+1 {
+								found = true
+							}
+						}
+
+					}
+				}
+			}
+		}
+	}
+
+	return maxGlobalNonce, prophecyInfoMap
 
 }
