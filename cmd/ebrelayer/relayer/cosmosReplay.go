@@ -117,74 +117,7 @@ func (sub CosmosSub) ReplaySignatureAggregation(txFactory tx.Factory) {
 		return
 	}
 
-	fromBlock, toBlock, err := GetScannedBlockScope(tmClient)
-	if err != nil {
-		log.Printf("failed to get the scaned block scope, error as %s\n", err)
-		return
-	}
-
-	// Start Ethereum client
-	ethClient, err := ethclient.Dial(sub.EthProvider)
-	if err != nil {
-		log.Printf("failed to connect to Ethereum node, error as %s\n", err)
-		return
-	}
-
-	cosmosBridgeAddress, err := txs.GetAddressFromBridgeRegistry(ethClient, sub.RegistryContractAddress, txs.CosmosBridge, sub.SugaredLogger)
-	if err != nil {
-		log.Printf("failed to get the cosmos bridge address, error as %s\n", err)
-		return
-	}
-
-	lastSubmittedNonce, err := GetLastNonceSubmitted(ethClient, cosmosBridgeAddress, sub.SugaredLogger)
-	if err != nil {
-		log.Printf("failed to get the last submitted nonce, error as %s\n", err)
-		return
-	}
-
-	sub.ReplaySignatureAggregationWithScope(txFactory, tmClient, fromBlock, toBlock, lastSubmittedNonce.Uint64())
-}
-
-// ReplaySignatureAggregationWithScope to check missed ProphecyCompleted events
-func (sub CosmosSub) ReplaySignatureAggregationWithScope(txFactory tx.Factory, client *tmClient.HTTP, fromBlock int64, toBlock int64, lastSubmittedNonce uint64) {
-
-	// scan cosmos blocks
-	for blockNumber := fromBlock; blockNumber < toBlock; {
-		tmpBlockNumber := blockNumber
-
-		ctx := context.Background()
-		block, err := client.BlockResults(ctx, &tmpBlockNumber)
-
-		if err != nil {
-			log.Printf("failed to start a client %s\n", err.Error())
-			continue
-		}
-
-		blockNumber++
-		log.Printf("Replay start to process block %d\n", blockNumber)
-
-		for _, ethLog := range block.TxsResults {
-			for _, event := range ethLog.Events {
-
-				claimType := getOracleClaimType(event.GetType())
-
-				switch claimType {
-				case types.ProphecyCompleted:
-
-					prophecyInfo, err := txs.ProphecyCompletedEventToProphecyInfo(event.GetAttributes(), sub.SugaredLogger)
-					if err != nil {
-						sub.SugaredLogger.Errorw("sifchain client failed in get prophecy completed message from event.",
-							errorMessageKey, err.Error())
-						continue
-					}
-					if prophecyInfo.NetworkDescriptor == sub.NetworkDescriptor &&
-						prophecyInfo.GlobalNonce > lastSubmittedNonce {
-						sub.handleProphecyCompleted(prophecyInfo)
-					}
-				}
-			}
-		}
-	}
+	sub.handleNewProphecyCompleted(tmClient)
 }
 
 // getAllSignSigature returns all sign signature messages by check events

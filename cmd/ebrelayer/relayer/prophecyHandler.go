@@ -128,63 +128,6 @@ func (sub CosmosSub) handleNewProphecyCompleted(client *tmClient.HTTP) {
 }
 
 // Parses event data from the msg, event, builds a new ProphecyClaim, and relays it to Ethereum
-func (sub CosmosSub) handleProphecyCompleted(prophecyInfo types.ProphecyInfo) bool {
-	sub.SugaredLogger.Infow(
-		"get the prophecy completed message.",
-		"cosmosMsg", prophecyInfo,
-	)
-
-	client, auth, target, err := tryInitRelayConfig(sub)
-	if err != nil {
-		sub.SugaredLogger.Errorw("failed in init relay config.",
-			errorMessageKey, err.Error())
-		return false
-	}
-
-	// Initialize CosmosBridge instance
-	cosmosBridgeInstance, err := cosmosbridge.NewCosmosBridge(target, client)
-	if err != nil {
-		sub.SugaredLogger.Errorw("failed to get cosmosBridge instance.",
-			errorMessageKey, err.Error())
-		return false
-	}
-
-	maxRetries := 5
-	i := 0
-
-	for i < maxRetries {
-		err = txs.RelayProphecyCompletedToEthereum(
-			prophecyInfo,
-			sub.SugaredLogger,
-			client,
-			auth,
-			cosmosBridgeInstance,
-		)
-
-		if err != nil {
-			sub.SugaredLogger.Errorw(
-				"failed to send new prophecy completed to ethereum",
-				errorMessageKey, err.Error(),
-			)
-		} else {
-			break
-		}
-		i++
-	}
-
-	if i == maxRetries {
-		sub.SugaredLogger.Errorw(
-			"failed to broadcast transaction after 5 attempts",
-			errorMessageKey, err.Error(),
-		)
-		return false
-	}
-
-	return true
-
-}
-
-// Parses event data from the msg, event, builds a new ProphecyClaim, and relays it to Ethereum
 func (sub CosmosSub) handleBatchProphecyCompleted(
 	prophecyInfoMap map[uint64]types.ProphecyInfo,
 	batchStartNonce uint64,
