@@ -105,20 +105,34 @@ class Command:
     def mktempfile(self):
         return exactly_one(stdout_lines(self.execst(["mktemp"])))
 
-    def tar_create(self, path, tar_path, compression=None):
-        comp_opts = {"gz": "z"}
-        comp = comp_opts[compression] if compression in comp_opts else ""
+    def __tar_compression_option(self, tarfile):
+        filename = os.path.basename(tarfile).lower()
+        if filename.endswith(".tar"):
+            return ""
+        elif filename.endswith(".tar.gz"):
+            return "z"
+        else:
+            raise ValueError(f"Unknown extension for tar file: {tarfile}")
+
+    def tar_create(self, path, tarfile):
+        comp = self.__tar_compression_option(tarfile)
         # tar on 9p filesystem reports "file shrank by ... bytes" and exits with errorcode 1
         tar_quirks = True
         if tar_quirks:
             tmpdir = self.mktempdir()
             try:
                 shutil.copytree(path, tmpdir, dirs_exist_ok=True)
-                self.execst(["tar", "cf" + comp, tar_path, "."], cwd=tmpdir)
+                self.execst(["tar", "cf" + comp, tarfile, "."], cwd=tmpdir)
             finally:
                 self.rmdir(tmpdir)
         else:
-            self.execst(["tar", "cf" + comp, tar_path, "."], cwd=path)
+            self.execst(["tar", "cf" + comp, tarfile, "."], cwd=path)
+
+    def tar_extract(self, tarfile, path):
+        comp = self.__tar_compression_option(tarfile)
+        if not self.exists(path):
+            self.mkdir(path)
+        self.execst(["tar", "xf" + comp, tarfile], cwd=path)
 
 
 class Ganache(Command):
@@ -516,15 +530,15 @@ class UIStackPlaybook:
         self.cmd.mkdir(snapshots_dir)  # TODO self.cmd.rmdir(snapshots_dir)
         # ui/chains/peggy/snapshot.sh:
         # mkdir -p ui/chains/peggy/relayerdb
-        self.cmd.tar_create(project_dir("ui/chains/peggy/relayerdb"), os.path.join(snapshots_dir, "peggy.tar.gz"), compression="gz")
+        self.cmd.tar_create(project_dir("ui/chains/peggy/relayerdb"), os.path.join(snapshots_dir, "peggy.tar.gz"))
         # mkdir -p smart-contracts/build
-        self.cmd.tar_create(project_dir("smart-contracts/build"), os.path.join(snapshots_dir, "peggy_build.tar.gz"), compression="gz")
+        self.cmd.tar_create(project_dir("smart-contracts/build"), os.path.join(snapshots_dir, "peggy_build.tar.gz"))
 
         # ui/chains/sif/snapshot.sh:
-        self.cmd.tar_create(self.sifnoded_path, os.path.join(snapshots_dir, "sif.tar.gz"), compression="gz")
+        self.cmd.tar_create(self.sifnoded_path, os.path.join(snapshots_dir, "sif.tar.gz"))
 
         # ui/chains/etc/snapshot.sh:
-        self.cmd.tar_create(self.ganache_db_path, os.path.join(snapshots_dir, "eth.tar.gz"), compression="gz")
+        self.cmd.tar_create(self.ganache_db_path, os.path.join(snapshots_dir, "eth.tar.gz"))
 
     def stack_push(self):
         # ui/scripts/stack-push.sh
@@ -822,9 +836,10 @@ class IntegrationTestsPlaybook:
             raise Exception(f"Directory '{named_snapshot_dir}' already exists")
         self.cmd.mkdir(named_snapshot_dir)
         ganache_db_path = self.state_vars["GANACHE_DB_DIR"]
-        self.cmd.tar_create(ganache_db_path, os.path.join(named_snapshot_dir, "ganache.tar.gz"), compression="gz")
-        self.cmd.tar_create(project_dir("deploy/networks"), os.path.join(named_snapshot_dir, "networks.tar.gz"), compression="gz")
-        self.cmd.tar_create(project_dir("smart-contracts/build"), os.path.join(named_snapshot_dir, "smart-contracts.tar.gz"), compression="gz")
+        self.cmd.tar_create(ganache_db_path, os.path.join(named_snapshot_dir, "ganache.tar.gz"))
+        self.cmd.tar_create(project_dir("test/integration/relayerdb"), os.path.join(named_snapshot_dir, "relayerdb.tar.gz"))
+        self.cmd.tar_create(project_dir("deploy/networks"), os.path.join(named_snapshot_dir, "networks.tar.gz"))
+        self.cmd.tar_create(project_dir("smart-contracts/build"), os.path.join(named_snapshot_dir, "smart-contracts.tar.gz"))
         self.cmd.write_text_file(os.path.join(named_snapshot_dir, "vagrantenv.json"), json.dumps(self.state_vars, indent=4))
 
     def restart_processes(self):
@@ -858,8 +873,27 @@ class IntegrationTestsPlaybook:
 
     def restore_snapshot(self, snapshot_name):
         named_snapshot_dir = os.path.join(self.snapshots_dir, snapshot_name)
-        self.state_vars = json.loads(self.cmd.read_text_file(os.path.join(named_snapshot_dir, "vagrantenv.json")))
+        state_vars = json.loads(self.cmd.read_text_file(os.path.join(named_snapshot_dir, "vagrantenv.json")))
 
+        def extract(tarfile, path):
+            self.cmd.rmdir(path)
+            self.cmd.mkdir(path)
+            self.cmd.tar_extract(os.path.join(named_snapshot_dir, tarfile), path)
+
+        ganache_db_dir = self.cmd.mktempdir()
+        extract("ganache.tar.gz", ganache_db_dir)
+        relayerdb_dir = project_dir("test/integration/relayerdb")
+        extract("relayerdb.tar.gz", relayerdb_dir)
+        deploy_networks_dir = project_dir("deploy/networks")
+        extract("networks.tar.gz", deploy_networks_dir)
+        smart_contracts_build_dir = project_dir("smart-contracts/build")
+        extract("smart-contracts.tar.gz", smart_contracts_build_dir)
+
+        state_vars["GANACHE_DB_DIR"] = ganache_db_dir
+        self.state_vars = state_vars
+        self.write_vagrantenv_sh()
+
+        return self.restart_processes()
 
 def cleanup_and_reset_state():
     # git checkout 4cb7322b6b282babd93a0d0aedda837c9134e84e deploy
@@ -885,6 +919,12 @@ def cleanup_and_reset_state():
     # cmd.rmdir(project_dir("smart-contracts/.openzeppelin"))
     time.sleep(3)
 
+def killall(processes):
+    # TODO Order - ebrelayer, sifnoded, ganache
+    for p in processes:
+        if p is not None:
+            p.kill()
+            p.wait()
 
 def main(argv):
     logging.basicConfig(stream=sys.stdout, level=logging.DEBUG, format="%(message)s")
@@ -897,19 +937,17 @@ def main(argv):
     elif what == "create_snapshot":
         snapshot_name = argv[1]
         cleanup_and_reset_state()
-        cmd = Integrator()
         it_playbook = IntegrationTestsPlaybook(cmd)
         processes = it_playbook.run()
-        for p in processes:
-            if p is not None:
-                p.kill()
-                p.wait()
-        processes1 = it_playbook.restart_processes()
+        killall(processes)
+        # processes1 = it_playbook.restart_processes()
         it_playbook.create_snapshot(snapshot_name)
     elif what == "restore_snapshot":
         snapshot_name = argv[1]
         it_playbook = IntegrationTestsPlaybook(cmd)
-        it_playbook.restore_snapshot(snapshot_name)
+        processes = it_playbook.restore_snapshot(snapshot_name)
+        input("Press ENTER to exit...")
+        killall(processes)
     else:
         raise Exception("Missing/unknown command")
 
