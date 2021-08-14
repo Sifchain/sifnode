@@ -40,7 +40,7 @@ func (srv msgServer) Transfer(goCtx context.Context, msg *types.MsgTransfer) (*t
 
 		po := registryEntry.Decimals - registryEntry.IbcDecimals
 		decAmount := sdk.NewDecFromInt(msg.Token.Amount)
-		convAmountDec := ReducePrecision(sdk.NewDecFromBigInt(decAmount.BigInt()), po)
+		convAmountDec := ReducePrecision(decAmount, po)
 
 		convAmount := sdk.NewIntFromBigInt(convAmountDec.RoundInt().BigInt())
 

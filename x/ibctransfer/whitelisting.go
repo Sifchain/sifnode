@@ -51,7 +51,8 @@ func OnRecvPacketWhiteListed(
 	// if no error and packet is returning and needs conversion: convert
 	if err != nil && IsRecvPacketReturning(packet, data) && checkRecvConvert(ctx, whitelistKeeper, packet, data) {
 
-		recvResult, err = convertRecvDenom(ctx, whitelistKeeper, bankKeeper, packet, data)
+		ibcToken, convToken := convertRecvDenom(ctx, whitelistKeeper, packet, data)
+		recvResult, err = sendConvertRecvDenom(ctx, ibcToken, convToken, bankKeeper, data)
 
 	}
 
@@ -64,11 +65,11 @@ func checkRecvConvert(ctx sdk.Context, whitelistKeeper tokenregistrytypes.Keeper
 	denom := GetMintedDenomFromPacket(packet, data)
 	// get token registry entry for received token
 	registryEntry := whitelistKeeper.GetIBCDenom(ctx, denom)
-	return registryEntry.IbcDenom != "" && registryEntry.IbcDecimals > 10
+	return registryEntry.IbcDenom != "" && registryEntry.Decimals > registryEntry.IbcDecimals
 }
 
-func convertRecvDenom(ctx sdk.Context, whitelistKeeper tokenregistrytypes.Keeper, bankKeeper types.BankKeeper,
-	packet channeltypes.Packet, data transfertypes.FungibleTokenPacketData) (*sdk.Result, error) {
+func convertRecvDenom(ctx sdk.Context, whitelistKeeper tokenregistrytypes.Keeper,
+	packet channeltypes.Packet, data transfertypes.FungibleTokenPacketData) (sdk.Coin, sdk.Coin) {
 	denom := GetMintedDenomFromPacket(packet, data)
 	// get token registry entry for received token
 	registryEntry := whitelistKeeper.GetIBCDenom(ctx, denom)
@@ -76,17 +77,32 @@ func convertRecvDenom(ctx sdk.Context, whitelistKeeper tokenregistrytypes.Keeper
 	// calculate conversion
 	po := registryEntry.Decimals - registryEntry.IbcDecimals
 	decAmount := sdk.NewDecFromInt(sdk.NewIntFromUint64(data.Amount))
-	convAmountDec := IncreasePrecision(sdk.NewDecFromBigInt(decAmount.BigInt()), po)
+	convAmountDec := IncreasePrecision(decAmount, po)
 	convAmount := sdk.NewIntFromBigInt(convAmountDec.RoundInt().BigInt())
-
 	convToken := sdk.NewCoin(registryEntry.Denom, convAmount)
-	// decode the receiver address
+	ibcToken := sdk.NewCoin(denom, sdk.NewIntFromUint64(data.Amount))
+
+	return ibcToken, convToken
+}
+func sendConvertRecvDenom(ctx sdk.Context, ibcToken sdk.Coin, convToken sdk.Coin, bankKeeper types.BankKeeper, data transfertypes.FungibleTokenPacketData) (*sdk.Result, error) {
+	// denom := GetMintedDenomFromPacket(packet, data)
+	// // get token registry entry for received token
+	// registryEntry := whitelistKeeper.GetIBCDenom(ctx, denom)
+	// // check if registry entry has an IBC decimal field
+	// // calculate conversion
+	// po := registryEntry.Decimals - registryEntry.IbcDecimals
+	// decAmount := sdk.NewDecFromInt(sdk.NewIntFromUint64(data.Amount))
+	// convAmountDec := IncreasePrecision(sdk.NewDecFromBigInt(decAmount.BigInt()), po)
+	// convAmount := sdk.NewIntFromBigInt(convAmountDec.RoundInt().BigInt())
+
+	// convToken := sdk.NewCoin(registryEntry.Denom, convAmount)
+	// // decode the receiver address
 	receiver, err := sdk.AccAddressFromBech32(data.Receiver)
 	if err != nil {
 		return nil, err
 	}
 	// send ibcdenom coins from account to module
-	ibcToken := sdk.NewCoin(denom, sdk.NewIntFromUint64(data.Amount))
+	// ibcToken := sdk.NewCoin(denom, sdk.NewIntFromUint64(data.Amount))
 	err = bankKeeper.SendCoinsFromAccountToModule(ctx, receiver, transfertypes.ModuleName, sdk.NewCoins(ibcToken))
 	if err != nil {
 		return nil, err
