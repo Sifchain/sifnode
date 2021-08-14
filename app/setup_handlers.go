@@ -22,8 +22,7 @@ func SetupHandlers(app *SifchainApp) {
 	if err != nil {
 		panic(err)
 	}
-
-	if upgradeInfo.Name == "0.9.3" && !app.UpgradeKeeper.IsSkipHeight(upgradeInfo.Height) {
+	if upgradeInfo.Name == "0.9.3" && !app.UpgradeKeeper.IsSkipHeight(upgradeInfo.Height) && app.LastBlockHeight()+1 == upgradeInfo.Height {
 		storeUpgrades := storetypes.StoreUpgrades{
 			Added: []string{tokenregistrytypes.ModuleName},
 		}
