@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: Apache-2.0
 pragma solidity 0.8.0;
 
 import "./Oracle.sol";
@@ -22,7 +23,7 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
 
     event LogNewBridgeTokenCreated(
         uint8 decimals,
-        uint256 indexed sourceChainDescriptor,
+        uint256 indexed sourcechainId,
         string name,
         string symbol,
         address indexed sourceContractAddress,
@@ -49,11 +50,13 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
         address _operator,
         uint256 _consensusThreshold,
         address[] calldata _initValidators,
-        uint256[] calldata _initPowers
+        uint256[] calldata _initPowers,
+        uint256 _networkDescriptor
     ) external {
         require(!_initialized, "Initialized");
 
         operator = _operator;
+        networkDescriptor = _networkDescriptor;
         hasBridgeBank = false;
         _initialized = true;
         Oracle._initialize(
@@ -91,7 +94,8 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
         address tokenAddress,
         uint256 amount,
         bool doublePeg,
-        uint128 nonce
+        uint128 nonce,
+        uint256 _networkDescriptor
     ) public pure returns (uint256) {
         return uint256(
             keccak256(
@@ -102,7 +106,8 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
                     tokenAddress,
                     amount,
                     doublePeg,
-                    nonce
+                    nonce,
+                    _networkDescriptor
                 )
             )
         );
@@ -124,10 +129,10 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
     // it would require some pretty low level work for this very simple function
     // Alternatively, cast addresses to UINT's and possibly do some bitwise operations
     // to ensure there are no duplicate numbers
-    function findDup(SignatureData[] calldata validators) public pure returns (bool) {
-        for (uint256 i = 0; i < validators.length; i++) {
-            for (uint256 j = i + 1; j < validators.length; j++) {
-                if (validators[i].signer == validators[j].signer) {
+    function findDup(SignatureData[] calldata _validators) public pure returns (bool) {
+        for (uint256 i = 0; i < _validators.length; i++) {
+            for (uint256 j = i + 1; j < _validators.length; j++) {
+                if (_validators[i].signer == _validators[j].signer) {
                     return true;
                 }
             }
@@ -136,20 +141,20 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
         return false;
     }
 
-    function getSignedPower(SignatureData[] calldata validators) public view returns(uint256) {
-        uint256 totalPower = 0;
-        for (uint256 i = 0; i < validators.length; i++) {
-            totalPower += getValidatorPower(validators[i].signer);
+    function getSignedPower(SignatureData[] calldata _validators) public view returns(uint256) {
+        uint256 _totalPower = 0;
+        for (uint256 i = 0; i < _validators.length; i++) {
+            _totalPower += getValidatorPower(_validators[i].signer);
         }
 
-        return totalPower;
+        return _totalPower;
     }
 
     struct SignatureData {
         address signer;
         uint8 _v;
-		bytes32 _r;
-		bytes32 _s;
+		    bytes32 _r;
+		    bytes32 _s;
     }
 
     struct ClaimData {
@@ -160,6 +165,10 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
         uint256 amount;
         bool doublePeg;
         uint128 nonce;
+        uint256 networkDescriptor;
+        string tokenName;
+        string tokenSymbol;
+        uint8 tokenDecimals;
     }
 
     function batchSubmitProphecyClaimAggregatedSigs(
@@ -183,11 +192,21 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
         _submitProphecyClaimAggregatedSigs(hashDigest, claimData, signatureData);
     }
 
+    // Essentially, each tx to the submitProphecyClaimAggregatedSigs needs to include a
+    // networkDescriptor or other unique identifier that only the smart contract on that chain has.
+    // If the chain identifier in the smart contract and the chain identifier in the message do not
+    // match, the transaction should fail.
     function _submitProphecyClaimAggregatedSigs(
         bytes32 hashDigest,
         ClaimData calldata claimData,
         SignatureData[] calldata signatureData
     ) private {
+        uint256 previousNonce = lastNonceSubmitted;
+        require(
+            // assert nonce is correct
+            previousNonce + 1 == claimData.nonce,
+            "INV_ORD"
+        );
 
         uint256 prophecyID = getProphecyID(
             claimData.cosmosSender,
@@ -196,7 +215,8 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
             claimData.tokenAddress,
             claimData.amount,
             claimData.doublePeg,
-            claimData.nonce
+            claimData.nonce,
+            claimData.networkDescriptor
         );
 
         require(
@@ -210,10 +230,18 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
             "INV_SIG_LEN"
         );
 
+        // ensure the networkDescriptor matches
+        if (!claimData.doublePeg) {
+            require(verifyNetworkDescriptor(claimData.networkDescriptor), "INV_NET_DESC");
+        }
+        
         // ensure there are no duplicate signers
         require(
             !findDup(signatureData), "DUP_SIGNER"
         );
+
+        // update the nonce
+        lastNonceSubmitted = claimData.nonce;
 
         // check that all signers are validators and are unique
         for (uint256 i = 0; i < signatureData.length; i++) {
@@ -231,19 +259,24 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
         }
 
         uint256 signedPower = getSignedPower(signatureData);
-
         require(getProphecyStatus(signedPower), "INV_POW");
 
-        uint256 previousNonce = lastNonceSubmitted;
-        require(
-            // assert nonce is correct
-            previousNonce + 1 == claimData.nonce,
-            "INV_ORD"
-        );
-        lastNonceSubmitted = claimData.nonce;
-
-        // if we are double pegging, then we are going to need to get the address on this chain
-        address tokenAddress = claimData.doublePeg ? sourceAddressToDestinationAddress[claimData.tokenAddress] : claimData.tokenAddress;
+        // if we are double pegging AND we don't control the token, we deploy a new smart contract
+        address tokenAddress;
+        if(claimData.doublePeg && !_isManagedToken(claimData.tokenAddress)) {
+            tokenAddress = _createNewBridgeToken(
+                claimData.tokenSymbol,
+                claimData.tokenName,
+                claimData.tokenAddress,
+                claimData.tokenDecimals,
+                claimData.networkDescriptor
+            );
+        } else if(claimData.doublePeg) {
+            // if we are double pegging and already control the token, then we are going to need to get the address on this chain
+            tokenAddress = sourceAddressToDestinationAddress[claimData.tokenAddress];
+        } else {
+            tokenAddress = claimData.tokenAddress;
+        }
 
         completeProphecyClaim(
             prophecyID,
@@ -259,20 +292,21 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
         );
     }
 
-    /**
-     * @param symbol symbol of the ERC20 token on the source chain
-     * @param name name of the ERC20 token on the source chain
-     * @param sourceChainTokenAddress address of the ERC20 token on the source chain
-     * @param decimals of the ERC20 token on the source chain
-     * @param chainDescriptor descriptor of the source chain
-     */
-    function createNewBridgeToken(
+    function _isManagedToken(address tokenAddress) private returns(bool) {
+        return sourceAddressToDestinationAddress[tokenAddress] != address(0);
+    }
+
+    function verifyNetworkDescriptor(uint256 _networkDescriptor) internal returns(bool) {
+        return _networkDescriptor == networkDescriptor;
+    }
+
+    function _createNewBridgeToken(
         string calldata symbol,
         string calldata name,
         address sourceChainTokenAddress,
         uint8 decimals,
-        uint256 chainDescriptor
-    ) external onlyValidator {
+        uint256 _networkDescriptor
+    ) internal returns(address) {
         require(
             sourceAddressToDestinationAddress[sourceChainTokenAddress] == address(0),
             "INV_SRC_ADDR"
@@ -290,12 +324,14 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
 
         emit LogNewBridgeTokenCreated(
             decimals,
-            chainDescriptor,
+            _networkDescriptor,
             name,
             symbol,
             sourceChainTokenAddress,
             tokenAddress
         );
+
+        return tokenAddress;
     }
 
     /*

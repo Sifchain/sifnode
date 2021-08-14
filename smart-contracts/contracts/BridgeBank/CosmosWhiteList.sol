@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: Apache-2.0
 pragma solidity 0.8.0;
 
 import "./CosmosWhiteListStorage.sol";
@@ -12,9 +13,8 @@ contract CosmosWhiteList is CosmosWhiteListStorage {
 
     /*
      * @dev: Event declarations
+     * @notice: This event is in EthereumWhitelist.sol
      */
-    event LogWhiteListUpdate(address _token, bool _value);
-
     function _cosmosWhitelistInitialize() internal {
         require(!_initialized, "Initialized");
         _initialized = true;
@@ -26,7 +26,7 @@ contract CosmosWhiteList is CosmosWhiteListStorage {
     modifier onlyCosmosTokenWhiteList(address _token) {
         require(
             getCosmosTokenInWhiteList(_token),
-            "Only token in whitelist can be burned"
+            "Only token in cosmos whitelist can be burned"
         );
         _;
     }
