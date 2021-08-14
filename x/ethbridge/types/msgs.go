@@ -169,14 +169,13 @@ func (msg MsgBurn) GetSigners() []sdk.AccAddress {
 }
 
 // GetProphecyID get prophecy ID for lock message
-func (msg MsgBurn) GetProphecyID(doublePeggy bool, sequence, globalNonce uint64) []byte {
+func (msg MsgBurn) GetProphecyID(doublePeggy bool, sequence, globalNonce uint64, tokenAddress string) []byte {
 
 	return ComputeProphecyID(
 		msg.CosmosSender,
 		sequence,
 		msg.EthereumReceiver,
-		// TODO need get the token address from token's symbol
-		msg.EthereumReceiver,
+		tokenAddress,
 		msg.Amount,
 		doublePeggy,
 		globalNonce,
@@ -224,10 +223,8 @@ func ComputeProphecyID(cosmosSender string, sequence uint64, ethereumReceiver st
 	bytes, _ := arguments.Pack(
 		[]byte(cosmosSender),
 		big.NewInt(int64(sequence)),
-
 		gethCommon.HexToAddress(ethereumReceiver),
-		// TODO need get the token address from token's symbol
-		gethCommon.HexToAddress(ethereumReceiver),
+		gethCommon.HexToAddress(tokenAddress),
 		big.NewInt(amount.Int64()),
 		doublePeggy,
 		big.NewInt(int64(globalNonce)),

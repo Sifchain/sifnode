@@ -23,7 +23,7 @@ var testMetadata = types.TokenMetadata{
 func TestGetAddTokenMetadata(t *testing.T) {
 	ctx, keeper, _, _, _, _, _, _ := test.CreateTestKeepers(t, 0.7, []int64{3, 3}, "")
 	expected := types.TokenMetadata{}
-	result := keeper.GetTokenMetadata(ctx, invalidDenom)
+	result, _ := keeper.GetTokenMetadata(ctx, invalidDenom)
 	require.Equal(t, expected, result)
 	resultDenom := keeper.AddTokenMetadata(ctx, testMetadata)
 	expectedDenom := types.GetDenomHash(
@@ -34,7 +34,7 @@ func TestGetAddTokenMetadata(t *testing.T) {
 		testMetadata.Symbol,
 	)
 	require.Equal(t, expectedDenom, resultDenom)
-	result = keeper.GetTokenMetadata(ctx, resultDenom)
+	result, _ = keeper.GetTokenMetadata(ctx, resultDenom)
 	require.Equal(t, testMetadata, result)
 }
 

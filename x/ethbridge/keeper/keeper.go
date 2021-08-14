@@ -116,6 +116,11 @@ func (k Keeper) ProcessBurn(ctx sdk.Context, cosmosSender sdk.AccAddress, sender
 		return []byte{}, errors.New("crosschain fee amount in message less than minimum burn")
 	}
 
+	tokenMetadata, ok := k.GetTokenMetadata(ctx, msg.Symbol)
+	if !ok {
+		return []byte{}, errors.New("token metadata not available")
+	}
+
 	if k.IsCrossChainFeeReceiverAccountSet(ctx) {
 		coins = sdk.NewCoins(sdk.NewCoin(crossChainFeeConfig.FeeCurrency, msg.CrosschainFee))
 
@@ -154,7 +159,7 @@ func (k Keeper) ProcessBurn(ctx sdk.Context, cosmosSender sdk.AccAddress, sender
 	// TODO global sequence will be implemented in other feature
 	globalSequence := uint64(0)
 
-	prophecyID := msg.GetProphecyID(false, senderSequence, globalSequence)
+	prophecyID := msg.GetProphecyID(false, senderSequence, globalSequence, tokenMetadata.TokenAddress)
 	k.oracleKeeper.SetProphecyWithInitValue(ctx, prophecyID)
 
 	return prophecyID, nil
@@ -287,9 +292,12 @@ func (k Keeper) ProcessSignProphecy(ctx sdk.Context, msg *types.MsgSignProphecy)
 		return errors.New("prophecy not found in oracle keeper")
 	}
 
-	denom := k.GetTokenMetadata(ctx, prophecyInfo.TokenSymbol)
+	metadata, ok := k.GetTokenMetadata(ctx, prophecyInfo.TokenSymbol)
+	if !ok {
+		return fmt.Errorf("metadata not available for %s", prophecyInfo.TokenSymbol)
+	}
 
-	return k.oracleKeeper.ProcessSignProphecy(ctx, msg.NetworkDescriptor, msg.ProphecyId, msg.CosmosSender, denom.TokenAddress, msg.EthereumAddress, msg.Signature)
+	return k.oracleKeeper.ProcessSignProphecy(ctx, msg.NetworkDescriptor, msg.ProphecyId, msg.CosmosSender, metadata.TokenAddress, msg.EthereumAddress, msg.Signature)
 }
 
 // Exists chec if the key existed in db.

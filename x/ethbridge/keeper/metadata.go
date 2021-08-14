@@ -6,15 +6,15 @@ import (
 )
 
 // Fetches token meteadata if it exists
-func (k Keeper) GetTokenMetadata(ctx sdk.Context, denomHash string) types.TokenMetadata {
+func (k Keeper) GetTokenMetadata(ctx sdk.Context, denomHash string) (types.TokenMetadata, bool) {
 	if !k.ExistsTokenMetadata(ctx, denomHash) {
-		return types.TokenMetadata{}
+		return types.TokenMetadata{}, false
 	}
 	store := ctx.KVStore(k.storeKey)
 	encodedMetadata := store.Get([]byte(denomHash))
 	tokenMetadata := types.TokenMetadata{}
 	k.cdc.MustUnmarshalBinaryBare(encodedMetadata, &tokenMetadata)
-	return tokenMetadata
+	return tokenMetadata, true
 }
 
 // Add new token metadata information
