@@ -12,7 +12,6 @@ import (
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/txs"
 
 	sifapp "github.com/Sifchain/sifnode/app"
-	"github.com/Sifchain/sifnode/cmd/ebrelayer/contract"
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/relayer"
 	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
 	"github.com/cosmos/cosmos-sdk/client"
@@ -90,7 +89,6 @@ func buildRootCmd() *cobra.Command {
 	rootCmd.AddCommand(
 		rpc.StatusCommand(),
 		initRelayerCmd(),
-		generateBindingsCmd(),
 		replayEthereumCmd(),
 		replayCosmosCmd(),
 		listMissedCosmosEventCmd(),
@@ -113,19 +111,6 @@ func initRelayerCmd() *cobra.Command {
 	flags.AddTxFlagsToCmd(initRelayerCmd)
 
 	return initRelayerCmd
-}
-
-//	generateBindingsCmd : Generates ABIs and bindings for Bridge smart contracts which facilitate contract interaction
-func generateBindingsCmd() *cobra.Command {
-	generateBindingsCmd := &cobra.Command{
-		Use:     "generate",
-		Short:   "Generates Bridge smart contracts ABIs and bindings",
-		Args:    cobra.ExactArgs(0),
-		Example: "generate",
-		RunE:    RunGenerateBindingsCmd,
-	}
-
-	return generateBindingsCmd
 }
 
 // RunInitRelayerCmd executes initRelayerCmd
@@ -235,21 +220,6 @@ func RunInitRelayerCmd(cmd *cobra.Command, args []string) error {
 	waitForAll.Wait()
 
 	return nil
-}
-
-// RunGenerateBindingsCmd : executes the generateBindingsCmd
-func RunGenerateBindingsCmd(_ *cobra.Command, _ []string) error {
-	contracts := contract.LoadBridgeContracts()
-
-	// Compile contracts, generating contract bins and abis
-	err := contract.CompileContracts(contracts)
-	if err != nil {
-		log.Println(err)
-		return err
-	}
-
-	// Generate contract bindings from bins and abis
-	return contract.GenerateBindings(contracts)
 }
 
 func replayEthereumCmd() *cobra.Command {
