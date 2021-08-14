@@ -171,7 +171,7 @@ func (k Keeper) SetProphecyWithInitValue(ctx sdk.Context, prophecyID []byte) {
 }
 
 // ProcessSignProphecy deal with the signature from validator
-func (k Keeper) ProcessSignProphecy(ctx sdk.Context, networkDescriptor types.NetworkDescriptor, prophecyID []byte, cosmosSender, ethereumAddress, signature string) error {
+func (k Keeper) ProcessSignProphecy(ctx sdk.Context, networkDescriptor types.NetworkDescriptor, prophecyID []byte, cosmosSender, tokenAddress, ethereumAddress, signature string) error {
 	prophecy, ok := k.GetProphecy(ctx, prophecyID)
 	if !ok {
 		return types.ErrProphecyNotFound
@@ -231,8 +231,7 @@ func (k Keeper) ProcessSignProphecy(ctx sdk.Context, networkDescriptor types.Net
 				sdk.NewAttribute(types.AttributeKeyCosmosSender, prophecyInfo.CosmosSender),
 				sdk.NewAttribute(types.AttributeKeyCosmosSenderSequence, strconv.FormatInt(int64(prophecyInfo.CosmosSenderSequence), 10)),
 				sdk.NewAttribute(types.AttributeKeyEthereumReceiver, prophecyInfo.EthereumReceiver),
-				// TODO get the token address from denom
-				sdk.NewAttribute(types.AttributeKeyTokenContractAddress, prophecyInfo.EthereumReceiver),
+				sdk.NewAttribute(types.AttributeKeyTokenContractAddress, tokenAddress),
 				sdk.NewAttribute(types.AttributeKeyAmount, strconv.FormatInt(prophecyInfo.TokenAmount.Int64(), 10)),
 				sdk.NewAttribute(types.AttributeKeyDoublePeggy, strconv.FormatBool(prophecyInfo.DoublePeg)),
 				sdk.NewAttribute(types.AttributeKeyGlobalNonce, strconv.FormatInt(int64(prophecyInfo.GlobalNonce), 10)),

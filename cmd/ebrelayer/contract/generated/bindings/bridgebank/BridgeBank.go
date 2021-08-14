@@ -27,7 +27,7 @@ var (
 )
 
 // BridgeBankABI is the input ABI used to generate the binding from.
-const BridgeBankABI = "[{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"_token\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"_amount\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"_beneficiary\",\"type\":\"address\"}],\"name\":\"LogBridgeTokenMint\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"_from\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"bytes\",\"name\":\"_to\",\"type\":\"bytes\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"_token\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"_value\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"_nonce\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"_decimals\",\"type\":\"uint256\"}],\"name\":\"LogBurn\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"_from\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"bytes\",\"name\":\"_to\",\"type\":\"bytes\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"_token\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"_value\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"_nonce\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"_decimals\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"string\",\"name\":\"_symbol\",\"type\":\"string\"},{\"indexed\":false,\"internalType\":\"string\",\"name\":\"_name\",\"type\":\"string\"}],\"name\":\"LogLock\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"_token\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"string\",\"name\":\"_symbol\",\"type\":\"string\"}],\"name\":\"LogNewBridgeToken\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"_to\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"_token\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"_value\",\"type\":\"uint256\"}],\"name\":\"LogUnlock\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"_token\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"bool\",\"name\":\"_value\",\"type\":\"bool\"}],\"name\":\"LogWhiteListUpdate\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"Paused\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"Unpaused\",\"type\":\"event\"},{\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"_sifAddress\",\"type\":\"bytes\"}],\"name\":\"VSA\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"contractAddress\",\"type\":\"address\"}],\"name\":\"addExistingBridgeToken\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"addPauser\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"bridgeTokenCount\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"recipient\",\"type\":\"bytes\"},{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"burn\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"changeOwner\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"name\":\"contractDecimals\",\"outputs\":[{\"internalType\":\"uint8\",\"name\":\"\",\"type\":\"uint8\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"name\":\"contractName\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"name\":\"contractSymbol\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"cosmosBridge\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"cosmosDepositNonce\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"name\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"symbol\",\"type\":\"string\"},{\"internalType\":\"uint8\",\"name\":\"decimals\",\"type\":\"uint8\"}],\"name\":\"createNewBridgeToken\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_token\",\"type\":\"address\"}],\"name\":\"getCosmosTokenInWhiteList\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"addresspayable\",\"name\":\"ethereumReceiver\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"tokenAddress\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"handleUnpeg\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_cosmosBridgeAddress\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"_owner\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"_pauser\",\"type\":\"address\"}],\"name\":\"initialize\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"recipient\",\"type\":\"bytes\"},{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"lock\",\"outputs\":[],\"stateMutability\":\"payable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"lockBurnNonce\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes[]\",\"name\":\"recipient\",\"type\":\"bytes[]\"},{\"internalType\":\"address[]\",\"name\":\"token\",\"type\":\"address[]\"},{\"internalType\":\"uint256[]\",\"name\":\"amount\",\"type\":\"uint256[]\"}],\"name\":\"multiLock\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes[]\",\"name\":\"recipient\",\"type\":\"bytes[]\"},{\"internalType\":\"address[]\",\"name\":\"token\",\"type\":\"address[]\"},{\"internalType\":\"uint256[]\",\"name\":\"amount\",\"type\":\"uint256[]\"},{\"internalType\":\"bool[]\",\"name\":\"isBurn\",\"type\":\"bool[]\"}],\"name\":\"multiLockBurn\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"owner\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"pause\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"paused\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"name\":\"pausers\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"renouncePauser\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"unpause\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]"
+const BridgeBankABI = "[{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"_token\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"_amount\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"_beneficiary\",\"type\":\"address\"}],\"name\":\"LogBridgeTokenMint\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"_from\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"bytes\",\"name\":\"_to\",\"type\":\"bytes\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"_token\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"_value\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"_nonce\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"_decimals\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"_networkDescriptor\",\"type\":\"uint256\"}],\"name\":\"LogBurn\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"_from\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"bytes\",\"name\":\"_to\",\"type\":\"bytes\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"_token\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"_value\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"_nonce\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"_decimals\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"string\",\"name\":\"_symbol\",\"type\":\"string\"},{\"indexed\":false,\"internalType\":\"string\",\"name\":\"_name\",\"type\":\"string\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"_networkDescriptor\",\"type\":\"uint256\"}],\"name\":\"LogLock\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"_token\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"string\",\"name\":\"_symbol\",\"type\":\"string\"}],\"name\":\"LogNewBridgeToken\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"_to\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"_token\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"_value\",\"type\":\"uint256\"}],\"name\":\"LogUnlock\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"_token\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"bool\",\"name\":\"_value\",\"type\":\"bool\"}],\"name\":\"LogWhiteListUpdate\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"Paused\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"Unpaused\",\"type\":\"event\"},{\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"_sifAddress\",\"type\":\"bytes\"}],\"name\":\"VSA\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"contractAddress\",\"type\":\"address\"}],\"name\":\"addExistingBridgeToken\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"addPauser\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"bridgeTokenCount\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"recipient\",\"type\":\"bytes\"},{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"burn\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_newOperator\",\"type\":\"address\"}],\"name\":\"changeOperator\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"changeOwner\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"name\":\"contractDecimals\",\"outputs\":[{\"internalType\":\"uint8\",\"name\":\"\",\"type\":\"uint8\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"name\":\"contractName\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"name\":\"contractSymbol\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"cosmosBridge\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"cosmosDepositNonce\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"name\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"symbol\",\"type\":\"string\"},{\"internalType\":\"uint8\",\"name\":\"decimals\",\"type\":\"uint8\"}],\"name\":\"createNewBridgeToken\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_token\",\"type\":\"address\"}],\"name\":\"getCosmosTokenInWhiteList\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_token\",\"type\":\"address\"}],\"name\":\"getTokenInEthWhiteList\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"addresspayable\",\"name\":\"ethereumReceiver\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"tokenAddress\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"handleUnpeg\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"initialize\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_operator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"_cosmosBridgeAddress\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"_owner\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"_pauser\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"_networkDescriptor\",\"type\":\"uint256\"}],\"name\":\"initialize\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"recipient\",\"type\":\"bytes\"},{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"lock\",\"outputs\":[],\"stateMutability\":\"payable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"lockBurnNonce\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\"}],\"name\":\"lockedTokenList\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes[]\",\"name\":\"recipient\",\"type\":\"bytes[]\"},{\"internalType\":\"address[]\",\"name\":\"token\",\"type\":\"address[]\"},{\"internalType\":\"uint256[]\",\"name\":\"amount\",\"type\":\"uint256[]\"}],\"name\":\"multiLock\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes[]\",\"name\":\"recipient\",\"type\":\"bytes[]\"},{\"internalType\":\"address[]\",\"name\":\"token\",\"type\":\"address[]\"},{\"internalType\":\"uint256[]\",\"name\":\"amount\",\"type\":\"uint256[]\"},{\"internalType\":\"bool[]\",\"name\":\"isBurn\",\"type\":\"bool[]\"}],\"name\":\"multiLockBurn\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"networkDescriptor\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"operator\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"owner\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"pause\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"paused\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"name\":\"pausers\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_operator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"_cosmosBridgeAddress\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"_owner\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"_pauser\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"_networkDescriptor\",\"type\":\"uint256\"}],\"name\":\"reinitialize\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"renouncePauser\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"unpause\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_token\",\"type\":\"address\"},{\"internalType\":\"bool\",\"name\":\"_inList\",\"type\":\"bool\"}],\"name\":\"updateEthWhiteList\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]"
 
 // BridgeBank is an auto generated Go binding around an Ethereum contract.
 type BridgeBank struct {
@@ -379,6 +379,32 @@ func (_BridgeBank *BridgeBankCallerSession) GetCosmosTokenInWhiteList(_token com
 	return _BridgeBank.Contract.GetCosmosTokenInWhiteList(&_BridgeBank.CallOpts, _token)
 }
 
+// GetTokenInEthWhiteList is a free data retrieval call binding the contract method 0x7b38c6d4.
+//
+// Solidity: function getTokenInEthWhiteList(address _token) view returns(bool)
+func (_BridgeBank *BridgeBankCaller) GetTokenInEthWhiteList(opts *bind.CallOpts, _token common.Address) (bool, error) {
+	var (
+		ret0 = new(bool)
+	)
+	out := ret0
+	err := _BridgeBank.contract.Call(opts, out, "getTokenInEthWhiteList", _token)
+	return *ret0, err
+}
+
+// GetTokenInEthWhiteList is a free data retrieval call binding the contract method 0x7b38c6d4.
+//
+// Solidity: function getTokenInEthWhiteList(address _token) view returns(bool)
+func (_BridgeBank *BridgeBankSession) GetTokenInEthWhiteList(_token common.Address) (bool, error) {
+	return _BridgeBank.Contract.GetTokenInEthWhiteList(&_BridgeBank.CallOpts, _token)
+}
+
+// GetTokenInEthWhiteList is a free data retrieval call binding the contract method 0x7b38c6d4.
+//
+// Solidity: function getTokenInEthWhiteList(address _token) view returns(bool)
+func (_BridgeBank *BridgeBankCallerSession) GetTokenInEthWhiteList(_token common.Address) (bool, error) {
+	return _BridgeBank.Contract.GetTokenInEthWhiteList(&_BridgeBank.CallOpts, _token)
+}
+
 // LockBurnNonce is a free data retrieval call binding the contract method 0x1deed3bb.
 //
 // Solidity: function lockBurnNonce() view returns(uint256)
@@ -403,6 +429,84 @@ func (_BridgeBank *BridgeBankSession) LockBurnNonce() (*big.Int, error) {
 // Solidity: function lockBurnNonce() view returns(uint256)
 func (_BridgeBank *BridgeBankCallerSession) LockBurnNonce() (*big.Int, error) {
 	return _BridgeBank.Contract.LockBurnNonce(&_BridgeBank.CallOpts)
+}
+
+// LockedTokenList is a free data retrieval call binding the contract method 0xf24a590a.
+//
+// Solidity: function lockedTokenList(string ) view returns(address)
+func (_BridgeBank *BridgeBankCaller) LockedTokenList(opts *bind.CallOpts, arg0 string) (common.Address, error) {
+	var (
+		ret0 = new(common.Address)
+	)
+	out := ret0
+	err := _BridgeBank.contract.Call(opts, out, "lockedTokenList", arg0)
+	return *ret0, err
+}
+
+// LockedTokenList is a free data retrieval call binding the contract method 0xf24a590a.
+//
+// Solidity: function lockedTokenList(string ) view returns(address)
+func (_BridgeBank *BridgeBankSession) LockedTokenList(arg0 string) (common.Address, error) {
+	return _BridgeBank.Contract.LockedTokenList(&_BridgeBank.CallOpts, arg0)
+}
+
+// LockedTokenList is a free data retrieval call binding the contract method 0xf24a590a.
+//
+// Solidity: function lockedTokenList(string ) view returns(address)
+func (_BridgeBank *BridgeBankCallerSession) LockedTokenList(arg0 string) (common.Address, error) {
+	return _BridgeBank.Contract.LockedTokenList(&_BridgeBank.CallOpts, arg0)
+}
+
+// NetworkDescriptor is a free data retrieval call binding the contract method 0x909d4a1c.
+//
+// Solidity: function networkDescriptor() view returns(uint256)
+func (_BridgeBank *BridgeBankCaller) NetworkDescriptor(opts *bind.CallOpts) (*big.Int, error) {
+	var (
+		ret0 = new(*big.Int)
+	)
+	out := ret0
+	err := _BridgeBank.contract.Call(opts, out, "networkDescriptor")
+	return *ret0, err
+}
+
+// NetworkDescriptor is a free data retrieval call binding the contract method 0x909d4a1c.
+//
+// Solidity: function networkDescriptor() view returns(uint256)
+func (_BridgeBank *BridgeBankSession) NetworkDescriptor() (*big.Int, error) {
+	return _BridgeBank.Contract.NetworkDescriptor(&_BridgeBank.CallOpts)
+}
+
+// NetworkDescriptor is a free data retrieval call binding the contract method 0x909d4a1c.
+//
+// Solidity: function networkDescriptor() view returns(uint256)
+func (_BridgeBank *BridgeBankCallerSession) NetworkDescriptor() (*big.Int, error) {
+	return _BridgeBank.Contract.NetworkDescriptor(&_BridgeBank.CallOpts)
+}
+
+// Operator is a free data retrieval call binding the contract method 0x570ca735.
+//
+// Solidity: function operator() view returns(address)
+func (_BridgeBank *BridgeBankCaller) Operator(opts *bind.CallOpts) (common.Address, error) {
+	var (
+		ret0 = new(common.Address)
+	)
+	out := ret0
+	err := _BridgeBank.contract.Call(opts, out, "operator")
+	return *ret0, err
+}
+
+// Operator is a free data retrieval call binding the contract method 0x570ca735.
+//
+// Solidity: function operator() view returns(address)
+func (_BridgeBank *BridgeBankSession) Operator() (common.Address, error) {
+	return _BridgeBank.Contract.Operator(&_BridgeBank.CallOpts)
+}
+
+// Operator is a free data retrieval call binding the contract method 0x570ca735.
+//
+// Solidity: function operator() view returns(address)
+func (_BridgeBank *BridgeBankCallerSession) Operator() (common.Address, error) {
+	return _BridgeBank.Contract.Operator(&_BridgeBank.CallOpts)
 }
 
 // Owner is a free data retrieval call binding the contract method 0x8da5cb5b.
@@ -546,6 +650,27 @@ func (_BridgeBank *BridgeBankTransactorSession) Burn(recipient []byte, token com
 	return _BridgeBank.Contract.Burn(&_BridgeBank.TransactOpts, recipient, token, amount)
 }
 
+// ChangeOperator is a paid mutator transaction binding the contract method 0x06394c9b.
+//
+// Solidity: function changeOperator(address _newOperator) returns()
+func (_BridgeBank *BridgeBankTransactor) ChangeOperator(opts *bind.TransactOpts, _newOperator common.Address) (*types.Transaction, error) {
+	return _BridgeBank.contract.Transact(opts, "changeOperator", _newOperator)
+}
+
+// ChangeOperator is a paid mutator transaction binding the contract method 0x06394c9b.
+//
+// Solidity: function changeOperator(address _newOperator) returns()
+func (_BridgeBank *BridgeBankSession) ChangeOperator(_newOperator common.Address) (*types.Transaction, error) {
+	return _BridgeBank.Contract.ChangeOperator(&_BridgeBank.TransactOpts, _newOperator)
+}
+
+// ChangeOperator is a paid mutator transaction binding the contract method 0x06394c9b.
+//
+// Solidity: function changeOperator(address _newOperator) returns()
+func (_BridgeBank *BridgeBankTransactorSession) ChangeOperator(_newOperator common.Address) (*types.Transaction, error) {
+	return _BridgeBank.Contract.ChangeOperator(&_BridgeBank.TransactOpts, _newOperator)
+}
+
 // ChangeOwner is a paid mutator transaction binding the contract method 0xa6f9dae1.
 //
 // Solidity: function changeOwner(address newOwner) returns()
@@ -609,25 +734,46 @@ func (_BridgeBank *BridgeBankTransactorSession) HandleUnpeg(ethereumReceiver com
 	return _BridgeBank.Contract.HandleUnpeg(&_BridgeBank.TransactOpts, ethereumReceiver, tokenAddress, amount)
 }
 
-// Initialize is a paid mutator transaction binding the contract method 0xc0c53b8b.
+// Initialize is a paid mutator transaction binding the contract method 0x8129fc1c.
 //
-// Solidity: function initialize(address _cosmosBridgeAddress, address _owner, address _pauser) returns()
-func (_BridgeBank *BridgeBankTransactor) Initialize(opts *bind.TransactOpts, _cosmosBridgeAddress common.Address, _owner common.Address, _pauser common.Address) (*types.Transaction, error) {
-	return _BridgeBank.contract.Transact(opts, "initialize", _cosmosBridgeAddress, _owner, _pauser)
+// Solidity: function initialize() returns()
+func (_BridgeBank *BridgeBankTransactor) Initialize(opts *bind.TransactOpts) (*types.Transaction, error) {
+	return _BridgeBank.contract.Transact(opts, "initialize")
 }
 
-// Initialize is a paid mutator transaction binding the contract method 0xc0c53b8b.
+// Initialize is a paid mutator transaction binding the contract method 0x8129fc1c.
 //
-// Solidity: function initialize(address _cosmosBridgeAddress, address _owner, address _pauser) returns()
-func (_BridgeBank *BridgeBankSession) Initialize(_cosmosBridgeAddress common.Address, _owner common.Address, _pauser common.Address) (*types.Transaction, error) {
-	return _BridgeBank.Contract.Initialize(&_BridgeBank.TransactOpts, _cosmosBridgeAddress, _owner, _pauser)
+// Solidity: function initialize() returns()
+func (_BridgeBank *BridgeBankSession) Initialize() (*types.Transaction, error) {
+	return _BridgeBank.Contract.Initialize(&_BridgeBank.TransactOpts)
 }
 
-// Initialize is a paid mutator transaction binding the contract method 0xc0c53b8b.
+// Initialize is a paid mutator transaction binding the contract method 0x8129fc1c.
 //
-// Solidity: function initialize(address _cosmosBridgeAddress, address _owner, address _pauser) returns()
-func (_BridgeBank *BridgeBankTransactorSession) Initialize(_cosmosBridgeAddress common.Address, _owner common.Address, _pauser common.Address) (*types.Transaction, error) {
-	return _BridgeBank.Contract.Initialize(&_BridgeBank.TransactOpts, _cosmosBridgeAddress, _owner, _pauser)
+// Solidity: function initialize() returns()
+func (_BridgeBank *BridgeBankTransactorSession) Initialize() (*types.Transaction, error) {
+	return _BridgeBank.Contract.Initialize(&_BridgeBank.TransactOpts)
+}
+
+// Initialize0 is a paid mutator transaction binding the contract method 0xf7013ef6.
+//
+// Solidity: function initialize(address _operator, address _cosmosBridgeAddress, address _owner, address _pauser, uint256 _networkDescriptor) returns()
+func (_BridgeBank *BridgeBankTransactor) Initialize0(opts *bind.TransactOpts, _operator common.Address, _cosmosBridgeAddress common.Address, _owner common.Address, _pauser common.Address, _networkDescriptor *big.Int) (*types.Transaction, error) {
+	return _BridgeBank.contract.Transact(opts, "initialize0", _operator, _cosmosBridgeAddress, _owner, _pauser, _networkDescriptor)
+}
+
+// Initialize0 is a paid mutator transaction binding the contract method 0xf7013ef6.
+//
+// Solidity: function initialize(address _operator, address _cosmosBridgeAddress, address _owner, address _pauser, uint256 _networkDescriptor) returns()
+func (_BridgeBank *BridgeBankSession) Initialize0(_operator common.Address, _cosmosBridgeAddress common.Address, _owner common.Address, _pauser common.Address, _networkDescriptor *big.Int) (*types.Transaction, error) {
+	return _BridgeBank.Contract.Initialize0(&_BridgeBank.TransactOpts, _operator, _cosmosBridgeAddress, _owner, _pauser, _networkDescriptor)
+}
+
+// Initialize0 is a paid mutator transaction binding the contract method 0xf7013ef6.
+//
+// Solidity: function initialize(address _operator, address _cosmosBridgeAddress, address _owner, address _pauser, uint256 _networkDescriptor) returns()
+func (_BridgeBank *BridgeBankTransactorSession) Initialize0(_operator common.Address, _cosmosBridgeAddress common.Address, _owner common.Address, _pauser common.Address, _networkDescriptor *big.Int) (*types.Transaction, error) {
+	return _BridgeBank.Contract.Initialize0(&_BridgeBank.TransactOpts, _operator, _cosmosBridgeAddress, _owner, _pauser, _networkDescriptor)
 }
 
 // Lock is a paid mutator transaction binding the contract method 0x9df2a385.
@@ -714,6 +860,27 @@ func (_BridgeBank *BridgeBankTransactorSession) Pause() (*types.Transaction, err
 	return _BridgeBank.Contract.Pause(&_BridgeBank.TransactOpts)
 }
 
+// Reinitialize is a paid mutator transaction binding the contract method 0xba89b065.
+//
+// Solidity: function reinitialize(address _operator, address _cosmosBridgeAddress, address _owner, address _pauser, uint256 _networkDescriptor) returns()
+func (_BridgeBank *BridgeBankTransactor) Reinitialize(opts *bind.TransactOpts, _operator common.Address, _cosmosBridgeAddress common.Address, _owner common.Address, _pauser common.Address, _networkDescriptor *big.Int) (*types.Transaction, error) {
+	return _BridgeBank.contract.Transact(opts, "reinitialize", _operator, _cosmosBridgeAddress, _owner, _pauser, _networkDescriptor)
+}
+
+// Reinitialize is a paid mutator transaction binding the contract method 0xba89b065.
+//
+// Solidity: function reinitialize(address _operator, address _cosmosBridgeAddress, address _owner, address _pauser, uint256 _networkDescriptor) returns()
+func (_BridgeBank *BridgeBankSession) Reinitialize(_operator common.Address, _cosmosBridgeAddress common.Address, _owner common.Address, _pauser common.Address, _networkDescriptor *big.Int) (*types.Transaction, error) {
+	return _BridgeBank.Contract.Reinitialize(&_BridgeBank.TransactOpts, _operator, _cosmosBridgeAddress, _owner, _pauser, _networkDescriptor)
+}
+
+// Reinitialize is a paid mutator transaction binding the contract method 0xba89b065.
+//
+// Solidity: function reinitialize(address _operator, address _cosmosBridgeAddress, address _owner, address _pauser, uint256 _networkDescriptor) returns()
+func (_BridgeBank *BridgeBankTransactorSession) Reinitialize(_operator common.Address, _cosmosBridgeAddress common.Address, _owner common.Address, _pauser common.Address, _networkDescriptor *big.Int) (*types.Transaction, error) {
+	return _BridgeBank.Contract.Reinitialize(&_BridgeBank.TransactOpts, _operator, _cosmosBridgeAddress, _owner, _pauser, _networkDescriptor)
+}
+
 // RenouncePauser is a paid mutator transaction binding the contract method 0x6ef8d66d.
 //
 // Solidity: function renouncePauser() returns()
@@ -754,6 +921,27 @@ func (_BridgeBank *BridgeBankSession) Unpause() (*types.Transaction, error) {
 // Solidity: function unpause() returns()
 func (_BridgeBank *BridgeBankTransactorSession) Unpause() (*types.Transaction, error) {
 	return _BridgeBank.Contract.Unpause(&_BridgeBank.TransactOpts)
+}
+
+// UpdateEthWhiteList is a paid mutator transaction binding the contract method 0xd185e1bb.
+//
+// Solidity: function updateEthWhiteList(address _token, bool _inList) returns(bool)
+func (_BridgeBank *BridgeBankTransactor) UpdateEthWhiteList(opts *bind.TransactOpts, _token common.Address, _inList bool) (*types.Transaction, error) {
+	return _BridgeBank.contract.Transact(opts, "updateEthWhiteList", _token, _inList)
+}
+
+// UpdateEthWhiteList is a paid mutator transaction binding the contract method 0xd185e1bb.
+//
+// Solidity: function updateEthWhiteList(address _token, bool _inList) returns(bool)
+func (_BridgeBank *BridgeBankSession) UpdateEthWhiteList(_token common.Address, _inList bool) (*types.Transaction, error) {
+	return _BridgeBank.Contract.UpdateEthWhiteList(&_BridgeBank.TransactOpts, _token, _inList)
+}
+
+// UpdateEthWhiteList is a paid mutator transaction binding the contract method 0xd185e1bb.
+//
+// Solidity: function updateEthWhiteList(address _token, bool _inList) returns(bool)
+func (_BridgeBank *BridgeBankTransactorSession) UpdateEthWhiteList(_token common.Address, _inList bool) (*types.Transaction, error) {
+	return _BridgeBank.Contract.UpdateEthWhiteList(&_BridgeBank.TransactOpts, _token, _inList)
 }
 
 // BridgeBankLogBridgeTokenMintIterator is returned from FilterLogBridgeTokenMint and is used to iterate over the raw logs and unpacked data for LogBridgeTokenMint events raised by the BridgeBank contract.
@@ -960,18 +1148,19 @@ func (it *BridgeBankLogBurnIterator) Close() error {
 
 // BridgeBankLogBurn represents a LogBurn event raised by the BridgeBank contract.
 type BridgeBankLogBurn struct {
-	From     common.Address
-	To       []byte
-	Token    common.Address
-	Value    *big.Int
-	Nonce    *big.Int
-	Decimals *big.Int
-	Raw      types.Log // Blockchain specific contextual infos
+	From              common.Address
+	To                []byte
+	Token             common.Address
+	Value             *big.Int
+	Nonce             *big.Int
+	Decimals          *big.Int
+	NetworkDescriptor *big.Int
+	Raw               types.Log // Blockchain specific contextual infos
 }
 
-// FilterLogBurn is a free log retrieval operation binding the contract event 0x21aa193c5e2620f812ca8191e6bfea275367fe22f1ff0742ff28d83daf015936.
+// FilterLogBurn is a free log retrieval operation binding the contract event 0x56fcbc9b3de154d383800e5ae13e7b5b426c4193793edccf24014995d14cde26.
 //
-// Solidity: event LogBurn(address _from, bytes _to, address _token, uint256 _value, uint256 _nonce, uint256 _decimals)
+// Solidity: event LogBurn(address _from, bytes _to, address _token, uint256 _value, uint256 _nonce, uint256 _decimals, uint256 _networkDescriptor)
 func (_BridgeBank *BridgeBankFilterer) FilterLogBurn(opts *bind.FilterOpts) (*BridgeBankLogBurnIterator, error) {
 
 	logs, sub, err := _BridgeBank.contract.FilterLogs(opts, "LogBurn")
@@ -981,9 +1170,9 @@ func (_BridgeBank *BridgeBankFilterer) FilterLogBurn(opts *bind.FilterOpts) (*Br
 	return &BridgeBankLogBurnIterator{contract: _BridgeBank.contract, event: "LogBurn", logs: logs, sub: sub}, nil
 }
 
-// WatchLogBurn is a free log subscription operation binding the contract event 0x21aa193c5e2620f812ca8191e6bfea275367fe22f1ff0742ff28d83daf015936.
+// WatchLogBurn is a free log subscription operation binding the contract event 0x56fcbc9b3de154d383800e5ae13e7b5b426c4193793edccf24014995d14cde26.
 //
-// Solidity: event LogBurn(address _from, bytes _to, address _token, uint256 _value, uint256 _nonce, uint256 _decimals)
+// Solidity: event LogBurn(address _from, bytes _to, address _token, uint256 _value, uint256 _nonce, uint256 _decimals, uint256 _networkDescriptor)
 func (_BridgeBank *BridgeBankFilterer) WatchLogBurn(opts *bind.WatchOpts, sink chan<- *BridgeBankLogBurn) (event.Subscription, error) {
 
 	logs, sub, err := _BridgeBank.contract.WatchLogs(opts, "LogBurn")
@@ -1018,9 +1207,9 @@ func (_BridgeBank *BridgeBankFilterer) WatchLogBurn(opts *bind.WatchOpts, sink c
 	}), nil
 }
 
-// ParseLogBurn is a log parse operation binding the contract event 0x21aa193c5e2620f812ca8191e6bfea275367fe22f1ff0742ff28d83daf015936.
+// ParseLogBurn is a log parse operation binding the contract event 0x56fcbc9b3de154d383800e5ae13e7b5b426c4193793edccf24014995d14cde26.
 //
-// Solidity: event LogBurn(address _from, bytes _to, address _token, uint256 _value, uint256 _nonce, uint256 _decimals)
+// Solidity: event LogBurn(address _from, bytes _to, address _token, uint256 _value, uint256 _nonce, uint256 _decimals, uint256 _networkDescriptor)
 func (_BridgeBank *BridgeBankFilterer) ParseLogBurn(log types.Log) (*BridgeBankLogBurn, error) {
 	event := new(BridgeBankLogBurn)
 	if err := _BridgeBank.contract.UnpackLog(event, "LogBurn", log); err != nil {
@@ -1098,20 +1287,21 @@ func (it *BridgeBankLogLockIterator) Close() error {
 
 // BridgeBankLogLock represents a LogLock event raised by the BridgeBank contract.
 type BridgeBankLogLock struct {
-	From     common.Address
-	To       []byte
-	Token    common.Address
-	Value    *big.Int
-	Nonce    *big.Int
-	Decimals *big.Int
-	Symbol   string
-	Name     string
-	Raw      types.Log // Blockchain specific contextual infos
+	From              common.Address
+	To                []byte
+	Token             common.Address
+	Value             *big.Int
+	Nonce             *big.Int
+	Decimals          *big.Int
+	Symbol            string
+	Name              string
+	NetworkDescriptor *big.Int
+	Raw               types.Log // Blockchain specific contextual infos
 }
 
-// FilterLogLock is a free log retrieval operation binding the contract event 0x26da6c56b3f6e0bd8bd9b2fd231332d8519937ccbef6633cca691c99942a5802.
+// FilterLogLock is a free log retrieval operation binding the contract event 0xaa3b602a40796ab1d3052f1c53843fb18b5d038e134a99498c5954f2931be53d.
 //
-// Solidity: event LogLock(address _from, bytes _to, address _token, uint256 _value, uint256 _nonce, uint256 _decimals, string _symbol, string _name)
+// Solidity: event LogLock(address _from, bytes _to, address _token, uint256 _value, uint256 _nonce, uint256 _decimals, string _symbol, string _name, uint256 _networkDescriptor)
 func (_BridgeBank *BridgeBankFilterer) FilterLogLock(opts *bind.FilterOpts) (*BridgeBankLogLockIterator, error) {
 
 	logs, sub, err := _BridgeBank.contract.FilterLogs(opts, "LogLock")
@@ -1121,9 +1311,9 @@ func (_BridgeBank *BridgeBankFilterer) FilterLogLock(opts *bind.FilterOpts) (*Br
 	return &BridgeBankLogLockIterator{contract: _BridgeBank.contract, event: "LogLock", logs: logs, sub: sub}, nil
 }
 
-// WatchLogLock is a free log subscription operation binding the contract event 0x26da6c56b3f6e0bd8bd9b2fd231332d8519937ccbef6633cca691c99942a5802.
+// WatchLogLock is a free log subscription operation binding the contract event 0xaa3b602a40796ab1d3052f1c53843fb18b5d038e134a99498c5954f2931be53d.
 //
-// Solidity: event LogLock(address _from, bytes _to, address _token, uint256 _value, uint256 _nonce, uint256 _decimals, string _symbol, string _name)
+// Solidity: event LogLock(address _from, bytes _to, address _token, uint256 _value, uint256 _nonce, uint256 _decimals, string _symbol, string _name, uint256 _networkDescriptor)
 func (_BridgeBank *BridgeBankFilterer) WatchLogLock(opts *bind.WatchOpts, sink chan<- *BridgeBankLogLock) (event.Subscription, error) {
 
 	logs, sub, err := _BridgeBank.contract.WatchLogs(opts, "LogLock")
@@ -1158,9 +1348,9 @@ func (_BridgeBank *BridgeBankFilterer) WatchLogLock(opts *bind.WatchOpts, sink c
 	}), nil
 }
 
-// ParseLogLock is a log parse operation binding the contract event 0x26da6c56b3f6e0bd8bd9b2fd231332d8519937ccbef6633cca691c99942a5802.
+// ParseLogLock is a log parse operation binding the contract event 0xaa3b602a40796ab1d3052f1c53843fb18b5d038e134a99498c5954f2931be53d.
 //
-// Solidity: event LogLock(address _from, bytes _to, address _token, uint256 _value, uint256 _nonce, uint256 _decimals, string _symbol, string _name)
+// Solidity: event LogLock(address _from, bytes _to, address _token, uint256 _value, uint256 _nonce, uint256 _decimals, string _symbol, string _name, uint256 _networkDescriptor)
 func (_BridgeBank *BridgeBankFilterer) ParseLogLock(log types.Log) (*BridgeBankLogLock, error) {
 	event := new(BridgeBankLogLock)
 	if err := _BridgeBank.contract.UnpackLog(event, "LogLock", log); err != nil {

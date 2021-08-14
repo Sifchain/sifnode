@@ -282,7 +282,14 @@ func (k Keeper) SetFeeInfo(ctx sdk.Context, msg *types.MsgSetFeeInfo) error {
 
 // ProcessSignProphecy processes the set sign prophecy from validator
 func (k Keeper) ProcessSignProphecy(ctx sdk.Context, msg *types.MsgSignProphecy) error {
-	return k.oracleKeeper.ProcessSignProphecy(ctx, msg.NetworkDescriptor, msg.ProphecyId, msg.CosmosSender, msg.EthereumAddress, msg.Signature)
+	prophecyInfo, ok := k.oracleKeeper.GetProphecyInfo(ctx, msg.ProphecyId)
+	if !ok {
+		return errors.New("prophecy not found in oracle keeper")
+	}
+
+	denom := k.GetTokenMetadata(ctx, prophecyInfo.TokenSymbol)
+
+	return k.oracleKeeper.ProcessSignProphecy(ctx, msg.NetworkDescriptor, msg.ProphecyId, msg.CosmosSender, denom.TokenAddress, msg.EthereumAddress, msg.Signature)
 }
 
 // Exists chec if the key existed in db.
