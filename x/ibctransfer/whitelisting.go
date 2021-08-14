@@ -46,7 +46,7 @@ func OnRecvPacketWhiteListed(
 			Events: ctx.EventManager().Events().ToABCIEvents(),
 		}, acknowledgement.GetBytes(), nil
 	}
-	// get result of transfer recieve
+	// get result of transfer receive
 	recvResult, resBytes, err := sdkAppModule.OnRecvPacket(ctx, packet)
 	// if no error and packet is returning and needs conversion: convert
 	if err != nil && IsRecvPacketReturning(packet, data) && checkRecvConvert(ctx, whitelistKeeper, packet, data) {
@@ -64,7 +64,7 @@ func checkRecvConvert(ctx sdk.Context, whitelistKeeper tokenregistrytypes.Keeper
 	denom := GetMintedDenomFromPacket(packet, data)
 	// get token registry entry for received token
 	registryEntry := whitelistKeeper.GetIBCDenom(ctx, denom)
-	return registryEntry.IBCDecimals != nil && registryEntry.Decimals > 10
+	return registryEntry.IbcDenom != "" && registryEntry.IbcDecimals > 10
 }
 
 func convertRecvDenom(ctx sdk.Context, whitelistKeeper tokenregistrytypes.Keeper, bankKeeper types.BankKeeper,
@@ -74,8 +74,12 @@ func convertRecvDenom(ctx sdk.Context, whitelistKeeper tokenregistrytypes.Keeper
 	registryEntry := whitelistKeeper.GetIBCDenom(ctx, denom)
 	// check if registry entry has an IBC decimal field
 	// calculate conversion
-	convAmount := data.Amount * (10 * *(uint64(registryEntry.Decimals) - uint64(registryEntry.IBCDecimals)))
-	convToken := sdk.NewCoin(registryEntry.Denom, sdk.NewIntFromUint64(convAmount))
+	po := registryEntry.Decimals - registryEntry.IbcDecimals
+	decAmount := sdk.NewDecFromInt(sdk.NewIntFromUint64(data.Amount))
+	convAmountDec := IncreasePrecision(sdk.NewDecFromBigInt(decAmount.BigInt()), po)
+	convAmount := sdk.NewIntFromBigInt(convAmountDec.RoundInt().BigInt())
+
+	convToken := sdk.NewCoin(registryEntry.Denom, convAmount)
 	// decode the receiver address
 	receiver, err := sdk.AccAddressFromBech32(data.Receiver)
 	if err != nil {
@@ -112,6 +116,11 @@ func convertRecvDenom(ctx sdk.Context, whitelistKeeper tokenregistrytypes.Keeper
 	return &sdk.Result{
 		Events: ctx.EventManager().Events().ToABCIEvents(),
 	}, nil
+}
+
+func IncreasePrecision(dec sdk.Dec, po int64) sdk.Dec {
+	p := sdk.NewDec(10).Power(uint64(po))
+	return dec.Mul(p)
 }
 
 func isRecvPacketAllowed(ctx sdk.Context, whitelistKeeper tokenregistrytypes.Keeper,
