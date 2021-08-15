@@ -2,13 +2,14 @@ package app
 
 import (
 	"encoding/json"
+	"os"
+	"testing"
+
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/store/rootmulti"
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
 	"github.com/pkg/errors"
-	"os"
-	"testing"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/require"
@@ -35,7 +36,8 @@ func TestAppUpgrade_CannotDeleteLatestVersion(t *testing.T) {
 		encCfg,
 		EmptyAppOptions{},
 	)
-	app.LoadLatestVersion()
+	err := app.LoadLatestVersion()
+	require.NoError(t, err)
 
 	genesisState := NewDefaultGenesisState(encCfg.Marshaler)
 	stateBytes, err := json.MarshalIndent(genesisState, "", "  ")
