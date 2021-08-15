@@ -7,7 +7,7 @@ const (
 	ModuleName = "tokenregistry"
 
 	// StoreKey is the string store representation
-	StoreKey = ModuleName
+	StoreKey = ModuleName + "-1"
 
 	// QuerierRoute is the querier route
 	QuerierRoute = ModuleName
