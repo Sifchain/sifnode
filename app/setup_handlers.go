@@ -11,8 +11,9 @@ import (
 func SetupHandlers(app *SifchainApp) {
 	app.UpgradeKeeper.SetUpgradeHandler("0.9.0", func(ctx sdk.Context, plan types.Plan) {})
 	app.UpgradeKeeper.SetUpgradeHandler("0.9.1", func(ctx sdk.Context, plan types.Plan) {})
-  app.UpgradeKeeper.SetUpgradeHandler("0.9.2", func(ctx sdk.Context, plan types.Plan) {})
-	app.UpgradeKeeper.SetUpgradeHandler("0.9.2-ibc.7", func(ctx sdk.Context, plan types.Plan) {
+	app.UpgradeKeeper.SetUpgradeHandler("0.9.2", func(ctx sdk.Context, plan types.Plan) {})
+	app.UpgradeKeeper.SetUpgradeHandler("0.9.2-ibc.7", func(ctx sdk.Context, plan types.Plan) {})
+	app.UpgradeKeeper.SetUpgradeHandler("0.9.3", func(ctx sdk.Context, plan types.Plan) {})
 	app.UpgradeKeeper.SetUpgradeHandler("0.9.3-rc.1", func(ctx sdk.Context, plan types.Plan) {
 		app.Logger().Info("Running upgrade handler for 0.9.3-rc.1")
 		tokenregistrymigrations.Init(ctx, app.TokenRegistryKeeper)
@@ -23,7 +24,7 @@ func SetupHandlers(app *SifchainApp) {
 		panic(err)
 	}
 
-	if upgradeInfo.Name == "0.9.3" && !app.UpgradeKeeper.IsSkipHeight(upgradeInfo.Height) {
+	if upgradeInfo.Name == "0.9.3-rc.1" && !app.UpgradeKeeper.IsSkipHeight(upgradeInfo.Height) {
 		storeUpgrades := storetypes.StoreUpgrades{
 			Added: []string{tokenregistrytypes.StoreKey},
 		}
