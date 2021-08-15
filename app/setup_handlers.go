@@ -8,12 +8,18 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/upgrade/types"
 )
 
+const upgradeNameV093 = "0.9.3-ibc"
+
 func SetupHandlers(app *SifchainApp) {
 	app.UpgradeKeeper.SetUpgradeHandler("0.9.0", func(ctx sdk.Context, plan types.Plan) {})
 	app.UpgradeKeeper.SetUpgradeHandler("0.9.1", func(ctx sdk.Context, plan types.Plan) {})
 	app.UpgradeKeeper.SetUpgradeHandler("0.9.2", func(ctx sdk.Context, plan types.Plan) {})
-	app.UpgradeKeeper.SetUpgradeHandler("0.9.3-rc.1", func(ctx sdk.Context, plan types.Plan) {
-		app.Logger().Info("Running upgrade handler for 0.9.3-rc.1")
+	SetupUpgradeV093(app)
+}
+
+func SetupUpgradeV093(app *SifchainApp) {
+	app.UpgradeKeeper.SetUpgradeHandler(upgradeNameV093, func(ctx sdk.Context, plan types.Plan) {
+		app.Logger().Info("Running upgrade handler for " + upgradeNameV093 + " with new store " + tokenregistrytypes.StoreKey)
 		tokenregistrymigrations.Init(ctx, app.TokenRegistryKeeper)
 	})
 
@@ -22,7 +28,7 @@ func SetupHandlers(app *SifchainApp) {
 		panic(err)
 	}
 
-	if upgradeInfo.Name == "0.9.3" && !app.UpgradeKeeper.IsSkipHeight(upgradeInfo.Height) {
+	if upgradeInfo.Name == upgradeNameV093 && !app.UpgradeKeeper.IsSkipHeight(upgradeInfo.Height) {
 		storeUpgrades := storetypes.StoreUpgrades{
 			Added: []string{tokenregistrytypes.StoreKey},
 		}
