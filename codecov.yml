@@ -15,39 +15,19 @@ coverage:
     patch: off
     project:
       default:
-        flags:
-          - server
-          - ui
-      server:
         target: 50%
         flags:
-          - server
         paths:
           - "x/"
           - "!x/**/client/" # ignore client package
-      ui:
-        target: 70%
-        flags:
-          - ui
-        paths:
-          - "ui/core/src"
+          - "!**/*.pb.go"
+          - "!**/*.pb.gw.go"
     changes: false
 
 comment:
-  layout: "reach, diff, flags, files"
+  layout: "reach, diff, files"
   behavior: default # update if exists else create new
   require_changes: true
-
-flags:
-  server:
-    paths:
-      - "x/"
-      - "!x/**/client/" # ignore client package
-    carryforward: true
-  ui:
-    paths:
-      - "ui/core/src"
-    carryforward: true
 
 ignore:
   - "docs"
@@ -59,6 +39,8 @@ ignore:
   - "**/test_helpers.go"
   - "**/module.go"
   - "**/genesis.go"
-  - "*.pb.go"
+  - "x/**/*.pb.go"
+  - "**/*.pb.go"
+  - "**/*.pq.gw.go"
   - "scripts/"
   - "contrib"
