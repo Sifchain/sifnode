@@ -37,6 +37,42 @@ func TestHandleRegister(t *testing.T) {
 			},
 		},
 		{
+			name: "Successful IBC Registration",
+			msg: types.MsgRegister{
+				From: admin,
+				Entry: &types.RegistryEntry{
+					Denom:       "TestDenomIBC",
+					DisplayName: "Test Denom IBC",
+					Decimals:    18,
+					IbcDenom:    "Test Denom IBC",
+					IbcDecimals: 10,
+				},
+			},
+			errorAssertion: assert.NoError,
+			valueAssertion: func(t require.TestingT, res interface{}, i ...interface{}) {
+				d := app.TokenRegistryKeeper.GetDenom(ctx, "TestDenomIBC")
+				require.Equal(t, "Test Denom IBC", d.DisplayName)
+			},
+		},
+		{
+			name: "Successful Registration Converted",
+			msg: types.MsgRegister{
+				From: admin,
+				Entry: &types.RegistryEntry{
+					Denom:       "TestDenomIBC2",
+					DisplayName: "Test Denom IBC 2",
+					Decimals:    8,
+					IbcDenom:    "Test Denom IBC 2",
+					IbcDecimals: 10,
+				},
+			},
+			errorAssertion: assert.NoError,
+			valueAssertion: func(t require.TestingT, res interface{}, i ...interface{}) {
+				d := app.TokenRegistryKeeper.GetDenom(ctx, "TestDenomIBC2")
+				require.Equal(t, "Test Denom IBC 2", d.DisplayName)
+			},
+		},
+		{
 			name: "Non Admin Account",
 			msg: types.MsgRegister{
 				From: sdk.AccAddress("addr2_______________").String(),
@@ -64,10 +100,30 @@ func TestHandleDeregister(t *testing.T) {
 
 	app.TokenRegistryKeeper.SetToken(ctx, &types.RegistryEntry{
 		IsWhitelisted: true,
-		Denom:         "removeMe",
+		Denom:         "tokenToRemove",
+		Decimals:      18,
 	})
 
-	require.True(t, app.TokenRegistryKeeper.IsDenomWhitelisted(ctx, "removeMe"))
+	app.TokenRegistryKeeper.SetToken(ctx, &types.RegistryEntry{
+		IsWhitelisted: true,
+		Denom:         "ibcTokenToRemove",
+		Decimals:      18,
+		IbcDecimals:   10,
+		IbcDenom:      "ibcTokenToRemove",
+	})
+
+	app.TokenRegistryKeeper.SetToken(ctx, &types.RegistryEntry{
+		IsWhitelisted: true,
+		Denom:         "ibcTokenToRemove2",
+		Decimals:      8,
+		IbcDecimals:   10,
+		IbcDenom:      "ibcTokenToRemove2",
+	})
+
+	require.True(t, app.TokenRegistryKeeper.IsDenomWhitelisted(ctx, "tokenToRemove"))
+	require.True(t, app.TokenRegistryKeeper.IsDenomWhitelisted(ctx, "ibcTokenToRemove"))
+	require.True(t, app.TokenRegistryKeeper.IsDenomWhitelisted(ctx, "ibcTokenToRemove2"))
+	require.Equal(t, 3, len(app.TokenRegistryKeeper.GetDenomWhitelist(ctx).Entries))
 
 	h := handler.NewHandler(app.TokenRegistryKeeper)
 
@@ -81,13 +137,36 @@ func TestHandleDeregister(t *testing.T) {
 			name: "Successful De-registration",
 			msg: types.MsgDeregister{
 				From:  admin,
-				Denom: "removeMe",
+				Denom: "tokenToRemove",
 			},
 			errorAssertion: assert.NoError,
 			valueAssertion: func(t require.TestingT, res interface{}, i ...interface{}) {
-				require.False(t, app.TokenRegistryKeeper.IsDenomWhitelisted(ctx, "removeMe"))
+				require.False(t, app.TokenRegistryKeeper.IsDenomWhitelisted(ctx, "tokenToRemove"))
+				require.Equal(t, 2, len(app.TokenRegistryKeeper.GetDenomWhitelist(ctx).Entries))
+			},
+		},
+		{
+			name: "Successful IBC De-registration",
+			msg: types.MsgDeregister{
+				From:  admin,
+				Denom: "ibcTokenToRemove",
+			},
+			errorAssertion: assert.NoError,
+			valueAssertion: func(t require.TestingT, res interface{}, i ...interface{}) {
+				require.False(t, app.TokenRegistryKeeper.IsDenomWhitelisted(ctx, "ibcTokenToRemove"))
+				require.Equal(t, 1, len(app.TokenRegistryKeeper.GetDenomWhitelist(ctx).Entries))
+			},
+		},
+		{
+			name: "Successful IBC De-registration 2",
+			msg: types.MsgDeregister{
+				From:  admin,
+				Denom: "ibcTokenToRemove2",
+			},
+			errorAssertion: assert.NoError,
+			valueAssertion: func(t require.TestingT, res interface{}, i ...interface{}) {
+				require.False(t, app.TokenRegistryKeeper.IsDenomWhitelisted(ctx, "ibcTokenToRemove2"))
 				require.Empty(t, app.TokenRegistryKeeper.GetDenomWhitelist(ctx).Entries)
-
 			},
 		},
 		{
