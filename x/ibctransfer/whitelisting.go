@@ -9,7 +9,6 @@ import (
 	transfertypes "github.com/cosmos/cosmos-sdk/x/ibc/applications/transfer/types"
 	channeltypes "github.com/cosmos/cosmos-sdk/x/ibc/core/04-channel/types"
 
-	"github.com/Sifchain/sifnode/x/ethbridge/types"
 	tokenregistrytypes "github.com/Sifchain/sifnode/x/tokenregistry/types"
 )
 
@@ -17,7 +16,7 @@ func OnRecvPacketWhiteListed(
 	ctx sdk.Context,
 	sdkAppModule transfer.AppModule,
 	whitelistKeeper tokenregistrytypes.Keeper,
-	bankKeeper types.BankKeeper,
+	bankKeeper transfertypes.BankKeeper,
 	packet channeltypes.Packet,
 ) (*sdk.Result, []byte, error) {
 
@@ -34,7 +33,7 @@ func OnRecvPacketWhiteListed(
 		ctx.EventManager().EmitEvent(
 			sdk.NewEvent(
 				transfertypes.EventTypePacket,
-				sdk.NewAttribute(sdk.AttributeKeyModule, types.ModuleName), // is this ethbridge on purpose?
+				sdk.NewAttribute(sdk.AttributeKeyModule, transfertypes.ModuleName), // is this ethbridge on purpose?
 				sdk.NewAttribute(transfertypes.AttributeKeyReceiver, data.Receiver),
 				sdk.NewAttribute(transfertypes.AttributeKeyDenom, data.Denom),
 				sdk.NewAttribute(transfertypes.AttributeKeyAmount, fmt.Sprintf("%d", data.Amount)),
@@ -84,7 +83,7 @@ func convertRecvDenom(ctx sdk.Context, whitelistKeeper tokenregistrytypes.Keeper
 
 	return ibcToken, convToken
 }
-func sendConvertRecvDenom(ctx sdk.Context, ibcToken sdk.Coin, convToken sdk.Coin, bankKeeper types.BankKeeper, data transfertypes.FungibleTokenPacketData) (*sdk.Result, error) {
+func sendConvertRecvDenom(ctx sdk.Context, ibcToken sdk.Coin, convToken sdk.Coin, bankKeeper transfertypes.BankKeeper, data transfertypes.FungibleTokenPacketData) (*sdk.Result, error) {
 	// denom := GetMintedDenomFromPacket(packet, data)
 	// // get token registry entry for received token
 	// registryEntry := whitelistKeeper.GetIBCDenom(ctx, denom)
@@ -121,7 +120,7 @@ func sendConvertRecvDenom(ctx sdk.Context, ibcToken sdk.Coin, convToken sdk.Coin
 	ctx.EventManager().EmitEvent(
 		sdk.NewEvent(
 			transfertypes.EventTypePacket,
-			sdk.NewAttribute(sdk.AttributeKeyModule, types.ModuleName),
+			sdk.NewAttribute(sdk.AttributeKeyModule, transfertypes.ModuleName),
 			sdk.NewAttribute(transfertypes.AttributeKeyReceiver, data.Receiver),
 			sdk.NewAttribute(transfertypes.AttributeKeyDenom, convToken.Denom),
 			sdk.NewAttribute(transfertypes.AttributeKeyAmount, fmt.Sprintf("%d", convToken.Amount)),
@@ -192,18 +191,14 @@ func GetMintedDenomFromPacket(packet channeltypes.Packet, data transfertypes.Fun
 }
 
 func IsRecvPacketReturning(packet channeltypes.Packet, data transfertypes.FungibleTokenPacketData) bool {
-	if transfertypes.ReceiverChainIsSource(packet.GetSourcePort(), packet.GetSourceChannel(), data.Denom) {
-		// token originated on sifchain and is now being returned. This is allowed
-		// For paths Sifchain -> X -> Sifchain return true
-		// For paths Sifchain -> X -> Y -> Sifchain this condition is not triggered
-		// No need to whitelist channel and port,
-		// we assume tokens will come back using the same channel they used to go across.
-		// If Sifchain and Chain X have two channels running between them,
-		// and Token A uses channel 1 to go from sifchain to chain X . It needs to use channel 1 to come back.
-		return true
-	}
-
-	return false
+	// Token originated on sifchain and is now being returned. This is allowed
+	// For paths Sifchain -> X -> Sifchain return true
+	// For paths Sifchain -> X -> Y -> Sifchain this condition is not triggered
+	// No need to whitelist channel and port,
+	// we assume tokens will come back using the same channel they used to go across.
+	// If Sifchain and Chain X have two channels running between them,
+	// and Token A uses channel 1 to go from sifchain to chain X . It needs to use channel 1 to come back.
+	return transfertypes.ReceiverChainIsSource(packet.GetSourcePort(), packet.GetSourceChannel(), data.Denom)
 }
 
 func IsWhitelisted(ctx sdk.Context, whitelistKeeper tokenregistrytypes.Keeper, denom string) bool {
