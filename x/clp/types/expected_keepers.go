@@ -1,6 +1,7 @@
 package types
 
 import (
+	"github.com/Sifchain/sifnode/x/tokenregistry/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
@@ -14,7 +15,8 @@ type ParamSubspace interface {
 	SetParamSet(ctx sdk.Context, ps paramtypes.ParamSet)
 }
 
-type BankKeeper interface {	SubtractCoins(ctx sdk.Context, addr sdk.AccAddress, amt sdk.Coins) error
+type BankKeeper interface {
+	SubtractCoins(ctx sdk.Context, addr sdk.AccAddress, amt sdk.Coins) error
 	SendCoins(ctx sdk.Context, fromAddr sdk.AccAddress, toAddr sdk.AccAddress, amt sdk.Coins) error
 	AddCoins(ctx sdk.Context, addr sdk.AccAddress, amt sdk.Coins) error
 	SendCoinsFromModuleToAccount(ctx sdk.Context, senderModule string, recipientAddr sdk.AccAddress, amt sdk.Coins) error
@@ -23,10 +25,14 @@ type BankKeeper interface {	SubtractCoins(ctx sdk.Context, addr sdk.AccAddress, 
 	BurnCoins(ctx sdk.Context, name string, amt sdk.Coins) error
 	GetBalance(ctx sdk.Context, addr sdk.AccAddress, denom string) sdk.Coin
 	HasBalance(ctx sdk.Context, addr sdk.AccAddress, amt sdk.Coin) bool
-
 }
 
 type AuthKeeper interface {
 	SetModuleAccount(sdk.Context, authtypes.ModuleAccountI)
 	GetModuleAccount(ctx sdk.Context, moduleName string) authtypes.ModuleAccountI
+}
+
+type TokenRegistryKeeper interface {
+	GetDenom(ctx sdk.Context, denom string) types.RegistryEntry
+	IsDenomWhitelisted(ctx sdk.Context, denom string) bool
 }

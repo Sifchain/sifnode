@@ -5,11 +5,211 @@ import (
 	"os"
 	"testing"
 
+	"github.com/cosmos/cosmos-sdk/baseapp"
+	"github.com/cosmos/cosmos-sdk/store/rootmulti"
+	storetypes "github.com/cosmos/cosmos-sdk/store/types"
+	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
+	"github.com/pkg/errors"
+
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/require"
 	abci "github.com/tendermint/tendermint/abci/types"
 	"github.com/tendermint/tendermint/libs/log"
+	"github.com/tendermint/tendermint/proto/tendermint/types"
 	dbm "github.com/tendermint/tm-db"
 )
+
+func TestAppUpgrade_CannotDeleteLatestVersion(t *testing.T) {
+	// Skip this test that shows how SDK allows stores to get into irrecoverable state and panics
+	// TODO: Open PR on SDK with this test.
+	t.Skip()
+	encCfg := MakeTestEncodingConfig()
+	db := dbm.NewMemDB()
+	app := NewSifApp(
+		log.NewTMLogger(log.NewSyncWriter(os.Stdout)),
+		db,
+		nil,
+		false,
+		map[int64]bool{},
+		DefaultNodeHome,
+		0,
+		encCfg,
+		EmptyAppOptions{},
+	)
+	err := app.LoadLatestVersion()
+	require.NoError(t, err)
+
+	genesisState := NewDefaultGenesisState(encCfg.Marshaler)
+	stateBytes, err := json.MarshalIndent(genesisState, "", "  ")
+	require.NoError(t, err)
+
+	// Initialize the chain
+	app.InitChain(
+		abci.RequestInitChain{
+			Validators:    []abci.ValidatorUpdate{},
+			AppStateBytes: stateBytes,
+		},
+	)
+
+	// Commit enough to trigger beginning of pruning soon
+	for i := 1; i < 105; i++ {
+		app.BeginBlock(abci.RequestBeginBlock{Header: types.Header{Height: int64(i)}})
+		app.EndBlock(abci.RequestEndBlock{Height: int64(i)})
+		app.Commit()
+	}
+
+	app = NewSifApp(
+		log.NewTMLogger(log.NewSyncWriter(os.Stdout)),
+		db,
+		nil,
+		false,
+		map[int64]bool{},
+		DefaultNodeHome,
+		0,
+		encCfg,
+		EmptyAppOptions{},
+		func(app *baseapp.BaseApp) {
+			cms := rootmulti.NewStore(db)
+			cms.SetPruning(storetypes.PruneDefault)
+			app.SetCMS(cms)
+		},
+	)
+	// Mount and load newStore which will be loaded with version 0,
+	// because it did not load with an "add" upgrade to set it's initialVersion,
+	// while the other stores will be at version = blockHeight (i.e 1 here).
+	app.MountKVStores(map[string]*sdk.KVStoreKey{
+		"newStore": sdk.NewKVStoreKey("newStore"),
+	})
+	err = app.LoadLatestVersion()
+	require.NoError(t, err)
+
+	// Commit until just before default pruning is triggered
+	for i := 105; i <= 109; i++ {
+		app.BeginBlock(abci.RequestBeginBlock{Header: types.Header{Height: int64(i)}})
+		app.EndBlock(abci.RequestEndBlock{Height: int64(i)})
+		app.Commit()
+	}
+
+	// Next commit will panic when trying to prune a height on the new store,
+	// that is >= the current version of the new store.
+	defer func() {
+		err := recover()
+		require.EqualError(t, err.(error), errors.Errorf("cannot delete latest saved version (%d)", 6).Error())
+	}()
+
+	app.BeginBlock(abci.RequestBeginBlock{Header: types.Header{Height: int64(110)}})
+	app.EndBlock(abci.RequestEndBlock{Height: int64(110)})
+	app.Commit()
+}
+
+func TestAppUpgrade_CannotLoadCorruptStoreUsingLatestHeight(t *testing.T) {
+	// Skip this test that shows how SDK allows stores to get installed with 0 height,
+	// then, after pruning halts chain, it becomes impossible to load them at correct height,
+	// loosing any data that was added since last upgrade.
+	// Trying to rename (i.e copy) also fails as old store still errors.
+	t.Skip()
+	encCfg := MakeTestEncodingConfig()
+	db := dbm.NewMemDB()
+	app := NewSifApp(
+		log.NewTMLogger(log.NewSyncWriter(os.Stdout)),
+		db,
+		nil,
+		false,
+		map[int64]bool{},
+		DefaultNodeHome,
+		0,
+		encCfg,
+		EmptyAppOptions{},
+	)
+	err := app.LoadLatestVersion()
+	require.NoError(t, err)
+
+	genesisState := NewDefaultGenesisState(encCfg.Marshaler)
+	stateBytes, err := json.MarshalIndent(genesisState, "", "  ")
+	require.NoError(t, err)
+
+	// Initialize the chain
+	app.InitChain(
+		abci.RequestInitChain{
+			Validators:    []abci.ValidatorUpdate{},
+			AppStateBytes: stateBytes,
+		},
+	)
+
+	// Commit enough to trigger beginning of pruning soon
+	for i := 1; i < 105; i++ {
+		app.BeginBlock(abci.RequestBeginBlock{Header: types.Header{Height: int64(i)}})
+		app.EndBlock(abci.RequestEndBlock{Height: int64(i)})
+		app.Commit()
+	}
+
+	app = NewSifApp(
+		log.NewTMLogger(log.NewSyncWriter(os.Stdout)),
+		db,
+		nil,
+		false,
+		map[int64]bool{},
+		DefaultNodeHome,
+		0,
+		encCfg,
+		EmptyAppOptions{},
+		func(app *baseapp.BaseApp) {
+			cms := rootmulti.NewStore(db)
+			cms.SetPruning(storetypes.PruneDefault)
+			app.SetCMS(cms)
+		},
+	)
+	// Mount and load newStore which will be loaded with version 0,
+	// because it did not load with an "add" upgrade to set it's initialVersion,
+	// while the other stores will be at version = blockHeight (i.e 1 here).
+	app.MountKVStores(map[string]*sdk.KVStoreKey{
+		"newStore": sdk.NewKVStoreKey("newStore"),
+	})
+	err = app.LoadLatestVersion()
+	require.NoError(t, err)
+
+	// Commit until just before default pruning is triggered
+	for i := 105; i <= 109; i++ {
+		app.BeginBlock(abci.RequestBeginBlock{Header: types.Header{Height: int64(i)}})
+		app.EndBlock(abci.RequestEndBlock{Height: int64(i)})
+		app.Commit()
+	}
+
+	// Try to recover the store by setting an "add" store upgrade,
+	// after it has already been committed to above, before setting initial height.
+	app = NewSifApp(
+		log.NewTMLogger(log.NewSyncWriter(os.Stdout)),
+		db,
+		nil,
+		false,
+		map[int64]bool{},
+		DefaultNodeHome,
+		0,
+		encCfg,
+		EmptyAppOptions{},
+		func(app *baseapp.BaseApp) {
+			cms := rootmulti.NewStore(db)
+			cms.SetPruning(storetypes.PruneDefault)
+			app.SetCMS(cms)
+		},
+	)
+	// Mount and load newStore which will be loaded with version 0,
+	// because it did not load with an "add" upgrade to set it's initialVersion,
+	// while the other stores will be at version = blockHeight (i.e 1 here).
+	app.MountKVStores(map[string]*sdk.KVStoreKey{
+		"newStore": sdk.NewKVStoreKey("newStore"),
+	})
+	app.SetStoreLoader(upgradetypes.UpgradeStoreLoader(110, &storetypes.StoreUpgrades{
+		Added: []string{"newStore"},
+	}))
+
+	// Trigger the upgrade store loader set above, instead of the default store loader.
+	// Load will error when trying to load new store at current block height,
+	// because it is > the latest store version (i.e there is an earlier version of the store).
+	err = app.LoadLatestVersion()
+	require.Error(t, err)
+	require.Contains(t, err.Error(), errors.Errorf("initial version set to %v, but found earlier version %v", 110, 1).Error())
+}
 
 func TestGetMaccPerms(t *testing.T) {
 	dup := GetMaccPerms()

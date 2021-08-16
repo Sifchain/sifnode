@@ -128,7 +128,6 @@ contract BridgeBank is BankStorage,
     {
         address newTokenAddress = deployNewBridgeToken(_symbol);
         setTokenInCosmosWhiteList(newTokenAddress, true);
-
         return newTokenAddress;
     }
 
@@ -175,33 +174,12 @@ contract BridgeBank is BankStorage,
         return setTokenInEthWhiteList(_token, _inList);
     }
 
-    // Method that is only for doing the setting of the mapping
-    // private so that it is not inheritable or able to be called
-    // by anyone other than this contract
-    function _updateTokenLimits(address _token, uint256 _amount) private {
-        string memory symbol = _token == address(0) ? "eth" : BridgeToken(_token).symbol();
-        maxTokenAmount[symbol] = _amount;
-    }
-
-    function updateTokenLockBurnLimit(address _token, uint256 _amount)
-        public
+    function bulkWhitelistUpdateLimits(address[] calldata tokenAddresses)
+        external
         onlyOperator
         returns (bool)
     {
-        _updateTokenLimits(_token, _amount);
-        return true;
-    }
-
-    function bulkWhitelistUpdateLimits(
-        address[] calldata tokenAddresses,
-        uint256[] calldata tokenLimit
-        ) external
-        onlyOperator
-        returns (bool)
-    {
-        require(tokenAddresses.length == tokenLimit.length, "!same length");
         for (uint256 i = 0; i < tokenAddresses.length; i++) {
-            _updateTokenLimits(tokenAddresses[i], tokenLimit[i]);
             setTokenInEthWhiteList(tokenAddresses[i], true);
             string memory symbol = BridgeToken(tokenAddresses[i]).symbol();
             lowerToUpperTokens[toLower(symbol)] = symbol;
@@ -220,15 +198,16 @@ contract BridgeBank is BankStorage,
      */
     function mintBridgeTokens(
         address payable _intendedRecipient,
-        address _bridgeTokenAddress,
         string memory _symbol,
         uint256 _amount
     ) public onlyCosmosBridge whenNotPaused {
+        string memory symbol = safeLowerToUpperTokens(_symbol);
+        address tokenAddress = controlledBridgeTokens[symbol];
         return
             mintNewBridgeTokens(
                 _intendedRecipient,
-                _bridgeTokenAddress,
-                _symbol,
+                tokenAddress,
+                symbol,
                 _amount
             );
     }
@@ -246,10 +225,6 @@ contract BridgeBank is BankStorage,
         uint256 _amount
     ) public validSifAddress(_recipient) onlyCosmosTokenWhiteList(_token) whenNotPaused {
         string memory symbol = BridgeToken(_token).symbol();
-
-        if (_amount > maxTokenAmount[symbol]) {
-            revert("Amount being transferred is over the limit for this token");
-        }
 
         BridgeToken(_token).burnFrom(msg.sender, _amount);
         burnFunds(msg.sender, _recipient, _token, symbol, _amount);
@@ -291,9 +266,6 @@ contract BridgeBank is BankStorage,
             symbol = BridgeToken(_token).symbol();
         }
 
-        if (_amount > maxTokenAmount[symbol]) {
-            revert("Amount being transferred is over the limit");
-        }
         lockFunds(msg.sender, _recipient, _token, symbol, _amount);
     }
 
@@ -310,26 +282,11 @@ contract BridgeBank is BankStorage,
         string memory _symbol,
         uint256 _amount
     ) public onlyCosmosBridge whenNotPaused {
-        // Confirm that the bank has sufficient locked balances of this token type
-        require(
-            getLockedFunds(_symbol) >= _amount,
-            "!Bank funds"
-        );
+        string memory symbol = safeLowerToUpperTokens(_symbol);
 
         // Confirm that the bank holds sufficient balances to complete the unlock
-        address tokenAddress = lockedTokenList[_symbol];
-        if (tokenAddress == address(0)) {
-            require(
-                ((address(this)).balance) >= _amount,
-                "Insufficient ethereum balance for delivery."
-            );
-        } else {
-            require(
-                BridgeToken(tokenAddress).balanceOf(address(this)) >= _amount,
-                "Insufficient ERC20 token balance for delivery."
-            );
-        }
-        unlockFunds(_recipient, tokenAddress, _symbol, _amount);
+        address tokenAddress = lockedTokenList[symbol];
+        unlockFunds(_recipient, tokenAddress, symbol, _amount);
     }
 
     /*
