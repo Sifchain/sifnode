@@ -39,10 +39,10 @@ def http_get(url):
     with urllib.request.urlopen(url) as r:
         return r.read()
 
-def popen(args, env=None):
+def popen(args, env=None, cwd=None):
     if env:
         env = dict_merge(os.environ, env)
-    return subprocess.Popen(args, env=env)
+    return subprocess.Popen(args, env=env, cwd=cwd)
 
 def dict_merge(*dicts):
     result = {}
@@ -216,7 +216,7 @@ class Integrator(Ganache, Sifnoded, Command):
 
     def ebrelayer_init(self, ethereum_private_key, tendermind_node, web3_provider, bridge_registry_contract_address,
         validator_moniker, validator_mnemonic, chain_id, gas=None, gas_prices=None, node=None, keyring_backend=None,
-        sign_with=None):
+        sign_with=None, cwd=None):
         env = {"ETHEREUM_PRIVATE_KEY": ethereum_private_key}
         args = ["ebrelayer", "init", tendermind_node, web3_provider, bridge_registry_contract_address,
             validator_moniker, " ".join(validator_mnemonic), "--chain-id={}".format(chain_id)] + \
@@ -225,7 +225,7 @@ class Integrator(Ganache, Sifnoded, Command):
             (["--node", node] if node is not None else []) + \
             (["--keyring-backend", keyring_backend] if keyring_backend is not None else []) + \
             (["--from", sign_with] if sign_with is not None else [])
-        return popen(args, env=env)
+        return popen(args, env=env, cwd=cwd)
 
     def sif_wait_up(self, host, port):
         while True:
@@ -690,9 +690,8 @@ class IntegrationTestsPlaybook:
         self.cmd.rmdir(networks_dir)  # networks_dir has many directories without write permission, so change those before deleting it
         self.cmd.mkdir(networks_dir)
         self.cmd.execst(["rake", f"genesis:network:scaffold[{self.chainnet}]"], env={"BASEDIR": project_dir()}, pipe=False)
-        netdef = exactly_one(yaml_load(self.cmd.read_text_file(project_dir(networks_dir, "network-definition.yml"))))
-        netdef_json = os.path.join(self.data_dir, "netdef.json")
-        self.cmd.write_text_file(netdef_json, json.dumps(netdef))
+
+        netdef, netdef_json = self.process_netdef(networks_dir)
 
         validator_moniker = netdef["moniker"]
         validator1_address = netdef["address"]
@@ -723,14 +722,8 @@ class IntegrationTestsPlaybook:
         # test/integration/sifchain_start_ebrelayer.sh -> test/integration/sifchain_run_ebrelayer.sh
         # This script is also called from tests
 
-        while not self.cmd.tcp_probe_connect("localhost", 26657):
-            time.sleep(1)
-        self.wait_for_sif_account(netdef_json, validator1_address)
-        time.sleep(10)
-        self.remove_and_add_sifnoded_keys(validator_moniker, validator_mnemonic)
-        ebrelayer_proc = self.cmd.ebrelayer_init(ebrelayer_ethereum_private_key, self.tcp_url,
-            self.ethereum_websocket_address, bridge_registry_sc_addr, validator_moniker, validator_mnemonic,
-            self.chainnet, node=self.tcp_url, keyring_backend="test", sign_with=validator_moniker)
+        ebrelayer_proc = self.run_ebrelayer(netdef_json, validator1_address, validator_moniker, validator_mnemonic,
+            ebrelayer_ethereum_private_key, bridge_registry_sc_addr)
 
         vagrantenv_path = project_dir("test/integration/vagrantenv.sh")
         self.state_vars = {
@@ -829,6 +822,28 @@ class IntegrationTestsPlaybook:
         self.cmd.sifnoded_keys_add([validator_moniker, "--keyring-backend", "test", "--recover"],
             stdin=[" ".join(validator_mnemonic)])
 
+    def process_netdef(self, networks_dir):
+        # networks_dir = deploy/networks
+        # File deploy/networks/network-definition.yml is created by "rake genesis:network:scaffold"
+        # We read it and convert to test/integration/vagrant/data/netdef.json
+        netdef = exactly_one(yaml_load(self.cmd.read_text_file(project_dir(networks_dir, "network-definition.yml"))))
+        netdef_json = os.path.join(self.data_dir, "netdef.json")
+        self.cmd.write_text_file(netdef_json, json.dumps(netdef))
+        return netdef, netdef_json
+
+    def run_ebrelayer(self, netdef_json, validator1_address, validator_moniker, validator_mnemonic,
+        ebrelayer_ethereum_private_key, bridge_registry_sc_addr):
+        while not self.cmd.tcp_probe_connect("localhost", 26657):
+            time.sleep(1)
+        self.wait_for_sif_account(netdef_json, validator1_address)
+        time.sleep(10)
+        self.remove_and_add_sifnoded_keys(validator_moniker, validator_mnemonic)  # Creates ~/.sifnoded/keyring-tests/xxxx.address
+        ebrelayer_proc = self.cmd.ebrelayer_init(ebrelayer_ethereum_private_key, self.tcp_url,
+            self.ethereum_websocket_address, bridge_registry_sc_addr, validator_moniker, validator_mnemonic,
+            self.chainnet, node=self.tcp_url, keyring_backend="test", sign_with=validator_moniker,
+            cwd=self.test_integration_dir)
+        return ebrelayer_proc
+
     def create_snapshot(self, snapshot_name):
         self.cmd.mkdir(self.snapshots_dir)
         named_snapshot_dir = os.path.join(self.snapshots_dir, snapshot_name)
@@ -840,36 +855,8 @@ class IntegrationTestsPlaybook:
         self.cmd.tar_create(project_dir("test/integration/relayerdb"), os.path.join(named_snapshot_dir, "relayerdb.tar.gz"))
         self.cmd.tar_create(project_dir("deploy/networks"), os.path.join(named_snapshot_dir, "networks.tar.gz"))
         self.cmd.tar_create(project_dir("smart-contracts/build"), os.path.join(named_snapshot_dir, "smart-contracts.tar.gz"))
+        self.cmd.tar_create(self.cmd.get_user_home(".sifnoded"), os.path.join(named_snapshot_dir, "sifnoded.tar.gz"))
         self.cmd.write_text_file(os.path.join(named_snapshot_dir, "vagrantenv.json"), json.dumps(self.state_vars, indent=4))
-
-    def restart_processes(self):
-        block_time = None
-        ganache_db_path = self.state_vars["GANACHE_DB_DIR"]
-        account_keys_path = None
-        ganache_proc = self.cmd.start_ganache_cli(block_time=block_time, host="0.0.0.0", mnemonic=self.ganache_mnemonic,
-            network_id=self.network_id, port=7545, db=ganache_db_path, account_keys_path=account_keys_path)
-
-        validator_moniker = self.state_vars["MONIKER"]
-        networks_dir = project_dir("deploy/networks")
-        chaindir = os.path.join(networks_dir, f"validators/{self.chainnet}/{validator_moniker}")
-        sifchaind_home = os.path.join(chaindir, ".sifnoded")
-        sifnoded_proc = popen(["sifnoded", "start", "--minimum-gas-prices", sif_format_amount(0.5, "rowan"),
-            "--rpc.laddr", self.tcp_url, "--home", sifchaind_home])
-
-        bridge_token_sc_addr, bridge_registry_sc_addr, bridge_bank_sc_addr = \
-            self.cmd.get_bridge_smart_contract_addresses(self.network_id)
-
-        validator_mnemonic = self.state_vars["MNEMONIC"].split(" ")
-        account_keys_path = os.path.join(self.data_dir, "ganachekeys.json")
-        ganache_keys = json.loads(self.cmd.read_text_file(account_keys_path))
-        ebrelayer_ethereum_addr = list(ganache_keys["private_keys"].keys())[9]
-        ebrelayer_ethereum_private_key = ganache_keys["private_keys"][ebrelayer_ethereum_addr]
-
-        ebrelayer_proc = self.cmd.ebrelayer_init(ebrelayer_ethereum_private_key, self.tcp_url,
-            self.ethereum_websocket_address, bridge_registry_sc_addr, validator_moniker, validator_mnemonic,
-            self.chainnet, node=self.tcp_url, keyring_backend="test", sign_with=validator_moniker)
-
-        return ganache_proc, sifnoded_proc, ebrelayer_proc, None
 
     def restore_snapshot(self, snapshot_name):
         named_snapshot_dir = os.path.join(self.snapshots_dir, snapshot_name)
@@ -892,8 +879,44 @@ class IntegrationTestsPlaybook:
         state_vars["GANACHE_DB_DIR"] = ganache_db_dir
         self.state_vars = state_vars
         self.write_vagrantenv_sh()
+        self.cmd.mkdir(self.data_dir)
 
         return self.restart_processes()
+
+    def restart_processes(self):
+        block_time = None
+        ganache_db_path = self.state_vars["GANACHE_DB_DIR"]
+        account_keys_path = os.path.join(self.data_dir, "ganachekeys.json")  # TODO this is in test/integration/vagrant/data, which is supposed to be cleared
+
+        ganache_proc = self.cmd.start_ganache_cli(block_time=block_time, host="0.0.0.0", mnemonic=self.ganache_mnemonic,
+            network_id=self.network_id, port=7545, db=ganache_db_path, account_keys_path=account_keys_path)
+
+        self.cmd.wait_for_file(account_keys_path)  # Created by ganache-cli
+        time.sleep(2)
+
+        validator_moniker = self.state_vars["MONIKER"]
+        networks_dir = project_dir("deploy/networks")
+        chaindir = os.path.join(networks_dir, f"validators/{self.chainnet}/{validator_moniker}")
+        sifchaind_home = os.path.join(chaindir, ".sifnoded")
+        sifnoded_proc = popen(["sifnoded", "start", "--minimum-gas-prices", sif_format_amount(0.5, "rowan"),
+            "--rpc.laddr", self.tcp_url, "--home", sifchaind_home])
+
+        bridge_token_sc_addr, bridge_registry_sc_addr, bridge_bank_sc_addr = \
+            self.cmd.get_bridge_smart_contract_addresses(self.network_id)
+
+        validator_mnemonic = self.state_vars["MNEMONIC"].split(" ")
+        account_keys_path = os.path.join(self.data_dir, "ganachekeys.json")
+        ganache_keys = json.loads(self.cmd.read_text_file(account_keys_path))
+        ebrelayer_ethereum_addr = list(ganache_keys["private_keys"].keys())[9]
+        ebrelayer_ethereum_private_key = ganache_keys["private_keys"][ebrelayer_ethereum_addr]
+
+        netdef, netdef_json = self.process_netdef(networks_dir)
+        validator1_address = netdef["address"]
+        assert validator1_address == self.state_vars["VALIDATOR1_ADDR"]
+        ebrelayer_proc = self.run_ebrelayer(netdef_json, validator1_address, validator_moniker, validator_mnemonic,
+            ebrelayer_ethereum_private_key, bridge_registry_sc_addr)
+
+        return ganache_proc, sifnoded_proc, ebrelayer_proc, None
 
 def cleanup_and_reset_state():
     # git checkout 4cb7322b6b282babd93a0d0aedda837c9134e84e deploy
@@ -939,6 +962,8 @@ def main(argv):
         cleanup_and_reset_state()
         it_playbook = IntegrationTestsPlaybook(cmd)
         processes = it_playbook.run()
+        # Give processes some time to settle, for example relayerdb must init and create its "relayerdb"
+        time.sleep(45)
         killall(processes)
         # processes1 = it_playbook.restart_processes()
         it_playbook.create_snapshot(snapshot_name)
