@@ -6,7 +6,6 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
-	"github.com/pkg/errors"
 
 	"github.com/Sifchain/sifnode/x/ethbridge/types"
 	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
@@ -26,12 +25,7 @@ var _ types.MsgServer = msgServer{}
 
 func (srv msgServer) Lock(goCtx context.Context, msg *types.MsgLock) (*types.MsgLockResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
-
 	logger := srv.Keeper.Logger(ctx)
-	if srv.Keeper.ExistsPeggyToken(ctx, msg.Symbol) {
-		logger.Error("pegged token can't be lock.", "tokenSymbol", msg.Symbol)
-		return nil, errors.Errorf("Pegged token %s can't be lock.", msg.Symbol)
-	}
 
 	cosmosSender, err := sdk.AccAddressFromBech32(msg.CosmosSender)
 	if err != nil {
@@ -60,7 +54,7 @@ func (srv msgServer) Lock(goCtx context.Context, msg *types.MsgLock) (*types.Msg
 		cosmosSender.String(),
 		account.GetSequence(),
 		msg.EthereumReceiver,
-		msg.Symbol,
+		msg.DenomHash,
 		msg.Amount,
 		msg.CrosschainFee,
 		// TODO decide the double peggy and global nonce
@@ -93,12 +87,6 @@ func (srv msgServer) Burn(goCtx context.Context, msg *types.MsgBurn) (*types.Msg
 	ctx := sdk.UnwrapSDKContext(goCtx)
 	logger := srv.Keeper.Logger(ctx)
 
-	if !srv.Keeper.ExistsPeggyToken(ctx, msg.Symbol) {
-		logger.Error("crosschain fee can't be burn.",
-			"tokenSymbol", msg.Symbol)
-		return nil, errors.Errorf("crosschain fee %s can't be burn.", msg.Symbol)
-	}
-
 	cosmosSender, err := sdk.AccAddressFromBech32(msg.CosmosSender)
 	if err != nil {
 		return nil, err
@@ -126,7 +114,7 @@ func (srv msgServer) Burn(goCtx context.Context, msg *types.MsgBurn) (*types.Msg
 		cosmosSender.String(),
 		account.GetSequence(),
 		msg.EthereumReceiver,
-		msg.Symbol,
+		msg.DenomHash,
 		msg.Amount,
 		msg.CrosschainFee,
 		// TODO decide the double peggy and global nonce
@@ -186,6 +174,7 @@ func (srv msgServer) CreateEthBridgeClaim(goCtx context.Context, msg *types.MsgC
 		NetworkDescriptor: claim.NetworkDescriptor,
 	}
 
+	// TODO check if it is safe to add the metadata automatically
 	if !srv.Keeper.ExistsTokenMetadata(ctx, claim.DenomHash) {
 		srv.Keeper.AddTokenMetadata(ctx, metadata)
 	}

@@ -18,13 +18,13 @@ import (
 // NewMsgLock is a constructor function for MsgLock
 func NewMsgLock(
 	networkDescriptor oracletypes.NetworkDescriptor, cosmosSender sdk.AccAddress,
-	ethereumReceiver EthereumAddress, amount sdk.Int, symbol string, crossChainFee sdk.Int) MsgLock {
+	ethereumReceiver EthereumAddress, amount sdk.Int, denomHash string, crossChainFee sdk.Int) MsgLock {
 	return MsgLock{
 		NetworkDescriptor: networkDescriptor,
 		CosmosSender:      cosmosSender.String(),
 		EthereumReceiver:  ethereumReceiver.String(),
 		Amount:            amount,
-		Symbol:            symbol,
+		DenomHash:         denomHash,
 		CrosschainFee:     crossChainFee,
 	}
 }
@@ -57,7 +57,7 @@ func (msg MsgLock) ValidateBasic() error {
 		return ErrInvalidAmount
 	}
 
-	if len(msg.Symbol) == 0 {
+	if len(msg.DenomHash) == 0 {
 		return ErrInvalidSymbol
 	}
 	return nil
@@ -95,13 +95,13 @@ func (msg MsgLock) GetProphecyID(doublePeggy bool, sequence, globalNonce uint64,
 // NewMsgBurn is a constructor function for MsgBurn
 func NewMsgBurn(
 	networkDescriptor oracletypes.NetworkDescriptor, cosmosSender sdk.AccAddress,
-	ethereumReceiver EthereumAddress, amount sdk.Int, symbol string, crosschainFee sdk.Int) MsgBurn {
+	ethereumReceiver EthereumAddress, amount sdk.Int, denomHash string, crosschainFee sdk.Int) MsgBurn {
 	return MsgBurn{
 		NetworkDescriptor: networkDescriptor,
 		CosmosSender:      cosmosSender.String(),
 		EthereumReceiver:  ethereumReceiver.String(),
 		Amount:            amount,
-		Symbol:            symbol,
+		DenomHash:         denomHash,
 		CrosschainFee:     crosschainFee,
 	}
 }
@@ -134,20 +134,20 @@ func (msg MsgBurn) ValidateBasic() error {
 		return ErrInvalidAmount
 	}
 
-	prefixLength := len(PeggedCoinPrefix)
-	if len(msg.Symbol) <= prefixLength+1 {
-		return ErrInvalidBurnSymbol
-	}
+	// prefixLength := len(PeggedCoinPrefix)
+	// if len(msg.DenomHash) <= prefixLength+1 {
+	// 	return ErrInvalidBurnSymbol
+	// }
 
-	symbolPrefix := msg.Symbol[:prefixLength]
-	if symbolPrefix != PeggedCoinPrefix {
-		return ErrInvalidBurnSymbol
-	}
+	// symbolPrefix := msg.DenomHash[:prefixLength]
+	// if symbolPrefix != PeggedCoinPrefix {
+	// 	return ErrInvalidBurnSymbol
+	// }
 
-	symbolSuffix := msg.Symbol[prefixLength:]
-	if len(symbolSuffix) == 0 {
-		return ErrInvalidBurnSymbol
-	}
+	// symbolSuffix := msg.DenomHash[prefixLength:]
+	// if len(symbolSuffix) == 0 {
+	// 	return ErrInvalidBurnSymbol
+	// }
 
 	return nil
 }

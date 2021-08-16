@@ -31,7 +31,7 @@ message MsgLock {
     (gogoproto.nullable) = false,
     (gogoproto.moretags) = "yaml:\"amount\""
   ];
-  string symbol = 3 [ (gogoproto.moretags) = "yaml:\"symbol\"" ];
+  string denom_hash = 3 [ (gogoproto.moretags) = "yaml:\"denom_hash\"" ];
   sifnode.oracle.v1.NetworkDescriptor network_descriptor = 4
       [ (gogoproto.moretags) = "yaml:\"network_descriptor\"" ];
   string ethereum_receiver = 5
@@ -53,7 +53,7 @@ message MsgBurn {
     (gogoproto.nullable) = false,
     (gogoproto.moretags) = "yaml:\"amount\""
   ];
-  string symbol = 3 [ (gogoproto.moretags) = "yaml:\"symbol\"" ];
+  string denom_hash = 3 [ (gogoproto.moretags) = "yaml:\"denom_hash\"" ];
   sifnode.oracle.v1.NetworkDescriptor network_descriptor = 4
       [ (gogoproto.moretags) = "yaml:\"network_descriptor\"" ];
   string ethereum_receiver = 5

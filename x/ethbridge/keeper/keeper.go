@@ -62,18 +62,20 @@ func (k Keeper) ProcessClaim(ctx sdk.Context, claim *types.EthBridgeClaim) (orac
 // ProcessSuccessfulClaim processes a claim that has just completed successfully with consensus
 func (k Keeper) ProcessSuccessfulClaim(ctx sdk.Context, claim *types.EthBridgeClaim) error {
 	logger := k.Logger(ctx)
+	tokenMetadata, ok := k.GetTokenMetadata(ctx, claim.DenomHash)
+	if !ok {
+		return fmt.Errorf("token metadata not available for %s", claim.DenomHash)
+	}
 
 	var coins sdk.Coins
 	var err error
 	switch claim.ClaimType {
 	case types.ClaimType_CLAIM_TYPE_LOCK:
-		symbol := fmt.Sprintf("%v%v", types.PeggedCoinPrefix, claim.Symbol)
-		k.AddPeggyToken(ctx, symbol)
-
-		coins = sdk.Coins{sdk.NewCoin(symbol, claim.Amount)}
+		// symbol := fmt.Sprintf("%v%v", types.PeggedCoinPrefix, claim.Symbol)
+		coins = sdk.Coins{sdk.NewCoin(tokenMetadata.Symbol, claim.Amount)}
 		err = k.bankKeeper.MintCoins(ctx, types.ModuleName, coins)
 	case types.ClaimType_CLAIM_TYPE_BURN:
-		coins = sdk.Coins{sdk.NewCoin(claim.Symbol, claim.Amount)}
+		coins = sdk.Coins{sdk.NewCoin(tokenMetadata.Symbol, claim.Amount)}
 		err = k.bankKeeper.MintCoins(ctx, types.ModuleName, coins)
 	default:
 		err = types.ErrInvalidClaimType
@@ -116,10 +118,16 @@ func (k Keeper) ProcessBurn(ctx sdk.Context, cosmosSender sdk.AccAddress, sender
 		return []byte{}, errors.New("crosschain fee amount in message less than minimum burn")
 	}
 
-	tokenMetadata, ok := k.GetTokenMetadata(ctx, msg.Symbol)
+	tokenMetadata, ok := k.GetTokenMetadata(ctx, msg.DenomHash)
 	if !ok {
-		return []byte{}, fmt.Errorf("token metadata not available for %s", msg.Symbol)
+		return []byte{}, fmt.Errorf("token metadata not available for %s", msg.DenomHash)
 	}
+
+	// TODO use the network descriptor to check if token is from sifchains
+	// if !tokenMetadata.NetworkDescriptor.IsValid() {
+	// 	logger.Error("sifchain natvie token can't be burn.", "tokenSymbol", tokenMetadata.Symbol)
+	// 	return []byte{}, fmt.Errorf("sifchain native token %s can't be burn", tokenMetadata.Symbol)
+	// }
 
 	if k.IsCrossChainFeeReceiverAccountSet(ctx) {
 		coins = sdk.NewCoins(sdk.NewCoin(crossChainFeeConfig.FeeCurrency, msg.CrosschainFee))
@@ -131,13 +139,13 @@ func (k Keeper) ProcessBurn(ctx sdk.Context, cosmosSender sdk.AccAddress, sender
 			return []byte{}, err
 		}
 
-		coins = sdk.NewCoins(sdk.NewCoin(msg.Symbol, msg.Amount))
+		coins = sdk.NewCoins(sdk.NewCoin(tokenMetadata.Symbol, msg.Amount))
 
 	} else {
-		if msg.Symbol == crossChainFeeConfig.FeeCurrency {
+		if msg.DenomHash == crossChainFeeConfig.FeeCurrency {
 			coins = sdk.NewCoins(sdk.NewCoin(crossChainFeeConfig.FeeCurrency, msg.CrosschainFee.Add(msg.Amount)))
 		} else {
-			coins = sdk.NewCoins(sdk.NewCoin(msg.Symbol, msg.Amount), sdk.NewCoin(crossChainFeeConfig.FeeCurrency, msg.CrosschainFee))
+			coins = sdk.NewCoins(sdk.NewCoin(tokenMetadata.Symbol, msg.Amount), sdk.NewCoin(crossChainFeeConfig.FeeCurrency, msg.CrosschainFee))
 		}
 	}
 
@@ -148,7 +156,7 @@ func (k Keeper) ProcessBurn(ctx sdk.Context, cosmosSender sdk.AccAddress, sender
 		return []byte{}, err
 	}
 
-	coins = sdk.NewCoins(sdk.NewCoin(msg.Symbol, msg.Amount))
+	coins = sdk.NewCoins(sdk.NewCoin(tokenMetadata.Symbol, msg.Amount))
 	err = k.bankKeeper.BurnCoins(ctx, types.ModuleName, coins)
 	if err != nil {
 		logger.Error("failed to burn locked coin.",
@@ -176,9 +184,15 @@ func (k Keeper) ProcessLock(ctx sdk.Context, cosmosSender sdk.AccAddress, sender
 		return []byte{}, err
 	}
 
-	tokenMetadata, ok := k.GetTokenMetadata(ctx, msg.Symbol)
+	tokenMetadata, ok := k.GetTokenMetadata(ctx, msg.DenomHash)
 	if !ok {
-		return []byte{}, fmt.Errorf("token metadata not available for %s", msg.Symbol)
+		return []byte{}, fmt.Errorf("token metadata not available for %s", msg.DenomHash)
+	}
+
+	// TODO use the network descriptor to check if token is from sifchain
+	if tokenMetadata.NetworkDescriptor.IsValid() {
+		logger.Error("pegged token can't be lock.", "tokenSymbol", tokenMetadata.Symbol)
+		return []byte{}, fmt.Errorf("pegged token %s can't be lock", tokenMetadata.Symbol)
 	}
 
 	minimumLock := crossChainFeeConfig.MinimumLockCost.Mul(crossChainFeeConfig.FeeCurrencyGas)
@@ -196,10 +210,10 @@ func (k Keeper) ProcessLock(ctx sdk.Context, cosmosSender sdk.AccAddress, sender
 			return []byte{}, err
 		}
 
-		coins = sdk.NewCoins(sdk.NewCoin(msg.Symbol, msg.Amount))
+		coins = sdk.NewCoins(sdk.NewCoin(tokenMetadata.Symbol, msg.Amount))
 
 	} else {
-		coins = sdk.NewCoins(sdk.NewCoin(msg.Symbol, msg.Amount), sdk.NewCoin(crossChainFeeConfig.FeeCurrency, msg.CrosschainFee))
+		coins = sdk.NewCoins(sdk.NewCoin(tokenMetadata.Symbol, msg.Amount), sdk.NewCoin(crossChainFeeConfig.FeeCurrency, msg.CrosschainFee))
 	}
 
 	err = k.bankKeeper.SendCoinsFromAccountToModule(ctx, cosmosSender, types.ModuleName, coins)
@@ -210,7 +224,7 @@ func (k Keeper) ProcessLock(ctx sdk.Context, cosmosSender sdk.AccAddress, sender
 		return []byte{}, err
 	}
 
-	coins = sdk.NewCoins(sdk.NewCoin(msg.Symbol, msg.Amount))
+	coins = sdk.NewCoins(sdk.NewCoin(tokenMetadata.Symbol, msg.Amount))
 	err = k.bankKeeper.BurnCoins(ctx, types.ModuleName, coins)
 	if err != nil {
 		logger.Error("failed to burn burned coin.",
@@ -297,9 +311,9 @@ func (k Keeper) ProcessSignProphecy(ctx sdk.Context, msg *types.MsgSignProphecy)
 		return errors.New("prophecy not found in oracle keeper")
 	}
 
-	metadata, ok := k.GetTokenMetadata(ctx, prophecyInfo.TokenSymbol)
+	metadata, ok := k.GetTokenMetadata(ctx, prophecyInfo.TokenDenomHash)
 	if !ok {
-		return fmt.Errorf("metadata not available for %s", prophecyInfo.TokenSymbol)
+		return fmt.Errorf("metadata not available for %s", prophecyInfo.TokenDenomHash)
 	}
 
 	return k.oracleKeeper.ProcessSignProphecy(ctx, msg.NetworkDescriptor, msg.ProphecyId, msg.CosmosSender, metadata.TokenAddress, msg.EthereumAddress, msg.Signature)

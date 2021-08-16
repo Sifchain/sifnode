@@ -10,6 +10,8 @@ import (
 )
 
 const (
+	TestNetworkDescriptorSifchain = oracletypes.NetworkDescriptor(0)
+
 	TestNetworkDescriptor     = oracletypes.NetworkDescriptor(1)
 	TestBridgeContractAddress = "0xC4cE93a5699c68241fc2fB503Fb0f21724A624BB"
 	TestAddress               = "cosmos1gn8409qq9hnrxde37kuxwx5hrxpfpv8426szuv"

@@ -71,7 +71,7 @@ message ProphecyInfo {
   string cosmos_sender = 4;
   uint64 cosmos_sender_sequence = 5;
   string ethereum_receiver = 6;
-  string token_symbol = 7;
+  string token_denom_hash = 7;
   string token_amount = 8 [
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
     (gogoproto.nullable) = false,

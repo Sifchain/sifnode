@@ -258,6 +258,7 @@ func (sub CosmosSub) getUnhandledProphecies(client *tmClient.HTTP, currentBlock 
 				}
 			}
 		}
+		
 	}
 	return maxGlobalNonce, prophecyInfoMap
 }

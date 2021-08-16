@@ -22,22 +22,13 @@ func InitGenesis(ctx sdk.Context, keeper keeper.Keeper, data types.GenesisState)
 		keeper.SetCrossChainFeeReceiverAccount(ctx, receiveAccount)
 	}
 
-	// AddPeggyTokens
-	if data.PeggyTokens != nil {
-		for _, tokenStr := range data.PeggyTokens {
-			keeper.AddPeggyToken(ctx, tokenStr)
-		}
-	}
-
 	return []abci.ValidatorUpdate{}
 }
 
 func ExportGenesis(ctx sdk.Context, keeper keeper.Keeper) *types.GenesisState {
-	peggyTokens := keeper.GetPeggyToken(ctx)
 	receiveAccount := keeper.GetCrossChainFeeReceiverAccount(ctx)
 
 	return &types.GenesisState{
-		PeggyTokens:                 peggyTokens.Tokens,
 		CrosschainFeeReceiveAccount: receiveAccount.String(),
 	}
 }

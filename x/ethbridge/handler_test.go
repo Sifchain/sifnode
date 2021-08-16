@@ -36,21 +36,21 @@ var (
 	TestAddress                  = "cosmos1xdp5tvt7lxh8rf9xx07wy2xlagzhq24ha48xtq"
 )
 
-var testMetadata1 = types.TokenMetadata{
+var testMetadataEther = types.TokenMetadata{
 	Decimals:          18,
 	Name:              "ether",
-	NetworkDescriptor: oracletypes.NetworkDescriptor_NETWORK_DESCRIPTOR_ETHEREUM,
+	NetworkDescriptor: oracletypes.NetworkDescriptor_NETWORK_DESCRIPTOR_UNSPECIFIED,
 	Symbol:            "ether",
 	TokenAddress:      "0x0123456789ABCDEF",
 }
 
-var testMetadata2 = types.TokenMetadata{
-	Decimals:          18,
-	Name:              "cether",
-	NetworkDescriptor: oracletypes.NetworkDescriptor_NETWORK_DESCRIPTOR_ETHEREUM,
-	Symbol:            "cether",
-	TokenAddress:      "0x0123456789ABCDEF",
-}
+// var testMetadataCether = types.TokenMetadata{
+// 	Decimals:          18,
+// 	Name:              "cether",
+// 	NetworkDescriptor: oracletypes.NetworkDescriptor_NETWORK_DESCRIPTOR_UNSPECIFIED,
+// 	Symbol:            "cether",
+// 	TokenAddress:      "0x0123456789ABCDEF",
+// }
 
 func TestBasicMsgs(t *testing.T) {
 	//Setup
@@ -158,7 +158,7 @@ func TestMintSuccess(t *testing.T) {
 	receiverAddress, err := sdk.AccAddressFromBech32(types.TestAddress)
 	require.NoError(t, err)
 	receiverCoins := bankKeeper.GetAllBalances(ctx, receiverAddress)
-	expectedCoins := sdk.Coins{sdk.NewInt64Coin(types.TestCrossChainFeeSymbol, types.TestCoinIntAmount)}
+	expectedCoins := sdk.Coins{sdk.NewInt64Coin(types.AltTestCoinsSymbol, types.TestCoinIntAmount)}
 
 	require.True(t, receiverCoins.IsEqual(expectedCoins))
 	for _, event := range res.Events {
@@ -175,7 +175,7 @@ func TestMintSuccess(t *testing.T) {
 	_, err = handler(ctx, &normalCreateMsg)
 	require.Nil(t, err)
 	receiverCoins = bankKeeper.GetAllBalances(ctx, receiverAddress)
-	expectedCoins = sdk.Coins{sdk.NewInt64Coin(types.TestCrossChainFeeSymbol, types.TestCoinIntAmount)}
+	expectedCoins = sdk.Coins{sdk.NewInt64Coin(types.AltTestCoinsSymbol, types.TestCoinIntAmount)}
 	require.True(t, receiverCoins.IsEqual(expectedCoins))
 }
 
@@ -292,10 +292,6 @@ func TestBurnEthSuccess(t *testing.T) {
 	// Initial message to mint some eth
 	coinsToMintAmount := sdk.NewInt(7)
 	coinsToMintSymbol := "ether"
-	keeper.AddTokenMetadataViaSymbol(ctx, testMetadata1)
-	keeper.AddTokenMetadataViaSymbol(ctx, testMetadata2)
-
-	coinsToMintSymbolLocked := fmt.Sprintf("%v%v", types.PeggedCoinPrefix, coinsToMintSymbol)
 
 	testTokenContractAddress := types.NewEthereumAddress(types.TestTokenContractAddress)
 	testEthereumAddress := types.NewEthereumAddress(types.TestEthereumAddress)
@@ -305,6 +301,16 @@ func TestBurnEthSuccess(t *testing.T) {
 		valAddressVal1Pow5, testEthereumAddress, coinsToMintAmount, coinsToMintSymbol, types.ClaimType_CLAIM_TYPE_LOCK, types.TestDecimals, types.TestName)
 	ethMsg1 := types.NewMsgCreateEthBridgeClaim(ethClaim1)
 
+	denom := types.TokenMetadata{
+		Decimals:          types.TestDecimals,
+		Name:              types.TestName,
+		NetworkDescriptor: oracletypes.NetworkDescriptor_NETWORK_DESCRIPTOR_ETHEREUM,
+		Symbol:            coinsToMintSymbol,
+		TokenAddress:      types.TestTokenContractAddress,
+	}
+	denomHash := keeper.AddTokenMetadata(ctx, denom)
+	require.Equal(t, denomHash, ethClaim1.DenomHash)
+
 	// Initial message succeeds and mints eth
 	res, err := handler(ctx, &ethMsg1)
 	require.NoError(t, err)
@@ -312,17 +318,26 @@ func TestBurnEthSuccess(t *testing.T) {
 	receiverAddress, err := sdk.AccAddressFromBech32(types.TestAddress)
 	require.NoError(t, err)
 	receiverCoins := bankKeeper.GetAllBalances(ctx, receiverAddress)
-	mintedCoins := sdk.Coins{sdk.NewCoin(coinsToMintSymbolLocked, coinsToMintAmount)}
+	mintedCoins := sdk.Coins{sdk.NewCoin(coinsToMintSymbol, coinsToMintAmount)}
 	require.True(t, receiverCoins.IsEqual(mintedCoins))
 
 	coinsToMintAmount = sdk.NewInt(65000000000 * 300000)
-	coinsToMintSymbol = "eth"
+	coinsToMintSymbol = "ceth"
 	testEthereumAddress = types.NewEthereumAddress(types.AltTestEthereumAddress)
 
 	ethClaim1 = types.CreateTestEthClaim(
 		t, testEthereumAddress, testTokenContractAddress,
 		valAddressVal1Pow5, testEthereumAddress, coinsToMintAmount, coinsToMintSymbol, types.ClaimType_CLAIM_TYPE_LOCK, types.TestDecimals, types.TestName)
 	ethMsg1 = types.NewMsgCreateEthBridgeClaim(ethClaim1)
+
+	denom = types.TokenMetadata{
+		Decimals:          types.TestDecimals,
+		Name:              types.TestName,
+		NetworkDescriptor: oracletypes.NetworkDescriptor_NETWORK_DESCRIPTOR_ETHEREUM,
+		Symbol:            coinsToMintSymbol,
+		TokenAddress:      types.TestTokenContractAddress,
+	}
+	keeper.AddTokenMetadata(ctx, denom)
 
 	// Initial message succeeds and mints eth
 	res, err = handler(ctx, &ethMsg1)
@@ -331,18 +346,17 @@ func TestBurnEthSuccess(t *testing.T) {
 
 	coinsToBurnAmount := sdk.NewInt(3)
 	coinsToBurnSymbol := "ether"
-	coinsToBurnSymbolPrefixed := fmt.Sprintf("%v%v", types.PeggedCoinPrefix, coinsToBurnSymbol)
-
 	ethereumReceiver := types.NewEthereumAddress(types.AltTestEthereumAddress)
 
 	// Second message succeeds, burns eth and fires correct event
 	burnMsg := types.CreateTestBurnMsg(t, types.TestAddress, ethereumReceiver, coinsToBurnAmount,
-		coinsToBurnSymbolPrefixed)
+		denomHash)
+
 	res, err = handler(ctx, &burnMsg)
 	require.NoError(t, err)
 	require.NotNil(t, res)
 	senderAddress := receiverAddress
-	burnedCoins := sdk.Coins{sdk.NewCoin(coinsToBurnSymbolPrefixed, coinsToBurnAmount)}
+	burnedCoins := sdk.Coins{sdk.NewCoin(coinsToBurnSymbol, coinsToBurnAmount)}
 	remainingCoins := mintedCoins.Sub(burnedCoins)
 	senderCoins := bankKeeper.GetAllBalances(ctx, senderAddress)
 	require.True(t, senderCoins.IsEqual(remainingCoins))
@@ -378,26 +392,19 @@ func TestBurnEthSuccess(t *testing.T) {
 		valAddressVal1Pow5, testEthereumAddress, coinsToMintAmount, coinsToMintSymbol, types.ClaimType_CLAIM_TYPE_LOCK, types.TestDecimals, types.TestName)
 	ethMsg1 = types.NewMsgCreateEthBridgeClaim(ethClaim1)
 
+	denom = types.TokenMetadata{
+		Decimals:          types.TestDecimals,
+		Name:              types.TestName,
+		NetworkDescriptor: oracletypes.NetworkDescriptor_NETWORK_DESCRIPTOR_ETHEREUM,
+		Symbol:            coinsToMintSymbol,
+		TokenAddress:      types.TestTokenContractAddress,
+	}
+	keeper.AddTokenMetadata(ctx, denom)
+
 	// Initial message succeeds and mints eth
 	res, err = handler(ctx, &ethMsg1)
 	require.NoError(t, err)
 	require.NotNil(t, res)
-
-	// Third message failed since pegged token can be lock.
-	lockMsg := types.CreateTestLockMsg(t, types.TestAddress, ethereumReceiver, coinsToBurnAmount,
-		coinsToBurnSymbolPrefixed)
-	_, err = handler(ctx, &lockMsg)
-	require.NotNil(t, err)
-	require.Equal(t, "Pegged token cether can't be lock.", err.Error())
-
-	// Fourth message OK
-	_, err = handler(ctx, &burnMsg)
-	require.Nil(t, err)
-
-	// Fifth message fails, not enough eth
-	res, err = handler(ctx, &burnMsg)
-	require.Error(t, err)
-	require.Nil(t, res)
 }
 
 func TestUpdateCrossChainFeeReceiverAccountMsg(t *testing.T) {
