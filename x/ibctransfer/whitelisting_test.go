@@ -147,12 +147,12 @@ func TestCheckRecvConvert(t *testing.T) {
 
 	wl := whitelistmocks.NewMockKeeper(ctrl)
 
-	wl.EXPECT().GetIBCDenom(ctx, "ueth").Return(ibcRegistryEntry)
-	got := checkRecvConvert(ctx, wl, returningTransferPacket, ibcDenom)
+	wl.EXPECT().GetRegistryEntry(ctx, "ueth").Return(ibcRegistryEntry)
+	got := shouldConvertDecimals(ctx, wl, returningTransferPacket, ibcDenom)
 	require.Equal(t, got, true)
 
-	wl.EXPECT().GetIBCDenom(ctx, "cusdt").Return(nonIBCRegistryEntry)
-	got = checkRecvConvert(ctx, wl, returningTransferPacket, nonIBCDenom)
+	wl.EXPECT().GetRegistryEntry(ctx, "cusdt").Return(nonIBCRegistryEntry)
+	got = shouldConvertDecimals(ctx, wl, returningTransferPacket, nonIBCDenom)
 	require.Equal(t, got, false)
 }
 
@@ -202,13 +202,13 @@ func TestConvertRecvDenom(t *testing.T) {
 
 	wl := whitelistmocks.NewMockKeeper(ctrl)
 
-	wl.EXPECT().GetIBCDenom(ctx, "ueth").Return(ibcRegistryEntry)
-	gotIBCToken, gotConvToken := convertRecvDenom(ctx, wl, returningTransferPacket, ibcDenom)
+	wl.EXPECT().GetRegistryEntry(ctx, "ueth").Return(ibcRegistryEntry)
+	gotIBCToken, gotConvToken := convertDecimals(ctx, wl, returningTransferPacket, ibcDenom)
 	intAmount, _ := sdk.NewIntFromString("100000000000000000000")
 	require.Equal(t, gotIBCToken, sdk.NewCoin("ueth", sdk.NewInt(1000000000000)))
 	require.Equal(t, gotConvToken, sdk.NewCoin("ceth", intAmount))
 
-	// wl.EXPECT().GetIBCDenom(ctx, "cusdt").Return(nonIBCRegistryEntry)
+	// wl.EXPECT().GetRegistryEntry(ctx, "cusdt").Return(nonIBCRegistryEntry)
 	// got = checkRecvConvert(ctx, wl, returningTransferPacket, nonIBCDenom)
 	// require.Equal(t, got, false)
 }

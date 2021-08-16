@@ -71,7 +71,7 @@ func (k keeper) GetDenom(ctx sdk.Context, denom string) types.RegistryEntry {
 	}
 }
 
-func (k keeper) GetIBCDenom(ctx sdk.Context, ibcdenom string) types.RegistryEntry {
+func (k keeper) GetRegistryEntry(ctx sdk.Context, ibcdenom string) types.RegistryEntry {
 	wl := k.GetDenomWhitelist(ctx)
 
 	for i := range wl.Entries {
