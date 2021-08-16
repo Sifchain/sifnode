@@ -1,13 +1,14 @@
 package handler_test
 
 import (
+	"testing"
+
 	"github.com/Sifchain/sifnode/x/tokenregistry/handler"
 	"github.com/Sifchain/sifnode/x/tokenregistry/test"
 	"github.com/Sifchain/sifnode/x/tokenregistry/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"testing"
 )
 
 func TestHandleRegister(t *testing.T) {
