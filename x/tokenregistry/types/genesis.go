@@ -53,7 +53,7 @@ func DefaultRegistry() Registry {
 			{IsWhitelisted: true, Denom: "chusd", Decimals: 8},
 			{IsWhitelisted: true, Denom: "campl", Decimals: 9},
 			{IsWhitelisted: true, Denom: "ceth", Decimals: 18, IbcDenom: "ueth", IbcDecimals: 10},
-			{IsWhitelisted: true, Denom: "cdai", Decimals: 18, IbcDenom: "edai", IbcDecimals: 10},
+			{IsWhitelisted: true, Denom: "cdai", Decimals: 18, IbcDenom: "udai", IbcDecimals: 10},
 			{IsWhitelisted: true, Denom: "cyfi", Decimals: 18, IbcDenom: "uyfi", IbcDecimals: 10},
 			{IsWhitelisted: true, Denom: "czrx", Decimals: 18, IbcDenom: "uzrx", IbcDecimals: 10},
 			{IsWhitelisted: true, Denom: "cwscrt", Decimals: 6},
