@@ -1,7 +1,10 @@
 const {
   setup,
-  getValidClaim
+  getValidClaim,
+  batchAddTokensToEthWhitelist,
 } = require('./helpers/testFixture');
+
+const { colorLog } = require('./helpers/helpers');
 
 const web3 = require("web3");
 const { expect } = require('chai');
@@ -13,7 +16,9 @@ const gasProfiling = {
   use: true,
   lock: 173978,
   mint: 179749,
-  newBb: 1162769
+  newBb: 1162769,
+  multiLock: 328673,
+  current: {}
 }
 
 require("chai")
@@ -122,11 +127,13 @@ describe.only("Gas Cost Tests", function () {
             signatures
         );
       const receipt = await tx.wait();
-
       const sum = Number(receipt.gasUsed);
-      console.log("~~~~~~~~~~~~\nTotal: ", sum);
+      
       if(gasProfiling.use) {
-        logGasDiff(gasProfiling.lock, sum);
+        gasProfiling.current.lock = sum;
+        logGasDiff('LOCK:', gasProfiling.lock, sum);
+      } else {
+        console.log("~~~~~~~~~~~~\nTotal: ", sum);
       }
 
       // Bridge claim should be completed
@@ -167,11 +174,13 @@ describe.only("Gas Cost Tests", function () {
         .connect(userOne)
         .submitProphecyClaimAggregatedSigs(digest, claimData, signatures);
       const receipt = await tx.wait();
-
       const sum = Number(receipt.gasUsed);
-      console.log("~~~~~~~~~~~~\nTotal: ", sum);
+
       if(gasProfiling.use) {
-        logGasDiff(gasProfiling.mint, sum);
+        gasProfiling.current.mint = sum;
+        logGasDiff('MINT:', gasProfiling.mint, sum);
+      } else {
+        console.log("~~~~~~~~~~~~\nTotal: ", sum);
       }
 
       // Last nonce should now be 1
@@ -211,24 +220,149 @@ describe.only("Gas Cost Tests", function () {
             signatures
         );
       const receipt = await tx.wait();
-
       const sum = Number(receipt.gasUsed);
-      console.log("~~~~~~~~~~~~\nTotal: ", Number(receipt.gasUsed));
+      
       if(gasProfiling.use) {
-        logGasDiff(gasProfiling.newBb, sum);
+        gasProfiling.current.newBb = sum;
+        logGasDiff('New BridgeToken:', gasProfiling.newBb, sum);
+      } else {
+        console.log("~~~~~~~~~~~~\nTotal: ", Number(receipt.gasUsed));
       }
 
       const newlyCreatedTokenAddress = await state.cosmosBridge.sourceAddressToDestinationAddress(state.token1.address);
       expect(newlyCreatedTokenAddress).to.be.equal(expectedAddress);
     });
+
+    it("should allow us to check the cost of submitting a batch prophecy claim lock", async function () {
+      // Add tokens 2 and 3 into white list
+      await batchAddTokensToEthWhitelist(state, [state.token2.address, state.token3.address])
+      
+      // Lock token2 on contract
+      await state.bridgeBank.connect(userOne).lock(
+        state.sender,
+        state.token2.address,
+        state.amount
+      ).should.be.fulfilled;
+
+      // Lock token3 on contract
+      await state.bridgeBank.connect(userOne).lock(
+        state.sender,
+        state.token3.address,
+        state.amount
+      ).should.be.fulfilled;
+
+      let balanceToken1 = Number(await state.token1.balanceOf(state.recipient.address));
+      expect(balanceToken1).to.be.equal(0);
+
+      let balanceToken2 = Number(await state.token2.balanceOf(state.recipient.address));
+      expect(balanceToken2).to.be.equal(0);
+
+      let balanceToken3 = Number(await state.token3.balanceOf(state.recipient.address));
+      expect(balanceToken3).to.be.equal(0);
+
+      // Last nonce should now be 0
+      let lastNonceSubmitted = Number(await state.cosmosBridge.lastNonceSubmitted());
+      expect(lastNonceSubmitted).to.be.equal(0);
+
+      state.nonce = 1;
+
+      const { digest, claimData, signatures } = await getValidClaim({
+        sender: state.sender,
+        senderSequence: state.senderSequence,
+        recipientAddress: state.recipient.address,
+        tokenAddress: state.token1.address,
+        amount: state.amount,
+        doublePeg: false,
+        nonce: state.nonce,
+        networkDescriptor: state.networkDescriptor,
+        tokenName: state.name,
+        tokenSymbol: state.symbol,
+        tokenDecimals: state.decimals,
+        validators: accounts.slice(1, 5),
+      });
+
+      const { digest: digest2, claimData: claimData2, signatures: signatures2 } = await getValidClaim({
+        sender: state.sender,
+        senderSequence: state.senderSequence,
+        recipientAddress: state.recipient.address,
+        tokenAddress: state.token2.address,
+        amount: state.amount,
+        doublePeg: false,
+        nonce: state.nonce + 1,
+        networkDescriptor: state.networkDescriptor,
+        tokenName: state.name,
+        tokenSymbol: state.symbol,
+        tokenDecimals: state.decimals,
+        validators: accounts.slice(1, 5),
+      });
+
+      const { digest: digest3, claimData: claimData3, signatures: signatures3 } = await getValidClaim({
+        sender: state.sender,
+        senderSequence: state.senderSequence,
+        recipientAddress: state.recipient.address,
+        tokenAddress: state.token3.address,
+        amount: state.amount,
+        doublePeg: false,
+        nonce: state.nonce + 2,
+        networkDescriptor: state.networkDescriptor,
+        tokenName: state.name,
+        tokenSymbol: state.symbol,
+        tokenDecimals: state.decimals,
+        validators: accounts.slice(1, 5),
+      });
+
+      const tx = await state.cosmosBridge
+        .connect(userOne)
+        .batchSubmitProphecyClaimAggregatedSigs(
+            [digest, digest2, digest3],
+            [claimData, claimData2, claimData3],
+            [signatures, signatures2, signatures3]
+        );
+      const receipt = await tx.wait();
+      const sum = Number(receipt.gasUsed);
+      
+      if(gasProfiling.use) {
+        const numberOfClaimsInBatch = 3;
+        logGasDiff('BATCH, regarding previous implementation:', gasProfiling.multiLock, sum);
+        logGasDiff(`${numberOfClaimsInBatch} Batched claims VS single claim:`, gasProfiling.current.lock * numberOfClaimsInBatch, sum, true);
+      } else {
+        console.log("~~~~~~~~~~~~\nTotal: ", sum);
+      }
+
+      lastNonceSubmitted = Number(await state.cosmosBridge.lastNonceSubmitted());
+      expect(lastNonceSubmitted).to.be.equal(3);
+
+      balanceToken1 = Number(await state.token1.balanceOf(state.recipient.address));
+      expect(balanceToken1).to.be.equal(state.amount);
+
+      balanceToken2 = Number(await state.token2.balanceOf(state.recipient.address));
+      expect(balanceToken2).to.be.equal(state.amount);
+
+      balanceToken3 = Number(await state.token3.balanceOf(state.recipient.address));
+      expect(balanceToken3).to.be.equal(state.amount);
+    });
   });
 });
 
 // Helper function to aid comparing implementations wrt gas costs
-function logGasDiff(original, current) {
-  console.log("Before:", original);
+function logGasDiff(title, original, current, useShortTitle) {
+  const separator = useShortTitle ? '---' : '~~~~~~~~~~~~';
+  colorLog('cyan', `${separator}\n${title}`);
+  console.log('Original:', original);
+  console.log('Current :', current);
   const pct = Math.abs(((1 - current / original) * 100)).toFixed(2);
-  console.log(`Difference: ${current - original} (${pct}%)`);
+  const diff = current - original;
+  colorLog(getColorName(diff), `Diff    : ${diff} (${pct}%)`);
+}
+
+function getColorName(value) {
+  if(value > 0) {
+    return 'red';
+  } else if(value < 0) {
+    return 'green';
+  } else {
+    return 'white';
+  }
 }
 
 /**
