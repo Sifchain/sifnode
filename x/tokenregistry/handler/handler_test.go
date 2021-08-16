@@ -37,6 +37,42 @@ func TestHandleRegister(t *testing.T) {
 			},
 		},
 		{
+			name: "Successful IBC Registration",
+			msg: types.MsgRegister{
+				From: admin,
+				Entry: &types.RegistryEntry{
+					Denom:       "TestDenomIBC",
+					DisplayName: "Test Denom IBC",
+					Decimals:    18,
+					IbcDenom:    "Test Denom IBC",
+					IbcDecimals: 10,
+				},
+			},
+			errorAssertion: assert.NoError,
+			valueAssertion: func(t require.TestingT, res interface{}, i ...interface{}) {
+				d := app.TokenRegistryKeeper.GetDenom(ctx, "TestDenomIBC")
+				require.Equal(t, "Test Denom IBC", d.DisplayName)
+			},
+		},
+		{
+			name: "Successful Registration Converted",
+			msg: types.MsgRegister{
+				From: admin,
+				Entry: &types.RegistryEntry{
+					Denom:       "TestDenomIBC2",
+					DisplayName: "Test Denom IBC 2",
+					Decimals:    8,
+					IbcDenom:    "Test Denom IBC 2",
+					IbcDecimals: 10,
+				},
+			},
+			errorAssertion: assert.NoError,
+			valueAssertion: func(t require.TestingT, res interface{}, i ...interface{}) {
+				d := app.TokenRegistryKeeper.GetDenom(ctx, "TestDenomIBC2")
+				require.Equal(t, "Test Denom IBC 2", d.DisplayName)
+			},
+		},
+		{
 			name: "Non Admin Account",
 			msg: types.MsgRegister{
 				From: sdk.AccAddress("addr2_______________").String(),
@@ -87,7 +123,6 @@ func TestHandleDeregister(t *testing.T) {
 			valueAssertion: func(t require.TestingT, res interface{}, i ...interface{}) {
 				require.False(t, app.TokenRegistryKeeper.IsDenomWhitelisted(ctx, "removeMe"))
 				require.Empty(t, app.TokenRegistryKeeper.GetDenomWhitelist(ctx).Entries)
-
 			},
 		},
 		{
