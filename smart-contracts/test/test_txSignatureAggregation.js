@@ -126,7 +126,7 @@ describe.only("Gas Cost Tests", function () {
       const sum = Number(receipt.gasUsed);
       console.log("~~~~~~~~~~~~\nTotal: ", sum);
       if(gasProfiling.use) {
-        console.log("Improvement: ", gasProfiling.lock - sum);
+        logGasDiff(gasProfiling.lock, sum);
       }
 
       // Bridge claim should be completed
@@ -171,7 +171,7 @@ describe.only("Gas Cost Tests", function () {
       const sum = Number(receipt.gasUsed);
       console.log("~~~~~~~~~~~~\nTotal: ", sum);
       if(gasProfiling.use) {
-        console.log("Improvement: ", gasProfiling.mint - sum);
+        logGasDiff(gasProfiling.mint, sum);
       }
 
       // Last nonce should now be 1
@@ -210,11 +210,12 @@ describe.only("Gas Cost Tests", function () {
             claimData,
             signatures
         );
-
       const receipt = await tx.wait();
+
+      const sum = Number(receipt.gasUsed);
       console.log("~~~~~~~~~~~~\nTotal: ", Number(receipt.gasUsed));
       if(gasProfiling.use) {
-        console.log("Improvement: ", gasProfiling.newBb - Number(receipt.gasUsed));
+        logGasDiff(gasProfiling.newBb, sum);
       }
 
       const newlyCreatedTokenAddress = await state.cosmosBridge.sourceAddressToDestinationAddress(state.token1.address);
@@ -222,6 +223,13 @@ describe.only("Gas Cost Tests", function () {
     });
   });
 });
+
+// Helper function to aid comparing implementations wrt gas costs
+function logGasDiff(original, current) {
+  console.log("Before:", original);
+  const pct = Math.abs(((1 - current / original) * 100)).toFixed(2);
+  console.log(`Difference: ${current - original} (${pct}%)`);
+}
 
 /**
  * 
