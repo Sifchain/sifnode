@@ -38,7 +38,7 @@ function toEthSignedMessageHash(messageHex) {
 /**
  * Colorizes and prints logs without using libs
  * @dev Start your string with the color of choice and end it with .close
- * @dev Example: colorize('green', message);
+ * @dev Example: colorLog('green', message);
  */
 function colorLog(colorName, message) {
   console.log(`${colors[colorName]}${message}${colors.close}`);
