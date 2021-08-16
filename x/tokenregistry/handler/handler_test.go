@@ -34,6 +34,7 @@ func TestHandleRegister(t *testing.T) {
 			valueAssertion: func(t require.TestingT, res interface{}, i ...interface{}) {
 				d := app.TokenRegistryKeeper.GetDenom(ctx, "TestDenom")
 				require.Equal(t, "Test Denom", d.DisplayName)
+				require.Equal(t, 1, len(app.TokenRegistryKeeper.GetDenomWhitelist(ctx).Entries))
 			},
 		},
 		{
@@ -52,10 +53,11 @@ func TestHandleRegister(t *testing.T) {
 			valueAssertion: func(t require.TestingT, res interface{}, i ...interface{}) {
 				d := app.TokenRegistryKeeper.GetDenom(ctx, "TestDenomIBC")
 				require.Equal(t, "Test Denom IBC", d.DisplayName)
+				require.Equal(t, 2, len(app.TokenRegistryKeeper.GetDenomWhitelist(ctx).Entries))
 			},
 		},
 		{
-			name: "Successful Registration Converted",
+			name: "Successful IBC Registration 2",
 			msg: types.MsgRegister{
 				From: admin,
 				Entry: &types.RegistryEntry{
@@ -70,6 +72,27 @@ func TestHandleRegister(t *testing.T) {
 			valueAssertion: func(t require.TestingT, res interface{}, i ...interface{}) {
 				d := app.TokenRegistryKeeper.GetDenom(ctx, "TestDenomIBC2")
 				require.Equal(t, "Test Denom IBC 2", d.DisplayName)
+				require.Equal(t, 3, len(app.TokenRegistryKeeper.GetDenomWhitelist(ctx).Entries))
+			},
+		},
+		{
+			name: "Registration Ignore Duplicate Tokens",
+			msg: types.MsgRegister{
+				From: admin,
+				Entry: &types.RegistryEntry{
+					Denom:       "TestDenomIBC",
+					DisplayName: "Test Denom IBC",
+					Decimals:    18,
+					IbcDenom:    "Test Denom IBC",
+					IbcDecimals: 10,
+				},
+			},
+			errorAssertion: assert.NoError,
+			valueAssertion: func(t require.TestingT, res interface{}, i ...interface{}) {
+				d := app.TokenRegistryKeeper.GetDenom(ctx, "TestDenomIBC")
+				require.Equal(t, "Test Denom IBC", d.DisplayName)
+				// Denom whitelist size is still 3, duplicate denoms are ignored.
+				require.Equal(t, 3, len(app.TokenRegistryKeeper.GetDenomWhitelist(ctx).Entries))
 			},
 		},
 		{
