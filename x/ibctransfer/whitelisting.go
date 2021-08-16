@@ -82,7 +82,7 @@ func shouldConvertDecimals(
 ) bool {
 	// get token registry entry for received denom
 	denom := GetMintedDenomFromPacket(packet, data)
-	registryEntry := whitelistKeeper.GetIBCDenom(ctx, denom)
+	registryEntry := whitelistKeeper.GetRegistryEntry(ctx, denom)
 	// if decimals are greater than ibc decimals, we need to increase precision to convert them
 	return registryEntry.IbcDenom != "" && registryEntry.Decimals > registryEntry.IbcDecimals
 }
@@ -95,7 +95,7 @@ func convertDecimals(
 ) (sdk.Coin, sdk.Coin) {
 	// get token registry entry for received denom
 	denom := GetMintedDenomFromPacket(packet, data)
-	registryEntry := whitelistKeeper.GetIBCDenom(ctx, denom)
+	registryEntry := whitelistKeeper.GetRegistryEntry(ctx, denom)
 	// get the token amount from the packet data
 	decAmount := sdk.NewDecFromInt(sdk.NewIntFromUint64(data.Amount))
 	// calculate the conversion difference and increase precision
