@@ -2,6 +2,7 @@ package app
 
 import (
 	tokenregistrykeeper "github.com/Sifchain/sifnode/x/tokenregistry/keeper"
+	tmos "github.com/tendermint/tendermint/libs/os"
 	"io"
 	"math/big"
 	"net/http"
@@ -74,7 +75,6 @@ import (
 	abci "github.com/tendermint/tendermint/abci/types"
 	tmjson "github.com/tendermint/tendermint/libs/json"
 	"github.com/tendermint/tendermint/libs/log"
-	tmos "github.com/tendermint/tendermint/libs/os"
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 	dbm "github.com/tendermint/tm-db"
 
@@ -242,6 +242,10 @@ func NewSifApp(
 		memKeys:           memKeys,
 	}
 
+	if homePath == "" {
+		homePath = DefaultNodeHome
+	}
+
 	app.ParamsKeeper = initParamsKeeper(appCodec, legacyAmino, keys[paramstypes.StoreKey], tkeys[paramstypes.TStoreKey])
 
 	// set the BaseApp's parameter store
@@ -311,7 +315,7 @@ func NewSifApp(
 	// The mapping represents height to bool. if the value is true for a height that height
 	// will be skipped even if we have a update proposal for it
 	skipUpgradeHeights[0] = true
-	app.UpgradeKeeper = upgradekeeper.NewKeeper(skipUpgradeHeights, keys[upgradetypes.StoreKey], appCodec, DefaultNodeHome)
+	app.UpgradeKeeper = upgradekeeper.NewKeeper(skipUpgradeHeights, keys[upgradetypes.StoreKey], appCodec, homePath)
 	SetupHandlers(app)
 
 	// Create IBC Keeper
