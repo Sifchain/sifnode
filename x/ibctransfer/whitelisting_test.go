@@ -212,3 +212,138 @@ func TestConvertRecvDenom(t *testing.T) {
 	got := shouldConvertDecimals(ctx, wl, returningTransferPacket, nonIBCDenom)
 	require.Equal(t, got, false)
 }
+
+func TestConvertDecimals(t *testing.T) {
+	ctrl := gomock.NewController(t)
+
+	ctx := sdk.NewContext(nil, tmproto.Header{ChainID: "foochainid"}, false, nil)
+
+	returningTransferPacket := channeltypes.Packet{
+		Sequence:           0,
+		SourcePort:         "transfer",
+		SourceChannel:      "channel-0",
+		DestinationPort:    "transfer",
+		DestinationChannel: "channel-1",
+		Data:               nil,
+	}
+
+	ibcDenom1 := transfertypes.FungibleTokenPacketData{
+		// When sender chain is the source,
+		// it simply sends the base denom without path prefix
+		Denom:  "transfer/channel-0/ueth",
+		Amount: 1000000000000,
+	}
+
+	ibcRegistryEntry1 := tokenregistrytypes.RegistryEntry{
+		IsWhitelisted: true,
+		Denom:         "ceth",
+		Decimals:      18,
+		IbcDenom:      "ueth",
+		IbcDecimals:   10,
+	}
+
+	ibcDenom2 := transfertypes.FungibleTokenPacketData{
+		// When sender chain is the source,
+		// it simply sends the base denom without path prefix
+		Denom:  "transfer/channel-0/umana",
+		Amount: 1000000000000,
+	}
+
+	ibcRegistryEntry2 := tokenregistrytypes.RegistryEntry{
+		IsWhitelisted: true,
+		Denom:         "cmana",
+		Decimals:      8,
+		IbcDenom:      "umana",
+		IbcDecimals:   10,
+	}
+
+	ibcDenom3 := transfertypes.FungibleTokenPacketData{
+		// When sender chain is the source,
+		// it simply sends the base denom without path prefix
+		Denom:  "transfer/channel-0/usand",
+		Amount: 1000000000000,
+	}
+
+	ibcRegistryEntry3 := tokenregistrytypes.RegistryEntry{
+		IsWhitelisted: true,
+		Denom:         "csand",
+		Decimals:      10,
+		IbcDenom:      "usand",
+		IbcDecimals:   10,
+	}
+
+	ibcDenom4 := transfertypes.FungibleTokenPacketData{
+		// When sender chain is the source,
+		// it simply sends the base denom without path prefix
+		Denom:  "transfer/channel-0/udash",
+		Amount: 1000000000000,
+	}
+
+	ibcRegistryEntry4 := tokenregistrytypes.RegistryEntry{
+		IsWhitelisted: true,
+		Denom:         "cdash",
+		Decimals:      18,
+		IbcDenom:      "udash",
+		IbcDecimals:   10,
+	}
+
+	nonIBCDenom := transfertypes.FungibleTokenPacketData{
+		// When sender chain is the source,
+		// it simply sends the base denom without path prefix
+		Denom:  "transfer/channel-0/cusdt",
+		Amount: 100000000,
+	}
+
+	nonIBCRegistryEntry := tokenregistrytypes.RegistryEntry{
+		IsWhitelisted: true,
+		Denom:         "cusdt",
+		Decimals:      6,
+		IbcDenom:      "",
+		IbcDecimals:   0,
+	}
+
+	nonIBCDenom2 := transfertypes.FungibleTokenPacketData{
+		// When sender chain is the source,
+		// it simply sends the base denom without path prefix
+		Denom:  "transfer/channel-0/c1inch",
+		Amount: 100000000,
+	}
+
+	nonIBCRegistryEntry2 := tokenregistrytypes.RegistryEntry{
+		IsWhitelisted: true,
+		Denom:         "c1inch",
+		Decimals:      18,
+		IbcDenom:      "",
+		IbcDecimals:   0,
+	}
+
+	wl := whitelistmocks.NewMockKeeper(ctrl)
+
+	wl.EXPECT().GetRegistryEntry(ctx, "ueth").Return(ibcRegistryEntry1)
+	gotIBCToken, gotConvToken := convertDecimals(ctx, wl, returningTransferPacket, ibcDenom1)
+	intAmount, _ := sdk.NewIntFromString("100000000000000000000")
+	require.Equal(t, gotIBCToken, sdk.NewCoin("ueth", sdk.NewInt(1000000000000)))
+	require.Equal(t, gotConvToken, sdk.NewCoin("ceth", intAmount))
+
+	wl.EXPECT().GetRegistryEntry(ctx, "umana").Return(ibcRegistryEntry2)
+	got := shouldConvertDecimals(ctx, wl, returningTransferPacket, ibcDenom2)
+	require.Equal(t, got, false)
+
+	wl.EXPECT().GetRegistryEntry(ctx, "usand").Return(ibcRegistryEntry3)
+	got = shouldConvertDecimals(ctx, wl, returningTransferPacket, ibcDenom3)
+	require.Equal(t, got, false)
+
+	wl.EXPECT().GetRegistryEntry(ctx, "udash").Return(ibcRegistryEntry4)
+	gotIBCToken, gotConvToken = convertDecimals(ctx, wl, returningTransferPacket, ibcDenom4)
+	intAmount, _ = sdk.NewIntFromString("100000000000000000000")
+	require.Equal(t, gotIBCToken, sdk.NewCoin("udash", sdk.NewInt(1000000000000)))
+	require.Equal(t, gotConvToken, sdk.NewCoin("cdash", intAmount))
+
+	wl.EXPECT().GetRegistryEntry(ctx, "cusdt").Return(nonIBCRegistryEntry)
+	got = shouldConvertDecimals(ctx, wl, returningTransferPacket, nonIBCDenom)
+	require.Equal(t, got, false)
+
+	wl.EXPECT().GetRegistryEntry(ctx, "c1inch").Return(nonIBCRegistryEntry2)
+	got = shouldConvertDecimals(ctx, wl, returningTransferPacket, nonIBCDenom2)
+	require.Equal(t, got, false)
+}
