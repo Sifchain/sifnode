@@ -37,14 +37,13 @@ func (srv msgServer) Transfer(goCtx context.Context, msg *types.MsgTransfer) (*t
 	registryEntry := srv.tokenRegistryKeeper.GetDenom(ctx, msg.Token.Denom)
 	// check if registry entry has an IBC decimal field
 	if registryEntry.IbcDenom != "" && registryEntry.Decimals > registryEntry.IbcDecimals {
-
+		// calculate the conversion difference and reduce precision
 		po := registryEntry.Decimals - registryEntry.IbcDecimals
 		decAmount := sdk.NewDecFromInt(msg.Token.Amount)
 		convAmountDec := ReducePrecision(decAmount, po)
 
 		convAmount := sdk.NewIntFromBigInt(convAmountDec.RoundInt().BigInt())
-
-		// convAmount := msg.Token.Amount / (10 **(uint64(registryEntry.Decimals) - uint64(registryEntry.IbcDecimals)))
+		// create converted and sifchain tokens with corresponding denoms and amounts
 		convToken := sdk.NewCoin(registryEntry.IbcDenom, convAmount)
 		// send coins from account to module
 		token := sdk.NewCoin(msg.Token.Denom, msg.Token.Amount)

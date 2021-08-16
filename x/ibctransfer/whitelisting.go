@@ -5,7 +5,6 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
-	transfer "github.com/cosmos/cosmos-sdk/x/ibc/applications/transfer"
 	transfertypes "github.com/cosmos/cosmos-sdk/x/ibc/applications/transfer/types"
 	channeltypes "github.com/cosmos/cosmos-sdk/x/ibc/core/04-channel/types"
 
@@ -14,7 +13,7 @@ import (
 
 func OnRecvPacketWhiteListed(
 	ctx sdk.Context,
-	sdkAppModule transfer.AppModule,
+	sdkTransferKeeper tokenregistrytypes.SDKTransferKeeper,
 	whitelistKeeper tokenregistrytypes.Keeper,
 	bankKeeper transfertypes.BankKeeper,
 	packet channeltypes.Packet,
@@ -42,28 +41,26 @@ func OnRecvPacketWhiteListed(
 		}, acknowledgement.GetBytes(), nil
 	}
 	// get result of transfer receive
-	// TODO: replace module.OnRecvPacket with keeper.OnRecvPacket
-	recvResult, resBytes, err := sdkAppModule.OnRecvPacket(ctx, packet)
-
-	// acknowledgement := channeltypes.NewResultAcknowledgement([]byte{byte(1)})
-	// recvResult, resBytes, err := sdkAppModule.keeper.OnRecvPacket(ctx, packet, data)
-	// if err != nil {
-	// 	acknowledgement = channeltypes.NewErrorAcknowledgement(err.Error())
-	// }
-	// ctx.EventManager().EmitEvent(
-	// 	sdk.NewEvent(
-	// 		transfertypes.EventTypePacket,
-	// 		sdk.NewAttribute(sdk.AttributeKeyModule, transfertypes.ModuleName),
-	// 		sdk.NewAttribute(transfertypes.AttributeKeyReceiver, data.Receiver),
-	// 		sdk.NewAttribute(transfertypes.AttributeKeyDenom, data.Denom),
-	// 		sdk.NewAttribute(transfertypes.AttributeKeyAmount, fmt.Sprintf("%d", data.Amount)),
-	// 		sdk.NewAttribute(transfertypes.AttributeKeyAckSuccess, fmt.Sprintf("%t", err == nil)),
-	// 	),
-	// )
-	// // NOTE: acknowledgement will be written synchronously during IBC handler execution.
-	// return &sdk.Result{
-	// 	Events: ctx.EventManager().Events().ToABCIEvents(),
-	// }, acknowledgement.GetBytes(), nil
+	acknowledgement := channeltypes.NewResultAcknowledgement([]byte{byte(1)})
+	err := sdkTransferKeeper.OnRecvPacket(ctx, packet, data)
+	if err != nil {
+		acknowledgement = channeltypes.NewErrorAcknowledgement(err.Error())
+	}
+	ctx.EventManager().EmitEvent(
+		sdk.NewEvent(
+			transfertypes.EventTypePacket,
+			sdk.NewAttribute(sdk.AttributeKeyModule, transfertypes.ModuleName),
+			sdk.NewAttribute(transfertypes.AttributeKeyReceiver, data.Receiver),
+			sdk.NewAttribute(transfertypes.AttributeKeyDenom, data.Denom),
+			sdk.NewAttribute(transfertypes.AttributeKeyAmount, fmt.Sprintf("%d", data.Amount)),
+			sdk.NewAttribute(transfertypes.AttributeKeyAckSuccess, fmt.Sprintf("%t", err == nil)),
+		),
+	)
+	// NOTE: acknowledgement will be written synchronously during IBC handler execution.
+	recvResult := &sdk.Result{
+		Events: ctx.EventManager().Events().ToABCIEvents(),
+	}
+	resBytes := acknowledgement.GetBytes()
 
 	// if no error and packet is returning and needs conversion: convert
 	if err != nil && IsRecvPacketReturning(packet, data) && shouldConvertDecimals(ctx, whitelistKeeper, packet, data) {
@@ -120,7 +117,6 @@ func sendConvertRecvDenom(
 		return nil, err
 	}
 	// send ibcdenom coins from account to module
-	// ibcToken := sdk.NewCoin(denom, sdk.NewIntFromUint64(data.Amount))
 	err = bankKeeper.SendCoinsFromAccountToModule(ctx, receiver, transfertypes.ModuleName, sdk.NewCoins(ibcToken))
 	if err != nil {
 		return nil, err
@@ -142,7 +138,6 @@ func sendConvertRecvDenom(
 			sdk.NewAttribute(transfertypes.AttributeKeyReceiver, data.Receiver),
 			sdk.NewAttribute(transfertypes.AttributeKeyDenom, convToken.Denom),
 			sdk.NewAttribute(transfertypes.AttributeKeyAmount, fmt.Sprintf("%d", convToken.Amount)),
-			// sdk.NewAttribute(transfertypes.AttributeKeyAckSuccess, fmt.Sprintf("%t", err == nil)),  ??
 		),
 	)
 	return &sdk.Result{
