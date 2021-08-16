@@ -80,7 +80,8 @@ func TestAppUpgrade_CannotDeleteLatestVersion(t *testing.T) {
 	app.MountKVStores(map[string]*sdk.KVStoreKey{
 		"newStore": sdk.NewKVStoreKey("newStore"),
 	})
-	app.LoadLatestVersion()
+	err = app.LoadLatestVersion()
+	require.NoError(t, err)
 
 	// Commit until just before default pruning is triggered
 	for i := 105; i <= 109; i++ {
@@ -120,7 +121,8 @@ func TestAppUpgrade_CannotLoadCorruptStoreUsingLatestHeight(t *testing.T) {
 		encCfg,
 		EmptyAppOptions{},
 	)
-	app.LoadLatestVersion()
+	err := app.LoadLatestVersion()
+	require.NoError(t, err)
 
 	genesisState := NewDefaultGenesisState(encCfg.Marshaler)
 	stateBytes, err := json.MarshalIndent(genesisState, "", "  ")
@@ -163,7 +165,8 @@ func TestAppUpgrade_CannotLoadCorruptStoreUsingLatestHeight(t *testing.T) {
 	app.MountKVStores(map[string]*sdk.KVStoreKey{
 		"newStore": sdk.NewKVStoreKey("newStore"),
 	})
-	app.LoadLatestVersion()
+	err = app.LoadLatestVersion()
+	require.NoError(t, err)
 
 	// Commit until just before default pruning is triggered
 	for i := 105; i <= 109; i++ {
