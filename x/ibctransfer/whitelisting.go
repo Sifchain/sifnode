@@ -30,7 +30,7 @@ func OnRecvPacketWhiteListed(
 		ctx.EventManager().EmitEvent(
 			sdk.NewEvent(
 				transfertypes.EventTypePacket,
-				sdk.NewAttribute(sdk.AttributeKeyModule, transfertypes.ModuleName), // is this ethbridge on purpose?
+				sdk.NewAttribute(sdk.AttributeKeyModule, transfertypes.ModuleName),
 				sdk.NewAttribute(transfertypes.AttributeKeyReceiver, data.Receiver),
 				sdk.NewAttribute(transfertypes.AttributeKeyDenom, data.Denom),
 				sdk.NewAttribute(transfertypes.AttributeKeyAmount, fmt.Sprintf("%d", data.Amount)),

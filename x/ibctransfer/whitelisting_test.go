@@ -185,20 +185,20 @@ func TestConvertRecvDenom(t *testing.T) {
 		IbcDecimals:   10,
 	}
 
-	// nonIBCDenom := transfertypes.FungibleTokenPacketData{
-	// 	// When sender chain is the source,
-	// 	// it simply sends the base denom without path prefix
-	// 	Denom:  "transfer/channel-0/cusdt",
-	// 	Amount: 100000000,
-	// }
+	nonIBCDenom := transfertypes.FungibleTokenPacketData{
+		// When sender chain is the source,
+		// it simply sends the base denom without path prefix
+		Denom:  "transfer/channel-0/cusdt",
+		Amount: 100000000,
+	}
 
-	// nonIBCRegistryEntry := tokenregistrytypes.RegistryEntry{
-	// 	IsWhitelisted: true,
-	// 	Denom:         "cusdt",
-	// 	Decimals:      6,
-	// 	IbcDenom:      "",
-	// 	IbcDecimals:   0,
-	// }
+	nonIBCRegistryEntry := tokenregistrytypes.RegistryEntry{
+		IsWhitelisted: true,
+		Denom:         "cusdt",
+		Decimals:      6,
+		IbcDenom:      "",
+		IbcDecimals:   0,
+	}
 
 	wl := whitelistmocks.NewMockKeeper(ctrl)
 
@@ -208,7 +208,7 @@ func TestConvertRecvDenom(t *testing.T) {
 	require.Equal(t, gotIBCToken, sdk.NewCoin("ueth", sdk.NewInt(1000000000000)))
 	require.Equal(t, gotConvToken, sdk.NewCoin("ceth", intAmount))
 
-	// wl.EXPECT().GetRegistryEntry(ctx, "cusdt").Return(nonIBCRegistryEntry)
-	// got = checkRecvConvert(ctx, wl, returningTransferPacket, nonIBCDenom)
-	// require.Equal(t, got, false)
+	wl.EXPECT().GetRegistryEntry(ctx, "cusdt").Return(nonIBCRegistryEntry)
+	got := shouldConvertDecimals(ctx, wl, returningTransferPacket, nonIBCDenom)
+	require.Equal(t, got, false)
 }
