@@ -224,7 +224,7 @@ describe.only("Gas Cost Tests", function () {
       
       if(gasProfiling.use) {
         gasProfiling.current.newBb = sum;
-        logGasDiff('New BridgeToken:', gasProfiling.newBb, sum);
+        logGasDiff('DoublePeg :: New BridgeToken:', gasProfiling.newBb, sum);
       } else {
         console.log("~~~~~~~~~~~~\nTotal: ", Number(receipt.gasUsed));
       }
@@ -340,6 +340,85 @@ describe.only("Gas Cost Tests", function () {
 
       balanceToken3 = Number(await state.token3.balanceOf(state.recipient.address));
       expect(balanceToken3).to.be.equal(state.amount);
+    });
+
+    it("should allow us to check the cost of batch creating new BridgeTokens", async function () {
+      state.nonce = 1;
+
+      const { digest, claimData, signatures } = await getValidClaim({
+        sender: state.sender,
+        senderSequence: state.senderSequence,
+        recipientAddress: state.recipient.address,
+        tokenAddress: state.token1.address,
+        amount: state.amount,
+        doublePeg: true,
+        nonce: state.nonce,
+        networkDescriptor: state.networkDescriptor,
+        tokenName: state.name,
+        tokenSymbol: state.symbol,
+        tokenDecimals: state.decimals,
+        validators: accounts.slice(1, 5),
+      });
+
+      const { digest: digest2, claimData: claimData2, signatures: signatures2 } = await getValidClaim({
+        sender: state.sender,
+        senderSequence: state.senderSequence,
+        recipientAddress: state.recipient.address,
+        tokenAddress: state.token2.address,
+        amount: state.amount,
+        doublePeg: true,
+        nonce: state.nonce,
+        networkDescriptor: state.networkDescriptor,
+        tokenName: state.name,
+        tokenSymbol: state.symbol,
+        tokenDecimals: state.decimals,
+        validators: accounts.slice(1, 5),
+      });
+
+      const { digest: digest3, claimData: claimData3, signatures: signatures3 } = await getValidClaim({
+        sender: state.sender,
+        senderSequence: state.senderSequence,
+        recipientAddress: state.recipient.address,
+        tokenAddress: state.token3.address,
+        amount: state.amount,
+        doublePeg: true,
+        nonce: state.nonce,
+        networkDescriptor: state.networkDescriptor,
+        tokenName: state.name,
+        tokenSymbol: state.symbol,
+        tokenDecimals: state.decimals,
+        validators: accounts.slice(1, 5),
+      });
+
+      const expectedAddress1 = ethers.utils.getContractAddress({ from: state.bridgeBank.address, nonce: 1 });
+      const expectedAddress2 = ethers.utils.getContractAddress({ from: state.bridgeBank.address, nonce: 2 });
+      const expectedAddress3 = ethers.utils.getContractAddress({ from: state.bridgeBank.address, nonce: 3 });
+
+      const tx = await state.cosmosBridge
+        .connect(userOne)
+        .batchSubmitProphecyClaimAggregatedSigs(
+          [digest, digest2, digest3],
+          [claimData, claimData2, claimData3],
+          [signatures, signatures2, signatures3]
+        );
+      const receipt = await tx.wait();
+      const sum = Number(receipt.gasUsed);
+      
+      if(gasProfiling.use) {
+        const numberOfClaimsInBatch = 3;
+        logGasDiff(`DoublePeg :: ${numberOfClaimsInBatch} Batched claims VS single claim:`, gasProfiling.current.newBb * numberOfClaimsInBatch, sum);
+      } else {
+        console.log("~~~~~~~~~~~~\nTotal: ", Number(receipt.gasUsed));
+      }
+
+      const newlyCreatedTokenAddress1 = await state.cosmosBridge.sourceAddressToDestinationAddress(state.token1.address);
+      expect(newlyCreatedTokenAddress1).to.be.equal(expectedAddress1);
+
+      const newlyCreatedTokenAddress2 = await state.cosmosBridge.sourceAddressToDestinationAddress(state.token2.address);
+      expect(newlyCreatedTokenAddress2).to.be.equal(expectedAddress2);
+
+      const newlyCreatedTokenAddress3 = await state.cosmosBridge.sourceAddressToDestinationAddress(state.token3.address);
+      expect(newlyCreatedTokenAddress3).to.be.equal(expectedAddress3);
     });
   });
 });

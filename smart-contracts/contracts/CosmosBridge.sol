@@ -183,9 +183,15 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
         require(sigs.length == claims.length, "INV_CLM_LEN");
         require(sigs.length == signatureData.length, "INV_SIG_LEN");
 
+        uint256 intermediateNonce = lastNonceSubmitted;
+        require(intermediateNonce + 1 == claims[0].nonce, "INV_ORD");
+
         for (uint256 i = 0; i < sigs.length; i++) {
+            intermediateNonce++;
             _submitProphecyClaimAggregatedSigs(sigs[i], claims[i], signatureData[i]);
         }
+
+        lastNonceSubmitted = intermediateNonce;
     }
 
     function submitProphecyClaimAggregatedSigs(
@@ -193,7 +199,13 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
         ClaimData calldata claimData,
         SignatureData[] calldata signatureData
     ) external {
+        uint256 previousNonce = lastNonceSubmitted;
+        require(previousNonce + 1 == claimData.nonce, "INV_ORD");
+
         _submitProphecyClaimAggregatedSigs(hashDigest, claimData, signatureData);
+
+        // update the nonce
+        lastNonceSubmitted = claimData.nonce;
     }
 
     function _submitProphecyClaimAggregatedSigs(
@@ -201,13 +213,6 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
         ClaimData calldata claimData,
         SignatureData[] calldata signatureData
     ) private {
-        uint256 previousNonce = lastNonceSubmitted;
-        require(
-            // assert nonce is correct
-            previousNonce + 1 == claimData.nonce,
-            "INV_ORD"
-        );
-
         uint256 prophecyID = getProphecyID(
             claimData.cosmosSender,
             claimData.cosmosSenderSequence,
@@ -218,7 +223,7 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
             claimData.nonce,
             claimData.networkDescriptor
         );
-
+        
         require(
             uint256(hashDigest) == prophecyID,
             "INV_DATA"
@@ -237,9 +242,6 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
         
         (bool dup, uint256 pow) = getSignedPowerAndFindDup(signatureData, hashDigest);
         require(!dup, "DUP_SIGNER");
-
-        // update the nonce
-        lastNonceSubmitted = claimData.nonce;
 
         require(getProphecyStatus(pow), "INV_POW");
 
