@@ -372,3 +372,52 @@ func (srv msgServer) SetFeeInfo(goCtx context.Context, msg *types.MsgSetFeeInfo)
 
 	return &types.MsgSetFeeInfoResponse{}, nil
 }
+
+func (srv msgServer) TokenMetadataAdd(goCtx context.Context, msg *types.TokenMetadataAddRequest) (*types.TokenMetadataAddResponse, error) {
+	ctx := sdk.UnwrapSDKContext(goCtx)
+	logger := srv.Keeper.Logger(ctx)
+
+	cosmosSender, err := sdk.AccAddressFromBech32(msg.CosmosSender)
+	if err != nil {
+		return nil, err
+	}
+
+	account := srv.Keeper.accountKeeper.GetAccount(ctx, cosmosSender)
+	if account == nil {
+		logger.Error("account is nil.", "CosmosSender", msg.CosmosSender)
+		return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.CosmosSender)
+	}
+
+	if !IsIBCToken(msg.Metadata.Name) {
+		logger.Error("token is not IBC cannot manually add", msg.Metadata)
+		return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidRequest, msg.Metadata.Name)
+	}
+
+	denom := srv.Keeper.AddTokenMetadata(ctx, *msg.Metadata)
+
+	return &types.TokenMetadataAddResponse{
+		Denom: denom,
+	}, nil
+}
+
+func (srv msgServer) TokenMetadataDelete(goCtx context.Context, msg *types.TokenMetadataDeleteRequest) (*types.TokenMetadataDeleteResponse, error) {
+	ctx := sdk.UnwrapSDKContext(goCtx)
+	logger := srv.Keeper.Logger(ctx)
+
+	cosmosSender, err := sdk.AccAddressFromBech32(msg.CosmosSender)
+	if err != nil {
+		return nil, err
+	}
+
+	account := srv.Keeper.accountKeeper.GetAccount(ctx, cosmosSender)
+	if account == nil {
+		logger.Error("account is nil.", "CosmosSender", msg.CosmosSender)
+		return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.CosmosSender)
+	}
+
+	success := srv.Keeper.DeleteTokenMetadata(ctx, msg.Denom)
+
+	return &types.TokenMetadataDeleteResponse{
+		Success: success,
+	}, nil
+}

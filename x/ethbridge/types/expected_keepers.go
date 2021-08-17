@@ -37,6 +37,7 @@ type OracleKeeper interface {
 
 type MetadataKeeper interface {
 	GetTokenMetadata(ctx sdk.Context, denomHash string) TokenMetadata
-	AddTokenMetadata(ctx sdk.Context, metadata TokenMetadata)
+	AddTokenMetadata(ctx sdk.Context, metadata TokenMetadata) string
+	DeleteTokenMetadata(ctx sdk.Context, denomHash string) bool
 	ExistsTokenMetadata(ctx sdk.Context, denomHash string) bool
 }

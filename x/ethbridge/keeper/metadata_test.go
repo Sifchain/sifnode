@@ -48,3 +48,17 @@ func TestExistsTokenMetadata(t *testing.T) {
 	result = keeper.ExistsTokenMetadata(ctx, denom)
 	require.Equal(t, expected, result)
 }
+
+func TestDeleteTokenMetadata(t *testing.T) {
+	ctx, keeper, _, _, _, _, _, _ := test.CreateTestKeepers(t, 0.7, []int64{3, 3}, "")
+	testData := testMetadata
+	denom := keeper.AddTokenMetadata(ctx, testData)
+	expected := false
+	result := keeper.DeleteTokenMetadata(ctx, denom)
+	require.Equal(t, expected, result)
+	testData.Name = "ibc/" + testData.Name
+	denom = keeper.AddTokenMetadata(ctx, testData)
+	expected = true
+	result = keeper.DeleteTokenMetadata(ctx, denom)
+	require.Equal(t, expected, result)
+}
