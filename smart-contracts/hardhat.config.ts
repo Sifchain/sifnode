@@ -34,6 +34,7 @@ const config: HardhatUserConfig = {
         mainnet: {
             url: mainnetUrl,
             accounts: [mainnetProxyAdminKey],
+            gas: 2000000
         }
     },
     solidity: {

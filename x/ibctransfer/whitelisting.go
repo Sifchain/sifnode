@@ -5,48 +5,149 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
-	transfer "github.com/cosmos/cosmos-sdk/x/ibc/applications/transfer"
 	transfertypes "github.com/cosmos/cosmos-sdk/x/ibc/applications/transfer/types"
 	channeltypes "github.com/cosmos/cosmos-sdk/x/ibc/core/04-channel/types"
 
-	"github.com/Sifchain/sifnode/x/ethbridge/types"
 	tokenregistrytypes "github.com/Sifchain/sifnode/x/tokenregistry/types"
 )
 
 func OnRecvPacketWhiteListed(
 	ctx sdk.Context,
-	sdkAppModule transfer.AppModule,
+	sdkTransferKeeper tokenregistrytypes.SDKTransferKeeper,
 	whitelistKeeper tokenregistrytypes.Keeper,
+	bankKeeper transfertypes.BankKeeper,
 	packet channeltypes.Packet,
 ) (*sdk.Result, []byte, error) {
-
 	var data transfertypes.FungibleTokenPacketData
 	if err := transfertypes.ModuleCdc.UnmarshalJSON(packet.GetData(), &data); err != nil {
 		return nil, nil, sdkerrors.Wrapf(sdkerrors.ErrUnknownRequest, "cannot unmarshal ICS-20 transfer packet data: %s", err.Error())
 	}
-
 	if !isRecvPacketAllowed(ctx, whitelistKeeper, packet, data) {
 		acknowledgement := channeltypes.NewErrorAcknowledgement(
 			sdkerrors.Wrapf(sdkerrors.ErrInvalidCoins, "denom not on whitelist").Error(),
 		)
-
 		ctx.EventManager().EmitEvent(
 			sdk.NewEvent(
 				transfertypes.EventTypePacket,
-				sdk.NewAttribute(sdk.AttributeKeyModule, types.ModuleName),
+				sdk.NewAttribute(sdk.AttributeKeyModule, transfertypes.ModuleName),
 				sdk.NewAttribute(transfertypes.AttributeKeyReceiver, data.Receiver),
 				sdk.NewAttribute(transfertypes.AttributeKeyDenom, data.Denom),
 				sdk.NewAttribute(transfertypes.AttributeKeyAmount, fmt.Sprintf("%d", data.Amount)),
 				sdk.NewAttribute(transfertypes.AttributeKeyAckSuccess, fmt.Sprintf("%t", false)),
 			),
 		)
-
 		return &sdk.Result{
 			Events: ctx.EventManager().Events().ToABCIEvents(),
 		}, acknowledgement.GetBytes(), nil
 	}
+	// get result of transfer receive
+	acknowledgement := channeltypes.NewResultAcknowledgement([]byte{byte(1)})
+	err := sdkTransferKeeper.OnRecvPacket(ctx, packet, data)
+	if err != nil {
+		acknowledgement = channeltypes.NewErrorAcknowledgement(err.Error())
+	}
+	ctx.EventManager().EmitEvent(
+		sdk.NewEvent(
+			transfertypes.EventTypePacket,
+			sdk.NewAttribute(sdk.AttributeKeyModule, transfertypes.ModuleName),
+			sdk.NewAttribute(transfertypes.AttributeKeyReceiver, data.Receiver),
+			sdk.NewAttribute(transfertypes.AttributeKeyDenom, data.Denom),
+			sdk.NewAttribute(transfertypes.AttributeKeyAmount, fmt.Sprintf("%d", data.Amount)),
+			sdk.NewAttribute(transfertypes.AttributeKeyAckSuccess, fmt.Sprintf("%t", err == nil)),
+		),
+	)
+	// NOTE: acknowledgement will be written synchronously during IBC handler execution.
+	recvResult := &sdk.Result{
+		Events: ctx.EventManager().Events().ToABCIEvents(),
+	}
+	resBytes := acknowledgement.GetBytes()
 
-	return sdkAppModule.OnRecvPacket(ctx, packet)
+	// if no error and packet is returning and needs conversion: convert
+	if err != nil && IsRecvPacketReturning(packet, data) && shouldConvertDecimals(ctx, whitelistKeeper, packet, data) {
+		ibcToken, convToken := convertDecimals(ctx, whitelistKeeper, packet, data)
+		recvResult, err = sendConvertRecvDenom(ctx, ibcToken, convToken, bankKeeper, data)
+	}
+	// otherwise return
+	return recvResult, resBytes, err
+}
+
+func shouldConvertDecimals(
+	ctx sdk.Context,
+	whitelistKeeper tokenregistrytypes.Keeper,
+	packet channeltypes.Packet,
+	data transfertypes.FungibleTokenPacketData,
+) bool {
+	// get token registry entry for received denom
+	denom := GetMintedDenomFromPacket(packet, data)
+	registryEntry := whitelistKeeper.GetRegistryEntry(ctx, denom)
+	// if decimals are greater than ibc decimals, we need to increase precision to convert them
+	return registryEntry.IbcDenom != "" && registryEntry.Decimals > registryEntry.IbcDecimals
+}
+
+func convertDecimals(
+	ctx sdk.Context,
+	whitelistKeeper tokenregistrytypes.Keeper,
+	packet channeltypes.Packet,
+	data transfertypes.FungibleTokenPacketData,
+) (sdk.Coin, sdk.Coin) {
+	// get token registry entry for received denom
+	denom := GetMintedDenomFromPacket(packet, data)
+	registryEntry := whitelistKeeper.GetRegistryEntry(ctx, denom)
+	// get the token amount from the packet data
+	decAmount := sdk.NewDecFromInt(sdk.NewIntFromUint64(data.Amount))
+	// calculate the conversion difference and increase precision
+	po := registryEntry.Decimals - registryEntry.IbcDecimals
+	convAmountDec := IncreasePrecision(decAmount, po)
+	convAmount := sdk.NewIntFromBigInt(convAmountDec.TruncateInt().BigInt())
+	// create converted and ibc tokens with corresponding denoms and amounts
+	convToken := sdk.NewCoin(registryEntry.Denom, convAmount)
+	ibcToken := sdk.NewCoin(denom, sdk.NewIntFromUint64(data.Amount))
+	return ibcToken, convToken
+}
+func sendConvertRecvDenom(
+	ctx sdk.Context,
+	ibcToken sdk.Coin,
+	convToken sdk.Coin,
+	bankKeeper transfertypes.BankKeeper,
+	data transfertypes.FungibleTokenPacketData,
+) (*sdk.Result, error) {
+	// decode the receiver address
+	receiver, err := sdk.AccAddressFromBech32(data.Receiver)
+	if err != nil {
+		return nil, err
+	}
+	// send ibcdenom coins from account to module
+	err = bankKeeper.SendCoinsFromAccountToModule(ctx, receiver, transfertypes.ModuleName, sdk.NewCoins(ibcToken))
+	if err != nil {
+		return nil, err
+	}
+	// send coins from module account to address
+	err = bankKeeper.SendCoinsFromModuleToAccount(ctx, transfertypes.ModuleName, receiver, sdk.NewCoins(convToken))
+	if err != nil {
+		return nil, err
+	}
+	// burn ibcdenom coins
+	err = bankKeeper.BurnCoins(ctx, transfertypes.ModuleName, sdk.NewCoins(ibcToken))
+	if err != nil {
+		return nil, err
+	}
+	ctx.EventManager().EmitEvent(
+		sdk.NewEvent(
+			transfertypes.EventTypePacket,
+			sdk.NewAttribute(sdk.AttributeKeyModule, transfertypes.ModuleName),
+			sdk.NewAttribute(transfertypes.AttributeKeyReceiver, data.Receiver),
+			sdk.NewAttribute(transfertypes.AttributeKeyDenom, convToken.Denom),
+			sdk.NewAttribute(transfertypes.AttributeKeyAmount, fmt.Sprintf("%d", convToken.Amount)),
+		),
+	)
+	return &sdk.Result{
+		Events: ctx.EventManager().Events().ToABCIEvents(),
+	}, nil
+}
+
+func IncreasePrecision(dec sdk.Dec, po int64) sdk.Dec {
+	p := sdk.NewDec(10).Power(uint64(po))
+	return dec.Mul(p)
 }
 
 func isRecvPacketAllowed(ctx sdk.Context, whitelistKeeper tokenregistrytypes.Keeper,
@@ -102,18 +203,14 @@ func GetMintedDenomFromPacket(packet channeltypes.Packet, data transfertypes.Fun
 }
 
 func IsRecvPacketReturning(packet channeltypes.Packet, data transfertypes.FungibleTokenPacketData) bool {
-	if transfertypes.ReceiverChainIsSource(packet.GetSourcePort(), packet.GetSourceChannel(), data.Denom) {
-		// token originated on sifchain and is now being returned. This is allowed
-		// For paths Sifchain -> X -> Sifchain return true
-		// For paths Sifchain -> X -> Y -> Sifchain this condition is not triggered
-		// No need to whitelist channel and port,
-		// we assume tokens will come back using the same channel they used to go across.
-		// If Sifchain and Chain X have two channels running between them,
-		// and Token A uses channel 1 to go from sifchain to chain X . It needs to use channel 1 to come back.
-		return true
-	}
-
-	return false
+	// Token originated on sifchain and is now being returned. This is allowed
+	// For paths Sifchain -> X -> Sifchain return true
+	// For paths Sifchain -> X -> Y -> Sifchain this condition is not triggered
+	// No need to whitelist channel and port,
+	// we assume tokens will come back using the same channel they used to go across.
+	// If Sifchain and Chain X have two channels running between them,
+	// and Token A uses channel 1 to go from sifchain to chain X . It needs to use channel 1 to come back.
+	return transfertypes.ReceiverChainIsSource(packet.GetSourcePort(), packet.GetSourceChannel(), data.Denom)
 }
 
 func IsWhitelisted(ctx sdk.Context, whitelistKeeper tokenregistrytypes.Keeper, denom string) bool {

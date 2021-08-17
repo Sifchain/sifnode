@@ -28,4 +28,6 @@ message RegistryEntry {
   string address = 11;
   string external_symbol = 12;
   string transfer_limit = 13;
+  string ibc_denom = 14;
+  int64 ibc_decimals = 15;
 }
