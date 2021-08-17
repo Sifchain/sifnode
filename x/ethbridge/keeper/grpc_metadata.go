@@ -21,10 +21,6 @@ func NewTokenMetadataServer(keeper Keeper) types.TokenMetadataServiceServer {
 	}
 }
 
-func IsMetadataAdmin() bool {
-	return false
-}
-
 func (srv metadataServer) Search(ctx context.Context, req *types.TokenMetadataSearchRequest) (*types.TokenMetadataSearchResponse, error) {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 
