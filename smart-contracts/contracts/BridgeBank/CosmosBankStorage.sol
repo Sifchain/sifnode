@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: Apache-2.0
 pragma solidity 0.8.0;
 
 contract CosmosBankStorage {
@@ -33,8 +34,13 @@ contract CosmosBankStorage {
     */
     mapping(string => string) private lowerToUpperTokens;
 
+    /**
+    * @notice network descriptor
+    */
+    uint256 public networkDescriptor;
+
     /*
     * @notice gap of storage for future upgrades
     */
-    uint256[100] private ____gap;
+    uint256[99] private ____gap;
 }

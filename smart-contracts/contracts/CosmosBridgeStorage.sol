@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: Apache-2.0
 pragma solidity 0.8.0;
 
 contract CosmosBridgeStorage {
@@ -58,8 +59,13 @@ contract CosmosBridgeStorage {
         uint256 amount;
     }
 
+    /**
+    * @notice network descriptor
+    */
+    uint256 public networkDescriptor;
+
     /*
     * @notice gap of storage for future upgrades
     */
-    uint256[99] private ____gap;
+    uint256[98] private ____gap;
 }

@@ -1,5 +1,4 @@
-const { upgradeProxy } = require('@openzeppelin/truffle-upgrades');
-const { multiTokenSetup } = require('./helpers/testFixture');
+const { setup } = require('./helpers/testFixture');
 const { upgrades } = require('hardhat');
 const { use, expect } = require('chai');
 
@@ -23,6 +22,7 @@ describe("CosmosBridge Upgrade", function () {
   let owner;
   let initialPowers;
   let initialValidators;
+  let networkDescriptor;
   let state;
   let pauser;
   let MockCosmosBridgeUpgrade;
@@ -36,39 +36,31 @@ describe("CosmosBridge Upgrade", function () {
     userOne = accounts[1];
     userTwo = accounts[2];
     userFour = accounts[3];
-    userThree = accounts[7].address;
+    userThree = accounts[7];
 
     owner = accounts[5];
     pauser = accounts[6];
 
     initialPowers = [25, 25, 25, 25];
     initialValidators = signerAccounts.slice(0, 4);
+    networkDescriptor = 1;
     MockCosmosBridgeUpgrade = await ethers.getContractFactory("MockCosmosBridgeUpgrade");
     state = {};
   });
 
   describe("CosmosBridge smart contract deployment", function () {
     beforeEach(async function () {
-
-      state.initialValidators = [
-        userOne.address,
-        userTwo.address,
-        userThree,
-        userFour.address
-      ];
-
-      state.initialPowers = [30, 20, 21, 29];
-
-      state = await multiTokenSetup(
-        state.initialValidators,
-        state.initialPowers,
+      state = await setup({
+        initialValidators: [userOne.address, userTwo.address, userThree.address, userFour.address],
+        initialPowers: [30, 20, 21, 29],
         operator,
         consensusThreshold,
         owner,
-        userOne,
-        userThree,
-        pauser.address
-      );
+        user: userOne,
+        recipient: userThree,
+        pauser,
+        networkDescriptor
+      });
 
       state.cosmosBridge = await upgrades.upgradeProxy(
           state.cosmosBridge.address,
@@ -106,7 +98,7 @@ describe("CosmosBridge Upgrade", function () {
       state.cosmosBridge.should.exist;
 
       await expect(
-        state.cosmosBridge.initialize(userFour.address, 50, state.initialValidators, state.initialPowers),
+        state.cosmosBridge.initialize(userFour.address, 50, state.initialValidators, state.initialPowers, state.networkDescriptor),
       ).to.be.revertedWith("Initialized");
     });
 

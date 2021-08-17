@@ -1,7 +1,6 @@
 const {
-  multiTokenSetup,
-  signHash,
-  getDigestNewProphecyClaim
+  setup,
+  getValidClaim
 } = require('./helpers/testFixture');
 
 const web3 = require("web3");
@@ -27,6 +26,7 @@ describe("Gas Cost Tests", function () {
   const consensusThreshold = 70;
   let initialPowers;
   let initialValidators;
+  let networkDescriptor;
   let state;
 
   before(async function() {
@@ -39,7 +39,7 @@ describe("Gas Cost Tests", function () {
     userFour = accounts[4];
 
     owner = accounts[5];
-    pauser = accounts[6].address;
+    pauser = accounts[6];
 
     initialPowers = [25, 25, 25, 25];
     initialValidators = [
@@ -48,20 +48,28 @@ describe("Gas Cost Tests", function () {
       userThree.address,
       userFour.address
     ];
+
+    networkDescriptor = 1;
   });
 
   beforeEach(async function () {
     // Deploy Valset contract
-    state = await multiTokenSetup(
+    state = await setup({
       initialValidators,
       initialPowers,
       operator,
       consensusThreshold,
       owner,
-      userOne,
-      userThree,
-      pauser
-    );
+      user: userOne,
+      recipient: userThree,
+      pauser,
+      networkDescriptor
+    });
+
+    // Add the token into white list
+    await state.bridgeBank.connect(operator)
+      .updateEthWhiteList(state.token1.address, true)
+      .should.be.fulfilled;
 
     // Lock tokens on contract
     await state.bridgeBank.connect(userOne).lock(
@@ -71,7 +79,7 @@ describe("Gas Cost Tests", function () {
     ).should.be.fulfilled;
   });
 
-  describe("Unlock Gas Cost With 4 Validators", function () {
+  describe("Gas Cost With 4 Validators", function () {
     it("should allow us to check the cost of submitting a prophecy claim lock", async function () {
       let balance = Number(await state.token1.balanceOf(state.recipient.address));
       expect(balance).to.be.equal(0);
@@ -81,40 +89,32 @@ describe("Gas Cost Tests", function () {
       expect(lastNonceSubmitted).to.be.equal(0);
 
       state.nonce = 1;
-      const digest = getDigestNewProphecyClaim([
-        state.sender,
-        state.senderSequence,
-        state.recipient.address,
-        state.token1.address,
-        state.amount,
-        false,
-        state.nonce
-      ]);
 
-      let validators = accounts.slice(1, 5);
-      const signatures = await signHash(validators, digest);
-      let sum = 0;
-
-      let claimData = {
-        cosmosSender: state.sender,
-        cosmosSenderSequence: state.senderSequence,
-        ethereumReceiver: state.recipient.address,
+      const { digest, claimData, signatures } = await getValidClaim({
+        sender: state.sender,
+        senderSequence: state.senderSequence,
+        recipientAddress: state.recipient.address,
         tokenAddress: state.token1.address,
         amount: state.amount,
         doublePeg: false,
-        nonce: state.nonce
-      };
+        nonce: state.nonce,
+        networkDescriptor: state.networkDescriptor,
+        tokenName: state.name,
+        tokenSymbol: state.symbol,
+        tokenDecimals: state.decimals,
+        validators: accounts.slice(1, 5),
+      });
 
-      let tx = await state.cosmosBridge
+      const tx = await state.cosmosBridge
         .connect(userOne)
         .submitProphecyClaimAggregatedSigs(
             digest,
             claimData,
             signatures
         );
-      let receipt = await tx.wait();
-      sum += Number(receipt.gasUsed);
+      const receipt = await tx.wait();
 
+      const sum = Number(receipt.gasUsed);
       console.log("~~~~~~~~~~~~\nTotal: ", sum);
 
       // Bridge claim should be completed
@@ -135,40 +135,28 @@ describe("Gas Cost Tests", function () {
       expect(lastNonceSubmitted).to.be.equal(0);
 
       state.nonce = 1;
-      const digest = getDigestNewProphecyClaim([
-        state.sender,
-        state.senderSequence,
-        state.recipient.address,
-        state.rowan.address,
-        state.amount,
-        false,
-        state.nonce
-      ]);
 
-      let validators = accounts.slice(1, 5);
-      const signatures = await signHash(validators, digest);
-      let sum = 0;
+      const { digest, claimData, signatures } = await getValidClaim({
+        sender: state.sender,
+        senderSequence: state.senderSequence,
+        recipientAddress: state.recipient.address,
+        tokenAddress: state.rowan.address,
+        amount: state.amount,
+        doublePeg: false,
+        nonce: state.nonce,
+        networkDescriptor: state.networkDescriptor,
+        tokenName: state.name,
+        tokenSymbol: state.symbol,
+        tokenDecimals: state.decimals,
+        validators: accounts.slice(1, 5),
+      });
 
-      let claimData = {
-          cosmosSender: state.sender,
-          cosmosSenderSequence: state.senderSequence,
-          ethereumReceiver: state.recipient.address,
-          tokenAddress: state.rowan.address,
-          amount: state.amount,
-          doublePeg: false,
-          nonce: state.nonce
-      };
-
-      let tx = await state.cosmosBridge
+      const tx = await state.cosmosBridge
         .connect(userOne)
-        .submitProphecyClaimAggregatedSigs(
-            digest,
-            claimData,
-            signatures
-        );
-      let receipt = await tx.wait();
-      sum += Number(receipt.gasUsed);
+        .submitProphecyClaimAggregatedSigs(digest, claimData, signatures);
+      const receipt = await tx.wait();
 
+      const sum = Number(receipt.gasUsed);
       console.log("~~~~~~~~~~~~\nTotal: ", sum);
 
       // Last nonce should now be 1
@@ -179,6 +167,41 @@ describe("Gas Cost Tests", function () {
       balance = Number(await state.rowan.balanceOf(state.recipient.address));
       expect(balance).to.be.equal(state.amount);
     });
+
+    it("should allow us to check the cost of creating a new BridgeToken", async function () {
+      state.nonce = 1;
+
+      const { digest, claimData, signatures } = await getValidClaim({
+        sender: state.sender,
+        senderSequence: state.senderSequence,
+        recipientAddress: state.recipient.address,
+        tokenAddress: state.token1.address,
+        amount: state.amount,
+        doublePeg: true,
+        nonce: state.nonce,
+        networkDescriptor: state.networkDescriptor,
+        tokenName: state.name,
+        tokenSymbol: state.symbol,
+        tokenDecimals: state.decimals,
+        validators: accounts.slice(1, 5),
+      });
+
+      const expectedAddress = ethers.utils.getContractAddress({ from: state.bridgeBank.address, nonce: 1 });
+
+      const tx = await state.cosmosBridge
+        .connect(userOne)
+        .submitProphecyClaimAggregatedSigs(
+            digest,
+            claimData,
+            signatures
+        );
+
+      const receipt = await tx.wait();
+      console.log("~~~~~~~~~~~~\nTotal: ", Number(receipt.gasUsed));
+
+      const newlyCreatedTokenAddress = await state.cosmosBridge.sourceAddressToDestinationAddress(state.token1.address);
+      expect(newlyCreatedTokenAddress).to.be.equal(expectedAddress);
+    });
   });
 });
 
@@ -186,13 +209,18 @@ describe("Gas Cost Tests", function () {
  * 
  * 
 Unlock Gas Cost With 4 Validators
-tx0  182434
+tx0  173978
 ~~~~~~~~~~~~
-Total:  182434
+Total:  173978
 
 Mint Gas Cost With 4 Validators
-tx0  198100
+tx0  179749
 ~~~~~~~~~~~~
-Total:  198100
+Total:  179749
+
+Create new BridgeToken Gas Cost With 4 Validators
+tx0  1162769
+~~~~~~~~~~~~
+Total:  1162769
  * 
  */
