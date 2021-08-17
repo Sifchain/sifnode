@@ -23,11 +23,13 @@ async function main() {
 
     container.register(HardhatRuntimeEnvironmentToken, {useValue: hardhat})
 
-    container.register(DeploymentName, {useValue: requiredEnvVar("DEPLOYMENT_NAME")})
+    const deploymentName = requiredEnvVar("DEPLOYMENT_NAME")
+
+    container.register(DeploymentName, {useValue: deploymentName})
 
     switch (hardhat.network.name) {
         case "ropsten":
-            await setupRopstenDeployment(container, hardhat, "sifchain-testnet-042-ibc")
+            await setupRopstenDeployment(container, hardhat, deploymentName)
             break
         case "mainnet":
             await setupSifchainMainnetDeployment(container, hardhat)
