@@ -420,6 +420,42 @@ describe("Gas Cost Tests", function () {
       const newlyCreatedTokenAddress3 = await state.cosmosBridge.sourceAddressToDestinationAddress(state.token3.address);
       expect(newlyCreatedTokenAddress3).to.be.equal(expectedAddress3);
     });
+
+    it("should allow us to check the cost of adding a token to Eth Whitelist", async function () {
+      // First, remove token1 from the whitelist so that we can add it again
+      await state.bridgeBank.connect(operator)
+        .updateEthWhiteList(state.token1.address, false)
+        .should.be.fulfilled;
+
+      // Measure gas costs of adding a single token into Eth WhiteList
+      const tx = await state.bridgeBank.connect(operator)
+        .updateEthWhiteList(state.token1.address, true);
+      
+      const receipt = await tx.wait();
+      gasProfiling.current.addToEthWhiteList = Number(receipt.gasUsed);
+
+      // Now, we remove token1 from the whitelist to be able to add it again in a batch
+      await state.bridgeBank.connect(operator)
+        .updateEthWhiteList(state.token1.address, false)
+        .should.be.fulfilled;
+      
+      const batchTx = await state.bridgeBank.connect(operator)
+        .batchUpdateEthWhiteList(
+          [state.token1.address, state.token2.address, state.token3.address],
+          [true, true, true]
+        );
+
+      const batchReceipt = await batchTx.wait();
+      const sum = Number(batchReceipt.gasUsed);
+
+      if(gasProfiling.use) {
+        const numberOfTokensInBatch = 3;
+        logGasDiff(
+          `Batch Whitelist :: ${numberOfTokensInBatch} Batched VS single:`,
+          gasProfiling.current.addToEthWhiteList * numberOfTokensInBatch, sum
+        );
+      }
+    });
   });
 });
 

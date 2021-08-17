@@ -229,11 +229,11 @@ async function addTokenToEthWhitelist(state, tokenAddress) {
 }
 
 async function batchAddTokensToEthWhitelist(state, tokenAddressList) {
-  // TODO: once we implement a batch function in our smart contracts, call it directly
-  for (let i = 0; i < tokenAddressList.length; i++) {
-    const tokenAddress = tokenAddressList[i];
-    await addTokenToEthWhitelist(state, tokenAddress);
-  }
+  const inList = Array(tokenAddressList.length).fill(true);
+
+  await state.bridgeBank.connect(state.operator)
+    .batchUpdateEthWhiteList(tokenAddressList, inList)
+    .should.be.fulfilled;
 }
 
 /**

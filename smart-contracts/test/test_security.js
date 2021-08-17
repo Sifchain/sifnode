@@ -628,5 +628,13 @@ describe("Security Test", function () {
         .updateEthWhiteList(expectedAddress, true))
         .to.be.revertedWith('already in cosmos whitelist');
     });
+
+    it("should not allow the operator to batch add tokens to Eth whitelist if the lists length don't match", async function () {
+      await expect(state.bridgeBank.connect(operator)
+        .batchUpdateEthWhiteList(
+          [state.token2.address, state.token3.address],
+          [true]
+        )).to.be.revertedWith('INV_LEN');
+    });
   });
 });

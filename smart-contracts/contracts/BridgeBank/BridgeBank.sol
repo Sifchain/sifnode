@@ -155,6 +155,20 @@ contract BridgeBank is BankStorage,
     }
 
     /*
+     * @dev: Set N token addresses in Eth whitelist
+     *
+     * @param _tokens: list of ERC 20's addresses
+     * @param _inList: list of booleans for each address: set _tokens[i] in list or not
+     */
+    function batchUpdateEthWhiteList(address[] calldata _tokens, bool[] calldata _inList) public onlyOperator {
+        require(_tokens.length == _inList.length, "INV_LEN");
+
+        for (uint256 i = 0; i < _tokens.length; i++) {
+            updateEthWhiteList(_tokens[i], _inList[i]);
+        }
+    }
+
+    /*
      * @dev: Set the token address in whitelist
      *
      * @param token: ERC 20's address
