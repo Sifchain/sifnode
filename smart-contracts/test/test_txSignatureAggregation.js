@@ -13,7 +13,7 @@ const BigNumber = web3.BigNumber;
 // Set `use` to `true` to compare a new implementation with the previous gas costs;
 // Please set the previous gas costs accordingly in this object
 const gasProfiling = {
-  use: true,
+  use: false,
   lock: 173978,
   mint: 179749,
   newBb: 1162769,
