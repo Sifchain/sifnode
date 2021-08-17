@@ -26,7 +26,7 @@ require("chai")
   .use(require("chai-bignumber")(BigNumber))
   .should();
 
-describe.only("Gas Cost Tests", function () {
+describe("Gas Cost Tests", function () {
   let userOne;
   let userTwo;
   let userThree;
