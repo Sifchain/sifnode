@@ -47,8 +47,26 @@ func (k Keeper) AddTokenMetadata(ctx sdk.Context, metadata types.TokenMetadata) 
 	return denomHash
 }
 
+func (k Keeper) AddIBCTokenMetadata(ctx sdk.Context, metadata types.TokenMetadata, cosmosSender sdk.AccAddress) string {
+	logger := k.Logger(ctx)
+	if !IsIBCToken(metadata.Name) {
+		logger.Error("Token is not IBC cannot use this keeper")
+		return ""
+	}
+
+	if !k.oracleKeeper.IsAdminAccount(ctx, cosmosSender) {
+		logger.Error("cosmos sender is not admin account.")
+		return ""
+	}
+
+	denom := k.AddTokenMetadata(ctx, metadata)
+
+	return denom
+}
+
 // Deletes token metadata for IBC tokens only; returns true on success
-func (k Keeper) DeleteTokenMetadata(ctx sdk.Context, denomHash string) bool {
+func (k Keeper) DeleteTokenMetadata(ctx sdk.Context, cosmosSender sdk.AccAddress, denomHash string) bool {
+	logger := k.Logger(ctx)
 	// Check if metadata exists first
 	if !k.ExistsTokenMetadata(ctx, denomHash) {
 		return false
@@ -58,6 +76,12 @@ func (k Keeper) DeleteTokenMetadata(ctx sdk.Context, denomHash string) bool {
 	if !IsIBCToken(metadata.Name) {
 		return false
 	}
+
+	if !k.oracleKeeper.IsAdminAccount(ctx, cosmosSender) {
+		logger.Error("cosmos sender is not admin account.")
+		return false
+	}
+
 	// If we made it this far, we have an IBC token, lets delete it
 	key := []byte(denomHash)
 	store := ctx.KVStore(k.storeKey)

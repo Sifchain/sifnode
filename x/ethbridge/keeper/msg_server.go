@@ -393,7 +393,7 @@ func (srv msgServer) TokenMetadataAdd(goCtx context.Context, msg *types.TokenMet
 		return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidRequest, msg.Metadata.Name)
 	}
 
-	denom := srv.Keeper.AddTokenMetadata(ctx, *msg.Metadata)
+	denom := srv.Keeper.AddIBCTokenMetadata(ctx, *msg.Metadata, cosmosSender)
 
 	return &types.TokenMetadataAddResponse{
 		Denom: denom,
@@ -415,7 +415,7 @@ func (srv msgServer) TokenMetadataDelete(goCtx context.Context, msg *types.Token
 		return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.CosmosSender)
 	}
 
-	success := srv.Keeper.DeleteTokenMetadata(ctx, msg.Denom)
+	success := srv.Keeper.DeleteTokenMetadata(ctx, cosmosSender, msg.Denom)
 
 	return &types.TokenMetadataDeleteResponse{
 		Success: success,
