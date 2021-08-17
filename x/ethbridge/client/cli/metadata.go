@@ -72,10 +72,11 @@ func GetCmdAddIBCTokenMetadata() *cobra.Command {
 
 			tokenAddress := types.NewEthereumAddress(tokenAddressRaw)
 
-			tokenDecimals, err := strconv.Atoi(args[4])
+			tokenDecimalsRaw, err := strconv.ParseInt(args[4], 10, 32)
 			if err != nil {
 				return errors.New("Error parsing token decimals, must be base 10 number")
 			}
+			tokenDecimals := int32(tokenDecimalsRaw)
 
 			networkDescriptorRaw, err := strconv.Atoi(args[5])
 			if err != nil {
@@ -83,7 +84,7 @@ func GetCmdAddIBCTokenMetadata() *cobra.Command {
 			}
 			networkDescriptor := oracletypes.NetworkDescriptor(networkDescriptorRaw)
 
-			msg := types.NewTokenMetadata(cosmosSender, tokenName, tokenSymbol, int32(tokenDecimals), tokenAddress, networkDescriptor)
+			msg := types.NewTokenMetadata(cosmosSender, tokenName, tokenSymbol, tokenDecimals, tokenAddress, networkDescriptor)
 			if err := msg.ValidateBasic(); err != nil {
 				return err
 			}
