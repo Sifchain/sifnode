@@ -127,7 +127,7 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
     function getSignedPowerAndFindDup(
         SignatureData[] calldata _validators,
         bytes32 hashDigest
-    ) private view returns(bool dup, uint256 pow) {
+    ) private view returns(bool, uint256 pow) {
         for (uint256 i = 0; i < _validators.length; i++) {
             SignatureData memory validator = _validators[i];
 
@@ -147,8 +147,7 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
 
             for (uint256 j = i + 1; j < _validators.length; j++) {
                 if (validator.signer == _validators[j].signer) {
-                    dup = true;
-                    return (dup, pow);
+                    return (true, pow);
                 }
             }
         }
