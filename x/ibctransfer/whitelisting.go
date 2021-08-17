@@ -98,7 +98,7 @@ func convertDecimals(
 	// calculate the conversion difference and increase precision
 	po := registryEntry.Decimals - registryEntry.IbcDecimals
 	convAmountDec := IncreasePrecision(decAmount, po)
-	convAmount := sdk.NewIntFromBigInt(convAmountDec.RoundInt().BigInt())
+	convAmount := sdk.NewIntFromBigInt(convAmountDec.TruncateInt().BigInt())
 	// create converted and ibc tokens with corresponding denoms and amounts
 	convToken := sdk.NewCoin(registryEntry.Denom, convAmount)
 	ibcToken := sdk.NewCoin(denom, sdk.NewIntFromUint64(data.Amount))

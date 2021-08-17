@@ -42,11 +42,14 @@ func (srv msgServer) Transfer(goCtx context.Context, msg *types.MsgTransfer) (*t
 		decAmount := sdk.NewDecFromInt(msg.Token.Amount)
 		convAmountDec := ReducePrecision(decAmount, po)
 
-		convAmount := sdk.NewIntFromBigInt(convAmountDec.RoundInt().BigInt())
+		convAmount := sdk.NewIntFromBigInt(convAmountDec.TruncateInt().BigInt())
 		// create converted and sifchain tokens with corresponding denoms and amounts
 		convToken := sdk.NewCoin(registryEntry.IbcDenom, convAmount)
+		// increase convAmount precision to ensure amount deducted from address is the same that gets sent
+		tokenAmountDec := IncreasePrecision(convAmountDec, po)
+		tokenAmount := sdk.NewIntFromBigInt(tokenAmountDec.TruncateInt().BigInt())
+		token := sdk.NewCoin(msg.Token.Denom, tokenAmount)
 		// send coins from account to module
-		token := sdk.NewCoin(msg.Token.Denom, msg.Token.Amount)
 		err = srv.bankKeeper.SendCoinsFromAccountToModule(ctx, sender, types.ModuleName, sdk.NewCoins(token))
 		if err != nil {
 			return nil, err
@@ -65,6 +68,11 @@ func (srv msgServer) Transfer(goCtx context.Context, msg *types.MsgTransfer) (*t
 	}
 
 	return srv.sdkMsgServer.Transfer(goCtx, msg)
+}
+
+func IncreasePrecision(dec sdk.Dec, po int64) sdk.Dec {
+	p := sdk.NewDec(10).Power(uint64(po))
+	return dec.Mul(p)
 }
 
 func ReducePrecision(dec sdk.Dec, po int64) sdk.Dec {
