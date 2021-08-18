@@ -24,9 +24,9 @@ type TransferTestSuite struct {
 }
 
 func (suite *TransferTestSuite) SetupTest() {
-	suite.chainA = NewTestChain(suite.t, "1")
-	suite.chainB = NewTestChain(suite.t, "2")
-	suite.chainC = NewTestChain(suite.t, "3")
+	_, suite.chainA = CreateTestChain(suite.t, "1", false)
+	_, suite.chainB = CreateTestChain(suite.t, "2", false)
+	_, suite.chainC = CreateTestChain(suite.t, "3", false)
 
 	chains := make(map[string]*TestChain)
 	chains[suite.chainA.ChainID] = suite.chainA
