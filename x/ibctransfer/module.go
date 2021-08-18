@@ -132,12 +132,13 @@ func (am AppModule) OnTimeoutPacket(ctx sdk.Context, packet types.Packet) (*sdk.
 	return OnTimeoutPacketConvert(ctx, am.sdkTransferKeeper, am.whitelistKeeper, am.bankKeeper, packet)
 }
 
-func NewAppModule(sdkTransferKeeper sdktransferkeeper.Keeper, whitelistKeeper tokenregistrytypes.Keeper, cdc codec.BinaryMarshaler) AppModule {
+func NewAppModule(sdkTransferKeeper sdktransferkeeper.Keeper, whitelistKeeper tokenregistrytypes.Keeper, bankKeeper bankkeeper.Keeper, cdc codec.BinaryMarshaler) AppModule {
 	return AppModule{
 		AppModuleBasic: AppModuleBasic{
 			cosmosAppModule: transfer.NewAppModule(sdkTransferKeeper),
 		},
 		sdkTransferKeeper: sdkTransferKeeper,
+		bankKeeper:        bankKeeper,
 		whitelistKeeper:   whitelistKeeper,
 		cdc:               cdc,
 	}
@@ -149,7 +150,7 @@ func (am AppModule) LegacyQuerierHandler(amino *codec.LegacyAmino) sdk.Querier {
 }
 
 func (am AppModule) RegisterServices(cfg module.Configurator) {
-	sdktransfertypes.RegisterMsgServer(cfg.MsgServer(), keeper.NewMsgServerImpl())
+	sdktransfertypes.RegisterMsgServer(cfg.MsgServer(), keeper.NewMsgServerImpl(am.sdkTransferKeeper, am.bankKeeper, am.whitelistKeeper))
 	sdktransfertypes.RegisterQueryServer(cfg.QueryServer(), am.sdkTransferKeeper)
 }
 

@@ -21,8 +21,12 @@ type msgServer struct {
 
 // NewMsgServerImpl returns an implementation of the bank MsgServer interface
 // for the provided Keeper.
-func NewMsgServerImpl( /* bankKeeper, tokenRegistryKeeper */ ) types.MsgServer {
-	return &msgServer{}
+func NewMsgServerImpl(sdkMsgServer types.MsgServer, bankKeeper bankkeeper.Keeper, tokenRegistryKeeper tokenregistrytypes.Keeper) types.MsgServer {
+	return &msgServer{
+		sdkMsgServer:        sdkMsgServer,
+		bankKeeper:          bankKeeper,
+		tokenRegistryKeeper: tokenRegistryKeeper,
+	}
 }
 
 // Transfer defines a rpc handler method for MsgTransfer.
