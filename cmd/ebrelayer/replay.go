@@ -128,7 +128,7 @@ func RunReplayCosmosBurnLockCmd(cmd *cobra.Command, args []string) error {
 	// Initialize new Cosmos event listener
 	cosmosSub := relayer.NewCosmosSub(oracletypes.NetworkDescriptor(networkDescriptor),
 		privateKey, tendermintNode, web3Provider, contractAddress, nil, cliContext,
-		validatorMoniker, true, sugaredLogger)
+		validatorMoniker, sugaredLogger)
 
 	cosmosSub.ReplayCosmosBurnLock(txFactory)
 
@@ -189,7 +189,7 @@ func RunReplayCosmosSignatureAggregationCmd(cmd *cobra.Command, args []string) e
 	// Initialize new Cosmos event listener
 	cosmosSub := relayer.NewCosmosSub(oracletypes.NetworkDescriptor(networkDescriptor),
 		privateKey, tendermintNode, web3Provider, contractAddress, nil, cliContext,
-		validatorMoniker, true, sugaredLogger)
+		validatorMoniker, sugaredLogger)
 
 	cosmosSub.ReplaySignatureAggregation(txFactory)
 

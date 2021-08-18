@@ -49,12 +49,11 @@ type CosmosSub struct {
 	RegistryContractAddress common.Address
 	CliContext              client.Context
 	ValidatorName           string
-	SignatureAggregator     bool
 }
 
 // NewCosmosSub initializes a new CosmosSub
 func NewCosmosSub(networkDescriptor oracletypes.NetworkDescriptor, privateKey *ecdsa.PrivateKey, tmProvider, ethProvider string, registryContractAddress common.Address,
-	db *leveldb.DB, cliContext client.Context, validatorName string, signatureAggregator bool, sugaredLogger *zap.SugaredLogger) CosmosSub {
+	db *leveldb.DB, cliContext client.Context, validatorName string, sugaredLogger *zap.SugaredLogger) CosmosSub {
 
 	return CosmosSub{
 		NetworkDescriptor:       networkDescriptor,
@@ -64,7 +63,6 @@ func NewCosmosSub(networkDescriptor oracletypes.NetworkDescriptor, privateKey *e
 		RegistryContractAddress: registryContractAddress,
 		DB:                      db,
 		CliContext:              cliContext,
-		SignatureAggregator:     signatureAggregator,
 		ValidatorName:           validatorName,
 		SugaredLogger:           sugaredLogger,
 	}
@@ -170,16 +168,14 @@ func (sub CosmosSub) Start(txFactory tx.Factory, completionEvent *sync.WaitGroup
 						switch claimType {
 						case types.MsgBurn, types.MsgLock:
 							// the relayer for signature aggregator not handle burn and lock
-							if !sub.SignatureAggregator {
-								cosmosMsg, err := txs.BurnLockEventToCosmosMsg(event.GetAttributes(), sub.SugaredLogger)
-								if err != nil {
-									sub.SugaredLogger.Errorw("sifchain client failed in get burn lock message from event.",
-										errorMessageKey, err.Error())
-									continue
-								}
-								if cosmosMsg.NetworkDescriptor == sub.NetworkDescriptor {
-									sub.handleBurnLockMsg(txFactory, cosmosMsg)
-								}
+							cosmosMsg, err := txs.BurnLockEventToCosmosMsg(event.GetAttributes(), sub.SugaredLogger)
+							if err != nil {
+								sub.SugaredLogger.Errorw("sifchain client failed in get burn lock message from event.",
+									errorMessageKey, err.Error())
+								continue
+							}
+							if cosmosMsg.NetworkDescriptor == sub.NetworkDescriptor {
+								sub.handleBurnLockMsg(txFactory, cosmosMsg)
 							}
 						}
 					}

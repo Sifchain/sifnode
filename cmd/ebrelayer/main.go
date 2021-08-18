@@ -233,7 +233,6 @@ func RunInitRelayerCmd(cmd *cobra.Command, args []string) error {
 		db,
 		cliContext,
 		validatorMoniker,
-		true,
 		sugaredLogger)
 
 	waitForAll := sync.WaitGroup{}
@@ -351,7 +350,6 @@ func RunInitWitnessCmd(cmd *cobra.Command, args []string) error {
 		db,
 		cliContext,
 		validatorMoniker,
-		false,
 		sugaredLogger)
 
 	waitForAll := sync.WaitGroup{}
