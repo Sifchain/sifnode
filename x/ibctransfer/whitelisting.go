@@ -71,6 +71,116 @@ func OnRecvPacketWhiteListed(
 	return recvResult, resBytes, err
 }
 
+func OnAcknowledgementPacketConvert(
+	ctx sdk.Context,
+	sdkTransferKeeper tokenregistrytypes.SDKTransferKeeper,
+	whitelistKeeper tokenregistrytypes.Keeper,
+	bankKeeper transfertypes.BankKeeper,
+	packet channeltypes.Packet,
+	acknowledgement []byte,
+) (*sdk.Result, error) {
+	var ack channeltypes.Acknowledgement
+	if err := transfertypes.ModuleCdc.UnmarshalJSON(acknowledgement, &ack); err != nil {
+		return nil, sdkerrors.Wrapf(sdkerrors.ErrUnknownRequest, "cannot unmarshal ICS-20 transfer packet acknowledgement: %v", err)
+	}
+	var data transfertypes.FungibleTokenPacketData
+	if err := transfertypes.ModuleCdc.UnmarshalJSON(packet.GetData(), &data); err != nil {
+		return nil, sdkerrors.Wrapf(sdkerrors.ErrUnknownRequest, "cannot unmarshal ICS-20 transfer packet data: %s", err.Error())
+	}
+
+	if err := sdkTransferKeeper.OnAcknowledgementPacket(ctx, packet, data, ack); err != nil {
+		return nil, err
+	}
+
+	ctx.EventManager().EmitEvent(
+		sdk.NewEvent(
+			transfertypes.EventTypePacket,
+			sdk.NewAttribute(sdk.AttributeKeyModule, transfertypes.ModuleName),
+			sdk.NewAttribute(transfertypes.AttributeKeyReceiver, data.Receiver),
+			sdk.NewAttribute(transfertypes.AttributeKeyDenom, data.Denom),
+			sdk.NewAttribute(transfertypes.AttributeKeyAmount, fmt.Sprintf("%d", data.Amount)),
+			sdk.NewAttribute(transfertypes.AttributeKeyAck, fmt.Sprintf("%v", ack)),
+		),
+	)
+
+	switch resp := ack.Response.(type) {
+	case *channeltypes.Acknowledgement_Result:
+		ctx.EventManager().EmitEvent(
+			sdk.NewEvent(
+				transfertypes.EventTypePacket,
+				sdk.NewAttribute(transfertypes.AttributeKeyAckSuccess, string(resp.Result)),
+			),
+		)
+	// if acknowledgement error then a refund was processed so we must check if conversion is necessary
+	case *channeltypes.Acknowledgement_Error:
+		ctx.EventManager().EmitEvent(
+			sdk.NewEvent(
+				transfertypes.EventTypePacket,
+				sdk.NewAttribute(transfertypes.AttributeKeyAckError, resp.Error),
+			),
+		)
+		// if sender is source check for conversion
+		if transfertypes.SenderChainIsSource(packet.GetSourcePort(), packet.GetSourceChannel(), data.Denom) {
+			// if needs conversion, convert and send
+			if shouldConvertDecimals(ctx, whitelistKeeper, packet, data) {
+				ibcToken, convToken := convertDecimals(ctx, whitelistKeeper, packet, data)
+				recvResult, err := sendConvertRecvDenom(ctx, ibcToken, convToken, bankKeeper, data)
+				if err != nil {
+					return nil, err
+				}
+				return recvResult, nil
+			}
+		}
+	}
+
+	return &sdk.Result{
+		Events: ctx.EventManager().Events().ToABCIEvents(),
+	}, nil
+}
+
+func OnTimeoutPacketConvert(
+	ctx sdk.Context,
+	sdkTransferKeeper tokenregistrytypes.SDKTransferKeeper,
+	whitelistKeeper tokenregistrytypes.Keeper,
+	bankKeeper transfertypes.BankKeeper,
+	packet channeltypes.Packet,
+) (*sdk.Result, error) {
+	var data transfertypes.FungibleTokenPacketData
+	if err := transfertypes.ModuleCdc.UnmarshalJSON(packet.GetData(), &data); err != nil {
+		return nil, sdkerrors.Wrapf(sdkerrors.ErrUnknownRequest, "cannot unmarshal ICS-20 transfer packet data: %s", err.Error())
+	}
+	// refund tokens
+	if err := sdkTransferKeeper.OnTimeoutPacket(ctx, packet, data); err != nil {
+		return nil, err
+	}
+
+	ctx.EventManager().EmitEvent(
+		sdk.NewEvent(
+			transfertypes.EventTypeTimeout,
+			sdk.NewAttribute(sdk.AttributeKeyModule, transfertypes.ModuleName),
+			sdk.NewAttribute(transfertypes.AttributeKeyRefundReceiver, data.Sender),
+			sdk.NewAttribute(transfertypes.AttributeKeyRefundDenom, data.Denom),
+			sdk.NewAttribute(transfertypes.AttributeKeyRefundAmount, fmt.Sprintf("%d", data.Amount)),
+		),
+	)
+	// if sender is source check for conversion
+	if transfertypes.SenderChainIsSource(packet.GetSourcePort(), packet.GetSourceChannel(), data.Denom) {
+		// if needs conversion, convert and send
+		if shouldConvertDecimals(ctx, whitelistKeeper, packet, data) {
+			ibcToken, convToken := convertDecimals(ctx, whitelistKeeper, packet, data)
+			recvResult, err := sendConvertRecvDenom(ctx, ibcToken, convToken, bankKeeper, data)
+			if err != nil {
+				return nil, err
+			}
+			return recvResult, nil
+		}
+	}
+
+	return &sdk.Result{
+		Events: ctx.EventManager().Events().ToABCIEvents(),
+	}, nil
+}
+
 func shouldConvertDecimals(
 	ctx sdk.Context,
 	whitelistKeeper tokenregistrytypes.Keeper,

@@ -125,11 +125,13 @@ func (am AppModule) OnRecvPacket(ctx sdk.Context, packet types.Packet) (*sdk.Res
 }
 
 func (am AppModule) OnAcknowledgementPacket(ctx sdk.Context, packet types.Packet, acknowledgement []byte) (*sdk.Result, error) {
-	return am.cosmosAppModule.OnAcknowledgementPacket(ctx, packet, acknowledgement)
+	// return am.cosmosAppModule.OnAcknowledgementPacket(ctx, packet, acknowledgement)
+	return OnAcknowledgementPacketConvert(ctx, am.sdkTransferKeeper, am.whitelistKeeper, am.bankKeeper, packet, acknowledgement)
 }
 
 func (am AppModule) OnTimeoutPacket(ctx sdk.Context, packet types.Packet) (*sdk.Result, error) {
-	return am.cosmosAppModule.OnTimeoutPacket(ctx, packet)
+	// return am.cosmosAppModule.OnTimeoutPacket(ctx, packet)
+	return OnTimeoutPacketConvert(ctx, am.sdkTransferKeeper, am.whitelistKeeper, am.bankKeeper, packet)
 }
 
 func NewAppModule(sdkTransferKeeper sdktransferkeeper.Keeper, whitelistKeeper tokenregistrytypes.Keeper, cdc codec.BinaryMarshaler) AppModule {

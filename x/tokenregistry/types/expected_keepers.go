@@ -22,4 +22,6 @@ type Keeper interface {
 
 type SDKTransferKeeper interface {
 	OnRecvPacket(ctx sdk.Context, packet channeltypes.Packet, data transferTypes.FungibleTokenPacketData) error
+	OnAcknowledgementPacket(ctx sdk.Context, packet channeltypes.Packet, data transferTypes.FungibleTokenPacketData, ack channeltypes.Acknowledgement) error
+	OnTimeoutPacket(ctx sdk.Context, packet channeltypes.Packet, data transferTypes.FungibleTokenPacketData) error
 }
