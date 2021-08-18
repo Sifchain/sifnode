@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"context"
+	"fmt"
 
 	tokenregistrytypes "github.com/Sifchain/sifnode/x/tokenregistry/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -27,16 +28,14 @@ func NewMsgServerImpl( /* bankKeeper, tokenRegistryKeeper */ ) types.MsgServer {
 // Transfer defines a rpc handler method for MsgTransfer.
 func (srv msgServer) Transfer(goCtx context.Context, msg *types.MsgTransfer) (*types.MsgTransferResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
-
-	sender, err := sdk.AccAddressFromBech32(msg.Sender)
-	if err != nil {
-		return nil, err
-	}
-
 	// get token registry entry for sent token
 	registryEntry := srv.tokenRegistryKeeper.GetDenom(ctx, msg.Token.Denom)
 	// check if registry entry has an IBC decimal field
 	if registryEntry.IbcDenom != "" && registryEntry.Decimals > registryEntry.IbcDecimals {
+		sender, err := sdk.AccAddressFromBech32(msg.Sender)
+		if err != nil {
+			return nil, err
+		}
 		// calculate the conversion difference and reduce precision
 		po := registryEntry.Decimals - registryEntry.IbcDecimals
 		decAmount := sdk.NewDecFromInt(msg.Token.Amount)
@@ -64,9 +63,24 @@ func (srv msgServer) Transfer(goCtx context.Context, msg *types.MsgTransfer) (*t
 		if err != nil {
 			return nil, err
 		}
-		msg.Token = convToken
-	}
 
+		ctx.EventManager().EmitEvent(
+			sdk.NewEvent(
+				tokenregistrytypes.EventTypeCovertTransfer,
+				sdk.NewAttribute(sdk.AttributeKeyModule, types.ModuleName),
+				sdk.NewAttribute(tokenregistrytypes.AttributeKeySentAmount, fmt.Sprintf("%d", token.Amount)),
+				sdk.NewAttribute(tokenregistrytypes.AttributeKeySentDenom, token.Denom),
+				sdk.NewAttribute(tokenregistrytypes.AttributeKeyConvertAmount, fmt.Sprintf("%d", convToken.Amount)),
+				sdk.NewAttribute(tokenregistrytypes.AttributeKeyConvertDenom, convToken.Denom),
+			),
+		)
+
+		convMsg := types.NewMsgTransfer(
+			msg.SourcePort, msg.SourceChannel, convToken, sender, msg.Receiver, msg.TimeoutHeight, msg.TimeoutTimestamp,
+		)
+		convCtx := sdk.WrapSDKContext(ctx)
+		return srv.sdkMsgServer.Transfer(convCtx, convMsg)
+	}
 	return srv.sdkMsgServer.Transfer(goCtx, msg)
 }
 
