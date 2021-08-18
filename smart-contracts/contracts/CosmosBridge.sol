@@ -88,14 +88,17 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
     }
 
     function getProphecyID(
-        bytes calldata cosmosSender,
+        bytes memory cosmosSender,
         uint256 cosmosSenderSequence,
         address payable ethereumReceiver,
         address tokenAddress,
         uint256 amount,
         bool doublePeg,
         uint128 nonce,
-        uint256 _networkDescriptor
+        uint256 _networkDescriptor,
+        string memory tokenName,
+        string memory tokenSymbol,
+        uint8 tokenDecimals
     ) public pure returns (uint256) {
         return uint256(
             keccak256(
@@ -107,12 +110,15 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
                     amount,
                     doublePeg,
                     nonce,
-                    _networkDescriptor
+                    _networkDescriptor,
+                    tokenName,
+                    tokenSymbol,
+                    tokenDecimals
                 )
             )
         );
     }
-
+    
     function verifySignature(
         address signer,
         bytes32 hashDigest,
@@ -209,7 +215,7 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
 
     function _submitProphecyClaimAggregatedSigs(
         bytes32 hashDigest,
-        ClaimData calldata claimData,
+        ClaimData memory claimData,
         SignatureData[] calldata signatureData
     ) private {
         uint256 prophecyID = getProphecyID(
@@ -220,13 +226,13 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
             claimData.amount,
             claimData.doublePeg,
             claimData.nonce,
-            claimData.networkDescriptor
+            claimData.networkDescriptor,
+            claimData.tokenName,
+            claimData.tokenSymbol,
+            claimData.tokenDecimals
         );
-        
-        require(
-            uint256(hashDigest) == prophecyID,
-            "INV_DATA"
-        );
+
+        require(uint256(hashDigest) == prophecyID, "INV_DATA");
 
         // ensure signature lengths are correct
         require(
@@ -286,8 +292,8 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
     }
 
     function _createNewBridgeToken(
-        string calldata symbol,
-        string calldata name,
+        string memory symbol,
+        string memory name,
         address sourceChainTokenAddress,
         uint8 decimals,
         uint256 _networkDescriptor

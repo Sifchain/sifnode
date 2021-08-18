@@ -378,23 +378,12 @@ describe("Security Test", function () {
     it("should not allow unlocking tokens upon the processing of a burn prophecy claim with the wrong network descriptor", async function () {
       state.nonce = 1;
 
-      const digest = getDigestNewProphecyClaim([
-        state.sender,
-        state.senderSequence,
-        state.recipient.address,
-        state.token.address,
-        state.amount,
-        false,
-        state.nonce,
-        state.networkDescriptor
-      ]);
-
-      const signatures = await signHash([userOne, userTwo, userFour], digest);
-
-      let claimData = {
-        cosmosSender: state.sender,
-        cosmosSenderSequence: state.senderSequence,
-        ethereumReceiver: state.recipient.address,
+      // this is a valid claim in itself (digest, claimData, and signatures all match)
+      // but since we set networkDescriptorMismatch=true in beforeEach(), it will be rejected
+      const { digest, claimData, signatures } = await getValidClaim({
+        sender: state.sender,
+        senderSequence: state.senderSequence,
+        recipientAddress: state.recipient.address,
         tokenAddress: state.token.address,
         amount: state.amount,
         doublePeg: false,
@@ -403,7 +392,8 @@ describe("Security Test", function () {
         tokenName: state.name,
         tokenSymbol: state.symbol,
         tokenDecimals: state.decimals,
-      };
+        validators: [userOne, userTwo, userFour],
+      });
 
       await expect(state.cosmosBridge
         .connect(userOne)
@@ -416,23 +406,13 @@ describe("Security Test", function () {
 
     it("should not allow unlocking native tokens upon the processing of a burn prophecy claim with the wrong network descriptor", async function () {
       state.nonce = 1;
-      const digest = getDigestNewProphecyClaim([
-        state.sender,
-        state.senderSequence,
-        state.recipient.address,
-        state.constants.zeroAddress,
-        state.amount,
-        false,
-        state.nonce,
-        state.networkDescriptor
-      ]);
 
-      const signatures = await signHash([userOne, userTwo, userFour], digest);
-
-      let claimData = {
-        cosmosSender: state.sender,
-        cosmosSenderSequence: state.senderSequence,
-        ethereumReceiver: state.recipient.address,
+      // this is a valid claim in itself (digest, claimData, and signatures all match)
+      // but since we set networkDescriptorMismatch=true in beforeEach(), it will be rejected
+      const { digest, claimData, signatures } = await getValidClaim({
+        sender: state.sender,
+        senderSequence: state.senderSequence,
+        recipientAddress: state.recipient.address,
         tokenAddress: state.constants.zeroAddress,
         amount: state.amount,
         doublePeg: false,
@@ -441,7 +421,8 @@ describe("Security Test", function () {
         tokenName: state.name,
         tokenSymbol: state.symbol,
         tokenDecimals: state.decimals,
-      };
+        validators: [userOne, userTwo, userFour],
+      });
 
       await expect(state.cosmosBridge
         .connect(userOne)
@@ -473,33 +454,24 @@ describe("Security Test", function () {
     });
 
     it("should revert when prophecyclaim is submitted out of order", async function () {
-      state.recipient = userOne.address;
       state.nonce = 10;
-      const digest = getDigestNewProphecyClaim([
-        state.sender,
-        state.senderSequence,
-        state.recipient,
-        state.troll.address,
-        state.amount,
-        false,
-        state.nonce,
-        state.networkDescriptor
-      ]);
 
-      const signatures = await signHash([userOne, userTwo, userFour], digest);
-      let claimData = {
-        cosmosSender: state.sender,
-        cosmosSenderSequence: state.senderSequence,
-        ethereumReceiver: state.recipient,
+      // this is a valid claim in itself (digest, claimData, and signatures all match)
+      // but it has the wrong nonce (should be 1, not 10)
+      const { digest, claimData, signatures } = await getValidClaim({
+        sender: state.sender,
+        senderSequence: state.senderSequence,
+        recipientAddress: state.recipient.address,
         tokenAddress: state.troll.address,
         amount: state.amount,
         doublePeg: false,
         nonce: state.nonce,
         networkDescriptor: state.networkDescriptor,
-        tokenName: "Troll",
-        tokenSymbol: "TRL",
-        tokenDecimals: state.decimals
-      };
+        tokenName: state.name,
+        tokenSymbol: state.symbol,
+        tokenDecimals: state.decimals,
+        validators: [userOne, userTwo, userFour],
+      });
 
       await expect(
         state.cosmosBridge
@@ -534,24 +506,13 @@ describe("Security Test", function () {
       let endingBalance = Number(await state.troll.balanceOf(userOne.address));
       expect(endingBalance).to.be.equal(0);
 
-      state.recipient = userOne.address;
+      state.recipient = userOne;
       state.nonce = 1;
-      const digest = getDigestNewProphecyClaim([
-        state.sender,
-        state.senderSequence,
-        state.recipient,
-        state.troll.address,
-        state.amount,
-        false,
-        state.nonce,
-        state.networkDescriptor
-      ]);
 
-      const signatures = await signHash([userOne, userTwo, userFour], digest);
-      let claimData = {
-        cosmosSender: state.sender,
-        cosmosSenderSequence: state.senderSequence,
-        ethereumReceiver: state.recipient,
+      const { digest, claimData, signatures } = await getValidClaim({
+        sender: state.sender,
+        senderSequence: state.senderSequence,
+        recipientAddress: state.recipient.address,
         tokenAddress: state.troll.address,
         amount: state.amount,
         doublePeg: false,
@@ -560,7 +521,8 @@ describe("Security Test", function () {
         tokenName: "Troll",
         tokenSymbol: "TRL",
         tokenDecimals: state.decimals,
-      };
+        validators: [userOne, userTwo, userFour],
+      });
 
       await state.cosmosBridge
         .connect(userOne)

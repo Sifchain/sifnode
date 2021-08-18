@@ -16,21 +16,25 @@ function getDigestNewProphecyClaim(data) {
     throw new Error("Input Error: not array");
   }
 
-  const digest = ethers.utils.keccak256(
-    ethers.utils.defaultAbiCoder.encode(
-      [
-        "bytes",
-        "uint256",
-        "address",
-        "address",
-        "uint256",
-        "bool",
-        "uint128",
-        "uint256"
-      ],
-      data
-    ),
-  );
+  const types = [
+    "bytes",
+    "uint256",
+    "address",
+    "address",
+    "uint256",
+    "bool",
+    "uint128",
+    "uint256",
+    "string",
+    "string",
+    "uint8"
+  ];
+
+  if(types.length !== data.length) {
+    throw new Error("testFixture::getDigestNewProphecyClaim: invalid data length");
+  }
+
+  const digest = ethers.utils.keccak256(ethers.utils.defaultAbiCoder.encode(types, data));
 
   return digest;
 }
@@ -263,6 +267,9 @@ async function getValidClaim({
     doublePeg,
     nonce,
     networkDescriptor,
+    tokenName,
+    tokenSymbol,
+    tokenDecimals,
   ]);
 
   const signatures = await signHash(validators, digest);

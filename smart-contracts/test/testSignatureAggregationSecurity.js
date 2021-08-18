@@ -118,7 +118,6 @@ describe("submitProphecyClaimAggregatedSigs Security", function () {
     });
     
     it("hash digest doesn't match provided data", async function () {
-      state.recipient = userOne;
       state.nonce = 1;
       const digest = getDigestNewProphecyClaim([
         state.sender,
@@ -128,7 +127,10 @@ describe("submitProphecyClaimAggregatedSigs Security", function () {
         state.amount,
         false,
         state.nonce + 1,
-        state.networkDescriptor
+        state.networkDescriptor,
+        state.name,
+        state.symbol,
+        state.decimals
       ]);
 
       const signatures = await signHash([userOne, userTwo, userFour], digest);
@@ -228,7 +230,10 @@ describe("submitProphecyClaimAggregatedSigs Security", function () {
         state.amount,
         false,
         state.nonce,
-        state.networkDescriptor
+        state.networkDescriptor,
+        state.name,
+        state.symbol,
+        state.decimals
       ]);
 
       const invalidDigest = getDigestNewProphecyClaim([
@@ -239,7 +244,10 @@ describe("submitProphecyClaimAggregatedSigs Security", function () {
         state.amount,
         false,
         state.nonce + 1,
-        state.networkDescriptor
+        state.networkDescriptor,
+        state.name,
+        state.symbol,
+        state.decimals
       ]);
 
       const signatures = await signHash([userOne, userTwo], digest);
