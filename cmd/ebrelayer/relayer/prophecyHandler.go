@@ -63,10 +63,8 @@ func (sub CosmosSub) StartProphecyHandler(txFactory tx.Factory, completionEvent 
 	}
 }
 
-// Parses event data from the msg, event, builds a new ProphecyClaim, and relays it to Ethereum
+// Get all not processed Prophecy via rpc and handle them in batch
 func (sub CosmosSub) handleNewProphecyCompleted(client *tmClient.HTTP) {
-	// ctx := context.Background()
-
 	// Start Ethereum client
 	ethClient, err := ethclient.Dial(sub.EthProvider)
 	if err != nil {
@@ -92,7 +90,7 @@ func (sub CosmosSub) handleNewProphecyCompleted(client *tmClient.HTTP) {
 
 	prophecyInfoArray := GetAllProphciesCompleted(sub.TmProvider, sub.NetworkDescriptor, lastSubmittedNonce.Uint64()+1)
 
-	batches := len(prophecyInfoArray) / 5
+	batches := (len(prophecyInfoArray) + 4) / 5
 	batch := 0
 
 	for batch < batches {
