@@ -1,4 +1,4 @@
-package keeper_test
+package test
 
 import (
 	"testing"
@@ -6,7 +6,6 @@ import (
 	transfertypes "github.com/cosmos/cosmos-sdk/x/ibc/applications/transfer/types"
 	clienttypes "github.com/cosmos/cosmos-sdk/x/ibc/core/02-client/types"
 	channeltypes "github.com/cosmos/cosmos-sdk/x/ibc/core/04-channel/types"
-	ibctesting "github.com/cosmos/cosmos-sdk/x/ibc/testing"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/ibc/core/exported"
@@ -15,20 +14,26 @@ import (
 
 type TransferTestSuite struct {
 	suite.Suite
-
-	coordinator *ibctesting.Coordinator
+	coordinator *Coordinator
+	t           *testing.T
 
 	// testing chains used for convenience and readability
-	chainA *ibctesting.TestChain
-	chainB *ibctesting.TestChain
-	chainC *ibctesting.TestChain
+	chainA *TestChain
+	chainB *TestChain
+	chainC *TestChain
 }
 
 func (suite *TransferTestSuite) SetupTest() {
-	suite.coordinator = ibctesting.NewCoordinator(suite.T(), 3)
-	suite.chainA = suite.coordinator.GetChain(ibctesting.GetChainID(0))
-	suite.chainB = suite.coordinator.GetChain(ibctesting.GetChainID(1))
-	suite.chainC = suite.coordinator.GetChain(ibctesting.GetChainID(2))
+	suite.chainA = NewTestChain(suite.t, "1")
+	suite.chainB = NewTestChain(suite.t, "2")
+	suite.chainC = NewTestChain(suite.t, "3")
+
+	chains := make(map[string]*TestChain)
+	chains[suite.chainA.ChainID] = suite.chainA
+	chains[suite.chainB.ChainID] = suite.chainB
+	chains[suite.chainC.ChainID] = suite.chainC
+
+	suite.coordinator = NewCoordinator(suite.t, chains)
 }
 
 // constructs a send from chainA to chainB on the established channel/connection
@@ -38,24 +43,25 @@ func (suite *TransferTestSuite) TestHandleMsgTransfer() {
 	clientA, clientB, connA, connB := suite.coordinator.SetupClientConnections(suite.chainA, suite.chainB, exported.Tendermint)
 	channelA, channelB := suite.coordinator.CreateTransferChannels(suite.chainA, suite.chainB, connA, connB, channeltypes.UNORDERED)
 	timeoutHeight := clienttypes.NewHeight(0, 110)
-	testDenom := "cusdt"
-	coinToSendToB := sdk.NewCoin(testDenom, sdk.NewInt(77))
-	initCoins := sdk.NewCoins(sdk.NewCoin(testDenom, sdk.NewInt(555)))
+	//testDenom := "cusdt"
+	testDenom := sdk.DefaultBondDenom
+	coinToSendToB := sdk.NewCoin(testDenom, sdk.NewInt(100))
+	// initCoins := sdk.NewCoins(sdk.NewCoin(testDenom, sdk.NewInt(555)))
 
-	err := suite.chainA.App.BankKeeper.AddCoins(suite.chainA.GetContext(), suite.chainA.SenderAccount.GetAddress(), initCoins)
-	if err != nil {
-		panic(err)
-	}
+	// err := suite.chainA.App.BankKeeper.AddCoins(suite.chainA.GetContext(), suite.chainA.SenderAccount.GetAddress(), initCoins)
+	// if err != nil {
+	// 	panic(err)
+	// }
 
-	err = suite.chainB.App.BankKeeper.AddCoins(suite.chainB.GetContext(), suite.chainB.SenderAccount.GetAddress(), initCoins)
-	if err != nil {
-		panic(err)
-	}
+	// err = suite.chainB.App.BankKeeper.AddCoins(suite.chainB.GetContext(), suite.chainB.SenderAccount.GetAddress(), initCoins)
+	// if err != nil {
+	// 	panic(err)
+	// }
 
 	// send from chainA to chainB
 	msg := transfertypes.NewMsgTransfer(channelA.PortID, channelA.ID, coinToSendToB, suite.chainA.SenderAccount.GetAddress(), suite.chainB.SenderAccount.GetAddress().String(), timeoutHeight, 0)
 
-	err = suite.coordinator.SendMsg(suite.chainA, suite.chainB, clientB, msg)
+	err := suite.coordinator.SendMsg(suite.chainA, suite.chainB, clientB, msg)
 	suite.Require().NoError(err) // message committed
 
 	// relay send
@@ -129,5 +135,9 @@ func (suite *TransferTestSuite) TestHandleMsgTransfer() {
 }
 
 func TestTransferTestSuite(t *testing.T) {
-	suite.Run(t, new(TransferTestSuite))
+	testingSuite := &TransferTestSuite{
+		t: t,
+	}
+
+	suite.Run(t, testingSuite)
 }
