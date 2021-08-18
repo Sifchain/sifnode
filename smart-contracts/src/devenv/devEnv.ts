@@ -4,16 +4,18 @@ import {SignerWithAddress} from "@nomiclabs/hardhat-ethers/signers";
 import * as hre from "hardhat"
 
 export abstract class ShellCommand {
-    public run(): Promise<void> {
-        let cmd = this.cmd();
-        const result = childProcess.execSync(cmd)
-        console.log("resultis: ", result.toString("UTF-8"))
-        return Promise.resolve()
-    }
+    abstract run(): Promise<void>
 
-    abstract cmd(): string
+    abstract cmd(): [string, string[]]
 
     abstract results(): Promise<EthereumResults>
+
+    /**
+     * A combination of run and results
+     */
+    go(): [Promise<void>, Promise<EthereumResults>] {
+        return [this.run(), this.results()]
+    }
 }
 
 @registry([{
@@ -48,7 +50,8 @@ export interface EthereumAccounts {
 
 export interface EthereumResults {
     httpHost: string
-    httpPort: number
+    httpPort: number,
+    chainId: number,  // note that hardhat doesn't believe networkId exists...
     accounts: EthereumAccounts
 }
 
@@ -60,29 +63,41 @@ export class HardhatNodeRunner extends ShellCommand {
         super();
     }
 
-    cmd(): string {
-        return `node_modules/.bin/hardhat node --hostname ${this.args.host} --port ${this.args.port}`
+    cmd(): [string, string[]] {
+        return ["node_modules/.bin/hardhat", [
+            "node",
+            "--hostname", this.args.host,
+            "--port", this.args.port.toString()
+        ]]
     }
 
     override run(): Promise<void> {
         return new Promise((resolve, reject) => {
-            childProcess.exec(this.cmd(), (err, stdout, stderr) => {
-                if (err == null)
+            const [c, args] = this.cmd()
+            const process = childProcess.spawn(c, args, {stdio: "inherit"})
+            process.on("error", err => {
+                reject(err)
+            })
+            process.on("exit", e => {
+                if (e && e != 0) {
+                    reject(e)
+                } else
                     resolve()
-                else
-                    reject(err)
             })
         })
     }
 
     override async results(): Promise<EthereumResults> {
         const hardhatSigners = await hre.ethers.getSigners()
-        let ethereumAccounts = signerArrayToEthereumAccounts(hardhatSigners, this.args.nValidators);
-        return new class implements EthereumResults {
-            accounts: EthereumAccounts = ethereumAccounts,
-            httpHost: "fnord"
-            httpPort: 1
-        }
+        let ethereumAccounts = signerArrayToEthereumAccounts(hardhatSigners, this.args.nValidators)
+        if (hre.network.config.chainId) {
+            return {
+                accounts: ethereumAccounts,
+                httpHost: this.args.host,
+                httpPort: this.args.port,
+                chainId: hre.network.config.chainId
+            }
+        } else throw "unknown chainId"
     }
 }
 
