@@ -7,6 +7,10 @@ import (
 	"testing"
 	"time"
 
+	sifapp "github.com/Sifchain/sifnode/app"
+	tokenregistrytypes "github.com/Sifchain/sifnode/x/tokenregistry/types"
+	"github.com/cosmos/cosmos-sdk/crypto/keys/secp256k1"
+	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	"github.com/stretchr/testify/require"
 	abci "github.com/tendermint/tendermint/abci/types"
 	"github.com/tendermint/tendermint/crypto/tmhash"
@@ -17,13 +21,11 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/codec"
-	"github.com/cosmos/cosmos-sdk/crypto/keys/secp256k1"
 	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
 	"github.com/cosmos/cosmos-sdk/simapp"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
-	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	capabilitytypes "github.com/cosmos/cosmos-sdk/x/capability/types"
 	ibctransfertypes "github.com/cosmos/cosmos-sdk/x/ibc/applications/transfer/types"
 	clienttypes "github.com/cosmos/cosmos-sdk/x/ibc/core/02-client/types"
@@ -84,7 +86,7 @@ var (
 type TestChain struct {
 	t *testing.T
 
-	App           *simapp.SimApp
+	App           *sifapp.SifchainApp
 	ChainID       string
 	LastHeader    *ibctmtypes.Header // header for last block height committed
 	CurrentHeader tmproto.Header     // header for current block height
@@ -103,43 +105,46 @@ type TestChain struct {
 	Connections []*TestConnection // track connectionID's created for this chain
 }
 
-// NewTestChain initializes a new TestChain instance with a single validator set using a
-// generated private key. It also creates a sender account to be used for delivering transactions.
-//
-// The first block height is committed to state in order to allow for client creations on
-// counterparty chains. The TestChain will return with a block height starting at 2.
-//
-// Time management is handled by the Coordinator in order to ensure synchrony between chains.
-// Each update of any chain increments the block header time for all chains by 5 seconds.
-func NewTestChain(t *testing.T, chainID string) *TestChain {
-	// generate validator private/public key
+func CreateTestChain(t *testing.T, chainID string, isCheckTx bool) (sdk.Context, *TestChain) {
+	sifapp.SetConfig(false)
 	privVal := mock.NewPV()
 	pubKey, err := privVal.GetPubKey()
 	require.NoError(t, err)
 
-	// create validator set with single validator
+	// // create validator set with single validator
 	validator := tmtypes.NewValidator(pubKey, 1)
 	valSet := tmtypes.NewValidatorSet([]*tmtypes.Validator{validator})
 	signers := []tmtypes.PrivValidator{privVal}
 
-	// generate genesis account
+	// // generate genesis account
 	senderPrivKey := secp256k1.GenPrivKey()
 	acc := authtypes.NewBaseAccount(senderPrivKey.PubKey().Address().Bytes(), senderPrivKey.PubKey(), 0, 0)
-	balance := banktypes.Balance{
-		Address: acc.GetAddress().String(),
-		Coins:   sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, sdk.NewInt(100000000000000))),
-	}
+	// balance := banktypes.Balance{
+	// 	Address: acc.GetAddress().String(),
+	// 	Coins:   sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, sdk.NewInt(100000000000000))),
+	// }
 
-	app := simapp.SetupWithGenesisValSet(t, valSet, []authtypes.GenesisAccount{acc}, balance)
-
-	// create current header and call begin block
 	header := tmproto.Header{
 		ChainID: chainID,
 		Height:  1,
 		Time:    globalStartTime,
 	}
 
-	txConfig := simapp.MakeTestEncodingConfig().TxConfig
+	// app := SetupWithGenesisValSet(t, valSet, []authtypes.GenesisAccount{acc}, balance)
+	app := sifapp.Setup(false)
+
+	ctx := app.BaseApp.NewContext(isCheckTx, header)
+
+	app.AccountKeeper.SetParams(ctx, authtypes.DefaultParams())
+	initTokens := sdk.TokensFromConsensusPower(1000)
+	app.BankKeeper.SetSupply(ctx, banktypes.NewSupply(sdk.Coins{}))
+	_ = sifapp.AddTestAddrs(app, ctx, 6, initTokens)
+	state := tokenregistrytypes.GenesisState{
+		AdminAccount: acc.Address,
+		Registry:     nil,
+	}
+	app.TokenRegistryKeeper.InitGenesis(ctx, state)
+	txConfig := sifapp.MakeTestEncodingConfig().TxConfig
 
 	// create an account to send transactions from
 	chain := &TestChain{
@@ -164,7 +169,7 @@ func NewTestChain(t *testing.T, chainID string) *TestChain {
 
 	chain.NextBlock()
 
-	return chain
+	return ctx, chain
 }
 
 // GetContext returns the current context for the application.
