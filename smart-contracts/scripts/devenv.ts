@@ -1,5 +1,5 @@
 import {container} from "tsyringe";
-import {HardhatNodeRunner} from "../src/devenv/devEnv"
+import {HardhatNodeRunner} from "../src/devenv/hardhatNode";
 
 async function main() {
     const node = container.resolve(HardhatNodeRunner)
