@@ -37,15 +37,25 @@ func (suite *TransferTestSuite) TestHandleMsgTransfer() {
 	// setup between chainA and chainB
 	clientA, clientB, connA, connB := suite.coordinator.SetupClientConnections(suite.chainA, suite.chainB, exported.Tendermint)
 	channelA, channelB := suite.coordinator.CreateTransferChannels(suite.chainA, suite.chainB, connA, connB, channeltypes.UNORDERED)
-	//	originalBalance := suite.chainA.App.BankKeeper.GetBalance(suite.chainA.GetContext(), suite.chainA.SenderAccount.GetAddress(), sdk.DefaultBondDenom)
 	timeoutHeight := clienttypes.NewHeight(0, 110)
+	testDenom := "cusdt"
+	coinToSendToB := sdk.NewCoin(testDenom, sdk.NewInt(77))
+	initCoins := sdk.NewCoins(sdk.NewCoin(testDenom, sdk.NewInt(555)))
 
-	coinToSendToB := sdk.NewCoin(sdk.DefaultBondDenom, sdk.NewInt(100))
+	err := suite.chainA.App.BankKeeper.AddCoins(suite.chainA.GetContext(), suite.chainA.SenderAccount.GetAddress(), initCoins)
+	if err != nil {
+		panic(err)
+	}
+
+	err = suite.chainB.App.BankKeeper.AddCoins(suite.chainB.GetContext(), suite.chainB.SenderAccount.GetAddress(), initCoins)
+	if err != nil {
+		panic(err)
+	}
 
 	// send from chainA to chainB
 	msg := transfertypes.NewMsgTransfer(channelA.PortID, channelA.ID, coinToSendToB, suite.chainA.SenderAccount.GetAddress(), suite.chainB.SenderAccount.GetAddress().String(), timeoutHeight, 0)
 
-	err := suite.coordinator.SendMsg(suite.chainA, suite.chainB, clientB, msg)
+	err = suite.coordinator.SendMsg(suite.chainA, suite.chainB, clientB, msg)
 	suite.Require().NoError(err) // message committed
 
 	// relay send
@@ -56,10 +66,10 @@ func (suite *TransferTestSuite) TestHandleMsgTransfer() {
 	suite.Require().NoError(err) // relay committed
 
 	// check that voucher exists on chain B
-	voucherDenomTrace := transfertypes.ParseDenomTrace(transfertypes.GetPrefixedDenom(packet.GetDestPort(), packet.GetDestChannel(), sdk.DefaultBondDenom))
+	voucherDenomTrace := transfertypes.ParseDenomTrace(transfertypes.GetPrefixedDenom(packet.GetDestPort(), packet.GetDestChannel(), testDenom))
 	balance := suite.chainB.App.BankKeeper.GetBalance(suite.chainB.GetContext(), suite.chainB.SenderAccount.GetAddress(), voucherDenomTrace.IBCDenom())
 
-	coinSentFromAToB := transfertypes.GetTransferCoin(channelB.PortID, channelB.ID, sdk.DefaultBondDenom, 100)
+	coinSentFromAToB := transfertypes.GetTransferCoin(channelB.PortID, channelB.ID, testDenom, 100)
 	suite.Require().Equal(coinSentFromAToB, balance)
 
 	// setup between chainB to chainC
@@ -110,8 +120,8 @@ func (suite *TransferTestSuite) TestHandleMsgTransfer() {
 
 	// check that module account escrow address is empty
 	escrowAddress := transfertypes.GetEscrowAddress(packet.GetDestPort(), packet.GetDestChannel())
-	balance = suite.chainB.App.BankKeeper.GetBalance(suite.chainB.GetContext(), escrowAddress, sdk.DefaultBondDenom)
-	suite.Require().Equal(sdk.NewCoin(sdk.DefaultBondDenom, sdk.ZeroInt()), balance)
+	balance = suite.chainB.App.BankKeeper.GetBalance(suite.chainB.GetContext(), escrowAddress, testDenom)
+	suite.Require().Equal(sdk.NewCoin(testDenom, sdk.ZeroInt()), balance)
 
 	// check that balance on chain B is empty
 	balance = suite.chainC.App.BankKeeper.GetBalance(suite.chainC.GetContext(), suite.chainC.SenderAccount.GetAddress(), voucherDenomTrace.IBCDenom())
