@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"context"
+	"fmt"
 	"strconv"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -38,7 +39,12 @@ func (srv msgServer) Lock(goCtx context.Context, msg *types.MsgLock) (*types.Msg
 		return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.CosmosSender)
 	}
 
-	prophecyID, err := srv.Keeper.ProcessLock(ctx, cosmosSender, account.GetSequence(), msg)
+	tokenMetadata, ok := srv.Keeper.GetTokenMetadata(ctx, msg.DenomHash)
+	if !ok {
+		return &types.MsgLockResponse{}, fmt.Errorf("token metadata not available for %s", msg.DenomHash)
+	}
+
+	prophecyID, err := srv.Keeper.ProcessLock(ctx, cosmosSender, account.GetSequence(), msg, tokenMetadata)
 
 	if err != nil {
 		logger.Error("bridge keeper failed to process lock.", errorMessageKey, err.Error())
@@ -46,7 +52,8 @@ func (srv msgServer) Lock(goCtx context.Context, msg *types.MsgLock) (*types.Msg
 	}
 
 	logger.Info("sifnode emit lock event.", "message", msg)
-	globalNonce := srv.Keeper.GetAndUpdateGlobalNonce(ctx, msg.NetworkDescriptor)
+	globalNonce := srv.Keeper.GetGlobalNonce(ctx, msg.NetworkDescriptor)
+	srv.Keeper.UpdateGlobalNonce(ctx, msg.NetworkDescriptor)
 
 	err = srv.oracleKeeper.SetProphecyInfo(ctx,
 		prophecyID,
@@ -55,6 +62,7 @@ func (srv msgServer) Lock(goCtx context.Context, msg *types.MsgLock) (*types.Msg
 		account.GetSequence(),
 		msg.EthereumReceiver,
 		msg.DenomHash,
+		tokenMetadata.TokenAddress,
 		msg.Amount,
 		msg.CrosschainFee,
 		// TODO decide the double peggy and global nonce
@@ -98,7 +106,12 @@ func (srv msgServer) Burn(goCtx context.Context, msg *types.MsgBurn) (*types.Msg
 		return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.CosmosSender)
 	}
 
-	prophecyID, err := srv.Keeper.ProcessBurn(ctx, cosmosSender, account.GetSequence(), msg)
+	tokenMetadata, ok := srv.Keeper.GetTokenMetadata(ctx, msg.DenomHash)
+	if !ok {
+		return nil, fmt.Errorf("token metadata not available for %s", msg.DenomHash)
+	}
+
+	prophecyID, err := srv.Keeper.ProcessBurn(ctx, cosmosSender, account.GetSequence(), msg, tokenMetadata)
 
 	if err != nil {
 		logger.Error("bridge keeper failed to process burn.", errorMessageKey, err.Error())
@@ -106,7 +119,8 @@ func (srv msgServer) Burn(goCtx context.Context, msg *types.MsgBurn) (*types.Msg
 	}
 
 	logger.Info("sifnode emit burn event.", "message", msg)
-	globalNonce := srv.Keeper.GetAndUpdateGlobalNonce(ctx, msg.NetworkDescriptor)
+	globalNonce := srv.Keeper.GetGlobalNonce(ctx, msg.NetworkDescriptor)
+	srv.Keeper.UpdateGlobalNonce(ctx, msg.NetworkDescriptor)
 
 	err = srv.oracleKeeper.SetProphecyInfo(ctx,
 		prophecyID,
@@ -115,6 +129,7 @@ func (srv msgServer) Burn(goCtx context.Context, msg *types.MsgBurn) (*types.Msg
 		account.GetSequence(),
 		msg.EthereumReceiver,
 		msg.DenomHash,
+		tokenMetadata.TokenAddress,
 		msg.Amount,
 		msg.CrosschainFee,
 		// TODO decide the double peggy and global nonce

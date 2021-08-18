@@ -10,10 +10,13 @@ import (
 
 	cosmosbridge "github.com/Sifchain/sifnode/cmd/ebrelayer/contract/generated/bindings/cosmosbridge"
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/txs"
-	"github.com/Sifchain/sifnode/cmd/ebrelayer/types"
 	"github.com/cosmos/cosmos-sdk/client/tx"
 	"github.com/ethereum/go-ethereum/ethclient"
 	tmClient "github.com/tendermint/tendermint/rpc/client/http"
+	"google.golang.org/grpc"
+
+	ethbridgetypes "github.com/Sifchain/sifnode/x/ethbridge/types"
+	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
 )
 
 const wakeupTimer = 60
@@ -62,13 +65,7 @@ func (sub CosmosSub) StartProphecyHandler(txFactory tx.Factory, completionEvent 
 
 // Parses event data from the msg, event, builds a new ProphecyClaim, and relays it to Ethereum
 func (sub CosmosSub) handleNewProphecyCompleted(client *tmClient.HTTP) {
-	ctx := context.Background()
-	currentBlock, err := client.Block(ctx, nil)
-	if err != nil {
-		sub.SugaredLogger.Errorw("failed to get the latest block from cosmos.",
-			errorMessageKey, err.Error())
-		return
-	}
+	// ctx := context.Background()
 
 	// Start Ethereum client
 	ethClient, err := ethclient.Dial(sub.EthProvider)
@@ -93,56 +90,36 @@ func (sub CosmosSub) handleNewProphecyCompleted(client *tmClient.HTTP) {
 		return
 	}
 
-	// put the latest one into map
-	maxGlobalNonce, prophecyInfoMap := sub.getUnhandledProphecies(client, uint64(currentBlock.Block.Height), lastSubmittedNonce.Uint64())
+	prophecyInfoArray := GetAllProphciesCompleted(sub.TmProvider, sub.NetworkDescriptor, lastSubmittedNonce.Uint64())
 
-	nonce := lastSubmittedNonce.Uint64() + 1
-	batchStartNonce := nonce
-	batchEndNonce := lastSubmittedNonce.Uint64()
+	batches := len(prophecyInfoArray) / 5
+	batch := 0
 
-	for nonce <= maxGlobalNonce {
-		prophecy, ok := prophecyInfoMap[nonce]
-		// must deal prophecy in order, if any one missed in the map, just discontinue
-		if !ok {
-			sub.SugaredLogger.Errorw("can't get global nonce via scanning the blocks.",
-				"expected global nonce is ", nonce)
+	for batch < batches {
+		end := (batch + 1) * 5
+		if end > len(prophecyInfoArray) {
+			end = len(prophecyInfoArray)
+		}
 
-			if !sub.handleBatchProphecyCompleted(prophecyInfoMap, batchStartNonce, batchEndNonce) {
-				sub.SugaredLogger.Errorw("fail to process prophecy.")
-				return
-			}
+		batchProphecyInfo := prophecyInfoArray[batch*5 : end]
+
+		if !sub.handleBatchProphecyCompleted(batchProphecyInfo) {
+			sub.SugaredLogger.Errorw("fail to process prophecy.")
 			return
 		}
-		batchEndNonce = prophecy.GlobalNonce
-		if batchEndNonce > batchStartNonce+5 {
-			if !sub.handleBatchProphecyCompleted(prophecyInfoMap, batchStartNonce, batchEndNonce) {
-				sub.SugaredLogger.Errorw("fail to process prophecy.")
-				return
-			}
-			batchStartNonce = batchEndNonce + 1
-		}
-		nonce++
-	}
 
-	sub.handleBatchProphecyCompleted(prophecyInfoMap, batchStartNonce, batchEndNonce)
+		batch++
+	}
 }
 
 // Parses event data from the msg, event, builds a new ProphecyClaim, and relays it to Ethereum
 func (sub CosmosSub) handleBatchProphecyCompleted(
-	prophecyInfoMap map[uint64]types.ProphecyInfo,
-	batchStartNonce uint64,
-	batchEndNonce uint64) bool {
+	batchProphecyInfo []*oracletypes.ProphecyInfo) bool {
 
 	sub.SugaredLogger.Infow(
 		"handle batch prophecy completed.",
-		"cosmosMsg", prophecyInfoMap,
+		"prophecyInfoArray", batchProphecyInfo,
 	)
-
-	var batchProphecyInfo []types.ProphecyInfo
-	for batchStartNonce <= batchEndNonce {
-		batchProphecyInfo = append(batchProphecyInfo, prophecyInfoMap[batchStartNonce])
-		batchStartNonce++
-	}
 
 	client, auth, target, err := tryInitRelayConfig(sub)
 	if err != nil {
@@ -195,70 +172,23 @@ func (sub CosmosSub) handleBatchProphecyCompleted(
 
 }
 
-func (sub CosmosSub) getUnhandledProphecies(client *tmClient.HTTP, currentBlock uint64, lastSubmittedNonce uint64) (uint64, map[uint64]types.ProphecyInfo) {
-	// return variable
-	prophecyInfoMap := map[uint64]types.ProphecyInfo{}
-	maxGlobalNonce := uint64(0)
-
-	// determine the last possible block we will scan according to prophecy life time
-	var endBlock uint64
-	if currentBlock > ProphecyLifeTime {
-		endBlock = currentBlock - ProphecyLifeTime
-
-	} else {
-		endBlock = 0
+// GetAllProphciesCompleted
+func GetAllProphciesCompleted(rpcServer string, networkDescriptor oracletypes.NetworkDescriptor, startGlobalNonce uint64) []*oracletypes.ProphecyInfo {
+	conn, err := grpc.Dial(rpcServer)
+	if err != nil {
+		return []*oracletypes.ProphecyInfo{}
 	}
 
-	ctx := context.Background()
-	// if found the next one
-	found := false
-	for currentBlock > endBlock {
-		// not go to priviouos block if found.
-		if found {
-			break
-		}
-		tmpBlock := int64(currentBlock)
-		block, err := client.BlockResults(ctx, &tmpBlock)
-
-		if err != nil {
-			sub.SugaredLogger.Errorw("sifchain client failed to get a block.",
-				errorMessageKey, err.Error())
-			continue
-		}
-
-		for _, txLog := range block.TxsResults {
-			for _, event := range txLog.Events {
-
-				claimType := getOracleClaimType(event.GetType())
-
-				if claimType == types.ProphecyCompleted {
-
-					prophecyInfo, err := txs.ProphecyCompletedEventToProphecyInfo(event.GetAttributes(), sub.SugaredLogger)
-					if err != nil {
-						sub.SugaredLogger.Errorw("sifchain client failed in get prophecy completed message from event.",
-							errorMessageKey, err.Error())
-						continue
-					}
-					if prophecyInfo.NetworkDescriptor == sub.NetworkDescriptor {
-						// put not processed prophecy into map
-						if prophecyInfo.GlobalNonce > lastSubmittedNonce {
-							prophecyInfoMap[prophecyInfo.GlobalNonce] = prophecyInfo
-							if prophecyInfo.GlobalNonce > maxGlobalNonce {
-								// record the max global nonce
-								maxGlobalNonce = prophecyInfo.GlobalNonce
-
-							}
-							// already found the minimum global nonce not processeed
-							if prophecyInfo.GlobalNonce <= lastSubmittedNonce+1 {
-								found = true
-							}
-						}
-
-					}
-				}
-			}
-		}
-		
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	defer cancel()
+	client := ethbridgetypes.NewProphciesCompletedQueryServiceClient(conn)
+	request := ethbridgetypes.ProphciesCompletedQueryRequest{
+		NetworkDescriptor: networkDescriptor,
+		GlobalNonce:       startGlobalNonce,
 	}
-	return maxGlobalNonce, prophecyInfoMap
+	response, err := client.Search(ctx, &request)
+	if err != nil {
+		return []*oracletypes.ProphecyInfo{}
+	}
+	return response.ProphecyInfo
 }

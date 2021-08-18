@@ -11,11 +11,11 @@ import (
 
 	cosmosbridge "github.com/Sifchain/sifnode/cmd/ebrelayer/contract/generated/bindings/cosmosbridge"
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/types"
+	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	ethereumtypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
-
 	"go.uber.org/zap"
 )
 
@@ -204,7 +204,7 @@ func RelayProphecyCompletedToEthereum(
 
 // RelayBatchProphecyCompletedToEthereum send the prophecy aggregation to CosmosBridge contract on the Ethereum network
 func RelayBatchProphecyCompletedToEthereum(
-	batchProphecyInfo []types.ProphecyInfo,
+	batchProphecyInfo []*oracletypes.ProphecyInfo,
 	sugaredLogger *zap.SugaredLogger,
 	client *ethclient.Client,
 	auth *bind.TransactOpts,
@@ -225,16 +225,16 @@ func RelayBatchProphecyCompletedToEthereum(
 			CosmosSender:         []byte(prophecyInfo.CosmosSender),
 			CosmosSenderSequence: big.NewInt(int64(prophecyInfo.CosmosSenderSequence)),
 			EthereumReceiver:     common.HexToAddress(prophecyInfo.EthereumReceiver),
-			TokenAddress:         common.HexToAddress(prophecyInfo.TokenSymbol),
-			Amount:               &prophecyInfo.TokenAmount,
+			TokenAddress:         common.HexToAddress(prophecyInfo.TokenContractAddress),
+			Amount:               big.NewInt(prophecyInfo.TokenAmount.Int64()),
 			DoublePeg:            prophecyInfo.DoublePeg,
 			Nonce:                big.NewInt(int64(prophecyInfo.GlobalNonce)),
 		}
 		batchClaimData[index] = claimData
 
-		var signatureData = make([]cosmosbridge.CosmosBridgeSignatureData, len(prophecyInfo.EthereumSignerAddresses))
+		var signatureData = make([]cosmosbridge.CosmosBridgeSignatureData, len(prophecyInfo.EthereumAddress))
 
-		for index, address := range prophecyInfo.EthereumSignerAddresses {
+		for index, address := range prophecyInfo.EthereumAddress {
 			signature := []byte(prophecyInfo.Signatures[index])
 			var r [32]byte
 			var s [32]byte
@@ -253,7 +253,7 @@ func RelayBatchProphecyCompletedToEthereum(
 
 		batchSignatureData[index] = signatureData
 		var id [32]byte
-		copy(id[:], prophecyInfo.ProphecyID)
+		copy(id[:], prophecyInfo.ProphecyId)
 		batchID[index] = id
 	}
 

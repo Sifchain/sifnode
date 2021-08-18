@@ -103,7 +103,12 @@ func (k Keeper) ProcessSuccessfulClaim(ctx sdk.Context, claim *types.EthBridgeCl
 }
 
 // ProcessBurn processes the burn of bridged coins from the given sender
-func (k Keeper) ProcessBurn(ctx sdk.Context, cosmosSender sdk.AccAddress, senderSequence uint64, msg *types.MsgBurn) ([]byte, error) {
+func (k Keeper) ProcessBurn(ctx sdk.Context,
+	cosmosSender sdk.AccAddress,
+	senderSequence uint64,
+	msg *types.MsgBurn,
+	tokenMetadata types.TokenMetadata) ([]byte, error) {
+
 	logger := k.Logger(ctx)
 	var coins sdk.Coins
 	networkIdentity := oracletypes.NewNetworkIdentity(msg.NetworkDescriptor)
@@ -116,11 +121,6 @@ func (k Keeper) ProcessBurn(ctx sdk.Context, cosmosSender sdk.AccAddress, sender
 	minimumBurn := crossChainFeeConfig.MinimumBurnCost.Mul(crossChainFeeConfig.FeeCurrencyGas)
 	if msg.CrosschainFee.LT(minimumBurn) {
 		return []byte{}, errors.New("crosschain fee amount in message less than minimum burn")
-	}
-
-	tokenMetadata, ok := k.GetTokenMetadata(ctx, msg.DenomHash)
-	if !ok {
-		return []byte{}, fmt.Errorf("token metadata not available for %s", msg.DenomHash)
 	}
 
 	// TODO use the network descriptor to check if token is from sifchains
@@ -164,17 +164,19 @@ func (k Keeper) ProcessBurn(ctx sdk.Context, cosmosSender sdk.AccAddress, sender
 		return []byte{}, err
 	}
 
-	// TODO global sequence will be implemented in other feature
-	globalSequence := uint64(0)
-
-	prophecyID := msg.GetProphecyID(false, senderSequence, globalSequence, tokenMetadata.TokenAddress)
+	prophecyID := msg.GetProphecyID(false, senderSequence, k.GetGlobalNonce(ctx, msg.NetworkDescriptor), tokenMetadata.TokenAddress)
 	k.oracleKeeper.SetProphecyWithInitValue(ctx, prophecyID)
 
 	return prophecyID, nil
 }
 
 // ProcessLock processes the lockup of cosmos coins from the given sender
-func (k Keeper) ProcessLock(ctx sdk.Context, cosmosSender sdk.AccAddress, senderSequence uint64, msg *types.MsgLock) ([]byte, error) {
+func (k Keeper) ProcessLock(ctx sdk.Context,
+	cosmosSender sdk.AccAddress,
+	senderSequence uint64,
+	msg *types.MsgLock,
+	tokenMetadata types.TokenMetadata) ([]byte, error) {
+
 	logger := k.Logger(ctx)
 	var coins sdk.Coins
 	networkIdentity := oracletypes.NewNetworkIdentity(msg.NetworkDescriptor)
@@ -182,11 +184,6 @@ func (k Keeper) ProcessLock(ctx sdk.Context, cosmosSender sdk.AccAddress, sender
 
 	if err != nil {
 		return []byte{}, err
-	}
-
-	tokenMetadata, ok := k.GetTokenMetadata(ctx, msg.DenomHash)
-	if !ok {
-		return []byte{}, fmt.Errorf("token metadata not available for %s", msg.DenomHash)
 	}
 
 	// TODO use the network descriptor to check if token is from sifchain
@@ -232,10 +229,7 @@ func (k Keeper) ProcessLock(ctx sdk.Context, cosmosSender sdk.AccAddress, sender
 		return []byte{}, err
 	}
 
-	// global sequence will be implemented in other feature
-	glocalSequence := uint64(0)
-
-	prophecyID := msg.GetProphecyID(false, senderSequence, glocalSequence, tokenMetadata.TokenAddress)
+	prophecyID := msg.GetProphecyID(false, senderSequence, k.GetGlobalNonce(ctx, msg.NetworkDescriptor), tokenMetadata.TokenAddress)
 	k.oracleKeeper.SetProphecyWithInitValue(ctx, prophecyID)
 
 	return prophecyID, nil

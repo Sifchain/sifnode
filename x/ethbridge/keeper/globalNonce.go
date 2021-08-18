@@ -8,28 +8,32 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-// GetAndUpdateGlobalNonce get current global nonce and update it
-func (k Keeper) GetAndUpdateGlobalNonce(ctx sdk.Context, networkDescriptor oracletypes.NetworkDescriptor) uint64 {
+// GetGlobalNonce get current global nonce and update it
+func (k Keeper) GetGlobalNonce(ctx sdk.Context, networkDescriptor oracletypes.NetworkDescriptor) uint64 {
 	prefix := k.GetGlobalNoncePrefix(ctx, networkDescriptor)
 	store := ctx.KVStore(k.storeKey)
 
 	if !k.ExistsGlobalNonce(ctx, prefix) {
 		// global nonce start from 1
-		nextGlobalNonce := uint64(2)
-		bs := make([]byte, 8)
-		binary.LittleEndian.PutUint64(bs, nextGlobalNonce)
-
-		store.Set(prefix, bs)
 		return uint64(1)
 	}
 
 	value := store.Get(prefix)
 	globalNonce := binary.LittleEndian.Uint64(value)
 
+	return globalNonce
+}
+
+// UpdateGlobalNonce get current global nonce and update it
+func (k Keeper) UpdateGlobalNonce(ctx sdk.Context, networkDescriptor oracletypes.NetworkDescriptor) {
+	prefix := k.GetGlobalNoncePrefix(ctx, networkDescriptor)
+	store := ctx.KVStore(k.storeKey)
+
+	globalNonce := k.GetGlobalNonce(ctx, networkDescriptor)
+
 	bs := make([]byte, 8)
 	binary.LittleEndian.PutUint64(bs, globalNonce+1)
-
-	return globalNonce
+	store.Set(prefix, bs)
 }
 
 // ExistsGlobalNonce check if the global nonce exists

@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	"encoding/binary"
 	"errors"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -70,6 +71,7 @@ func (k Keeper) SetProphecyInfo(ctx sdk.Context, prophecyID []byte, networkDescr
 	cosmosSenderSequence uint64,
 	ethereumReceiver string,
 	tokenDenomHash string,
+	tokenContractAddress string,
 	tokenAmount sdk.Int,
 	crosschainFee sdk.Int,
 	doublePeg bool,
@@ -86,6 +88,7 @@ func (k Keeper) SetProphecyInfo(ctx sdk.Context, prophecyID []byte, networkDescr
 		CosmosSenderSequence: cosmosSenderSequence,
 		EthereumReceiver:     ethereumReceiver,
 		TokenDenomHash:       tokenDenomHash,
+		TokenContractAddress: tokenContractAddress,
 		TokenAmount:          tokenAmount,
 		DoublePeg:            doublePeg,
 		GlobalNonce:          globalNonce,
@@ -95,6 +98,7 @@ func (k Keeper) SetProphecyInfo(ctx sdk.Context, prophecyID []byte, networkDescr
 		BlockNumber:          uint64(k.currentHeight),
 	}
 
+	k.SetGlobalNonceProphecyID(ctx, networkDescriptor, globalNonce, prophecyID)
 	store.Set(storePrefix, k.cdc.MustMarshalBinaryBare(&prophecyInfo))
 	return nil
 }
@@ -129,6 +133,77 @@ func (k Keeper) CleanUpProphecy(ctx sdk.Context) {
 		if prophecyInfo.BlockNumber-currentHeight > ProphecyLiftTime {
 			storePrefix := append(types.SignaturePrefix, prophecyInfo.ProphecyId[:]...)
 			store.Delete(storePrefix)
+			storePrefix = k.getKeyViaNetworkDescriptorGlobalNonce(prophecyInfo.NetworkDescriptor, prophecyInfo.GlobalNonce)
+			store.Delete(storePrefix)
 		}
 	}
+}
+
+// GetProphecyIDByNetworkDescriptorGlobalNonce get the prophecy id via network descriptor + global nonce
+func (k Keeper) GetProphecyIDByNetworkDescriptorGlobalNonce(ctx sdk.Context,
+	networkDescriptor types.NetworkDescriptor,
+	globalNonce uint64) ([]byte, bool) {
+	store := ctx.KVStore(k.storeKey)
+	storeKey := k.getKeyViaNetworkDescriptorGlobalNonce(networkDescriptor, globalNonce)
+
+	bz := store.Get(storeKey)
+	if bz == nil {
+		return bz, false
+	}
+	return bz, true
+}
+
+// SetGlobalNonceProphecyID store the map from network descriptor + global nonce to prophecy id
+func (k Keeper) SetGlobalNonceProphecyID(ctx sdk.Context,
+	networkDescriptor types.NetworkDescriptor,
+	globalNonce uint64,
+	prophecyID []byte) {
+	store := ctx.KVStore(k.storeKey)
+	storeKey := k.getKeyViaNetworkDescriptorGlobalNonce(networkDescriptor, globalNonce)
+
+	store.Set(storeKey, prophecyID)
+}
+
+func (k Keeper) getKeyViaNetworkDescriptorGlobalNonce(networkDescriptor types.NetworkDescriptor,
+	globalNonce uint64) []byte {
+	bs1 := make([]byte, 4)
+	binary.LittleEndian.PutUint32(bs1, uint32(networkDescriptor))
+
+	bs2 := make([]byte, 8)
+	binary.LittleEndian.PutUint64(bs2, globalNonce)
+
+	storeKey := append(append(types.GlobalNonceProphecyIDPrefix, bs1[:]...), bs2[:]...)
+	return storeKey
+}
+
+// GetProphecyInfoWithScopeGlocalNonce get the prophecy id via network descriptor + global nonce
+func (k Keeper) GetProphecyInfoWithScopeGlocalNonce(ctx sdk.Context,
+	networkDescriptor types.NetworkDescriptor,
+	startGlobalNonce uint64) []*types.ProphecyInfo {
+	result := []*types.ProphecyInfo{}
+
+	nonce := startGlobalNonce
+	for {
+		prophecyID, ok := k.GetProphecyIDByNetworkDescriptorGlobalNonce(ctx, networkDescriptor, nonce)
+		if !ok {
+			return result
+		}
+
+		prophecy, ok := k.GetProphecy(ctx, prophecyID)
+		if !ok {
+			return result
+		}
+
+		if prophecy.Status != types.StatusText_STATUS_TEXT_SUCCESS {
+			return result
+		}
+
+		prophecyInfo, ok := k.GetProphecyInfo(ctx, prophecyID)
+		if !ok {
+			return result
+		}
+		nonce++
+		result = append(result, &prophecyInfo)
+	}
+
 }

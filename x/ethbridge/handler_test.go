@@ -36,22 +36,6 @@ var (
 	TestAddress                  = "cosmos1xdp5tvt7lxh8rf9xx07wy2xlagzhq24ha48xtq"
 )
 
-var testMetadataEther = types.TokenMetadata{
-	Decimals:          18,
-	Name:              "ether",
-	NetworkDescriptor: oracletypes.NetworkDescriptor_NETWORK_DESCRIPTOR_UNSPECIFIED,
-	Symbol:            "ether",
-	TokenAddress:      "0x0123456789ABCDEF",
-}
-
-// var testMetadataCether = types.TokenMetadata{
-// 	Decimals:          18,
-// 	Name:              "cether",
-// 	NetworkDescriptor: oracletypes.NetworkDescriptor_NETWORK_DESCRIPTOR_UNSPECIFIED,
-// 	Symbol:            "cether",
-// 	TokenAddress:      "0x0123456789ABCDEF",
-// }
-
 func TestBasicMsgs(t *testing.T) {
 	//Setup
 	ctx, _, _, _, handler, validatorAddresses, _ := CreateTestHandler(t, 0.7, []int64{3, 7})
