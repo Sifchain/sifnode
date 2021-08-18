@@ -3,15 +3,19 @@ import {HardhatNodeRunner} from "../src/devenv/devEnv"
 
 async function main() {
     const node = container.resolve(HardhatNodeRunner)
-    const process = node.run()
-    const r = await node.results()
-    console.log(`rsltis: ${JSON.stringify(r, undefined, 2)}`)
+    const [process, resultsPromise] = node.go()
+    const results = await resultsPromise
+    console.log(`rsltis: ${JSON.stringify(results, undefined, 2)}`)
     await process
 }
 
 main()
     .then(() => process.exit(0))
     .catch((error) => {
-        console.error(error);
-        process.exit(1);
+        if (typeof error == "number")
+            process.exit(error)
+        else {
+            console.error(error);
+            process.exit(1)
+        }
     });
