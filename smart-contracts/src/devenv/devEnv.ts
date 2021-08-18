@@ -1,8 +1,3 @@
-import {registry, singleton} from "tsyringe";
-import * as childProcess from "child_process"
-import {SignerWithAddress} from "@nomiclabs/hardhat-ethers/signers";
-import * as hre from "hardhat"
-
 export abstract class ShellCommand {
     abstract run(): Promise<void>
 
@@ -23,13 +18,18 @@ export interface EthereumAccount {
     privateKey: string
 }
 
+export interface EthereumAddressAndKey {
+    privateKey: string
+    address: string
+}
+
 export interface EthereumAccounts {
-    operator: string,
-    owner: string,
-    pauser: string,
-    proxyAdmin: string,
-    validators: string[],
-    available: string[]
+    operator: EthereumAddressAndKey,
+    owner: EthereumAddressAndKey,
+    pauser: EthereumAddressAndKey,
+    proxyAdmin: EthereumAddressAndKey,
+    validators: EthereumAddressAndKey[],
+    available: EthereumAddressAndKey[]
 }
 
 export interface EthereumResults {
