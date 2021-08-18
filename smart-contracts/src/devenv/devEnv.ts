@@ -13,7 +13,7 @@ export abstract class ShellCommand {
 
     abstract cmd(): string
 
-    abstract results(): Promise<EthereumResults | EthereumAccounts>
+    abstract results(): Promise<EthereumResults>
 }
 
 @registry([{
@@ -49,7 +49,7 @@ export interface EthereumAccounts {
 export interface EthereumResults {
     httpHost: string
     httpPort: number
-    accounts: EthereumAccount[]
+    accounts: EthereumAccounts
 }
 
 @singleton()
@@ -75,9 +75,14 @@ export class HardhatNodeRunner extends ShellCommand {
         })
     }
 
-    override async results(): Promise<EthereumAccounts> {
+    override async results(): Promise<EthereumResults> {
         const hardhatSigners = await hre.ethers.getSigners()
-        return signerArrayToEthereumAccounts(hardhatSigners, this.args.nValidators)
+        let ethereumAccounts = signerArrayToEthereumAccounts(hardhatSigners, this.args.nValidators);
+        return new class implements EthereumResults {
+            accounts: EthereumAccounts = ethereumAccounts,
+            httpHost: "fnord"
+            httpPort: 1
+        }
     }
 }
 
