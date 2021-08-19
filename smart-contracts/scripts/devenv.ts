@@ -16,8 +16,8 @@ async function golangBuilder() {
     const node = container.resolve(GolangBuilder)
     const [process, resultsPromise] = node.go()
     let golangResultsPromise = new GolangResultsPromise(resultsPromise);
-    container.register(GolangResultsPromise, {useValue: golangResultsPromise})
-    const sifnodeTask = sifnodedBuilder(golangResultsPromise)
+    // container.register(GolangResultsPromise, {useValue: golangResultsPromise})
+    // const sifnodeTask = sifnodedBuilder(golangResultsPromise)
     const results = await resultsPromise
     console.log(`golangBuilder: ${JSON.stringify(results, undefined, 2)}`)
     return process

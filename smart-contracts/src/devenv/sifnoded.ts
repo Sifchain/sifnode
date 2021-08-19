@@ -79,6 +79,7 @@ export class SifnodedRunner extends ShellCommand<SifnodedResults> {
     }
 
     async sifgenNetworkCreate() {
+        // sifgen network create localnet 1 $NETWORKDIR 192.168.1.2 $NETWORKDIR/network-definition.yml --keyring-backend test --mint-amount 999999000000000000000000000rowan,1370000000000000000ibc/FEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACE
         const sifgenArgs = [
             "network",
             "create",
