@@ -524,10 +524,6 @@ contract BridgeBank is BankStorage,
         // decimals defaults to 18 if call to decimals fails
         uint8 decimals = getDecimals(tokenAddress);
 
-        // Get name and symbol
-        string memory name = getName(tokenAddress);
-        string memory symbol = getSymbol(tokenAddress);
-
         emit LogBurn(
             msg.sender,
             recipient,
