@@ -1,32 +1,12 @@
 import {singleton} from "tsyringe";
-import * as childProcess from "child_process"
-import {GolangResults, ShellCommand} from "./devEnv";
-import {firstValueFrom, ReplaySubject} from "rxjs";
+import {SynchronousCommand, SynchronousCommandResult} from "./synchronousCommand";
 
-@singleton()
-class GolangArguments {
+export class GolangResults extends SynchronousCommandResult {
 }
 
-// export function resolvableAndRejectablePromise<T>(): [Promise<T>, (value: (PromiseLike<T> | T)) => void, (value: any) => void] {
-//     let resolveFn: (value: (PromiseLike<T> | T)) => void
-//     let rejectFn: (value: any) => void
-//     const result = new Promise<T>((resolve, reject) => {
-//         resolveFn = resolve
-//         rejectFn = reject
-//     })
-//     return [result, resolveFn, rejectFn]
-// }
-//
-// export function resolvablePromise<T>(): [Promise<T>, (T) => void] {
-//     const [promise, resolveFn, _] = resolvableAndRejectablePromise<T>()
-//     return [promise, resolveFn]
-// }
-
-
 @singleton()
-export class GolangBuilder extends ShellCommand {
+export class GolangBuilder extends SynchronousCommand<GolangResults> {
     constructor(
-        readonly args: GolangArguments
     ) {
         super();
     }
@@ -39,15 +19,5 @@ export class GolangBuilder extends ShellCommand {
         ]]
     }
 
-    completion = new ReplaySubject<GolangResults>(1)
-
-    override async run(): Promise<void> {
-        const pq = childProcess.spawnSync(this.cmd()[0], this.cmd()[1])
-        this.completion.next({golangBuilt: true, output: pq.stdout.toString()})
-        return Promise.resolve()
-    }
-
-    results(): Promise<GolangResults> {
-        return firstValueFrom(this.completion)
-    }
+    resultConverter = (r: SynchronousCommandResult) => new GolangResults(r.completed, r.error, r.output)
 }

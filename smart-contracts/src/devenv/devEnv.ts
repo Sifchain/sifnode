@@ -1,16 +1,16 @@
-type RunnerResult = EthereumResults | GolangResults
+import {SynchronousCommandResult} from "./synchronousCommand";
 
-export abstract class ShellCommand {
+export abstract class ShellCommand<T> {
     abstract run(): Promise<void>
 
     abstract cmd(): [string, string[]]
 
-    abstract results(): Promise<EthereumResults | GolangResults >
+    abstract results(): Promise<T>
 
     /**
      * A combination of run and results
      */
-    go(): [Promise<void>, Promise<RunnerResult>] {
+    go(): [Promise<void>, Promise<T>] {
         return [this.run(), this.results()]
     }
 }
@@ -41,7 +41,3 @@ export interface EthereumResults {
     accounts: EthereumAccounts
 }
 
-export interface GolangResults {
-    golangBuilt: boolean,
-    output: string
-}
