@@ -125,21 +125,20 @@ func (am AppModule) OnRecvPacket(ctx sdk.Context, packet types.Packet) (*sdk.Res
 }
 
 func (am AppModule) OnAcknowledgementPacket(ctx sdk.Context, packet types.Packet, acknowledgement []byte) (*sdk.Result, error) {
-	// return am.cosmosAppModule.OnAcknowledgementPacket(ctx, packet, acknowledgement)
 	return OnAcknowledgementPacketConvert(ctx, am.sdkTransferKeeper, am.whitelistKeeper, am.bankKeeper, packet, acknowledgement)
 }
 
 func (am AppModule) OnTimeoutPacket(ctx sdk.Context, packet types.Packet) (*sdk.Result, error) {
-	// return am.cosmosAppModule.OnTimeoutPacket(ctx, packet)
 	return OnTimeoutPacketConvert(ctx, am.sdkTransferKeeper, am.whitelistKeeper, am.bankKeeper, packet)
 }
 
-func NewAppModule(sdkTransferKeeper sdktransferkeeper.Keeper, whitelistKeeper tokenregistrytypes.Keeper, cdc codec.BinaryMarshaler) AppModule {
+func NewAppModule(sdkTransferKeeper sdktransferkeeper.Keeper, whitelistKeeper tokenregistrytypes.Keeper, bankKeeper bankkeeper.Keeper, cdc codec.BinaryMarshaler) AppModule {
 	return AppModule{
 		AppModuleBasic: AppModuleBasic{
 			cosmosAppModule: transfer.NewAppModule(sdkTransferKeeper),
 		},
 		sdkTransferKeeper: sdkTransferKeeper,
+		bankKeeper:        bankKeeper,
 		whitelistKeeper:   whitelistKeeper,
 		cdc:               cdc,
 	}
@@ -151,8 +150,7 @@ func (am AppModule) LegacyQuerierHandler(amino *codec.LegacyAmino) sdk.Querier {
 }
 
 func (am AppModule) RegisterServices(cfg module.Configurator) {
-	// ChangeDenom(cfg, am.cosmosAppModule, am.whitelistKeeper, am.keeper)
-	sdktransfertypes.RegisterMsgServer(cfg.MsgServer(), keeper.NewMsgServerImpl())
+	sdktransfertypes.RegisterMsgServer(cfg.MsgServer(), keeper.NewMsgServerImpl(am.sdkTransferKeeper, am.bankKeeper, am.whitelistKeeper))
 	sdktransfertypes.RegisterQueryServer(cfg.QueryServer(), am.sdkTransferKeeper)
 }
 
