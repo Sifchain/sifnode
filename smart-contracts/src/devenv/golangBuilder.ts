@@ -1,11 +1,27 @@
-import {registry, singleton} from "tsyringe";
+import {singleton} from "tsyringe";
 import * as childProcess from "child_process"
-import {SignerWithAddress} from "@nomiclabs/hardhat-ethers/signers";
-import * as hre from "hardhat"
-import {EthereumAccounts, EthereumResults, ShellCommand} from "./devEnv";
+import {GolangResults, ShellCommand} from "./devEnv";
+import {firstValueFrom, ReplaySubject} from "rxjs";
 
-interface GolangArguments {
+@singleton()
+class GolangArguments {
 }
+
+// export function resolvableAndRejectablePromise<T>(): [Promise<T>, (value: (PromiseLike<T> | T)) => void, (value: any) => void] {
+//     let resolveFn: (value: (PromiseLike<T> | T)) => void
+//     let rejectFn: (value: any) => void
+//     const result = new Promise<T>((resolve, reject) => {
+//         resolveFn = resolve
+//         rejectFn = reject
+//     })
+//     return [result, resolveFn, rejectFn]
+// }
+//
+// export function resolvablePromise<T>(): [Promise<T>, (T) => void] {
+//     const [promise, resolveFn, _] = resolvableAndRejectablePromise<T>()
+//     return [promise, resolveFn]
+// }
+
 
 @singleton()
 export class GolangBuilder extends ShellCommand {
@@ -17,23 +33,21 @@ export class GolangBuilder extends ShellCommand {
 
     cmd(): [string, string[]] {
         return ["make", [
+            "-C",
+            "..",
             "install",
         ]]
     }
 
-    override run(): Promise<void> {
-        return new Promise((resolve, reject) => {
-            const [c, args] = this.cmd()
-            const process = childProcess.spawn(c, args, {stdio: "inherit"})
-            process.on("error", err => {
-                reject(err)
-            })
-            process.on("exit", e => {
-                if (e && e != 0) {
-                    reject(e)
-                } else
-                    resolve()
-            })
-        })
+    completion = new ReplaySubject<GolangResults>(1)
+
+    override async run(): Promise<void> {
+        const pq = childProcess.spawnSync(this.cmd()[0], this.cmd()[1])
+        this.completion.next({golangBuilt: true, output: pq.stdout.toString()})
+        return Promise.resolve()
+    }
+
+    results(): Promise<GolangResults> {
+        return firstValueFrom(this.completion)
     }
 }

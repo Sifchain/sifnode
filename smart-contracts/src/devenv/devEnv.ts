@@ -1,14 +1,16 @@
+type RunnerResult = EthereumResults | GolangResults
+
 export abstract class ShellCommand {
     abstract run(): Promise<void>
 
     abstract cmd(): [string, string[]]
 
-    abstract results(): Promise<EthereumResults>
+    abstract results(): Promise<EthereumResults | GolangResults >
 
     /**
      * A combination of run and results
      */
-    go(): [Promise<void>, Promise<EthereumResults>] {
+    go(): [Promise<void>, Promise<RunnerResult>] {
         return [this.run(), this.results()]
     }
 }
@@ -37,4 +39,9 @@ export interface EthereumResults {
     httpPort: number,
     chainId: number,  // note that hardhat doesn't believe networkId exists...
     accounts: EthereumAccounts
+}
+
+export interface GolangResults {
+    golangBuilt: boolean,
+    output: string
 }
