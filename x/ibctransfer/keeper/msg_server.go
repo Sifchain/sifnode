@@ -4,9 +4,10 @@ import (
 	"context"
 	"fmt"
 
-	tokenregistrytypes "github.com/Sifchain/sifnode/x/tokenregistry/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
+
+	tokenregistrytypes "github.com/Sifchain/sifnode/x/tokenregistry/types"
 
 	"github.com/cosmos/cosmos-sdk/x/ibc/applications/transfer/types"
 )
@@ -35,17 +36,19 @@ func (srv msgServer) Transfer(goCtx context.Context, msg *types.MsgTransfer) (*t
 	registryEntry := srv.tokenRegistryKeeper.GetDenom(sdk.UnwrapSDKContext(goCtx), msg.Token.Denom)
 	// check if registry entry has an IBC decimal field
 	if registryEntry.IbcDenom != "" && registryEntry.Decimals > registryEntry.IbcDecimals {
-		token, convToken := ConvertTransfer(goCtx, msg, registryEntry)
-		err := SendConvertTransfer(goCtx, msg, token, convToken, srv.bankKeeper)
+		token, tokenConversion := ConvertCoinsForTransfer(goCtx, msg, registryEntry)
+		err := PrepareToSendConvertedCoins(goCtx, msg, token, tokenConversion, srv.bankKeeper)
 		if err != nil {
 			return nil, err
 		}
-		msg.Token = convToken
+		msg.Token = tokenConversion
 	}
 	return srv.sdkMsgServer.Transfer(goCtx, msg)
 }
 
-func ConvertTransfer(goCtx context.Context, msg *types.MsgTransfer, registryEntry tokenregistrytypes.RegistryEntry) (sdk.Coin, sdk.Coin) {
+// Converts the coins requested for transfer into an amount that should be deducted from requested denom,
+// and the Coins that should be minted in the new denom.
+func ConvertCoinsForTransfer(goCtx context.Context, msg *types.MsgTransfer, registryEntry tokenregistrytypes.RegistryEntry) (sdk.Coin, sdk.Coin) {
 	// calculate the conversion difference and reduce precision
 	po := registryEntry.Decimals - registryEntry.IbcDecimals
 	decAmount := sdk.NewDecFromInt(msg.Token.Amount)
@@ -62,30 +65,31 @@ func ConvertTransfer(goCtx context.Context, msg *types.MsgTransfer, registryEntr
 	return token, convToken
 }
 
-func SendConvertTransfer(goCtx context.Context, msg *types.MsgTransfer, token sdk.Coin, convToken sdk.Coin, bankKeeper bankkeeper.Keeper) error {
+func PrepareToSendConvertedCoins(goCtx context.Context, msg *types.MsgTransfer, token sdk.Coin, convToken sdk.Coin, bankKeeper bankkeeper.Keeper) error {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 	sender, err := sdk.AccAddressFromBech32(msg.Sender)
 	if err != nil {
 		return err
 	}
+	// Deduct requested denom so it can be converted to the denom that will be sent out
 	err = bankKeeper.SendCoinsFromAccountToModule(ctx, sender, types.ModuleName, sdk.NewCoins(token))
 	if err != nil {
 		return err
 	}
-	// mint ibcdenom coins
+	// Mint into module account the new coins of the denom that will be sent via IBC
 	err = bankKeeper.MintCoins(ctx, types.ModuleName, sdk.NewCoins(convToken))
 	if err != nil {
 		return err
 	}
-	// send coins from module account to address
+	// Send minted coins (from module account) to senders address
 	err = bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, sender, sdk.NewCoins(convToken))
 	if err != nil {
 		return err
 	}
-
+	// Record conversion event, sender and coins
 	ctx.EventManager().EmitEvent(
 		sdk.NewEvent(
-			tokenregistrytypes.EventTypeCovertTransfer,
+			tokenregistrytypes.EventTypeConvertTransfer,
 			sdk.NewAttribute(sdk.AttributeKeyModule, types.ModuleName),
 			sdk.NewAttribute(tokenregistrytypes.AttributeKeySentAmount, fmt.Sprintf("%d", token.Amount)),
 			sdk.NewAttribute(tokenregistrytypes.AttributeKeySentDenom, token.Denom),
