@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
 
-### chain init script for development purposes only ###
 
 helpFunction()
 {
