@@ -124,7 +124,19 @@ function initState({
   const sender = web3.utils.utf8ToHex("sif1nx650s8q9w28f2g3t9ztxyg48ugldptuwzpace");
   const state = {
     constants: {
-      zeroAddress: ZERO_ADDRESS
+      zeroAddress: ZERO_ADDRESS,
+      ethereum: {
+        nativeToken: {
+          name: "Ether",
+          symbol: "ETH"
+        }
+      },
+      binance: {
+        nativeToken: {
+          name: "Binance Coin",
+          symbol: "BNB"
+        }
+      },
     },
     initialValidators,
     initialPowers,
@@ -170,8 +182,10 @@ async function deployBaseContracts(state) {
     state.cosmosBridge.address,
     state.owner.address,
     state.pauser.address,
-    state.networkDescriptorMismatch ? state.networkDescriptor + 2 : state.networkDescriptor
-  ], { initializer: 'initialize(address,address,address,address,uint256)' });
+    state.networkDescriptorMismatch ? state.networkDescriptor + 2 : state.networkDescriptor,
+    state.constants.ethereum.nativeToken.name,
+    state.constants.ethereum.nativeToken.symbol,
+  ], { initializer: 'initialize(address,address,address,address,uint256,string,string)' });
   await state.bridgeBank.deployed();
 
   // Operator sets Bridge Bank

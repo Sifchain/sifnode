@@ -3,7 +3,12 @@ import type {BigNumberish, Contract} from 'ethers';
 import {BigNumber, ContractFactory} from "ethers";
 import {HardhatRuntimeEnvironment} from "hardhat/types";
 import {EthereumAddress, NotNativeCurrencyAddress} from "../ethereumAddress";
-import {HardhatRuntimeEnvironmentToken, NetworkDescriptorToken,} from "./injectionTokens";
+import {
+  HardhatRuntimeEnvironmentToken,
+  NetworkDescriptorToken,
+  NativeTokenNameToken,
+  NativeTokenSymbolToken
+} from "./injectionTokens";
 import {SifchainAccounts, SifchainAccountsPromise} from "./sifchainAccounts";
 import {
     BridgeBank,
@@ -102,6 +107,14 @@ export function defaultCosmosBridgeArguments(sifchainAccounts: SifchainAccounts,
     {
         token: NetworkDescriptorToken,
         useValue: 1
+    },
+    {
+      token: NativeTokenNameToken,
+      useValue: "Ether"
+    },
+    {
+      token: NativeTokenSymbolToken,
+      useValue: "ETH"
     }
 ])
 
@@ -110,7 +123,9 @@ export class BridgeBankArguments {
     constructor(
         private readonly cosmosBridgeProxy: CosmosBridgeProxy,
         private readonly sifchainAccountsPromise: SifchainAccountsPromise,
-        @inject(NetworkDescriptorToken) private readonly networkDescriptor: number
+        @inject(NetworkDescriptorToken) private readonly networkDescriptor: number,
+        @inject(NativeTokenNameToken) private readonly nativeTokenName: string,
+        @inject(NativeTokenSymbolToken) private readonly nativeTokenSymbol: string,
     ) {
     }
 
@@ -122,7 +137,9 @@ export class BridgeBankArguments {
             cosmosBridge.address,
             accts.ownerAccount.address,
             accts.pauserAccount.address,
-            this.networkDescriptor
+            this.networkDescriptor,
+            this.nativeTokenName,
+            this.nativeTokenSymbol
         ]
         return result
     }
@@ -142,7 +159,7 @@ export class BridgeBankProxy {
             const bridgeBankArguments = await this.bridgeBankArguments.asArray()
             const bridgeBankProxy = await h.upgrades.deployProxy(bridgeBankFactory,
                 bridgeBankArguments,
-                { initializer: 'initialize(address,address,address,address,uint256)' }
+                { initializer: 'initialize(address,address,address,address,uint256,string,string)' }
             ) as BridgeBank
             await bridgeBankProxy.deployed()
             return bridgeBankProxy

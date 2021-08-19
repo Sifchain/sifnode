@@ -85,7 +85,9 @@ describe("Security Test", function () {
         accounts[4].address, // was state.cosmosBridge.address
         accounts[5].address, // was owner.address
         accounts[6].address, // was pauser.address
-        state.networkDescriptor + 1 // was state.networkDescriptor
+        state.networkDescriptor + 1, // was state.networkDescriptor,
+        state.constants.binance.nativeToken.name, // was state.constants.ethereum.nativeToken.name
+        state.constants.binance.nativeToken.symbol // state.constants.ethereum.nativeToken.name
       )).to.be.fulfilled;
 
       expect(await state.bridgeBank.operator()).to.equal(accounts[3].address);
@@ -93,6 +95,10 @@ describe("Security Test", function () {
       expect(await state.bridgeBank.owner()).to.equal(accounts[5].address);
       expect(await state.bridgeBank.pausers(accounts[6].address)).to.equal(true);
       expect(await state.bridgeBank.networkDescriptor()).to.equal(state.networkDescriptor + 1);
+      expect(await state.bridgeBank.contractName(state.constants.zeroAddress))
+        .to.equal(state.constants.binance.nativeToken.name);
+      expect(await state.bridgeBank.contractSymbol(state.constants.zeroAddress))
+        .to.equal(state.constants.binance.nativeToken.symbol);
 
       // Expect to keep the previous pauser too
       expect(await state.bridgeBank.pausers(pauser.address)).to.equal(true);
@@ -104,7 +110,9 @@ describe("Security Test", function () {
         state.cosmosBridge.address,
         owner.address,
         pauser.address,
-        state.networkDescriptor
+        state.networkDescriptor,
+        state.constants.binance.nativeToken.name,
+        state.constants.binance.nativeToken.symbol
       )).to.be.fulfilled;
 
       await expect(state.bridgeBank.connect(operator).reinitialize(
@@ -112,7 +120,9 @@ describe("Security Test", function () {
         state.cosmosBridge.address,
         owner.address,
         pauser.address,
-        state.networkDescriptor
+        state.networkDescriptor,
+        state.constants.binance.nativeToken.name,
+        state.constants.binance.nativeToken.symbol
       )).to.be.rejectedWith('Already reinitialized');
     });
 
@@ -122,7 +132,9 @@ describe("Security Test", function () {
         state.cosmosBridge.address,
         owner.address,
         pauser.address,
-        state.networkDescriptor
+        state.networkDescriptor,
+        state.constants.binance.nativeToken.name,
+        state.constants.binance.nativeToken.symbol
       )).to.be.revertedWith('!operator');
     });
 

@@ -39,15 +39,14 @@ contract BridgeBank is BankStorage,
         address _cosmosBridgeAddress,
         address _owner,
         address _pauser,
-        uint256 _networkDescriptor
+        uint256 _networkDescriptor,
+        string calldata nativeTokenName,
+        string calldata nativeTokenSymbol
     ) public {
         require(!_initialized, "Init");
 
         CosmosWhiteList._cosmosWhitelistInitialize();
         EthereumWhiteList.initialize();
-
-        contractName[address(0)] = "Ethereum";
-        contractSymbol[address(0)] = "ETH";
 
         _initialized = true;
 
@@ -56,7 +55,9 @@ contract BridgeBank is BankStorage,
             _cosmosBridgeAddress,
             _owner,
             _pauser,
-            _networkDescriptor
+            _networkDescriptor,
+            nativeTokenName,
+            nativeTokenSymbol
         );
     }
 
@@ -65,7 +66,9 @@ contract BridgeBank is BankStorage,
         address _cosmosBridgeAddress,
         address _owner,
         address _pauser,
-        uint256 _networkDescriptor
+        uint256 _networkDescriptor,
+        string calldata nativeTokenName,
+        string calldata nativeTokenSymbol
     ) public onlyOperator {
         require(!_reinitialized, "Already reinitialized");
 
@@ -76,7 +79,9 @@ contract BridgeBank is BankStorage,
             _cosmosBridgeAddress,
             _owner,
             _pauser,
-            _networkDescriptor
+            _networkDescriptor,
+            nativeTokenName,
+            nativeTokenSymbol
         );
     }
 
@@ -85,7 +90,9 @@ contract BridgeBank is BankStorage,
         address _cosmosBridgeAddress,
         address _owner,
         address _pauser,
-        uint256 _networkDescriptor
+        uint256 _networkDescriptor,
+        string calldata nativeTokenName,
+        string calldata nativeTokenSymbol
     ) private {
         Pausable._pausableInitialize(_pauser);
 
@@ -93,6 +100,9 @@ contract BridgeBank is BankStorage,
         cosmosBridge = _cosmosBridgeAddress;
         owner = _owner;
         networkDescriptor = _networkDescriptor;
+
+        contractName[address(0)] = nativeTokenName;
+        contractSymbol[address(0)] = nativeTokenSymbol;
     }
 
     /*
