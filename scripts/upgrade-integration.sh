@@ -5,7 +5,7 @@ clibuilder()
 {
    echo ""
    echo "Usage: $0 -u UpgradeName -c CurrentBinary -n NewBinary"
-   echo -e "\t-u Name on the upgrade [Must match a handler defined in setup-handlers.go in NewBinary]"
+   echo -e "\t-u Name of the upgrade [Must match a handler defined in setup-handlers.go in NewBinary]"
    echo -e "\t-c Download link for current Binary"
    echo -e "\t-n Download link for new Binary"
    exit 1 # Exit script after printing help
