@@ -95,7 +95,3 @@ sleep 5
 sifnoded query gov proposal 1
 
 tail -f sifnode.log
-
-#Upgrade : 0.9.3
-#Old : https://filebin.net/ez0139j5zzh76uba/sifnoded
-#New : https://filebin.net/q67j0mjnckxgmn90/sifnoded
