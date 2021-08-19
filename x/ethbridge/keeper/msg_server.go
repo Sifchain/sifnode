@@ -55,6 +55,9 @@ func (srv msgServer) Lock(goCtx context.Context, msg *types.MsgLock) (*types.Msg
 	globalNonce := srv.Keeper.GetGlobalNonce(ctx, msg.NetworkDescriptor)
 	srv.Keeper.UpdateGlobalNonce(ctx, msg.NetworkDescriptor)
 
+	// TODO confirm the double peg logic
+	doublePeg := tokenMetadata.NetworkDescriptor != msg.NetworkDescriptor
+
 	err = srv.oracleKeeper.SetProphecyInfo(ctx,
 		prophecyID,
 		msg.NetworkDescriptor,
@@ -65,8 +68,7 @@ func (srv msgServer) Lock(goCtx context.Context, msg *types.MsgLock) (*types.Msg
 		tokenMetadata.TokenAddress,
 		msg.Amount,
 		msg.CrosschainFee,
-		// TODO decide the double peggy and global nonce
-		false,
+		doublePeg,
 		globalNonce,
 	)
 
@@ -122,6 +124,9 @@ func (srv msgServer) Burn(goCtx context.Context, msg *types.MsgBurn) (*types.Msg
 	globalNonce := srv.Keeper.GetGlobalNonce(ctx, msg.NetworkDescriptor)
 	srv.Keeper.UpdateGlobalNonce(ctx, msg.NetworkDescriptor)
 
+	// TODO confirm the double peg logic
+	doublePeg := tokenMetadata.NetworkDescriptor != msg.NetworkDescriptor
+
 	err = srv.oracleKeeper.SetProphecyInfo(ctx,
 		prophecyID,
 		msg.NetworkDescriptor,
@@ -132,8 +137,7 @@ func (srv msgServer) Burn(goCtx context.Context, msg *types.MsgBurn) (*types.Msg
 		tokenMetadata.TokenAddress,
 		msg.Amount,
 		msg.CrosschainFee,
-		// TODO decide the double peggy and global nonce
-		false,
+		doublePeg,
 		globalNonce,
 	)
 
