@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 
-helpFunction()
+clibuilder()
 {
    echo ""
    echo "Usage: $0 -u UpgradeName -c CurrentBinary -n NewBinary"
@@ -17,19 +17,16 @@ do
       u ) UpgradeName="$OPTARG" ;;
       c ) CurrentBinary="$OPTARG" ;;
       n ) NewBinary="$OPTARG" ;;
-      ? ) helpFunction ;; # Print helpFunction in case parameter is non-existent
+      ? ) clibuilder ;; # Print cliBuilder in case parameter is non-existent
    esac
 done
 
 if [ -z "$UpgradeName" ] || [ -z "$CurrentBinary" ] || [ -z "$NewBinary" ]
 then
    echo "Some or all of the parameters are empty";
-   helpFunction
+   clibuilder
 fi
 
-echo "$UpgradeName"
-echo "$CurrentBinary"
-echo "$NewBinary"
 
 export DAEMON_HOME=$HOME/.sifnoded
 export DAEMON_NAME=sifnoded
@@ -87,7 +84,7 @@ echo "${contents}" > $DAEMON_HOME/config/genesis.json
 
 cosmovisor start >> sifnode.log 2>&1  &
 sleep 10
-yes Y | sifnoded tx gov submit-proposal software-upgrade $UpgradeName --from sif --deposit 100000000stake --upgrade-height 20 --title $UpgradeName --description $UpgradeName --keyring-backend test --chain-id localnet
+yes Y | sifnoded tx gov submit-proposal software-upgrade $UpgradeName --from sif --deposit 100000000stake --upgrade-height 10 --title $UpgradeName --description $UpgradeName --keyring-backend test --chain-id localnet
 sleep 5
 yes Y | sifnoded tx gov vote 1 yes --from sif --keyring-backend test --chain-id localnet
 clear
