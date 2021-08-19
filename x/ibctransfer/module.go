@@ -166,7 +166,7 @@ func (am AppModule) RegisterInvariants(ir sdk.InvariantRegistry) {
 
 // Route returns the message routing key for the dispensation module.
 func (am AppModule) Route() sdk.Route {
-	return am.cosmosAppModule.Route()
+	return sdk.NewRoute(sdktransfertypes.RouterKey, transfer.NewHandler(keeper.NewMsgServerImpl(am.sdkTransferKeeper, am.bankKeeper, am.whitelistKeeper)))
 }
 
 // QuerierRoute returns the dispensation module's querier route name.
