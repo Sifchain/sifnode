@@ -58,7 +58,7 @@ func ConvertCoinsForTransfer(goCtx context.Context, msg *types.MsgTransfer, regi
 	// create converted and sifchain tokens with corresponding denoms and amounts
 	convToken := sdk.NewCoin(registryEntry.IbcDenom, convAmount)
 	// increase convAmount precision to ensure amount deducted from address is the same that gets sent
-	tokenAmountDec := IncreasePrecision(convAmountDec, po)
+	tokenAmountDec := IncreasePrecision(sdk.NewDecFromInt(convAmount), po)
 	tokenAmount := sdk.NewIntFromBigInt(tokenAmountDec.TruncateInt().BigInt())
 	token := sdk.NewCoin(msg.Token.Denom, tokenAmount)
 
