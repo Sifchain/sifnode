@@ -1,27 +1,44 @@
 import {registry, singleton} from "tsyringe";
 import * as childProcess from "child_process"
 import * as hre from "hardhat"
-import {EthereumAccounts, EthereumAddressAndKey, EthereumResults, ShellCommand} from "./devEnv"
+import {
+    EthereumAccounts,
+    EthereumAddressAndKey,
+    EthereumResults,
+    GolangResults,
+    ShellCommand
+} from "./devEnv"
 
-@registry([{
-    token: EthereumArguments,
-    useValue: new EthereumArguments("localhost", 8545, 1, 1, 1)
-}])
-export class EthereumArguments {
+export class SifnodedArguments {
+    // "input": {
+    //     "basedir": "/sifnode",
+    //     "logfile": "/logs/ganache.log",
+    //     "configoutputfile": "/configs/sifnoded.json",
+    //     "rpc_port": 26657,
+    //     "n_validators": 1,
+    //     "chain_id": "localnet",
+    //     "network_config_file": "/tmp/netconfig.yml",
+    //     "seed_ip_address": "10.10.1.1",
+    //     "bin_prefix": "/gobin",
+    //     "go_build_config_path": "/configs/golang.json",
+    //     "sifnode_host": "sifnoded"
+    //   },
     constructor(
-        readonly host: string,
-        readonly port: number,
+        readonly logfile: string,
+        readonly rpcPort: number,
         readonly nValidators: number,
-        readonly networkId: number,
-        readonly chainId: number,
+        readonly chainId: string,
+        readonly networkConfigFile: string,
+        readonly seedIpAddress: string,
     ) {
     }
 }
 
 @singleton()
-export class HardhatNodeRunner extends ShellCommand<EthereumResults> {
+export class SifnodedRunner extends ShellCommand {
     constructor(
-        readonly args: EthereumArguments
+        readonly args: SifnodedArguments,
+        readonly golangResults: GolangResults
     ) {
         super();
     }
