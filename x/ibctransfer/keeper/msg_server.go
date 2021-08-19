@@ -11,8 +11,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/ibc/applications/transfer/types"
 )
 
-var _ types.MsgServer = msgServer{}
-
 type msgServer struct {
 	bankKeeper          bankkeeper.Keeper
 	tokenRegistryKeeper tokenregistrytypes.Keeper
@@ -28,6 +26,8 @@ func NewMsgServerImpl(sdkMsgServer types.MsgServer, bankKeeper bankkeeper.Keeper
 		tokenRegistryKeeper: tokenRegistryKeeper,
 	}
 }
+
+var _ types.MsgServer = msgServer{}
 
 // Transfer defines a rpc handler method for MsgTransfer.
 func (srv msgServer) Transfer(goCtx context.Context, msg *types.MsgTransfer) (*types.MsgTransferResponse, error) {
