@@ -189,14 +189,12 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
         require(sigs.length == signatureData.length, "INV_SIG_LEN");
 
         uint256 intermediateNonce = lastNonceSubmitted;
-        require(intermediateNonce + 1 == claims[0].nonce, "INV_ORD");
+        lastNonceSubmitted += claims.length;
 
         for (uint256 i = 0; i < sigs.length; i++) {
-            intermediateNonce++;
+            require(intermediateNonce + 1 + i == claims[i].nonce, "INV_ORD");
             _submitProphecyClaimAggregatedSigs(sigs[i], claims[i], signatureData[i]);
         }
-
-        lastNonceSubmitted = intermediateNonce;
     }
 
     function submitProphecyClaimAggregatedSigs(
@@ -207,10 +205,10 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
         uint256 previousNonce = lastNonceSubmitted;
         require(previousNonce + 1 == claimData.nonce, "INV_ORD");
 
-        _submitProphecyClaimAggregatedSigs(hashDigest, claimData, signatureData);
-
         // update the nonce
         lastNonceSubmitted = claimData.nonce;
+
+        _submitProphecyClaimAggregatedSigs(hashDigest, claimData, signatureData);
     }
 
     function _submitProphecyClaimAggregatedSigs(

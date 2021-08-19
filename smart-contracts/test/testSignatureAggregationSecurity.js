@@ -3,7 +3,8 @@ const {
   setup,
   deployTrollToken,
   getDigestNewProphecyClaim,
-  getValidClaim
+  getValidClaim,
+  batchAddTokensToEthWhitelist
 } = require('./helpers/testFixture');
 
 const web3 = require("web3");
@@ -377,6 +378,89 @@ describe("submitProphecyClaimAggregatedSigs Security", function () {
             signatures
           )
       ).to.be.revertedWith("INV_ORD");
+    });
+
+    it("one of the claims in a batch prophecy claim has the wrong nonce", async function () {
+      // Add tokens 2 and 3 into white list
+      await batchAddTokensToEthWhitelist(state, [state.token2.address, state.token3.address])
+      
+      // Lock token2 on contract
+      await state.bridgeBank.connect(userOne).lock(
+        state.sender,
+        state.token2.address,
+        state.amount
+      ).should.be.fulfilled;
+
+      // Lock token3 on contract
+      await state.bridgeBank.connect(userOne).lock(
+        state.sender,
+        state.token3.address,
+        state.amount
+      ).should.be.fulfilled;
+
+      // Last nonce should be 0
+      let lastNonceSubmitted = Number(await state.cosmosBridge.lastNonceSubmitted());
+      expect(lastNonceSubmitted).to.be.equal(0);
+
+      state.nonce = 1;
+
+      const { digest, claimData, signatures } = await getValidClaim({
+        sender: state.sender,
+        senderSequence: state.senderSequence,
+        recipientAddress: state.recipient.address,
+        tokenAddress: state.token1.address,
+        amount: state.amount,
+        doublePeg: false,
+        nonce: state.nonce,
+        networkDescriptor: state.networkDescriptor,
+        tokenName: state.name,
+        tokenSymbol: state.symbol,
+        tokenDecimals: state.decimals,
+        validators: accounts.slice(1, 5),
+      });
+
+      const { digest: digest2, claimData: claimData2, signatures: signatures2 } = await getValidClaim({
+        sender: state.sender,
+        senderSequence: state.senderSequence,
+        recipientAddress: state.recipient.address,
+        tokenAddress: state.token2.address,
+        amount: state.amount,
+        doublePeg: false,
+        nonce: state.nonce + 2, // this should be rejected because the expected value is state.nonce + 1
+        networkDescriptor: state.networkDescriptor,
+        tokenName: state.name,
+        tokenSymbol: state.symbol,
+        tokenDecimals: state.decimals,
+        validators: accounts.slice(1, 5),
+      });
+
+      const { digest: digest3, claimData: claimData3, signatures: signatures3 } = await getValidClaim({
+        sender: state.sender,
+        senderSequence: state.senderSequence,
+        recipientAddress: state.recipient.address,
+        tokenAddress: state.token3.address,
+        amount: state.amount,
+        doublePeg: false,
+        nonce: state.nonce + 2, 
+        networkDescriptor: state.networkDescriptor,
+        tokenName: state.name,
+        tokenSymbol: state.symbol,
+        tokenDecimals: state.decimals,
+        validators: accounts.slice(1, 5),
+      });
+
+      await expect(state.cosmosBridge
+        .connect(userOne)
+        .batchSubmitProphecyClaimAggregatedSigs(
+            [digest, digest2, digest3],
+            [claimData, claimData2, claimData3],
+            [signatures, signatures2, signatures3]
+        ))
+        .to.be.rejectedWith('INV_ORD');
+      
+      // global nonce should not have changed:
+      lastNonceSubmitted = Number(await state.cosmosBridge.lastNonceSubmitted());
+      expect(lastNonceSubmitted).to.be.equal(0);
     });
   });
 });
