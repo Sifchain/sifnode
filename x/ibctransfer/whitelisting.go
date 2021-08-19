@@ -243,7 +243,7 @@ func sendConvertRecvDenom(
 	}
 	ctx.EventManager().EmitEvent(
 		sdk.NewEvent(
-			tokenregistrytypes.EventTypeCovertReceived,
+			tokenregistrytypes.EventTypeConvertReceived,
 			sdk.NewAttribute(sdk.AttributeKeyModule, transfertypes.ModuleName),
 			sdk.NewAttribute(tokenregistrytypes.AttributeKeyPacketAmount, fmt.Sprintf("%d", ibcToken.Amount)),
 			sdk.NewAttribute(tokenregistrytypes.AttributeKeyPacketDenom, ibcToken.Denom),
