@@ -1,15 +1,38 @@
 import {registry, singleton} from "tsyringe";
-import * as childProcess from "child_process"
-import * as hre from "hardhat"
-import {
-    EthereumAccounts,
-    EthereumAddressAndKey,
-    EthereumResults,
-    ShellCommand
-} from "./devEnv"
-import {GolangResults, GolangResultsPromise} from "./golangBuilder";
+import * as ChildProcess from "child_process"
+import {SpawnSyncReturns} from "child_process"
+import {ShellCommand} from "./devEnv"
+import {GolangResultsPromise} from "./golangBuilder";
 import * as path from "path"
-import {SpawnSyncReturns} from "child_process";
+import events from "events";
+import {lastValueFrom, ReplaySubject} from "rxjs";
+import * as fs from "fs";
+import YAML from 'yaml'
+
+class ErrorEvent {
+    constructor(readonly errorObject: any) {
+    }
+}
+
+function eventEmitterToObservable(eventEmitter: events.EventEmitter) {
+    const subject = new ReplaySubject<"exit" | ErrorEvent>(1)
+    eventEmitter.on('error', e => {
+        subject.error(new ErrorEvent(e))
+    })
+    eventEmitter.on('exit', e => {
+        console.log("in eventEmitter")
+        switch (e) {
+            case 0:
+                subject.next("exit")
+                subject.complete()
+                break
+            default:
+                subject.error(new ErrorEvent(e))
+                break
+        }
+    })
+    return subject.asObservable()
+}
 
 @registry([
     {
@@ -70,7 +93,7 @@ export class SifnodedRunner extends ShellCommand<SifnodedResults> {
     }
 
     ensureCorrectExecution(result: SpawnSyncReturns<string>): SpawnSyncReturns<string> {
-        if (result.error || result?.stderr != undefined) {
+        if (result.error || (result?.stderr ?? "") != "") {
             console.log("error stdout: ", result.stdout)
             console.log("error stderr: ", result.stderr)
             throw result.error
@@ -79,22 +102,51 @@ export class SifnodedRunner extends ShellCommand<SifnodedResults> {
     }
 
     async sifgenNetworkCreate() {
-        // sifgen network create localnet 1 $NETWORKDIR 192.168.1.2 $NETWORKDIR/network-definition.yml --keyring-backend test --mint-amount 999999000000000000000000000rowan,1370000000000000000ibc/FEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACE
         const sifgenArgs = [
             "network",
             "create",
+            "--keyring-backend",
+            "test",
             this.args.chainId,
             this.args.nValidators.toString(),
             this.args.networkDir,
             this.args.seedIpAddress,
             this.args.networkConfigFile
         ]
-        this.ensureCorrectExecution(childProcess.spawnSync(
+        this.ensureCorrectExecution(ChildProcess.spawnSync(
                 path.join((await this.golangResults.results).goBin, "sifgen"),
                 sifgenArgs,
                 {encoding: "utf8"}
             )
         )
+        const file = fs.readFileSync(this.args.networkConfigFile, 'utf8')
+        const networkConfig = YAML.parse(file)
+        await this.addValidatorKeyToTestKeyring(
+            networkConfig[0]["moniker"],
+            this.args.networkDir,
+            networkConfig[0]["mnemonic"],
+        )
+        console.log("finishedaddval")
+    }
+
+    // echo "$MNEMONIC" | sifnoded keys add $MONIKER --keyring-backend test --recover
+    // valoper=$(sifnoded keys show -a --bech val $MONIKER --home $CHAINDIR/.sifnoded --keyring-backend test)
+    // sifnoded add-genesis-validators $valoper --home $CHAINDIR/.sifnoded
+    async addValidatorKeyToTestKeyring(moniker: string, chainDir: string, mnemonic: string) {
+        const sifgenArgs = [
+            "keys",
+            "add",
+            moniker,
+            "--keyring-backend",
+            "test",
+        ]
+        let child = ChildProcess.spawn(
+            path.join((await this.golangResults.results).goBin, "sifnoded"),
+            sifgenArgs,
+            {stdio: "pipe"}
+        );
+        child.stdin.end(mnemonic)
+        await lastValueFrom(eventEmitterToObservable(child))
     }
 
     async execute() {
@@ -102,10 +154,11 @@ export class SifnodedRunner extends ShellCommand<SifnodedResults> {
     }
 
     override run(): Promise<void> {
-        return this.execute().then(_ => this.run())
+        console.log("inrun")
+        return this.execute()
     }
 
     override async results(): Promise<SifnodedResults> {
-        throw "not implemented"
+        return Promise.resolve({})
     }
 }
