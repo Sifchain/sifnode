@@ -363,6 +363,26 @@ contract BridgeBank is BankStorage,
         return decimals;
     }
 
+    function getDenom(address token) private returns (string memory) {
+        string memory denom = contractDenom[token];
+
+        // check to see if we already have this name stored in the smart contract
+        if (keccak256(abi.encodePacked(denom)) != keccak256(abi.encodePacked(""))) {
+            return denom;
+        }
+
+        try BridgeToken(token).cosmosDenom() returns (string memory _denom) {
+            denom = _denom;
+            contractDenom[token] = _denom;
+        } catch {
+            // if we can't access the denom function of this token,
+            // use an empty string
+            denom = "";
+        }
+
+        return denom;
+    }
+
     /*
      * @dev: Locks received Ethereum/ERC20 funds.
      *

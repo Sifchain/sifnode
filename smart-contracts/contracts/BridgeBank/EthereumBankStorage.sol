@@ -33,10 +33,15 @@ contract EthereumBankStorage {
     */
     mapping (address => string) public contractName;
 
+    /**
+    * @notice contract denom based off of address
+    */
+    mapping (address => string) public contractDenom;
+
     /*
     * @notice gap of storage for future upgrades
     */
-    uint256[97] private ____gap;
+    uint256[96] private ____gap;
 
     /*
      * @dev: Event declarations

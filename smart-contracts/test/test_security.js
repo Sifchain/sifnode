@@ -292,7 +292,7 @@ describe("Security Test", function () {
       const sifAddress = "0x" + convertToHex("sif12qfvgsq76eghlagyfcfyt9md2s9nunsn40zu2h");
 
       // create new fake eRowan token
-      const bridgeToken = await BridgeToken.deploy("rowan", "rowan", 18, state.constants.cosmos.denom.rowan);
+      const bridgeToken = await BridgeToken.deploy("rowan", "rowan", 18, state.constants.denom.rowan);
 
       // Attempt to burn tokens
       await expect(
@@ -392,7 +392,7 @@ describe("Security Test", function () {
         tokenName: state.name,
         tokenSymbol: state.symbol,
         tokenDecimals: state.decimals,
-        cosmosDenom: state.constants.cosmos.denom.none,
+        cosmosDenom: state.constants.denom.one,
         validators: [userOne, userTwo, userFour],
       });
 
@@ -422,6 +422,7 @@ describe("Security Test", function () {
         tokenName: state.name,
         tokenSymbol: state.symbol,
         tokenDecimals: state.decimals,
+        cosmosDenom: state.constants.denom.ether,
         validators: [userOne, userTwo, userFour],
       });
 
@@ -471,6 +472,7 @@ describe("Security Test", function () {
         tokenName: state.name,
         tokenSymbol: state.symbol,
         tokenDecimals: state.decimals,
+        cosmosDenom: state.constants.denom.none,
         validators: [userOne, userTwo, userFour],
       });
 
@@ -522,6 +524,7 @@ describe("Security Test", function () {
         tokenName: "Troll",
         tokenSymbol: "TRL",
         tokenDecimals: state.decimals,
+        cosmosDenom: state.constants.denom.none,
         validators: [userOne, userTwo, userFour],
       });
 
@@ -563,6 +566,7 @@ describe("Security Test", function () {
         tokenName: state.name,
         tokenSymbol: state.symbol,
         tokenDecimals: state.decimals,
+        cosmosDenom: state.constants.denom.one,
         validators: [userOne, userTwo, userFour],
       });
 
@@ -575,7 +579,15 @@ describe("Security Test", function () {
           claimData,
           signatures
         )).to.emit(state.cosmosBridge, 'LogNewBridgeTokenCreated')
-        .withArgs(state.decimals, state.networkDescriptor, state.name, state.symbol, state.token1.address, expectedAddress);
+        .withArgs(
+          state.decimals,
+          state.networkDescriptor,
+          state.name,
+          state.symbol,
+          state.token1.address,
+          expectedAddress,
+          state.constants.denom.one
+        );
 
       const newlyCreatedTokenAddress = await state.cosmosBridge.sourceAddressToDestinationAddress(state.token1.address);
       expect(newlyCreatedTokenAddress).to.be.equal(expectedAddress);

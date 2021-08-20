@@ -116,6 +116,7 @@ describe("Gas Cost Tests", function () {
         tokenName: state.name,
         tokenSymbol: state.symbol,
         tokenDecimals: state.decimals,
+        cosmosDenom: state.constants.denom.one,
         validators: accounts.slice(1, 5),
       });
 
@@ -167,6 +168,7 @@ describe("Gas Cost Tests", function () {
         tokenName: state.name,
         tokenSymbol: state.symbol,
         tokenDecimals: state.decimals,
+        cosmosDenom: state.constants.denom.rowan,
         validators: accounts.slice(1, 5),
       });
 
@@ -207,6 +209,7 @@ describe("Gas Cost Tests", function () {
         tokenName: state.name,
         tokenSymbol: state.symbol,
         tokenDecimals: state.decimals,
+        cosmosDenom: state.constants.denom.one,
         validators: accounts.slice(1, 5),
       });
 
@@ -278,6 +281,7 @@ describe("Gas Cost Tests", function () {
         tokenName: state.name,
         tokenSymbol: state.symbol,
         tokenDecimals: state.decimals,
+        cosmosDenom: state.constants.denom.one,
         validators: accounts.slice(1, 5),
       });
 
@@ -293,6 +297,7 @@ describe("Gas Cost Tests", function () {
         tokenName: state.name,
         tokenSymbol: state.symbol,
         tokenDecimals: state.decimals,
+        cosmosDenom: state.constants.denom.two,
         validators: accounts.slice(1, 5),
       });
 
@@ -308,6 +313,7 @@ describe("Gas Cost Tests", function () {
         tokenName: state.name,
         tokenSymbol: state.symbol,
         tokenDecimals: state.decimals,
+        cosmosDenom: state.constants.denom.three,
         validators: accounts.slice(1, 5),
       });
 
@@ -357,6 +363,7 @@ describe("Gas Cost Tests", function () {
         tokenName: state.name,
         tokenSymbol: state.symbol,
         tokenDecimals: state.decimals,
+        cosmosDenom: state.constants.denom.one,
         validators: accounts.slice(1, 5),
       });
 
@@ -372,6 +379,7 @@ describe("Gas Cost Tests", function () {
         tokenName: state.name,
         tokenSymbol: state.symbol,
         tokenDecimals: state.decimals,
+        cosmosDenom: state.constants.denom.two,
         validators: accounts.slice(1, 5),
       });
 
@@ -387,6 +395,7 @@ describe("Gas Cost Tests", function () {
         tokenName: state.name,
         tokenSymbol: state.symbol,
         tokenDecimals: state.decimals,
+        cosmosDenom: state.constants.denom.three,
         validators: accounts.slice(1, 5),
       });
 

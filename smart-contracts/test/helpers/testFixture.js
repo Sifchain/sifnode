@@ -1,6 +1,8 @@
 const { ethers, upgrades } = require("hardhat");
 const web3 = require("web3");
 
+const { ROWAN_DENOM, ETHER_DENOM, DENOM_1, DENOM_2, DENOM_3, DENOM_4 } = require('./denoms');
+
 const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
 
 async function returnContractObjects() {
@@ -31,7 +33,7 @@ function getDigestNewProphecyClaim(data) {
     "string"
   ];
 
-  if(types.length !== data.length) {
+  if (types.length !== data.length) {
     throw new Error("testFixture::getDigestNewProphecyClaim: invalid data length");
   }
 
@@ -90,7 +92,7 @@ async function setup({
   await deployRowan(state);
   await addTokenToEthWhitelist(state, state.token.address);
 
-  if(lockTokensOnBridgeBank) {
+  if (lockTokensOnBridgeBank) {
     // Lock tokens on contract
     await state.bridgeBank.connect(user).lock(
       state.sender,
@@ -126,15 +128,14 @@ function initState({
   const state = {
     constants: {
       zeroAddress: ZERO_ADDRESS,
-      cosmos: {
-        denom: {
-          none: "",
-          rowan: "rowanCosmosDenomHere",
-          one: "cosmosDenomHere1",
-          two: "cosmosDenomHere2",
-          three: "cosmosDenomHere3",
-          four: "cosmosDenomHere4",
-        }
+      denom: {
+        none: "",
+        rowan: ROWAN_DENOM,
+        ether: ETHER_DENOM,
+        one: DENOM_1,
+        two: DENOM_2,
+        three: DENOM_3,
+        four: DENOM_4,
       }
     },
     initialValidators,
@@ -189,32 +190,36 @@ async function deployBaseContracts(state) {
   await state.cosmosBridge.connect(state.operator).setBridgeBank(state.bridgeBank.address);
 
   // Deploy BridgeTokens
-  state.token = await BridgeToken.deploy(state.name, state.symbol, state.decimals, state.constants.cosmos.denom.one);
-  state.token1 = await BridgeToken.deploy(state.name, state.symbol, state.decimals, state.constants.cosmos.denom.two);
-  state.token2 = await BridgeToken.deploy(state.name, state.symbol, state.decimals, state.constants.cosmos.denom.three);
-  state.token3 = await BridgeToken.deploy(state.name, state.symbol, state.decimals, state.constants.cosmos.denom.four);
+  state.token = await BridgeToken.deploy(state.name, state.symbol, state.decimals, state.constants.denom.one);
+  state.token1 = await BridgeToken.deploy(state.name, state.symbol, state.decimals, state.constants.denom.two);
+  state.token2 = await BridgeToken.deploy(state.name, state.symbol, state.decimals, state.constants.denom.three);
+  state.token3 = await BridgeToken.deploy(state.name, state.symbol, state.decimals, state.constants.denom.four);
+  state.token_noDenom = await BridgeToken.deploy(state.name, state.symbol, state.decimals, state.constants.denom.none);
 
   await state.token.deployed();
   await state.token1.deployed();
   await state.token2.deployed();
   await state.token3.deployed();
+  await state.token_noDenom.deployed();
 
   // Load user account with ERC20 tokens for testing
   await state.token.connect(state.operator).mint(state.user.address, state.amount * 2);
   await state.token1.connect(state.operator).mint(state.user.address, state.amount * 2);
   await state.token2.connect(state.operator).mint(state.user.address, state.amount * 2);
   await state.token3.connect(state.operator).mint(state.user.address, state.amount * 2);
+  await state.token_noDenom.connect(state.operator).mint(state.user.address, state.amount * 2);
 
   // Approve BridgeBank
   await state.token.connect(state.user).approve(state.bridgeBank.address, state.amount * 2);
   await state.token1.connect(state.user).approve(state.bridgeBank.address, state.amount * 2);
   await state.token2.connect(state.user).approve(state.bridgeBank.address, state.amount * 2);
   await state.token3.connect(state.user).approve(state.bridgeBank.address, state.amount * 2);
+  await state.token_noDenom.connect(state.user).approve(state.bridgeBank.address, state.amount * 2);
 }
 
 async function deployRowan(state) {
   // deploy
-  state.rowan = await state.factories.BridgeToken.deploy("rowan", "rowan", state.decimals, state.constants.cosmos.denom.rowan);
+  state.rowan = await state.factories.BridgeToken.deploy("rowan", "rowan", state.decimals, state.constants.denom.rowan);
   await state.rowan.deployed();
 
   // mint tokens
@@ -316,5 +321,5 @@ module.exports = {
   getDigestNewProphecyClaim,
   getValidClaim,
   addTokenToEthWhitelist,
-  batchAddTokensToEthWhitelist
+  batchAddTokensToEthWhitelist,
 };

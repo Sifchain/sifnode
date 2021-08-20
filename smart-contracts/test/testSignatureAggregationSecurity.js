@@ -104,6 +104,7 @@ describe("submitProphecyClaimAggregatedSigs Security", function () {
         tokenName: state.name,
         tokenSymbol: state.symbol,
         tokenDecimals: state.decimals,
+        cosmosDenom: state.constants.denom.none,
         validators: [userOne, userTwo, userFour],
       });
 
@@ -131,7 +132,8 @@ describe("submitProphecyClaimAggregatedSigs Security", function () {
         state.networkDescriptor,
         state.name,
         state.symbol,
-        state.decimals
+        state.decimals,
+        state.constants.denom.none
       ]);
 
       const signatures = await signHash([userOne, userTwo, userFour], digest);
@@ -146,7 +148,8 @@ describe("submitProphecyClaimAggregatedSigs Security", function () {
         networkDescriptor: state.networkDescriptor,
         tokenName: state.name,
         tokenSymbol: state.symbol,
-        tokenDecimals: state.decimals
+        tokenDecimals: state.decimals,
+        cosmosDenom: state.constants.denom.none
       };
 
       await expect(
@@ -176,6 +179,7 @@ describe("submitProphecyClaimAggregatedSigs Security", function () {
         tokenName: state.name,
         tokenSymbol: state.symbol,
         tokenDecimals: state.decimals,
+        cosmosDenom: state.constants.denom.none,
         validators: [userOne, userTwo, userFour, userFour],
       });
 
@@ -206,6 +210,7 @@ describe("submitProphecyClaimAggregatedSigs Security", function () {
         tokenName: state.name,
         tokenSymbol: state.symbol,
         tokenDecimals: state.decimals,
+        cosmosDenom: state.constants.denom.none,
         validators: [userOne, userTwo, operator],
       });
 
@@ -234,7 +239,8 @@ describe("submitProphecyClaimAggregatedSigs Security", function () {
         state.networkDescriptor,
         state.name,
         state.symbol,
-        state.decimals
+        state.decimals,
+        state.constants.denom.none,
       ]);
 
       const invalidDigest = getDigestNewProphecyClaim([
@@ -248,7 +254,8 @@ describe("submitProphecyClaimAggregatedSigs Security", function () {
         state.networkDescriptor,
         state.name,
         state.symbol,
-        state.decimals
+        state.decimals,
+        state.constants.denom.none,
       ]);
 
       const signatures = await signHash([userOne, userTwo], digest);
@@ -269,6 +276,7 @@ describe("submitProphecyClaimAggregatedSigs Security", function () {
         tokenName: state.name,
         tokenSymbol: state.symbol,
         tokenDecimals: state.decimals,
+        cosmosDenom: state.constants.denom.none,
       };
 
       await expect(
@@ -298,6 +306,7 @@ describe("submitProphecyClaimAggregatedSigs Security", function () {
         tokenName: state.name,
         tokenSymbol: state.symbol,
         tokenDecimals: state.decimals,
+        cosmosDenom: state.constants.denom.none,
         validators: [userOne, userTwo],
       });
 
@@ -328,6 +337,7 @@ describe("submitProphecyClaimAggregatedSigs Security", function () {
         tokenName: state.name,
         tokenSymbol: state.symbol,
         tokenDecimals: state.decimals,
+        cosmosDenom: state.constants.denom.none,
         validators: [userOne, userTwo, userFour],
       });
 
@@ -358,6 +368,7 @@ describe("submitProphecyClaimAggregatedSigs Security", function () {
         tokenName: state.name,
         tokenSymbol: state.symbol,
         tokenDecimals: state.decimals,
+        cosmosDenom: state.constants.denom.none,
         validators: [userOne, userTwo, userFour],
       });
 
@@ -416,6 +427,7 @@ describe("submitProphecyClaimAggregatedSigs Security", function () {
         tokenName: state.name,
         tokenSymbol: state.symbol,
         tokenDecimals: state.decimals,
+        cosmosDenom: state.constants.denom.one,
         validators: accounts.slice(1, 5),
       });
 
@@ -431,6 +443,7 @@ describe("submitProphecyClaimAggregatedSigs Security", function () {
         tokenName: state.name,
         tokenSymbol: state.symbol,
         tokenDecimals: state.decimals,
+        cosmosDenom: state.constants.denom.two,
         validators: accounts.slice(1, 5),
       });
 
@@ -446,6 +459,7 @@ describe("submitProphecyClaimAggregatedSigs Security", function () {
         tokenName: state.name,
         tokenSymbol: state.symbol,
         tokenDecimals: state.decimals,
+        cosmosDenom: state.constants.denom.three,
         validators: accounts.slice(1, 5),
       });
 

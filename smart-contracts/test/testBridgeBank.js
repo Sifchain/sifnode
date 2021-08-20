@@ -151,7 +151,7 @@ describe("Test Bridge Bank", function () {
   describe("BridgeBank single lock burn transactions", function () {
     it("should allow a user to burn tokens from the bridge bank", async function () {
       const BridgeToken = await ethers.getContractFactory("BridgeToken");
-      const bridgeToken = await BridgeToken.deploy("rowan", "rowan", 18);
+      const bridgeToken = await BridgeToken.deploy("rowan", "rowan", 18, state.constants.denom.rowan);
 
       await bridgeToken.connect(operator).mint(userOne.address, state.amount);
       await bridgeToken.connect(userOne).approve(state.bridgeBank.address, state.amount);
