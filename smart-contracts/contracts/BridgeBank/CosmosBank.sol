@@ -14,7 +14,11 @@ contract CosmosBank is CosmosBankStorage {
     /*
      * @dev: Event declarations
      */
-    event LogNewBridgeToken(address indexed _token, string indexed _symbol);
+    event LogNewBridgeToken(
+        address indexed _token,
+        string indexed _symbol,
+        string indexed _cosmosDenom
+    );
 
     event LogBridgeTokenMint(
         address _token,
@@ -30,7 +34,8 @@ contract CosmosBank is CosmosBankStorage {
     function deployNewBridgeToken(
         string memory _name,
         string memory _symbol,
-        uint8 _decimals
+        uint8 _decimals,
+        string memory _cosmosDenom
     )
         internal
         returns (address)
@@ -39,13 +44,14 @@ contract CosmosBank is CosmosBankStorage {
         BridgeToken newBridgeToken = new BridgeToken(
             _name,
             _symbol,
-            _decimals
+            _decimals,
+            _cosmosDenom
         );
 
         // Set address in tokens mapping
         address newBridgeTokenAddress = address(newBridgeToken);
 
-        emit LogNewBridgeToken(newBridgeTokenAddress, _symbol);
+        emit LogNewBridgeToken(newBridgeTokenAddress, _symbol, _cosmosDenom);
         return newBridgeTokenAddress;
     }
 

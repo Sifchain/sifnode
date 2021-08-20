@@ -27,7 +27,8 @@ function getDigestNewProphecyClaim(data) {
     "uint256",
     "string",
     "string",
-    "uint8"
+    "uint8",
+    "string"
   ];
 
   if(types.length !== data.length) {
@@ -124,7 +125,17 @@ function initState({
   const sender = web3.utils.utf8ToHex("sif1nx650s8q9w28f2g3t9ztxyg48ugldptuwzpace");
   const state = {
     constants: {
-      zeroAddress: ZERO_ADDRESS
+      zeroAddress: ZERO_ADDRESS,
+      cosmos: {
+        denom: {
+          none: "",
+          rowan: "rowanCosmosDenomHere",
+          one: "cosmosDenomHere1",
+          two: "cosmosDenomHere2",
+          three: "cosmosDenomHere3",
+          four: "cosmosDenomHere4",
+        }
+      }
     },
     initialValidators,
     initialPowers,
@@ -178,10 +189,10 @@ async function deployBaseContracts(state) {
   await state.cosmosBridge.connect(state.operator).setBridgeBank(state.bridgeBank.address);
 
   // Deploy BridgeTokens
-  state.token = await BridgeToken.deploy(state.name, state.symbol, state.decimals);
-  state.token1 = await BridgeToken.deploy(state.name, state.symbol, state.decimals);
-  state.token2 = await BridgeToken.deploy(state.name, state.symbol, state.decimals);
-  state.token3 = await BridgeToken.deploy(state.name, state.symbol, state.decimals);
+  state.token = await BridgeToken.deploy(state.name, state.symbol, state.decimals, state.constants.cosmos.denom.one);
+  state.token1 = await BridgeToken.deploy(state.name, state.symbol, state.decimals, state.constants.cosmos.denom.two);
+  state.token2 = await BridgeToken.deploy(state.name, state.symbol, state.decimals, state.constants.cosmos.denom.three);
+  state.token3 = await BridgeToken.deploy(state.name, state.symbol, state.decimals, state.constants.cosmos.denom.four);
 
   await state.token.deployed();
   await state.token1.deployed();
@@ -203,7 +214,7 @@ async function deployBaseContracts(state) {
 
 async function deployRowan(state) {
   // deploy
-  state.rowan = await state.factories.BridgeToken.deploy("rowan", "rowan", state.decimals);
+  state.rowan = await state.factories.BridgeToken.deploy("rowan", "rowan", state.decimals, state.constants.cosmos.denom.rowan);
   await state.rowan.deployed();
 
   // mint tokens
@@ -256,6 +267,7 @@ async function getValidClaim({
   tokenName,
   tokenSymbol,
   tokenDecimals,
+  cosmosDenom,
   validators,
 }) {
   const digest = getDigestNewProphecyClaim([
@@ -270,6 +282,7 @@ async function getValidClaim({
     tokenName,
     tokenSymbol,
     tokenDecimals,
+    cosmosDenom
   ]);
 
   const signatures = await signHash(validators, digest);
@@ -286,6 +299,7 @@ async function getValidClaim({
     tokenName,
     tokenSymbol,
     tokenDecimals,
+    cosmosDenom
   };
 
   return {

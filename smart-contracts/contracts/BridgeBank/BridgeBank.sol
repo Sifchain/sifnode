@@ -230,12 +230,14 @@ contract BridgeBank is BankStorage,
     function createNewBridgeToken(
         string calldata name,
         string calldata symbol,
-        uint8 decimals
+        uint8 decimals,
+        string calldata cosmosDenom
     ) external onlyCosmosBridge returns (address) {
         address newTokenAddress = deployNewBridgeToken(
             name,
             symbol,
-            decimals
+            decimals,
+            cosmosDenom
         );
         setTokenInCosmosWhiteList(newTokenAddress, true);
 

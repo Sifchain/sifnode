@@ -180,7 +180,7 @@ class RowanContract {
         private sifchainContractFactories: SifchainContractFactories,
     ) {
         this.contract = sifchainContractFactories.bridgeToken.then(async bridgeToken => {
-            return await (bridgeToken as BridgeToken__factory).deploy("erowan", "erowan", 18) as BridgeToken
+            return await (bridgeToken as BridgeToken__factory).deploy("erowan", "erowan", 18, "cosmosDenomHere") as BridgeToken
         })
     }
 }

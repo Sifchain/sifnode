@@ -292,7 +292,7 @@ describe("Security Test", function () {
       const sifAddress = "0x" + convertToHex("sif12qfvgsq76eghlagyfcfyt9md2s9nunsn40zu2h");
 
       // create new fake eRowan token
-      const bridgeToken = await BridgeToken.deploy("rowan", "rowan", 18);
+      const bridgeToken = await BridgeToken.deploy("rowan", "rowan", 18, state.constants.cosmos.denom.rowan);
 
       // Attempt to burn tokens
       await expect(
@@ -392,6 +392,7 @@ describe("Security Test", function () {
         tokenName: state.name,
         tokenSymbol: state.symbol,
         tokenDecimals: state.decimals,
+        cosmosDenom: state.constants.cosmos.denom.none,
         validators: [userOne, userTwo, userFour],
       });
 

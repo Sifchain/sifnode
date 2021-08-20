@@ -27,7 +27,8 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
         string name,
         string symbol,
         address indexed sourceContractAddress,
-        address indexed bridgeTokenAddress
+        address indexed bridgeTokenAddress,
+        string cosmosDenom
     );
 
     event LogProphecyCompleted(uint256 prophecyID, bool success);
@@ -98,7 +99,8 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
         uint256 _networkDescriptor,
         string memory tokenName,
         string memory tokenSymbol,
-        uint8 tokenDecimals
+        uint8 tokenDecimals,
+        string memory cosmosDenom
     ) public pure returns (uint256) {
         return uint256(
             keccak256(
@@ -113,7 +115,8 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
                     _networkDescriptor,
                     tokenName,
                     tokenSymbol,
-                    tokenDecimals
+                    tokenDecimals,
+                    cosmosDenom
                 )
             )
         );
@@ -178,6 +181,7 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
         uint8 tokenDecimals;
         bool doublePeg;
         uint128 nonce;
+        string cosmosDenom;
     }
 
     function batchSubmitProphecyClaimAggregatedSigs(
@@ -227,7 +231,8 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
             claimData.networkDescriptor,
             claimData.tokenName,
             claimData.tokenSymbol,
-            claimData.tokenDecimals
+            claimData.tokenDecimals,
+            claimData.cosmosDenom
         );
 
         require(uint256(hashDigest) == prophecyID, "INV_DATA");
@@ -257,7 +262,8 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
                   claimData.tokenName,
                   claimData.tokenAddress,
                   claimData.tokenDecimals,
-                  claimData.networkDescriptor
+                  claimData.networkDescriptor,
+                  claimData.cosmosDenom
               );
             } else {
               // if we are double pegging and already control the token, then we are going to need to get the address on this chain
@@ -294,7 +300,8 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
         string memory name,
         address sourceChainTokenAddress,
         uint8 decimals,
-        uint256 _networkDescriptor
+        uint256 _networkDescriptor,
+        string memory cosmosDenom
     ) internal returns(address tokenAddress) {
         require(
             sourceAddressToDestinationAddress[sourceChainTokenAddress] == address(0),
@@ -306,7 +313,8 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
             .createNewBridgeToken(
                 name,
                 symbol,
-                decimals
+                decimals,
+                cosmosDenom
             );
 
         sourceAddressToDestinationAddress[sourceChainTokenAddress] = tokenAddress;
@@ -317,7 +325,8 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
             name,
             symbol,
             sourceChainTokenAddress,
-            tokenAddress
+            tokenAddress,
+            cosmosDenom
         );
     }
 

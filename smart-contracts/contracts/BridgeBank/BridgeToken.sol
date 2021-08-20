@@ -12,13 +12,15 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 contract BridgeToken is ERC20Burnable, Ownable {
 
     uint8 private _decimals;
+    string public cosmosDenom;
 
-    constructor(string memory _name, string memory _symbol, uint8 _tokenDecimals)
+    constructor(string memory _name, string memory _symbol, uint8 _tokenDecimals, string memory _cosmosDenom)
         public
         ERC20(_name, _symbol)
         Ownable()
     {
        _decimals = _tokenDecimals;
+       cosmosDenom = _cosmosDenom;
     }
 
     function mint(address user, uint256 amount) public onlyOwner returns (bool) {

@@ -62,7 +62,7 @@ describe("BridgeBank", () => {
             amount = hardhat.ethers.utils.parseEther("100") as BigNumber
             smallAmount = amount.div(100)
             const testTokenFactory = (await container.resolve(SifchainContractFactories).bridgeToken).connect(sender)
-            testToken = await testTokenFactory.deploy("TEST token", "test", 18)
+            testToken = await testTokenFactory.deploy("TEST token", "test", 18, "cosmosDenomHere")
             await testToken.mint(sender.address, amount)
             await testToken.approve(bridgeBank.address, hardhat.ethers.constants.MaxUint256)
         })
