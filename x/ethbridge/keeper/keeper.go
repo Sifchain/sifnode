@@ -75,7 +75,7 @@ func (k Keeper) ProcessSuccessfulClaim(ctx sdk.Context, claim *types.EthBridgeCl
 		err = k.bankKeeper.MintCoins(ctx, types.ModuleName, coins)
 	case types.ClaimType_CLAIM_TYPE_BURN:
 		coins = sdk.Coins{sdk.NewCoin(tokenMetadata.Symbol, claim.Amount)}
-		err = k.bankKeeper.MintCoins(ctx, types.ModuleName, coins)
+		err = nil
 	default:
 		err = types.ErrInvalidClaimType
 	}
