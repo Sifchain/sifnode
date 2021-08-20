@@ -21,6 +21,7 @@ func SetupHandlers(app *SifchainApp) {
 	app.UpgradeKeeper.SetUpgradeHandler("0.9.3-ibc-precision.3", func(ctx sdk.Context, plan types.Plan) {})
 	app.UpgradeKeeper.SetUpgradeHandler("0.9.3-ibc-precision.4", func(ctx sdk.Context, plan types.Plan) {})
 	app.UpgradeKeeper.SetUpgradeHandler("0.9.3-ibc-precision.5", func(ctx sdk.Context, plan types.Plan) {})
+	app.UpgradeKeeper.SetUpgradeHandler("0.9.3-ibc-precision.6", func(ctx sdk.Context, plan types.Plan) {})
 	SetupUpgradeV093(app)
 }
 
