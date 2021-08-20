@@ -2,7 +2,6 @@ package keeper
 
 import (
 	"context"
-	"errors"
 	"fmt"
 
 	tokenregistrytypes "github.com/Sifchain/sifnode/x/tokenregistry/types"
@@ -34,9 +33,8 @@ var _ types.MsgServer = msgServer{}
 func (srv msgServer) Transfer(goCtx context.Context, msg *types.MsgTransfer) (*types.MsgTransferResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 	if !srv.tokenRegistryKeeper.CheckDenomPermissions(ctx, msg.Token.Denom, []tokenregistrytypes.Permission{tokenregistrytypes.Permission_IBCEXPORT}) {
-		return nil, errors.New(fmt.Sprintf("Token cannot be exported : %s | Does not have permission", msg.Token.Denom))
+		return nil, fmt.Errorf("Token cannot be exported : %s  , does not have permission", msg.Token.Denom)
 	}
 
 	return srv.sdkMsgServer.Transfer(goCtx, msg)
 }
-

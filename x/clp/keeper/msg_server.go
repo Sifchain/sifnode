@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	tokenregistryTypes "github.com/Sifchain/sifnode/x/tokenregistry/types"
 	"math"
 	"strconv"
 
@@ -366,7 +365,7 @@ func (k msgServer) CreatePool(goCtx context.Context, msg *types.MsgCreatePool) (
 	if !k.tokenRegistryKeeper.IsDenomWhitelisted(ctx, msg.ExternalAsset.Symbol) {
 		return nil, types.ErrTokenNotSupported
 	}
-	if !k.tokenRegistryKeeper.CheckDenomPermissions(ctx, msg.ExternalAsset.Symbol, []tokenregistryTypes.Permission{tokenregistryTypes.Permission_CLP}) {
+	if !k.tokenRegistryKeeper.CheckDenomPermissions(ctx, msg.ExternalAsset.Symbol, types.GetCLPermissons()) {
 		return nil, types.ErrTokenNotSupported
 	}
 	// Check if pool already exists
