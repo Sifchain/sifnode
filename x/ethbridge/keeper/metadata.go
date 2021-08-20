@@ -67,12 +67,14 @@ func (k Keeper) AddIBCTokenMetadata(ctx sdk.Context, metadata types.TokenMetadat
 // Deletes token metadata for IBC tokens only; returns true on success
 func (k Keeper) DeleteTokenMetadata(ctx sdk.Context, cosmosSender sdk.AccAddress, denomHash string) bool {
 	logger := k.Logger(ctx)
-	// Check if metadata exists first
-	if !k.ExistsTokenMetadata(ctx, denomHash) {
+
+	// Check if token is IBC token or not, refuse to delete non-IBC tokens
+	metadata, success := k.GetTokenMetadata(ctx, denomHash)
+	// Check if metadata exists before attempting to delete
+	if !success {
 		return false
 	}
-	// Check if token is IBC token or not, refuse to delete non-IBC tokens
-	metadata := k.GetTokenMetadata(ctx, denomHash)
+
 	if !IsIBCToken(metadata.Name) {
 		return false
 	}
