@@ -26,7 +26,6 @@ export const connect = function (no_daemon_mode: boolean) {
       if (err) {
         return reject(err)
       }
-      console.log("calledpromise")
       return resolve()
     });
   })
