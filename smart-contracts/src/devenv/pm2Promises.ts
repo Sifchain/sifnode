@@ -9,12 +9,11 @@ export type PM2Process = string | number;
 export async function spawn(command: string, args: string[]) {
   await connect(false)
   await start({
-    execute_command: command,
+    script: command,
     args: args,
     autorestart: false,
     force: true
   } as pm2.StartOptions);
-  disconnect();
 }
 
 /**
@@ -27,6 +26,7 @@ export const connect = function (no_daemon_mode: boolean) {
       if (err) {
         return reject(err)
       }
+      console.log("calledpromise")
       return resolve()
     });
   })
