@@ -62,8 +62,14 @@ func GetCmdAddIBCTokenMetadata() *cobra.Command {
 			}
 
 			tokenName := args[1]
+			if tokenName == "" {
+				return errors.New("Token name can not be empty string")
+			}
 
 			tokenSymbol := args[2]
+			if tokenSymbol == "" {
+				return errors.New("Token Symbol cannot be empty string")
+			}
 
 			tokenAddressRaw := args[3]
 			if !common.IsHexAddress(tokenAddressRaw) {
@@ -77,6 +83,9 @@ func GetCmdAddIBCTokenMetadata() *cobra.Command {
 				return errors.New("Error parsing token decimals, must be base 10 number")
 			}
 			tokenDecimals := int32(tokenDecimalsRaw)
+			if tokenDecimals < 0 {
+				return errors.New("Token must have a positive number of decimals")
+			}
 
 			networkDescriptorRaw, err := strconv.Atoi(args[5])
 			if err != nil {

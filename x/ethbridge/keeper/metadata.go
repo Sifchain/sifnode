@@ -50,7 +50,7 @@ func (k Keeper) AddTokenMetadata(ctx sdk.Context, metadata types.TokenMetadata) 
 func (k Keeper) AddIBCTokenMetadata(ctx sdk.Context, metadata types.TokenMetadata, cosmosSender sdk.AccAddress) string {
 	logger := k.Logger(ctx)
 	if !IsIBCToken(metadata.Name) {
-		logger.Error("Token is not IBC cannot use this keeper")
+		logger.Error("Token is not IBC, cannot modify metadata manually")
 		return ""
 	}
 

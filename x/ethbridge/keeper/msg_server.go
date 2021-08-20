@@ -388,11 +388,6 @@ func (srv msgServer) TokenMetadataAdd(goCtx context.Context, msg *types.TokenMet
 		return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.CosmosSender)
 	}
 
-	if !IsIBCToken(msg.Metadata.Name) {
-		logger.Error("token is not IBC cannot manually add", msg.Metadata)
-		return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidRequest, msg.Metadata.Name)
-	}
-
 	denom := srv.Keeper.AddIBCTokenMetadata(ctx, *msg.Metadata, cosmosSender)
 
 	return &types.TokenMetadataAddResponse{
