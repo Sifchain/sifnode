@@ -147,7 +147,10 @@ func (am AppModule) ExportGenesis(ctx sdk.Context, cdc codec.JSONMarshaler) json
 }
 
 // BeginBlock returns the begin blocker for the oracle module.
-func (AppModule) BeginBlock(_ sdk.Context, _ abci.RequestBeginBlock) {}
+func (am AppModule) BeginBlock(ctx sdk.Context, block abci.RequestBeginBlock) {
+	am.keeper.UpdateCurrentHeight(block.Header.Height)
+	am.keeper.CleanUpProphecy(ctx)
+}
 
 // EndBlock returns the end blocker for the oracle module. It returns no validator
 // updates.

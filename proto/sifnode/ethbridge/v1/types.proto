@@ -68,7 +68,4 @@ enum ClaimType {
 }
 
 // GenesisState for ethbridge
-message GenesisState {
-  string crosschain_fee_receive_account = 1;
-  repeated string peggy_tokens = 2;
-}
+message GenesisState { string crosschain_fee_receive_account = 1; }

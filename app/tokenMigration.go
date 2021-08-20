@@ -6,7 +6,6 @@ import (
 	"io/ioutil"
 
 	clpkeeper "github.com/Sifchain/sifnode/x/clp/keeper"
-	bridgekeeper "github.com/Sifchain/sifnode/x/ethbridge/keeper"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
@@ -24,7 +23,6 @@ func GetTokenMigrationFunc(app *SifchainApp) func(ctx sdk.Context, plan upgradet
 		migrateBalance(ctx, tokenMap, app.BankKeeper)
 		migratePool(ctx, tokenMap, app.ClpKeeper)
 		migrateLiquidity(ctx, tokenMap, app.ClpKeeper)
-		migratePeggedToken(ctx, tokenMap, app.EthbridgeKeeper)
 	}
 }
 
@@ -129,17 +127,4 @@ func migrateLiquidity(ctx sdk.Context, tokenMap map[string]string, poolKeeper cl
 			poolKeeper.SetLiquidityProvider(ctx, value)
 		}
 	}
-}
-
-func migratePeggedToken(ctx sdk.Context, tokenMap map[string]string, bridgeKeeper bridgekeeper.Keeper) {
-	tokens := bridgeKeeper.GetPeggyToken(ctx).Tokens
-	newTokens := []string{}
-	for _, token := range tokens {
-		if value, ok := tokenMap[token]; ok {
-			newTokens = append(newTokens, value)
-		} else {
-			panic(fmt.Sprintf("new denom for %s not found\n", token))
-		}
-	}
-	bridgeKeeper.SetPeggyToken(ctx, newTokens)
 }

@@ -26,13 +26,18 @@ type BankKeeper interface {
 type OracleKeeper interface {
 	ProcessClaim(ctx sdk.Context, networkDescriptor oracletypes.NetworkDescriptor, prophecyID []byte, address string) (oracletypes.StatusText, error)
 	GetProphecy(ctx sdk.Context, prophecyID []byte) (oracletypes.Prophecy, bool)
+	GetProphecyInfo(ctx sdk.Context, prophecyID []byte) (oracletypes.ProphecyInfo, bool)
 	ProcessUpdateWhiteListValidator(ctx sdk.Context, networkDescriptor oracletypes.NetworkDescriptor, cosmosSender sdk.AccAddress, validator sdk.ValAddress, power uint32) error
 	IsAdminAccount(ctx sdk.Context, cosmosSender sdk.AccAddress) bool
 	GetAdminAccount(ctx sdk.Context) sdk.AccAddress
 	SetAdminAccount(ctx sdk.Context, cosmosSender sdk.AccAddress)
+	ProcessSignProphecy(ctx sdk.Context, networkDescriptor oracletypes.NetworkDescriptor, prophecyID []byte, cosmosSender, tokenAddress, ethereumAddress, signature string) error
 	GetCrossChainFee(ctx sdk.Context, networkIdentity oracletypes.NetworkIdentity) (string, error)
 	GetCrossChainFeeConfig(ctx sdk.Context, networkIdentity oracletypes.NetworkIdentity) (oracletypes.CrossChainFeeConfig, error)
 	SetFeeInfo(ctx sdk.Context, networkDescriptor oracletypes.NetworkDescriptor, feeCurrency string, gas, burnCost, lockCost sdk.Int) error
+	SetProphecyWithInitValue(ctx sdk.Context, prophecyID []byte)
+	SetProphecyInfo(ctx sdk.Context, prophecyID []byte, networkDescriptor oracletypes.NetworkDescriptor, cosmosSender string, cosmosSenderSequence uint64, ethereumReceiver string, tokenSymbol string, tokenContractAddress string, tokenAmount sdk.Int, crosschainFee sdk.Int, doublePeg bool, globalNonce uint64) error
+	GetProphecyInfoWithScopeGlocalNonce(ctx sdk.Context, networkDescriptor oracletypes.NetworkDescriptor, startGlobalNonce uint64) []*oracletypes.ProphecyInfo
 }
 
 type MetadataKeeper interface {

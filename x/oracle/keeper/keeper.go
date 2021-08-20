@@ -3,9 +3,13 @@ package keeper
 import (
 	"errors"
 	"fmt"
+	"strconv"
+	"strings"
 
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	gethCommon "github.com/ethereum/go-ethereum/common"
+	gethCrypto "github.com/ethereum/go-ethereum/crypto"
 	"github.com/tendermint/tendermint/libs/log"
 
 	"github.com/Sifchain/sifnode/x/oracle/types"
@@ -20,6 +24,7 @@ type Keeper struct {
 	stakeKeeper types.StakingKeeper
 	// TODO: use this as param instead
 	consensusNeeded float64 // The minimum % of stake needed to sign claims in order for consensus to occur
+	currentHeight   int64
 }
 
 // NewKeeper creates new instances of the oracle Keeper
@@ -37,6 +42,10 @@ func NewKeeper(
 	}
 }
 
+func (k Keeper) UpdateCurrentHeight(height int64) {
+	k.currentHeight = height
+}
+
 // GetCdc return keeper's cdc
 func (k Keeper) GetCdc() codec.BinaryMarshaler {
 	return k.cdc
@@ -45,44 +54,6 @@ func (k Keeper) GetCdc() codec.BinaryMarshaler {
 // Logger returns a module-specific logger.
 func (k Keeper) Logger(ctx sdk.Context) log.Logger {
 	return ctx.Logger().With("module", fmt.Sprintf("x/%s", types.ModuleName))
-}
-
-// GetProphecies returns all prophecies
-func (k Keeper) GetProphecies(ctx sdk.Context) []types.Prophecy {
-	var prophecies []types.Prophecy
-	store := ctx.KVStore(k.storeKey)
-	iter := sdk.KVStorePrefixIterator(store, types.ProphecyPrefix)
-	for ; iter.Valid(); iter.Next() {
-		var prophecy types.Prophecy
-		k.cdc.MustUnmarshalBinaryBare(iter.Value(), &prophecy)
-		prophecies = append(prophecies, prophecy)
-	}
-	return prophecies
-}
-
-// GetProphecy gets the entire prophecy data struct for a given id
-func (k Keeper) GetProphecy(ctx sdk.Context, prophecyID []byte) (types.Prophecy, bool) {
-
-	store := ctx.KVStore(k.storeKey)
-	bz := store.Get(append(types.ProphecyPrefix, prophecyID[:]...))
-
-	if bz == nil {
-		return types.Prophecy{}, false
-	}
-
-	var prophecy types.Prophecy
-	k.cdc.MustUnmarshalBinaryBare(bz, &prophecy)
-
-	return prophecy, true
-}
-
-// SetProphecy saves a prophecy with an initial claim
-func (k Keeper) SetProphecy(ctx sdk.Context, prophecy types.Prophecy) {
-	store := ctx.KVStore(k.storeKey)
-
-	storePrefix := append(types.ProphecyPrefix, prophecy.Id[:]...)
-
-	store.Set(storePrefix, k.cdc.MustMarshalBinaryBare(&prophecy))
 }
 
 // ProcessClaim handle claim
@@ -111,6 +82,12 @@ func (k Keeper) ProcessClaim(ctx sdk.Context, networkDescriptor types.NetworkDes
 		return types.StatusText_STATUS_TEXT_UNSPECIFIED, types.ErrInvalidIdentifier
 	}
 
+	return k.AppendValidatorToProphecy(ctx, networkDescriptor, prophecyID, valAddr)
+
+}
+
+// AppendValidatorToProphecy append the validator's signature to prophecy
+func (k Keeper) AppendValidatorToProphecy(ctx sdk.Context, networkDescriptor types.NetworkDescriptor, prophecyID []byte, validator sdk.ValAddress) (types.StatusText, error) {
 	prophecy, ok := k.GetProphecy(ctx, prophecyID)
 	if !ok {
 		prophecy.Id = prophecyID
@@ -120,7 +97,7 @@ func (k Keeper) ProcessClaim(ctx sdk.Context, networkDescriptor types.NetworkDes
 	switch prophecy.Status {
 	case types.StatusText_STATUS_TEXT_PENDING:
 
-		err = prophecy.AddClaim(valAddr)
+		err := prophecy.AddClaim(validator)
 		if err != nil {
 			return types.StatusText_STATUS_TEXT_UNSPECIFIED, err
 
@@ -128,11 +105,12 @@ func (k Keeper) ProcessClaim(ctx sdk.Context, networkDescriptor types.NetworkDes
 
 		prophecy = k.processCompletion(ctx, networkDescriptor, prophecy)
 		k.SetProphecy(ctx, prophecy)
+
 		return prophecy.Status, nil
 
 	case types.StatusText_STATUS_TEXT_SUCCESS:
 
-		err = prophecy.AddClaim(valAddr)
+		err := prophecy.AddClaim(validator)
 		if err != nil {
 			return types.StatusText_STATUS_TEXT_UNSPECIFIED, err
 		}
@@ -142,7 +120,6 @@ func (k Keeper) ProcessClaim(ctx sdk.Context, networkDescriptor types.NetworkDes
 	default:
 		return types.StatusText_STATUS_TEXT_UNSPECIFIED, types.ErrInvalidProphecyStatus
 	}
-
 }
 
 func (k Keeper) checkActiveValidator(ctx sdk.Context, validatorAddress sdk.ValAddress) bool {
@@ -180,6 +157,90 @@ func (k Keeper) processCompletion(ctx sdk.Context, networkDescriptor types.Netwo
 // SetFeeInfo set crosschain fee for a network
 func (k Keeper) SetFeeInfo(ctx sdk.Context, networkDescriptor types.NetworkDescriptor, crossChainFee string, gas, lockCost, burnCost sdk.Int) error {
 	k.SetCrossChainFee(ctx, types.NewNetworkIdentity(networkDescriptor), crossChainFee, gas, lockCost, burnCost)
+	return nil
+}
+
+// SetProphecyWithInitValue set the prophecy in keeper
+func (k Keeper) SetProphecyWithInitValue(ctx sdk.Context, prophecyID []byte) {
+	prophecy := types.Prophecy{
+		Id:              prophecyID,
+		Status:          types.StatusText_STATUS_TEXT_PENDING,
+		ClaimValidators: []string{},
+	}
+	k.SetProphecy(ctx, prophecy)
+}
+
+// ProcessSignProphecy deal with the signature from validator
+func (k Keeper) ProcessSignProphecy(ctx sdk.Context, networkDescriptor types.NetworkDescriptor, prophecyID []byte, cosmosSender, tokenAddress, ethereumAddress, signature string) error {
+	prophecy, ok := k.GetProphecy(ctx, prophecyID)
+	if !ok {
+		return types.ErrProphecyNotFound
+	}
+
+	whiteList := k.GetOracleWhiteList(ctx, types.NewNetworkIdentity(networkDescriptor))
+	power, ok := whiteList.WhiteList[cosmosSender]
+	if !ok {
+		return errors.New("message sender to sign prophecy not in the whitelist")
+	}
+
+	if power == 0 {
+		return errors.New("message sender to sign prophecy without vote power")
+	}
+
+	// verify the signature
+	publicKey, err := gethCrypto.Ecrecover(prophecyID, gethCommon.FromHex(signature))
+	if err != nil {
+		return err
+	}
+
+	ok = gethCrypto.VerifySignature(publicKey, prophecyID, []byte(signature))
+	if !ok {
+		return errors.New("incorrect ethereum signature")
+	}
+
+	valAddr, err := sdk.ValAddressFromBech32(cosmosSender)
+	if err != nil {
+		return err
+	}
+
+	oldStatus := prophecy.Status
+
+	newStatus, err := k.AppendValidatorToProphecy(ctx, networkDescriptor, prophecyID, valAddr)
+	if err != nil {
+		return err
+	}
+
+	err = k.AppendSignature(ctx, prophecyID, ethereumAddress, signature)
+	if err != nil {
+		return err
+	}
+
+	// emit the event when status from pending to success
+	if oldStatus == types.StatusText_STATUS_TEXT_PENDING && newStatus == types.StatusText_STATUS_TEXT_SUCCESS {
+		prophecyInfo, ok := k.GetProphecyInfo(ctx, prophecyID)
+		if !ok {
+			return errors.New("prophecy info not available in keeper")
+		}
+
+		ctx.EventManager().EmitEvents(sdk.Events{
+
+			sdk.NewEvent(
+				types.EventTypeProphecyCompleted,
+				sdk.NewAttribute(types.AttributeKeyProphecyID, string(prophecyID)),
+				sdk.NewAttribute(types.AttributeKeyNetworkDescriptor, prophecyInfo.NetworkDescriptor.String()),
+				sdk.NewAttribute(types.AttributeKeyCosmosSender, prophecyInfo.CosmosSender),
+				sdk.NewAttribute(types.AttributeKeyCosmosSenderSequence, strconv.FormatInt(int64(prophecyInfo.CosmosSenderSequence), 10)),
+				sdk.NewAttribute(types.AttributeKeyEthereumReceiver, prophecyInfo.EthereumReceiver),
+				sdk.NewAttribute(types.AttributeKeyTokenContractAddress, tokenAddress),
+				sdk.NewAttribute(types.AttributeKeyAmount, strconv.FormatInt(prophecyInfo.TokenAmount.Int64(), 10)),
+				sdk.NewAttribute(types.AttributeKeyDoublePeggy, strconv.FormatBool(prophecyInfo.DoublePeg)),
+				sdk.NewAttribute(types.AttributeKeyGlobalNonce, strconv.FormatInt(int64(prophecyInfo.GlobalNonce), 10)),
+				sdk.NewAttribute(types.AttributeKeycrossChainFee, strconv.FormatInt(prophecyInfo.CrosschainFee.Int64(), 10)),
+				sdk.NewAttribute(types.AttributeKeySignatures, strings.Join(prophecyInfo.Signatures, ",")),
+				sdk.NewAttribute(types.AttributeKeyEthereumAddresses, strings.Join(prophecyInfo.EthereumAddress, ",")),
+			),
+		})
+	}
 	return nil
 }
 

@@ -53,3 +53,21 @@ message QueryCrosschainFeeConfigRequest {
 message QueryCrosschainFeeConfigResponse {
   sifnode.oracle.v1.CrossChainFeeConfig crosschain_fee_config = 1;
 }
+
+service ProphciesCompletedQueryService {
+  // Prophecies Completed Query Service to fetch prophecy info from global nonce
+  rpc Search(ProphciesCompletedQueryRequest)
+      returns (ProphciesCompletedQueryResponse) {}
+}
+// ProphciesCompletedQueryRequest payload for ProphciesCompletedQueryRequest rpc
+// query
+message ProphciesCompletedQueryRequest {
+  sifnode.oracle.v1.NetworkDescriptor network_descriptor = 1;
+  uint64 global_nonce = 2;
+}
+
+// QueryCrosschainFeeConfigResponse payload for ProphciesCompletedQueryResponse
+// rpc query response
+message ProphciesCompletedQueryResponse {
+  repeated sifnode.oracle.v1.ProphecyInfo prophecy_info = 1;
+}
