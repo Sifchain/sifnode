@@ -5,7 +5,7 @@ import {ShellCommand} from "./devEnv"
 import {GolangResultsPromise} from "./golangBuilder";
 import * as path from "path"
 import events from "events";
-import {lastValueFrom, ReplaySubject} from "rxjs";
+import {ReplaySubject} from "rxjs";
 import * as fs from "fs";
 import YAML from 'yaml'
 
@@ -43,24 +43,12 @@ function eventEmitterToObservable(eventEmitter: events.EventEmitter) {
             "localnet",
             "/tmp/sifnodedConfig.yml",
             "/tmp/sifnodedNetwork",
-            "10.10.1.1"
+            "10.10.1.1",
+            "../test/integration/whitelisted-denoms.json"
         )
     }
 ])
 export class SifnodedArguments {
-    // "input": {
-    //     "basedir": "/sifnode",
-    //     "logfile": "/logs/ganache.log",
-    //     "configoutputfile": "/configs/sifnoded.json",
-    //     "rpc_port": 26657,
-    //     "n_validators": 1,
-    //     "chain_id": "localnet",
-    //     "network_config_file": "/tmp/netconfig.yml",
-    //     "seed_ip_address": "10.10.1.1",
-    //     "bin_prefix": "/gobin",
-    //     "go_build_config_path": "/configs/golang.json",
-    //     "sifnode_host": "sifnoded"
-    //   },
     constructor(
         readonly logfile: string,
         readonly rpcPort: number,
@@ -69,6 +57,7 @@ export class SifnodedArguments {
         readonly networkConfigFile: string,
         readonly networkDir: string,
         readonly seedIpAddress: string,
+        readonly whitelistFile: string
     ) {
     }
 }
@@ -121,17 +110,69 @@ export class SifnodedRunner extends ShellCommand<SifnodedResults> {
         )
         const file = fs.readFileSync(this.args.networkConfigFile, 'utf8')
         const networkConfig = YAML.parse(file)
-        await this.addValidatorKeyToTestKeyring(
-            networkConfig[0]["moniker"],
+        console.log("ymlis: ", JSON.stringify(networkConfig, undefined, 2))
+        const moniker = networkConfig[0]["moniker"]
+        let mnemonic = networkConfig[0]["mnemonic"]
+        let password = networkConfig[0]["password"]
+        const chainDir = path.join(
             this.args.networkDir,
-            networkConfig[0]["mnemonic"],
+            "validators",
+            this.args.chainId,
+            moniker
         )
-        console.log("finishedaddval")
+        const homeDir = path.join(chainDir, ".sifnoded")
+        await this.addValidatorKeyToTestKeyring(
+            moniker,
+            this.args.networkDir,
+            mnemonic,
+        )
+        const valOperKey = await this.readValoperKey(
+            moniker,
+            this.args.networkDir,
+            mnemonic,
+        )
+        await this.addGenesisValidator(chainDir, valOperKey)
+        const sifnodedCommand = path.join((await this.golangResults.results).goBin, "sifnoded")
+        const whitelistedValidator = ChildProcess.execSync(
+            `${sifnodedCommand} keys show -a --bech val ${moniker} --keyring-backend test`,
+            {encoding: "utf8", input: password}
+        ).trim()
+        let sifnodeadmincmd = `${sifnodedCommand} keys add sifnodeadmin --keyring-backend test --output json`;
+        const sifnodedadminJson = ChildProcess.execSync(
+            sifnodeadmincmd,
+            {encoding: "utf8", input: "yes\nyes"}
+        ).trim()
+        const sifnodedAdminAddress = JSON.parse(sifnodedadminJson)["address"]
+        // const q = ChildProcess.execSync(
+        //     `${sifnodedCommand} add-genesis-validators ${whitelistedValidator} --home ${homeDir}`,
+        //     {encoding: "utf8", input: password}
+        // ).trim()
+        // sifnoded add-genesis-account $adminuser 100000000000000000000rowan --home $CHAINDIR/.sifnoded
+        // sifnoded set-genesis-oracle-admin $adminuser --home $CHAINDIR/.sifnoded
+        // sifnoded set-genesis-whitelister-admin $adminuser --home $CHAINDIR/.sifnoded
+        // sifnoded set-gen-denom-whitelist $SCRIPT_DIR/whitelisted-denoms.json --home $CHAINDIR/.sifnoded
+        ChildProcess.execSync(
+            `${sifnodedCommand} add-genesis-account ${sifnodedAdminAddress} 100000000000000000000rowan --home ${homeDir}`,
+            {encoding: "utf8"}
+        ).trim()
+        ChildProcess.execSync(
+            `${sifnodedCommand} set-genesis-oracle-admin ${sifnodedAdminAddress} --home ${homeDir}`,
+            {encoding: "utf8"}
+        ).trim()
+        ChildProcess.execSync(
+            `${sifnodedCommand} set-genesis-whitelister-admin ${sifnodedAdminAddress} --home ${homeDir}`,
+            {encoding: "utf8"}
+        ).trim()
+        ChildProcess.execSync(
+            `${sifnodedCommand} set-gen-denom-whitelist ${this.args.whitelistFile} --home ${homeDir}`,
+            {encoding: "utf8"}
+        ).trim()
+        // ChildProcess.exec(
+        //     `${sifnodedCommand} start --minimum-gas-prices 0.5rowan --rpc.laddr tcp://0.0.0.0:26657 --home ${homeDir}`,
+        //     {}
+        // )
     }
 
-    // echo "$MNEMONIC" | sifnoded keys add $MONIKER --keyring-backend test --recover
-    // valoper=$(sifnoded keys show -a --bech val $MONIKER --home $CHAINDIR/.sifnoded --keyring-backend test)
-    // sifnoded add-genesis-validators $valoper --home $CHAINDIR/.sifnoded
     async addValidatorKeyToTestKeyring(moniker: string, chainDir: string, mnemonic: string) {
         const sifgenArgs = [
             "keys",
@@ -140,13 +181,47 @@ export class SifnodedRunner extends ShellCommand<SifnodedResults> {
             "--keyring-backend",
             "test",
         ]
-        let child = ChildProcess.spawn(
+        let child = ChildProcess.execFileSync(
             path.join((await this.golangResults.results).goBin, "sifnoded"),
             sifgenArgs,
-            {stdio: "pipe"}
+            {input: mnemonic, encoding: "utf8"}
         );
-        child.stdin.end(mnemonic)
-        await lastValueFrom(eventEmitterToObservable(child))
+        child
+    }
+
+    async readValoperKey(moniker: string, chainDir: string, mnemonic: string): Promise<string> {
+        const sifgenArgs = [
+            "keys",
+            "show",
+            "-a",
+            "--bech",
+            "val",
+            moniker,
+            // "--home",
+            // path.join(chainDir, ".sifnoded"),
+            "--keyring-backend",
+            "test",
+        ]
+        return ChildProcess.execFileSync(
+            path.join((await this.golangResults.results).goBin, "sifnoded"),
+            sifgenArgs,
+            {encoding: "utf8"}
+        ).trim()
+    }
+
+    // sifnoded add-genesis-validators $valoper --home $CHAINDIR/.sifnoded
+    async addGenesisValidator(chainDir: string, valoper: string): Promise<string> {
+        const sifgenArgs = [
+            "add-genesis-validators",
+            valoper,
+            "--home",
+            path.join(chainDir, ".sifnoded"),
+        ]
+        return ChildProcess.execFileSync(
+            path.join((await this.golangResults.results).goBin, "sifnoded"),
+            sifgenArgs,
+            {encoding: "utf8"}
+        )
     }
 
     async execute() {
