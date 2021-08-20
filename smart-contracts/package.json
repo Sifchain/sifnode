@@ -39,6 +39,7 @@
     "hardhat-gas-reporter": "^1.0.4",
     "mocha": "^9.0.3",
     "openzeppelin-solidity": "^2.5.1",
+    "pm2": "^5.1.1",
     "reflect-metadata": "^0.1.13",
     "rxjs": "^7.3.0",
     "solidity-coverage": "^0.7.16",
@@ -91,7 +92,6 @@
     "truffle": "^5.4.7",
     "@types/node": "^10.17.19",
     "concurrently": "^6.2.0",
-    "node-notify": "^1.0.0",
-    "pm2": "^5.1.1"
+    "node-notify": "^1.0.0"
   }
 }
