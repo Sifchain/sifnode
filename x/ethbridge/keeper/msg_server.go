@@ -2,11 +2,11 @@ package keeper
 
 import (
 	"context"
+	"fmt"
 	"strconv"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
-	"github.com/pkg/errors"
 
 	"github.com/Sifchain/sifnode/x/ethbridge/types"
 	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
@@ -26,12 +26,7 @@ var _ types.MsgServer = msgServer{}
 
 func (srv msgServer) Lock(goCtx context.Context, msg *types.MsgLock) (*types.MsgLockResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
-
 	logger := srv.Keeper.Logger(ctx)
-	if srv.Keeper.ExistsPeggyToken(ctx, msg.Symbol) {
-		logger.Error("pegged token can't be lock.", "tokenSymbol", msg.Symbol)
-		return nil, errors.Errorf("Pegged token %s can't be lock.", msg.Symbol)
-	}
 
 	cosmosSender, err := sdk.AccAddressFromBech32(msg.CosmosSender)
 	if err != nil {
@@ -44,13 +39,43 @@ func (srv msgServer) Lock(goCtx context.Context, msg *types.MsgLock) (*types.Msg
 		return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.CosmosSender)
 	}
 
-	if err := srv.Keeper.ProcessLock(ctx, cosmosSender, msg); err != nil {
+	tokenMetadata, ok := srv.Keeper.GetTokenMetadata(ctx, msg.DenomHash)
+	if !ok {
+		return &types.MsgLockResponse{}, fmt.Errorf("token metadata not available for %s", msg.DenomHash)
+	}
+
+	prophecyID, err := srv.Keeper.ProcessLock(ctx, cosmosSender, account.GetSequence(), msg, tokenMetadata)
+
+	if err != nil {
 		logger.Error("bridge keeper failed to process lock.", errorMessageKey, err.Error())
 		return nil, err
 	}
 
 	logger.Info("sifnode emit lock event.", "message", msg)
-	globalNonce := srv.Keeper.GetAndUpdateGlobalNonce(ctx, msg.NetworkDescriptor)
+	globalNonce := srv.Keeper.GetGlobalNonce(ctx, msg.NetworkDescriptor)
+	srv.Keeper.UpdateGlobalNonce(ctx, msg.NetworkDescriptor)
+
+	// TODO confirm the double peg logic
+	doublePeg := tokenMetadata.NetworkDescriptor != msg.NetworkDescriptor
+
+	err = srv.oracleKeeper.SetProphecyInfo(ctx,
+		prophecyID,
+		msg.NetworkDescriptor,
+		cosmosSender.String(),
+		account.GetSequence(),
+		msg.EthereumReceiver,
+		msg.DenomHash,
+		tokenMetadata.TokenAddress,
+		msg.Amount,
+		msg.CrosschainFee,
+		doublePeg,
+		globalNonce,
+	)
+
+	if err != nil {
+		logger.Error("bridge keeper failed to set prophecy info.", errorMessageKey, err.Error())
+		return nil, err
+	}
 
 	ctx.EventManager().EmitEvents(sdk.Events{
 		sdk.NewEvent(
@@ -60,14 +85,8 @@ func (srv msgServer) Lock(goCtx context.Context, msg *types.MsgLock) (*types.Msg
 		),
 		sdk.NewEvent(
 			types.EventTypeLock,
-			sdk.NewAttribute(types.AttributeKeyNetworkDescriptor, strconv.FormatUint(uint64(msg.NetworkDescriptor), 10)),
-			sdk.NewAttribute(types.AttributeKeyGlobalNonce, strconv.FormatUint(globalNonce, 10)),
-			sdk.NewAttribute(types.AttributeKeyCosmosSender, msg.CosmosSender),
-			sdk.NewAttribute(types.AttributeKeyCosmosSenderSequence, strconv.FormatUint(account.GetSequence(), 10)),
-			sdk.NewAttribute(types.AttributeKeyEthereumReceiver, msg.EthereumReceiver),
-			sdk.NewAttribute(types.AttributeKeyAmount, msg.Amount.String()),
-			sdk.NewAttribute(types.AttributeKeySymbol, msg.Symbol),
-			sdk.NewAttribute(types.AttributeKeycrossChainFee, msg.CrosschainFee.String()),
+			sdk.NewAttribute(types.AttributeKeyNetworkDescriptor, strconv.FormatInt(int64(msg.NetworkDescriptor), 10)),
+			sdk.NewAttribute(types.AttributeKeyProphecyID, string(prophecyID[:])),
 		),
 	})
 
@@ -78,12 +97,6 @@ func (srv msgServer) Burn(goCtx context.Context, msg *types.MsgBurn) (*types.Msg
 	ctx := sdk.UnwrapSDKContext(goCtx)
 	logger := srv.Keeper.Logger(ctx)
 
-	if !srv.Keeper.ExistsPeggyToken(ctx, msg.Symbol) {
-		logger.Error("crosschain fee can't be burn.",
-			"tokenSymbol", msg.Symbol)
-		return nil, errors.Errorf("crosschain fee %s can't be burn.", msg.Symbol)
-	}
-
 	cosmosSender, err := sdk.AccAddressFromBech32(msg.CosmosSender)
 	if err != nil {
 		return nil, err
@@ -95,13 +108,43 @@ func (srv msgServer) Burn(goCtx context.Context, msg *types.MsgBurn) (*types.Msg
 		return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.CosmosSender)
 	}
 
-	if err := srv.Keeper.ProcessBurn(ctx, cosmosSender, msg); err != nil {
+	tokenMetadata, ok := srv.Keeper.GetTokenMetadata(ctx, msg.DenomHash)
+	if !ok {
+		return nil, fmt.Errorf("token metadata not available for %s", msg.DenomHash)
+	}
+
+	prophecyID, err := srv.Keeper.ProcessBurn(ctx, cosmosSender, account.GetSequence(), msg, tokenMetadata)
+
+	if err != nil {
 		logger.Error("bridge keeper failed to process burn.", errorMessageKey, err.Error())
 		return nil, err
 	}
 
 	logger.Info("sifnode emit burn event.", "message", msg)
-	globalNonce := srv.Keeper.GetAndUpdateGlobalNonce(ctx, msg.NetworkDescriptor)
+	globalNonce := srv.Keeper.GetGlobalNonce(ctx, msg.NetworkDescriptor)
+	srv.Keeper.UpdateGlobalNonce(ctx, msg.NetworkDescriptor)
+
+	// TODO confirm the double peg logic
+	doublePeg := tokenMetadata.NetworkDescriptor != msg.NetworkDescriptor
+
+	err = srv.oracleKeeper.SetProphecyInfo(ctx,
+		prophecyID,
+		msg.NetworkDescriptor,
+		cosmosSender.String(),
+		account.GetSequence(),
+		msg.EthereumReceiver,
+		msg.DenomHash,
+		tokenMetadata.TokenAddress,
+		msg.Amount,
+		msg.CrosschainFee,
+		doublePeg,
+		globalNonce,
+	)
+
+	if err != nil {
+		logger.Error("bridge keeper failed to set prophecy info.", errorMessageKey, err.Error())
+		return nil, err
+	}
 
 	ctx.EventManager().EmitEvents(sdk.Events{
 		sdk.NewEvent(
@@ -112,13 +155,7 @@ func (srv msgServer) Burn(goCtx context.Context, msg *types.MsgBurn) (*types.Msg
 		sdk.NewEvent(
 			types.EventTypeBurn,
 			sdk.NewAttribute(types.AttributeKeyNetworkDescriptor, strconv.FormatInt(int64(msg.NetworkDescriptor), 10)),
-			sdk.NewAttribute(types.AttributeKeyGlobalNonce, strconv.FormatUint(globalNonce, 10)),
-			sdk.NewAttribute(types.AttributeKeyCosmosSender, msg.CosmosSender),
-			sdk.NewAttribute(types.AttributeKeyCosmosSenderSequence, strconv.FormatUint(account.GetSequence(), 10)),
-			sdk.NewAttribute(types.AttributeKeyEthereumReceiver, msg.EthereumReceiver),
-			sdk.NewAttribute(types.AttributeKeyAmount, msg.Amount.String()),
-			sdk.NewAttribute(types.AttributeKeySymbol, msg.Symbol),
-			sdk.NewAttribute(types.AttributeKeycrossChainFee, msg.CrosschainFee.String()),
+			sdk.NewAttribute(types.AttributeKeyProphecyID, string(prophecyID[:])),
 		),
 	})
 
@@ -156,6 +193,7 @@ func (srv msgServer) CreateEthBridgeClaim(goCtx context.Context, msg *types.MsgC
 		NetworkDescriptor: claim.NetworkDescriptor,
 	}
 
+	// TODO check if it is safe to add the metadata automatically
 	if !srv.Keeper.ExistsTokenMetadata(ctx, claim.DenomHash) {
 		srv.Keeper.AddTokenMetadata(ctx, metadata)
 	}
@@ -178,6 +216,10 @@ func (srv msgServer) CreateEthBridgeClaim(goCtx context.Context, msg *types.MsgC
 			sdk.NewAttribute(sdk.AttributeKeySender, claim.ValidatorAddress),
 		),
 		sdk.NewEvent(
+			types.EventTypeProphecyStatus,
+			sdk.NewAttribute(types.AttributeKeyStatus, status.String()),
+		),
+		sdk.NewEvent(
 			types.EventTypeCreateClaim,
 			sdk.NewAttribute(types.AttributeKeyCosmosSender, claim.ValidatorAddress),
 			sdk.NewAttribute(types.AttributeKeyEthereumSender, claim.EthereumSender),
@@ -187,10 +229,6 @@ func (srv msgServer) CreateEthBridgeClaim(goCtx context.Context, msg *types.MsgC
 			sdk.NewAttribute(types.AttributeKeySymbol, claim.Symbol),
 			sdk.NewAttribute(types.AttributeKeyTokenContract, claim.TokenContractAddress),
 			sdk.NewAttribute(types.AttributeKeyClaimType, claim.ClaimType.String()),
-		),
-		sdk.NewEvent(
-			types.EventTypeProphecyStatus,
-			sdk.NewAttribute(types.AttributeKeyStatus, status.String()),
 		),
 	})
 
@@ -371,4 +409,49 @@ func (srv msgServer) SetFeeInfo(goCtx context.Context, msg *types.MsgSetFeeInfo)
 	})
 
 	return &types.MsgSetFeeInfoResponse{}, nil
+}
+
+// SignProphecy relayer sign the prophecy ID and send to Sifchain after receive the burn/lock events
+func (srv msgServer) SignProphecy(goCtx context.Context, msg *types.MsgSignProphecy) (*types.MsgSignProphecyResponse, error) {
+	ctx := sdk.UnwrapSDKContext(goCtx)
+	logger := srv.Keeper.Logger(ctx)
+
+	cosmosSender, err := sdk.AccAddressFromBech32(msg.CosmosSender)
+	if err != nil {
+		return nil, err
+	}
+
+	account := srv.Keeper.accountKeeper.GetAccount(ctx, cosmosSender)
+	if account == nil {
+		logger.Error("account is nil.", "CosmosSender", msg.CosmosSender)
+		return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.CosmosSender)
+	}
+
+	err = srv.Keeper.ProcessSignProphecy(ctx, msg)
+
+	// if error is ErrProphecyFinalized, will continue and emit event, not return error.
+	if err != nil && err != oracletypes.ErrProphecyFinalized {
+		logger.Error("keeper failed to process rescue native_token message.", errorMessageKey, err.Error())
+		return nil, err
+	}
+
+	logger.Info("sifnode received the sign prophecy message.",
+		"Message", msg)
+
+	ctx.EventManager().EmitEvents(sdk.Events{
+		sdk.NewEvent(
+			sdk.EventTypeMessage,
+			sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
+			sdk.NewAttribute(sdk.AttributeKeySender, msg.CosmosSender),
+		),
+		sdk.NewEvent(
+			types.EventTypeSignProphecy,
+			sdk.NewAttribute(types.AttributeKeyCosmosSender, msg.CosmosSender),
+			sdk.NewAttribute(types.AttributeKeyCosmosSenderSequence, strconv.FormatUint(account.GetSequence(), 10)),
+			sdk.NewAttribute(types.AttributeKeyNetworkDescriptor, msg.NetworkDescriptor.String()),
+			sdk.NewAttribute(types.AttributeKeyProphecyID, string(msg.ProphecyId)),
+		),
+	})
+
+	return &types.MsgSignProphecyResponse{}, nil
 }

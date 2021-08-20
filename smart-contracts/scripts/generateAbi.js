@@ -57,21 +57,27 @@
  
      // write the abi to a file
      const targetAbiDirectory = `${BASE_TARGET_DIR}/${TARGET_ABI_DIR}/${internalPath}`;
-     createDir(targetAbiDirectory);
      const targetAbiFileName = `${targetAbiDirectory}/${strippedFilename}.abi`;
-     fs.writeFileSync(targetAbiFileName, JSON.stringify(parsed.abi));
+     if (fs.existsSync(targetAbiFileName)) {
+      createDir(targetAbiDirectory);
+      fs.writeFileSync(targetAbiFileName, JSON.stringify(parsed.abi));
+     }
  
      // write the binary data to a file
      const targetBinDirectory = `${BASE_TARGET_DIR}/${TARGET_BIN_DIR}/${internalPath}`;
-     createDir(targetBinDirectory);
      const targetBinFileName = `${targetBinDirectory}/${strippedFilename}.bin`;
-     fs.writeFileSync(targetBinFileName, JSON.stringify(parsed.bytecode));
+     if (fs.existsSync(targetBinFileName)) {
+      createDir(targetBinDirectory);
+      fs.writeFileSync(targetBinFileName, JSON.stringify(parsed.bytecode));
+     }
  
      // create go bindings for this contract
      const targetGoDirectory = `${BASE_TARGET_DIR}/${TARGET_GO_DIR}/${internalPath}`;
-     createDir(targetGoDirectory);
      const targetGoFileName = `${targetGoDirectory}/${strippedFilename}.go`;
-     await exec(`abigen --abi ${targetAbiFileName} --pkg ${strippedFilename} --type ${strippedFilename} --out ${targetGoFileName}`);
+     if (fs.existsSync(targetGoFileName)) {
+      createDir(targetGoDirectory);
+      await exec(`abigen --abi ${targetAbiFileName} --pkg ${internalPath} --type ${internalPath} --out ${targetGoFileName}`);
+     }
    }
  
    printSuccess();

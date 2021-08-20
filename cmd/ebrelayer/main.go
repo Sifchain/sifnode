@@ -89,11 +89,12 @@ func buildRootCmd() *cobra.Command {
 	rootCmd.AddCommand(
 		rpc.StatusCommand(),
 		initRelayerCmd(),
+		initWitnessCmd(),
 		replayEthereumCmd(),
-		replayCosmosCmd(),
+		replayCosmosBurnLockCmd(),
+		replayCosmosSignatureAggregationCmd(),
 		listMissedCosmosEventCmd(),
 	)
-
 	return rootCmd
 }
 
@@ -101,16 +102,30 @@ func buildRootCmd() *cobra.Command {
 func initRelayerCmd() *cobra.Command {
 	//nolint:lll
 	initRelayerCmd := &cobra.Command{
-		Use:     "init [networkDescriptor] [tendermintNode] [web3Provider] [bridgeRegistryContractAddress] [validatorMnemonic]",
+		Use:     "init-relayer [networkDescriptor] [tendermintNode] [web3Provider] [bridgeRegistryContractAddress] [validatorMnemonic]",
 		Short:   "Validate credentials and initialize subscriptions to both chains",
 		Args:    cobra.ExactArgs(5),
-		Example: "ebrelayer init 1 tcp://localhost:26657 ws://localhost:7545/ 0x30753E4A8aad7F8597332E813735Def5dD395028 mnemonic --chain-id=peggy",
+		Example: "ebrelayer init-relayer 1 tcp://localhost:26657 ws://localhost:7545/ 0x30753E4A8aad7F8597332E813735Def5dD395028 mnemonic --chain-id=peggy",
 		RunE:    RunInitRelayerCmd,
 	}
-	//flags.AddQueryFlagsToCmd(initRelayerCmd)
 	flags.AddTxFlagsToCmd(initRelayerCmd)
 
 	return initRelayerCmd
+}
+
+//	initWitnessCmd
+func initWitnessCmd() *cobra.Command {
+	//nolint:lll
+	initWitnessCmd := &cobra.Command{
+		Use:     "init-witness [networkDescriptor] [tendermintNode] [web3Provider] [bridgeRegistryContractAddress] [validatorMnemonic]",
+		Short:   "Validate credentials and initialize subscriptions to both chains",
+		Args:    cobra.ExactArgs(5),
+		Example: "ebrelayer init-witness 1 tcp://localhost:26657 ws://localhost:7545/ 0x30753E4A8aad7F8597332E813735Def5dD395028 mnemonic --chain-id=peggy",
+		RunE:    RunInitWitnessCmd,
+	}
+	flags.AddTxFlagsToCmd(initWitnessCmd)
+
+	return initWitnessCmd
 }
 
 // RunInitRelayerCmd executes initRelayerCmd
@@ -210,13 +225,138 @@ func RunInitRelayerCmd(cmd *cobra.Command, args []string) error {
 	)
 
 	// Initialize new Cosmos event listener
-	cosmosSub := relayer.NewCosmosSub(oracletypes.NetworkDescriptor(networkDescriptor), privateKey, tendermintNode, web3Provider, contractAddress, db, sugaredLogger)
+	cosmosSub := relayer.NewCosmosSub(oracletypes.NetworkDescriptor(networkDescriptor),
+		privateKey,
+		tendermintNode,
+		web3Provider,
+		contractAddress,
+		db,
+		cliContext,
+		validatorMoniker,
+		sugaredLogger)
 
 	waitForAll := sync.WaitGroup{}
 	waitForAll.Add(2)
 	txFactory := tx.NewFactoryCLI(cliContext, cmd.Flags())
 	go ethSub.Start(txFactory, &waitForAll)
-	go cosmosSub.Start(&waitForAll)
+	go cosmosSub.Start(txFactory, &waitForAll)
+	waitForAll.Wait()
+
+	return nil
+}
+
+// RunInitWitnessCmd executes initWitnessCmd
+func RunInitWitnessCmd(cmd *cobra.Command, args []string) error {
+	// First initialize the Cosmos features we need for the context
+	cliContext, err := client.GetClientTxContext(cmd)
+	if err != nil {
+		return err
+	}
+	log.Printf("got result from GetClientQueryContext: %v", cliContext)
+
+	// Load the validator's Ethereum private key from environment variables
+	privateKey, err := txs.LoadPrivateKey()
+	if err != nil {
+		return errors.Errorf("invalid [ETHEREUM_PRIVATE_KEY] environment variable")
+	}
+
+	// Open the level db
+	db, err := leveldb.OpenFile(levelDbFile, nil)
+	if err != nil {
+		log.Fatal("Error opening leveldb: ", err)
+	}
+	defer func() {
+		if err := db.Close(); err != nil {
+			log.Println("db.Close filed: ", err.Error())
+		}
+	}()
+
+	nodeURL, err := cmd.Flags().GetString(flags.FlagNode)
+	if err != nil {
+		return err
+	}
+	if nodeURL != "" {
+		_, err := url.Parse(nodeURL)
+		if nodeURL != "" && err != nil {
+			return errors.Wrapf(err, "invalid RPC URL: %v", nodeURL)
+		}
+	}
+
+	// Validate and parse arguments
+	networkDescriptor, err := strconv.Atoi(args[0])
+	if err != nil {
+		return errors.Errorf("%s is invalid network id", args[0])
+	}
+
+	// check if the networkDescriptor is valid
+	if !oracletypes.NetworkDescriptor(networkDescriptor).IsValid() {
+		return errors.Errorf("network id: %d is invalid", networkDescriptor)
+	}
+
+	if len(strings.Trim(args[1], "")) == 0 {
+		return errors.Errorf("invalid [tendermint-node]: %s", args[1])
+	}
+	tendermintNode := args[1]
+
+	if !relayer.IsWebsocketURL(args[2]) {
+		return errors.Errorf("invalid [web3-provider]: %s", args[2])
+	}
+	web3Provider := args[2]
+
+	if !common.IsHexAddress(args[3]) {
+		return errors.Errorf("invalid [bridge-registry-contract-address]: %s", args[3])
+	}
+	contractAddress := common.HexToAddress(args[3])
+
+	if len(strings.Trim(args[4], "")) == 0 {
+		return errors.Errorf("invalid [validator-moniker]: %s", args[4])
+	}
+	validatorMoniker := args[4]
+
+	logConfig := zap.NewDevelopmentConfig()
+	logConfig.Sampling = nil
+	logger, err := logConfig.Build()
+
+	if err != nil {
+		log.Fatalln("failed to init zap logging")
+	}
+	defer func() {
+		if err := logger.Sync(); err != nil {
+			log.Println("failed to sync zap logging")
+		}
+	}()
+
+	sugaredLogger := logger.Sugar()
+	zap.RedirectStdLog(sugaredLogger.Desugar())
+
+	// Initialize new Ethereum event listener
+	ethSub := relayer.NewEthereumSub(
+		cliContext,
+		nodeURL,
+		validatorMoniker,
+		web3Provider,
+		contractAddress,
+		nil,
+		db,
+		sugaredLogger,
+	)
+
+	// Initialize new Cosmos event listener
+	cosmosSub := relayer.NewCosmosSub(oracletypes.NetworkDescriptor(networkDescriptor),
+		privateKey,
+		tendermintNode,
+		web3Provider,
+		contractAddress,
+		db,
+		cliContext,
+		validatorMoniker,
+		sugaredLogger)
+
+	waitForAll := sync.WaitGroup{}
+	waitForAll.Add(2)
+	txFactory := tx.NewFactoryCLI(cliContext, cmd.Flags())
+	go ethSub.Start(txFactory, &waitForAll)
+	go cosmosSub.StartProphecyHandler(txFactory, &waitForAll)
 	waitForAll.Wait()
 
 	return nil
@@ -225,10 +365,10 @@ func RunInitRelayerCmd(cmd *cobra.Command, args []string) error {
 func replayEthereumCmd() *cobra.Command {
 	//nolint:lll
 	replayEthereumCmd := &cobra.Command{
-		Use:     "replayEthereum [tendermintNode] [web3Provider] [bridgeRegistryContractAddress] [validatorMoniker] [validatorMnemonic] [fromBlock] [toBlock] [sifFromBlock] [sifEndBlock]",
+		Use:     "replayEthereum [tendermintNode] [web3Provider] [bridgeRegistryContractAddress] [validatorMoniker] [fromBlock] [toBlock] [sifFromBlock] [sifEndBlock]",
 		Short:   "replay missed ethereum events",
-		Args:    cobra.ExactArgs(9),
-		Example: "replayEthereum tcp://localhost:26657 ws://localhost:7545/ 0x30753E4A8aad7F8597332E813735Def5dD395028 validator mnemonic 100 200 100 200 --chain-id=peggy",
+		Args:    cobra.ExactArgs(8),
+		Example: "replayEthereum tcp://localhost:26657 ws://localhost:7545/ 0x30753E4A8aad7F8597332E813735Def5dD395028 validator 100 200 100 200 --chain-id=peggy",
 		RunE:    RunReplayEthereumCmd,
 	}
 
@@ -237,26 +377,39 @@ func replayEthereumCmd() *cobra.Command {
 	return replayEthereumCmd
 }
 
-func replayCosmosCmd() *cobra.Command {
+func replayCosmosBurnLockCmd() *cobra.Command {
 	//nolint:lll
-	replayCosmosCmd := &cobra.Command{
-		Use:     "replayCosmos [tendermintNode] [web3Provider] [bridgeRegistryContractAddress] [fromBlock] [toBlock] [ethFromBlock] [ethToBlock]",
+	replayCosmosBurnLockCmd := &cobra.Command{
+		Use:     "replayCosmosBurnLock [tendermintNode] [web3Provider] [bridgeRegistryContractAddress] [validatorMoniker]",
 		Short:   "replay missed cosmos events",
-		Args:    cobra.ExactArgs(7),
-		Example: "replayCosmos tcp://localhost:26657 ws://localhost:7545/ 0x30753E4A8aad7F8597332E813735Def5dD395028 100 200 100 200",
-		RunE:    RunReplayCosmosCmd,
+		Args:    cobra.ExactArgs(4),
+		Example: "replayCosmos tcp://localhost:26657 ws://localhost:7545/ 0x30753E4A8aad7F8597332E813735Def5dD395028 validator",
+		RunE:    RunReplayCosmosBurnLockCmd,
 	}
 
-	return replayCosmosCmd
+	return replayCosmosBurnLockCmd
+}
+
+func replayCosmosSignatureAggregationCmd() *cobra.Command {
+	//nolint:lll
+	replayCosmosSignatureAggregationCmd := &cobra.Command{
+		Use:     "replayCosmosSignatureAggregation [tendermintNode] [web3Provider] [bridgeRegistryContractAddress] [validatorMoniker]",
+		Short:   "replay missed cosmos events",
+		Args:    cobra.ExactArgs(4),
+		Example: "replayCosmos tcp://localhost:26657 ws://localhost:7545/ 0x30753E4A8aad7F8597332E813735Def5dD395028 validator",
+		RunE:    RunReplayCosmosSignatureAggregationCmd,
+	}
+
+	return replayCosmosSignatureAggregationCmd
 }
 
 func listMissedCosmosEventCmd() *cobra.Command {
 	//nolint:lll
 	listMissedCosmosEventCmd := &cobra.Command{
-		Use:     "listMissedCosmosEventCmd [tendermintNode] [web3Provider] [bridgeRegistryContractAddress] [ebrelayerEthereumAddress] [days]",
+		Use:     "listMissedCosmosEventCmd [tendermintNode] [web3Provider] [bridgeRegistryContractAddress] [ebrelayerEthereumAddress]",
 		Short:   "replay missed cosmos events",
-		Args:    cobra.ExactArgs(5),
-		Example: "listMissedCosmosEventCmd tcp://localhost:26657 ws://localhost:7545/ 0x30753E4A8aad7F8597332E813735Def5dD395028 0x627306090abaB3A6e1400e9345bC60c78a8BEf57 1",
+		Args:    cobra.ExactArgs(4),
+		Example: "listMissedCosmosEventCmd tcp://localhost:26657 ws://localhost:7545/ 0x30753E4A8aad7F8597332E813735Def5dD395028 0x627306090abaB3A6e1400e9345bC60c78a8BEf57",
 		RunE:    RunListMissedCosmosEventCmd,
 	}
 

@@ -11,95 +11,27 @@ import (
 
 	cosmosbridge "github.com/Sifchain/sifnode/cmd/ebrelayer/contract/generated/bindings/cosmosbridge"
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/types"
+	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
-	ctypes "github.com/ethereum/go-ethereum/core/types"
+	ethereumtypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"go.uber.org/zap"
 )
 
 const (
 	// GasLimit the gas limit in Gwei used for transactions sent with TransactOpts
-	GasLimit            = uint64(500000)
+	GasLimit = uint64(1000000)
 )
-
-var GasPriceMinimum *big.Int = big.NewInt(60000000000)
 
 func sleepThread(seconds time.Duration) {
 	time.Sleep(time.Second * seconds)
-}
-
-// RelayProphecyClaimToEthereum relays the provided ProphecyClaim to CosmosBridge contract on the Ethereum network
-func RelayProphecyClaimToEthereum(
-	claim types.CosmosMsg,
-	sugaredLogger *zap.SugaredLogger,
-	client *ethclient.Client,
-	auth *bind.TransactOpts,
-	cosmosBridgeInstance *cosmosbridge.CosmosBridge,
-) error {
-
-	// Send transaction
-	sugaredLogger.Infow(
-		"Sending new ProphecyClaim to CosmosBridge.",
-		"CosmosSender", claim.CosmosSender,
-		"CosmosSenderSequence", claim.CosmosSenderSequence,
-	)
-
-	amount := claim.Amount.BigInt()
-
-	tx, err := cosmosBridgeInstance.NewProphecyClaim(
-		auth,
-		uint8(claim.ClaimType),
-		claim.CosmosSender,
-		claim.CosmosSenderSequence,
-		claim.EthereumReceiver,
-		claim.Symbol,
-		amount,
-	)
-
-	// sleep 2 seconds to wait for tx to go through before querying.
-	sleepThread(2)
-
-	if err != nil {
-		return err
-	}
-
-	sugaredLogger.Infow("get NewProphecyClaim tx hash:", "ProphecyClaimHash", tx.Hash().Hex())
-
-	// var receipt *eth.types.Receipt
-	var receipt *ctypes.Receipt
-	maxRetries := 60
-	i := 0
-	// if there is an error getting the tx, or if the tx fails, retry 60 times
-	for i < maxRetries {
-		// Get the transaction receipt
-		receipt, err = client.TransactionReceipt(context.Background(), tx.Hash())
-
-		if err != nil {
-			sleepThread(1)
-		} else {
-			break
-		}
-		i++
-	}
-
-	if i == maxRetries {
-		return errors.New("hit max tx receipt query retries")
-	}
-
-	sugaredLogger.Infow(
-		"Successfully received transaction receipt after retry",
-		"txReceipt", receipt,
-	)
-
-	return nil
 }
 
 // InitRelayConfig set up Ethereum client, validator's transaction auth, and the target contract's address
 func InitRelayConfig(
 	provider string,
 	registry common.Address,
-	event types.Event,
 	key *ecdsa.PrivateKey,
 	sugaredLogger *zap.SugaredLogger,
 ) (
@@ -164,17 +96,7 @@ func InitRelayConfig(
 	sugaredLogger.Infow("nonce before send transaction.",
 		"transactOptsAuth.Nonce", transactOptsAuth.Nonce)
 
-	var targetContract ContractRegistry
-	switch event {
-	// ProphecyClaims are sent to the CosmosBridge contract
-	case types.MsgBurn, types.MsgLock:
-		targetContract = CosmosBridge
-	// OracleClaims are sent to the Oracle contract
-	case types.LogNewProphecyClaim:
-		targetContract = Oracle
-	default:
-		panic("invalid target contract address")
-	}
+	targetContract := CosmosBridge
 
 	// Get the specific contract's address
 	target, err := GetAddressFromBridgeRegistry(client, registry, targetContract, sugaredLogger)
@@ -185,4 +107,196 @@ func InitRelayConfig(
 
 	}
 	return client, transactOptsAuth, target, nil
+}
+
+// RelayProphecyCompletedToEthereum send the prophecy aggregation to CosmosBridge contract on the Ethereum network
+func RelayProphecyCompletedToEthereum(
+	prophecyInfo types.ProphecyInfo,
+	sugaredLogger *zap.SugaredLogger,
+	client *ethclient.Client,
+	auth *bind.TransactOpts,
+	cosmosBridgeInstance *cosmosbridge.CosmosBridge,
+) error {
+
+	// Send transaction
+	sugaredLogger.Infow(
+		"Sending SubmitProphecyClaimAggregatedSigs to CosmosBridge.",
+		"CosmosSender", prophecyInfo.CosmosSender,
+		"CosmosSenderSequence", prophecyInfo.CosmosSenderSequence,
+		"ProphecyId", prophecyInfo.ProphecyID,
+	)
+
+	claimData := cosmosbridge.CosmosBridgeClaimData{
+		CosmosSender:         []byte(prophecyInfo.CosmosSender),
+		CosmosSenderSequence: big.NewInt(int64(prophecyInfo.CosmosSenderSequence)),
+		EthereumReceiver:     common.HexToAddress(prophecyInfo.EthereumReceiver),
+		TokenAddress:         common.HexToAddress(prophecyInfo.TokenSymbol),
+		Amount:               &prophecyInfo.TokenAmount,
+		DoublePeg:            prophecyInfo.DoublePeg,
+		Nonce:                big.NewInt(int64(prophecyInfo.GlobalNonce)),
+	}
+
+	var signatureData = make([]cosmosbridge.CosmosBridgeSignatureData, len(prophecyInfo.EthereumSignerAddresses))
+
+	for index, address := range prophecyInfo.EthereumSignerAddresses {
+		signature := []byte(prophecyInfo.Signatures[index])
+		var r [32]byte
+		var s [32]byte
+		copy(r[:], signature[1:33])
+		copy(s[:], signature[33:65])
+
+		tmpSignature := cosmosbridge.CosmosBridgeSignatureData{
+			Signer: common.HexToAddress(address),
+			V:      signature[0],
+			R:      r,
+			S:      s,
+		}
+
+		signatureData[index] = tmpSignature
+	}
+
+	var id [32]byte
+	copy(id[:], prophecyInfo.ProphecyID)
+
+	tx, err := cosmosBridgeInstance.SubmitProphecyClaimAggregatedSigs(
+		auth,
+		id,
+		claimData,
+		signatureData,
+	)
+
+	// sleep 2 seconds to wait for tx to go through before querying.
+	sleepThread(2)
+
+	if err != nil {
+		return err
+	}
+
+	sugaredLogger.Infow("get SubmitProphecyClaimAggregatedSigs tx hash:", "TransactionHash", tx.Hash().Hex())
+
+	var receipt *ethereumtypes.Receipt
+	maxRetries := 60
+	i := 0
+	// if there is an error getting the tx, or if the tx fails, retry 60 times
+	for i < maxRetries {
+		// Get the transaction receipt
+		receipt, err = client.TransactionReceipt(context.Background(), tx.Hash())
+
+		if err != nil {
+			sleepThread(1)
+		} else {
+			break
+		}
+		i++
+	}
+
+	if i == maxRetries {
+		return errors.New("hit max tx receipt query retries")
+	}
+
+	sugaredLogger.Infow(
+		"Successfully received transaction receipt after retry",
+		"txReceipt", receipt,
+	)
+
+	return nil
+}
+
+// RelayBatchProphecyCompletedToEthereum send the prophecy aggregation to CosmosBridge contract on the Ethereum network
+func RelayBatchProphecyCompletedToEthereum(
+	batchProphecyInfo []*oracletypes.ProphecyInfo,
+	sugaredLogger *zap.SugaredLogger,
+	client *ethclient.Client,
+	auth *bind.TransactOpts,
+	cosmosBridgeInstance *cosmosbridge.CosmosBridge,
+) error {
+
+	if len(batchProphecyInfo) == 0 {
+		return nil
+	}
+
+	batchLen := len(batchProphecyInfo)
+	batchClaimData := make([]cosmosbridge.CosmosBridgeClaimData, batchLen)
+	batchSignatureData := make([][]cosmosbridge.CosmosBridgeSignatureData, batchLen)
+	batchID := make([][32]byte, batchLen)
+
+	for index, prophecyInfo := range batchProphecyInfo {
+		claimData := cosmosbridge.CosmosBridgeClaimData{
+			CosmosSender:         []byte(prophecyInfo.CosmosSender),
+			CosmosSenderSequence: big.NewInt(int64(prophecyInfo.CosmosSenderSequence)),
+			EthereumReceiver:     common.HexToAddress(prophecyInfo.EthereumReceiver),
+			TokenAddress:         common.HexToAddress(prophecyInfo.TokenContractAddress),
+			Amount:               big.NewInt(prophecyInfo.TokenAmount.Int64()),
+			DoublePeg:            prophecyInfo.DoublePeg,
+			Nonce:                big.NewInt(int64(prophecyInfo.GlobalNonce)),
+		}
+		batchClaimData[index] = claimData
+
+		var signatureData = make([]cosmosbridge.CosmosBridgeSignatureData, len(prophecyInfo.EthereumAddress))
+
+		for index, address := range prophecyInfo.EthereumAddress {
+			signature := []byte(prophecyInfo.Signatures[index])
+			var r [32]byte
+			var s [32]byte
+			copy(r[:], signature[1:33])
+			copy(s[:], signature[33:65])
+
+			tmpSignature := cosmosbridge.CosmosBridgeSignatureData{
+				Signer: common.HexToAddress(address),
+				V:      signature[0],
+				R:      r,
+				S:      s,
+			}
+
+			signatureData[index] = tmpSignature
+		}
+
+		batchSignatureData[index] = signatureData
+		var id [32]byte
+		copy(id[:], prophecyInfo.ProphecyId)
+		batchID[index] = id
+	}
+
+	tx, err := cosmosBridgeInstance.BatchSubmitProphecyClaimAggregatedSigs(
+		auth,
+		batchID,
+		batchClaimData,
+		batchSignatureData,
+	)
+
+	// sleep 2 seconds to wait for tx to go through before querying.
+	sleepThread(2)
+
+	if err != nil {
+		return err
+	}
+
+	sugaredLogger.Infow("get SubmitProphecyClaimAggregatedSigs tx hash:", "TransactionHash", tx.Hash().Hex())
+
+	var receipt *ethereumtypes.Receipt
+	maxRetries := 60
+	i := 0
+	// if there is an error getting the tx, or if the tx fails, retry 60 times
+	for i < maxRetries {
+		// Get the transaction receipt
+		receipt, err = client.TransactionReceipt(context.Background(), tx.Hash())
+
+		if err != nil {
+			sleepThread(1)
+		} else {
+			break
+		}
+		i++
+	}
+
+	if i == maxRetries {
+		return errors.New("hit max tx receipt query retries")
+	}
+
+	sugaredLogger.Infow(
+		"Successfully received transaction receipt after retry",
+		"txReceipt", receipt,
+	)
+
+	return nil
 }

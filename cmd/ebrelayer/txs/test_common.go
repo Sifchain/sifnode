@@ -4,7 +4,6 @@ import (
 	"encoding/binary"
 	"math/big"
 	"strconv"
-	"strings"
 	"testing"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -93,70 +92,17 @@ func CreateTestProphecyClaimEvent(t *testing.T) types.ProphecyClaimEvent {
 
 // CreateTestCosmosMsg creates a sample Cosmos Msg for testing purposes
 func CreateTestCosmosMsg(t *testing.T, claimType types.Event) types.CosmosMsg {
-	testCosmosSender := []byte(TestCosmosAddress1)
-	testEthereumReceiver := common.HexToAddress(TestEthereumAddress1)
-	testAmount := testSDKAmount
-
-	var symbol string
-	if claimType == types.MsgBurn {
-		res := strings.SplitAfter(strings.ToLower(TestSymbol), defaultSifchainPrefix)
-		symbol = strings.Join(res[1:], "")
-	} else {
-		symbol = TestSymbol
-	}
+	prophecyID := []byte{}
 
 	// Create new Cosmos Msg
-	cosmosMsg := types.NewCosmosMsg(oracletypes.NetworkDescriptor(TestNetworkDescriptor), claimType, testCosmosSender, big.NewInt(TestCosmosAddressSequence),
-		testEthereumReceiver, symbol, testAmount)
+	cosmosMsg := types.NewCosmosMsg(oracletypes.NetworkDescriptor(TestNetworkDescriptor), prophecyID)
 
 	return cosmosMsg
 }
 
 // CreateCosmosMsgAttributes creates expected attributes for a MsgBurn/MsgLock for testing purposes
 func CreateCosmosMsgAttributes(t *testing.T, claimType types.Event) []abci.EventAttribute {
-	attributes := [7]abci.EventAttribute{}
-
-	// (key, value) pairing for "cosmos_sender" key
-	pairCosmosSender := abci.EventAttribute{
-		Key:   []byte("cosmos_sender"),
-		Value: []byte(TestCosmosAddress1),
-	}
-
-	// (key, value) pairing for "cosmos_sender_sequence" key
-	pairCosmosSenderSequence := abci.EventAttribute{
-		Key:   []byte("cosmos_sender_sequence"),
-		Value: []byte(strconv.Itoa(TestCosmosAddressSequence)),
-	}
-
-	// (key, value) pairing for "ethereum_receiver" key
-	pairEthereumReceiver := abci.EventAttribute{
-		Key:   []byte("ethereum_receiver"),
-		Value: []byte(common.HexToAddress(TestEthereumAddress1).Hex()), // .Bytes() doesn't seem to work here
-	}
-
-	// (key, value) pairing for "symbol" key
-	var symbol string
-	if claimType == types.MsgBurn {
-		symbol = strings.ToLower(TestSymbol)
-	} else {
-		symbol = TestSymbol
-	}
-	pairSymbol := abci.EventAttribute{
-		Key:   []byte("symbol"),
-		Value: []byte(symbol),
-	}
-
-	// (key, value) pairing for "amount" key
-	pairAmount := abci.EventAttribute{
-		Key:   []byte("amount"),
-		Value: []byte(testAmount.String()),
-	}
-
-	// (key, value) pairing for "token_contract_address" key
-	pairTokenContract := abci.EventAttribute{
-		Key:   []byte("token_contract_address"),
-		Value: []byte(common.HexToAddress(TestEthTokenAddress).Hex()),
-	}
+	attributes := [2]abci.EventAttribute{}
 
 	// (key, value) pairing for "network-descriptor" key
 	pairEthereumChainID := abci.EventAttribute{
@@ -164,14 +110,15 @@ func CreateCosmosMsgAttributes(t *testing.T, claimType types.Event) []abci.Event
 		Value: []byte(strconv.Itoa(TestNetworkDescriptor)),
 	}
 
+	// (key, value) pairing for "network-descriptor" key
+	pairProphecyID := abci.EventAttribute{
+		Key:   []byte("prophecy_id"),
+		Value: []byte{},
+	}
+
 	// Assign pairs to attributes array
-	attributes[0] = pairCosmosSender
-	attributes[1] = pairCosmosSenderSequence
-	attributes[2] = pairEthereumReceiver
-	attributes[3] = pairTokenContract
-	attributes[4] = pairSymbol
-	attributes[5] = pairAmount
-	attributes[6] = pairEthereumChainID
+	attributes[0] = pairEthereumChainID
+	attributes[1] = pairProphecyID
 	return attributes[:]
 }
 

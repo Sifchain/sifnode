@@ -26,6 +26,22 @@ var (
 	networkDescriptor    = oracletypes.NetworkDescriptor_NETWORK_DESCRIPTOR_ETHEREUM
 )
 
+var testMetadataStake = types.TokenMetadata{
+	Decimals:          18,
+	Name:              "stake",
+	NetworkDescriptor: oracletypes.NetworkDescriptor_NETWORK_DESCRIPTOR_UNSPECIFIED,
+	Symbol:            "stake",
+	TokenAddress:      "0x0123456789ABCDEF",
+}
+
+var testMetadataCeth = types.TokenMetadata{
+	Decimals:          18,
+	Name:              "ceth",
+	NetworkDescriptor: oracletypes.NetworkDescriptor_NETWORK_DESCRIPTOR_UNSPECIFIED,
+	Symbol:            "ceth",
+	TokenAddress:      "0x0123456789ABCDEF",
+}
+
 func TestProcessClaimLock(t *testing.T) {
 	ctx, keeper, _, _, _, _, _, validatorAddresses := test.CreateTestKeepers(t, 0.7, []int64{3, 3}, "")
 	validator1Pow3 := validatorAddresses[0]
@@ -199,13 +215,16 @@ func TestProcessBurn(t *testing.T) {
 	networkIdentity := oracletypes.NewNetworkIdentity(networkDescriptor)
 	crossChainFeeConfig, _ := oracleKeeper.GetCrossChainFeeConfig(ctx, networkIdentity)
 	crossChainFee := crossChainFeeConfig.FeeCurrency
+	denomHash := keeper.AddTokenMetadata(ctx, testMetadataStake)
 
-	msg := types.NewMsgBurn(1, cosmosReceivers[0], ethereumSender, amount, "stake", amount)
+	msg := types.NewMsgBurn(1, cosmosReceivers[0], ethereumSender, amount, denomHash, amount)
 	coins := sdk.NewCoins(sdk.NewCoin("stake", amount), sdk.NewCoin(crossChainFee, amount))
 	_ = bankKeeper.MintCoins(ctx, types.ModuleName, coins)
 	_ = bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, cosmosReceivers[0], coins)
 
-	err := keeper.ProcessBurn(ctx, cosmosReceivers[0], &msg)
+	account := keeper.GetAccountKeeper().GetAccount(ctx, cosmosReceivers[0])
+
+	_, err := keeper.ProcessBurn(ctx, cosmosReceivers[0], account.GetSequence(), &msg, testMetadataStake)
 	require.NoError(t, err)
 
 	receiverCoins := bankKeeper.GetAllBalances(ctx, cosmosReceivers[0])
@@ -217,13 +236,15 @@ func TestProcessBurnCrossChainFee(t *testing.T) {
 	networkIdentity := oracletypes.NewNetworkIdentity(networkDescriptor)
 	crossChainFeeConfig, _ := oracleKeeper.GetCrossChainFeeConfig(ctx, networkIdentity)
 	crossChainFee := crossChainFeeConfig.FeeCurrency
+	denomHash := keeper.AddTokenMetadata(ctx, testMetadataCeth)
 
-	msg := types.NewMsgBurn(networkDescriptor, cosmosReceivers[0], ethereumSender, amount, crossChainFee, amount)
+	msg := types.NewMsgBurn(networkDescriptor, cosmosReceivers[0], ethereumSender, amount, denomHash, amount)
 	coins := sdk.NewCoins(sdk.NewCoin(crossChainFee, doubleAmount))
 	_ = bankKeeper.MintCoins(ctx, types.ModuleName, coins)
 	_ = bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, cosmosReceivers[0], coins)
 
-	err := keeper.ProcessBurn(ctx, cosmosReceivers[0], &msg)
+	account := keeper.GetAccountKeeper().GetAccount(ctx, cosmosReceivers[0])
+	_, err := keeper.ProcessBurn(ctx, cosmosReceivers[0], account.GetSequence(), &msg, testMetadataCeth)
 	require.NoError(t, err)
 
 	receiverCoins := bankKeeper.GetAllBalances(ctx, cosmosReceivers[0])
@@ -232,28 +253,31 @@ func TestProcessBurnCrossChainFee(t *testing.T) {
 
 func TestProcessLock(t *testing.T) {
 	ctx, keeper, bankKeeper, _, oracleKeeper, _, _, _ := test.CreateTestKeepers(t, 0.7, []int64{3, 3}, "")
+	keeper.AddTokenMetadata(ctx, testMetadataStake)
+
 	networkIdentity := oracletypes.NewNetworkIdentity(networkDescriptor)
 	crossChainFeeConfig, _ := oracleKeeper.GetCrossChainFeeConfig(ctx, networkIdentity)
 	crossChainFee := crossChainFeeConfig.FeeCurrency
+	coins := sdk.NewCoins(sdk.NewCoin(crossChainFee, amount))
+	_ = bankKeeper.MintCoins(ctx, types.ModuleName, coins)
+	_ = bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, cosmosReceivers[0], coins)
+	denomHash := keeper.AddTokenMetadata(ctx, testMetadataStake)
 
-	receiverCoins := bankKeeper.GetAllBalances(ctx, cosmosReceivers[0])
-	require.Equal(t, receiverCoins, sdk.Coins{})
+	msg := types.NewMsgLock(1, cosmosReceivers[0], ethereumSender, amount, denomHash, amount)
+	account := keeper.GetAccountKeeper().GetAccount(ctx, cosmosReceivers[0])
 
-	msg := types.NewMsgLock(1, cosmosReceivers[0], ethereumSender, amount, "stake", amount)
-
-	err := keeper.ProcessLock(ctx, cosmosReceivers[0], &msg)
+	_, err := keeper.ProcessLock(ctx, cosmosReceivers[0], account.GetSequence(), &msg, testMetadataStake)
 	require.ErrorIs(t, err, sdkerrors.ErrInsufficientFunds)
 
-	coins := sdk.NewCoins(sdk.NewCoin("stake", amount), sdk.NewCoin(crossChainFee, amount))
+	coins = sdk.NewCoins(sdk.NewCoin("stake", amount), sdk.NewCoin(crossChainFee, amount))
 	_ = bankKeeper.MintCoins(ctx, types.ModuleName, coins)
 	_ = bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, cosmosReceivers[0], coins)
 
-	err = keeper.ProcessLock(ctx, cosmosReceivers[0], &msg)
+	_, err = keeper.ProcessLock(ctx, cosmosReceivers[0], account.GetSequence(), &msg, testMetadataStake)
 	require.NoError(t, err)
 
-	receiverCoins = bankKeeper.GetAllBalances(ctx, cosmosReceivers[0])
-	require.Equal(t, receiverCoins.String(), string(""))
-
+	receiverCoins := bankKeeper.GetAllBalances(ctx, cosmosReceivers[0])
+	require.Equal(t, receiverCoins.String(), "")
 }
 
 func TestProcessBurnWithReceiver(t *testing.T) {
@@ -261,17 +285,20 @@ func TestProcessBurnWithReceiver(t *testing.T) {
 	cosmosSender, err := sdk.AccAddressFromBech32(types.TestAddress)
 	require.NoError(t, err)
 	oracleKeeper.SetAdminAccount(ctx, cosmosSender)
+	keeper.AddTokenMetadata(ctx, testMetadataStake)
 
 	networkIdentity := oracletypes.NewNetworkIdentity(networkDescriptor)
 	crossChainFeeConfig, _ := oracleKeeper.GetCrossChainFeeConfig(ctx, networkIdentity)
 	crossChainFee := crossChainFeeConfig.FeeCurrency
+	denomHash := keeper.AddTokenMetadata(ctx, testMetadataStake)
 
-	msg := types.NewMsgBurn(1, cosmosReceivers[0], ethereumSender, amount, "stake", amount)
+	msg := types.NewMsgBurn(1, cosmosReceivers[0], ethereumSender, amount, denomHash, amount)
 	coins := sdk.NewCoins(sdk.NewCoin("stake", amount), sdk.NewCoin(crossChainFee, amount))
 	_ = bankKeeper.MintCoins(ctx, types.ModuleName, coins)
 	_ = bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, cosmosReceivers[0], coins)
 
-	err = keeper.ProcessBurn(ctx, cosmosReceivers[0], &msg)
+	account := keeper.GetAccountKeeper().GetAccount(ctx, cosmosReceivers[0])
+	_, err = keeper.ProcessBurn(ctx, cosmosReceivers[0], account.GetSequence(), &msg, testMetadataStake)
 	require.NoError(t, err)
 
 	receiverCoins := bankKeeper.GetAllBalances(ctx, cosmosReceivers[0])
@@ -283,17 +310,19 @@ func TestProcessBurnCrossChainFeeWithReceiver(t *testing.T) {
 	cosmosSender, err := sdk.AccAddressFromBech32(types.TestAddress)
 	require.NoError(t, err)
 	oracleKeeper.SetAdminAccount(ctx, cosmosSender)
+	denomHash := keeper.AddTokenMetadata(ctx, testMetadataCeth)
 
 	networkIdentity := oracletypes.NewNetworkIdentity(networkDescriptor)
 	crossChainFeeConfig, _ := oracleKeeper.GetCrossChainFeeConfig(ctx, networkIdentity)
 	crossChainFee := crossChainFeeConfig.FeeCurrency
 
-	msg := types.NewMsgBurn(1, cosmosReceivers[0], ethereumSender, amount, crossChainFee, amount)
+	msg := types.NewMsgBurn(1, cosmosReceivers[0], ethereumSender, amount, denomHash, amount)
 	coins := sdk.NewCoins(sdk.NewCoin(crossChainFee, doubleAmount))
 	_ = bankKeeper.MintCoins(ctx, types.ModuleName, coins)
 	_ = bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, cosmosReceivers[0], coins)
 
-	err = keeper.ProcessBurn(ctx, cosmosReceivers[0], &msg)
+	account := keeper.GetAccountKeeper().GetAccount(ctx, cosmosReceivers[0])
+	_, err = keeper.ProcessBurn(ctx, cosmosReceivers[0], account.GetSequence(), &msg, testMetadataCeth)
 	require.NoError(t, err)
 
 	receiverCoins := bankKeeper.GetAllBalances(ctx, cosmosReceivers[0])
@@ -305,24 +334,30 @@ func TestProcessLockWithReceiver(t *testing.T) {
 	cosmosSender, err := sdk.AccAddressFromBech32(types.TestAddress)
 	require.NoError(t, err)
 	oracleKeeper.SetAdminAccount(ctx, cosmosSender)
+	denomHash := keeper.AddTokenMetadata(ctx, testMetadataStake)
 
 	networkIdentity := oracletypes.NewNetworkIdentity(networkDescriptor)
 	crossChainFeeConfig, _ := oracleKeeper.GetCrossChainFeeConfig(ctx, networkIdentity)
 	crossChainFee := crossChainFeeConfig.FeeCurrency
-
-	receiverCoins := bankKeeper.GetAllBalances(ctx, cosmosReceivers[0])
-	require.Equal(t, receiverCoins, sdk.Coins{})
-
-	msg := types.NewMsgLock(1, cosmosReceivers[0], ethereumSender, amount, "stake", amount)
-
-	err = keeper.ProcessLock(ctx, cosmosReceivers[0], &msg)
-	require.ErrorIs(t, err, sdkerrors.ErrInsufficientFunds)
-
-	coins := sdk.NewCoins(sdk.NewCoin("stake", amount), sdk.NewCoin(crossChainFee, amount))
+	coins := sdk.NewCoins(sdk.NewCoin(crossChainFee, amount))
 	_ = bankKeeper.MintCoins(ctx, types.ModuleName, coins)
 	_ = bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, cosmosReceivers[0], coins)
 
-	err = keeper.ProcessLock(ctx, cosmosReceivers[0], &msg)
+	receiverCoins := bankKeeper.GetAllBalances(ctx, cosmosReceivers[0])
+	require.Equal(t, receiverCoins, coins)
+
+	msg := types.NewMsgLock(1, cosmosReceivers[0], ethereumSender, amount, denomHash, amount)
+
+	account := keeper.GetAccountKeeper().GetAccount(ctx, cosmosReceivers[0])
+	// require.Nil(t, account)
+	_, err = keeper.ProcessLock(ctx, cosmosReceivers[0], account.GetSequence(), &msg, testMetadataStake)
+	require.ErrorIs(t, err, sdkerrors.ErrInsufficientFunds)
+
+	coins = sdk.NewCoins(sdk.NewCoin("stake", amount), sdk.NewCoin(crossChainFee, amount))
+	_ = bankKeeper.MintCoins(ctx, types.ModuleName, coins)
+	_ = bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, cosmosReceivers[0], coins)
+
+	_, err = keeper.ProcessLock(ctx, cosmosReceivers[0], account.GetSequence(), &msg, testMetadataStake)
 	require.NoError(t, err)
 
 	receiverCoins = bankKeeper.GetAllBalances(ctx, cosmosReceivers[0])

@@ -28,6 +28,11 @@ type Keeper struct {
 	storeKey      sdk.StoreKey
 }
 
+// GetAccountKeeper
+func (k Keeper) GetAccountKeeper() types.AccountKeeper {
+	return k.accountKeeper
+}
+
 // GetBankKeeper
 func (k Keeper) GetBankKeeper() types.BankKeeper {
 	return k.bankKeeper
@@ -57,19 +62,20 @@ func (k Keeper) ProcessClaim(ctx sdk.Context, claim *types.EthBridgeClaim) (orac
 // ProcessSuccessfulClaim processes a claim that has just completed successfully with consensus
 func (k Keeper) ProcessSuccessfulClaim(ctx sdk.Context, claim *types.EthBridgeClaim) error {
 	logger := k.Logger(ctx)
+	tokenMetadata, ok := k.GetTokenMetadata(ctx, claim.DenomHash)
+	if !ok {
+		return fmt.Errorf("token metadata not available for %s", claim.DenomHash)
+	}
 
 	var coins sdk.Coins
 	var err error
 	switch claim.ClaimType {
 	case types.ClaimType_CLAIM_TYPE_LOCK:
-		symbol := fmt.Sprintf("%v%v", types.PeggedCoinPrefix, claim.Symbol)
-		k.AddPeggyToken(ctx, symbol)
-
-		coins = sdk.Coins{sdk.NewCoin(symbol, claim.Amount)}
+		coins = sdk.Coins{sdk.NewCoin(tokenMetadata.Symbol, claim.Amount)}
 		err = k.bankKeeper.MintCoins(ctx, types.ModuleName, coins)
 	case types.ClaimType_CLAIM_TYPE_BURN:
-		coins = sdk.Coins{sdk.NewCoin(claim.Symbol, claim.Amount)}
-		err = k.bankKeeper.MintCoins(ctx, types.ModuleName, coins)
+		coins = sdk.Coins{sdk.NewCoin(tokenMetadata.Symbol, claim.Amount)}
+		err = nil
 	default:
 		err = types.ErrInvalidClaimType
 	}
@@ -96,20 +102,31 @@ func (k Keeper) ProcessSuccessfulClaim(ctx sdk.Context, claim *types.EthBridgeCl
 }
 
 // ProcessBurn processes the burn of bridged coins from the given sender
-func (k Keeper) ProcessBurn(ctx sdk.Context, cosmosSender sdk.AccAddress, msg *types.MsgBurn) error {
+func (k Keeper) ProcessBurn(ctx sdk.Context,
+	cosmosSender sdk.AccAddress,
+	senderSequence uint64,
+	msg *types.MsgBurn,
+	tokenMetadata types.TokenMetadata) ([]byte, error) {
+
 	logger := k.Logger(ctx)
 	var coins sdk.Coins
 	networkIdentity := oracletypes.NewNetworkIdentity(msg.NetworkDescriptor)
 	crossChainFeeConfig, err := k.oracleKeeper.GetCrossChainFeeConfig(ctx, networkIdentity)
 
 	if err != nil {
-		return err
+		return []byte{}, err
 	}
 
 	minimumBurn := crossChainFeeConfig.MinimumBurnCost.Mul(crossChainFeeConfig.FeeCurrencyGas)
 	if msg.CrosschainFee.LT(minimumBurn) {
-		return errors.New("crosschain fee amount in message less than minimum burn")
+		return []byte{}, errors.New("crosschain fee amount in message less than minimum burn")
 	}
+
+	// TODO use the network descriptor to check if token is from sifchains
+	// if !tokenMetadata.NetworkDescriptor.IsValid() {
+	// 	logger.Error("sifchain natvie token can't be burn.", "tokenSymbol", tokenMetadata.Symbol)
+	// 	return []byte{}, fmt.Errorf("sifchain native token %s can't be burn", tokenMetadata.Symbol)
+	// }
 
 	if k.IsCrossChainFeeReceiverAccountSet(ctx) {
 		coins = sdk.NewCoins(sdk.NewCoin(crossChainFeeConfig.FeeCurrency, msg.CrosschainFee))
@@ -118,16 +135,16 @@ func (k Keeper) ProcessBurn(ctx sdk.Context, cosmosSender sdk.AccAddress, msg *t
 		if err != nil {
 			logger.Error("failed to send crosschain fee from account to account.",
 				errorMessageKey, err.Error())
-			return err
+			return []byte{}, err
 		}
 
-		coins = sdk.NewCoins(sdk.NewCoin(msg.Symbol, msg.Amount))
+		coins = sdk.NewCoins(sdk.NewCoin(tokenMetadata.Symbol, msg.Amount))
 
 	} else {
-		if msg.Symbol == crossChainFeeConfig.FeeCurrency {
+		if msg.DenomHash == crossChainFeeConfig.FeeCurrency {
 			coins = sdk.NewCoins(sdk.NewCoin(crossChainFeeConfig.FeeCurrency, msg.CrosschainFee.Add(msg.Amount)))
 		} else {
-			coins = sdk.NewCoins(sdk.NewCoin(msg.Symbol, msg.Amount), sdk.NewCoin(crossChainFeeConfig.FeeCurrency, msg.CrosschainFee))
+			coins = sdk.NewCoins(sdk.NewCoin(tokenMetadata.Symbol, msg.Amount), sdk.NewCoin(crossChainFeeConfig.FeeCurrency, msg.CrosschainFee))
 		}
 	}
 
@@ -135,34 +152,48 @@ func (k Keeper) ProcessBurn(ctx sdk.Context, cosmosSender sdk.AccAddress, msg *t
 	if err != nil {
 		logger.Error("failed to send crosschain fee from module to account.",
 			errorMessageKey, err.Error())
-		return err
+		return []byte{}, err
 	}
 
-	coins = sdk.NewCoins(sdk.NewCoin(msg.Symbol, msg.Amount))
+	coins = sdk.NewCoins(sdk.NewCoin(tokenMetadata.Symbol, msg.Amount))
 	err = k.bankKeeper.BurnCoins(ctx, types.ModuleName, coins)
 	if err != nil {
 		logger.Error("failed to burn locked coin.",
 			errorMessageKey, err.Error())
-		return err
+		return []byte{}, err
 	}
 
-	return nil
+	prophecyID := msg.GetProphecyID(false, senderSequence, k.GetGlobalNonce(ctx, msg.NetworkDescriptor), tokenMetadata.TokenAddress)
+	k.oracleKeeper.SetProphecyWithInitValue(ctx, prophecyID)
+
+	return prophecyID, nil
 }
 
 // ProcessLock processes the lockup of cosmos coins from the given sender
-func (k Keeper) ProcessLock(ctx sdk.Context, cosmosSender sdk.AccAddress, msg *types.MsgLock) error {
+func (k Keeper) ProcessLock(ctx sdk.Context,
+	cosmosSender sdk.AccAddress,
+	senderSequence uint64,
+	msg *types.MsgLock,
+	tokenMetadata types.TokenMetadata) ([]byte, error) {
+
 	logger := k.Logger(ctx)
 	var coins sdk.Coins
 	networkIdentity := oracletypes.NewNetworkIdentity(msg.NetworkDescriptor)
 	crossChainFeeConfig, err := k.oracleKeeper.GetCrossChainFeeConfig(ctx, networkIdentity)
 
 	if err != nil {
-		return err
+		return []byte{}, err
+	}
+
+	// TODO use the network descriptor to check if token is from sifchain
+	if tokenMetadata.NetworkDescriptor.IsValid() {
+		logger.Error("pegged token can't be lock.", "tokenSymbol", tokenMetadata.Symbol)
+		return []byte{}, fmt.Errorf("pegged token %s can't be lock", tokenMetadata.Symbol)
 	}
 
 	minimumLock := crossChainFeeConfig.MinimumLockCost.Mul(crossChainFeeConfig.FeeCurrencyGas)
 	if msg.CrosschainFee.LT(minimumLock) {
-		return errors.New("crosschain fee amount in message less than minimum lock")
+		return []byte{}, errors.New("crosschain fee amount in message less than minimum lock")
 	}
 
 	if k.IsCrossChainFeeReceiverAccountSet(ctx) {
@@ -172,13 +203,13 @@ func (k Keeper) ProcessLock(ctx sdk.Context, cosmosSender sdk.AccAddress, msg *t
 		if err != nil {
 			logger.Error("failed to send crosschain fee from account to account.",
 				errorMessageKey, err.Error())
-			return err
+			return []byte{}, err
 		}
 
-		coins = sdk.NewCoins(sdk.NewCoin(msg.Symbol, msg.Amount))
+		coins = sdk.NewCoins(sdk.NewCoin(tokenMetadata.Symbol, msg.Amount))
 
 	} else {
-		coins = sdk.NewCoins(sdk.NewCoin(msg.Symbol, msg.Amount), sdk.NewCoin(crossChainFeeConfig.FeeCurrency, msg.CrosschainFee))
+		coins = sdk.NewCoins(sdk.NewCoin(tokenMetadata.Symbol, msg.Amount), sdk.NewCoin(crossChainFeeConfig.FeeCurrency, msg.CrosschainFee))
 	}
 
 	err = k.bankKeeper.SendCoinsFromAccountToModule(ctx, cosmosSender, types.ModuleName, coins)
@@ -186,17 +217,21 @@ func (k Keeper) ProcessLock(ctx sdk.Context, cosmosSender sdk.AccAddress, msg *t
 	if err != nil {
 		logger.Error("failed to transfer coin from account to module.",
 			errorMessageKey, err.Error())
-		return err
+		return []byte{}, err
 	}
 
-	coins = sdk.NewCoins(sdk.NewCoin(msg.Symbol, msg.Amount))
+	coins = sdk.NewCoins(sdk.NewCoin(tokenMetadata.Symbol, msg.Amount))
 	err = k.bankKeeper.BurnCoins(ctx, types.ModuleName, coins)
 	if err != nil {
 		logger.Error("failed to burn burned coin.",
 			errorMessageKey, err.Error())
-		return err
+		return []byte{}, err
 	}
-	return nil
+
+	prophecyID := msg.GetProphecyID(false, senderSequence, k.GetGlobalNonce(ctx, msg.NetworkDescriptor), tokenMetadata.TokenAddress)
+	k.oracleKeeper.SetProphecyWithInitValue(ctx, prophecyID)
+
+	return prophecyID, nil
 }
 
 // ProcessUpdateWhiteListValidator processes the update whitelist validator from admin
@@ -260,6 +295,21 @@ func (k Keeper) SetFeeInfo(ctx sdk.Context, msg *types.MsgSetFeeInfo) error {
 		return errors.New("only admin account can set crosschain fee")
 	}
 	return k.oracleKeeper.SetFeeInfo(ctx, msg.NetworkDescriptor, msg.FeeCurrency, msg.FeeCurrencyGas, msg.MinimumBurnCost, msg.MinimumLockCost)
+}
+
+// ProcessSignProphecy processes the set sign prophecy from validator
+func (k Keeper) ProcessSignProphecy(ctx sdk.Context, msg *types.MsgSignProphecy) error {
+	prophecyInfo, ok := k.oracleKeeper.GetProphecyInfo(ctx, msg.ProphecyId)
+	if !ok {
+		return errors.New("prophecy not found in oracle keeper")
+	}
+
+	metadata, ok := k.GetTokenMetadata(ctx, prophecyInfo.TokenDenomHash)
+	if !ok {
+		return fmt.Errorf("metadata not available for %s", prophecyInfo.TokenDenomHash)
+	}
+
+	return k.oracleKeeper.ProcessSignProphecy(ctx, msg.NetworkDescriptor, msg.ProphecyId, msg.CosmosSender, metadata.TokenAddress, msg.EthereumAddress, msg.Signature)
 }
 
 // Exists chec if the key existed in db.

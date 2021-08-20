@@ -37,6 +37,11 @@ func (list *ValidatorWhiteList) GetPowerRatio(claimValidators []string) float64 
 		}
 	}
 
+	// if no validator, return 0.0
+	if totalPower == 0 {
+		return 0.0
+	}
+
 	return float64(votePower) / float64(totalPower)
 }
 
