@@ -71,21 +71,6 @@ func (k keeper) GetDenom(ctx sdk.Context, denom string) types.RegistryEntry {
 	}
 }
 
-func (k keeper) GetRegistryEntry(ctx sdk.Context, ibcdenom string) types.RegistryEntry {
-	wl := k.GetDenomWhitelist(ctx)
-
-	for i := range wl.Entries {
-		if wl.Entries[i] != nil && strings.EqualFold(wl.Entries[i].IbcDenom, ibcdenom) {
-			return *wl.Entries[i]
-		}
-	}
-
-	return types.RegistryEntry{
-		IsWhitelisted: false,
-		Denom:         ibcdenom,
-	}
-}
-
 func (k keeper) SetToken(ctx sdk.Context, entry *types.RegistryEntry) {
 	wl := k.GetDenomWhitelist(ctx)
 
