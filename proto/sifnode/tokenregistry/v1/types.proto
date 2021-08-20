@@ -14,15 +14,13 @@ message Registry {
   repeated RegistryEntry entries = 1;
 }
 
-
-
-
 enum Permission {
   UNSPECIFIED = 0;
   CLP = 1;
   IBCEXPORT =  2;
   IBCIMPORT = 3;
 }
+
 message RegistryEntry {
   bool is_whitelisted = 1;
   int64 decimals = 2;
