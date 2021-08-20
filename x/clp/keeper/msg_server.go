@@ -111,6 +111,9 @@ func (k msgServer) Swap(goCtx context.Context, msg *types.MsgSwap) (*types.MsgSw
 	if !(k.tokenRegistryKeeper.IsDenomWhitelisted(ctx, msg.ReceivedAsset.Symbol) || (k.tokenRegistryKeeper.IsDenomWhitelisted(ctx, msg.SentAsset.Symbol))) {
 		return nil, types.ErrTokenNotSupported
 	}
+	if !k.tokenRegistryKeeper.CheckDenomPermissions(ctx, msg.ReceivedAsset.Symbol, types.GetCLPermissons()) || !k.tokenRegistryKeeper.CheckDenomPermissions(ctx, msg.SentAsset.Symbol, types.GetCLPermissons()) {
+		return nil, types.ErrTokenNotSupported
+	}
 	liquidityFeeNative := sdk.ZeroUint()
 	liquidityFeeExternal := sdk.ZeroUint()
 	totalLiquidityFee := sdk.ZeroUint()
@@ -243,6 +246,9 @@ func (k msgServer) RemoveLiquidity(goCtx context.Context, msg *types.MsgRemoveLi
 	if !k.tokenRegistryKeeper.IsDenomWhitelisted(ctx, msg.ExternalAsset.Symbol) {
 		return nil, types.ErrTokenNotSupported
 	}
+	if !k.tokenRegistryKeeper.CheckDenomPermissions(ctx, msg.ExternalAsset.Symbol, types.GetCLPermissons()) {
+		return nil, types.ErrTokenNotSupported
+	}
 	pool, err := k.Keeper.GetPool(ctx, msg.ExternalAsset.Symbol)
 	if err != nil {
 		return nil, types.ErrPoolDoesNotExist
@@ -359,6 +365,9 @@ func (k msgServer) CreatePool(goCtx context.Context, msg *types.MsgCreatePool) (
 	if !k.tokenRegistryKeeper.IsDenomWhitelisted(ctx, msg.ExternalAsset.Symbol) {
 		return nil, types.ErrTokenNotSupported
 	}
+	if !k.tokenRegistryKeeper.CheckDenomPermissions(ctx, msg.ExternalAsset.Symbol, types.GetCLPermissons()) {
+		return nil, types.ErrTokenNotSupported
+	}
 	// Check if pool already exists
 	if k.Keeper.ExistsPool(ctx, msg.ExternalAsset.Symbol) {
 		return nil, types.ErrUnableToCreatePool
@@ -407,6 +416,9 @@ func (k msgServer) CreatePool(goCtx context.Context, msg *types.MsgCreatePool) (
 func (k msgServer) AddLiquidity(goCtx context.Context, msg *types.MsgAddLiquidity) (*types.MsgAddLiquidityResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 	if !k.tokenRegistryKeeper.IsDenomWhitelisted(ctx, msg.ExternalAsset.Symbol) {
+		return nil, types.ErrTokenNotSupported
+	}
+	if !k.tokenRegistryKeeper.CheckDenomPermissions(ctx, msg.ExternalAsset.Symbol, types.GetCLPermissons()) {
 		return nil, types.ErrTokenNotSupported
 	}
 	// Get pool

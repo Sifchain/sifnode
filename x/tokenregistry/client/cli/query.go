@@ -71,6 +71,8 @@ func GetCmdGenerateEntry() *cobra.Command {
 	var flagNetwork = "token_network"
 	var flagAddress = "token_address"
 
+	var flagsPermission = []string{"permission_clp", "permission_ibc_export", "permission_ibc_import"}
+
 	cmd := &cobra.Command{
 		Use:   "generate",
 		Short: "generate JSON for a token registration",
@@ -148,6 +150,17 @@ func GetCmdGenerateEntry() *cobra.Command {
 				return err
 			}
 
+			permissions := []types.Permission{}
+			for _, permission := range flagsPermission {
+				validPermission, err := flags.GetBool(permission)
+				if err != nil {
+					return err
+				}
+				if validPermission {
+					permissions = append(permissions, types.GetPermissionFromString(permission))
+				}
+			}
+
 			// normalise path slashes before generating hash (do this in MsgRegister.ValidateBasic as well)
 			path = strings.Trim(path, "/")
 
@@ -187,6 +200,7 @@ func GetCmdGenerateEntry() *cobra.Command {
 				Address:        address,
 				ExternalSymbol: externalSymbol,
 				TransferLimit:  transferLimit,
+				Permissions:    permissions,
 			}
 
 			return clientCtx.PrintProto(&types.Registry{Entries: []*types.RegistryEntry{&entry}})
@@ -219,6 +233,9 @@ func GetCmdGenerateEntry() *cobra.Command {
 		"Original network of token i.e ethereum")
 	cmd.Flags().String(flagAddress, "",
 		"Contract address i.e in EVM cases")
+	for _, flag := range flagsPermission {
+		cmd.Flags().Bool(flag, false, fmt.Sprintf("Flag to specify permission for %s", types.GetPermissionFromString(flag)))
+	}
 
 	_ = cmd.MarkFlagRequired(flagBaseDenom)
 	_ = cmd.MarkFlagRequired(flagDecimals)

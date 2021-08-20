@@ -15,6 +15,12 @@ func SetupHandlers(app *SifchainApp) {
 	app.UpgradeKeeper.SetUpgradeHandler("0.9.1", func(ctx sdk.Context, plan types.Plan) {})
 	app.UpgradeKeeper.SetUpgradeHandler("0.9.2", func(ctx sdk.Context, plan types.Plan) {})
 	SetupUpgradeV093(app)
+	app.UpgradeKeeper.SetUpgradeHandler("0.9.4", func(ctx sdk.Context, plan types.Plan) {
+		app.Logger().Info("Running upgrade handler for 0.9.4")
+		// Install new permissions for native tokens.
+		// IBC token permissions will be disabled until updated dynamically.
+		tokenregistrymigrations.Init(ctx, app.TokenRegistryKeeper)
+	})
 }
 
 func SetupUpgradeV093(app *SifchainApp) {
