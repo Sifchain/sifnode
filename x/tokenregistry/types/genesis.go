@@ -39,6 +39,7 @@ func DefaultRegistry() Registry {
 			{IsWhitelisted: true, Denom: "ibc/48E40290A494F271890BCFC867EB0940D8A6205DD94750C8EA71750480D65BA9", BaseDenom: "akt", SrcChannel: "channel-1", DestChannel: "channel-12", Path: "transfer/channel-1", DisplayName: "AKT", ExternalSymbol: "AKT", Decimals: 18},
 			{IsWhitelisted: true, Denom: "ibc/0F3C9D893A0ADE5738E473BB1A15C44D9715568E0C005D33A02495B444E15225", BaseDenom: "ncat", SrcChannel: "channel-2", DestChannel: "channel-12", Path: "transfer/channel-2", DisplayName: "NCAT", ExternalSymbol: "NCAT", Decimals: 18},
 			{IsWhitelisted: true, Denom: "ibc/E0B9629F3DF557C3412F12F6EFE3DACB28B4A30627A27697B6CFAD03A3DE0C96", BaseDenom: "dvpn", SrcChannel: "channel-3", DestChannel: "channel-16", Path: "transfer/channel-3", DisplayName: "dVPN", ExternalSymbol: "dVPN", Decimals: 18},
+			// TODO ADD PERMISSIONS HERE
 			{IsWhitelisted: true, Denom: "rowan", Decimals: 18, IbcDenom: "urowan", IbcDecimals: 10},
 			{IsWhitelisted: true, Denom: "ccel", Decimals: 4},
 			{IsWhitelisted: true, Denom: "causc", Decimals: 6},

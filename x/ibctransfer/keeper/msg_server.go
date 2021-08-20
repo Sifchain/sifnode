@@ -3,6 +3,7 @@ package keeper
 import (
 	"context"
 	"fmt"
+	"github.com/pkg/errors"
 
 	tokenregistrytypes "github.com/Sifchain/sifnode/x/tokenregistry/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -32,7 +33,11 @@ var _ types.MsgServer = msgServer{}
 // Transfer defines a rpc handler method for MsgTransfer.
 func (srv msgServer) Transfer(goCtx context.Context, msg *types.MsgTransfer) (*types.MsgTransferResponse, error) {
 	// get token registry entry for sent token
-	registryEntry := srv.tokenRegistryKeeper.GetDenom(sdk.UnwrapSDKContext(goCtx), msg.Token.Denom)
+	ctx := sdk.UnwrapSDKContext(goCtx)
+	if !srv.tokenRegistryKeeper.CheckDenomPermissions(ctx, msg.Token.Denom, []tokenregistrytypes.Permission{tokenregistrytypes.Permission_IBCEXPORT}) {
+		return nil, errors.New(fmt.Sprintf("Token cannot be exported : %s | Does not have permission", msg.Token.Denom))
+	}
+	registryEntry := srv.tokenRegistryKeeper.GetDenom(ctx, msg.Token.Denom)
 	// check if registry entry has an IBC decimal field
 	if registryEntry.IbcDenom != "" && registryEntry.Decimals > registryEntry.IbcDecimals {
 		token, convToken := ConvertTransfer(goCtx, msg, registryEntry)
