@@ -66,7 +66,7 @@ func (k keeper) CheckDenomPermissions(ctx sdk.Context, denom string, requiredPer
 			}
 		}
 	}
-	return len(requiredPermissons) == availablePermissions
+	return len(requiredPermissions) == availablePermissions
 }
 
 func (k keeper) GetDenom(ctx sdk.Context, denom string) types.RegistryEntry {
