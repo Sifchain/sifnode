@@ -188,32 +188,69 @@ func shouldConvertDecimals(
 	data transfertypes.FungibleTokenPacketData,
 ) bool {
 	// get token registry entry for received denom
-	denom := GetMintedDenomFromPacket(packet, data)
-	registryEntry := whitelistKeeper.GetRegistryEntry(ctx, denom)
-	// if decimals are greater than ibc decimals, we need to increase precision to convert them
-	return registryEntry.IbcDenom != "" && registryEntry.Decimals > registryEntry.IbcDecimals
+	mintedDenom := GetMintedDenomFromPacket(packet, data)
+	mintedDenomRegistryEntry := whitelistKeeper.GetDenom(ctx, mintedDenom)
+	if !mintedDenomRegistryEntry.IsWhitelisted {
+		// TODO: unlikely as have already accepted this import,
+		// however, it could have come through the "accept returns" whitelist logic,
+		// and have 0 decimals here. Consider refactoring inputs here and returning pointer and error on GetDenom.
+	}
+	// get unit denom to store funds in, or do not convert
+	unitDenom := mintedDenomRegistryEntry.UnitDenom
+	if unitDenom == "" || unitDenom == mintedDenom {
+		return false
+	}
+	unitDenomRegistryEntry := whitelistKeeper.GetDenom(ctx, unitDenom)
+	if !unitDenomRegistryEntry.IsWhitelisted {
+		// TODO: err
+	}
+	// if unit_denom decimals are greater than minted denom decimals, we need to increase precision to convert them
+	return unitDenomRegistryEntry.Decimals > mintedDenomRegistryEntry.IbcDecimals
 }
 
+// convertDecimals returns 1) the coins that are being received via IBC,
+// which need to be deducted from that denom when converting to final denom,
+// and 2) the coins that need to be added to the final denom.
 func convertDecimals(
 	ctx sdk.Context,
 	whitelistKeeper tokenregistrytypes.Keeper,
 	packet channeltypes.Packet,
 	data transfertypes.FungibleTokenPacketData,
 ) (sdk.Coin, sdk.Coin) {
+
+	// Get the denom that will be minted by sdk transfer module,
+	// so that it can be converted to the denom it should be stored as.
+	// For a native token that has been returned, this will just be a base_denom,
+	// which will be on the whitelist.
+	mintedDenom := GetMintedDenomFromPacket(packet, data)
+
 	// get token registry entry for received denom
-	denom := GetMintedDenomFromPacket(packet, data)
-	registryEntry := whitelistKeeper.GetRegistryEntry(ctx, denom)
+	mintedDenomEntry := whitelistKeeper.GetDenom(ctx, mintedDenom)
+	if !mintedDenomEntry.IsWhitelisted {
+		// TODO
+	}
+	// convert to unit_denom
+	if mintedDenomEntry.UnitDenom == "" {
+		// noop, should prevent getting here.
+		return sdk.NewCoin(mintedDenom, sdk.NewIntFromUint64(data.Amount)),
+			sdk.NewCoin(mintedDenom, sdk.NewIntFromUint64(data.Amount))
+	}
+
+	convertToDenomEntry := whitelistKeeper.GetDenom(ctx, mintedDenomEntry.UnitDenom)
+
 	// get the token amount from the packet data
 	decAmount := sdk.NewDecFromInt(sdk.NewIntFromUint64(data.Amount))
-	// calculate the conversion difference and increase precision
-	po := registryEntry.Decimals - registryEntry.IbcDecimals
+
+	// Calculate the conversion difference for increasing precision.
+	po := convertToDenomEntry.Decimals - mintedDenomEntry.Decimals
 	convAmountDec := IncreasePrecision(decAmount, po)
 	convAmount := sdk.NewIntFromBigInt(convAmountDec.TruncateInt().BigInt())
 	// create converted and ibc tokens with corresponding denoms and amounts
-	convToken := sdk.NewCoin(registryEntry.Denom, convAmount)
-	ibcToken := sdk.NewCoin(denom, sdk.NewIntFromUint64(data.Amount))
-	return ibcToken, convToken
+	convertToCoins := sdk.NewCoin(convertToDenomEntry.Denom, convAmount)
+	mintedCoins := sdk.NewCoin(mintedDenom, sdk.NewIntFromUint64(data.Amount))
+	return mintedCoins, convertToCoins
 }
+
 func sendConvertRecvDenom(
 	ctx sdk.Context,
 	ibcToken sdk.Coin,

@@ -34,29 +34,33 @@ var _ types.MsgServer = msgServer{}
 func (srv msgServer) Transfer(goCtx context.Context, msg *types.MsgTransfer) (*types.MsgTransferResponse, error) {
 	// get token registry entry for sent token
 	registryEntry := srv.tokenRegistryKeeper.GetDenom(sdk.UnwrapSDKContext(goCtx), msg.Token.Denom)
-	// check if registry entry has an IBC decimal field
-	if registryEntry.IbcDenom != "" && registryEntry.Decimals > registryEntry.IbcDecimals {
-		token, tokenConversion := ConvertCoinsForTransfer(goCtx, msg, registryEntry)
-		err := PrepareToSendConvertedCoins(goCtx, msg, token, tokenConversion, srv.bankKeeper)
-		if err != nil {
-			return nil, err
+	// check if registry entry has an IBC counter party conversion to process
+	if registryEntry.IbcCounterPartyDenom != "" && registryEntry.IbcCounterPartyDenom != registryEntry.Denom {
+		sendAsRegistryEntry := srv.tokenRegistryKeeper.GetDenom(sdk.UnwrapSDKContext(goCtx), registryEntry.IbcCounterPartyDenom)
+		if registryEntry.Decimals > sendAsRegistryEntry.Decimals {
+			token, tokenConversion := ConvertCoinsForTransfer(goCtx, msg, registryEntry, sendAsRegistryEntry)
+			err := PrepareToSendConvertedCoins(goCtx, msg, token, tokenConversion, srv.bankKeeper)
+			if err != nil {
+				return nil, err
+			}
+			msg.Token = tokenConversion
 		}
-		msg.Token = tokenConversion
 	}
+
 	return srv.sdkMsgServer.Transfer(goCtx, msg)
 }
 
 // Converts the coins requested for transfer into an amount that should be deducted from requested denom,
 // and the Coins that should be minted in the new denom.
-func ConvertCoinsForTransfer(goCtx context.Context, msg *types.MsgTransfer, registryEntry tokenregistrytypes.RegistryEntry) (sdk.Coin, sdk.Coin) {
+func ConvertCoinsForTransfer(goCtx context.Context, msg *types.MsgTransfer, sendRegistryEntry tokenregistrytypes.RegistryEntry, sendAsRegistryEntry tokenregistrytypes.RegistryEntry) (sdk.Coin, sdk.Coin) {
 	// calculate the conversion difference and reduce precision
-	po := registryEntry.Decimals - registryEntry.IbcDecimals
+	po := sendRegistryEntry.Decimals - sendAsRegistryEntry.Decimals
 	decAmount := sdk.NewDecFromInt(msg.Token.Amount)
 	convAmountDec := ReducePrecision(decAmount, po)
 
 	convAmount := sdk.NewIntFromBigInt(convAmountDec.TruncateInt().BigInt())
 	// create converted and sifchain tokens with corresponding denoms and amounts
-	convToken := sdk.NewCoin(registryEntry.IbcDenom, convAmount)
+	convToken := sdk.NewCoin(sendRegistryEntry.IbcCounterPartyDenom, convAmount)
 	// increase convAmount precision to ensure amount deducted from address is the same that gets sent
 	tokenAmountDec := IncreasePrecision(sdk.NewDecFromInt(convAmount), po)
 	tokenAmount := sdk.NewIntFromBigInt(tokenAmountDec.TruncateInt().BigInt())
