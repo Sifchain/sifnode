@@ -8,24 +8,16 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/upgrade/types"
 )
 
-const upgradeNameV093 = "0.9.3-ibc"
+const upgradeNameV095 = "0.9.5"
 
 func SetupHandlers(app *SifchainApp) {
-	app.UpgradeKeeper.SetUpgradeHandler("0.9.0", func(ctx sdk.Context, plan types.Plan) {})
-	app.UpgradeKeeper.SetUpgradeHandler("0.9.1", func(ctx sdk.Context, plan types.Plan) {})
-	app.UpgradeKeeper.SetUpgradeHandler("0.9.2", func(ctx sdk.Context, plan types.Plan) {})
-	SetupUpgradeV093(app)
-	app.UpgradeKeeper.SetUpgradeHandler("0.9.4", func(ctx sdk.Context, plan types.Plan) {
-		app.Logger().Info("Running upgrade handler for 0.9.4")
-		// Install new permissions for native tokens.
-		// IBC token permissions will be disabled until updated dynamically.
-		tokenregistrymigrations.Init(ctx, app.TokenRegistryKeeper)
-	})
+	SetupHandlersForV095(app)
 }
 
-func SetupUpgradeV093(app *SifchainApp) {
-	app.UpgradeKeeper.SetUpgradeHandler(upgradeNameV093, func(ctx sdk.Context, plan types.Plan) {
-		app.Logger().Info("Running upgrade handler for " + upgradeNameV093 + " with new store " + tokenregistrytypes.StoreKey)
+func SetupHandlersForV095(app *SifchainApp) {
+	app.UpgradeKeeper.SetUpgradeHandler(upgradeNameV095, func(ctx sdk.Context, plan types.Plan) {
+		app.Logger().Info("Running upgrade handler for " + upgradeNameV095 + " with new store " + tokenregistrytypes.StoreKey)
+		// Install initial token registry entries for non-ibc tokens.
 		tokenregistrymigrations.Init(ctx, app.TokenRegistryKeeper)
 	})
 
@@ -34,7 +26,7 @@ func SetupUpgradeV093(app *SifchainApp) {
 		panic(err)
 	}
 
-	if upgradeInfo.Name == upgradeNameV093 && !app.UpgradeKeeper.IsSkipHeight(upgradeInfo.Height) {
+	if upgradeInfo.Name == upgradeNameV095 && !app.UpgradeKeeper.IsSkipHeight(upgradeInfo.Height) {
 		storeUpgrades := storetypes.StoreUpgrades{
 			Added: []string{tokenregistrytypes.StoreKey},
 		}
