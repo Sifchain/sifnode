@@ -14,24 +14,23 @@ import (
 	tokenregistrytypes "github.com/Sifchain/sifnode/x/tokenregistry/types"
 )
 
-
 func TestMsgServer_Transfer(t *testing.T) {
 	t.Skip()
 	app, ctx, admin := tokenregistrytest.CreateTestApp(false)
 	app.TokenRegistryKeeper.SetToken(ctx, &tokenregistrytypes.RegistryEntry{
-		Denom: "rowan",
+		Denom:         "rowan",
 		IsWhitelisted: true,
-		Decimals: 18,
-		IbcDenom: "microrowan",
-		IbcDecimals: 10,
+		Decimals:      18,
+		IbcDenom:      "microrowan",
+		IbcDecimals:   10,
 	})
 	// TODO: Need to create channel if possible.
 	// TODO: Setup funded addresses.
 	srv := keeper.NewMsgServerImpl(app.TransferKeeper, app.BankKeeper, app.TokenRegistryKeeper)
 	_, err := srv.Transfer(sdk.WrapSDKContext(ctx), &ibctransfertypes.MsgTransfer{
-		SourcePort:       "transfer",
-		SourceChannel:    "channel-0",
-		Token:            sdk.Coin{
+		SourcePort:    "transfer",
+		SourceChannel: "channel-0",
+		Token: sdk.Coin{
 			Denom:  "rowan",
 			Amount: sdk.NewInt(int64(1000000)),
 		},
@@ -49,12 +48,21 @@ func TestConvertCoins(t *testing.T) {
 	maxUInt64 := uint64(18446744073709551615)
 
 	rowanEntry := tokenregistrytypes.RegistryEntry{
-		IsWhitelisted:  true,
-		Decimals:       18,
-		Denom:          "rowan",
-		BaseDenom:      "rowan",
-		IbcDenom:       "microrowan",
-		IbcDecimals:    10,
+		IsWhitelisted: true,
+		Decimals:      18,
+		Denom:         "rowan",
+		BaseDenom:     "rowan",
+		IbcDenom:      "microrowan",
+		IbcDecimals:   10,
+	}
+
+	decimal12Entry := tokenregistrytypes.RegistryEntry{
+		IsWhitelisted: true,
+		Decimals:      12,
+		Denom:         "twelve",
+		BaseDenom:     "twelve",
+		IbcDenom:      "microtwelve",
+		IbcDecimals:   10,
 	}
 
 	type args struct {
@@ -69,9 +77,24 @@ func TestConvertCoins(t *testing.T) {
 		tokensConverted sdk.Coin
 	}{
 		{
-			args: args{ctx, &ibctransfertypes.MsgTransfer{Token: sdk.NewCoin("rowan", sdk.NewIntFromUint64(maxUInt64))}, rowanEntry},
-			tokenDeduction: sdk.NewCoin("rowan", sdk.NewIntFromUint64(18446744073700000000)),
+			args:            args{ctx, &ibctransfertypes.MsgTransfer{Token: sdk.NewCoin("rowan", sdk.NewIntFromUint64(maxUInt64))}, rowanEntry},
+			tokenDeduction:  sdk.NewCoin("rowan", sdk.NewIntFromUint64(18446744073700000000)),
 			tokensConverted: sdk.NewCoin("microrowan", sdk.NewIntFromUint64(184467440737)),
+		},
+		{
+			args:            args{ctx, &ibctransfertypes.MsgTransfer{Token: sdk.NewCoin("rowan", sdk.NewIntFromUint64(1000000))}, rowanEntry},
+			tokenDeduction:  sdk.NewCoin("rowan", sdk.NewIntFromUint64(0)),
+			tokensConverted: sdk.NewCoin("microrowan", sdk.NewIntFromUint64(0)),
+		},
+		{
+			args:            args{ctx, &ibctransfertypes.MsgTransfer{Token: sdk.NewCoin("twelve", sdk.NewIntFromUint64(10000000000000))}, decimal12Entry},
+			tokenDeduction:  sdk.NewCoin("twelve", sdk.NewIntFromUint64(10000000000000)),
+			tokensConverted: sdk.NewCoin("microtwelve", sdk.NewIntFromUint64(100000000000)),
+		},
+		{
+			args:            args{ctx, &ibctransfertypes.MsgTransfer{Token: sdk.NewCoin("twelve", sdk.NewIntFromUint64(1))}, decimal12Entry},
+			tokenDeduction:  sdk.NewCoin("twelve", sdk.NewIntFromUint64(0)),
+			tokensConverted: sdk.NewCoin("microtwelve", sdk.NewIntFromUint64(0)),
 		},
 	}
 	for _, tt := range tests {
