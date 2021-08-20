@@ -1,4 +1,4 @@
-import {container, registry, singleton} from "tsyringe";
+import {container} from "tsyringe";
 import {HardhatNodeRunner} from "../src/devenv/hardhatNode";
 import {GolangBuilder, GolangResultsPromise} from "../src/devenv/golangBuilder";
 import {SifnodedRunner} from "../src/devenv/sifnoded";
@@ -16,14 +16,15 @@ async function golangBuilder() {
     const node = container.resolve(GolangBuilder)
     const [process, resultsPromise] = node.go()
     let golangResultsPromise = new GolangResultsPromise(resultsPromise);
-    // container.register(GolangResultsPromise, {useValue: golangResultsPromise})
-    // const sifnodeTask = sifnodedBuilder(golangResultsPromise)
+    container.register(GolangResultsPromise, {useValue: golangResultsPromise})
+    const sifnodeTask = sifnodedBuilder(golangResultsPromise)
     const results = await resultsPromise
     console.log(`golangBuilder: ${JSON.stringify(results, undefined, 2)}`)
     return process
 }
 
 async function sifnodedBuilder(golangResults: GolangResultsPromise) {
+    console.log('in sifnodedBuilder')
     const node = container.resolve(SifnodedRunner)
     const [process, resultsPromise] = node.go()
     const results = await resultsPromise
