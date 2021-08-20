@@ -455,3 +455,47 @@ func (srv msgServer) SignProphecy(goCtx context.Context, msg *types.MsgSignProph
 
 	return &types.MsgSignProphecyResponse{}, nil
 }
+
+func (srv msgServer) TokenMetadataAdd(goCtx context.Context, msg *types.TokenMetadataAddRequest) (*types.TokenMetadataAddResponse, error) {
+	ctx := sdk.UnwrapSDKContext(goCtx)
+	logger := srv.Keeper.Logger(ctx)
+
+	cosmosSender, err := sdk.AccAddressFromBech32(msg.CosmosSender)
+	if err != nil {
+		return nil, err
+	}
+
+	account := srv.Keeper.accountKeeper.GetAccount(ctx, cosmosSender)
+	if account == nil {
+		logger.Error("account is nil.", "CosmosSender", msg.CosmosSender)
+		return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.CosmosSender)
+	}
+
+	denom := srv.Keeper.AddIBCTokenMetadata(ctx, *msg.Metadata, cosmosSender)
+
+	return &types.TokenMetadataAddResponse{
+		Denom: denom,
+	}, nil
+}
+
+func (srv msgServer) TokenMetadataDelete(goCtx context.Context, msg *types.TokenMetadataDeleteRequest) (*types.TokenMetadataDeleteResponse, error) {
+	ctx := sdk.UnwrapSDKContext(goCtx)
+	logger := srv.Keeper.Logger(ctx)
+
+	cosmosSender, err := sdk.AccAddressFromBech32(msg.CosmosSender)
+	if err != nil {
+		return nil, err
+	}
+
+	account := srv.Keeper.accountKeeper.GetAccount(ctx, cosmosSender)
+	if account == nil {
+		logger.Error("account is nil.", "CosmosSender", msg.CosmosSender)
+		return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.CosmosSender)
+	}
+
+	success := srv.Keeper.DeleteTokenMetadata(ctx, cosmosSender, msg.Denom)
+
+	return &types.TokenMetadataDeleteResponse{
+		Success: success,
+	}, nil
+}

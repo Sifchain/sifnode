@@ -21,6 +21,29 @@ service Msg {
   rpc RescueCrossChainFee(MsgRescueCrossChainFee)
       returns (MsgRescueCrossChainFeeResponse);
   rpc SetFeeInfo(MsgSetFeeInfo) returns (MsgSetFeeInfoResponse);
+  rpc TokenMetadataAdd(TokenMetadataAddRequest)
+      returns (TokenMetadataAddResponse);
+  rpc TokenMetadataDelete(TokenMetadataDeleteRequest)
+      returns (TokenMetadataDeleteResponse);
+}
+
+message TokenMetadataAddRequest {
+  string cosmos_sender = 1;
+  sifnode.ethbridge.v1.TokenMetadata metadata = 2
+      [ (gogoproto.moretags) = "yaml:\"metadata\"" ];
+}
+
+message TokenMetadataAddResponse {
+  string denom = 1 [ (gogoproto.moretags) = "yaml:\"token_denom\"" ];
+}
+
+message TokenMetadataDeleteRequest {
+  string cosmos_sender = 1;
+  string denom = 2 [ (gogoproto.moretags) = "yaml:\"token_denom\"" ];
+}
+
+message TokenMetadataDeleteResponse {
+  bool success = 1 [ (gogoproto.moretags) = "yaml:\"token_deleted\"" ];
 }
 
 // MsgLock defines a message for locking coins and triggering a related event
