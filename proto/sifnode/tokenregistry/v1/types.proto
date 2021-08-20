@@ -18,11 +18,10 @@ message Registry {
 
 
 enum Permission {
-  option allow_alias = true;
   UNSPECIFIED = 0;
   CLP = 1;
-  IBCEXPORT = 1;
-  IBCIMPORT =1;
+  IBCEXPORT =  2;
+  IBCIMPORT = 3;
 }
 message RegistryEntry {
   bool is_whitelisted = 1;
