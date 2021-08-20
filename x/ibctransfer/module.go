@@ -6,9 +6,11 @@ import (
 	"github.com/cosmos/cosmos-sdk/client"
 	cdctypes "github.com/cosmos/cosmos-sdk/codec/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
+	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 	capabilitytypes "github.com/cosmos/cosmos-sdk/x/capability/types"
 	"github.com/cosmos/cosmos-sdk/x/ibc/applications/transfer"
 	sdktransferkeeper "github.com/cosmos/cosmos-sdk/x/ibc/applications/transfer/keeper"
+	transfertypes "github.com/cosmos/cosmos-sdk/x/ibc/applications/transfer/types"
 	"github.com/cosmos/cosmos-sdk/x/ibc/core/04-channel/types"
 	porttypes "github.com/cosmos/cosmos-sdk/x/ibc/core/05-port/types"
 	"github.com/gorilla/mux"
@@ -20,6 +22,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
+	"github.com/Sifchain/sifnode/x/ibctransfer/keeper"
 	tokenregistrytypes "github.com/Sifchain/sifnode/x/tokenregistry/types"
 )
 
@@ -84,8 +87,10 @@ func (am AppModuleBasic) GetQueryCmd() *cobra.Command {
 // AppModule implements an application module for the dispensation module.
 type AppModule struct {
 	AppModuleBasic
-	whitelistKeeper tokenregistrytypes.Keeper
-	cdc             codec.BinaryMarshaler
+	sdkTransferKeeper sdktransferkeeper.Keeper
+	whitelistKeeper   tokenregistrytypes.Keeper
+	bankKeeper        bankkeeper.Keeper
+	cdc               codec.BinaryMarshaler
 }
 
 func (am AppModule) OnChanOpenInit(ctx sdk.Context, order types.Order, connectionHops []string, portID string, channelID string, channelCap *capabilitytypes.Capability, counterparty types.Counterparty, version string) error {
@@ -124,13 +129,15 @@ func (am AppModule) OnTimeoutPacket(ctx sdk.Context, packet types.Packet) (*sdk.
 	return am.cosmosAppModule.OnTimeoutPacket(ctx, packet)
 }
 
-func NewAppModule(keeper sdktransferkeeper.Keeper, whitelistKeeper tokenregistrytypes.Keeper, cdc codec.BinaryMarshaler) AppModule {
+func NewAppModule(sdkTransferKeeper sdktransferkeeper.Keeper, whitelistKeeper tokenregistrytypes.Keeper, bankKeeper bankkeeper.Keeper, cdc codec.BinaryMarshaler) AppModule {
 	return AppModule{
 		AppModuleBasic: AppModuleBasic{
-			cosmosAppModule: transfer.NewAppModule(keeper),
+			cosmosAppModule: transfer.NewAppModule(sdkTransferKeeper),
 		},
-		whitelistKeeper: whitelistKeeper,
-		cdc:             cdc,
+		sdkTransferKeeper: sdkTransferKeeper,
+		bankKeeper:        bankKeeper,
+		whitelistKeeper:   whitelistKeeper,
+		cdc:               cdc,
 	}
 }
 
@@ -140,7 +147,8 @@ func (am AppModule) LegacyQuerierHandler(amino *codec.LegacyAmino) sdk.Querier {
 }
 
 func (am AppModule) RegisterServices(cfg module.Configurator) {
-	am.cosmosAppModule.RegisterServices(cfg)
+	transfertypes.RegisterMsgServer(cfg.MsgServer(), keeper.NewMsgServerImpl(am.sdkTransferKeeper, am.bankKeeper, am.whitelistKeeper))
+	transfertypes.RegisterQueryServer(cfg.QueryServer(), am.sdkTransferKeeper)
 }
 
 // Name returns the dispensation module's name.
@@ -155,7 +163,7 @@ func (am AppModule) RegisterInvariants(ir sdk.InvariantRegistry) {
 
 // Route returns the message routing key for the dispensation module.
 func (am AppModule) Route() sdk.Route {
-	return am.cosmosAppModule.Route()
+	return sdk.NewRoute(transfertypes.RouterKey, transfer.NewHandler(keeper.NewMsgServerImpl(am.sdkTransferKeeper, am.bankKeeper, am.whitelistKeeper)))
 }
 
 // QuerierRoute returns the dispensation module's querier route name.
