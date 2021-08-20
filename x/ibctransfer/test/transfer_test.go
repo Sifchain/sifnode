@@ -15,25 +15,15 @@ import (
 type TransferTestSuite struct {
 	suite.Suite
 	coordinator *Coordinator
-	t           *testing.T
-
-	// testing chains used for convenience and readability
-	chainA *TestChain
-	chainB *TestChain
-	chainC *TestChain
+	chainA      *TestChain
+	chainB      *TestChain
+	chainC      *TestChain
 }
 
 func (suite *TransferTestSuite) SetupTest() {
-	_, suite.chainA = CreateTestChain(suite.t, "1", false)
-	_, suite.chainB = CreateTestChain(suite.t, "2", false)
-	_, suite.chainC = CreateTestChain(suite.t, "3", false)
-
-	chains := make(map[string]*TestChain)
-	chains[suite.chainA.ChainID] = suite.chainA
-	chains[suite.chainB.ChainID] = suite.chainB
-	chains[suite.chainC.ChainID] = suite.chainC
-
-	suite.coordinator = NewCoordinator(suite.t, chains)
+	suite.coordinator = NewCoordinator(suite.T(), 2)
+	suite.chainA = suite.coordinator.GetChain(GetChainID(0))
+	suite.chainB = suite.coordinator.GetChain(GetChainID(1))
 }
 
 // constructs a send from chainA to chainB on the established channel/connection
@@ -43,20 +33,9 @@ func (suite *TransferTestSuite) TestHandleMsgTransfer() {
 	clientA, clientB, connA, connB := suite.coordinator.SetupClientConnections(suite.chainA, suite.chainB, exported.Tendermint)
 	channelA, channelB := suite.coordinator.CreateTransferChannels(suite.chainA, suite.chainB, connA, connB, channeltypes.UNORDERED)
 	timeoutHeight := clienttypes.NewHeight(0, 110)
-	//testDenom := "cusdt"
-	testDenom := sdk.DefaultBondDenom
-	coinToSendToB := sdk.NewCoin(testDenom, sdk.NewInt(100))
-	// initCoins := sdk.NewCoins(sdk.NewCoin(testDenom, sdk.NewInt(555)))
-
-	// err := suite.chainA.App.BankKeeper.AddCoins(suite.chainA.GetContext(), suite.chainA.SenderAccount.GetAddress(), initCoins)
-	// if err != nil {
-	// 	panic(err)
-	// }
-
-	// err = suite.chainB.App.BankKeeper.AddCoins(suite.chainB.GetContext(), suite.chainB.SenderAccount.GetAddress(), initCoins)
-	// if err != nil {
-	// 	panic(err)
-	// }
+	defaultDenom := sdk.DefaultBondDenom
+	//photon := "ibc/C126D687EA8EBD7D7BE86185A44F5B3C2850AD6B2002DFC0844FC214F4EEF7B2"
+	coinToSendToB := sdk.NewCoin(defaultDenom, sdk.NewInt(100))
 
 	// send from chainA to chainB
 	msg := transfertypes.NewMsgTransfer(channelA.PortID, channelA.ID, coinToSendToB, suite.chainA.SenderAccount.GetAddress(), suite.chainB.SenderAccount.GetAddress().String(), timeoutHeight, 0)
@@ -72,10 +51,10 @@ func (suite *TransferTestSuite) TestHandleMsgTransfer() {
 	suite.Require().NoError(err) // relay committed
 
 	// check that voucher exists on chain B
-	voucherDenomTrace := transfertypes.ParseDenomTrace(transfertypes.GetPrefixedDenom(packet.GetDestPort(), packet.GetDestChannel(), testDenom))
+	voucherDenomTrace := transfertypes.ParseDenomTrace(transfertypes.GetPrefixedDenom(packet.GetDestPort(), packet.GetDestChannel(), defaultDenom))
 	balance := suite.chainB.App.BankKeeper.GetBalance(suite.chainB.GetContext(), suite.chainB.SenderAccount.GetAddress(), voucherDenomTrace.IBCDenom())
 
-	coinSentFromAToB := transfertypes.GetTransferCoin(channelB.PortID, channelB.ID, testDenom, 100)
+	coinSentFromAToB := transfertypes.GetTransferCoin(channelB.PortID, channelB.ID, defaultDenom, 100)
 	suite.Require().Equal(coinSentFromAToB, balance)
 
 	// setup between chainB to chainC
@@ -126,8 +105,8 @@ func (suite *TransferTestSuite) TestHandleMsgTransfer() {
 
 	// check that module account escrow address is empty
 	escrowAddress := transfertypes.GetEscrowAddress(packet.GetDestPort(), packet.GetDestChannel())
-	balance = suite.chainB.App.BankKeeper.GetBalance(suite.chainB.GetContext(), escrowAddress, testDenom)
-	suite.Require().Equal(sdk.NewCoin(testDenom, sdk.ZeroInt()), balance)
+	balance = suite.chainB.App.BankKeeper.GetBalance(suite.chainB.GetContext(), escrowAddress, defaultDenom)
+	suite.Require().Equal(sdk.NewCoin(defaultDenom, sdk.ZeroInt()), balance)
 
 	// check that balance on chain B is empty
 	balance = suite.chainC.App.BankKeeper.GetBalance(suite.chainC.GetContext(), suite.chainC.SenderAccount.GetAddress(), voucherDenomTrace.IBCDenom())
@@ -135,9 +114,5 @@ func (suite *TransferTestSuite) TestHandleMsgTransfer() {
 }
 
 func TestTransferTestSuite(t *testing.T) {
-	testingSuite := &TransferTestSuite{
-		t: t,
-	}
-
-	suite.Run(t, testingSuite)
+	suite.Run(t, new(TransferTestSuite))
 }
