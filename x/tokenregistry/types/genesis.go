@@ -33,7 +33,7 @@ func GetGenesisStateFromAppState(marshaler codec.JSONMarshaler, appState map[str
 func DefaultRegistry() Registry {
 	return Registry{
 		Entries: []*RegistryEntry{
-			{IsWhitelisted: true, Denom: "ibc/7FADB462B684FE724B7D125500BECB77DF92EC0701E793EFA8605EF266E03DC9", BaseDenom: "uphoton", SrcChannel: "channel-9", DestChannel: "channel-0", Path: "transfer/channel-9", DisplayName: "uPHOTON", ExternalSymbol: "uPHOTON", Decimals: 6},
+			{IsWhitelisted: true, Denom: "ibc/1690CAACCF73943D04A9BD36F8C09D066DA3A4C9914292B2813362D0FE9A34B5", BaseDenom: "uphoton", SrcChannel: "channel-23", DestChannel: "channel-16", Path: "transfer/channel-23", DisplayName: "uPHOTON", ExternalSymbol: "uPHOTON", Decimals: 6},
 			{IsWhitelisted: true, Denom: "ibc/C126D687EA8EBD7D7BE86185A44F5B3C2850AD6B2002DFC0844FC214F4EEF7B2", BaseDenom: "photon", SrcChannel: "channel-0", DestChannel: "channel-86", Path: "transfer/channel-0", DisplayName: "PHOTON", ExternalSymbol: "PHOTON", Decimals: 18},
 			{IsWhitelisted: true, Denom: "ibc/896F0081794734A2DBDF219B7575C569698F872619C43D18CC63C03CFB997257", BaseDenom: "atom", SrcChannel: "channel-0", DestChannel: "channel-86", Path: "transfer/channel-0", DisplayName: "ATOM", ExternalSymbol: "ATOM", Decimals: 18},
 			{IsWhitelisted: true, Denom: "ibc/48E40290A494F271890BCFC867EB0940D8A6205DD94750C8EA71750480D65BA9", BaseDenom: "akt", SrcChannel: "channel-1", DestChannel: "channel-12", Path: "transfer/channel-1", DisplayName: "AKT", ExternalSymbol: "AKT", Decimals: 18},
