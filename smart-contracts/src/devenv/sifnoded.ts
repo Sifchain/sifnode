@@ -5,7 +5,7 @@ import {ShellCommand} from "./devEnv"
 import {GolangResultsPromise} from "./golangBuilder";
 import * as path from "path"
 import events from "events";
-import {ReplaySubject} from "rxjs";
+import {lastValueFrom, ReplaySubject} from "rxjs";
 import * as fs from "fs";
 import YAML from 'yaml'
 
@@ -14,7 +14,7 @@ class ErrorEvent {
     }
 }
 
-function eventEmitterToObservable(eventEmitter: events.EventEmitter) {
+function eventEmitterToObservable(eventEmitter: events.EventEmitter, sourceName: string = "no name given") {
     const subject = new ReplaySubject<"exit" | ErrorEvent>(1)
     eventEmitter.on('error', e => {
         subject.error(new ErrorEvent(e))
@@ -63,7 +63,6 @@ export class SifnodedArguments {
 }
 
 interface SifnodedResults {
-
 }
 
 @singleton()
@@ -91,6 +90,7 @@ export class SifnodedRunner extends ShellCommand<SifnodedResults> {
     }
 
     async sifgenNetworkCreate() {
+        const sifnodedCommand = path.join((await this.golangResults.results).goBin, "sifnoded")
         const sifgenArgs = [
             "network",
             "create",
@@ -102,11 +102,10 @@ export class SifnodedRunner extends ShellCommand<SifnodedResults> {
             this.args.seedIpAddress,
             this.args.networkConfigFile
         ]
-        this.ensureCorrectExecution(ChildProcess.spawnSync(
-                path.join((await this.golangResults.results).goBin, "sifgen"),
-                sifgenArgs,
-                {encoding: "utf8"}
-            )
+        const sifgenOutput = ChildProcess.execFileSync(
+            path.join((await this.golangResults.results).goBin, "sifgen"),
+            sifgenArgs,
+            {encoding: "utf8"}
         )
         const file = fs.readFileSync(this.args.networkConfigFile, 'utf8')
         const networkConfig = YAML.parse(file)
@@ -132,7 +131,6 @@ export class SifnodedRunner extends ShellCommand<SifnodedResults> {
             mnemonic,
         )
         await this.addGenesisValidator(chainDir, valOperKey)
-        const sifnodedCommand = path.join((await this.golangResults.results).goBin, "sifnoded")
         const whitelistedValidator = ChildProcess.execSync(
             `${sifnodedCommand} keys show -a --bech val ${moniker} --keyring-backend test`,
             {encoding: "utf8", input: password}
@@ -167,10 +165,12 @@ export class SifnodedRunner extends ShellCommand<SifnodedResults> {
             `${sifnodedCommand} set-gen-denom-whitelist ${this.args.whitelistFile} --home ${homeDir}`,
             {encoding: "utf8"}
         ).trim()
-        // ChildProcess.exec(
-        //     `${sifnodedCommand} start --minimum-gas-prices 0.5rowan --rpc.laddr tcp://0.0.0.0:26657 --home ${homeDir}`,
-        //     {}
-        // )
+        let sifnodedDaemonCmd = `${sifnodedCommand} start --minimum-gas-prices 0.5rowan --rpc.laddr tcp://0.0.0.0:26657 --home ${homeDir}`;
+        const sifnoded = ChildProcess.spawn(
+            sifnodedDaemonCmd,
+            {shell: true, stdio: "inherit"}
+        )
+        return lastValueFrom(eventEmitterToObservable(sifnoded, "sifnoded"))
     }
 
     async addValidatorKeyToTestKeyring(moniker: string, chainDir: string, mnemonic: string) {
@@ -226,6 +226,7 @@ export class SifnodedRunner extends ShellCommand<SifnodedResults> {
 
     async execute() {
         await this.sifgenNetworkCreate()
+        console.log("finisehd sifnodedts execute")
     }
 
     override run(): Promise<void> {

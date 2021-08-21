@@ -2,6 +2,7 @@ import { registry, singleton } from "tsyringe";
 import * as hre from "hardhat";
 import { spawn } from "./pm2Promises";
 import { EthereumAccounts, EthereumAddressAndKey, EthereumResults, ShellCommand } from "./devEnv";
+import * as ChildProcess from "child_process"
 
 @registry([{
   token: EthereumArguments,

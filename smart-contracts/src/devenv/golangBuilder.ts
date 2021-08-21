@@ -36,11 +36,6 @@ export class GolangBuilder extends SynchronousCommand<GolangResults> {
     ]]
   }
 
-  override run() {
-    const [c, args] = this.cmd()
-    return spawn(c, args)
-  }
-
   resultConverter(r: SynchronousCommandResult): GolangResults {
     const goBin = requiredEnvVar("GOBIN")
     return new GolangResults(goBin, r.completed, r.error, r.output)
