@@ -29,11 +29,16 @@ type Coordinator struct {
 	Chains map[string]*TestChain
 }
 
-// NewCoordinator initializes Coordinator with N TestChain's
-func NewCoordinator(t *testing.T, mockChains map[string]*TestChain) *Coordinator {
+func NewCoordinator(t *testing.T, n int) *Coordinator {
+	chains := make(map[string]*TestChain)
+
+	for i := 0; i < n; i++ {
+		chainID := GetChainID(i)
+		chains[chainID] = CreateTestChain(t, chainID)
+	}
 	return &Coordinator{
 		t:      t,
-		Chains: mockChains,
+		Chains: chains,
 	}
 }
 

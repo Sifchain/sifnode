@@ -8,9 +8,8 @@ import (
 	"time"
 
 	sifapp "github.com/Sifchain/sifnode/app"
-	tokenregistrytypes "github.com/Sifchain/sifnode/x/tokenregistry/types"
+	"github.com/Sifchain/sifnode/x/clp/test"
 	"github.com/cosmos/cosmos-sdk/crypto/keys/secp256k1"
-	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	"github.com/stretchr/testify/require"
 	abci "github.com/tendermint/tendermint/abci/types"
 	"github.com/tendermint/tendermint/crypto/tmhash"
@@ -22,7 +21,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/codec"
 	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
-	"github.com/cosmos/cosmos-sdk/simapp"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
@@ -78,7 +76,7 @@ var (
 	MockCommitment      = mock.MockCommitment
 )
 
-// TestChain is a testing struct that wraps a simapp with the last TM Header, the current ABCI
+// TestChain is a testing struct that wraps a sifapp with the last TM Header, the current ABCI
 // header and the validators of the TestChain. It also contains a field called ChainID. This
 // is the clientID that *other* chains use to refer to this TestChain. The SenderAccount
 // is used for delivering transactions through the application state.
@@ -105,24 +103,25 @@ type TestChain struct {
 	Connections []*TestConnection // track connectionID's created for this chain
 }
 
-func CreateTestChain(t *testing.T, chainID string, isCheckTx bool) (sdk.Context, *TestChain) {
-	sifapp.SetConfig(false)
+func CreateTestChain(t *testing.T, chainID string) *TestChain {
 	privVal := mock.NewPV()
 	pubKey, err := privVal.GetPubKey()
 	require.NoError(t, err)
 
-	// // create validator set with single validator
+	// create validator set with single validator
 	validator := tmtypes.NewValidator(pubKey, 1)
 	valSet := tmtypes.NewValidatorSet([]*tmtypes.Validator{validator})
 	signers := []tmtypes.PrivValidator{privVal}
 
-	// // generate genesis account
+	// generate genesis account
 	senderPrivKey := secp256k1.GenPrivKey()
 	acc := authtypes.NewBaseAccount(senderPrivKey.PubKey().Address().Bytes(), senderPrivKey.PubKey(), 0, 0)
 	// balance := banktypes.Balance{
 	// 	Address: acc.GetAddress().String(),
 	// 	Coins:   sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, sdk.NewInt(100000000000000))),
 	// }
+	_, app := test.CreateTestAppClp(false)
+	//app := SetupWithGenesisValSet(t, valSet, []authtypes.GenesisAccount{acc}, balance)
 
 	header := tmproto.Header{
 		ChainID: chainID,
@@ -130,20 +129,6 @@ func CreateTestChain(t *testing.T, chainID string, isCheckTx bool) (sdk.Context,
 		Time:    globalStartTime,
 	}
 
-	// app := SetupWithGenesisValSet(t, valSet, []authtypes.GenesisAccount{acc}, balance)
-	app := sifapp.Setup(false)
-
-	ctx := app.BaseApp.NewContext(isCheckTx, header)
-
-	app.AccountKeeper.SetParams(ctx, authtypes.DefaultParams())
-	initTokens := sdk.TokensFromConsensusPower(1000)
-	app.BankKeeper.SetSupply(ctx, banktypes.NewSupply(sdk.Coins{}))
-	_ = sifapp.AddTestAddrs(app, ctx, 6, initTokens)
-	state := tokenregistrytypes.GenesisState{
-		AdminAccount: acc.Address,
-		Registry:     nil,
-	}
-	app.TokenRegistryKeeper.InitGenesis(ctx, state)
 	txConfig := sifapp.MakeTestEncodingConfig().TxConfig
 
 	// create an account to send transactions from
@@ -169,7 +154,7 @@ func CreateTestChain(t *testing.T, chainID string, isCheckTx bool) (sdk.Context,
 
 	chain.NextBlock()
 
-	return ctx, chain
+	return chain
 }
 
 // GetContext returns the current context for the application.
@@ -285,7 +270,7 @@ func (chain *TestChain) sendMsgs(msgs ...sdk.Msg) error {
 // number and updates the TestChain's headers. It returns the result and error if one
 // occurred.
 func (chain *TestChain) SendMsgs(msgs ...sdk.Msg) (*sdk.Result, error) {
-	_, r, err := simapp.SignCheckDeliver(
+	_, r, err := sifapp.SignCheckDeliver(
 		chain.t,
 		chain.TxConfig,
 		chain.App.BaseApp,
