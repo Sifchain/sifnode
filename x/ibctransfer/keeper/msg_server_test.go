@@ -307,7 +307,7 @@ func TestOnTimeoutPacketConvert(t *testing.T) {
 			err = keeper.PrepareToSendConvertedCoins(sdk.WrapSDKContext(appCtx), tt.args.msg, tokenDeduction, tokensConverted, app.BankKeeper)
 			require.NoError(t, err)
 
-			res, err := ibctransfer.OnTimeoutPacketConvert(appCtx, app.TransferKeeper, app.TokenRegistryKeeper, app.BankKeeper, packet)
+			res, err := ibctransfer.OnTimeoutMaybeConvert(appCtx, app.TransferKeeper, app.TokenRegistryKeeper, app.BankKeeper, packet)
 			require.NoError(t, err)
 			require.NotNil(t, res)
 			require.NotEmpty(t, res.Events)
