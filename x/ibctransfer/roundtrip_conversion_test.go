@@ -61,7 +61,7 @@ func TestExportImportConversionEquality(t *testing.T) {
 	wl.EXPECT().GetDenom(ctx, "microrowan").Return(microRowanEntry)
 	wl.EXPECT().GetDenom(ctx, "rowan").Return(rowanEntry)
 
-	incomingDeduction, incomingAddition := convertDecimals(ctx, wl, returningTransferPacket, tokenPacket)
+	incomingDeduction, incomingAddition := GetConvForIncomingCoins(ctx, wl, returningTransferPacket, tokenPacket)
 	require.Greater(t, incomingAddition.Amount.String(), incomingDeduction.Amount.String())
 	require.Equal(t, outgoingDeduction, incomingAddition)
 	require.Equal(t, outgoingAddition, incomingDeduction)
