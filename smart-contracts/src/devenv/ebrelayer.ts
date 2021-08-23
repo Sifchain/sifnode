@@ -1,4 +1,4 @@
-import { registry, singleton } from "tsyringe";
+import { registry, injectable } from "tsyringe";
 import * as ChildProcess from "child_process"
 import { SpawnSyncReturns } from "child_process"
 import { ShellCommand } from "./devEnv"
@@ -6,13 +6,14 @@ import { GolangResultsPromise } from "./golangBuilder";
 import * as path from "path"
 import events from "events";
 import { lastValueFrom, ReplaySubject } from "rxjs";
+import { ValidatorValues } from "./sifnoded"
 import * as fs from "fs";
 import YAML from 'yaml'
 import { eventEmitterToObservable } from "./devEnvUtilities"
 
 @registry([
   {
-    token: SifnodedArguments, useValue: new SifnodedArguments(
+    token: EbrelayerArguments, useValue: new EbrelayerArguments(
       "/tmp/sifnoded.log",
       9000,
       1,
@@ -24,40 +25,35 @@ import { eventEmitterToObservable } from "./devEnvUtilities"
     )
   }
 ])
-export class SifnodedArguments {
+
+ETHEREUM_PRIVATE_KEY = $EBRELAYER_ETHEREUM_PRIVATE_KEY $runner init $TCP_URL "$ETHEREUM_WEBSOCKET_ADDRESS" \
+"$BRIDGE_REGISTRY_ADDRESS" \
+"$MONIKER" \
+"$MNEMONIC" \
+--chain - id $CHAINNET \
+--node $TCP_URL \
+--keyring - backend test \
+--from $MONIKER \
+--symbol - translator - file ${ TEST_INTEGRATION_DIR } /config/symbol_translator.json \
+--relayerdb - path "$EBRELAYER_DB" \
+  #--home $CHAINDIR /.sifnoded \
+
+
+export class EbrelayerArguments {
   constructor(
-    readonly logfile: string,
-    readonly rpcPort: number,
-    readonly nValidators: number,
-    readonly chainId: string,
-    readonly networkConfigFile: string,
-    readonly networkDir: string,
-    readonly seedIpAddress: string,
-    readonly whitelistFile: string
+    readonly websocketAddress: string,
+    readonly bridgeRegistryAddress: string,
+    readonly ebrelayerDB: string,
+    readonly validatorValues: ValidatorValues,
   ) {
   }
 }
 
-export interface ValidatorValues {
-  chainID: string;
-  nodeID: string;
-  ipv4Address: string;
-  moniker: string;
-  password: string;
-  address: string;
-  pubKey: string;
-  mnemonic: string;
-  validatorAddress: string;
-  validatorConsensusAddress: string;
-  isSeed: boolean;
-}
-export interface SifnodedResults {
-  validatorValues: ValidatorValues[];
-  tcpurl: string;
+interface EbrelayerResults {
 }
 
-@singleton()
-export class SifnodedRunner extends ShellCommand<SifnodedResults> {
+@injectable()
+export class EbrelayerRunner extends ShellCommand<SifnodedResults> {
   constructor(
     readonly args: SifnodedArguments,
     readonly golangResults: GolangResultsPromise
