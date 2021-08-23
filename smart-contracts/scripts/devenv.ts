@@ -2,6 +2,8 @@ import {container} from "tsyringe";
 import {HardhatNodeRunner} from "../src/devenv/hardhatNode";
 import {GolangBuilder, GolangResultsPromise} from "../src/devenv/golangBuilder";
 import {SifnodedRunner} from "../src/devenv/sifnoded";
+import {SmartContractDeployer} from "../src/devenv/smartcontractDeployer";
+import { cons } from "fp-ts/lib/ReadonlyNonEmptyArray";
 
 
 async function startHardhat() {
@@ -32,8 +34,17 @@ async function sifnodedBuilder(golangResults: GolangResultsPromise) {
     return process
 }
 
+async function smartContractDeployer() {
+    const node: SmartContractDeployer = container.resolve(SmartContractDeployer);
+    const [process, resultsPromise] = node.go();
+    const result = await resultsPromise;
+    console.log(`Contracts deployed: ${JSON.stringify(result.contractAddresses, undefined, 2)}`)
+    return process;
+}
 async function main() {
     await Promise.all([startHardhat(), golangBuilder()])
+                 .then(smartContractDeployer)
+                 .catch(() => {console.log("Deployment failed. Lets log where it broke")});
 }
 
 main()
