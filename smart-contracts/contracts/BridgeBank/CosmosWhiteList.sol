@@ -7,7 +7,6 @@ import "./CosmosWhiteListStorage.sol";
  * @title WhiteList
  * @dev WhiteList contract records the ERC 20 list that can be locked in BridgeBank.
  **/
-
 contract CosmosWhiteList is CosmosWhiteListStorage {
     bool private _initialized;
 
@@ -19,7 +18,7 @@ contract CosmosWhiteList is CosmosWhiteListStorage {
         _initialized = true;
     }
 
-    /*
+    /**
      * @dev Modifier to restrict erc20 can be locked
      */
     modifier onlyCosmosTokenWhiteList(address _token) {
@@ -30,8 +29,8 @@ contract CosmosWhiteList is CosmosWhiteListStorage {
         _;
     }
 
-    /*
-     * @dev: Modifier to restrict erc20 can be locked
+    /**
+     * @dev Modifier to restrict erc20 can be locked
      */
     modifier onlyTokenNotInCosmosWhiteList(address _token) {
         require(

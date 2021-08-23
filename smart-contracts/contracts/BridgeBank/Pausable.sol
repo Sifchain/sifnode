@@ -4,6 +4,7 @@ pragma solidity 0.8.0;
 import "./PauserRole.sol";
 
 /**
+ * @title Pausable
  * @dev Contract module which allows children to implement an emergency stop
  * mechanism that can be triggered by an authorized account.
  *
@@ -25,13 +26,16 @@ contract Pausable is PauserRole {
 
     bool private _paused;
 
-
+    /**
+     * @dev Initializes adding a new Pauser
+     */
     function _pausableInitialize (address _user) internal {
         _addPauser(_user);
         _paused = false;
     }
 
     /**
+     * @notice Is the contract paused?
      * @dev Returns true if the contract is paused, and false otherwise.
      */
     function paused() public view returns (bool) {
@@ -62,6 +66,7 @@ contract Pausable is PauserRole {
     }
 
     /**
+     * @notice Pauses the contract
      * @dev Called by a pauser to pause contract
      */
     function pause() external onlyPauser whenNotPaused {
@@ -70,6 +75,7 @@ contract Pausable is PauserRole {
     }
 
     /**
+     * @notice Unpauses the contract
      * @dev Called by a pauser to unpause contract
      */
     function unpause() external onlyPauser whenPaused {

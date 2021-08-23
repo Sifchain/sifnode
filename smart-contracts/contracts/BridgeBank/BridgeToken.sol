@@ -8,7 +8,6 @@ import "@openzeppelin/contracts/access/Ownable.sol";
  * @title BridgeToken
  * @dev Mintable, ERC20Burnable, ERC20 compatible BankToken for use by BridgeBank
  **/
-
 contract BridgeToken is ERC20Burnable, Ownable {
 
     uint8 private _decimals;

@@ -115,7 +115,7 @@ contract BridgeBank is BankStorage,
         networkDescriptor = _networkDescriptor;
     }
 
-    /*
+    /**
      * @dev Modifier to restrict access to operator
      */
     modifier onlyOperator() {
@@ -123,15 +123,15 @@ contract BridgeBank is BankStorage,
         _;
     }
 
-    /*
-     * @dev: Modifier to restrict access to owner
+    /**
+     * @dev Modifier to restrict access to owner
      */
     modifier onlyOwner {
         require(msg.sender == owner, "!owner");
         _;
     }
 
-    /*
+    /**
      * @dev Modifier to restrict access to the cosmos bridge
      */
     modifier onlyCosmosBridge {
@@ -142,7 +142,7 @@ contract BridgeBank is BankStorage,
         _;
     }
 
-    /*
+    /**
      * @dev Modifier to only allow valid sif addresses
      */
     modifier validSifAddress(bytes calldata sifAddress) {

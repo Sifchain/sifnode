@@ -1,10 +1,14 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity 0.8.0;
 
+/**
+ * @title Cosmos Whitelist Storage
+ * @dev Records the Cosmos whitelisted tokens
+ **/
 contract CosmosWhiteListStorage {
 
     /*
-    * @notice mapping to keep track of whitelisted tokens
+    * @dev mapping to keep track of whitelisted tokens
     */
     mapping(address => bool) internal _cosmosTokenWhiteList;
 

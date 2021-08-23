@@ -1,6 +1,10 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity 0.8.0;
 
+/**
+ * @title Ethereum Bank Storage
+ * @dev Stores nonces, locked tokens, token data (name, symbol, decimals, and denom)
+ **/
 contract EthereumBankStorage {
 
     /**
@@ -13,7 +17,7 @@ contract EthereumBankStorage {
     */
     mapping(address => uint256) private lockedFunds;
 
-    /*
+    /**
     * @notice map the token symbol to the token address
     */
     mapping(string => address) public lockedTokenList;
