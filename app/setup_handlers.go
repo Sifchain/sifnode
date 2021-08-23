@@ -21,6 +21,7 @@ func SetupHandlers(app *SifchainApp) {
 		// IBC token permissions will be disabled until updated dynamically.
 		tokenregistrymigrations.Init(ctx, app.TokenRegistryKeeper)
 	})
+	app.UpgradeKeeper.SetUpgradeHandler("0.9.5-rc.1", func(ctx sdk.Context, plan types.Plan) {})
 }
 
 func SetupUpgradeV093(app *SifchainApp) {
