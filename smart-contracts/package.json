@@ -29,6 +29,7 @@
     "chai": "^4.3.4",
     "chai-as-promised": "^7.1.1",
     "chai-bignumber": "^3.0.0",
+    "concurrently": "^6.2.0",
     "dotenv": "^10.0.0",
     "ethereum-waffle": "^3.4.0",
     "ethers": "^5.4.4",
@@ -41,6 +42,7 @@
     "openzeppelin-solidity": "^2.5.1",
     "reflect-metadata": "^0.1.13",
     "solidity-coverage": "^0.7.16",
+    "truffle": "^5.1.48",
     "ts-generator": "^0.1.1",
     "ts-node": "^10.1.0",
     "tsyringe": "^4.6.0",
@@ -84,8 +86,5 @@
     "compile": "hardhat compile",
     "test": "concurrently -r -k -s first \"yarn develop\" \"truffle test --network develop test/test*.js\" ",
     "testHardhat": "npx hardhat test test/test_bridgeBankMigration.ts  test/test_newBridgeBank.ts"
-  },
-  "dependencies": {
-    "concurrently": "^6.2.0"
   }
 }
