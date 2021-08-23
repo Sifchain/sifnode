@@ -26,7 +26,7 @@ contract CosmosBank is CosmosBankStorage {
     );
 
     /**
-     * @dev: Deploys a new BridgeToken contract
+     * @dev Deploys a new BridgeToken contract
      * @param _name The BridgeToken's name
      * @param _symbol The BridgeToken's symbol
      * @param _decimals The BridgeToken's decimals
@@ -57,7 +57,7 @@ contract CosmosBank is CosmosBankStorage {
     }
 
     /**
-     * @dev: Mints new Cosmos tokens
+     * @dev Mints new Cosmos tokens
      * @param _intendedRecipient The intended recipient's Ethereum address.
      * @param _bridgeTokenAddress The currency type
      * @param _amount Number of Cosmos tokens to be minted
