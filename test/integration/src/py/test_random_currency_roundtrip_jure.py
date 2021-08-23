@@ -12,9 +12,9 @@ from test_utilities import get_required_env_var, get_shell_output, amount_in_wei
 # bridgebank_address = get_required_env_var("BRIDGE_BANK_ADDRESS")
 # bridgetoken_address = get_required_env_var("BRIDGE_TOKEN_ADDRESS")
 
-smart_contracts_dir = None
-bridgebank_address = None
-bridgetoken_address = None
+# smart_contracts_dir = None
+# bridgebank_address = None
+# bridgetoken_address = None
 
 # @pytest.mark.skip
 @pytest.mark.usefixtures("with_snapshot")
@@ -26,34 +26,36 @@ def test_simple(ctx):
     rowan_source_integrationtest_env_credentials = ctx.rowan_source_integrationtest_env_credentials
     rowan_source_integrationtest_env_transfer_request = ctx.rowan_source_integrationtest_env_transfer_request(basic_transfer_request)
     new_currency_symbol = ("a" + get_shell_output("uuidgen").replace("-", ""))[:4]
-    ethereum_network = ctx.ethereum_network
-    solidity_json_path = ctx.solidity_json_path
+    # ethereum_network = ctx.ethereum_network
+    # solidity_json_path = ctx.solidity_json_path
 
-    global smart_contracts_dir
-    global bridgebank_address
-    global bridgetoken_address
-    smart_contracts_dir = get_required_env_var("SMART_CONTRACTS_DIR")
-    bridgebank_address = get_required_env_var("BRIDGE_BANK_ADDRESS")
-    bridgetoken_address = get_required_env_var("BRIDGE_TOKEN_ADDRESS")
+    # global smart_contracts_dir
+    # global bridgebank_address
+    # global bridgetoken_address
+    # smart_contracts_dir = get_required_env_var("SMART_CONTRACTS_DIR")
+    # bridgebank_address = get_required_env_var("BRIDGE_BANK_ADDRESS")
+    # bridgetoken_address = get_required_env_var("BRIDGE_TOKEN_ADDRESS")
+
+    # assert ctx.smart_contracts_dir == smart_contracts_dir
+    # assert ctx.bridgebank_address == bridgebank_address
+    # assert ctx.bridgetoken_address == bridgetoken_address
 
     do_currency_test(
+        ctx,
         new_currency_symbol,
         basic_transfer_request,
         source_ethereum_address,
         rowan_source_integrationtest_env_credentials,
         rowan_source_integrationtest_env_transfer_request,
-        ethereum_network,
-        solidity_json_path=solidity_json_path
     )
 
 def do_currency_test(
+        ctx,
         new_currency_symbol,
         basic_transfer_request: EthereumToSifchainTransferRequest,
         source_ethereum_address: str,
         rowan_source_integrationtest_env_credentials: SifchaincliCredentials,
         rowan_source_integrationtest_env_transfer_request: EthereumToSifchainTransferRequest,
-        ethereum_network,
-        solidity_json_path,
 ):
     amount = amount_in_wei(9)
     logging.info(f"create new currency")
@@ -62,9 +64,9 @@ def do_currency_test(
         new_currency_symbol,
         new_currency_symbol,
         18,
-        smart_contracts_dir=smart_contracts_dir,
-        bridgebank_address=bridgebank_address,
-        solidity_json_path=solidity_json_path
+        smart_contracts_dir=ctx.smart_contracts_dir,
+        bridgebank_address=ctx.bridgebank_address,
+        solidity_json_path=ctx.solidity_json_path
     )
 
     logging.info(f"create test account to use with new currency {new_currency_symbol}")
@@ -85,7 +87,7 @@ def do_currency_test(
 
     logging.info("send some new currency to ethereum")
     request.ethereum_address, _ = test_utilities.create_ethereum_address(
-        smart_contracts_dir, ethereum_network
+        ctx.smart_contracts_dir, ctx.ethereum_network
     )
     request.amount = test_amount - 1
     burn_lock_functions.transfer_sifchain_to_ethereum(request, credentials)
