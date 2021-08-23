@@ -11,11 +11,8 @@ import * as dotenv from "dotenv";
 // npx hardhat run scripts/deploy_contracts.ts
 
 async function main() {
-    const [proxyAdmin] = await hardhat.ethers.getSigners();
-
     container.register(HardhatRuntimeEnvironmentToken, {useValue: hardhat})
-
-    const completeSetup = await container.resolve(BridgeTokenSetup).complete
+    await container.resolve(BridgeTokenSetup).complete
 }
 
 main()
