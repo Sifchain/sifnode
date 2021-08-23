@@ -3,6 +3,7 @@ package types
 import (
 	"encoding/json"
 	"fmt"
+	"strings"
 
 	"github.com/cosmos/cosmos-sdk/codec"
 )
@@ -100,6 +101,12 @@ func InitialRegistry() Registry {
 			{IsWhitelisted: true, Denom: "cdaofi", Decimals: 18, Permissions: []Permission{Permission_CLP}},
 			{IsWhitelisted: true, Denom: "ckeep", Decimals: 18, Permissions: []Permission{Permission_CLP}},
 		},
+	}
+
+	for i := range entries.Entries {
+		if !strings.HasPrefix(entries.Entries[i].Denom, "ibc/") {
+			entries.Entries[i].BaseDenom = entries.Entries[i].Denom
+		}
 	}
 
 	return entries
