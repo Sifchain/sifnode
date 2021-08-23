@@ -64,11 +64,13 @@ may be inspected manually. `tmate` is an extension over `tmux`, supporting remot
 So instead of running many terminals, one per component, all of them may be started in a single one making our life easier.
 At the same time, `tmate` provides the list of all running apps, marking those which exited (due to panic for ex.).
 
-### podman
+### docker / podman
 
 `podman` is a docker replacement with 100% compatible CLI interface. The difference is that `podman` doesn't require
 daemon and supports containers created in user-space (no `root` required). It's much lighter than `docker` and
 world is moving toward this.
+
+Both `docker` and `podman` are supported by `localnet`.  
 
 ## CLI interface
 
