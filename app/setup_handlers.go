@@ -11,7 +11,9 @@ import (
 const upgradeNameV095 = "0.9.5"
 
 func SetupHandlers(app *SifchainApp) {
-	app.UpgradeKeeper.SetUpgradeHandler("0.9.5-rc.3", func(ctx sdk.Context, plan types.Plan) {})
+	app.UpgradeKeeper.SetUpgradeHandler("0.9.5-rc.3", func(ctx sdk.Context, plan types.Plan) {
+		tokenregistrymigrations.Init(ctx, app.TokenRegistryKeeper)
+	})
 	SetupHandlersForV095(app)
 }
 
