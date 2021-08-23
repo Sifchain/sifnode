@@ -21,14 +21,15 @@ To be able to play with all th features of `sifnode` (including IBC) we need the
 - peggy between eth and sifchain
 - block explorer for every chain
 
+User selects which blockchains are started.
 
-Every time we add new supported blockchain `localnet` is extended by adding testnet, relayer  and block explorer.
+User chooses if block explorers are started.
+
+Every time we add new supported blockchain `localnet` is extended by adding testnet, relayer and block explorer.
 
 ### Sifchain
 
-To support sifchains, a single `sifnode` per chain is started. `sifnode` should be configured to not mine empty blocks,
-to make output in block explorer more relevant and easier to inspect. IIRC there is an option for this in tendermint but
-3 years ago when I tested it, consensus was failing because of that. Maybe it has been fixed, have to test it again.
+To support sifchains, 4 validators and 1 full node per chain are started.
 
 It would be nice to implement some logs filter in `sifnode` to prevent regular `tendermint` consensus-related logs
 from being printed in `localnet` unless they are errors or panics. By doing this, relevant logs printed by our app are
@@ -73,9 +74,10 @@ world is moving toward this.
 
 `localnet` exposes these commands:
 
-- `localnet install` - downloads all the required components, unpacks, builds them etc.
-- `localnet update` - updates components
+- `localnet install` - downloads all the required components, unpacks, builds them, installs/updates them
 - `localnet start` - starts all the components in `tmate` session
+  - `--with-chain=<blockchain>` adds `blockchain` to the setup
+  - `--with-explorers` starts block explorers for each blockchain
 - `localnet stop` - stops `tmate` session, all components are stopped but may be (re)started again - state is preserved  between restarts  
 - `localnet destroy` - drops all the state generated/collected by the components (blocks, keys, etc.)
 
