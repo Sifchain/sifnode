@@ -9,7 +9,6 @@ on:
       - develop
       - master
       - testnet
-      - ui-truffle-dep
 
 jobs:
   build_ui_stack:
