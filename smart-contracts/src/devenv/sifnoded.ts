@@ -8,31 +8,7 @@ import events from "events";
 import {lastValueFrom, ReplaySubject} from "rxjs";
 import * as fs from "fs";
 import YAML from 'yaml'
-
-class ErrorEvent {
-    constructor(readonly errorObject: any) {
-    }
-}
-
-function eventEmitterToObservable(eventEmitter: events.EventEmitter, sourceName: string = "no name given") {
-    const subject = new ReplaySubject<"exit" | ErrorEvent>(1)
-    eventEmitter.on('error', e => {
-        subject.error(new ErrorEvent(e))
-    })
-    eventEmitter.on('exit', e => {
-        console.log("in eventEmitter")
-        switch (e) {
-            case 0:
-                subject.next("exit")
-                subject.complete()
-                break
-            default:
-                subject.error(new ErrorEvent(e))
-                break
-        }
-    })
-    return subject.asObservable()
-}
+import {eventEmitterToObservable} from "./devEnvUtilities"
 
 @registry([
     {
@@ -78,15 +54,6 @@ export class SifnodedRunner extends ShellCommand<SifnodedResults> {
         return ["sifgen", [
             "node"
         ]]
-    }
-
-    ensureCorrectExecution(result: SpawnSyncReturns<string>): SpawnSyncReturns<string> {
-        if (result.error || (result?.stderr ?? "") != "") {
-            console.log("error stdout: ", result.stdout)
-            console.log("error stderr: ", result.stderr)
-            throw result.error
-        }
-        return result
     }
 
     async sifgenNetworkCreate() {
