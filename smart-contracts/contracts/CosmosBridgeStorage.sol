@@ -1,57 +1,66 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity 0.8.0;
 
+/**
+ * @title Cosmos Bridge Storage
+ * @dev Stores the operator's address,
+        BridgeBank's address,
+        networkDescriptor,
+        sourceAddressToDestinationAddress of a pegged token
+ **/
 contract CosmosBridgeStorage {
-    /*
-    * @notice gap of storage for future upgrades
+    /**
     * @dev {DEPRECATED}
     */
     string private COSMOS_NATIVE_ASSET_PREFIX;
 
-    /*
-     * @dev: Public variable declarations
+    /**
+     * @dev Public variable declarations
      */
     address private _operator;
 
     /**
-    * @notice gap of storage for future upgrades
+    * @dev {DEPRECATED}
     */
-    address payable public valset;
+    address payable private valset;
 
     /**
-    * @notice gap of storage for future upgrades
+    * @dev {DEPRECATED}
     */
-    address payable public oracle;
+    address payable private oracle;
 
     /**
-    * @notice gap of storage for future upgrades
+    * @notice Address of the BridgeBank contract
     */
     address payable public bridgeBank;
     
     /**
-    * @notice gap of storage for future upgrades
+    * @notice Has the BridgeBank contract been registered yet?
     */
     bool public hasBridgeBank;
+
     /**
-    * @notice gap of storage for future upgrades
+    * @dev {DEPRECATED}
     */
-    mapping(uint256 => ProphecyClaim) public prophecyClaims;
+    mapping(uint256 => ProphecyClaim) private prophecyClaims;
 
-
+    /**
+    * @notice Maps the original address of a token to its address in another network
+    */
     mapping (address => address) public sourceAddressToDestinationAddress;
 
     /**
-    * @notice prophecy status enum
+    * @dev {DEPRECATED}
     */
     enum Status {Null, Pending, Success, Failed}
 
     /**
-    * @notice claim type enum
+    * @dev {DEPRECATED}
     */
     enum ClaimType {Unsupported, Burn, Lock}
 
     /**
-    * @notice Prophecy claim struct
+    * @notice {DEPRECATED}
     */
     struct ProphecyClaim {
         address payable ethereumReceiver;
