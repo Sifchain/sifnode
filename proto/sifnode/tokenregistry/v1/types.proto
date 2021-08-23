@@ -27,8 +27,8 @@ message RegistryEntry {
   string denom = 3;
   string base_denom = 4;
   string path = 5;
-  string src_channel = 6;
-  string dest_channel = 7;
+  string ibc_channel_id = 6;
+  string ibc_counterparty_channel_id = 7;
   string display_name = 8;
   string display_symbol = 9;
   string network = 10;
@@ -36,4 +36,7 @@ message RegistryEntry {
   string external_symbol = 12;
   string transfer_limit = 13;
   repeated Permission permissions = 15;
+  string unit_denom = 16;
+  string ibc_counterparty_denom = 17;
+  string ibc_counterparty_chain_id =  18;
 }

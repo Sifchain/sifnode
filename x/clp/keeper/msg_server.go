@@ -12,6 +12,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/types/query"
 
 	"github.com/Sifchain/sifnode/x/clp/types"
+	tokenregistrytypes "github.com/Sifchain/sifnode/x/tokenregistry/types"
 )
 
 type msgServer struct {
@@ -247,7 +248,7 @@ func (k msgServer) RemoveLiquidity(goCtx context.Context, msg *types.MsgRemoveLi
 		return nil, types.ErrTokenNotSupported
 	}
 	if !k.tokenRegistryKeeper.CheckDenomPermissions(ctx, msg.ExternalAsset.Symbol, types.GetCLPermissons()) {
-		return nil, types.ErrTokenNotSupported
+		return nil, tokenregistrytypes.ErrPermissionDenied
 	}
 	pool, err := k.Keeper.GetPool(ctx, msg.ExternalAsset.Symbol)
 	if err != nil {
@@ -366,7 +367,7 @@ func (k msgServer) CreatePool(goCtx context.Context, msg *types.MsgCreatePool) (
 		return nil, types.ErrTokenNotSupported
 	}
 	if !k.tokenRegistryKeeper.CheckDenomPermissions(ctx, msg.ExternalAsset.Symbol, types.GetCLPermissons()) {
-		return nil, types.ErrTokenNotSupported
+		return nil, tokenregistrytypes.ErrPermissionDenied
 	}
 	// Check if pool already exists
 	if k.Keeper.ExistsPool(ctx, msg.ExternalAsset.Symbol) {
@@ -419,7 +420,7 @@ func (k msgServer) AddLiquidity(goCtx context.Context, msg *types.MsgAddLiquidit
 		return nil, types.ErrTokenNotSupported
 	}
 	if !k.tokenRegistryKeeper.CheckDenomPermissions(ctx, msg.ExternalAsset.Symbol, types.GetCLPermissons()) {
-		return nil, types.ErrTokenNotSupported
+		return nil, tokenregistrytypes.ErrPermissionDenied
 	}
 	// Get pool
 	pool, err := k.Keeper.GetPool(ctx, msg.ExternalAsset.Symbol)
