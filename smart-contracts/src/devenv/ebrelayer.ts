@@ -25,26 +25,17 @@ import { eventEmitterToObservable } from "./devEnvUtilities"
     )
   }
 ])
-
-ETHEREUM_PRIVATE_KEY = $EBRELAYER_ETHEREUM_PRIVATE_KEY $runner init $TCP_URL "$ETHEREUM_WEBSOCKET_ADDRESS" \
-"$BRIDGE_REGISTRY_ADDRESS" \
-"$MONIKER" \
-"$MNEMONIC" \
---chain - id $CHAINNET \
---node $TCP_URL \
---keyring - backend test \
---from $MONIKER \
---symbol - translator - file ${ TEST_INTEGRATION_DIR } /config/symbol_translator.json \
---relayerdb - path "$EBRELAYER_DB" \
-  #--home $CHAINDIR /.sifnoded \
-
-
 export class EbrelayerArguments {
   constructor(
     readonly websocketAddress: string,
     readonly bridgeRegistryAddress: string,
+    // Interface in hardhatNode readonly bridgeRegistryAddress: string,
+    readonly tcpURL: string,
+    readonly chainNet: number,
     readonly ebrelayerDB: string,
     readonly validatorValues: ValidatorValues,
+    readonly symbolTranslatorFile: string,
+    readonly relayerdbPath: string,
   ) {
   }
 }
@@ -53,17 +44,28 @@ interface EbrelayerResults {
 }
 
 @injectable()
-export class EbrelayerRunner extends ShellCommand<SifnodedResults> {
+export class EbrelayerRunner extends ShellCommand<EbrelayerResults> {
   constructor(
-    readonly args: SifnodedArguments,
+    readonly args: EbrelayerArguments,
     readonly golangResults: GolangResultsPromise
   ) {
     super();
   }
 
   cmd(): [string, string[]] {
-    return ["sifgen", [
-      "node"
+    return ["ebrelayer", [
+      "init",
+      this.args.tcpURL,
+      this.args.websocketAddress,
+      // Bridge Registery Address,
+      this.args.validatorValues.moniker,
+      this.args.validatorValues.mnemonic,
+      `--chain-id ${this.args.chainNet}`,
+      `--node ${this.args.tcpURL}`,
+      "--keyring-backend test",
+      `--from ${this.args.validatorValues.moniker}`,
+      `--symbol-translator-file ${this.args.symbolTranslatorFile}`,
+      `--relayerdb-path ${this.args.relayerdbPath}`
     ]]
   }
 
