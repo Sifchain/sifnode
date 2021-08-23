@@ -11,15 +11,14 @@ import "./Pausable.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 /**
- * @title BridgeBank
+ * @title Bridge Bank
  * @dev Bank contract which coordinates asset-related functionality.
  *      CosmosBank manages the minting and burning of tokens which
  *      represent Cosmos based assets, while EthereumBank manages
  *      the locking and unlocking of Ethereum and ERC20 token assets
  *      based on Ethereum. WhiteList records the ERC20 token address 
  *      list that can be locked.
- **/
-
+ */
 contract BridgeBank is BankStorage,
     CosmosBank,
     EthereumWhiteList,
@@ -31,8 +30,13 @@ contract BridgeBank is BankStorage,
     bool private _initialized;
     bool private _reinitialized;
 
-    /*
-     * @dev: Initializer
+    /**
+     * @notice Initializer
+     * @param _operator Manages the contract
+     * @param _cosmosBridgeAddress The CosmosBridge contract's address
+     * @param _owner Manages whitelists
+     * @param _pauser Can pause the system
+     * @param _networkDescriptor Indentifies the connected network
      */
     function initialize(
         address _operator,
@@ -60,6 +64,14 @@ contract BridgeBank is BankStorage,
         );
     }
 
+    /**
+     * @notice Allows the current operator to reinitialize the contract
+     * @param _operator Manages the contract
+     * @param _cosmosBridgeAddress The CosmosBridge contract's address
+     * @param _owner Manages whitelists
+     * @param _pauser Can pause the system
+     * @param _networkDescriptor Indentifies the connected network
+     */
     function reinitialize(
         address _operator,
         address _cosmosBridgeAddress,
@@ -80,6 +92,14 @@ contract BridgeBank is BankStorage,
         );
     }
 
+    /**
+     * @dev Internal function called by initialize() and reinitialize()
+     * @param _operator Manages the contract
+     * @param _cosmosBridgeAddress The CosmosBridge contract's address
+     * @param _owner Manages whitelists
+     * @param _pauser Can pause the system
+     * @param _networkDescriptor Indentifies the connected network
+     */
     function _initialize(
         address _operator,
         address _cosmosBridgeAddress,
@@ -96,7 +116,7 @@ contract BridgeBank is BankStorage,
     }
 
     /*
-     * @dev: Modifier to restrict access to operator
+     * @dev Modifier to restrict access to operator
      */
     modifier onlyOperator() {
         require(msg.sender == operator, "!operator");
@@ -112,7 +132,7 @@ contract BridgeBank is BankStorage,
     }
 
     /*
-     * @dev: Modifier to restrict access to the cosmos bridge
+     * @dev Modifier to restrict access to the cosmos bridge
      */
     modifier onlyCosmosBridge {
         require(
@@ -123,19 +143,19 @@ contract BridgeBank is BankStorage,
     }
 
     /*
-     * @dev: Modifier to only allow valid sif addresses
+     * @dev Modifier to only allow valid sif addresses
      */
     modifier validSifAddress(bytes calldata sifAddress) {
         require(verifySifAddress(sifAddress) == true, "INV_SIF_ADDR");
         _;
     }
 
-    /*
-     * @dev: Set the token address in Eth whitelist
-     *
-     * @param _token: ERC 20's address
-     * @param _inList: set the _token in list or not
-     * @return: new value of if _token in whitelist
+    /**
+     * @notice Allows the operator to add or remove `_token` to/from the Eth whitelist
+     * @dev Set the token address in Eth whitelist
+     * @param _token ERC 20's address
+     * @param _inList Set the _token in list or not
+     * @return New value of if _token in whitelist
      */
     function updateEthWhiteList(address _token, bool _inList)
         public
@@ -154,11 +174,11 @@ contract BridgeBank is BankStorage,
         return setTokenInEthWhiteList(_token, _inList);
     }
 
-    /*
-     * @dev: Set N token addresses in Eth whitelist
-     *
-     * @param _tokens: list of ERC 20's addresses
-     * @param _inList: list of booleans for each address: set _tokens[i] in list or not
+    /**
+     * @notice Allows the operator to add or remove a list of tokens to/from the Eth whitelist
+     * @dev Set N token addresses in Eth whitelist
+     * @param _tokens List of ERC 20's addresses
+     * @param _inList List of booleans for each address: set _tokens[i] in list or not
      */
     function batchUpdateEthWhiteList(address[] calldata _tokens, bool[] calldata _inList) public onlyOperator {
         require(_tokens.length == _inList.length, "INV_LEN");
@@ -168,12 +188,11 @@ contract BridgeBank is BankStorage,
         }
     }
 
-    /*
-     * @dev: Set the token address in whitelist
-     *
-     * @param token: ERC 20's address
-     * @param inList: set the token in list or not
-     * @return: new value of if token in whitelist
+    /**
+     * @dev Set the token address in Cosmos whitelist
+     * @param token ERC 20's address
+     * @param inList Set the token in list or not
+     * @return New value of if token is in whitelist
      */
     function setTokenInCosmosWhiteList(address token, bool inList)
         internal returns (bool)
@@ -183,19 +202,28 @@ contract BridgeBank is BankStorage,
         return inList;
     }
 
+    /**
+     * @notice Transfers ownership of this contract to `newOwner`
+     * @dev Cannot transfer ownership to the zero address
+     * @param newOwner The new owner's address
+     */
     function changeOwner(address newOwner) public onlyOwner {
         require(newOwner != address(0), "invalid address");
         owner = newOwner;
     }
 
+    /**
+     * @notice Allows the operator to transfer the role to another address
+     * @dev Cannot transfer role to the zero address
+     * @param _newOperator: the new operator's address
+     */
     function changeOperator(address _newOperator) public onlyOperator {
         require(_newOperator != address(0), "invalid address");
         operator = _newOperator;
     }
 
-
-    /*
-     * @dev: function to validate if a sif address has a correct prefix
+    /**
+     * @dev function to validate if a sif address has a correct prefix
      */
     function verifySifPrefix(bytes calldata sifAddress) private pure returns (bool) {
         bytes3 sifInHex = 0x736966;
@@ -208,24 +236,37 @@ contract BridgeBank is BankStorage,
         return true;
     }
 
+    /**
+     * @dev function to validate if a sif address has the correct length
+     */
     function verifySifAddressLength(bytes calldata sifAddress) private pure returns (bool) {
         return sifAddress.length == 42;
     }
 
+    /**
+     * @dev function to validate if a sif address has a correct prefix and the correct length
+     */
     function verifySifAddress(bytes calldata sifAddress) private pure returns (bool) {
         return verifySifAddressLength(sifAddress) && verifySifPrefix(sifAddress);
     }
 
-    // function used only for testing
+    /**
+     * @notice Validates whether `_sifAddress` is a valid Sif address
+     * @dev Function used only for testing
+     * @param _sifAddress Bytes representation of a Sif address
+     */
     function VSA(bytes calldata _sifAddress) external pure returns (bool) {
         return verifySifAddress(_sifAddress);
     }
 
-    /*
-     * @dev: Creates a new BridgeToken
-     *
-     * @param _symbol: The new BridgeToken's symbol
-     * @return: The new BridgeToken contract's address
+    /**
+     * @notice CosmosBridge calls this function to create a new BridgeToken
+     * @dev Only CosmosBridge can create a new BridgeToken 
+     * @param name The new BridgeToken's name
+     * @param symbol The new BridgeToken's symbol
+     * @param decimals The new BridgeToken's decimals
+     * @param cosmosDenom The new BridgeToken's denom
+     * @return The new BridgeToken contract's address
      */
     function createNewBridgeToken(
         string calldata name,
@@ -240,14 +281,16 @@ contract BridgeBank is BankStorage,
             cosmosDenom
         );
         setTokenInCosmosWhiteList(newTokenAddress, true);
+        contractDenom[newTokenAddress] = cosmosDenom;
 
         return newTokenAddress;
     }
 
-    /*
-     * @dev: Creates a new BridgeToken
-     *
-     * @param contractAddress: The new BridgeToken's address
+    /**
+     * @notice Allows the owner to add `contractAddress` as an existing BridgeToken
+     * @dev Adds the token to Cosmos Whitelist
+     * @param contractAddress The token's address
+     * @return New value of if token is in whitelist (true)
      */
     function addExistingBridgeToken(
         address contractAddress    
@@ -255,6 +298,13 @@ contract BridgeBank is BankStorage,
         return setTokenInCosmosWhiteList(contractAddress, true);
     }
 
+    /**
+     * @notice CosmosBridge calls this function to mint or unlock tokens
+     * @dev Controlled tokens will be minted, others will be unlocked
+     * @param ethereumReceiver Tokens will be sent to this address
+     * @param tokenAddress The BridgeToken's address
+     * @param amount How much should be minted or unlocked 
+     */
     function handleUnpeg(
         address payable ethereumReceiver,
         address tokenAddress,
@@ -273,18 +323,22 @@ contract BridgeBank is BankStorage,
         }
     }
 
-    /*
-     * @dev: Burns BridgeTokens representing native Cosmos assets.
-     *
-     * @param recipient: bytes representation of destination address.
-     * @param token: token address in origin chain (0x0 if ethereum)
-     * @param amount: value of deposit
+    /**
+     * @notice Burns `amount` `token` tokens for `recipient`
+     * @dev Burns BridgeTokens representing native Cosmos assets
+     * @param recipient Bytes representation of destination address
+     * @param token Token address in origin chain (0x0 if ethereum)
+     * @param amount How much will be burned
      */
     function burn(
         bytes calldata recipient,
         address token,
         uint256 amount
     ) external validSifAddress(recipient) onlyCosmosTokenWhiteList(token) whenNotPaused {
+        // revert if the token doesn't have a denom
+        string memory denom = getDenom(token);
+        require(keccak256(abi.encodePacked(denom)) != keccak256(abi.encodePacked("")), "INV_DENOM");
+
         // burn the tokens
         BridgeToken(token).burnFrom(msg.sender, amount);
         
@@ -300,10 +354,16 @@ contract BridgeBank is BankStorage,
             amount,
             lockBurnNonce,
             decimals,
-            networkDescriptor
+            networkDescriptor,
+            denom
         );
     }
 
+    /**
+     * @dev Fetches the name of a token by address
+     * @param token The BridgeTokens's address
+     * @return The bridgeTokens's name or ''
+     */
     function getName(address token) private returns (string memory) {
         string memory name = contractName[token];
 
@@ -316,14 +376,18 @@ contract BridgeBank is BankStorage,
             name = _name;
             contractName[token] = _name;
         } catch {
-            // if we can't access the decimals function of this token,
-            // assume that it has 18 decimals
+            // if we can't access the name function of this token, return an empty string
             name = "";
         }
 
         return name;
     }
 
+    /**
+     * @dev Fetches the symbol of a token by address
+     * @param token The bridgeTokens's address
+     * @return The bridgeTokens's symbol or ''
+     */
     function getSymbol(address token) private returns (string memory) {
         string memory symbol = contractSymbol[token];
 
@@ -336,14 +400,18 @@ contract BridgeBank is BankStorage,
             symbol = _symbol;
             contractSymbol[token] = _symbol;
         } catch {
-            // if we can't access the decimals function of this token,
-            // assume that it has 18 decimals
+            // if we can't access the symbol function of this token, return an empty string
             symbol = "";
         }
 
         return symbol;
     }
 
+    /**
+     * @dev Fetches de decimals of a token by address
+     * @param token The bridgeTokens's address
+     * @return The bridgeTokens's decimals or 18
+     */
     function getDecimals(address token) private returns (uint8) {
         uint8 decimals = contractDecimals[token];
         if (decimals > 0) {
@@ -363,10 +431,15 @@ contract BridgeBank is BankStorage,
         return decimals;
     }
 
+    /**
+     * @dev Fetches the denom of a token by address
+     * @param token The bridgeTokens's address
+     * @return The bridgeTokens's denom or ''
+     */
     function getDenom(address token) private returns (string memory) {
         string memory denom = contractDenom[token];
 
-        // check to see if we already have this name stored in the smart contract
+        // check to see if we already have this denom stored in the smart contract
         if (keccak256(abi.encodePacked(denom)) != keccak256(abi.encodePacked(""))) {
             return denom;
         }
@@ -375,20 +448,18 @@ contract BridgeBank is BankStorage,
             denom = _denom;
             contractDenom[token] = _denom;
         } catch {
-            // if we can't access the denom function of this token,
-            // use an empty string
             denom = "";
         }
 
         return denom;
     }
 
-    /*
-     * @dev: Locks received Ethereum/ERC20 funds.
-     *
-     * @param recipient: bytes representation of destination address.
-     * @param token: token address in origin chain (0x0 if ethereum)
-     * @param amount: value of deposit
+    /**
+     * @notice Locks `amount` `token` tokens for `recipient`
+     * @dev Locks received Ethereum/ERC20 funds
+     * @param recipient Bytes representation of destination address
+     * @param token Token address in origin chain (0x0 if ethereum)
+     * @param amount Value of deposit
      */
     function lock(
         bytes calldata recipient,
@@ -405,12 +476,11 @@ contract BridgeBank is BankStorage,
     }
 
     /**
-     * Locks multiple tokens in the bridge contract in a single tx.
-     * This is used to handle the case where the user is sending tokens
-     *
-     * @param recipient: bytes representation of destination address.
-     * @param token: token address
-     * @param amount: value of deposit
+     * @notice Locks multiple tokens in the bridge contract in a single tx
+     * @dev This is used to handle the case where the user is sending tokens
+     * @param recipient Bytes representation of destination address
+     * @param token Token address
+     * @param amount Value of deposit
      */
     function multiLock(
         bytes[] calldata recipient,
@@ -442,13 +512,11 @@ contract BridgeBank is BankStorage,
     }
 
     /**
-     * Locks multiple tokens in the bridge contract in a single tx.
-     * This is used to handle the case where the user is sending tokens
-     *
-     * @param recipient: bytes representation of destination address.
-     * @param token: token address
-     * @param amount: value of deposit
-     * @param isBurn: value of deposit
+     * @notice Locks or burns multiple tokens in the bridge contract in a single tx
+     * @param recipient Bytes representation of destination address
+     * @param token Token address
+     * @param amount Value of deposit
+     * @param isBurn Should the tokens be burned?
      */
     function multiLockBurn(
         bytes[] calldata recipient,
@@ -486,6 +554,13 @@ contract BridgeBank is BankStorage,
         lockBurnNonce = intermediateLockBurnNonce;
     }
 
+    /**
+     * @dev Locks a token in the bridge contract
+     * @param recipient Bytes representation of destination address
+     * @param tokenAddress Token address
+     * @param tokenAmount Value of deposit
+     * @param _lockBurnNonce A global nonce for locking an burning tokens
+     */
     function _lockTokens(
         bytes calldata recipient,
         address tokenAddress,
@@ -520,6 +595,13 @@ contract BridgeBank is BankStorage,
         );
     }
 
+    /**
+     * @dev Burns a token
+     * @param recipient Bytes representation of destination address
+     * @param tokenAddress Token address
+     * @param tokenAmount How much should be burned
+     * @param _lockBurnNonce A global nonce for locking an burning tokens
+     */
     function _burnTokens(
         bytes calldata recipient,
         address tokenAddress,
@@ -527,11 +609,13 @@ contract BridgeBank is BankStorage,
         uint256 _lockBurnNonce
     ) private onlyCosmosTokenWhiteList(tokenAddress) validSifAddress(recipient) {
         BridgeToken tokenToTransfer = BridgeToken(tokenAddress);
+        
         // burn tokens
-        tokenToTransfer.burnFrom(
-            msg.sender,
-            tokenAmount
-        );
+        tokenToTransfer.burnFrom(msg.sender, tokenAmount);
+
+        // revert if the token doesn't have a denom
+        string memory denom = getDenom(tokenAddress);
+        require(keccak256(abi.encodePacked(denom)) != keccak256(abi.encodePacked("")), "INV_DENOM");
 
         // decimals defaults to 18 if call to decimals fails
         uint8 decimals = getDecimals(tokenAddress);
@@ -543,16 +627,15 @@ contract BridgeBank is BankStorage,
             tokenAmount,
             _lockBurnNonce,
             decimals,
-            networkDescriptor
+            networkDescriptor,
+            denom
         );
     }
 
-    /*
-     * Locks received Ethereum/ERC20 funds.
-     *
-     * @param recipient: bytes representation of destination address.
-     * @param token: token address in origin chain (0x0 if ethereum)
-     * @param amount: value of deposit
+    /**
+     * @dev Locks received EVM native tokens
+     * @param recipient Bytes representation of destination address
+     * @param amount Value of deposit
      */
     function handleNativeCurrencyLock(
         bytes calldata recipient,
@@ -585,10 +668,10 @@ contract BridgeBank is BankStorage,
     }
 
     /**
-     *
-     * @param recipient: recipient's Ethereum address
-     * @param token: token contract address
-     * @param amount: wei amount or ERC20 token count
+     * @dev Unlocks native or ERC20 tokens
+     * @param recipient Recipient's Ethereum address
+     * @param token Token contract address
+     * @param amount Wei amount or ERC20 token count
      */
     function unlock(
         address payable recipient,
