@@ -2,11 +2,12 @@ package keeper
 
 import (
 	"context"
-	"fmt"
+
+	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 
 	tokenregistrytypes "github.com/Sifchain/sifnode/x/tokenregistry/types"
-	sdk "github.com/cosmos/cosmos-sdk/types"
-	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 
 	"github.com/cosmos/cosmos-sdk/x/ibc/applications/transfer/types"
 )
@@ -33,7 +34,7 @@ var _ types.MsgServer = msgServer{}
 func (srv msgServer) Transfer(goCtx context.Context, msg *types.MsgTransfer) (*types.MsgTransferResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 	if !srv.tokenRegistryKeeper.CheckDenomPermissions(ctx, msg.Token.Denom, []tokenregistrytypes.Permission{tokenregistrytypes.Permission_IBCEXPORT}) {
-		return nil, fmt.Errorf("Token cannot be exported : %s  , does not have permission", msg.Token.Denom)
+		return nil, sdkerrors.Wrap(tokenregistrytypes.ErrPermissionDenied, "denom cannot be exported")
 	}
 
 	return srv.sdkMsgServer.Transfer(goCtx, msg)
