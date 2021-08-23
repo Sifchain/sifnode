@@ -287,7 +287,7 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
         );
     }
 
-    function _isManagedToken(address tokenAddress) private returns(bool) {
+    function _isManagedToken(address tokenAddress) private view returns(bool) {
         return sourceAddressToDestinationAddress[tokenAddress] != address(0);
     }
 
