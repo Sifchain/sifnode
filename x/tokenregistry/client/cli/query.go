@@ -187,20 +187,20 @@ func GetCmdGenerateEntry() *cobra.Command {
 			}
 
 			entry := types.RegistryEntry{
-				IsWhitelisted:  whitelist,
-				Decimals:       int64(decimals),
-				Denom:          denom,
-				BaseDenom:      baseDenom,
-				Path:           path,
-				SrcChannel:     srcChannel,
-				DestChannel:    destChannel,
-				DisplayName:    displayName,
-				DisplaySymbol:  displaySymbol,
-				Network:        network,
-				Address:        address,
-				ExternalSymbol: externalSymbol,
-				TransferLimit:  transferLimit,
-				Permissions:    permissions,
+				IsWhitelisted:            whitelist,
+				Decimals:                 int64(decimals),
+				Denom:                    denom,
+				BaseDenom:                baseDenom,
+				Path:                     path,
+				IbcChannelId:             srcChannel,
+				IbcCounterpartyChannelId: destChannel,
+				DisplayName:              displayName,
+				DisplaySymbol:            displaySymbol,
+				Network:                  network,
+				Address:                  address,
+				ExternalSymbol:           externalSymbol,
+				TransferLimit:            transferLimit,
+				Permissions:              permissions,
 			}
 
 			return clientCtx.PrintProto(&types.Registry{Entries: []*types.RegistryEntry{&entry}})
