@@ -1,9 +1,19 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity 0.8.0;
 
-
+/**
+ * @title Bridge Registry
+ * @dev Stores the addresses of BridgeBank and CosmosBridge
+ */
 contract BridgeRegistry {
+    /**
+    * @notice Address of the CosmosBridge contract
+    */
     address public cosmosBridge;
+
+    /**
+    * @notice Address of the BridgeBank contract
+    */
     address public bridgeBank;
 
     // these variables are now deprecated and are made private
@@ -22,6 +32,11 @@ contract BridgeRegistry {
         address _bridgeBank
     );
 
+    /**
+     * @notice Initializer
+     * @param _cosmosBridge Address of the CosmosBridge contract
+     * @param _bridgeBank Address of the BridgeBank contract
+     */
     function initialize(
         address _cosmosBridge,
         address _bridgeBank

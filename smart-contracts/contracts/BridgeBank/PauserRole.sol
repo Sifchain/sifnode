@@ -4,7 +4,7 @@ pragma solidity 0.8.0;
 /**
  * @title PauserRole
  * @dev Manages pausers
- **/
+ */
 contract PauserRole {
     /**
     * @notice List of pausers
