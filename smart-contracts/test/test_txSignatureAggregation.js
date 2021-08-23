@@ -234,6 +234,10 @@ describe("Gas Cost Tests", function () {
 
       const newlyCreatedTokenAddress = await state.cosmosBridge.sourceAddressToDestinationAddress(state.token1.address);
       expect(newlyCreatedTokenAddress).to.be.equal(expectedAddress);
+
+      // expect the token to have a denom
+      const registeredDenom = await state.bridgeBank.contractDenom(newlyCreatedTokenAddress);
+      expect(registeredDenom).to.be.equal(state.constants.denom.one);
     });
 
     it("should allow us to check the cost of submitting a batch prophecy claim lock", async function () {
