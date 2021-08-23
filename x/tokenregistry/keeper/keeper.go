@@ -58,15 +58,22 @@ func (k keeper) IsDenomWhitelisted(ctx sdk.Context, denom string) bool {
 
 func (k keeper) CheckDenomPermissions(ctx sdk.Context, denom string, requiredPermissions []types.Permission) bool {
 	d := k.GetDenom(ctx, denom)
-	availablePermissions := 0
+
 	for _, requiredPermission := range requiredPermissions {
+		var has bool
 		for _, allowedPermission := range d.Permissions {
 			if allowedPermission == requiredPermission {
-				availablePermissions++
+				has = true
+				break
 			}
 		}
+
+		if !has {
+			return false
+		}
 	}
-	return len(requiredPermissions) == availablePermissions
+
+	return true
 }
 
 func (k keeper) GetDenom(ctx sdk.Context, denom string) types.RegistryEntry {
