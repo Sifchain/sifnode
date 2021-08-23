@@ -9,7 +9,7 @@ on:
       - develop
       - master
       - testnet
-      - feature/cosmos-0.42
+      - ui-truffle-dep
 
 jobs:
   build_ui_stack:
