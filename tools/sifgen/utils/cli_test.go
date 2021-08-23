@@ -3,6 +3,7 @@ package utils
 import (
 	"github.com/Sifchain/sifnode/tools/sifgen/common"
 	"github.com/cosmos/cosmos-sdk/crypto/keyring"
+	"github.com/stretchr/testify/require"
 	"gopkg.in/yaml.v3"
 	"io/ioutil"
 	"testing"
@@ -38,9 +39,7 @@ func AddKeyToBackend(backend string, t *testing.T) {
 	tempdir := SafeTempDir("", "homedir", t)
 	keyname := "mykey"
 	key, err := c.AddKey(keyname, TestMnemonic, TestPassword, tempdir)
-	if err != nil {
-		t.Errorf("AddKey failed %v", err)
-	}
+	require.NoError(t, err)
 	var keyResult common.Keys
 	unmarshallResult := yaml.Unmarshal([]byte(*key), &keyResult)
 	if unmarshallResult != nil {
