@@ -8,6 +8,7 @@ import (
 	transfertypes "github.com/cosmos/cosmos-sdk/x/ibc/applications/transfer/types"
 	channeltypes "github.com/cosmos/cosmos-sdk/x/ibc/core/04-channel/types"
 
+	sctransfertypes "github.com/Sifchain/sifnode/x/ibctransfer/types"
 	tokenregistrytypes "github.com/Sifchain/sifnode/x/tokenregistry/types"
 )
 
@@ -23,7 +24,7 @@ import (
 // back to the original unit_denom.
 func OnTimeoutMaybeConvert(
 	ctx sdk.Context,
-	sdkTransferKeeper tokenregistrytypes.SDKTransferKeeper,
+	sdkTransferKeeper sctransfertypes.SDKTransferKeeper,
 	whitelistKeeper tokenregistrytypes.Keeper,
 	bankKeeper transfertypes.BankKeeper,
 	packet channeltypes.Packet,

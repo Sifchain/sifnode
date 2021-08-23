@@ -101,13 +101,13 @@ func ExecConvForIncomingCoins(
 	// send coins from module account to address
 	err = bankKeeper.SendCoinsFromModuleToAccount(ctx, transfertypes.ModuleName, receiver, sdk.NewCoins(finalCoins))
 	if err != nil {
-		// TODO: Revert send to module
+		// TODO: Revert send to module, or panic.
 		return err
 	}
 	// burn ibcdenom coins
 	err = bankKeeper.BurnCoins(ctx, transfertypes.ModuleName, sdk.NewCoins(incomingCoins))
 	if err != nil {
-		// TODO: Log error. What happens on relayer / on other chain if error is returned here?
+		// TODO: Log error or panic? What happens on relayer / on other chain if error is returned here?
 		return err
 	}
 	ctx.EventManager().EmitEvent(

@@ -8,6 +8,7 @@ import (
 	transfertypes "github.com/cosmos/cosmos-sdk/x/ibc/applications/transfer/types"
 	channeltypes "github.com/cosmos/cosmos-sdk/x/ibc/core/04-channel/types"
 
+	sctransfertypes "github.com/Sifchain/sifnode/x/ibctransfer/types"
 	tokenregistrytypes "github.com/Sifchain/sifnode/x/tokenregistry/types"
 )
 
@@ -17,7 +18,7 @@ import (
 // Case B: Recipient acknowledges error of our send, refund sender their coins.
 func OnAcknowledgementMaybeConvert(
 	ctx sdk.Context,
-	sdkTransferKeeper tokenregistrytypes.SDKTransferKeeper,
+	sdkTransferKeeper sctransfertypes.SDKTransferKeeper,
 	whitelistKeeper tokenregistrytypes.Keeper,
 	bankKeeper transfertypes.BankKeeper,
 	packet channeltypes.Packet,
@@ -70,6 +71,8 @@ func OnAcknowledgementMaybeConvert(
 			),
 		)
 		// TODO: Always refund, not only if sender of ack is source.
+		// TODO: Copy error / panic pattern from sdkkeeper.refundPacketToken in ExecConvForIncomingCoins.
+		// TODO: Why does sdk transfer module use escrow vs minting in different scenarios here?
 		// if sender is source check for conversion
 		if transfertypes.SenderChainIsSource(packet.GetSourcePort(), packet.GetSourceChannel(), data.Denom) {
 			// if needs conversion, convert and send
