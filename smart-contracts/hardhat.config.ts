@@ -21,10 +21,6 @@ const config: HardhatUserConfig = {
         hardhat: {
             allowUnlimitedContractSize: false,
             chainId: 1,
-            forking: {
-                url: mainnetUrl,
-                blockNumber: 10875100,
-            }
         },
         ropsten: {
             url: ropstenUrl,
