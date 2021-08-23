@@ -45,8 +45,6 @@ func TestHandleRegister(t *testing.T) {
 					Denom:       "TestDenomIBC",
 					DisplayName: "Test Denom IBC",
 					Decimals:    18,
-					IbcDenom:    "Test Denom IBC",
-					IbcDecimals: 10,
 				},
 			},
 			errorAssertion: assert.NoError,
@@ -64,8 +62,6 @@ func TestHandleRegister(t *testing.T) {
 					Denom:       "TestDenomIBC2",
 					DisplayName: "Test Denom IBC 2",
 					Decimals:    8,
-					IbcDenom:    "Test Denom IBC 2",
-					IbcDecimals: 10,
 				},
 			},
 			errorAssertion: assert.NoError,
@@ -83,8 +79,6 @@ func TestHandleRegister(t *testing.T) {
 					Denom:       "TestDenomIBC",
 					DisplayName: "Test Denom IBC",
 					Decimals:    18,
-					IbcDenom:    "Test Denom IBC",
-					IbcDecimals: 10,
 				},
 			},
 			errorAssertion: assert.NoError,
@@ -131,16 +125,12 @@ func TestHandleDeregister(t *testing.T) {
 		IsWhitelisted: true,
 		Denom:         "ibcTokenToRemove",
 		Decimals:      18,
-		IbcDecimals:   10,
-		IbcDenom:      "ibcTokenToRemove",
 	})
 
 	app.TokenRegistryKeeper.SetToken(ctx, &types.RegistryEntry{
 		IsWhitelisted: true,
 		Denom:         "ibcTokenToRemove2",
 		Decimals:      8,
-		IbcDecimals:   10,
-		IbcDenom:      "ibcTokenToRemove2",
 	})
 
 	require.True(t, app.TokenRegistryKeeper.IsDenomWhitelisted(ctx, "tokenToRemove"))

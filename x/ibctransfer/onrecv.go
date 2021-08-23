@@ -34,7 +34,7 @@ func ShouldConvertIncomingCoins(
 		// TODO: err
 	}
 	// if unit_denom decimals are greater than minted denom decimals, we need to increase precision to convert them
-	return unitDenomRegistryEntry.Decimals > mintedDenomRegistryEntry.IbcDecimals
+	return unitDenomRegistryEntry.Decimals > mintedDenomRegistryEntry.Decimals
 }
 
 // GetConvForIncomingCoins returns 1) the coins that are being received via IBC,

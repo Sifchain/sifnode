@@ -14,24 +14,28 @@ message Registry {
   repeated RegistryEntry entries = 1;
 }
 
+enum Permission {
+  UNSPECIFIED = 0;
+  CLP = 1;
+  IBCEXPORT =  2;
+  IBCIMPORT = 3;
+}
+
 message RegistryEntry {
   bool is_whitelisted = 1;
   int64 decimals = 2;
   string denom = 3;
   string base_denom = 4;
   string path = 5;
-  string src_channel = 6;
-  string dest_channel = 7;
+  string ibc_channel_id = 6;
+  string ibc_counterparty_channel_id = 7;
   string display_name = 8;
   string display_symbol = 9;
   string network = 10;
   string address = 11;
   string external_symbol = 12;
   string transfer_limit = 13;
-  // TODO: Remove before merging to develop
-  string ibc_denom = 14 [deprecated=true];
-  // TODO: Remove before merging to develop
-  int64 ibc_decimals = 15 [deprecated=true];
+  repeated Permission permissions = 15;
   // The name of denomination unit of this token that is the smallest unit stored.
   // IBC imports of this RegistryEntry convert and store funds as unit_denom.
   // Several different denom units of a token may be imported into this same unit denom,
@@ -50,4 +54,5 @@ message RegistryEntry {
   // i.e rowan -> microrowan
   // i.e microrowan -> microrowan
   string ibc_counter_party_denom = 17;
+  string ibc_counterparty_chain_id =  18;
 }
