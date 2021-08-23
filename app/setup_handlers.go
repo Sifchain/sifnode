@@ -11,12 +11,11 @@ import (
 const upgradeNameV095 = "0.9.5"
 
 func SetupHandlers(app *SifchainApp) {
-	app.UpgradeKeeper.SetUpgradeHandler("0.9.5-rc.2", func(ctx sdk.Context, plan types.Plan) {})
 	SetupHandlersForV095(app)
 }
 
 func SetupHandlersForV095(app *SifchainApp) {
-	app.UpgradeKeeper.SetUpgradeHandler(upgradeNameV095, func(ctx sdk.Context, plan types.Plan) {
+	app.UpgradeKeeper.SetUpgradeHandler("0.9.5", func(ctx sdk.Context, plan types.Plan) {
 		app.Logger().Info("Running upgrade handler for " + upgradeNameV095 + " with new store " + tokenregistrytypes.StoreKey)
 		// Install initial token registry entries for non-ibc tokens.
 		tokenregistrymigrations.Init(ctx, app.TokenRegistryKeeper)
