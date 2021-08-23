@@ -1,6 +1,10 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity 0.8.0;
 
+/**
+ * @title Cosmos Bank Storage
+ * @dev Stores Cosmos deposits, nonces, networkDescriptor
+ */
 contract CosmosBankStorage {
 
     /**

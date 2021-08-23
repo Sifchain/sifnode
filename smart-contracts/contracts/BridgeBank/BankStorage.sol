@@ -5,12 +5,16 @@ import "./CosmosBankStorage.sol";
 import "./EthereumBankStorage.sol";
 import "./CosmosWhiteListStorage.sol";
 
+/**
+ * @title Bank Storage
+ * @dev Stores addresses for owner, operator, and CosmosBridge
+ **/
 contract BankStorage is 
     CosmosBankStorage,
     EthereumBankStorage,
     CosmosWhiteListStorage {
 
-    /*
+    /**
     * @notice operator address that can:
     *   Reinitialize BridgeBank
     *   Update Eth whitelist

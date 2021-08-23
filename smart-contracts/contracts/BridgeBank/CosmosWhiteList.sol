@@ -11,9 +11,8 @@ import "./CosmosWhiteListStorage.sol";
 contract CosmosWhiteList is CosmosWhiteListStorage {
     bool private _initialized;
 
-    /*
-     * @dev: Event declarations
-     * @notice: This event is in EthereumWhitelist.sol
+    /**
+     * @dev Initializer
      */
     function _cosmosWhitelistInitialize() internal {
         require(!_initialized, "Initialized");
@@ -21,7 +20,7 @@ contract CosmosWhiteList is CosmosWhiteListStorage {
     }
 
     /*
-     * @dev: Modifier to restrict erc20 can be locked
+     * @dev Modifier to restrict erc20 can be locked
      */
     modifier onlyCosmosTokenWhiteList(address _token) {
         require(
@@ -42,11 +41,11 @@ contract CosmosWhiteList is CosmosWhiteListStorage {
         _;
     }
 
-    /*
-     * @dev: Get if the token in whitelist
-     *
+    /**
+     * @notice Is `_token` in Cosmos Whitelist?
+     * @dev Get if the token in whitelist
      * @param _token: ERC 20's address
-     * @return: if _token in whitelist
+     * @return if _token in whitelist
      */
     function getCosmosTokenInWhiteList(address _token) public view returns (bool) {
         return _cosmosTokenWhiteList[_token];

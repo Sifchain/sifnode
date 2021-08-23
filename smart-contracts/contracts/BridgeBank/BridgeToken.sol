@@ -23,11 +23,20 @@ contract BridgeToken is ERC20Burnable, Ownable {
        cosmosDenom = _cosmosDenom;
     }
 
+    /**
+     * @notice If sender is the owner, mints `amount` to `user`
+     * @param user Address of the recipient
+     * @param amount How much should be minted
+     * @return true if the operation succeeds
+     */
     function mint(address user, uint256 amount) public onlyOwner returns (bool) {
         _mint(user, amount);
         return true;
     }
 
+    /**
+     * @notice Number of decimals this token has
+     */
     function decimals() public override view returns (uint8) {
         return _decimals;
     }
