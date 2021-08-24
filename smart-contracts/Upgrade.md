@@ -4,23 +4,51 @@
 
 Modify the .env file to include:
 
-MAINNET_URL=https://eth-mainnet.alchemyapi.io/v2/...  
-ROPSTEN_URL=https://eth-ropsten.alchemyapi.io/v2/...  
-ROPSTEN_PROXY_ADMIN_PRIVATE_KEY=aaaa...  
-MAINNET_PROXY_ADMIN_PRIVATE_KEY=aaaa...  
-DEPLOYMENT_NAME="sifchain-testnet-042-ibc"  
+```
+MAINNET_URL=<mainnet_url>
+MAINNET_PROXY_ADMIN_PRIVATE_KEY=<private_key>
+DEPLOYMENT_NAME="sifchain-1"  
+```
+
+Where:
+
+|Item|Description|
+|----|-----------|
+|`<mainnet_url>`|Replace with the Infura Mainnet URL|
+|`<private_key>`|Replace with the ETH Private Key|
 
 ## Execution
 
-cd to the smart-contracts directory
+### BetaNet
 
-Run:
+1. Pull down the latest code:
 
-    bash scripts/upgrade_contracts.sh sifchain-testnet-042-ibc {ropsten|mainnet}
+```bash
+git checkout develop && git pull
+```
 
-Replacing sifchain-testnet-042-ibc with whatever deployment you're upgrading, and selecting one of ropsten or mainnet.
+2. Switch to the `smart-contracts` directory:
 
-cp .opensomething to deployments/{deployment name}
+```bash
+cd smart-contracts
+```
 
-add files to git and push
+3. Run the upgrade:
 
+```bash
+scripts/upgrade_contracts.sh sifchain-1 mainnet
+```
+
+4. Copy the artifacts into the deployment folder:
+
+```bash
+cp -r .openzeppelin deployments/sifchain-1/
+```
+
+5. Add the files to git and push into the `develop` branch:
+
+```bash
+git add deployments/
+git commit -m 'Updated contracts.'
+git push origin develop
+```
