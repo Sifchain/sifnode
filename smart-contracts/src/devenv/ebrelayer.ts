@@ -7,6 +7,7 @@ import * as path from "path"
 import events from "events";
 import { lastValueFrom, ReplaySubject } from "rxjs";
 import { ValidatorValues } from "./sifnoded"
+import { DeployedContractAddresses } from "./smartcontractDeployer";
 import * as fs from "fs";
 import YAML from 'yaml'
 import { eventEmitterToObservable } from "./devEnvUtilities"
@@ -36,6 +37,7 @@ export class EbrelayerArguments {
     readonly validatorValues: ValidatorValues,
     readonly symbolTranslatorFile: string,
     readonly relayerdbPath: string,
+    readonly contractAddress: DeployedContractAddresses
   ) {
   }
 }
@@ -57,7 +59,7 @@ export class EbrelayerRunner extends ShellCommand<EbrelayerResults> {
       "init",
       this.args.tcpURL,
       this.args.websocketAddress,
-      // Bridge Registery Address,
+      this.args.contractAddress.bridgeRegistry,
       this.args.validatorValues.moniker,
       this.args.validatorValues.mnemonic,
       `--chain-id ${this.args.chainNet}`,
@@ -69,88 +71,16 @@ export class EbrelayerRunner extends ShellCommand<EbrelayerResults> {
     ]]
   }
 
-  async sifgenNetworkCreate() {
-    const sifnodedCommand = path.join((await this.golangResults.results).goBin, "sifnoded")
-    const sifgenArgs = [
-      "network",
-      "create",
-      "--keyring-backend",
-      "test",
-      this.args.chainId,
-      this.args.nValidators.toString(),
-      this.args.networkDir,
-      this.args.seedIpAddress,
-      this.args.networkConfigFile
+  async waitForSifAccount() {
+    const scriptArgs = [
+      "FirstOptionIsIgnored",
+      this.args.validatorValues.address
     ]
-    const sifgenOutput = ChildProcess.execFileSync(
-      path.join((await this.golangResults.results).goBin, "sifgen"),
-      sifgenArgs,
-      { encoding: "utf8" }
+    const child = ChildProcess.execFileSync(
+      "./wait_for_sif_account.py",
+      scriptArgs
     )
-    const file = fs.readFileSync(this.args.networkConfigFile, 'utf8')
-    const networkConfig = YAML.parse(file)
-    console.log("ymlis: ", JSON.stringify(networkConfig, undefined, 2))
-    const moniker = networkConfig[0]["moniker"]
-    let mnemonic = networkConfig[0]["mnemonic"]
-    let password = networkConfig[0]["password"]
-    const chainDir = path.join(
-      this.args.networkDir,
-      "validators",
-      this.args.chainId,
-      moniker
-    )
-    const homeDir = path.join(chainDir, ".sifnoded")
-    await this.addValidatorKeyToTestKeyring(
-      moniker,
-      this.args.networkDir,
-      mnemonic,
-    )
-    const valOperKey = await this.readValoperKey(
-      moniker,
-      this.args.networkDir,
-      mnemonic,
-    )
-    await this.addGenesisValidator(chainDir, valOperKey)
-    const whitelistedValidator = ChildProcess.execSync(
-      `${sifnodedCommand} keys show -a --bech val ${moniker} --keyring-backend test`,
-      { encoding: "utf8", input: password }
-    ).trim()
-    let sifnodeadmincmd = `${sifnodedCommand} keys add sifnodeadmin --keyring-backend test --output json`;
-    const sifnodedadminJson = ChildProcess.execSync(
-      sifnodeadmincmd,
-      { encoding: "utf8", input: "yes\nyes" }
-    ).trim()
-    const sifnodedAdminAddress = JSON.parse(sifnodedadminJson)["address"]
-    // const q = ChildProcess.execSync(
-    //     `${sifnodedCommand} add-genesis-validators ${whitelistedValidator} --home ${homeDir}`,
-    //     {encoding: "utf8", input: password}
-    // ).trim()
-    // sifnoded add-genesis-account $adminuser 100000000000000000000rowan --home $CHAINDIR/.sifnoded
-    // sifnoded set-genesis-oracle-admin $adminuser --home $CHAINDIR/.sifnoded
-    // sifnoded set-genesis-whitelister-admin $adminuser --home $CHAINDIR/.sifnoded
-    // sifnoded set-gen-denom-whitelist $SCRIPT_DIR/whitelisted-denoms.json --home $CHAINDIR/.sifnoded
-    ChildProcess.execSync(
-      `${sifnodedCommand} add-genesis-account ${sifnodedAdminAddress} 100000000000000000000rowan --home ${homeDir}`,
-      { encoding: "utf8" }
-    ).trim()
-    ChildProcess.execSync(
-      `${sifnodedCommand} set-genesis-oracle-admin ${sifnodedAdminAddress} --home ${homeDir}`,
-      { encoding: "utf8" }
-    ).trim()
-    ChildProcess.execSync(
-      `${sifnodedCommand} set-genesis-whitelister-admin ${sifnodedAdminAddress} --home ${homeDir}`,
-      { encoding: "utf8" }
-    ).trim()
-    ChildProcess.execSync(
-      `${sifnodedCommand} set-gen-denom-whitelist ${this.args.whitelistFile} --home ${homeDir}`,
-      { encoding: "utf8" }
-    ).trim()
-    let sifnodedDaemonCmd = `${sifnodedCommand} start --minimum-gas-prices 0.5rowan --rpc.laddr tcp://0.0.0.0:26657 --home ${homeDir}`;
-    const sifnoded = ChildProcess.spawn(
-      sifnodedDaemonCmd,
-      { shell: true, stdio: "inherit" }
-    )
-    return lastValueFrom(eventEmitterToObservable(sifnoded, "sifnoded"))
+
   }
 
   async addValidatorKeyToTestKeyring(moniker: string, chainDir: string, mnemonic: string) {
@@ -205,16 +135,16 @@ export class EbrelayerRunner extends ShellCommand<EbrelayerResults> {
   }
 
   async execute() {
-    await this.sifgenNetworkCreate()
-    console.log("finisehd sifnodedts execute")
+    await this.waitForSifAccount()
+    const args = this.cmd().slice(1) as string[]
+    const commandResult = ChildProcess.spawnSync(this.cmd()[0], args)
   }
 
   override run(): Promise<void> {
-    console.log("inrun")
     return this.execute()
   }
 
-  override async results(): Promise<SifnodedResults> {
+  override async results(): Promise<EbrelayerResults> {
     return Promise.resolve({})
   }
 }
