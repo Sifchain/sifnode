@@ -91,7 +91,6 @@ export class SifnodedRunner extends ShellCommand<SifnodedResults> {
     )
     const file = fs.readFileSync(this.args.networkConfigFile, 'utf8')
     const networkConfig = YAML.parse(file)
-    console.log("ymlis: ", JSON.stringify(networkConfig, undefined, 2))
     const moniker = networkConfig[0]["moniker"]
     let mnemonic = networkConfig[0]["mnemonic"]
     let password = networkConfig[0]["password"]
@@ -208,15 +207,16 @@ export class SifnodedRunner extends ShellCommand<SifnodedResults> {
 
   async execute() {
     await this.sifgenNetworkCreate()
-    console.log("finisehd sifnodedts execute")
   }
 
   override run(): Promise<void> {
-    console.log("inrun")
     return this.execute()
   }
 
   override async results(): Promise<SifnodedResults> {
-    return Promise.resolve({})
+    return Promise.resolve({
+      validatorValues: [],
+      tcpurl: ""
+    })
   }
 }

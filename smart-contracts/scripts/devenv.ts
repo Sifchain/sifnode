@@ -4,6 +4,7 @@ import {GolangBuilder, GolangResultsPromise} from "../src/devenv/golangBuilder";
 import {SifnodedRunner} from "../src/devenv/sifnoded";
 import {SmartContractDeployer} from "../src/devenv/smartcontractDeployer";
 import { cons } from "fp-ts/lib/ReadonlyNonEmptyArray";
+import {sampleCode} from "../src/devenv/synchronousCommand";
 
 
 async function startHardhat() {
@@ -41,10 +42,12 @@ async function smartContractDeployer() {
     console.log(`Contracts deployed: ${JSON.stringify(result.contractAddresses, undefined, 2)}`)
     return process;
 }
+
 async function main() {
+    sampleCode()
     await Promise.all([startHardhat(), golangBuilder()])
                  .then(smartContractDeployer)
-                 .catch(() => {console.log("Deployment failed. Lets log where it broke")});
+                 .catch((e) => {console.log("Deployment failed. Lets log where it broke: ", e)});
 }
 
 main()

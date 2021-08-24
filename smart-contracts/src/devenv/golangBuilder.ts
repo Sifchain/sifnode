@@ -1,8 +1,6 @@
 import { singleton } from "tsyringe";
 import { SynchronousCommand, SynchronousCommandResult } from "./synchronousCommand";
 import { requiredEnvVar } from "../contractSupport";
-import { spawn } from "./pm2Promises";
-
 
 export class GolangResults extends SynchronousCommandResult {
   constructor(
