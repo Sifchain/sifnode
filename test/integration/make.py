@@ -59,6 +59,7 @@ NULL_ADDRESS = "0x0000000000000000000000000000000000000000"
 
 class Command:
     def execst(self, args, cwd=None, env=None, stdin=None, binary=False, pipe=True, check_exit=True):
+        logging.debug(f"execst(): args={repr(args)}, cwd={repr(cwd)}")
         if stdin is not None:
             if type(stdin) == list:
                 stdin = "".join([line + "\n" for line in stdin])
@@ -164,16 +165,23 @@ class Sifnoded(Command):
         res = self.execst(args, stdin=stdin)
         return yaml_load(res[1])[0]
 
-    def sifnoded_keys_show(self, name, bech=None, keyring_backend=None):
-        keyring_backend = "test"
+    def sifnoded_keys_show(self, name, bech=None, keyring_backend=None, home=None):
+        keyring_backend = keyring_backend or "test"
         args = ["sifnoded", "keys", "show", name] + \
                (["--bech", bech] if bech else []) + \
-               (["--keyring-backend={}".format(keyring_backend)] if keyring_backend else [])
+               (["--keyring-backend={}".format(keyring_backend)] if keyring_backend else []) + \
+               (["--home", home] if home else [])
         res = self.execst(args)
         return yaml_load(res[1])
 
-    def sifnoded_keys_add(self, args, stdin=None):
-        return yaml_load(self.execst(["sifnoded", "keys", "add"] + args, stdin=stdin)[1])
+    def sifnoded_keys_add(self, moniker, mnemonic):
+        args = ["sifnoded", "keys", "add", moniker, "--keyring-backend", "test", "--recover"]
+        stdin = [" ".join(mnemonic)]
+        return yaml_load(self.execst(args, stdin=stdin)[1])
+
+    def sifnoded_keys_add_1(self, mnemonic):
+        args = ["sifnoded", "keys", "add", mnemonic, "--keyring-backend", "test"]
+        return yaml_load(self.execst(args, stdin=["y"])[1])
 
     def sifnoded_add_genesis_account(self, address, tokens):
         tokens_str = ",".join([sif_format_amount(amount, denom) for amount, denom in tokens])
@@ -216,7 +224,7 @@ class Integrator(Ganache, Sifnoded, Command):
 
     def ebrelayer_init(self, ethereum_private_key, tendermind_node, web3_provider, bridge_registry_contract_address,
         validator_moniker, validator_mnemonic, chain_id, gas=None, gas_prices=None, node=None, keyring_backend=None,
-        sign_with=None, cwd=None):
+        sign_with=None, symbol_translator_file=None, relayerdb_path=None, cwd=None):
         env = {"ETHEREUM_PRIVATE_KEY": ethereum_private_key}
         args = ["ebrelayer", "init", tendermind_node, web3_provider, bridge_registry_contract_address,
             validator_moniker, " ".join(validator_mnemonic), "--chain-id={}".format(chain_id)] + \
@@ -224,7 +232,9 @@ class Integrator(Ganache, Sifnoded, Command):
             (["--gas-prices", sif_format_amount(*gas_prices)] if gas_prices is not None else []) + \
             (["--node", node] if node is not None else []) + \
             (["--keyring-backend", keyring_backend] if keyring_backend is not None else []) + \
-            (["--from", sign_with] if sign_with is not None else [])
+            (["--from", sign_with] if sign_with is not None else []) + \
+            (["--symbol-translator-file", symbol_translator_file] if symbol_translator_file else []) + \
+            (["--relayerdb-path", relayerdb_path] if relayerdb_path else [])
         return popen(args, env=env, cwd=cwd)
 
     def sif_wait_up(self, host, port):
@@ -267,8 +277,8 @@ class Integrator(Ganache, Sifnoded, Command):
             result[k] = v
         return result
 
-    def build_smart_contracts_for_integration_tests(self):
-        self.execst(["make", "clean-smartcontracts"], cwd=self.smart_contracts_dir)
+    def install_smart_contracts_dependencies(self):
+        self.execst(["make", "clean-smartcontracts"], cwd=self.smart_contracts_dir)  # = rm -rf build .openzeppelin
         self.yarn(["install"], cwd=self.smart_contracts_dir)
 
     def _check_env_vs_file(self, env, env_path):
@@ -334,6 +344,7 @@ class Integrator(Ganache, Sifnoded, Command):
         # Maybe: self.cmd.yarn(["integrationtest:setTokenLockBurnLimit", str(amount)])
         self.execst(["npx", "truffle", "exec", script_path] + list(script_args), env=env, cwd=self.smart_contracts_dir)
 
+    # TODO setTokenLockBurnLimit is gone, possibly replaced by bulkSetTokenLockBurnLimit
     def set_token_lock_burn_limit(self, update_address, amount, ethereum_private_key, infura_project_id, local_provider):
         env = {
             "ETHEREUM_PRIVATE_KEY": ethereum_private_key,
@@ -342,6 +353,7 @@ class Integrator(Ganache, Sifnoded, Command):
             "LOCAL_PROVIDER": local_provider,
         }
         # Needs: ETHEREUM_PRIVATE_KEY, INFURA_PROJECT_ID, LOCAL_PROVIDER, UPDATE_ADDRESS
+        # TODO script is no longer there!
         self.truffle_exec("setTokenLockBurnLimit", str(amount), env=env)
 
 
@@ -612,13 +624,16 @@ class IntegrationTestsPlaybook:
         self.ganache_mnemonic = ["candy", "maple", "cake", "sugar", "pudding", "cream", "honey", "rich", "smooth",
                 "crumble", "sweet", "treat"]
 
+    def make_go_binaries(self):
+        # make go binaries (TODO Makefile needs to be trimmed down, especially "find")
+        self.cmd.execst(["make"], cwd=self.test_integration_dir, env={"BASEDIR": project_dir()})
+
     def run(self):
         self.cmd.mkdir(self.data_dir)
 
-        # make go binaries (a lot of nonsense!)
-        self.cmd.execst(["make"], cwd=self.test_integration_dir, env={"BASEDIR": project_dir()})
+        self.make_go_binaries()
 
-        self.cmd.build_smart_contracts_for_integration_tests()
+        self.cmd.install_smart_contracts_dependencies()
 
         if self.using_ganache_gui:
             ebrelayer_ethereum_addr = "0x8e2bE12daDbCcbf7c98DBb59f98f22DFF0eF3F2c"
@@ -664,32 +679,44 @@ class IntegrationTestsPlaybook:
         bridge_token_sc_addr, bridge_registry_sc_addr, bridge_bank_sc_addr = \
             self.cmd.get_bridge_smart_contract_addresses(self.network_id)
 
-        # # Proof of concept: restart ganache-cli
-        # time.sleep(10)
-        # ganache_proc.kill()
-        # ganache_proc = self.cmd.start_ganache_cli(block_time=block_time, host="0.0.0.0", mnemonic=validator_mnemonic,
-        #     network_id=self.network_id, port=7545, db=ganache_db_path, account_keys_path=account_keys_path)
-
-        # TODO This should be last (after return from setup_sifchain.sh)
-        burn_limits = [
-            [NULL_ADDRESS, 31*10**18],
-            [bridge_token_sc_addr, 10**25],
-        ]
-        env_file_vars = self.cmd.primitive_parse_env_file(env_file)
-        for address, amount in burn_limits:
-            self.cmd.set_token_lock_burn_limit(
-                address,
-                amount,
-                env_file_vars["ETHEREUM_PRIVATE_KEY"],  # != ebrelayer_ethereum_private_key
-                env_file_vars["INFURA_PROJECT_ID"],
-                env_file_vars["LOCAL_PROVIDER"],  # for web3.js to connect to ganache
-            )
+        # # TODO This should be last (after return from setup_sifchain.sh)
+        # burn_limits = [
+        #     [NULL_ADDRESS, 31*10**18],
+        #     [bridge_token_sc_addr, 10**25],
+        # ]
+        # env_file_vars = self.cmd.primitive_parse_env_file(env_file)
+        # for address, amount in burn_limits:
+        #     self.cmd.set_token_lock_burn_limit(
+        #         address,
+        #         amount,
+        #         env_file_vars["ETHEREUM_PRIVATE_KEY"],  # != ebrelayer_ethereum_private_key
+        #         env_file_vars["INFURA_PROJECT_ID"],
+        #         env_file_vars["LOCAL_PROVIDER"],  # for web3.js to connect to ganache
+        #     )
 
         # test/integration/setup_sifchain.sh:
         networks_dir = project_dir("deploy/networks")
         self.cmd.rmdir(networks_dir)  # networks_dir has many directories without write permission, so change those before deleting it
         self.cmd.mkdir(networks_dir)
-        self.cmd.execst(["rake", f"genesis:network:scaffold[{self.chainnet}]"], env={"BASEDIR": project_dir()}, pipe=False)
+        # Old:
+        # self.cmd.execst(["rake", f"genesis:network:scaffold[{self.chainnet}]"], env={"BASEDIR": project_dir()}, pipe=False)
+        # New:
+        # sifgen network create localnet 1 $NETWORKDIR 192.168.1.2 $NETWORKDIR/network-definition.yml --keyring-backend test \
+        #     --mint-amount 999999000000000000000000000rowan,1370000000000000000ibc/FEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACE
+        mint_amount = [[999999 * 10**21, "rowan"], [137 * 10**16, "ibc/FEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACE"]]
+        validator_count = 1
+        seed_ip_address = "192.168.1.2"
+
+        # Old call (no longer works either):
+        # sifgen network create localnet 1 /mnt/shared/work/projects/sif/sifnode/local-tmp/my/deploy/rake/../networks \
+        #     192.168.1.2 /mnt/shared/work/projects/sif/sifnode/local-tmp/my/deploy/rake/../networks/network-definition.yml \
+        #     --keyring-backend file
+        # self.cmd.execst(["sifgen", "network", "create", "localnet", str(validator_count), networks_dir, seed_ip_address,
+        #     os.path.join(networks_dir, "network-definition.yml"), "--keyring-backend", "file"])
+
+        self.cmd.execst(["sifgen", "network", "create", "localnet", str(validator_count), networks_dir, seed_ip_address,
+            os.path.join(networks_dir, "network-definition.yml"), "--keyring-backend", "file", "--mint-amount",
+            ",".join([sif_format_amount(*x) for x in mint_amount])])
 
         netdef, netdef_json = self.process_netdef(networks_dir)
 
@@ -698,22 +725,34 @@ class IntegrationTestsPlaybook:
         validator1_password = netdef["password"]
         validator_mnemonic = netdef["mnemonic"].split(" ")
         chaindir = os.path.join(networks_dir, f"validators/{self.chainnet}/{validator_moniker}")
+        sifnoded_home = os.path.join(chaindir, ".sifnoded")
         # SIFNODED_LOG=$datadir/logs/sifnoded.log
 
+        # now we have to add the validator key to the test keyring so the tests can send rowan from validator1
+        # echo "$MNEMONIC" | sifnoded keys add $MONIKER --keyring-backend test --recover
+        self.cmd.sifnoded_keys_add(validator_moniker, validator_mnemonic)
+        # valoper=$(sifnoded keys show -a --bech val $MONIKER --home $CHAINDIR/.sifnoded --keyring-backend test)
+        valoper = self.cmd.sifnoded_keys_show(validator_moniker, bech="val", keyring_backend="test", home=sifnoded_home)[0]["address"]
+        # sifnoded add-genesis-validators $valoper --home $CHAINDIR/.sifnoded
+        self.cmd.execst(["sifnoded", "add-genesis-validators", valoper, "--home", sifnoded_home])
+
         # test/integration/sifchain_start_daemon.sh:
-        sifchaind_home = os.path.join(chaindir, ".sifnoded")
+        # whitelisted_validator=$(yes $VALIDATOR1_PASSWORD | sifnoded keys show --keyring-backend file -a --bech val \
+        #     $MONIKER --home $CHAINDIR/.sifnoded)
         whitelisted_validator = exactly_one(stdout_lines(self.cmd.execst(["sifnoded", "keys", "show",
-            "--keyring-backend", "file", "-a", "--bech", "val", validator_moniker, "--home", sifchaind_home],
+            "--keyring-backend", "file", "-a", "--bech", "val", validator_moniker, "--home", sifnoded_home],
             stdin=[validator1_password])))
         log.info(f"Whitelisted validator: {whitelisted_validator}")
-        self.cmd.execst(["sifnoded", "add-genesis-validators", whitelisted_validator, "--home", sifchaind_home])
-        adminuser_addr = json.loads(self.cmd.execst(["sifnoded", "keys", "add", "sifnodeadmin", "--keyring-backend",
-            "test", "--output", "json"], stdin=["y"])[1])["address"]
+        self.cmd.execst(["sifnoded", "add-genesis-validators", whitelisted_validator, "--home", sifnoded_home])
+        adminuser_addr = self.cmd.sifnoded_keys_add_1("sifnodeadmin")["address"]
         self.cmd.execst(["sifnoded", "add-genesis-account", adminuser_addr, sif_format_amount(10**20, "rowan"),
-            "--home", sifchaind_home], pipe=False)
-        self.cmd.execst(["sifnoded", "set-genesis-oracle-admin", adminuser_addr, "--home", sifchaind_home], pipe=False)
+            "--home", sifnoded_home], pipe=False)
+        self.cmd.execst(["sifnoded", "set-genesis-oracle-admin", adminuser_addr, "--home", sifnoded_home], pipe=False)
         sifnoded_proc = popen(["sifnoded", "start", "--minimum-gas-prices", sif_format_amount(0.5, "rowan"),
-            "--rpc.laddr", self.tcp_url, "--home", sifchaind_home])
+            "--rpc.laddr", self.tcp_url, "--home", sifnoded_home])
+        # TODO
+        # sifnoded set-genesis-whitelister-admin $adminuser --home $CHAINDIR/.sifnoded
+        # sifnoded set-gen-denom-whitelist $SCRIPT_DIR/whitelisted-denoms.json --home $CHAINDIR/.sifnoded
 
         # TODO Process exits immediately with returncode 1
         # TODO Why does it not stop start-integration-env.sh?
@@ -722,8 +761,9 @@ class IntegrationTestsPlaybook:
         # test/integration/sifchain_start_ebrelayer.sh -> test/integration/sifchain_run_ebrelayer.sh
         # This script is also called from tests
 
+        relayer_db_path = os.path.join(self.test_integration_dir, "sifchainrelayerdb")
         ebrelayer_proc = self.run_ebrelayer(netdef_json, validator1_address, validator_moniker, validator_mnemonic,
-            ebrelayer_ethereum_private_key, bridge_registry_sc_addr)
+            ebrelayer_ethereum_private_key, bridge_registry_sc_addr, relayer_db_path)
 
         vagrantenv_path = project_dir("test/integration/vagrantenv.sh")
         self.state_vars = {
@@ -757,6 +797,7 @@ class IntegrationTestsPlaybook:
             "MNEMONIC": " ".join(validator_mnemonic),
             "CHAINDIR": os.path.join(networks_dir, "validators", self.chainnet, validator_moniker),
             "SIFCHAIN_ADMIN_ACCOUNT": adminuser_addr,  # Needed by test_peggy_fees.py (via conftest.py)
+            "EBRELAYERDB_DB": relayer_db_path,  # Created by sifchain_run_ebrelayer.sh, does not appear to be used anywhere at the moment
         }
         self.write_vagrantenv_sh()
 
@@ -819,8 +860,7 @@ class IntegrationTestsPlaybook:
         # during tests that restart ebrelayer
         # res = self.cmd.execst(["sifnoded", "keys", "delete", moniker, "--keyring-backend", "test"], stdin=["y"])
         self.cmd.execst(["sifnoded", "keys", "delete", validator_moniker, "--keyring-backend", "test"], stdin=["y"], check_exit=False)
-        self.cmd.sifnoded_keys_add([validator_moniker, "--keyring-backend", "test", "--recover"],
-            stdin=[" ".join(validator_mnemonic)])
+        self.cmd.sifnoded_keys_add(validator_moniker, validator_mnemonic)
 
     def process_netdef(self, networks_dir):
         # networks_dir = deploy/networks
@@ -832,7 +872,7 @@ class IntegrationTestsPlaybook:
         return netdef, netdef_json
 
     def run_ebrelayer(self, netdef_json, validator1_address, validator_moniker, validator_mnemonic,
-        ebrelayer_ethereum_private_key, bridge_registry_sc_addr):
+        ebrelayer_ethereum_private_key, bridge_registry_sc_addr, relayer_db_path):
         while not self.cmd.tcp_probe_connect("localhost", 26657):
             time.sleep(1)
         self.wait_for_sif_account(netdef_json, validator1_address)
@@ -841,7 +881,8 @@ class IntegrationTestsPlaybook:
         ebrelayer_proc = self.cmd.ebrelayer_init(ebrelayer_ethereum_private_key, self.tcp_url,
             self.ethereum_websocket_address, bridge_registry_sc_addr, validator_moniker, validator_mnemonic,
             self.chainnet, node=self.tcp_url, keyring_backend="test", sign_with=validator_moniker,
-            cwd=self.test_integration_dir)
+            symbol_translator_file=os.path.join(self.test_integration_dir, "config/symbol_translator.json"),
+            relayerdb_path=relayer_db_path, cwd=self.test_integration_dir)
         return ebrelayer_proc
 
     def create_snapshot(self, snapshot_name):
@@ -850,9 +891,8 @@ class IntegrationTestsPlaybook:
         if self.cmd.exists(named_snapshot_dir):
             raise Exception(f"Directory '{named_snapshot_dir}' already exists")
         self.cmd.mkdir(named_snapshot_dir)
-        ganache_db_path = self.state_vars["GANACHE_DB_DIR"]
-        self.cmd.tar_create(ganache_db_path, os.path.join(named_snapshot_dir, "ganache.tar.gz"))
-        self.cmd.tar_create(project_dir("test/integration/relayerdb"), os.path.join(named_snapshot_dir, "relayerdb.tar.gz"))
+        self.cmd.tar_create(self.state_vars["GANACHE_DB_DIR"], os.path.join(named_snapshot_dir, "ganache.tar.gz"))
+        self.cmd.tar_create(self.state_vars["EBRELAYER_DB"], os.path.join(named_snapshot_dir, "sifchainrelayerdb.tar.gz"))
         self.cmd.tar_create(project_dir("deploy/networks"), os.path.join(named_snapshot_dir, "networks.tar.gz"))
         self.cmd.tar_create(project_dir("smart-contracts/build"), os.path.join(named_snapshot_dir, "smart-contracts.tar.gz"))
         self.cmd.tar_create(self.cmd.get_user_home(".sifnoded"), os.path.join(named_snapshot_dir, "sifnoded.tar.gz"))
@@ -868,15 +908,17 @@ class IntegrationTestsPlaybook:
             self.cmd.tar_extract(os.path.join(named_snapshot_dir, tarfile), path)
 
         ganache_db_dir = self.cmd.mktempdir()
+        relayer_db_path = self.state_vars["RELAYERDB_DIR"]  # TODO use /tmp
+        assert os.path.normpath(relayer_db_path) == os.path.normpath(os.path.join(self.test_integration_dir, "sifchainrelayerdb"))
         extract("ganache.tar.gz", ganache_db_dir)
-        relayerdb_dir = project_dir("test/integration/relayerdb")
-        extract("relayerdb.tar.gz", relayerdb_dir)
+        extract("sifchainrelayerdb.tar.gz", relayer_db_path)
         deploy_networks_dir = project_dir("deploy/networks")
         extract("networks.tar.gz", deploy_networks_dir)
         smart_contracts_build_dir = project_dir("smart-contracts/build")
         extract("smart-contracts.tar.gz", smart_contracts_build_dir)
 
         state_vars["GANACHE_DB_DIR"] = ganache_db_dir
+        state_vars["EBRELAYER_DB"] = relayer_db_path
         self.state_vars = state_vars
         self.write_vagrantenv_sh()
         self.cmd.mkdir(self.data_dir)
@@ -913,8 +955,9 @@ class IntegrationTestsPlaybook:
         netdef, netdef_json = self.process_netdef(networks_dir)
         validator1_address = netdef["address"]
         assert validator1_address == self.state_vars["VALIDATOR1_ADDR"]
+        relayer_db_path = self.state_vars["EBRELAYER_DB"]
         ebrelayer_proc = self.run_ebrelayer(netdef_json, validator1_address, validator_moniker, validator_mnemonic,
-            ebrelayer_ethereum_private_key, bridge_registry_sc_addr)
+            ebrelayer_ethereum_private_key, bridge_registry_sc_addr, relayer_db_path)
 
         return ganache_proc, sifnoded_proc, ebrelayer_proc, None
 
@@ -927,7 +970,7 @@ def cleanup_and_reset_state():
     cmd.execst(["pkill", "sifnoded"], check_exit=False)
 
     # rm -rvf /tmp/tmp.xxxx (ganache DB, unique for every run)
-    cmd.rmdir(project_dir("test/integration/relayerdb"))
+    cmd.rmdir(project_dir("test/integration/sifchainrelayerdb"))  # TODO move to /tmp
     cmd.rmdir(project_dir("smart-contracts/build"))
     cmd.rmdir(project_dir("test/integration/vagrant/data"))
 
@@ -940,6 +983,8 @@ def cleanup_and_reset_state():
     # cmd,rm(project_dir("smart-contracts/.env"))
     # cmd.rmdir(project_dir("deploy/networks"))
     # cmd.rmdir(project_dir("smart-contracts/.openzeppelin"))
+
+    # rmdir ~/.cache/yarn
     time.sleep(3)
 
 def killall(processes):
