@@ -170,6 +170,9 @@ func (srv msgServer) CreateEthBridgeClaim(goCtx context.Context, msg *types.MsgC
 	// check the account
 	cosmosSender := msg.EthBridgeClaim.ValidatorAddress
 	valAddress, err := sdk.ValAddressFromBech32(cosmosSender)
+	if err != nil {
+		return nil, err
+	}
 
 	// check the lock burn nonce
 	lockBurnNonce := srv.Keeper.GetEthereumLockBurnNonce(ctx, msg.EthBridgeClaim.NetworkDescriptor, valAddress)
