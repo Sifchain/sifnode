@@ -19,3 +19,16 @@ const (
 func (r *RegistryEntry) Sanitize() {
 	r.Path = strings.Trim(r.Path, "/")
 }
+
+func GetPermissionFromString(s string) Permission {
+	switch s {
+	case "permission_clp":
+		return Permission_CLP
+	case "permission_ibc_export":
+		return Permission_IBCEXPORT
+	case "permission_ibc_import":
+		return Permission_IBCIMPORT
+	default:
+		return Permission_UNSPECIFIED
+	}
+}

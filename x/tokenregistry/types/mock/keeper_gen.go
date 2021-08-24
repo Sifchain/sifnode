@@ -31,6 +31,17 @@ func NewMockKeeper(ctrl *gomock.Controller) *MockKeeper {
 	return mock
 }
 
+func (m *MockKeeper) CheckDenomPermissions(ctx types0.Context, denom string, permissions []types.Permission) bool {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CheckDenomPermissions", ctx, denom)
+	ret0, _ := ret[0].(bool)
+	return ret0
+}
+func (mr *MockKeeperMockRecorder) CheckDenomPermissions(ctx, denom interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CheckDenomPermissions", reflect.TypeOf((*MockKeeper)(nil).CheckDenomPermissions), ctx, denom)
+}
+
 // EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockKeeper) EXPECT() *MockKeeperMockRecorder {
 	return m.recorder

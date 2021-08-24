@@ -16,6 +16,11 @@ cd to the smart-contracts directory
 
 Run:
 
-    bash scripts/upgrade_contracts.sh sifchain-testnet-042-ibc ropsten
+    bash scripts/upgrade_contracts.sh sifchain-testnet-042-ibc {ropsten|mainnet}
 
-Replacing sifchain-testnet-042-ibc and ropsten with whatever deployment you're upgrading.
+Replacing sifchain-testnet-042-ibc with whatever deployment you're upgrading, and selecting one of ropsten or mainnet.
+
+cp .opensomething to deployments/{deployment name}
+
+add files to git and push
+
