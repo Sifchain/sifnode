@@ -1,0 +1,27 @@
+{
+  "entries": [
+    {
+      "is_whitelisted": true,
+      "decimals": "6",
+      "denom": "ibc/8870198B720C44FED28AE75FBE01D22E6DEDC8E20E9EB6A34A4C7BD7B492DCD0",
+      "base_denom": "uphoton",
+      "path": "transfer/channel-8",
+      "ibc_channel_id": "channel-8",
+      "ibc_counterparty_channel_id": "channel-20",
+      "display_name": "",
+      "display_symbol": "",
+      "network": "",
+      "address": "",
+      "external_symbol": "",
+      "transfer_limit": "",
+      "permissions": [
+        "CLP",
+        "IBCEXPORT",
+        "IBCIMPORT"
+      ],
+      "unit_denom": "",
+      "ibc_counterparty_denom": "",
+      "ibc_counterparty_chain_id": "cosmoshub-testnet"
+    }
+  ]
+}
