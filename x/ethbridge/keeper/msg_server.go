@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strconv"
 
@@ -166,6 +167,19 @@ func (srv msgServer) CreateEthBridgeClaim(goCtx context.Context, msg *types.MsgC
 	ctx := sdk.UnwrapSDKContext(goCtx)
 	logger := srv.Keeper.Logger(ctx)
 
+	// check the account
+	cosmosSender := msg.EthBridgeClaim.ValidatorAddress
+	valAddress, err := sdk.ValAddressFromBech32(cosmosSender)
+
+	// check the lock burn nonce
+	lockBurnNonce := srv.Keeper.GetEthereumLockBurnNonce(ctx, msg.EthBridgeClaim.NetworkDescriptor, valAddress)
+
+	newLockBurnNonce := msg.EthBridgeClaim.EthereumLockBurnNonce
+
+	if lockBurnNonce != 0 && newLockBurnNonce != lockBurnNonce+1 {
+		return nil, errors.New("lock burn nonce out of order")
+	}
+
 	status, err := srv.Keeper.ProcessClaim(ctx, msg.EthBridgeClaim)
 
 	if err != nil {
@@ -197,6 +211,9 @@ func (srv msgServer) CreateEthBridgeClaim(goCtx context.Context, msg *types.MsgC
 	if !srv.Keeper.ExistsTokenMetadata(ctx, claim.DenomHash) {
 		srv.Keeper.AddTokenMetadata(ctx, metadata)
 	}
+
+	// update lock burn nonce in keeper
+	srv.Keeper.SetEthereumLockBurnNonce(ctx, msg.EthBridgeClaim.NetworkDescriptor, valAddress, newLockBurnNonce)
 
 	logger.Info("sifnode emit create event.",
 		"CosmosSender", claim.ValidatorAddress,
