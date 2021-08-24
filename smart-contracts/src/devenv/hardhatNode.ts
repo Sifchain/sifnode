@@ -1,8 +1,9 @@
 import { registry, singleton } from "tsyringe";
 import * as hre from "hardhat";
-import { spawn } from "./pm2Promises";
 import { EthereumAccounts, EthereumAddressAndKey, EthereumResults, ShellCommand } from "./devEnv";
 import * as ChildProcess from "child_process"
+import {eventEmitterToObservable} from "./devEnvUtilities";
+import {lastValueFrom} from "rxjs";
 
 @registry([{
   token: EthereumArguments,
@@ -35,9 +36,12 @@ export class HardhatNodeRunner extends ShellCommand<EthereumResults> {
     ]]
   }
 
-  override run() {
+  override async run(): Promise<void> {
     const [c, args] = this.cmd()
-    return spawn(c, args)
+    const childInfo = ChildProcess.spawn(c, args, {
+      stdio: "inherit",
+    })
+    return
   }
 
   override async results(): Promise<EthereumResults> {

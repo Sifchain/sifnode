@@ -103,8 +103,11 @@ export class EbrelayerRunner extends ShellCommand<EbrelayerResults> {
     const commandResult = ChildProcess.spawnSync(this.cmd()[0], args)
   }
 
-  override run(): Promise<void> {
-    return this.execute()
+  override async run(): Promise<void> {
+    await this.waitForSifAccount()
+    const args = this.cmd().slice(1) as string[]
+    const commandResult = ChildProcess.spawn(this.cmd()[0], args, {stdio: "inherit"})
+    return
   }
 
   override async results(): Promise<EbrelayerResults> {
