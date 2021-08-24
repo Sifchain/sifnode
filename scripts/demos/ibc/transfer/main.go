@@ -152,7 +152,7 @@ func newClient(uri string) (*rpchttp.HTTP, error) {
 func getDevnetNetArgs() *Args {
 	amount, ok := sdk.NewIntFromString("100000000000000000000000")
 	if !ok {
-		panic("Cannot parse fee")
+		panic("Cannot parse amount")
 	}
 	path := hd.CreateHDPath(118, 0, 0).String()
 
