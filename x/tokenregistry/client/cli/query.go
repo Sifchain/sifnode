@@ -61,8 +61,11 @@ func GetCmdGenerateEntry() *cobra.Command {
 	var flagDenom = "token_denom"
 	var flagBaseDenom = "token_base_denom"
 	var flagPath = "token_path"
-	var flagSrcChannel = "token_src_channel"
-	var flagDestChannel = "token_dest_channel"
+	var flagIbcChannelId = "token_ibc_channel_id"
+	var flagIbcCounterpartyChannelId = "token_ibc_counterparty_channel_id"
+	var flagIbcCounterpartyChainId = "token_ibc_counterparty_chain_id"
+	var flagIbcCounterpartyDenom = "token_ibc_counterparty_denom"
+	var flagUnitDenom = "token_unit_denom"
 	var flagDecimals = "token_decimals"
 	var flagDisplayName = "token_display_name"
 	var flagDisplaySymbol = "token_display_symbol"
@@ -71,7 +74,7 @@ func GetCmdGenerateEntry() *cobra.Command {
 	var flagNetwork = "token_network"
 	var flagAddress = "token_address"
 
-	var flagsPermission = []string{"permission_clp", "permission_ibc_export", "permission_ibc_import"}
+	var flagsPermission = []string{"token_permission_clp", "token_permission_ibc_export", "token_permission_ibc_import"}
 
 	cmd := &cobra.Command{
 		Use:   "generate",
@@ -140,12 +143,27 @@ func GetCmdGenerateEntry() *cobra.Command {
 				return err
 			}
 
-			srcChannel, err := flags.GetString(flagSrcChannel)
+			ibcChannelId, err := flags.GetString(flagIbcChannelId)
 			if err != nil {
 				return err
 			}
 
-			destChannel, err := flags.GetString(flagDestChannel)
+			ibcCounterpartyChannelId, err := flags.GetString(flagIbcCounterpartyChannelId)
+			if err != nil {
+				return err
+			}
+
+			ibcCounterpartyChainId, err := flags.GetString(flagIbcCounterpartyChainId)
+			if err != nil {
+				return err
+			}
+
+			ibcCounterpartyDenom, err := flags.GetString(flagIbcCounterpartyDenom)
+			if err != nil {
+				return err
+			}
+
+			unitDenom, err := flags.GetString(flagUnitDenom)
 			if err != nil {
 				return err
 			}
@@ -192,8 +210,11 @@ func GetCmdGenerateEntry() *cobra.Command {
 				Denom:                    denom,
 				BaseDenom:                baseDenom,
 				Path:                     path,
-				IbcChannelId:             srcChannel,
-				IbcCounterpartyChannelId: destChannel,
+				IbcChannelId:             ibcChannelId,
+				IbcCounterpartyChannelId: ibcCounterpartyChannelId,
+				IbcCounterpartyChainId:   ibcCounterpartyChainId,
+				IbcCounterpartyDenom:     ibcCounterpartyDenom,
+				UnitDenom:                unitDenom,
 				DisplayName:              displayName,
 				DisplaySymbol:            displaySymbol,
 				Network:                  network,
@@ -212,15 +233,21 @@ func GetCmdGenerateEntry() *cobra.Command {
 	cmd.Flags().String(flagDenom, "",
 		"The IBC hash / denom  stored on sifchain - to generate this hash for IBC token, leave blank and specify base_denom and path.")
 	cmd.Flags().String(flagBaseDenom, "",
-		"The denom native to our chain, or native to an original chain (i.e the non-path part, underlying an IBC hash token).")
+		"The base denom native to our chain, or native to an original chain (ie not the ibc hash).")
 	cmd.Flags().String(flagPath, "",
-		"IBC path using the *SRC* port + channel ID on our chain and other IBC hops receiving this token (leave blank for non-IBC) i.e transfer/channel-0")
-	cmd.Flags().String(flagSrcChannel, "",
-		"The src channel if this is an IBC token - used by UI when initiating send from this chain")
-	cmd.Flags().String(flagDestChannel, "",
-		"The dest channel if this is an IBC token - used by UI when initiating import from originating chain")
+		"Specify this to generate an ibc hash in the denom field. This is the IBC path using the transfer port + ibc_channel_id on our chain, *not* counterparty channel.  (leave blank for non-IBC) i.e transfer/channel-0")
+	cmd.Flags().String(flagIbcChannelId, "",
+		"The channel id if this is an IBC token - used by clients when initiating send from this chain")
+	cmd.Flags().String(flagIbcCounterpartyChannelId, "",
+		"The counterparty channel if this is an IBC token - used by clients when initiating send from a counterparty chain")
+	cmd.Flags().String(flagIbcCounterpartyChainId, "",
+		"The chain id of ibc counter party chain")
 	cmd.Flags().Int(flagDecimals, -1,
 		"The number of decimal points")
+	cmd.Flags().String(flagUnitDenom, "",
+		"The denom in registry that holds the funds for this denom, ie the most precise denom for a token.")
+	cmd.Flags().String(flagIbcCounterpartyDenom, "",
+		"The denom in registry that funds in this account will get sent as over IBC.")
 	cmd.Flags().String(flagDisplayName, "",
 		"Friendly name for use by UI etc")
 	cmd.Flags().String(flagDisplaySymbol, "",
