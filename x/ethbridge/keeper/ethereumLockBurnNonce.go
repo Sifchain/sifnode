@@ -10,7 +10,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-// SetEthereumLockBurnNonce set the ethereum lock burn nonce after prophecy completed in Sifchain
+// SetEthereumLockBurnNonce set the ethereum lock burn nonce for each relayer
 func (k Keeper) SetEthereumLockBurnNonce(ctx sdk.Context, networkDescriptor oracletypes.NetworkDescriptor, valAccount sdk.ValAddress, newNonce uint64) {
 	store := ctx.KVStore(k.storeKey)
 	key := k.getEthereumLockBurnNoncePrefix(networkDescriptor, valAccount)
@@ -35,8 +35,7 @@ func (k Keeper) GetEthereumLockBurnNonce(ctx sdk.Context, networkDescriptor orac
 	return binary.BigEndian.Uint64(bz)
 }
 
-// GetCrossChainFee return crosschain fee
-// GetCrossChainFeePrefix return storage prefix
+// getEthereumLockBurnNoncePrefix return storage prefix
 func (k Keeper) getEthereumLockBurnNoncePrefix(networkDescriptor oracletypes.NetworkDescriptor, valAccount sdk.ValAddress) []byte {
 	bytebuf := bytes.NewBuffer([]byte{})
 	_ = binary.Write(bytebuf, binary.BigEndian, networkDescriptor)
