@@ -29,11 +29,7 @@ async function main() {
 
     switch (hardhat.network.name) {
         case "ropsten":
-<<<<<<< HEAD
             await setupRopstenDeployment(container, hardhat, deploymentName)
-=======
-            await setupRopstenDeployment(container, hardhat, "sifchain-testnet-1")
->>>>>>> develop
             break
         case "mainnet":
             await setupSifchainMainnetDeployment(container, hardhat)
