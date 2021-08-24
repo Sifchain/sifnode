@@ -15,24 +15,38 @@ import { eventEmitterToObservable } from "./devEnvUtilities"
 @registry([
   {
     token: EbrelayerArguments, useValue: new EbrelayerArguments(
-      "/tmp/sifnoded.log",
-      9000,
-      1,
+      "ws://localhost:7545/",
+      "tcp://0.0.0.0:26657",
       "localnet",
-      "/tmp/sifnodedConfig.yml",
-      "/tmp/sifnodedNetwork",
-      "10.10.1.1",
-      "../test/integration/whitelisted-denoms.json"
+      "levelDB.db",
+      {
+        address: "",
+        chainID: "",
+        ipv4Address: "",
+        isSeed: false,
+        mnemonic: "",
+        moniker: "",
+        nodeID: "",
+        password: "",
+        pubKey: "",
+        validatorAddress: "",
+        validatorConsensusAddress: ""
+      },
+      "../test/integration/whitelisted-denoms.json",
+      "",
+      {
+        bridgeBank: "",
+        bridgeRegistry: "",
+        rowanContract: ""
+      }
     )
   }
 ])
 export class EbrelayerArguments {
   constructor(
     readonly websocketAddress: string,
-    readonly bridgeRegistryAddress: string,
-    // Interface in hardhatNode readonly bridgeRegistryAddress: string,
     readonly tcpURL: string,
-    readonly chainNet: number,
+    readonly chainNet: string,
     readonly ebrelayerDB: string,
     readonly validatorValues: ValidatorValues,
     readonly symbolTranslatorFile: string,
@@ -81,57 +95,6 @@ export class EbrelayerRunner extends ShellCommand<EbrelayerResults> {
       scriptArgs
     )
 
-  }
-
-  async addValidatorKeyToTestKeyring(moniker: string, chainDir: string, mnemonic: string) {
-    const sifgenArgs = [
-      "keys",
-      "add",
-      moniker,
-      "--keyring-backend",
-      "test",
-    ]
-    let child = ChildProcess.execFileSync(
-      path.join((await this.golangResults.results).goBin, "sifnoded"),
-      sifgenArgs,
-      { input: mnemonic, encoding: "utf8" }
-    );
-    child
-  }
-
-  async readValoperKey(moniker: string, chainDir: string, mnemonic: string): Promise<string> {
-    const sifgenArgs = [
-      "keys",
-      "show",
-      "-a",
-      "--bech",
-      "val",
-      moniker,
-      // "--home",
-      // path.join(chainDir, ".sifnoded"),
-      "--keyring-backend",
-      "test",
-    ]
-    return ChildProcess.execFileSync(
-      path.join((await this.golangResults.results).goBin, "sifnoded"),
-      sifgenArgs,
-      { encoding: "utf8" }
-    ).trim()
-  }
-
-  // sifnoded add-genesis-validators $valoper --home $CHAINDIR/.sifnoded
-  async addGenesisValidator(chainDir: string, valoper: string): Promise<string> {
-    const sifgenArgs = [
-      "add-genesis-validators",
-      valoper,
-      "--home",
-      path.join(chainDir, ".sifnoded"),
-    ]
-    return ChildProcess.execFileSync(
-      path.join((await this.golangResults.results).goBin, "sifnoded"),
-      sifgenArgs,
-      { encoding: "utf8" }
-    )
   }
 
   async execute() {
