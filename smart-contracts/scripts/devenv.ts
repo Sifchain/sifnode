@@ -5,6 +5,7 @@ import {SifnodedRunner} from "../src/devenv/sifnoded";
 import {SmartContractDeployer} from "../src/devenv/smartcontractDeployer";
 import { cons } from "fp-ts/lib/ReadonlyNonEmptyArray";
 import {sampleCode} from "../src/devenv/synchronousCommand";
+import {EbrelayerRunner} from "../src/devenv/ebrelayer";
 
 
 async function startHardhat() {
@@ -40,6 +41,14 @@ async function smartContractDeployer() {
     const [process, resultsPromise] = node.go();
     const result = await resultsPromise;
     console.log(`Contracts deployed: ${JSON.stringify(result.contractAddresses, undefined, 2)}`)
+    await ebrelayerBuilder()
+    return process;
+}
+
+async function ebrelayerBuilder() {
+    const node: EbrelayerRunner = container.resolve(EbrelayerRunner);
+    const [process, resultsPromise] = node.go();
+    const result = await resultsPromise;
     return process;
 }
 
