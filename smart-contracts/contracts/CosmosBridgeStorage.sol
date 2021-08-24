@@ -73,8 +73,8 @@ contract CosmosBridgeStorage {
     */
     uint256 public networkDescriptor;
 
-    /*
-    * @notice gap of storage for future upgrades
+    /**
+    * @dev gap of storage for future upgrades
     */
     uint256[98] private ____gap;
 }

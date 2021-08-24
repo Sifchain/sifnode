@@ -8,7 +8,7 @@ pragma solidity 0.8.0;
 contract CosmosBankStorage {
 
     /**
-    * @notice Cosmos deposit struct
+    * @dev {DEPRECATED}
     */
     struct CosmosDeposit {
         bytes cosmosSender;
@@ -24,17 +24,17 @@ contract CosmosBankStorage {
     uint256 public bridgeTokenCount;
 
     /**
-    * @notice cosmos deposit nonce
+    * @dev {DEPRECATED}
     */
     uint256 public cosmosDepositNonce;
 
-    /*
-    * @notice [DEPRECATED] mapping of symbols to token addresses
+    /**
+    * @dev {DEPRECATED}
     */
     mapping(string => address) private controlledBridgeTokens;
 
-    /*
-    * @notice [DEPRECATED] mapping of lowercase symbols to properly capitalized tokens
+    /**
+    * @dev {DEPRECATED}
     */
     mapping(string => string) private lowerToUpperTokens;
 
@@ -43,8 +43,8 @@ contract CosmosBankStorage {
     */
     uint256 public networkDescriptor;
 
-    /*
-    * @notice gap of storage for future upgrades
+    /**
+    * @dev gap of storage for future upgrades
     */
     uint256[99] private ____gap;
 }

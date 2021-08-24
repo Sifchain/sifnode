@@ -2,7 +2,7 @@
 pragma solidity 0.8.0;
 
 /**
- * @title PauserRole
+ * @title Pauser Role
  * @dev Manages pausers
  */
 contract PauserRole {
@@ -12,7 +12,7 @@ contract PauserRole {
     mapping (address => bool) public pausers;
 
     /**
-    * @notice Modifier to restrict functions that can only be called by pausers
+    * @dev Modifier to restrict functions that can only be called by pausers
     */
     modifier onlyPauser() {
         require(pausers[msg.sender], "PauserRole: caller does not have the Pauser role");

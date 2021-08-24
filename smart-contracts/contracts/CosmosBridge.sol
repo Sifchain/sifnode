@@ -6,21 +6,39 @@ import "./BridgeBank/BridgeBank.sol";
 import "./CosmosBridgeStorage.sol";
 import "hardhat/console.sol";
 
+/**
+ * @title Cosmos Bridge
+ * @dev Processes Prophecy Claims and communicates with the
+ *      BridgeBank contract to deploy, mint or unlock BridgeTokens.
+ */
 contract CosmosBridge is CosmosBridgeStorage, Oracle {
+    /**
+     * @dev has the contract been initialized?
+     */
     bool private _initialized;
+
+    /**
+    * @dev gap of storage for future upgrades
+    */
     uint256[100] private ___gap;
 
-    /*
-     * @dev: Event declarations
+    /**
+     * @dev Event emitted when BridgeBank's address has been set
      */
     event LogBridgeBankSet(address bridgeBank);
 
+    /**
+     * @dev Event emitted when a ProphecyClaim has been accepted
+     */
     event LogNewProphecyClaim(
         uint256 indexed prophecyID,
         address indexed ethereumReceiver,
         uint256 indexed amount
     );
 
+    /**
+     * @dev Event emitted when a new BridgeToken has been created
+     */
     event LogNewBridgeTokenCreated(
         uint8 decimals,
         uint256 indexed sourcechainId,
@@ -31,10 +49,13 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
         string cosmosDenom
     );
 
+    /**
+     * @dev Event emitted when a ProphecyClaim has been completed
+     */
     event LogProphecyCompleted(uint256 prophecyID, bool success);
 
-    /*
-     * @dev: Modifier to restrict access to current ValSet validators
+    /**
+     * @dev Modifier to restrict access to current ValSet validators
      */
     modifier onlyValidator {
         require(
@@ -44,8 +65,13 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
         _;
     }
 
-    /*
-     * @dev: Constructor
+    /**
+     * @notice Initializer
+     * @param _operator Address of the operator
+     * @param _consensusThreshold Minimum required power for a valid prophecy
+     * @param _initValidators List of initial validators
+     * @param _initPowers List of numbers representing the power of each validator in the above list
+     * @param _networkDescriptor Unique identifier of the network that this contract cares about 
      */
     function initialize(
         address _operator,
@@ -68,13 +94,19 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
         );
     }
 
+    /**
+     * @notice Transfers the operator role to `_newOperator`
+     * @dev Cannot transfer role to the zero address
+     * @param _newOperator: the new operator's address
+     */
     function changeOperator(address _newOperator) external onlyOperator {
         require(_newOperator != address(0), "invalid address");
         operator = _newOperator;
     }
 
-    /*
-     * @dev: setBridgeBank
+    /**
+     * @notice Sets the brigeBank address to `_bridgeBank`
+     * @param _bridgeBank The address of BridgeBank
      */
     function setBridgeBank(address payable _bridgeBank) external onlyOperator {
         require(
@@ -88,6 +120,22 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
         emit LogBridgeBankSet(bridgeBank);
     }
 
+    /**
+     * @notice Calculates the ID of a Prophecy based on its properties
+     * @param cosmosSender Address of the Cosmos account sending this prophecy
+     * @param cosmosSenderSequence Nonce of the Cosmos account sending this prophecy
+     * @param ethereumReceiver Destination address
+     * @param tokenAddress Original address
+     * @param amount How much should be transacted
+     * @param doublePeg Is this an already pegged token?
+     * @param nonce Global nonce for this kind of operation
+     * @param _networkDescriptor Unique identifier of the network
+     * @param tokenName Name of the original token
+     * @param tokenSymbol Symbol of the original token
+     * @param tokenDecimals Number of decimals of the original token
+     * @param cosmosDenom Unique denom pertaining this token
+     * @return A hash that uniquely identifies this Prophecy
+     */
     function getProphecyID(
         bytes memory cosmosSender,
         uint256 cosmosSenderSequence,
@@ -122,6 +170,15 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
         );
     }
     
+    /**
+     * @dev Guarantees that the signature is correct
+     * @param signer Address that supposedly signed the message
+     * @param hashDigest Hash of the message
+     * @param _v The signature's recovery identifier
+     * @param _r The signature's random value
+     * @param _s The signature's proof
+     * @return Boolean: has the message been signed by `signer`?
+     */
     function verifySignature(
         address signer,
         bytes32 hashDigest,
@@ -131,8 +188,17 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
     ) private pure returns (bool) {
 		    bytes32 messageDigest = keccak256(abi.encodePacked("\x19Ethereum Signed Message:\n32", hashDigest));
 		    return signer == ecrecover(messageDigest, _v, _r, _s);
-	}
+	  }
     
+    /**
+     * @dev Runs verifications on a ProphecyClaim
+     * @dev Prevents duplicates signers, makes sure validators are active,
+     * @dev Validates signatures and calculates the total validation power
+     * @param _validators List of validators for this ProphecyClaim
+     * @param hashDigest The message in this prophecy
+     * @return Boolean: is there any duplicate signers?
+     * @return pow : aggregated signing power of all validators
+     */
     function getSignedPowerAndFindDup(
         SignatureData[] calldata _validators,
         bytes32 hashDigest
@@ -162,6 +228,9 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
         }
     }
 
+    /**
+     * @dev Information on a signature: address, r, s, and v
+     */
     struct SignatureData {
         address signer;
         uint8 _v;
@@ -169,6 +238,9 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
 		    bytes32 _s;
     }
 
+    /**
+     * @dev Data structure of a claim
+     */
     struct ClaimData {
         bytes cosmosSender;
         uint256 cosmosSenderSequence;
@@ -184,6 +256,13 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
         string cosmosDenom;
     }
 
+    /**
+     * @notice Submits a list of ProphecyClaims in a batch
+     * @dev All arrays must have the same length
+     * @param sigs List of hashed messages
+     * @param claims List of claims
+     * @param signatureData List of signature data
+     */
     function batchSubmitProphecyClaimAggregatedSigs(
         bytes32[] calldata sigs,
         ClaimData[] calldata claims,
@@ -201,6 +280,12 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
         }
     }
 
+    /**
+     * @notice Submits a ProphecyClaim
+     * @param hashDigest The hashed message
+     * @param claimData The claim itself
+     * @param signatureData The signature data
+     */
     function submitProphecyClaimAggregatedSigs(
         bytes32 hashDigest,
         ClaimData calldata claimData,
@@ -215,6 +300,12 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
         _submitProphecyClaimAggregatedSigs(hashDigest, claimData, signatureData);
     }
 
+    /**
+     * @dev Submits a ProphecyClaim
+     * @param hashDigest The hashed message
+     * @param claimData The claim itself
+     * @param signatureData The signature data
+     */
     function _submitProphecyClaimAggregatedSigs(
         bytes32 hashDigest,
         ClaimData memory claimData,
@@ -287,14 +378,34 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
         );
     }
 
+    /**
+     * @dev Verifies if `tokenAddress` is a known token
+     * @param tokenAddress The address of the token
+     * @return Boolean: is `tokenAddress` a known token?
+     */
     function _isManagedToken(address tokenAddress) private view returns(bool) {
         return sourceAddressToDestinationAddress[tokenAddress] != address(0);
     }
 
+    /**
+     * @dev Verifies if `_networkDescriptor` matches this contract's networkDescriptor
+     * @param _networkDescriptor Unique identifier of the network
+     * @return Boolean: is `_networkDescriptor` what we expected?
+     */
     function _verifyNetworkDescriptor(uint256 _networkDescriptor) private returns(bool) {
         return _networkDescriptor == networkDescriptor;
     }
 
+    /**
+     * @dev Deploys a new BridgeToken, delegating this responsibility to BridgeBank
+     * @param symbol The symbol of the token
+     * @param name The name of the token
+     * @param sourceChainTokenAddress Address of the token on its original chain
+     * @param decimals The number of decimals this token has
+     * @param _networkDescriptor Unique identifier of the network
+     * @param cosmosDenom The token's Cosmos denom
+     * @return tokenAddress : The address of the newly deployed BridgeToken
+     */
     function _createNewBridgeToken(
         string memory symbol,
         string memory name,
@@ -330,11 +441,15 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
         );
     }
 
-    /*
-     * @dev: completeProphecyClaim
-     *       Allows for the completion of ProphecyClaims once processed by the Oracle.
-     *       Burn claims unlock tokens stored by BridgeBank.
-     *       Lock claims mint BridgeTokens on BridgeBank's token whitelist.
+    /**
+     * @dev completeProphecyClaim
+     *      Allows for the completion of ProphecyClaims once processed by the Oracle.
+     *      Burn claims unlock tokens stored by BridgeBank.
+     *      Lock claims mint BridgeTokens on BridgeBank's token whitelist.
+     * @param prophecyID The calculated prophecyID
+     * @param ethereumReceiver The Recipient's address
+     * @param tokenAddress The tokens address
+     * @param amount How much should be transacted
      */
     function completeProphecyClaim(
         uint256 prophecyID,

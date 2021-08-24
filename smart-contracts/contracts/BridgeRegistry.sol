@@ -16,17 +16,30 @@ contract BridgeRegistry {
     */
     address public bridgeBank;
 
-    // these variables are now deprecated and are made private
-    // so that the getter helper method is not available.
-    // [DEPRECATED]
+    /**
+    * @dev {DEPRECATED}
+    */
     address private oracle;
-    // [DEPRECATED]
+
+    /**
+    * @dev {DEPRECATED}
+    */
     address private valset;
 
+    /**
+    * @dev has this contract been initialized?
+    */
     bool private _initialized;
 
+    /**
+    * @dev gap of storage for future upgrades
+    */
     uint256[100] private ____gap;
 
+
+    /**
+    * @dev Event emitted when this contract is initialized
+    */
     event LogContractsRegistered(
         address _cosmosBridge,
         address _bridgeBank

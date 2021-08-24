@@ -10,8 +10,8 @@ import "./CosmosBankStorage.sol";
  *      which represent assets based on the Cosmos blockchain.
  */
 contract CosmosBank is CosmosBankStorage {
-    /*
-     * @dev: Event declarations
+    /**
+     * @dev Event emitted when a new BridgeToken is deployed
      */
     event LogNewBridgeToken(
         address indexed _token,
@@ -19,6 +19,9 @@ contract CosmosBank is CosmosBankStorage {
         string indexed _cosmosDenom
     );
 
+    /**
+     * @dev Event emitted when a mint happens
+     */
     event LogBridgeTokenMint(
         address _token,
         uint256 _amount,
@@ -31,6 +34,7 @@ contract CosmosBank is CosmosBankStorage {
      * @param _symbol The BridgeToken's symbol
      * @param _decimals The BridgeToken's decimals
      * @param _cosmosDenom The BridgeToken's Cosmos denom
+     * @return The address of the newly deployed token
      */
     function deployNewBridgeToken(
         string memory _name,

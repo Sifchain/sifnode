@@ -15,35 +15,35 @@ contract BankStorage is
     CosmosWhiteListStorage {
 
     /**
-    * @notice operator address that can:
-    *   Reinitialize BridgeBank
-    *   Update Eth whitelist
-    *   Change the operator
+    * @notice Operator address that can:
+    *         Reinitialize BridgeBank
+    *         Update Eth whitelist
+    *         Change the operator
     */
     address public operator;
 
-    /*
-    * @notice [DEPRECATED] address of the Oracle smart contract
+    /**
+    * @dev {DEPRECATED}
     */
     address private oracle;
 
     /**
-    * @notice address of the Cosmos Bridge smart contract
+    * @notice Address of the Cosmos Bridge smart contract
     */
     address public cosmosBridge;
 
     /**
-    * @notice owner address that can use the admin API
+    * @notice Owner address that can use the admin API
     */
     address public owner;
 
-    /*
-    * @notice [DEPRECATED] token limit
+    /**
+    * @dev {DEPRECATED}
     */
     mapping (string => uint256) private maxTokenAmount;
 
-    /*
-    * @notice gap of storage for future upgrades
+    /**
+    * @dev gap of storage for future upgrades
     */
     uint256[100] private ____gap;
 }

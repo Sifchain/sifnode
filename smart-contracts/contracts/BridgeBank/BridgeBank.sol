@@ -24,10 +24,16 @@ contract BridgeBank is BankStorage,
     EthereumWhiteList,
     CosmosWhiteList,
     Pausable {
-
     using SafeERC20 for IERC20;
 
+    /**
+     * @dev Has the contract been initialized?
+     */
     bool private _initialized;
+
+    /**
+     * @dev Has the contract been reinitialized?
+     */
     bool private _reinitialized;
 
     /**
@@ -213,7 +219,7 @@ contract BridgeBank is BankStorage,
     }
 
     /**
-     * @notice Allows the operator to transfer the role to another address
+     * @notice Transfers the operator role to `_newOperator`
      * @dev Cannot transfer role to the zero address
      * @param _newOperator: the new operator's address
      */
@@ -223,7 +229,9 @@ contract BridgeBank is BankStorage,
     }
 
     /**
-     * @dev function to validate if a sif address has a correct prefix
+     * @dev Validates if a sif address has a correct prefix
+     * @param sifAddress The Sif address to check
+     * @return Boolean: does it have the correct prefix?
      */
     function verifySifPrefix(bytes calldata sifAddress) private pure returns (bool) {
         bytes3 sifInHex = 0x736966;
@@ -237,14 +245,18 @@ contract BridgeBank is BankStorage,
     }
 
     /**
-     * @dev function to validate if a sif address has the correct length
+     * @dev Validates if a sif address has the correct length
+     * @param sifAddress The Sif address to check
+     * @return Boolean: does it have the correct length?
      */
     function verifySifAddressLength(bytes calldata sifAddress) private pure returns (bool) {
         return sifAddress.length == 42;
     }
 
     /**
-     * @dev function to validate if a sif address has a correct prefix and the correct length
+     * @dev Validates if a sif address has a correct prefix and the correct length
+     * @param sifAddress The Sif address to be validated
+     * @return Boolean: is it a valid Sif address?
      */
     function verifySifAddress(bytes calldata sifAddress) private pure returns (bool) {
         return verifySifAddressLength(sifAddress) && verifySifPrefix(sifAddress);
@@ -254,6 +266,7 @@ contract BridgeBank is BankStorage,
      * @notice Validates whether `_sifAddress` is a valid Sif address
      * @dev Function used only for testing
      * @param _sifAddress Bytes representation of a Sif address
+     * @return Boolean: is it a valid Sif address?
      */
     function VSA(bytes calldata _sifAddress) external pure returns (bool) {
         return verifySifAddress(_sifAddress);
