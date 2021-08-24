@@ -2,7 +2,7 @@ pragma solidity 0.5.16;
 
 import "./BridgeToken.sol";
 import "./EthereumBankStorage.sol";
-import "../../node_modules/openzeppelin-solidity/contracts/token/ERC20/SafeERC20.sol";
+import "openzeppelin-solidity/contracts/token/ERC20/SafeERC20.sol";
 /*
  *  @title: EthereumBank
  *  @dev: Ethereum bank which locks Ethereum/ERC20 token deposits, and unlocks
@@ -104,7 +104,6 @@ contract EthereumBank is EthereumBankStorage {
 
         // Increment locked funds by the amount of tokens to be locked
         lockedTokenList[_symbol] = _token;
-        lockedFunds[_token] = lockedFunds[_token].add(_amount);
 
         emit LogLock(_sender, _recipient, _token, _symbol, _amount, lockBurnNonce);
     }
@@ -124,12 +123,9 @@ contract EthereumBank is EthereumBankStorage {
         string memory _symbol,
         uint256 _amount
     ) internal {
-        // Decrement locked funds mapping by the amount of tokens to be unlocked
-        lockedFunds[_token] = lockedFunds[_token].sub(_amount);
-
         // Transfer funds to intended recipient
         if (_token == address(0)) {
-            (bool success,) = _recipient.call.value(_amount)("");
+            (bool success,) = _recipient.call.value(_amount).gas(60000)("");
             require(success, "error sending ether");
         } else {
             IERC20 tokenToTransfer = IERC20(_token);

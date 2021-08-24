@@ -1,7 +1,7 @@
 package clp_test
 
 import (
-	"github.com/ethereum/go-ethereum/common/math"
+	"math"
 	"testing"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -15,46 +15,51 @@ import (
 )
 
 func TestExportGenesis(t *testing.T) {
-	ctx, keeper := test.CreateTestAppClp(false)
+	ctx, app := test.CreateTestAppClp(false)
+	// pop
 	// Generate State
-	poolsCount, lpCount := CreateState(ctx, keeper, t)
-	state := clp.ExportGenesis(ctx, keeper)
-	assert.Equal(t, len(state.PoolList), poolsCount)
+	poolscount, lpCount := CreateState(ctx, app.ClpKeeper, t)
+	state := clp.ExportGenesis(ctx, app.ClpKeeper)
+	assert.Equal(t, len(state.PoolList), poolscount)
 	assert.Equal(t, len(state.LiquidityProviders), lpCount)
+
 }
 
 func TestInitGenesis(t *testing.T) {
-	ctx1, keeper1 := test.CreateTestAppClp(false)
-	ctx2, keeper2 := test.CreateTestAppClp(false)
+	ctx1, app1 := test.CreateTestAppClp(false)
+	ctx2, app2 := test.CreateTestAppClp(false)
 	// Generate State
-	poolsCount, lpCount := CreateState(ctx1, keeper1, t)
-	state := clp.ExportGenesis(ctx1, keeper1)
-	assert.Equal(t, len(state.PoolList), poolsCount)
+	poolscount, lpCount := CreateState(ctx1, app1.ClpKeeper, t)
+	state := clp.ExportGenesis(ctx1, app1.ClpKeeper)
+	assert.Equal(t, len(state.PoolList), poolscount)
 	assert.Equal(t, len(state.LiquidityProviders), lpCount)
-	state2 := clp.ExportGenesis(ctx2, keeper2)
+	state2 := clp.ExportGenesis(ctx2, app2.ClpKeeper)
 	assert.Equal(t, len(state2.PoolList), 0)
 	assert.Equal(t, len(state2.LiquidityProviders), 0)
-	valUpdates := clp.InitGenesis(ctx2, keeper2, state)
+
+	valUpdates := clp.InitGenesis(ctx2, app2.ClpKeeper, state)
 	assert.Equal(t, len(valUpdates), 0)
-	poolsList, _, err := keeper2.GetPoolsPaginated(ctx2, &query.PageRequest{})
+
+	poolsList, _, err := app2.ClpKeeper.GetPoolsPaginated(ctx2, &query.PageRequest{Limit: math.MaxUint64})
 	assert.NoError(t, err)
-	assert.Equal(t, len(poolsList), poolsCount)
-	lpList, _, err := keeper2.GetAllLiquidityProvidersPaginated(ctx2, &query.PageRequest{Limit: math.MaxUint64})
+	assert.Equal(t, len(poolsList), poolscount)
+	lpList, _, err := app2.ClpKeeper.GetAllLiquidityProvidersPaginated(ctx2, &query.PageRequest{Limit: math.MaxUint64})
 	assert.NoError(t, err)
 	assert.Equal(t, len(lpList), lpCount)
-	assert.Equal(t, keeper2.GetParams(ctx2).MinCreatePoolThreshold, types.DefaultMinCreatePoolThreshold)
-	assert.Equal(t, keeper2.GetParams(ctx2).MinCreatePoolThreshold, keeper1.GetParams(ctx1).MinCreatePoolThreshold)
+	assert.Equal(t, app2.ClpKeeper.GetParams(ctx2).MinCreatePoolThreshold, types.DefaultMinCreatePoolThreshold)
+	assert.Equal(t, app2.ClpKeeper.GetParams(ctx2).MinCreatePoolThreshold, app1.ClpKeeper.GetParams(ctx1).MinCreatePoolThreshold)
 }
 
 func TestValidateGenesis(t *testing.T) {
-	ctx, keeper := test.CreateTestAppClp(false)
+	ctx, app := test.CreateTestAppClp(false)
 	// Generate State
-	poolsCount, lpCount := CreateState(ctx, keeper, t)
-	state := clp.ExportGenesis(ctx, keeper)
-	assert.Equal(t, len(state.PoolList), poolsCount)
+	poolscount, lpCount := CreateState(ctx, app.ClpKeeper, t)
+	state := clp.ExportGenesis(ctx, app.ClpKeeper)
+	assert.Equal(t, len(state.PoolList), poolscount)
 	assert.Equal(t, len(state.LiquidityProviders), lpCount)
 	err := clp.ValidateGenesis(state)
 	assert.NoError(t, err)
+
 }
 
 func CreateState(ctx sdk.Context, keeper keeper.Keeper, t *testing.T) (int, int) {

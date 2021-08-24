@@ -27,6 +27,7 @@ func createTestInput() (*codec.LegacyAmino, *sifapp.SifchainApp, sdk.Context) {
 		app.GetKey(types.StoreKey),
 		app.BankKeeper,
 		app.AccountKeeper,
+		app.TokenRegistryKeeper,
 		app.GetSubspace(types.ModuleName),
 	)
 	return app.LegacyAmino(), app, ctx

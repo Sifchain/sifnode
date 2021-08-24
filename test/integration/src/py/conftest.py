@@ -297,10 +297,9 @@ def rowan_source_integrationtest_env_credentials(
     to transfer rowan from an account that already has rowan.
     """
     return test_utilities.SifchaincliCredentials(
-        keyring_backend="file" if is_ganache else "test",
+        keyring_backend="test",
         keyring_passphrase=validator_password,
-        from_key=rowan_source,
-        sifnoded_homedir=sifnoded_homedir
+        from_key=rowan_source
     )
 
 

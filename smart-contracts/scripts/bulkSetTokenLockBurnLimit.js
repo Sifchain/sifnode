@@ -42,7 +42,6 @@ module.exports = async (cb) => {
     }
 
     const addresses = whitelistLimitData.array.map(e => {return e.address})
-    const limits = whitelistLimitData.array.map(e => {return e.limit})
 
     if (!addresses || !addresses.length) {
         err();
@@ -64,15 +63,15 @@ module.exports = async (cb) => {
         const accounts = await web3.eth.getAccounts();
 
         bridgeBank = await BridgeBank.at(process.env.BRIDGEBANK_ADDRESS)
-        console.log(await bridgeBank.bulkWhitelistUpdateLimits(addresses, limits, {
+        console.log(await bridgeBank.bulkWhitelistUpdateLimits(addresses, {
             from: accounts[0],
             gas: 4000000 // 300,000 gas
         }));
 
-        console.log("\n\n~~~~ New Token Limits Set ~~~~\n\n");
+        console.log("\n\n~~~~ New Tokens Whitelisted ~~~~\n\n");
 
-        for (let i = 0; i < limits.length; i++) {
-            console.log(`Token address ${addresses[i]} now has limit ${limits[i]}`);
+        for (let i = 0; i < addresses.length; i++) {
+            console.log(`Token address ${addresses[i]} now whitelisted`);
         }
 
         cb();
