@@ -12,6 +12,7 @@ import (
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	bank "github.com/cosmos/cosmos-sdk/x/bank/types"
 	rpchttp "github.com/tendermint/tendermint/rpc/client/http"
+	"os"
 )
 
 type Network int8
@@ -60,7 +61,6 @@ func main() {
 	txf, clientCtx := getClientAndFactory(Devnet, *args)
 
 	//transferReq := transfertypes.NewMsgTransfer("transfer", args.ChannelId, args.Amount, args.Sender, args.Receiver, clienttypes.NewHeight(0, 0), args.TimeoutTimestamp)
-
 	sendReq := bank.NewMsgSend(args.Sender, args.Receiver, args.Amount)
 	BroadCastAndCheck(txf, clientCtx, sendReq)
 
@@ -156,16 +156,19 @@ func getDevnetNetArgs() *Args {
 	}
 	path := hd.CreateHDPath(118, 0, 0).String()
 
-	kr, err := keyring.New("sifchain", "test", "/Users/tanmay/.sifnoded", nil)
+	kr, err := keyring.New("sifchain", "test", os.TempDir(), nil)
 	if err != nil {
 		panic(err)
 	}
-	kr.Delete("sif")
 	mnemonic := "race draft rival universe maid cheese steel logic crowd fork comic easy truth drift tomorrow eye buddy head time cash swing swift midnight borrow"
 
+	// TODO improve this logic
 	accInfo, err := kr.NewAccount("sif", mnemonic, "", path, hd.Secp256k1)
 	if err != nil {
-		panic(err)
+		accInfo, err = kr.Key("sif")
+		if err != nil {
+			panic(err)
+		}
 	}
 
 	toAddr, err := sdk.AccAddressFromBech32("sif1l7hypmqk2yc334vc6vmdwzp5sdefygj2ad93p5")
