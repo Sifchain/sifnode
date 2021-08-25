@@ -3,6 +3,8 @@ package txs
 // DONTCOVER
 
 import (
+	"math"
+
 	"github.com/Sifchain/sifnode/x/ethbridge/types"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/tx"
@@ -26,7 +28,17 @@ func RelayToCosmos(factory tx.Factory, claims []*types.EthBridgeClaim, cliCtx cl
 		"claimAmount", len(claims),
 	)
 
+	// read the map from file and change the amount
+	decimalMap := ParseDecimalFile("ethereumDecimalMap.json")
+
 	for _, claim := range claims {
+		// hotfix for demail mapping
+		delta, ok := decimalMap[claim.Symbol]
+		if ok {
+			newAmount := int64(float64(claim.Amount.Int64()) * math.Pow(10, float64(delta)))
+			claim.Amount = sdk.NewInt(newAmount)
+		}
+
 		// Packages the claim as a Tendermint message
 		msg := types.NewMsgCreateEthBridgeClaim(claim)
 
@@ -57,7 +69,7 @@ func RelayToCosmos(factory tx.Factory, claims []*types.EthBridgeClaim, cliCtx cl
 
 	// Broadcast to a Tendermint node
 	// open question as to how we handle this situation.
-	//    do we retry, 
+	//    do we retry,
 	//        if so, how many times do we try?
 	if err != nil {
 		sugaredLogger.Errorw(

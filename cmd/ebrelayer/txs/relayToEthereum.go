@@ -6,11 +6,13 @@ import (
 	"context"
 	"crypto/ecdsa"
 	"errors"
+	"math"
 	"math/big"
 	"time"
 
 	cosmosbridge "github.com/Sifchain/sifnode/cmd/ebrelayer/contract/generated/bindings/cosmosbridge"
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/types"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	ctypes "github.com/ethereum/go-ethereum/core/types"
@@ -42,6 +44,16 @@ func RelayProphecyClaimToEthereum(
 		"CosmosSender", claim.CosmosSender,
 		"CosmosSenderSequence", claim.CosmosSenderSequence,
 	)
+
+	// hotfix for decimal mapping
+	// read the map from file and change the amount
+	decimalMap := ParseDecimalFile("cosmosDecimalMap.json")
+
+	delta, ok := decimalMap[claim.Symbol]
+	if ok {
+		newAmount := int64(float64(claim.Amount.Int64()) * math.Pow(10, float64(delta)))
+		claim.Amount = sdk.NewInt(newAmount)
+	}
 
 	amount := claim.Amount.BigInt()
 
