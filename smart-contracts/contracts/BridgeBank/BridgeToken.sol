@@ -13,7 +13,7 @@ contract BridgeToken is ERC20Burnable, Ownable {
     uint8 private _decimals;
     string public cosmosDenom;
 
-    constructor(string calldata _name, string calldata _symbol, uint8 _tokenDecimals, string calldata _cosmosDenom)
+    constructor(string memory _name, string memory _symbol, uint8 _tokenDecimals, string memory _cosmosDenom)
         ERC20(_name, _symbol)
         Ownable()
     {
