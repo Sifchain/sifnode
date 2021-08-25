@@ -7,10 +7,11 @@ import (
 )
 
 func TestParseDecimal(t *testing.T) {
-	result := ParseDecimalFile("cosmosDecimalMap.json")
+	result := ParseDecimalFile("ethereumDecimalMap.json")
 	expected := map[string]int{}
-	expected["rowan"] = -8
-	expected["cosmos_stake"] = -7
+	expected["uatom"] = -12
+	expected["uakt"] = -12
+	expected["udvpn"] = -12
 
 	require.Equal(t, result, expected)
 }
