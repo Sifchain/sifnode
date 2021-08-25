@@ -46,7 +46,7 @@ func newClientContext(uri string, client *rpchttp.HTTP, args Args, config params
 		WithTxConfig(config.TxConfig).
 		WithInterfaceRegistry(config.InterfaceRegistry).
 		WithSkipConfirmation(true).
-		WithFromName("sif").
+		WithFromName(args.SenderName).
 		WithBroadcastMode("block").
 		WithOutputFormat("json").
 		WithJSONMarshaler(config.Marshaler)
