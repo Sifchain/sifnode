@@ -114,9 +114,9 @@ func ExecConvForIncomingCoins(
 		sdk.NewEvent(
 			tokenregistrytypes.EventTypeConvertReceived,
 			sdk.NewAttribute(sdk.AttributeKeyModule, transfertypes.ModuleName),
-			sdk.NewAttribute(tokenregistrytypes.AttributeKeyPacketAmount, fmt.Sprintf("%d", incomingCoins.Amount)),
+			sdk.NewAttribute(tokenregistrytypes.AttributeKeyPacketAmount, fmt.Sprintf("%v", incomingCoins.Amount)),
 			sdk.NewAttribute(tokenregistrytypes.AttributeKeyPacketDenom, incomingCoins.Denom),
-			sdk.NewAttribute(tokenregistrytypes.AttributeKeyConvertAmount, fmt.Sprintf("%d", finalCoins.Amount)),
+			sdk.NewAttribute(tokenregistrytypes.AttributeKeyConvertAmount, fmt.Sprintf("%v", finalCoins.Amount)),
 			sdk.NewAttribute(tokenregistrytypes.AttributeKeyConvertDenom, finalCoins.Denom),
 		),
 	)
