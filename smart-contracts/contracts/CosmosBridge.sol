@@ -308,7 +308,7 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
      */
     function _submitProphecyClaimAggregatedSigs(
         bytes32 hashDigest,
-        ClaimData memory claimData,
+        ClaimData calldata claimData,
         SignatureData[] calldata signatureData
     ) private {
         uint256 prophecyID = getProphecyID(
