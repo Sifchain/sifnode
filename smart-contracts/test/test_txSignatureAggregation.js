@@ -240,7 +240,7 @@ describe("Gas Cost Tests", function () {
       expect(registeredDenom).to.be.equal(state.constants.denom.one);
     });
 
-    it.only("should allow us to check the cost of submitting a batch prophecy claim lock", async function () {
+    it("should allow us to check the cost of submitting a batch prophecy claim lock", async function () {
       // Add tokens 2 and 3 into white list
       await batchAddTokensToEthWhitelist(state, [state.token2.address, state.token3.address]);
 

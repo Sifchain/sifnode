@@ -204,7 +204,7 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
         bytes32 hashDigest
     ) private view returns(bool, uint256 pow) {
         for (uint256 i = 0; i < _validators.length; i++) {
-            SignatureData memory validator = _validators[i];
+            SignatureData calldata validator = _validators[i];
 
             require(isActiveValidator(validator.signer), "INV_SIGNER");
 
