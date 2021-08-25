@@ -919,8 +919,8 @@ class IntegrationTestsPlaybook:
             self.cmd.tar_extract(os.path.join(named_snapshot_dir, tarfile), path)
 
         ganache_db_dir = self.cmd.mktempdir()
-        relayer_db_path = self.state_vars["RELAYERDB_DIR"]  # TODO use /tmp
-        assert os.path.normpath(relayer_db_path) == os.path.normpath(os.path.join(self.test_integration_dir, "sifchainrelayerdb"))
+        relayer_db_path = state_vars["EBRELAYER_DB"]  # TODO use /tmp
+        assert os.path.realpath(relayer_db_path) == os.path.realpath(os.path.join(self.test_integration_dir, "sifchainrelayerdb"))
         extract("ganache.tar.gz", ganache_db_dir)
         extract("sifchainrelayerdb.tar.gz", relayer_db_path)
         deploy_networks_dir = project_dir("deploy/networks")
