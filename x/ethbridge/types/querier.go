@@ -8,6 +8,7 @@ import (
 const (
 	QueryEthProphecy         = "prophecies"
 	QueryCrosschainFeeConfig = "crosschainFeeConfig"
+	QueryLockBurnNonce = "lockBurnNonce"
 )
 
 // NewQueryEthProphecyRequest creates a new QueryEthProphecyParams

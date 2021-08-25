@@ -291,14 +291,15 @@ func getLockBurnNonceHandler(cliCtx client.Context, storeName string) http.Handl
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusNotFound, err.Error())
 		}
+		valAddress := vars[restRelayerCosmosAddress]
 
-		bz, err := cliCtx.LegacyAmino.MarshalJSON(types.NewQueryCrosschainFeeConfigRequest(oracletypes.NetworkDescriptor(networkDescriptor)))
+		bz, err := cliCtx.LegacyAmino.MarshalJSON(types.NewLockBurnNonceRequest(oracletypes.NetworkDescriptor(networkDescriptor), valAddress))
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusNotFound, err.Error())
 			return
 		}
 
-		route := fmt.Sprintf("custom/%s/%s", storeName, types.QueryCrosschainFeeConfig)
+		route := fmt.Sprintf("custom/%s/%s", storeName, types.QueryLockBurnNonce)
 		res, _, err := cliCtx.QueryWithData(route, bz)
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusNotFound, err.Error())

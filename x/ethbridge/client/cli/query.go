@@ -72,7 +72,7 @@ func GetCmdGetCrosschainFeeConfig() *cobra.Command {
 	}
 }
 
-// GetLockBurnNonce queries crosschain fee config for a network
+// GetLockBurnNonce queries lock burn nonce for a relayer
 func GetLockBurnNonce() *cobra.Command {
 	return &cobra.Command{
 		Use:   `lock-burn-nonce [network-descriptor] [val-address]`,
