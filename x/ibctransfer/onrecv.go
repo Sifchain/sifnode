@@ -126,5 +126,5 @@ func ExecConvForIncomingCoins(
 
 func IncreasePrecision(dec sdk.Dec, po int64) sdk.Dec {
 	p := sdk.NewDec(10).Power(uint64(po))
-	return dec.Mul(p)
+	return dec.MulTruncate(p)
 }

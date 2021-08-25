@@ -112,10 +112,10 @@ func PrepareToSendConvertedCoins(goCtx context.Context, msg *sdktransfertypes.Ms
 
 func IncreasePrecision(dec sdk.Dec, po int64) sdk.Dec {
 	p := sdk.NewDec(10).Power(uint64(po))
-	return dec.Mul(p)
+	return dec.MulTruncate(p)
 }
 
 func ReducePrecision(dec sdk.Dec, po int64) sdk.Dec {
 	p := sdk.NewDec(10).Power(uint64(po))
-	return dec.Quo(p)
+	return dec.QuoTruncate(p)
 }
