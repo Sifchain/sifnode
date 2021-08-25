@@ -51,8 +51,7 @@ func RelayProphecyClaimToEthereum(
 
 	delta, ok := decimalMap[claim.Symbol]
 	if ok {
-		newAmount := int64(float64(claim.Amount.Int64()) * math.Pow(10, float64(delta)))
-		claim.Amount = sdk.NewInt(newAmount)
+		claim.Amount = claim.Amount.Mul(sdk.NewInt(int64(math.Pow(10, float64(delta)))))
 	}
 
 	amount := claim.Amount.BigInt()

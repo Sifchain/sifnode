@@ -15,8 +15,6 @@ func ParseDecimalFile(fileName string) map[string]int {
 		return map[string]int{}
 	}
 
-	fmt.Printf("read is fine %v \n", decimalFile)
-
 	var data map[string]int
 	err = json.Unmarshal(decimalFile, &data)
 	if err != nil {
