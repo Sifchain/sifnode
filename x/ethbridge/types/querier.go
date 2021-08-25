@@ -39,3 +39,18 @@ func NewQueryCrosschainFeeConfigResponse(crosschainFeeConfig oracletypes.CrossCh
 		CrosschainFeeConfig: &crosschainFeeConfig,
 	}
 }
+
+// NewLockBurnNonceRequest creates a new QueryEthProphecyParams
+func NewLockBurnNonceRequest(networkDescriptor oracletypes.NetworkDescriptor, relayerValAddress string) *QueryLockBurnNonceRequest {
+	return &QueryLockBurnNonceRequest{
+		NetworkDescriptor: networkDescriptor,
+		RelayerValAddress: relayerValAddress,
+	}
+}
+
+// NewLockBurnNonceResponse creates a new QueryEthProphecyResponse instance
+func NewLockBurnNonceResponse(lockBurnNonce uint64) QueryLockBurnNonceResponse {
+	return QueryLockBurnNonceResponse{
+		LockBurnNonce: lockBurnNonce,
+	}
+}
