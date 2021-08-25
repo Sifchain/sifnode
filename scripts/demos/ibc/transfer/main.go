@@ -35,7 +35,7 @@ func SetConfig(seal bool) {
 type TestCase interface {
 	GetMsgAndArgs() (sdk.Msg, Args)
 	GetName() string
-	Assert(res *sdk.TxResponse)
+	Assert(*sdk.TxResponse)
 }
 
 type Args struct {
