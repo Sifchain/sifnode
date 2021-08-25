@@ -181,7 +181,7 @@ class Sifnoded(Command):
 
     def sifnoded_keys_add_1(self, mnemonic):
         args = ["sifnoded", "keys", "add", mnemonic, "--keyring-backend", "test"]
-        return yaml_load(self.execst(args, stdin=["y"])[1])
+        return exactly_one(yaml_load(self.execst(args, stdin=["y"])[1]))
 
     def sifnoded_add_genesis_account(self, address, tokens):
         tokens_str = ",".join([sif_format_amount(amount, denom) for amount, denom in tokens])
@@ -494,6 +494,7 @@ class UIStackPlaybook:
             "LOCAL_PROVIDER": "http://localhost:7545",
         }
 
+        # NOTE: this probably doesn't work anymore since setTokenLockBurnLimit.js was replaced
         burn_limits = [
             [NULL_ADDRESS, 31 * 10 ** 18],
             [bridge_token_address, 10 ** 25],
@@ -614,7 +615,7 @@ class IntegrationTestsPlaybook:
         self.network_name = "develop"
         self.network_id = 5777
         self.using_ganache_gui = False
-        self.snapshots_dir = self.cmd.get_user_home(".sifnode-snapshots")
+        self.peruser_storage_dir = self.cmd.get_user_home(".sifnode-integration")
         self.state_vars = {}
         self.test_integration_dir = project_dir("test/integration")
         self.data_dir = project_dir("test/integration/vagrant/data")
@@ -713,9 +714,9 @@ class IntegrationTestsPlaybook:
         #     --keyring-backend file
         # self.cmd.execst(["sifgen", "network", "create", "localnet", str(validator_count), networks_dir, seed_ip_address,
         #     os.path.join(networks_dir, "network-definition.yml"), "--keyring-backend", "file"])
-
+        # TODO Most likely, this should be "--keyring-backend file"
         self.cmd.execst(["sifgen", "network", "create", "localnet", str(validator_count), networks_dir, seed_ip_address,
-            os.path.join(networks_dir, "network-definition.yml"), "--keyring-backend", "file", "--mint-amount",
+            os.path.join(networks_dir, "network-definition.yml"), "--keyring-backend", "test", "--mint-amount",
             ",".join([sif_format_amount(*x) for x in mint_amount])])
 
         netdef, netdef_json = self.process_netdef(networks_dir)
@@ -729,34 +730,40 @@ class IntegrationTestsPlaybook:
         # SIFNODED_LOG=$datadir/logs/sifnoded.log
 
         # now we have to add the validator key to the test keyring so the tests can send rowan from validator1
-        # echo "$MNEMONIC" | sifnoded keys add $MONIKER --keyring-backend test --recover
         self.cmd.sifnoded_keys_add(validator_moniker, validator_mnemonic)
-        # valoper=$(sifnoded keys show -a --bech val $MONIKER --home $CHAINDIR/.sifnoded --keyring-backend test)
         valoper = self.cmd.sifnoded_keys_show(validator_moniker, bech="val", keyring_backend="test", home=sifnoded_home)[0]["address"]
-        # sifnoded add-genesis-validators $valoper --home $CHAINDIR/.sifnoded
         self.cmd.execst(["sifnoded", "add-genesis-validators", valoper, "--home", sifnoded_home])
 
-        # test/integration/sifchain_start_daemon.sh:
-        # whitelisted_validator=$(yes $VALIDATOR1_PASSWORD | sifnoded keys show --keyring-backend file -a --bech val \
-        #     $MONIKER --home $CHAINDIR/.sifnoded)
-        whitelisted_validator = exactly_one(stdout_lines(self.cmd.execst(["sifnoded", "keys", "show",
-            "--keyring-backend", "file", "-a", "--bech", "val", validator_moniker, "--home", sifnoded_home],
-            stdin=[validator1_password])))
-        log.info(f"Whitelisted validator: {whitelisted_validator}")
-        self.cmd.execst(["sifnoded", "add-genesis-validators", whitelisted_validator, "--home", sifnoded_home])
+        try:
+            # Probable bug in test/integration/sifchain_start_daemon.sh:
+            # whitelisted_validator=$(yes $VALIDATOR1_PASSWORD | sifnoded keys show --keyring-backend file -a \
+            #     --bech val $MONIKER --home $CHAINDIR/.sifnoded)
+            whitelisted_validator = exactly_one(stdout_lines(self.cmd.execst(["sifnoded", "keys", "show",
+                "--keyring-backend", "file", "-a", "--bech", "val", validator_moniker, "--home", sifnoded_home],
+                stdin=[validator1_password])))
+            assert False
+            log.info(f"Whitelisted validator: {whitelisted_validator}")
+            self.cmd.execst(["sifnoded", "add-genesis-validators", whitelisted_validator, "--home", sifnoded_home])
+        except:
+            log.error("Failed to get whitelisted validator (probable bug)", exc_info=True)
+            assert True
         adminuser_addr = self.cmd.sifnoded_keys_add_1("sifnodeadmin")["address"]
         self.cmd.execst(["sifnoded", "add-genesis-account", adminuser_addr, sif_format_amount(10**20, "rowan"),
             "--home", sifnoded_home], pipe=False)
         self.cmd.execst(["sifnoded", "set-genesis-oracle-admin", adminuser_addr, "--home", sifnoded_home], pipe=False)
+        self.cmd.execst(["sifnoded", "set-genesis-whitelister-admin", adminuser_addr, "--home", sifnoded_home])
+        self.cmd.execst(["sifnoded", "set-gen-denom-whitelist", os.path.join(self.test_integration_dir,
+            "whitelisted-denoms.json"), "--home", sifnoded_home])
+
+        # Start sifnoded
         sifnoded_proc = popen(["sifnoded", "start", "--minimum-gas-prices", sif_format_amount(0.5, "rowan"),
             "--rpc.laddr", self.tcp_url, "--home", sifnoded_home])
-        # TODO
-        # sifnoded set-genesis-whitelister-admin $adminuser --home $CHAINDIR/.sifnoded
-        # sifnoded set-gen-denom-whitelist $SCRIPT_DIR/whitelisted-denoms.json --home $CHAINDIR/.sifnoded
+
+        # TODO: should we wait for sifnoded to come up before continuing? If so, how do we do it?
 
         # TODO Process exits immediately with returncode 1
         # TODO Why does it not stop start-integration-env.sh?
-        rest_server_proc = popen(["sifnoded", "rest-server", "--laddr", "tcp://0.0.0.0:1317"])  # TODO cwd
+        # rest_server_proc = popen(["sifnoded", "rest-server", "--laddr", "tcp://0.0.0.0:1317"])  # TODO cwd
 
         # test/integration/sifchain_start_ebrelayer.sh -> test/integration/sifchain_run_ebrelayer.sh
         # This script is also called from tests
@@ -797,11 +804,11 @@ class IntegrationTestsPlaybook:
             "MNEMONIC": " ".join(validator_mnemonic),
             "CHAINDIR": os.path.join(networks_dir, "validators", self.chainnet, validator_moniker),
             "SIFCHAIN_ADMIN_ACCOUNT": adminuser_addr,  # Needed by test_peggy_fees.py (via conftest.py)
-            "EBRELAYERDB_DB": relayer_db_path,  # Created by sifchain_run_ebrelayer.sh, does not appear to be used anywhere at the moment
+            "EBRELAYER_DB": relayer_db_path,  # Created by sifchain_run_ebrelayer.sh, does not appear to be used anywhere at the moment
         }
         self.write_vagrantenv_sh()
 
-        return ganache_proc, sifnoded_proc, ebrelayer_proc, rest_server_proc
+        return ganache_proc, sifnoded_proc, ebrelayer_proc
 
     def write_vagrantenv_sh(self):
         # Trace of test_utilities.py get_required_env_var/get_optional_env_var:
@@ -885,9 +892,13 @@ class IntegrationTestsPlaybook:
             relayerdb_path=relayer_db_path, cwd=self.test_integration_dir)
         return ebrelayer_proc
 
+    def create_own_dirs(self):
+        self.cmd.mkdir(self.peruser_storage_dir)
+        self.cmd.mkdir(os.path.join(self.peruser_storage_dir, "snapshots"))
+
     def create_snapshot(self, snapshot_name):
-        self.cmd.mkdir(self.snapshots_dir)
-        named_snapshot_dir = os.path.join(self.snapshots_dir, snapshot_name)
+        self.create_own_dirs()
+        named_snapshot_dir = os.path.join(self.peruser_storage_dir, "snapshots", snapshot_name)
         if self.cmd.exists(named_snapshot_dir):
             raise Exception(f"Directory '{named_snapshot_dir}' already exists")
         self.cmd.mkdir(named_snapshot_dir)
@@ -899,7 +910,7 @@ class IntegrationTestsPlaybook:
         self.cmd.write_text_file(os.path.join(named_snapshot_dir, "vagrantenv.json"), json.dumps(self.state_vars, indent=4))
 
     def restore_snapshot(self, snapshot_name):
-        named_snapshot_dir = os.path.join(self.snapshots_dir, snapshot_name)
+        named_snapshot_dir = os.path.join(self.peruser_storage_dir, "snapshots", snapshot_name)
         state_vars = json.loads(self.cmd.read_text_file(os.path.join(named_snapshot_dir, "vagrantenv.json")))
 
         def extract(tarfile, path):
@@ -959,7 +970,7 @@ class IntegrationTestsPlaybook:
         ebrelayer_proc = self.run_ebrelayer(netdef_json, validator1_address, validator_moniker, validator_mnemonic,
             ebrelayer_ethereum_private_key, bridge_registry_sc_addr, relayer_db_path)
 
-        return ganache_proc, sifnoded_proc, ebrelayer_proc, None
+        return ganache_proc, sifnoded_proc, ebrelayer_proc
 
 def cleanup_and_reset_state():
     # git checkout 4cb7322b6b282babd93a0d0aedda837c9134e84e deploy
