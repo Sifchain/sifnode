@@ -7,7 +7,7 @@ import * as path from "path"
 import events from "events";
 import { lastValueFrom, ReplaySubject } from "rxjs";
 import { ValidatorValues } from "./sifnoded"
-import { DeployedContractAddresses } from "../../scripts/deploy_contracts";
+import { SmartContractDeployResult } from "./smartcontractDeployer";
 import * as fs from "fs";
 import YAML from 'yaml'
 import { eventEmitterToObservable } from "./devEnvUtilities"
@@ -35,9 +35,14 @@ import { eventEmitterToObservable } from "./devEnvUtilities"
       "../test/integration/whitelisted-denoms.json",
       "",
       {
-        bridgeBank: "",
-        bridgeRegistry: "",
-        rowanContract: ""
+        contractAddresses: {
+          bridgeBank: "",
+          bridgeRegistry: "",
+          rowanContract: ""
+        },
+        completed: false,
+        error: undefined,
+        output: ""
       }
     )
   }
@@ -51,7 +56,7 @@ export class EbrelayerArguments {
     readonly validatorValues: ValidatorValues,
     readonly symbolTranslatorFile: string,
     readonly relayerdbPath: string,
-    readonly contractAddress: DeployedContractAddresses
+    readonly smartContract: SmartContractDeployResult
   ) {
   }
 }
@@ -73,7 +78,7 @@ export class EbrelayerRunner extends ShellCommand<EbrelayerResults> {
       "init",
       this.args.tcpURL,
       this.args.websocketAddress,
-      this.args.contractAddress.bridgeRegistry,
+      this.args.smartContract.contractAddresses.bridgeRegistry,
       this.args.validatorValues.moniker,
       this.args.validatorValues.mnemonic,
       `--chain-id ${this.args.chainNet}`,

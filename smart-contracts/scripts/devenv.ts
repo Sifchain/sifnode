@@ -2,10 +2,10 @@ import { container } from "tsyringe";
 import { HardhatNodeRunner } from "../src/devenv/hardhatNode";
 import { GolangBuilder, GolangResultsPromise } from "../src/devenv/golangBuilder";
 import { SifnodedRunner } from "../src/devenv/sifnoded";
-import { SmartContractDeployer } from "../src/devenv/smartcontractDeployer";
+import { SmartContractDeployer, SmartContractDeployResult } from "../src/devenv/smartcontractDeployer";
 import { cons } from "fp-ts/lib/ReadonlyNonEmptyArray";
 import { sampleCode } from "../src/devenv/synchronousCommand";
-import { EbrelayerRunner } from "../src/devenv/ebrelayer";
+import { EbrelayerArguments, EbrelayerRunner } from "../src/devenv/ebrelayer";
 
 
 async function startHardhat() {
@@ -40,6 +40,7 @@ async function smartContractDeployer() {
   const node: SmartContractDeployer = container.resolve(SmartContractDeployer);
   const [process, resultsPromise] = node.go();
   const result = await resultsPromise;
+  container.register(SmartContractDeployResult, { useValue: result })
   console.log(`Contracts deployed: ${JSON.stringify(result.contractAddresses, undefined, 2)}`)
   await ebrelayerBuilder()
   return;
