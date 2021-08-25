@@ -29,7 +29,6 @@ describe("Test IBC Token", function () {
     accounts = await ethers.getSigners();
   
     ibcTokenFactory = await ethers.getContractFactory("IbcToken");
-    signerAccounts = accounts.map((e) => { return e.address });
   
     owner = accounts[0];
     userOne = accounts[1];
