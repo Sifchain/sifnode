@@ -32,8 +32,7 @@ describe("Test IBC Token", function () {
     signerAccounts = accounts.map((e) => { return e.address });
   
     owner = accounts[0];
-    operator = accounts[1];
-    userOne = accounts[2];
+    userOne = accounts[1];
   });
   
   beforeEach(async function () {
