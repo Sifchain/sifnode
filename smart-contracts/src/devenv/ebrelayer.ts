@@ -7,7 +7,7 @@ import * as path from "path"
 import events from "events";
 import { lastValueFrom, ReplaySubject } from "rxjs";
 import { ValidatorValues } from "./sifnoded"
-import { DeployedContractAddresses } from "./smartcontractDeployer";
+import { DeployedContractAddresses } from "../../scripts/deploy_contracts";
 import * as fs from "fs";
 import YAML from 'yaml'
 import { eventEmitterToObservable } from "./devEnvUtilities"
