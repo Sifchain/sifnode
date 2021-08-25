@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	transfertypes "github.com/cosmos/cosmos-sdk/x/ibc/applications/transfer/types"
 	channeltypes "github.com/cosmos/cosmos-sdk/x/ibc/core/04-channel/types"
 
@@ -85,6 +86,7 @@ func ExecConvForIncomingCoins(
 	incomingCoins sdk.Coin,
 	finalCoins sdk.Coin,
 	bankKeeper transfertypes.BankKeeper,
+	packet channeltypes.Packet,
 	data transfertypes.FungibleTokenPacketData,
 ) error {
 
@@ -98,11 +100,14 @@ func ExecConvForIncomingCoins(
 	if err != nil {
 		return err
 	}
-	// send coins from module account to address
-	err = bankKeeper.SendCoinsFromModuleToAccount(ctx, transfertypes.ModuleName, receiver, sdk.NewCoins(finalCoins))
-	if err != nil {
-		// TODO: Revert send to module, or panic.
-		return err
+	// unescrow original tokens
+	escrowAddress := transfertypes.GetEscrowAddress(packet.GetDestPort(), packet.GetDestChannel())
+	if err := bankKeeper.SendCoins(ctx, escrowAddress, receiver, sdk.NewCoins(finalCoins)); err != nil {
+		// NOTE: this error is only expected to occur given an unexpected bug or a malicious
+		// counterparty module. The bug may occur in bank or any part of the code that allows
+		// the escrow address to be drained. A malicious counterparty module could drain the
+		// escrow address by allowing more tokens to be sent back then were escrowed.
+		return sdkerrors.Wrap(err, "unable to unescrow original tokens")
 	}
 	// burn ibcdenom coins
 	err = bankKeeper.BurnCoins(ctx, transfertypes.ModuleName, sdk.NewCoins(incomingCoins))

@@ -80,11 +80,16 @@ func PrepareToSendConvertedCoins(goCtx context.Context, msg *sdktransfertypes.Ms
 	if err != nil {
 		return err
 	}
-	// Deduct requested denom so it can be converted to the denom that will be sent out
-	err = bankKeeper.SendCoinsFromAccountToModule(ctx, sender, sdktransfertypes.ModuleName, sdk.NewCoins(token))
-	if err != nil {
+	// create the escrow address for the tokens
+	escrowAddress := sdktransfertypes.GetEscrowAddress(msg.SourcePort, msg.SourceChannel)
+
+	// escrow requested denom so it can be converted to the denom that will be sent out. It fails if balance insufficient.
+	if err := bankKeeper.SendCoins(
+		ctx, sender, escrowAddress, sdk.NewCoins(token),
+	); err != nil {
 		return err
 	}
+
 	// Mint into module account the new coins of the denom that will be sent via IBC
 	err = bankKeeper.MintCoins(ctx, sdktransfertypes.ModuleName, sdk.NewCoins(convToken))
 	if err != nil {
