@@ -8,6 +8,8 @@ import (
 	"os"
 )
 
+// This file contains sample values which can be used to speed up the process of writing test cases
+// Any or all values can be replaced in the the individual functions where these are used
 func getCommonArgs() Args {
 	amount, ok := sdk.NewIntFromString("100000000000000000000000")
 	if !ok {
