@@ -12,13 +12,6 @@ require("chai")
 
 use(solidity);
 
-require("chai")
-  .use(require("chai-as-promised"))
-  .use(require("chai-bignumber")(BigNumber))
-  .should();
-
-use(solidity);
-
 describe("Test IBC Token", function () {
   let userOne;
   let accounts;
