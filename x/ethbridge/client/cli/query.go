@@ -71,3 +71,37 @@ func GetCmdGetCrosschainFeeConfig() *cobra.Command {
 		},
 	}
 }
+
+// GetLockBurnNonce queries crosschain fee config for a network
+func GetLockBurnNonce() *cobra.Command {
+	return &cobra.Command{
+		Use:   `lock-burn-nonce [network-descriptor] [val-address]`,
+		Short: "Query lock-burn-nonce",
+		Args:  cobra.ExactArgs(2),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			clientCtx, err := client.GetClientTxContext(cmd)
+			if err != nil {
+				return err
+			}
+
+			networkDescriptor, err := strconv.Atoi(args[0])
+			if err != nil {
+				return err
+			}
+
+			queryClient := types.NewQueryClient(clientCtx)
+
+			req := &types.QueryLockBurnNonceRequest{
+				NetworkDescriptor: oracletypes.NetworkDescriptor(networkDescriptor),
+				RelayerValAddress: args[1],
+			}
+
+			res, err := queryClient.LockBurnNonce(context.Background(), req)
+			if err != nil {
+				return err
+			}
+
+			return clientCtx.PrintProto(res)
+		},
+	}
+}
