@@ -76,14 +76,17 @@ export class SifnodedRunner extends ShellCommand<SifnodedResults> {
     const sifgenArgs = [
       "network",
       "create",
-      "--keyring-backend",
-      "test",
       this.args.chainId,
       this.args.nValidators.toString(),
       this.args.networkDir,
       this.args.seedIpAddress,
-      this.args.networkConfigFile
+      this.args.networkConfigFile,
+      "--keyring-backend",
+      "test",
     ]
+
+    await fs.promises.mkdir(this.args.networkDir, { recursive: true });
+
     const sifgenOutput = ChildProcess.execFileSync(
       path.join((await this.golangResults.results).goBin, "sifgen"),
       sifgenArgs,
