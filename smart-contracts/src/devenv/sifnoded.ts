@@ -154,7 +154,8 @@ export class SifnodedRunner extends ShellCommand<SifnodedResults> {
       sifnodedDaemonCmd,
       { shell: true, stdio: "inherit" }
     )
-    return lastValueFrom(eventEmitterToObservable(sifnoded, "sifnoded"))
+    return
+//    return lastValueFrom(eventEmitterToObservable(sifnoded, "sifnoded"))
   }
 
   async addValidatorKeyToTestKeyring(moniker: string, chainDir: string, mnemonic: string) {
