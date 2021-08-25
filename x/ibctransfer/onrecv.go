@@ -8,6 +8,7 @@ import (
 	transfertypes "github.com/cosmos/cosmos-sdk/x/ibc/applications/transfer/types"
 	channeltypes "github.com/cosmos/cosmos-sdk/x/ibc/core/04-channel/types"
 
+	"github.com/Sifchain/sifnode/x/ibctransfer/types"
 	tokenregistrytypes "github.com/Sifchain/sifnode/x/tokenregistry/types"
 )
 
@@ -117,12 +118,12 @@ func ExecConvForIncomingCoins(
 	}
 	ctx.EventManager().EmitEvent(
 		sdk.NewEvent(
-			tokenregistrytypes.EventTypeConvertReceived,
+			types.EventTypeConvertReceived,
 			sdk.NewAttribute(sdk.AttributeKeyModule, transfertypes.ModuleName),
-			sdk.NewAttribute(tokenregistrytypes.AttributeKeyPacketAmount, fmt.Sprintf("%v", incomingCoins.Amount)),
-			sdk.NewAttribute(tokenregistrytypes.AttributeKeyPacketDenom, incomingCoins.Denom),
-			sdk.NewAttribute(tokenregistrytypes.AttributeKeyConvertAmount, fmt.Sprintf("%v", finalCoins.Amount)),
-			sdk.NewAttribute(tokenregistrytypes.AttributeKeyConvertDenom, finalCoins.Denom),
+			sdk.NewAttribute(types.AttributeKeyPacketAmount, fmt.Sprintf("%v", incomingCoins.Amount)),
+			sdk.NewAttribute(types.AttributeKeyPacketDenom, incomingCoins.Denom),
+			sdk.NewAttribute(types.AttributeKeyConvertAmount, fmt.Sprintf("%v", finalCoins.Amount)),
+			sdk.NewAttribute(types.AttributeKeyConvertDenom, finalCoins.Denom),
 		),
 	)
 

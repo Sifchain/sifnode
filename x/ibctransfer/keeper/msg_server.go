@@ -103,12 +103,12 @@ func PrepareToSendConvertedCoins(goCtx context.Context, msg *sdktransfertypes.Ms
 	// Record conversion event, sender and coins
 	ctx.EventManager().EmitEvent(
 		sdk.NewEvent(
-			tokenregistrytypes.EventTypeConvertTransfer,
+			types.EventTypeConvertTransfer,
 			sdk.NewAttribute(sdk.AttributeKeyModule, sdktransfertypes.ModuleName),
-			sdk.NewAttribute(tokenregistrytypes.AttributeKeySentAmount, fmt.Sprintf("%v", token.Amount)),
-			sdk.NewAttribute(tokenregistrytypes.AttributeKeySentDenom, token.Denom),
-			sdk.NewAttribute(tokenregistrytypes.AttributeKeyConvertAmount, fmt.Sprintf("%v", convToken.Amount)),
-			sdk.NewAttribute(tokenregistrytypes.AttributeKeyConvertDenom, convToken.Denom),
+			sdk.NewAttribute(types.AttributeKeySentAmount, fmt.Sprintf("%v", token.Amount)),
+			sdk.NewAttribute(types.AttributeKeySentDenom, token.Denom),
+			sdk.NewAttribute(types.AttributeKeyConvertAmount, fmt.Sprintf("%v", convToken.Amount)),
+			sdk.NewAttribute(types.AttributeKeyConvertDenom, convToken.Denom),
 		),
 	)
 

@@ -1,6 +1,6 @@
 package types
 
-// tokenregistry module event types
+// ibctransfer module event types
 
 const (
 	EventTypeConvertTransfer  = "converted_transfer"
