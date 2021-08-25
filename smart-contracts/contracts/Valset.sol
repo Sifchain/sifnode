@@ -107,7 +107,7 @@ contract Valset is ValsetStorage {
      * @param _validatorPower The power this validator has
      */
     function addValidator(address _validatorAddress, uint256 _validatorPower)
-        public
+        external
         onlyOperator
     {
         _addValidatorInternal(_validatorAddress, _validatorPower);
@@ -122,7 +122,7 @@ contract Valset is ValsetStorage {
     function updateValidatorPower(
         address _validatorAddress,
         uint256 _newValidatorPower
-    ) public onlyOperator {
+    ) external onlyOperator {
 
         require(
             validators[_validatorAddress][currentValsetVersion],
@@ -153,7 +153,7 @@ contract Valset is ValsetStorage {
      * @dev Can only be called by the operator
      * @param _validatorAddress Address of the validator
      */
-    function removeValidator(address _validatorAddress) public onlyOperator {
+    function removeValidator(address _validatorAddress) external onlyOperator {
         require(validators[_validatorAddress][currentValsetVersion], "Can only remove active validators");
 
         // Update validator count and total power
@@ -182,7 +182,7 @@ contract Valset is ValsetStorage {
     function updateValset(
         address[] memory _validators,
         uint256[] memory _powers
-    ) public onlyOperator {
+    ) external onlyOperator {
         require(
             _validators.length == _powers.length,
             "Every validator must have a corresponding power"
