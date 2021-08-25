@@ -240,9 +240,16 @@ describe("Gas Cost Tests", function () {
       expect(registeredDenom).to.be.equal(state.constants.denom.one);
     });
 
-    it("should allow us to check the cost of submitting a batch prophecy claim lock", async function () {
+    it.only("should allow us to check the cost of submitting a batch prophecy claim lock", async function () {
       // Add tokens 2 and 3 into white list
-      await batchAddTokensToEthWhitelist(state, [state.token2.address, state.token3.address])
+      await batchAddTokensToEthWhitelist(state, [state.token2.address, state.token3.address]);
+
+      // Make sure the tokens were added to the whitelist
+      const isToken2InWhitelist = await state.bridgeBank.getTokenInEthWhiteList(state.token2.address);
+      expect(isToken2InWhitelist).to.be.equal(true);
+
+      const isToken3InWhitelist = await state.bridgeBank.getTokenInEthWhiteList(state.token3.address);
+      expect(isToken3InWhitelist).to.be.equal(true);
       
       // Lock token2 on contract
       await state.bridgeBank.connect(userOne).lock(
