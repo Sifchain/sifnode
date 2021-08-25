@@ -16,6 +16,12 @@ import {
 } from "../src/tsyringe/contracts";
 import * as dotenv from "dotenv";
 
+
+export type DeployedContractAddresses = {
+    bridgeBank: string,
+    bridgeRegistry: string,
+    rowanContract: string,
+}
 // Usage
 //
 // npx hardhat run scripts/deploy_contracts.ts
@@ -26,7 +32,7 @@ async function main() {
     const bridgeBank = await container.resolve(BridgeBankProxy).contract
     const bridgeRegistry = await container.resolve(BridgeRegistryProxy).contract
     const rowanContract = await container.resolve(RowanContract).contract
-    const result = {
+    const result: DeployedContractAddresses = {
         bridgeBank: bridgeBank.address,
         bridgeRegistry: bridgeRegistry.address,
         rowanContract: rowanContract.address

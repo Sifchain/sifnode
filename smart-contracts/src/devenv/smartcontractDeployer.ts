@@ -1,13 +1,7 @@
 import { singleton } from "tsyringe";
 import { SynchronousCommand, SynchronousCommandResult } from "./synchronousCommand";
 import { requiredEnvVar } from "../contractSupport";
-
-// TODO: This can be shared with scripts/deploy_contracts.ts
-export interface DeployedContractAddresses {
-  bridgeBank: string,
-  bridgeRegistry: string,
-  rowanContract: string
-}
+import { DeployedContractAddresses } from "../../scripts/deploy_contracts";
 
 export class SmartContractDeployResult extends SynchronousCommandResult {
   constructor(

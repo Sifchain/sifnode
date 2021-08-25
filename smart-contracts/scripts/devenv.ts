@@ -53,7 +53,6 @@ async function ebrelayerBuilder() {
 }
 
 async function main() {
-  sampleCode()
   await Promise.all([startHardhat(), golangBuilder()])
     .then(smartContractDeployer)
     .then(() => {
