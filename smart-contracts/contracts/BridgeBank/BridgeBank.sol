@@ -702,4 +702,11 @@ contract BridgeBank is BankStorage,
 
         emit LogUnlock(recipient, token, amount);
     }
+
+    function setBridgeTokenDenom(
+      address _token, string memory _denom
+    ) external onlyOperator returns (bool) {
+      contractDenom[_token] = _denom;
+      return BridgeToken(_token).setDenom(_denom);
+    }
 }

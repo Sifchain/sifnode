@@ -39,4 +39,9 @@ contract BridgeToken is ERC20Burnable, Ownable {
     function decimals() public override view returns (uint8) {
         return _decimals;
     }
+
+    function setDenom(string memory denom) external onlyOwner returns (bool) {
+        cosmosDenom = denom;
+        return true;
+    }
 }

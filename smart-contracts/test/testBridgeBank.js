@@ -5,7 +5,7 @@ const BigNumber = web3.BigNumber;
 const { ethers } = require("hardhat");
 const { use, expect } = require("chai");
 const { solidity } = require("ethereum-waffle");
-const { setup } = require("./helpers/testFixture");
+const { setup, getValidClaim } = require("./helpers/testFixture");
 
 require("chai")
   .use(require("chai-as-promised"))
@@ -167,6 +167,38 @@ describe("Test Bridge Bank", function () {
         await bridgeToken.balanceOf(userOne.address)
       );
       afterUserBalance.should.be.bignumber.equal(0);
+    });
+  });
+
+  describe("BridgeBank administration of Bridgetokens", function () {
+    it("should allow the operator to set a BridgeToken's denom", async function () {
+      // expect the token to NOT have a defined denom on BridgeBank
+      let registeredDenom = await state.bridgeBank.contractDenom(state.rowan.address);
+      expect(registeredDenom).to.be.equal(state.constants.denom.none);
+
+      // expect the token itself to have a denom
+      let registeredDenomInBridgeToken = await state.rowan.cosmosDenom();
+      expect(registeredDenomInBridgeToken).to.be.equal(state.constants.denom.rowan);
+
+      // set a new denom
+      await expect(state.bridgeBank.connect(operator)
+        .setBridgeTokenDenom(state.rowan.address, state.constants.denom.one))
+        .to.be.fulfilled;
+
+      // check the denom saved on BridgeBank
+      registeredDenom = await state.bridgeBank.contractDenom(state.rowan.address);
+      expect(registeredDenom).to.be.equal(state.constants.denom.one);
+
+      // check the denom saved on the BridgeToken itself
+      registeredDenomInBridgeToken = await state.rowan.cosmosDenom();
+      expect(registeredDenomInBridgeToken).to.be.equal(state.constants.denom.one);
+    });
+
+    it("should not allow a user to set a BridgeToken's denom", async function () {
+      // set a new denom
+      await expect(state.bridgeBank.connect(userOne)
+        .setBridgeTokenDenom(state.rowan.address, state.constants.denom.one))
+        .to.be.revertedWith('!operator');
     });
   });
 });
