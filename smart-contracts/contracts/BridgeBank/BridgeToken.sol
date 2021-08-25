@@ -13,8 +13,7 @@ contract BridgeToken is ERC20Burnable, Ownable {
     uint8 private _decimals;
     string public cosmosDenom;
 
-    constructor(string memory _name, string memory _symbol, uint8 _tokenDecimals, string memory _cosmosDenom)
-        public
+    constructor(string calldata _name, string calldata _symbol, uint8 _tokenDecimals, string calldata _cosmosDenom)
         ERC20(_name, _symbol)
         Ownable()
     {
@@ -40,7 +39,12 @@ contract BridgeToken is ERC20Burnable, Ownable {
         return _decimals;
     }
 
-    function setDenom(string memory denom) external onlyOwner returns (bool) {
+    /**
+     * @notice Sets the cosmosDenom
+     * @param denom The new cosmos denom
+     * @return true if the operation succeeds
+     */
+    function setDenom(string calldata denom) external onlyOwner returns (bool) {
         cosmosDenom = denom;
         return true;
     }
