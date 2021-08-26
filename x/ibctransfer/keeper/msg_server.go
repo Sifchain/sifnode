@@ -7,7 +7,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 
-	transfertypes "github.com/Sifchain/sifnode/x/ibctransfer/types"
+	sctransfertypes "github.com/Sifchain/sifnode/x/ibctransfer/types"
 	tokenregistrytypes "github.com/Sifchain/sifnode/x/tokenregistry/types"
 
 	sdktransfertypes "github.com/cosmos/cosmos-sdk/x/ibc/applications/transfer/types"
@@ -41,7 +41,7 @@ func (srv msgServer) Transfer(goCtx context.Context, msg *sdktransfertypes.MsgTr
 		if registryEntry.Decimals > sendAsRegistryEntry.Decimals {
 			token, tokenConversion := ConvertCoinsForTransfer(goCtx, msg, registryEntry, sendAsRegistryEntry)
 			if token.Amount.Equal(sdk.NewInt(0)) {
-				return nil, transfertypes.ErrAmountTooLowToConvert
+				return nil, sctransfertypes.ErrAmountTooLowToConvert
 			}
 			err := PrepareToSendConvertedCoins(goCtx, msg, token, tokenConversion, srv.bankKeeper)
 			if err != nil {
@@ -102,12 +102,12 @@ func PrepareToSendConvertedCoins(goCtx context.Context, msg *sdktransfertypes.Ms
 	// Record conversion event, sender and coins
 	ctx.EventManager().EmitEvent(
 		sdk.NewEvent(
-			transfertypes.EventTypeConvertTransfer,
+			sctransfertypes.EventTypeConvertTransfer,
 			sdk.NewAttribute(sdk.AttributeKeyModule, sdktransfertypes.ModuleName),
-			sdk.NewAttribute(transfertypes.AttributeKeySentAmount, fmt.Sprintf("%v", token.Amount)),
-			sdk.NewAttribute(transfertypes.AttributeKeySentDenom, token.Denom),
-			sdk.NewAttribute(transfertypes.AttributeKeyConvertAmount, fmt.Sprintf("%v", convToken.Amount)),
-			sdk.NewAttribute(transfertypes.AttributeKeyConvertDenom, convToken.Denom),
+			sdk.NewAttribute(sctransfertypes.AttributeKeySentAmount, fmt.Sprintf("%v", token.Amount)),
+			sdk.NewAttribute(sctransfertypes.AttributeKeySentDenom, token.Denom),
+			sdk.NewAttribute(sctransfertypes.AttributeKeyConvertAmount, fmt.Sprintf("%v", convToken.Amount)),
+			sdk.NewAttribute(sctransfertypes.AttributeKeyConvertDenom, convToken.Denom),
 		),
 	)
 

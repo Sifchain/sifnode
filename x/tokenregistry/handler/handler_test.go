@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/Sifchain/sifnode/x/tokenregistry/handler"
-	"github.com/Sifchain/sifnode/x/tokenregistry/test"
+	tokenregistrytest "github.com/Sifchain/sifnode/x/tokenregistry/test"
 	"github.com/Sifchain/sifnode/x/tokenregistry/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/assert"
@@ -12,7 +12,7 @@ import (
 )
 
 func TestHandleRegister(t *testing.T) {
-	app, ctx, admin := test.CreateTestApp(false)
+	app, ctx, admin := tokenregistrytest.CreateTestApp(false)
 	h := handler.NewHandler(app.TokenRegistryKeeper)
 	tests := []struct {
 		name           string
@@ -113,7 +113,7 @@ func TestHandleRegister(t *testing.T) {
 }
 
 func TestHandleDeregister(t *testing.T) {
-	app, ctx, admin := test.CreateTestApp(false)
+	app, ctx, admin := tokenregistrytest.CreateTestApp(false)
 
 	app.TokenRegistryKeeper.SetToken(ctx, &types.RegistryEntry{
 		IsWhitelisted: true,

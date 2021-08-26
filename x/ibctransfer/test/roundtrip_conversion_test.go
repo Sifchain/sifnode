@@ -1,9 +1,10 @@
-package ibctransfer
+package test
 
 import (
 	"context"
 	"testing"
 
+	"github.com/Sifchain/sifnode/x/ibctransfer"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	transfertypes "github.com/cosmos/cosmos-sdk/x/ibc/applications/transfer/types"
 	channeltypes "github.com/cosmos/cosmos-sdk/x/ibc/core/04-channel/types"
@@ -61,7 +62,7 @@ func TestExportImportConversionEquality(t *testing.T) {
 	wl.EXPECT().GetDenom(ctx, "microrowan").Return(microRowanEntry)
 	wl.EXPECT().GetDenom(ctx, "rowan").Return(rowanEntry)
 
-	incomingDeduction, incomingAddition := GetConvForIncomingCoins(ctx, wl, returningTransferPacket, tokenPacket)
+	incomingDeduction, incomingAddition := ibctransfer.GetConvForIncomingCoins(ctx, wl, returningTransferPacket, tokenPacket)
 	require.Greater(t, incomingAddition.Amount.String(), incomingDeduction.Amount.String())
 	require.Equal(t, outgoingDeduction, incomingAddition)
 	require.Equal(t, outgoingAddition, incomingDeduction)

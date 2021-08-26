@@ -1,4 +1,4 @@
-package test_framework
+package test
 
 import (
 	"testing"

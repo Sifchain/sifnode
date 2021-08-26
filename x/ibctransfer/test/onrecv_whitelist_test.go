@@ -1,8 +1,10 @@
-package ibctransfer
+package test
 
 import (
 	"testing"
 
+	"github.com/Sifchain/sifnode/x/ibctransfer"
+	tokenregistrytypes "github.com/Sifchain/sifnode/x/tokenregistry/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	transfertypes "github.com/cosmos/cosmos-sdk/x/ibc/applications/transfer/types"
 	channeltypes "github.com/cosmos/cosmos-sdk/x/ibc/core/04-channel/types"
@@ -12,6 +14,21 @@ import (
 
 	whitelistmocks "github.com/Sifchain/sifnode/x/tokenregistry/types/mock"
 )
+
+func isRecvPacketAllowed(ctx sdk.Context, whitelistKeeper tokenregistrytypes.Keeper,
+	packet channeltypes.Packet, data transfertypes.FungibleTokenPacketData) bool {
+
+	isReturning := ibctransfer.IsRecvPacketReturning(packet, data)
+
+	denom := ibctransfer.GetMintedDenomFromPacket(packet, data)
+	isWhitelisted := ibctransfer.IsWhitelisted(ctx, whitelistKeeper, denom)
+
+	if isReturning || isWhitelisted {
+		return true
+	}
+
+	return false
+}
 
 func TestIsRecvPacketAllowed(t *testing.T) {
 	ctrl := gomock.NewController(t)
@@ -95,9 +112,9 @@ func TestIsRecvPacketReturning(t *testing.T) {
 		Denom: "transfer/channel-11/atom",
 	}
 
-	got := IsRecvPacketReturning(packet, returningData)
+	got := ibctransfer.IsRecvPacketReturning(packet, returningData)
 	require.Equal(t, got, true)
 
-	got = IsRecvPacketReturning(packet, nonReturningData)
+	got = ibctransfer.IsRecvPacketReturning(packet, nonReturningData)
 	require.Equal(t, got, false)
 }

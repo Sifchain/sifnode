@@ -1,16 +1,17 @@
 package keeper_test
 
 import (
+	"testing"
+
 	"github.com/Sifchain/sifnode/x/tokenregistry/keeper"
-	"github.com/Sifchain/sifnode/x/tokenregistry/test"
+	tokenregistrytest "github.com/Sifchain/sifnode/x/tokenregistry/test"
 	"github.com/Sifchain/sifnode/x/tokenregistry/types"
 	"github.com/stretchr/testify/require"
 	abci "github.com/tendermint/tendermint/abci/types"
-	"testing"
 )
 
 func TestQueryEntries(t *testing.T) {
-	app, ctx, _ := test.CreateTestApp(false)
+	app, ctx, _ := tokenregistrytest.CreateTestApp(false)
 
 	app.TokenRegistryKeeper.SetToken(ctx, &types.RegistryEntry{
 		Denom:    "rowan",

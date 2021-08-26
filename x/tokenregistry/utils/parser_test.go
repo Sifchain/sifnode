@@ -2,14 +2,16 @@ package utils_test
 
 import (
 	"encoding/json"
-	"github.com/Sifchain/sifnode/x/tokenregistry/test"
+
+	tokenregistrytest "github.com/Sifchain/sifnode/x/tokenregistry/test"
 	"github.com/Sifchain/sifnode/x/tokenregistry/types"
 	"github.com/Sifchain/sifnode/x/tokenregistry/utils"
 
-	"github.com/stretchr/testify/assert"
 	"io/ioutil"
 	"os"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func createInput(t *testing.T, filename string) {
@@ -26,7 +28,7 @@ func createInput(t *testing.T, filename string) {
 }
 
 func TestParseDenoms(t *testing.T) {
-	app, _, _ := test.CreateTestApp(false)
+	app, _, _ := tokenregistrytest.CreateTestApp(false)
 	filepath := "denoms.json"
 	defer os.Remove(filepath)
 	createInput(t, filepath)

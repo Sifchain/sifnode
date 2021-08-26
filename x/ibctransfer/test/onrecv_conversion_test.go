@@ -1,8 +1,9 @@
-package ibctransfer
+package test
 
 import (
 	"testing"
 
+	"github.com/Sifchain/sifnode/x/ibctransfer"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	transfertypes "github.com/cosmos/cosmos-sdk/x/ibc/applications/transfer/types"
 	channeltypes "github.com/cosmos/cosmos-sdk/x/ibc/core/04-channel/types"
@@ -64,11 +65,11 @@ func TestShouldConvertIncomingCoins(t *testing.T) {
 
 	wl.EXPECT().GetDenom(ctx, "ueth").Return(ibcRegistryEntry)
 	wl.EXPECT().GetDenom(ctx, "ceth").Return(unitDenomEntry)
-	got := ShouldConvertIncomingCoins(ctx, wl, returningTransferPacket, ibcDenom)
+	got := ibctransfer.ShouldConvertIncomingCoins(ctx, wl, returningTransferPacket, ibcDenom)
 	require.Equal(t, got, true)
 
 	wl.EXPECT().GetDenom(ctx, "cusdt").Return(nonIBCRegistryEntry)
-	got = ShouldConvertIncomingCoins(ctx, wl, returningTransferPacket, nonIBCDenom)
+	got = ibctransfer.ShouldConvertIncomingCoins(ctx, wl, returningTransferPacket, nonIBCDenom)
 	require.Equal(t, got, false)
 }
 
@@ -110,7 +111,7 @@ func TestGetConvForIncomingCoins(t *testing.T) {
 
 	wl.EXPECT().GetDenom(ctx, "ueth").Return(ibcRegistryEntry)
 	wl.EXPECT().GetDenom(ctx, "ceth").Return(unitDenomEntry)
-	gotIBCToken, gotConvToken := GetConvForIncomingCoins(ctx, wl, returningTransferPacket, ibcDenom)
+	gotIBCToken, gotConvToken := ibctransfer.GetConvForIncomingCoins(ctx, wl, returningTransferPacket, ibcDenom)
 	intAmount, _ := sdk.NewIntFromString("100000000000000000000")
 	require.Equal(t, gotIBCToken, sdk.NewCoin("ueth", sdk.NewInt(1000000000000)))
 	require.Equal(t, gotConvToken, sdk.NewCoin("ceth", intAmount))
