@@ -1,0 +1,27 @@
+{
+  "entries": [
+    {
+      "is_whitelisted": true,
+      "decimals": "6",
+      "denom": "ibc/DFD628D519AE17E66130E9877E56EF1B06EF6FED08B550298A8C03FE141F224D",
+      "base_denom": "udvpn",
+      "path": "transfer/channel-7",
+      "ibc_channel_id": "channel-7",
+      "ibc_counterparty_channel_id": "channel-32",
+      "display_name": "uDVPN",
+      "display_symbol": "",
+      "network": "",
+      "address": "",
+      "external_symbol": "udvpn",
+      "transfer_limit": "",
+      "permissions": [
+        "CLP",
+        "IBCEXPORT",
+        "IBCIMPORT"
+      ],
+      "unit_denom": "",
+      "ibc_counterparty_denom": "",
+      "ibc_counterparty_chain_id": "sentinelhub-2"
+    }
+  ]
+}

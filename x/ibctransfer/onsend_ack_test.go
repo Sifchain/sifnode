@@ -1,4 +1,4 @@
-package ibctransfer
+package ibctransfer_test
 
 import (
 	"testing"
@@ -8,6 +8,7 @@ import (
 	channeltypes "github.com/cosmos/cosmos-sdk/x/ibc/core/04-channel/types"
 	"github.com/stretchr/testify/require"
 
+	"github.com/Sifchain/sifnode/x/ibctransfer"
 	sctransfertypes "github.com/Sifchain/sifnode/x/ibctransfer/types"
 	tokenregistrytypes "github.com/Sifchain/sifnode/x/tokenregistry/types"
 )
@@ -37,7 +38,7 @@ func TestOnAcknowledgementMaybeConvert(t *testing.T) {
 	for _, tt := range tests {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
-			_, err := OnAcknowledgementMaybeConvert(tt.args.ctx, tt.args.sdkTransferKeeper, tt.args.whitelistKeeper, tt.args.bankKeeper, tt.args.packet, tt.args.acknowledgement)
+			_, err := ibctransfer.OnAcknowledgementMaybeConvert(tt.args.ctx, tt.args.sdkTransferKeeper, tt.args.whitelistKeeper, tt.args.bankKeeper, tt.args.packet, tt.args.acknowledgement)
 			require.ErrorIs(t, err, tt.err)
 			// Assert events have recorded what happened.
 		})

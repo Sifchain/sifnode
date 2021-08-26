@@ -25,7 +25,7 @@ func OnRecvPacketEnforceWhitelist(
 		return nil, nil, sdkerrors.Wrapf(sdkerrors.ErrUnknownRequest, "cannot unmarshal ICS-20 transfer packet data: %s", err.Error())
 	}
 
-	if !isRecvPacketAllowed(ctx, whitelistKeeper, packet, data) {
+	if !IsRecvPacketAllowed(ctx, whitelistKeeper, packet, data) {
 		acknowledgement := channeltypes.NewErrorAcknowledgement(
 			sdkerrors.Wrapf(sdkerrors.ErrInvalidCoins, "denom not on whitelist").Error(),
 		)
@@ -48,12 +48,15 @@ func OnRecvPacketEnforceWhitelist(
 	return OnRecvPacketMaybeConvert(ctx, sdkTransferKeeper, whitelistKeeper, bankKeeper, packet)
 }
 
-func isRecvPacketAllowed(ctx sdk.Context, whitelistKeeper tokenregistrytypes.Keeper,
+func IsRecvPacketAllowed(ctx sdk.Context, whitelistKeeper tokenregistrytypes.Keeper,
 	packet channeltypes.Packet, data transfertypes.FungibleTokenPacketData) bool {
 
 	isReturning := IsRecvPacketReturning(packet, data)
 
 	denom := GetMintedDenomFromPacket(packet, data)
+	if !whitelistKeeper.CheckDenomPermissions(ctx, denom, []tokenregistrytypes.Permission{tokenregistrytypes.Permission_IBCIMPORT}) {
+		return false
+	}
 	isWhitelisted := IsWhitelisted(ctx, whitelistKeeper, denom)
 
 	if isReturning || isWhitelisted {

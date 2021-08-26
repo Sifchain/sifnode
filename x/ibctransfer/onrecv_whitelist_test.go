@@ -1,4 +1,4 @@
-package ibctransfer
+package ibctransfer_test
 
 import (
 	"testing"
@@ -10,6 +10,7 @@ import (
 	"github.com/stretchr/testify/require"
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 
+	"github.com/Sifchain/sifnode/x/ibctransfer"
 	whitelistmocks "github.com/Sifchain/sifnode/x/tokenregistry/types/mock"
 )
 
@@ -54,28 +55,28 @@ func TestIsRecvPacketAllowed(t *testing.T) {
 		IsDenomWhitelisted(ctx,
 			"ibc/44F0BAC50DDD0C83DAC9CEFCCC770C12F700C0D1F024ED27B8A3EE9DD949BAD3").
 		Return(true)
-	got := isRecvPacketAllowed(ctx, wl, nonReturningTransferPacket, whitelistedDenom)
+	got := ibctransfer.IsRecvPacketAllowed(ctx, wl, nonReturningTransferPacket, whitelistedDenom)
 	require.Equal(t, got, true)
 
 	wl.EXPECT().
 		IsDenomWhitelisted(ctx,
 			"ibc/A916425D9C00464330F8B333711C4A51AA8CF0141392E7E250371EC6D4285BF2").
 		Return(false)
-	got = isRecvPacketAllowed(ctx, wl, nonReturningTransferPacket, disallowedDenom)
+	got = ibctransfer.IsRecvPacketAllowed(ctx, wl, nonReturningTransferPacket, disallowedDenom)
 	require.Equal(t, got, false)
 
 	wl.EXPECT().
 		IsDenomWhitelisted(ctx,
 			"ibc/A916425D9C00464330F8B333711C4A51AA8CF0141392E7E250371EC6D4285BF2").
 		Return(true)
-	got = isRecvPacketAllowed(ctx, wl, returningTransferPacket, disallowedDenom)
+	got = ibctransfer.IsRecvPacketAllowed(ctx, wl, returningTransferPacket, disallowedDenom)
 	require.Equal(t, got, true)
 
 	wl.EXPECT().
 		IsDenomWhitelisted(ctx,
 			"ibc/44F0BAC50DDD0C83DAC9CEFCCC770C12F700C0D1F024ED27B8A3EE9DD949BAD3").
 		Return(true)
-	got = isRecvPacketAllowed(ctx, wl, returningTransferPacket, whitelistedDenom)
+	got = ibctransfer.IsRecvPacketAllowed(ctx, wl, returningTransferPacket, whitelistedDenom)
 	require.Equal(t, got, true)
 }
 
@@ -95,9 +96,9 @@ func TestIsRecvPacketReturning(t *testing.T) {
 		Denom: "transfer/channel-11/atom",
 	}
 
-	got := IsRecvPacketReturning(packet, returningData)
+	got := ibctransfer.IsRecvPacketReturning(packet, returningData)
 	require.Equal(t, got, true)
 
-	got = IsRecvPacketReturning(packet, nonReturningData)
+	got = ibctransfer.IsRecvPacketReturning(packet, nonReturningData)
 	require.Equal(t, got, false)
 }

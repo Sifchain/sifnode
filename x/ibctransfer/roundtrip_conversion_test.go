@@ -1,4 +1,4 @@
-package ibctransfer
+package ibctransfer_test
 
 import (
 	"context"
@@ -11,6 +11,7 @@ import (
 	"github.com/stretchr/testify/require"
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 
+	"github.com/Sifchain/sifnode/x/ibctransfer"
 	"github.com/Sifchain/sifnode/x/ibctransfer/keeper"
 	tokenregistrytypes "github.com/Sifchain/sifnode/x/tokenregistry/types"
 	whitelistmocks "github.com/Sifchain/sifnode/x/tokenregistry/types/mock"
@@ -61,7 +62,7 @@ func TestExportImportConversionEquality(t *testing.T) {
 	wl.EXPECT().GetDenom(ctx, "microrowan").Return(microRowanEntry)
 	wl.EXPECT().GetDenom(ctx, "rowan").Return(rowanEntry)
 
-	incomingDeduction, incomingAddition := GetConvForIncomingCoins(ctx, wl, returningTransferPacket, tokenPacket)
+	incomingDeduction, incomingAddition := ibctransfer.GetConvForIncomingCoins(ctx, wl, returningTransferPacket, tokenPacket)
 	require.Greater(t, incomingAddition.Amount.String(), incomingDeduction.Amount.String())
 	require.Equal(t, outgoingDeduction, incomingAddition)
 	require.Equal(t, outgoingAddition, incomingDeduction)
