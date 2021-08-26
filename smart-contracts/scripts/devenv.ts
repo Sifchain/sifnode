@@ -5,7 +5,6 @@ import { DeployedContractAddresses } from "../scripts/deploy_contracts";
 import { SmartContractDeployer } from "../src/devenv/smartcontractDeployer";
 import { EbrelayerRunner } from "../src/devenv/ebrelayer";
 
-
 async function startHardhat() {
   const node = new HardhatNodeRunner()
   const [process, resultsPromise] = node.go()
