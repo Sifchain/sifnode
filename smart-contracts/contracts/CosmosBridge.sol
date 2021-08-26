@@ -392,7 +392,7 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
      * @param _networkDescriptor Unique identifier of the network
      * @return Boolean: is `_networkDescriptor` what we expected?
      */
-    function _verifyNetworkDescriptor(uint256 _networkDescriptor) private returns(bool) {
+    function _verifyNetworkDescriptor(uint256 _networkDescriptor) private view returns(bool) {
         return _networkDescriptor == networkDescriptor;
     }
 
