@@ -1,4 +1,4 @@
-import { EthereumArguments, HardhatNodeRunner } from "../src/devenv/hardhatNode";
+import { HardhatNodeRunner } from "../src/devenv/hardhatNode";
 import { GolangBuilder, GolangResults, GolangResultsPromise } from "../src/devenv/golangBuilder";
 import { SifnodedResults, SifnodedRunner, ValidatorValues } from "../src/devenv/sifnoded";
 import { DeployedContractAddresses } from "../scripts/deploy_contracts";
@@ -7,14 +7,7 @@ import { EbrelayerRunner } from "../src/devenv/ebrelayer";
 
 
 async function startHardhat() {
-  const node = new HardhatNodeRunner(
-    {
-      host: "localhost",
-      port: 8545,
-      nValidators: 1,
-      networkId: 1,
-      chainId: 1
-    })
+  const node = new HardhatNodeRunner()
   const [process, resultsPromise] = node.go()
   const results = await resultsPromise
   console.log(`rsltis: ${JSON.stringify(results, undefined, 2)}`)
@@ -39,16 +32,6 @@ async function golangBuilder() {
 async function sifnodedBuilder(golangResults: GolangResultsPromise) {
   console.log('in sifnodedBuilder')
   const node = new SifnodedRunner(
-    {
-      logfile: "/tmp/sifnoded.log",
-      rpcPort: 9000,
-      nValidators: 1,
-      chainId: "localnet",
-      networkConfigFile: "/tmp/sifnodedConfig.yml",
-      networkDir: "/tmp/sifnodedNetwork",
-      seedIpAddress: "10.10.1.1",
-      whitelistFile: "../test/integration/whitelisted-denoms.json"
-    },
     golangResults
   )
   const [process, resultsPromise] = node.go()
@@ -72,13 +55,7 @@ async function smartContractDeployer(golangResults: GolangResults, sifnodedResul
 async function ebrelayerBuilder(contractAddresses: DeployedContractAddresses, validater: ValidatorValues) {
   const node: EbrelayerRunner = new EbrelayerRunner({
     smartContract: contractAddresses,
-    websocketAddress: "ws://localhost:7545/",
-    tcpURL: "tcp://0.0.0.0:26657",
-    chainNet: "localnet",
-    ebrelayerDB: `levelDB.db`,
-    relayerdbPath: "",
     validatorValues: validater,
-    symbolTranslatorFile: "../test/integration/whitelisted-denom.json"
   });
   const [process, resultsPromise] = node.go();
   const result = await resultsPromise;

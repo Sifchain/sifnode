@@ -5,17 +5,6 @@ import * as path from "path"
 import * as fs from "fs";
 import YAML from 'yaml'
 
-export interface SifnodedArguments {
-  readonly logfile: string;
-  readonly rpcPort: number;
-  readonly nValidators: number;
-  readonly chainId: string;
-  readonly networkConfigFile: string;
-  readonly networkDir: string;
-  readonly seedIpAddress: string;
-  readonly whitelistFile: string;
-}
-
 export interface ValidatorValues {
   chainID: string;
   nodeID: string;
@@ -36,8 +25,15 @@ export interface SifnodedResults {
 
 export class SifnodedRunner extends ShellCommand<SifnodedResults> {
   constructor(
-    readonly args: SifnodedArguments,
-    readonly golangResults: GolangResultsPromise
+    readonly golangResults: GolangResultsPromise,
+    readonly logfile = "/tmp/sifnoded.log",
+    readonly rpcPort = 9000,
+    readonly nValidators = 1,
+    readonly chainId = "localnet",
+    readonly networkConfigFile = "/tmp/sifnodedConfig.yml",
+    readonly networkDir = "/tmp/sifnodedNetwork",
+    readonly seedIpAddress = "10.10.1.1",
+    readonly whitelistFile = "../test/integration/whitelisted-denoms.json"
   ) {
     super();
   }
@@ -53,42 +49,42 @@ export class SifnodedRunner extends ShellCommand<SifnodedResults> {
     const sifgenArgs = [
       "network",
       "create",
-      this.args.chainId,
-      this.args.nValidators.toString(),
-      this.args.networkDir,
-      this.args.seedIpAddress,
-      this.args.networkConfigFile,
+      this.chainId,
+      this.nValidators.toString(),
+      this.networkDir,
+      this.seedIpAddress,
+      this.networkConfigFile,
       "--keyring-backend",
       "test",
     ]
 
-    await fs.promises.mkdir(this.args.networkDir, { recursive: true });
+    await fs.promises.mkdir(this.networkDir, { recursive: true });
 
     const sifgenOutput = ChildProcess.execFileSync(
       path.join((await this.golangResults.results).goBin, "sifgen"),
       sifgenArgs,
       { encoding: "utf8" }
     )
-    const file = fs.readFileSync(this.args.networkConfigFile, 'utf8')
+    const file = fs.readFileSync(this.networkConfigFile, 'utf8')
     const networkConfig = YAML.parse(file)
     const moniker = networkConfig[0]["moniker"]
     let mnemonic = networkConfig[0]["mnemonic"]
     let password = networkConfig[0]["password"]
     const chainDir = path.join(
-      this.args.networkDir,
+      this.networkDir,
       "validators",
-      this.args.chainId,
+      this.chainId,
       moniker
     )
     const homeDir = path.join(chainDir, ".sifnoded")
     await this.addValidatorKeyToTestKeyring(
       moniker,
-      this.args.networkDir,
+      this.networkDir,
       mnemonic,
     )
     const valOperKey = await this.readValoperKey(
       moniker,
-      this.args.networkDir,
+      this.networkDir,
       mnemonic,
     )
     await this.addGenesisValidator(chainDir, valOperKey)
@@ -123,7 +119,7 @@ export class SifnodedRunner extends ShellCommand<SifnodedResults> {
       { encoding: "utf8" }
     ).trim()
     ChildProcess.execSync(
-      `${sifnodedCommand} set-gen-denom-whitelist ${this.args.whitelistFile} --home ${homeDir}`,
+      `${sifnodedCommand} set-gen-denom-whitelist ${this.whitelistFile} --home ${homeDir}`,
       { encoding: "utf8" }
     ).trim()
     let sifnodedDaemonCmd = `${sifnodedCommand} start --minimum-gas-prices 0.5rowan --rpc.laddr tcp://0.0.0.0:26657 --home ${homeDir}`;
