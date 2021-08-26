@@ -2,6 +2,7 @@ package types
 
 import (
 	"fmt"
+	tokenregistrytypes "github.com/Sifchain/sifnode/x/tokenregistry/types"
 )
 
 const (
@@ -45,4 +46,8 @@ func GetPoolKey(externalTicker string, nativeTicker string) ([]byte, error) {
 func GetLiquidityProviderKey(externalTicker string, lp string) []byte {
 	key := []byte(fmt.Sprintf("%s_%s", externalTicker, lp))
 	return append(LiquidityProviderPrefix, key...)
+}
+
+func GetCLPermissons() []tokenregistrytypes.Permission {
+	return []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP}
 }

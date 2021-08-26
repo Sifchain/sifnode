@@ -45,7 +45,6 @@ func GetCmdRegister() *cobra.Command {
 			} else if len(registry.Entries) != 1 {
 				return errors.New("exactly one token entry must be specified in input file")
 			}
-
 			msg := types.MsgRegister{
 				From:  clientCtx.GetFromAddress().String(),
 				Entry: registry.Entries[0],

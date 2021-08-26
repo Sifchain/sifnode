@@ -13,7 +13,7 @@ func Init(ctx sdk.Context, keeper tokenregistrytypes.Keeper) {
 
 	keeper.SetAdminAccount(ctx, addr)
 
-	registry := tokenregistrytypes.DefaultRegistry()
+	registry := tokenregistrytypes.InitialRegistry()
 
 	for _, t := range registry.Entries {
 		keeper.SetToken(ctx, t)

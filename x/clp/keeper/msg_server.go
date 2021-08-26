@@ -12,6 +12,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/types/query"
 
 	"github.com/Sifchain/sifnode/x/clp/types"
+	tokenregistrytypes "github.com/Sifchain/sifnode/x/tokenregistry/types"
 )
 
 type msgServer struct {
@@ -109,6 +110,9 @@ func (k msgServer) Swap(goCtx context.Context, msg *types.MsgSwap) (*types.MsgSw
 		priceImpact sdk.Uint
 	)
 	if !(k.tokenRegistryKeeper.IsDenomWhitelisted(ctx, msg.ReceivedAsset.Symbol) || (k.tokenRegistryKeeper.IsDenomWhitelisted(ctx, msg.SentAsset.Symbol))) {
+		return nil, types.ErrTokenNotSupported
+	}
+	if !k.tokenRegistryKeeper.CheckDenomPermissions(ctx, msg.ReceivedAsset.Symbol, types.GetCLPermissons()) || !k.tokenRegistryKeeper.CheckDenomPermissions(ctx, msg.SentAsset.Symbol, types.GetCLPermissons()) {
 		return nil, types.ErrTokenNotSupported
 	}
 	liquidityFeeNative := sdk.ZeroUint()
@@ -243,6 +247,9 @@ func (k msgServer) RemoveLiquidity(goCtx context.Context, msg *types.MsgRemoveLi
 	if !k.tokenRegistryKeeper.IsDenomWhitelisted(ctx, msg.ExternalAsset.Symbol) {
 		return nil, types.ErrTokenNotSupported
 	}
+	if !k.tokenRegistryKeeper.CheckDenomPermissions(ctx, msg.ExternalAsset.Symbol, types.GetCLPermissons()) {
+		return nil, tokenregistrytypes.ErrPermissionDenied
+	}
 	pool, err := k.Keeper.GetPool(ctx, msg.ExternalAsset.Symbol)
 	if err != nil {
 		return nil, types.ErrPoolDoesNotExist
@@ -359,6 +366,9 @@ func (k msgServer) CreatePool(goCtx context.Context, msg *types.MsgCreatePool) (
 	if !k.tokenRegistryKeeper.IsDenomWhitelisted(ctx, msg.ExternalAsset.Symbol) {
 		return nil, types.ErrTokenNotSupported
 	}
+	if !k.tokenRegistryKeeper.CheckDenomPermissions(ctx, msg.ExternalAsset.Symbol, types.GetCLPermissons()) {
+		return nil, tokenregistrytypes.ErrPermissionDenied
+	}
 	// Check if pool already exists
 	if k.Keeper.ExistsPool(ctx, msg.ExternalAsset.Symbol) {
 		return nil, types.ErrUnableToCreatePool
@@ -408,6 +418,9 @@ func (k msgServer) AddLiquidity(goCtx context.Context, msg *types.MsgAddLiquidit
 	ctx := sdk.UnwrapSDKContext(goCtx)
 	if !k.tokenRegistryKeeper.IsDenomWhitelisted(ctx, msg.ExternalAsset.Symbol) {
 		return nil, types.ErrTokenNotSupported
+	}
+	if !k.tokenRegistryKeeper.CheckDenomPermissions(ctx, msg.ExternalAsset.Symbol, types.GetCLPermissons()) {
+		return nil, tokenregistrytypes.ErrPermissionDenied
 	}
 	// Get pool
 	pool, err := k.Keeper.GetPool(ctx, msg.ExternalAsset.Symbol)

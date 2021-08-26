@@ -3,6 +3,7 @@ package types
 import (
 	"encoding/json"
 	"fmt"
+	"strings"
 
 	"github.com/cosmos/cosmos-sdk/codec"
 )
@@ -30,8 +31,8 @@ func GetGenesisStateFromAppState(marshaler codec.JSONMarshaler, appState map[str
 	return genesisState
 }
 
-func DefaultRegistry() Registry {
-	return Registry{
+func InitialRegistry() Registry {
+	entries := Registry{
 		Entries: []*RegistryEntry{
 			{IsWhitelisted: true, Denom: "ibc/287EE075B7AADDEB240AFE74FA2108CDACA50A7CCD013FA4C1FCD142AFA9CA9A", BaseDenom: "uphoton", IbcChannelId: "channel-0", IbcCounterpartyChannelId: "channel-86", Path: "transfer/channel-0", DisplayName: "uPHOTON", ExternalSymbol: "uPHOTON", Decimals: 6},
 			{IsWhitelisted: true, Denom: "ibc/48E40290A494F271890BCFC867EB0940D8A6205DD94750C8EA71750480D65BA9", BaseDenom: "akt", IbcChannelId: "channel-1", IbcCounterpartyChannelId: "channel-12", Path: "transfer/channel-1", DisplayName: "AKT", ExternalSymbol: "AKT", Decimals: 6},
@@ -105,4 +106,12 @@ func DefaultRegistry() Registry {
 			{IsWhitelisted: true, Denom: "ckeep", Decimals: 18, Permissions: []Permission{Permission_CLP}},
 		},
 	}
+
+	for i := range entries.Entries {
+		if !strings.HasPrefix(entries.Entries[i].Denom, "ibc/") {
+			entries.Entries[i].BaseDenom = entries.Entries[i].Denom
+		}
+	}
+
+	return entries
 }
