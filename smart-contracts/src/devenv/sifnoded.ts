@@ -1,6 +1,6 @@
 import * as ChildProcess from "child_process"
 import { ShellCommand } from "./devEnv"
-import { GolangResultsPromise } from "./golangBuilder";
+import { GolangResults } from "./golangBuilder";
 import * as path from "path"
 import * as fs from "fs";
 import YAML from 'yaml'
@@ -25,7 +25,7 @@ export interface SifnodedResults {
 
 export class SifnodedRunner extends ShellCommand<SifnodedResults> {
   constructor(
-    readonly golangResults: GolangResultsPromise,
+    readonly golangResults: GolangResults,
     readonly logfile = "/tmp/sifnoded.log",
     readonly rpcPort = 9000,
     readonly nValidators = 1,
@@ -45,7 +45,7 @@ export class SifnodedRunner extends ShellCommand<SifnodedResults> {
   }
 
   async sifgenNetworkCreate() {
-    const sifnodedCommand = path.join((await this.golangResults.results).goBin, "sifnoded")
+    const sifnodedCommand = path.join(this.golangResults.goBin, "sifnoded")
     const sifgenArgs = [
       "network",
       "create",
@@ -61,7 +61,7 @@ export class SifnodedRunner extends ShellCommand<SifnodedResults> {
     await fs.promises.mkdir(this.networkDir, { recursive: true });
 
     const sifgenOutput = ChildProcess.execFileSync(
-      path.join((await this.golangResults.results).goBin, "sifgen"),
+      path.join(this.golangResults.goBin, "sifgen"),
       sifgenArgs,
       { encoding: "utf8" }
     )
@@ -140,7 +140,7 @@ export class SifnodedRunner extends ShellCommand<SifnodedResults> {
       "test",
     ]
     let child = ChildProcess.execFileSync(
-      path.join((await this.golangResults.results).goBin, "sifnoded"),
+      path.join(this.golangResults.goBin, "sifnoded"),
       sifgenArgs,
       { input: mnemonic, encoding: "utf8" }
     );
@@ -161,7 +161,7 @@ export class SifnodedRunner extends ShellCommand<SifnodedResults> {
       "test",
     ]
     return ChildProcess.execFileSync(
-      path.join((await this.golangResults.results).goBin, "sifnoded"),
+      path.join(this.golangResults.goBin, "sifnoded"),
       sifgenArgs,
       { encoding: "utf8" }
     ).trim()
@@ -176,7 +176,7 @@ export class SifnodedRunner extends ShellCommand<SifnodedResults> {
       path.join(chainDir, ".sifnoded"),
     ]
     return ChildProcess.execFileSync(
-      path.join((await this.golangResults.results).goBin, "sifnoded"),
+      path.join(this.golangResults.goBin, "sifnoded"),
       sifgenArgs,
       { encoding: "utf8" }
     )
