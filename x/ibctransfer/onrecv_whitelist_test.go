@@ -11,6 +11,7 @@ import (
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 
 	"github.com/Sifchain/sifnode/x/ibctransfer"
+	tokenregistrytypes "github.com/Sifchain/sifnode/x/tokenregistry/types"
 	whitelistmocks "github.com/Sifchain/sifnode/x/tokenregistry/types/mock"
 )
 
@@ -51,6 +52,10 @@ func TestIsRecvPacketAllowed(t *testing.T) {
 
 	wl := whitelistmocks.NewMockKeeper(ctrl)
 
+	wl.EXPECT().
+		CheckDenomPermissions(ctx,
+			"ibc/44F0BAC50DDD0C83DAC9CEFCCC770C12F700C0D1F024ED27B8A3EE9DD949BAD3", []tokenregistrytypes.Permission{tokenregistrytypes.Permission_IBCIMPORT}).
+		Return(true)
 	wl.EXPECT().
 		IsDenomWhitelisted(ctx,
 			"ibc/44F0BAC50DDD0C83DAC9CEFCCC770C12F700C0D1F024ED27B8A3EE9DD949BAD3").
