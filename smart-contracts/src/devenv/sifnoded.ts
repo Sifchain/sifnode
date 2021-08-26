@@ -24,6 +24,8 @@ export interface SifnodedResults {
 }
 
 export class SifnodedRunner extends ShellCommand<SifnodedResults> {
+  output: Promise<string>;
+  #outputResolve: any;
   constructor(
     readonly golangResults: GolangResults,
     readonly logfile = "/tmp/sifnoded.log",
@@ -36,6 +38,9 @@ export class SifnodedRunner extends ShellCommand<SifnodedResults> {
     readonly whitelistFile = "../test/integration/whitelisted-denoms.json"
   ) {
     super();
+    this.output = new Promise<string>((res, _) => {
+      this.#outputResolve = res;
+    });
   }
 
   cmd(): [string, string[]] {
@@ -127,7 +132,7 @@ export class SifnodedRunner extends ShellCommand<SifnodedResults> {
       sifnodedDaemonCmd,
       { shell: true, stdio: "inherit" }
     )
-    return
+    return stdout
     //    return lastValueFrom(eventEmitterToObservable(sifnoded, "sifnoded"))
   }
 
@@ -187,7 +192,8 @@ export class SifnodedRunner extends ShellCommand<SifnodedResults> {
   // }
 
   override async run(): Promise<void> {
-    await this.sifgenNetworkCreate();
+    const output = await this.sifgenNetworkCreate();
+    this.#outputResolve(output)
   }
 
   override async results(): Promise<SifnodedResults> {
