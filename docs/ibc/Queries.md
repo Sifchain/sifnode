@@ -43,28 +43,6 @@ height:
 - Query the client-state with channel-id
 
 ```shell
- sifnoded q ibc channel client-state transfer channel-101  --node=https://rpc-devnet.sifchain.finance:443 --chain-id=sifchain-devnet-1
-```
-```json
-channels:
-- channel_id: channel-101
-  connection_hops:
-  - connection-110
-  counterparty:
-    channel_id: channel-3
-    port_id: transfer
-  ordering: ORDER_UNORDERED
-  port_id: transfer
-  state: STATE_OPEN
-  version: ics20-1
-height:
-  revision_height: "1846741"
-  revision_number: "1"
-pagination:
-  next_key: L3BvcnRzL3RyYW5zZmVyL2NoYW5uZWxzL2NoYW5uZWwtODQ=
-  total: "0"
-````
-```shell
 sifnoded q ibc channel client-state transfer channel-101  --node=https://rpc-devnet.sifchain.finance:443 --chain-id=sifchain-devnet-1
 ````
 ```json
