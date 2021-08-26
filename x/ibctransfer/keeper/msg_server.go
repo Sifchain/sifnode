@@ -42,7 +42,6 @@ func (srv msgServer) Transfer(goCtx context.Context, msg *sdktransfertypes.MsgTr
 			token, tokenConversion := ConvertCoinsForTransfer(goCtx, msg, registryEntry, sendAsRegistryEntry)
 			if token.Amount.Equal(sdk.NewInt(0)) {
 				return nil, transfertypes.ErrAmountTooLowToConvert
-
 			}
 			err := PrepareToSendConvertedCoins(goCtx, msg, token, tokenConversion, srv.bankKeeper)
 			if err != nil {
