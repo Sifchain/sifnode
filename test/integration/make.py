@@ -927,6 +927,7 @@ class IntegrationTestsPlaybook:
         extract("networks.tar.gz", deploy_networks_dir)
         smart_contracts_build_dir = project_dir("smart-contracts/build")
         extract("smart-contracts.tar.gz", smart_contracts_build_dir)
+        extract("sifnoded.tar.gz", self.cmd.get_user_home(".sifnoded"))  # Needed for "--keyring-backend test"
 
         state_vars["GANACHE_DB_DIR"] = ganache_db_dir
         state_vars["EBRELAYER_DB"] = relayer_db_path
@@ -984,9 +985,7 @@ def cleanup_and_reset_state():
     cmd.rmdir(project_dir("test/integration/sifchainrelayerdb"))  # TODO move to /tmp
     cmd.rmdir(project_dir("smart-contracts/build"))
     cmd.rmdir(project_dir("test/integration/vagrant/data"))
-
-    # Not sure if this is needed too
-    cmd.rmdir(cmd.get_user_home(".sifnoded"))
+    cmd.rmdir(cmd.get_user_home(".sifnoded"))  # Probably needed for "--keyring-backend test"
 
     # Additional cleanup (not neccessary to make it work)
     # cmd.rm(project_dir("smart-contracts/combined.log"))
