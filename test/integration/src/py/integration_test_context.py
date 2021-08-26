@@ -1,4 +1,5 @@
 import importlib.util
+import copy
 import os
 import logging
 import test_utilities
