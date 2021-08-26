@@ -1,6 +1,4 @@
-import { singleton } from "tsyringe";
 import { SynchronousCommand, SynchronousCommandResult } from "./synchronousCommand";
-import { requiredEnvVar } from "../contractSupport";
 import { DeployedContractAddresses } from "../../scripts/deploy_contracts";
 
 export class SmartContractDeployResult extends SynchronousCommandResult {
@@ -21,7 +19,6 @@ export class SmartContractDeployResultsPromise {
   }
 }
 
-@singleton()
 export class SmartContractDeployer extends SynchronousCommand<SmartContractDeployResult> {
   constructor() {
     super();
@@ -39,10 +36,10 @@ export class SmartContractDeployer extends SynchronousCommand<SmartContractDeplo
     // This is to handle npx commmand outputting "No need to generate any newer types"
     const jsonOutput = JSON.parse(r.output.split('\n')[1]);
     return new SmartContractDeployResult({
-                                            bridgeBank: jsonOutput.bridgeBank,
-                                            bridgeRegistry: jsonOutput.bridgeResitry,
-                                            rowanContract: jsonOutput.rowanContract
-                                          },
-                                          r.completed, r.error, r.output);
+      bridgeBank: jsonOutput.bridgeBank,
+      bridgeRegistry: jsonOutput.bridgeResitry,
+      rowanContract: jsonOutput.rowanContract
+    },
+      r.completed, r.error, r.output);
   }
 }
