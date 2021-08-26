@@ -5,20 +5,6 @@ import * as path from "path"
 import * as fs from "fs";
 import YAML from 'yaml'
 
-@registry([
-  {
-    token: SifnodedArguments, useValue: new SifnodedArguments(
-      "/tmp/sifnoded.log",
-      9000,
-      1,
-      "localnet",
-      "/tmp/sifnodedConfig.yml",
-      "/tmp/sifnodedNetwork",
-      "10.10.1.1",
-      "../test/integration/whitelisted-denoms.json"
-    )
-  }
-])
 export interface SifnodedArguments {
   readonly logfile: string;
   readonly rpcPort: number;
