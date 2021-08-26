@@ -9,7 +9,6 @@ on:
       - develop
       - master
       - testnet
-      - feature/cosmos-0.42
 
 jobs:
   build_ui_stack:

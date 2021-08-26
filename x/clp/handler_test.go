@@ -1,7 +1,7 @@
 package clp_test
 
 import (
-	"github.com/Sifchain/sifnode/x/tokenregistry/types"
+	tokenregistrytypes "github.com/Sifchain/sifnode/x/tokenregistry/types"
 	"testing"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -80,7 +80,7 @@ func TestCreatePool(t *testing.T) {
 	_, err = handler(ctx, &msgNonWhitelisted)
 	require.Error(t, err)
 	// Whitelist Asset
-	app.TokenRegistryKeeper.SetToken(ctx, &types.RegistryEntry{IsWhitelisted: true, Denom: newAsset.Symbol, Decimals: 18})
+	app.TokenRegistryKeeper.SetToken(ctx, &tokenregistrytypes.RegistryEntry{IsWhitelisted: true, Denom: newAsset.Symbol, Decimals: 18, Permissions: []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP}})
 	newAssetCoin := sdk.NewCoin(newAsset.Symbol, sdk.Int(initialBalance))
 	_ = app.ClpKeeper.GetBankKeeper().AddCoins(ctx, signer, sdk.Coins{newAssetCoin}.Sort())
 	// Create Pool

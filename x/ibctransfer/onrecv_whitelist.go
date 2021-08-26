@@ -54,6 +54,9 @@ func IsRecvPacketAllowed(ctx sdk.Context, whitelistKeeper tokenregistrytypes.Kee
 	isReturning := IsRecvPacketReturning(packet, data)
 
 	denom := GetMintedDenomFromPacket(packet, data)
+	if !whitelistKeeper.CheckDenomPermissions(ctx, denom, []tokenregistrytypes.Permission{tokenregistrytypes.Permission_IBCIMPORT}) {
+		return false
+	}
 	isWhitelisted := IsWhitelisted(ctx, whitelistKeeper, denom)
 
 	if isReturning || isWhitelisted {
