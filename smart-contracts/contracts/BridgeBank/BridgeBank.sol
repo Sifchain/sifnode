@@ -705,8 +705,20 @@ contract BridgeBank is BankStorage,
 
     function setBridgeTokenDenom(
       address _token, string memory _denom
-    ) external onlyOperator returns (bool) {
+    ) public onlyOperator returns (bool) {
       contractDenom[_token] = _denom;
       return BridgeToken(_token).setDenom(_denom);
+    }
+
+    function batchSetBridgeTokenDenom(
+      address[] calldata _tokens, string[] calldata _denoms
+    ) external onlyOperator returns (bool) {
+      require(_tokens.length == _denoms.length, "INV_LEN");
+
+      for (uint256 i = 0; i < _tokens.length; i++) {
+        setBridgeTokenDenom(_tokens[i], _denoms[i]);
+      }
+
+      return true;
     }
 }

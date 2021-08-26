@@ -200,5 +200,93 @@ describe("Test Bridge Bank", function () {
         .setBridgeTokenDenom(state.rowan.address, state.constants.denom.one))
         .to.be.revertedWith('!operator');
     });
+
+    it("should allow the operator to set many BridgeTokens' denom in a batch", async function () {
+      // expect rowan to NOT have a defined denom on BridgeBank
+      let registeredDenom = await state.bridgeBank.contractDenom(state.rowan.address);
+      expect(registeredDenom).to.be.equal(state.constants.denom.none);
+
+      // expect rowan itself to have a denom
+      let registeredDenomInBridgeToken = await state.rowan.cosmosDenom();
+      expect(registeredDenomInBridgeToken).to.be.equal(state.constants.denom.rowan);
+
+      // transfer ownership of state.token_noDenom to the BridgeBank
+      await state.token_noDenom.transferOwnership(state.bridgeBank.address);
+
+      // expect the noDenom token to NOT have a defined denom on BridgeBank
+      let registeredDenom2 = await state.bridgeBank.contractDenom(state.token_noDenom.address);
+      expect(registeredDenom2).to.be.equal(state.constants.denom.none);
+
+      // expect the noDenom token itself to NOT have a denom either
+      let registeredDenomInBridgeToken2 = await state.token_noDenom.cosmosDenom();
+      expect(registeredDenomInBridgeToken2).to.be.equal(state.constants.denom.none);
+
+      // set the new denom for both of them
+      await expect(state.bridgeBank.connect(operator)
+        .batchSetBridgeTokenDenom(
+          [state.rowan.address, state.token_noDenom.address],
+          [state.constants.denom.one, state.constants.denom.two]
+        )).to.be.fulfilled;
+
+      // check the denom saved on BridgeBank
+      registeredDenom = await state.bridgeBank.contractDenom(state.rowan.address);
+      expect(registeredDenom).to.be.equal(state.constants.denom.one);
+
+      // check the denom saved on Rowan itself
+      registeredDenomInBridgeToken = await state.rowan.cosmosDenom();
+      expect(registeredDenomInBridgeToken).to.be.equal(state.constants.denom.one);
+
+      // check the denom saved on BridgeBank
+      registeredDenom2 = await state.bridgeBank.contractDenom(state.token_noDenom.address);
+      expect(registeredDenom2).to.be.equal(state.constants.denom.two);
+
+      // check the denom saved on the noDenom BridgeToken itself
+      registeredDenomInBridgeToken2 = await state.token_noDenom.cosmosDenom();
+      expect(registeredDenomInBridgeToken2).to.be.equal(state.constants.denom.two);
+    });
+
+    it("should NOT allow a user to set many BridgeTokens' denom in a batch", async function () {
+      // expect rowan to NOT have a defined denom on BridgeBank
+      let registeredDenom = await state.bridgeBank.contractDenom(state.rowan.address);
+      expect(registeredDenom).to.be.equal(state.constants.denom.none);
+
+      // expect rowan itself to have a denom
+      let registeredDenomInBridgeToken = await state.rowan.cosmosDenom();
+      expect(registeredDenomInBridgeToken).to.be.equal(state.constants.denom.rowan);
+
+      // transfer ownership of state.token_noDenom to the BridgeBank
+      await state.token_noDenom.transferOwnership(state.bridgeBank.address);
+
+      // expect the noDenom token to NOT have a defined denom on BridgeBank
+      let registeredDenom2 = await state.bridgeBank.contractDenom(state.token_noDenom.address);
+      expect(registeredDenom2).to.be.equal(state.constants.denom.none);
+
+      // expect the noDenom token itself to NOT have a denom either
+      let registeredDenomInBridgeToken2 = await state.token_noDenom.cosmosDenom();
+      expect(registeredDenomInBridgeToken2).to.be.equal(state.constants.denom.none);
+
+      // try to set the new denom for both of them
+      await expect(state.bridgeBank.connect(userOne)
+        .batchSetBridgeTokenDenom(
+          [state.rowan.address, state.token_noDenom.address],
+          [state.constants.denom.one, state.constants.denom.two]
+        )).to.be.revertedWith("!operator");
+
+      // check the denom saved on BridgeBank (shouldn't have changed)
+      registeredDenom = await state.bridgeBank.contractDenom(state.rowan.address);
+      expect(registeredDenom).to.be.equal(state.constants.denom.none);
+
+      // check the denom saved on Rowan itself (shouldn't have changed)
+      registeredDenomInBridgeToken = await state.rowan.cosmosDenom();
+      expect(registeredDenomInBridgeToken).to.be.equal(state.constants.denom.rowan);
+
+      // check the denom saved on BridgeBank (shouldn't have changed)
+      registeredDenom2 = await state.bridgeBank.contractDenom(state.token_noDenom.address);
+      expect(registeredDenom2).to.be.equal(state.constants.denom.none);
+
+      // check the denom saved on the noDenom BridgeToken itself (shouldn't have changed)
+      registeredDenomInBridgeToken2 = await state.token_noDenom.cosmosDenom();
+      expect(registeredDenomInBridgeToken2).to.be.equal(state.constants.denom.none);
+    });
   });
 });
