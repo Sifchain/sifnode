@@ -70,22 +70,17 @@ func OnAcknowledgementMaybeConvert(
 				sdk.NewAttribute(transfertypes.AttributeKeyAckError, resp.Error),
 			),
 		)
-		// TODO: Always refund, not only if sender of ack is source.
-		// TODO: Copy error / panic pattern from sdkkeeper.refundPacketToken in ExecConvForIncomingCoins.
-		// TODO: Why does sdk transfer module use escrow vs minting in different scenarios here?
-		// if sender is source check for conversion
-		if transfertypes.SenderChainIsSource(packet.GetSourcePort(), packet.GetSourceChannel(), data.Denom) {
-			// if needs conversion, convert and send
-			if ShouldConvertIncomingCoins(ctx, whitelistKeeper, packet, data) {
-				ibcToken, convToken := GetConvForIncomingCoins(ctx, whitelistKeeper, packet, data)
-				err := ExecConvForIncomingCoins(ctx, ibcToken, convToken, bankKeeper, packet, data)
-				if err != nil {
-					return nil, err
-				}
-				return &sdk.Result{
-					Events: ctx.EventManager().Events().ToABCIEvents(),
-				}, nil
+
+		// if needs conversion, convert and send
+		if ShouldConvertIncomingCoins(ctx, whitelistKeeper, packet, data) {
+			ibcToken, convToken := GetConvForIncomingCoins(ctx, whitelistKeeper, packet, data)
+			err := ExecConvForIncomingCoins(ctx, ibcToken, convToken, bankKeeper, packet, data)
+			if err != nil {
+				return nil, err
 			}
+			return &sdk.Result{
+				Events: ctx.EventManager().Events().ToABCIEvents(),
+			}, nil
 		}
 	}
 

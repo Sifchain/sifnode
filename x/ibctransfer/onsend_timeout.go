@@ -47,16 +47,13 @@ func OnTimeoutMaybeConvert(
 			sdk.NewAttribute(transfertypes.AttributeKeyRefundAmount, fmt.Sprintf("%d", data.Amount)),
 		),
 	)
-	// if sender is source check for conversion
-	if transfertypes.SenderChainIsSource(packet.GetSourcePort(), packet.GetSourceChannel(), data.Denom) {
-		// if needs conversion, convert and send
-		if ShouldConvertIncomingCoins(ctx, whitelistKeeper, packet, data) {
-			receivedCoins, finalCoins := GetConvForIncomingCoins(ctx, whitelistKeeper, packet, data)
-			err := ExecConvForIncomingCoins(ctx, receivedCoins, finalCoins, bankKeeper, packet, data)
-			if err != nil {
-				// TODO: What is the effect of returning err here on relayer / counter party?
-				return nil, err
-			}
+	// if needs conversion, convert and send
+	if ShouldConvertIncomingCoins(ctx, whitelistKeeper, packet, data) {
+		receivedCoins, finalCoins := GetConvForIncomingCoins(ctx, whitelistKeeper, packet, data)
+		err := ExecConvForIncomingCoins(ctx, receivedCoins, finalCoins, bankKeeper, packet, data)
+		if err != nil {
+			// TODO: What is the effect of returning err here on relayer / counter party?
+			return nil, err
 		}
 	}
 
