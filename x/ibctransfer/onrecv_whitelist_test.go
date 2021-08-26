@@ -20,16 +20,7 @@ func TestIsRecvPacketAllowed(t *testing.T) {
 
 	ctx := sdk.NewContext(nil, tmproto.Header{ChainID: "foochainid"}, false, nil)
 
-	returningTransferPacket := channeltypes.Packet{
-		Sequence:           0,
-		SourcePort:         "transfer",
-		SourceChannel:      "channel-0",
-		DestinationPort:    "transfer",
-		DestinationChannel: "channel-1",
-		Data:               nil,
-	}
-
-	nonReturningTransferPacket := channeltypes.Packet{
+	transferPacket := channeltypes.Packet{
 		Sequence:           0,
 		SourcePort:         "transfer",
 		SourceChannel:      "channel-0",
@@ -78,7 +69,7 @@ func TestIsRecvPacketAllowed(t *testing.T) {
 		IsDenomWhitelisted(ctx,
 			"ibc/44F0BAC50DDD0C83DAC9CEFCCC770C12F700C0D1F024ED27B8A3EE9DD949BAD3").
 		Return(true)
-	got := ibctransfer.IsRecvPacketAllowed(ctx, wl, nonReturningTransferPacket, whitelistedDenom)
+	got := ibctransfer.IsRecvPacketAllowed(ctx, wl, transferPacket, whitelistedDenom)
 	require.Equal(t, got, true)
 	// Case: Returning: FALSE, Whitelisted: FALSE, Permissions: TRUE
 	// Expected Result: FALSE
@@ -90,7 +81,7 @@ func TestIsRecvPacketAllowed(t *testing.T) {
 		IsDenomWhitelisted(ctx,
 			"ibc/A916425D9C00464330F8B333711C4A51AA8CF0141392E7E250371EC6D4285BF2").
 		Return(false)
-	got = ibctransfer.IsRecvPacketAllowed(ctx, wl, nonReturningTransferPacket, disallowedDenom)
+	got = ibctransfer.IsRecvPacketAllowed(ctx, wl, transferPacket, disallowedDenom)
 	require.Equal(t, got, false)
 	// Case: Returning: TRUE, Whitelisted: FALSE, Permissions: TRUE
 	// Expected Result: TRUE
@@ -102,7 +93,7 @@ func TestIsRecvPacketAllowed(t *testing.T) {
 		IsDenomWhitelisted(ctx,
 			"rowan").
 		Return(true)
-	got = ibctransfer.IsRecvPacketAllowed(ctx, wl, returningTransferPacket, returningDenom)
+	got = ibctransfer.IsRecvPacketAllowed(ctx, wl, transferPacket, returningDenom)
 	require.Equal(t, got, true)
 	// Case: Returning: TRUE, Whitelisted: True, Permissions: TRUE
 	// Expected Result: TRUE
@@ -114,7 +105,7 @@ func TestIsRecvPacketAllowed(t *testing.T) {
 		IsDenomWhitelisted(ctx,
 			"ibc/44F0BAC50DDD0C83DAC9CEFCCC770C12F700C0D1F024ED27B8A3EE9DD949BAD3").
 		Return(true)
-	got = ibctransfer.IsRecvPacketAllowed(ctx, wl, returningTransferPacket, whitelistedDenom)
+	got = ibctransfer.IsRecvPacketAllowed(ctx, wl, transferPacket, whitelistedDenom)
 	require.Equal(t, got, true)
 
 	// Case: Returning: FALSE, Whitelisted: TRUE, Permissions: FALSE
@@ -127,7 +118,7 @@ func TestIsRecvPacketAllowed(t *testing.T) {
 		IsDenomWhitelisted(ctx,
 			"ibc/44F0BAC50DDD0C83DAC9CEFCCC770C12F700C0D1F024ED27B8A3EE9DD949BAD3").
 		Return(true)
-	got = ibctransfer.IsRecvPacketAllowed(ctx, wl, nonReturningTransferPacket, whitelistedDenom)
+	got = ibctransfer.IsRecvPacketAllowed(ctx, wl, transferPacket, whitelistedDenom)
 	require.Equal(t, got, false)
 	// Case: Returning: FALSE, Whitelisted: FALSE, Permissions: FALSE
 	// Expected Result: FALSE
@@ -139,7 +130,7 @@ func TestIsRecvPacketAllowed(t *testing.T) {
 		IsDenomWhitelisted(ctx,
 			"ibc/A916425D9C00464330F8B333711C4A51AA8CF0141392E7E250371EC6D4285BF2").
 		Return(false)
-	got = ibctransfer.IsRecvPacketAllowed(ctx, wl, nonReturningTransferPacket, disallowedDenom)
+	got = ibctransfer.IsRecvPacketAllowed(ctx, wl, transferPacket, disallowedDenom)
 	require.Equal(t, got, false)
 	// Case: Returning: TRUE, Whitelisted: FALSE, Permissions: FALSE
 	// Expected Result: FALSE
@@ -151,7 +142,7 @@ func TestIsRecvPacketAllowed(t *testing.T) {
 		IsDenomWhitelisted(ctx,
 			"rowan").
 		Return(true)
-	got = ibctransfer.IsRecvPacketAllowed(ctx, wl, returningTransferPacket, returningDenom)
+	got = ibctransfer.IsRecvPacketAllowed(ctx, wl, transferPacket, returningDenom)
 	require.Equal(t, got, false)
 	// Case: Returning: TRUE, Whitelisted: True, Permissions: FALSE
 	// Expected Result: TRUE
@@ -163,7 +154,7 @@ func TestIsRecvPacketAllowed(t *testing.T) {
 		IsDenomWhitelisted(ctx,
 			"ibc/44F0BAC50DDD0C83DAC9CEFCCC770C12F700C0D1F024ED27B8A3EE9DD949BAD3").
 		Return(true)
-	got = ibctransfer.IsRecvPacketAllowed(ctx, wl, returningTransferPacket, whitelistedDenom)
+	got = ibctransfer.IsRecvPacketAllowed(ctx, wl, transferPacket, whitelistedDenom)
 	require.Equal(t, got, false)
 }
 
