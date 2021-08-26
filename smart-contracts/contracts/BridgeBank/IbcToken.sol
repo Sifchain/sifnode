@@ -31,7 +31,7 @@ contract IbcToken is ERC20Burnable, Ownable {
      * @param amount How much should be minted
      * @return true if the operation succeeds
      */
-    function mint(address user, uint256 amount) public onlyOwner returns (bool) {
+    function mint(address user, uint256 amount) external onlyOwner returns (bool) {
         _mint(user, amount);
         return true;
     }
