@@ -1,4 +1,4 @@
-package test
+package ibctransfer_test_transfer
 
 import (
 	"testing"

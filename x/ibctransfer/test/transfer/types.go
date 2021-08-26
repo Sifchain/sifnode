@@ -1,4 +1,4 @@
-package types
+package ibctransfer_test_transfer
 
 import (
 	channeltypes "github.com/cosmos/cosmos-sdk/x/ibc/core/04-channel/types"
