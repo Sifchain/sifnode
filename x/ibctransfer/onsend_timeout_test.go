@@ -1,4 +1,4 @@
-package ibctransfer
+package ibctransfer_test
 
 import (
 	"context"
@@ -10,6 +10,7 @@ import (
 	channeltypes "github.com/cosmos/cosmos-sdk/x/ibc/core/04-channel/types"
 	"github.com/stretchr/testify/require"
 
+	"github.com/Sifchain/sifnode/x/ibctransfer"
 	tokenregistrytest "github.com/Sifchain/sifnode/x/tokenregistry/test"
 	tokenregistrytypes "github.com/Sifchain/sifnode/x/tokenregistry/types"
 )
@@ -107,7 +108,7 @@ func TestOnTimeoutPacketConvert(t *testing.T) {
 			err = keeper.PrepareToSendConvertedCoins(sdk.WrapSDKContext(appCtx), tt.args.msg, tokenDeduction, tokensConverted, app.BankKeeper)
 			require.NoError(t, err)
 
-			res, err := OnTimeoutMaybeConvert(appCtx, app.TransferKeeper, app.TokenRegistryKeeper, app.BankKeeper, packet)
+			res, err := ibctransfer.OnTimeoutMaybeConvert(appCtx, app.TransferKeeper, app.TokenRegistryKeeper, app.BankKeeper, packet)
 			require.NoError(t, err)
 			require.NotNil(t, res)
 			require.NotEmpty(t, res.Events)
