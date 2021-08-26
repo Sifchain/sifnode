@@ -4,13 +4,7 @@ import { ValidatorValues } from "./sifnoded"
 import { DeployedContractAddresses } from "../../scripts/deploy_contracts";
 
 export interface EbrelayerArguments {
-  readonly websocketAddress: string,
-  readonly tcpURL: string,
-  readonly chainNet: string,
-  readonly ebrelayerDB: string,
   readonly validatorValues: ValidatorValues,
-  readonly symbolTranslatorFile: string,
-  readonly relayerdbPath: string,
   readonly smartContract: DeployedContractAddresses
 }
 
@@ -20,6 +14,12 @@ interface EbrelayerResults {
 export class EbrelayerRunner extends ShellCommand<EbrelayerResults> {
   constructor(
     readonly args: EbrelayerArguments,
+    readonly websocketAddress = "ws://localhost:7545/",
+    readonly tcpURL = "tcp://0.0.0.0:26657",
+    readonly chainNet = "localnet",
+    readonly ebrelayerDB = `levelDB.db`,
+    readonly relayerdbPath = "",
+    readonly symbolTranslatorFile = "../test/integration/whitelisted-denom.json"
   ) {
     super();
   }
@@ -27,17 +27,17 @@ export class EbrelayerRunner extends ShellCommand<EbrelayerResults> {
   cmd(): [string, string[]] {
     return ["ebrelayer", [
       "init",
-      this.args.tcpURL,
-      this.args.websocketAddress,
+      this.tcpURL,
+      this.websocketAddress,
       this.args.smartContract.bridgeRegistry,
       this.args.validatorValues.moniker,
       this.args.validatorValues.mnemonic,
-      `--chain-id ${this.args.chainNet}`,
-      `--node ${this.args.tcpURL}`,
+      `--chain-id ${this.chainNet}`,
+      `--node ${this.tcpURL}`,
       "--keyring-backend test",
       `--from ${this.args.validatorValues.moniker}`,
-      `--symbol-translator-file ${this.args.symbolTranslatorFile}`,
-      `--relayerdb-path ${this.args.relayerdbPath}`
+      `--symbol-translator-file ${this.symbolTranslatorFile}`,
+      `--relayerdb-path ${this.relayerdbPath}`
     ]]
   }
 

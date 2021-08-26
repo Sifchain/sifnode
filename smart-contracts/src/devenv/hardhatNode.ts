@@ -2,20 +2,13 @@ import * as hre from "hardhat";
 import { EthereumAccounts, EthereumAddressAndKey, EthereumResults, ShellCommand } from "./devEnv";
 import * as ChildProcess from "child_process"
 
-export class EthereumArguments {
-  constructor(
-    readonly host: string,
-    readonly port: number,
-    readonly nValidators: number,
-    readonly networkId: number,
-    readonly chainId: number,
-  ) {
-  }
-}
-
 export class HardhatNodeRunner extends ShellCommand<EthereumResults> {
   constructor(
-    readonly args: EthereumArguments
+    readonly host = "localhost",
+    readonly port = 8545,
+    readonly nValidators = 1,
+    readonly networkId = 1,
+    readonly chainId = 1
   ) {
     super();
   }
@@ -23,8 +16,8 @@ export class HardhatNodeRunner extends ShellCommand<EthereumResults> {
   cmd(): [string, string[]] {
     return ["node_modules/.bin/hardhat", [
       "node",
-      "--hostname", this.args.host,
-      "--port", this.args.port.toString()
+      "--hostname", this.host,
+      "--port", this.port.toString()
     ]]
   }
 
@@ -37,12 +30,12 @@ export class HardhatNodeRunner extends ShellCommand<EthereumResults> {
   }
 
   override async results(): Promise<EthereumResults> {
-    let ethereumAccounts = signerArrayToEthereumAccounts(defaultHardhatAccounts, this.args.nValidators)
+    let ethereumAccounts = signerArrayToEthereumAccounts(defaultHardhatAccounts, this.nValidators)
     if (hre.network.config.chainId) {
       return {
         accounts: ethereumAccounts,
-        httpHost: this.args.host,
-        httpPort: this.args.port,
+        httpHost: this.host,
+        httpPort: this.port,
         chainId: hre.network.config.chainId
       }
     } else throw "unknown chainId"
