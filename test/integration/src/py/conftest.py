@@ -522,10 +522,9 @@ class IntegrationTestContext:
         to transfer rowan from an account that already has rowan.
         """
         return test_utilities.SifchaincliCredentials(
-            keyring_backend="file" if self.is_ganache else "test",
+            keyring_backend="test",
             keyring_passphrase=self.validator_password,
-            from_key=self.rowan_source,
-            sifnoded_homedir=self.sifnoded_homedir
+            from_key=self.rowan_source
         )
 
     def rowan_source_integrationtest_env_transfer_request(self, basic_transfer_request):
