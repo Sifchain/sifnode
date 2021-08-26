@@ -1,14 +1,9 @@
-import { registry, singleton } from "tsyringe";
 import * as ChildProcess from "child_process"
-import { SpawnSyncReturns } from "child_process"
 import { ShellCommand } from "./devEnv"
 import { GolangResultsPromise } from "./golangBuilder";
 import * as path from "path"
-import events from "events";
-import { lastValueFrom, ReplaySubject } from "rxjs";
 import * as fs from "fs";
 import YAML from 'yaml'
-import { eventEmitterToObservable } from "./devEnvUtilities"
 
 @registry([
   {
@@ -24,18 +19,15 @@ import { eventEmitterToObservable } from "./devEnvUtilities"
     )
   }
 ])
-export class SifnodedArguments {
-  constructor(
-    readonly logfile: string,
-    readonly rpcPort: number,
-    readonly nValidators: number,
-    readonly chainId: string,
-    readonly networkConfigFile: string,
-    readonly networkDir: string,
-    readonly seedIpAddress: string,
-    readonly whitelistFile: string
-  ) {
-  }
+export interface SifnodedArguments {
+  readonly logfile: string;
+  readonly rpcPort: number;
+  readonly nValidators: number;
+  readonly chainId: string;
+  readonly networkConfigFile: string;
+  readonly networkDir: string;
+  readonly seedIpAddress: string;
+  readonly whitelistFile: string;
 }
 
 export interface ValidatorValues {
@@ -56,7 +48,6 @@ export interface SifnodedResults {
   tcpurl: string;
 }
 
-@singleton()
 export class SifnodedRunner extends ShellCommand<SifnodedResults> {
   constructor(
     readonly args: SifnodedArguments,
@@ -155,7 +146,7 @@ export class SifnodedRunner extends ShellCommand<SifnodedResults> {
       { shell: true, stdio: "inherit" }
     )
     return
-//    return lastValueFrom(eventEmitterToObservable(sifnoded, "sifnoded"))
+    //    return lastValueFrom(eventEmitterToObservable(sifnoded, "sifnoded"))
   }
 
   async addValidatorKeyToTestKeyring(moniker: string, chainDir: string, mnemonic: string) {

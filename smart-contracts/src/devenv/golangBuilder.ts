@@ -1,4 +1,3 @@
-import { singleton } from "tsyringe";
 import { SynchronousCommand, SynchronousCommandResult } from "./synchronousCommand";
 import { requiredEnvVar } from "../contractSupport";
 
@@ -20,7 +19,6 @@ export class GolangResultsPromise {
   }
 }
 
-@singleton()
 export class GolangBuilder extends SynchronousCommand<GolangResults> {
   constructor() {
     super();

@@ -1,14 +1,7 @@
-import { registry, singleton } from "tsyringe";
 import * as hre from "hardhat";
 import { EthereumAccounts, EthereumAddressAndKey, EthereumResults, ShellCommand } from "./devEnv";
 import * as ChildProcess from "child_process"
-import {eventEmitterToObservable} from "./devEnvUtilities";
-import {lastValueFrom} from "rxjs";
 
-@registry([{
-  token: EthereumArguments,
-  useValue: new EthereumArguments("localhost", 8545, 1, 1, 1)
-}])
 export class EthereumArguments {
   constructor(
     readonly host: string,
@@ -20,7 +13,6 @@ export class EthereumArguments {
   }
 }
 
-@singleton()
 export class HardhatNodeRunner extends ShellCommand<EthereumResults> {
   constructor(
     readonly args: EthereumArguments
