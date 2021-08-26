@@ -1,10 +1,20 @@
 import * as hardhat from "hardhat";
+import { container } from "tsyringe";
+import {
+  DeployedBridgeBank,
+  DeployedBridgeRegistry,
+  DeployedCosmosBridge,
+  requiredEnvVar
+} from "../src/contractSupport";
+import { DeploymentName, HardhatRuntimeEnvironmentToken } from "../src/tsyringe/injectionTokens";
+import { setupRopstenDeployment, setupSifchainMainnetDeployment } from "../src/hardhatFunctions";
 import {
   BridgeBankProxy, BridgeRegistryProxy,
   BridgeTokenSetup,
   RowanContract,
+  SifchainContractFactories
 } from "../src/tsyringe/contracts";
-
+import * as dotenv from "dotenv";
 export type DeployedContractAddresses = {
   bridgeBank: string,
   bridgeRegistry: string,
