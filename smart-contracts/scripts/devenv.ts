@@ -27,9 +27,7 @@ async function golangBuilder() {
 
 async function sifnodedBuilder(golangResults: GolangResults) {
   console.log('in sifnodedBuilder')
-  const node = new SifnodedRunner(
-    golangResults
-  )
+  const node = new SifnodedRunner(golangResults)
   const [process, resultsPromise] = node.go()
   const results = await resultsPromise
   console.log(`golangBuilder: ${JSON.stringify(results, undefined, 2)}`)

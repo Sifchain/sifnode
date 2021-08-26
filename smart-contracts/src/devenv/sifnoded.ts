@@ -87,7 +87,7 @@ export class SifnodedRunner extends ShellCommand<SifnodedResults> {
       this.networkDir,
       mnemonic,
     )
-    await this.addGenesisValidator(chainDir, valOperKey)
+    const stdout = await this.addGenesisValidator(chainDir, valOperKey)
     const whitelistedValidator = ChildProcess.execSync(
       `${sifnodedCommand} keys show -a --bech val ${moniker} --keyring-backend test`,
       { encoding: "utf8", input: password }
@@ -182,12 +182,12 @@ export class SifnodedRunner extends ShellCommand<SifnodedResults> {
     )
   }
 
-  async execute() {
-    await this.sifgenNetworkCreate()
-  }
+  // async execute() {
+  //   await this.sifgenNetworkCreate()
+  // }
 
-  override run(): Promise<void> {
-    return this.execute()
+  override async run(): Promise<void> {
+    await this.sifgenNetworkCreate();
   }
 
   override async results(): Promise<SifnodedResults> {
