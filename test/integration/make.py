@@ -1029,6 +1029,19 @@ def main(argv):
         processes = it_playbook.restore_snapshot(snapshot_name)
         input("Press ENTER to exit...")
         killall(processes)
+    elif what == "fullclean":
+        cmd.execst(["chmod", "-R", "+w", cmd.get_user_home("go")])
+        cmd.rmdir(cmd.get_user_home("go"))
+        cmd.mkdir(cmd.get_user_home("go"))
+        cmd.rmdir(cmd.get_user_home(".npm"))
+        cmd.rmdir(cmd.get_user_home(".npm-global"))
+        cmd.mkdir(cmd.get_user_home(".npm-global"))
+        cmd.rmdir(cmd.get_user_home(".cache/yarn"))
+        cmd.rmdir(cmd.get_user_home(".sifnoded"))
+        cmd.rmdir(cmd.get_user_home(".sifnode-integration"))
+        cmd.rmdir(project_dir("smart-contracts/node_modules"))
+        cmd.execst(["npm", "install", "-g", "ganache-cli", "dotenv", "yarn"], cwd=project_dir("smart-contracts"))
+        cmd.install_smart_contracts_dependencies()
     else:
         raise Exception("Missing/unknown command")
 
