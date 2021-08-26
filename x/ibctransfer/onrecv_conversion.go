@@ -56,13 +56,13 @@ func OnRecvPacketMaybeConvert(
 	// check if conversion to another denom is required.
 	if ShouldConvertIncomingCoins(ctx, whitelistKeeper, packet, data) {
 		receievedCoins, finalCoins := GetConvForIncomingCoins(ctx, whitelistKeeper, packet, data)
-		err = ExecConvForIncomingCoins(ctx, receievedCoins, finalCoins, bankKeeper, data)
+		err = ExecConvForIncomingCoins(ctx, receievedCoins, finalCoins, bankKeeper, packet, data)
 		if err != nil {
-			// TODO: Do we respond with ack error here?
 			// May be best to break the ExecConv into two steps called from here:
 			// 	1: Burn received denom.
 			//  2: Mint final denom.
-
+			// if conversion fails we need to respond with an error acknowledgement
+			acknowledgement = channeltypes.NewErrorAcknowledgement(err.Error())
 			return &sdk.Result{
 				Events: ctx.EventManager().Events().ToABCIEvents(),
 			}, acknowledgement.GetBytes(), nil

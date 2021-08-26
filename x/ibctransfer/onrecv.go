@@ -4,9 +4,11 @@ import (
 	"fmt"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	transfertypes "github.com/cosmos/cosmos-sdk/x/ibc/applications/transfer/types"
 	channeltypes "github.com/cosmos/cosmos-sdk/x/ibc/core/04-channel/types"
 
+	"github.com/Sifchain/sifnode/x/ibctransfer/types"
 	tokenregistrytypes "github.com/Sifchain/sifnode/x/tokenregistry/types"
 )
 
@@ -34,7 +36,7 @@ func ShouldConvertIncomingCoins(
 		// TODO: err
 	}
 	// if unit_denom decimals are greater than minted denom decimals, we need to increase precision to convert them
-	return unitDenomRegistryEntry.Decimals > mintedDenomRegistryEntry.IbcDecimals
+	return unitDenomRegistryEntry.Decimals > mintedDenomRegistryEntry.Decimals
 }
 
 // GetConvForIncomingCoins returns 1) the coins that are being received via IBC,
@@ -85,6 +87,7 @@ func ExecConvForIncomingCoins(
 	incomingCoins sdk.Coin,
 	finalCoins sdk.Coin,
 	bankKeeper transfertypes.BankKeeper,
+	packet channeltypes.Packet,
 	data transfertypes.FungibleTokenPacketData,
 ) error {
 
@@ -98,11 +101,14 @@ func ExecConvForIncomingCoins(
 	if err != nil {
 		return err
 	}
-	// send coins from module account to address
-	err = bankKeeper.SendCoinsFromModuleToAccount(ctx, transfertypes.ModuleName, receiver, sdk.NewCoins(finalCoins))
-	if err != nil {
-		// TODO: Revert send to module, or panic.
-		return err
+	// unescrow original tokens
+	escrowAddress := transfertypes.GetEscrowAddress(packet.GetDestPort(), packet.GetDestChannel())
+	if err := bankKeeper.SendCoins(ctx, escrowAddress, receiver, sdk.NewCoins(finalCoins)); err != nil {
+		// NOTE: this error is only expected to occur given an unexpected bug or a malicious
+		// counterparty module. The bug may occur in bank or any part of the code that allows
+		// the escrow address to be drained. A malicious counterparty module could drain the
+		// escrow address by allowing more tokens to be sent back then were escrowed.
+		return sdkerrors.Wrap(err, "unable to unescrow original tokens")
 	}
 	// burn ibcdenom coins
 	err = bankKeeper.BurnCoins(ctx, transfertypes.ModuleName, sdk.NewCoins(incomingCoins))
@@ -112,12 +118,12 @@ func ExecConvForIncomingCoins(
 	}
 	ctx.EventManager().EmitEvent(
 		sdk.NewEvent(
-			tokenregistrytypes.EventTypeConvertReceived,
+			types.EventTypeConvertReceived,
 			sdk.NewAttribute(sdk.AttributeKeyModule, transfertypes.ModuleName),
-			sdk.NewAttribute(tokenregistrytypes.AttributeKeyPacketAmount, fmt.Sprintf("%d", incomingCoins.Amount)),
-			sdk.NewAttribute(tokenregistrytypes.AttributeKeyPacketDenom, incomingCoins.Denom),
-			sdk.NewAttribute(tokenregistrytypes.AttributeKeyConvertAmount, fmt.Sprintf("%d", finalCoins.Amount)),
-			sdk.NewAttribute(tokenregistrytypes.AttributeKeyConvertDenom, finalCoins.Denom),
+			sdk.NewAttribute(types.AttributeKeyPacketAmount, fmt.Sprintf("%v", incomingCoins.Amount)),
+			sdk.NewAttribute(types.AttributeKeyPacketDenom, incomingCoins.Denom),
+			sdk.NewAttribute(types.AttributeKeyConvertAmount, fmt.Sprintf("%v", finalCoins.Amount)),
+			sdk.NewAttribute(types.AttributeKeyConvertDenom, finalCoins.Denom),
 		),
 	)
 
@@ -126,5 +132,5 @@ func ExecConvForIncomingCoins(
 
 func IncreasePrecision(dec sdk.Dec, po int64) sdk.Dec {
 	p := sdk.NewDec(10).Power(uint64(po))
-	return dec.Mul(p)
+	return dec.MulTruncate(p)
 }
