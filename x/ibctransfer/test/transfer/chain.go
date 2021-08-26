@@ -2,14 +2,19 @@ package ibctransfer_test_transfer
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"strconv"
 	"testing"
 	"time"
 
-	"github.com/cosmos/cosmos-sdk/simapp"
+	"github.com/tendermint/tendermint/libs/log"
+	dbm "github.com/tendermint/tm-db"
 
-	"github.com/cosmos/cosmos-sdk/crypto/keys/secp256k1"
+	sifapp "github.com/Sifchain/sifnode/app"
+	tokenregistrytypes "github.com/Sifchain/sifnode/x/tokenregistry/types"
+	"github.com/cosmos/cosmos-sdk/crypto/keys/ed25519"
+
 	"github.com/stretchr/testify/require"
 	abci "github.com/tendermint/tendermint/abci/types"
 	"github.com/tendermint/tendermint/crypto/tmhash"
@@ -77,7 +82,7 @@ var (
 	MockCommitment      = mock.MockCommitment
 )
 
-// TestChain is a testing struct that wraps a simapp with the last TM Header, the current ABCI
+// TestChain is a testing struct that wraps a sifapp with the last TM Header, the current ABCI
 // header and the validators of the TestChain. It also contains a field called ChainID. This
 // is the clientID that *other* chains use to refer to this TestChain. The SenderAccount
 // is used for delivering transactions through the application state.
@@ -85,7 +90,7 @@ var (
 type TestChain struct {
 	t *testing.T
 
-	App           *simapp.SimApp
+	App           *sifapp.SifchainApp
 	ChainID       string
 	LastHeader    *ibctmtypes.Header // header for last block height committed
 	CurrentHeader tmproto.Header     // header for current block height
@@ -105,30 +110,68 @@ type TestChain struct {
 }
 
 func CreateTestChain(t *testing.T, chainID string) *TestChain {
-	// generate validator private/public key
-	privVal := mock.NewPV()
-	pubKey, err := privVal.GetPubKey()
-	require.NoError(t, err)
+	db := dbm.NewMemDB()
+	encCdc := sifapp.MakeTestEncodingConfig()
+	app := sifapp.NewSifApp(log.NewNopLogger(), db, nil, true, map[int64]bool{}, sifapp.DefaultNodeHome, 5, encCdc, sifapp.EmptyAppOptions{})
+	genesisState := sifapp.NewDefaultGenesisState(encCdc.Marshaler)
 
-	// create validator set with single validator
-	validator := tmtypes.NewValidator(pubKey, 1)
-	valSet := tmtypes.NewValidatorSet([]*tmtypes.Validator{validator})
-	signers := []tmtypes.PrivValidator{privVal}
-
-	// generate genesis account
-	senderPrivKey := secp256k1.GenPrivKey()
-	acc := authtypes.NewBaseAccount(senderPrivKey.PubKey().Address().Bytes(), senderPrivKey.PubKey(), 0, 0)
-	balance := banktypes.Balance{
-		Address: acc.GetAddress().String(),
-		Coins: sdk.NewCoins(
-			sdk.NewCoin(sdk.DefaultBondDenom, sdk.NewInt(100000000000000)),
-			sdk.NewCoin("ceth", sdk.NewInt(100000000000000)),
-			sdk.NewCoin("cphoton", sdk.NewInt(100000000000000)),
-			sdk.NewCoin("cusdt", sdk.NewInt(100000000000000)),
-		),
+	// init chain must be called to stop deliverState from being nil
+	stateBytes, err := json.MarshalIndent(genesisState, "", " ")
+	if err != nil {
+		panic(err)
 	}
 
-	app := simapp.SetupWithGenesisValSet(t, valSet, []authtypes.GenesisAccount{acc}, balance)
+	// Initialize the chain
+	app.InitChain(
+		abci.RequestInitChain{
+			Validators:      []abci.ValidatorUpdate{},
+			ConsensusParams: sifapp.DefaultConsensusParams,
+			AppStateBytes:   stateBytes,
+		},
+	)
+
+	ctx := app.BaseApp.NewContext(false, tmproto.Header{})
+	app.AccountKeeper.SetParams(ctx, authtypes.DefaultParams())
+
+	privKey := ed25519.GenPrivKey()
+	pk := privKey.PubKey()
+	//acc := sdk.AccAddress(pk.Address())
+	acc := authtypes.NewBaseAccount(pk.Address().Bytes(), pk, 0, 0)
+	//acc := app.AccountKeeper.NewAccountWithAddress(ctx, addr)
+	// initTokens := sdk.TokensFromConsensusPower(1000)
+
+	coins := sdk.NewCoins(
+		sdk.NewCoin(sdk.DefaultBondDenom, sdk.NewInt(100000000000000)),
+		sdk.NewCoin("ceth", sdk.NewInt(2100000000000000)),
+		sdk.NewCoin("cdash", sdk.NewInt(3100000000000000)),
+		sdk.NewCoin("eth", sdk.NewInt(4100000000000000)),
+		sdk.NewCoin("cacoin", sdk.NewInt(5100000000000000)),
+		sdk.NewCoin("dash", sdk.NewInt(6100000000000000)),
+		sdk.NewCoin("rowan", sdk.NewInt(7100000000000000)),
+		sdk.NewCoin("twelve", sdk.NewInt(8100000000000000)),
+	)
+
+	prevSupply := app.BankKeeper.GetSupply(ctx)
+	app.BankKeeper.SetSupply(ctx, banktypes.NewSupply(prevSupply.GetTotal().Add(coins...)))
+
+	app.AccountKeeper.SetAccount(ctx, acc)
+	// err := app.BankKeeper.AddCoins(ctx, acc.GetAddress(), coins)
+	// if err != nil {
+	// 	panic(err)
+	// }
+
+	state := tokenregistrytypes.GenesisState{
+		AdminAccount: acc.GetAddress().String(),
+		Registry:     nil,
+	}
+	app.TokenRegistryKeeper.InitGenesis(ctx, state)
+
+	sifapp.SetConfig(false)
+	app.TokenRegistryKeeper.SetToken(ctx, &tokenregistrytypes.RegistryEntry{IsWhitelisted: true, Denom: "ceth", Decimals: 18, Permissions: []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP}})
+	app.TokenRegistryKeeper.SetToken(ctx, &tokenregistrytypes.RegistryEntry{IsWhitelisted: true, Denom: "cdash", Decimals: 18, Permissions: []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP}})
+	app.TokenRegistryKeeper.SetToken(ctx, &tokenregistrytypes.RegistryEntry{IsWhitelisted: true, Denom: "eth", Decimals: 18, Permissions: []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP}})
+	app.TokenRegistryKeeper.SetToken(ctx, &tokenregistrytypes.RegistryEntry{IsWhitelisted: true, Denom: "cacoin", Decimals: 18, Permissions: []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP}})
+	app.TokenRegistryKeeper.SetToken(ctx, &tokenregistrytypes.RegistryEntry{IsWhitelisted: true, Denom: "dash", Decimals: 18, Permissions: []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP}})
 
 	// create current header and call begin block
 	header := tmproto.Header{
@@ -137,8 +180,6 @@ func CreateTestChain(t *testing.T, chainID string) *TestChain {
 		Time:    globalStartTime,
 	}
 
-	txConfig := simapp.MakeTestEncodingConfig().TxConfig
-
 	// create an account to send transactions from
 	chain := &TestChain{
 		t:             t,
@@ -146,11 +187,9 @@ func CreateTestChain(t *testing.T, chainID string) *TestChain {
 		App:           app,
 		CurrentHeader: header,
 		QueryServer:   app.IBCKeeper,
-		TxConfig:      txConfig,
+		TxConfig:      encCdc.TxConfig,
 		Codec:         app.AppCodec(),
-		Vals:          valSet,
-		Signers:       signers,
-		senderPrivKey: senderPrivKey,
+		senderPrivKey: privKey,
 		SenderAccount: acc,
 		ClientIDs:     make([]string, 0),
 		Connections:   make([]*TestConnection, 0),
@@ -278,7 +317,7 @@ func (chain *TestChain) sendMsgs(msgs ...sdk.Msg) error {
 // number and updates the TestChain's headers. It returns the result and error if one
 // occurred.
 func (chain *TestChain) SendMsgs(msgs ...sdk.Msg) (*sdk.Result, error) {
-	_, r, err := simapp.SignCheckDeliver(
+	_, r, err := sifapp.SignCheckDeliver(
 		chain.t,
 		chain.TxConfig,
 		chain.App.BaseApp,
