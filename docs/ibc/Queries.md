@@ -121,7 +121,7 @@ denom_trace:
 
 - Get Escrow address for a channel and port combination
 Tokens send from Chain-1 to Chain-2 ,are escrowed in Chain-1,instead of Burning .
-When this token comes back ,it gets send from the escrow address to the used instead of being Minted again.  
+When a token comes back to the source chain, it gets released from the escrow address to the user instead of being Minted again.  
 ```shell
 sifnoded q ibc-transfer escrow-address transfer channel-101 --node=https://rpc-devnet.sifchain.finance:443 --chain-id=sifchain-devnet-1
 ```
