@@ -12,6 +12,8 @@ import (
 	tokenregistrytypes "github.com/Sifchain/sifnode/x/tokenregistry/types"
 )
 
+// ShouldConvertIncomingCoins() is called after the SDK has accepted incoming coins,
+// or after the coins have "come back in" when a send is refunded.
 func ShouldConvertIncomingCoins(
 	ctx sdk.Context,
 	whitelistKeeper tokenregistrytypes.Keeper,
@@ -21,10 +23,12 @@ func ShouldConvertIncomingCoins(
 	// get token registry entry for received denom
 	mintedDenom := GetMintedDenomFromPacket(packet, data)
 	mintedDenomRegistryEntry := whitelistKeeper.GetDenom(ctx, mintedDenom)
-	if !mintedDenomRegistryEntry.IsWhitelisted {
-		// TODO: unlikely as have already accepted this import,
-		// however, it could have come through the "accept returns" whitelist logic,
-		// and have 0 decimals here. Consider refactoring inputs here and returning pointer and error on GetDenom.
+	// If this incoming coin isn't setup on the whitelist with decimals / unit denom,
+	// then no conversion happens.
+	// This extra decimal & UnitDenom check should ensure we still process refunds,
+	// even if the token permission / whitelist property has since been changed.
+	if !mintedDenomRegistryEntry.IsWhitelisted && (mintedDenomRegistryEntry.Decimals == 0 || mintedDenomRegistryEntry.UnitDenom == "") {
+		return false
 	}
 	// get unit denom to store funds in, or do not convert
 	unitDenom := mintedDenomRegistryEntry.UnitDenom
@@ -33,7 +37,11 @@ func ShouldConvertIncomingCoins(
 	}
 	unitDenomRegistryEntry := whitelistKeeper.GetDenom(ctx, unitDenom)
 	if !unitDenomRegistryEntry.IsWhitelisted {
-		// TODO: err
+		// This should be considered an error case,
+		// but we just choose not to convert here.
+		// TODO: ShouldConvertIncoming can be brought in line with the corresponding outgoing check,
+		// add test for this case.
+		return false
 	}
 	// if unit_denom decimals are greater than minted denom decimals, we need to increase precision to convert them
 	return unitDenomRegistryEntry.Decimals > mintedDenomRegistryEntry.Decimals

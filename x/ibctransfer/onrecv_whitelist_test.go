@@ -20,7 +20,7 @@ func TestIsRecvPacketAllowed(t *testing.T) {
 
 	ctx := sdk.NewContext(nil, tmproto.Header{ChainID: "foochainid"}, false, nil)
 
-	returningTransferPacket := channeltypes.Packet{
+	transferPacket := channeltypes.Packet{
 		Sequence:           0,
 		SourcePort:         "transfer",
 		SourceChannel:      "channel-0",
@@ -29,13 +29,17 @@ func TestIsRecvPacketAllowed(t *testing.T) {
 		Data:               nil,
 	}
 
-	nonReturningTransferPacket := channeltypes.Packet{
-		Sequence:           0,
-		SourcePort:         "transfer",
-		SourceChannel:      "channel-0",
-		DestinationPort:    "transfer",
-		DestinationChannel: "channel-1",
-		Data:               nil,
+	// If token is returning it will have prefix that matches packet source port and channel
+	// FROM COSMOS: This is the prefix that would have been prefixed to the denomination
+	// on sender chain IF and only if the token originally came from the
+	// receiving chain.
+	// NOTE: We use SourcePort and SourceChannel here, because the counterparty
+	// chain would have prefixed with DestPort and DestChannel when originally
+	// receiving this coin as seen in the "sender chain is the source" condition.
+	returningDenom := transfertypes.FungibleTokenPacketData{
+		// If atom has a prefix when coming in,
+		// it has an extra hop in the path received in ibc transfer OnRecvPacket().
+		Denom: "transfer/channel-0/rowan",
 	}
 
 	whitelistedDenom := transfertypes.FungibleTokenPacketData{
@@ -43,7 +47,10 @@ func TestIsRecvPacketAllowed(t *testing.T) {
 		// it simply sends the base denom without path prefix
 		Denom: "atom",
 	}
-
+	// If token is returning it will have prefix that matches packet source port and channel
+	// FROM COSMOS: This is the prefix that would have been prefixed to the denomination
+	// on sender chain IF and only if the token originally came from the
+	// receiving chain.
 	disallowedDenom := transfertypes.FungibleTokenPacketData{
 		// If atom has a prefix when coming in,
 		// it has an extra hop in the path received in ibc transfer OnRecvPacket().
@@ -52,6 +59,8 @@ func TestIsRecvPacketAllowed(t *testing.T) {
 
 	wl := whitelistmocks.NewMockKeeper(ctrl)
 
+	// Case: Returning: FALSE, Whitelisted: TRUE, Permissions: TRUE
+	// Expected Result: TRUE
 	wl.EXPECT().
 		CheckDenomPermissions(ctx,
 			"ibc/44F0BAC50DDD0C83DAC9CEFCCC770C12F700C0D1F024ED27B8A3EE9DD949BAD3", []tokenregistrytypes.Permission{tokenregistrytypes.Permission_IBCIMPORT}).
@@ -60,29 +69,93 @@ func TestIsRecvPacketAllowed(t *testing.T) {
 		IsDenomWhitelisted(ctx,
 			"ibc/44F0BAC50DDD0C83DAC9CEFCCC770C12F700C0D1F024ED27B8A3EE9DD949BAD3").
 		Return(true)
-	got := ibctransfer.IsRecvPacketAllowed(ctx, wl, nonReturningTransferPacket, whitelistedDenom)
+	got := ibctransfer.IsRecvPacketAllowed(ctx, wl, transferPacket, whitelistedDenom)
 	require.Equal(t, got, true)
-
+	// Case: Returning: FALSE, Whitelisted: FALSE, Permissions: TRUE
+	// Expected Result: FALSE
+	wl.EXPECT().
+		CheckDenomPermissions(ctx,
+			"ibc/A916425D9C00464330F8B333711C4A51AA8CF0141392E7E250371EC6D4285BF2", []tokenregistrytypes.Permission{tokenregistrytypes.Permission_IBCIMPORT}).
+		Return(false)
 	wl.EXPECT().
 		IsDenomWhitelisted(ctx,
 			"ibc/A916425D9C00464330F8B333711C4A51AA8CF0141392E7E250371EC6D4285BF2").
 		Return(false)
-	got = ibctransfer.IsRecvPacketAllowed(ctx, wl, nonReturningTransferPacket, disallowedDenom)
+	got = ibctransfer.IsRecvPacketAllowed(ctx, wl, transferPacket, disallowedDenom)
 	require.Equal(t, got, false)
-
+	// Case: Returning: TRUE, Whitelisted: FALSE, Permissions: TRUE
+	// Expected Result: TRUE
+	wl.EXPECT().
+		CheckDenomPermissions(ctx,
+			"rowan", []tokenregistrytypes.Permission{tokenregistrytypes.Permission_IBCIMPORT}).
+		Return(true)
 	wl.EXPECT().
 		IsDenomWhitelisted(ctx,
-			"ibc/A916425D9C00464330F8B333711C4A51AA8CF0141392E7E250371EC6D4285BF2").
+			"rowan").
 		Return(true)
-	got = ibctransfer.IsRecvPacketAllowed(ctx, wl, returningTransferPacket, disallowedDenom)
+	got = ibctransfer.IsRecvPacketAllowed(ctx, wl, transferPacket, returningDenom)
 	require.Equal(t, got, true)
-
+	// Case: Returning: TRUE, Whitelisted: True, Permissions: TRUE
+	// Expected Result: TRUE
+	wl.EXPECT().
+		CheckDenomPermissions(ctx,
+			"ibc/44F0BAC50DDD0C83DAC9CEFCCC770C12F700C0D1F024ED27B8A3EE9DD949BAD3", []tokenregistrytypes.Permission{tokenregistrytypes.Permission_IBCIMPORT}).
+		Return(true)
 	wl.EXPECT().
 		IsDenomWhitelisted(ctx,
 			"ibc/44F0BAC50DDD0C83DAC9CEFCCC770C12F700C0D1F024ED27B8A3EE9DD949BAD3").
 		Return(true)
-	got = ibctransfer.IsRecvPacketAllowed(ctx, wl, returningTransferPacket, whitelistedDenom)
+	got = ibctransfer.IsRecvPacketAllowed(ctx, wl, transferPacket, whitelistedDenom)
 	require.Equal(t, got, true)
+
+	// Case: Returning: FALSE, Whitelisted: TRUE, Permissions: FALSE
+	// Expected Result: FALSE
+	wl.EXPECT().
+		CheckDenomPermissions(ctx,
+			"ibc/44F0BAC50DDD0C83DAC9CEFCCC770C12F700C0D1F024ED27B8A3EE9DD949BAD3", []tokenregistrytypes.Permission{tokenregistrytypes.Permission_IBCIMPORT}).
+		Return(false)
+	wl.EXPECT().
+		IsDenomWhitelisted(ctx,
+			"ibc/44F0BAC50DDD0C83DAC9CEFCCC770C12F700C0D1F024ED27B8A3EE9DD949BAD3").
+		Return(true)
+	got = ibctransfer.IsRecvPacketAllowed(ctx, wl, transferPacket, whitelistedDenom)
+	require.Equal(t, got, false)
+	// Case: Returning: FALSE, Whitelisted: FALSE, Permissions: FALSE
+	// Expected Result: FALSE
+	wl.EXPECT().
+		CheckDenomPermissions(ctx,
+			"ibc/A916425D9C00464330F8B333711C4A51AA8CF0141392E7E250371EC6D4285BF2", []tokenregistrytypes.Permission{tokenregistrytypes.Permission_IBCIMPORT}).
+		Return(false)
+	wl.EXPECT().
+		IsDenomWhitelisted(ctx,
+			"ibc/A916425D9C00464330F8B333711C4A51AA8CF0141392E7E250371EC6D4285BF2").
+		Return(false)
+	got = ibctransfer.IsRecvPacketAllowed(ctx, wl, transferPacket, disallowedDenom)
+	require.Equal(t, got, false)
+	// Case: Returning: TRUE, Whitelisted: FALSE, Permissions: FALSE
+	// Expected Result: FALSE
+	wl.EXPECT().
+		CheckDenomPermissions(ctx,
+			"rowan", []tokenregistrytypes.Permission{tokenregistrytypes.Permission_IBCIMPORT}).
+		Return(false)
+	wl.EXPECT().
+		IsDenomWhitelisted(ctx,
+			"rowan").
+		Return(true)
+	got = ibctransfer.IsRecvPacketAllowed(ctx, wl, transferPacket, returningDenom)
+	require.Equal(t, got, false)
+	// Case: Returning: TRUE, Whitelisted: True, Permissions: FALSE
+	// Expected Result: TRUE
+	wl.EXPECT().
+		CheckDenomPermissions(ctx,
+			"ibc/44F0BAC50DDD0C83DAC9CEFCCC770C12F700C0D1F024ED27B8A3EE9DD949BAD3", []tokenregistrytypes.Permission{tokenregistrytypes.Permission_IBCIMPORT}).
+		Return(false)
+	wl.EXPECT().
+		IsDenomWhitelisted(ctx,
+			"ibc/44F0BAC50DDD0C83DAC9CEFCCC770C12F700C0D1F024ED27B8A3EE9DD949BAD3").
+		Return(true)
+	got = ibctransfer.IsRecvPacketAllowed(ctx, wl, transferPacket, whitelistedDenom)
+	require.Equal(t, got, false)
 }
 
 func TestIsRecvPacketReturning(t *testing.T) {
