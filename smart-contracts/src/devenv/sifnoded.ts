@@ -4,19 +4,20 @@ import { GolangResults } from "./golangBuilder";
 import * as path from "path"
 import * as fs from "fs";
 import YAML from 'yaml'
+import { boolean } from "yargs";
 
 export interface ValidatorValues {
-  chainID: string;
-  nodeID: string;
-  ipv4Address: string;
-  moniker: string;
-  password: string;
-  address: string;
-  pubKey: string;
-  mnemonic: string;
-  validatorAddress: string;
-  validatorConsensusAddress: string;
-  isSeed: boolean;
+  chain_id: string,
+  node_id: string,
+  ipv4_address: string,
+  moniker: string,
+  password: string,
+  address: string,
+  pub_key: string,
+  mnemonic: string,
+  validator_address: string,
+  validator_consensus_address: string,
+  is_seed: boolean,
 }
 export interface SifnodedResults {
   validatorValues: ValidatorValues[];
@@ -24,8 +25,9 @@ export interface SifnodedResults {
 }
 
 export class SifnodedRunner extends ShellCommand<SifnodedResults> {
-  output: Promise<string>;
-  #outputResolve: any;
+  output: Promise<SifnodedResults>;
+  private outputResolve: any;
+
   constructor(
     readonly golangResults: GolangResults,
     readonly logfile = "/tmp/sifnoded.log",
@@ -38,8 +40,8 @@ export class SifnodedRunner extends ShellCommand<SifnodedResults> {
     readonly whitelistFile = "../test/integration/whitelisted-denoms.json"
   ) {
     super();
-    this.output = new Promise<string>((res, _) => {
-      this.#outputResolve = res;
+    this.output = new Promise<SifnodedResults>((res, _) => {
+      this.outputResolve = res;
     });
   }
 
@@ -71,7 +73,7 @@ export class SifnodedRunner extends ShellCommand<SifnodedResults> {
       { encoding: "utf8" }
     )
     const file = fs.readFileSync(this.networkConfigFile, 'utf8')
-    const networkConfig = YAML.parse(file)
+    const networkConfig: ValidatorValues[] = YAML.parse(file)
     const moniker = networkConfig[0]["moniker"]
     let mnemonic = networkConfig[0]["mnemonic"]
     let password = networkConfig[0]["password"]
@@ -132,7 +134,10 @@ export class SifnodedRunner extends ShellCommand<SifnodedResults> {
       sifnodedDaemonCmd,
       { shell: true, stdio: "inherit" }
     )
-    return stdout
+    return {
+      validatorValues: networkConfig,
+      tcpurl: ""
+    }
     //    return lastValueFrom(eventEmitterToObservable(sifnoded, "sifnoded"))
   }
 
@@ -193,13 +198,10 @@ export class SifnodedRunner extends ShellCommand<SifnodedResults> {
 
   override async run(): Promise<void> {
     const output = await this.sifgenNetworkCreate();
-    this.#outputResolve(output)
+    this.outputResolve(output)
   }
 
   override async results(): Promise<SifnodedResults> {
-    return Promise.resolve({
-      validatorValues: [],
-      tcpurl: ""
-    })
+    return this.output;
   }
 }
