@@ -116,7 +116,7 @@ func TestOnAcknowledgementMaybeConvert_Source(t *testing.T) {
 
 			_, err = ibctransfer.OnAcknowledgementMaybeConvert(ctx, app.TransferKeeper, app.TokenRegistryKeeper, app.BankKeeper, packet, app.AppCodec().MustMarshalJSON(&tt.args.acknowledgement))
 			require.ErrorIs(t, err, tt.err)
-			// Assert events have recorded what happened.
+			require.Equal(t, tt.args.msg.Token.String(), app.BankKeeper.GetBalance(ctx, sender, tt.args.msg.Token.Denom).String())
 		})
 	}
 }
@@ -223,7 +223,7 @@ func TestOnAcknowledgementMaybeConvert_Sink(t *testing.T) {
 
 			_, err = ibctransfer.OnAcknowledgementMaybeConvert(ctx, app.TransferKeeper, app.TokenRegistryKeeper, app.BankKeeper, ackPacket, app.AppCodec().MustMarshalJSON(&tt.args.acknowledgement))
 			require.ErrorIs(t, err, tt.err)
-			// Assert events have recorded what happened.
+			require.Equal(t, tt.args.msg.Token.String(), app.BankKeeper.GetBalance(ctx, sender, tt.args.msg.Token.Denom).String())
 		})
 	}
 }
