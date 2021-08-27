@@ -3,6 +3,8 @@ import { EthereumAccounts, EthereumAddressAndKey, EthereumResults, ShellCommand 
 import * as ChildProcess from "child_process"
 
 export class HardhatNodeRunner extends ShellCommand<EthereumResults> {
+  private output: Promise<EthereumResults>;
+  private outputResolve: any;
   constructor(
     readonly host = "localhost",
     readonly port = 8545,
@@ -11,6 +13,9 @@ export class HardhatNodeRunner extends ShellCommand<EthereumResults> {
     readonly chainId = 1
   ) {
     super();
+    this.output = new Promise<EthereumResults>((res, rej) => {
+      this.outputResolve = res;
+    })
   }
 
   cmd(): [string, string[]] {
@@ -26,19 +31,19 @@ export class HardhatNodeRunner extends ShellCommand<EthereumResults> {
     const childInfo = ChildProcess.spawn(c, args, {
       stdio: "inherit",
     })
+    let ethereumAccounts = signerArrayToEthereumAccounts(defaultHardhatAccounts, this.nValidators)
+    this.outputResolve({
+      process: childInfo,
+      accounts: ethereumAccounts,
+      httpHost: this.host,
+      httpPort: this.port,
+      chainId: hre.network.config.chainId
+    })
     return
   }
 
   override async results(): Promise<EthereumResults> {
-    let ethereumAccounts = signerArrayToEthereumAccounts(defaultHardhatAccounts, this.nValidators)
-    if (hre.network.config.chainId) {
-      return {
-        accounts: ethereumAccounts,
-        httpHost: this.host,
-        httpPort: this.port,
-        chainId: hre.network.config.chainId
-      }
-    } else throw "unknown chainId"
+    return this.output;
   }
 }
 

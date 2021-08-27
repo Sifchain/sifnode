@@ -7,7 +7,7 @@ import { EbrelayerRunner } from "../src/devenv/ebrelayer";
 
 async function startHardhat() {
   const node = new HardhatNodeRunner()
-  const [process, resultsPromise] = node.go()
+  const resultsPromise = node.go()
   const results = await resultsPromise
   console.log(`rsltis: ${JSON.stringify(results, undefined, 2)}`)
   return { process }
@@ -15,7 +15,7 @@ async function startHardhat() {
 
 async function golangBuilder() {
   const node = new GolangBuilder()
-  const [process, resultsPromise] = node.go()
+  const resultsPromise = node.go()
   const results = await resultsPromise
   console.log(`golangBuilder: ${JSON.stringify(results, undefined, 2)}`)
   const output = await Promise.all([process, results])
@@ -28,7 +28,7 @@ async function golangBuilder() {
 async function sifnodedBuilder(golangResults: GolangResults) {
   console.log('in sifnodedBuilder')
   const node = new SifnodedRunner(golangResults)
-  const [process, resultsPromise] = node.go()
+  const resultsPromise = node.go()
   const results = await resultsPromise
   console.log(`golangBuilder: ${JSON.stringify(results, undefined, 2)}`)
   return {
@@ -39,7 +39,7 @@ async function sifnodedBuilder(golangResults: GolangResults) {
 
 async function smartContractDeployer() {
   const node: SmartContractDeployer = new SmartContractDeployer();
-  const [process, resultsPromise] = node.go();
+  const resultsPromise = node.go();
   const result = await resultsPromise;
   console.log(`Contracts deployed: ${JSON.stringify(result.contractAddresses, undefined, 2)}`)
   return { process, result };
@@ -50,18 +50,26 @@ async function ebrelayerBuilder(contractAddresses: DeployedContractAddresses, va
     smartContract: contractAddresses,
     validatorValues: validater,
   });
-  const [process, resultsPromise] = node.go();
+  const resultsPromise = node.go();
   const result = await resultsPromise;
   return { process, result };
 }
 
 async function main() {
   try {
-    const golang = (await Promise.all([startHardhat(), golangBuilder()]))[1]
+    const [hardhat, golang] = (await Promise.all([startHardhat(), golangBuilder()]))
     const sifnode = await sifnodedBuilder(golang.results);
     const smartcontract = await smartContractDeployer()
-    await ebrelayerBuilder(smartcontract.result.contractAddresses, sifnode.results.validatorValues[0])
+    const ebrelayer = await ebrelayerBuilder(smartcontract.result.contractAddresses, sifnode.results.validatorValues[0])
     console.log("Congrats, you did not fail, yay!")
+    process.on('SIGINT', () => {
+      console.log("Caught interrupt signal, cleaning up.");
+      sifnode.process.kill(sifnode.process.pid);
+      hardhat.process.kill(hardhat.process.pid);
+      ebrelayer.process.kill(ebrelayer.process.pid);
+      console.log("All child process terminated, goodbye.");
+    });
+    for (; ;) { /* Loop until killed */ }
   } catch (error) {
     console.log("Deployment failed. Lets log where it broke: ", error);
   }
