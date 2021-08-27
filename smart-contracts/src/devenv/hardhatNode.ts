@@ -1,6 +1,7 @@
 import * as hre from "hardhat";
 import { EthereumAccounts, EthereumAddressAndKey, EthereumResults, ShellCommand } from "./devEnv";
 import * as ChildProcess from "child_process"
+import notifier from 'node-notifier';
 
 export class HardhatNodeRunner extends ShellCommand<EthereumResults> {
   private output: Promise<EthereumResults>;
@@ -39,6 +40,13 @@ export class HardhatNodeRunner extends ShellCommand<EthereumResults> {
       httpPort: this.port,
       chainId: hre.network.config.chainId
     })
+    childInfo.on('exit', (code) => {
+      notifier.notify({
+        title: "HardHat Notice",
+        message: `Hardhat has just exited with exit code: ${code}`
+      })
+    });
+
     return
   }
 

@@ -24,6 +24,7 @@
     "@typechain/hardhat": "^2.3.0",
     "@types/chai": "^4.2.21",
     "@types/mocha": "^9.0.0",
+    "@types/node-notifier": "^8.0.1",
     "@types/yargs": "^17.0.2",
     "big-integer": "^1.6.48",
     "chai": "^4.3.4",
@@ -92,6 +93,7 @@
     "truffle": "^5.4.7",
     "@types/node": "^10.17.19",
     "concurrently": "^6.2.0",
+    "node-notifier": "^10.0.0",
     "node-notify": "^1.0.0"
   }
 }

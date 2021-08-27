@@ -57,14 +57,16 @@ async function ebrelayerBuilder(contractAddresses: DeployedContractAddresses, va
 
 async function main() {
   try {
+    const sigterm = new Promise((res, _) => {
+      process.on('SIGINT', res);
+      process.on('SIGTERM', res);
+    });
+    console.log("Debugged Process ID: ", process.pid);
     const [hardhat, golang] = (await Promise.all([startHardhat(), golangBuilder()]))
     const sifnode = await sifnodedBuilder(golang.results);
     const smartcontract = await smartContractDeployer()
     const ebrelayer = await ebrelayerBuilder(smartcontract.result.contractAddresses, sifnode.results.validatorValues[0])
     console.log("Congrats, you did not fail, yay!")
-    const sigterm = new Promise((res, _) => {
-      process.on('SIGINT', res);
-    })
     await sigterm
     console.log("Caught interrupt signal, cleaning up.");
     sifnode.process.kill(sifnode.process.pid);
