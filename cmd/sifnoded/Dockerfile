@@ -13,7 +13,7 @@ RUN go get github.com/cosmos/cosmos-sdk/cosmovisor/cmd/cosmovisor
 #
 # Build: Sifnode
 #
-FROM golang:1.15 AS sifnode
+FROM golang:1.16 AS sifnode
 
 ARG chainnet
 
