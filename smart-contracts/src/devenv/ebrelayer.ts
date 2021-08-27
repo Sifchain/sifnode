@@ -1,11 +1,12 @@
 import * as ChildProcess from "child_process"
-import { ShellCommand } from "./devEnv"
+import { ShellCommand, EthereumAddressAndKey } from "./devEnv"
 import { ValidatorValues } from "./sifnoded"
 import { DeployedContractAddresses } from "../../scripts/deploy_contracts";
 import notifier from 'node-notifier';
 
 export interface EbrelayerArguments {
   readonly validatorValues: ValidatorValues,
+  readonly account: EthereumAddressAndKey,
   readonly smartContract: DeployedContractAddresses
 }
 
@@ -18,7 +19,7 @@ export class EbrelayerRunner extends ShellCommand<EbrelayerResults> {
   private outputResolve: any;
   constructor(
     readonly args: EbrelayerArguments,
-    readonly websocketAddress = "ws://localhost:8545/",
+    readonly websocketAddress = "ws://localhost:7545/",
     readonly tcpURL = "tcp://0.0.0.0:26657",
     readonly chainNet = "localnet",
     readonly ebrelayerDB = `levelDB.db`,
@@ -73,7 +74,11 @@ export class EbrelayerRunner extends ShellCommand<EbrelayerResults> {
       spawncmd,
       {
         shell: true,
-        stdio: "inherit"
+        stdio: "inherit",
+        env: {
+          "ETHEREUM_PRIVATE_KEY": this.args.account.privateKey,
+          "ETHEREUM_ADDRESS": this.args.account.address
+        }
       }
     )
     commandResult.on('exit', (code) => {

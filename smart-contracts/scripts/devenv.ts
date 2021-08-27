@@ -4,13 +4,14 @@ import { SifnodedRunner, ValidatorValues } from "../src/devenv/sifnoded";
 import { DeployedContractAddresses } from "../scripts/deploy_contracts";
 import { SmartContractDeployer } from "../src/devenv/smartcontractDeployer";
 import { EbrelayerRunner } from "../src/devenv/ebrelayer";
+import { EthereumAddressAndKey } from "../src/devenv/devEnv";
 
 async function startHardhat() {
   const node = new HardhatNodeRunner()
   const resultsPromise = node.go()
   const results = await resultsPromise
   console.log(`rsltis: ${JSON.stringify(results, undefined, 2)}`)
-  return { process }
+  return { process, results }
 }
 
 async function golangBuilder() {
@@ -45,9 +46,10 @@ async function smartContractDeployer() {
   return { process, result };
 }
 
-async function ebrelayerBuilder(contractAddresses: DeployedContractAddresses, validater: ValidatorValues) {
+async function ebrelayerBuilder(contractAddresses: DeployedContractAddresses, ethereumAccount: EthereumAddressAndKey, validater: ValidatorValues) {
   const node: EbrelayerRunner = new EbrelayerRunner({
     smartContract: contractAddresses,
+    account: ethereumAccount,
     validatorValues: validater,
   });
   const resultsPromise = node.go();
@@ -64,7 +66,11 @@ async function main() {
     const [hardhat, golang] = (await Promise.all([startHardhat(), golangBuilder()]))
     const sifnode = await sifnodedBuilder(golang.results);
     const smartcontract = await smartContractDeployer()
-    const ebrelayer = await ebrelayerBuilder(smartcontract.result.contractAddresses, sifnode.results.validatorValues[0])
+    const ebrelayer = await ebrelayerBuilder(
+      smartcontract.result.contractAddresses,
+      hardhat.results.accounts.validators[0],
+      sifnode.results.validatorValues[0]
+    )
     await sigterm
     console.log("Caught interrupt signal, cleaning up.");
     sifnode.process.kill(sifnode.process.pid);
