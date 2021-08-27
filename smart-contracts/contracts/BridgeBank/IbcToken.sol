@@ -3,17 +3,22 @@ pragma solidity 0.8.0;
 
 import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "./MinterRole.sol";
+import "@openzeppelin/contracts/access/AccessControl.sol";
 
 /**
  * @title IbcToken
  * @dev Mintable, ERC20Burnable, ERC20 compatible BankToken for use by BridgeBank
  **/
-contract IbcToken is ERC20Burnable, Ownable, MinterRole {
+contract IbcToken is ERC20Burnable, Ownable, AccessControl {
+    bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
+
+    /**
+     * @dev Number of decimals this token uses
+     */
     uint8 private _decimals;
 
     /**
-     * @dev the Cosmos denom of this token
+     * @dev The Cosmos denom of this token
      */
     string public cosmosDenom;
 
@@ -25,7 +30,7 @@ contract IbcToken is ERC20Burnable, Ownable, MinterRole {
     ) ERC20(_name, _symbol) Ownable() {
         _decimals = _tokenDecimals;
         cosmosDenom = _cosmosDenom;
-        _addMinter(msg.sender);
+        _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
     }
 
     /**
@@ -34,7 +39,7 @@ contract IbcToken is ERC20Burnable, Ownable, MinterRole {
      * @param amount How much should be minted
      * @return true if the operation succeeds
      */
-    function mint(address user, uint256 amount) external onlyMinter returns (bool) {
+    function mint(address user, uint256 amount) external onlyRole(MINTER_ROLE) returns (bool) {
         _mint(user, amount);
         return true;
     }
@@ -54,29 +59,5 @@ contract IbcToken is ERC20Burnable, Ownable, MinterRole {
     function setDenom(string calldata denom) external onlyOwner returns (bool) {
         cosmosDenom = denom;
         return true;
-    }
-
-    /**
-     * @notice Adds `account` to the list of Minters
-     * @param account The address of the new Minter
-     */
-    function addMinter(address account) external onlyOwner {
-        _addMinter(account);
-    }
-
-    /**
-     * @notice Removes `account` from the list of Minters
-     * @param account The address of the Minter to be removed
-     */
-    function removeMinter(address account) external onlyOwner {
-        _removeMinter(account);
-    }
-
-    /**
-     * @notice Removes `msg.sender` from the list of Minters
-     * @dev Caller must be a Minter
-     */
-    function renounceMinter() external onlyMinter {
-        _removeMinter(msg.sender);
     }
 }

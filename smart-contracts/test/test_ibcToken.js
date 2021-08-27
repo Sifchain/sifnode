@@ -12,6 +12,10 @@ require("chai")
 
 use(solidity);
 
+// Bytes32 representation of Roles, according to OpenZeppelin's docs
+const MINTER_ROLE = web3.utils.soliditySha3('MINTER_ROLE');
+const DEFAULT_ADMIN_ROLE = '0x0000000000000000000000000000000000000000000000000000000000000000';
+
 describe("Test IBC Token", function () {
   let userOne;
   let accounts;
@@ -49,87 +53,40 @@ describe("Test IBC Token", function () {
     const _symbol = await ibcToken.symbol();
     const _decimals = await ibcToken.decimals();
     const _denom = await ibcToken.cosmosDenom();
-    const isMinter = await ibcToken.minters(owner.address);
+    const isAdmin = await ibcToken.hasRole(DEFAULT_ADMIN_ROLE, owner.address);
+    const isMinter = await ibcToken.hasRole(MINTER_ROLE, owner.address);
 
     expect(_name).to.be.equal(name);
     expect(_symbol).to.be.equal(symbol);
     expect(_decimals).to.be.equal(decimals);
     expect(_denom).to.be.equal(denom);
-    expect(isMinter).to.be.true;
-  });
-
-  it("should allow owner (who is a minter) to mint ERC20 tokens", async function () {
-    const amount = 1000000;
-
-    // User should have no tokens yet
-    let userBalance = Number(await ibcToken.balanceOf(userOne.address));
-    userBalance.should.be.bignumber.equal(0);
-
-    // Mint some tokens
-    await ibcToken.connect(owner).mint(userOne.address, amount);
-
-    // check if the user received the minted tokens
-    userBalance = Number(await ibcToken.balanceOf(userOne.address));
-    userBalance.should.be.bignumber.equal(amount);
-  });
-
-  it("should NOT allow a non-minter user to mint ERC20 tokens", async function () {
-    const amount = 1000000;
-
-    // Try to mint some tokens
-    await expect(ibcToken.connect(userOne).mint(userOne.address, amount))
-      .to.be.revertedWith("MinterRole: caller does not have the Minter role");
-
-    // check if the user received the minted tokens
-    userBalance = Number(await ibcToken.balanceOf(userOne.address));
-    userBalance.should.be.bignumber.equal(0);
+    expect(isAdmin).to.be.true;
+    expect(isMinter).to.be.false;
   });
 
   it("should allow owner to add a new minter", async function () {
     // Add a new minter
-    await ibcToken.connect(owner).addMinter(userOne.address);
+    await ibcToken.connect(owner).grantRole(MINTER_ROLE, userOne.address);
 
     // check if the user received the minter role
-    isMinter = await ibcToken.minters(userOne.address);
+    const isMinter = await ibcToken.hasRole(MINTER_ROLE, userOne.address);
     expect(isMinter).to.be.true;
   });
 
-  it("should emit en event when the owner adds a new minter", async function () {
+  it("should allow a minter to mint ERC20 tokens", async function () {
     // Add a new minter
-    await expect(ibcToken.connect(owner).addMinter(userOne.address))
-      .to.emit(ibcToken, 'MinterUpdate')
-      .withArgs(userOne.address, true);
+    await ibcToken.connect(owner).grantRole(MINTER_ROLE, userOne.address);
 
     // check if the user received the minter role
-    isMinter = await ibcToken.minters(userOne.address);
+    const isMinter = await ibcToken.hasRole(MINTER_ROLE, userOne.address);
     expect(isMinter).to.be.true;
-  });
-
-  it("should NOT allow a user to add a new minter", async function () {
-    // Add a new minter
-    await expect(ibcToken.connect(userOne).addMinter(userOne.address))
-      .to.be.revertedWith('Ownable: caller is not the owner');
-
-    // check if the user received the minter role
-    isMinter = await ibcToken.minters(userOne.address);
-    expect(isMinter).to.be.false;
-  });
-
-  it("should allow a new minter to mint tokens", async function () {
-    // Add a new minter
-    await ibcToken.connect(owner).addMinter(userOne.address);
-
-    // check if the user received the minter role
-    isMinter = await ibcToken.minters(userOne.address);
-    expect(isMinter).to.be.true;
-
-    const amount = 1000000;
 
     // User should have no tokens yet
     let userBalance = Number(await ibcToken.balanceOf(userOne.address));
     userBalance.should.be.bignumber.equal(0);
 
     // Mint some tokens
+    const amount = 1000000;
     await ibcToken.connect(userOne).mint(userOne.address, amount);
 
     // check if the user received the minted tokens
@@ -137,96 +94,163 @@ describe("Test IBC Token", function () {
     userBalance.should.be.bignumber.equal(amount);
   });
 
-  it("should allow owner to remove a minter", async function () {
-    // Add a new minter
-    await ibcToken.connect(owner).addMinter(userOne.address);
-
-    // check if the user received the minter role
-    isMinter = await ibcToken.minters(userOne.address);
-    expect(isMinter).to.be.true;
-
-    // Remove the new minter
-    await ibcToken.connect(owner).removeMinter(userOne.address);
-
-    // check if the user lost the minter role
-    isMinter = await ibcToken.minters(userOne.address);
-    expect(isMinter).to.be.false;
-
-    // Try to mint tokens (should fail)
-    const amount = 1000000;
-
+  it("should NOT allow a non-minter user to mint ERC20 tokens", async function () {
     // User should have no tokens yet
     let userBalance = Number(await ibcToken.balanceOf(userOne.address));
     userBalance.should.be.bignumber.equal(0);
 
-    // Mint some tokens
+    // Try to mint some tokens (should fail)
+    const amount = 1000000;
     await expect(ibcToken.connect(userOne).mint(userOne.address, amount))
-      .to.be.revertedWith("MinterRole: caller does not have the Minter role");
+      .to.be.revertedWith(
+        `AccessControl: account ${userOne.address.toLowerCase()} is missing role ${MINTER_ROLE}`
+      );
 
     // check if the user received the minted tokens (should not have)
     userBalance = Number(await ibcToken.balanceOf(userOne.address));
     userBalance.should.be.bignumber.equal(0);
   });
 
-  it("should emit en event when owner removes a minter", async function () {
+  it("should emit an event when the owner adds a new minter", async function () {
     // Add a new minter
-    await ibcToken.connect(owner).addMinter(userOne.address);
+    await expect(ibcToken.connect(owner).grantRole(MINTER_ROLE, userOne.address))
+      .to.emit(ibcToken, 'RoleGranted')
+      .withArgs(MINTER_ROLE, userOne.address, owner.address);
 
     // check if the user received the minter role
-    isMinter = await ibcToken.minters(userOne.address);
+    const isMinter = await ibcToken.hasRole(MINTER_ROLE, userOne.address);
     expect(isMinter).to.be.true;
+  });
 
-    // Remove the new minter
-    await expect(ibcToken.connect(owner).removeMinter(userOne.address))
-      .to.emit(ibcToken, 'MinterUpdate')
-      .withArgs(userOne.address, false);
+  it("should NOT allow a user to add a new minter", async function () {
+    // Add a new minter
+    await expect(ibcToken.connect(userOne).grantRole(MINTER_ROLE, userOne.address))
+      .to.be.revertedWith(
+        `AccessControl: account ${userOne.address.toLowerCase()} is missing role ${DEFAULT_ADMIN_ROLE}`
+      );
 
-    // check if the user lost the minter role
-    isMinter = await ibcToken.minters(userOne.address);
+    // check if the user received the minter role
+    isMinter = await ibcToken.hasRole(MINTER_ROLE, userOne.address);
     expect(isMinter).to.be.false;
   });
 
-  it("should NOT allow a user to remove a minter", async function () {
+  it("should allow a new minter to mint tokens", async function () {
     // Add a new minter
-    await ibcToken.connect(owner).addMinter(userOne.address);
+    await ibcToken.connect(owner).grantRole(MINTER_ROLE, userOne.address);
 
     // check if the user received the minter role
-    isMinter = await ibcToken.minters(userOne.address);
+    const isMinter = await ibcToken.hasRole(MINTER_ROLE, userOne.address);
     expect(isMinter).to.be.true;
 
-    // Try to remove the new minter (should fail)
-    await expect(ibcToken.connect(userOne).removeMinter(owner.address))
-      .to.be.revertedWith("Ownable: caller is not the owner")
+    // User should have no tokens yet
+    let userBalance = Number(await ibcToken.balanceOf(userOne.address));
+    userBalance.should.be.bignumber.equal(0);
 
-    // check if the owner kept the minter role
-    isMinter = await ibcToken.minters(owner.address);
+    // Mint some tokens
+    const amount = 1000000;
+    await ibcToken.connect(userOne).mint(userOne.address, amount);
+
+    // check if the user received the minted tokens
+    userBalance = Number(await ibcToken.balanceOf(userOne.address));
+    userBalance.should.be.bignumber.equal(amount);
+  });
+
+  it("should allow owner to revoke minter role", async function () {
+    // Add a new minter
+    await ibcToken.connect(owner).grantRole(MINTER_ROLE, userOne.address);
+
+    // check if the user received the minter role
+    let isMinter = await ibcToken.hasRole(MINTER_ROLE, userOne.address);
+    expect(isMinter).to.be.true;
+
+    // Remove the new minter
+    await ibcToken.connect(owner).revokeRole(MINTER_ROLE, userOne.address);
+
+    // check if the user lost the minter role
+    isMinter = await ibcToken.hasRole(MINTER_ROLE, userOne.address);
+    expect(isMinter).to.be.false;
+
+    // User should have no tokens yet
+    let userBalance = Number(await ibcToken.balanceOf(userOne.address));
+    userBalance.should.be.bignumber.equal(0);
+
+    // Try to mint some tokens (should fail)
+    const amount = 1000000;
+    await expect(ibcToken.connect(userOne).mint(userOne.address, amount))
+      .to.be.revertedWith(
+        `AccessControl: account ${userOne.address.toLowerCase()} is missing role ${MINTER_ROLE}`
+      );
+
+    // check if the user received the minted tokens (should not have)
+    userBalance = Number(await ibcToken.balanceOf(userOne.address));
+    userBalance.should.be.bignumber.equal(0);
+  });
+
+  it("should emit en event when owner revokes minter role", async function () {
+    // Add a new minter
+    await ibcToken.connect(owner).grantRole(MINTER_ROLE, userOne.address);
+      
+    // check if the user received the minter role
+    let isMinter = await ibcToken.hasRole(MINTER_ROLE, userOne.address);
+    expect(isMinter).to.be.true;
+
+    // Revoke minter role
+    await expect(ibcToken.connect(owner).revokeRole(MINTER_ROLE, userOne.address))
+      .to.emit(ibcToken, 'RoleRevoked')
+      .withArgs(MINTER_ROLE, userOne.address, owner.address);
+
+    // check if the user received the minter role
+    isMinter = await ibcToken.hasRole(MINTER_ROLE, userOne.address);
+    expect(isMinter).to.be.false;
+  });
+
+  it("should NOT allow a user to revoke minter role", async function () {
+    // Add a new minter
+    await ibcToken.connect(owner).grantRole(MINTER_ROLE, userOne.address);
+      
+    // check if the user received the minter role
+    let isMinter = await ibcToken.hasRole(MINTER_ROLE, userOne.address);
+    expect(isMinter).to.be.true;
+
+    // Try to revoke minter role (should fail)
+    await expect(ibcToken.connect(userOne).revokeRole(MINTER_ROLE, userOne.address))
+      .to.be.revertedWith(
+        `AccessControl: account ${userOne.address.toLowerCase()} is missing role ${DEFAULT_ADMIN_ROLE}`
+      );
+
+    // check if the user kept the minter role
+    isMinter = await ibcToken.hasRole(MINTER_ROLE, userOne.address);
     expect(isMinter).to.be.true;
   });
 
-  it("should allow a minter to remove themselves from the list of minters", async function () {
+  it("should allow a minter to renounce it's own minter role", async function () {
+    // Add a new minter
+    await ibcToken.connect(owner).grantRole(MINTER_ROLE, userOne.address);
+      
+    // check if the user received the minter role
+    let isMinter = await ibcToken.hasRole(MINTER_ROLE, userOne.address);
+    expect(isMinter).to.be.true;
+
     // Renounces the minter role
-    await ibcToken.connect(owner).renounceMinter();
+    await ibcToken.connect(userOne).renounceRole(MINTER_ROLE, userOne.address);
 
     // check if the user lost the minter role
-    isMinter = await ibcToken.minters(owner.address);
+    isMinter = await ibcToken.hasRole(MINTER_ROLE, userOne.address);
     expect(isMinter).to.be.false;
   });
 
   it("should emit an event when a minter renounces the minter role", async function () {
+    // Add a new minter
+    await ibcToken.connect(owner).grantRole(MINTER_ROLE, userOne.address);
+      
+    // check if the user received the minter role
+    let isMinter = await ibcToken.hasRole(MINTER_ROLE, userOne.address);
+    expect(isMinter).to.be.true;
+
     // Renounces the minter role
-    await expect(ibcToken.connect(owner).renounceMinter())
-      .to.emit(ibcToken, 'MinterUpdate')
-      .withArgs(owner.address, false);
-
-    // check if the user lost the minter role
-    isMinter = await ibcToken.minters(owner.address);
-    expect(isMinter).to.be.false;
-  });
-
-  it("should NOT allow a non-minter user to remove themselves from the list of minters", async function () {
-    // Try to renounce the minter role (should fail)
-    await expect(ibcToken.connect(userOne).renounceMinter())
-      .to.be.revertedWith("MinterRole: caller does not have the Minter role");
+    await expect(ibcToken.connect(userOne).renounceRole(MINTER_ROLE, userOne.address))
+      .to.emit(ibcToken, 'RoleRevoked')
+      .withArgs(MINTER_ROLE, userOne.address, userOne.address);
   });
 
   it("should allow owner to set the cosmosDenom", async function () {
