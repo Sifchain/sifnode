@@ -2,6 +2,7 @@ import * as ChildProcess from "child_process"
 import { ShellCommand } from "./devEnv"
 import { ValidatorValues } from "./sifnoded"
 import { DeployedContractAddresses } from "../../scripts/deploy_contracts";
+import notifier from 'node-notifier';
 
 export interface EbrelayerArguments {
   readonly validatorValues: ValidatorValues,
@@ -75,6 +76,12 @@ export class EbrelayerRunner extends ShellCommand<EbrelayerResults> {
         stdio: "inherit"
       }
     )
+    commandResult.on('exit', (code) => {
+      notifier.notify({
+        title: "Ebrelayer Notice",
+        message: `Ebrelayer has just exited with exit code: ${code}`
+      })
+    })
     this.outputResolve(
       {
         process: commandResult

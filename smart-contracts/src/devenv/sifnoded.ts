@@ -5,6 +5,7 @@ import * as path from "path"
 import * as fs from "fs";
 import YAML from 'yaml'
 import { boolean } from "yargs";
+import notifier from 'node-notifier';
 
 export interface ValidatorValues {
   chain_id: string,
@@ -134,6 +135,14 @@ export class SifnodedRunner extends ShellCommand<SifnodedResults> {
       sifnodedDaemonCmd,
       { shell: true, stdio: "inherit" }
     )
+
+    sifnoded.on('exit', (code) => {
+      notifier.notify({
+        title: "Sifnoded Notice",
+        message: `Sifnoded has just exited with exit code: ${code}`
+      })
+    });
+
     return {
       validatorValues: networkConfig,
       process: sifnoded,
