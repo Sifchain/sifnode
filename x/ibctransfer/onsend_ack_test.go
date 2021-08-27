@@ -25,15 +25,17 @@ func TestOnAcknowledgementMaybeConvert_Source(t *testing.T) {
 	addrs, _ := test2.CreateTestAddrs(2)
 
 	rowanToken := tokenregistrytypes.RegistryEntry{
+		IsWhitelisted:        true,
 		Denom:                "rowan",
 		IbcCounterPartyDenom: "xrowan",
 		Decimals:             18,
 	}
 
 	xrowanToken := tokenregistrytypes.RegistryEntry{
-		Denom:     "xrowan",
-		UnitDenom: "rowan",
-		Decimals:  10,
+		IsWhitelisted: true,
+		Denom:         "xrowan",
+		UnitDenom:     "rowan",
+		Decimals:      10,
 	}
 
 	// successAck := channeltypes.NewResultAcknowledgement([]byte{byte(1)})
