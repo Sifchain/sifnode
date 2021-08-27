@@ -3,13 +3,13 @@ pragma solidity 0.8.0;
 
 import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "./MinterRole.sol";
 
 /**
  * @title IbcToken
  * @dev Mintable, ERC20Burnable, ERC20 compatible BankToken for use by BridgeBank
  **/
-contract IbcToken is ERC20Burnable, Ownable {
-
+contract IbcToken is ERC20Burnable, Ownable, MinterRole {
     uint8 private _decimals;
 
     /**
@@ -17,12 +17,15 @@ contract IbcToken is ERC20Burnable, Ownable {
      */
     string public cosmosDenom;
 
-    constructor(string memory _name, string memory _symbol, uint8 _tokenDecimals, string memory _cosmosDenom)
-        ERC20(_name, _symbol)
-        Ownable()
-    {
-       _decimals = _tokenDecimals;
-       cosmosDenom = _cosmosDenom;
+    constructor(
+        string memory _name,
+        string memory _symbol,
+        uint8 _tokenDecimals,
+        string memory _cosmosDenom
+    ) ERC20(_name, _symbol) Ownable() {
+        _decimals = _tokenDecimals;
+        cosmosDenom = _cosmosDenom;
+        _addMinter(msg.sender);
     }
 
     /**
@@ -31,7 +34,7 @@ contract IbcToken is ERC20Burnable, Ownable {
      * @param amount How much should be minted
      * @return true if the operation succeeds
      */
-    function mint(address user, uint256 amount) external onlyOwner returns (bool) {
+    function mint(address user, uint256 amount) external onlyMinter returns (bool) {
         _mint(user, amount);
         return true;
     }
@@ -39,7 +42,7 @@ contract IbcToken is ERC20Burnable, Ownable {
     /**
      * @notice Number of decimals this token has
      */
-    function decimals() public override view returns (uint8) {
+    function decimals() public view override returns (uint8) {
         return _decimals;
     }
 
@@ -51,5 +54,21 @@ contract IbcToken is ERC20Burnable, Ownable {
     function setDenom(string calldata denom) external onlyOwner returns (bool) {
         cosmosDenom = denom;
         return true;
+    }
+
+    /**
+     * @notice Adds `account` to the list of Minters
+     * @param account The address of the new Minter
+     */
+    function addMinter(address account) external onlyOwner {
+        _addMinter(account);
+    }
+
+    /**
+     * @notice Removes `account` from the list of Minters
+     * @param account The address of the Minter to be removed
+     */
+    function removeMinter(address account) external onlyOwner {
+        _removeMinter(account);
     }
 }
