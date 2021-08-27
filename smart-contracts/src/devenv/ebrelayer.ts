@@ -12,6 +12,8 @@ interface EbrelayerResults {
 }
 
 export class EbrelayerRunner extends ShellCommand<EbrelayerResults> {
+  private output: EbrelayerResults;
+  private outputResolve: any;
   constructor(
     readonly args: EbrelayerArguments,
     readonly websocketAddress = "ws://localhost:7545/",
@@ -22,6 +24,9 @@ export class EbrelayerRunner extends ShellCommand<EbrelayerResults> {
     readonly symbolTranslatorFile = "../test/integration/whitelisted-denom.json"
   ) {
     super();
+    this.output = new Promise<EbrelayerResults>((res, rej) => {
+      this.outputResolve = res;
+    })
   }
 
   cmd(): [string, string[]] {
@@ -57,10 +62,11 @@ export class EbrelayerRunner extends ShellCommand<EbrelayerResults> {
     await this.waitForSifAccount()
     const args = this.cmd().slice(1) as string[]
     const commandResult = ChildProcess.spawn(this.cmd()[0], args, { stdio: "inherit" })
+    this.outputResolve({})
     return
   }
 
   override async results(): Promise<EbrelayerResults> {
-    return Promise.resolve({})
+    return this.output;
   }
 }
