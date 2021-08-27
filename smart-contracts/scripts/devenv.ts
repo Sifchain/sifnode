@@ -62,14 +62,15 @@ async function main() {
     const smartcontract = await smartContractDeployer()
     const ebrelayer = await ebrelayerBuilder(smartcontract.result.contractAddresses, sifnode.results.validatorValues[0])
     console.log("Congrats, you did not fail, yay!")
-    process.on('SIGINT', () => {
-      console.log("Caught interrupt signal, cleaning up.");
-      sifnode.process.kill(sifnode.process.pid);
-      hardhat.process.kill(hardhat.process.pid);
-      ebrelayer.process.kill(ebrelayer.process.pid);
-      console.log("All child process terminated, goodbye.");
-    });
-    for (; ;) { /* Loop until killed */ }
+    const sigterm = new Promise((res, _) => {
+      process.on('SIGINT', res);
+    })
+    await sigterm
+    console.log("Caught interrupt signal, cleaning up.");
+    sifnode.process.kill(sifnode.process.pid);
+    hardhat.process.kill(hardhat.process.pid);
+    ebrelayer.process.kill(ebrelayer.process.pid);
+    console.log("All child process terminated, goodbye.");
   } catch (error) {
     console.log("Deployment failed. Lets log where it broke: ", error);
   }
