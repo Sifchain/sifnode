@@ -73,8 +73,8 @@ func OnAcknowledgementMaybeConvert(
 
 		// if needs conversion, convert and send
 		if ShouldConvertIncomingCoins(ctx, whitelistKeeper, packet, data) {
-			ibcToken, convToken := GetConvForIncomingCoins(ctx, whitelistKeeper, packet, data)
-			err := ExecConvForIncomingCoins(ctx, ibcToken, convToken, bankKeeper, packet, data)
+			incomingCoins, finalCoins := GetConvForIncomingCoins(ctx, whitelistKeeper, packet, data)
+			err := ExecConvForIncomingCoins(ctx, incomingCoins, finalCoins, bankKeeper, packet, data)
 			if err != nil {
 				return nil, err
 			}
