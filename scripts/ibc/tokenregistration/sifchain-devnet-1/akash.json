@@ -7,7 +7,7 @@
       "base_denom": "uakt",
       "path": "transfer/channel-110",
       "ibc_channel_id": "channel-110",
-      "ibc_counterparty_channel_id": "channel-channel-63",
+      "ibc_counterparty_channel_id": "channel-63",
       "display_name": "UAKT",
       "display_symbol": "",
       "network": "",
