@@ -99,10 +99,12 @@ func ShouldConvertRefundCoins(
 	// get token registry entry for received denom
 	denom := data.Denom
 	denomRegistryEntry := whitelistKeeper.GetDenom(ctx, data.Denom)
-	if !denomRegistryEntry.IsWhitelisted {
-		// TODO: unlikely as have already accepted this import,
-		// however, it could have come through the "accept returns" whitelist logic,
-		// and have 0 decimals here. Consider refactoring inputs here and returning pointer and error on GetDenom.
+	// If this incoming coin isn't setup on the whitelist with decimals / unit denom,
+	// then no conversion happens.
+	// This extra decimal & UnitDenom check should ensure we still process refunds,
+	// even if the token permission / whitelist property has since been changed.
+	if !denomRegistryEntry.IsWhitelisted && (denomRegistryEntry.Decimals == 0 || denomRegistryEntry.UnitDenom == "") {
+		return false
 	}
 	// get unit denom to store funds in, or do not convert
 	unitDenom := denomRegistryEntry.UnitDenom
@@ -111,7 +113,11 @@ func ShouldConvertRefundCoins(
 	}
 	unitDenomRegistryEntry := whitelistKeeper.GetDenom(ctx, unitDenom)
 	if !unitDenomRegistryEntry.IsWhitelisted {
-		// TODO: err
+		// This should be considered an error case,
+		// but we just choose not to convert here.
+		// TODO: ShouldConvertIncoming can be brought in line with the corresponding outgoing check,
+		// add test for this case.
+		return false
 	}
 	// if unit_denom decimals are greater than minted denom decimals, we need to increase precision to convert them
 	return unitDenomRegistryEntry.Decimals > denomRegistryEntry.Decimals
