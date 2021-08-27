@@ -40,6 +40,7 @@ export class HardhatNodeRunner extends ShellCommand<EthereumResults> {
       httpPort: this.port,
       chainId: hre.network.config.chainId
     })
+
     childInfo.on('exit', (code) => {
       notifier.notify({
         title: "HardHat Notice",
