@@ -3,35 +3,43 @@ pragma solidity 0.8.0;
 
 import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/access/AccessControl.sol";
 
 /**
  * @title IbcToken
  * @dev Mintable, ERC20Burnable, ERC20 compatible BankToken for use by BridgeBank
  **/
-contract IbcToken is ERC20Burnable, Ownable {
+contract IbcToken is ERC20Burnable, Ownable, AccessControl {
+    bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
 
+    /**
+     * @dev Number of decimals this token uses
+     */
     uint8 private _decimals;
 
     /**
-     * @dev the Cosmos denom of this token
+     * @dev The Cosmos denom of this token
      */
     string public cosmosDenom;
 
-    constructor(string memory _name, string memory _symbol, uint8 _tokenDecimals, string memory _cosmosDenom)
-        ERC20(_name, _symbol)
-        Ownable()
-    {
-       _decimals = _tokenDecimals;
-       cosmosDenom = _cosmosDenom;
+    constructor(
+        string memory _name,
+        string memory _symbol,
+        uint8 _tokenDecimals,
+        string memory _cosmosDenom
+    ) ERC20(_name, _symbol) Ownable() {
+        _decimals = _tokenDecimals;
+        cosmosDenom = _cosmosDenom;
+        _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
     }
 
     /**
-     * @notice If sender is the owner, mints `amount` to `user`
+     * @notice If sender is a Minter, mints `amount` to `user`
      * @param user Address of the recipient
      * @param amount How much should be minted
      * @return true if the operation succeeds
      */
-    function mint(address user, uint256 amount) external onlyOwner returns (bool) {
+    function mint(address user, uint256 amount) external onlyRole(MINTER_ROLE) returns (bool) {
         _mint(user, amount);
         return true;
     }
@@ -39,7 +47,7 @@ contract IbcToken is ERC20Burnable, Ownable {
     /**
      * @notice Number of decimals this token has
      */
-    function decimals() public override view returns (uint8) {
+    function decimals() public view override returns (uint8) {
         return _decimals;
     }
 
