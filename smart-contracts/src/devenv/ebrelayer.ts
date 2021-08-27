@@ -73,15 +73,13 @@ export class EbrelayerRunner extends ShellCommand<EbrelayerResults> {
     await this.waitForSifAccount()
     // const args: string[] = this.cmd()[1]// as string[]
     const spawncmd = path.join(this.args.golangResults.goBin, this.cmd()[0] + " " + this.cmd()[1].join(" "));
+    process.env["ETHEREUM_PRIVATE_KEY"] = this.args.account.privateKey;
+    process.env["ETHEREUM_ADDRESS"] = this.args.account.address;
     const commandResult = ChildProcess.spawn(
       spawncmd,
       {
         shell: true,
         stdio: "inherit",
-        env: {
-          "ETHEREUM_PRIVATE_KEY": this.args.account.privateKey,
-          "ETHEREUM_ADDRESS": this.args.account.address
-        }
       }
     )
     commandResult.on('exit', (code) => {
