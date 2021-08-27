@@ -17,12 +17,12 @@ export class EbrelayerRunner extends ShellCommand<EbrelayerResults> {
   private outputResolve: any;
   constructor(
     readonly args: EbrelayerArguments,
-    readonly websocketAddress = "ws://localhost:7545/",
+    readonly websocketAddress = "ws://localhost:8545/",
     readonly tcpURL = "tcp://0.0.0.0:26657",
     readonly chainNet = "localnet",
     readonly ebrelayerDB = `levelDB.db`,
-    readonly relayerdbPath = "./",
-    readonly symbolTranslatorFile = "../test/integration/whitelisted-denom.json"
+    readonly relayerdbPath = "./relayerdb",
+    readonly symbolTranslatorFile = "../test/integration/config/symbol_translator.json"
   ) {
     super();
     this.output = new Promise<EbrelayerResults>((res, rej) => {
@@ -48,8 +48,8 @@ export class EbrelayerRunner extends ShellCommand<EbrelayerResults> {
       this.args.validatorValues.moniker,
       "--symbol-translator-file",
       this.symbolTranslatorFile,
-      "--relayerdb-path",
-      this.relayerdbPath
+      // "--relayerdb-path",
+      // this.relayerdbPath
     ]]
   }
 
@@ -66,8 +66,15 @@ export class EbrelayerRunner extends ShellCommand<EbrelayerResults> {
 
   override async run(): Promise<void> {
     await this.waitForSifAccount()
-    const args = this.cmd().slice(1) as string[]
-    const commandResult = ChildProcess.spawn(this.cmd()[0], args, { stdio: "inherit" })
+    // const args: string[] = this.cmd()[1]// as string[]
+    const spawncmd = this.cmd()[0] + " " + this.cmd()[1].join(" ");
+    const commandResult = ChildProcess.spawn(
+      spawncmd,
+      {
+        shell: true,
+        stdio: "inherit"
+      }
+    )
     this.outputResolve(
       {
         process: commandResult
