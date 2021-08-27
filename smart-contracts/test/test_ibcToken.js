@@ -203,6 +203,32 @@ describe("Test IBC Token", function () {
     expect(isMinter).to.be.true;
   });
 
+  it("should allow a minter to remove themselves from the list of minters", async function () {
+    // Renounces the minter role
+    await ibcToken.connect(owner).renounceMinter();
+
+    // check if the user lost the minter role
+    isMinter = await ibcToken.minters(owner.address);
+    expect(isMinter).to.be.false;
+  });
+
+  it("should emit an event when a minter renounces the minter role", async function () {
+    // Renounces the minter role
+    await expect(ibcToken.connect(owner).renounceMinter())
+      .to.emit(ibcToken, 'MinterUpdate')
+      .withArgs(owner.address, false);
+
+    // check if the user lost the minter role
+    isMinter = await ibcToken.minters(owner.address);
+    expect(isMinter).to.be.false;
+  });
+
+  it("should NOT allow a non-minter user to remove themselves from the list of minters", async function () {
+    // Try to renounce the minter role (should fail)
+    await expect(ibcToken.connect(userOne).renounceMinter())
+      .to.be.revertedWith("MinterRole: caller does not have the Minter role");
+  });
+
   it("should allow owner to set the cosmosDenom", async function () {
     await expect(ibcToken.connect(owner).setDenom(anotherDenom))
       .to.be.fulfilled;

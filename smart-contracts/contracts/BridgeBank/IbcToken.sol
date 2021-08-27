@@ -71,4 +71,12 @@ contract IbcToken is ERC20Burnable, Ownable, MinterRole {
     function removeMinter(address account) external onlyOwner {
         _removeMinter(account);
     }
+
+    /**
+     * @notice Removes `msg.sender` from the list of Minters
+     * @dev Caller must be a Minter
+     */
+    function renounceMinter() external onlyMinter {
+        _removeMinter(msg.sender);
+    }
 }
