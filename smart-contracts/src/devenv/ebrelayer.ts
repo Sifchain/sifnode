@@ -9,10 +9,11 @@ export interface EbrelayerArguments {
 }
 
 interface EbrelayerResults {
+  process: ChildProcess.ChildProcess;
 }
 
 export class EbrelayerRunner extends ShellCommand<EbrelayerResults> {
-  private output: EbrelayerResults;
+  private output: Promise<EbrelayerResults>;
   private outputResolve: any;
   constructor(
     readonly args: EbrelayerArguments,
@@ -36,7 +37,7 @@ export class EbrelayerRunner extends ShellCommand<EbrelayerResults> {
       this.websocketAddress,
       this.args.smartContract.bridgeRegistry,
       this.args.validatorValues.moniker,
-      ...this.args.validatorValues.mnemonic.split(" "),
+      `'${this.args.validatorValues.mnemonic}'`,
       "--chain-id",
       String(this.chainNet),
       "--node",
@@ -67,8 +68,11 @@ export class EbrelayerRunner extends ShellCommand<EbrelayerResults> {
     await this.waitForSifAccount()
     const args = this.cmd().slice(1) as string[]
     const commandResult = ChildProcess.spawn(this.cmd()[0], args, { stdio: "inherit" })
-    this.outputResolve({})
-    return
+    this.outputResolve(
+      {
+        process: commandResult
+      }
+    )
   }
 
   override async results(): Promise<EbrelayerResults> {
