@@ -37,7 +37,7 @@ export class SmartContractDeployer extends SynchronousCommand<SmartContractDeplo
     const jsonOutput = JSON.parse(r.output.split('\n')[1]);
     return new SmartContractDeployResult({
       bridgeBank: jsonOutput.bridgeBank,
-      bridgeRegistry: jsonOutput.bridgeResitry,
+      bridgeRegistry: jsonOutput.bridgeRegistry,
       rowanContract: jsonOutput.rowanContract
     },
       r.completed, r.error, r.output);
