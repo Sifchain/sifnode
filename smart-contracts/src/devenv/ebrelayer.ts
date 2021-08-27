@@ -3,11 +3,14 @@ import { ShellCommand, EthereumAddressAndKey } from "./devEnv"
 import { ValidatorValues } from "./sifnoded"
 import { DeployedContractAddresses } from "../../scripts/deploy_contracts";
 import notifier from 'node-notifier';
+import * as path from "path"
+import { GolangResults } from "./golangBuilder";
 
 export interface EbrelayerArguments {
   readonly validatorValues: ValidatorValues,
   readonly account: EthereumAddressAndKey,
-  readonly smartContract: DeployedContractAddresses
+  readonly smartContract: DeployedContractAddresses,
+  readonly golangResults: GolangResults
 }
 
 interface EbrelayerResults {
@@ -69,7 +72,7 @@ export class EbrelayerRunner extends ShellCommand<EbrelayerResults> {
   override async run(): Promise<void> {
     await this.waitForSifAccount()
     // const args: string[] = this.cmd()[1]// as string[]
-    const spawncmd = this.cmd()[0] + " " + this.cmd()[1].join(" ");
+    const spawncmd = path.join(this.args.golangResults.goBin, this.cmd()[0] + " " + this.cmd()[1].join(" "));
     const commandResult = ChildProcess.spawn(
       spawncmd,
       {
