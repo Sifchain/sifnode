@@ -1,0 +1,14 @@
+[
+  {
+    "name": "atom",
+    "symbol": "ATOM",
+    "decimals": 6,
+    "cosmosDenom": "ibc/FEEDFACE"
+  },
+  {
+    "name": "photon",
+    "symbol": "Photon",
+    "decimals": 6,
+    "cosmosDenom": "ibc/FEEDFACEFEED"
+  }
+]

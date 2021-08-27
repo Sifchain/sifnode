@@ -74,9 +74,9 @@ export async function setNewEthBalance(
     ]);
 }
 
-export async function setupSifchainMainnetDeployment(c: DependencyContainer, hre: HardhatRuntimeEnvironment) {
+export async function setupSifchainMainnetDeployment(c: DependencyContainer, hre: HardhatRuntimeEnvironment, deploymentName: string) {
     c.register(DeploymentDirectory, {useValue: "./deployments"})
-    c.register(DeploymentName, {useValue: "sifchain"})
+    c.register(DeploymentName, {useValue: deploymentName})
     c.register(DeploymentChainId, {useValue: 1})
     const bridgeTokenFactory = await hre.ethers.getContractFactory("BridgeToken") as BridgeToken__factory
 
@@ -88,7 +88,6 @@ export async function setupSifchainMainnetDeployment(c: DependencyContainer, hre
         contractName: () => "BridgeToken"
     }
     c.register(BridgeBankMainnetUpgradeAdmin, {useValue: "0x7c6c6ea036e56efad829af5070c8fb59dc163d88"})
-    //TODO this is probably the wrong address?
     c.register(CosmosBridgeMainnetUpgradeAdmin, {useValue: "0x7c6c6ea036e56efad829af5070c8fb59dc163d88"})
     c.register(DeployedBridgeToken, {useValue: syntheticBridgeToken as DeployedBridgeToken})
 }
