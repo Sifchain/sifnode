@@ -46,9 +46,15 @@ async function smartContractDeployer() {
   return { process, result };
 }
 
-async function ebrelayerBuilder(contractAddresses: DeployedContractAddresses, ethereumAccount: EthereumAddressAndKey, validater: ValidatorValues) {
+async function ebrelayerBuilder(
+  contractAddresses: DeployedContractAddresses,
+  ethereumAccount: EthereumAddressAndKey,
+  validater: ValidatorValues,
+  golangResults: GolangResults
+) {
   const node: EbrelayerRunner = new EbrelayerRunner({
     smartContract: contractAddresses,
+    golangResults: golangResults,
     account: ethereumAccount,
     validatorValues: validater,
   });
@@ -69,7 +75,8 @@ async function main() {
     const ebrelayer = await ebrelayerBuilder(
       smartcontract.result.contractAddresses,
       hardhat.results.accounts.validators[0],
-      sifnode.results.validatorValues[0]
+      sifnode.results.validatorValues[0],
+      golang.results
     )
     await sigterm
     console.log("Caught interrupt signal, cleaning up.");
