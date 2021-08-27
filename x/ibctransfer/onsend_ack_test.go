@@ -83,11 +83,12 @@ func TestOnAcknowledgementMaybeConvert_Source(t *testing.T) {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			app, ctx, _ := test.CreateTestApp(false)
-
+			app.TokenRegistryKeeper.SetToken(ctx, &tt.args.transferToken)
+			app.TokenRegistryKeeper.SetToken(ctx, &tt.args.packetToken)
 			// Setup the send conversion before testing ACK.
 			tokenDeduction, tokensConverted := keeper.ConvertCoinsForTransfer(sdk.WrapSDKContext(ctx), tt.args.msg, tt.args.transferToken, tt.args.packetToken)
 
-			initCoins := sdk.NewCoins(tokenDeduction)
+			initCoins := sdk.NewCoins(tt.args.msg.Token)
 			sender, err := sdk.AccAddressFromBech32(tt.args.msg.Sender)
 			require.NoError(t, err)
 

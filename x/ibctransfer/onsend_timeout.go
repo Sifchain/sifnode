@@ -48,13 +48,15 @@ func OnTimeoutMaybeConvert(
 		),
 	)
 	// if needs conversion, convert and send
-	if ShouldConvertIncomingCoins(ctx, whitelistKeeper, packet, data) {
-		receivedCoins, finalCoins := GetConvForIncomingCoins(ctx, whitelistKeeper, packet, data)
-		err := ExecConvForIncomingCoins(ctx, receivedCoins, finalCoins, bankKeeper, packet, data)
+	if ShouldConvertRefundCoins(ctx, whitelistKeeper, packet, data) {
+		incomingCoins, finalCoins := GetConvForRefundCoins(ctx, whitelistKeeper, packet, data)
+		err := ExecConvForRefundCoins(ctx, incomingCoins, finalCoins, bankKeeper, packet, data)
 		if err != nil {
-			// TODO: What is the effect of returning err here on relayer / counter party?
 			return nil, err
 		}
+		return &sdk.Result{
+			Events: ctx.EventManager().Events().ToABCIEvents(),
+		}, nil
 	}
 
 	return &sdk.Result{
