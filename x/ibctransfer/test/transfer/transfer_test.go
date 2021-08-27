@@ -28,6 +28,7 @@ func (suite *TransferTestSuite) SetupTest() {
 	suite.chainA = suite.coordinator.GetChain(GetChainID(0))
 	suite.chainB = suite.coordinator.GetChain(GetChainID(1))
 	suite.chainC = suite.coordinator.GetChain(GetChainID(2))
+	//fmt.Println("CHain A :" ,suite.chainA.SenderAccount.GetAddress() , "Chain B : " ,suite.chainC.SenderAccount.GetAddress())
 }
 
 func (suite *TransferTestSuite) TestSingleTransfer() {
@@ -37,19 +38,19 @@ func (suite *TransferTestSuite) TestSingleTransfer() {
 	testCoin := sdk.NewCoin(testDenom, sdk.NewInt(testAmount))
 
 	// setup between chainA and chainB
-	clientA, clientB, connA, connB := suite.coordinator.SetupClientConnections(suite.chainA, suite.chainB, exported.Tendermint)
-	channelA, channelB := suite.coordinator.CreateTransferChannels(suite.chainA, suite.chainB, connA, connB, channeltypes.UNORDERED)
+	clientA, clientB, connA, connB := suite.coordinator.SetupClientConnections(suite.chainC, suite.chainB, exported.Tendermint)
+	channelA, channelB := suite.coordinator.CreateTransferChannels(suite.chainC, suite.chainB, connA, connB, channeltypes.UNORDERED)
 
 	// send from chainA to chainB
-	msg := transfertypes.NewMsgTransfer(channelA.PortID, channelA.ID, testCoin, suite.chainA.SenderAccount.GetAddress(), suite.chainB.SenderAccount.GetAddress().String(), timeoutHeight, 0)
-	err := suite.coordinator.SendMsg(suite.chainA, suite.chainB, clientB, msg)
+	msg := transfertypes.NewMsgTransfer(channelA.PortID, channelA.ID, testCoin, suite.chainC.SenderAccount.GetAddress(), suite.chainB.SenderAccount.GetAddress().String(), timeoutHeight, 0)
+	err := suite.coordinator.SendMsg(suite.chainC, suite.chainB, clientB, msg)
 	suite.Require().NoError(err)
 
 	// relay send
-	fungibleTokenPacket := transfertypes.NewFungibleTokenPacketData(testCoin.Denom, testCoin.Amount.Uint64(), suite.chainA.SenderAccount.GetAddress().String(), suite.chainB.SenderAccount.GetAddress().String())
+	fungibleTokenPacket := transfertypes.NewFungibleTokenPacketData(testCoin.Denom, testCoin.Amount.Uint64(), suite.chainC.SenderAccount.GetAddress().String(), suite.chainB.SenderAccount.GetAddress().String())
 	packet := channeltypes.NewPacket(fungibleTokenPacket.GetBytes(), 1, channelA.PortID, channelA.ID, channelB.PortID, channelB.ID, timeoutHeight, 0)
 	ack := channeltypes.NewResultAcknowledgement([]byte{byte(1)})
-	err = suite.coordinator.RelayPacket(suite.chainA, suite.chainB, clientA, clientB, packet, ack.GetBytes())
+	err = suite.coordinator.RelayPacket(suite.chainC, suite.chainB, clientA, clientB, packet, ack.GetBytes())
 	suite.Require().NoError(err)
 
 	// check that voucher exists on chain B
@@ -59,9 +60,9 @@ func (suite *TransferTestSuite) TestSingleTransfer() {
 	suite.Require().Equal(coinSentFromAToB, balance)
 
 	// check that balance on chain A is correct
-	balance = suite.chainA.App.BankKeeper.GetBalance(suite.chainA.GetContext(), suite.chainA.SenderAccount.GetAddress(), testDenom)
+	balance = suite.chainC.App.BankKeeper.GetBalance(suite.chainC.GetContext(), suite.chainC.SenderAccount.GetAddress(), testDenom)
 	suite.Require().Equal(sdk.NewInt(99989876543211), balance.Amount)
-	balance = suite.chainA.App.BankKeeper.GetBalance(suite.chainA.GetContext(), suite.chainA.SenderAccount.GetAddress(), coinSentFromAToB.Denom)
+	balance = suite.chainC.App.BankKeeper.GetBalance(suite.chainC.GetContext(), suite.chainC.SenderAccount.GetAddress(), coinSentFromAToB.Denom)
 	suite.Require().Zero(balance.Amount.Int64())
 
 	// check that the balance on chain B is correct

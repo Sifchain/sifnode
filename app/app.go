@@ -189,7 +189,7 @@ type SifchainApp struct {
 	DispensationKeeper  dispkeeper.Keeper
 	TokenRegistryKeeper tokenregistrytypes.Keeper
 
-	mm *module.Manager
+	Mm *module.Manager
 	sm *module.SimulationManager
 }
 
@@ -366,7 +366,7 @@ func NewSifApp(
 
 	// NOTE: Any module instantiated in the module manager that is later modified
 	// must be passed by reference here.
-	app.mm = module.NewManager(
+	app.Mm = module.NewManager(
 		genutil.NewAppModule(
 			app.AccountKeeper, app.StakingKeeper, app.BaseApp.DeliverTx,
 			encodingConfig.TxConfig,
@@ -393,7 +393,7 @@ func NewSifApp(
 	// During begin block slashing happens after distr.BeginBlocker so that
 	// there is nothing left over in the validator fee pool, so as to keep the
 	// CanWithdrawInvariant invariant.
-	app.mm.SetOrderBeginBlockers(
+	app.Mm.SetOrderBeginBlockers(
 		capabilitytypes.ModuleName,
 		distrtypes.ModuleName,
 		slashingtypes.ModuleName,
@@ -403,14 +403,14 @@ func NewSifApp(
 		ibchost.ModuleName,
 	)
 
-	app.mm.SetOrderEndBlockers(
+	app.Mm.SetOrderEndBlockers(
 		stakingtypes.ModuleName,
 		govtypes.ModuleName,
 	)
 
 	// NOTE: The genutils module must occur after staking so that pools are
 	// properly initialized with tokens from genesis accounts.
-	app.mm.SetOrderInitGenesis(
+	app.Mm.SetOrderInitGenesis(
 		authtypes.ModuleName,
 		banktypes.ModuleName,
 		capabilitytypes.ModuleName,
@@ -430,8 +430,8 @@ func NewSifApp(
 		tokenregistry.ModuleName,
 	)
 
-	app.mm.RegisterRoutes(app.Router(), app.QueryRouter(), encodingConfig.Amino)
-	app.mm.RegisterServices(module.NewConfigurator(app.MsgServiceRouter(), app.GRPCQueryRouter()))
+	app.Mm.RegisterRoutes(app.Router(), app.QueryRouter(), encodingConfig.Amino)
+	app.Mm.RegisterServices(module.NewConfigurator(app.MsgServiceRouter(), app.GRPCQueryRouter()))
 
 	// initialize stores
 	app.MountKVStores(keys)
@@ -482,15 +482,15 @@ func (app *SifchainApp) InitChainer(ctx sdk.Context, req abci.RequestInitChain) 
 		panic(err)
 	}
 
-	return app.mm.InitGenesis(ctx, app.appCodec, genesisState)
+	return app.Mm.InitGenesis(ctx, app.appCodec, genesisState)
 }
 
 func (app *SifchainApp) BeginBlocker(ctx sdk.Context, req abci.RequestBeginBlock) abci.ResponseBeginBlock {
-	return app.mm.BeginBlock(ctx, req)
+	return app.Mm.BeginBlock(ctx, req)
 }
 
 func (app *SifchainApp) EndBlocker(ctx sdk.Context, req abci.RequestEndBlock) abci.ResponseEndBlock {
-	return app.mm.EndBlock(ctx, req)
+	return app.Mm.EndBlock(ctx, req)
 }
 
 func (app *SifchainApp) LegacyAmino() *codec.LegacyAmino {

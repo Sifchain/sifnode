@@ -3,24 +3,32 @@ package ibctransfer_test_transfer
 import (
 	"bytes"
 	"encoding/json"
+	tokenregistrytypes "github.com/Sifchain/sifnode/x/tokenregistry/types"
+	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
+	cryptocodec "github.com/cosmos/cosmos-sdk/crypto/codec"
+	"github.com/cosmos/cosmos-sdk/crypto/keys/secp256k1"
+	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
+	dtypes "github.com/cosmos/cosmos-sdk/x/distribution/types"
+	evidencetypes "github.com/cosmos/cosmos-sdk/x/evidence/types"
+	ibchost "github.com/cosmos/cosmos-sdk/x/ibc/core/24-host"
+	slashingtypes "github.com/cosmos/cosmos-sdk/x/slashing/types"
+	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
+	"github.com/tendermint/tendermint/libs/log"
+	dbm "github.com/tendermint/tm-db"
+
 	"fmt"
+	tmtypes "github.com/tendermint/tendermint/types"
 	"strconv"
 	"testing"
 	"time"
 
-	"github.com/tendermint/tendermint/libs/log"
-	dbm "github.com/tendermint/tm-db"
-
 	sifapp "github.com/Sifchain/sifnode/app"
-	tokenregistrytypes "github.com/Sifchain/sifnode/x/tokenregistry/types"
-	"github.com/cosmos/cosmos-sdk/crypto/keys/ed25519"
 
 	"github.com/stretchr/testify/require"
 	abci "github.com/tendermint/tendermint/abci/types"
 	"github.com/tendermint/tendermint/crypto/tmhash"
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 	tmprotoversion "github.com/tendermint/tendermint/proto/tendermint/version"
-	tmtypes "github.com/tendermint/tendermint/types"
 	tmversion "github.com/tendermint/tendermint/version"
 
 	"github.com/cosmos/cosmos-sdk/client"
@@ -29,7 +37,6 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
-	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	capabilitytypes "github.com/cosmos/cosmos-sdk/x/capability/types"
 	ibctransfertypes "github.com/cosmos/cosmos-sdk/x/ibc/applications/transfer/types"
 	clienttypes "github.com/cosmos/cosmos-sdk/x/ibc/core/02-client/types"
@@ -109,19 +116,160 @@ type TestChain struct {
 	Connections []*TestConnection // track connectionID's created for this chain
 }
 
+//func CreateTestChain2(t *testing.T, chainID string) *TestChain {
+//	// generate validator private/public key
+//	privVal := mock.NewPV()
+//	pubKey, err := privVal.GetPubKey()
+//	require.NoError(t, err)
+//
+//	// create validator set with single validator
+//	validator := tmtypes.NewValidator(pubKey, 1)
+//	valSet := tmtypes.NewValidatorSet([]*tmtypes.Validator{validator})
+//	signers := []tmtypes.PrivValidator{privVal}
+//
+//	// generate genesis account
+//	senderPrivKey := secp256k1.GenPrivKey()
+//	acc := authtypes.NewBaseAccount(senderPrivKey.PubKey().Address().Bytes(), senderPrivKey.PubKey(), 0, 0)
+//	balance := banktypes.Balance{
+//		Address: acc.GetAddress().String(),
+//		Coins: sdk.NewCoins(
+//			sdk.NewCoin(sdk.DefaultBondDenom, sdk.NewInt(100000000000000)),
+//			sdk.NewCoin("ceth", sdk.NewInt(100000000000000)),
+//			sdk.NewCoin("cphoton", sdk.NewInt(100000000000000)),
+//			sdk.NewCoin("cusdt", sdk.NewInt(100000000000000)),
+//		),
+//	}
+//
+//	app := sifapp.SetupWithGenesisValSet(t, valSet, []authtypes.GenesisAccount{acc}, balance)
+//
+//	// create current header and call begin block
+//	header := tmproto.Header{
+//		ChainID: chainID,
+//		Height:  1,
+//		Time:    globalStartTime,
+//	}
+//
+//	txConfig := simapp.MakeTestEncodingConfig().TxConfig
+//
+//	// create an account to send transactions from
+//	chain := &TestChain{
+//		t:             t,
+//		ChainID:       chainID,
+//		App:           app,
+//		CurrentHeader: header,
+//		QueryServer:   app.IBCKeeper,
+//		TxConfig:      txConfig,
+//		Codec:         app.AppCodec(),
+//		Vals:          valSet,
+//		Signers:       signers,
+//		senderPrivKey: senderPrivKey,
+//		SenderAccount: acc,
+//		ClientIDs:     make([]string, 0),
+//		Connections:   make([]*TestConnection, 0),
+//	}
+//
+//	cap := chain.App.IBCKeeper.PortKeeper.BindPort(chain.GetContext(), MockPort)
+//	err = chain.App.ScopedIBCMockKeeper.ClaimCapability(chain.GetContext(), cap, host.PortPath(MockPort))
+//	require.NoError(t, err)
+//
+//	chain.NextBlock()
+//
+//	return chain
+//}
+
 func CreateTestChain(t *testing.T, chainID string) *TestChain {
 	db := dbm.NewMemDB()
 	encCdc := sifapp.MakeTestEncodingConfig()
 	app := sifapp.NewSifApp(log.NewNopLogger(), db, nil, true, map[int64]bool{}, sifapp.DefaultNodeHome, 5, encCdc, sifapp.EmptyAppOptions{})
-	genesisState := sifapp.NewDefaultGenesisState(encCdc.Marshaler)
+	app.Mm.SetOrderBeginBlockers(
+		capabilitytypes.ModuleName,
+		slashingtypes.ModuleName,
+		upgradetypes.ModuleName,
+		evidencetypes.ModuleName,
+		stakingtypes.ModuleName,
+		ibchost.ModuleName,
+	)
+	senderPrivKey := secp256k1.GenPrivKey()
+	acc := authtypes.NewBaseAccount(senderPrivKey.PubKey().Address().Bytes(), senderPrivKey.PubKey(), 0, 0)
+	balances := []banktypes.Balance{{
+		Address: acc.GetAddress().String(),
+		Coins: sdk.NewCoins(
+			sdk.NewCoin(sdk.DefaultBondDenom, sdk.NewInt(100000000000000)),
+			sdk.NewCoin("ceth", sdk.NewInt(100000000000000)),
+			sdk.NewCoin("cphoton", sdk.NewInt(100000000000000)),
+			sdk.NewCoin("cusdt", sdk.NewInt(100000000000000)),
+		),
+	}}
+	privVal := mock.NewPV()
+	pubKey, err := privVal.GetPubKey()
+	require.NoError(t, err)
 
+	// create validator set with single validator
+	validator := tmtypes.NewValidator(pubKey, 1)
+	valSet := tmtypes.NewValidatorSet([]*tmtypes.Validator{validator})
+	signers := []tmtypes.PrivValidator{privVal}
+	genesisState := sifapp.NewDefaultGenesisState(encCdc.Marshaler)
 	// init chain must be called to stop deliverState from being nil
+	genAccs := []authtypes.GenesisAccount{acc}
+	authGenesis := authtypes.NewGenesisState(authtypes.DefaultParams(), genAccs)
+	genesisState[authtypes.ModuleName] = app.AppCodec().MustMarshalJSON(authGenesis)
+
+	validators := make([]stakingtypes.Validator, 0, len(valSet.Validators))
+	delegations := make([]stakingtypes.Delegation, 0, len(valSet.Validators))
 	stateBytes, err := json.MarshalIndent(genesisState, "", " ")
 	if err != nil {
 		panic(err)
 	}
 
+	bondAmt := sdk.NewInt(1000000)
+	for _, val := range valSet.Validators {
+		pk, err := cryptocodec.FromTmPubKeyInterface(val.PubKey)
+		require.NoError(t, err)
+		pkAny, err := codectypes.NewAnyWithValue(pk)
+		require.NoError(t, err)
+		validator := stakingtypes.Validator{
+			OperatorAddress:   sdk.ValAddress(val.Address).String(),
+			ConsensusPubkey:   pkAny,
+			Jailed:            false,
+			Status:            stakingtypes.Bonded,
+			Tokens:            bondAmt,
+			DelegatorShares:   sdk.OneDec(),
+			Description:       stakingtypes.Description{},
+			UnbondingHeight:   int64(0),
+			UnbondingTime:     time.Unix(0, 0).UTC(),
+			Commission:        stakingtypes.NewCommission(sdk.ZeroDec(), sdk.ZeroDec(), sdk.ZeroDec()),
+			MinSelfDelegation: sdk.ZeroInt(),
+		}
+		validators = append(validators, validator)
+		delegations = append(delegations, stakingtypes.NewDelegation(genAccs[0].GetAddress(), val.Address.Bytes(), sdk.OneDec()))
+
+	}
+
+	// set validators and delegations
+	stakingGenesis := stakingtypes.NewGenesisState(stakingtypes.DefaultParams(), validators, delegations)
+	distrGenesis := dtypes.DefaultGenesisState()
+	distrGenesis.Params = dtypes.Params{
+		CommunityTax:        sdk.ZeroDec(),
+		BaseProposerReward:  sdk.ZeroDec(),
+		BonusProposerReward: sdk.ZeroDec(),
+		WithdrawAddrEnabled: true,
+	}
+	genesisState[stakingtypes.ModuleName] = app.AppCodec().MustMarshalJSON(stakingGenesis)
+	genesisState[dtypes.ModuleName] = app.AppCodec().MustMarshalJSON(distrGenesis)
+	totalSupply := sdk.NewCoins()
+	for _, b := range balances {
+		// add genesis acc tokens and delegated tokens to total supply
+		totalSupply = totalSupply.Add(b.Coins.Add(sdk.NewCoin(sdk.DefaultBondDenom, bondAmt))...)
+	}
+
+	// update total supply
+	bankGenesis := banktypes.NewGenesisState(banktypes.DefaultGenesisState().Params, balances, totalSupply, []banktypes.Metadata{})
+	genesisState[banktypes.ModuleName] = app.AppCodec().MustMarshalJSON(bankGenesis)
+
+	stateBytes, err = json.MarshalIndent(genesisState, "", " ")
+	require.NoError(t, err)
 	// Initialize the chain
+
 	app.InitChain(
 		abci.RequestInitChain{
 			Validators:      []abci.ValidatorUpdate{},
@@ -130,13 +278,25 @@ func CreateTestChain(t *testing.T, chainID string) *TestChain {
 		},
 	)
 
-	ctx := app.BaseApp.NewContext(false, tmproto.Header{})
+	app.Commit()
+	header := tmproto.Header{
+		Height:             app.LastBlockHeight() + 1,
+		AppHash:            app.LastCommitID().Hash,
+		ValidatorsHash:     valSet.Hash(),
+		NextValidatorsHash: valSet.Hash(),
+	}
+	app.BeginBlock(abci.RequestBeginBlock{Header: header})
+	//header := tmproto.Header{
+	//	ChainID: chainID,
+	//	Height:  1,
+	//	Time:    globalStartTime,
+	//}
+
+	ctx := app.BaseApp.NewContext(false, header)
 	app.AccountKeeper.SetParams(ctx, authtypes.DefaultParams())
 
-	privKey := ed25519.GenPrivKey()
-	pk := privKey.PubKey()
 	//acc := sdk.AccAddress(pk.Address())
-	acc := authtypes.NewBaseAccount(pk.Address().Bytes(), pk, 0, 0)
+	//acc := authtypes.NewBaseAccount(pk.Address().Bytes(), pk, 0, 0)
 	//acc := app.AccountKeeper.NewAccountWithAddress(ctx, addr)
 	// initTokens := sdk.TokensFromConsensusPower(1000)
 
@@ -174,13 +334,7 @@ func CreateTestChain(t *testing.T, chainID string) *TestChain {
 	app.TokenRegistryKeeper.SetToken(ctx, &tokenregistrytypes.RegistryEntry{IsWhitelisted: true, Denom: "dash", Decimals: 18, Permissions: []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP}})
 
 	// create current header and call begin block
-	header := tmproto.Header{
-		ChainID: chainID,
-		Height:  1,
-		Time:    globalStartTime,
-	}
 
-	// create an account to send transactions from
 	chain := &TestChain{
 		t:             t,
 		ChainID:       chainID,
@@ -189,7 +343,9 @@ func CreateTestChain(t *testing.T, chainID string) *TestChain {
 		QueryServer:   app.IBCKeeper,
 		TxConfig:      encCdc.TxConfig,
 		Codec:         app.AppCodec(),
-		senderPrivKey: privKey,
+		Vals:          valSet,
+		Signers:       signers,
+		senderPrivKey: senderPrivKey,
 		SenderAccount: acc,
 		ClientIDs:     make([]string, 0),
 		Connections:   make([]*TestConnection, 0),
@@ -198,9 +354,7 @@ func CreateTestChain(t *testing.T, chainID string) *TestChain {
 	cap := chain.App.IBCKeeper.PortKeeper.BindPort(chain.GetContext(), MockPort)
 	err = chain.App.ScopedIBCMockKeeper.ClaimCapability(chain.GetContext(), cap, host.PortPath(MockPort))
 	require.NoError(t, err)
-
 	chain.NextBlock()
-
 	return chain
 }
 
@@ -496,10 +650,10 @@ func (chain *TestChain) ConstructMsgCreateClient(counterparty *TestChain, client
 	default:
 		chain.t.Fatalf("unsupported client state type %s", clientType)
 	}
-
 	msg, err := clienttypes.NewMsgCreateClient(
 		clientState, consensusState, chain.SenderAccount.GetAddress(),
 	)
+	fmt.Println("Signer :", chain.SenderAccount.GetAddress())
 	require.NoError(chain.t, err)
 	return msg
 }
@@ -604,7 +758,6 @@ func (chain *TestChain) CreateTMClientHeader(chainID string, blockHeight int64, 
 	hhash := tmHeader.Hash()
 	blockID := MakeBlockID(hhash, 3, tmhash.Sum([]byte("part_set")))
 	voteSet := tmtypes.NewVoteSet(chainID, blockHeight, 1, tmproto.PrecommitType, tmValSet)
-
 	commit, err := tmtypes.MakeCommit(blockID, blockHeight, 1, voteSet, signers, timestamp)
 	require.NoError(chain.t, err)
 
