@@ -29,7 +29,7 @@ contract IbcToken is ERC20Burnable, Ownable, MinterRole {
     }
 
     /**
-     * @notice If sender is the owner, mints `amount` to `user`
+     * @notice If sender is a Minter, mints `amount` to `user`
      * @param user Address of the recipient
      * @param amount How much should be minted
      * @return true if the operation succeeds
