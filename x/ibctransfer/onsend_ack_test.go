@@ -20,7 +20,8 @@ import (
 	tokenregistrytypes "github.com/Sifchain/sifnode/x/tokenregistry/types"
 )
 
-func TestOnAcknowledgementMaybeConvert(t *testing.T) {
+func TestOnAcknowledgementMaybeConvert_Source(t *testing.T) {
+	sifapp.SetConfig(false)
 	addrs, _ := test2.CreateTestAddrs(2)
 
 	rowanToken := tokenregistrytypes.RegistryEntry{
@@ -32,7 +33,7 @@ func TestOnAcknowledgementMaybeConvert(t *testing.T) {
 	xrowanToken := tokenregistrytypes.RegistryEntry{
 		Denom:     "xrowan",
 		UnitDenom: "rowan",
-		Decimals:  6,
+		Decimals:  10,
 	}
 
 	// successAck := channeltypes.NewResultAcknowledgement([]byte{byte(1)})
@@ -42,16 +43,6 @@ func TestOnAcknowledgementMaybeConvert(t *testing.T) {
 		"transfer",
 		"channel-0",
 		sdk.NewCoin("rowan", sdk.NewInt(123456789123456789)),
-		addrs[0],
-		addrs[1].String(),
-		clienttypes.NewHeight(0, 0),
-		0,
-	)
-
-	msgSinkTransfer := types.NewMsgTransfer(
-		"transfer",
-		"channel-0",
-		sdk.NewCoin("ibc/", sdk.NewInt(123456789123456789)),
 		addrs[0],
 		addrs[1].String(),
 		clienttypes.NewHeight(0, 0),
@@ -86,21 +77,6 @@ func TestOnAcknowledgementMaybeConvert(t *testing.T) {
 			err:    nil,
 			events: []sdk.Event{},
 		},
-		{
-			name: "Ack err sender is sink, causes refund - success",
-			args: args{
-				context.Background(),
-				msgSinkTransfer,
-				"channel-1",
-				rowanToken,
-				xrowanToken,
-				errorAck,
-			},
-			err:    nil,
-			events: []sdk.Event{},
-		},
-		//{name: "Ack err when sender is source - "},
-		//{name: "Ack err when sender is sink (not source) - "},
 	}
 
 	for _, tt := range tests {
@@ -128,7 +104,7 @@ func TestOnAcknowledgementMaybeConvert(t *testing.T) {
 			packet := channeltypes.Packet{
 				SourceChannel:      "channel-0",
 				SourcePort:         "transfer",
-				DestinationChannel: tt.args.destChannel,
+				DestinationChannel: "channel-1",
 				DestinationPort:    "transfer",
 				Data: app.AppCodec().MustMarshalJSON(&types.FungibleTokenPacketData{
 					Denom:    sdkSentDenom,
@@ -139,6 +115,113 @@ func TestOnAcknowledgementMaybeConvert(t *testing.T) {
 			}
 
 			_, err = ibctransfer.OnAcknowledgementMaybeConvert(ctx, app.TransferKeeper, app.TokenRegistryKeeper, app.BankKeeper, packet, app.AppCodec().MustMarshalJSON(&tt.args.acknowledgement))
+			require.ErrorIs(t, err, tt.err)
+			// Assert events have recorded what happened.
+		})
+	}
+}
+
+func TestOnAcknowledgementMaybeConvert_Sink(t *testing.T) {
+	sifapp.SetConfig(false)
+
+	addrs, _ := test2.CreateTestAddrs(2)
+
+	denomTrace := types.DenomTrace{
+		// A token coming from source will have this chain's source channel prepended when this chain generates hash.
+		Path:      "transfer/channel-0",
+		BaseDenom: "uatom",
+	}
+
+	atomToken := tokenregistrytypes.RegistryEntry{
+		Denom:     denomTrace.IBCDenom(),
+		BaseDenom: "uatom",
+		Decimals:  6,
+	}
+
+	// successAck := channeltypes.NewResultAcknowledgement([]byte{byte(1)})
+	errorAck := channeltypes.NewErrorAcknowledgement("failed packet transfer")
+
+	msgSinkTransfer := types.NewMsgTransfer(
+		"transfer",
+		"channel-0", // Sent from this chain back to source
+		sdk.NewCoin(atomToken.Denom, sdk.NewIntFromUint64(123456789123456789)),
+		addrs[0],
+		addrs[1].String(),
+		clienttypes.NewHeight(0, 0),
+		0,
+	)
+
+	type args struct {
+		goCtx           context.Context
+		msg             *types.MsgTransfer
+		transferToken   tokenregistrytypes.RegistryEntry
+		acknowledgement channeltypes.Acknowledgement
+	}
+
+	tests := []struct {
+		name   string
+		args   args
+		err    error
+		events sdk.Events
+	}{
+		{
+			name: "Ack err sender is sink, causes refund - success",
+			args: args{
+				context.Background(),
+				msgSinkTransfer,
+				atomToken,
+				errorAck,
+			},
+			err:    nil,
+			events: []sdk.Event{},
+		},
+	}
+
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			app, ctx, _ := test.CreateTestApp(false)
+			recvTokenPacket := types.FungibleTokenPacketData{
+				Denom:  atomToken.BaseDenom,
+				Amount: tt.args.msg.Token.Amount.Uint64(),
+				Sender: tt.args.msg.Receiver,
+				// Fund the addr that will do a send later.
+				Receiver: tt.args.msg.Sender,
+			}
+			recvPacket := channeltypes.Packet{
+				SourceChannel:      "channel-1",
+				SourcePort:         "transfer",
+				DestinationChannel: "channel-0",
+				DestinationPort:    "transfer",
+				Data:               app.AppCodec().MustMarshalJSON(&recvTokenPacket),
+			}
+
+			// Simulate OnRecv so that IBC hash is stored in transfer keeper and can be,
+			// converted to denom trace during processing ack.
+			err := app.TransferKeeper.OnRecvPacket(ctx, recvPacket, recvTokenPacket)
+			require.NoError(t, err)
+
+			sender, err := sdk.AccAddressFromBech32(tt.args.msg.Sender)
+			require.NoError(t, err)
+
+			// Simulate send from this chain, with SDK stub.
+			sdkSentDenom, err := sendStub(ctx, app, tt.args.msg.Token, sender, tt.args.msg.SourcePort, tt.args.msg.SourceChannel)
+
+			// Test Ack.
+			ackPacket := channeltypes.Packet{
+				SourceChannel:      "channel-0",
+				SourcePort:         "transfer",
+				DestinationChannel: "channel-1",
+				DestinationPort:    "transfer",
+				Data: app.AppCodec().MustMarshalJSON(&types.FungibleTokenPacketData{
+					Denom:    sdkSentDenom,
+					Amount:   tt.args.msg.Token.Amount.Uint64(),
+					Sender:   tt.args.msg.Sender,
+					Receiver: tt.args.msg.Receiver,
+				}),
+			}
+
+			_, err = ibctransfer.OnAcknowledgementMaybeConvert(ctx, app.TransferKeeper, app.TokenRegistryKeeper, app.BankKeeper, ackPacket, app.AppCodec().MustMarshalJSON(&tt.args.acknowledgement))
 			require.ErrorIs(t, err, tt.err)
 			// Assert events have recorded what happened.
 		})
