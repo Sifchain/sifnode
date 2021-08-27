@@ -61,12 +61,10 @@ async function main() {
       process.on('SIGINT', res);
       process.on('SIGTERM', res);
     });
-    console.log("Debugged Process ID: ", process.pid);
     const [hardhat, golang] = (await Promise.all([startHardhat(), golangBuilder()]))
     const sifnode = await sifnodedBuilder(golang.results);
     const smartcontract = await smartContractDeployer()
     const ebrelayer = await ebrelayerBuilder(smartcontract.result.contractAddresses, sifnode.results.validatorValues[0])
-    console.log("Congrats, you did not fail, yay!")
     await sigterm
     console.log("Caught interrupt signal, cleaning up.");
     sifnode.process.kill(sifnode.process.pid);
