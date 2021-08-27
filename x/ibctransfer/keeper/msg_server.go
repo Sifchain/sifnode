@@ -74,6 +74,8 @@ func ConvertCoinsForTransfer(goCtx context.Context, msg *sdktransfertypes.MsgTra
 	return token, convToken
 }
 
+// PrepareToSendConvertedCoins moves outgoing tokens into the denom that will be sent via IBC.
+// The requested tokens will be escrowed, and the new denom to send over IBC will be minted in the senders account.
 func PrepareToSendConvertedCoins(goCtx context.Context, msg *sdktransfertypes.MsgTransfer, token sdk.Coin, convToken sdk.Coin, bankKeeper bankkeeper.Keeper) error {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 	sender, err := sdk.AccAddressFromBech32(msg.Sender)

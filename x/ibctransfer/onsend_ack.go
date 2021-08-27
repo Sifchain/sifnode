@@ -72,9 +72,9 @@ func OnAcknowledgementMaybeConvert(
 		)
 
 		// if needs conversion, convert and send
-		if ShouldConvertIncomingCoins(ctx, whitelistKeeper, packet, data) {
-			ibcToken, convToken := GetConvForIncomingCoins(ctx, whitelistKeeper, packet, data)
-			err := ExecConvForIncomingCoins(ctx, ibcToken, convToken, bankKeeper, packet, data)
+		if ShouldConvertRefundCoins(ctx, whitelistKeeper, packet, data) {
+			incomingCoins, finalCoins := GetConvForRefundCoins(ctx, whitelistKeeper, packet, data)
+			err := ExecConvForRefundCoins(ctx, incomingCoins, finalCoins, bankKeeper, packet, data)
 			if err != nil {
 				return nil, err
 			}
@@ -87,4 +87,126 @@ func OnAcknowledgementMaybeConvert(
 	return &sdk.Result{
 		Events: ctx.EventManager().Events().ToABCIEvents(),
 	}, nil
+}
+
+func ShouldConvertRefundCoins(
+	ctx sdk.Context,
+	whitelistKeeper tokenregistrytypes.Keeper,
+	packet channeltypes.Packet,
+	data transfertypes.FungibleTokenPacketData,
+) bool {
+	// we don't need to manipulate the denom because the data and packet was created on this chain
+	// get token registry entry for received denom
+	denom := data.Denom
+	denomRegistryEntry := whitelistKeeper.GetDenom(ctx, data.Denom)
+	// If this incoming coin isn't setup on the whitelist with decimals / unit denom,
+	// then no conversion happens.
+	// This extra decimal & UnitDenom check should ensure we still process refunds,
+	// even if the token permission / whitelist property has since been changed.
+	if !denomRegistryEntry.IsWhitelisted && (denomRegistryEntry.Decimals == 0 || denomRegistryEntry.UnitDenom == "") {
+		return false
+	}
+	// get unit denom to store funds in, or do not convert
+	unitDenom := denomRegistryEntry.UnitDenom
+	if unitDenom == "" || unitDenom == denom {
+		return false
+	}
+	unitDenomRegistryEntry := whitelistKeeper.GetDenom(ctx, unitDenom)
+	if !unitDenomRegistryEntry.IsWhitelisted {
+		// This should be considered an error case,
+		// but we just choose not to convert here.
+		// TODO: ShouldConvertIncoming can be brought in line with the corresponding outgoing check,
+		// add test for this case.
+		return false
+	}
+	// if unit_denom decimals are greater than minted denom decimals, we need to increase precision to convert them
+	return unitDenomRegistryEntry.Decimals > denomRegistryEntry.Decimals
+}
+
+// GetConvForIncomingCoins returns 1) the coins that are being received via IBC,
+// which need to be deducted from that denom when converting to final denom,
+// and 2) the coins that need to be added to the final denom.
+func GetConvForRefundCoins(
+	ctx sdk.Context,
+	whitelistKeeper tokenregistrytypes.Keeper,
+	packet channeltypes.Packet,
+	data transfertypes.FungibleTokenPacketData,
+) (sdk.Coin, sdk.Coin) {
+
+	// we don't need to manipulate the denom because the data and packet was created on this chain
+	denom := data.Denom
+
+	// get token registry entry for received denom
+	denomenomEntry := whitelistKeeper.GetDenom(ctx, denom)
+	if !denomenomEntry.IsWhitelisted {
+		// TODO
+	}
+	// convert to unit_denom
+	if denomenomEntry.UnitDenom == "" {
+		// noop, should prevent getting here.
+		return sdk.NewCoin(denom, sdk.NewIntFromUint64(data.Amount)),
+			sdk.NewCoin(denom, sdk.NewIntFromUint64(data.Amount))
+	}
+
+	convertToDenomEntry := whitelistKeeper.GetDenom(ctx, denomenomEntry.UnitDenom)
+
+	// get the token amount from the packet data
+	decAmount := sdk.NewDecFromInt(sdk.NewIntFromUint64(data.Amount))
+
+	// Calculate the conversion difference for increasing precision.
+	po := convertToDenomEntry.Decimals - denomenomEntry.Decimals
+	convAmountDec := IncreasePrecision(decAmount, po)
+	convAmount := sdk.NewIntFromBigInt(convAmountDec.TruncateInt().BigInt())
+	// create converted and ibc tokens with corresponding denoms and amounts
+	convertToCoins := sdk.NewCoin(convertToDenomEntry.Denom, convAmount)
+	mintedCoins := sdk.NewCoin(denom, sdk.NewIntFromUint64(data.Amount))
+	return mintedCoins, convertToCoins
+}
+
+func ExecConvForRefundCoins(
+	ctx sdk.Context,
+	incomingCoins sdk.Coin,
+	finalCoins sdk.Coin,
+	bankKeeper transfertypes.BankKeeper,
+	packet channeltypes.Packet,
+	data transfertypes.FungibleTokenPacketData,
+) error {
+
+	// decode the receiver address
+	sender, err := sdk.AccAddressFromBech32(data.Sender)
+	if err != nil {
+		return err
+	}
+	// send ibcdenom coins from account to module
+	err = bankKeeper.SendCoinsFromAccountToModule(ctx, sender, transfertypes.ModuleName, sdk.NewCoins(incomingCoins))
+	if err != nil {
+		return err
+	}
+	// unescrow original tokens
+	escrowAddress := transfertypes.GetEscrowAddress(packet.GetSourcePort(), packet.GetSourceChannel())
+	if err := bankKeeper.SendCoins(ctx, escrowAddress, sender, sdk.NewCoins(finalCoins)); err != nil {
+		// NOTE: this error is only expected to occur given an unexpected bug or a malicious
+		// counterparty module. The bug may occur in bank or any part of the code that allows
+		// the escrow address to be drained. A malicious counterparty module could drain the
+		// escrow address by allowing more tokens to be sent back then were escrowed.
+		return sdkerrors.Wrap(err, "unable to unescrow original tokens")
+	}
+	// burn ibcdenom coins
+	err = bankKeeper.BurnCoins(ctx, transfertypes.ModuleName, sdk.NewCoins(incomingCoins))
+	if err != nil {
+		// TODO: Log error or panic? What happens on relayer / on other chain if error is returned here?
+		return err
+	}
+	ctx.EventManager().EmitEvent(
+		sdk.NewEvent(
+			sctransfertypes.EventTypeConvertRefund,
+			sdk.NewAttribute(sdk.AttributeKeyModule, transfertypes.ModuleName),
+			sdk.NewAttribute(sctransfertypes.AttributeKeyPacketAmount, fmt.Sprintf("%v", incomingCoins.Amount)),
+			sdk.NewAttribute(sctransfertypes.AttributeKeyPacketDenom, incomingCoins.Denom),
+			sdk.NewAttribute(sctransfertypes.AttributeKeyConvertAmount, fmt.Sprintf("%v", finalCoins.Amount)),
+			sdk.NewAttribute(sctransfertypes.AttributeKeyConvertDenom, finalCoins.Denom),
+		),
+	)
+
+	return nil
 }
