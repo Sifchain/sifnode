@@ -20,7 +20,7 @@ export class EbrelayerRunner extends ShellCommand<EbrelayerResults> {
     readonly tcpURL = "tcp://0.0.0.0:26657",
     readonly chainNet = "localnet",
     readonly ebrelayerDB = `levelDB.db`,
-    readonly relayerdbPath = "",
+    readonly relayerdbPath = "./",
     readonly symbolTranslatorFile = "../test/integration/whitelisted-denom.json"
   ) {
     super();
@@ -36,13 +36,19 @@ export class EbrelayerRunner extends ShellCommand<EbrelayerResults> {
       this.websocketAddress,
       this.args.smartContract.bridgeRegistry,
       this.args.validatorValues.moniker,
-      this.args.validatorValues.mnemonic,
-      `--chain-id ${this.chainNet}`,
-      `--node ${this.tcpURL}`,
-      "--keyring-backend test",
-      `--from ${this.args.validatorValues.moniker}`,
-      `--symbol-translator-file ${this.symbolTranslatorFile}`,
-      `--relayerdb-path ${this.relayerdbPath}`
+      ...this.args.validatorValues.mnemonic.split(" "),
+      "--chain-id",
+      String(this.chainNet),
+      "--node",
+      String(this.tcpURL),
+      "--keyring-backend",
+      "test",
+      "--from",
+      this.args.validatorValues.moniker,
+      "--symbol-translator-file",
+      this.symbolTranslatorFile,
+      "--relayerdb-path",
+      this.relayerdbPath
     ]]
   }
 
@@ -52,10 +58,9 @@ export class EbrelayerRunner extends ShellCommand<EbrelayerResults> {
       this.args.validatorValues.address
     ]
     const child = ChildProcess.execFileSync(
-      "./wait_for_sif_account.py",
+      "./src/devenv/wait_for_sif_account.py",
       scriptArgs
     )
-
   }
 
   override async run(): Promise<void> {
