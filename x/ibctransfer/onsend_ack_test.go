@@ -99,9 +99,13 @@ func TestOnAcknowledgementMaybeConvert_Source(t *testing.T) {
 
 			err = keeper.PrepareToSendConvertedCoins(sdk.WrapSDKContext(ctx), tt.args.msg, tokenDeduction, tokensConverted, app.BankKeeper)
 			require.NoError(t, err)
+			require.Equal(t, tokensConverted.String(), app.BankKeeper.GetBalance(ctx, sender, tokensConverted.Denom).String())
+			require.Equal(t, tt.args.msg.Token.Sub(tokenDeduction).String(), app.BankKeeper.GetBalance(ctx, sender, tt.args.msg.Token.Denom).String())
 
 			// Simulate send with SDK stub.
 			sdkSentDenom, err := sendStub(ctx, app, tokensConverted, sender, tt.args.msg.SourcePort, tt.args.msg.SourceChannel)
+			require.Equal(t, tt.args.msg.Token.Sub(tokenDeduction).String(), app.BankKeeper.GetBalance(ctx, sender, tt.args.msg.Token.Denom).String())
+			require.Equal(t, "0"+tokensConverted.Denom, app.BankKeeper.GetBalance(ctx, sender, tokensConverted.Denom).String())
 
 			// Test Ack.
 			packet := channeltypes.Packet{
