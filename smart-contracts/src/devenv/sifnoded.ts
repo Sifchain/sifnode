@@ -146,7 +146,7 @@ export class SifnodedRunner extends ShellCommand<SifnodedResults> {
     return {
       validatorValues: networkConfig,
       process: sifnoded,
-      tcpurl: ""
+      tcpurl: "tcp://0.0.0.0:26657"
     }
     //    return lastValueFrom(eventEmitterToObservable(sifnoded, "sifnoded"))
   }

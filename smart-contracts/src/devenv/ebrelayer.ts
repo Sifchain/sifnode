@@ -22,7 +22,7 @@ export class EbrelayerRunner extends ShellCommand<EbrelayerResults> {
   private outputResolve: any;
   constructor(
     readonly args: EbrelayerArguments,
-    readonly websocketAddress = "ws://localhost:7545/",
+    readonly websocketAddress = "ws://localhost:8545/",
     readonly tcpURL = "tcp://0.0.0.0:26657",
     readonly chainNet = "localnet",
     readonly ebrelayerDB = `levelDB.db`,
@@ -73,8 +73,8 @@ export class EbrelayerRunner extends ShellCommand<EbrelayerResults> {
     await this.waitForSifAccount()
     // const args: string[] = this.cmd()[1]// as string[]
     const spawncmd = path.join(this.args.golangResults.goBin, this.cmd()[0] + " " + this.cmd()[1].join(" "));
-    process.env["ETHEREUM_PRIVATE_KEY"] = this.args.account.privateKey;
-    process.env["ETHEREUM_ADDRESS"] = this.args.account.address;
+    process.env["ETHEREUM_PRIVATE_KEY"] = this.args.account.privateKey.slice(2);
+    process.env["ETHEREUM_ADDRESS"] = this.args.account.address.slice(2);
     const commandResult = ChildProcess.spawn(
       spawncmd,
       {
