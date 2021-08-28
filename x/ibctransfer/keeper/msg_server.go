@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 
 	"github.com/Sifchain/sifnode/x/ibctransfer/types"
 	tokenregistrytypes "github.com/Sifchain/sifnode/x/tokenregistry/types"
@@ -14,14 +13,14 @@ import (
 )
 
 type msgServer struct {
-	bankKeeper          bankkeeper.Keeper
+	bankKeeper          types.BankKeeper
 	tokenRegistryKeeper tokenregistrytypes.Keeper
-	sdkMsgServer        sdktransfertypes.MsgServer
+	sdkMsgServer        types.MsgServer
 }
 
 // NewMsgServerImpl returns an implementation of the bank MsgServer interface
 // for the provided Keeper.
-func NewMsgServerImpl(sdkMsgServer sdktransfertypes.MsgServer, bankKeeper bankkeeper.Keeper, tokenRegistryKeeper tokenregistrytypes.Keeper) sdktransfertypes.MsgServer {
+func NewMsgServerImpl(sdkMsgServer types.MsgServer, bankKeeper types.BankKeeper, tokenRegistryKeeper tokenregistrytypes.Keeper) sdktransfertypes.MsgServer {
 	return &msgServer{
 		sdkMsgServer:        sdkMsgServer,
 		bankKeeper:          bankKeeper,
@@ -76,7 +75,7 @@ func ConvertCoinsForTransfer(goCtx context.Context, msg *sdktransfertypes.MsgTra
 
 // PrepareToSendConvertedCoins moves outgoing tokens into the denom that will be sent via IBC.
 // The requested tokens will be escrowed, and the new denom to send over IBC will be minted in the senders account.
-func PrepareToSendConvertedCoins(goCtx context.Context, msg *sdktransfertypes.MsgTransfer, token sdk.Coin, convToken sdk.Coin, bankKeeper bankkeeper.Keeper) error {
+func PrepareToSendConvertedCoins(goCtx context.Context, msg *sdktransfertypes.MsgTransfer, token sdk.Coin, convToken sdk.Coin, bankKeeper types.BankKeeper) error {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 	sender, err := sdk.AccAddressFromBech32(msg.Sender)
 	if err != nil {
