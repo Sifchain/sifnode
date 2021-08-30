@@ -3,7 +3,14 @@
   {
    "is_whitelisted": true,
    "denom": "ceth",
-   "decimals": 18
+   "decimals": 18,
+   "ibc_counterparty_denom": "xeth"
+  },
+  {
+   "is_whitelisted": true,
+   "denom": "xeth",
+   "decimals": 10,
+   "unit_denom": "ceth"
   },
   {
    "is_whitelisted": true,
@@ -13,7 +20,14 @@
   {
    "is_whitelisted": true,
    "denom": "rowan",
-   "decimals": 18
+   "decimals": 18,
+   "ibc_counterparty_denom": "xrowan"
+  },
+  {
+   "is_whitelisted": true,
+   "denom": "xrowan",
+   "decimals": 10,
+   "unit_denom": "rowan"
   }
  ]
 }
