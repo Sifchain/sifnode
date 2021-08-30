@@ -1,36 +1,76 @@
-import '@openzeppelin/hardhat-upgrades'
+import * as dotenv from "dotenv"
+import {HardhatUserConfig} from "hardhat/config"
 import "@nomiclabs/hardhat-ethers"
-import "@typechain/hardhat"
+import '@openzeppelin/hardhat-upgrades'
 import "reflect-metadata"; // needed by tsyringe
-import { HardhatUserConfig } from "hardhat/config";
-require('solidity-coverage');
-require("hardhat-gas-reporter");
-require('hardhat-contract-sizer');
+import "@typechain/hardhat"
+
+// require('solidity-coverage');
+// require("hardhat-gas-reporter");
+// require('hardhat-contract-sizer');
+
+const envconfig = dotenv.config()
+
+const mainnetUrl = process.env["MAINNET_URL"] ?? "https://example.com"
+const ropstenUrl = process.env['ROPSTEN_URL'] ?? "https://example.com"
+const ropstenProxyAdminKey = process.env['ROPSTEN_PROXY_ADMIN_PRIVATE_KEY'] ?? "0xabcd"
+const mainnetProxyAdminKey = process.env['MAINNET_PROXY_ADMIN_PRIVATE_KEY'] ?? "0xabcd"
 
 const config: HardhatUserConfig = {
-  networks: {
-    hardhat: {
-      allowUnlimitedContractSize: false,
+    networks: {
+        hardhat: {
+            allowUnlimitedContractSize: false,
+            chainId: 1,
+            forking: {
+                url: mainnetUrl,
+                blockNumber: 12865480,
+            }
+        },
+        ropsten: {
+            url: ropstenUrl,
+            accounts: [ropstenProxyAdminKey],
+            gas: 2000000
+        },
+        mainnet: {
+            url: mainnetUrl,
+            accounts: [mainnetProxyAdminKey],
+            gas: 2000000
+        },
+        localRpc: {
+            allowUnlimitedContractSize: false,
+            chainId: 31337,
+            url: 'http://127.0.0.1:8545/',
+        },
     },
-    localRpc: {
-      allowUnlimitedContractSize: false,
-      chainId: 31337,
-      url: 'http://127.0.0.1:8545/',
+    solidity: {
+        compilers: [
+            {
+                version: "0.8.0",
+                settings: {
+                    optimizer: {
+                        enabled: true,
+                        runs: 200
+                    },
+                }
+            },
+            {
+                version: "0.5.16",
+                settings: {
+                    optimizer: {
+                        enabled: true,
+                        runs: 200
+                    },
+                }
+            },
+        ],
     },
-  },
-  solidity: {
-    version: "0.8.0",
-    settings: {
-      optimizer: {
-        enabled: true,
-        runs: 200
-      },
+    typechain: {
+        outDir: "build",
+        target: "ethers-v5"
     },
-  },
-  typechain: {
-    outDir: "build",
-    target: "ethers-v5"
-  },
+    mocha: {
+        timeout: 200000
+    }
 }
 
 export default config
