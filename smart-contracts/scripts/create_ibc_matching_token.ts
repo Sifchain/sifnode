@@ -3,7 +3,7 @@ import {container} from "tsyringe";
 import {DeployedBridgeBank, requiredEnvVar} from "../src/contractSupport";
 import {DeploymentName, HardhatRuntimeEnvironmentToken} from "../src/tsyringe/injectionTokens";
 import {
-    impersonateAccount,
+    impersonateAccount, setNewEthBalance,
     setupRopstenDeployment,
     setupSifchainMainnetDeployment
 } from "../src/hardhatFunctions";
@@ -36,10 +36,16 @@ async function main() {
     const ibcTokenFactory = (await factories.ibcToken).connect(bridgeBankOwner)
 
     const bridgeBank = await container.resolve(DeployedBridgeBank).contract
+    const bridgeBankOperater = await bridgeBank.operator()
 
-    await impersonateAccount(hardhat, await bridgeBank.operator(), undefined, impersonatedAccount => {
+    if (hardhat.network.name == "localhost") {
+        await impersonateAccount(hardhat, await bridgeBank.operator(), undefined, async impersonatedAccount => {
+            await buildIbcTokens(ibcTokenFactory, await readTokenData(requiredEnvVar("TOKEN_FILE")), bridgeBank.connect(impersonatedAccount))
+        })
+    } else {
         await buildIbcTokens(ibcTokenFactory, await readTokenData(requiredEnvVar("TOKEN_FILE")), bridgeBank)
-    })
+    }
+    console.log("created ibc tokens on this network: ", hardhat.network.name)
 }
 
 main()
