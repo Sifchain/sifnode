@@ -8,6 +8,7 @@ SIFCHAIN_ID=sifchain-devnet-1 \
   AKASH_CHANNEL_ID=channel-110 \
   AKASH_COUNTERPARTY_CHANNEL_ID=channel-63 \
   AKASH_CHAIN_ID=akash-testnet-6 \
+  IRIS_BASE_DENOM=unyan \
   IRIS_CHANNEL_ID=channel-117 \
   IRIS_COUNTERPARTY_CHANNEL_ID=channel-24 \
   IRIS_CHAIN_ID=nyancat-8 \

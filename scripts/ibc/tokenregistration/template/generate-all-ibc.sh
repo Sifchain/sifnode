@@ -80,15 +80,15 @@ cat $SIFCHAIN_ID/sentinel.json | jq
 
 
 sifnoded q tokenregistry generate \
-	--token_base_denom=unyan \
+	--token_base_denom=$IRIS_BASE_DENOM \
 	--token_ibc_counterparty_chain_id=$IRIS_CHAIN_ID \
   --token_ibc_channel_id=$IRIS_CHANNEL_ID \
   --token_ibc_counterparty_channel_id=$IRIS_COUNTERPARTY_CHANNEL_ID \
 	--token_ibc_counterparty_denom="" \
 	--token_unit_denom="" \
 	--token_decimals=6 \
-	--token_display_name="uNYAN" \
-	--token_external_symbol="unyan" \
+	--token_display_name="" \
+	--token_external_symbol="" \
 	--token_permission_clp=true \
 	--token_permission_ibc_export=true \
 	--token_permission_ibc_import=true | jq > $SIFCHAIN_ID/iris.json

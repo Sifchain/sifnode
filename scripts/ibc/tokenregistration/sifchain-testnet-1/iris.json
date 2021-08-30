@@ -8,11 +8,11 @@
       "path": "transfer/channel-14",
       "ibc_channel_id": "channel-14",
       "ibc_counterparty_channel_id": "channel-25",
-      "display_name": "uNYAN",
+      "display_name": "",
       "display_symbol": "",
       "network": "",
       "address": "",
-      "external_symbol": "unyan",
+      "external_symbol": "",
       "transfer_limit": "",
       "permissions": [
         "CLP",
