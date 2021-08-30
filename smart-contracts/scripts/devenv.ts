@@ -5,6 +5,7 @@ import { DeployedContractAddresses } from "../scripts/deploy_contracts";
 import { SmartContractDeployer } from "../src/devenv/smartcontractDeployer";
 import { EbrelayerRunner } from "../src/devenv/ebrelayer";
 import { EthereumAddressAndKey } from "../src/devenv/devEnv";
+import { notify } from "node-notifier";
 
 async function startHardhat() {
   const node = new HardhatNodeRunner()
@@ -84,6 +85,10 @@ async function main() {
     hardhat.process.kill(hardhat.process.pid);
     ebrelayer.process.kill(ebrelayer.process.pid);
     console.log("All child process terminated, goodbye.");
+    notify({
+      title: "Sifchain DevEnvironment Notice",
+      message: `Dev Environment has recieved either a SIGINT or SIGTERM signal, all process have exited.`
+    })
   } catch (error) {
     console.log("Deployment failed. Lets log where it broke: ", error);
   }
