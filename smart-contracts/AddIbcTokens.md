@@ -7,6 +7,7 @@ Modify the .env file to include:
 ```
 MAINNET_URL=<mainnet_url>
 MAINNET_PROXY_ADMIN_PRIVATE_KEY=<private_key>
+DEPLOYMENT_NAME=<deployment_name>
 ```
 
 Where:
@@ -15,6 +16,7 @@ Where:
 |----|-----------|
 |`<mainnet_url>`|Replace with the Infura Mainnet URL|
 |`<private_key>`|Replace with the ETH Private Key for the BridgeBank operator|
+|`<deployment_name>`|Replace with the deployment name like sifchain |
 
 
 ## Execution
