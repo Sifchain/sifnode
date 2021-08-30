@@ -48,8 +48,15 @@ func TestMsgServer_Transfer(t *testing.T) {
 	xrowanAmount, ok := sdk.NewIntFromString("12345678911")
 	require.True(t, ok)
 
+	rowanSmallest, ok := sdk.NewIntFromString("183456789")
+	require.True(t, ok)
+
+	rowanTooSmall, ok := sdk.NewIntFromString("12345678")
+	require.True(t, ok)
+
 	tt := []struct {
 		name                 string
+		err                  error
 		bankKeeper           scibctransfertypes.BankKeeper
 		msgSrv               scibctransfertypes.MsgServer
 		msg                  *sdktransfertypes.MsgTransfer
@@ -87,6 +94,53 @@ func TestMsgServer_Transfer(t *testing.T) {
 				bankKeeper.EXPECT().SendCoinsFromModuleToAccount(gomock.Any(), sdktransfertypes.ModuleName, addrs[0], sdk.NewCoins(sdk.NewCoin("xrowan", xrowanAmount))).Return(nil)
 			},
 		},
+		{
+			name:       "transfer smallest rowan without rounding",
+			bankKeeper: bankKeeper,
+			msgSrv:     msgSrv,
+			msg: sdktransfertypes.NewMsgTransfer(
+				"transfer",
+				"channel-0",
+				sdk.NewCoin("rowan", rowanSmallest),
+				addrs[0],
+				addrs[1].String(),
+				clienttypes.NewHeight(0, 0),
+				0,
+			),
+			setupMsgServerCalls: func() {
+				msgSrv.EXPECT().Transfer(gomock.Any(), &sdktransfertypes.MsgTransfer{
+					SourcePort:       "transfer",
+					SourceChannel:    "channel-0",
+					Token:            sdk.NewCoin("xrowan", sdk.NewInt(1)),
+					Sender:           addrs[0].String(),
+					Receiver:         addrs[1].String(),
+					TimeoutHeight:    clienttypes.NewHeight(0, 0),
+					TimeoutTimestamp: 0,
+				})
+			},
+			setupBankKeeperCalls: func() {
+				bankKeeper.EXPECT().SendCoins(gomock.Any(), addrs[0], sdktransfertypes.GetEscrowAddress("transfer", "channel-0"), sdk.NewCoins(sdk.NewCoin("rowan", sdk.NewInt(100000000)))).Return(nil)
+				bankKeeper.EXPECT().MintCoins(gomock.Any(), sdktransfertypes.ModuleName, sdk.NewCoins(sdk.NewCoin("xrowan", sdk.NewInt(1)))).Return(nil)
+				bankKeeper.EXPECT().SendCoinsFromModuleToAccount(gomock.Any(), sdktransfertypes.ModuleName, addrs[0], sdk.NewCoins(sdk.NewCoin("xrowan", sdk.NewInt(1)))).Return(nil)
+			},
+		},
+		{
+			name:       "transfer amount too small for conversion",
+			err:        scibctransfertypes.ErrAmountTooLowToConvert,
+			bankKeeper: bankKeeper,
+			msgSrv:     msgSrv,
+			msg: sdktransfertypes.NewMsgTransfer(
+				"transfer",
+				"channel-0",
+				sdk.NewCoin("rowan", rowanTooSmall),
+				addrs[0],
+				addrs[1].String(),
+				clienttypes.NewHeight(0, 0),
+				0,
+			),
+			setupBankKeeperCalls: func() {},
+			setupMsgServerCalls:  func() {},
+		},
 	}
 
 	for _, tc := range tt {
@@ -97,7 +151,7 @@ func TestMsgServer_Transfer(t *testing.T) {
 
 			srv := keeper.NewMsgServerImpl(tc.msgSrv, tc.bankKeeper, app.TokenRegistryKeeper)
 			_, err := srv.Transfer(sdk.WrapSDKContext(ctx), tc.msg)
-			require.NoError(t, err)
+			require.ErrorIs(t, tc.err, err)
 		})
 	}
 }
