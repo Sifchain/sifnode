@@ -17,7 +17,7 @@ Where:
 |`<mainnet_url>`|Replace with the Infura Mainnet URL|
 |`<private_key>`|Replace with the ETH Private Key for the BridgeBank operator|
 |`<deployment_name>`|Replace with the deployment name like sifchain |
-
+|`<token_file>`|Replace with the path to the token file containing json|
 
 ## Execution
 
