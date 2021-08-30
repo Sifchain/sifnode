@@ -36,19 +36,21 @@ interface TokenData {
     cosmosDenom: string
 }
 
-const MINTER_ROLE = web3.utils.soliditySha3('MINTER_ROLE') ?? "0xBADBAD"
+const MINTER_ROLE: string = web3.utils.soliditySha3('MINTER_ROLE') ?? "0xBADBAD"  // this should never fail
+if (MINTER_ROLE == "0xBADBAD")
+    throw Error("failed to get MINTER_ROLE")
 const DEFAULT_ADMIN_ROLE = '0x0000000000000000000000000000000000000000000000000000000000000000' // to bridgebank
 
 async function buildIbcToken(tokenFactory: IbcToken__factory, tokenData: TokenData, bridgeBank: BridgeBank) {
     const newToken = await tokenFactory.deploy(tokenData.name, tokenData.symbol, tokenData.decimals, tokenData.cosmosDenom)
     console.log(JSON.stringify({deployed: await newToken.address, symbol: await newToken.symbol()}))
-    const x = await newToken.grantRole(DEFAULT_ADMIN_ROLE, bridgeBank.address)
+    await newToken.grantRole(DEFAULT_ADMIN_ROLE, bridgeBank.address)
     console.log(JSON.stringify({roleGrantedToBridgeBank: DEFAULT_ADMIN_ROLE}))
-    const y = await newToken.grantRole(MINTER_ROLE, bridgeBank.address)
+    await newToken.grantRole(MINTER_ROLE, bridgeBank.address)
     console.log(JSON.stringify({roleGrantedToBridgeBank: MINTER_ROLE}))
-    const z = await newToken.renounceRole(MINTER_ROLE, await tokenFactory.signer.getAddress())
+    await newToken.renounceRole(MINTER_ROLE, await tokenFactory.signer.getAddress())
     console.log(JSON.stringify({roleRenouncedByDeployer: MINTER_ROLE}))
-    const zz = await newToken.renounceRole(DEFAULT_ADMIN_ROLE, await tokenFactory.signer.getAddress())
+    await newToken.renounceRole(DEFAULT_ADMIN_ROLE, await tokenFactory.signer.getAddress())
     console.log(JSON.stringify({roleRenouncedByDeployer: DEFAULT_ADMIN_ROLE}))
     await newToken.transferOwnership(bridgeBank.address)
     return newToken
