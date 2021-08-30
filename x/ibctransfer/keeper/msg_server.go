@@ -97,7 +97,7 @@ func PrepareToSendConvertedCoins(goCtx context.Context, msg *sdktransfertypes.Ms
 		return err
 	}
 	// create the escrow address for the tokens
-	escrowAddress := sdktransfertypes.GetEscrowAddress(msg.SourcePort, msg.SourceChannel)
+	escrowAddress := types.GetEscrowAddress(msg.SourcePort, msg.SourceChannel)
 
 	// escrow requested denom so it can be converted to the denom that will be sent out. It fails if balance insufficient.
 	if err := bankKeeper.SendCoins(
@@ -107,12 +107,12 @@ func PrepareToSendConvertedCoins(goCtx context.Context, msg *sdktransfertypes.Ms
 	}
 
 	// Mint into module account the new coins of the denom that will be sent via IBC
-	err = bankKeeper.MintCoins(ctx, sdktransfertypes.ModuleName, sdk.NewCoins(convToken))
+	err = bankKeeper.MintCoins(ctx, types.ModuleName, sdk.NewCoins(convToken))
 	if err != nil {
 		return err
 	}
 	// Send minted coins (from module account) to senders address
-	err = bankKeeper.SendCoinsFromModuleToAccount(ctx, sdktransfertypes.ModuleName, sender, sdk.NewCoins(convToken))
+	err = bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, sender, sdk.NewCoins(convToken))
 	if err != nil {
 		return err
 	}
@@ -120,7 +120,7 @@ func PrepareToSendConvertedCoins(goCtx context.Context, msg *sdktransfertypes.Ms
 	ctx.EventManager().EmitEvent(
 		sdk.NewEvent(
 			types.EventTypeConvertTransfer,
-			sdk.NewAttribute(sdk.AttributeKeyModule, sdktransfertypes.ModuleName),
+			sdk.NewAttribute(sdk.AttributeKeyModule, types.ModuleName),
 			sdk.NewAttribute(types.AttributeKeySentAmount, fmt.Sprintf("%v", token.Amount)),
 			sdk.NewAttribute(types.AttributeKeySentDenom, token.Denom),
 			sdk.NewAttribute(types.AttributeKeyConvertAmount, fmt.Sprintf("%v", convToken.Amount)),

@@ -5,7 +5,7 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
-	transfertypes "github.com/cosmos/cosmos-sdk/x/ibc/applications/transfer/types"
+	sdktransfertypes "github.com/cosmos/cosmos-sdk/x/ibc/applications/transfer/types"
 	channeltypes "github.com/cosmos/cosmos-sdk/x/ibc/core/04-channel/types"
 
 	sctransfertypes "github.com/Sifchain/sifnode/x/ibctransfer/types"
@@ -20,18 +20,18 @@ func OnAcknowledgementMaybeConvert(
 	ctx sdk.Context,
 	sdkTransferKeeper sctransfertypes.SDKTransferKeeper,
 	whitelistKeeper tokenregistrytypes.Keeper,
-	bankKeeper transfertypes.BankKeeper,
+	bankKeeper sdktransfertypes.BankKeeper,
 	packet channeltypes.Packet,
 	acknowledgement []byte,
 ) (*sdk.Result, error) {
 
 	var ack channeltypes.Acknowledgement
-	if err := transfertypes.ModuleCdc.UnmarshalJSON(acknowledgement, &ack); err != nil {
+	if err := sdktransfertypes.ModuleCdc.UnmarshalJSON(acknowledgement, &ack); err != nil {
 		return nil, sdkerrors.Wrapf(sdkerrors.ErrUnknownRequest, "cannot unmarshal ICS-20 transfer packet acknowledgement: %v", err)
 	}
 
-	var data transfertypes.FungibleTokenPacketData
-	if err := transfertypes.ModuleCdc.UnmarshalJSON(packet.GetData(), &data); err != nil {
+	var data sdktransfertypes.FungibleTokenPacketData
+	if err := sdktransfertypes.ModuleCdc.UnmarshalJSON(packet.GetData(), &data); err != nil {
 		return nil, sdkerrors.Wrapf(sdkerrors.ErrUnknownRequest, "cannot unmarshal ICS-20 transfer packet data: %s", err.Error())
 	}
 
@@ -45,12 +45,12 @@ func OnAcknowledgementMaybeConvert(
 
 	ctx.EventManager().EmitEvent(
 		sdk.NewEvent(
-			transfertypes.EventTypePacket,
-			sdk.NewAttribute(sdk.AttributeKeyModule, transfertypes.ModuleName),
-			sdk.NewAttribute(transfertypes.AttributeKeyReceiver, data.Receiver),
-			sdk.NewAttribute(transfertypes.AttributeKeyDenom, data.Denom),
-			sdk.NewAttribute(transfertypes.AttributeKeyAmount, fmt.Sprintf("%d", data.Amount)),
-			sdk.NewAttribute(transfertypes.AttributeKeyAck, fmt.Sprintf("%v", ack)),
+			sdktransfertypes.EventTypePacket,
+			sdk.NewAttribute(sdk.AttributeKeyModule, sdktransfertypes.ModuleName),
+			sdk.NewAttribute(sdktransfertypes.AttributeKeyReceiver, data.Receiver),
+			sdk.NewAttribute(sdktransfertypes.AttributeKeyDenom, data.Denom),
+			sdk.NewAttribute(sdktransfertypes.AttributeKeyAmount, fmt.Sprintf("%d", data.Amount)),
+			sdk.NewAttribute(sdktransfertypes.AttributeKeyAck, fmt.Sprintf("%v", ack)),
 		),
 	)
 
@@ -58,16 +58,16 @@ func OnAcknowledgementMaybeConvert(
 	case *channeltypes.Acknowledgement_Result:
 		ctx.EventManager().EmitEvent(
 			sdk.NewEvent(
-				transfertypes.EventTypePacket,
-				sdk.NewAttribute(transfertypes.AttributeKeyAckSuccess, string(resp.Result)),
+				sdktransfertypes.EventTypePacket,
+				sdk.NewAttribute(sdktransfertypes.AttributeKeyAckSuccess, string(resp.Result)),
 			),
 		)
 	// if acknowledgement error then a refund was processed so we must check if conversion is necessary
 	case *channeltypes.Acknowledgement_Error:
 		ctx.EventManager().EmitEvent(
 			sdk.NewEvent(
-				transfertypes.EventTypePacket,
-				sdk.NewAttribute(transfertypes.AttributeKeyAckError, resp.Error),
+				sdktransfertypes.EventTypePacket,
+				sdk.NewAttribute(sdktransfertypes.AttributeKeyAckError, resp.Error),
 			),
 		)
 
@@ -93,7 +93,7 @@ func ShouldConvertRefundCoins(
 	ctx sdk.Context,
 	whitelistKeeper tokenregistrytypes.Keeper,
 	packet channeltypes.Packet,
-	data transfertypes.FungibleTokenPacketData,
+	data sdktransfertypes.FungibleTokenPacketData,
 ) bool {
 	// we don't need to manipulate the denom because the data and packet was created on this chain
 	// get token registry entry for received denom
@@ -126,7 +126,7 @@ func GetConvForRefundCoins(
 	ctx sdk.Context,
 	whitelistKeeper tokenregistrytypes.Keeper,
 	packet channeltypes.Packet,
-	data transfertypes.FungibleTokenPacketData,
+	data sdktransfertypes.FungibleTokenPacketData,
 ) (sdk.Coin, sdk.Coin) {
 
 	// we don't need to manipulate the denom because the data and packet was created on this chain
@@ -161,9 +161,9 @@ func ExecConvForRefundCoins(
 	ctx sdk.Context,
 	incomingCoins sdk.Coin,
 	finalCoins sdk.Coin,
-	bankKeeper transfertypes.BankKeeper,
+	bankKeeper sdktransfertypes.BankKeeper,
 	packet channeltypes.Packet,
-	data transfertypes.FungibleTokenPacketData,
+	data sdktransfertypes.FungibleTokenPacketData,
 ) error {
 
 	// decode the receiver address
@@ -172,12 +172,12 @@ func ExecConvForRefundCoins(
 		return err
 	}
 	// send ibcdenom coins from account to module
-	err = bankKeeper.SendCoinsFromAccountToModule(ctx, sender, transfertypes.ModuleName, sdk.NewCoins(incomingCoins))
+	err = bankKeeper.SendCoinsFromAccountToModule(ctx, sender, sctransfertypes.ModuleName, sdk.NewCoins(incomingCoins))
 	if err != nil {
 		return err
 	}
 	// unescrow original tokens
-	escrowAddress := transfertypes.GetEscrowAddress(packet.GetSourcePort(), packet.GetSourceChannel())
+	escrowAddress := sctransfertypes.GetEscrowAddress(packet.GetSourcePort(), packet.GetSourceChannel())
 	if err := bankKeeper.SendCoins(ctx, escrowAddress, sender, sdk.NewCoins(finalCoins)); err != nil {
 		// NOTE: this error is only expected to occur given an unexpected bug or a malicious
 		// counterparty module. The bug may occur in bank or any part of the code that allows
@@ -186,14 +186,14 @@ func ExecConvForRefundCoins(
 		return sdkerrors.Wrap(err, "unable to unescrow original tokens")
 	}
 	// burn ibcdenom coins
-	err = bankKeeper.BurnCoins(ctx, transfertypes.ModuleName, sdk.NewCoins(incomingCoins))
+	err = bankKeeper.BurnCoins(ctx, sctransfertypes.ModuleName, sdk.NewCoins(incomingCoins))
 	if err != nil {
 		return err
 	}
 	ctx.EventManager().EmitEvent(
 		sdk.NewEvent(
 			sctransfertypes.EventTypeConvertRefund,
-			sdk.NewAttribute(sdk.AttributeKeyModule, transfertypes.ModuleName),
+			sdk.NewAttribute(sdk.AttributeKeyModule, sctransfertypes.ModuleName),
 			sdk.NewAttribute(sctransfertypes.AttributeKeyPacketAmount, fmt.Sprintf("%v", incomingCoins.Amount)),
 			sdk.NewAttribute(sctransfertypes.AttributeKeyPacketDenom, incomingCoins.Denom),
 			sdk.NewAttribute(sctransfertypes.AttributeKeyConvertAmount, fmt.Sprintf("%v", finalCoins.Amount)),

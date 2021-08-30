@@ -98,9 +98,9 @@ func TestMsgServer_Transfer(t *testing.T) {
 				})
 			},
 			setupBankKeeperCalls: func() {
-				bankKeeper.EXPECT().SendCoins(gomock.Any(), addrs[0], sdktransfertypes.GetEscrowAddress("transfer", "channel-0"), sdk.NewCoins(sdk.NewCoin("rowan", rowanAmountEscrowed))).Return(nil)
-				bankKeeper.EXPECT().MintCoins(gomock.Any(), sdktransfertypes.ModuleName, sdk.NewCoins(sdk.NewCoin("xrowan", xrowanAmount))).Return(nil)
-				bankKeeper.EXPECT().SendCoinsFromModuleToAccount(gomock.Any(), sdktransfertypes.ModuleName, addrs[0], sdk.NewCoins(sdk.NewCoin("xrowan", xrowanAmount))).Return(nil)
+				bankKeeper.EXPECT().SendCoins(gomock.Any(), addrs[0], scibctransfertypes.GetEscrowAddress("transfer", "channel-0"), sdk.NewCoins(sdk.NewCoin("rowan", rowanAmountEscrowed))).Return(nil)
+				bankKeeper.EXPECT().MintCoins(gomock.Any(), scibctransfertypes.ModuleName, sdk.NewCoins(sdk.NewCoin("xrowan", xrowanAmount))).Return(nil)
+				bankKeeper.EXPECT().SendCoinsFromModuleToAccount(gomock.Any(), scibctransfertypes.ModuleName, addrs[0], sdk.NewCoins(sdk.NewCoin("xrowan", xrowanAmount))).Return(nil)
 			},
 		},
 		{
@@ -128,9 +128,9 @@ func TestMsgServer_Transfer(t *testing.T) {
 				})
 			},
 			setupBankKeeperCalls: func() {
-				bankKeeper.EXPECT().SendCoins(gomock.Any(), addrs[0], sdktransfertypes.GetEscrowAddress("transfer", "channel-0"), sdk.NewCoins(sdk.NewCoin("rowan", sdk.NewInt(100000000)))).Return(nil)
-				bankKeeper.EXPECT().MintCoins(gomock.Any(), sdktransfertypes.ModuleName, sdk.NewCoins(sdk.NewCoin("xrowan", sdk.NewInt(1)))).Return(nil)
-				bankKeeper.EXPECT().SendCoinsFromModuleToAccount(gomock.Any(), sdktransfertypes.ModuleName, addrs[0], sdk.NewCoins(sdk.NewCoin("xrowan", sdk.NewInt(1)))).Return(nil)
+				bankKeeper.EXPECT().SendCoins(gomock.Any(), addrs[0], scibctransfertypes.GetEscrowAddress("transfer", "channel-0"), sdk.NewCoins(sdk.NewCoin("rowan", sdk.NewInt(100000000)))).Return(nil)
+				bankKeeper.EXPECT().MintCoins(gomock.Any(), scibctransfertypes.ModuleName, sdk.NewCoins(sdk.NewCoin("xrowan", sdk.NewInt(1)))).Return(nil)
+				bankKeeper.EXPECT().SendCoinsFromModuleToAccount(gomock.Any(), scibctransfertypes.ModuleName, addrs[0], sdk.NewCoins(sdk.NewCoin("xrowan", sdk.NewInt(1)))).Return(nil)
 			},
 		},
 		{

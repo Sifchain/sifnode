@@ -5,7 +5,7 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
-	transfertypes "github.com/cosmos/cosmos-sdk/x/ibc/applications/transfer/types"
+	sdktransfertypes "github.com/cosmos/cosmos-sdk/x/ibc/applications/transfer/types"
 	channeltypes "github.com/cosmos/cosmos-sdk/x/ibc/core/04-channel/types"
 
 	"github.com/Sifchain/sifnode/x/ibctransfer/types"
@@ -18,7 +18,7 @@ func ShouldConvertIncomingCoins(
 	ctx sdk.Context,
 	whitelistKeeper tokenregistrytypes.Keeper,
 	packet channeltypes.Packet,
-	data transfertypes.FungibleTokenPacketData,
+	data sdktransfertypes.FungibleTokenPacketData,
 ) bool {
 	// get token registry entry for received denom
 	mintedDenom := GetMintedDenomFromPacket(packet, data)
@@ -50,7 +50,7 @@ func GetConvForIncomingCoins(
 	ctx sdk.Context,
 	whitelistKeeper tokenregistrytypes.Keeper,
 	packet channeltypes.Packet,
-	data transfertypes.FungibleTokenPacketData,
+	data sdktransfertypes.FungibleTokenPacketData,
 ) (sdk.Coin, sdk.Coin) {
 
 	// Get the denom that will be minted by sdk transfer module,
@@ -88,9 +88,9 @@ func ExecConvForIncomingCoins(
 	ctx sdk.Context,
 	incomingCoins sdk.Coin,
 	finalCoins sdk.Coin,
-	bankKeeper transfertypes.BankKeeper,
+	bankKeeper sdktransfertypes.BankKeeper,
 	packet channeltypes.Packet,
-	data transfertypes.FungibleTokenPacketData,
+	data sdktransfertypes.FungibleTokenPacketData,
 ) error {
 
 	// decode the receiver address
@@ -99,12 +99,17 @@ func ExecConvForIncomingCoins(
 		return err
 	}
 	// send ibcdenom coins from account to module
-	err = bankKeeper.SendCoinsFromAccountToModule(ctx, receiver, transfertypes.ModuleName, sdk.NewCoins(incomingCoins))
+	err = bankKeeper.SendCoinsFromAccountToModule(ctx, receiver, types.ModuleName, sdk.NewCoins(incomingCoins))
+	if err != nil {
+		return err
+	}
+	// burn ibcdenom coins
+	err = bankKeeper.BurnCoins(ctx, types.ModuleName, sdk.NewCoins(incomingCoins))
 	if err != nil {
 		return err
 	}
 	// unescrow original tokens
-	escrowAddress := transfertypes.GetEscrowAddress(packet.GetDestPort(), packet.GetDestChannel())
+	escrowAddress := types.GetEscrowAddress(packet.GetDestPort(), packet.GetDestChannel())
 	if err := bankKeeper.SendCoins(ctx, escrowAddress, receiver, sdk.NewCoins(finalCoins)); err != nil {
 		// NOTE: this error is only expected to occur given an unexpected bug or a malicious
 		// counterparty module. The bug may occur in bank or any part of the code that allows
@@ -112,15 +117,10 @@ func ExecConvForIncomingCoins(
 		// escrow address by allowing more tokens to be sent back then were escrowed.
 		return sdkerrors.Wrap(err, "unable to unescrow original tokens")
 	}
-	// burn ibcdenom coins
-	err = bankKeeper.BurnCoins(ctx, transfertypes.ModuleName, sdk.NewCoins(incomingCoins))
-	if err != nil {
-		return err
-	}
 	ctx.EventManager().EmitEvent(
 		sdk.NewEvent(
 			types.EventTypeConvertReceived,
-			sdk.NewAttribute(sdk.AttributeKeyModule, transfertypes.ModuleName),
+			sdk.NewAttribute(sdk.AttributeKeyModule, types.ModuleName),
 			sdk.NewAttribute(types.AttributeKeyPacketAmount, fmt.Sprintf("%v", incomingCoins.Amount)),
 			sdk.NewAttribute(types.AttributeKeyPacketDenom, incomingCoins.Denom),
 			sdk.NewAttribute(types.AttributeKeyConvertAmount, fmt.Sprintf("%v", finalCoins.Amount)),
