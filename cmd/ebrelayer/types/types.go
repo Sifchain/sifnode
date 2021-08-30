@@ -33,11 +33,15 @@ const (
 	NewProphecyClaim
 	// CreateEthBridgeClaim is a Cosmos msg of type MsgCreateEthBridgeClaim
 	CreateEthBridgeClaim
+	// ProphecyCompleted is Cosmos event EventTypeProphecyCompleted
+	ProphecyCompleted
+	// SubmitProphecyClaimAggregatedSigs is Ethereum method name
+	SubmitProphecyClaimAggregatedSigs
 )
 
 // String returns the event type as a string
 func (d Event) String() string {
-	return [...]string{"unsupported", "burn", "lock", "LogLock", "LogBurn", "LogNewProphecyClaim", "newProphecyClaim", "create_claim"}[d]
+	return [...]string{"unsupported", "burn", "lock", "LogLock", "LogBurn", "LogNewProphecyClaim", "newProphecyClaim", "create_claim", "prophecy_completed", "submitProphecyClaimAggregatedSigs"}[d]
 }
 
 // EthereumEvent struct is used by LogLock and LogBurn
@@ -117,39 +121,21 @@ func (p ProphecyClaimEvent) String() string {
 
 // CosmosMsg contains data from MsgBurn and MsgLock events
 type CosmosMsg struct {
-	NetworkDescriptor    oracle.NetworkDescriptor
-	CosmosSender         []byte
-	CosmosSenderSequence *big.Int
-	Symbol               string
-	Amount               sdk.Int
-	EthereumReceiver     common.Address
-	ClaimType            Event
+	NetworkDescriptor oracle.NetworkDescriptor
+	ProphecyID        []byte
 }
 
 // NewCosmosMsg creates a new CosmosMsg
-func NewCosmosMsg(networkDescriptor oracle.NetworkDescriptor, claimType Event, cosmosSender []byte, cosmosSenderSequence *big.Int, ethereumReceiver common.Address, symbol string,
-	amount sdk.Int) CosmosMsg {
+func NewCosmosMsg(networkDescriptor oracle.NetworkDescriptor, prophecyID []byte) CosmosMsg {
 	return CosmosMsg{
-		NetworkDescriptor:    networkDescriptor,
-		ClaimType:            claimType,
-		CosmosSender:         cosmosSender,
-		CosmosSenderSequence: cosmosSenderSequence,
-		EthereumReceiver:     ethereumReceiver,
-		Symbol:               symbol,
-		Amount:               amount,
+		NetworkDescriptor: networkDescriptor,
+		ProphecyID:        prophecyID,
 	}
 }
 
 // String implements fmt.Stringer
 func (c CosmosMsg) String() string {
-	if c.ClaimType == MsgLock {
-		return fmt.Sprintf("\nNetwork id: %v\nClaim Type: %v\nCosmos Sender: %v\nCosmos Sender Sequence: %v\nEthereum Recipient: %v"+
-			"\nSymbol: %v\nAmount: %v\n", c.NetworkDescriptor.String(),
-			c.ClaimType.String(), string(c.CosmosSender), c.CosmosSenderSequence, c.EthereumReceiver.Hex(), c.Symbol, c.Amount)
-	}
-	return fmt.Sprintf("\nClaim Type: %v\nCosmos Sender: %v\nCosmos Sender Sequence: %v\nEthereum Recipient: %v"+
-		"\nSymbol: %v\nAmount: %v\n",
-		c.ClaimType.String(), string(c.CosmosSender), c.CosmosSenderSequence, c.EthereumReceiver.Hex(), c.Symbol, c.Amount)
+	return fmt.Sprintf("\nNetwork id: %v\nProphecy ID: %v\n", c.NetworkDescriptor.String(), c.ProphecyID)
 }
 
 // CosmosMsgAttributeKey enum containing supported attribute keys
@@ -174,11 +160,32 @@ const (
 	EthereumSenderNonce
 	// NetworkDescriptor is different blockchain identity
 	NetworkDescriptor
+	// EthereumAddresses all relayer's ethereum addresses
+	EthereumAddresses
+	// Signatures all relayer's signature against one prophecy
+	Signatures
+	// ProphecyID id of prophecy
+	ProphecyID
+	// DoublePeg indicates if the token is double pegged
+	DoublePeg
+	// GlobalNonce an increment value for lock/burn
+	GlobalNonce
 )
 
 // String returns the event type as a string
 func (d CosmosMsgAttributeKey) String() string {
-	return [...]string{"unsupported", "cosmos_sender", "cosmos_sender_sequence", "ethereum_receiver", "amount", "symbol", "ethereum_sender", "ethereum_sender_nonce", "network_id"}[d]
+	return [...]string{"unsupported",
+		"cosmos_sender",
+		"cosmos_sender_sequence",
+		"ethereum_receiver", "amount",
+		"symbol", "ethereum_sender",
+		"ethereum_sender_nonce",
+		"network_id",
+		"ethereum_addresses",
+		"signatures",
+		"prophecy_id",
+		"double_peg",
+		"global_nonce"}[d]
 }
 
 // EthereumBridgeClaim for store the EventTypeCreateClaim from cosmos
@@ -190,6 +197,30 @@ type EthereumBridgeClaim struct {
 
 // ProphecyClaimUnique for data part of ProphecyClaim transaction in Ethereum
 type ProphecyClaimUnique struct {
-	CosmosSenderSequence *big.Int
-	CosmosSender         []byte
+	ProphecyID []byte
+}
+
+type CosmosSignProphecyClaim struct {
+	CosmosSender      sdk.ValAddress
+	NetworkDescriptor oracle.NetworkDescriptor
+	ProphecyID        []byte
+}
+
+// ProphecyInfo store all data needed for smart contract call
+type ProphecyInfo struct {
+	TokenAmount             big.Int
+	ProphecyID              []byte
+	EthereumSignerAddresses []string
+	Signatures              []string
+	CosmosSender            string
+	EthereumReceiver        string
+	TokenSymbol             string
+	CosmosSenderSequence    uint64
+	GlobalNonce             uint64
+	NetworkDescriptor       oracle.NetworkDescriptor
+	DoublePeg               bool
+}
+
+func (info *ProphecyInfo) String() string {
+	return fmt.Sprintf("%#v\n", info)
 }

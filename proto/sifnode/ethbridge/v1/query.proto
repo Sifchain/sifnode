@@ -28,20 +28,22 @@ message QueryEthProphecyResponse {
 }
 
 // Denom needed to request metadata for token
-message TokenMetadataRequest {
+message TokenMetadataSearchRequest {
   string denom = 1 [ (gogoproto.moretags) = "yaml:\"token_denom\"" ];
 }
 
 // Message returned from a TokenMetadata Response
-message TokenMetadataResponse {
+message TokenMetadataSearchResponse {
   sifnode.ethbridge.v1.TokenMetadata metadata = 1
       [ (gogoproto.moretags) = "yaml:\"metadata\"" ];
 }
 
 service TokenMetadataService {
   // Metadata Query Service to fetch token metadata from token denom
-  rpc Search(TokenMetadataRequest) returns (TokenMetadataResponse) {}
+  rpc Search(TokenMetadataSearchRequest) returns (TokenMetadataSearchResponse) {
+  }
 }
+
 // QueryCrosschainFeeConfigRequest payload for EthProphecy rpc query
 message QueryCrosschainFeeConfigRequest {
   sifnode.oracle.v1.NetworkDescriptor network_descriptor = 1;
@@ -50,4 +52,22 @@ message QueryCrosschainFeeConfigRequest {
 // QueryCrosschainFeeConfigResponse payload for EthProphecy rpc query
 message QueryCrosschainFeeConfigResponse {
   sifnode.oracle.v1.CrossChainFeeConfig crosschain_fee_config = 1;
+}
+
+service ProphciesCompletedQueryService {
+  // Prophecies Completed Query Service to fetch prophecy info from global nonce
+  rpc Search(ProphciesCompletedQueryRequest)
+      returns (ProphciesCompletedQueryResponse) {}
+}
+// ProphciesCompletedQueryRequest payload for ProphciesCompletedQueryRequest rpc
+// query
+message ProphciesCompletedQueryRequest {
+  sifnode.oracle.v1.NetworkDescriptor network_descriptor = 1;
+  uint64 global_nonce = 2;
+}
+
+// QueryCrosschainFeeConfigResponse payload for ProphciesCompletedQueryResponse
+// rpc query response
+message ProphciesCompletedQueryResponse {
+  repeated sifnode.oracle.v1.ProphecyInfo prophecy_info = 1;
 }

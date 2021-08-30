@@ -2,8 +2,8 @@ package txs
 
 import (
 	"errors"
+	"fmt"
 	"log"
-	"math/big"
 	"strconv"
 	"strings"
 
@@ -19,7 +19,6 @@ import (
 
 const (
 	nullAddress           = "0x0000000000000000000000000000000000000000"
-	defaultSifchainPrefix = "c"
 	defaultEthereumPrefix = "e"
 )
 
@@ -87,12 +86,8 @@ func EthereumEventToEthBridgeClaim(valAddr sdk.ValAddress, event types.EthereumE
 }
 
 // BurnLockEventToCosmosMsg parses data from a Burn/Lock event witnessed on Cosmos into a CosmosMsg struct
-func BurnLockEventToCosmosMsg(claimType types.Event, attributes []abci.EventAttribute, sugaredLogger *zap.SugaredLogger) (types.CosmosMsg, error) {
-	var cosmosSender []byte
-	var cosmosSenderSequence *big.Int
-	var ethereumReceiver common.Address
-	var symbol string
-	var amount sdk.Int
+func BurnLockEventToCosmosMsg(attributes []abci.EventAttribute, sugaredLogger *zap.SugaredLogger) (types.CosmosMsg, error) {
+	var prophecyID []byte
 	var networkDescriptor uint32
 
 	attributeNumber := 0
@@ -101,53 +96,15 @@ func BurnLockEventToCosmosMsg(claimType types.Event, attributes []abci.EventAttr
 		key := string(attribute.GetKey())
 		val := string(attribute.GetValue())
 
+		fmt.Printf(" key is %v, value is %v\n", key, val)
+
 		// Set variable based on the attribute's key
 		switch key {
-		case types.CosmosSender.String():
-			cosmosSender = []byte(val)
+		case types.ProphecyID.String():
+			fmt.Printf(" prophecy id is %v\n", val)
+			prophecyID = []byte(val)
 			attributeNumber++
-		case types.CosmosSenderSequence.String():
-			attributeNumber++
-			tempSequence := new(big.Int)
-			tempSequence, ok := tempSequence.SetString(val, 10)
-			if !ok {
-				// log.Println("Invalid account sequence:", val)
-				sugaredLogger.Errorw("Invalid account sequence", "account sequence", val)
-				return types.CosmosMsg{}, errors.New("invalid account sequence: " + val)
-			}
-			cosmosSenderSequence = tempSequence
-		case types.EthereumReceiver.String():
-			attributeNumber++
-			if !common.IsHexAddress(val) {
-				// log.Printf("Invalid recipient address: %v", val)
-				sugaredLogger.Errorw("Invalid recipient address", "recipient address", val)
 
-				return types.CosmosMsg{}, errors.New("invalid recipient address: " + val)
-			}
-			ethereumReceiver = common.HexToAddress(val)
-		case types.Symbol.String():
-			attributeNumber++
-			if claimType == types.MsgBurn {
-				if !strings.Contains(val, defaultSifchainPrefix) {
-					// log.Printf("Can only relay burns of '%v' prefixed coins", defaultSifchainPrefix)
-					sugaredLogger.Errorw("only relay burns prefixed coins", "coin symbol", val)
-					return types.CosmosMsg{}, errors.New("can only relay burns of '%v' prefixed coins" + defaultSifchainPrefix)
-				}
-				res := strings.SplitAfter(val, defaultSifchainPrefix)
-				symbol = strings.Join(res[1:], "")
-			} else {
-				symbol = val
-			}
-		case types.Amount.String():
-			attributeNumber++
-			tempAmount, ok := sdk.NewIntFromString(val)
-			if !ok {
-				// log.Println("Invalid amount:", val)
-				sugaredLogger.Errorw("Invalid amount", "amount", val)
-
-				return types.CosmosMsg{}, errors.New("invalid amount:" + val)
-			}
-			amount = tempAmount
 		case types.NetworkDescriptor.String():
 			attributeNumber++
 			tempNetworkDescriptor, err := strconv.ParseUint(val, 10, 32)
@@ -164,11 +121,11 @@ func BurnLockEventToCosmosMsg(claimType types.Event, attributes []abci.EventAttr
 		}
 	}
 
-	if attributeNumber < 6 {
+	if attributeNumber < 2 {
 		sugaredLogger.Errorw("message not complete", "attributeNumber", attributeNumber)
 		return types.CosmosMsg{}, errors.New("message not complete")
 	}
-	return types.NewCosmosMsg(oracletypes.NetworkDescriptor(networkDescriptor), claimType, cosmosSender, cosmosSenderSequence, ethereumReceiver, symbol, amount), nil
+	return types.NewCosmosMsg(oracletypes.NetworkDescriptor(networkDescriptor), prophecyID), nil
 }
 
 // AttributesToEthereumBridgeClaim parses data from event to EthereumBridgeClaim
@@ -211,6 +168,52 @@ func AttributesToEthereumBridgeClaim(attributes []abci.EventAttribute) (types.Et
 		EthereumSender: ethereumSender,
 		CosmosSender:   cosmosSender,
 		Nonce:          ethereumSenderNonce,
+	}, nil
+}
+
+// AttributesToCosmosSignProphecyClaim parses data from event to EthereumBridgeClaim
+func AttributesToCosmosSignProphecyClaim(attributes []abci.EventAttribute) (types.CosmosSignProphecyClaim, error) {
+	var cosmosSender sdk.ValAddress
+	var networkDescriptor oracletypes.NetworkDescriptor
+	var prophecyID []byte
+	var err error
+	attributeNumber := 0
+
+	for _, attribute := range attributes {
+		key := string(attribute.GetKey())
+		val := string(attribute.GetValue())
+
+		// Set variable based on the attribute's key
+		switch key {
+		case types.CosmosSender.String():
+			cosmosSender, err = sdk.ValAddressFromBech32(val)
+			if err != nil {
+				return types.CosmosSignProphecyClaim{}, err
+			}
+
+		case types.NetworkDescriptor.String():
+			attributeNumber++
+			tempNetworkDescriptor, err := strconv.ParseUint(val, 10, 32)
+			if err != nil {
+				log.Printf("network id can't parse networkDescriptor is %s\n", val)
+				return types.CosmosSignProphecyClaim{}, errors.New("network id can't parse")
+			}
+			networkDescriptor = oracletypes.NetworkDescriptor(uint32(tempNetworkDescriptor))
+
+			// check if the networkDescriptor is valid
+			if !networkDescriptor.IsValid() {
+				return types.CosmosSignProphecyClaim{}, errors.New("network id is invalid")
+			}
+
+		case types.ProphecyID.String():
+			prophecyID = []byte(val)
+		}
+	}
+
+	return types.CosmosSignProphecyClaim{
+		CosmosSender:      cosmosSender,
+		NetworkDescriptor: networkDescriptor,
+		ProphecyID:        prophecyID,
 	}, nil
 }
 

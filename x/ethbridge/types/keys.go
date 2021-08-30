@@ -21,4 +21,5 @@ var (
 	PeggyTokenKeyPrefix                = []byte{0x00}
 	CrossChainFeeReceiverAccountPrefix = []byte{0x01}
 	GlobalNoncePrefix                  = []byte{0x02}
+	EthereumLockBurnNoncePrefix        = []byte{0x03}
 )

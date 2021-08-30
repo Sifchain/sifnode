@@ -136,22 +136,22 @@ func (m *QueryEthProphecyResponse) GetClaimValidators() []string {
 }
 
 // Denom needed to request metadata for token
-type TokenMetadataRequest struct {
+type TokenMetadataSearchRequest struct {
 	Denom string `protobuf:"bytes,1,opt,name=denom,proto3" json:"denom,omitempty" yaml:"token_denom"`
 }
 
-func (m *TokenMetadataRequest) Reset()         { *m = TokenMetadataRequest{} }
-func (m *TokenMetadataRequest) String() string { return proto.CompactTextString(m) }
-func (*TokenMetadataRequest) ProtoMessage()    {}
-func (*TokenMetadataRequest) Descriptor() ([]byte, []int) {
+func (m *TokenMetadataSearchRequest) Reset()         { *m = TokenMetadataSearchRequest{} }
+func (m *TokenMetadataSearchRequest) String() string { return proto.CompactTextString(m) }
+func (*TokenMetadataSearchRequest) ProtoMessage()    {}
+func (*TokenMetadataSearchRequest) Descriptor() ([]byte, []int) {
 	return fileDescriptor_7077edcf9f792b78, []int{2}
 }
-func (m *TokenMetadataRequest) XXX_Unmarshal(b []byte) error {
+func (m *TokenMetadataSearchRequest) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *TokenMetadataRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *TokenMetadataSearchRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_TokenMetadataRequest.Marshal(b, m, deterministic)
+		return xxx_messageInfo_TokenMetadataSearchRequest.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -161,19 +161,19 @@ func (m *TokenMetadataRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte
 		return b[:n], nil
 	}
 }
-func (m *TokenMetadataRequest) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_TokenMetadataRequest.Merge(m, src)
+func (m *TokenMetadataSearchRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_TokenMetadataSearchRequest.Merge(m, src)
 }
-func (m *TokenMetadataRequest) XXX_Size() int {
+func (m *TokenMetadataSearchRequest) XXX_Size() int {
 	return m.Size()
 }
-func (m *TokenMetadataRequest) XXX_DiscardUnknown() {
-	xxx_messageInfo_TokenMetadataRequest.DiscardUnknown(m)
+func (m *TokenMetadataSearchRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_TokenMetadataSearchRequest.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_TokenMetadataRequest proto.InternalMessageInfo
+var xxx_messageInfo_TokenMetadataSearchRequest proto.InternalMessageInfo
 
-func (m *TokenMetadataRequest) GetDenom() string {
+func (m *TokenMetadataSearchRequest) GetDenom() string {
 	if m != nil {
 		return m.Denom
 	}
@@ -181,22 +181,22 @@ func (m *TokenMetadataRequest) GetDenom() string {
 }
 
 // Message returned from a TokenMetadata Response
-type TokenMetadataResponse struct {
+type TokenMetadataSearchResponse struct {
 	Metadata *TokenMetadata `protobuf:"bytes,1,opt,name=metadata,proto3" json:"metadata,omitempty" yaml:"metadata"`
 }
 
-func (m *TokenMetadataResponse) Reset()         { *m = TokenMetadataResponse{} }
-func (m *TokenMetadataResponse) String() string { return proto.CompactTextString(m) }
-func (*TokenMetadataResponse) ProtoMessage()    {}
-func (*TokenMetadataResponse) Descriptor() ([]byte, []int) {
+func (m *TokenMetadataSearchResponse) Reset()         { *m = TokenMetadataSearchResponse{} }
+func (m *TokenMetadataSearchResponse) String() string { return proto.CompactTextString(m) }
+func (*TokenMetadataSearchResponse) ProtoMessage()    {}
+func (*TokenMetadataSearchResponse) Descriptor() ([]byte, []int) {
 	return fileDescriptor_7077edcf9f792b78, []int{3}
 }
-func (m *TokenMetadataResponse) XXX_Unmarshal(b []byte) error {
+func (m *TokenMetadataSearchResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *TokenMetadataResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *TokenMetadataSearchResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_TokenMetadataResponse.Marshal(b, m, deterministic)
+		return xxx_messageInfo_TokenMetadataSearchResponse.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -206,19 +206,19 @@ func (m *TokenMetadataResponse) XXX_Marshal(b []byte, deterministic bool) ([]byt
 		return b[:n], nil
 	}
 }
-func (m *TokenMetadataResponse) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_TokenMetadataResponse.Merge(m, src)
+func (m *TokenMetadataSearchResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_TokenMetadataSearchResponse.Merge(m, src)
 }
-func (m *TokenMetadataResponse) XXX_Size() int {
+func (m *TokenMetadataSearchResponse) XXX_Size() int {
 	return m.Size()
 }
-func (m *TokenMetadataResponse) XXX_DiscardUnknown() {
-	xxx_messageInfo_TokenMetadataResponse.DiscardUnknown(m)
+func (m *TokenMetadataSearchResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_TokenMetadataSearchResponse.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_TokenMetadataResponse proto.InternalMessageInfo
+var xxx_messageInfo_TokenMetadataSearchResponse proto.InternalMessageInfo
 
-func (m *TokenMetadataResponse) GetMetadata() *TokenMetadata {
+func (m *TokenMetadataSearchResponse) GetMetadata() *TokenMetadata {
 	if m != nil {
 		return m.Metadata
 	}
@@ -315,55 +315,163 @@ func (m *QueryCrosschainFeeConfigResponse) GetCrosschainFeeConfig() *types.Cross
 	return nil
 }
 
+// ProphciesCompletedQueryRequest payload for ProphciesCompletedQueryRequest rpc
+// query
+type ProphciesCompletedQueryRequest struct {
+	NetworkDescriptor types.NetworkDescriptor `protobuf:"varint,1,opt,name=network_descriptor,json=networkDescriptor,proto3,enum=sifnode.oracle.v1.NetworkDescriptor" json:"network_descriptor,omitempty"`
+	GlobalNonce       uint64                  `protobuf:"varint,2,opt,name=global_nonce,json=globalNonce,proto3" json:"global_nonce,omitempty"`
+}
+
+func (m *ProphciesCompletedQueryRequest) Reset()         { *m = ProphciesCompletedQueryRequest{} }
+func (m *ProphciesCompletedQueryRequest) String() string { return proto.CompactTextString(m) }
+func (*ProphciesCompletedQueryRequest) ProtoMessage()    {}
+func (*ProphciesCompletedQueryRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_7077edcf9f792b78, []int{6}
+}
+func (m *ProphciesCompletedQueryRequest) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *ProphciesCompletedQueryRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_ProphciesCompletedQueryRequest.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *ProphciesCompletedQueryRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_ProphciesCompletedQueryRequest.Merge(m, src)
+}
+func (m *ProphciesCompletedQueryRequest) XXX_Size() int {
+	return m.Size()
+}
+func (m *ProphciesCompletedQueryRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_ProphciesCompletedQueryRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_ProphciesCompletedQueryRequest proto.InternalMessageInfo
+
+func (m *ProphciesCompletedQueryRequest) GetNetworkDescriptor() types.NetworkDescriptor {
+	if m != nil {
+		return m.NetworkDescriptor
+	}
+	return types.NetworkDescriptor_NETWORK_DESCRIPTOR_UNSPECIFIED
+}
+
+func (m *ProphciesCompletedQueryRequest) GetGlobalNonce() uint64 {
+	if m != nil {
+		return m.GlobalNonce
+	}
+	return 0
+}
+
+// QueryCrosschainFeeConfigResponse payload for ProphciesCompletedQueryResponse
+// rpc query response
+type ProphciesCompletedQueryResponse struct {
+	ProphecyInfo []*types.ProphecyInfo `protobuf:"bytes,1,rep,name=prophecy_info,json=prophecyInfo,proto3" json:"prophecy_info,omitempty"`
+}
+
+func (m *ProphciesCompletedQueryResponse) Reset()         { *m = ProphciesCompletedQueryResponse{} }
+func (m *ProphciesCompletedQueryResponse) String() string { return proto.CompactTextString(m) }
+func (*ProphciesCompletedQueryResponse) ProtoMessage()    {}
+func (*ProphciesCompletedQueryResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_7077edcf9f792b78, []int{7}
+}
+func (m *ProphciesCompletedQueryResponse) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *ProphciesCompletedQueryResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_ProphciesCompletedQueryResponse.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *ProphciesCompletedQueryResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_ProphciesCompletedQueryResponse.Merge(m, src)
+}
+func (m *ProphciesCompletedQueryResponse) XXX_Size() int {
+	return m.Size()
+}
+func (m *ProphciesCompletedQueryResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_ProphciesCompletedQueryResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_ProphciesCompletedQueryResponse proto.InternalMessageInfo
+
+func (m *ProphciesCompletedQueryResponse) GetProphecyInfo() []*types.ProphecyInfo {
+	if m != nil {
+		return m.ProphecyInfo
+	}
+	return nil
+}
+
 func init() {
 	proto.RegisterType((*QueryEthProphecyRequest)(nil), "sifnode.ethbridge.v1.QueryEthProphecyRequest")
 	proto.RegisterType((*QueryEthProphecyResponse)(nil), "sifnode.ethbridge.v1.QueryEthProphecyResponse")
-	proto.RegisterType((*TokenMetadataRequest)(nil), "sifnode.ethbridge.v1.TokenMetadataRequest")
-	proto.RegisterType((*TokenMetadataResponse)(nil), "sifnode.ethbridge.v1.TokenMetadataResponse")
+	proto.RegisterType((*TokenMetadataSearchRequest)(nil), "sifnode.ethbridge.v1.TokenMetadataSearchRequest")
+	proto.RegisterType((*TokenMetadataSearchResponse)(nil), "sifnode.ethbridge.v1.TokenMetadataSearchResponse")
 	proto.RegisterType((*QueryCrosschainFeeConfigRequest)(nil), "sifnode.ethbridge.v1.QueryCrosschainFeeConfigRequest")
 	proto.RegisterType((*QueryCrosschainFeeConfigResponse)(nil), "sifnode.ethbridge.v1.QueryCrosschainFeeConfigResponse")
+	proto.RegisterType((*ProphciesCompletedQueryRequest)(nil), "sifnode.ethbridge.v1.ProphciesCompletedQueryRequest")
+	proto.RegisterType((*ProphciesCompletedQueryResponse)(nil), "sifnode.ethbridge.v1.ProphciesCompletedQueryResponse")
 }
 
 func init() { proto.RegisterFile("sifnode/ethbridge/v1/query.proto", fileDescriptor_7077edcf9f792b78) }
 
 var fileDescriptor_7077edcf9f792b78 = []byte{
-	// 564 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x94, 0x94, 0xc1, 0x6e, 0xd3, 0x4c,
-	0x10, 0xc7, 0xe3, 0x56, 0x8d, 0xbe, 0x6e, 0x3e, 0xb5, 0xb0, 0x49, 0x21, 0x8a, 0x54, 0x27, 0x32,
-	0x08, 0x85, 0x42, 0x6d, 0x25, 0xa8, 0x1c, 0x7a, 0x4c, 0x0a, 0x88, 0x03, 0x08, 0x9c, 0x88, 0x43,
-	0x2f, 0x96, 0xb3, 0x9e, 0xc4, 0x56, 0x63, 0xaf, 0xbb, 0xbb, 0x31, 0x8d, 0x90, 0x10, 0x27, 0xce,
-	0xbc, 0x00, 0xef, 0xc3, 0xb1, 0x47, 0x4e, 0x15, 0x4a, 0xde, 0xa0, 0x4f, 0x80, 0xb2, 0xb6, 0xa3,
-	0x36, 0x71, 0x20, 0xdc, 0x56, 0x33, 0xbf, 0x99, 0xf9, 0xcf, 0xec, 0x68, 0x50, 0x8d, 0x7b, 0xfd,
-	0x80, 0x3a, 0x60, 0x80, 0x70, 0x7b, 0xcc, 0x73, 0x06, 0x60, 0x44, 0x0d, 0xe3, 0x7c, 0x04, 0x6c,
-	0xac, 0x87, 0x8c, 0x0a, 0x8a, 0x4b, 0x09, 0xa1, 0xcf, 0x09, 0x3d, 0x6a, 0x54, 0x4a, 0x03, 0x3a,
-	0xa0, 0x12, 0x30, 0x66, 0xaf, 0x98, 0xad, 0x64, 0x67, 0x13, 0xe3, 0x10, 0x78, 0x42, 0xec, 0xa7,
-	0x04, 0x65, 0x36, 0x19, 0x2e, 0xb9, 0x0f, 0x96, 0xdd, 0x01, 0x88, 0x8f, 0x94, 0x9d, 0x59, 0x0e,
-	0x70, 0xc2, 0xbc, 0x50, 0x50, 0x16, 0xb3, 0xda, 0x31, 0xba, 0xff, 0x7e, 0xa6, 0xf3, 0x85, 0x70,
-	0xdf, 0x31, 0x1a, 0xba, 0x40, 0xc6, 0x26, 0x9c, 0x8f, 0x80, 0x0b, 0x5c, 0x45, 0x85, 0x30, 0x31,
-	0x59, 0x9e, 0x53, 0x56, 0x6a, 0x4a, 0xfd, 0x7f, 0x13, 0xa5, 0xa6, 0xd7, 0x8e, 0xf6, 0x5d, 0x41,
-	0xe5, 0xe5, 0x60, 0x1e, 0xd2, 0x80, 0xc3, 0x5f, 0xa3, 0xf1, 0x11, 0xca, 0x73, 0x61, 0x8b, 0x11,
-	0x2f, 0x6f, 0xd4, 0x94, 0xfa, 0x4e, 0x73, 0x5f, 0x4f, 0x67, 0x14, 0xcb, 0xd6, 0xa3, 0x86, 0xde,
-	0x91, 0x40, 0x17, 0x2e, 0x84, 0x99, 0xc0, 0xf8, 0x31, 0xba, 0x43, 0x86, 0xb6, 0xe7, 0x5b, 0x91,
-	0x3d, 0xf4, 0x1c, 0x5b, 0x50, 0xc6, 0xcb, 0x9b, 0xb5, 0xcd, 0xfa, 0xb6, 0xb9, 0x2b, 0xed, 0x1f,
-	0xe6, 0x66, 0xed, 0x04, 0x95, 0xba, 0xf4, 0x0c, 0x82, 0x37, 0x20, 0x6c, 0xc7, 0x16, 0x76, 0xda,
-	0xd8, 0x53, 0xb4, 0xe5, 0x40, 0x40, 0x7d, 0x29, 0x6a, 0xbb, 0x75, 0xef, 0xfa, 0xaa, 0x8a, 0xc7,
-	0xb6, 0x3f, 0x3c, 0xd6, 0xc4, 0x0c, 0xb7, 0xa4, 0x53, 0x33, 0x63, 0x48, 0xf3, 0xd1, 0xde, 0x42,
-	0x96, 0xa4, 0xc3, 0x2e, 0xfa, 0xcf, 0x4f, 0x6c, 0x32, 0x53, 0xa1, 0xf9, 0x40, 0xcf, 0xfa, 0x66,
-	0xfd, 0x56, 0x78, 0xab, 0x78, 0x7d, 0x55, 0xdd, 0x8d, 0xcb, 0xa5, 0xe1, 0x9a, 0x39, 0xcf, 0xa4,
-	0x45, 0xa8, 0x2a, 0x67, 0xda, 0x66, 0x94, 0x73, 0xe2, 0xda, 0x5e, 0xf0, 0x12, 0xa0, 0x4d, 0x83,
-	0xbe, 0x37, 0x48, 0xf5, 0x77, 0x10, 0x5e, 0xfe, 0x4f, 0x29, 0x61, 0xa7, 0xf9, 0x30, 0x63, 0x8a,
-	0x6f, 0x63, 0xf8, 0x64, 0xce, 0x9a, 0x77, 0x83, 0x45, 0x93, 0xf6, 0x19, 0xd5, 0x56, 0xd7, 0x4d,
-	0x3a, 0x3e, 0x45, 0x7b, 0x64, 0xee, 0xb6, 0xfa, 0x00, 0x16, 0x91, 0x40, 0xd2, 0xfe, 0xa3, 0x8c,
-	0xda, 0x32, 0x5d, 0xfb, 0x76, 0xba, 0x22, 0x59, 0xae, 0xd1, 0xfc, 0xb2, 0x81, 0xb6, 0xa4, 0x00,
-	0x1c, 0xa0, 0xc2, 0x8d, 0x85, 0xc2, 0x87, 0xd9, 0x43, 0x5d, 0xb1, 0xb5, 0x15, 0x7d, 0x5d, 0x3c,
-	0xee, 0x49, 0xcb, 0xe1, 0xaf, 0x0a, 0x2a, 0x66, 0x74, 0x8d, 0x8f, 0xfe, 0x90, 0x69, 0xf5, 0xef,
-	0x54, 0x9e, 0xff, 0x6b, 0x58, 0x2a, 0xa4, 0xf9, 0x69, 0x61, 0x5f, 0x3b, 0xc0, 0x22, 0x8f, 0x00,
-	0x26, 0x28, 0xdf, 0x01, 0x9b, 0x11, 0x17, 0x1f, 0xac, 0xb1, 0x60, 0xa9, 0x8e, 0x27, 0x6b, 0xb1,
-	0x69, 0xf1, 0xd6, 0xab, 0x1f, 0x13, 0x55, 0xb9, 0x9c, 0xa8, 0xca, 0xaf, 0x89, 0xaa, 0x7c, 0x9b,
-	0xaa, 0xb9, 0xcb, 0xa9, 0x9a, 0xfb, 0x39, 0x55, 0x73, 0xa7, 0x87, 0x03, 0x4f, 0xb8, 0xa3, 0x9e,
-	0x4e, 0xa8, 0x6f, 0x74, 0xbc, 0xbe, 0x94, 0x6f, 0xa4, 0x27, 0xe6, 0xe2, 0xc6, 0x95, 0x92, 0x37,
-	0xa8, 0x97, 0x97, 0x87, 0xe5, 0xd9, 0xef, 0x00, 0x00, 0x00, 0xff, 0xff, 0xa0, 0xd8, 0xae, 0x15,
-	0x15, 0x05, 0x00, 0x00,
+	// 669 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xb4, 0x55, 0xcf, 0x6e, 0xd3, 0x4e,
+	0x10, 0x8e, 0xdb, 0x5f, 0xab, 0x5f, 0x37, 0xa5, 0x85, 0x6d, 0x81, 0xc8, 0xa8, 0x4e, 0x30, 0x08,
+	0x05, 0x44, 0x1d, 0x12, 0x28, 0x87, 0x1e, 0x9b, 0x02, 0x2a, 0x12, 0x15, 0x38, 0x15, 0x87, 0x5e,
+	0x2c, 0x67, 0x3d, 0x71, 0xac, 0x3a, 0xbb, 0xae, 0x77, 0xe3, 0x36, 0x17, 0xc4, 0x09, 0xae, 0x1c,
+	0xe1, 0xc0, 0xfb, 0x70, 0xec, 0x91, 0x53, 0x85, 0xda, 0x37, 0xe8, 0x13, 0xa0, 0xac, 0xff, 0xd0,
+	0x36, 0x4e, 0x69, 0x0f, 0xdc, 0xec, 0x99, 0x6f, 0xbe, 0xf9, 0x66, 0x76, 0x46, 0x83, 0x2a, 0xdc,
+	0xeb, 0x50, 0xe6, 0x40, 0x0d, 0x44, 0xb7, 0x1d, 0x7a, 0x8e, 0x0b, 0xb5, 0xa8, 0x5e, 0xdb, 0xed,
+	0x43, 0x38, 0x30, 0x82, 0x90, 0x09, 0x86, 0x17, 0x13, 0x84, 0x91, 0x21, 0x8c, 0xa8, 0xae, 0x2e,
+	0xba, 0xcc, 0x65, 0x12, 0x50, 0x1b, 0x7e, 0xc5, 0x58, 0x35, 0x9f, 0x4d, 0x0c, 0x02, 0xe0, 0x09,
+	0x62, 0x29, 0x45, 0xb0, 0xd0, 0x26, 0xfe, 0x88, 0xfb, 0xd1, 0xa8, 0x9b, 0x82, 0xd8, 0x63, 0xe1,
+	0x8e, 0xe5, 0x00, 0x27, 0xa1, 0x17, 0x08, 0x16, 0xc6, 0x58, 0x7d, 0x15, 0xdd, 0x7e, 0x37, 0xd4,
+	0xf9, 0x42, 0x74, 0xdf, 0x86, 0x2c, 0xe8, 0x02, 0x19, 0x98, 0xb0, 0xdb, 0x07, 0x2e, 0x70, 0x19,
+	0x15, 0x83, 0xc4, 0x64, 0x79, 0x4e, 0x49, 0xa9, 0x28, 0xd5, 0x59, 0x13, 0xa5, 0xa6, 0x0d, 0x47,
+	0xff, 0xae, 0xa0, 0xd2, 0x68, 0x30, 0x0f, 0x18, 0xe5, 0xf0, 0xd7, 0x68, 0xbc, 0x82, 0xa6, 0xb9,
+	0xb0, 0x45, 0x9f, 0x97, 0x26, 0x2a, 0x4a, 0x75, 0xae, 0xb1, 0x64, 0xa4, 0x3d, 0x8a, 0x65, 0x1b,
+	0x51, 0xdd, 0x68, 0x49, 0xc0, 0x16, 0xec, 0x0b, 0x33, 0x01, 0xe3, 0x87, 0xe8, 0x3a, 0xf1, 0x6d,
+	0xaf, 0x67, 0x45, 0xb6, 0xef, 0x39, 0xb6, 0x60, 0x21, 0x2f, 0x4d, 0x56, 0x26, 0xab, 0x33, 0xe6,
+	0xbc, 0xb4, 0xbf, 0xcf, 0xcc, 0xfa, 0x6b, 0xa4, 0x6e, 0xb1, 0x1d, 0xa0, 0x6f, 0x40, 0xd8, 0x8e,
+	0x2d, 0xec, 0x16, 0xd8, 0x21, 0xe9, 0xa6, 0xe5, 0x3d, 0x46, 0x53, 0x0e, 0x50, 0xd6, 0x93, 0xd2,
+	0x66, 0xd6, 0x6e, 0x9d, 0x1c, 0x96, 0xf1, 0xc0, 0xee, 0xf9, 0xab, 0xba, 0x18, 0x06, 0x59, 0xd2,
+	0xa9, 0x9b, 0x31, 0x48, 0xe7, 0xe8, 0x4e, 0x2e, 0x57, 0x52, 0xed, 0x16, 0xfa, 0xbf, 0x97, 0x78,
+	0x24, 0x5f, 0xb1, 0x71, 0xcf, 0xc8, 0x7b, 0x72, 0xe3, 0x0c, 0xc9, 0xda, 0xc2, 0xc9, 0x61, 0x79,
+	0x3e, 0x4e, 0x9a, 0x86, 0xeb, 0x66, 0xc6, 0xa4, 0x47, 0xa8, 0x2c, 0xfb, 0xdb, 0x0c, 0x19, 0xe7,
+	0xa4, 0x6b, 0x7b, 0xf4, 0x25, 0x40, 0x93, 0xd1, 0x8e, 0xe7, 0xa6, 0x55, 0xb4, 0x10, 0x1e, 0x7d,
+	0x5b, 0x29, 0x61, 0xae, 0x71, 0x3f, 0xa7, 0xa3, 0x9b, 0x31, 0x78, 0x3d, 0xc3, 0x9a, 0x37, 0xe8,
+	0x79, 0x93, 0xfe, 0x01, 0x55, 0xc6, 0xe7, 0x4d, 0x2a, 0xde, 0x46, 0x37, 0x49, 0xe6, 0xb6, 0x3a,
+	0x00, 0x16, 0x91, 0x80, 0xa4, 0xfc, 0x07, 0x39, 0xb9, 0x25, 0x5d, 0xf3, 0x2c, 0xdd, 0x02, 0x19,
+	0xcd, 0xa1, 0x7f, 0x55, 0x90, 0x26, 0x07, 0x8a, 0x78, 0xc0, 0x9b, 0xac, 0x17, 0xf8, 0x20, 0xc0,
+	0x91, 0x92, 0xfe, 0x65, 0xdd, 0xf8, 0x2e, 0x9a, 0x75, 0x7d, 0xd6, 0xb6, 0x7d, 0x8b, 0x32, 0x4a,
+	0x40, 0x0e, 0xe6, 0x7f, 0x66, 0x31, 0xb6, 0x6d, 0x0e, 0x4d, 0xba, 0x8b, 0xca, 0x63, 0x95, 0x25,
+	0x9d, 0x59, 0x47, 0xd7, 0xfe, 0x4c, 0x3e, 0xed, 0xb0, 0x92, 0x52, 0x99, 0xac, 0x16, 0x1b, 0xe5,
+	0x1c, 0x55, 0xe9, 0xd6, 0x6c, 0xd0, 0x0e, 0x33, 0x67, 0x83, 0x53, 0x7f, 0x8d, 0x8f, 0x13, 0x68,
+	0x4a, 0xf2, 0x62, 0x8a, 0x8a, 0xa7, 0x16, 0x0c, 0x2f, 0xe7, 0x0f, 0xd6, 0x98, 0x2d, 0x56, 0x8d,
+	0xcb, 0xc2, 0x63, 0xf5, 0x7a, 0x01, 0x7f, 0x52, 0xd0, 0x42, 0xce, 0xcb, 0xe3, 0x95, 0x0b, 0x98,
+	0xc6, 0x4f, 0xa8, 0xfa, 0xfc, 0xaa, 0x61, 0xa9, 0x90, 0xc6, 0x67, 0x05, 0x2d, 0x9e, 0x5b, 0xba,
+	0x30, 0xf2, 0x08, 0x60, 0x86, 0xa6, 0xe3, 0xfd, 0xc3, 0x4f, 0x2e, 0xb1, 0x65, 0x67, 0xd6, 0x5e,
+	0xad, 0x5f, 0x21, 0x22, 0x53, 0xf2, 0x6d, 0xfc, 0x40, 0xa6, 0x9a, 0xf6, 0x32, 0x4d, 0xcf, 0xf2,
+	0x33, 0x5c, 0x3c, 0xd0, 0xea, 0xca, 0x15, 0xa3, 0x52, 0x6d, 0x6b, 0xaf, 0x7e, 0x1c, 0x69, 0xca,
+	0xc1, 0x91, 0xa6, 0xfc, 0x3a, 0xd2, 0x94, 0x2f, 0xc7, 0x5a, 0xe1, 0xe0, 0x58, 0x2b, 0xfc, 0x3c,
+	0xd6, 0x0a, 0xdb, 0xcb, 0xae, 0x27, 0xba, 0xfd, 0xb6, 0x41, 0x58, 0xaf, 0xd6, 0xf2, 0x3a, 0xb2,
+	0xcf, 0xb5, 0xf4, 0x36, 0xec, 0x9f, 0x3a, 0x2f, 0xf2, 0x78, 0xb4, 0xa7, 0xe5, 0x45, 0x78, 0xfa,
+	0x3b, 0x00, 0x00, 0xff, 0xff, 0x03, 0xcd, 0x6e, 0x84, 0xce, 0x06, 0x00, 0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -491,7 +599,7 @@ var _Query_serviceDesc = grpc.ServiceDesc{
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
 type TokenMetadataServiceClient interface {
 	// Metadata Query Service to fetch token metadata from token denom
-	Search(ctx context.Context, in *TokenMetadataRequest, opts ...grpc.CallOption) (*TokenMetadataResponse, error)
+	Search(ctx context.Context, in *TokenMetadataSearchRequest, opts ...grpc.CallOption) (*TokenMetadataSearchResponse, error)
 }
 
 type tokenMetadataServiceClient struct {
@@ -502,8 +610,8 @@ func NewTokenMetadataServiceClient(cc grpc1.ClientConn) TokenMetadataServiceClie
 	return &tokenMetadataServiceClient{cc}
 }
 
-func (c *tokenMetadataServiceClient) Search(ctx context.Context, in *TokenMetadataRequest, opts ...grpc.CallOption) (*TokenMetadataResponse, error) {
-	out := new(TokenMetadataResponse)
+func (c *tokenMetadataServiceClient) Search(ctx context.Context, in *TokenMetadataSearchRequest, opts ...grpc.CallOption) (*TokenMetadataSearchResponse, error) {
+	out := new(TokenMetadataSearchResponse)
 	err := c.cc.Invoke(ctx, "/sifnode.ethbridge.v1.TokenMetadataService/Search", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -514,14 +622,14 @@ func (c *tokenMetadataServiceClient) Search(ctx context.Context, in *TokenMetada
 // TokenMetadataServiceServer is the server API for TokenMetadataService service.
 type TokenMetadataServiceServer interface {
 	// Metadata Query Service to fetch token metadata from token denom
-	Search(context.Context, *TokenMetadataRequest) (*TokenMetadataResponse, error)
+	Search(context.Context, *TokenMetadataSearchRequest) (*TokenMetadataSearchResponse, error)
 }
 
 // UnimplementedTokenMetadataServiceServer can be embedded to have forward compatible implementations.
 type UnimplementedTokenMetadataServiceServer struct {
 }
 
-func (*UnimplementedTokenMetadataServiceServer) Search(ctx context.Context, req *TokenMetadataRequest) (*TokenMetadataResponse, error) {
+func (*UnimplementedTokenMetadataServiceServer) Search(ctx context.Context, req *TokenMetadataSearchRequest) (*TokenMetadataSearchResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Search not implemented")
 }
 
@@ -530,7 +638,7 @@ func RegisterTokenMetadataServiceServer(s grpc1.Server, srv TokenMetadataService
 }
 
 func _TokenMetadataService_Search_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(TokenMetadataRequest)
+	in := new(TokenMetadataSearchRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -542,7 +650,7 @@ func _TokenMetadataService_Search_Handler(srv interface{}, ctx context.Context, 
 		FullMethod: "/sifnode.ethbridge.v1.TokenMetadataService/Search",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(TokenMetadataServiceServer).Search(ctx, req.(*TokenMetadataRequest))
+		return srv.(TokenMetadataServiceServer).Search(ctx, req.(*TokenMetadataSearchRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -554,6 +662,80 @@ var _TokenMetadataService_serviceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Search",
 			Handler:    _TokenMetadataService_Search_Handler,
+		},
+	},
+	Streams:  []grpc.StreamDesc{},
+	Metadata: "sifnode/ethbridge/v1/query.proto",
+}
+
+// ProphciesCompletedQueryServiceClient is the client API for ProphciesCompletedQueryService service.
+//
+// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
+type ProphciesCompletedQueryServiceClient interface {
+	// Prophecies Completed Query Service to fetch prophecy info from global nonce
+	Search(ctx context.Context, in *ProphciesCompletedQueryRequest, opts ...grpc.CallOption) (*ProphciesCompletedQueryResponse, error)
+}
+
+type prophciesCompletedQueryServiceClient struct {
+	cc grpc1.ClientConn
+}
+
+func NewProphciesCompletedQueryServiceClient(cc grpc1.ClientConn) ProphciesCompletedQueryServiceClient {
+	return &prophciesCompletedQueryServiceClient{cc}
+}
+
+func (c *prophciesCompletedQueryServiceClient) Search(ctx context.Context, in *ProphciesCompletedQueryRequest, opts ...grpc.CallOption) (*ProphciesCompletedQueryResponse, error) {
+	out := new(ProphciesCompletedQueryResponse)
+	err := c.cc.Invoke(ctx, "/sifnode.ethbridge.v1.ProphciesCompletedQueryService/Search", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+// ProphciesCompletedQueryServiceServer is the server API for ProphciesCompletedQueryService service.
+type ProphciesCompletedQueryServiceServer interface {
+	// Prophecies Completed Query Service to fetch prophecy info from global nonce
+	Search(context.Context, *ProphciesCompletedQueryRequest) (*ProphciesCompletedQueryResponse, error)
+}
+
+// UnimplementedProphciesCompletedQueryServiceServer can be embedded to have forward compatible implementations.
+type UnimplementedProphciesCompletedQueryServiceServer struct {
+}
+
+func (*UnimplementedProphciesCompletedQueryServiceServer) Search(ctx context.Context, req *ProphciesCompletedQueryRequest) (*ProphciesCompletedQueryResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Search not implemented")
+}
+
+func RegisterProphciesCompletedQueryServiceServer(s grpc1.Server, srv ProphciesCompletedQueryServiceServer) {
+	s.RegisterService(&_ProphciesCompletedQueryService_serviceDesc, srv)
+}
+
+func _ProphciesCompletedQueryService_Search_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ProphciesCompletedQueryRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ProphciesCompletedQueryServiceServer).Search(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/sifnode.ethbridge.v1.ProphciesCompletedQueryService/Search",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ProphciesCompletedQueryServiceServer).Search(ctx, req.(*ProphciesCompletedQueryRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+var _ProphciesCompletedQueryService_serviceDesc = grpc.ServiceDesc{
+	ServiceName: "sifnode.ethbridge.v1.ProphciesCompletedQueryService",
+	HandlerType: (*ProphciesCompletedQueryServiceServer)(nil),
+	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "Search",
+			Handler:    _ProphciesCompletedQueryService_Search_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
@@ -634,7 +816,7 @@ func (m *QueryEthProphecyResponse) MarshalToSizedBuffer(dAtA []byte) (int, error
 	return len(dAtA) - i, nil
 }
 
-func (m *TokenMetadataRequest) Marshal() (dAtA []byte, err error) {
+func (m *TokenMetadataSearchRequest) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -644,12 +826,12 @@ func (m *TokenMetadataRequest) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *TokenMetadataRequest) MarshalTo(dAtA []byte) (int, error) {
+func (m *TokenMetadataSearchRequest) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *TokenMetadataRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *TokenMetadataSearchRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
@@ -664,7 +846,7 @@ func (m *TokenMetadataRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	return len(dAtA) - i, nil
 }
 
-func (m *TokenMetadataResponse) Marshal() (dAtA []byte, err error) {
+func (m *TokenMetadataSearchResponse) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -674,12 +856,12 @@ func (m *TokenMetadataResponse) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *TokenMetadataResponse) MarshalTo(dAtA []byte) (int, error) {
+func (m *TokenMetadataSearchResponse) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *TokenMetadataResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *TokenMetadataSearchResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
@@ -762,6 +944,76 @@ func (m *QueryCrosschainFeeConfigResponse) MarshalToSizedBuffer(dAtA []byte) (in
 	return len(dAtA) - i, nil
 }
 
+func (m *ProphciesCompletedQueryRequest) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *ProphciesCompletedQueryRequest) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *ProphciesCompletedQueryRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.GlobalNonce != 0 {
+		i = encodeVarintQuery(dAtA, i, uint64(m.GlobalNonce))
+		i--
+		dAtA[i] = 0x10
+	}
+	if m.NetworkDescriptor != 0 {
+		i = encodeVarintQuery(dAtA, i, uint64(m.NetworkDescriptor))
+		i--
+		dAtA[i] = 0x8
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *ProphciesCompletedQueryResponse) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *ProphciesCompletedQueryResponse) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *ProphciesCompletedQueryResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.ProphecyInfo) > 0 {
+		for iNdEx := len(m.ProphecyInfo) - 1; iNdEx >= 0; iNdEx-- {
+			{
+				size, err := m.ProphecyInfo[iNdEx].MarshalToSizedBuffer(dAtA[:i])
+				if err != nil {
+					return 0, err
+				}
+				i -= size
+				i = encodeVarintQuery(dAtA, i, uint64(size))
+			}
+			i--
+			dAtA[i] = 0xa
+		}
+	}
+	return len(dAtA) - i, nil
+}
+
 func encodeVarintQuery(dAtA []byte, offset int, v uint64) int {
 	offset -= sovQuery(v)
 	base := offset
@@ -808,7 +1060,7 @@ func (m *QueryEthProphecyResponse) Size() (n int) {
 	return n
 }
 
-func (m *TokenMetadataRequest) Size() (n int) {
+func (m *TokenMetadataSearchRequest) Size() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -821,7 +1073,7 @@ func (m *TokenMetadataRequest) Size() (n int) {
 	return n
 }
 
-func (m *TokenMetadataResponse) Size() (n int) {
+func (m *TokenMetadataSearchResponse) Size() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -855,6 +1107,36 @@ func (m *QueryCrosschainFeeConfigResponse) Size() (n int) {
 	if m.CrosschainFeeConfig != nil {
 		l = m.CrosschainFeeConfig.Size()
 		n += 1 + l + sovQuery(uint64(l))
+	}
+	return n
+}
+
+func (m *ProphciesCompletedQueryRequest) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.NetworkDescriptor != 0 {
+		n += 1 + sovQuery(uint64(m.NetworkDescriptor))
+	}
+	if m.GlobalNonce != 0 {
+		n += 1 + sovQuery(uint64(m.GlobalNonce))
+	}
+	return n
+}
+
+func (m *ProphciesCompletedQueryResponse) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if len(m.ProphecyInfo) > 0 {
+		for _, e := range m.ProphecyInfo {
+			l = e.Size()
+			n += 1 + l + sovQuery(uint64(l))
+		}
 	}
 	return n
 }
@@ -1084,7 +1366,7 @@ func (m *QueryEthProphecyResponse) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *TokenMetadataRequest) Unmarshal(dAtA []byte) error {
+func (m *TokenMetadataSearchRequest) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -1107,10 +1389,10 @@ func (m *TokenMetadataRequest) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: TokenMetadataRequest: wiretype end group for non-group")
+			return fmt.Errorf("proto: TokenMetadataSearchRequest: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: TokenMetadataRequest: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: TokenMetadataSearchRequest: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
@@ -1166,7 +1448,7 @@ func (m *TokenMetadataRequest) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *TokenMetadataResponse) Unmarshal(dAtA []byte) error {
+func (m *TokenMetadataSearchResponse) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -1189,10 +1471,10 @@ func (m *TokenMetadataResponse) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: TokenMetadataResponse: wiretype end group for non-group")
+			return fmt.Errorf("proto: TokenMetadataSearchResponse: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: TokenMetadataResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: TokenMetadataSearchResponse: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
@@ -1383,6 +1665,178 @@ func (m *QueryCrosschainFeeConfigResponse) Unmarshal(dAtA []byte) error {
 				m.CrosschainFeeConfig = &types.CrossChainFeeConfig{}
 			}
 			if err := m.CrosschainFeeConfig.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *ProphciesCompletedQueryRequest) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: ProphciesCompletedQueryRequest: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: ProphciesCompletedQueryRequest: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field NetworkDescriptor", wireType)
+			}
+			m.NetworkDescriptor = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.NetworkDescriptor |= types.NetworkDescriptor(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 2:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field GlobalNonce", wireType)
+			}
+			m.GlobalNonce = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.GlobalNonce |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *ProphciesCompletedQueryResponse) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: ProphciesCompletedQueryResponse: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: ProphciesCompletedQueryResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field ProphecyInfo", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.ProphecyInfo = append(m.ProphecyInfo, &types.ProphecyInfo{})
+			if err := m.ProphecyInfo[len(m.ProphecyInfo)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex

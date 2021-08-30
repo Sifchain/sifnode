@@ -42,6 +42,9 @@ message EthBridgeClaim {
   // Token decimals, name and symbol
   // Marked optional because messages sent by the relayer may not be hashed
   string denom_hash = 13 [ (gogoproto.moretags) = "yaml:\"denom_hash\"" ];
+  // Lock burn nonce from bridge bank
+  uint64 ethereum_lock_burn_nonce = 14
+      [ (gogoproto.moretags) = "yaml:\"ethereum_lock_burn_nonce\"" ];
 }
 
 // Coin Metadata Modlue structure for storing
@@ -68,7 +71,4 @@ enum ClaimType {
 }
 
 // GenesisState for ethbridge
-message GenesisState {
-  string crosschain_fee_receive_account = 1;
-  repeated string peggy_tokens = 2;
-}
+message GenesisState { string crosschain_fee_receive_account = 1; }

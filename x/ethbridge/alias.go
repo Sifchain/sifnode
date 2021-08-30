@@ -21,7 +21,6 @@ const (
 
 var (
 	// functions aliases
-
 	NewKeeper                   = keeper.NewKeeper
 	NewQuerier                  = keeper.NewLegacyQuerier
 	NewEthBridgeClaim           = types.NewEthBridgeClaim
@@ -50,6 +49,8 @@ type (
 	MsgUpdateWhiteListValidator           = types.MsgUpdateWhiteListValidator
 	MsgUpdateCrossChainFeeReceiverAccount = types.MsgUpdateCrossChainFeeReceiverAccount
 	MsgRescueCrossChainFee                = types.MsgRescueCrossChainFee
+	MsgSetFeeInfo                         = types.MsgSetFeeInfo
+	MsgSignProphecy                       = types.MsgSignProphecy
 	QueryEthProphecyParams                = types.QueryEthProphecyRequest
 	QueryEthProphecyResponse              = types.QueryEthProphecyResponse
 )

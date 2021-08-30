@@ -1,9 +1,9 @@
 import {inject, injectable, instanceCachingFactory, registry, singleton} from "tsyringe";
-import type {BigNumberish, Contract} from 'ethers';
+import type {Contract} from 'ethers';
 import {BigNumber, ContractFactory} from "ethers";
 import {HardhatRuntimeEnvironment} from "hardhat/types";
 import {EthereumAddress, NotNativeCurrencyAddress} from "../ethereumAddress";
-import {HardhatRuntimeEnvironmentToken, NetworkDescriptorToken,} from "./injectionTokens";
+import {HardhatRuntimeEnvironmentToken, NetworkDescriptorToken} from "./injectionTokens";
 import {SifchainAccounts, SifchainAccountsPromise} from "./sifchainAccounts";
 import {
     BridgeBank,
@@ -14,8 +14,11 @@ import {
     BridgeToken__factory,
     CosmosBridge__factory
 } from "../../build";
+import web3 from "web3";
 
-@injectable()
+const MINTER_ROLE = web3.utils.soliditySha3('MINTER_ROLE');
+
+@singleton()
 export class SifchainContractFactories {
     bridgeBank: Promise<BridgeBank__factory>
     cosmosBridge: Promise<CosmosBridge__factory>
@@ -78,7 +81,7 @@ export class CosmosBridgeProxy {
 }
 
 export function defaultCosmosBridgeArguments(sifchainAccounts: SifchainAccounts, power: number = 100, networkDescriptor: number = 1): CosmosBridgeArguments {
-    const powers = sifchainAccounts.validatatorAccounts.map(x => power)
+    const powers = sifchainAccounts.validatatorAccounts.map(_ => power)
     const threshold = powers.reduce((acc, x) => acc + x)
     return new CosmosBridgeArguments(
         new NotNativeCurrencyAddress(sifchainAccounts.operatorAccount.address),
@@ -135,7 +138,6 @@ export class BridgeBankProxy {
     constructor(
         @inject(HardhatRuntimeEnvironmentToken) h: HardhatRuntimeEnvironment,
         private sifchainContractFactories: SifchainContractFactories,
-        private cof: CosmosBridgeProxy,
         private bridgeBankArguments: BridgeBankArguments,
     ) {
         this.contract = sifchainContractFactories.bridgeBank.then(async bridgeBankFactory => {
@@ -145,6 +147,7 @@ export class BridgeBankProxy {
                 { initializer: 'initialize(address,address,address,address,uint256)' }
             ) as BridgeBank
             await bridgeBankProxy.deployed()
+            const own = await bridgeBankProxy.owner()
             return bridgeBankProxy
         })
     }
@@ -172,24 +175,23 @@ export class BridgeRegistryProxy {
     }
 }
 
-@injectable()
-class RowanContract {
+/**
+ * Deploys a BridgeToken named erowan
+ */
+@singleton()
+export class RowanContract {
     readonly contract: Promise<BridgeToken>
 
     constructor(
         private sifchainContractFactories: SifchainContractFactories,
     ) {
         this.contract = sifchainContractFactories.bridgeToken.then(async bridgeToken => {
-            return await (bridgeToken as BridgeToken__factory).deploy("erowan", "erowan", 18, "cosmosDenomHere") as BridgeToken
+            return await (bridgeToken as BridgeToken__factory).deploy("erowan", "erowan", 18, "cosmosDenom") as BridgeToken
         })
     }
 }
 
-@injectable()
-/**
- * Returns a true when BridgeBank has had a new erowan contract set
- * via addExistingBridgeToken
- */
+@singleton()
 export class BridgeTokenSetup {
     readonly complete: Promise<boolean>
 
@@ -197,10 +199,10 @@ export class BridgeTokenSetup {
         rowan: RowanContract,
         bridgeBankProxy: BridgeBankProxy,
         sifchainAccounts: SifchainAccountsPromise
-
     ) {
         const erowan = await rowan.contract
-        const bridgebank = await bridgeBankProxy.contract
+        const owner = (await sifchainAccounts.accounts).ownerAccount
+        const bridgebank = (await bridgeBankProxy.contract).connect(owner)
         await bridgebank.addExistingBridgeToken(erowan.address)
         await erowan.approve(bridgebank.address, "10000000000000000000")
         const accounts = await sifchainAccounts.accounts

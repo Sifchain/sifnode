@@ -21,13 +21,13 @@ func NewTokenMetadataServer(keeper Keeper) types.TokenMetadataServiceServer {
 	}
 }
 
-func (srv metadataServer) Search(ctx context.Context, req *types.TokenMetadataRequest) (*types.TokenMetadataResponse, error) {
+func (srv metadataServer) Search(ctx context.Context, req *types.TokenMetadataSearchRequest) (*types.TokenMetadataSearchResponse, error) {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 
 	denomHash := req.GetDenom()
-	metadata := srv.Keeper.GetTokenMetadata(sdkCtx, denomHash)
+	metadata, _ := srv.Keeper.GetTokenMetadata(sdkCtx, denomHash)
 
-	res := types.TokenMetadataResponse{
+	res := types.TokenMetadataSearchResponse{
 		Metadata: &metadata,
 	}
 
