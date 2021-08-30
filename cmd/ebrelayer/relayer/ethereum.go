@@ -5,7 +5,6 @@ package relayer
 import (
 	"context"
 	"crypto/ecdsa"
-	"fmt"
 	"log"
 	"math/big"
 	"os"
@@ -27,7 +26,6 @@ import (
 	ctypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/syndtr/goleveldb/leveldb"
-	tmClient "github.com/tendermint/tendermint/rpc/client/http"
 	tmclient "github.com/tendermint/tendermint/rpc/client/http"
 	"go.uber.org/zap"
 
@@ -111,7 +109,7 @@ func (sub EthereumSub) Start(txFactory tx.Factory, completionEvent *sync.WaitGro
 	sub.SugaredLogger.Infow("Started Ethereum websocket with provider:",
 		"Ethereum provider", sub.EthProvider)
 
-	tmClient, err := tmClient.New(sub.TmProvider, "/websocket")
+	tmClient, err := tmclient.New(sub.TmProvider, "/websocket")
 	if err != nil {
 		sub.SugaredLogger.Errorw("failed to initialize a sifchain client.",
 			errorMessageKey, err.Error())
@@ -151,30 +149,40 @@ func (sub EthereumSub) Start(txFactory tx.Factory, completionEvent *sync.WaitGro
 		case <-quit:
 			return
 		case <-t.C:
-			// get current block height
-			currentBlock, err := ethClient.HeaderByNumber(context.Background(), nil)
-			if err != nil {
-				return
-			}
-			currentBlockHeight := currentBlock.Number.Uint64()
-
-			lockBurnNonce := GetLockBurnNonceViaCosmosRpc(tmClient)
-
-			fromBlock := sub.GetBlockHeightWithLockBurnNonce(ethClient,
-				bridgeBankAddress,
-				currentBlockHeight,
-				lockBurnNonce)
-
-			sub.HandleEthereumEventWithScope(ethClient,
-				bridgeBankAddress,
-				bridgeBankContractABI,
-				fromBlock,
-				currentBlockHeight,
-				lockBurnNonce,
-				networkID,
-				txFactory)
+			sub.CheckNonceAndProcess(txFactory, networkID, ethClient, tmClient, bridgeBankAddress, bridgeBankContractABI)
 		}
 	}
+}
+
+// CheckNonceAndProcess check the lock burn nonce and process the event
+func (sub EthereumSub) CheckNonceAndProcess(txFactory tx.Factory,
+	networkID *big.Int,
+	ethClient *ethclient.Client,
+	tmClient *tmclient.HTTP,
+	bridgeBankAddress common.Address,
+	bridgeBankContractABI abi.ABI) {
+	// get current block height
+	currentBlock, err := ethClient.HeaderByNumber(context.Background(), nil)
+	if err != nil {
+		return
+	}
+	currentBlockHeight := currentBlock.Number.Uint64()
+
+	lockBurnNonce := sub.GetLockBurnNonceFromCosmos(tmClient)
+
+	fromBlock := sub.GetBlockHeightWithLockBurnNonce(ethClient,
+		bridgeBankAddress,
+		currentBlockHeight,
+		lockBurnNonce)
+
+	sub.HandleEthereumEventWithScope(ethClient,
+		bridgeBankAddress,
+		bridgeBankContractABI,
+		fromBlock,
+		currentBlockHeight,
+		lockBurnNonce,
+		networkID,
+		txFactory)
 }
 
 // GetBlockHeightWithLockBurnNonce return the block height with specific lock burn nonce
@@ -212,8 +220,8 @@ func (sub EthereumSub) GetBlockHeightWithLockBurnNonce(client *ethclient.Client,
 	return 0
 }
 
-// GetLockBurnNonceViaCosmosRPC via rpc
-func GetLockBurnNonceViaCosmosRPC(client *tmClient.HTTP) uint64 {
+// GetLockBurnNonceFromCosmos via rpc
+func (sub EthereumSub) GetLockBurnNonceFromCosmos(client *tmclient.HTTP) uint64 {
 	// conn, err := grpc.Dial(rpcServer)
 	// if err != nil {
 	// 	return []*oracletypes.ProphecyInfo{}
@@ -244,7 +252,7 @@ func (sub EthereumSub) HandleEthereumEventWithScope(client *ethclient.Client,
 	networkID *big.Int,
 	txFactory tx.Factory) {
 
-	var events []types.EthereumEvent
+	events := []types.EthereumEvent{}
 	// query event data from this specific block range
 	ethLogs, err := client.FilterLogs(context.Background(), ethereum.FilterQuery{
 		FromBlock: big.NewInt(int64(fromBlock)),
@@ -284,59 +292,6 @@ func (sub EthereumSub) HandleEthereumEventWithScope(client *ethclient.Client,
 	}
 }
 
-func (sub EthereumSub) getAllClaims(fromBlock int64, toBlock int64) []types.EthereumBridgeClaim {
-	log.Printf("Replay get all ethereum bridge claim from block %d to block %d\n", fromBlock, toBlock)
-
-	var claimArray []types.EthereumBridgeClaim
-	tmClient, err := tmclient.New(sub.TmProvider, "/websocket")
-	if err != nil {
-		log.Printf("failed to initialize a client, error is %s\n", err.Error())
-		return claimArray
-	}
-
-	if err := tmClient.Start(); err != nil {
-		log.Printf("failed to start a client, error is %s\n", err.Error())
-		return claimArray
-	}
-
-	defer tmClient.Stop() //nolint:errcheck
-
-	for blockNumber := fromBlock; blockNumber < toBlock; {
-		tmpBlockNumber := blockNumber
-
-		ctx := context.Background()
-		block, err := tmClient.BlockResults(ctx, &tmpBlockNumber)
-
-		blockNumber++
-		log.Printf("Replay start to process block %d\n", blockNumber)
-
-		if err != nil {
-			log.Printf("failed to start a client %s\n", err.Error())
-			continue
-		}
-
-		for _, result := range block.TxsResults {
-			for _, event := range result.Events {
-				log.Printf("Replay get an event %s\n", event.GetType())
-				if event.GetType() == "create_claim" {
-					claim, err := txs.AttributesToEthereumBridgeClaim(event.GetAttributes())
-					if err != nil {
-						continue
-					}
-
-					// Check if sender is me
-					if claim.CosmosSender.Equals(sub.ValidatorAddress) {
-						log.Printf("We got a eth bridge claim message %s\n", claim.EthereumSender.String())
-						claimArray = append(claimArray, claim)
-					}
-				}
-			}
-		}
-	}
-
-	return claimArray
-}
-
 // EventProcessed check if the event processed by relayer
 func EventProcessed(bridgeClaims []types.EthereumBridgeClaim, event types.EthereumEvent) bool {
 	for _, claim := range bridgeClaims {
@@ -348,63 +303,37 @@ func EventProcessed(bridgeClaims []types.EthereumBridgeClaim, event types.Ethere
 }
 
 // Replay the missed events
-func (sub EthereumSub) Replay(txFactory tx.Factory, fromBlock int64, toBlock int64, cosmosFromBlock int64, cosmosToBlock int64) {
-	log.Printf("ethereum replay for %d block to %d block\n", fromBlock, toBlock)
+func (sub EthereumSub) Replay(txFactory tx.Factory) {
+	tmClient, err := tmclient.New(sub.TmProvider, "/websocket")
+	if err != nil {
+		sub.SugaredLogger.Errorw("failed to initialize a sifchain client.",
+			errorMessageKey, err.Error())
+		return
+	}
 
-	bridgeClaims := sub.getAllClaims(cosmosFromBlock, cosmosToBlock)
-	log.Printf("found out %d bridgeClaims\n", len(bridgeClaims))
-
-	c, err := SetupRPCEthClient(sub.EthProvider)
+	ethClient, err := SetupRPCEthClient(sub.EthProvider)
 	if err != nil {
 		log.Printf("failed to connect ethereum node, error is %s\n", err.Error())
 		return
 	}
-	defer c.Close()
+	defer ethClient.Close()
 
-	networkID, err := c.NetworkID(context.Background())
+	networkID, err := ethClient.NetworkID(context.Background())
 	if err != nil {
 		log.Printf("failed to get chain ID, error is %s\n", err.Error())
 		return
 	}
 
-	// Get the contract address for this subscription
-	subContractAddress, err := txs.GetAddressFromBridgeRegistry(c, sub.RegistryContractAddress, txs.BridgeBank, sub.SugaredLogger)
+	// get the bridgebank address from the registry contract
+	bridgeBankAddress, err := txs.GetAddressFromBridgeRegistry(ethClient, sub.RegistryContractAddress, txs.BridgeBank, sub.SugaredLogger)
 	if err != nil {
-		log.Printf("failed to get contract address, error is %s\n", err.Error())
+		log.Fatal("Error getting bridgebank address: ", err.Error())
 		return
 	}
+
 	bridgeBankContractABI := contract.LoadABI(txs.BridgeBank)
-	// We need the address in []bytes for the query
-	subQuery := ethereum.FilterQuery{
-		Addresses: []common.Address{subContractAddress},
-		FromBlock: big.NewInt(fromBlock),
-		ToBlock:   big.NewInt(toBlock),
-	}
 
-	logs, err := c.FilterLogs(context.Background(), subQuery)
-	if err != nil {
-		log.Printf("failed to get filter log, error is %s\n", err.Error())
-		return
-	}
-
-	for _, ethLog := range logs {
-		// Before deal with it, we need check in cosmos if it is already handled by myself bofore.
-		event, isBurnLock, err := sub.logToEvent(oracletypes.NetworkDescriptor(networkID.Uint64()), subContractAddress, bridgeBankContractABI, ethLog)
-		if err != nil {
-			log.Println("Failed to get event from ethereum log")
-		} else if isBurnLock {
-			log.Println(fmt.Sprintf("found out a burn lock event"))
-			if !EventProcessed(bridgeClaims, event) {
-				err := sub.handleEthereumEvent(txFactory, []types.EthereumEvent{event})
-				if err != nil {
-					log.Printf("failed to handle ethereum event, error is %s\n", err.Error())
-				}
-				time.Sleep(transactionInterval)
-			} else {
-				log.Println("event already processed by me.")
-			}
-		}
-	}
+	sub.CheckNonceAndProcess(txFactory, networkID, ethClient, tmClient, bridgeBankAddress, bridgeBankContractABI)
 }
 
 // logToEvent unpacks an Ethereum event
