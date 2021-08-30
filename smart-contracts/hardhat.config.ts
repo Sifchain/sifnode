@@ -20,13 +20,11 @@ const config: HardhatUserConfig = {
     networks: {
         hardhat: {
             allowUnlimitedContractSize: false,
-            /*
             chainId: 1,
             forking: {
                 url: mainnetUrl,
                 blockNumber: 12865480,
             }
-            */
         },
         ropsten: {
             url: ropstenUrl,
