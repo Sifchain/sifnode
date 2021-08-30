@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"github.com/cosmos/cosmos-sdk/client/tx"
+	"google.golang.org/grpc"
 
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/crypto/hd"
@@ -33,7 +34,7 @@ import (
 	bridgebank "github.com/Sifchain/sifnode/cmd/ebrelayer/contract/generated/bindings/bridgebank"
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/txs"
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/types"
-	ethbridge "github.com/Sifchain/sifnode/x/ethbridge/types"
+	ethbridgetypes "github.com/Sifchain/sifnode/x/ethbridge/types"
 	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
 )
 
@@ -168,7 +169,10 @@ func (sub EthereumSub) CheckNonceAndProcess(txFactory tx.Factory,
 	}
 	currentBlockHeight := currentBlock.Number.Uint64()
 
-	lockBurnNonce := sub.GetLockBurnNonceFromCosmos(tmClient)
+	lockBurnNonce, err := sub.GetLockBurnNonceFromCosmos(oracletypes.NetworkDescriptor(networkID.Uint64()), string(sub.ValidatorAddress))
+	if err != nil {
+		return
+	}
 
 	fromBlock := sub.GetBlockHeightWithLockBurnNonce(ethClient,
 		bridgeBankAddress,
@@ -221,27 +225,26 @@ func (sub EthereumSub) GetBlockHeightWithLockBurnNonce(client *ethclient.Client,
 }
 
 // GetLockBurnNonceFromCosmos via rpc
-func (sub EthereumSub) GetLockBurnNonceFromCosmos(client *tmclient.HTTP) uint64 {
-	// conn, err := grpc.Dial(rpcServer)
-	// if err != nil {
-	// 	return []*oracletypes.ProphecyInfo{}
-	// }
+func (sub EthereumSub) GetLockBurnNonceFromCosmos(
+	networkDescriptor oracletypes.NetworkDescriptor,
+	relayerValAddress string) (uint64, error) {
+	conn, err := grpc.Dial(sub.TmProvider)
+	if err != nil {
+		return 0, err
+	}
 
-	// ctx, cancel := context.WithTimeout(context.Background(), time.Second)
-	// defer cancel()
-	// client := ethbridgetypes.NewProphciesCompletedQueryServiceClient(conn)
-	// request := ethbridgetypes.ProphciesCompletedQueryRequest{
-	// 	NetworkDescriptor: networkDescriptor,
-	// 	GlobalNonce:       startGlobalNonce,
-	// }
-	// response, err := client.Search(ctx, &request)
-	// if err != nil {
-	// 	return []*oracletypes.ProphecyInfo{}
-	// }
-	// return response.ProphecyInfo
-
-	lockBurnNonce := uint64(0)
-	return lockBurnNonce
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	defer cancel()
+	client := ethbridgetypes.NewQueryClient(conn)
+	request := ethbridgetypes.QueryLockBurnNonceRequest{
+		NetworkDescriptor: networkDescriptor,
+		RelayerValAddress: relayerValAddress,
+	}
+	response, err := client.LockBurnNonce(ctx, &request)
+	if err != nil {
+		return 0, err
+	}
+	return response.LockBurnNonce, nil
 }
 
 // HandleEthereumEventWithScope process event one by one
@@ -366,9 +369,9 @@ func (sub EthereumSub) logToEvent(networkDescriptor oracletypes.NetworkDescripto
 	event.BridgeContractAddress = contractAddress
 	event.NetworkDescriptor = networkDescriptor
 	if eventName == types.LogBurn.String() {
-		event.ClaimType = ethbridge.ClaimType_CLAIM_TYPE_BURN
+		event.ClaimType = ethbridgetypes.ClaimType_CLAIM_TYPE_BURN
 	} else {
-		event.ClaimType = ethbridge.ClaimType_CLAIM_TYPE_LOCK
+		event.ClaimType = ethbridgetypes.ClaimType_CLAIM_TYPE_LOCK
 	}
 	sub.SugaredLogger.Infow("receive an event.",
 		"event", event.String())
@@ -388,7 +391,7 @@ func GetValAddressFromKeyring(k keyring.Keyring, keyname string) (sdk.ValAddress
 
 // handleEthereumEvent unpacks an Ethereum event, converts it to a ProphecyClaim, and relays a tx to Cosmos
 func (sub EthereumSub) handleEthereumEvent(txFactory tx.Factory, events []types.EthereumEvent) error {
-	var prophecyClaims []*ethbridge.EthBridgeClaim
+	var prophecyClaims []*ethbridgetypes.EthBridgeClaim
 	valAddr, err := GetValAddressFromKeyring(txFactory.Keybase(), sub.ValidatorName)
 	if err != nil {
 		return err
