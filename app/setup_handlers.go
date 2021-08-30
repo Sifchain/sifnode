@@ -11,12 +11,8 @@ import (
 const upgradeNameV095 = "0.9.5"
 
 func SetupHandlers(app *SifchainApp) {
-	app.UpgradeKeeper.SetUpgradeHandler("0.9.0", func(ctx sdk.Context, plan types.Plan) {})
-	app.UpgradeKeeper.SetUpgradeHandler("0.9.1", func(ctx sdk.Context, plan types.Plan) {})
-	app.UpgradeKeeper.SetUpgradeHandler("0.9.2", func(ctx sdk.Context, plan types.Plan) {})
-	app.UpgradeKeeper.SetUpgradeHandler("0.9.2-ibc.7", func(ctx sdk.Context, plan types.Plan) {})
-	app.UpgradeKeeper.SetUpgradeHandler("0.9.3", func(ctx sdk.Context, plan types.Plan) {})
-	SetupHandlersForV095(app)
+	// SetupHandlersForV095(app)
+	app.UpgradeKeeper.SetUpgradeHandler("0.9.6-rc.1", func(ctx sdk.Context, plan types.Plan) {})
 }
 
 func SetupHandlersForV095(app *SifchainApp) {
