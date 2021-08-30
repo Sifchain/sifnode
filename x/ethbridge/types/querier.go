@@ -8,6 +8,7 @@ import (
 const (
 	QueryEthProphecy         = "prophecies"
 	QueryCrosschainFeeConfig = "crosschainFeeConfig"
+	QueryLockBurnNonce       = "lockBurnNonce"
 )
 
 // NewQueryEthProphecyRequest creates a new QueryEthProphecyParams
@@ -37,5 +38,20 @@ func NewQueryCrosschainFeeConfigRequest(networkDescriptor oracletypes.NetworkDes
 func NewQueryCrosschainFeeConfigResponse(crosschainFeeConfig oracletypes.CrossChainFeeConfig) QueryCrosschainFeeConfigResponse {
 	return QueryCrosschainFeeConfigResponse{
 		CrosschainFeeConfig: &crosschainFeeConfig,
+	}
+}
+
+// NewLockBurnNonceRequest creates a new QueryLockBurnNonceRequest
+func NewLockBurnNonceRequest(networkDescriptor oracletypes.NetworkDescriptor, relayerValAddress string) *QueryLockBurnNonceRequest {
+	return &QueryLockBurnNonceRequest{
+		NetworkDescriptor: networkDescriptor,
+		RelayerValAddress: relayerValAddress,
+	}
+}
+
+// NewLockBurnNonceResponse creates a new QueryLockBurnNonceResponse instance
+func NewLockBurnNonceResponse(lockBurnNonce uint64) QueryLockBurnNonceResponse {
+	return QueryLockBurnNonceResponse{
+		LockBurnNonce: lockBurnNonce,
 	}
 }

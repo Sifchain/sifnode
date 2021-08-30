@@ -51,3 +51,22 @@ func (srv queryServer) CrosschainFeeConfig(ctx context.Context, req *types.Query
 
 	return &res, nil
 }
+
+func (srv queryServer) LockBurnNonce(ctx context.Context, req *types.QueryLockBurnNonceRequest) (*types.QueryLockBurnNonceResponse, error) {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+
+	networkDescriptor := req.GetNetworkDescriptor()
+	relayerValAddress := req.RelayerValAddress
+
+	address, err := sdk.ValAddressFromBech32(relayerValAddress)
+
+	if err != nil {
+		return nil, err
+	}
+
+	lockBurnNonce := srv.Keeper.GetEthereumLockBurnNonce(sdkCtx, networkDescriptor, address)
+
+	res := types.NewLockBurnNonceResponse(lockBurnNonce)
+
+	return &res, nil
+}
