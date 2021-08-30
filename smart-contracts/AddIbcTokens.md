@@ -21,5 +21,6 @@ Where:
 
     cd smart-contracts
     npm install
-    hardhat run scripts/create_ibc_matching_token.ts | grep -v 'No need to generate' > test_data/ibc_token_addresses.jsonl  
-    hardhat run scripts/attach_ibc_matching_token.ts < 
+    hardhat run scripts/create_ibc_matching_token.ts --network mainnet | grep -v 'No need to generate' > test_data/ibc_token_addresses.jsonl  
+    hardhat run scripts/attach_ibc_matching_token.ts --network mainnet < test_data/ibc_token_addresses.jsonl 
+ 
