@@ -256,6 +256,14 @@ describe("Test IBC Token", function () {
     // check if owner received the minter role
     hasMinterRole = await ibcToken.hasRole(MINTER_ROLE, owner.address);
     expect(hasMinterRole).to.be.true;
+
+    // new admin changes the cosmosDenom:
+    await expect(ibcToken.connect(userOne).setDenom(anotherDenom))
+      .to.be.fulfilled;
+
+    // check if the denom changed
+    const newDenom = await ibcToken.cosmosDenom();
+    expect(newDenom).to.be.equal(anotherDenom);
   });
 
   it("should allow owner to set the cosmosDenom", async function () {
@@ -269,6 +277,8 @@ describe("Test IBC Token", function () {
 
   it("should NOT allow a user to set the cosmosDenom", async function () {
     await expect(ibcToken.connect(userOne).setDenom(anotherDenom))
-      .to.be.revertedWith("Ownable: caller is not the owner");
+      .to.be.revertedWith(
+        `AccessControl: account ${userOne.address.toLowerCase()} is missing role ${DEFAULT_ADMIN_ROLE}`
+      );
   });
 });
