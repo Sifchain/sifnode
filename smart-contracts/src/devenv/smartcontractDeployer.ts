@@ -29,6 +29,8 @@ export class SmartContractDeployer extends SynchronousCommand<SmartContractDeplo
       "hardhat",
       "run",
       "scripts/deploy_contracts.ts",
+      "--network",
+      "localhost"
     ]]
   }
 
