@@ -9,14 +9,15 @@ interface TokenAddress {
 }
 
 async function attachIbcToken(bridgeBank: BridgeBank, token: IbcToken) {
-    await token.transferOwnership(bridgeBank.address)
     return await bridgeBank.addExistingBridgeToken(token.address)
 }
 
 export async function processTokenData(bridgeBank: BridgeBank, filename: string, container: DependencyContainer) {
     const fileContents = fs.readFileSync(filename, {encoding: "utf8"})
 
-    for (const line of fileContents.split(/\r?\n/)) {
+    for (const line of fileContents.split(/\r?\n+/)) {
+        if ((line ?? "") === "")
+            continue
         const data = JSON.parse(line) as TokenAddress
         const token = await hardhat.ethers.getContractAt("IbcToken", data.address) as IbcToken
         await attachIbcToken(bridgeBank, token)

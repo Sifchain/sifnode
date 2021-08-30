@@ -29,7 +29,6 @@ async function main() {
     }
 
     const bridgeBank = await container.resolve(DeployedBridgeBank).contract
-    const owner = await bridgeBank.owner()
 
     await processTokenData(bridgeBank, requiredEnvVar("TOKEN_ADDRESS_FILE"), container)
 }
