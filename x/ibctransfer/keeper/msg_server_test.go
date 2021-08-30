@@ -40,6 +40,7 @@ func TestMsgServer_Transfer(t *testing.T) {
 		IsWhitelisted: true,
 		Decimals:      10,
 		UnitDenom:     "rowan",
+		Permissions:   []tokenregistrytypes.Permission{tokenregistrytypes.Permission_IBCEXPORT},
 	})
 
 	rowanAmount, ok := sdk.NewIntFromString("1234567891123456789")
@@ -158,6 +159,23 @@ func TestMsgServer_Transfer(t *testing.T) {
 			setupBankKeeperCalls: func() {},
 			setupMsgServerCalls:  func() {},
 		},
+		{
+			name:       "transfer denom alias with unit denom set in registry",
+			err:        tokenregistrytypes.ErrPermissionDenied,
+			bankKeeper: bankKeeper,
+			msgSrv:     msgSrv,
+			msg: sdktransfertypes.NewMsgTransfer(
+				"transfer",
+				"channel-0",
+				sdk.NewCoin("xrowan", sdk.NewInt(1)),
+				addrs[0],
+				addrs[1].String(),
+				clienttypes.NewHeight(0, 0),
+				0,
+			),
+			setupBankKeeperCalls: func() {},
+			setupMsgServerCalls:  func() {},
+		},
 	}
 
 	for _, tc := range tt {
@@ -168,7 +186,7 @@ func TestMsgServer_Transfer(t *testing.T) {
 
 			srv := keeper.NewMsgServerImpl(tc.msgSrv, tc.bankKeeper, app.TokenRegistryKeeper)
 			_, err := srv.Transfer(sdk.WrapSDKContext(ctx), tc.msg)
-			require.ErrorIs(t, tc.err, err)
+			require.ErrorIs(t, err, tc.err)
 		})
 	}
 }
@@ -334,7 +352,7 @@ func TestPrepareToSendConvertedCoins(t *testing.T) {
 
 			err = keeper.PrepareToSendConvertedCoins(sdk.WrapSDKContext(appCtx), tt.args.msg, tokenDeduction, tokensConverted, app.BankKeeper)
 			require.NoError(t, err)
-			// TODO: Assert amounts
+			// TODO: Assert amounts here in addition to above transfer test
 		})
 	}
 }
