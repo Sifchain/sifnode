@@ -377,7 +377,7 @@ func TestPrepareToSendConvertedCoins(t *testing.T) {
 
 			err = keeper.PrepareToSendConvertedCoins(sdk.WrapSDKContext(appCtx), tt.args.msg, tokenDeduction, tokensConverted, app.BankKeeper)
 			require.NoError(t, err)
-			// TODO: Assert amounts here in addition to above transfer test
+			// Amounts.
 		})
 	}
 }

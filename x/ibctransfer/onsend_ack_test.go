@@ -2,8 +2,6 @@ package ibctransfer_test
 
 import (
 	"context"
-	"fmt"
-	"strings"
 	"testing"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -16,6 +14,7 @@ import (
 	test2 "github.com/Sifchain/sifnode/x/ethbridge/test"
 	"github.com/Sifchain/sifnode/x/ibctransfer"
 	"github.com/Sifchain/sifnode/x/ibctransfer/keeper"
+	"github.com/Sifchain/sifnode/x/ibctransfer/keeper/testhelpers"
 	"github.com/Sifchain/sifnode/x/tokenregistry/test"
 	tokenregistrytypes "github.com/Sifchain/sifnode/x/tokenregistry/types"
 )
@@ -103,7 +102,7 @@ func TestOnAcknowledgementMaybeConvert_Source(t *testing.T) {
 			require.Equal(t, tt.args.msg.Token.Sub(tokenDeduction).String(), app.BankKeeper.GetBalance(ctx, sender, tt.args.msg.Token.Denom).String())
 
 			// Simulate send with SDK stub.
-			sdkSentDenom, err := sendStub(ctx, app, tokensConverted, sender, tt.args.msg.SourcePort, tt.args.msg.SourceChannel)
+			sdkSentDenom, err := testhelpers.SendStub(ctx, app.TransferKeeper, app.BankKeeper, tokensConverted, sender, tt.args.msg.SourcePort, tt.args.msg.SourceChannel)
 			require.Equal(t, tt.args.msg.Token.Sub(tokenDeduction).String(), app.BankKeeper.GetBalance(ctx, sender, tt.args.msg.Token.Denom).String())
 			require.Equal(t, "0"+tokensConverted.Denom, app.BankKeeper.GetBalance(ctx, sender, tokensConverted.Denom).String())
 
@@ -140,12 +139,40 @@ func TestOnAcknowledgementMaybeConvert_Sink(t *testing.T) {
 	}
 
 	atomToken := tokenregistrytypes.RegistryEntry{
-		Denom:     denomTrace.IBCDenom(),
-		BaseDenom: "uatom",
-		Decimals:  6,
+		IsWhitelisted: true,
+		Denom:         denomTrace.IBCDenom(),
+		BaseDenom:     "uatom",
+		Decimals:      6,
 	}
 
-	// successAck := channeltypes.NewResultAcknowledgement([]byte{byte(1)})
+	/*croGweiDenomTrace := types.DenomTrace{
+		// A token coming from source will have this chain's source channel prepended when this chain generates hash.
+		Path:      "transfer/channel-0",
+		BaseDenom: "gwei",
+	}
+
+	croKweiDenomTrace := types.DenomTrace{
+		// A token coming from source will have this chain's source channel prepended when this chain generates hash.
+		Path:      "transfer/channel-0",
+		BaseDenom: "kwei",
+	}
+
+	croGweiToken := tokenregistrytypes.RegistryEntry{
+		IsWhitelisted: true,
+		Denom:     croGweiDenomTrace.IBCDenom(),
+		BaseDenom: "gwei",
+		Decimals:  18,
+		IbcCounterPartyDenom: croKweiDenomTrace.IBCDenom(),
+	}
+
+	croKweiToken := tokenregistrytypes.RegistryEntry{
+		IsWhitelisted: true,
+		Denom:     croKweiDenomTrace.IBCDenom(),
+		BaseDenom: "kwei",
+		Decimals:  10,
+		UnitDenom: croGweiToken.Denom,
+	}*/
+
 	errorAck := channeltypes.NewErrorAcknowledgement("failed packet transfer")
 
 	msgSinkTransfer := types.NewMsgTransfer(
@@ -158,10 +185,21 @@ func TestOnAcknowledgementMaybeConvert_Sink(t *testing.T) {
 		0,
 	)
 
+	/*msgSinkTransferWithConv := types.NewMsgTransfer(
+		"transfer",
+		"channel-0", // Sent from this chain back to source
+		sdk.NewCoin(croGweiToken.Denom, sdk.NewIntFromUint64(123456789123456789)),
+		addrs[0],
+		addrs[1].String(),
+		clienttypes.NewHeight(0, 0),
+		0,
+	)*/
+
 	type args struct {
 		goCtx           context.Context
 		msg             *types.MsgTransfer
 		transferToken   tokenregistrytypes.RegistryEntry
+		transferAsToken tokenregistrytypes.RegistryEntry
 		acknowledgement channeltypes.Acknowledgement
 	}
 
@@ -172,24 +210,40 @@ func TestOnAcknowledgementMaybeConvert_Sink(t *testing.T) {
 		events sdk.Events
 	}{
 		{
-			name: "Ack err sender is sink, causes refund - success",
+			name: "Ack err sender is sink, causes refund without conversion - success",
 			args: args{
 				context.Background(),
 				msgSinkTransfer,
+				atomToken,
 				atomToken,
 				errorAck,
 			},
 			err:    nil,
 			events: []sdk.Event{},
 		},
+		/*{
+			name: "Ack err sender is sink, causes refund with conversion - not supported",
+			args: args{
+				context.Background(),
+				msgSinkTransferWithConv,
+				croGweiToken,
+				croKweiToken,
+				errorAck,
+			},
+			err:    nil,
+			events: []sdk.Event{},
+		},*/
 	}
 
 	for _, tt := range tests {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			app, ctx, _ := test.CreateTestApp(false)
+			app.TokenRegistryKeeper.SetToken(ctx, &tt.args.transferToken)
+			app.TokenRegistryKeeper.SetToken(ctx, &tt.args.transferAsToken)
+
 			recvTokenPacket := types.FungibleTokenPacketData{
-				Denom:  atomToken.BaseDenom,
+				Denom:  tt.args.transferToken.BaseDenom,
 				Amount: tt.args.msg.Token.Amount.Uint64(),
 				Sender: tt.args.msg.Receiver,
 				// Fund the addr that will do a send later.
@@ -203,16 +257,18 @@ func TestOnAcknowledgementMaybeConvert_Sink(t *testing.T) {
 				Data:               app.AppCodec().MustMarshalJSON(&recvTokenPacket),
 			}
 
-			// Simulate OnRecv so that IBC hash is stored in transfer keeper and can be,
-			// converted to denom trace during processing ack.
-			err := app.TransferKeeper.OnRecvPacket(ctx, recvPacket, recvTokenPacket)
-			require.NoError(t, err)
-
 			sender, err := sdk.AccAddressFromBech32(tt.args.msg.Sender)
 			require.NoError(t, err)
 
+			// Simulate OnRecv so that IBC hash is stored in transfer keeper and can be,
+			// converted to denom trace during processing ack.
+			err = app.TransferKeeper.OnRecvPacket(ctx, recvPacket, recvTokenPacket)
+			require.NoError(t, err)
+			require.Equal(t, tt.args.msg.Token.Amount.String(), app.BankKeeper.GetBalance(ctx, sender, tt.args.transferToken.Denom).Amount.String())
+
 			// Simulate send from this chain, with SDK stub.
-			sdkSentDenom, err := sendStub(ctx, app, tt.args.msg.Token, sender, tt.args.msg.SourcePort, tt.args.msg.SourceChannel)
+			sdkSentDenom, err := testhelpers.SendStub(ctx, app.TransferKeeper, app.BankKeeper, tt.args.msg.Token, sender, tt.args.msg.SourcePort, tt.args.msg.SourceChannel)
+			require.Equal(t, "0", app.BankKeeper.GetBalance(ctx, sender, tt.args.transferToken.Denom).Amount.String())
 
 			// Test Ack.
 			ackPacket := channeltypes.Packet{
@@ -230,51 +286,10 @@ func TestOnAcknowledgementMaybeConvert_Sink(t *testing.T) {
 
 			_, err = ibctransfer.OnAcknowledgementMaybeConvert(ctx, app.TransferKeeper, app.TokenRegistryKeeper, app.BankKeeper, ackPacket, app.AppCodec().MustMarshalJSON(&tt.args.acknowledgement))
 			require.ErrorIs(t, err, tt.err)
+			if tt.err != nil {
+				return
+			}
 			require.Equal(t, tt.args.msg.Token.String(), app.BankKeeper.GetBalance(ctx, sender, tt.args.msg.Token.Denom).String())
 		})
 	}
-}
-
-func sendStub(ctx sdk.Context, app *sifapp.SifchainApp, token sdk.Coin, sender sdk.AccAddress, sourcePort, sourceChannel string) (string, error) {
-	// deconstruct the token denomination into the denomination trace info
-	// to determine if the sender is the source chain
-	fullDenomPath := token.Denom
-	var err error
-	if strings.HasPrefix(token.Denom, "ibc/") {
-		fullDenomPath, err = app.TransferKeeper.DenomPathFromHash(ctx, token.Denom)
-		if err != nil {
-			return "", err
-		}
-	}
-
-	if types.SenderChainIsSource(sourcePort, sourceChannel, fullDenomPath) {
-		// create the escrow address for the tokens
-		escrowAddress := types.GetEscrowAddress(sourcePort, sourceChannel)
-
-		// escrow source tokens. It fails if balance insufficient.
-		if err := app.BankKeeper.SendCoins(
-			ctx, sender, escrowAddress, sdk.NewCoins(token),
-		); err != nil {
-			return "", err
-		}
-
-	} else {
-		// transfer the coins to the module account and burn them
-		if err := app.BankKeeper.SendCoinsFromAccountToModule(
-			ctx, sender, types.ModuleName, sdk.NewCoins(token),
-		); err != nil {
-			return "", err
-		}
-
-		if err := app.BankKeeper.BurnCoins(
-			ctx, types.ModuleName, sdk.NewCoins(token),
-		); err != nil {
-			// NOTE: should not happen as the module account was
-			// retrieved on the step above and it has enough balace
-			// to burn.
-			panic(fmt.Sprintf("cannot burn coins after a successful send to a module account: %v", err))
-		}
-	}
-
-	return fullDenomPath, nil
 }

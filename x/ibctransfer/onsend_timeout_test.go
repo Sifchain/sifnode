@@ -4,17 +4,19 @@ import (
 	"context"
 	"testing"
 
-	sifapp "github.com/Sifchain/sifnode/app"
-	test2 "github.com/Sifchain/sifnode/x/ethbridge/test"
-	"github.com/Sifchain/sifnode/x/ibctransfer"
-	"github.com/Sifchain/sifnode/x/ibctransfer/keeper"
-	"github.com/Sifchain/sifnode/x/tokenregistry/test"
-	tokenregistrytypes "github.com/Sifchain/sifnode/x/tokenregistry/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/ibc/applications/transfer/types"
 	clienttypes "github.com/cosmos/cosmos-sdk/x/ibc/core/02-client/types"
 	channeltypes "github.com/cosmos/cosmos-sdk/x/ibc/core/04-channel/types"
 	"github.com/stretchr/testify/require"
+
+	sifapp "github.com/Sifchain/sifnode/app"
+	test2 "github.com/Sifchain/sifnode/x/ethbridge/test"
+	"github.com/Sifchain/sifnode/x/ibctransfer"
+	"github.com/Sifchain/sifnode/x/ibctransfer/keeper"
+	"github.com/Sifchain/sifnode/x/ibctransfer/keeper/testhelpers"
+	"github.com/Sifchain/sifnode/x/tokenregistry/test"
+	tokenregistrytypes "github.com/Sifchain/sifnode/x/tokenregistry/types"
 )
 
 func TestOnTimeoutPacketConvert_Source(t *testing.T) {
@@ -95,7 +97,7 @@ func TestOnTimeoutPacketConvert_Source(t *testing.T) {
 			require.Equal(t, tt.args.msg.Token.Sub(tokenDeduction).String(), app.BankKeeper.GetBalance(ctx, sender, tt.args.msg.Token.Denom).String())
 
 			// Simulate send with SDK stub.
-			sdkSentDenom, err := sendStub(ctx, app, tokensConverted, sender, tt.args.msg.SourcePort, tt.args.msg.SourceChannel)
+			sdkSentDenom, err := testhelpers.SendStub(ctx, app.TransferKeeper, app.BankKeeper, tokensConverted, sender, tt.args.msg.SourcePort, tt.args.msg.SourceChannel)
 			require.Equal(t, tt.args.msg.Token.Sub(tokenDeduction).String(), app.BankKeeper.GetBalance(ctx, sender, tt.args.msg.Token.Denom).String())
 			require.Equal(t, "0"+tokensConverted.Denom, app.BankKeeper.GetBalance(ctx, sender, tokensConverted.Denom).String())
 
@@ -199,7 +201,7 @@ func TestOnTimeoutPacketConvert_Sink(t *testing.T) {
 			require.NoError(t, err)
 
 			// Simulate send from this chain, with SDK stub.
-			sdkSentDenom, err := sendStub(ctx, app, tt.args.msg.Token, sender, tt.args.msg.SourcePort, tt.args.msg.SourceChannel)
+			sdkSentDenom, err := testhelpers.SendStub(ctx, app.TransferKeeper, app.BankKeeper, tt.args.msg.Token, sender, tt.args.msg.SourcePort, tt.args.msg.SourceChannel)
 
 			// Test Ack.
 			ackPacket := channeltypes.Packet{
