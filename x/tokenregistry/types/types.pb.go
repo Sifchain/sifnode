@@ -182,7 +182,7 @@ type RegistryEntry struct {
 	// to overcome the current uint64 limit on the packet level.
 	// i.e rowan -> microrowan
 	// i.e microrowan -> microrowan
-	IbcCounterPartyDenom   string `protobuf:"bytes,17,opt,name=ibc_counter_party_denom,json=ibcCounterPartyDenom,proto3" json:"ibc_counter_party_denom,omitempty"`
+	IbcCounterpartyDenom   string `protobuf:"bytes,17,opt,name=ibc_counterparty_denom,json=ibcCounterpartyDenom,proto3" json:"ibc_counterparty_denom,omitempty"`
 	IbcCounterpartyChainId string `protobuf:"bytes,18,opt,name=ibc_counterparty_chain_id,json=ibcCounterpartyChainId,proto3" json:"ibc_counterparty_chain_id,omitempty"`
 }
 
@@ -326,7 +326,7 @@ func (m *RegistryEntry) GetUnitDenom() string {
 
 func (m *RegistryEntry) GetIbcCounterpartyDenom() string {
 	if m != nil {
-		return m.IbcCounterPartyDenom
+		return m.IbcCounterpartyDenom
 	}
 	return ""
 }
@@ -500,10 +500,10 @@ func (m *RegistryEntry) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		i--
 		dAtA[i] = 0x92
 	}
-	if len(m.IbcCounterPartyDenom) > 0 {
-		i -= len(m.IbcCounterPartyDenom)
-		copy(dAtA[i:], m.IbcCounterPartyDenom)
-		i = encodeVarintTypes(dAtA, i, uint64(len(m.IbcCounterPartyDenom)))
+	if len(m.IbcCounterpartyDenom) > 0 {
+		i -= len(m.IbcCounterpartyDenom)
+		copy(dAtA[i:], m.IbcCounterpartyDenom)
+		i = encodeVarintTypes(dAtA, i, uint64(len(m.IbcCounterpartyDenom)))
 		i--
 		dAtA[i] = 0x1
 		i--
@@ -741,7 +741,7 @@ func (m *RegistryEntry) Size() (n int) {
 	if l > 0 {
 		n += 2 + l + sovTypes(uint64(l))
 	}
-	l = len(m.IbcCounterPartyDenom)
+	l = len(m.IbcCounterpartyDenom)
 	if l > 0 {
 		n += 2 + l + sovTypes(uint64(l))
 	}
@@ -1483,7 +1483,7 @@ func (m *RegistryEntry) Unmarshal(dAtA []byte) error {
 			iNdEx = postIndex
 		case 17:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field IbcCounterPartyDenom", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field IbcCounterpartyDenom", wireType)
 			}
 			var stringLen uint64
 			for shift := uint(0); ; shift += 7 {
@@ -1511,7 +1511,7 @@ func (m *RegistryEntry) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.IbcCounterPartyDenom = string(dAtA[iNdEx:postIndex])
+			m.IbcCounterpartyDenom = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
 		case 18:
 			if wireType != 2 {

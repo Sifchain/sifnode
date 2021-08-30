@@ -225,7 +225,7 @@ func GetCmdGenerateEntry() *cobra.Command {
 				IbcChannelId:             ibcChannelId,
 				IbcCounterpartyChannelId: ibcCounterpartyChannelId,
 				IbcCounterpartyChainId:   ibcCounterpartyChainId,
-				IbcCounterPartyDenom:     ibcCounterpartyDenom,
+				IbcCounterpartyDenom:     ibcCounterpartyDenom,
 				UnitDenom:                unitDenom,
 				DisplayName:              displayName,
 				DisplaySymbol:            displaySymbol,

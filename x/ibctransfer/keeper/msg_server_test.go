@@ -33,7 +33,7 @@ func TestMsgServer_Transfer(t *testing.T) {
 		Denom:                "rowan",
 		IsWhitelisted:        true,
 		Decimals:             18,
-		IbcCounterPartyDenom: "xrowan",
+		IbcCounterpartyDenom: "xrowan",
 		Permissions:          []tokenregistrytypes.Permission{tokenregistrytypes.Permission_IBCEXPORT},
 	})
 	app.TokenRegistryKeeper.SetToken(ctx, &tokenregistrytypes.RegistryEntry{
@@ -226,7 +226,7 @@ func TestConvertCoins(t *testing.T) {
 		Decimals:             18,
 		Denom:                "rowan",
 		BaseDenom:            "rowan",
-		IbcCounterPartyDenom: "microrowan",
+		IbcCounterpartyDenom: "microrowan",
 	}
 
 	microRowanEntry := tokenregistrytypes.RegistryEntry{
@@ -242,7 +242,7 @@ func TestConvertCoins(t *testing.T) {
 		Decimals:             12,
 		Denom:                "twelve",
 		BaseDenom:            "twelve",
-		IbcCounterPartyDenom: "microtwelve",
+		IbcCounterpartyDenom: "microtwelve",
 	}
 
 	decimal10Entry := tokenregistrytypes.RegistryEntry{
@@ -303,7 +303,7 @@ func TestPrepareToSendConvertedCoins(t *testing.T) {
 		Decimals:             18,
 		Denom:                "rowan",
 		BaseDenom:            "rowan",
-		IbcCounterPartyDenom: "microrowan",
+		IbcCounterpartyDenom: "microrowan",
 	}
 
 	microRowanEntry := tokenregistrytypes.RegistryEntry{
@@ -319,7 +319,7 @@ func TestPrepareToSendConvertedCoins(t *testing.T) {
 		Decimals:             12,
 		Denom:                "twelve",
 		BaseDenom:            "twelve",
-		IbcCounterPartyDenom: "microtwelve",
+		IbcCounterpartyDenom: "microtwelve",
 	}
 
 	decimal10Entry := tokenregistrytypes.RegistryEntry{

@@ -47,8 +47,8 @@ func (srv msgServer) Transfer(goCtx context.Context, msg *sdktransfertypes.MsgTr
 	}
 
 	// check if registry entry has an IBC counter party conversion to process
-	if registryEntry.IbcCounterPartyDenom != "" && registryEntry.IbcCounterPartyDenom != registryEntry.Denom {
-		sendAsRegistryEntry := srv.tokenRegistryKeeper.GetDenom(sdk.UnwrapSDKContext(goCtx), registryEntry.IbcCounterPartyDenom)
+	if registryEntry.IbcCounterpartyDenom != "" && registryEntry.IbcCounterpartyDenom != registryEntry.Denom {
+		sendAsRegistryEntry := srv.tokenRegistryKeeper.GetDenom(sdk.UnwrapSDKContext(goCtx), registryEntry.IbcCounterpartyDenom)
 		if sendAsRegistryEntry.Decimals != 0 && registryEntry.Decimals > sendAsRegistryEntry.Decimals {
 			token, tokenConversion := ConvertCoinsForTransfer(goCtx, msg, registryEntry, sendAsRegistryEntry)
 			if token.Amount.Equal(sdk.NewInt(0)) {
@@ -79,7 +79,7 @@ func ConvertCoinsForTransfer(goCtx context.Context, msg *sdktransfertypes.MsgTra
 
 	convAmount := sdk.NewIntFromBigInt(convAmountDec.TruncateInt().BigInt())
 	// create converted and sifchain tokens with corresponding denoms and amounts
-	convToken := sdk.NewCoin(sendRegistryEntry.IbcCounterPartyDenom, convAmount)
+	convToken := sdk.NewCoin(sendRegistryEntry.IbcCounterpartyDenom, convAmount)
 	// increase convAmount precision to ensure amount deducted from address is the same that gets sent
 	tokenAmountDec := IncreasePrecision(sdk.NewDecFromInt(convAmount), po)
 	tokenAmount := sdk.NewIntFromBigInt(tokenAmountDec.TruncateInt().BigInt())

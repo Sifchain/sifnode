@@ -35,7 +35,7 @@ func TestExportImportConversionEquality(t *testing.T) {
 		Decimals:             18,
 		Denom:                "rowan",
 		BaseDenom:            "rowan",
-		IbcCounterPartyDenom: "microrowan",
+		IbcCounterpartyDenom: "microrowan",
 	}
 
 	wl.EXPECT().GetDenom(ctx, "microrowan").Return(microRowanEntry)

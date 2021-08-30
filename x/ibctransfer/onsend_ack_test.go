@@ -26,7 +26,7 @@ func TestOnAcknowledgementMaybeConvert_Source(t *testing.T) {
 	rowanToken := tokenregistrytypes.RegistryEntry{
 		IsWhitelisted:        true,
 		Denom:                "rowan",
-		IbcCounterPartyDenom: "xrowan",
+		IbcCounterpartyDenom: "xrowan",
 		Decimals:             18,
 	}
 
@@ -162,7 +162,7 @@ func TestOnAcknowledgementMaybeConvert_Sink(t *testing.T) {
 		Denom:     croGweiDenomTrace.IBCDenom(),
 		BaseDenom: "gwei",
 		Decimals:  18,
-		IbcCounterPartyDenom: croKweiDenomTrace.IBCDenom(),
+		IbcCounterpartyDenom: croKweiDenomTrace.IBCDenom(),
 	}
 
 	croKweiToken := tokenregistrytypes.RegistryEntry{

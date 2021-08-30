@@ -26,7 +26,7 @@ func TestOnTimeoutPacketConvert_Source(t *testing.T) {
 	rowanToken := tokenregistrytypes.RegistryEntry{
 		IsWhitelisted:        true,
 		Denom:                "rowan",
-		IbcCounterPartyDenom: "xrowan",
+		IbcCounterpartyDenom: "xrowan",
 		Decimals:             18,
 	}
 
