@@ -37,10 +37,6 @@ func ShouldConvertIncomingCoins(
 	}
 	unitDenomRegistryEntry := whitelistKeeper.GetDenom(ctx, unitDenom)
 	if !unitDenomRegistryEntry.IsWhitelisted {
-		// This should be considered an error case,
-		// but we just choose not to convert here.
-		// TODO: ShouldConvertIncoming can be brought in line with the corresponding outgoing check,
-		// add test for this case.
 		return false
 	}
 	// if unit_denom decimals are greater than minted denom decimals, we need to increase precision to convert them
@@ -65,11 +61,9 @@ func GetConvForIncomingCoins(
 
 	// get token registry entry for received denom
 	mintedDenomEntry := whitelistKeeper.GetDenom(ctx, mintedDenom)
-	if !mintedDenomEntry.IsWhitelisted {
-		// TODO
-	}
+
 	// convert to unit_denom
-	if mintedDenomEntry.UnitDenom == "" {
+	if mintedDenomEntry.UnitDenom == "" || !mintedDenomEntry.IsWhitelisted {
 		// noop, should prevent getting here.
 		return sdk.NewCoin(mintedDenom, sdk.NewIntFromUint64(data.Amount)),
 			sdk.NewCoin(mintedDenom, sdk.NewIntFromUint64(data.Amount))
@@ -121,7 +115,6 @@ func ExecConvForIncomingCoins(
 	// burn ibcdenom coins
 	err = bankKeeper.BurnCoins(ctx, transfertypes.ModuleName, sdk.NewCoins(incomingCoins))
 	if err != nil {
-		// TODO: Log error or panic? What happens on relayer / on other chain if error is returned here?
 		return err
 	}
 	ctx.EventManager().EmitEvent(

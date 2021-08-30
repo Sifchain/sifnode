@@ -113,17 +113,13 @@ func ShouldConvertRefundCoins(
 	}
 	unitDenomRegistryEntry := whitelistKeeper.GetDenom(ctx, unitDenom)
 	if !unitDenomRegistryEntry.IsWhitelisted {
-		// This should be considered an error case,
-		// but we just choose not to convert here.
-		// TODO: ShouldConvertIncoming can be brought in line with the corresponding outgoing check,
-		// add test for this case.
 		return false
 	}
 	// if unit_denom decimals are greater than minted denom decimals, we need to increase precision to convert them
 	return unitDenomRegistryEntry.Decimals > denomRegistryEntry.Decimals
 }
 
-// GetConvForIncomingCoins returns 1) the coins that are being received via IBC,
+// GetConvForRefundCoins returns 1) the coins that are being received via IBC,
 // which need to be deducted from that denom when converting to final denom,
 // and 2) the coins that need to be added to the final denom.
 func GetConvForRefundCoins(
@@ -137,24 +133,22 @@ func GetConvForRefundCoins(
 	denom := data.Denom
 
 	// get token registry entry for received denom
-	denomenomEntry := whitelistKeeper.GetDenom(ctx, denom)
-	if !denomenomEntry.IsWhitelisted {
-		// TODO
-	}
+	denomEntry := whitelistKeeper.GetDenom(ctx, denom)
+
 	// convert to unit_denom
-	if denomenomEntry.UnitDenom == "" {
+	if denomEntry.UnitDenom == "" || !denomEntry.IsWhitelisted {
 		// noop, should prevent getting here.
 		return sdk.NewCoin(denom, sdk.NewIntFromUint64(data.Amount)),
 			sdk.NewCoin(denom, sdk.NewIntFromUint64(data.Amount))
 	}
 
-	convertToDenomEntry := whitelistKeeper.GetDenom(ctx, denomenomEntry.UnitDenom)
+	convertToDenomEntry := whitelistKeeper.GetDenom(ctx, denomEntry.UnitDenom)
 
 	// get the token amount from the packet data
 	decAmount := sdk.NewDecFromInt(sdk.NewIntFromUint64(data.Amount))
 
 	// Calculate the conversion difference for increasing precision.
-	po := convertToDenomEntry.Decimals - denomenomEntry.Decimals
+	po := convertToDenomEntry.Decimals - denomEntry.Decimals
 	convAmountDec := IncreasePrecision(decAmount, po)
 	convAmount := sdk.NewIntFromBigInt(convAmountDec.TruncateInt().BigInt())
 	// create converted and ibc tokens with corresponding denoms and amounts
@@ -194,7 +188,6 @@ func ExecConvForRefundCoins(
 	// burn ibcdenom coins
 	err = bankKeeper.BurnCoins(ctx, transfertypes.ModuleName, sdk.NewCoins(incomingCoins))
 	if err != nil {
-		// TODO: Log error or panic? What happens on relayer / on other chain if error is returned here?
 		return err
 	}
 	ctx.EventManager().EmitEvent(
