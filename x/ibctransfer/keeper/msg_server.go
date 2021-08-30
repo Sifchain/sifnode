@@ -56,10 +56,14 @@ func (srv msgServer) Transfer(goCtx context.Context, msg *sdktransfertypes.MsgTr
 			}
 			err := PrepareToSendConvertedCoins(goCtx, msg, token, tokenConversion, srv.bankKeeper)
 			if err != nil {
-				return nil, err
+				return nil, sdkerrors.Wrap(types.ErrConvertingToCounterpartyDenom, err.Error())
 			}
 			msg.Token = tokenConversion
 		}
+	}
+
+	if !msg.Token.Amount.IsUint64() {
+		return nil, types.ErrAmountTooLargeToSend
 	}
 
 	return srv.sdkMsgServer.Transfer(goCtx, msg)

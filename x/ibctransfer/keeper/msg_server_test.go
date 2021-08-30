@@ -2,6 +2,7 @@ package keeper_test
 
 import (
 	"context"
+	"math"
 	"testing"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -42,6 +43,12 @@ func TestMsgServer_Transfer(t *testing.T) {
 		UnitDenom:     "rowan",
 		Permissions:   []tokenregistrytypes.Permission{tokenregistrytypes.Permission_IBCEXPORT},
 	})
+	app.TokenRegistryKeeper.SetToken(ctx, &tokenregistrytypes.RegistryEntry{
+		Denom:         "misconfigured",
+		IsWhitelisted: true,
+		Decimals:      18,
+		Permissions:   []tokenregistrytypes.Permission{tokenregistrytypes.Permission_IBCEXPORT},
+	})
 
 	rowanAmount, ok := sdk.NewIntFromString("1234567891123456789")
 	require.True(t, ok)
@@ -49,6 +56,7 @@ func TestMsgServer_Transfer(t *testing.T) {
 	require.True(t, ok)
 	xrowanAmount, ok := sdk.NewIntFromString("12345678911")
 	require.True(t, ok)
+	packetOverflowAmount := sdk.NewIntFromUint64(math.MaxUint64).Add(sdk.NewInt(1))
 
 	rowanSmallest, ok := sdk.NewIntFromString("183456789")
 	require.True(t, ok)
@@ -168,6 +176,23 @@ func TestMsgServer_Transfer(t *testing.T) {
 				"transfer",
 				"channel-0",
 				sdk.NewCoin("xrowan", sdk.NewInt(1)),
+				addrs[0],
+				addrs[1].String(),
+				clienttypes.NewHeight(0, 0),
+				0,
+			),
+			setupBankKeeperCalls: func() {},
+			setupMsgServerCalls:  func() {},
+		},
+		{
+			name:       "transfer amount too large to send without conversion",
+			err:        scibctransfertypes.ErrAmountTooLargeToSend,
+			bankKeeper: bankKeeper,
+			msgSrv:     msgSrv,
+			msg: sdktransfertypes.NewMsgTransfer(
+				"transfer",
+				"channel-0",
+				sdk.NewCoin("misconfigured", packetOverflowAmount),
 				addrs[0],
 				addrs[1].String(),
 				clienttypes.NewHeight(0, 0),
