@@ -2,7 +2,11 @@ import * as hardhat from "hardhat";
 import {container} from "tsyringe";
 import {DeployedBridgeBank, requiredEnvVar} from "../src/contractSupport";
 import {DeploymentName, HardhatRuntimeEnvironmentToken} from "../src/tsyringe/injectionTokens";
-import {setupRopstenDeployment, setupSifchainMainnetDeployment} from "../src/hardhatFunctions";
+import {
+    impersonateAccount,
+    setupRopstenDeployment,
+    setupSifchainMainnetDeployment
+} from "../src/hardhatFunctions";
 import {SifchainContractFactories} from "../src/tsyringe/contracts";
 import {buildIbcTokens, readTokenData} from "../src/ibcMatchingTokens";
 
@@ -33,7 +37,9 @@ async function main() {
 
     const bridgeBank = await container.resolve(DeployedBridgeBank).contract
 
-    await buildIbcTokens(ibcTokenFactory, await readTokenData(requiredEnvVar("TOKEN_FILE")), bridgeBank)
+    await impersonateAccount(hardhat, await bridgeBank.operator(), undefined, impersonatedAccount => {
+        await buildIbcTokens(ibcTokenFactory, await readTokenData(requiredEnvVar("TOKEN_FILE")), bridgeBank)
+    })
 }
 
 main()
