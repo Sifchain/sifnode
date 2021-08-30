@@ -33,6 +33,7 @@ func TestMsgServer_Transfer(t *testing.T) {
 		IsWhitelisted:        true,
 		Decimals:             18,
 		IbcCounterPartyDenom: "xrowan",
+		Permissions:          []tokenregistrytypes.Permission{tokenregistrytypes.Permission_IBCEXPORT},
 	})
 	app.TokenRegistryKeeper.SetToken(ctx, &tokenregistrytypes.RegistryEntry{
 		Denom:         "xrowan",
@@ -87,7 +88,6 @@ func TestMsgServer_Transfer(t *testing.T) {
 					TimeoutTimestamp: 0,
 				})
 			},
-			// TODO: Mint into the scibctransfer module account instead of SDK module account.
 			setupBankKeeperCalls: func() {
 				bankKeeper.EXPECT().SendCoins(gomock.Any(), addrs[0], sdktransfertypes.GetEscrowAddress("transfer", "channel-0"), sdk.NewCoins(sdk.NewCoin("rowan", rowanAmountEscrowed))).Return(nil)
 				bankKeeper.EXPECT().MintCoins(gomock.Any(), sdktransfertypes.ModuleName, sdk.NewCoins(sdk.NewCoin("xrowan", xrowanAmount))).Return(nil)
@@ -133,6 +133,23 @@ func TestMsgServer_Transfer(t *testing.T) {
 				"transfer",
 				"channel-0",
 				sdk.NewCoin("rowan", rowanTooSmall),
+				addrs[0],
+				addrs[1].String(),
+				clienttypes.NewHeight(0, 0),
+				0,
+			),
+			setupBankKeeperCalls: func() {},
+			setupMsgServerCalls:  func() {},
+		},
+		{
+			name:       "transfer denom without ibc export permission",
+			err:        tokenregistrytypes.ErrPermissionDenied,
+			bankKeeper: bankKeeper,
+			msgSrv:     msgSrv,
+			msg: sdktransfertypes.NewMsgTransfer(
+				"transfer",
+				"channel-0",
+				sdk.NewCoin("ceth", sdk.NewInt(1)),
 				addrs[0],
 				addrs[1].String(),
 				clienttypes.NewHeight(0, 0),
