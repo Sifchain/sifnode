@@ -52,7 +52,7 @@ func OnRecvPacketMaybeConvert(
 		}, acknowledgement.GetBytes(), nil
 	}
 
-	// Incoming coins were succesfully minted onto the chain,
+	// Incoming coins were successfully minted onto the chain,
 	// check if conversion to another denom is required.
 	if ShouldConvertIncomingCoins(ctx, whitelistKeeper, packet, data) {
 		receievedCoins, finalCoins := GetConvForIncomingCoins(ctx, whitelistKeeper, packet, data)

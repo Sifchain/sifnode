@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 
 	"github.com/Sifchain/sifnode/x/ibctransfer/types"
 	tokenregistrytypes "github.com/Sifchain/sifnode/x/tokenregistry/types"
@@ -14,14 +14,14 @@ import (
 )
 
 type msgServer struct {
-	bankKeeper          bankkeeper.Keeper
+	bankKeeper          types.BankKeeper
 	tokenRegistryKeeper tokenregistrytypes.Keeper
-	sdkMsgServer        sdktransfertypes.MsgServer
+	sdkMsgServer        types.MsgServer
 }
 
 // NewMsgServerImpl returns an implementation of the bank MsgServer interface
 // for the provided Keeper.
-func NewMsgServerImpl(sdkMsgServer sdktransfertypes.MsgServer, bankKeeper bankkeeper.Keeper, tokenRegistryKeeper tokenregistrytypes.Keeper) sdktransfertypes.MsgServer {
+func NewMsgServerImpl(sdkMsgServer types.MsgServer, bankKeeper types.BankKeeper, tokenRegistryKeeper tokenregistrytypes.Keeper) sdktransfertypes.MsgServer {
 	return &msgServer{
 		sdkMsgServer:        sdkMsgServer,
 		bankKeeper:          bankKeeper,
@@ -33,16 +33,26 @@ var _ sdktransfertypes.MsgServer = msgServer{}
 
 // Transfer defines a rpc handler method for MsgTransfer.
 func (srv msgServer) Transfer(goCtx context.Context, msg *sdktransfertypes.MsgTransfer) (*sdktransfertypes.MsgTransferResponse, error) {
+	// Check export permission
+	ctx := sdk.UnwrapSDKContext(goCtx)
+	if !srv.tokenRegistryKeeper.CheckDenomPermissions(ctx, msg.Token.Denom, []tokenregistrytypes.Permission{tokenregistrytypes.Permission_IBCEXPORT}) {
+		return nil, sdkerrors.Wrap(tokenregistrytypes.ErrPermissionDenied, "denom cannot be exported")
+	}
+
 	// get token registry entry for sent token
 	registryEntry := srv.tokenRegistryKeeper.GetDenom(sdk.UnwrapSDKContext(goCtx), msg.Token.Denom)
+	// disallow direct transfers of denom aliases
+	if registryEntry.UnitDenom != "" && registryEntry.UnitDenom != registryEntry.Denom {
+		return nil, sdkerrors.Wrap(tokenregistrytypes.ErrPermissionDenied, "transfers of denom aliases are not yet supported")
+	}
+
 	// check if registry entry has an IBC counter party conversion to process
 	if registryEntry.IbcCounterPartyDenom != "" && registryEntry.IbcCounterPartyDenom != registryEntry.Denom {
 		sendAsRegistryEntry := srv.tokenRegistryKeeper.GetDenom(sdk.UnwrapSDKContext(goCtx), registryEntry.IbcCounterPartyDenom)
-		if registryEntry.Decimals > sendAsRegistryEntry.Decimals {
+		if sendAsRegistryEntry.Decimals != 0 && registryEntry.Decimals > sendAsRegistryEntry.Decimals {
 			token, tokenConversion := ConvertCoinsForTransfer(goCtx, msg, registryEntry, sendAsRegistryEntry)
 			if token.Amount.Equal(sdk.NewInt(0)) {
 				return nil, types.ErrAmountTooLowToConvert
-
 			}
 			err := PrepareToSendConvertedCoins(goCtx, msg, token, tokenConversion, srv.bankKeeper)
 			if err != nil {
@@ -76,7 +86,7 @@ func ConvertCoinsForTransfer(goCtx context.Context, msg *sdktransfertypes.MsgTra
 
 // PrepareToSendConvertedCoins moves outgoing tokens into the denom that will be sent via IBC.
 // The requested tokens will be escrowed, and the new denom to send over IBC will be minted in the senders account.
-func PrepareToSendConvertedCoins(goCtx context.Context, msg *sdktransfertypes.MsgTransfer, token sdk.Coin, convToken sdk.Coin, bankKeeper bankkeeper.Keeper) error {
+func PrepareToSendConvertedCoins(goCtx context.Context, msg *sdktransfertypes.MsgTransfer, token sdk.Coin, convToken sdk.Coin, bankKeeper types.BankKeeper) error {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 	sender, err := sdk.AccAddressFromBech32(msg.Sender)
 	if err != nil {
