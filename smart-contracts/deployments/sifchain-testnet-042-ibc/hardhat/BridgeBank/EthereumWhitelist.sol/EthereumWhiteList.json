@@ -1,0 +1,60 @@
+{
+  "_format": "hh-sol-artifact-1",
+  "contractName": "EthereumWhiteList",
+  "sourceName": "contracts/BridgeBank/EthereumWhitelist.sol",
+  "abi": [
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "address",
+          "name": "_token",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "bool",
+          "name": "_value",
+          "type": "bool"
+        }
+      ],
+      "name": "LogWhiteListUpdate",
+      "type": "event"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_token",
+          "type": "address"
+        }
+      ],
+      "name": "getTokenInEthWhiteList",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [],
+      "name": "initialize",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    }
+  ],
+  "bytecode": "0x608060405234801561001057600080fd5b5061015a806100206000396000f3fe608060405234801561001057600080fd5b50600436106100365760003560e01c80637b38c6d41461003b5780638129fc1c14610075575b600080fd5b6100616004803603602081101561005157600080fd5b50356001600160a01b031661007f565b604080519115158252519081900360200190f35b61007d61009d565b005b6001600160a01b031660009081526001602052604090205460ff1690565b60005460ff16156100e3576040805162461bcd60e51b815260206004820152600b60248201526a125b9a5d1a585b1a5e995960aa1b604482015290519081900360640190fd5b6000808052600160208190527fa6eef7e35abe7026729641147f7915573c7e97b47efa546f5f6e3230263bcb49805460ff19908116831790915582541617905556fea265627a7a72315820af136973712ae726363ebf238d80524d18f57dfb43bc8d7ee10cac85001a324e64736f6c63430005100032",
+  "deployedBytecode": "0x608060405234801561001057600080fd5b50600436106100365760003560e01c80637b38c6d41461003b5780638129fc1c14610075575b600080fd5b6100616004803603602081101561005157600080fd5b50356001600160a01b031661007f565b604080519115158252519081900360200190f35b61007d61009d565b005b6001600160a01b031660009081526001602052604090205460ff1690565b60005460ff16156100e3576040805162461bcd60e51b815260206004820152600b60248201526a125b9a5d1a585b1a5e995960aa1b604482015290519081900360640190fd5b6000808052600160208190527fa6eef7e35abe7026729641147f7915573c7e97b47efa546f5f6e3230263bcb49805460ff19908116831790915582541617905556fea265627a7a72315820af136973712ae726363ebf238d80524d18f57dfb43bc8d7ee10cac85001a324e64736f6c63430005100032",
+  "linkReferences": {},
+  "deployedLinkReferences": {}
+}
