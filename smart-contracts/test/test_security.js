@@ -303,20 +303,6 @@ describe("Security Test", function () {
         ),
       ).to.be.revertedWith("Only token in cosmos whitelist can be burned");
     });
-
-    it("should not allow a user to burn tokens that don't have a denom", async function () {
-      await state.token_noDenom.connect(operator).mint(userOne.address, state.amount);
-      await state.token_noDenom.connect(userOne).approve(state.bridgeBank.address, state.amount);
-      await state.bridgeBank.connect(owner).addExistingBridgeToken(state.token_noDenom.address);
-  
-      await expect(
-        state.bridgeBank.connect(userOne).burn(
-          state.sender,
-          state.token_noDenom.address,
-          state.amount
-        )
-      ).to.be.revertedWith("INV_DENOM");
-    });
   });
 
   describe("Consensus Threshold Limits", function () {

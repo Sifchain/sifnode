@@ -364,15 +364,14 @@ contract BridgeBank is BankStorage,
         address token,
         uint256 amount
     ) external validSifAddress(recipient) onlyCosmosTokenWhiteList(token) whenNotPaused {
-        // revert if the token doesn't have a denom
-        string memory denom = getDenom(token);
-        require(keccak256(abi.encodePacked(denom)) != keccak256(abi.encodePacked("")), "INV_DENOM");
-
         // burn the tokens
         BridgeToken(token).burnFrom(msg.sender, amount);
         
         // decimals defaults to 18 if call to decimals fails
         uint8 decimals = getDecimals(token);
+
+        // Denom defaults to "" (empty string) if call to cosmosDenom fails
+        string memory denom = getDenom(token);
 
         lockBurnNonce = lockBurnNonce + 1;
 

@@ -325,7 +325,7 @@ describe("Test Bridge Bank", function () {
       expect(isInCosmosWhitelist3).to.be.true;
     });
 
-    it.only("should NOT allow a user to add many BridgeTokens in a batch", async function () {
+    it("should NOT allow a user to add many BridgeTokens in a batch", async function () {
       // expect token1 to NOT be registered as a BridgeToken
       let isInCosmosWhitelist1 = await state.bridgeBank.getCosmosTokenInWhiteList(state.token1.address);
       expect(isInCosmosWhitelist1).to.be.false;
