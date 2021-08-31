@@ -2,14 +2,13 @@
 pragma solidity 0.8.0;
 
 import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
 
 /**
  * @title IbcToken
  * @dev Mintable, ERC20Burnable, ERC20 compatible BankToken for use by BridgeBank
  **/
-contract IbcToken is ERC20Burnable, Ownable, AccessControl {
+contract IbcToken is ERC20Burnable, AccessControl {
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
 
     /**
@@ -27,7 +26,7 @@ contract IbcToken is ERC20Burnable, Ownable, AccessControl {
         string memory _symbol,
         uint8 _tokenDecimals,
         string memory _cosmosDenom
-    ) ERC20(_name, _symbol) Ownable() {
+    ) ERC20(_name, _symbol) {
         _decimals = _tokenDecimals;
         cosmosDenom = _cosmosDenom;
         _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
@@ -56,7 +55,7 @@ contract IbcToken is ERC20Burnable, Ownable, AccessControl {
      * @param denom The new cosmos denom
      * @return true if the operation succeeds
      */
-    function setDenom(string calldata denom) external onlyOwner returns (bool) {
+    function setDenom(string calldata denom) external onlyRole(DEFAULT_ADMIN_ROLE) returns (bool) {
         cosmosDenom = denom;
         return true;
     }
