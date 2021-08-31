@@ -84,10 +84,16 @@ class IntegrationTestContext:
         """true if we're using ganache"""
         return not self.ethereum_network
 
+    # Deprecated: sifnoded accepts --gas-prices=0.5rowan along with --gas-adjustment=1.5 instead of a fixed fee.
+    # Using those parameters is the best way to have the fees set robustly after the .42 upgrade.
+    # See https://github.com/Sifchain/sifnode/pull/1802#discussion_r697403408
     @property
     def sifchain_fees_int(self):
         return 200000
 
+    # Deprecated: sifnoded accepts --gas-prices=0.5rowan along with --gas-adjustment=1.5 instead of a fixed fee.
+    # Using those parameters is the best way to have the fees set robustly after the .42 upgrade.
+    # See https://github.com/Sifchain/sifnode/pull/1802#discussion_r697403408
     @property
     def sifchain_fees(self):
         """returns a string suitable for passing to sifnoded"""
