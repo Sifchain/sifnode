@@ -60,3 +60,13 @@ Then run the two scripts in a different shell:
 
     npx hardhat run scripts/create_ibc_matching_token.ts --network localhost | grep -v 'No need to generate' | tee test_data/ibc_token_addresses.jsonl
     npx hardhat run scripts/attach_ibc_matching_token.ts --network localhost < test_data/ibc_token_addresses.jsonl
+
+# Updating dev and test deployments
+
+## Update symbol_translator.json
+
+Modify https://github.com/Sifchain/chainOps/blob/main/.github/workflows/variableMapping/ebrelayer.yaml
+with the new symbol_translation.json entries.  It's a yaml file, so you need to escape json - you could
+use something like ```jq -aRs``` to do the quoting.
+
+To push that data out and restart the relayers, use https://github.com/Sifchain/chainOps/actions/workflows/peggy-ebrelayer-deployment.yml
