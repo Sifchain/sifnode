@@ -1,0 +1,51 @@
+[
+  {
+    "name": "Cosmos Hub",
+    "symbol": "ATOM",
+    "decimals": 6,
+    "cosmosDenom": ""
+  },
+  {
+    "name": "Iris Network",
+    "symbol": "IRIS",
+    "decimals": 6,
+    "cosmosDenom": ""
+  },
+  {
+    "name": "Persistance",
+    "symbol": "XPRT",
+    "decimals": 6,
+    "cosmosDenom": ""
+  },
+  {
+    "name": "Secret Network",
+    "symbol": "SCRT",
+    "decimals": 6,
+    "cosmosDenom": ""
+  },
+
+  {
+    "name": "Hard Protocol",
+    "symbol": "HARD",
+    "decimals": 6,
+    "cosmosDenom": ""
+  },
+  {
+    "name": "Osmosis",
+    "symbol": "OSMO",
+    "decimals": 6,
+    "cosmosDenom": ""
+  },
+  {
+    "name": "Regen",
+    "symbol": "REGEN",
+    "decimals": 6,
+    "cosmosDenom": ""
+  },
+  {
+    "name": "ION",
+    "symbol": "ION",
+    "decimals": 6,
+    "cosmosDenom": ""
+  }
+]
