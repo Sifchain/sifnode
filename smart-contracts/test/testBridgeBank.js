@@ -288,5 +288,77 @@ describe("Test Bridge Bank", function () {
       registeredDenomInBridgeToken2 = await state.token_noDenom.cosmosDenom();
       expect(registeredDenomInBridgeToken2).to.be.equal(state.constants.denom.none);
     });
+
+    it("should allow the operator to add many BridgeTokens in a batch", async function () {
+      // expect token1 to NOT be registered as a BridgeToken
+      let isInCosmosWhitelist1 = await state.bridgeBank.getCosmosTokenInWhiteList(state.token1.address);
+      expect(isInCosmosWhitelist1).to.be.false;
+
+      // expect token2 to NOT be registered as a BridgeToken
+      let isInCosmosWhitelist2 = await state.bridgeBank.getCosmosTokenInWhiteList(state.token2.address);
+      expect(isInCosmosWhitelist2).to.be.false;
+
+      // expect token3 to NOT be registered as a BridgeToken
+      let isInCosmosWhitelist3 = await state.bridgeBank.getCosmosTokenInWhiteList(state.token3.address);
+      expect(isInCosmosWhitelist3).to.be.false;
+
+      // add tokens as BridgeTokens
+      await expect(state.bridgeBank.connect(owner)
+        .batchAddExistingBridgeTokens([
+          state.token1.address,
+          state.token2.address,
+          state.token3.address
+        ])
+      ).to.be.fulfilled;
+
+      // check if the tokens are now correctly registered
+      // expect token1 to be registered as a BridgeToken
+      isInCosmosWhitelist1 = await state.bridgeBank.getCosmosTokenInWhiteList(state.token1.address);
+      expect(isInCosmosWhitelist1).to.be.true;
+
+      // expect token2 to be registered as a BridgeToken
+      isInCosmosWhitelist2 = await state.bridgeBank.getCosmosTokenInWhiteList(state.token2.address);
+      expect(isInCosmosWhitelist2).to.be.true;
+
+      // expect token3 to be registered as a BridgeToken
+      isInCosmosWhitelist3 = await state.bridgeBank.getCosmosTokenInWhiteList(state.token3.address);
+      expect(isInCosmosWhitelist3).to.be.true;
+    });
+
+    it.only("should NOT allow a user to add many BridgeTokens in a batch", async function () {
+      // expect token1 to NOT be registered as a BridgeToken
+      let isInCosmosWhitelist1 = await state.bridgeBank.getCosmosTokenInWhiteList(state.token1.address);
+      expect(isInCosmosWhitelist1).to.be.false;
+
+      // expect token2 to NOT be registered as a BridgeToken
+      let isInCosmosWhitelist2 = await state.bridgeBank.getCosmosTokenInWhiteList(state.token2.address);
+      expect(isInCosmosWhitelist2).to.be.false;
+
+      // expect token3 to NOT be registered as a BridgeToken
+      let isInCosmosWhitelist3 = await state.bridgeBank.getCosmosTokenInWhiteList(state.token3.address);
+      expect(isInCosmosWhitelist3).to.be.false;
+
+      // add tokens as BridgeTokens
+      await expect(state.bridgeBank.connect(userOne)
+        .batchAddExistingBridgeTokens([
+          state.token1.address,
+          state.token2.address,
+          state.token3.address
+        ])
+      ).to.be.revertedWith('!owner');
+
+      // check if the tokens are now registered (should not be)
+      // expect token1 to NOT be registered as a BridgeToken
+      isInCosmosWhitelist1 = await state.bridgeBank.getCosmosTokenInWhiteList(state.token1.address);
+      expect(isInCosmosWhitelist1).to.be.false;
+
+      // expect token2 to NOT be registered as a BridgeToken
+      isInCosmosWhitelist2 = await state.bridgeBank.getCosmosTokenInWhiteList(state.token2.address);
+      expect(isInCosmosWhitelist2).to.be.false;
+
+      // expect token3 to NOT be registered as a BridgeToken
+      isInCosmosWhitelist3 = await state.bridgeBank.getCosmosTokenInWhiteList(state.token3.address);
+      expect(isInCosmosWhitelist3).to.be.false;
+    });
   });
 });

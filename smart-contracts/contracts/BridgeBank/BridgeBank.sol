@@ -312,6 +312,22 @@ contract BridgeBank is BankStorage,
     }
 
     /**
+     * @notice Allows the owner to add many contracts as existing BridgeTokens
+     * @dev Adds tokens to Cosmos Whitelist in a batch
+     * @param contractsAddresses The list of tokens addresses
+     * @return true if the operation succeeded
+     */
+    function batchAddExistingBridgeTokens(
+      address[] calldata contractsAddresses
+    ) external onlyOwner returns (bool) {
+      for (uint256 i = 0; i < contractsAddresses.length; i++) {
+        setTokenInCosmosWhiteList(contractsAddresses[i], true);
+      }
+
+      return true;
+    }
+
+    /**
      * @notice CosmosBridge calls this function to mint or unlock tokens
      * @dev Controlled tokens will be minted, others will be unlocked
      * @param ethereumReceiver Tokens will be sent to this address
