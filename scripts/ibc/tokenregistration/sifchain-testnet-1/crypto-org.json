@@ -2,7 +2,7 @@
   "entries": [
     {
       "is_whitelisted": true,
-      "decimals": "6",
+      "decimals": "8",
       "denom": "basecro",
       "base_denom": "basecro",
       "path": "",
