@@ -3,11 +3,11 @@
     {
       "is_whitelisted": true,
       "decimals": "6",
-      "denom": "ibc/4BFA1CE7B80A9A830F8E164495276CCD9E9B5424951749ED92F80B394E8C91C8",
-      "base_denom": "uphoton",
-      "path": "transfer/channel-11",
-      "ibc_channel_id": "channel-11",
-      "ibc_counterparty_channel_id": "channel-27",
+      "denom": "ibc/11DFDFADE34DCE439BA732EBA5CD8AA804A544BA1ECC0882856289FAF01FE53F",
+      "base_denom": "uiris",
+      "path": "transfer/channel-8",
+      "ibc_channel_id": "channel-8",
+      "ibc_counterparty_channel_id": "channel-19",
       "display_name": "",
       "display_symbol": "",
       "network": "",
@@ -21,7 +21,7 @@
       ],
       "unit_denom": "",
       "ibc_counterparty_denom": "",
-      "ibc_counterparty_chain_id": "cosmoshub-testnet"
+      "ibc_counterparty_chain_id": "irishub-1"
     }
   ]
 }

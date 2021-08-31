@@ -5,18 +5,18 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
-	transfer "github.com/cosmos/cosmos-sdk/x/ibc/applications/transfer"
 	transfertypes "github.com/cosmos/cosmos-sdk/x/ibc/applications/transfer/types"
 	channeltypes "github.com/cosmos/cosmos-sdk/x/ibc/core/04-channel/types"
 
-	"github.com/Sifchain/sifnode/x/ethbridge/types"
+	sctransfertypes "github.com/Sifchain/sifnode/x/ibctransfer/types"
 	tokenregistrytypes "github.com/Sifchain/sifnode/x/tokenregistry/types"
 )
 
-func OnRecvPacketWhiteListed(
+func OnRecvPacketEnforceWhitelist(
 	ctx sdk.Context,
-	sdkAppModule transfer.AppModule,
+	sdkTransferKeeper sctransfertypes.SDKTransferKeeper,
 	whitelistKeeper tokenregistrytypes.Keeper,
+	bankKeeper transfertypes.BankKeeper,
 	packet channeltypes.Packet,
 ) (*sdk.Result, []byte, error) {
 
@@ -25,31 +25,30 @@ func OnRecvPacketWhiteListed(
 		return nil, nil, sdkerrors.Wrapf(sdkerrors.ErrUnknownRequest, "cannot unmarshal ICS-20 transfer packet data: %s", err.Error())
 	}
 
-	if !isRecvPacketAllowed(ctx, whitelistKeeper, packet, data) {
+	if !IsRecvPacketAllowed(ctx, whitelistKeeper, packet, data) {
 		acknowledgement := channeltypes.NewErrorAcknowledgement(
 			sdkerrors.Wrapf(sdkerrors.ErrInvalidCoins, "denom not on whitelist").Error(),
 		)
-
 		ctx.EventManager().EmitEvent(
 			sdk.NewEvent(
 				transfertypes.EventTypePacket,
-				sdk.NewAttribute(sdk.AttributeKeyModule, types.ModuleName),
+				sdk.NewAttribute(sdk.AttributeKeyModule, transfertypes.ModuleName),
 				sdk.NewAttribute(transfertypes.AttributeKeyReceiver, data.Receiver),
 				sdk.NewAttribute(transfertypes.AttributeKeyDenom, data.Denom),
 				sdk.NewAttribute(transfertypes.AttributeKeyAmount, fmt.Sprintf("%d", data.Amount)),
 				sdk.NewAttribute(transfertypes.AttributeKeyAckSuccess, fmt.Sprintf("%t", false)),
 			),
 		)
-
 		return &sdk.Result{
 			Events: ctx.EventManager().Events().ToABCIEvents(),
 		}, acknowledgement.GetBytes(), nil
 	}
 
-	return sdkAppModule.OnRecvPacket(ctx, packet)
+	// Executes the actual receive, with potential conversion.
+	return OnRecvPacketMaybeConvert(ctx, sdkTransferKeeper, whitelistKeeper, bankKeeper, packet)
 }
 
-func isRecvPacketAllowed(ctx sdk.Context, whitelistKeeper tokenregistrytypes.Keeper,
+func IsRecvPacketAllowed(ctx sdk.Context, whitelistKeeper tokenregistrytypes.Keeper,
 	packet channeltypes.Packet, data transfertypes.FungibleTokenPacketData) bool {
 
 	isReturning := IsRecvPacketReturning(packet, data)
@@ -104,19 +103,17 @@ func GetMintedDenomFromPacket(packet channeltypes.Packet, data transfertypes.Fun
 	return denomTrace.IBCDenom()
 }
 
+// IsRecvPacketReturning() indicates if a token is returning to sifchain,
+// i.e the sender is not the source of the token.
 func IsRecvPacketReturning(packet channeltypes.Packet, data transfertypes.FungibleTokenPacketData) bool {
-	if transfertypes.ReceiverChainIsSource(packet.GetSourcePort(), packet.GetSourceChannel(), data.Denom) {
-		// token originated on sifchain and is now being returned. This is allowed
-		// For paths Sifchain -> X -> Sifchain return true
-		// For paths Sifchain -> X -> Y -> Sifchain this condition is not triggered
-		// No need to whitelist channel and port,
-		// we assume tokens will come back using the same channel they used to go across.
-		// If Sifchain and Chain X have two channels running between them,
-		// and Token A uses channel 1 to go from sifchain to chain X . It needs to use channel 1 to come back.
-		return true
-	}
-
-	return false
+	// Token originated on sifchain and is now being returned. This is allowed
+	// For paths Sifchain -> X -> Sifchain return true
+	// For paths Sifchain -> X -> Y -> Sifchain this condition is not triggered
+	// No need to whitelist channel and port,
+	// we assume tokens will come back using the same channel they used to go across.
+	// If Sifchain and Chain X have two channels running between them,
+	// and Token A uses channel 1 to go from sifchain to chain X . It needs to use channel 1 to come back.
+	return transfertypes.ReceiverChainIsSource(packet.GetSourcePort(), packet.GetSourceChannel(), data.Denom)
 }
 
 func IsWhitelisted(ctx sdk.Context, whitelistKeeper tokenregistrytypes.Keeper, denom string) bool {

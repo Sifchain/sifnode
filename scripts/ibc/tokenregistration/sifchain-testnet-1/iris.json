@@ -3,11 +3,11 @@
     {
       "is_whitelisted": true,
       "decimals": "6",
-      "denom": "ibc/4BFA1CE7B80A9A830F8E164495276CCD9E9B5424951749ED92F80B394E8C91C8",
-      "base_denom": "uphoton",
-      "path": "transfer/channel-11",
-      "ibc_channel_id": "channel-11",
-      "ibc_counterparty_channel_id": "channel-27",
+      "denom": "ibc/7EABFE14CD2B6F8B0444A0ED0D7BCB947A81D0B74CE5B571C73DE61DFA261193",
+      "base_denom": "unyan",
+      "path": "transfer/channel-14",
+      "ibc_channel_id": "channel-14",
+      "ibc_counterparty_channel_id": "channel-25",
       "display_name": "",
       "display_symbol": "",
       "network": "",
@@ -21,7 +21,7 @@
       ],
       "unit_denom": "",
       "ibc_counterparty_denom": "",
-      "ibc_counterparty_chain_id": "cosmoshub-testnet"
+      "ibc_counterparty_chain_id": "nyancat-8"
     }
   ]
 }

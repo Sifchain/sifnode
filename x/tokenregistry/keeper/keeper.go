@@ -137,12 +137,9 @@ func (k keeper) GetDenomWhitelist(ctx sdk.Context) types.Registry {
 	var whitelist types.Registry
 	store := ctx.KVStore(k.storeKey)
 	bz := store.Get(types.WhitelistStorePrefix)
-
 	if len(bz) == 0 {
 		return types.Registry{}
 	}
-
 	k.cdc.MustUnmarshalBinaryBare(bz, &whitelist)
-
 	return whitelist
 }

@@ -89,6 +89,7 @@ import (
 	ethbridgekeeper "github.com/Sifchain/sifnode/x/ethbridge/keeper"
 	ethbridgetypes "github.com/Sifchain/sifnode/x/ethbridge/types"
 	ibctransferoverride "github.com/Sifchain/sifnode/x/ibctransfer"
+	sctransfertypes "github.com/Sifchain/sifnode/x/ibctransfer/types"
 	"github.com/Sifchain/sifnode/x/oracle"
 	oraclekeeper "github.com/Sifchain/sifnode/x/oracle/keeper"
 	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
@@ -132,6 +133,7 @@ var (
 		stakingtypes.NotBondedPoolName: {authtypes.Burner, authtypes.Staking},
 		govtypes.ModuleName:            {authtypes.Burner, authtypes.Staking},
 		ibctransfertypes.ModuleName:    {authtypes.Minter, authtypes.Burner},
+		sctransfertypes.ModuleName:     {authtypes.Minter, authtypes.Burner},
 		ethbridgetypes.ModuleName:      {authtypes.Minter, authtypes.Burner},
 		clptypes.ModuleName:            {authtypes.Burner, authtypes.Minter},
 		dispensation.ModuleName:        {authtypes.Burner, authtypes.Minter},
