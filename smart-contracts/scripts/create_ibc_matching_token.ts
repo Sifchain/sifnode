@@ -3,7 +3,9 @@ import {container} from "tsyringe";
 import {DeployedBridgeBank, requiredEnvVar} from "../src/contractSupport";
 import {DeploymentName, HardhatRuntimeEnvironmentToken} from "../src/tsyringe/injectionTokens";
 import {
-    impersonateAccount, setNewEthBalance,
+    impersonateAccount,
+    impersonateBridgeBankAccounts,
+    setNewEthBalance,
     setupRopstenDeployment,
     setupSifchainMainnetDeployment
 } from "../src/hardhatFunctions";
@@ -13,7 +15,6 @@ import {buildIbcTokens, readTokenData} from "../src/ibcMatchingTokens";
 async function main() {
     const [bridgeBankOwner] = await hardhat.ethers.getSigners();
 
-    hardhat.network.config
     container.register(HardhatRuntimeEnvironmentToken, {useValue: hardhat})
 
     const deploymentName = requiredEnvVar("DEPLOYMENT_NAME")
@@ -31,21 +32,17 @@ async function main() {
             break
     }
 
+    if (hardhat.network.name != "mainnet")
+        impersonateBridgeBankAccounts(container, hardhat, deploymentName)
+
     const factories = await container.resolve(SifchainContractFactories) as SifchainContractFactories
 
     const ibcTokenFactory = (await factories.ibcToken).connect(bridgeBankOwner)
 
     const bridgeBank = await container.resolve(DeployedBridgeBank).contract
-    const bridgeBankOperater = await bridgeBank.operator()
+    await buildIbcTokens(ibcTokenFactory, await readTokenData(requiredEnvVar("TOKEN_FILE")), bridgeBank)
 
-    if (hardhat.network.name == "localhost") {
-        await impersonateAccount(hardhat, await bridgeBank.operator(), undefined, async impersonatedAccount => {
-            await buildIbcTokens(ibcTokenFactory, await readTokenData(requiredEnvVar("TOKEN_FILE")), bridgeBank.connect(impersonatedAccount))
-        })
-    } else {
-        await buildIbcTokens(ibcTokenFactory, await readTokenData(requiredEnvVar("TOKEN_FILE")), bridgeBank)
-    }
-    console.log("created ibc tokens on this network: ", hardhat.network.name)
+    console.log(JSON.stringify({createdTokensOnNetwork: hardhat.network.name}))
 }
 
 main()

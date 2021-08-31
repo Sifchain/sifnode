@@ -11,7 +11,7 @@ import {
 import {BridgeToken, BridgeToken__factory, ERC20} from "../build";
 import {SignerWithAddress} from "@nomiclabs/hardhat-ethers/signers";
 import {NotNativeCurrencyAddress} from "./ethereumAddress";
-import {DeployedBridgeToken} from "./contractSupport";
+import {DeployedBridgeBank, DeployedBridgeToken} from "./contractSupport";
 
 export const eRowanMainnetAddress = "0x07bac35846e5ed502aa91adf6a9e7aa210f2dcbe"
 
@@ -90,6 +90,18 @@ export async function setupSifchainMainnetDeployment(c: DependencyContainer, hre
     c.register(BridgeBankMainnetUpgradeAdmin, {useValue: "0x7c6c6ea036e56efad829af5070c8fb59dc163d88"})
     c.register(CosmosBridgeMainnetUpgradeAdmin, {useValue: "0x7c6c6ea036e56efad829af5070c8fb59dc163d88"})
     c.register(DeployedBridgeToken, {useValue: syntheticBridgeToken as DeployedBridgeToken})
+}
+
+export async function impersonateBridgeBankAccounts(c: DependencyContainer, hre: HardhatRuntimeEnvironment, deploymentName: string) {
+    const bridgeBank = await c.resolve(DeployedBridgeBank).contract
+    const operator = await bridgeBank.operator()
+    const owner = await bridgeBank.owner()
+    const pauser = owner // TODO you can't look up pausers, so probably need to add a pauser
+    startImpersonateAccount(hre, operator)
+    startImpersonateAccount(hre, owner)
+    startImpersonateAccount(hre, pauser)
+
+    await setNewEthBalance(hre, owner, BigNumber.from("100000000000000000000"))
 }
 
 export async function setupRopstenDeployment(c: DependencyContainer, hre: HardhatRuntimeEnvironment, deploymentName: string) {

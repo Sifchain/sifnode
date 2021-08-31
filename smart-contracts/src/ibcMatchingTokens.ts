@@ -19,13 +19,15 @@ export async function processTokenData(bridgeBank: BridgeBank, filename: string,
         if ((line ?? "") === "")
             continue
         const data = JSON.parse(line) as TokenAddress
-        const token = await hardhat.ethers.getContractAt("IbcToken", data.address) as IbcToken
-        await attachIbcToken(bridgeBank, token)
-        const result = {
-            ownedByBridgeBank: token.address,
-            addExistingBridgeTokenCalled: true
+        if (data?.address) {
+            const token = await hardhat.ethers.getContractAt("IbcToken", data.address) as IbcToken
+            await attachIbcToken(bridgeBank, token)
+            const result = {
+                ownedByBridgeBank: token.address,
+                addExistingBridgeTokenCalled: true
+            }
+            console.log(JSON.stringify(result))
         }
-        console.log(JSON.stringify(result))
     }
 }
 
@@ -52,7 +54,6 @@ async function buildIbcToken(tokenFactory: IbcToken__factory, tokenData: TokenDa
     console.log(JSON.stringify({roleRenouncedByDeployer: MINTER_ROLE}))
     await newToken.renounceRole(DEFAULT_ADMIN_ROLE, await tokenFactory.signer.getAddress())
     console.log(JSON.stringify({roleRenouncedByDeployer: DEFAULT_ADMIN_ROLE}))
-    await newToken.transferOwnership(bridgeBank.address)
     return newToken
 }
 
