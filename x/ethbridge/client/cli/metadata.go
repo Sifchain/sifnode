@@ -16,7 +16,7 @@ import (
 	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
 )
 
-// GetCmdGetEthBridgeProphecy queries information about a specific prophecy
+// GetCmdGetTokenMetadata queries information about a specific token
 func GetCmdGetTokenMetadata() *cobra.Command {
 	return &cobra.Command{
 		Use:   `metadata [denom-hash]`,
@@ -44,7 +44,7 @@ func GetCmdGetTokenMetadata() *cobra.Command {
 	}
 }
 
-// GetCmdSetCrossChainFee is the CLI command to send the message to set crosschain fee for network
+// GetCmdAddIBCTokenMetadata is the CLI command to send the message to add metadata for an IBC token
 func GetCmdAddIBCTokenMetadata() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "metadata-add [cosmos-sender-address] [token-name] [token-symbol] [token-address] [token-decimals] [network-descriptor]",
