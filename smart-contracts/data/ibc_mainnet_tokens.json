@@ -12,7 +12,7 @@
     "cosmosDenom": ""
   },
   {
-    "name": "Persistance",
+    "name": "Persistence",
     "symbol": "XPRT",
     "decimals": 6,
     "cosmosDenom": ""
@@ -37,13 +37,13 @@
     "cosmosDenom": ""
   },
   {
-    "name": "Regen",
+    "name": "Regen Network",
     "symbol": "REGEN",
     "decimals": 6,
     "cosmosDenom": ""
   },
   {
-    "name": "ION",
+    "name": "Ion",
     "symbol": "ION",
     "decimals": 6,
     "cosmosDenom": ""
