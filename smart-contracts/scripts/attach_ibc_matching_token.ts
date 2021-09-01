@@ -32,7 +32,8 @@ async function main() {
             break
     }
 
-    if (hardhat.network.name != "mainnet")
+    const useForking = process.env["USE_FORKING"];
+    if (useForking)
         await impersonateBridgeBankAccounts(container, hardhat, deploymentName)
 
     const bridgeBank = await container.resolve(DeployedBridgeBank).contract

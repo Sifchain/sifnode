@@ -32,14 +32,16 @@ async function main() {
             break
     }
 
-    if (hardhat.network.name != "mainnet")
-        impersonateBridgeBankAccounts(container, hardhat, deploymentName)
+    const useForking = process.env["USE_FORKING"];
+    if (useForking)
+        await impersonateBridgeBankAccounts(container, hardhat, deploymentName)
 
     const factories = await container.resolve(SifchainContractFactories) as SifchainContractFactories
 
     const ibcTokenFactory = (await factories.ibcToken).connect(bridgeBankOwner)
 
     const bridgeBank = await container.resolve(DeployedBridgeBank).contract
+
     await buildIbcTokens(ibcTokenFactory, await readTokenData(requiredEnvVar("TOKEN_FILE")), bridgeBank)
 
     console.log(JSON.stringify({createdTokensOnNetwork: hardhat.network.name}))

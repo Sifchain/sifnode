@@ -3,6 +3,7 @@ import { DependencyContainer } from "tsyringe";
 import fs from "fs";
 import * as hardhat from "hardhat";
 import web3 from "web3";
+import {BigNumber} from "ethers";
 
 interface TokenAddress {
   address: string;
@@ -63,12 +64,12 @@ async function buildIbcToken(
   );
   console.log(
     JSON.stringify({
-      deployed: await newToken.address,
+      deployed: newToken.address,
       symbol: await newToken.symbol(),
     })
   );
   await newToken.grantRole(DEFAULT_ADMIN_ROLE, bridgeBank.address);
-  console.log(JSON.stringify({ roleGrantedToBridgeBank: DEFAULT_ADMIN_ROLE }));
+  console.log(JSON.stringify({ roleGrantedToBridgeBank: DEFAULT_ADMIN_ROLE, bridgeBank: bridgeBank.address }));
   await newToken.grantRole(MINTER_ROLE, bridgeBank.address);
   console.log(JSON.stringify({ roleGrantedToBridgeBank: MINTER_ROLE }));
   await newToken.renounceRole(

@@ -25,21 +25,21 @@ echo ========== Sample commands ==========
 
 echo; echo == erowan balance
 echo yarn -s --cwd $BASEDIR/smart-contracts integrationtest:getTokenBalance \
-  --symbol \$BRIDGE_TOKEN_ADDRESS \
   --ethereum_private_key_env_var "ETHEREUM_PRIVATE_KEY" \
   --json_path \$BASEDIR/smart-contracts/deployments/$DEPLOYMENT_NAME \
   --gas estimate \
   --ethereum_network \$ETHEREUM_NETWORK \
   --ethereum_address \$ETHEREUM_ADDRESS \
+  --symbol \$BRIDGE_TOKEN_ADDRESS \
 
 echo; echo == eth balance
 echo yarn -s --cwd $BASEDIR/smart-contracts integrationtest:getTokenBalance \
-  --symbol eth \
-  --ethereum_private_key_env_var "ETHEREUM_PRIVATE_KEY" \
   --json_path $BASEDIR/smart-contracts/deployments/$DEPLOYMENT_NAME \
   --gas estimate \
   --ethereum_network \$ETHEREUM_NETWORK \
+  --ethereum_private_key_env_var "ETHEREUM_PRIVATE_KEY" \
   --ethereum_address \$ETHEREUM_ADDRESS \
+  --symbol eth \
 
 echo; echo == mint erowan
 echo yarn -s --cwd /home/james/workspace/sifnode/smart-contracts integrationtest:mintTestnetTokens  \
@@ -54,25 +54,36 @@ echo yarn -s --cwd /home/james/workspace/sifnode/smart-contracts integrationtest
 
 echo; echo == lock eth
 echo yarn -s --cwd $BASEDIR/smart-contracts integrationtest:sendLockTx --sifchain_address $ROWAN_SOURCE \
-  --symbol eth \
   --ethereum_private_key_env_var "ETHEREUM_PRIVATE_KEY" \
   --json_path $BASEDIR/smart-contracts/deployments/$DEPLOYMENT_NAME \
   --gas estimate \
   --ethereum_network $ETHEREUM_NETWORK \
   --bridgebank_address $BRIDGE_BANK_ADDRESS \
   --ethereum_address $ETHEREUM_ADDRESS \
+  --symbol eth \
+  --amount 1700000000000000000
+
+echo; echo == lock OTHER_TOKEN
+echo yarn -s --cwd $BASEDIR/smart-contracts integrationtest:sendLockTx --sifchain_address $ROWAN_SOURCE \
+  --ethereum_private_key_env_var "ETHEREUM_PRIVATE_KEY" \
+  --json_path $BASEDIR/smart-contracts/deployments/$DEPLOYMENT_NAME \
+  --gas estimate \
+  --ethereum_network $ETHEREUM_NETWORK \
+  --bridgebank_address $BRIDGE_BANK_ADDRESS \
+  --ethereum_address $ETHEREUM_ADDRESS \
+  --symbol $OTHER_TOKEN \
   --amount 1700000000000000000
 
 echo; echo == burn erowan
 echo yarn -s --cwd $BASEDIR/smart-contracts integrationtest:sendBurnTx \
-  --symbol $BRIDGE_TOKEN_ADDRESS \
   --ethereum_private_key_env_var "ETHEREUM_PRIVATE_KEY" \
   --json_path $BASEDIR/smart-contracts/deployments/$DEPLOYMENT_NAME \
   --gas estimate \
   --ethereum_network $ETHEREUM_NETWORK \
   --bridgebank_address $BRIDGE_BANK_ADDRESS \
-  --ethereum_address $ETHEREUM_ADDRESS \
   --sifchain_address $ROWAN_SOURCE \
+  --ethereum_address $ETHEREUM_ADDRESS \
+  --symbol $BRIDGE_TOKEN_ADDRESS \
   --amount 17
 
 echo; echo == burn erowan from operator account
@@ -97,13 +108,14 @@ echo yarn -s --cwd $BASEDIR/smart-contracts \
 sifnodecmd=sifnoded
 
 echo; echo == sifchain balance
-echo $sifnodecmd q auth account --node $SIFNODE $ROWAN_SOURCE
+echo $sifnodecmd q bank balances --node $SIFNODE $ROWAN_SOURCE
 
 echo; echo == sifchain transaction
 echo $sifnodecmd q tx --node $SIFNODE --chain-id $DEPLOYMENT_NAME 193EFB4A5D20BEC58ADE8BACEB38264870ADD8BAFEA9D6DAABE554B0ACBC0C93
 
 echo; echo == all account balances
-echo "$sifnodecmd keys list --keyring-backend test --output json | jq -r '.[].address' | parallel $sifnodecmd q auth account --node $SIFNODE -o json {} | grep coins"
+echo "$sifnodecmd keys list --keyring-backend test --output json | jq -r '.[].address' | parallel $sifnodecmd q bank balances --node $SIFNODE -o json {} | grep coins"
+echo "$sifnodecmd keys list --keyring-backend test --output json | jq -r '.[].address' | parallel --tag sifnoded q bank balances --node tcp://rpc-devnet.sifchain.finance:80 -o json {} \| grep denom \| jq \'. += {foo: 1}\' \| jq .balances"
 
 echo; echo == burn ceth
 echo $sifnodecmd tx ethbridge burn \
@@ -115,6 +127,28 @@ echo $sifnodecmd tx ethbridge burn \
   --chain-id=$DEPLOYMENT_NAME  \
   --yes \
   --from $ROWAN_SOURCE \
+
+echo; echo == lock rowan
+echo $sifnodecmd tx ethbridge lock \
+  $ROWAN_SOURCE $ETHEREUM_ADDRESS 100 rowan 58560000000000000 \
+  --node $SIFNODE \
+  --keyring-backend test \
+  --ethereum-chain-id=$ETHEREUM_NETWORK_ID \
+  --chain-id=$DEPLOYMENT_NAME  \
+  --yes \
+  --gas-prices 0.5rowan \
+  --from $ROWAN_SOURCE \
+
+echo; echo == lock rowan with fees
+echo $sifnodecmd tx ethbridge lock \
+  $ROWAN_SOURCE $ETHEREUM_ADDRESS 100 rowan 58560000000000000 \
+  --node $SIFNODE \
+  --keyring-backend test \
+  --ethereum-chain-id=$ETHEREUM_NETWORK_ID \
+  --chain-id=$DEPLOYMENT_NAME  \
+  --yes \
+  --from $ROWAN_SOURCE \
+  --fees 100000rowan \
 
 echo; echo == send ceth
 echo $sifnodecmd tx send $ROWAN_SOURCE sifsomedestination 100rowan \

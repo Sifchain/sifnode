@@ -61,6 +61,11 @@ Then run the two scripts in a different shell:
     npx hardhat run scripts/create_ibc_matching_token.ts --network localhost | grep -v 'No need to generate' | tee test_data/ibc_token_addresses.jsonl
     npx hardhat run scripts/attach_ibc_matching_token.ts --network localhost < test_data/ibc_token_addresses.jsonl
 
+or for ropsten
+
+    npx hardhat run scripts/create_ibc_matching_token.ts --network ropsten | grep -v 'No need to generate' | tee test_data/ibc_token_addresses.jsonl
+    npx hardhat run scripts/attach_ibc_matching_token.ts --network ropsten < test_data/ibc_token_addresses.jsonl
+
 # Updating dev and test deployments
 
 ## Update symbol_translator.json

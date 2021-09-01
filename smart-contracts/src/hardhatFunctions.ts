@@ -77,7 +77,21 @@ export async function setNewEthBalance(
 export async function setupSifchainMainnetDeployment(c: DependencyContainer, hre: HardhatRuntimeEnvironment, deploymentName: string) {
     c.register(DeploymentDirectory, {useValue: "./deployments"})
     c.register(DeploymentName, {useValue: deploymentName})
-    c.register(DeploymentChainId, {useValue: 1})
+    // We'd like to be able to use chainId from the provider,
+    // but it doesn't actually work.  It returns 1 even when
+    // you're looking at forked ropsten.
+    // const chainId = (await hre.ethers.provider.getNetwork()).chainId
+    let chainId = 0;
+    switch (deploymentName) {
+        case "sifchain":
+        case "sifchain-1":
+            chainId = 1
+            break
+        default:
+            chainId = 3
+            break
+    }
+    c.register(DeploymentChainId, {useValue: chainId})
     const bridgeTokenFactory = await hre.ethers.getContractFactory("BridgeToken") as BridgeToken__factory
 
     // BridgeToken for Rowan doesn't have a json file in deployments, so we need to build DeployedBridgeToken by hand
