@@ -18,13 +18,6 @@
     "cosmosDenom": ""
   },
   {
-    "name": "Secret Network",
-    "symbol": "SCRT",
-    "decimals": 6,
-    "cosmosDenom": ""
-  },
-
-  {
     "name": "HARD Protocol",
     "symbol": "HARD",
     "decimals": 6,
