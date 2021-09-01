@@ -47,5 +47,17 @@
     "symbol": "ION",
     "decimals": 6,
     "cosmosDenom": ""
+  },
+  {
+    "name": "Akash Network",
+    "symbol": "AKT",
+    "decimals": 6,
+    "cosmosDenom": ""
+  },
+  {
+    "name": "Kava.io",
+    "symbol": "KAVA",
+    "decimals": 6,
+    "cosmosDenom": ""
   }
 ]
