@@ -1,0 +1,60 @@
+{
+  "_format": "hh-sol-artifact-1",
+  "contractName": "CosmosWhiteList",
+  "sourceName": "contracts/BridgeBank/CosmosWhiteList.sol",
+  "abi": [
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "address",
+          "name": "_token",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "bool",
+          "name": "_value",
+          "type": "bool"
+        }
+      ],
+      "name": "LogWhiteListUpdate",
+      "type": "event"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_token",
+          "type": "address"
+        }
+      ],
+      "name": "getCosmosTokenInWhiteList",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [],
+      "name": "initialize",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    }
+  ],
+  "bytecode": "0x608060405234801561001057600080fd5b5061015e806100206000396000f3fe608060405234801561001057600080fd5b50600436106100365760003560e01c80638129fc1c1461003b57806396e5c35614610045575b600080fd5b61004361007f565b005b61006b6004803603602081101561005b57600080fd5b50356001600160a01b031661010b565b604080519115158252519081900360200190f35b60655460ff16156100c5576040805162461bcd60e51b815260206004820152600b60248201526a125b9a5d1a585b1a5e995960aa1b604482015290519081900360640190fd5b60008080526020527fad3228b676f7d3cd4284a5443f17f1962b36e491b30a40b2405849e597ba5fb58054600160ff199182168117909255606580549091169091179055565b6001600160a01b031660009081526020819052604090205460ff169056fea265627a7a72315820795d4b9a3517217bd6f2dfb67b9d74f1a0aa2816df46b4a6f77b634c4728a7be64736f6c63430005100032",
+  "deployedBytecode": "0x608060405234801561001057600080fd5b50600436106100365760003560e01c80638129fc1c1461003b57806396e5c35614610045575b600080fd5b61004361007f565b005b61006b6004803603602081101561005b57600080fd5b50356001600160a01b031661010b565b604080519115158252519081900360200190f35b60655460ff16156100c5576040805162461bcd60e51b815260206004820152600b60248201526a125b9a5d1a585b1a5e995960aa1b604482015290519081900360640190fd5b60008080526020527fad3228b676f7d3cd4284a5443f17f1962b36e491b30a40b2405849e597ba5fb58054600160ff199182168117909255606580549091169091179055565b6001600160a01b031660009081526020819052604090205460ff169056fea265627a7a72315820795d4b9a3517217bd6f2dfb67b9d74f1a0aa2816df46b4a6f77b634c4728a7be64736f6c63430005100032",
+  "linkReferences": {},
+  "deployedLinkReferences": {}
+}

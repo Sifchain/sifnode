@@ -15,6 +15,9 @@ service Query {
   // CrosschainFeeConfig queries crosschain fee config for a network
   rpc CrosschainFeeConfig(QueryCrosschainFeeConfigRequest)
       returns (QueryCrosschainFeeConfigResponse) {}
+  // LockBurnNonce query lock burn nonce for a relayer in a network
+  rpc LockBurnNonce(QueryLockBurnNonceRequest)
+      returns (QueryLockBurnNonceResponse) {}
 }
 
 // QueryEthProphecyRequest payload for EthProphecy rpc query
@@ -71,3 +74,12 @@ message ProphciesCompletedQueryRequest {
 message ProphciesCompletedQueryResponse {
   repeated sifnode.oracle.v1.ProphecyInfo prophecy_info = 1;
 }
+
+// QueryLockBurnNonceRequest payload for LockBurnNonce rpc query
+message QueryLockBurnNonceRequest {
+  sifnode.oracle.v1.NetworkDescriptor network_descriptor = 1;
+  string relayer_val_address = 2;
+}
+
+// QueryLockBurnNonceResponse return LockBurnNonce
+message QueryLockBurnNonceResponse { uint64 lock_burn_nonce = 1; }
