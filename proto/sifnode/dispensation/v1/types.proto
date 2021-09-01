@@ -22,6 +22,12 @@ enum DistributionType {
   DISTRIBUTION_TYPE_VALIDATOR_SUBSIDY = 2;
   // Liquidity mining distribution type
   DISTRIBUTION_TYPE_LIQUIDITY_MINING = 3;
+  // 0.42 Cosmos IBC Rewards Program v1 distribution type
+  DISTRIBUTION_TYPE_LIQUIDITY_MINING_IBC_V1 = 4;
+  // Akash rewards program v1 distribution type
+  DISTRIBUTION_TYPE_LIQUIDITY_MINING_AKASH_V1 = 5;
+  // Peggy rewards program v1 distribution type
+  DISTRIBUTION_TYPE_LIQUIDITY_MINING_PEGGY_V1 = 6;
 }
 
 // Claim status enum
