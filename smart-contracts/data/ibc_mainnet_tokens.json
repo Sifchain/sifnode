@@ -1,12 +1,12 @@
 [
   {
-    "name": "Cosmos Hub",
+    "name": "Cosmos",
     "symbol": "ATOM",
     "decimals": 6,
     "cosmosDenom": ""
   },
   {
-    "name": "Iris Network",
+    "name": "IRISnet",
     "symbol": "IRIS",
     "decimals": 6,
     "cosmosDenom": ""
@@ -25,7 +25,7 @@
   },
 
   {
-    "name": "Hard Protocol",
+    "name": "HARD Protocol",
     "symbol": "HARD",
     "decimals": 6,
     "cosmosDenom": ""
