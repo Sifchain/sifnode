@@ -14,9 +14,6 @@ import {
     BridgeToken__factory,
     CosmosBridge__factory
 } from "../../build";
-import web3 from "web3";
-
-const MINTER_ROLE = web3.utils.soliditySha3('MINTER_ROLE');
 
 @singleton()
 export class SifchainContractFactories {
