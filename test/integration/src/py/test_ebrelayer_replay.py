@@ -88,7 +88,7 @@ def test_transfer_eth_to_ceth_using_replay_blocks(
     cn = test_utilities.get_required_env_var("CHAINNET")
     ending_block = test_utilities.current_ethereum_block_number(smart_contracts_dir) + 1
     cmd = f"""yes | ebrelayer replayEthereum tcp://0.0.0.0:26657 {ews} {bra} {mon} '{mn}' {starting_block} {ending_block} 1 2 --chain-id {cn} --gas 5000000000000 \
- --keyring-backend test --node tcp://0.0.0.0:26657 --from {mon}  --symbol-translator-file config/symbol_translator.json"""
+ --keyring-backend test --node tcp://0.0.0.0:26657 --from {mon}  --symbol-translator-file {integration_dir}/config/symbol_translator.json"""
     test_utilities.get_shell_output(cmd)
     time.sleep(5)
     logging.info(f"check the ending balance of {request.sifchain_address} after replaying blocks")
