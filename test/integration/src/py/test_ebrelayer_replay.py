@@ -41,7 +41,7 @@ def test_transfer_eth_to_ceth_using_replay_blocks(
 ):
     starting_block = test_utilities.current_ethereum_block_number(smart_contracts_dir)
     logging.info("stopping ebrelayer")
-    test_utilities.get_shell_output("pkill -9 ebrelayer || true")
+    test_utilities.kill_ebrelayer()
     request, credentials = build_request(smart_contracts_dir, source_ethereum_address, solidity_json_path)
     logging.info("(no transactions should happen without a relayer)")
     logging.info(f"send {request.amount / 10 ** 18} eth ({request.amount} wei) to {request.sifchain_address}")

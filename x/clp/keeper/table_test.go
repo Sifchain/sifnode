@@ -16,7 +16,7 @@ import (
 )
 
 func getDenomWhiteListEntries() tokenregistrytypes.Registry {
-	return tokenregistrytypes.DefaultRegistry()
+	return tokenregistrytypes.InitialRegistry()
 }
 
 func createTestAppForTestTables() (sdk.Context, *sifapp.SifchainApp) {

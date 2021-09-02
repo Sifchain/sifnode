@@ -23,6 +23,37 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
+type Permission int32
+
+const (
+	Permission_UNSPECIFIED Permission = 0
+	Permission_CLP         Permission = 1
+	Permission_IBCEXPORT   Permission = 2
+	Permission_IBCIMPORT   Permission = 3
+)
+
+var Permission_name = map[int32]string{
+	0: "UNSPECIFIED",
+	1: "CLP",
+	2: "IBCEXPORT",
+	3: "IBCIMPORT",
+}
+
+var Permission_value = map[string]int32{
+	"UNSPECIFIED": 0,
+	"CLP":         1,
+	"IBCEXPORT":   2,
+	"IBCIMPORT":   3,
+}
+
+func (x Permission) String() string {
+	return proto.EnumName(Permission_name, int32(x))
+}
+
+func (Permission) EnumDescriptor() ([]byte, []int) {
+	return fileDescriptor_d08afdaf425e66ea, []int{0}
+}
+
 type GenesisState struct {
 	AdminAccount string    `protobuf:"bytes,1,opt,name=admin_account,json=adminAccount,proto3" json:"admin_account,omitempty"`
 	Registry     *Registry `protobuf:"bytes,2,opt,name=registry,proto3" json:"registry,omitempty"`
@@ -120,21 +151,39 @@ func (m *Registry) GetEntries() []*RegistryEntry {
 }
 
 type RegistryEntry struct {
-	IsWhitelisted  bool   `protobuf:"varint,1,opt,name=is_whitelisted,json=isWhitelisted,proto3" json:"is_whitelisted,omitempty"`
-	Decimals       int64  `protobuf:"varint,2,opt,name=decimals,proto3" json:"decimals,omitempty"`
-	Denom          string `protobuf:"bytes,3,opt,name=denom,proto3" json:"denom,omitempty"`
-	BaseDenom      string `protobuf:"bytes,4,opt,name=base_denom,json=baseDenom,proto3" json:"base_denom,omitempty"`
-	Path           string `protobuf:"bytes,5,opt,name=path,proto3" json:"path,omitempty"`
-	SrcChannel     string `protobuf:"bytes,6,opt,name=src_channel,json=srcChannel,proto3" json:"src_channel,omitempty"`
-	DestChannel    string `protobuf:"bytes,7,opt,name=dest_channel,json=destChannel,proto3" json:"dest_channel,omitempty"`
-	DisplayName    string `protobuf:"bytes,8,opt,name=display_name,json=displayName,proto3" json:"display_name,omitempty"`
-	DisplaySymbol  string `protobuf:"bytes,9,opt,name=display_symbol,json=displaySymbol,proto3" json:"display_symbol,omitempty"`
-	Network        string `protobuf:"bytes,10,opt,name=network,proto3" json:"network,omitempty"`
-	Address        string `protobuf:"bytes,11,opt,name=address,proto3" json:"address,omitempty"`
-	ExternalSymbol string `protobuf:"bytes,12,opt,name=external_symbol,json=externalSymbol,proto3" json:"external_symbol,omitempty"`
-	TransferLimit  string `protobuf:"bytes,13,opt,name=transfer_limit,json=transferLimit,proto3" json:"transfer_limit,omitempty"`
-	IbcDenom       string `protobuf:"bytes,14,opt,name=ibc_denom,json=ibcDenom,proto3" json:"ibc_denom,omitempty"`
-	IbcDecimals    int64  `protobuf:"varint,15,opt,name=ibc_decimals,json=ibcDecimals,proto3" json:"ibc_decimals,omitempty"`
+	IsWhitelisted            bool         `protobuf:"varint,1,opt,name=is_whitelisted,json=isWhitelisted,proto3" json:"is_whitelisted,omitempty"`
+	Decimals                 int64        `protobuf:"varint,2,opt,name=decimals,proto3" json:"decimals,omitempty"`
+	Denom                    string       `protobuf:"bytes,3,opt,name=denom,proto3" json:"denom,omitempty"`
+	BaseDenom                string       `protobuf:"bytes,4,opt,name=base_denom,json=baseDenom,proto3" json:"base_denom,omitempty"`
+	Path                     string       `protobuf:"bytes,5,opt,name=path,proto3" json:"path,omitempty"`
+	IbcChannelId             string       `protobuf:"bytes,6,opt,name=ibc_channel_id,json=ibcChannelId,proto3" json:"ibc_channel_id,omitempty"`
+	IbcCounterpartyChannelId string       `protobuf:"bytes,7,opt,name=ibc_counterparty_channel_id,json=ibcCounterpartyChannelId,proto3" json:"ibc_counterparty_channel_id,omitempty"`
+	DisplayName              string       `protobuf:"bytes,8,opt,name=display_name,json=displayName,proto3" json:"display_name,omitempty"`
+	DisplaySymbol            string       `protobuf:"bytes,9,opt,name=display_symbol,json=displaySymbol,proto3" json:"display_symbol,omitempty"`
+	Network                  string       `protobuf:"bytes,10,opt,name=network,proto3" json:"network,omitempty"`
+	Address                  string       `protobuf:"bytes,11,opt,name=address,proto3" json:"address,omitempty"`
+	ExternalSymbol           string       `protobuf:"bytes,12,opt,name=external_symbol,json=externalSymbol,proto3" json:"external_symbol,omitempty"`
+	TransferLimit            string       `protobuf:"bytes,13,opt,name=transfer_limit,json=transferLimit,proto3" json:"transfer_limit,omitempty"`
+	Permissions              []Permission `protobuf:"varint,15,rep,packed,name=permissions,proto3,enum=sifnode.tokenregistry.v1.Permission" json:"permissions,omitempty"`
+	// The name of denomination unit of this token that is the smallest unit stored.
+	// IBC imports of this RegistryEntry convert and store funds as unit_denom.
+	// Several different denom units of a token may be imported into this same unit denom,
+	// they should all be stored under the same unit_denom if they are the same token.
+	// When exporting a RegistryEntry where unit_denom != denom,
+	// then unit_denom can, in future, be used to indicate the source of funds for a denom unit that does not actually
+	// exist on chain, enabling other chains to overcome the uint64 limit on the packet level and import large amounts
+	// of high precision tokens easily.
+	// ie. microrowan -> rowan
+	// i.e rowan -> rowan
+	UnitDenom string `protobuf:"bytes,16,opt,name=unit_denom,json=unitDenom,proto3" json:"unit_denom,omitempty"`
+	// The name of denomination unit of this token that should appear on counterparty chain when this unit is exported.
+	// If empty, the denom is exported as is.
+	// Generally this will only be used to map a high precision (unit_denom) to a lower precision,
+	// to overcome the current uint64 limit on the packet level.
+	// i.e rowan -> microrowan
+	// i.e microrowan -> microrowan
+	IbcCounterpartyDenom   string `protobuf:"bytes,17,opt,name=ibc_counterparty_denom,json=ibcCounterpartyDenom,proto3" json:"ibc_counterparty_denom,omitempty"`
+	IbcCounterpartyChainId string `protobuf:"bytes,18,opt,name=ibc_counterparty_chain_id,json=ibcCounterpartyChainId,proto3" json:"ibc_counterparty_chain_id,omitempty"`
 }
 
 func (m *RegistryEntry) Reset()         { *m = RegistryEntry{} }
@@ -205,16 +254,16 @@ func (m *RegistryEntry) GetPath() string {
 	return ""
 }
 
-func (m *RegistryEntry) GetSrcChannel() string {
+func (m *RegistryEntry) GetIbcChannelId() string {
 	if m != nil {
-		return m.SrcChannel
+		return m.IbcChannelId
 	}
 	return ""
 }
 
-func (m *RegistryEntry) GetDestChannel() string {
+func (m *RegistryEntry) GetIbcCounterpartyChannelId() string {
 	if m != nil {
-		return m.DestChannel
+		return m.IbcCounterpartyChannelId
 	}
 	return ""
 }
@@ -261,21 +310,36 @@ func (m *RegistryEntry) GetTransferLimit() string {
 	return ""
 }
 
-func (m *RegistryEntry) GetIbcDenom() string {
+func (m *RegistryEntry) GetPermissions() []Permission {
 	if m != nil {
-		return m.IbcDenom
+		return m.Permissions
+	}
+	return nil
+}
+
+func (m *RegistryEntry) GetUnitDenom() string {
+	if m != nil {
+		return m.UnitDenom
 	}
 	return ""
 }
 
-func (m *RegistryEntry) GetIbcDecimals() int64 {
+func (m *RegistryEntry) GetIbcCounterpartyDenom() string {
 	if m != nil {
-		return m.IbcDecimals
+		return m.IbcCounterpartyDenom
 	}
-	return 0
+	return ""
+}
+
+func (m *RegistryEntry) GetIbcCounterpartyChainId() string {
+	if m != nil {
+		return m.IbcCounterpartyChainId
+	}
+	return ""
 }
 
 func init() {
+	proto.RegisterEnum("sifnode.tokenregistry.v1.Permission", Permission_name, Permission_value)
 	proto.RegisterType((*GenesisState)(nil), "sifnode.tokenregistry.v1.GenesisState")
 	proto.RegisterType((*Registry)(nil), "sifnode.tokenregistry.v1.Registry")
 	proto.RegisterType((*RegistryEntry)(nil), "sifnode.tokenregistry.v1.RegistryEntry")
@@ -286,39 +350,46 @@ func init() {
 }
 
 var fileDescriptor_d08afdaf425e66ea = []byte{
-	// 498 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x84, 0x93, 0xbb, 0x6e, 0xdb, 0x30,
-	0x14, 0x86, 0xa3, 0x3a, 0x89, 0xe5, 0x23, 0xdb, 0x01, 0x88, 0x0c, 0x44, 0x8a, 0xaa, 0x8e, 0xdb,
-	0x20, 0x9e, 0x24, 0x38, 0xdd, 0x0b, 0xa4, 0x17, 0x74, 0xe8, 0x65, 0xb0, 0x87, 0x02, 0x5d, 0x04,
-	0x4a, 0x3a, 0xb6, 0x88, 0x48, 0xa4, 0x41, 0x32, 0x17, 0xbf, 0x45, 0x1f, 0xab, 0x63, 0xc6, 0x8e,
-	0x85, 0x3d, 0xf7, 0x1d, 0x0a, 0x91, 0x92, 0xdb, 0x14, 0x28, 0xba, 0xf1, 0x7c, 0xff, 0xc7, 0x23,
-	0x91, 0xc4, 0x81, 0xe7, 0x9a, 0x2f, 0x84, 0xcc, 0x31, 0x36, 0xf2, 0x0a, 0x85, 0xc2, 0x25, 0xd7,
-	0x46, 0xad, 0xe3, 0x9b, 0x69, 0x6c, 0xd6, 0x2b, 0xd4, 0xd1, 0x4a, 0x49, 0x23, 0x09, 0x6d, 0xac,
-	0xe8, 0x81, 0x15, 0xdd, 0x4c, 0x4f, 0x8e, 0x97, 0x72, 0x29, 0xad, 0x14, 0xd7, 0x2b, 0xe7, 0x8f,
-	0x35, 0xf4, 0xdf, 0xa1, 0x40, 0xcd, 0xf5, 0xdc, 0x30, 0x83, 0xe4, 0x19, 0x0c, 0x58, 0x5e, 0x71,
-	0x91, 0xb0, 0x2c, 0x93, 0xd7, 0xc2, 0x50, 0x6f, 0xe4, 0x4d, 0x7a, 0xb3, 0xbe, 0x85, 0x97, 0x8e,
-	0x91, 0x97, 0xe0, 0xb7, 0x9d, 0xe9, 0xa3, 0x91, 0x37, 0x09, 0x2e, 0xc6, 0xd1, 0xbf, 0xbe, 0x1b,
-	0xcd, 0x9a, 0xf5, 0x6c, 0xb7, 0x67, 0xfc, 0x11, 0xfc, 0x96, 0x92, 0x4b, 0xe8, 0xa2, 0x30, 0x8a,
-	0xa3, 0xa6, 0xde, 0xa8, 0x33, 0x09, 0x2e, 0xce, 0xff, 0xdf, 0xea, 0xad, 0xa8, 0xfb, 0xb5, 0xfb,
-	0xc6, 0x3f, 0x3b, 0x30, 0x78, 0x10, 0x91, 0x33, 0x18, 0x72, 0x9d, 0xdc, 0x16, 0xdc, 0x60, 0xc9,
-	0xb5, 0xc1, 0xdc, 0x1e, 0xc3, 0x9f, 0x0d, 0xb8, 0xfe, 0xfc, 0x1b, 0x92, 0x13, 0xf0, 0x73, 0xcc,
-	0x78, 0xc5, 0x4a, 0x6d, 0xcf, 0xd1, 0x99, 0xed, 0x6a, 0x72, 0x0c, 0x07, 0x39, 0x0a, 0x59, 0xd1,
-	0x8e, 0xbd, 0x00, 0x57, 0x90, 0x27, 0x00, 0x29, 0xd3, 0x98, 0xb8, 0x68, 0xdf, 0x46, 0xbd, 0x9a,
-	0xbc, 0xb1, 0x31, 0x81, 0xfd, 0x15, 0x33, 0x05, 0x3d, 0xb0, 0x81, 0x5d, 0x93, 0xa7, 0x10, 0x68,
-	0x95, 0x25, 0x59, 0xc1, 0x84, 0xc0, 0x92, 0x1e, 0xda, 0x08, 0xb4, 0xca, 0x5e, 0x3b, 0x42, 0x4e,
-	0xa1, 0x9f, 0xa3, 0x36, 0x3b, 0xa3, 0x6b, 0x8d, 0xa0, 0x66, 0x7f, 0x2a, 0x5c, 0xaf, 0x4a, 0xb6,
-	0x4e, 0x04, 0xab, 0x90, 0xfa, 0x8d, 0xe2, 0xd8, 0x27, 0x56, 0x61, 0x7d, 0xe4, 0x56, 0xd1, 0xeb,
-	0x2a, 0x95, 0x25, 0xed, 0x59, 0x69, 0xd0, 0xd0, 0xb9, 0x85, 0x84, 0x42, 0x57, 0xa0, 0xb9, 0x95,
-	0xea, 0x8a, 0x82, 0xcd, 0xdb, 0xb2, 0x4e, 0x58, 0x9e, 0x2b, 0xd4, 0x9a, 0x06, 0x2e, 0x69, 0x4a,
-	0x72, 0x0e, 0x47, 0x78, 0x67, 0x50, 0x09, 0x56, 0xb6, 0xbd, 0xfb, 0xd6, 0x18, 0xb6, 0xb8, 0x69,
-	0x7e, 0x06, 0x43, 0xa3, 0x98, 0xd0, 0x0b, 0x54, 0x49, 0xc9, 0x2b, 0x6e, 0xe8, 0xc0, 0xfd, 0x43,
-	0x4b, 0x3f, 0xd4, 0x90, 0x3c, 0x86, 0x1e, 0x4f, 0xb3, 0xe6, 0x0e, 0x87, 0xd6, 0xf0, 0x79, 0x9a,
-	0xb9, 0x2b, 0x3c, 0x85, 0xbe, 0x0b, 0x9b, 0x77, 0x39, 0xb2, 0xef, 0x12, 0xd8, 0xdc, 0xa1, 0x57,
-	0xef, 0xbf, 0x6d, 0x42, 0xef, 0x7e, 0x13, 0x7a, 0x3f, 0x36, 0xa1, 0xf7, 0x75, 0x1b, 0xee, 0xdd,
-	0x6f, 0xc3, 0xbd, 0xef, 0xdb, 0x70, 0xef, 0xcb, 0x74, 0xc9, 0x4d, 0x71, 0x9d, 0x46, 0x99, 0xac,
-	0xe2, 0x39, 0x5f, 0x64, 0x05, 0xe3, 0x22, 0x6e, 0xe7, 0xe6, 0xee, 0xaf, 0xc9, 0xb1, 0x63, 0x93,
-	0x1e, 0xda, 0x39, 0x78, 0xf1, 0x2b, 0x00, 0x00, 0xff, 0xff, 0xe2, 0x39, 0xc9, 0x94, 0x5f, 0x03,
-	0x00, 0x00,
+	// 614 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x84, 0x54, 0xcd, 0x6e, 0xd3, 0x40,
+	0x10, 0x8e, 0x9b, 0xb6, 0x49, 0x26, 0x3f, 0x0d, 0xab, 0xaa, 0x5a, 0x8a, 0x88, 0x42, 0x68, 0xd5,
+	0x88, 0x43, 0xa2, 0x16, 0x2e, 0x1c, 0x40, 0x6a, 0xd3, 0x14, 0x45, 0xb4, 0x25, 0x72, 0x40, 0x20,
+	0x2e, 0xd6, 0xc6, 0x9e, 0x26, 0xab, 0xda, 0x6b, 0xcb, 0xbb, 0xfd, 0xc9, 0x5b, 0xf0, 0x14, 0x3c,
+	0x0b, 0xc7, 0x1e, 0x39, 0xa2, 0xf6, 0x45, 0x90, 0x77, 0xed, 0xfe, 0x52, 0x71, 0xdb, 0xf9, 0x7e,
+	0xc6, 0xbb, 0xf3, 0x59, 0x03, 0x6b, 0x92, 0x1f, 0x89, 0xd0, 0xc3, 0xae, 0x0a, 0x8f, 0x51, 0xc4,
+	0x38, 0xe1, 0x52, 0xc5, 0xb3, 0xee, 0xe9, 0x66, 0x57, 0xcd, 0x22, 0x94, 0x9d, 0x28, 0x0e, 0x55,
+	0x48, 0x68, 0xaa, 0xea, 0xdc, 0x51, 0x75, 0x4e, 0x37, 0x57, 0x97, 0x27, 0xe1, 0x24, 0xd4, 0xa2,
+	0x6e, 0x72, 0x32, 0xfa, 0x96, 0x84, 0xca, 0x07, 0x14, 0x28, 0xb9, 0x1c, 0x29, 0xa6, 0x90, 0xbc,
+	0x84, 0x2a, 0xf3, 0x02, 0x2e, 0x1c, 0xe6, 0xba, 0xe1, 0x89, 0x50, 0xd4, 0x6a, 0x5a, 0xed, 0x92,
+	0x5d, 0xd1, 0xe0, 0xb6, 0xc1, 0xc8, 0x7b, 0x28, 0x66, 0x9d, 0xe9, 0x5c, 0xd3, 0x6a, 0x97, 0xb7,
+	0x5a, 0x9d, 0xc7, 0xbe, 0xdb, 0xb1, 0xd3, 0xb3, 0x7d, 0xed, 0x69, 0x1d, 0x40, 0x31, 0x43, 0xc9,
+	0x36, 0x14, 0x50, 0xa8, 0x98, 0xa3, 0xa4, 0x56, 0x33, 0xdf, 0x2e, 0x6f, 0x6d, 0xfc, 0xbf, 0x55,
+	0x5f, 0x24, 0xfd, 0x32, 0x5f, 0xeb, 0xe7, 0x02, 0x54, 0xef, 0x50, 0x64, 0x1d, 0x6a, 0x5c, 0x3a,
+	0x67, 0x53, 0xae, 0xd0, 0xe7, 0x52, 0xa1, 0xa7, 0x9f, 0x51, 0xb4, 0xab, 0x5c, 0x7e, 0xbd, 0x01,
+	0xc9, 0x2a, 0x14, 0x3d, 0x74, 0x79, 0xc0, 0x7c, 0xa9, 0xdf, 0x91, 0xb7, 0xaf, 0x6b, 0xb2, 0x0c,
+	0x0b, 0x1e, 0x8a, 0x30, 0xa0, 0x79, 0x3d, 0x00, 0x53, 0x90, 0xe7, 0x00, 0x63, 0x26, 0xd1, 0x31,
+	0xd4, 0xbc, 0xa6, 0x4a, 0x09, 0xb2, 0xab, 0x69, 0x02, 0xf3, 0x11, 0x53, 0x53, 0xba, 0xa0, 0x09,
+	0x7d, 0x26, 0x6b, 0x50, 0xe3, 0x63, 0xd7, 0x71, 0xa7, 0x4c, 0x08, 0xf4, 0x1d, 0xee, 0xd1, 0x45,
+	0x33, 0x52, 0x3e, 0x76, 0x7b, 0x06, 0x1c, 0x78, 0xe4, 0x1d, 0x3c, 0xd3, 0xaa, 0x64, 0xbe, 0x18,
+	0x47, 0x2c, 0x56, 0xb3, 0xdb, 0x96, 0x82, 0xb6, 0xd0, 0xc4, 0x72, 0x4b, 0x71, 0x63, 0x7f, 0x01,
+	0x15, 0x8f, 0xcb, 0xc8, 0x67, 0x33, 0x47, 0xb0, 0x00, 0x69, 0x51, 0xeb, 0xcb, 0x29, 0x76, 0xc8,
+	0x02, 0x4c, 0x66, 0x92, 0x49, 0xe4, 0x2c, 0x18, 0x87, 0x3e, 0x2d, 0x69, 0x51, 0x35, 0x45, 0x47,
+	0x1a, 0x24, 0x14, 0x0a, 0x02, 0xd5, 0x59, 0x18, 0x1f, 0x53, 0xd0, 0x7c, 0x56, 0x26, 0x0c, 0xf3,
+	0xbc, 0x18, 0xa5, 0xa4, 0x65, 0xc3, 0xa4, 0x25, 0xd9, 0x80, 0x25, 0x3c, 0x57, 0x18, 0x0b, 0xe6,
+	0x67, 0xbd, 0x2b, 0x5a, 0x51, 0xcb, 0xe0, 0xb4, 0xf9, 0x3a, 0xd4, 0x54, 0xcc, 0x84, 0x3c, 0xc2,
+	0xd8, 0xf1, 0x79, 0xc0, 0x15, 0xad, 0x9a, 0x3b, 0x64, 0xe8, 0x7e, 0x02, 0x92, 0x3d, 0x28, 0x47,
+	0x18, 0x07, 0x5c, 0x4a, 0x1e, 0x0a, 0x49, 0x97, 0x9a, 0xf9, 0x76, 0x6d, 0x6b, 0xed, 0xf1, 0xff,
+	0x62, 0x78, 0x2d, 0xb6, 0x6f, 0x1b, 0x93, 0xb4, 0x4e, 0x04, 0x57, 0x69, 0x5a, 0x75, 0x93, 0x56,
+	0x82, 0x98, 0xb4, 0xde, 0xc0, 0xca, 0x83, 0x99, 0x1b, 0xe9, 0x13, 0x2d, 0x5d, 0xbe, 0x37, 0x6e,
+	0xe3, 0x7a, 0x0b, 0x4f, 0xff, 0x95, 0x14, 0x17, 0x49, 0x4e, 0x44, 0x1b, 0x57, 0x1e, 0xe6, 0xc4,
+	0xc5, 0xc0, 0x7b, 0xb5, 0x0b, 0x70, 0x73, 0x55, 0xb2, 0x04, 0xe5, 0x2f, 0x87, 0xa3, 0x61, 0xbf,
+	0x37, 0xd8, 0x1b, 0xf4, 0x77, 0xeb, 0x39, 0x52, 0x80, 0x7c, 0x6f, 0x7f, 0x58, 0xb7, 0x48, 0x15,
+	0x4a, 0x83, 0x9d, 0x5e, 0xff, 0xdb, 0xf0, 0x93, 0xfd, 0xb9, 0x3e, 0x97, 0x96, 0x83, 0x03, 0x5d,
+	0xe6, 0x77, 0x3e, 0xfe, 0xba, 0x6c, 0x58, 0x17, 0x97, 0x0d, 0xeb, 0xcf, 0x65, 0xc3, 0xfa, 0x71,
+	0xd5, 0xc8, 0x5d, 0x5c, 0x35, 0x72, 0xbf, 0xaf, 0x1a, 0xb9, 0xef, 0x9b, 0x13, 0xae, 0xa6, 0x27,
+	0xe3, 0x8e, 0x1b, 0x06, 0xdd, 0x11, 0x3f, 0xd2, 0xb7, 0xea, 0x66, 0x6b, 0xe3, 0xfc, 0xde, 0xe2,
+	0xd0, 0x5b, 0x63, 0xbc, 0xa8, 0xd7, 0xc0, 0xeb, 0xbf, 0x01, 0x00, 0x00, 0xff, 0xff, 0x24, 0x2f,
+	0x4c, 0xae, 0x5e, 0x04, 0x00, 0x00,
 }
 
 func (m *GenesisState) Marshal() (dAtA []byte, err error) {
@@ -420,17 +491,50 @@ func (m *RegistryEntry) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	_ = i
 	var l int
 	_ = l
-	if m.IbcDecimals != 0 {
-		i = encodeVarintTypes(dAtA, i, uint64(m.IbcDecimals))
+	if len(m.IbcCounterpartyChainId) > 0 {
+		i -= len(m.IbcCounterpartyChainId)
+		copy(dAtA[i:], m.IbcCounterpartyChainId)
+		i = encodeVarintTypes(dAtA, i, uint64(len(m.IbcCounterpartyChainId)))
 		i--
-		dAtA[i] = 0x78
+		dAtA[i] = 0x1
+		i--
+		dAtA[i] = 0x92
 	}
-	if len(m.IbcDenom) > 0 {
-		i -= len(m.IbcDenom)
-		copy(dAtA[i:], m.IbcDenom)
-		i = encodeVarintTypes(dAtA, i, uint64(len(m.IbcDenom)))
+	if len(m.IbcCounterpartyDenom) > 0 {
+		i -= len(m.IbcCounterpartyDenom)
+		copy(dAtA[i:], m.IbcCounterpartyDenom)
+		i = encodeVarintTypes(dAtA, i, uint64(len(m.IbcCounterpartyDenom)))
 		i--
-		dAtA[i] = 0x72
+		dAtA[i] = 0x1
+		i--
+		dAtA[i] = 0x8a
+	}
+	if len(m.UnitDenom) > 0 {
+		i -= len(m.UnitDenom)
+		copy(dAtA[i:], m.UnitDenom)
+		i = encodeVarintTypes(dAtA, i, uint64(len(m.UnitDenom)))
+		i--
+		dAtA[i] = 0x1
+		i--
+		dAtA[i] = 0x82
+	}
+	if len(m.Permissions) > 0 {
+		dAtA3 := make([]byte, len(m.Permissions)*10)
+		var j2 int
+		for _, num := range m.Permissions {
+			for num >= 1<<7 {
+				dAtA3[j2] = uint8(uint64(num)&0x7f | 0x80)
+				num >>= 7
+				j2++
+			}
+			dAtA3[j2] = uint8(num)
+			j2++
+		}
+		i -= j2
+		copy(dAtA[i:], dAtA3[:j2])
+		i = encodeVarintTypes(dAtA, i, uint64(j2))
+		i--
+		dAtA[i] = 0x7a
 	}
 	if len(m.TransferLimit) > 0 {
 		i -= len(m.TransferLimit)
@@ -474,17 +578,17 @@ func (m *RegistryEntry) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		i--
 		dAtA[i] = 0x42
 	}
-	if len(m.DestChannel) > 0 {
-		i -= len(m.DestChannel)
-		copy(dAtA[i:], m.DestChannel)
-		i = encodeVarintTypes(dAtA, i, uint64(len(m.DestChannel)))
+	if len(m.IbcCounterpartyChannelId) > 0 {
+		i -= len(m.IbcCounterpartyChannelId)
+		copy(dAtA[i:], m.IbcCounterpartyChannelId)
+		i = encodeVarintTypes(dAtA, i, uint64(len(m.IbcCounterpartyChannelId)))
 		i--
 		dAtA[i] = 0x3a
 	}
-	if len(m.SrcChannel) > 0 {
-		i -= len(m.SrcChannel)
-		copy(dAtA[i:], m.SrcChannel)
-		i = encodeVarintTypes(dAtA, i, uint64(len(m.SrcChannel)))
+	if len(m.IbcChannelId) > 0 {
+		i -= len(m.IbcChannelId)
+		copy(dAtA[i:], m.IbcChannelId)
+		i = encodeVarintTypes(dAtA, i, uint64(len(m.IbcChannelId)))
 		i--
 		dAtA[i] = 0x32
 	}
@@ -594,11 +698,11 @@ func (m *RegistryEntry) Size() (n int) {
 	if l > 0 {
 		n += 1 + l + sovTypes(uint64(l))
 	}
-	l = len(m.SrcChannel)
+	l = len(m.IbcChannelId)
 	if l > 0 {
 		n += 1 + l + sovTypes(uint64(l))
 	}
-	l = len(m.DestChannel)
+	l = len(m.IbcCounterpartyChannelId)
 	if l > 0 {
 		n += 1 + l + sovTypes(uint64(l))
 	}
@@ -626,12 +730,24 @@ func (m *RegistryEntry) Size() (n int) {
 	if l > 0 {
 		n += 1 + l + sovTypes(uint64(l))
 	}
-	l = len(m.IbcDenom)
-	if l > 0 {
-		n += 1 + l + sovTypes(uint64(l))
+	if len(m.Permissions) > 0 {
+		l = 0
+		for _, e := range m.Permissions {
+			l += sovTypes(uint64(e))
+		}
+		n += 1 + sovTypes(uint64(l)) + l
 	}
-	if m.IbcDecimals != 0 {
-		n += 1 + sovTypes(uint64(m.IbcDecimals))
+	l = len(m.UnitDenom)
+	if l > 0 {
+		n += 2 + l + sovTypes(uint64(l))
+	}
+	l = len(m.IbcCounterpartyDenom)
+	if l > 0 {
+		n += 2 + l + sovTypes(uint64(l))
+	}
+	l = len(m.IbcCounterpartyChainId)
+	if l > 0 {
+		n += 2 + l + sovTypes(uint64(l))
 	}
 	return n
 }
@@ -1010,7 +1126,7 @@ func (m *RegistryEntry) Unmarshal(dAtA []byte) error {
 			iNdEx = postIndex
 		case 6:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field SrcChannel", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field IbcChannelId", wireType)
 			}
 			var stringLen uint64
 			for shift := uint(0); ; shift += 7 {
@@ -1038,11 +1154,11 @@ func (m *RegistryEntry) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.SrcChannel = string(dAtA[iNdEx:postIndex])
+			m.IbcChannelId = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
 		case 7:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field DestChannel", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field IbcCounterpartyChannelId", wireType)
 			}
 			var stringLen uint64
 			for shift := uint(0); ; shift += 7 {
@@ -1070,7 +1186,7 @@ func (m *RegistryEntry) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.DestChannel = string(dAtA[iNdEx:postIndex])
+			m.IbcCounterpartyChannelId = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
 		case 8:
 			if wireType != 2 {
@@ -1264,9 +1380,78 @@ func (m *RegistryEntry) Unmarshal(dAtA []byte) error {
 			}
 			m.TransferLimit = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
-		case 14:
+		case 15:
+			if wireType == 0 {
+				var v Permission
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return ErrIntOverflowTypes
+					}
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					v |= Permission(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				m.Permissions = append(m.Permissions, v)
+			} else if wireType == 2 {
+				var packedLen int
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return ErrIntOverflowTypes
+					}
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					packedLen |= int(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				if packedLen < 0 {
+					return ErrInvalidLengthTypes
+				}
+				postIndex := iNdEx + packedLen
+				if postIndex < 0 {
+					return ErrInvalidLengthTypes
+				}
+				if postIndex > l {
+					return io.ErrUnexpectedEOF
+				}
+				var elementCount int
+				if elementCount != 0 && len(m.Permissions) == 0 {
+					m.Permissions = make([]Permission, 0, elementCount)
+				}
+				for iNdEx < postIndex {
+					var v Permission
+					for shift := uint(0); ; shift += 7 {
+						if shift >= 64 {
+							return ErrIntOverflowTypes
+						}
+						if iNdEx >= l {
+							return io.ErrUnexpectedEOF
+						}
+						b := dAtA[iNdEx]
+						iNdEx++
+						v |= Permission(b&0x7F) << shift
+						if b < 0x80 {
+							break
+						}
+					}
+					m.Permissions = append(m.Permissions, v)
+				}
+			} else {
+				return fmt.Errorf("proto: wrong wireType = %d for field Permissions", wireType)
+			}
+		case 16:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field IbcDenom", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field UnitDenom", wireType)
 			}
 			var stringLen uint64
 			for shift := uint(0); ; shift += 7 {
@@ -1294,13 +1479,13 @@ func (m *RegistryEntry) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.IbcDenom = string(dAtA[iNdEx:postIndex])
+			m.UnitDenom = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
-		case 15:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field IbcDecimals", wireType)
+		case 17:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field IbcCounterpartyDenom", wireType)
 			}
-			m.IbcDecimals = 0
+			var stringLen uint64
 			for shift := uint(0); ; shift += 7 {
 				if shift >= 64 {
 					return ErrIntOverflowTypes
@@ -1310,11 +1495,56 @@ func (m *RegistryEntry) Unmarshal(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				m.IbcDecimals |= int64(b&0x7F) << shift
+				stringLen |= uint64(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
 			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTypes
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTypes
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.IbcCounterpartyDenom = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 18:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field IbcCounterpartyChainId", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTypes
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTypes
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTypes
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.IbcCounterpartyChainId = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
 		default:
 			iNdEx = preIndex
 			skippy, err := skipTypes(dAtA[iNdEx:])
