@@ -30,7 +30,7 @@ export async function processTokenData(
       )) as IbcToken;
       await attachIbcToken(bridgeBank, token);
       const result = {
-        ownedByBridgeBank: token.address,
+        ownedByBridgeBank: data,
         addExistingBridgeTokenCalled: true,
       };
       console.log(JSON.stringify(result));
@@ -54,7 +54,8 @@ const DEFAULT_ADMIN_ROLE =
 async function buildIbcToken(
   tokenFactory: IbcToken__factory,
   tokenData: TokenData,
-  bridgeBank: BridgeBank
+  bridgeBank: BridgeBank,
+  mintTokens: boolean
 ) {
   const newToken = await tokenFactory.deploy(
     tokenData.name,
@@ -68,6 +69,15 @@ async function buildIbcToken(
       symbol: await newToken.symbol(),
     })
   );
+  if (mintTokens) {
+    const newTokenSignerAddress = await newToken.signer.getAddress();
+    await newToken.grantRole(MINTER_ROLE, newTokenSignerAddress)
+    const amount = BigNumber.from(10).pow(tokenData.decimals + 1);
+    const destinationAccount = await bridgeBank.owner();
+    await newToken.mint(destinationAccount, amount)
+    console.log(JSON.stringify({ mintedTokensTo: destinationAccount, amount: amount.toString() }));
+    await newToken.renounceRole(MINTER_ROLE, newTokenSignerAddress)
+  }
   await newToken.grantRole(DEFAULT_ADMIN_ROLE, bridgeBank.address);
   console.log(JSON.stringify({ roleGrantedToBridgeBank: DEFAULT_ADMIN_ROLE, bridgeBank: bridgeBank.address }));
   await newToken.grantRole(MINTER_ROLE, bridgeBank.address);
@@ -88,11 +98,12 @@ async function buildIbcToken(
 export async function buildIbcTokens(
   ibcTokenFactory: IbcToken__factory,
   tokens: TokenData[],
-  bridgeBank: BridgeBank
+  bridgeBank: BridgeBank,
+  mintTokens: boolean
 ) {
   const result = [];
   for (const t of tokens) {
-    const newToken = await buildIbcToken(ibcTokenFactory, t, bridgeBank);
+    const newToken = await buildIbcToken(ibcTokenFactory, t, bridgeBank, mintTokens);
     const tokenResult = {
       address: newToken.address,
       symbol: await newToken.symbol(),

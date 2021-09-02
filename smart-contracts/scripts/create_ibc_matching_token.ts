@@ -32,7 +32,7 @@ async function main() {
             break
     }
 
-    const useForking = process.env["USE_FORKING"];
+    const useForking = !!process.env["USE_FORKING"];
     if (useForking)
         await impersonateBridgeBankAccounts(container, hardhat, deploymentName)
 
@@ -42,9 +42,10 @@ async function main() {
 
     const bridgeBank = await container.resolve(DeployedBridgeBank).contract
 
-    await buildIbcTokens(ibcTokenFactory, await readTokenData(requiredEnvVar("TOKEN_FILE")), bridgeBank)
-
-    console.log(JSON.stringify({createdTokensOnNetwork: hardhat.network.name}))
+    const startingBalance = await hardhat.ethers.provider.getBalance(bridgeBankOwner.address)
+    await buildIbcTokens(ibcTokenFactory, await readTokenData(requiredEnvVar("TOKEN_FILE")), bridgeBank, false)
+    const endingBalance = await hardhat.ethers.provider.getBalance(bridgeBankOwner.address)
+    console.log(JSON.stringify({createdTokensOnNetwork: hardhat.network.name, cost: hardhat.ethers.utils.formatEther(startingBalance.sub(endingBalance))}))
 }
 
 main()

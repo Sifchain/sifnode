@@ -26,11 +26,20 @@ echo ========== Sample commands ==========
 echo; echo == erowan balance
 echo yarn -s --cwd $BASEDIR/smart-contracts integrationtest:getTokenBalance \
   --ethereum_private_key_env_var "ETHEREUM_PRIVATE_KEY" \
-  --json_path \$BASEDIR/smart-contracts/deployments/$DEPLOYMENT_NAME \
+  --json_path \$BASEDIR/smart-contracts/deployments/\$DEPLOYMENT_NAME \
   --gas estimate \
   --ethereum_network \$ETHEREUM_NETWORK \
   --ethereum_address \$ETHEREUM_ADDRESS \
   --symbol \$BRIDGE_TOKEN_ADDRESS \
+
+echo; echo == $sym balance
+echo yarn -s --cwd $BASEDIR/smart-contracts integrationtest:getTokenBalance \
+  --ethereum_private_key_env_var "ETHEREUM_PRIVATE_KEY" \
+  --json_path \$BASEDIR/smart-contracts/deployments/\$DEPLOYMENT_NAME \
+  --gas estimate \
+  --ethereum_network \$ETHEREUM_NETWORK \
+  --ethereum_address \$ETHEREUM_ADDRESS \
+  --symbol \$sym \
 
 echo; echo == eth balance
 echo yarn -s --cwd $BASEDIR/smart-contracts integrationtest:getTokenBalance \
