@@ -1,12 +1,12 @@
 [
   {
-    "name": "Cosmos Hub",
+    "name": "Cosmos",
     "symbol": "ATOM",
     "decimals": 6,
     "cosmosDenom": ""
   },
   {
-    "name": "Iris Network",
+    "name": "IRISnet",
     "symbol": "IRIS",
     "decimals": 6,
     "cosmosDenom": ""
@@ -18,14 +18,7 @@
     "cosmosDenom": ""
   },
   {
-    "name": "Secret Network",
-    "symbol": "SCRT",
-    "decimals": 6,
-    "cosmosDenom": ""
-  },
-
-  {
-    "name": "Hard Protocol",
+    "name": "HARD Protocol",
     "symbol": "HARD",
     "decimals": 6,
     "cosmosDenom": ""
@@ -45,6 +38,18 @@
   {
     "name": "Ion",
     "symbol": "ION",
+    "decimals": 6,
+    "cosmosDenom": ""
+  },
+  {
+    "name": "Akash Network",
+    "symbol": "AKT",
+    "decimals": 6,
+    "cosmosDenom": ""
+  },
+  {
+    "name": "Kava.io",
+    "symbol": "KAVA",
     "decimals": 6,
     "cosmosDenom": ""
   }
