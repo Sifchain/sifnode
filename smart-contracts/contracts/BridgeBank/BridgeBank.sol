@@ -56,8 +56,8 @@ contract BridgeBank is BankStorage,
         CosmosWhiteList._cosmosWhitelistInitialize();
         EthereumWhiteList.initialize();
 
-        contractName[address(0)] = "Ethereum";
-        contractSymbol[address(0)] = "ETH";
+        contractName[address(0)] = "EVM_NATIVE";
+        contractSymbol[address(0)] = "EVM_NATIVE";
 
         _initialized = true;
 
@@ -689,8 +689,8 @@ contract BridgeBank is BankStorage,
             amount,
             lockBurnNonce,
             decimals,
-            symbol,
-            name,
+            "EVM_NATIVE", // symbol
+            "EVM_NATIVE", // name
             networkDescriptor
         );
     }
@@ -718,20 +718,62 @@ contract BridgeBank is BankStorage,
         emit LogUnlock(recipient, token, amount);
     }
 
+    /**
+     * @notice Changes the denom of `_token` to `_denom`
+     * @dev Will set the denom both in this contract AND in the token itself
+     * @param _token Address of the BridgeToken
+     * @param _denom The Cosmos denom to be applied
+     * @return true if the operation succeeded
+     */
     function setBridgeTokenDenom(
       address _token, string memory _denom
-    ) public onlyOperator returns (bool) {
+    ) public onlyOwner returns (bool) {
       contractDenom[_token] = _denom;
       return BridgeToken(_token).setDenom(_denom);
     }
 
+    /**
+     * @notice Changes the denom of many tokens in a batch
+     * @dev Will set the denom both in this contract AND in each token
+     * @param _tokens List of address of BridgeTokens
+     * @param _denoms List of Cosmos denoms to be applied
+     * @return true if the operation succeeded
+     */
     function batchSetBridgeTokenDenom(
       address[] calldata _tokens, string[] calldata _denoms
-    ) external onlyOperator returns (bool) {
+    ) external onlyOwner returns (bool) {
       require(_tokens.length == _denoms.length, "INV_LEN");
 
       for (uint256 i = 0; i < _tokens.length; i++) {
         setBridgeTokenDenom(_tokens[i], _denoms[i]);
+      }
+
+      return true;
+    }
+
+    /**
+     * @notice Sets in this contract the denom of `_token`
+     * @dev Will fetch the denom from `_token` and register it in this contract
+     * @dev Anyone may call this function
+     * @param _token Address of the BridgeToken
+     * @return true if the operation succeeded
+     */
+    function forceSetBridgeTokenDenom(address _token) external returns (bool) {
+      contractDenom[_token] = BridgeToken(_token).cosmosDenom();
+
+      return true;
+    }
+
+    /**
+     * @notice Sets in this contract the denom of a list of BridgeTokens     * @dev Will fetch the denom from each token and register it in this contract
+     * @dev Will fetch the denom from each token and register it in this contract
+     * @dev Anyone may call this function
+     * @param _tokens List of address of BridgeTokens
+     * @return true if the operation succeeded
+     */
+    function batchForceSetBridgeTokenDenom(address[] memory _tokens) external returns (bool) {
+      for (uint256 i = 0; i < _tokens.length; i++) {
+        contractDenom[_tokens[i]] = BridgeToken(_tokens[i]).cosmosDenom();
       }
 
       return true;
