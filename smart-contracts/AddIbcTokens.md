@@ -38,7 +38,7 @@ before they're attached to the BridgeBank.
 
     cd smart-contracts
     npm install
-    npx hardhat run scripts/create_ibc_matching_token.ts --network mainnet | grep -v 'No need to generate' > data/ibc_token_addresses.jsonl
+    npx hardhat run scripts/create_ibc_matching_token.ts --network mainnet | grep -v 'No need to generate' | tee data/ibc_token_addresses.jsonl
 
 ## Steps to Attach Tokens to BridgeBank
 
