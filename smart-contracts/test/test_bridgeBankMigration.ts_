@@ -7,7 +7,6 @@ import {BridgeBankMainnetUpgradeAdmin, HardhatRuntimeEnvironmentToken} from "../
 import * as hardhat from "hardhat";
 import {DeployedBridgeBank, DeployedBridgeToken, DeployedCosmosBridge} from "../src/contractSupport";
 import {
-    getProxyAdmin,
     impersonateAccount,
     setupSifchainMainnetDeployment,
     startImpersonateAccount

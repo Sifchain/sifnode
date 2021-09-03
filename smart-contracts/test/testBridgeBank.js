@@ -181,7 +181,7 @@ describe("Test Bridge Bank", function () {
       expect(registeredDenomInBridgeToken).to.be.equal(state.constants.denom.rowan);
 
       // set a new denom
-      await expect(state.bridgeBank.connect(operator)
+      await expect(state.bridgeBank.connect(owner)
         .setBridgeTokenDenom(state.rowan.address, state.constants.denom.one))
         .to.be.fulfilled;
 
@@ -198,7 +198,7 @@ describe("Test Bridge Bank", function () {
       // set a new denom
       await expect(state.bridgeBank.connect(userOne)
         .setBridgeTokenDenom(state.rowan.address, state.constants.denom.one))
-        .to.be.revertedWith('!operator');
+        .to.be.revertedWith('!owner');
     });
 
     it("should allow the operator to set many BridgeTokens' denom in a batch", async function () {
@@ -222,7 +222,7 @@ describe("Test Bridge Bank", function () {
       expect(registeredDenomInBridgeToken2).to.be.equal(state.constants.denom.none);
 
       // set the new denom for both of them
-      await expect(state.bridgeBank.connect(operator)
+      await expect(state.bridgeBank.connect(owner)
         .batchSetBridgeTokenDenom(
           [state.rowan.address, state.token_noDenom.address],
           [state.constants.denom.one, state.constants.denom.two]
@@ -270,7 +270,7 @@ describe("Test Bridge Bank", function () {
         .batchSetBridgeTokenDenom(
           [state.rowan.address, state.token_noDenom.address],
           [state.constants.denom.one, state.constants.denom.two]
-        )).to.be.revertedWith("!operator");
+        )).to.be.revertedWith("!owner");
 
       // check the denom saved on BridgeBank (shouldn't have changed)
       registeredDenom = await state.bridgeBank.contractDenom(state.rowan.address);
