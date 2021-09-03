@@ -1,6 +1,7 @@
 package keeper_test
 
 import (
+	"github.com/cosmos/cosmos-sdk/types/query"
 	"testing"
 	"time"
 
@@ -92,4 +93,35 @@ func TestKeeper_GetClaim(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, cl.UserClaimType, claimType)
 	assert.Equal(t, cl.UserAddress, claim.UserAddress)
+}
+
+func TestKeeper_GetClaimsByTypePaginated(t *testing.T) {
+	app, ctx := test.CreateTestApp(false)
+	keeper := app.DispensationKeeper
+	loopCount := 300
+	queryLimit := 10
+	numberOfClaims := loopCount * queryLimit
+	claimList := test.CreateClaimsList(numberOfClaims, types.DistributionType_DISTRIBUTION_TYPE_VALIDATOR_SUBSIDY)
+	for _, claim := range claimList {
+		err := keeper.SetClaim(ctx, claim)
+		assert.NoError(t, err)
+	}
+	claimList = test.CreateClaimsList(numberOfClaims, types.DistributionType_DISTRIBUTION_TYPE_LIQUIDITY_MINING)
+	for _, claim := range claimList {
+		err := keeper.SetClaim(ctx, claim)
+		assert.NoError(t, err)
+	}
+	fetchList, pageRes, err := keeper.GetClaimsByTypePaginated(ctx, types.DistributionType_DISTRIBUTION_TYPE_LIQUIDITY_MINING, &query.PageRequest{Limit: uint64(queryLimit)})
+	assert.NoError(t, err)
+	assert.Len(t, fetchList.UserClaims, queryLimit)
+	loopCounter := 1
+	for {
+		_, pageRes, err = keeper.GetClaimsByTypePaginated(ctx, types.DistributionType_DISTRIBUTION_TYPE_LIQUIDITY_MINING, &query.PageRequest{Key: pageRes.NextKey, Limit: uint64(queryLimit)})
+		loopCounter++
+		assert.NoError(t, err)
+		if pageRes.NextKey == nil {
+			break
+		}
+	}
+	assert.Equal(t, loopCounter, loopCount)
 }

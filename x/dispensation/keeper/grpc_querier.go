@@ -43,7 +43,7 @@ func (q Querier) AllDistributions(ctx context.Context,
 	}
 
 	c := sdk.UnwrapSDKContext(ctx)
-	list, pageRes, err := q.keeper.GetDistributionsPaginated(sdk.UnwrapSDKContext(ctx), req.Pagination)
+	list, pageRes, err := q.keeper.GetDistributionsPaginated(c, req.Pagination)
 	if err != nil {
 		return nil, err
 	}
@@ -56,9 +56,27 @@ func (q Querier) AllDistributions(ctx context.Context,
 
 func (q Querier) ClaimsByType(ctx context.Context,
 	request *types.QueryClaimsByTypeRequest) (*types.QueryClaimsResponse, error) {
-	claims := q.keeper.GetClaimsByType(sdk.UnwrapSDKContext(ctx), request.UserClaimType)
+	if request == nil {
+		return nil, status.Error(codes.InvalidArgument, "empty request")
+	}
+	if request.Pagination == nil {
+		request.Pagination = &query.PageRequest{
+			Limit: MaxPageLimit,
+		}
+	}
+	if request.Pagination.Limit > MaxPageLimit {
+		return nil, status.Error(codes.InvalidArgument, fmt.Sprintf("page size greater than max %d", MaxPageLimit))
+	}
+
+	c := sdk.UnwrapSDKContext(ctx)
+	claims, pageRes, err := q.keeper.GetClaimsByTypePaginated(c, request.UserClaimType, request.Pagination)
+	if err != nil {
+		return nil, err
+	}
 	return &types.QueryClaimsResponse{
-		Claims: claims.UserClaims,
+		Claims:     claims.UserClaims,
+		Height:     c.BlockHeight(),
+		Pagination: pageRes,
 	}, nil
 }
 

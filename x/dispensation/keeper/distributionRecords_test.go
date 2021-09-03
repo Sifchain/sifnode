@@ -1,6 +1,7 @@
 package keeper_test
 
 import (
+	"github.com/cosmos/cosmos-sdk/types/query"
 	"testing"
 
 	"github.com/Sifchain/sifnode/x/dispensation/test"
@@ -112,4 +113,33 @@ func TestKeeper_GetRecordsForRecipient(t *testing.T) {
 	}
 	list := keeper.GetRecordsForRecipient(ctx, outList[0].Address)
 	assert.Len(t, list.DistributionRecords, 1)
+}
+
+func TestKeeper_GetRecordsForNameAndStatusPaginated(t *testing.T) {
+	app, ctx := test.CreateTestApp(false)
+	keeper := app.DispensationKeeper
+	loopCount := 300
+	queryLimit := 10
+	outList := test.CreatOutputList(loopCount*queryLimit, "1000000000")
+	name := uuid.New().String()
+	for _, rec := range outList {
+		record := types.NewDistributionRecord(types.DistributionStatus_DISTRIBUTION_STATUS_PENDING, types.DistributionType_DISTRIBUTION_TYPE_AIRDROP, name, rec.Address, rec.Coins, ctx.BlockHeight(), -1, "")
+		err := keeper.SetDistributionRecord(ctx, record)
+		assert.NoError(t, err)
+		_, err = keeper.GetDistributionRecord(ctx, name, rec.Address, types.DistributionStatus_DISTRIBUTION_STATUS_PENDING, record.DistributionType)
+		assert.NoError(t, err)
+	}
+	list, pageRes, err := keeper.GetRecordsForNameAndStatusPaginated(ctx, name, types.DistributionStatus_DISTRIBUTION_STATUS_PENDING, &query.PageRequest{Limit: uint64(queryLimit)})
+	assert.NoError(t, err)
+	assert.Len(t, list.DistributionRecords, queryLimit)
+	loopCounter := 1
+	for {
+		list, pageRes, err = keeper.GetRecordsForNameAndStatusPaginated(ctx, name, types.DistributionStatus_DISTRIBUTION_STATUS_PENDING, &query.PageRequest{Key: pageRes.NextKey, Limit: uint64(queryLimit)})
+		loopCounter++
+		assert.NoError(t, err)
+		if pageRes.NextKey == nil {
+			break
+		}
+	}
+	assert.Equal(t, loopCounter, loopCount)
 }

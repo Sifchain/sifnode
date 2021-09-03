@@ -2,6 +2,10 @@ package keeper
 
 import (
 	"fmt"
+	"github.com/cosmos/cosmos-sdk/store/prefix"
+	"github.com/cosmos/cosmos-sdk/types/query"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 
 	"github.com/Sifchain/sifnode/x/dispensation/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -94,25 +98,29 @@ func (k Keeper) GetClaimsByType(ctx sdk.Context, userClaimType types.Distributio
 	return &res
 }
 
-func (k Keeper) GetClaimsByTypePaginated(ctx sdk.Context, userClaimType types.DistributionType) *types.UserClaims {
+func (k Keeper) GetClaimsByTypePaginated(ctx sdk.Context, userClaimType types.DistributionType, pagination *query.PageRequest) (*types.UserClaims, *query.PageResponse, error) {
 	var res types.UserClaims
-	iterator := k.GetUserClaimsIterator(ctx)
-	defer func(iterator sdk.Iterator) {
-		err := iterator.Close()
+	store := ctx.KVStore(k.storeKey)
+	claimStore := prefix.NewStore(store, types.UserClaimPrefix)
+	pageRes, err := query.FilteredPaginate(claimStore, pagination, func(key []byte, value []byte, accumulate bool) (bool, error) {
+		var claim types.UserClaim
+		if len(value) <= 0 {
+			return false, nil
+		}
+		err := k.cdc.UnmarshalBinaryBare(value, &claim)
 		if err != nil {
-			panic("Failed to close iterator")
+			return false, err
 		}
-	}(iterator)
-	for ; iterator.Valid(); iterator.Next() {
-		var dl types.UserClaim
-		bytesValue := iterator.Value()
-		if len(bytesValue) == 0 {
-			continue
+		if claim.UserClaimType != userClaimType {
+			return false, nil
 		}
-		k.cdc.MustUnmarshalBinaryBare(bytesValue, &dl)
-		if dl.UserClaimType == userClaimType {
-			res.UserClaims = append(res.UserClaims, &dl)
+		if accumulate {
+			res.UserClaims = append(res.UserClaims, &claim)
 		}
+		return true, nil
+	})
+	if err != nil {
+		return nil, &query.PageResponse{}, status.Error(codes.Internal, err.Error())
 	}
-	return &res
+	return &res, pageRes, nil
 }
