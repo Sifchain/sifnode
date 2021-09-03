@@ -360,5 +360,50 @@ describe("Test Bridge Bank", function () {
       isInCosmosWhitelist3 = await state.bridgeBank.getCosmosTokenInWhiteList(state.token3.address);
       expect(isInCosmosWhitelist3).to.be.false;
     });
+
+    it("should allow anyone to forceSetBridgeTokenDenom", async function () {
+      // expect token2's denom to NOT be registered in BridgeBank
+      let denomInBridgeBank = await state.bridgeBank.contractDenom(state.token2.address);
+      expect(denomInBridgeBank).to.be.equal("");
+
+      // add token 2 as BridgeToken
+      await state.bridgeBank.connect(owner).addExistingBridgeToken(state.token2.address);
+
+      // userOne calls forceSetBridgeTokenDenom
+      await expect(state.bridgeBank.connect(userOne)
+        .forceSetBridgeTokenDenom(state.token2.address))
+        .to.be.fulfilled;
+
+      // expect token2's denom to be registered in BridgeBank
+      denomInBridgeBank = await state.bridgeBank.contractDenom(state.token2.address);
+      expect(denomInBridgeBank).to.be.equal(state.constants.denom.three);
+    });
+
+    it("should allow anyone to batchForceSetBridgeTokenDenom", async function () {
+      // expect token2's denom to NOT be registered in BridgeBank
+      let denomInBridgeBank2 = await state.bridgeBank.contractDenom(state.token2.address);
+      expect(denomInBridgeBank2).to.be.equal("");
+
+      // expect token3's denom to NOT be registered in BridgeBank
+      let denomInBridgeBank3 = await state.bridgeBank.contractDenom(state.token3.address);
+      expect(denomInBridgeBank3).to.be.equal("");
+
+      // add tokens as BridgeTokens
+      await state.bridgeBank.connect(owner)
+        .batchAddExistingBridgeTokens([state.token2.address, state.token3.address]);
+
+      // userOne calls batchForceSetBridgeTokenDenom
+      await expect(state.bridgeBank.connect(userOne)
+        .batchForceSetBridgeTokenDenom([state.token2.address, state.token3.address]))
+        .to.be.fulfilled;
+
+      // expect token2's denom to be registered in BridgeBank
+      denomInBridgeBank2 = await state.bridgeBank.contractDenom(state.token2.address);
+      expect(denomInBridgeBank2).to.be.equal(state.constants.denom.three);
+
+      // expect token3's denom to be registered in BridgeBank
+      denomInBridgeBank3 = await state.bridgeBank.contractDenom(state.token3.address);
+      expect(denomInBridgeBank3).to.be.equal(state.constants.denom.four);
+    });
   });
 });
