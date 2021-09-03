@@ -2,6 +2,10 @@ package main
 
 import (
 	"fmt"
+	"github.com/Sifchain/sifnode/cmd/ebrelayer/internal/symbol_translator"
+	"github.com/Sifchain/sifnode/cmd/ebrelayer/txs"
+	ebrelayertypes "github.com/Sifchain/sifnode/cmd/ebrelayer/types"
+	flag "github.com/spf13/pflag"
 	"log"
 	"net/url"
 	"os"
@@ -27,11 +31,6 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/syndtr/goleveldb/leveldb"
 	"go.uber.org/zap"
-)
-
-const (
-	// EnvPrefix defines the environment prefix for the root cmd
-	levelDbFile = "relayerdb"
 )
 
 func buildRootCmd() *cobra.Command {
@@ -84,7 +83,16 @@ func buildRootCmd() *cobra.Command {
 	))
 	rootCmd.PersistentFlags().String(flags.FlagGasPrices, "", "Gas prices to determine the transaction fee (e.g. 10uatom)")
 	rootCmd.PersistentFlags().Float64(flags.FlagGasAdjustment, flags.DefaultGasAdjustment, "gas adjustment")
-
+	rootCmd.PersistentFlags().String(
+		ebrelayertypes.FlagSymbolTranslatorFile,
+		"",
+		"Path to a json file containing an array of sifchain denom => Ethereum symbol pairs",
+	)
+	rootCmd.PersistentFlags().String(
+		ebrelayertypes.FlagRelayerDbPath,
+		"./relayerdb",
+		"Path to the relayerdb directory",
+	)
 	// Construct Root Command
 	rootCmd.AddCommand(
 		rpc.StatusCommand(),
@@ -143,6 +151,12 @@ func RunInitRelayerCmd(cmd *cobra.Command, args []string) error {
 		return errors.Errorf("invalid [ETHEREUM_PRIVATE_KEY] environment variable")
 	}
 
+	// TODO peggy2merge
+
+	levelDbFile, err := cmd.Flags().GetString(ebrelayertypes.FlagRelayerDbPath)
+	if err != nil {
+		return err
+	}
 	// Open the level db
 	db, err := leveldb.OpenFile(levelDbFile, nil)
 	if err != nil {
@@ -212,6 +226,11 @@ func RunInitRelayerCmd(cmd *cobra.Command, args []string) error {
 	sugaredLogger := logger.Sugar()
 	zap.RedirectStdLog(sugaredLogger.Desugar())
 
+	symbolTranslator, err := buildSymbolTranslator(cmd.Flags())
+	if err != nil {
+		return err
+	}
+
 	// Initialize new Ethereum event listener
 	ethSub := relayer.NewEthereumSub(
 		cliContext,
@@ -238,8 +257,8 @@ func RunInitRelayerCmd(cmd *cobra.Command, args []string) error {
 	waitForAll := sync.WaitGroup{}
 	waitForAll.Add(2)
 	txFactory := tx.NewFactoryCLI(cliContext, cmd.Flags())
-	go ethSub.Start(txFactory, &waitForAll)
-	go cosmosSub.Start(txFactory, &waitForAll)
+	go ethSub.Start(txFactory, &waitForAll, symbolTranslator)
+	go cosmosSub.Start(txFactory, &waitForAll, symbolTranslator)
 	waitForAll.Wait()
 
 	return nil
@@ -414,6 +433,21 @@ func listMissedCosmosEventCmd() *cobra.Command {
 	}
 
 	return listMissedCosmosEventCmd
+}
+
+func buildSymbolTranslator(flags *flag.FlagSet) (*symbol_translator.SymbolTranslator, error) {
+	filename, err := flags.GetString(ebrelayertypes.FlagSymbolTranslatorFile)
+	// If FlagSymbolTranslatorFile isn't specified, just use an empty SymbolTranslator
+	if err != nil || filename == "" {
+		return symbol_translator.NewSymbolTranslator(), nil
+	}
+
+	symbolTranslator, err := symbol_translator.NewSymbolTranslatorFromJSONFile(filename)
+	if err != nil {
+		return nil, err
+	}
+
+	return symbolTranslator, nil
 }
 
 func main() {

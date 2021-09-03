@@ -36,7 +36,7 @@ type UserClaim struct {
 ### User Flow
 - Create Claim
 ```shell
-sifnodecli tx dispensation claim ValidatorSubsidy --from akasha --keyring-backend test --yes
+sifnoded tx dispensation claim ValidatorSubsidy --from akasha --keyring-backend test --yes
 ```
 
 ### Events Emitted
@@ -63,7 +63,7 @@ sifnodecli tx dispensation claim ValidatorSubsidy --from akasha --keyring-backen
 ### Queries
 - Query to get claims by type
 ```shell
-sifnodecli q dispensation claims-by-type ValidatorSubsidy
+sifnoded q dispensation claims-by-type ValidatorSubsidy
 ```
 Response 
 ```json

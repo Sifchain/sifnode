@@ -29,3 +29,4 @@ ADD cmd/ebrelayer/contract/generated  /sif/cmd/ebrelayer/contract/generated
 
 # Copy the compiled binaires over.
 COPY --from=build /go/bin/ebrelayer /usr/bin/ebrelayer
+COPY --from=build /go/bin/sifnoded /usr/bin/sifnoded

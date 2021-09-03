@@ -77,7 +77,7 @@ def test_bulk_transfers_from_sifchain(
             burn_lock_functions.transfer_sifchain_to_sifchain(request, credentials_for_account_with_ceth)
             transfer = (request.sifchain_destination_address, from_key, request.sifchain_symbol, request.amount)
 
-            test_utilities.get_sifchain_addr_balance(request.sifchain_destination_address, request.sifnodecli_node, t)
+            test_utilities.get_sifchain_addr_balance(request.sifchain_destination_address, request.sifnoded_node, t)
 
             test_transfers.append(transfer)
 
@@ -88,7 +88,7 @@ def test_bulk_transfers_from_sifchain(
         keyring_passphrase=None,
         keyring_backend="test",
         from_key=None,
-        sifnodecli_homedir=None
+        sifnoded_homedir=None
     )
 
     logging.info(f"all accounts are on sifchain and have the correct balance")

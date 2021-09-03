@@ -20,6 +20,9 @@ import (
 	v039clp "github.com/Sifchain/sifnode/x/clp/legacy/v39"
 	v042clp "github.com/Sifchain/sifnode/x/clp/legacy/v42"
 	clptypes "github.com/Sifchain/sifnode/x/clp/types"
+	v039dispensation "github.com/Sifchain/sifnode/x/dispensation/legacy/v39"
+	v042dispensation "github.com/Sifchain/sifnode/x/dispensation/legacy/v42"
+	dispensationtypes "github.com/Sifchain/sifnode/x/dispensation/types"
 	v039ethbridge "github.com/Sifchain/sifnode/x/ethbridge/legacy/v39"
 	v042ethbridge "github.com/Sifchain/sifnode/x/ethbridge/legacy/v42"
 	ethbridgetypes "github.com/Sifchain/sifnode/x/ethbridge/types"
@@ -147,6 +150,14 @@ func Migrate(appState types.AppMap, clientCtx client.Context) types.AppMap {
 
 		newGenesis := v042oracle.Migrate(genesis)
 		appState[oracletypes.ModuleName] = v040Codec.MustMarshalJSON(newGenesis)
+	}
+	// Dispensation
+	if appState[v039dispensation.ModuleName] != nil {
+		var genesis v039dispensation.GenesisState
+		v039Codec.MustUnmarshalJSON(appState[v039dispensation.ModuleName], &genesis)
+
+		newGenesis := v042dispensation.Migrate(genesis)
+		appState[dispensationtypes.ModuleName] = v040Codec.MustMarshalJSON(newGenesis)
 	}
 	// Install evidence module genesis
 	if appState[evidencetypes.ModuleName] == nil {

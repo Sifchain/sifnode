@@ -1,21 +1,13 @@
 package cli
 
 import (
-	"bufio"
 	"fmt"
+	"github.com/Sifchain/sifnode/x/dispensation/types"
+	dispensationUtils "github.com/Sifchain/sifnode/x/dispensation/utils"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/client/tx"
-	"github.com/cosmos/cosmos-sdk/crypto/keyring"
-	"github.com/cosmos/cosmos-sdk/crypto/keys/multisig"
-	"github.com/cosmos/cosmos-sdk/server"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
-	"github.com/tendermint/tendermint/libs/cli"
-
-	"github.com/Sifchain/sifnode/x/dispensation/types"
-	dispensationUtils "github.com/Sifchain/sifnode/x/dispensation/utils"
 )
 
 // GetTxCmd returns the transaction commands for this module
@@ -31,6 +23,7 @@ func GetTxCmd() *cobra.Command {
 	dispensationTxCmd.AddCommand(
 		GetCmdCreate(),
 		GetCmdClaim(),
+		GetCmdRun(),
 	)
 
 	return dispensationTxCmd
@@ -41,57 +34,26 @@ func GetTxCmd() *cobra.Command {
 func GetCmdCreate() *cobra.Command {
 	// Note ,the command only creates a airdrop for now .
 	cmd := &cobra.Command{
-		Use:   "distribute [MultiSigKeyName] [DistributionName] [DistributionType] [Input JSON File Path] [Output JSON File Path]",
+		Use:   "create [DistributionType] [Output JSON File Path] [AuthorizedRunner]",
 		Short: "Create new distribution",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			clientCtx := client.GetClientContextFromCmd(cmd)
-			serverCtx := server.GetServerContextFromCmd(cmd)
-			config := serverCtx.Config
-
-			config.SetRoot(viper.GetString(cli.HomeFlag))
-
-			inBuf := bufio.NewReader(cmd.InOrStdin())
-			keyringBackend, err := cmd.Flags().GetString(flags.FlagKeyringBackend)
+			clientCtx, err := client.GetClientTxContext(cmd)
 			if err != nil {
 				return err
 			}
-
-			// attempt to lookup address from Keybase if no address was provided
-			kb, err := keyring.New(sdk.KeyringServiceName(), keyringBackend, clientCtx.HomeDir, inBuf)
+			err = cobra.ExactArgs(3)(cmd, args)
 			if err != nil {
 				return err
 			}
-
-			multisigInfo, err := kb.Key(args[0])
-			if err != nil {
-				return fmt.Errorf("failed to get address from Keybase: %w", err)
-			}
-
-			if multisigInfo.GetType() != keyring.TypeMulti {
-				return fmt.Errorf("%q must be of type %s: %s", args[0], keyring.TypeMulti, multisigInfo.GetType())
-			}
-			name := args[1]
-			distributionType, ok := types.IsValidDistribution(args[2])
+			distributionType, ok := types.GetDistributionTypeFromShortString(args[0])
 			if !ok {
 				return fmt.Errorf("invalid distribution Type %s: Types supported [Airdrop/LiquidityMining/ValidatorSubsidy]", args[2])
 			}
-
-			inputList, err := dispensationUtils.ParseInput(args[3])
+			outputList, err := dispensationUtils.ParseOutput(args[1])
 			if err != nil {
 				return err
 			}
-
-			multisigPub := multisigInfo.GetPubKey().(*multisig.LegacyAminoPubKey)
-			err = dispensationUtils.VerifyInputList(inputList, multisigPub.PubKeys)
-			if err != nil {
-				return err
-			}
-
-			outputlist, err := dispensationUtils.ParseOutput(args[4])
-			if err != nil {
-				return err
-			}
-			msg := types.NewMsgCreateDistribution(clientCtx.GetFromAddress(), name, distributionType, inputList, outputlist)
+			msg := types.NewMsgCreateDistribution(clientCtx.GetFromAddress(), distributionType, outputList, args[2])
 			if err := msg.ValidateBasic(); err != nil {
 				return err
 			}
@@ -109,8 +71,15 @@ func GetCmdClaim() *cobra.Command {
 		Use:   "claim [ClaimType]",
 		Short: "Create new Claim",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			clientCtx := client.GetClientContextFromCmd(cmd)
-			claimType, ok := types.IsValidClaim(args[0])
+			clientCtx, err := client.GetClientTxContext(cmd)
+			if err != nil {
+				return err
+			}
+			err = cobra.ExactArgs(1)(cmd, args)
+			if err != nil {
+				return err
+			}
+			claimType, ok := types.GetClaimType(args[0])
 			if !ok {
 				return fmt.Errorf("invalid Claim Type %s: Types supported [LiquidityMining/ValidatorSubsidy]", args[0])
 			}
@@ -121,5 +90,37 @@ func GetCmdClaim() *cobra.Command {
 			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), &msg)
 		},
 	}
+	flags.AddTxFlagsToCmd(cmd)
+
+	return cmd
+
+}
+
+func GetCmdRun() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "run [DistributionName] [DistributionType]",
+		Short: "run limited records dispensation by specifying the name / should only be called by the authorized runner",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			clientCtx, err := client.GetClientTxContext(cmd)
+			if err != nil {
+				return err
+			}
+			err = cobra.ExactArgs(2)(cmd, args)
+			if err != nil {
+				return err
+			}
+			distributionType, ok := types.GetDistributionTypeFromShortString(args[1])
+			if !ok {
+				return fmt.Errorf("invalid distribution Type %s: Types supported [Airdrop/LiquidityMining/ValidatorSubsidy]", args[1])
+			}
+			msg := types.NewMsgRunDistribution(clientCtx.GetFromAddress().String(), args[0], distributionType)
+			if err := msg.ValidateBasic(); err != nil {
+				return err
+			}
+			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), &msg)
+		},
+	}
+	flags.AddTxFlagsToCmd(cmd)
+
 	return cmd
 }

@@ -1,2 +1,2 @@
-height=$(sifnodecli --home $CHAINDIR/.sifnodecli q block | jq -r .block.header.height)
-seq $height | parallel -k sifnodecli --home $CHAINDIR/.sifnodecli q block {}
+height=$(sifnoded --home $CHAINDIR/.sifnoded q block | jq -r .block.header.height)
+seq $height | parallel -k sifnoded --home $CHAINDIR/.sifnoded q block {}

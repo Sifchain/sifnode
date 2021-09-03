@@ -2,10 +2,8 @@ package utils_test
 
 import (
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"os"
-	"path/filepath"
 	"testing"
 
 	"github.com/Sifchain/sifnode/x/dispensation/test"
@@ -40,7 +38,7 @@ func createInput(t *testing.T, filename string) {
 	assert.NoError(t, err)
 	out, err := sdk.AccAddressFromBech32("sif1l7hypmqk2yc334vc6vmdwzp5sdefygj2ad93p5")
 	assert.NoError(t, err)
-	coin := sdk.Coins{sdk.NewCoin("rowan", sdk.NewInt(10))}
+	coin := sdk.NewCoins(sdk.NewCoin("rowan", sdk.NewInt(10)))
 	inputList := []types.Input{types.NewInput(in, coin), types.NewInput(out, coin)}
 	tempInput := utils.TempInput{In: inputList}
 	file, _ := json.MarshalIndent(tempInput, "", " ")

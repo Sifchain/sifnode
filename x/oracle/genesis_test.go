@@ -17,7 +17,8 @@ func TestInitGenesis(t *testing.T) {
 
 	tt, _ := testGenesisData(t)
 
-	for _, tc := range tt {
+	for i := range tt {
+		tc := tt[i]
 		t.Run(tc.name, func(t *testing.T) {
 			ctx, _, _, _, keeper, _, _, _ := test.CreateTestKeepers(t, 1, []int64{1}, "")
 			keeper.RemoveOracleWhiteList(ctx, networkDescriptor)
@@ -53,7 +54,8 @@ func TestInitGenesis(t *testing.T) {
 func TestExportGenesis(t *testing.T) {
 	tt, _ := testGenesisData(t)
 
-	for _, tc := range tt {
+	for i := range tt {
+		tc := tt[i]
 		t.Run(tc.name, func(t *testing.T) {
 			ctx, _, _, _, keeper, _, _, _ := test.CreateTestKeepers(t, 1, []int64{1}, "")
 			networkDescriptor := types.NetworkIdentity{NetworkDescriptor: types.NetworkDescriptor_NETWORK_DESCRIPTOR_ETHEREUM}
@@ -62,7 +64,6 @@ func TestExportGenesis(t *testing.T) {
 
 			_ = oracle.InitGenesis(ctx, keeper, tc.genesis)
 			genesis := oracle.ExportGenesis(ctx, keeper)
-
 			require.Equal(t, tc.genesis.AdminAddress, genesis.AdminAddress)
 
 			wl := genesis.AddressWhitelist
@@ -83,7 +84,8 @@ func TestExportGenesis(t *testing.T) {
 func TestGenesisMarshalling(t *testing.T) {
 	tt, prophecies := testGenesisData(t)
 
-	for _, tc := range tt {
+	for i := range tt {
+		tc := tt[i]
 		t.Run(tc.name, func(t *testing.T) {
 			ctx, _, _, _, keeper, encCfg, _, _ := test.CreateTestKeepers(t, 1, []int64{1}, "")
 			networkDescriptor := types.NetworkIdentity{NetworkDescriptor: types.NetworkDescriptor_NETWORK_DESCRIPTOR_ETHEREUM}
@@ -129,9 +131,11 @@ func testGenesisData(t *testing.T) ([]testCase, []types.Prophecy) {
 	addrs, valAddrs := test.CreateTestAddrs(2)
 	power := uint32(100)
 
-	whiteList := types.ValidatorWhiteList{WhiteList: make(map[string]uint32)}
-	whiteList.WhiteList[valAddrs[0].String()] = power
-	whiteList.WhiteList[valAddrs[1].String()] = power
+	// TODO peggy2merge need to look at peggy2 version
+	whitelist := make([]string, len(valAddrs))
+	for i, addr := range valAddrs {
+		whitelist[i] = addr.String()
+	}
 
 	prophecy := types.Prophecy{
 		Id:              []byte("asd"),
@@ -143,10 +147,6 @@ func testGenesisData(t *testing.T) ([]testCase, []types.Prophecy) {
 		{
 			name:    "Default genesis",
 			genesis: *types.DefaultGenesisState(),
-		},
-		{
-			name:    "Nil genesis",
-			genesis: types.GenesisState{},
 		},
 		{
 			name: "Prophecy",

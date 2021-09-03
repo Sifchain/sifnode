@@ -4,12 +4,15 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"math"
 	"strconv"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+	"github.com/cosmos/cosmos-sdk/types/query"
 
 	"github.com/Sifchain/sifnode/x/clp/types"
+	tokenregistrytypes "github.com/Sifchain/sifnode/x/tokenregistry/types"
 )
 
 type msgServer struct {
@@ -26,7 +29,6 @@ var _ types.MsgServer = msgServer{}
 
 func (k msgServer) DecommissionPool(goCtx context.Context, msg *types.MsgDecommissionPool) (*types.MsgDecommissionPoolResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
-
 	pool, err := k.Keeper.GetPool(ctx, msg.Symbol)
 	if err != nil {
 		return nil, types.ErrPoolDoesNotExist
@@ -47,14 +49,19 @@ func (k msgServer) DecommissionPool(goCtx context.Context, msg *types.MsgDecommi
 	if pool.ExternalAsset == nil {
 		return nil, errors.New("nill external asset")
 	}
-	lpList := k.Keeper.GetLiquidityProvidersForAsset(ctx, *pool.ExternalAsset)
+	lpList, _, err := k.Keeper.GetLiquidityProvidersForAssetPaginated(ctx, *pool.ExternalAsset, &query.PageRequest{
+		Limit: uint64(math.MaxUint64),
+	})
+	if err != nil {
+		return nil, sdkerrors.Wrap(types.ErrLiquidityProviderDoesNotExist, err.Error())
+	}
 	poolUnits := pool.PoolUnits
 	nativeAssetBalance := pool.NativeAssetBalance
 	externalAssetBalance := pool.ExternalAssetBalance
 	// iterate over Lp list and refund them there tokens
 	// Return both RWN and EXTERNAL ASSET
 	for _, lp := range lpList {
-		withdrawNativeAsset, withdrawExternalAsset, _, _ := CalculateAllAssetsForLP(pool, lp)
+		withdrawNativeAsset, withdrawExternalAsset, _, _ := CalculateAllAssetsForLP(pool, *lp)
 		poolUnits = poolUnits.Sub(lp.LiquidityProviderUnits)
 		nativeAssetBalance = nativeAssetBalance.Sub(withdrawNativeAsset)
 		externalAssetBalance = externalAssetBalance.Sub(withdrawExternalAsset)
@@ -69,8 +76,8 @@ func (k msgServer) DecommissionPool(goCtx context.Context, msg *types.MsgDecommi
 		}
 		withdrawNativeCoins := sdk.NewCoin(types.GetSettlementAsset().Symbol, withdrawNativeAssetInt)
 		withdrawExternalCoins := sdk.NewCoin(msg.Symbol, withdrawExternalAssetInt)
-		refundingCoins := sdk.Coins{withdrawExternalCoins, withdrawNativeCoins}
-		err := k.Keeper.RemoveLiquidityProvider(ctx, refundingCoins, lp)
+		refundingCoins := sdk.NewCoins(withdrawExternalCoins, withdrawNativeCoins)
+		err := k.Keeper.RemoveLiquidityProvider(ctx, refundingCoins, *lp)
 		if err != nil {
 			return nil, sdkerrors.Wrap(types.ErrUnableToRemoveLiquidityProvider, err.Error())
 		}
@@ -102,7 +109,12 @@ func (k msgServer) Swap(goCtx context.Context, msg *types.MsgSwap) (*types.MsgSw
 	var (
 		priceImpact sdk.Uint
 	)
-
+	if !(k.tokenRegistryKeeper.IsDenomWhitelisted(ctx, msg.ReceivedAsset.Symbol) || (k.tokenRegistryKeeper.IsDenomWhitelisted(ctx, msg.SentAsset.Symbol))) {
+		return nil, types.ErrTokenNotSupported
+	}
+	if !k.tokenRegistryKeeper.CheckDenomPermissions(ctx, msg.ReceivedAsset.Symbol, types.GetCLPermissons()) || !k.tokenRegistryKeeper.CheckDenomPermissions(ctx, msg.SentAsset.Symbol, types.GetCLPermissons()) {
+		return nil, types.ErrTokenNotSupported
+	}
 	liquidityFeeNative := sdk.ZeroUint()
 	liquidityFeeExternal := sdk.ZeroUint()
 	totalLiquidityFee := sdk.ZeroUint()
@@ -142,7 +154,8 @@ func (k msgServer) Swap(goCtx context.Context, msg *types.MsgSwap) (*types.MsgSw
 	// If its one way we can skip this if condition and add balance to users account from outpool
 
 	if !msg.SentAsset.Equals(nativeAsset) && !msg.ReceivedAsset.Equals(nativeAsset) {
-		emitAmount, lp, ts, finalPool, err := SwapOne(*sentAsset, sentAmount, nativeAsset, inPool)
+		normalizationFactor, adjustExternalToken := k.GetNormalizationFactor(ctx, inPool.ExternalAsset.Symbol)
+		emitAmount, lp, ts, finalPool, err := SwapOne(*sentAsset, sentAmount, nativeAsset, inPool, normalizationFactor, adjustExternalToken)
 		if err != nil {
 			return nil, err
 		}
@@ -169,7 +182,8 @@ func (k msgServer) Swap(goCtx context.Context, msg *types.MsgSwap) (*types.MsgSw
 	}
 
 	// Calculating amount user receives
-	emitAmount, lp, ts, finalPool, err := SwapOne(*sentAsset, sentAmount, *receivedAsset, outPool)
+	normalizationFactor, adjustExternalToken := k.GetNormalizationFactor(ctx, outPool.ExternalAsset.Symbol)
+	emitAmount, lp, ts, finalPool, err := SwapOne(*sentAsset, sentAmount, *receivedAsset, outPool, normalizationFactor, adjustExternalToken)
 	if err != nil {
 		return nil, err
 	}
@@ -201,7 +215,8 @@ func (k msgServer) Swap(goCtx context.Context, msg *types.MsgSwap) (*types.MsgSw
 	}
 	if liquidityFeeNative.GT(sdk.ZeroUint()) {
 		liquidityFeeExternal = liquidityFeeExternal.Add(lp)
-		firstSwapFeeInOutputAsset := GetSwapFee(liquidityFeeNative, *msg.ReceivedAsset, outPool)
+		normalizationFactor, adjustExternalToken := k.GetNormalizationFactor(ctx, outPool.ExternalAsset.Symbol)
+		firstSwapFeeInOutputAsset := GetSwapFee(liquidityFeeNative, *msg.ReceivedAsset, outPool, normalizationFactor, adjustExternalToken)
 		totalLiquidityFee = liquidityFeeExternal.Add(firstSwapFeeInOutputAsset)
 	} else {
 		totalLiquidityFee = liquidityFeeNative.Add(lp)
@@ -229,7 +244,12 @@ func (k msgServer) Swap(goCtx context.Context, msg *types.MsgSwap) (*types.MsgSw
 
 func (k msgServer) RemoveLiquidity(goCtx context.Context, msg *types.MsgRemoveLiquidity) (*types.MsgRemoveLiquidityResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
-
+	if !k.tokenRegistryKeeper.IsDenomWhitelisted(ctx, msg.ExternalAsset.Symbol) {
+		return nil, types.ErrTokenNotSupported
+	}
+	if !k.tokenRegistryKeeper.CheckDenomPermissions(ctx, msg.ExternalAsset.Symbol, types.GetCLPermissons()) {
+		return nil, tokenregistrytypes.ErrPermissionDenied
+	}
 	pool, err := k.Keeper.GetPool(ctx, msg.ExternalAsset.Symbol)
 	if err != nil {
 		return nil, types.ErrPoolDoesNotExist
@@ -269,7 +289,8 @@ func (k msgServer) RemoveLiquidity(goCtx context.Context, msg *types.MsgRemoveLi
 
 	// Swapping between Native and External based on Asymmetry
 	if msg.Asymmetry.IsPositive() {
-		swapResult, _, _, swappedPool, err := SwapOne(types.GetSettlementAsset(), swapAmount, *msg.ExternalAsset, pool)
+		normalizationFactor, adjustExternalToken := k.GetNormalizationFactor(ctx, pool.ExternalAsset.Symbol)
+		swapResult, _, _, swappedPool, err := SwapOne(types.GetSettlementAsset(), swapAmount, *msg.ExternalAsset, pool, normalizationFactor, adjustExternalToken)
 		if err != nil {
 			return nil, sdkerrors.Wrap(types.ErrUnableToSwap, err.Error())
 		}
@@ -290,7 +311,8 @@ func (k msgServer) RemoveLiquidity(goCtx context.Context, msg *types.MsgRemoveLi
 		pool = swappedPool
 	}
 	if msg.Asymmetry.IsNegative() {
-		swapResult, _, _, swappedPool, err := SwapOne(*msg.ExternalAsset, swapAmount, types.GetSettlementAsset(), pool)
+		normalizationFactor, adjustExternalToken := k.GetNormalizationFactor(ctx, pool.ExternalAsset.Symbol)
+		swapResult, _, _, swappedPool, err := SwapOne(*msg.ExternalAsset, swapAmount, types.GetSettlementAsset(), pool, normalizationFactor, adjustExternalToken)
 		if err != nil {
 			return nil, sdkerrors.Wrap(types.ErrUnableToSwap, err.Error())
 		}
@@ -336,11 +358,16 @@ func (k msgServer) CreatePool(goCtx context.Context, msg *types.MsgCreatePool) (
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
 	// Verify min threshold
-
 	MinThreshold := sdk.NewUintFromString(types.PoolThrehold)
 
 	if msg.NativeAssetAmount.LT(MinThreshold) { // Need to verify
 		return nil, types.ErrTotalAmountTooLow
+	}
+	if !k.tokenRegistryKeeper.IsDenomWhitelisted(ctx, msg.ExternalAsset.Symbol) {
+		return nil, types.ErrTokenNotSupported
+	}
+	if !k.tokenRegistryKeeper.CheckDenomPermissions(ctx, msg.ExternalAsset.Symbol, types.GetCLPermissons()) {
+		return nil, tokenregistrytypes.ErrPermissionDenied
 	}
 	// Check if pool already exists
 	if k.Keeper.ExistsPool(ctx, msg.ExternalAsset.Symbol) {
@@ -349,7 +376,8 @@ func (k msgServer) CreatePool(goCtx context.Context, msg *types.MsgCreatePool) (
 
 	nativeBalance := msg.NativeAssetAmount
 	externalBalance := msg.ExternalAssetAmount
-	poolUnits, lpunits, err := CalculatePoolUnits(msg.ExternalAsset.Symbol, sdk.ZeroUint(), sdk.ZeroUint(), sdk.ZeroUint(), nativeBalance, externalBalance)
+	normalizationFactor, adjustExternalToken := k.GetNormalizationFactor(ctx, msg.ExternalAsset.Symbol)
+	poolUnits, lpunits, err := CalculatePoolUnits(sdk.ZeroUint(), sdk.ZeroUint(), sdk.ZeroUint(), nativeBalance, externalBalance, normalizationFactor, adjustExternalToken)
 	if err != nil {
 		return nil, sdkerrors.Wrap(types.ErrUnableToCreatePool, err.Error())
 	}
@@ -388,20 +416,26 @@ func (k msgServer) CreatePool(goCtx context.Context, msg *types.MsgCreatePool) (
 
 func (k msgServer) AddLiquidity(goCtx context.Context, msg *types.MsgAddLiquidity) (*types.MsgAddLiquidityResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
-
+	if !k.tokenRegistryKeeper.IsDenomWhitelisted(ctx, msg.ExternalAsset.Symbol) {
+		return nil, types.ErrTokenNotSupported
+	}
+	if !k.tokenRegistryKeeper.CheckDenomPermissions(ctx, msg.ExternalAsset.Symbol, types.GetCLPermissons()) {
+		return nil, tokenregistrytypes.ErrPermissionDenied
+	}
 	// Get pool
 	pool, err := k.Keeper.GetPool(ctx, msg.ExternalAsset.Symbol)
 	if err != nil {
 		return nil, types.ErrPoolDoesNotExist
 	}
-
+	normalizationFactor, adjustExternalToken := k.GetNormalizationFactor(ctx, msg.ExternalAsset.Symbol)
 	newPoolUnits, lpUnits, err := CalculatePoolUnits(
-		msg.ExternalAsset.Symbol,
 		pool.PoolUnits,
 		pool.NativeAssetBalance,
 		pool.ExternalAssetBalance,
 		msg.NativeAssetAmount,
-		msg.ExternalAssetAmount)
+		msg.ExternalAssetAmount,
+		normalizationFactor,
+		adjustExternalToken)
 	if err != nil {
 		return nil, err
 	}

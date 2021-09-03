@@ -6,20 +6,37 @@ import (
 )
 
 func Migrate(genesis v039oracle.GenesisState) *types.GenesisState {
-	networkDescriptor := types.NetworkDescriptor_NETWORK_DESCRIPTOR_ETHEREUM
-	whitelist := make(map[string]uint32)
-	defaultPower := uint32(100)
-
-	for _, addr := range genesis.AddressWhitelist {
-		whitelist[addr.String()] = defaultPower
+	// TODO peggy2merge there were peggy2 changes
+	var addressWhiteList = make([]string, len(genesis.AddressWhitelist))
+	for i, addr := range genesis.AddressWhitelist {
+		addressWhiteList[i] = addr.String()
 	}
 
-	addressWhitelist := make(map[uint32]*types.ValidatorWhiteList)
-	addressWhitelist[uint32(networkDescriptor)] = &types.ValidatorWhiteList{WhiteList: whitelist}
+	prophecies := make([]*types.DBProphecy, len(genesis.Prophecies))
+	for i, legacy := range genesis.Prophecies {
+		statusText := types.StatusText_STATUS_TEXT_UNSPECIFIED
+		if legacy.Status.Text == v039oracle.PendingStatusText {
+			statusText = types.StatusText_STATUS_TEXT_PENDING
+		} else if legacy.Status.Text == v039oracle.FailedStatusText {
+			statusText = types.StatusText_STATUS_TEXT_FAILED
+		} else if legacy.Status.Text == v039oracle.SuccessStatusText {
+			statusText = types.StatusText_STATUS_TEXT_SUCCESS
+		}
+
+		prophecies[i] = &types.DBProphecy{
+			Id: legacy.ID,
+			Status: types.Status{
+				Text:       statusText,
+				FinalClaim: legacy.Status.FinalClaim,
+			},
+			ClaimValidators: legacy.ClaimValidators,
+			ValidatorClaims: legacy.ValidatorClaims,
+		}
+	}
 
 	return &types.GenesisState{
-		AddressWhitelist: addressWhitelist,
+		AddressWhitelist: addressWhiteList,
 		AdminAddress:     genesis.AdminAddress.String(),
-		Prophecies:       []*types.Prophecy{},
+		Prophecies:       prophecies,
 	}
 }

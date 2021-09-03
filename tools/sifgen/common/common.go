@@ -9,7 +9,7 @@ import (
 type (
 	Keys       types.Keys
 	ConfigTOML types.ConfigTOML
-	AppTOML types.AppTOML
+	AppTOML    types.AppTOML
 	Genesis    types.Genesis
 )
 

@@ -42,7 +42,7 @@ func (k Keeper) CreatePool(ctx sdk.Context, poolUints sdk.Uint, msg *types.MsgCr
 	}
 
 	// Send coins from user to pool
-	err = k.bankKeeper.SendCoinsFromAccountToModule(ctx, addr, types.ModuleName, sdk.Coins{externalAssetCoin, nativeAssetCoin})
+	err = k.bankKeeper.SendCoinsFromAccountToModule(ctx, addr, types.ModuleName, sdk.NewCoins(externalAssetCoin, nativeAssetCoin))
 	if err != nil {
 		return nil, err
 	}
@@ -158,7 +158,7 @@ func (k Keeper) RemoveLiquidity(ctx sdk.Context, pool types.Pool, externalAssetC
 		return err
 	}
 
-	sendCoins := sdk.Coins{}
+	sendCoins := sdk.NewCoins()
 	if !externalAssetCoin.IsZero() && !externalAssetCoin.IsNegative() {
 		sendCoins = sendCoins.Add(externalAssetCoin)
 	}
@@ -200,7 +200,7 @@ func (k Keeper) InitiateSwap(ctx sdk.Context, sentCoin sdk.Coin, swapper sdk.Acc
 	if !k.bankKeeper.HasBalance(ctx, swapper, sentCoin) {
 		return types.ErrBalanceNotAvailable
 	}
-	err := k.bankKeeper.SendCoinsFromAccountToModule(ctx, swapper, types.ModuleName, sdk.Coins{sentCoin})
+	err := k.bankKeeper.SendCoinsFromAccountToModule(ctx, swapper, types.ModuleName, sdk.NewCoins(sentCoin))
 	if err != nil {
 		return err
 	}
@@ -225,7 +225,7 @@ func (k Keeper) FinalizeSwap(ctx sdk.Context, sentAmount string, finalPool types
 		return err
 	}
 	sentCoin := sdk.NewCoin(msg.ReceivedAsset.Symbol, sentAmountInt)
-	err = k.bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, addr, sdk.Coins{sentCoin})
+	err = k.bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, addr, sdk.NewCoins(sentCoin))
 	if err != nil {
 		return err
 	}

@@ -10,11 +10,11 @@ import (
 
 // RegisterCodec registers concrete types on codec
 func RegisterLegacyAminoCodec(cdc *codec.LegacyAmino) {
-	cdc.RegisterConcrete(MsgCreatePool{}, "clp/CreatePool", nil)
-	cdc.RegisterConcrete(MsgAddLiquidity{}, "clp/AddLiquidity", nil)
-	cdc.RegisterConcrete(MsgRemoveLiquidity{}, "clp/RemoveLiquidity", nil)
-	cdc.RegisterConcrete(MsgSwap{}, "clp/Swap", nil)
-	cdc.RegisterConcrete(MsgDecommissionPool{}, "clp/DecommissionPool", nil)
+	cdc.RegisterConcrete(&MsgCreatePool{}, "clp/CreatePool", nil)
+	cdc.RegisterConcrete(&MsgAddLiquidity{}, "clp/AddLiquidity", nil)
+	cdc.RegisterConcrete(&MsgRemoveLiquidity{}, "clp/RemoveLiquidity", nil)
+	cdc.RegisterConcrete(&MsgSwap{}, "clp/Swap", nil)
+	cdc.RegisterConcrete(&MsgDecommissionPool{}, "clp/DecommissionPool", nil)
 }
 
 var (
@@ -25,6 +25,7 @@ var (
 func init() {
 	RegisterLegacyAminoCodec(amino)
 	cryptocodec.RegisterCrypto(amino)
+	amino.Seal()
 }
 
 func RegisterInterfaces(registry types.InterfaceRegistry) {

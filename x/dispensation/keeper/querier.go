@@ -33,9 +33,8 @@ func queryClaimsByType(ctx sdk.Context, req abci.RequestQuery, querier Querier) 
 	if err != nil {
 		return nil, sdkerrors.Wrap(sdkerrors.ErrJSONUnmarshal, err.Error())
 	}
-	list, _ := querier.ClaimsByType(sdk.WrapSDKContext(ctx), &params)
-
-	res, err := types.ModuleCdc.MarshalJSON(list)
+	queryResponse, _ := querier.ClaimsByType(sdk.WrapSDKContext(ctx), &params)
+	res, err := types.ModuleCdc.MarshalJSON(queryResponse)
 	if err != nil {
 		return nil, sdkerrors.Wrap(sdkerrors.ErrJSONMarshal, err.Error())
 	}
