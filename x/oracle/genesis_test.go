@@ -129,7 +129,7 @@ type testCase struct {
 
 func testGenesisData(t *testing.T) ([]testCase, []types.Prophecy) {
 	addrs, valAddrs := test.CreateTestAddrs(2)
-	power := uint32(100)
+	// power := uint32(100)
 
 	// TODO peggy2merge need to look at peggy2 version
 	whitelist := make([]string, len(valAddrs))
@@ -151,7 +151,7 @@ func testGenesisData(t *testing.T) ([]testCase, []types.Prophecy) {
 		{
 			name: "Prophecy",
 			genesis: types.GenesisState{
-				AddressWhitelist: map[uint32]*types.ValidatorWhiteList{uint32(types.NetworkDescriptor_NETWORK_DESCRIPTOR_ETHEREUM): &whiteList},
+				AddressWhitelist: map[uint32]*types.ValidatorWhiteList{},
 				AdminAddress:     addrs[0].String(),
 				Prophecies: []*types.Prophecy{
 					&prophecy,

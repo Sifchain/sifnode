@@ -6,7 +6,6 @@ import (
 	"context"
 	"crypto/ecdsa"
 	"fmt"
-	"github.com/Sifchain/sifnode/cmd/ebrelayer/internal/symbol_translator"
 	"log"
 	"math/big"
 	"os"
@@ -14,6 +13,8 @@ import (
 	"sync"
 	"syscall"
 	"time"
+
+	"github.com/Sifchain/sifnode/cmd/ebrelayer/internal/symbol_translator"
 
 	"github.com/cosmos/cosmos-sdk/client/tx"
 
@@ -426,7 +427,7 @@ func (sub EthereumSub) handleEthereumEvent(txFactory tx.Factory, events []types.
 		return err
 	}
 	for _, event := range events {
-		prophecyClaim, err := txs.EthereumEventToEthBridgeClaim(valAddr, event, symbolTranslator, sub.SugaredLogger)
+		prophecyClaim, err := txs.EthereumEventToEthBridgeClaim(valAddr, event)
 		if err != nil {
 			sub.SugaredLogger.Errorw(".",
 				errorMessageKey, err.Error())

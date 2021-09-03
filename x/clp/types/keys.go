@@ -1,7 +1,10 @@
 package types
 
 import (
+	"errors"
 	"fmt"
+	"strings"
+
 	tokenregistrytypes "github.com/Sifchain/sifnode/x/tokenregistry/types"
 )
 
@@ -50,4 +53,15 @@ func GetLiquidityProviderKey(externalTicker string, lp string) []byte {
 
 func GetCLPermissons() []tokenregistrytypes.Permission {
 	return []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP}
+}
+
+// ParsePoolKey split key into externalTicker and lp
+func ParsePoolKey(key string) (string, string, error) {
+	index := strings.Index(key, "_")
+	if index < 1 || index > len(key)-1 {
+		return "", "", errors.New("invalid pool key")
+	}
+
+	return key[:index], key[:index+1], nil
+
 }

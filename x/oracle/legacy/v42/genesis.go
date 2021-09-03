@@ -6,37 +6,11 @@ import (
 )
 
 func Migrate(genesis v039oracle.GenesisState) *types.GenesisState {
-	// TODO peggy2merge there were peggy2 changes
-	var addressWhiteList = make([]string, len(genesis.AddressWhitelist))
-	for i, addr := range genesis.AddressWhitelist {
-		addressWhiteList[i] = addr.String()
-	}
-
-	prophecies := make([]*types.DBProphecy, len(genesis.Prophecies))
-	for i, legacy := range genesis.Prophecies {
-		statusText := types.StatusText_STATUS_TEXT_UNSPECIFIED
-		if legacy.Status.Text == v039oracle.PendingStatusText {
-			statusText = types.StatusText_STATUS_TEXT_PENDING
-		} else if legacy.Status.Text == v039oracle.FailedStatusText {
-			statusText = types.StatusText_STATUS_TEXT_FAILED
-		} else if legacy.Status.Text == v039oracle.SuccessStatusText {
-			statusText = types.StatusText_STATUS_TEXT_SUCCESS
-		}
-
-		prophecies[i] = &types.DBProphecy{
-			Id: legacy.ID,
-			Status: types.Status{
-				Text:       statusText,
-				FinalClaim: legacy.Status.FinalClaim,
-			},
-			ClaimValidators: legacy.ClaimValidators,
-			ValidatorClaims: legacy.ValidatorClaims,
-		}
-	}
-
 	return &types.GenesisState{
-		AddressWhitelist: addressWhiteList,
+		// for new peggy2, each validator has its voting power, can be got from peggy 1.0
+		AddressWhitelist: map[uint32]*types.ValidatorWhiteList{},
 		AdminAddress:     genesis.AdminAddress.String(),
-		Prophecies:       prophecies,
+		// the algorithm to compute the prophecy id changed, not make sense to copy prophecy from peggy 1.0
+		Prophecies: []*types.Prophecy{},
 	}
 }

@@ -2,8 +2,10 @@ package utils_test
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/Sifchain/sifnode/x/dispensation/test"

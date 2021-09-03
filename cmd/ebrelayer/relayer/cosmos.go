@@ -8,7 +8,6 @@ import (
 	"crypto/ecdsa"
 	"errors"
 	"fmt"
-	"github.com/Sifchain/sifnode/cmd/ebrelayer/internal/symbol_translator"
 	"log"
 	"math/big"
 	"os"
@@ -16,6 +15,8 @@ import (
 	"sync"
 	"syscall"
 	"time"
+
+	"github.com/Sifchain/sifnode/cmd/ebrelayer/internal/symbol_translator"
 
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/txs"
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/types"
@@ -172,7 +173,7 @@ func (sub CosmosSub) Start(txFactory tx.Factory, completionEvent *sync.WaitGroup
 						switch claimType {
 						case types.MsgBurn, types.MsgLock:
 							// the relayer for signature aggregator not handle burn and lock
-							cosmosMsg, err := txs.BurnLockEventToCosmosMsg(event.GetAttributes(), symbolTranslator, sub.SugaredLogger)
+							cosmosMsg, err := txs.BurnLockEventToCosmosMsg(event.GetAttributes(), sub.SugaredLogger)
 							if err != nil {
 								sub.SugaredLogger.Errorw("sifchain client failed in get burn lock message from event.",
 									errorMessageKey, err.Error())

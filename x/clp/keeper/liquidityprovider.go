@@ -130,3 +130,10 @@ func (k Keeper) GetAllLiquidityProvidersPaginated(ctx sdk.Context,
 	}
 	return lpList, pageRes, nil
 }
+
+func (k Keeper) SetRawLiquidityProvider(ctx sdk.Context, symbol string, lp string, rawValue []byte) {
+
+	store := ctx.KVStore(k.storeKey)
+	key := types.GetLiquidityProviderKey(symbol, lp)
+	store.Set(key, rawValue)
+}

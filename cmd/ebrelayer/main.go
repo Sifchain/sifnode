@@ -2,10 +2,6 @@ package main
 
 import (
 	"fmt"
-	"github.com/Sifchain/sifnode/cmd/ebrelayer/internal/symbol_translator"
-	"github.com/Sifchain/sifnode/cmd/ebrelayer/txs"
-	ebrelayertypes "github.com/Sifchain/sifnode/cmd/ebrelayer/types"
-	flag "github.com/spf13/pflag"
 	"log"
 	"net/url"
 	"os"
@@ -13,7 +9,10 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/Sifchain/sifnode/cmd/ebrelayer/internal/symbol_translator"
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/txs"
+	ebrelayertypes "github.com/Sifchain/sifnode/cmd/ebrelayer/types"
+	flag "github.com/spf13/pflag"
 
 	sifapp "github.com/Sifchain/sifnode/app"
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/relayer"
@@ -280,6 +279,8 @@ func RunInitWitnessCmd(cmd *cobra.Command, args []string) error {
 	}
 
 	// Open the level db
+	// TODO check if still use the level db in peggy2
+	levelDbFile := ""
 	db, err := leveldb.OpenFile(levelDbFile, nil)
 	if err != nil {
 		log.Fatal("Error opening leveldb: ", err)
@@ -345,6 +346,11 @@ func RunInitWitnessCmd(cmd *cobra.Command, args []string) error {
 		}
 	}()
 
+	symbolTranslator, err := buildSymbolTranslator(cmd.Flags())
+	if err != nil {
+		return err
+	}
+
 	sugaredLogger := logger.Sugar()
 	zap.RedirectStdLog(sugaredLogger.Desugar())
 
@@ -374,8 +380,8 @@ func RunInitWitnessCmd(cmd *cobra.Command, args []string) error {
 	waitForAll := sync.WaitGroup{}
 	waitForAll.Add(2)
 	txFactory := tx.NewFactoryCLI(cliContext, cmd.Flags())
-	go ethSub.Start(txFactory, &waitForAll)
-	go cosmosSub.StartProphecyHandler(txFactory, &waitForAll)
+	go ethSub.Start(txFactory, &waitForAll, symbolTranslator)
+	go cosmosSub.StartProphecyHandler(txFactory, &waitForAll, symbolTranslator)
 	waitForAll.Wait()
 
 	return nil

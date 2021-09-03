@@ -4,8 +4,9 @@ package relayer
 
 import (
 	"context"
-	"github.com/Sifchain/sifnode/cmd/ebrelayer/internal/symbol_translator"
 	"log"
+
+	"github.com/Sifchain/sifnode/cmd/ebrelayer/internal/symbol_translator"
 
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/txs"
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/types"
@@ -108,7 +109,7 @@ func (list ListMissedCosmosEvent) ListMissedCosmosEvent(symbolTranslator *symbol
 				switch claimType {
 				case types.ProphecyCompleted:
 
-					cosmosMsg, err := txs.ProphecyCompletedEventToProphecyInfo(event.GetAttributes(), symbolTranslator, list.SugaredLogger)
+					cosmosMsg, err := txs.ProphecyCompletedEventToProphecyInfo(event.GetAttributes(), list.SugaredLogger)
 					if err != nil {
 						log.Println(err.Error())
 						continue
