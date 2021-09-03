@@ -116,6 +116,7 @@ export async function impersonateBridgeBankAccounts(c: DependencyContainer, hre:
     startImpersonateAccount(hre, pauser)
 
     await setNewEthBalance(hre, owner, BigNumber.from("100000000000000000000"))
+    await setNewEthBalance(hre, operator, BigNumber.from("100000000000000000000"))
 }
 
 export async function setupRopstenDeployment(c: DependencyContainer, hre: HardhatRuntimeEnvironment, deploymentName: string) {

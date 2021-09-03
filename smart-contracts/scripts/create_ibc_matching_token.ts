@@ -43,7 +43,7 @@ async function main() {
     const bridgeBank = await container.resolve(DeployedBridgeBank).contract
 
     const startingBalance = await hardhat.ethers.provider.getBalance(bridgeBankOwner.address)
-    await buildIbcTokens(ibcTokenFactory, await readTokenData(requiredEnvVar("TOKEN_FILE")), bridgeBank, false)
+    await buildIbcTokens(ibcTokenFactory, await readTokenData(requiredEnvVar("TOKEN_FILE")), bridgeBank, useForking)
     const endingBalance = await hardhat.ethers.provider.getBalance(bridgeBankOwner.address)
     console.log(JSON.stringify({createdTokensOnNetwork: hardhat.network.name, cost: hardhat.ethers.utils.formatEther(startingBalance.sub(endingBalance))}))
 }
