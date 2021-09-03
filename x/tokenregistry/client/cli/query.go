@@ -59,9 +59,9 @@ func GetCmdGenerateEntry() *cobra.Command {
 	var flagWhitelist = "token_whitelist"
 	var flagDenom = "token_denom"
 	var flagBaseDenom = "token_base_denom"
-	var flagIbcChannelId = "token_ibc_channel_id"
-	var flagIbcCounterpartyChannelId = "token_ibc_counterparty_channel_id"
-	var flagIbcCounterpartyChainId = "token_ibc_counterparty_chain_id"
+	var flagIbcChannelID = "token_ibc_channel_id"
+	var flagIbcCounterpartyChannelID = "token_ibc_counterparty_channel_id"
+	var flagIbcCounterpartyChainID = "token_ibc_counterparty_chain_id"
 	var flagIbcCounterpartyDenom = "token_ibc_counterparty_denom"
 	var flagUnitDenom = "token_unit_denom"
 	var flagDecimals = "token_decimals"
@@ -136,17 +136,17 @@ func GetCmdGenerateEntry() *cobra.Command {
 				return err
 			}
 
-			ibcChannelId, err := flags.GetString(flagIbcChannelId)
+			ibcChannelID, err := flags.GetString(flagIbcChannelID)
 			if err != nil {
 				return err
 			}
 
-			ibcCounterpartyChannelId, err := flags.GetString(flagIbcCounterpartyChannelId)
+			ibcCounterpartyChannelID, err := flags.GetString(flagIbcCounterpartyChannelID)
 			if err != nil {
 				return err
 			}
 
-			ibcCounterpartyChainId, err := flags.GetString(flagIbcCounterpartyChainId)
+			ibcCounterpartyChainID, err := flags.GetString(flagIbcCounterpartyChainID)
 			if err != nil {
 				return err
 			}
@@ -197,9 +197,9 @@ func GetCmdGenerateEntry() *cobra.Command {
 			// override the IBC generation with --denom if specified explicitly.
 			// otherwise fallback to base_denom
 
-			if ibcChannelId != "" {
+			if ibcChannelID != "" {
 				// normalise path slashes before generating hash (do this in MsgRegister.ValidateBasic as well)
-				path = "transfer/" + ibcChannelId
+				path = "transfer/" + ibcChannelID
 
 				// generate IBC hash from baseDenom and ibc channel id
 				denomTrace := transfertypes.DenomTrace{
@@ -222,9 +222,9 @@ func GetCmdGenerateEntry() *cobra.Command {
 				Denom:                    denom,
 				BaseDenom:                baseDenom,
 				Path:                     path,
-				IbcChannelId:             ibcChannelId,
-				IbcCounterpartyChannelId: ibcCounterpartyChannelId,
-				IbcCounterpartyChainId:   ibcCounterpartyChainId,
+				IbcChannelId:             ibcChannelID,
+				IbcCounterpartyChannelId: ibcCounterpartyChannelID,
+				IbcCounterpartyChainId:   ibcCounterpartyChainID,
 				IbcCounterpartyDenom:     ibcCounterpartyDenom,
 				UnitDenom:                unitDenom,
 				DisplayName:              displayName,
@@ -246,11 +246,11 @@ func GetCmdGenerateEntry() *cobra.Command {
 		"The IBC hash / denom  stored on sifchain - to generate this hash for IBC token, leave blank and specify base_denom and ibc_channel_id.")
 	cmd.Flags().String(flagBaseDenom, "",
 		"The base denom native to our chain, or native to an original chain (ie not the ibc hash).")
-	cmd.Flags().String(flagIbcChannelId, "",
+	cmd.Flags().String(flagIbcChannelID, "",
 		"The channel id on our chain if this is an IBC token. Specify this to generate a new IBC hash to overwrite the denom field - used by clients when initiating send from this chain")
-	cmd.Flags().String(flagIbcCounterpartyChannelId, "",
+	cmd.Flags().String(flagIbcCounterpartyChannelID, "",
 		"The counterparty channel if this is an IBC token - used by clients when initiating send from a counterparty chain")
-	cmd.Flags().String(flagIbcCounterpartyChainId, "",
+	cmd.Flags().String(flagIbcCounterpartyChainID, "",
 		"The chain id of ibc counter party chain")
 	cmd.Flags().Int(flagDecimals, -1,
 		"The number of decimal points")
