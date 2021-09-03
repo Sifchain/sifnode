@@ -1,6 +1,6 @@
 pragma solidity 0.5.16;
 
-import "../node_modules/openzeppelin-solidity/contracts/math/SafeMath.sol";
+import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 import "./ValsetStorage.sol";
 
 contract Valset is ValsetStorage {
@@ -69,7 +69,18 @@ contract Valset is ValsetStorage {
         currentValsetVersion = 0;
         _initialized = true;
 
-        updateValset(_initValidators, _initPowers);
+        require(
+            _initValidators.length == _initPowers.length,
+            "Every validator must have a corresponding power"
+        );
+
+        resetValset();
+
+        for (uint256 i = 0; i < _initValidators.length; i++) {
+            addValidatorInternal(_initValidators[i], _initPowers[i]);
+        }
+
+        emit LogValsetUpdated(currentValsetVersion, validatorCount, totalPower);
     }
 
     /*
@@ -149,7 +160,7 @@ contract Valset is ValsetStorage {
 
         resetValset();
 
-        for (uint256 i = 0; i < _validators.length; i = i.add(1)) {
+        for (uint256 i = 0; i < _validators.length; i++) {
             addValidatorInternal(_validators[i], _powers[i]);
         }
 
@@ -172,7 +183,7 @@ contract Valset is ValsetStorage {
      * @dev: getValidatorPower
      */
     function getValidatorPower(address _validatorAddress)
-        external
+        public
         view
         returns (uint256)
     {

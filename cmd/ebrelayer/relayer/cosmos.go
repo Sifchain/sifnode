@@ -9,6 +9,7 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
+	"github.com/Sifchain/sifnode/cmd/ebrelayer/internal/symbol_translator"
 	"log"
 	"math/big"
 	"os"
@@ -65,7 +66,7 @@ func NewCosmosSub(tmProvider, ethProvider string, registryContractAddress common
 }
 
 // Start a Cosmos chain subscription
-func (sub CosmosSub) Start(completionEvent *sync.WaitGroup) {
+func (sub CosmosSub) Start(completionEvent *sync.WaitGroup, symbolTranslator *symbol_translator.SymbolTranslator) {
 	defer completionEvent.Done()
 	time.Sleep(time.Second)
 	client, err := tmClient.New(sub.TmProvider, "/websocket")
@@ -73,7 +74,7 @@ func (sub CosmosSub) Start(completionEvent *sync.WaitGroup) {
 		sub.SugaredLogger.Errorw("failed to initialize a sifchain client.",
 			errorMessageKey, err.Error())
 		completionEvent.Add(1)
-		go sub.Start(completionEvent)
+		go sub.Start(completionEvent, symbolTranslator)
 		return
 	}
 
@@ -81,7 +82,7 @@ func (sub CosmosSub) Start(completionEvent *sync.WaitGroup) {
 		sub.SugaredLogger.Errorw("failed to start a sifchain client.",
 			errorMessageKey, err.Error())
 		completionEvent.Add(1)
-		go sub.Start(completionEvent)
+		go sub.Start(completionEvent, symbolTranslator)
 		return
 	}
 
@@ -95,7 +96,7 @@ func (sub CosmosSub) Start(completionEvent *sync.WaitGroup) {
 			errorMessageKey, err.Error(),
 			"query", query)
 		completionEvent.Add(1)
-		go sub.Start(completionEvent)
+		go sub.Start(completionEvent, symbolTranslator)
 		return
 	}
 
@@ -138,7 +139,7 @@ func (sub CosmosSub) Start(completionEvent *sync.WaitGroup) {
 			if lastProcessedBlock == 0 {
 				lastProcessedBlock = blockHeight
 			}
-			sub.SugaredLogger.Infow("new transaction witnessed in sifchain client.")
+			sub.SugaredLogger.Infow("new sifchain block witnessed")
 
 			startBlockHeight := lastProcessedBlock + 1
 			sub.SugaredLogger.Infow("cosmos process events for blocks.",
@@ -157,18 +158,27 @@ func (sub CosmosSub) Start(completionEvent *sync.WaitGroup) {
 				}
 
 				for _, txLog := range block.TxsResults {
+					sub.SugaredLogger.Infow("block.TxsResults: ", "block.TxsResults: ", block.TxsResults)
 					for _, event := range txLog.Events {
 
 						claimType := getOracleClaimType(event.GetType())
 
+						sub.SugaredLogger.Infow("claimtype cosmos.go: ", "claimType: ", claimType)
+
 						switch claimType {
 						case types.MsgBurn, types.MsgLock:
-							cosmosMsg, err := txs.BurnLockEventToCosmosMsg(claimType, event.GetAttributes(), sub.SugaredLogger)
+							cosmosMsg, err := txs.BurnLockEventToCosmosMsg(claimType, event.GetAttributes(), symbolTranslator, sub.SugaredLogger)
 							if err != nil {
 								sub.SugaredLogger.Errorw("sifchain client failed in get message from event.",
 									errorMessageKey, err.Error())
 								continue
 							}
+
+							sub.SugaredLogger.Infow(
+								"Received message from sifchain: ",
+								"msg", cosmosMsg,
+							)
+
 							sub.handleBurnLockMsg(cosmosMsg, claimType)
 						}
 					}
@@ -282,7 +292,7 @@ func MessageProcessed(message types.CosmosMsg, prophecyClaims []types.ProphecyCl
 }
 
 // Replay the missed events
-func (sub CosmosSub) Replay(fromBlock int64, toBlock int64, ethFromBlock int64, ethToBlock int64) {
+func (sub CosmosSub) Replay(symbolTranslator *symbol_translator.SymbolTranslator, fromBlock int64, toBlock int64, ethFromBlock int64, ethToBlock int64) {
 	// Start Ethereum client
 	ethClient, err := ethclient.Dial(sub.EthProvider)
 	if err != nil {
@@ -344,7 +354,7 @@ func (sub CosmosSub) Replay(fromBlock int64, toBlock int64, ethFromBlock int64, 
 				case types.MsgBurn, types.MsgLock:
 					log.Println("found out a lock burn message")
 
-					cosmosMsg, err := txs.BurnLockEventToCosmosMsg(claimType, event.GetAttributes(), sub.SugaredLogger)
+					cosmosMsg, err := txs.BurnLockEventToCosmosMsg(claimType, event.GetAttributes(), symbolTranslator, sub.SugaredLogger)
 					if err != nil {
 						log.Println(err)
 						continue
@@ -450,9 +460,9 @@ func (sub CosmosSub) handleBurnLockMsg(
 	}
 
 	if i == maxRetries {
-		sub.SugaredLogger.Errorw(
-			"failed to broadcast transaction after 5 attempts",
-			errorMessageKey, err.Error(),
-		)
+		sub.SugaredLogger.Errorw("failed to broadcast transaction after 5 attempts")
+		if err != nil {
+			sub.SugaredLogger.Errorw("error for failed broadcast is", errorMessageKey, err)
+		}
 	}
 }

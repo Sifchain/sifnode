@@ -1,0 +1,103 @@
+{
+  "_format": "hh-sol-artifact-1",
+  "contractName": "OracleStorage",
+  "sourceName": "contracts/OracleStorage.sol",
+  "abi": [
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "consensusThreshold",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "cosmosBridge",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        },
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "name": "hasMadeClaim",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "operator",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "name": "oracleClaimValidators",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    }
+  ],
+  "bytecode": "0x608060405234801561001057600080fd5b5061018a806100206000396000f3fe608060405234801561001057600080fd5b50600436106100575760003560e01c8063570ca7351461005c57806378ffb1c614610080578063a219763e146100af578063b0e9ef71146100ef578063f9b0b5b9146100f7575b600080fd5b6100646100ff565b604080516001600160a01b039092168252519081900360200190f35b61009d6004803603602081101561009657600080fd5b503561010e565b60408051918252519081900360200190f35b6100db600480360360408110156100c557600080fd5b50803590602001356001600160a01b0316610120565b604080519115158252519081900360200190f35b610064610140565b61009d61014f565b6001546001600160a01b031681565b60036020526000908152604090205481565b600460209081526000928352604080842090915290825290205460ff1681565b6000546001600160a01b031681565b6002548156fea265627a7a7231582066c40a40c5e79221fd67592e9b43586dbd183666ad2bebd593ae424f49048db864736f6c63430005100032",
+  "deployedBytecode": "0x608060405234801561001057600080fd5b50600436106100575760003560e01c8063570ca7351461005c57806378ffb1c614610080578063a219763e146100af578063b0e9ef71146100ef578063f9b0b5b9146100f7575b600080fd5b6100646100ff565b604080516001600160a01b039092168252519081900360200190f35b61009d6004803603602081101561009657600080fd5b503561010e565b60408051918252519081900360200190f35b6100db600480360360408110156100c557600080fd5b50803590602001356001600160a01b0316610120565b604080519115158252519081900360200190f35b610064610140565b61009d61014f565b6001546001600160a01b031681565b60036020526000908152604090205481565b600460209081526000928352604080842090915290825290205460ff1681565b6000546001600160a01b031681565b6002548156fea265627a7a7231582066c40a40c5e79221fd67592e9b43586dbd183666ad2bebd593ae424f49048db864736f6c63430005100032",
+  "linkReferences": {},
+  "deployedLinkReferences": {}
+}

@@ -6,6 +6,7 @@ import (
 	"context"
 	"crypto/ecdsa"
 	"fmt"
+	"github.com/Sifchain/sifnode/cmd/ebrelayer/internal/symbol_translator"
 	"log"
 	"math/big"
 	"os"
@@ -90,7 +91,7 @@ func NewEthereumSub(
 }
 
 // Start an Ethereum chain subscription
-func (sub EthereumSub) Start(txFactory tx.Factory, completionEvent *sync.WaitGroup) {
+func (sub EthereumSub) Start(txFactory tx.Factory, completionEvent *sync.WaitGroup, symbolTranslator *symbol_translator.SymbolTranslator) {
 	defer completionEvent.Done()
 	time.Sleep(time.Second)
 	ethClient, err := SetupWebsocketEthClient(sub.EthProvider)
@@ -99,7 +100,7 @@ func (sub EthereumSub) Start(txFactory tx.Factory, completionEvent *sync.WaitGro
 			errorMessageKey, err.Error())
 
 		completionEvent.Add(1)
-		go sub.Start(txFactory, completionEvent)
+		go sub.Start(txFactory, completionEvent, symbolTranslator)
 		return
 	}
 	defer ethClient.Close()
@@ -111,13 +112,10 @@ func (sub EthereumSub) Start(txFactory tx.Factory, completionEvent *sync.WaitGro
 		sub.SugaredLogger.Errorw("failed to get network ID.",
 			errorMessageKey, err.Error())
 		completionEvent.Add(1)
-		go sub.Start(txFactory, completionEvent)
+		go sub.Start(txFactory, completionEvent, symbolTranslator)
 		return
 	}
 
-	// We will check logs for new events
-	logs := make(chan ctypes.Log)
-	defer close(logs)
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	defer close(quit)
@@ -161,7 +159,7 @@ func (sub EthereumSub) Start(txFactory tx.Factory, completionEvent *sync.WaitGro
 			sub.SugaredLogger.Errorw("failed to subscribe ethereum header.",
 				errorMessageKey, err.Error())
 			completionEvent.Add(1)
-			go sub.Start(txFactory, completionEvent)
+			go sub.Start(txFactory, completionEvent, symbolTranslator)
 			return
 		case newHead := <-heads:
 			sub.SugaredLogger.Infow("receive new ethereum header.",
@@ -227,7 +225,7 @@ func (sub EthereumSub) Start(txFactory tx.Factory, completionEvent *sync.WaitGro
 			}
 
 			if len(events) > 0 {
-				if err := sub.handleEthereumEvent(txFactory, events); err != nil {
+				if err := sub.handleEthereumEvent(txFactory, events, symbolTranslator); err != nil {
 					sub.SugaredLogger.Errorw("failed to handle ethereum event.",
 						errorMessageKey, err.Error())
 				}
@@ -310,7 +308,7 @@ func EventProcessed(bridgeClaims []types.EthereumBridgeClaim, event types.Ethere
 }
 
 // Replay the missed events
-func (sub EthereumSub) Replay(txFactory tx.Factory, fromBlock int64, toBlock int64, cosmosFromBlock int64, cosmosToBlock int64) {
+func (sub EthereumSub) Replay(txFactory tx.Factory, fromBlock int64, toBlock int64, cosmosFromBlock int64, cosmosToBlock int64, symbolTranslator *symbol_translator.SymbolTranslator) {
 	log.Printf("ethereum replay for %d block to %d block\n", fromBlock, toBlock)
 
 	bridgeClaims := sub.getAllClaims(cosmosFromBlock, cosmosToBlock)
@@ -357,7 +355,7 @@ func (sub EthereumSub) Replay(txFactory tx.Factory, fromBlock int64, toBlock int
 		} else if isBurnLock {
 			log.Println(fmt.Sprintf("found out a burn lock event"))
 			if !EventProcessed(bridgeClaims, event) {
-				err := sub.handleEthereumEvent(txFactory, []types.EthereumEvent{event})
+				err := sub.handleEthereumEvent(txFactory, []types.EthereumEvent{event}, symbolTranslator)
 				if err != nil {
 					log.Printf("failed to handle ethereum event, error is %s\n", err.Error())
 				}
@@ -404,7 +402,7 @@ func (sub EthereumSub) logToEvent(clientChainID *big.Int, contractAddress common
 		event.ClaimType = ethbridge.ClaimType_CLAIM_TYPE_LOCK
 	}
 	sub.SugaredLogger.Infow("receive an event.",
-		"event", event.String())
+		"event", event)
 
 	// Add the event to the record
 	types.NewEventWrite(cLog.TxHash.Hex(), event)
@@ -420,14 +418,14 @@ func GetValAddressFromKeyring(k keyring.Keyring, keyname string) (sdk.ValAddress
 }
 
 // handleEthereumEvent unpacks an Ethereum event, converts it to a ProphecyClaim, and relays a tx to Cosmos
-func (sub EthereumSub) handleEthereumEvent(txFactory tx.Factory, events []types.EthereumEvent) error {
+func (sub EthereumSub) handleEthereumEvent(txFactory tx.Factory, events []types.EthereumEvent, symbolTranslator *symbol_translator.SymbolTranslator) error {
 	var prophecyClaims []*ethbridge.EthBridgeClaim
 	valAddr, err := GetValAddressFromKeyring(txFactory.Keybase(), sub.ValidatorName)
 	if err != nil {
 		return err
 	}
 	for _, event := range events {
-		prophecyClaim, err := txs.EthereumEventToEthBridgeClaim(valAddr, event)
+		prophecyClaim, err := txs.EthereumEventToEthBridgeClaim(valAddr, event, symbolTranslator, sub.SugaredLogger)
 		if err != nil {
 			sub.SugaredLogger.Errorw(".",
 				errorMessageKey, err.Error())
