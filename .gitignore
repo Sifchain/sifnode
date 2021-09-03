@@ -28,3 +28,5 @@ smart-contracts/test/build/*
 smart-contracts/cache/*
 
 node_modules/
+
+deploy

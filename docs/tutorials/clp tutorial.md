@@ -25,7 +25,7 @@ When used with the use of peg-zone as demonstrated a past video, this will enabl
 
 2. Start the chain; `./scripts/run.sh`
 
-3. Check to see you have two local accounts/keys setup; `sifnodecli keys list`
+3. Check to see you have two local accounts/keys setup; `sifnoded keys list`
 
 ```
 [
@@ -45,36 +45,36 @@ When used with the use of peg-zone as demonstrated a past video, this will enabl
 ```
 
 4. Check your seed account balance/s;
-   `sifnodecli q account $(sifnodecli keys show sif -a)`
-   `sifnodecli q account $(sifnodecli keys show akasha -a)`
+   `sifnoded q account $(sifnoded keys show sif -a)`
+   `sifnoded q account $(sifnoded keys show akasha -a)`
    
 #### Create and query pools
 
-1. Create the first pool; `sifnodecli tx clp create-pool --from sif --symbol chot --nativeAmount 20000 --externalAmount 20000`
+1. Create the first pool; `sifnoded tx clp create-pool --from sif --symbol chot --nativeAmount 20000 --externalAmount 20000`
 
-2. Create another pool with a different account `sifnodecli tx clp create-pool --from akasha --symbol clink --nativeAmount 30000 --externalAmount 30000`    
+2. Create another pool with a different account `sifnoded tx clp create-pool --from akasha --symbol clink --nativeAmount 30000 --externalAmount 30000`    
 
-3. Check funds left on first account; `sifnodecli q account $(sifnodecli keys show sif -a)`
+3. Check funds left on first account; `sifnoded q account $(sifnoded keys show sif -a)`
 
-4. Check funds left on second account; `sifnodecli q account $(sifnodecli keys show akasha -a)`
+4. Check funds left on second account; `sifnoded q account $(sifnoded keys show akasha -a)`
 
-5. Query all clp pools; `sifnodecli q clp pools`
+5. Query all clp pools; `sifnoded q clp pools`
 
-6. Query the ceth pool; `sifnodecli q clp pool ceth`
+6. Query the ceth pool; `sifnoded q clp pool ceth`
 
-7. Query an accounts liquidity provider `sifnodecli q clp lp chot $(sifnodecli keys show sif -a)`
+7. Query an accounts liquidity provider `sifnoded q clp lp chot $(sifnoded keys show sif -a)`
 
 #### Add Extra liquidity  (Continuing from above)
 
-1. Add more liquidity; `sifnodecli tx clp add-liquidity --from sif --symbol chot --nativeAmount 10000 --externalAmount 10000` 
+1. Add more liquidity; `sifnoded tx clp add-liquidity --from sif --symbol chot --nativeAmount 10000 --externalAmount 10000` 
 
-2. Add more liquidity from other account ; `sifnodecli tx clp add-liquidity --from akasha --symbol clink --nativeAmount 10000 --externalAmount 10000`
+2. Add more liquidity from other account ; `sifnoded tx clp add-liquidity --from akasha --symbol clink --nativeAmount 10000 --externalAmount 10000`
 
 #### Swap via the pools 
 
-1.  Swap some chot for clink via the sif key/account; `sifnodecli tx clp swap --from sif --sentSymbol chot --receivedSymbol clink --sentAmount 200` 
+1.  Swap some chot for clink via the sif key/account; `sifnoded tx clp swap --from sif --sentSymbol chot --receivedSymbol clink --sentAmount 200` 
 
-2. Swap some clink for chot via the akasha key/account; `sifnodecli tx clp swap --from akasha --sentSymbol clink --receivedSymbol chot --sentAmount 200`
+2. Swap some clink for chot via the akasha key/account; `sifnoded tx clp swap --from akasha --sentSymbol clink --receivedSymbol chot --sentAmount 200`
 
 #### Removing liquidity (Continuing from above)
 
@@ -86,9 +86,9 @@ When used with the use of peg-zone as demonstrated a past video, this will enabl
 
 E.g
 
-1. Remove 50% of your liquidity asymmetry (Equal rowan/chot); `sifnodecli tx clp remove-liquidity --from sif --symbol chot --wBasis 5000 --asymmetry 0`
+1. Remove 50% of your liquidity asymmetry (Equal rowan/chot); `sifnoded tx clp remove-liquidity --from sif --symbol chot --wBasis 5000 --asymmetry 0`
 
-2. Remove 10% of your liquidity asymmetry; `sifnodecli tx clp remove-liquidity --from akasha --symbol clink --wBasis 1000 --asymmetry 0`
+2. Remove 10% of your liquidity asymmetry; `sifnoded tx clp remove-liquidity --from akasha --symbol clink --wBasis 1000 --asymmetry 0`
 
 
 #### Coming  

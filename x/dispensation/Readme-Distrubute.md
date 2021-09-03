@@ -70,19 +70,19 @@ This record is also stored in the keeper for historical records .
 #input.json  : list of funding addresses  -  Input address must be part of the multisig key
 #output.json : list of airdrop receivers.
 
-sifnodecli tx dispensation create mkey ar1 input.json output.json --gas 200064128 --generate-only >> offlinetx.json
+sifnoded tx dispensation create mkey ar1 input.json output.json --gas 200064128 --generate-only >> offlinetx.json
 
 #First user signs
-sifnodecli tx sign --multisig $(sifnodecli keys show mkey -a) --from $(sifnodecli keys show sif -a)  offlinetx.json >> sig1.json
+sifnoded tx sign --multisig $(sifnoded keys show mkey -a) --from $(sifnoded keys show sif -a)  offlinetx.json >> sig1.json
 
 #Second user signs
-sifnodecli tx sign --multisig $(sifnodecli keys show mkey -a) --from $(sifnodecli keys show akasha -a)  offlinetx.json >> sig2.json
+sifnoded tx sign --multisig $(sifnoded keys show mkey -a) --from $(sifnoded keys show akasha -a)  offlinetx.json >> sig2.json
 
 #Multisign created from the above signatures
-sifnodecli tx multisign offlinetx.json mkey sig1.json sig2.json >> signedtx.json
+sifnoded tx multisign offlinetx.json mkey sig1.json sig2.json >> signedtx.json
 
 #transaction broadcast , distribution happens
-sifnodecli tx broadcast signedtx.json
+sifnoded tx broadcast signedtx.json
 ```
 
 ### Events Emitted 
@@ -147,13 +147,13 @@ Transfer events are emitted for each transfer . There are two type of transfers 
 ### Queries supported
 ```shell
 #Query all distributions
-sifnodecli q dispensation distributions-all
+sifnoded q dispensation distributions-all
 #Query all distribution records by distribution name 
-sifnodecli q dispensation records-by-name-all ar1
+sifnoded q dispensation records-by-name-all ar1
 #Query pending distribution records by distribution name 
-sifnodecli q dispensation records-by-name-pending ar1
+sifnoded q dispensation records-by-name-pending ar1
 #Query completed distribution records by distribution name
-sifnodecli q dispensation records-by-name-completed ar1
+sifnoded q dispensation records-by-name-completed ar1
 #Query distribution records by address
-sifnodecli q dispensation records-by-addr sif1cp23ye3h49nl5ty35vewrtvsgwnuczt03jwg00
+sifnoded q dispensation records-by-addr sif1cp23ye3h49nl5ty35vewrtvsgwnuczt03jwg00
 ```

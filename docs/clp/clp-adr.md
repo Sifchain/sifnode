@@ -44,7 +44,7 @@ ExternalAsset: SourceChain: ETHEREUM
                Symbol: ETH
                Ticker: ceth
 LiquidityProviderUnits: 1000
-liquidityOroviderAddress: sif15tyrwghfcjszj7sckxvqh0qpzprup9mhksmuzm 
+liquidityProviderAddress: sif15tyrwghfcjszj7sckxvqh0qpzprup9mhksmuzm 
 ````
     
 ## Decisions 

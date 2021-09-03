@@ -6,6 +6,8 @@ import (
 	"context"
 	"log"
 
+	"github.com/Sifchain/sifnode/cmd/ebrelayer/internal/symbol_translator"
+
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/txs"
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/types"
 	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
@@ -39,7 +41,7 @@ func NewListMissedCosmosEvent(networkDescriptor oracletypes.NetworkDescriptor, t
 }
 
 // ListMissedCosmosEvent print all missed cosmos events by this ebrelayer in days
-func (list ListMissedCosmosEvent) ListMissedCosmosEvent() {
+func (list ListMissedCosmosEvent) ListMissedCosmosEvent(symbolTranslator *symbol_translator.SymbolTranslator) {
 	log.Println("ListMissedCosmosEvent started")
 	// Start Ethereum client
 	ethClient, err := ethclient.Dial(list.EthProvider)

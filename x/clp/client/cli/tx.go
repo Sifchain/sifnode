@@ -2,7 +2,6 @@ package cli
 
 import (
 	"fmt"
-	"github.com/tendermint/tendermint/libs/cli"
 	"log"
 
 	"github.com/Sifchain/sifnode/x/clp/types"
@@ -45,11 +44,26 @@ func GetCmdCreatePool() *cobra.Command {
 				return err
 			}
 
-			asset := types.NewAsset(viper.GetString(FlagAssetSymbol))
-			externalAmount := viper.GetString(FlagExternalAssetAmount)
-			nativeAmount := viper.GetString(FlagNativeAssetAmount)
+			flags := cmd.Flags()
+
+			assetSymbol, err := flags.GetString(FlagAssetSymbol)
+			if err != nil {
+				return err
+			}
+
+			externalAmount, err := flags.GetString(FlagExternalAssetAmount)
+			if err != nil {
+				return err
+			}
+
+			nativeAmount, err := flags.GetString(FlagNativeAssetAmount)
+			if err != nil {
+				return err
+			}
+
 			signer := clientCtx.GetFromAddress()
 
+			asset := types.NewAsset(assetSymbol)
 			msg := types.NewMsgCreatePool(signer, asset, sdk.NewUintFromString(nativeAmount), sdk.NewUintFromString(externalAmount))
 			if err := msg.ValidateBasic(); err != nil {
 				return err
@@ -73,7 +87,6 @@ func GetCmdCreatePool() *cobra.Command {
 	}
 
 	flags.AddTxFlagsToCmd(cmd)
-	cmd.Flags().StringP(cli.OutputFlag, "o", "text", "Output format (text|json)")
 
 	return cmd
 }
@@ -103,7 +116,6 @@ func GetCmdDecommissionPool() *cobra.Command {
 	}
 
 	flags.AddTxFlagsToCmd(cmd)
-	cmd.Flags().StringP(cli.OutputFlag, "o", "text", "Output format (text|json)")
 
 	return cmd
 }
@@ -145,7 +157,6 @@ func GetCmdAddLiquidity() *cobra.Command {
 	}
 
 	flags.AddTxFlagsToCmd(cmd)
-	cmd.Flags().StringP(cli.OutputFlag, "o", "text", "Output format (text|json)")
 
 	return cmd
 }
@@ -195,7 +206,6 @@ func GetCmdRemoveLiquidity() *cobra.Command {
 	}
 
 	flags.AddTxFlagsToCmd(cmd)
-	cmd.Flags().StringP(cli.OutputFlag, "o", "text", "Output format (text|json)")
 
 	return cmd
 }
@@ -246,7 +256,6 @@ func GetCmdSwap() *cobra.Command {
 	}
 
 	flags.AddTxFlagsToCmd(cmd)
-	cmd.Flags().StringP(cli.OutputFlag, "o", "text", "Output format (text|json)")
 
 	return cmd
 }

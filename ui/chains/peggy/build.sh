@@ -4,4 +4,4 @@
 
 cd $PWD/../../../smart-contracts
 
-yarn && truffle compile
+yarn && yarn truffle compile
