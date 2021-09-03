@@ -110,12 +110,13 @@ func TestQueryAllDistributions(t *testing.T) {
 func TestQueryClaims(t *testing.T) {
 	testApp, ctx := test.CreateTestApp(false)
 	keeper := testApp.DispensationKeeper
-	claimsVS := test.CreateClaimsList(1000, types.DistributionType_DISTRIBUTION_TYPE_VALIDATOR_SUBSIDY)
+	claimCount := 200
+	claimsVS := test.CreateClaimsList(claimCount, types.DistributionType_DISTRIBUTION_TYPE_VALIDATOR_SUBSIDY)
 	for _, claim := range claimsVS {
 		err := keeper.SetClaim(ctx, claim)
 		assert.NoError(t, err)
 	}
-	claimsLM := test.CreateClaimsList(1000, types.DistributionType_DISTRIBUTION_TYPE_LIQUIDITY_MINING)
+	claimsLM := test.CreateClaimsList(claimCount, types.DistributionType_DISTRIBUTION_TYPE_LIQUIDITY_MINING)
 	for _, claim := range claimsLM {
 		err := keeper.SetClaim(ctx, claim)
 		assert.NoError(t, err)
@@ -134,5 +135,5 @@ func TestQueryClaims(t *testing.T) {
 	var dr types.QueryClaimsResponse
 	err = testApp.LegacyAmino().UnmarshalJSON(res, &dr)
 	assert.NoError(t, err)
-	assert.Len(t, dr.Claims, 1000)
+	assert.Len(t, dr.Claims, claimCount)
 }
