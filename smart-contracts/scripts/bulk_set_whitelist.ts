@@ -59,6 +59,13 @@ async function main() {
   const bridgeBankAsOperator = bridgeBank.connect(operatorSigner);
 
   for (const addr of whitelistData.array) {
+    if(await bridgeBankAsOperator.getTokenInEthWhiteList(addr.address)) {
+      // this token is already in the whitelist;
+      // the contract will not blow up on us, so we just skip this one.
+      console.log(`\x1b[31mToken ${addr.address} NOT added to the whitelist: already there\x1b[0m`);
+      continue;
+    }
+
     const tx = await bridgeBankAsOperator.updateEthWhiteList(addr.address, true);
     const receipt = await tx.wait();
     logResult(addr.address, receipt);
