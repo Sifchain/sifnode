@@ -8,6 +8,7 @@ import sys
 import time
 import urllib.request
 import yaml  # pip install pyyaml
+from dataclasses import dataclass
 
 
 log = logging.getLogger(__name__)
@@ -629,6 +630,19 @@ class IntegrationTestsPlaybook:
         # make go binaries (TODO Makefile needs to be trimmed down, especially "find")
         self.cmd.execst(["make"], cwd=self.test_integration_dir, env={"BASEDIR": project_dir()})
 
+    def sifgen_create_network(self, validator_count, networks_dir, network_definition_file, seed_ip_address, mint_amount=None):
+        # Old call (no longer works either):
+        # sifgen network create localnet 1 /mnt/shared/work/projects/sif/sifnode/local-tmp/my/deploy/rake/../networks \
+        #     192.168.1.2 /mnt/shared/work/projects/sif/sifnode/local-tmp/my/deploy/rake/../networks/network-definition.yml \
+        #     --keyring-backend file
+        # self.cmd.execst(["sifgen", "network", "create", "localnet", str(validator_count), networks_dir, seed_ip_address,
+        #     os.path.join(networks_dir, "network-definition.yml"), "--keyring-backend", "file"])
+        # TODO Most likely, this should be "--keyring-backend file"
+        args = ["sifgen", "network", "create", "localnet", str(validator_count), networks_dir, seed_ip_address,
+            network_definition_file, "--keyring-backend", "test"] + \
+            (["--mint-amount", ",".join([sif_format_amount(*x) for x in mint_amount])] if mint_amount else [])
+        self.cmd.execst(args)
+
     def run(self):
         self.cmd.mkdir(self.data_dir)
 
@@ -707,17 +721,9 @@ class IntegrationTestsPlaybook:
         mint_amount = [[999999 * 10**21, "rowan"], [137 * 10**16, "ibc/FEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACE"]]
         validator_count = 1
         seed_ip_address = "192.168.1.2"
+        network_definition_file = os.path.join(networks_dir, "network-definition.yml")
 
-        # Old call (no longer works either):
-        # sifgen network create localnet 1 /mnt/shared/work/projects/sif/sifnode/local-tmp/my/deploy/rake/../networks \
-        #     192.168.1.2 /mnt/shared/work/projects/sif/sifnode/local-tmp/my/deploy/rake/../networks/network-definition.yml \
-        #     --keyring-backend file
-        # self.cmd.execst(["sifgen", "network", "create", "localnet", str(validator_count), networks_dir, seed_ip_address,
-        #     os.path.join(networks_dir, "network-definition.yml"), "--keyring-backend", "file"])
-        # TODO Most likely, this should be "--keyring-backend file"
-        self.cmd.execst(["sifgen", "network", "create", "localnet", str(validator_count), networks_dir, seed_ip_address,
-            os.path.join(networks_dir, "network-definition.yml"), "--keyring-backend", "test", "--mint-amount",
-            ",".join([sif_format_amount(*x) for x in mint_amount])])
+        self.sifgen_create_network(validator_count, networks_dir, network_definition_file, seed_ip_address, mint_amount=mint_amount)
 
         netdef, netdef_json = self.process_netdef(networks_dir)
 
@@ -869,11 +875,11 @@ class IntegrationTestsPlaybook:
         self.cmd.execst(["sifnoded", "keys", "delete", validator_moniker, "--keyring-backend", "test"], stdin=["y"], check_exit=False)
         self.cmd.sifnoded_keys_add(validator_moniker, validator_mnemonic)
 
-    def process_netdef(self, networks_dir):
+    def process_netdef(self, network_definition_file):
         # networks_dir = deploy/networks
         # File deploy/networks/network-definition.yml is created by "rake genesis:network:scaffold"
         # We read it and convert to test/integration/vagrant/data/netdef.json
-        netdef = exactly_one(yaml_load(self.cmd.read_text_file(project_dir(networks_dir, "network-definition.yml"))))
+        netdef = exactly_one(yaml_load(self.cmd.read_text_file(network_definition_file)))
         netdef_json = os.path.join(self.data_dir, "netdef.json")
         self.cmd.write_text_file(netdef_json, json.dumps(netdef))
         return netdef, netdef_json
@@ -963,8 +969,9 @@ class IntegrationTestsPlaybook:
         ganache_keys = json.loads(self.cmd.read_text_file(account_keys_path))
         ebrelayer_ethereum_addr = list(ganache_keys["private_keys"].keys())[9]
         ebrelayer_ethereum_private_key = ganache_keys["private_keys"][ebrelayer_ethereum_addr]
+        network_definition_file = project_dir(networks_dir, "network-definition.yml")
 
-        netdef, netdef_json = self.process_netdef(networks_dir)
+        netdef, netdef_json = self.process_netdef(network_definition_file)
         validator1_address = netdef["address"]
         assert validator1_address == self.state_vars["VALIDATOR1_ADDR"]
         relayer_db_path = self.state_vars["EBRELAYER_DB"]
@@ -972,6 +979,129 @@ class IntegrationTestsPlaybook:
             ebrelayer_ethereum_private_key, bridge_registry_sc_addr, relayer_db_path)
 
         return ganache_proc, sifnoded_proc, ebrelayer_proc
+
+
+class PeggyPlaybook(IntegrationTestsPlaybook):
+    def __init__(self, cmd):
+        super().__init__(cmd)
+        self.smart_contracts_dir = project_dir("smart-contracts")
+        gobin_dir = os.environ["GOBIN"]
+        self.sifgen_cmd = os.path.join(gobin_dir, "sifgen")
+        self.sifnoded_cmd = os.path.join(gobin_dir, "sifnoded")
+        self.ebrelater_cmd = os.path.join(gobin_dir, "ebrelayer")
+
+    @dataclass
+    class EthereumAddressAndKey:
+        addr: str
+        private_key: str
+
+    # TODO Merge with super.make_go_binaries
+    # Main Makefile requires GOBIN to be set to an absolute path. Compiled executables ebrelayer, sifgen and
+    # sifnoded will be written there. The directory will be created if it doesn't exist yet.
+    #
+    # c.f. IntegrationPlaybook:
+    # cd test/integration; BASEDIR=... make
+    # (checks all *.go files and, runs make in $BASEDIR, touches sifnoded, removes ~/.sifnoded/localnet
+    def _make_go_binaries(self):
+        # Original: cd smart-contracts; make -C .. install
+        res = self.cmd.execst(["make", "install"], cwd=project_dir())
+        print(repr(res))
+
+    def start_hardhat(self, hostname, port, n_validators, network_id, chain_id):
+        # default_hardhat_accounts_dict = dict((("address", x[0]), ("privateKey", x[1])) for x in self.default_hardhat_accounts())
+        # print(default_hardhat_accounts_dict)
+        # TODO We need to manaege smart-contracts/hardhat.config.ts + it also reads smart-contracts/.env via dotenv
+        proc = popen([os.path.join("node_modules", ".bin", "hardhat"), "node", "--hostname", hostname, "--port",
+            str(port)], cwd=self.smart_contracts_dir)
+        return proc
+
+    def signer_array_to_ethereum_accounts(self, accounts, n_validators):
+        operator, owner, pauser, *rest = accounts
+        validators, available = rest[:n_validators], rest[n_validators:]
+        return {
+            "proxy_admin": operator,
+            "operator": operator,
+            "owner": owner,
+            "pauser": pauser,
+            "validators": validators,
+            "available": available,
+        }
+
+    def default_hardhat_accounts(self):
+        # Hardhat doesn't provide a way to get the private keys of its default accounts, so just hardcode them for now.
+        # TODO hardhat prints 20 accounts upon startup
+        # Keep synced to smart-contracts/src/devenv/hardhatNode.ts:defaultHardhatAccounts
+        # Format: [address, private_key]
+        return [[
+            "0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266",
+            "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80",
+        ], [
+            "0x70997970c51812dc3a010c7d01b50e0d17dc79c8",
+            "0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d",
+        ], [
+            "0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc",
+            "0x5de4111afa1a4b94908f83103eb1f1706367c2e68ca870fc3fb9a804cdab365a",
+        ], [
+            "0x90f79bf6eb2c4f870365e785982e1f101e93b906",
+            "0x7c852118294e51e653712a81e05800f419141751be58f605c371e15141b007a6",
+        ], [
+            "0x15d34aaf54267db7d7c367839aaf71a00a2c6a65",
+            "0x47e179ec197488593b187f80a00eb0da91f1b9d0b13f8733639f19c30a34926a",
+        ], [
+            "0x9965507d1a55bcc2695c58ba16fb37d819b0a4dc",
+            "0x8b3a350cf5c34c9194ca85829a2df0ec3153be0318b5e2d3348e872092edffba",
+        ], [
+            "0x976ea74026e726554db657fa54763abd0c3a0aa9",
+            "0x92db14e403b83dfe3df233f83dfa3a0d7096f21ca9b0d6d6b8d88b2b4ec1564e",
+        ], [
+            "0x14dc79964da2c08b23698b3d3cc7ca32193d9955",
+            "0x4bbbf85ce3377467afe5d46f804f221813b2bb87f24d81f60f1fcdbf7cbf4356",
+        ], [
+            "0x23618e81e3f5cdf7f54c3d65f7fbc0abf5b21e8f",
+            "0xdbda1821b80551c9d65939329250298aa3472ba22feea921c0cf5d620ea67b97",
+        ], [
+            "0xa0ee7a142d267c1f36714e4a8f75612f20a79720",
+            "0x2a871d0798f97d79848a013d4936a73bf4cc922c825d33c1cf7073dff6d409c6",
+        ]]
+
+    def deploy_smart_contracts_hardhat(self):
+        res = self.cmd.execst(["npx", "hardhat", "run", "scripts/deploy_contracts.ts", "--network", "localhost"],
+            cwd=project_dir("smart-contracts"))
+        # This is to handle npx commmand outputting "No need to generate any newer types"
+        return res
+
+    # TODO Merge with super
+    def sifgen_network_create_peggy(self, chain_id, n_validators, network_dir, seed_ip_address, network_config_file):
+        self.sifgen_create_network(n_validators, network_dir,seed_ip_address)
+        # res = self.cmd.execst([self.sifgen_cmd, "network", "create", str(chain_id), str(n_validators), network_dir,
+        #     seed_ip_address, network_config_file, "--keyring-backend", "test"])
+
+    def sinode(self):
+        pass
+
+    # Override
+    def run(self):
+        # self._make_go_binaries()
+
+        hardhat_hostname = "localhost"
+        hardhat_port = 8545
+        hardhat_n_validators = 1
+        hardhat_network_id = 1
+        hardhat_chain_id = 1
+        hardhat_proc = self.start_hardhat(hardhat_hostname, hardhat_port, hardhat_n_validators, hardhat_network_id,
+            hardhat_chain_id)
+        hardhat_accounts = self.signer_array_to_ethereum_accounts(self.default_hardhat_accounts(), hardhat_n_validators)
+
+        self.deploy_smart_contracts_hardhat()
+
+        sifnoded_network_dir = "/tmp/sifnodedNetwork"
+        network_config_file = "/tmp/sifnodedConfig.yml"
+        validator_count = 1
+        seed_ip_address = "10.10.1.1"
+        self.sifgen_create_network_peggy(validator_count, sifnoded_network_dir, seed_ip_address)
+
+
+        return hardhat_proc, None, None
 
 def cleanup_and_reset_state():
     # git checkout 4cb7322b6b282babd93a0d0aedda837c9134e84e deploy
@@ -1041,6 +1171,9 @@ def main(argv):
         cmd.rmdir(project_dir("smart-contracts/node_modules"))
         cmd.execst(["npm", "install", "-g", "ganache-cli", "dotenv", "yarn"], cwd=project_dir("smart-contracts"))
         cmd.install_smart_contracts_dependencies()
+    elif what == "peggy-devenv":
+        playbook = PeggyPlaybook(cmd)
+        processes = playbook.run()
     else:
         raise Exception("Missing/unknown command")
 
