@@ -4,10 +4,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"math"
 
 	clpkeeper "github.com/Sifchain/sifnode/x/clp/keeper"
 	"github.com/Sifchain/sifnode/x/clp/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/cosmos-sdk/types/query"
 	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
 )
@@ -81,7 +83,10 @@ func migrateBalance(ctx sdk.Context, tokenMap map[string]string, bankKeeper bank
 }
 
 func migratePool(ctx sdk.Context, tokenMap map[string]string, poolKeeper clpkeeper.Keeper) {
-	pools := poolKeeper.GetPools(ctx)
+	pools, _, err := poolKeeper.GetPoolsPaginated(ctx, &query.PageRequest{Limit: math.MaxUint64})
+	if err != nil {
+		panic("failed to get pools during token migration")
+	}
 
 	// at first check all old denom mapped
 	for _, value := range pools {
