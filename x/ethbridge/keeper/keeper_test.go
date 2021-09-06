@@ -152,7 +152,7 @@ func TestProcessClaimBurn(t *testing.T) {
 	)
 	status, err = keeper.ProcessClaim(ctx, ethBridgeClaim)
 	require.NoError(t, err)
-	require.Equal(t, status.String(), oracletypes.StatusText_STATUS_TEXT_SUCCESS)
+	require.Equal(t, status.String(), oracletypes.StatusText_STATUS_TEXT_SUCCESS.String())
 
 }
 
@@ -396,7 +396,7 @@ func TestProcessLockWithReceiver(t *testing.T) {
 	_ = bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, cosmosReceivers[0], coins)
 
 	receiverCoins := bankKeeper.GetAllBalances(ctx, cosmosReceivers[0])
-	require.Equal(t, receiverCoins, sdk.NewCoins())
+	require.Equal(t, receiverCoins, coins)
 
 	msg := types.NewMsgLock(1, cosmosReceivers[0], ethereumSender, amount, denomHash, amount)
 
