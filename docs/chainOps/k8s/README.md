@@ -12,6 +12,14 @@
 
 _This tutorial assumes that you have at least a basic understanding of setting up AWS and configuring your access keys accordingly, so that you may interact with AWS via the CLI Tool._
 
+The deployment rake tasks and helm charts have moved [here](https://github.com/Sifchain/sifchain-deploy-public).
+
+Please clone into the deploy folder, in the root of the sifnode repository:
+
+```bash
+git clone ssh://git@github.com/Sifchain/sifchain-deploy-public ./deploy
+```
+
 #### What is Kubernetes? (k8s)
 
 Kubernetes is an open-source container-orchestration system for automating application deployment, scaling, and management.

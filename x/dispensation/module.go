@@ -3,6 +3,7 @@ package dispensation
 import (
 	"encoding/json"
 	"fmt"
+
 	"github.com/Sifchain/sifnode/x/dispensation/client/rest"
 
 	"github.com/cosmos/cosmos-sdk/client"
@@ -36,6 +37,7 @@ func (AppModuleBasic) Name() string {
 	return types.ModuleName
 }
 
+//lint:ignore SA1019 Legacy handler has to use legacy/deprecated features
 func (AppModuleBasic) RegisterLegacyAminoCodec(cdc *codec.LegacyAmino) {
 	types.RegisterLegacyAminoCodec(cdc)
 }
@@ -159,8 +161,7 @@ func (am AppModule) ExportGenesis(ctx sdk.Context, codec codec.JSONMarshaler) js
 }
 
 // BeginBlock returns the begin blocker for the dispensation module.
-func (am AppModule) BeginBlock(ctx sdk.Context, req abci.RequestBeginBlock) {
-	BeginBlocker(ctx, req, am.keeper)
+func (am AppModule) BeginBlock(_ sdk.Context, _ abci.RequestBeginBlock) {
 }
 
 // EndBlock returns the end blocker for the dispensation module. It returns no validator

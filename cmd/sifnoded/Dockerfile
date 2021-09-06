@@ -1,7 +1,7 @@
 #
 # Build: Cosmovisor
 #
-FROM golang:1.15 AS cosmovisor
+FROM golang:1.16 AS cosmovisor
 
 ENV GOBIN=/go/bin
 ENV GOPATH=/go

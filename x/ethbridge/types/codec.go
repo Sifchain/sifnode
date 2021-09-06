@@ -6,6 +6,7 @@ import (
 )
 
 // RegisterLegacyAminoCodec registers concrete types on the Amino codec
+//lint:ignore SA1019 Legacy handler has to use legacy/deprecated features
 func RegisterLegacyAminoCodec(cdc *codec.LegacyAmino) {
 	cdc.RegisterConcrete(MsgCreateEthBridgeClaim{}, "ethbridge/MsgCreateEthBridgeClaim", nil)
 	cdc.RegisterConcrete(MsgBurn{}, "ethbridge/MsgBurn", nil)
@@ -25,4 +26,5 @@ var (
 func init() {
 	RegisterLegacyAminoCodec(amino)
 	cryptocodec.RegisterCrypto(amino)
+	amino.Seal()
 }

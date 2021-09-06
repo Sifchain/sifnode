@@ -6,20 +6,11 @@ import (
 )
 
 func Migrate(genesis v039oracle.GenesisState) *types.GenesisState {
-	networkDescriptor := types.NetworkDescriptor_NETWORK_DESCRIPTOR_ETHEREUM
-	whitelist := make(map[string]uint32)
-	defaultPower := uint32(100)
-
-	for _, addr := range genesis.AddressWhitelist {
-		whitelist[addr.String()] = defaultPower
-	}
-
-	addressWhitelist := make(map[uint32]*types.ValidatorWhiteList)
-	addressWhitelist[uint32(networkDescriptor)] = &types.ValidatorWhiteList{WhiteList: whitelist}
-
 	return &types.GenesisState{
-		AddressWhitelist: addressWhitelist,
+		// for new peggy2, each validator has its voting power, can be got from peggy 1.0
+		AddressWhitelist: map[uint32]*types.ValidatorWhiteList{},
 		AdminAddress:     genesis.AdminAddress.String(),
-		Prophecies:       []*types.Prophecy{},
+		// the algorithm to compute the prophecy id changed, not make sense to copy prophecy from peggy 1.0
+		Prophecies: []*types.Prophecy{},
 	}
 }

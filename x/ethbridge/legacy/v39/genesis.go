@@ -14,6 +14,7 @@ type GenesisState struct {
 	CethReceiverAccount sdk.AccAddress `json:"ceth_receiver_account"`
 }
 
+//lint:ignore SA1019 Legacy handler has to use legacy/deprecated features
 func RegisterLegacyAminoCodec(cdc *codec.LegacyAmino) {
 	cryptocodec.RegisterCrypto(cdc)
 }

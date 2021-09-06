@@ -15,6 +15,7 @@ import (
 // TODO: move to x/oracle
 
 // NewLegacyQuerier is the module level router for state queries
+//lint:ignore SA1019 Legacy handler has to use legacy/deprecated features
 func NewLegacyQuerier(keeper Keeper, cdc *codec.LegacyAmino) sdk.Querier {
 
 	return func(ctx sdk.Context, path []string, req abci.RequestQuery) ([]byte, error) {
@@ -29,6 +30,7 @@ func NewLegacyQuerier(keeper Keeper, cdc *codec.LegacyAmino) sdk.Querier {
 	}
 }
 
+//lint:ignore SA1019 Legacy handler has to use legacy/deprecated features
 func legacyQueryEthProphecy(ctx sdk.Context, cdc *codec.LegacyAmino, query abci.RequestQuery, keeper Keeper) ([]byte, error) {
 	var req types.QueryEthProphecyRequest
 

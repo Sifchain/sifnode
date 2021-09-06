@@ -197,9 +197,13 @@ func GetCmdLpList(queryRoute string) *cobra.Command {
 			queryClient := types.NewQueryClient(clientCtx)
 
 			assetSymbol := args[0]
-
+			pageReq, err := client.ReadPageRequest(cmd.Flags())
+			if err != nil {
+				return err
+			}
 			result, err := queryClient.GetLiquidityProviderList(context.Background(), &types.LiquidityProviderListReq{
-				Symbol: assetSymbol,
+				Symbol:     assetSymbol,
+				Pagination: pageReq,
 			})
 			if err != nil {
 				return err
@@ -210,6 +214,7 @@ func GetCmdLpList(queryRoute string) *cobra.Command {
 	}
 
 	flags.AddQueryFlagsToCmd(cmd)
+	flags.AddPaginationFlagsToCmd(cmd, "lplist")
 
 	return cmd
 }

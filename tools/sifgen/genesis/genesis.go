@@ -19,6 +19,7 @@ func ReplaceStakingBondDenom(nodeHomeDir string) error {
 	}
 
 	genesis.AppState.Staking.Params.BondDenom = common.StakeTokenDenom
+
 	content, err := tmjson.Marshal(genesis)
 	if err != nil {
 		return err
@@ -117,7 +118,7 @@ func readGenesis(nodeHomeDir string) (*common.Genesis, error) {
 		return nil, err
 	}
 
-	if err := tmjson.Unmarshal(body, &genesis); err != nil {
+	if err := json.Unmarshal(body, &genesis); err != nil {
 		return nil, err
 	}
 

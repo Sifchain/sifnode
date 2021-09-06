@@ -40,6 +40,7 @@ type Asset struct {
 	Symbol string `json:"symbol"`
 }
 
+//lint:ignore SA1019 Legacy handler has to use legacy/deprecated features
 func RegisterLegacyAminoCodec(cdc *codec.LegacyAmino) {
 	cryptocodec.RegisterCrypto(cdc)
 }

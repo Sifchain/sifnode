@@ -152,7 +152,59 @@ func TestProcessClaimBurn(t *testing.T) {
 	)
 	status, err = keeper.ProcessClaim(ctx, ethBridgeClaim)
 	require.NoError(t, err)
-	require.Equal(t, status, oracletypes.StatusText_STATUS_TEXT_SUCCESS)
+	require.Equal(t, status.String(), oracletypes.StatusText_STATUS_TEXT_SUCCESS.String())
+
+}
+
+func TestProcessSuccessfulClaimLock(t *testing.T) {
+	// ctx, keeper, bankKeeper, _, _, _, _, _ := test.CreateTestKeepers(t, 0.7, []int64{3, 3}, "")
+
+	// receiverCoins := bankKeeper.GetAllBalances(ctx, cosmosReceivers[0])
+	// require.Equal(t, receiverCoins, sdk.NewCoins())
+
+	// claimType := types.ClaimType_CLAIM_TYPE_LOCK
+	// claimContent := types.NewEthBridgeClaim(cosmosReceivers[0], amount, symbol, tokenContractAddress, claimType)
+
+	// claimBytes, err := json.Marshal(claimContent)
+	// require.NoError(t, err)
+	// claimString := string(claimBytes)
+	// err = keeper.ProcessSuccessfulClaim(ctx, claimString)
+	// require.NoError(t, err)
+
+	// receiverCoins = bankKeeper.GetAllBalances(ctx, cosmosReceivers[0])
+
+	// require.Equal(t, receiverCoins.String(), "10cstake")
+
+	// // duplicate processSuccessClaim
+	// err = keeper.ProcessSuccessfulClaim(ctx, claimString)
+	// require.NoError(t, err)
+
+	// receiverCoins = bankKeeper.GetAllBalances(ctx, cosmosReceivers[0])
+	// require.Equal(t, "20cstake", receiverCoins.String())
+}
+
+func TestProcessSuccessfulClaimBurn(t *testing.T) {
+	// ctx, keeper, bankKeeper, _, _, _, _, _ := test.CreateTestKeepers(t, 0.7, []int64{3, 3}, "")
+
+	// receiverCoins := bankKeeper.GetAllBalances(ctx, cosmosReceivers[0])
+	// require.Equal(t, receiverCoins, sdk.NewCoins())
+
+	// claimType := types.ClaimType_CLAIM_TYPE_BURN
+	// claimContent := types.NewMsgBurn(cosmosReceivers[0], amount, symbol, tokenContractAddress, claimType)
+
+	// claimBytes, err := json.Marshal(claimContent)
+	// require.NoError(t, err)
+	// claimString := string(claimBytes)
+	// err = keeper.ProcessSuccessfulClaim(ctx, claimString)
+	// require.NoError(t, err)
+
+	// receiverCoins = bankKeeper.GetAllBalances(ctx, cosmosReceivers[0])
+
+	// require.Equal(t, receiverCoins.String(), "10stake")
+
+	// // duplicate processSuccessClaim
+	// err = keeper.ProcessSuccessfulClaim(ctx, claimString)
+	// require.NoError(t, err)
 
 }
 

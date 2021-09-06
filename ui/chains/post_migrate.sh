@@ -47,7 +47,8 @@ yarn peggy:whiteList "$USDC_ADDRESS" true
 yarn peggy:whiteList "$LINK_ADDRESS" true
 
 # Update local test addresses
-cd $BASE_DIR/ui/core/
-./scripts/updateLocalTestAddresses.js
+# (disabled: no such file or directory)
+# cd $BASE_DIR/ui/core/
+# ./scripts/updateLocalTestAddresses.js
 
 echo "1" > $BASE_DIR/ui/node_modules/.migrate-complete

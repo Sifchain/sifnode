@@ -1,7 +1,5 @@
 #!/usr/bin/env bash
 
-killall sifnoded sifnodecli
+killall sifnoded
 
-sifnodecli rest-server &
 sifnoded start
-

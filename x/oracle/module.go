@@ -32,6 +32,7 @@ func (AppModuleBasic) Name() string {
 }
 
 // RegisterLegacyAminoCodec registers the oracle module's types on the given LegacyAmino codec.
+//lint:ignore SA1019 Legacy handler has to use legacy/deprecated features
 func (AppModuleBasic) RegisterLegacyAminoCodec(cdc *codec.LegacyAmino) {}
 
 // RegisterInterfaces registers the module's interface types
@@ -118,6 +119,7 @@ func (AppModule) QuerierRoute() string {
 }
 
 // NewQuerierHandler returns the oracle module sdk.Querier.
+//lint:ignore SA1019 Legacy handler has to use legacy/deprecated features
 func (am AppModule) LegacyQuerierHandler(legacyQuerierCdc *codec.LegacyAmino) sdk.Querier {
 	return nil
 }
