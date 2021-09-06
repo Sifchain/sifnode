@@ -593,6 +593,14 @@ class UIStackPlaybook:
             self.cmd.execst(["docker", "push", stable_tag])
 
 
+@dataclass
+class NetworkDefinition:
+    validator_moniker = None
+    validator1_address = None
+    validator1_password = None
+    validator_mnemonic = None
+
+
 class IntegrationTestsPlaybook:
     def __init__(self, cmd):
         self.cmd = cmd
@@ -630,7 +638,7 @@ class IntegrationTestsPlaybook:
         # make go binaries (TODO Makefile needs to be trimmed down, especially "find")
         self.cmd.execst(["make"], cwd=self.test_integration_dir, env={"BASEDIR": project_dir()})
 
-    def sifgen_create_network(self, validator_count, networks_dir, network_definition_file, seed_ip_address, mint_amount=None):
+    def sifgen_create_network(self, chain_id, validator_count, networks_dir, network_definition_file, seed_ip_address, mint_amount=None):
         # Old call (no longer works either):
         # sifgen network create localnet 1 /mnt/shared/work/projects/sif/sifnode/local-tmp/my/deploy/rake/../networks \
         #     192.168.1.2 /mnt/shared/work/projects/sif/sifnode/local-tmp/my/deploy/rake/../networks/network-definition.yml \
@@ -638,7 +646,7 @@ class IntegrationTestsPlaybook:
         # self.cmd.execst(["sifgen", "network", "create", "localnet", str(validator_count), networks_dir, seed_ip_address,
         #     os.path.join(networks_dir, "network-definition.yml"), "--keyring-backend", "file"])
         # TODO Most likely, this should be "--keyring-backend file"
-        args = ["sifgen", "network", "create", "localnet", str(validator_count), networks_dir, seed_ip_address,
+        args = ["sifgen", "network", "create", chain_id, str(validator_count), networks_dir, seed_ip_address,
             network_definition_file, "--keyring-backend", "test"] + \
             (["--mint-amount", ",".join([sif_format_amount(*x) for x in mint_amount])] if mint_amount else [])
         self.cmd.execst(args)
@@ -718,14 +726,15 @@ class IntegrationTestsPlaybook:
         # New:
         # sifgen network create localnet 1 $NETWORKDIR 192.168.1.2 $NETWORKDIR/network-definition.yml --keyring-backend test \
         #     --mint-amount 999999000000000000000000000rowan,1370000000000000000ibc/FEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACE
-        mint_amount = [[999999 * 10**21, "rowan"], [137 * 10**16, "ibc/FEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACE"]]
+        chain_id = "localnet"
         validator_count = 1
-        seed_ip_address = "192.168.1.2"
         network_definition_file = os.path.join(networks_dir, "network-definition.yml")
+        seed_ip_address = "192.168.1.2"
+        mint_amount = [[999999 * 10**21, "rowan"], [137 * 10**16, "ibc/FEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACE"]]
 
-        self.sifgen_create_network(validator_count, networks_dir, network_definition_file, seed_ip_address, mint_amount=mint_amount)
+        self.sifgen_create_network(chain_id, validator_count, networks_dir, network_definition_file, seed_ip_address, mint_amount=mint_amount)
 
-        netdef, netdef_json = self.process_netdef(networks_dir)
+        netdef, netdef_json = self.process_netdef(network_definition_file)
 
         validator_moniker = netdef["moniker"]
         validator1_address = netdef["address"]
@@ -877,7 +886,8 @@ class IntegrationTestsPlaybook:
 
     def process_netdef(self, network_definition_file):
         # networks_dir = deploy/networks
-        # File deploy/networks/network-definition.yml is created by "rake genesis:network:scaffold"
+        # File deploy/networks/network-definition.yml is created by "rake genesis:network:scaffold", specifically by
+        # "sifgen network create"
         # We read it and convert to test/integration/vagrant/data/netdef.json
         netdef = exactly_one(yaml_load(self.cmd.read_text_file(network_definition_file)))
         netdef_json = os.path.join(self.data_dir, "netdef.json")
@@ -1072,7 +1082,7 @@ class PeggyPlaybook(IntegrationTestsPlaybook):
 
     # TODO Merge with super
     def sifgen_network_create_peggy(self, chain_id, n_validators, network_dir, seed_ip_address, network_config_file):
-        self.sifgen_create_network(n_validators, network_dir,seed_ip_address)
+        self.sifgen_create_network(chain_id, n_validators, network_dir, network_config_file, seed_ip_address)
         # res = self.cmd.execst([self.sifgen_cmd, "network", "create", str(chain_id), str(n_validators), network_dir,
         #     seed_ip_address, network_config_file, "--keyring-backend", "test"])
 
@@ -1098,7 +1108,7 @@ class PeggyPlaybook(IntegrationTestsPlaybook):
         network_config_file = "/tmp/sifnodedConfig.yml"
         validator_count = 1
         seed_ip_address = "10.10.1.1"
-        self.sifgen_create_network_peggy(validator_count, sifnoded_network_dir, seed_ip_address)
+        self.sifgen_network_create_peggy(validator_count, sifnoded_network_dir, seed_ip_address)
 
 
         return hardhat_proc, None, None
