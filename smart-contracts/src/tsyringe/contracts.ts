@@ -44,7 +44,9 @@ export class CosmosBridgeArguments {
       this.operator.address,
       this.consensusThreshold,
       this.initialValidators.map(x => x.address),
-      this.initialPowers
+      this.initialPowers,
+      // TODO: Need to pass in network descriptor. Currently hardcoded for testing purposes
+      1
     ]
   }
 }
@@ -110,7 +112,9 @@ export class BridgeBankArguments {
       accts.operatorAccount.address,
       cosmosBridge.address,
       accts.ownerAccount.address,
-      accts.pauserAccount.address
+      accts.pauserAccount.address,
+      // TODO: Need to pass in network descriptor. Currently hardcoded for testing purposes
+      1
     ]
     return result
   }
@@ -127,7 +131,7 @@ export class BridgeBankProxy {
   ) {
     this.contract = sifchainContractFactories.bridgeBank.then(async bridgeBankFactory => {
       const bridgeBankArguments = await this.bridgeBankArguments.asArray()
-      const bridgeBankProxy = await h.upgrades.deployProxy(bridgeBankFactory, bridgeBankArguments, { initializer: "initialize(address,address,address,address)" }) as BridgeBank
+      const bridgeBankProxy = await h.upgrades.deployProxy(bridgeBankFactory, bridgeBankArguments, { initializer: "initialize(address,address,address,address,uint256)" }) as BridgeBank
       await bridgeBankProxy.deployed()
       const own = await bridgeBankProxy.owner()
       return bridgeBankProxy
