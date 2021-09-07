@@ -128,6 +128,10 @@ function initState({
   const state = {
     constants: {
       zeroAddress: ZERO_ADDRESS,
+      roles: {
+        minter: web3.utils.soliditySha3('MINTER_ROLE'),
+        admin: '0x0000000000000000000000000000000000000000000000000000000000000000'
+      },
       denom: {
         none: "",
         rowan: ROWAN_DENOM,
@@ -202,6 +206,13 @@ async function deployBaseContracts(state) {
   await state.token3.deployed();
   await state.token_noDenom.deployed();
 
+  // Grant the MINTER role to the operator:
+  await state.token.connect(state.operator).grantRole(state.constants.roles.minter, state.operator.address)
+  await state.token1.connect(state.operator).grantRole(state.constants.roles.minter, state.operator.address);
+  await state.token2.connect(state.operator).grantRole(state.constants.roles.minter, state.operator.address);
+  await state.token3.connect(state.operator).grantRole(state.constants.roles.minter, state.operator.address);
+  await state.token_noDenom.connect(state.operator).grantRole(state.constants.roles.minter, state.operator.address);
+
   // Load user account with ERC20 tokens for testing
   await state.token.connect(state.operator).mint(state.user.address, state.amount * 2);
   await state.token1.connect(state.operator).mint(state.user.address, state.amount * 2);
@@ -223,10 +234,12 @@ async function deployRowan(state) {
   await state.rowan.deployed();
 
   // mint tokens
+  await state.rowan.connect(state.operator).grantRole(state.constants.roles.minter, state.operator.address)
   await state.rowan.connect(state.operator).mint(state.user.address, state.amount * 2);
 
-  // add bridgebank as owner of the rowan contract
-  await state.rowan.transferOwnership(state.bridgeBank.address);
+  // add bridgebank as admin and minter of the rowan contract
+  await state.rowan.connect(state.operator).grantRole(state.constants.roles.minter, state.bridgeBank.address);
+  await state.rowan.connect(state.operator).grantRole(state.constants.roles.admin, state.bridgeBank.address);
 
   // approve bridgeBank
   await state.rowan.connect(state.user).approve(state.bridgeBank.address, state.amount * 2);
