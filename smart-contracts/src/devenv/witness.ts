@@ -6,7 +6,7 @@ import notifier from 'node-notifier';
 import * as path from "path"
 import { GolangResults } from "./golangBuilder";
 
-export interface EbrelayerArguments {
+export interface WitnessArguments {
   readonly validatorValues: ValidatorValues,
   readonly account: EthereumAddressAndKey,
   readonly smartContract: DeployedContractAddresses,
@@ -14,32 +14,32 @@ export interface EbrelayerArguments {
   readonly golangResults: GolangResults
 }
 
-interface EbrelayerResults {
+interface WitnessResults {
   process: ChildProcess.ChildProcess;
 }
 
-export class EbrelayerRunner extends ShellCommand<EbrelayerResults> {
-  private output: Promise<EbrelayerResults>;
+export class WitnessRunner extends ShellCommand<WitnessResults> {
+  private output: Promise<WitnessResults>;
   private outputResolve: any;
   constructor(
-    readonly args: EbrelayerArguments,
+    readonly args: WitnessArguments,
     readonly websocketAddress = "ws://localhost:8545/",
     // TODO: This naming isnt specific enough
     readonly tcpURL = "tcp://0.0.0.0:26657",
     readonly chainNet = "localnet",
-    readonly ebrelayerDB = `levelDB.db`,
-    readonly relayerdbPath = "./relayerdb",
+    readonly witnessDB = `WitnessDB.db`,
+    readonly relayerdbPath = "./witnessdb",
     readonly symbolTranslatorFile = "../test/integration/config/symbol_translator.json"
   ) {
     super();
-    this.output = new Promise<EbrelayerResults>((res, rej) => {
+    this.output = new Promise<WitnessResults>((res, rej) => {
       this.outputResolve = res;
     })
   }
 
   cmd(): [string, string[]] {
     return ["ebrelayer", [
-      "init-relayer",
+      "init-witness",
       "1", // TODO: DONT HARDCODE ME
       this.tcpURL,
       this.websocketAddress,
@@ -55,8 +55,8 @@ export class EbrelayerRunner extends ShellCommand<EbrelayerResults> {
       this.args.validatorValues.moniker,
       "--symbol-translator-file",
       this.symbolTranslatorFile,
-      // "--relayerdb-path",
-      // this.relayerdbPath
+      "--relayerdb-path",
+      this.relayerdbPath
     ]]
   }
 
@@ -85,8 +85,8 @@ export class EbrelayerRunner extends ShellCommand<EbrelayerResults> {
     )
     commandResult.on('exit', (code) => {
       notifier.notify({
-        title: "Ebrelayer Notice",
-        message: `Ebrelayer has just exited with exit code: ${code}`
+        title: "Witness Notice",
+        message: `Sifnode Witness has just exited with exit code: ${code}`
       })
     })
     this.outputResolve(
@@ -96,7 +96,7 @@ export class EbrelayerRunner extends ShellCommand<EbrelayerResults> {
     )
   }
 
-  override async results(): Promise<EbrelayerResults> {
+  override async results(): Promise<WitnessResults> {
     return this.output;
   }
 }

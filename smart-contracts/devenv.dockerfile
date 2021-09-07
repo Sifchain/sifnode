@@ -7,7 +7,7 @@ RUN rm -rf /usr/local/go && tar -C /usr/local -xzf go1.17.linux-amd64.tar.gz
 ENV PATH=$PATH:/usr/local/go/bin
 ENV GOBIN=/usr/local/go/bin
 # Run the sifchain dev environment
-RUN git clone https://github.com/Sifchain/sifnode.git && cd /sifnode && git checkout future/devenv
+RUN git clone https://github.com/Sifchain/sifnode.git && cd /sifnode && git checkout future/devenv-rebase
 RUN cd /sifnode/smart-contracts && npm install
 WORKDIR "/sifnode/smart-contracts" 
 CMD npx hardhat run scripts/devenv.ts
