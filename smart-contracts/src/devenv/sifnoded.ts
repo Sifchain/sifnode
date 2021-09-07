@@ -191,7 +191,9 @@ export class SifnodedRunner extends ShellCommand<SifnodedResults> {
   async addGenesisValidator(chainDir: string, valoper: string): Promise<string> {
     const sifgenArgs = [
       "add-genesis-validators",
+      "1",
       valoper,
+      "100",
       "--home",
       path.join(chainDir, ".sifnoded"),
     ]
