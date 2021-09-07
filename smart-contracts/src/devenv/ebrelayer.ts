@@ -18,7 +18,92 @@ interface EbrelayerResults {
   process: ChildProcess.ChildProcess;
 }
 
-export class EbrelayerRunner extends ShellCommand<EbrelayerResults> {
+async function waitForSifAccount(validatorAddress: string) {
+  const scriptArgs = [
+    "FirstOptionIsIgnored",
+    validatorAddress
+  ]
+  const child = ChildProcess.execFileSync(
+    "./src/devenv/wait_for_sif_account.py",
+    scriptArgs
+  )
+}
+
+export class WitnessRunner extends ShellCommand<EbrelayerResults> {
+  private output: Promise<EbrelayerResults>;
+  private outputResolve: any;
+  constructor(
+    readonly args: EbrelayerArguments,
+    readonly websocketAddress = "ws://localhost:8545/",
+    // TODO: This naming isnt specific enough
+    readonly tcpURL = "tcp://0.0.0.0:26657",
+    readonly chainNet = "localnet",
+    readonly witnessDB = `WitnessDB.db`,
+    readonly relayerdbPath = "./witnessdb",
+    readonly symbolTranslatorFile = "../test/integration/config/symbol_translator.json"
+  ) {
+    super();
+    this.output = new Promise<EbrelayerResults>((res, rej) => {
+      this.outputResolve = res;
+    })
+  }
+
+  cmd(): [string, string[]] {
+    return ["ebrelayer", [
+      "init-witness",
+      "1", // TODO: DONT HARDCODE ME
+      this.tcpURL,
+      this.websocketAddress,
+      this.args.smartContract.bridgeRegistry,
+      `'${this.args.validatorValues.mnemonic}'`,
+      "--chain-id",
+      String(this.chainNet),
+      "--node",
+      String(this.tcpURL),
+      "--keyring-backend",
+      "test",
+      "--from",
+      this.args.validatorValues.moniker,
+      "--symbol-translator-file",
+      this.symbolTranslatorFile,
+      "--relayerdb-path",
+      this.relayerdbPath
+    ]]
+  }
+
+
+  override async run(): Promise<void> {
+    await waitForSifAccount(this.args.validatorValues.address)
+    process.env["ETHEREUM_PRIVATE_KEY"] = this.args.account.privateKey.slice(2);
+    process.env["ETHEREUM_ADDRESS"] = this.args.account.address.slice(2);
+    const spawncmd = "ebrelayer " + this.cmd()[1].join(" ");
+    const commandResult = ChildProcess.spawn(
+      spawncmd,
+      {
+        shell: true,
+        stdio: "inherit",
+      }
+    )
+    commandResult.on('exit', (code) => {
+      notifier.notify({
+        title: "Witness Notice",
+        message: `Sifnode Witness has just exited with exit code: ${code}`
+      })
+    })
+    this.outputResolve(
+      {
+        process: commandResult
+      }
+    )
+  }
+
+  override async results(): Promise<EbrelayerResults> {
+    return this.output;
+  }
+}
+
+
+export class RelayerRunner extends ShellCommand<EbrelayerResults> {
   private output: Promise<EbrelayerResults>;
   private outputResolve: any;
   constructor(
@@ -60,19 +145,8 @@ export class EbrelayerRunner extends ShellCommand<EbrelayerResults> {
     ]]
   }
 
-  async waitForSifAccount() {
-    const scriptArgs = [
-      "FirstOptionIsIgnored",
-      this.args.validatorValues.address
-    ]
-    const child = ChildProcess.execFileSync(
-      "./src/devenv/wait_for_sif_account.py",
-      scriptArgs
-    )
-  }
-
   override async run(): Promise<void> {
-    await this.waitForSifAccount()
+    await waitForSifAccount(this.args.validatorValues.address)
     process.env["ETHEREUM_PRIVATE_KEY"] = this.args.account.privateKey.slice(2);
     process.env["ETHEREUM_ADDRESS"] = this.args.account.address.slice(2);
     const spawncmd = "ebrelayer " + this.cmd()[1].join(" ");
