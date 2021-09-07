@@ -1021,6 +1021,8 @@ class PeggyPlaybook(IntegrationTestsPlaybook):
         # default_hardhat_accounts_dict = dict((("address", x[0]), ("privateKey", x[1])) for x in self.default_hardhat_accounts())
         # print(default_hardhat_accounts_dict)
         # TODO We need to manaege smart-contracts/hardhat.config.ts + it also reads smart-contracts/.env via dotenv
+        # TODO Handle failures, e.g. if the process is already running we get exit value 1 and
+        # "Error: listen EADDRINUSE: address already in use 127.0.0.1:8545"
         proc = popen([os.path.join("node_modules", ".bin", "hardhat"), "node", "--hostname", hostname, "--port",
             str(port)], cwd=self.smart_contracts_dir)
         return proc
@@ -1081,13 +1083,45 @@ class PeggyPlaybook(IntegrationTestsPlaybook):
         return res
 
     # TODO Merge with super
-    def sifgen_network_create_peggy(self, chain_id, n_validators, network_dir, seed_ip_address, network_config_file):
-        self.sifgen_create_network(chain_id, n_validators, network_dir, network_config_file, seed_ip_address)
+    def sifgen_network_create_peggy(self, chain_id, validator_count, network_dir, seed_ip_address, network_config_file):
+        self.sifgen_create_network(chain_id, validator_count, network_dir, network_config_file, seed_ip_address)
         # res = self.cmd.execst([self.sifgen_cmd, "network", "create", str(chain_id), str(n_validators), network_dir,
         #     seed_ip_address, network_config_file, "--keyring-backend", "test"])
 
-    def sinode(self):
-        pass
+    # @parameter validator_moniker - from network config
+    # @parameter validator_mnemonic - from network config
+    def sifchain_init(self, validator_moniker, validator_mnemonic, sifnoded_home):
+        tmp1 = self.sifchain_init_add_validator_key_to_test_keyring(validator_moniker, validator_mnemonic)
+        valoper_key = self.sifchain_init_sifchain_init_read_valoper_key(validator_moniker)
+        valoper = valoper_key  # TODO
+        tmp2 = self.sifchain_init_add_genesis_validator(valoper, sifnoded_home)
+        # This is similar as above, but now it needs a password
+        whitelisted_validator = self.sifnoded_exec(["keys", "show", "-a", "--bech", "val", validator_moniker, "--output", "json"], keyring_backend="test")
+
+        tmp3 = self.sifnoded_exec(["keys", "add", "sifnodeadmin", "--output", "json"], keyring_backend="test", stdin=["yes", "yes"])
+        sifnoded_admin_address = json.loads(tmp3)
+
+
+    def sifchain_init_add_validator_key_to_test_keyring(self, validator_moniker, validator_mnemonic):
+        res = self.sifnoded_exec(["keys", "add", validator_moniker], keyring_backend="test", stdin=[validator_mnemonic])
+        return res
+
+    def sifchain_init_sifchain_init_read_valoper_key(self, moniker):
+        res = self.sifnoded_exec(["keys", "show", "-a", "--bech", "val", moniker], keyring_backend="test")
+        return res
+
+    def sifchain_init_add_genesis_validator(self, valoper, sifnoded_home):
+        res = self.sifnoded_exec(["add-genesis-validators", valoper], sifnoded_home=sifnoded_home)
+        return res
+
+    def sifnoded_exec(self, args, sifnoded_home=None, keyring_backend=None, stdin=None):
+        args = ["sifnoded"] + args + \
+               (["--home", sifnoded_home] if sifnoded_home else []) + \
+               (["--keyring-backend", keyring_backend] if keyring_backend else [])
+        res = self.cmd.execst(args, stdin=stdin)
+        return res
+
+
 
     # Override
     def run(self):
@@ -1104,12 +1138,21 @@ class PeggyPlaybook(IntegrationTestsPlaybook):
 
         self.deploy_smart_contracts_hardhat()
 
+        chain_id = "localnet"
         sifnoded_network_dir = "/tmp/sifnodedNetwork"
+        self.cmd.rmdir(sifnoded_network_dir)
+        self.cmd.mkdir(sifnoded_network_dir)
         network_config_file = "/tmp/sifnodedConfig.yml"
         validator_count = 1
         seed_ip_address = "10.10.1.1"
-        self.sifgen_network_create_peggy(validator_count, sifnoded_network_dir, seed_ip_address)
+        self.sifgen_network_create_peggy(chain_id, validator_count, sifnoded_network_dir, seed_ip_address, network_config_file)
 
+        netdev_yml = exactly_one(yaml_load(self.cmd.read_text_file(network_config_file)))
+        moniker = netdev_yml["moniker"]
+        mnemonic = netdev_yml["mnemonic"].split(" ")
+        sifnoded_home = None  # TODO
+
+        self.sifchain_init(moniker, mnemonic, sifnoded_home)
 
         return hardhat_proc, None, None
 
