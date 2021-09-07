@@ -260,10 +260,18 @@ class Integrator(Ganache, Sifnoded, Command):
     def __init__(self):
         self.smart_contracts_dir = project_dir("smart-contracts")
 
-    def ebrelayer_init(self, ethereum_private_key, tendermind_node, web3_provider, bridge_registry_contract_address,
-        validator_moniker, validator_mnemonic, chain_id, gas=None, gas_prices=None, node=None, keyring_backend=None,
-        sign_with=None, symbol_translator_file=None, relayerdb_path=None, cwd=None):
-        env = {"ETHEREUM_PRIVATE_KEY": ethereum_private_key}
+    def ebrelayer_init(self, tendermind_node, web3_provider, bridge_registry_contract_address,
+        validator_moniker, validator_mnemonic, chain_id, ethereum_private_key=None, ethereum_address=None, gas=None,
+        gas_prices=None, node=None, keyring_backend=None, sign_with=None, symbol_translator_file=None,
+        relayerdb_path=None, cwd=None
+    ):
+        env = {}
+        if ethereum_private_key:
+            assert ethereum_private_key.startswith("0x")
+            env["ETHEREUM_PRIVATE_KEY"] = ethereum_private_key[2:]
+        if ethereum_address:
+            assert ethereum_address.startswith("0x")
+            env["ETHEREUM_ADDRESS"] = ethereum_address[2:]
         args = ["ebrelayer", "init", tendermind_node, web3_provider, bridge_registry_contract_address,
             validator_moniker, " ".join(validator_mnemonic), "--chain-id={}".format(chain_id)] + \
             (["--gas", str(gas)] if gas is not None else []) + \
@@ -624,9 +632,9 @@ class UIStackPlaybook:
         # rm -rf ui/chains/peggy/relayerdb
         # ebrelayer is in $GOBIN, gets installed by "make install"
         ethereum_private_key = smart_contracts_env_ui_example_vars["ETHEREUM_PRIVATE_KEY"]
-        ebrelayer_proc = self.cmd.ebrelayer_init(ethereum_private_key, "tcp://localhost:26657", "ws://localhost:7545/",
-            bridge_registry_address, self.shadowfiend_name, self.shadowfiend_mnemonic, self.chain_id, gas=5*10**12,
-            gas_prices=[0.5, "rowan"])
+        ebrelayer_proc = self.cmd.ebrelayer_init("tcp://localhost:26657", "ws://localhost:7545/",
+            bridge_registry_address, self.shadowfiend_name, self.shadowfiend_mnemonic, self.chain_id,
+            ethereum_private_key=ethereum_private_key, gas=5*10**12, gas_prices=[0.5, "rowan"])
 
         # At this point we have 3 running processes - ganache_proc, sifnoded_proc and ebrelayer_proc
         # await sif-node-up and migrate-complete
@@ -980,9 +988,9 @@ class IntegrationTestsPlaybook:
         self.wait_for_sif_account(netdef_json, validator1_address)
         time.sleep(10)
         self.remove_and_add_sifnoded_keys(validator_moniker, validator_mnemonic)  # Creates ~/.sifnoded/keyring-tests/xxxx.address
-        ebrelayer_proc = self.cmd.ebrelayer_init(ebrelayer_ethereum_private_key, self.tcp_url,
-            self.ethereum_websocket_address, bridge_registry_sc_addr, validator_moniker, validator_mnemonic,
-            self.chainnet, node=self.tcp_url, keyring_backend="test", sign_with=validator_moniker,
+        ebrelayer_proc = self.cmd.ebrelayer_init(self.tcp_url, self.ethereum_websocket_address, bridge_registry_sc_addr,
+            validator_moniker, validator_mnemonic, self.chainnet, ethereum_private_key=ebrelayer_ethereum_private_key,
+            node=self.tcp_url, keyring_backend="test", sign_with=validator_moniker,
             symbol_translator_file=os.path.join(self.test_integration_dir, "config/symbol_translator.json"),
             relayerdb_path=relayer_db_path, cwd=self.test_integration_dir)
         return ebrelayer_proc
@@ -1167,28 +1175,12 @@ class PeggyPlaybook(IntegrationTestsPlaybook):
         #     seed_ip_address, network_config_file, "--keyring-backend", "test"])
 
     def run_ebrelayer_peggy(self, tcp_url, websocket_address, bridge_registry_sc_addr, validator_moniker,
-        validator_mnemonic, chain_id, symbol_translator_file, relayerdb_path, ethereum_address, ethereum_private_key):
-        # Rmmove prefix "0x"
-        env = {"ETHEREUM_ADDRESS": ethereum_address[2:], "ETHEREUM_PRIVATE_KEY": ethereum_private_key[2:]}
-        args = ["ebrelayer", "init", tcp_url, websocket_address, bridge_registry_sc_addr, validator_moniker,
-            " ".join(validator_mnemonic), "--chain-id", chain_id, "--node", tcp_url, "--keyring-backend", "test", "--from",
-            validator_moniker, "--symbol-translator-file", symbol_translator_file, "--relayerdb-path", relayerdb_path]
-        return popen(args, env=env)
-
-    def _delete__ebrelayer_init(self, ethereum_private_key, tendermind_node, web3_provider, bridge_registry_contract_address,
-        validator_moniker, validator_mnemonic, chain_id, gas=None, gas_prices=None, node=None, keyring_backend=None,
-        sign_with=None, symbol_translator_file=None, relayerdb_path=None, cwd=None):
-        env = {"ETHEREUM_PRIVATE_KEY": ethereum_private_key}
-        args = ["ebrelayer", "init", tendermind_node, web3_provider, bridge_registry_contract_address,
-            validator_moniker, " ".join(validator_mnemonic), "--chain-id={}".format(chain_id)] + \
-            (["--gas", str(gas)] if gas is not None else []) + \
-            (["--gas-prices", sif_format_amount(*gas_prices)] if gas_prices is not None else []) + \
-            (["--node", node] if node is not None else []) + \
-            (["--keyring-backend", keyring_backend] if keyring_backend is not None else []) + \
-            (["--from", sign_with] if sign_with is not None else []) + \
-            (["--symbol-translator-file", symbol_translator_file] if symbol_translator_file else []) + \
-            (["--relayerdb-path", relayerdb_path] if relayerdb_path else [])
-        return popen(args, env=env, cwd=cwd)
+        validator_mnemonic, chain_id, symbol_translator_file, relayerdb_path, ethereum_address, ethereum_private_key
+    ):
+        return self.cmd.ebrelayer_init(tcp_url, websocket_address, bridge_registry_sc_addr, validator_moniker,
+            validator_mnemonic, chain_id, ethereum_private_key=ethereum_private_key, ethereum_address=ethereum_address,
+            node=tcp_url, keyring_backend="test", sign_with=validator_moniker,
+            symbol_translator_file=symbol_translator_file, relayerdb_path=relayerdb_path)
 
     # Override
     def run(self):
@@ -1231,8 +1223,7 @@ class PeggyPlaybook(IntegrationTestsPlaybook):
         sifnoded_proc = self.cmd.sifnoded_start(minimum_gas_prices=[0.5, "rowan"], tcp_url="tcp://0.0.0.0:26657", sifnoded_home=sifnoded_home)
 
         relayerdb_path = self.cmd.mktempdir()
-        ethereum_address = hardhat_accounts["validators"][0][0]
-        ethereum_private_key = hardhat_accounts["validators"][0][1]
+        ethereum_address, ethereum_private_key = hardhat_accounts["validators"][0]
         ebrelayer_proc = self.run_ebrelayer_peggy(
             "tcp://0.0.0.0:26657",
             "ws://localhost:8545/",
