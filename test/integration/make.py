@@ -176,6 +176,12 @@ class Sifnoded(Command):
         res = self.sifnoded_exec(args, keyring_backend=keyring_backend, sifnoded_home=home)
         return yaml_load(stdout(res))
 
+    def sifnoded_get_val_address(self, name):
+        expected = exactly_one(stdout_lines(self.sifnoded_exec(["keys", "show", "-a", "--bech", "val", name], keyring_backend="test")))
+        result = exactly_one(self.sifnoded_keys_show(name, bech="val", keyring_backend="test"))["address"]
+        assert result == expected
+        return result
+
     def sifnoded_keys_add(self, moniker, mnemonic):
         args = ["sifnoded", "keys", "add", moniker, "--keyring-backend", "test", "--recover"]
         stdin = [" ".join(mnemonic)]
@@ -224,9 +230,11 @@ class Sifnoded(Command):
         res = self.execst(args)
         return yaml_load(stdout(res))
 
-    def sifnoded_launch(self, minimum_gas_prices=None):
+    def sifnoded_start(self, tcp_url=None, minimum_gas_prices=None, sifnoded_home=None):
         args = ["sifnoded", "start"] + \
-            (["--minimum-gas-prices", sif_format_amount(*minimum_gas_prices)] if minimum_gas_prices is not None else [])
+            (["--minimum-gas-prices", sif_format_amount(*minimum_gas_prices)] if minimum_gas_prices is not None else []) + \
+            (["--rpc.laddr", tcp_url] if tcp_url else []) + \
+            (["--home", sifnoded_home] if sifnoded_home else [])
         return popen(args)
 
     def sifnoded_exec(self, args, sifnoded_home=None, keyring_backend=None, stdin=None, cwd=None):
@@ -386,6 +394,41 @@ class Integrator(Ganache, Sifnoded, Command):
         # TODO script is no longer there!
         self.truffle_exec("setTokenLockBurnLimit", str(amount), env=env)
 
+    # @parameter validator_moniker - from network config
+    # @parameter validator_mnemonic - from network config
+    # TODO Merge with IntegrationTestPlaybook
+    def sifchain_init_peggy(self, validator_moniker, validator_mnemonic, sifnoded_home, denom_whitelist_file):
+        # Add validator key to test keyring
+        _tmp0 = self.sifnoded_keys_add_2(validator_moniker, validator_mnemonic)
+
+        valoper = self.sifnoded_get_val_address(validator_moniker)
+
+        # (0, '', '2021/09/07 05:55:33 AddGenesisValidatorCmd, adding addr: sifvaloper1f5vj6j2mnkaw0yec3ut9at4rkl2u23k2fxtrsv to whitelist: []\n')
+        self.sifnoded_exec(["add-genesis-validators", valoper], sifnoded_home=sifnoded_home)
+
+        # Get whitelisted validator
+        # TODO Value is not being used
+        _whitelisted_validator = self.sifnoded_get_val_address(validator_moniker)
+        assert valoper == _whitelisted_validator
+
+        # Original:
+        # _tmp3 = json.loads(stdout(
+        #     self.cmd.sifnoded_exec(["keys", "add", "sifnodeadmin", "--output", "json"], keyring_backend="test", stdin=["yes", "yes"])
+        # ))
+        # sifnoded_admin_address = _tmp3["address"]
+        # Refactored:
+        _tmp4 = self.sifnoded_keys_add_1("sifnodeadmin")
+        sifnoded_admin_address = _tmp4["address"]
+
+        # Original:
+        # _tmp5 = self.cmd.execst(["sifnoded", "add-genesis-account", sifnoded_admin_address, "100000000000000000000rowan", "--home", sifnoded_home])
+        # Refactored:
+        tokens = [[10**20, "rowan"]]
+        self.sifnoded_add_genesis_account_1(sifnoded_admin_address, tokens, sifnoded_home=sifnoded_home)
+
+        _tmp6 = self.sifnoded_exec(["set-genesis-oracle-admin", sifnoded_admin_address], sifnoded_home=sifnoded_home)
+        _tmp7 = self.sifnoded_exec(["set-genesis-whitelister-admin", sifnoded_admin_address], sifnoded_home=sifnoded_home)
+        _tmp8 = self.sifnoded_exec(["set-gen-denom-whitelist", denom_whitelist_file], sifnoded_home=sifnoded_home)
 
 class UIStackPlaybook:
     def __init__(self, cmd):
@@ -473,7 +516,7 @@ class UIStackPlaybook:
         self.cmd.execst(["sifnoded", "validate-genesis"])
 
         log.info("Starting test chain...")
-        sifnoded_proc = self.cmd.sifnoded_launch(minimum_gas_prices=[0.5, "rowan"])
+        sifnoded_proc = self.cmd.sifnoded_start(minimum_gas_prices=[0.5, "rowan"])
 
         # sifnoded must be up before continuing
         self.cmd.sif_wait_up("localhost", 1317)
@@ -802,8 +845,9 @@ class IntegrationTestsPlaybook:
             "whitelisted-denoms.json"), "--home", sifnoded_home])
 
         # Start sifnoded
-        sifnoded_proc = popen(["sifnoded", "start", "--minimum-gas-prices", sif_format_amount(0.5, "rowan"),
-            "--rpc.laddr", self.tcp_url, "--home", sifnoded_home])
+        # sifnoded_proc = popen(["sifnoded", "start", "--minimum-gas-prices", sif_format_amount(0.5, "rowan"),
+        #     "--rpc.laddr", self.tcp_url, "--home", sifnoded_home])
+        sifnoded_proc = self.cmd.sifnoded_start(tcp_url=self.tcp_url, minimum_gas_prices=[0.5, "rowan"], home=sifnoded_home)
 
         # TODO: should we wait for sifnoded to come up before continuing? If so, how do we do it?
 
@@ -1119,63 +1163,11 @@ class PeggyPlaybook(IntegrationTestsPlaybook):
         # res = self.cmd.execst([self.sifgen_cmd, "network", "create", str(chain_id), str(n_validators), network_dir,
         #     seed_ip_address, network_config_file, "--keyring-backend", "test"])
 
-    # @parameter validator_moniker - from network config
-    # @parameter validator_mnemonic - from network config
-    # TODO Merge with IntegrationTestPlaybook
-    def sifchain_init(self, validator_moniker, validator_mnemonic, chain_dir, denom_whitelist_file):
-        # Add validator key to test keyring
-        res0 = self.cmd.sifnoded_keys_add_2(validator_moniker, validator_mnemonic)
-
-        valoper = self.sifchain_init_sifchain_init_read_valoper_key(validator_moniker)
-
-        sifnoded_home = os.path.join(chain_dir, ".sifnoded")
-        self.sifchain_init_add_genesis_validator(valoper, sifnoded_home)
-
-        whitelisted_validator = self.sifchain_init_get_whitelisted_validator(validator_moniker)
-
-        # Original:
-        # tmp3 = json.loads(stdout(
-        #     self.cmd.sifnoded_exec(["keys", "add", "sifnodeadmin", "--output", "json"], keyring_backend="test", stdin=["yes", "yes"])
-        # ))
-        # sifnoded_admin_address = tmp3["address"]
-        # Refactored:
-        tmp4 = self.cmd.sifnoded_keys_add_1("sifnodeadmin")
-        sifnoded_admin_address = tmp4["address"]
-
-        # Original:
-        # tmp5 = self.cmd.execst(["sifnoded", "add-genesis-account", sifnoded_admin_address, "100000000000000000000rowan", "--home", sifnoded_home])
-        # Refactored:
-        tokens = [[10**20, "rowan"]]
-        self.cmd.sifnoded_add_genesis_account_1(sifnoded_admin_address, tokens, sifnoded_home=sifnoded_home)
-
-        tmp6 = self.cmd.sifnoded_exec(["set-genesis-oracle-admin", sifnoded_admin_address], sifnoded_home=sifnoded_home)
-
-        tmp7 = self.cmd.sifnoded_exec(["set-genesis-whitelister-admin", sifnoded_admin_address], sifnoded_home=sifnoded_home)
-
-        tmp8 = self.cmd.sifnoded_exec(["set-gen-denom-whitelist", denom_whitelist_file], sifnoded_home=sifnoded_home)
-        return
-
-    def sifchain_init_sifchain_init_read_valoper_key(self, moniker):
-        res = self.cmd.sifnoded_exec(["keys", "show", "-a", "--bech", "val", moniker], keyring_backend="test")
-        tmp = exactly_one(self.cmd.sifnoded_keys_show(moniker, keyring_backend="test"))
-        assert tmp["address"] == res
-        return exactly_one(stdout_lines(res))
-
-    def sifchain_init_add_genesis_validator(self, valoper, sifnoded_home):
-        # (0, '', '2021/09/07 05:55:33 AddGenesisValidatorCmd, adding addr: sifvaloper1f5vj6j2mnkaw0yec3ut9at4rkl2u23k2fxtrsv to whitelist: []\n')
-        self.cmd.sifnoded_exec(["add-genesis-validators", valoper], sifnoded_home=sifnoded_home)
-
-    def sifchain_init_get_whitelisted_validator(self, validator_moniker):
-        tmp = exactly_one(self.cmd.sifnoded_keys_show(validator_moniker, bech="val", keyring_backend="test"))
-        whitelisted_validator = exactly_one(stdout_lines(
-            self.cmd.sifnoded_exec(["keys", "show", "-a", "--bech", "val", validator_moniker], keyring_backend="test")
-        ))
-        assert tmp["address"] == whitelisted_validator  # @TODO Cleanup, use tmp
-        return tmp["address"]
-
     # Override
     def run(self):
         # self._make_go_binaries()
+
+        self.cmd.rmdir(self.cmd.get_user_home(".sifnoded"))  # Purge test keyring backend
 
         hardhat_hostname = "localhost"
         hardhat_port = 8545
@@ -1202,11 +1194,15 @@ class PeggyPlaybook(IntegrationTestsPlaybook):
         mnemonic = netdev_yml["mnemonic"].split(" ")
 
         chain_dir = os.path.join(sifnoded_network_dir, "validators", chain_id, moniker)
-        denom_whitelist_file = project_dir("test", "integration", "whitelist-denoms.json")
+        sifnoded_home = os.path.join(chain_dir, ".sifnoded")
+        denom_whitelist_file = project_dir("test", "integration", "whitelisted-denoms.json")
 
-        self.sifchain_init(moniker, mnemonic, chain_dir, denom_whitelist_file)
 
-        return hardhat_proc, None, None
+        self.cmd.sifchain_init_peggy(moniker, mnemonic, sifnoded_home, denom_whitelist_file)
+
+        sifnoded_proc = self.cmd.sifnoded_start(minimum_gas_prices=[0.5, "rowan"], tcp_url="tcp://0.0.0.0:26657", sifnoded_home=sifnoded_home)
+
+        return hardhat_proc, sifnoded_proc, None
 
 def cleanup_and_reset_state():
     # git checkout 4cb7322b6b282babd93a0d0aedda837c9134e84e deploy
