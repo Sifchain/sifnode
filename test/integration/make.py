@@ -394,9 +394,41 @@ class Integrator(Ganache, Sifnoded, Command):
         # TODO script is no longer there!
         self.truffle_exec("setTokenLockBurnLimit", str(amount), env=env)
 
+    # @TODO Merge
+    def sifchain_init_integration(self, validator_moniker, validator_mnemonic, sifnoded_home, denom_whitelist_file, validator1_password):
+        # now we have to add the validator key to the test keyring so the tests can send rowan from validator1
+        self.sifnoded_keys_add(validator_moniker, validator_mnemonic)
+        valoper = self.sifnoded_keys_show(validator_moniker, bech="val", keyring_backend="test", home=sifnoded_home)[0]["address"]
+        self.execst(["sifnoded", "add-genesis-validators", valoper, "--home", sifnoded_home])
+
+        try:
+            # Probable bug in test/integration/sifchain_start_daemon.sh:
+            # whitelisted_validator=$(yes $VALIDATOR1_PASSWORD | sifnoded keys show --keyring-backend file -a \
+            #     --bech val $MONIKER --home $CHAINDIR/.sifnoded)
+            # TODO We probably don't need validator1_passsword
+            # TODO This could then be merged with "sifnoded_keys_show"
+            whitelisted_validator = exactly_one(stdout_lines(self.execst(["sifnoded", "keys", "show",
+                "--keyring-backend", "file", "-a", "--bech", "val", validator_moniker, "--home", sifnoded_home],
+                stdin=[validator1_password])))
+            assert False
+            log.info(f"Whitelisted validator: {whitelisted_validator}")
+            self.cmd.execst(["sifnoded", "add-genesis-validators", whitelisted_validator, "--home", sifnoded_home])
+        except:
+            log.error("Failed to get whitelisted validator (probable bug)", exc_info=True)
+            assert True
+        adminuser_addr = self.sifnoded_keys_add_1("sifnodeadmin")["address"]
+        # TODO Merge with PeggyPlaybook.run()
+        # TODO Use self.cmd.add_genesis_account
+        self.execst(["sifnoded", "add-genesis-account", adminuser_addr, sif_format_amount(10**20, "rowan"),
+            "--home", sifnoded_home], pipe=False)
+        self.execst(["sifnoded", "set-genesis-oracle-admin", adminuser_addr, "--home", sifnoded_home], pipe=False)
+        self.execst(["sifnoded", "set-genesis-whitelister-admin", adminuser_addr, "--home", sifnoded_home])
+        self.execst(["sifnoded", "set-gen-denom-whitelist", denom_whitelist_file, "--home", sifnoded_home])
+        return adminuser_addr
+
     # @parameter validator_moniker - from network config
     # @parameter validator_mnemonic - from network config
-    # TODO Merge with IntegrationTestPlaybook
+    # TODO Merge
     def sifchain_init_peggy(self, validator_moniker, validator_mnemonic, sifnoded_home, denom_whitelist_file):
         # Add validator key to test keyring
         _tmp0 = self.sifnoded_keys_add_2(validator_moniker, validator_mnemonic)
@@ -412,23 +444,20 @@ class Integrator(Ganache, Sifnoded, Command):
         assert valoper == _whitelisted_validator
 
         # Original:
-        # _tmp3 = json.loads(stdout(
+        # adminuser_addr = json.loads(stdout(
         #     self.cmd.sifnoded_exec(["keys", "add", "sifnodeadmin", "--output", "json"], keyring_backend="test", stdin=["yes", "yes"])
-        # ))
-        # sifnoded_admin_address = _tmp3["address"]
-        # Refactored:
-        _tmp4 = self.sifnoded_keys_add_1("sifnodeadmin")
-        sifnoded_admin_address = _tmp4["address"]
+        # ))["address"]
+        adminuser_addr = self.sifnoded_keys_add_1("sifnodeadmin")["address"]
 
         # Original:
-        # _tmp5 = self.cmd.execst(["sifnoded", "add-genesis-account", sifnoded_admin_address, "100000000000000000000rowan", "--home", sifnoded_home])
-        # Refactored:
+        # self.cmd.execst(["sifnoded", "add-genesis-account", sifnoded_admin_address, "100000000000000000000rowan", "--home", sifnoded_home])
         tokens = [[10**20, "rowan"]]
-        self.sifnoded_add_genesis_account_1(sifnoded_admin_address, tokens, sifnoded_home=sifnoded_home)
+        self.sifnoded_add_genesis_account_1(adminuser_addr, tokens, sifnoded_home=sifnoded_home)
 
-        _tmp6 = self.sifnoded_exec(["set-genesis-oracle-admin", sifnoded_admin_address], sifnoded_home=sifnoded_home)
-        _tmp7 = self.sifnoded_exec(["set-genesis-whitelister-admin", sifnoded_admin_address], sifnoded_home=sifnoded_home)
-        _tmp8 = self.sifnoded_exec(["set-gen-denom-whitelist", denom_whitelist_file], sifnoded_home=sifnoded_home)
+        self.sifnoded_exec(["set-genesis-oracle-admin", adminuser_addr], sifnoded_home=sifnoded_home)
+        self.sifnoded_exec(["set-genesis-whitelister-admin", adminuser_addr], sifnoded_home=sifnoded_home)
+        self.sifnoded_exec(["set-gen-denom-whitelist", denom_whitelist_file], sifnoded_home=sifnoded_home)
+        return adminuser_addr
 
 class UIStackPlaybook:
     def __init__(self, cmd):
@@ -814,35 +843,10 @@ class IntegrationTestsPlaybook:
         validator_mnemonic = netdef["mnemonic"].split(" ")
         chaindir = os.path.join(networks_dir, f"validators/{self.chainnet}/{validator_moniker}")
         sifnoded_home = os.path.join(chaindir, ".sifnoded")
+        denom_whitelist_file = os.path.join(self.test_integration_dir, "whitelisted-denoms.json")
         # SIFNODED_LOG=$datadir/logs/sifnoded.log
 
-        # now we have to add the validator key to the test keyring so the tests can send rowan from validator1
-        self.cmd.sifnoded_keys_add(validator_moniker, validator_mnemonic)
-        valoper = self.cmd.sifnoded_keys_show(validator_moniker, bech="val", keyring_backend="test", home=sifnoded_home)[0]["address"]
-        self.cmd.execst(["sifnoded", "add-genesis-validators", valoper, "--home", sifnoded_home])
-
-        try:
-            # Probable bug in test/integration/sifchain_start_daemon.sh:
-            # whitelisted_validator=$(yes $VALIDATOR1_PASSWORD | sifnoded keys show --keyring-backend file -a \
-            #     --bech val $MONIKER --home $CHAINDIR/.sifnoded)
-            whitelisted_validator = exactly_one(stdout_lines(self.cmd.execst(["sifnoded", "keys", "show",
-                "--keyring-backend", "file", "-a", "--bech", "val", validator_moniker, "--home", sifnoded_home],
-                stdin=[validator1_password])))
-            assert False
-            log.info(f"Whitelisted validator: {whitelisted_validator}")
-            self.cmd.execst(["sifnoded", "add-genesis-validators", whitelisted_validator, "--home", sifnoded_home])
-        except:
-            log.error("Failed to get whitelisted validator (probable bug)", exc_info=True)
-            assert True
-        adminuser_addr = self.cmd.sifnoded_keys_add_1("sifnodeadmin")["address"]
-        # TODO Merge with PeggyPlaybook.run()
-        # TODO Use self.cmd.add_genesis_account
-        self.cmd.execst(["sifnoded", "add-genesis-account", adminuser_addr, sif_format_amount(10**20, "rowan"),
-            "--home", sifnoded_home], pipe=False)
-        self.cmd.execst(["sifnoded", "set-genesis-oracle-admin", adminuser_addr, "--home", sifnoded_home], pipe=False)
-        self.cmd.execst(["sifnoded", "set-genesis-whitelister-admin", adminuser_addr, "--home", sifnoded_home])
-        self.cmd.execst(["sifnoded", "set-gen-denom-whitelist", os.path.join(self.test_integration_dir,
-            "whitelisted-denoms.json"), "--home", sifnoded_home])
+        adminuser_addr = self.cmd.sifchain_init_integration(validator_moniker, validator_mnemonic, sifnoded_home, denom_whitelist_file, validator1_password)
 
         # Start sifnoded
         # sifnoded_proc = popen(["sifnoded", "start", "--minimum-gas-prices", sif_format_amount(0.5, "rowan"),
@@ -1092,9 +1096,7 @@ class PeggyPlaybook(IntegrationTestsPlaybook):
         res = self.cmd.execst(["make", "install"], cwd=project_dir())
         print(repr(res))
 
-    def start_hardhat(self, hostname, port, n_validators, network_id, chain_id):
-        # default_hardhat_accounts_dict = dict((("address", x[0]), ("privateKey", x[1])) for x in self.default_hardhat_accounts())
-        # print(default_hardhat_accounts_dict)
+    def start_hardhat(self, hostname, port):
         # TODO We need to manaege smart-contracts/hardhat.config.ts + it also reads smart-contracts/.env via dotenv
         # TODO Handle failures, e.g. if the process is already running we get exit value 1 and
         # "Error: listen EADDRINUSE: address already in use 127.0.0.1:8545"
@@ -1154,14 +1156,39 @@ class PeggyPlaybook(IntegrationTestsPlaybook):
     def deploy_smart_contracts_hardhat(self):
         res = self.cmd.execst(["npx", "hardhat", "run", "scripts/deploy_contracts.ts", "--network", "localhost"],
             cwd=project_dir("smart-contracts"))
-        # This is to handle npx commmand outputting "No need to generate any newer types"
-        return res
+        # Skip first line "No need to generate any newer types"
+        m = json.loads(stdout(res).splitlines()[1])
+        return m["bridgeBank"], m["bridgeRegistry"], m["rowanContract"]
 
     # TODO Merge with super
     def sifgen_network_create_peggy(self, chain_id, validator_count, network_dir, seed_ip_address, network_config_file):
         self.sifgen_create_network(chain_id, validator_count, network_dir, network_config_file, seed_ip_address)
         # res = self.cmd.execst([self.sifgen_cmd, "network", "create", str(chain_id), str(n_validators), network_dir,
         #     seed_ip_address, network_config_file, "--keyring-backend", "test"])
+
+    def run_ebrelayer_peggy(self, tcp_url, websocket_address, bridge_registry_sc_addr, validator_moniker,
+        validator_mnemonic, chain_id, symbol_translator_file, relayerdb_path, ethereum_address, ethereum_private_key):
+        # Rmmove prefix "0x"
+        env = {"ETHEREUM_ADDRESS": ethereum_address[2:], "ETHEREUM_PRIVATE_KEY": ethereum_private_key[2:]}
+        args = ["ebrelayer", "init", tcp_url, websocket_address, bridge_registry_sc_addr, validator_moniker,
+            " ".join(validator_mnemonic), "--chain-id", chain_id, "--node", tcp_url, "--keyring-backend", "test", "--from",
+            validator_moniker, "--symbol-translator-file", symbol_translator_file, "--relayerdb-path", relayerdb_path]
+        return popen(args, env=env)
+
+    def _delete__ebrelayer_init(self, ethereum_private_key, tendermind_node, web3_provider, bridge_registry_contract_address,
+        validator_moniker, validator_mnemonic, chain_id, gas=None, gas_prices=None, node=None, keyring_backend=None,
+        sign_with=None, symbol_translator_file=None, relayerdb_path=None, cwd=None):
+        env = {"ETHEREUM_PRIVATE_KEY": ethereum_private_key}
+        args = ["ebrelayer", "init", tendermind_node, web3_provider, bridge_registry_contract_address,
+            validator_moniker, " ".join(validator_mnemonic), "--chain-id={}".format(chain_id)] + \
+            (["--gas", str(gas)] if gas is not None else []) + \
+            (["--gas-prices", sif_format_amount(*gas_prices)] if gas_prices is not None else []) + \
+            (["--node", node] if node is not None else []) + \
+            (["--keyring-backend", keyring_backend] if keyring_backend is not None else []) + \
+            (["--from", sign_with] if sign_with is not None else []) + \
+            (["--symbol-translator-file", symbol_translator_file] if symbol_translator_file else []) + \
+            (["--relayerdb-path", relayerdb_path] if relayerdb_path else [])
+        return popen(args, env=env, cwd=cwd)
 
     # Override
     def run(self):
@@ -1171,14 +1198,16 @@ class PeggyPlaybook(IntegrationTestsPlaybook):
 
         hardhat_hostname = "localhost"
         hardhat_port = 8545
-        hardhat_n_validators = 1
+        hardhat_proc = self.start_hardhat(hardhat_hostname, hardhat_port)
+
+        hardhat_validator_count = 1
         hardhat_network_id = 1
         hardhat_chain_id = 1
-        hardhat_proc = self.start_hardhat(hardhat_hostname, hardhat_port, hardhat_n_validators, hardhat_network_id,
-            hardhat_chain_id)
-        hardhat_accounts = self.signer_array_to_ethereum_accounts(self.default_hardhat_accounts(), hardhat_n_validators)
+        # default_hardhat_accounts_dict = dict((("address", x[0]), ("privateKey", x[1])) for x in self.default_hardhat_accounts())
+        # print(default_hardhat_accounts_dict)
+        hardhat_accounts = self.signer_array_to_ethereum_accounts(self.default_hardhat_accounts(), hardhat_validator_count)
 
-        self.deploy_smart_contracts_hardhat()
+        bridgebank_sc_addr, bridge_registry_sc_addr, rowan_sc_addr = self.deploy_smart_contracts_hardhat()
 
         chain_id = "localnet"
         sifnoded_network_dir = "/tmp/sifnodedNetwork"
@@ -1190,19 +1219,34 @@ class PeggyPlaybook(IntegrationTestsPlaybook):
         self.sifgen_network_create_peggy(chain_id, validator_count, sifnoded_network_dir, seed_ip_address, network_config_file)
 
         netdev_yml = exactly_one(yaml_load(self.cmd.read_text_file(network_config_file)))
-        moniker = netdev_yml["moniker"]
-        mnemonic = netdev_yml["mnemonic"].split(" ")
+        validator_moniker = netdev_yml["moniker"]
+        validator_mnemonic = netdev_yml["mnemonic"].split(" ")
 
-        chain_dir = os.path.join(sifnoded_network_dir, "validators", chain_id, moniker)
+        chain_dir = os.path.join(sifnoded_network_dir, "validators", chain_id, validator_moniker)
         sifnoded_home = os.path.join(chain_dir, ".sifnoded")
         denom_whitelist_file = project_dir("test", "integration", "whitelisted-denoms.json")
 
-
-        self.cmd.sifchain_init_peggy(moniker, mnemonic, sifnoded_home, denom_whitelist_file)
+        self.cmd.sifchain_init_peggy(validator_moniker, validator_mnemonic, sifnoded_home, denom_whitelist_file)
 
         sifnoded_proc = self.cmd.sifnoded_start(minimum_gas_prices=[0.5, "rowan"], tcp_url="tcp://0.0.0.0:26657", sifnoded_home=sifnoded_home)
 
-        return hardhat_proc, sifnoded_proc, None
+        relayerdb_path = self.cmd.mktempdir()
+        ethereum_address = hardhat_accounts["validators"][0][0]
+        ethereum_private_key = hardhat_accounts["validators"][0][1]
+        ebrelayer_proc = self.run_ebrelayer_peggy(
+            "tcp://0.0.0.0:26657",
+            "ws://localhost:8545/",
+            bridge_registry_sc_addr,
+            validator_moniker,
+            validator_mnemonic,
+            chain_id,
+            os.path.join(self.test_integration_dir, "config/symbol_translator.json"),
+            relayerdb_path,
+            ethereum_address,
+            ethereum_private_key,
+        )
+
+        return hardhat_proc, sifnoded_proc, ebrelayer_proc
 
 def cleanup_and_reset_state():
     # git checkout 4cb7322b6b282babd93a0d0aedda837c9134e84e deploy
