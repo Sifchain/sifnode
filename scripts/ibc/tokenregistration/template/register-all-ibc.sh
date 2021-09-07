@@ -38,3 +38,43 @@ sifnoded tx tokenregistry register ./$SIFCHAIN_ID/sentinel.json \
   --gas-prices=0.5rowan \
   --gas-adjustment=1.5 \
   --broadcast-mode=block
+
+# IRIS
+sifnoded tx tokenregistry register ./$SIFCHAIN_ID/iris.json \
+  --node $SIF_NODE \
+  --chain-id $SIFCHAIN_ID \
+  --from $TOKEN_REGISTRY_ADMIN_ADDRESS \
+  --keyring-backend $KEYRING_BACKEND \
+  --gas-prices=0.5rowan \
+  --gas-adjustment=1.5 \
+  --broadcast-mode=block
+
+# PERSISTENCE
+sifnoded tx tokenregistry register ./$SIFCHAIN_ID/persistence.json \
+  --node $SIF_NODE \
+  --chain-id $SIFCHAIN_ID \
+  --from $TOKEN_REGISTRY_ADMIN_ADDRESS \
+  --keyring-backend $KEYRING_BACKEND \
+  --gas-prices=0.5rowan \
+  --gas-adjustment=1.5 \
+  --broadcast-mode=block
+
+# CRYPTO ORG
+sifnoded tx tokenregistry register ./$SIFCHAIN_ID/crypto-org.json \
+  --node $SIF_NODE \
+  --chain-id $SIFCHAIN_ID \
+  --from $TOKEN_REGISTRY_ADMIN_ADDRESS \
+  --keyring-backend $KEYRING_BACKEND \
+  --gas-prices=0.5rowan \
+  --gas-adjustment=1.5 \
+  --broadcast-mode=block
+
+# REGEN
+sifnoded tx tokenregistry register ./$SIFCHAIN_ID/regen.json \
+  --node $SIF_NODE \
+  --chain-id $SIFCHAIN_ID \
+  --from $TOKEN_REGISTRY_ADMIN_ADDRESS \
+  --keyring-backend $KEYRING_BACKEND \
+  --gas-prices=0.5rowan \
+  --gas-adjustment=1.5 \
+  --broadcast-mode=block
