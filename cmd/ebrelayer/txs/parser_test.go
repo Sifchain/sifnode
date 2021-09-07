@@ -9,6 +9,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"go.uber.org/zap"
 
+	"github.com/Sifchain/sifnode/cmd/ebrelayer/internal/symbol_translator"
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/types"
 	ethbridge "github.com/Sifchain/sifnode/x/ethbridge/types"
 )
@@ -42,7 +43,8 @@ func TestLogLockToEthBridgeClaim(t *testing.T) {
 	// Create test ethereum event
 	ethereumEvent := CreateTestLogEthereumEvent(t)
 
-	ethBridgeClaim, err := EthereumEventToEthBridgeClaim(testCosmosValidatorBech32Address, ethereumEvent)
+	symbolTranslator := symbol_translator.NewSymbolTranslator()
+	ethBridgeClaim, err := EthereumEventToEthBridgeClaim(testCosmosValidatorBech32Address, ethereumEvent, symbolTranslator, sugaredLogger)
 	require.NoError(t, err)
 
 	require.Equal(t, expectedEthBridgeClaim, &ethBridgeClaim)
