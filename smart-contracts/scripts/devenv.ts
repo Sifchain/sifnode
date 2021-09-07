@@ -3,8 +3,7 @@ import { GolangBuilder, GolangResults } from "../src/devenv/golangBuilder";
 import { SifnodedRunner, ValidatorValues } from "../src/devenv/sifnoded";
 import { DeployedContractAddresses } from "../scripts/deploy_contracts";
 import { SmartContractDeployer } from "../src/devenv/smartcontractDeployer";
-import { EbrelayerRunner } from "../src/devenv/ebrelayer";
-import { WitnessRunner } from "../src/devenv/witness";
+import { RelayerRunner, WitnessRunner, EbrelayerArguments } from "../src/devenv/ebrelayer";
 import { EthereumAddressAndKey } from "../src/devenv/devEnv";
 import { notify } from "node-notifier";
 
@@ -48,38 +47,39 @@ async function smartContractDeployer() {
   return { process, result };
 }
 
-async function ebrelayerBuilder(
-  contractAddresses: DeployedContractAddresses,
-  ethereumAccount: EthereumAddressAndKey,
-  validater: ValidatorValues,
-  golangResults: GolangResults
-) {
-  const node: EbrelayerRunner = new EbrelayerRunner({
-    smartContract: contractAddresses,
-    golangResults: golangResults,
-    account: ethereumAccount,
-    validatorValues: validater,
-  });
+async function relayerBuilder(args: EbrelayerArguments) {
+  const node: RelayerRunner = new RelayerRunner(args);
   const resultsPromise = node.go();
   const result = await resultsPromise;
   return { process, result };
 }
 
-async function witnessBuilder(
+async function witnessBuilder(args: EbrelayerArguments) {
+  const node: WitnessRunner = new WitnessRunner(args);
+  const resultsPromise = node.go();
+  const result = await resultsPromise;
+  return { process, result };
+}
+
+async function ebrelayerWitnessBuilder(
   contractAddresses: DeployedContractAddresses,
   ethereumAccount: EthereumAddressAndKey,
   validater: ValidatorValues,
   golangResults: GolangResults
 ) {
-  const node: WitnessRunner = new WitnessRunner({
+  const args: EbrelayerArguments = {
     smartContract: contractAddresses,
-    golangResults: golangResults,
     account: ethereumAccount,
     validatorValues: validater,
-  });
-  const resultsPromise = node.go();
-  const result = await resultsPromise;
-  return { process, result };
+    golangResults
+  };
+  const relayerPromise = relayerBuilder(args)
+  const witnessPromise = witnessBuilder(args)
+  const [relayer, witness] = await Promise.all([relayerPromise, witnessPromise])
+  return {
+    relayer,
+    witness
+  }
 }
 
 async function main() {
@@ -91,25 +91,17 @@ async function main() {
     const [hardhat, golang] = (await Promise.all([startHardhat(), golangBuilder()]))
     const sifnode = await sifnodedBuilder(golang.results);
     const smartcontract = await smartContractDeployer()
-    const ebrelayerPromise = ebrelayerBuilder(
+    const { relayer, witness } = await ebrelayerWitnessBuilder(
       smartcontract.result.contractAddresses,
       hardhat.results.accounts.validators[0],
       sifnode.results.validatorValues[0],
       golang.results
     )
-    const witnessPromise = witnessBuilder(
-      smartcontract.result.contractAddresses,
-      hardhat.results.accounts.validators[0],
-      sifnode.results.validatorValues[0],
-      golang.results
-    )
-    const [ebrelayer, witness] = await Promise.all([ebrelayerPromise, witnessPromise]);
-
     await sigterm
     console.log("Caught interrupt signal, cleaning up.");
     sifnode.process.kill(sifnode.process.pid);
     hardhat.process.kill(hardhat.process.pid);
-    ebrelayer.process.kill(ebrelayer.process.pid);
+    relayer.process.kill(relayer.process.pid);
     witness.process.kill(witness.process.pid);
     console.log("All child process terminated, goodbye.");
     notify({
