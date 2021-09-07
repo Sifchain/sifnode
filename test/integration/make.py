@@ -43,6 +43,16 @@ def http_get(url):
     with urllib.request.urlopen(url) as r:
         return r.read()
 
+def mkcallcmd(args, env=None, cwd=None, stdin=None):
+    result = {"args": args}
+    if env is not None:
+        result["env"] = env
+    if cwd is not None:
+        result["cwd"] = cwd
+    if stdin is not None:
+        result["stdin"] = stdin
+    return result
+
 def popen(args, env=None, cwd=None):
     if env:
         env = dict_merge(os.environ, env)
@@ -206,16 +216,9 @@ class Sifnoded(Command):
         # {"name": "<moniker>", "type": "local", "address": "sif1...", "pubkey": "sifpub1...", "mnemonic": "", "threshold": 0, "pubkeys": []}
         return result
 
-    def sifnoded_add_genesis_account(self, address, tokens):
+    def sifnoded_add_genesis_account(self, address, tokens, sifnoded_home=None):
         tokens_str = ",".join([sif_format_amount(amount, denom) for amount, denom in tokens])
-        # return self.sifnoded_exec(["add-genesis-account", address, tokens_str], home=home)
-        args = ["sifnoded", "add-genesis-account", address, tokens_str]
-        self.execst(args, pipe=False)  # TODO Why do we need pipe=False? => move to sifnoded_add_genesis_account_1
-
-    def sifnoded_add_genesis_account_1(self, address, tokens, sifnoded_home=None):
-        tokens_str = ",".join([sif_format_amount(amount, denom) for amount, denom in tokens])
-        args = ["add-genesis-account", address, tokens_str]
-        self.sifnoded_exec(args, sifnoded_home=sifnoded_home)
+        self.sifnoded_exec(["add-genesis-account", address, tokens_str], sifnoded_home=sifnoded_home)
 
     def sifnoded_add_genesis_validators(self, address):
         args = ["sifnoded", "add-genesis-validators", address]
@@ -367,7 +370,7 @@ class Integrator(Ganache, Sifnoded, Command):
 
         # TODO ui scripts use just "yarn; yarn migrate" alias "npx truffle migrate --reset",
         self.execst(["npx", "truffle", "deploy", "--network", network_name, "--reset"], env=env,
-            cwd=self.smart_contracts_dir, pipe=False)
+            cwd=self.smart_contracts_dir, pipe=False)  # TODO Why pipe=False?
 
     def deploy_smart_contracts_for_ui_stack(self):
         self.copy_file(os.path.join(self.smart_contracts_dir, ".env.ui.example"), os.path.join(self.smart_contracts_dir, ".env"))
@@ -375,20 +378,25 @@ class Integrator(Ganache, Sifnoded, Command):
         self.yarn([], cwd=self.smart_contracts_dir)
         self.yarn(["migrate"], cwd=self.smart_contracts_dir)
 
+    # truffle
     def get_smart_contract_address(self, compiled_json_path, network_id):
         return json.loads(self.read_text_file(compiled_json_path))["networks"][str(network_id)]["address"]
 
+    # truffle
     def get_bridge_smart_contract_addresses(self, network_id):
         return [self.get_smart_contract_address(os.path.join(
             self.smart_contracts_dir, f"build/contracts/{x}.json"), network_id)
             for x in ["BridgeToken", "BridgeRegistry", "BridgeBank"]]
+
+    def npx(self, args, env=None, cwd=None):
+        return self.execst(["npx"] + args, env=env, cwd=cwd)
 
     def truffle_exec(self, script_name, *script_args, env=None):
         self._check_env_vs_file(env, os.path.join(self.smart_contracts_dir, ".env"))
         script_path = os.path.join(self.smart_contracts_dir, f"scripts/{script_name}.js")
         # Hint: call web3 directly, avoid npx + truffle + script
         # Maybe: self.cmd.yarn(["integrationtest:setTokenLockBurnLimit", str(amount)])
-        self.execst(["npx", "truffle", "exec", script_path] + list(script_args), env=env, cwd=self.smart_contracts_dir)
+        self.npx(["truffle", "exec", script_path] + list(script_args), env=env, cwd=self.smart_contracts_dir)
 
     # TODO setTokenLockBurnLimit is gone, possibly replaced by bulkSetTokenLockBurnLimit
     def set_token_lock_burn_limit(self, update_address, amount, ethereum_private_key, infura_project_id, local_provider):
@@ -424,19 +432,13 @@ class Integrator(Ganache, Sifnoded, Command):
         except:
             log.error("Failed to get whitelisted validator (probable bug)", exc_info=True)
             assert True
+
         adminuser_addr = self.sifnoded_keys_add_1("sifnodeadmin")["address"]
-        # TODO Merge with PeggyPlaybook.run()
-        # TODO Use self.cmd.add_genesis_account
-        self.execst(["sifnoded", "add-genesis-account", adminuser_addr, sif_format_amount(10**20, "rowan"),
-            "--home", sifnoded_home], pipe=False)
-        self.execst(["sifnoded", "set-genesis-oracle-admin", adminuser_addr, "--home", sifnoded_home], pipe=False)
-        self.execst(["sifnoded", "set-genesis-whitelister-admin", adminuser_addr, "--home", sifnoded_home])
-        self.execst(["sifnoded", "set-gen-denom-whitelist", denom_whitelist_file, "--home", sifnoded_home])
+        self.sifchain_init_common(adminuser_addr, denom_whitelist_file, sifnoded_home)
         return adminuser_addr
 
     # @parameter validator_moniker - from network config
     # @parameter validator_mnemonic - from network config
-    # TODO Merge
     def sifchain_init_peggy(self, validator_moniker, validator_mnemonic, sifnoded_home, denom_whitelist_file):
         # Add validator key to test keyring
         _tmp0 = self.sifnoded_keys_add_2(validator_moniker, validator_mnemonic)
@@ -451,21 +453,18 @@ class Integrator(Ganache, Sifnoded, Command):
         _whitelisted_validator = self.sifnoded_get_val_address(validator_moniker)
         assert valoper == _whitelisted_validator
 
-        # Original:
-        # adminuser_addr = json.loads(stdout(
-        #     self.cmd.sifnoded_exec(["keys", "add", "sifnodeadmin", "--output", "json"], keyring_backend="test", stdin=["yes", "yes"])
-        # ))["address"]
         adminuser_addr = self.sifnoded_keys_add_1("sifnodeadmin")["address"]
+        self.sifchain_init_common(adminuser_addr, denom_whitelist_file, sifnoded_home)
+        return adminuser_addr
 
-        # Original:
-        # self.cmd.execst(["sifnoded", "add-genesis-account", sifnoded_admin_address, "100000000000000000000rowan", "--home", sifnoded_home])
+    def sifchain_init_common(self, adminuser_addr, denom_whitelist_file, sifnoded_home):
         tokens = [[10**20, "rowan"]]
-        self.sifnoded_add_genesis_account_1(adminuser_addr, tokens, sifnoded_home=sifnoded_home)
-
+        # Original from peggy:
+        # self.cmd.execst(["sifnoded", "add-genesis-account", sifnoded_admin_address, "100000000000000000000rowan", "--home", sifnoded_home])
+        self.sifnoded_add_genesis_account(adminuser_addr, tokens, sifnoded_home=sifnoded_home)
         self.sifnoded_exec(["set-genesis-oracle-admin", adminuser_addr], sifnoded_home=sifnoded_home)
         self.sifnoded_exec(["set-genesis-whitelister-admin", adminuser_addr], sifnoded_home=sifnoded_home)
         self.sifnoded_exec(["set-gen-denom-whitelist", denom_whitelist_file], sifnoded_home=sifnoded_home)
-        return adminuser_addr
 
 class UIStackPlaybook:
     def __init__(self, cmd):
@@ -1220,13 +1219,14 @@ class PeggyPlaybook(IntegrationTestsPlaybook):
 
         self.cmd.sifchain_init_peggy(validator_moniker, validator_mnemonic, sifnoded_home, denom_whitelist_file)
 
-        sifnoded_proc = self.cmd.sifnoded_start(minimum_gas_prices=[0.5, "rowan"], tcp_url="tcp://0.0.0.0:26657", sifnoded_home=sifnoded_home)
+        tcp_url = "tcp://0.0.0.0:26657"
+        sifnoded_proc = self.cmd.sifnoded_start(minimum_gas_prices=[0.5, "rowan"], tcp_url=tcp_url, sifnoded_home=sifnoded_home)
 
         relayerdb_path = self.cmd.mktempdir()
         ethereum_address, ethereum_private_key = hardhat_accounts["validators"][0]
         ebrelayer_proc = self.run_ebrelayer_peggy(
-            "tcp://0.0.0.0:26657",
-            "ws://localhost:8545/",
+            tcp_url,
+            f"ws://{hardhat_hostname}:{hardhat_port}/",
             bridge_registry_sc_addr,
             validator_moniker,
             validator_mnemonic,
