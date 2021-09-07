@@ -1,6 +1,8 @@
 package keeper
 
 import (
+	"fmt"
+
 	"github.com/Sifchain/sifnode/x/dispensation/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/pkg/errors"
@@ -43,43 +45,51 @@ func (k Keeper) GetUserClaimsIterator(ctx sdk.Context) sdk.Iterator {
 	return sdk.KVStorePrefixIterator(store, types.UserClaimPrefix)
 }
 
-func (k Keeper) GetClaims(ctx sdk.Context) []types.UserClaim {
-	var res []types.UserClaim
+func (k Keeper) GetClaims(ctx sdk.Context) *types.UserClaims {
+	var res types.UserClaims
 	iterator := k.GetUserClaimsIterator(ctx)
-	defer iterator.Close()
+	defer func(iterator sdk.Iterator) {
+		err := iterator.Close()
+		if err != nil {
+			panic("Failed to close iterator")
+		}
+	}(iterator)
 	for ; iterator.Valid(); iterator.Next() {
 		var dl types.UserClaim
 		bytesValue := iterator.Value()
-		k.cdc.MustUnmarshalBinaryBare(bytesValue, &dl)
-		res = append(res, dl)
+		if len(bytesValue) == 0 {
+			continue
+		}
+		err := k.cdc.UnmarshalBinaryBare(bytesValue, &dl)
+		if err != nil {
+			// Log unmarshal claim error instead of panic.
+			ctx.Logger().Error(fmt.Sprintf("Unmarshal failed for user claim bytes : %s ", bytesValue))
+			continue
+		}
+		res.UserClaims = append(res.UserClaims, &dl)
 	}
-	return res
+	return &res
 }
 
-func (k Keeper) GetClaimsByType(ctx sdk.Context, userClaimType types.DistributionType) []types.UserClaim {
-	var res []types.UserClaim
+func (k Keeper) GetClaimsByType(ctx sdk.Context, userClaimType types.DistributionType) *types.UserClaims {
+	var res types.UserClaims
 	iterator := k.GetUserClaimsIterator(ctx)
-	defer iterator.Close()
+	defer func(iterator sdk.Iterator) {
+		err := iterator.Close()
+		if err != nil {
+			panic("Failed to close iterator")
+		}
+	}(iterator)
 	for ; iterator.Valid(); iterator.Next() {
 		var dl types.UserClaim
 		bytesValue := iterator.Value()
+		if len(bytesValue) == 0 {
+			continue
+		}
 		k.cdc.MustUnmarshalBinaryBare(bytesValue, &dl)
 		if dl.UserClaimType == userClaimType {
-			res = append(res, dl)
+			res.UserClaims = append(res.UserClaims, &dl)
 		}
 	}
-	return res
-}
-
-func (k Keeper) LockClaim(ctx sdk.Context, recipient string, userClaimType types.DistributionType) error {
-	claim, err := k.GetClaim(ctx, recipient, userClaimType)
-	if err != nil {
-		return err
-	}
-	claim.Locked = true
-	err = k.SetClaim(ctx, claim)
-	if err != nil {
-		return err
-	}
-	return nil
+	return &res
 }

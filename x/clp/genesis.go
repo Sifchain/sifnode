@@ -2,9 +2,11 @@ package clp
 
 import (
 	"fmt"
+	"math"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+	"github.com/cosmos/cosmos-sdk/types/query"
 	abci "github.com/tendermint/tendermint/abci/types"
 
 	"github.com/Sifchain/sifnode/x/clp/keeper"
@@ -13,11 +15,9 @@ import (
 
 func InitGenesis(ctx sdk.Context, k keeper.Keeper, data types.GenesisState) (res []abci.ValidatorUpdate) {
 	k.SetParams(ctx, data.Params)
-
 	if data.AddressWhitelist == nil || len(data.AddressWhitelist) == 0 {
-		panic(fmt.Sprintf("AddressWhiteList must be set."))
+		panic("AddressWhiteList must be set.")
 	}
-
 	wl := make([]sdk.AccAddress, len(data.AddressWhitelist))
 	if data.AddressWhitelist != nil {
 		for i, entry := range data.AddressWhitelist {
@@ -27,10 +27,8 @@ func InitGenesis(ctx sdk.Context, k keeper.Keeper, data types.GenesisState) (res
 			}
 			wl[i] = wlAddress
 		}
-
 		k.SetClpWhiteList(ctx, wl)
 	}
-
 	k.SetClpWhiteList(ctx, wl)
 	for _, pool := range data.PoolList {
 		err := k.SetPool(ctx, pool)
@@ -41,24 +39,23 @@ func InitGenesis(ctx sdk.Context, k keeper.Keeper, data types.GenesisState) (res
 	for _, lp := range data.LiquidityProviders {
 		k.SetLiquidityProvider(ctx, lp)
 	}
-
 	return []abci.ValidatorUpdate{}
 }
 
 func ExportGenesis(ctx sdk.Context, keeper keeper.Keeper) types.GenesisState {
 	params := keeper.GetParams(ctx)
-
-	poolList := keeper.GetPools(ctx)
-
-	liquidityProviders := keeper.GetLiquidityProviders(ctx)
-
+	var poolList []*types.Pool
+	poolList, _, _ = keeper.GetPoolsPaginated(ctx, &query.PageRequest{
+		Limit: uint64(math.MaxUint64),
+	})
+	liquidityProviders, _, _ := keeper.GetAllLiquidityProvidersPaginated(ctx, &query.PageRequest{
+		Limit: uint64(math.MaxUint64),
+	})
 	whiteList := keeper.GetClpWhiteList(ctx)
-
 	wl := make([]string, len(whiteList))
 	for i, entry := range whiteList {
 		wl[i] = entry.String()
 	}
-
 	return types.GenesisState{
 		Params:             params,
 		AddressWhitelist:   wl,

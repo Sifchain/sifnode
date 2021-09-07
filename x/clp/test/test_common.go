@@ -14,8 +14,8 @@ import (
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 
 	sifapp "github.com/Sifchain/sifnode/app"
-	"github.com/Sifchain/sifnode/x/clp/keeper"
 	"github.com/Sifchain/sifnode/x/clp/types"
+	tokenregistrytypes "github.com/Sifchain/sifnode/x/tokenregistry/types"
 )
 
 // Constants for test scripts only .
@@ -30,18 +30,21 @@ const (
 func CreateTestApp(isCheckTx bool) (*sifapp.SifchainApp, sdk.Context) {
 	app := sifapp.Setup(isCheckTx)
 	ctx := app.BaseApp.NewContext(isCheckTx, tmproto.Header{})
-
 	app.AccountKeeper.SetParams(ctx, authtypes.DefaultParams())
 	initTokens := sdk.TokensFromConsensusPower(1000)
 	_ = sifapp.AddTestAddrs(app, ctx, 6, initTokens)
-
 	return app, ctx
 }
 
-func CreateTestAppClp(isCheckTx bool) (sdk.Context, keeper.Keeper) {
+func CreateTestAppClp(isCheckTx bool) (sdk.Context, *sifapp.SifchainApp) {
 	ctx, app := GetSimApp(isCheckTx)
 	sifapp.SetConfig(false)
-	return ctx, app.ClpKeeper
+	app.TokenRegistryKeeper.SetToken(ctx, &tokenregistrytypes.RegistryEntry{IsWhitelisted: true, Denom: "ceth", Decimals: 18, Permissions: []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP}})
+	app.TokenRegistryKeeper.SetToken(ctx, &tokenregistrytypes.RegistryEntry{IsWhitelisted: true, Denom: "cdash", Decimals: 18, Permissions: []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP}})
+	app.TokenRegistryKeeper.SetToken(ctx, &tokenregistrytypes.RegistryEntry{IsWhitelisted: true, Denom: "eth", Decimals: 18, Permissions: []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP}})
+	app.TokenRegistryKeeper.SetToken(ctx, &tokenregistrytypes.RegistryEntry{IsWhitelisted: true, Denom: "cacoin", Decimals: 18, Permissions: []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP}})
+	app.TokenRegistryKeeper.SetToken(ctx, &tokenregistrytypes.RegistryEntry{IsWhitelisted: true, Denom: "dash", Decimals: 18, Permissions: []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP}})
+	return ctx, app
 }
 
 func GetSimApp(isCheckTx bool) (sdk.Context, *sifapp.SifchainApp) {
@@ -70,20 +73,16 @@ func GenerateRandomLP(numberOfLp int) []types.LiquidityProvider {
 	var lpList []types.LiquidityProvider
 	tokens := []string{"ceth", "cbtc", "ceos", "cbch", "cbnb", "cusdt", "cada", "ctrx"}
 	rand.Seed(time.Now().Unix())
-
 	for i := 0; i < numberOfLp; i++ {
 		externalToken := tokens[rand.Intn(len(tokens))]
 		asset := types.NewAsset(trimFirstRune(externalToken))
-
 		lpAddess, err := sdk.AccAddressFromBech32("sif1azpar20ck9lpys89r8x7zc8yu0qzgvtp48ng5v")
 		if err != nil {
 			panic(err)
 		}
-
 		lp := types.NewLiquidityProvider(&asset, sdk.NewUint(1), lpAddess)
 		lpList = append(lpList, lp)
 	}
-
 	return lpList
 }
 
@@ -103,16 +102,13 @@ func GenerateAddress(key string) sdk.AccAddress {
 	bech := res.String()
 	addr := buffer.String()
 	res, err := sdk.AccAddressFromHex(addr)
-
 	if err != nil {
 		panic(err)
 	}
-
 	bechexpected := res.String()
 	if bech != bechexpected {
 		panic("Bech encoding doesn't match reference")
 	}
-
 	bechres, err := sdk.AccAddressFromBech32(bech)
 	if err != nil {
 		panic(err)
@@ -134,16 +130,13 @@ func GenerateWhitelistAddress(key string) sdk.AccAddress {
 	bech := res.String()
 	addr := buffer.String()
 	res, err := sdk.AccAddressFromHex(addr)
-
 	if err != nil {
 		panic(err)
 	}
-
 	bechexpected := res.String()
 	if bech != bechexpected {
 		panic("Bech encoding doesn't match reference")
 	}
-
 	bechres, err := sdk.AccAddressFromBech32(bech)
 	if err != nil {
 		panic(err)

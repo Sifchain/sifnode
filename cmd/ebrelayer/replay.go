@@ -39,6 +39,11 @@ func RunReplayEthereumCmd(cmd *cobra.Command, args []string) error {
 	}
 	validatorMoniker := args[3]
 
+	symbolTranslator, err := buildSymbolTranslator(cmd.Flags())
+	if err != nil {
+		return err
+	}
+
 	logger, err := zap.NewProduction()
 	if err != nil {
 		log.Fatalln("failed to init zap logging")
@@ -49,7 +54,7 @@ func RunReplayEthereumCmd(cmd *cobra.Command, args []string) error {
 		contractAddress, nil, nil, sugaredLogger)
 
 	txFactory := tx.NewFactoryCLI(cliContext, cmd.Flags())
-	ethSub.Replay(txFactory)
+	ethSub.Replay(txFactory, symbolTranslator)
 
 	return nil
 }
@@ -177,7 +182,7 @@ func RunReplayCosmosSignatureAggregationCmd(cmd *cobra.Command, args []string) e
 }
 
 // RunListMissedCosmosEventCmd get all missed signature aggregation completed events
-func RunListMissedCosmosEventCmd(_ *cobra.Command, args []string) error {
+func RunListMissedCosmosEventCmd(cmd *cobra.Command, args []string) error {
 	// Validate and parse arguments
 	networkDescriptor, err := strconv.Atoi(args[0])
 	if err != nil {
@@ -209,6 +214,11 @@ func RunListMissedCosmosEventCmd(_ *cobra.Command, args []string) error {
 	}
 	relayerEthereumAddress := common.HexToAddress(args[4])
 
+	symbolTranslator, err := buildSymbolTranslator(cmd.Flags())
+	if err != nil {
+		return err
+	}
+
 	logger, err := zap.NewProduction()
 	if err != nil {
 		log.Fatalln("failed to init zap logging")
@@ -217,7 +227,7 @@ func RunListMissedCosmosEventCmd(_ *cobra.Command, args []string) error {
 
 	listMissedCosmosEvent := relayer.NewListMissedCosmosEvent(oracletypes.NetworkDescriptor(networkDescriptor), tendermintNode, web3Provider, contractAddress, relayerEthereumAddress, sugaredLogger)
 
-	listMissedCosmosEvent.ListMissedCosmosEvent()
+	listMissedCosmosEvent.ListMissedCosmosEvent(symbolTranslator)
 
 	return nil
 }

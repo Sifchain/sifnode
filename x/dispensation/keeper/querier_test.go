@@ -9,6 +9,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	abci "github.com/tendermint/tendermint/abci/types"
+	"github.com/tendermint/tendermint/crypto"
 
 	"github.com/Sifchain/sifnode/app"
 	dispensationkeeper "github.com/Sifchain/sifnode/x/dispensation/keeper"
@@ -18,14 +19,15 @@ import (
 
 func GenerateQueryData(app *app.SifchainApp, ctx sdk.Context, name string, outList []bank.Output) {
 	keeper := app.DispensationKeeper
+	authorizedRunner := sdk.AccAddress(crypto.AddressHash([]byte("Runner")))
 	for i := 0; i < 10; i++ {
 		name := uuid.New().String()
-		distribution := types.NewDistribution(types.DistributionType_DISTRIBUTION_TYPE_AIRDROP, name)
+		distribution := types.NewDistribution(types.DistributionType_DISTRIBUTION_TYPE_AIRDROP, name, authorizedRunner.String())
 		_ = keeper.SetDistribution(ctx, distribution)
 	}
 
 	for _, rec := range outList {
-		record := types.NewDistributionRecord(types.DistributionStatus_DISTRIBUTION_STATUS_PENDING, types.DistributionType_DISTRIBUTION_TYPE_AIRDROP, name, rec.Address, rec.Coins, ctx.BlockHeight(), int64(-1))
+		record := types.NewDistributionRecord(types.DistributionStatus_DISTRIBUTION_STATUS_PENDING, types.DistributionType_DISTRIBUTION_TYPE_AIRDROP, name, rec.Address, rec.Coins, ctx.BlockHeight(), -1, "")
 		_ = keeper.SetDistributionRecord(ctx, record)
 	}
 

@@ -1,8 +1,8 @@
 ---
-name: "🚀 Feature request"
+name: "\U0001F680 Feature request"
 about: Suggest an idea for improving Sifnode
 title: ''
-labels: 'type:enhancement'
+labels: ''
 assignees: ''
 
 ---
@@ -31,6 +31,11 @@ assignees: ''
 -->
 
 (Write your answer here.)
+
+### Technical Considerations
+
+Will this feature modify application state?
+Will this feature require a genesis import migration?
 
 ### Additional context
 

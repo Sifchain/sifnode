@@ -1,0 +1,27 @@
+{
+  "entries": [
+    {
+      "is_whitelisted": true,
+      "decimals": "6",
+      "denom": "ibc/FA2A11411CA6EE8DBB2247799FEEA3B918FF5E699361B47CA820AA908FA3418E",
+      "base_denom": "unyan",
+      "path": "transfer/channel-117",
+      "ibc_channel_id": "channel-117",
+      "ibc_counterparty_channel_id": "channel-24",
+      "display_name": "",
+      "display_symbol": "",
+      "network": "",
+      "address": "",
+      "external_symbol": "",
+      "transfer_limit": "",
+      "permissions": [
+        "CLP",
+        "IBCEXPORT",
+        "IBCIMPORT"
+      ],
+      "unit_denom": "",
+      "ibc_counterparty_denom": "",
+      "ibc_counterparty_chain_id": "nyancat-8"
+    }
+  ]
+}

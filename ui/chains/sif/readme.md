@@ -3,7 +3,7 @@ For reference when playing with cosmos cain
 # Create liquidity pool catk:rowan
 
 ```
-sifnodecli tx clp create-pool \
+sifnoded tx clp create-pool \
  --from akasha \
  --symbol catk \
  --nativeAmount 500 \
@@ -13,7 +13,7 @@ sifnodecli tx clp create-pool \
 # Create liquidity pool cbtk:rowan
 
 ```
-sifnodecli tx clp create-pool \
+sifnoded tx clp create-pool \
  --from akasha \
  --symbol cbtk \
  --nativeAmount 500 \
@@ -23,13 +23,13 @@ sifnodecli tx clp create-pool \
 # Verify pool created
 
 ```
-sifnodecli query clp pools
+sifnoded query clp pools
 ```
 
 # Execute swap
 
 ```
-sifnodecli tx clp swap \
+sifnoded tx clp swap \
  --from shadowfiend \
  --sentSymbol catk \
  --receivedSymbol cbtk \

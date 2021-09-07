@@ -2,7 +2,9 @@ package rest
 
 import (
 	"fmt"
+	"github.com/cosmos/cosmos-sdk/types/query"
 	"net/http"
+	"strconv"
 
 	"github.com/cosmos/cosmos-sdk/client"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -104,7 +106,39 @@ func getPoolsHandler(cliCtx client.Context) http.HandlerFunc {
 
 		route := fmt.Sprintf("custom/%s/%s", types.QuerierRoute, types.QueryPools)
 
-		res, height, err := cliCtx.QueryWithData(route, nil)
+		var err error
+		var limit, offset uint64
+
+		if r.URL.Query().Get("limit") != "" {
+			limit, err = strconv.ParseUint(r.URL.Query().Get("limit"), 10, 64)
+			if err != nil {
+				rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
+				return
+			}
+		}
+
+		if r.URL.Query().Get("offset") != "" {
+			offset, err = strconv.ParseUint(r.URL.Query().Get("offset"), 10, 64)
+			if err != nil {
+				rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
+				return
+			}
+		}
+
+		params := types.PoolsReq{
+			Pagination: &query.PageRequest{
+				Limit:  limit,
+				Offset: offset,
+			},
+		}
+
+		bz, err := cliCtx.LegacyAmino.MarshalJSON(params)
+		if err != nil {
+			rest.WriteErrorResponse(w, http.StatusInternalServerError, err.Error())
+			return
+		}
+
+		res, height, err := cliCtx.QueryWithData(route, bz)
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusInternalServerError, err.Error())
 			return
@@ -123,15 +157,40 @@ func getAssetsHandler(cliCtx client.Context) http.HandlerFunc {
 		}
 
 		route := fmt.Sprintf("custom/%s/%s", types.QuerierRoute, types.QueryAssetList)
-		var params types.AssetListReq
-		addressString := r.URL.Query().Get("lpAddress")
 
-		lpAddess, err := sdk.AccAddressFromBech32(addressString)
+		var err error
+		var limit, offset uint64
+
+		if r.URL.Query().Get("limit") != "" {
+			limit, err = strconv.ParseUint(r.URL.Query().Get("limit"), 10, 64)
+			if err != nil {
+				rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
+				return
+			}
+		}
+
+		if r.URL.Query().Get("offset") != "" {
+			offset, err = strconv.ParseUint(r.URL.Query().Get("offset"), 10, 64)
+			if err != nil {
+				rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
+				return
+			}
+		}
+
+		params := types.AssetListReq{
+			Pagination: &query.PageRequest{
+				Limit:  limit,
+				Offset: offset,
+			},
+		}
+
+		lpAddress, err := sdk.AccAddressFromBech32(r.URL.Query().Get("lpAddress"))
 		if err != nil {
 			return
 		}
 
-		params.LpAddress = lpAddess.String()
+		params.LpAddress = lpAddress.String()
+
 		bz, err := cliCtx.LegacyAmino.MarshalJSON(params)
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
@@ -158,9 +217,34 @@ func getLpListHandler(cliCtx client.Context) http.HandlerFunc {
 		}
 
 		route := fmt.Sprintf("custom/%s/%s", types.QuerierRoute, types.QueryLPList)
-		var params types.LiquidityProviderListReq
+
+		var err error
+		var limit, offset uint64
 		assetSymbol := r.URL.Query().Get("symbol")
-		params.Symbol = assetSymbol
+
+		if r.URL.Query().Get("limit") != "" {
+			limit, err = strconv.ParseUint(r.URL.Query().Get("limit"), 10, 64)
+			if err != nil {
+				rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
+				return
+			}
+		}
+
+		if r.URL.Query().Get("offset") != "" {
+			offset, err = strconv.ParseUint(r.URL.Query().Get("offset"), 10, 64)
+			if err != nil {
+				rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
+				return
+			}
+		}
+
+		params := types.LiquidityProviderListReq{
+			Symbol: assetSymbol,
+			Pagination: &query.PageRequest{
+				Limit:  limit,
+				Offset: offset,
+			},
+		}
 
 		bz, err := cliCtx.LegacyAmino.MarshalJSON(params)
 		if err != nil {

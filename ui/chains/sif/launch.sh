@@ -5,13 +5,13 @@
 rm -rf ~/.sifnoded
 
 sifnoded init test --chain-id=sifchain-local
-cp ./config.toml ~/.sifnoded/config
+cp ./app.toml ~/.sifnoded/config
 
-#sifnodecli config output json
-#sifnodecli config indent true
-#sifnodecli config trust-node true
-#sifnodecli config chain-id sifchain-local
-#sifnodecli config keyring-backend test
+#sifnoded config output json
+#sifnoded config indent true
+#sifnoded config trust-node true
+#sifnoded config chain-id sifchain-local
+#sifnoded config keyring-backend test
 
 echo "Generating deterministic account - ${SHADOWFIEND_NAME}"
 echo "${SHADOWFIEND_MNEMONIC}" | sifnoded keys add ${SHADOWFIEND_NAME}  --keyring-backend=test --recover
@@ -38,7 +38,4 @@ sifnoded validate-genesis
 
 echo "Starting test chain"
 
-parallelizr "sifnoded start"
-
-
-#sifnoded start --log_level="main:info,state:error,statesync:info,*:error"
+./start.sh

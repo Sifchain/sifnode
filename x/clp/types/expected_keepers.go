@@ -1,6 +1,7 @@
 package types
 
 import (
+	tokenregistryTypes "github.com/Sifchain/sifnode/x/tokenregistry/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
@@ -31,4 +32,10 @@ type BankKeeper interface {
 type AuthKeeper interface {
 	SetModuleAccount(sdk.Context, authtypes.ModuleAccountI)
 	GetModuleAccount(ctx sdk.Context, moduleName string) authtypes.ModuleAccountI
+}
+
+type TokenRegistryKeeper interface {
+	GetDenom(ctx sdk.Context, denom string) tokenregistryTypes.RegistryEntry
+	IsDenomWhitelisted(ctx sdk.Context, denom string) bool
+	CheckDenomPermissions(ctx sdk.Context, denom string, permissions []tokenregistryTypes.Permission) bool
 }

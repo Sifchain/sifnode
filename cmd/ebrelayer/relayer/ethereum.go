@@ -13,6 +13,8 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/Sifchain/sifnode/cmd/ebrelayer/internal/symbol_translator"
+
 	"github.com/cosmos/cosmos-sdk/client/tx"
 	"google.golang.org/grpc"
 
@@ -92,8 +94,8 @@ func NewEthereumSub(
 	}
 }
 
-// Start an Ethereum event handler
-func (sub EthereumSub) Start(txFactory tx.Factory, completionEvent *sync.WaitGroup) {
+// Start an Ethereum chain subscription
+func (sub EthereumSub) Start(txFactory tx.Factory, completionEvent *sync.WaitGroup, symbolTranslator *symbol_translator.SymbolTranslator) {
 	defer completionEvent.Done()
 	time.Sleep(time.Second)
 	ethClient, err := SetupWebsocketEthClient(sub.EthProvider)
@@ -102,7 +104,7 @@ func (sub EthereumSub) Start(txFactory tx.Factory, completionEvent *sync.WaitGro
 			errorMessageKey, err.Error())
 
 		completionEvent.Add(1)
-		go sub.Start(txFactory, completionEvent)
+		go sub.Start(txFactory, completionEvent, symbolTranslator)
 		return
 	}
 	defer ethClient.Close()
@@ -122,13 +124,10 @@ func (sub EthereumSub) Start(txFactory tx.Factory, completionEvent *sync.WaitGro
 		sub.SugaredLogger.Errorw("failed to get network ID.",
 			errorMessageKey, err.Error())
 		completionEvent.Add(1)
-		go sub.Start(txFactory, completionEvent)
+		go sub.Start(txFactory, completionEvent, symbolTranslator)
 		return
 	}
 
-	// We will check logs for new events
-	logs := make(chan ctypes.Log)
-	defer close(logs)
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	defer close(quit)
@@ -306,7 +305,7 @@ func EventProcessed(bridgeClaims []types.EthereumBridgeClaim, event types.Ethere
 }
 
 // Replay the missed events
-func (sub EthereumSub) Replay(txFactory tx.Factory) {
+func (sub EthereumSub) Replay(txFactory tx.Factory, symbolTranslator *symbol_translator.SymbolTranslator) {
 	tmClient, err := tmclient.New(sub.TmProvider, "/websocket")
 	if err != nil {
 		sub.SugaredLogger.Errorw("failed to initialize a sifchain client.",
@@ -374,7 +373,7 @@ func (sub EthereumSub) logToEvent(networkDescriptor oracletypes.NetworkDescripto
 		event.ClaimType = ethbridgetypes.ClaimType_CLAIM_TYPE_LOCK
 	}
 	sub.SugaredLogger.Infow("receive an event.",
-		"event", event.String())
+		"event", event)
 
 	// Add the event to the record
 	types.NewEventWrite(cLog.TxHash.Hex(), event)

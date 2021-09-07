@@ -4,9 +4,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"math"
 
 	clpkeeper "github.com/Sifchain/sifnode/x/clp/keeper"
+	"github.com/Sifchain/sifnode/x/clp/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/cosmos-sdk/types/query"
 	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
 )
@@ -80,7 +83,10 @@ func migrateBalance(ctx sdk.Context, tokenMap map[string]string, bankKeeper bank
 }
 
 func migratePool(ctx sdk.Context, tokenMap map[string]string, poolKeeper clpkeeper.Keeper) {
-	pools := poolKeeper.GetPools(ctx)
+	pools, _, err := poolKeeper.GetPoolsPaginated(ctx, &query.PageRequest{Limit: math.MaxUint64})
+	if err != nil {
+		panic("failed to get pools during token migration")
+	}
 
 	// at first check all old denom mapped
 	for _, value := range pools {
@@ -109,22 +115,25 @@ func migratePool(ctx sdk.Context, tokenMap map[string]string, poolKeeper clpkeep
 }
 
 func migrateLiquidity(ctx sdk.Context, tokenMap map[string]string, poolKeeper clpkeeper.Keeper) {
-	liquidity := poolKeeper.GetLiquidityProviders(ctx)
-	// at first check all old denom mapped
-	for _, value := range liquidity {
-		token := value.Asset.Symbol
-		if _, ok := tokenMap[token]; ok {
-		} else {
-			panic(fmt.Sprintf("new denom for %s not found\n", token))
+	iterator := poolKeeper.GetLiquidityProviderIterator(ctx)
+	for ; iterator.Valid(); iterator.Next() {
+
+		key := string(iterator.Key())
+		_, _, err := types.ParsePoolKey(key)
+
+		if err != nil {
+			panic(err.Error())
 		}
 	}
 
-	for _, value := range liquidity {
-		token := value.Asset.Symbol
-		if newDenom, ok := tokenMap[token]; ok {
-			poolKeeper.DestroyLiquidityProvider(ctx, token, value.LiquidityProviderAddress)
-			value.Asset.Symbol = newDenom
-			poolKeeper.SetLiquidityProvider(ctx, value)
+	iterator = poolKeeper.GetLiquidityProviderIterator(ctx)
+	for ; iterator.Valid(); iterator.Next() {
+		key := string(iterator.Key())
+		symbol, lp, _ := types.ParsePoolKey(key)
+
+		if newDenom, ok := tokenMap[symbol]; ok {
+			poolKeeper.DestroyLiquidityProvider(ctx, newDenom, lp)
+			poolKeeper.SetRawLiquidityProvider(ctx, newDenom, lp, iterator.Value())
 		}
 	}
 }

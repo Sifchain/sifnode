@@ -16,6 +16,8 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/Sifchain/sifnode/cmd/ebrelayer/internal/symbol_translator"
+
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/txs"
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/types"
 	ebrelayertypes "github.com/Sifchain/sifnode/x/ethbridge/types"
@@ -69,7 +71,7 @@ func NewCosmosSub(networkDescriptor oracletypes.NetworkDescriptor, privateKey *e
 }
 
 // Start a Cosmos chain subscription
-func (sub CosmosSub) Start(txFactory tx.Factory, completionEvent *sync.WaitGroup) {
+func (sub CosmosSub) Start(txFactory tx.Factory, completionEvent *sync.WaitGroup, symbolTranslator *symbol_translator.SymbolTranslator) {
 	defer completionEvent.Done()
 	time.Sleep(time.Second)
 	client, err := tmClient.New(sub.TmProvider, "/websocket")
@@ -77,7 +79,7 @@ func (sub CosmosSub) Start(txFactory tx.Factory, completionEvent *sync.WaitGroup
 		sub.SugaredLogger.Errorw("failed to initialize a sifchain client.",
 			errorMessageKey, err.Error())
 		completionEvent.Add(1)
-		go sub.Start(txFactory, completionEvent)
+		go sub.Start(txFactory, completionEvent, symbolTranslator)
 		return
 	}
 
@@ -85,7 +87,7 @@ func (sub CosmosSub) Start(txFactory tx.Factory, completionEvent *sync.WaitGroup
 		sub.SugaredLogger.Errorw("failed to start a sifchain client.",
 			errorMessageKey, err.Error())
 		completionEvent.Add(1)
-		go sub.Start(txFactory, completionEvent)
+		go sub.Start(txFactory, completionEvent, symbolTranslator)
 		return
 	}
 
@@ -99,7 +101,7 @@ func (sub CosmosSub) Start(txFactory tx.Factory, completionEvent *sync.WaitGroup
 			errorMessageKey, err.Error(),
 			"query", query)
 		completionEvent.Add(1)
-		go sub.Start(txFactory, completionEvent)
+		go sub.Start(txFactory, completionEvent, symbolTranslator)
 		return
 	}
 
@@ -142,7 +144,7 @@ func (sub CosmosSub) Start(txFactory tx.Factory, completionEvent *sync.WaitGroup
 			if lastProcessedBlock == 0 {
 				lastProcessedBlock = blockHeight
 			}
-			sub.SugaredLogger.Infow("new transaction witnessed in sifchain client.")
+			sub.SugaredLogger.Infow("new sifchain block witnessed")
 
 			startBlockHeight := lastProcessedBlock + 1
 			sub.SugaredLogger.Infow("cosmos process events for blocks.",
@@ -161,9 +163,12 @@ func (sub CosmosSub) Start(txFactory tx.Factory, completionEvent *sync.WaitGroup
 				}
 
 				for _, txLog := range block.TxsResults {
+					sub.SugaredLogger.Infow("block.TxsResults: ", "block.TxsResults: ", block.TxsResults)
 					for _, event := range txLog.Events {
 
 						claimType := getOracleClaimType(event.GetType())
+
+						sub.SugaredLogger.Infow("claimtype cosmos.go: ", "claimType: ", claimType)
 
 						switch claimType {
 						case types.MsgBurn, types.MsgLock:
@@ -174,6 +179,12 @@ func (sub CosmosSub) Start(txFactory tx.Factory, completionEvent *sync.WaitGroup
 									errorMessageKey, err.Error())
 								continue
 							}
+
+							sub.SugaredLogger.Infow(
+								"Received message from sifchain: ",
+								"msg", cosmosMsg,
+							)
+
 							if cosmosMsg.NetworkDescriptor == sub.NetworkDescriptor {
 								sub.handleBurnLockMsg(txFactory, cosmosMsg)
 							}
@@ -266,5 +277,4 @@ func (sub CosmosSub) handleBurnLockMsg(
 		cosmosMsg.ProphecyID, "", "")
 
 	txs.SignProphecyToCosmos(txFactory, signProphecy, sub.CliContext, sub.SugaredLogger)
-
 }

@@ -1,7 +1,11 @@
 package types
 
 import (
+	"errors"
 	"fmt"
+	"strings"
+
+	tokenregistrytypes "github.com/Sifchain/sifnode/x/tokenregistry/types"
 )
 
 const (
@@ -21,7 +25,7 @@ const (
 	PoolThrehold      = "1000000000000000000"
 	PoolUnitsMinValue = "1000000000"
 
-	MaxSymbolLength = 10
+	MaxSymbolLength = 71
 	MaxWbasis       = 10000
 )
 
@@ -47,19 +51,17 @@ func GetLiquidityProviderKey(externalTicker string, lp string) []byte {
 	return append(LiquidityProviderPrefix, key...)
 }
 
-func GetNormalizationMap() map[string]int64 {
-	m := make(map[string]int64)
-	m["cel"] = 4
-	m["ausdc"] = 6
-	m["usdt"] = 6
-	m["usdc"] = 6
-	m["cro"] = 8
-	m["cdai"] = 8
-	m["wbtc"] = 8
-	m["ceth"] = 8
-	m["renbtc"] = 8
-	m["cusdc"] = 8
-	m["husd"] = 8
-	m["ampl"] = 9
-	return m
+func GetCLPermissons() []tokenregistrytypes.Permission {
+	return []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP}
+}
+
+// ParsePoolKey split key into externalTicker and lp
+func ParsePoolKey(key string) (string, string, error) {
+	index := strings.Index(key, "_")
+	if index < 1 || index > len(key)-1 {
+		return "", "", errors.New("invalid pool key")
+	}
+
+	return key[:index], key[:index+1], nil
+
 }

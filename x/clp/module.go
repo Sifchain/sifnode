@@ -36,6 +36,7 @@ func (AppModuleBasic) Name() string {
 }
 
 // RegisterLegacyAminoCodec registers the clp module's types on the given LegacyAmino codec.
+//lint:ignore SA1019 Legacy handler has to use legacy/deprecated features
 func (AppModuleBasic) RegisterLegacyAminoCodec(cdc *codec.LegacyAmino) {
 	types.RegisterLegacyAminoCodec(cdc)
 }
@@ -122,6 +123,7 @@ func (AppModule) QuerierRoute() string {
 }
 
 // LegacyQuerierHandler returns the staking module sdk.Querier.
+//lint:ignore SA1019 Legacy handler has to use legacy/deprecated features
 func (am AppModule) LegacyQuerierHandler(legacyQuerierCdc *codec.LegacyAmino) sdk.Querier {
 	return keeper.NewQuerier(am.keeper, legacyQuerierCdc)
 }
