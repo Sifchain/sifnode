@@ -282,7 +282,7 @@ type Ibc struct {
 }
 
 type Oracle struct {
-	AddressWhitelist map[uint32]interface{} `json:"address_whitelist"`
+	AddressWhitelist map[string]interface{} `json:"address_whitelist"`
 	AdminAddress     string                 `json:"admin_address"`
 }
 

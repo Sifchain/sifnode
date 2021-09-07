@@ -15,6 +15,7 @@ log/*.log
 .ssh
 anchore-reports
 sifnoded
+*.pyc
 
 .vercel
 nohup.out
