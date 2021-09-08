@@ -4,7 +4,7 @@ Sifchain looks forward to working with the security community to find vulnerabil
 
 ## Responsible Disclosure
 
-For all security related issues refer to our [Bug Bounty Program](https://hackerone.com/sifchain). **Do not open up a GitHub issue if the bug is a security vulnerability**
+For all security related issues refer to our [Bug Bounty Program](https://immunefi.com/bounty/sifchain/). **Do not open up a GitHub issue if the bug is a security vulnerability**
 
 **Ensure the bug was not already reported** by searching on GitHub under [Issues](https://github.com/Sifchain/sifnode/issues).
 
@@ -22,7 +22,8 @@ We’ll try to keep you informed about our progress throughout the process.
 
 ### Disclosure Policy
 
-* Follow HackerOne's [disclosure guidelines](https://www.hackerone.com/disclosure-guidelines).
+* Vulnerabilities should be disclosed through the Immunefi platform. Immunefi will then handle bug bounty communications.
 * Public disclosure of a vulnerability makes it ineligible for a bounty. If the user reports the vulnerability to other security teams (e.g. Ethereum or Cosmos) but reports to Sifchain with considerable delay, then Sifchain may reduce or cancel the bounty.
+* Users who violate the rules of participation will not receive bug bounty payouts and may be temporarily suspended or banned from the bug bounty program.
 
-For more information check Sifchain bounty program policy at [HackerOne](https://hackerone.com/sifchain)
+For more information check Sifchain bounty program policy at [ImmuneFi](https://immunefi.com/bounty/sifchain/)
