@@ -52,6 +52,7 @@ describe("BridgeBank", () => {
         let amount: BigNumber
         let smallAmount: BigNumber
         let testToken: BridgeToken
+        let minterRole: any = web3.utils.soliditySha3('MINTER_ROLE'); // TODO set type
         const recipient = web3.utils.utf8ToHex("sif1nx650s8q9w28f2g3t9ztxyg48ugldptuwzpace")
         const invalidRecipient = web3.utils.utf8ToHex("esif1nx650s8q9w28f2g3t9ztxyg48ugldptuwzpace")
 
@@ -63,7 +64,9 @@ describe("BridgeBank", () => {
             smallAmount = amount.div(100)
             const testTokenFactory = (await container.resolve(SifchainContractFactories).bridgeToken).connect(sender)
             testToken = await testTokenFactory.deploy("TEST token", "test", 18, "cosmosDenomHere")
-            await testToken.mint(sender.address, amount)
+            
+            await testToken.connect(sender).grantRole(minterRole, operator.address)
+            await testToken.connect(operator).mint(sender.address, amount)
             await testToken.approve(bridgeBank.address, hardhat.ethers.constants.MaxUint256)
         })
 

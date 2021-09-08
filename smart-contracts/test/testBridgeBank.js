@@ -153,6 +153,7 @@ describe("Test Bridge Bank", function () {
       const BridgeToken = await ethers.getContractFactory("BridgeToken");
       const bridgeToken = await BridgeToken.deploy("rowan", "rowan", 18, state.constants.denom.rowan);
 
+      await bridgeToken.connect(operator).grantRole(state.constants.roles.minter, operator.address)
       await bridgeToken.connect(operator).mint(userOne.address, state.amount);
       await bridgeToken.connect(userOne).approve(state.bridgeBank.address, state.amount);
       await state.bridgeBank.connect(owner).addExistingBridgeToken(bridgeToken.address);
@@ -211,7 +212,7 @@ describe("Test Bridge Bank", function () {
       expect(registeredDenomInBridgeToken).to.be.equal(state.constants.denom.rowan);
 
       // transfer ownership of state.token_noDenom to the BridgeBank
-      await state.token_noDenom.transferOwnership(state.bridgeBank.address);
+      await state.token_noDenom.connect(operator).grantRole(state.constants.roles.admin, state.bridgeBank.address);
 
       // expect the noDenom token to NOT have a defined denom on BridgeBank
       let registeredDenom2 = await state.bridgeBank.contractDenom(state.token_noDenom.address);
@@ -255,7 +256,7 @@ describe("Test Bridge Bank", function () {
       expect(registeredDenomInBridgeToken).to.be.equal(state.constants.denom.rowan);
 
       // transfer ownership of state.token_noDenom to the BridgeBank
-      await state.token_noDenom.transferOwnership(state.bridgeBank.address);
+      await state.token_noDenom.connect(operator).grantRole(state.constants.roles.admin, state.bridgeBank.address);
 
       // expect the noDenom token to NOT have a defined denom on BridgeBank
       let registeredDenom2 = await state.bridgeBank.contractDenom(state.token_noDenom.address);

@@ -370,7 +370,7 @@ describe("Test Bridge Bank", function () {
         [state.token1.address, state.token2.address, state.token3.address, state.constants.zeroAddress],
         [state.amount, state.amount, state.amount, state.amount],
         [true, true, true, true]
-      )).to.be.revertedWith('function call to a non-contract account');
+      )).to.be.reverted;
     });
   });
 
