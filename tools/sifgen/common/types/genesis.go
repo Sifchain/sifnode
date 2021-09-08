@@ -245,18 +245,23 @@ type Gov struct {
 	TallyParams        GovTallyParams   `json:"tally_params"`
 }
 
-type Mint struct {
-	Minter interface{} `json:"minter"`
-	Params MintParams  `json:"params"`
+type Minter struct {
+	Inflation        string `json:"inflation"`
+	AnnualProvisions string `json:"annual_provisions"`
 }
 
 type MintParams struct {
-	MintDenom           string      `json:"mint_denom"`
-	InflationRateChange interface{} `json:"inflation_rate_change"`
-	InflationMax        interface{} `json:"inflation_max"`
-	InflationMin        interface{} `json:"inflation_min"`
-	GoalBonded          interface{} `json:"goal_bonded"`
-	BlocksPerYear       interface{} `json:"blocks_per_year"`
+	MintDenom           string `json:"mint_denom"`
+	InflationRateChange string `json:"inflation_rate_change"`
+	InflationMax        string `json:"inflation_max"`
+	InflationMin        string `json:"inflation_min"`
+	GoalBonded          string `json:"goal_bonded"`
+	BlocksPerYear       string `json:"blocks_per_year"`
+}
+
+type Mint struct {
+	Minter Minter     `json:"minter"`
+	Params MintParams `json:"params"`
 }
 
 type ClientGenesisParams struct {
