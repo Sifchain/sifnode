@@ -81,7 +81,4 @@ const config: HardhatUserConfig = {
       }    
 }
 
-// verify command: 
-// https://prod.liveshare.vsengsaas.visualstudio.com/join?84826512BD698D80121925FFF8F6A0D17A2A
-
 export default config
