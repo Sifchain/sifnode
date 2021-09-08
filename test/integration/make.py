@@ -8,7 +8,6 @@ import sys
 import time
 import urllib.request
 import yaml  # pip install pyyaml
-from dataclasses import dataclass
 
 
 log = logging.getLogger(__name__)
@@ -43,7 +42,8 @@ def http_get(url):
     with urllib.request.urlopen(url) as r:
         return r.read()
 
-def mkcallcmd(args, env=None, cwd=None, stdin=None):
+# Not used yet
+def mkcmd(args, env=None, cwd=None, stdin=None):
     result = {"args": args}
     if env is not None:
         result["env"] = env
@@ -53,10 +53,45 @@ def mkcallcmd(args, env=None, cwd=None, stdin=None):
         result["stdin"] = stdin
     return result
 
-def popen(args, env=None, cwd=None):
+# stdin will always be redirected to the returned process' stdin.
+# If pipe, the stdout and stderr will be redirected and available as stdout and stderr of the returned object.
+# If not pipe, the stdout and stderr will not be redirected and will inherit sys.stdout and sys.stderr.
+def _popen(args, cwd=None, env=None, binary=False, pipe=True):
+    logging.debug(f"execst(): args={repr(args)}, cwd={repr(cwd)}")
     if env:
         env = dict_merge(os.environ, env)
-    return subprocess.Popen(args, env=env, cwd=cwd)
+    p = subprocess.PIPE if pipe else None
+    return subprocess.Popen(args, cwd=cwd, env=env, stdin=subprocess.PIPE, stdout=p, stderr=p, text=not binary)
+
+def popen(args, cwd=None, env=None):
+    #     if env:
+    #         env = dict_merge(os.environ, env)
+    #     return subprocess.Popen(args, env=env, cwd=cwd)
+    return _popen(args, cwd=cwd, env=env, pipe=False)
+
+# popen_obj must be open in binary mode
+def log_to_file(popen_obj, path):
+    def copy_buf(in_buf, out_buf):
+        while True:
+            q = in_buf.read(4096)
+            if not len(q):
+                break
+            out_buf.write(q)  # No locking on output file (GIL assumed)
+
+    def run():
+        with open(path, "wb") as f:
+            t_stdout = Thread(target=copy_buf, args=(popen_obj.stdout, f))
+            t_stderr = Thread(target=copy_buf, args=(popen_obj.stderr, f))
+            t_stdout.start()
+            t_stderr.start()
+            t_stdout.join()
+            t_stderr.join()
+
+    from threading import Thread
+
+    master_thread = Thread(target=run)
+    master_thread.start()
+    return master_thread
 
 def dict_merge(*dicts):
     result = {}
@@ -73,18 +108,18 @@ NULL_ADDRESS = "0x0000000000000000000000000000000000000000"
 
 class Command:
     def execst(self, args, cwd=None, env=None, stdin=None, binary=False, pipe=True, check_exit=True):
-        logging.debug(f"execst(): args={repr(args)}, cwd={repr(cwd)}")
+        proc = _popen(args, env=env, cwd=cwd, binary=binary, pipe=pipe)
         if stdin is not None:
             if type(stdin) == list:
                 stdin = "".join([line + "\n" for line in stdin])
-        p = subprocess.PIPE if pipe else None
-        if env:
-            env = dict_merge(os.environ, env)
-        popen = subprocess.Popen(args, cwd=cwd, env=env, stdin=subprocess.PIPE, stdout=p, stderr=p, text=not binary)
-        stdout_data, stderr_data = popen.communicate(input=stdin)
-        if check_exit and (popen.returncode != 0):
-            raise Exception("Command '{}' exited with returncode {}: {}".format(" ".join(args), popen.returncode, repr(stderr_data)))
-        return popen.returncode, stdout_data, stderr_data
+        stdout_data, stderr_data = proc.communicate(input=stdin)
+        if check_exit and (proc.returncode != 0):
+            raise Exception("Command '{}' exited with returncode {}: {}".format(" ".join(args), proc.returncode, repr(stderr_data)))
+        return proc.returncode, stdout_data, stderr_data
+
+    # Default implementation of popen for environemnts to start long-lived processes
+    def popen(self, args, cwd=None, env=None):
+        return popen(args, cwd=cwd, env=env)
 
     def rm(self, path):
         if os.path.exists(path):
@@ -164,7 +199,7 @@ class Ganache(Command):
             (["--defaultBalanceEther", str(default_balance_ether)] if default_balance_ether is not None else []) + \
             (["--blockTime", str(block_time)] if block_time is not None else []) + \
             (["--account_keys_path", account_keys_path] if account_keys_path is not None else [])
-        return popen(args, **(popen_args if popen_args is not None else dict()))
+        return self.popen(args, **(popen_args if popen_args is not None else dict()))
 
 
 class Sifnoded(Command):
@@ -216,6 +251,9 @@ class Sifnoded(Command):
         # {"name": "<moniker>", "type": "local", "address": "sif1...", "pubkey": "sifpub1...", "mnemonic": "", "threshold": 0, "pubkeys": []}
         return result
 
+    def sifnoded_keys_delete(self, name):
+        self.execst(["sifnoded", "keys", "delete", name, "--keyring-backend", "test"], stdin=["y"], check_exit=False)
+
     def sifnoded_add_genesis_account(self, address, tokens, sifnoded_home=None):
         tokens_str = ",".join([sif_format_amount(amount, denom) for amount, denom in tokens])
         self.sifnoded_exec(["add-genesis-account", address, tokens_str], sifnoded_home=sifnoded_home)
@@ -238,7 +276,7 @@ class Sifnoded(Command):
             (["--minimum-gas-prices", sif_format_amount(*minimum_gas_prices)] if minimum_gas_prices is not None else []) + \
             (["--rpc.laddr", tcp_url] if tcp_url else []) + \
             (["--home", sifnoded_home] if sifnoded_home else [])
-        return popen(args)
+        return self.popen(args)
 
     def sifnoded_exec(self, args, sifnoded_home=None, keyring_backend=None, stdin=None, cwd=None):
         args = ["sifnoded"] + args + \
@@ -284,7 +322,7 @@ class Integrator(Ganache, Sifnoded, Command):
             (["--from", sign_with] if sign_with is not None else []) + \
             (["--symbol-translator-file", symbol_translator_file] if symbol_translator_file else []) + \
             (["--relayerdb-path", relayerdb_path] if relayerdb_path else [])
-        return popen(args, env=env, cwd=cwd)
+        return self.popen(args, env=env, cwd=cwd)
 
     def sif_wait_up(self, host, port):
         while True:
@@ -415,6 +453,8 @@ class Integrator(Ganache, Sifnoded, Command):
         # now we have to add the validator key to the test keyring so the tests can send rowan from validator1
         self.sifnoded_keys_add(validator_moniker, validator_mnemonic)
         valoper = self.sifnoded_keys_show(validator_moniker, bech="val", keyring_backend="test", home=sifnoded_home)[0]["address"]
+        assert valoper == self.sifnoded_get_val_address(validator_moniker)  # This does not use "home"; if it the assertion holds it could be grouped with sifchain_init_peggy
+
         self.execst(["sifnoded", "add-genesis-validators", valoper, "--home", sifnoded_home])
 
         try:
@@ -442,7 +482,6 @@ class Integrator(Ganache, Sifnoded, Command):
     def sifchain_init_peggy(self, validator_moniker, validator_mnemonic, sifnoded_home, denom_whitelist_file):
         # Add validator key to test keyring
         _tmp0 = self.sifnoded_keys_add_2(validator_moniker, validator_mnemonic)
-
         valoper = self.sifnoded_get_val_address(validator_moniker)
 
         # (0, '', '2021/09/07 05:55:33 AddGenesisValidatorCmd, adding addr: sifvaloper1f5vj6j2mnkaw0yec3ut9at4rkl2u23k2fxtrsv to whitelist: []\n')
@@ -466,7 +505,21 @@ class Integrator(Ganache, Sifnoded, Command):
         self.sifnoded_exec(["set-genesis-whitelister-admin", adminuser_addr], sifnoded_home=sifnoded_home)
         self.sifnoded_exec(["set-gen-denom-whitelist", denom_whitelist_file], sifnoded_home=sifnoded_home)
 
-class UIStackPlaybook:
+    def sifgen_create_network(self, chain_id, validator_count, networks_dir, network_definition_file, seed_ip_address, mint_amount=None):
+        # Old call (no longer works either):
+        # sifgen network create localnet 1 /mnt/shared/work/projects/sif/sifnode/local-tmp/my/deploy/rake/../networks \
+        #     192.168.1.2 /mnt/shared/work/projects/sif/sifnode/local-tmp/my/deploy/rake/../networks/network-definition.yml \
+        #     --keyring-backend file
+        # self.cmd.execst(["sifgen", "network", "create", "localnet", str(validator_count), networks_dir, seed_ip_address,
+        #     os.path.join(networks_dir, "network-definition.yml"), "--keyring-backend", "file"])
+        # TODO Most likely, this should be "--keyring-backend file"
+        args = ["sifgen", "network", "create", chain_id, str(validator_count), networks_dir, seed_ip_address,
+            network_definition_file, "--keyring-backend", "test"] + \
+            (["--mint-amount", ",".join([sif_format_amount(*x) for x in mint_amount])] if mint_amount else [])
+        self.execst(args)
+
+
+class UIStackEnvironment:
     def __init__(self, cmd):
         self.cmd = cmd
         self.chain_id = "sifchain-local"
@@ -552,7 +605,7 @@ class UIStackPlaybook:
         self.cmd.execst(["sifnoded", "validate-genesis"])
 
         log.info("Starting test chain...")
-        sifnoded_proc = self.cmd.sifnoded_start(minimum_gas_prices=[0.5, "rowan"])
+        sifnoded_proc = self.cmd.sifnoded_start(minimum_gas_prices=[0.5, "rowan"])  # TODO sifnoded_home=???
 
         # sifnoded must be up before continuing
         self.cmd.sif_wait_up("localhost", 1317)
@@ -701,15 +754,7 @@ class UIStackPlaybook:
             self.cmd.execst(["docker", "push", stable_tag])
 
 
-@dataclass
-class NetworkDefinition:
-    validator_moniker = None
-    validator1_address = None
-    validator1_password = None
-    validator_mnemonic = None
-
-
-class IntegrationTestsPlaybook:
+class IntegrationTestsEnvironment:
     def __init__(self, cmd):
         self.cmd = cmd
         # Fixed, set in start-integration-env.sh
@@ -745,19 +790,6 @@ class IntegrationTestsPlaybook:
     def make_go_binaries(self):
         # make go binaries (TODO Makefile needs to be trimmed down, especially "find")
         self.cmd.execst(["make"], cwd=self.test_integration_dir, env={"BASEDIR": project_dir()})
-
-    def sifgen_create_network(self, chain_id, validator_count, networks_dir, network_definition_file, seed_ip_address, mint_amount=None):
-        # Old call (no longer works either):
-        # sifgen network create localnet 1 /mnt/shared/work/projects/sif/sifnode/local-tmp/my/deploy/rake/../networks \
-        #     192.168.1.2 /mnt/shared/work/projects/sif/sifnode/local-tmp/my/deploy/rake/../networks/network-definition.yml \
-        #     --keyring-backend file
-        # self.cmd.execst(["sifgen", "network", "create", "localnet", str(validator_count), networks_dir, seed_ip_address,
-        #     os.path.join(networks_dir, "network-definition.yml"), "--keyring-backend", "file"])
-        # TODO Most likely, this should be "--keyring-backend file"
-        args = ["sifgen", "network", "create", chain_id, str(validator_count), networks_dir, seed_ip_address,
-            network_definition_file, "--keyring-backend", "test"] + \
-            (["--mint-amount", ",".join([sif_format_amount(*x) for x in mint_amount])] if mint_amount else [])
-        self.cmd.execst(args)
 
     def run(self):
         self.cmd.mkdir(self.data_dir)
@@ -840,7 +872,7 @@ class IntegrationTestsPlaybook:
         seed_ip_address = "192.168.1.2"
         mint_amount = [[999999 * 10**21, "rowan"], [137 * 10**16, "ibc/FEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACE"]]
 
-        self.sifgen_create_network(chain_id, validator_count, networks_dir, network_definition_file, seed_ip_address, mint_amount=mint_amount)
+        self.cmd.sifgen_create_network(chain_id, validator_count, networks_dir, network_definition_file, seed_ip_address, mint_amount=mint_amount)
 
         netdef, netdef_json = self.process_netdef(network_definition_file)
 
@@ -856,15 +888,13 @@ class IntegrationTestsPlaybook:
         adminuser_addr = self.cmd.sifchain_init_integration(validator_moniker, validator_mnemonic, sifnoded_home, denom_whitelist_file, validator1_password)
 
         # Start sifnoded
-        # sifnoded_proc = popen(["sifnoded", "start", "--minimum-gas-prices", sif_format_amount(0.5, "rowan"),
-        #     "--rpc.laddr", self.tcp_url, "--home", sifnoded_home])
-        sifnoded_proc = self.cmd.sifnoded_start(tcp_url=self.tcp_url, minimum_gas_prices=[0.5, "rowan"], home=sifnoded_home)
+        sifnoded_proc = self.cmd.sifnoded_start(tcp_url=self.tcp_url, minimum_gas_prices=[0.5, "rowan"], sifnoded_home=sifnoded_home)
 
         # TODO: should we wait for sifnoded to come up before continuing? If so, how do we do it?
 
         # TODO Process exits immediately with returncode 1
         # TODO Why does it not stop start-integration-env.sh?
-        # rest_server_proc = popen(["sifnoded", "rest-server", "--laddr", "tcp://0.0.0.0:1317"])  # TODO cwd
+        # rest_server_proc = self.cmd.popen(["sifnoded", "rest-server", "--laddr", "tcp://0.0.0.0:1317"])  # TODO cwd
 
         # test/integration/sifchain_start_ebrelayer.sh -> test/integration/sifchain_run_ebrelayer.sh
         # This script is also called from tests
@@ -967,7 +997,7 @@ class IntegrationTestsPlaybook:
         # This is not neccessary during start-integration-env.sh (as the key does not exist yet), but is neccessary
         # during tests that restart ebrelayer
         # res = self.cmd.execst(["sifnoded", "keys", "delete", moniker, "--keyring-backend", "test"], stdin=["y"])
-        self.cmd.execst(["sifnoded", "keys", "delete", validator_moniker, "--keyring-backend", "test"], stdin=["y"], check_exit=False)
+        self.cmd.sifnoded_keys_delete(validator_moniker)
         self.cmd.sifnoded_keys_add(validator_moniker, validator_mnemonic)
 
     def process_netdef(self, network_definition_file):
@@ -1053,9 +1083,8 @@ class IntegrationTestsPlaybook:
         validator_moniker = self.state_vars["MONIKER"]
         networks_dir = project_dir("deploy/networks")
         chaindir = os.path.join(networks_dir, f"validators/{self.chainnet}/{validator_moniker}")
-        sifchaind_home = os.path.join(chaindir, ".sifnoded")
-        sifnoded_proc = popen(["sifnoded", "start", "--minimum-gas-prices", sif_format_amount(0.5, "rowan"),
-            "--rpc.laddr", self.tcp_url, "--home", sifchaind_home])
+        sifnoded_home = os.path.join(chaindir, ".sifnoded")
+        sifnoded_proc = self.cmd.sifnoded_start(tcp_url=self.tcp_url, minimum_gas_prices=[0.5, "rowan"], sifnoded_home=sifnoded_home)
 
         bridge_token_sc_addr, bridge_registry_sc_addr, bridge_bank_sc_addr = \
             self.cmd.get_bridge_smart_contract_addresses(self.network_id)
@@ -1077,7 +1106,7 @@ class IntegrationTestsPlaybook:
         return ganache_proc, sifnoded_proc, ebrelayer_proc
 
 
-class PeggyPlaybook(IntegrationTestsPlaybook):
+class PeggyEnvironment(IntegrationTestsEnvironment):
     def __init__(self, cmd):
         super().__init__(cmd)
         self.smart_contracts_dir = project_dir("smart-contracts")
@@ -1086,16 +1115,11 @@ class PeggyPlaybook(IntegrationTestsPlaybook):
         self.sifnoded_cmd = os.path.join(gobin_dir, "sifnoded")
         self.ebrelater_cmd = os.path.join(gobin_dir, "ebrelayer")
 
-    @dataclass
-    class EthereumAddressAndKey:
-        addr: str
-        private_key: str
-
     # TODO Merge with super.make_go_binaries
     # Main Makefile requires GOBIN to be set to an absolute path. Compiled executables ebrelayer, sifgen and
     # sifnoded will be written there. The directory will be created if it doesn't exist yet.
     #
-    # c.f. IntegrationPlaybook:
+    # c.f. IntegrationEnvironment:
     # cd test/integration; BASEDIR=... make
     # (checks all *.go files and, runs make in $BASEDIR, touches sifnoded, removes ~/.sifnoded/localnet
     def _make_go_binaries(self):
@@ -1107,7 +1131,7 @@ class PeggyPlaybook(IntegrationTestsPlaybook):
         # TODO We need to manaege smart-contracts/hardhat.config.ts + it also reads smart-contracts/.env via dotenv
         # TODO Handle failures, e.g. if the process is already running we get exit value 1 and
         # "Error: listen EADDRINUSE: address already in use 127.0.0.1:8545"
-        proc = popen([os.path.join("node_modules", ".bin", "hardhat"), "node", "--hostname", hostname, "--port",
+        proc = self.cmd,popen([os.path.join("node_modules", ".bin", "hardhat"), "node", "--hostname", hostname, "--port",
             str(port)], cwd=self.smart_contracts_dir)
         return proc
 
@@ -1167,12 +1191,6 @@ class PeggyPlaybook(IntegrationTestsPlaybook):
         m = json.loads(stdout(res).splitlines()[1])
         return m["bridgeBank"], m["bridgeRegistry"], m["rowanContract"]
 
-    # TODO Merge with super
-    def sifgen_network_create_peggy(self, chain_id, validator_count, network_dir, seed_ip_address, network_config_file):
-        self.sifgen_create_network(chain_id, validator_count, network_dir, network_config_file, seed_ip_address)
-        # res = self.cmd.execst([self.sifgen_cmd, "network", "create", str(chain_id), str(n_validators), network_dir,
-        #     seed_ip_address, network_config_file, "--keyring-backend", "test"])
-
     def run_ebrelayer_peggy(self, tcp_url, websocket_address, bridge_registry_sc_addr, validator_moniker,
         validator_mnemonic, chain_id, symbol_translator_file, relayerdb_path, ethereum_address, ethereum_private_key
     ):
@@ -1194,8 +1212,6 @@ class PeggyPlaybook(IntegrationTestsPlaybook):
         hardhat_validator_count = 1
         hardhat_network_id = 1
         hardhat_chain_id = 1
-        # default_hardhat_accounts_dict = dict((("address", x[0]), ("privateKey", x[1])) for x in self.default_hardhat_accounts())
-        # print(default_hardhat_accounts_dict)
         hardhat_accounts = self.signer_array_to_ethereum_accounts(self.default_hardhat_accounts(), hardhat_validator_count)
 
         bridgebank_sc_addr, bridge_registry_sc_addr, rowan_sc_addr = self.deploy_smart_contracts_hardhat()
@@ -1207,7 +1223,7 @@ class PeggyPlaybook(IntegrationTestsPlaybook):
         network_config_file = "/tmp/sifnodedConfig.yml"
         validator_count = 1
         seed_ip_address = "10.10.1.1"
-        self.sifgen_network_create_peggy(chain_id, validator_count, sifnoded_network_dir, seed_ip_address, network_config_file)
+        self.cmd.sifgen_create_network(chain_id, validator_count, sifnoded_network_dir, network_config_file, seed_ip_address)
 
         netdev_yml = exactly_one(yaml_load(self.cmd.read_text_file(network_config_file)))
         validator_moniker = netdev_yml["moniker"]
@@ -1221,6 +1237,8 @@ class PeggyPlaybook(IntegrationTestsPlaybook):
 
         tcp_url = "tcp://0.0.0.0:26657"
         sifnoded_proc = self.cmd.sifnoded_start(minimum_gas_prices=[0.5, "rowan"], tcp_url=tcp_url, sifnoded_home=sifnoded_home)
+
+        # TODO Wait for account (somewhere)
 
         relayerdb_path = self.cmd.mktempdir()
         ethereum_address, ethereum_private_key = hardhat_accounts["validators"][0]
@@ -1238,6 +1256,15 @@ class PeggyPlaybook(IntegrationTestsPlaybook):
         )
 
         return hardhat_proc, sifnoded_proc, ebrelayer_proc
+
+def run_with_logging_until_keypress(procs):
+    o = []
+    for i, p in enumerate(procs):
+        path = f"/tmp/proc-{i}.log"
+        pass
+    procs_and_files = [[p, f"/tmp/proc-{i}.log"] for i, p in enumerate(procs)]
+
+    pass
 
 def cleanup_and_reset_state():
     # git checkout 4cb7322b6b282babd93a0d0aedda837c9134e84e deploy
@@ -1274,24 +1301,35 @@ def main(argv):
     logging.basicConfig(stream=sys.stdout, level=logging.DEBUG, format="%(message)s")
     what = argv[0] if argv else None
     cmd = Integrator()
-    if what == "run_ui_playbook":
-        ui_playbook = UIStackPlaybook(cmd)
-        ui_playbook.stack_save_snapshot()
-        ui_playbook.stack_push()
+    if what == "run-ui-env":
+        e = UIStackEnvironment(cmd)
+        e.stack_save_snapshot()
+        e.stack_push()
+    elif what == "run-integration-env":
+        e = IntegrationTestsEnvironment(cmd)
+        processes = e.run()
+        input("Press ENTER to exit...")
+        killall(processes)
     elif what == "create_snapshot":
         snapshot_name = argv[1]
         cleanup_and_reset_state()
-        it_playbook = IntegrationTestsPlaybook(cmd)
-        processes = it_playbook.run()
+        e = IntegrationTestsEnvironment(cmd)
+        processes = e.run()
         # Give processes some time to settle, for example relayerdb must init and create its "relayerdb"
         time.sleep(45)
         killall(processes)
-        # processes1 = it_playbook.restart_processes()
-        it_playbook.create_snapshot(snapshot_name)
+        # processes1 = e.restart_processes()
+        e.create_snapshot(snapshot_name)
     elif what == "restore_snapshot":
         snapshot_name = argv[1]
-        it_playbook = IntegrationTestsPlaybook(cmd)
-        processes = it_playbook.restore_snapshot(snapshot_name)
+        e = IntegrationTestsEnvironment(cmd)
+        processes = e.restore_snapshot(snapshot_name)
+        input("Press ENTER to exit...")
+        killall(processes)
+    elif what == "run-peggy-env":
+        # hardhat, sifnoded, ebrelayer
+        e = PeggyEnvironment(cmd)
+        processes = e.run()
         input("Press ENTER to exit...")
         killall(processes)
     elif what == "fullclean":
@@ -1307,9 +1345,12 @@ def main(argv):
         cmd.rmdir(project_dir("smart-contracts/node_modules"))
         cmd.execst(["npm", "install", "-g", "ganache-cli", "dotenv", "yarn"], cwd=project_dir("smart-contracts"))
         cmd.install_smart_contracts_dependencies()
-    elif what == "peggy-devenv":
-        playbook = PeggyPlaybook(cmd)
-        processes = playbook.run()
+    elif what == "test-logging":
+        ls_cmd = mkcmd(["ls", "-al", "."], cwd="/tmp")
+        res = stdout_lines(cmd.execst(**ls_cmd))
+        print(ls_cmd)
+
+        # log_to_file(proc, "/tmp/test.txt")
     else:
         raise Exception("Missing/unknown command")
 
