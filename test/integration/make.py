@@ -62,30 +62,6 @@ def popen(args, cwd=None, env=None, text=None, stdin=None, stdout=None, stderr=N
     logging.debug(f"popen(): args={repr(args)}, cwd={repr(cwd)}")
     return subprocess.Popen(args, cwd=cwd, env=env, stdin=stdin, stdout=stdout, stderr=stderr, text=text)
 
-# popen_obj must be open in binary mode
-def log_to_file(popen_obj, path):
-    def copy_buf(in_buf, out_buf):
-        while True:
-            q = in_buf.read(4096)
-            if not len(q):
-                break
-            out_buf.write(q)  # No locking on output file (GIL assumed)
-
-    def run():
-        with open(path, "wb") as f:
-            t_stdout = Thread(target=copy_buf, args=(popen_obj.stdout, f))
-            t_stderr = Thread(target=copy_buf, args=(popen_obj.stderr, f))
-            t_stdout.start()
-            t_stderr.start()
-            t_stdout.join()
-            t_stderr.join()
-
-    from threading import Thread
-
-    master_thread = Thread(target=run)
-    master_thread.start()
-    return master_thread
-
 def dict_merge(*dicts):
     result = {}
     for d in dicts:
@@ -1282,8 +1258,6 @@ def force_kill_processes(cmd):
     cmd.execst(["pkill", "sifnoded"], check_exit=False)
 
 def cleanup_and_reset_state():
-    # git checkout 4cb7322b6b282babd93a0d0aedda837c9134e84e deploy
-    # pkill node; pkill ebrelayer; pkill sifnoded; rm -rvf $HOME/.sifnoded; rm -rvf ./vagrant/data; mkdir vagrant/data
     cmd = Command()
     force_kill_processes(cmd)
 
@@ -1355,8 +1329,8 @@ def main(argv):
         scripts = [
             "execute_integration_tests_against_test_chain_peg.sh",
             "execute_integration_tests_against_test_chain_clp.sh",
-            "execute_integration_tests_with_snapshots.sh"
             "execute_integration_tests_against_any_chain.sh",
+            "execute_integration_tests_with_snapshots.sh",
         ]
         for script in scripts:
             force_kill_processes(cmd)
@@ -1382,8 +1356,6 @@ def main(argv):
         ls_cmd = mkcmd(["ls", "-al", "."], cwd="/tmp")
         res = stdout_lines(cmd.execst(**ls_cmd))
         print(ls_cmd)
-
-        # log_to_file(proc, "/tmp/test.txt")
     else:
         raise Exception("Missing/unknown command")
 
