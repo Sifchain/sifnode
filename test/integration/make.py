@@ -308,11 +308,11 @@ class Integrator(Ganache, Sifnoded, Command):
     ):
         env = {}
         if ethereum_private_key:
-            assert ethereum_private_key.startswith("0x")
-            env["ETHEREUM_PRIVATE_KEY"] = ethereum_private_key[2:]
+            assert not ethereum_private_key.startswith("0x")
+            env["ETHEREUM_PRIVATE_KEY"] = ethereum_private_key
         if ethereum_address:
             assert ethereum_address.startswith("0x")
-            env["ETHEREUM_ADDRESS"] = ethereum_address[2:]
+            env["ETHEREUM_ADDRESS"] = ethereum_address
         args = ["ebrelayer", "init", tendermind_node, web3_provider, bridge_registry_contract_address,
             validator_moniker, " ".join(validator_mnemonic), "--chain-id={}".format(chain_id)] + \
             (["--gas", str(gas)] if gas is not None else []) + \
@@ -1111,9 +1111,6 @@ class PeggyEnvironment(IntegrationTestsEnvironment):
         super().__init__(cmd)
         self.smart_contracts_dir = project_dir("smart-contracts")
         gobin_dir = os.environ["GOBIN"]
-        self.sifgen_cmd = os.path.join(gobin_dir, "sifgen")
-        self.sifnoded_cmd = os.path.join(gobin_dir, "sifnoded")
-        self.ebrelater_cmd = os.path.join(gobin_dir, "ebrelayer")
 
     # TODO Merge with super.make_go_binaries
     # Main Makefile requires GOBIN to be set to an absolute path. Compiled executables ebrelayer, sifgen and
@@ -1152,7 +1149,9 @@ class PeggyEnvironment(IntegrationTestsEnvironment):
         # TODO hardhat prints 20 accounts upon startup
         # Keep synced to smart-contracts/src/devenv/hardhatNode.ts:defaultHardhatAccounts
         # Format: [address, private_key]
-        return [[
+        # Note: for compatibility with ganache, private keys should be stripped of "0x" prefix
+        # (when you pass a private key to ebrelayer via ETHEREUM_PRIVATE_KEY, the key is treated as invalid)
+        return [[address, private_key[2:]] for address, private_key in [[
             "0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266",
             "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80",
         ], [
@@ -1182,7 +1181,7 @@ class PeggyEnvironment(IntegrationTestsEnvironment):
         ], [
             "0xa0ee7a142d267c1f36714e4a8f75612f20a79720",
             "0x2a871d0798f97d79848a013d4936a73bf4cc922c825d33c1cf7073dff6d409c6",
-        ]]
+        ]]]
 
     def deploy_smart_contracts_hardhat(self):
         res = self.cmd.execst(["npx", "hardhat", "run", "scripts/deploy_contracts.ts", "--network", "localhost"],
@@ -1332,6 +1331,8 @@ def main(argv):
         processes = e.run()
         input("Press ENTER to exit...")
         killall(processes)
+    elif what == "run-integration-tests":
+        pass
     elif what == "fullclean":
         cmd.execst(["chmod", "-R", "+w", cmd.get_user_home("go")])
         cmd.rmdir(cmd.get_user_home("go"))
