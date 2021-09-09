@@ -6,11 +6,11 @@ import {
     CosmosBridgeMainnetUpgradeAdmin,
     DeploymentChainId,
     DeploymentDirectory,
-    DeploymentName
+    DeploymentName,
+    HardhatRuntimeEnvironmentToken
 } from "./tsyringe/injectionTokens";
-import {BridgeToken, BridgeToken__factory, ERC20} from "../build";
+import {BridgeToken, BridgeToken__factory} from "../build";
 import {SignerWithAddress} from "@nomiclabs/hardhat-ethers/signers";
-import {NotNativeCurrencyAddress} from "./ethereumAddress";
 import {DeployedBridgeBank, DeployedBridgeToken} from "./contractSupport";
 
 export const eRowanMainnetAddress = "0x07bac35846e5ed502aa91adf6a9e7aa210f2dcbe"
@@ -74,24 +74,30 @@ export async function setNewEthBalance(
     ]);
 }
 
-export async function setupSifchainMainnetDeployment(c: DependencyContainer, hre: HardhatRuntimeEnvironment, deploymentName: string) {
+export async function setupDeployment(c: DependencyContainer) {
+    const hre = c.resolve(HardhatRuntimeEnvironmentToken) as HardhatRuntimeEnvironment
+    let deploymentName = process.env["DEPLOYMENT_NAME"];
+    switch(deploymentName) {
+        case "sifchain":
+        case "sifchain-1":
+            setupSifchainMainnetDeployment(c, hre, deploymentName)
+            break
+        case undefined:
+            break
+        default:
+            setupRopstenDeployment(c, hre, deploymentName)
+            break
+    }
+}
+
+export async function setupSifchainMainnetDeployment(c: DependencyContainer, hre: HardhatRuntimeEnvironment, deploymentName: "sifchain" | "sifchain-1") {
     c.register(DeploymentDirectory, {useValue: "./deployments"})
     c.register(DeploymentName, {useValue: deploymentName})
     // We'd like to be able to use chainId from the provider,
     // but it doesn't actually work.  It returns 1 even when
     // you're looking at forked ropsten.
     // const chainId = (await hre.ethers.provider.getNetwork()).chainId
-    let chainId = 0;
-    switch (deploymentName) {
-        case "sifchain":
-        case "sifchain-1":
-            chainId = 1
-            break
-        default:
-            chainId = 3
-            break
-    }
-    c.register(DeploymentChainId, {useValue: chainId})
+    c.register(DeploymentChainId, {useValue: 1})
     const bridgeTokenFactory = await hre.ethers.getContractFactory("BridgeToken") as BridgeToken__factory
 
     // BridgeToken for Rowan doesn't have a json file in deployments, so we need to build DeployedBridgeToken by hand
@@ -106,7 +112,7 @@ export async function setupSifchainMainnetDeployment(c: DependencyContainer, hre
     c.register(DeployedBridgeToken, {useValue: syntheticBridgeToken as DeployedBridgeToken})
 }
 
-export async function impersonateBridgeBankAccounts(c: DependencyContainer, hre: HardhatRuntimeEnvironment, deploymentName: string) {
+export async function impersonateBridgeBankAccounts(c: DependencyContainer, hre: HardhatRuntimeEnvironment) {
     const bridgeBank = await c.resolve(DeployedBridgeBank).contract
     const operator = await bridgeBank.operator()
     const owner = await bridgeBank.owner()
@@ -122,15 +128,4 @@ export async function setupRopstenDeployment(c: DependencyContainer, hre: Hardha
     c.register(DeploymentDirectory, {useValue: "./deployments"})
     c.register(DeploymentName, {useValue: deploymentName})
     c.register(DeploymentChainId, {useValue: 3})
-}
-
-export async function approveThenDo<T>(
-    token: ERC20,
-    agent: NotNativeCurrencyAddress,
-    amount: BigNumberish,
-    account: SignerWithAddress,
-    fn: () => Promise<T>
-) {
-    await token.connect(account).approve(agent.address, amount)
-    return fn()
 }

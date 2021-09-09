@@ -47,7 +47,7 @@ async function main() {
 
   const useForking = !!process.env["USE_FORKING"];
   if (useForking)
-    await impersonateBridgeBankAccounts(container, hardhat, deploymentName)
+    await impersonateBridgeBankAccounts(container, hardhat)
 
   const whitelistData = await readTokenData(process.env["WHITELIST_DATA"] ?? "/tmp/nothing")
 
