@@ -8,7 +8,7 @@ import {
     DeploymentName,
     HardhatRuntimeEnvironmentToken
 } from "./tsyringe/injectionTokens";
-import {BridgeBank, BridgeRegistry, BridgeToken, CosmosBridge} from "../build";
+import {BridgeBank, BridgeRegistry, BridgeToken, CosmosBridge, IbcToken} from "../build";
 import * as path from "path"
 
 export async function getContractFromTruffleArtifact<T extends BaseContract>(
@@ -75,6 +75,13 @@ export class DeployedBridgeRegistry extends DeployableContract<BridgeRegistry> {
 export class DeployedCosmosBridge extends DeployableContract<CosmosBridge> {
     contractName() {
         return "CosmosBridge"
+    }
+}
+
+@singleton()
+export class DeployedIbcToken extends DeployableContract<IbcToken> {
+    contractName() {
+        return "IbcToken"
     }
 }
 

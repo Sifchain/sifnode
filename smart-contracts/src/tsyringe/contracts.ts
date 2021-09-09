@@ -12,7 +12,7 @@ import {
     BridgeRegistry__factory,
     BridgeToken,
     BridgeToken__factory,
-    CosmosBridge__factory
+    CosmosBridge__factory, IbcToken__factory
 } from "../../build";
 
 @singleton()
@@ -21,12 +21,14 @@ export class SifchainContractFactories {
     cosmosBridge: Promise<CosmosBridge__factory>
     bridgeRegistry: Promise<BridgeRegistry__factory>
     bridgeToken: Promise<BridgeToken__factory>
+    ibcToken: Promise<IbcToken__factory>
 
     constructor(@inject(HardhatRuntimeEnvironmentToken) hre: HardhatRuntimeEnvironment) {
         this.bridgeBank = hre.ethers.getContractFactory("BridgeBank").then((x: ContractFactory) => x as BridgeBank__factory)
         this.cosmosBridge = hre.ethers.getContractFactory("CosmosBridge").then((x: ContractFactory) => x as CosmosBridge__factory)
         this.bridgeRegistry = hre.ethers.getContractFactory("BridgeRegistry").then((x: ContractFactory) => x as BridgeRegistry__factory)
         this.bridgeToken = hre.ethers.getContractFactory("BridgeToken").then((x: ContractFactory) => x as BridgeToken__factory)
+        this.ibcToken = hre.ethers.getContractFactory("IbcToken").then((x: ContractFactory) => x as IbcToken__factory)
     }
 }
 
@@ -168,7 +170,7 @@ export class RowanContract {
         private sifchainContractFactories: SifchainContractFactories,
     ) {
         this.contract = sifchainContractFactories.bridgeToken.then(async bridgeToken => {
-            return await (bridgeToken as BridgeToken__factory).deploy("erowan") as BridgeToken
+            return await (bridgeToken as BridgeToken__factory).deploy("erowan", "erowan", 18) as BridgeToken
         })
     }
 }
@@ -187,7 +189,6 @@ export class BridgeTokenSetup {
         const bridgebank = (await bridgeBankProxy.contract).connect(owner)
         await bridgebank.addExistingBridgeToken(erowan.address)
         await erowan.approve(bridgebank.address, "10000000000000000000")
-        await erowan.addMinter(owner.address)
         const accounts = await sifchainAccounts.accounts
         const muchRowan = BigNumber.from(100000000).mul(BigNumber.from(10).pow(18))
         await erowan.mint(accounts.operatorAccount.address, muchRowan)
