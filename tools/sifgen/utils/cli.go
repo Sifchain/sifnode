@@ -60,6 +60,8 @@ type CLI struct {
 }
 
 func NewCLI(chainID, keyringBackend string) CLI {
+	app.SetConfig(false)
+
 	return CLI{
 		chainID:        chainID,
 		configPath:     fmt.Sprintf("%s/config", app.DefaultNodeHome),

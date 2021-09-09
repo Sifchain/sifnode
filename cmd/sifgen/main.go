@@ -39,6 +39,7 @@ func main() {
 	_nodeCreateCmd.PersistentFlags().Bool("with-cosmovisor", false, "setup cosmovisor")
 	_nodeCreateCmd.PersistentFlags().Bool("enable-grpc", false, "enable gRPC")
 	_nodeCreateCmd.PersistentFlags().Bool("enable-api", false, "enable API")
+	_nodeCreateCmd.PersistentFlags().String("keyring-backend", "file", "Select keyring's backend (os|file|kwallet|pass|test|memory)")
 	_nodeCmd.AddCommand(_nodeCreateCmd, nodeResetStateCmd())
 
 	_keyCmd := keyCmd()
@@ -123,8 +124,9 @@ func nodeCreateCmd() *cobra.Command {
 			withCosmovisor, _ := cmd.Flags().GetBool("with-cosmovisor")
 			enableGrpc, _ := cmd.Flags().GetBool("enable-grpc")
 			enableAPI, _ := cmd.Flags().GetBool("enable-api")
+			keyringBackend, _ := cmd.Flags().GetString("keyring-backend")
 
-			node := sifgen.NewSifgen(&args[0]).NewNode()
+			node := sifgen.NewSifgen(&args[0]).NewNode(keyringBackend)
 			node.Moniker = args[1]
 			node.Mnemonic = args[2]
 
