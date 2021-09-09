@@ -12,7 +12,7 @@ const upgradeNameV095 = "0.9.5"
 
 func SetupHandlers(app *SifchainApp) {
 	// SetupHandlersForV095(app)
-	app.UpgradeKeeper.SetUpgradeHandler("0.9.6-rc.1", func(ctx sdk.Context, plan types.Plan) {})
+	app.UpgradeKeeper.SetUpgradeHandler("0.9.6-rc.2", func(ctx sdk.Context, plan types.Plan) {})
 }
 
 func SetupHandlersForV095(app *SifchainApp) {
