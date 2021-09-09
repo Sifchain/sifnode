@@ -2,17 +2,17 @@
   "entries": [
     {
       "is_whitelisted": true,
-      "decimals": "8",
-      "denom": "ibc/270EBAED0483782E28E931C112A134029FB557F7736403B3109FA8AC1A5E65F3",
-      "base_denom": "basecro",
-      "path": "transfer/channel-16",
-      "ibc_channel_id": "channel-16",
+      "decimals": "6",
+      "denom": "ibc/B181EA86AE95E6AB974D0692E52996C8836619E28E03E90947FE49D3BA1EBE90",
+      "base_denom": "uosmo",
+      "path": "transfer/channel-21",
+      "ibc_channel_id": "channel-21",
       "ibc_counterparty_channel_id": "channel-32",
-      "display_name": "CRO",
+      "display_name": "",
       "display_symbol": "",
       "network": "",
       "address": "",
-      "external_symbol": "basecro",
+      "external_symbol": "",
       "transfer_limit": "",
       "permissions": [
         "CLP",
@@ -21,7 +21,7 @@
       ],
       "unit_denom": "",
       "ibc_counterparty_denom": "",
-      "ibc_counterparty_chain_id": "crypto-org-chain-mainnet-1"
+      "ibc_counterparty_chain_id": "osmosis-1"
     }
   ]
 }
