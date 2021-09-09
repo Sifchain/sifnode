@@ -56,18 +56,11 @@ def mkcmd(args, env=None, cwd=None, stdin=None):
 # stdin will always be redirected to the returned process' stdin.
 # If pipe, the stdout and stderr will be redirected and available as stdout and stderr of the returned object.
 # If not pipe, the stdout and stderr will not be redirected and will inherit sys.stdout and sys.stderr.
-def _popen(args, cwd=None, env=None, binary=False, pipe=True):
-    logging.debug(f"execst(): args={repr(args)}, cwd={repr(cwd)}")
+def popen(args, cwd=None, env=None, text=None, stdin=None, stdout=None, stderr=None):
     if env:
         env = dict_merge(os.environ, env)
-    p = subprocess.PIPE if pipe else None
-    return subprocess.Popen(args, cwd=cwd, env=env, stdin=subprocess.PIPE, stdout=p, stderr=p, text=not binary)
-
-def popen(args, cwd=None, env=None):
-    #     if env:
-    #         env = dict_merge(os.environ, env)
-    #     return subprocess.Popen(args, env=env, cwd=cwd)
-    return _popen(args, cwd=cwd, env=env, pipe=False)
+    logging.debug(f"popen(): args={repr(args)}, cwd={repr(cwd)}")
+    return subprocess.Popen(args, cwd=cwd, env=env, stdin=stdin, stdout=stdout, stderr=stderr, text=text)
 
 # popen_obj must be open in binary mode
 def log_to_file(popen_obj, path):
@@ -108,18 +101,26 @@ NULL_ADDRESS = "0x0000000000000000000000000000000000000000"
 
 class Command:
     def execst(self, args, cwd=None, env=None, stdin=None, binary=False, pipe=True, check_exit=True):
-        proc = _popen(args, env=env, cwd=cwd, binary=binary, pipe=pipe)
+        fd_stdout = subprocess.PIPE if pipe else None
+        fd_stderr = subprocess.PIPE if pipe else None
+        fd_stdin = subprocess.DEVNULL
         if stdin is not None:
+            fd_stdin = subprocess.PIPE
             if type(stdin) == list:
                 stdin = "".join([line + "\n" for line in stdin])
+        proc = popen(args, env=env, cwd=cwd, stdin=fd_stdin, stdout=fd_stdout, stderr=fd_stderr, text=not binary)
         stdout_data, stderr_data = proc.communicate(input=stdin)
+        assert pipe == (stdout_data is not None)
+        assert pipe == (stderr_data is not None)
         if check_exit and (proc.returncode != 0):
             raise Exception("Command '{}' exited with returncode {}: {}".format(" ".join(args), proc.returncode, repr(stderr_data)))
         return proc.returncode, stdout_data, stderr_data
 
     # Default implementation of popen for environemnts to start long-lived processes
-    def popen(self, args, cwd=None, env=None):
-        return popen(args, cwd=cwd, env=env)
+    def popen(self, args, log_file=None, **kwargs):
+        stdout = log_file or None
+        stderr = log_file or None
+        return popen(args, stdout=stdout, stderr=stderr, **kwargs)
 
     def rm(self, path):
         if os.path.exists(path):
@@ -187,7 +188,8 @@ class Command:
 
 class Ganache(Command):
     def start_ganache_cli(self, mnemonic=None, db=None, port=None, host=None, network_id=None, gas_price=None,
-        gas_limit=None, default_balance_ether=None, block_time=None, account_keys_path=None, popen_args=None):
+        gas_limit=None, default_balance_ether=None, block_time=None, account_keys_path=None, log_file=None
+    ):
         args = ["ganache-cli"] + \
             (["--mnemonic", " ".join(mnemonic)] if mnemonic else []) + \
             (["--db", db] if db else []) + \
@@ -199,7 +201,7 @@ class Ganache(Command):
             (["--defaultBalanceEther", str(default_balance_ether)] if default_balance_ether is not None else []) + \
             (["--blockTime", str(block_time)] if block_time is not None else []) + \
             (["--account_keys_path", account_keys_path] if account_keys_path is not None else [])
-        return self.popen(args, **(popen_args if popen_args is not None else dict()))
+        return self.popen(args, log_file=log_file)
 
 
 class Sifnoded(Command):
@@ -271,12 +273,12 @@ class Sifnoded(Command):
         res = self.execst(args)
         return yaml_load(stdout(res))
 
-    def sifnoded_start(self, tcp_url=None, minimum_gas_prices=None, sifnoded_home=None):
+    def sifnoded_start(self, tcp_url=None, minimum_gas_prices=None, sifnoded_home=None, log_file=None):
         args = ["sifnoded", "start"] + \
             (["--minimum-gas-prices", sif_format_amount(*minimum_gas_prices)] if minimum_gas_prices is not None else []) + \
             (["--rpc.laddr", tcp_url] if tcp_url else []) + \
             (["--home", sifnoded_home] if sifnoded_home else [])
-        return self.popen(args)
+        return self.popen(args, log_file=log_file)
 
     def sifnoded_exec(self, args, sifnoded_home=None, keyring_backend=None, stdin=None, cwd=None):
         args = ["sifnoded"] + args + \
@@ -304,7 +306,7 @@ class Integrator(Ganache, Sifnoded, Command):
     def ebrelayer_init(self, tendermind_node, web3_provider, bridge_registry_contract_address,
         validator_moniker, validator_mnemonic, chain_id, ethereum_private_key=None, ethereum_address=None, gas=None,
         gas_prices=None, node=None, keyring_backend=None, sign_with=None, symbol_translator_file=None,
-        relayerdb_path=None, cwd=None
+        relayerdb_path=None, cwd=None, log_file=None
     ):
         env = {}
         if ethereum_private_key:
@@ -323,7 +325,7 @@ class Integrator(Ganache, Sifnoded, Command):
             (["--from", sign_with] if sign_with is not None else []) + \
             (["--symbol-translator-file", symbol_translator_file] if symbol_translator_file else []) + \
             (["--relayerdb-path", relayerdb_path] if relayerdb_path else [])
-        return self.popen(args, env=env, cwd=cwd)
+        return self.popen(args, env=env, cwd=cwd, log_file=log_file)
 
     def sif_wait_up(self, host, port):
         while True:
@@ -408,8 +410,8 @@ class Integrator(Ganache, Sifnoded, Command):
         self._check_env_vs_file(env, env_path)
 
         # TODO ui scripts use just "yarn; yarn migrate" alias "npx truffle migrate --reset",
-        self.execst(["npx", "truffle", "deploy", "--network", network_name, "--reset"], env=env,
-            cwd=self.smart_contracts_dir, pipe=False)  # TODO Why pipe=False?
+        self.npx(["truffle", "deploy", "--network", network_name, "--reset"], env=env,
+            cwd=self.smart_contracts_dir)
 
     def deploy_smart_contracts_for_ui_stack(self):
         self.copy_file(os.path.join(self.smart_contracts_dir, ".env.ui.example"), os.path.join(self.smart_contracts_dir, ".env"))
@@ -428,7 +430,8 @@ class Integrator(Ganache, Sifnoded, Command):
             for x in ["BridgeToken", "BridgeRegistry", "BridgeBank"]]
 
     def npx(self, args, env=None, cwd=None):
-        return self.execst(["npx"] + args, env=env, cwd=cwd)
+        # Typically we want any npx commands to inherit stdout and strerr
+        self.execst(["npx"] + args, env=env, cwd=cwd, pipe=False)
 
     def truffle_exec(self, script_name, *script_args, env=None):
         self._check_env_vs_file(env, os.path.join(self.smart_contracts_dir, ".env"))
@@ -792,12 +795,19 @@ class IntegrationTestsEnvironment:
         # make go binaries (TODO Makefile needs to be trimmed down, especially "find")
         self.cmd.execst(["make"], cwd=self.test_integration_dir, env={"BASEDIR": project_dir()})
 
+    def prepare(self):
+        self.make_go_binaries()
+        self.cmd.install_smart_contracts_dependencies()
+
     def run(self):
         self.cmd.mkdir(self.data_dir)
 
-        self.make_go_binaries()
+        self.prepare()
 
-        self.cmd.install_smart_contracts_dependencies()
+        log_dir = "/tmp"
+        ganache_log_file = open(os.path.join(log_dir, "ganache.log"), "w")
+        sifnoded_log_file = open(os.path.join(log_dir, "sifnoded.log"), "w")
+        ebrelayer_log_file = open(os.path.join(log_dir, "ebrelayer.log"), "w")
 
         if self.using_ganache_gui:
             ebrelayer_ethereum_addr = "0x8e2bE12daDbCcbf7c98DBb59f98f22DFF0eF3F2c"
@@ -820,7 +830,7 @@ class IntegrationTestsEnvironment:
             ganache_db_path = self.cmd.mktempdir()
             ganache_proc = self.cmd.start_ganache_cli(block_time=block_time, host="0.0.0.0",
                 mnemonic=self.ganache_mnemonic, network_id=self.network_id, port=7545, db=ganache_db_path,
-                account_keys_path=account_keys_path)
+                account_keys_path=account_keys_path, log_file=ganache_log_file)
 
             self.cmd.wait_for_file(account_keys_path)  # Created by ganache-cli
             time.sleep(2)
@@ -889,7 +899,7 @@ class IntegrationTestsEnvironment:
         adminuser_addr = self.cmd.sifchain_init_integration(validator_moniker, validator_mnemonic, sifnoded_home, denom_whitelist_file, validator1_password)
 
         # Start sifnoded
-        sifnoded_proc = self.cmd.sifnoded_start(tcp_url=self.tcp_url, minimum_gas_prices=[0.5, "rowan"], sifnoded_home=sifnoded_home)
+        sifnoded_proc = self.cmd.sifnoded_start(tcp_url=self.tcp_url, minimum_gas_prices=[0.5, "rowan"], sifnoded_home=sifnoded_home, log_file=sifnoded_log_file)
 
         # TODO: should we wait for sifnoded to come up before continuing? If so, how do we do it?
 
@@ -902,7 +912,7 @@ class IntegrationTestsEnvironment:
 
         relayer_db_path = os.path.join(self.test_integration_dir, "sifchainrelayerdb")
         ebrelayer_proc = self.run_ebrelayer(netdef_json, validator1_address, validator_moniker, validator_mnemonic,
-            ebrelayer_ethereum_private_key, bridge_registry_sc_addr, relayer_db_path)
+            ebrelayer_ethereum_private_key, bridge_registry_sc_addr, relayer_db_path, log_file=ebrelayer_log_file)
 
         vagrantenv_path = project_dir("test/integration/vagrantenv.sh")
         self.state_vars = {
@@ -1012,7 +1022,7 @@ class IntegrationTestsEnvironment:
         return netdef, netdef_json
 
     def run_ebrelayer(self, netdef_json, validator1_address, validator_moniker, validator_mnemonic,
-        ebrelayer_ethereum_private_key, bridge_registry_sc_addr, relayer_db_path):
+        ebrelayer_ethereum_private_key, bridge_registry_sc_addr, relayer_db_path, log_file=None):
         while not self.cmd.tcp_probe_connect("localhost", 26657):
             time.sleep(1)
         self.wait_for_sif_account(netdef_json, validator1_address)
@@ -1022,7 +1032,7 @@ class IntegrationTestsEnvironment:
             validator_moniker, validator_mnemonic, self.chainnet, ethereum_private_key=ebrelayer_ethereum_private_key,
             node=self.tcp_url, keyring_backend="test", sign_with=validator_moniker,
             symbol_translator_file=os.path.join(self.test_integration_dir, "config/symbol_translator.json"),
-            relayerdb_path=relayer_db_path, cwd=self.test_integration_dir)
+            relayerdb_path=relayer_db_path, cwd=self.test_integration_dir, log_file=log_file)
         return ebrelayer_proc
 
     def create_own_dirs(self):
@@ -1266,13 +1276,16 @@ def run_with_logging_until_keypress(procs):
 
     pass
 
+def force_kill_processes(cmd):
+    cmd.execst(["pkill", "node"], check_exit=False)
+    cmd.execst(["pkill", "ebrelayer"], check_exit=False)
+    cmd.execst(["pkill", "sifnoded"], check_exit=False)
+
 def cleanup_and_reset_state():
     # git checkout 4cb7322b6b282babd93a0d0aedda837c9134e84e deploy
     # pkill node; pkill ebrelayer; pkill sifnoded; rm -rvf $HOME/.sifnoded; rm -rvf ./vagrant/data; mkdir vagrant/data
     cmd = Command()
-    cmd.execst(["pkill", "node"], check_exit=False)
-    cmd.execst(["pkill", "ebrelayer"], check_exit=False)
-    cmd.execst(["pkill", "sifnoded"], check_exit=False)
+    force_kill_processes(cmd)
 
     # rm -rvf /tmp/tmp.xxxx (ganache DB, unique for every run)
     cmd.rmdir(project_dir("test/integration/sifchainrelayerdb"))  # TODO move to /tmp
@@ -1298,6 +1311,11 @@ def killall(processes):
             p.wait()
 
 def main(argv):
+    # tmux usage:
+    # tmux new-session -d -s env1
+    # tmux split-window -h -t env1
+    # tmux split-window -h -t env1
+    # tmux select-layout -t env1 even-vertical
     logging.basicConfig(stream=sys.stdout, level=logging.DEBUG, format="%(message)s")
     what = argv[0] if argv else None
     cmd = Integrator()
@@ -1333,6 +1351,7 @@ def main(argv):
         input("Press ENTER to exit...")
         killall(processes)
     elif what == "run-integration-tests":
+        # TODO After switching the branch,: cd smart-contracts; rm -rf node_modules; + cmd.install_smart_contract_dependencies() (yarn clean + yarn install)
         scripts = [
             "execute_integration_tests_against_test_chain_peg.sh",
             "execute_integration_tests_against_test_chain_clp.sh",
@@ -1340,10 +1359,12 @@ def main(argv):
             "execute_integration_tests_against_any_chain.sh",
         ]
         for script in scripts:
+            force_kill_processes(cmd)
             e = IntegrationTestsEnvironment(cmd)
             processes = e.run()
             cmd.execst(script, cwd=project_dir("test", "integration"))
             killall(processes)
+        log.info("Everything OK")
     elif what == "fullclean":
         cmd.execst(["chmod", "-R", "+w", cmd.get_user_home("go")])
         cmd.rmdir(cmd.get_user_home("go"))
