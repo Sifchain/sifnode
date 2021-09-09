@@ -313,6 +313,7 @@ class Integrator(Ganache, Sifnoded, Command):
         if ethereum_address:
             assert ethereum_address.startswith("0x")
             env["ETHEREUM_ADDRESS"] = ethereum_address
+        env = env or None  # Avoid passing empty environment
         args = ["ebrelayer", "init", tendermind_node, web3_provider, bridge_registry_contract_address,
             validator_moniker, " ".join(validator_mnemonic), "--chain-id={}".format(chain_id)] + \
             (["--gas", str(gas)] if gas is not None else []) + \
@@ -1332,7 +1333,17 @@ def main(argv):
         input("Press ENTER to exit...")
         killall(processes)
     elif what == "run-integration-tests":
-        pass
+        scripts = [
+            "execute_integration_tests_against_test_chain_peg.sh",
+            "execute_integration_tests_against_test_chain_clp.sh",
+            "execute_integration_tests_with_snapshots.sh"
+            "execute_integration_tests_against_any_chain.sh",
+        ]
+        for script in scripts:
+            e = IntegrationTestsEnvironment(cmd)
+            processes = e.run()
+            cmd.execst(script, cwd=project_dir("test", "integration"))
+            killall(processes)
     elif what == "fullclean":
         cmd.execst(["chmod", "-R", "+w", cmd.get_user_home("go")])
         cmd.rmdir(cmd.get_user_home("go"))
