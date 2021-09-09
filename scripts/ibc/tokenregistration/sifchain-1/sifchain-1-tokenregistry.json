@@ -527,7 +527,7 @@
     },
     {
       "is_whitelisted": true,
-      "decimals": "18",
+      "decimals": "6",
       "denom": "csrm",
       "base_denom": "csrm",
       "path": "",
