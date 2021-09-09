@@ -19,3 +19,5 @@ anchore-reports
 nohup.out
 relayerdb
 venv/
+
+deploy

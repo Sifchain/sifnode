@@ -103,7 +103,7 @@ sifnoded keys show <moniker> --keyring-backend file
 4. Deploy a new node to your cluster and connect to an existing network:
 
 ```
-rake "sifnode:standalone:deploy:peer[<cluster>,<chain_id>,<provider>,<namespace>,<image>,<image_tag>,<moniker>,<mnemonic>,<peer_address>,<genesis_url>]"
+rake "sifnode:peer:deploy[<cluster>,<chain_id>,<provider>,<namespace>,<image>,<image_tag>,<moniker>,<mnemonic>,<peer_address>,<genesis_url>,<enable_rpc>,<enable_external_rpc>]"
 ```
 
 where:
@@ -119,14 +119,16 @@ where:
 |`<moniker>`|The moniker or name of your node as you want it to appear on the network.|
 |`<peer_address>`|The address of the peer to connect to.|
 |`<genesis_url>`|The URL of genesis file for the network.|
+|`<enable_rpc>`|Enable RPC (if unsure, set to `false`).|
+|`<enable_external_rpc>`|Enable external access to the RPC port. If `true`, then `<enable_rpc>` must also be `true`. Recommend this is set to `false`.|
 
 e.g.:
 
 ```
-rake "sifnode:standalone:deploy:peer[my-cluster,sifchain,aws,sifnode,sifchain/sifnoded,mainnet-genesis,my-node,'my mnemonic',0d4981bdaf4d5d73bad00af3b1fa9d699e4d3bc0@44.235.108.41:26656,https://rpc.sifchain.finance/genesis]"
+rake "sifnode:peer:deploy[my-cluster,sifchain,aws,sifnode,sifchain/sifnoded,mainnet-0.9.0,my-node,'my mnemonic',0d4981bdaf4d5d73bad00af3b1fa9d699e4d3bc0@44.235.108.41:26656,https://rpc.sifchain.finance/genesis,false,false]"
 ```
 
-_Please note: the image tag *must* be `mainnet-genesis`._
+_Please note: the image tag must be in the format of `mainnet-<version>`. Replace `<version>` with the latest version number found [here](https://github.com/Sifchain/sifnode/blob/master/version)._
 
 5. Once deployed, check the status of the pods:
 

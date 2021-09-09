@@ -1,20 +1,37 @@
-# Update token limits on mainnet
+# Update whitelisted tokens on mainnet
 
-If you are trying to whitelist and update token limits many addresses at once, you will need to use the bulkSetTokenLockBurnLimit.js script. If you need to only update the lock or burn limit and the token has already been whitelisted, use the setTokenLockBurnLimit script.
+If you are trying to whitelist many token addresses at once, you will need to use the bulk_set_whitelist.ts script.
 
-Before running the following script go to the data folder and open create a file called `whitelist_<network>_<date>.json`, for example `whitelist_ethereum_feb_21_2021.json`. Change the name of the file to remove the date and insert the current date. Copy the contents from `limitWhitelistUpdate.json` into your newly created file and change the addresses to the address you want to whitelist. Then, update the limit to the desired limit you would like to allow a user to move through the bridge in a single tx. If you want to set this to the max allowable value in solidity, set the limit value to `115792089237316195423570985008687907853269984665640564039457584007913129639935` which is the UINT_MAX in solidity.
+Before running the following script go to the data folder and create a file called `whitelist_<network>_<date>.json`, for example `whitelist_ethereum_feb_21_2021.json`. Change the name of the file to remove the date and insert the current date. Copy the contents from `whitelist_mainnet_update_postibc.json` into your newly created file and change the addresses to the addresses you want to whitelist.  
+Example:
+```
+{
+  "array": [
+    {
+      "address": "0xa47c8bf37f92abed4a126bda807a7b7498661acd"
+    },
+    {
+      "address": "0x853d955acef822db058eb8505911ed77f175b99e"
+    }
+  ]
+}
+```
 
-Make sure ETHEREUM_PRIVATE_KEY in your .env file is the private key matching the OPERATOR address and ensure INFURA_PROJECT_ID is set correctly. Get the bridgebank address and set it in the env var when running the script. To bulk update the whitelist and limits for each token, use bulkSetTokenLockBurnLimit.js like so:
+Your .env file should have the following variables.  
+All values here are mocked examples that won't work on the mainnet.  
+Please change them to match your needs.
 ```
-ETHEREUM_PRIVATE_KEY=$eth_key_operator BRIDGEBANK_ADDRESS=$bridge_bank_address truffle exec scripts/bulkSetTokenLockBurnLimit.js --network develop ../data/whitelist_<network>_<date>.json
+BRIDGEBANK_ADDRESS=0x6CfD69783E3fFb44CBaaFF7F509a4fcF0d8e2835
+WHITELIST_DATA=data/whitelist_mainnet_update_postibc.json
+DEPLOYMENT_NAME=sifchain-1
+MAINNET_URL=https://eth-mainnet.alchemyapi.io/v2/ZGe5q0xD06oCAHiwf6ZAexnzGKSPrS5P
+MAINNET_PRIVATE_KEY=c8750aa1c067bbde78beb793e8fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3
 ```
 
-To update the limit amount for a token (other than Ethereum) that is already whitelisted, use:
+Make sure MAINNET_PRIVATE_KEY in your .env file is the private key matching the OPERATOR address and ensure MAINNET_URL is set correctly. Get the bridgebank address and set it in the env var when running the script. To bulk update the whitelist and add tokens, use bulk_set_whitelist.ts like so:
 ```
-UPDATE_ADDRESS="0x0d8cc4b8d15D4c3eF1d70af0071376fb26B5669b" truffle exec scripts/setTokenLockBurnLimit.js --network develop 1000000000000000000000
+npx hardhat run scripts/bulk_set_whitelist.ts --network mainnet
 ```
 
-To update the Ethereum lock limit in the smart contract, use setTokenLockBurnLimit.js with address 0x0000000000000000000000000000000000000000:
-```
-UPDATE_ADDRESS="0x0000000000000000000000000000000000000000" truffle exec scripts/setTokenLockBurnLimit.js --network develop 1000000000000000000000
-```
+## Note
+In the previous version of the smart contracts, there was a concept of a max token lock or burn amount. This functionality has been completely removed from the codebase. There is no longer a max lock or burn amount, there is only a token whitelist. Whitelisted tokens may be locked and burned if they are on the whitelist to perform that action.

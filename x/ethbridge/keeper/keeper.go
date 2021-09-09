@@ -75,10 +75,10 @@ func (k Keeper) ProcessSuccessfulClaim(ctx sdk.Context, claim string) error {
 		symbol := fmt.Sprintf("%v%v", types.PeggedCoinPrefix, oracleClaim.Symbol)
 		k.AddPeggyToken(ctx, symbol)
 
-		coins = sdk.Coins{sdk.NewCoin(symbol, oracleClaim.Amount)}
+		coins = sdk.NewCoins(sdk.NewCoin(symbol, oracleClaim.Amount))
 		err = k.bankKeeper.MintCoins(ctx, types.ModuleName, coins)
 	case types.ClaimType_CLAIM_TYPE_BURN:
-		coins = sdk.Coins{sdk.NewCoin(oracleClaim.Symbol, oracleClaim.Amount)}
+		coins = sdk.NewCoins(sdk.NewCoin(oracleClaim.Symbol, oracleClaim.Amount))
 		err = k.bankKeeper.MintCoins(ctx, types.ModuleName, coins)
 	default:
 		err = types.ErrInvalidClaimType

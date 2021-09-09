@@ -104,6 +104,10 @@ func (n *Network) Build(count int, outputDir, seedIPv4Addr string) (*string, err
 			return nil, err
 		}
 
+		if err := genesis.ReplaceMintBondDenom(validator.NodeHomeDir); err != nil {
+			return nil, err
+		}
+
 		if err := n.setValidatorID(validator); err != nil {
 			return nil, err
 		}

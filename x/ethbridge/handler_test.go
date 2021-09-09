@@ -138,7 +138,7 @@ func TestMintSuccess(t *testing.T) {
 	receiverAddress, err := sdk.AccAddressFromBech32(types.TestAddress)
 	require.NoError(t, err)
 	receiverCoins := bankKeeper.GetAllBalances(ctx, receiverAddress)
-	expectedCoins := sdk.Coins{sdk.NewInt64Coin(types.TestCoinsLockedSymbol, types.TestCoinIntAmount)}
+	expectedCoins := sdk.NewCoins(sdk.NewInt64Coin(types.TestCoinsLockedSymbol, types.TestCoinIntAmount))
 	require.True(t, receiverCoins.IsEqual(expectedCoins))
 	for _, event := range res.Events {
 		for _, attribute := range event.Attributes {
@@ -156,7 +156,7 @@ func TestMintSuccess(t *testing.T) {
 	require.Nil(t, res)
 	require.True(t, strings.Contains(err.Error(), "prophecy already finalized"))
 	receiverCoins = bankKeeper.GetAllBalances(ctx, receiverAddress)
-	expectedCoins = sdk.Coins{sdk.NewInt64Coin(types.TestCoinsLockedSymbol, types.TestCoinIntAmount)}
+	expectedCoins = sdk.NewCoins(sdk.NewInt64Coin(types.TestCoinsLockedSymbol, types.TestCoinIntAmount))
 	require.True(t, receiverCoins.IsEqual(expectedCoins))
 }
 
@@ -283,7 +283,7 @@ func TestBurnEthSuccess(t *testing.T) {
 	receiverAddress, err := sdk.AccAddressFromBech32(types.TestAddress)
 	require.NoError(t, err)
 	receiverCoins := bankKeeper.GetAllBalances(ctx, receiverAddress)
-	mintedCoins := sdk.Coins{sdk.NewCoin(coinsToMintSymbolLocked, coinsToMintAmount)}
+	mintedCoins := sdk.NewCoins(sdk.NewCoin(coinsToMintSymbolLocked, coinsToMintAmount))
 	require.True(t, receiverCoins.IsEqual(mintedCoins))
 
 	coinsToMintAmount = sdk.NewInt(65000000000 * 300000)
@@ -313,7 +313,7 @@ func TestBurnEthSuccess(t *testing.T) {
 	require.NoError(t, err)
 	require.NotNil(t, res)
 	senderAddress := receiverAddress
-	burnedCoins := sdk.Coins{sdk.NewCoin(coinsToBurnSymbolPrefixed, coinsToBurnAmount)}
+	burnedCoins := sdk.NewCoins(sdk.NewCoin(coinsToBurnSymbolPrefixed, coinsToBurnAmount))
 	senderSequence := "0"
 	remainingCoins := mintedCoins.Sub(burnedCoins)
 	senderCoins := bankKeeper.GetAllBalances(ctx, senderAddress)

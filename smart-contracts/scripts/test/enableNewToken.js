@@ -47,10 +47,6 @@ module.exports = async (cb) => {
 
     const updateWhiteListResult = await bridgeBankContract.updateEthWhiteList(newToken.address, true, standardOptions);
 
-    await bridgeBankContract.updateTokenLockBurnLimit(newToken.address, limitAmount, {
-        from: operator_address
-    });
-
     const token_destination = argv.operator_address;
 
     await newToken.mint(token_destination, amount, standardOptions);

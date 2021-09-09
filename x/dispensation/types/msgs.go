@@ -133,7 +133,7 @@ func (m MsgRunDistribution) Type() string {
 
 func (m MsgRunDistribution) ValidateBasic() error {
 	//Validate DistributionType
-	_, ok := GetDistributionTypeFromShortString(m.DistributionType.String())
+	_, ok := IsValidDistributionType(m.DistributionType.String())
 	if !ok {
 		return sdkerrors.Wrap(ErrInvalid, "Invalid Distribution Type")
 	}

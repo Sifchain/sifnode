@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	"fmt"
 	"github.com/Sifchain/sifnode/x/dispensation/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/errors"
@@ -218,7 +219,14 @@ func (k Keeper) GetRecords(ctx sdk.Context) *types.DistributionRecords {
 	for ; iterator.Valid(); iterator.Next() {
 		var dr types.DistributionRecord
 		bytesValue := iterator.Value()
-		k.cdc.MustUnmarshalBinaryBare(bytesValue, &dr)
+		err := k.cdc.UnmarshalBinaryBare(bytesValue, &dr)
+		if err != nil {
+			ctx.Logger().Error(fmt.Sprintf("Unmarshal failed for record bytes : %s ", bytesValue))
+			// Not panicking here .
+			// Records data is not that important . We can ignore a record if it is causing an issue for chain upgrade .
+			// Logging data out for investigation
+			continue
+		}
 		res.DistributionRecords = append(res.DistributionRecords, &dr)
 	}
 	iterator = k.GetDistributionRecordsIterator(ctx, types.DistributionStatus_DISTRIBUTION_STATUS_COMPLETED)

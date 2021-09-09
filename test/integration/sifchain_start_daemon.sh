@@ -6,7 +6,9 @@
 
 set -x
 
-. /sifnode/test/integration/vagrantenv.sh
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
+
+. $(SCRIPT_DIR)/vagrantenv.sh
 . ${TEST_INTEGRATION_DIR}/shell_utilities.sh
 
 whitelisted_validator=$(yes $VALIDATOR1_PASSWORD | sifnoded keys show --keyring-backend file -a --bech val $MONIKER --home $CHAINDIR/.sifnoded)
@@ -18,5 +20,6 @@ adminuser=$(yes | sifnoded keys add sifnodeadmin --keyring-backend test --output
 set_persistant_env_var SIFCHAIN_ADMIN_ACCOUNT $adminuser $envexportfile
 sifnoded add-genesis-account $adminuser 100000000000000000000rowan --home $CHAINDIR/.sifnoded
 sifnoded set-genesis-oracle-admin $adminuser --home $CHAINDIR/.sifnoded
-
+sifnoded set-genesis-whitelister-admin $adminuser --home $CHAINDIR/.sifnoded
+sifnoded set-gen-denom-whitelist $SCRIPT_DIR/whitelisted-denoms.json --home $CHAINDIR/.sifnoded
 sifnoded start --minimum-gas-prices 0.5rowan --rpc.laddr tcp://0.0.0.0:26657 --home $CHAINDIR/.sifnoded

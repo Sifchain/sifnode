@@ -29,6 +29,13 @@ module.exports = async (cb) => {
 
         await contractUtilites.setAllowance(this, argv.symbol, argv.amount, argv, logging, transactionParameters);
 
+        const bridgeBankContractLockArgs = {
+            recipient: cosmosRecipient,
+            token: coinDenom,
+            amount,
+            transactionParameters
+        }
+        logging.debug(`bridgeBankContract.lock arguments: ${JSON.stringify(bridgeBankContractLockArgs, undefined, 2)}`);
         const lockResult = await bridgeBankContract.lock(cosmosRecipient, coinDenom, amount, transactionParameters);
 
         console.log(JSON.stringify(lockResult, undefined, 0))

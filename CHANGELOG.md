@@ -1,3 +1,12 @@
+# v0.8.8
+> July 16, 2021
+>
+## 🐛 Bug Fixes
+
+- [Sifnode] Updates to the Oracle module to allow for exporting state.
+
+----
+
 # v0.8.7
 > June 9, 2021
 > 

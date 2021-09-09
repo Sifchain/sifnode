@@ -18,7 +18,7 @@ func CreateTestApp(isCheckTx bool) (*sifapp.SifchainApp, sdk.Context) {
 	ctx := app.BaseApp.NewContext(isCheckTx, tmproto.Header{})
 	app.AccountKeeper.SetParams(ctx, authtypes.DefaultParams())
 	initTokens := sdk.TokensFromConsensusPower(1000)
-	app.BankKeeper.SetSupply(ctx, types.NewSupply(sdk.Coins{}))
+	app.BankKeeper.SetSupply(ctx, types.NewSupply(sdk.NewCoins()))
 	_ = sifapp.AddTestAddrs(app, ctx, 6, initTokens)
 	return app, ctx
 }
@@ -29,7 +29,7 @@ func CreatOutputList(count int, rowanAmount string) []types.Output {
 	if !ok {
 		panic("Unable to generate rowan amount")
 	}
-	coin := sdk.Coins{sdk.NewCoin("rowan", amount)}
+	coin := sdk.NewCoins(sdk.NewCoin("rowan", amount))
 	for i := 0; i < count; i++ {
 		address := sdk.AccAddress(crypto.AddressHash([]byte("Output1" + strconv.Itoa(i))))
 		out := types.NewOutput(address, coin)
@@ -44,7 +44,7 @@ func CreateInputList(count int, rowanAmount string) []types.Input {
 	if !ok {
 		panic("Unable to generate rowan amount")
 	}
-	coin := sdk.Coins{sdk.NewCoin("rowan", amount)}
+	coin := sdk.NewCoins(sdk.NewCoin("rowan", amount))
 	for i := 0; i < count; i++ {
 		address := sdk.AccAddress(crypto.AddressHash([]byte("Output1" + strconv.Itoa(i))))
 		out := types.NewInput(address, coin)

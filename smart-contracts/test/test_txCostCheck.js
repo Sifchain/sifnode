@@ -77,11 +77,6 @@ contract("Gas Cost Test", function (accounts) {
 
       this.weiAmount = web3.utils.toWei("0.25", "ether");
 
-      // Update the lock/burn limit for this token
-      await this.bridgeBank.updateTokenLockBurnLimit(this.tokenAddress, this.weiAmount, {
-        from: operator
-      }).should.be.fulfilled;
-
       await this.bridgeBank.lock(
         this.recipient,
         this.tokenAddress,
@@ -253,16 +248,8 @@ contract("Gas Cost Test", function (accounts) {
 
       this.weiAmount = web3.utils.toWei("0.25", "ether");
 
-      // Update the lock/burn limit for this token
-      await this.bridgeBank.updateTokenLockBurnLimit(this.tokenAddress, this.weiAmount, {
-        from: operator
-      }).should.be.fulfilled;
-
       await this.bridgeBank.addExistingBridgeToken(this.token.address, { from: operator });
   
-      // allow 10 eth to be sent at once
-      await this.bridgeBank.updateTokenLockBurnLimit(this.token.address, '10000000000000000000', {from: operator });
-
       await this.token.addMinter(this.bridgeBank.address, { from: operator });    
     });
 
@@ -274,7 +261,7 @@ contract("Gas Cost Test", function (accounts) {
         this.cosmosSender,
         this.cosmosSenderSequence,
         this.ethereumReceiver,
-        this.passSymbol,
+        this.symbol,
         this.amount,
         {
             from: userOne
@@ -287,7 +274,7 @@ contract("Gas Cost Test", function (accounts) {
       this.cosmosSender,
       this.cosmosSenderSequence,
       this.ethereumReceiver,
-      this.passSymbol,
+      this.symbol,
       this.amount,
       {
         from: userOne,
@@ -309,7 +296,7 @@ contract("Gas Cost Test", function (accounts) {
       this.cosmosSender,
       this.cosmosSenderSequence,
       this.ethereumReceiver,
-      this.passSymbol,
+      this.symbol,
       this.amount,
       {
         from: userTwo,
@@ -324,7 +311,7 @@ contract("Gas Cost Test", function (accounts) {
       this.cosmosSender,
       this.cosmosSenderSequence,
       this.ethereumReceiver,
-      this.passSymbol,
+      this.symbol,
       this.amount,
       {
         from: userThree,
