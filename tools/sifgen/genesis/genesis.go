@@ -19,7 +19,6 @@ func ReplaceStakingBondDenom(nodeHomeDir string) error {
 	}
 
 	genesis.AppState.Staking.Params.BondDenom = common.StakeTokenDenom
-	genesis.AppState.Mint.Params.MintDenom = common.StakeTokenDenom
 	content, err := tmjson.Marshal(genesis)
 	if err != nil {
 		return err
