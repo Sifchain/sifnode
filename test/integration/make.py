@@ -1177,6 +1177,18 @@ class PeggyEnvironment(IntegrationTestsEnvironment):
     def deploy_smart_contracts_hardhat(self):
         res = self.cmd.npx(["hardhat", "run", "scripts/deploy_contracts.ts", "--network", "localhost"],
             cwd=project_dir("smart-contracts"))
+        # TODO Wrong!
+        # Output after removing build/, cache/, artifacts/ and .openzeppelin:
+        #
+        # Compiling 35 files with 0.5.16
+        # Generating typings for: 36 artifacts in dir: build for target: ethers-v5
+        # Successfully generated 65 typings!
+        # Compilation finished successfully
+        # {"bridgeBank":"0x959922bE3CAee4b8Cd9a407cc3ac1C251C2007B1","bridgeRegistry":"0x59b670e9fA9D0A427751Af201D676719a970857b","rowanContract":"0xB7f8BC63BbcaD18155201308C8f3540b07f84F5e"}
+        #
+        # Output when the things have already been compiled:
+        # No need to generate any newer typings.
+        # {"bridgeBank":"0xa85233C63b9Ee964Add6F2cffe00Fd84eb32338f","bridgeRegistry":"0xc5a5C42992dECbae36851359345FE25997F5C42d","rowanContract":"0x4ed7c70F96B99c776995fB64377f0d4aB3B0e1C1"}
         # Skip first line "No need to generate any newer types"
         m = json.loads(stdout(res).splitlines()[1])
         return m["bridgeBank"], m["bridgeRegistry"], m["rowanContract"]
