@@ -1298,6 +1298,8 @@ def main(argv):
     cmd = Integrator()
     if what == "init":
         cleanup_and_reset_state()
+        cmd.rmdir(project_dir("smart-contracts/node_modules"))
+        cmd.execst(["yarn", "install"], cwd=project_dir("smart-contracts"))
         cmd.make_go_binaries_2()
         cmd.install_smart_contracts_dependencies()
     elif what == "run-ui-env":
@@ -1345,6 +1347,7 @@ def main(argv):
             processes = e.run()
             cmd.execst(script, cwd=project_dir("test", "integration"))
             killall(processes)
+            force_kill_processes(cmd)  # Some processes are restarted during integration tests so we don't own them
         log.info("Everything OK")
     elif what == "fullclean":
         cmd.execst(["chmod", "-R", "+w", cmd.get_user_home("go")])
