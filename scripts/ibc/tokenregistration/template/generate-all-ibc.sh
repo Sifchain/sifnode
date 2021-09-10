@@ -150,3 +150,21 @@ sifnoded q tokenregistry generate \
 echo "\n\ngenerated entry for $REGEN_CHAIN_ID"
 
 cat $SIFCHAIN_ID/regen.json | jq
+
+sifnoded q tokenregistry generate \
+	--token_base_denom=uluna \
+	--token_ibc_counterparty_chain_id=bombay-10 \
+  --token_ibc_channel_id=channel-123 \
+  --token_ibc_counterparty_channel_id=channel-3 \
+	--token_ibc_counterparty_denom="" \
+	--token_unit_denom="" \
+	--token_decimals=6 \
+	--token_display_name="Luna" \
+	--token_external_symbol="" \
+	--token_permission_clp=true \
+	--token_permission_ibc_export=true \
+	--token_permission_ibc_import=true | jq > $SIFCHAIN_ID/terra.json
+
+echo "\n\ngenerated entry for bombay-10"
+
+cat $SIFCHAIN_ID/terra.json | jq
