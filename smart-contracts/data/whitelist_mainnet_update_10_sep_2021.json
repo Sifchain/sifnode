@@ -31,12 +31,6 @@
       "decimals": 18
     },
     {
-      "address": "0xEF53462838000184F35f7D991452e5f25110b207",
-      "name": "Knit Finance",
-      "symbol": "KFT",
-      "decimals": 18
-    },
-    {
       "address": "0xb9ef770b6a5e12e45983c5d80545258aa38f3b78",
       "name": "0chain",
       "symbol": "ZCN",
@@ -82,12 +76,6 @@
       "address": "0x7D1AfA7B718fb893dB30A3aBc0Cfc608AaCfeBB0",
       "name": "Matic Token",
       "symbol": "MATIC",
-      "decimals": 18
-    },
-    {
-      "address": "0x2e9d63788249371f1dfc918a52f8d799f4a38c94",
-      "name": "Tokemak",
-      "symbol": "TOKE",
       "decimals": 18
     }
   ]
