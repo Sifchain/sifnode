@@ -1174,22 +1174,21 @@ class PeggyEnvironment(IntegrationTestsEnvironment):
             "0x2a871d0798f97d79848a013d4936a73bf4cc922c825d33c1cf7073dff6d409c6",
         ]]]
 
+    def compile_smart_contracts_hardhat(self):
+        self.cmd.npx(["hardhat", "compile"], cwd=project_dir("smart-contracts"), pipe=False)
+
     def deploy_smart_contracts_hardhat(self):
         res = self.cmd.npx(["hardhat", "run", "scripts/deploy_contracts.ts", "--network", "localhost"],
             cwd=project_dir("smart-contracts"))
-        # TODO Wrong!
-        # Output after removing build/, cache/, artifacts/ and .openzeppelin:
-        #
-        # Compiling 35 files with 0.5.16
-        # Generating typings for: 36 artifacts in dir: build for target: ethers-v5
-        # Successfully generated 65 typings!
-        # Compilation finished successfully
-        # {"bridgeBank":"0x959922bE3CAee4b8Cd9a407cc3ac1C251C2007B1","bridgeRegistry":"0x59b670e9fA9D0A427751Af201D676719a970857b","rowanContract":"0xB7f8BC63BbcaD18155201308C8f3540b07f84F5e"}
-        #
-        # Output when the things have already been compiled:
-        # No need to generate any newer typings.
-        # {"bridgeBank":"0xa85233C63b9Ee964Add6F2cffe00Fd84eb32338f","bridgeRegistry":"0xc5a5C42992dECbae36851359345FE25997F5C42d","rowanContract":"0x4ed7c70F96B99c776995fB64377f0d4aB3B0e1C1"}
-        # Skip first line "No need to generate any newer types"
+        # Skip first line "No need to generate any newer types". This only works if the smart contracts have already
+        # been compiled, otherwise the output starts with 4 lines:
+        #     Compiling 35 files with 0.5.16
+        #     Generating typings for: 36 artifacts in dir: build for target: ethers-v5
+        #     Successfully generated 65 typings!
+        #     Compilation finished successfully
+        # With devtool, the compilation is performed automatically before invoking main() if the script is invoked
+        # via "npx hardhat run scripts/devenv.ts" instead of "npx ts-node scripts/devenv.ts", so normally this would
+        # not happen.
         m = json.loads(stdout(res).splitlines()[1])
         return m["bridgeBank"], m["bridgeRegistry"], m["rowanContract"]
 
@@ -1222,6 +1221,7 @@ class PeggyEnvironment(IntegrationTestsEnvironment):
         hardhat_chain_id = 1
         hardhat_accounts = self.signer_array_to_ethereum_accounts(self.default_hardhat_accounts(), hardhat_validator_count)
 
+        self.compile_smart_contracts_hardhat()
         bridgebank_sc_addr, bridge_registry_sc_addr, rowan_sc_addr = self.deploy_smart_contracts_hardhat()
 
         chain_id = "localnet"
