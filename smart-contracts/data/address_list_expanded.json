@@ -60,12 +60,6 @@
     "decimals": 18
   },
   {
-    "address": "0x50d1c9771902476076ecfc8b2a83ad6b9355a4c9",
-    "name": "FTT",
-    "symbol": "FTX Token",
-    "decimals": 18
-  },
-  {
     "address": "0xbbc2ae13b23d715c30720f079fcd9b4a74093505",
     "name": "@EthernityChain $ERN Token",
     "symbol": "ERN",
