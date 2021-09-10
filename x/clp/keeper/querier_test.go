@@ -216,7 +216,6 @@ func TestQueryGetLiquidityProviderData(t *testing.T) {
 		assert.Contains(t, lpList, *lpData.LiquidityProvider)
 		assert.Equal(t, lpList[0].LiquidityProviderAddress, lpData.LiquidityProvider.LiquidityProviderAddress)
 		assert.Equal(t, test.TrimFirstRune(tokens[i]), lpData.LiquidityProvider.Asset.Symbol)
-		assert.Equal(t, test.TrimFirstRune(tokens[i]), lpData.Symbol)
 		assert.Equal(t, fmt.Sprint(100*uint64(i+1)), lpData.ExternalAssetBalance)
 		assert.Equal(t, fmt.Sprint(1000*uint64(i+1)), lpData.NativeAssetBalance)
 	}

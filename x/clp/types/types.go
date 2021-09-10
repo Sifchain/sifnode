@@ -52,6 +52,6 @@ func NewLiquidityProviderDataResponse(liquidityProviderData []*LiquidityProvider
 	return LiquidityProviderDataRes{LiquidityProviderData: liquidityProviderData, Height: height}
 }
 
-func NewLiquidityProviderData(liquidityProvider LiquidityProvider, symbol string, nativeBalance string, externalBalance string) LiquidityProviderData {
-	return LiquidityProviderData{LiquidityProvider: &liquidityProvider, Symbol: symbol, NativeAssetBalance: nativeBalance, ExternalAssetBalance: externalBalance}
+func NewLiquidityProviderData(liquidityProvider LiquidityProvider, nativeBalance string, externalBalance string) LiquidityProviderData {
+	return LiquidityProviderData{LiquidityProvider: &liquidityProvider, NativeAssetBalance: nativeBalance, ExternalAssetBalance: externalBalance}
 }

@@ -174,7 +174,7 @@ func TestKeeper_GetLiquidityProviderData(t *testing.T) {
 			continue
 		}
 		native, external, _, _ := clpkeeper.CalculateAllAssetsForLP(pool, lp)
-		lpData := types.NewLiquidityProviderData(lp, asset.Symbol, native.String(), external.String())
+		lpData := types.NewLiquidityProviderData(lp, native.String(), external.String())
 		lpDataList = append(lpDataList, &lpData)
 	}
 	lpDataResponse := types.NewLiquidityProviderDataResponse(lpDataList, ctx.BlockHeight())
@@ -186,7 +186,6 @@ func TestKeeper_GetLiquidityProviderData(t *testing.T) {
 		assert.Contains(t, lpList, *lpData.LiquidityProvider)
 		assert.Equal(t, lpList[0].LiquidityProviderAddress, lpData.LiquidityProvider.LiquidityProviderAddress)
 		assert.Equal(t, assetList[i], lpData.LiquidityProvider.Asset)
-		assert.Equal(t, assetList[i].Symbol, lpData.Symbol)
 		assert.Equal(t, fmt.Sprint(100*uint64(i+1)), lpData.ExternalAssetBalance)
 		assert.Equal(t, fmt.Sprint(1000*uint64(i+1)), lpData.NativeAssetBalance)
 	}

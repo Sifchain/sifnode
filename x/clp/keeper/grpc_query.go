@@ -123,7 +123,7 @@ func (k Querier) GetLiquidityProviderData(c context.Context, req *types.Liquidit
 			continue
 		}
 		native, external, _, _ := CalculateAllAssetsForLP(pool, lp)
-		lpData := types.NewLiquidityProviderData(lp, asset.Symbol, native.String(), external.String())
+		lpData := types.NewLiquidityProviderData(lp, native.String(), external.String())
 		lpDataList = append(lpDataList, &lpData)
 	}
 
