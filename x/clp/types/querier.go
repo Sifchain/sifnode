@@ -24,3 +24,7 @@ func NewQueryReqLiquidityProvider(symbol string, lpAddress sdk.AccAddress) Liqui
 func NewQueryReqGetAssetList(lpAddress sdk.AccAddress) AssetListReq {
 	return AssetListReq{LpAddress: lpAddress.String()}
 }
+
+func NewQueryReqLiquidityProviderData(lpAddress sdk.AccAddress) LiquidityProviderDataReq {
+	return LiquidityProviderDataReq{LpAddress: lpAddress.String()}
+}
