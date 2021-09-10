@@ -958,7 +958,6 @@ class IntegrationTestsEnvironment:
         # ETHEREUM_ADDRESS (optional), value=None
         # ETHEREUM_NETWORK (optional), value=None
         # ETHEREUM_NETWORK_ID (optional), value=None
-        # ETHEREUM_WEBSOCKET_ADDRESS (required), value=ws://localhost:7545/
         # GANACHE_KEYS_FILE (optional), value=None
         # HOME (required), value=/home/jurez
         # MNEMONIC (required), value=future tattoo gesture artist tomato accuse chuckle polar ivory strategy rail flower apart virus burger rhythm either describe habit attend absurd aspect predict parent
@@ -1189,6 +1188,7 @@ class PeggyEnvironment(IntegrationTestsEnvironment):
         # With devtool, the compilation is performed automatically before invoking main() if the script is invoked
         # via "npx hardhat run scripts/devenv.ts" instead of "npx ts-node scripts/devenv.ts", so normally this would
         # not happen.
+        # TODO Suggested solution: pass a parameter to deploy_contracts.ts where it should write the output json file
         m = json.loads(stdout(res).splitlines()[1])
         return m["bridgeBank"], m["bridgeRegistry"], m["rowanContract"]
 
@@ -1265,6 +1265,28 @@ class PeggyEnvironment(IntegrationTestsEnvironment):
             log_file=ebrelayer_log_file
         )
 
+        # Write compatibility JSON file with smart contract addresses to smart-contracts/build/smart_contract_addresses.json
+        # so that test_utilities.py:contract_artifacts() can find it
+        integration_tests_expected_network_id = 5777
+        smartcontract_address = {
+            "BridgeBank": {"networks": {str(integration_tests_expected_network_id): {"address": bridgebank_sc_addr}}},
+            "BridgeRegistry": {"networks": {str(integration_tests_expected_network_id): {"address": bridge_registry_sc_addr}}},
+            "BridgeToken": None,  # TODO
+            # "Rowan": rowan_sc_addr,
+        }
+        d = project_dir("smart-contracts", "build", "contracts")
+        self.cmd.mkdir(d)
+        self.cmd.write_text_file(os.path.join(d, "smart_contract_addresses.json"), json.dumps(smartcontract_address))
+
+        state_vars = {
+            "ETHEREUM_WEBSOCKET_ADDRESS": f"ws://{hardhat_hostname}:{hardhat_port}",
+            "BASEDIR": project_dir(),
+            "TEST_INTEGRATION_PY_DIR": project_dir("test/integration/src/py"),
+        }
+        vagrantenv_path = project_dir("test/integration/vagrantenv.sh")
+        self.cmd.write_text_file(vagrantenv_path, joinlines(format_as_shell_env_vars(state_vars)))
+        self.cmd.write_text_file(project_dir("test/integration/vagrantenv.json"), json.dumps(state_vars))
+
         return hardhat_proc, sifnoded_proc, ebrelayer_proc
 
 def force_kill_processes(cmd):
@@ -1277,9 +1299,9 @@ def cleanup_and_reset_state():
     force_kill_processes(cmd)
 
     # rm -rvf /tmp/tmp.xxxx (ganache DB, unique for every run)
-    cmd.rmdir(project_dir("test/integration/sifchainrelayerdb"))  # TODO move to /tmp
-    cmd.rmdir(project_dir("smart-contracts/build"))  # truffle deploy
-    cmd.rmdir(project_dir("test/integration/vagrant/data"))
+    cmd.rmdir(project_dir("test", "integration", "sifchainrelayerdb"))  # TODO move to /tmp
+    cmd.rmdir(project_dir("smart-contracts", "build"))  # truffle deploy
+    cmd.rmdir(project_dir("test", "integration", "vagrant", "data"))
     cmd.rmdir(cmd.get_user_home(".sifnoded"))  # Probably needed for "--keyring-backend test"
 
     # Peggy/devenv/hardhat cleanup
@@ -1290,7 +1312,7 @@ def cleanup_and_reset_state():
     cmd.rmdir(project_dir("smart-contracts", "build"))  # (1)
     cmd.rmdir(project_dir("smart-contracts", "artifacts"))  # (1)
     cmd.rmdir(project_dir("smart-contracts", "cache"))  # (1)
-    cmd.rmdir(project_dir("smart-contracts/.openzeppelin"))  # (1)
+    cmd.rmdir(project_dir("smart-contracts", ".openzeppelin"))  # (1)
     cmd.rmdir(project_dir("smart-contracts", "relayerdb"))  # (2)
     cmd.rmdir(project_dir("smart-contracts", "venv"))
 
