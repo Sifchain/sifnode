@@ -111,7 +111,7 @@ func (k Querier) GetLiquidityProviderData(c context.Context, req *types.Liquidit
 		return nil, err
 	}
 
-	var lpDataList []*types.LiquidityProviderData
+	lpDataList := make([]*types.LiquidityProviderData, 0, len(assetList))
 	for i := range assetList {
 		asset := assetList[i]
 		pool, err := k.Keeper.GetPool(ctx, asset.Symbol)

@@ -162,7 +162,7 @@ func TestKeeper_GetLiquidityProviderData(t *testing.T) {
 	assetList, _, err := clpKeeper.GetAssetsForLiquidityProviderPaginated(ctx, lpaddr, &query.PageRequest{Limit: math.MaxUint64})
 	require.NoError(t, err)
 	assert.LessOrEqual(t, len(assetList), len(lpList))
-	var lpDataList []*types.LiquidityProviderData
+	lpDataList := make([]*types.LiquidityProviderData, 0, len(assetList))
 	for i := range assetList {
 		asset := assetList[i]
 		pool, err := clpKeeper.GetPool(ctx, asset.Symbol)
