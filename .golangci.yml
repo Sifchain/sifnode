@@ -17,7 +17,7 @@ linters:
     - govet
     - ineffassign
 #    - interfacer
-    - maligned
+    # - fieldalignment
     - misspell
     - nakedret
     - prealloc

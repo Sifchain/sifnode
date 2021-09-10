@@ -150,8 +150,6 @@ func RunInitRelayerCmd(cmd *cobra.Command, args []string) error {
 		return errors.Errorf("invalid [ETHEREUM_PRIVATE_KEY] environment variable")
 	}
 
-	// TODO peggy2merge
-
 	levelDbFile, err := cmd.Flags().GetString(ebrelayertypes.FlagRelayerDbPath)
 	if err != nil {
 		return err
@@ -238,7 +236,6 @@ func RunInitRelayerCmd(cmd *cobra.Command, args []string) error {
 		web3Provider,
 		contractAddress,
 		nil,
-		db,
 		sugaredLogger,
 	)
 
@@ -362,7 +359,6 @@ func RunInitWitnessCmd(cmd *cobra.Command, args []string) error {
 		web3Provider,
 		contractAddress,
 		nil,
-		db,
 		sugaredLogger,
 	)
 

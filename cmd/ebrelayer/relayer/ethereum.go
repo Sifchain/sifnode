@@ -28,7 +28,6 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	ctypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
-	"github.com/syndtr/goleveldb/leveldb"
 	tmclient "github.com/tendermint/tendermint/rpc/client/http"
 	"go.uber.org/zap"
 
@@ -42,7 +41,6 @@ import (
 const (
 	transactionInterval = 10 * time.Second
 	trailingBlocks      = 50
-	ethLevelDBKey       = "ethereumLastProcessedBlock"
 	ethereumWakeupTimer = 60
 )
 
@@ -55,7 +53,6 @@ type EthereumSub struct {
 	ValidatorAddress        sdk.ValAddress
 	CliCtx                  client.Context
 	PrivateKey              *ecdsa.PrivateKey
-	DB                      *leveldb.DB
 	SugaredLogger           *zap.SugaredLogger
 }
 
@@ -79,7 +76,6 @@ func NewEthereumSub(
 	ethProvider string,
 	registryContractAddress common.Address,
 	validatorAddress sdk.ValAddress,
-	db *leveldb.DB,
 	sugaredLogger *zap.SugaredLogger,
 ) EthereumSub {
 
@@ -90,7 +86,6 @@ func NewEthereumSub(
 		ValidatorName:           validatorMoniker,
 		ValidatorAddress:        validatorAddress,
 		CliCtx:                  cliCtx,
-		DB:                      db,
 		SugaredLogger:           sugaredLogger,
 	}
 }
@@ -179,23 +174,13 @@ func (sub EthereumSub) CheckNonceAndProcess(txFactory tx.Factory,
 	}
 	currentBlockHeight := currentBlock.Number
 
+	// If current block is less than 50, just return.
 	if currentBlockHeight.Cmp(big.NewInt(trailingBlocks)) <= 0 {
 		return
 	}
+
 	var endBlockHeight *big.Int
 	endBlockHeight = endBlockHeight.Sub(currentBlockHeight, big.NewInt(trailingBlocks))
-
-	// get last processed block
-	var lastProcessedBlock *big.Int
-
-	data, err := sub.DB.Get([]byte(ethLevelDBKey), nil)
-	if err != nil {
-		sub.SugaredLogger.Errorw("failed to get the last ethereum block from level db.",
-			errorMessageKey, err.Error())
-		lastProcessedBlock = big.NewInt(0)
-	} else {
-		lastProcessedBlock = new(big.Int).SetBytes(data)
-	}
 
 	// get lock burn nonce from cosmos
 	lockBurnNonce, err := sub.GetLockBurnNonceFromCosmos(oracletypes.NetworkDescriptor(networkID.Uint64()), string(sub.ValidatorAddress))
@@ -205,32 +190,69 @@ func (sub EthereumSub) CheckNonceAndProcess(txFactory tx.Factory,
 		return
 	}
 
-	// check the last processed block
-	if lastProcessedBlock.Cmp(big.NewInt(0)) == 0 {
-		if lockBurnNonce > 0 {
-			log.Fatalf("the processed block in DB not match with lock burn nonce in cosmos")
-		} else {
-			// this relayer never send the prophecy to sifchain
-			err = sub.DB.Put([]byte(ethLevelDBKey), endBlockHeight.Bytes(), nil)
-			if err != nil {
-				// if you can't write to leveldb, then error out as something is seriously amiss
-				log.Fatalf("Error saving lastProcessedBlock to leveldb: %v", err)
-			}
-			return
-		}
-	}
+	topics := [][]common.Hash{}
+	// add the log type as first topic, the first search filter will be lockTopic or burnTopic
+	lockTopic := bridgeBankContractABI.Events[types.LogLock.String()].ID()
+	burnTopic := bridgeBankContractABI.Events[types.LogBurn.String()].ID()
+	topics = append(topics, []common.Hash{lockTopic, burnTopic})
 
-	// wait block finalized in ethereum
-	if endBlockHeight.Cmp(lastProcessedBlock) <= 0 {
+	// add the lock burn nonce as second topic, combined search filter will be (lockTopic or burnTopic) and lockBurnNonceTopic
+	var lockBurnNonceTopic [32]byte
+	copy(lockBurnNonceTopic[:], abi.U256(big.NewInt(int64(lockBurnNonce + 1)))[:32])
+	topics = append(topics, []common.Hash{lockBurnNonceTopic})
+
+	// query the exact block number with the lock burn nonce
+	ethLogs, err := ethClient.FilterLogs(context.Background(), ethereum.FilterQuery{
+		FromBlock: big.NewInt(0),
+		ToBlock:   endBlockHeight,
+		Addresses: []common.Address{bridgeBankAddress},
+		Topics:    topics,
+	})
+
+	if err != nil {
+		sub.SugaredLogger.Errorw("failed to filter the logs from ethereum client",
+			errorMessageKey, err.Error())
 		return
 	}
 
+	fromBlockNumber := uint64(0)
+	for _, ethLog := range ethLogs {
+		event, isBurnLock, err := sub.logToEvent(oracletypes.NetworkDescriptor(networkID.Uint64()),
+			bridgeBankAddress,
+			bridgeBankContractABI,
+			ethLog)
+
+		if err != nil {
+			sub.SugaredLogger.Errorw("failed to transform from log to event.",
+				errorMessageKey, err.Error())
+			continue
+		}
+		if !isBurnLock {
+			sub.SugaredLogger.Infow("not burn or lock event, continue events.")
+			continue
+		}
+
+		if event.Nonce.Uint64() != lockBurnNonce+1 {
+			sub.SugaredLogger.Errorw("the lock burn nonce is not expected.")
+			return
+		}
+
+		// get the block height for the specific lock burn nonce
+		fromBlockNumber = ethLog.BlockNumber
+		break
+	}
+
 	events := []types.EthereumEvent{}
+	// get a new topics, exclude the lock burn nonce since we already get block number
+	topics = [][]common.Hash{}
+	topics = append(topics, []common.Hash{lockTopic, burnTopic})
+
 	// query event data from this specific block range
-	ethLogs, err := ethClient.FilterLogs(context.Background(), ethereum.FilterQuery{
-		FromBlock: lastProcessedBlock.Add(lastProcessedBlock, big.NewInt(1)),
+	ethLogs, err = ethClient.FilterLogs(context.Background(), ethereum.FilterQuery{
+		FromBlock: big.NewInt(int64(fromBlockNumber)),
 		ToBlock:   endBlockHeight,
 		Addresses: []common.Address{bridgeBankAddress},
+		Topics:    topics,
 	})
 
 	if err != nil {
@@ -240,7 +262,6 @@ func (sub EthereumSub) CheckNonceAndProcess(txFactory tx.Factory,
 	}
 
 	// loop over ethlogs, and build an array of burn/lock events
-	lastBlockNumber := uint64(0)
 	for _, ethLog := range ethLogs {
 		event, isBurnLock, err := sub.logToEvent(oracletypes.NetworkDescriptor(networkID.Uint64()),
 			bridgeBankAddress,
@@ -257,7 +278,6 @@ func (sub EthereumSub) CheckNonceAndProcess(txFactory tx.Factory,
 			continue
 		}
 		events = append(events, event)
-		lastBlockNumber = ethLog.BlockNumber
 	}
 
 	if len(events) > 0 {
@@ -267,13 +287,6 @@ func (sub EthereumSub) CheckNonceAndProcess(txFactory tx.Factory,
 			return
 		}
 		time.Sleep(transactionInterval)
-	}
-
-	// update the processed block number
-	err = sub.DB.Put([]byte(ethLevelDBKey), big.NewInt(int64(lastBlockNumber)).Bytes(), nil)
-	if err != nil {
-		sub.SugaredLogger.Errorw("failed to write the last processed block into DB",
-			errorMessageKey, err.Error())
 	}
 }
 
@@ -341,6 +354,8 @@ func (sub EthereumSub) logToEvent(networkDescriptor oracletypes.NetworkDescripto
 		eventName = types.LogBurn.String()
 	case eventLogLockSignature:
 		eventName = types.LogLock.String()
+	default:
+		eventName = ""
 	}
 
 	// If event is not expected
