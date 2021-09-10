@@ -1224,6 +1224,13 @@ class PeggyEnvironment(IntegrationTestsEnvironment):
         self.compile_smart_contracts_hardhat()
         bridgebank_sc_addr, bridge_registry_sc_addr, rowan_sc_addr = self.deploy_smart_contracts_hardhat()
 
+        self.write_compatibility_json_file_with_smart_contract_addresses({
+            "BridgeBank": bridgebank_sc_addr,
+            "BridgeRegistry": bridge_registry_sc_addr,
+            # "BridgeToken": None,  # TODO
+            # "Rowan": rowan_sc_addr,
+        })
+
         chain_id = "localnet"
         sifnoded_network_dir = "/tmp/sifnodedNetwork"
         self.cmd.rmdir(sifnoded_network_dir)
@@ -1265,19 +1272,6 @@ class PeggyEnvironment(IntegrationTestsEnvironment):
             log_file=ebrelayer_log_file
         )
 
-        # Write compatibility JSON file with smart contract addresses to smart-contracts/build/smart_contract_addresses.json
-        # so that test_utilities.py:contract_artifacts() can find it
-        integration_tests_expected_network_id = 5777
-        smartcontract_address = {
-            "BridgeBank": {"networks": {str(integration_tests_expected_network_id): {"address": bridgebank_sc_addr}}},
-            "BridgeRegistry": {"networks": {str(integration_tests_expected_network_id): {"address": bridge_registry_sc_addr}}},
-            "BridgeToken": None,  # TODO
-            # "Rowan": rowan_sc_addr,
-        }
-        d = project_dir("smart-contracts", "build", "contracts")
-        self.cmd.mkdir(d)
-        self.cmd.write_text_file(os.path.join(d, "smart_contract_addresses.json"), json.dumps(smartcontract_address))
-
         state_vars = {
             "ETHEREUM_WEBSOCKET_ADDRESS": f"ws://{hardhat_hostname}:{hardhat_port}",
             "BASEDIR": project_dir(),
@@ -1288,6 +1282,19 @@ class PeggyEnvironment(IntegrationTestsEnvironment):
         self.cmd.write_text_file(project_dir("test/integration/vagrantenv.json"), json.dumps(state_vars))
 
         return hardhat_proc, sifnoded_proc, ebrelayer_proc
+
+    # Write compatibility JSON files with smart contract addresses so that test_utilities.py:contract_artifact() keeps
+    # working. We're not using truffle, so we need to create files with the same names and structure as it's used for
+    # integration tests: .["networks"]["5777"]["address"]
+    def write_compatibility_json_file_with_smart_contract_addresses(self, smart_contract_addresses):
+        integration_tests_expected_network_id = 5777
+        d = project_dir("smart-contracts", "build", "contracts")
+        self.cmd.mkdir(d)
+        for sc_name, sc_addr in smart_contract_addresses.items():
+            self.cmd.write_text_file(os.path.join(d, f"{sc_name}.json"), json.dumps({
+                "networks": {str(integration_tests_expected_network_id): {"address": sc_addr}}}))
+        # self.cmd.write_text_file(os.path.join(d, "smart_contract_addresses.json"), json.dumps(smartcontract_address))
+
 
 def force_kill_processes(cmd):
     cmd.execst(["pkill", "node"], check_exit=False)
