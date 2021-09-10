@@ -405,7 +405,7 @@ class Integrator(Ganache, Sifnoded, Command):
 
         # TODO ui scripts use just "yarn; yarn migrate" alias "npx truffle migrate --reset",
         self.npx(["truffle", "deploy", "--network", network_name, "--reset"], env=env,
-            cwd=self.smart_contracts_dir)
+            cwd=self.smart_contracts_dir, pipe=False)
 
     def deploy_smart_contracts_for_ui_stack(self):
         self.copy_file(os.path.join(self.smart_contracts_dir, ".env.ui.example"), os.path.join(self.smart_contracts_dir, ".env"))
@@ -423,16 +423,16 @@ class Integrator(Ganache, Sifnoded, Command):
             self.smart_contracts_dir, f"build/contracts/{x}.json"), network_id)
             for x in ["BridgeToken", "BridgeRegistry", "BridgeBank"]]
 
-    def npx(self, args, env=None, cwd=None):
+    def npx(self, args, env=None, cwd=None, pipe=True):
         # Typically we want any npx commands to inherit stdout and strerr
-        self.execst(["npx"] + args, env=env, cwd=cwd, pipe=False)
+        return self.execst(["npx"] + args, env=env, cwd=cwd, pipe=pipe)
 
     def truffle_exec(self, script_name, *script_args, env=None):
         self._check_env_vs_file(env, os.path.join(self.smart_contracts_dir, ".env"))
         script_path = os.path.join(self.smart_contracts_dir, f"scripts/{script_name}.js")
         # Hint: call web3 directly, avoid npx + truffle + script
         # Maybe: self.cmd.yarn(["integrationtest:setTokenLockBurnLimit", str(amount)])
-        self.npx(["truffle", "exec", script_path] + list(script_args), env=env, cwd=self.smart_contracts_dir)
+        self.npx(["truffle", "exec", script_path] + list(script_args), env=env, cwd=self.smart_contracts_dir, pipe=False)
 
     # TODO setTokenLockBurnLimit is gone, possibly replaced by bulkSetTokenLockBurnLimit
     def set_token_lock_burn_limit(self, update_address, amount, ethereum_private_key, infura_project_id, local_provider):
@@ -1266,9 +1266,21 @@ def cleanup_and_reset_state():
 
     # rm -rvf /tmp/tmp.xxxx (ganache DB, unique for every run)
     cmd.rmdir(project_dir("test/integration/sifchainrelayerdb"))  # TODO move to /tmp
-    cmd.rmdir(project_dir("smart-contracts/build"))
+    cmd.rmdir(project_dir("smart-contracts/build"))  # truffle deploy
     cmd.rmdir(project_dir("test/integration/vagrant/data"))
     cmd.rmdir(cmd.get_user_home(".sifnoded"))  # Probably needed for "--keyring-backend test"
+
+    # Peggy/devenv/hardhat cleanup
+    # For full clean, also: cd smart-contracts && rm -rf node_modules && npm install
+    # TODO Difference between yarn vs. npm install?
+    # (1) = cd smart-contracts; npx hardhat run scripts/deploy_contracts.ts --network localhost
+    # (2) = cd smart-contracts; GOBIN=/home/anderson/go/bin npx hardhat run scripts/devenv.ts
+    cmd.rmdir(project_dir("smart-contracts", "build"))  # (1)
+    cmd.rmdir(project_dir("smart-contracts", "artifacts"))  # (1)
+    cmd.rmdir(project_dir("smart-contracts", "cache"))  # (1)
+    cmd.rmdir(project_dir("smart-contracts/.openzeppelin"))  # (1)
+    cmd.rmdir(project_dir("smart-contracts", "relayerdb"))  # (2)
+    cmd.rmdir(project_dir("smart-contracts", "venv"))
 
     # Additional cleanup (not neccessary to make it work)
     # cmd.rm(project_dir("smart-contracts/combined.log"))
@@ -1328,7 +1340,8 @@ def main(argv):
         input("Press ENTER to exit...")
         killall(processes)
     elif what == "run-peggy-env":
-        # hardhat, sifnoded, ebrelayer
+        # Equivalent to future/devenv - hardhat, sifnoded, ebrelayer
+        # I.e. cd smart-contracts; GOBIN=/home/anderson/go/bin npx hardhat run scripts/devenv.ts
         e = PeggyEnvironment(cmd)
         processes = e.run()
         input("Press ENTER to exit...")
