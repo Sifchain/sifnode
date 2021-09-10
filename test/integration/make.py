@@ -162,8 +162,9 @@ class Command:
         self.execst(["tar", "xf" + comp, tarfile], cwd=path)
 
 
-class Ganache(Command):
-    def start_ganache_cli(self, mnemonic=None, db=None, port=None, host=None, network_id=None, gas_price=None,
+class Ganache:
+    @staticmethod
+    def start_ganache_cli(env, mnemonic=None, db=None, port=None, host=None, network_id=None, gas_price=None,
         gas_limit=None, default_balance_ether=None, block_time=None, account_keys_path=None, log_file=None
     ):
         args = ["ganache-cli"] + \
@@ -177,7 +178,7 @@ class Ganache(Command):
             (["--defaultBalanceEther", str(default_balance_ether)] if default_balance_ether is not None else []) + \
             (["--blockTime", str(block_time)] if block_time is not None else []) + \
             (["--account_keys_path", account_keys_path] if account_keys_path is not None else [])
-        return self.popen(args, log_file=log_file)
+        return env.popen(args, log_file=log_file)
 
 
 class Sifnoded(Command):
@@ -342,6 +343,23 @@ class Integrator(Ganache, Sifnoded, Command):
                 continue
             result[k] = v
         return result
+
+    # IntegrationEnvironment
+    # TODO Merge
+    def make_go_binaries(self):
+        # make go binaries (TODO Makefile needs to be trimmed down, especially "find")
+        # cd test/integration; BASEDIR=... make
+        # (checks all *.go files and, runs make in $BASEDIR, touches sifnoded, removes ~/.sifnoded/localnet
+        self.execst(["make"], cwd=project_dir("test", "integration"), env={"BASEDIR": project_dir()}, pipe=False)
+
+    # From PeggyEnvironment
+    # TODO Merge
+    # Main Makefile requires GOBIN to be set to an absolute path. Compiled executables ebrelayer, sifgen and
+    # sifnoded will be written there. The directory will be created if it doesn't exist yet.
+    #
+    def make_go_binaries_2(self):
+        # Original: cd smart-contracts; make -C .. install
+        self.execst(["make", "install"], cwd=project_dir(), pipe=False)
 
     def install_smart_contracts_dependencies(self):
         self.execst(["make", "clean-smartcontracts"], cwd=self.smart_contracts_dir)  # = rm -rf build .openzeppelin
@@ -540,13 +558,13 @@ class UIStackEnvironment:
         # killall sifnoded
         # rm $(which sifnoded)
         self.cmd.rmdir(self.sifnoded_path)
-        self.cmd.execst(["make", "install"], cwd=project_dir(), pipe=False)
+        self.cmd.make_go_binaries_2()
 
         # ui/scripts/stack-launch.sh -> ui/scripts/_eth.sh -> ui/chains/etc/launch.sh
         self.cmd.rmdir(self.ganache_db_path)
         self.cmd.yarn([], cwd=project_dir("ui/chains/eth"))  # Installs ui/chains/eth/node_modules
         # Note that this runs ganache-cli from $PATH whereas scripts start it with yarn in ui/chains/eth
-        ganache_proc = self.cmd.start_ganache_cli(mnemonic=self.ethereum_root_mnemonic, db=self.ganache_db_path,
+        ganache_proc = Ganache.start_ganache_cli(self.cmd, mnemonic=self.ethereum_root_mnemonic, db=self.ganache_db_path,
             port=7545, network_id=self.network_id, gas_price=20000000000, gas_limit=6721975, host="0.0.0.0")
 
         # ui/scripts/stack-launch.sh -> ui/scripts/_sif.sh -> ui/chains/sif/launch.sh
@@ -767,12 +785,8 @@ class IntegrationTestsEnvironment:
         self.ganache_mnemonic = ["candy", "maple", "cake", "sugar", "pudding", "cream", "honey", "rich", "smooth",
                 "crumble", "sweet", "treat"]
 
-    def make_go_binaries(self):
-        # make go binaries (TODO Makefile needs to be trimmed down, especially "find")
-        self.cmd.execst(["make"], cwd=self.test_integration_dir, env={"BASEDIR": project_dir()})
-
     def prepare(self):
-        self.make_go_binaries()
+        self.cmd.make_go_binaries()
         self.cmd.install_smart_contracts_dependencies()
 
     def run(self):
@@ -781,9 +795,9 @@ class IntegrationTestsEnvironment:
         self.prepare()
 
         log_dir = "/tmp"
-        ganache_log_file = open(os.path.join(log_dir, "ganache.log"), "w")
-        sifnoded_log_file = open(os.path.join(log_dir, "sifnoded.log"), "w")
-        ebrelayer_log_file = open(os.path.join(log_dir, "ebrelayer.log"), "w")
+        ganache_log_file = open(os.path.join(log_dir, "ganache.log"), "w")  # TODO close
+        sifnoded_log_file = open(os.path.join(log_dir, "sifnoded.log"), "w")  # TODO close
+        ebrelayer_log_file = open(os.path.join(log_dir, "ebrelayer.log"), "w")  # TODO close
 
         if self.using_ganache_gui:
             ebrelayer_ethereum_addr = "0x8e2bE12daDbCcbf7c98DBb59f98f22DFF0eF3F2c"
@@ -804,7 +818,7 @@ class IntegrationTestsEnvironment:
             block_time = None  # TODO
             account_keys_path = os.path.join(self.data_dir, "ganachekeys.json")
             ganache_db_path = self.cmd.mktempdir()
-            ganache_proc = self.cmd.start_ganache_cli(block_time=block_time, host="0.0.0.0",
+            ganache_proc = Ganache.start_ganache_cli(self.cmd, block_time=block_time, host="0.0.0.0",
                 mnemonic=self.ganache_mnemonic, network_id=self.network_id, port=7545, db=ganache_db_path,
                 account_keys_path=account_keys_path, log_file=ganache_log_file)
 
@@ -875,7 +889,8 @@ class IntegrationTestsEnvironment:
         adminuser_addr = self.cmd.sifchain_init_integration(validator_moniker, validator_mnemonic, sifnoded_home, denom_whitelist_file, validator1_password)
 
         # Start sifnoded
-        sifnoded_proc = self.cmd.sifnoded_start(tcp_url=self.tcp_url, minimum_gas_prices=[0.5, "rowan"], sifnoded_home=sifnoded_home, log_file=sifnoded_log_file)
+        sifnoded_proc = self.cmd.sifnoded_start(tcp_url=self.tcp_url, minimum_gas_prices=[0.5, "rowan"],
+            sifnoded_home=sifnoded_home, log_file=sifnoded_log_file)
 
         # TODO: should we wait for sifnoded to come up before continuing? If so, how do we do it?
 
@@ -1061,8 +1076,9 @@ class IntegrationTestsEnvironment:
         ganache_db_path = self.state_vars["GANACHE_DB_DIR"]
         account_keys_path = os.path.join(self.data_dir, "ganachekeys.json")  # TODO this is in test/integration/vagrant/data, which is supposed to be cleared
 
-        ganache_proc = self.cmd.start_ganache_cli(block_time=block_time, host="0.0.0.0", mnemonic=self.ganache_mnemonic,
-            network_id=self.network_id, port=7545, db=ganache_db_path, account_keys_path=account_keys_path)
+        ganache_proc = Ganache.start_ganache_cli(self.cmd, block_time=block_time, host="0.0.0.0",
+            mnemonic=self.ganache_mnemonic, network_id=self.network_id, port=7545, db=ganache_db_path,
+            account_keys_path=account_keys_path)  # TODO log_file
 
         self.cmd.wait_for_file(account_keys_path)  # Created by ganache-cli
         time.sleep(2)
@@ -1099,24 +1115,12 @@ class PeggyEnvironment(IntegrationTestsEnvironment):
         self.smart_contracts_dir = project_dir("smart-contracts")
         gobin_dir = os.environ["GOBIN"]
 
-    # TODO Merge with super.make_go_binaries
-    # Main Makefile requires GOBIN to be set to an absolute path. Compiled executables ebrelayer, sifgen and
-    # sifnoded will be written there. The directory will be created if it doesn't exist yet.
-    #
-    # c.f. IntegrationEnvironment:
-    # cd test/integration; BASEDIR=... make
-    # (checks all *.go files and, runs make in $BASEDIR, touches sifnoded, removes ~/.sifnoded/localnet
-    def _make_go_binaries(self):
-        # Original: cd smart-contracts; make -C .. install
-        res = self.cmd.execst(["make", "install"], cwd=project_dir())
-        print(repr(res))
-
-    def start_hardhat(self, hostname, port):
+    def start_hardhat(self, hostname, port, log_file=None):
         # TODO We need to manaege smart-contracts/hardhat.config.ts + it also reads smart-contracts/.env via dotenv
         # TODO Handle failures, e.g. if the process is already running we get exit value 1 and
         # "Error: listen EADDRINUSE: address already in use 127.0.0.1:8545"
-        proc = self.cmd,popen([os.path.join("node_modules", ".bin", "hardhat"), "node", "--hostname", hostname, "--port",
-            str(port)], cwd=self.smart_contracts_dir)
+        proc = self.cmd.popen([os.path.join("node_modules", ".bin", "hardhat"), "node", "--hostname", hostname, "--port",
+            str(port)], cwd=self.smart_contracts_dir, log_file=log_file)
         return proc
 
     def signer_array_to_ethereum_accounts(self, accounts, n_validators):
@@ -1171,29 +1175,35 @@ class PeggyEnvironment(IntegrationTestsEnvironment):
         ]]]
 
     def deploy_smart_contracts_hardhat(self):
-        res = self.cmd.execst(["npx", "hardhat", "run", "scripts/deploy_contracts.ts", "--network", "localhost"],
+        res = self.cmd.npx(["hardhat", "run", "scripts/deploy_contracts.ts", "--network", "localhost"],
             cwd=project_dir("smart-contracts"))
         # Skip first line "No need to generate any newer types"
         m = json.loads(stdout(res).splitlines()[1])
         return m["bridgeBank"], m["bridgeRegistry"], m["rowanContract"]
 
     def run_ebrelayer_peggy(self, tcp_url, websocket_address, bridge_registry_sc_addr, validator_moniker,
-        validator_mnemonic, chain_id, symbol_translator_file, relayerdb_path, ethereum_address, ethereum_private_key
+        validator_mnemonic, chain_id, symbol_translator_file, relayerdb_path, ethereum_address, ethereum_private_key,
+        log_file=None
     ):
         return self.cmd.ebrelayer_init(tcp_url, websocket_address, bridge_registry_sc_addr, validator_moniker,
             validator_mnemonic, chain_id, ethereum_private_key=ethereum_private_key, ethereum_address=ethereum_address,
             node=tcp_url, keyring_backend="test", sign_with=validator_moniker,
-            symbol_translator_file=symbol_translator_file, relayerdb_path=relayerdb_path)
+            symbol_translator_file=symbol_translator_file, relayerdb_path=relayerdb_path, log_file=log_file)
 
     # Override
     def run(self):
         # self._make_go_binaries()
 
+        log_dir = "/tmp"
+        hardhat_log_file = open(os.path.join(log_dir, "ganache.log"), "w")  # TODO close + use a different name
+        sifnoded_log_file = open(os.path.join(log_dir, "sifnoded.log"), "w")  # TODO close
+        ebrelayer_log_file = open(os.path.join(log_dir, "ebrelayer.log"), "w")  # TODO close
+
         self.cmd.rmdir(self.cmd.get_user_home(".sifnoded"))  # Purge test keyring backend
 
         hardhat_hostname = "localhost"
         hardhat_port = 8545
-        hardhat_proc = self.start_hardhat(hardhat_hostname, hardhat_port)
+        hardhat_proc = self.start_hardhat(hardhat_hostname, hardhat_port, log_file=hardhat_log_file)
 
         hardhat_validator_count = 1
         hardhat_network_id = 1
@@ -1222,7 +1232,8 @@ class PeggyEnvironment(IntegrationTestsEnvironment):
         self.cmd.sifchain_init_peggy(validator_moniker, validator_mnemonic, sifnoded_home, denom_whitelist_file)
 
         tcp_url = "tcp://0.0.0.0:26657"
-        sifnoded_proc = self.cmd.sifnoded_start(minimum_gas_prices=[0.5, "rowan"], tcp_url=tcp_url, sifnoded_home=sifnoded_home)
+        sifnoded_proc = self.cmd.sifnoded_start(minimum_gas_prices=[0.5, "rowan"], tcp_url=tcp_url,
+            sifnoded_home=sifnoded_home, log_file=sifnoded_log_file)
 
         # TODO Wait for account (somewhere)
 
@@ -1239,18 +1250,10 @@ class PeggyEnvironment(IntegrationTestsEnvironment):
             relayerdb_path,
             ethereum_address,
             ethereum_private_key,
+            log_file=ebrelayer_log_file
         )
 
         return hardhat_proc, sifnoded_proc, ebrelayer_proc
-
-def run_with_logging_until_keypress(procs):
-    o = []
-    for i, p in enumerate(procs):
-        path = f"/tmp/proc-{i}.log"
-        pass
-    procs_and_files = [[p, f"/tmp/proc-{i}.log"] for i, p in enumerate(procs)]
-
-    pass
 
 def force_kill_processes(cmd):
     cmd.execst(["pkill", "node"], check_exit=False)
@@ -1293,7 +1296,11 @@ def main(argv):
     logging.basicConfig(stream=sys.stdout, level=logging.DEBUG, format="%(message)s")
     what = argv[0] if argv else None
     cmd = Integrator()
-    if what == "run-ui-env":
+    if what == "init":
+        cleanup_and_reset_state()
+        cmd.make_go_binaries_2()
+        cmd.install_smart_contracts_dependencies()
+    elif what == "run-ui-env":
         e = UIStackEnvironment(cmd)
         e.stack_save_snapshot()
         e.stack_push()
