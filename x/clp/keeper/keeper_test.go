@@ -1,9 +1,11 @@
 package keeper_test
 
 import (
+	"fmt"
 	"math"
 	"testing"
 
+	clpkeeper "github.com/Sifchain/sifnode/x/clp/keeper"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/query"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
@@ -148,4 +150,44 @@ func TestKeeper_GetModuleAccount(t *testing.T) {
 	moduleAccount := clpKeeper.GetAuthKeeper().GetModuleAccount(ctx, types.ModuleName)
 	assert.Equal(t, moduleAccount.GetName(), types.ModuleName)
 	assert.Equal(t, moduleAccount.GetPermissions(), []string{authtypes.Burner, authtypes.Minter})
+}
+
+func TestKeeper_GetLiquidityProviderData(t *testing.T) {
+	ctx, app := test.CreateTestAppClp(false)
+	clpKeeper := app.ClpKeeper
+	tokens := []string{"cada", "cbch", "cbnb", "cbtc", "ceos", "ceth", "ctrx", "cusdt"}
+	pools, lpList := test.GeneratePoolsAndLPs(clpKeeper, ctx, tokens)
+	lpaddr, err := sdk.AccAddressFromBech32(lpList[0].LiquidityProviderAddress)
+	require.NoError(t, err)
+	assetList, _, err := clpKeeper.GetAssetsForLiquidityProviderPaginated(ctx, lpaddr, &query.PageRequest{Limit: math.MaxUint64})
+	require.NoError(t, err)
+	assert.LessOrEqual(t, len(assetList), len(lpList))
+	var lpDataList []*types.LiquidityProviderData
+	for i := range assetList {
+		asset := assetList[i]
+		pool, err := clpKeeper.GetPool(ctx, asset.Symbol)
+		if err != nil {
+			continue
+		}
+		lp, err := clpKeeper.GetLiquidityProvider(ctx, asset.Symbol, lpaddr.String())
+		if err != nil {
+			continue
+		}
+		native, external, _, _ := clpkeeper.CalculateAllAssetsForLP(pool, lp)
+		lpData := types.NewLiquidityProviderData(lp, asset.Symbol, native.String(), external.String())
+		lpDataList = append(lpDataList, &lpData)
+	}
+	lpDataResponse := types.NewLiquidityProviderDataResponse(lpDataList, ctx.BlockHeight())
+	assert.NotNil(t, lpDataResponse)
+	assert.Equal(t, len(pools), len(lpDataResponse.LiquidityProviderData))
+	assert.Equal(t, len(lpList), len(lpDataResponse.LiquidityProviderData))
+	for i := 0; i < len(lpDataResponse.LiquidityProviderData); i++ {
+		lpData := lpDataResponse.LiquidityProviderData[i]
+		assert.Contains(t, lpList, *lpData.LiquidityProvider)
+		assert.Equal(t, lpList[0].LiquidityProviderAddress, lpData.LiquidityProvider.LiquidityProviderAddress)
+		assert.Equal(t, assetList[i], lpData.LiquidityProvider.Asset)
+		assert.Equal(t, assetList[i].Symbol, lpData.Symbol)
+		assert.Equal(t, fmt.Sprint(100*uint64(i+1)), lpData.ExternalAssetBalance)
+		assert.Equal(t, fmt.Sprint(1000*uint64(i+1)), lpData.NativeAssetBalance)
+	}
 }
