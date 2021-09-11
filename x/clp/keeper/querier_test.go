@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"testing"
 
+	sdkQuery "github.com/cosmos/cosmos-sdk/types/query"
+
 	sifapp "github.com/Sifchain/sifnode/app"
 	clpkeeper "github.com/Sifchain/sifnode/x/clp/keeper"
 	"github.com/Sifchain/sifnode/x/clp/test"
@@ -219,6 +221,36 @@ func TestQueryGetLiquidityProviderData(t *testing.T) {
 		assert.Equal(t, fmt.Sprint(100*uint64(i+1)), lpData.ExternalAssetBalance)
 		assert.Equal(t, fmt.Sprint(1000*uint64(i+1)), lpData.NativeAssetBalance)
 	}
+}
+
+func TestQueryGetLiquidityProviderDataFailure(t *testing.T) {
+	cdc, app, ctx := createTestInput()
+	keeper := app.ClpKeeper
+	tokens := []string{"cada", "cbch", "cbnb", "cbtc", "ceos", "ceth", "ctrx", "cusdt"}
+	_, lpList := test.GeneratePoolsAndLPs(keeper, ctx, tokens)
+	query := abci.RequestQuery{
+		Path: "",
+		Data: []byte{},
+	}
+	querier := clpkeeper.NewQuerier(keeper, cdc)
+	addr, err := sdk.AccAddressFromBech32(lpList[0].LiquidityProviderAddress)
+	assert.NoError(t, err)
+	query.Path = ""
+	query.Data = nil
+	_, err = querier(ctx, []string{types.QueryLiquidityProviderData}, query)
+	assert.Error(t, err)
+	queryLp := types.LiquidityProviderDataReq{
+		LpAddress: addr.String(),
+		Pagination: &sdkQuery.PageRequest{
+			Limit: 300,
+		},
+	}
+	qlp, errRes := cdc.MarshalJSON(queryLp)
+	require.NoError(t, errRes)
+	query.Path = ""
+	query.Data = qlp
+	_, err = querier(ctx, []string{types.QueryLiquidityProviderData}, query)
+	assert.Error(t, err)
 }
 
 func TestQueryAssetList(t *testing.T) {

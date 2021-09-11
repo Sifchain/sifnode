@@ -37,6 +37,16 @@ func TestKeeper_Errors(t *testing.T) {
 	assert.NotNil(t, test.GenerateAddress("A58856F0FD53BF058B4909A21AEC019107BA7"))
 }
 
+func TestKeeper_CalculateAssetsForLP(t *testing.T) {
+	_, app, ctx := createTestInput()
+	keeper := app.ClpKeeper
+	tokens := []string{"cada", "cbch", "cbnb", "cbtc", "ceos", "ceth", "ctrx", "cusdt"}
+	pools, lpList := test.GeneratePoolsAndLPs(keeper, ctx, tokens)
+	native, external, _, _ := clpkeeper.CalculateAllAssetsForLP(pools[0], lpList[0])
+	assert.Equal(t, "100", external.String())
+	assert.Equal(t, "1000", native.String())
+}
+
 func TestKeeper_SetPool(t *testing.T) {
 	pool := test.GenerateRandomPool(1)[0]
 	ctx, app := test.CreateTestAppClp(false)
