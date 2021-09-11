@@ -106,7 +106,10 @@ func (k Querier) GetLiquidityProviderData(c context.Context, req *types.Liquidit
 		return nil, err
 	}
 
-	assetList, _, err := k.Keeper.GetAssetsForLiquidityProviderPaginated(ctx, addr, &query.PageRequest{Limit: MaxPageLimit})
+	if req.Pagination.Limit > MaxPageLimit {
+		req.Pagination.Limit = MaxPageLimit
+	}
+	assetList, _, err := k.Keeper.GetAssetsForLiquidityProviderPaginated(ctx, addr, &query.PageRequest{Limit: req.Pagination.Limit})
 	if err != nil {
 		return nil, err
 	}
