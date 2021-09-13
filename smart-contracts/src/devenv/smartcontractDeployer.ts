@@ -38,6 +38,7 @@ export class SmartContractDeployer extends SynchronousCommand<SmartContractDeplo
     // This is to handle npx commmand outputting "No need to generate any newer types"
     const jsonOutput = JSON.parse(r.output.split('\n')[1]);
     return new SmartContractDeployResult({
+      cosmosBridge: jsonOutput.cosmosBridge,
       bridgeBank: jsonOutput.bridgeBank,
       bridgeRegistry: jsonOutput.bridgeRegistry,
       rowanContract: jsonOutput.rowanContract
