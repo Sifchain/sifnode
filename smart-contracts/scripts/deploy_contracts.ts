@@ -11,11 +11,13 @@ import { setupRopstenDeployment, setupSifchainMainnetDeployment } from "../src/h
 import {
   BridgeBankProxy, BridgeRegistryProxy,
   BridgeTokenSetup,
+  CosmosBridgeProxy,
   RowanContract,
   SifchainContractFactories
 } from "../src/tsyringe/contracts";
 import * as dotenv from "dotenv";
 export type DeployedContractAddresses = {
+  cosmosBridge: string,
   bridgeBank: string,
   bridgeRegistry: string,
   rowanContract: string,
@@ -30,10 +32,12 @@ async function main() {
   const bridgeBank = await container.resolve(BridgeBankProxy).contract
   const bridgeRegistry = await container.resolve(BridgeRegistryProxy).contract
   const rowanContract = await container.resolve(RowanContract).contract
+  const cosmosBridge = await container.resolve(CosmosBridgeProxy).contract
   const result: DeployedContractAddresses = {
+    cosmosBridge: cosmosBridge.address,
     bridgeBank: bridgeBank.address,
     bridgeRegistry: bridgeRegistry.address,
-    rowanContract: rowanContract.address
+    rowanContract: rowanContract.address,
   }
   console.log(JSON.stringify(result))
 }
