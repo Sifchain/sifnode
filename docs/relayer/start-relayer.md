@@ -3,13 +3,25 @@ After the signature aggregation feature introduced in the relayer, there are two
 
 ## start witness node
 To start the witness node, you need run a subcommand of eblayer, the usage as following:
-Use: "init-witness [networkDescriptor] [tendermintNode] [web3Provider] [bridgeRegistryContractAddress] [validatorMnemonic]",
-Example: "ebrelayer init-witness 1 tcp://localhost:26657 ws://localhost:7545/ 0x30753E4A8aad7F8597332E813735Def5dD395028 mnemonic --chain-id=peggy".
+Usage:
+```shell
+init-witness [networkDescriptor] [tendermintNode] [web3Provider] [bridgeRegistryContractAddress] [validatorMnemonic]
+```
+Example: 
+```shell
+ebrelayer init-witness 1 tcp://localhost:26657 ws://localhost:7545/ 0x30753E4A8aad7F8597332E813735Def5dD395028 mnemonic --chain-id=peggy
+```
 
 ## start relay node
 To start the relay node, you need run a subcommand of eblayer, the usage as following:
-Use: "init-relayer [networkDescriptor] [tendermintNode] [web3Provider] [bridgeRegistryContractAddress] [validatorMnemonic]",	
-Example: "ebrelayer init-relayer 1 tcp://localhost:26657 ws://localhost:7545/ 0x30753E4A8aad7F8597332E813735Def5dD395028 mnemonic --chain-id=peggy".
+Usage: 
+```shell
+init-relayer [networkDescriptor] [tendermintNode] [web3Provider] [bridgeRegistryContractAddress] [validatorMnemonic]
+```
+Example:
+```shell
+ebrelayer init-relayer 1 tcp://localhost:26657 ws://localhost:7545/ 0x30753E4A8aad7F8597332E813735Def5dD395028 mnemonic --chain-id=peggy
+```
 
 Because in the Sifchain network, we just need single relay node for each target network. In current stage, target network means EVM-based network like Ethereum, BSC, Polygon like so on.
 
