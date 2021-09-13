@@ -190,7 +190,7 @@ describe("Test Bridge Bank", function () {
           [state.amount, state.amount, state.amount],
           [true, false, false]
         ),
-      ).to.be.revertedWith("Only token in cosmos whitelist can be burned");
+      ).to.be.revertedWith("Token is not in Cosmos whitelist");
     });
 
     it("should allow user to multi-lock and burn ERC20 tokens and rowan with multiLockBurn method", async function () {

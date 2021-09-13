@@ -301,7 +301,7 @@ describe("Security Test", function () {
           bridgeToken.address,
           amount
         ),
-      ).to.be.revertedWith("Only token in cosmos whitelist can be burned");
+      ).to.be.revertedWith("Token is not in Cosmos whitelist");
     });
   });
 

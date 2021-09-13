@@ -24,7 +24,7 @@ contract CosmosWhiteList is CosmosWhiteListStorage {
     modifier onlyCosmosTokenWhiteList(address _token) {
         require(
             getCosmosTokenInWhiteList(_token),
-            "Only token in cosmos whitelist can be burned"
+            "Token is not in Cosmos whitelist"
         );
         _;
     }
