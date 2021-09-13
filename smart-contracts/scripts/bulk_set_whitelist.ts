@@ -62,7 +62,7 @@ async function main() {
     if(await bridgeBankAsOperator.getTokenInEthWhiteList(addr.address)) {
       // this token is already in the whitelist;
       // the contract will not blow up on us, so we just skip this one.
-      console.log(`\x1b[31mToken ${addr.address} NOT added to the whitelist: already there\x1b[0m`);
+      console.log(`\x1b[31mToken ${addr.address} NOT added to the whitelist: already there, no transaction sent\x1b[0m`);
       continue;
     }
 
