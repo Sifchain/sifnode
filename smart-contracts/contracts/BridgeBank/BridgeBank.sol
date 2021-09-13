@@ -673,13 +673,6 @@ contract BridgeBank is BankStorage,
 
         address token = address(0);
 
-        // decimals defaults to 18 if call to decimals fails
-        uint8 decimals = 18;
-
-        // Get name and symbol
-        string memory name = getName(token);
-        string memory symbol = getSymbol(token);
-
         lockBurnNonce = lockBurnNonce + 1;
 
         emit LogLock(
@@ -688,7 +681,7 @@ contract BridgeBank is BankStorage,
             token,
             amount,
             lockBurnNonce,
-            decimals,
+            18, // decimals
             "EVM_NATIVE", // symbol
             "EVM_NATIVE", // name
             networkDescriptor
