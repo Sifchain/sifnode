@@ -33,7 +33,7 @@ async function setAllowance(user, erowan, rowan) {
   return { erowanBalance, rowanBalance };
 }
 
-describe.only("Test Erowan migration", function () {
+describe("Test Erowan migration", function () {
   let accounts;
   let userOne;
   let owner;

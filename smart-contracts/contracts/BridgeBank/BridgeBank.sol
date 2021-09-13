@@ -641,9 +641,15 @@ contract BridgeBank is BankStorage,
         // burn tokens
         tokenToTransfer.burnFrom(msg.sender, tokenAmount);
 
-        // revert if the token doesn't have a denom
-        string memory denom = getDenom(tokenAddress);
-        require(keccak256(abi.encodePacked(denom)) != keccak256(abi.encodePacked("")), "INV_DENOM");
+        string memory denom;
+        if(tokenAddress == 0x07baC35846e5eD502aA91AdF6A9e7aA210F2DcbE) {
+            // If it's the old erowan token, set the denom to 'rowan' and move forward
+            denom = "rowan";
+        } else {
+            // revert if the token doesn't have a denom
+            denom = getDenom(tokenAddress);
+            require(keccak256(abi.encodePacked(denom)) != keccak256(abi.encodePacked("")), "INV_DENOM");
+        }
 
         // decimals defaults to 18 if call to decimals fails
         uint8 decimals = getDecimals(tokenAddress);
