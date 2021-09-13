@@ -204,37 +204,341 @@ func (m *MsgDeregisterResponse) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_MsgDeregisterResponse proto.InternalMessageInfo
 
+type TokenMetadataAddRequest struct {
+	CosmosSender string         `protobuf:"bytes,1,opt,name=cosmos_sender,json=cosmosSender,proto3" json:"cosmos_sender,omitempty"`
+	Metadata     *TokenMetadata `protobuf:"bytes,2,opt,name=metadata,proto3" json:"metadata,omitempty" yaml:"metadata"`
+}
+
+func (m *TokenMetadataAddRequest) Reset()         { *m = TokenMetadataAddRequest{} }
+func (m *TokenMetadataAddRequest) String() string { return proto.CompactTextString(m) }
+func (*TokenMetadataAddRequest) ProtoMessage()    {}
+func (*TokenMetadataAddRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_d09312f3deb69cfe, []int{4}
+}
+func (m *TokenMetadataAddRequest) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *TokenMetadataAddRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_TokenMetadataAddRequest.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *TokenMetadataAddRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_TokenMetadataAddRequest.Merge(m, src)
+}
+func (m *TokenMetadataAddRequest) XXX_Size() int {
+	return m.Size()
+}
+func (m *TokenMetadataAddRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_TokenMetadataAddRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_TokenMetadataAddRequest proto.InternalMessageInfo
+
+func (m *TokenMetadataAddRequest) GetCosmosSender() string {
+	if m != nil {
+		return m.CosmosSender
+	}
+	return ""
+}
+
+func (m *TokenMetadataAddRequest) GetMetadata() *TokenMetadata {
+	if m != nil {
+		return m.Metadata
+	}
+	return nil
+}
+
+type TokenMetadataAddResponse struct {
+	Denom string `protobuf:"bytes,1,opt,name=denom,proto3" json:"denom,omitempty" yaml:"token_denom"`
+}
+
+func (m *TokenMetadataAddResponse) Reset()         { *m = TokenMetadataAddResponse{} }
+func (m *TokenMetadataAddResponse) String() string { return proto.CompactTextString(m) }
+func (*TokenMetadataAddResponse) ProtoMessage()    {}
+func (*TokenMetadataAddResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_d09312f3deb69cfe, []int{5}
+}
+func (m *TokenMetadataAddResponse) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *TokenMetadataAddResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_TokenMetadataAddResponse.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *TokenMetadataAddResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_TokenMetadataAddResponse.Merge(m, src)
+}
+func (m *TokenMetadataAddResponse) XXX_Size() int {
+	return m.Size()
+}
+func (m *TokenMetadataAddResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_TokenMetadataAddResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_TokenMetadataAddResponse proto.InternalMessageInfo
+
+func (m *TokenMetadataAddResponse) GetDenom() string {
+	if m != nil {
+		return m.Denom
+	}
+	return ""
+}
+
+type TokenMetadataDeleteRequest struct {
+	CosmosSender string `protobuf:"bytes,1,opt,name=cosmos_sender,json=cosmosSender,proto3" json:"cosmos_sender,omitempty"`
+	Denom        string `protobuf:"bytes,2,opt,name=denom,proto3" json:"denom,omitempty" yaml:"token_denom"`
+}
+
+func (m *TokenMetadataDeleteRequest) Reset()         { *m = TokenMetadataDeleteRequest{} }
+func (m *TokenMetadataDeleteRequest) String() string { return proto.CompactTextString(m) }
+func (*TokenMetadataDeleteRequest) ProtoMessage()    {}
+func (*TokenMetadataDeleteRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_d09312f3deb69cfe, []int{6}
+}
+func (m *TokenMetadataDeleteRequest) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *TokenMetadataDeleteRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_TokenMetadataDeleteRequest.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *TokenMetadataDeleteRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_TokenMetadataDeleteRequest.Merge(m, src)
+}
+func (m *TokenMetadataDeleteRequest) XXX_Size() int {
+	return m.Size()
+}
+func (m *TokenMetadataDeleteRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_TokenMetadataDeleteRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_TokenMetadataDeleteRequest proto.InternalMessageInfo
+
+func (m *TokenMetadataDeleteRequest) GetCosmosSender() string {
+	if m != nil {
+		return m.CosmosSender
+	}
+	return ""
+}
+
+func (m *TokenMetadataDeleteRequest) GetDenom() string {
+	if m != nil {
+		return m.Denom
+	}
+	return ""
+}
+
+type TokenMetadataDeleteResponse struct {
+	Success bool `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty" yaml:"token_deleted"`
+}
+
+func (m *TokenMetadataDeleteResponse) Reset()         { *m = TokenMetadataDeleteResponse{} }
+func (m *TokenMetadataDeleteResponse) String() string { return proto.CompactTextString(m) }
+func (*TokenMetadataDeleteResponse) ProtoMessage()    {}
+func (*TokenMetadataDeleteResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_d09312f3deb69cfe, []int{7}
+}
+func (m *TokenMetadataDeleteResponse) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *TokenMetadataDeleteResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_TokenMetadataDeleteResponse.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *TokenMetadataDeleteResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_TokenMetadataDeleteResponse.Merge(m, src)
+}
+func (m *TokenMetadataDeleteResponse) XXX_Size() int {
+	return m.Size()
+}
+func (m *TokenMetadataDeleteResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_TokenMetadataDeleteResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_TokenMetadataDeleteResponse proto.InternalMessageInfo
+
+func (m *TokenMetadataDeleteResponse) GetSuccess() bool {
+	if m != nil {
+		return m.Success
+	}
+	return false
+}
+
+// Denom needed to request metadata for token
+type TokenMetadataSearchRequest struct {
+	Denom string `protobuf:"bytes,1,opt,name=denom,proto3" json:"denom,omitempty" yaml:"token_denom"`
+}
+
+func (m *TokenMetadataSearchRequest) Reset()         { *m = TokenMetadataSearchRequest{} }
+func (m *TokenMetadataSearchRequest) String() string { return proto.CompactTextString(m) }
+func (*TokenMetadataSearchRequest) ProtoMessage()    {}
+func (*TokenMetadataSearchRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_d09312f3deb69cfe, []int{8}
+}
+func (m *TokenMetadataSearchRequest) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *TokenMetadataSearchRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_TokenMetadataSearchRequest.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *TokenMetadataSearchRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_TokenMetadataSearchRequest.Merge(m, src)
+}
+func (m *TokenMetadataSearchRequest) XXX_Size() int {
+	return m.Size()
+}
+func (m *TokenMetadataSearchRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_TokenMetadataSearchRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_TokenMetadataSearchRequest proto.InternalMessageInfo
+
+func (m *TokenMetadataSearchRequest) GetDenom() string {
+	if m != nil {
+		return m.Denom
+	}
+	return ""
+}
+
+// Message returned from a TokenMetadata Response
+type TokenMetadataSearchResponse struct {
+	Metadata *TokenMetadata `protobuf:"bytes,1,opt,name=metadata,proto3" json:"metadata,omitempty" yaml:"metadata"`
+}
+
+func (m *TokenMetadataSearchResponse) Reset()         { *m = TokenMetadataSearchResponse{} }
+func (m *TokenMetadataSearchResponse) String() string { return proto.CompactTextString(m) }
+func (*TokenMetadataSearchResponse) ProtoMessage()    {}
+func (*TokenMetadataSearchResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_d09312f3deb69cfe, []int{9}
+}
+func (m *TokenMetadataSearchResponse) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *TokenMetadataSearchResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_TokenMetadataSearchResponse.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *TokenMetadataSearchResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_TokenMetadataSearchResponse.Merge(m, src)
+}
+func (m *TokenMetadataSearchResponse) XXX_Size() int {
+	return m.Size()
+}
+func (m *TokenMetadataSearchResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_TokenMetadataSearchResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_TokenMetadataSearchResponse proto.InternalMessageInfo
+
+func (m *TokenMetadataSearchResponse) GetMetadata() *TokenMetadata {
+	if m != nil {
+		return m.Metadata
+	}
+	return nil
+}
+
 func init() {
 	proto.RegisterType((*MsgRegister)(nil), "sifnode.tokenregistry.v1.MsgRegister")
 	proto.RegisterType((*MsgRegisterResponse)(nil), "sifnode.tokenregistry.v1.MsgRegisterResponse")
 	proto.RegisterType((*MsgDeregister)(nil), "sifnode.tokenregistry.v1.MsgDeregister")
 	proto.RegisterType((*MsgDeregisterResponse)(nil), "sifnode.tokenregistry.v1.MsgDeregisterResponse")
+	proto.RegisterType((*TokenMetadataAddRequest)(nil), "sifnode.tokenregistry.v1.TokenMetadataAddRequest")
+	proto.RegisterType((*TokenMetadataAddResponse)(nil), "sifnode.tokenregistry.v1.TokenMetadataAddResponse")
+	proto.RegisterType((*TokenMetadataDeleteRequest)(nil), "sifnode.tokenregistry.v1.TokenMetadataDeleteRequest")
+	proto.RegisterType((*TokenMetadataDeleteResponse)(nil), "sifnode.tokenregistry.v1.TokenMetadataDeleteResponse")
+	proto.RegisterType((*TokenMetadataSearchRequest)(nil), "sifnode.tokenregistry.v1.TokenMetadataSearchRequest")
+	proto.RegisterType((*TokenMetadataSearchResponse)(nil), "sifnode.tokenregistry.v1.TokenMetadataSearchResponse")
 }
 
 func init() { proto.RegisterFile("sifnode/tokenregistry/v1/tx.proto", fileDescriptor_d09312f3deb69cfe) }
 
 var fileDescriptor_d09312f3deb69cfe = []byte{
-	// 309 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x8c, 0x91, 0xbf, 0x4f, 0x02, 0x31,
-	0x1c, 0xc5, 0xaf, 0x2a, 0x46, 0xbe, 0xc4, 0xa5, 0x42, 0x24, 0x37, 0x34, 0x78, 0xd1, 0xc0, 0x62,
-	0x1b, 0x70, 0x72, 0x70, 0x31, 0x3a, 0x19, 0x96, 0xba, 0x39, 0x29, 0x50, 0xca, 0xc5, 0xd0, 0x92,
-	0xb6, 0x12, 0xf8, 0x2f, 0xfc, 0xb3, 0x1c, 0x49, 0x5c, 0x1c, 0x0d, 0xf7, 0x8f, 0x18, 0x7a, 0xfc,
-	0x38, 0x4c, 0x8e, 0xb0, 0xbd, 0xcb, 0x7d, 0xde, 0xf7, 0xbd, 0xe6, 0xc1, 0x85, 0x8d, 0xfb, 0x4a,
-	0xf7, 0x04, 0x73, 0xfa, 0x5d, 0x28, 0x23, 0x64, 0x6c, 0x9d, 0x99, 0xb2, 0x71, 0x93, 0xb9, 0x09,
-	0x1d, 0x19, 0xed, 0x34, 0xae, 0x2e, 0x11, 0xba, 0x85, 0xd0, 0x71, 0x33, 0x2c, 0x4b, 0x2d, 0xb5,
-	0x87, 0xd8, 0x42, 0xa5, 0x7c, 0x78, 0x99, 0x7f, 0x72, 0x3a, 0x12, 0x36, 0xa5, 0xa2, 0x57, 0x28,
-	0xb5, 0xad, 0xe4, 0xfe, 0xaf, 0x30, 0x18, 0xc3, 0x51, 0xdf, 0xe8, 0x61, 0x15, 0xd5, 0x50, 0xa3,
-	0xc8, 0xbd, 0xc6, 0x77, 0x50, 0x10, 0xca, 0x99, 0x69, 0xf5, 0xa0, 0x86, 0x1a, 0xa5, 0x56, 0x9d,
-	0xe6, 0x15, 0xa1, 0x7c, 0xa9, 0x1f, 0x17, 0x38, 0x4f, 0x5d, 0x51, 0x05, 0xce, 0x32, 0x09, 0x5c,
-	0xd8, 0x91, 0x56, 0x56, 0x44, 0xb7, 0x70, 0xda, 0xb6, 0xf2, 0x41, 0x98, 0x5d, 0xd1, 0x65, 0x28,
-	0xf4, 0x84, 0xd2, 0x43, 0x1f, 0x5d, 0xe4, 0xe9, 0x47, 0x74, 0x0e, 0x95, 0x2d, 0xeb, 0xea, 0x66,
-	0xeb, 0x1b, 0xc1, 0x61, 0xdb, 0x4a, 0xdc, 0x81, 0x93, 0xf5, 0x8b, 0xae, 0xf2, 0xeb, 0x66, 0x6a,
-	0x85, 0xd7, 0x7b, 0x61, 0xeb, 0xf6, 0x01, 0x1e, 0x00, 0x64, 0xca, 0xd7, 0x77, 0xda, 0x37, 0x60,
-	0xc8, 0xf6, 0x04, 0x37, 0x49, 0xf7, 0x4f, 0x5f, 0x73, 0x82, 0x66, 0x73, 0x82, 0x7e, 0xe7, 0x04,
-	0x7d, 0x26, 0x24, 0x98, 0x25, 0x24, 0xf8, 0x49, 0x48, 0xf0, 0xd2, 0x94, 0xb1, 0x1b, 0x7c, 0x74,
-	0x68, 0x57, 0x0f, 0xd9, 0x73, 0xdc, 0xef, 0x0e, 0xde, 0x62, 0xc5, 0x56, 0xb3, 0x4f, 0xfe, 0x0d,
-	0xef, 0x57, 0xef, 0x1c, 0xfb, 0xd9, 0x6f, 0xfe, 0x02, 0x00, 0x00, 0xff, 0xff, 0x5c, 0xe6, 0x07,
-	0xb2, 0x71, 0x02, 0x00, 0x00,
+	// 562 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xac, 0x54, 0xc1, 0x6e, 0xd3, 0x40,
+	0x10, 0x8d, 0x29, 0x2d, 0xe9, 0x94, 0x0a, 0xb4, 0x49, 0x69, 0x64, 0x24, 0xa7, 0x18, 0x50, 0x7b,
+	0x28, 0xb6, 0x12, 0xe0, 0x00, 0x12, 0x07, 0xa2, 0x22, 0x21, 0x50, 0x0e, 0x38, 0x1c, 0x10, 0x97,
+	0xe2, 0xd8, 0x13, 0xc7, 0xa2, 0xf6, 0x86, 0xdd, 0x4d, 0xda, 0x88, 0x2b, 0x77, 0x38, 0xf2, 0x49,
+	0x1c, 0x7b, 0x83, 0x53, 0x84, 0x92, 0x3f, 0xc8, 0x17, 0xa0, 0xac, 0xed, 0x34, 0x0e, 0x4d, 0xeb,
+	0x48, 0xbd, 0x6d, 0x9c, 0x37, 0xef, 0xbd, 0xd9, 0x7d, 0x33, 0x70, 0x8f, 0xfb, 0xad, 0x90, 0xba,
+	0x68, 0x0a, 0xfa, 0x19, 0x43, 0x86, 0x9e, 0xcf, 0x05, 0xeb, 0x9b, 0xbd, 0x8a, 0x29, 0x4e, 0x8c,
+	0x0e, 0xa3, 0x82, 0x92, 0x52, 0x0c, 0x31, 0x52, 0x10, 0xa3, 0x57, 0x51, 0x8b, 0x1e, 0xf5, 0xa8,
+	0x04, 0x99, 0x93, 0x53, 0x84, 0x57, 0x1f, 0x2c, 0xa6, 0xec, 0x77, 0x90, 0x47, 0x28, 0xfd, 0x13,
+	0x6c, 0xd4, 0xb9, 0x67, 0xc9, 0x7f, 0x91, 0x11, 0x02, 0xd7, 0x5b, 0x8c, 0x06, 0x25, 0x65, 0x47,
+	0xd9, 0x5b, 0xb7, 0xe4, 0x99, 0xbc, 0x80, 0x55, 0x0c, 0x05, 0xeb, 0x97, 0xae, 0xed, 0x28, 0x7b,
+	0x1b, 0xd5, 0x5d, 0x63, 0x91, 0x11, 0xc3, 0x8a, 0xcf, 0xaf, 0x26, 0x70, 0x2b, 0xaa, 0xd2, 0xb7,
+	0xa0, 0x30, 0xa3, 0x60, 0x21, 0xef, 0xd0, 0x90, 0xa3, 0xfe, 0x0c, 0x36, 0xeb, 0xdc, 0x3b, 0x40,
+	0x76, 0x91, 0x74, 0x11, 0x56, 0x5d, 0x0c, 0x69, 0x20, 0xa5, 0xd7, 0xad, 0xe8, 0x87, 0xbe, 0x0d,
+	0x5b, 0xa9, 0xd2, 0x29, 0xe7, 0x4f, 0x05, 0xb6, 0xdf, 0x4f, 0x4c, 0xd5, 0x51, 0xd8, 0xae, 0x2d,
+	0xec, 0x97, 0xae, 0x6b, 0xe1, 0x97, 0x2e, 0x72, 0x41, 0xee, 0xc3, 0xa6, 0x43, 0x79, 0x40, 0xf9,
+	0x21, 0xc7, 0xd0, 0x45, 0x16, 0xeb, 0xdc, 0x8c, 0x3e, 0x36, 0xe4, 0x37, 0xf2, 0x01, 0xf2, 0x41,
+	0x5c, 0x7a, 0x79, 0xb7, 0x29, 0xa5, 0x5a, 0x61, 0x3c, 0x28, 0xdf, 0xea, 0xdb, 0xc1, 0xd1, 0x73,
+	0x3d, 0xa1, 0xd0, 0xad, 0x29, 0x9b, 0xfe, 0x1a, 0x4a, 0xff, 0x3b, 0x8b, 0x6c, 0x93, 0xfd, 0xa4,
+	0x4b, 0x69, 0xa9, 0x76, 0x67, 0x3c, 0x28, 0x93, 0x88, 0x49, 0x6a, 0x1e, 0x46, 0x5d, 0x27, 0xdd,
+	0x53, 0x50, 0x53, 0x4c, 0x07, 0x78, 0x84, 0x02, 0x97, 0x6a, 0x73, 0x3f, 0x75, 0xad, 0x97, 0x09,
+	0xbe, 0x83, 0xbb, 0xe7, 0x0a, 0xc6, 0xee, 0xab, 0x70, 0x83, 0x77, 0x1d, 0x07, 0x39, 0x97, 0x5a,
+	0xf9, 0x5a, 0x69, 0x3c, 0x28, 0x17, 0xd3, 0x74, 0x93, 0x02, 0x57, 0xb7, 0x12, 0xa0, 0xfe, 0x66,
+	0xae, 0x87, 0x06, 0xda, 0xcc, 0x69, 0x27, 0x3d, 0x2c, 0x77, 0x1f, 0xc7, 0x73, 0xf6, 0x12, 0xae,
+	0xd8, 0xde, 0xec, 0x93, 0x2a, 0x57, 0xf9, 0xa4, 0xd5, 0xdf, 0x2b, 0xb0, 0x52, 0xe7, 0x1e, 0x69,
+	0x42, 0x7e, 0x3a, 0x3f, 0x0f, 0x17, 0x73, 0xcf, 0x0c, 0x81, 0xfa, 0x28, 0x13, 0x6c, 0x9a, 0xeb,
+	0x1c, 0x69, 0x03, 0xcc, 0x8c, 0xca, 0xee, 0x85, 0xe5, 0x67, 0x40, 0xd5, 0xcc, 0x08, 0x9c, 0x51,
+	0xfa, 0x0a, 0xb7, 0xe7, 0x83, 0x4a, 0x2a, 0x19, 0x6f, 0xec, 0x6c, 0xdc, 0xd4, 0xea, 0x32, 0x25,
+	0x53, 0xf1, 0x6f, 0x0a, 0x14, 0xce, 0xc9, 0x1a, 0x79, 0x92, 0x91, 0x2d, 0x35, 0x0b, 0xea, 0xd3,
+	0x25, 0xab, 0x12, 0x1b, 0xd5, 0xef, 0x0a, 0x14, 0xe7, 0x32, 0xc5, 0x7a, 0xbe, 0x83, 0xe4, 0x18,
+	0xd6, 0xa2, 0x78, 0x65, 0x76, 0x94, 0x4a, 0x76, 0x66, 0x47, 0xe9, 0x0c, 0xeb, 0xb9, 0xda, 0xdb,
+	0x5f, 0x43, 0x4d, 0x39, 0x1d, 0x6a, 0xca, 0xdf, 0xa1, 0xa6, 0xfc, 0x18, 0x69, 0xb9, 0xd3, 0x91,
+	0x96, 0xfb, 0x33, 0xd2, 0x72, 0x1f, 0x2b, 0x9e, 0x2f, 0xda, 0xdd, 0xa6, 0xe1, 0xd0, 0xc0, 0x6c,
+	0xf8, 0x2d, 0xa7, 0x6d, 0xfb, 0xa1, 0x99, 0xac, 0xfe, 0x93, 0xb9, 0xe5, 0x2f, 0x37, 0x7f, 0x73,
+	0x4d, 0xae, 0xfe, 0xc7, 0xff, 0x02, 0x00, 0x00, 0xff, 0xff, 0xec, 0x4b, 0x8a, 0xa6, 0x75, 0x06,
+	0x00, 0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -251,6 +555,8 @@ const _ = grpc.SupportPackageIsVersion4
 type MsgClient interface {
 	Register(ctx context.Context, in *MsgRegister, opts ...grpc.CallOption) (*MsgRegisterResponse, error)
 	Deregister(ctx context.Context, in *MsgDeregister, opts ...grpc.CallOption) (*MsgDeregisterResponse, error)
+	TokenMetadataAdd(ctx context.Context, in *TokenMetadataAddRequest, opts ...grpc.CallOption) (*TokenMetadataAddResponse, error)
+	TokenMetadataDelete(ctx context.Context, in *TokenMetadataDeleteRequest, opts ...grpc.CallOption) (*TokenMetadataDeleteResponse, error)
 }
 
 type msgClient struct {
@@ -279,10 +585,30 @@ func (c *msgClient) Deregister(ctx context.Context, in *MsgDeregister, opts ...g
 	return out, nil
 }
 
+func (c *msgClient) TokenMetadataAdd(ctx context.Context, in *TokenMetadataAddRequest, opts ...grpc.CallOption) (*TokenMetadataAddResponse, error) {
+	out := new(TokenMetadataAddResponse)
+	err := c.cc.Invoke(ctx, "/sifnode.tokenregistry.v1.Msg/TokenMetadataAdd", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *msgClient) TokenMetadataDelete(ctx context.Context, in *TokenMetadataDeleteRequest, opts ...grpc.CallOption) (*TokenMetadataDeleteResponse, error) {
+	out := new(TokenMetadataDeleteResponse)
+	err := c.cc.Invoke(ctx, "/sifnode.tokenregistry.v1.Msg/TokenMetadataDelete", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // MsgServer is the server API for Msg service.
 type MsgServer interface {
 	Register(context.Context, *MsgRegister) (*MsgRegisterResponse, error)
 	Deregister(context.Context, *MsgDeregister) (*MsgDeregisterResponse, error)
+	TokenMetadataAdd(context.Context, *TokenMetadataAddRequest) (*TokenMetadataAddResponse, error)
+	TokenMetadataDelete(context.Context, *TokenMetadataDeleteRequest) (*TokenMetadataDeleteResponse, error)
 }
 
 // UnimplementedMsgServer can be embedded to have forward compatible implementations.
@@ -294,6 +620,12 @@ func (*UnimplementedMsgServer) Register(ctx context.Context, req *MsgRegister) (
 }
 func (*UnimplementedMsgServer) Deregister(ctx context.Context, req *MsgDeregister) (*MsgDeregisterResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Deregister not implemented")
+}
+func (*UnimplementedMsgServer) TokenMetadataAdd(ctx context.Context, req *TokenMetadataAddRequest) (*TokenMetadataAddResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method TokenMetadataAdd not implemented")
+}
+func (*UnimplementedMsgServer) TokenMetadataDelete(ctx context.Context, req *TokenMetadataDeleteRequest) (*TokenMetadataDeleteResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method TokenMetadataDelete not implemented")
 }
 
 func RegisterMsgServer(s grpc1.Server, srv MsgServer) {
@@ -336,6 +668,42 @@ func _Msg_Deregister_Handler(srv interface{}, ctx context.Context, dec func(inte
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Msg_TokenMetadataAdd_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(TokenMetadataAddRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MsgServer).TokenMetadataAdd(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/sifnode.tokenregistry.v1.Msg/TokenMetadataAdd",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MsgServer).TokenMetadataAdd(ctx, req.(*TokenMetadataAddRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Msg_TokenMetadataDelete_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(TokenMetadataDeleteRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MsgServer).TokenMetadataDelete(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/sifnode.tokenregistry.v1.Msg/TokenMetadataDelete",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MsgServer).TokenMetadataDelete(ctx, req.(*TokenMetadataDeleteRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 var _Msg_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "sifnode.tokenregistry.v1.Msg",
 	HandlerType: (*MsgServer)(nil),
@@ -347,6 +715,88 @@ var _Msg_serviceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Deregister",
 			Handler:    _Msg_Deregister_Handler,
+		},
+		{
+			MethodName: "TokenMetadataAdd",
+			Handler:    _Msg_TokenMetadataAdd_Handler,
+		},
+		{
+			MethodName: "TokenMetadataDelete",
+			Handler:    _Msg_TokenMetadataDelete_Handler,
+		},
+	},
+	Streams:  []grpc.StreamDesc{},
+	Metadata: "sifnode/tokenregistry/v1/tx.proto",
+}
+
+// TokenMetadataServiceClient is the client API for TokenMetadataService service.
+//
+// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
+type TokenMetadataServiceClient interface {
+	// Metadata Query Service to fetch token metadata from token denom
+	Search(ctx context.Context, in *TokenMetadataSearchRequest, opts ...grpc.CallOption) (*TokenMetadataSearchResponse, error)
+}
+
+type tokenMetadataServiceClient struct {
+	cc grpc1.ClientConn
+}
+
+func NewTokenMetadataServiceClient(cc grpc1.ClientConn) TokenMetadataServiceClient {
+	return &tokenMetadataServiceClient{cc}
+}
+
+func (c *tokenMetadataServiceClient) Search(ctx context.Context, in *TokenMetadataSearchRequest, opts ...grpc.CallOption) (*TokenMetadataSearchResponse, error) {
+	out := new(TokenMetadataSearchResponse)
+	err := c.cc.Invoke(ctx, "/sifnode.tokenregistry.v1.TokenMetadataService/Search", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+// TokenMetadataServiceServer is the server API for TokenMetadataService service.
+type TokenMetadataServiceServer interface {
+	// Metadata Query Service to fetch token metadata from token denom
+	Search(context.Context, *TokenMetadataSearchRequest) (*TokenMetadataSearchResponse, error)
+}
+
+// UnimplementedTokenMetadataServiceServer can be embedded to have forward compatible implementations.
+type UnimplementedTokenMetadataServiceServer struct {
+}
+
+func (*UnimplementedTokenMetadataServiceServer) Search(ctx context.Context, req *TokenMetadataSearchRequest) (*TokenMetadataSearchResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Search not implemented")
+}
+
+func RegisterTokenMetadataServiceServer(s grpc1.Server, srv TokenMetadataServiceServer) {
+	s.RegisterService(&_TokenMetadataService_serviceDesc, srv)
+}
+
+func _TokenMetadataService_Search_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(TokenMetadataSearchRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TokenMetadataServiceServer).Search(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/sifnode.tokenregistry.v1.TokenMetadataService/Search",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TokenMetadataServiceServer).Search(ctx, req.(*TokenMetadataSearchRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+var _TokenMetadataService_serviceDesc = grpc.ServiceDesc{
+	ServiceName: "sifnode.tokenregistry.v1.TokenMetadataService",
+	HandlerType: (*TokenMetadataServiceServer)(nil),
+	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "Search",
+			Handler:    _TokenMetadataService_Search_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
@@ -478,6 +928,213 @@ func (m *MsgDeregisterResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	return len(dAtA) - i, nil
 }
 
+func (m *TokenMetadataAddRequest) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *TokenMetadataAddRequest) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *TokenMetadataAddRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.Metadata != nil {
+		{
+			size, err := m.Metadata.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintTx(dAtA, i, uint64(size))
+		}
+		i--
+		dAtA[i] = 0x12
+	}
+	if len(m.CosmosSender) > 0 {
+		i -= len(m.CosmosSender)
+		copy(dAtA[i:], m.CosmosSender)
+		i = encodeVarintTx(dAtA, i, uint64(len(m.CosmosSender)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *TokenMetadataAddResponse) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *TokenMetadataAddResponse) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *TokenMetadataAddResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.Denom) > 0 {
+		i -= len(m.Denom)
+		copy(dAtA[i:], m.Denom)
+		i = encodeVarintTx(dAtA, i, uint64(len(m.Denom)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *TokenMetadataDeleteRequest) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *TokenMetadataDeleteRequest) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *TokenMetadataDeleteRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.Denom) > 0 {
+		i -= len(m.Denom)
+		copy(dAtA[i:], m.Denom)
+		i = encodeVarintTx(dAtA, i, uint64(len(m.Denom)))
+		i--
+		dAtA[i] = 0x12
+	}
+	if len(m.CosmosSender) > 0 {
+		i -= len(m.CosmosSender)
+		copy(dAtA[i:], m.CosmosSender)
+		i = encodeVarintTx(dAtA, i, uint64(len(m.CosmosSender)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *TokenMetadataDeleteResponse) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *TokenMetadataDeleteResponse) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *TokenMetadataDeleteResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.Success {
+		i--
+		if m.Success {
+			dAtA[i] = 1
+		} else {
+			dAtA[i] = 0
+		}
+		i--
+		dAtA[i] = 0x8
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *TokenMetadataSearchRequest) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *TokenMetadataSearchRequest) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *TokenMetadataSearchRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.Denom) > 0 {
+		i -= len(m.Denom)
+		copy(dAtA[i:], m.Denom)
+		i = encodeVarintTx(dAtA, i, uint64(len(m.Denom)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *TokenMetadataSearchResponse) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *TokenMetadataSearchResponse) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *TokenMetadataSearchResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.Metadata != nil {
+		{
+			size, err := m.Metadata.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintTx(dAtA, i, uint64(size))
+		}
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
 func encodeVarintTx(dAtA []byte, offset int, v uint64) int {
 	offset -= sovTx(v)
 	base := offset
@@ -538,6 +1195,91 @@ func (m *MsgDeregisterResponse) Size() (n int) {
 	}
 	var l int
 	_ = l
+	return n
+}
+
+func (m *TokenMetadataAddRequest) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.CosmosSender)
+	if l > 0 {
+		n += 1 + l + sovTx(uint64(l))
+	}
+	if m.Metadata != nil {
+		l = m.Metadata.Size()
+		n += 1 + l + sovTx(uint64(l))
+	}
+	return n
+}
+
+func (m *TokenMetadataAddResponse) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.Denom)
+	if l > 0 {
+		n += 1 + l + sovTx(uint64(l))
+	}
+	return n
+}
+
+func (m *TokenMetadataDeleteRequest) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.CosmosSender)
+	if l > 0 {
+		n += 1 + l + sovTx(uint64(l))
+	}
+	l = len(m.Denom)
+	if l > 0 {
+		n += 1 + l + sovTx(uint64(l))
+	}
+	return n
+}
+
+func (m *TokenMetadataDeleteResponse) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.Success {
+		n += 2
+	}
+	return n
+}
+
+func (m *TokenMetadataSearchRequest) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.Denom)
+	if l > 0 {
+		n += 1 + l + sovTx(uint64(l))
+	}
+	return n
+}
+
+func (m *TokenMetadataSearchResponse) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.Metadata != nil {
+		l = m.Metadata.Size()
+		n += 1 + l + sovTx(uint64(l))
+	}
 	return n
 }
 
@@ -858,6 +1600,558 @@ func (m *MsgDeregisterResponse) Unmarshal(dAtA []byte) error {
 			return fmt.Errorf("proto: MsgDeregisterResponse: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
+		default:
+			iNdEx = preIndex
+			skippy, err := skipTx(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthTx
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *TokenMetadataAddRequest) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowTx
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: TokenMetadataAddRequest: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: TokenMetadataAddRequest: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field CosmosSender", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.CosmosSender = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Metadata", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if m.Metadata == nil {
+				m.Metadata = &TokenMetadata{}
+			}
+			if err := m.Metadata.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipTx(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthTx
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *TokenMetadataAddResponse) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowTx
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: TokenMetadataAddResponse: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: TokenMetadataAddResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Denom", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Denom = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipTx(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthTx
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *TokenMetadataDeleteRequest) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowTx
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: TokenMetadataDeleteRequest: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: TokenMetadataDeleteRequest: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field CosmosSender", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.CosmosSender = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Denom", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Denom = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipTx(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthTx
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *TokenMetadataDeleteResponse) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowTx
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: TokenMetadataDeleteResponse: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: TokenMetadataDeleteResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Success", wireType)
+			}
+			var v int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				v |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			m.Success = bool(v != 0)
+		default:
+			iNdEx = preIndex
+			skippy, err := skipTx(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthTx
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *TokenMetadataSearchRequest) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowTx
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: TokenMetadataSearchRequest: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: TokenMetadataSearchRequest: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Denom", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Denom = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipTx(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthTx
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *TokenMetadataSearchResponse) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowTx
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: TokenMetadataSearchResponse: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: TokenMetadataSearchResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Metadata", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if m.Metadata == nil {
+				m.Metadata = &TokenMetadata{}
+			}
+			if err := m.Metadata.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
 		default:
 			iNdEx = preIndex
 			skippy, err := skipTx(dAtA[iNdEx:])

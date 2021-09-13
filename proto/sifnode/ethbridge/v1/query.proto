@@ -30,23 +30,6 @@ message QueryEthProphecyResponse {
   repeated string claim_validators = 3;
 }
 
-// Denom needed to request metadata for token
-message TokenMetadataSearchRequest {
-  string denom = 1 [ (gogoproto.moretags) = "yaml:\"token_denom\"" ];
-}
-
-// Message returned from a TokenMetadata Response
-message TokenMetadataSearchResponse {
-  sifnode.ethbridge.v1.TokenMetadata metadata = 1
-      [ (gogoproto.moretags) = "yaml:\"metadata\"" ];
-}
-
-service TokenMetadataService {
-  // Metadata Query Service to fetch token metadata from token denom
-  rpc Search(TokenMetadataSearchRequest) returns (TokenMetadataSearchResponse) {
-  }
-}
-
 // QueryCrosschainFeeConfigRequest payload for EthProphecy rpc query
 message QueryCrosschainFeeConfigRequest {
   sifnode.oracle.v1.NetworkDescriptor network_descriptor = 1;

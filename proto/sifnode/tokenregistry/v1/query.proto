@@ -14,7 +14,5 @@ service Query {
   }
 }
 
-message QueryEntriesResponse {
-    Registry registry = 1;
-}
+message QueryEntriesResponse { Registry registry = 1; }
 message QueryEntriesRequest {}

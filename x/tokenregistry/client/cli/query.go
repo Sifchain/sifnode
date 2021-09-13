@@ -24,6 +24,7 @@ func GetQueryCmd() *cobra.Command {
 	cmd.AddCommand(
 		GetCmdQueryEntries(),
 		GetCmdGenerateEntry(),
+		GetCmdGetTokenMetadata(),
 	)
 
 	return cmd
@@ -169,7 +170,7 @@ func GetCmdGenerateEntry() *cobra.Command {
 			}
 
 			if permissionCLP {
-				permissions = append(permissions, types.Permission_CLP)
+				permissions = append(permissions, types.Permission_PERMISSION_CLP)
 			}
 
 			permissionIBCExport, err := flags.GetBool("token_permission_ibc_export")
@@ -178,7 +179,7 @@ func GetCmdGenerateEntry() *cobra.Command {
 			}
 
 			if permissionIBCExport {
-				permissions = append(permissions, types.Permission_IBCEXPORT)
+				permissions = append(permissions, types.Permission_PERMISSION_IBCEXPORT)
 			}
 
 			permissionIBCImport, err := flags.GetBool("token_permission_ibc_import")
@@ -187,7 +188,7 @@ func GetCmdGenerateEntry() *cobra.Command {
 			}
 
 			if permissionIBCImport {
-				permissions = append(permissions, types.Permission_IBCIMPORT)
+				permissions = append(permissions, types.Permission_PERMISSION_IBCIMPORT)
 			}
 
 			var path string

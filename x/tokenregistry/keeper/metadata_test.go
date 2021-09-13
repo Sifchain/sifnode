@@ -6,8 +6,10 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	"github.com/Sifchain/sifnode/x/ethbridge/test"
-	"github.com/Sifchain/sifnode/x/ethbridge/types"
+	ethbridgetypes "github.com/Sifchain/sifnode/x/ethbridge/types"
 	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
+
+	"github.com/Sifchain/sifnode/x/tokenregistry/types"
 	"github.com/stretchr/testify/require"
 )
 
@@ -27,7 +29,7 @@ func TestGetAddTokenMetadata(t *testing.T) {
 	result, _ := keeper.GetTokenMetadata(ctx, invalidDenom)
 	require.Equal(t, expected, result)
 	resultDenom := keeper.AddTokenMetadata(ctx, testTokenMetadata)
-	expectedDenom := types.GetDenomHash(
+	expectedDenom := ethbridgetypes.GetDenomHash(
 		testTokenMetadata.NetworkDescriptor,
 		testTokenMetadata.TokenAddress,
 		testTokenMetadata.Decimals,

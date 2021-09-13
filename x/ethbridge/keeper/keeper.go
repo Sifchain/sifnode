@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
-
+	tokenregistrytypes "github.com/Sifchain/sifnode/x/tokenregistry/types"
 	"github.com/tendermint/tendermint/libs/log"
 
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -22,10 +22,11 @@ const errorMessageKey = "errorMessageKey"
 type Keeper struct {
 	cdc codec.BinaryMarshaler // The wire codec for binary encoding/decoding.
 
-	accountKeeper types.AccountKeeper
-	bankKeeper    types.BankKeeper
-	oracleKeeper  types.OracleKeeper
-	storeKey      sdk.StoreKey
+	accountKeeper       types.AccountKeeper
+	bankKeeper          types.BankKeeper
+	oracleKeeper        types.OracleKeeper
+	tokenRegistryKeeper tokenregistrytypes.Keeper
+	storeKey            sdk.StoreKey
 }
 
 // GetAccountKeeper
@@ -39,13 +40,19 @@ func (k Keeper) GetBankKeeper() types.BankKeeper {
 }
 
 // NewKeeper creates new instances of the oracle Keeper
-func NewKeeper(cdc codec.BinaryMarshaler, bankKeeper types.BankKeeper, oracleKeeper types.OracleKeeper, accountKeeper types.AccountKeeper, storeKey sdk.StoreKey) Keeper {
+func NewKeeper(cdc codec.BinaryMarshaler,
+	bankKeeper types.BankKeeper,
+	oracleKeeper types.OracleKeeper,
+	accountKeeper types.AccountKeeper,
+	tokenRegistryKeeper tokenregistrytypes.Keeper,
+	storeKey sdk.StoreKey) Keeper {
 	return Keeper{
-		cdc:           cdc,
-		accountKeeper: accountKeeper,
-		bankKeeper:    bankKeeper,
-		oracleKeeper:  oracleKeeper,
-		storeKey:      storeKey,
+		cdc:                 cdc,
+		accountKeeper:       accountKeeper,
+		bankKeeper:          bankKeeper,
+		oracleKeeper:        oracleKeeper,
+		tokenRegistryKeeper: tokenRegistryKeeper,
+		storeKey:            storeKey,
 	}
 }
 
@@ -62,7 +69,7 @@ func (k Keeper) ProcessClaim(ctx sdk.Context, claim *types.EthBridgeClaim) (orac
 // ProcessSuccessfulClaim processes a claim that has just completed successfully with consensus
 func (k Keeper) ProcessSuccessfulClaim(ctx sdk.Context, claim *types.EthBridgeClaim) error {
 	logger := k.Logger(ctx)
-	tokenMetadata, ok := k.GetTokenMetadata(ctx, claim.DenomHash)
+	tokenMetadata, ok := k.tokenRegistryKeeper.GetTokenMetadata(ctx, claim.DenomHash)
 	if !ok {
 		return fmt.Errorf("token metadata not available for %s", claim.DenomHash)
 	}
@@ -106,7 +113,7 @@ func (k Keeper) ProcessBurn(ctx sdk.Context,
 	cosmosSender sdk.AccAddress,
 	senderSequence uint64,
 	msg *types.MsgBurn,
-	tokenMetadata types.TokenMetadata) ([]byte, error) {
+	tokenMetadata tokenregistrytypes.TokenMetadata) ([]byte, error) {
 
 	logger := k.Logger(ctx)
 	var coins sdk.Coins
@@ -176,7 +183,7 @@ func (k Keeper) ProcessLock(ctx sdk.Context,
 	cosmosSender sdk.AccAddress,
 	senderSequence uint64,
 	msg *types.MsgLock,
-	tokenMetadata types.TokenMetadata) ([]byte, error) {
+	tokenMetadata tokenregistrytypes.TokenMetadata) ([]byte, error) {
 
 	logger := k.Logger(ctx)
 	var coins sdk.Coins
@@ -305,12 +312,42 @@ func (k Keeper) ProcessSignProphecy(ctx sdk.Context, msg *types.MsgSignProphecy)
 		return errors.New("prophecy not found in oracle keeper")
 	}
 
-	metadata, ok := k.GetTokenMetadata(ctx, prophecyInfo.TokenDenomHash)
+	metadata, ok := k.metadataKeeper.GetTokenMetadata(ctx, prophecyInfo.TokenDenomHash)
 	if !ok {
 		return fmt.Errorf("metadata not available for %s", prophecyInfo.TokenDenomHash)
 	}
 
 	return k.oracleKeeper.ProcessSignProphecy(ctx, msg.NetworkDescriptor, msg.ProphecyId, msg.CosmosSender, metadata.TokenAddress, msg.EthereumAddress, msg.Signature)
+}
+
+// GetMetadataKeeper return metadata keeper
+func (k Keeper) GetTokenRegistryKeeper() tokenregistrytypes.Keeper {
+	return k.tokenRegistryKeeper
+}
+
+// GetTokenMetadata call metadataKeeper's GetTokenMetadata
+func (k Keeper) GetTokenMetadata(ctx sdk.Context, denomHash string) (tokenregistrytypes.TokenMetadata, bool) {
+	return k.metadataKeeper.GetTokenMetadata(ctx, denomHash)
+}
+
+// AddTokenMetadata call metadataKeeper's AddTokenMetadata
+func (k Keeper) AddTokenMetadata(ctx sdk.Context, metadata tokenregistrytypes.TokenMetadata) string {
+	return k.metadataKeeper.AddTokenMetadata(ctx, metadata)
+}
+
+// AddIBCTokenMetadata call metadataKeeper's AddIBCTokenMetadata
+func (k Keeper) AddIBCTokenMetadata(ctx sdk.Context, metadata tokenregistrytypes.TokenMetadata, cosmosSender sdk.AccAddress) string {
+	return k.metadataKeeper.AddIBCTokenMetadata(ctx, metadata, cosmosSender)
+}
+
+// DeleteTokenMetadata call metadataKeeper's DeleteTokenMetadata
+func (k Keeper) DeleteTokenMetadata(ctx sdk.Context, denomHash string) bool {
+	return k.metadataKeeper.DeleteTokenMetadata(ctx, denomHash)
+}
+
+// ExistsTokenMetadata call metadataKeeper's ExistsTokenMetadata
+func (k Keeper) ExistsTokenMetadata(ctx sdk.Context, denomHash string) bool {
+	return k.metadataKeeper.ExistsTokenMetadata(ctx, denomHash)
 }
 
 // Exists chec if the key existed in db.

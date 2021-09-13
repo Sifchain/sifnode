@@ -2,6 +2,7 @@ package cli
 
 import (
 	"errors"
+
 	"github.com/Sifchain/sifnode/x/tokenregistry/types"
 	whitelistutils "github.com/Sifchain/sifnode/x/tokenregistry/utils"
 	"github.com/cosmos/cosmos-sdk/client"
@@ -20,6 +21,8 @@ func GetTxCmd() *cobra.Command {
 	cmd.AddCommand(
 		GetCmdRegister(),
 		GetCmdDeregister(),
+		GetCmdAddIBCTokenMetadata(),
+		GetCmdDeleteIBCTokenMetadata(),
 	)
 	return cmd
 }

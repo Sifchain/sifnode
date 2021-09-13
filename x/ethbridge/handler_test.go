@@ -20,6 +20,7 @@ import (
 	"github.com/Sifchain/sifnode/x/ethbridge/types"
 	oraclekeeper "github.com/Sifchain/sifnode/x/oracle/keeper"
 	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
+	tokenregistrytypes "github.com/Sifchain/sifnode/x/tokenregistry/types"
 )
 
 const (
@@ -285,7 +286,7 @@ func TestBurnEthSuccess(t *testing.T) {
 		valAddressVal1Pow5, testEthereumAddress, coinsToMintAmount, coinsToMintSymbol, types.ClaimType_CLAIM_TYPE_LOCK, types.TestDecimals, types.TestName)
 	ethMsg1 := types.NewMsgCreateEthBridgeClaim(ethClaim1)
 
-	denom := types.TokenMetadata{
+	denom := tokenregistrytypes.TokenMetadata{
 		Decimals:          types.TestDecimals,
 		Name:              types.TestName,
 		NetworkDescriptor: oracletypes.NetworkDescriptor_NETWORK_DESCRIPTOR_ETHEREUM,
@@ -314,7 +315,7 @@ func TestBurnEthSuccess(t *testing.T) {
 		valAddressVal1Pow5, testEthereumAddress, coinsToMintAmount, coinsToMintSymbol, types.ClaimType_CLAIM_TYPE_LOCK, types.TestDecimals, types.TestName)
 	ethMsg1 = types.NewMsgCreateEthBridgeClaim(ethClaim1)
 
-	denom = types.TokenMetadata{
+	denom = tokenregistrytypes.TokenMetadata{
 		Decimals:          types.TestDecimals,
 		Name:              types.TestName,
 		NetworkDescriptor: oracletypes.NetworkDescriptor_NETWORK_DESCRIPTOR_ETHEREUM,
@@ -377,7 +378,7 @@ func TestBurnEthSuccess(t *testing.T) {
 		valAddressVal1Pow5, testEthereumAddress, coinsToMintAmount, coinsToMintSymbol, types.ClaimType_CLAIM_TYPE_LOCK, types.TestDecimals, types.TestName)
 	ethMsg1 = types.NewMsgCreateEthBridgeClaim(ethClaim1)
 
-	denom = types.TokenMetadata{
+	denom = tokenregistrytypes.TokenMetadata{
 		Decimals:          types.TestDecimals,
 		Name:              types.TestName,
 		NetworkDescriptor: oracletypes.NetworkDescriptor_NETWORK_DESCRIPTOR_ETHEREUM,

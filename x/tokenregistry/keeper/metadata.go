@@ -3,7 +3,8 @@ package keeper
 import (
 	"strings"
 
-	"github.com/Sifchain/sifnode/x/ethbridge/types"
+	ethbridgetypes "github.com/Sifchain/sifnode/x/ethbridge/types"
+	"github.com/Sifchain/sifnode/x/tokenregistry/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
@@ -20,7 +21,7 @@ func IsIBCToken(name string) bool {
 }
 
 // Fetches token meteadata if it exists
-func (k Keeper) GetTokenMetadata(ctx sdk.Context, denomHash string) (types.TokenMetadata, bool) {
+func (k keeper) GetTokenMetadata(ctx sdk.Context, denomHash string) (types.TokenMetadata, bool) {
 	if !k.ExistsTokenMetadata(ctx, denomHash) {
 		return types.TokenMetadata{}, false
 	}
@@ -32,8 +33,8 @@ func (k Keeper) GetTokenMetadata(ctx sdk.Context, denomHash string) (types.Token
 }
 
 // Add new token metadata information
-func (k Keeper) AddTokenMetadata(ctx sdk.Context, metadata types.TokenMetadata) string {
-	denomHash := types.GetDenomHash(
+func (k keeper) AddTokenMetadata(ctx sdk.Context, metadata types.TokenMetadata) string {
+	denomHash := ethbridgetypes.GetDenomHash(
 		metadata.NetworkDescriptor,
 		metadata.TokenAddress,
 		metadata.Decimals,
@@ -47,14 +48,14 @@ func (k Keeper) AddTokenMetadata(ctx sdk.Context, metadata types.TokenMetadata) 
 	return denomHash
 }
 
-func (k Keeper) AddIBCTokenMetadata(ctx sdk.Context, metadata types.TokenMetadata, cosmosSender sdk.AccAddress) string {
+func (k keeper) AddIBCTokenMetadata(ctx sdk.Context, metadata types.TokenMetadata, cosmosSender sdk.AccAddress) string {
 	logger := k.Logger(ctx)
 	if !IsIBCToken(metadata.Name) {
 		logger.Error("Token is not IBC, cannot modify metadata manually")
 		return ""
 	}
 
-	if !k.oracleKeeper.IsAdminAccount(ctx, cosmosSender) {
+	if !k.IsAdminAccount(ctx, cosmosSender) {
 		logger.Error("cosmos sender is not admin account.")
 		return ""
 	}
@@ -65,7 +66,7 @@ func (k Keeper) AddIBCTokenMetadata(ctx sdk.Context, metadata types.TokenMetadat
 }
 
 // Deletes token metadata for IBC tokens only; returns true on success
-func (k Keeper) DeleteTokenMetadata(ctx sdk.Context, cosmosSender sdk.AccAddress, denomHash string) bool {
+func (k keeper) DeleteTokenMetadata(ctx sdk.Context, cosmosSender sdk.AccAddress, denomHash string) bool {
 	logger := k.Logger(ctx)
 
 	// Check if token is IBC token or not, refuse to delete non-IBC tokens
@@ -79,7 +80,7 @@ func (k Keeper) DeleteTokenMetadata(ctx sdk.Context, cosmosSender sdk.AccAddress
 		return false
 	}
 
-	if !k.oracleKeeper.IsAdminAccount(ctx, cosmosSender) {
+	if !k.IsAdminAccount(ctx, cosmosSender) {
 		logger.Error("cosmos sender is not admin account.")
 		return false
 	}
@@ -93,6 +94,6 @@ func (k Keeper) DeleteTokenMetadata(ctx sdk.Context, cosmosSender sdk.AccAddress
 
 // Searches the keeper to determine if a specific token has
 // been stored before
-func (k Keeper) ExistsTokenMetadata(ctx sdk.Context, denomHash string) bool {
+func (k keeper) ExistsTokenMetadata(ctx sdk.Context, denomHash string) bool {
 	return k.Exists(ctx, []byte(denomHash))
 }

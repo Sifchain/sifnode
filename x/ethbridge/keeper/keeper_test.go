@@ -11,6 +11,7 @@ import (
 	"github.com/Sifchain/sifnode/x/ethbridge/test"
 	"github.com/Sifchain/sifnode/x/ethbridge/types"
 	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
+	tokenregistrytypes "github.com/Sifchain/sifnode/x/tokenregistry/types"
 )
 
 var (
@@ -26,7 +27,7 @@ var (
 	networkDescriptor    = oracletypes.NetworkDescriptor_NETWORK_DESCRIPTOR_ETHEREUM
 )
 
-var testMetadataStake = types.TokenMetadata{
+var testMetadataStake = tokenregistrytypes.TokenMetadata{
 	Decimals:          18,
 	Name:              "stake",
 	NetworkDescriptor: oracletypes.NetworkDescriptor_NETWORK_DESCRIPTOR_ETHEREUM,
@@ -34,7 +35,7 @@ var testMetadataStake = types.TokenMetadata{
 	TokenAddress:      "0x0123456789ABCDEF",
 }
 
-var testMetadataCeth = types.TokenMetadata{
+var testMetadataCeth = tokenregistrytypes.TokenMetadata{
 	Decimals:          18,
 	Name:              "ceth",
 	NetworkDescriptor: oracletypes.NetworkDescriptor_NETWORK_DESCRIPTOR_ETHEREUM,
@@ -42,7 +43,7 @@ var testMetadataCeth = types.TokenMetadata{
 	TokenAddress:      "0x0123456789ABCDEF",
 }
 
-var testMetadataRowan = types.TokenMetadata{
+var testMetadataRowan = tokenregistrytypes.TokenMetadata{
 	Decimals:          18,
 	Name:              "rowan",
 	NetworkDescriptor: oracletypes.NetworkDescriptor_NETWORK_DESCRIPTOR_UNSPECIFIED,

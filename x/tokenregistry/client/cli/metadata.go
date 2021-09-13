@@ -12,8 +12,8 @@ import (
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 
-	"github.com/Sifchain/sifnode/x/ethbridge/types"
 	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
+	"github.com/Sifchain/sifnode/x/tokenregistry/types"
 )
 
 // GetCmdGetTokenMetadata queries information about a specific token
@@ -76,7 +76,7 @@ func GetCmdAddIBCTokenMetadata() *cobra.Command {
 				return errors.New("Error parsing tokenAddress invalid format must be a hex address")
 			}
 
-			tokenAddress := types.NewEthereumAddress(tokenAddressRaw)
+			tokenAddress := common.HexToAddress(tokenAddressRaw)
 
 			tokenDecimalsRaw, err := strconv.ParseInt(args[4], 10, 32)
 			if err != nil {
