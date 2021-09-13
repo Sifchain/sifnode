@@ -165,13 +165,23 @@ func TestKeeper_GetModuleAccount(t *testing.T) {
 func TestKeeper_GetLiquidityProviderData(t *testing.T) {
 	ctx, app := test.CreateTestAppClp(false)
 	clpKeeper := app.ClpKeeper
+	queryLimit := 5
 	tokens := []string{"cada", "cbch", "cbnb", "cbtc", "ceos", "ceth", "ctrx", "cusdt"}
 	pools, lpList := test.GeneratePoolsAndLPs(clpKeeper, ctx, tokens)
 	lpaddr, err := sdk.AccAddressFromBech32(lpList[0].LiquidityProviderAddress)
-	require.NoError(t, err)
-	assetList, _, err := clpKeeper.GetAssetsForLiquidityProviderPaginated(ctx, lpaddr, &query.PageRequest{Limit: math.MaxUint64})
-	require.NoError(t, err)
-	assert.LessOrEqual(t, len(assetList), len(lpList))
+	assert.NoError(t, err)
+	assetList, pageRes, err := clpKeeper.GetAssetsForLiquidityProviderPaginated(ctx, lpaddr, &query.PageRequest{Limit: uint64(queryLimit)})
+	assert.NoError(t, err)
+	assert.Len(t, assetList, queryLimit)
+	assert.NotNil(t, pageRes.NextKey)
+	assetList, pageRes, err = clpKeeper.GetAssetsForLiquidityProviderPaginated(ctx, lpaddr, &query.PageRequest{Key: pageRes.NextKey, Limit: uint64(queryLimit)})
+	assert.NoError(t, err)
+	assert.Len(t, assetList, len(tokens)-queryLimit)
+	assert.Nil(t, pageRes.NextKey)
+	assetList, pageRes, err = clpKeeper.GetAssetsForLiquidityProviderPaginated(ctx, lpaddr, &query.PageRequest{Limit: uint64(200)})
+	assert.NoError(t, err)
+	assert.Len(t, assetList, len(tokens))
+	assert.Nil(t, pageRes.NextKey)
 	lpDataList := make([]*types.LiquidityProviderData, 0, len(assetList))
 	for i := range assetList {
 		asset := assetList[i]
