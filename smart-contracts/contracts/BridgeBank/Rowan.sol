@@ -9,14 +9,9 @@ import "./BridgeToken.sol";
  **/
 contract Rowan is BridgeToken {
   /**
-   * @notice Address of the old erowan contract
-   */
-  address public constant erowanAddress = 0x07baC35846e5eD502aA91AdF6A9e7aA210F2DcbE;
-
-  /**
    * @dev Instance of the old erowan contract 
    */
-  BridgeToken erowan = BridgeToken(erowanAddress);
+  BridgeToken erowan;
 
   /**
    * @notice Event emitted when a user migrates their balance
@@ -30,9 +25,10 @@ contract Rowan is BridgeToken {
       string memory _name,
       string memory _symbol,
       uint8 _tokenDecimals,
-      string memory _cosmosDenom
+      string memory _cosmosDenom,
+      address _erowanAddress
   ) BridgeToken(_name, _symbol, _tokenDecimals, _cosmosDenom) {
-
+    erowan = BridgeToken(_erowanAddress);
   }
 
   /**
