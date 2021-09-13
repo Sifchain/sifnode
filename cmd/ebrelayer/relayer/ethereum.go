@@ -215,6 +215,9 @@ func (sub EthereumSub) CheckNonceAndProcess(txFactory tx.Factory,
 		return
 	}
 
+	// TODO
+	// remove for loop, instead check that ethlogs array length is equal to 1
+	// if it isn't we have an error, otherwise, just grab blocknumber
 	fromBlockNumber := uint64(0)
 	for _, ethLog := range ethLogs {
 		event, isBurnLock, err := sub.logToEvent(oracletypes.NetworkDescriptor(networkID.Uint64()),
@@ -247,7 +250,12 @@ func (sub EthereumSub) CheckNonceAndProcess(txFactory tx.Factory,
 	topics = [][]common.Hash{}
 	topics = append(topics, []common.Hash{lockTopic, burnTopic})
 
+	// TODO
+	// put this query in a loop that increments both the from block and to block each time,
+	// and appends its items to an ethlogs array
+	// max block delta to query should be 5000 to avoid geth hanging or web3 provider issues
 	// query event data from this specific block range
+
 	ethLogs, err = ethClient.FilterLogs(context.Background(), ethereum.FilterQuery{
 		FromBlock: big.NewInt(int64(fromBlockNumber)),
 		ToBlock:   endBlockHeight,
