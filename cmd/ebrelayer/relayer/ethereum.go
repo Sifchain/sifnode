@@ -42,6 +42,7 @@ const (
 	transactionInterval = 10 * time.Second
 	trailingBlocks      = 50
 	ethereumWakeupTimer = 60
+	maxQueryBlocks      = 5000
 )
 
 // EthereumSub is an Ethereum listener that can relay txs to Cosmos and Ethereum
@@ -215,87 +216,93 @@ func (sub EthereumSub) CheckNonceAndProcess(txFactory tx.Factory,
 		return
 	}
 
-	// TODO
-	// remove for loop, instead check that ethlogs array length is equal to 1
-	// if it isn't we have an error, otherwise, just grab blocknumber
 	fromBlockNumber := uint64(0)
-	for _, ethLog := range ethLogs {
-		event, isBurnLock, err := sub.logToEvent(oracletypes.NetworkDescriptor(networkID.Uint64()),
-			bridgeBankAddress,
-			bridgeBankContractABI,
-			ethLog)
-
-		if err != nil {
-			sub.SugaredLogger.Errorw("failed to transform from log to event.",
-				errorMessageKey, err.Error())
-			continue
-		}
-		if !isBurnLock {
-			sub.SugaredLogger.Infow("not burn or lock event, continue events.")
-			continue
-		}
-
-		if event.Nonce.Uint64() != lockBurnNonce+1 {
-			sub.SugaredLogger.Errorw("the lock burn nonce is not expected.")
-			return
-		}
-
-		// get the block height for the specific lock burn nonce
-		fromBlockNumber = ethLog.BlockNumber
-		break
+	if len(ethLogs) != 1 {
+		sub.SugaredLogger.Errorw("the result from filter is wrong.")
+		return
 	}
+
+	event, isBurnLock, err := sub.logToEvent(oracletypes.NetworkDescriptor(networkID.Uint64()),
+		bridgeBankAddress,
+		bridgeBankContractABI,
+		ethLogs[0])
+
+	if err != nil {
+		sub.SugaredLogger.Errorw("failed to transform from log to event.",
+			errorMessageKey, err.Error())
+		return
+	}
+	if !isBurnLock {
+		sub.SugaredLogger.Infow("not burn or lock event, continue events.")
+		return
+	}
+
+	if event.Nonce.Uint64() != lockBurnNonce+1 {
+		sub.SugaredLogger.Errorw("the lock burn nonce is not expected.")
+		return
+	}
+
+	// get the block height for the specific lock burn nonce
+	fromBlockNumber = ethLogs[0].BlockNumber
 
 	events := []types.EthereumEvent{}
 	// get a new topics, exclude the lock burn nonce since we already get block number
 	topics = [][]common.Hash{}
 	topics = append(topics, []common.Hash{lockTopic, burnTopic})
 
-	// TODO
-	// put this query in a loop that increments both the from block and to block each time,
-	// and appends its items to an ethlogs array
-	// max block delta to query should be 5000 to avoid geth hanging or web3 provider issues
-	// query event data from this specific block range
-
-	ethLogs, err = ethClient.FilterLogs(context.Background(), ethereum.FilterQuery{
-		FromBlock: big.NewInt(int64(fromBlockNumber)),
-		ToBlock:   endBlockHeight,
-		Addresses: []common.Address{bridgeBankAddress},
-		Topics:    topics,
-	})
-
-	if err != nil {
-		sub.SugaredLogger.Errorw("failed to filter the logs from ethereum client",
-			errorMessageKey, err.Error())
-		return
-	}
-
-	// loop over ethlogs, and build an array of burn/lock events
-	for _, ethLog := range ethLogs {
-		event, isBurnLock, err := sub.logToEvent(oracletypes.NetworkDescriptor(networkID.Uint64()),
-			bridgeBankAddress,
-			bridgeBankContractABI,
-			ethLog)
+	for {
+		if fromBlockNumber > endBlockHeight.Uint64() {
+			break
+		}
+		endBlock := endBlockHeight.Uint64()
+		if endBlock > fromBlockNumber+maxQueryBlocks {
+			endBlock = fromBlockNumber + maxQueryBlocks
+		}
+		ethLogs, err = ethClient.FilterLogs(context.Background(), ethereum.FilterQuery{
+			FromBlock: big.NewInt(int64(fromBlockNumber)),
+			ToBlock:   big.NewInt(int64(endBlock)),
+			Addresses: []common.Address{bridgeBankAddress},
+			Topics:    topics,
+		})
 
 		if err != nil {
-			sub.SugaredLogger.Errorw("failed to transform from log to event.",
-				errorMessageKey, err.Error())
-			continue
-		}
-		if !isBurnLock {
-			sub.SugaredLogger.Infow("not burn or lock event, continue events.")
-			continue
-		}
-		events = append(events, event)
-	}
-
-	if len(events) > 0 {
-		if err := sub.handleEthereumEvent(txFactory, events, symbolTranslator, lockBurnNonce); err != nil {
-			sub.SugaredLogger.Errorw("failed to handle ethereum event.",
+			sub.SugaredLogger.Errorw("failed to filter the logs from ethereum client",
 				errorMessageKey, err.Error())
 			return
 		}
-		time.Sleep(transactionInterval)
+
+		// loop over ethlogs, and build an array of burn/lock events
+		for _, ethLog := range ethLogs {
+			event, isBurnLock, err := sub.logToEvent(oracletypes.NetworkDescriptor(networkID.Uint64()),
+				bridgeBankAddress,
+				bridgeBankContractABI,
+				ethLog)
+
+			if err != nil {
+				sub.SugaredLogger.Errorw("failed to transform from log to event.",
+					errorMessageKey, err.Error())
+				continue
+			}
+			if !isBurnLock {
+				sub.SugaredLogger.Infow("not burn or lock event, continue events.")
+				continue
+			}
+			events = append(events, event)
+		}
+
+		if len(events) > 0 {
+			if lockBurnNonce, err = sub.handleEthereumEvent(txFactory, events, symbolTranslator, lockBurnNonce); err != nil {
+				sub.SugaredLogger.Errorw("failed to handle ethereum event.",
+					errorMessageKey, err.Error())
+				return
+			}
+			time.Sleep(transactionInterval)
+		}
+		// handleEthereumEvent return the next expected lock burn nonce
+		lockBurnNonce--
+		fromBlockNumber += maxQueryBlocks
 	}
+
 }
 
 // Replay the missed events
@@ -396,13 +403,13 @@ func (sub EthereumSub) logToEvent(networkDescriptor oracletypes.NetworkDescripto
 func (sub EthereumSub) handleEthereumEvent(txFactory tx.Factory,
 	events []types.EthereumEvent,
 	symbolTranslator *symbol_translator.SymbolTranslator,
-	lockBurnNonce uint64) error {
+	lockBurnNonce uint64) (uint64, error) {
 
 	var prophecyClaims []*ethbridgetypes.EthBridgeClaim
 	nextLockBurnNonce := lockBurnNonce + 1
 	valAddr, err := GetValAddressFromKeyring(txFactory.Keybase(), sub.ValidatorName)
 	if err != nil {
-		return err
+		return nextLockBurnNonce, err
 	}
 	for _, event := range events {
 		prophecyClaim, err := txs.EthereumEventToEthBridgeClaim(valAddr, event, symbolTranslator, sub.SugaredLogger)
@@ -417,7 +424,7 @@ func (sub EthereumSub) handleEthereumEvent(txFactory tx.Factory,
 				sub.SugaredLogger.Infow("ock burn nonce is not expected.",
 					"expected lock burn nonce is %d", nextLockBurnNonce,
 					"lock burn nonce from event is %d", prophecyClaim.EthereumLockBurnNonce)
-				return errors.New("lock burn nonce is not expected")
+				return nextLockBurnNonce, errors.New("lock burn nonce is not expected")
 			}
 
 		}
@@ -426,10 +433,10 @@ func (sub EthereumSub) handleEthereumEvent(txFactory tx.Factory,
 		"prophecy claims length", len(prophecyClaims))
 
 	if len(events) == 0 {
-		return nil
+		return nextLockBurnNonce, nil
 	}
 
-	return txs.RelayToCosmos(txFactory, prophecyClaims, sub.CliCtx, sub.SugaredLogger)
+	return nextLockBurnNonce, txs.RelayToCosmos(txFactory, prophecyClaims, sub.CliCtx, sub.SugaredLogger)
 }
 
 // GetLockBurnNonceFromCosmos via rpc
