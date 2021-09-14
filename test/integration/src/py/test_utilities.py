@@ -1,3 +1,4 @@
+from web3 import Web3
 import json
 import logging
 import os
@@ -24,12 +25,15 @@ class EthereumToSifchainTransferRequest:
     sifchain_destination_address: str = ""
     ethereum_address: str = ""
     ethereum_private_key_env_var: str = "not required for localnet"
+    # TODO: Fetch from env variable
+    ethereum_websocket: str = "ws://localhost:8545/"
     sifchain_symbol: str = "ceth"
     ethereum_symbol: str = "eth"
     ethereum_network: str = ""  # mainnet, ropsten, http:// for localnet
     amount: int = 0
     ceth_amount: int = 0
-    sifchain_fees: str = ""  # Deprecated, see https://github.com/Sifchain/sifnode/pull/1802#discussion_r697403408
+    # Deprecated, see https://github.com/Sifchain/sifnode/pull/1802#discussion_r697403408
+    sifchain_fees: str = ""
     smart_contracts_dir: str = ""
     ethereum_chain_id: str = "5777"
     chain_id: str = "localnet"  # cosmos chain id
@@ -110,6 +114,7 @@ def get_env_var(name):
             result = env.get(name)
     return result
 
+
 def get_required_env_var(name, why: str = "by the system"):
     result = get_env_var(name)
     if not result:
@@ -119,6 +124,7 @@ def get_required_env_var(name, why: str = "by the system"):
 
 def get_optional_env_var(name: str, default_value: str):
     result = get_env_var(name)
+    print(f"ENV VARIABLE - {name}={result}")
     return result if result else default_value
 
 
@@ -188,6 +194,7 @@ def run_yarn_command(command_line):
 def get_token_metadata(denomHash):
     command_line = f"{sifnoded_binary} query ethbridge metadata {denomHash}"
     return get_shell_output(command_line)
+
 
 def kill_ebrelayer():
     return get_shell_output("pkill -9 ebrelayer || true")
@@ -394,7 +401,8 @@ def send_from_sifchain_to_sifchain_cmd(
     keyring_backend_entry = f"--keyring-backend {credentials.keyring_backend}" if credentials.keyring_backend else ""
     chain_id_entry = f"--chain-id {transfer_request.chain_id}" if transfer_request.chain_id else ""
     node = f"--node {transfer_request.sifnoded_node}" if transfer_request.sifnoded_node else ""
-    sifchain_fees_entry = f"--fees {transfer_request.sifchain_fees}" if transfer_request.sifchain_fees else ""  # Deprecated, see https://github.com/Sifchain/sifnode/pull/1802#discussion_r697403408
+    # Deprecated, see https://github.com/Sifchain/sifnode/pull/1802#discussion_r697403408
+    sifchain_fees_entry = f"--fees {transfer_request.sifchain_fees}" if transfer_request.sifchain_fees else ""
     home_entry = f"--home {credentials.sifnoded_homedir}" if credentials.sifnoded_homedir else ""
     cmd = " ".join([
         yes_entry,
@@ -438,7 +446,8 @@ def send_from_sifchain_to_ethereum_cmd(
     yes_entry = f"yes {credentials.keyring_passphrase} | " if credentials.keyring_passphrase else ""
     keyring_backend_entry = f"--keyring-backend {credentials.keyring_backend}" if credentials.keyring_backend else ""
     node = f"--node {transfer_request.sifnoded_node}" if transfer_request.sifnoded_node else ""
-    sifchain_fees_entry = f"--fees {transfer_request.sifchain_fees}" if transfer_request.sifchain_fees else ""  # Deprecated, see https://github.com/Sifchain/sifnode/pull/1802#discussion_r697403408
+    # Deprecated, see https://github.com/Sifchain/sifnode/pull/1802#discussion_r697403408
+    sifchain_fees_entry = f"--fees {transfer_request.sifchain_fees}" if transfer_request.sifchain_fees else ""
     direction = "lock" if transfer_request.sifchain_symbol == "rowan" else "burn"
     home_entry = f"--home {credentials.sifnoded_homedir}" if credentials.sifnoded_homedir else ""
     from_entry = f"--from {credentials.from_key} " if credentials.from_key else ""
@@ -473,26 +482,52 @@ def send_from_sifchain_to_ethereum(transfer_request: EthereumToSifchainTransferR
     return result
 
 
+def project_dir(*paths):
+    return os.path.abspath(os.path.join(os.path.normpath(os.path.join(__file__, *([os.path.pardir]*4))), *paths))
+
+
+def connect_web3(websocket: str, address: str, contractName: str):
+    with json.load(project_dir(f"smart-contracts/artifacts/contracts/{contractName}.sol/{contractName}.json")) as contractJSON:
+        contractABI = contractJSON["abi"]
+        w3 = Web3(Web3.WebsocketProvider(websocket))
+        contract = w3.eth.contract(
+            address=address, abi=contractABI)
+        return (contract, w3)
+
+
+def bridgebank_web3(transfer_request: EthereumToSifchainTransferRequest):
+    return connect_web3(transfer_request.ethereum_websocket, transfer_request.bridgebank_address, "BridgeBank")
+
+# %%
 # this does not wait for the transaction to complete
+
+
 def send_from_ethereum_to_sifchain(transfer_request: EthereumToSifchainTransferRequest) -> int:
-    direction = "sendBurnTx" if transfer_request.sifchain_symbol == "rowan" else "sendLockTx"
-    command_line = f"yarn -s --cwd {transfer_request.smart_contracts_dir} integrationtest:{direction} " \
-                   f"--sifchain_address {transfer_request.sifchain_address} " \
-                   f"--symbol {transfer_request.ethereum_symbol} " \
-                   f"--amount {int(transfer_request.amount):0} " \
-                   f"--bridgebank_address {transfer_request.bridgebank_address} " \
-                   f"--ethereum_address {transfer_request.ethereum_address} " \
-                   f"--ethereum_private_key_env_var \"{transfer_request.ethereum_private_key_env_var}\" " \
-                   f"--json_path {transfer_request.solidity_json_path} " \
-                   f"--gas estimate "
-    command_line += f"--ethereum_network {transfer_request.ethereum_network} " if transfer_request.ethereum_network else ""
-    transaction_result = run_yarn_command(command_line)
+    contract, w3 = bridgebank_web3(transfer_request)
+    contract.functions.Lock(transfer_request.sifchain_destination_address,
+                            get_token_ethereum_address(transfer_request.ethereum_symbol, ))
+    # direction = "sendBurnTx" if transfer_request.sifchain_symbol == "rowan" else "sendLockTx"
+    # command_line = f"yarn -s --cwd {transfer_request.smart_contracts_dir} integrationtest:{direction} " \
+    #                f"--sifchain_address {transfer_request.sifchain_address} " \
+    #                f"--symbol {transfer_request.ethereum_symbol} " \
+    #                f"--amount {int(transfer_request.amount):0} " \
+    #                f"--bridgebank_address {transfer_request.bridgebank_address} " \
+    #                f"--ethereum_address {transfer_request.ethereum_address} " \
+    #                f"--ethereum_private_key_env_var \"{transfer_request.ethereum_private_key_env_var}\" " \
+    #                f"--json_path {transfer_request.solidity_json_path} " \
+    #                f"--gas estimate "
+    # command_line += f"--ethereum_network {transfer_request.ethereum_network} " if transfer_request.ethereum_network else ""
+    # transaction_result = run_yarn_command(command_line)
     if "burn" in transaction_result:
         result = transaction_result["burn"]["receipt"]["blockNumber"]
     else:
         result = transaction_result["receipt"]["blockNumber"]
     return result
 
+
+send_from_ethereum_to_sifchain(EthereumToSifchainTransferRequest())
+
+# %%
 
 currency_pairs = {
     "eth": "ceth",
@@ -508,10 +543,10 @@ def calculate_denom_hash(
         decimals: int,
         token_name: str,
         token_symbol: str) -> str:
-        '''
-        Takes in token information and generates the denom hash for metadata module
-        and IBC. Returns string.
-        '''
+    '''
+    Takes in token information and generates the denom hash for metadata module
+    and IBC. Returns string.
+    '''
     network_descriptor = int(network_descriptor)
     token_contract_address = token_contract_address.lower()
     decimals = int(decimals)
@@ -777,7 +812,8 @@ def build_sifchain_command(
     node_entry = f"--node {transfer_request.sifnoded_node}" if transfer_request.sifnoded_node else ""
     home_entry = f"--home {credentials.sifnoded_homedir}" if credentials.sifnoded_homedir else ""
     from_entry = f"--from {credentials.from_key} " if credentials.from_key else ""
-    sifchain_fees_entry = f"--fees {transfer_request.sifchain_fees}" if transfer_request.sifchain_fees else ""  # Deprecated, see https://github.com/Sifchain/sifnode/pull/1802#discussion_r697403408
+    # Deprecated, see https://github.com/Sifchain/sifnode/pull/1802#discussion_r697403408
+    sifchain_fees_entry = f"--fees {transfer_request.sifchain_fees}" if transfer_request.sifchain_fees else ""
     return " ".join([
         yes_entry,
         command_contents,

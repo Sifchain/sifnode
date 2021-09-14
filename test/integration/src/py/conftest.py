@@ -34,7 +34,8 @@ def sifchain_admin_account_credentials(sifchain_admin_account):
 
 @pytest.fixture
 def smart_contract_artifact_dir(smart_contracts_dir):
-    result = test_utilities.get_optional_env_var("SMART_CONTRACT_ARTIFACT_DIR", None)
+    result = test_utilities.get_optional_env_var(
+        "SMART_CONTRACT_ARTIFACT_DIR", None)
     return result if result else os.path.join(smart_contracts_dir, "build/contracts")
 
 
@@ -121,7 +122,8 @@ def rowan_source(is_ropsten_testnet, validator_address):
 @pytest.fixture
 def rowan_source_key(is_ropsten_testnet, rowan_source):
     """A sifchain address or key that has rowan and can send that rowan to other address"""
-    result = test_utilities.get_optional_env_var("ROWAN_SOURCE_KEY", rowan_source)
+    result = test_utilities.get_optional_env_var(
+        "ROWAN_SOURCE_KEY", rowan_source)
     if result:
         return result
     if is_ropsten_testnet:
@@ -217,7 +219,8 @@ def operator_private_key(ganache_keys_file, operator_address):
 def ganache_keys_file(sifnode_base_dir):
     return test_utilities.get_optional_env_var(
         "GANACHE_KEYS_FILE",
-        os.path.join(sifnode_base_dir, "test/integration/vagrant/data/ganachekeys.json")
+        os.path.join(sifnode_base_dir,
+                     "test/integration/vagrant/data/ganachekeys.json")
     )
 
 
@@ -231,7 +234,8 @@ def source_ethereum_address(is_ropsten_testnet, smart_contracts_dir):
     """
     addr = test_utilities.get_optional_env_var("ETHEREUM_ADDRESS", "")
     if addr:
-        logging.debug("using ETHEREUM_ADDRESS provided for source_ethereum_address")
+        logging.debug(
+            "using ETHEREUM_ADDRESS provided for source_ethereum_address")
         return addr
     if is_ropsten_testnet:
         # Ropsten requires that you manually set the ETHEREUM_ADDRESS environment variable
@@ -248,7 +252,8 @@ def ganache_timed_blocks(integration_dir):
     "restart ganache with timed blocks (keeps existing database)"
     logging.info("restart ganache with timed blocks (keeps existing database)")
     yield test_utilities.get_shell_output(f"{integration_dir}/ganache_start.sh 2")
-    logging.info("restart ganache with instant mining (keeps existing database)")
+    logging.info(
+        "restart ganache with instant mining (keeps existing database)")
     test_utilities.get_shell_output(f"{integration_dir}/ganache_start.sh")
 
 
@@ -256,9 +261,11 @@ def ganache_timed_blocks(integration_dir):
 def ensure_relayer_restart(integration_dir, smart_contracts_dir):
     """restarts relayer after the test function completes.  Used by tests that need to stop the relayer."""
     yield None
-    logging.info("restart ebrelayer after advancing wait blocks - avoids any interaction with replaying blocks")
+    logging.info(
+        "restart ebrelayer after advancing wait blocks - avoids any interaction with replaying blocks")
     original_log_level = decrease_log_level(new_level=logging.WARNING)
-    test_utilities.advance_n_ethereum_blocks(test_utilities.n_wait_blocks + 1, smart_contracts_dir)
+    test_utilities.advance_n_ethereum_blocks(
+        test_utilities.n_wait_blocks + 1, smart_contracts_dir)
     test_utilities.start_ebrelayer()
     force_log_level(original_log_level)
 
@@ -320,7 +327,8 @@ def rowan_source_integrationtest_env_transfer_request(
     Creates a EthereumToSifchainTransferRequest with all the generic fields filled in
     for a transfer of rowan from an account that already has rowan.
     """
-    result: test_utilities.EthereumToSifchainTransferRequest = copy.deepcopy(basic_transfer_request)
+    result: test_utilities.EthereumToSifchainTransferRequest = copy.deepcopy(
+        basic_transfer_request)
     result.sifchain_address = rowan_source
     result.sifchain_symbol = "rowan"
     return result
@@ -351,11 +359,13 @@ def restore_default_rescue_location(
 
 threadlocals = threading.local()
 
+
 @pytest.fixture
 def ctx(snapshot_name):
     logging.debug("Before ctx()")
     yield threadlocals.ctx
     logging.debug("After ctx()")
+
 
 @pytest.fixture(scope="function")
 def with_snapshot(snapshot_name):
@@ -364,10 +374,12 @@ def with_snapshot(snapshot_name):
     ctx = integration_test_context.IntegrationTestContext(snapshot_name)
     logging.info("Started processes: {}".format(repr(ctx.processes)))
     threadlocals.ctx = ctx
-    os.environ["VAGRANT_ENV_JSON"] = make.project_dir("test/integration/vagrantenv.json")  # TODO HACK
+    os.environ["VAGRANT_ENV_JSON"] = make.project_dir(
+        "test/integration/vagrantenv.json")  # TODO HACK
     logging.debug("Before with_snapshot()")
     yield
     logging.debug("After with_snapshot()")
-    make.killall(ctx.processes)  # TODO Ensure this is called even in the case of exception
+    # TODO Ensure this is called even in the case of exception
+    make.killall(ctx.processes)
     logging.info("Terminated processes: {}".format(repr(ctx.processes)))
     del threadlocals.ctx
