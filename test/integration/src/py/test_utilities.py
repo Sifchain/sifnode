@@ -483,11 +483,12 @@ def send_from_sifchain_to_ethereum(transfer_request: EthereumToSifchainTransferR
 
 
 def project_dir(*paths):
-    return os.path.abspath(os.path.join(os.path.normpath(os.path.join(__file__, *([os.path.pardir]*4))), *paths))
+    return os.path.abspath(os.path.join(os.path.normpath(os.path.join(__file__, *([os.path.pardir]*5))), *paths))
 
 
-def connect_web3(websocket: str, address: str, contractName: str):
-    with json.load(project_dir(f"smart-contracts/artifacts/contracts/{contractName}.sol/{contractName}.json")) as contractJSON:
+def connect_web3(websocket: str, address: str, contractName: str, contractPath: str):
+    with open(project_dir(f"smart-contracts/artifacts/contracts/{contractPath}/{contractName}.json"), "r") as jsonFile:
+        contractJSON = json.load(jsonFile)
         contractABI = contractJSON["abi"]
         w3 = Web3(Web3.WebsocketProvider(websocket))
         contract = w3.eth.contract(
@@ -496,16 +497,24 @@ def connect_web3(websocket: str, address: str, contractName: str):
 
 
 def bridgebank_web3(transfer_request: EthereumToSifchainTransferRequest):
-    return connect_web3(transfer_request.ethereum_websocket, transfer_request.bridgebank_address, "BridgeBank")
+    return connect_web3(transfer_request.ethereum_websocket, transfer_request.bridgebank_address, "BridgeBank", "BridgeBank/BridgeBank.sol")
 
-# %%
 # this does not wait for the transaction to complete
 
 
 def send_from_ethereum_to_sifchain(transfer_request: EthereumToSifchainTransferRequest) -> int:
     contract, w3 = bridgebank_web3(transfer_request)
-    contract.functions.Lock(transfer_request.sifchain_destination_address,
-                            get_token_ethereum_address(transfer_request.ethereum_symbol, ))
+    if transfer_request.sifchain_symbol == "rowan":
+        contract.functions.burn(
+            bytes(transfer_request.sifchain_address, 'utf-8'),
+            transfer_request.bridgetoken_address,
+            transfer_request.amount).transact()
+    else:
+        contract.functions.lock(
+            bytes(transfer_request.sifchain_address, 'utf-8'),
+            # TODO: FIGURE OUT THE SYMBOL TO ADDRESS MAPPING
+            NULL_ADDRESS,
+            transfer_request.amount).transact({"value": transfer_request.amount if transfer_request.ethereum_symbol == "eth" else 0})
     # direction = "sendBurnTx" if transfer_request.sifchain_symbol == "rowan" else "sendLockTx"
     # command_line = f"yarn -s --cwd {transfer_request.smart_contracts_dir} integrationtest:{direction} " \
     #                f"--sifchain_address {transfer_request.sifchain_address} " \
@@ -524,10 +533,6 @@ def send_from_ethereum_to_sifchain(transfer_request: EthereumToSifchainTransferR
         result = transaction_result["receipt"]["blockNumber"]
     return result
 
-
-send_from_ethereum_to_sifchain(EthereumToSifchainTransferRequest())
-
-# %%
 
 currency_pairs = {
     "eth": "ceth",
