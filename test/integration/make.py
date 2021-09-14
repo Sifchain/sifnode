@@ -181,9 +181,51 @@ class Ganache:
         return env.popen(args, log_file=log_file)
 
 
+class Hardhat:
+    @staticmethod
+    def default_accounts():
+        # Hardhat doesn't provide a way to get the private keys of its default accounts, so just hardcode them for now.
+        # TODO hardhat prints 20 accounts upon startup
+        # Keep synced to smart-contracts/src/devenv/hardhatNode.ts:defaultHardhatAccounts
+        # Format: [address, private_key]
+        # Note: for compatibility with ganache, private keys should be stripped of "0x" prefix
+        # (when you pass a private key to ebrelayer via ETHEREUM_PRIVATE_KEY, the key is treated as invalid)
+        return [[address, private_key[2:]] for address, private_key in [[
+            "0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266",
+            "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80",
+        ], [
+            "0x70997970c51812dc3a010c7d01b50e0d17dc79c8",
+            "0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d",
+        ], [
+            "0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc",
+            "0x5de4111afa1a4b94908f83103eb1f1706367c2e68ca870fc3fb9a804cdab365a",
+        ], [
+            "0x90f79bf6eb2c4f870365e785982e1f101e93b906",
+            "0x7c852118294e51e653712a81e05800f419141751be58f605c371e15141b007a6",
+        ], [
+            "0x15d34aaf54267db7d7c367839aaf71a00a2c6a65",
+            "0x47e179ec197488593b187f80a00eb0da91f1b9d0b13f8733639f19c30a34926a",
+        ], [
+            "0x9965507d1a55bcc2695c58ba16fb37d819b0a4dc",
+            "0x8b3a350cf5c34c9194ca85829a2df0ec3153be0318b5e2d3348e872092edffba",
+        ], [
+            "0x976ea74026e726554db657fa54763abd0c3a0aa9",
+            "0x92db14e403b83dfe3df233f83dfa3a0d7096f21ca9b0d6d6b8d88b2b4ec1564e",
+        ], [
+            "0x14dc79964da2c08b23698b3d3cc7ca32193d9955",
+            "0x4bbbf85ce3377467afe5d46f804f221813b2bb87f24d81f60f1fcdbf7cbf4356",
+        ], [
+            "0x23618e81e3f5cdf7f54c3d65f7fbc0abf5b21e8f",
+            "0xdbda1821b80551c9d65939329250298aa3472ba22feea921c0cf5d620ea67b97",
+        ], [
+            "0xa0ee7a142d267c1f36714e4a8f75612f20a79720",
+            "0x2a871d0798f97d79848a013d4936a73bf4cc922c825d33c1cf7073dff6d409c6",
+        ]]]
+
+
 class Sifnoded(Command):
     def sifnoded_init(self, moniker, chain_id):
-        args = ["sifnoded", "init", moniker, "--chain-id={}".format(chain_id)]
+        args = ["sifnoded", "init", moniker, "--chain-id", chain_id]
         res = self.execst(args)
         return json.loads(res[2])  # output is on stderr
 
@@ -191,7 +233,7 @@ class Sifnoded(Command):
         args = ["sifnoded", "keys", "add", name, "--keyring-backend={}".format("test"), "--recover"]
         stdin = [" ".join(mnemonic)]
         res = self.execst(args, stdin=stdin)
-        return yaml_load(stdout(res))[0]
+        return exactly_one(yaml_load(stdout(res)))
 
     def sifnoded_keys_show(self, name, bech=None, keyring_backend=None, home=None):
         keyring_backend = keyring_backend or "test"
@@ -276,14 +318,13 @@ class Sifnoded(Command):
         while not self.exists(path):
             time.sleep(1)
 
-class Integrator(Ganache, Sifnoded, Command):
-    def __init__(self):
-        self.smart_contracts_dir = project_dir("smart-contracts")
 
-    def ebrelayer_init(self, tendermind_node, web3_provider, bridge_registry_contract_address,
-        validator_moniker, validator_mnemonic, chain_id, ethereum_private_key=None, ethereum_address=None, gas=None,
-        gas_prices=None, node=None, keyring_backend=None, sign_with=None, symbol_translator_file=None,
-        relayerdb_path=None, cwd=None, log_file=None
+class Ebrelayer:
+    @staticmethod
+    def init(cmd, tendermind_node, web3_provider, bridge_registry_contract_address, validator_moniker,
+        validator_mnemonic, chain_id, ethereum_private_key=None, ethereum_address=None, gas=None, gas_prices=None,
+        node=None, keyring_backend=None, sign_with=None, symbol_translator_file=None, relayerdb_path=None,
+        cwd=None, log_file=None
     ):
         env = {}
         if ethereum_private_key:
@@ -302,7 +343,53 @@ class Integrator(Ganache, Sifnoded, Command):
             (["--from", sign_with] if sign_with is not None else []) + \
             (["--symbol-translator-file", symbol_translator_file] if symbol_translator_file else []) + \
             (["--relayerdb-path", relayerdb_path] if relayerdb_path else [])
-        return self.popen(args, env=env, cwd=cwd, log_file=log_file)
+        return cmd.popen(args, env=env, cwd=cwd, log_file=log_file)
+
+
+class ProjectDir:
+    """Represents a checked out copy of a project in a particular directory."""
+
+    def __init__(self, cmd, base_dir):
+        self.cmd = cmd
+        self.base_dir = base_dir
+
+    def project_dir(self, *paths):
+        return os.path.abspath(os.path.join(self.base_dir, *paths))
+
+    def cleanup_and_reset_state(self):
+        force_kill_processes(self.cmd)
+
+        # rm -rvf /tmp/tmp.xxxx (ganache DB, unique for every run)
+        self.cmd.rmdir(self.project_dir("test", "integration", "sifchainrelayerdb"))  # TODO move to /tmp
+        self.cmd.rmdir(self.project_dir("smart-contracts", "build"))  # truffle deploy
+        self.cmd.rmdir(self.project_dir("test", "integration", "vagrant", "data"))
+        self.cmd.rmdir(self.cmd.get_user_home(".sifnoded"))  # Probably needed for "--keyring-backend test"
+
+        # Peggy/devenv/hardhat cleanup
+        # For full clean, also: cd smart-contracts && rm -rf node_modules && npm install
+        # TODO Difference between yarn vs. npm install?
+        # (1) = cd smart-contracts; npx hardhat run scripts/deploy_contracts.ts --network localhost
+        # (2) = cd smart-contracts; GOBIN=/home/anderson/go/bin npx hardhat run scripts/devenv.ts
+        self.cmd.rmdir(self.project_dir("smart-contracts", "build"))  # (1)
+        self.cmd.rmdir(self.project_dir("smart-contracts", "artifacts"))  # (1)
+        self.cmd.rmdir(self.project_dir("smart-contracts", "cache"))  # (1)
+        self.cmd.rmdir(self.project_dir("smart-contracts", ".openzeppelin"))  # (1)
+        self.cmd.rmdir(self.project_dir("smart-contracts", "relayerdb"))  # (2)
+        self.cmd.rmdir(self.project_dir("smart-contracts", "venv"))
+
+        # Additional cleanup (not neccessary to make it work)
+        # self.cmd.rm(self.project_dir("smart-contracts/combined.log"))
+        # self.cmd.rmdir(self.project_dir("test/integration/.pytest_cache"))
+        # self.cmd,rm(self.project_dir("smart-contracts/.env"))
+        # self.cmd.rmdir(self.project_dir("deploy/networks"))
+        # self.cmd.rmdir(self.project_dir("smart-contracts/.openzeppelin"))
+
+        # rmdir ~/.cache/yarn
+
+
+class Integrator(Ganache, Sifnoded, Command):
+    def __init__(self):
+        self.smart_contracts_dir = project_dir("smart-contracts")
 
     def sif_wait_up(self, host, port):
         while True:
@@ -682,7 +769,7 @@ class UIStackEnvironment:
         # rm -rf ui/chains/peggy/relayerdb
         # ebrelayer is in $GOBIN, gets installed by "make install"
         ethereum_private_key = smart_contracts_env_ui_example_vars["ETHEREUM_PRIVATE_KEY"]
-        ebrelayer_proc = self.cmd.ebrelayer_init("tcp://localhost:26657", "ws://localhost:7545/",
+        ebrelayer_proc = Ebrelayer.init(self.cmd, "tcp://localhost:26657", "ws://localhost:7545/",
             bridge_registry_address, self.shadowfiend_name, self.shadowfiend_mnemonic, self.chain_id,
             ethereum_private_key=ethereum_private_key, gas=5*10**12, gas_prices=[0.5, "rowan"])
 
@@ -1018,7 +1105,7 @@ class IntegrationTestsEnvironment:
         self.wait_for_sif_account(netdef_json, validator1_address)
         time.sleep(10)
         self.remove_and_add_sifnoded_keys(validator_moniker, validator_mnemonic)  # Creates ~/.sifnoded/keyring-tests/xxxx.address
-        ebrelayer_proc = self.cmd.ebrelayer_init(self.tcp_url, self.ethereum_websocket_address, bridge_registry_sc_addr,
+        ebrelayer_proc = Ebrelayer.init(self.cmd, self.tcp_url, self.ethereum_websocket_address, bridge_registry_sc_addr,
             validator_moniker, validator_mnemonic, self.chainnet, ethereum_private_key=ebrelayer_ethereum_private_key,
             node=self.tcp_url, keyring_backend="test", sign_with=validator_moniker,
             symbol_translator_file=os.path.join(self.test_integration_dir, "config/symbol_translator.json"),
@@ -1068,8 +1155,6 @@ class IntegrationTestsEnvironment:
         self.write_vagrantenv_sh()
         self.cmd.mkdir(self.data_dir)
 
-        return self.restart_processes()
-
     def restart_processes(self):
         block_time = None
         ganache_db_path = self.state_vars["GANACHE_DB_DIR"]
@@ -1112,15 +1197,7 @@ class PeggyEnvironment(IntegrationTestsEnvironment):
     def __init__(self, cmd):
         super().__init__(cmd)
         self.smart_contracts_dir = project_dir("smart-contracts")
-        gobin_dir = os.environ["GOBIN"]
-
-    def start_hardhat(self, hostname, port, log_file=None):
-        # TODO We need to manaege smart-contracts/hardhat.config.ts + it also reads smart-contracts/.env via dotenv
-        # TODO Handle failures, e.g. if the process is already running we get exit value 1 and
-        # "Error: listen EADDRINUSE: address already in use 127.0.0.1:8545"
-        proc = self.cmd.popen([os.path.join("node_modules", ".bin", "hardhat"), "node", "--hostname", hostname, "--port",
-            str(port)], cwd=self.smart_contracts_dir, log_file=log_file)
-        return proc
+        # gobin_dir = os.environ["GOBIN"]
 
     def signer_array_to_ethereum_accounts(self, accounts, n_validators):
         operator, owner, pauser, *rest = accounts
@@ -1134,44 +1211,13 @@ class PeggyEnvironment(IntegrationTestsEnvironment):
             "available": available,
         }
 
-    def default_hardhat_accounts(self):
-        # Hardhat doesn't provide a way to get the private keys of its default accounts, so just hardcode them for now.
-        # TODO hardhat prints 20 accounts upon startup
-        # Keep synced to smart-contracts/src/devenv/hardhatNode.ts:defaultHardhatAccounts
-        # Format: [address, private_key]
-        # Note: for compatibility with ganache, private keys should be stripped of "0x" prefix
-        # (when you pass a private key to ebrelayer via ETHEREUM_PRIVATE_KEY, the key is treated as invalid)
-        return [[address, private_key[2:]] for address, private_key in [[
-            "0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266",
-            "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80",
-        ], [
-            "0x70997970c51812dc3a010c7d01b50e0d17dc79c8",
-            "0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d",
-        ], [
-            "0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc",
-            "0x5de4111afa1a4b94908f83103eb1f1706367c2e68ca870fc3fb9a804cdab365a",
-        ], [
-            "0x90f79bf6eb2c4f870365e785982e1f101e93b906",
-            "0x7c852118294e51e653712a81e05800f419141751be58f605c371e15141b007a6",
-        ], [
-            "0x15d34aaf54267db7d7c367839aaf71a00a2c6a65",
-            "0x47e179ec197488593b187f80a00eb0da91f1b9d0b13f8733639f19c30a34926a",
-        ], [
-            "0x9965507d1a55bcc2695c58ba16fb37d819b0a4dc",
-            "0x8b3a350cf5c34c9194ca85829a2df0ec3153be0318b5e2d3348e872092edffba",
-        ], [
-            "0x976ea74026e726554db657fa54763abd0c3a0aa9",
-            "0x92db14e403b83dfe3df233f83dfa3a0d7096f21ca9b0d6d6b8d88b2b4ec1564e",
-        ], [
-            "0x14dc79964da2c08b23698b3d3cc7ca32193d9955",
-            "0x4bbbf85ce3377467afe5d46f804f221813b2bb87f24d81f60f1fcdbf7cbf4356",
-        ], [
-            "0x23618e81e3f5cdf7f54c3d65f7fbc0abf5b21e8f",
-            "0xdbda1821b80551c9d65939329250298aa3472ba22feea921c0cf5d620ea67b97",
-        ], [
-            "0xa0ee7a142d267c1f36714e4a8f75612f20a79720",
-            "0x2a871d0798f97d79848a013d4936a73bf4cc922c825d33c1cf7073dff6d409c6",
-        ]]]
+    def start_hardhat(self, hostname, port, log_file=None):
+        # TODO We need to manaege smart-contracts/hardhat.config.ts + it also reads smart-contracts/.env via dotenv
+        # TODO Handle failures, e.g. if the process is already running we get exit value 1 and
+        # "Error: listen EADDRINUSE: address already in use 127.0.0.1:8545"
+        proc = self.cmd.popen([os.path.join("node_modules", ".bin", "hardhat"), "node", "--hostname", hostname, "--port",
+            str(port)], cwd=self.smart_contracts_dir, log_file=log_file)
+        return proc
 
     def compile_smart_contracts_hardhat(self):
         self.cmd.npx(["hardhat", "compile"], cwd=project_dir("smart-contracts"), pipe=False)
@@ -1196,7 +1242,7 @@ class PeggyEnvironment(IntegrationTestsEnvironment):
         validator_mnemonic, chain_id, symbol_translator_file, relayerdb_path, ethereum_address, ethereum_private_key,
         log_file=None
     ):
-        return self.cmd.ebrelayer_init(tcp_url, websocket_address, bridge_registry_sc_addr, validator_moniker,
+        return Ebrelayer.init(self.cmd, tcp_url, websocket_address, bridge_registry_sc_addr, validator_moniker,
             validator_mnemonic, chain_id, ethereum_private_key=ethereum_private_key, ethereum_address=ethereum_address,
             node=tcp_url, keyring_backend="test", sign_with=validator_moniker,
             symbol_translator_file=symbol_translator_file, relayerdb_path=relayerdb_path, log_file=log_file)
@@ -1219,7 +1265,7 @@ class PeggyEnvironment(IntegrationTestsEnvironment):
         hardhat_validator_count = 1
         hardhat_network_id = 1
         hardhat_chain_id = 1
-        hardhat_accounts = self.signer_array_to_ethereum_accounts(self.default_hardhat_accounts(), hardhat_validator_count)
+        hardhat_accounts = self.signer_array_to_ethereum_accounts(Hardhat.default_accounts(), hardhat_validator_count)
 
         self.compile_smart_contracts_hardhat()
         bridgebank_sc_addr, bridge_registry_sc_addr, rowan_sc_addr = self.deploy_smart_contracts_hardhat()
@@ -1293,7 +1339,6 @@ class PeggyEnvironment(IntegrationTestsEnvironment):
         for sc_name, sc_addr in smart_contract_addresses.items():
             self.cmd.write_text_file(os.path.join(d, f"{sc_name}.json"), json.dumps({
                 "networks": {str(integration_tests_expected_network_id): {"address": sc_addr}}}))
-        # self.cmd.write_text_file(os.path.join(d, "smart_contract_addresses.json"), json.dumps(smartcontract_address))
 
 
 def force_kill_processes(cmd):
@@ -1301,37 +1346,6 @@ def force_kill_processes(cmd):
     cmd.execst(["pkill", "ebrelayer"], check_exit=False)
     cmd.execst(["pkill", "sifnoded"], check_exit=False)
 
-def cleanup_and_reset_state():
-    cmd = Command()
-    force_kill_processes(cmd)
-
-    # rm -rvf /tmp/tmp.xxxx (ganache DB, unique for every run)
-    cmd.rmdir(project_dir("test", "integration", "sifchainrelayerdb"))  # TODO move to /tmp
-    cmd.rmdir(project_dir("smart-contracts", "build"))  # truffle deploy
-    cmd.rmdir(project_dir("test", "integration", "vagrant", "data"))
-    cmd.rmdir(cmd.get_user_home(".sifnoded"))  # Probably needed for "--keyring-backend test"
-
-    # Peggy/devenv/hardhat cleanup
-    # For full clean, also: cd smart-contracts && rm -rf node_modules && npm install
-    # TODO Difference between yarn vs. npm install?
-    # (1) = cd smart-contracts; npx hardhat run scripts/deploy_contracts.ts --network localhost
-    # (2) = cd smart-contracts; GOBIN=/home/anderson/go/bin npx hardhat run scripts/devenv.ts
-    cmd.rmdir(project_dir("smart-contracts", "build"))  # (1)
-    cmd.rmdir(project_dir("smart-contracts", "artifacts"))  # (1)
-    cmd.rmdir(project_dir("smart-contracts", "cache"))  # (1)
-    cmd.rmdir(project_dir("smart-contracts", ".openzeppelin"))  # (1)
-    cmd.rmdir(project_dir("smart-contracts", "relayerdb"))  # (2)
-    cmd.rmdir(project_dir("smart-contracts", "venv"))
-
-    # Additional cleanup (not neccessary to make it work)
-    # cmd.rm(project_dir("smart-contracts/combined.log"))
-    # cmd.rmdir(project_dir("test/integration/.pytest_cache"))
-    # cmd,rm(project_dir("smart-contracts/.env"))
-    # cmd.rmdir(project_dir("deploy/networks"))
-    # cmd.rmdir(project_dir("smart-contracts/.openzeppelin"))
-
-    # rmdir ~/.cache/yarn
-    time.sleep(3)
 
 def killall(processes):
     # TODO Order - ebrelayer, sifnoded, ganache
@@ -1349,8 +1363,9 @@ def main(argv):
     logging.basicConfig(stream=sys.stdout, level=logging.DEBUG, format="%(message)s")
     what = argv[0] if argv else None
     cmd = Integrator()
+    project = ProjectDir(cmd, project_dir())
     if what == "init":
-        cleanup_and_reset_state()
+        project.cleanup_and_reset_state()
         cmd.rmdir(project_dir("smart-contracts/node_modules"))
         cmd.execst(["yarn", "install"], cwd=project_dir("smart-contracts"))
         cmd.make_go_binaries_2()
@@ -1360,31 +1375,32 @@ def main(argv):
         e.stack_save_snapshot()
         e.stack_push()
     elif what == "run-integration-env":
-        e = IntegrationTestsEnvironment(cmd)
-        processes = e.run()
+        env = IntegrationTestsEnvironment(cmd)
+        processes = env.run()
         input("Press ENTER to exit...")
         killall(processes)
     elif what == "create_snapshot":
         snapshot_name = argv[1]
-        cleanup_and_reset_state()
-        e = IntegrationTestsEnvironment(cmd)
-        processes = e.run()
+        project.cleanup_and_reset_state()
+        env = IntegrationTestsEnvironment(cmd)
+        processes = env.run()
         # Give processes some time to settle, for example relayerdb must init and create its "relayerdb"
         time.sleep(45)
         killall(processes)
         # processes1 = e.restart_processes()
-        e.create_snapshot(snapshot_name)
+        env.create_snapshot(snapshot_name)
     elif what == "restore_snapshot":
         snapshot_name = argv[1]
-        e = IntegrationTestsEnvironment(cmd)
-        processes = e.restore_snapshot(snapshot_name)
+        env = IntegrationTestsEnvironment(cmd)
+        env.restore_snapshot(snapshot_name)
+        processes = env.restart_processes()
         input("Press ENTER to exit...")
         killall(processes)
     elif what == "run-peggy-env":
         # Equivalent to future/devenv - hardhat, sifnoded, ebrelayer
         # I.e. cd smart-contracts; GOBIN=/home/anderson/go/bin npx hardhat run scripts/devenv.ts
-        e = PeggyEnvironment(cmd)
-        processes = e.run()
+        env = PeggyEnvironment(cmd)
+        processes = env.run()
         input("Press ENTER to exit...")
         killall(processes)
     elif what == "run-integration-tests":
