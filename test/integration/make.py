@@ -7,6 +7,8 @@ import subprocess
 import sys
 import time
 import urllib.request
+from dataclasses import dataclass
+
 import yaml  # pip install pyyaml
 
 
@@ -1194,6 +1196,15 @@ class IntegrationTestsEnvironment:
 
 
 class PeggyEnvironment(IntegrationTestsEnvironment):
+
+    # Peggy uses different smart contracts (e.g. in Peggy2.0 there is no BridgeToken, there is CosmosBridge etc.)
+    @dataclass
+    class SmartContractAddresses:
+        bridge_bank: str
+        bridge_registry: str
+        cosmos_bridge: str
+        rowan: str
+
     def __init__(self, cmd):
         super().__init__(cmd)
         self.smart_contracts_dir = project_dir("smart-contracts")
@@ -1222,7 +1233,7 @@ class PeggyEnvironment(IntegrationTestsEnvironment):
     def compile_smart_contracts_hardhat(self):
         self.cmd.npx(["hardhat", "compile"], cwd=project_dir("smart-contracts"), pipe=False)
 
-    def deploy_smart_contracts_hardhat(self):
+    def deploy_smart_contracts_hardhat(self) -> SmartContractAddresses:
         res = self.cmd.npx(["hardhat", "run", "scripts/deploy_contracts.ts", "--network", "localhost"],
             cwd=project_dir("smart-contracts"))
         # Skip first line "No need to generate any newer types". This only works if the smart contracts have already
@@ -1236,7 +1247,8 @@ class PeggyEnvironment(IntegrationTestsEnvironment):
         # not happen.
         # TODO Suggested solution: pass a parameter to deploy_contracts.ts where it should write the output json file
         m = json.loads(stdout(res).splitlines()[1])
-        return m["bridgeBank"], m["bridgeRegistry"], m["rowanContract"]
+        return PeggyEnvironment.SmartContractAddresses(bridge_bank=m["bridgeBank"], bridge_registry=m["bridgeRegistry"],
+            cosmos_bridge=m["cosmosBridge"], rowan=m["rowanContract"])
 
     def run_ebrelayer_peggy(self, tcp_url, websocket_address, bridge_registry_sc_addr, validator_moniker,
         validator_mnemonic, chain_id, symbol_translator_file, relayerdb_path, ethereum_address, ethereum_private_key,
@@ -1268,13 +1280,12 @@ class PeggyEnvironment(IntegrationTestsEnvironment):
         hardhat_accounts = self.signer_array_to_ethereum_accounts(Hardhat.default_accounts(), hardhat_validator_count)
 
         self.compile_smart_contracts_hardhat()
-        bridgebank_sc_addr, bridge_registry_sc_addr, rowan_sc_addr = self.deploy_smart_contracts_hardhat()
+        peggy_sc_addrs = self.deploy_smart_contracts_hardhat()
 
         self.write_compatibility_json_file_with_smart_contract_addresses({
-            "BridgeBank": bridgebank_sc_addr,
-            "BridgeRegistry": bridge_registry_sc_addr,
-            # "BridgeToken": None,  # TODO
-            # "Rowan": rowan_sc_addr,
+            "BridgeRegistry": peggy_sc_addrs.bridge_registry,
+            "BridgeBank": peggy_sc_addrs.bridge_bank,
+            # TODO There is no BridgeToken smart contract on Peggy2.0 branch
         })
 
         chain_id = "localnet"
@@ -1307,7 +1318,7 @@ class PeggyEnvironment(IntegrationTestsEnvironment):
         ebrelayer_proc = self.run_ebrelayer_peggy(
             tcp_url,
             f"ws://{hardhat_hostname}:{hardhat_port}/",
-            bridge_registry_sc_addr,
+            peggy_sc_addrs.bridge_registry,
             validator_moniker,
             validator_mnemonic,
             chain_id,
