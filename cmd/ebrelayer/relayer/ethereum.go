@@ -251,13 +251,17 @@ func (sub EthereumSub) CheckNonceAndProcess(txFactory tx.Factory,
 	topics = append(topics, []common.Hash{lockTopic, burnTopic})
 
 	for {
-		if fromBlockNumber > endBlockHeight.Uint64() {
+		endBlock := endBlockHeight.Uint64()
+		if fromBlockNumber > endBlock {
 			break
 		}
-		endBlock := endBlockHeight.Uint64()
+
+		// query block scope limited to maxQueryBlocks
 		if endBlock > fromBlockNumber+maxQueryBlocks {
 			endBlock = fromBlockNumber + maxQueryBlocks
 		}
+
+		// query the events with block scope
 		ethLogs, err = ethClient.FilterLogs(context.Background(), ethereum.FilterQuery{
 			FromBlock: big.NewInt(int64(fromBlockNumber)),
 			ToBlock:   big.NewInt(int64(endBlock)),
@@ -300,9 +304,9 @@ func (sub EthereumSub) CheckNonceAndProcess(txFactory tx.Factory,
 		}
 		// handleEthereumEvent return the next expected lock burn nonce
 		lockBurnNonce--
+		// update fromBlockNumber
 		fromBlockNumber += maxQueryBlocks
 	}
-
 }
 
 // Replay the missed events
