@@ -320,11 +320,15 @@ async function getValidClaim({
     cosmosDenom
   };
 
-  return {
+  const result = {
     digest,
     signatures,
     claimData,
-  };
+  }
+
+  //console.log(JSON.stringify(result, null, 2));
+
+  return result;
 }
 
 module.exports = {

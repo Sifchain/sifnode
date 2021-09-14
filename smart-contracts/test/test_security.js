@@ -545,6 +545,76 @@ describe("Security Test", function () {
       expect(lastNonceSubmitted).to.be.equal(1);
     });
 
+    it.only("Should not revert on a reentrancy attack, but user should not receive funds either", async function () {
+      // Deploy reentrancy attacker token:
+      const reentrancyTokenFactory = await ethers.getContractFactory("ReentrancyToken");
+      const reentrancyToken = await reentrancyTokenFactory.deploy(
+        "Troll Token",
+        "TROLL",
+        state.cosmosBridge.address,
+        userOne.address,
+        state.amount
+      );
+      await reentrancyToken.deployed();
+
+      // Add the token into white list
+      await state.bridgeBank.connect(operator)
+        .updateEthWhiteList(reentrancyToken.address, true)
+        .should.be.fulfilled;
+
+      // approve and lock tokens
+      await reentrancyToken.connect(userOne).approve(
+        state.bridgeBank.address,
+        state.amount
+      );
+
+      // Attempt to lock tokens
+      await state.bridgeBank.connect(userOne).lock(
+        state.sender,
+        reentrancyToken.address,
+        state.amount
+      );
+
+      let endingBalance = Number(await reentrancyToken.balanceOf(userOne.address));
+      expect(endingBalance).to.be.equal(0);
+
+      state.recipient = userOne;
+      state.nonce = 1;
+
+      const { digest, claimData, signatures } = await getValidClaim({
+        sender: state.sender,
+        senderSequence: state.senderSequence,
+        recipientAddress: state.recipient.address,
+        tokenAddress: reentrancyToken.address,
+        amount: state.amount,
+        doublePeg: false,
+        nonce: state.nonce,
+        networkDescriptor: state.networkDescriptor,
+        tokenName: "Troll",
+        tokenSymbol: "TRL",
+        tokenDecimals: state.decimals,
+        cosmosDenom: state.constants.denom.none,
+        validators: [userOne, userTwo, userFour],
+      });
+
+      // Reentrancy token will try to reenter submitProphecyClaimAggregatedSigs
+      await state.cosmosBridge
+        .connect(userOne)
+        .submitProphecyClaimAggregatedSigs(
+          digest,
+          claimData,
+          signatures
+        );
+
+      // user should not receive funds as a Reentrancy should break the transfer flow
+      endingBalance = Number(await reentrancyToken.balanceOf(userOne.address));
+      expect(endingBalance).to.be.equal(0);
+
+      // Last nonce should now be 1 (because it does NOT REVERT)
+      let lastNonceSubmitted = Number(await state.cosmosBridge.lastNonceSubmitted());
+      expect(lastNonceSubmitted).to.be.equal(1);
+    });
+
     it("should not allow the operator to add a token to Eth whitelist if it's already in Cosmos whitelist", async function () {
       // assert that the cosmos bridge token has not been created
       let bridgeToken = await state.cosmosBridge.sourceAddressToDestinationAddress(
