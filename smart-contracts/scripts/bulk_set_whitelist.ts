@@ -94,7 +94,7 @@
      console.log(`\x1b[32mTokens added to the whitelist:\x1b[0m`);
      console.log(`\x1b[32m${addressList.join('\n')}\x1b[0m`);
    } else {
-     // logs failure in red
+     // logs failure in red 
      console.log(`\x1b[31mFAILED: either got no tx receipt, or the receipt had no events.\x1b[0m`);
    }
  }
