@@ -1,11 +1,15 @@
 import { HardhatNodeRunner } from "../src/devenv/hardhatNode";
 import { GolangBuilder, GolangResults } from "../src/devenv/golangBuilder";
-import { SifnodedRunner, ValidatorValues } from "../src/devenv/sifnoded";
+import { SifnodedResults, SifnodedRunner, ValidatorValues } from "../src/devenv/sifnoded";
 import { DeployedContractAddresses } from "../scripts/deploy_contracts";
-import { SmartContractDeployer } from "../src/devenv/smartcontractDeployer";
+import { SmartContractDeployer, SmartContractDeployResult } from "../src/devenv/smartcontractDeployer";
 import { RelayerRunner, WitnessRunner, EbrelayerArguments } from "../src/devenv/ebrelayer";
-import { EthereumAddressAndKey } from "../src/devenv/devEnv";
+import { EthereumAddressAndKey, EthereumResults } from "../src/devenv/devEnv";
+import path from 'path';
 import { notify } from "node-notifier";
+import { strict, string } from "yargs";
+import { ContractFactory } from "ethers";
+import { EnvJSONWriter } from "../src/devenv/outputWriter";
 
 async function startHardhat() {
   const node = new HardhatNodeRunner()
@@ -82,21 +86,28 @@ async function ebrelayerWitnessBuilder(
   }
 }
 
+
 async function main() {
   try {
     const sigterm = new Promise((res, _) => {
       process.on('SIGINT', res);
       process.on('SIGTERM', res);
     });
-    const [hardhat, golang] = (await Promise.all([startHardhat(), golangBuilder()]))
+    const [hardhat, golang] = (await Promise.all([startHardhat(), golangBuilder()]));
     const sifnode = await sifnodedBuilder(golang.results);
-    const smartcontract = await smartContractDeployer()
+    const smartcontract = await smartContractDeployer();
     const { relayer, witness } = await ebrelayerWitnessBuilder(
       smartcontract.result.contractAddresses,
       hardhat.results.accounts.validators[0],
       sifnode.results.validatorValues[0],
       golang.results
-    )
+    );
+    EnvJSONWriter({
+      contractResults: smartcontract.result,
+      ethResults: hardhat.results,
+      goResults: golang.results,
+      sifResults: sifnode.results
+    });
     await sigterm
     console.log("Caught interrupt signal, cleaning up.");
     sifnode.process.kill(sifnode.process.pid);
@@ -107,7 +118,7 @@ async function main() {
     notify({
       title: "Sifchain DevEnvironment Notice",
       message: `Dev Environment has recieved either a SIGINT or SIGTERM signal, all process have exited.`
-    })
+    });
   } catch (error) {
     console.log("Deployment failed. Lets log where it broke: ", error);
   }
@@ -117,9 +128,9 @@ main()
   .then(() => process.exit(0))
   .catch((error) => {
     if (typeof error == "number")
-      process.exit(error)
+      process.exit(error);
     else {
       console.error(error);
-      process.exit(1)
+      process.exit(1);
     }
   });
