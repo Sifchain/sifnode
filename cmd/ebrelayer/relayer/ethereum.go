@@ -295,15 +295,17 @@ func (sub EthereumSub) CheckNonceAndProcess(txFactory tx.Factory,
 		}
 
 		if len(events) > 0 {
-			if lockBurnNonce, err = sub.handleEthereumEvent(txFactory, events, symbolTranslator, lockBurnNonce); err != nil {
+			var nextLockBurnNonce uint64
+			if nextLockBurnNonce, err = sub.handleEthereumEvent(txFactory, events, symbolTranslator, lockBurnNonce); err != nil {
 				sub.SugaredLogger.Errorw("failed to handle ethereum event.",
 					errorMessageKey, err.Error())
 				return
 			}
+			// handleEthereumEvent return the next expected lock burn nonce
+			lockBurnNonce = nextLockBurnNonce - 1
 			time.Sleep(transactionInterval)
 		}
-		// handleEthereumEvent return the next expected lock burn nonce
-		lockBurnNonce--
+
 		// update fromBlockNumber
 		fromBlockNumber += maxQueryBlocks
 	}
