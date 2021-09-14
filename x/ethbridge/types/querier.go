@@ -6,9 +6,10 @@ import (
 
 // query endpoints supported by the oracle Querier
 const (
-	QueryEthProphecy         = "prophecies"
-	QueryCrosschainFeeConfig = "crosschainFeeConfig"
-	QueryLockBurnNonce       = "lockBurnNonce"
+	QueryEthProphecy          = "prophecies"
+	QueryCrosschainFeeConfig  = "crosschainFeeConfig"
+	QueryLockBurnNonce        = "lockBurnNonce"
+	QueryWitnessLockBurnNonce = "witnessLockBurnNonce"
 )
 
 // NewQueryEthProphecyRequest creates a new QueryEthProphecyParams
@@ -53,5 +54,20 @@ func NewLockBurnNonceRequest(networkDescriptor oracletypes.NetworkDescriptor, re
 func NewLockBurnNonceResponse(lockBurnNonce uint64) QueryLockBurnNonceResponse {
 	return QueryLockBurnNonceResponse{
 		LockBurnNonce: lockBurnNonce,
+	}
+}
+
+// NewWitnessLockBurnNonceRequest creates a new QueryWitnessLockBurnNonceRequest
+func NewWitnessLockBurnNonceRequest(networkDescriptor oracletypes.NetworkDescriptor, relayerValAddress string) *QueryWitnessLockBurnNonceRequest {
+	return &QueryWitnessLockBurnNonceRequest{
+		NetworkDescriptor: networkDescriptor,
+		RelayerValAddress: relayerValAddress,
+	}
+}
+
+// NewWitnessLockBurnNonceResponse creates a new QueryWitnessLockBurnNonceResponse instance
+func NewWitnessLockBurnNonceResponse(lockBurnNonce uint64) QueryWitnessLockBurnNonceResponse {
+	return QueryWitnessLockBurnNonceResponse{
+		WitnessLockBurnNonce: lockBurnNonce,
 	}
 }

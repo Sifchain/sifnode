@@ -203,6 +203,17 @@ func (k Keeper) ProcessSignProphecy(ctx sdk.Context, networkDescriptor types.Net
 		return err
 	}
 
+	prophecyInfo, ok := k.GetProphecyInfo(ctx, prophecyID)
+	if !ok {
+		return errors.New("prophecy info not available in keeper")
+	}
+
+	// check the order of witness lock burn nonce
+	lastLockBurnNonce := k.GetWitnessLockBurnNonce(ctx, networkDescriptor, valAddr)
+	if lastLockBurnNonce != 0 && lastLockBurnNonce+1 != prophecyInfo.GlobalNonce {
+		return errors.New("witness node not send the signature in order")
+	}
+
 	oldStatus := prophecy.Status
 
 	newStatus, err := k.AppendValidatorToProphecy(ctx, networkDescriptor, prophecyID, valAddr)
@@ -215,13 +226,11 @@ func (k Keeper) ProcessSignProphecy(ctx sdk.Context, networkDescriptor types.Net
 		return err
 	}
 
+	// update witness's lock burn nonce
+	k.SetWitnessLockBurnNonce(ctx, networkDescriptor, valAddr, prophecyInfo.GlobalNonce)
+
 	// emit the event when status from pending to success
 	if oldStatus == types.StatusText_STATUS_TEXT_PENDING && newStatus == types.StatusText_STATUS_TEXT_SUCCESS {
-		prophecyInfo, ok := k.GetProphecyInfo(ctx, prophecyID)
-		if !ok {
-			return errors.New("prophecy info not available in keeper")
-		}
-
 		ctx.EventManager().EmitEvents(sdk.Events{
 
 			sdk.NewEvent(

@@ -18,6 +18,9 @@ service Query {
   // LockBurnNonce query lock burn nonce for a relayer in a network
   rpc LockBurnNonce(QueryLockBurnNonceRequest)
       returns (QueryLockBurnNonceResponse) {}
+  // WitnessLockBurnNonce query lock burn nonce for a relayer in a network
+  rpc WitnessLockBurnNonce(QueryWitnessLockBurnNonceRequest)
+      returns (QueryWitnessLockBurnNonceResponse) {}
 }
 
 // QueryEthProphecyRequest payload for EthProphecy rpc query
@@ -83,3 +86,15 @@ message QueryLockBurnNonceRequest {
 
 // QueryLockBurnNonceResponse return LockBurnNonce
 message QueryLockBurnNonceResponse { uint64 lock_burn_nonce = 1; }
+
+// QueryWitnessLockBurnNonceRequest payload for LockBurnNonce rpc query
+message QueryWitnessLockBurnNonceRequest {
+  sifnode.oracle.v1.NetworkDescriptor network_descriptor = 1;
+  string relayer_val_address = 2;
+}
+
+// QueryWitnessLockBurnNonceResponse return WitnessLockBurnNonce
+message QueryWitnessLockBurnNonceResponse {
+  uint64 witness_lock_burn_nonce = 1;
+}
+
