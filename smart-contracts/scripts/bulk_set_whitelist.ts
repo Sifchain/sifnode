@@ -58,6 +58,7 @@ async function main() {
   const operatorSigner = await hardhat.ethers.getSigner(operator)
   const bridgeBankAsOperator = bridgeBank.connect(operatorSigner);
 
+  const addressList = [];
   for (const addr of whitelistData.array) {
     if(await bridgeBankAsOperator.getTokenInEthWhiteList(addr.address)) {
       // this token is already in the whitelist;
@@ -66,21 +67,35 @@ async function main() {
       continue;
     }
 
-    const tx = await bridgeBankAsOperator.updateEthWhiteList(addr.address, true);
-    const receipt = await tx.wait();
-    logResult(addr.address, receipt);
+    addressList.push(addr.address);
+  }
+
+  if(addressList.length > 0) {
+    // Force ABI:
+    const factory = await hardhat.ethers.getContractFactory("BridgeBank");
+    const encodedData = factory.interface.encodeFunctionData('bulkWhitelistUpdateLimits', [addressList]);
+    
+    const receipt = await (
+      await operatorSigner.sendTransaction({ data: encodedData, to: bridgeBank.address })
+    ).wait();
+
+    logResult(addressList, receipt);
+  } else {
+    // logs in red
+    console.log(`\x1b[31mFailed to whitelist tokens: the final token list is empty. Were all tokens already whitelisted?\x1b[0m`);
   }
 
   console.log('~~~ DONE ~~~');
 }
 
-function logResult(address:string, receipt:any) {
-  if(receipt.events?.[0].args?.[1]) {
+function logResult(addressList:Array<String>, receipt:any) {
+  if(receipt?.logs?.length > 0) {
     // logs success in green
-    console.log(`\x1b[32mToken ${address} added to the whitelist\x1b[0m`);
+    console.log(`\x1b[32mTokens added to the whitelist:\x1b[0m`);
+    console.log(`\x1b[32m${addressList.join('\n')}\x1b[0m`);
   } else {
     // logs failure in red
-    console.log(`\x1b[31mToken ${address} NOT added to the whitelist\x1b[0m`);
+    console.log(`\x1b[31mFAILED: either got no tx receipt, or the receipt had no events.\x1b[0m`);
   }
 }
 
