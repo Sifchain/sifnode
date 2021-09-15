@@ -3,7 +3,7 @@ package types
 import (
 	"encoding/json"
 
-	oracletypes "github.com/Sifchain/sifnode/oracle/types"
+	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	gethcommon "github.com/ethereum/go-ethereum/common"
@@ -116,15 +116,15 @@ func NewTokenMetadata(cosmosSender sdk.AccAddress,
 	symbol string,
 	decimals int64,
 	tokenAddress gethcommon.Address,
-	network string) TokenMetadataAddRequest {
+	networkDescriptor oracletypes.NetworkDescriptor) TokenMetadataAddRequest {
 	return TokenMetadataAddRequest{
 		CosmosSender: cosmosSender.String(),
 		Metadata: &TokenMetadata{
-			Name:         name,
-			Symbol:       symbol,
-			Decimals:     decimals,
-			TokenAddress: tokenAddress.String(),
-			Network:      network,
+			Name:              name,
+			Symbol:            symbol,
+			Decimals:          decimals,
+			TokenAddress:      tokenAddress.String(),
+			NetworkDescriptor: networkDescriptor,
 		},
 	}
 }
@@ -175,57 +175,3 @@ func (msg TokenMetadataAddRequest) Route() string { return RouterKey }
 
 // Type should return the action
 func (msg TokenMetadataAddRequest) Type() string { return "add_token_metadata" }
-
-// NewTokenMetadata is a constructor function for MsgTokenMetadataAdd
-func DeleteTokenMetadata(cosmosSender sdk.AccAddress, denomHash string) TokenMetadataDeleteRequest {
-	return TokenMetadataDeleteRequest{
-		CosmosSender: cosmosSender.String(),
-		Denom:        denomHash,
-	}
-}
-
-// Validate Basic runs stateless checks on the message
-func (msg TokenMetadataDeleteRequest) ValidateBasic() error {
-	if msg.CosmosSender == "" {
-		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.CosmosSender)
-	}
-
-	if msg.Denom == "" {
-		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.Denom)
-	}
-
-	return nil
-}
-
-// GetSignBytes encodes the message for signing
-func (msg TokenMetadataDeleteRequest) GetSignBytes() []byte {
-	b, err := json.Marshal(msg)
-	if err != nil {
-		panic(err)
-	}
-
-	return sdk.MustSortJSON(b)
-}
-
-// GetSigners defines whose signature is required
-func (msg TokenMetadataDeleteRequest) GetSigners() []sdk.AccAddress {
-	cosmosSender, err := sdk.AccAddressFromBech32(msg.CosmosSender)
-	if err != nil {
-		panic(err)
-	}
-
-	return []sdk.AccAddress{cosmosSender}
-}
-
-// Route should return the name of the module
-func (msg TokenMetadataDeleteRequest) Route() string { return RouterKey }
-
-// Type should return the action
-func (msg TokenMetadataDeleteRequest) Type() string { return "delete_token_metadata" }
-
-// Check if the token from Sifchain
-func (m TokenMetadata) IsSifchain() bool {
-	networkID := oracletypes.NetworkDescriptor_value[m.Network]
-	networkDescriptor := oracletypes.NetworkDescriptor(networkID)
-	return networkDescriptor.IsSifchain()
-}

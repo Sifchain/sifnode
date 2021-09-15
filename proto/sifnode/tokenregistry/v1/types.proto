@@ -35,7 +35,7 @@ message RegistryEntry {
   string ibc_counterparty_channel_id = 7;
   string display_name = 8;
   string display_symbol = 9;
-  string network = 10;
+  sifnode.oracle.v1.NetworkDescriptor network = 10;
   string address = 11;
   string external_symbol = 12;
   string transfer_limit = 13;
@@ -67,5 +67,6 @@ message TokenMetadata {
   string name = 2 [ (gogoproto.moretags) = "yaml:\"token_name\"" ];
   string symbol = 3 [ (gogoproto.moretags) = "yaml:\"token_symbol\"" ];
   string token_address = 4 [ (gogoproto.moretags) = "yaml:\"token_address\"" ];
-  string network = 5 [ (gogoproto.moretags) = "yaml:\"network\"" ];
+  sifnode.oracle.v1.NetworkDescriptor network_descriptor = 5
+      [ (gogoproto.moretags) = "yaml:\"network\"" ];
 }

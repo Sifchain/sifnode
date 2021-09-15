@@ -8,6 +8,8 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	"github.com/stretchr/testify/assert"
+
+	// nolint
 	"github.com/tendermint/tendermint/crypto/ed25519"
 )
 
@@ -28,6 +30,7 @@ func TestMsgCreateDistribution_ValidateBasic_WrongAddress(t *testing.T) {
 	distributor := sdk.AccAddress("addr1_______________")
 	outputList := test.CreatOutputList(1, "1")
 	validAddress := sdk.AccAddress("addr2_______________")
+	// nolint
 	inValidAddress := validAddress[1:]
 	authorizedRunner := sdk.AccAddress("addr3_______________")
 	outputList = append(outputList, banktypes.NewOutput(inValidAddress,

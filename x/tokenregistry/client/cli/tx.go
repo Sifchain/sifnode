@@ -22,7 +22,6 @@ func GetTxCmd() *cobra.Command {
 		GetCmdRegister(),
 		GetCmdDeregister(),
 		GetCmdAddIBCTokenMetadata(),
-		GetCmdDeleteIBCTokenMetadata(),
 	)
 	return cmd
 }

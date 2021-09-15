@@ -26,9 +26,9 @@ func NewEthBridgeClaim(
 	amount sdk.Int,
 	claimType ClaimType,
 	tokenName string,
-	decimals int32,
+	decimals int64,
 ) *EthBridgeClaim {
-	denomHash := GetDenomHash(networkDescriptor, tokenContract.String(), int64(decimals), tokenName, symbol)
+	denomHash := GetDenomHash(networkDescriptor, tokenContract.String(), decimals, tokenName, symbol)
 	return &EthBridgeClaim{
 		NetworkDescriptor:     networkDescriptor,
 		BridgeContractAddress: bridgeContract.String(),

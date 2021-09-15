@@ -57,7 +57,6 @@ func (srv msgServer) Lock(goCtx context.Context, msg *types.MsgLock) (*types.Msg
 	globalNonce := srv.Keeper.GetGlobalNonce(ctx, msg.NetworkDescriptor)
 	srv.Keeper.UpdateGlobalNonce(ctx, msg.NetworkDescriptor)
 
-	// TODO confirm the double peg logic
 	doublePeg := tokenMetadata.NetworkDescriptor != msg.NetworkDescriptor
 
 	err = srv.oracleKeeper.SetProphecyInfo(ctx,
@@ -126,7 +125,6 @@ func (srv msgServer) Burn(goCtx context.Context, msg *types.MsgBurn) (*types.Msg
 	globalNonce := srv.Keeper.GetGlobalNonce(ctx, msg.NetworkDescriptor)
 	srv.Keeper.UpdateGlobalNonce(ctx, msg.NetworkDescriptor)
 
-	// TODO confirm the double peg logic
 	doublePeg := tokenMetadata.NetworkDescriptor != msg.NetworkDescriptor
 
 	err = srv.oracleKeeper.SetProphecyInfo(ctx,
@@ -202,7 +200,6 @@ func (srv msgServer) CreateEthBridgeClaim(goCtx context.Context, msg *types.MsgC
 	}
 
 	claim := msg.EthBridgeClaim
-
 	metadata := tokenregistrytypes.TokenMetadata{
 		Decimals:          claim.Decimals,
 		Name:              claim.TokenName,

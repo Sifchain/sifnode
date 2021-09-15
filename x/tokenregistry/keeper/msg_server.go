@@ -71,28 +71,6 @@ func (srv msgServer) TokenMetadataAdd(goCtx context.Context, msg *types.TokenMet
 	}, nil
 }
 
-func (srv msgServer) TokenMetadataDelete(goCtx context.Context, msg *types.TokenMetadataDeleteRequest) (*types.TokenMetadataDeleteResponse, error) {
-	ctx := sdk.UnwrapSDKContext(goCtx)
-	logger := srv.keeper.Logger(ctx)
-
-	cosmosSender, err := sdk.AccAddressFromBech32(msg.CosmosSender)
-	if err != nil {
-		return nil, err
-	}
-
-	account := srv.accountKeeper.GetAccount(ctx, cosmosSender)
-	if account == nil {
-		logger.Error("account is nil.", "CosmosSender", msg.CosmosSender)
-		return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.CosmosSender)
-	}
-
-	success := srv.keeper.DeleteTokenMetadata(ctx, cosmosSender, msg.Denom)
-
-	return &types.TokenMetadataDeleteResponse{
-		Success: success,
-	}, nil
-}
-
 // NewMsgServerImpl returns an implementation of MsgServer interface
 // for the provided Keeper.
 func NewMsgServerImpl(keeper types.Keeper) types.MsgServer {

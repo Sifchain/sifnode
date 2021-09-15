@@ -24,7 +24,6 @@ type Keeper interface {
 	ExistsTokenMetadata(ctx sdk.Context, denomHash string) bool
 	AddTokenMetadata(ctx sdk.Context, metadata TokenMetadata) string
 	AddIBCTokenMetadata(ctx sdk.Context, metadata TokenMetadata, cosmosSender sdk.AccAddress) string
-	DeleteTokenMetadata(ctx sdk.Context, cosmosSender sdk.AccAddress, denomHash string) bool
 }
 
 type AccountKeeper interface {

@@ -129,7 +129,7 @@ func (k Keeper) ProcessBurn(ctx sdk.Context,
 		return []byte{}, errors.New("crosschain fee amount in message less than minimum burn")
 	}
 
-	if tokenMetadata.IsSifchain() {
+	if tokenMetadata.NetworkDescriptor.IsSifchain() {
 		logger.Error("sifchain natvie token can't be burn.", "tokenSymbol", tokenMetadata.Symbol)
 		return []byte{}, fmt.Errorf("sifchain native token %s can't be burn", tokenMetadata.Symbol)
 	}
@@ -162,7 +162,7 @@ func (k Keeper) ProcessBurn(ctx sdk.Context,
 	}
 
 	// not burn the token if it is sifchain native token
-	if !tokenMetadata.IsSifchain() {
+	if !tokenMetadata.NetworkDescriptor.IsSifchain() {
 		coins = sdk.NewCoins(sdk.NewCoin(tokenMetadata.Symbol, msg.Amount))
 		err = k.bankKeeper.BurnCoins(ctx, types.ModuleName, coins)
 		if err != nil {
@@ -194,7 +194,7 @@ func (k Keeper) ProcessLock(ctx sdk.Context,
 		return []byte{}, err
 	}
 
-	if !tokenMetadata.IsSifchain() {
+	if !tokenMetadata.NetworkDescriptor.IsSifchain() {
 		logger.Error("pegged token can't be lock.", "tokenSymbol", tokenMetadata.Symbol)
 		return []byte{}, fmt.Errorf("pegged token %s can't be lock", tokenMetadata.Symbol)
 	}
@@ -338,11 +338,6 @@ func (k Keeper) AddTokenMetadata(ctx sdk.Context, metadata tokenregistrytypes.To
 // AddIBCTokenMetadata call metadataKeeper's AddIBCTokenMetadata
 func (k Keeper) AddIBCTokenMetadata(ctx sdk.Context, metadata tokenregistrytypes.TokenMetadata, cosmosSender sdk.AccAddress) string {
 	return k.tokenRegistryKeeper.AddIBCTokenMetadata(ctx, metadata, cosmosSender)
-}
-
-// DeleteTokenMetadata call metadataKeeper's DeleteTokenMetadata
-func (k Keeper) DeleteTokenMetadata(ctx sdk.Context, cosmosSender sdk.AccAddress, denomHash string) bool {
-	return k.tokenRegistryKeeper.DeleteTokenMetadata(ctx, cosmosSender, denomHash)
 }
 
 // ExistsTokenMetadata call metadataKeeper's ExistsTokenMetadata

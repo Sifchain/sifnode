@@ -39,11 +39,3 @@ type OracleKeeper interface {
 	SetProphecyInfo(ctx sdk.Context, prophecyID []byte, networkDescriptor oracletypes.NetworkDescriptor, cosmosSender string, cosmosSenderSequence uint64, ethereumReceiver string, tokenSymbol string, tokenContractAddress string, tokenAmount sdk.Int, crosschainFee sdk.Int, doublePeg bool, globalNonce uint64) error
 	GetProphecyInfoWithScopeGlocalNonce(ctx sdk.Context, networkDescriptor oracletypes.NetworkDescriptor, startGlobalNonce uint64) []*oracletypes.ProphecyInfo
 }
-
-// type MetadataKeeper interface {
-// 	GetTokenMetadata(ctx sdk.Context, denomHash string) (tokenregistrytypes.TokenMetadata, bool)
-// 	AddTokenMetadata(ctx sdk.Context, metadata tokenregistrytypes.TokenMetadata) string
-// 	AddIBCTokenMetadata(ctx sdk.Context, metadata tokenregistrytypes.TokenMetadata, cosmosSender sdk.AccAddress) string
-// 	DeleteTokenMetadata(ctx sdk.Context, denomHash string) bool
-// 	ExistsTokenMetadata(ctx sdk.Context, denomHash string) bool
-// }
