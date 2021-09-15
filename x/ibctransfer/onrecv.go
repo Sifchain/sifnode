@@ -1,8 +1,6 @@
 package ibctransfer
 
 import (
-	"fmt"
-
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	sdktransfertypes "github.com/cosmos/cosmos-sdk/x/ibc/applications/transfer/types"
@@ -117,16 +115,16 @@ func ExecConvForIncomingCoins(
 		// escrow address by allowing more tokens to be sent back then were escrowed.
 		return sdkerrors.Wrap(err, "unable to unescrow original tokens")
 	}
-	ctx.EventManager().EmitEvent(
-		sdk.NewEvent(
-			types.EventTypeConvertReceived,
-			sdk.NewAttribute(sdk.AttributeKeyModule, types.ModuleName),
-			sdk.NewAttribute(types.AttributeKeyPacketAmount, fmt.Sprintf("%v", incomingCoins.Amount)),
-			sdk.NewAttribute(types.AttributeKeyPacketDenom, incomingCoins.Denom),
-			sdk.NewAttribute(types.AttributeKeyConvertAmount, fmt.Sprintf("%v", finalCoins.Amount)),
-			sdk.NewAttribute(types.AttributeKeyConvertDenom, finalCoins.Denom),
-		),
-	)
+	// ctx.EventManager().EmitEvent(
+	// 	sdk.NewEvent(
+	// 		types.EventTypeConvertReceived,
+	// 		sdk.NewAttribute(sdk.AttributeKeyModule, types.ModuleName),
+	// 		sdk.NewAttribute(types.AttributeKeyPacketAmount, fmt.Sprintf("%v", incomingCoins.Amount)),
+	// 		sdk.NewAttribute(types.AttributeKeyPacketDenom, incomingCoins.Denom),
+	// 		sdk.NewAttribute(types.AttributeKeyConvertAmount, fmt.Sprintf("%v", finalCoins.Amount)),
+	// 		sdk.NewAttribute(types.AttributeKeyConvertDenom, finalCoins.Denom),
+	// 	),
+	// )
 
 	return nil
 }

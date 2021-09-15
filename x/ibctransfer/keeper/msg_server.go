@@ -2,7 +2,6 @@ package keeper
 
 import (
 	"context"
-	"fmt"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
@@ -117,16 +116,16 @@ func PrepareToSendConvertedCoins(goCtx context.Context, msg *sdktransfertypes.Ms
 		return err
 	}
 	// Record conversion event, sender and coins
-	ctx.EventManager().EmitEvent(
-		sdk.NewEvent(
-			types.EventTypeConvertTransfer,
-			sdk.NewAttribute(sdk.AttributeKeyModule, types.ModuleName),
-			sdk.NewAttribute(types.AttributeKeySentAmount, fmt.Sprintf("%v", token.Amount)),
-			sdk.NewAttribute(types.AttributeKeySentDenom, token.Denom),
-			sdk.NewAttribute(types.AttributeKeyConvertAmount, fmt.Sprintf("%v", convToken.Amount)),
-			sdk.NewAttribute(types.AttributeKeyConvertDenom, convToken.Denom),
-		),
-	)
+	// ctx.EventManager().EmitEvent(
+	// 	sdk.NewEvent(
+	// 		types.EventTypeConvertTransfer,
+	// 		sdk.NewAttribute(sdk.AttributeKeyModule, types.ModuleName),
+	// 		sdk.NewAttribute(types.AttributeKeySentAmount, fmt.Sprintf("%v", token.Amount)),
+	// 		sdk.NewAttribute(types.AttributeKeySentDenom, token.Denom),
+	// 		sdk.NewAttribute(types.AttributeKeyConvertAmount, fmt.Sprintf("%v", convToken.Amount)),
+	// 		sdk.NewAttribute(types.AttributeKeyConvertDenom, convToken.Denom),
+	// 	),
+	// )
 
 	return nil
 }
