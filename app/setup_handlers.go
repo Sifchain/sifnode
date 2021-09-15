@@ -8,7 +8,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/upgrade/types"
 )
 
-const upgradeName = "0.9.6"
+const upgradeName = "0.9.7"
 
 func SetupHandlers(app *SifchainApp) {
 	SetupHandlersForMint(app)
