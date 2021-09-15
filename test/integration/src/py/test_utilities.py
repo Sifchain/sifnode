@@ -17,6 +17,7 @@ highest_gas_cost = max(burn_gas_cost, lock_gas_cost)
 
 
 sifnoded_binary = "sifnoded"
+ethereum_websocket = ""
 
 
 @dataclass
@@ -50,6 +51,13 @@ class EthereumToSifchainTransferRequest:
     # this to true if the block time is really short, since
     # you may get a block advance as soon as you submit the transaction.
     check_wait_blocks: bool = False
+
+    def __post_init__(self):
+        # Set websocket as global from last init of this object. Its used all over
+        # I know its ugly but it works and lets it be configurable as this should only
+        # be set once but should still be changeable if needed for specific tests
+        global ethereum_websocket
+        ethereum_websocket = self.ethereum_websocket
 
     def as_json(self):
         return json.dumps(self.__dict__)
@@ -595,12 +603,13 @@ def write_ganache_transactions_to_file(filename):
         print(json, file=text_file)
 
 
-def advance_n_ethereum_blocks(n: int, smart_contracts_dir: str):
-    return run_yarn_command(f"yarn --cwd {smart_contracts_dir} advance {int(n)}")
+def advance_n_ethereum_blocks(n: int, smart_contracts_dir: str) -> int:
+    return run_yarn_command(f"yarn --cwd {smart_contracts_dir} advance --blocks {int(n)} --provider {ethereum_websocket}")
 
 
-def current_ethereum_block_number(smart_contracts_dir: str):
-    return advance_n_ethereum_blocks(0, smart_contracts_dir)["currentBlockNumber"]
+def current_ethereum_block_number(smart_contracts_dir: str) -> int:
+    w3 = Web3(Web3.WebsocketProvider(ethereum_websocket))
+    return w3.eth.blockNumber
 
 
 def wait_for_ethereum_block_number(block_number: int, transfer_request: EthereumToSifchainTransferRequest):
