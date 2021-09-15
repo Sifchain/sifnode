@@ -16,6 +16,7 @@ import * as fs from "fs";
 
 // Will estimate gas and multiply the result by this value (wiggle room)
 const GAS_PRICE_BUFFER = 1.2;
+
 interface WhitelistTokenData {
   address: string
 }
@@ -77,15 +78,18 @@ async function main() {
     const factory = await hardhat.ethers.getContractFactory("BridgeBank");
     const encodedData = factory.interface.encodeFunctionData('bulkWhitelistUpdateLimits', [addressList]);
     
-    let gasPrice = await hardhat.ethers.provider.getGasPrice();
-    let finalGasPrice = Math.round(gasPrice.toNumber() * GAS_PRICE_BUFFER);
-    console.log(`Using ideal Gas price: ${hardhat.ethers.utils.formatUnits(finalGasPrice, 'gwei')} GWEI`);
+    // Estimate gasPrice:
+    const gasPrice = await estimateGasPrice();
+    console.log(`Using ideal Gas price: ${hardhat.ethers.utils.formatUnits(gasPrice, 'gwei')} GWEI`);
+
+    // UX
+    console.log(`\x1b[46m\x1b[30mSending transaction. This may take a while, please wait...\x1b[0m`);
 
     const receipt = await (
       await operatorSigner.sendTransaction({
         data: encodedData,
         to: bridgeBank.address,
-        gasPrice: finalGasPrice
+        gasPrice
       })
     ).wait();
 
@@ -96,6 +100,13 @@ async function main() {
   }
 
   console.log('~~~ DONE ~~~');
+}
+
+async function estimateGasPrice() {
+  const gasPrice = await hardhat.ethers.provider.getGasPrice();
+  const finalGasPrice = Math.round(gasPrice.toNumber() * GAS_PRICE_BUFFER);
+  
+  return finalGasPrice;
 }
 
 function logResult(addressList:Array<String>, receipt:any) {
