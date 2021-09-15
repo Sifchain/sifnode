@@ -1,35 +1,44 @@
 const {web3} = require("@openzeppelin/test-helpers/src/setup");
 const { time } = require("@openzeppelin/test-helpers");
-require('@openzeppelin/test-helpers/configure')({
-  provider: process.env.LOCAL_PROVIDER,
-});
-
-/*******************************************
- *** the script just used in local test to generate a new block via trivial amount transfer
- ******************************************/
-console.log("Expected usage: \n node scripts/advanceBlock.js <block_number>");
-console.log("Provider: ", process.env.LOCAL_PROVIDER);
 
 async function main() {
-  let txNumber = 5;
+  const DEFAULT_BLOCK_TO_ADVANCE = 5
+  const argv = require('yargs/yargs')(process.argv.slice(2))
+                    .options({
+                        'n': {
+                        alias: 'blocks',
+                        demandOption: false,
+                        default: DEFAULT_BLOCK_TO_ADVANCE,
+                        describe: 'Number of blocks to advance',
+                        type: 'int'
+                        },
+                        'provider': {
+                            demandOption: false,
+                            default: process.env.LOCAL_PROVIDER,
+                            describe: 'Web3 Provider. e.g. http://localhost:8545. Defaults to env LOCAL_PROVIDER',
+                            type: 'string'
+                        }
+                    })
+                    .usage("Usage: node advanceBlock.js [-n blocks] [--provider ethereum_node]")
+                    .argv;
 
-  // [node, <script_name>, <args>]
-  if (process.argv.length >= 3) {
-    txNumber = process.argv[2];
-  }
+  let blocks_to_advance = argv.n;
+  require('@openzeppelin/test-helpers/configure')({
+    provider: argv.provider,
+  });
 
   try {
-    for (let i = 0; i < txNumber; i++) {
+    for (let i = 0; i < blocks_to_advance; i++) {
       await time.advanceBlock();
     }
 
-    console.log(`Advanced ${txNumber} blocks`);
+    console.log(`Advanced ${blocks_to_advance} blocks`);
 
     let bn = await web3.eth.getBlockNumber();
 
     console.log(`current block number is ${bn}`)
 
-    console.log(JSON.stringify({nBlocks: txNumber, currentBlockNumber: bn}))
+    console.log(JSON.stringify({nBlocks: blocks_to_advance, currentBlockNumber: bn}))
   } catch (error) {
     console.error({ error });
   }
