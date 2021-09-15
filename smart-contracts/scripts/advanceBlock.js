@@ -23,6 +23,11 @@ async function main() {
                     .argv;
 
   let blocks_to_advance = argv.n;
+  if (argv.provider == null || argv.provider == undefined || argv.provider.trim() == "") {
+    console.error("Invalid provider. Supply with value or set LOCAL_PROVIDER env var. Received:[",argv.provider,"]")
+    return
+  }
+
   require('@openzeppelin/test-helpers/configure')({
     provider: argv.provider,
   });
