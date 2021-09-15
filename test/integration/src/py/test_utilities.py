@@ -499,39 +499,24 @@ def connect_web3(websocket: str, address: str, contractName: str, contractPath: 
 def bridgebank_web3(transfer_request: EthereumToSifchainTransferRequest):
     return connect_web3(transfer_request.ethereum_websocket, transfer_request.bridgebank_address, "BridgeBank", "BridgeBank/BridgeBank.sol")
 
+
 # this does not wait for the transaction to complete
-
-
 def send_from_ethereum_to_sifchain(transfer_request: EthereumToSifchainTransferRequest) -> int:
     contract, w3 = bridgebank_web3(transfer_request)
+    tx_hash = ""
     if transfer_request.sifchain_symbol == "rowan":
-        contract.functions.burn(
+        tx_hash = contract.functions.burn(
             bytes(transfer_request.sifchain_address, 'utf-8'),
             transfer_request.bridgetoken_address,
             transfer_request.amount).transact()
     else:
-        contract.functions.lock(
+        tx_hash = contract.functions.lock(
             bytes(transfer_request.sifchain_address, 'utf-8'),
             # TODO: FIGURE OUT THE SYMBOL TO ADDRESS MAPPING
             NULL_ADDRESS,
             transfer_request.amount).transact({"value": transfer_request.amount if transfer_request.ethereum_symbol == "eth" else 0})
-    # direction = "sendBurnTx" if transfer_request.sifchain_symbol == "rowan" else "sendLockTx"
-    # command_line = f"yarn -s --cwd {transfer_request.smart_contracts_dir} integrationtest:{direction} " \
-    #                f"--sifchain_address {transfer_request.sifchain_address} " \
-    #                f"--symbol {transfer_request.ethereum_symbol} " \
-    #                f"--amount {int(transfer_request.amount):0} " \
-    #                f"--bridgebank_address {transfer_request.bridgebank_address} " \
-    #                f"--ethereum_address {transfer_request.ethereum_address} " \
-    #                f"--ethereum_private_key_env_var \"{transfer_request.ethereum_private_key_env_var}\" " \
-    #                f"--json_path {transfer_request.solidity_json_path} " \
-    #                f"--gas estimate "
-    # command_line += f"--ethereum_network {transfer_request.ethereum_network} " if transfer_request.ethereum_network else ""
-    # transaction_result = run_yarn_command(command_line)
-    if "burn" in transaction_result:
-        result = transaction_result["burn"]["receipt"]["blockNumber"]
-    else:
-        result = transaction_result["receipt"]["blockNumber"]
-    return result
+    lock_burn_tx = w3.eth.get_transaction(tx_hash)
+    return lock_burn_tx.blockNumber
 
 
 currency_pairs = {
