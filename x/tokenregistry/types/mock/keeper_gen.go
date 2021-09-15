@@ -169,3 +169,7 @@ func (mr *MockKeeperMockRecorder) SetToken(ctx, entry interface{}) *gomock.Call 
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetToken", reflect.TypeOf((*MockKeeper)(nil).SetToken), ctx, entry)
 }
+
+func (m *MockKeeper) AddIBCTokenMetadata(ctx types0.Context, metadata types.TokenMetadata, cosmosSender types0.AccAddress) string {
+	return ""
+}

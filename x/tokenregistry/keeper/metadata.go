@@ -4,7 +4,9 @@ import (
 	"strings"
 
 	ethbridgetypes "github.com/Sifchain/sifnode/x/ethbridge/types"
+	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
 	"github.com/Sifchain/sifnode/x/tokenregistry/types"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
@@ -22,29 +24,49 @@ func IsIBCToken(name string) bool {
 
 // Fetches token meteadata if it exists
 func (k keeper) GetTokenMetadata(ctx sdk.Context, denomHash string) (types.TokenMetadata, bool) {
-	if !k.ExistsTokenMetadata(ctx, denomHash) {
+
+	entry := k.GetDenom(ctx, denomHash)
+
+	if !entry.IsWhitelisted {
 		return types.TokenMetadata{}, false
 	}
-	store := ctx.KVStore(k.storeKey)
-	encodedMetadata := store.Get([]byte(denomHash))
-	tokenMetadata := types.TokenMetadata{}
-	k.cdc.MustUnmarshalBinaryBare(encodedMetadata, &tokenMetadata)
-	return tokenMetadata, true
+
+	metadata := types.TokenMetadata{
+		Decimals:     entry.Decimals,
+		Name:         entry.DisplayName,
+		Symbol:       entry.DisplaySymbol,
+		TokenAddress: entry.Address,
+		Network:      entry.Network,
+	}
+	return metadata, true
 }
 
 // Add new token metadata information
 func (k keeper) AddTokenMetadata(ctx sdk.Context, metadata types.TokenMetadata) string {
+
+	networkID := oracletypes.NetworkDescriptor_value[metadata.Network]
+	networkDescriptor := oracletypes.NetworkDescriptor(networkID)
 	denomHash := ethbridgetypes.GetDenomHash(
-		metadata.NetworkDescriptor,
+		networkDescriptor,
 		metadata.TokenAddress,
 		metadata.Decimals,
 		metadata.Name,
 		metadata.Symbol,
 	)
-	key := []byte(denomHash)
-	store := ctx.KVStore(k.storeKey)
-	value := k.cdc.MustMarshalBinaryBare(&metadata)
-	store.Set(key, value)
+
+	entry := k.GetDenom(ctx, denomHash)
+
+	if entry.IsWhitelisted {
+		entry.Decimals = metadata.Decimals
+		entry.DisplayName = metadata.Name
+		entry.DisplaySymbol = metadata.Symbol
+		entry.Address = metadata.TokenAddress
+		entry.Network = metadata.Network
+		entry.Denom = denomHash
+
+		k.SetToken(ctx, &entry)
+	}
+
 	return denomHash
 }
 
@@ -60,40 +82,11 @@ func (k keeper) AddIBCTokenMetadata(ctx sdk.Context, metadata types.TokenMetadat
 		return ""
 	}
 
-	denom := k.AddTokenMetadata(ctx, metadata)
-
-	return denom
+	return k.AddTokenMetadata(ctx, metadata)
 }
 
-// Deletes token metadata for IBC tokens only; returns true on success
-func (k keeper) DeleteTokenMetadata(ctx sdk.Context, cosmosSender sdk.AccAddress, denomHash string) bool {
-	logger := k.Logger(ctx)
 
-	// Check if token is IBC token or not, refuse to delete non-IBC tokens
-	metadata, success := k.GetTokenMetadata(ctx, denomHash)
-	// Check if metadata exists before attempting to delete
-	if !success {
-		return false
-	}
 
-	if !IsIBCToken(metadata.Name) {
-		return false
-	}
 
-	if !k.IsAdminAccount(ctx, cosmosSender) {
-		logger.Error("cosmos sender is not admin account.")
-		return false
-	}
 
-	// If we made it this far, we have an IBC token, lets delete it
-	key := []byte(denomHash)
-	store := ctx.KVStore(k.storeKey)
-	store.Delete(key)
-	return true
-}
 
-// Searches the keeper to determine if a specific token has
-// been stored before
-func (k keeper) ExistsTokenMetadata(ctx sdk.Context, denomHash string) bool {
-	return k.Exists(ctx, []byte(denomHash))
-}

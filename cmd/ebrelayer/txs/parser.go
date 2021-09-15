@@ -75,7 +75,7 @@ func EthereumEventToEthBridgeClaim(valAddr sdk.ValAddress, event types.EthereumE
 	witnessClaim.ClaimType = event.ClaimType
 	witnessClaim.Decimals = event.Decimals
 	witnessClaim.TokenName = event.Name
-	witnessClaim.DenomHash = ethbridge.GetDenomHash(networkDescriptor, tokenContractAddress.String(), event.Decimals, event.Name, event.Symbol)
+	witnessClaim.DenomHash = ethbridge.GetDenomHash(networkDescriptor, tokenContractAddress.String(), int64(event.Decimals), event.Name, event.Symbol)
 
 	return witnessClaim, nil
 }

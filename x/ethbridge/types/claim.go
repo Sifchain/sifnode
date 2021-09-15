@@ -28,7 +28,7 @@ func NewEthBridgeClaim(
 	tokenName string,
 	decimals int32,
 ) *EthBridgeClaim {
-	denomHash := GetDenomHash(networkDescriptor, tokenContract.String(), decimals, tokenName, symbol)
+	denomHash := GetDenomHash(networkDescriptor, tokenContract.String(), int64(decimals), tokenName, symbol)
 	return &EthBridgeClaim{
 		NetworkDescriptor:     networkDescriptor,
 		BridgeContractAddress: bridgeContract.String(),
@@ -70,7 +70,7 @@ func (claim *EthBridgeClaim) GetProphecyID() []byte {
 func GetDenomHash(
 	networkDescriptor oracletypes.NetworkDescriptor,
 	tokenContractAddress string,
-	decimals int32,
+	decimals int64,
 	tokenName string,
 	symbol string,
 ) string {

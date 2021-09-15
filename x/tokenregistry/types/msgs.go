@@ -3,7 +3,7 @@ package types
 import (
 	"encoding/json"
 
-	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
+	oracletypes "github.com/Sifchain/sifnode/oracle/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	gethcommon "github.com/ethereum/go-ethereum/common"
@@ -114,17 +114,17 @@ func (m *MsgDeregister) GetSigners() []sdk.AccAddress {
 func NewTokenMetadata(cosmosSender sdk.AccAddress,
 	name string,
 	symbol string,
-	decimals int32,
+	decimals int64,
 	tokenAddress gethcommon.Address,
-	networkDescriptor oracletypes.NetworkDescriptor) TokenMetadataAddRequest {
+	network string) TokenMetadataAddRequest {
 	return TokenMetadataAddRequest{
 		CosmosSender: cosmosSender.String(),
 		Metadata: &TokenMetadata{
-			Name:              name,
-			Symbol:            symbol,
-			Decimals:          decimals,
-			TokenAddress:      tokenAddress.String(),
-			NetworkDescriptor: networkDescriptor,
+			Name:         name,
+			Symbol:       symbol,
+			Decimals:     decimals,
+			TokenAddress: tokenAddress.String(),
+			Network:      network,
 		},
 	}
 }
@@ -222,3 +222,10 @@ func (msg TokenMetadataDeleteRequest) Route() string { return RouterKey }
 
 // Type should return the action
 func (msg TokenMetadataDeleteRequest) Type() string { return "delete_token_metadata" }
+
+// Check if the token from Sifchain
+func (m TokenMetadata) IsSifchain() bool {
+	networkID := oracletypes.NetworkDescriptor_value[m.Network]
+	networkDescriptor := oracletypes.NetworkDescriptor(networkID)
+	return networkDescriptor.IsSifchain()
+}

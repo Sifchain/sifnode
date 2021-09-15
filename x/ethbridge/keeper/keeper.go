@@ -129,7 +129,7 @@ func (k Keeper) ProcessBurn(ctx sdk.Context,
 		return []byte{}, errors.New("crosschain fee amount in message less than minimum burn")
 	}
 
-	if tokenMetadata.NetworkDescriptor.IsSifchain() {
+	if tokenMetadata.IsSifchain() {
 		logger.Error("sifchain natvie token can't be burn.", "tokenSymbol", tokenMetadata.Symbol)
 		return []byte{}, fmt.Errorf("sifchain native token %s can't be burn", tokenMetadata.Symbol)
 	}
@@ -162,7 +162,7 @@ func (k Keeper) ProcessBurn(ctx sdk.Context,
 	}
 
 	// not burn the token if it is sifchain native token
-	if !tokenMetadata.NetworkDescriptor.IsSifchain() {
+	if !tokenMetadata.IsSifchain() {
 		coins = sdk.NewCoins(sdk.NewCoin(tokenMetadata.Symbol, msg.Amount))
 		err = k.bankKeeper.BurnCoins(ctx, types.ModuleName, coins)
 		if err != nil {
@@ -194,7 +194,7 @@ func (k Keeper) ProcessLock(ctx sdk.Context,
 		return []byte{}, err
 	}
 
-	if !tokenMetadata.NetworkDescriptor.IsSifchain() {
+	if !tokenMetadata.IsSifchain() {
 		logger.Error("pegged token can't be lock.", "tokenSymbol", tokenMetadata.Symbol)
 		return []byte{}, fmt.Errorf("pegged token %s can't be lock", tokenMetadata.Symbol)
 	}
@@ -312,7 +312,7 @@ func (k Keeper) ProcessSignProphecy(ctx sdk.Context, msg *types.MsgSignProphecy)
 		return errors.New("prophecy not found in oracle keeper")
 	}
 
-	metadata, ok := k.metadataKeeper.GetTokenMetadata(ctx, prophecyInfo.TokenDenomHash)
+	metadata, ok := k.GetTokenMetadata(ctx, prophecyInfo.TokenDenomHash)
 	if !ok {
 		return fmt.Errorf("metadata not available for %s", prophecyInfo.TokenDenomHash)
 	}
@@ -327,27 +327,27 @@ func (k Keeper) GetTokenRegistryKeeper() tokenregistrytypes.Keeper {
 
 // GetTokenMetadata call metadataKeeper's GetTokenMetadata
 func (k Keeper) GetTokenMetadata(ctx sdk.Context, denomHash string) (tokenregistrytypes.TokenMetadata, bool) {
-	return k.metadataKeeper.GetTokenMetadata(ctx, denomHash)
+	return k.tokenRegistryKeeper.GetTokenMetadata(ctx, denomHash)
 }
 
 // AddTokenMetadata call metadataKeeper's AddTokenMetadata
 func (k Keeper) AddTokenMetadata(ctx sdk.Context, metadata tokenregistrytypes.TokenMetadata) string {
-	return k.metadataKeeper.AddTokenMetadata(ctx, metadata)
+	return k.tokenRegistryKeeper.AddTokenMetadata(ctx, metadata)
 }
 
 // AddIBCTokenMetadata call metadataKeeper's AddIBCTokenMetadata
 func (k Keeper) AddIBCTokenMetadata(ctx sdk.Context, metadata tokenregistrytypes.TokenMetadata, cosmosSender sdk.AccAddress) string {
-	return k.metadataKeeper.AddIBCTokenMetadata(ctx, metadata, cosmosSender)
+	return k.tokenRegistryKeeper.AddIBCTokenMetadata(ctx, metadata, cosmosSender)
 }
 
 // DeleteTokenMetadata call metadataKeeper's DeleteTokenMetadata
-func (k Keeper) DeleteTokenMetadata(ctx sdk.Context, denomHash string) bool {
-	return k.metadataKeeper.DeleteTokenMetadata(ctx, denomHash)
+func (k Keeper) DeleteTokenMetadata(ctx sdk.Context, cosmosSender sdk.AccAddress, denomHash string) bool {
+	return k.tokenRegistryKeeper.DeleteTokenMetadata(ctx, cosmosSender, denomHash)
 }
 
 // ExistsTokenMetadata call metadataKeeper's ExistsTokenMetadata
 func (k Keeper) ExistsTokenMetadata(ctx sdk.Context, denomHash string) bool {
-	return k.metadataKeeper.ExistsTokenMetadata(ctx, denomHash)
+	return k.tokenRegistryKeeper.ExistsTokenMetadata(ctx, denomHash)
 }
 
 // Exists chec if the key existed in db.
