@@ -26,6 +26,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/client/tx"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/syndtr/goleveldb/leveldb"
 	tmClient "github.com/tendermint/tendermint/rpc/client/http"
@@ -273,8 +274,18 @@ func (sub CosmosSub) handleBurnLockMsg(
 		)
 	}
 
+	signData := txs.PrefixMsg(cosmosMsg.ProphecyID)
+	address := crypto.PubkeyToAddress(sub.PrivateKey.PublicKey)
+	signature, err := txs.SignClaim(signData, sub.PrivateKey)
+	if err != nil {
+		sub.SugaredLogger.Infow(
+			"failed to sign the prophecy id",
+			errorMessageKey, err.Error(),
+		)
+	}
+
 	signProphecy := ebrelayertypes.NewMsgSignProphecy(valAddr.String(), cosmosMsg.NetworkDescriptor,
-		cosmosMsg.ProphecyID, "", "")
+		cosmosMsg.ProphecyID, address.String(), string(signature))
 
 	txs.SignProphecyToCosmos(txFactory, signProphecy, sub.CliContext, sub.SugaredLogger)
 }
