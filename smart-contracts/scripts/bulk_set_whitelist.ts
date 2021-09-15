@@ -1,6 +1,11 @@
 /**
  * Adds tokens to the whitelist in a batch
  * Please read LimitUpdating.md for instructions
+ * 
+ * @dev We're setting gasPrice explicitly, in accordance with the received ask.
+ *      If this causes problems, please remove gasPrice from the transaction,
+ *      and consult https://github.com/ethers-io/ethers.js/issues/1610 to understand why.
+ *      In principle, it should work without it (as soon as EIP-1559 settles everywhere).
  */
 
 import * as hardhat from "hardhat";
@@ -31,34 +36,37 @@ export async function readTokenData(filename: string): Promise<WhitelistData> {
 }
 
 async function main() {
-  container.register(HardhatRuntimeEnvironmentToken, {useValue: hardhat})
+  console.log(`\x1b[36mRunning bulk_set_whitelist script. Please wait...\x1b[0m`);
 
-  const deploymentName = requiredEnvVar("DEPLOYMENT_NAME")
+  container.register(HardhatRuntimeEnvironmentToken, {useValue: hardhat});
 
-  container.register(DeploymentName, {useValue: deploymentName})
+  const deploymentName = requiredEnvVar("DEPLOYMENT_NAME");
+
+  container.register(DeploymentName, {useValue: deploymentName});
 
   switch (hardhat.network.name) {
     case "ropsten":
-        await setupRopstenDeployment(container, hardhat, deploymentName)
-        break
+        await setupRopstenDeployment(container, hardhat, deploymentName);
+        break;
     case "mainnet":
     case "hardhat":
     case "localhost":
-        await setupSifchainMainnetDeployment(container, hardhat, deploymentName)
-        break
+        await setupSifchainMainnetDeployment(container, hardhat, deploymentName);
+        break;
   }
 
   const useForking = !!process.env["USE_FORKING"];
   if (useForking)
-    await impersonateBridgeBankAccounts(container, hardhat, deploymentName)
+    await impersonateBridgeBankAccounts(container, hardhat, deploymentName);
 
-  const whitelistData = await readTokenData(process.env["WHITELIST_DATA"] ?? "/tmp/nothing")
+  const whitelistData = await readTokenData(process.env["WHITELIST_DATA"] ?? "/tmp/nothing");
 
-  const bridgeBank = (await container.resolve(DeployedBridgeBank).contract)
+  const bridgeBank = (await container.resolve(DeployedBridgeBank).contract);
 
-  const operator = await bridgeBank.operator()
+  const operator = await bridgeBank.operator();
+  console.log(`\x1b[36mOperator account is ${operator}\x1b[0m`);
 
-  const operatorSigner = await hardhat.ethers.getSigner(operator)
+  const operatorSigner = await hardhat.ethers.getSigner(operator);
   const bridgeBankAsOperator = bridgeBank.connect(operatorSigner);
 
   const addressList = [];
@@ -71,6 +79,7 @@ async function main() {
     }
 
     addressList.push(addr.address);
+    console.log(`\x1b[36mToken ${addr.address} will be added to the whitelist\x1b[0m`);
   }
 
   if(addressList.length > 0) {
@@ -80,8 +89,7 @@ async function main() {
     
     // Estimate gasPrice:
     const gasPrice = await estimateGasPrice();
-    console.log(`Using ideal Gas price: ${hardhat.ethers.utils.formatUnits(gasPrice, 'gwei')} GWEI`);
-
+    
     // UX
     console.log(`\x1b[46m\x1b[30mSending transaction. This may take a while, please wait...\x1b[0m`);
 
@@ -103,8 +111,12 @@ async function main() {
 }
 
 async function estimateGasPrice() {
+  console.log('Estimating ideal Gas price, please wait...');
+
   const gasPrice = await hardhat.ethers.provider.getGasPrice();
   const finalGasPrice = Math.round(gasPrice.toNumber() * GAS_PRICE_BUFFER);
+
+  console.log(`Using ideal Gas price: ${hardhat.ethers.utils.formatUnits(finalGasPrice, 'gwei')} GWEI`);
   
   return finalGasPrice;
 }
