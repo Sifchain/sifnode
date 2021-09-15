@@ -1330,6 +1330,7 @@ class PeggyEnvironment(IntegrationTestsEnvironment):
         )
 
         state_vars = {
+            "TEST_INTEGRATION_DIR": project_dir("test/integration"),
             "ETHEREUM_WEBSOCKET_ADDRESS": f"ws://{hardhat_hostname}:{hardhat_port}",
             "BASEDIR": project_dir(),
             "TEST_INTEGRATION_PY_DIR": project_dir("test/integration/src/py"),
