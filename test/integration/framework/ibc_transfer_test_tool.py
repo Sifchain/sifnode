@@ -20,8 +20,10 @@ configs = {
         "fees": 5000,
         "gas": 1000,
         "denom": "uakt",
+        "start_chain_locally": True,
     },
     "ci": {
+        "start_chain_locally": False,
     },
 }
 
@@ -59,7 +61,7 @@ def start_chain(chain):
 def init_chain(chain):
     pass
 
-def start_relayer(chain_a, chain_b, channel_id, counterchannel_id):
+def start_relayer(chain_a, chain_b, config, channel_id, counterchannel_id):
     # TODO Determine which relayer to use
     relayer_binary = None
     relayer_args = []
@@ -81,23 +83,25 @@ def send_transaction(chain, channel, amount, denom, src_addr, dst_addr, sequence
         (["--dry-run"] if dry_run else [])
     run_command(args)
 
-def query_bank_balance(chain, addr, denom):
+def query_bank_balance(chain, addr, denom, config):
     node = None  # TODO
     chain_id = None  # TODO
     result = json.loads(run_command([get_binary_for_chain(chain), "q", "bank", "balances", addr, "--node", node,
         "--chain-id", chain_id, "--output", "json"]).stdout)
-    return result[denom]
+    return int(result[denom])
+
+def get_starting_account_and_sequence_number(config, chain):
+    # TODO Get from CLI
+    return 0, 0
 
 def run_tests_for_one_chain_in_one_direction(config, other_chain, direction_flag, number_of_iterations):
     from_chain = "sifchain" if direction_flag else other_chain
     to_chain = other_chain if direction_flag else "sifchain"
-    sequence = 0   # TODO
+    sequence, account_number = get_starting_account_and_sequence_number(config, from_chain)
     broadcast_mode = "block"  # TODO
-    account_number = None  # TODO
-    chain_id = int(config["chain)id"])
+    chain_id = int(config["chain_id"])
     denom = config["denom"]
-    channel_id = int(config["channel_id"])
-    counterchannel_id = int(config["counterchannel_id"])
+    channel_id = int(config["channel_id" if direction_flag else "counterchannel_id"])
     from_account = config["from_account"]
     to_account = config["to_account"]
     amount = int(config["amount"])
@@ -106,15 +110,21 @@ def run_tests_for_one_chain_in_one_direction(config, other_chain, direction_flag
     gas = config["gas"]
     sifchain_proc = start_chain("sifchain")
     other_chain_proc = start_chain(other_chain)
-    init_chain(from_chain)
-    init_chain(to_chain)
-    relayer_proc = start_relayer(from_chain, to_chain, channel_id, counterchannel_id)
+    if config["init_chain"]:
+        init_chain(from_chain)
+        init_chain(to_chain)
+        relayer_proc = start_relayer(from_chain, to_chain, channel_id, counterchannel_id)
     mnemonic = add_new_key_to_keyring("sifchain", from_account)
     add_existing_key_to_keyring(other_chain, to_account, mnemonic)
+
     from_balance_before = query_bank_balance(from_chain, from_account, denom)
     to_balance_before = query_bank_balance(to_chain, to_account, denom)
+
+    # TODO Check that from_balance_before >= number_of_iterations * amount + fees + gas
+    # We can know the exact gas in block mode
+
     for i in range(number_of_iterations):
-        send_transaction(from_chain, channel_id if direction_flag else counterchannel_id, amount, denom, from_account,
+        send_transaction(from_chain, channel_id, amount, denom, from_account,
             to_account, sequence + i, chain_id, node, broadcast_mode, fees, gas, account_number)
     # TODO Wait for transaction to complete (if async)
     from_balance_after = query_bank_balance(from_chain, from_account, denom)
@@ -122,7 +132,7 @@ def run_tests_for_one_chain_in_one_direction(config, other_chain, direction_flag
     relayer_proc.stop()
     sifchain_proc.stop()
     other_chain_proc.stop()
-    assert from_balance_after == from_balance_before - number_of_iterations * amount
+    assert from_balance_after == from_balance_before - number_of_iterations * amount # TODO Account for fees and gas
     assert to_balance_after == to_balance_before + number_of_iterations * amount
 
 def run_tests_for_all_chains_in_both_directions(config, number_of_iterations):
@@ -132,7 +142,7 @@ def run_tests_for_all_chains_in_both_directions(config, number_of_iterations):
 
 # This is called from GitHub CI/CD (i.e. .github/workflows)
 def run_from_ci(args):
-    config = get_config("local")
+    config = get_config("ci")
     run_tests_for_all_chains_in_both_directions(config, 1000)
 
 def run_locally(args):
