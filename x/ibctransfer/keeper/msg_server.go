@@ -103,14 +103,12 @@ func PrepareToSendConvertedCoins(goCtx context.Context, msg *sdktransfertypes.Ms
 	if err := bankKeeper.SendCoins(
 		ctx, sender, escrowAddress, sdk.NewCoins(token),
 	); err != nil {
-		fmt.Println("Failing here at 106")
 		return err
 	}
 
 	// Mint into module account the new coins of the denom that will be sent via IBC
 	err = bankKeeper.MintCoins(ctx, types.ModuleName, sdk.NewCoins(convToken))
 	if err != nil {
-		fmt.Println("Failing here at 113")
 		return err
 	}
 	// Send minted coins (from module account) to senders address
