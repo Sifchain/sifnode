@@ -5,6 +5,7 @@
 package tokenregistrymocks
 
 import (
+	"github.com/tendermint/tendermint/libs/log"
 	reflect "reflect"
 
 	types "github.com/Sifchain/sifnode/x/tokenregistry/types"
@@ -172,4 +173,46 @@ func (mr *MockKeeperMockRecorder) SetToken(ctx, entry interface{}) *gomock.Call 
 
 func (m *MockKeeper) AddIBCTokenMetadata(ctx types0.Context, metadata types.TokenMetadata, cosmosSender types0.AccAddress) string {
 	return ""
+}
+
+// GetDenom mocks base method.
+func (m *MockKeeper) AddTokenMetadata(ctx types0.Context, metadata types.TokenMetadata) string {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AddTokenMetadata", ctx, metadata)
+	ret0, _ := ret[0].(string)
+	return ret0
+}
+
+// GetDenom indicates an expected call of GetDenom.
+func (mr *MockKeeperMockRecorder) AddTokenMetadata(ctx, metadata interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddTokenMetadata", reflect.TypeOf((*MockKeeper)(nil).AddTokenMetadata), ctx, metadata)
+}
+
+// GetDenom mocks base method.
+func (m *MockKeeper) GetTokenMetadata(ctx types0.Context, denomHash string) (types.TokenMetadata, bool) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetTokenMetadata", ctx, denomHash)
+	ret0, ret1 := ret[0].(types.TokenMetadata), ret[1].(bool)
+	return ret0, ret1
+}
+
+// GetDenom indicates an expected call of GetDenom.
+func (mr *MockKeeperMockRecorder) GetTokenMetadata(ctx, denomHash interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTokenMetadata", reflect.TypeOf((*MockKeeper)(nil).GetTokenMetadata), ctx, denomHash)
+}
+
+// GetDenom mocks base method.
+func (m *MockKeeper) Logger(ctx types0.Context) log.Logger {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Logger", ctx)
+	ret0 := ret[0].(log.Logger)
+	return ret0
+}
+
+// GetDenom indicates an expected call of GetDenom.
+func (mr *MockKeeperMockRecorder) Logger(ctx interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Logger", reflect.TypeOf((*MockKeeper)(nil).Logger), ctx)
 }

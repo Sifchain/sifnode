@@ -340,11 +340,6 @@ func (k Keeper) AddIBCTokenMetadata(ctx sdk.Context, metadata tokenregistrytypes
 	return k.tokenRegistryKeeper.AddIBCTokenMetadata(ctx, metadata, cosmosSender)
 }
 
-// ExistsTokenMetadata call metadataKeeper's ExistsTokenMetadata
-func (k Keeper) ExistsTokenMetadata(ctx sdk.Context, denomHash string) bool {
-	return k.tokenRegistryKeeper.ExistsTokenMetadata(ctx, denomHash)
-}
-
 // Exists chec if the key existed in db.
 func (k Keeper) Exists(ctx sdk.Context, key []byte) bool {
 	store := ctx.KVStore(k.storeKey)

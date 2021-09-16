@@ -21,7 +21,6 @@ type Keeper interface {
 	GetDenomWhitelist(ctx sdk.Context) Registry
 	Logger(ctx sdk.Context) log.Logger
 	GetTokenMetadata(ctx sdk.Context, denomHash string) (TokenMetadata, bool)
-	ExistsTokenMetadata(ctx sdk.Context, denomHash string) bool
 	AddTokenMetadata(ctx sdk.Context, metadata TokenMetadata) string
 	AddIBCTokenMetadata(ctx sdk.Context, metadata TokenMetadata, cosmosSender sdk.AccAddress) string
 }

@@ -209,7 +209,7 @@ func (srv msgServer) CreateEthBridgeClaim(goCtx context.Context, msg *types.MsgC
 	}
 
 	// TODO check if it is safe to add the metadata automatically
-	if !srv.Keeper.ExistsTokenMetadata(ctx, claim.DenomHash) {
+	if !srv.Keeper.tokenRegistryKeeper.IsDenomWhitelisted(ctx, claim.DenomHash) {
 		srv.Keeper.AddTokenMetadata(ctx, metadata)
 	}
 

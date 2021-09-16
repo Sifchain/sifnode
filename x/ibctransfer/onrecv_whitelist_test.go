@@ -136,7 +136,7 @@ func TestIsRecvPacketAllowed(t *testing.T) {
 	// Expected Result: FALSE
 	wl.EXPECT().
 		CheckDenomPermissions(ctx,
-			"rowan", []tokenregistrytypes.Permission{tokenregistrytypes.Permission_IBCIMPORT}).
+			"rowan", []tokenregistrytypes.Permission{tokenregistrytypes.Permission_PERMISSION_IBCIMPORT}).
 		Return(false)
 	wl.EXPECT().
 		IsDenomWhitelisted(ctx,

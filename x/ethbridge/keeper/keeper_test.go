@@ -18,7 +18,7 @@ var (
 	cosmosReceivers, _   = test.CreateTestAddrs(1)
 	amount               = sdk.NewInt(10)
 	doubleAmount         = sdk.NewInt(20)
-	decimals             = 18
+	decimals             = int64(18)
 	symbol               = "stake"
 	name                 = "STAKE"
 	tokenContractAddress = types.NewEthereumAddress("0xbbbbca6a901c926f240b89eacb641d8aec7aeafd")
@@ -28,7 +28,7 @@ var (
 )
 
 var testMetadataStake = tokenregistrytypes.TokenMetadata{
-	Decimals:          18,
+	Decimals:          int64(18),
 	Name:              "stake",
 	NetworkDescriptor: oracletypes.NetworkDescriptor_NETWORK_DESCRIPTOR_ETHEREUM,
 	Symbol:            "stake",
@@ -36,7 +36,7 @@ var testMetadataStake = tokenregistrytypes.TokenMetadata{
 }
 
 var testMetadataCeth = tokenregistrytypes.TokenMetadata{
-	Decimals:          18,
+	Decimals:          int64(18),
 	Name:              "ceth",
 	NetworkDescriptor: oracletypes.NetworkDescriptor_NETWORK_DESCRIPTOR_ETHEREUM,
 	Symbol:            "ceth",
@@ -44,7 +44,7 @@ var testMetadataCeth = tokenregistrytypes.TokenMetadata{
 }
 
 var testMetadataRowan = tokenregistrytypes.TokenMetadata{
-	Decimals:          18,
+	Decimals:          int64(18),
 	Name:              "rowan",
 	NetworkDescriptor: oracletypes.NetworkDescriptor_NETWORK_DESCRIPTOR_UNSPECIFIED,
 	Symbol:            "rowan",
@@ -77,7 +77,7 @@ func TestProcessClaimLock(t *testing.T) {
 		amount,
 		claimType,
 		name,
-		int32(decimals),
+		decimals,
 	)
 
 	status, err := keeper.ProcessClaim(ctx, ethBridgeClaim)
@@ -102,7 +102,7 @@ func TestProcessClaimLock(t *testing.T) {
 		amount,
 		claimType,
 		name,
-		int32(decimals),
+		decimals,
 	)
 	status, err = keeper.ProcessClaim(ctx, ethBridgeClaim)
 	require.NoError(t, err)
@@ -131,7 +131,7 @@ func TestProcessClaimBurn(t *testing.T) {
 		amount,
 		claimType,
 		name,
-		int32(decimals),
+		decimals,
 	)
 
 	status, err := keeper.ProcessClaim(ctx, ethBridgeClaim)
@@ -157,7 +157,7 @@ func TestProcessClaimBurn(t *testing.T) {
 		amount,
 		claimType,
 		name,
-		int32(decimals),
+		decimals,
 	)
 	status, err = keeper.ProcessClaim(ctx, ethBridgeClaim)
 	require.NoError(t, err)

@@ -4,11 +4,11 @@ import (
 	"context"
 	"fmt"
 
+	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
 	"github.com/Sifchain/sifnode/x/tokenregistry/types"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	transfertypes "github.com/cosmos/cosmos-sdk/x/ibc/applications/transfer/types"
-	oracletypes "github.com/cosmos/cosmos-sdk/x/oracle/types"
 	"github.com/spf13/cobra"
 )
 

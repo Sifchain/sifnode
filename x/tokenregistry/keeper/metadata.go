@@ -4,7 +4,6 @@ import (
 	"strings"
 
 	ethbridgetypes "github.com/Sifchain/sifnode/x/ethbridge/types"
-	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
 	"github.com/Sifchain/sifnode/x/tokenregistry/types"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -32,22 +31,19 @@ func (k keeper) GetTokenMetadata(ctx sdk.Context, denomHash string) (types.Token
 	}
 
 	metadata := types.TokenMetadata{
-		Decimals:     entry.Decimals,
-		Name:         entry.DisplayName,
-		Symbol:       entry.DisplaySymbol,
-		TokenAddress: entry.Address,
-		Network:      entry.Network,
+		Decimals:          entry.Decimals,
+		Name:              entry.DisplayName,
+		Symbol:            entry.DisplaySymbol,
+		TokenAddress:      entry.Address,
+		NetworkDescriptor: entry.Network,
 	}
 	return metadata, true
 }
 
 // Add new token metadata information
 func (k keeper) AddTokenMetadata(ctx sdk.Context, metadata types.TokenMetadata) string {
-
-	networkID := oracletypes.NetworkDescriptor_value[metadata.Network]
-	networkDescriptor := oracletypes.NetworkDescriptor(networkID)
 	denomHash := ethbridgetypes.GetDenomHash(
-		networkDescriptor,
+		metadata.NetworkDescriptor,
 		metadata.TokenAddress,
 		metadata.Decimals,
 		metadata.Name,
@@ -61,7 +57,7 @@ func (k keeper) AddTokenMetadata(ctx sdk.Context, metadata types.TokenMetadata) 
 		entry.DisplayName = metadata.Name
 		entry.DisplaySymbol = metadata.Symbol
 		entry.Address = metadata.TokenAddress
-		entry.Network = metadata.Network
+		entry.Network = metadata.NetworkDescriptor
 		entry.Denom = denomHash
 
 		k.SetToken(ctx, &entry)
@@ -84,9 +80,3 @@ func (k keeper) AddIBCTokenMetadata(ctx sdk.Context, metadata types.TokenMetadat
 
 	return k.AddTokenMetadata(ctx, metadata)
 }
-
-
-
-
-
-
