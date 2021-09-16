@@ -14,6 +14,7 @@ var (
 )
 
 // RegisterLegacyAminoCodec registers concrete types on the Amino codec
+//lint:ignore SA1019 Legacy handler has to use legacy/deprecated features
 func RegisterLegacyAminoCodec(cdc *codec.LegacyAmino) {
 	cdc.RegisterConcrete(&MsgRegister{}, "MsgRegister", nil)
 	cdc.RegisterConcrete(&MsgRegisterResponse{}, "MsgRegisterResponse", nil)

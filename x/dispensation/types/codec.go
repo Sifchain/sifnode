@@ -9,6 +9,7 @@ import (
 )
 
 // RegisterCodec registers concrete types on codec
+//lint:ignore SA1019 Legacy handler has to use legacy/deprecated features
 func RegisterLegacyAminoCodec(cdc *codec.LegacyAmino) {
 	cdc.RegisterConcrete(&MsgCreateDistribution{}, "dispensation/MsgCreateDistribution", nil)
 	cdc.RegisterConcrete(&Distribution{}, "dispensation/Distribution", nil)

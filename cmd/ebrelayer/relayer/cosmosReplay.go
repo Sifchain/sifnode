@@ -92,7 +92,7 @@ func (sub CosmosSub) ReplayCosmosBurnLockWithBlocks(
 					log.Printf("found out a lock burn message%s\n", cosmosMsg.String())
 					if cosmosMsg.NetworkDescriptor == sub.NetworkDescriptor {
 						if !MessageProcessed(cosmosMsg.ProphecyID, ProphecyClaims) {
-							sub.handleBurnLockMsg(txFactory, cosmosMsg)
+							sub.witnessSignProphecyID(txFactory, cosmosMsg)
 						} else {
 							log.Println("lock burn message already processed by me")
 						}

@@ -37,15 +37,15 @@ func ExportGenesis(ctx sdk.Context, keeper keeper.Keeper) *types.GenesisState {
 	whiteList := keeper.GetAllWhiteList(ctx)
 	wl := make(map[uint32]*types.ValidatorWhiteList, len(whiteList))
 	for key, entry := range whiteList {
-		wl[uint32(key)] = &entry
+		wlEntry := entry
+		wl[uint32(key)] = &wlEntry
 	}
 	adminAcc := keeper.GetAdminAccount(ctx)
 	prophecies := keeper.GetProphecies(ctx)
 
 	dbProphecies := make([]*types.Prophecy, len(prophecies))
-	for i, dbProphecy := range prophecies {
-
-		dbProphecies[i] = &dbProphecy
+	for i := range prophecies {
+		dbProphecies[i] = &prophecies[i]
 	}
 	return &types.GenesisState{
 		AddressWhitelist: wl,

@@ -12,18 +12,18 @@ import (
 	abci "github.com/tendermint/tendermint/abci/types"
 	"go.uber.org/zap"
 
+	"github.com/Sifchain/sifnode/cmd/ebrelayer/internal/symbol_translator"
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/types"
 	ethbridge "github.com/Sifchain/sifnode/x/ethbridge/types"
 	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
 )
 
 const (
-	nullAddress           = "0x0000000000000000000000000000000000000000"
-	defaultEthereumPrefix = "e"
+	nullAddress = "0x0000000000000000000000000000000000000000"
 )
 
 // EthereumEventToEthBridgeClaim parses and packages an Ethereum event struct with a validator address in an EthBridgeClaim msg
-func EthereumEventToEthBridgeClaim(valAddr sdk.ValAddress, event types.EthereumEvent) (ethbridge.EthBridgeClaim, error) {
+func EthereumEventToEthBridgeClaim(valAddr sdk.ValAddress, event types.EthereumEvent, symbolTranslator *symbol_translator.SymbolTranslator, sugaredLogger *zap.SugaredLogger) (ethbridge.EthBridgeClaim, error) {
 	witnessClaim := ethbridge.EthBridgeClaim{}
 
 	// chainID type casting (*big.Int -> int)
@@ -54,12 +54,7 @@ func EthereumEventToEthBridgeClaim(valAddr sdk.ValAddress, event types.EthereumE
 			return witnessClaim, errors.New("symbol \"eth\" must have null address set as token address")
 		}
 	case ethbridge.ClaimType_CLAIM_TYPE_BURN:
-		if !strings.Contains(symbol, defaultEthereumPrefix) {
-			log.Printf("Can only relay burns of '%v' prefixed tokens", defaultEthereumPrefix)
-			return witnessClaim, errors.New("symbol of burn token must start with prefix")
-		}
-		res := strings.SplitAfter(symbol, defaultEthereumPrefix)
-		symbol = strings.Join(res[1:], "")
+		symbol = symbolTranslator.EthereumToSifchain(symbol)
 	}
 
 	amount := sdk.NewIntFromBigInt(event.Value)

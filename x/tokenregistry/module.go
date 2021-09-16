@@ -44,6 +44,7 @@ func (AppModuleBasic) Name() string {
 }
 
 // RegisterCodec registers the module's types for the given codec.
+//lint:ignore SA1019 Legacy handler has to use legacy/deprecated features
 func (AppModuleBasic) RegisterLegacyAminoCodec(cdc *codec.LegacyAmino) {
 	types.RegisterLegacyAminoCodec(cdc)
 }

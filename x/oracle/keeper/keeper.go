@@ -42,7 +42,7 @@ func NewKeeper(
 	}
 }
 
-func (k Keeper) UpdateCurrentHeight(height int64) {
+func (k *Keeper) UpdateCurrentHeight(height int64) {
 	k.currentHeight = height
 }
 

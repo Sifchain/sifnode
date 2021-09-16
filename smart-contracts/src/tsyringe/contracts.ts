@@ -12,7 +12,7 @@ import {
     BridgeRegistry__factory,
     BridgeToken,
     BridgeToken__factory,
-    CosmosBridge__factory
+    CosmosBridge__factory, IbcToken__factory
 } from "../../build";
 
 @singleton()
@@ -21,12 +21,14 @@ export class SifchainContractFactories {
     cosmosBridge: Promise<CosmosBridge__factory>
     bridgeRegistry: Promise<BridgeRegistry__factory>
     bridgeToken: Promise<BridgeToken__factory>
+    ibcToken: Promise<IbcToken__factory>
 
     constructor(@inject(HardhatRuntimeEnvironmentToken) hre: HardhatRuntimeEnvironment) {
         this.bridgeBank = hre.ethers.getContractFactory("BridgeBank").then((x: ContractFactory) => x as BridgeBank__factory)
         this.cosmosBridge = hre.ethers.getContractFactory("CosmosBridge").then((x: ContractFactory) => x as CosmosBridge__factory)
         this.bridgeRegistry = hre.ethers.getContractFactory("BridgeRegistry").then((x: ContractFactory) => x as BridgeRegistry__factory)
         this.bridgeToken = hre.ethers.getContractFactory("BridgeToken").then((x: ContractFactory) => x as BridgeToken__factory)
+        this.ibcToken = hre.ethers.getContractFactory("IbcToken").then((x: ContractFactory) => x as IbcToken__factory)
     }
 }
 

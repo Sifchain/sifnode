@@ -12,7 +12,7 @@ linters:
 #    - gocritic
 #    - gofmt
 #    - goimports
-    - golint
+    # - golint
     - gosec
     - govet
     - ineffassign
@@ -22,7 +22,7 @@ linters:
     - nakedret
     - prealloc
     # - scopelint
-    - staticcheck
+    # - staticcheck
     - structcheck
     - stylecheck
     - typecheck
@@ -32,6 +32,7 @@ linters:
     - errcheck
   disable:
     - gosimple
+    - staticcheck
 
 issues:
   exclude-rules:

@@ -102,7 +102,7 @@ func TestOnAcknowledgementMaybeConvert_Source(t *testing.T) {
 			require.Equal(t, tt.args.msg.Token.Sub(tokenDeduction).String(), app.BankKeeper.GetBalance(ctx, sender, tt.args.msg.Token.Denom).String())
 
 			// Simulate send with SDK stub.
-			sdkSentDenom, err := testhelpers.SendStub(ctx, app.TransferKeeper, app.BankKeeper, tokensConverted, sender, tt.args.msg.SourcePort, tt.args.msg.SourceChannel)
+			sdkSentDenom, _ := testhelpers.SendStub(ctx, app.TransferKeeper, app.BankKeeper, tokensConverted, sender, tt.args.msg.SourcePort, tt.args.msg.SourceChannel)
 			require.Equal(t, tt.args.msg.Token.Sub(tokenDeduction).String(), app.BankKeeper.GetBalance(ctx, sender, tt.args.msg.Token.Denom).String())
 			require.Equal(t, "0"+tokensConverted.Denom, app.BankKeeper.GetBalance(ctx, sender, tokensConverted.Denom).String())
 
@@ -267,7 +267,7 @@ func TestOnAcknowledgementMaybeConvert_Sink(t *testing.T) {
 			require.Equal(t, tt.args.msg.Token.Amount.String(), app.BankKeeper.GetBalance(ctx, sender, tt.args.transferToken.Denom).Amount.String())
 
 			// Simulate send from this chain, with SDK stub.
-			sdkSentDenom, err := testhelpers.SendStub(ctx, app.TransferKeeper, app.BankKeeper, tt.args.msg.Token, sender, tt.args.msg.SourcePort, tt.args.msg.SourceChannel)
+			sdkSentDenom, _ := testhelpers.SendStub(ctx, app.TransferKeeper, app.BankKeeper, tt.args.msg.Token, sender, tt.args.msg.SourcePort, tt.args.msg.SourceChannel)
 			require.Equal(t, "0", app.BankKeeper.GetBalance(ctx, sender, tt.args.transferToken.Denom).Amount.String())
 
 			// Test Ack.

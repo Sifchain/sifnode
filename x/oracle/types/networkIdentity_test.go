@@ -24,7 +24,7 @@ func TestGetPrefix(t *testing.T) {
 
 func TestNetworkDescriptorValid(t *testing.T) {
 	networkDescriptor := NetworkDescriptor(0)
-	assert.Equal(t, networkDescriptor.IsValid(), false)
+	assert.Equal(t, networkDescriptor.IsSifchain(), true)
 
 	networkDescriptor = NetworkDescriptor(1)
 	assert.Equal(t, networkDescriptor.IsValid(), true)
