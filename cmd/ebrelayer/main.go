@@ -257,7 +257,7 @@ func RunInitRelayerCmd(cmd *cobra.Command, args []string) error {
 	waitForAll.Add(2)
 	txFactory := tx.NewFactoryCLI(cliContext, cmd.Flags())
 	go ethSub.Start(txFactory, &waitForAll, symbolTranslator)
-	go cosmosSub.Start(txFactory, &waitForAll, symbolTranslator)
+	go cosmosSub.StartProphecyHandler(txFactory, &waitForAll, symbolTranslator)
 	waitForAll.Wait()
 
 	return nil
@@ -384,7 +384,7 @@ func RunInitWitnessCmd(cmd *cobra.Command, args []string) error {
 	waitForAll.Add(2)
 	txFactory := tx.NewFactoryCLI(cliContext, cmd.Flags())
 	go ethSub.Start(txFactory, &waitForAll, symbolTranslator)
-	go cosmosSub.StartProphecyHandler(txFactory, &waitForAll, symbolTranslator)
+	go cosmosSub.Start(txFactory, &waitForAll, symbolTranslator)
 	waitForAll.Wait()
 
 	return nil

@@ -427,7 +427,7 @@ func (sub EthereumSub) handleEthereumEvent(txFactory tx.Factory, events []types.
 		return err
 	}
 	for _, event := range events {
-		prophecyClaim, err := txs.EthereumEventToEthBridgeClaim(valAddr, event)
+		prophecyClaim, err := txs.EthereumEventToEthBridgeClaim(valAddr, event, symbolTranslator, sub.SugaredLogger)
 		if err != nil {
 			sub.SugaredLogger.Errorw(".",
 				errorMessageKey, err.Error())

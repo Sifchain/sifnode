@@ -49,11 +49,11 @@ func GetFromPrefix(key []byte) (NetworkIdentity, error) {
 
 // IsValid check if the network id is valid
 func (n NetworkDescriptor) IsValid() bool {
-
-	if n == NetworkDescriptor_NETWORK_DESCRIPTOR_UNSPECIFIED {
-		return false
-	}
-
 	_, ok := NetworkDescriptor_name[int32(n)]
 	return ok
+}
+
+// IsSifchain check if the network id is Sifchain
+func (n NetworkDescriptor) IsSifchain() bool {
+	return n == NetworkDescriptor_NETWORK_DESCRIPTOR_UNSPECIFIED
 }

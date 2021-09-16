@@ -46,7 +46,7 @@ contract EthereumBankStorage {
         bytes _to,
         address _token,
         uint256 _value,
-        uint256 _nonce,
+        uint256 indexed _nonce,
         uint256 _decimals,
         uint256 _networkDescriptor
     );
@@ -56,7 +56,7 @@ contract EthereumBankStorage {
         bytes _to,
         address _token,
         uint256 _value,
-        uint256 _nonce,
+        uint256 indexed _nonce,
         uint256 _decimals,
         string _symbol,
         string _name,
