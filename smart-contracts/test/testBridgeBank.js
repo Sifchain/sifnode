@@ -202,7 +202,27 @@ describe("Test Bridge Bank", function () {
         .to.be.revertedWith('!owner');
     });
 
-    it("should allow the operator to set many BridgeTokens' denom in a batch", async function () {
+    it("should revert when trying to set the denom of the old Erowan token", async function () {
+      // Deploy the old Erowan token
+      const erowanTokenFactory = await ethers.getContractFactory('Erowan');
+      const erowanToken = await erowanTokenFactory.deploy('erowan');
+      await erowanToken.deployed();
+
+      // expect the token to NOT have a defined denom on BridgeBank
+      let registeredDenom = await state.bridgeBank.contractDenom(erowanToken.address);
+      expect(registeredDenom).to.be.equal(state.constants.denom.none);
+
+      // try to set a new denom
+      await expect(state.bridgeBank.connect(owner)
+        .setBridgeTokenDenom(erowanToken.address, state.constants.denom.one))
+        .to.be.rejectedWith("Transaction reverted: function selector was not recognized and there's no fallback function");
+
+      // check if the denom was saved on BridgeBank (should not)
+      registeredDenom = await state.bridgeBank.contractDenom(erowanToken.address);
+      expect(registeredDenom).to.be.equal(state.constants.denom.none);
+    });
+
+    it("should allow the owner to set many BridgeTokens' denom in a batch", async function () {
       // expect rowan to NOT have a defined denom on BridgeBank
       let registeredDenom = await state.bridgeBank.contractDenom(state.rowan.address);
       expect(registeredDenom).to.be.equal(state.constants.denom.none);
@@ -324,6 +344,88 @@ describe("Test Bridge Bank", function () {
       // expect token3 to be registered as a BridgeToken
       isInCosmosWhitelist3 = await state.bridgeBank.getCosmosTokenInWhiteList(state.token3.address);
       expect(isInCosmosWhitelist3).to.be.true;
+    });
+
+    it("should allow the owner to add many BridgeTokens in a batch and then set the cosmosDenom", async function () {
+      // add bridgebank as admin of the tokens
+      await state.token1.connect(state.operator).grantRole(state.constants.roles.admin, state.bridgeBank.address);
+      await state.token2.connect(state.operator).grantRole(state.constants.roles.admin, state.bridgeBank.address);
+      await state.token3.connect(state.operator).grantRole(state.constants.roles.admin, state.bridgeBank.address);
+
+      // expect token1 to NOT be registered as a BridgeToken
+      let isInCosmosWhitelist1 = await state.bridgeBank.getCosmosTokenInWhiteList(state.token1.address);
+      expect(isInCosmosWhitelist1).to.be.false;
+
+      // expect token2 to NOT be registered as a BridgeToken
+      let isInCosmosWhitelist2 = await state.bridgeBank.getCosmosTokenInWhiteList(state.token2.address);
+      expect(isInCosmosWhitelist2).to.be.false;
+
+      // expect token3 to NOT be registered as a BridgeToken
+      let isInCosmosWhitelist3 = await state.bridgeBank.getCosmosTokenInWhiteList(state.token3.address);
+      expect(isInCosmosWhitelist3).to.be.false;
+
+      // add tokens as BridgeTokens
+      await expect(state.bridgeBank.connect(owner)
+        .batchAddExistingBridgeTokens([
+          state.token1.address,
+          state.token2.address,
+          state.token3.address
+        ])
+      ).to.be.fulfilled;
+
+      // check if the tokens are now correctly registered
+      // expect token1 to be registered as a BridgeToken
+      isInCosmosWhitelist1 = await state.bridgeBank.getCosmosTokenInWhiteList(state.token1.address);
+      expect(isInCosmosWhitelist1).to.be.true;
+
+      // expect token2 to be registered as a BridgeToken
+      isInCosmosWhitelist2 = await state.bridgeBank.getCosmosTokenInWhiteList(state.token2.address);
+      expect(isInCosmosWhitelist2).to.be.true;
+
+      // expect token3 to be registered as a BridgeToken
+      isInCosmosWhitelist3 = await state.bridgeBank.getCosmosTokenInWhiteList(state.token3.address);
+      expect(isInCosmosWhitelist3).to.be.true;
+
+      // Check the current token denoms in each token:
+      let registeredDenomInBridgeToken = await state.token1.cosmosDenom();
+      expect(registeredDenomInBridgeToken).to.be.equal(state.constants.denom.two);
+
+      let registeredDenomInBridgeToken2 = await state.token2.cosmosDenom();
+      expect(registeredDenomInBridgeToken2).to.be.equal(state.constants.denom.three);
+
+      let registeredDenomInBridgeToken3 = await state.token3.cosmosDenom();
+      expect(registeredDenomInBridgeToken3).to.be.equal(state.constants.denom.four);
+
+      // Now, set the denom for all those tokens
+      await expect(state.bridgeBank.connect(owner)
+        .batchSetBridgeTokenDenom(
+          [state.token1.address, state.token2.address, state.token3.address],
+          [state.constants.denom.one, state.constants.denom.two, state.constants.denom.three]
+        )).to.be.fulfilled;
+
+      // check the denom saved on BridgeBank
+      registeredDenom = await state.bridgeBank.contractDenom(state.token1.address);
+      expect(registeredDenom).to.be.equal(state.constants.denom.one);
+
+      // check the denom saved on token1 itself
+      registeredDenomInBridgeToken = await state.token1.cosmosDenom();
+      expect(registeredDenomInBridgeToken).to.be.equal(state.constants.denom.one);
+
+      // check the denom saved on BridgeBank
+      registeredDenom2 = await state.bridgeBank.contractDenom(state.token2.address);
+      expect(registeredDenom2).to.be.equal(state.constants.denom.two);
+
+      // check the denom saved on token2 itself
+      registeredDenomInBridgeToken2 = await state.token2.cosmosDenom();
+      expect(registeredDenomInBridgeToken2).to.be.equal(state.constants.denom.two);
+
+      // check the denom saved on BridgeBank
+      registeredDenom3 = await state.bridgeBank.contractDenom(state.token3.address);
+      expect(registeredDenom3).to.be.equal(state.constants.denom.three);
+
+      // check the denom saved on token3 itself
+      registeredDenomInBridgeToken3 = await state.token3.cosmosDenom();
+      expect(registeredDenomInBridgeToken3).to.be.equal(state.constants.denom.three);
     });
 
     it("should NOT allow a user to add many BridgeTokens in a batch", async function () {
