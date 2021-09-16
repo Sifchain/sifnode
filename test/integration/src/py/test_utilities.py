@@ -230,20 +230,22 @@ def get_password(network_definition_file_json):
 
 
 def get_eth_balance(transfer_request: EthereumToSifchainTransferRequest):
-    network_element = f"--ethereum_network {transfer_request.ethereum_network} " if transfer_request.ethereum_network else ""
-    symbol_element = f"--symbol {transfer_request.ethereum_symbol} " if transfer_request.ethereum_symbol else ""
-    private_element = f"--ethereum_private_key_env_var \"{transfer_request.ethereum_private_key_env_var}\"" if transfer_request.ethereum_private_key_env_var else ""
-    command_line = " ".join(
-        [f"yarn -s --cwd {transfer_request.smart_contracts_dir}",
-         f"integrationtest:getTokenBalance",
-         f"--ethereum_address {transfer_request.ethereum_address}",
-         f"--json_path {transfer_request.solidity_json_path}",
-         private_element,
-         symbol_element,
-         network_element]
-    )
-    result = run_yarn_command(command_line)
-    return int(result["balanceWei"])
+    w3 = Web3(Web3.WebsocketProvider(ethereum_websocket))
+    return w3.eth.get_balance()
+    # network_element = f"--ethereum_network {transfer_request.ethereum_network} " if transfer_request.ethereum_network else ""
+    # symbol_element = f"--symbol {transfer_request.ethereum_symbol} " if transfer_request.ethereum_symbol else ""
+    # private_element = f"--ethereum_private_key_env_var \"{transfer_request.ethereum_private_key_env_var}\"" if transfer_request.ethereum_private_key_env_var else ""
+    # command_line = " ".join(
+    #     [f"yarn -s --cwd {transfer_request.smart_contracts_dir}",
+    #      f"integrationtest:getTokenBalance",
+    #      f"--ethereum_address {transfer_request.ethereum_address}",
+    #      f"--json_path {transfer_request.solidity_json_path}",
+    #      private_element,
+    #      symbol_element,
+    #      network_element]
+    # )
+    # result = run_yarn_command(command_line)
+    # return int(result["balanceWei"])
 
 
 def get_whitelisted_tokens(transfer_request: EthereumToSifchainTransferRequest):

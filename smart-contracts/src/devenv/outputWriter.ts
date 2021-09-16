@@ -29,6 +29,7 @@ interface ContractEnv {
   BRIDGE_REGISTERY_ADDRESS: string
   COSMOS_BRIDGE_ADDRESS: string
   ROWANTOKEN_ADDRESS: string
+  BRIDGE_TOKEN_ADDRESS: string // Same address as Rowantoken
 }
 
 interface GOEnv {
@@ -53,6 +54,10 @@ interface EnvOutput {
   GOLANG?: GOEnv
   CONTRACTS?: ContractEnv
   ETHEREUM?: ETHEnv
+}
+
+interface EnvDictionary {
+  [key: string]: string
 }
 
 export function EnvJSONWriter(args: {
@@ -95,7 +100,8 @@ export function EnvJSONWriter(args: {
       BRIDGE_BANK_ADDRESS: contract.bridgeBank,
       BRIDGE_REGISTERY_ADDRESS: contract.bridgeRegistry,
       COSMOS_BRIDGE_ADDRESS: contract.cosmosBridge,
-      ROWANTOKEN_ADDRESS: contract.rowanContract
+      ROWANTOKEN_ADDRESS: contract.rowanContract,
+      BRIDGE_TOKEN_ADDRESS: contract.rowanContract
     }
     output.CONTRACTS = env
   }
@@ -122,13 +128,16 @@ export function EnvJSONWriter(args: {
   }
   try {
     const envValues: string[] = []
+    const rootValues: EnvDictionary = {}
     Object.values(output).forEach(module => {
       Object.entries(module).forEach(entry => {
-        envValues.push(`${entry[0]}="${entry[1]}"`)
+        envValues.push(`${entry[0]}="${entry[1]}"`);
+        rootValues[entry[0]] = entry[1] as string;
       });
     });
     const envText = envValues.join("\n")
-    fs.writeFileSync(path.resolve(__dirname, "../../", "environment.env"), envText);
+    fs.writeFileSync(path.resolve(__dirname, "../../", ".env"), envText);
+    fs.writeFileSync(path.resolve(__dirname, "../../", "env.json"), JSON.stringify(rootValues))
     fs.writeFileSync(path.resolve(__dirname, "../../", "environment.json"), JSON.stringify(args));
     console.log("Wrote environment and JSON values to disk. PATH: ", path.resolve(__dirname));
   }
