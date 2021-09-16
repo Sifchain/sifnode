@@ -32,11 +32,6 @@ contract OracleStorage {
     mapping(uint256 => mapping(address => bool)) private hasMadeClaim;
 
     /**
-    * @dev {DEPRECATED}
-    */
-    mapping(uint256 => bool) private prophecyRedeemed;
-
-    /**
     * @notice mapping of validator address to last nonce submitted
     */
     uint256 public lastNonceSubmitted;
@@ -44,5 +39,5 @@ contract OracleStorage {
     /**
     * @dev gap of storage for future upgrades
     */
-    uint256[98] private ____gap;
+    uint256[99] private ____gap;
 }
