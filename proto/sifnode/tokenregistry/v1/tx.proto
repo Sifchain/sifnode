@@ -11,8 +11,6 @@ service Msg {
   rpc Deregister(MsgDeregister) returns (MsgDeregisterResponse) {}
   rpc TokenMetadataAdd(TokenMetadataAddRequest)
       returns (TokenMetadataAddResponse) {}
-  rpc TokenMetadataDelete(TokenMetadataDeleteRequest)
-      returns (TokenMetadataDeleteResponse) {}
 }
 
 message MsgRegister {

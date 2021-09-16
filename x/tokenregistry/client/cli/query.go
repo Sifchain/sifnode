@@ -4,12 +4,12 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/Sifchain/sifnode/x/tokenregistry/types"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	transfertypes "github.com/cosmos/cosmos-sdk/x/ibc/applications/transfer/types"
+	oracletypes "github.com/cosmos/cosmos-sdk/x/oracle/types"
 	"github.com/spf13/cobra"
-
-	"github.com/Sifchain/sifnode/x/tokenregistry/types"
 )
 
 func GetQueryCmd() *cobra.Command {
@@ -127,7 +127,7 @@ func GetCmdGenerateEntry() *cobra.Command {
 				return err
 			}
 
-			network, err := flags.GetString(flagNetwork)
+			network, err := flags.GetInt32(flagNetwork)
 			if err != nil {
 				return err
 			}
@@ -230,7 +230,7 @@ func GetCmdGenerateEntry() *cobra.Command {
 				UnitDenom:                unitDenom,
 				DisplayName:              displayName,
 				DisplaySymbol:            displaySymbol,
-				Network:                  network,
+				Network:                  oracletypes.NetworkDescriptor(network),
 				Address:                  address,
 				ExternalSymbol:           externalSymbol,
 				TransferLimit:            transferLimit,
