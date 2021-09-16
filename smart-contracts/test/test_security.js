@@ -545,7 +545,7 @@ describe("Security Test", function () {
       expect(lastNonceSubmitted).to.be.equal(1);
     });
 
-    it.only("Should not revert on a reentrancy attack, but user should not receive funds either", async function () {
+    it("Should not revert on a reentrancy attack, but user should not receive funds either", async function () {
       // Deploy reentrancy attacker token:
       const reentrancyTokenFactory = await ethers.getContractFactory("ReentrancyToken");
       const reentrancyToken = await reentrancyTokenFactory.deploy(

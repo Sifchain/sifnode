@@ -14,10 +14,10 @@ const BigNumber = web3.BigNumber;
 // Please set the previous gas costs accordingly in this object
 const gasProfiling = {
   use: false,
-  lock: 173978,
-  mint: 179749,
-  newBb: 1162769,
-  multiLock: 328673,
+  lock: 175867,
+  mint: 181881,
+  newBt: 1665627,
+  multiLock: 346709,
   current: {}
 }
 
@@ -226,8 +226,8 @@ describe("Gas Cost Tests", function () {
       const sum = Number(receipt.gasUsed);
       
       if(gasProfiling.use) {
-        gasProfiling.current.newBb = sum;
-        logGasDiff('DoublePeg :: New BridgeToken:', gasProfiling.newBb, sum);
+        gasProfiling.current.newBt = sum;
+        logGasDiff('DoublePeg :: New BridgeToken:', gasProfiling.newBt, sum);
       } else {
         console.log("~~~~~~~~~~~~\nTotal: ", Number(receipt.gasUsed));
       }
@@ -426,7 +426,7 @@ describe("Gas Cost Tests", function () {
       
       if(gasProfiling.use) {
         const numberOfClaimsInBatch = 3;
-        logGasDiff(`DoublePeg :: ${numberOfClaimsInBatch} Batched claims VS single claim:`, gasProfiling.current.newBb * numberOfClaimsInBatch, sum);
+        logGasDiff(`DoublePeg :: ${numberOfClaimsInBatch} Batched claims VS single claim:`, gasProfiling.current.newBt * numberOfClaimsInBatch, sum);
       } else {
         console.log("~~~~~~~~~~~~\nTotal: ", Number(receipt.gasUsed));
       }
