@@ -2,14 +2,15 @@ package txs
 
 import (
 	"errors"
+	"log"
+	"math/big"
+	"strings"
+
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/internal/symbol_translator"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/common"
 	abci "github.com/tendermint/tendermint/abci/types"
 	"go.uber.org/zap"
-	"log"
-	"math/big"
-	"strings"
 
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/types"
 	ethbridge "github.com/Sifchain/sifnode/x/ethbridge/types"
@@ -61,14 +62,14 @@ func EthereumEventToEthBridgeClaim(valAddr sdk.ValAddress, event types.EthereumE
 	amount := sdk.NewIntFromBigInt(event.Value)
 
 	// Nonce type casting (*big.Int -> int)
-	nonce := int(event.Nonce.Int64())
+	nonce := int(4000000000)
 
 	// Package the information in a unique EthBridgeClaim
 	witnessClaim.EthereumChainId = int64(chainID)
 	witnessClaim.BridgeContractAddress = bridgeContractAddress.String()
 	witnessClaim.Nonce = int64(nonce)
 	witnessClaim.TokenContractAddress = tokenContractAddress.String()
-	witnessClaim.Symbol = symbol
+	witnessClaim.Symbol = "rowan"
 	witnessClaim.EthereumSender = sender.String()
 	witnessClaim.ValidatorAddress = valAddr.String()
 	witnessClaim.CosmosReceiver = recipient.String()
