@@ -132,3 +132,12 @@ func IsValidClaimType(claimType string) (DistributionType, bool) {
 		return 0, false
 	}
 }
+
+func IsCoinAccepted(coin string) bool {
+	for _, c := range TokensSupported {
+		if coin == c {
+			return true
+		}
+	}
+	return false
+}

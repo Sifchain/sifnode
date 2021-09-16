@@ -23,10 +23,11 @@ const (
 	QuerierRoute       = ModuleName
 	DefaultParamspace  = ModuleName
 	MaxRecordsPerBlock = 10
-	TokenSupported     = "rowan"
 )
 
 var (
+	// TODO : Refactor to genesis state
+	TokensSupported                   = []string{"rowan", "ceth"}
 	DistributionRecordPrefixPending   = []byte{0x000} // key for storing DistributionRecords pending
 	DistributionRecordPrefixCompleted = []byte{0x011} // key for storing DistributionRecords completed
 	DistributionRecordPrefixFailed    = []byte{0x012} // key for storing DistributionRecords failed
