@@ -122,11 +122,10 @@ func (k Keeper) ProcessBurn(ctx sdk.Context,
 		return []byte{}, errors.New("crosschain fee amount in message less than minimum burn")
 	}
 
-	// TODO use the network descriptor to check if token is from sifchains
-	// if !tokenMetadata.NetworkDescriptor.IsValid() {
-	// 	logger.Error("sifchain natvie token can't be burn.", "tokenSymbol", tokenMetadata.Symbol)
-	// 	return []byte{}, fmt.Errorf("sifchain native token %s can't be burn", tokenMetadata.Symbol)
-	// }
+	if tokenMetadata.NetworkDescriptor.IsSifchain() {
+		logger.Error("sifchain natvie token can't be burn.", "tokenSymbol", tokenMetadata.Symbol)
+		return []byte{}, fmt.Errorf("sifchain native token %s can't be burn", tokenMetadata.Symbol)
+	}
 
 	if k.IsCrossChainFeeReceiverAccountSet(ctx) {
 		coins = sdk.NewCoins(sdk.NewCoin(crossChainFeeConfig.FeeCurrency, msg.CrosschainFee))
@@ -155,12 +154,15 @@ func (k Keeper) ProcessBurn(ctx sdk.Context,
 		return []byte{}, err
 	}
 
-	coins = sdk.NewCoins(sdk.NewCoin(tokenMetadata.Symbol, msg.Amount))
-	err = k.bankKeeper.BurnCoins(ctx, types.ModuleName, coins)
-	if err != nil {
-		logger.Error("failed to burn locked coin.",
-			errorMessageKey, err.Error())
-		return []byte{}, err
+	// not burn the token if it is sifchain native token
+	if !tokenMetadata.NetworkDescriptor.IsSifchain() {
+		coins = sdk.NewCoins(sdk.NewCoin(tokenMetadata.Symbol, msg.Amount))
+		err = k.bankKeeper.BurnCoins(ctx, types.ModuleName, coins)
+		if err != nil {
+			logger.Error("failed to burn locked coin.",
+				errorMessageKey, err.Error())
+			return []byte{}, err
+		}
 	}
 
 	prophecyID := msg.GetProphecyID(false, senderSequence, k.GetGlobalNonce(ctx, msg.NetworkDescriptor), tokenMetadata.TokenAddress)
@@ -185,8 +187,7 @@ func (k Keeper) ProcessLock(ctx sdk.Context,
 		return []byte{}, err
 	}
 
-	// TODO use the network descriptor to check if token is from sifchain
-	if tokenMetadata.NetworkDescriptor.IsValid() {
+	if !tokenMetadata.NetworkDescriptor.IsSifchain() {
 		logger.Error("pegged token can't be lock.", "tokenSymbol", tokenMetadata.Symbol)
 		return []byte{}, fmt.Errorf("pegged token %s can't be lock", tokenMetadata.Symbol)
 	}
