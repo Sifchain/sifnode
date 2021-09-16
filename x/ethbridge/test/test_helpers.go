@@ -81,6 +81,7 @@ func CreateTestKeepers(t *testing.T, consensusNeeded float64, validatorAmounts [
 	ms.MountStoreWithDB(keyBank, sdk.StoreTypeIAVL, db)
 	ms.MountStoreWithDB(keyOracle, sdk.StoreTypeIAVL, db)
 	ms.MountStoreWithDB(keyEthBridge, sdk.StoreTypeIAVL, db)
+	ms.MountStoreWithDB(keyTokenRegistry, sdk.StoreTypeIAVL, db)
 	err := ms.LoadLatestVersion()
 	require.NoError(t, err)
 
