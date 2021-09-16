@@ -23,8 +23,8 @@ All values here are mocked examples that won't work on the mainnet.
 Please change them to match your needs.
 
 ```
-BRIDGEBANK_ADDRESS=0x6CfD69783E3fFb44CBaaFF7F509a4fcF0d8e2835
-WHITELIST_DATA=data/whitelist_mainnet_update_postibc.json
+BRIDGEBANK_ADDRESS=0xB5F54ac4466f5ce7E0d8A5cB9FE7b8c0F35B7Ba8
+WHITELIST_DATA=data/whitelist_mainnet_update_14_sep_2021.json
 DEPLOYMENT_NAME=sifchain-1
 MAINNET_URL=https://eth-mainnet.alchemyapi.io/v2/ZGe5q0xD06oCAHiwf6ZAexnzGKSPrS5P
 MAINNET_PRIVATE_KEY_OPERATOR=c8750aa1c067bbde78beb793e8fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3
