@@ -7,7 +7,7 @@ import (
 
 type SentTx struct{}
 
-func (SentTx) GetMsgAndArgs(_ InterTestArgs) (sdk.Msg, Args) {
+func (SentTx) GetMsgAndArgs(_ CommonArgs) (sdk.Msg, Args) {
 	args := getSendTxArgs()
 	sendReq := bank.NewMsgSend(args.Sender, args.SifchainReceiver, args.Amount)
 	return sendReq, args
@@ -16,7 +16,7 @@ func (SentTx) GetName() string {
 	return "SEND"
 }
 
-func (s SentTx) Assert(response *sdk.TxResponse, _ *InterTestArgs) {
+func (s SentTx) Assert(response *sdk.TxResponse, _ *CommonArgs) {
 	commonAssert(response, s.GetName())
 }
 

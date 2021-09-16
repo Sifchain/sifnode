@@ -34,9 +34,9 @@ func SetConfig(seal bool) {
 }
 
 type TestCase interface {
-	GetMsgAndArgs(iArgs InterTestArgs) (sdk.Msg, Args)
+	GetMsgAndArgs(iArgs CommonArgs) (sdk.Msg, Args)
 	GetName() string
-	Assert(*sdk.TxResponse, *InterTestArgs)
+	Assert(*sdk.TxResponse, *CommonArgs)
 }
 
 type Args struct {
@@ -55,18 +55,18 @@ type Args struct {
 	Fees             string          `json:"fees"`
 }
 
-type InterTestArgs struct {
+type CommonArgs struct {
 	DispensationName string
 }
 
 func main() {
 	SetConfig(true)
 	tests := []TestCase{CreateDispensationTx{}}
-	iArgs := InterTestArgs{}
+	cArgs := CommonArgs{}
 	for _, test := range tests {
-		msg, args := test.GetMsgAndArgs(iArgs)
+		msg, args := test.GetMsgAndArgs(cArgs)
 		txf, clientCtx := getClientAndFactory(args)
 		res := BroadCast(txf, clientCtx, msg)
-		test.Assert(res, &iArgs)
+		test.Assert(res, &cArgs)
 	}
 }

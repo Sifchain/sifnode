@@ -8,7 +8,7 @@ import (
 
 type CreateDispensationTx struct{}
 
-func (CreateDispensationTx) GetMsgAndArgs(_ InterTestArgs) (sdk.Msg, Args) {
+func (CreateDispensationTx) GetMsgAndArgs(_ CommonArgs) (sdk.Msg, Args) {
 	args := getDispensationTxArgs()
 	output, err := dispensationutils.ParseOutput("output.json")
 	if err != nil {
@@ -21,7 +21,7 @@ func (CreateDispensationTx) GetName() string {
 	return "CREATE-DISPENSATION"
 }
 
-func (s CreateDispensationTx) Assert(response *sdk.TxResponse, _ *InterTestArgs) {
+func (s CreateDispensationTx) Assert(response *sdk.TxResponse, _ *CommonArgs) {
 	commonAssert(response, s.GetName())
 }
 
