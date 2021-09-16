@@ -196,13 +196,12 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
      * @dev Validates signatures and calculates the total validation power
      * @param _validators List of validators for this ProphecyClaim
      * @param hashDigest The message in this prophecy
-     * @return Boolean: is there any duplicate signers?
      * @return pow : aggregated signing power of all validators
      */
     function getSignedPowerAndFindDup(
         SignatureData[] calldata _validators,
         bytes32 hashDigest
-    ) private view returns(bool, uint256 pow) {
+    ) private view returns (uint256 pow) {
         for (uint256 i = 0; i < _validators.length; i++) {
             SignatureData calldata validator = _validators[i];
 
@@ -221,9 +220,7 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
             pow += getValidatorPower(validator.signer);
 
             for (uint256 j = i + 1; j < _validators.length; j++) {
-                if (validator.signer == _validators[j].signer) {
-                    return (true, pow);
-                }
+                require(validator.signer != _validators[j].signer, "DUP_SIGNER");
             }
         }
     }
@@ -338,15 +335,13 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
         if (!claimData.doublePeg) {
             require(_verifyNetworkDescriptor(claimData.networkDescriptor), "INV_NET_DESC");
         }
-        
-        (bool dup, uint256 pow) = getSignedPowerAndFindDup(signatureData, hashDigest);
-        require(!dup, "DUP_SIGNER");
 
+        uint256 pow = getSignedPowerAndFindDup(signatureData, hashDigest);
         require(getProphecyStatus(pow), "INV_POW");
 
         address tokenAddress;
         if(claimData.doublePeg) {
-            if(!_isManagedToken(claimData.tokenAddress)) {
+            if (!_isDoublePeggedToken(claimData.tokenAddress)) {
               // if we are double pegging AND we don't control the token, we deploy a new smart contract
               tokenAddress = _createNewBridgeToken(
                   claimData.tokenSymbol,
@@ -383,7 +378,7 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
      * @param tokenAddress The address of the token
      * @return Boolean: is `tokenAddress` a known token?
      */
-    function _isManagedToken(address tokenAddress) private view returns(bool) {
+    function _isDoublePeggedToken(address tokenAddress) private view returns (bool) {
         return sourceAddressToDestinationAddress[tokenAddress] != address(0);
     }
 
@@ -412,7 +407,7 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
         address sourceChainTokenAddress,
         uint8 decimals,
         uint256 _networkDescriptor,
-        string memory cosmosDenom
+        string calldata cosmosDenom
     ) internal returns(address tokenAddress) {
         require(
             sourceAddressToDestinationAddress[sourceChainTokenAddress] == address(0),
