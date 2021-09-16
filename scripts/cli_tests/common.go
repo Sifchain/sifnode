@@ -10,7 +10,7 @@ import (
 
 // This file contains sample values which can be used to speed up the process of writing test cases
 // Any or all values can be replaced in the the individual functions where these are used
-func getCommonArgs() Args {
+func getDefaultArgs() Args {
 	amount, ok := sdk.NewIntFromString("100000000000000000000000")
 	if !ok {
 		panic("Cannot parse amount")
@@ -54,7 +54,7 @@ func getCommonArgs() Args {
 	}
 }
 
-func commonAssert(res *sdk.TxResponse, testName string) *sdk.TxResponse {
+func defaultAssert(res *sdk.TxResponse, testName string) *sdk.TxResponse {
 	// Works only in block
 	if res.Code != 0 {
 		panic("Transaction Failed")

@@ -22,11 +22,11 @@ func (CreateDispensationTx) GetName() string {
 }
 
 func (s CreateDispensationTx) Assert(response *sdk.TxResponse, _ *CommonArgs) {
-	commonAssert(response, s.GetName())
+	defaultAssert(response, s.GetName())
 }
 
 func getDispensationTxArgs() Args {
-	commonArgs := getCommonArgs()
-	setNetwork(&commonArgs, LocalNet)
-	return commonArgs
+	defaultArgs := getDefaultArgs()
+	setNetwork(&defaultArgs, LocalNet)
+	return defaultArgs
 }
