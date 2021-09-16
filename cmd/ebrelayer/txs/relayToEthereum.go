@@ -20,8 +20,10 @@ import (
 )
 
 const (
-	// GasLimit the gas limit in Gwei used for transactions sent with TransactOpts
+	// GasLimit the gas limit in Gwei used for one prophecy in an transaction sent with TransactOpts
 	GasLimit = uint64(2000000)
+	// MaxGasLimit the gas limit in Gwei used for an transaction sent with TransactOpts
+	MaxGasLimit = uint64(5000000)
 )
 
 func sleepThread(seconds time.Duration) {
@@ -220,8 +222,11 @@ func RelayBatchProphecyCompletedToEthereum(
 	batchSignatureData := make([][]cosmosbridge.CosmosBridgeSignatureData, batchLen)
 	batchID := make([][32]byte, batchLen)
 
-	// reset the gas limit according to length of batchProphecyInfo
+	// reset the gas limit according to length of batchProphecyInfo and max gas limit.
 	auth.GasLimit = auth.GasLimit * uint64(batchLen)
+	if auth.GasLimit > MaxGasLimit {
+		auth.GasLimit = MaxGasLimit
+	}
 
 	for index, prophecyInfo := range batchProphecyInfo {
 		claimData := cosmosbridge.CosmosBridgeClaimData{
