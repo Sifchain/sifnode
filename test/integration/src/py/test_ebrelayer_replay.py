@@ -1,3 +1,4 @@
+import copy
 import logging
 import os
 import time
@@ -6,6 +7,7 @@ import burn_lock_functions
 import test_utilities
 from burn_lock_functions import EthereumToSifchainTransferRequest
 from integration_env_credentials import sifchain_cli_credentials_for_test
+from pytest_utilities import generate_test_account
 from test_utilities import get_required_env_var, get_shell_output, SifchaincliCredentials
 
 
@@ -37,14 +39,36 @@ def test_transfer_eth_to_ceth_using_replay_blocks(
         solidity_json_path,
         source_ethereum_address,
         validator_address,
-        ensure_relayer_restart
+        ensure_relayer_restart,
+        basic_transfer_request,
+        rowan_source_integrationtest_env_transfer_request,
+        rowan_source_integrationtest_env_credentials,
+        bridgetoken_address
 ):
+    logging.info("create some initial balances")
+    basic_transfer_request.ethereum_address = source_ethereum_address
+    request, credentials = generate_test_account(
+        basic_transfer_request,
+        rowan_source_integrationtest_env_transfer_request,
+        rowan_source_integrationtest_env_credentials,
+        target_ceth_balance=10 ** 19,
+        target_rowan_balance=10 ** 19
+    )
+    rowan_transfer_request = copy.deepcopy(request)
+    rowan_transfer_request.sifchain_symbol = "rowan"
+    small_amount = 9
+    rowan_transfer_request.amount = small_amount
+    test_utilities.send_from_sifchain_to_ethereum(rowan_transfer_request, credentials)
+
     starting_block = test_utilities.current_ethereum_block_number(smart_contracts_dir)
     logging.info("stopping ebrelayer")
-    test_utilities.get_shell_output("pkill -9 ebrelayer || true")
+    test_utilities.kill_ebrelayer()
     request, credentials = build_request(smart_contracts_dir, source_ethereum_address, solidity_json_path)
+    request.sifchain_symbol = "rowan"
+    request.ethereum_symbol = bridgetoken_address
+    request.amount = small_amount
     logging.info("(no transactions should happen without a relayer)")
-    logging.info(f"send {request.amount / 10 ** 18} eth ({request.amount} wei) to {request.sifchain_address}")
+    logging.info(f"send {small_amount} rowan to {request.sifchain_address}")
     test_utilities.send_from_ethereum_to_sifchain(request)
 
     logging.info("make sure no balances changed while the relayer was offline")
@@ -64,7 +88,7 @@ def test_transfer_eth_to_ceth_using_replay_blocks(
     cn = test_utilities.get_required_env_var("CHAINNET")
     ending_block = test_utilities.current_ethereum_block_number(smart_contracts_dir) + 1
     cmd = f"""yes | ebrelayer replayEthereum tcp://0.0.0.0:26657 {ews} {bra} {mon} '{mn}' {starting_block} {ending_block} 1 2 --chain-id {cn} --gas 5000000000000 \
- --keyring-backend test --node tcp://0.0.0.0:26657 --from {mon}"""
+ --keyring-backend test --node tcp://0.0.0.0:26657 --from {mon}  --symbol-translator-file {integration_dir}/config/symbol_translator.json"""
     test_utilities.get_shell_output(cmd)
     time.sleep(5)
     logging.info(f"check the ending balance of {request.sifchain_address} after replaying blocks")
