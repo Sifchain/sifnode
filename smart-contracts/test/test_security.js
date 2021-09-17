@@ -292,7 +292,7 @@ describe("Security Test", function () {
       const sifAddress = "0x" + convertToHex("sif12qfvgsq76eghlagyfcfyt9md2s9nunsn40zu2h");
 
       // create new fake eRowan token
-      const bridgeToken = await BridgeToken.deploy("rowan", "rowan", 18);
+      const bridgeToken = await BridgeToken.deploy("rowan", "rowan", 18, state.constants.denom.rowan);
 
       // Attempt to burn tokens
       await expect(
@@ -301,7 +301,7 @@ describe("Security Test", function () {
           bridgeToken.address,
           amount
         ),
-      ).to.be.revertedWith("Only token in cosmos whitelist can be burned");
+      ).to.be.revertedWith("Token is not in Cosmos whitelist");
     });
   });
 
@@ -378,23 +378,12 @@ describe("Security Test", function () {
     it("should not allow unlocking tokens upon the processing of a burn prophecy claim with the wrong network descriptor", async function () {
       state.nonce = 1;
 
-      const digest = getDigestNewProphecyClaim([
-        state.sender,
-        state.senderSequence,
-        state.recipient.address,
-        state.token.address,
-        state.amount,
-        false,
-        state.nonce,
-        state.networkDescriptor
-      ]);
-
-      const signatures = await signHash([userOne, userTwo, userFour], digest);
-
-      let claimData = {
-        cosmosSender: state.sender,
-        cosmosSenderSequence: state.senderSequence,
-        ethereumReceiver: state.recipient.address,
+      // this is a valid claim in itself (digest, claimData, and signatures all match)
+      // but since we set networkDescriptorMismatch=true in beforeEach(), it will be rejected
+      const { digest, claimData, signatures } = await getValidClaim({
+        sender: state.sender,
+        senderSequence: state.senderSequence,
+        recipientAddress: state.recipient.address,
         tokenAddress: state.token.address,
         amount: state.amount,
         doublePeg: false,
@@ -403,7 +392,9 @@ describe("Security Test", function () {
         tokenName: state.name,
         tokenSymbol: state.symbol,
         tokenDecimals: state.decimals,
-      };
+        cosmosDenom: state.constants.denom.one,
+        validators: [userOne, userTwo, userFour],
+      });
 
       await expect(state.cosmosBridge
         .connect(userOne)
@@ -416,23 +407,13 @@ describe("Security Test", function () {
 
     it("should not allow unlocking native tokens upon the processing of a burn prophecy claim with the wrong network descriptor", async function () {
       state.nonce = 1;
-      const digest = getDigestNewProphecyClaim([
-        state.sender,
-        state.senderSequence,
-        state.recipient.address,
-        state.constants.zeroAddress,
-        state.amount,
-        false,
-        state.nonce,
-        state.networkDescriptor
-      ]);
 
-      const signatures = await signHash([userOne, userTwo, userFour], digest);
-
-      let claimData = {
-        cosmosSender: state.sender,
-        cosmosSenderSequence: state.senderSequence,
-        ethereumReceiver: state.recipient.address,
+      // this is a valid claim in itself (digest, claimData, and signatures all match)
+      // but since we set networkDescriptorMismatch=true in beforeEach(), it will be rejected
+      const { digest, claimData, signatures } = await getValidClaim({
+        sender: state.sender,
+        senderSequence: state.senderSequence,
+        recipientAddress: state.recipient.address,
         tokenAddress: state.constants.zeroAddress,
         amount: state.amount,
         doublePeg: false,
@@ -441,7 +422,9 @@ describe("Security Test", function () {
         tokenName: state.name,
         tokenSymbol: state.symbol,
         tokenDecimals: state.decimals,
-      };
+        cosmosDenom: state.constants.denom.ether,
+        validators: [userOne, userTwo, userFour],
+      });
 
       await expect(state.cosmosBridge
         .connect(userOne)
@@ -473,33 +456,25 @@ describe("Security Test", function () {
     });
 
     it("should revert when prophecyclaim is submitted out of order", async function () {
-      state.recipient = userOne.address;
       state.nonce = 10;
-      const digest = getDigestNewProphecyClaim([
-        state.sender,
-        state.senderSequence,
-        state.recipient,
-        state.troll.address,
-        state.amount,
-        false,
-        state.nonce,
-        state.networkDescriptor
-      ]);
 
-      const signatures = await signHash([userOne, userTwo, userFour], digest);
-      let claimData = {
-        cosmosSender: state.sender,
-        cosmosSenderSequence: state.senderSequence,
-        ethereumReceiver: state.recipient,
+      // this is a valid claim in itself (digest, claimData, and signatures all match)
+      // but it has the wrong nonce (should be 1, not 10)
+      const { digest, claimData, signatures } = await getValidClaim({
+        sender: state.sender,
+        senderSequence: state.senderSequence,
+        recipientAddress: state.recipient.address,
         tokenAddress: state.troll.address,
         amount: state.amount,
         doublePeg: false,
         nonce: state.nonce,
         networkDescriptor: state.networkDescriptor,
-        tokenName: "Troll",
-        tokenSymbol: "TRL",
-        tokenDecimals: state.decimals
-      };
+        tokenName: state.name,
+        tokenSymbol: state.symbol,
+        tokenDecimals: state.decimals,
+        cosmosDenom: state.constants.denom.none,
+        validators: [userOne, userTwo, userFour],
+      });
 
       await expect(
         state.cosmosBridge
@@ -534,24 +509,13 @@ describe("Security Test", function () {
       let endingBalance = Number(await state.troll.balanceOf(userOne.address));
       expect(endingBalance).to.be.equal(0);
 
-      state.recipient = userOne.address;
+      state.recipient = userOne;
       state.nonce = 1;
-      const digest = getDigestNewProphecyClaim([
-        state.sender,
-        state.senderSequence,
-        state.recipient,
-        state.troll.address,
-        state.amount,
-        false,
-        state.nonce,
-        state.networkDescriptor
-      ]);
 
-      const signatures = await signHash([userOne, userTwo, userFour], digest);
-      let claimData = {
-        cosmosSender: state.sender,
-        cosmosSenderSequence: state.senderSequence,
-        ethereumReceiver: state.recipient,
+      const { digest, claimData, signatures } = await getValidClaim({
+        sender: state.sender,
+        senderSequence: state.senderSequence,
+        recipientAddress: state.recipient.address,
         tokenAddress: state.troll.address,
         amount: state.amount,
         doublePeg: false,
@@ -560,7 +524,9 @@ describe("Security Test", function () {
         tokenName: "Troll",
         tokenSymbol: "TRL",
         tokenDecimals: state.decimals,
-      };
+        cosmosDenom: state.constants.denom.none,
+        validators: [userOne, userTwo, userFour],
+      });
 
       await state.cosmosBridge
         .connect(userOne)
@@ -575,6 +541,76 @@ describe("Security Test", function () {
       expect(endingBalance).to.be.equal(0);
 
       // Last nonce should now be 1
+      let lastNonceSubmitted = Number(await state.cosmosBridge.lastNonceSubmitted());
+      expect(lastNonceSubmitted).to.be.equal(1);
+    });
+
+    it("Should not revert on a reentrancy attack, but user should not receive funds either", async function () {
+      // Deploy reentrancy attacker token:
+      const reentrancyTokenFactory = await ethers.getContractFactory("ReentrancyToken");
+      const reentrancyToken = await reentrancyTokenFactory.deploy(
+        "Troll Token",
+        "TROLL",
+        state.cosmosBridge.address,
+        userOne.address,
+        state.amount
+      );
+      await reentrancyToken.deployed();
+
+      // Add the token into white list
+      await state.bridgeBank.connect(operator)
+        .updateEthWhiteList(reentrancyToken.address, true)
+        .should.be.fulfilled;
+
+      // approve and lock tokens
+      await reentrancyToken.connect(userOne).approve(
+        state.bridgeBank.address,
+        state.amount
+      );
+
+      // Attempt to lock tokens
+      await state.bridgeBank.connect(userOne).lock(
+        state.sender,
+        reentrancyToken.address,
+        state.amount
+      );
+
+      let endingBalance = Number(await reentrancyToken.balanceOf(userOne.address));
+      expect(endingBalance).to.be.equal(0);
+
+      state.recipient = userOne;
+      state.nonce = 1;
+
+      const { digest, claimData, signatures } = await getValidClaim({
+        sender: state.sender,
+        senderSequence: state.senderSequence,
+        recipientAddress: state.recipient.address,
+        tokenAddress: reentrancyToken.address,
+        amount: state.amount,
+        doublePeg: false,
+        nonce: state.nonce,
+        networkDescriptor: state.networkDescriptor,
+        tokenName: "Troll",
+        tokenSymbol: "TRL",
+        tokenDecimals: state.decimals,
+        cosmosDenom: state.constants.denom.none,
+        validators: [userOne, userTwo, userFour],
+      });
+
+      // Reentrancy token will try to reenter submitProphecyClaimAggregatedSigs
+      await state.cosmosBridge
+        .connect(userOne)
+        .submitProphecyClaimAggregatedSigs(
+          digest,
+          claimData,
+          signatures
+        );
+
+      // user should not receive funds as a Reentrancy should break the transfer flow
+      endingBalance = Number(await reentrancyToken.balanceOf(userOne.address));
+      expect(endingBalance).to.be.equal(0);
+
+      // Last nonce should now be 1 (because it does NOT REVERT)
       let lastNonceSubmitted = Number(await state.cosmosBridge.lastNonceSubmitted());
       expect(lastNonceSubmitted).to.be.equal(1);
     });
@@ -600,6 +636,7 @@ describe("Security Test", function () {
         tokenName: state.name,
         tokenSymbol: state.symbol,
         tokenDecimals: state.decimals,
+        cosmosDenom: state.constants.denom.one,
         validators: [userOne, userTwo, userFour],
       });
 
@@ -612,7 +649,15 @@ describe("Security Test", function () {
           claimData,
           signatures
         )).to.emit(state.cosmosBridge, 'LogNewBridgeTokenCreated')
-        .withArgs(state.decimals, state.networkDescriptor, state.name, state.symbol, state.token1.address, expectedAddress);
+        .withArgs(
+          state.decimals,
+          state.networkDescriptor,
+          state.name,
+          state.symbol,
+          state.token1.address,
+          expectedAddress,
+          state.constants.denom.one
+        );
 
       const newlyCreatedTokenAddress = await state.cosmosBridge.sourceAddressToDestinationAddress(state.token1.address);
       expect(newlyCreatedTokenAddress).to.be.equal(expectedAddress);
@@ -627,6 +672,12 @@ describe("Security Test", function () {
       await expect(state.bridgeBank.connect(operator)
         .updateEthWhiteList(expectedAddress, true))
         .to.be.revertedWith('already in cosmos whitelist');
+    });
+
+    it("should not allow the operator to batch add tokens to Eth whitelist if the lists length don't match", async function () {
+      await expect(state.bridgeBank.connect(operator)
+        .batchUpdateEthWhiteList([state.token2.address, state.token3.address], [true]))
+        .to.be.revertedWith('INV_LEN');
     });
   });
 });

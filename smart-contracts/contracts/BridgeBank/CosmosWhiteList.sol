@@ -7,32 +7,30 @@ import "./CosmosWhiteListStorage.sol";
  * @title WhiteList
  * @dev WhiteList contract records the ERC 20 list that can be locked in BridgeBank.
  **/
-
 contract CosmosWhiteList is CosmosWhiteListStorage {
     bool private _initialized;
 
-    /*
-     * @dev: Event declarations
-     * @notice: This event is in EthereumWhitelist.sol
+    /**
+     * @dev Initializer
      */
     function _cosmosWhitelistInitialize() internal {
         require(!_initialized, "Initialized");
         _initialized = true;
     }
 
-    /*
-     * @dev: Modifier to restrict erc20 can be locked
+    /**
+     * @dev Modifier to restrict erc20 can be locked
      */
     modifier onlyCosmosTokenWhiteList(address _token) {
         require(
             getCosmosTokenInWhiteList(_token),
-            "Only token in cosmos whitelist can be burned"
+            "Token is not in Cosmos whitelist"
         );
         _;
     }
 
-    /*
-     * @dev: Modifier to restrict erc20 can be locked
+    /**
+     * @dev Modifier to restrict erc20 can be locked
      */
     modifier onlyTokenNotInCosmosWhiteList(address _token) {
         require(
@@ -42,11 +40,11 @@ contract CosmosWhiteList is CosmosWhiteListStorage {
         _;
     }
 
-    /*
-     * @dev: Get if the token in whitelist
-     *
+    /**
+     * @notice Is `_token` in Cosmos Whitelist?
+     * @dev Get if the token in whitelist
      * @param _token: ERC 20's address
-     * @return: if _token in whitelist
+     * @return if _token in whitelist
      */
     function getCosmosTokenInWhiteList(address _token) public view returns (bool) {
         return _cosmosTokenWhiteList[_token];

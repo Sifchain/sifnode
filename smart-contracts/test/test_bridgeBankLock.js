@@ -190,7 +190,7 @@ describe("Test Bridge Bank", function () {
           [state.amount, state.amount, state.amount],
           [true, false, false]
         ),
-      ).to.be.revertedWith("Only token in cosmos whitelist can be burned");
+      ).to.be.revertedWith("Token is not in Cosmos whitelist");
     });
 
     it("should allow user to multi-lock and burn ERC20 tokens and rowan with multiLockBurn method", async function () {
@@ -334,6 +334,43 @@ describe("Test Bridge Bank", function () {
           [state.amount, state.amount, state.amount]
         )
       ).to.be.revertedWith("Pausable: paused");
+    });
+
+    it("should not allow user to multi-lock ERC20 tokens and Eth in the same call", async function () {
+      // Add the tokens into white list
+      await batchAddTokensToEthWhitelist(state, [
+        state.token1.address,
+        state.token2.address,
+        state.token3.address,
+      ]);
+
+      // Attempt to lock tokens and Ether in the same call
+      await expect(state.bridgeBank.connect(userOne).multiLock(
+        [state.sender, state.sender, state.sender, state.sender],
+        [state.token1.address, state.token2.address, state.token3.address, state.constants.zeroAddress],
+        [state.amount, state.amount, state.amount, state.amount]
+      ), { value: 100 })
+        .to.be.revertedWith('Address: call to non-contract');
+    });
+
+    it("should not allow user to multi-burn tokens and Eth in the same call", async function () {
+      // Add the tokens into whitelist
+      // Also, add Ether into whitelist, which shouldn't be done but
+      // we'll indulge in this scenario to bypass the whitelist requirements
+      await state.bridgeBank.connect(owner).batchAddExistingBridgeTokens([
+        state.token1.address,
+        state.token2.address,
+        state.token3.address,
+        state.constants.zeroAddress
+      ]);
+
+      // Attempt to burn tokens and Ether in the same call
+      await expect(state.bridgeBank.connect(userOne).multiLockBurn(
+        [state.sender, state.sender, state.sender, state.sender],
+        [state.token1.address, state.token2.address, state.token3.address, state.constants.zeroAddress],
+        [state.amount, state.amount, state.amount, state.amount],
+        [true, true, true, true]
+      )).to.be.reverted;
     });
   });
 

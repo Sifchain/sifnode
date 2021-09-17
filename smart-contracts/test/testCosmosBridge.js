@@ -219,6 +219,7 @@ describe("Test Cosmos Bridge", function () {
         tokenName: state.name,
         tokenSymbol: state.symbol,
         tokenDecimals: state.decimals,
+        cosmosDenom: state.constants.denom.one,
         validators: [userOne, userTwo, userFour],
       });
      
@@ -260,6 +261,7 @@ describe("Test Cosmos Bridge", function () {
         tokenName: "Ether",
         tokenSymbol: "ETH",
         tokenDecimals: state.decimals,
+        cosmosDenom: state.constants.denom.ether,
         validators: [userOne, userTwo, userFour],
       });
 
@@ -296,6 +298,7 @@ describe("Test Cosmos Bridge", function () {
         tokenName: state.name,
         tokenSymbol: state.symbol,
         tokenDecimals: state.decimals,
+        cosmosDenom: state.constants.denom.one,
         validators: [userOne, userTwo, userFour],
       });
 
@@ -308,7 +311,15 @@ describe("Test Cosmos Bridge", function () {
             claimData,
             signatures
         )).to.emit(state.cosmosBridge, 'LogNewBridgeTokenCreated')
-        .withArgs(18, state.networkDescriptor, state.name, state.symbol, state.token.address, expectedAddress);
+        .withArgs(
+          state.decimals,
+          state.networkDescriptor,
+          state.name,
+          state.symbol,
+          state.token.address,
+          expectedAddress,
+          state.constants.denom.one
+        );
 
       const newlyCreatedTokenAddress = await state.cosmosBridge.sourceAddressToDestinationAddress(state.token.address);
       expect(newlyCreatedTokenAddress).to.be.equal(expectedAddress);
@@ -334,6 +345,7 @@ describe("Test Cosmos Bridge", function () {
         tokenName: state.name,
         tokenSymbol: state.symbol,
         tokenDecimals: state.decimals,
+        cosmosDenom: state.constants.denom.one,
         validators: [userOne, userTwo, userFour],
       });
 
@@ -364,6 +376,7 @@ describe("Test Cosmos Bridge", function () {
         tokenName: state.name,
         tokenSymbol: state.symbol,
         tokenDecimals: state.decimals,
+        cosmosDenom: state.constants.denom.one,
         validators: [userOne, userTwo, userFour],
       });
 
@@ -375,7 +388,14 @@ describe("Test Cosmos Bridge", function () {
             claimData,
             signatures
         )).to.emit(state.cosmosBridge, 'LogNewBridgeTokenCreated')
-        .withArgs(18, state.networkDescriptor, state.name, state.symbol, state.token.address, expectedAddress);
+        .withArgs(
+          state.decimals,
+          state.networkDescriptor,
+          state.name, state.symbol,
+          state.token.address,
+          expectedAddress,
+          state.constants.denom.one
+        );
 
       const newlyCreatedTokenAddress = await state.cosmosBridge.sourceAddressToDestinationAddress(state.token.address);
       expect(newlyCreatedTokenAddress).to.be.equal(expectedAddress);
@@ -393,6 +413,7 @@ describe("Test Cosmos Bridge", function () {
         tokenName: state.name,
         tokenSymbol: state.symbol,
         tokenDecimals: state.decimals,
+        cosmosDenom: state.constants.denom.one,
         validators: [userOne, userTwo, userFour],
       });
 

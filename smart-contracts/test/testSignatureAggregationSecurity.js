@@ -3,7 +3,8 @@ const {
   setup,
   deployTrollToken,
   getDigestNewProphecyClaim,
-  getValidClaim
+  getValidClaim,
+  batchAddTokensToEthWhitelist
 } = require('./helpers/testFixture');
 
 const web3 = require("web3");
@@ -103,6 +104,7 @@ describe("submitProphecyClaimAggregatedSigs Security", function () {
         tokenName: state.name,
         tokenSymbol: state.symbol,
         tokenDecimals: state.decimals,
+        cosmosDenom: state.constants.denom.none,
         validators: [userOne, userTwo, userFour],
       });
 
@@ -118,7 +120,6 @@ describe("submitProphecyClaimAggregatedSigs Security", function () {
     });
     
     it("hash digest doesn't match provided data", async function () {
-      state.recipient = userOne;
       state.nonce = 1;
       const digest = getDigestNewProphecyClaim([
         state.sender,
@@ -128,7 +129,11 @@ describe("submitProphecyClaimAggregatedSigs Security", function () {
         state.amount,
         false,
         state.nonce + 1,
-        state.networkDescriptor
+        state.networkDescriptor,
+        state.name,
+        state.symbol,
+        state.decimals,
+        state.constants.denom.none
       ]);
 
       const signatures = await signHash([userOne, userTwo, userFour], digest);
@@ -143,7 +148,8 @@ describe("submitProphecyClaimAggregatedSigs Security", function () {
         networkDescriptor: state.networkDescriptor,
         tokenName: state.name,
         tokenSymbol: state.symbol,
-        tokenDecimals: state.decimals
+        tokenDecimals: state.decimals,
+        cosmosDenom: state.constants.denom.none
       };
 
       await expect(
@@ -173,6 +179,7 @@ describe("submitProphecyClaimAggregatedSigs Security", function () {
         tokenName: state.name,
         tokenSymbol: state.symbol,
         tokenDecimals: state.decimals,
+        cosmosDenom: state.constants.denom.none,
         validators: [userOne, userTwo, userFour, userFour],
       });
 
@@ -203,6 +210,7 @@ describe("submitProphecyClaimAggregatedSigs Security", function () {
         tokenName: state.name,
         tokenSymbol: state.symbol,
         tokenDecimals: state.decimals,
+        cosmosDenom: state.constants.denom.none,
         validators: [userOne, userTwo, operator],
       });
 
@@ -228,7 +236,11 @@ describe("submitProphecyClaimAggregatedSigs Security", function () {
         state.amount,
         false,
         state.nonce,
-        state.networkDescriptor
+        state.networkDescriptor,
+        state.name,
+        state.symbol,
+        state.decimals,
+        state.constants.denom.none,
       ]);
 
       const invalidDigest = getDigestNewProphecyClaim([
@@ -239,7 +251,11 @@ describe("submitProphecyClaimAggregatedSigs Security", function () {
         state.amount,
         false,
         state.nonce + 1,
-        state.networkDescriptor
+        state.networkDescriptor,
+        state.name,
+        state.symbol,
+        state.decimals,
+        state.constants.denom.none,
       ]);
 
       const signatures = await signHash([userOne, userTwo], digest);
@@ -260,6 +276,7 @@ describe("submitProphecyClaimAggregatedSigs Security", function () {
         tokenName: state.name,
         tokenSymbol: state.symbol,
         tokenDecimals: state.decimals,
+        cosmosDenom: state.constants.denom.none,
       };
 
       await expect(
@@ -289,6 +306,7 @@ describe("submitProphecyClaimAggregatedSigs Security", function () {
         tokenName: state.name,
         tokenSymbol: state.symbol,
         tokenDecimals: state.decimals,
+        cosmosDenom: state.constants.denom.none,
         validators: [userOne, userTwo],
       });
 
@@ -319,6 +337,7 @@ describe("submitProphecyClaimAggregatedSigs Security", function () {
         tokenName: state.name,
         tokenSymbol: state.symbol,
         tokenDecimals: state.decimals,
+        cosmosDenom: state.constants.denom.none,
         validators: [userOne, userTwo, userFour],
       });
 
@@ -349,6 +368,7 @@ describe("submitProphecyClaimAggregatedSigs Security", function () {
         tokenName: state.name,
         tokenSymbol: state.symbol,
         tokenDecimals: state.decimals,
+        cosmosDenom: state.constants.denom.none,
         validators: [userOne, userTwo, userFour],
       });
 
@@ -369,6 +389,92 @@ describe("submitProphecyClaimAggregatedSigs Security", function () {
             signatures
           )
       ).to.be.revertedWith("INV_ORD");
+    });
+
+    it("one of the claims in a batch prophecy claim has the wrong nonce", async function () {
+      // Add tokens 2 and 3 into white list
+      await batchAddTokensToEthWhitelist(state, [state.token2.address, state.token3.address])
+      
+      // Lock token2 on contract
+      await state.bridgeBank.connect(userOne).lock(
+        state.sender,
+        state.token2.address,
+        state.amount
+      ).should.be.fulfilled;
+
+      // Lock token3 on contract
+      await state.bridgeBank.connect(userOne).lock(
+        state.sender,
+        state.token3.address,
+        state.amount
+      ).should.be.fulfilled;
+
+      // Last nonce should be 0
+      let lastNonceSubmitted = Number(await state.cosmosBridge.lastNonceSubmitted());
+      expect(lastNonceSubmitted).to.be.equal(0);
+
+      state.nonce = 1;
+
+      const { digest, claimData, signatures } = await getValidClaim({
+        sender: state.sender,
+        senderSequence: state.senderSequence,
+        recipientAddress: state.recipient.address,
+        tokenAddress: state.token1.address,
+        amount: state.amount,
+        doublePeg: false,
+        nonce: state.nonce,
+        networkDescriptor: state.networkDescriptor,
+        tokenName: state.name,
+        tokenSymbol: state.symbol,
+        tokenDecimals: state.decimals,
+        cosmosDenom: state.constants.denom.one,
+        validators: accounts.slice(1, 5),
+      });
+
+      const { digest: digest2, claimData: claimData2, signatures: signatures2 } = await getValidClaim({
+        sender: state.sender,
+        senderSequence: state.senderSequence,
+        recipientAddress: state.recipient.address,
+        tokenAddress: state.token2.address,
+        amount: state.amount,
+        doublePeg: false,
+        nonce: state.nonce + 2, // this should be rejected because the expected value is state.nonce + 1
+        networkDescriptor: state.networkDescriptor,
+        tokenName: state.name,
+        tokenSymbol: state.symbol,
+        tokenDecimals: state.decimals,
+        cosmosDenom: state.constants.denom.two,
+        validators: accounts.slice(1, 5),
+      });
+
+      const { digest: digest3, claimData: claimData3, signatures: signatures3 } = await getValidClaim({
+        sender: state.sender,
+        senderSequence: state.senderSequence,
+        recipientAddress: state.recipient.address,
+        tokenAddress: state.token3.address,
+        amount: state.amount,
+        doublePeg: false,
+        nonce: state.nonce + 2, 
+        networkDescriptor: state.networkDescriptor,
+        tokenName: state.name,
+        tokenSymbol: state.symbol,
+        tokenDecimals: state.decimals,
+        cosmosDenom: state.constants.denom.three,
+        validators: accounts.slice(1, 5),
+      });
+
+      await expect(state.cosmosBridge
+        .connect(userOne)
+        .batchSubmitProphecyClaimAggregatedSigs(
+            [digest, digest2, digest3],
+            [claimData, claimData2, claimData3],
+            [signatures, signatures2, signatures3]
+        ))
+        .to.be.rejectedWith('INV_ORD');
+      
+      // global nonce should not have changed:
+      lastNonceSubmitted = Number(await state.cosmosBridge.lastNonceSubmitted());
+      expect(lastNonceSubmitted).to.be.equal(0);
     });
   });
 });
