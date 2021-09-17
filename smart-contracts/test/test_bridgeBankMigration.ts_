@@ -26,7 +26,8 @@ describe("BridgeBank and CosmosBridge - updating to latest smart contracts", () 
     })
 
     before('use mainnet data', async () => {
-        await setupSifchainMainnetDeployment(container, hardhat)
+        const deploymentName = process.env.DEPLOYMENT_NAME ?? 'sifchain-1'
+        await setupSifchainMainnetDeployment(container, hardhat, deploymentName)
     })
 
     describe("upgraded BridgeBank", async () => {
