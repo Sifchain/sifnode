@@ -594,7 +594,7 @@ contract BridgeBank is BankStorage,
         address tokenAddress,
         uint256 tokenAmount,
         uint256 _lockBurnNonce
-    ) private onlyEthTokenWhiteList(tokenAddress) validSifAddress(recipient) {
+    ) private onlyTokenNotInCosmosWhiteList(tokenAddress) validSifAddress(recipient) {
         IERC20 tokenToTransfer = IERC20(tokenAddress);
         // lock tokens
         tokenToTransfer.safeTransferFrom(
