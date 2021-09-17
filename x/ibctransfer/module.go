@@ -2,6 +2,7 @@ package ibctransfer
 
 import (
 	"encoding/json"
+	// "context"
 
 	"github.com/cosmos/cosmos-sdk/client"
 	cdctypes "github.com/cosmos/cosmos-sdk/codec/types"
@@ -10,9 +11,10 @@ import (
 	capabilitytypes "github.com/cosmos/cosmos-sdk/x/capability/types"
 	"github.com/cosmos/cosmos-sdk/x/ibc/applications/transfer"
 	sdktransferkeeper "github.com/cosmos/cosmos-sdk/x/ibc/applications/transfer/keeper"
-	transfertypes "github.com/cosmos/cosmos-sdk/x/ibc/applications/transfer/types"
 	"github.com/cosmos/cosmos-sdk/x/ibc/core/04-channel/types"
 	porttypes "github.com/cosmos/cosmos-sdk/x/ibc/core/05-port/types"
+
+	sdktransfertypes "github.com/cosmos/cosmos-sdk/x/ibc/applications/transfer/types"
 	"github.com/gorilla/mux"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 	"github.com/spf13/cobra"
@@ -84,7 +86,7 @@ func (am AppModuleBasic) GetQueryCmd() *cobra.Command {
 
 //____________________________________________________________________________
 
-// AppModule implements an application module for the dispensation module.
+// AppModule implements an application module for the ibctransfer module.
 type AppModule struct {
 	AppModuleBasic
 	sdkTransferKeeper sdktransferkeeper.Keeper
@@ -118,15 +120,15 @@ func (am AppModule) OnChanCloseConfirm(ctx sdk.Context, portID, channelID string
 }
 
 func (am AppModule) OnRecvPacket(ctx sdk.Context, packet types.Packet) (*sdk.Result, []byte, error) {
-	return OnRecvPacketWhiteListed(ctx, am.cosmosAppModule, am.whitelistKeeper, packet)
+	return OnRecvPacketEnforceWhitelist(ctx, am.sdkTransferKeeper, am.whitelistKeeper, am.bankKeeper, packet)
 }
 
 func (am AppModule) OnAcknowledgementPacket(ctx sdk.Context, packet types.Packet, acknowledgement []byte) (*sdk.Result, error) {
-	return am.cosmosAppModule.OnAcknowledgementPacket(ctx, packet, acknowledgement)
+	return OnAcknowledgementMaybeConvert(ctx, am.sdkTransferKeeper, am.whitelistKeeper, am.bankKeeper, packet, acknowledgement)
 }
 
 func (am AppModule) OnTimeoutPacket(ctx sdk.Context, packet types.Packet) (*sdk.Result, error) {
-	return am.cosmosAppModule.OnTimeoutPacket(ctx, packet)
+	return OnTimeoutMaybeConvert(ctx, am.sdkTransferKeeper, am.whitelistKeeper, am.bankKeeper, packet)
 }
 
 func NewAppModule(sdkTransferKeeper sdktransferkeeper.Keeper, whitelistKeeper tokenregistrytypes.Keeper, bankKeeper bankkeeper.Keeper, cdc codec.BinaryMarshaler) AppModule {
@@ -147,8 +149,8 @@ func (am AppModule) LegacyQuerierHandler(amino *codec.LegacyAmino) sdk.Querier {
 }
 
 func (am AppModule) RegisterServices(cfg module.Configurator) {
-	transfertypes.RegisterMsgServer(cfg.MsgServer(), keeper.NewMsgServerImpl(am.sdkTransferKeeper, am.bankKeeper, am.whitelistKeeper))
-	transfertypes.RegisterQueryServer(cfg.QueryServer(), am.sdkTransferKeeper)
+	sdktransfertypes.RegisterMsgServer(cfg.MsgServer(), keeper.NewMsgServerImpl(am.sdkTransferKeeper, am.bankKeeper, am.whitelistKeeper))
+	sdktransfertypes.RegisterQueryServer(cfg.QueryServer(), am.sdkTransferKeeper)
 }
 
 // Name returns the dispensation module's name.
@@ -163,7 +165,7 @@ func (am AppModule) RegisterInvariants(ir sdk.InvariantRegistry) {
 
 // Route returns the message routing key for the dispensation module.
 func (am AppModule) Route() sdk.Route {
-	return sdk.NewRoute(transfertypes.RouterKey, transfer.NewHandler(keeper.NewMsgServerImpl(am.sdkTransferKeeper, am.bankKeeper, am.whitelistKeeper)))
+	return sdk.NewRoute(sdktransfertypes.RouterKey, transfer.NewHandler(keeper.NewMsgServerImpl(am.sdkTransferKeeper, am.bankKeeper, am.whitelistKeeper)))
 }
 
 // QuerierRoute returns the dispensation module's querier route name.
@@ -194,4 +196,4 @@ func (am AppModule) EndBlock(ctx sdk.Context, req abci.RequestEndBlock) []abci.V
 	return am.cosmosAppModule.EndBlock(ctx, req)
 }
 
-// OnRecvPacketWhiteListed overrides the default implementation to add whitelisting functionality
+// OnRecvPacketEnforceWhitelist overrides the default implementation to add whitelisting functionality
