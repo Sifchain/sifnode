@@ -1,6 +1,29 @@
 # Update whitelisted tokens on mainnet
 
-If you are trying to whitelist many token addresses at once, you will need to use the bulk_set_whitelist.ts script.
+If you are trying to whitelist many token addresses at once, you will need to use the `yarn whitelist:run` script.
+
+1) Before runnig the script, go to the data folder and create a file called address_list_source.json, or edit it so
+that it has only the addresses you want to whitelist. The contents of the file should have a list of addresses, like so:
+[
+ "0x217ddead61a42369a266f1fb754eb5d3ebadc88a",
+ "0x9e32b13ce7f2e80a01932b42553652e053d6ed8e"
+]
+
+2) Now, edit you .env file adding the following variables:
+MAINNET_URL=https://eth-mainnet.alchemyapi.io/v2/ZGe5q0xD06oCAHiwf6ZAexnzGKSPrS5P
+MAINNET_PRIVATE_KEY_OPERATOR=e67825808c9642d98d16b5794da4582432cb159610ff3934e8a0bac074e725f2
+ACTIVE_PRIVATE_KEY=MAINNET_PRIVATE_KEY_OPERATOR
+BRIDGEBANK_ADDRESS=0x6CfD69783E3fFb44CBaaFF7F509a4fcF0d8e2835
+DEPLOYMENT_NAME=sifchain-1
+ADDRESS_LIST_SOURCE="data/address_list_source.json"
+
+Expected usage: first, set the .env variable ADDRESS_LIST_SOURCE with the path for
+ * the file that contains a list of addresses in the following format:
+ * 
+ * 
+ * 
+ * EXAMPLE (.env):
+ * ADDRESS_LIST_SOURCE="data/testAddressList.json"
 
 Before running the following script go to the data folder and create a file called `whitelist_<network>_<date>.json`, for example `whitelist_ethereum_feb_21_2021.json`. Change the name of the file to remove the date and insert the current date. Copy the contents from `whitelist_mainnet_update_postibc.json` into your newly created file and change the addresses to the addresses you want to whitelist.  
 Example:
