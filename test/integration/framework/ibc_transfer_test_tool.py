@@ -48,9 +48,10 @@ def add_new_key_to_keyring(chain, key_name):
     res = run_command([binary, "keys", "add", key_name, "--keyring-backend", "test", "--output", "json"], stdin=["y"])
     return json.loads(res.stdout)["mnemonic"]
 
-def add_existing_key_to_keyring(chain, key_name, mnemonic):
+def add_existing_key_to_keyring(chain, key_name, mnemonic, overwrite=True):
     binary = get_binary_for_chain(chain)
-    run_command([binary, "keys", "delete", key_name, "--keyring-backend", "test", "-y"], ignore_errors=True)
+    if overwrite:
+        run_command([binary, "keys", "delete", key_name, "--keyring-backend", "test", "-y"], ignore_errors=True)
     run_command([binary, "keys", "add", key_name, "-i", "--recover", "--keyring-backend", "test"],
         stdin=[mnemonic, ""])
 
@@ -90,14 +91,15 @@ def query_bank_balance(chain, addr, denom, config):
         "--chain-id", chain_id, "--output", "json"]).stdout)
     return int(result[denom])
 
-def get_starting_account_and_sequence_number(config, chain):
-    # TODO Get from CLI
-    return 0, 0
+def get_initial_account_and_sequence_number(config, chain, src_addr, node, chain_id):
+    res = run_command([get_binary_for_chain(chain), "q", "auth", "account", src_addr, "--node", node, "--chain-id",
+        chain_id, "--output", "json"]).stdout
+    account_number, sequence = res["account_number"], res["sequence"]
+    return account_number, sequence
 
 def run_tests_for_one_chain_in_one_direction(config, other_chain, direction_flag, number_of_iterations):
     from_chain = "sifchain" if direction_flag else other_chain
     to_chain = other_chain if direction_flag else "sifchain"
-    sequence, account_number = get_starting_account_and_sequence_number(config, from_chain)
     broadcast_mode = "block"  # TODO
     chain_id = int(config["chain_id"])
     denom = config["denom"]
@@ -116,6 +118,7 @@ def run_tests_for_one_chain_in_one_direction(config, other_chain, direction_flag
         relayer_proc = start_relayer(from_chain, to_chain, channel_id, counterchannel_id)
     mnemonic = add_new_key_to_keyring("sifchain", from_account)
     add_existing_key_to_keyring(other_chain, to_account, mnemonic)
+    sequence, account_number = get_initial_account_and_sequence_number(config, from_chain, from_account, node, chain_id)
 
     from_balance_before = query_bank_balance(from_chain, from_account, denom)
     to_balance_before = query_bank_balance(to_chain, to_account, denom)
