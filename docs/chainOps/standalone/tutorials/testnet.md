@@ -99,7 +99,7 @@ Where:
 2. From within your running container, obtain your node's public key:
 
 ```
-docker exec -ti mainnet_sifnode_1 sh
+docker exec -ti testnet_sifnode_1 sh
 /root/.sifnoded/cosmovisor/current/bin/sifnoded tendermint show-validator
 ```
 
