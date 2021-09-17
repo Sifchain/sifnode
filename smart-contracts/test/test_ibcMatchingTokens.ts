@@ -27,7 +27,7 @@ describe("IBC matching tokens", () => {
             await impersonateAccount(hardhat, bridgeBankOperator, hardhat.ethers.utils.parseEther("10"), async fakeDeployer => {
                 const tokenData = await readTokenData("../test_data/ibc_token_data.json")
                 expect(tokenData).to.have("size").eq(2)
-                const x = buildIbcTokens(ibcTokenFactory, tokenData, existingBridgeBank.connect(fakeDeployer))
+                const x = buildIbcTokens(ibcTokenFactory, tokenData, existingBridgeBank.connect(fakeDeployer), true)
                 expect(x).to.eq(3)
             })
         })
