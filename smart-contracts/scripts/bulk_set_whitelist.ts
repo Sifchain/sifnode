@@ -1,6 +1,7 @@
 /**
- * Adds tokens to the whitelist in a batch
- * Please read LimitUpdating.md for instructions
+ * Adds tokens to the whitelist in a batch.
+ * This script is part of the whitlisting process.
+ * Please read Whitelist_Update.md for instructions.
  * 
  * @dev We're setting gasPrice explicitly, in accordance with the received ask.
  *      If this causes problems, please remove gasPrice from the transaction,

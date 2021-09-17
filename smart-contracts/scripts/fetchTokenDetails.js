@@ -1,20 +1,7 @@
 /**
- * Given a list of addresses, returns token details for each address
- * Details fetched are: name, symbol and decimals.
- * 
- * Expected usage: first, set the .env variable ADDRESS_LIST_SOURCE with the path for
- * the file that contains a list of addresses in the following format:
- * [
- *  "0x217ddead61a42369a266f1fb754eb5d3ebadc88a",
- *  "0x9e32b13ce7f2e80a01932b42553652e053d6ed8e"
- * ]
- * 
- * 
- * EXAMPLE (.env):
- * ADDRESS_LIST_SOURCE="data/testAddressList.json"
- *
- * Finally, run
- * $ npx hardhat run scripts/fetchTokenDetails.js --network mainnet
+ * Given a list of token addresses, fetches metadata for each token.
+ * This script is part of the whitlisting process.
+ * Please read Whitelist_Update.md for instructions.
  */
 
 require("dotenv").config();
