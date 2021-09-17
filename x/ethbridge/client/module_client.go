@@ -27,7 +27,6 @@ func GetQueryCmd() *cobra.Command {
 
 	ethBridgeQueryCmd.AddCommand(
 		cli.GetCmdGetEthBridgeProphecy(),
-
 		cli.GetCmdGetCrosschainFeeConfig(),
 		cli.GetLockBurnNonce(),
 	)
@@ -55,7 +54,6 @@ func GetTxCmd() *cobra.Command {
 		cli.GetCmdUpdateCrossChainFeeReceiverAccount(),
 		cli.GetCmdRescueCrossChainFee(),
 		cli.GetCmdSetCrossChainFee(),
-
 		cli.GetCmdSignProphecy(),
 	)
 

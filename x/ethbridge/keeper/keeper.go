@@ -320,7 +320,7 @@ func (k Keeper) ProcessSignProphecy(ctx sdk.Context, msg *types.MsgSignProphecy)
 	return k.oracleKeeper.ProcessSignProphecy(ctx, msg.NetworkDescriptor, msg.ProphecyId, msg.CosmosSender, metadata.TokenAddress, msg.EthereumAddress, msg.Signature)
 }
 
-// GetMetadataKeeper return metadata keeper
+// GetTokenRegistryKeeper return token registry keeper
 func (k Keeper) GetTokenRegistryKeeper() tokenregistrytypes.Keeper {
 	return k.tokenRegistryKeeper
 }
@@ -333,11 +333,6 @@ func (k Keeper) GetTokenMetadata(ctx sdk.Context, denomHash string) (tokenregist
 // AddTokenMetadata call metadataKeeper's AddTokenMetadata
 func (k Keeper) AddTokenMetadata(ctx sdk.Context, metadata tokenregistrytypes.TokenMetadata) string {
 	return k.tokenRegistryKeeper.AddTokenMetadata(ctx, metadata)
-}
-
-// AddIBCTokenMetadata call metadataKeeper's AddIBCTokenMetadata
-func (k Keeper) AddIBCTokenMetadata(ctx sdk.Context, metadata tokenregistrytypes.TokenMetadata, cosmosSender sdk.AccAddress) string {
-	return k.tokenRegistryKeeper.AddIBCTokenMetadata(ctx, metadata, cosmosSender)
 }
 
 // Exists chec if the key existed in db.

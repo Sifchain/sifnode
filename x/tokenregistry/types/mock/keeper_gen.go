@@ -175,7 +175,7 @@ func (m *MockKeeper) AddIBCTokenMetadata(ctx types0.Context, metadata types.Toke
 	return ""
 }
 
-// GetDenom mocks base method.
+// AddTokenMetadata mocks base method.
 func (m *MockKeeper) AddTokenMetadata(ctx types0.Context, metadata types.TokenMetadata) string {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AddTokenMetadata", ctx, metadata)
@@ -183,13 +183,13 @@ func (m *MockKeeper) AddTokenMetadata(ctx types0.Context, metadata types.TokenMe
 	return ret0
 }
 
-// GetDenom indicates an expected call of GetDenom.
+// AddTokenMetadata indicates an expected call of AddTokenMetadata.
 func (mr *MockKeeperMockRecorder) AddTokenMetadata(ctx, metadata interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddTokenMetadata", reflect.TypeOf((*MockKeeper)(nil).AddTokenMetadata), ctx, metadata)
 }
 
-// GetDenom mocks base method.
+// GetTokenMetadata mocks base method.
 func (m *MockKeeper) GetTokenMetadata(ctx types0.Context, denomHash string) (types.TokenMetadata, bool) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetTokenMetadata", ctx, denomHash)
@@ -197,13 +197,13 @@ func (m *MockKeeper) GetTokenMetadata(ctx types0.Context, denomHash string) (typ
 	return ret0, ret1
 }
 
-// GetDenom indicates an expected call of GetDenom.
+// GetTokenMetadata indicates an expected call of GetTokenMetadata.
 func (mr *MockKeeperMockRecorder) GetTokenMetadata(ctx, denomHash interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTokenMetadata", reflect.TypeOf((*MockKeeper)(nil).GetTokenMetadata), ctx, denomHash)
 }
 
-// GetDenom mocks base method.
+// Logger mocks base method.
 func (m *MockKeeper) Logger(ctx types0.Context) log.Logger {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Logger", ctx)
@@ -211,7 +211,7 @@ func (m *MockKeeper) Logger(ctx types0.Context) log.Logger {
 	return ret0
 }
 
-// GetDenom indicates an expected call of GetDenom.
+// Logger indicates an expected call of Logger.
 func (mr *MockKeeperMockRecorder) Logger(ctx interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Logger", reflect.TypeOf((*MockKeeper)(nil).Logger), ctx)
