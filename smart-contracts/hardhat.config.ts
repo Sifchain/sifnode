@@ -20,10 +20,14 @@ const mainnetPrivateKey = process.env['MAINNET_PRIVATE_KEY'] ?? "0xabcd"
 const config: HardhatUserConfig = {
     networks: {
         hardhat: {
+            allowUnlimitedContractSize: false
+        },
+        mainnetFork: {
+            url: mainnetUrl,
             allowUnlimitedContractSize: false,
             chainId: 1,
             forking: {
-                url: ropstenUrl,
+                url: mainnetUrl,
                 blockNumber: 10959000,
             }
         },
