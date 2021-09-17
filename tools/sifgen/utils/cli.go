@@ -2,11 +2,8 @@ package utils
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
-	"github.com/cosmos/cosmos-sdk/crypto/hd"
-	"github.com/cosmos/cosmos-sdk/crypto/keyring"
-	sdk "github.com/cosmos/cosmos-sdk/types"
-	yaml "gopkg.in/yaml.v3"
 	"io"
 	"io/ioutil"
 	"log"
@@ -16,6 +13,7 @@ import (
 	"strings"
 
 	"github.com/Sifchain/sifnode/app"
+	"github.com/cosmos/cosmos-sdk/crypto/keyring"
 )
 
 const (
@@ -119,57 +117,12 @@ func (c CLI) InitChain(chainID, moniker, nodeDir string) (*string, error) {
 func (c CLI) AddKey(name, mnemonic, keyPassword, cliDir string) (*string, error) {
 	switch c.keyringBackend {
 	case keyring.BackendFile:
-		return c.AddKeyToFileBackend(name, mnemonic, keyPassword, cliDir)
+		return nil, errors.New("not implemented")
 	default:
 		var input [][]byte
 		input = c.formatInputs([]string{mnemonic, ""})
 		return c.shellExecInput("sifnoded", input, "keys", "add", name, "--home", cliDir, "-i", "--keyring-backend", c.keyringBackend)
 	}
-}
-
-// AddKeyToFileBackend
-//
-// Adding a key to the file backend is different enough from the other backends that it's
-// worth splitting it out.  This is usually only called by AddKey.  (It needs a few things
-// from an interactive session -  the password repeated twice)
-func (c CLI) AddKeyToFileBackend(name, mnemonic, bip39Passphrase, cliDir string) (*string, error) {
-	passwordReader, passwordWriter, _ := os.Pipe()
-
-	kb, err := keyring.New(sdk.KeyringServiceName(), "file", cliDir, passwordReader)
-	if err != nil {
-		return nil, err
-	}
-
-	hdpath := *hd.NewFundraiserParams(0, sdk.CoinType, 0)
-
-	_, err = passwordWriter.WriteString(bip39Passphrase + "\n")
-	if err != nil {
-		return nil, err
-	}
-
-	_, err = passwordWriter.WriteString(bip39Passphrase + "\n")
-	if err != nil {
-		return nil, err
-	}
-
-	info, err := kb.NewAccount(name, mnemonic, bip39Passphrase, hdpath.String(), hd.Secp256k1)
-	if err != nil {
-		return nil, err
-	}
-
-	ko, err := keyring.Bech32KeyOutput(info)
-	if err != nil {
-		return nil, err
-	}
-
-	out, err := yaml.Marshal(&[]keyring.KeyOutput{ko})
-	if err != nil {
-		panic(err)
-	}
-
-	outYaml := string(out)
-
-	return &outYaml, nil
 }
 
 func (c CLI) AddGenesisAccount(address, nodeDir string, coins []string) (*string, error) {
