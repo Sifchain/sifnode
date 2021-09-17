@@ -61,8 +61,13 @@
        print('red', `--> Failed to fetch details of token ${address}: ${e.message}`);
      }
    }
+
+   // The output file expects this format:
+   const output = {
+      array: finalList
+   }
  
-   fs.writeFileSync(destinationFile, JSON.stringify(finalList, null, 2));
+   fs.writeFileSync(destinationFile, JSON.stringify(output, null, 2));
  
    print('cyan', `DONE! These results have been written to ${destinationFile}:`);
    print('cyan', JSON.stringify(finalList, null, 2));
