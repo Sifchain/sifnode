@@ -13,8 +13,8 @@ const envconfig = dotenv.config()
 
 const mainnetUrl = process.env["MAINNET_URL"] ?? "https://example.com"
 const ropstenUrl = process.env['ROPSTEN_URL'] ?? "https://example.com"
-const ropstenProxyAdminKey = process.env['ROPSTEN_PROXY_ADMIN_PRIVATE_KEY'] ?? "0xabcd"
-const mainnetProxyAdminKey = process.env['MAINNET_PROXY_ADMIN_PRIVATE_KEY'] ?? "0xabcd"
+
+const activePrivateKey = process.env[process.env['ACTIVE_PRIVATE_KEY'] ?? "0xabcd"] ?? "0xabcd";
 
 const config: HardhatUserConfig = {
     networks: {
@@ -28,12 +28,12 @@ const config: HardhatUserConfig = {
         },
         ropsten: {
             url: ropstenUrl,
-            accounts: [ropstenProxyAdminKey],
+            accounts: [activePrivateKey],
             gas: 2000000
         },
         mainnet: {
             url: mainnetUrl,
-            accounts: [mainnetProxyAdminKey],
+            accounts: [activePrivateKey],
             gas: 2000000
         }
     },
