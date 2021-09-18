@@ -31,7 +31,7 @@ func TestCLI_AddKeyBackendTest(t *testing.T) {
 }
 
 func TestCLI_AddKeyBackendMemory(t *testing.T) {
-	AddKeyToBackend(keyring.BackendTest, t)
+	AddKeyToBackend(keyring.BackendMemory, t)
 }
 
 func AddKeyToBackend(backend string, t *testing.T) {
@@ -39,13 +39,13 @@ func AddKeyToBackend(backend string, t *testing.T) {
 	tempdir := SafeTempDir("", "homedir", t)
 	keyname := "mykey"
 	key, err := c.AddKey(keyname, TestMnemonic, TestPassword, tempdir)
-	require.NoError(t, err)
-	var keyResult common.Keys
-	unmarshallResult := yaml.Unmarshal([]byte(*key), &keyResult)
-	if unmarshallResult != nil {
-		t.Errorf("Failed to add key, error is: %v, input is: %v", unmarshallResult, *key)
-	}
-	if keyResult[0].Name != keyname {
-		t.Errorf("Key was not added correctly")
+	if backend == keyring.BackendFile {
+		require.Error(t, err, "not implemented")
+	} else {
+		require.NoError(t, err)
+		var keyResult common.Keys
+		err = yaml.Unmarshal([]byte(*key), &keyResult)
+		require.NoError(t, err)
+		require.Equal(t, keyname, keyResult[0].Name)
 	}
 }
