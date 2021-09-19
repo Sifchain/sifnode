@@ -1,397 +1,20 @@
 import json
-import logging
-import os
 import re
-import shutil
-import subprocess
 import sys
 import time
-import urllib.request
-from dataclasses import dataclass
-
-import yaml  # pip install pyyaml
-
-
-log = logging.getLogger(__name__)
-
-def stdout(res):
-    return res[1]
-
-def stdout_lines(res):
-    return stdout(res).splitlines()
-
-def joinlines(lines):
-    return "".join([x + os.linesep for x in lines])
-
-def exactly_one(items):
-    if len(items) == 0:
-        raise ValueError("Zero items")
-    elif len(items) > 1:
-        raise ValueError("Multiple items")
-    else:
-        return items[0]
-
-def project_dir(*paths):
-    return os.path.abspath(os.path.join(os.path.normpath(os.path.join(__file__, *([os.path.pardir]*3))), *paths))
-
-def yaml_load(s):
-    return yaml.load(s, Loader=yaml.SafeLoader)
-
-def sif_format_amount(amount, denom):
-    return "{}{}".format(amount, denom)
-
-def http_get(url):
-    with urllib.request.urlopen(url) as r:
-        return r.read()
-
-# Not used yet
-def mkcmd(args, env=None, cwd=None, stdin=None):
-    result = {"args": args}
-    if env is not None:
-        result["env"] = env
-    if cwd is not None:
-        result["cwd"] = cwd
-    if stdin is not None:
-        result["stdin"] = stdin
-    return result
-
-# stdin will always be redirected to the returned process' stdin.
-# If pipe, the stdout and stderr will be redirected and available as stdout and stderr of the returned object.
-# If not pipe, the stdout and stderr will not be redirected and will inherit sys.stdout and sys.stderr.
-def popen(args, cwd=None, env=None, text=None, stdin=None, stdout=None, stderr=None):
-    if env:
-        env = dict_merge(os.environ, env)
-    logging.debug(f"popen(): args={repr(args)}, cwd={repr(cwd)}")
-    return subprocess.Popen(args, cwd=cwd, env=env, stdin=stdin, stdout=stdout, stderr=stderr, text=text)
-
-def dict_merge(*dicts):
-    result = {}
-    for d in dicts:
-        for k, v in d.items():
-            result[k] = v
-    return result
-
-def format_as_shell_env_vars(env, export=True):
-    return ["{}{}=\"{}\"".format("export " if export else "", k, v) for k, v in env.items()]
-
-NULL_ADDRESS = "0x0000000000000000000000000000000000000000"
-
-
-class Command:
-    def execst(self, args, cwd=None, env=None, stdin=None, binary=False, pipe=True, check_exit=True):
-        fd_stdout = subprocess.PIPE if pipe else None
-        fd_stderr = subprocess.PIPE if pipe else None
-        fd_stdin = subprocess.DEVNULL
-        if stdin is not None:
-            fd_stdin = subprocess.PIPE
-            if type(stdin) == list:
-                stdin = "".join([line + "\n" for line in stdin])
-        proc = popen(args, env=env, cwd=cwd, stdin=fd_stdin, stdout=fd_stdout, stderr=fd_stderr, text=not binary)
-        stdout_data, stderr_data = proc.communicate(input=stdin)
-        assert pipe == (stdout_data is not None)
-        assert pipe == (stderr_data is not None)
-        if check_exit and (proc.returncode != 0):
-            raise Exception("Command '{}' exited with returncode {}: {}".format(" ".join(args), proc.returncode, repr(stderr_data)))
-        return proc.returncode, stdout_data, stderr_data
-
-    # Default implementation of popen for environemnts to start long-lived processes
-    def popen(self, args, log_file=None, **kwargs):
-        stdout = log_file or None
-        stderr = log_file or None
-        return popen(args, stdout=stdout, stderr=stderr, **kwargs)
-
-    def rm(self, path):
-        if os.path.exists(path):
-            os.remove(path)
-
-    def read_text_file(self, path):
-        with open(path, "rt") as f:
-            return f.read()  # TODO Convert to exec
-
-    def write_text_file(self, path, s):
-        with open(path, "wt") as f:
-            f.write(s)
-
-    def mkdir(self, path):
-        os.makedirs(path, exist_ok=True)
-
-    def rmdir(self, path):
-        if os.path.exists(path):
-            shutil.rmtree(path)  # TODO Convert to exec
-
-    def copy_file(self, src, dst):
-        shutil.copy(src, dst)
-
-    def exists(self, path):
-        return os.path.exists(path)
-
-    def get_user_home(self, *paths):
-        return os.path.join(os.environ["HOME"], *paths)
-
-    def mktempdir(self):
-        return exactly_one(stdout_lines(self.execst(["mktemp", "-d"])))
-
-    def mktempfile(self):
-        return exactly_one(stdout_lines(self.execst(["mktemp"])))
-
-    def __tar_compression_option(self, tarfile):
-        filename = os.path.basename(tarfile).lower()
-        if filename.endswith(".tar"):
-            return ""
-        elif filename.endswith(".tar.gz"):
-            return "z"
-        else:
-            raise ValueError(f"Unknown extension for tar file: {tarfile}")
-
-    def tar_create(self, path, tarfile):
-        comp = self.__tar_compression_option(tarfile)
-        # tar on 9p filesystem reports "file shrank by ... bytes" and exits with errorcode 1
-        tar_quirks = True
-        if tar_quirks:
-            tmpdir = self.mktempdir()
-            try:
-                shutil.copytree(path, tmpdir, dirs_exist_ok=True)
-                self.execst(["tar", "cf" + comp, tarfile, "."], cwd=tmpdir)
-            finally:
-                self.rmdir(tmpdir)
-        else:
-            self.execst(["tar", "cf" + comp, tarfile, "."], cwd=path)
-
-    def tar_extract(self, tarfile, path):
-        comp = self.__tar_compression_option(tarfile)
-        if not self.exists(path):
-            self.mkdir(path)
-        self.execst(["tar", "xf" + comp, tarfile], cwd=path)
-
-
-class Ganache:
-    @staticmethod
-    def start_ganache_cli(env, mnemonic=None, db=None, port=None, host=None, network_id=None, gas_price=None,
-        gas_limit=None, default_balance_ether=None, block_time=None, account_keys_path=None, log_file=None
-    ):
-        args = ["ganache-cli"] + \
-            (["--mnemonic", " ".join(mnemonic)] if mnemonic else []) + \
-            (["--db", db] if db else []) + \
-            (["--port", str(port)] if port is not None else []) + \
-            (["--host", host] if host else []) + \
-            (["--networkId", str(network_id)] if network_id is not None else []) + \
-            (["--gasPrice", str(gas_price)] if gas_price is not None else []) + \
-            (["--gasLimit", str(gas_limit)] if gas_limit is not None else []) + \
-            (["--defaultBalanceEther", str(default_balance_ether)] if default_balance_ether is not None else []) + \
-            (["--blockTime", str(block_time)] if block_time is not None else []) + \
-            (["--account_keys_path", account_keys_path] if account_keys_path is not None else [])
-        return env.popen(args, log_file=log_file)
-
-
-class Hardhat:
-    @staticmethod
-    def default_accounts():
-        # Hardhat doesn't provide a way to get the private keys of its default accounts, so just hardcode them for now.
-        # TODO hardhat prints 20 accounts upon startup
-        # Keep synced to smart-contracts/src/devenv/hardhatNode.ts:defaultHardhatAccounts
-        # Format: [address, private_key]
-        # Note: for compatibility with ganache, private keys should be stripped of "0x" prefix
-        # (when you pass a private key to ebrelayer via ETHEREUM_PRIVATE_KEY, the key is treated as invalid)
-        return [[address, private_key[2:]] for address, private_key in [[
-            "0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266",
-            "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80",
-        ], [
-            "0x70997970c51812dc3a010c7d01b50e0d17dc79c8",
-            "0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d",
-        ], [
-            "0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc",
-            "0x5de4111afa1a4b94908f83103eb1f1706367c2e68ca870fc3fb9a804cdab365a",
-        ], [
-            "0x90f79bf6eb2c4f870365e785982e1f101e93b906",
-            "0x7c852118294e51e653712a81e05800f419141751be58f605c371e15141b007a6",
-        ], [
-            "0x15d34aaf54267db7d7c367839aaf71a00a2c6a65",
-            "0x47e179ec197488593b187f80a00eb0da91f1b9d0b13f8733639f19c30a34926a",
-        ], [
-            "0x9965507d1a55bcc2695c58ba16fb37d819b0a4dc",
-            "0x8b3a350cf5c34c9194ca85829a2df0ec3153be0318b5e2d3348e872092edffba",
-        ], [
-            "0x976ea74026e726554db657fa54763abd0c3a0aa9",
-            "0x92db14e403b83dfe3df233f83dfa3a0d7096f21ca9b0d6d6b8d88b2b4ec1564e",
-        ], [
-            "0x14dc79964da2c08b23698b3d3cc7ca32193d9955",
-            "0x4bbbf85ce3377467afe5d46f804f221813b2bb87f24d81f60f1fcdbf7cbf4356",
-        ], [
-            "0x23618e81e3f5cdf7f54c3d65f7fbc0abf5b21e8f",
-            "0xdbda1821b80551c9d65939329250298aa3472ba22feea921c0cf5d620ea67b97",
-        ], [
-            "0xa0ee7a142d267c1f36714e4a8f75612f20a79720",
-            "0x2a871d0798f97d79848a013d4936a73bf4cc922c825d33c1cf7073dff6d409c6",
-        ]]]
-
-
-class Sifnoded(Command):
-    def sifnoded_init(self, moniker, chain_id):
-        args = ["sifnoded", "init", moniker, "--chain-id", chain_id]
-        res = self.execst(args)
-        return json.loads(res[2])  # output is on stderr
-
-    def sifnoded_generate_deterministic_account(self, name, mnemonic):
-        args = ["sifnoded", "keys", "add", name, "--keyring-backend={}".format("test"), "--recover"]
-        stdin = [" ".join(mnemonic)]
-        res = self.execst(args, stdin=stdin)
-        return exactly_one(yaml_load(stdout(res)))
-
-    def sifnoded_keys_show(self, name, bech=None, keyring_backend=None, home=None):
-        keyring_backend = keyring_backend or "test"
-        args = ["keys", "show", name] + \
-            (["--bech", bech] if bech else [])
-        res = self.sifnoded_exec(args, keyring_backend=keyring_backend, sifnoded_home=home)
-        return yaml_load(stdout(res))
-
-    def sifnoded_get_val_address(self, name):
-        expected = exactly_one(stdout_lines(self.sifnoded_exec(["keys", "show", "-a", "--bech", "val", name], keyring_backend="test")))
-        result = exactly_one(self.sifnoded_keys_show(name, bech="val", keyring_backend="test"))["address"]
-        assert result == expected
-        return result
-
-    def sifnoded_keys_add(self, moniker, mnemonic):
-        args = ["sifnoded", "keys", "add", moniker, "--keyring-backend", "test", "--recover"]
-        stdin = [" ".join(mnemonic)]
-        return yaml_load(stdout(self.execst(args, stdin=stdin)))
-
-    # How "sifnoded keys add <name> --keyring-backend test" works:
-    # If name does not exist yet, it creates it and returns a yaml
-    # If name alredy exists, prompts for overwrite (y/n) on standard input, generates new address/pubkey/mnemonic
-    # Directory used is xxx/keyring-test if "--home xxx" is specified, otherwise $HOME/.sifnoded/keyring-test
-
-    def sifnoded_keys_add_1(self, name):
-        res = self.sifnoded_exec(["keys", "add", name], keyring_backend="test", stdin=["y"])
-        return exactly_one(yaml_load(stdout(res)))
-
-    # From peggy
-    # @TODO Passing mnemonic to stdin is useless, only "y/n" makes sense, probably could use sifnoded_keys_add_1
-    # See smart-contracts/src/devenv/sifnoded.ts:addValidatorKeysToTestKeyring
-    def sifnoded_keys_add_2(self, name, mnemonic):
-        stdin = [" ".join(mnemonic)]
-        res = self.sifnoded_exec(["keys", "add", name], keyring_backend="test", stdin=stdin)
-        result = exactly_one(yaml_load(stdout(res)))
-        # {"name": "<moniker>", "type": "local", "address": "sif1...", "pubkey": "sifpub1...", "mnemonic": "", "threshold": 0, "pubkeys": []}
-        return result
-
-    def sifnoded_keys_delete(self, name):
-        self.execst(["sifnoded", "keys", "delete", name, "--keyring-backend", "test"], stdin=["y"], check_exit=False)
-
-    def sifnoded_add_genesis_account(self, address, tokens, sifnoded_home=None):
-        tokens_str = ",".join([sif_format_amount(amount, denom) for amount, denom in tokens])
-        self.sifnoded_exec(["add-genesis-account", address, tokens_str], sifnoded_home=sifnoded_home)
-
-    def sifnoded_add_genesis_validators(self, address):
-        args = ["sifnoded", "add-genesis-validators", address]
-        res = self.execst(args)
-        return res
-
-    def sifnoded_tx_clp_create_pool(self, chain_id, keyring_backend, from_name, symbol, fees, native_amount, external_amount):
-        args = ["sifnoded", "tx", "clp", "create-pool", "--chain-id={}".format(chain_id),
-            "--keyring-backend={}".format(keyring_backend), "--from", from_name, "--symbol", symbol, "--fees",
-            sif_format_amount(*fees), "--nativeAmount", str(native_amount), "--externalAmount", str(external_amount),
-            "--yes"]
-        res = self.execst(args)
-        return yaml_load(stdout(res))
-
-    def sifnoded_start(self, tcp_url=None, minimum_gas_prices=None, sifnoded_home=None, log_file=None):
-        args = ["sifnoded", "start"] + \
-            (["--minimum-gas-prices", sif_format_amount(*minimum_gas_prices)] if minimum_gas_prices is not None else []) + \
-            (["--rpc.laddr", tcp_url] if tcp_url else []) + \
-            (["--home", sifnoded_home] if sifnoded_home else [])
-        return self.popen(args, log_file=log_file)
-
-    def sifnoded_exec(self, args, sifnoded_home=None, keyring_backend=None, stdin=None, cwd=None):
-        args = ["sifnoded"] + args + \
-            (["--home", sifnoded_home] if sifnoded_home else []) + \
-            (["--keyring-backend", keyring_backend] if keyring_backend else [])
-        res = self.execst(args, stdin=stdin, cwd=cwd)
-        return res
-
-    def sifnoded_get_status(self, host, port):
-        url = "http://{}:{}/node_info".format(host, port)
-        return json.loads(http_get(url).decode("UTF-8"))
-
-    def tcp_probe_connect(self, host, port):
-        res = self.execst(["nc", "-z", host, str(port)], check_exit=False)
-        return res[0] == 0
-
-    def wait_for_file(self, path):
-        while not self.exists(path):
-            time.sleep(1)
-
-
-class Ebrelayer:
-    @staticmethod
-    def init(cmd, tendermind_node, web3_provider, bridge_registry_contract_address, validator_moniker,
-        validator_mnemonic, chain_id, ethereum_private_key=None, ethereum_address=None, gas=None, gas_prices=None,
-        node=None, keyring_backend=None, sign_with=None, symbol_translator_file=None, relayerdb_path=None,
-        cwd=None, log_file=None
-    ):
-        env = {}
-        if ethereum_private_key:
-            assert not ethereum_private_key.startswith("0x")
-            env["ETHEREUM_PRIVATE_KEY"] = ethereum_private_key
-        if ethereum_address:
-            assert ethereum_address.startswith("0x")
-            env["ETHEREUM_ADDRESS"] = ethereum_address
-        env = env or None  # Avoid passing empty environment
-        args = ["ebrelayer", "init", tendermind_node, web3_provider, bridge_registry_contract_address,
-            validator_moniker, " ".join(validator_mnemonic), "--chain-id={}".format(chain_id)] + \
-            (["--gas", str(gas)] if gas is not None else []) + \
-            (["--gas-prices", sif_format_amount(*gas_prices)] if gas_prices is not None else []) + \
-            (["--node", node] if node is not None else []) + \
-            (["--keyring-backend", keyring_backend] if keyring_backend is not None else []) + \
-            (["--from", sign_with] if sign_with is not None else []) + \
-            (["--symbol-translator-file", symbol_translator_file] if symbol_translator_file else []) + \
-            (["--relayerdb-path", relayerdb_path] if relayerdb_path else [])
-        return cmd.popen(args, env=env, cwd=cwd, log_file=log_file)
-
-
-class ProjectDir:
-    """Represents a checked out copy of a project in a particular directory."""
-
-    def __init__(self, cmd, base_dir):
-        self.cmd = cmd
-        self.base_dir = base_dir
-
-    def project_dir(self, *paths):
-        return os.path.abspath(os.path.join(self.base_dir, *paths))
-
-    def cleanup_and_reset_state(self):
-        force_kill_processes(self.cmd)
-
-        # rm -rvf /tmp/tmp.xxxx (ganache DB, unique for every run)
-        self.cmd.rmdir(self.project_dir("test", "integration", "sifchainrelayerdb"))  # TODO move to /tmp
-        self.cmd.rmdir(self.project_dir("smart-contracts", "build"))  # truffle deploy
-        self.cmd.rmdir(self.project_dir("test", "integration", "vagrant", "data"))
-        self.cmd.rmdir(self.cmd.get_user_home(".sifnoded"))  # Probably needed for "--keyring-backend test"
-
-        # Peggy/devenv/hardhat cleanup
-        # For full clean, also: cd smart-contracts && rm -rf node_modules && npm install
-        # TODO Difference between yarn vs. npm install?
-        # (1) = cd smart-contracts; npx hardhat run scripts/deploy_contracts.ts --network localhost
-        # (2) = cd smart-contracts; GOBIN=/home/anderson/go/bin npx hardhat run scripts/devenv.ts
-        self.cmd.rmdir(self.project_dir("smart-contracts", "build"))  # (1)
-        self.cmd.rmdir(self.project_dir("smart-contracts", "artifacts"))  # (1)
-        self.cmd.rmdir(self.project_dir("smart-contracts", "cache"))  # (1)
-        self.cmd.rmdir(self.project_dir("smart-contracts", ".openzeppelin"))  # (1)
-        self.cmd.rmdir(self.project_dir("smart-contracts", "relayerdb"))  # (2)
-        self.cmd.rmdir(self.project_dir("smart-contracts", "venv"))
-
-        # Additional cleanup (not neccessary to make it work)
-        # self.cmd.rm(self.project_dir("smart-contracts/combined.log"))
-        # self.cmd.rmdir(self.project_dir("test/integration/.pytest_cache"))
-        # self.cmd,rm(self.project_dir("smart-contracts/.env"))
-        # self.cmd.rmdir(self.project_dir("deploy/networks"))
-        # self.cmd.rmdir(self.project_dir("smart-contracts/.openzeppelin"))
-
-        # rmdir ~/.cache/yarn
+from truffle import Ganache
+from command import Command
+from hardhat import Hardhat
+from sifchain import Sifnoded, Ebrelayer
+from project import Project, killall, force_kill_processes
+from common import *
 
 
 class Integrator(Ganache, Sifnoded, Command):
     def __init__(self):
+        super().__init__()  # TODO Which super is this? All of them?
         self.smart_contracts_dir = project_dir("smart-contracts")
+        self.project = Project(self, project_dir())
 
     def sif_wait_up(self, host, port):
         while True:
@@ -400,9 +23,6 @@ class Integrator(Ganache, Sifnoded, Command):
                 return self.sifnoded_get_status(host, port)
             except URLError:
                 time.sleep(1)
-
-    def yarn(self, args, cwd=None, env=None):
-        return self.execst(["yarn"] + args, cwd=cwd, env=env, pipe=False)
 
     def primitive_parse_env_file(self, path):
         def split(lines):
@@ -432,27 +52,6 @@ class Integrator(Ganache, Sifnoded, Command):
                 continue
             result[k] = v
         return result
-
-    # IntegrationEnvironment
-    # TODO Merge
-    def make_go_binaries(self):
-        # make go binaries (TODO Makefile needs to be trimmed down, especially "find")
-        # cd test/integration; BASEDIR=... make
-        # (checks all *.go files and, runs make in $BASEDIR, touches sifnoded, removes ~/.sifnoded/localnet
-        self.execst(["make"], cwd=project_dir("test", "integration"), env={"BASEDIR": project_dir()}, pipe=False)
-
-    # From PeggyEnvironment
-    # TODO Merge
-    # Main Makefile requires GOBIN to be set to an absolute path. Compiled executables ebrelayer, sifgen and
-    # sifnoded will be written there. The directory will be created if it doesn't exist yet.
-    #
-    def make_go_binaries_2(self):
-        # Original: cd smart-contracts; make -C .. install
-        self.execst(["make", "install"], cwd=project_dir(), pipe=False)
-
-    def install_smart_contracts_dependencies(self):
-        self.execst(["make", "clean-smartcontracts"], cwd=self.smart_contracts_dir)  # = rm -rf build .openzeppelin
-        self.yarn(["install"], cwd=self.smart_contracts_dir)
 
     def _check_env_vs_file(self, env, env_path):
         if (not self.exists(env_path)) or (env is None):
@@ -493,14 +92,14 @@ class Integrator(Ganache, Sifnoded, Command):
         self._check_env_vs_file(env, env_path)
 
         # TODO ui scripts use just "yarn; yarn migrate" alias "npx truffle migrate --reset",
-        self.npx(["truffle", "deploy", "--network", network_name, "--reset"], env=env,
+        self.project.npx(["truffle", "deploy", "--network", network_name, "--reset"], env=env,
             cwd=self.smart_contracts_dir, pipe=False)
 
     def deploy_smart_contracts_for_ui_stack(self):
         self.copy_file(os.path.join(self.smart_contracts_dir, ".env.ui.example"), os.path.join(self.smart_contracts_dir, ".env"))
         # TODO Might not be neccessary
-        self.yarn([], cwd=self.smart_contracts_dir)
-        self.yarn(["migrate"], cwd=self.smart_contracts_dir)
+        self.project.yarn([], cwd=self.smart_contracts_dir)
+        self.project.yarn(["migrate"], cwd=self.smart_contracts_dir)
 
     # truffle
     def get_smart_contract_address(self, compiled_json_path, network_id):
@@ -512,16 +111,12 @@ class Integrator(Ganache, Sifnoded, Command):
             self.smart_contracts_dir, f"build/contracts/{x}.json"), network_id)
             for x in ["BridgeToken", "BridgeRegistry", "BridgeBank"]]
 
-    def npx(self, args, env=None, cwd=None, pipe=True):
-        # Typically we want any npx commands to inherit stdout and strerr
-        return self.execst(["npx"] + args, env=env, cwd=cwd, pipe=pipe)
-
     def truffle_exec(self, script_name, *script_args, env=None):
         self._check_env_vs_file(env, os.path.join(self.smart_contracts_dir, ".env"))
         script_path = os.path.join(self.smart_contracts_dir, f"scripts/{script_name}.js")
         # Hint: call web3 directly, avoid npx + truffle + script
         # Maybe: self.cmd.yarn(["integrationtest:setTokenLockBurnLimit", str(amount)])
-        self.npx(["truffle", "exec", script_path] + list(script_args), env=env, cwd=self.smart_contracts_dir, pipe=False)
+        self.project.npx(["truffle", "exec", script_path] + list(script_args), env=env, cwd=self.smart_contracts_dir, pipe=False)
 
     # TODO setTokenLockBurnLimit is gone, possibly replaced by bulkSetTokenLockBurnLimit
     def set_token_lock_burn_limit(self, update_address, amount, ethereum_private_key, infura_project_id, local_provider):
@@ -609,6 +204,7 @@ class Integrator(Ganache, Sifnoded, Command):
 class UIStackEnvironment:
     def __init__(self, cmd):
         self.cmd = cmd
+        self.project = cmd.project
         self.chain_id = "sifchain-local"
         self.network_name = "develop"
         self.network_id = 5777
@@ -647,11 +243,11 @@ class UIStackEnvironment:
         # killall sifnoded
         # rm $(which sifnoded)
         self.cmd.rmdir(self.sifnoded_path)
-        self.cmd.make_go_binaries_2()
+        self.project.make_go_binaries_2()
 
         # ui/scripts/stack-launch.sh -> ui/scripts/_eth.sh -> ui/chains/etc/launch.sh
         self.cmd.rmdir(self.ganache_db_path)
-        self.cmd.yarn([], cwd=project_dir("ui/chains/eth"))  # Installs ui/chains/eth/node_modules
+        self.project.yarn([], cwd=project_dir("ui/chains/eth"))  # Installs ui/chains/eth/node_modules
         # Note that this runs ganache-cli from $PATH whereas scripts start it with yarn in ui/chains/eth
         ganache_proc = Ganache.start_ganache_cli(self.cmd, mnemonic=self.ethereum_root_mnemonic, db=self.ganache_db_path,
             port=7545, network_id=self.network_id, gas_price=20000000000, gas_limit=6721975, host="0.0.0.0")
@@ -702,7 +298,7 @@ class UIStackEnvironment:
 
         # ui/scripts/_migrate.sh -> ui/chains/eth/migrate.sh
         # send through atk and btk tokens to eth chain
-        self.cmd.yarn(["migrate"], cwd=project_dir("ui/chains/eth"))
+        self.project.yarn(["migrate"], cwd=project_dir("ui/chains/eth"))
 
         # ui/scripts/_migrate.sh -> ui/chains/sif/migrate.sh
         # Original scripts say "if we don't sleep there are issues"
@@ -765,7 +361,7 @@ class UIStackEnvironment:
 
         # Whitelist test tokens
         for addr in [atk_address, btk_address, usdc_address, link_address]:
-            self.cmd.yarn(["peggy:whiteList", addr, "true"], cwd=self.cmd.smart_contracts_dir)
+            self.project.yarn(["peggy:whiteList", addr, "true"], cwd=self.cmd.smart_contracts_dir)
 
         # ui/scripts/stack-launch.sh -> ui/scripts/_peggy.sh -> ui/chains/peggy/launch.sh
         # rm -rf ui/chains/peggy/relayerdb
@@ -844,6 +440,7 @@ class UIStackEnvironment:
 class IntegrationTestsEnvironment:
     def __init__(self, cmd):
         self.cmd = cmd
+        self.project = cmd.project
         # Fixed, set in start-integration-env.sh
         self.ethereum_private_key = "c87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3"
         self.owner = "0x627306090abaB3A6e1400e9345bC60c78a8BEf57"
@@ -875,8 +472,8 @@ class IntegrationTestsEnvironment:
                 "crumble", "sweet", "treat"]
 
     def prepare(self):
-        self.cmd.make_go_binaries()
-        self.cmd.install_smart_contracts_dependencies()
+        self.project.make_go_binaries()
+        self.project.install_smart_contracts_dependencies()
 
     def run(self):
         self.cmd.mkdir(self.data_dir)
@@ -1028,55 +625,9 @@ class IntegrationTestsEnvironment:
             "SIFCHAIN_ADMIN_ACCOUNT": adminuser_addr,  # Needed by test_peggy_fees.py (via conftest.py)
             "EBRELAYER_DB": relayer_db_path,  # Created by sifchain_run_ebrelayer.sh, does not appear to be used anywhere at the moment
         }
-        self.write_vagrantenv_sh()
+        self.project.write_vagrantenv_sh(self.state_vars, self.data_dir, self.ethereum_websocket_address, self.chainnet)
 
         return ganache_proc, sifnoded_proc, ebrelayer_proc
-
-    def write_vagrantenv_sh(self):
-        # Trace of test_utilities.py get_required_env_var/get_optional_env_var:
-        #
-        # BASEDIR (required), value=/home/jurez/work/projects/sif/sifnode/local
-        # BRIDGE_BANK_ADDRESS (optional), value=0x30753E4A8aad7F8597332E813735Def5dD395028
-        # BRIDGE_BANK_ADDRESS (required), value=0x30753E4A8aad7F8597332E813735Def5dD395028
-        # BRIDGE_REGISTRY_ADDRESS (required), value=0xf204a4Ef082f5c04bB89F7D5E6568B796096735a
-        # BRIDGE_TOKEN_ADDRESS (optional), value=0x82D50AD3C1091866E258Fd0f1a7cC9674609D254
-        # BRIDGE_TOKEN_ADDRESS (required), value=0x82D50AD3C1091866E258Fd0f1a7cC9674609D254
-        # CHAINDIR (required), 3x value
-        # CHAINNET (required), value=localnet
-        # DEPLOYMENT_NAME (optional), value=None
-        # ETHEREUM_ADDRESS (optional), value=None
-        # ETHEREUM_NETWORK (optional), value=None
-        # ETHEREUM_NETWORK_ID (optional), value=None
-        # GANACHE_KEYS_FILE (optional), value=None
-        # HOME (required), value=/home/jurez
-        # MNEMONIC (required), value=future tattoo gesture artist tomato accuse chuckle polar ivory strategy rail flower apart virus burger rhythm either describe habit attend absurd aspect predict parent
-        # MONIKER (required), value=wandering-flower
-        # OPERATOR_ADDRESS (optional), value=None
-        # OPERATOR_PRIVATE_KEY (optional), value=None
-        # OPERATOR_PRIVATE_KEY (optional), value=c87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3
-        # ROWAN_SOURCE (optional), value=None
-        # ROWAN_SOURCE_KEY (optional), value=None
-        # SIFCHAIN_ADMIN_ACCOUNT (required), value=sif1896ner48vrg8m05k48ykc6yydlxc4yvm23hp5m
-        # SIFNODE (optional), value=None
-        # SMART_CONTRACTS_DIR (required), 2x value
-        # SMART_CONTRACT_ARTIFACT_DIR (optional), value=None
-        # SOLIDITY_JSON_PATH (optional), value=None
-        # TEST_INTEGRATION_DIR (required), value=/home/jurez/work/projects/sif/sifnode/local/test/integration
-        # VALIDATOR1_ADDR (optional), 3x value
-        # VALIDATOR1_PASSWORD (optional), 3x value
-        env = dict_merge(self.state_vars, {
-            # For running test/integration/execute_integration_tests_against_*.sh
-            "TEST_INTEGRATION_DIR": project_dir("test/integration"),
-            "TEST_INTEGRATION_PY_DIR": project_dir("test/integration/src/py"),
-            "SMART_CONTRACTS_DIR": self.cmd.smart_contracts_dir,
-            "datadir": self.data_dir,  # Needed by test_rollback_chain.py that calls ganache_start.sh
-            "GANACHE_KEYS_JSON": os.path.join(self.data_dir, "ganachekeys.json"),  # Needed by test_rollback_chain.py that calls ganache_start.sh
-            "ETHEREUM_WEBSOCKET_ADDRESS": self.ethereum_websocket_address,   # Needed by test_ebrelayer_replay.py (and possibly others)
-            "CHAINNET": self.chainnet,   # Needed by test_ebrelayer_replay.py (and possibly others)
-        })
-        vagrantenv_path = project_dir("test/integration/vagrantenv.sh")
-        self.cmd.write_text_file(vagrantenv_path, joinlines(format_as_shell_env_vars(env)))
-        self.cmd.write_text_file(project_dir("test/integration/vagrantenv.json"), json.dumps(env))
 
     def wait_for_sif_account(self, netdef_json, validator1_address):
         return self.cmd.execst(["python3", os.path.join(self.test_integration_dir, "src/py/wait_for_sif_account.py"),
@@ -1154,7 +705,7 @@ class IntegrationTestsEnvironment:
         state_vars["GANACHE_DB_DIR"] = ganache_db_dir
         state_vars["EBRELAYER_DB"] = relayer_db_path
         self.state_vars = state_vars
-        self.write_vagrantenv_sh()
+        self.project.write_vagrantenv_sh(state_vars, self.data_dir, self.ethereum_websocket_address, self.chainnet)
         self.cmd.mkdir(self.data_dir)
 
     def restart_processes(self):
@@ -1196,19 +747,11 @@ class IntegrationTestsEnvironment:
 
 
 class PeggyEnvironment(IntegrationTestsEnvironment):
-
-    # Peggy uses different smart contracts (e.g. in Peggy2.0 there is no BridgeToken, there is CosmosBridge etc.)
-    @dataclass
-    class SmartContractAddresses:
-        bridge_bank: str
-        bridge_registry: str
-        cosmos_bridge: str
-        rowan: str
-
     def __init__(self, cmd):
         super().__init__(cmd)
         self.smart_contracts_dir = project_dir("smart-contracts")
         # gobin_dir = os.environ["GOBIN"]
+        self.hardhat = Hardhat(cmd)
 
     def signer_array_to_ethereum_accounts(self, accounts, n_validators):
         operator, owner, pauser, *rest = accounts
@@ -1222,34 +765,6 @@ class PeggyEnvironment(IntegrationTestsEnvironment):
             "available": available,
         }
 
-    def start_hardhat(self, hostname, port, log_file=None):
-        # TODO We need to manaege smart-contracts/hardhat.config.ts + it also reads smart-contracts/.env via dotenv
-        # TODO Handle failures, e.g. if the process is already running we get exit value 1 and
-        # "Error: listen EADDRINUSE: address already in use 127.0.0.1:8545"
-        proc = self.cmd.popen([os.path.join("node_modules", ".bin", "hardhat"), "node", "--hostname", hostname, "--port",
-            str(port)], cwd=self.smart_contracts_dir, log_file=log_file)
-        return proc
-
-    def compile_smart_contracts_hardhat(self):
-        self.cmd.npx(["hardhat", "compile"], cwd=project_dir("smart-contracts"), pipe=False)
-
-    def deploy_smart_contracts_hardhat(self) -> SmartContractAddresses:
-        res = self.cmd.npx(["hardhat", "run", "scripts/deploy_contracts.ts", "--network", "localhost"],
-            cwd=project_dir("smart-contracts"))
-        # Skip first line "No need to generate any newer types". This only works if the smart contracts have already
-        # been compiled, otherwise the output starts with 4 lines:
-        #     Compiling 35 files with 0.5.16
-        #     Generating typings for: 36 artifacts in dir: build for target: ethers-v5
-        #     Successfully generated 65 typings!
-        #     Compilation finished successfully
-        # With devtool, the compilation is performed automatically before invoking main() if the script is invoked
-        # via "npx hardhat run scripts/devenv.ts" instead of "npx ts-node scripts/devenv.ts", so normally this would
-        # not happen.
-        # TODO Suggested solution: pass a parameter to deploy_contracts.ts where it should write the output json file
-        m = json.loads(stdout(res).splitlines()[1])
-        return PeggyEnvironment.SmartContractAddresses(bridge_bank=m["bridgeBank"], bridge_registry=m["bridgeRegistry"],
-            cosmos_bridge=m["cosmosBridge"], rowan=m["rowanContract"])
-
     def run_ebrelayer_peggy(self, tcp_url, websocket_address, bridge_registry_sc_addr, validator_moniker,
         validator_mnemonic, chain_id, symbol_translator_file, relayerdb_path, ethereum_address, ethereum_private_key,
         log_file=None
@@ -1261,7 +776,7 @@ class PeggyEnvironment(IntegrationTestsEnvironment):
 
     # Override
     def run(self):
-        # self._make_go_binaries()
+        # self.project._make_go_binaries()
 
         log_dir = "/tmp"
         hardhat_log_file = open(os.path.join(log_dir, "ganache.log"), "w")  # TODO close + use a different name
@@ -1272,15 +787,15 @@ class PeggyEnvironment(IntegrationTestsEnvironment):
 
         hardhat_hostname = "localhost"
         hardhat_port = 8545
-        hardhat_proc = self.start_hardhat(hardhat_hostname, hardhat_port, log_file=hardhat_log_file)
+        hardhat_proc = self.hardhat.start(hardhat_hostname, hardhat_port, log_file=hardhat_log_file)
 
         hardhat_validator_count = 1
         hardhat_network_id = 1
         hardhat_chain_id = 1
         hardhat_accounts = self.signer_array_to_ethereum_accounts(Hardhat.default_accounts(), hardhat_validator_count)
 
-        self.compile_smart_contracts_hardhat()
-        peggy_sc_addrs = self.deploy_smart_contracts_hardhat()
+        self.hardhat.compile_smart_contracts()
+        peggy_sc_addrs = self.hardhat.deploy_smart_contracts()
 
         self.write_compatibility_json_file_with_smart_contract_addresses({
             "BridgeRegistry": peggy_sc_addrs.bridge_registry,
@@ -1353,19 +868,6 @@ class PeggyEnvironment(IntegrationTestsEnvironment):
                 "networks": {str(integration_tests_expected_network_id): {"address": sc_addr}}}))
 
 
-def force_kill_processes(cmd):
-    cmd.execst(["pkill", "node"], check_exit=False)
-    cmd.execst(["pkill", "ebrelayer"], check_exit=False)
-    cmd.execst(["pkill", "sifnoded"], check_exit=False)
-
-
-def killall(processes):
-    # TODO Order - ebrelayer, sifnoded, ganache
-    for p in processes:
-        if p is not None:
-            p.kill()
-            p.wait()
-
 def main(argv):
     # tmux usage:
     # tmux new-session -d -s env1
@@ -1375,13 +877,9 @@ def main(argv):
     logging.basicConfig(stream=sys.stdout, level=logging.DEBUG, format="%(message)s")
     what = argv[0] if argv else None
     cmd = Integrator()
-    project = ProjectDir(cmd, project_dir())
-    if what == "init":
-        project.cleanup_and_reset_state()
-        cmd.rmdir(project_dir("smart-contracts/node_modules"))
-        cmd.execst(["yarn", "install"], cwd=project_dir("smart-contracts"))
-        cmd.make_go_binaries_2()
-        cmd.install_smart_contracts_dependencies()
+    project = cmd.project
+    if what == "project-init":
+        project.init()
     elif what == "run-ui-env":
         e = UIStackEnvironment(cmd)
         e.stack_save_snapshot()
@@ -1432,18 +930,7 @@ def main(argv):
             force_kill_processes(cmd)  # Some processes are restarted during integration tests so we don't own them
         log.info("Everything OK")
     elif what == "fullclean":
-        cmd.execst(["chmod", "-R", "+w", cmd.get_user_home("go")])
-        cmd.rmdir(cmd.get_user_home("go"))
-        cmd.mkdir(cmd.get_user_home("go"))
-        cmd.rmdir(cmd.get_user_home(".npm"))
-        cmd.rmdir(cmd.get_user_home(".npm-global"))
-        cmd.mkdir(cmd.get_user_home(".npm-global"))
-        cmd.rmdir(cmd.get_user_home(".cache/yarn"))
-        cmd.rmdir(cmd.get_user_home(".sifnoded"))
-        cmd.rmdir(cmd.get_user_home(".sifnode-integration"))
-        cmd.rmdir(project_dir("smart-contracts/node_modules"))
-        cmd.execst(["npm", "install", "-g", "ganache-cli", "dotenv", "yarn"], cwd=project_dir("smart-contracts"))
-        cmd.install_smart_contracts_dependencies()
+        project.fullclean()
     elif what == "test-logging":
         ls_cmd = mkcmd(["ls", "-al", "."], cwd="/tmp")
         res = stdout_lines(cmd.execst(**ls_cmd))

@@ -3,6 +3,8 @@
 import json
 import sys
 
+from command import Command
+
 chains = {
     "akash": {"binary": "akash", "relayer": "ibc"},
     "iris": {"binary": "iris", "relayer": "hermes"},
@@ -28,8 +30,8 @@ configs = {
 }
 
 # Runs the command synchronously, checks that the exit code is 0 and returns standard output and error.
-def run_command(args, stdin=None, cwd=None, env=None, ignore_errors=False):
-    return None  # TODO
+def run_command(args, stdin=None, cwd=None, env=None, check_exit=False):
+    return Command().execst(args, cwd=cwd, env=env, check_exit=check_exit, stdin=stdin)
 
 # Starts a process and returns a Popen object for it
 def start_process(args):
@@ -51,7 +53,7 @@ def add_new_key_to_keyring(chain, key_name):
 def add_existing_key_to_keyring(chain, key_name, mnemonic, overwrite=True):
     binary = get_binary_for_chain(chain)
     if overwrite:
-        run_command([binary, "keys", "delete", key_name, "--keyring-backend", "test", "-y"], ignore_errors=True)
+        run_command([binary, "keys", "delete", key_name, "--keyring-backend", "test", "-y"], check_exit=False)
     run_command([binary, "keys", "add", key_name, "-i", "--recover", "--keyring-backend", "test"],
         stdin=[mnemonic, ""])
 
