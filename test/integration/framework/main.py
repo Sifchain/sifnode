@@ -256,11 +256,11 @@ class UIStackEnvironment:
         self.cmd.sifnoded_init("test", self.chain_id)
         self.cmd.copy_file(project_dir("ui/chains/sif/app.toml"), os.path.join(self.sifnoded_path, "config/app.toml"))
         log.info(f"Generating deterministic account - {self.shadowfiend_name}...")
-        shadowfiend_account = self.cmd.sifnoded_generate_deterministic_account(self.shadowfiend_name, self.shadowfiend_mnemonic)
+        shadowfiend_account = self.cmd.sifnoded_keys_add(self.shadowfiend_name, self.shadowfiend_mnemonic)
         log.info(f"Generating deterministic account - {self.akasha_name}...")
-        akasha_account = self.cmd.sifnoded_generate_deterministic_account(self.akasha_name, self.akasha_mnemonic)
+        akasha_account = self.cmd.sifnoded_keys_add(self.akasha_name, self.akasha_mnemonic)
         log.info(f"Generating deterministic account - {self.juniper_name}...")
-        juniper_account = self.cmd.sifnoded_generate_deterministic_account(self.juniper_name, self.juniper_mnemonic)
+        juniper_account = self.cmd.sifnoded_keys_add(self.juniper_name, self.juniper_mnemonic)
         shadowfiend_address = shadowfiend_account["address"]
         akasha_address = akasha_account["address"]
         juniper_address = juniper_account["address"]
