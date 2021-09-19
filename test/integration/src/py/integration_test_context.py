@@ -1,21 +1,20 @@
-import importlib.util
 import copy
 import os
 import logging
+import sys
 import test_utilities
 
-basedir = os.path.abspath(os.path.join(__file__, *([os.path.pardir] * 5)))
-path = os.path.join(basedir, "test/integration/make.py")
-spec = importlib.util.spec_from_file_location("module.name", path)
-make_py_module = importlib.util.module_from_spec(spec)
-spec.loader.exec_module(make_py_module)
-
+# Temporary workaround to include integration framework
+project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), *([os.path.pardir] * 4)))
+base_dir = os.path.join(project_root, "test", "integration", "framework")
+sys.path = sys.path + [base_dir]
+import main
 
 class IntegrationTestContext:
     def __init__(self, snapshot_name):
-        self.cmd = make_py_module.Integrator()
-        self.it_playbook = make_py_module.IntegrationTestsPlaybook(self.cmd)
-        self.processes = self.it_playbook.restore_snapshot(snapshot_name)
+        self.cmd = main.Integrator()
+        self.env = main.IntegrationTestsEnvironment(self.cmd)
+        self.processes = self.env.restore_snapshot(snapshot_name)
 
     def get_required_var(self, varname):
         return test_utilities.get_required_env_var(varname)
