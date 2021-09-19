@@ -62,6 +62,12 @@ def start_chain(chain):
 def init_chain(chain):
     pass
 
+def start_hermes_relayer():
+    pass
+
+def start_ibc_relayer():
+    pass
+
 def start_relayer(chain_a, chain_b, config, channel_id, counterchannel_id):
     # TODO Determine which relayer to use
     relayer_binary = None
@@ -98,6 +104,8 @@ def get_initial_account_and_sequence_number(config, chain, src_addr, node, chain
     return account_number, sequence
 
 def run_tests_for_one_chain_in_one_direction(config, other_chain, direction_flag, number_of_iterations):
+    # Assume we're always sending transactions between other_chain and sifchain.
+    # from_chain is chain sending the assets, to_chain is the receiving chain.
     from_chain = "sifchain" if direction_flag else other_chain
     to_chain = other_chain if direction_flag else "sifchain"
     broadcast_mode = "block"  # TODO
@@ -129,7 +137,11 @@ def run_tests_for_one_chain_in_one_direction(config, other_chain, direction_flag
     for i in range(number_of_iterations):
         send_transaction(from_chain, channel_id, amount, denom, from_account,
             to_account, sequence + i, chain_id, node, broadcast_mode, fees, gas, account_number)
-    # TODO Wait for transaction to complete (if async)
+
+    if broadcast_mode == "async":
+        # TODO Wait for transactions to complete before querying the balances
+        pass
+
     from_balance_after = query_bank_balance(from_chain, from_account, denom)
     to_balance_after = query_bank_balance(to_chain, to_account, denom)
     relayer_proc.stop()
