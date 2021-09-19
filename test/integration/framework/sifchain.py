@@ -100,11 +100,11 @@ class Sifnoded(Command):
 
 
 class Ebrelayer:
-    def __init__(self):
+    def __init__(self, cmd):
+        self.cmd = cmd
         self.binary = "ebrelayer"
 
-    @staticmethod
-    def init(cmd, tendermind_node, web3_provider, bridge_registry_contract_address, validator_moniker,
+    def init(self, tendermind_node, web3_provider, bridge_registry_contract_address, validator_moniker,
         validator_mnemonic, chain_id, ethereum_private_key=None, ethereum_address=None, gas=None, gas_prices=None,
         node=None, keyring_backend=None, sign_with=None, symbol_translator_file=None, relayerdb_path=None,
         cwd=None, log_file=None
@@ -126,4 +126,4 @@ class Ebrelayer:
             (["--from", sign_with] if sign_with is not None else []) + \
             (["--symbol-translator-file", symbol_translator_file] if symbol_translator_file else []) + \
             (["--relayerdb-path", relayerdb_path] if relayerdb_path else [])
-        return cmd.popen(args, env=env, cwd=cwd, log_file=log_file)
+        return self.cmd.popen(args, env=env, cwd=cwd, log_file=log_file)

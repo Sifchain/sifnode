@@ -367,7 +367,7 @@ class UIStackEnvironment:
         # rm -rf ui/chains/peggy/relayerdb
         # ebrelayer is in $GOBIN, gets installed by "make install"
         ethereum_private_key = smart_contracts_env_ui_example_vars["ETHEREUM_PRIVATE_KEY"]
-        ebrelayer_proc = Ebrelayer.init(self.cmd, "tcp://localhost:26657", "ws://localhost:7545/",
+        ebrelayer_proc = Ebrelayer(self.cmd).init("tcp://localhost:26657", "ws://localhost:7545/",
             bridge_registry_address, self.shadowfiend_name, self.shadowfiend_mnemonic, self.chain_id,
             ethereum_private_key=ethereum_private_key, gas=5*10**12, gas_prices=[0.5, "rowan"])
 
@@ -658,7 +658,7 @@ class IntegrationTestsEnvironment:
         self.wait_for_sif_account(netdef_json, validator1_address)
         time.sleep(10)
         self.remove_and_add_sifnoded_keys(validator_moniker, validator_mnemonic)  # Creates ~/.sifnoded/keyring-tests/xxxx.address
-        ebrelayer_proc = Ebrelayer.init(self.cmd, self.tcp_url, self.ethereum_websocket_address, bridge_registry_sc_addr,
+        ebrelayer_proc = Ebrelayer(self.cmd).init(self.tcp_url, self.ethereum_websocket_address, bridge_registry_sc_addr,
             validator_moniker, validator_mnemonic, self.chainnet, ethereum_private_key=ebrelayer_ethereum_private_key,
             node=self.tcp_url, keyring_backend="test", sign_with=validator_moniker,
             symbol_translator_file=os.path.join(self.test_integration_dir, "config/symbol_translator.json"),
@@ -769,7 +769,7 @@ class PeggyEnvironment(IntegrationTestsEnvironment):
         validator_mnemonic, chain_id, symbol_translator_file, relayerdb_path, ethereum_address, ethereum_private_key,
         log_file=None
     ):
-        return Ebrelayer.init(self.cmd, tcp_url, websocket_address, bridge_registry_sc_addr, validator_moniker,
+        return Ebrelayer(self.cmd).init(tcp_url, websocket_address, bridge_registry_sc_addr, validator_moniker,
             validator_mnemonic, chain_id, ethereum_private_key=ethereum_private_key, ethereum_address=ethereum_address,
             node=tcp_url, keyring_backend="test", sign_with=validator_moniker,
             symbol_translator_file=symbol_translator_file, relayerdb_path=relayerdb_path, log_file=log_file)
