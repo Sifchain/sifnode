@@ -15,12 +15,6 @@ class Sifnoded(Command):
         res = self.execst(args)
         return json.loads(res[2])  # output is on stderr
 
-    def sifnoded_generate_deterministic_account(self, name, mnemonic):
-        args = [self.binary, "keys", "add", name, "--keyring-backend={}".format("test"), "--recover"]
-        stdin = [" ".join(mnemonic)]
-        res = self.execst(args, stdin=stdin)
-        return exactly_one(yaml_load(stdout(res)))
-
     def sifnoded_keys_show(self, name, bech=None, keyring_backend=None, home=None):
         keyring_backend = keyring_backend or "test"
         args = ["keys", "show", name] + \
@@ -35,25 +29,25 @@ class Sifnoded(Command):
         return result
 
     def sifnoded_keys_add(self, moniker, mnemonic):
-        args = ["sifnoded", "keys", "add", moniker, "--keyring-backend", "test", "--recover"]
         stdin = [" ".join(mnemonic)]
-        return yaml_load(stdout(self.execst(args, stdin=stdin)))
+        res = self.sifnoded_exec(["keys", "add", moniker, "--recover"], keyring_backend="test", stdin=stdin)
+        return yaml_load(stdout(res))
 
     # How "sifnoded keys add <name> --keyring-backend test" works:
     # If name does not exist yet, it creates it and returns a yaml
     # If name alredy exists, prompts for overwrite (y/n) on standard input, generates new address/pubkey/mnemonic
     # Directory used is xxx/keyring-test if "--home xxx" is specified, otherwise $HOME/.sifnoded/keyring-test
 
-    def sifnoded_keys_add_1(self, name):
-        res = self.sifnoded_exec(["keys", "add", name], keyring_backend="test", stdin=["y"])
+    def sifnoded_keys_add_1(self, moniker):
+        res = self.sifnoded_exec(["keys", "add", moniker], keyring_backend="test", stdin=["y"])
         return exactly_one(yaml_load(stdout(res)))
 
     # From peggy
     # @TODO Passing mnemonic to stdin is useless, only "y/n" makes sense, probably could use sifnoded_keys_add_1
     # See smart-contracts/src/devenv/sifnoded.ts:addValidatorKeysToTestKeyring
-    def sifnoded_keys_add_2(self, name, mnemonic):
+    def sifnoded_keys_add_2(self, moniker, mnemonic):
         stdin = [" ".join(mnemonic)]
-        res = self.sifnoded_exec(["keys", "add", name], keyring_backend="test", stdin=stdin)
+        res = self.sifnoded_exec(["keys", "add", moniker], keyring_backend="test", stdin=stdin)
         result = exactly_one(yaml_load(stdout(res)))
         # {"name": "<moniker>", "type": "local", "address": "sif1...", "pubkey": "sifpub1...", "mnemonic": "", "threshold": 0, "pubkeys": []}
         return result
