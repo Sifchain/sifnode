@@ -52,7 +52,7 @@ func GetLiquidityProviderKey(externalTicker string, lp string) []byte {
 }
 
 func GetCLPermissons() []tokenregistrytypes.Permission {
-	return []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP}
+	return []tokenregistrytypes.Permission{tokenregistrytypes.Permission_PERMISSION_CLP}
 }
 
 // ParsePoolKey split key into externalTicker and lp

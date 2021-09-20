@@ -11,6 +11,7 @@ import (
 
 	"github.com/Sifchain/sifnode/x/ethbridge/types"
 	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
+	tokenregistrytypes "github.com/Sifchain/sifnode/x/tokenregistry/types"
 )
 
 type msgServer struct {
@@ -56,7 +57,6 @@ func (srv msgServer) Lock(goCtx context.Context, msg *types.MsgLock) (*types.Msg
 	globalNonce := srv.Keeper.GetGlobalNonce(ctx, msg.NetworkDescriptor)
 	srv.Keeper.UpdateGlobalNonce(ctx, msg.NetworkDescriptor)
 
-	// TODO confirm the double peg logic
 	doublePeg := tokenMetadata.NetworkDescriptor != msg.NetworkDescriptor
 
 	err = srv.oracleKeeper.SetProphecyInfo(ctx,
@@ -125,7 +125,6 @@ func (srv msgServer) Burn(goCtx context.Context, msg *types.MsgBurn) (*types.Msg
 	globalNonce := srv.Keeper.GetGlobalNonce(ctx, msg.NetworkDescriptor)
 	srv.Keeper.UpdateGlobalNonce(ctx, msg.NetworkDescriptor)
 
-	// TODO confirm the double peg logic
 	doublePeg := tokenMetadata.NetworkDescriptor != msg.NetworkDescriptor
 
 	err = srv.oracleKeeper.SetProphecyInfo(ctx,
@@ -201,8 +200,7 @@ func (srv msgServer) CreateEthBridgeClaim(goCtx context.Context, msg *types.MsgC
 	}
 
 	claim := msg.EthBridgeClaim
-
-	metadata := types.TokenMetadata{
+	metadata := tokenregistrytypes.TokenMetadata{
 		Decimals:          claim.Decimals,
 		Name:              claim.TokenName,
 		Symbol:            claim.Symbol,
@@ -211,7 +209,7 @@ func (srv msgServer) CreateEthBridgeClaim(goCtx context.Context, msg *types.MsgC
 	}
 
 	// TODO check if it is safe to add the metadata automatically
-	if !srv.Keeper.ExistsTokenMetadata(ctx, claim.DenomHash) {
+	if !srv.Keeper.tokenRegistryKeeper.IsDenomWhitelisted(ctx, claim.DenomHash) {
 		srv.Keeper.AddTokenMetadata(ctx, metadata)
 	}
 
@@ -474,48 +472,4 @@ func (srv msgServer) SignProphecy(goCtx context.Context, msg *types.MsgSignProph
 	})
 
 	return &types.MsgSignProphecyResponse{}, nil
-}
-
-func (srv msgServer) TokenMetadataAdd(goCtx context.Context, msg *types.TokenMetadataAddRequest) (*types.TokenMetadataAddResponse, error) {
-	ctx := sdk.UnwrapSDKContext(goCtx)
-	logger := srv.Keeper.Logger(ctx)
-
-	cosmosSender, err := sdk.AccAddressFromBech32(msg.CosmosSender)
-	if err != nil {
-		return nil, err
-	}
-
-	account := srv.Keeper.accountKeeper.GetAccount(ctx, cosmosSender)
-	if account == nil {
-		logger.Error("account is nil.", "CosmosSender", msg.CosmosSender)
-		return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.CosmosSender)
-	}
-
-	denom := srv.Keeper.AddIBCTokenMetadata(ctx, *msg.Metadata, cosmosSender)
-
-	return &types.TokenMetadataAddResponse{
-		Denom: denom,
-	}, nil
-}
-
-func (srv msgServer) TokenMetadataDelete(goCtx context.Context, msg *types.TokenMetadataDeleteRequest) (*types.TokenMetadataDeleteResponse, error) {
-	ctx := sdk.UnwrapSDKContext(goCtx)
-	logger := srv.Keeper.Logger(ctx)
-
-	cosmosSender, err := sdk.AccAddressFromBech32(msg.CosmosSender)
-	if err != nil {
-		return nil, err
-	}
-
-	account := srv.Keeper.accountKeeper.GetAccount(ctx, cosmosSender)
-	if account == nil {
-		logger.Error("account is nil.", "CosmosSender", msg.CosmosSender)
-		return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.CosmosSender)
-	}
-
-	success := srv.Keeper.DeleteTokenMetadata(ctx, cosmosSender, msg.Denom)
-
-	return &types.TokenMetadataDeleteResponse{
-		Success: success,
-	}, nil
 }

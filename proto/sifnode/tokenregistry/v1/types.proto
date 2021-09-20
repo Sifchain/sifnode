@@ -2,6 +2,7 @@ syntax = "proto3";
 package sifnode.tokenregistry.v1;
 
 import "gogoproto/gogo.proto";
+import "sifnode/oracle/v1/network_descriptor.proto";
 
 option go_package = "github.com/Sifchain/sifnode/x/tokenregistry/types";
 
@@ -12,11 +13,16 @@ message GenesisState {
 
 message Registry { repeated RegistryEntry entries = 1; }
 
+// Permission
 enum Permission {
-  UNSPECIFIED = 0;
-  CLP = 1;
-  IBCEXPORT = 2;
-  IBCIMPORT = 3;
+  // PERMISSION_UNSPECIFIED
+  PERMISSION_UNSPECIFIED = 0;
+  // PERMISSION_CLP
+  PERMISSION_CLP = 1;
+  // PERMISSION_IBCEXPORT
+  PERMISSION_IBCEXPORT = 2;
+  // PERMISSION_IBCIMPORT
+  PERMISSION_IBCIMPORT = 3;
 }
 
 message RegistryEntry {
@@ -29,7 +35,7 @@ message RegistryEntry {
   string ibc_counterparty_channel_id = 7;
   string display_name = 8;
   string display_symbol = 9;
-  string network = 10;
+  sifnode.oracle.v1.NetworkDescriptor network = 10;
   string address = 11;
   string external_symbol = 12;
   string transfer_limit = 13;
@@ -52,4 +58,15 @@ message RegistryEntry {
   // the packet level. i.e rowan -> microrowan i.e microrowan -> microrowan
   string ibc_counterparty_denom = 17;
   string ibc_counterparty_chain_id = 18;
+}
+
+// Coin Metadata Modlue structure for storing
+// new tokens and fetching queries
+message TokenMetadata {
+  int64 decimals = 1 [ (gogoproto.moretags) = "yaml:\"token_decimals\"" ];
+  string name = 2 [ (gogoproto.moretags) = "yaml:\"token_name\"" ];
+  string symbol = 3 [ (gogoproto.moretags) = "yaml:\"token_symbol\"" ];
+  string token_address = 4 [ (gogoproto.moretags) = "yaml:\"token_address\"" ];
+  sifnode.oracle.v1.NetworkDescriptor network_descriptor = 5
+      [ (gogoproto.moretags) = "yaml:\"network\"" ];
 }
