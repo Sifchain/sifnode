@@ -203,6 +203,8 @@ export class BridgeTokenSetup {
     const owner = (await sifchainAccounts.accounts).ownerAccount
     const bridgebank = (await bridgeBankProxy.contract).connect(owner)
     await bridgebank.addExistingBridgeToken(erowan.address)
+    await erowan.grantRole(await erowan.MINTER_ROLE(), bridgebank.address)
+    await erowan.grantRole(await erowan.DEFAULT_ADMIN_ROLE(), bridgebank.address)
     await erowan.approve(bridgebank.address, "10000000000000000000")
     const accounts = await sifchainAccounts.accounts
     const muchRowan = BigNumber.from(100000000).mul(BigNumber.from(10).pow(18))
