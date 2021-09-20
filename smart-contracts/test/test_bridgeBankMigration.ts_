@@ -7,7 +7,6 @@ import {BridgeBankMainnetUpgradeAdmin, HardhatRuntimeEnvironmentToken} from "../
 import * as hardhat from "hardhat";
 import {DeployedBridgeBank, DeployedBridgeToken, DeployedCosmosBridge} from "../src/contractSupport";
 import {
-    getProxyAdmin,
     impersonateAccount,
     setupSifchainMainnetDeployment,
     startImpersonateAccount
@@ -27,7 +26,8 @@ describe("BridgeBank and CosmosBridge - updating to latest smart contracts", () 
     })
 
     before('use mainnet data', async () => {
-        await setupSifchainMainnetDeployment(container, hardhat)
+        const deploymentName = process.env.DEPLOYMENT_NAME ?? 'sifchain-1'
+        await setupSifchainMainnetDeployment(container, hardhat, deploymentName)
     })
 
     describe("upgraded BridgeBank", async () => {

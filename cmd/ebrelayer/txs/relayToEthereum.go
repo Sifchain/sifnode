@@ -21,7 +21,9 @@ import (
 
 const (
 	// GasLimit the gas limit in Gwei used for transactions sent with TransactOpts
-	GasLimit = uint64(1000000)
+	GasLimit = uint64(2000000)
+	// MaxGasPrice for max gas price 500 gwei
+	MaxGasPrice = int64(500 * 1000000000)
 )
 
 func sleepThread(seconds time.Duration) {
@@ -92,6 +94,10 @@ func InitRelayConfig(
 	transactOptsAuth.Value = big.NewInt(0) // in wei
 	transactOptsAuth.GasLimit = GasLimit
 	transactOptsAuth.GasPrice = gasPrice
+
+	if transactOptsAuth.GasPrice.Int64() > MaxGasPrice {
+		transactOptsAuth.GasPrice = big.NewInt(MaxGasPrice)
+	}
 
 	sugaredLogger.Infow("nonce before send transaction.",
 		"transactOptsAuth.Nonce", transactOptsAuth.Nonce)
@@ -219,6 +225,9 @@ func RelayBatchProphecyCompletedToEthereum(
 	batchClaimData := make([]cosmosbridge.CosmosBridgeClaimData, batchLen)
 	batchSignatureData := make([][]cosmosbridge.CosmosBridgeSignatureData, batchLen)
 	batchID := make([][32]byte, batchLen)
+
+	// reset the gas limit according to length of batchProphecyInfo
+	auth.GasLimit = auth.GasLimit * uint64(batchLen)
 
 	for index, prophecyInfo := range batchProphecyInfo {
 		claimData := cosmosbridge.CosmosBridgeClaimData{

@@ -1,19 +1,22 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity 0.8.0;
 
+/**
+ * @title Ethereum Bank Storage
+ * @dev Stores nonces, locked tokens, token data (name, symbol, decimals, and denom)
+ **/
 contract EthereumBankStorage {
-
     /**
     * @notice current lock and or burn nonce
     */
     uint256 public lockBurnNonce;
 
-    /*
-    * @notice {DEPRECATED}
+    /**
+    * @dev {DEPRECATED}
     */
     mapping(address => uint256) private lockedFunds;
 
-    /*
+    /**
     * @notice map the token symbol to the token address
     */
     mapping(string => address) public lockedTokenList;
@@ -33,36 +36,48 @@ contract EthereumBankStorage {
     */
     mapping (address => string) public contractName;
 
-    /*
-    * @notice gap of storage for future upgrades
+    /**
+    * @notice contract denom based off of address
     */
-    uint256[97] private ____gap;
+    mapping (address => string) public contractDenom;
 
-    /*
-     * @dev: Event declarations
+    /**
+    * @dev gap of storage for future upgrades
+    */
+    uint256[96] private ____gap;
+
+    /**
+     * @dev Event emitted when tokens are burned
      */
     event LogBurn(
         address _from,
         bytes _to,
         address _token,
         uint256 _value,
-        uint256 _nonce,
-        uint256 _decimals,
-        uint256 _networkDescriptor
+        uint256 indexed _nonce,
+        uint8 _decimals,
+        uint256 _networkDescriptor,
+        string _denom
     );
 
+    /**
+     * @dev Event emitted when tokens are locked
+     */
     event LogLock(
         address _from,
         bytes _to,
         address _token,
         uint256 _value,
-        uint256 _nonce,
-        uint256 _decimals,
+        uint256 indexed _nonce,
+        uint8 _decimals,
         string _symbol,
         string _name,
         uint256 _networkDescriptor
     );
 
+    /**
+     * @dev Event emitted when tokens are unlocked
+     */
     event LogUnlock(
         address _to,
         address _token,

@@ -3,7 +3,7 @@ import type {Contract} from 'ethers';
 import {BigNumber, ContractFactory} from "ethers";
 import {HardhatRuntimeEnvironment} from "hardhat/types";
 import {EthereumAddress, NotNativeCurrencyAddress} from "../ethereumAddress";
-import {HardhatRuntimeEnvironmentToken,} from "./injectionTokens";
+import {HardhatRuntimeEnvironmentToken, NetworkDescriptorToken} from "./injectionTokens";
 import {SifchainAccounts, SifchainAccountsPromise} from "./sifchainAccounts";
 import {
     BridgeBank,
@@ -12,7 +12,7 @@ import {
     BridgeRegistry__factory,
     BridgeToken,
     BridgeToken__factory,
-    CosmosBridge__factory
+    CosmosBridge__factory, IbcToken__factory
 } from "../../build";
 
 @singleton()
@@ -21,12 +21,14 @@ export class SifchainContractFactories {
     cosmosBridge: Promise<CosmosBridge__factory>
     bridgeRegistry: Promise<BridgeRegistry__factory>
     bridgeToken: Promise<BridgeToken__factory>
+    ibcToken: Promise<IbcToken__factory>
 
     constructor(@inject(HardhatRuntimeEnvironmentToken) hre: HardhatRuntimeEnvironment) {
         this.bridgeBank = hre.ethers.getContractFactory("BridgeBank").then((x: ContractFactory) => x as BridgeBank__factory)
         this.cosmosBridge = hre.ethers.getContractFactory("CosmosBridge").then((x: ContractFactory) => x as CosmosBridge__factory)
         this.bridgeRegistry = hre.ethers.getContractFactory("BridgeRegistry").then((x: ContractFactory) => x as BridgeRegistry__factory)
         this.bridgeToken = hre.ethers.getContractFactory("BridgeToken").then((x: ContractFactory) => x as BridgeToken__factory)
+        this.ibcToken = hre.ethers.getContractFactory("IbcToken").then((x: ContractFactory) => x as IbcToken__factory)
     }
 }
 
@@ -36,6 +38,7 @@ export class CosmosBridgeArguments {
         readonly consensusThreshold: number,
         readonly initialValidators: Array<EthereumAddress>,
         readonly initialPowers: Array<number>,
+        readonly networkDescriptor: number,
     ) {
     }
 
@@ -44,7 +47,8 @@ export class CosmosBridgeArguments {
             this.operator.address,
             this.consensusThreshold,
             this.initialValidators.map(x => x.address),
-            this.initialPowers
+            this.initialPowers,
+            this.networkDescriptor
         ]
     }
 }
@@ -65,21 +69,25 @@ export class CosmosBridgeProxy {
     ) {
         this.contract = sifchainContractFactories.cosmosBridge.then(async cosmosBridgeFactory => {
             const args = await cosmosBridgeArgumentsPromise.cosmosBridgeArguments
-            const cosmosBridgeProxy = await hardhatRuntimeEnvironment.upgrades.deployProxy(cosmosBridgeFactory, args.asArray())
+            const cosmosBridgeProxy = await hardhatRuntimeEnvironment.upgrades.deployProxy(cosmosBridgeFactory,
+                args.asArray(),
+                { initializer: 'initialize(address,uint256,address[],uint256[],uint256)' }
+            )
             await cosmosBridgeProxy.deployed()
             return cosmosBridgeProxy
         })
     }
 }
 
-export function defaultCosmosBridgeArguments(sifchainAccounts: SifchainAccounts, power: number = 100): CosmosBridgeArguments {
+export function defaultCosmosBridgeArguments(sifchainAccounts: SifchainAccounts, power: number = 100, networkDescriptor: number = 1): CosmosBridgeArguments {
     const powers = sifchainAccounts.validatatorAccounts.map(_ => power)
     const threshold = powers.reduce((acc, x) => acc + x)
     return new CosmosBridgeArguments(
         new NotNativeCurrencyAddress(sifchainAccounts.operatorAccount.address),
         threshold,
         sifchainAccounts.validatatorAccounts.map(x => new NotNativeCurrencyAddress(x.address)),
-        powers
+        powers,
+        networkDescriptor
     )
 }
 
@@ -92,6 +100,10 @@ export function defaultCosmosBridgeArguments(sifchainAccounts: SifchainAccounts,
                 return defaultCosmosBridgeArguments(accts)
             }))
         })
+    },
+    {
+        token: NetworkDescriptorToken,
+        useValue: 1
     }
 ])
 
@@ -99,7 +111,8 @@ export function defaultCosmosBridgeArguments(sifchainAccounts: SifchainAccounts,
 export class BridgeBankArguments {
     constructor(
         private readonly cosmosBridgeProxy: CosmosBridgeProxy,
-        private readonly sifchainAccountsPromise: SifchainAccountsPromise
+        private readonly sifchainAccountsPromise: SifchainAccountsPromise,
+        @inject(NetworkDescriptorToken) private readonly networkDescriptor: number
     ) {
     }
 
@@ -110,7 +123,8 @@ export class BridgeBankArguments {
             accts.operatorAccount.address,
             cosmosBridge.address,
             accts.ownerAccount.address,
-            accts.pauserAccount.address
+            accts.pauserAccount.address,
+            this.networkDescriptor
         ]
         return result
     }
@@ -127,7 +141,10 @@ export class BridgeBankProxy {
     ) {
         this.contract = sifchainContractFactories.bridgeBank.then(async bridgeBankFactory => {
             const bridgeBankArguments = await this.bridgeBankArguments.asArray()
-            const bridgeBankProxy = await h.upgrades.deployProxy(bridgeBankFactory, bridgeBankArguments, {initializer: "initialize(address,address,address,address)"}) as BridgeBank
+            const bridgeBankProxy = await h.upgrades.deployProxy(bridgeBankFactory,
+                bridgeBankArguments,
+                { initializer: 'initialize(address,address,address,address,uint256)' }
+            ) as BridgeBank
             await bridgeBankProxy.deployed()
             const own = await bridgeBankProxy.owner()
             return bridgeBankProxy
@@ -168,7 +185,7 @@ export class RowanContract {
         private sifchainContractFactories: SifchainContractFactories,
     ) {
         this.contract = sifchainContractFactories.bridgeToken.then(async bridgeToken => {
-            return await (bridgeToken as BridgeToken__factory).deploy("erowan") as BridgeToken
+            return await (bridgeToken as BridgeToken__factory).deploy("erowan", "erowan", 18, "cosmosDenom") as BridgeToken
         })
     }
 }
@@ -187,7 +204,6 @@ export class BridgeTokenSetup {
         const bridgebank = (await bridgeBankProxy.contract).connect(owner)
         await bridgebank.addExistingBridgeToken(erowan.address)
         await erowan.approve(bridgebank.address, "10000000000000000000")
-        await erowan.addMinter(owner.address)
         const accounts = await sifchainAccounts.accounts
         const muchRowan = BigNumber.from(100000000).mul(BigNumber.from(10).pow(18))
         await erowan.mint(accounts.operatorAccount.address, muchRowan)
