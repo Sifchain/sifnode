@@ -190,7 +190,7 @@ describe("Test Bridge Bank", function () {
           [state.amount, state.amount, state.amount],
           [true, false, false]
         ),
-      ).to.be.revertedWith("Only token in cosmos whitelist can be burned");
+      ).to.be.revertedWith("Token is not in Cosmos whitelist");
     });
 
     it("should allow user to multi-lock and burn ERC20 tokens and rowan with multiLockBurn method", async function () {
@@ -335,6 +335,43 @@ describe("Test Bridge Bank", function () {
         )
       ).to.be.revertedWith("Pausable: paused");
     });
+
+    it("should not allow user to multi-lock ERC20 tokens and Eth in the same call", async function () {
+      // Add the tokens into white list
+      await batchAddTokensToEthWhitelist(state, [
+        state.token1.address,
+        state.token2.address,
+        state.token3.address,
+      ]);
+
+      // Attempt to lock tokens and Ether in the same call
+      await expect(state.bridgeBank.connect(userOne).multiLock(
+        [state.sender, state.sender, state.sender, state.sender],
+        [state.token1.address, state.token2.address, state.token3.address, state.constants.zeroAddress],
+        [state.amount, state.amount, state.amount, state.amount]
+      ), { value: 100 })
+        .to.be.revertedWith('Address: call to non-contract');
+    });
+
+    it("should not allow user to multi-burn tokens and Eth in the same call", async function () {
+      // Add the tokens into whitelist
+      // Also, add Ether into whitelist, which shouldn't be done but
+      // we'll indulge in this scenario to bypass the whitelist requirements
+      await state.bridgeBank.connect(owner).batchAddExistingBridgeTokens([
+        state.token1.address,
+        state.token2.address,
+        state.token3.address,
+        state.constants.zeroAddress
+      ]);
+
+      // Attempt to burn tokens and Ether in the same call
+      await expect(state.bridgeBank.connect(userOne).multiLockBurn(
+        [state.sender, state.sender, state.sender, state.sender],
+        [state.token1.address, state.token2.address, state.token3.address, state.constants.zeroAddress],
+        [state.amount, state.amount, state.amount, state.amount],
+        [true, true, true, true]
+      )).to.be.reverted;
+    });
   });
 
   describe("Multi Lock Burn ERC20 Tokens", function () {
@@ -468,35 +505,47 @@ describe("Test Bridge Bank", function () {
       expect(await state.bridgeBank.getTokenInEthWhiteList(state.token1.address)).to.be.equal(true);
     });
 
-    it("should not allow user to lock ERC20 tokens that are not in eth whitelist", async function () {
+    it("should not allow user to lock ERC20 tokens that are in Cosmos whitelist", async function () {
+      // add token as BridgeToken
+      await state.bridgeBank.connect(owner).addExistingBridgeToken(state.token1.address);
+
       // Attempt to lock tokens
       await expect(state.bridgeBank.connect(userOne).lock(
         state.sender,
         state.token1.address,
         state.amount
-      )).to.be.revertedWith("Only token in eth whitelist can be transferred to cosmos");
+      )).to.be.revertedWith("Only token not in cosmos whitelist can be locked");
     });
 
-    it("should not allow user to multi-lock ERC20 tokens that are not in eth whitelist", async function () {
+    it("should not allow user to multi-lock ERC20 tokens if at least one of them is in cosmos whitelist", async function () {
+      // add token1 as BridgeToken
+      await state.bridgeBank.connect(owner).addExistingBridgeToken(state.token1.address);
+
       // Attempt to lock tokens
       await expect(state.bridgeBank.connect(userOne).multiLock(
         [state.sender, state.sender, state.sender],
         [state.token1.address, state.token2.address, state.token3.address],
         [state.amount, state.amount, state.amount]
-      )).to.be.revertedWith("Only token in eth whitelist can be transferred to cosmos");
+      )).to.be.revertedWith("Only token not in cosmos whitelist can be locked");
     });
 
-    it("should not allow user to multi-lock ERC20 tokens that are not in eth whitelist with multiLockBurn method", async function () {
+    it("should not allow user to multi-lock ERC20 tokens with multiLockBurn method if one of them is cosmos whitelist", async function () {
+      // add token1 as BridgeToken
+      await state.bridgeBank.connect(owner).addExistingBridgeToken(state.token1.address);
+
       // Attempt to lock tokens
       await expect(state.bridgeBank.connect(userOne).multiLockBurn(
         [state.sender, state.sender, state.sender],
         [state.token1.address, state.token2.address, state.token3.address],
         [state.amount, state.amount, state.amount],
         [false, false, false]
-      )).to.be.revertedWith("Only token in eth whitelist can be transferred to cosmos");
+      )).to.be.revertedWith("Only token not in cosmos whitelist can be locked");
     });
 
-    it("should not allow user to multi-lock and burn ERC20 tokens not in eth whitelist and rowan with multiLockBurn method", async function () {
+    it("should not allow user to multi-lock and burn ERC20 tokens and rowan with multiLockBurn method if at least one of them is in cosmos whitelist ", async function () {
+      // add token1 as BridgeToken
+      await state.bridgeBank.connect(owner).addExistingBridgeToken(state.token1.address);
+
       // approve bridgebank to spend rowan
       await state.rowan.connect(userOne).approve(
         state.bridgeBank.address,
@@ -509,7 +558,7 @@ describe("Test Bridge Bank", function () {
         [state.token1.address, state.token2.address, state.rowan.address],
         [state.amount, state.amount, state.amount],
         [false, false, true]
-      )).to.be.revertedWith("Only token in eth whitelist can be transferred to cosmos");
+      )).to.be.revertedWith("Only token not in cosmos whitelist can be locked");
     });
   });
 });

@@ -18,7 +18,33 @@ function toEthSignedMessageHash(messageHex) {
   return web3.utils.sha3(Buffer.concat([prefix, messageBuffer]));
 }
 
+/**
+ * Used to colorize logs without using libs
+ * @dev Start your string with the color of choice and end it with .close
+ * @dev Example: console.log(`${colors.green}Your message here${colors.close}`);
+ */
+ const colors = {
+  green: '\x1b[32m',
+  red: '\x1b[41m\x1b[37m',
+  white: '\x1b[37m',
+  highlight: '\x1b[47m\x1b[30m',
+  yellow: '\x1b[33m',
+  blue: '\x1b[34m',
+  magenta: '\x1b[35m',
+  cyan: '\x1b[36m',
+  close: '\x1b[0m'
+}
+
+/**
+ * Colorizes and prints logs without using libs
+ * @dev Example: colorLog('green', message);
+ */
+function colorLog(colorName, message) {
+  console.log(`${colors[colorName]}${message}${colors.close}`);
+}
+
 module.exports = {
   toEthSignedMessageHash,
-  fixSignature
+  fixSignature,
+  colorLog
 };

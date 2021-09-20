@@ -1,6 +1,8 @@
 const { ethers, upgrades } = require("hardhat");
 const web3 = require("web3");
 
+const { ROWAN_DENOM, ETHER_DENOM, DENOM_1, DENOM_2, DENOM_3, DENOM_4 } = require('./denoms');
+
 const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
 
 async function returnContractObjects() {
@@ -16,21 +18,26 @@ function getDigestNewProphecyClaim(data) {
     throw new Error("Input Error: not array");
   }
 
-  const digest = ethers.utils.keccak256(
-    ethers.utils.defaultAbiCoder.encode(
-      [
-        "bytes",
-        "uint256",
-        "address",
-        "address",
-        "uint256",
-        "bool",
-        "uint128",
-        "uint256"
-      ],
-      data
-    ),
-  );
+  const types = [
+    "bytes",
+    "uint256",
+    "address",
+    "address",
+    "uint256",
+    "bool",
+    "uint128",
+    "uint256",
+    "string",
+    "string",
+    "uint8",
+    "string"
+  ];
+
+  if (types.length !== data.length) {
+    throw new Error("testFixture::getDigestNewProphecyClaim: invalid data length");
+  }
+
+  const digest = ethers.utils.keccak256(ethers.utils.defaultAbiCoder.encode(types, data));
 
   return digest;
 }
@@ -85,7 +92,7 @@ async function setup({
   await deployRowan(state);
   await addTokenToEthWhitelist(state, state.token.address);
 
-  if(lockTokensOnBridgeBank) {
+  if (lockTokensOnBridgeBank) {
     // Lock tokens on contract
     await state.bridgeBank.connect(user).lock(
       state.sender,
@@ -120,7 +127,20 @@ function initState({
   const sender = web3.utils.utf8ToHex("sif1nx650s8q9w28f2g3t9ztxyg48ugldptuwzpace");
   const state = {
     constants: {
-      zeroAddress: ZERO_ADDRESS
+      zeroAddress: ZERO_ADDRESS,
+      roles: {
+        minter: web3.utils.soliditySha3('MINTER_ROLE'),
+        admin: '0x0000000000000000000000000000000000000000000000000000000000000000'
+      },
+      denom: {
+        none: "",
+        rowan: ROWAN_DENOM,
+        ether: ETHER_DENOM,
+        one: DENOM_1,
+        two: DENOM_2,
+        three: DENOM_3,
+        four: DENOM_4,
+      }
     },
     initialValidators,
     initialPowers,
@@ -174,39 +194,52 @@ async function deployBaseContracts(state) {
   await state.cosmosBridge.connect(state.operator).setBridgeBank(state.bridgeBank.address);
 
   // Deploy BridgeTokens
-  state.token = await BridgeToken.deploy(state.name, state.symbol, state.decimals);
-  state.token1 = await BridgeToken.deploy(state.name, state.symbol, state.decimals);
-  state.token2 = await BridgeToken.deploy(state.name, state.symbol, state.decimals);
-  state.token3 = await BridgeToken.deploy(state.name, state.symbol, state.decimals);
+  state.token = await BridgeToken.deploy(state.name, state.symbol, state.decimals, state.constants.denom.one);
+  state.token1 = await BridgeToken.deploy(state.name, state.symbol, state.decimals, state.constants.denom.two);
+  state.token2 = await BridgeToken.deploy(state.name, state.symbol, state.decimals, state.constants.denom.three);
+  state.token3 = await BridgeToken.deploy(state.name, state.symbol, state.decimals, state.constants.denom.four);
+  state.token_noDenom = await BridgeToken.deploy(state.name, state.symbol, state.decimals, state.constants.denom.none);
 
   await state.token.deployed();
   await state.token1.deployed();
   await state.token2.deployed();
   await state.token3.deployed();
+  await state.token_noDenom.deployed();
+
+  // Grant the MINTER role to the operator:
+  await state.token.connect(state.operator).grantRole(state.constants.roles.minter, state.operator.address)
+  await state.token1.connect(state.operator).grantRole(state.constants.roles.minter, state.operator.address);
+  await state.token2.connect(state.operator).grantRole(state.constants.roles.minter, state.operator.address);
+  await state.token3.connect(state.operator).grantRole(state.constants.roles.minter, state.operator.address);
+  await state.token_noDenom.connect(state.operator).grantRole(state.constants.roles.minter, state.operator.address);
 
   // Load user account with ERC20 tokens for testing
   await state.token.connect(state.operator).mint(state.user.address, state.amount * 2);
   await state.token1.connect(state.operator).mint(state.user.address, state.amount * 2);
   await state.token2.connect(state.operator).mint(state.user.address, state.amount * 2);
   await state.token3.connect(state.operator).mint(state.user.address, state.amount * 2);
+  await state.token_noDenom.connect(state.operator).mint(state.user.address, state.amount * 2);
 
   // Approve BridgeBank
   await state.token.connect(state.user).approve(state.bridgeBank.address, state.amount * 2);
   await state.token1.connect(state.user).approve(state.bridgeBank.address, state.amount * 2);
   await state.token2.connect(state.user).approve(state.bridgeBank.address, state.amount * 2);
   await state.token3.connect(state.user).approve(state.bridgeBank.address, state.amount * 2);
+  await state.token_noDenom.connect(state.user).approve(state.bridgeBank.address, state.amount * 2);
 }
 
 async function deployRowan(state) {
   // deploy
-  state.rowan = await state.factories.BridgeToken.deploy("rowan", "rowan", state.decimals);
+  state.rowan = await state.factories.BridgeToken.deploy("rowan", "rowan", state.decimals, state.constants.denom.rowan);
   await state.rowan.deployed();
 
   // mint tokens
+  await state.rowan.connect(state.operator).grantRole(state.constants.roles.minter, state.operator.address)
   await state.rowan.connect(state.operator).mint(state.user.address, state.amount * 2);
 
-  // add bridgebank as owner of the rowan contract
-  await state.rowan.transferOwnership(state.bridgeBank.address);
+  // add bridgebank as admin and minter of the rowan contract
+  await state.rowan.connect(state.operator).grantRole(state.constants.roles.minter, state.bridgeBank.address);
+  await state.rowan.connect(state.operator).grantRole(state.constants.roles.admin, state.bridgeBank.address);
 
   // approve bridgeBank
   await state.rowan.connect(state.user).approve(state.bridgeBank.address, state.amount * 2);
@@ -229,11 +262,11 @@ async function addTokenToEthWhitelist(state, tokenAddress) {
 }
 
 async function batchAddTokensToEthWhitelist(state, tokenAddressList) {
-  // TODO: once we implement a batch function in our smart contracts, call it directly
-  for (let i = 0; i < tokenAddressList.length; i++) {
-    const tokenAddress = tokenAddressList[i];
-    await addTokenToEthWhitelist(state, tokenAddress);
-  }
+  const inList = Array(tokenAddressList.length).fill(true);
+
+  await state.bridgeBank.connect(state.operator)
+    .batchUpdateEthWhiteList(tokenAddressList, inList)
+    .should.be.fulfilled;
 }
 
 /**
@@ -252,6 +285,7 @@ async function getValidClaim({
   tokenName,
   tokenSymbol,
   tokenDecimals,
+  cosmosDenom,
   validators,
 }) {
   const digest = getDigestNewProphecyClaim([
@@ -263,6 +297,10 @@ async function getValidClaim({
     doublePeg,
     nonce,
     networkDescriptor,
+    tokenName,
+    tokenSymbol,
+    tokenDecimals,
+    cosmosDenom
   ]);
 
   const signatures = await signHash(validators, digest);
@@ -279,13 +317,18 @@ async function getValidClaim({
     tokenName,
     tokenSymbol,
     tokenDecimals,
+    cosmosDenom
   };
 
-  return {
+  const result = {
     digest,
     signatures,
     claimData,
-  };
+  }
+
+  //console.log(JSON.stringify(result, null, 2));
+
+  return result;
 }
 
 module.exports = {
@@ -295,5 +338,5 @@ module.exports = {
   getDigestNewProphecyClaim,
   getValidClaim,
   addTokenToEthWhitelist,
-  batchAddTokensToEthWhitelist
+  batchAddTokensToEthWhitelist,
 };
