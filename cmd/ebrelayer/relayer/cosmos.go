@@ -187,7 +187,7 @@ func (sub CosmosSub) Start(txFactory tx.Factory, completionEvent *sync.WaitGroup
 							)
 
 							if cosmosMsg.NetworkDescriptor == sub.NetworkDescriptor {
-								sub.handleBurnLockMsg(txFactory, cosmosMsg)
+								sub.witnessSignProphecyID(txFactory, cosmosMsg)
 							}
 						}
 					}
@@ -253,8 +253,8 @@ func tryInitRelayConfig(sub CosmosSub) (*ethclient.Client, *bind.TransactOpts, c
 	return nil, nil, common.Address{}, errors.New("hit max initRelayConfig retries")
 }
 
-// Parses event data from the msg, event, builds a new ProphecyClaim, and relays it to Ethereum
-func (sub CosmosSub) handleBurnLockMsg(
+// witness node sign against prophecyID of lock and burn message and send the singnature in message back to Sifnode.
+func (sub CosmosSub) witnessSignProphecyID(
 	txFactory tx.Factory,
 	cosmosMsg types.CosmosMsg,
 ) {
