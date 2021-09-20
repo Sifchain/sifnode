@@ -1,5 +1,8 @@
 #!/bin/python3
 
+# THis is an executable command-line frontend that makes sure we are running with a suitable Python virtual environment.
+# If the virtual environment does not exist yet, it is created on first use.
+
 import os
 import sys
 import glob

@@ -11,7 +11,7 @@ class Sifnoded(Command):
         # keyring_backend = None
 
     def sifnoded_init(self, moniker, chain_id):
-        args = ["sifnoded", "init", moniker, "--chain-id", chain_id]
+        args = [self.binary, "init", moniker, "--chain-id", chain_id]
         res = self.execst(args)
         return json.loads(res[2])  # output is on stderr
 

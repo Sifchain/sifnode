@@ -155,8 +155,7 @@ class Integrator(Ganache, Sifnoded, Command):
             log.error("Failed to get whitelisted validator (probable bug)", exc_info=True)
             assert True
 
-        adminuser_addr = self.sifnoded_keys_add_1("sifnodeadmin")["address"]
-        self.sifchain_init_common(adminuser_addr, denom_whitelist_file, sifnoded_home)
+        adminuser_addr = self.sifchain_init_common(denom_whitelist_file, sifnoded_home)
         return adminuser_addr
 
     # @parameter validator_moniker - from network config
@@ -174,11 +173,11 @@ class Integrator(Ganache, Sifnoded, Command):
         _whitelisted_validator = self.sifnoded_get_val_address(validator_moniker)
         assert valoper == _whitelisted_validator
 
-        adminuser_addr = self.sifnoded_keys_add_1("sifnodeadmin")["address"]
-        self.sifchain_init_common(adminuser_addr, denom_whitelist_file, sifnoded_home)
+        adminuser_addr = self.sifchain_init_common(denom_whitelist_file, sifnoded_home)
         return adminuser_addr
 
-    def sifchain_init_common(self, adminuser_addr, denom_whitelist_file, sifnoded_home):
+    def sifchain_init_common(self, denom_whitelist_file, sifnoded_home):
+        adminuser_addr = self.sifnoded_keys_add_1("sifnodeadmin")["address"]
         tokens = [[10**20, "rowan"]]
         # Original from peggy:
         # self.cmd.execst(["sifnoded", "add-genesis-account", sifnoded_admin_address, "100000000000000000000rowan", "--home", sifnoded_home])
@@ -186,6 +185,7 @@ class Integrator(Ganache, Sifnoded, Command):
         self.sifnoded_exec(["set-genesis-oracle-admin", adminuser_addr], sifnoded_home=sifnoded_home)
         self.sifnoded_exec(["set-genesis-whitelister-admin", adminuser_addr], sifnoded_home=sifnoded_home)
         self.sifnoded_exec(["set-gen-denom-whitelist", denom_whitelist_file], sifnoded_home=sifnoded_home)
+        return adminuser_addr
 
     def sifgen_create_network(self, chain_id, validator_count, networks_dir, network_definition_file, seed_ip_address, mint_amount=None):
         # Old call (no longer works either):
