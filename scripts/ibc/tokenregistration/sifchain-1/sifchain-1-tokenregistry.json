@@ -1409,6 +1409,297 @@
     },
     {
       "is_whitelisted": true,
+      "decimals": "18",
+      "denom": "caxs",
+      "base_denom": "caxs",
+      "permissions": [
+        "CLP"
+      ]
+    },
+    {
+      "is_whitelisted": true,
+      "decimals": "18",
+      "denom": "cdfyn",
+      "base_denom": "cdfyn",
+      "path": "",
+      "ibc_channel_id": "",
+      "ibc_counterparty_channel_id": "",
+      "display_name": "",
+      "display_symbol": "",
+      "network": "",
+      "address": "",
+      "external_symbol": "",
+      "transfer_limit": "",
+      "permissions": [
+        "CLP"
+      ],
+      "unit_denom": "",
+      "ibc_counterparty_denom": "",
+      "ibc_counterparty_chain_id": ""
+    },
+    {
+      "is_whitelisted": true,
+      "decimals": "18",
+      "denom": "cdnxc",
+      "base_denom": "cdnxc",
+      "path": "",
+      "ibc_channel_id": "",
+      "ibc_counterparty_channel_id": "",
+      "display_name": "",
+      "display_symbol": "",
+      "network": "",
+      "address": "",
+      "external_symbol": "",
+      "transfer_limit": "",
+      "permissions": [
+        "CLP"
+      ],
+      "unit_denom": "",
+      "ibc_counterparty_denom": "",
+      "ibc_counterparty_chain_id": ""
+    },
+    {
+      "is_whitelisted": true,
+      "decimals": "18",
+      "denom": "cdon",
+      "base_denom": "cdon",
+      "path": "",
+      "ibc_channel_id": "",
+      "ibc_counterparty_channel_id": "",
+      "display_name": "",
+      "display_symbol": "",
+      "network": "",
+      "address": "",
+      "external_symbol": "",
+      "transfer_limit": "",
+      "permissions": [
+        "CLP"
+      ],
+      "unit_denom": "",
+      "ibc_counterparty_denom": "",
+      "ibc_counterparty_chain_id": ""
+    },
+    {
+      "is_whitelisted": true,
+      "decimals": "18",
+      "denom": "cern",
+      "base_denom": "cern",
+      "path": "",
+      "ibc_channel_id": "",
+      "ibc_counterparty_channel_id": "",
+      "display_name": "",
+      "display_symbol": "",
+      "network": "",
+      "address": "",
+      "external_symbol": "",
+      "transfer_limit": "",
+      "permissions": [
+        "CLP"
+      ],
+      "unit_denom": "",
+      "ibc_counterparty_denom": "",
+      "ibc_counterparty_chain_id": ""
+    },
+    {
+      "is_whitelisted": true,
+      "decimals": "18",
+      "denom": "cfrax",
+      "base_denom": "cfrax",
+      "path": "",
+      "ibc_channel_id": "",
+      "ibc_counterparty_channel_id": "",
+      "display_name": "",
+      "display_symbol": "",
+      "network": "",
+      "address": "",
+      "external_symbol": "",
+      "transfer_limit": "",
+      "permissions": [
+        "CLP"
+      ],
+      "unit_denom": "",
+      "ibc_counterparty_denom": "",
+      "ibc_counterparty_chain_id": ""
+    },
+    {
+      "is_whitelisted": true,
+      "decimals": "18",
+      "denom": "cfxs",
+      "base_denom": "cfxs",
+      "path": "",
+      "ibc_channel_id": "",
+      "ibc_counterparty_channel_id": "",
+      "display_name": "",
+      "display_symbol": "",
+      "network": "",
+      "address": "",
+      "external_symbol": "",
+      "transfer_limit": "",
+      "permissions": [
+        "CLP"
+      ],
+      "unit_denom": "",
+      "ibc_counterparty_denom": "",
+      "ibc_counterparty_chain_id": ""
+    },
+    {
+      "is_whitelisted": true,
+      "decimals": "18",
+      "denom": "ckft",
+      "base_denom": "ckft",
+      "path": "",
+      "ibc_channel_id": "",
+      "ibc_counterparty_channel_id": "",
+      "display_name": "",
+      "display_symbol": "",
+      "network": "",
+      "address": "",
+      "external_symbol": "",
+      "transfer_limit": "",
+      "permissions": [
+        "CLP"
+      ],
+      "unit_denom": "",
+      "ibc_counterparty_denom": "",
+      "ibc_counterparty_chain_id": ""
+    },
+    {
+      "is_whitelisted": true,
+      "decimals": "18",
+      "denom": "cmatic",
+      "base_denom": "cmatic",
+      "path": "",
+      "ibc_channel_id": "",
+      "ibc_counterparty_channel_id": "",
+      "display_name": "",
+      "display_symbol": "",
+      "network": "",
+      "address": "",
+      "external_symbol": "",
+      "transfer_limit": "",
+      "permissions": [
+        "CLP"
+      ],
+      "unit_denom": "",
+      "ibc_counterparty_denom": "",
+      "ibc_counterparty_chain_id": ""
+    },
+    {
+      "is_whitelisted": true,
+      "decimals": "18",
+      "denom": "cmetis",
+      "base_denom": "cmetis",
+      "path": "",
+      "ibc_channel_id": "",
+      "ibc_counterparty_channel_id": "",
+      "display_name": "",
+      "display_symbol": "",
+      "network": "",
+      "address": "",
+      "external_symbol": "",
+      "transfer_limit": "",
+      "permissions": [
+        "CLP"
+      ],
+      "unit_denom": "",
+      "ibc_counterparty_denom": "",
+      "ibc_counterparty_chain_id": ""
+    },
+    {
+      "is_whitelisted": true,
+      "decimals": "18",
+      "denom": "cpols",
+      "base_denom": "cpols",
+      "path": "",
+      "ibc_channel_id": "",
+      "ibc_counterparty_channel_id": "",
+      "display_name": "",
+      "display_symbol": "",
+      "network": "",
+      "address": "",
+      "external_symbol": "",
+      "transfer_limit": "",
+      "permissions": [
+        "CLP"
+      ],
+      "unit_denom": "",
+      "ibc_counterparty_denom": "",
+      "ibc_counterparty_chain_id": ""
+    },
+    {
+      "is_whitelisted": true,
+      "decimals": "18",
+      "denom": "csaito",
+      "base_denom": "csaito",
+      "path": "",
+      "ibc_channel_id": "",
+      "ibc_counterparty_channel_id": "",
+      "display_name": "",
+      "display_symbol": "",
+      "network": "",
+      "address": "",
+      "external_symbol": "",
+      "transfer_limit": "",
+      "permissions": [
+        "CLP"
+      ],
+      "unit_denom": "",
+      "ibc_counterparty_denom": "",
+      "ibc_counterparty_chain_id": ""
+    },
+    {
+      "is_whitelisted": true,
+      "decimals": "18",
+      "denom": "ctoke",
+      "base_denom": "ctoke",
+      "permissions": [
+        "CLP"
+      ]
+    },
+    {
+      "is_whitelisted": true,
+      "decimals": "10",
+      "denom": "czcn",
+      "base_denom": "czcn",
+      "path": "",
+      "ibc_channel_id": "",
+      "ibc_counterparty_channel_id": "",
+      "display_name": "",
+      "display_symbol": "",
+      "network": "",
+      "address": "",
+      "external_symbol": "",
+      "transfer_limit": "",
+      "permissions": [
+        "CLP"
+      ],
+      "unit_denom": "",
+      "ibc_counterparty_denom": "",
+      "ibc_counterparty_chain_id": ""
+    },
+    {
+      "is_whitelisted": true,
+      "decimals": "18",
+      "denom": "czcx",
+      "base_denom": "czcx",
+      "path": "",
+      "ibc_channel_id": "",
+      "ibc_counterparty_channel_id": "",
+      "display_name": "",
+      "display_symbol": "",
+      "network": "",
+      "address": "",
+      "external_symbol": "",
+      "transfer_limit": "",
+      "permissions": [
+        "CLP"
+      ],
+      "unit_denom": "",
+      "ibc_counterparty_denom": "",
+      "ibc_counterparty_chain_id": ""
+    },
+    {
+      "is_whitelisted": true,
       "decimals": "6",
       "denom": "ibc/C9D28A562D872C72C68336CB3031F5ED3289B994EDC0C7D02216A312D4EC842D",
       "base_denom": "uakt",
