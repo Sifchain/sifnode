@@ -15,6 +15,10 @@ import {
   CosmosBridge__factory, IbcToken__factory
 } from "../../build";
 
+import web3 from "web3";
+const MINTER_ROLE = web3.utils.soliditySha3('MINTER_ROLE');
+const ADMIN_ROLE = '0x0000000000000000000000000000000000000000000000000000000000000000';
+
 @singleton()
 export class SifchainContractFactories {
   bridgeBank: Promise<BridgeBank__factory>
@@ -203,12 +207,13 @@ export class BridgeTokenSetup {
     const owner = (await sifchainAccounts.accounts).ownerAccount
     const bridgebank = (await bridgeBankProxy.contract).connect(owner)
     await bridgebank.addExistingBridgeToken(erowan.address)
-    await erowan.grantRole(await erowan.MINTER_ROLE(), bridgebank.address)
-    await erowan.grantRole(await erowan.DEFAULT_ADMIN_ROLE(), bridgebank.address)
+    await erowan.grantRole(String(MINTER_ROLE), bridgebank.address)
+    await erowan.grantRole(String(MINTER_ROLE), owner.address)
+    await erowan.grantRole(ADMIN_ROLE, bridgebank.address)
     await erowan.approve(bridgebank.address, "10000000000000000000")
     const accounts = await sifchainAccounts.accounts
     const muchRowan = BigNumber.from(100000000).mul(BigNumber.from(10).pow(18))
-    await erowan.mint(accounts.operatorAccount.address, muchRowan)
+    await erowan.connect(owner).mint(accounts.operatorAccount.address, muchRowan)
     return true
   }
 
