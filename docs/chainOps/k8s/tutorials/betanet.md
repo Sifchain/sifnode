@@ -10,6 +10,7 @@
 make -C ./deploy bundler
 ```
 
+
 3. Ensure your `$GOPATH` is setup correctly:
 
 ```bash
