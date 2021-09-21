@@ -54,7 +54,7 @@ where:
 
 |Param|Description|
 |-----|----------|
-|`<cluster>`|A name for your new cluster.|
+|`<cluster>`|The name of your new cluster.|
 |`<provider>`|The cloud provider to use (currently only AWS is supported).|
 
 e.g.:
@@ -144,7 +144,7 @@ where:
 |`<provider>`|The cloud provider to use (currently only AWS is supported).|
 |`<namespace>`|The Kubernetes namespace to use (e.g.: sifnode).|
 |`<image>`|The image to pull down from Docker Hub (e.g.: sifchain/sifnoded).|
-|`<image_tag>`|The image tag to use (this must be `mainnet-genesis`).|
+|`<image_tag>`|The image tag to use (this must be `betanet-0.9.0`).|
 |`<moniker>`|The moniker or name of your node as you want it to appear on the network.|
 |`<peer_address>`|The address of the peer to connect to.|
 |`<genesis_url>`|The URL of genesis file for the network.|
@@ -154,10 +154,8 @@ where:
 e.g.:
 
 ```bash
-rake "sifnode:peer:deploy[my-cluster,sifchain-1,aws,sifnode,sifchain/sifnoded,mainnet-0.9.0,my-node,'my mnemonic',0d4981bdaf4d5d73bad00af3b1fa9d699e4d3bc0@44.235.108.41:26656,https://rpc.sifchain.finance/genesis,false,false]"
+rake "sifnode:peer:deploy[my-cluster,sifchain-1,aws,sifnode,sifchain/sifnoded,betanet-0.9.0,my-node,'my mnemonic',0d4981bdaf4d5d73bad00af3b1fa9d699e4d3bc0@44.235.108.41:26656,https://rpc.sifchain.finance/genesis,false,false]"
 ```
-
-_Please note: the image tag must be in the format of `mainnet-<version>`. Replace `<version>` with the latest version number found [here](https://github.com/Sifchain/sifnode/blob/master/version)._
 
 5. Once deployed, check the status of the pods:
 
