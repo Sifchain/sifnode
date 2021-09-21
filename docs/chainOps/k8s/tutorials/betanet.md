@@ -76,7 +76,7 @@ where:
 
 |Param|Description|
 |-----|----------|
-|`<cluster>`|A name for your new cluster.|
+|`<cluster>`|The name of your cluster.|
 |`<region>`|The AWS region where your cluster was deployed.|
 |`<aws_profile>`|*Optional. Your AWS profile (used when you have multiple AWS accounts setup locally).|
 
