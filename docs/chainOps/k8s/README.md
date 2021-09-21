@@ -30,8 +30,8 @@ Kubernetes is an open-source container-orchestration system for automating appli
 
 ### Testnet
 
-Please see [here](https://github.com/Sifchain/sifnode/tree/master/docs/chainOps/k8s/tutorials/testnet.md) for instructions on how to connect.
+Please see [here](https://github.com/Sifchain/sifnode/tree/develop/docs/chainOps/k8s/tutorials/testnet.md) for instructions on how to connect.
 
 ### BetaNet
 
-Please see [here](https://github.com/Sifchain/sifnode/tree/master/docs/chainOps/k8s/tutorials/betanet.md) for instructions on how to connect.
+Please see [here](https://github.com/Sifchain/sifnode/tree/develop/docs/chainOps/k8s/tutorials/betanet.md) for instructions on how to connect.
