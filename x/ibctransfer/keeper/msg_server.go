@@ -50,7 +50,7 @@ func (srv msgServer) Transfer(goCtx context.Context, msg *sdktransfertypes.MsgTr
 	// check if registry entry has an IBC counterparty conversion to process
 	if registryEntry.IbcCounterpartyDenom != "" && registryEntry.IbcCounterpartyDenom != registryEntry.Denom {
 		sendAsRegistryEntry := srv.tokenRegistryKeeper.GetDenom(registry, registryEntry.IbcCounterpartyDenom)
-		if sendAsRegistryEntry.Decimals != 0 && registryEntry.Decimals > sendAsRegistryEntry.Decimals {
+		if sendAsRegistryEntry != nil && sendAsRegistryEntry.Decimals != 0 && registryEntry.Decimals > sendAsRegistryEntry.Decimals {
 			token, tokenConversion := ConvertCoinsForTransfer(msg, registryEntry, sendAsRegistryEntry)
 			if token.Amount.Equal(sdk.NewInt(0)) {
 				return nil, types.ErrAmountTooLowToConvert
