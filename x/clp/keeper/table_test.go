@@ -43,19 +43,16 @@ func TestCalculatePoolUnits(t *testing.T) {
 	}
 	file, err := ioutil.ReadFile("../../../test/test-tables/pool_units_after_upgrade.json")
 	assert.NoError(t, err)
-
 	file = bytes.TrimPrefix(file, []byte("\xef\xbb\xbf"))
 	var test Test
 	err = json.Unmarshal(file, &test)
 	assert.NoError(t, err)
-
-	ctx, app := createTestAppForTestTables()
-
+	_, app := createTestAppForTestTables()
 	testcases := test.TestType
+	wl := getDenomWhiteListEntries()
 	for _, test := range testcases {
-		wl := getDenomWhiteListEntries()
 		for _, entry := range wl.Entries {
-			nf, ad := app.ClpKeeper.GetNormalizationFactor(ctx, entry.Denom)
+			nf, ad := app.ClpKeeper.GetNormalizationFactor(entry.Decimals)
 			_, stakeUnits, _ := clpkeeper.CalculatePoolUnits(
 				sdk.NewUintFromString(test.PoolUnitsBalance),
 				sdk.NewUintFromString(test.NativeBalance),
@@ -82,19 +79,16 @@ func TestCalculateSwapResult(t *testing.T) {
 	}
 	file, err := ioutil.ReadFile("../../../test/test-tables/singleswap_result.json")
 	assert.NoError(t, err)
-
 	file = bytes.TrimPrefix(file, []byte("\xef\xbb\xbf"))
 	var test Test
 	err = json.Unmarshal(file, &test)
 	assert.NoError(t, err)
-
-	ctx, app := createTestAppForTestTables()
-
+	_, app := createTestAppForTestTables()
 	testcases := test.TestType
+	wl := getDenomWhiteListEntries()
 	for _, test := range testcases {
-		wl := getDenomWhiteListEntries()
 		for _, entry := range wl.Entries {
-			nf, ad := app.ClpKeeper.GetNormalizationFactor(ctx, entry.Denom)
+			nf, ad := app.ClpKeeper.GetNormalizationFactor(entry.Decimals)
 			Yy, _ := clpkeeper.CalcSwapResult(
 				true,
 				nf,
@@ -120,19 +114,16 @@ func TestCalculateSwapLiquidityFee(t *testing.T) {
 	}
 	file, err := ioutil.ReadFile("../../../test/test-tables/singleswap_liquidityfees.json")
 	assert.NoError(t, err)
-
 	file = bytes.TrimPrefix(file, []byte("\xef\xbb\xbf"))
 	var test Test
 	err = json.Unmarshal(file, &test)
 	assert.NoError(t, err)
-
-	ctx, app := createTestAppForTestTables()
-
+	_, app := createTestAppForTestTables()
 	testcases := test.TestType
+	wl := getDenomWhiteListEntries()
 	for _, test := range testcases {
-		wl := getDenomWhiteListEntries()
 		for _, entry := range wl.Entries {
-			nf, ad := app.ClpKeeper.GetNormalizationFactor(ctx, entry.Denom)
+			nf, ad := app.ClpKeeper.GetNormalizationFactor(entry.Decimals)
 			Yy, _ := clpkeeper.CalcLiquidityFee(
 				true,
 				nf,
@@ -160,19 +151,16 @@ func TestCalculateDoubleSwapResult(t *testing.T) {
 	}
 	file, err := ioutil.ReadFile("../../../test/test-tables/doubleswap_result.json")
 	assert.NoError(t, err)
-
 	file = bytes.TrimPrefix(file, []byte("\xef\xbb\xbf"))
 	var test Test
 	err = json.Unmarshal(file, &test)
 	assert.NoError(t, err)
-
-	ctx, app := createTestAppForTestTables()
-
+	_, app := createTestAppForTestTables()
 	testcases := test.TestType
+	wl := getDenomWhiteListEntries()
 	for _, test := range testcases {
-		wl := getDenomWhiteListEntries()
 		for _, entry := range wl.Entries {
-			nf, ad := app.ClpKeeper.GetNormalizationFactor(ctx, entry.Denom)
+			nf, ad := app.ClpKeeper.GetNormalizationFactor(entry.Decimals)
 			Ay, _ := clpkeeper.CalcSwapResult(
 				true,
 				nf,
@@ -209,17 +197,16 @@ func TestCalculatePoolUnitsAfterUpgrade(t *testing.T) {
 	}
 	file, err := ioutil.ReadFile("../../../test/test-tables/pool_units_after_upgrade.json")
 	assert.NoError(t, err)
-
 	file = bytes.TrimPrefix(file, []byte("\xef\xbb\xbf"))
 	var test Test
 	err = json.Unmarshal(file, &test)
 	assert.NoError(t, err)
-
-	ctx, app := createTestAppForTestTables()
-
+	_, app := createTestAppForTestTables()
 	testcases := test.TestType
+	wl := getDenomWhiteListEntries()
 	for _, test := range testcases {
-		nf, ad := app.ClpKeeper.GetNormalizationFactor(ctx, test.Symbol)
+		entry := app.TokenRegistryKeeper.GetDenom(wl, test.Symbol)
+		nf, ad := app.ClpKeeper.GetNormalizationFactor(entry.Decimals)
 		_, stakeUnits, _ := clpkeeper.CalculatePoolUnits(
 			sdk.NewUintFromString(test.PoolUnitsBalance),
 			sdk.NewUintFromString(test.NativeBalance),

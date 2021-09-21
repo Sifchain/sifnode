@@ -20,7 +20,8 @@ import (
 // were burnt in the original send so new tokens are minted and sent to
 // the sending address.
 //
-// OnTimeoutMaybeConvert() potentially does a conversion from the denom that was sent out,
+
+// OnTimeoutMaybeConvert potentially does a conversion from the denom that was sent out,
 // back to the original unit_denom.
 func OnTimeoutMaybeConvert(
 	ctx sdk.Context,
@@ -37,7 +38,6 @@ func OnTimeoutMaybeConvert(
 	if err := sdkTransferKeeper.OnTimeoutPacket(ctx, packet, data); err != nil {
 		return nil, err
 	}
-
 	ctx.EventManager().EmitEvent(
 		sdk.NewEvent(
 			transfertypes.EventTypeTimeout,
@@ -48,8 +48,8 @@ func OnTimeoutMaybeConvert(
 		),
 	)
 	// if needs conversion, convert and send
-	if ShouldConvertRefundCoins(ctx, whitelistKeeper, packet, data) {
-		incomingCoins, finalCoins := GetConvForRefundCoins(ctx, whitelistKeeper, packet, data)
+	incomingCoins, finalCoins := GetConvForRefundCoins(ctx, whitelistKeeper, packet, data)
+	if incomingCoins != nil && finalCoins != nil {
 		err := ExecConvForRefundCoins(ctx, incomingCoins, finalCoins, bankKeeper, packet, data)
 		if err != nil {
 			return nil, err
@@ -58,7 +58,6 @@ func OnTimeoutMaybeConvert(
 			Events: ctx.EventManager().Events().ToABCIEvents(),
 		}, nil
 	}
-
 	return &sdk.Result{
 		Events: ctx.EventManager().Events().ToABCIEvents(),
 	}, nil

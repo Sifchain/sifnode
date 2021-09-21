@@ -71,14 +71,10 @@ func (k Keeper) HasBalance(ctx sdk.Context, addr sdk.AccAddress, coin sdk.Coin) 
 	return k.bankKeeper.HasBalance(ctx, addr, coin)
 }
 
-func (k Keeper) GetNormalizationFactor(ctx sdk.Context, denom string) (sdk.Dec, bool) {
+func (k Keeper) GetNormalizationFactor(decimals int64) (sdk.Dec, bool) {
 	normalizationFactor := sdk.NewDec(1)
 	adjustExternalToken := false
-	entry := k.tokenRegistryKeeper.GetDenom(ctx, denom)
-	if !entry.IsWhitelisted {
-		return normalizationFactor, adjustExternalToken
-	}
-	nf := entry.Decimals
+	nf := decimals
 	if nf != 18 {
 		adjustExternalToken = true
 		diffFactor := 18 - nf

@@ -37,17 +37,17 @@ func (m *MockKeeper) EXPECT() *MockKeeperMockRecorder {
 }
 
 // CheckDenomPermissions mocks base method.
-func (m *MockKeeper) CheckDenomPermissions(ctx types0.Context, denom string, permissions []types.Permission) bool {
+func (m *MockKeeper) CheckDenomPermissions(entry *types.RegistryEntry, permissions []types.Permission) bool {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CheckDenomPermissions", ctx, denom, permissions)
+	ret := m.ctrl.Call(m, "CheckDenomPermissions", entry, permissions)
 	ret0, _ := ret[0].(bool)
 	return ret0
 }
 
 // CheckDenomPermissions indicates an expected call of CheckDenomPermissions.
-func (mr *MockKeeperMockRecorder) CheckDenomPermissions(ctx, denom, permissions interface{}) *gomock.Call {
+func (mr *MockKeeperMockRecorder) CheckDenomPermissions(entry, permissions interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CheckDenomPermissions", reflect.TypeOf((*MockKeeper)(nil).CheckDenomPermissions), ctx, denom, permissions)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CheckDenomPermissions", reflect.TypeOf((*MockKeeper)(nil).CheckDenomPermissions), entry, permissions)
 }
 
 // ExportGenesis mocks base method.
@@ -65,17 +65,17 @@ func (mr *MockKeeperMockRecorder) ExportGenesis(ctx interface{}) *gomock.Call {
 }
 
 // GetDenom mocks base method.
-func (m *MockKeeper) GetDenom(ctx types0.Context, denom string) types.RegistryEntry {
+func (m *MockKeeper) GetDenom(wl types.Registry, denom string) *types.RegistryEntry {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetDenom", ctx, denom)
-	ret0, _ := ret[0].(types.RegistryEntry)
+	ret := m.ctrl.Call(m, "GetDenom", wl, denom)
+	ret0, _ := ret[0].(*types.RegistryEntry)
 	return ret0
 }
 
 // GetDenom indicates an expected call of GetDenom.
-func (mr *MockKeeperMockRecorder) GetDenom(ctx, denom interface{}) *gomock.Call {
+func (mr *MockKeeperMockRecorder) GetDenom(wl, denom interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetDenom", reflect.TypeOf((*MockKeeper)(nil).GetDenom), ctx, denom)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetDenom", reflect.TypeOf((*MockKeeper)(nil).GetDenom), wl, denom)
 }
 
 // GetDenomWhitelist mocks base method.
@@ -118,20 +118,6 @@ func (m *MockKeeper) IsAdminAccount(ctx types0.Context, adminAccount types0.AccA
 func (mr *MockKeeperMockRecorder) IsAdminAccount(ctx, adminAccount interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsAdminAccount", reflect.TypeOf((*MockKeeper)(nil).IsAdminAccount), ctx, adminAccount)
-}
-
-// IsDenomWhitelisted mocks base method.
-func (m *MockKeeper) IsDenomWhitelisted(ctx types0.Context, denom string) bool {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "IsDenomWhitelisted", ctx, denom)
-	ret0, _ := ret[0].(bool)
-	return ret0
-}
-
-// IsDenomWhitelisted indicates an expected call of IsDenomWhitelisted.
-func (mr *MockKeeperMockRecorder) IsDenomWhitelisted(ctx, denom interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsDenomWhitelisted", reflect.TypeOf((*MockKeeper)(nil).IsDenomWhitelisted), ctx, denom)
 }
 
 // RemoveToken mocks base method.
