@@ -1,0 +1,27 @@
+{
+  "entries": [
+    {
+      "is_whitelisted": true,
+      "decimals": "6",
+      "denom": "ibc/EBDF43077A97DBDD9130E90B510EFC431D7FE2E8F8C7C36ACFA1BDF151D174C1",
+      "base_denom": "uluna",
+      "path": "transfer/channel-29",
+      "ibc_channel_id": "channel-29",
+      "ibc_counterparty_channel_id": "channel-4",
+      "display_name": "ULUNA",
+      "display_symbol": "",
+      "network": "",
+      "address": "",
+      "external_symbol": "uluna",
+      "transfer_limit": "",
+      "permissions": [
+        "CLP",
+        "IBCEXPORT",
+        "IBCIMPORT"
+      ],
+      "unit_denom": "",
+      "ibc_counterparty_denom": "",
+      "ibc_counterparty_chain_id": "bombay-10"
+    }
+  ]
+}
