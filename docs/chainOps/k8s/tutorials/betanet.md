@@ -30,12 +30,6 @@ make install
 rake "cluster:scaffold[<cluster>,<provider>]"
 ```
 
-e.g.:
-
-```bash
-rake "cluster:scaffold[my-cluster,aws]"
-```
-
 where:
 
 |Param|Description|
@@ -43,7 +37,13 @@ where:
 |`<cluster>`|A name for your new cluster.|
 |`<provider>`|The cloud provider to use (currently only AWS is supported).|
 
-6. Once complete, you'll notice that several Terraform files/folders have been setup inside of the `.live` directory. We recommend you leave the defaults as-is, but for those that have experience with Terraform, feel free to adjust the configuration as you see fit.
+e.g.:
+
+```bash
+rake "cluster:scaffold[my-cluster,aws]"
+```
+
+6. Once complete, you'll notice that several Terraform files/folders have been setup inside of a `.live` directory. We recommend you leave the defaults as-is, but for those that have experience with Terraform, feel free to adjust the configuration as you see fit.
 
 7. Deploy the cluster to AWS (Default region is US-WEST-2):
 
@@ -64,9 +64,9 @@ e.g.:
 rake "cluster:deploy[my-cluster,aws]"
 ```
 
-8. Once complete, you should see your cluster on your AWS account.
+Once complete, you should see your cluster on your AWS account.
 
-9. Update the cluster kubeconfig (so you may interact with the cluster properly):
+8. Update the cluster kubeconfig (so you may interact with the cluster properly):
 
 ```bash
 rake "provider:aws:kubeconfig[<cluster>,<region>,<aws_profile>]"
@@ -193,10 +193,17 @@ _It may take several minutes for your node to become active._
 rake "sifnode:status[<cluster>,<namespace>]"
 ```
 
+where:
+
+|Param|Description|
+|-----|----------|
+|`<cluster>`|The name of your cluster.|
+|`<namespace>`|The namespace you want to check (e.g.: `sifnode`).|
+
 e.g.:
 
 ```bash
-rake "sifnode:status[my-cluster,my-namespace]"
+rake "sifnode:status[my-cluster,sifnode]"
 ```
 
 ## Stake to become a validator
@@ -209,10 +216,18 @@ In order to become a validator, that is a node which can participate in consensu
 rake "sifnode:keys:public[<cluster>,<provider>,<namespace>]"
 ```
 
+where:
+
+|Param|Description|
+|-----|----------|
+|`<cluster>`|The name of your cluster.|
+|`<provider>`|The cloud provider to use (currently only AWS is supported).|
+|`<namespace>`|The namespace you want to check (e.g.: `sifnode`).|
+
 e.g.:
 
 ```bash
-rake "sifnode:keys:public[my-cluster,aws,my-namespace]"
+rake "sifnode:keys:public[my-cluster,aws,sifnode]"
 ```
 
 3. Stake:
@@ -228,13 +243,13 @@ where:
 |`<commission_max_change_rate>`|The maximum commission change rate percentage (per day).|
 |`<commission_max_rate>`|The maximum commission rate percentage.|
 |`<commission_rate>`|The initial commission rate percentage.|
-|`<chain_id>`|The Chain ID of the network (e.g.: sifchain).|
+|`<chain_id>`|The Chain ID of the network (e.g.: `sifchain-1`).|
 |`<moniker>`|The moniker or name of your node as you want it to appear on the network.|
-|`<amount>`|The amount to stake, including the denomination (e.g.: 100000000rowan). The precision used is 1e18.|
-|`<gas>`| The per-transaction gas limit (e.g.: 300000).|
-|`<gas_prices>`|The minimum gas price to use  (e.g.: 0.5rowan).|
+|`<amount>`|The amount to stake, including the denomination (e.g.: `100000000rowan`). The precision used is 1e18.|
+|`<gas>`| The per-transaction gas limit (e.g.: `300000`).|
+|`<gas_prices>`|The minimum gas price to use  (e.g.: `0.5rowan`).|
 |`<public_key>`|The public key of your validator (you got this in the previous step).|
-|`<node_rpc_address>`|The address to broadcast the transaction to (e.g.: tcp://rpc.sifchain.finance:80).|
+|`<node_rpc_address>`|The address to broadcast the transaction to (e.g.: `tcp://rpc.sifchain.finance:80`).|
 
 e.g.:
 
