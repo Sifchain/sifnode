@@ -12,8 +12,8 @@ import (
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 
-	"github.com/Sifchain/sifnode/x/ethbridge/types"
 	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
+	"github.com/Sifchain/sifnode/x/tokenregistry/types"
 )
 
 // GetCmdGetTokenMetadata queries information about a specific token
@@ -76,13 +76,12 @@ func GetCmdAddIBCTokenMetadata() *cobra.Command {
 				return errors.New("Error parsing tokenAddress invalid format must be a hex address")
 			}
 
-			tokenAddress := types.NewEthereumAddress(tokenAddressRaw)
+			tokenAddress := common.HexToAddress(tokenAddressRaw)
 
-			tokenDecimalsRaw, err := strconv.ParseInt(args[4], 10, 32)
+			tokenDecimals, err := strconv.ParseInt(args[4], 10, 64)
 			if err != nil {
 				return errors.New("Error parsing token decimals, must be base 10 number")
 			}
-			tokenDecimals := int32(tokenDecimalsRaw)
 			if tokenDecimals < 0 {
 				return errors.New("Token must have a positive number of decimals")
 			}
@@ -91,42 +90,9 @@ func GetCmdAddIBCTokenMetadata() *cobra.Command {
 			if err != nil {
 				return errors.New("Error parsing network descriptor")
 			}
+
 			networkDescriptor := oracletypes.NetworkDescriptor(networkDescriptorRaw)
-
-			msg := types.NewTokenMetadata(cosmosSender, tokenName, tokenSymbol, tokenDecimals, tokenAddress, networkDescriptor)
-			if err := msg.ValidateBasic(); err != nil {
-				return err
-			}
-
-			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), &msg)
-		},
-	}
-
-	flags.AddTxFlagsToCmd(cmd)
-
-	return cmd
-}
-
-// GetCmdSetCrossChainFee is the CLI command to send the message to set crosschain fee for network
-func GetCmdDeleteIBCTokenMetadata() *cobra.Command {
-	cmd := &cobra.Command{
-		Use:   "metadata-delete [cosmos-sender-address] [denom-hash]",
-		Short: "Used to manually delete Token Metadata for IBC tokens.",
-		Args:  cobra.ExactArgs(2),
-		RunE: func(cmd *cobra.Command, args []string) error {
-			clientCtx, err := client.GetClientTxContext(cmd)
-			if err != nil {
-				return err
-			}
-
-			cosmosSender, err := sdk.AccAddressFromBech32(args[0])
-			if err != nil {
-				return err
-			}
-
-			denomHash := args[1]
-
-			msg := types.DeleteTokenMetadata(cosmosSender, denomHash)
+			msg := types.NewTokenMetadataAddRequest(cosmosSender, tokenName, tokenSymbol, tokenDecimals, tokenAddress, networkDescriptor)
 			if err := msg.ValidateBasic(); err != nil {
 				return err
 			}

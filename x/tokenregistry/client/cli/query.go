@@ -4,12 +4,12 @@ import (
 	"context"
 	"fmt"
 
+	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
+	"github.com/Sifchain/sifnode/x/tokenregistry/types"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	transfertypes "github.com/cosmos/cosmos-sdk/x/ibc/applications/transfer/types"
 	"github.com/spf13/cobra"
-
-	"github.com/Sifchain/sifnode/x/tokenregistry/types"
 )
 
 func GetQueryCmd() *cobra.Command {
@@ -24,6 +24,7 @@ func GetQueryCmd() *cobra.Command {
 	cmd.AddCommand(
 		GetCmdQueryEntries(),
 		GetCmdGenerateEntry(),
+		GetCmdGetTokenMetadata(),
 	)
 
 	return cmd
@@ -126,7 +127,7 @@ func GetCmdGenerateEntry() *cobra.Command {
 				return err
 			}
 
-			network, err := flags.GetString(flagNetwork)
+			network, err := flags.GetInt32(flagNetwork)
 			if err != nil {
 				return err
 			}
@@ -169,7 +170,7 @@ func GetCmdGenerateEntry() *cobra.Command {
 			}
 
 			if permissionCLP {
-				permissions = append(permissions, types.Permission_CLP)
+				permissions = append(permissions, types.Permission_PERMISSION_CLP)
 			}
 
 			permissionIBCExport, err := flags.GetBool("token_permission_ibc_export")
@@ -178,7 +179,7 @@ func GetCmdGenerateEntry() *cobra.Command {
 			}
 
 			if permissionIBCExport {
-				permissions = append(permissions, types.Permission_IBCEXPORT)
+				permissions = append(permissions, types.Permission_PERMISSION_IBCEXPORT)
 			}
 
 			permissionIBCImport, err := flags.GetBool("token_permission_ibc_import")
@@ -187,7 +188,7 @@ func GetCmdGenerateEntry() *cobra.Command {
 			}
 
 			if permissionIBCImport {
-				permissions = append(permissions, types.Permission_IBCIMPORT)
+				permissions = append(permissions, types.Permission_PERMISSION_IBCIMPORT)
 			}
 
 			var path string
@@ -229,7 +230,7 @@ func GetCmdGenerateEntry() *cobra.Command {
 				UnitDenom:                unitDenom,
 				DisplayName:              displayName,
 				DisplaySymbol:            displaySymbol,
-				Network:                  network,
+				Network:                  oracletypes.NetworkDescriptor(network),
 				Address:                  address,
 				ExternalSymbol:           externalSymbol,
 				TransferLimit:            transferLimit,

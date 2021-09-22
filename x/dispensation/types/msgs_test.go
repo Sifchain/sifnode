@@ -1,13 +1,14 @@
 package types_test
 
 import (
+	"testing"
+
 	"github.com/Sifchain/sifnode/x/dispensation/test"
 	"github.com/Sifchain/sifnode/x/dispensation/types"
-	"github.com/cosmos/cosmos-sdk/crypto/keys/ed25519"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	"github.com/stretchr/testify/assert"
-	"testing"
+	"github.com/tendermint/tendermint/crypto/ed25519"
 )
 
 func TestMsgCreateDistribution_ValidateBasic(t *testing.T) {

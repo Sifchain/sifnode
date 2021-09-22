@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"context"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 
@@ -9,7 +10,8 @@ import (
 )
 
 type msgServer struct {
-	keeper types.Keeper
+	keeper        types.Keeper
+	accountKeeper types.AccountKeeper
 }
 
 func (m msgServer) Register(ctx context.Context, req *types.MsgRegister) (
@@ -45,6 +47,28 @@ func (m msgServer) Deregister(ctx context.Context, req *types.MsgDeregister) (
 
 	return &types.MsgDeregisterResponse{}, nil
 
+}
+
+func (srv msgServer) TokenMetadataAdd(goCtx context.Context, msg *types.TokenMetadataAddRequest) (*types.TokenMetadataAddResponse, error) {
+	ctx := sdk.UnwrapSDKContext(goCtx)
+	logger := srv.keeper.Logger(ctx)
+
+	cosmosSender, err := sdk.AccAddressFromBech32(msg.CosmosSender)
+	if err != nil {
+		return nil, err
+	}
+
+	account := srv.accountKeeper.GetAccount(ctx, cosmosSender)
+	if account == nil {
+		logger.Error("account is nil.", "CosmosSender", msg.CosmosSender)
+		return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.CosmosSender)
+	}
+
+	denom := srv.keeper.AddIBCTokenMetadata(ctx, *msg.Metadata, cosmosSender)
+
+	return &types.TokenMetadataAddResponse{
+		Denom: denom,
+	}, nil
 }
 
 // NewMsgServerImpl returns an implementation of MsgServer interface

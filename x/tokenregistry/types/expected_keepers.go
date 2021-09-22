@@ -1,7 +1,10 @@
 package types
 
 import (
+	"github.com/tendermint/tendermint/libs/log"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	abci "github.com/tendermint/tendermint/abci/types"
 )
 
@@ -16,4 +19,13 @@ type Keeper interface {
 	InitGenesis(ctx sdk.Context, state GenesisState) []abci.ValidatorUpdate
 	ExportGenesis(ctx sdk.Context) *GenesisState
 	GetDenomWhitelist(ctx sdk.Context) Registry
+	Logger(ctx sdk.Context) log.Logger
+	GetTokenMetadata(ctx sdk.Context, denomHash string) (TokenMetadata, bool)
+	AddTokenMetadata(ctx sdk.Context, metadata TokenMetadata) string
+	AddIBCTokenMetadata(ctx sdk.Context, metadata TokenMetadata, cosmosSender sdk.AccAddress) string
+}
+
+type AccountKeeper interface {
+	GetAccount(sdk.Context, sdk.AccAddress) authtypes.AccountI
+	SetModuleAccount(sdk.Context, authtypes.ModuleAccountI)
 }

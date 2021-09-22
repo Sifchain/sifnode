@@ -37,6 +37,9 @@ import (
 	"github.com/Sifchain/sifnode/x/ethbridge/types"
 	oraclekeeper "github.com/Sifchain/sifnode/x/oracle/keeper"
 	oracleTypes "github.com/Sifchain/sifnode/x/oracle/types"
+	tokenregistrytypes "github.com/Sifchain/sifnode/x/tokenregistry/types"
+
+	tokenregistrykeeper "github.com/Sifchain/sifnode/x/tokenregistry/keeper"
 )
 
 const (
@@ -66,6 +69,7 @@ func CreateTestKeepers(t *testing.T, consensusNeeded float64, validatorAmounts [
 	keyBank := sdk.NewKVStoreKey(banktypes.StoreKey)
 	keyOracle := sdk.NewKVStoreKey(oracleTypes.StoreKey)
 	keyEthBridge := sdk.NewKVStoreKey(types.StoreKey)
+	keyTokenRegistry := sdk.NewKVStoreKey(tokenregistrytypes.StoreKey)
 
 	db := dbm.NewMemDB()
 	ms := store.NewCommitMultiStore(db)
@@ -77,6 +81,7 @@ func CreateTestKeepers(t *testing.T, consensusNeeded float64, validatorAmounts [
 	ms.MountStoreWithDB(keyBank, sdk.StoreTypeIAVL, db)
 	ms.MountStoreWithDB(keyOracle, sdk.StoreTypeIAVL, db)
 	ms.MountStoreWithDB(keyEthBridge, sdk.StoreTypeIAVL, db)
+	ms.MountStoreWithDB(keyTokenRegistry, sdk.StoreTypeIAVL, db)
 	err := ms.LoadLatestVersion()
 	require.NoError(t, err)
 
@@ -140,6 +145,7 @@ func CreateTestKeepers(t *testing.T, consensusNeeded float64, validatorAmounts [
 	stakingKeeper := stakingkeeper.NewKeeper(encCfg.Marshaler, keyStaking, accountKeeper, bankKeeper, paramsKeeper.Subspace(stakingtypes.ModuleName))
 	stakingKeeper.SetParams(ctx, stakingtypes.DefaultParams())
 	oracleKeeper := oraclekeeper.NewKeeper(encCfg.Marshaler, keyOracle, stakingKeeper, consensusNeeded)
+	tokenRegistryKeeper := tokenregistrykeeper.NewKeeper(encCfg.Marshaler, keyTokenRegistry)
 
 	// set module accounts
 	err = bankKeeper.AddCoins(ctx, notBondedPool.GetAddress(), totalSupply)
@@ -150,7 +156,7 @@ func CreateTestKeepers(t *testing.T, consensusNeeded float64, validatorAmounts [
 	accountKeeper.SetModuleAccount(ctx, bondPool)
 	accountKeeper.SetModuleAccount(ctx, notBondedPool)
 
-	ethbridgeKeeper := keeper.NewKeeper(encCfg.Marshaler, bankKeeper, oracleKeeper, accountKeeper, keyEthBridge)
+	ethbridgeKeeper := keeper.NewKeeper(encCfg.Marshaler, bankKeeper, oracleKeeper, accountKeeper, tokenRegistryKeeper, keyEthBridge)
 
 	CrossChainFeeReceiverAccount, _ := sdk.AccAddressFromBech32(TestCrossChainFeeReceiverAddress)
 	ethbridgeKeeper.SetCrossChainFeeReceiverAccount(ctx, CrossChainFeeReceiverAccount)
