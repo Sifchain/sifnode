@@ -26,9 +26,13 @@ func OnRecvPacketMaybeConvert(
 	if err := transfertypes.ModuleCdc.UnmarshalJSON(packet.GetData(), &data); err != nil {
 		return nil, nil, sdkerrors.Wrapf(sdkerrors.ErrUnknownRequest, "cannot unmarshal ICS-20 transfer packet data: %s", err.Error())
 	}
-	// get result of transfer receive
-	acknowledgement := channeltypes.NewResultAcknowledgement([]byte{byte(1)})
 	err := sdkTransferKeeper.OnRecvPacket(ctx, packet, data)
+	if err != nil {
+		acknowledgement := channeltypes.NewErrorAcknowledgement(err.Error())
+		return &sdk.Result{
+			Events: ctx.EventManager().Events().ToABCIEvents(),
+		}, acknowledgement.GetBytes(), nil
+	}
 	ctx.EventManager().EmitEvent(
 		sdk.NewEvent(
 			transfertypes.EventTypePacket,
@@ -39,24 +43,17 @@ func OnRecvPacketMaybeConvert(
 			sdk.NewAttribute(transfertypes.AttributeKeyAckSuccess, fmt.Sprintf("%t", err == nil)),
 		),
 	)
-	if err != nil {
-		acknowledgement = channeltypes.NewErrorAcknowledgement(err.Error())
-		return &sdk.Result{
-			Events: ctx.EventManager().Events().ToABCIEvents(),
-		}, acknowledgement.GetBytes(), nil
-	}
 	// Incoming coins were successfully minted onto the chain,
 	// check if conversion to another denom is required
 	receievedCoins, finalCoins := GetConvForIncomingCoins(ctx, whitelistKeeper, packet, data)
 	if receievedCoins != nil && finalCoins != nil {
 		err = ExecConvForIncomingCoins(ctx, receievedCoins, finalCoins, bankKeeper, packet, data)
+		// Revert, although this may cause packet to be relayed again.
 		if err != nil {
-			// Revert,
-			// although this may cause packet to be relayed again.
 			return nil, nil, sdkerrors.Wrap(sctransfertypes.ErrConvertingToUnitDenom, err.Error())
 		}
 	}
 	return &sdk.Result{
 		Events: ctx.EventManager().Events().ToABCIEvents(),
-	}, acknowledgement.GetBytes(), nil
+	}, []byte{byte(1)}, nil
 }
