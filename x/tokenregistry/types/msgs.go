@@ -110,8 +110,8 @@ func (m *MsgDeregister) GetSigners() []sdk.AccAddress {
 	return []sdk.AccAddress{addr}
 }
 
-// NewTokenMetadata is a constructor function for MsgTokenMetadataAdd
-func NewTokenMetadata(cosmosSender sdk.AccAddress,
+// NewTokenMetadataAddRequest is a constructor function for TokenMetadataAddRequest
+func NewTokenMetadataAddRequest(cosmosSender sdk.AccAddress,
 	name string,
 	symbol string,
 	decimals int64,

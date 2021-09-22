@@ -92,7 +92,7 @@ func GetCmdAddIBCTokenMetadata() *cobra.Command {
 			}
 
 			networkDescriptor := oracletypes.NetworkDescriptor(networkDescriptorRaw)
-			msg := types.NewTokenMetadata(cosmosSender, tokenName, tokenSymbol, tokenDecimals, tokenAddress, networkDescriptor)
+			msg := types.NewTokenMetadataAddRequest(cosmosSender, tokenName, tokenSymbol, tokenDecimals, tokenAddress, networkDescriptor)
 			if err := msg.ValidateBasic(); err != nil {
 				return err
 			}
