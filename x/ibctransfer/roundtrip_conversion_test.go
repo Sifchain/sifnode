@@ -1,8 +1,9 @@
 package ibctransfer_test
 
 import (
-	tokenregistrytest "github.com/Sifchain/sifnode/x/tokenregistry/test"
 	"testing"
+
+	tokenregistrytest "github.com/Sifchain/sifnode/x/tokenregistry/test"
 
 	"github.com/Sifchain/sifnode/x/ibctransfer"
 	"github.com/Sifchain/sifnode/x/ibctransfer/keeper"

@@ -2,6 +2,7 @@ package ibctransfer
 
 import (
 	"fmt"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	sdktransfertypes "github.com/cosmos/cosmos-sdk/x/ibc/applications/transfer/types"
@@ -10,38 +11,6 @@ import (
 	"github.com/Sifchain/sifnode/x/ibctransfer/types"
 	tokenregistrytypes "github.com/Sifchain/sifnode/x/tokenregistry/types"
 )
-
-// ShouldConvertIncomingCoins() is called after the SDK has accepted incoming coins,
-// or after the coins have "come back in" when a send is refunded.
-func ShouldConvertIncomingCoins(
-	ctx sdk.Context,
-	whitelistKeeper tokenregistrytypes.Keeper,
-	packet channeltypes.Packet,
-	data sdktransfertypes.FungibleTokenPacketData,
-) bool {
-	// get token registry entry for received denom
-	mintedDenom := GetMintedDenomFromPacket(packet, data)
-	wl := whitelistKeeper.GetDenomWhitelist(ctx)
-	mintedDenomRegistryEntry := whitelistKeeper.GetDenom(wl, mintedDenom)
-	// If this incoming coin isn't setup on the whitelist with decimals / unit denom,
-	// then no conversion happens.
-	// This extra decimal & UnitDenom check should ensure we still process refunds,
-	// even if the token permission / whitelist property has since been changed.
-	if !mintedDenomRegistryEntry.IsWhitelisted && (mintedDenomRegistryEntry.Decimals == 0 || mintedDenomRegistryEntry.UnitDenom == "") {
-		return false
-	}
-	// get unit denom to store funds in, or do not convert
-	unitDenom := mintedDenomRegistryEntry.UnitDenom
-	if unitDenom == "" || unitDenom == mintedDenom {
-		return false
-	}
-	unitDenomRegistryEntry := whitelistKeeper.GetDenom(wl, unitDenom)
-	if !unitDenomRegistryEntry.IsWhitelisted {
-		return false
-	}
-	// if unit_denom decimals are greater than minted denom decimals, we need to increase precision to convert them
-	return unitDenomRegistryEntry.Decimals > mintedDenomRegistryEntry.Decimals
-}
 
 // GetConvForIncomingCoins returns 1) the coins that are being received via IBC,
 // which need to be deducted from that denom when converting to final denom,
