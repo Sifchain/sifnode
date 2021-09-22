@@ -24,10 +24,10 @@ contract ReentrancyToken is ERC20 {
             payable(0x70997970C51812dc3A010C7d01b50e0d17dc79C8), // ethereumReceiver
             0xa48a285BAb4061e9104EeA29f968b1B801423E32, // tokenAddress
             100, // amount
-            1, // networkDescriptor
             "Reentrancy Token", // tokenName
             "RTK", // tokenSymbol
             18, // tokenDecimals
+            1, // networkDescriptor
             false, // doublePeg
             1, // nonce
             "" // cosmosDenom

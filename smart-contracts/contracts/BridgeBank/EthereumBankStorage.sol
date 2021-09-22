@@ -56,7 +56,7 @@ contract EthereumBankStorage {
         uint256 _value,
         uint256 indexed _nonce,
         uint8 _decimals,
-        uint256 _networkDescriptor,
+        int32 _networkDescriptor,
         string _denom
     );
 
@@ -72,7 +72,7 @@ contract EthereumBankStorage {
         uint8 _decimals,
         string _symbol,
         string _name,
-        uint256 _networkDescriptor
+        int32 _networkDescriptor
     );
 
     /**

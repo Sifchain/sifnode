@@ -41,7 +41,7 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
      */
     event LogNewBridgeTokenCreated(
         uint8 decimals,
-        uint256 indexed sourcechainId,
+        int32 indexed sourcechainId,
         string name,
         string symbol,
         address indexed sourceContractAddress,
@@ -78,7 +78,7 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
         uint256 _consensusThreshold,
         address[] calldata _initValidators,
         uint256[] calldata _initPowers,
-        uint256 _networkDescriptor
+        int32 _networkDescriptor
     ) external {
         require(!_initialized, "Initialized");
 
@@ -142,12 +142,12 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
         address payable ethereumReceiver,
         address tokenAddress,
         uint256 amount,
-        bool doublePeg,
-        uint128 nonce,
-        uint256 _networkDescriptor,
         string memory tokenName,
         string memory tokenSymbol,
         uint8 tokenDecimals,
+        int32 _networkDescriptor,
+        bool doublePeg,
+        uint128 nonce,
         string memory cosmosDenom
     ) public pure returns (uint256) {
         return uint256(
@@ -158,12 +158,12 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
                     ethereumReceiver,
                     tokenAddress,
                     amount,
-                    doublePeg,
-                    nonce,
-                    _networkDescriptor,
                     tokenName,
                     tokenSymbol,
                     tokenDecimals,
+                    _networkDescriptor,
+                    doublePeg,
+                    nonce,
                     cosmosDenom
                 )
             )
@@ -244,10 +244,10 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
         address payable ethereumReceiver;
         address tokenAddress;
         uint256 amount;
-        uint256 networkDescriptor;
         string tokenName;
         string tokenSymbol;
         uint8 tokenDecimals;
+        int32 networkDescriptor;
         bool doublePeg;
         uint128 nonce;
         string cosmosDenom;
@@ -314,12 +314,12 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
             claimData.ethereumReceiver,
             claimData.tokenAddress,
             claimData.amount,
-            claimData.doublePeg,
-            claimData.nonce,
-            claimData.networkDescriptor,
             claimData.tokenName,
             claimData.tokenSymbol,
             claimData.tokenDecimals,
+            claimData.networkDescriptor,
+            claimData.doublePeg,
+            claimData.nonce,
             claimData.cosmosDenom
         );
 
@@ -387,7 +387,7 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
      * @param _networkDescriptor Unique identifier of the network
      * @return Boolean: is `_networkDescriptor` what we expected?
      */
-    function _verifyNetworkDescriptor(uint256 _networkDescriptor) private view returns(bool) {
+    function _verifyNetworkDescriptor(int32 _networkDescriptor) private view returns(bool) {
         return _networkDescriptor == networkDescriptor;
     }
 
@@ -406,7 +406,7 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
         string memory name,
         address sourceChainTokenAddress,
         uint8 decimals,
-        uint256 _networkDescriptor,
+        int32 _networkDescriptor,
         string calldata cosmosDenom
     ) internal returns(address tokenAddress) {
         require(
