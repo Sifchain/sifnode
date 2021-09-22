@@ -1,19 +1,17 @@
 package ibctransfer_test
 
 import (
-	tokenregistrytest "github.com/Sifchain/sifnode/x/tokenregistry/test"
 	"testing"
+
+	tokenregistrytest "github.com/Sifchain/sifnode/x/tokenregistry/test"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	transfertypes "github.com/cosmos/cosmos-sdk/x/ibc/applications/transfer/types"
 	channeltypes "github.com/cosmos/cosmos-sdk/x/ibc/core/04-channel/types"
-	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/require"
-	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 
 	"github.com/Sifchain/sifnode/x/ibctransfer"
 	tokenregistrytypes "github.com/Sifchain/sifnode/x/tokenregistry/types"
-	whitelistmocks "github.com/Sifchain/sifnode/x/tokenregistry/types/mock"
 )
 
 func TestShouldConvertIncomingCoins(t *testing.T) {
@@ -68,8 +66,7 @@ func TestShouldConvertIncomingCoins(t *testing.T) {
 }
 
 func TestGetConvForIncomingCoins(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	ctx := sdk.NewContext(nil, tmproto.Header{ChainID: "foochainid"}, false, nil)
+	app, ctx, _ := tokenregistrytest.CreateTestApp(false)
 	returningTransferPacket := channeltypes.Packet{
 		Sequence:           0,
 		SourcePort:         "transfer",
@@ -79,8 +76,6 @@ func TestGetConvForIncomingCoins(t *testing.T) {
 		Data:               nil,
 	}
 	ibcDenom := transfertypes.FungibleTokenPacketData{
-		// When sender chain is the source,
-		// it simply sends the base denom without path prefix
 		Denom:  "transfer/channel-0/ueth",
 		Amount: 1000000000000,
 	}
@@ -95,13 +90,14 @@ func TestGetConvForIncomingCoins(t *testing.T) {
 		Denom:         "ceth",
 		Decimals:      18,
 	}
-	wl := whitelistmocks.NewMockKeeper(ctrl)
-	wl.EXPECT().GetDenomWhitelist(ctx)
-	registry := wl.GetDenomWhitelist(ctx)
-	wl.EXPECT().GetDenom(registry, "ueth").Return(&ibcRegistryEntry)
-	wl.EXPECT().GetDenom(registry, "ceth").Return(&unitDenomEntry)
-	wl.EXPECT().GetDenomWhitelist(ctx)
-	gotIBCToken, gotConvToken := ibctransfer.GetConvForIncomingCoins(ctx, wl, returningTransferPacket, ibcDenom)
+	app.TokenRegistryKeeper.SetToken(ctx, &unitDenomEntry)
+	app.TokenRegistryKeeper.SetToken(ctx, &ibcRegistryEntry)
+	registry := app.TokenRegistryKeeper.GetDenomWhitelist(ctx)
+	entry1 := app.TokenRegistryKeeper.GetDenom(registry, "ueth")
+	require.NotNil(t, entry1)
+	entry2 := app.TokenRegistryKeeper.GetDenom(registry, "ceth")
+	require.NotNil(t, entry2)
+	gotIBCToken, gotConvToken := ibctransfer.GetConvForIncomingCoins(ctx, app.TokenRegistryKeeper, returningTransferPacket, ibcDenom)
 	intAmount, _ := sdk.NewIntFromString("100000000000000000000")
 	require.Equal(t, *gotIBCToken, sdk.NewCoin("ueth", sdk.NewInt(1000000000000)))
 	require.Equal(t, *gotConvToken, sdk.NewCoin("ceth", intAmount))

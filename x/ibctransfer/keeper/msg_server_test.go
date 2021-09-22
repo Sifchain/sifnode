@@ -295,6 +295,7 @@ func TestConvertCoins(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			tokenDeduction, tokensConverted := keeper.ConvertCoinsForTransfer(tt.args.msg, &tt.args.registryEntry, &tt.args.sendAsEntry)
 			require.Equal(t, tt.tokensConverted, tokensConverted)
@@ -367,6 +368,7 @@ func TestPrepareToSendConvertedCoins(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			tokenDeduction, tokensConverted := keeper.ConvertCoinsForTransfer(tt.args.msg, &tt.args.registryEntry, &tt.args.sendAsEntry)
 			require.Equal(t, tt.tokensConverted, tokensConverted)

@@ -2,6 +2,7 @@ package ibctransfer
 
 import (
 	"fmt"
+
 	sctransfertypes "github.com/Sifchain/sifnode/x/ibctransfer/types"
 	tokenregistrytypes "github.com/Sifchain/sifnode/x/tokenregistry/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -62,9 +63,8 @@ func GetMintedDenomFromPacket(packet channeltypes.Packet, data transfertypes.Fun
 		denomTrace := transfertypes.ParseDenomTrace(denom)
 		if denomTrace.Path != "" {
 			return denomTrace.IBCDenom()
-		} else {
-			return denom
 		}
+		return denom
 	} else {
 		return transfertypes.ParseDenomTrace(transfertypes.GetDenomPrefix(packet.GetDestPort(), packet.GetDestChannel()) + data.Denom).IBCDenom()
 	}
