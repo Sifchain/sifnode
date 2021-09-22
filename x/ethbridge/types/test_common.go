@@ -50,7 +50,7 @@ func CreateTestEthMsg(t *testing.T, validatorAddress sdk.ValAddress, claimType C
 func CreateTestEthClaim(
 	t *testing.T, testContractAddress EthereumAddress, testTokenAddress EthereumAddress,
 	validatorAddress sdk.ValAddress, testEthereumAddress EthereumAddress, amount sdk.Int, symbol string, claimType ClaimType,
-	testDecimals int32, testName string,
+	testDecimals uint8, testName string,
 ) *EthBridgeClaim {
 	testCosmosAddress, err1 := sdk.AccAddressFromBech32(TestAddress)
 	require.NoError(t, err1)
