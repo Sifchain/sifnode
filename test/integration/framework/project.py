@@ -26,26 +26,35 @@ class Project:
     def project_dir(self, *paths):
         return os.path.abspath(os.path.join(self.base_dir, *paths))
 
+    def __rmdir(self, path):
+        if self.cmd.exists(path):
+            log.info("Removing '{}'...".format(path))
+            self.cmd.rmdir(path)
+        else:
+            log.info("Nothing to delete for '{}'".format(path))
+
     def cleanup_and_reset_state(self):
         force_kill_processes(self.cmd)
 
         # rm -rvf /tmp/tmp.xxxx (ganache DB, unique for every run)
-        self.cmd.rmdir(self.project_dir("test", "integration", "sifchainrelayerdb"))  # TODO move to /tmp
-        self.cmd.rmdir(self.project_dir("smart-contracts", "build"))  # truffle deploy
-        self.cmd.rmdir(self.project_dir("test", "integration", "vagrant", "data"))
-        self.cmd.rmdir(self.cmd.get_user_home(".sifnoded"))  # Probably needed for "--keyring-backend test"
+        self.__rmdir(self.project_dir("test", "integration", "sifchainrelayerdb"))  # TODO move to /tmp
+        self.__rmdir(self.project_dir("smart-contracts", "build"))  # truffle deploy
+        self.__rmdir(self.project_dir("test", "integration", "vagrant", "data"))
+        self.__rmdir(self.cmd.get_user_home(".sifnoded"))  # Probably needed for "--keyring-backend test"
+
+        self.__rmdir(self.project_dir("deploy", "networks"))  # from running integration tests
 
         # Peggy/devenv/hardhat cleanup
         # For full clean, also: cd smart-contracts && rm -rf node_modules && npm install
         # TODO Difference between yarn vs. npm install?
         # (1) = cd smart-contracts; npx hardhat run scripts/deploy_contracts.ts --network localhost
         # (2) = cd smart-contracts; GOBIN=/home/anderson/go/bin npx hardhat run scripts/devenv.ts
-        self.cmd.rmdir(self.project_dir("smart-contracts", "build"))  # (1)
-        self.cmd.rmdir(self.project_dir("smart-contracts", "artifacts"))  # (1)
-        self.cmd.rmdir(self.project_dir("smart-contracts", "cache"))  # (1)
-        self.cmd.rmdir(self.project_dir("smart-contracts", ".openzeppelin"))  # (1)
-        self.cmd.rmdir(self.project_dir("smart-contracts", "relayerdb"))  # (2)
-        self.cmd.rmdir(self.project_dir("smart-contracts", "venv"))
+        self.__rmdir(self.project_dir("smart-contracts", "build"))  # (1)
+        self.__rmdir(self.project_dir("smart-contracts", "artifacts"))  # (1)
+        self.__rmdir(self.project_dir("smart-contracts", "cache"))  # (1)
+        self.__rmdir(self.project_dir("smart-contracts", ".openzeppelin"))  # (1)
+        self.__rmdir(self.project_dir("smart-contracts", "relayerdb"))  # (2)
+        self.__rmdir(self.project_dir("smart-contracts", "venv"))
 
         # Additional cleanup (not neccessary to make it work)
         # self.cmd.rm(self.project_dir("smart-contracts/combined.log"))
@@ -55,6 +64,21 @@ class Project:
         # self.cmd.rmdir(self.project_dir("smart-contracts/.openzeppelin"))
 
         # rmdir ~/.cache/yarn
+
+    def fullclean(self):
+        go_home = self.cmd.get_user_home("go")
+        self.cmd.execst(["chmod", "-R", "+w", go_home])
+        self.__rmdir(go_home)
+        self.__rmdir(self.cmd.get_user_home("go"))
+        self.__rmdir(self.cmd.get_user_home(".npm"))
+        self.__rmdir(self.cmd.get_user_home(".npm-global"))
+        self.__rmdir(self.cmd.get_user_home(".npm-global"))
+        self.__rmdir(self.cmd.get_user_home(".cache/yarn"))
+        self.__rmdir(self.cmd.get_user_home(".sifnoded"))
+        self.__rmdir(self.cmd.get_user_home(".sifnode-integration"))
+        self.__rmdir(project_dir("smart-contracts/node_modules"))
+        self.cmd.execst(["npm", "install", "-g", "ganache-cli", "dotenv", "yarn"], cwd=self.smart_contracts_dir)
+        self.install_smart_contracts_dependencies()
 
     def yarn(self, args, cwd=None, env=None):
         return self.cmd.execst(["yarn"] + args, cwd=cwd, env=env, pipe=False)
@@ -135,19 +159,4 @@ class Project:
         self.cmd.rmdir(project_dir("smart-contracts/node_modules"))
         self.yarn(["install"], cwd=project_dir("smart-contracts"))
         self.make_go_binaries_2()
-        self.install_smart_contracts_dependencies()
-
-    def fullclean(self):
-        go_home = self.cmd.get_user_home("go")
-        self.cmd.execst(["chmod", "-R", "+w", go_home])
-        self.cmd.rmdir(go_home)
-        self.cmd.mkdir(self.cmd.get_user_home("go"))
-        self.cmd.rmdir(self.cmd.get_user_home(".npm"))
-        self.cmd.rmdir(self.cmd.get_user_home(".npm-global"))
-        self.cmd.mkdir(self.cmd.get_user_home(".npm-global"))
-        self.cmd.rmdir(self.cmd.get_user_home(".cache/yarn"))
-        self.cmd.rmdir(self.cmd.get_user_home(".sifnoded"))
-        self.cmd.rmdir(self.cmd.get_user_home(".sifnode-integration"))
-        self.cmd.rmdir(project_dir("smart-contracts/node_modules"))
-        self.cmd.execst(["npm", "install", "-g", "ganache-cli", "dotenv", "yarn"], cwd=self.smart_contracts_dir)
         self.install_smart_contracts_dependencies()

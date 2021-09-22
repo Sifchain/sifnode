@@ -871,24 +871,37 @@ class PeggyEnvironment(IntegrationTestsEnvironment):
 def main(argv):
     # tmux usage:
     # tmux new-session -d -s env1
+    # tmux main-pane-height -t env1 10
     # tmux split-window -h -t env1
     # tmux split-window -h -t env1
     # tmux select-layout -t env1 even-vertical
+    # OR: tmux select-layout main-horizontal
     logging.basicConfig(stream=sys.stdout, level=logging.DEBUG, format="%(message)s")
     what = argv[0] if argv else None
     cmd = Integrator()
     project = cmd.project
     if what == "project-init":
         project.init()
+    elif what == "project-clean":
+        project.cleanup_and_reset_state()
+    elif what == "project-fullclean":
+        project.fullclean()
     elif what == "run-ui-env":
         e = UIStackEnvironment(cmd)
         e.stack_save_snapshot()
         e.stack_push()
     elif what == "run-integration-env":
         env = IntegrationTestsEnvironment(cmd)
+        project.cleanup_and_reset_state()
+        # deploy/networks already included in run()
         processes = env.run()
         input("Press ENTER to exit...")
         killall(processes)
+        # TODO Cleanup:
+        # - rm -rf test/integration/sifnoderelayerdb
+        # - rm -rf networks/validators/localnet/$moniker/.sifnoded
+        # - If you ran the execute_integration_test_*.sh you need to kill ganache-cli for proper cleanup
+        #   as it might have been killed and started outside of our control
     elif what == "create_snapshot":
         snapshot_name = argv[1]
         project.cleanup_and_reset_state()
@@ -929,8 +942,6 @@ def main(argv):
             killall(processes)
             force_kill_processes(cmd)  # Some processes are restarted during integration tests so we don't own them
         log.info("Everything OK")
-    elif what == "fullclean":
-        project.fullclean()
     elif what == "test-logging":
         ls_cmd = mkcmd(["ls", "-al", "."], cwd="/tmp")
         res = stdout_lines(cmd.execst(**ls_cmd))
