@@ -4,22 +4,30 @@
 
 1. Switch to the root of the sifchain project.
 
-2. import the `gotpl` module
+2. Install bundler/gems:
 
-```
-go get github.com/belitre/gotpl
+```bash
+make -C ./deploy bundler
 ```
 
-3. Scaffold a new cluster:
 
+3. Ensure your `$GOPATH` is setup correctly:
+
+```bash
+export GOPATH=~/go
+export PATH=$PATH:$GOPATH/bin
 ```
+
+4. Compile `sifnoded`:
+
+```bash
+make install
+```
+
+5. Scaffold a new cluster:
+
+```bash
 rake "cluster:scaffold[<cluster>,<provider>]"
-```
-
-e.g.:
-
-```
-rake "cluster:scaffold[my-cluster,aws]"
 ```
 
 where:
@@ -29,57 +37,67 @@ where:
 |`<cluster>`|A name for your new cluster.|
 |`<provider>`|The cloud provider to use (currently only AWS is supported).|
 
-4. Once complete, you'll notice that several Terraform files/folders have been setup inside of the `.live` directory. We recommend you leave the defaults as-is, but for those that have experience with Terraform, feel free to adjust the configuration as you see fit.
+e.g.:
 
-5. Deploy the cluster to AWS (Default region is US-WEST-2):
-
+```bash
+rake "cluster:scaffold[my-cluster,aws]"
 ```
+
+6. Once complete, you'll notice that several Terraform files/folders have been setup inside of a `.live` directory. We recommend you leave the defaults as-is, but for those that have experience with Terraform, feel free to adjust the configuration as you see fit.
+
+7. Deploy the cluster to AWS (Default region is US-WEST-2):
+
+```bash
 rake "cluster:deploy[<cluster>,<provider>]"
 ```
 
+where:
+
+|Param|Description|
+|-----|----------|
+|`<cluster>`|The name of your new cluster.|
+|`<provider>`|The cloud provider to use (currently only AWS is supported).|
+
 e.g.:
 
-```
+```bash
 rake "cluster:deploy[my-cluster,aws]"
 ```
 
-6. Once complete, you should see your cluster on your AWS account. You can also check using `kubectl`:
+Once complete, you should see your cluster on your AWS account.
 
-```
-kubectl get pods --all-namespaces --kubeconfig ./.live/sifchain-aws-my-cluster/kubeconfig_sifchain-aws-my-cluster
-```
+8. Update the cluster kubeconfig (so you may interact with the cluster properly):
 
-If you receive the error:
- 
-```
-Unable to connect to the server: getting credentials: exec: exec: "aws-iam-authenticator": executable file not found in $PATH
+```bash
+rake "provider:aws:kubeconfig[<cluster>,<region>,<aws_profile>]"
 ```
 
-then install `aws-iam-authenticator` from [here](https://docs.aws.amazon.com/eks/latest/userguide/install-aws-iam-authenticator.html).
+where:
+
+|Param|Description|
+|-----|----------|
+|`<cluster>`|The name of your cluster.|
+|`<region>`|The AWS region where your cluster was deployed.|
+|`<aws_profile>`|*Optional. Your AWS profile (used when you have multiple AWS accounts setup locally).|
+
+e.g.:
+
+```bash
+rake "provider:aws:kubeconfig[my-cluster,us-west-2]"
+```
 
 ## Deploy a new node
 
 1. Generate a new mnemonic key for your node. This key is what your node will use to eventually sign transactions/blocks on the network.
 
-```
-rake "keys:generate:mnemonic"
-```
-
-If this command fails, with:
-
-_rake abort!_
-
-then please ensure that your `$GOPATH` is set:
-
-```
-export GOPATH=~/go
-export PATH=$PATH:$GOPATH/bin
+```bash
+rake "sifnode:keys:generate:mnemonic"
 ```
 
 2. Import your newly generated key:
 
-```
-rake "keys:import[<moniker>]"
+```bash
+rake "sifnode:keys:import[<moniker>]"
 ```
 
 where:
@@ -90,19 +108,31 @@ where:
 
 e.g.:
 
-```
-rake "keys:import[my-node]"
+```bash
+rake "sifnode:keys:import[my-node]"
 ```
 
 3. Check that it's been imported accordingly:
 
+```bash
+rake "sifnode:keys:show[<moniker>]"
 ```
-sifnoded keys show <moniker> --keyring-backend file 
+
+where:
+
+|Param|Description|
+|-----|----------|
+|`<moniker>`|The moniker or name of your node as you want it to appear on the network.|
+
+e.g.:
+
+```bash
+rake "sifnode:keys:show[my-node]"
 ```
 
 4. Deploy a new node to your cluster and connect to an existing network:
 
-```
+```bash
 rake "sifnode:peer:deploy[<cluster>,<chain_id>,<provider>,<namespace>,<image>,<image_tag>,<moniker>,<mnemonic>,<peer_address>,<genesis_url>,<enable_rpc>,<enable_external_rpc>]"
 ```
 
@@ -115,7 +145,7 @@ where:
 |`<provider>`|The cloud provider to use (currently only AWS is supported).|
 |`<namespace>`|The Kubernetes namespace to use (e.g.: sifnode).|
 |`<image>`|The image to pull down from Docker Hub (e.g.: sifchain/sifnoded).|
-|`<image_tag>`|The image tag to use (this must be `mainnet-genesis`).|
+|`<image_tag>`|The image tag to use (this must be `betanet-0.9.0`).|
 |`<moniker>`|The moniker or name of your node as you want it to appear on the network.|
 |`<peer_address>`|The address of the peer to connect to.|
 |`<genesis_url>`|The URL of genesis file for the network.|
@@ -124,97 +154,113 @@ where:
 
 e.g.:
 
+```bash
+rake "sifnode:peer:deploy[my-cluster,sifchain-1,aws,sifnode,sifchain/sifnoded,betanet-0.9.0,my-node,'my mnemonic',0d4981bdaf4d5d73bad00af3b1fa9d699e4d3bc0@44.235.108.41:26656,https://rpc.sifchain.finance/genesis,false,false]"
 ```
-rake "sifnode:peer:deploy[my-cluster,sifchain,aws,sifnode,sifchain/sifnoded,mainnet-0.9.0,my-node,'my mnemonic',0d4981bdaf4d5d73bad00af3b1fa9d699e4d3bc0@44.235.108.41:26656,https://rpc.sifchain.finance/genesis,false,false]"
-```
-
-_Please note: the image tag must be in the format of `mainnet-<version>`. Replace `<version>` with the latest version number found [here](https://github.com/Sifchain/sifnode/blob/master/version)._
 
 5. Once deployed, check the status of the pods:
 
-```
-kubectl get pods -n sifnode --kubeconfig ./.live/sifchain-aws-my-cluster/kubeconfig_sifchain-aws-my-cluster
-```
-
-and you should see something that resembles the following:
-
-```                            
-NAME                           READY   STATUS     RESTARTS   AGE
-sifnode-75464fcd4c-dsmzq       0/1     Init:0/2   0          10s
-```
-
-_It may take several minutes for your node to become active._
-
-6. Once your node is active (Status of "Running"), you can view it's sync status by looking at the logs. Run:
-
-```
-kubectl -n sifnode logs <pod> --kubeconfig ./.live/sifchain-aws-my-cluster/kubeconfig_sifchain-aws-my-cluster
-```
-
-e.g.:
-
-```
-kubectl -n sifnode logs sifnode-65fbd7798f-6wqhb --kubeconfig ./.live/sifchain-aws-my-cluster/kubeconfig_sifchain-aws-my-cluster
-```
-
-Note: Before moving to further steps make sure that your node is synced upto the current block height. 
-You can check this by comparing your logs from above command with the block height from
-```
-https://blockexplorer.sifchain.finance/blocks
-```
-
-## Stake to become a validator
-
-In order to become a validator, that is a node which can participate in consensus on the network, you'll need to stake `rowan`.
-
-1. If using testnet, obtain funds from the faucet.
-
-2. Get the public key of your node:
-
-```
-rake "validator:keys:public[<cluster>,<provider>,<namespace>]"
-```
-
-e.g.:
-
-```
-rake "validator:keys:public[my-cluster,aws,sifnode]"
-```
-
-3. Stake:
-
-```
-rake "validator:stake[<chain_id>,<moniker>,<amount>,<gas>,<gas_prices>,<public_key>,<node_rpc_address>]"
+```bash
+rake "cluster:pods[<cluster>,<provider>,<namespace>]"
 ```
 
 where:
 
 |Param|Description|
 |-----|----------|
-|`<chain_id>`|The Chain ID of the network (e.g.: sifchain).|
-|`<moniker>`|The moniker or name of your node as you want it to appear on the network.|
-|`<amount>`|The amount to stake, including the denomination (e.g.: 100000000rowan). The precision used is 1e18.|
-|`<gas>`| The per-transaction gas limit (e.g.: 300000).|
-|`<gas_prices>`|The minimum gas price to use  (e.g.: 0.5rowan).|
-|`<public_key>`|The public key of your validator (you got this in the previous step).|
-|`<node_rpc_address>`|The address to broadcast the transaction to (e.g.: tcp://rpc.sifchain.finance:80).|
+|`<cluster>`|The name of your cluster.|
+|`<provider>`|The cloud provider to use (currently only AWS is supported).|
+|`<namespace>`|The namespace you want to check (e.g.: `sifnode`).|
 
 e.g.:
 
+```bash
+rake "cluster:pods[my-cluster,aws,sifnode]"
 ```
-rake "validator:stake[sifchain,my-node,10000000rowan,300000,0.5rowan,<public_key>,tcp://rpc.sifchain.finance:80]"
+
+and you should see something that resembles the following:
+
+```bash                    
+NAME                           READY   STATUS     RESTARTS   AGE
+sifnode-75464fcd4c-dsmzq       0/1     Init:0/2   0          10s
+```
+
+_It may take several minutes for your node to become active._
+
+6. Once your node is active (Status of "Running"), you can view its sync status as follows:
+
+```bash
+rake "sifnode:status[<cluster>,<namespace>]"
+```
+
+where:
+
+|Param|Description|
+|-----|----------|
+|`<cluster>`|The name of your cluster.|
+|`<namespace>`|The namespace you want to check (e.g.: `sifnode`).|
+
+e.g.:
+
+```bash
+rake "sifnode:status[my-cluster,sifnode]"
+```
+
+## Stake to become a validator
+
+In order to become a validator, that is a node which can participate in consensus on the network, you'll need to stake `rowan`.
+
+1. Get the public key of your node:
+
+```bash
+rake "sifnode:keys:public[<cluster>,<provider>,<namespace>]"
+```
+
+where:
+
+|Param|Description|
+|-----|----------|
+|`<cluster>`|The name of your cluster.|
+|`<provider>`|The cloud provider to use (currently only AWS is supported).|
+|`<namespace>`|The namespace you want to check (e.g.: `sifnode`).|
+
+e.g.:
+
+```bash
+rake "sifnode:keys:public[my-cluster,aws,sifnode]"
+```
+
+3. Stake:
+
+```bash
+rake "sifnode:staking:stake[<commission_max_change_rate>,<commission_max_rate>,<commission_rate>,<chain_id>,<moniker>,<amount>,<gas>,<gas_prices>,<public_key>,<node>]"
+```
+
+where:
+
+|Param|Description|
+|-----|----------|
+|`<commission_max_change_rate>`|The maximum commission change rate percentage (per day).|
+|`<commission_max_rate>`|The maximum commission rate percentage.|
+|`<commission_rate>`|The initial commission rate percentage.|
+|`<chain_id>`|The Chain ID of the network (e.g.: `sifchain-1`).|
+|`<moniker>`|The moniker or name of your node as you want it to appear on the network.|
+|`<amount>`|The amount to stake, including the denomination (e.g.: `100000000rowan`). The precision used is 1e18.|
+|`<gas>`| The per-transaction gas limit (e.g.: `300000`).|
+|`<gas_prices>`|The minimum gas price to use  (e.g.: `0.5rowan`).|
+|`<public_key>`|The public key of your validator (you got this in the previous step).|
+|`<node_rpc_address>`|The address to broadcast the transaction to (e.g.: `tcp://rpc.sifchain.finance:80`).|
+
+e.g.:
+
+```bash
+rake "sifnode:staking:stake[0.1,0.1,0.1,sifchain-1,my-node,10000000rowan,300000,0.5rowan,<public_key>,tcp://rpc.sifchain.finance:80]"
 ```
 
 4. It may take several blocks before your node appears as a validator on the network, but you can always check by running:
 
-```
-sifnoded q tendermint-validator-set --node <node_rpc_address> --trust-node
-```
-
-e.g.:
-
-```
-sifnoded q tendermint-validator-set --node tcp://rpc.sifchain.finance:80 --trust-node
+```bash
+rake "sifnode:staking:validators"
 ```
 
 ## Additional Resources
