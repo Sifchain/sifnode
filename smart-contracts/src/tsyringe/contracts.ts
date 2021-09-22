@@ -75,7 +75,7 @@ export class CosmosBridgeProxy {
       const args = await cosmosBridgeArgumentsPromise.cosmosBridgeArguments
       const cosmosBridgeProxy = await hardhatRuntimeEnvironment.upgrades.deployProxy(cosmosBridgeFactory,
         args.asArray(),
-        { initializer: 'initialize(address,uint256,address[],uint256[],uint256)' }
+        { initializer: 'initialize(address,uint256,address[],uint256[],int32)' }
       )
       await cosmosBridgeProxy.deployed()
       return cosmosBridgeProxy
@@ -147,7 +147,7 @@ export class BridgeBankProxy {
       const bridgeBankArguments = await this.bridgeBankArguments.asArray()
       const bridgeBankProxy = await h.upgrades.deployProxy(bridgeBankFactory,
         bridgeBankArguments,
-        { initializer: 'initialize(address,address,address,address,uint256)' }
+        { initializer: 'initialize(address,address,address,address,int32)' }
       ) as BridgeBank
       await bridgeBankProxy.deployed()
       const own = await bridgeBankProxy.owner()
