@@ -41,7 +41,7 @@ func NewEthBridgeClaim(
 		Amount:                amount,
 		ClaimType:             claimType,
 		TokenName:             tokenName,
-		Decimals:              int32(decimals),
+		Decimals:              int64(decimals),
 		DenomHash:             denomHash,
 	}
 }

@@ -127,11 +127,7 @@ func createClaimHandler(cliCtx client.Context) http.HandlerFunc {
 		// create the message
 		ethBridgeClaim := types.NewEthBridgeClaim(
 			req.NetworkDescriptor, bridgeContractAddress, int64(req.Nonce), req.Symbol,
-<<<<<<< HEAD
 			tokenContractAddress, ethereumSender, cosmosReceiver, validator, req.Amount, ct, req.TokenName, uint8(req.Decimals))
-=======
-			tokenContractAddress, ethereumSender, cosmosReceiver, validator, req.Amount, ct, req.TokenName, int64(req.Decimals))
->>>>>>> future/peggy2
 		msg := types.NewMsgCreateEthBridgeClaim(ethBridgeClaim)
 		err = msg.ValidateBasic()
 		if err != nil {
