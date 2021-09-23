@@ -27,7 +27,7 @@ func EthereumEventToEthBridgeClaim(valAddr sdk.ValAddress, event types.EthereumE
 	witnessClaim := ethbridge.EthBridgeClaim{}
 
 	// chainID type casting (*big.Int -> int)
-	networkDescriptor := event.NetworkDescriptor
+	networkDescriptor := oracletypes.NetworkDescriptor(event.NetworkDescriptor)
 
 	bridgeContractAddress := ethbridge.NewEthereumAddress(event.BridgeContractAddress.Hex())
 

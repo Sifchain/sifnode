@@ -5,7 +5,6 @@ package relayer
 import (
 	"context"
 	"crypto/ecdsa"
-	"fmt"
 	"log"
 	"math/big"
 	"os"
@@ -355,7 +354,7 @@ func (sub EthereumSub) Replay(txFactory tx.Factory, fromBlock int64, toBlock int
 		if err != nil {
 			log.Println("Failed to get event from ethereum log")
 		} else if isBurnLock {
-			log.Println(fmt.Sprintf("found out a burn lock event"))
+			log.Println("found out a burn lock event")
 			if !EventProcessed(bridgeClaims, event) {
 				err := sub.handleEthereumEvent(txFactory, []types.EthereumEvent{event}, symbolTranslator)
 				if err != nil {
@@ -399,7 +398,7 @@ func (sub EthereumSub) logToEvent(networkDescriptor oracletypes.NetworkDescripto
 		return event, false, err
 	}
 	event.BridgeContractAddress = contractAddress
-	event.NetworkDescriptor = networkDescriptor
+	event.NetworkDescriptor = int32(networkDescriptor)
 	if eventName == types.LogBurn.String() {
 		event.ClaimType = ethbridge.ClaimType_CLAIM_TYPE_BURN
 	} else {

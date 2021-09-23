@@ -55,7 +55,7 @@ type EthereumEvent struct {
 	Symbol                string
 	Name                  string
 	Decimals              uint8
-	NetworkDescriptor     oracle.NetworkDescriptor
+	NetworkDescriptor     int32
 	Value                 *big.Int
 	Nonce                 *big.Int
 	ClaimType             ethbridge.ClaimType
