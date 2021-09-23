@@ -48,8 +48,8 @@ func IsRecvPacketAllowed(ctx sdk.Context, whitelistKeeper tokenregistrytypes.Kee
 	if transfertypes.ReceiverChainIsSource(packet.GetSourcePort(), packet.GetSourceChannel(), data.Denom) {
 		return true
 	}
-	denom := GetMintedDenomFromPacket(packet, data)
 	registry := whitelistKeeper.GetDenomWhitelist(ctx)
+	denom := GetMintedDenomFromPacket(packet, data)
 	entry := whitelistKeeper.GetDenom(registry, denom)
 	if entry == nil {
 		return false

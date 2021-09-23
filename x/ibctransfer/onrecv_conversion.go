@@ -53,7 +53,8 @@ func OnRecvPacketMaybeConvert(
 			return nil, nil, sdkerrors.Wrap(sctransfertypes.ErrConvertingToUnitDenom, err.Error())
 		}
 	}
+	acknowledgement := channeltypes.NewResultAcknowledgement([]byte{byte(1)})
 	return &sdk.Result{
 		Events: ctx.EventManager().Events().ToABCIEvents(),
-	}, []byte{byte(1)}, nil
+	}, acknowledgement.GetBytes(), nil
 }

@@ -25,8 +25,8 @@ func GetConvForIncomingCoins(
 	// so that it can be converted to the denom it should be stored as.
 	// For a native token that has been returned, this will just be a base_denom,
 	// which will be on the whitelist.
-	mintedDenom := GetMintedDenomFromPacket(packet, data)
 	registry := whitelistKeeper.GetDenomWhitelist(ctx)
+	mintedDenom := GetMintedDenomFromPacket(packet, data)
 	// get token registry entry for received denom
 	mintedDenomEntry := whitelistKeeper.GetDenom(registry, mintedDenom)
 	// convert to unit_denom
@@ -40,9 +40,13 @@ func GetConvForIncomingCoins(
 		return nil, nil
 	}
 	// get the token amount from the packet data
-	decAmount := sdk.NewDecFromInt(sdk.NewIntFromUint64(data.Amount))
 	// Calculate the conversion difference for increasing precision.
 	po := convertToDenomEntry.Decimals - mintedDenomEntry.Decimals
+	if po <= 0 {
+		// Shortcut to prevent crash if po <= 0
+		return nil, nil
+	}
+	decAmount := sdk.NewDecFromInt(sdk.NewIntFromUint64(data.Amount))
 	convAmountDec := IncreasePrecision(decAmount, po)
 	convAmount := sdk.NewIntFromBigInt(convAmountDec.TruncateInt().BigInt())
 	// create converted and ibc tokens with corresponding denoms and amounts
