@@ -2,7 +2,12 @@
 
 ## Getting Started
 
-### Prerequisites
+#### Prerequisites / Dependencies:
+
+- Clone the repository (`git clone git@github.com:Sifchain/sifnode.git`)
+- [Ruby 2.7.x](https://www.ruby-lang.org/en/documentation/installation)
+- [Golang](https://golang.org/doc/install)
+- [Docker](https://www.docker.com/get-started)
 
 The deployment rake tasks and helm charts have moved [here](https://github.com/Sifchain/sifchain-deploy-public).
 
@@ -14,8 +19,8 @@ git clone ssh://git@github.com/Sifchain/sifchain-deploy-public ./deploy
 
 ### Testnet
 
-Please see [here](https://github.com/Sifchain/sifnode/tree/master/docs/chainOps/standalone/tutorials/testnet.md) for instructions on how to connect.
+Please see [here](https://github.com/Sifchain/sifnode/tree/develop/docs/chainOps/standalone/tutorials/testnet.md) for instructions on how to connect.
 
 ### BetaNet
 
-Please see [here](https://github.com/Sifchain/sifnode/tree/master/docs/chainOps/standalone/tutorials/betanet.md) for instructions on how to connect.
+Please see [here](https://github.com/Sifchain/sifnode/tree/develop/docs/chainOps/standalone/tutorials/betanet.md) for instructions on how to connect.
