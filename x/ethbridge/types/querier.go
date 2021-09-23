@@ -42,18 +42,18 @@ func NewQueryCrosschainFeeConfigResponse(crosschainFeeConfig oracletypes.CrossCh
 	}
 }
 
-// NewLockBurnNonceRequest creates a new QueryLockBurnNonceRequest
-func NewLockBurnNonceRequest(networkDescriptor oracletypes.NetworkDescriptor, relayerValAddress string) *QueryLockBurnNonceRequest {
-	return &QueryLockBurnNonceRequest{
+// NewEthereumLockBurnNonceRequest creates a new QueryLockBurnNonceRequest
+func NewEthereumLockBurnNonceRequest(networkDescriptor oracletypes.NetworkDescriptor, relayerValAddress string) *QueryEthereumLockBurnNonceRequest {
+	return &QueryEthereumLockBurnNonceRequest{
 		NetworkDescriptor: networkDescriptor,
 		RelayerValAddress: relayerValAddress,
 	}
 }
 
-// NewLockBurnNonceResponse creates a new QueryLockBurnNonceResponse instance
-func NewLockBurnNonceResponse(lockBurnNonce uint64) QueryLockBurnNonceResponse {
-	return QueryLockBurnNonceResponse{
-		LockBurnNonce: lockBurnNonce,
+// NewEthereumLockBurnNonceResponse creates a new QueryEthereumLockBurnNonceResponse instance
+func NewEthereumLockBurnNonceResponse(lockBurnNonce uint64) QueryEthereumLockBurnNonceResponse {
+	return QueryEthereumLockBurnNonceResponse{
+		EthereumLockBurnNonce: lockBurnNonce,
 	}
 }
 

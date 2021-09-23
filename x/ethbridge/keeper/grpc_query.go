@@ -52,7 +52,7 @@ func (srv queryServer) CrosschainFeeConfig(ctx context.Context, req *types.Query
 	return &res, nil
 }
 
-func (srv queryServer) LockBurnNonce(ctx context.Context, req *types.QueryLockBurnNonceRequest) (*types.QueryLockBurnNonceResponse, error) {
+func (srv queryServer) EthereumLockBurnNonce(ctx context.Context, req *types.QueryEthereumLockBurnNonceRequest) (*types.QueryEthereumLockBurnNonceResponse, error) {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 
 	networkDescriptor := req.GetNetworkDescriptor()
@@ -66,7 +66,7 @@ func (srv queryServer) LockBurnNonce(ctx context.Context, req *types.QueryLockBu
 
 	lockBurnNonce := srv.Keeper.GetEthereumLockBurnNonce(sdkCtx, networkDescriptor, address)
 
-	res := types.NewLockBurnNonceResponse(lockBurnNonce)
+	res := types.NewEthereumLockBurnNonceResponse(lockBurnNonce)
 
 	return &res, nil
 }

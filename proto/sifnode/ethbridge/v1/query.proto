@@ -15,10 +15,10 @@ service Query {
   // CrosschainFeeConfig queries crosschain fee config for a network
   rpc CrosschainFeeConfig(QueryCrosschainFeeConfigRequest)
       returns (QueryCrosschainFeeConfigResponse) {}
-  // LockBurnNonce query lock burn nonce for a relayer in a network
-  rpc LockBurnNonce(QueryLockBurnNonceRequest)
-      returns (QueryLockBurnNonceResponse) {}
-  // WitnessLockBurnNonce query lock burn nonce for a relayer in a network
+  // EthereumLockBurnNonce query ethereum lock burn nonce for a relayer in a network
+  rpc EthereumLockBurnNonce(QueryEthereumLockBurnNonceRequest)
+      returns (QueryEthereumLockBurnNonceResponse) {}
+  // WitnessLockBurnNonce query witness lock burn nonce for a relayer in a network
   rpc WitnessLockBurnNonce(QueryWitnessLockBurnNonceRequest)
       returns (QueryWitnessLockBurnNonceResponse) {}
 }
@@ -61,14 +61,16 @@ message ProphciesCompletedQueryResponse {
   repeated sifnode.oracle.v1.ProphecyInfo prophecy_info = 1;
 }
 
-// QueryLockBurnNonceRequest payload for LockBurnNonce rpc query
-message QueryLockBurnNonceRequest {
+// QueryEthereumLockBurnNonceRequest payload for LockBurnNonce rpc query
+message QueryEthereumLockBurnNonceRequest {
   sifnode.oracle.v1.NetworkDescriptor network_descriptor = 1;
   string relayer_val_address = 2;
 }
 
-// QueryLockBurnNonceResponse return LockBurnNonce
-message QueryLockBurnNonceResponse { uint64 lock_burn_nonce = 1; }
+// QueryEthereumLockBurnNonceResponse return LockBurnNonce
+message QueryEthereumLockBurnNonceResponse {
+  uint64 ethereum_lock_burn_nonce = 1;
+}
 
 // QueryWitnessLockBurnNonceRequest payload for LockBurnNonce rpc query
 message QueryWitnessLockBurnNonceRequest {

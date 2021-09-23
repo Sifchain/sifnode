@@ -91,12 +91,12 @@ func GetLockBurnNonce() *cobra.Command {
 
 			queryClient := types.NewQueryClient(clientCtx)
 
-			req := &types.QueryLockBurnNonceRequest{
+			req := &types.QueryEthereumLockBurnNonceRequest{
 				NetworkDescriptor: oracletypes.NetworkDescriptor(networkDescriptor),
 				RelayerValAddress: args[1],
 			}
 
-			res, err := queryClient.LockBurnNonce(context.Background(), req)
+			res, err := queryClient.EthereumLockBurnNonce(context.Background(), req)
 			if err != nil {
 				return err
 			}
