@@ -30,18 +30,16 @@ func TestExportImportConversionEquality(t *testing.T) {
 		Amount: 184467440737,
 	}
 	rowanEntry := tokenregistrytypes.RegistryEntry{
-		IsWhitelisted:        true,
 		Decimals:             18,
 		Denom:                "rowan",
 		BaseDenom:            "rowan",
 		IbcCounterpartyDenom: "microrowan",
 	}
 	microRowanEntry := tokenregistrytypes.RegistryEntry{
-		IsWhitelisted: true,
-		Decimals:      10,
-		Denom:         "microrowan",
-		BaseDenom:     "microrowan",
-		UnitDenom:     "rowan",
+		Decimals:  10,
+		Denom:     "microrowan",
+		BaseDenom: "microrowan",
+		UnitDenom: "rowan",
 	}
 	app.TokenRegistryKeeper.SetToken(ctx, &rowanEntry)
 	app.TokenRegistryKeeper.SetToken(ctx, &microRowanEntry)
