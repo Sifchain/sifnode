@@ -131,7 +131,7 @@ export function EnvJSONWriter(args: {
     const rootValues: EnvDictionary = {}
     Object.values(output).forEach(module => {
       Object.entries(module).forEach(entry => {
-        envValues.push(`${entry[0]}="${entry[1]}"`);
+        envValues.push(`export ${entry[0]}="${entry[1]}"`);
         rootValues[entry[0]] = entry[1] as string;
       });
     });

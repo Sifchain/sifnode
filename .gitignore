@@ -27,7 +27,8 @@ smart-contracts/coverage/*
 smart-contracts/coverage.json
 smart-contracts/test/build/*
 smart-contracts/cache/*
-
+smart-contracts/env.json
+smart-contracts/environment.json
 node_modules/
 
 deploy
