@@ -1,10 +1,8 @@
-from web3 import Web3
 import json
 import logging
 import os
 import subprocess
 import time
-import hashlib
 from dataclasses import dataclass
 from functools import lru_cache
 
@@ -17,8 +15,6 @@ highest_gas_cost = max(burn_gas_cost, lock_gas_cost)
 
 
 sifnoded_binary = "sifnoded"
-ethereum_websocket = ""
-
 
 @dataclass
 class EthereumToSifchainTransferRequest:
@@ -26,14 +22,11 @@ class EthereumToSifchainTransferRequest:
     sifchain_destination_address: str = ""
     ethereum_address: str = ""
     ethereum_private_key_env_var: str = "not required for localnet"
-    # TODO: Fetch from env variable
-    ethereum_websocket: str = "ws://localhost:8545/"
     sifchain_symbol: str = "ceth"
     ethereum_symbol: str = "eth"
     ethereum_network: str = ""  # mainnet, ropsten, http:// for localnet
     amount: int = 0
     ceth_amount: int = 0
-    # Deprecated, see https://github.com/Sifchain/sifnode/pull/1802#discussion_r697403408
     sifchain_fees: str = ""
     smart_contracts_dir: str = ""
     ethereum_chain_id: str = "5777"
@@ -51,13 +44,6 @@ class EthereumToSifchainTransferRequest:
     # this to true if the block time is really short, since
     # you may get a block advance as soon as you submit the transaction.
     check_wait_blocks: bool = False
-
-    def __post_init__(self):
-        # Set websocket as global from last init of this object. Its used all over
-        # I know its ugly but it works and lets it be configurable as this should only
-        # be set once but should still be changeable if needed for specific tests
-        global ethereum_websocket
-        ethereum_websocket = self.ethereum_websocket
 
     def as_json(self):
         return json.dumps(self.__dict__)
@@ -111,28 +97,15 @@ def print_error_message(error_message):
     raise Exception(error_message)
 
 
-def get_env_var(name):
-    result = os.environ.get(name)
-    if result is None:
-        tmp = os.environ.get("VAGRANT_ENV_JSON")
-        if tmp:
-            import json
-            with open(tmp, "rt") as f:
-                env = json.loads(f.read())
-            result = env.get(name)
-    return result
-
-
 def get_required_env_var(name, why: str = "by the system"):
-    result = get_env_var(name)
+    result = os.environ.get(name)
     if not result:
         print_error_message(f"{name} env var is required {why}")
     return result
 
 
 def get_optional_env_var(name: str, default_value: str):
-    result = get_env_var(name)
-    print(f"ENV VARIABLE - {name}={result}")
+    result = os.environ.get(name)
     return result if result else default_value
 
 
@@ -164,8 +137,7 @@ def get_shell_output_json(command_line):
         result = json.loads(output)
         return result
     except:
-        logging.critical(
-            f"failed to decode json.  cmd is: {command_line}, output is: {output}")
+        logging.critical(f"failed to decode json.  cmd is: {command_line}, output is: {output}")
         raise
 
 
@@ -177,8 +149,7 @@ def get_shell_output_yaml(command_line):
         result = yaml.safe_load(output)
         return result
     except:
-        logging.critical(
-            f"failed to decode json.  cmd is: {command_line}, output is: {output}")
+        logging.critical(f"failed to decode json.  cmd is: {command_line}, output is: {output}")
         raise
 
 
@@ -193,32 +164,12 @@ def run_yarn_command(command_line):
     try:
         return json.loads(json_line)
     except Exception as e:
-        raise Exception(
-            f"json error from command:\n{command_line}\noutput:\n{lines}\noriginal exception: {e}")
-
-# Gets the Token Metadata from a denom hash
-
-
-def get_token_metadata(denomHash):
-    command_line = f"{sifnoded_binary} query ethbridge metadata {denomHash}"
-    return get_shell_output(command_line)
-
-
-def kill_ebrelayer():
-    return get_shell_output("pkill -9 ebrelayer || true")
-
-
-def start_ebrelayer():
-    integration_dir = get_required_env_var("TEST_INTEGRATION_DIR")
-    return get_shell_output(f"{integration_dir}/sifchain_start_ebrelayer.sh")
+        raise Exception(f"json error from command:\n{command_line}\noutput:\n{lines}\noriginal exception: {e}")
 
 
 # converts a key to a sif address.
-
-
 def get_user_account(user, network_password):
-    command_line = "yes " + network_password + \
-        f" | {sifnoded_binary} keys show " + user + " -a"
+    command_line = "yes " + network_password + f" | {sifnoded_binary} keys show " + user + " -a"
     return get_shell_output(command_line)
 
 
@@ -230,22 +181,20 @@ def get_password(network_definition_file_json):
 
 
 def get_eth_balance(transfer_request: EthereumToSifchainTransferRequest):
-    w3 = Web3(Web3.WebsocketProvider(ethereum_websocket))
-    return w3.eth.get_balance()
-    # network_element = f"--ethereum_network {transfer_request.ethereum_network} " if transfer_request.ethereum_network else ""
-    # symbol_element = f"--symbol {transfer_request.ethereum_symbol} " if transfer_request.ethereum_symbol else ""
-    # private_element = f"--ethereum_private_key_env_var \"{transfer_request.ethereum_private_key_env_var}\"" if transfer_request.ethereum_private_key_env_var else ""
-    # command_line = " ".join(
-    #     [f"yarn -s --cwd {transfer_request.smart_contracts_dir}",
-    #      f"integrationtest:getTokenBalance",
-    #      f"--ethereum_address {transfer_request.ethereum_address}",
-    #      f"--json_path {transfer_request.solidity_json_path}",
-    #      private_element,
-    #      symbol_element,
-    #      network_element]
-    # )
-    # result = run_yarn_command(command_line)
-    # return int(result["balanceWei"])
+    network_element = f"--ethereum_network {transfer_request.ethereum_network} " if transfer_request.ethereum_network else ""
+    symbol_element = f"--symbol {transfer_request.ethereum_symbol} " if transfer_request.ethereum_symbol else ""
+    private_element = f"--ethereum_private_key_env_var \"{transfer_request.ethereum_private_key_env_var}\"" if transfer_request.ethereum_private_key_env_var else ""
+    command_line = " ".join(
+        [f"yarn -s --cwd {transfer_request.smart_contracts_dir}",
+         f"integrationtest:getTokenBalance",
+         f"--ethereum_address {transfer_request.ethereum_address}",
+         f"--json_path {transfer_request.solidity_json_path}",
+         private_element,
+         symbol_element,
+         network_element]
+    )
+    result = run_yarn_command(command_line)
+    return int(result["balanceWei"])
 
 
 def get_whitelisted_tokens(transfer_request: EthereumToSifchainTransferRequest):
@@ -382,11 +331,9 @@ def wait_for_sifchain_addr_balance(
     normalized_symbol = normalize_symbol(symbol)
     if not max_seconds:
         max_seconds = 90
-    logging.debug(
-        f"wait_for_sifchain_addr_balance for node {sifchaincli_node}, {normalized_symbol}, {target_balance}")
+    logging.debug(f"wait_for_sifchain_addr_balance for node {sifchaincli_node}, {normalized_symbol}, {target_balance}")
     return wait_for_balance(
-        lambda: int(get_sifchain_addr_balance(
-            sifchain_address, sifchaincli_node, normalized_symbol)),
+        lambda: int(get_sifchain_addr_balance(sifchain_address, sifchaincli_node, normalized_symbol)),
         int(target_balance),
         max_seconds,
         debug_prefix
@@ -405,13 +352,11 @@ def send_from_sifchain_to_sifchain_cmd(
         transfer_request: EthereumToSifchainTransferRequest,
         credentials: SifchaincliCredentials
 ):
-    logging.debug(
-        f"send_from_sifchain_to_sifchain {transfer_request} {credentials}")
+    logging.debug(f"send_from_sifchain_to_sifchain {transfer_request} {credentials}")
     yes_entry = f"yes {credentials.keyring_passphrase} | " if credentials.keyring_passphrase else ""
     keyring_backend_entry = f"--keyring-backend {credentials.keyring_backend}" if credentials.keyring_backend else ""
     chain_id_entry = f"--chain-id {transfer_request.chain_id}" if transfer_request.chain_id else ""
     node = f"--node {transfer_request.sifnoded_node}" if transfer_request.sifnoded_node else ""
-    # Deprecated, see https://github.com/Sifchain/sifnode/pull/1802#discussion_r697403408
     sifchain_fees_entry = f"--fees {transfer_request.sifchain_fees}" if transfer_request.sifchain_fees else ""
     home_entry = f"--home {credentials.sifnoded_homedir}" if credentials.sifnoded_homedir else ""
     cmd = " ".join([
@@ -456,7 +401,6 @@ def send_from_sifchain_to_ethereum_cmd(
     yes_entry = f"yes {credentials.keyring_passphrase} | " if credentials.keyring_passphrase else ""
     keyring_backend_entry = f"--keyring-backend {credentials.keyring_backend}" if credentials.keyring_backend else ""
     node = f"--node {transfer_request.sifnoded_node}" if transfer_request.sifnoded_node else ""
-    # Deprecated, see https://github.com/Sifchain/sifnode/pull/1802#discussion_r697403408
     sifchain_fees_entry = f"--fees {transfer_request.sifchain_fees}" if transfer_request.sifchain_fees else ""
     direction = "lock" if transfer_request.sifchain_symbol == "rowan" else "burn"
     home_entry = f"--home {credentials.sifnoded_homedir}" if credentials.sifnoded_homedir else ""
@@ -485,48 +429,31 @@ def send_from_sifchain_to_ethereum_cmd(
 
 def send_from_sifchain_to_ethereum(transfer_request: EthereumToSifchainTransferRequest,
                                    credentials: SifchaincliCredentials):
-    command_line = send_from_sifchain_to_ethereum_cmd(
-        transfer_request, credentials)
+    command_line = send_from_sifchain_to_ethereum_cmd(transfer_request, credentials)
     result = get_shell_output(command_line)
     detect_errors_in_sifnoded_output(result)
     return result
 
 
-def project_dir(*paths):
-    return os.path.abspath(os.path.join(os.path.normpath(os.path.join(__file__, *([os.path.pardir]*5))), *paths))
-
-
-def connect_web3(websocket: str, address: str, contractName: str, contractPath: str):
-    with open(project_dir(f"smart-contracts/artifacts/contracts/{contractPath}/{contractName}.json"), "r") as jsonFile:
-        contractJSON = json.load(jsonFile)
-        contractABI = contractJSON["abi"]
-        w3 = Web3(Web3.WebsocketProvider(websocket))
-        contract = w3.eth.contract(
-            address=address, abi=contractABI)
-        return (contract, w3)
-
-
-def bridgebank_web3(transfer_request: EthereumToSifchainTransferRequest):
-    return connect_web3(transfer_request.ethereum_websocket, transfer_request.bridgebank_address, "BridgeBank", "BridgeBank/BridgeBank.sol")
-
-
 # this does not wait for the transaction to complete
 def send_from_ethereum_to_sifchain(transfer_request: EthereumToSifchainTransferRequest) -> int:
-    contract, w3 = bridgebank_web3(transfer_request)
-    tx_hash = ""
-    if transfer_request.sifchain_symbol == "rowan":
-        tx_hash = contract.functions.burn(
-            bytes(transfer_request.sifchain_address, 'utf-8'),
-            transfer_request.bridgetoken_address,
-            transfer_request.amount).transact()
+    direction = "sendBurnTx" if transfer_request.sifchain_symbol == "rowan" else "sendLockTx"
+    command_line = f"yarn -s --cwd {transfer_request.smart_contracts_dir} integrationtest:{direction} " \
+                   f"--sifchain_address {transfer_request.sifchain_address} " \
+                   f"--symbol {transfer_request.ethereum_symbol} " \
+                   f"--amount {int(transfer_request.amount):0} " \
+                   f"--bridgebank_address {transfer_request.bridgebank_address} " \
+                   f"--ethereum_address {transfer_request.ethereum_address} " \
+                   f"--ethereum_private_key_env_var \"{transfer_request.ethereum_private_key_env_var}\" " \
+                   f"--json_path {transfer_request.solidity_json_path} " \
+                   f"--gas estimate "
+    command_line += f"--ethereum_network {transfer_request.ethereum_network} " if transfer_request.ethereum_network else ""
+    transaction_result = run_yarn_command(command_line)
+    if "burn" in transaction_result:
+        result = transaction_result["burn"]["receipt"]["blockNumber"]
     else:
-        tx_hash = contract.functions.lock(
-            bytes(transfer_request.sifchain_address, 'utf-8'),
-            # TODO: FIGURE OUT THE SYMBOL TO ADDRESS MAPPING
-            NULL_ADDRESS,
-            transfer_request.amount).transact({"value": transfer_request.amount if transfer_request.ethereum_symbol == "eth" else 0})
-    lock_burn_tx = w3.eth.get_transaction(tx_hash)
-    return lock_burn_tx.blockNumber
+        result = transaction_result["receipt"]["blockNumber"]
+    return result
 
 
 currency_pairs = {
@@ -535,27 +462,6 @@ currency_pairs = {
     "rowan": "erowan",
     "erowan": "rowan"
 }
-
-
-def calculate_denom_hash(
-        network_descriptor: int,
-        token_contract_address: str,
-        decimals: int,
-        token_name: str,
-        token_symbol: str) -> str:
-    '''
-    Takes in token information and generates the denom hash for metadata module
-    and IBC. Returns string.
-    '''
-    network_descriptor = int(network_descriptor)
-    token_contract_address = token_contract_address.lower()
-    decimals = int(decimals)
-    token_name = token_name.lower()
-    token_symbol = token_symbol.lower()
-    denom_string = f"{network_descriptor}{token_contract_address}{decimals}{token_name}{token_symbol}"
-    denom_hash = "sif" + \
-        hashlib.sha256(denom_string.encode('utf-8')).hexdigest()
-    return denom_hash
 
 
 def mirror_of(currency):
@@ -570,8 +476,7 @@ def wait_for_sif_account(sif_addr, sifchaincli_node, max_seconds=90):
         except:
             return False
 
-    wait_for_predicate(lambda: fn(), True, max_seconds,
-                       f"wait for account {sif_addr}")
+    wait_for_predicate(lambda: fn(), True, max_seconds, f"wait for account {sif_addr}")
 
 
 def wait_for_predicate(predicate, success_result, max_seconds=90, debug_prefix="") -> int:
@@ -581,8 +486,7 @@ def wait_for_predicate(predicate, success_result, max_seconds=90, debug_prefix="
             return success_result
         else:
             t = time.time()
-            logging.debug(
-                f"wait_for_predicate: wait for {done_at_time - t} more seconds")
+            logging.debug(f"wait_for_predicate: wait for {done_at_time - t} more seconds")
             if t >= done_at_time:
                 msg = f"{debug_prefix} wait_for_predicate failed"
                 logging.debug(msg)
@@ -605,13 +509,12 @@ def write_ganache_transactions_to_file(filename):
         print(json, file=text_file)
 
 
-def advance_n_ethereum_blocks(n: int, smart_contracts_dir: str) -> int:
-    return run_yarn_command(f"yarn --cwd {smart_contracts_dir} advance --blocks {int(n)} --provider {ethereum_websocket}")
+def advance_n_ethereum_blocks(n: int, smart_contracts_dir: str):
+    return run_yarn_command(f"yarn --cwd {smart_contracts_dir} advance {int(n)}")
 
 
-def current_ethereum_block_number(smart_contracts_dir: str) -> int:
-    w3 = Web3(Web3.WebsocketProvider(ethereum_websocket))
-    return w3.eth.blockNumber
+def current_ethereum_block_number(smart_contracts_dir: str):
+    return advance_n_ethereum_blocks(0, smart_contracts_dir)["currentBlockNumber"]
 
 
 def wait_for_ethereum_block_number(block_number: int, transfer_request: EthereumToSifchainTransferRequest):
@@ -813,7 +716,6 @@ def build_sifchain_command(
     node_entry = f"--node {transfer_request.sifnoded_node}" if transfer_request.sifnoded_node else ""
     home_entry = f"--home {credentials.sifnoded_homedir}" if credentials.sifnoded_homedir else ""
     from_entry = f"--from {credentials.from_key} " if credentials.from_key else ""
-    # Deprecated, see https://github.com/Sifchain/sifnode/pull/1802#discussion_r697403408
     sifchain_fees_entry = f"--fees {transfer_request.sifchain_fees}" if transfer_request.sifchain_fees else ""
     return " ".join([
         yes_entry,

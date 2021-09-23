@@ -27,7 +27,7 @@ func EthereumEventToEthBridgeClaim(valAddr sdk.ValAddress, event types.EthereumE
 	witnessClaim := ethbridge.EthBridgeClaim{}
 
 	// chainID type casting (*big.Int -> int)
-	networkDescriptor := event.NetworkDescriptor
+	networkDescriptor := oracletypes.NetworkDescriptor(event.NetworkDescriptor)
 
 	bridgeContractAddress := ethbridge.NewEthereumAddress(event.BridgeContractAddress.Hex())
 
@@ -73,9 +73,9 @@ func EthereumEventToEthBridgeClaim(valAddr sdk.ValAddress, event types.EthereumE
 	witnessClaim.CosmosReceiver = recipient.String()
 	witnessClaim.Amount = amount
 	witnessClaim.ClaimType = event.ClaimType
-	witnessClaim.Decimals = event.Decimals
+	witnessClaim.Decimals = int64(event.Decimals)
 	witnessClaim.TokenName = event.Name
-	witnessClaim.DenomHash = ethbridge.GetDenomHash(networkDescriptor, tokenContractAddress.String(), event.Decimals, event.Name, event.Symbol)
+	witnessClaim.DenomHash = ethbridge.GetDenomHash(networkDescriptor, tokenContractAddress.String(), int64(event.Decimals), event.Name, event.Symbol)
 
 	return witnessClaim, nil
 }

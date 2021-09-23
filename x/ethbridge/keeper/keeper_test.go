@@ -18,7 +18,7 @@ var (
 	cosmosReceivers, _   = test.CreateTestAddrs(1)
 	amount               = sdk.NewInt(10)
 	doubleAmount         = sdk.NewInt(20)
-	decimals             = int64(18)
+	decimals             = uint8(18)
 	symbol               = "stake"
 	name                 = "STAKE"
 	tokenContractAddress = types.NewEthereumAddress("0xbbbbca6a901c926f240b89eacb641d8aec7aeafd")

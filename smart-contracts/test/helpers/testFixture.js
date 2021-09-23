@@ -19,18 +19,18 @@ function getDigestNewProphecyClaim(data) {
   }
 
   const types = [
-    "bytes",
-    "uint256",
-    "address",
-    "address",
-    "uint256",
-    "bool",
-    "uint128",
-    "uint256",
-    "string",
-    "string",
-    "uint8",
-    "string"
+    "bytes", // cosmosSender
+    "uint256", // cosmosSenderSequence
+    "address", // ethereumReceiver
+    "address", // tokenAddress
+    "uint256", // amount
+    "string", // tokenName
+    "string", // tokenSymbol
+    "uint8", // tokenDecimals
+    "int32", // networkDescriptor
+    "bool", // doublePeg
+    "uint128", // nonce
+    "string" // cosmosDenom
   ];
 
   if (types.length !== data.length) {
@@ -177,7 +177,7 @@ async function deployBaseContracts(state) {
     state.initialValidators,
     state.initialPowers,
     state.networkDescriptorMismatch ? state.networkDescriptor + 1 : state.networkDescriptor
-  ], { initializer: 'initialize(address,uint256,address[],uint256[],uint256)' });
+  ], { initializer: 'initialize(address,uint256,address[],uint256[],int32)' });
   await state.cosmosBridge.deployed();
 
   // Deploy BridgeBank contract
@@ -187,7 +187,7 @@ async function deployBaseContracts(state) {
     state.owner.address,
     state.pauser.address,
     state.networkDescriptorMismatch ? state.networkDescriptor + 2 : state.networkDescriptor
-  ], { initializer: 'initialize(address,address,address,address,uint256)' });
+  ], { initializer: 'initialize(address,address,address,address,int32)' });
   await state.bridgeBank.deployed();
 
   // Operator sets Bridge Bank
@@ -279,12 +279,12 @@ async function getValidClaim({
   recipientAddress,
   tokenAddress,
   amount,
-  doublePeg,
-  nonce,
-  networkDescriptor,
   tokenName,
   tokenSymbol,
   tokenDecimals,
+  networkDescriptor,
+  doublePeg,
+  nonce,
   cosmosDenom,
   validators,
 }) {
@@ -294,12 +294,12 @@ async function getValidClaim({
     recipientAddress,
     tokenAddress,
     amount,
-    doublePeg,
-    nonce,
-    networkDescriptor,
     tokenName,
     tokenSymbol,
     tokenDecimals,
+    networkDescriptor,
+    doublePeg,
+    nonce,
     cosmosDenom
   ]);
 
@@ -311,12 +311,12 @@ async function getValidClaim({
     ethereumReceiver: recipientAddress,
     tokenAddress,
     amount,
-    doublePeg,
-    nonce,
-    networkDescriptor,
     tokenName,
     tokenSymbol,
     tokenDecimals,
+    networkDescriptor,
+    doublePeg,
+    nonce,
     cosmosDenom
   };
 
