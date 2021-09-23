@@ -1,3 +1,31 @@
+# v0.9.7
+> September 17, 2021
+>
+## ⭐ Features
+
+- [Sifnode] Enabling of inflationary block rewards.
+
+# v0.9.5
+> August 24, 2021
+>
+## ⭐ Features
+
+- [Sifnode] IBC Support is now available.
+
+# v0.9.1
+> August 6, 2021
+>
+## ⭐ Features
+
+- [Sifnode] Numerous updates to allow for the enabling of IBC in the coming weeks.
+
+# v0.9.0
+> July 28, 2021
+>
+## ⭐ Features
+
+- [Sifnode] Upgraded to version 0.42 of the Cosmos SDK.
+
 # v0.8.8
 > July 16, 2021
 >
@@ -9,11 +37,11 @@
 
 # v0.8.7
 > June 9, 2021
-> 
+>
 ## 🛠 Improvements
 
-- [UI] Introduction of a footer! User's can sign-up for our newsletter, and link to our privacy policy, roadmap, and legal disclaimer. 
-- [UI] Removal of negative signs in the Pool Stats>Arbitrage as these are confusing and not necessary. 
+- [UI] Introduction of a footer! User's can sign-up for our newsletter, and link to our privacy policy, roadmap, and legal disclaimer.
+- [UI] Removal of negative signs in the Pool Stats>Arbitrage as these are confusing and not necessary.
 - [UI] Removal of the words Peg and Unpeg. We have updated our language across our entire application to use 'Import' and 'Export' instead. We did this to be more clear with the action that is being done, as well as to prepare for more chains being integrated into Sifchain.
 - [UI] Included the ability for a user to see their net gain/loss on their liquidity pool position. This includes earnings from swap fees AND any gains or losses associated with changes in the tokens' prices. This number is represented as USDT.
 - [Peggy] Relayer Upgrade - Implementation of Retry Logic.
@@ -65,7 +93,7 @@
 ## 🛠 Improvements
 
 - [UI] Added logic for when clicking on max button in ROWAN to take into consideration necessary gas fees.
-- [UI] In swap confirmation screen, built in cleaner UX logic around the way we display numbers. 
+- [UI] In swap confirmation screen, built in cleaner UX logic around the way we display numbers.
 - [UI] Included logic in the token list pop-ups when doing a swap or liquidity add for how we sort the displayed tokens. We are also now calling in user's balances directly in this pop-up as well for easy viewing.
 - [Peggy] Add retry logic when infura gives us a not found error. Add additional retry logic to try to retrieve the tx if it cannot be found on the first query.
 - [Sifnode] Ability to propose and vote on new jailing parameters.
