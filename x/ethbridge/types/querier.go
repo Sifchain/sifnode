@@ -6,10 +6,10 @@ import (
 
 // query endpoints supported by the oracle Querier
 const (
-	QueryEthProphecy          = "prophecies"
-	QueryCrosschainFeeConfig  = "crosschainFeeConfig"
-	QueryLockBurnNonce        = "lockBurnNonce"
-	QueryWitnessLockBurnNonce = "witnessLockBurnNonce"
+	QueryEthProphecy           = "prophecies"
+	QueryCrosschainFeeConfig   = "crosschainFeeConfig"
+	QueryEthereumLockBurnNonce = "ethereumLockBurnNonce"
+	QueryWitnessLockBurnNonce  = "witnessLockBurnNonce"
 )
 
 // NewQueryEthProphecyRequest creates a new QueryEthProphecyParams

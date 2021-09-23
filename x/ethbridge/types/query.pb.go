@@ -325,7 +325,7 @@ func (m *ProphciesCompletedQueryResponse) GetProphecyInfo() []*types.ProphecyInf
 	return nil
 }
 
-// QueryEthereumLockBurnNonceRequest payload for LockBurnNonce rpc query
+// QueryEthereumLockBurnNonceRequest payload for EthereumLockBurnNonce rpc query
 type QueryEthereumLockBurnNonceRequest struct {
 	NetworkDescriptor types.NetworkDescriptor `protobuf:"varint,1,opt,name=network_descriptor,json=networkDescriptor,proto3,enum=sifnode.oracle.v1.NetworkDescriptor" json:"network_descriptor,omitempty"`
 	RelayerValAddress string                  `protobuf:"bytes,2,opt,name=relayer_val_address,json=relayerValAddress,proto3" json:"relayer_val_address,omitempty"`
@@ -378,7 +378,7 @@ func (m *QueryEthereumLockBurnNonceRequest) GetRelayerValAddress() string {
 	return ""
 }
 
-// QueryEthereumLockBurnNonceResponse return LockBurnNonce
+// QueryEthereumLockBurnNonceResponse return EthereumLockBurnNonce
 type QueryEthereumLockBurnNonceResponse struct {
 	EthereumLockBurnNonce uint64 `protobuf:"varint,1,opt,name=ethereum_lock_burn_nonce,json=ethereumLockBurnNonce,proto3" json:"ethereum_lock_burn_nonce,omitempty"`
 }
@@ -423,7 +423,7 @@ func (m *QueryEthereumLockBurnNonceResponse) GetEthereumLockBurnNonce() uint64 {
 	return 0
 }
 
-// QueryWitnessLockBurnNonceRequest payload for LockBurnNonce rpc query
+// QueryWitnessLockBurnNonceRequest payload for WitnessLockBurnNonce rpc query
 type QueryWitnessLockBurnNonceRequest struct {
 	NetworkDescriptor types.NetworkDescriptor `protobuf:"varint,1,opt,name=network_descriptor,json=networkDescriptor,proto3,enum=sifnode.oracle.v1.NetworkDescriptor" json:"network_descriptor,omitempty"`
 	RelayerValAddress string                  `protobuf:"bytes,2,opt,name=relayer_val_address,json=relayerValAddress,proto3" json:"relayer_val_address,omitempty"`
@@ -601,9 +601,11 @@ type QueryClient interface {
 	EthProphecy(ctx context.Context, in *QueryEthProphecyRequest, opts ...grpc.CallOption) (*QueryEthProphecyResponse, error)
 	// CrosschainFeeConfig queries crosschain fee config for a network
 	CrosschainFeeConfig(ctx context.Context, in *QueryCrosschainFeeConfigRequest, opts ...grpc.CallOption) (*QueryCrosschainFeeConfigResponse, error)
-	// EthereumLockBurnNonce query ethereum lock burn nonce for a relayer in a network
+	// EthereumLockBurnNonce query ethereum lock burn nonce for a relayer in a
+	// network
 	EthereumLockBurnNonce(ctx context.Context, in *QueryEthereumLockBurnNonceRequest, opts ...grpc.CallOption) (*QueryEthereumLockBurnNonceResponse, error)
-	// WitnessLockBurnNonce query witness lock burn nonce for a relayer in a network
+	// WitnessLockBurnNonce query witness lock burn nonce for a relayer in a
+	// network
 	WitnessLockBurnNonce(ctx context.Context, in *QueryWitnessLockBurnNonceRequest, opts ...grpc.CallOption) (*QueryWitnessLockBurnNonceResponse, error)
 }
 
@@ -657,9 +659,11 @@ type QueryServer interface {
 	EthProphecy(context.Context, *QueryEthProphecyRequest) (*QueryEthProphecyResponse, error)
 	// CrosschainFeeConfig queries crosschain fee config for a network
 	CrosschainFeeConfig(context.Context, *QueryCrosschainFeeConfigRequest) (*QueryCrosschainFeeConfigResponse, error)
-	// EthereumLockBurnNonce query ethereum lock burn nonce for a relayer in a network
+	// EthereumLockBurnNonce query ethereum lock burn nonce for a relayer in a
+	// network
 	EthereumLockBurnNonce(context.Context, *QueryEthereumLockBurnNonceRequest) (*QueryEthereumLockBurnNonceResponse, error)
-	// WitnessLockBurnNonce query witness lock burn nonce for a relayer in a network
+	// WitnessLockBurnNonce query witness lock burn nonce for a relayer in a
+	// network
 	WitnessLockBurnNonce(context.Context, *QueryWitnessLockBurnNonceRequest) (*QueryWitnessLockBurnNonceResponse, error)
 }
 

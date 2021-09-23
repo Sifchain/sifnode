@@ -301,7 +301,7 @@ func getEthereumLockBurnNonceHandler(cliCtx client.Context, storeName string) ht
 			return
 		}
 
-		route := fmt.Sprintf("custom/%s/%s", storeName, types.QueryLockBurnNonce)
+		route := fmt.Sprintf("custom/%s/%s", storeName, types.QueryEthereumLockBurnNonce)
 		res, _, err := cliCtx.QueryWithData(route, bz)
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusNotFound, err.Error())
