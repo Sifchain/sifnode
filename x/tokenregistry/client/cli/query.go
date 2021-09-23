@@ -56,7 +56,6 @@ func GetCmdQueryEntries() *cobra.Command {
 }
 
 func GetCmdGenerateEntry() *cobra.Command {
-	var flagWhitelist = "token_whitelist"
 	var flagDenom = "token_denom"
 	var flagBaseDenom = "token_base_denom"
 	var flagIbcChannelId = "token_ibc_channel_id"
@@ -65,12 +64,6 @@ func GetCmdGenerateEntry() *cobra.Command {
 	var flagIbcCounterpartyDenom = "token_ibc_counterparty_denom"
 	var flagUnitDenom = "token_unit_denom"
 	var flagDecimals = "token_decimals"
-	var flagDisplayName = "token_display_name"
-	var flagDisplaySymbol = "token_display_symbol"
-	var flagExternalSymbol = "token_external_symbol"
-	var flagTransferLimit = "token_transfer_limit"
-	var flagNetwork = "token_network"
-	var flagAddress = "token_address"
 	var flagsPermission = []string{"token_permission_clp", "token_permission_ibc_export", "token_permission_ibc_import"}
 	cmd := &cobra.Command{
 		Use:   "generate",
@@ -171,8 +164,6 @@ func GetCmdGenerateEntry() *cobra.Command {
 			return clientCtx.PrintProto(&types.Registry{Entries: []*types.RegistryEntry{&entry}})
 		},
 	}
-	cmd.Flags().Bool(flagWhitelist, true,
-		"Whether this token should be whitelisted i.e disable all permissions.")
 	cmd.Flags().String(flagDenom, "",
 		"The IBC hash / denom  stored on sifchain - to generate this hash for IBC token, leave blank and specify base_denom and ibc_channel_id.")
 	cmd.Flags().String(flagBaseDenom, "",
@@ -189,18 +180,6 @@ func GetCmdGenerateEntry() *cobra.Command {
 		"The denom in registry that holds the funds for this denom, ie the most precise denom for a token.")
 	cmd.Flags().String(flagIbcCounterpartyDenom, "",
 		"The denom in registry that funds in this account will get sent as over IBC.")
-	cmd.Flags().String(flagDisplayName, "",
-		"Friendly name for use by UI etc")
-	cmd.Flags().String(flagDisplaySymbol, "",
-		"Friendly symbol for use by UI etc")
-	cmd.Flags().String(flagExternalSymbol, "",
-		"The original symbol as seen on external network")
-	cmd.Flags().String(flagTransferLimit, "",
-		"Used by UI")
-	cmd.Flags().String(flagNetwork, "",
-		"Original network of token i.e ethereum")
-	cmd.Flags().String(flagAddress, "",
-		"Contract address i.e in EVM cases")
 	// Permission flags, default true.
 	for _, flag := range flagsPermission {
 		cmd.Flags().Bool(flag, true, fmt.Sprintf("Flag to specify permission for %s", types.GetPermissionFromString(flag)))
