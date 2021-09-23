@@ -49,7 +49,7 @@ contract BridgeBank is BankStorage,
         address _cosmosBridgeAddress,
         address _owner,
         address _pauser,
-        uint256 _networkDescriptor
+        int32 _networkDescriptor
     ) public {
         require(!_initialized, "Init");
 
@@ -83,7 +83,7 @@ contract BridgeBank is BankStorage,
         address _cosmosBridgeAddress,
         address _owner,
         address _pauser,
-        uint256 _networkDescriptor
+        int32 _networkDescriptor
     ) public onlyOperator {
         require(!_reinitialized, "Already reinitialized");
 
@@ -111,7 +111,7 @@ contract BridgeBank is BankStorage,
         address _cosmosBridgeAddress,
         address _owner,
         address _pauser,
-        uint256 _networkDescriptor
+        int32 _networkDescriptor
     ) private {
         Pausable._pausableInitialize(_pauser);
 

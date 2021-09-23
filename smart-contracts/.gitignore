@@ -7,3 +7,6 @@ venv
 /artifacts/
 /cache/
 /.idea/
+relayerdb/
+witnessdb/
+*.pyc

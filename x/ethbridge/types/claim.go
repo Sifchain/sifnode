@@ -26,9 +26,9 @@ func NewEthBridgeClaim(
 	amount sdk.Int,
 	claimType ClaimType,
 	tokenName string,
-	decimals int64,
+	decimals uint8,
 ) *EthBridgeClaim {
-	denomHash := GetDenomHash(networkDescriptor, tokenContract.String(), decimals, tokenName, symbol)
+	denomHash := GetDenomHash(networkDescriptor, tokenContract.String(), int64(decimals), tokenName, symbol)
 	return &EthBridgeClaim{
 		NetworkDescriptor:     networkDescriptor,
 		BridgeContractAddress: bridgeContract.String(),
@@ -41,7 +41,7 @@ func NewEthBridgeClaim(
 		Amount:                amount,
 		ClaimType:             claimType,
 		TokenName:             tokenName,
-		Decimals:              decimals,
+		Decimals:              int64(decimals),
 		DenomHash:             denomHash,
 	}
 }
@@ -67,6 +67,7 @@ func (claim *EthBridgeClaim) GetProphecyID() []byte {
 	return hashBytes
 }
 
+// TODO: Can this decimal be uint8?
 func GetDenomHash(
 	networkDescriptor oracletypes.NetworkDescriptor,
 	tokenContractAddress string,

@@ -127,12 +127,12 @@ describe("submitProphecyClaimAggregatedSigs Security", function () {
         state.recipient.address,
         state.troll.address,
         state.amount,
-        false,
-        state.nonce + 1,
-        state.networkDescriptor,
         state.name,
         state.symbol,
         state.decimals,
+        state.networkDescriptor,
+        false,
+        state.nonce + 1,
         state.constants.denom.none
       ]);
 
@@ -234,12 +234,12 @@ describe("submitProphecyClaimAggregatedSigs Security", function () {
         state.recipient.address,
         state.troll.address,
         state.amount,
-        false,
-        state.nonce,
-        state.networkDescriptor,
         state.name,
         state.symbol,
         state.decimals,
+        state.networkDescriptor,
+        false,
+        state.nonce,
         state.constants.denom.none,
       ]);
 
@@ -249,12 +249,12 @@ describe("submitProphecyClaimAggregatedSigs Security", function () {
         state.recipient.address,
         state.troll.address,
         state.amount,
-        false,
-        state.nonce + 1,
-        state.networkDescriptor,
         state.name,
         state.symbol,
         state.decimals,
+        state.networkDescriptor,
+        false,
+        state.nonce + 1,
         state.constants.denom.none,
       ]);
 

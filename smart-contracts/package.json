@@ -25,6 +25,7 @@
     "@typechain/hardhat": "^2.3.0",
     "@types/chai": "^4.2.21",
     "@types/mocha": "^9.0.0",
+    "@types/node-notifier": "^8.0.1",
     "@types/yargs": "^17.0.2",
     "big-integer": "^1.6.48",
     "chai": "^4.3.4",
@@ -41,6 +42,7 @@
     "mocha": "^9.0.3",
     "openzeppelin-solidity": "^2.5.1",
     "reflect-metadata": "^0.1.13",
+    "rxjs": "^7.3.0",
     "solidity-coverage": "^0.7.16",
     "ts-generator": "^0.1.1",
     "ts-node": "^10.1.0",
@@ -49,12 +51,13 @@
     "typescript": "^4.3.5",
     "web3": "^1.5.1",
     "winston": "^3.3.3",
+    "yaml": "^1.10.2",
     "yargs": "^17.1.0"
   },
   "scripts": {
     "develop": "ganache-cli -q -i 5777 -p 7545 -m 'candy maple cake sugar pudding cream honey rich smooth crumble sweet treat'",
     "migrate": "npx truffle migrate --reset",
-    "advance": "npx truffle exec scripts/advanceBlock.js",
+    "advance": "node scripts/advanceBlock.js",
     "integrationtest:approve": "npx truffle exec scripts/test/approve.js",
     "integrationtest:createEthereumAddress": "npx truffle exec scripts/test/createEthereumAddress.js",
     "integrationtest:sendBurnTx": "npx truffle exec scripts/test/sendBurnTx.js",
@@ -87,7 +90,10 @@
     "compile": "hardhat compile"
   },
   "dependencies": {
+    "@types/node": "^10.17.19",
     "concurrently": "^6.2.0",
+    "node-notifier": "^10.0.0",
+    "node-notify": "^1.0.0",
     "truffle": "^5.4.7"
   }
 }

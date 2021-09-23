@@ -110,7 +110,7 @@ func GetCmdCreateEthBridgeClaim() *cobra.Command {
 			networkDescriptor := oracletypes.NetworkDescriptor(ethereumChainID)
 
 			ethBridgeClaim := types.NewEthBridgeClaim(networkDescriptor, bridgeContract, nonce, symbol, tokenContract,
-				ethereumSender, cosmosReceiver, validator, bigIntAmount, ct, name, decimals)
+				ethereumSender, cosmosReceiver, validator, bigIntAmount, ct, name, uint8(decimals))
 
 			msg := types.NewMsgCreateEthBridgeClaim(ethBridgeClaim)
 			if err := msg.ValidateBasic(); err != nil {
