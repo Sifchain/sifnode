@@ -1,12 +1,13 @@
 package app
 
 import (
-	tokenregistrykeeper "github.com/Sifchain/sifnode/x/tokenregistry/keeper"
-	tmos "github.com/tendermint/tendermint/libs/os"
 	"io"
 	"math/big"
 	"net/http"
 	"os"
+
+	tokenregistrykeeper "github.com/Sifchain/sifnode/x/tokenregistry/keeper"
+	tmos "github.com/tendermint/tendermint/libs/os"
 
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/client"
@@ -302,6 +303,7 @@ func NewSifApp(
 		app.BankKeeper,
 		app.OracleKeeper,
 		app.AccountKeeper,
+		app.TokenRegistryKeeper,
 		keys[ethbridgetypes.StoreKey],
 	)
 

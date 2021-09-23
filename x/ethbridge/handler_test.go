@@ -20,6 +20,7 @@ import (
 	"github.com/Sifchain/sifnode/x/ethbridge/types"
 	oraclekeeper "github.com/Sifchain/sifnode/x/oracle/keeper"
 	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
+	tokenregistrytypes "github.com/Sifchain/sifnode/x/tokenregistry/types"
 )
 
 const (
@@ -122,7 +123,7 @@ func TestDuplicateMsgs(t *testing.T) {
 
 func TestMintSuccess(t *testing.T) {
 	//Setup
-	ctx, _, bankKeeper, _, handler, validatorAddresses, _ := CreateTestHandler(t, 0.7, []int64{2, 7, 1})
+	ctx, keeper, bankKeeper, _, handler, validatorAddresses, _ := CreateTestHandler(t, 0.7, []int64{2, 7, 1})
 
 	valAddressVal1Pow2 := validatorAddresses[0]
 	valAddressVal2Pow7 := validatorAddresses[1]
@@ -130,6 +131,16 @@ func TestMintSuccess(t *testing.T) {
 
 	//Initial message
 	normalCreateMsg := types.CreateTestEthMsg(t, valAddressVal1Pow2, types.ClaimType_CLAIM_TYPE_LOCK)
+
+	entry := tokenregistrytypes.RegistryEntry{
+		Denom:         normalCreateMsg.EthBridgeClaim.DenomHash,
+		DisplaySymbol: normalCreateMsg.EthBridgeClaim.Symbol,
+		Decimals:      18,
+		IsWhitelisted: true,
+		Permissions:   []tokenregistrytypes.Permission{tokenregistrytypes.Permission_PERMISSION_CLP},
+	}
+	keeper.GetTokenRegistryKeeper().SetToken(ctx, &entry)
+
 	res, err := handler(ctx, &normalCreateMsg)
 	require.NoError(t, err)
 	require.NotNil(t, res)
@@ -285,7 +296,16 @@ func TestBurnEthSuccess(t *testing.T) {
 		valAddressVal1Pow5, testEthereumAddress, coinsToMintAmount, coinsToMintSymbol, types.ClaimType_CLAIM_TYPE_LOCK, types.TestDecimals, types.TestName)
 	ethMsg1 := types.NewMsgCreateEthBridgeClaim(ethClaim1)
 
-	denom := types.TokenMetadata{
+	entry := tokenregistrytypes.RegistryEntry{
+		Denom:         ethMsg1.EthBridgeClaim.DenomHash,
+		DisplaySymbol: ethMsg1.EthBridgeClaim.Symbol,
+		Decimals:      18,
+		IsWhitelisted: true,
+		Permissions:   []tokenregistrytypes.Permission{tokenregistrytypes.Permission_PERMISSION_CLP},
+	}
+	keeper.GetTokenRegistryKeeper().SetToken(ctx, &entry)
+
+	denom := tokenregistrytypes.TokenMetadata{
 		Decimals:          types.TestDecimals,
 		Name:              types.TestName,
 		NetworkDescriptor: oracletypes.NetworkDescriptor_NETWORK_DESCRIPTOR_ETHEREUM,
@@ -314,7 +334,16 @@ func TestBurnEthSuccess(t *testing.T) {
 		valAddressVal1Pow5, testEthereumAddress, coinsToMintAmount, coinsToMintSymbol, types.ClaimType_CLAIM_TYPE_LOCK, types.TestDecimals, types.TestName)
 	ethMsg1 = types.NewMsgCreateEthBridgeClaim(ethClaim1)
 
-	denom = types.TokenMetadata{
+	entry = tokenregistrytypes.RegistryEntry{
+		Denom:         ethMsg1.EthBridgeClaim.DenomHash,
+		DisplaySymbol: ethMsg1.EthBridgeClaim.Symbol,
+		Decimals:      18,
+		IsWhitelisted: true,
+		Permissions:   []tokenregistrytypes.Permission{tokenregistrytypes.Permission_PERMISSION_CLP},
+	}
+	keeper.GetTokenRegistryKeeper().SetToken(ctx, &entry)
+
+	denom = tokenregistrytypes.TokenMetadata{
 		Decimals:          types.TestDecimals,
 		Name:              types.TestName,
 		NetworkDescriptor: oracletypes.NetworkDescriptor_NETWORK_DESCRIPTOR_ETHEREUM,
@@ -377,7 +406,16 @@ func TestBurnEthSuccess(t *testing.T) {
 		valAddressVal1Pow5, testEthereumAddress, coinsToMintAmount, coinsToMintSymbol, types.ClaimType_CLAIM_TYPE_LOCK, types.TestDecimals, types.TestName)
 	ethMsg1 = types.NewMsgCreateEthBridgeClaim(ethClaim1)
 
-	denom = types.TokenMetadata{
+	entry = tokenregistrytypes.RegistryEntry{
+		Denom:         ethMsg1.EthBridgeClaim.DenomHash,
+		DisplaySymbol: ethMsg1.EthBridgeClaim.Symbol,
+		Decimals:      18,
+		IsWhitelisted: true,
+		Permissions:   []tokenregistrytypes.Permission{tokenregistrytypes.Permission_PERMISSION_CLP},
+	}
+	keeper.GetTokenRegistryKeeper().SetToken(ctx, &entry)
+
+	denom = tokenregistrytypes.TokenMetadata{
 		Decimals:          types.TestDecimals,
 		Name:              types.TestName,
 		NetworkDescriptor: oracletypes.NetworkDescriptor_NETWORK_DESCRIPTOR_ETHEREUM,

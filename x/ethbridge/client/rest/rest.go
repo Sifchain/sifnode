@@ -127,7 +127,7 @@ func createClaimHandler(cliCtx client.Context) http.HandlerFunc {
 		// create the message
 		ethBridgeClaim := types.NewEthBridgeClaim(
 			req.NetworkDescriptor, bridgeContractAddress, int64(req.Nonce), req.Symbol,
-			tokenContractAddress, ethereumSender, cosmosReceiver, validator, req.Amount, ct, req.TokenName, int32(req.Decimals))
+			tokenContractAddress, ethereumSender, cosmosReceiver, validator, req.Amount, ct, req.TokenName, int64(req.Decimals))
 		msg := types.NewMsgCreateEthBridgeClaim(ethBridgeClaim)
 		err = msg.ValidateBasic()
 		if err != nil {

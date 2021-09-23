@@ -63,7 +63,7 @@ func TestIsRecvPacketAllowed(t *testing.T) {
 	// Expected Result: TRUE
 	wl.EXPECT().
 		CheckDenomPermissions(ctx,
-			"ibc/44F0BAC50DDD0C83DAC9CEFCCC770C12F700C0D1F024ED27B8A3EE9DD949BAD3", []tokenregistrytypes.Permission{tokenregistrytypes.Permission_IBCIMPORT}).
+			"ibc/44F0BAC50DDD0C83DAC9CEFCCC770C12F700C0D1F024ED27B8A3EE9DD949BAD3", []tokenregistrytypes.Permission{tokenregistrytypes.Permission_PERMISSION_IBCIMPORT}).
 		Return(true)
 	wl.EXPECT().
 		IsDenomWhitelisted(ctx,
@@ -75,7 +75,7 @@ func TestIsRecvPacketAllowed(t *testing.T) {
 	// Expected Result: FALSE
 	wl.EXPECT().
 		CheckDenomPermissions(ctx,
-			"ibc/A916425D9C00464330F8B333711C4A51AA8CF0141392E7E250371EC6D4285BF2", []tokenregistrytypes.Permission{tokenregistrytypes.Permission_IBCIMPORT}).
+			"ibc/A916425D9C00464330F8B333711C4A51AA8CF0141392E7E250371EC6D4285BF2", []tokenregistrytypes.Permission{tokenregistrytypes.Permission_PERMISSION_IBCIMPORT}).
 		Return(false)
 	wl.EXPECT().
 		IsDenomWhitelisted(ctx,
@@ -87,7 +87,7 @@ func TestIsRecvPacketAllowed(t *testing.T) {
 	// Expected Result: TRUE
 	wl.EXPECT().
 		CheckDenomPermissions(ctx,
-			"rowan", []tokenregistrytypes.Permission{tokenregistrytypes.Permission_IBCIMPORT}).
+			"rowan", []tokenregistrytypes.Permission{tokenregistrytypes.Permission_PERMISSION_IBCIMPORT}).
 		Return(true)
 	wl.EXPECT().
 		IsDenomWhitelisted(ctx,
@@ -99,7 +99,7 @@ func TestIsRecvPacketAllowed(t *testing.T) {
 	// Expected Result: TRUE
 	wl.EXPECT().
 		CheckDenomPermissions(ctx,
-			"ibc/44F0BAC50DDD0C83DAC9CEFCCC770C12F700C0D1F024ED27B8A3EE9DD949BAD3", []tokenregistrytypes.Permission{tokenregistrytypes.Permission_IBCIMPORT}).
+			"ibc/44F0BAC50DDD0C83DAC9CEFCCC770C12F700C0D1F024ED27B8A3EE9DD949BAD3", []tokenregistrytypes.Permission{tokenregistrytypes.Permission_PERMISSION_IBCIMPORT}).
 		Return(true)
 	wl.EXPECT().
 		IsDenomWhitelisted(ctx,
@@ -112,7 +112,7 @@ func TestIsRecvPacketAllowed(t *testing.T) {
 	// Expected Result: FALSE
 	wl.EXPECT().
 		CheckDenomPermissions(ctx,
-			"ibc/44F0BAC50DDD0C83DAC9CEFCCC770C12F700C0D1F024ED27B8A3EE9DD949BAD3", []tokenregistrytypes.Permission{tokenregistrytypes.Permission_IBCIMPORT}).
+			"ibc/44F0BAC50DDD0C83DAC9CEFCCC770C12F700C0D1F024ED27B8A3EE9DD949BAD3", []tokenregistrytypes.Permission{tokenregistrytypes.Permission_PERMISSION_IBCIMPORT}).
 		Return(false)
 	wl.EXPECT().
 		IsDenomWhitelisted(ctx,
@@ -124,7 +124,7 @@ func TestIsRecvPacketAllowed(t *testing.T) {
 	// Expected Result: FALSE
 	wl.EXPECT().
 		CheckDenomPermissions(ctx,
-			"ibc/A916425D9C00464330F8B333711C4A51AA8CF0141392E7E250371EC6D4285BF2", []tokenregistrytypes.Permission{tokenregistrytypes.Permission_IBCIMPORT}).
+			"ibc/A916425D9C00464330F8B333711C4A51AA8CF0141392E7E250371EC6D4285BF2", []tokenregistrytypes.Permission{tokenregistrytypes.Permission_PERMISSION_IBCIMPORT}).
 		Return(false)
 	wl.EXPECT().
 		IsDenomWhitelisted(ctx,
@@ -136,7 +136,7 @@ func TestIsRecvPacketAllowed(t *testing.T) {
 	// Expected Result: FALSE
 	wl.EXPECT().
 		CheckDenomPermissions(ctx,
-			"rowan", []tokenregistrytypes.Permission{tokenregistrytypes.Permission_IBCIMPORT}).
+			"rowan", []tokenregistrytypes.Permission{tokenregistrytypes.Permission_PERMISSION_IBCIMPORT}).
 		Return(false)
 	wl.EXPECT().
 		IsDenomWhitelisted(ctx,
@@ -148,7 +148,7 @@ func TestIsRecvPacketAllowed(t *testing.T) {
 	// Expected Result: TRUE
 	wl.EXPECT().
 		CheckDenomPermissions(ctx,
-			"ibc/44F0BAC50DDD0C83DAC9CEFCCC770C12F700C0D1F024ED27B8A3EE9DD949BAD3", []tokenregistrytypes.Permission{tokenregistrytypes.Permission_IBCIMPORT}).
+			"ibc/44F0BAC50DDD0C83DAC9CEFCCC770C12F700C0D1F024ED27B8A3EE9DD949BAD3", []tokenregistrytypes.Permission{tokenregistrytypes.Permission_PERMISSION_IBCIMPORT}).
 		Return(false)
 	wl.EXPECT().
 		IsDenomWhitelisted(ctx,

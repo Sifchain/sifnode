@@ -9,6 +9,8 @@ option go_package = "github.com/Sifchain/sifnode/x/tokenregistry/types";
 service Msg {
   rpc Register(MsgRegister) returns (MsgRegisterResponse) {}
   rpc Deregister(MsgDeregister) returns (MsgDeregisterResponse) {}
+  rpc TokenMetadataAdd(TokenMetadataAddRequest)
+      returns (TokenMetadataAddResponse) {}
 }
 
 message MsgRegister {
@@ -16,15 +18,47 @@ message MsgRegister {
   RegistryEntry entry = 2;
 }
 
-message MsgRegisterResponse {
-
-}
+message MsgRegisterResponse {}
 
 message MsgDeregister {
   string from = 1;
   string denom = 2;
 }
 
-message MsgDeregisterResponse {
+message MsgDeregisterResponse {}
 
+message TokenMetadataAddRequest {
+  string cosmos_sender = 1;
+  sifnode.tokenregistry.v1.TokenMetadata metadata = 2
+      [ (gogoproto.moretags) = "yaml:\"metadata\"" ];
+}
+
+message TokenMetadataAddResponse {
+  string denom = 1 [ (gogoproto.moretags) = "yaml:\"token_denom\"" ];
+}
+
+message TokenMetadataDeleteRequest {
+  string cosmos_sender = 1;
+  string denom = 2 [ (gogoproto.moretags) = "yaml:\"token_denom\"" ];
+}
+
+message TokenMetadataDeleteResponse {
+  bool success = 1 [ (gogoproto.moretags) = "yaml:\"token_deleted\"" ];
+}
+
+// Denom needed to request metadata for token
+message TokenMetadataSearchRequest {
+  string denom = 1 [ (gogoproto.moretags) = "yaml:\"token_denom\"" ];
+}
+
+// Message returned from a TokenMetadata Response
+message TokenMetadataSearchResponse {
+  sifnode.tokenregistry.v1.TokenMetadata metadata = 1
+      [ (gogoproto.moretags) = "yaml:\"metadata\"" ];
+}
+
+service TokenMetadataService {
+  // Metadata Query Service to fetch token metadata from token denom
+  rpc Search(TokenMetadataSearchRequest) returns (TokenMetadataSearchResponse) {
+  }
 }

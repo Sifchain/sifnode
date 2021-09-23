@@ -3,21 +3,21 @@ package keeper
 import (
 	"context"
 
-	"github.com/Sifchain/sifnode/x/ethbridge/types"
+	"github.com/Sifchain/sifnode/x/tokenregistry/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 var _ types.TokenMetadataServiceServer = metadataServer{}
 
 type metadataServer struct {
-	Keeper
+	keeper
 }
 
 // NewQueryServer returns an implementation of the ethbridge QueryServer interface,
 // for the provided Keeper.
-func NewTokenMetadataServer(keeper Keeper) types.TokenMetadataServiceServer {
+func NewTokenMetadataServer(keeper keeper) types.TokenMetadataServiceServer {
 	return &metadataServer{
-		Keeper: keeper,
+		keeper: keeper,
 	}
 }
 
@@ -25,7 +25,7 @@ func (srv metadataServer) Search(ctx context.Context, req *types.TokenMetadataSe
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 
 	denomHash := req.GetDenom()
-	metadata, _ := srv.Keeper.GetTokenMetadata(sdkCtx, denomHash)
+	metadata, _ := srv.keeper.GetTokenMetadata(sdkCtx, denomHash)
 
 	res := types.TokenMetadataSearchResponse{
 		Metadata: &metadata,

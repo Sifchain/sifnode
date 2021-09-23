@@ -24,7 +24,6 @@ linters:
     # - scopelint
     # - staticcheck
     - structcheck
-    - stylecheck
     - typecheck
     - unconvert
     - unused
@@ -33,6 +32,7 @@ linters:
   disable:
     - gosimple
     - staticcheck
+    - stylecheck
 
 issues:
   exclude-rules:
