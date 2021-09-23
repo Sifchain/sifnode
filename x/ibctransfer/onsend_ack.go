@@ -109,7 +109,7 @@ func GetConvForRefundCoins(
 	decAmount := sdk.NewDecFromInt(sdk.NewIntFromUint64(data.Amount))
 	// Calculate the conversion difference for increasing precision.
 	po := convertToDenomEntry.Decimals - denomEntry.Decimals
-	convAmountDec := IncreasePrecision(decAmount, po)
+	convAmountDec := IncreasePrecision(decAmount, int64(po))
 	convAmount := sdk.NewIntFromBigInt(convAmountDec.TruncateInt().BigInt())
 	// create converted and ibc tokens with corresponding denoms and amounts
 	convertToCoins := sdk.NewCoin(convertToDenomEntry.Denom, convAmount)

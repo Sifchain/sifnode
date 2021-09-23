@@ -31,21 +31,18 @@ func TestShouldConvertIncomingCoins(t *testing.T) {
 		Denom: "transfer/channel-0/cusdt",
 	}
 	unitDenomEntry := tokenregistrytypes.RegistryEntry{
-		IsWhitelisted: true,
-		Denom:         "ceth",
-		Decimals:      18,
-		UnitDenom:     "ceth",
+		Denom:     "ceth",
+		Decimals:  18,
+		UnitDenom: "ceth",
 	}
 	ibcRegistryEntry := tokenregistrytypes.RegistryEntry{
-		IsWhitelisted: true,
-		Denom:         "ueth",
-		Decimals:      10,
-		UnitDenom:     "ceth",
+		Denom:     "ueth",
+		Decimals:  10,
+		UnitDenom: "ceth",
 	}
 	nonIBCRegistryEntry := tokenregistrytypes.RegistryEntry{
-		IsWhitelisted: true,
-		Denom:         "cusdt",
-		Decimals:      6,
+		Denom:    "cusdt",
+		Decimals: 6,
 	}
 	app.TokenRegistryKeeper.SetToken(ctx, &unitDenomEntry)
 	app.TokenRegistryKeeper.SetToken(ctx, &ibcRegistryEntry)
@@ -80,15 +77,13 @@ func TestGetConvForIncomingCoins(t *testing.T) {
 		Amount: 1000000000000,
 	}
 	ibcRegistryEntry := tokenregistrytypes.RegistryEntry{
-		IsWhitelisted: true,
-		Denom:         "ueth",
-		Decimals:      10,
-		UnitDenom:     "ceth",
+		Denom:     "ueth",
+		Decimals:  10,
+		UnitDenom: "ceth",
 	}
 	unitDenomEntry := tokenregistrytypes.RegistryEntry{
-		IsWhitelisted: true,
-		Denom:         "ceth",
-		Decimals:      18,
+		Denom:    "ceth",
+		Decimals: 18,
 	}
 	app.TokenRegistryKeeper.SetToken(ctx, &unitDenomEntry)
 	app.TokenRegistryKeeper.SetToken(ctx, &ibcRegistryEntry)

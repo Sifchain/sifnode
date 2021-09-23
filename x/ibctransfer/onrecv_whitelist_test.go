@@ -32,21 +32,18 @@ func TestIsRecvPacketAllowed(t *testing.T) {
 	}
 	app.TokenRegistryKeeper.SetToken(ctx, &tokenregistrytypes.RegistryEntry{
 		Denom:                "atom",
-		IsWhitelisted:        true,
 		Decimals:             6,
 		IbcCounterpartyDenom: "",
 		Permissions:          []tokenregistrytypes.Permission{tokenregistrytypes.Permission_IBCIMPORT},
 	})
 	app.TokenRegistryKeeper.SetToken(ctx, &tokenregistrytypes.RegistryEntry{
 		Denom:                "ibc/44F0BAC50DDD0C83DAC9CEFCCC770C12F700C0D1F024ED27B8A3EE9DD949BAD3",
-		IsWhitelisted:        true,
 		Decimals:             6,
 		IbcCounterpartyDenom: "",
 		Permissions:          []tokenregistrytypes.Permission{tokenregistrytypes.Permission_IBCIMPORT},
 	})
 	app.TokenRegistryKeeper.SetToken(ctx, &tokenregistrytypes.RegistryEntry{
 		Denom:                "ibc/A916425D9C00464330F8B333711C4A51AA8CF0141392E7E250371EC6D4285BF2",
-		IsWhitelisted:        true,
 		Decimals:             6,
 		IbcCounterpartyDenom: "",
 		Permissions:          []tokenregistrytypes.Permission{},

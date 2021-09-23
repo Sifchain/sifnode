@@ -23,16 +23,14 @@ func TestOnTimeoutPacketConvert_Source(t *testing.T) {
 	sifapp.SetConfig(false)
 	addrs, _ := test2.CreateTestAddrs(2)
 	rowanToken := tokenregistrytypes.RegistryEntry{
-		IsWhitelisted:        true,
 		Denom:                "rowan",
 		IbcCounterpartyDenom: "xrowan",
 		Decimals:             18,
 	}
 	xrowanToken := tokenregistrytypes.RegistryEntry{
-		IsWhitelisted: true,
-		Denom:         "xrowan",
-		UnitDenom:     "rowan",
-		Decimals:      10,
+		Denom:     "xrowan",
+		UnitDenom: "rowan",
+		Decimals:  10,
 	}
 	msgSourceTransfer := types.NewMsgTransfer(
 		"transfer",

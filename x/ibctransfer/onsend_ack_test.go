@@ -23,16 +23,14 @@ func TestOnAcknowledgementMaybeConvert_Source(t *testing.T) {
 	sifapp.SetConfig(false)
 	addrs, _ := test2.CreateTestAddrs(2)
 	rowanToken := tokenregistrytypes.RegistryEntry{
-		IsWhitelisted:        true,
 		Denom:                "rowan",
 		IbcCounterpartyDenom: "xrowan",
 		Decimals:             18,
 	}
 	xrowanToken := tokenregistrytypes.RegistryEntry{
-		IsWhitelisted: true,
-		Denom:         "xrowan",
-		UnitDenom:     "rowan",
-		Decimals:      10,
+		Denom:     "xrowan",
+		UnitDenom: "rowan",
+		Decimals:  10,
 	}
 	// successAck := channeltypes.NewResultAcknowledgement([]byte{byte(1)})
 	errorAck := channeltypes.NewErrorAcknowledgement("failed packet transfer")
@@ -123,10 +121,9 @@ func TestOnAcknowledgementMaybeConvert_Sink(t *testing.T) {
 		BaseDenom: "uatom",
 	}
 	atomToken := tokenregistrytypes.RegistryEntry{
-		IsWhitelisted: true,
-		Denom:         denomTrace.IBCDenom(),
-		BaseDenom:     "uatom",
-		Decimals:      6,
+		Denom:     denomTrace.IBCDenom(),
+		BaseDenom: "uatom",
+		Decimals:  6,
 	}
 	/*croGweiDenomTrace := types.DenomTrace{
 		// A token coming from source will have this chain's source channel prepended when this chain generates hash.

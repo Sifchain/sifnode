@@ -12,7 +12,7 @@ import (
 )
 
 type keeper struct {
-	cdc codec.BinaryMarshaler
+	cdc      codec.BinaryMarshaler
 	storeKey sdk.StoreKey
 }
 
@@ -75,7 +75,6 @@ func (k keeper) GetDenom(wl types.Registry, denom string) *types.RegistryEntry {
 
 func (k keeper) SetToken(ctx sdk.Context, entry *types.RegistryEntry) {
 	wl := k.GetDenomWhitelist(ctx)
-	entry.Sanitize()
 	for i := range wl.Entries {
 		if wl.Entries[i] != nil && strings.EqualFold(wl.Entries[i].Denom, entry.Denom) {
 			wl.Entries[i] = entry

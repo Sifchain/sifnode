@@ -75,12 +75,12 @@ func ConvertCoinsForTransfer(msg *sdktransfertypes.MsgTransfer, sendRegistryEntr
 	// calculate the conversion difference and reduce precision
 	po := sendRegistryEntry.Decimals - sendAsRegistryEntry.Decimals
 	decAmount := sdk.NewDecFromInt(msg.Token.Amount)
-	convAmountDec := ReducePrecision(decAmount, po)
+	convAmountDec := ReducePrecision(decAmount, int64(po))
 	convAmount := sdk.NewIntFromBigInt(convAmountDec.TruncateInt().BigInt())
 	// create converted and Sifchain tokens with corresponding denoms and amounts
 	convToken := sdk.NewCoin(sendRegistryEntry.IbcCounterpartyDenom, convAmount)
 	// increase convAmount precision to ensure amount deducted from address is the same that gets sent
-	tokenAmountDec := IncreasePrecision(sdk.NewDecFromInt(convAmount), po)
+	tokenAmountDec := IncreasePrecision(sdk.NewDecFromInt(convAmount), int64(po))
 	tokenAmount := sdk.NewIntFromBigInt(tokenAmountDec.TruncateInt().BigInt())
 	token := sdk.NewCoin(msg.Token.Denom, tokenAmount)
 	return token, convToken

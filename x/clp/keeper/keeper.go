@@ -71,7 +71,7 @@ func (k Keeper) HasBalance(ctx sdk.Context, addr sdk.AccAddress, coin sdk.Coin) 
 	return k.bankKeeper.HasBalance(ctx, addr, coin)
 }
 
-func (k Keeper) GetNormalizationFactor(decimals int64) (sdk.Dec, bool) {
+func (k Keeper) GetNormalizationFactor(decimals int32) (sdk.Dec, bool) {
 	normalizationFactor := sdk.NewDec(1)
 	adjustExternalToken := false
 	nf := decimals
