@@ -41,7 +41,7 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
      */
     event LogNewBridgeTokenCreated(
         uint8 decimals,
-        int32 indexed sourcechainId,
+        int32 indexed _networkDescriptor,
         string name,
         string symbol,
         address indexed sourceContractAddress,
