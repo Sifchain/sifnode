@@ -22,6 +22,9 @@ func NewHandler(k types.Keeper) sdk.Handler {
 		case *types.MsgDeregister:
 			res, err := msgServer.Deregister(sdk.WrapSDKContext(ctx), msg)
 			return sdk.WrapServiceResult(ctx, res, err)
+		case *types.TokenMetadataAddRequest:
+			res, err := msgServer.TokenMetadataAdd(sdk.WrapSDKContext(ctx), msg)
+			return sdk.WrapServiceResult(ctx, res, err)
 		default:
 			errMsg := fmt.Sprintf("unrecognized message type: %v", msg.Type())
 			return nil, sdkerrors.Wrap(sdkerrors.ErrUnknownRequest, errMsg)

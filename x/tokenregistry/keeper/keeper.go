@@ -2,11 +2,13 @@ package keeper
 
 import (
 	"bytes"
+	"fmt"
 	"strings"
 
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	gogotypes "github.com/gogo/protobuf/types"
+	"github.com/tendermint/tendermint/libs/log"
 
 	"github.com/Sifchain/sifnode/x/tokenregistry/types"
 )
@@ -22,6 +24,11 @@ func NewKeeper(cdc codec.Marshaler, storeKey sdk.StoreKey) types.Keeper {
 		cdc:      cdc,
 		storeKey: storeKey,
 	}
+}
+
+// Logger returns a module-specific logger.
+func (k keeper) Logger(ctx sdk.Context) log.Logger {
+	return ctx.Logger().With("module", fmt.Sprintf("x/%s", types.ModuleName))
 }
 
 func (k keeper) SetAdminAccount(ctx sdk.Context, adminAccount sdk.AccAddress) {
@@ -142,4 +149,10 @@ func (k keeper) GetDenomWhitelist(ctx sdk.Context) types.Registry {
 	}
 	k.cdc.MustUnmarshalBinaryBare(bz, &whitelist)
 	return whitelist
+}
+
+// Exists chec if the key existed in db.
+func (k keeper) Exists(ctx sdk.Context, key []byte) bool {
+	store := ctx.KVStore(k.storeKey)
+	return store.Has(key)
 }
