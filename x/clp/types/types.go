@@ -47,3 +47,11 @@ func NewPoolsResponse(pools []*Pool, height int64, address string) PoolsRes {
 func NewLiquidityProviderResponse(liquidityProvider LiquidityProvider, height int64, nativeBalance string, externalBalance string) LiquidityProviderRes {
 	return LiquidityProviderRes{LiquidityProvider: &liquidityProvider, Height: height, NativeAssetBalance: nativeBalance, ExternalAssetBalance: externalBalance}
 }
+
+func NewLiquidityProviderDataResponse(liquidityProviderData []*LiquidityProviderData, height int64) LiquidityProviderDataRes {
+	return LiquidityProviderDataRes{LiquidityProviderData: liquidityProviderData, Height: height}
+}
+
+func NewLiquidityProviderData(liquidityProvider LiquidityProvider, nativeBalance string, externalBalance string) LiquidityProviderData {
+	return LiquidityProviderData{LiquidityProvider: &liquidityProvider, NativeAssetBalance: nativeBalance, ExternalAssetBalance: externalBalance}
+}
