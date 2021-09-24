@@ -65,13 +65,7 @@ rake "sifnode:keys:show[my-node]"
 make install
 ```
 
-8. Generate a mnemonic (if you don't already have one):
-
-```bash
-rake "sifnode:keys:generate:mnemonic"
-```
-
-9. Boot your node:
+8. Boot your node:
 
 ```bash
 rake "sifnode:standalone:boot[<chain_id>,<moniker>,'<mnemonic>',<gas_price>,<bind_ip_address>,'<flags>']"
