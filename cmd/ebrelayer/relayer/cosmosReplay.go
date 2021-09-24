@@ -18,7 +18,10 @@ import (
 )
 
 // ProphecyLifeTime signature info life time on chain
-const ProphecyLifeTime = 520000
+const blockTimeInSecond = 5
+const secondsPerDay = 60 * 60 * 24
+const daysPerMonth = 30
+const ProphecyLifeTime = (secondsPerDay * daysPerMonth) / blockTimeInSecond
 
 // ReplayCosmosBurnLock the missed burn lock events from cosmos
 func (sub CosmosSub) ReplayCosmosBurnLock(txFactory tx.Factory) {
