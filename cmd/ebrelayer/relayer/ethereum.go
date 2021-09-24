@@ -362,8 +362,10 @@ func (sub EthereumSub) Replay(txFactory tx.Factory, symbolTranslator *symbol_tra
 }
 
 // logToEvent unpacks an Ethereum event
-func (sub EthereumSub) logToEvent(networkDescriptor oracletypes.NetworkDescriptor, contractAddress common.Address,
-	contractABI abi.ABI, cLog ctypes.Log) (types.EthereumEvent, bool, error) {
+func (sub EthereumSub) logToEvent(networkDescriptor oracletypes.NetworkDescriptor,
+	contractAddress common.Address,
+	contractABI abi.ABI,
+	cLog ctypes.Log) (types.EthereumEvent, bool, error) {
 	// Parse the event's attributes via contract ABI
 	event := types.EthereumEvent{}
 	eventLogLockSignature := contractABI.Events[types.LogLock.String()].ID().Hex()
@@ -391,7 +393,7 @@ func (sub EthereumSub) logToEvent(networkDescriptor oracletypes.NetworkDescripto
 		return event, false, err
 	}
 	event.BridgeContractAddress = contractAddress
-	event.NetworkDescriptor = networkDescriptor
+	event.NetworkDescriptor = int32(networkDescriptor)
 	if eventName == types.LogBurn.String() {
 		event.ClaimType = ethbridgetypes.ClaimType_CLAIM_TYPE_BURN
 	} else {

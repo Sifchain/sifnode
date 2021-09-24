@@ -1,5 +1,5 @@
 import * as dotenv from "dotenv"
-import {HardhatUserConfig} from "hardhat/config"
+import { HardhatUserConfig } from "hardhat/config"
 import "@nomiclabs/hardhat-ethers"
 import "@nomiclabs/hardhat-etherscan"
 import '@openzeppelin/hardhat-upgrades'
@@ -82,7 +82,7 @@ const config: HardhatUserConfig = {
         // Your API key for Etherscan
         // Obtain one at https://etherscan.io/
         apiKey: process.env['ETHERSCAN_API_KEY']
-      }    
+    }
 }
 
 export default config

@@ -277,7 +277,10 @@ func RunInitWitnessCmd(cmd *cobra.Command, args []string) error {
 
 	// Open the level db
 	// TODO check if still use the level db in peggy2
-	levelDbFile := ""
+	levelDbFile, err := cmd.Flags().GetString(ebrelayertypes.FlagRelayerDbPath)
+	if err != nil {
+		return err
+	}
 	db, err := leveldb.OpenFile(levelDbFile, nil)
 	if err != nil {
 		log.Fatal("Error opening leveldb: ", err)

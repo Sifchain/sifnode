@@ -54,8 +54,8 @@ type EthereumEvent struct {
 	To                    []byte
 	Symbol                string
 	Name                  string
-	Decimals              int64
-	NetworkDescriptor     oracle.NetworkDescriptor
+	Decimals              uint8
+	NetworkDescriptor     int32
 	Value                 *big.Int
 	Nonce                 *big.Int
 	ClaimType             ethbridge.ClaimType

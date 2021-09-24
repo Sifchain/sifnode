@@ -14,9 +14,9 @@ const BigNumber = web3.BigNumber;
 // Please set the previous gas costs accordingly in this object
 const gasProfiling = {
   use: false,
-  lock: 175867,
-  mint: 181881,
-  newBt: 1665627,
+  lock: 176141,
+  mint: 182155,
+  newBt: 1665776,
   multiLock: 346709,
   current: {}
 }

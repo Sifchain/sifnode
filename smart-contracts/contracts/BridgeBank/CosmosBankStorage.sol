@@ -41,7 +41,7 @@ contract CosmosBankStorage {
     /**
     * @notice network descriptor
     */
-    uint256 public networkDescriptor;
+    int32 public networkDescriptor;
 
     /**
     * @dev gap of storage for future upgrades

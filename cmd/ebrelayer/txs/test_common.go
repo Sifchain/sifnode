@@ -62,7 +62,7 @@ func CreateTestLogEthereumEvent(t *testing.T) types.EthereumEvent {
 	testNonce := big.NewInt(int64(TestNonce))
 
 	return types.EthereumEvent{
-		NetworkDescriptor:     networkDescriptor,
+		NetworkDescriptor:     int32(networkDescriptor),
 		BridgeContractAddress: testBridgeContractAddress,
 		ID:                    testProphecyID32,
 		From:                  testEthereumSender,
