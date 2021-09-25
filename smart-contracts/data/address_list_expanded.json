@@ -1,0 +1,92 @@
+[
+  {
+    "address": "0x217ddead61a42369a266f1fb754eb5d3ebadc88a",
+    "name": "Donkey",
+    "symbol": "DON",
+    "decimals": 18
+  },
+  {
+    "address": "0x9e32b13ce7f2e80a01932b42553652e053d6ed8e",
+    "name": "Metis Token",
+    "symbol": "Metis",
+    "decimals": 18
+  },
+  {
+    "address": "0xc52c326331e9ce41f04484d3b5e5648158028804",
+    "name": "ZEN Exchange Token",
+    "symbol": "ZCX",
+    "decimals": 18
+  },
+  {
+    "address": "0x3432b6a60d23ca0dfca7761b7ab56459d9c964d0",
+    "name": "Frax Share",
+    "symbol": "FXS",
+    "decimals": 18
+  },
+  {
+    "address": "0x853d955acef822db058eb8505911ed77f175b99e",
+    "name": "Frax",
+    "symbol": "FRAX",
+    "decimals": 18
+  },
+  {
+    "address": "0xEF53462838000184F35f7D991452e5f25110b207",
+    "name": "Knit Finance",
+    "symbol": "KFT",
+    "decimals": 18
+  },
+  {
+    "address": "0xb9ef770b6a5e12e45983c5d80545258aa38f3b78",
+    "name": "0chain",
+    "symbol": "ZCN",
+    "decimals": 10
+  },
+  {
+    "address": "0xFa14Fa6958401314851A17d6C5360cA29f74B57B",
+    "name": "SAITO",
+    "symbol": "SAITO",
+    "decimals": 18
+  },
+  {
+    "address": "0x9695e0114e12c0d3a3636fab5a18e6b737529023",
+    "name": "DFYN Token",
+    "symbol": "DFYN",
+    "decimals": 18
+  },
+  {
+    "address": "0x20a8cec5fffea65be7122bcab2ffe32ed4ebf03a",
+    "name": "DinoX Coin",
+    "symbol": "DNXC",
+    "decimals": 18
+  },
+  {
+    "address": "0xbbc2ae13b23d715c30720f079fcd9b4a74093505",
+    "name": "@EthernityChain $ERN Token",
+    "symbol": "ERN",
+    "decimals": 18
+  },
+  {
+    "address": "0x83e6f1e41cdd28eaceb20cb649155049fac3d5aa",
+    "name": "PolkastarterToken",
+    "symbol": "POLS",
+    "decimals": 18
+  },
+  {
+    "address": "0xbb0e17ef65f82ab018d8edd776e8dd940327b28b",
+    "name": "Axie Infinity Shard",
+    "symbol": "AXS",
+    "decimals": 18
+  },
+  {
+    "address": "0x7D1AfA7B718fb893dB30A3aBc0Cfc608AaCfeBB0",
+    "name": "Matic Token",
+    "symbol": "MATIC",
+    "decimals": 18
+  },
+  {
+    "address": "0x2e9d63788249371f1dfc918a52f8d799f4a38c94",
+    "name": "Tokemak",
+    "symbol": "TOKE",
+    "decimals": 18
+  }
+]
