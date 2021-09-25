@@ -16,7 +16,7 @@ func TestMigrateGenesisDataCmd(t *testing.T) {
 	cmd, _ := NewRootCmd()
 	migrateOutputBuf := new(bytes.Buffer)
 	cmd.SetOut(migrateOutputBuf)
-	// This test file has been run through sifnoded migrate, and IBC state added.
+	// This test file has been run through sifnoded migrate, and IBC and Mint state added.
 	cmd.SetArgs([]string{"migrate-data", "v0.9", "testdata/v039_exported_migrated_state.json"})
 
 	app.SetConfig(false)
