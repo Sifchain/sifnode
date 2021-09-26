@@ -1,25 +1,16 @@
 package app
 
 import (
-	tokenregistrymigrations "github.com/Sifchain/sifnode/x/tokenregistry/migrations"
-	tokenregistrytypes "github.com/Sifchain/sifnode/x/tokenregistry/types"
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/upgrade/types"
 )
 
-const upgradeNameV095 = "0.9.5"
+const upgradeName = "0.9.8"
 
 func SetupHandlers(app *SifchainApp) {
-	// SetupHandlersForV095(app)
-	app.UpgradeKeeper.SetUpgradeHandler("0.9.6-rc.2", func(ctx sdk.Context, plan types.Plan) {})
-}
-
-func SetupHandlersForV095(app *SifchainApp) {
-	app.UpgradeKeeper.SetUpgradeHandler("0.9.5", func(ctx sdk.Context, plan types.Plan) {
-		app.Logger().Info("Running upgrade handler for " + upgradeNameV095 + " with new store " + tokenregistrytypes.StoreKey)
-		// Install initial token registry entries for non-ibc tokens.
-		tokenregistrymigrations.Init(ctx, app.TokenRegistryKeeper)
+	app.UpgradeKeeper.SetUpgradeHandler(upgradeName, func(ctx sdk.Context, plan types.Plan) {
+		app.Logger().Info("Running upgrade handler for " + upgradeName)
 	})
 
 	upgradeInfo, err := app.UpgradeKeeper.ReadUpgradeInfoFromDisk()
@@ -27,9 +18,9 @@ func SetupHandlersForV095(app *SifchainApp) {
 		panic(err)
 	}
 
-	if upgradeInfo.Name == upgradeNameV095 && !app.UpgradeKeeper.IsSkipHeight(upgradeInfo.Height) {
+	if upgradeInfo.Name == upgradeName && !app.UpgradeKeeper.IsSkipHeight(upgradeInfo.Height) {
 		storeUpgrades := storetypes.StoreUpgrades{
-			Added: []string{tokenregistrytypes.StoreKey},
+			Added: []string{},
 		}
 
 		// Use upgrade store loader for the initial loading of all stores when app starts,
