@@ -2,10 +2,11 @@ package main
 
 import (
 	"fmt"
+	"os"
+
 	"github.com/cosmos/cosmos-sdk/crypto/hd"
 	"github.com/cosmos/cosmos-sdk/crypto/keyring"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"os"
 )
 
 // This file contains sample values which can be used to speed up the process of writing test cases
@@ -42,7 +43,7 @@ func getDefaultArgs() Args {
 		GasPrice:         "",
 		GasAdjustment:    0,
 		Keybase:          kr,
-		ChannelId:        "",
+		ChannelID:        "",
 		Sender:           accInfo.GetAddress(),
 		SifchainReceiver: toAddr,
 		CosmosReceiver:   "",

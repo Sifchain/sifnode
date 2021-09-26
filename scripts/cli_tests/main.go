@@ -45,7 +45,7 @@ type Args struct {
 	GasPrice         string          `json:"gas_price,omitempty"`
 	GasAdjustment    float64         `json:"gas_adjustment,omitempty"`
 	Keybase          keyring.Keyring `json:"keybase,omitempty"`
-	ChannelId        string          `json:"channel_id,omitempty"`
+	ChannelID        string          `json:"channel_id,omitempty"`
 	Sender           sdk.AccAddress  `json:"sender,omitempty"`
 	SenderName       string          `json:"sender_name"`
 	SifchainReceiver sdk.AccAddress  `json:"receiver,omitempty"`
