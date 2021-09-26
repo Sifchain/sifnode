@@ -1264,7 +1264,7 @@
       "decimals": "6",
       "denom": "ibc/C9D28A562D872C72C68336CB3031F5ED3289B994EDC0C7D02216A312D4EC842D",
       "base_denom": "uakt",
-      "ibc_transfer_port": "transfer/channel-77",
+      "ibc_transfer_port": "transfer",
       "ibc_channel_id": "channel-77",
       "ibc_counterparty_channel_id": "channel-44",
       "permissions": [
@@ -1280,7 +1280,7 @@
       "decimals": "6",
       "denom": "ibc/6D5142030EDCBBF7396B98C3F0C0BE58E0C8CA306F3D49FC52CBF0CF3C1FBD02",
       "base_denom": "udvpn",
-      "ibc_transfer_port": "transfer/channel-79",
+      "ibc_transfer_port": "transfer",
       "ibc_channel_id": "channel-79",
       "ibc_counterparty_channel_id": "channel-19",
 
@@ -1297,7 +1297,7 @@
       "decimals": "6",
       "denom": "ibc/8395BFD6DF6EFE215B56CBEB14B7B265598E6F14AFFAF28337E9B627F0334059",
       "base_denom": "unyan",
-      "ibc_transfer_port": "transfer/channel-74",
+      "ibc_transfer_port": "transfer",
       "ibc_channel_id": "channel-74",
       "ibc_counterparty_channel_id": "channel-22",
 
@@ -1314,7 +1314,7 @@
       "decimals": "6",
       "denom": "ibc/C782C1DE5F380BC8A5B7D490684894B439D31847A004B271D7B7BA07751E582A",
       "base_denom": "uphoton",
-      "ibc_transfer_port": "transfer/channel-101",
+      "ibc_transfer_port": "transfer",
       "ibc_channel_id": "channel-101",
       "ibc_counterparty_channel_id": "channel-3",
 
