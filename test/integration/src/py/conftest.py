@@ -1,8 +1,10 @@
 import copy
 import logging
 import os
+import threading
 
 import pytest
+import integration_test_context
 
 import test_utilities
 from burn_lock_functions import decrease_log_level, force_log_level
@@ -178,12 +180,18 @@ def is_ganache(ethereum_network):
     return not ethereum_network
 
 
+# Deprecated: sifnoded accepts --gas-prices=0.5rowan along with --gas-adjustment=1.5 instead of a fixed fee.
+# Using those parameters is the best way to have the fees set robustly after the .42 upgrade.
+# See https://github.com/Sifchain/sifnode/pull/1802#discussion_r697403408
 @pytest.fixture
 def sifchain_fees(sifchain_fees_int):
     """returns a string suitable for passing to sifnoded"""
     return f"{sifchain_fees_int}rowan"
 
 
+# Deprecated: sifnoded accepts --gas-prices=0.5rowan along with --gas-adjustment=1.5 instead of a fixed fee.
+# Using those parameters is the best way to have the fees set robustly after the .42 upgrade.
+# See https://github.com/Sifchain/sifnode/pull/1802#discussion_r697403408
 @pytest.fixture
 def sifchain_fees_int():
     return 200000
@@ -251,7 +259,7 @@ def ensure_relayer_restart(integration_dir, smart_contracts_dir):
     logging.info("restart ebrelayer after advancing wait blocks - avoids any interaction with replaying blocks")
     original_log_level = decrease_log_level(new_level=logging.WARNING)
     test_utilities.advance_n_ethereum_blocks(test_utilities.n_wait_blocks + 1, smart_contracts_dir)
-    test_utilities.get_shell_output(f"{integration_dir}/sifchain_start_ebrelayer.sh")
+    test_utilities.start_ebrelayer()
     force_log_level(original_log_level)
 
 
@@ -339,3 +347,27 @@ def restore_default_rescue_location(
         transfer_request=basic_transfer_request,
         credentials=sifchain_admin_account_credentials
     )
+
+
+threadlocals = threading.local()
+
+@pytest.fixture
+def ctx(snapshot_name):
+    logging.debug("Before ctx()")
+    yield threadlocals.ctx
+    logging.debug("After ctx()")
+
+@pytest.fixture(scope="function")
+def with_snapshot(snapshot_name):
+    make = integration_test_context.make_py_module
+    make.cleanup_and_reset_state()
+    ctx = integration_test_context.IntegrationTestContext(snapshot_name)
+    logging.info("Started processes: {}".format(repr(ctx.processes)))
+    threadlocals.ctx = ctx
+    os.environ["VAGRANT_ENV_JSON"] = make.project_dir("test/integration/vagrantenv.json")  # TODO HACK
+    logging.debug("Before with_snapshot()")
+    yield
+    logging.debug("After with_snapshot()")
+    make.killall(ctx.processes)  # TODO Ensure this is called even in the case of exception
+    logging.info("Terminated processes: {}".format(repr(ctx.processes)))
+    del threadlocals.ctx

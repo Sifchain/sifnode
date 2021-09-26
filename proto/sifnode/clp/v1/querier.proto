@@ -20,6 +20,11 @@ service Query {
     option (google.api.http).get =
         "/sifchain/clp/v1/liquidity_provider/{symbol}/{lp_address}";
   };
+  rpc GetLiquidityProviderData(LiquidityProviderDataReq)
+      returns (LiquidityProviderDataRes) {
+    option (google.api.http).get =
+        "/sifchain/clp/v1/liquidity_provider_data/{lp_address}";
+  };
   rpc GetAssetList(AssetListReq) returns (AssetListRes) {
     option (google.api.http).get = "/sifchain/clp/v1/asset_list/{lp_address}";
   };
@@ -84,6 +89,20 @@ message AssetListRes {
   repeated sifnode.clp.v1.Asset assets = 1;
   int64 height = 2;
   cosmos.base.query.v1beta1.PageResponse pagination = 3;
+}
+
+message LiquidityProviderDataReq {
+  option (gogoproto.equal) = false;
+  option (gogoproto.goproto_getters) = false;
+
+  string lp_address = 1;
+  cosmos.base.query.v1beta1.PageRequest pagination = 2;
+}
+
+message LiquidityProviderDataRes {
+  repeated sifnode.clp.v1.LiquidityProviderData liquidity_provider_data = 1;
+  int64 height = 2;
+  cosmos.base.query.v1beta1.PageRequest pagination = 3;
 }
 
 message LiquidityProviderListReq {

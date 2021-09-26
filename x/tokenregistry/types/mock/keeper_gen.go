@@ -9,10 +9,8 @@ import (
 
 	types "github.com/Sifchain/sifnode/x/tokenregistry/types"
 	types0 "github.com/cosmos/cosmos-sdk/types"
-	types1 "github.com/cosmos/cosmos-sdk/x/ibc/applications/transfer/types"
-	types2 "github.com/cosmos/cosmos-sdk/x/ibc/core/04-channel/types"
 	gomock "github.com/golang/mock/gomock"
-	types3 "github.com/tendermint/tendermint/abci/types"
+	types1 "github.com/tendermint/tendermint/abci/types"
 )
 
 // MockKeeper is a mock of Keeper interface.
@@ -33,20 +31,23 @@ func NewMockKeeper(ctrl *gomock.Controller) *MockKeeper {
 	return mock
 }
 
-func (m *MockKeeper) CheckDenomPermissions(ctx types0.Context, denom string, permissions []types.Permission) bool {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CheckDenomPermissions", ctx, denom)
-	ret0, _ := ret[0].(bool)
-	return ret0
-}
-func (mr *MockKeeperMockRecorder) CheckDenomPermissions(ctx, denom interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CheckDenomPermissions", reflect.TypeOf((*MockKeeper)(nil).CheckDenomPermissions), ctx, denom)
-}
-
 // EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockKeeper) EXPECT() *MockKeeperMockRecorder {
 	return m.recorder
+}
+
+// CheckDenomPermissions mocks base method.
+func (m *MockKeeper) CheckDenomPermissions(ctx types0.Context, denom string, permissions []types.Permission) bool {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CheckDenomPermissions", ctx, denom, permissions)
+	ret0, _ := ret[0].(bool)
+	return ret0
+}
+
+// CheckDenomPermissions indicates an expected call of CheckDenomPermissions.
+func (mr *MockKeeperMockRecorder) CheckDenomPermissions(ctx, denom, permissions interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CheckDenomPermissions", reflect.TypeOf((*MockKeeper)(nil).CheckDenomPermissions), ctx, denom, permissions)
 }
 
 // ExportGenesis mocks base method.
@@ -92,10 +93,10 @@ func (mr *MockKeeperMockRecorder) GetDenomWhitelist(ctx interface{}) *gomock.Cal
 }
 
 // InitGenesis mocks base method.
-func (m *MockKeeper) InitGenesis(ctx types0.Context, state types.GenesisState) []types3.ValidatorUpdate {
+func (m *MockKeeper) InitGenesis(ctx types0.Context, state types.GenesisState) []types1.ValidatorUpdate {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "InitGenesis", ctx, state)
-	ret0, _ := ret[0].([]types3.ValidatorUpdate)
+	ret0, _ := ret[0].([]types1.ValidatorUpdate)
 	return ret0
 }
 
@@ -167,69 +168,4 @@ func (m *MockKeeper) SetToken(ctx types0.Context, entry *types.RegistryEntry) {
 func (mr *MockKeeperMockRecorder) SetToken(ctx, entry interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetToken", reflect.TypeOf((*MockKeeper)(nil).SetToken), ctx, entry)
-}
-
-// MockSDKTransferKeeper is a mock of SDKTransferKeeper interface.
-type MockSDKTransferKeeper struct {
-	ctrl     *gomock.Controller
-	recorder *MockSDKTransferKeeperMockRecorder
-}
-
-// MockSDKTransferKeeperMockRecorder is the mock recorder for MockSDKTransferKeeper.
-type MockSDKTransferKeeperMockRecorder struct {
-	mock *MockSDKTransferKeeper
-}
-
-// NewMockSDKTransferKeeper creates a new mock instance.
-func NewMockSDKTransferKeeper(ctrl *gomock.Controller) *MockSDKTransferKeeper {
-	mock := &MockSDKTransferKeeper{ctrl: ctrl}
-	mock.recorder = &MockSDKTransferKeeperMockRecorder{mock}
-	return mock
-}
-
-// EXPECT returns an object that allows the caller to indicate expected use.
-func (m *MockSDKTransferKeeper) EXPECT() *MockSDKTransferKeeperMockRecorder {
-	return m.recorder
-}
-
-// OnAcknowledgementPacket mocks base method.
-func (m *MockSDKTransferKeeper) OnAcknowledgementPacket(ctx types0.Context, packet types2.Packet, data types1.FungibleTokenPacketData, ack types2.Acknowledgement) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "OnAcknowledgementPacket", ctx, packet, data, ack)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// OnAcknowledgementPacket indicates an expected call of OnAcknowledgementPacket.
-func (mr *MockSDKTransferKeeperMockRecorder) OnAcknowledgementPacket(ctx, packet, data, ack interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "OnAcknowledgementPacket", reflect.TypeOf((*MockSDKTransferKeeper)(nil).OnAcknowledgementPacket), ctx, packet, data, ack)
-}
-
-// OnRecvPacket mocks base method.
-func (m *MockSDKTransferKeeper) OnRecvPacket(ctx types0.Context, packet types2.Packet, data types1.FungibleTokenPacketData) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "OnRecvPacket", ctx, packet, data)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// OnRecvPacket indicates an expected call of OnRecvPacket.
-func (mr *MockSDKTransferKeeperMockRecorder) OnRecvPacket(ctx, packet, data interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "OnRecvPacket", reflect.TypeOf((*MockSDKTransferKeeper)(nil).OnRecvPacket), ctx, packet, data)
-}
-
-// OnTimeoutPacket mocks base method.
-func (m *MockSDKTransferKeeper) OnTimeoutPacket(ctx types0.Context, packet types2.Packet, data types1.FungibleTokenPacketData) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "OnTimeoutPacket", ctx, packet, data)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// OnTimeoutPacket indicates an expected call of OnTimeoutPacket.
-func (mr *MockSDKTransferKeeperMockRecorder) OnTimeoutPacket(ctx, packet, data interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "OnTimeoutPacket", reflect.TypeOf((*MockSDKTransferKeeper)(nil).OnTimeoutPacket), ctx, packet, data)
 }

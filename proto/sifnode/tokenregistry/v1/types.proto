@@ -53,6 +53,6 @@ message RegistryEntry {
   // to overcome the current uint64 limit on the packet level.
   // i.e rowan -> microrowan
   // i.e microrowan -> microrowan
-  string ibc_counter_party_denom = 17;
+  string ibc_counterparty_denom = 17;
   string ibc_counterparty_chain_id =  18;
 }

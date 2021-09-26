@@ -34,10 +34,6 @@ func GetGenesisStateFromAppState(marshaler codec.JSONMarshaler, appState map[str
 func InitialRegistry() Registry {
 	entries := Registry{
 		Entries: []*RegistryEntry{
-			{IsWhitelisted: true, Denom: "ibc/287EE075B7AADDEB240AFE74FA2108CDACA50A7CCD013FA4C1FCD142AFA9CA9A", BaseDenom: "uphoton", IbcChannelId: "channel-0", IbcCounterpartyChannelId: "channel-86", Path: "transfer/channel-0", DisplayName: "uPHOTON", ExternalSymbol: "uPHOTON", Decimals: 6},
-			{IsWhitelisted: true, Denom: "ibc/48E40290A494F271890BCFC867EB0940D8A6205DD94750C8EA71750480D65BA9", BaseDenom: "akt", IbcChannelId: "channel-1", IbcCounterpartyChannelId: "channel-12", Path: "transfer/channel-1", DisplayName: "AKT", ExternalSymbol: "AKT", Decimals: 6},
-			{IsWhitelisted: true, Denom: "ibc/0F3C9D893A0ADE5738E473BB1A15C44D9715568E0C005D33A02495B444E15225", BaseDenom: "ncat", IbcChannelId: "channel-2", IbcCounterpartyChannelId: "channel-12", Path: "transfer/channel-2", DisplayName: "NCAT", ExternalSymbol: "NCAT", Decimals: 6},
-			{IsWhitelisted: true, Denom: "ibc/E0B9629F3DF557C3412F12F6EFE3DACB28B4A30627A27697B6CFAD03A3DE0C96", BaseDenom: "dvpn", IbcChannelId: "channel-3", IbcCounterpartyChannelId: "channel-16", Path: "transfer/channel-3", DisplayName: "dVPN", ExternalSymbol: "dVPN", Decimals: 6},
 			{IsWhitelisted: true, Denom: "rowan", Decimals: 18, Permissions: []Permission{Permission_CLP}},
 			{IsWhitelisted: true, Denom: "ccel", Decimals: 4, Permissions: []Permission{Permission_CLP}},
 			{IsWhitelisted: true, Denom: "causc", Decimals: 6, Permissions: []Permission{Permission_CLP}},

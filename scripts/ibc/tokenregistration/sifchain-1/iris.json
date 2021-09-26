@@ -1,0 +1,27 @@
+{
+  "entries": [
+    {
+      "is_whitelisted": true,
+      "decimals": "6",
+      "denom": "ibc/11DFDFADE34DCE439BA732EBA5CD8AA804A544BA1ECC0882856289FAF01FE53F",
+      "base_denom": "uiris",
+      "path": "transfer/channel-8",
+      "ibc_channel_id": "channel-8",
+      "ibc_counterparty_channel_id": "channel-19",
+      "display_name": "",
+      "display_symbol": "",
+      "network": "",
+      "address": "",
+      "external_symbol": "",
+      "transfer_limit": "",
+      "permissions": [
+        "CLP",
+        "IBCEXPORT",
+        "IBCIMPORT"
+      ],
+      "unit_denom": "",
+      "ibc_counterparty_denom": "",
+      "ibc_counterparty_chain_id": "irishub-1"
+    }
+  ]
+}

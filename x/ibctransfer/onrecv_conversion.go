@@ -52,20 +52,15 @@ func OnRecvPacketMaybeConvert(
 		}, acknowledgement.GetBytes(), nil
 	}
 
-	// Incoming coins were succesfully minted onto the chain,
+	// Incoming coins were successfully minted onto the chain,
 	// check if conversion to another denom is required.
 	if ShouldConvertIncomingCoins(ctx, whitelistKeeper, packet, data) {
 		receievedCoins, finalCoins := GetConvForIncomingCoins(ctx, whitelistKeeper, packet, data)
 		err = ExecConvForIncomingCoins(ctx, receievedCoins, finalCoins, bankKeeper, packet, data)
 		if err != nil {
-			// May be best to break the ExecConv into two steps called from here:
-			// 	1: Burn received denom.
-			//  2: Mint final denom.
-			// if conversion fails we need to respond with an error acknowledgement
-			acknowledgement = channeltypes.NewErrorAcknowledgement(err.Error())
-			return &sdk.Result{
-				Events: ctx.EventManager().Events().ToABCIEvents(),
-			}, acknowledgement.GetBytes(), nil
+			// Revert,
+			// although this may cause packet to be relayed again.
+			return nil, nil, sdkerrors.Wrap(sctransfertypes.ErrConvertingToUnitDenom, err.Error())
 		}
 	}
 

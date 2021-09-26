@@ -77,3 +77,95 @@ sifnoded q tokenregistry generate \
 echo "\n\ngenerated entry for $SENTINEL_CHAIN_ID"
 
 cat $SIFCHAIN_ID/sentinel.json | jq
+
+
+sifnoded q tokenregistry generate \
+	--token_base_denom=$IRIS_BASE_DENOM \
+	--token_ibc_counterparty_chain_id=$IRIS_CHAIN_ID \
+  --token_ibc_channel_id=$IRIS_CHANNEL_ID \
+  --token_ibc_counterparty_channel_id=$IRIS_COUNTERPARTY_CHANNEL_ID \
+	--token_ibc_counterparty_denom="" \
+	--token_unit_denom="" \
+	--token_decimals=6 \
+	--token_display_name="" \
+	--token_external_symbol="" \
+	--token_permission_clp=true \
+	--token_permission_ibc_export=true \
+	--token_permission_ibc_import=true | jq > $SIFCHAIN_ID/iris.json
+
+echo "\n\ngenerated entry for $IRIS_CHAIN_ID"
+
+cat $SIFCHAIN_ID/iris.json | jq
+
+sifnoded q tokenregistry generate \
+	--token_base_denom=uxprt \
+	--token_ibc_counterparty_chain_id=$PERSISTENCE_CHAIN_ID \
+  --token_ibc_channel_id=$PERSISTENCE_CHANNEL_ID \
+  --token_ibc_counterparty_channel_id=$PERSISTENCE_COUNTERPARTY_CHANNEL_ID \
+	--token_ibc_counterparty_denom="" \
+	--token_unit_denom="" \
+	--token_decimals=6 \
+	--token_display_name="uXPRT" \
+	--token_external_symbol="uxprt" \
+	--token_permission_clp=true \
+	--token_permission_ibc_export=true \
+	--token_permission_ibc_import=true | jq > $SIFCHAIN_ID/persistence.json
+
+echo "\n\ngenerated entry for $PERSISTENCE_CHAIN_ID"
+
+cat $SIFCHAIN_ID/persistence.json | jq
+
+sifnoded q tokenregistry generate \
+	--token_base_denom=basecro \
+	--token_ibc_counterparty_chain_id=$CRYPTO_ORG_CHAIN_ID \
+  --token_ibc_channel_id=$CRYPTO_ORG_CHANNEL_ID \
+  --token_ibc_counterparty_channel_id=$CRYPTO_ORG_COUNTERPARTY_CHANNEL_ID \
+	--token_ibc_counterparty_denom="" \
+	--token_unit_denom="" \
+	--token_decimals=8 \
+	--token_display_name="CRO" \
+	--token_external_symbol="basecro" \
+	--token_permission_clp=true \
+	--token_permission_ibc_export=true \
+	--token_permission_ibc_import=true | jq > $SIFCHAIN_ID/crypto-org.json
+
+echo "\n\ngenerated entry for $CRYPTO_ORG_CHAIN_ID"
+
+cat $SIFCHAIN_ID/crypto-org.json | jq
+
+sifnoded q tokenregistry generate \
+	--token_base_denom=uregen \
+	--token_ibc_counterparty_chain_id=$REGEN_CHAIN_ID \
+  --token_ibc_channel_id=$REGEN_CHANNEL_ID \
+  --token_ibc_counterparty_channel_id=$REGEN_COUNTERPARTY_CHANNEL_ID \
+	--token_ibc_counterparty_denom="" \
+	--token_unit_denom="" \
+	--token_decimals=6 \
+	--token_display_name="" \
+	--token_external_symbol="" \
+	--token_permission_clp=true \
+	--token_permission_ibc_export=true \
+	--token_permission_ibc_import=true | jq > $SIFCHAIN_ID/regen.json
+
+echo "\n\ngenerated entry for $REGEN_CHAIN_ID"
+
+cat $SIFCHAIN_ID/regen.json | jq
+
+sifnoded q tokenregistry generate \
+	--token_base_denom=uosmo \
+	--token_ibc_counterparty_chain_id=$OSMOSIS_CHAIN_ID \
+  --token_ibc_channel_id=$OSMOSIS_CHANNEL_ID \
+  --token_ibc_counterparty_channel_id=$OSMOSIS_COUNTERPARTY_CHANNEL_ID \
+	--token_ibc_counterparty_denom="" \
+	--token_unit_denom="" \
+	--token_decimals=6 \
+	--token_display_name="" \
+	--token_external_symbol="" \
+	--token_permission_clp=true \
+	--token_permission_ibc_export=true \
+	--token_permission_ibc_import=true | jq > $SIFCHAIN_ID/osmosis.json
+
+echo "\n\ngenerated entry for $OSMOSIS_CHAIN_ID"
+
+cat $SIFCHAIN_ID/osmosis.json | jq
+
