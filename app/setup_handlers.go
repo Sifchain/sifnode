@@ -3,26 +3,14 @@ package app
 import (
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/cosmos/cosmos-sdk/x/mint"
-	minttypes "github.com/cosmos/cosmos-sdk/x/mint/types"
 	"github.com/cosmos/cosmos-sdk/x/upgrade/types"
 )
 
-const upgradeName = "0.9.7"
+const upgradeName = "0.9.8"
 
 func SetupHandlers(app *SifchainApp) {
-	SetupHandlersForMint(app)
-}
-
-func SetupHandlersForMint(app *SifchainApp) {
 	app.UpgradeKeeper.SetUpgradeHandler(upgradeName, func(ctx sdk.Context, plan types.Plan) {
-		app.Logger().Info("Running upgrade handler for " + upgradeName + " with new store " + minttypes.StoreKey)
-		// Install initial params and minter for mint module.
-		mintGenesis := minttypes.DefaultGenesisState()
-		// Replace default MintDenom with staking bond denom.
-		mintGenesis.Params.MintDenom = app.StakingKeeper.GetParams(ctx).BondDenom
-		mint.InitGenesis(ctx, app.MintKeeper, app.AccountKeeper, mintGenesis)
-
+		app.Logger().Info("Running upgrade handler for " + upgradeName)
 	})
 
 	upgradeInfo, err := app.UpgradeKeeper.ReadUpgradeInfoFromDisk()
@@ -32,7 +20,7 @@ func SetupHandlersForMint(app *SifchainApp) {
 
 	if upgradeInfo.Name == upgradeName && !app.UpgradeKeeper.IsSkipHeight(upgradeInfo.Height) {
 		storeUpgrades := storetypes.StoreUpgrades{
-			Added: []string{minttypes.StoreKey},
+			Added: []string{},
 		}
 
 		// Use upgrade store loader for the initial loading of all stores when app starts,
