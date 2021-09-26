@@ -3,6 +3,7 @@ package ibctransfer_test_transfer
 import (
 	"bytes"
 	"encoding/json"
+
 	tokenregistrytypes "github.com/Sifchain/sifnode/x/tokenregistry/types"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	cryptocodec "github.com/cosmos/cosmos-sdk/crypto/codec"
@@ -17,10 +18,11 @@ import (
 	dbm "github.com/tendermint/tm-db"
 
 	"fmt"
-	tmtypes "github.com/tendermint/tendermint/types"
 	"strconv"
 	"testing"
 	"time"
+
+	tmtypes "github.com/tendermint/tendermint/types"
 
 	sifapp "github.com/Sifchain/sifnode/app"
 
@@ -115,67 +117,6 @@ type TestChain struct {
 	ClientIDs   []string          // ClientID's used on this chain
 	Connections []*TestConnection // track connectionID's created for this chain
 }
-
-//func CreateTestChain2(t *testing.T, chainID string) *TestChain {
-//	// generate validator private/public key
-//	privVal := mock.NewPV()
-//	pubKey, err := privVal.GetPubKey()
-//	require.NoError(t, err)
-//
-//	// create validator set with single validator
-//	validator := tmtypes.NewValidator(pubKey, 1)
-//	valSet := tmtypes.NewValidatorSet([]*tmtypes.Validator{validator})
-//	signers := []tmtypes.PrivValidator{privVal}
-//
-//	// generate genesis account
-//	senderPrivKey := secp256k1.GenPrivKey()
-//	acc := authtypes.NewBaseAccount(senderPrivKey.PubKey().Address().Bytes(), senderPrivKey.PubKey(), 0, 0)
-//	balance := banktypes.Balance{
-//		Address: acc.GetAddress().String(),
-//		Coins: sdk.NewCoins(
-//			sdk.NewCoin(sdk.DefaultBondDenom, sdk.NewInt(100000000000000)),
-//			sdk.NewCoin("ceth", sdk.NewInt(100000000000000)),
-//			sdk.NewCoin("cphoton", sdk.NewInt(100000000000000)),
-//			sdk.NewCoin("cusdt", sdk.NewInt(100000000000000)),
-//		),
-//	}
-//
-//	app := sifapp.SetupWithGenesisValSet(t, valSet, []authtypes.GenesisAccount{acc}, balance)
-//
-//	// create current header and call begin block
-//	header := tmproto.Header{
-//		ChainID: chainID,
-//		Height:  1,
-//		Time:    globalStartTime,
-//	}
-//
-//	txConfig := simapp.MakeTestEncodingConfig().TxConfig
-//
-//	// create an account to send transactions from
-//	chain := &TestChain{
-//		t:             t,
-//		ChainID:       chainID,
-//		App:           app,
-//		CurrentHeader: header,
-//		QueryServer:   app.IBCKeeper,
-//		TxConfig:      txConfig,
-//		Codec:         app.AppCodec(),
-//		Vals:          valSet,
-//		Signers:       signers,
-//		senderPrivKey: senderPrivKey,
-//		SenderAccount: acc,
-//		ClientIDs:     make([]string, 0),
-//		Connections:   make([]*TestConnection, 0),
-//	}
-//
-//	cap := chain.App.IBCKeeper.PortKeeper.BindPort(chain.GetContext(), MockPort)
-//	err = chain.App.ScopedIBCMockKeeper.ClaimCapability(chain.GetContext(), cap, host.PortPath(MockPort))
-//	require.NoError(t, err)
-//
-//	chain.NextBlock()
-//
-//	return chain
-//}
 
 func CreateTestChain(t *testing.T, chainID string) *TestChain {
 	db := dbm.NewMemDB()
