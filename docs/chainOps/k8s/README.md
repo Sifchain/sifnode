@@ -6,15 +6,20 @@
 - [Ruby 2.7.x](https://www.ruby-lang.org/en/documentation/installation)
 - [Golang](https://golang.org/doc/install)
 - [AWS CLI Tool](https://aws.amazon.com/cli/)
+- [aws-iam-authenticator](https://docs.aws.amazon.com/eks/latest/userguide/install-aws-iam-authenticator.html)
 - [kubectl](https://docs.aws.amazon.com/eks/latest/userguide/install-kubectl.html)
 - [helm](https://helm.sh/docs/intro/install)
 - [Terraform](https://learn.hashicorp.com/tutorials/terraform/install-cli)
+- [jq](https://stedolan.github.io/jq/download/)
+- libcurl
 
 _This tutorial assumes that you have at least a basic understanding of setting up AWS and configuring your access keys accordingly, so that you may interact with AWS via the CLI Tool._
 
 The deployment rake tasks and helm charts have moved [here](https://github.com/Sifchain/sifchain-deploy-public).
 
-Please clone into the deploy folder, in the root of the sifnode repository:
+Please clone into the deploy folder, in the root of the sifnode repository.
+
+e.g.:
 
 ```bash
 git clone ssh://git@github.com/Sifchain/sifchain-deploy-public ./deploy
@@ -28,8 +33,8 @@ Kubernetes is an open-source container-orchestration system for automating appli
 
 ### Testnet
 
-Please see [here](https://github.com/Sifchain/sifnode/tree/master/docs/chainOps/k8s/tutorials/testnet.md) for instructions on how to connect.
+Please see [here](https://github.com/Sifchain/sifnode/tree/develop/docs/chainOps/k8s/tutorials/testnet.md) for instructions on how to connect.
 
 ### BetaNet
 
-Please see [here](https://github.com/Sifchain/sifnode/tree/master/docs/chainOps/k8s/tutorials/betanet.md) for instructions on how to connect.
+Please see [here](https://github.com/Sifchain/sifnode/tree/develop/docs/chainOps/k8s/tutorials/betanet.md) for instructions on how to connect.
