@@ -3,7 +3,6 @@ package ibctransfer_test
 import (
 	"testing"
 
-	"github.com/Sifchain/sifnode/x/ibctransfer"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	transfertypes "github.com/cosmos/cosmos-sdk/x/ibc/applications/transfer/types"
 	channeltypes "github.com/cosmos/cosmos-sdk/x/ibc/core/04-channel/types"
