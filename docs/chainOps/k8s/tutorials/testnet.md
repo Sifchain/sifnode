@@ -212,7 +212,7 @@ In order to become a validator, that is a node which can participate in consensu
 1. Get the public key of your node:
 
 ```bash
-rake "sifnode:keys:public[<cluster>,<provider>,<namespace>]"
+rake "sifnode:keys:kubernetes:public[<cluster>,<provider>,<namespace>]"
 ```
 
 where:
@@ -226,7 +226,7 @@ where:
 e.g.:
 
 ```bash
-rake "sifnode:keys:public[my-cluster,aws,sifnode]"
+rake "sifnode:keys:kubernetes:public[my-cluster,aws,sifnode]"
 ```
 
 3. Stake:
