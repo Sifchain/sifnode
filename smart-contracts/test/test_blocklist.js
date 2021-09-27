@@ -1,5 +1,4 @@
 const Blocklist = artifacts.require("Blocklist");
-const Web3Utils = require("web3-utils");
 const { expect } = require('chai');
 
 require("chai")
