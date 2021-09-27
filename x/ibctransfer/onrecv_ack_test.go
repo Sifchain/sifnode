@@ -4,18 +4,22 @@ import (
 	"context"
 	"testing"
 
+	"github.com/Sifchain/sifnode/x/ethbridge/test"
+
+	tokenregistrytest "github.com/Sifchain/sifnode/x/tokenregistry/test"
+	transfertypes "github.com/cosmos/cosmos-sdk/x/ibc/applications/transfer/types"
+	"github.com/stretchr/testify/require"
+
 	sifapp "github.com/Sifchain/sifnode/app"
 	test2 "github.com/Sifchain/sifnode/x/ethbridge/test"
 	"github.com/Sifchain/sifnode/x/ibctransfer"
 	"github.com/Sifchain/sifnode/x/ibctransfer/helpers"
 	"github.com/Sifchain/sifnode/x/ibctransfer/keeper/testhelpers"
-	"github.com/Sifchain/sifnode/x/tokenregistry/test"
 	tokenregistrytypes "github.com/Sifchain/sifnode/x/tokenregistry/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/ibc/applications/transfer/types"
 	clienttypes "github.com/cosmos/cosmos-sdk/x/ibc/core/02-client/types"
 	channeltypes "github.com/cosmos/cosmos-sdk/x/ibc/core/04-channel/types"
-	"github.com/stretchr/testify/require"
 )
 
 func TestOnAcknowledgementMaybeConvert_Source(t *testing.T) {
@@ -73,7 +77,7 @@ func TestOnAcknowledgementMaybeConvert_Source(t *testing.T) {
 	for _, tt := range tests {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
-			app, ctx, _ := test.CreateTestApp(false)
+			app, ctx, _ := tokenregistrytest.CreateTestApp(false)
 			app.TokenRegistryKeeper.SetToken(ctx, &tt.args.transferToken)
 			app.TokenRegistryKeeper.SetToken(ctx, &tt.args.packetToken)
 			// Setup the send conversion before testing ACK.
@@ -208,7 +212,7 @@ func TestOnAcknowledgementMaybeConvert_Sink(t *testing.T) {
 	for _, tt := range tests {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
-			app, ctx, _ := test.CreateTestApp(false)
+			app, ctx, _ := tokenregistrytest.CreateTestApp(false)
 			app.TokenRegistryKeeper.SetToken(ctx, &tt.args.transferToken)
 			app.TokenRegistryKeeper.SetToken(ctx, &tt.args.transferAsToken)
 			recvTokenPacket := types.FungibleTokenPacketData{
@@ -256,4 +260,60 @@ func TestOnAcknowledgementMaybeConvert_Sink(t *testing.T) {
 			require.Equal(t, tt.args.msg.Token.String(), app.BankKeeper.GetBalance(ctx, sender, tt.args.msg.Token.Denom).String())
 		})
 	}
+}
+
+func TestExecConvForRefundCoins(t *testing.T) {
+	app, ctx, _ := tokenregistrytest.CreateTestApp(false)
+	addrs, _ := test.CreateTestAddrs(2)
+	packet := channeltypes.Packet{
+		SourcePort:         "transfer",
+		SourceChannel:      "channel-0",
+		DestinationPort:    "transfer",
+		DestinationChannel: "channel-1",
+	}
+	returningData := transfertypes.FungibleTokenPacketData{
+		Denom:  "transfer/channel-0/ueth",
+		Sender: addrs[0].String(),
+	}
+	nonReturningData := transfertypes.FungibleTokenPacketData{
+		Denom:  "transfer/channel-1/ueth",
+		Sender: addrs[0].String(),
+	}
+	ibcRegistryEntry := tokenregistrytypes.RegistryEntry{
+		Denom:     "ueth",
+		Decimals:  10,
+		UnitDenom: "ceth",
+	}
+	ibcRegistryEntry2 := tokenregistrytypes.RegistryEntry{
+		Denom:       "ibc/C1061B25E69D71E96BED65B5652168F41927316D07D6B417A3A9774F94A4CB7A",
+		Decimals:    10,
+		UnitDenom:   "ceth",
+		Permissions: []tokenregistrytypes.Permission{tokenregistrytypes.Permission_IBCIMPORT},
+	}
+	unitDenomEntry := tokenregistrytypes.RegistryEntry{
+		Denom:    "ceth",
+		Decimals: 18,
+	}
+	app.TokenRegistryKeeper.SetToken(ctx, &unitDenomEntry)
+	app.TokenRegistryKeeper.SetToken(ctx, &ibcRegistryEntry)
+	app.TokenRegistryKeeper.SetToken(ctx, &ibcRegistryEntry2)
+	mintedDenom := helpers.GetMintedDenomFromPacket(packet, returningData)
+	registry := app.TokenRegistryKeeper.GetDenomWhitelist(ctx)
+	mintedDenomEntry := app.TokenRegistryKeeper.GetDenom(registry, mintedDenom)
+	require.NotNil(t, mintedDenomEntry)
+	allowed := helpers.IsRecvPacketAllowed(ctx, app.TokenRegistryKeeper, packet, returningData, mintedDenomEntry)
+	require.Equal(t, allowed, true)
+	convertToDenomEntry := app.TokenRegistryKeeper.GetDenom(registry, mintedDenomEntry.UnitDenom)
+	require.NotNil(t, convertToDenomEntry)
+	err := helpers.ExecConvForRefundCoins(ctx, app.BankKeeper, app.TokenRegistryKeeper, mintedDenomEntry, convertToDenomEntry, packet, returningData)
+	require.NoError(t, err)
+	mintedDenom = helpers.GetMintedDenomFromPacket(packet, nonReturningData)
+	mintedDenomEntry = app.TokenRegistryKeeper.GetDenom(registry, mintedDenom)
+	require.NotNil(t, mintedDenomEntry)
+	allowed = helpers.IsRecvPacketAllowed(ctx, app.TokenRegistryKeeper, packet, nonReturningData, mintedDenomEntry)
+	require.Equal(t, allowed, true)
+	convertToDenomEntry = app.TokenRegistryKeeper.GetDenom(registry, mintedDenomEntry.UnitDenom)
+	require.NotNil(t, convertToDenomEntry)
+	err = helpers.ExecConvForRefundCoins(ctx, app.BankKeeper, app.TokenRegistryKeeper, mintedDenomEntry, convertToDenomEntry, packet, nonReturningData)
+	require.NoError(t, err)
 }
