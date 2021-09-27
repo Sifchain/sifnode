@@ -157,7 +157,7 @@ func ExecConvForRefundCoins(
 	packet channeltypes.Packet,
 	data sdktransfertypes.FungibleTokenPacketData,
 ) error {
-	// decode the receiver address
+	// decode the sender address
 	sender, err := sdk.AccAddressFromBech32(data.Sender)
 	if err != nil {
 		return err
