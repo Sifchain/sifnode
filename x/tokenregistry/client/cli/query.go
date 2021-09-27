@@ -92,7 +92,7 @@ func GetCmdGenerateEntry() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			ibcChannelId, err := flags.GetString(flagIbcChannelID)
+			ibcChannelID, err := flags.GetString(flagIbcChannelID)
 			if err != nil {
 				return err
 			}
@@ -100,11 +100,11 @@ func GetCmdGenerateEntry() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			ibcCounterpartyChannelId, err := flags.GetString(flagIbcCounterpartyChannelID)
+			ibcCounterpartyChannelID, err := flags.GetString(flagIbcCounterpartyChannelID)
 			if err != nil {
 				return err
 			}
-			ibcCounterpartyChainId, err := flags.GetString(flagIbcCounterpartyChainID)
+			ibcCounterpartyChainID, err := flags.GetString(flagIbcCounterpartyChainID)
 			if err != nil {
 				return err
 			}
@@ -140,9 +140,9 @@ func GetCmdGenerateEntry() *cobra.Command {
 			// generate denom if path is also provided.
 			// override the IBC generation with --denom if specified explicitly.
 			// otherwise fallback to base_denom
-			if ibcChannelId != "" {
+			if ibcChannelID != "" {
 				// normalise path slashes before generating hash (do this in MsgRegister.ValidateBasic as well)
-				path = ibcTransferPort + "/" + ibcChannelId
+				path = ibcTransferPort + "/" + ibcChannelID
 				// generate IBC hash from baseDenom and ibc channel id
 				denomTrace := transfertypes.DenomTrace{
 					Path:      path,
@@ -160,9 +160,9 @@ func GetCmdGenerateEntry() *cobra.Command {
 				Denom:                    denom,
 				BaseDenom:                baseDenom,
 				IbcTransferPort:          ibcTransferPort,
-				IbcChannelId:             ibcChannelId,
-				IbcCounterpartyChannelId: ibcCounterpartyChannelId,
-				IbcCounterpartyChainId:   ibcCounterpartyChainId,
+				IbcChannelId:             ibcChannelID,
+				IbcCounterpartyChannelId: ibcCounterpartyChannelID,
+				IbcCounterpartyChainId:   ibcCounterpartyChainID,
 				IbcCounterpartyDenom:     ibcCounterpartyDenom,
 				UnitDenom:                unitDenom,
 				Permissions:              permissions,
