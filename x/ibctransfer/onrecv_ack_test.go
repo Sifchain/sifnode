@@ -317,3 +317,52 @@ func TestExecConvForRefundCoins(t *testing.T) {
 	err = helpers.ExecConvForRefundCoins(ctx, app.BankKeeper, app.TokenRegistryKeeper, mintedDenomEntry, convertToDenomEntry, packet, nonReturningData)
 	require.NoError(t, err)
 }
+
+func TestOnAcknowledgementMaybeConvert(t *testing.T) {
+	app, ctx, _ := tokenregistrytest.CreateTestApp(false)
+	addrs, _ := test.CreateTestAddrs(2)
+	rowanToken := tokenregistrytypes.RegistryEntry{
+		Denom:                "rowan",
+		IbcCounterpartyDenom: "xrowan",
+		Decimals:             18,
+	}
+	xrowanToken := tokenregistrytypes.RegistryEntry{
+		Denom:     "xrowan",
+		UnitDenom: "rowan",
+		Decimals:  10,
+	}
+	app.TokenRegistryKeeper.SetToken(ctx, &rowanToken)
+	app.TokenRegistryKeeper.SetToken(ctx, &xrowanToken)
+	msgSourceTransfer := types.NewMsgTransfer(
+		"transfer",
+		"channel-0",
+		sdk.NewCoin("rowan", sdk.NewInt(123456789123456789)),
+		addrs[0],
+		addrs[1].String(),
+		clienttypes.NewHeight(0, 0),
+		0,
+	)
+	tokenDeduction, tokensConverted := helpers.ConvertCoinsForTransfer(msgSourceTransfer, &rowanToken, &xrowanToken)
+	initCoins := sdk.NewCoins(sdk.NewCoin("rowan", sdk.NewInt(123456789123456789)))
+	sender, err := sdk.AccAddressFromBech32(addrs[0].String())
+	require.NoError(t, err)
+	err = app.BankKeeper.AddCoins(ctx, sender, initCoins)
+	require.NoError(t, err)
+	err = helpers.PrepareToSendConvertedCoins(sdk.WrapSDKContext(ctx), msgSourceTransfer, tokenDeduction, tokensConverted, app.BankKeeper)
+	require.NoError(t, err)
+	errorAck := channeltypes.NewErrorAcknowledgement("failed packet transfer")
+	ackPacket := channeltypes.Packet{
+		SourceChannel:      "channel-0",
+		SourcePort:         "transfer",
+		DestinationChannel: "channel-1",
+		DestinationPort:    "transfer",
+		Data: app.AppCodec().MustMarshalJSON(&types.FungibleTokenPacketData{
+			Denom:    "transfer/channel-0/xrowan",
+			Amount:   uint64(123456789),
+			Sender:   addrs[0].String(),
+			Receiver: addrs[1].String(),
+		}),
+	}
+	_, err = ibctransfer.OnAcknowledgementMaybeConvert(ctx, app.TransferKeeper, app.TokenRegistryKeeper, app.BankKeeper, ackPacket, app.AppCodec().MustMarshalJSON(&errorAck))
+	require.NoError(t, err)
+}
