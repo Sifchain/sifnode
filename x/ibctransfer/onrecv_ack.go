@@ -66,7 +66,7 @@ func OnAcknowledgementMaybeConvert(
 				sdk.NewAttribute(sdktransfertypes.AttributeKeyAckError, resp.Error),
 			),
 		)
-		denom := helpers.GetMintedDenomFromPacket(packet, data)
+		denom := data.Denom
 		registry := whitelistKeeper.GetDenomWhitelist(ctx)
 		denomEntry := whitelistKeeper.GetDenom(registry, denom)
 		if denomEntry != nil && denomEntry.Decimals > 0 && denomEntry.UnitDenom != "" {

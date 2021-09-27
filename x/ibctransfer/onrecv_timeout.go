@@ -48,7 +48,7 @@ func OnTimeoutMaybeConvert(
 			sdk.NewAttribute(transfertypes.AttributeKeyRefundAmount, fmt.Sprintf("%d", data.Amount)),
 		),
 	)
-	denom := helpers.GetMintedDenomFromPacket(packet, data)
+	denom := data.Denom
 	registry := whitelistKeeper.GetDenomWhitelist(ctx)
 	denomEntry := whitelistKeeper.GetDenom(registry, denom)
 	if denomEntry != nil && denomEntry.Decimals > 0 && denomEntry.UnitDenom != "" {
