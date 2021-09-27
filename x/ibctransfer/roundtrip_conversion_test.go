@@ -9,25 +9,12 @@ import (
 	tokenregistrytypes "github.com/Sifchain/sifnode/x/tokenregistry/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	transfertypes "github.com/cosmos/cosmos-sdk/x/ibc/applications/transfer/types"
-	channeltypes "github.com/cosmos/cosmos-sdk/x/ibc/core/04-channel/types"
 	"github.com/stretchr/testify/require"
 )
 
 func TestExportImportConversionEquality(t *testing.T) {
 	app, ctx, _ := tokenregistrytest.CreateTestApp(false)
 	maxUInt64 := uint64(18446744073709551615)
-	returningTransferPacket := channeltypes.Packet{
-		Sequence:           0,
-		SourcePort:         "transfer",
-		SourceChannel:      "channel-0",
-		DestinationPort:    "transfer",
-		DestinationChannel: "channel-1",
-		Data:               nil,
-	}
-	tokenPacket := transfertypes.FungibleTokenPacketData{
-		Denom:  "transfer/channel-0/microrowan",
-		Amount: 184467440737,
-	}
 	rowanEntry := tokenregistrytypes.RegistryEntry{
 		Decimals:             18,
 		Denom:                "rowan",
@@ -49,8 +36,13 @@ func TestExportImportConversionEquality(t *testing.T) {
 	require.NotNil(t, mrEntry)
 	msg := &transfertypes.MsgTransfer{Token: sdk.NewCoin("rowan", sdk.NewIntFromUint64(maxUInt64))}
 	outgoingDeduction, outgoingAddition := helpers.ConvertCoinsForTransfer(msg, rEntry, mrEntry)
-	incomingDeduction, incomingAddition := helpers.GetConvForIncomingCoins(ctx, app.TokenRegistryKeeper, returningTransferPacket, tokenPacket)
-	require.Greater(t, (*incomingAddition).Amount.String(), (*incomingDeduction).Amount.String())
-	require.Equal(t, outgoingDeduction, *incomingAddition)
-	require.Equal(t, outgoingAddition, *incomingDeduction)
+	mrEntryUnit := app.TokenRegistryKeeper.GetDenom(registry, mrEntry.UnitDenom)
+	require.NotNil(t, mrEntryUnit)
+	diff := uint64(mrEntryUnit.Decimals - mrEntry.Decimals)
+	convAmount := helpers.ConvertIncomingCoins(ctx, app.TokenRegistryKeeper, 184467440737, diff)
+	incomingDeduction := sdk.NewCoin("microrowan", sdk.NewIntFromUint64(184467440737))
+	incomingAddition := sdk.NewCoin("rowan", convAmount)
+	require.Greater(t, incomingAddition.Amount.String(), incomingDeduction.Amount.String())
+	require.Equal(t, outgoingDeduction, incomingAddition)
+	require.Equal(t, outgoingAddition, incomingDeduction)
 }

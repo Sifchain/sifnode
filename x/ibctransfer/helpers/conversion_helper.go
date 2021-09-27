@@ -9,7 +9,6 @@ import (
 	sdktransfertypes "github.com/cosmos/cosmos-sdk/x/ibc/applications/transfer/types"
 	channeltypes "github.com/cosmos/cosmos-sdk/x/ibc/core/04-channel/types"
 
-	"github.com/Sifchain/sifnode/x/ibctransfer/types"
 	sctransfertypes "github.com/Sifchain/sifnode/x/ibctransfer/types"
 	tokenregistrytypes "github.com/Sifchain/sifnode/x/tokenregistry/types"
 )
@@ -34,7 +33,7 @@ func ConvertCoinsForTransfer(msg *sdktransfertypes.MsgTransfer, sendRegistryEntr
 
 // PrepareToSendConvertedCoins moves outgoing tokens into the denom that will be sent via IBC.
 // The requested tokens will be escrowed, and the new denom to send over IBC will be minted in the senders account.
-func PrepareToSendConvertedCoins(goCtx context.Context, msg *sdktransfertypes.MsgTransfer, token sdk.Coin, convToken sdk.Coin, bankKeeper types.BankKeeper) error {
+func PrepareToSendConvertedCoins(goCtx context.Context, msg *sdktransfertypes.MsgTransfer, token sdk.Coin, convToken sdk.Coin, bankKeeper sctransfertypes.BankKeeper) error {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 	sender, err := sdk.AccAddressFromBech32(msg.Sender)
 	if err != nil {
@@ -71,6 +70,13 @@ func PrepareToSendConvertedCoins(goCtx context.Context, msg *sdktransfertypes.Ms
 	return nil
 }
 
+func IsRecvPacketAllowed(ctx sdk.Context, whitelistKeeper tokenregistrytypes.Keeper, packet channeltypes.Packet, data sdktransfertypes.FungibleTokenPacketData, mintedDenomEntry *tokenregistrytypes.RegistryEntry) bool {
+	if sdktransfertypes.ReceiverChainIsSource(packet.GetSourcePort(), packet.GetSourceChannel(), data.Denom) {
+		return true
+	}
+	return mintedDenomEntry != nil && whitelistKeeper.CheckDenomPermissions(mintedDenomEntry, []tokenregistrytypes.Permission{tokenregistrytypes.Permission_IBCIMPORT})
+}
+
 func GetMintedDenomFromPacket(packet channeltypes.Packet, data sdktransfertypes.FungibleTokenPacketData) string {
 	if sdktransfertypes.ReceiverChainIsSource(packet.GetSourcePort(), packet.GetSourceChannel(), data.Denom) {
 		denom := data.Denom[len(sdktransfertypes.GetDenomPrefix(packet.GetSourcePort(), packet.GetSourceChannel())):]
@@ -79,59 +85,25 @@ func GetMintedDenomFromPacket(packet channeltypes.Packet, data sdktransfertypes.
 			return denomTrace.IBCDenom()
 		}
 		return denom
-	} else {
-		return sdktransfertypes.ParseDenomTrace(sdktransfertypes.GetDenomPrefix(packet.GetDestPort(), packet.GetDestChannel()) + data.Denom).IBCDenom()
 	}
+	return sdktransfertypes.ParseDenomTrace(sdktransfertypes.GetDenomPrefix(packet.GetDestPort(), packet.GetDestChannel()) + data.Denom).IBCDenom()
 }
 
-// GetConvForIncomingCoins returns 1) the coins that are being received via IBC,
-// which need to be deducted from that denom when converting to final denom,
-// and 2) the coins that need to be added to the final denom.
-func GetConvForIncomingCoins(
+func ConvertIncomingCoins(
 	ctx sdk.Context,
 	whitelistKeeper tokenregistrytypes.Keeper,
-	packet channeltypes.Packet,
-	data sdktransfertypes.FungibleTokenPacketData,
-) (*sdk.Coin, *sdk.Coin) {
-	// Get the denom that will be minted by sdk transfer module,
-	// so that it can be converted to the denom it should be stored as.
-	// For a native token that has been returned, this will just be a base_denom,
-	// which will be on the whitelist.
-	mintedDenom := GetMintedDenomFromPacket(packet, data)
-	registry := whitelistKeeper.GetDenomWhitelist(ctx)
-	// get token registry entry for received denom
-	mintedDenomEntry := whitelistKeeper.GetDenom(registry, mintedDenom)
-	// convert to unit_denom
-	if mintedDenomEntry == nil {
-		// noop, should prevent getting here.
-		return nil, nil
-	}
-	convertToDenomEntry := whitelistKeeper.GetDenom(registry, mintedDenomEntry.UnitDenom)
-	if convertToDenomEntry == nil {
-		// noop, should prevent getting here.
-		return nil, nil
-	}
-	// get the token amount from the packet data
-	// Calculate the conversion difference for increasing precision.
-	po := convertToDenomEntry.Decimals - mintedDenomEntry.Decimals
-	if po <= 0 {
-		// Shortcut to prevent crash if po <= 0
-		return nil, nil
-	}
-	decAmount := sdk.NewDecFromInt(sdk.NewIntFromUint64(data.Amount))
-	convAmountDec := IncreasePrecision(decAmount, int64(po))
-	convAmount := sdk.NewIntFromBigInt(convAmountDec.TruncateInt().BigInt())
-	// create converted and ibc tokens with corresponding denoms and amounts
-	convertToCoins := sdk.NewCoin(convertToDenomEntry.Denom, convAmount)
-	mintedCoins := sdk.NewCoin(mintedDenom, sdk.NewIntFromUint64(data.Amount))
-	return &mintedCoins, &convertToCoins
+	amount uint64,
+	diff uint64,
+) sdk.Int {
+	return sdk.NewIntFromBigInt(IncreasePrecision(sdk.NewDecFromInt(sdk.NewIntFromUint64(amount)), int64(diff)).TruncateInt().BigInt())
 }
 
 func ExecConvForIncomingCoins(
 	ctx sdk.Context,
-	incomingCoins *sdk.Coin,
-	finalCoins *sdk.Coin,
 	bankKeeper sdktransfertypes.BankKeeper,
+	whitelistKeeper tokenregistrytypes.Keeper,
+	mintedDenomEntry *tokenregistrytypes.RegistryEntry,
+	convertToDenomEntry *tokenregistrytypes.RegistryEntry,
 	packet channeltypes.Packet,
 	data sdktransfertypes.FungibleTokenPacketData,
 ) error {
@@ -140,19 +112,23 @@ func ExecConvForIncomingCoins(
 	if err != nil {
 		return err
 	}
+	incomingCoins := sdk.NewCoins(sdk.NewCoin(mintedDenomEntry.Denom, sdk.NewIntFromUint64(data.Amount)))
 	// send ibcdenom coins from account to module
-	err = bankKeeper.SendCoinsFromAccountToModule(ctx, receiver, sctransfertypes.ModuleName, sdk.NewCoins(*incomingCoins))
+	err = bankKeeper.SendCoinsFromAccountToModule(ctx, receiver, sctransfertypes.ModuleName, incomingCoins)
 	if err != nil {
 		return err
 	}
 	// burn ibcdenom coins
-	err = bankKeeper.BurnCoins(ctx, sctransfertypes.ModuleName, sdk.NewCoins(*incomingCoins))
+	err = bankKeeper.BurnCoins(ctx, sctransfertypes.ModuleName, incomingCoins)
 	if err != nil {
 		return err
 	}
+	diff := uint64(convertToDenomEntry.Decimals - mintedDenomEntry.Decimals)
+	convAmount := ConvertIncomingCoins(ctx, whitelistKeeper, data.Amount, diff)
+	finalCoins := sdk.NewCoins(sdk.NewCoin(convertToDenomEntry.Denom, convAmount))
 	// unescrow original tokens
 	escrowAddress := sctransfertypes.GetEscrowAddress(packet.GetDestPort(), packet.GetDestChannel())
-	if err := bankKeeper.SendCoins(ctx, escrowAddress, receiver, sdk.NewCoins(*finalCoins)); err != nil {
+	if err := bankKeeper.SendCoins(ctx, escrowAddress, receiver, finalCoins); err != nil {
 		// NOTE: this error is only expected to occur given an unexpected bug or a malicious
 		// counterparty module. The bug may occur in bank or any part of the code that allows
 		// the escrow address to be drained. A malicious counterparty module could drain the
@@ -163,55 +139,21 @@ func ExecConvForIncomingCoins(
 		sdk.NewEvent(
 			sctransfertypes.EventTypeConvertReceived,
 			sdk.NewAttribute(sdk.AttributeKeyModule, sctransfertypes.ModuleName),
-			sdk.NewAttribute(sctransfertypes.AttributeKeyPacketAmount, fmt.Sprintf("%v", incomingCoins.Amount)),
-			sdk.NewAttribute(sctransfertypes.AttributeKeyPacketDenom, incomingCoins.Denom),
-			sdk.NewAttribute(sctransfertypes.AttributeKeyConvertAmount, fmt.Sprintf("%v", finalCoins.Amount)),
-			sdk.NewAttribute(sctransfertypes.AttributeKeyConvertDenom, finalCoins.Denom),
+			sdk.NewAttribute(sctransfertypes.AttributeKeyPacketAmount, fmt.Sprintf("%v", data.Amount)),
+			sdk.NewAttribute(sctransfertypes.AttributeKeyPacketDenom, mintedDenomEntry.Denom),
+			sdk.NewAttribute(sctransfertypes.AttributeKeyConvertAmount, fmt.Sprintf("%v", convAmount)),
+			sdk.NewAttribute(sctransfertypes.AttributeKeyConvertDenom, convertToDenomEntry.Denom),
 		),
 	)
 	return nil
 }
 
-// GetConvForRefundCoins returns 1) the coins that are being received via IBC,
-// which need to be deducted from that denom when converting to final denom,
-// and 2) the coins that need to be added to the final denom.
-func GetConvForRefundCoins(
-	ctx sdk.Context,
-	whitelistKeeper tokenregistrytypes.Keeper,
-	packet channeltypes.Packet,
-	data sdktransfertypes.FungibleTokenPacketData,
-) (*sdk.Coin, *sdk.Coin) {
-	// we don't need to manipulate the denom because the data and packet was created on this chain
-	denom := data.Denom
-	wl := whitelistKeeper.GetDenomWhitelist(ctx)
-	// get token registry entry for received denom
-	denomEntry := whitelistKeeper.GetDenom(wl, denom)
-	// convert to unit_denom
-	if denomEntry == nil || (denomEntry.Decimals == 0 || denomEntry.UnitDenom == "") {
-		// noop, should prevent getting here.
-		return nil, nil
-	}
-	convertToDenomEntry := whitelistKeeper.GetDenom(wl, denomEntry.UnitDenom)
-	if convertToDenomEntry == nil || convertToDenomEntry.Decimals <= denomEntry.Decimals {
-		return nil, nil
-	}
-	// get the token amount from the packet data
-	decAmount := sdk.NewDecFromInt(sdk.NewIntFromUint64(data.Amount))
-	// Calculate the conversion difference for increasing precision.
-	po := convertToDenomEntry.Decimals - denomEntry.Decimals
-	convAmountDec := IncreasePrecision(decAmount, int64(po))
-	convAmount := sdk.NewIntFromBigInt(convAmountDec.TruncateInt().BigInt())
-	// create converted and ibc tokens with corresponding denoms and amounts
-	convertToCoins := sdk.NewCoin(convertToDenomEntry.Denom, convAmount)
-	mintedCoins := sdk.NewCoin(denom, sdk.NewIntFromUint64(data.Amount))
-	return &mintedCoins, &convertToCoins
-}
-
 func ExecConvForRefundCoins(
 	ctx sdk.Context,
-	incomingCoins *sdk.Coin,
-	finalCoins *sdk.Coin,
 	bankKeeper sdktransfertypes.BankKeeper,
+	whitelistKeeper tokenregistrytypes.Keeper,
+	mintedDenomEntry *tokenregistrytypes.RegistryEntry,
+	convertToDenomEntry *tokenregistrytypes.RegistryEntry,
 	packet channeltypes.Packet,
 	data sdktransfertypes.FungibleTokenPacketData,
 ) error {
@@ -220,14 +162,18 @@ func ExecConvForRefundCoins(
 	if err != nil {
 		return err
 	}
+	incomingCoins := sdk.NewCoins(sdk.NewCoin(mintedDenomEntry.Denom, sdk.NewIntFromUint64(data.Amount)))
 	// send ibcdenom coins from account to module
-	err = bankKeeper.SendCoinsFromAccountToModule(ctx, sender, sctransfertypes.ModuleName, sdk.NewCoins(*incomingCoins))
+	err = bankKeeper.SendCoinsFromAccountToModule(ctx, sender, sctransfertypes.ModuleName, incomingCoins)
 	if err != nil {
 		return err
 	}
+	diff := uint64(convertToDenomEntry.Decimals - mintedDenomEntry.Decimals)
+	convAmount := ConvertIncomingCoins(ctx, whitelistKeeper, data.Amount, diff)
+	finalCoins := sdk.NewCoins(sdk.NewCoin(convertToDenomEntry.Denom, convAmount))
 	// unescrow original tokens
 	escrowAddress := sctransfertypes.GetEscrowAddress(packet.GetSourcePort(), packet.GetSourceChannel())
-	if err := bankKeeper.SendCoins(ctx, escrowAddress, sender, sdk.NewCoins(*finalCoins)); err != nil {
+	if err := bankKeeper.SendCoins(ctx, escrowAddress, sender, finalCoins); err != nil {
 		// NOTE: this error is only expected to occur given an unexpected bug or a malicious
 		// counterparty module. The bug may occur in bank or any part of the code that allows
 		// the escrow address to be drained. A malicious counterparty module could drain the
@@ -235,7 +181,7 @@ func ExecConvForRefundCoins(
 		return sdkerrors.Wrap(err, "unable to unescrow original tokens")
 	}
 	// burn ibcdenom coins
-	err = bankKeeper.BurnCoins(ctx, sctransfertypes.ModuleName, sdk.NewCoins(*incomingCoins))
+	err = bankKeeper.BurnCoins(ctx, sctransfertypes.ModuleName, incomingCoins)
 	if err != nil {
 		return err
 	}
@@ -243,10 +189,10 @@ func ExecConvForRefundCoins(
 		sdk.NewEvent(
 			sctransfertypes.EventTypeConvertRefund,
 			sdk.NewAttribute(sdk.AttributeKeyModule, sctransfertypes.ModuleName),
-			sdk.NewAttribute(sctransfertypes.AttributeKeyPacketAmount, fmt.Sprintf("%v", incomingCoins.Amount)),
-			sdk.NewAttribute(sctransfertypes.AttributeKeyPacketDenom, incomingCoins.Denom),
-			sdk.NewAttribute(sctransfertypes.AttributeKeyConvertAmount, fmt.Sprintf("%v", finalCoins.Amount)),
-			sdk.NewAttribute(sctransfertypes.AttributeKeyConvertDenom, finalCoins.Denom),
+			sdk.NewAttribute(sctransfertypes.AttributeKeyPacketAmount, fmt.Sprintf("%v", data.Amount)),
+			sdk.NewAttribute(sctransfertypes.AttributeKeyPacketDenom, mintedDenomEntry.Denom),
+			sdk.NewAttribute(sctransfertypes.AttributeKeyConvertAmount, fmt.Sprintf("%v", convAmount)),
+			sdk.NewAttribute(sctransfertypes.AttributeKeyConvertDenom, convertToDenomEntry.Denom),
 		),
 	)
 	return nil
