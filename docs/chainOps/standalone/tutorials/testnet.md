@@ -17,13 +17,19 @@ export GOPATH=~/go
 export PATH=$PATH:$GOPATH/bin
 ```
 
-4. Generate a new mnemonic key for your node. This key is what your node will use to eventually sign transactions/blocks on the network.
+4. Compile `sifnoded` and `sifgen`:
+
+```bash
+make install
+```
+
+5. Generate a new mnemonic key for your node. This key is what your node will use to eventually sign transactions/blocks on the network.
 
 ```bash
 rake "sifnode:keys:generate:mnemonic"
 ```
 
-5. Import your newly generated key:
+6. Import your newly generated key:
 
 ```bash
 rake "sifnode:keys:import[<moniker>]"
@@ -41,7 +47,7 @@ e.g.:
 rake "sifnode:keys:import[my-node]"
 ```
 
-6. Check that it's been imported accordingly:
+7. Check that it's been imported accordingly:
 
 ```bash
 rake "sifnode:keys:show[<moniker>]"
@@ -57,12 +63,6 @@ e.g.:
 
 ```bash
 rake "sifnode:keys:show[my-node]"
-```
-
-7. Compile `sifnoded`:
-
-```bash
-make install
 ```
 
 8. Boot your node:

@@ -8,6 +8,7 @@ frontend/.cache
 .DS_Store
 .testCoverage.txt
 .environments
+.ruby-version
 deploy/networks
 log/*.log
 .env
