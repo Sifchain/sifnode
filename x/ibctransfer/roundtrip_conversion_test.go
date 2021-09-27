@@ -5,8 +5,7 @@ import (
 
 	tokenregistrytest "github.com/Sifchain/sifnode/x/tokenregistry/test"
 
-	"github.com/Sifchain/sifnode/x/ibctransfer"
-	"github.com/Sifchain/sifnode/x/ibctransfer/keeper"
+	"github.com/Sifchain/sifnode/x/ibctransfer/helpers"
 	tokenregistrytypes "github.com/Sifchain/sifnode/x/tokenregistry/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	transfertypes "github.com/cosmos/cosmos-sdk/x/ibc/applications/transfer/types"
@@ -49,8 +48,8 @@ func TestExportImportConversionEquality(t *testing.T) {
 	mrEntry := app.TokenRegistryKeeper.GetDenom(registry, "microrowan")
 	require.NotNil(t, mrEntry)
 	msg := &transfertypes.MsgTransfer{Token: sdk.NewCoin("rowan", sdk.NewIntFromUint64(maxUInt64))}
-	outgoingDeduction, outgoingAddition := keeper.ConvertCoinsForTransfer(msg, rEntry, mrEntry)
-	incomingDeduction, incomingAddition := ibctransfer.GetConvForIncomingCoins(ctx, app.TokenRegistryKeeper, returningTransferPacket, tokenPacket)
+	outgoingDeduction, outgoingAddition := helpers.ConvertCoinsForTransfer(msg, rEntry, mrEntry)
+	incomingDeduction, incomingAddition := helpers.GetConvForIncomingCoins(ctx, app.TokenRegistryKeeper, returningTransferPacket, tokenPacket)
 	require.Greater(t, (*incomingAddition).Amount.String(), (*incomingDeduction).Amount.String())
 	require.Equal(t, outgoingDeduction, *incomingAddition)
 	require.Equal(t, outgoingAddition, *incomingDeduction)

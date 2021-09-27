@@ -48,24 +48,11 @@ func IsRecvPacketAllowed(ctx sdk.Context, whitelistKeeper tokenregistrytypes.Kee
 	if transfertypes.ReceiverChainIsSource(packet.GetSourcePort(), packet.GetSourceChannel(), data.Denom) {
 		return true
 	}
+	denom := transfertypes.ParseDenomTrace(transfertypes.GetDenomPrefix(packet.GetDestPort(), packet.GetDestChannel()) + data.Denom).IBCDenom()
 	registry := whitelistKeeper.GetDenomWhitelist(ctx)
-	denom := GetMintedDenomFromPacket(packet, data)
 	entry := whitelistKeeper.GetDenom(registry, denom)
 	if entry == nil {
 		return false
 	}
 	return whitelistKeeper.CheckDenomPermissions(entry, []tokenregistrytypes.Permission{tokenregistrytypes.Permission_IBCIMPORT})
-}
-
-func GetMintedDenomFromPacket(packet channeltypes.Packet, data transfertypes.FungibleTokenPacketData) string {
-	if transfertypes.ReceiverChainIsSource(packet.GetSourcePort(), packet.GetSourceChannel(), data.Denom) {
-		denom := data.Denom[len(transfertypes.GetDenomPrefix(packet.GetSourcePort(), packet.GetSourceChannel())):]
-		denomTrace := transfertypes.ParseDenomTrace(denom)
-		if denomTrace.Path != "" {
-			return denomTrace.IBCDenom()
-		}
-		return denom
-	} else {
-		return transfertypes.ParseDenomTrace(transfertypes.GetDenomPrefix(packet.GetDestPort(), packet.GetDestChannel()) + data.Denom).IBCDenom()
-	}
 }

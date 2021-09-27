@@ -3,6 +3,7 @@ package ibctransfer
 import (
 	"fmt"
 
+	"github.com/Sifchain/sifnode/x/ibctransfer/helpers"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	transfertypes "github.com/cosmos/cosmos-sdk/x/ibc/applications/transfer/types"
@@ -48,9 +49,9 @@ func OnTimeoutMaybeConvert(
 		),
 	)
 	// if needs conversion, convert and send
-	incomingCoins, finalCoins := GetConvForRefundCoins(ctx, whitelistKeeper, packet, data)
+	incomingCoins, finalCoins := helpers.GetConvForRefundCoins(ctx, whitelistKeeper, packet, data)
 	if incomingCoins != nil && finalCoins != nil {
-		err := ExecConvForRefundCoins(ctx, incomingCoins, finalCoins, bankKeeper, packet, data)
+		err := helpers.ExecConvForRefundCoins(ctx, incomingCoins, finalCoins, bankKeeper, packet, data)
 		if err != nil {
 			return nil, err
 		}

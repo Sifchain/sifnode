@@ -5,12 +5,12 @@ import (
 
 	tokenregistrytest "github.com/Sifchain/sifnode/x/tokenregistry/test"
 
+	"github.com/Sifchain/sifnode/x/ibctransfer/helpers"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	transfertypes "github.com/cosmos/cosmos-sdk/x/ibc/applications/transfer/types"
 	channeltypes "github.com/cosmos/cosmos-sdk/x/ibc/core/04-channel/types"
 	"github.com/stretchr/testify/require"
 
-	"github.com/Sifchain/sifnode/x/ibctransfer"
 	tokenregistrytypes "github.com/Sifchain/sifnode/x/tokenregistry/types"
 )
 
@@ -54,10 +54,10 @@ func TestShouldConvertIncomingCoins(t *testing.T) {
 	require.NotNil(t, entry2)
 	entry3 := app.TokenRegistryKeeper.GetDenom(registry, "cusdt")
 	require.NotNil(t, entry3)
-	incomingDeduction, incomingAddition := ibctransfer.GetConvForIncomingCoins(ctx, app.TokenRegistryKeeper, returningTransferPacket, ibcDenom)
+	incomingDeduction, incomingAddition := helpers.GetConvForIncomingCoins(ctx, app.TokenRegistryKeeper, returningTransferPacket, ibcDenom)
 	require.NotNil(t, incomingDeduction)
 	require.NotNil(t, incomingAddition)
-	incomingDeduction, incomingAddition = ibctransfer.GetConvForIncomingCoins(ctx, app.TokenRegistryKeeper, returningTransferPacket, nonIBCDenom)
+	incomingDeduction, incomingAddition = helpers.GetConvForIncomingCoins(ctx, app.TokenRegistryKeeper, returningTransferPacket, nonIBCDenom)
 	require.Nil(t, incomingDeduction)
 	require.Nil(t, incomingAddition)
 }
@@ -92,7 +92,7 @@ func TestGetConvForIncomingCoins(t *testing.T) {
 	require.NotNil(t, entry1)
 	entry2 := app.TokenRegistryKeeper.GetDenom(registry, "ceth")
 	require.NotNil(t, entry2)
-	gotIBCToken, gotConvToken := ibctransfer.GetConvForIncomingCoins(ctx, app.TokenRegistryKeeper, returningTransferPacket, ibcDenom)
+	gotIBCToken, gotConvToken := helpers.GetConvForIncomingCoins(ctx, app.TokenRegistryKeeper, returningTransferPacket, ibcDenom)
 	intAmount, _ := sdk.NewIntFromString("100000000000000000000")
 	require.Equal(t, *gotIBCToken, sdk.NewCoin("ueth", sdk.NewInt(1000000000000)))
 	require.Equal(t, *gotConvToken, sdk.NewCoin("ceth", intAmount))

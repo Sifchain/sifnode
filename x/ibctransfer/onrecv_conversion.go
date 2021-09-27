@@ -3,13 +3,13 @@ package ibctransfer
 import (
 	"fmt"
 
+	"github.com/Sifchain/sifnode/x/ibctransfer/helpers"
+	sctransfertypes "github.com/Sifchain/sifnode/x/ibctransfer/types"
+	tokenregistrytypes "github.com/Sifchain/sifnode/x/tokenregistry/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	transfertypes "github.com/cosmos/cosmos-sdk/x/ibc/applications/transfer/types"
 	channeltypes "github.com/cosmos/cosmos-sdk/x/ibc/core/04-channel/types"
-
-	sctransfertypes "github.com/Sifchain/sifnode/x/ibctransfer/types"
-	tokenregistrytypes "github.com/Sifchain/sifnode/x/tokenregistry/types"
 )
 
 // OnRecvPacketMaybeConvert will receive a transfer (after whitelisting is checked),
@@ -45,9 +45,9 @@ func OnRecvPacketMaybeConvert(
 	)
 	// Incoming coins were successfully minted onto the chain,
 	// check if conversion to another denom is required
-	receievedCoins, finalCoins := GetConvForIncomingCoins(ctx, whitelistKeeper, packet, data)
+	receievedCoins, finalCoins := helpers.GetConvForIncomingCoins(ctx, whitelistKeeper, packet, data)
 	if receievedCoins != nil && finalCoins != nil {
-		err = ExecConvForIncomingCoins(ctx, receievedCoins, finalCoins, bankKeeper, packet, data)
+		err = helpers.ExecConvForIncomingCoins(ctx, receievedCoins, finalCoins, bankKeeper, packet, data)
 		// Revert, although this may cause packet to be relayed again.
 		if err != nil {
 			return nil, nil, sdkerrors.Wrap(sctransfertypes.ErrConvertingToUnitDenom, err.Error())

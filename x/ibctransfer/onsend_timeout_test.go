@@ -4,6 +4,7 @@ import (
 	"context"
 	"testing"
 
+	"github.com/Sifchain/sifnode/x/ibctransfer/helpers"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/ibc/applications/transfer/types"
 	clienttypes "github.com/cosmos/cosmos-sdk/x/ibc/core/02-client/types"
@@ -13,7 +14,6 @@ import (
 	sifapp "github.com/Sifchain/sifnode/app"
 	test2 "github.com/Sifchain/sifnode/x/ethbridge/test"
 	"github.com/Sifchain/sifnode/x/ibctransfer"
-	"github.com/Sifchain/sifnode/x/ibctransfer/keeper"
 	"github.com/Sifchain/sifnode/x/ibctransfer/keeper/testhelpers"
 	"github.com/Sifchain/sifnode/x/tokenregistry/test"
 	tokenregistrytypes "github.com/Sifchain/sifnode/x/tokenregistry/types"
@@ -74,13 +74,13 @@ func TestOnTimeoutPacketConvert_Source(t *testing.T) {
 			app.TokenRegistryKeeper.SetToken(ctx, &tt.args.transferToken)
 			app.TokenRegistryKeeper.SetToken(ctx, &tt.args.packetToken)
 			// Setup the send conversion before testing timeout.
-			tokenDeduction, tokensConverted := keeper.ConvertCoinsForTransfer(tt.args.msg, &tt.args.transferToken, &tt.args.packetToken)
+			tokenDeduction, tokensConverted := helpers.ConvertCoinsForTransfer(tt.args.msg, &tt.args.transferToken, &tt.args.packetToken)
 			initCoins := sdk.NewCoins(tt.args.msg.Token)
 			sender, err := sdk.AccAddressFromBech32(tt.args.msg.Sender)
 			require.NoError(t, err)
 			err = app.BankKeeper.AddCoins(ctx, sender, initCoins)
 			require.NoError(t, err)
-			err = keeper.PrepareToSendConvertedCoins(sdk.WrapSDKContext(ctx), tt.args.msg, tokenDeduction, tokensConverted, app.BankKeeper)
+			err = helpers.PrepareToSendConvertedCoins(sdk.WrapSDKContext(ctx), tt.args.msg, tokenDeduction, tokensConverted, app.BankKeeper)
 			require.NoError(t, err)
 			require.Equal(t, tokensConverted.String(), app.BankKeeper.GetBalance(ctx, sender, tokensConverted.Denom).String())
 			require.Equal(t, tt.args.msg.Token.Sub(tokenDeduction).String(), app.BankKeeper.GetBalance(ctx, sender, tt.args.msg.Token.Denom).String())
