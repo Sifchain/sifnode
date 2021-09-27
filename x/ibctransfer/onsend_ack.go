@@ -70,8 +70,6 @@ func OnAcknowledgementMaybeConvert(
 				sdk.NewAttribute(sdktransfertypes.AttributeKeyAckError, resp.Error),
 			),
 		)
-		fmt.Println("+++++++++++++++++")
-		fmt.Println(data)
 		// if needs conversion, convert and send
 		if ShouldConvertRefundCoins(ctx, whitelistKeeper, packet, data) {
 			incomingCoins, finalCoins := GetConvForRefundCoins(ctx, whitelistKeeper, packet, data)
@@ -104,10 +102,17 @@ func ShouldConvertRefundCoins(
 	// then no conversion happens.
 	// This extra decimal & UnitDenom check should ensure we still process refunds,
 	// even if the token permission / whitelist property has since been changed.
+	// TODO: this check does not look correct
 	if !denomRegistryEntry.IsWhitelisted && (denomRegistryEntry.Decimals == 0 || denomRegistryEntry.UnitDenom == "") {
 		return false
 	}
 	// get unit denom to store funds in, or do not convert
+	// TODO: with this check it won't actually convert any of existing registry entries
+	// example:
+	// send ceth (ceth deducted, xeth minted and sent)
+	// receive ack with error (denom is transfer/channel-0/xeth)
+	// we need to use data.Amount and convert it back to deducted ceth amount (increase precision)
+	// also burn minted xeth token (denom is xeth, not transfer/channel-0/xeth)
 	unitDenom := denomRegistryEntry.UnitDenom
 	if unitDenom == "" || unitDenom == denom {
 		return false
