@@ -48,16 +48,19 @@ func OnTimeoutMaybeConvert(
 			sdk.NewAttribute(transfertypes.AttributeKeyRefundAmount, fmt.Sprintf("%d", data.Amount)),
 		),
 	)
-	// if needs conversion, convert and send
-	incomingCoins, finalCoins := helpers.GetConvForRefundCoins(ctx, whitelistKeeper, packet, data)
-	if incomingCoins != nil && finalCoins != nil {
-		err := helpers.ExecConvForRefundCoins(ctx, incomingCoins, finalCoins, bankKeeper, packet, data)
-		if err != nil {
-			return nil, err
+	registry := whitelistKeeper.GetDenomWhitelist(ctx)
+	denomEntry := whitelistKeeper.GetDenom(registry, data.Denom)
+	if denomEntry != nil && denomEntry.Decimals > 0 && denomEntry.UnitDenom != "" {
+		convertToDenomEntry := whitelistKeeper.GetDenom(registry, denomEntry.UnitDenom)
+		if convertToDenomEntry != nil && convertToDenomEntry.Decimals > denomEntry.Decimals {
+			err := helpers.ExecConvForRefundCoins(ctx, bankKeeper, whitelistKeeper, denomEntry, convertToDenomEntry, packet, data)
+			if err != nil {
+				return nil, err
+			}
+			return &sdk.Result{
+				Events: ctx.EventManager().Events().ToABCIEvents(),
+			}, nil
 		}
-		return &sdk.Result{
-			Events: ctx.EventManager().Events().ToABCIEvents(),
-		}, nil
 	}
 	return &sdk.Result{
 		Events: ctx.EventManager().Events().ToABCIEvents(),
