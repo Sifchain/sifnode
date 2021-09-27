@@ -61,8 +61,8 @@ sifnoded q tokenregistry generate \
 sifnoded q tokenregistry generate \
 	--token_base_denom=cusdt \
 	--token_decimals=6 \
-	--token_display_name="USDC" \
-	--token_external_symbol="USDC" \
+	--token_display_name="USDT" \
+	--token_external_symbol="USDT" \
 	--token_permission_clp=true \
 	--token_permission_ibc_export=true \
 	--token_permission_ibc_import=true > ./$SIFCHAIN_ID/cusdt.json
