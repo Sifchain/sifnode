@@ -19,7 +19,25 @@ func ReplaceStakingBondDenom(nodeHomeDir string) error {
 	}
 
 	genesis.AppState.Staking.Params.BondDenom = common.StakeTokenDenom
+	content, err := tmjson.Marshal(genesis)
+	if err != nil {
+		return err
+	}
 
+	if err := writeGenesis(nodeHomeDir, content); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func ReplaceMintBondDenom(nodeHomeDir string) error {
+	genesis, err := readGenesis(nodeHomeDir)
+	if err != nil {
+		return err
+	}
+
+	genesis.AppState.Mint.Params.MintDenom = common.StakeTokenDenom
 	content, err := tmjson.Marshal(genesis)
 	if err != nil {
 		return err

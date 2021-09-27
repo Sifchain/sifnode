@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"path"
 	"strings"
 	"time"
 
@@ -39,7 +40,6 @@ type Node struct {
 	GovVotingPeriod           time.Duration `yaml:"-"`
 	PeerAddress               string        `yaml:"-"`
 	GenesisURL                string        `yaml:"-"`
-	Key                       *key.Key      `yaml:"-"`
 	Standalone                bool          `yaml:"-"`
 	WithCosmovisor            bool          `yaml:"-"`
 	EnableGrpc                bool          `yaml:"-"`
@@ -54,7 +54,7 @@ func Reset(chainID string, nodeDir *string) error {
 		directory = *nodeDir
 	}
 
-	_, err := utils.NewCLI(chainID, keyring.BackendFile).ResetState(directory)
+	_, err := utils.NewCLI(chainID, keyring.BackendTest).ResetState(directory)
 	if err != nil {
 		return err
 	}
@@ -76,6 +76,10 @@ func (n *Node) Build() (*string, error) {
 	}
 
 	if err := n.setupCosmovisor(); err != nil {
+		return nil, err
+	}
+
+	if err := n.cleanup(); err != nil {
 		return nil, err
 	}
 
@@ -231,24 +235,33 @@ func (n *Node) generatePassword() error {
 }
 
 func (n *Node) generateNodeKeyAddress() error {
-	output, err := n.CLI.AddKey(n.Moniker, n.Mnemonic, n.Password, common.DefaultNodeHome)
-	if err != nil {
-		return err
+	if n.Standalone {
+		output, err := n.CLI.AddKey(n.Moniker, n.Mnemonic, n.Password, common.DefaultNodeHome)
+		if err != nil {
+			return err
+		}
+
+		yml, err := ioutil.ReadAll(strings.NewReader(*output))
+		if err != nil {
+			return err
+		}
+
+		var keys common.Keys
+
+		err = yaml.Unmarshal(yml, &keys)
+		if err != nil {
+			return err
+		}
+
+		n.Address = keys[0].Address
+	} else {
+		tmpKeyring := key.NewKey(n.Moniker, n.Password)
+		if err := tmpKeyring.RecoverFromMnemonic(n.Mnemonic); err != nil {
+			return err
+		}
+
+		n.Address = tmpKeyring.Address
 	}
-
-	yml, err := ioutil.ReadAll(strings.NewReader(*output))
-	if err != nil {
-		return err
-	}
-
-	var keys common.Keys
-
-	err = yaml.Unmarshal(yml, &keys)
-	if err != nil {
-		return err
-	}
-
-	n.Address = keys[0].Address
 
 	return nil
 }
@@ -411,4 +424,20 @@ func (n *Node) setupCosmovisor() error {
 func (n *Node) summary() string {
 	yml, _ := yaml.Marshal(n)
 	return string(yml)
+}
+
+func (n *Node) cleanup() error {
+	if n.Standalone {
+		_path := fmt.Sprintf("%v/%v", common.DefaultNodeHome, "keyring-test")
+		dir, err := ioutil.ReadDir(_path)
+		for _, d := range dir {
+			_ = os.RemoveAll(path.Join([]string{_path, d.Name()}...))
+		}
+
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }

@@ -8,7 +8,7 @@ set -x
 
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 
-. /sifnode/test/integration/vagrantenv.sh
+. $(SCRIPT_DIR)/vagrantenv.sh
 . ${TEST_INTEGRATION_DIR}/shell_utilities.sh
 
 whitelisted_validator=$(yes $VALIDATOR1_PASSWORD | sifnoded keys show --keyring-backend file -a --bech val $MONIKER --home $CHAINDIR/.sifnoded)

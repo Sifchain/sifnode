@@ -27,7 +27,7 @@ class EthereumToSifchainTransferRequest:
     ethereum_network: str = ""  # mainnet, ropsten, http:// for localnet
     amount: int = 0
     ceth_amount: int = 0
-    sifchain_fees: str = ""
+    sifchain_fees: str = ""  # Deprecated, see https://github.com/Sifchain/sifnode/pull/1802#discussion_r697403408
     smart_contracts_dir: str = ""
     ethereum_chain_id: str = "5777"
     chain_id: str = "localnet"  # cosmos chain id
@@ -97,15 +97,26 @@ def print_error_message(error_message):
     raise Exception(error_message)
 
 
-def get_required_env_var(name, why: str = "by the system"):
+def get_env_var(name):
     result = os.environ.get(name)
+    if result is None:
+        tmp = os.environ.get("VAGRANT_ENV_JSON")
+        if tmp:
+            import json
+            with open(tmp, "rt") as f:
+                env = json.loads(f.read())
+            result = env.get(name)
+    return result
+
+def get_required_env_var(name, why: str = "by the system"):
+    result = get_env_var(name)
     if not result:
         print_error_message(f"{name} env var is required {why}")
     return result
 
 
 def get_optional_env_var(name: str, default_value: str):
-    result = os.environ.get(name)
+    result = get_env_var(name)
     return result if result else default_value
 
 
@@ -165,6 +176,15 @@ def run_yarn_command(command_line):
         return json.loads(json_line)
     except Exception as e:
         raise Exception(f"json error from command:\n{command_line}\noutput:\n{lines}\noriginal exception: {e}")
+
+
+def kill_ebrelayer():
+    return get_shell_output("pkill -9 ebrelayer || true")
+
+
+def start_ebrelayer():
+    integration_dir = get_required_env_var("TEST_INTEGRATION_DIR")
+    return get_shell_output(f"{integration_dir}/sifchain_start_ebrelayer.sh")
 
 
 # converts a key to a sif address.
@@ -357,7 +377,7 @@ def send_from_sifchain_to_sifchain_cmd(
     keyring_backend_entry = f"--keyring-backend {credentials.keyring_backend}" if credentials.keyring_backend else ""
     chain_id_entry = f"--chain-id {transfer_request.chain_id}" if transfer_request.chain_id else ""
     node = f"--node {transfer_request.sifnoded_node}" if transfer_request.sifnoded_node else ""
-    sifchain_fees_entry = f"--fees {transfer_request.sifchain_fees}" if transfer_request.sifchain_fees else ""
+    sifchain_fees_entry = f"--fees {transfer_request.sifchain_fees}" if transfer_request.sifchain_fees else ""  # Deprecated, see https://github.com/Sifchain/sifnode/pull/1802#discussion_r697403408
     home_entry = f"--home {credentials.sifnoded_homedir}" if credentials.sifnoded_homedir else ""
     cmd = " ".join([
         yes_entry,
@@ -401,7 +421,7 @@ def send_from_sifchain_to_ethereum_cmd(
     yes_entry = f"yes {credentials.keyring_passphrase} | " if credentials.keyring_passphrase else ""
     keyring_backend_entry = f"--keyring-backend {credentials.keyring_backend}" if credentials.keyring_backend else ""
     node = f"--node {transfer_request.sifnoded_node}" if transfer_request.sifnoded_node else ""
-    sifchain_fees_entry = f"--fees {transfer_request.sifchain_fees}" if transfer_request.sifchain_fees else ""
+    sifchain_fees_entry = f"--fees {transfer_request.sifchain_fees}" if transfer_request.sifchain_fees else ""  # Deprecated, see https://github.com/Sifchain/sifnode/pull/1802#discussion_r697403408
     direction = "lock" if transfer_request.sifchain_symbol == "rowan" else "burn"
     home_entry = f"--home {credentials.sifnoded_homedir}" if credentials.sifnoded_homedir else ""
     from_entry = f"--from {credentials.from_key} " if credentials.from_key else ""
@@ -716,7 +736,7 @@ def build_sifchain_command(
     node_entry = f"--node {transfer_request.sifnoded_node}" if transfer_request.sifnoded_node else ""
     home_entry = f"--home {credentials.sifnoded_homedir}" if credentials.sifnoded_homedir else ""
     from_entry = f"--from {credentials.from_key} " if credentials.from_key else ""
-    sifchain_fees_entry = f"--fees {transfer_request.sifchain_fees}" if transfer_request.sifchain_fees else ""
+    sifchain_fees_entry = f"--fees {transfer_request.sifchain_fees}" if transfer_request.sifchain_fees else ""  # Deprecated, see https://github.com/Sifchain/sifnode/pull/1802#discussion_r697403408
     return " ".join([
         yes_entry,
         command_contents,

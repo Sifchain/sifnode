@@ -88,3 +88,14 @@ sifnoded tx tokenregistry register ./$SIFCHAIN_ID/terra.json \
   --gas-prices=0.5rowan \
   --gas-adjustment=1.5 \
   --broadcast-mode=block
+
+
+# OSMOSIS
+sifnoded tx tokenregistry register ./$SIFCHAIN_ID/osmosis.json \
+  --node $SIF_NODE \
+  --chain-id $SIFCHAIN_ID \
+  --from $TOKEN_REGISTRY_ADMIN_ADDRESS \
+  --keyring-backend $KEYRING_BACKEND \
+  --gas-prices=0.5rowan \
+  --gas-adjustment=1.5 \
+  --broadcast-mode=block
