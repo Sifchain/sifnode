@@ -70,6 +70,13 @@ func PrepareToSendConvertedCoins(goCtx context.Context, msg *sdktransfertypes.Ms
 	return nil
 }
 
+func IsRecvPacketAllowed(ctx sdk.Context, whitelistKeeper tokenregistrytypes.Keeper, packet channeltypes.Packet, data sdktransfertypes.FungibleTokenPacketData, mintedDenomEntry *tokenregistrytypes.RegistryEntry) bool {
+	if sdktransfertypes.ReceiverChainIsSource(packet.GetSourcePort(), packet.GetSourceChannel(), data.Denom) {
+		return true
+	}
+	return mintedDenomEntry != nil && whitelistKeeper.CheckDenomPermissions(mintedDenomEntry, []tokenregistrytypes.Permission{tokenregistrytypes.Permission_IBCIMPORT})
+}
+
 func GetMintedDenomFromPacket(packet channeltypes.Packet, data sdktransfertypes.FungibleTokenPacketData) string {
 	if sdktransfertypes.ReceiverChainIsSource(packet.GetSourcePort(), packet.GetSourceChannel(), data.Denom) {
 		denom := data.Denom[len(sdktransfertypes.GetDenomPrefix(packet.GetSourcePort(), packet.GetSourceChannel())):]
@@ -94,9 +101,10 @@ func ConvertIncomingCoins(
 
 func ExecConvForIncomingCoins(
 	ctx sdk.Context,
-	incomingCoins *sdk.Coin,
-	finalCoins *sdk.Coin,
 	bankKeeper sdktransfertypes.BankKeeper,
+	whitelistKeeper tokenregistrytypes.Keeper,
+	mintedDenomEntry *tokenregistrytypes.RegistryEntry,
+	convertToDenomEntry *tokenregistrytypes.RegistryEntry,
 	packet channeltypes.Packet,
 	data sdktransfertypes.FungibleTokenPacketData,
 ) error {
@@ -105,19 +113,24 @@ func ExecConvForIncomingCoins(
 	if err != nil {
 		return err
 	}
+
+	incomingCoins := sdk.NewCoins(sdk.NewCoin(mintedDenomEntry.Denom, sdk.NewIntFromUint64(data.Amount)))
 	// send ibcdenom coins from account to module
-	err = bankKeeper.SendCoinsFromAccountToModule(ctx, receiver, sctransfertypes.ModuleName, sdk.NewCoins(*incomingCoins))
+	err = bankKeeper.SendCoinsFromAccountToModule(ctx, receiver, sctransfertypes.ModuleName, incomingCoins)
 	if err != nil {
 		return err
 	}
 	// burn ibcdenom coins
-	err = bankKeeper.BurnCoins(ctx, sctransfertypes.ModuleName, sdk.NewCoins(*incomingCoins))
+	err = bankKeeper.BurnCoins(ctx, sctransfertypes.ModuleName, incomingCoins)
 	if err != nil {
 		return err
 	}
 	// unescrow original tokens
 	escrowAddress := sctransfertypes.GetEscrowAddress(packet.GetDestPort(), packet.GetDestChannel())
-	if err := bankKeeper.SendCoins(ctx, escrowAddress, receiver, sdk.NewCoins(*finalCoins)); err != nil {
+	diff := uint64(convertToDenomEntry.Decimals - mintedDenomEntry.Decimals)
+	convAmount := ConvertIncomingCoins(ctx, whitelistKeeper, data.Amount, diff)
+	finalCoins := sdk.NewCoins(sdk.NewCoin(convertToDenomEntry.Denom, convAmount))
+	if err := bankKeeper.SendCoins(ctx, escrowAddress, receiver, finalCoins); err != nil {
 		// NOTE: this error is only expected to occur given an unexpected bug or a malicious
 		// counterparty module. The bug may occur in bank or any part of the code that allows
 		// the escrow address to be drained. A malicious counterparty module could drain the
@@ -128,10 +141,10 @@ func ExecConvForIncomingCoins(
 		sdk.NewEvent(
 			sctransfertypes.EventTypeConvertReceived,
 			sdk.NewAttribute(sdk.AttributeKeyModule, sctransfertypes.ModuleName),
-			sdk.NewAttribute(sctransfertypes.AttributeKeyPacketAmount, fmt.Sprintf("%v", incomingCoins.Amount)),
-			sdk.NewAttribute(sctransfertypes.AttributeKeyPacketDenom, incomingCoins.Denom),
-			sdk.NewAttribute(sctransfertypes.AttributeKeyConvertAmount, fmt.Sprintf("%v", finalCoins.Amount)),
-			sdk.NewAttribute(sctransfertypes.AttributeKeyConvertDenom, finalCoins.Denom),
+			sdk.NewAttribute(sctransfertypes.AttributeKeyPacketAmount, fmt.Sprintf("%v", data.Amount)),
+			sdk.NewAttribute(sctransfertypes.AttributeKeyPacketDenom, mintedDenomEntry.Denom),
+			sdk.NewAttribute(sctransfertypes.AttributeKeyConvertAmount, fmt.Sprintf("%v", convAmount)),
+			sdk.NewAttribute(sctransfertypes.AttributeKeyConvertDenom, convertToDenomEntry.Denom),
 		),
 	)
 	return nil

@@ -37,7 +37,7 @@ func OnRecvPacketWhitelistConvert(
 	mintedDenom := helpers.GetMintedDenomFromPacket(packet, data)
 	registry := whitelistKeeper.GetDenomWhitelist(ctx)
 	mintedDenomEntry := whitelistKeeper.GetDenom(registry, mintedDenom)
-	if !IsRecvPacketAllowed(ctx, whitelistKeeper, packet, data, mintedDenomEntry) {
+	if !helpers.IsRecvPacketAllowed(ctx, whitelistKeeper, packet, data, mintedDenomEntry) {
 		acknowledgement := channeltypes.NewErrorAcknowledgement(
 			sdkerrors.Wrapf(sdkerrors.ErrInvalidCoins, "denom not whitelisted").Error(),
 		)
@@ -57,11 +57,7 @@ func OnRecvPacketWhitelistConvert(
 	}
 	convertToDenomEntry := whitelistKeeper.GetDenom(registry, mintedDenomEntry.UnitDenom)
 	if convertToDenomEntry != nil && convertToDenomEntry.Decimals > 0 && mintedDenomEntry.Decimals > 0 && convertToDenomEntry.Decimals > mintedDenomEntry.Decimals {
-		diff := uint64(convertToDenomEntry.Decimals - mintedDenomEntry.Decimals)
-		convAmount := helpers.ConvertIncomingCoins(ctx, whitelistKeeper, data.Amount, diff)
-		mintedCoins := sdk.NewCoin(mintedDenom, sdk.NewIntFromUint64(data.Amount))
-		convertToCoins := sdk.NewCoin(convertToDenomEntry.Denom, convAmount)
-		err = helpers.ExecConvForIncomingCoins(ctx, &mintedCoins, &convertToCoins, bankKeeper, packet, data)
+		err = helpers.ExecConvForIncomingCoins(ctx, bankKeeper, whitelistKeeper, mintedDenomEntry, convertToDenomEntry, packet, data)
 		// Revert, although this may cause packet to be relayed again.
 		if err != nil {
 			return nil, nil, sdkerrors.Wrap(sctransfertypes.ErrConvertingToUnitDenom, err.Error())
@@ -81,11 +77,4 @@ func OnRecvPacketWhitelistConvert(
 	return &sdk.Result{
 		Events: ctx.EventManager().Events().ToABCIEvents(),
 	}, acknowledgement.GetBytes(), nil
-}
-
-func IsRecvPacketAllowed(ctx sdk.Context, whitelistKeeper tokenregistrytypes.Keeper, packet channeltypes.Packet, data transfertypes.FungibleTokenPacketData, mintedDenomEntry *tokenregistrytypes.RegistryEntry) bool {
-	if transfertypes.ReceiverChainIsSource(packet.GetSourcePort(), packet.GetSourceChannel(), data.Denom) {
-		return true
-	}
-	return mintedDenomEntry != nil && whitelistKeeper.CheckDenomPermissions(mintedDenomEntry, []tokenregistrytypes.Permission{tokenregistrytypes.Permission_IBCIMPORT})
 }
