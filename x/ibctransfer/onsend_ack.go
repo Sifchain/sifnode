@@ -70,7 +70,8 @@ func OnAcknowledgementMaybeConvert(
 				sdk.NewAttribute(sdktransfertypes.AttributeKeyAckError, resp.Error),
 			),
 		)
-
+		fmt.Println("+++++++++++++++++")
+		fmt.Println(data)
 		// if needs conversion, convert and send
 		if ShouldConvertRefundCoins(ctx, whitelistKeeper, packet, data) {
 			incomingCoins, finalCoins := GetConvForRefundCoins(ctx, whitelistKeeper, packet, data)
@@ -97,7 +98,7 @@ func ShouldConvertRefundCoins(
 ) bool {
 	// we don't need to manipulate the denom because the data and packet was created on this chain
 	// get token registry entry for received denom
-	denom := data.Denom
+	denom := GetMintedDenomFromPacket(packet, data)
 	denomRegistryEntry := whitelistKeeper.GetDenom(ctx, data.Denom)
 	// If this incoming coin isn't setup on the whitelist with decimals / unit denom,
 	// then no conversion happens.
@@ -130,7 +131,7 @@ func GetConvForRefundCoins(
 ) (sdk.Coin, sdk.Coin) {
 
 	// we don't need to manipulate the denom because the data and packet was created on this chain
-	denom := data.Denom
+	denom := GetMintedDenomFromPacket(packet, data)
 
 	// get token registry entry for received denom
 	denomEntry := whitelistKeeper.GetDenom(ctx, denom)
