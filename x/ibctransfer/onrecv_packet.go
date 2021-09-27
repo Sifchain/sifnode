@@ -57,8 +57,11 @@ func OnRecvPacketWhitelistConvert(
 	}
 	convertToDenomEntry := whitelistKeeper.GetDenom(registry, mintedDenomEntry.UnitDenom)
 	if convertToDenomEntry != nil && convertToDenomEntry.Decimals > 0 && mintedDenomEntry.Decimals > 0 && convertToDenomEntry.Decimals > mintedDenomEntry.Decimals {
-		mintedCoins, convertToCoins := helpers.GetConvForIncomingCoins(ctx, whitelistKeeper, mintedDenomEntry, convertToDenomEntry, data.Amount)
-		err = helpers.ExecConvForIncomingCoins(ctx, mintedCoins, convertToCoins, bankKeeper, packet, data)
+		diff := uint64(convertToDenomEntry.Decimals - mintedDenomEntry.Decimals)
+		convAmount := helpers.ConvertIncomingCoins(ctx, whitelistKeeper, data.Amount, diff)
+		mintedCoins := sdk.NewCoin(mintedDenom, sdk.NewIntFromUint64(data.Amount))
+		convertToCoins := sdk.NewCoin(convertToDenomEntry.Denom, convAmount)
+		err = helpers.ExecConvForIncomingCoins(ctx, &mintedCoins, &convertToCoins, bankKeeper, packet, data)
 		// Revert, although this may cause packet to be relayed again.
 		if err != nil {
 			return nil, nil, sdkerrors.Wrap(sctransfertypes.ErrConvertingToUnitDenom, err.Error())

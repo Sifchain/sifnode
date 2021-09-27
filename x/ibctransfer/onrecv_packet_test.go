@@ -38,7 +38,10 @@ func TestShouldConvertIncomingCoins(t *testing.T) {
 	require.NotNil(t, entry1)
 	entry1c := app.TokenRegistryKeeper.GetDenom(registry, entry1.UnitDenom)
 	require.NotNil(t, entry1c)
-	incomingDeduction, incomingAddition := helpers.GetConvForIncomingCoins(ctx, app.TokenRegistryKeeper, entry1, entry1c, 1000000000000)
+	diff := uint64(entry1c.Decimals - entry1.Decimals)
+	convAmount := helpers.ConvertIncomingCoins(ctx, app.TokenRegistryKeeper, 1000000000000, diff)
+	incomingDeduction := sdk.NewCoin("ueth", sdk.NewIntFromUint64(1000000000000))
+	incomingAddition := sdk.NewCoin("ceth", convAmount)
 	require.NotNil(t, incomingDeduction)
 	require.NotNil(t, incomingAddition)
 	require.Equal(t, incomingDeduction.Denom, "ueth")
@@ -71,10 +74,13 @@ func TestGetConvForIncomingCoins(t *testing.T) {
 	require.NotNil(t, entry2)
 	entry1c := app.TokenRegistryKeeper.GetDenom(registry, entry1.UnitDenom)
 	require.NotNil(t, entry1c)
-	gotIBCToken, gotConvToken := helpers.GetConvForIncomingCoins(ctx, app.TokenRegistryKeeper, entry1, entry1c, 1000000000000)
+	diff := uint64(entry1c.Decimals - entry1.Decimals)
+	convAmount := helpers.ConvertIncomingCoins(ctx, app.TokenRegistryKeeper, 1000000000000, diff)
+	incomingDeduction := sdk.NewCoin("ueth", sdk.NewIntFromUint64(1000000000000))
+	incomingAddition := sdk.NewCoin("ceth", convAmount)
 	intAmount, _ := sdk.NewIntFromString("100000000000000000000")
-	require.Equal(t, *gotIBCToken, sdk.NewCoin("ueth", sdk.NewInt(1000000000000)))
-	require.Equal(t, *gotConvToken, sdk.NewCoin("ceth", intAmount))
+	require.Equal(t, incomingDeduction, sdk.NewCoin("ueth", sdk.NewInt(1000000000000)))
+	require.Equal(t, incomingAddition, sdk.NewCoin("ceth", intAmount))
 }
 
 func TestIsRecvPacketAllowed(t *testing.T) {

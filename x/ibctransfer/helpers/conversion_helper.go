@@ -83,25 +83,13 @@ func GetMintedDenomFromPacket(packet channeltypes.Packet, data sdktransfertypes.
 	}
 }
 
-// GetConvForIncomingCoins returns 1) the coins that are being received via IBC,
-// which need to be deducted from that denom when converting to final denom,
-// and 2) the coins that need to be added to the final denom.
-func GetConvForIncomingCoins(
+func ConvertIncomingCoins(
 	ctx sdk.Context,
 	whitelistKeeper tokenregistrytypes.Keeper,
-	mintedDenomEntry *tokenregistrytypes.RegistryEntry,
-	convertToDenomEntry *tokenregistrytypes.RegistryEntry,
 	amount uint64,
-) (*sdk.Coin, *sdk.Coin) {
-	decAmount := sdk.NewDecFromInt(sdk.NewIntFromUint64(amount))
-	// calculate the conversion difference for increasing precision.
-	po := convertToDenomEntry.Decimals - mintedDenomEntry.Decimals
-	convAmountDec := IncreasePrecision(decAmount, int64(po))
-	convAmount := sdk.NewIntFromBigInt(convAmountDec.TruncateInt().BigInt())
-	// create converted and ibc tokens with corresponding denoms and amounts
-	mintedCoins := sdk.NewCoin(mintedDenomEntry.Denom, sdk.NewIntFromUint64(amount))
-	convertToCoins := sdk.NewCoin(convertToDenomEntry.Denom, convAmount)
-	return &mintedCoins, &convertToCoins
+	diff uint64,
+) sdk.Int {
+	return sdk.NewIntFromBigInt(IncreasePrecision(sdk.NewDecFromInt(sdk.NewIntFromUint64(amount)), int64(diff)).TruncateInt().BigInt())
 }
 
 func ExecConvForIncomingCoins(
@@ -147,41 +135,6 @@ func ExecConvForIncomingCoins(
 		),
 	)
 	return nil
-}
-
-// GetConvForRefundCoins returns 1) the coins that are being received via IBC,
-// which need to be deducted from that denom when converting to final denom,
-// and 2) the coins that need to be added to the final denom.
-func GetConvForRefundCoins(
-	ctx sdk.Context,
-	whitelistKeeper tokenregistrytypes.Keeper,
-	packet channeltypes.Packet,
-	data sdktransfertypes.FungibleTokenPacketData,
-) (*sdk.Coin, *sdk.Coin) {
-	// we don't need to manipulate the denom because the data and packet was created on this chain
-	denom := data.Denom
-	wl := whitelistKeeper.GetDenomWhitelist(ctx)
-	// get token registry entry for received denom
-	denomEntry := whitelistKeeper.GetDenom(wl, denom)
-	// convert to unit_denom
-	if denomEntry == nil || (denomEntry.Decimals == 0 || denomEntry.UnitDenom == "") {
-		// noop, should prevent getting here.
-		return nil, nil
-	}
-	convertToDenomEntry := whitelistKeeper.GetDenom(wl, denomEntry.UnitDenom)
-	if convertToDenomEntry == nil || convertToDenomEntry.Decimals <= denomEntry.Decimals {
-		return nil, nil
-	}
-	// get the token amount from the packet data
-	decAmount := sdk.NewDecFromInt(sdk.NewIntFromUint64(data.Amount))
-	// Calculate the conversion difference for increasing precision.
-	po := convertToDenomEntry.Decimals - denomEntry.Decimals
-	convAmountDec := IncreasePrecision(decAmount, int64(po))
-	convAmount := sdk.NewIntFromBigInt(convAmountDec.TruncateInt().BigInt())
-	// create converted and ibc tokens with corresponding denoms and amounts
-	convertToCoins := sdk.NewCoin(convertToDenomEntry.Denom, convAmount)
-	mintedCoins := sdk.NewCoin(denom, sdk.NewIntFromUint64(data.Amount))
-	return &mintedCoins, &convertToCoins
 }
 
 func ExecConvForRefundCoins(
