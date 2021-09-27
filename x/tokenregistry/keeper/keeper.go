@@ -66,7 +66,7 @@ func (k keeper) CheckDenomPermissions(entry *types.RegistryEntry, requiredPermis
 func (k keeper) GetDenom(wl types.Registry, denom string) *types.RegistryEntry {
 	for i := range wl.Entries {
 		e := wl.Entries[i]
-		if e != nil && strings.ToLower(e.Denom) == strings.ToLower(denom) {
+		if e != nil && strings.EqualFold(e.Denom, denom) {
 			return wl.Entries[i]
 		}
 	}

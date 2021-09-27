@@ -7,7 +7,6 @@ import (
 	"github.com/Sifchain/sifnode/x/ethbridge/test"
 
 	tokenregistrytest "github.com/Sifchain/sifnode/x/tokenregistry/test"
-	transfertypes "github.com/cosmos/cosmos-sdk/x/ibc/applications/transfer/types"
 	"github.com/stretchr/testify/require"
 
 	sifapp "github.com/Sifchain/sifnode/app"
@@ -271,11 +270,11 @@ func TestExecConvForRefundCoins(t *testing.T) {
 		DestinationPort:    "transfer",
 		DestinationChannel: "channel-1",
 	}
-	returningData := transfertypes.FungibleTokenPacketData{
+	returningData := types.FungibleTokenPacketData{
 		Denom:  "transfer/channel-0/ueth",
 		Sender: addrs[0].String(),
 	}
-	nonReturningData := transfertypes.FungibleTokenPacketData{
+	nonReturningData := types.FungibleTokenPacketData{
 		Denom:  "transfer/channel-1/ueth",
 		Sender: addrs[0].String(),
 	}
