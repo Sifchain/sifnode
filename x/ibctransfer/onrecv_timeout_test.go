@@ -4,19 +4,18 @@ import (
 	"context"
 	"testing"
 
+	sifapp "github.com/Sifchain/sifnode/app"
+	test2 "github.com/Sifchain/sifnode/x/ethbridge/test"
+	"github.com/Sifchain/sifnode/x/ibctransfer"
 	"github.com/Sifchain/sifnode/x/ibctransfer/helpers"
+	"github.com/Sifchain/sifnode/x/ibctransfer/keeper/testhelpers"
+	"github.com/Sifchain/sifnode/x/tokenregistry/test"
+	tokenregistrytypes "github.com/Sifchain/sifnode/x/tokenregistry/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/ibc/applications/transfer/types"
 	clienttypes "github.com/cosmos/cosmos-sdk/x/ibc/core/02-client/types"
 	channeltypes "github.com/cosmos/cosmos-sdk/x/ibc/core/04-channel/types"
 	"github.com/stretchr/testify/require"
-
-	sifapp "github.com/Sifchain/sifnode/app"
-	test2 "github.com/Sifchain/sifnode/x/ethbridge/test"
-	"github.com/Sifchain/sifnode/x/ibctransfer"
-	"github.com/Sifchain/sifnode/x/ibctransfer/keeper/testhelpers"
-	"github.com/Sifchain/sifnode/x/tokenregistry/test"
-	tokenregistrytypes "github.com/Sifchain/sifnode/x/tokenregistry/types"
 )
 
 func TestOnTimeoutPacketConvert_Source(t *testing.T) {
@@ -196,4 +195,56 @@ func TestOnTimeoutPacketConvert_Sink(t *testing.T) {
 			require.Equal(t, tt.args.msg.Token.String(), app.BankKeeper.GetBalance(ctx, sender, tt.args.msg.Token.Denom).String())
 		})
 	}
+}
+
+func TestOnTimeoutMaybeConvert(t *testing.T) {
+	app, ctx, _ := test.CreateTestApp(false)
+	addrs, _ := test2.CreateTestAddrs(2)
+	rowanToken := tokenregistrytypes.RegistryEntry{
+		Denom:                "rowan",
+		IbcCounterpartyDenom: "xrowan",
+		Decimals:             18,
+	}
+	xrowanToken := tokenregistrytypes.RegistryEntry{
+		Denom:     "xrowan",
+		UnitDenom: "rowan",
+		Decimals:  10,
+	}
+	app.TokenRegistryKeeper.SetToken(ctx, &rowanToken)
+	app.TokenRegistryKeeper.SetToken(ctx, &xrowanToken)
+	rowan := sdk.NewCoin(rowanToken.Denom, sdk.NewInt(123456789123456789))
+	msgSourceTransfer := types.NewMsgTransfer(
+		"transfer",
+		"channel-0",
+		rowan,
+		addrs[0],
+		addrs[1].String(),
+		clienttypes.NewHeight(0, 0),
+		0,
+	)
+	initCoins := sdk.NewCoins(rowan)
+	sender, err := sdk.AccAddressFromBech32(addrs[0].String())
+	require.NoError(t, err)
+	err = app.BankKeeper.AddCoins(ctx, sender, initCoins)
+	require.NoError(t, err)
+	tokenDeduction, tokensConverted := helpers.ConvertCoinsForTransfer(msgSourceTransfer, &rowanToken, &xrowanToken)
+	err = helpers.PrepareToSendConvertedCoins(sdk.WrapSDKContext(ctx), msgSourceTransfer, tokenDeduction, tokensConverted, app.BankKeeper)
+	require.NoError(t, err)
+	sentDenom, _ := testhelpers.SendStub(ctx, app.TransferKeeper, app.BankKeeper, tokensConverted, sender, "transfer", "channel-0")
+	require.Equal(t, "0", app.BankKeeper.GetBalance(ctx, sender, sentDenom).Amount.String())
+	timeoutPacket := channeltypes.Packet{
+		SourceChannel:      "channel-0",
+		SourcePort:         "transfer",
+		DestinationChannel: "channel-1",
+		DestinationPort:    "transfer",
+		Data: app.AppCodec().MustMarshalJSON(&types.FungibleTokenPacketData{
+			Denom:    sentDenom,
+			Amount:   uint64(1234567891),
+			Sender:   addrs[0].String(),
+			Receiver: addrs[1].String(),
+		}),
+	}
+	_, err = ibctransfer.OnTimeoutMaybeConvert(ctx, app.TransferKeeper, app.TokenRegistryKeeper, app.BankKeeper, timeoutPacket)
+	require.NoError(t, err)
+	require.Equal(t, rowan.String(), app.BankKeeper.GetBalance(ctx, sender, rowan.Denom).String())
 }

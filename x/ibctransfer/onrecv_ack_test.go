@@ -4,9 +4,7 @@ import (
 	"context"
 	"testing"
 
-	"github.com/Sifchain/sifnode/x/ethbridge/test"
-
-	tokenregistrytest "github.com/Sifchain/sifnode/x/tokenregistry/test"
+	"github.com/Sifchain/sifnode/x/tokenregistry/test"
 	"github.com/stretchr/testify/require"
 
 	sifapp "github.com/Sifchain/sifnode/app"
@@ -76,7 +74,7 @@ func TestOnAcknowledgementMaybeConvert_Source(t *testing.T) {
 	for _, tt := range tests {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
-			app, ctx, _ := tokenregistrytest.CreateTestApp(false)
+			app, ctx, _ := test.CreateTestApp(false)
 			app.TokenRegistryKeeper.SetToken(ctx, &tt.args.transferToken)
 			app.TokenRegistryKeeper.SetToken(ctx, &tt.args.packetToken)
 			// Setup the send conversion before testing ACK.
@@ -211,7 +209,7 @@ func TestOnAcknowledgementMaybeConvert_Sink(t *testing.T) {
 	for _, tt := range tests {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
-			app, ctx, _ := tokenregistrytest.CreateTestApp(false)
+			app, ctx, _ := test.CreateTestApp(false)
 			app.TokenRegistryKeeper.SetToken(ctx, &tt.args.transferToken)
 			app.TokenRegistryKeeper.SetToken(ctx, &tt.args.transferAsToken)
 			recvTokenPacket := types.FungibleTokenPacketData{
@@ -262,8 +260,8 @@ func TestOnAcknowledgementMaybeConvert_Sink(t *testing.T) {
 }
 
 func TestExecConvForRefundCoins(t *testing.T) {
-	app, ctx, _ := tokenregistrytest.CreateTestApp(false)
-	addrs, _ := test.CreateTestAddrs(2)
+	app, ctx, _ := test.CreateTestApp(false)
+	addrs, _ := test2.CreateTestAddrs(2)
 	packet := channeltypes.Packet{
 		SourcePort:         "transfer",
 		SourceChannel:      "channel-0",
@@ -318,8 +316,8 @@ func TestExecConvForRefundCoins(t *testing.T) {
 }
 
 func TestOnAcknowledgementMaybeConvert(t *testing.T) {
-	app, ctx, _ := tokenregistrytest.CreateTestApp(false)
-	addrs, _ := test.CreateTestAddrs(2)
+	app, ctx, _ := test.CreateTestApp(false)
+	addrs, _ := test2.CreateTestAddrs(2)
 	rowanToken := tokenregistrytypes.RegistryEntry{
 		Denom:                "rowan",
 		IbcCounterpartyDenom: "xrowan",
@@ -332,23 +330,26 @@ func TestOnAcknowledgementMaybeConvert(t *testing.T) {
 	}
 	app.TokenRegistryKeeper.SetToken(ctx, &rowanToken)
 	app.TokenRegistryKeeper.SetToken(ctx, &xrowanToken)
+	rowan := sdk.NewCoin(rowanToken.Denom, sdk.NewInt(123456789123456789))
 	msgSourceTransfer := types.NewMsgTransfer(
 		"transfer",
 		"channel-0",
-		sdk.NewCoin("rowan", sdk.NewInt(123456789123456789)),
+		rowan,
 		addrs[0],
 		addrs[1].String(),
 		clienttypes.NewHeight(0, 0),
 		0,
 	)
-	tokenDeduction, tokensConverted := helpers.ConvertCoinsForTransfer(msgSourceTransfer, &rowanToken, &xrowanToken)
-	initCoins := sdk.NewCoins(sdk.NewCoin("rowan", sdk.NewInt(123456789123456789)))
+	initCoins := sdk.NewCoins(rowan)
 	sender, err := sdk.AccAddressFromBech32(addrs[0].String())
 	require.NoError(t, err)
 	err = app.BankKeeper.AddCoins(ctx, sender, initCoins)
 	require.NoError(t, err)
+	tokenDeduction, tokensConverted := helpers.ConvertCoinsForTransfer(msgSourceTransfer, &rowanToken, &xrowanToken)
 	err = helpers.PrepareToSendConvertedCoins(sdk.WrapSDKContext(ctx), msgSourceTransfer, tokenDeduction, tokensConverted, app.BankKeeper)
 	require.NoError(t, err)
+	sentDenom, _ := testhelpers.SendStub(ctx, app.TransferKeeper, app.BankKeeper, tokensConverted, sender, "transfer", "channel-0")
+	require.Equal(t, "0", app.BankKeeper.GetBalance(ctx, sender, sentDenom).Amount.String())
 	errorAck := channeltypes.NewErrorAcknowledgement("failed packet transfer")
 	ackPacket := channeltypes.Packet{
 		SourceChannel:      "channel-0",
@@ -356,12 +357,13 @@ func TestOnAcknowledgementMaybeConvert(t *testing.T) {
 		DestinationChannel: "channel-1",
 		DestinationPort:    "transfer",
 		Data: app.AppCodec().MustMarshalJSON(&types.FungibleTokenPacketData{
-			Denom:    "transfer/channel-0/xrowan",
-			Amount:   uint64(123456789),
+			Denom:    sentDenom,
+			Amount:   uint64(1234567891),
 			Sender:   addrs[0].String(),
 			Receiver: addrs[1].String(),
 		}),
 	}
 	_, err = ibctransfer.OnAcknowledgementMaybeConvert(ctx, app.TransferKeeper, app.TokenRegistryKeeper, app.BankKeeper, ackPacket, app.AppCodec().MustMarshalJSON(&errorAck))
 	require.NoError(t, err)
+	require.Equal(t, rowan.String(), app.BankKeeper.GetBalance(ctx, sender, rowan.Denom).String())
 }
