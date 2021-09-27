@@ -9,7 +9,6 @@ import (
 	sdktransfertypes "github.com/cosmos/cosmos-sdk/x/ibc/applications/transfer/types"
 	channeltypes "github.com/cosmos/cosmos-sdk/x/ibc/core/04-channel/types"
 
-	"github.com/Sifchain/sifnode/x/ibctransfer/types"
 	sctransfertypes "github.com/Sifchain/sifnode/x/ibctransfer/types"
 	tokenregistrytypes "github.com/Sifchain/sifnode/x/tokenregistry/types"
 )
@@ -34,7 +33,7 @@ func ConvertCoinsForTransfer(msg *sdktransfertypes.MsgTransfer, sendRegistryEntr
 
 // PrepareToSendConvertedCoins moves outgoing tokens into the denom that will be sent via IBC.
 // The requested tokens will be escrowed, and the new denom to send over IBC will be minted in the senders account.
-func PrepareToSendConvertedCoins(goCtx context.Context, msg *sdktransfertypes.MsgTransfer, token sdk.Coin, convToken sdk.Coin, bankKeeper types.BankKeeper) error {
+func PrepareToSendConvertedCoins(goCtx context.Context, msg *sdktransfertypes.MsgTransfer, token sdk.Coin, convToken sdk.Coin, bankKeeper sctransfertypes.BankKeeper) error {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 	sender, err := sdk.AccAddressFromBech32(msg.Sender)
 	if err != nil {
@@ -90,40 +89,18 @@ func GetMintedDenomFromPacket(packet channeltypes.Packet, data sdktransfertypes.
 func GetConvForIncomingCoins(
 	ctx sdk.Context,
 	whitelistKeeper tokenregistrytypes.Keeper,
-	packet channeltypes.Packet,
-	data sdktransfertypes.FungibleTokenPacketData,
+	mintedDenomEntry *tokenregistrytypes.RegistryEntry,
+	convertToDenomEntry *tokenregistrytypes.RegistryEntry,
+	amount uint64,
 ) (*sdk.Coin, *sdk.Coin) {
-	// Get the denom that will be minted by sdk transfer module,
-	// so that it can be converted to the denom it should be stored as.
-	// For a native token that has been returned, this will just be a base_denom,
-	// which will be on the whitelist.
-	mintedDenom := GetMintedDenomFromPacket(packet, data)
-	registry := whitelistKeeper.GetDenomWhitelist(ctx)
-	// get token registry entry for received denom
-	mintedDenomEntry := whitelistKeeper.GetDenom(registry, mintedDenom)
-	// convert to unit_denom
-	if mintedDenomEntry == nil {
-		// noop, should prevent getting here.
-		return nil, nil
-	}
-	convertToDenomEntry := whitelistKeeper.GetDenom(registry, mintedDenomEntry.UnitDenom)
-	if convertToDenomEntry == nil {
-		// noop, should prevent getting here.
-		return nil, nil
-	}
-	// get the token amount from the packet data
-	// Calculate the conversion difference for increasing precision.
+	decAmount := sdk.NewDecFromInt(sdk.NewIntFromUint64(amount))
+	// calculate the conversion difference for increasing precision.
 	po := convertToDenomEntry.Decimals - mintedDenomEntry.Decimals
-	if po <= 0 {
-		// Shortcut to prevent crash if po <= 0
-		return nil, nil
-	}
-	decAmount := sdk.NewDecFromInt(sdk.NewIntFromUint64(data.Amount))
 	convAmountDec := IncreasePrecision(decAmount, int64(po))
 	convAmount := sdk.NewIntFromBigInt(convAmountDec.TruncateInt().BigInt())
 	// create converted and ibc tokens with corresponding denoms and amounts
+	mintedCoins := sdk.NewCoin(mintedDenomEntry.Denom, sdk.NewIntFromUint64(amount))
 	convertToCoins := sdk.NewCoin(convertToDenomEntry.Denom, convAmount)
-	mintedCoins := sdk.NewCoin(mintedDenom, sdk.NewIntFromUint64(data.Amount))
 	return &mintedCoins, &convertToCoins
 }
 
