@@ -85,9 +85,8 @@ func GetMintedDenomFromPacket(packet channeltypes.Packet, data sdktransfertypes.
 			return denomTrace.IBCDenom()
 		}
 		return denom
-	} else {
-		return sdktransfertypes.ParseDenomTrace(sdktransfertypes.GetDenomPrefix(packet.GetDestPort(), packet.GetDestChannel()) + data.Denom).IBCDenom()
 	}
+	return sdktransfertypes.ParseDenomTrace(sdktransfertypes.GetDenomPrefix(packet.GetDestPort(), packet.GetDestChannel()) + data.Denom).IBCDenom()
 }
 
 func ConvertIncomingCoins(
