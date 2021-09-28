@@ -459,15 +459,15 @@ func (sub EthereumSub) GetLockBurnNonceFromCosmos(
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
 	client := ethbridgetypes.NewQueryClient(conn)
-	request := ethbridgetypes.QueryLockBurnNonceRequest{
+	request := ethbridgetypes.QueryEthereumLockBurnNonceRequest{
 		NetworkDescriptor: networkDescriptor,
 		RelayerValAddress: relayerValAddress,
 	}
-	response, err := client.LockBurnNonce(ctx, &request)
+	response, err := client.EthereumLockBurnNonce(ctx, &request)
 	if err != nil {
 		return 0, err
 	}
-	return response.LockBurnNonce, nil
+	return response.EthereumLockBurnNonce, nil
 }
 
 // GetValAddressFromKeyring get validator address from keyring
