@@ -3,6 +3,8 @@ package keeper_test
 import (
 	"testing"
 
+	sifapp "github.com/Sifchain/sifnode/app"
+
 	"github.com/Sifchain/sifnode/x/dispensation/test"
 	"github.com/Sifchain/sifnode/x/dispensation/types"
 	dispensationUtils "github.com/Sifchain/sifnode/x/dispensation/utils"
@@ -20,7 +22,7 @@ func TestKeeper_AccumulateDrops(t *testing.T) {
 	for _, in := range inputList {
 		address, err := sdk.AccAddressFromBech32(in.Address)
 		assert.NoError(t, err)
-		err = keeper.GetBankKeeper().AddCoins(ctx, address, in.Coins)
+		err = sifapp.AddCoinsToAccount(types.ModuleName, app.BankKeeper, ctx, address, in.Coins)
 		assert.NoError(t, err)
 	}
 	distributor := inputList[0]
@@ -28,7 +30,6 @@ func TestKeeper_AccumulateDrops(t *testing.T) {
 	assert.NoError(t, err)
 	moduleBalance, _ := sdk.NewIntFromString(rowanAmount)
 	assert.True(t, keeper.HasCoins(ctx, types.GetDistributionModuleAddress(), sdk.NewCoins(sdk.NewCoin("rowan", moduleBalance))))
-
 }
 
 func TestKeeper_CreateAndDistributeDrops(t *testing.T) {
@@ -40,7 +41,7 @@ func TestKeeper_CreateAndDistributeDrops(t *testing.T) {
 	for _, in := range inputList {
 		address, err := sdk.AccAddressFromBech32(in.Address)
 		assert.NoError(t, err)
-		err = keeper.GetBankKeeper().AddCoins(ctx, address, in.Coins)
+		err = sifapp.AddCoinsToAccount(types.ModuleName, app.BankKeeper, ctx, address, in.Coins)
 		assert.NoError(t, err)
 	}
 	totalCoins, err := dispensationUtils.TotalOutput(outputList)
@@ -58,7 +59,6 @@ func TestKeeper_CreateAndDistributeDrops(t *testing.T) {
 	assert.NoError(t, err)
 	err = keeper.CreateDrops(ctx, outputList, distributionName, types.DistributionType_DISTRIBUTION_TYPE_LIQUIDITY_MINING, runner)
 	assert.NoError(t, err)
-
 	_, err = keeper.DistributeDrops(ctx, 1, distributionName, runner, types.DistributionType_DISTRIBUTION_TYPE_AIRDROP)
 	assert.NoError(t, err)
 	_, err = keeper.DistributeDrops(ctx, 1, distributionName, runner, types.DistributionType_DISTRIBUTION_TYPE_LIQUIDITY_MINING)

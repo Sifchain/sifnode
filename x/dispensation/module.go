@@ -3,6 +3,7 @@ package dispensation
 import (
 	"encoding/json"
 	"fmt"
+
 	"github.com/Sifchain/sifnode/x/dispensation/client/rest"
 
 	"github.com/cosmos/cosmos-sdk/client"
@@ -46,7 +47,7 @@ func (b AppModuleBasic) RegisterInterfaces(registry cdctypes.InterfaceRegistry) 
 }
 
 // DefaultGenesis returns default genesis state as raw bytes for the dispensation module.
-func (AppModuleBasic) DefaultGenesis(cdc codec.JSONMarshaler) json.RawMessage {
+func (AppModuleBasic) DefaultGenesis(cdc codec.JSONCodec) json.RawMessage {
 	return cdc.MustMarshalJSON(types.DefaultGenesisState())
 }
 
@@ -56,7 +57,7 @@ func (AppModuleBasic) RegisterCodec(cdc *codec.LegacyAmino) {
 }
 
 // ValidateGenesis performs genesis state validation for the dispensation module.
-func (AppModuleBasic) ValidateGenesis(cdc codec.JSONMarshaler, config client.TxEncodingConfig, bz json.RawMessage) error {
+func (AppModuleBasic) ValidateGenesis(cdc codec.JSONCodec, config client.TxEncodingConfig, bz json.RawMessage) error {
 	var data GenesisState
 	err := cdc.UnmarshalJSON(bz, &data)
 	if err != nil {
@@ -145,7 +146,7 @@ func (am AppModule) NewQuerierHandler() sdk.Querier {
 
 // InitGenesis performs genesis initialization for the dispensation module. It returns
 // no validator updates.
-func (am AppModule) InitGenesis(ctx sdk.Context, codec codec.JSONMarshaler, data json.RawMessage) []abci.ValidatorUpdate {
+func (am AppModule) InitGenesis(ctx sdk.Context, codec codec.JSONCodec, data json.RawMessage) []abci.ValidatorUpdate {
 	var genesisState GenesisState
 	codec.MustUnmarshalJSON(data, &genesisState)
 	return InitGenesis(ctx, am.keeper, genesisState)
@@ -153,7 +154,7 @@ func (am AppModule) InitGenesis(ctx sdk.Context, codec codec.JSONMarshaler, data
 
 // ExportGenesis returns the exported genesis state as raw bytes for the dispensation
 // module.
-func (am AppModule) ExportGenesis(ctx sdk.Context, codec codec.JSONMarshaler) json.RawMessage {
+func (am AppModule) ExportGenesis(ctx sdk.Context, codec codec.JSONCodec) json.RawMessage {
 	gs := ExportGenesis(ctx, am.keeper)
 	return codec.MustMarshalJSON(&gs)
 }
@@ -167,3 +168,5 @@ func (am AppModule) BeginBlock(_ sdk.Context, _ abci.RequestBeginBlock) {
 func (AppModule) EndBlock(_ sdk.Context, _ abci.RequestEndBlock) []abci.ValidatorUpdate {
 	return []abci.ValidatorUpdate{}
 }
+
+func (AppModule) ConsensusVersion() uint64 { return 1 }
