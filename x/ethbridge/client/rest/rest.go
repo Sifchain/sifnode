@@ -73,7 +73,8 @@ func RegisterRESTRoutes(cliCtx client.Context, r *mux.Router, storeName string) 
 		restSymbol, restTokenContract, restEthereumSender)
 
 	getCrosschainFeeConfigRoute := fmt.Sprintf("/%s/crosschainFeeConfig/{%s}", storeName, restNetworkDescriptor)
-	getLockBurnNonceRoute := fmt.Sprintf("/%s/lockBurnNonce/{%s}/{%s}", storeName, restNetworkDescriptor, restRelayerCosmosAddress)
+	getEthereumLockBurnNonceRoute := fmt.Sprintf("/%s/ethereumLockBurnNonce/{%s}/{%s}", storeName, restNetworkDescriptor, restRelayerCosmosAddress)
+	getWitnessLockBurnNonceRoute := fmt.Sprintf("/%s/witnessLockBurnNonce/{%s}/{%s}", storeName, restNetworkDescriptor, restRelayerCosmosAddress)
 
 	r.HandleFunc(fmt.Sprintf("/%s/prophecies", storeName), createClaimHandler(cliCtx)).Methods("POST")
 	r.HandleFunc(getProhechyRoute, getProphecyHandler(cliCtx, storeName)).Methods("GET")
@@ -81,7 +82,8 @@ func RegisterRESTRoutes(cliCtx client.Context, r *mux.Router, storeName string) 
 	r.HandleFunc(fmt.Sprintf("/%s/burn", storeName), burnOrLockHandler(cliCtx, "burn")).Methods("POST")
 	r.HandleFunc(fmt.Sprintf("/%s/lock", storeName), burnOrLockHandler(cliCtx, "lock")).Methods("POST")
 	r.HandleFunc(fmt.Sprintf("/%s/signProphecy", storeName), signProphecyHandler(cliCtx)).Methods("POST")
-	r.HandleFunc(getLockBurnNonceRoute, getLockBurnNonceHandler(cliCtx, storeName)).Methods("GET")
+	r.HandleFunc(getEthereumLockBurnNonceRoute, getEthereumLockBurnNonceHandler(cliCtx, storeName)).Methods("GET")
+	r.HandleFunc(getWitnessLockBurnNonceRoute, getWitnessLockBurnNonceHandler(cliCtx, storeName)).Methods("GET")
 
 }
 
@@ -281,7 +283,7 @@ func getCrosschainFeeConfigHandler(cliCtx client.Context, storeName string) http
 	}
 }
 
-func getLockBurnNonceHandler(cliCtx client.Context, storeName string) http.HandlerFunc {
+func getEthereumLockBurnNonceHandler(cliCtx client.Context, storeName string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
 
@@ -293,13 +295,42 @@ func getLockBurnNonceHandler(cliCtx client.Context, storeName string) http.Handl
 		}
 		valAddress := vars[restRelayerCosmosAddress]
 
-		bz, err := cliCtx.LegacyAmino.MarshalJSON(types.NewLockBurnNonceRequest(oracletypes.NetworkDescriptor(networkDescriptor), valAddress))
+		bz, err := cliCtx.LegacyAmino.MarshalJSON(types.NewEthereumLockBurnNonceRequest(oracletypes.NetworkDescriptor(networkDescriptor), valAddress))
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusNotFound, err.Error())
 			return
 		}
 
-		route := fmt.Sprintf("custom/%s/%s", storeName, types.QueryLockBurnNonce)
+		route := fmt.Sprintf("custom/%s/%s", storeName, types.QueryEthereumLockBurnNonce)
+		res, _, err := cliCtx.QueryWithData(route, bz)
+		if err != nil {
+			rest.WriteErrorResponse(w, http.StatusNotFound, err.Error())
+			return
+		}
+
+		rest.PostProcessResponse(w, cliCtx, res)
+	}
+}
+
+func getWitnessLockBurnNonceHandler(cliCtx client.Context, storeName string) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		vars := mux.Vars(r)
+
+		restNetworkDescriptor := vars[restNetworkDescriptor]
+
+		networkDescriptor, err := strconv.Atoi(restNetworkDescriptor)
+		if err != nil {
+			rest.WriteErrorResponse(w, http.StatusNotFound, err.Error())
+		}
+		valAddress := vars[restRelayerCosmosAddress]
+
+		bz, err := cliCtx.LegacyAmino.MarshalJSON(types.NewWitnessLockBurnNonceRequest(oracletypes.NetworkDescriptor(networkDescriptor), valAddress))
+		if err != nil {
+			rest.WriteErrorResponse(w, http.StatusNotFound, err.Error())
+			return
+		}
+
+		route := fmt.Sprintf("custom/%s/%s", storeName, types.QueryWitnessLockBurnNonce)
 		res, _, err := cliCtx.QueryWithData(route, bz)
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusNotFound, err.Error())

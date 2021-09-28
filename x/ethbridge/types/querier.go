@@ -6,9 +6,10 @@ import (
 
 // query endpoints supported by the oracle Querier
 const (
-	QueryEthProphecy         = "prophecies"
-	QueryCrosschainFeeConfig = "crosschainFeeConfig"
-	QueryLockBurnNonce       = "lockBurnNonce"
+	QueryEthProphecy           = "prophecies"
+	QueryCrosschainFeeConfig   = "crosschainFeeConfig"
+	QueryEthereumLockBurnNonce = "ethereumLockBurnNonce"
+	QueryWitnessLockBurnNonce  = "witnessLockBurnNonce"
 )
 
 // NewQueryEthProphecyRequest creates a new QueryEthProphecyParams
@@ -41,17 +42,32 @@ func NewQueryCrosschainFeeConfigResponse(crosschainFeeConfig oracletypes.CrossCh
 	}
 }
 
-// NewLockBurnNonceRequest creates a new QueryLockBurnNonceRequest
-func NewLockBurnNonceRequest(networkDescriptor oracletypes.NetworkDescriptor, relayerValAddress string) *QueryLockBurnNonceRequest {
-	return &QueryLockBurnNonceRequest{
+// NewEthereumLockBurnNonceRequest creates a new QueryLockBurnNonceRequest
+func NewEthereumLockBurnNonceRequest(networkDescriptor oracletypes.NetworkDescriptor, relayerValAddress string) *QueryEthereumLockBurnNonceRequest {
+	return &QueryEthereumLockBurnNonceRequest{
 		NetworkDescriptor: networkDescriptor,
 		RelayerValAddress: relayerValAddress,
 	}
 }
 
-// NewLockBurnNonceResponse creates a new QueryLockBurnNonceResponse instance
-func NewLockBurnNonceResponse(lockBurnNonce uint64) QueryLockBurnNonceResponse {
-	return QueryLockBurnNonceResponse{
-		LockBurnNonce: lockBurnNonce,
+// NewEthereumLockBurnNonceResponse creates a new QueryEthereumLockBurnNonceResponse instance
+func NewEthereumLockBurnNonceResponse(lockBurnNonce uint64) QueryEthereumLockBurnNonceResponse {
+	return QueryEthereumLockBurnNonceResponse{
+		EthereumLockBurnNonce: lockBurnNonce,
+	}
+}
+
+// NewWitnessLockBurnNonceRequest creates a new QueryWitnessLockBurnNonceRequest
+func NewWitnessLockBurnNonceRequest(networkDescriptor oracletypes.NetworkDescriptor, relayerValAddress string) *QueryWitnessLockBurnNonceRequest {
+	return &QueryWitnessLockBurnNonceRequest{
+		NetworkDescriptor: networkDescriptor,
+		RelayerValAddress: relayerValAddress,
+	}
+}
+
+// NewWitnessLockBurnNonceResponse creates a new QueryWitnessLockBurnNonceResponse instance
+func NewWitnessLockBurnNonceResponse(lockBurnNonce uint64) QueryWitnessLockBurnNonceResponse {
+	return QueryWitnessLockBurnNonceResponse{
+		WitnessLockBurnNonce: lockBurnNonce,
 	}
 }

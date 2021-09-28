@@ -21,4 +21,5 @@ var (
 	CrossChainFeePrefix         = []byte{0x03}
 	SignaturePrefix             = []byte{0x04}
 	GlobalNonceProphecyIDPrefix = []byte{0x05}
+	WitnessLockBurnNoncePrefix  = []byte{0x06}
 )
