@@ -3,14 +3,16 @@ package app
 import (
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	m "github.com/cosmos/cosmos-sdk/types/module"
 	"github.com/cosmos/cosmos-sdk/x/upgrade/types"
 )
 
 const upgradeName = "0.9.8"
 
 func SetupHandlers(app *SifchainApp) {
-	app.UpgradeKeeper.SetUpgradeHandler(upgradeName, func(ctx sdk.Context, plan types.Plan) {
+	app.UpgradeKeeper.SetUpgradeHandler(upgradeName, func(ctx sdk.Context, plan types.Plan, vm m.VersionMap) (m.VersionMap, error) {
 		app.Logger().Info("Running upgrade handler for " + upgradeName)
+		return vm, nil
 	})
 
 	upgradeInfo, err := app.UpgradeKeeper.ReadUpgradeInfoFromDisk()
