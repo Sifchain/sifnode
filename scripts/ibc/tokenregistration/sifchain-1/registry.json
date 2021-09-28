@@ -890,11 +890,13 @@
       "ibc_channel_id": "",
       "ibc_counterparty_channel_id": "",
       "permissions": [
-        "CLP"
+        "CLP",
+        "IBCEXPORT",
+        "IBCIMPORT"
       ],
       "unit_denom": "",
       "ibc_counterparty_denom": "",
-      "ibc_counterparty_chain_id": ""
+      "ibc_counterparty_chain_id": "cosmoshub-4"
     },
     {
       "decimals": "18",
@@ -904,11 +906,13 @@
       "ibc_channel_id": "",
       "ibc_counterparty_channel_id": "",
       "permissions": [
-        "CLP"
+        "CLP",
+        "IBCEXPORT",
+        "IBCIMPORT"
       ],
       "unit_denom": "",
       "ibc_counterparty_denom": "",
-      "ibc_counterparty_chain_id": ""
+      "ibc_counterparty_chain_id": "akashnet-2"
     },
     {
       "decimals": "18",
@@ -918,11 +922,13 @@
       "ibc_channel_id": "",
       "ibc_counterparty_channel_id": "",
       "permissions": [
-        "CLP"
+        "CLP",
+        "IBCEXPORT",
+        "IBCIMPORT"
       ],
       "unit_denom": "",
       "ibc_counterparty_denom": "",
-      "ibc_counterparty_chain_id": ""
+      "ibc_counterparty_chain_id": "sentinelhub-2"
     },
     {
       "decimals": "18",
@@ -946,11 +952,13 @@
       "ibc_channel_id": "",
       "ibc_counterparty_channel_id": "",
       "permissions": [
-        "CLP"
+        "CLP",
+        "IBCEXPORT",
+        "IBCIMPORT"
       ],
       "unit_denom": "",
       "ibc_counterparty_denom": "",
-      "ibc_counterparty_chain_id": ""
+      "ibc_counterparty_chain_id": "core-1"
     },
     {
       "decimals": "18",
@@ -960,11 +968,13 @@
       "ibc_channel_id": "",
       "ibc_counterparty_channel_id": "",
       "permissions": [
-        "CLP"
+        "CLP",
+        "IBCEXPORT",
+        "IBCIMPORT"
       ],
       "unit_denom": "",
       "ibc_counterparty_denom": "",
-      "ibc_counterparty_chain_id": ""
+      "ibc_counterparty_chain_id": "irishub-1"
     },
     {
       "decimals": "18",
@@ -974,11 +984,13 @@
       "ibc_channel_id": "",
       "ibc_counterparty_channel_id": "",
       "permissions": [
-        "CLP"
+        "CLP",
+        "IBCEXPORT",
+        "IBCIMPORT"
       ],
       "unit_denom": "",
       "ibc_counterparty_denom": "",
-      "ibc_counterparty_chain_id": ""
+      "ibc_counterparty_chain_id": "crypto-org-chain-mainnet-1"
     },
     {
       "decimals": "18",
@@ -988,11 +1000,13 @@
       "ibc_channel_id": "",
       "ibc_counterparty_channel_id": "",
       "permissions": [
-        "CLP"
+        "CLP",
+        "IBCEXPORT",
+        "IBCIMPORT"
       ],
       "unit_denom": "",
       "ibc_counterparty_denom": "",
-      "ibc_counterparty_chain_id": ""
+      "ibc_counterparty_chain_id": "regen-1"
     },
     {
       "decimals": "18",
