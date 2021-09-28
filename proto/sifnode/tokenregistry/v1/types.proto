@@ -43,7 +43,7 @@ enum Permission {
 */
 
 message RegistryEntry {
-  int32 decimals = 1;
+  uint32 decimals = 1;
   string denom = 2;
   string base_denom = 3;
   string unit_denom = 4;
