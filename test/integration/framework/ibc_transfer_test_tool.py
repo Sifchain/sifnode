@@ -1,3 +1,4 @@
+# Draft - not used yet
 # Design document: https://docs.google.com/document/d/1yxxQ3RtftCvCJp_vDlSR5MiXvtOEJxlGXg3GLvf9dls/edit?skip_itp2_check=true
 
 import json
@@ -64,10 +65,15 @@ def start_chain(chain):
 def init_chain(chain):
     pass
 
+# Both hermes and ts-relayer are IBC-compliant relayers.
+# hermes is written in Rust, ts-relayer is written in Typescript.
+# Their core functionality should be similar, but for some reason we might choose one over the other in specific cases.
+# ts-relayer has the ability to act as multiple relayers in one process.
+
 def start_hermes_relayer():
     pass
 
-def start_ibc_relayer():
+def start_ts_relayer():
     pass
 
 def start_relayer(chain_a, chain_b, config, channel_id, counterchannel_id):
