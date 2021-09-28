@@ -1,6 +1,8 @@
 package ante
 
 import (
+	"strings"
+
 	disptypes "github.com/Sifchain/sifnode/x/dispensation/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
@@ -11,7 +13,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-func NewAnteHandler(ak authkeeper.AccountKeeper, bk bankkeeper.Keeper, gasConsumer ante.SignatureVerificationGasConsumer, signModeHandler signing.SignModeHandler) sdk.AnteHandler {
+func NewAnteHandler(ak authkeeper.AccountKeeper, bk bankkeeper.Keeper, fk ante.FeegrantKeeper, gasConsumer ante.SignatureVerificationGasConsumer, signModeHandler signing.SignModeHandler) sdk.AnteHandler {
 	return sdk.ChainAnteDecorators(
 		ante.NewSetUpContextDecorator(), // outermost AnteDecorator. SetUpContext must be called first
 		NewReduceGasPriceDecorator(),    // Custom decorator to reduce gas price for specific msg types
@@ -21,10 +23,9 @@ func NewAnteHandler(ak authkeeper.AccountKeeper, bk bankkeeper.Keeper, gasConsum
 		ante.TxTimeoutHeightDecorator{},
 		ante.NewValidateMemoDecorator(ak),
 		ante.NewConsumeGasForTxSizeDecorator(ak),
-		ante.NewRejectFeeGranterDecorator(),
 		ante.NewSetPubKeyDecorator(ak), // SetPubKeyDecorator must be called before all signature verification decorators
 		ante.NewValidateSigCountDecorator(ak),
-		ante.NewDeductFeeDecorator(ak, bk),
+		ante.NewDeductFeeDecorator(ak, bk, fk),
 		ante.NewSigGasConsumeDecorator(ak, gasConsumer),
 		ante.NewSigVerificationDecorator(ak, signModeHandler),
 		ante.NewIncrementSequenceDecorator(ak),
@@ -46,7 +47,9 @@ func (r ReduceGasPriceDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate
 
 	var found bool
 	for i := range msgs {
-		if msgs[i].Type() == disptypes.MsgTypeCreateDistribution || msgs[i].Type() == disptypes.MsgTypeRunDistribution {
+		msgTypeURLLower := strings.ToLower(sdk.MsgTypeURL(msgs[i]))
+		if strings.Contains(msgTypeURLLower, strings.ToLower(disptypes.MsgTypeCreateDistribution)) ||
+			strings.Contains(msgTypeURLLower, strings.ToLower(disptypes.MsgTypeRunDistribution)) {
 			found = true
 		}
 	}

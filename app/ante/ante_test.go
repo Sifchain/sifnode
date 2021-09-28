@@ -18,7 +18,7 @@ func TestReduceGasPriceDecorator_AnteHandle(t *testing.T) {
 	app := sifapp.Setup(false)
 	ctx := app.BaseApp.NewContext(false, tmproto.Header{})
 	app.AccountKeeper.SetParams(ctx, authtypes.DefaultParams())
-	initTokens := sdk.TokensFromConsensusPower(1000)
+	initTokens := sdk.TokensFromConsensusPower(1000, sdk.DefaultPowerReduction)
 	addrs := sifapp.AddTestAddrs(app, ctx, 6, initTokens)
 
 	decorator := ante.ReduceGasPriceDecorator{}
