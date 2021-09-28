@@ -130,7 +130,7 @@ export class SifnodedRunner extends ShellCommand<SifnodedResults> {
       `${sifnodedCommand} set-gen-denom-whitelist ${this.whitelistFile} --home ${homeDir}`,
       { encoding: "utf8" }
     ).trim()
-    let sifnodedDaemonCmd = `${sifnodedCommand} start --minimum-gas-prices 0.5rowan --rpc.laddr tcp://0.0.0.0:26657 --home ${homeDir}`;
+    let sifnodedDaemonCmd = `${sifnodedCommand} start --log_format json --minimum-gas-prices 0.5rowan --rpc.laddr tcp://0.0.0.0:26657 --home ${homeDir}`;
     const sifnoded = ChildProcess.spawn(
       sifnodedDaemonCmd,
       { shell: true, stdio: "inherit" }
