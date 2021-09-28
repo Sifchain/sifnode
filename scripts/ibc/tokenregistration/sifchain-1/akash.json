@@ -1,0 +1,27 @@
+{
+  "entries": [
+    {
+      "is_whitelisted": true,
+      "decimals": "6",
+      "denom": "ibc/6D717BFF5537D129035BAB39F593D638BA258A9F8D86FB7ECCEAB05B6950CC3E",
+      "base_denom": "uakt",
+      "path": "transfer/channel-2",
+      "ibc_channel_id": "channel-2",
+      "ibc_counterparty_channel_id": "channel-24",
+      "display_name": "UAKT",
+      "display_symbol": "",
+      "network": "",
+      "address": "",
+      "external_symbol": "uakt",
+      "transfer_limit": "",
+      "permissions": [
+        "CLP",
+        "IBCEXPORT",
+        "IBCIMPORT"
+      ],
+      "unit_denom": "",
+      "ibc_counterparty_denom": "",
+      "ibc_counterparty_chain_id": "akashnet-2"
+    }
+  ]
+}

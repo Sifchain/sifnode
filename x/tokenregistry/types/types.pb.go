@@ -165,9 +165,25 @@ type RegistryEntry struct {
 	ExternalSymbol           string       `protobuf:"bytes,12,opt,name=external_symbol,json=externalSymbol,proto3" json:"external_symbol,omitempty"`
 	TransferLimit            string       `protobuf:"bytes,13,opt,name=transfer_limit,json=transferLimit,proto3" json:"transfer_limit,omitempty"`
 	Permissions              []Permission `protobuf:"varint,15,rep,packed,name=permissions,proto3,enum=sifnode.tokenregistry.v1.Permission" json:"permissions,omitempty"`
-	UnitDenom                string       `protobuf:"bytes,16,opt,name=unit_denom,json=unitDenom,proto3" json:"unit_denom,omitempty"`
-	IbcCounterpartyDenom     string       `protobuf:"bytes,17,opt,name=ibc_counterparty_denom,json=ibcCounterpartyDenom,proto3" json:"ibc_counterparty_denom,omitempty"`
-	IbcCounterpartyChainId   string       `protobuf:"bytes,18,opt,name=ibc_counterparty_chain_id,json=ibcCounterpartyChainId,proto3" json:"ibc_counterparty_chain_id,omitempty"`
+	// The name of denomination unit of this token that is the smallest unit stored.
+	// IBC imports of this RegistryEntry convert and store funds as unit_denom.
+	// Several different denom units of a token may be imported into this same unit denom,
+	// they should all be stored under the same unit_denom if they are the same token.
+	// When exporting a RegistryEntry where unit_denom != denom,
+	// then unit_denom can, in future, be used to indicate the source of funds for a denom unit that does not actually
+	// exist on chain, enabling other chains to overcome the uint64 limit on the packet level and import large amounts
+	// of high precision tokens easily.
+	// ie. microrowan -> rowan
+	// i.e rowan -> rowan
+	UnitDenom string `protobuf:"bytes,16,opt,name=unit_denom,json=unitDenom,proto3" json:"unit_denom,omitempty"`
+	// The name of denomination unit of this token that should appear on counterparty chain when this unit is exported.
+	// If empty, the denom is exported as is.
+	// Generally this will only be used to map a high precision (unit_denom) to a lower precision,
+	// to overcome the current uint64 limit on the packet level.
+	// i.e rowan -> microrowan
+	// i.e microrowan -> microrowan
+	IbcCounterpartyDenom   string `protobuf:"bytes,17,opt,name=ibc_counterparty_denom,json=ibcCounterpartyDenom,proto3" json:"ibc_counterparty_denom,omitempty"`
+	IbcCounterpartyChainId string `protobuf:"bytes,18,opt,name=ibc_counterparty_chain_id,json=ibcCounterpartyChainId,proto3" json:"ibc_counterparty_chain_id,omitempty"`
 }
 
 func (m *RegistryEntry) Reset()         { *m = RegistryEntry{} }

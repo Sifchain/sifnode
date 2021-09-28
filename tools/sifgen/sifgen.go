@@ -6,12 +6,11 @@ import (
 	"log"
 
 	"github.com/MakeNowJust/heredoc"
+
 	"github.com/Sifchain/sifnode/tools/sifgen/key"
 	"github.com/Sifchain/sifnode/tools/sifgen/network"
 	"github.com/Sifchain/sifnode/tools/sifgen/node"
 	"github.com/Sifchain/sifnode/tools/sifgen/utils"
-
-	"github.com/cosmos/cosmos-sdk/crypto/keyring"
 )
 
 type Sifgen struct {
@@ -51,10 +50,10 @@ func (s Sifgen) NetworkReset(networkDir string) {
 	}
 }
 
-func (s Sifgen) NewNode() *node.Node {
+func (s Sifgen) NewNode(keyringBackend string) *node.Node {
 	return &node.Node{
 		ChainID: *s.chainID,
-		CLI:     utils.NewCLI(*s.chainID, keyring.BackendFile),
+		CLI:     utils.NewCLI(*s.chainID, keyringBackend),
 	}
 }
 
