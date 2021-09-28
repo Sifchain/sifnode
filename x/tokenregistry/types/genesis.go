@@ -16,7 +16,6 @@ func UnmarshalGenesis(marshaler codec.JSONMarshaler, state json.RawMessage) Gene
 			panic(fmt.Sprintf("Failed to get genesis state from app state: %s", err.Error()))
 		}
 	}
-
 	return genesisState
 }
 
@@ -102,12 +101,10 @@ func InitialRegistry() Registry {
 			{Denom: "ckeep", Decimals: 18, Permissions: []Permission{Permission_CLP}},
 		},
 	}
-
 	for i := range entries.Entries {
 		if !strings.HasPrefix(entries.Entries[i].Denom, "ibc/") {
 			entries.Entries[i].BaseDenom = entries.Entries[i].Denom
 		}
 	}
-
 	return entries
 }

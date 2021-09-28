@@ -20,12 +20,10 @@ func GetQueryCmd() *cobra.Command {
 		SuggestionsMinimumDistance: 2,
 		RunE:                       client.ValidateCmd,
 	}
-
 	cmd.AddCommand(
 		GetCmdQueryEntries(),
 		GetCmdGenerateEntry(),
 	)
-
 	return cmd
 }
 
@@ -39,19 +37,15 @@ func GetCmdQueryEntries() *cobra.Command {
 			if err != nil {
 				return err
 			}
-
 			queryClient := types.NewQueryClient(clientCtx)
 			res, err := queryClient.Entries(context.Background(), &types.QueryEntriesRequest{})
 			if err != nil {
 				return err
 			}
-
 			return clientCtx.PrintBytes(clientCtx.JSONMarshaler.MustMarshalJSON(res.Registry))
 		},
 	}
-
 	flags.AddQueryFlagsToCmd(cmd)
-
 	return cmd
 }
 
@@ -76,7 +70,7 @@ func GetCmdGenerateEntry() *cobra.Command {
 				return err
 			}
 			flags := cmd.Flags()
-			decimals, err := flags.GetInt(flagDecimals)
+			decimals, err := flags.GetUint32(flagDecimals)
 			if err != nil {
 				return err
 			}
@@ -156,7 +150,7 @@ func GetCmdGenerateEntry() *cobra.Command {
 				denom = baseDenom
 			}
 			entry := types.RegistryEntry{
-				Decimals:                 int32(decimals),
+				Decimals:                 decimals,
 				Denom:                    denom,
 				BaseDenom:                baseDenom,
 				IbcTransferPort:          ibcTransferPort,
