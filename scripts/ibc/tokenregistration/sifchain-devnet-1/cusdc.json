@@ -1,0 +1,16 @@
+{
+  "entries": [
+    {
+      "decimals": "6",
+      "denom": "cusdc",
+      "base_denom": "cusdc",
+      "ibc_transfer_port": "",
+      "ibc_channel_id": "",
+      "ibc_counterparty_channel_id": "",
+      "permissions": ["CLP", "IBCEXPORT", "IBCIMPORT"],
+      "unit_denom": "",
+      "ibc_counterparty_denom": "",
+      "ibc_counterparty_chain_id": ""
+    }
+  ]
+}

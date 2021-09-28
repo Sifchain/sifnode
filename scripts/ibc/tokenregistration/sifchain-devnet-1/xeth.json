@@ -1,0 +1,16 @@
+{
+  "entries": [
+    {
+      "decimals": "10",
+      "denom": "xeth",
+      "base_denom": "xeth",
+      "ibc_transfer_port": "",
+      "ibc_channel_id": "",
+      "ibc_counterparty_channel_id": "",
+      "permissions": ["IBCIMPORT"],
+      "unit_denom": "ceth",
+      "ibc_counterparty_denom": "",
+      "ibc_counterparty_chain_id": ""
+    }
+  ]
+}

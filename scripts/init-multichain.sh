@@ -8,13 +8,6 @@ rm -rf ~/.sifnode-3
 make clean install
 sifnoded init test --chain-id=localnet-1 -o --home ~/.sifnode-1
 
-#sifnoded config output json
-#sifnoded config indent true
-#sifnoded config trust-node true
-#sifnoded config chain-id localnet-1
-
-#sifnoded config keyring-backend test
-
 echo "Generating deterministic account - sif"
 echo "race draft rival universe maid cheese steel logic crowd fork comic easy truth drift tomorrow eye buddy head time cash swing swift midnight borrow" | sifnoded keys add sif --recover --keyring-backend=test --home ~/.sifnode-1
 
