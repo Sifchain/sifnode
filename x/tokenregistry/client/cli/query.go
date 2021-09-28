@@ -6,7 +6,7 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
-	transfertypes "github.com/cosmos/cosmos-sdk/x/ibc/applications/transfer/types"
+	transfertypes "github.com/cosmos/ibc-go/modules/apps/transfer/types"
 	"github.com/spf13/cobra"
 
 	"github.com/Sifchain/sifnode/x/tokenregistry/types"
@@ -20,12 +20,10 @@ func GetQueryCmd() *cobra.Command {
 		SuggestionsMinimumDistance: 2,
 		RunE:                       client.ValidateCmd,
 	}
-
 	cmd.AddCommand(
 		GetCmdQueryEntries(),
 		GetCmdGenerateEntry(),
 	)
-
 	return cmd
 }
 
@@ -39,19 +37,15 @@ func GetCmdQueryEntries() *cobra.Command {
 			if err != nil {
 				return err
 			}
-
 			queryClient := types.NewQueryClient(clientCtx)
 			res, err := queryClient.Entries(context.Background(), &types.QueryEntriesRequest{})
 			if err != nil {
 				return err
 			}
-
-			return clientCtx.PrintBytes(clientCtx.JSONMarshaler.MustMarshalJSON(res.Registry))
+			return clientCtx.PrintBytes(clientCtx.Codec.MustMarshalJSON(res.Registry))
 		},
 	}
-
 	flags.AddQueryFlagsToCmd(cmd)
-
 	return cmd
 }
 
