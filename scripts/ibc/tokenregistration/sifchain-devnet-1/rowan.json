@@ -1,1 +1,16 @@
-{"entries":[{"is_whitelisted":true,"decimals":"18","denom":"rowan","base_denom":"rowan","path":"","ibc_channel_id":"","ibc_counterparty_channel_id":"","display_name":"Rowan","display_symbol":"","network":"","address":"","external_symbol":"eRowan","transfer_limit":"","permissions":["CLP","IBCEXPORT","IBCIMPORT"],"unit_denom":"rowan","ibc_counterparty_denom":"xrowan","ibc_counterparty_chain_id":""}]}
+{
+  "entries": [
+    {
+      "decimals": "18",
+      "denom": "rowan",
+      "base_denom": "rowan",
+      "ibc_transfer_port": "",
+      "ibc_channel_id": "",
+      "ibc_counterparty_channel_id": "",
+      "permissions": ["CLP", "IBCEXPORT", "IBCIMPORT"],
+      "unit_denom": "rowan",
+      "ibc_counterparty_denom": "xrowan",
+      "ibc_counterparty_chain_id": ""
+    }
+  ]
+}
