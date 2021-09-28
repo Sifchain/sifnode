@@ -124,14 +124,11 @@ $ %s migrate v0.9 /path/to/genesis.json
 func Migrate(appState types.AppMap, clientCtx client.Context) types.AppMap {
 	v039Codec := codec.NewLegacyAmino()
 	v039ethbridge.RegisterLegacyAminoCodec(v039Codec)
-
-	v040Codec := clientCtx.JSONMarshaler
-
+	v040Codec := clientCtx.JSONCodec
 	// CLP
 	if appState[v039clp.ModuleName] != nil {
 		var genesis v039clp.GenesisState
 		v039Codec.MustUnmarshalJSON(appState[v039clp.ModuleName], &genesis)
-
 		newGenesis := v042clp.Migrate(genesis)
 		appState[clptypes.ModuleName] = v040Codec.MustMarshalJSON(&newGenesis)
 	}
@@ -139,7 +136,6 @@ func Migrate(appState types.AppMap, clientCtx client.Context) types.AppMap {
 	if appState[v039ethbridge.ModuleName] != nil {
 		var ethbridgeGenesis v039ethbridge.GenesisState
 		v039Codec.MustUnmarshalJSON(appState[v039ethbridge.ModuleName], &ethbridgeGenesis)
-
 		newGenesis := v042ethbridge.Migrate(ethbridgeGenesis)
 		appState[ethbridgetypes.ModuleName] = v040Codec.MustMarshalJSON(newGenesis)
 	}
@@ -147,7 +143,6 @@ func Migrate(appState types.AppMap, clientCtx client.Context) types.AppMap {
 	if appState[v039oracle.ModuleName] != nil {
 		var genesis v039oracle.GenesisState
 		v039Codec.MustUnmarshalJSON(appState[v039oracle.ModuleName], &genesis)
-
 		newGenesis := v042oracle.Migrate(genesis)
 		appState[oracletypes.ModuleName] = v040Codec.MustMarshalJSON(newGenesis)
 	}
@@ -155,7 +150,6 @@ func Migrate(appState types.AppMap, clientCtx client.Context) types.AppMap {
 	if appState[v039dispensation.ModuleName] != nil {
 		var genesis v039dispensation.GenesisState
 		v039Codec.MustUnmarshalJSON(appState[v039dispensation.ModuleName], &genesis)
-
 		newGenesis := v042dispensation.Migrate(genesis)
 		appState[dispensationtypes.ModuleName] = v040Codec.MustMarshalJSON(newGenesis)
 	}
@@ -163,6 +157,5 @@ func Migrate(appState types.AppMap, clientCtx client.Context) types.AppMap {
 	if appState[evidencetypes.ModuleName] == nil {
 		appState[evidencetypes.ModuleName] = v040Codec.MustMarshalJSON(evidencetypes.DefaultGenesisState())
 	}
-
 	return appState
 }

@@ -2,15 +2,16 @@ package main
 
 import (
 	"fmt"
-	"github.com/Sifchain/sifnode/cmd/ebrelayer/internal/symbol_translator"
-	"github.com/Sifchain/sifnode/cmd/ebrelayer/txs"
-	ebrelayertypes "github.com/Sifchain/sifnode/cmd/ebrelayer/types"
-	flag "github.com/spf13/pflag"
 	"log"
 	"net/url"
 	"os"
 	"strings"
 	"sync"
+
+	"github.com/Sifchain/sifnode/cmd/ebrelayer/internal/symbol_translator"
+	"github.com/Sifchain/sifnode/cmd/ebrelayer/txs"
+	ebrelayertypes "github.com/Sifchain/sifnode/cmd/ebrelayer/types"
+	flag "github.com/spf13/pflag"
 
 	sifapp "github.com/Sifchain/sifnode/app"
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/contract"
@@ -21,7 +22,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/client/tx"
 	"github.com/cosmos/cosmos-sdk/server"
 	svrcmd "github.com/cosmos/cosmos-sdk/server/cmd"
-	authclient "github.com/cosmos/cosmos-sdk/x/auth/client"
 	"github.com/cosmos/cosmos-sdk/x/auth/types"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/pkg/errors"
@@ -34,9 +34,8 @@ func buildRootCmd() *cobra.Command {
 	// see cmd/sifnoded/cmd/root.go:37 ; we need to do the
 	// same thing in ebrelayer
 	encodingConfig := sifapp.MakeTestEncodingConfig()
-	authclient.Codec = encodingConfig.Marshaler
 	initClientCtx := client.Context{}.
-		WithJSONMarshaler(encodingConfig.Marshaler).
+		WithJSONCodec(encodingConfig.Marshaler).
 		WithInterfaceRegistry(encodingConfig.InterfaceRegistry).
 		WithTxConfig(encodingConfig.TxConfig).
 		WithLegacyAmino(encodingConfig.Amino).
@@ -45,13 +44,6 @@ func buildRootCmd() *cobra.Command {
 		WithBroadcastMode(flags.BroadcastBlock).
 		WithHomeDir(sifapp.DefaultNodeHome)
 
-	// Read in the configuration file for the sdk
-	// config := sdk.GetConfig()
-	// config.SetBech32PrefixForAccount(sdk.Bech32PrefixAccAddr, sdk.Bech32PrefixAccPub)
-	// config.SetBech32PrefixForValidator(sdk.Bech32PrefixValAddr, sdk.Bech32PrefixValPub)
-	// config.SetBech32PrefixForConsensusNode(sdk.Bech32PrefixConsAddr, sdk.Bech32PrefixConsPub)
-	// config.Seal()
-
 	rootCmd := &cobra.Command{
 		Use:   "ebrelayer",
 		Short: "Streams live events from Ethereum and Cosmos and relays event information to the opposite chain",
@@ -59,12 +51,10 @@ func buildRootCmd() *cobra.Command {
 			if err := cmd.Flags().Set(flags.FlagSkipConfirmation, "true"); err != nil {
 				return err
 			}
-
 			if err := client.SetCmdClientContextHandler(initClientCtx, cmd); err != nil {
 				return err
 			}
-
-			return server.InterceptConfigsPreRunHandler(cmd)
+			return server.InterceptConfigsPreRunHandler(cmd, "", nil)
 		},
 	}
 

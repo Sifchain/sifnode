@@ -155,7 +155,7 @@ func bindCosmosBridge(address common.Address, caller bind.ContractCaller, transa
 // returns, a slice of interfaces for anonymous returns and a struct for named
 // returns.
 func (_CosmosBridge *CosmosBridgeRaw) Call(opts *bind.CallOpts, result interface{}, method string, params ...interface{}) error {
-	return _CosmosBridge.Contract.CosmosBridgeCaller.contract.Call(opts, result, method, params...)
+	return _CosmosBridge.Contract.CosmosBridgeCaller.contract.Call(opts, &[]interface{}{result}, method, params...)
 }
 
 // Transfer initiates a plain transaction to move funds to the contract, calling
@@ -174,7 +174,7 @@ func (_CosmosBridge *CosmosBridgeRaw) Transact(opts *bind.TransactOpts, method s
 // returns, a slice of interfaces for anonymous returns and a struct for named
 // returns.
 func (_CosmosBridge *CosmosBridgeCallerRaw) Call(opts *bind.CallOpts, result interface{}, method string, params ...interface{}) error {
-	return _CosmosBridge.Contract.contract.Call(opts, result, method, params...)
+	return _CosmosBridge.Contract.contract.Call(opts, &[]interface{}{result}, method, params...)
 }
 
 // Transfer initiates a plain transaction to move funds to the contract, calling
@@ -196,7 +196,7 @@ func (_CosmosBridge *CosmosBridgeCaller) BridgeBank(opts *bind.CallOpts) (common
 		ret0 = new(common.Address)
 	)
 	out := ret0
-	err := _CosmosBridge.contract.Call(opts, out, "bridgeBank")
+	err := _CosmosBridge.contract.Call(opts, &[]interface{}{out}, "bridgeBank")
 	return *ret0, err
 }
 
@@ -222,7 +222,7 @@ func (_CosmosBridge *CosmosBridgeCaller) HasBridgeBank(opts *bind.CallOpts) (boo
 		ret0 = new(bool)
 	)
 	out := ret0
-	err := _CosmosBridge.contract.Call(opts, out, "hasBridgeBank")
+	err := _CosmosBridge.contract.Call(opts, &[]interface{}{out}, "hasBridgeBank")
 	return *ret0, err
 }
 
@@ -248,7 +248,7 @@ func (_CosmosBridge *CosmosBridgeCaller) HasOracle(opts *bind.CallOpts) (bool, e
 		ret0 = new(bool)
 	)
 	out := ret0
-	err := _CosmosBridge.contract.Call(opts, out, "hasOracle")
+	err := _CosmosBridge.contract.Call(opts, &[]interface{}{out}, "hasOracle")
 	return *ret0, err
 }
 
@@ -274,7 +274,7 @@ func (_CosmosBridge *CosmosBridgeCaller) IsProphecyClaimActive(opts *bind.CallOp
 		ret0 = new(bool)
 	)
 	out := ret0
-	err := _CosmosBridge.contract.Call(opts, out, "isProphecyClaimActive", _prophecyID)
+	err := _CosmosBridge.contract.Call(opts, &[]interface{}{out}, "isProphecyClaimActive", _prophecyID)
 	return *ret0, err
 }
 
@@ -300,7 +300,7 @@ func (_CosmosBridge *CosmosBridgeCaller) IsProphecyClaimValidatorActive(opts *bi
 		ret0 = new(bool)
 	)
 	out := ret0
-	err := _CosmosBridge.contract.Call(opts, out, "isProphecyClaimValidatorActive", _prophecyID)
+	err := _CosmosBridge.contract.Call(opts, &[]interface{}{out}, "isProphecyClaimValidatorActive", _prophecyID)
 	return *ret0, err
 }
 
@@ -326,7 +326,7 @@ func (_CosmosBridge *CosmosBridgeCaller) Operator(opts *bind.CallOpts) (common.A
 		ret0 = new(common.Address)
 	)
 	out := ret0
-	err := _CosmosBridge.contract.Call(opts, out, "operator")
+	err := _CosmosBridge.contract.Call(opts, &[]interface{}{out}, "operator")
 	return *ret0, err
 }
 
@@ -352,7 +352,7 @@ func (_CosmosBridge *CosmosBridgeCaller) Oracle(opts *bind.CallOpts) (common.Add
 		ret0 = new(common.Address)
 	)
 	out := ret0
-	err := _CosmosBridge.contract.Call(opts, out, "oracle")
+	err := _CosmosBridge.contract.Call(opts, &[]interface{}{out}, "oracle")
 	return *ret0, err
 }
 
@@ -378,7 +378,7 @@ func (_CosmosBridge *CosmosBridgeCaller) ProphecyClaimCount(opts *bind.CallOpts)
 		ret0 = new(*big.Int)
 	)
 	out := ret0
-	err := _CosmosBridge.contract.Call(opts, out, "prophecyClaimCount")
+	err := _CosmosBridge.contract.Call(opts, &[]interface{}{out}, "prophecyClaimCount")
 	return *ret0, err
 }
 
@@ -420,7 +420,7 @@ func (_CosmosBridge *CosmosBridgeCaller) ProphecyClaims(opts *bind.CallOpts, arg
 		Status            uint8
 	})
 	out := ret
-	err := _CosmosBridge.contract.Call(opts, out, "prophecyClaims", arg0)
+	err := _CosmosBridge.contract.Call(opts, &[]interface{}{out}, "prophecyClaims", arg0)
 	return *ret, err
 }
 
@@ -464,7 +464,7 @@ func (_CosmosBridge *CosmosBridgeCaller) UsedNonce(opts *bind.CallOpts, arg0 *bi
 		ret0 = new(bool)
 	)
 	out := ret0
-	err := _CosmosBridge.contract.Call(opts, out, "usedNonce", arg0)
+	err := _CosmosBridge.contract.Call(opts, &[]interface{}{out}, "usedNonce", arg0)
 	return *ret0, err
 }
 
@@ -490,7 +490,7 @@ func (_CosmosBridge *CosmosBridgeCaller) Valset(opts *bind.CallOpts) (common.Add
 		ret0 = new(common.Address)
 	)
 	out := ret0
-	err := _CosmosBridge.contract.Call(opts, out, "valset")
+	err := _CosmosBridge.contract.Call(opts, &[]interface{}{out}, "valset")
 	return *ret0, err
 }
 
