@@ -335,6 +335,11 @@ func (k Keeper) AddTokenMetadata(ctx sdk.Context, metadata tokenregistrytypes.To
 	return k.tokenRegistryKeeper.AddTokenMetadata(ctx, metadata)
 }
 
+// GetWitnessLockBurnNonce return witness lock burn nonce from oracle keeper
+func (k Keeper) GetWitnessLockBurnNonce(ctx sdk.Context, networkDescriptor oracletypes.NetworkDescriptor, valAccount sdk.ValAddress) uint64 {
+	return k.oracleKeeper.GetWitnessLockBurnNonce(ctx, networkDescriptor, valAccount)
+}
+
 // Exists chec if the key existed in db.
 func (k Keeper) Exists(ctx sdk.Context, key []byte) bool {
 	store := ctx.KVStore(k.storeKey)
