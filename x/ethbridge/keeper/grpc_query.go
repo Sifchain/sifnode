@@ -52,7 +52,7 @@ func (srv queryServer) CrosschainFeeConfig(ctx context.Context, req *types.Query
 	return &res, nil
 }
 
-func (srv queryServer) LockBurnNonce(ctx context.Context, req *types.QueryLockBurnNonceRequest) (*types.QueryLockBurnNonceResponse, error) {
+func (srv queryServer) EthereumLockBurnNonce(ctx context.Context, req *types.QueryEthereumLockBurnNonceRequest) (*types.QueryEthereumLockBurnNonceResponse, error) {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 
 	networkDescriptor := req.GetNetworkDescriptor()
@@ -66,7 +66,26 @@ func (srv queryServer) LockBurnNonce(ctx context.Context, req *types.QueryLockBu
 
 	lockBurnNonce := srv.Keeper.GetEthereumLockBurnNonce(sdkCtx, networkDescriptor, address)
 
-	res := types.NewLockBurnNonceResponse(lockBurnNonce)
+	res := types.NewEthereumLockBurnNonceResponse(lockBurnNonce)
+
+	return &res, nil
+}
+
+func (srv queryServer) WitnessLockBurnNonce(ctx context.Context, req *types.QueryWitnessLockBurnNonceRequest) (*types.QueryWitnessLockBurnNonceResponse, error) {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+
+	networkDescriptor := req.GetNetworkDescriptor()
+	relayerValAddress := req.RelayerValAddress
+
+	address, err := sdk.ValAddressFromBech32(relayerValAddress)
+
+	if err != nil {
+		return nil, err
+	}
+
+	lockBurnNonce := srv.Keeper.GetEthereumLockBurnNonce(sdkCtx, networkDescriptor, address)
+
+	res := types.NewWitnessLockBurnNonceResponse(lockBurnNonce)
 
 	return &res, nil
 }
