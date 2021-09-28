@@ -230,6 +230,7 @@ func (k Keeper) ProcessSignProphecy(ctx sdk.Context, networkDescriptor types.Net
 	k.SetWitnessLockBurnNonce(ctx, networkDescriptor, valAddr, prophecyInfo.GlobalNonce)
 
 	// emit the event when status from pending to success
+	// TODO - what happens here if we don't match StatusText_STATUS_TEXT_PENDING and StatusText_STATUS_TEXT_SUCCESS?
 	if oldStatus == types.StatusText_STATUS_TEXT_PENDING && newStatus == types.StatusText_STATUS_TEXT_SUCCESS {
 		ctx.EventManager().EmitEvents(sdk.Events{
 
