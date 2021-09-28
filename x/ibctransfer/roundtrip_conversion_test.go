@@ -8,7 +8,7 @@ import (
 	"github.com/Sifchain/sifnode/x/ibctransfer/helpers"
 	tokenregistrytypes "github.com/Sifchain/sifnode/x/tokenregistry/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	transfertypes "github.com/cosmos/cosmos-sdk/x/ibc/applications/transfer/types"
+	transfertypes "github.com/cosmos/ibc-go/modules/apps/transfer/types"
 	"github.com/stretchr/testify/require"
 )
 

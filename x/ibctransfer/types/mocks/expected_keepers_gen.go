@@ -9,8 +9,8 @@ import (
 	reflect "reflect"
 
 	types "github.com/cosmos/cosmos-sdk/types"
-	types0 "github.com/cosmos/cosmos-sdk/x/ibc/applications/transfer/types"
-	types1 "github.com/cosmos/cosmos-sdk/x/ibc/core/04-channel/types"
+	types0 "github.com/cosmos/ibc-go/modules/apps/transfer/types"
+	types1 "github.com/cosmos/ibc-go/modules/core/04-channel/types"
 	gomock "github.com/golang/mock/gomock"
 )
 

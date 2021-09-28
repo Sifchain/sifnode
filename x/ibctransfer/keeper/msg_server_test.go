@@ -5,6 +5,7 @@ import (
 	"math"
 	"testing"
 
+	sifapp "github.com/Sifchain/sifnode/app"
 	"github.com/Sifchain/sifnode/x/ethbridge/test"
 	"github.com/Sifchain/sifnode/x/ibctransfer/helpers"
 	"github.com/Sifchain/sifnode/x/ibctransfer/keeper"
@@ -13,8 +14,8 @@ import (
 	tokenregistrytest "github.com/Sifchain/sifnode/x/tokenregistry/test"
 	tokenregistrytypes "github.com/Sifchain/sifnode/x/tokenregistry/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	sdktransfertypes "github.com/cosmos/cosmos-sdk/x/ibc/applications/transfer/types"
-	clienttypes "github.com/cosmos/cosmos-sdk/x/ibc/core/02-client/types"
+	sdktransfertypes "github.com/cosmos/ibc-go/modules/apps/transfer/types"
+	clienttypes "github.com/cosmos/ibc-go/modules/core/02-client/types"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/require"
 )
@@ -77,7 +78,7 @@ func TestMsgServer_Transfer(t *testing.T) {
 				"transfer",
 				"channel-0",
 				sdk.NewCoin("rowan", rowanAmount),
-				addrs[0],
+				addrs[0].String(),
 				addrs[1].String(),
 				clienttypes.NewHeight(0, 0),
 				0,
@@ -107,7 +108,7 @@ func TestMsgServer_Transfer(t *testing.T) {
 				"transfer",
 				"channel-0",
 				sdk.NewCoin("rowan", rowanSmallest),
-				addrs[0],
+				addrs[0].String(),
 				addrs[1].String(),
 				clienttypes.NewHeight(0, 0),
 				0,
@@ -138,7 +139,7 @@ func TestMsgServer_Transfer(t *testing.T) {
 				"transfer",
 				"channel-0",
 				sdk.NewCoin("rowan", rowanTooSmall),
-				addrs[0],
+				addrs[0].String(),
 				addrs[1].String(),
 				clienttypes.NewHeight(0, 0),
 				0,
@@ -155,7 +156,7 @@ func TestMsgServer_Transfer(t *testing.T) {
 				"transfer",
 				"channel-0",
 				sdk.NewCoin("ceth", sdk.NewInt(1)),
-				addrs[0],
+				addrs[0].String(),
 				addrs[1].String(),
 				clienttypes.NewHeight(0, 0),
 				0,
@@ -172,7 +173,7 @@ func TestMsgServer_Transfer(t *testing.T) {
 				"transfer",
 				"channel-0",
 				sdk.NewCoin("caave", sdk.NewInt(1)),
-				addrs[0],
+				addrs[0].String(),
 				addrs[1].String(),
 				clienttypes.NewHeight(0, 0),
 				0,
@@ -189,7 +190,7 @@ func TestMsgServer_Transfer(t *testing.T) {
 				"transfer",
 				"channel-0",
 				sdk.NewCoin("xrowan", sdk.NewInt(1)),
-				addrs[0],
+				addrs[0].String(),
 				addrs[1].String(),
 				clienttypes.NewHeight(0, 0),
 				0,
@@ -206,7 +207,7 @@ func TestMsgServer_Transfer(t *testing.T) {
 				"transfer",
 				"channel-0",
 				sdk.NewCoin("misconfigured", packetOverflowAmount),
-				addrs[0],
+				addrs[0].String(),
 				addrs[1].String(),
 				clienttypes.NewHeight(0, 0),
 				0,
@@ -364,7 +365,7 @@ func TestPrepareToSendConvertedCoins(t *testing.T) {
 			initCoins := sdk.NewCoins(tokenDeduction)
 			sender, err := sdk.AccAddressFromBech32(admin)
 			require.NoError(t, err)
-			err = app.BankKeeper.AddCoins(appCtx, sender, initCoins)
+			err = sifapp.AddCoinsToAccount(scibctransfertypes.ModuleName, app.BankKeeper, appCtx, sender, initCoins)
 			require.NoError(t, err)
 			err = helpers.PrepareToSendConvertedCoins(sdk.WrapSDKContext(appCtx), tt.args.msg, tokenDeduction, tokensConverted, app.BankKeeper)
 			require.NoError(t, err)

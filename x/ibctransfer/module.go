@@ -9,12 +9,13 @@ import (
 	"github.com/cosmos/cosmos-sdk/types/module"
 	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 	capabilitytypes "github.com/cosmos/cosmos-sdk/x/capability/types"
-	"github.com/cosmos/cosmos-sdk/x/ibc/applications/transfer"
-	sdktransferkeeper "github.com/cosmos/cosmos-sdk/x/ibc/applications/transfer/keeper"
-	"github.com/cosmos/cosmos-sdk/x/ibc/core/04-channel/types"
-	porttypes "github.com/cosmos/cosmos-sdk/x/ibc/core/05-port/types"
+	"github.com/cosmos/ibc-go/modules/apps/transfer"
+	sdktransferkeeper "github.com/cosmos/ibc-go/modules/apps/transfer/keeper"
+	"github.com/cosmos/ibc-go/modules/core/04-channel/types"
+	porttypes "github.com/cosmos/ibc-go/modules/core/05-port/types"
 
-	sdktransfertypes "github.com/cosmos/cosmos-sdk/x/ibc/applications/transfer/types"
+	sdktransfertypes "github.com/cosmos/ibc-go/modules/apps/transfer/types"
+	"github.com/cosmos/ibc-go/modules/core/exported"
 	"github.com/gorilla/mux"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 	"github.com/spf13/cobra"
@@ -54,12 +55,12 @@ func (am AppModuleBasic) RegisterInterfaces(registry cdctypes.InterfaceRegistry)
 }
 
 // DefaultGenesis returns default genesis state as raw bytes for the module.
-func (am AppModuleBasic) DefaultGenesis(cdc codec.JSONMarshaler) json.RawMessage {
+func (am AppModuleBasic) DefaultGenesis(cdc codec.JSONCodec) json.RawMessage {
 	return am.cosmosAppModule.DefaultGenesis(cdc)
 }
 
 // ValidateGenesis performs genesis state validation for the module.
-func (am AppModuleBasic) ValidateGenesis(cdc codec.JSONMarshaler, config client.TxEncodingConfig, bz json.RawMessage) error {
+func (am AppModuleBasic) ValidateGenesis(cdc codec.JSONCodec, config client.TxEncodingConfig, bz json.RawMessage) error {
 	return am.cosmosAppModule.ValidateGenesis(cdc, config, bz)
 }
 
@@ -92,7 +93,7 @@ type AppModule struct {
 	sdkTransferKeeper sdktransferkeeper.Keeper
 	whitelistKeeper   tokenregistrytypes.Keeper
 	bankKeeper        bankkeeper.Keeper
-	cdc               codec.BinaryMarshaler
+	cdc               codec.BinaryCodec
 }
 
 func (am AppModule) OnChanOpenInit(ctx sdk.Context, order types.Order, connectionHops []string, portID string, channelID string, channelCap *capabilitytypes.Capability, counterparty types.Counterparty, version string) error {
@@ -119,19 +120,19 @@ func (am AppModule) OnChanCloseConfirm(ctx sdk.Context, portID, channelID string
 	return am.cosmosAppModule.OnChanOpenConfirm(ctx, portID, channelID)
 }
 
-func (am AppModule) OnRecvPacket(ctx sdk.Context, packet types.Packet) (*sdk.Result, []byte, error) {
-	return OnRecvPacketWhitelistConvert(ctx, am.sdkTransferKeeper, am.whitelistKeeper, am.bankKeeper, packet)
+func (am AppModule) OnRecvPacket(ctx sdk.Context, packet types.Packet, relayer sdk.AccAddress) exported.Acknowledgement {
+	return OnRecvPacketWhitelistConvert(ctx, am.sdkTransferKeeper, am.whitelistKeeper, am.bankKeeper, packet, relayer)
 }
 
-func (am AppModule) OnAcknowledgementPacket(ctx sdk.Context, packet types.Packet, acknowledgement []byte) (*sdk.Result, error) {
-	return OnAcknowledgementMaybeConvert(ctx, am.sdkTransferKeeper, am.whitelistKeeper, am.bankKeeper, packet, acknowledgement)
+func (am AppModule) OnAcknowledgementPacket(ctx sdk.Context, packet types.Packet, acknowledgement []byte, relayer sdk.AccAddress) (*sdk.Result, error) {
+	return OnAcknowledgementMaybeConvert(ctx, am.sdkTransferKeeper, am.whitelistKeeper, am.bankKeeper, packet, acknowledgement, relayer)
 }
 
-func (am AppModule) OnTimeoutPacket(ctx sdk.Context, packet types.Packet) (*sdk.Result, error) {
-	return OnTimeoutMaybeConvert(ctx, am.sdkTransferKeeper, am.whitelistKeeper, am.bankKeeper, packet)
+func (am AppModule) OnTimeoutPacket(ctx sdk.Context, packet types.Packet, relayer sdk.AccAddress) (*sdk.Result, error) {
+	return OnTimeoutMaybeConvert(ctx, am.sdkTransferKeeper, am.whitelistKeeper, am.bankKeeper, packet, relayer)
 }
 
-func NewAppModule(sdkTransferKeeper sdktransferkeeper.Keeper, whitelistKeeper tokenregistrytypes.Keeper, bankKeeper bankkeeper.Keeper, cdc codec.BinaryMarshaler) AppModule {
+func NewAppModule(sdkTransferKeeper sdktransferkeeper.Keeper, whitelistKeeper tokenregistrytypes.Keeper, bankKeeper bankkeeper.Keeper, cdc codec.BinaryCodec) AppModule {
 	return AppModule{
 		AppModuleBasic: AppModuleBasic{
 			cosmosAppModule: transfer.NewAppModule(sdkTransferKeeper),
@@ -165,7 +166,7 @@ func (am AppModule) RegisterInvariants(ir sdk.InvariantRegistry) {
 
 // Route returns the message routing key for the dispensation module.
 func (am AppModule) Route() sdk.Route {
-	return sdk.NewRoute(sdktransfertypes.RouterKey, transfer.NewHandler(keeper.NewMsgServerImpl(am.sdkTransferKeeper, am.bankKeeper, am.whitelistKeeper)))
+	return sdk.NewRoute(sdktransfertypes.RouterKey, nil)
 }
 
 // QuerierRoute returns the dispensation module's querier route name.
@@ -175,13 +176,13 @@ func (am AppModule) QuerierRoute() string {
 
 // InitGenesis performs genesis initialization for the dispensation module. It returns
 // no validator updates
-func (am AppModule) InitGenesis(ctx sdk.Context, codec codec.JSONMarshaler, data json.RawMessage) []abci.ValidatorUpdate {
+func (am AppModule) InitGenesis(ctx sdk.Context, codec codec.JSONCodec, data json.RawMessage) []abci.ValidatorUpdate {
 	return am.cosmosAppModule.InitGenesis(ctx, codec, data)
 }
 
 // ExportGenesis returns the exported genesis state as raw bytes for the dispensation
 // module.
-func (am AppModule) ExportGenesis(ctx sdk.Context, codec codec.JSONMarshaler) json.RawMessage {
+func (am AppModule) ExportGenesis(ctx sdk.Context, codec codec.JSONCodec) json.RawMessage {
 	return am.cosmosAppModule.ExportGenesis(ctx, codec)
 }
 
@@ -196,4 +197,4 @@ func (am AppModule) EndBlock(ctx sdk.Context, req abci.RequestEndBlock) []abci.V
 	return am.cosmosAppModule.EndBlock(ctx, req)
 }
 
-// OnRecvPacketEnforceWhitelist overrides the default implementation to add whitelisting functionality
+func (AppModule) ConsensusVersion() uint64 { return 1 }

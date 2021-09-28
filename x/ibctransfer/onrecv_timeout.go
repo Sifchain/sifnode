@@ -6,21 +6,12 @@ import (
 	"github.com/Sifchain/sifnode/x/ibctransfer/helpers"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
-	transfertypes "github.com/cosmos/cosmos-sdk/x/ibc/applications/transfer/types"
-	channeltypes "github.com/cosmos/cosmos-sdk/x/ibc/core/04-channel/types"
+	transfertypes "github.com/cosmos/ibc-go/modules/apps/transfer/types"
+	channeltypes "github.com/cosmos/ibc-go/modules/core/04-channel/types"
 
 	sctransfertypes "github.com/Sifchain/sifnode/x/ibctransfer/types"
 	tokenregistrytypes "github.com/Sifchain/sifnode/x/tokenregistry/types"
 )
-
-// OnTimeoutPacket() refunds the sender since the original packet sent was
-// never received and has been timed out.
-//
-// sdkkeeper.refundPacketToken will unescrow and send back the tokens back to sender
-// if the sending chain was the source chain. Otherwise, the sent tokens
-// were burnt in the original send so new tokens are minted and sent to
-// the sending address.
-//
 
 // OnTimeoutMaybeConvert potentially does a conversion from the denom that was sent out,
 // back to the original unit_denom.
@@ -30,6 +21,7 @@ func OnTimeoutMaybeConvert(
 	whitelistKeeper tokenregistrytypes.Keeper,
 	bankKeeper transfertypes.BankKeeper,
 	packet channeltypes.Packet,
+	relayer sdk.AccAddress,
 ) (*sdk.Result, error) {
 	var data transfertypes.FungibleTokenPacketData
 	if err := transfertypes.ModuleCdc.UnmarshalJSON(packet.GetData(), &data); err != nil {

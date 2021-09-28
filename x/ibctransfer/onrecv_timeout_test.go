@@ -4,6 +4,9 @@ import (
 	"context"
 	"testing"
 
+	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/ibc-go/modules/apps/transfer/types"
+
 	sifapp "github.com/Sifchain/sifnode/app"
 	test2 "github.com/Sifchain/sifnode/x/ethbridge/test"
 	"github.com/Sifchain/sifnode/x/ibctransfer"
@@ -11,10 +14,8 @@ import (
 	"github.com/Sifchain/sifnode/x/ibctransfer/keeper/testhelpers"
 	"github.com/Sifchain/sifnode/x/tokenregistry/test"
 	tokenregistrytypes "github.com/Sifchain/sifnode/x/tokenregistry/types"
-	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/cosmos/cosmos-sdk/x/ibc/applications/transfer/types"
-	clienttypes "github.com/cosmos/cosmos-sdk/x/ibc/core/02-client/types"
-	channeltypes "github.com/cosmos/cosmos-sdk/x/ibc/core/04-channel/types"
+	clienttypes "github.com/cosmos/ibc-go/modules/core/02-client/types"
+	channeltypes "github.com/cosmos/ibc-go/modules/core/04-channel/types"
 	"github.com/stretchr/testify/require"
 )
 
@@ -35,7 +36,7 @@ func TestOnTimeoutPacketConvert_Source(t *testing.T) {
 		"transfer",
 		"channel-0",
 		sdk.NewCoin("rowan", sdk.NewInt(123456789123456789)),
-		addrs[0],
+		addrs[0].String(),
 		addrs[1].String(),
 		clienttypes.NewHeight(0, 0),
 		0,
@@ -77,7 +78,7 @@ func TestOnTimeoutPacketConvert_Source(t *testing.T) {
 			initCoins := sdk.NewCoins(tt.args.msg.Token)
 			sender, err := sdk.AccAddressFromBech32(tt.args.msg.Sender)
 			require.NoError(t, err)
-			err = app.BankKeeper.AddCoins(ctx, sender, initCoins)
+			err = sifapp.AddCoinsToAccount(types.ModuleName, app.BankKeeper, ctx, sender, initCoins)
 			require.NoError(t, err)
 			err = helpers.PrepareToSendConvertedCoins(sdk.WrapSDKContext(ctx), tt.args.msg, tokenDeduction, tokensConverted, app.BankKeeper)
 			require.NoError(t, err)
@@ -100,7 +101,7 @@ func TestOnTimeoutPacketConvert_Source(t *testing.T) {
 					Receiver: tt.args.msg.Receiver,
 				}),
 			}
-			_, err = ibctransfer.OnTimeoutMaybeConvert(ctx, app.TransferKeeper, app.TokenRegistryKeeper, app.BankKeeper, packet)
+			_, err = ibctransfer.OnTimeoutMaybeConvert(ctx, app.TransferKeeper, app.TokenRegistryKeeper, app.BankKeeper, packet, nil)
 			require.ErrorIs(t, err, tt.err)
 			require.Equal(t, tt.args.msg.Token.String(), app.BankKeeper.GetBalance(ctx, sender, tt.args.msg.Token.Denom).String())
 		})
@@ -124,7 +125,7 @@ func TestOnTimeoutPacketConvert_Sink(t *testing.T) {
 		"transfer",
 		"channel-0", // Sent from this chain back to source
 		sdk.NewCoin(atomToken.Denom, sdk.NewIntFromUint64(123456789123456789)),
-		addrs[0],
+		addrs[0].String(),
 		addrs[1].String(),
 		clienttypes.NewHeight(0, 0),
 		0,
@@ -190,7 +191,7 @@ func TestOnTimeoutPacketConvert_Sink(t *testing.T) {
 					Receiver: tt.args.msg.Receiver,
 				}),
 			}
-			_, err = ibctransfer.OnTimeoutMaybeConvert(ctx, app.TransferKeeper, app.TokenRegistryKeeper, app.BankKeeper, ackPacket)
+			_, err = ibctransfer.OnTimeoutMaybeConvert(ctx, app.TransferKeeper, app.TokenRegistryKeeper, app.BankKeeper, ackPacket, nil)
 			require.ErrorIs(t, err, tt.err)
 			require.Equal(t, tt.args.msg.Token.String(), app.BankKeeper.GetBalance(ctx, sender, tt.args.msg.Token.Denom).String())
 		})
@@ -217,7 +218,7 @@ func TestOnTimeoutMaybeConvert(t *testing.T) {
 		"transfer",
 		"channel-0",
 		rowan,
-		addrs[0],
+		addrs[0].String(),
 		addrs[1].String(),
 		clienttypes.NewHeight(0, 0),
 		0,
@@ -225,7 +226,7 @@ func TestOnTimeoutMaybeConvert(t *testing.T) {
 	initCoins := sdk.NewCoins(rowan)
 	sender, err := sdk.AccAddressFromBech32(addrs[0].String())
 	require.NoError(t, err)
-	err = app.BankKeeper.AddCoins(ctx, sender, initCoins)
+	err = sifapp.AddCoinsToAccount(types.ModuleName, app.BankKeeper, ctx, sender, initCoins)
 	require.NoError(t, err)
 	tokenDeduction, tokensConverted := helpers.ConvertCoinsForTransfer(msgSourceTransfer, &rowanToken, &xrowanToken)
 	err = helpers.PrepareToSendConvertedCoins(sdk.WrapSDKContext(ctx), msgSourceTransfer, tokenDeduction, tokensConverted, app.BankKeeper)
@@ -244,7 +245,7 @@ func TestOnTimeoutMaybeConvert(t *testing.T) {
 			Receiver: addrs[1].String(),
 		}),
 	}
-	_, err = ibctransfer.OnTimeoutMaybeConvert(ctx, app.TransferKeeper, app.TokenRegistryKeeper, app.BankKeeper, timeoutPacket)
+	_, err = ibctransfer.OnTimeoutMaybeConvert(ctx, app.TransferKeeper, app.TokenRegistryKeeper, app.BankKeeper, timeoutPacket, nil)
 	require.NoError(t, err)
 	require.Equal(t, rowan.String(), app.BankKeeper.GetBalance(ctx, sender, rowan.Denom).String())
 }

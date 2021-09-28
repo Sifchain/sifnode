@@ -4,12 +4,13 @@ import (
 	"fmt"
 
 	"github.com/Sifchain/sifnode/x/ibctransfer/helpers"
-	sctransfertypes "github.com/Sifchain/sifnode/x/ibctransfer/types"
-	tokenregistrytypes "github.com/Sifchain/sifnode/x/tokenregistry/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
-	transfertypes "github.com/cosmos/cosmos-sdk/x/ibc/applications/transfer/types"
-	channeltypes "github.com/cosmos/cosmos-sdk/x/ibc/core/04-channel/types"
+	transfertypes "github.com/cosmos/ibc-go/modules/apps/transfer/types"
+	channeltypes "github.com/cosmos/ibc-go/modules/core/04-channel/types"
+
+	sctransfertypes "github.com/Sifchain/sifnode/x/ibctransfer/types"
+	tokenregistrytypes "github.com/Sifchain/sifnode/x/tokenregistry/types"
 )
 
 func OnRecvPacketWhitelistConvert(
@@ -18,17 +19,17 @@ func OnRecvPacketWhitelistConvert(
 	whitelistKeeper tokenregistrytypes.Keeper,
 	bankKeeper transfertypes.BankKeeper,
 	packet channeltypes.Packet,
-) (*sdk.Result, []byte, error) {
+	relayer sdk.AccAddress,
+) channeltypes.Acknowledgement {
 	var data transfertypes.FungibleTokenPacketData
 	if err := transfertypes.ModuleCdc.UnmarshalJSON(packet.GetData(), &data); err != nil {
-		return nil, nil, sdkerrors.Wrapf(sdkerrors.ErrUnknownRequest, "cannot unmarshal ICS-20 transfer packet data: %s", err.Error())
+		acknowledgement := channeltypes.NewErrorAcknowledgement(err.Error())
+		return acknowledgement
 	}
 	err := sdkTransferKeeper.OnRecvPacket(ctx, packet, data)
 	if err != nil {
 		acknowledgement := channeltypes.NewErrorAcknowledgement(err.Error())
-		return &sdk.Result{
-			Events: ctx.EventManager().Events().ToABCIEvents(),
-		}, acknowledgement.GetBytes(), nil
+		return acknowledgement
 	}
 	// Get the denom that will be minted by sdk transfer module,
 	// so that it can be converted to the denom it should be stored as.
@@ -51,19 +52,19 @@ func OnRecvPacketWhitelistConvert(
 				sdk.NewAttribute(transfertypes.AttributeKeyAckSuccess, fmt.Sprintf("%t", false)),
 			),
 		)
-		return &sdk.Result{
-			Events: ctx.EventManager().Events().ToABCIEvents(),
-		}, acknowledgement.GetBytes(), nil
+		return acknowledgement
 	}
 	convertToDenomEntry := whitelistKeeper.GetDenom(registry, mintedDenomEntry.UnitDenom)
 	if convertToDenomEntry != nil && convertToDenomEntry.Decimals > 0 && mintedDenomEntry.Decimals > 0 && convertToDenomEntry.Decimals > mintedDenomEntry.Decimals {
 		err = helpers.ExecConvForIncomingCoins(ctx, bankKeeper, whitelistKeeper, mintedDenomEntry, convertToDenomEntry, packet, data)
 		// Revert, although this may cause packet to be relayed again.
 		if err != nil {
-			return nil, nil, sdkerrors.Wrap(sctransfertypes.ErrConvertingToUnitDenom, err.Error())
+			acknowledgement := channeltypes.NewErrorAcknowledgement(
+				sdkerrors.Wrapf(sctransfertypes.ErrConvertingToUnitDenom, err.Error()).Error(),
+			)
+			return acknowledgement
 		}
 	}
-	acknowledgement := channeltypes.NewResultAcknowledgement([]byte{byte(1)})
 	ctx.EventManager().EmitEvent(
 		sdk.NewEvent(
 			transfertypes.EventTypePacket,
@@ -74,7 +75,6 @@ func OnRecvPacketWhitelistConvert(
 			sdk.NewAttribute(transfertypes.AttributeKeyAckSuccess, fmt.Sprintf("%t", err == nil)),
 		),
 	)
-	return &sdk.Result{
-		Events: ctx.EventManager().Events().ToABCIEvents(),
-	}, acknowledgement.GetBytes(), nil
+	acknowledgement := channeltypes.NewResultAcknowledgement([]byte{byte(1)})
+	return acknowledgement
 }

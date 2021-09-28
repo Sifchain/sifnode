@@ -6,8 +6,8 @@ import (
 	"github.com/Sifchain/sifnode/x/ibctransfer/helpers"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
-	sdktransfertypes "github.com/cosmos/cosmos-sdk/x/ibc/applications/transfer/types"
-	channeltypes "github.com/cosmos/cosmos-sdk/x/ibc/core/04-channel/types"
+	sdktransfertypes "github.com/cosmos/ibc-go/modules/apps/transfer/types"
+	channeltypes "github.com/cosmos/ibc-go/modules/core/04-channel/types"
 
 	sctransfertypes "github.com/Sifchain/sifnode/x/ibctransfer/types"
 	tokenregistrytypes "github.com/Sifchain/sifnode/x/tokenregistry/types"
@@ -24,6 +24,7 @@ func OnAcknowledgementMaybeConvert(
 	bankKeeper sdktransfertypes.BankKeeper,
 	packet channeltypes.Packet,
 	acknowledgement []byte,
+	relayer sdk.AccAddress,
 ) (*sdk.Result, error) {
 	var ack channeltypes.Acknowledgement
 	if err := sdktransfertypes.ModuleCdc.UnmarshalJSON(acknowledgement, &ack); err != nil {

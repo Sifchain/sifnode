@@ -7,53 +7,13 @@ import (
 
 	tokenregistrytest "github.com/Sifchain/sifnode/x/tokenregistry/test"
 	tokenregistrytypes "github.com/Sifchain/sifnode/x/tokenregistry/types"
-	transfertypes "github.com/cosmos/cosmos-sdk/x/ibc/applications/transfer/types"
-	channeltypes "github.com/cosmos/cosmos-sdk/x/ibc/core/04-channel/types"
+	transfertypes "github.com/cosmos/ibc-go/modules/apps/transfer/types"
+	channeltypes "github.com/cosmos/ibc-go/modules/core/04-channel/types"
 	"github.com/stretchr/testify/require"
 
 	"github.com/Sifchain/sifnode/x/ibctransfer/helpers"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
-
-func TestShouldConvertIncomingCoins(t *testing.T) {
-	app, ctx, _ := tokenregistrytest.CreateTestApp(false)
-	unitDenomEntry := tokenregistrytypes.RegistryEntry{
-		Denom:     "ceth",
-		Decimals:  18,
-		UnitDenom: "ceth",
-	}
-	ibcRegistryEntry := tokenregistrytypes.RegistryEntry{
-		Denom:     "ueth",
-		Decimals:  10,
-		UnitDenom: "ceth",
-	}
-	nonIBCRegistryEntry := tokenregistrytypes.RegistryEntry{
-		Denom:    "cusdt",
-		Decimals: 6,
-	}
-	app.TokenRegistryKeeper.SetToken(ctx, &unitDenomEntry)
-	app.TokenRegistryKeeper.SetToken(ctx, &ibcRegistryEntry)
-	app.TokenRegistryKeeper.SetToken(ctx, &nonIBCRegistryEntry)
-	registry := app.TokenRegistryKeeper.GetDenomWhitelist(ctx)
-	entry1 := app.TokenRegistryKeeper.GetDenom(registry, "ueth")
-	require.NotNil(t, entry1)
-	entry1c := app.TokenRegistryKeeper.GetDenom(registry, entry1.UnitDenom)
-	require.NotNil(t, entry1c)
-	diff := uint64(entry1c.Decimals - entry1.Decimals)
-	convAmount := helpers.ConvertIncomingCoins(ctx, app.TokenRegistryKeeper, 1000000000000, diff)
-	incomingDeduction := sdk.NewCoin("ueth", sdk.NewIntFromUint64(1000000000000))
-	incomingAddition := sdk.NewCoin("ceth", convAmount)
-	require.NotNil(t, incomingDeduction)
-	require.NotNil(t, incomingAddition)
-	require.Equal(t, incomingDeduction.Denom, "ueth")
-	require.Equal(t, incomingDeduction.Amount.String(), "1000000000000")
-	require.Equal(t, incomingAddition.Denom, "ceth")
-	require.Equal(t, incomingAddition.Amount.String(), "100000000000000000000")
-	entry2 := app.TokenRegistryKeeper.GetDenom(registry, "cusdt")
-	require.NotNil(t, entry2)
-	entry2c := app.TokenRegistryKeeper.GetDenom(registry, entry2.UnitDenom)
-	require.Nil(t, entry2c)
-}
 
 func TestGetConvForIncomingCoins(t *testing.T) {
 	app, ctx, _ := tokenregistrytest.CreateTestApp(false)
