@@ -5,7 +5,7 @@ require("chai")
   .use(require("chai-as-promised"))
   .should();
 
-contract.only("Blocklist", function (accounts) {
+contract("Blocklist", function (accounts) {
   const state = {
     accounts: {
       owner: accounts[0],

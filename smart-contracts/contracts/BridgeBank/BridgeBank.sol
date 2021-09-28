@@ -8,6 +8,7 @@ import "../Oracle.sol";
 import "../CosmosBridge.sol";
 import "./BankStorage.sol";
 import "./Pausable.sol";
+import "../interfaces/IBlocklist.sol";
 
 /*
  * @title BridgeBank
@@ -27,7 +28,7 @@ contract BridgeBank is BankStorage,
     Pausable {
 
     bool private _initialized;
-
+    
     using SafeMath for uint256;
 
     /*
@@ -200,7 +201,7 @@ contract BridgeBank is BankStorage,
         address payable _intendedRecipient,
         string memory _symbol,
         uint256 _amount
-    ) public onlyCosmosBridge whenNotPaused {
+    ) public onlyCosmosBridge whenNotPaused onlyNotBlocklisted(_intendedRecipient) {
         string memory symbol = safeLowerToUpperTokens(_symbol);
         address tokenAddress = controlledBridgeTokens[symbol];
         return
@@ -223,7 +224,12 @@ contract BridgeBank is BankStorage,
         bytes memory _recipient,
         address _token,
         uint256 _amount
-    ) public validSifAddress(_recipient) onlyCosmosTokenWhiteList(_token) whenNotPaused {
+    ) public
+      validSifAddress(_recipient)
+      onlyCosmosTokenWhiteList(_token)
+      onlyNotBlocklisted(msg.sender)
+      whenNotPaused
+    {
         string memory symbol = BridgeToken(_token).symbol();
 
         BridgeToken(_token).burnFrom(msg.sender, _amount);
@@ -241,7 +247,12 @@ contract BridgeBank is BankStorage,
         bytes memory _recipient,
         address _token,
         uint256 _amount
-    ) public payable onlyEthTokenWhiteList(_token) validSifAddress(_recipient) whenNotPaused {
+    ) public payable
+      onlyEthTokenWhiteList(_token)
+      validSifAddress(_recipient)
+      onlyNotBlocklisted(msg.sender)
+      whenNotPaused
+    {
         string memory symbol;
 
         // Ethereum deposit
@@ -281,12 +292,20 @@ contract BridgeBank is BankStorage,
         address payable _recipient,
         string memory _symbol,
         uint256 _amount
-    ) public onlyCosmosBridge whenNotPaused {
+    ) public onlyCosmosBridge whenNotPaused onlyNotBlocklisted(_recipient) {
         string memory symbol = safeLowerToUpperTokens(_symbol);
 
         // Confirm that the bank holds sufficient balances to complete the unlock
         address tokenAddress = lockedTokenList[symbol];
         unlockFunds(_recipient, tokenAddress, symbol, _amount);
+    }
+
+    /**
+     * @notice Lets the operator set the blocklist address
+     * @param blocklistAddress The address of the blocklist contract
+     */
+    function setBlocklist(address blocklistAddress) public onlyOperator {
+      _setBlocklist(blocklistAddress);
     }
 
     /*
