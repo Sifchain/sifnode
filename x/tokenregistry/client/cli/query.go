@@ -3,6 +3,7 @@ package cli
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
@@ -10,6 +11,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/Sifchain/sifnode/x/tokenregistry/types"
+	whitelistutils "github.com/Sifchain/sifnode/x/tokenregistry/utils"
 )
 
 func GetQueryCmd() *cobra.Command {
@@ -24,6 +26,8 @@ func GetQueryCmd() *cobra.Command {
 	cmd.AddCommand(
 		GetCmdQueryEntries(),
 		GetCmdGenerateEntry(),
+		GetCmdGenerateLowPrecisionEntries(),
+		GetCmdGenerateHighPrecisionEntries(),
 	)
 
 	return cmd
@@ -277,6 +281,98 @@ func GetCmdGenerateEntry() *cobra.Command {
 
 	_ = cmd.MarkFlagRequired(flagBaseDenom)
 	_ = cmd.MarkFlagRequired(flagDecimals)
+
+	return cmd
+}
+
+func GetCmdGenerateLowPrecisionEntries() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "generate-low-precision-entries [registry.json]",
+		Short: "",
+		Args:  cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			clientCtx, err := client.GetClientQueryContext(cmd)
+			if err != nil {
+				return err
+			}
+
+			registry, err := whitelistutils.ParseDenoms(clientCtx.JSONMarshaler, args[0])
+			if err != nil {
+				return err
+			}
+
+			lowPrecisionTokenRegistry := types.Registry{Entries: []*types.RegistryEntry{}}
+
+			for _, entry := range registry.Entries {
+				if entry.Decimals > 10 && strings.HasPrefix(entry.Denom, "c") {
+					conversionDenom := "x" + strings.TrimPrefix(entry.Denom, "c")
+
+					lowPrecisionTokenRegistry.Entries = append(lowPrecisionTokenRegistry.Entries, &types.RegistryEntry{
+						IsWhitelisted: true,
+						Denom:         conversionDenom,
+						BaseDenom:     conversionDenom,
+						Decimals:      10,
+						UnitDenom:     entry.Denom,
+						Permissions: []types.Permission{
+							// These tokens cannot be pooled.
+							// types.Permission_CLP,
+							types.Permission_IBCEXPORT,
+							types.Permission_IBCEXPORT,
+						},
+					})
+				}
+			}
+
+			return clientCtx.PrintBytes(clientCtx.JSONMarshaler.MustMarshalJSON(&lowPrecisionTokenRegistry))
+		},
+	}
+
+	flags.AddQueryFlagsToCmd(cmd)
+
+	return cmd
+}
+
+func GetCmdGenerateHighPrecisionEntries() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "generate-high-precision-entries [registry.json]",
+		Short: "",
+		Args:  cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			clientCtx, err := client.GetClientQueryContext(cmd)
+			if err != nil {
+				return err
+			}
+
+			registry, err := whitelistutils.ParseDenoms(clientCtx.JSONMarshaler, args[0])
+			if err != nil {
+				return err
+			}
+
+			highPrecisionTokenRegistry := types.Registry{Entries: []*types.RegistryEntry{}}
+
+			for _, entry := range registry.Entries {
+				if entry.Decimals > 10 && strings.HasPrefix(entry.Denom, "c") {
+					entryForConversion := entry
+
+					conversionDenom := "x" + strings.TrimPrefix(entry.Denom, "c")
+
+					highPrecisionTokenRegistry.Entries = append(highPrecisionTokenRegistry.Entries, entryForConversion)
+
+					entryForConversion.IbcCounterpartyDenom = conversionDenom
+
+					entryForConversion.Permissions = []types.Permission{
+						types.Permission_CLP,
+						types.Permission_IBCEXPORT,
+						types.Permission_IBCIMPORT,
+					}
+				}
+			}
+
+			return clientCtx.PrintBytes(clientCtx.JSONMarshaler.MustMarshalJSON(&highPrecisionTokenRegistry))
+		},
+	}
+
+	flags.AddQueryFlagsToCmd(cmd)
 
 	return cmd
 }

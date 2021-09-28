@@ -20,7 +20,54 @@ func GetTxCmd() *cobra.Command {
 	cmd.AddCommand(
 		GetCmdRegister(),
 		GetCmdDeregister(),
+		GetCmdRegisterAll(),
 	)
+	return cmd
+}
+
+func GetCmdRegisterAll() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "register-all [registry.json]",
+		Short: "Add / update tokens on the registry",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			clientCtx, err := client.GetClientTxContext(cmd)
+			if err != nil {
+				return err
+			}
+
+			err = cobra.ExactArgs(1)(cmd, args)
+			if err != nil {
+				return err
+			}
+
+			registry, err := whitelistutils.ParseDenoms(clientCtx.JSONMarshaler, args[0])
+			if err != nil {
+				return err
+			} else if len(registry.Entries) < 1 {
+				return errors.New("at least one token entry must be specified in input file")
+			}
+
+			for _, entry := range registry.Entries {
+				msg := types.MsgRegister{
+					From:  clientCtx.GetFromAddress().String(),
+					Entry: entry,
+				}
+
+				if err := msg.ValidateBasic(); err != nil {
+					return err
+				}
+				err := tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), &msg)
+				if err != nil {
+					return err
+				}
+			}
+
+			return nil
+		},
+	}
+
+	flags.AddTxFlagsToCmd(cmd)
+
 	return cmd
 }
 
