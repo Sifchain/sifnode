@@ -21,10 +21,9 @@ import (
 // createTestInput Returns a simapp with custom StakingKeeper
 // to avoid messing with the hooks.
 func createTestInput() (*codec.LegacyAmino, *sifapp.SifchainApp, sdk.Context) {
-	app := sifapp.Setup(false)
 	sifapp.SetConfig(false)
+	app := sifapp.Setup(false)
 	ctx := app.BaseApp.NewContext(false, tmproto.Header{})
-
 	app.ClpKeeper = clpkeeper.NewKeeper(
 		app.AppCodec(),
 		app.GetKey(types.StoreKey),

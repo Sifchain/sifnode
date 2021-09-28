@@ -5,6 +5,8 @@ import (
 	"math"
 	"testing"
 
+	sifapp "github.com/Sifchain/sifnode/app"
+
 	clpkeeper "github.com/Sifchain/sifnode/x/clp/keeper"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/query"
@@ -27,7 +29,6 @@ func TestKeeper_Errors(t *testing.T) {
 	getpools, _, err := clpKeeper.GetPoolsPaginated(ctx, &query.PageRequest{})
 	assert.NoError(t, err)
 	assert.Equal(t, len(getpools), 0, "No pool added")
-
 	lp := test.GenerateRandomLP(1)[0]
 	lp.Asset.Symbol = ""
 	clpKeeper.SetLiquidityProvider(ctx, &lp)
@@ -131,7 +132,7 @@ func TestKeeper_BankKeeper(t *testing.T) {
 	sendingBalance := sdk.NewUint(1000)
 	nativeCoin := sdk.NewCoin(types.NativeSymbol, sdk.Int(initialBalance))
 	sendingCoin := sdk.NewCoin(types.NativeSymbol, sdk.Int(sendingBalance))
-	err := clpKeeper.GetBankKeeper().AddCoins(ctx, user1, sdk.NewCoins(nativeCoin))
+	err := sifapp.AddCoinsToAccount(types.ModuleName, app.BankKeeper, ctx, user1, sdk.NewCoins(nativeCoin))
 	assert.NoError(t, err)
 	assert.True(t, clpKeeper.HasBalance(ctx, user1, nativeCoin))
 	assert.NoError(t, clpKeeper.SendCoins(ctx, user1, user2, sdk.NewCoins(sendingCoin)))
@@ -146,7 +147,6 @@ func TestKeeper_GetAssetsForLiquidityProvider(t *testing.T) {
 		lp := lpList[i]
 		clpKeeper.SetLiquidityProvider(ctx, &lp)
 	}
-
 	lpaddr, err := sdk.AccAddressFromBech32(lpList[0].LiquidityProviderAddress)
 	require.NoError(t, err)
 	assetList, _, err := clpKeeper.GetAssetsForLiquidityProviderPaginated(ctx, lpaddr, &query.PageRequest{Limit: math.MaxUint64})

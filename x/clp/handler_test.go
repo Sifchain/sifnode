@@ -3,6 +3,8 @@ package clp_test
 import (
 	"testing"
 
+	sifapp "github.com/Sifchain/sifnode/app"
+
 	tokenregistrytypes "github.com/Sifchain/sifnode/x/tokenregistry/types"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -34,7 +36,8 @@ func TestCreatePool(t *testing.T) {
 	asset := clptypes.NewAsset("eth")
 	externalCoin := sdk.NewCoin(asset.Symbol, sdk.Int(initialBalance))
 	nativeCoin := sdk.NewCoin(clptypes.NativeSymbol, sdk.Int(initialBalance))
-	_ = app.ClpKeeper.GetBankKeeper().AddCoins(ctx, signer, sdk.NewCoins(externalCoin, nativeCoin))
+	err := sifapp.AddCoinsToAccount(clptypes.ModuleName, app.BankKeeper, ctx, signer, sdk.NewCoins(externalCoin, nativeCoin))
+	require.NoError(t, err)
 	ok := app.ClpKeeper.HasBalance(ctx, signer, externalCoin)
 	assert.True(t, ok, "")
 	ok = app.ClpKeeper.HasBalance(ctx, signer, nativeCoin)
@@ -74,7 +77,8 @@ func TestCreatePool(t *testing.T) {
 	// Whitelist Asset
 	app.TokenRegistryKeeper.SetToken(ctx, &tokenregistrytypes.RegistryEntry{Denom: newAsset.Symbol, Decimals: 18, Permissions: []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP}})
 	newAssetCoin := sdk.NewCoin(newAsset.Symbol, sdk.Int(initialBalance))
-	_ = app.ClpKeeper.GetBankKeeper().AddCoins(ctx, signer, sdk.Coins{newAssetCoin}.Sort())
+	err = sifapp.AddCoinsToAccount(clptypes.ModuleName, app.BankKeeper, ctx, signer, sdk.Coins{newAssetCoin}.Sort())
+	require.NoError(t, err)
 	// Create Pool
 	res, err = handler(ctx, &msgNonWhitelisted)
 	require.NoError(t, err)
@@ -93,7 +97,8 @@ func TestAddLiquidity(t *testing.T) {
 	asset := clptypes.NewAsset("eth")
 	externalCoin := sdk.NewCoin(asset.Symbol, sdk.Int(initialBalance))
 	nativeCoin := sdk.NewCoin(clptypes.NativeSymbol, sdk.Int(initialBalance))
-	_ = app.ClpKeeper.GetBankKeeper().AddCoins(ctx, signer, sdk.NewCoins(externalCoin, nativeCoin))
+	err := sifapp.AddCoinsToAccount(clptypes.ModuleName, app.BankKeeper, ctx, signer, sdk.NewCoins(externalCoin, nativeCoin))
+	require.NoError(t, err)
 	msg := clptypes.NewMsgAddLiquidity(signer, asset, addLiquidityAmount, addLiquidityAmount)
 	res, err := handler(ctx, &msg)
 	require.Error(t, err)
@@ -114,7 +119,8 @@ func TestAddLiquidity(t *testing.T) {
 	ok = clpKeeper.HasBalance(ctx, signer, nativeCoin)
 	assert.True(t, ok, "")
 	signer2 := test.GenerateAddress(test.AddressKey2)
-	_ = app.ClpKeeper.GetBankKeeper().AddCoins(ctx, signer2, sdk.NewCoins(externalCoin, nativeCoin))
+	err = sifapp.AddCoinsToAccount(clptypes.ModuleName, app.BankKeeper, ctx, signer2, sdk.NewCoins(externalCoin, nativeCoin))
+	require.NoError(t, err)
 	msg = clptypes.NewMsgAddLiquidity(signer2, asset, addLiquidityAmount, addLiquidityAmount)
 	res, err = handler(ctx, &msg)
 	require.NoError(t, err)
@@ -141,7 +147,8 @@ func TestAddLiquidity_LargeValue(t *testing.T) {
 	asset := clptypes.NewAsset("cacoin")
 	externalCoin := sdk.NewCoin(asset.Symbol, sdk.Int(poolBalanceCacoin).Add(sdk.Int(addLiquidityAmountCaCoin)))
 	nativeCoin := sdk.NewCoin(clptypes.NativeSymbol, sdk.Int(poolBalanceRowan).Add(sdk.Int(addLiquidityAmountRowan)))
-	_ = app.ClpKeeper.GetBankKeeper().AddCoins(ctx, signer, sdk.NewCoins(externalCoin, nativeCoin))
+	err := sifapp.AddCoinsToAccount(clptypes.ModuleName, app.BankKeeper, ctx, signer, sdk.NewCoins(externalCoin, nativeCoin))
+	require.NoError(t, err)
 	msgCreatePool := clptypes.NewMsgCreatePool(signer, asset, poolBalanceRowan, poolBalanceCacoin)
 	res, err := handler(ctx, &msgCreatePool)
 	require.NoError(t, err)
@@ -166,8 +173,10 @@ func TestRemoveLiquidity(t *testing.T) {
 	asset := clptypes.NewAsset(externalDenom)
 	externalCoin := sdk.NewCoin(asset.Symbol, sdk.Int(initialBalance))
 	nativeCoin := sdk.NewCoin(clptypes.NativeSymbol, sdk.Int(initialBalance))
-	_ = app.ClpKeeper.GetBankKeeper().AddCoins(ctx, signer, sdk.NewCoins(externalCoin, nativeCoin))
-	_ = app.ClpKeeper.GetBankKeeper().AddCoins(ctx, newLP, sdk.NewCoins(externalCoin, nativeCoin))
+	err := sifapp.AddCoinsToAccount(clptypes.ModuleName, app.BankKeeper, ctx, signer, sdk.NewCoins(externalCoin, nativeCoin))
+	require.NoError(t, err)
+	err = sifapp.AddCoinsToAccount(clptypes.ModuleName, app.BankKeeper, ctx, newLP, sdk.NewCoins(externalCoin, nativeCoin))
+	require.NoError(t, err)
 	msg := clptypes.NewMsgRemoveLiquidity(signer, asset, wBasis, asymmetry)
 	res, err := handler(ctx, &msg)
 	require.Error(t, err)
@@ -261,8 +270,10 @@ func TestSwap(t *testing.T) {
 	externalCoin2 := sdk.NewCoin(assetDash.Symbol, sdk.Int(initialBalance))
 	nativeCoin := sdk.NewCoin(clptypes.NativeSymbol, sdk.Int(initialBalance))
 	// Signer is given ETH and RWN (Signer will creat pool and become LP)
-	_ = app.ClpKeeper.GetBankKeeper().AddCoins(ctx, signer, sdk.NewCoins(externalCoin1, nativeCoin))
-	_ = app.ClpKeeper.GetBankKeeper().AddCoins(ctx, signer, sdk.NewCoins(externalCoin2))
+	err := sifapp.AddCoinsToAccount(clptypes.ModuleName, app.BankKeeper, ctx, signer, sdk.NewCoins(externalCoin1, nativeCoin))
+	require.NoError(t, err)
+	err = sifapp.AddCoinsToAccount(clptypes.ModuleName, app.BankKeeper, ctx, signer, sdk.NewCoins(externalCoin2))
+	require.NoError(t, err)
 	msg := clptypes.NewMsgSwap(signer, assetEth, assetDash, sdk.NewUint(1), sdk.NewUint(10))
 	res, err := handler(ctx, &msg)
 	require.Error(t, err)
@@ -316,7 +327,8 @@ func TestDecommisionPool(t *testing.T) {
 	externalCoin := sdk.NewCoin(asset.Symbol, sdk.Int(initialBalance))
 	nativeCoin := sdk.NewCoin(clptypes.NativeSymbol, sdk.Int(initialBalance))
 	// Signer is given ETH and RWN ( Signer will creat pool and become LP)
-	_ = app.ClpKeeper.GetBankKeeper().AddCoins(ctx, signer, sdk.NewCoins(externalCoin, nativeCoin))
+	err := sifapp.AddCoinsToAccount(clptypes.ModuleName, app.BankKeeper, ctx, signer, sdk.NewCoins(externalCoin, nativeCoin))
+	require.NoError(t, err)
 	msgCreatePool := clptypes.NewMsgCreatePool(signer, asset, poolBalance, poolBalance)
 	res, err := handler(ctx, &msgCreatePool)
 	require.NoError(t, err)
