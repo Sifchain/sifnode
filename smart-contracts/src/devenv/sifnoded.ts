@@ -22,6 +22,8 @@ export interface ValidatorValues {
 }
 export interface SifnodedResults {
   validatorValues: ValidatorValues[];
+  adminAddress: string;
+  process: ChildProcess.ChildProcess;
   tcpurl: string;
 }
 
@@ -52,7 +54,7 @@ export class SifnodedRunner extends ShellCommand<SifnodedResults> {
     ]]
   }
 
-  async sifgenNetworkCreate() {
+  async sifgenNetworkCreate(): Promise<SifnodedResults> {
     const sifnodedCommand = path.join(this.golangResults.goBin, "sifnoded")
     const sifgenArgs = [
       "network",
@@ -145,6 +147,7 @@ export class SifnodedRunner extends ShellCommand<SifnodedResults> {
 
     return {
       validatorValues: networkConfig,
+      adminAddress: sifnodedAdminAddress,
       process: sifnoded,
       tcpurl: "tcp://0.0.0.0:26657"
     }
