@@ -313,12 +313,7 @@ func GetCmdGenerateLowPrecisionEntries() *cobra.Command {
 						BaseDenom:     conversionDenom,
 						Decimals:      10,
 						UnitDenom:     entry.Denom,
-						Permissions: []types.Permission{
-							// These tokens cannot be pooled.
-							// types.Permission_CLP,
-							types.Permission_IBCEXPORT,
-							types.Permission_IBCEXPORT,
-						},
+						Permissions:   []types.Permission{types.Permission_IBCIMPORT},
 					})
 				}
 			}
