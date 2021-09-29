@@ -1,0 +1,58 @@
+{
+  "wallet": {
+    "sif": "sif19q2swhcxkxlc6va3pz5jz42jfsfv2ly4kuu8y0",
+    "cosmos": "cosmos19q2swhcxkxlc6va3pz5jz42jfsfv2ly4npn3ty",
+    "akash": "akash19q2swhcxkxlc6va3pz5jz42jfsfv2ly4767kj7"
+  },
+  "tx": [
+    {
+      "sif_asset": "ceth",
+      "ibc_denom": "ibc/95E612BDDA3E5F9B30579490CBA2F6AA2956ED9FBC2CD7310BAE5FABD769AAB1",
+      "sif_asset_dp_value": 18,
+      "ibc_denom_dp_value": 10,
+      "amount": [
+        1,
+        1000,
+        7000000000000,
+        2000000005555
+      ]
+    },
+    {
+      "sif_asset": "cusdt",
+      "ibc_denom": "ibc/4BC8BBA23191E0B48BC766E34A27663A34518D0967CB8B5C616126B9591F12E8",
+      "sif_asset_dp_value": 6,
+      "ibc_denom_dp_value": 6,
+      "amount": [
+        1,
+        1000,
+        70000200
+      ]
+    }
+    
+  ],
+  "chain": [
+    {
+      "name": "cosmos",
+      "channel": "channel-11",
+      "counterparty_channel" : "channel-27",
+      "cli_tool": "gaiad",
+      "chain_id": "cosmoshub-testnet",
+      "node": "https://rpc-testnet.sifchain.finance:443",
+      "gas_price": "50.0uphoton"
+    },
+    {
+      "name": "akash",
+      "channel": "channel-12",
+      "counterparty_channel": "channel-66",
+      "cli_tool": "akash",
+      "chain_id": "akash-testnet-6",
+      "node": "http://147.75.32.35:26657",
+      "gas_price": "5.0uakt"
+    },
+    {
+      "name": "sifchain-testnet",
+      "chain_id": "sifchain-testnet-1",
+      "node": "https://rpc-testnet.sifchain.finance:443"
+    }
+  ]
+}
