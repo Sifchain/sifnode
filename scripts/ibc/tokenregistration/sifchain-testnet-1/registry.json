@@ -168,7 +168,9 @@
       "external_symbol": "",
       "transfer_limit": "",
       "permissions": [
-        "CLP"
+        "CLP",
+        "IBCEXPORT",
+        "IBCIMPORT"
       ],
       "unit_denom": "",
       "ibc_counterparty_denom": "",
