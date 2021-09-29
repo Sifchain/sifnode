@@ -69,12 +69,14 @@ async function ebrelayerWitnessBuilder(
   contractAddresses: DeployedContractAddresses,
   ethereumAccount: EthereumAddressAndKey,
   validater: ValidatorValues,
+  sifnodeAdminAddress: string,
   golangResults: GolangResults
 ) {
   const args: EbrelayerArguments = {
     smartContract: contractAddresses,
     account: ethereumAccount,
     validatorValues: validater,
+    sifnodeAccount: sifnodeAdminAddress,
     golangResults
   };
   const relayerPromise = relayerBuilder(args)
@@ -100,6 +102,7 @@ async function main() {
       smartcontract.result.contractAddresses,
       hardhat.results.accounts.validators[0],
       sifnode.results.validatorValues[0],
+      sifnode.results.adminAddress,
       golang.results
     );
     EnvJSONWriter({
