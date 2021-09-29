@@ -75,6 +75,7 @@ func RegisterRESTRoutes(cliCtx client.Context, r *mux.Router, storeName string) 
 	getCrosschainFeeConfigRoute := fmt.Sprintf("/%s/crosschainFeeConfig/{%s}", storeName, restNetworkDescriptor)
 	getEthereumLockBurnNonceRoute := fmt.Sprintf("/%s/ethereumLockBurnNonce/{%s}/{%s}", storeName, restNetworkDescriptor, restRelayerCosmosAddress)
 	getWitnessLockBurnNonceRoute := fmt.Sprintf("/%s/witnessLockBurnNonce/{%s}/{%s}", storeName, restNetworkDescriptor, restRelayerCosmosAddress)
+	getGlocalNonceBlockNumberRoute := fmt.Sprintf("/%s/glocalNonceBlockNumber/{%s}/{%s}", storeName, restNetworkDescriptor, restNonce)
 
 	r.HandleFunc(fmt.Sprintf("/%s/prophecies", storeName), createClaimHandler(cliCtx)).Methods("POST")
 	r.HandleFunc(getProhechyRoute, getProphecyHandler(cliCtx, storeName)).Methods("GET")
@@ -84,7 +85,7 @@ func RegisterRESTRoutes(cliCtx client.Context, r *mux.Router, storeName string) 
 	r.HandleFunc(fmt.Sprintf("/%s/signProphecy", storeName), signProphecyHandler(cliCtx)).Methods("POST")
 	r.HandleFunc(getEthereumLockBurnNonceRoute, getEthereumLockBurnNonceHandler(cliCtx, storeName)).Methods("GET")
 	r.HandleFunc(getWitnessLockBurnNonceRoute, getWitnessLockBurnNonceHandler(cliCtx, storeName)).Methods("GET")
-
+	r.HandleFunc(getGlocalNonceBlockNumberRoute, getQueryGlocalNonceBlockNumberHandler(cliCtx, storeName)).Methods("GET")
 }
 
 func createClaimHandler(cliCtx client.Context) http.HandlerFunc {
@@ -331,6 +332,38 @@ func getWitnessLockBurnNonceHandler(cliCtx client.Context, storeName string) htt
 		}
 
 		route := fmt.Sprintf("custom/%s/%s", storeName, types.QueryWitnessLockBurnNonce)
+		res, _, err := cliCtx.QueryWithData(route, bz)
+		if err != nil {
+			rest.WriteErrorResponse(w, http.StatusNotFound, err.Error())
+			return
+		}
+
+		rest.PostProcessResponse(w, cliCtx, res)
+	}
+}
+
+func getQueryGlocalNonceBlockNumberHandler(cliCtx client.Context, storeName string) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		vars := mux.Vars(r)
+
+		restNetworkDescriptor := vars[restNetworkDescriptor]
+
+		networkDescriptor, err := strconv.Atoi(restNetworkDescriptor)
+		if err != nil {
+			rest.WriteErrorResponse(w, http.StatusNotFound, err.Error())
+		}
+		globalNonce, err := strconv.Atoi(restNonce)
+		if err != nil {
+			rest.WriteErrorResponse(w, http.StatusNotFound, err.Error())
+		}
+
+		bz, err := cliCtx.LegacyAmino.MarshalJSON(types.NewQueryGlocalNonceBlockNumberRequest(oracletypes.NetworkDescriptor(networkDescriptor), uint64(globalNonce)))
+		if err != nil {
+			rest.WriteErrorResponse(w, http.StatusNotFound, err.Error())
+			return
+		}
+
+		route := fmt.Sprintf("custom/%s/%s", storeName, types.QueryGlocalNonceBlockNumber)
 		res, _, err := cliCtx.QueryWithData(route, bz)
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusNotFound, err.Error())

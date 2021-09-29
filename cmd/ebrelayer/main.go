@@ -28,7 +28,6 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
-	"github.com/syndtr/goleveldb/leveldb"
 	"go.uber.org/zap"
 )
 
@@ -150,21 +149,6 @@ func RunInitRelayerCmd(cmd *cobra.Command, args []string) error {
 		return errors.Errorf("invalid [ETHEREUM_PRIVATE_KEY] environment variable")
 	}
 
-	levelDbFile, err := cmd.Flags().GetString(ebrelayertypes.FlagRelayerDbPath)
-	if err != nil {
-		return err
-	}
-	// Open the level db
-	db, err := leveldb.OpenFile(levelDbFile, nil)
-	if err != nil {
-		log.Fatal("Error opening leveldb: ", err)
-	}
-	defer func() {
-		if err := db.Close(); err != nil {
-			log.Println("db.Close filed: ", err.Error())
-		}
-	}()
-
 	nodeURL, err := cmd.Flags().GetString(flags.FlagNode)
 	if err != nil {
 		return err
@@ -245,7 +229,6 @@ func RunInitRelayerCmd(cmd *cobra.Command, args []string) error {
 		tendermintNode,
 		web3Provider,
 		contractAddress,
-		db,
 		cliContext,
 		validatorMoniker,
 		sugaredLogger)
@@ -275,22 +258,6 @@ func RunInitWitnessCmd(cmd *cobra.Command, args []string) error {
 		return errors.Errorf("invalid [ETHEREUM_PRIVATE_KEY] environment variable")
 	}
 
-	// Open the level db
-	// TODO check if still use the level db in peggy2
-	levelDbFile, err := cmd.Flags().GetString(ebrelayertypes.FlagRelayerDbPath)
-	if err != nil {
-		return err
-	}
-	db, err := leveldb.OpenFile(levelDbFile, nil)
-	if err != nil {
-		log.Fatal("Error opening leveldb: ", err)
-	}
-	defer func() {
-		if err := db.Close(); err != nil {
-			log.Println("db.Close filed: ", err.Error())
-		}
-	}()
-
 	nodeURL, err := cmd.Flags().GetString(flags.FlagNode)
 	if err != nil {
 		return err
@@ -371,7 +338,6 @@ func RunInitWitnessCmd(cmd *cobra.Command, args []string) error {
 		tendermintNode,
 		web3Provider,
 		contractAddress,
-		db,
 		cliContext,
 		validatorMoniker,
 		sugaredLogger)

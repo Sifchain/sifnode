@@ -15,11 +15,12 @@ func TestGetAndUpdateGlobalNonce(t *testing.T) {
 
 	// test the init value
 	globalNonceOne := uint64(1)
+	blockNumber := uint64(100)
 	globalNonce := keeper.GetGlobalNonce(ctx, networkDescriptor)
 	assert.Equal(t, globalNonce, globalNonceOne)
 
 	// test the second value
-	keeper.UpdateGlobalNonce(ctx, networkDescriptor)
+	keeper.UpdateGlobalNonce(ctx, networkDescriptor, blockNumber)
 
 	globalNonceTwo := uint64(2)
 	globalNonce = keeper.GetGlobalNonce(ctx, networkDescriptor)

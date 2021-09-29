@@ -23,6 +23,9 @@ service Query {
   // network
   rpc WitnessLockBurnNonce(QueryWitnessLockBurnNonceRequest)
       returns (QueryWitnessLockBurnNonceResponse) {}
+  // GlocalNonceBlockNumber query block number for a global nonce
+  rpc GlocalNonceBlockNumber(QueryGlocalNonceBlockNumberRequest)
+      returns (QueryGlocalNonceBlockNumberResponse) {}
 }
 
 // QueryEthProphecyRequest payload for EthProphecy rpc query
@@ -84,3 +87,13 @@ message QueryWitnessLockBurnNonceRequest {
 message QueryWitnessLockBurnNonceResponse {
   uint64 witness_lock_burn_nonce = 1;
 }
+
+// QueryGlocalNonceBlockNumberRequest payload for GlocalNonceBlockNumber rpc
+// query
+message QueryGlocalNonceBlockNumberRequest {
+  sifnode.oracle.v1.NetworkDescriptor network_descriptor = 1;
+  uint64 global_nonce = 2;
+}
+
+// QueryGlocalNonceBlockNumberResponse return GlocalNonceBlockNumber
+message QueryGlocalNonceBlockNumberResponse { uint64 block_number = 1; }
