@@ -4,7 +4,7 @@ If you are trying to whitelist many token addresses at once, you will need to us
 
 1) Before running the script, go to the data folder and create a file called address_list_source.json, or edit it so
 that it has only the addresses that you want to whitelist.  
-The contents of the file should have a list of addresses, like so:  
+The contents of the file should have an array of addresses, like so:  
 ```
 [
  "0x217ddead61a42369a266f1fb754eb5d3ebadc88a",
@@ -12,7 +12,7 @@ The contents of the file should have a list of addresses, like so:
 ]
 ```
 
-2) Now, edit you .env file adding the following variables:
+2) Now, edit your .env file adding the following variables:
 ```
 MAINNET_URL=https://eth-mainnet.alchemyapi.io/v2/ZGe5q0xD06oCAHiwf6ZAexnzGKSPrS5P
 MAINNET_PRIVATE_KEY_OPERATOR=e67825808c9642d98d16b5794da4582432cb159610ff3934e8a0bac074e725f2

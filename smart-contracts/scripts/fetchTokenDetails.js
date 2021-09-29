@@ -88,7 +88,7 @@ function print(color, message, breakLine) {
 * @returns {bool} does the symbol match the RegExp?
 */
 function isValidSymbol(symbol) {
-  const regexp = new RegExp('^[a-zA-Z0-9]*$');
+  const regexp = new RegExp('^[a-zA-Z0-9]+$');
   return regexp.test(symbol);
 }
 

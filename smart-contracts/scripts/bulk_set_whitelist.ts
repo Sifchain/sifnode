@@ -1,6 +1,6 @@
 /**
  * Adds tokens to the whitelist in a batch.
- * This script is part of the whitlisting process.
+ * This script is part of the whitelisting process.
  * Please read Whitelist_Update.md for instructions.
  * 
  * @dev We're setting gasPrice explicitly, in accordance with the received ask.
