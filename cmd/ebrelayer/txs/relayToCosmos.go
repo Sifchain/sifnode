@@ -101,5 +101,4 @@ func SignProphecyToCosmos(factory tx.Factory, signProphecy ethbridge.MsgSignProp
 	}
 
 	sugaredLogger.Infow("Broadcasted tx without error")
-
 }

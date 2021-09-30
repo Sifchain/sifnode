@@ -107,20 +107,32 @@ func (sub CosmosSub) Start(txFactory tx.Factory, completionEvent *sync.WaitGroup
 
 // CheckNonceAndProcess check the lock burn nonce and process the event
 func (sub CosmosSub) CheckNonceAndProcess(txFactory tx.Factory,
-	tmclient *tmclient.HTTP) {
+	client *tmclient.HTTP) {
 
 	// get lock burn nonce from cosmos
-	globalNonce, err := sub.GetWitnessLockBurnNonceFromCosmos(oracletypes.NetworkDescriptor(networkID.Uint64()), string(sub.ValidatorAddress))
+	globalNonce, blockNumber, err := sub.GetGlobalNonceBlockNumberFromCosmos(sub.NetworkDescriptor, sub.ValidatorName)
 	if err != nil {
 		sub.SugaredLogger.Errorw("failed to get the lock burn nonce from cosmos rpc",
 			errorMessageKey, err.Error())
 		return
 	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	defer cancel()
+	block, err := client.Block(ctx, nil)
+	if err != nil {
+		sub.SugaredLogger.Errorw("failed to get the block via cosmos client",
+			errorMessageKey, err.Error())
+		return
+	}
+	currentBlockHeight := uint64(block.Block.Header.Height)
+
+	sub.ProcessLockBurnWithScope(txFactory, client, globalNonce, blockNumber, currentBlockHeight)
 }
 
-func (sub CosmosSub) ProcessLockBurnWithScope(txFactory tx.Factory, client *tmclient.HTTP, fromBlockNumber int64, toBlockNumber int64) {
+func (sub CosmosSub) ProcessLockBurnWithScope(txFactory tx.Factory, client *tmclient.HTTP, globalNonce, fromBlockNumber, toBlockNumber uint64) {
 	for blockNumber := fromBlockNumber; blockNumber <= toBlockNumber; {
-		tmpBlockNumber := blockNumber
+		tmpBlockNumber := int64(blockNumber)
 
 		ctx := context.Background()
 		block, err := client.BlockResults(ctx, &tmpBlockNumber)
@@ -155,7 +167,18 @@ func (sub CosmosSub) ProcessLockBurnWithScope(txFactory tx.Factory, client *tmcl
 					)
 
 					if cosmosMsg.NetworkDescriptor == sub.NetworkDescriptor {
-						sub.witnessSignProphecyID(txFactory, cosmosMsg)
+						if cosmosMsg.GlobalNonce == globalNonce+1 {
+							sub.witnessSignProphecyID(txFactory, cosmosMsg)
+							globalNonce++
+
+						} else if cosmosMsg.GlobalNonce > globalNonce+1 {
+							sub.SugaredLogger.Errorw(
+								"The global nonce is invalid",
+								"expected global nonce is:", globalNonce+1,
+								"globa nonce from message is:", cosmosMsg.GlobalNonce,
+							)
+							return
+						}
 					}
 				}
 			}
