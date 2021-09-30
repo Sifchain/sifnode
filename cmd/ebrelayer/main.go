@@ -142,7 +142,6 @@ func RunInitRelayerCmd(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
-	log.Printf("got result from GetClientQueryContext: %v", cliContext)
 
 	// Load the validator's Ethereum private key from environment variables
 	privateKey, err := txs.LoadPrivateKey()
@@ -211,6 +210,7 @@ func RunInitRelayerCmd(cmd *cobra.Command, args []string) error {
 
 	logConfig := zap.NewDevelopmentConfig()
 	logConfig.Sampling = nil
+	logConfig.Encoding = "json"
 	logger, err := logConfig.Build()
 
 	if err != nil {
@@ -270,7 +270,6 @@ func RunInitWitnessCmd(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
-	log.Printf("got result from GetClientQueryContext: %v", cliContext)
 
 	// Load the validator's Ethereum private key from environment variables
 	privateKey, err := txs.LoadPrivateKey()
@@ -337,6 +336,7 @@ func RunInitWitnessCmd(cmd *cobra.Command, args []string) error {
 	validatorMoniker := args[4]
 
 	logConfig := zap.NewDevelopmentConfig()
+	logConfig.Encoding = "json"
 	logConfig.Sampling = nil
 	logger, err := logConfig.Build()
 
