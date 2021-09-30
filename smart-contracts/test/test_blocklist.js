@@ -361,6 +361,121 @@ contract.only("Blocklist", function (accounts) {
       printDiff('Remove the last user from the blocklist', gasProfiling.removeLastUser, gas);
     });
   });
+
+  describe("Convoluted flows", function () {
+    beforeEach(async function () {
+      state.blocklist = await Blocklist.new();
+    });
+
+    it("should allow us to add and remove users to and from the blocklist sequentially a consistently", async function () {
+      // Batch add 3 users to the blocklist
+      const addressList = [state.accounts.userOne, state.accounts.userTwo, state.accounts.userThree];
+      await expect(state.blocklist.batchAddToBlocklist(
+        addressList,
+        { from: state.accounts.owner }
+      )).to.be.fulfilled;
+
+      // Remove the second user from the blocklist
+      await expect(state.blocklist.removeFromBlocklist(
+        state.accounts.userTwo,
+        { from: state.accounts.owner }
+      )).to.be.fulfilled;
+
+      // Check if data is consistent
+      let isUserOneBlocklisted = await state.blocklist.isBlocklisted(state.accounts.userOne);
+      let isUserTwoBlocklisted = await state.blocklist.isBlocklisted(state.accounts.userTwo);
+      let isUserThreeBlocklisted = await state.blocklist.isBlocklisted(state.accounts.userThree);
+      let fullList = await state.blocklist.getFullList();
+      expect(isUserOneBlocklisted).to.be.true;
+      expect(isUserTwoBlocklisted).to.be.false;
+      expect(isUserThreeBlocklisted).to.be.true;
+      expect(fullList.length).to.be.equal(2); // TODO
+
+      // Remove the first user from the blocklist
+      await expect(state.blocklist.removeFromBlocklist(
+        state.accounts.userOne,
+        { from: state.accounts.owner }
+      )).to.be.fulfilled;
+
+      // Check if data is consistent
+      isUserOneBlocklisted = await state.blocklist.isBlocklisted(state.accounts.userOne);
+      isUserTwoBlocklisted = await state.blocklist.isBlocklisted(state.accounts.userTwo);
+      isUserThreeBlocklisted = await state.blocklist.isBlocklisted(state.accounts.userThree);
+      expect(isUserOneBlocklisted).to.be.false;
+      expect(isUserTwoBlocklisted).to.be.false;
+      expect(isUserThreeBlocklisted).to.be.true;
+
+      // Add the second user to the blocklist
+      await expect(state.blocklist.addToBlocklist(
+        state.accounts.userTwo,
+        { from: state.accounts.owner }
+      )).to.be.fulfilled;
+
+      // Check if data is consistent
+      isUserOneBlocklisted = await state.blocklist.isBlocklisted(state.accounts.userOne);
+      isUserTwoBlocklisted = await state.blocklist.isBlocklisted(state.accounts.userTwo);
+      isUserThreeBlocklisted = await state.blocklist.isBlocklisted(state.accounts.userThree);
+      expect(isUserOneBlocklisted).to.be.false;
+      expect(isUserTwoBlocklisted).to.be.true;
+      expect(isUserThreeBlocklisted).to.be.true;
+
+      // Add the first user to the blocklist
+      await expect(state.blocklist.addToBlocklist(
+        state.accounts.userOne,
+        { from: state.accounts.owner }
+      )).to.be.fulfilled;
+
+      // Check if data is consistent
+      isUserOneBlocklisted = await state.blocklist.isBlocklisted(state.accounts.userOne);
+      isUserTwoBlocklisted = await state.blocklist.isBlocklisted(state.accounts.userTwo);
+      isUserThreeBlocklisted = await state.blocklist.isBlocklisted(state.accounts.userThree);
+      expect(isUserOneBlocklisted).to.be.true;
+      expect(isUserTwoBlocklisted).to.be.true;
+      expect(isUserThreeBlocklisted).to.be.true;
+
+      // Batch remove all users from the blocklist
+      await expect(state.blocklist.batchRemoveFromBlocklist(
+        addressList,
+        { from: state.accounts.owner }
+      )).to.be.fulfilled;
+
+      // Check if data is consistent
+      isUserOneBlocklisted = await state.blocklist.isBlocklisted(state.accounts.userOne);
+      isUserTwoBlocklisted = await state.blocklist.isBlocklisted(state.accounts.userTwo);
+      isUserThreeBlocklisted = await state.blocklist.isBlocklisted(state.accounts.userThree);
+      expect(isUserOneBlocklisted).to.be.false;
+      expect(isUserTwoBlocklisted).to.be.false;
+      expect(isUserThreeBlocklisted).to.be.false;
+
+      // Batch add 3 users to the blocklist again
+      await expect(state.blocklist.batchAddToBlocklist(
+        addressList,
+        { from: state.accounts.owner }
+      )).to.be.fulfilled;
+
+      // Check if data is consistent
+      isUserOneBlocklisted = await state.blocklist.isBlocklisted(state.accounts.userOne);
+      isUserTwoBlocklisted = await state.blocklist.isBlocklisted(state.accounts.userTwo);
+      isUserThreeBlocklisted = await state.blocklist.isBlocklisted(state.accounts.userThree);
+      expect(isUserOneBlocklisted).to.be.true;
+      expect(isUserTwoBlocklisted).to.be.true;
+      expect(isUserThreeBlocklisted).to.be.true;
+
+      // Batch remove users 1 and 3 from the blocklist
+      await expect(state.blocklist.batchRemoveFromBlocklist(
+        [state.accounts.userOne, state.accounts.userThree],
+        { from: state.accounts.owner }
+      )).to.be.fulfilled;
+
+      // Check if data is consistent
+      isUserOneBlocklisted = await state.blocklist.isBlocklisted(state.accounts.userOne);
+      isUserTwoBlocklisted = await state.blocklist.isBlocklisted(state.accounts.userTwo);
+      isUserThreeBlocklisted = await state.blocklist.isBlocklisted(state.accounts.userThree);
+      expect(isUserOneBlocklisted).to.be.false;
+      expect(isUserTwoBlocklisted).to.be.true;
+      expect(isUserThreeBlocklisted).to.be.false;
+    });
+  });
 });
 
 function printDiff(title, original, current) {

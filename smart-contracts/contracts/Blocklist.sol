@@ -70,7 +70,12 @@ contract Blocklist is Ownable {
   function isBlocklisted(address account) public view returns(bool) {
     //return _isBlocklisted[account];
     if(_userIndex.length == 0) return false;
+    if(_userStructs[account].index >= _userIndex.length) return false;
 
     return _userIndex[_userStructs[account].index] == account;
+  }
+
+  function getFullList() public returns(address[] memory) {
+    return _userIndex;
   }
 }
