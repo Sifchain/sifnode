@@ -5,7 +5,15 @@ require("chai")
   .use(require("chai-as-promised"))
   .should();
 
-contract("Blocklist", function (accounts) {
+const gasProfiling = {
+  use: false,
+  addFirstUser: 45963,
+  addAnotherUser: 45963,
+  removeOneUser: 15949,
+  removeLastUser: 15949,
+}
+
+contract.only("Blocklist", function (accounts) {
   const state = {
     accounts: {
       owner: accounts[0],
@@ -279,4 +287,87 @@ contract("Blocklist", function (accounts) {
       expect(isBlocklisted).to.be.true;
     });
   });
+
+  describe("Gas costs", function () {
+    beforeEach(async function () {
+      state.blocklist = await Blocklist.new();
+    });
+
+    it("should allow us to measure the cost of adding an address to the blocklist", async function () {
+      // add userOne to the blocklist
+      const tx = await state.blocklist.addToBlocklist(
+        state.accounts.userOne,
+        { from: state.accounts.owner }
+      );
+      
+      const gas = Number(tx.receipt.gasUsed);
+      printDiff('Remove the last user from the blocklist', gasProfiling.addFirstUser, gas);
+    });
+
+    it("should allow us to measure the cost of adding another address to the blocklist", async function () {
+      // add userOne to the blocklist
+      await state.blocklist.addToBlocklist(
+        state.accounts.userOne,
+        { from: state.accounts.owner }
+      );
+
+      // add userTwo to the blocklist
+      const tx = await state.blocklist.addToBlocklist(
+        state.accounts.userTwo,
+        { from: state.accounts.owner }
+      );
+      
+      const gas = Number(tx.receipt.gasUsed);
+      printDiff('Remove the last user from the blocklist', gasProfiling.addAnotherUser, gas);
+    });
+
+    it("should allow us to measure the cost of removing an address from the blocklist", async function () {
+      // add userOne to the blocklist
+      await state.blocklist.addToBlocklist(
+        state.accounts.userOne,
+        { from: state.accounts.owner }
+      );
+
+      // add userTwo to the blocklist
+      await state.blocklist.addToBlocklist(
+        state.accounts.userTwo,
+        { from: state.accounts.owner }
+      );
+
+      // remove userOne from the blocklist
+      const tx = await state.blocklist.removeFromBlocklist(
+        state.accounts.userOne,
+        { from: state.accounts.owner }
+      );
+      
+      const gas = Number(tx.receipt.gasUsed);
+      printDiff('Remove the last user from the blocklist', gasProfiling.removeOneUser, gas);
+    });
+
+    it("should allow us to measure the cost of removing the last address from the blocklist", async function () {
+      // add userOne to the blocklist
+      await state.blocklist.addToBlocklist(
+        state.accounts.userOne,
+        { from: state.accounts.owner }
+      );
+
+      // remove userOne from the blocklist
+      const tx = await state.blocklist.removeFromBlocklist(
+        state.accounts.userOne,
+        { from: state.accounts.owner }
+      );
+    
+      const gas = Number(tx.receipt.gasUsed);
+      printDiff('Remove the last user from the blocklist', gasProfiling.removeLastUser, gas);
+    });
+  });
 });
+
+function printDiff(title, original, current) {
+  const diff = current - original;
+  const pct = Math.abs(((1 - current / original) * 100)).toFixed(2);
+
+  console.log(`______________________________`);
+  console.log(`${title}:`);
+  console.log(`-> From ${original} to ${current} GAS | Diff: ${diff} (${pct}%)`);
+}
