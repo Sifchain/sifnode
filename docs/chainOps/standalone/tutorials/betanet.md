@@ -1,167 +1,149 @@
 # Connecting to the Sifchain BetaNet.
 
-## Prerequisites / Dependencies:
-
-- [Docker](https://www.docker.com/get-started)
-- [Ruby 2.7.x](https://www.ruby-lang.org/en/documentation/installation)
-- [Golang](https://golang.org/doc/install)
-  - Add `export GOPATH=~/go` to your shell
-  - Add `export PATH=$PATH:$GOPATH/bin` to your shell
-
 ## Scaffold and run your node
 
-1. Clone the repository:
+1. Switch to the root of the sifchain project.
 
-```
-git clone https://github.com/Sifchain/sifnode && cd sifnode
-```
+2. Install bundler/gems:
 
-2. Build:
-
-```
-make clean install
+```bash
+make -C ./deploy bundler
 ```
 
-3. Generate a mnemonic (if you don't already have one):
+3. Ensure your `$GOPATH` is setup correctly:
 
-```
-rake "keys:generate:mnemonic"
-```
-
-4. Boot your node:
-
-```
-rake "genesis:sifnode:boot[mainnet,<moniker>,'<mnemonic>',<gas_price>,<bind_ip_address>,'<flags>']"
+```bash
+export GOPATH=~/go
+export PATH=$PATH:$GOPATH/bin
 ```
 
-Where:
+4. Generate a new mnemonic key for your node. This key is what your node will use to eventually sign transactions/blocks on the network.
+
+```bash
+rake "sifnode:keys:generate:mnemonic"
+```
+
+5. Import your newly generated key:
+
+```bash
+rake "sifnode:keys:import[<moniker>]"
+```
+
+where:
 
 |Param|Description|
 |-----|----------|
-|`<moniker>`|A name for your node.|
-|`<mnemonic>`|The mnemonic phrase generated in the previous step.|
-|`<gas_price>`|The minimum gas price (e.g.: 0.5rowan).|
-|`<bind_ip_address>`|The IP Address to bind to (*Important:* this is what your node will advertise to the rest of the network). This should be the public IP of the host.|
-|`<flags>`|Optional. Docker compose run flags (see [here](https://docs.docker.com/compose/reference/run/)).|
-
-and your node will start synchronizing with the network. Please note that this may take several hours or more.
-
-## Verify
-
-You can verify that you're connected by running:
-
-```
-sifnoded q tendermint-validator-set --node tcp://rpc.sifchain.finance:80 --trust-node
-```
-
-and you should see the following primary validator node/s for Sifchain:
-
-```
-validators:
-- address: sifvalcons1qv28dvpgue9vlwzncpc75t3l3l7apcee423tem
-  pubkey: sifvalconspub1zcjduepqx0jdvxtyx8fd9aff3fr4g946azapz9zujm0mtf8gqx92f0uts90skzrfws
-  proposerpriority: -875
-  votingpower: 1000
-- address: sifvalcons18q4fh3g748d7krq4gnx0lktxlr8l6czzvvp7p6
-  pubkey: sifvalconspub1zcjduepqsymd2qtgqtt5vhdzc2dphnr6ulr2eszvyre8rzzgwva232f76h7svryp06
-  proposerpriority: 625
-  votingpower: 1000
-- address: sifvalcons12gwn2fgatqappspxevja8ry65t0rmv8k8xtgme
-  pubkey: sifvalconspub1zcjduepqk2jktuqwgvs6k0xy6fg6972pu956476x5wtwtjx4al4gns2wx59sgd4kky
-  proposerpriority: -125
-  votingpower: 1000
-- address: sifvalcons1dv83vy7k0zmezpkzqw7q95tht7fgwj5q2hz97g
-  pubkey: sifvalconspub1zcjduepqw8zehuezpsse9f0pe5su0faxteqgvsa7j074s674e0pu8jrf3cyqt9frej
-  proposerpriority: -1625
-  votingpower: 1000
-- address: sifvalcons1wn97nf5e80n0avr736a5p3sqwgf9ng6dgvctn7
-  pubkey: sifvalconspub1zcjduepq8fcqvd6x3m74zdckqqsfaq5gdnd9y4ypc724v4alyyl33e5pr7fqqzae69
-  proposerpriority: -1875
-  votingpower: 1000
-- address: sifvalcons1nz9ehhaxw6s79v5c46a2mg7q3a4p2mk8xkwkyj
-  pubkey: sifvalconspub1zcjduepqkcsxq9gu5w8j32x9w28vga0d33hcasaa726c22agp892sxu4g5eqrlxm8j
-  proposerpriority: 375
-  votingpower: 1000
-- address: sifvalcons1k6f2u93hjnn9khw5flj9sa6fvf05vzfpsyjjat
-  pubkey: sifvalconspub1zcjduepqd3x4ryy8e4wnn6gxzagk3sz355gu725tx0a260xhnaa76pz3whesfyaz6f
-  proposerpriority: 3875
-  votingpower: 1000
-- address: sifvalcons1awm72sjma7fphp0mtsfc6szyg055h2k8hdwsnn
-  pubkey: sifvalconspub1zcjduepq7f72cfve29dwn09r8z3hdss9n05hhqpsj653nsrvl2t66mnnfe0s44phkl
-  proposerpriority: -375
-  votingpower: 1000
-```
-
-Congratulations! You are now connected to the network.
-
-## Become a Validator
-
-You won't be able to participate in consensus until you become a validator.
-
-1. Import your mnemonic locally:
-
-```
-rake "keys:import[<moniker>]"
-```
-
-Where:
-
-|Param|Description|
-|-----|----------|
-|`<moniker>`|A name for your node.|
-
-*You will need to have tokens (rowan) on your account in order to become a validator.*
-
-2. From within your running container, obtain your node's public key:
-
-```
-docker exec -ti mainnet_sifnode_1 sh
-/root/.sifnoded/cosmovisor/current/bin/sifnoded tendermint show-validator
-```
-
-3. Run the following command to become a validator: 
-
-```
-sifnoded tx staking create-validator \
-    --commission-max-change-rate="0.1" \
-    --commission-max-rate="0.1" \
-    --commission-rate="0.1" \
-    --amount="<amount>" \
-    --pubkey=<pub_key> \
-    --moniker=<moniker> \
-    --chain-id=sifchain \
-    --min-self-delegation="1" \
-    --gas="300000" \
-    --gas-prices="0.5rowan" \
-    --from=<moniker> \
-    --keyring-backend=file \
-    --node tcp://rpc.sifchain.finance:80
-```
-
-Where:
-
-|Param|Description|
-|-----|----------|
-|`<amount>`|The amount of rowan you wish to stake (the more the better). The precision used is 1e18.|
-|`<pub_key>`|The public key of your node, that you got in the previous step.|
-|`<moniker>`|The moniker (name) of your node.|
+|`<moniker>`|The moniker or name of your node as you want it to appear on the network.|
 
 e.g.:
 
+```bash
+rake "sifnode:keys:import[my-node]"
 ```
-sifnoded tx staking create-validator \
-    --commission-max-change-rate="0.1" \
-    --commission-max-rate="0.1" \
-    --commission-rate="0.1" \
-    --amount="1000000000000000000000rowan" \
-    --pubkey=thepublickeyofyournode \
-    --moniker=my-node \
-    --chain-id=sifchain \
-    --min-self-delegation="1" \
-    --gas-prices="0.5rowan" \
-    --from=my-node \
-    --keyring-backend=file \
-    --node tcp://rpc.sifchain.finance:80
+
+6. Check that it's been imported accordingly:
+
+```bash
+rake "sifnode:keys:show[<moniker>]"
+```
+
+where:
+
+|Param|Description|
+|-----|----------|
+|`<moniker>`|The moniker or name of your node as you want it to appear on the network.|
+
+e.g.:
+
+```bash
+rake "sifnode:keys:show[my-node]"
+```
+
+7. Compile `sifnoded`:
+
+```bash
+make install
+```
+
+8. Boot your node:
+
+```bash
+rake "sifnode:standalone:boot[<chain_id>,<moniker>,'<mnemonic>',<gas_price>,<bind_ip_address>,'<flags>']"
+```
+
+Where:
+
+|Param|Description|
+|-----|----------|
+|`<chain_id>`|The Chain ID of the network (e.g.: `sifchain-1`).|
+|`<moniker>`|A name for your node.|
+|`<mnemonic>`|The mnemonic phrase generated in the previous step.|
+|`<gas_price>`|The minimum gas price (e.g.: `0.5rowan`).|
+|`<bind_ip_address>`|The IP Address to bind to (*Important:* this is what your node will advertise to the rest of the network). This should be the public IP of the host.|
+|`<flags>`|Optional. Docker compose run flags (see [here](https://docs.docker.com/compose/reference/run/)).|
+
+e.g.:
+
+```bash
+rake "sifnode:standalone:boot[sifchain-1,my-node,'my mnemonic',0.5rowan,127.0.0.1]"
+```
+
+and your node will start synchronizing with the network. Please note that this may take several hours or more.
+
+## Stake to become a validator
+
+In order to become a validator, that is a node which can participate in consensus on the network, you'll need to stake `rowan`.
+
+1. Get the public key of your node:
+
+```bash
+rake "sifnode:keys:docker:public[<image>,<image_tag>]"
+```
+
+where:
+
+|Param|Description|
+|-----|----------|
+|`<image>`|The docker image your node is running  (e.g.: `sifchain/sifnoded`).|
+|`<image_tag>`|The tag of the docker image your node is running  (e.g.: `sifchain-1`).|
+
+e.g.:
+
+```bash
+rake "sifnode:keys:docker:public[sifchain/sifnoded, sifchain-1]"
+```
+
+2. Stake:
+
+```bash
+rake "sifnode:staking:stake[<commission_max_change_rate>,<commission_max_rate>,<commission_rate>,<chain_id>,<moniker>,<amount>,<gas>,<gas_prices>,<public_key>,<node>]"
+```
+
+where:
+
+|Param|Description|
+|-----|----------|
+|`<commission_max_change_rate>`|The maximum commission change rate percentage (per day).|
+|`<commission_max_rate>`|The maximum commission rate percentage.|
+|`<commission_rate>`|The initial commission rate percentage.|
+|`<chain_id>`|The Chain ID of the network (e.g.: `sifchain-1`).|
+|`<moniker>`|The moniker or name of your node as you want it to appear on the network.|
+|`<amount>`|The amount to stake, including the denomination (e.g.: `100000000rowan`). The precision used is 1e18.|
+|`<gas>`| The per-transaction gas limit (e.g.: `300000`).|
+|`<gas_prices>`|The minimum gas price to use  (e.g.: `0.5rowan`).|
+|`<public_key>`|The public key of your validator (you got this in the previous step).|
+|`<node_rpc_address>`|The address to broadcast the transaction to (e.g.: `tcp://rpc.sifchain.finance:80`).|
+
+e.g.:
+
+```bash
+rake "sifnode:staking:stake[0.1,0.1,0.1,sifchain-1,my-node,10000000rowan,300000,0.5rowan,<public_key>,tcp://rpc.sifchain.finance:80]"
+```
+
+3. It may take several blocks before your node appears as a validator on the network, but you can always check by running:
+
+```bash
+rake "sifnode:staking:validators"
 ```
 
 ## Additional Resources
@@ -170,6 +152,6 @@ sifnoded tx staking create-validator \
 
 |Description|Address|
 |-----------|-------|
-|Block Explorer|https://blockexplorer.sifchain.finance|
+|Block Explorer|https://mintscan.io/sifchain|
 |RPC|https://rpc.sifchain.finance|
 |API|https://api.sifchain.finance|
