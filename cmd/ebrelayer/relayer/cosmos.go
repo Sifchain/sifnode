@@ -32,8 +32,10 @@ import (
 	"go.uber.org/zap"
 )
 
-// TODO: Move relay functionality out of CosmosSub into a new Relayer parent struct
-const errorMessageKey = "errorMessage"
+const (
+	errorMessageKey   = "errorMessage"
+	cosmosWakeupTimer = 60
+)
 
 // CosmosSub defines a Cosmos listener that relays events to Ethereum and Cosmos
 type CosmosSub struct {
@@ -91,7 +93,7 @@ func (sub CosmosSub) Start(txFactory tx.Factory, completionEvent *sync.WaitGroup
 	defer close(quit)
 
 	// start the timer
-	t := time.NewTicker(time.Second * ethereumWakeupTimer)
+	t := time.NewTicker(time.Second * cosmosWakeupTimer)
 	for {
 		select {
 		// Handle any errors
@@ -109,7 +111,7 @@ func (sub CosmosSub) Start(txFactory tx.Factory, completionEvent *sync.WaitGroup
 func (sub CosmosSub) CheckNonceAndProcess(txFactory tx.Factory,
 	client *tmclient.HTTP) {
 
-	// get lock burn nonce from cosmos
+	// get lock burn nonce and start block number from cosmos
 	globalNonce, blockNumber, err := sub.GetGlobalNonceBlockNumberFromCosmos(sub.NetworkDescriptor, sub.ValidatorName)
 	if err != nil {
 		sub.SugaredLogger.Errorw("failed to get the lock burn nonce from cosmos rpc",
@@ -130,6 +132,7 @@ func (sub CosmosSub) CheckNonceAndProcess(txFactory tx.Factory,
 	sub.ProcessLockBurnWithScope(txFactory, client, globalNonce, blockNumber, currentBlockHeight)
 }
 
+// ProcessLockBurnWithScope scan blocks in scope and handle all burn lock events
 func (sub CosmosSub) ProcessLockBurnWithScope(txFactory tx.Factory, client *tmclient.HTTP, globalNonce, fromBlockNumber, toBlockNumber uint64) {
 	for blockNumber := fromBlockNumber; blockNumber <= toBlockNumber; {
 		tmpBlockNumber := int64(blockNumber)
@@ -167,8 +170,12 @@ func (sub CosmosSub) ProcessLockBurnWithScope(txFactory tx.Factory, client *tmcl
 					)
 
 					if cosmosMsg.NetworkDescriptor == sub.NetworkDescriptor {
+						// if global nonce is expected, sign prophecy and send back to cosmos
+						// if global nonce is less than expected, just ignore the event. it is normal to see processed nonce coexist with expected one
+						// if global nonce is larger than expected, it is wrong and we must miss something.
 						if cosmosMsg.GlobalNonce == globalNonce+1 {
 							sub.witnessSignProphecyID(txFactory, cosmosMsg)
+							// update expected global nonce
 							globalNonce++
 
 						} else if cosmosMsg.GlobalNonce > globalNonce+1 {
@@ -271,29 +278,6 @@ func (sub CosmosSub) witnessSignProphecyID(
 		cosmosMsg.ProphecyID, address.String(), string(signature))
 
 	txs.SignProphecyToCosmos(txFactory, signProphecy, sub.CliContext, sub.SugaredLogger)
-}
-
-// GetWitnessLockBurnNonceFromCosmos get witness lock burn nonce via rpc
-func (sub CosmosSub) GetWitnessLockBurnNonceFromCosmos(
-	networkDescriptor oracletypes.NetworkDescriptor,
-	relayerValAddress string) (uint64, error) {
-	conn, err := grpc.Dial(sub.TmProvider)
-	if err != nil {
-		return 0, err
-	}
-
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
-	defer cancel()
-	client := ethbridgetypes.NewQueryClient(conn)
-	request := ethbridgetypes.QueryWitnessLockBurnNonceRequest{
-		NetworkDescriptor: networkDescriptor,
-		RelayerValAddress: relayerValAddress,
-	}
-	response, err := client.WitnessLockBurnNonce(ctx, &request)
-	if err != nil {
-		return 0, err
-	}
-	return response.WitnessLockBurnNonce, nil
 }
 
 // GetGlobalNonceBlockNumberFromCosmos get global nonce block number via rpc
