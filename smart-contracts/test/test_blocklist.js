@@ -11,6 +11,7 @@ const gasProfiling = {
   addAnotherUser: 45963,
   removeOneUser: 15949,
   removeLastUser: 15949,
+  current: {}
 }
 
 contract.only("Blocklist", function (accounts) {
@@ -301,7 +302,7 @@ contract.only("Blocklist", function (accounts) {
       );
       
       const gas = Number(tx.receipt.gasUsed);
-      printDiff('Remove the last user from the blocklist', gasProfiling.addFirstUser, gas);
+      printDiff('Add a user to the blocklist', gasProfiling.addFirstUser, gas);
     });
 
     it("should allow us to measure the cost of adding another address to the blocklist", async function () {
@@ -318,7 +319,31 @@ contract.only("Blocklist", function (accounts) {
       );
       
       const gas = Number(tx.receipt.gasUsed);
-      printDiff('Remove the last user from the blocklist', gasProfiling.addAnotherUser, gas);
+      gasProfiling.current.addAnotherUser = gas;
+      printDiff('Add another user to the blocklist', gasProfiling.addAnotherUser, gas);
+    });
+
+    it("adding a third user to the blocklist should cost the same as adding the second user", async function () {
+      // add userOne to the blocklist
+      await state.blocklist.addToBlocklist(
+        state.accounts.userOne,
+        { from: state.accounts.owner }
+      );
+
+      // add userTwo to the blocklist
+      await state.blocklist.addToBlocklist(
+        state.accounts.userTwo,
+        { from: state.accounts.owner }
+      );
+
+      // add userThree to the blocklist
+      const tx = await state.blocklist.addToBlocklist(
+        state.accounts.userThree,
+        { from: state.accounts.owner }
+      );
+      
+      const gas = Number(tx.receipt.gasUsed);
+      printDiff('Add a third user to the blocklist', gasProfiling.current.addAnotherUser, gas);
     });
 
     it("should allow us to measure the cost of removing an address from the blocklist", async function () {
@@ -341,7 +366,7 @@ contract.only("Blocklist", function (accounts) {
       );
       
       const gas = Number(tx.receipt.gasUsed);
-      printDiff('Remove the last user from the blocklist', gasProfiling.removeOneUser, gas);
+      printDiff('Remove a user from the blocklist', gasProfiling.removeOneUser, gas);
     });
 
     it("should allow us to measure the cost of removing the last address from the blocklist", async function () {
@@ -385,11 +410,13 @@ contract.only("Blocklist", function (accounts) {
       let isUserOneBlocklisted = await state.blocklist.isBlocklisted(state.accounts.userOne);
       let isUserTwoBlocklisted = await state.blocklist.isBlocklisted(state.accounts.userTwo);
       let isUserThreeBlocklisted = await state.blocklist.isBlocklisted(state.accounts.userThree);
-      let fullList = await state.blocklist.getFullList();
       expect(isUserOneBlocklisted).to.be.true;
       expect(isUserTwoBlocklisted).to.be.false;
       expect(isUserThreeBlocklisted).to.be.true;
-      expect(fullList.length).to.be.equal(2); // TODO
+      let fullList = await state.blocklist.getFullList();
+      expect(fullList.length).to.be.equal(2);
+      expect(fullList[0]).to.be.equal(state.accounts.userOne);
+      expect(fullList[1]).to.be.equal(state.accounts.userThree);
 
       // Remove the first user from the blocklist
       await expect(state.blocklist.removeFromBlocklist(
@@ -404,6 +431,9 @@ contract.only("Blocklist", function (accounts) {
       expect(isUserOneBlocklisted).to.be.false;
       expect(isUserTwoBlocklisted).to.be.false;
       expect(isUserThreeBlocklisted).to.be.true;
+      fullList = await state.blocklist.getFullList();
+      expect(fullList.length).to.be.equal(1);
+      expect(fullList[0]).to.be.equal(state.accounts.userThree);
 
       // Add the second user to the blocklist
       await expect(state.blocklist.addToBlocklist(
@@ -418,6 +448,10 @@ contract.only("Blocklist", function (accounts) {
       expect(isUserOneBlocklisted).to.be.false;
       expect(isUserTwoBlocklisted).to.be.true;
       expect(isUserThreeBlocklisted).to.be.true;
+      fullList = await state.blocklist.getFullList();
+      expect(fullList.length).to.be.equal(2);
+      expect(fullList[0]).to.be.equal(state.accounts.userThree);
+      expect(fullList[1]).to.be.equal(state.accounts.userTwo);
 
       // Add the first user to the blocklist
       await expect(state.blocklist.addToBlocklist(
@@ -432,6 +466,11 @@ contract.only("Blocklist", function (accounts) {
       expect(isUserOneBlocklisted).to.be.true;
       expect(isUserTwoBlocklisted).to.be.true;
       expect(isUserThreeBlocklisted).to.be.true;
+      fullList = await state.blocklist.getFullList();
+      expect(fullList.length).to.be.equal(3);
+      expect(fullList[0]).to.be.equal(state.accounts.userThree);
+      expect(fullList[1]).to.be.equal(state.accounts.userTwo);
+      expect(fullList[2]).to.be.equal(state.accounts.userOne);
 
       // Batch remove all users from the blocklist
       await expect(state.blocklist.batchRemoveFromBlocklist(
@@ -446,6 +485,8 @@ contract.only("Blocklist", function (accounts) {
       expect(isUserOneBlocklisted).to.be.false;
       expect(isUserTwoBlocklisted).to.be.false;
       expect(isUserThreeBlocklisted).to.be.false;
+      fullList = await state.blocklist.getFullList();
+      expect(fullList.length).to.be.equal(0);
 
       // Batch add 3 users to the blocklist again
       await expect(state.blocklist.batchAddToBlocklist(
@@ -460,6 +501,11 @@ contract.only("Blocklist", function (accounts) {
       expect(isUserOneBlocklisted).to.be.true;
       expect(isUserTwoBlocklisted).to.be.true;
       expect(isUserThreeBlocklisted).to.be.true;
+      fullList = await state.blocklist.getFullList();
+      expect(fullList.length).to.be.equal(3);
+      expect(fullList[0]).to.be.equal(state.accounts.userOne);
+      expect(fullList[1]).to.be.equal(state.accounts.userTwo);
+      expect(fullList[2]).to.be.equal(state.accounts.userThree);
 
       // Batch remove users 1 and 3 from the blocklist
       await expect(state.blocklist.batchRemoveFromBlocklist(
@@ -474,6 +520,9 @@ contract.only("Blocklist", function (accounts) {
       expect(isUserOneBlocklisted).to.be.false;
       expect(isUserTwoBlocklisted).to.be.true;
       expect(isUserThreeBlocklisted).to.be.false;
+      fullList = await state.blocklist.getFullList();
+      expect(fullList.length).to.be.equal(1);
+      expect(fullList[0]).to.be.equal(state.accounts.userTwo);
     });
   });
 });

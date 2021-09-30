@@ -7,8 +7,8 @@ contract Blocklist is Ownable {
     uint256 index;
   }
 
-  mapping(address => UserStruct) private _userStructs;
-  address[] private _userIndex;
+  mapping(address => uint256) private _userIndex;
+  address[] private _userList;
 
   event addedToBlocklist(address indexed account, address by);
   event removedFromBlocklist(address indexed account, address by);
@@ -25,8 +25,8 @@ contract Blocklist is Ownable {
 
   function _addToBlocklist(address account) private onlyNotInBlocklist(account) returns(bool) {
     //_isBlocklisted[account] = true;
-    _userStructs[account].index = _userIndex.length;
-    _userIndex.push(account);
+    _userIndex[account] = _userList.length;
+    _userList.push(account);
 
     emit addedToBlocklist(account, msg.sender);
 
@@ -46,11 +46,11 @@ contract Blocklist is Ownable {
 
   function _removeFromBlocklist(address account) private onlyInBlocklist(account) returns(bool) {
     //_isBlocklisted[account] = false;
-    uint rowToDelete = _userStructs[account].index;
-    address keyToMove = _userIndex[_userIndex.length-1];
-    _userIndex[rowToDelete] = keyToMove;
-    _userStructs[keyToMove].index = rowToDelete; 
-    _userIndex.length--;
+    uint rowToDelete = _userIndex[account];
+    address keyToMove = _userList[_userList.length-1];
+    _userList[rowToDelete] = keyToMove;
+    _userIndex[keyToMove] = rowToDelete; 
+    _userList.length--;
 
     emit removedFromBlocklist(account, msg.sender);
     
@@ -69,13 +69,13 @@ contract Blocklist is Ownable {
 
   function isBlocklisted(address account) public view returns(bool) {
     //return _isBlocklisted[account];
-    if(_userIndex.length == 0) return false;
-    if(_userStructs[account].index >= _userIndex.length) return false;
+    if(_userList.length == 0) return false;
+    if(_userIndex[account] >= _userList.length) return false;
 
-    return _userIndex[_userStructs[account].index] == account;
+    return _userList[_userIndex[account]] == account;
   }
 
-  function getFullList() public returns(address[] memory) {
-    return _userIndex;
+  function getFullList() public view returns(address[] memory) {
+    return _userList;
   }
 }
