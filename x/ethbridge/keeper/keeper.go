@@ -183,7 +183,8 @@ func (k Keeper) ProcessLock(ctx sdk.Context,
 	cosmosSender sdk.AccAddress,
 	senderSequence uint64,
 	msg *types.MsgLock,
-	tokenMetadata tokenregistrytypes.TokenMetadata) ([]byte, error) {
+	tokenMetadata tokenregistrytypes.TokenMetadata,
+	firstDoublePeg bool) ([]byte, error) {
 
 	logger := k.Logger(ctx)
 	var coins sdk.Coins
@@ -199,7 +200,13 @@ func (k Keeper) ProcessLock(ctx sdk.Context,
 		return []byte{}, fmt.Errorf("pegged token %s can't be lock", tokenMetadata.Symbol)
 	}
 
-	minimumLock := crossChainFeeConfig.MinimumLockCost.Mul(crossChainFeeConfig.FeeCurrencyGas)
+	// check if it is the first time to do double peg
+	cost := crossChainFeeConfig.MinimumLockCost
+	if firstDoublePeg {
+		cost = cost.Add(crossChainFeeConfig.FirstLockDoublePeggyCost)
+	}
+
+	minimumLock := cost.Mul(crossChainFeeConfig.FeeCurrencyGas)
 	if msg.CrosschainFee.LT(minimumLock) {
 		return []byte{}, errors.New("crosschain fee amount in message less than minimum lock")
 	}
@@ -302,7 +309,13 @@ func (k Keeper) SetFeeInfo(ctx sdk.Context, msg *types.MsgSetFeeInfo) error {
 		logger.Error("cosmos sender is not admin account.")
 		return errors.New("only admin account can set crosschain fee")
 	}
-	return k.oracleKeeper.SetFeeInfo(ctx, msg.NetworkDescriptor, msg.FeeCurrency, msg.FeeCurrencyGas, msg.MinimumBurnCost, msg.MinimumLockCost)
+	return k.oracleKeeper.SetFeeInfo(ctx,
+		msg.NetworkDescriptor,
+		msg.FeeCurrency,
+		msg.FeeCurrencyGas,
+		msg.MinimumBurnCost,
+		msg.MinimumLockCost,
+		msg.FirstLockDoublePeggyCost)
 }
 
 // ProcessSignProphecy processes the set sign prophecy from validator
