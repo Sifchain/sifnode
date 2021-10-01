@@ -2,17 +2,17 @@
  * List of colors to be used in the below function
  */
 const colors = {
-  black: '\x1b[30m',
-  green: '\x1b[42m\x1b[30m',
-  red: '\x1b[41m\x1b[37m',
-  yellow: '\x1b[33m',
-  blue: '\x1b[34m',
-  magenta: '\x1b[35m',
-  cyan: '\x1b[36m',
-  white: '\x1b[37m',
-  highlight: '\x1b[40m\x1b[37m',
-  close: '\x1b[0m'
-}
+  black: "\x1b[30m",
+  green: "\x1b[42m\x1b[30m",
+  red: "\x1b[41m\x1b[37m",
+  yellow: "\x1b[33m",
+  blue: "\x1b[34m",
+  magenta: "\x1b[35m",
+  cyan: "\x1b[36m",
+  white: "\x1b[37m",
+  highlight: "\x1b[40m\x1b[37m",
+  close: "\x1b[0m",
+};
 
 /**
  * Prints a colored message on your console/terminal
@@ -21,17 +21,17 @@ const colors = {
  * @param {bool} breakLine Should it break line after the message?
  */
 function print(color, message, breakLine) {
-  const lb = breakLine ? '\n' : '';
+  const lb = breakLine ? "\n" : "";
   console.log(`${colors[color]}${message}${colors.close}${lb}`);
 }
 
 /**
-* Will return false for a symbol that has spaces and/or special characters in it
-* @param {string} symbol 
-* @returns {bool} does the symbol match the RegExp?
-*/
+ * Will return false for a symbol that has spaces and/or special characters in it
+ * @param {string} symbol
+ * @returns {bool} does the symbol match the RegExp?
+ */
 function isValidSymbol(symbol) {
-  const regexp = new RegExp('^[a-zA-Z0-9]+$');
+  const regexp = new RegExp("^[a-zA-Z0-9]+$");
   return regexp.test(symbol);
 }
 
@@ -45,21 +45,31 @@ function isValidSymbol(symbol) {
 function generateTodayFilename({ prefix, extension, directory }) {
   // setup month names
   const monthNames = [
-    "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-    "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+    "Jan",
+    "Feb",
+    "Mar",
+    "Apr",
+    "May",
+    "Jun",
+    "Jul",
+    "Aug",
+    "Sep",
+    "Oct",
+    "Nov",
+    "Dec",
   ];
 
   // get current date (we do it manually so that it's not dependant on user's locale)
   const today = new Date();
-  const day = String(today.getDate()).padStart(2, '0');
+  const day = String(today.getDate()).padStart(2, "0");
   const month = monthNames[today.getMonth()];
   const year = today.getFullYear();
   let finalDate;
 
-  directory = directory ? `${directory}/` : '';
-  prefix = prefix ? `${prefix}_` : '';
+  directory = directory ? `${directory}/` : "";
+  prefix = prefix ? `${prefix}_` : "";
   finalDate = `${day}_${month}_${year}`;
-  extension = extension ? extension : 'json';
+  extension = extension ? extension : "json";
 
   // transform it in a string with the following format:
   // 'myDirectory/whitelist_mainnet_update_14_sep_2021.json' where
@@ -71,8 +81,16 @@ function generateTodayFilename({ prefix, extension, directory }) {
   return filename;
 }
 
+function cacheBuster(url) {
+  const rand = Math.floor(Math.random() * (9999999999 - 2) + 1);
+  const cacheBuster = `?cacheBuster=${rand}`;
+  const finalUrl = `${url}${cacheBuster}`;
+  return finalUrl;
+}
+
 module.exports = {
   print,
   isValidSymbol,
-  generateTodayFilename
-}
+  generateTodayFilename,
+  cacheBuster,
+};
