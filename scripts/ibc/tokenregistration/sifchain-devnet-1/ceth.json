@@ -1,1 +1,23 @@
-{"entries":[{"is_whitelisted":true,"decimals":"18","denom":"ceth","base_denom":"ceth","path":"","ibc_channel_id":"","ibc_counterparty_channel_id":"","display_name":"ETH","display_symbol":"","network":"","address":"","external_symbol":"ETH","transfer_limit":"","permissions":["CLP","IBCEXPORT","IBCIMPORT"],"unit_denom":"","ibc_counterparty_denom":"xeth","ibc_counterparty_chain_id":""}]}
+{
+  "entries": [
+    {
+      "is_whitelisted": true,
+      "decimals": "18",
+      "denom": "ceth",
+      "base_denom": "ceth",
+      "path": "",
+      "ibc_channel_id": "",
+      "ibc_counterparty_channel_id": "",
+      "display_name": "ETH",
+      "display_symbol": "",
+      "network": "",
+      "address": "",
+      "external_symbol": "ETH",
+      "transfer_limit": "",
+      "permissions": ["CLP", "IBCEXPORT", "IBCIMPORT"],
+      "unit_denom": "",
+      "ibc_counterparty_denom": "xeth",
+      "ibc_counterparty_chain_id": ""
+    }
+  ]
+}
