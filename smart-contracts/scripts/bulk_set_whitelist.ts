@@ -1,6 +1,7 @@
 /**
- * Adds tokens to the whitelist in a batch
- * Please read LimitUpdating.md for instructions
+ * Adds tokens to the whitelist in a batch.
+ * This script is part of the whitelisting process.
+ * Please read Whitelist_Update.md for instructions.
  * 
  * @dev We're setting gasPrice explicitly, in accordance with the received ask.
  *      If this causes problems, please remove gasPrice from the transaction,
@@ -21,6 +22,10 @@ import * as fs from "fs";
 
 // Will estimate gas and multiply the result by this value (wiggle room)
 const GAS_PRICE_BUFFER = 1.2;
+
+// Where to fetch token data from
+const sourceFolder = 'data';
+const sourceFile = calculateSourceFilename();
 
 interface WhitelistTokenData {
   address: string
@@ -59,7 +64,7 @@ async function main() {
   if (useForking)
     await impersonateBridgeBankAccounts(container, hardhat, deploymentName);
 
-  const whitelistData = await readTokenData(process.env["WHITELIST_DATA"] ?? "/tmp/nothing");
+  const whitelistData = await readTokenData(sourceFile);
 
   const bridgeBank = (await container.resolve(DeployedBridgeBank).contract);
 
@@ -130,6 +135,26 @@ function logResult(addressList:Array<String>, receipt:any) {
     // logs failure in red 
     console.log(`\x1b[31mFAILED: either got no tx receipt, or the receipt had no events.\x1b[0m`);
   }
+}
+
+function calculateSourceFilename() {
+  // setup month names
+  const monthNames = [
+    "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+    "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+  ];
+
+  // get current date (we do it manually so that it's not dependant on user's locale)
+  const today = new Date();
+  const day = String(today.getDate()).padStart(2, '0');
+  const month = monthNames[today.getMonth()];
+  const year = today.getFullYear();
+
+  // transform it in a string with the following format:
+  // whitelist_mainnet_update_14_sep_2021.json
+  const filename = `${sourceFolder}/whitelist_mainnet_update_${day}_${month}_${year}.json`;
+
+  return filename;
 }
 
 main()

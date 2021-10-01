@@ -10,11 +10,11 @@ Follow the links below to setup sifnode as a standalone (compile and run on your
 
 ### Standalone
 
-See [here](https://github.com/Sifchain/sifnode/tree/master/docs/chainOps/standalone/README.md).
+See [here](https://github.com/Sifchain/sifnode/tree/develop/docs/chainOps/standalone/README.md).
 
 ### Kubernetes (k8s)
 
-See [here](https://github.com/Sifchain/sifnode/tree/master/docs/chainOps/k8s/README.md).
+See [here](https://github.com/Sifchain/sifnode/tree/develop/docs/chainOps/k8s/README.md).
 
 ## Additional Resources
 
