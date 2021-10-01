@@ -9,9 +9,18 @@ const fs = require('fs');
 const axios = require('axios');
 const { ethers } = require("hardhat");
 
+const {
+  print,
+  isValidSymbol,
+  generateTodayFilename
+} = require('./helpers/utils');
+
 const addressListFile = process.env.ADDRESS_LIST_SOURCE;
-const destinationFolder = 'data';
-const destinationFile = generateDestinationFilename();
+const destinationFile = generateTodayFilename({
+  directory: 'data',
+  prefix: 'whitelist_mainnet_update',
+  extension: 'json'
+});
 
 async function main() {
   print('yellow', 'Starting...', true);
@@ -68,49 +77,6 @@ async function main() {
 
   print('cyan', `DONE! These results have been written to ${destinationFile}:`);
   print('cyan', JSON.stringify(finalList, null, 2));
-}
-
-const colors = {
-  green: '\x1b[42m\x1b[37m',
-  red: '\x1b[41m\x1b[37m',
-  yellow: '\x1b[33m',
-  cyan: '\x1b[36m',
-  close: '\x1b[0m'
-}
-function print(color, message, breakLine) {
-  const lb = breakLine ? '\n' : '';
-  console.log(`${colors[color]}${message}${colors.close}${lb}`);
-}
-
-/**
-* Will return false for a symbol that has spaces and/or special characters in it
-* @param {string} symbol 
-* @returns {bool} does the symbol match the RegExp?
-*/
-function isValidSymbol(symbol) {
-  const regexp = new RegExp('^[a-zA-Z0-9]+$');
-  return regexp.test(symbol);
-}
-
-
-function generateDestinationFilename() {
-  // setup month names
-  const monthNames = [
-    "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-    "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
-  ];
-
-  // get current date (we do it manually so that it's not dependant on user's locale)
-  const today = new Date();
-  const day = String(today.getDate()).padStart(2, '0');
-  const month = monthNames[today.getMonth()];
-  const year = today.getFullYear();
-
-  // transform it in a string with the following format:
-  // whitelist_mainnet_update_14_sep_2021.json
-  const filename = `${destinationFolder}/whitelist_mainnet_update_${day}_${month}_${year}.json`;
-
-  return filename;
 }
 
 async function getTokenMetadata(address) {

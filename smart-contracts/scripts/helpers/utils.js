@@ -35,6 +35,13 @@ function isValidSymbol(symbol) {
   return regexp.test(symbol);
 }
 
+/**
+ * Receives an object with the following properties, all of which are optional:
+ * @param {string} prefix The actual name of the file, something like 'whitelist'
+ * @param {string} extension The extension of the file, such as 'json'
+ * @param {string} directory The target directory of the file, something like 'data'
+ * @returns {string} The generated filename, something like 'data/whitelist_14_sep_2021.json'
+ */
 function generateTodayFilename({ prefix, extension, directory }) {
   // setup month names
   const monthNames = [
@@ -55,7 +62,7 @@ function generateTodayFilename({ prefix, extension, directory }) {
   extension = extension ? extension : 'json';
 
   // transform it in a string with the following format:
-  // myDirectory/whitelist_mainnet_update_14_sep_2021.json where
+  // 'myDirectory/whitelist_mainnet_update_14_sep_2021.json' where
   // 'myDirectory' is `directory`
   // 'whitelist_mainnet_update' is `prefix`
   // '14_sep_2021' is today's date
@@ -64,3 +71,8 @@ function generateTodayFilename({ prefix, extension, directory }) {
   return filename;
 }
 
+module.exports = {
+  print,
+  isValidSymbol,
+  generateTodayFilename
+}
