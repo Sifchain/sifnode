@@ -1,0 +1,65 @@
+/**
+ * List of colors to be used in the below function
+ */
+const colors = {
+  black: '\x1b[30m',
+  green: '\x1b[42m\x1b[30m',
+  red: '\x1b[41m\x1b[37m',
+  yellow: '\x1b[33m',
+  blue: '\x1b[34m',
+  magenta: '\x1b[35m',
+  cyan: '\x1b[36m',
+  white: '\x1b[37m',
+  highlight: '\x1b[40m\x1b[37m',
+  close: '\x1b[0m'
+}
+
+/**
+ * Prints a colored message on your console/terminal
+ * @param {string} color Can be one of the above colors
+ * @param {string} message Whatever string
+ * @param {bool} breakLine Should it break line after the message?
+ */
+function print(color, message, breakLine) {
+  const lb = breakLine ? '\n' : '';
+  console.log(`${colors[color]}${message}${colors.close}${lb}`);
+}
+
+/**
+* Will return false for a symbol that has spaces and/or special characters in it
+* @param {string} symbol 
+* @returns {bool} does the symbol match the RegExp?
+*/
+function isValidSymbol(symbol) {
+  const regexp = new RegExp('^[a-zA-Z0-9]+$');
+  return regexp.test(symbol);
+}
+
+function generateTodayFilename({ prefix, extension, directory }) {
+  // setup month names
+  const monthNames = [
+    "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+    "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+  ];
+
+  // get current date (we do it manually so that it's not dependant on user's locale)
+  const today = new Date();
+  const day = String(today.getDate()).padStart(2, '0');
+  const month = monthNames[today.getMonth()];
+  const year = today.getFullYear();
+  let finalDate;
+
+  directory = directory ? `${directory}/` : '';
+  prefix = prefix ? `${prefix}_` : '';
+  finalDate = `${day}_${month}_${year}`;
+  extension = extension ? extension : 'json';
+
+  // transform it in a string with the following format:
+  // myDirectory/whitelist_mainnet_update_14_sep_2021.json where
+  // 'myDirectory' is `directory`
+  // 'whitelist_mainnet_update' is `prefix`
+  // '14_sep_2021' is today's date
+  // and 'json' is `extension`
+  const filename = `${directory}${prefix}${finalDate}.${extension}`;
+  return filename;
+}
