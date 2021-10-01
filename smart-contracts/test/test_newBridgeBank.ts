@@ -23,6 +23,7 @@ import {SignerWithAddress} from "@nomiclabs/hardhat-ethers/signers";
 import {DeployedBridgeBank} from "../src/contractSupport";
 import {HardhatRuntimeEnvironment} from "hardhat/types";
 import {impersonateAccount, setupSifchainMainnetDeployment} from "../src/hardhatFunctions";
+import {getErc20Data, getWhitelistItems, getWhitelistRawItems} from "../src/whitelist";
 
 chai.use(solidity)
 
@@ -92,6 +93,12 @@ describe("BridgeBank", () => {
                     value: 0
                 }
             )).to.changeTokenBalance(testToken, sender, smallAmount.mul(-1))
+        })
+
+        it("should read the whitelist", async () => {
+            const btf = await container.resolve(SifchainContractFactories).bridgeToken
+            const whitelistItems = await getWhitelistItems(bridgeBank, btf)
+            expect(whitelistItems.length).to.eq(2)
         })
 
         it("should fail to lock a test token to an invalid address", async () => {
