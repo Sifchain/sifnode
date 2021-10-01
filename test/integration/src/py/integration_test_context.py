@@ -10,11 +10,6 @@ base_dir = os.path.join(project_root, "test", "integration", "framework")
 sys.path = sys.path + [base_dir]
 import main
 
-on_peggy_branch = not os.path.exists(os.path.join(project_root, "smart-contracts", "truffle-config.js"))
-
-if on_peggy_branch:
-    import web3
-
 
 class IntegrationTestContext:
     def __init__(self, snapshot_name):
