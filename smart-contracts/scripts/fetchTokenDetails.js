@@ -106,10 +106,10 @@ async function main() {
   fs.writeFileSync(destinationFile, JSON.stringify(output, null, 2));
   fs.writeFileSync(sifnodeDestinationFile, JSON.stringify(sifnodeList, null, 2));
 
-  print("cyan", `DONE! These results have been written to ${destinationFile}:`);
-  print("cyan", JSON.stringify(finalList, null, 2));
-  print('magenta', '---------');
-  print("magenta", `And Sifnode results have been written to ${sifnodeDestinationFile}.`);
+  print('green', 'The first part is done!');
+  print("cyan", `Results have been written to ${destinationFile}`);
+  print("magenta", `Sifnode results have been written to ${sifnodeDestinationFile}.`);
+  print("yellow", `Please wait while we send the whitelist to the blockchain...`);
 }
 
 async function getTokenMetadata(address) {
