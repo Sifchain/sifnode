@@ -66,7 +66,8 @@ def init_chain(chain):
     pass
 
 # Both hermes and ts-relayer are IBC-compliant relayers.
-# hermes is written in Rust, ts-relayer is written in Typescript.
+# (1) hermes is written in Rust (Cephalopod, Informal systems), (2) ts-relayer is written in Typescript, (3) Go
+# implementation. We use ts-relayer for most of the cases, because hermes was working unreliable.
 # Their core functionality should be similar, but for some reason we might choose one over the other in specific cases.
 # ts-relayer has the ability to act as multiple relayers in one process.
 
