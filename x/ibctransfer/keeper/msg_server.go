@@ -38,21 +38,22 @@ func (srv msgServer) Transfer(goCtx context.Context, msg *sdktransfertypes.MsgTr
 	if !srv.tokenRegistryKeeper.CheckDenomPermissions(ctx, msg.Token.Denom, []tokenregistrytypes.Permission{tokenregistrytypes.Permission_IBCEXPORT}) {
 		return nil, sdkerrors.Wrap(tokenregistrytypes.ErrPermissionDenied, "denom cannot be exported")
 	}
-
 	// get token registry entry for sent token
 	registryEntry := srv.tokenRegistryKeeper.GetDenom(sdk.UnwrapSDKContext(goCtx), msg.Token.Denom)
 	// disallow direct transfers of denom aliases
 	if registryEntry.UnitDenom != "" && registryEntry.UnitDenom != registryEntry.Denom {
 		return nil, sdkerrors.Wrap(tokenregistrytypes.ErrPermissionDenied, "transfers of denom aliases are not yet supported")
 	}
-
 	// check if registry entry has an IBC counter party conversion to process
 	if registryEntry.IbcCounterpartyDenom != "" && registryEntry.IbcCounterpartyDenom != registryEntry.Denom {
 		sendAsRegistryEntry := srv.tokenRegistryKeeper.GetDenom(sdk.UnwrapSDKContext(goCtx), registryEntry.IbcCounterpartyDenom)
 		if sendAsRegistryEntry.Decimals != 0 && registryEntry.Decimals > sendAsRegistryEntry.Decimals {
 			token, tokenConversion := ConvertCoinsForTransfer(goCtx, msg, registryEntry, sendAsRegistryEntry)
-			if token.Amount.Equal(sdk.NewInt(0)) {
+			if token.Amount.Equal(sdk.NewInt(0)) || tokenConversion.Amount.Equal(sdk.NewInt(0)) {
 				return nil, types.ErrAmountTooLowToConvert
+			}
+			if !token.Amount.IsUint64() || !tokenConversion.Amount.IsUint64() {
+				return nil, types.ErrAmountTooLargeToSend
 			}
 			err := PrepareToSendConvertedCoins(goCtx, msg, token, tokenConversion, srv.bankKeeper)
 			if err != nil {
@@ -61,11 +62,9 @@ func (srv msgServer) Transfer(goCtx context.Context, msg *sdktransfertypes.MsgTr
 			msg.Token = tokenConversion
 		}
 	}
-
-	if !msg.Token.Amount.IsUint64() {
+	if !msg.Token.Amount.IsUint64() || msg.Token.Amount.Equal(sdk.NewInt(0)) {
 		return nil, types.ErrAmountTooLargeToSend
 	}
-
 	return srv.sdkMsgServer.Transfer(goCtx, msg)
 }
 
