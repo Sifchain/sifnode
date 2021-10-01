@@ -15,6 +15,7 @@ import {DeployedBridgeBank, requiredEnvVar} from "../src/contractSupport";
 import {DeploymentName, HardhatRuntimeEnvironmentToken} from "../src/tsyringe/injectionTokens";
 import {
     impersonateBridgeBankAccounts,
+    setupDeployment,
     setupRopstenDeployment,
     setupSifchainMainnetDeployment
 } from "../src/hardhatFunctions";
@@ -45,24 +46,11 @@ async function main() {
 
   container.register(HardhatRuntimeEnvironmentToken, {useValue: hardhat});
 
-  const deploymentName = requiredEnvVar("DEPLOYMENT_NAME");
-
-  container.register(DeploymentName, {useValue: deploymentName});
-
-  switch (hardhat.network.name) {
-    case "ropsten":
-        await setupRopstenDeployment(container, hardhat, deploymentName);
-        break;
-    case "mainnet":
-    case "hardhat":
-    case "localhost":
-        await setupSifchainMainnetDeployment(container, hardhat, deploymentName);
-        break;
-  }
+  await setupDeployment(container);
 
   const useForking = !!process.env["USE_FORKING"];
   if (useForking)
-    await impersonateBridgeBankAccounts(container, hardhat, deploymentName);
+    await impersonateBridgeBankAccounts(container, hardhat);
 
   const whitelistData = await readTokenData(sourceFile);
 
