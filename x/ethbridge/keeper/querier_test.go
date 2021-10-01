@@ -19,7 +19,7 @@ import (
 //nolint:lll
 const (
 	TestResponseJSON              = "{\"prophecy_id\":\"FY9NHxf33a/BfHbkaF2YISRX2C3D2Fi2Rr7ROXLiIBc=\",\"status\":1,\"claim_validators\":[\"cosmosvaloper1mnfm9c7cdgqnkk66sganp78m0ydmcr4pn7fqfk\"]}"
-	TestCrossChainFeeResponseJSON = "{\"fee_currency\":\"ceth\",\"fee_currency_gas\":\"1\",\"minimum_lock_cost\":\"1\",\"minimum_burn_cost\":\"1\"}"
+	TestCrossChainFeeResponseJSON = "{\"fee_currency\":\"ceth\",\"fee_currency_gas\":\"1\",\"minimum_lock_cost\":\"1\",\"minimum_burn_cost\":\"1\",\"first_lock_double_peggy_cost\":\"1\"}"
 )
 
 func TestNewQuerier(t *testing.T) {

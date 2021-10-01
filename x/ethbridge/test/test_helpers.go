@@ -53,6 +53,7 @@ const (
 	CrossChainFee                    = "ceth"
 	CrossChainFeeGas                 = 1
 	MinimumCost                      = 1
+	FirstLockDoublePeggyCost         = 1
 )
 
 // CreateTestKeepers greates an Mock App, OracleKeeper, bankKeeper and ValidatorAddresses to be used for test input
@@ -186,7 +187,7 @@ func CreateTestKeepers(t *testing.T, consensusNeeded float64, validatorAmounts [
 	networkIdentity := oracleTypes.NewNetworkIdentity(NetworkDescriptor)
 
 	oracleKeeper.SetCrossChainFee(ctx, networkIdentity, CrossChainFee,
-		sdk.NewInt(CrossChainFeeGas), sdk.NewInt(MinimumCost), sdk.NewInt(MinimumCost))
+		sdk.NewInt(CrossChainFeeGas), sdk.NewInt(MinimumCost), sdk.NewInt(MinimumCost), sdk.NewInt(FirstLockDoublePeggyCost))
 	whitelist := oracleTypes.ValidatorWhiteList{WhiteList: valAddrs}
 	oracleKeeper.SetOracleWhiteList(ctx, networkIdentity, whitelist)
 
