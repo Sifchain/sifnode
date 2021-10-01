@@ -10,7 +10,6 @@
 make -C ./deploy bundler
 ```
 
-
 3. Ensure your `$GOPATH` is setup correctly:
 
 ```bash
@@ -141,7 +140,7 @@ where:
 |Param|Description|
 |-----|----------|
 |`<cluster>`|The name of your cluster.|
-|`<chain_id>`|The Chain ID of the network (e.g.: sifchain).|
+|`<chain_id>`|The Chain ID of the network (e.g.: `sifchain-1`).|
 |`<provider>`|The cloud provider to use (currently only AWS is supported).|
 |`<namespace>`|The Kubernetes namespace to use (e.g.: sifnode).|
 |`<image>`|The image to pull down from Docker Hub (e.g.: sifchain/sifnoded).|
@@ -213,7 +212,7 @@ In order to become a validator, that is a node which can participate in consensu
 1. Get the public key of your node:
 
 ```bash
-rake "sifnode:keys:public[<cluster>,<provider>,<namespace>]"
+rake "sifnode:keys:kubernetes:public[<cluster>,<provider>,<namespace>]"
 ```
 
 where:
@@ -227,7 +226,7 @@ where:
 e.g.:
 
 ```bash
-rake "sifnode:keys:public[my-cluster,aws,sifnode]"
+rake "sifnode:keys:kubernetes:public[my-cluster,aws,sifnode]"
 ```
 
 3. Stake:
