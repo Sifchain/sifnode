@@ -39,10 +39,10 @@ import (
 )
 
 const (
-	transactionInterval = 10 * time.Second
-	trailingBlocks      = 50
-	ethereumWakeupTimer = 60
-	maxQueryBlocks      = 5000
+	transactionInterval   = 10 * time.Second
+	trailingBlocks        = 50
+	ethereumSleepDuration = 60
+	maxQueryBlocks        = 5000
 )
 
 // EthereumSub is an Ethereum listener that can relay txs to Cosmos and Ethereum
@@ -139,14 +139,12 @@ func (sub EthereumSub) Start(txFactory tx.Factory,
 
 	bridgeBankContractABI := contract.LoadABI(txs.BridgeBank)
 
-	// start the timer
-	t := time.NewTicker(time.Second * ethereumWakeupTimer)
 	for {
 		select {
 		// Handle any errors
 		case <-quit:
 			return
-		case <-t.C:
+		default:
 			sub.CheckNonceAndProcess(txFactory,
 				networkID,
 				ethClient,
@@ -154,6 +152,7 @@ func (sub EthereumSub) Start(txFactory tx.Factory,
 				bridgeBankAddress,
 				bridgeBankContractABI,
 				symbolTranslator)
+			time.Sleep(time.Second * ethereumSleepDuration)
 		}
 	}
 }

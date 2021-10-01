@@ -33,8 +33,8 @@ import (
 )
 
 const (
-	errorMessageKey   = "errorMessage"
-	cosmosWakeupTimer = 60
+	errorMessageKey     = "errorMessage"
+	cosmosSleepDuration = 60
 )
 
 // CosmosSub defines a Cosmos listener that relays events to Ethereum and Cosmos
@@ -92,19 +92,17 @@ func (sub CosmosSub) Start(txFactory tx.Factory, completionEvent *sync.WaitGroup
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	defer close(quit)
 
-	// start the timer
-	t := time.NewTicker(time.Second * cosmosWakeupTimer)
 	for {
 		select {
 		// Handle any errors
 		case <-quit:
 			log.Println("we receive the quit signal and exit")
 			return
-		case <-t.C:
+		default:
 			sub.CheckNonceAndProcess(txFactory, client)
+			time.Sleep(time.Second * cosmosSleepDuration)
 		}
 	}
-
 }
 
 // CheckNonceAndProcess check the lock burn nonce and process the event
