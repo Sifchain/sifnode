@@ -13,7 +13,9 @@ async function getList() {
   return addresses;
 }
 
-async function extractAddresses(rawFileContents) {}
+async function extractAddresses(rawFileContents) {
+  const list = rawFileContents.match();
+}
 
 module.exports = {
   getList,
