@@ -22,14 +22,12 @@ func GetQueryCmd() *cobra.Command {
 		SuggestionsMinimumDistance: 2,
 		RunE:                       client.ValidateCmd,
 	}
-
 	cmd.AddCommand(
 		GetCmdQueryEntries(),
 		GetCmdGenerateEntry(),
-		GetCmdGenerateLowPrecisionEntries(),
-		GetCmdGenerateHighPrecisionEntries(),
+		GetCmdAddEntry(),
+		GetCmdAddAllEntries(),
 	)
-
 	return cmd
 }
 
@@ -43,19 +41,15 @@ func GetCmdQueryEntries() *cobra.Command {
 			if err != nil {
 				return err
 			}
-
 			queryClient := types.NewQueryClient(clientCtx)
 			res, err := queryClient.Entries(context.Background(), &types.QueryEntriesRequest{})
 			if err != nil {
 				return err
 			}
-
 			return clientCtx.PrintBytes(clientCtx.JSONMarshaler.MustMarshalJSON(res.Registry))
 		},
 	}
-
 	flags.AddQueryFlagsToCmd(cmd)
-
 	return cmd
 }
 
@@ -75,9 +69,7 @@ func GetCmdGenerateEntry() *cobra.Command {
 	var flagTransferLimit = "token_transfer_limit"
 	var flagNetwork = "token_network"
 	var flagAddress = "token_address"
-
 	var flagsPermission = []string{"token_permission_clp", "token_permission_ibc_export", "token_permission_ibc_import"}
-
 	cmd := &cobra.Command{
 		Use:   "generate",
 		Short: "generate JSON for a token registration",
@@ -87,139 +79,110 @@ func GetCmdGenerateEntry() *cobra.Command {
 			if err != nil {
 				return err
 			}
-
 			flags := cmd.Flags()
-
 			whitelist, err := flags.GetBool(flagWhitelist)
 			if err != nil {
 				return err
 			}
-
 			initialDenom, err := flags.GetString(flagDenom)
 			if err != nil {
 				return err
 			}
-
 			baseDenom, err := flags.GetString(flagBaseDenom)
 			if err != nil {
 				return err
 			}
-
 			decimals, err := flags.GetInt(flagDecimals)
 			if err != nil {
 				return err
 			}
-
 			displayName, err := flags.GetString(flagDisplayName)
 			if err != nil {
 				return err
 			}
-
 			displaySymbol, err := flags.GetString(flagDisplaySymbol)
 			if err != nil {
 				return err
 			}
-
 			externalSymbol, err := flags.GetString(flagExternalSymbol)
 			if err != nil {
 				return err
 			}
-
 			transferLimit, err := flags.GetString(flagTransferLimit)
 			if err != nil {
 				return err
 			}
-
 			network, err := flags.GetString(flagNetwork)
 			if err != nil {
 				return err
 			}
-
 			address, err := flags.GetString(flagAddress)
 			if err != nil {
 				return err
 			}
-
 			ibcChannelId, err := flags.GetString(flagIbcChannelId)
 			if err != nil {
 				return err
 			}
-
 			ibcCounterpartyChannelId, err := flags.GetString(flagIbcCounterpartyChannelId)
 			if err != nil {
 				return err
 			}
-
 			ibcCounterpartyChainId, err := flags.GetString(flagIbcCounterpartyChainId)
 			if err != nil {
 				return err
 			}
-
 			ibcCounterpartyDenom, err := flags.GetString(flagIbcCounterpartyDenom)
 			if err != nil {
 				return err
 			}
-
 			unitDenom, err := flags.GetString(flagUnitDenom)
 			if err != nil {
 				return err
 			}
-
 			permissions := []types.Permission{}
-
 			permissionCLP, err := flags.GetBool("token_permission_clp")
 			if err != nil {
 				return err
 			}
-
 			if permissionCLP {
 				permissions = append(permissions, types.Permission_CLP)
 			}
-
 			permissionIBCExport, err := flags.GetBool("token_permission_ibc_export")
 			if err != nil {
 				return err
 			}
-
 			if permissionIBCExport {
 				permissions = append(permissions, types.Permission_IBCEXPORT)
 			}
-
 			permissionIBCImport, err := flags.GetBool("token_permission_ibc_import")
 			if err != nil {
 				return err
 			}
-
 			if permissionIBCImport {
 				permissions = append(permissions, types.Permission_IBCIMPORT)
 			}
-
 			var path string
 			var denom string
 			// base_denom is required.
 			// generate denom if path is also provided.
 			// override the IBC generation with --denom if specified explicitly.
 			// otherwise fallback to base_denom
-
 			if ibcChannelId != "" {
 				// normalise path slashes before generating hash (do this in MsgRegister.ValidateBasic as well)
 				path = "transfer/" + ibcChannelId
-
 				// generate IBC hash from baseDenom and ibc channel id
 				denomTrace := transfertypes.DenomTrace{
 					Path:      path,
 					BaseDenom: baseDenom,
 				}
-
 				denom = denomTrace.IBCDenom()
 			}
-
 			if initialDenom != "" {
 				denom = initialDenom
 			} else if denom == "" {
 				denom = baseDenom
 			}
-
 			entry := types.RegistryEntry{
 				IsWhitelisted:            whitelist,
 				Decimals:                 int64(decimals),
@@ -239,11 +202,9 @@ func GetCmdGenerateEntry() *cobra.Command {
 				TransferLimit:            transferLimit,
 				Permissions:              permissions,
 			}
-
 			return clientCtx.PrintProto(&types.Registry{Entries: []*types.RegistryEntry{&entry}})
 		},
 	}
-
 	cmd.Flags().Bool(flagWhitelist, true,
 		"Whether this token should be whitelisted i.e disable all permissions.")
 	cmd.Flags().String(flagDenom, "",
@@ -278,16 +239,43 @@ func GetCmdGenerateEntry() *cobra.Command {
 	for _, flag := range flagsPermission {
 		cmd.Flags().Bool(flag, true, fmt.Sprintf("Flag to specify permission for %s", types.GetPermissionFromString(flag)))
 	}
-
 	_ = cmd.MarkFlagRequired(flagBaseDenom)
 	_ = cmd.MarkFlagRequired(flagDecimals)
-
 	return cmd
 }
 
-func GetCmdGenerateLowPrecisionEntries() *cobra.Command {
+func GetCmdAddEntry() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "generate-low-precision-entries [registry.json]",
+		Use:   "add [registry.json] [entry.json]",
+		Short: "",
+		Args:  cobra.ExactArgs(2),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			clientCtx, err := client.GetClientQueryContext(cmd)
+			if err != nil {
+				return err
+			}
+			registry, err := whitelistutils.ParseDenoms(clientCtx.JSONMarshaler, args[0])
+			if err != nil {
+				return err
+			}
+			reg, err := whitelistutils.ParseDenoms(clientCtx.JSONMarshaler, args[1])
+			if err != nil {
+				return err
+			}
+			entryToAdd := reg.Entries[0]
+			entries := registry.Entries
+			entries = append(entries, entryToAdd)
+			registry.Entries = entries
+			return clientCtx.PrintBytes(clientCtx.JSONMarshaler.MustMarshalJSON(&registry))
+		},
+	}
+	flags.AddQueryFlagsToCmd(cmd)
+	return cmd
+}
+
+func GetCmdAddAllEntries() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "add-all [registry.json]",
 		Short: "",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -295,19 +283,27 @@ func GetCmdGenerateLowPrecisionEntries() *cobra.Command {
 			if err != nil {
 				return err
 			}
-
 			registry, err := whitelistutils.ParseDenoms(clientCtx.JSONMarshaler, args[0])
 			if err != nil {
 				return err
 			}
-
-			lowPrecisionTokenRegistry := types.Registry{Entries: []*types.RegistryEntry{}}
-
+			finalRegistry := types.Registry{Entries: []*types.RegistryEntry{}}
 			for _, entry := range registry.Entries {
-				if entry.Decimals > 10 && strings.HasPrefix(entry.Denom, "c") {
-					conversionDenom := "x" + strings.TrimPrefix(entry.Denom, "c")
-
-					lowPrecisionTokenRegistry.Entries = append(lowPrecisionTokenRegistry.Entries, &types.RegistryEntry{
+				entryForConversion := entry
+				finalRegistry.Entries = append(finalRegistry.Entries, entryForConversion)
+				if entry.Decimals > 10 {
+					conversionDenom := ""
+					if strings.HasPrefix(entry.Denom, "c") {
+						conversionDenom = "x" + strings.TrimPrefix(entry.Denom, "c")
+					} else if strings.EqualFold(entry.Denom, "rowan") {
+						conversionDenom = "xrowan"
+					}
+					entryForConversion.IbcCounterpartyDenom = conversionDenom
+					entryForConversion.Permissions = []types.Permission{
+						types.Permission_CLP,
+						types.Permission_IBCEXPORT,
+					}
+					finalRegistry.Entries = append(finalRegistry.Entries, &types.RegistryEntry{
 						IsWhitelisted: true,
 						Denom:         conversionDenom,
 						BaseDenom:     conversionDenom,
@@ -315,46 +311,7 @@ func GetCmdGenerateLowPrecisionEntries() *cobra.Command {
 						UnitDenom:     entry.Denom,
 						Permissions:   []types.Permission{types.Permission_IBCIMPORT},
 					})
-				}
-			}
-
-			return clientCtx.PrintBytes(clientCtx.JSONMarshaler.MustMarshalJSON(&lowPrecisionTokenRegistry))
-		},
-	}
-
-	flags.AddQueryFlagsToCmd(cmd)
-
-	return cmd
-}
-
-func GetCmdGenerateHighPrecisionEntries() *cobra.Command {
-	cmd := &cobra.Command{
-		Use:   "generate-high-precision-entries [registry.json]",
-		Short: "",
-		Args:  cobra.ExactArgs(1),
-		RunE: func(cmd *cobra.Command, args []string) error {
-			clientCtx, err := client.GetClientQueryContext(cmd)
-			if err != nil {
-				return err
-			}
-
-			registry, err := whitelistutils.ParseDenoms(clientCtx.JSONMarshaler, args[0])
-			if err != nil {
-				return err
-			}
-
-			highPrecisionTokenRegistry := types.Registry{Entries: []*types.RegistryEntry{}}
-
-			for _, entry := range registry.Entries {
-				if entry.Decimals > 10 && strings.HasPrefix(entry.Denom, "c") {
-					entryForConversion := entry
-
-					conversionDenom := "x" + strings.TrimPrefix(entry.Denom, "c")
-
-					highPrecisionTokenRegistry.Entries = append(highPrecisionTokenRegistry.Entries, entryForConversion)
-
-					entryForConversion.IbcCounterpartyDenom = conversionDenom
-
+				} else {
 					entryForConversion.Permissions = []types.Permission{
 						types.Permission_CLP,
 						types.Permission_IBCEXPORT,
@@ -362,12 +319,9 @@ func GetCmdGenerateHighPrecisionEntries() *cobra.Command {
 					}
 				}
 			}
-
-			return clientCtx.PrintBytes(clientCtx.JSONMarshaler.MustMarshalJSON(&highPrecisionTokenRegistry))
+			return clientCtx.PrintBytes(clientCtx.JSONMarshaler.MustMarshalJSON(&finalRegistry))
 		},
 	}
-
 	flags.AddQueryFlagsToCmd(cmd)
-
 	return cmd
 }
