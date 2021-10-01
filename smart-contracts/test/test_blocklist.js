@@ -5,6 +5,12 @@ require("chai")
   .use(require("chai-as-promised"))
   .should();
 
+
+// The values below are from the old implementation (as they should be).
+// The idea is to compare the costs of the old impl with the new one.
+// The old impl didn't have the capability of returning the full list of blocklisted addresses.
+// The new one does have that and it's more expensive because of that.
+// Set `use` to true if you want to compare costs.
 const gasProfiling = {
   use: false,
   addFirstUser: 45963,
@@ -14,7 +20,7 @@ const gasProfiling = {
   current: {}
 }
 
-contract.only("Blocklist", function (accounts) {
+contract("Blocklist", function (accounts) {
   const state = {
     accounts: {
       owner: accounts[0],
@@ -528,6 +534,8 @@ contract.only("Blocklist", function (accounts) {
 });
 
 function printDiff(title, original, current) {
+  if(!gasProfiling.use) return;
+
   const diff = current - original;
   const pct = Math.abs(((1 - current / original) * 100)).toFixed(2);
 
