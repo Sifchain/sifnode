@@ -2,9 +2,8 @@
 
 If you are trying to whitelist many token addresses at once, you will need to use the `yarn whitelist:run` command.
 
-1) Before running the script, go to the data folder and create a file called address_list_source.json, or edit it so
-that it has only the addresses that you want to whitelist.  
-The contents of the file should have an array of addresses, like so:  
+1) Before running the script, make sure there is a file called address_list_source.json in the smart-contracts/data directory.  
+It contains the token addresses that will be whitelisted. It should have at least one address in an array, like so:
 ```
 [
  "0x217ddead61a42369a266f1fb754eb5d3ebadc88a",
