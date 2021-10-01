@@ -5,6 +5,7 @@ import { DeployedContractAddresses } from "../../scripts/deploy_contracts";
 import notifier from 'node-notifier';
 import * as path from "path"
 import { GolangResults } from "./golangBuilder";
+import * as fs from "fs";
 
 export interface EbrelayerArguments {
   readonly validatorValues: ValidatorValues,
@@ -40,7 +41,8 @@ export class WitnessRunner extends ShellCommand<EbrelayerResults> {
     readonly chainNet = "localnet",
     readonly witnessDB = `WitnessDB.db`,
     readonly relayerdbPath = "./witnessdb",
-    readonly symbolTranslatorFile = "../test/integration/config/symbol_translator.json"
+    readonly symbolTranslatorFile = "../test/integration/config/symbol_translator.json",
+    readonly logFile = "/tmp/sifnode/witness.log"
   ) {
     super();
     this.output = new Promise<EbrelayerResults>((res, rej) => {
@@ -67,7 +69,9 @@ export class WitnessRunner extends ShellCommand<EbrelayerResults> {
       "--symbol-translator-file",
       this.symbolTranslatorFile,
       "--relayerdb-path",
-      this.relayerdbPath
+      this.relayerdbPath,
+      "--log_format",
+      "json"
     ]]
   }
 
@@ -77,11 +81,12 @@ export class WitnessRunner extends ShellCommand<EbrelayerResults> {
     process.env["ETHEREUM_PRIVATE_KEY"] = this.args.account.privateKey.slice(2);
     process.env["ETHEREUM_ADDRESS"] = this.args.account.address.slice(2);
     const spawncmd = "ebrelayer " + this.cmd()[1].join(" ");
+    const witnessLogFile = fs.openSync(this.logFile, "w");
     const commandResult = ChildProcess.spawn(
       spawncmd,
       {
         shell: true,
-        stdio: "inherit",
+        stdio: ["inherit", witnessLogFile, witnessLogFile],
       }
     )
     commandResult.on('exit', (code) => {
@@ -89,6 +94,7 @@ export class WitnessRunner extends ShellCommand<EbrelayerResults> {
         title: "Witness Notice",
         message: `Sifnode Witness has just exited with exit code: ${code}`
       })
+      fs.closeSync(witnessLogFile)
     })
     this.outputResolve(
       {
@@ -114,7 +120,8 @@ export class RelayerRunner extends ShellCommand<EbrelayerResults> {
     readonly chainNet = "localnet",
     readonly ebrelayerDB = `levelDB.db`,
     readonly relayerdbPath = "./relayerdb",
-    readonly symbolTranslatorFile = "../test/integration/config/symbol_translator.json"
+    readonly symbolTranslatorFile = "../test/integration/config/symbol_translator.json",
+    readonly logFile = "/tmp/sifnode/evmrelayer.log"
   ) {
     super();
     this.output = new Promise<EbrelayerResults>((res, rej) => {
@@ -150,12 +157,13 @@ export class RelayerRunner extends ShellCommand<EbrelayerResults> {
     process.env["ETHEREUM_PRIVATE_KEY"] = this.args.account.privateKey.slice(2);
     process.env["ETHEREUM_ADDRESS"] = this.args.account.address.slice(2);
     const spawncmd = "ebrelayer " + this.cmd()[1].join(" ");
+    const ebrelayerLogFile = fs.openSync(this.logFile, "w");
     const commandResult = ChildProcess.spawn(
-      spawncmd,
-      {
-        shell: true,
-        stdio: "inherit",
-      }
+        spawncmd,
+        {
+          shell: true,
+          stdio: ["inherit", ebrelayerLogFile, ebrelayerLogFile],
+        }
     )
     commandResult.on('exit', (code) => {
       notifier.notify({
