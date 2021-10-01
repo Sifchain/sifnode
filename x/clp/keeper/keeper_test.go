@@ -1,9 +1,11 @@
 package keeper_test
 
 import (
+	"fmt"
 	"math"
 	"testing"
 
+	clpkeeper "github.com/Sifchain/sifnode/x/clp/keeper"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/query"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
@@ -33,6 +35,16 @@ func TestKeeper_Errors(t *testing.T) {
 	assert.Error(t, err)
 	assert.NotEqual(t, getlp, lp)
 	assert.NotNil(t, test.GenerateAddress("A58856F0FD53BF058B4909A21AEC019107BA7"))
+}
+
+func TestKeeper_CalculateAssetsForLP(t *testing.T) {
+	_, app, ctx := createTestInput()
+	keeper := app.ClpKeeper
+	tokens := []string{"cada", "cbch", "cbnb", "cbtc", "ceos", "ceth", "ctrx", "cusdt"}
+	pools, lpList := test.GeneratePoolsAndLPs(keeper, ctx, tokens)
+	native, external, _, _ := clpkeeper.CalculateAllAssetsForLP(pools[0], lpList[0])
+	assert.Equal(t, "100", external.String())
+	assert.Equal(t, "1000", native.String())
 }
 
 func TestKeeper_SetPool(t *testing.T) {
@@ -148,4 +160,53 @@ func TestKeeper_GetModuleAccount(t *testing.T) {
 	moduleAccount := clpKeeper.GetAuthKeeper().GetModuleAccount(ctx, types.ModuleName)
 	assert.Equal(t, moduleAccount.GetName(), types.ModuleName)
 	assert.Equal(t, moduleAccount.GetPermissions(), []string{authtypes.Burner, authtypes.Minter})
+}
+
+func TestKeeper_GetLiquidityProviderData(t *testing.T) {
+	ctx, app := test.CreateTestAppClp(false)
+	clpKeeper := app.ClpKeeper
+	queryLimit := 5
+	tokens := []string{"cada", "cbch", "cbnb", "cbtc", "ceos", "ceth", "ctrx", "cusdt"}
+	pools, lpList := test.GeneratePoolsAndLPs(clpKeeper, ctx, tokens)
+	lpaddr, err := sdk.AccAddressFromBech32(lpList[0].LiquidityProviderAddress)
+	assert.NoError(t, err)
+	assetList, pageRes, err := clpKeeper.GetAssetsForLiquidityProviderPaginated(ctx, lpaddr, &query.PageRequest{Limit: uint64(queryLimit)})
+	assert.NoError(t, err)
+	assert.Len(t, assetList, queryLimit)
+	assert.NotNil(t, pageRes.NextKey)
+	assetList, pageRes, err = clpKeeper.GetAssetsForLiquidityProviderPaginated(ctx, lpaddr, &query.PageRequest{Key: pageRes.NextKey, Limit: uint64(queryLimit)})
+	assert.NoError(t, err)
+	assert.Len(t, assetList, len(tokens)-queryLimit)
+	assert.Nil(t, pageRes.NextKey)
+	assetList, pageRes, err = clpKeeper.GetAssetsForLiquidityProviderPaginated(ctx, lpaddr, &query.PageRequest{Limit: uint64(200)})
+	assert.NoError(t, err)
+	assert.Len(t, assetList, len(tokens))
+	assert.Nil(t, pageRes.NextKey)
+	lpDataList := make([]*types.LiquidityProviderData, 0, len(assetList))
+	for i := range assetList {
+		asset := assetList[i]
+		pool, err := clpKeeper.GetPool(ctx, asset.Symbol)
+		if err != nil {
+			continue
+		}
+		lp, err := clpKeeper.GetLiquidityProvider(ctx, asset.Symbol, lpaddr.String())
+		if err != nil {
+			continue
+		}
+		native, external, _, _ := clpkeeper.CalculateAllAssetsForLP(pool, lp)
+		lpData := types.NewLiquidityProviderData(lp, native.String(), external.String())
+		lpDataList = append(lpDataList, &lpData)
+	}
+	lpDataResponse := types.NewLiquidityProviderDataResponse(lpDataList, ctx.BlockHeight())
+	assert.NotNil(t, lpDataResponse)
+	assert.Equal(t, len(pools), len(lpDataResponse.LiquidityProviderData))
+	assert.Equal(t, len(lpList), len(lpDataResponse.LiquidityProviderData))
+	for i := 0; i < len(lpDataResponse.LiquidityProviderData); i++ {
+		lpData := lpDataResponse.LiquidityProviderData[i]
+		assert.Contains(t, lpList, *lpData.LiquidityProvider)
+		assert.Equal(t, lpList[0].LiquidityProviderAddress, lpData.LiquidityProvider.LiquidityProviderAddress)
+		assert.Equal(t, assetList[i], lpData.LiquidityProvider.Asset)
+		assert.Equal(t, fmt.Sprint(100*uint64(i+1)), lpData.ExternalAssetBalance)
+		assert.Equal(t, fmt.Sprint(1000*uint64(i+1)), lpData.NativeAssetBalance)
+	}
 }
