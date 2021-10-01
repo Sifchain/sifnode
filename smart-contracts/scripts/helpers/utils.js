@@ -63,3 +63,4 @@ function generateTodayFilename({ prefix, extension, directory }) {
   const filename = `${directory}${prefix}${finalDate}.${extension}`;
   return filename;
 }
+
