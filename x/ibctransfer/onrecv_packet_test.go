@@ -34,7 +34,7 @@ func TestShouldConvertIncomingCoins(t *testing.T) {
 	app.TokenRegistryKeeper.SetToken(ctx, &unitDenomEntry)
 	app.TokenRegistryKeeper.SetToken(ctx, &ibcRegistryEntry)
 	app.TokenRegistryKeeper.SetToken(ctx, &nonIBCRegistryEntry)
-	registry := app.TokenRegistryKeeper.GetDenomWhitelist(ctx)
+	registry := app.TokenRegistryKeeper.GetRegistry(ctx)
 	entry1 := app.TokenRegistryKeeper.GetDenom(registry, "ueth")
 	require.NotNil(t, entry1)
 	entry1c := app.TokenRegistryKeeper.GetDenom(registry, entry1.UnitDenom)
@@ -68,7 +68,7 @@ func TestGetConvForIncomingCoins(t *testing.T) {
 	}
 	app.TokenRegistryKeeper.SetToken(ctx, &unitDenomEntry)
 	app.TokenRegistryKeeper.SetToken(ctx, &ibcRegistryEntry)
-	registry := app.TokenRegistryKeeper.GetDenomWhitelist(ctx)
+	registry := app.TokenRegistryKeeper.GetRegistry(ctx)
 	entry1 := app.TokenRegistryKeeper.GetDenom(registry, "ueth")
 	require.NotNil(t, entry1)
 	entry2 := app.TokenRegistryKeeper.GetDenom(registry, "ceth")
@@ -121,7 +121,7 @@ func TestIsRecvPacketAllowed(t *testing.T) {
 		IbcCounterpartyDenom: "",
 		Permissions:          []tokenregistrytypes.Permission{},
 	})
-	registry := app.TokenRegistryKeeper.GetDenomWhitelist(ctx)
+	registry := app.TokenRegistryKeeper.GetRegistry(ctx)
 	entry1 := app.TokenRegistryKeeper.GetDenom(registry, "ibc/44F0BAC50DDD0C83DAC9CEFCCC770C12F700C0D1F024ED27B8A3EE9DD949BAD3")
 	require.NotNil(t, entry1)
 	permitted1 := app.TokenRegistryKeeper.CheckDenomPermissions(entry1, []tokenregistrytypes.Permission{tokenregistrytypes.Permission_IBCIMPORT})
@@ -176,7 +176,7 @@ func TestExecConvForIncomingCoins(t *testing.T) {
 	app.TokenRegistryKeeper.SetToken(ctx, &ibcRegistryEntry)
 	app.TokenRegistryKeeper.SetToken(ctx, &ibcRegistryEntry2)
 	mintedDenom := helpers.GetMintedDenomFromPacket(packet, returningData)
-	registry := app.TokenRegistryKeeper.GetDenomWhitelist(ctx)
+	registry := app.TokenRegistryKeeper.GetRegistry(ctx)
 	mintedDenomEntry := app.TokenRegistryKeeper.GetDenom(registry, mintedDenom)
 	require.NotNil(t, mintedDenomEntry)
 	allowed := helpers.IsRecvPacketAllowed(ctx, app.TokenRegistryKeeper, packet, returningData, mintedDenomEntry)

@@ -49,7 +49,7 @@ func OnTimeoutMaybeConvert(
 		),
 	)
 	denom := data.Denom
-	registry := whitelistKeeper.GetDenomWhitelist(ctx)
+	registry := whitelistKeeper.GetRegistry(ctx)
 	denomEntry := whitelistKeeper.GetDenom(registry, denom)
 	if denomEntry != nil && denomEntry.Decimals > 0 && denomEntry.UnitDenom != "" {
 		convertToDenomEntry := whitelistKeeper.GetDenom(registry, denomEntry.UnitDenom)

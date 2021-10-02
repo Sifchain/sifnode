@@ -24,7 +24,7 @@ func (k keeper) InitGenesis(ctx sdk.Context, state types.GenesisState) []abci.Va
 }
 
 func (k keeper) ExportGenesis(ctx sdk.Context) *types.GenesisState {
-	wl := k.GetDenomWhitelist(ctx)
+	wl := k.GetRegistry(ctx)
 
 	return &types.GenesisState{
 		AdminAccount: k.GetAdminAccount(ctx).String(),

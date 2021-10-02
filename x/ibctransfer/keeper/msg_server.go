@@ -33,7 +33,7 @@ var _ sdktransfertypes.MsgServer = msgServer{}
 // Transfer defines a rpc handler method for MsgTransfer.
 func (srv msgServer) Transfer(goCtx context.Context, msg *sdktransfertypes.MsgTransfer) (*sdktransfertypes.MsgTransferResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
-	registry := srv.tokenRegistryKeeper.GetDenomWhitelist(ctx)
+	registry := srv.tokenRegistryKeeper.GetRegistry(ctx)
 	registryEntry := srv.tokenRegistryKeeper.GetDenom(registry, msg.Token.Denom)
 	if registryEntry == nil {
 		return nil, sdkerrors.Wrap(tokenregistrytypes.ErrPermissionDenied, "denom is not whitelisted")

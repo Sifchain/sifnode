@@ -1,10 +1,11 @@
 package keeper_test
 
 import (
+	"testing"
+
 	"github.com/Sifchain/sifnode/x/tokenregistry/test"
 	"github.com/Sifchain/sifnode/x/tokenregistry/types"
 	"github.com/stretchr/testify/assert"
-	"testing"
 )
 
 func TestKeeper_CheckDenomPermissions(t *testing.T) {
@@ -25,7 +26,7 @@ func TestKeeper_CheckDenomPermissions(t *testing.T) {
 		Decimals:    18,
 		Permissions: []types.Permission{types.Permission_IBCEXPORT, types.Permission_IBCEXPORT},
 	})
-	registry := app.TokenRegistryKeeper.GetDenomWhitelist(ctx)
+	registry := app.TokenRegistryKeeper.GetRegistry(ctx)
 	entry := app.TokenRegistryKeeper.GetDenom(registry, "rowan")
 	entry2 := app.TokenRegistryKeeper.GetDenom(registry, "t2")
 	assert.True(t, app.TokenRegistryKeeper.CheckDenomPermissions(entry, []types.Permission{types.Permission_CLP}))

@@ -35,7 +35,7 @@ func OnRecvPacketWhitelistConvert(
 	// For a native token that has been returned, this will just be a base_denom,
 	// which will be on the whitelist.
 	mintedDenom := helpers.GetMintedDenomFromPacket(packet, data)
-	registry := whitelistKeeper.GetDenomWhitelist(ctx)
+	registry := whitelistKeeper.GetRegistry(ctx)
 	mintedDenomEntry := whitelistKeeper.GetDenom(registry, mintedDenom)
 	if !helpers.IsRecvPacketAllowed(ctx, whitelistKeeper, packet, data, mintedDenomEntry) {
 		acknowledgement := channeltypes.NewErrorAcknowledgement(

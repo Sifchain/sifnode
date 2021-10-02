@@ -1,12 +1,13 @@
 package keeper_test
 
 import (
+	"testing"
+
 	"github.com/Sifchain/sifnode/x/tokenregistry/keeper"
 	"github.com/Sifchain/sifnode/x/tokenregistry/test"
 	"github.com/Sifchain/sifnode/x/tokenregistry/types"
 	"github.com/stretchr/testify/require"
 	abci "github.com/tendermint/tendermint/abci/types"
-	"testing"
 )
 
 func TestQueryEntries(t *testing.T) {
@@ -17,7 +18,7 @@ func TestQueryEntries(t *testing.T) {
 		Decimals: 18,
 	})
 
-	expectedRegistry := app.TokenRegistryKeeper.GetDenomWhitelist(ctx)
+	expectedRegistry := app.TokenRegistryKeeper.GetRegistry(ctx)
 
 	querier := keeper.NewLegacyQuerier(app.TokenRegistryKeeper)
 

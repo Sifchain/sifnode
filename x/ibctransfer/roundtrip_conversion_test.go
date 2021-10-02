@@ -33,7 +33,7 @@ func TestExportImportConversionEquality(t *testing.T) {
 	}
 	app.TokenRegistryKeeper.SetToken(ctx, &rowanEntry)
 	app.TokenRegistryKeeper.SetToken(ctx, &microRowanEntry)
-	registry := app.TokenRegistryKeeper.GetDenomWhitelist(ctx)
+	registry := app.TokenRegistryKeeper.GetRegistry(ctx)
 	rEntry := app.TokenRegistryKeeper.GetDenom(registry, "rowan")
 	require.NotNil(t, rEntry)
 	mrEntry := app.TokenRegistryKeeper.GetDenom(registry, "microrowan")

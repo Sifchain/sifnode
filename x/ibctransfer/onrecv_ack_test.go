@@ -295,7 +295,7 @@ func TestExecConvForRefundCoins(t *testing.T) {
 	app.TokenRegistryKeeper.SetToken(ctx, &ibcRegistryEntry)
 	app.TokenRegistryKeeper.SetToken(ctx, &ibcRegistryEntry2)
 	mintedDenom := helpers.GetMintedDenomFromPacket(packet, returningData)
-	registry := app.TokenRegistryKeeper.GetDenomWhitelist(ctx)
+	registry := app.TokenRegistryKeeper.GetRegistry(ctx)
 	mintedDenomEntry := app.TokenRegistryKeeper.GetDenom(registry, mintedDenom)
 	require.NotNil(t, mintedDenomEntry)
 	allowed := helpers.IsRecvPacketAllowed(ctx, app.TokenRegistryKeeper, packet, returningData, mintedDenomEntry)
