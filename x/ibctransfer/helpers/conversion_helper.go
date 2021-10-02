@@ -90,8 +90,6 @@ func GetMintedDenomFromPacket(packet channeltypes.Packet, data sdktransfertypes.
 }
 
 func ConvertIncomingCoins(
-	ctx sdk.Context,
-	whitelistKeeper tokenregistrytypes.Keeper,
 	amount uint64,
 	diff uint64,
 ) sdk.Int {
@@ -124,7 +122,7 @@ func ExecConvForIncomingCoins(
 		return err
 	}
 	diff := uint64(convertToDenomEntry.Decimals - mintedDenomEntry.Decimals)
-	convAmount := ConvertIncomingCoins(ctx, whitelistKeeper, data.Amount, diff)
+	convAmount := ConvertIncomingCoins(data.Amount, diff)
 	finalCoins := sdk.NewCoins(sdk.NewCoin(convertToDenomEntry.Denom, convAmount))
 	// unescrow original tokens
 	escrowAddress := sctransfertypes.GetEscrowAddress(packet.GetDestPort(), packet.GetDestChannel())
@@ -169,7 +167,7 @@ func ExecConvForRefundCoins(
 		return err
 	}
 	diff := uint64(convertToDenomEntry.Decimals - mintedDenomEntry.Decimals)
-	convAmount := ConvertIncomingCoins(ctx, whitelistKeeper, data.Amount, diff)
+	convAmount := ConvertIncomingCoins(data.Amount, diff)
 	finalCoins := sdk.NewCoins(sdk.NewCoin(convertToDenomEntry.Denom, convAmount))
 	// unescrow original tokens
 	escrowAddress := sctransfertypes.GetEscrowAddress(packet.GetSourcePort(), packet.GetSourceChannel())
