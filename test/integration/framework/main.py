@@ -652,7 +652,7 @@ class IntegrationTestsEnvironment:
         # We read it and convert to test/integration/vagrant/data/netdef.json
         netdef = exactly_one(yaml_load(self.cmd.read_text_file(network_definition_file)))
         netdef_json = os.path.join(self.data_dir, "netdef.json")
-        self.cmd.write_text_file(netdef_json, json.dumps(netdef))
+        self.cmd.write_text_file(netdef_json, json.dumps(netdef, indent=4))
         return netdef, netdef_json
 
     def run_ebrelayer(self, netdef_json, validator1_address, validator_moniker, validator_mnemonic,
@@ -913,12 +913,13 @@ class PeggyEnvironment(IntegrationTestsEnvironment):
             )
             log.debug("Started witness: pid={}".format(witness_proc.pid))
 
-            env_vars_computed = {
+            env_vars = {
+                # Computed
                 "BASEDIR": self.project.base_dir,
                 "GOBIN": self.project.go_bin_dir,
                 "CHAINDIR": chain_dir,
-            }
-            env_vars_eth = {
+
+                # Ethereum
                 "ETHEREUM_ADDRESS": hardhat_accounts["available"][0][0],
                 "ETHEREUM_PRIVATE_KEY": "0x" + hardhat_accounts["available"][0][1],
                 "ROWAN_SOURCE": "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80",
@@ -935,35 +936,32 @@ class PeggyEnvironment(IntegrationTestsEnvironment):
                 "ETH_CHAIN_ID": hardhat_chain_id,
                 "ETH_HOST": hardhat_hostname,
                 "ETH_PORT": hardhat_port,
-            }
-            env_vars_contracts = {
+
+                # Smart contracts
                 "BRIDGE_BANK_ADDRESS": peggy_sc_addrs.bridge_bank,
                 "BRIDGE_REGISTERY_ADDRESS": peggy_sc_addrs.bridge_registry,
                 "COSMOS_BRIDGE_ADDRESS": peggy_sc_addrs.cosmos_bridge,
                 "ROWANTOKEN_ADDRESS": peggy_sc_addrs.rowan,
                 "BRIDGE_TOKEN_ADDRESS": peggy_sc_addrs.rowan,
-            }
-            env_vars_sif = {
+
+                # Sifnode
                 "TCP_URL": tcp_url,
-                # All of these are from netdef
                 "VALIDATOR_ADDRESS": netdef["validator_address"],
                 "VALIDATOR_CONSENSUS_ADDRESS": netdef["validator_consensus_address"],
-                "VALIDATOR_MENOMONIC": " ".join(validator_mnemonic),
-                "VALIDATOR_MONIKER": validator_moniker,
+                "VALIDATOR_MENOMONIC": " ".join(validator_mnemonic),  # == netdef["validator_mnemonic"]
+                "VALIDATOR_MONIKER": validator_moniker,  # == netdef["validator_moniker"]
                 "VALIDATOR_PASSWORD": netdef["password"],
                 "VALIDATOR_PUB_KEY": netdef["pub_key"],
             }
-            env_vars = dict_merge(env_vars_computed, env_vars_eth, env_vars_contracts, env_vars_sif)
-            log.debug("env_vars: " + repr(env_vars))
 
+            log.debug("env_vars: " + repr(env_vars))
             dotenv_file = os.path.join(self.project.smart_contracts_dir, ".env")
             env_json_file = os.path.join(self.project.smart_contracts_dir, "env.json")
             environment_json_file = os.path.join(self.project.smart_contracts_dir, "environment.json")
             self.cmd.write_text_file(dotenv_file, joinlines([
-                "export {}=\"{}\"".format(k, v) for k, v in env_vars.items()
-            ]))
-            self.cmd.write_text_file(env_json_file, json.dumps(env_vars))
-            self.cmd.write_text_file(environment_json_file, json.dumps(env_vars))
+                "export {}=\"{}\"".format(k, v) for k, v in env_vars.items()]))
+            self.cmd.write_text_file(env_json_file, json.dumps(env_vars, indent=4))
+            self.cmd.write_text_file(environment_json_file, json.dumps(env_vars, indent=4))
         else:
             ebrelayer_proc = ebrelayer.init(
                 tcp_url,
@@ -984,14 +982,14 @@ class PeggyEnvironment(IntegrationTestsEnvironment):
             witness_proc = None
 
             state_vars = {
+                "BASEDIR": self.project.base_dir,
                 "TEST_INTEGRATION_DIR": project_dir("test/integration"),
                 "ETHEREUM_WEBSOCKET_ADDRESS": web3_provider,
-                "BASEDIR": project_dir(),
                 "TEST_INTEGRATION_PY_DIR": project_dir("test/integration/src/py"),
             }
             vagrantenv_path = project_dir("test/integration/vagrantenv.sh")
             self.cmd.write_text_file(vagrantenv_path, joinlines(format_as_shell_env_vars(state_vars)))
-            self.cmd.write_text_file(project_dir("test/integration/vagrantenv.json"), json.dumps(state_vars))
+            self.cmd.write_text_file(project_dir("test/integration/vagrantenv.json"), json.dumps(state_vars, indent=4))
 
         return hardhat_proc, sifnoded_proc, ebrelayer_proc, witness_proc
 
@@ -1004,7 +1002,7 @@ class PeggyEnvironment(IntegrationTestsEnvironment):
         self.cmd.mkdir(d)
         for sc_name, sc_addr in smart_contract_addresses.items():
             self.cmd.write_text_file(os.path.join(d, f"{sc_name}.json"), json.dumps({
-                "networks": {str(integration_tests_expected_network_id): {"address": sc_addr}}}))
+                "networks": {str(integration_tests_expected_network_id): {"address": sc_addr}}}, indent=4))
 
 
 def main(argv):
