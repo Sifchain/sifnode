@@ -54,7 +54,7 @@ func GetCmdGenerateEntry() *cobra.Command {
 	var flagDenom = "token_denom"
 	var flagBaseDenom = "token_base_denom"
 	var flagUnitDenom = "token_unit_denom"
-	var flagIbcTransferPort = "token_ibc_transfer_port"
+	var flagIbcPath = "token_path"
 	var flagIbcChannelID = "token_ibc_channel_id"
 	var flagIbcCounterpartyChannelID = "token_ibc_counterparty_channel_id"
 	var flagIbcCounterpartyChainID = "token_ibc_counterparty_chain_id"
@@ -90,7 +90,7 @@ func GetCmdGenerateEntry() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			ibcTransferPort, err := flags.GetString(flagIbcTransferPort)
+			ibcPath, err := flags.GetString(flagIbcPath)
 			if err != nil {
 				return err
 			}
@@ -136,7 +136,7 @@ func GetCmdGenerateEntry() *cobra.Command {
 			// otherwise fallback to base_denom
 			if ibcChannelID != "" {
 				// normalise path slashes before generating hash (do this in MsgRegister.ValidateBasic as well)
-				path = ibcTransferPort + "/" + ibcChannelID
+				path = "transfer/" + ibcChannelID
 				// generate IBC hash from baseDenom and ibc channel id
 				denomTrace := transfertypes.DenomTrace{
 					Path:      path,
@@ -153,7 +153,7 @@ func GetCmdGenerateEntry() *cobra.Command {
 				Decimals:                 decimals,
 				Denom:                    denom,
 				BaseDenom:                baseDenom,
-				IbcTransferPort:          ibcTransferPort,
+				Path:                     ibcPath,
 				IbcChannelId:             ibcChannelID,
 				IbcCounterpartyChannelId: ibcCounterpartyChannelID,
 				IbcCounterpartyChainId:   ibcCounterpartyChainID,
@@ -164,8 +164,8 @@ func GetCmdGenerateEntry() *cobra.Command {
 			return clientCtx.PrintProto(&types.Registry{Entries: []*types.RegistryEntry{&entry}})
 		},
 	}
-	cmd.Flags().Bool(flagIbcTransferPort, true,
-		"The ibc transfer port name (default: 'transfer')")
+	cmd.Flags().Bool(flagIbcPath, true,
+		"The ibc transfer path")
 	cmd.Flags().String(flagDenom, "",
 		"The IBC hash / denom  stored on sifchain - to generate this hash for IBC token, leave blank and specify base_denom and ibc_channel_id")
 	cmd.Flags().String(flagBaseDenom, "",
