@@ -36,8 +36,8 @@ func OnRecvPacketWhitelistConvert(
 	// which will be on the whitelist.
 	mintedDenom := helpers.GetMintedDenomFromPacket(packet, data)
 	registry := whitelistKeeper.GetRegistry(ctx)
-	mintedDenomEntry := whitelistKeeper.GetEntry(registry, mintedDenom)
-	if !helpers.IsRecvPacketAllowed(ctx, whitelistKeeper, packet, data, mintedDenomEntry) {
+	mintedDenomEntry, err := whitelistKeeper.GetEntry(registry, mintedDenom)
+	if err != nil || !helpers.IsRecvPacketAllowed(ctx, whitelistKeeper, packet, data, mintedDenomEntry) {
 		acknowledgement := channeltypes.NewErrorAcknowledgement(
 			sdkerrors.Wrapf(sdkerrors.ErrInvalidCoins, "denom not whitelisted").Error(),
 		)
@@ -55,8 +55,8 @@ func OnRecvPacketWhitelistConvert(
 			Events: ctx.EventManager().Events().ToABCIEvents(),
 		}, acknowledgement.GetBytes(), nil
 	}
-	convertToDenomEntry := whitelistKeeper.GetEntry(registry, mintedDenomEntry.UnitDenom)
-	if convertToDenomEntry != nil && convertToDenomEntry.Decimals > 0 && mintedDenomEntry.Decimals > 0 && convertToDenomEntry.Decimals > mintedDenomEntry.Decimals {
+	convertToDenomEntry, err := whitelistKeeper.GetEntry(registry, mintedDenomEntry.UnitDenom)
+	if err == nil && convertToDenomEntry.Decimals > 0 && mintedDenomEntry.Decimals > 0 && convertToDenomEntry.Decimals > mintedDenomEntry.Decimals {
 		err = helpers.ExecConvForIncomingCoins(ctx, bankKeeper, whitelistKeeper, mintedDenomEntry, convertToDenomEntry, packet, data)
 		// Revert, although this may cause packet to be relayed again.
 		if err != nil {

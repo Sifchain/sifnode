@@ -65,17 +65,18 @@ func (mr *MockKeeperMockRecorder) ExportGenesis(ctx interface{}) *gomock.Call {
 }
 
 // GetEntry mocks base method.
-func (m *MockKeeper) GetEntry(wl types.Registry, denom string) *types.RegistryEntry {
+func (m *MockKeeper) GetEntry(registry types.Registry, denom string) (*types.RegistryEntry, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetEntry", wl, denom)
+	ret := m.ctrl.Call(m, "GetEntry", registry, denom)
 	ret0, _ := ret[0].(*types.RegistryEntry)
-	return ret0
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // GetEntry indicates an expected call of GetEntry.
-func (mr *MockKeeperMockRecorder) GetEntry(wl, denom interface{}) *gomock.Call {
+func (mr *MockKeeperMockRecorder) GetEntry(registry, denom interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetEntry", reflect.TypeOf((*MockKeeper)(nil).GetEntry), wl, denom)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetEntry", reflect.TypeOf((*MockKeeper)(nil).GetEntry), registry, denom)
 }
 
 // GetRegistry mocks base method.

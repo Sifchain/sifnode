@@ -9,7 +9,7 @@ type Keeper interface {
 	IsAdminAccount(ctx sdk.Context, adminAccount sdk.AccAddress) bool
 	SetAdminAccount(ctx sdk.Context, adminAccount sdk.AccAddress)
 	CheckDenomPermissions(entry *RegistryEntry, permissions []Permission) bool
-	GetEntry(wl Registry, denom string) *RegistryEntry
+	GetEntry(registry Registry, denom string) (*RegistryEntry, error)
 	SetToken(ctx sdk.Context, entry *RegistryEntry)
 	RemoveToken(ctx sdk.Context, denom string)
 	InitGenesis(ctx sdk.Context, state GenesisState) []abci.ValidatorUpdate

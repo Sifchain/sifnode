@@ -6,6 +6,7 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/cosmos-sdk/types/errors"
 	gogotypes "github.com/gogo/protobuf/types"
 
 	"github.com/Sifchain/sifnode/x/tokenregistry/types"
@@ -63,14 +64,14 @@ func (k keeper) CheckDenomPermissions(entry *types.RegistryEntry, requiredPermis
 	return true
 }
 
-func (k keeper) GetEntry(wl types.Registry, denom string) *types.RegistryEntry {
+func (k keeper) GetEntry(wl types.Registry, denom string) (*types.RegistryEntry, error) {
 	for i := range wl.Entries {
 		e := wl.Entries[i]
 		if e != nil && strings.EqualFold(e.Denom, denom) {
-			return wl.Entries[i]
+			return wl.Entries[i], nil
 		}
 	}
-	return nil
+	return nil, errors.Wrap(errors.ErrKeyNotFound, "registry entry not found")
 }
 
 func (k keeper) SetToken(ctx sdk.Context, entry *types.RegistryEntry) {
