@@ -76,11 +76,12 @@ func (k Keeper) GetNormalizationFactor(decimals uint32) (sdk.Dec, bool) {
 	adjustExternalToken := false
 	nf := decimals
 	if nf != 18 {
-		adjustExternalToken = true
-		diffFactor := 18 - nf
-		if diffFactor < 0 {
+		var diffFactor uint32
+		if nf < 18 {
+			diffFactor = 18 - nf
+			adjustExternalToken = true
+		} else {
 			diffFactor = nf - 18
-			adjustExternalToken = false
 		}
 		normalizationFactor = sdk.NewDec(10).Power(uint64(diffFactor))
 	}
