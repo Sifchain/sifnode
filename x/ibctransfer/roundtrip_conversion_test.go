@@ -107,6 +107,7 @@ func TestMultihopTransfer(t *testing.T) {
 	require.Equal(t, "0", app.BankKeeper.GetBalance(ctx, first, "uphoton").Amount.String())
 	require.Equal(t, "123456789123456789", app.BankKeeper.GetBalance(ctx, second, "ibc/4BFA1CE7B80A9A830F8E164495276CCD9E9B5424951749ED92F80B394E8C91C8").Amount.String())
 	sdkSentDenom, _ := testhelpers.SendStub(ctx, app.TransferKeeper, app.BankKeeper, sdk.NewCoin("ibc/4BFA1CE7B80A9A830F8E164495276CCD9E9B5424951749ED92F80B394E8C91C8", sdk.NewIntFromUint64(amount)), second, "transfer", "channel-12")
+	require.Equal(t, "transfer/channel-11/uphoton", sdkSentDenom)
 	recvTokenPacket = transfertypes.FungibleTokenPacketData{
 		Denom:    sdkSentDenom,
 		Amount:   amount,
@@ -125,6 +126,7 @@ func TestMultihopTransfer(t *testing.T) {
 	require.Equal(t, "0", app.BankKeeper.GetBalance(ctx, second, "ibc/4BFA1CE7B80A9A830F8E164495276CCD9E9B5424951749ED92F80B394E8C91C8").Amount.String())
 	require.Equal(t, "123456789123456789", app.BankKeeper.GetBalance(ctx, third, "ibc/ED52642E49540BE90488C9027BEA1C1AFA2BD296A548D99CA20EDAEF8F3BB5B9").Amount.String())
 	sdkSentDenom, _ = testhelpers.SendStub(ctx, app.TransferKeeper, app.BankKeeper, sdk.NewCoin("ibc/ED52642E49540BE90488C9027BEA1C1AFA2BD296A548D99CA20EDAEF8F3BB5B9", sdk.NewIntFromUint64(amount)), third, "transfer", "channel-66")
+	require.Equal(t, "transfer/channel-66/transfer/channel-11/uphoton", sdkSentDenom)
 	recvTokenPacket = transfertypes.FungibleTokenPacketData{
 		Denom:    sdkSentDenom,
 		Amount:   amount,
