@@ -13,7 +13,6 @@ from common import *
 class Integrator(Ganache, Sifnoded, Command):
     def __init__(self):
         super().__init__()  # TODO Which super is this? All of them?
-        self.smart_contracts_dir = project_dir("smart-contracts")
         self.project = Project(self, project_dir())
 
     def sif_wait_up(self, host, port):
@@ -85,7 +84,7 @@ class Integrator(Ganache, Sifnoded, Command):
         if mainnet_gas_price is not None:
             env["MAINNET_GAS_PRICE"] = mainnet_gas_price
 
-        env_path = os.path.join(self.smart_contracts_dir, ".env")
+        env_path = os.path.join(self.project.smart_contracts_dir, ".env")
         if env_file is not None:
             self.copy_file(env_file, env_path)
 
@@ -93,13 +92,14 @@ class Integrator(Ganache, Sifnoded, Command):
 
         # TODO ui scripts use just "yarn; yarn migrate" alias "npx truffle migrate --reset",
         self.project.npx(["truffle", "deploy", "--network", network_name, "--reset"], env=env,
-            cwd=self.smart_contracts_dir, pipe=False)
+            cwd=self.project.smart_contracts_dir, pipe=False)
 
     def deploy_smart_contracts_for_ui_stack(self):
-        self.copy_file(os.path.join(self.smart_contracts_dir, ".env.ui.example"), os.path.join(self.smart_contracts_dir, ".env"))
+        self.copy_file(os.path.join(self.project.smart_contracts_dir, ".env.ui.example"),
+            os.path.join(self.project.smart_contracts_dir, ".env"))
         # TODO Might not be neccessary
-        self.project.yarn([], cwd=self.smart_contracts_dir)
-        self.project.yarn(["migrate"], cwd=self.smart_contracts_dir)
+        self.project.yarn([], cwd=self.project.smart_contracts_dir)
+        self.project.yarn(["migrate"], cwd=self.project.smart_contracts_dir)
 
     # truffle
     def get_smart_contract_address(self, compiled_json_path, network_id):
@@ -108,15 +108,15 @@ class Integrator(Ganache, Sifnoded, Command):
     # truffle
     def get_bridge_smart_contract_addresses(self, network_id):
         return [self.get_smart_contract_address(os.path.join(
-            self.smart_contracts_dir, f"build/contracts/{x}.json"), network_id)
+            self.project.smart_contracts_dir, f"build/contracts/{x}.json"), network_id)
             for x in ["BridgeToken", "BridgeRegistry", "BridgeBank"]]
 
     def truffle_exec(self, script_name, *script_args, env=None):
-        self._check_env_vs_file(env, os.path.join(self.smart_contracts_dir, ".env"))
-        script_path = os.path.join(self.smart_contracts_dir, f"scripts/{script_name}.js")
+        self._check_env_vs_file(env, os.path.join(self.project.smart_contracts_dir, ".env"))
+        script_path = os.path.join(self.project.smart_contracts_dir, f"scripts/{script_name}.js")
         # Hint: call web3 directly, avoid npx + truffle + script
         # Maybe: self.cmd.yarn(["integrationtest:setTokenLockBurnLimit", str(amount)])
-        self.project.npx(["truffle", "exec", script_path] + list(script_args), env=env, cwd=self.smart_contracts_dir, pipe=False)
+        self.project.npx(["truffle", "exec", script_path] + list(script_args), env=env, cwd=self.project.smart_contracts_dir, pipe=False)
 
     # TODO setTokenLockBurnLimit is gone, possibly replaced by bulkSetTokenLockBurnLimit
     def set_token_lock_burn_limit(self, update_address, amount, ethereum_private_key, infura_project_id, local_provider):
@@ -166,7 +166,9 @@ class Integrator(Ganache, Sifnoded, Command):
         valoper = self.sifnoded_get_val_address(validator_moniker)
 
         # (0, '', '2021/09/07 05:55:33 AddGenesisValidatorCmd, adding addr: sifvaloper1f5vj6j2mnkaw0yec3ut9at4rkl2u23k2fxtrsv to whitelist: []\n')
-        self.sifnoded_exec(["add-genesis-validators", valoper], sifnoded_home=sifnoded_home)
+        unknown_parameter_1 = 1  # Likely "network_descriptor"
+        unknown_parameter_2 = 100  # Likely "power"
+        self.sifnoded_add_genesis_validators_peggy(unknown_parameter_1, valoper, unknown_parameter_2, sifnoded_home)
 
         # Get whitelisted validator
         # TODO Value is not being used
@@ -176,16 +178,17 @@ class Integrator(Ganache, Sifnoded, Command):
         adminuser_addr = self.sifchain_init_common(denom_whitelist_file, sifnoded_home)
         return adminuser_addr
 
+    # Shared between IntegrationEnvironment and PeggyEnvironment
     def sifchain_init_common(self, denom_whitelist_file, sifnoded_home):
-        adminuser_addr = self.sifnoded_keys_add_1("sifnodeadmin")["address"]
+        sifnodeadmin_addr = self.sifnoded_keys_add_1("sifnodeadmin")["address"]
         tokens = [[10**20, "rowan"]]
         # Original from peggy:
         # self.cmd.execst(["sifnoded", "add-genesis-account", sifnoded_admin_address, "100000000000000000000rowan", "--home", sifnoded_home])
-        self.sifnoded_add_genesis_account(adminuser_addr, tokens, sifnoded_home=sifnoded_home)
-        self.sifnoded_exec(["set-genesis-oracle-admin", adminuser_addr], sifnoded_home=sifnoded_home)
-        self.sifnoded_exec(["set-genesis-whitelister-admin", adminuser_addr], sifnoded_home=sifnoded_home)
+        self.sifnoded_add_genesis_account(sifnodeadmin_addr, tokens, sifnoded_home=sifnoded_home)
+        self.sifnoded_exec(["set-genesis-oracle-admin", sifnodeadmin_addr], sifnoded_home=sifnoded_home)
+        self.sifnoded_exec(["set-genesis-whitelister-admin", sifnodeadmin_addr], sifnoded_home=sifnoded_home)
         self.sifnoded_exec(["set-gen-denom-whitelist", denom_whitelist_file], sifnoded_home=sifnoded_home)
-        return adminuser_addr
+        return sifnodeadmin_addr
 
     def sifgen_create_network(self, chain_id, validator_count, networks_dir, network_definition_file, seed_ip_address, mint_amount=None):
         # Old call (no longer works either):
@@ -361,7 +364,7 @@ class UIStackEnvironment:
 
         # Whitelist test tokens
         for addr in [atk_address, btk_address, usdc_address, link_address]:
-            self.project.yarn(["peggy:whiteList", addr, "true"], cwd=self.cmd.smart_contracts_dir)
+            self.project.yarn(["peggy:whiteList", addr, "true"], cwd=self.project.smart_contracts_dir)
 
         # ui/scripts/stack-launch.sh -> ui/scripts/_peggy.sh -> ui/chains/peggy/launch.sh
         # rm -rf ui/chains/peggy/relayerdb
@@ -480,7 +483,8 @@ class IntegrationTestsEnvironment:
 
         self.prepare()
 
-        log_dir = "/tmp"
+        log_dir = "/tmp/sifnode"
+        self.cmd.mkdir(log_dir)
         ganache_log_file = open(os.path.join(log_dir, "ganache.log"), "w")  # TODO close
         sifnoded_log_file = open(os.path.join(log_dir, "sifnoded.log"), "w")  # TODO close
         ebrelayer_log_file = open(os.path.join(log_dir, "ebrelayer.log"), "w")  # TODO close
@@ -563,16 +567,16 @@ class IntegrationTestsEnvironment:
 
         netdef, netdef_json = self.process_netdef(network_definition_file)
 
-        validator_moniker = netdef["moniker"]
+        validator1_moniker = netdef["moniker"]
         validator1_address = netdef["address"]
         validator1_password = netdef["password"]
-        validator_mnemonic = netdef["mnemonic"].split(" ")
-        chaindir = os.path.join(networks_dir, f"validators/{self.chainnet}/{validator_moniker}")
+        validator1_mnemonic = netdef["mnemonic"].split(" ")
+        chaindir = os.path.join(networks_dir, f"validators/{self.chainnet}/{validator1_moniker}")
         sifnoded_home = os.path.join(chaindir, ".sifnoded")
         denom_whitelist_file = os.path.join(self.test_integration_dir, "whitelisted-denoms.json")
         # SIFNODED_LOG=$datadir/logs/sifnoded.log
 
-        adminuser_addr = self.cmd.sifchain_init_integration(validator_moniker, validator_mnemonic, sifnoded_home, denom_whitelist_file, validator1_password)
+        adminuser_addr = self.cmd.sifchain_init_integration(validator1_moniker, validator1_mnemonic, sifnoded_home, denom_whitelist_file, validator1_password)
 
         # Start sifnoded
         sifnoded_proc = self.cmd.sifnoded_start(tcp_url=self.tcp_url, minimum_gas_prices=[0.5, "rowan"],
@@ -588,7 +592,7 @@ class IntegrationTestsEnvironment:
         # This script is also called from tests
 
         relayer_db_path = os.path.join(self.test_integration_dir, "sifchainrelayerdb")
-        ebrelayer_proc = self.run_ebrelayer(netdef_json, validator1_address, validator_moniker, validator_mnemonic,
+        ebrelayer_proc = self.run_ebrelayer(netdef_json, validator1_address, validator1_moniker, validator1_mnemonic,
             ebrelayer_ethereum_private_key, bridge_registry_sc_addr, relayer_db_path, log_file=ebrelayer_log_file)
 
         vagrantenv_path = project_dir("test/integration/vagrantenv.sh")
@@ -601,7 +605,7 @@ class IntegrationTestsEnvironment:
             "envexportfile": vagrantenv_path,
             # export TEST_INTEGRATION_DIR="/home/jurez/work/projects/sif/sifnode/local/test/integration"
             # export TEST_INTEGRATION_PY_DIR="/home/jurez/work/projects/sif/sifnode/local/test/integration/src/py"
-            "SMART_CONTRACTS_DIR": project_dir("smart-contracts"),
+            "SMART_CONTRACTS_DIR": self.project.smart_contracts_dir,
             # export datadir="/home/jurez/work/projects/sif/sifnode/local/test/integration/vagrant/data"
             # export CONTAINER_NAME="integration_sifnode1_1"
             "NETWORKDIR": networks_dir,
@@ -617,11 +621,11 @@ class IntegrationTestsEnvironment:
             "BRIDGE_BANK_ADDRESS": bridge_bank_sc_addr,
             "NETDEF": os.path.join(networks_dir, "network-definition.yml"),
             "NETDEF_JSON": project_dir("test/integration/vagrant/data/netdef.json"),
-            "MONIKER": validator_moniker,
+            "MONIKER": validator1_moniker,
             "VALIDATOR1_PASSWORD": validator1_password,
             "VALIDATOR1_ADDR": validator1_address,
-            "MNEMONIC": " ".join(validator_mnemonic),
-            "CHAINDIR": os.path.join(networks_dir, "validators", self.chainnet, validator_moniker),
+            "MNEMONIC": " ".join(validator1_mnemonic),
+            "CHAINDIR": os.path.join(networks_dir, "validators", self.chainnet, validator1_moniker),
             "SIFCHAIN_ADMIN_ACCOUNT": adminuser_addr,  # Needed by test_peggy_fees.py (via conftest.py)
             "EBRELAYER_DB": relayer_db_path,  # Created by sifchain_run_ebrelayer.sh, does not appear to be used anywhere at the moment
         }
@@ -633,13 +637,13 @@ class IntegrationTestsEnvironment:
         return self.cmd.execst(["python3", os.path.join(self.test_integration_dir, "src/py/wait_for_sif_account.py"),
             netdef_json, validator1_address], env={"USER1ADDR": "nothing"})
 
-    def remove_and_add_sifnoded_keys(self, validator_moniker, validator_mnemonic):
+    def remove_and_add_sifnoded_keys(self, moniker, mnemonic):
         # Error: The specified item could not be found in the keyring
         # This is not neccessary during start-integration-env.sh (as the key does not exist yet), but is neccessary
         # during tests that restart ebrelayer
         # res = self.cmd.execst(["sifnoded", "keys", "delete", moniker, "--keyring-backend", "test"], stdin=["y"])
-        self.cmd.sifnoded_keys_delete(validator_moniker)
-        self.cmd.sifnoded_keys_add(validator_moniker, validator_mnemonic)
+        self.cmd.sifnoded_keys_delete(moniker)
+        self.cmd.sifnoded_keys_add(moniker, mnemonic)
 
     def process_netdef(self, network_definition_file):
         # networks_dir = deploy/networks
@@ -652,7 +656,9 @@ class IntegrationTestsEnvironment:
         return netdef, netdef_json
 
     def run_ebrelayer(self, netdef_json, validator1_address, validator_moniker, validator_mnemonic,
-        ebrelayer_ethereum_private_key, bridge_registry_sc_addr, relayer_db_path, log_file=None):
+        ebrelayer_ethereum_private_key, bridge_registry_sc_addr, relayer_db_path, log_file=None
+    ):
+        # TODO Deduplicate
         while not self.cmd.tcp_probe_connect("localhost", 26657):
             time.sleep(1)
         self.wait_for_sif_account(netdef_json, validator1_address)
@@ -749,11 +755,12 @@ class IntegrationTestsEnvironment:
 class PeggyEnvironment(IntegrationTestsEnvironment):
     def __init__(self, cmd):
         super().__init__(cmd)
-        self.smart_contracts_dir = project_dir("smart-contracts")
+        self.project = cmd.project
         # gobin_dir = os.environ["GOBIN"]
         self.hardhat = Hardhat(cmd)
 
     def signer_array_to_ethereum_accounts(self, accounts, n_validators):
+        assert len(accounts) >= n_validators + 3
         operator, owner, pauser, *rest = accounts
         validators, available = rest[:n_validators], rest[n_validators:]
         return {
@@ -778,10 +785,12 @@ class PeggyEnvironment(IntegrationTestsEnvironment):
     def run(self):
         # self.project._make_go_binaries()
 
-        log_dir = "/tmp"
+        log_dir = "/tmp/sifnode"
+        self.cmd.mkdir(log_dir)
         hardhat_log_file = open(os.path.join(log_dir, "ganache.log"), "w")  # TODO close + use a different name
         sifnoded_log_file = open(os.path.join(log_dir, "sifnoded.log"), "w")  # TODO close
-        ebrelayer_log_file = open(os.path.join(log_dir, "ebrelayer.log"), "w")  # TODO close
+        ebrelayer_log_file = open(os.path.join(log_dir, "evmrelayer.log"), "w")  # TODO close
+        witness_log_file = open(os.path.join(log_dir, "witness.log"), "w")  # TODO close; will be empty on non-peggy2 branch
 
         self.cmd.rmdir(self.cmd.get_user_home(".sifnoded"))  # Purge test keyring backend
 
@@ -790,8 +799,12 @@ class PeggyEnvironment(IntegrationTestsEnvironment):
         hardhat_proc = self.hardhat.start(hardhat_hostname, hardhat_port, log_file=hardhat_log_file)
 
         hardhat_validator_count = 1
-        hardhat_network_id = 1
-        hardhat_chain_id = 1
+        hardhat_network_id = 1  # Not used in smart-contracts/src/devenv/hardhatNode.ts
+        hardhat_chain_id = 1  # Not used in smart-contracts/src/devenv/hardhatNode.ts
+        # This value is actually returned from HardhatNodeRunner. It comes from smart-contracts/hardhat.config.ts.
+        # In Typescript, its value is obtained by 'require("hardhat").hre.network.config.chainId'.
+        # See https://hardhat.org/advanced/hardhat-runtime-environment.html
+        hardhat_chain_id = 31337  # From smart-contracts/hardhat.config.ts, a dynamically set in Typescript by 'requre("hardhat")'
         hardhat_accounts = self.signer_array_to_ethereum_accounts(Hardhat.default_accounts(), hardhat_validator_count)
 
         self.hardhat.compile_smart_contracts()
@@ -800,7 +813,7 @@ class PeggyEnvironment(IntegrationTestsEnvironment):
         self.write_compatibility_json_file_with_smart_contract_addresses({
             "BridgeRegistry": peggy_sc_addrs.bridge_registry,
             "BridgeBank": peggy_sc_addrs.bridge_bank,
-            # TODO There is no BridgeToken smart contract on Peggy2.0 branch
+            # TODO There is no BridgeToken smart contract on Peggy2.0 branch, but there are "cosmos_bridge" and "rowan"
         })
 
         chain_id = "localnet"
@@ -811,10 +824,29 @@ class PeggyEnvironment(IntegrationTestsEnvironment):
         validator_count = 1
         seed_ip_address = "10.10.1.1"
         self.cmd.sifgen_create_network(chain_id, validator_count, sifnoded_network_dir, network_config_file, seed_ip_address)
+        netdef_yml = yaml_load(self.cmd.read_text_file(network_config_file))
 
-        netdev_yml = exactly_one(yaml_load(self.cmd.read_text_file(network_config_file)))
-        validator_moniker = netdev_yml["moniker"]
-        validator_mnemonic = netdev_yml["mnemonic"].split(" ")
+        # netdef_yml is a list of generated validators like below.
+        # Each one has its unique IP (starting with base IP + 1), the first one also has is_seed=True.
+        #
+        # class ValidatorValues:
+        #     chain_id: str
+        #     node_id: str
+        #     ipv4_address: str
+        #     moniker: str
+        #     password: str
+        #     address: str
+        #     pub_key: str
+        #     mnemonic: str
+        #     validator_address: str
+        #     validator_consensus_address: str
+        #     is_seed: bool
+        assert len(netdef_yml) == validator_count
+        netdef = exactly_one(netdef_yml)
+        validator_moniker = netdef["moniker"]
+        validator_mnemonic = netdef["mnemonic"].split(" ")
+        # Not used
+        # validator_password = netdef["password"]
 
         chain_dir = os.path.join(sifnoded_network_dir, "validators", chain_id, validator_moniker)
         sifnoded_home = os.path.join(chain_dir, ".sifnoded")
@@ -822,39 +854,146 @@ class PeggyEnvironment(IntegrationTestsEnvironment):
 
         self.cmd.sifchain_init_peggy(validator_moniker, validator_mnemonic, sifnoded_home, denom_whitelist_file)
 
-        tcp_url = "tcp://0.0.0.0:26657"
+        tendermint_port = 26657
+        tcp_url = "tcp://{}:{}".format("0.0.0.0", tendermint_port)
         sifnoded_proc = self.cmd.sifnoded_start(minimum_gas_prices=[0.5, "rowan"], tcp_url=tcp_url,
-            sifnoded_home=sifnoded_home, log_file=sifnoded_log_file)
+            sifnoded_home=sifnoded_home, log_format_json=True, log_file=sifnoded_log_file)
 
-        # TODO Wait for account (somewhere)
+        def _wait_for_sif_validator_up():
+            # TODO Deduplicate: this is also in run_ebrelayer()
+            # netdef_json is path to file containing json_dump(netdef)
+            # while not self.tcp_probe_connect("localhost", tendermint_port):
+            #     time.sleep(1)
+            # self.wait_for_sif_account(netdef_json, validator1_address)
+            pass
+        _wait_for_sif_validator_up()
 
         relayerdb_path = self.cmd.mktempdir()
+        web3_provider = "ws://{}:{}/".format(hardhat_hostname, str(hardhat_port))
         ethereum_address, ethereum_private_key = hardhat_accounts["validators"][0]
-        ebrelayer_proc = self.run_ebrelayer_peggy(
-            tcp_url,
-            f"ws://{hardhat_hostname}:{hardhat_port}/",
-            peggy_sc_addrs.bridge_registry,
-            validator_moniker,
-            validator_mnemonic,
-            chain_id,
-            os.path.join(self.test_integration_dir, "config/symbol_translator.json"),
-            relayerdb_path,
-            ethereum_address,
-            ethereum_private_key,
-            log_file=ebrelayer_log_file
-        )
+        symbol_translator_file = os.path.join(self.test_integration_dir, "config", "symbol_translator.json")
+        ebrelayer = Ebrelayer(self.cmd)
 
-        state_vars = {
-            "TEST_INTEGRATION_DIR": project_dir("test/integration"),
-            "ETHEREUM_WEBSOCKET_ADDRESS": f"ws://{hardhat_hostname}:{hardhat_port}",
-            "BASEDIR": project_dir(),
-            "TEST_INTEGRATION_PY_DIR": project_dir("test/integration/src/py"),
-        }
-        vagrantenv_path = project_dir("test/integration/vagrantenv.sh")
-        self.cmd.write_text_file(vagrantenv_path, joinlines(format_as_shell_env_vars(state_vars)))
-        self.cmd.write_text_file(project_dir("test/integration/vagrantenv.json"), json.dumps(state_vars))
+        # validator_moniker and validator_mnemonic is the validator on sifchain side
+        # ethereum_address and ethereum_private_key is the validator on ethereum side
 
-        return hardhat_proc, sifnoded_proc, ebrelayer_proc
+        if on_peggy2_branch:
+            hardcoded_network_descriptor = "1"  # TODO Don't hardcode me
+            ebrelayer_proc = ebrelayer.peggy2_init_relayer(
+                hardcoded_network_descriptor,
+                tcp_url,
+                web3_provider,
+                peggy_sc_addrs.bridge_registry,
+                validator_moniker,
+                validator_mnemonic,
+                chain_id,
+                symbol_translator_file,
+                ethereum_address,
+                ethereum_private_key,
+                keyring_backend="test",
+                log_file=ebrelayer_log_file,
+                cwd=None,
+            )
+            log.debug("Started ebrelayer: pid={}".format(ebrelayer_proc.pid))
+            witness_proc = ebrelayer.peggy2_init_witness(
+                hardcoded_network_descriptor,
+                tcp_url,
+                web3_provider,
+                peggy_sc_addrs.bridge_registry,
+                validator_moniker,
+                validator_mnemonic,
+                chain_id,
+                symbol_translator_file,
+                ethereum_address,
+                ethereum_private_key,
+                relayerdb_path=relayerdb_path,
+                keyring_backend="test",
+                log_file=witness_log_file,
+                cwd=None,
+            )
+            log.debug("Started witness: pid={}".format(witness_proc.pid))
+
+            env_vars_computed = {
+                "BASEDIR": self.project.base_dir,
+                "GOBIN": self.project.go_bin_dir,
+                "CHAINDIR": chain_dir,
+            }
+            env_vars_eth = {
+                "ETHEREUM_ADDRESS": hardhat_accounts["available"][0][0],
+                "ETHEREUM_PRIVATE_KEY": "0x" + hardhat_accounts["available"][0][1],
+                "ROWAN_SOURCE": "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80",
+                "ETH_ACCOUNT_OPERATOR_ADDRESS": hardhat_accounts["operator"][0],
+                "ETH_ACCOUNT_OPERATOR_PRIVATEKEY": "0x" + hardhat_accounts["operator"][1],
+                "ETH_ACCOUNT_OWNER_ADDRESS": hardhat_accounts["owner"][0],
+                "ETH_ACCOUNT_OWNER_PRIVATEKEY": "0x" + hardhat_accounts["owner"][1],
+                "ETH_ACCOUNT_PAUSER_ADDRESS": hardhat_accounts["pauser"][0],
+                "ETH_ACCOUNT_PAUSER_PRIVATEKEY": "0x" + hardhat_accounts["pauser"][1],
+                "ETH_ACCOUNT_PROXYADMIN_ADDRESS": hardhat_accounts["proxy_admin"][0],
+                "ETH_ACCOUNT_PROXYADMIN_PRIVATEKEY": "0x" + hardhat_accounts["proxy_admin"][1],
+                "ETH_ACCOUNT_VALIDATOR_ADDRESS": "0x90f79bf6eb2c4f870365e785982e1f101e93b906",
+                "ETH_ACCOUNT_VALIDATOR_PRIVATEKEY": "0x7c852118294e51e653712a81e05800f419141751be58f605c371e15141b007a6",
+                "ETH_CHAIN_ID": hardhat_chain_id,
+                "ETH_HOST": hardhat_hostname,
+                "ETH_PORT": hardhat_port,
+            }
+            env_vars_contracts = {
+                "BRIDGE_BANK_ADDRESS": peggy_sc_addrs.bridge_bank,
+                "BRIDGE_REGISTERY_ADDRESS": peggy_sc_addrs.bridge_registry,
+                "COSMOS_BRIDGE_ADDRESS": peggy_sc_addrs.cosmos_bridge,
+                "ROWANTOKEN_ADDRESS": peggy_sc_addrs.rowan,
+                "BRIDGE_TOKEN_ADDRESS": peggy_sc_addrs.rowan,
+            }
+            env_vars_sif = {
+                "TCP_URL": tcp_url,
+                # All of these are from netdef
+                "VALIDATOR_ADDRESS": netdef["validator_address"],
+                "VALIDATOR_CONSENSUS_ADDRESS": netdef["validator_consensus_address"],
+                "VALIDATOR_MENOMONIC": " ".join(validator_mnemonic),
+                "VALIDATOR_MONIKER": validator_moniker,
+                "VALIDATOR_PASSWORD": netdef["password"],
+                "VALIDATOR_PUB_KEY": netdef["pub_key"],
+            }
+            env_vars = dict_merge(env_vars_computed, env_vars_eth, env_vars_contracts, env_vars_sif)
+            log.debug("env_vars: " + repr(env_vars))
+
+            dotenv_file = os.path.join(self.project.smart_contracts_dir, ".env")
+            env_json_file = os.path.join(self.project.smart_contracts_dir, "env.json")
+            environment_json_file = os.path.join(self.project.smart_contracts_dir, "environment.json")
+            self.cmd.write_text_file(dotenv_file, joinlines([
+                "export {}=\"{}\"".format(k, v) for k, v in env_vars.items()
+            ]))
+            self.cmd.write_text_file(env_json_file, json.dumps(env_vars))
+            self.cmd.write_text_file(environment_json_file, json.dumps(env_vars))
+        else:
+            ebrelayer_proc = ebrelayer.init(
+                tcp_url,
+                web3_provider,
+                peggy_sc_addrs.bridge_registry,
+                validator_moniker,
+                validator_mnemonic,
+                chain_id,
+                ethereum_private_key=ethereum_private_key,
+                ethereum_address=ethereum_address,
+                node=tcp_url,
+                keyring_backend="test",
+                sign_with=validator_moniker,
+                symbol_translator_file=symbol_translator_file,
+                relayerdb_path=relayerdb_path,
+                log_file=ebrelayer_log_file,
+            )
+            witness_proc = None
+
+            state_vars = {
+                "TEST_INTEGRATION_DIR": project_dir("test/integration"),
+                "ETHEREUM_WEBSOCKET_ADDRESS": web3_provider,
+                "BASEDIR": project_dir(),
+                "TEST_INTEGRATION_PY_DIR": project_dir("test/integration/src/py"),
+            }
+            vagrantenv_path = project_dir("test/integration/vagrantenv.sh")
+            self.cmd.write_text_file(vagrantenv_path, joinlines(format_as_shell_env_vars(state_vars)))
+            self.cmd.write_text_file(project_dir("test/integration/vagrantenv.json"), json.dumps(state_vars))
+
+        return hardhat_proc, sifnoded_proc, ebrelayer_proc, witness_proc
 
     # Write compatibility JSON files with smart contract addresses so that test_utilities.py:contract_artifact() keeps
     # working. We're not using truffle, so we need to create files with the same names and structure as it's used for

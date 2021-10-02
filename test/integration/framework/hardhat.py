@@ -15,7 +15,7 @@ class Peggy2SmartContractAddresses:
 class Hardhat:
     def __init__(self, cmd):
         self.cmd = cmd
-        self.smart_contracts_dir = project_dir("smart-contracts")
+        self.project = cmd.project
 
     @staticmethod
     def default_accounts():
@@ -57,20 +57,19 @@ class Hardhat:
             "0x2a871d0798f97d79848a013d4936a73bf4cc922c825d33c1cf7073dff6d409c6",
         ]]]
 
-
     def start(self, hostname, port, log_file=None):
         # TODO We need to manaege smart-contracts/hardhat.config.ts + it also reads smart-contracts/.env via dotenv
         # TODO Handle failures, e.g. if the process is already running we get exit value 1 and
         # "Error: listen EADDRINUSE: address already in use 127.0.0.1:8545"
         proc = self.cmd.popen([os.path.join("node_modules", ".bin", "hardhat"), "node", "--hostname", hostname, "--port",
-            str(port)], cwd=self.smart_contracts_dir, log_file=log_file)
+            str(port)], cwd=self.project.smart_contracts_dir, log_file=log_file)
         return proc
 
     def compile_smart_contracts(self):
-        self.cmd.npx(["hardhat", "compile"], cwd=project_dir("smart-contracts"), pipe=False)
+        self.project.npx(["hardhat", "compile"], cwd=project_dir("smart-contracts"), pipe=False)
 
     def deploy_smart_contracts(self) -> Peggy2SmartContractAddresses:
-        res = self.cmd.npx(["hardhat", "run", "scripts/deploy_contracts.ts", "--network", "localhost"],
+        res = self.project.npx(["hardhat", "run", "scripts/deploy_contracts.ts", "--network", "localhost"],
             cwd=project_dir("smart-contracts"))
         # Skip first line "No need to generate any newer types". This only works if the smart contracts have already
         # been compiled, otherwise the output starts with 4 lines:
@@ -83,5 +82,5 @@ class Hardhat:
         # not happen.
         # TODO Suggested solution: pass a parameter to deploy_contracts.ts where it should write the output json file
         m = json.loads(stdout(res).splitlines()[1])
-        return Peggy2SmartContractAddresses(bridge_bank=m["bridgeBank"], bridge_registry=m["bridgeRegistry"],
-            cosmos_bridge=m["cosmosBridge"], rowan=m["rowanContract"])
+        return Peggy2SmartContractAddresses(cosmos_bridge=m["cosmosBridge"], bridge_bank=m["bridgeBank"],
+            bridge_registry=m["bridgeRegistry"], rowan=m["rowanContract"])

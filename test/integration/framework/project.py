@@ -1,4 +1,5 @@
 import json
+import os
 from common import *
 
 
@@ -22,6 +23,7 @@ class Project:
         self.cmd = cmd
         self.base_dir = base_dir
         self.smart_contracts_dir = project_dir("smart-contracts")
+        self.go_bin_dir = os.environ["GOBIN"]
 
     def project_dir(self, *paths):
         return os.path.abspath(os.path.join(self.base_dir, *paths))
