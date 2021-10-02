@@ -22,9 +22,9 @@ class Sifnoded(Command):
         res = self.sifnoded_exec(args, keyring_backend=keyring_backend, sifnoded_home=home)
         return yaml_load(stdout(res))
 
-    def sifnoded_get_val_address(self, name):
-        expected = exactly_one(stdout_lines(self.sifnoded_exec(["keys", "show", "-a", "--bech", "val", name], keyring_backend="test")))
-        result = exactly_one(self.sifnoded_keys_show(name, bech="val", keyring_backend="test"))["address"]
+    def sifnoded_get_val_address(self, moniker):
+        expected = exactly_one(stdout_lines(self.sifnoded_exec(["keys", "show", "-a", "--bech", "val", moniker], keyring_backend="test")))
+        result = exactly_one(self.sifnoded_keys_show(moniker, bech="val", keyring_backend="test"))["address"]
         assert result == expected
         return result
 
@@ -55,14 +55,19 @@ class Sifnoded(Command):
     def sifnoded_keys_delete(self, name):
         self.execst(["sifnoded", "keys", "delete", name, "--keyring-backend", "test"], stdin=["y"], check_exit=False)
 
-    def sifnoded_add_genesis_account(self, address, tokens, sifnoded_home=None):
+    def sifnoded_add_genesis_account(self, sifnodeadmin_addr, tokens, sifnoded_home=None):
         tokens_str = ",".join([sif_format_amount(amount, denom) for amount, denom in tokens])
-        self.sifnoded_exec(["add-genesis-account", address, tokens_str], sifnoded_home=sifnoded_home)
+        self.sifnoded_exec(["add-genesis-account", sifnodeadmin_addr, tokens_str], sifnoded_home=sifnoded_home)
 
     def sifnoded_add_genesis_validators(self, address):
         args = ["sifnoded", "add-genesis-validators", address]
         res = self.execst(args)
         return res
+
+    # At the moment only on future/peggy2 branch, called from PeggyEnvironment
+    def sifnoded_add_genesis_validators_peggy(self, unknown_parameter_1, valoper, unknown_parameter_2, sifnoded_home):
+        self.sifnoded_exec(["add-genesis-validators", str(unknown_parameter_1), valoper, str(unknown_parameter_2)],
+            sifnoded_home=sifnoded_home)
 
     def sifnoded_tx_clp_create_pool(self, chain_id, keyring_backend, from_name, symbol, fees, native_amount, external_amount):
         args = [self.binary, "tx", "clp", "create-pool", "--chain-id={}".format(chain_id),
@@ -72,10 +77,13 @@ class Sifnoded(Command):
         res = self.execst(args)
         return yaml_load(stdout(res))
 
-    def sifnoded_start(self, tcp_url=None, minimum_gas_prices=None, sifnoded_home=None, log_file=None):
+    def sifnoded_start(self, tcp_url=None, minimum_gas_prices=None, sifnoded_home=None, log_file=None,
+        log_format_json=False
+    ):
         args = [self.binary, "start"] + \
             (["--minimum-gas-prices", sif_format_amount(*minimum_gas_prices)] if minimum_gas_prices is not None else []) + \
             (["--rpc.laddr", tcp_url] if tcp_url else []) + \
+            (["--log_format", "json"] if log_format_json else []) + \
             (["--home", sifnoded_home] if sifnoded_home else [])
         return self.popen(args, log_file=log_file)
 
@@ -104,6 +112,98 @@ class Ebrelayer:
         self.cmd = cmd
         self.binary = "ebrelayer"
 
+    def peggy2_init_relayer(
+            self,
+            network_descriptor,
+            tendermint_node,
+            web3_provider,
+            bridge_registry_contract_address,
+            validator_moniker,
+            validator_mnemonic,
+            chain_id,
+            symbol_translator_file,
+            ethereum_address,
+            ethereum_private_key,
+            keyring_backend=None,
+            log_file=None,
+            cwd=None,
+    ):
+        # Usage:
+        #   ebrelayer init-relayer [networkDescriptor] [tendermintNode] [web3Provider] [bridgeRegistryContractAddress] [validatorMnemonic] [flags]
+        #
+        # Examples:
+        # ebrelayer init-relayer 1 tcp://localhost:26657 ws://localhost:7545/ 0x30753E4A8aad7F8597332E813735Def5dD395028 mnemonic --chain-id=peggy
+        return self.__peggy2_init_common("init-relayer", network_descriptor, tendermint_node, web3_provider,
+            bridge_registry_contract_address, validator_mnemonic, chain_id=chain_id, node=tendermint_node,
+            sign_with=validator_moniker, symbol_translator_file=symbol_translator_file,
+            ethereum_address=ethereum_address, ethereum_private_key=ethereum_private_key,
+            keyring_backend=keyring_backend, cwd=cwd, log_file=log_file)
+
+    def peggy2_init_witness(
+            self,
+            network_descriptor,
+            tendermint_node,
+            web3_provider,
+            bridge_registry_contract_address,
+            validator_moniker,
+            validator_mnemonic,
+            chain_id,
+            symbol_translator_file,
+            ethereum_address,
+            ethereum_private_key,
+            relayerdb_path=None,
+            keyring_backend=None,
+            log_file=None,
+            cwd=None,
+    ):
+        # Usage:
+        #   ebrelayer init-witness [networkDescriptor] [tendermintNode] [web3Provider] [bridgeRegistryContractAddress] [validatorMnemonic] [flags]
+        #
+        # Examples:
+        # ebrelayer init-witness 1 tcp://localhost:26657 ws://localhost:7545/ 0x30753E4A8aad7F8597332E813735Def5dD395028 mnemonic --chain-id=peggy
+        extra_args = [] + \
+            (["--relayerdb-path", relayerdb_path] if relayerdb_path else [])
+        return self.__peggy2_init_common("init-witness", network_descriptor, tendermint_node, web3_provider,
+            bridge_registry_contract_address, validator_mnemonic, chain_id=chain_id, node=tendermint_node,
+            sign_with=validator_moniker, symbol_translator_file=symbol_translator_file,
+            ethereum_address=ethereum_address, ethereum_private_key=ethereum_private_key,
+            keyring_backend=keyring_backend, cwd=cwd, log_file=log_file,
+            log_format="json", extra_args=extra_args)
+
+
+    def __peggy2_init_common(self, init_what, network_descriptor, tendermint_node, web3_provider,
+        bridge_registry_contract_address, validator_mnemonic, chain_id, node=None, keyring_backend=None,
+        sign_with=None, symbol_translator_file=None, log_format=None, extra_args=None, ethereum_private_key=None,
+        ethereum_address=None, cwd=None, log_file=None
+    ):
+        env = {}
+        if ethereum_private_key:
+            assert not ethereum_private_key.startswith("0x")
+            env["ETHEREUM_PRIVATE_KEY"] = ethereum_private_key
+        if ethereum_address:
+            assert ethereum_address.startswith("0x")
+            env["ETHEREUM_ADDRESS"] = ethereum_address
+        env = env or None  # Avoid passing empty environment
+        args = [
+            self.binary,
+            init_what,
+            network_descriptor,
+            tendermint_node,
+            web3_provider,
+            bridge_registry_contract_address,
+            " ".join(validator_mnemonic),
+            "--chain-id", chain_id
+        ] + \
+            (extra_args if extra_args else []) + \
+            (["--node", node] if node else []) + \
+            (["--keyring-backend", keyring_backend] if keyring_backend else []) + \
+            (["--from", sign_with] if sign_with else []) + \
+            (["--symbol-translator-file", symbol_translator_file] if symbol_translator_file else []) + \
+            (["--log_format", log_format] if log_format else [])
+        return self.cmd.popen(args, env=env, cwd=cwd, log_file=log_file)
+
+    # Legacy stuff - pre-peggy2
+    # Called from IntegrationContext
     def init(self, tendermind_node, web3_provider, bridge_registry_contract_address, validator_moniker,
         validator_mnemonic, chain_id, ethereum_private_key=None, ethereum_address=None, gas=None, gas_prices=None,
         node=None, keyring_backend=None, sign_with=None, symbol_translator_file=None, relayerdb_path=None,
