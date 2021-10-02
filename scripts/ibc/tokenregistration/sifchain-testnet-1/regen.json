@@ -4,7 +4,7 @@
       "decimals": "6",
       "denom": "ibc/A7E38774F447445DB94A8ED00BEE78EFC43EED7A732D314D3F7F4AB743993E9F",
       "base_denom": "uregen",
-      "ibc_transfer_port": "transfer",
+      "path": "transfer/channel-17",
       "ibc_channel_id": "channel-17",
       "ibc_counterparty_channel_id": "channel-27",
       "permissions": [

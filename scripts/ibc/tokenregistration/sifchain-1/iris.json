@@ -4,7 +4,7 @@
       "decimals": "6",
       "denom": "ibc/11DFDFADE34DCE439BA732EBA5CD8AA804A544BA1ECC0882856289FAF01FE53F",
       "base_denom": "uiris",
-      "ibc_transfer_port": "transfer",
+      "path": "transfer/channel-8",
       "ibc_channel_id": "channel-8",
       "ibc_counterparty_channel_id": "channel-19",
       "permissions": [

@@ -4,7 +4,7 @@
       "decimals": "18",
       "denom": "rowan",
       "base_denom": "rowan",
-      "ibc_transfer_port": "",
+      "path": "",
       "ibc_channel_id": "",
       "ibc_counterparty_channel_id": "",
       "permissions": ["CLP", "IBCEXPORT", "IBCIMPORT"],

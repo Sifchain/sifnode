@@ -4,7 +4,7 @@
       "decimals": "6",
       "denom": "ibc/6D717BFF5537D129035BAB39F593D638BA258A9F8D86FB7ECCEAB05B6950CC3E",
       "base_denom": "uakt",
-      "ibc_transfer_port": "transfer",
+      "path": "transfer/channel-2",
       "ibc_channel_id": "channel-2",
       "ibc_counterparty_channel_id": "channel-24",
       "permissions": [

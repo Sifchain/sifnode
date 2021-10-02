@@ -121,7 +121,7 @@ sif1j3mmq2dsfws0pv5fut3ce2252w0ere8g2alrvd
             "ibc_counterparty_chain_id": "cosmoshub-testnet",
             "ibc_counterparty_channel_id": "channel-3",
             "ibc_counterparty_denom": "",
-            "ibc_transfer_port": "transfer",
+            "path": "transfer/channel-101",
             "permissions": [
                 "CLP",
                 "IBCEXPORT",

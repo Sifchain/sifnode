@@ -4,7 +4,7 @@
       "decimals": "6",
       "denom": "ibc/196953F37BE10851E68C01434989C6B8E1748A836796CA1ABFF2E414D58863C5",
       "base_denom": "udvpn",
-      "ibc_transfer_port": "transfer",
+      "path": "transfer/channel-111",
       "ibc_channel_id": "channel-111",
       "ibc_counterparty_channel_id": "CHANNEL-35",
       "permissions": [

@@ -4,7 +4,7 @@
       "decimals": "6",
       "denom": "ibc/1A807A9792E3051609C5997C0B118FAC298F762C019A5EFAF8B983305D737BB7",
       "base_denom": "uphoton",
-      "ibc_transfer_port": "transfer",
+      "path": "transfer/channel-114",
       "ibc_channel_id": "channel-114",
       "ibc_counterparty_channel_id": "channel-26",
       "permissions": [

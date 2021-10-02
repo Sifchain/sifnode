@@ -4,7 +4,7 @@
       "decimals": "18",
       "denom": "rowan",
       "base_denom": "rowan",
-      "ibc_transfer_port": "",
+      "path": "",
       "ibc_channel_id": "",
       "ibc_counterparty_channel_id": "",
       "permissions": [
@@ -20,7 +20,7 @@
       "decimals": "4",
       "denom": "ccel",
       "base_denom": "ccel",
-      "ibc_transfer_port": "",
+      "path": "",
       "ibc_channel_id": "",
       "ibc_counterparty_channel_id": "",
       "permissions": [
@@ -34,7 +34,7 @@
       "decimals": "6",
       "denom": "causc",
       "base_denom": "causc",
-      "ibc_transfer_port": "",
+      "path": "",
       "ibc_channel_id": "",
       "ibc_counterparty_channel_id": "",
       "permissions": [
@@ -48,7 +48,7 @@
       "decimals": "6",
       "denom": "cusdt",
       "base_denom": "cusdt",
-      "ibc_transfer_port": "",
+      "path": "",
       "ibc_channel_id": "",
       "ibc_counterparty_channel_id": "",
       "permissions": [
@@ -64,7 +64,7 @@
       "decimals": "6",
       "denom": "cusdc",
       "base_denom": "cusdc",
-      "ibc_transfer_port": "",
+      "path": "",
       "ibc_channel_id": "",
       "ibc_counterparty_channel_id": "",
       "permissions": [
@@ -80,7 +80,7 @@
       "decimals": "8",
       "denom": "ccro",
       "base_denom": "ccro",
-      "ibc_transfer_port": "",
+      "path": "",
       "ibc_channel_id": "",
       "ibc_counterparty_channel_id": "",
       "permissions": [
@@ -94,7 +94,7 @@
       "decimals": "8",
       "denom": "ccdai",
       "base_denom": "ccdai",
-      "ibc_transfer_port": "",
+      "path": "",
       "ibc_channel_id": "",
       "ibc_counterparty_channel_id": "",
       "permissions": [
@@ -108,7 +108,7 @@
       "decimals": "8",
       "denom": "cwbtc",
       "base_denom": "cwbtc",
-      "ibc_transfer_port": "",
+      "path": "",
       "ibc_channel_id": "",
       "ibc_counterparty_channel_id": "",
 
@@ -123,7 +123,7 @@
       "decimals": "8",
       "denom": "cceth",
       "base_denom": "cceth",
-      "ibc_transfer_port": "",
+      "path": "",
       "ibc_channel_id": "",
       "ibc_counterparty_channel_id": "",
       "permissions": [
@@ -137,7 +137,7 @@
       "decimals": "8",
       "denom": "crenbtc",
       "base_denom": "crenbtc",
-      "ibc_transfer_port": "",
+      "path": "",
       "ibc_channel_id": "",
       "ibc_counterparty_channel_id": "",
       "permissions": [
@@ -151,7 +151,7 @@
       "decimals": "8",
       "denom": "ccusdc",
       "base_denom": "ccusdc",
-      "ibc_transfer_port": "",
+      "path": "",
       "ibc_channel_id": "",
       "ibc_counterparty_channel_id": "",
       "permissions": [
@@ -165,7 +165,7 @@
       "decimals": "8",
       "denom": "chusd",
       "base_denom": "chusd",
-      "ibc_transfer_port": "",
+      "path": "",
       "ibc_channel_id": "",
       "ibc_counterparty_channel_id": "",
       "permissions": [
@@ -179,7 +179,7 @@
       "decimals": "9",
       "denom": "campl",
       "base_denom": "campl",
-      "ibc_transfer_port": "",
+      "path": "",
       "ibc_channel_id": "",
       "ibc_counterparty_channel_id": "",
       "permissions": [
@@ -193,7 +193,7 @@
       "decimals": "18",
       "denom": "ceth",
       "base_denom": "ceth",
-      "ibc_transfer_port": "",
+      "path": "",
       "ibc_channel_id": "",
       "ibc_counterparty_channel_id": "",
       "permissions": [
@@ -209,7 +209,7 @@
       "decimals": "18",
       "denom": "cdai",
       "base_denom": "cdai",
-      "ibc_transfer_port": "",
+      "path": "",
       "ibc_channel_id": "",
       "ibc_counterparty_channel_id": "",
       "permissions": [
@@ -223,7 +223,7 @@
       "decimals": "18",
       "denom": "cyfi",
       "base_denom": "cyfi",
-      "ibc_transfer_port": "",
+      "path": "",
       "ibc_channel_id": "",
       "ibc_counterparty_channel_id": "",
       "permissions": [
@@ -237,7 +237,7 @@
       "decimals": "18",
       "denom": "czrx",
       "base_denom": "czrx",
-      "ibc_transfer_port": "",
+      "path": "",
       "ibc_channel_id": "",
       "ibc_counterparty_channel_id": "",
       "permissions": [
@@ -251,7 +251,7 @@
       "decimals": "6",
       "denom": "cwscrt",
       "base_denom": "cwscrt",
-      "ibc_transfer_port": "",
+      "path": "",
       "ibc_channel_id": "",
       "ibc_counterparty_channel_id": "",
       "permissions": [
@@ -265,7 +265,7 @@
       "decimals": "18",
       "denom": "cwfil",
       "base_denom": "cwfil",
-      "ibc_transfer_port": "",
+      "path": "",
       "ibc_channel_id": "",
       "ibc_counterparty_channel_id": "",
       "permissions": [
@@ -279,7 +279,7 @@
       "decimals": "18",
       "denom": "cuni",
       "base_denom": "cuni",
-      "ibc_transfer_port": "",
+      "path": "",
       "ibc_channel_id": "",
       "ibc_counterparty_channel_id": "",
       "permissions": [
@@ -293,7 +293,7 @@
       "decimals": "18",
       "denom": "cuma",
       "base_denom": "cuma",
-      "ibc_transfer_port": "",
+      "path": "",
       "ibc_channel_id": "",
       "ibc_counterparty_channel_id": "",
       "permissions": [
@@ -307,7 +307,7 @@
       "decimals": "18",
       "denom": "ctusd",
       "base_denom": "ctusd",
-      "ibc_transfer_port": "",
+      "path": "",
       "ibc_channel_id": "",
       "ibc_counterparty_channel_id": "",
       "permissions": [
@@ -321,7 +321,7 @@
       "decimals": "18",
       "denom": "csxp",
       "base_denom": "csxp",
-      "ibc_transfer_port": "",
+      "path": "",
       "ibc_channel_id": "",
       "ibc_counterparty_channel_id": "",
       "permissions": [
@@ -335,7 +335,7 @@
       "decimals": "18",
       "denom": "csushi",
       "base_denom": "csushi",
-      "ibc_transfer_port": "",
+      "path": "",
       "ibc_channel_id": "",
       "ibc_counterparty_channel_id": "",
       "permissions": [
@@ -349,7 +349,7 @@
       "decimals": "18",
       "denom": "csusd",
       "base_denom": "csusd",
-      "ibc_transfer_port": "",
+      "path": "",
       "ibc_channel_id": "",
       "ibc_counterparty_channel_id": "",
       "permissions": [
@@ -363,7 +363,7 @@
       "decimals": "18",
       "denom": "csrm",
       "base_denom": "csrm",
-      "ibc_transfer_port": "",
+      "path": "",
       "ibc_channel_id": "",
       "ibc_counterparty_channel_id": "",
       "permissions": [
@@ -377,7 +377,7 @@
       "decimals": "18",
       "denom": "csnx",
       "base_denom": "csnx",
-      "ibc_transfer_port": "",
+      "path": "",
       "ibc_channel_id": "",
       "ibc_counterparty_channel_id": "",
       "permissions": [
@@ -391,7 +391,7 @@
       "decimals": "18",
       "denom": "csand",
       "base_denom": "csand",
-      "ibc_transfer_port": "",
+      "path": "",
       "ibc_channel_id": "",
       "ibc_counterparty_channel_id": "",
       "permissions": [
@@ -405,7 +405,7 @@
       "decimals": "18",
       "denom": "crune",
       "base_denom": "crune",
-      "ibc_transfer_port": "",
+      "path": "",
       "ibc_channel_id": "",
       "ibc_counterparty_channel_id": "",
       "permissions": [
@@ -419,7 +419,7 @@
       "decimals": "18",
       "denom": "creef",
       "base_denom": "creef",
-      "ibc_transfer_port": "",
+      "path": "",
       "ibc_channel_id": "",
       "ibc_counterparty_channel_id": "",
       "permissions": [
@@ -433,7 +433,7 @@
       "decimals": "18",
       "denom": "cogn",
       "base_denom": "cogn",
-      "ibc_transfer_port": "",
+      "path": "",
       "ibc_channel_id": "",
       "ibc_counterparty_channel_id": "",
       "permissions": [
@@ -447,7 +447,7 @@
       "decimals": "18",
       "denom": "cocean",
       "base_denom": "cocean",
-      "ibc_transfer_port": "",
+      "path": "",
       "ibc_channel_id": "",
       "ibc_counterparty_channel_id": "",
       "permissions": [
@@ -461,7 +461,7 @@
       "decimals": "18",
       "denom": "cmana",
       "base_denom": "cmana",
-      "ibc_transfer_port": "",
+      "path": "",
       "ibc_channel_id": "",
       "ibc_counterparty_channel_id": "",
       "permissions": [
@@ -475,7 +475,7 @@
       "decimals": "18",
       "denom": "clrc",
       "base_denom": "clrc",
-      "ibc_transfer_port": "",
+      "path": "",
       "ibc_channel_id": "",
       "ibc_counterparty_channel_id": "",
       "permissions": [
@@ -489,7 +489,7 @@
       "decimals": "18",
       "denom": "clon",
       "base_denom": "clon",
-      "ibc_transfer_port": "",
+      "path": "",
       "ibc_channel_id": "",
       "ibc_counterparty_channel_id": "",
       "permissions": [
@@ -503,7 +503,7 @@
       "decimals": "18",
       "denom": "clink",
       "base_denom": "clink",
-      "ibc_transfer_port": "",
+      "path": "",
       "ibc_channel_id": "",
       "ibc_counterparty_channel_id": "",
       "permissions": [
@@ -517,7 +517,7 @@
       "decimals": "18",
       "denom": "ciotx",
       "base_denom": "ciotx",
-      "ibc_transfer_port": "",
+      "path": "",
       "ibc_channel_id": "",
       "ibc_counterparty_channel_id": "",
       "permissions": [
@@ -531,7 +531,7 @@
       "decimals": "18",
       "denom": "cgrt",
       "base_denom": "cgrt",
-      "ibc_transfer_port": "",
+      "path": "",
       "ibc_channel_id": "",
       "ibc_counterparty_channel_id": "",
       "permissions": [
@@ -545,7 +545,7 @@
       "decimals": "18",
       "denom": "cftm",
       "base_denom": "cftm",
-      "ibc_transfer_port": "",
+      "path": "",
       "ibc_channel_id": "",
       "ibc_counterparty_channel_id": "",
       "permissions": [
@@ -559,7 +559,7 @@
       "decimals": "18",
       "denom": "cesd",
       "base_denom": "cesd",
-      "ibc_transfer_port": "",
+      "path": "",
       "ibc_channel_id": "",
       "ibc_counterparty_channel_id": "",
       "permissions": [
@@ -573,7 +573,7 @@
       "decimals": "18",
       "denom": "cenj",
       "base_denom": "cenj",
-      "ibc_transfer_port": "",
+      "path": "",
       "ibc_channel_id": "",
       "ibc_counterparty_channel_id": "",
       "permissions": [
@@ -587,7 +587,7 @@
       "decimals": "18",
       "denom": "ccream",
       "base_denom": "ccream",
-      "ibc_transfer_port": "",
+      "path": "",
       "ibc_channel_id": "",
       "ibc_counterparty_channel_id": "",
       "permissions": [
@@ -601,7 +601,7 @@
       "decimals": "18",
       "denom": "ccomp",
       "base_denom": "ccomp",
-      "ibc_transfer_port": "",
+      "path": "",
       "ibc_channel_id": "",
       "ibc_counterparty_channel_id": "",
       "permissions": [
@@ -615,7 +615,7 @@
       "decimals": "18",
       "denom": "ccocos",
       "base_denom": "ccocos",
-      "ibc_transfer_port": "",
+      "path": "",
       "ibc_channel_id": "",
       "ibc_counterparty_channel_id": "",
       "permissions": [
@@ -629,7 +629,7 @@
       "decimals": "18",
       "denom": "cbond",
       "base_denom": "cbond",
-      "ibc_transfer_port": "",
+      "path": "",
       "ibc_channel_id": "",
       "ibc_counterparty_channel_id": "",
       "permissions": [
@@ -643,7 +643,7 @@
       "decimals": "18",
       "denom": "cbnt",
       "base_denom": "cbnt",
-      "ibc_transfer_port": "",
+      "path": "",
       "ibc_channel_id": "",
       "ibc_counterparty_channel_id": "",
       "permissions": [
@@ -657,7 +657,7 @@
       "decimals": "18",
       "denom": "cbat",
       "base_denom": "cbat",
-      "ibc_transfer_port": "",
+      "path": "",
       "ibc_channel_id": "",
       "ibc_counterparty_channel_id": "",
       "permissions": [
@@ -671,7 +671,7 @@
       "decimals": "18",
       "denom": "cband",
       "base_denom": "cband",
-      "ibc_transfer_port": "",
+      "path": "",
       "ibc_channel_id": "",
       "ibc_counterparty_channel_id": "",
       "permissions": [
@@ -685,7 +685,7 @@
       "decimals": "18",
       "denom": "cbal",
       "base_denom": "cbal",
-      "ibc_transfer_port": "",
+      "path": "",
       "ibc_channel_id": "",
       "ibc_counterparty_channel_id": "",
       "permissions": [
@@ -699,7 +699,7 @@
       "decimals": "18",
       "denom": "cant",
       "base_denom": "cant",
-      "ibc_transfer_port": "",
+      "path": "",
       "ibc_channel_id": "",
       "ibc_counterparty_channel_id": "",
       "permissions": [
@@ -713,7 +713,7 @@
       "decimals": "18",
       "denom": "caave",
       "base_denom": "caave",
-      "ibc_transfer_port": "",
+      "path": "",
       "ibc_channel_id": "",
       "ibc_counterparty_channel_id": "",
       "permissions": [
@@ -727,7 +727,7 @@
       "decimals": "18",
       "denom": "c1inch",
       "base_denom": "c1inch",
-      "ibc_transfer_port": "",
+      "path": "",
       "ibc_channel_id": "",
       "ibc_counterparty_channel_id": "",
       "permissions": [
@@ -741,7 +741,7 @@
       "decimals": "18",
       "denom": "cleash",
       "base_denom": "cleash",
-      "ibc_transfer_port": "",
+      "path": "",
       "ibc_channel_id": "",
       "ibc_counterparty_channel_id": "",
       "permissions": [
@@ -755,7 +755,7 @@
       "decimals": "18",
       "denom": "cshib",
       "base_denom": "cshib",
-      "ibc_transfer_port": "",
+      "path": "",
       "ibc_channel_id": "",
       "ibc_counterparty_channel_id": "",
       "permissions": [
@@ -769,7 +769,7 @@
       "decimals": "18",
       "denom": "ctidal",
       "base_denom": "ctidal",
-      "ibc_transfer_port": "",
+      "path": "",
       "ibc_channel_id": "",
       "ibc_counterparty_channel_id": "",
       "permissions": [
@@ -783,7 +783,7 @@
       "decimals": "18",
       "denom": "cpaid",
       "base_denom": "cpaid",
-      "ibc_transfer_port": "",
+      "path": "",
       "ibc_channel_id": "",
       "ibc_counterparty_channel_id": "",
       "permissions": [
@@ -797,7 +797,7 @@
       "decimals": "18",
       "denom": "crndr",
       "base_denom": "crndr",
-      "ibc_transfer_port": "",
+      "path": "",
       "ibc_channel_id": "",
       "ibc_counterparty_channel_id": "",
       "permissions": [
@@ -811,7 +811,7 @@
       "decimals": "18",
       "denom": "cconv",
       "base_denom": "cconv",
-      "ibc_transfer_port": "",
+      "path": "",
       "ibc_channel_id": "",
       "ibc_counterparty_channel_id": "",
       "permissions": [
@@ -825,7 +825,7 @@
       "decimals": "18",
       "denom": "crally",
       "base_denom": "crally",
-      "ibc_transfer_port": "",
+      "path": "",
       "ibc_channel_id": "",
       "ibc_counterparty_channel_id": "",
       "permissions": [
@@ -839,7 +839,7 @@
       "decimals": "18",
       "denom": "crfuel",
       "base_denom": "crfuel",
-      "ibc_transfer_port": "",
+      "path": "",
       "ibc_channel_id": "",
       "ibc_counterparty_channel_id": "",
       "permissions": [
@@ -853,7 +853,7 @@
       "decimals": "18",
       "denom": "cakro",
       "base_denom": "cakro",
-      "ibc_transfer_port": "",
+      "path": "",
       "ibc_channel_id": "",
       "ibc_counterparty_channel_id": "",
       "permissions": [
@@ -867,7 +867,7 @@
       "decimals": "18",
       "denom": "cb20",
       "base_denom": "cb20",
-      "ibc_transfer_port": "",
+      "path": "",
       "ibc_channel_id": "",
       "ibc_counterparty_channel_id": "",
       "permissions": [
@@ -881,7 +881,7 @@
       "decimals": "18",
       "denom": "ctshp",
       "base_denom": "ctshp",
-      "ibc_transfer_port": "",
+      "path": "",
       "ibc_channel_id": "",
       "ibc_counterparty_channel_id": "",
       "permissions": [
@@ -895,7 +895,7 @@
       "decimals": "18",
       "denom": "clina",
       "base_denom": "clina",
-      "ibc_transfer_port": "",
+      "path": "",
       "ibc_channel_id": "",
       "ibc_counterparty_channel_id": "",
       "permissions": [
@@ -909,7 +909,7 @@
       "decimals": "18",
       "denom": "cdaofi",
       "base_denom": "cdaofi",
-      "ibc_transfer_port": "",
+      "path": "",
       "ibc_channel_id": "",
       "ibc_counterparty_channel_id": "",
       "permissions": [
@@ -923,7 +923,7 @@
       "decimals": "18",
       "denom": "ckeep",
       "base_denom": "ckeep",
-      "ibc_transfer_port": "",
+      "path": "",
       "ibc_channel_id": "",
       "ibc_counterparty_channel_id": "",
       "permissions": [
@@ -937,7 +937,7 @@
       "decimals": "6",
       "denom": "ibc/1A807A9792E3051609C5997C0B118FAC298F762C019A5EFAF8B983305D737BB7",
       "base_denom": "uphoton",
-      "ibc_transfer_port": "transfer",
+      "path": "transfer/channel-114",
       "ibc_channel_id": "channel-114",
       "ibc_counterparty_channel_id": "channel-26",
       "permissions": [
@@ -953,7 +953,7 @@
       "decimals": "6",
       "denom": "ibc/5D0018BE54A23C89FFEF0EC45A1209A51140D7CCA8A73B00BC8B97E716A92131",
       "base_denom": "uakt",
-      "ibc_transfer_port": "transfer",
+      "path": "transfer/channel-110",
       "ibc_channel_id": "channel-110",
       "ibc_counterparty_channel_id": "channel-63",
       "permissions": [
@@ -969,7 +969,7 @@
       "decimals": "6",
       "denom": "ibc/196953F37BE10851E68C01434989C6B8E1748A836796CA1ABFF2E414D58863C5",
       "base_denom": "udvpn",
-      "ibc_transfer_port": "transfer",
+      "path": "transfer/channel-111",
       "ibc_channel_id": "channel-111",
       "ibc_counterparty_channel_id": "channel-35",
       "permissions": [
@@ -985,7 +985,7 @@
       "decimals": "6",
       "denom": "ibc/8395BFD6DF6EFE215B56CBEB14B7B265598E6F14AFFAF28337E9B627F0334059",
       "base_denom": "unyan",
-      "ibc_transfer_port": "transfer",
+      "path": "transfer/channel-74",
       "ibc_channel_id": "channel-74",
       "ibc_counterparty_channel_id": "channel-22",
       "permissions": [
@@ -1001,7 +1001,7 @@
       "decimals": "6",
       "denom": "ibc/FA2A11411CA6EE8DBB2247799FEEA3B918FF5E699361B47CA820AA908FA3418E",
       "base_denom": "unyan",
-      "ibc_transfer_port": "transfer",
+      "path": "transfer/channel-117",
       "ibc_channel_id": "channel-117",
       "ibc_counterparty_channel_id": "channel-24",
       "permissions": [
@@ -1017,7 +1017,7 @@
       "decimals": "6",
       "denom": "ibc/C9C7D0BEEA163F1F35F3D916A7EA7099FD39FFBB2AAA8257A34277F0429F52BF",
       "base_denom": "uxprt",
-      "ibc_transfer_port": "transfer",
+      "path": "transfer/channel-120",
       "ibc_channel_id": "channel-120",
       "ibc_counterparty_channel_id": "channel-25",
       "permissions": [
@@ -1033,7 +1033,7 @@
       "decimals": "8",
       "denom": "ibc/18DC6C5D781FB1D2398D925166810F63E4BE63D84486047D2F771151CD4AD64E",
       "base_denom": "basecro",
-      "ibc_transfer_port": "transfer",
+      "path": "transfer/channel-118",
       "ibc_channel_id": "channel-118",
       "ibc_counterparty_channel_id": "channel-31",
       "permissions": [
@@ -1049,7 +1049,7 @@
       "decimals": "6",
       "denom": "ibc/057E0E697E069620BD0E3C063EC861BA7FFC3EAD236A3EAB258D12D6BFE3C939",
       "base_denom": "uregen",
-      "ibc_transfer_port": "transfer",
+      "path": "transfer/channel-121",
       "ibc_channel_id": "channel-121",
       "ibc_counterparty_channel_id": "channel-26",
       "permissions": [
@@ -1065,7 +1065,7 @@
       "decimals": "10",
       "denom": "xeth",
       "base_denom": "xeth",
-      "ibc_transfer_port": "",
+      "path": "",
       "ibc_channel_id": "",
       "ibc_counterparty_channel_id": "",
       "permissions": [
@@ -1079,7 +1079,7 @@
       "decimals": "10",
       "denom": "xrowan",
       "base_denom": "xrowan",
-      "ibc_transfer_port": "",
+      "path": "",
       "ibc_channel_id": "",
       "ibc_counterparty_channel_id": "",
       "permissions": [
@@ -1093,7 +1093,7 @@
       "decimals": "6",
       "denom": "ibc/8A6E703951D3907FD8F83DE69AC0E6C247C0E58F78C7B33C335E008C56115042",
       "base_denom": "uluna",
-      "ibc_transfer_port": "transfer",
+      "path": "transfer/channel-123",
       "ibc_channel_id": "channel-123",
       "ibc_counterparty_channel_id": "channel-3",
       "permissions": [
@@ -1109,7 +1109,7 @@
       "decimals": "6",
       "denom": "ibc/788BAF91C4E411B0252776FC1B201264457EE886A9E534DF8A52C56A87924D20",
       "base_denom": "uosmo",
-      "ibc_transfer_port": "transfer",
+      "path": "transfer/channel-122",
       "ibc_channel_id": "channel-122",
       "ibc_counterparty_channel_id": "channel-34",
       "permissions": [
@@ -1125,7 +1125,7 @@
       "decimals": "6",
       "denom": "ibc/217BC2C4AD4953D957243A8D0ED015E6689E9C88ADE3D04C9F7BE48916A00457",
       "base_denom": "uusd",
-      "ibc_transfer_port": "transfer",
+      "path": "transfer/channel-123",
       "ibc_channel_id": "channel-123",
       "ibc_counterparty_channel_id": "channel-3",
       "permissions": [
