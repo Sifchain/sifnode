@@ -71,8 +71,8 @@ def format_as_shell_env_vars(env, export=True):
     return ["{}{}=\"{}\"".format("export " if export else "", k, v) for k, v in env.items()]
 
 
-on_peggy_branch = not os.path.exists(project_dir("smart-contracts", "truffle-config.js"))
+on_peggy2_branch = not os.path.exists(project_dir("smart-contracts", "truffle-config.js"))
 
-if on_peggy_branch:
+if on_peggy2_branch:
     # COnditional import - at the moment only on peggy2 branch as not to break existing integration tests
     import web3
