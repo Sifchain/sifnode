@@ -110,8 +110,8 @@ func (k msgServer) Swap(goCtx context.Context, msg *types.MsgSwap) (*types.MsgSw
 		priceImpact sdk.Uint
 	)
 	wl := k.tokenRegistryKeeper.GetRegistry(ctx)
-	sAsset := k.tokenRegistryKeeper.GetDenom(wl, msg.SentAsset.Symbol)
-	rAsset := k.tokenRegistryKeeper.GetDenom(wl, msg.ReceivedAsset.Symbol)
+	sAsset := k.tokenRegistryKeeper.GetEntry(wl, msg.SentAsset.Symbol)
+	rAsset := k.tokenRegistryKeeper.GetEntry(wl, msg.ReceivedAsset.Symbol)
 	if sAsset == nil || rAsset == nil {
 		return nil, types.ErrTokenNotSupported
 	}
@@ -242,7 +242,7 @@ func (k msgServer) Swap(goCtx context.Context, msg *types.MsgSwap) (*types.MsgSw
 func (k msgServer) RemoveLiquidity(goCtx context.Context, msg *types.MsgRemoveLiquidity) (*types.MsgRemoveLiquidityResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 	wl := k.tokenRegistryKeeper.GetRegistry(ctx)
-	eAsset := k.tokenRegistryKeeper.GetDenom(wl, msg.ExternalAsset.Symbol)
+	eAsset := k.tokenRegistryKeeper.GetEntry(wl, msg.ExternalAsset.Symbol)
 	if eAsset == nil {
 		return nil, types.ErrTokenNotSupported
 	}
@@ -357,7 +357,7 @@ func (k msgServer) CreatePool(goCtx context.Context, msg *types.MsgCreatePool) (
 		return nil, types.ErrTotalAmountTooLow
 	}
 	wl := k.tokenRegistryKeeper.GetRegistry(ctx)
-	eAsset := k.tokenRegistryKeeper.GetDenom(wl, msg.ExternalAsset.Symbol)
+	eAsset := k.tokenRegistryKeeper.GetEntry(wl, msg.ExternalAsset.Symbol)
 	if eAsset == nil {
 		return nil, types.ErrTokenNotSupported
 	}
@@ -408,7 +408,7 @@ func (k msgServer) CreatePool(goCtx context.Context, msg *types.MsgCreatePool) (
 func (k msgServer) AddLiquidity(goCtx context.Context, msg *types.MsgAddLiquidity) (*types.MsgAddLiquidityResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 	wl := k.tokenRegistryKeeper.GetRegistry(ctx)
-	eAsset := k.tokenRegistryKeeper.GetDenom(wl, msg.ExternalAsset.Symbol)
+	eAsset := k.tokenRegistryKeeper.GetEntry(wl, msg.ExternalAsset.Symbol)
 	if eAsset == nil {
 		return nil, types.ErrTokenNotSupported
 	}

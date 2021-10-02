@@ -68,9 +68,9 @@ func OnAcknowledgementMaybeConvert(
 		)
 		denom := data.Denom
 		registry := whitelistKeeper.GetRegistry(ctx)
-		denomEntry := whitelistKeeper.GetDenom(registry, denom)
+		denomEntry := whitelistKeeper.GetEntry(registry, denom)
 		if denomEntry != nil && denomEntry.Decimals > 0 && denomEntry.UnitDenom != "" {
-			convertToDenomEntry := whitelistKeeper.GetDenom(registry, denomEntry.UnitDenom)
+			convertToDenomEntry := whitelistKeeper.GetEntry(registry, denomEntry.UnitDenom)
 			if convertToDenomEntry != nil && convertToDenomEntry.Decimals > denomEntry.Decimals {
 				err := helpers.ExecConvForRefundCoins(ctx, bankKeeper, whitelistKeeper, denomEntry, convertToDenomEntry, packet, data)
 				if err != nil {

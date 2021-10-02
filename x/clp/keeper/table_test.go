@@ -205,7 +205,7 @@ func TestCalculatePoolUnitsAfterUpgrade(t *testing.T) {
 	testcases := test.TestType
 	wl := getDenomWhiteListEntries()
 	for _, test := range testcases {
-		entry := app.TokenRegistryKeeper.GetDenom(wl, test.Symbol)
+		entry := app.TokenRegistryKeeper.GetEntry(wl, test.Symbol)
 		nf, ad := app.ClpKeeper.GetNormalizationFactor(entry.Decimals)
 		_, stakeUnits, _ := clpkeeper.CalculatePoolUnits(
 			sdk.NewUintFromString(test.PoolUnitsBalance),

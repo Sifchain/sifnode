@@ -196,7 +196,7 @@ func (m *RegistryEntry) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_RegistryEntry proto.InternalMessageInfo
 
-func (m *RegistryEntry) GetDenom() string {
+func (m *RegistryEntry) GetEntry() string {
 	if m != nil {
 		return m.Denom
 	}
