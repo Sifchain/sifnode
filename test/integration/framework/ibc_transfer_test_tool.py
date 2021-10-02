@@ -1,5 +1,8 @@
 # Draft - not used yet
+#
 # Design document: https://docs.google.com/document/d/1yxxQ3RtftCvCJp_vDlSR5MiXvtOEJxlGXg3GLvf9dls/edit?skip_itp2_check=true
+# Test environment for testing the new Sifchain public SDK: https://docs.google.com/document/d/1MAlg-I0xMnUvbavAZdAN---WuqbyuRyKw-6Lfgfe130/edit
+# IBC localnet tool: https://github.com/Sifchain/sifchain-deploy/commit/0424d2ec81f6f739a3a2cbc77feba1a6f297430d
 
 import json
 import sys
