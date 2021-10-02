@@ -51,8 +51,11 @@ func (srv msgServer) Transfer(goCtx context.Context, msg *sdktransfertypes.MsgTr
 		sendAsRegistryEntry := srv.tokenRegistryKeeper.GetDenom(registry, registryEntry.IbcCounterpartyDenom)
 		if sendAsRegistryEntry != nil && sendAsRegistryEntry.Decimals > 0 && registryEntry.Decimals > sendAsRegistryEntry.Decimals {
 			token, tokenConversion := helpers.ConvertCoinsForTransfer(msg, registryEntry, sendAsRegistryEntry)
-			if token.Amount.Equal(sdk.NewInt(0)) {
+			if token.Amount.Equal(sdk.NewInt(0)) || tokenConversion.Amount.Equal(sdk.NewInt(0)) {
 				return nil, types.ErrAmountTooLowToConvert
+			}
+			if !token.Amount.IsUint64() || !tokenConversion.Amount.IsUint64() {
+				return nil, types.ErrAmountTooLargeToSend
 			}
 			err := helpers.PrepareToSendConvertedCoins(goCtx, msg, token, tokenConversion, srv.bankKeeper)
 			if err != nil {
@@ -61,7 +64,7 @@ func (srv msgServer) Transfer(goCtx context.Context, msg *sdktransfertypes.MsgTr
 			msg.Token = tokenConversion
 		}
 	}
-	if !msg.Token.Amount.IsUint64() {
+	if !msg.Token.Amount.IsUint64() || msg.Token.Amount.Equal(sdk.NewInt(0)) {
 		return nil, types.ErrAmountTooLargeToSend
 	}
 	return srv.sdkMsgServer.Transfer(goCtx, msg)
