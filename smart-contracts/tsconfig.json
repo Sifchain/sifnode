@@ -10,7 +10,14 @@
     "resolveJsonModule": true,
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
-    "strictPropertyInitialization": true
+    "strictPropertyInitialization": true,
+    "lib": [
+      "dom",
+      "es5",
+      "scripthost",
+      "es2015.promise",
+      "es2015.symbol"
+    ]
   },
   "allowJs": true,
   "include": [

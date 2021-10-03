@@ -1059,7 +1059,7 @@
       "denom": "ibc/B181EA86AE95E6AB974D0692E52996C8836619E28E03E90947FE49D3BA1EBE90",
       "base_denom": "uosmo",
       "ibc_transfer_port": "transfer",
-      "ibc_channel_id": "channel-21",
+      "ibc_channel_id": "channel-40",
       "ibc_counterparty_channel_id": "channel-32",
       "permissions": [
         "CLP",
