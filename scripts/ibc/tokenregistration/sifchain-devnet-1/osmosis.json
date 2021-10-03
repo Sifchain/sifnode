@@ -1,0 +1,27 @@
+{
+  "entries": [
+    {
+      "is_whitelisted": true,
+      "decimals": "6",
+      "denom": "ibc/788BAF91C4E411B0252776FC1B201264457EE886A9E534DF8A52C56A87924D20",
+      "base_denom": "uosmo",
+      "path": "transfer/channel-122",
+      "ibc_channel_id": "channel-122",
+      "ibc_counterparty_channel_id": "channel-34",
+      "display_name": "",
+      "display_symbol": "",
+      "network": "",
+      "address": "",
+      "external_symbol": "",
+      "transfer_limit": "",
+      "permissions": [
+        "CLP",
+        "IBCEXPORT",
+        "IBCIMPORT"
+      ],
+      "unit_denom": "",
+      "ibc_counterparty_denom": "",
+      "ibc_counterparty_chain_id": "osmosis-1"
+    }
+  ]
+}

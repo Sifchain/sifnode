@@ -3,6 +3,7 @@ package keeper
 import (
 	"context"
 	"fmt"
+
 	"github.com/cosmos/cosmos-sdk/types/query"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -82,6 +83,55 @@ func (k Querier) GetLiquidityProvider(c context.Context, req *types.LiquidityPro
 	native, external, _, _ := CalculateAllAssetsForLP(pool, lp)
 	lpResponse := types.NewLiquidityProviderResponse(lp, ctx.BlockHeight(), native.String(), external.String())
 	return &lpResponse, nil
+}
+
+func (k Querier) GetLiquidityProviderData(c context.Context, req *types.LiquidityProviderDataReq) (*types.LiquidityProviderDataRes, error) {
+	if req == nil {
+		return nil, status.Error(codes.InvalidArgument, "empty request")
+	}
+
+	if req.Pagination == nil {
+		req.Pagination = &query.PageRequest{
+			Limit: MaxPageLimit,
+		}
+	}
+
+	if req.Pagination.Limit > MaxPageLimit {
+		return nil, status.Error(codes.InvalidArgument, fmt.Sprintf("page size greater than max %d", MaxPageLimit))
+	}
+
+	ctx := sdk.UnwrapSDKContext(c)
+	addr, err := sdk.AccAddressFromBech32(req.LpAddress)
+	if err != nil {
+		return nil, err
+	}
+
+	if req.Pagination.Limit > MaxPageLimit {
+		req.Pagination.Limit = MaxPageLimit
+	}
+	assetList, _, err := k.Keeper.GetAssetsForLiquidityProviderPaginated(ctx, addr, &query.PageRequest{Limit: req.Pagination.Limit})
+	if err != nil {
+		return nil, err
+	}
+
+	lpDataList := make([]*types.LiquidityProviderData, 0, len(assetList))
+	for i := range assetList {
+		asset := assetList[i]
+		pool, err := k.Keeper.GetPool(ctx, asset.Symbol)
+		if err != nil {
+			continue
+		}
+		lp, err := k.Keeper.GetLiquidityProvider(ctx, asset.Symbol, req.LpAddress)
+		if err != nil {
+			continue
+		}
+		native, external, _, _ := CalculateAllAssetsForLP(pool, lp)
+		lpData := types.NewLiquidityProviderData(lp, native.String(), external.String())
+		lpDataList = append(lpDataList, &lpData)
+	}
+
+	lpDataResponse := types.NewLiquidityProviderDataResponse(lpDataList, ctx.BlockHeight())
+	return &lpDataResponse, nil
 }
 
 func (k Querier) GetAssetList(c context.Context, req *types.AssetListReq) (*types.AssetListRes, error) {
