@@ -20,15 +20,11 @@ import (
 )
 
 func TestMsgServer_Transfer(t *testing.T) {
-	/* Test that when a conversion is needed the right amounts are converted before sending to underlying SDK Transfer.
-	 */
 	ctrl := gomock.NewController(t)
 	bankKeeper := scibctransfermocks.NewMockBankKeeper(ctrl)
 	msgSrv := scibctransfermocks.NewMockMsgServer(ctrl)
-
 	app, ctx, _ := tokenregistrytest.CreateTestApp(false)
 	addrs, _ := test.CreateTestAddrs(2)
-
 	app.TokenRegistryKeeper.SetToken(ctx, &tokenregistrytypes.RegistryEntry{
 		Denom:                "rowan",
 		IsWhitelisted:        true,
@@ -49,7 +45,6 @@ func TestMsgServer_Transfer(t *testing.T) {
 		Decimals:      18,
 		Permissions:   []tokenregistrytypes.Permission{tokenregistrytypes.Permission_IBCEXPORT},
 	})
-
 	rowanAmount, ok := sdk.NewIntFromString("1234567891123456789")
 	require.True(t, ok)
 	rowanAmountEscrowed, ok := sdk.NewIntFromString("1234567891100000000")
@@ -57,13 +52,18 @@ func TestMsgServer_Transfer(t *testing.T) {
 	xrowanAmount, ok := sdk.NewIntFromString("12345678911")
 	require.True(t, ok)
 	packetOverflowAmount := sdk.NewIntFromUint64(math.MaxUint64).Add(sdk.NewInt(1))
-
 	rowanSmallest, ok := sdk.NewIntFromString("183456789")
 	require.True(t, ok)
-
 	rowanTooSmall, ok := sdk.NewIntFromString("12345678")
 	require.True(t, ok)
-
+	tooLargeToSend, ok := sdk.NewIntFromString("940000000000000000000000000")
+	require.True(t, ok)
+	tooLargeToSendAs, ok := sdk.NewIntFromString("9400000000000000000")
+	require.True(t, ok)
+	tooLargeToSend2, ok := sdk.NewIntFromString("8940000000000000000000000000")
+	require.True(t, ok)
+	tooLargeToSendAs2, ok := sdk.NewIntFromString("89400000000000000000")
+	require.True(t, ok)
 	tt := []struct {
 		name                 string
 		err                  error
@@ -201,14 +201,74 @@ func TestMsgServer_Transfer(t *testing.T) {
 			setupBankKeeperCalls: func() {},
 			setupMsgServerCalls:  func() {},
 		},
+		{
+			name:       "transfer amount too large to transfer edge case 1",
+			err:        scibctransfertypes.ErrAmountTooLargeToSend,
+			bankKeeper: bankKeeper,
+			msgSrv:     msgSrv,
+			msg: sdktransfertypes.NewMsgTransfer(
+				"transfer",
+				"channel-0",
+				sdk.NewCoin("rowan", tooLargeToSend),
+				addrs[0],
+				addrs[1].String(),
+				clienttypes.NewHeight(0, 0),
+				0,
+			),
+			setupMsgServerCalls: func() {
+				msgSrv.EXPECT().Transfer(gomock.Any(), &sdktransfertypes.MsgTransfer{
+					SourcePort:       "transfer",
+					SourceChannel:    "channel-0",
+					Token:            sdk.NewCoin("xrowan", tooLargeToSendAs),
+					Sender:           addrs[0].String(),
+					Receiver:         addrs[1].String(),
+					TimeoutHeight:    clienttypes.NewHeight(0, 0),
+					TimeoutTimestamp: 0,
+				})
+			},
+			setupBankKeeperCalls: func() {
+				bankKeeper.EXPECT().SendCoins(gomock.Any(), addrs[0], scibctransfertypes.GetEscrowAddress("transfer", "channel-0"), sdk.NewCoins(sdk.NewCoin("rowan", tooLargeToSend))).Return(nil)
+				bankKeeper.EXPECT().MintCoins(gomock.Any(), scibctransfertypes.ModuleName, sdk.NewCoins(sdk.NewCoin("xrowan", tooLargeToSendAs))).Return(nil)
+				bankKeeper.EXPECT().SendCoinsFromModuleToAccount(gomock.Any(), scibctransfertypes.ModuleName, addrs[0], sdk.NewCoins(sdk.NewCoin("xrowan", tooLargeToSendAs))).Return(nil)
+			},
+		},
+		{
+			name:       "transfer amount too large to transfer edge case 2",
+			err:        scibctransfertypes.ErrAmountTooLargeToSend,
+			bankKeeper: bankKeeper,
+			msgSrv:     msgSrv,
+			msg: sdktransfertypes.NewMsgTransfer(
+				"transfer",
+				"channel-0",
+				sdk.NewCoin("rowan", tooLargeToSend2),
+				addrs[0],
+				addrs[1].String(),
+				clienttypes.NewHeight(0, 0),
+				0,
+			),
+			setupMsgServerCalls: func() {
+				msgSrv.EXPECT().Transfer(gomock.Any(), &sdktransfertypes.MsgTransfer{
+					SourcePort:       "transfer",
+					SourceChannel:    "channel-0",
+					Token:            sdk.NewCoin("xrowan", tooLargeToSendAs2),
+					Sender:           addrs[0].String(),
+					Receiver:         addrs[1].String(),
+					TimeoutHeight:    clienttypes.NewHeight(0, 0),
+					TimeoutTimestamp: 0,
+				})
+			},
+			setupBankKeeperCalls: func() {
+				bankKeeper.EXPECT().SendCoins(gomock.Any(), addrs[0], scibctransfertypes.GetEscrowAddress("transfer", "channel-0"), sdk.NewCoins(sdk.NewCoin("rowan", tooLargeToSend2))).Return(nil)
+				bankKeeper.EXPECT().MintCoins(gomock.Any(), scibctransfertypes.ModuleName, sdk.NewCoins(sdk.NewCoin("xrowan", tooLargeToSendAs2))).Return(nil)
+				bankKeeper.EXPECT().SendCoinsFromModuleToAccount(gomock.Any(), scibctransfertypes.ModuleName, addrs[0], sdk.NewCoins(sdk.NewCoin("xrowan", tooLargeToSendAs2))).Return(nil)
+			},
+		},
 	}
-
 	for _, tc := range tt {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
 			tc.setupMsgServerCalls()
 			tc.setupBankKeeperCalls()
-
 			srv := keeper.NewMsgServerImpl(tc.msgSrv, tc.bankKeeper, app.TokenRegistryKeeper)
 			_, err := srv.Transfer(sdk.WrapSDKContext(ctx), tc.msg)
 			require.ErrorIs(t, err, tc.err)
