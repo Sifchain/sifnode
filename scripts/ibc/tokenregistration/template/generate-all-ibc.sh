@@ -187,3 +187,20 @@ echo "\n\ngenerated entry for $OSMOSIS_CHAIN_ID"
 
 cat $SIFCHAIN_ID/osmosis.json | jq
 
+sifnoded q tokenregistry generate \
+	--token_base_denom=ujuno \
+	--token_ibc_counterparty_chain_id=$JUNO_CHAIN_ID \
+  --token_ibc_channel_id=$JUNO_CHANNEL_ID \
+  --token_ibc_counterparty_channel_id=$JUNO_COUNTERPARTY_CHANNEL_ID \
+	--token_ibc_counterparty_denom="" \
+	--token_unit_denom="" \
+	--token_decimals=6 \
+	--token_display_name="" \
+	--token_external_symbol="" \
+	--token_permission_clp=true \
+	--token_permission_ibc_export=true \
+	--token_permission_ibc_import=true | jq > $SIFCHAIN_ID/juno.json
+
+echo "\n\ngenerated entry for $OSMOSIS_CHAIN_ID"
+
+cat $SIFCHAIN_ID/osmosis.json | jq
