@@ -245,6 +245,25 @@ type Gov struct {
 	TallyParams        GovTallyParams   `json:"tally_params"`
 }
 
+type Minter struct {
+	Inflation        string `json:"inflation"`
+	AnnualProvisions string `json:"annual_provisions"`
+}
+
+type MintParams struct {
+	MintDenom           string `json:"mint_denom"`
+	InflationRateChange string `json:"inflation_rate_change"`
+	InflationMax        string `json:"inflation_max"`
+	InflationMin        string `json:"inflation_min"`
+	GoalBonded          string `json:"goal_bonded"`
+	BlocksPerYear       string `json:"blocks_per_year"`
+}
+
+type Mint struct {
+	Minter Minter     `json:"minter"`
+	Params MintParams `json:"params"`
+}
+
 type ClientGenesisParams struct {
 	AllowedClients []string `json:"allowed_clients"`
 }
@@ -338,6 +357,7 @@ type AppState struct {
 	Distribution Distribution  `json:"distribution"`
 	Staking      Staking       `json:"staking"`
 	Gov          Gov           `json:"gov"`
+	Mint         Mint          `json:"mint"`
 	Slashing     Slashing      `json:"slashing"`
 	Auth         Auth          `json:"auth"`
 	Bank         Bank          `json:"bank"`

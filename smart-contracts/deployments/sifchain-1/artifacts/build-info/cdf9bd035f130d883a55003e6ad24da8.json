@@ -1,0 +1,965 @@
+{
+  "id": "cdf9bd035f130d883a55003e6ad24da8",
+  "_format": "hh-sol-build-info-1",
+  "solcVersion": "0.5.16",
+  "solcLongVersion": "0.5.16+commit.9c3226ce",
+  "input": {
+    "language": "Solidity",
+    "sources": {
+      "contracts/BridgeRegistry.sol": {
+        "content": "pragma solidity 0.5.16;\n\n\ncontract BridgeRegistry {\n    address public cosmosBridge;\n    address public bridgeBank;\n    address public oracle;\n    address public valset;\n\n    bool private _initialized;\n\n    uint256[100] private ____gap;\n\n    event LogContractsRegistered(\n        address _cosmosBridge,\n        address _bridgeBank,\n        address _oracle,\n        address _valset\n    );\n\n    function initialize(\n        address _cosmosBridge,\n        address _bridgeBank\n    ) public {\n        require(!_initialized, \"Initialized\");\n\n        cosmosBridge = _cosmosBridge;\n        bridgeBank = _bridgeBank;\n        _initialized = true;\n\n        emit LogContractsRegistered(cosmosBridge, bridgeBank, oracle, valset);\n    }\n}\n"
+      }
+    },
+    "settings": {
+      "optimizer": {
+        "enabled": true,
+        "runs": 200
+      },
+      "outputSelection": {
+        "*": {
+          "*": [
+            "abi",
+            "evm.bytecode",
+            "evm.deployedBytecode",
+            "evm.methodIdentifiers"
+          ],
+          "": [
+            "ast"
+          ]
+        }
+      }
+    }
+  },
+  "output": {
+    "contracts": {
+      "contracts/BridgeRegistry.sol": {
+        "BridgeRegistry": {
+          "abi": [
+            {
+              "anonymous": false,
+              "inputs": [
+                {
+                  "indexed": false,
+                  "internalType": "address",
+                  "name": "_cosmosBridge",
+                  "type": "address"
+                },
+                {
+                  "indexed": false,
+                  "internalType": "address",
+                  "name": "_bridgeBank",
+                  "type": "address"
+                },
+                {
+                  "indexed": false,
+                  "internalType": "address",
+                  "name": "_oracle",
+                  "type": "address"
+                },
+                {
+                  "indexed": false,
+                  "internalType": "address",
+                  "name": "_valset",
+                  "type": "address"
+                }
+              ],
+              "name": "LogContractsRegistered",
+              "type": "event"
+            },
+            {
+              "constant": true,
+              "inputs": [],
+              "name": "bridgeBank",
+              "outputs": [
+                {
+                  "internalType": "address",
+                  "name": "",
+                  "type": "address"
+                }
+              ],
+              "payable": false,
+              "stateMutability": "view",
+              "type": "function"
+            },
+            {
+              "constant": true,
+              "inputs": [],
+              "name": "cosmosBridge",
+              "outputs": [
+                {
+                  "internalType": "address",
+                  "name": "",
+                  "type": "address"
+                }
+              ],
+              "payable": false,
+              "stateMutability": "view",
+              "type": "function"
+            },
+            {
+              "constant": false,
+              "inputs": [
+                {
+                  "internalType": "address",
+                  "name": "_cosmosBridge",
+                  "type": "address"
+                },
+                {
+                  "internalType": "address",
+                  "name": "_bridgeBank",
+                  "type": "address"
+                }
+              ],
+              "name": "initialize",
+              "outputs": [],
+              "payable": false,
+              "stateMutability": "nonpayable",
+              "type": "function"
+            },
+            {
+              "constant": true,
+              "inputs": [],
+              "name": "oracle",
+              "outputs": [
+                {
+                  "internalType": "address",
+                  "name": "",
+                  "type": "address"
+                }
+              ],
+              "payable": false,
+              "stateMutability": "view",
+              "type": "function"
+            },
+            {
+              "constant": true,
+              "inputs": [],
+              "name": "valset",
+              "outputs": [
+                {
+                  "internalType": "address",
+                  "name": "",
+                  "type": "address"
+                }
+              ],
+              "payable": false,
+              "stateMutability": "view",
+              "type": "function"
+            }
+          ],
+          "evm": {
+            "bytecode": {
+              "linkReferences": {},
+              "object": "608060405234801561001057600080fd5b5061021b806100206000396000f3fe608060405234801561001057600080fd5b50600436106100575760003560e01c80630e41f3731461005c578063485cc955146100805780637dc0d1d0146100b05780637f54af0c146100b8578063b0e9ef71146100c0575b600080fd5b6100646100c8565b604080516001600160a01b039092168252519081900360200190f35b6100ae6004803603604081101561009657600080fd5b506001600160a01b03813581169160200135166100d7565b005b6100646101b9565b6100646101c8565b6100646101d7565b6001546001600160a01b031681565b600354600160a01b900460ff1615610124576040805162461bcd60e51b815260206004820152600b60248201526a125b9a5d1a585b1a5e995960aa1b604482015290519081900360640190fd5b600080546001600160a01b038085166001600160a01b0319928316179283905560018054858316931692909217918290556003805460ff60a01b1916600160a01b17908190556002546040805195841686529383166020860152821684840152166060830152517f039b733f31259b106f1d278c726870d5b28c7db22957d63df8dbaa70bd3a032a9181900360800190a15050565b6002546001600160a01b031681565b6003546001600160a01b031681565b6000546001600160a01b03168156fea265627a7a7231582023b7297efcf71270f65e160ac2a1c4ec8aac3cb0773ae45bce0a4b33f07ed18364736f6c63430005100032",
+              "opcodes": "PUSH1 0x80 PUSH1 0x40 MSTORE CALLVALUE DUP1 ISZERO PUSH2 0x10 JUMPI PUSH1 0x0 DUP1 REVERT JUMPDEST POP PUSH2 0x21B DUP1 PUSH2 0x20 PUSH1 0x0 CODECOPY PUSH1 0x0 RETURN INVALID PUSH1 0x80 PUSH1 0x40 MSTORE CALLVALUE DUP1 ISZERO PUSH2 0x10 JUMPI PUSH1 0x0 DUP1 REVERT JUMPDEST POP PUSH1 0x4 CALLDATASIZE LT PUSH2 0x57 JUMPI PUSH1 0x0 CALLDATALOAD PUSH1 0xE0 SHR DUP1 PUSH4 0xE41F373 EQ PUSH2 0x5C JUMPI DUP1 PUSH4 0x485CC955 EQ PUSH2 0x80 JUMPI DUP1 PUSH4 0x7DC0D1D0 EQ PUSH2 0xB0 JUMPI DUP1 PUSH4 0x7F54AF0C EQ PUSH2 0xB8 JUMPI DUP1 PUSH4 0xB0E9EF71 EQ PUSH2 0xC0 JUMPI JUMPDEST PUSH1 0x0 DUP1 REVERT JUMPDEST PUSH2 0x64 PUSH2 0xC8 JUMP JUMPDEST PUSH1 0x40 DUP1 MLOAD PUSH1 0x1 PUSH1 0x1 PUSH1 0xA0 SHL SUB SWAP1 SWAP3 AND DUP3 MSTORE MLOAD SWAP1 DUP2 SWAP1 SUB PUSH1 0x20 ADD SWAP1 RETURN JUMPDEST PUSH2 0xAE PUSH1 0x4 DUP1 CALLDATASIZE SUB PUSH1 0x40 DUP2 LT ISZERO PUSH2 0x96 JUMPI PUSH1 0x0 DUP1 REVERT JUMPDEST POP PUSH1 0x1 PUSH1 0x1 PUSH1 0xA0 SHL SUB DUP2 CALLDATALOAD DUP2 AND SWAP2 PUSH1 0x20 ADD CALLDATALOAD AND PUSH2 0xD7 JUMP JUMPDEST STOP JUMPDEST PUSH2 0x64 PUSH2 0x1B9 JUMP JUMPDEST PUSH2 0x64 PUSH2 0x1C8 JUMP JUMPDEST PUSH2 0x64 PUSH2 0x1D7 JUMP JUMPDEST PUSH1 0x1 SLOAD PUSH1 0x1 PUSH1 0x1 PUSH1 0xA0 SHL SUB AND DUP2 JUMP JUMPDEST PUSH1 0x3 SLOAD PUSH1 0x1 PUSH1 0xA0 SHL SWAP1 DIV PUSH1 0xFF AND ISZERO PUSH2 0x124 JUMPI PUSH1 0x40 DUP1 MLOAD PUSH3 0x461BCD PUSH1 0xE5 SHL DUP2 MSTORE PUSH1 0x20 PUSH1 0x4 DUP3 ADD MSTORE PUSH1 0xB PUSH1 0x24 DUP3 ADD MSTORE PUSH11 0x125B9A5D1A585B1A5E9959 PUSH1 0xAA SHL PUSH1 0x44 DUP3 ADD MSTORE SWAP1 MLOAD SWAP1 DUP2 SWAP1 SUB PUSH1 0x64 ADD SWAP1 REVERT JUMPDEST PUSH1 0x0 DUP1 SLOAD PUSH1 0x1 PUSH1 0x1 PUSH1 0xA0 SHL SUB DUP1 DUP6 AND PUSH1 0x1 PUSH1 0x1 PUSH1 0xA0 SHL SUB NOT SWAP3 DUP4 AND OR SWAP3 DUP4 SWAP1 SSTORE PUSH1 0x1 DUP1 SLOAD DUP6 DUP4 AND SWAP4 AND SWAP3 SWAP1 SWAP3 OR SWAP2 DUP3 SWAP1 SSTORE PUSH1 0x3 DUP1 SLOAD PUSH1 0xFF PUSH1 0xA0 SHL NOT AND PUSH1 0x1 PUSH1 0xA0 SHL OR SWAP1 DUP2 SWAP1 SSTORE PUSH1 0x2 SLOAD PUSH1 0x40 DUP1 MLOAD SWAP6 DUP5 AND DUP7 MSTORE SWAP4 DUP4 AND PUSH1 0x20 DUP7 ADD MSTORE DUP3 AND DUP5 DUP5 ADD MSTORE AND PUSH1 0x60 DUP4 ADD MSTORE MLOAD PUSH32 0x39B733F31259B106F1D278C726870D5B28C7DB22957D63DF8DBAA70BD3A032A SWAP2 DUP2 SWAP1 SUB PUSH1 0x80 ADD SWAP1 LOG1 POP POP JUMP JUMPDEST PUSH1 0x2 SLOAD PUSH1 0x1 PUSH1 0x1 PUSH1 0xA0 SHL SUB AND DUP2 JUMP JUMPDEST PUSH1 0x3 SLOAD PUSH1 0x1 PUSH1 0x1 PUSH1 0xA0 SHL SUB AND DUP2 JUMP JUMPDEST PUSH1 0x0 SLOAD PUSH1 0x1 PUSH1 0x1 PUSH1 0xA0 SHL SUB AND DUP2 JUMP INVALID LOG2 PUSH6 0x627A7A723158 KECCAK256 0x23 0xB7 0x29 PUSH31 0xFCF71270F65E160AC2A1C4EC8AAC3CB0773AE45BCE0A4B33F07ED18364736F PUSH13 0x63430005100032000000000000 ",
+              "sourceMap": "26:698:0:-;;;;8:9:-1;5:2;;;30:1;27;20:12;5:2;26:698:0;;;;;;;"
+            },
+            "deployedBytecode": {
+              "linkReferences": {},
+              "object": "608060405234801561001057600080fd5b50600436106100575760003560e01c80630e41f3731461005c578063485cc955146100805780637dc0d1d0146100b05780637f54af0c146100b8578063b0e9ef71146100c0575b600080fd5b6100646100c8565b604080516001600160a01b039092168252519081900360200190f35b6100ae6004803603604081101561009657600080fd5b506001600160a01b03813581169160200135166100d7565b005b6100646101b9565b6100646101c8565b6100646101d7565b6001546001600160a01b031681565b600354600160a01b900460ff1615610124576040805162461bcd60e51b815260206004820152600b60248201526a125b9a5d1a585b1a5e995960aa1b604482015290519081900360640190fd5b600080546001600160a01b038085166001600160a01b0319928316179283905560018054858316931692909217918290556003805460ff60a01b1916600160a01b17908190556002546040805195841686529383166020860152821684840152166060830152517f039b733f31259b106f1d278c726870d5b28c7db22957d63df8dbaa70bd3a032a9181900360800190a15050565b6002546001600160a01b031681565b6003546001600160a01b031681565b6000546001600160a01b03168156fea265627a7a7231582023b7297efcf71270f65e160ac2a1c4ec8aac3cb0773ae45bce0a4b33f07ed18364736f6c63430005100032",
+              "opcodes": "PUSH1 0x80 PUSH1 0x40 MSTORE CALLVALUE DUP1 ISZERO PUSH2 0x10 JUMPI PUSH1 0x0 DUP1 REVERT JUMPDEST POP PUSH1 0x4 CALLDATASIZE LT PUSH2 0x57 JUMPI PUSH1 0x0 CALLDATALOAD PUSH1 0xE0 SHR DUP1 PUSH4 0xE41F373 EQ PUSH2 0x5C JUMPI DUP1 PUSH4 0x485CC955 EQ PUSH2 0x80 JUMPI DUP1 PUSH4 0x7DC0D1D0 EQ PUSH2 0xB0 JUMPI DUP1 PUSH4 0x7F54AF0C EQ PUSH2 0xB8 JUMPI DUP1 PUSH4 0xB0E9EF71 EQ PUSH2 0xC0 JUMPI JUMPDEST PUSH1 0x0 DUP1 REVERT JUMPDEST PUSH2 0x64 PUSH2 0xC8 JUMP JUMPDEST PUSH1 0x40 DUP1 MLOAD PUSH1 0x1 PUSH1 0x1 PUSH1 0xA0 SHL SUB SWAP1 SWAP3 AND DUP3 MSTORE MLOAD SWAP1 DUP2 SWAP1 SUB PUSH1 0x20 ADD SWAP1 RETURN JUMPDEST PUSH2 0xAE PUSH1 0x4 DUP1 CALLDATASIZE SUB PUSH1 0x40 DUP2 LT ISZERO PUSH2 0x96 JUMPI PUSH1 0x0 DUP1 REVERT JUMPDEST POP PUSH1 0x1 PUSH1 0x1 PUSH1 0xA0 SHL SUB DUP2 CALLDATALOAD DUP2 AND SWAP2 PUSH1 0x20 ADD CALLDATALOAD AND PUSH2 0xD7 JUMP JUMPDEST STOP JUMPDEST PUSH2 0x64 PUSH2 0x1B9 JUMP JUMPDEST PUSH2 0x64 PUSH2 0x1C8 JUMP JUMPDEST PUSH2 0x64 PUSH2 0x1D7 JUMP JUMPDEST PUSH1 0x1 SLOAD PUSH1 0x1 PUSH1 0x1 PUSH1 0xA0 SHL SUB AND DUP2 JUMP JUMPDEST PUSH1 0x3 SLOAD PUSH1 0x1 PUSH1 0xA0 SHL SWAP1 DIV PUSH1 0xFF AND ISZERO PUSH2 0x124 JUMPI PUSH1 0x40 DUP1 MLOAD PUSH3 0x461BCD PUSH1 0xE5 SHL DUP2 MSTORE PUSH1 0x20 PUSH1 0x4 DUP3 ADD MSTORE PUSH1 0xB PUSH1 0x24 DUP3 ADD MSTORE PUSH11 0x125B9A5D1A585B1A5E9959 PUSH1 0xAA SHL PUSH1 0x44 DUP3 ADD MSTORE SWAP1 MLOAD SWAP1 DUP2 SWAP1 SUB PUSH1 0x64 ADD SWAP1 REVERT JUMPDEST PUSH1 0x0 DUP1 SLOAD PUSH1 0x1 PUSH1 0x1 PUSH1 0xA0 SHL SUB DUP1 DUP6 AND PUSH1 0x1 PUSH1 0x1 PUSH1 0xA0 SHL SUB NOT SWAP3 DUP4 AND OR SWAP3 DUP4 SWAP1 SSTORE PUSH1 0x1 DUP1 SLOAD DUP6 DUP4 AND SWAP4 AND SWAP3 SWAP1 SWAP3 OR SWAP2 DUP3 SWAP1 SSTORE PUSH1 0x3 DUP1 SLOAD PUSH1 0xFF PUSH1 0xA0 SHL NOT AND PUSH1 0x1 PUSH1 0xA0 SHL OR SWAP1 DUP2 SWAP1 SSTORE PUSH1 0x2 SLOAD PUSH1 0x40 DUP1 MLOAD SWAP6 DUP5 AND DUP7 MSTORE SWAP4 DUP4 AND PUSH1 0x20 DUP7 ADD MSTORE DUP3 AND DUP5 DUP5 ADD MSTORE AND PUSH1 0x60 DUP4 ADD MSTORE MLOAD PUSH32 0x39B733F31259B106F1D278C726870D5B28C7DB22957D63DF8DBAA70BD3A032A SWAP2 DUP2 SWAP1 SUB PUSH1 0x80 ADD SWAP1 LOG1 POP POP JUMP JUMPDEST PUSH1 0x2 SLOAD PUSH1 0x1 PUSH1 0x1 PUSH1 0xA0 SHL SUB AND DUP2 JUMP JUMPDEST PUSH1 0x3 SLOAD PUSH1 0x1 PUSH1 0x1 PUSH1 0xA0 SHL SUB AND DUP2 JUMP JUMPDEST PUSH1 0x0 SLOAD PUSH1 0x1 PUSH1 0x1 PUSH1 0xA0 SHL SUB AND DUP2 JUMP INVALID LOG2 PUSH6 0x627A7A723158 KECCAK256 0x23 0xB7 0x29 PUSH31 0xFCF71270F65E160AC2A1C4EC8AAC3CB0773AE45BCE0A4B33F07ED18364736F PUSH13 0x63430005100032000000000000 ",
+              "sourceMap": "26:698:0:-;;;;8:9:-1;5:2;;;30:1;27;20:12;5:2;26:698:0;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;89:25;;;:::i;:::-;;;;-1:-1:-1;;;;;89:25:0;;;;;;;;;;;;;;393:329;;;;;;13:2:-1;8:3;5:11;2:2;;;29:1;26;19:12;2:2;-1:-1;;;;;;393:329:0;;;;;;;;;;:::i;:::-;;120:21;;;:::i;147:::-;;;:::i;56:27::-;;;:::i;89:25::-;;;-1:-1:-1;;;;;89:25:0;;:::o;393:329::-;505:12;;-1:-1:-1;;;505:12:0;;;;504:13;496:37;;;;;-1:-1:-1;;;496:37:0;;;;;;;;;;;;-1:-1:-1;;;496:37:0;;;;;;;;;;;;;;;544:12;:28;;-1:-1:-1;;;;;544:28:0;;;-1:-1:-1;;;;;;544:28:0;;;;;;;;;582:24;;;;;;;;;;;;;;;616:12;:19;;-1:-1:-1;;;;616:19:0;-1:-1:-1;;;616:19:0;;;;;700:6;;651:64;;;674:12;;;651:64;;688:10;;;651:64;;;;700:6;;651:64;;;;708:6;651:64;;;;;;;;;;;;;;393:329;;:::o;120:21::-;;;-1:-1:-1;;;;;120:21:0;;:::o;147:::-;;;-1:-1:-1;;;;;147:21:0;;:::o;56:27::-;;;-1:-1:-1;;;;;56:27:0;;:::o"
+            },
+            "methodIdentifiers": {
+              "bridgeBank()": "0e41f373",
+              "cosmosBridge()": "b0e9ef71",
+              "initialize(address,address)": "485cc955",
+              "oracle()": "7dc0d1d0",
+              "valset()": "7f54af0c"
+            }
+          }
+        }
+      }
+    },
+    "sources": {
+      "contracts/BridgeRegistry.sol": {
+        "ast": {
+          "absolutePath": "contracts/BridgeRegistry.sol",
+          "exportedSymbols": {
+            "BridgeRegistry": [
+              59
+            ]
+          },
+          "id": 60,
+          "nodeType": "SourceUnit",
+          "nodes": [
+            {
+              "id": 1,
+              "literals": [
+                "solidity",
+                "0.5",
+                ".16"
+              ],
+              "nodeType": "PragmaDirective",
+              "src": "0:23:0"
+            },
+            {
+              "baseContracts": [],
+              "contractDependencies": [],
+              "contractKind": "contract",
+              "documentation": null,
+              "fullyImplemented": true,
+              "id": 59,
+              "linearizedBaseContracts": [
+                59
+              ],
+              "name": "BridgeRegistry",
+              "nodeType": "ContractDefinition",
+              "nodes": [
+                {
+                  "constant": false,
+                  "id": 3,
+                  "name": "cosmosBridge",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 59,
+                  "src": "56:27:0",
+                  "stateVariable": true,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 2,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "56:7:0",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "public"
+                },
+                {
+                  "constant": false,
+                  "id": 5,
+                  "name": "bridgeBank",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 59,
+                  "src": "89:25:0",
+                  "stateVariable": true,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 4,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "89:7:0",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "public"
+                },
+                {
+                  "constant": false,
+                  "id": 7,
+                  "name": "oracle",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 59,
+                  "src": "120:21:0",
+                  "stateVariable": true,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 6,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "120:7:0",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "public"
+                },
+                {
+                  "constant": false,
+                  "id": 9,
+                  "name": "valset",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 59,
+                  "src": "147:21:0",
+                  "stateVariable": true,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 8,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "147:7:0",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "public"
+                },
+                {
+                  "constant": false,
+                  "id": 11,
+                  "name": "_initialized",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 59,
+                  "src": "175:25:0",
+                  "stateVariable": true,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bool",
+                    "typeString": "bool"
+                  },
+                  "typeName": {
+                    "id": 10,
+                    "name": "bool",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "175:4:0",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bool",
+                      "typeString": "bool"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "private"
+                },
+                {
+                  "constant": false,
+                  "id": 15,
+                  "name": "____gap",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 59,
+                  "src": "207:28:0",
+                  "stateVariable": true,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_array$_t_uint256_$100_storage",
+                    "typeString": "uint256[100]"
+                  },
+                  "typeName": {
+                    "baseType": {
+                      "id": 12,
+                      "name": "uint256",
+                      "nodeType": "ElementaryTypeName",
+                      "src": "207:7:0",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_uint256",
+                        "typeString": "uint256"
+                      }
+                    },
+                    "id": 14,
+                    "length": {
+                      "argumentTypes": null,
+                      "hexValue": "313030",
+                      "id": 13,
+                      "isConstant": false,
+                      "isLValue": false,
+                      "isPure": true,
+                      "kind": "number",
+                      "lValueRequested": false,
+                      "nodeType": "Literal",
+                      "src": "215:3:0",
+                      "subdenomination": null,
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_rational_100_by_1",
+                        "typeString": "int_const 100"
+                      },
+                      "value": "100"
+                    },
+                    "nodeType": "ArrayTypeName",
+                    "src": "207:12:0",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_array$_t_uint256_$100_storage_ptr",
+                      "typeString": "uint256[100]"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "private"
+                },
+                {
+                  "anonymous": false,
+                  "documentation": null,
+                  "id": 25,
+                  "name": "LogContractsRegistered",
+                  "nodeType": "EventDefinition",
+                  "parameters": {
+                    "id": 24,
+                    "nodeType": "ParameterList",
+                    "parameters": [
+                      {
+                        "constant": false,
+                        "id": 17,
+                        "indexed": false,
+                        "name": "_cosmosBridge",
+                        "nodeType": "VariableDeclaration",
+                        "scope": 25,
+                        "src": "280:21:0",
+                        "stateVariable": false,
+                        "storageLocation": "default",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_address",
+                          "typeString": "address"
+                        },
+                        "typeName": {
+                          "id": 16,
+                          "name": "address",
+                          "nodeType": "ElementaryTypeName",
+                          "src": "280:7:0",
+                          "stateMutability": "nonpayable",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_address",
+                            "typeString": "address"
+                          }
+                        },
+                        "value": null,
+                        "visibility": "internal"
+                      },
+                      {
+                        "constant": false,
+                        "id": 19,
+                        "indexed": false,
+                        "name": "_bridgeBank",
+                        "nodeType": "VariableDeclaration",
+                        "scope": 25,
+                        "src": "311:19:0",
+                        "stateVariable": false,
+                        "storageLocation": "default",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_address",
+                          "typeString": "address"
+                        },
+                        "typeName": {
+                          "id": 18,
+                          "name": "address",
+                          "nodeType": "ElementaryTypeName",
+                          "src": "311:7:0",
+                          "stateMutability": "nonpayable",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_address",
+                            "typeString": "address"
+                          }
+                        },
+                        "value": null,
+                        "visibility": "internal"
+                      },
+                      {
+                        "constant": false,
+                        "id": 21,
+                        "indexed": false,
+                        "name": "_oracle",
+                        "nodeType": "VariableDeclaration",
+                        "scope": 25,
+                        "src": "340:15:0",
+                        "stateVariable": false,
+                        "storageLocation": "default",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_address",
+                          "typeString": "address"
+                        },
+                        "typeName": {
+                          "id": 20,
+                          "name": "address",
+                          "nodeType": "ElementaryTypeName",
+                          "src": "340:7:0",
+                          "stateMutability": "nonpayable",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_address",
+                            "typeString": "address"
+                          }
+                        },
+                        "value": null,
+                        "visibility": "internal"
+                      },
+                      {
+                        "constant": false,
+                        "id": 23,
+                        "indexed": false,
+                        "name": "_valset",
+                        "nodeType": "VariableDeclaration",
+                        "scope": 25,
+                        "src": "365:15:0",
+                        "stateVariable": false,
+                        "storageLocation": "default",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_address",
+                          "typeString": "address"
+                        },
+                        "typeName": {
+                          "id": 22,
+                          "name": "address",
+                          "nodeType": "ElementaryTypeName",
+                          "src": "365:7:0",
+                          "stateMutability": "nonpayable",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_address",
+                            "typeString": "address"
+                          }
+                        },
+                        "value": null,
+                        "visibility": "internal"
+                      }
+                    ],
+                    "src": "270:116:0"
+                  },
+                  "src": "242:145:0"
+                },
+                {
+                  "body": {
+                    "id": 57,
+                    "nodeType": "Block",
+                    "src": "486:236:0",
+                    "statements": [
+                      {
+                        "expression": {
+                          "argumentTypes": null,
+                          "arguments": [
+                            {
+                              "argumentTypes": null,
+                              "id": 34,
+                              "isConstant": false,
+                              "isLValue": false,
+                              "isPure": false,
+                              "lValueRequested": false,
+                              "nodeType": "UnaryOperation",
+                              "operator": "!",
+                              "prefix": true,
+                              "src": "504:13:0",
+                              "subExpression": {
+                                "argumentTypes": null,
+                                "id": 33,
+                                "name": "_initialized",
+                                "nodeType": "Identifier",
+                                "overloadedDeclarations": [],
+                                "referencedDeclaration": 11,
+                                "src": "505:12:0",
+                                "typeDescriptions": {
+                                  "typeIdentifier": "t_bool",
+                                  "typeString": "bool"
+                                }
+                              },
+                              "typeDescriptions": {
+                                "typeIdentifier": "t_bool",
+                                "typeString": "bool"
+                              }
+                            },
+                            {
+                              "argumentTypes": null,
+                              "hexValue": "496e697469616c697a6564",
+                              "id": 35,
+                              "isConstant": false,
+                              "isLValue": false,
+                              "isPure": true,
+                              "kind": "string",
+                              "lValueRequested": false,
+                              "nodeType": "Literal",
+                              "src": "519:13:0",
+                              "subdenomination": null,
+                              "typeDescriptions": {
+                                "typeIdentifier": "t_stringliteral_d2a9b5158cff4d129f58e3e9cb6a13e2414f0ef74f94537777267284c43bba3b",
+                                "typeString": "literal_string \"Initialized\""
+                              },
+                              "value": "Initialized"
+                            }
+                          ],
+                          "expression": {
+                            "argumentTypes": [
+                              {
+                                "typeIdentifier": "t_bool",
+                                "typeString": "bool"
+                              },
+                              {
+                                "typeIdentifier": "t_stringliteral_d2a9b5158cff4d129f58e3e9cb6a13e2414f0ef74f94537777267284c43bba3b",
+                                "typeString": "literal_string \"Initialized\""
+                              }
+                            ],
+                            "id": 32,
+                            "name": "require",
+                            "nodeType": "Identifier",
+                            "overloadedDeclarations": [
+                              77,
+                              78
+                            ],
+                            "referencedDeclaration": 78,
+                            "src": "496:7:0",
+                            "typeDescriptions": {
+                              "typeIdentifier": "t_function_require_pure$_t_bool_$_t_string_memory_ptr_$returns$__$",
+                              "typeString": "function (bool,string memory) pure"
+                            }
+                          },
+                          "id": 36,
+                          "isConstant": false,
+                          "isLValue": false,
+                          "isPure": false,
+                          "kind": "functionCall",
+                          "lValueRequested": false,
+                          "names": [],
+                          "nodeType": "FunctionCall",
+                          "src": "496:37:0",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_tuple$__$",
+                            "typeString": "tuple()"
+                          }
+                        },
+                        "id": 37,
+                        "nodeType": "ExpressionStatement",
+                        "src": "496:37:0"
+                      },
+                      {
+                        "expression": {
+                          "argumentTypes": null,
+                          "id": 40,
+                          "isConstant": false,
+                          "isLValue": false,
+                          "isPure": false,
+                          "lValueRequested": false,
+                          "leftHandSide": {
+                            "argumentTypes": null,
+                            "id": 38,
+                            "name": "cosmosBridge",
+                            "nodeType": "Identifier",
+                            "overloadedDeclarations": [],
+                            "referencedDeclaration": 3,
+                            "src": "544:12:0",
+                            "typeDescriptions": {
+                              "typeIdentifier": "t_address",
+                              "typeString": "address"
+                            }
+                          },
+                          "nodeType": "Assignment",
+                          "operator": "=",
+                          "rightHandSide": {
+                            "argumentTypes": null,
+                            "id": 39,
+                            "name": "_cosmosBridge",
+                            "nodeType": "Identifier",
+                            "overloadedDeclarations": [],
+                            "referencedDeclaration": 27,
+                            "src": "559:13:0",
+                            "typeDescriptions": {
+                              "typeIdentifier": "t_address",
+                              "typeString": "address"
+                            }
+                          },
+                          "src": "544:28:0",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_address",
+                            "typeString": "address"
+                          }
+                        },
+                        "id": 41,
+                        "nodeType": "ExpressionStatement",
+                        "src": "544:28:0"
+                      },
+                      {
+                        "expression": {
+                          "argumentTypes": null,
+                          "id": 44,
+                          "isConstant": false,
+                          "isLValue": false,
+                          "isPure": false,
+                          "lValueRequested": false,
+                          "leftHandSide": {
+                            "argumentTypes": null,
+                            "id": 42,
+                            "name": "bridgeBank",
+                            "nodeType": "Identifier",
+                            "overloadedDeclarations": [],
+                            "referencedDeclaration": 5,
+                            "src": "582:10:0",
+                            "typeDescriptions": {
+                              "typeIdentifier": "t_address",
+                              "typeString": "address"
+                            }
+                          },
+                          "nodeType": "Assignment",
+                          "operator": "=",
+                          "rightHandSide": {
+                            "argumentTypes": null,
+                            "id": 43,
+                            "name": "_bridgeBank",
+                            "nodeType": "Identifier",
+                            "overloadedDeclarations": [],
+                            "referencedDeclaration": 29,
+                            "src": "595:11:0",
+                            "typeDescriptions": {
+                              "typeIdentifier": "t_address",
+                              "typeString": "address"
+                            }
+                          },
+                          "src": "582:24:0",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_address",
+                            "typeString": "address"
+                          }
+                        },
+                        "id": 45,
+                        "nodeType": "ExpressionStatement",
+                        "src": "582:24:0"
+                      },
+                      {
+                        "expression": {
+                          "argumentTypes": null,
+                          "id": 48,
+                          "isConstant": false,
+                          "isLValue": false,
+                          "isPure": false,
+                          "lValueRequested": false,
+                          "leftHandSide": {
+                            "argumentTypes": null,
+                            "id": 46,
+                            "name": "_initialized",
+                            "nodeType": "Identifier",
+                            "overloadedDeclarations": [],
+                            "referencedDeclaration": 11,
+                            "src": "616:12:0",
+                            "typeDescriptions": {
+                              "typeIdentifier": "t_bool",
+                              "typeString": "bool"
+                            }
+                          },
+                          "nodeType": "Assignment",
+                          "operator": "=",
+                          "rightHandSide": {
+                            "argumentTypes": null,
+                            "hexValue": "74727565",
+                            "id": 47,
+                            "isConstant": false,
+                            "isLValue": false,
+                            "isPure": true,
+                            "kind": "bool",
+                            "lValueRequested": false,
+                            "nodeType": "Literal",
+                            "src": "631:4:0",
+                            "subdenomination": null,
+                            "typeDescriptions": {
+                              "typeIdentifier": "t_bool",
+                              "typeString": "bool"
+                            },
+                            "value": "true"
+                          },
+                          "src": "616:19:0",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_bool",
+                            "typeString": "bool"
+                          }
+                        },
+                        "id": 49,
+                        "nodeType": "ExpressionStatement",
+                        "src": "616:19:0"
+                      },
+                      {
+                        "eventCall": {
+                          "argumentTypes": null,
+                          "arguments": [
+                            {
+                              "argumentTypes": null,
+                              "id": 51,
+                              "name": "cosmosBridge",
+                              "nodeType": "Identifier",
+                              "overloadedDeclarations": [],
+                              "referencedDeclaration": 3,
+                              "src": "674:12:0",
+                              "typeDescriptions": {
+                                "typeIdentifier": "t_address",
+                                "typeString": "address"
+                              }
+                            },
+                            {
+                              "argumentTypes": null,
+                              "id": 52,
+                              "name": "bridgeBank",
+                              "nodeType": "Identifier",
+                              "overloadedDeclarations": [],
+                              "referencedDeclaration": 5,
+                              "src": "688:10:0",
+                              "typeDescriptions": {
+                                "typeIdentifier": "t_address",
+                                "typeString": "address"
+                              }
+                            },
+                            {
+                              "argumentTypes": null,
+                              "id": 53,
+                              "name": "oracle",
+                              "nodeType": "Identifier",
+                              "overloadedDeclarations": [],
+                              "referencedDeclaration": 7,
+                              "src": "700:6:0",
+                              "typeDescriptions": {
+                                "typeIdentifier": "t_address",
+                                "typeString": "address"
+                              }
+                            },
+                            {
+                              "argumentTypes": null,
+                              "id": 54,
+                              "name": "valset",
+                              "nodeType": "Identifier",
+                              "overloadedDeclarations": [],
+                              "referencedDeclaration": 9,
+                              "src": "708:6:0",
+                              "typeDescriptions": {
+                                "typeIdentifier": "t_address",
+                                "typeString": "address"
+                              }
+                            }
+                          ],
+                          "expression": {
+                            "argumentTypes": [
+                              {
+                                "typeIdentifier": "t_address",
+                                "typeString": "address"
+                              },
+                              {
+                                "typeIdentifier": "t_address",
+                                "typeString": "address"
+                              },
+                              {
+                                "typeIdentifier": "t_address",
+                                "typeString": "address"
+                              },
+                              {
+                                "typeIdentifier": "t_address",
+                                "typeString": "address"
+                              }
+                            ],
+                            "id": 50,
+                            "name": "LogContractsRegistered",
+                            "nodeType": "Identifier",
+                            "overloadedDeclarations": [],
+                            "referencedDeclaration": 25,
+                            "src": "651:22:0",
+                            "typeDescriptions": {
+                              "typeIdentifier": "t_function_event_nonpayable$_t_address_$_t_address_$_t_address_$_t_address_$returns$__$",
+                              "typeString": "function (address,address,address,address)"
+                            }
+                          },
+                          "id": 55,
+                          "isConstant": false,
+                          "isLValue": false,
+                          "isPure": false,
+                          "kind": "functionCall",
+                          "lValueRequested": false,
+                          "names": [],
+                          "nodeType": "FunctionCall",
+                          "src": "651:64:0",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_tuple$__$",
+                            "typeString": "tuple()"
+                          }
+                        },
+                        "id": 56,
+                        "nodeType": "EmitStatement",
+                        "src": "646:69:0"
+                      }
+                    ]
+                  },
+                  "documentation": null,
+                  "id": 58,
+                  "implemented": true,
+                  "kind": "function",
+                  "modifiers": [],
+                  "name": "initialize",
+                  "nodeType": "FunctionDefinition",
+                  "parameters": {
+                    "id": 30,
+                    "nodeType": "ParameterList",
+                    "parameters": [
+                      {
+                        "constant": false,
+                        "id": 27,
+                        "name": "_cosmosBridge",
+                        "nodeType": "VariableDeclaration",
+                        "scope": 58,
+                        "src": "422:21:0",
+                        "stateVariable": false,
+                        "storageLocation": "default",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_address",
+                          "typeString": "address"
+                        },
+                        "typeName": {
+                          "id": 26,
+                          "name": "address",
+                          "nodeType": "ElementaryTypeName",
+                          "src": "422:7:0",
+                          "stateMutability": "nonpayable",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_address",
+                            "typeString": "address"
+                          }
+                        },
+                        "value": null,
+                        "visibility": "internal"
+                      },
+                      {
+                        "constant": false,
+                        "id": 29,
+                        "name": "_bridgeBank",
+                        "nodeType": "VariableDeclaration",
+                        "scope": 58,
+                        "src": "453:19:0",
+                        "stateVariable": false,
+                        "storageLocation": "default",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_address",
+                          "typeString": "address"
+                        },
+                        "typeName": {
+                          "id": 28,
+                          "name": "address",
+                          "nodeType": "ElementaryTypeName",
+                          "src": "453:7:0",
+                          "stateMutability": "nonpayable",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_address",
+                            "typeString": "address"
+                          }
+                        },
+                        "value": null,
+                        "visibility": "internal"
+                      }
+                    ],
+                    "src": "412:66:0"
+                  },
+                  "returnParameters": {
+                    "id": 31,
+                    "nodeType": "ParameterList",
+                    "parameters": [],
+                    "src": "486:0:0"
+                  },
+                  "scope": 59,
+                  "src": "393:329:0",
+                  "stateMutability": "nonpayable",
+                  "superFunction": null,
+                  "visibility": "public"
+                }
+              ],
+              "scope": 60,
+              "src": "26:698:0"
+            }
+          ],
+          "src": "0:725:0"
+        },
+        "id": 0
+      }
+    }
+  }
+}
