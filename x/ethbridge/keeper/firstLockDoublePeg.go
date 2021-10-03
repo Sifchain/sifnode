@@ -7,13 +7,12 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-// GetFirstLockDoublePeg get current global nonce and update it
+// GetFirstLockDoublePeg get first lock double peg
 func (k Keeper) GetFirstLockDoublePeg(ctx sdk.Context, denom string) bool {
 	prefix := k.GetFirstLockDoublePegPrefix(ctx, denom)
 	store := ctx.KVStore(k.storeKey)
 
 	if !k.ExistsFirstLockDoublePeg(ctx, prefix) {
-		// global nonce start from 1
 		return false
 	}
 	value := store.Get(prefix)
@@ -25,7 +24,7 @@ func (k Keeper) GetFirstLockDoublePeg(ctx sdk.Context, denom string) bool {
 	return result
 }
 
-// SetFirstLockDoublePeg set denom double pegged
+// SetFirstLockDoublePeg set first lock double peg
 func (k Keeper) SetFirstLockDoublePeg(ctx sdk.Context, denom string) {
 	prefix := k.GetFirstLockDoublePegPrefix(ctx, denom)
 	store := ctx.KVStore(k.storeKey)
@@ -34,7 +33,7 @@ func (k Keeper) SetFirstLockDoublePeg(ctx sdk.Context, denom string) {
 	store.Set(prefix, b)
 }
 
-// ExistsFirstLockDoublePeg check if the global nonce exists
+// ExistsFirstLockDoublePeg check if the data exists
 func (k Keeper) ExistsFirstLockDoublePeg(ctx sdk.Context, prefix []byte) bool {
 	if !k.Exists(ctx, prefix) {
 		return false

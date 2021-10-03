@@ -15,7 +15,7 @@ func TestGetAndSetFirstLockDoublePeg(t *testing.T) {
 	FirstLockDoublePeg := keeper.GetFirstLockDoublePeg(ctx, denom)
 	assert.Equal(t, FirstLockDoublePeg, false)
 
-	// test the second value
+	// test the value after set
 	keeper.SetFirstLockDoublePeg(ctx, denom)
 
 	FirstLockDoublePeg = keeper.GetFirstLockDoublePeg(ctx, denom)
