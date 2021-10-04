@@ -10,7 +10,7 @@ const colors = {
   magenta: "\x1b[35m",
   cyan: "\x1b[36m",
   white: "\x1b[37m",
-  highlight: "\x1b[40m\x1b[37m",
+  highlight: "\x1b[47m\x1b[30m",
   close: "\x1b[0m",
 };
 
@@ -88,9 +88,38 @@ function cacheBuster(url) {
   return finalUrl;
 }
 
+/**
+ * Removes duplicates from arrays
+ * @param {array} list Your array
+ * @returns {array} an array containing no duplicates
+ */
+function removeDuplicates(list) {
+  const uniqueSet = new Set(list);
+  return [...uniqueSet];
+}
+
+/**
+ * Compares two arrays and returns true if they have the exact same elements, even if out of order
+ * @param {array} List 1
+ * @param {array} List 2
+ * @returns {bool} Do they have the same elements?
+ */
+function hasSameElements(a, b) {
+  if (a.length !== b.length) return false;
+  const uniqueValues = new Set([...a, ...b]);
+  for (const v of uniqueValues) {
+    const aCount = a.filter((e) => e === v).length;
+    const bCount = b.filter((e) => e === v).length;
+    if (aCount !== bCount) return false;
+  }
+  return true;
+}
+
 module.exports = {
   print,
   isValidSymbol,
   generateTodayFilename,
   cacheBuster,
+  removeDuplicates,
+  hasSameElements,
 };
