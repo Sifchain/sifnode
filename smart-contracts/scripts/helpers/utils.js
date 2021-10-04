@@ -81,6 +81,11 @@ function generateTodayFilename({ prefix, extension, directory }) {
   return filename;
 }
 
+/**
+ * Busts cache
+ * @param {string} url The url to be cacheBusted
+ * @returns The same URL with something '?cacheBuster=95508245028' appended to it
+ */
 function cacheBuster(url) {
   const rand = Math.floor(Math.random() * (9999999999 - 2) + 1);
   const cacheBuster = `?cacheBuster=${rand}`;
@@ -115,6 +120,39 @@ function hasSameElements(a, b) {
   return true;
 }
 
+/*
+ * Generates a valid Peggy1 Denom
+ * @param {string} symbol The symbol that should be converted to a V1 denom
+ * @returns The denom, something like 'ceth'
+ */
+function generateV1Denom(symbol) {
+  const denom = "c" + symbol.toLowerCase();
+  return denom;
+}
+
+/**
+ * Model of an object that the Sifnode team cares about
+ */
+const SIFNODE_MODEL = {
+  is_whitelisted: true,
+  decimals: "",
+  denom: "",
+  base_denom: "",
+  path: "",
+  ibc_channel_id: "",
+  ibc_counterparty_channel_id: "",
+  display_name: "",
+  display_symbol: "",
+  network: "",
+  address: "",
+  external_symbol: "",
+  transfer_limit: "",
+  permissions: ["CLP"],
+  unit_denom: "",
+  ibc_counterparty_denom: "",
+  ibc_counterparty_chain_id: "",
+};
+
 module.exports = {
   print,
   isValidSymbol,
@@ -122,4 +160,6 @@ module.exports = {
   cacheBuster,
   removeDuplicates,
   hasSameElements,
+  generateV1Denom,
+  SIFNODE_MODEL,
 };

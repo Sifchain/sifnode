@@ -2,7 +2,7 @@
  * Adds tokens to the whitelist in a batch.
  * This script is part of the whitelisting process.
  * Please read Whitelist_Update.md for instructions.
- * 
+ *
  * @dev We're setting gasPrice explicitly, in accordance with the received ask.
  *      If this causes problems, please remove gasPrice from the transaction,
  *      and consult https://github.com/ethers-io/ethers.js/issues/1610 to understand why.
@@ -15,6 +15,7 @@ import {DeployedBridgeBank, requiredEnvVar} from "../src/contractSupport";
 import {DeploymentName, HardhatRuntimeEnvironmentToken} from "../src/tsyringe/injectionTokens";
 import {
     impersonateBridgeBankAccounts,
+    setupDeployment,
     setupRopstenDeployment,
     setupSifchainMainnetDeployment
 } from "../src/hardhatFunctions";
@@ -45,24 +46,11 @@ async function main() {
 
   container.register(HardhatRuntimeEnvironmentToken, {useValue: hardhat});
 
-  const deploymentName = requiredEnvVar("DEPLOYMENT_NAME");
-
-  container.register(DeploymentName, {useValue: deploymentName});
-
-  switch (hardhat.network.name) {
-    case "ropsten":
-        await setupRopstenDeployment(container, hardhat, deploymentName);
-        break;
-    case "mainnet":
-    case "hardhat":
-    case "localhost":
-        await setupSifchainMainnetDeployment(container, hardhat, deploymentName);
-        break;
-  }
+  await setupDeployment(container);
 
   const useForking = !!process.env["USE_FORKING"];
   if (useForking)
-    await impersonateBridgeBankAccounts(container, hardhat, deploymentName);
+    await impersonateBridgeBankAccounts(container, hardhat);
 
   const whitelistData = await readTokenData(sourceFile);
 
@@ -91,10 +79,10 @@ async function main() {
     // Force ABI:
     const factory = await hardhat.ethers.getContractFactory("BridgeBank");
     const encodedData = factory.interface.encodeFunctionData('bulkWhitelistUpdateLimits', [addressList]);
-    
+
     // Estimate gasPrice:
     const gasPrice = await estimateGasPrice();
-    
+
     // UX
     console.log(`\x1b[46m\x1b[30mSending transaction. This may take a while, please wait...\x1b[0m`);
 
@@ -122,7 +110,7 @@ async function estimateGasPrice() {
   const finalGasPrice = Math.round(gasPrice.toNumber() * GAS_PRICE_BUFFER);
 
   console.log(`Using ideal Gas price: ${hardhat.ethers.utils.formatUnits(finalGasPrice, 'gwei')} GWEI`);
-  
+
   return finalGasPrice;
 }
 
@@ -132,7 +120,7 @@ function logResult(addressList:Array<String>, receipt:any) {
     console.log(`\x1b[32mTokens added to the whitelist:\x1b[0m`);
     console.log(`\x1b[32m${addressList.join('\n')}\x1b[0m`);
   } else {
-    // logs failure in red 
+    // logs failure in red
     console.log(`\x1b[31mFAILED: either got no tx receipt, or the receipt had no events.\x1b[0m`);
   }
 }

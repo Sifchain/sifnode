@@ -3,11 +3,7 @@ const fs = require("fs");
 const axios = require("axios");
 const { ethers } = require("hardhat");
 
-const {
-  print,
-  generateTodayFilename,
-  hasSameElements,
-} = require("./helpers/utils");
+const { print, generateTodayFilename } = require("./helpers/utils");
 const parser = require("./helpers/ofacParser");
 
 // Defaults to the Ropsten address
@@ -49,7 +45,14 @@ function calculateDiff() {
 async function addToBlocklist() {
   if (state.toAdd.length === 0) {
     print("green", "The are no new addresses to add to the blocklist.");
-  } else if (state.toAdd.length === 1) {
+    return;
+  }
+
+  // TODO: use Hardhat or Truffle!
+  // 1) Would be nice to be able to impersonate an account here to test with a fork
+  const accounts = await web3.eth.getAccounts();
+
+  if (state.toAdd.length === 1) {
     await state.blocklistInstance.addToBlocklist(state.toAdd[0], {
       from: TODO,
     });
