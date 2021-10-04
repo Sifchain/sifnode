@@ -1,0 +1,27 @@
+{
+  "entries": [
+    {
+      "is_whitelisted": true,
+      "decimals": "6",
+      "denom": "ibc/930EF45CB9740F9F6E3FCC56E70167DE4039885433948845F994C9DD2DF53AA4",
+      "base_denom": "ujuno",
+      "path": "transfer/channel-34",
+      "ibc_channel_id": "channel-34",
+      "ibc_counterparty_channel_id": "channel-2",
+      "display_name": "",
+      "display_symbol": "",
+      "network": "",
+      "address": "",
+      "external_symbol": "",
+      "transfer_limit": "",
+      "permissions": [
+        "CLP",
+        "IBCEXPORT",
+        "IBCIMPORT"
+      ],
+      "unit_denom": "",
+      "ibc_counterparty_denom": "",
+      "ibc_counterparty_chain_id": "juno-1"
+    }
+  ]
+}
