@@ -3,12 +3,12 @@
     {
       "is_whitelisted": true,
       "decimals": "6",
-      "denom": "ibc/0F24FDC3E75A4724A875A37B4F742AC12010F540325864D5AEB213CEB2595A9D",
-      "base_denom": "uluna",
-      "path": "transfer/channel-33",
-      "ibc_channel_id": "channel-33",
-      "ibc_counterparty_channel_id": "channel-0",
-      "display_name": "Luna",
+      "denom": "ibc/930EF45CB9740F9F6E3FCC56E70167DE4039885433948845F994C9DD2DF53AA4",
+      "base_denom": "ujuno",
+      "path": "transfer/channel-34",
+      "ibc_channel_id": "channel-34",
+      "ibc_counterparty_channel_id": "channel-2",
+      "display_name": "",
       "display_symbol": "",
       "network": "",
       "address": "",
@@ -21,7 +21,7 @@
       ],
       "unit_denom": "",
       "ibc_counterparty_denom": "",
-      "ibc_counterparty_chain_id": "bombay-12"
+      "ibc_counterparty_chain_id": "juno-1"
     }
   ]
 }
