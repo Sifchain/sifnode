@@ -2765,16 +2765,16 @@
     {
       "is_whitelisted": true,
       "decimals": "6",
-      "denom": "ibc/0F24FDC3E75A4724A875A37B4F742AC12010F540325864D5AEB213CEB2595A9D",
+      "denom": "ibc/3B1146139151E09059F4769651827B785D9313AB419BEBE0928A1146014FA488",
       "base_denom": "uluna",
       "path": "transfer/channel-33",
       "ibc_channel_id": "channel-33",
       "ibc_counterparty_channel_id": "channel-0",
-      "display_name": "Luna",
+      "display_name": "ULUNA",
       "display_symbol": "",
       "network": "",
       "address": "",
-      "external_symbol": "",
+      "external_symbol": "uluna",
       "transfer_limit": "",
       "permissions": [
         "CLP",
@@ -2788,10 +2788,10 @@
     {
       "is_whitelisted": true,
       "decimals": "6",
-      "denom": "ibc/B181EA86AE95E6AB974D0692E52996C8836619E28E03E90947FE49D3BA1EBE90",
+      "denom": "ibc/2EA34E6C269697C312CD876A27EA42485FE99CE4EF613AB228EE90BCFEC7979E",
       "base_denom": "uosmo",
-      "path": "transfer/channel-21",
-      "ibc_channel_id": "channel-21",
+      "path": "transfer/channel-40",
+      "ibc_channel_id": "channel-40",
       "ibc_counterparty_channel_id": "channel-32",
       "display_name": "",
       "display_symbol": "",
@@ -2807,29 +2807,6 @@
       "unit_denom": "",
       "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": "osmosis-1"
-    },
-    {
-      "is_whitelisted": true,
-      "decimals": "6",
-      "denom": "ibc/930EF45CB9740F9F6E3FCC56E70167DE4039885433948845F994C9DD2DF53AA4",
-      "base_denom": "ujuno",
-      "path": "transfer/channel-34",
-      "ibc_channel_id": "channel-34",
-      "ibc_counterparty_channel_id": "channel-2",
-      "display_name": "",
-      "display_symbol": "",
-      "network": "",
-      "address": "",
-      "external_symbol": "",
-      "transfer_limit": "",
-      "permissions": [
-        "CLP",
-        "IBCEXPORT",
-        "IBCIMPORT"
-      ],
-      "unit_denom": "",
-      "ibc_counterparty_denom": "",
-      "ibc_counterparty_chain_id": "juno-1"
     }
   ]
 }
