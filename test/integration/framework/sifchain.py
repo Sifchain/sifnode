@@ -107,6 +107,23 @@ class Sifnoded(Command):
             time.sleep(1)
 
 
+class Sifgen:
+    def __init__(self, cmd):
+        self.cmd = cmd
+        self.binary = "sifgen"
+
+    # Reference: docker/localnet/sifnode/root/scripts/sifnode.sh (branch future/peggy2):
+    # sifgen node create "$CHAINNET" "$MONIKER" "$MNEMONIC" --bind-ip-address "$BIND_IP_ADDRESS" --standalone --keyring-backend test
+    def create_standalone(self, chainnet, moniker, mnemonic, bind_ip_address, keyring_backend=None):
+        args = ["node", "create", chainnet, moniker, mnemonic, bind_ip_address]
+        return self.sifgen_exec(args, keyring_backend=keyring_backend)
+
+    def sifgen_exec(self, args, keyring_backend=None, cwd=None, env=None):
+        args = [self.binary] + args + \
+            (["--keyring-backend", keyring_backend] if keyring_backend else [])
+        return self.cmd.execst(args, cwd=cwd, env=env)
+
+
 class Ebrelayer:
     def __init__(self, cmd):
         self.cmd = cmd
@@ -169,7 +186,6 @@ class Ebrelayer:
             ethereum_address=ethereum_address, ethereum_private_key=ethereum_private_key,
             keyring_backend=keyring_backend, cwd=cwd, log_file=log_file,
             log_format="json", extra_args=extra_args)
-
 
     def __peggy2_init_common(self, init_what, network_descriptor, tendermint_node, web3_provider,
         bridge_registry_contract_address, validator_mnemonic, chain_id, node=None, keyring_backend=None,

@@ -1,3 +1,17 @@
+# Resources
+
+1. Docker setup in docker/ (currently only on future/peggy2 branch, Tim Lind):
+- setups two sifnode instances running independent chains + IBC relayer (ts-relayer)
+
+2. Brent's PoC (docker): https://github.com/Sifchain/sifchain-deploy/tree/feature/ibc-poc/docker/localnet/ibc
+
+3. Test environment for testing the new Sifchain public SDK (Caner):
+- https://docs.google.com/document/d/1MAlg-I0xMnUvbavAZdAN---WuqbyuRyKw-6Lfgfe130/edit
+- https://github.com/sifchain/sifchain-ui/blob/3868ac7138c6c4149dced4ced5b36690e5fc1da7/ui/core/src/config/chains/index.ts#L1
+- https://github.com/Sifchain/sifchain-ui/blob/3868ac7138c6c4149dced4ced5b36690e5fc1da7/ui/core/src/config/chains/cosmoshub/index.ts
+
+4. scripts/init-multichain.sh (on future/peggy2 branch)
+
 # Peggy2 devenv
 - Directory: smart-contracts/scripts/src/devenv
 - Init: cd smart-contracts; rm -rf node_modules; npm install (plan is to move to yarn eventually)
@@ -29,13 +43,3 @@
 ```
 - Integration test to be targeted for PoC: test_eth_transfers.py
 - Dependency diagram: https://files.slack.com/files-pri/T0187TWB4V8-F02BC477N79/sifchaindevenv.jpg
-
-
-# Resources
-
-Brent's PoC (docker): https://github.com/Sifchain/sifchain-deploy/tree/feature/ibc-poc/docker/localnet/ibc
-
-Test environment for testing the new Sifchain public SDK:
-- https://docs.google.com/document/d/1MAlg-I0xMnUvbavAZdAN---WuqbyuRyKw-6Lfgfe130/edit
-- https://github.com/sifchain/sifchain-ui/blob/3868ac7138c6c4149dced4ced5b36690e5fc1da7/ui/core/src/config/chains/index.ts#L1
-- https://github.com/Sifchain/sifchain-ui/blob/3868ac7138c6c4149dced4ced5b36690e5fc1da7/ui/core/src/config/chains/cosmoshub/index.ts

@@ -1,5 +1,4 @@
 import json
-import os
 from common import *
 
 
@@ -108,7 +107,9 @@ class Project:
 
     def install_smart_contracts_dependencies(self):
         self.cmd.execst(["make", "clean-smartcontracts"], cwd=self.smart_contracts_dir)  # = rm -rf build .openzeppelin
-        self.yarn(["install"], cwd=self.smart_contracts_dir)
+        # According to peggy2, the plan is to move from npm install to yarn, but there are some issues with yarn atm.
+        # self.yarn(["install"], cwd=self.smart_contracts_dir)
+        self.cmd.execst(["npm", "install"], cwd=self.smart_contracts_dir, pipe=False)
 
     def write_vagrantenv_sh(self, state_vars, data_dir, ethereum_websocket_address, chainnet):
         # Trace of test_utilities.py get_required_env_var/get_optional_env_var:
@@ -159,6 +160,5 @@ class Project:
     def init(self):
         self.cleanup_and_reset_state()
         self.cmd.rmdir(project_dir("smart-contracts/node_modules"))
-        self.yarn(["install"], cwd=project_dir("smart-contracts"))
         self.make_go_binaries_2()
         self.install_smart_contracts_dependencies()
