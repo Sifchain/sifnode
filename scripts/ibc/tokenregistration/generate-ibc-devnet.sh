@@ -29,4 +29,4 @@ SIFCHAIN_ID=sifchain-devnet-1 \
   JUNO_COUNTERPARTY_CHANNEL_ID=channel-3 \
   OSMOSIS_CHAIN_ID=osmosis-1 \
   OSMOSIS_CHANNEL_ID=channel-122 \
-  OSMOSIS_COUNTERPARTY_CHANNEL_ID=channel-34 ./template/generate-all-ibc.sh
+  OSMOSIS_COUNTERPARTY_CHANNEL_ID=channel-34 ./template/generate-ibc-jsons.sh
