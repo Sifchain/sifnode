@@ -3,10 +3,10 @@
     {
       "is_whitelisted": true,
       "decimals": "6",
-      "denom": "ibc/B181EA86AE95E6AB974D0692E52996C8836619E28E03E90947FE49D3BA1EBE90",
+      "denom": "ibc/2EA34E6C269697C312CD876A27EA42485FE99CE4EF613AB228EE90BCFEC7979E",
       "base_denom": "uosmo",
-      "path": "transfer/channel-21",
-      "ibc_channel_id": "channel-21",
+      "path": "transfer/channel-40",
+      "ibc_channel_id": "channel-40",
       "ibc_counterparty_channel_id": "channel-32",
       "display_name": "",
       "display_symbol": "",
