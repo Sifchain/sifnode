@@ -203,4 +203,4 @@ sifnoded q tokenregistry generate \
 
 echo "\n\ngenerated entry for $OSMOSIS_CHAIN_ID"
 
-cat $SIFCHAIN_ID/osmosis.json | jq
+cat $SIFCHAIN_ID/juno.json | jq
