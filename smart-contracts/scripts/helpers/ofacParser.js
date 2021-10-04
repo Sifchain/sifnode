@@ -12,7 +12,7 @@ const { print, cacheBuster, removeDuplicates } = require("./utils");
 const OFAC_URL = "https://www.treasury.gov/ofac/downloads/sdnlist.txt";
 
 async function getList() {
-  print("highlight", "Fetching and parsing OFAC blocklist. Please wait...");
+  print("yellow", "Fetching and parsing OFAC blocklist. Please wait...");
 
   const finalUrl = cacheBuster(OFAC_URL);
   const response = await axios.get(finalUrl).catch((e) => {
@@ -35,8 +35,7 @@ function extractAddresses(rawFileContents) {
 
   const finalList = removeDuplicates(checksumList);
 
-  print("yellow", `The final list has ${finalList.length} unique addresses:`);
-  print("yellow", `${finalList}`);
+  print("yellow", `The final list has ${finalList.length} unique addresses.`);
 
   return finalList;
 }
