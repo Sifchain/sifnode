@@ -5,7 +5,7 @@ import time
 from truffle import Ganache
 from command import Command
 from hardhat import Hardhat
-from sifchain import Sifnoded, Ebrelayer
+from sifchain import Sifgen, Sifnoded, Ebrelayer
 from project import Project, killall, force_kill_processes
 from common import *
 
@@ -752,11 +752,9 @@ class IntegrationTestsEnvironment:
         return ganache_proc, sifnoded_proc, ebrelayer_proc
 
 
-class PeggyEnvironment(IntegrationTestsEnvironment):
+class Peggy2Environment(IntegrationTestsEnvironment):
     def __init__(self, cmd):
         super().__init__(cmd)
-        self.project = cmd.project
-        # gobin_dir = os.environ["GOBIN"]
         self.hardhat = Hardhat(cmd)
 
     def signer_array_to_ethereum_accounts(self, accounts, n_validators):
@@ -1004,6 +1002,28 @@ class PeggyEnvironment(IntegrationTestsEnvironment):
             self.cmd.write_text_file(os.path.join(d, f"{sc_name}.json"), json.dumps({
                 "networks": {str(integration_tests_expected_network_id): {"address": sc_addr}}}, indent=4))
 
+class IBCEnvironment(IntegrationTestsEnvironment):
+    def __init__(self, cmd):
+        super().__init__(cmd)
+
+    def run(self):
+        chainnet0 = "sifchain-ibc-0"
+        chainnet1 = "sifchain-ibc-1"
+        ipaddr0 = "192.168.65.2"
+        ipaddr1 = "192.168.65.3"
+        subnet = "192.168.65.1/24"
+        # Mnemonics can be generated with "sifgen key generate" or "sifnoded keys mnemonic", but that gives us 24 words
+        # and here are only 12.
+        # A mnemonic contains both public and private key. Public key is the address, there can only be one such entry
+        # in the keyring.
+        mnemonic = "toddler spike waste purpose neutral beach science dawn joke stock help beyond"
+
+        sifgen = Sifgen(self.cmd)
+        # This does not work - "--keyring-backend" is not supported
+        x = sifgen.create_standalone(chainnet0, "chain1", mnemonic, ipaddr0, keyring_backend=None)
+
+        print()
+
 
 def main(argv):
     # tmux usage:
@@ -1040,6 +1060,7 @@ def main(argv):
         # - If you ran the execute_integration_test_*.sh you need to kill ganache-cli for proper cleanup
         #   as it might have been killed and started outside of our control
     elif what == "create_snapshot":
+        # Snapshots are only supported in IntegrationTestEnvironment
         snapshot_name = argv[1]
         project.cleanup_and_reset_state()
         env = IntegrationTestsEnvironment(cmd)
@@ -1050,19 +1071,23 @@ def main(argv):
         # processes1 = e.restart_processes()
         env.create_snapshot(snapshot_name)
     elif what == "restore_snapshot":
+        # Snapshots are only supported in IntegrationTestEnvironment
         snapshot_name = argv[1]
         env = IntegrationTestsEnvironment(cmd)
         env.restore_snapshot(snapshot_name)
         processes = env.restart_processes()
         input("Press ENTER to exit...")
         killall(processes)
-    elif what == "run-peggy-env":
+    elif what == "run-peggy2-env":
         # Equivalent to future/devenv - hardhat, sifnoded, ebrelayer
         # I.e. cd smart-contracts; GOBIN=/home/anderson/go/bin npx hardhat run scripts/devenv.ts
-        env = PeggyEnvironment(cmd)
+        env = Peggy2Environment(cmd)
         processes = env.run()
         input("Press ENTER to exit...")
         killall(processes)
+    elif what == "run-ibc-env":
+        env = IBCEnvironment(cmd)
+        processes = env.run()
     elif what == "run-integration-tests":
         # TODO After switching the branch,: cd smart-contracts; rm -rf node_modules; + cmd.install_smart_contract_dependencies() (yarn clean + yarn install)
         scripts = [
