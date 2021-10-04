@@ -1,12 +1,15 @@
 require("dotenv").config();
 const { ethers } = require("hardhat");
 
+const { startImpersonateAccount } = require("../src/hardhatFunctions");
 const { print } = require("./helpers/utils");
 const parser = require("./helpers/ofacParser");
 
 // Defaults to the Ropsten address
 const BLOCKLIST_ADDRESS =
   process.env.BLOCKLIST_ADDRESS || "0xbB4fa6cC28f18Ae005998a5336dbA3bC49e3dc57";
+
+const USE_FORKING = !!process.env.USE_FORKING;
 
 const state = {
   ofac: [],
@@ -19,15 +22,31 @@ const state = {
 async function main() {
   print("highlight", "-- SYNC OFAC BLOCKLIST --");
 
+  // Set the deployed blocklist instance
+  state.blocklistInstance = await getBlocklistInstance();
+
+  // Set the OFAC list
   state.ofac = await parser.getList();
   print("cyan", `OFAC LIST: ${state.ofac}`);
   print("cyan", `----`);
 
-  state.evm = await fetchEvmBlocklist();
+  // Set the EVM list
+  print("yellow", "Fetching EVM blocklist...");
+  state.evm = await state.blocklistInstance.getFullList();
   print("cyan", `EVM LIST : ${state.evm}`);
   print("cyan", `----`);
 
+  // Finds out what the diff betweeen lists is and sets it in state.toAdd and state.toRemove
   calculateDiff();
+
+  // If we're forking, we want to impersonate the owner account
+  if (USE_FORKING) {
+    // fetch owner
+    const owner = await state.blocklistInstance.owner();
+
+    // impersonate blocklist owner
+    startImpersonateAccount(owner);
+  }
 
   await addToBlocklist();
   print("cyan", `----`);
@@ -38,14 +57,9 @@ async function main() {
   print("highlight", "~~~ DONE ~~~");
 }
 
-async function fetchEvmBlocklist() {
-  print("yellow", "Fetching EVM blocklist...");
-
+async function getBlocklistInstance() {
   const blocklistFactory = await ethers.getContractFactory("Blocklist");
-  state.blocklistInstance = await blocklistFactory.attach(BLOCKLIST_ADDRESS);
-  const fullList = await state.blocklistInstance.getFullList();
-
-  return fullList;
+  return await blocklistFactory.attach(BLOCKLIST_ADDRESS);
 }
 
 function calculateDiff() {
