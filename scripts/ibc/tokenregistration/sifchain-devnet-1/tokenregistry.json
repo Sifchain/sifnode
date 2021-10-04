@@ -2807,6 +2807,29 @@
       "unit_denom": "",
       "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": "osmosis-1"
+    },
+    {
+      "is_whitelisted": true,
+      "decimals": "6",
+      "denom": "ibc/78D33D0303F72DAB5DE793E187C79306818C0D03364A0F133CE216B7C9C78B69",
+      "base_denom": "ujuno",
+      "path": "transfer/channel-129",
+      "ibc_channel_id": "channel-129",
+      "ibc_counterparty_channel_id": "channel-3",
+      "display_name": "",
+      "display_symbol": "",
+      "network": "",
+      "address": "",
+      "external_symbol": "",
+      "transfer_limit": "",
+      "permissions": [
+        "CLP",
+        "IBCEXPORT",
+        "IBCIMPORT"
+      ],
+      "unit_denom": "",
+      "ibc_counterparty_denom": "",
+      "ibc_counterparty_chain_id": "juno-1"
     }
   ]
 }
