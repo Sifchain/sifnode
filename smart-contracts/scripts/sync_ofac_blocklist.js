@@ -1,15 +1,12 @@
 require("dotenv").config();
-const fs = require("fs");
 const { ethers } = require("hardhat");
 
-const { print, generateTodayFilename } = require("./helpers/utils");
+const { print } = require("./helpers/utils");
 const parser = require("./helpers/ofacParser");
 
 // Defaults to the Ropsten address
 const BLOCKLIST_ADDRESS =
   process.env.BLOCKLIST_ADDRESS || "0xbB4fa6cC28f18Ae005998a5336dbA3bC49e3dc57";
-
-const OWNER_PRIVATE_KEY = process.env[process.env["ACTIVE_PRIVATE_KEY"]];
 
 const state = {
   ofac: [],
@@ -23,11 +20,11 @@ async function main() {
   print("highlight", "-- SYNC OFAC BLOCKLIST --");
 
   state.ofac = await parser.getList();
-  print("magenta", `OFAC LIST: ${state.ofac}`);
+  print("cyan", `OFAC LIST: ${state.ofac}`);
   print("cyan", `----`);
 
   state.evm = await fetchEvmBlocklist();
-  print("magenta", `EVM LIST : ${state.evm}`);
+  print("cyan", `EVM LIST : ${state.evm}`);
   print("cyan", `----`);
 
   calculateDiff();
@@ -52,7 +49,7 @@ async function fetchEvmBlocklist() {
 }
 
 function calculateDiff() {
-  print("cyan", "Calculating Diff...");
+  print("yellow", "Calculating Diff...");
 
   // addresses that must be added don't exist on evm, but exist on ofac
   state.toAdd = state.ofac.filter((address) => !state.evm.includes(address));
@@ -66,21 +63,15 @@ function calculateDiff() {
 
 async function addToBlocklist() {
   if (state.toAdd.length === 0) {
-    print("green", "The are no new addresses to add to the blocklist");
+    print("yellow", "The are no new addresses to add to the blocklist");
     return;
   }
 
-  print("highlight", "Adding addresses to the blocklist. Please wait...");
-
-  //const owner = await ethers.getSigner(OWNER_PRIVATE_KEY);
-  const owner = await ethers.getSigner(
-    "0xfc854524613dA7244417908d199857754189633c"
-  );
+  print("yellow", "Adding addresses to the blocklist. Please wait...");
 
   let tx;
   if (state.toAdd.length === 1) {
     tx = await state.blocklistInstance
-      .connect(owner)
       .addToBlocklist(state.toAdd[0])
       .catch((e) => {
         throw e;
@@ -88,24 +79,23 @@ async function addToBlocklist() {
   } else {
     // there are many addresses to add
     tx = await state.blocklistInstance
-      .connect(owner)
       .batchAddToBlocklist(state.toAdd)
       .catch((e) => {
         throw e;
       });
   }
 
-  print("green", `Added ${state.toAdd} to the blocklist.`);
-  print("cyan", `--> TX: ${tx.hash}`);
+  print("cyan", `Added ${state.toAdd} to the blocklist.`);
+  print("green", `TX Hash: ${tx.hash}`);
 }
 
 async function removeFromBlocklist() {
   if (state.toRemove.length === 0) {
-    print("green", "The are no addresses to remove from the blocklist");
+    print("yellow", "The are no addresses to remove from the blocklist");
     return;
   }
 
-  print("highlight", "Removing addresses from the blocklist. Please wait...");
+  print("yellow", "Removing addresses from the blocklist. Please wait...");
 
   const owner = await ethers.getSigner(
     "0xfc854524613dA7244417908d199857754189633c"
@@ -129,8 +119,8 @@ async function removeFromBlocklist() {
       });
   }
 
-  print("green", `Removed ${state.toRemove} from the blocklist.`);
-  print("cyan", `--> TX: ${tx.hash}`);
+  print("cyan", `Removed ${state.toRemove} from the blocklist.`);
+  print("green", `TX Hash: ${tx.hash}`);
 }
 
 main()

@@ -11,6 +11,9 @@ const { print, cacheBuster, removeDuplicates } = require("./utils");
 
 const OFAC_URL = "https://www.treasury.gov/ofac/downloads/sdnlist.txt";
 
+// Make this true to test a diff
+const FORCE_DIFF_FOR_TESTING = false;
+
 async function getList() {
   print("yellow", "Fetching and parsing OFAC blocklist. Please wait...");
 
@@ -21,6 +24,11 @@ async function getList() {
 
   const addresses = extractAddresses(response.data);
 
+  if (FORCE_DIFF_FOR_TESTING) {
+    addresses.shift();
+    addresses.push("0xfc854524613dA7244417908d199857754189633c");
+  }
+
   return addresses;
 }
 
@@ -29,13 +37,13 @@ function extractAddresses(rawFileContents) {
   const checksumList = list.map(web3.utils.toChecksumAddress);
 
   print(
-    "yellow",
+    "magenta",
     `Found ${checksumList.length} EVM addresses. Removing duplicates...`
   );
 
   const finalList = removeDuplicates(checksumList);
 
-  print("yellow", `The final list has ${finalList.length} unique addresses.`);
+  print("magenta", `The final list has ${finalList.length} unique addresses.`);
 
   return finalList;
 }
