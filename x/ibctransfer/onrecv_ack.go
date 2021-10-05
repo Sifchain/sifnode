@@ -40,21 +40,16 @@ func OnAcknowledgementMaybeConvert(
 	if err := sdkTransferKeeper.OnAcknowledgementPacket(ctx, packet, data, ack); err != nil {
 		return nil, err
 	}
-	ctx.EventManager().EmitEvent(
-		sdk.NewEvent(
-			sdktransfertypes.EventTypePacket,
-			sdk.NewAttribute(sdk.AttributeKeyModule, sdktransfertypes.ModuleName),
-			sdk.NewAttribute(sdktransfertypes.AttributeKeyReceiver, data.Receiver),
-			sdk.NewAttribute(sdktransfertypes.AttributeKeyDenom, data.Denom),
-			sdk.NewAttribute(sdktransfertypes.AttributeKeyAmount, fmt.Sprintf("%d", data.Amount)),
-			sdk.NewAttribute(sdktransfertypes.AttributeKeyAck, fmt.Sprintf("%v", ack)),
-		),
-	)
 	switch resp := ack.Response.(type) {
 	case *channeltypes.Acknowledgement_Result:
 		ctx.EventManager().EmitEvent(
 			sdk.NewEvent(
 				sdktransfertypes.EventTypePacket,
+				sdk.NewAttribute(sdk.AttributeKeyModule, sdktransfertypes.ModuleName),
+				sdk.NewAttribute(sdktransfertypes.AttributeKeyReceiver, data.Receiver),
+				sdk.NewAttribute(sdktransfertypes.AttributeKeyDenom, data.Denom),
+				sdk.NewAttribute(sdktransfertypes.AttributeKeyAmount, fmt.Sprintf("%d", data.Amount)),
+				sdk.NewAttribute(sdktransfertypes.AttributeKeyAck, fmt.Sprintf("%v", ack)),
 				sdk.NewAttribute(sdktransfertypes.AttributeKeyAckSuccess, string(resp.Result)),
 			),
 		)
@@ -63,12 +58,16 @@ func OnAcknowledgementMaybeConvert(
 		ctx.EventManager().EmitEvent(
 			sdk.NewEvent(
 				sdktransfertypes.EventTypePacket,
+				sdk.NewAttribute(sdk.AttributeKeyModule, sdktransfertypes.ModuleName),
+				sdk.NewAttribute(sdktransfertypes.AttributeKeyReceiver, data.Receiver),
+				sdk.NewAttribute(sdktransfertypes.AttributeKeyDenom, data.Denom),
+				sdk.NewAttribute(sdktransfertypes.AttributeKeyAmount, fmt.Sprintf("%d", data.Amount)),
+				sdk.NewAttribute(sdktransfertypes.AttributeKeyAck, fmt.Sprintf("%v", ack)),
 				sdk.NewAttribute(sdktransfertypes.AttributeKeyAckError, resp.Error),
 			),
 		)
-		denom := data.Denom
 		registry := whitelistKeeper.GetRegistry(ctx)
-		denomEntry, err := whitelistKeeper.GetEntry(registry, denom)
+		denomEntry, err := whitelistKeeper.GetEntry(registry, data.Denom)
 		if err == nil && denomEntry.Decimals > 0 && denomEntry.UnitDenom != "" {
 			convertToDenomEntry, err := whitelistKeeper.GetEntry(registry, denomEntry.UnitDenom)
 			if err == nil && convertToDenomEntry.Decimals > denomEntry.Decimals {
