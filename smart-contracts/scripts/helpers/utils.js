@@ -1,16 +1,31 @@
 /**
- * List of colors to be used in the below function
+ * List of colors to be used in the `print` function
  */
 const colors = {
+  // simple font colors
   black: "\x1b[30m",
-  green: "\x1b[42m\x1b[30m",
-  red: "\x1b[41m\x1b[37m",
+  red: "\x1b[31m",
+  green: "\x1b[32m",
   yellow: "\x1b[33m",
   blue: "\x1b[34m",
   magenta: "\x1b[35m",
   cyan: "\x1b[36m",
   white: "\x1b[37m",
-  highlight: "\x1b[47m\x1b[30m",
+
+  // highlights
+  hblack: "\x1b[40m\x1b[37m",
+  hred: "\x1b[41m\x1b[37m",
+  hgreen: "\x1b[42m\x1b[30m",
+  hyellow: "\x1b[43m\x1b[30m",
+  hblue: "\x1b[44m\x1b[37m",
+  hmagenta: "\x1b[45m\x1b[37m",
+  hcyan: "\x1b[46m\x1b[30m",
+  hwhite: "\x1b[47m\x1b[30m",
+
+  // aliases
+  highlight: "\x1b[47m\x1b[30m", // white bg and black font
+
+  // mandatory close
   close: "\x1b[0m",
 };
 
