@@ -12,6 +12,8 @@
 
 4. scripts/init-multichain.sh (on future/peggy2 branch)
 
+5. https://github.com/Sifchain/sifnode/commit/9ab620e148be8f4850eef59d39b0e869956f87a4
+
 # Peggy2 devenv
 - Directory: smart-contracts/scripts/src/devenv
 - Init: cd smart-contracts; rm -rf node_modules; npm install (plan is to move to yarn eventually)
