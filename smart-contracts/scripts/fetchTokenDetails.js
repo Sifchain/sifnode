@@ -58,7 +58,7 @@ async function main() {
 
       if (!isValidSymbol(symbol)) {
         print(
-          "red",
+          "hred",
           `Skipping token ${address} (${name}) because it's symbol has spaces or special characters: ${symbol}`
         );
         continue;
@@ -86,13 +86,13 @@ async function main() {
       sifnodeList.push(sifnodeObj);
 
       print(
-        "green",
+        "hgreen",
         `--> Processed token "${name}" (${symbol}) successfully: ${decimals} decimals.`,
         true
       );
     } catch (e) {
       print(
-        "red",
+        "hred",
         `--> Failed to fetch details of token ${address}: ${e.message}`
       );
     }
@@ -109,7 +109,7 @@ async function main() {
     JSON.stringify(sifnodeList, null, 2)
   );
 
-  print("green", "The first part is done!");
+  print("hgreen", "The first part is done!");
   print("cyan", `Results have been written to ${destinationFile}`);
   print(
     "magenta",
@@ -130,7 +130,7 @@ async function getTokenMetadata(address) {
       id: 1,
     })
     .catch((e) => {
-      print("red", `-> Cannot find imageUrl. Setting imageUrl to null.`);
+      print("hred", `-> Cannot find imageUrl. Setting imageUrl to null.`);
       return null;
     });
 

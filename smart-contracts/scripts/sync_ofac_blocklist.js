@@ -36,7 +36,7 @@ async function main() {
   print("cyan", `----`);
 
   // Print success
-  print("green", "Our EVM blocklist is synced with OFAC's blocklist");
+  print("hgreen", "Our EVM blocklist is synced with OFAC's blocklist");
   print("highlight", "~~~ DONE ~~~");
 }
 
@@ -112,7 +112,7 @@ async function addToBlocklist() {
   }
 
   print("cyan", `Added ${state.toAdd} to the blocklist.`);
-  print("green", `TX Hash: ${tx.hash}`);
+  print("hgreen", `TX Hash: ${tx.hash}`);
 }
 
 async function removeFromBlocklist() {
@@ -140,28 +140,28 @@ async function removeFromBlocklist() {
   }
 
   print("cyan", `Removed ${state.toRemove} from the blocklist.`);
-  print("green", `TX Hash: ${tx.hash}`);
+  print("hgreen", `TX Hash: ${tx.hash}`);
 }
 
 function treatCommonErrors(e) {
   if (e.message.indexOf("getFullList") !== -1) {
     print(
-      "red",
+      "hred",
       "Error: cannot execute functions on the blocklist contract. Are you sure you have the right address in your .env variables?"
     );
   } else if (e.message.indexOf("Unsupported method") !== -1) {
     print(
-      "red",
+      "hred",
       "Error: if you are NOT trying to test this with a mainnet fork, please remove the variable USE_FORKING from your .env"
     );
   } else if (e.message.indexOf("insufficient funds") !== -1) {
     print(
-      "red",
+      "hred",
       "Error: insufficient funds. If you are using the correct private key, please refill your account with EVM native coins."
     );
   } else if (e.message.indexOf("caller is not the owner") !== -1) {
     print(
-      "red",
+      "hred",
       "Error: caller is not the owner. Either you have the wrong private key set in your .env, or you should add USE_FORKING=1 to your .env if you want to test the script."
     );
   } else {
