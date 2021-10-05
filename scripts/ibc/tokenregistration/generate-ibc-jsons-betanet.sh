@@ -23,4 +23,4 @@ SIFCHAIN_ID=sifchain-1 \
   REGEN_COUNTERPARTY_CHANNEL_ID=channel-28 \
   CRYPTO_ORG_CHAIN_ID=crypto-org-chain-mainnet-1 \
   CRYPTO_ORG_CHANNEL_ID=channel-9 \
-  CRYPTO_ORG_COUNTERPARTY_CHANNEL_ID=channel-33 ./template/generate-all-ibc.sh
+  CRYPTO_ORG_COUNTERPARTY_CHANNEL_ID=channel-33 ./template/generate-ibc-jsons.sh
