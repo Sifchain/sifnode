@@ -153,9 +153,9 @@ cat $SIFCHAIN_ID/regen.json | jq
 
 sifnoded q tokenregistry generate \
 	--token_base_denom=uluna \
-	--token_ibc_counterparty_chain_id=bombay-10 \
-  --token_ibc_channel_id=channel-123 \
-  --token_ibc_counterparty_channel_id=channel-3 \
+	--token_ibc_counterparty_chain_id=$TERRA_CHAIN_ID \
+  --token_ibc_channel_id=$TERRA_CHANNEL_ID \
+  --token_ibc_counterparty_channel_id=$TERRA_COUNTERPARTY_CHANNEL_ID \
 	--token_ibc_counterparty_denom="" \
 	--token_unit_denom="" \
 	--token_decimals=6 \
