@@ -1,12 +1,19 @@
 {
   "entries": [
     {
+      "is_whitelisted": true,
       "decimals": "6",
       "denom": "ibc/D87BC708A791246AA683D514C273736F07579CBD56C9CA79B7823F9A01C16270",
       "base_denom": "uxprt",
       "path": "transfer/channel-7",
       "ibc_channel_id": "channel-7",
       "ibc_counterparty_channel_id": "channel-26",
+      "display_name": "uXPRT",
+      "display_symbol": "",
+      "network": "",
+      "address": "",
+      "external_symbol": "uxprt",
+      "transfer_limit": "",
       "permissions": [
         "CLP",
         "IBCEXPORT",

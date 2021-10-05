@@ -1,12 +1,19 @@
 {
   "entries": [
     {
+      "is_whitelisted": true,
       "decimals": "6",
       "denom": "uosmo",
       "base_denom": "uosmo",
       "path": "",
       "ibc_channel_id": "",
       "ibc_counterparty_channel_id": "",
+      "display_name": "",
+      "display_symbol": "",
+      "network": "",
+      "address": "",
+      "external_symbol": "",
+      "transfer_limit": "",
       "permissions": [
         "CLP",
         "IBCEXPORT",

@@ -1,12 +1,19 @@
 {
   "entries": [
     {
+      "is_whitelisted": true,
       "decimals": "6",
-      "denom": "ibc/EBDF43077A97DBDD9130E90B510EFC431D7FE2E8F8C7C36ACFA1BDF151D174C1",
+      "denom": "ibc/0F24FDC3E75A4724A875A37B4F742AC12010F540325864D5AEB213CEB2595A9D",
       "base_denom": "uluna",
-      "path": "transfer/channel-29",
-      "ibc_channel_id": "channel-29",
-      "ibc_counterparty_channel_id": "channel-4",
+      "path": "transfer/channel-33",
+      "ibc_channel_id": "channel-33",
+      "ibc_counterparty_channel_id": "channel-0",
+      "display_name": "Luna",
+      "display_symbol": "",
+      "network": "",
+      "address": "",
+      "external_symbol": "",
+      "transfer_limit": "",
       "permissions": [
         "CLP",
         "IBCEXPORT",
@@ -14,7 +21,7 @@
       ],
       "unit_denom": "",
       "ibc_counterparty_denom": "",
-      "ibc_counterparty_chain_id": "bombay-10"
+      "ibc_counterparty_chain_id": "bombay-12"
     }
   ]
 }
