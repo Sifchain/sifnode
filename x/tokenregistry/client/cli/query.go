@@ -3,6 +3,7 @@ package cli
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
@@ -10,6 +11,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/Sifchain/sifnode/x/tokenregistry/types"
+	whitelistutils "github.com/Sifchain/sifnode/x/tokenregistry/utils"
 )
 
 func GetQueryCmd() *cobra.Command {
@@ -23,6 +25,8 @@ func GetQueryCmd() *cobra.Command {
 	cmd.AddCommand(
 		GetCmdQueryEntries(),
 		GetCmdGenerateEntry(),
+		GetCmdAddEntry(),
+		GetCmdAddAllEntries(),
 	)
 	return cmd
 }
@@ -59,6 +63,13 @@ func GetCmdGenerateEntry() *cobra.Command {
 	var flagIbcCounterpartyChannelID = "token_ibc_counterparty_channel_id"
 	var flagIbcCounterpartyChainID = "token_ibc_counterparty_chain_id"
 	var flagIbcCounterpartyDenom = "token_ibc_counterparty_denom"
+	var flagDecimals = "token_decimals"
+	var flagDisplayName = "token_display_name"
+	var flagDisplaySymbol = "token_display_symbol"
+	var flagExternalSymbol = "token_external_symbol"
+	var flagTransferLimit = "token_transfer_limit"
+	var flagNetwork = "token_network"
+	var flagAddress = "token_address"
 	var flagsPermission = []string{"token_permission_clp", "token_permission_ibc_export", "token_permission_ibc_import"}
 	cmd := &cobra.Command{
 		Use:   "generate",
@@ -102,7 +113,27 @@ func GetCmdGenerateEntry() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			ibcCounterpartyDenom, err := flags.GetString(flagIbcCounterpartyDenom)
+			displayName, err := flags.GetString(flagDisplayName)
+			if err != nil {
+				return err
+			}
+			displaySymbol, err := flags.GetString(flagDisplaySymbol)
+			if err != nil {
+				return err
+			}
+			externalSymbol, err := flags.GetString(flagExternalSymbol)
+			if err != nil {
+				return err
+			}
+			transferLimit, err := flags.GetString(flagTransferLimit)
+			if err != nil {
+				return err
+			}
+			network, err := flags.GetString(flagNetwork)
+			if err != nil {
+				return err
+			}
+			address, err := flags.GetString(flagAddress)
 			if err != nil {
 				return err
 			}
@@ -188,5 +219,87 @@ func GetCmdGenerateEntry() *cobra.Command {
 	}
 	_ = cmd.MarkFlagRequired(flagBaseDenom)
 	_ = cmd.MarkFlagRequired(flagDecimals)
+	return cmd
+}
+
+func GetCmdAddEntry() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "add [registry.json] [entry.json]",
+		Short: "",
+		Args:  cobra.ExactArgs(2),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			clientCtx, err := client.GetClientQueryContext(cmd)
+			if err != nil {
+				return err
+			}
+			registry, err := whitelistutils.ParseDenoms(clientCtx.JSONMarshaler, args[0])
+			if err != nil {
+				return err
+			}
+			reg, err := whitelistutils.ParseDenoms(clientCtx.JSONMarshaler, args[1])
+			if err != nil {
+				return err
+			}
+			entryToAdd := reg.Entries[0]
+			entries := registry.Entries
+			entries = append(entries, entryToAdd)
+			registry.Entries = entries
+			return clientCtx.PrintBytes(clientCtx.JSONMarshaler.MustMarshalJSON(&registry))
+		},
+	}
+	flags.AddQueryFlagsToCmd(cmd)
+	return cmd
+}
+
+func GetCmdAddAllEntries() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "add-all [registry.json]",
+		Short: "",
+		Args:  cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			clientCtx, err := client.GetClientQueryContext(cmd)
+			if err != nil {
+				return err
+			}
+			registry, err := whitelistutils.ParseDenoms(clientCtx.JSONMarshaler, args[0])
+			if err != nil {
+				return err
+			}
+			finalRegistry := types.Registry{Entries: []*types.RegistryEntry{}}
+			for _, entry := range registry.Entries {
+				entryForConversion := entry
+				finalRegistry.Entries = append(finalRegistry.Entries, entryForConversion)
+				if entry.Decimals > 10 {
+					conversionDenom := ""
+					if strings.HasPrefix(entry.Denom, "c") {
+						conversionDenom = "x" + strings.TrimPrefix(entry.Denom, "c")
+					} else if strings.EqualFold(entry.Denom, "rowan") {
+						conversionDenom = "xrowan"
+					}
+					entryForConversion.IbcCounterpartyDenom = conversionDenom
+					entryForConversion.Permissions = []types.Permission{
+						types.Permission_CLP,
+						types.Permission_IBCEXPORT,
+					}
+					finalRegistry.Entries = append(finalRegistry.Entries, &types.RegistryEntry{
+						IsWhitelisted: true,
+						Denom:         conversionDenom,
+						BaseDenom:     conversionDenom,
+						Decimals:      10,
+						UnitDenom:     entry.Denom,
+						Permissions:   []types.Permission{types.Permission_IBCIMPORT},
+					})
+				} else {
+					entryForConversion.Permissions = []types.Permission{
+						types.Permission_CLP,
+						types.Permission_IBCEXPORT,
+						types.Permission_IBCIMPORT,
+					}
+				}
+			}
+			return clientCtx.PrintBytes(clientCtx.JSONMarshaler.MustMarshalJSON(&finalRegistry))
+		},
+	}
+	flags.AddQueryFlagsToCmd(cmd)
 	return cmd
 }
