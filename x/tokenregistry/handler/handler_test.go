@@ -151,9 +151,8 @@ func TestHandleDeregister(t *testing.T) {
 			valueAssertion: func(t require.TestingT, res interface{}, i ...interface{}) {
 				registry = app.TokenRegistryKeeper.GetRegistry(ctx)
 				require.Len(t, registry.Entries, 2)
-				tokenToRemove, err := app.TokenRegistryKeeper.GetEntry(registry, "tokenToRemove")
-				require.NoError(t, err)
-				require.Nil(t, tokenToRemove)
+				_, err := app.TokenRegistryKeeper.GetEntry(registry, "tokenToRemove")
+				require.Error(t, err)
 			},
 		},
 		{
@@ -166,9 +165,8 @@ func TestHandleDeregister(t *testing.T) {
 			valueAssertion: func(t require.TestingT, res interface{}, i ...interface{}) {
 				registry = app.TokenRegistryKeeper.GetRegistry(ctx)
 				require.Len(t, registry.Entries, 1)
-				ibcTokenToRemove, err := app.TokenRegistryKeeper.GetEntry(registry, "ibcTokenToRemove")
-				require.NoError(t, err)
-				require.Nil(t, ibcTokenToRemove)
+				_, err := app.TokenRegistryKeeper.GetEntry(registry, "ibcTokenToRemove")
+				require.Error(t, err)
 			},
 		},
 		{
@@ -181,9 +179,8 @@ func TestHandleDeregister(t *testing.T) {
 			valueAssertion: func(t require.TestingT, res interface{}, i ...interface{}) {
 				registry = app.TokenRegistryKeeper.GetRegistry(ctx)
 				require.Empty(t, registry.Entries)
-				ibcTokenToRemove2, err := app.TokenRegistryKeeper.GetEntry(registry, "ibcTokenToRemove2")
-				require.NoError(t, err)
-				require.Nil(t, ibcTokenToRemove2)
+				_, err := app.TokenRegistryKeeper.GetEntry(registry, "ibcTokenToRemove2")
+				require.Error(t, err)
 			},
 		},
 		{
