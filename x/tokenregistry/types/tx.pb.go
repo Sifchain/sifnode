@@ -161,7 +161,7 @@ func (m *MsgDeregister) GetFrom() string {
 	return ""
 }
 
-func (m *MsgDeregister) GetEntry() string {
+func (m *MsgDeregister) GetDenom() string {
 	if m != nil {
 		return m.Denom
 	}
