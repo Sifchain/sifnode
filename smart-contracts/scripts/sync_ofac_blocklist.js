@@ -1,13 +1,12 @@
 require("dotenv").config();
-const { ethers } = require("hardhat");
 
 const support = require("./helpers/forkingSupport");
 const { print } = require("./helpers/utils");
 const parser = require("./helpers/ofacParser");
 
-// Defaults to the Ropsten address
+// Defaults to the Ethereum Mainnet address
 const BLOCKLIST_ADDRESS =
-  process.env.BLOCKLIST_ADDRESS || "0xbB4fa6cC28f18Ae005998a5336dbA3bC49e3dc57";
+  process.env.BLOCKLIST_ADDRESS || "0x2a9714AA672419cd189Dd8ac06Fc61478573Ba2C";
 
 const USE_FORKING = !!process.env.USE_FORKING;
 
@@ -124,14 +123,9 @@ async function removeFromBlocklist() {
 
   print("yellow", "Removing addresses from the blocklist. Please wait...");
 
-  const owner = await ethers.getSigner(
-    "0xfc854524613dA7244417908d199857754189633c"
-  );
-
   let tx;
   if (state.toRemove.length === 1) {
     tx = await state.blocklistInstance
-      .connect(owner)
       .removeFromBlocklist(state.toRemove[0])
       .catch((e) => {
         throw e;
@@ -139,7 +133,6 @@ async function removeFromBlocklist() {
   } else {
     // there are many addresses to remove
     tx = await state.blocklistInstance
-      .connect(owner)
       .batchRemoveFromBlocklist(state.toRemove)
       .catch((e) => {
         throw e;
