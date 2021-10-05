@@ -2,11 +2,11 @@
   "entries": [
     {
       "decimals": "6",
-      "denom": "ibc/057E0E697E069620BD0E3C063EC861BA7FFC3EAD236A3EAB258D12D6BFE3C939",
-      "base_denom": "uregen",
-      "path": "transfer/channel-121",
-      "ibc_channel_id": "channel-121",
-      "ibc_counterparty_channel_id": "channel-26",
+      "denom": "ibc/F279AB967042CAC10BFF70FAECB179DCE37AAAE4CD4C1BC4565C2BBC383BC0FA",
+      "base_denom": "ujuno",
+      "path": "transfer/channel-14",
+      "ibc_channel_id": "channel-14",
+      "ibc_counterparty_channel_id": "channel-5",
       "display_name": "",
       "display_symbol": "",
       "network": "",
@@ -20,7 +20,7 @@
       ],
       "unit_denom": "",
       "ibc_counterparty_denom": "",
-      "ibc_counterparty_chain_id": "regen-1"
+      "ibc_counterparty_chain_id": "juno-1"
     }
   ]
 }
