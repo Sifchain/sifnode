@@ -54,7 +54,6 @@ func GetCmdQueryEntries() *cobra.Command {
 }
 
 func GetCmdGenerateEntry() *cobra.Command {
-	var flagDecimals = "token_decimals"
 	var flagDenom = "token_denom"
 	var flagBaseDenom = "token_base_denom"
 	var flagUnitDenom = "token_unit_denom"
@@ -64,12 +63,6 @@ func GetCmdGenerateEntry() *cobra.Command {
 	var flagIbcCounterpartyChainID = "token_ibc_counterparty_chain_id"
 	var flagIbcCounterpartyDenom = "token_ibc_counterparty_denom"
 	var flagDecimals = "token_decimals"
-	var flagDisplayName = "token_display_name"
-	var flagDisplaySymbol = "token_display_symbol"
-	var flagExternalSymbol = "token_external_symbol"
-	var flagTransferLimit = "token_transfer_limit"
-	var flagNetwork = "token_network"
-	var flagAddress = "token_address"
 	var flagsPermission = []string{"token_permission_clp", "token_permission_ibc_export", "token_permission_ibc_import"}
 	cmd := &cobra.Command{
 		Use:   "generate",
@@ -113,27 +106,7 @@ func GetCmdGenerateEntry() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			displayName, err := flags.GetString(flagDisplayName)
-			if err != nil {
-				return err
-			}
-			displaySymbol, err := flags.GetString(flagDisplaySymbol)
-			if err != nil {
-				return err
-			}
-			externalSymbol, err := flags.GetString(flagExternalSymbol)
-			if err != nil {
-				return err
-			}
-			transferLimit, err := flags.GetString(flagTransferLimit)
-			if err != nil {
-				return err
-			}
-			network, err := flags.GetString(flagNetwork)
-			if err != nil {
-				return err
-			}
-			address, err := flags.GetString(flagAddress)
+			ibcCounterpartyDenom, err := flags.GetString(flagIbcCounterpartyDenom)
 			if err != nil {
 				return err
 			}
@@ -282,12 +255,11 @@ func GetCmdAddAllEntries() *cobra.Command {
 						types.Permission_IBCEXPORT,
 					}
 					finalRegistry.Entries = append(finalRegistry.Entries, &types.RegistryEntry{
-						IsWhitelisted: true,
-						Denom:         conversionDenom,
-						BaseDenom:     conversionDenom,
-						Decimals:      10,
-						UnitDenom:     entry.Denom,
-						Permissions:   []types.Permission{types.Permission_IBCIMPORT},
+						Denom:       conversionDenom,
+						BaseDenom:   conversionDenom,
+						Decimals:    10,
+						UnitDenom:   entry.Denom,
+						Permissions: []types.Permission{types.Permission_IBCIMPORT},
 					})
 				} else {
 					entryForConversion.Permissions = []types.Permission{
