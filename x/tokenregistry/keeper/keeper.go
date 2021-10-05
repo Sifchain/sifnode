@@ -48,7 +48,7 @@ func (k keeper) GetAdminAccount(ctx sdk.Context) (adminAccount sdk.AccAddress) {
 	return adminAccount
 }
 
-func (k keeper) CheckDenomPermissions(entry *types.RegistryEntry, requiredPermissions []types.Permission) bool {
+func (k keeper) CheckEntryPermissions(entry *types.RegistryEntry, requiredPermissions []types.Permission) bool {
 	for _, requiredPermission := range requiredPermissions {
 		var has bool
 		for _, allowedPermission := range entry.Permissions {

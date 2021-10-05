@@ -74,7 +74,7 @@ func IsRecvPacketAllowed(ctx sdk.Context, whitelistKeeper tokenregistrytypes.Kee
 	if sdktransfertypes.ReceiverChainIsSource(packet.GetSourcePort(), packet.GetSourceChannel(), data.Denom) {
 		return true
 	}
-	return mintedDenomEntry != nil && whitelistKeeper.CheckDenomPermissions(mintedDenomEntry, []tokenregistrytypes.Permission{tokenregistrytypes.Permission_IBCIMPORT})
+	return mintedDenomEntry != nil && whitelistKeeper.CheckEntryPermissions(mintedDenomEntry, []tokenregistrytypes.Permission{tokenregistrytypes.Permission_IBCIMPORT})
 }
 
 func GetMintedDenomFromPacket(packet channeltypes.Packet, data sdktransfertypes.FungibleTokenPacketData) string {

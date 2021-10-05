@@ -115,7 +115,7 @@ func (k msgServer) Swap(goCtx context.Context, msg *types.MsgSwap) (*types.MsgSw
 	if err != nil || err2 != nil {
 		return nil, types.ErrTokenNotSupported
 	}
-	if !k.tokenRegistryKeeper.CheckDenomPermissions(sAsset, types.GetCLPermissons()) || !k.tokenRegistryKeeper.CheckDenomPermissions(rAsset, types.GetCLPermissons()) {
+	if !k.tokenRegistryKeeper.CheckEntryPermissions(sAsset, types.GetCLPermissons()) || !k.tokenRegistryKeeper.CheckEntryPermissions(rAsset, types.GetCLPermissons()) {
 		return nil, types.ErrTokenNotSupported
 	}
 	decimals := sAsset.Decimals
@@ -246,7 +246,7 @@ func (k msgServer) RemoveLiquidity(goCtx context.Context, msg *types.MsgRemoveLi
 	if err != nil {
 		return nil, types.ErrTokenNotSupported
 	}
-	if !k.tokenRegistryKeeper.CheckDenomPermissions(eAsset, types.GetCLPermissons()) {
+	if !k.tokenRegistryKeeper.CheckEntryPermissions(eAsset, types.GetCLPermissons()) {
 		return nil, tokenregistrytypes.ErrPermissionDenied
 	}
 	pool, err := k.Keeper.GetPool(ctx, msg.ExternalAsset.Symbol)
@@ -361,7 +361,7 @@ func (k msgServer) CreatePool(goCtx context.Context, msg *types.MsgCreatePool) (
 	if err != nil {
 		return nil, types.ErrTokenNotSupported
 	}
-	if !k.tokenRegistryKeeper.CheckDenomPermissions(eAsset, types.GetCLPermissons()) {
+	if !k.tokenRegistryKeeper.CheckEntryPermissions(eAsset, types.GetCLPermissons()) {
 		return nil, tokenregistrytypes.ErrPermissionDenied
 	}
 	// Check if pool already exists
@@ -412,7 +412,7 @@ func (k msgServer) AddLiquidity(goCtx context.Context, msg *types.MsgAddLiquidit
 	if err != nil {
 		return nil, types.ErrTokenNotSupported
 	}
-	if !k.tokenRegistryKeeper.CheckDenomPermissions(eAsset, types.GetCLPermissons()) {
+	if !k.tokenRegistryKeeper.CheckEntryPermissions(eAsset, types.GetCLPermissons()) {
 		return nil, tokenregistrytypes.ErrPermissionDenied
 	}
 	// Get pool

@@ -34,6 +34,6 @@ type AuthKeeper interface {
 
 type TokenRegistryKeeper interface {
 	GetEntry(registry tokenregistryTypes.Registry, denom string) (*tokenregistryTypes.RegistryEntry, error)
-	CheckDenomPermissions(entry *tokenregistryTypes.RegistryEntry, permissions []tokenregistryTypes.Permission) bool
+	CheckEntryPermissions(entry *tokenregistryTypes.RegistryEntry, permissions []tokenregistryTypes.Permission) bool
 	GetRegistry(ctx sdk.Context) tokenregistryTypes.Registry
 }

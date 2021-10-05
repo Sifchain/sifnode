@@ -8,7 +8,7 @@ import (
 type Keeper interface {
 	IsAdminAccount(ctx sdk.Context, adminAccount sdk.AccAddress) bool
 	SetAdminAccount(ctx sdk.Context, adminAccount sdk.AccAddress)
-	CheckDenomPermissions(entry *RegistryEntry, permissions []Permission) bool
+	CheckEntryPermissions(entry *RegistryEntry, permissions []Permission) bool
 	GetEntry(registry Registry, denom string) (*RegistryEntry, error)
 	SetToken(ctx sdk.Context, entry *RegistryEntry)
 	RemoveToken(ctx sdk.Context, denom string)

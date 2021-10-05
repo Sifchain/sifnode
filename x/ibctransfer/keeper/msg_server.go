@@ -43,7 +43,7 @@ func (srv msgServer) Transfer(goCtx context.Context, msg *sdktransfertypes.MsgTr
 		return nil, sdkerrors.Wrap(tokenregistrytypes.ErrPermissionDenied, "transfers of denom aliases are not yet supported")
 	}
 	// check export permission
-	if !srv.tokenRegistryKeeper.CheckDenomPermissions(registryEntry, []tokenregistrytypes.Permission{tokenregistrytypes.Permission_IBCEXPORT}) {
+	if !srv.tokenRegistryKeeper.CheckEntryPermissions(registryEntry, []tokenregistrytypes.Permission{tokenregistrytypes.Permission_IBCEXPORT}) {
 		return nil, sdkerrors.Wrap(tokenregistrytypes.ErrPermissionDenied, "denom cannot be exported")
 	}
 	// check if registry entry has an IBC counterparty conversion to process
