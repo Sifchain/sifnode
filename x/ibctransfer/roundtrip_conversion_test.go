@@ -41,6 +41,7 @@ func TestExportImportConversionEquality(t *testing.T) {
 	outgoingDeduction, outgoingAddition := helpers.ConvertCoinsForTransfer(msg, rEntry, mrEntry)
 	mrEntryUnit, err := app.TokenRegistryKeeper.GetEntry(registry, mrEntry.UnitDenom)
 	require.NoError(t, err)
+	require.True(t, mrEntryUnit.Decimals > mrEntry.Decimals)
 	diff := uint64(mrEntryUnit.Decimals - mrEntry.Decimals)
 	convAmount := helpers.ConvertIncomingCoins(184467440737, diff)
 	incomingDeduction := sdk.NewCoin("microrowan", sdk.NewIntFromUint64(184467440737))
