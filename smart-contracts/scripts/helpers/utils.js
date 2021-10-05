@@ -13,14 +13,14 @@ const colors = {
   white: "\x1b[37m",
 
   // highlights
-  hblack: "\x1b[40m\x1b[37m",
-  hred: "\x1b[41m\x1b[37m",
-  hgreen: "\x1b[42m\x1b[30m",
-  hyellow: "\x1b[43m\x1b[30m",
-  hblue: "\x1b[44m\x1b[37m",
-  hmagenta: "\x1b[45m\x1b[37m",
-  hcyan: "\x1b[46m\x1b[30m",
-  hwhite: "\x1b[47m\x1b[30m",
+  h_black: "\x1b[40m\x1b[37m",
+  h_red: "\x1b[41m\x1b[37m",
+  h_green: "\x1b[42m\x1b[30m",
+  h_yellow: "\x1b[43m\x1b[30m",
+  h_blue: "\x1b[44m\x1b[37m",
+  h_magenta: "\x1b[45m\x1b[37m",
+  h_cyan: "\x1b[46m\x1b[30m",
+  h_white: "\x1b[47m\x1b[30m",
 
   // aliases
   highlight: "\x1b[47m\x1b[30m", // white bg and black font
