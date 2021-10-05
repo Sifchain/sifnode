@@ -10,8 +10,16 @@ const { print } = require("./utils");
 const DEPLOYMENT_DIRECTORY = "deployments";
 const DEFAULT_DEPLOYMENT_NAME = "sifchain-1";
 
+// The address of the Proxy admin (used to impersonate the account that has permission to upgrade proxies)
 const PROXY_ADMIN_ADDRESS = "0x7c6c6ea036e56efad829af5070c8fb59dc163d88";
 
+/**
+ * Figures out the correct details for a given contract that has already been deployed in production
+ * @param {string} deploymentName
+ * @param {string} contractName
+ * @param {number} chainId
+ * @returns An object containing the factory, the instance, its address and the first user found in the accounts list
+ */
 async function getDeployedContract(deploymentName, contractName, chainId) {
   deploymentName = deploymentName ?? DEFAULT_DEPLOYMENT_NAME;
   contractName = contractName ?? "BridgeBank";
@@ -47,6 +55,12 @@ async function getDeployedContract(deploymentName, contractName, chainId) {
   };
 }
 
+/**
+ * Use this function to impersonate accounts when forking
+ * @param {string} address
+ * @param {string} newBalance
+ * @returns An ethers SIGNER object
+ */
 async function impersonateAccount(address, newBalance) {
   print("magenta", `Impersonating account ${address}`);
 
@@ -64,6 +78,11 @@ async function impersonateAccount(address, newBalance) {
   return ethers.getSigner(address);
 }
 
+/**
+ * When impersonating an account, this function sets its balance
+ * @param {string} address
+ * @param {string | number} newBalance
+ */
 async function setNewEthBalance(address, newBalance) {
   const newValue = `0x${newBalance.toString(16)}`;
   await ethers.provider.send("hardhat_setBalance", [address, newValue]);
@@ -71,6 +90,9 @@ async function setNewEthBalance(address, newBalance) {
   print("magenta", `Balance of account ${address} set to ${newBalance}`);
 }
 
+/**
+ * Throws an error if USE_FORKING is not set in .env
+ */
 function enforceForking() {
   const forkingActive = !!process.env.USE_FORKING;
   if (!forkingActive) {
@@ -78,6 +100,15 @@ function enforceForking() {
   }
 }
 
+/**
+ * Returns an instance of the contract on the currently connected network
+ * @dev Use this function to connect to a deployed contract
+ * @dev THAT HAS THE SAME INTERFACE OF A CONTRACT IN THE CONTRACTS FOLDER
+ * @dev It means that it won't work for outdated contracts (for that, please use the function getDeployedContract)
+ * @param {string} contractName
+ * @param {string} contractAddress
+ * @returns An instance of the contract on the currently connected network
+ */
 async function getContractAt(contractName, contractAddress) {
   const factory = await ethers.getContractFactory(contractName);
   return await factory.attach(contractAddress);
