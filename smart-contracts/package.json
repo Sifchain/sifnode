@@ -77,6 +77,7 @@
     "peggy:burn": "npx truffle exec scripts/sendBurnTx.js",
     "peggy:check": "npx truffle exec scripts/sendCheckProphecy.js",
     "peggy:getTokenBalance": "npx truffle exec scripts/getTokenBalance.js",
+    "peggy:upgradeBridgeBank:test": "npx hardhat run scripts/testBridgeBankUpgrade.js --network hardhat",
     "token:address": "npx truffle exec scripts/getTokenContractAddress.js",
     "token:mint": "npx truffle exec scripts/mintTestTokens.js",
     "token:approve": "npx truffle exec scripts/sendApproveTx.js",
