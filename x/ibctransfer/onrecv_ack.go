@@ -71,7 +71,7 @@ func OnAcknowledgementMaybeConvert(
 		if err == nil && denomEntry.Decimals > 0 && denomEntry.UnitDenom != "" {
 			convertToDenomEntry, err := whitelistKeeper.GetEntry(registry, denomEntry.UnitDenom)
 			if err == nil && convertToDenomEntry.Decimals > denomEntry.Decimals {
-				err := helpers.ExecConvForRefundCoins(ctx, bankKeeper, whitelistKeeper, denomEntry, convertToDenomEntry, packet, data)
+				err := helpers.ExecConvForRefundCoins(ctx, bankKeeper, denomEntry, convertToDenomEntry, packet, data)
 				if err != nil {
 					return nil, err
 				}

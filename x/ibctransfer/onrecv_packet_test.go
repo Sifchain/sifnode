@@ -183,7 +183,7 @@ func TestExecConvForIncomingCoins(t *testing.T) {
 	require.Equal(t, allowed, true)
 	convertToDenomEntry, err := app.TokenRegistryKeeper.GetEntry(registry, mintedDenomEntry.UnitDenom)
 	require.NoError(t, err)
-	err = helpers.ExecConvForIncomingCoins(ctx, app.BankKeeper, app.TokenRegistryKeeper, mintedDenomEntry, convertToDenomEntry, packet, returningData)
+	err = helpers.ExecConvForIncomingCoins(ctx, app.BankKeeper, mintedDenomEntry, convertToDenomEntry, packet, returningData)
 	require.NoError(t, err)
 	mintedDenom = helpers.GetMintedDenomFromPacket(packet, nonReturningData)
 	mintedDenomEntry, err = app.TokenRegistryKeeper.GetEntry(registry, mintedDenom)
@@ -192,7 +192,7 @@ func TestExecConvForIncomingCoins(t *testing.T) {
 	require.Equal(t, allowed, true)
 	convertToDenomEntry, err = app.TokenRegistryKeeper.GetEntry(registry, mintedDenomEntry.UnitDenom)
 	require.NoError(t, err)
-	err = helpers.ExecConvForIncomingCoins(ctx, app.BankKeeper, app.TokenRegistryKeeper, mintedDenomEntry, convertToDenomEntry, packet, nonReturningData)
+	err = helpers.ExecConvForIncomingCoins(ctx, app.BankKeeper, mintedDenomEntry, convertToDenomEntry, packet, nonReturningData)
 	require.NoError(t, err)
 }
 

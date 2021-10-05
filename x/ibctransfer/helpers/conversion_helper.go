@@ -74,7 +74,7 @@ func IsRecvPacketAllowed(ctx sdk.Context, whitelistKeeper tokenregistrytypes.Kee
 	if sdktransfertypes.ReceiverChainIsSource(packet.GetSourcePort(), packet.GetSourceChannel(), data.Denom) {
 		return true
 	}
-	return mintedDenomEntry != nil && whitelistKeeper.CheckEntryPermissions(mintedDenomEntry, []tokenregistrytypes.Permission{tokenregistrytypes.Permission_IBCIMPORT})
+	return whitelistKeeper.CheckEntryPermissions(mintedDenomEntry, []tokenregistrytypes.Permission{tokenregistrytypes.Permission_IBCIMPORT})
 }
 
 func GetMintedDenomFromPacket(packet channeltypes.Packet, data sdktransfertypes.FungibleTokenPacketData) string {
@@ -96,7 +96,6 @@ func ConvertIncomingCoins(amount uint64, diff uint64) sdk.Int {
 func ExecConvForIncomingCoins(
 	ctx sdk.Context,
 	bankKeeper sdktransfertypes.BankKeeper,
-	whitelistKeeper tokenregistrytypes.Keeper,
 	mintedDenomEntry *tokenregistrytypes.RegistryEntry,
 	convertToDenomEntry *tokenregistrytypes.RegistryEntry,
 	packet channeltypes.Packet,
@@ -107,7 +106,8 @@ func ExecConvForIncomingCoins(
 	if err != nil {
 		return err
 	}
-	incomingCoins := sdk.NewCoins(sdk.NewCoin(mintedDenomEntry.Denom, sdk.NewIntFromUint64(data.Amount)))
+	amount := sdk.NewIntFromUint64(data.Amount)
+	incomingCoins := sdk.NewCoins(sdk.NewCoin(mintedDenomEntry.Denom, amount))
 	// send ibcdenom coins from account to module
 	err = bankKeeper.SendCoinsFromAccountToModule(ctx, receiver, sctransfertypes.ModuleName, incomingCoins)
 	if err != nil {
@@ -118,7 +118,7 @@ func ExecConvForIncomingCoins(
 	if err != nil {
 		return err
 	}
-	convAmount := sdk.NewIntFromUint64(data.Amount)
+	convAmount := amount
 	finalCoins := sdk.NewCoins(sdk.NewCoin(convertToDenomEntry.Denom, convAmount))
 	if convertToDenomEntry.Decimals > mintedDenomEntry.Decimals {
 		diff := uint64(convertToDenomEntry.Decimals - mintedDenomEntry.Decimals)
@@ -150,7 +150,6 @@ func ExecConvForIncomingCoins(
 func ExecConvForRefundCoins(
 	ctx sdk.Context,
 	bankKeeper sdktransfertypes.BankKeeper,
-	whitelistKeeper tokenregistrytypes.Keeper,
 	mintedDenomEntry *tokenregistrytypes.RegistryEntry,
 	convertToDenomEntry *tokenregistrytypes.RegistryEntry,
 	packet channeltypes.Packet,
@@ -161,13 +160,14 @@ func ExecConvForRefundCoins(
 	if err != nil {
 		return err
 	}
-	incomingCoins := sdk.NewCoins(sdk.NewCoin(mintedDenomEntry.Denom, sdk.NewIntFromUint64(data.Amount)))
+	amount := sdk.NewIntFromUint64(data.Amount)
+	incomingCoins := sdk.NewCoins(sdk.NewCoin(mintedDenomEntry.Denom, amount))
 	// send ibcdenom coins from account to module
 	err = bankKeeper.SendCoinsFromAccountToModule(ctx, sender, sctransfertypes.ModuleName, incomingCoins)
 	if err != nil {
 		return err
 	}
-	convAmount := sdk.NewIntFromUint64(data.Amount)
+	convAmount := amount
 	finalCoins := sdk.NewCoins(sdk.NewCoin(convertToDenomEntry.Denom, convAmount))
 	if convertToDenomEntry.Decimals > mintedDenomEntry.Decimals {
 		diff := uint64(convertToDenomEntry.Decimals - mintedDenomEntry.Decimals)
