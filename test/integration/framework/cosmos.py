@@ -2,6 +2,10 @@ from common import *
 
 akash_binary = "akash"
 
+# <editor-fold>
+
+# This is for Akash, but might be useful for other cosmos-based chains as well. (If not, it should be moved to separate
+# class/module.)
 # Source: https://sifchain.slack.com/archives/C01T05LPFEG/p1632822677353400?thread_ts=1632735716.332000&cid=C01T05LPFEG
 
 def query_account_balance(cmd, account, node, chain_id):
@@ -40,3 +44,5 @@ def transfer(cmd, channel, address, amount, from_addr, chain_id, node, gas_price
         "--gas", gas, "--packet-timeout-timestam[", str(packet_timeout_timestamp)]
     res = cmd.execst(args)
     return res
+
+# </editor-fold>
