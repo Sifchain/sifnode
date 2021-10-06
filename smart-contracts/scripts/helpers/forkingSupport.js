@@ -114,6 +114,125 @@ async function getContractAt(contractName, contractAddress) {
   return await factory.attach(contractAddress);
 }
 
+/**
+ * Injects a new variable in a gapped contract's manifest, so that you can upgrade it without errors
+ * @param {string} topContractMainnetAddress Address of the top contract, such as BridgeBank or CosmosBridge (NOT the proxy)
+ * @param {object} parsedManifest The manifest after a JSON.parse(manifestFile)
+ * @param {string} contractName The name of the modified contract
+ * @param {string} previousLabel Your new variable will be injected after this object (you have to manually find that out!)
+ * @param {object} newVarObject The object that contains your new variable
+ * @param {number} previousGapSize The gap size as it is in the currently deployed contract
+ * @param {number} newGapSize The new gap size
+ * @param {string} newTypeName The name of your new type, if any (this is optional)
+ * @param {string} newTypeLabel The label of your new type, if any  (this is mandatory IF you passed `newTypeName`)
+ * @returns {object} The modified manifest object (you can now stringify it and save it to a file)
+ * 
+ * Example:
+  {
+    topContractMainnetAddress: '0x714b49640c2a545b672e8bbd53cc8935725c6a14',
+    parsedManifest,
+    contractName: "EthereumWhiteList",
+    previousLabel: "_ethereumTokenWhiteList",
+    newVarObject: {
+      contract: "EthereumWhiteList",
+      label: "blocklist",
+      type: "t_contract(IBlocklist)4736",
+      src: "../project:/contracts/BridgeBank/EthereumWhitelist.sol:21",
+    },
+    previousGapSize: 100,
+    newGapSize: 99,
+    newTypeName: "t_contract(IBlocklist)4736",
+    newTypeLabel: "contract IBlocklist",
+  }
+ */
+function injectInManifest({
+  topContractMainnetAddress,
+  parsedManifest,
+  contractName,
+  previousLabel,
+  newVarObject,
+  previousGapSize,
+  newGapSize,
+  newTypeName,
+  newTypeLabel,
+}) {
+  // Make a copy of the manifest
+  parsedManifest = { ...parsedManifest };
+
+  // Find the correct implementation in the Manifest
+  const impls = parsedManifest.impls;
+  const implIndex = Object.keys(impls).findIndex((key) => {
+    return (
+      impls[key].address.toLowerCase() ===
+      topContractMainnetAddress.toLowerCase()
+    );
+  });
+  const impl = impls[Object.keys(impls)[implIndex]];
+
+  // Helpers
+  const layout = impl.layout;
+  const storage = layout.storage;
+  const types = layout.types;
+  const newStorage = [];
+
+  // STORAGE
+  // Find the slot where to inject the new var
+  const storagePreviousItemIndex = storage.findIndex((elem) => {
+    return elem.contract === contractName && elem.label === previousLabel;
+  });
+
+  // Populate the new storage up to the slot
+  for (let i = 0; i < storagePreviousItemIndex + 1; i++) {
+    newStorage.push(storage[i]);
+  }
+
+  // Push the new var to storage
+  newStorage.push(newVarObject);
+
+  // Finish populating the storage with what was already there
+  for (let i = storagePreviousItemIndex + 1; i < storage.length; i++) {
+    newStorage.push(storage[i]);
+  }
+
+  // GAP IN STORAGE:
+  // Find the gap declaration
+  const gapIndex = newStorage.findIndex((elem) => {
+    return elem.contract === contractName && elem.label === "____gap";
+  });
+
+  // Replace the size of the gap
+  newStorage[gapIndex]["type"] = newStorage[gapIndex]["type"].replace(
+    previousGapSize,
+    newGapSize
+  );
+
+  // GAP IN TYPES
+  // In the Types object of the manifest, add a new gap with the new size
+  types[`t_array(t_uint256)${newGapSize}_storage`] = {
+    label: "uint256[${newGapSize}]",
+  };
+
+  // Delete the old gap
+  delete types[`t_array(t_uint256)${previousGapSize}_storage`];
+
+  // If there's a new type to add, add it to the types object
+  if (newTypeName) {
+    if (!newTypeLabel) throw new Error("MISSING_NEW_TYPE_LABEL");
+
+    types[newTypeName] = {
+      label: newTypeLabel,
+    };
+  }
+
+  // Restructure the manifest
+  layout.storage = newStorage;
+  layout.types = types;
+  impl.layout = layout;
+  parsedManifest.impls[Object.keys(impls)[implIndex]] = impl;
+
+  return parsedManifest;
+}
+
 module.exports = {
   PROXY_ADMIN_ADDRESS,
   getDeployedContract,
@@ -121,4 +240,5 @@ module.exports = {
   setNewEthBalance,
   enforceForking,
   getContractAt,
+  injectInManifest,
 };

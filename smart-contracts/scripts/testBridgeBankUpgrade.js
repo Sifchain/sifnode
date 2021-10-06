@@ -12,6 +12,8 @@ const DEPLOYMENT_NAME = process.env.DEPLOYMENT_NAME || "sifchain-1";
 // If there is no FORKING_CHAIN_ID env var, we'll use the mainnet id
 const CHAIN_ID = process.env.FORKING_CHAIN_ID || 1;
 
+const BRIDGEBANK_ADDRESS = "0x714b49640c2a545b672e8bbd53cc8935725c6a14";
+
 async function main() {
   print("highlight", "~~~ TEST BRIDGEBANK UPGRADE ~~~");
 
@@ -54,13 +56,52 @@ async function main() {
 }
 
 // Copies the manifest to the right place (where Hardhat wants it)
-function copyManifest() {
+function copyManifest(injectChanges = true) {
   print("cyan", `Fetching the correct manifest`);
 
-  fs.copySync(
-    `./deployments/sifchain-1/.openzeppelin/mainnet.json`,
-    `./.openzeppelin/mainnet.json`
+  if (!injectChanges) {
+    // just copy the file over to the correct directory
+    fs.copySync(
+      `./deployments/sifchain-1/.openzeppelin/mainnet.json`,
+      `./.openzeppelin/mainnet.json`
+    );
+  } else {
+    // will write the file into the correct directory at the end
+    injectStorageChanges();
+  }
+}
+
+// https://forum.openzeppelin.com/t/storage-layout-upgrade-with-hardhat-upgrades/14567
+function injectStorageChanges() {
+  // Fetch the deployed manifest
+  const currentManifest = fs.readFileSync(
+    "./deployments/sifchain-1/.openzeppelin/mainnet.json",
+    "utf8"
   );
+
+  // Parse the deployed manifest
+  const parsedManifest = JSON.parse(currentManifest);
+
+  // Inject the new variable and change the gap
+  const modManifest = support.injectInManifest({
+    topContractMainnetAddress: BRIDGEBANK_ADDRESS,
+    parsedManifest,
+    contractName: "EthereumWhiteList",
+    previousLabel: "_ethereumTokenWhiteList",
+    newVarObject: {
+      contract: "EthereumWhiteList",
+      label: "blocklist",
+      type: "t_contract(IBlocklist)4736",
+      src: "../project:/contracts/BridgeBank/EthereumWhitelist.sol:21",
+    },
+    previousGapSize: 100,
+    newGapSize: 99,
+    newTypeName: "t_contract(IBlocklist)4736",
+    newTypeLabel: "contract IBlocklist",
+  });
+
+  // Write to file
+  fs.writeFileSync("./.openzeppelin/mainnet.json", JSON.stringify(modManifest));
 }
 
 // Deletes temporary files (the copied manifest)
