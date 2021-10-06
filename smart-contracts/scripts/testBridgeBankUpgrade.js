@@ -39,7 +39,7 @@ async function main() {
   // Fetch current values from the deployed contract
   const pauser_before = await bridgeBank.pausers(PAUSER);
   const owner_before = await bridgeBank.owner();
-  const lockBurnNonce_before = await bridgeBank.lockBurnNonce();
+  const nonce_before = await bridgeBank.lockBurnNonce();
 
   // Impersonate the admin account
   const admin = await support.impersonateAccount(
@@ -61,16 +61,12 @@ async function main() {
   // Fetch values after the upgrade
   const pauser_after = await upgradedBridgeBank.pausers(PAUSER);
   const owner_after = await upgradedBridgeBank.owner();
-  const lockBurnNonce_after = await upgradedBridgeBank.lockBurnNonce();
+  const nonce_after = await upgradedBridgeBank.lockBurnNonce();
 
   // Compare values before and after the upgrade
   testMatch(pauser_before, pauser_after, "Pauser");
   testMatch(owner_before, owner_after, "Owner");
-  testMatch(
-    lockBurnNonce_before.toString(),
-    lockBurnNonce_after.toString(),
-    "LockBurnNonce"
-  );
+  testMatch(nonce_before.toString(), nonce_after.toString(), "LockBurnNonce");
 
   // Send a prophecy claim to see it fail
 
