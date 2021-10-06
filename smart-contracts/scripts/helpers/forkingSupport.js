@@ -177,6 +177,7 @@ function injectInManifest({
 
   // STORAGE
   // Find the slot where to inject the new var
+  // @dev: this is not optimal, but we might want it as is to be able to deal with many new vars at once
   const storagePreviousItemIndex = storage.findIndex((elem) => {
     return elem.contract === contractName && elem.label === previousLabel;
   });

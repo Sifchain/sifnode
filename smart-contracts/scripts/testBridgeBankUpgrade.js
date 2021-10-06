@@ -16,30 +16,30 @@ const CHAIN_ID = process.env.FORKING_CHAIN_ID || 1;
 async function main() {
   print("highlight", "~~~ TEST BRIDGEBANK UPGRADE ~~~");
 
-  // Makes sure we're forking
+  // Make sure we're forking
   support.enforceForking();
 
-  // Fetches the manifest
-  copyManifest();
+  // Fetch the manifest and inject the new variables
+  copyManifest(true);
 
-  // Creates an instance of BridgeBank from the deployed code
+  // Create an instance of BridgeBank from the deployed code
   const { instance: bridgeBank } = await support.getDeployedContract(
     DEPLOYMENT_NAME,
     "BridgeBank",
     CHAIN_ID
   );
 
-  // Fetches and logs the operator
+  // Fetch and log the operator
   const operator_bb = await bridgeBank.operator();
   print("cyan", `Operator: ${operator_bb}`);
 
-  // Impersonates the admin account
+  // Impersonate the admin account
   const admin = await support.impersonateAccount(
     support.PROXY_ADMIN_ADDRESS,
     "10000000000000000000"
   );
 
-  // Upgrades BridgeBank
+  // Upgrade BridgeBank
   const newBridgeBankFactory = await hardhat.ethers.getContractFactory(
     "BridgeBank"
   );
@@ -48,14 +48,14 @@ async function main() {
     newBridgeBankFactory.connect(admin)
   );
 
-  // Cleans up temporary files
+  // Clean up temporary files
   cleanup();
 
   print("highlight", "~~~ DONE! ~~~");
 }
 
-// Copies the manifest to the right place (where Hardhat wants it)
-function copyManifest(injectChanges = true) {
+// Copy the manifest to the right place (where Hardhat wants it)
+function copyManifest(injectChanges) {
   print("cyan", `Fetching the correct manifest`);
 
   if (!injectChanges) {
@@ -89,7 +89,7 @@ function injectStorageChanges() {
   fs.writeFileSync("./.openzeppelin/mainnet.json", JSON.stringify(modManifest));
 }
 
-// Deletes temporary files (the copied manifest)
+// Delete temporary files (the copied manifest)
 function cleanup() {
   print("cyan", `Cleaning up temporary files`);
 
