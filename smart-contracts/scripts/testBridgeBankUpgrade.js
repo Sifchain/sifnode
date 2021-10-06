@@ -5,6 +5,7 @@ const fs = require("fs-extra");
 
 const support = require("./helpers/forkingSupport");
 const { print } = require("./helpers/utils");
+const toInject = require("../data/injector_upgrade_blocklist.json");
 
 // If there is no DEPLOYMENT_NAME env var, we'll use the mainnet deployment
 const DEPLOYMENT_NAME = process.env.DEPLOYMENT_NAME || "sifchain-1";
@@ -83,22 +84,8 @@ function injectStorageChanges() {
   const parsedManifest = JSON.parse(currentManifest);
 
   // Inject the new variable and change the gap
-  const modManifest = support.injectInManifest({
-    topContractMainnetAddress: BRIDGEBANK_ADDRESS,
-    parsedManifest,
-    contractName: "EthereumWhiteList",
-    previousLabel: "_ethereumTokenWhiteList",
-    newVarObject: {
-      contract: "EthereumWhiteList",
-      label: "blocklist",
-      type: "t_contract(IBlocklist)4736",
-      src: "../project:/contracts/BridgeBank/EthereumWhitelist.sol:21",
-    },
-    previousGapSize: 100,
-    newGapSize: 99,
-    newTypeName: "t_contract(IBlocklist)4736",
-    newTypeLabel: "contract IBlocklist",
-  });
+  toInject.parsedManifest = parsedManifest;
+  const modManifest = support.injectInManifest(toInject);
 
   // Write to file
   fs.writeFileSync("./.openzeppelin/mainnet.json", JSON.stringify(modManifest));
