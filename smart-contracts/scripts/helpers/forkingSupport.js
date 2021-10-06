@@ -33,7 +33,7 @@ async function getDeployedContract(deploymentName, contractName, chainId) {
   const address = parsed.networks[chainId].address;
   print(
     "yellow",
-    `Connecting to ${contractName} at ${address} on chain ${chainId}`
+    `🕑 Connecting to ${contractName} at ${address} on chain ${chainId}`
   );
 
   const accounts = await ethers.getSigners();
@@ -44,7 +44,7 @@ async function getDeployedContract(deploymentName, contractName, chainId) {
 
   print(
     "green",
-    `Connected to ${contractName} at ${address} on chain ${chainId}`
+    `🌎 Connected to ${contractName} at ${address} on chain ${chainId}`
   );
 
   return {
@@ -59,10 +59,13 @@ async function getDeployedContract(deploymentName, contractName, chainId) {
  * Use this function to impersonate accounts when forking
  * @param {string} address
  * @param {string} newBalance
+ * @param {string} accountName A name that will appear in the logs to facilitate things
  * @returns An ethers SIGNER object
  */
-async function impersonateAccount(address, newBalance) {
-  print("magenta", `Impersonating account ${address}`);
+async function impersonateAccount(address, newBalance, accountName) {
+  accountName = accountName ? ` (${accountName})` : "";
+
+  print("magenta", `🔒 Impersonating account ${address}${accountName}`);
 
   await network.provider.request({
     method: "hardhat_impersonateAccount",
@@ -73,7 +76,10 @@ async function impersonateAccount(address, newBalance) {
     await setNewEthBalance(address, newBalance);
   }
 
-  print("magenta", `Account ${address} successfully impersonated`);
+  print(
+    "magenta",
+    `🔓 Account ${address}${accountName} successfully impersonated`
+  );
 
   return ethers.getSigner(address);
 }
@@ -87,7 +93,7 @@ async function setNewEthBalance(address, newBalance) {
   const newValue = `0x${newBalance.toString(16)}`;
   await ethers.provider.send("hardhat_setBalance", [address, newValue]);
 
-  print("magenta", `Balance of account ${address} set to ${newBalance}`);
+  print("magenta", `💰 Balance of account ${address} set to ${newBalance}`);
 }
 
 /**

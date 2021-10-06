@@ -13,6 +13,9 @@ const DEPLOYMENT_NAME = process.env.DEPLOYMENT_NAME || "sifchain-1";
 // If there is no FORKING_CHAIN_ID env var, we'll use the mainnet id
 const CHAIN_ID = process.env.FORKING_CHAIN_ID || 1;
 
+// We want to verify whther old pausers are still there after an upgrade
+const PAUSER = "0x627306090abaB3A6e1400e9345bC60c78a8BEf57";
+
 async function main() {
   print("highlight", "~~~ TEST BRIDGEBANK UPGRADE ~~~");
 
@@ -30,33 +33,76 @@ async function main() {
   );
 
   // Fetch and log the operator
-  const operator_bb = await bridgeBank.operator();
-  print("cyan", `Operator: ${operator_bb}`);
+  const operator_before = await bridgeBank.operator();
+  print("white", `🤵 Operator: ${operator_before}`);
+
+  // Fetch current values from the deployed contract
+  const pauser_before = await bridgeBank.pausers(PAUSER);
+  const owner_before = await bridgeBank.owner();
+  const lockBurnNonce_before = await bridgeBank.lockBurnNonce();
 
   // Impersonate the admin account
   const admin = await support.impersonateAccount(
     support.PROXY_ADMIN_ADDRESS,
-    "10000000000000000000"
+    "10000000000000000000",
+    "Proxy Admin"
   );
 
   // Upgrade BridgeBank
   const newBridgeBankFactory = await hardhat.ethers.getContractFactory(
     "BridgeBank"
   );
-  await hardhat.upgrades.upgradeProxy(
+  const upgradedBridgeBank = await hardhat.upgrades.upgradeProxy(
     bridgeBank,
     newBridgeBankFactory.connect(admin)
   );
+  await upgradedBridgeBank.deployed();
+
+  // Fetch values after the upgrade
+  const pauser_after = await upgradedBridgeBank.pausers(PAUSER);
+  const owner_after = await upgradedBridgeBank.owner();
+  const lockBurnNonce_after = await upgradedBridgeBank.lockBurnNonce();
+
+  // Compare values before and after the upgrade
+  if (pauser_before === pauser_after) {
+    print("green", "✅ Pauser slot is safe");
+  } else {
+    throw new Error(
+      `💥 CRITICAL: Pauser Mismatch! From ${pauser_before} to ${pauser_after}`
+    );
+  }
+
+  if (owner_before === owner_after) {
+    print("green", "✅ Owner slot is safe");
+  } else {
+    throw new Error(
+      `💥 CRITICAL: Owner Mismatch! From ${owner_before} to ${owner_after}`
+    );
+  }
+
+  if (lockBurnNonce_before.toString() === lockBurnNonce_after.toString()) {
+    print("green", "✅ LockBurnNonce slot is safe");
+  } else {
+    throw new Error(
+      `💥 CRITICAL: LockBurnNonce Mismatch! From ${lockBurnNonce_before.toString()} to ${lockBurnNonce_after.toString()}`
+    );
+  }
+
+  // Send a prophecy claim to see it fail
+
+  // Set the blocklist and send a prophecy claim to see it go through
+
+  // Block the sender's address and send a prophecy claim to see it fail
 
   // Clean up temporary files
   cleanup();
 
-  print("highlight", "~~~ DONE! ~~~");
+  print("highlight", "~~~ DONE! 👏 Everything worked as expected. ~~~");
 }
 
 // Copy the manifest to the right place (where Hardhat wants it)
 function copyManifest(injectChanges) {
-  print("cyan", `Fetching the correct manifest`);
+  print("cyan", `👀 Fetching the correct manifest`);
 
   if (!injectChanges) {
     // just copy the file over to the correct directory
@@ -72,6 +118,8 @@ function copyManifest(injectChanges) {
 
 // https://forum.openzeppelin.com/t/storage-layout-upgrade-with-hardhat-upgrades/14567
 function injectStorageChanges() {
+  print("cyan", "🕵  Injecting changes into manifest");
+
   // Fetch the deployed manifest
   const currentManifest = fs.readFileSync(
     "./deployments/sifchain-1/.openzeppelin/mainnet.json",
@@ -91,7 +139,7 @@ function injectStorageChanges() {
 
 // Delete temporary files (the copied manifest)
 function cleanup() {
-  print("cyan", `Cleaning up temporary files`);
+  print("cyan", `🧹 Cleaning up temporary files`);
 
   fs.unlinkSync(`./.openzeppelin/mainnet.json`);
 }
