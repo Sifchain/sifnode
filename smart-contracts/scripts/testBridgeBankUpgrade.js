@@ -13,8 +13,6 @@ const DEPLOYMENT_NAME = process.env.DEPLOYMENT_NAME || "sifchain-1";
 // If there is no FORKING_CHAIN_ID env var, we'll use the mainnet id
 const CHAIN_ID = process.env.FORKING_CHAIN_ID || 1;
 
-const BRIDGEBANK_ADDRESS = "0x714b49640c2a545b672e8bbd53cc8935725c6a14";
-
 async function main() {
   print("highlight", "~~~ TEST BRIDGEBANK UPGRADE ~~~");
 
