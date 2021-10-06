@@ -64,29 +64,13 @@ async function main() {
   const lockBurnNonce_after = await upgradedBridgeBank.lockBurnNonce();
 
   // Compare values before and after the upgrade
-  if (pauser_before === pauser_after) {
-    print("green", "✅ Pauser slot is safe");
-  } else {
-    throw new Error(
-      `💥 CRITICAL: Pauser Mismatch! From ${pauser_before} to ${pauser_after}`
-    );
-  }
-
-  if (owner_before === owner_after) {
-    print("green", "✅ Owner slot is safe");
-  } else {
-    throw new Error(
-      `💥 CRITICAL: Owner Mismatch! From ${owner_before} to ${owner_after}`
-    );
-  }
-
-  if (lockBurnNonce_before.toString() === lockBurnNonce_after.toString()) {
-    print("green", "✅ LockBurnNonce slot is safe");
-  } else {
-    throw new Error(
-      `💥 CRITICAL: LockBurnNonce Mismatch! From ${lockBurnNonce_before.toString()} to ${lockBurnNonce_after.toString()}`
-    );
-  }
+  testMatch(pauser_before, pauser_after, "Pauser");
+  testMatch(owner_before, owner_after, "Owner");
+  testMatch(
+    lockBurnNonce_before.toString(),
+    lockBurnNonce_after.toString(),
+    "LockBurnNonce"
+  );
 
   // Send a prophecy claim to see it fail
 
@@ -135,6 +119,16 @@ function injectStorageChanges() {
 
   // Write to file
   fs.writeFileSync("./.openzeppelin/mainnet.json", JSON.stringify(modManifest));
+}
+
+function testMatch(before, after, slotName) {
+  if (before === after) {
+    print("green", `✅ ${slotName} slot is safe`);
+  } else {
+    throw new Error(
+      `💥 CRITICAL: ${slotName} Mismatch! From ${before} to ${after}`
+    );
+  }
 }
 
 // Delete temporary files (the copied manifest)
