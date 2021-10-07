@@ -25,6 +25,7 @@
     "@types/chai": "^4.2.21",
     "@types/mocha": "^9.0.0",
     "@types/yargs": "^17.0.2",
+    "axios": "^0.21.4",
     "big-integer": "^1.6.48",
     "chai": "^4.3.4",
     "chai-as-promised": "^7.1.1",
@@ -83,7 +84,9 @@
     "coverage": "truffle run coverage",
     "compile": "hardhat compile",
     "test": "concurrently -r -k -s first \"yarn develop\" \"truffle test --network develop test/test*.js\" ",
-    "testHardhat": "npx hardhat test test/test_bridgeBankMigration.ts  test/test_newBridgeBank.ts"
+    "testHardhat": "npx hardhat test test/test_bridgeBankMigration.ts  test/test_newBridgeBank.ts",
+    "whitelist:run": "npx hardhat run scripts/fetchTokenDetails.js --network mainnet && npx hardhat run scripts/bulk_set_whitelist.ts --network mainnet",
+    "whitelist:test": "npx hardhat run scripts/fetchTokenDetails.js --network hardhat && npx hardhat run scripts/bulk_set_whitelist.ts --network hardhat"
   },
   "dependencies": {
     "concurrently": "^6.2.0",

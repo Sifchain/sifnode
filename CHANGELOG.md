@@ -1,3 +1,10 @@
+ # v0.9.10
+> October 8, 2021
+>
+## ⭐ Features
+
+- [Sifnode] Support for transferring high precision tokens over IBC via denom conversion.
+
 # v0.9.7
 > September 17, 2021
 >
