@@ -70,6 +70,8 @@
     "integrationtest:mintTestnetTokens": "npx truffle exec scripts/test/mintTestnetTokens.js",
     "integrationtest:setTokenLockBurnLimit": "npx truffle exec scripts/setTokenLockBurnLimit.js",
     "integrationtest:whitelistedTokens": "npx truffle exec scripts/test/whitelistedTokens.js",
+    "deployIbcTokens:run": "npx hardhat run scripts/deploy_ibc_tokens.js --network mainnet",
+    "deployIbcTokens:test": "USE_FORKING=1 npx hardhat run scripts/deploy_ibc_tokens.js --network hardhat",
     "peggy:address": "npx truffle exec scripts/getBridgeRegistryAddress.js",
     "peggy:validators": "npx truffle exec scripts/getValidators.js",
     "peggy:hasLocked": "npx truffle exec scripts/hasLockedTokens.js",
