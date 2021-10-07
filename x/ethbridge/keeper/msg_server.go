@@ -58,7 +58,7 @@ func (srv msgServer) Lock(goCtx context.Context, msg *types.MsgLock) (*types.Msg
 
 	logger.Info("sifnode emit lock event.", "message", msg)
 	globalNonce := srv.Keeper.GetGlobalNonce(ctx, msg.NetworkDescriptor)
-	srv.Keeper.UpdateGlobalNonce(ctx, msg.NetworkDescriptor)
+	srv.Keeper.UpdateGlobalNonce(ctx, msg.NetworkDescriptor, uint64(ctx.BlockHeight()))
 	srv.Keeper.SetFirstLockDoublePeg(ctx, msg.DenomHash)
 
 	err = srv.oracleKeeper.SetProphecyInfo(ctx,
@@ -90,6 +90,7 @@ func (srv msgServer) Lock(goCtx context.Context, msg *types.MsgLock) (*types.Msg
 			types.EventTypeLock,
 			sdk.NewAttribute(types.AttributeKeyNetworkDescriptor, strconv.FormatInt(int64(msg.NetworkDescriptor), 10)),
 			sdk.NewAttribute(types.AttributeKeyProphecyID, string(prophecyID[:])),
+			sdk.NewAttribute(types.AttributeKeyGlobalNonce, strconv.FormatInt(int64(globalNonce), 10)),
 		),
 	})
 
@@ -125,7 +126,7 @@ func (srv msgServer) Burn(goCtx context.Context, msg *types.MsgBurn) (*types.Msg
 
 	logger.Info("sifnode emit burn event.", "message", msg)
 	globalNonce := srv.Keeper.GetGlobalNonce(ctx, msg.NetworkDescriptor)
-	srv.Keeper.UpdateGlobalNonce(ctx, msg.NetworkDescriptor)
+	srv.Keeper.UpdateGlobalNonce(ctx, msg.NetworkDescriptor, uint64(ctx.BlockHeight()))
 
 	doublePeg := tokenMetadata.NetworkDescriptor != msg.NetworkDescriptor
 
@@ -158,6 +159,7 @@ func (srv msgServer) Burn(goCtx context.Context, msg *types.MsgBurn) (*types.Msg
 			types.EventTypeBurn,
 			sdk.NewAttribute(types.AttributeKeyNetworkDescriptor, strconv.FormatInt(int64(msg.NetworkDescriptor), 10)),
 			sdk.NewAttribute(types.AttributeKeyProphecyID, string(prophecyID[:])),
+			sdk.NewAttribute(types.AttributeKeyGlobalNonce, strconv.FormatInt(int64(globalNonce), 10)),
 		),
 	})
 

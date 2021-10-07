@@ -22,5 +22,6 @@ var (
 	CrossChainFeeReceiverAccountPrefix = []byte{0x01}
 	GlobalNoncePrefix                  = []byte{0x02}
 	EthereumLockBurnNoncePrefix        = []byte{0x03}
-	FirstLockDoublePegPrefix           = []byte{0x04}
+	GlobalNonceToBlockNumberPrefix     = []byte{0x04}
+	FirstLockDoublePegPrefix           = []byte{0x05}
 )
