@@ -1,7 +1,7 @@
 import * as dotenv from "dotenv"
 import { HardhatUserConfig } from "hardhat/config"
 import "@nomiclabs/hardhat-ethers"
-import "@nomiclabs/hardhat-etherscan"
+//import "@nomiclabs/hardhat-etherscan"
 import '@openzeppelin/hardhat-upgrades'
 import "reflect-metadata"; // needed by tsyringe
 import "@typechain/hardhat"
@@ -78,11 +78,13 @@ const config: HardhatUserConfig = {
     mocha: {
         timeout: 200000
     },
+    /*
     etherscan: {
         // Your API key for Etherscan
         // Obtain one at https://etherscan.io/
         apiKey: process.env['ETHERSCAN_API_KEY']
     }
+    */
 }
 
 export default config
