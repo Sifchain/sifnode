@@ -39,26 +39,6 @@ func RunReplayEthereumCmd(cmd *cobra.Command, args []string) error {
 	}
 	validatorMoniker := args[3]
 
-	fromBlock, err := strconv.ParseInt(args[4], 10, 64)
-	if err != nil {
-		return errors.Errorf("invalid [from-block]: %s", args[4])
-	}
-
-	toBlock, err := strconv.ParseInt(args[5], 10, 64)
-	if err != nil {
-		return errors.Errorf("invalid [to-block]: %s", args[5])
-	}
-
-	cosmosFromBlock, err := strconv.ParseInt(args[6], 10, 64)
-	if err != nil {
-		return errors.Errorf("invalid [from-block]: %s", args[6])
-	}
-
-	cosmosToBlock, err := strconv.ParseInt(args[7], 10, 64)
-	if err != nil {
-		return errors.Errorf("invalid [to-block]: %s", args[7])
-	}
-
 	symbolTranslator, err := buildSymbolTranslator(cmd.Flags())
 	if err != nil {
 		return err
@@ -71,10 +51,10 @@ func RunReplayEthereumCmd(cmd *cobra.Command, args []string) error {
 	sugaredLogger := logger.Sugar()
 
 	ethSub := relayer.NewEthereumSub(cliContext, tendermintNode, validatorMoniker, web3Provider,
-		contractAddress, nil, nil, sugaredLogger)
+		contractAddress, nil, sugaredLogger)
 
 	txFactory := tx.NewFactoryCLI(cliContext, cmd.Flags())
-	ethSub.Replay(txFactory, fromBlock, toBlock, cosmosFromBlock, cosmosToBlock, symbolTranslator)
+	ethSub.Replay(txFactory, symbolTranslator)
 
 	return nil
 }
@@ -132,7 +112,7 @@ func RunReplayCosmosBurnLockCmd(cmd *cobra.Command, args []string) error {
 
 	// Initialize new Cosmos event listener
 	cosmosSub := relayer.NewCosmosSub(oracletypes.NetworkDescriptor(networkDescriptor),
-		privateKey, tendermintNode, web3Provider, contractAddress, nil, cliContext,
+		privateKey, tendermintNode, web3Provider, contractAddress, cliContext,
 		validatorMoniker, sugaredLogger)
 
 	cosmosSub.ReplayCosmosBurnLock(txFactory)
@@ -193,7 +173,7 @@ func RunReplayCosmosSignatureAggregationCmd(cmd *cobra.Command, args []string) e
 
 	// Initialize new Cosmos event listener
 	cosmosSub := relayer.NewCosmosSub(oracletypes.NetworkDescriptor(networkDescriptor),
-		privateKey, tendermintNode, web3Provider, contractAddress, nil, cliContext,
+		privateKey, tendermintNode, web3Provider, contractAddress, cliContext,
 		validatorMoniker, sugaredLogger)
 
 	cosmosSub.ReplaySignatureAggregation(txFactory)

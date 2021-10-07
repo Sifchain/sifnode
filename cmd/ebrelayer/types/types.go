@@ -128,19 +128,21 @@ func (p ProphecyClaimEvent) String() string {
 type CosmosMsg struct {
 	NetworkDescriptor oracle.NetworkDescriptor
 	ProphecyID        []byte
+	GlobalNonce       uint64
 }
 
 // NewCosmosMsg creates a new CosmosMsg
-func NewCosmosMsg(networkDescriptor oracle.NetworkDescriptor, prophecyID []byte) CosmosMsg {
+func NewCosmosMsg(networkDescriptor oracle.NetworkDescriptor, prophecyID []byte, globalNonce uint64) CosmosMsg {
 	return CosmosMsg{
 		NetworkDescriptor: networkDescriptor,
 		ProphecyID:        prophecyID,
+		GlobalNonce:       globalNonce,
 	}
 }
 
 // String implements fmt.Stringer
 func (c CosmosMsg) String() string {
-	return fmt.Sprintf("\nNetwork id: %v\nProphecy ID: %v\n", c.NetworkDescriptor.String(), c.ProphecyID)
+	return fmt.Sprintf("\nNetwork id: %v\nProphecy ID: %v\nGlobal nonce: %v\n", c.NetworkDescriptor.String(), c.ProphecyID, c.GlobalNonce)
 }
 
 // CosmosMsgAttributeKey enum containing supported attribute keys

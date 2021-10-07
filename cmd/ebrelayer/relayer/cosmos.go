@@ -7,9 +7,7 @@ import (
 	"context"
 	"crypto/ecdsa"
 	"errors"
-	"fmt"
 	"log"
-	"math/big"
 	"os"
 	"os/signal"
 	"sync"
@@ -17,10 +15,11 @@ import (
 	"time"
 
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/internal/symbol_translator"
+	"google.golang.org/grpc"
 
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/txs"
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/types"
-	ebrelayertypes "github.com/Sifchain/sifnode/x/ethbridge/types"
+	ethbridgetypes "github.com/Sifchain/sifnode/x/ethbridge/types"
 	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/tx"
@@ -28,25 +27,21 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
-	"github.com/syndtr/goleveldb/leveldb"
-	tmClient "github.com/tendermint/tendermint/rpc/client/http"
-	tmTypes "github.com/tendermint/tendermint/types"
+	tmclient "github.com/tendermint/tendermint/rpc/client/http"
+
 	"go.uber.org/zap"
 )
 
 const (
-	cosmosLevelDBKey = "cosmosLastProcessedBlock"
+	errorMessageKey     = "errorMessage"
+	cosmosSleepDuration = 60
 )
-
-// TODO: Move relay functionality out of CosmosSub into a new Relayer parent struct
-const errorMessageKey = "errorMessage"
 
 // CosmosSub defines a Cosmos listener that relays events to Ethereum and Cosmos
 type CosmosSub struct {
 	TmProvider              string
 	EthProvider             string
 	PrivateKey              *ecdsa.PrivateKey
-	DB                      *leveldb.DB
 	SugaredLogger           *zap.SugaredLogger
 	NetworkDescriptor       oracletypes.NetworkDescriptor
 	RegistryContractAddress common.Address
@@ -56,7 +51,7 @@ type CosmosSub struct {
 
 // NewCosmosSub initializes a new CosmosSub
 func NewCosmosSub(networkDescriptor oracletypes.NetworkDescriptor, privateKey *ecdsa.PrivateKey, tmProvider, ethProvider string, registryContractAddress common.Address,
-	db *leveldb.DB, cliContext client.Context, validatorName string, sugaredLogger *zap.SugaredLogger) CosmosSub {
+	cliContext client.Context, validatorName string, sugaredLogger *zap.SugaredLogger) CosmosSub {
 
 	return CosmosSub{
 		NetworkDescriptor:       networkDescriptor,
@@ -64,7 +59,6 @@ func NewCosmosSub(networkDescriptor oracletypes.NetworkDescriptor, privateKey *e
 		PrivateKey:              privateKey,
 		EthProvider:             ethProvider,
 		RegistryContractAddress: registryContractAddress,
-		DB:                      db,
 		CliContext:              cliContext,
 		ValidatorName:           validatorName,
 		SugaredLogger:           sugaredLogger,
@@ -75,7 +69,7 @@ func NewCosmosSub(networkDescriptor oracletypes.NetworkDescriptor, privateKey *e
 func (sub CosmosSub) Start(txFactory tx.Factory, completionEvent *sync.WaitGroup, symbolTranslator *symbol_translator.SymbolTranslator) {
 	defer completionEvent.Done()
 	time.Sleep(time.Second)
-	client, err := tmClient.New(sub.TmProvider, "/websocket")
+	client, err := tmclient.New(sub.TmProvider, "/websocket")
 	if err != nil {
 		sub.SugaredLogger.Errorw("failed to initialize a sifchain client.",
 			errorMessageKey, err.Error())
@@ -94,114 +88,108 @@ func (sub CosmosSub) Start(txFactory tx.Factory, completionEvent *sync.WaitGroup
 
 	defer client.Stop() //nolint:errcheck
 
-	// Subscribe to all new blocks
-	query := "tm.event = 'NewBlock'"
-	results, err := client.Subscribe(context.Background(), "test", query, 1000)
-	if err != nil {
-		sub.SugaredLogger.Errorw("sifchain client failed to subscribe to query.",
-			errorMessageKey, err.Error(),
-			"query", query)
-		completionEvent.Add(1)
-		go sub.Start(txFactory, completionEvent, symbolTranslator)
-		return
-	}
-
-	defer func() {
-		if err := client.Unsubscribe(context.Background(), "test", query); err != nil {
-			sub.SugaredLogger.Errorw("sifchain client failed to unsubscribe query.",
-				errorMessageKey, err.Error())
-		}
-	}()
-
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	defer close(quit)
 
-	var lastProcessedBlock int64
-
-	data, err := sub.DB.Get([]byte(cosmosLevelDBKey), nil)
-	if err != nil {
-		log.Println("Error getting the last cosmos block from level db", err)
-		lastProcessedBlock = 0
-	} else {
-		lastProcessedBlock = new(big.Int).SetBytes(data).Int64()
-	}
-
 	for {
 		select {
+		// Handle any errors
 		case <-quit:
 			log.Println("we receive the quit signal and exit")
 			return
+		default:
+			sub.CheckNonceAndProcess(txFactory, client)
+			time.Sleep(time.Second * cosmosSleepDuration)
+		}
+	}
+}
 
-		case e := <-results:
-			data, ok := e.Data.(tmTypes.EventDataNewBlock)
-			if !ok {
-				sub.SugaredLogger.Errorw("sifchain client failed to extract event data from new block.",
-					"EventDataNewBlock", fmt.Sprintf("%v", e.Data))
-			}
-			blockHeight := data.Block.Height
+// CheckNonceAndProcess check the lock burn nonce and process the event
+func (sub CosmosSub) CheckNonceAndProcess(txFactory tx.Factory,
+	client *tmclient.HTTP) {
 
-			// Just start from current block number if never process any block before
-			if lastProcessedBlock == 0 {
-				lastProcessedBlock = blockHeight
-			}
-			sub.SugaredLogger.Infow("new sifchain block witnessed")
+	// get lock burn nonce and start block number from cosmos
+	globalNonce, blockNumber, err := sub.GetGlobalNonceBlockNumberFromCosmos(sub.NetworkDescriptor, sub.ValidatorName)
+	if err != nil {
+		sub.SugaredLogger.Errorw("failed to get the lock burn nonce from cosmos rpc",
+			errorMessageKey, err.Error())
+		return
+	}
 
-			startBlockHeight := lastProcessedBlock + 1
-			sub.SugaredLogger.Infow("cosmos process events for blocks.",
-				"startingBlockHeight", startBlockHeight, "currentBlockHeight", blockHeight)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(cosmosSleepDuration)*time.Second)
+	defer cancel()
+	block, err := client.Block(ctx, nil)
+	if err != nil {
+		sub.SugaredLogger.Errorw("failed to get the block via cosmos client",
+			errorMessageKey, err.Error())
+		return
+	}
+	currentBlockHeight := uint64(block.Block.Header.Height)
 
-			for blockNumber := startBlockHeight; blockNumber <= blockHeight; {
-				tmpBlockNumber := blockNumber
+	sub.ProcessLockBurnWithScope(txFactory, client, globalNonce, blockNumber, currentBlockHeight)
+}
 
-				ctx := context.Background()
-				block, err := client.BlockResults(ctx, &tmpBlockNumber)
+// ProcessLockBurnWithScope scan blocks in scope and handle all burn lock events
+func (sub CosmosSub) ProcessLockBurnWithScope(txFactory tx.Factory, client *tmclient.HTTP, globalNonce, fromBlockNumber, toBlockNumber uint64) {
+	for blockNumber := fromBlockNumber; blockNumber <= toBlockNumber; {
+		tmpBlockNumber := int64(blockNumber)
 
-				if err != nil {
-					sub.SugaredLogger.Errorw("sifchain client failed to get a block.",
-						errorMessageKey, err.Error())
-					continue
-				}
+		ctx := context.Background()
+		block, err := client.BlockResults(ctx, &tmpBlockNumber)
 
-				for _, txLog := range block.TxsResults {
-					sub.SugaredLogger.Infow("block.TxsResults: ", "block.TxsResults: ", block.TxsResults)
-					for _, event := range txLog.Events {
+		if err != nil {
+			sub.SugaredLogger.Errorw("sifchain client failed to get a block.",
+				errorMessageKey, err.Error())
+			continue
+		}
 
-						claimType := getOracleClaimType(event.GetType())
+		for _, txLog := range block.TxsResults {
+			sub.SugaredLogger.Infow("block.TxsResults: ", "block.TxsResults: ", block.TxsResults)
+			for _, event := range txLog.Events {
 
-						sub.SugaredLogger.Infow("claimtype cosmos.go: ", "claimType: ", claimType)
+				claimType := getOracleClaimType(event.GetType())
 
-						switch claimType {
-						case types.MsgBurn, types.MsgLock:
-							// the relayer for signature aggregator not handle burn and lock
-							cosmosMsg, err := txs.BurnLockEventToCosmosMsg(event.GetAttributes(), sub.SugaredLogger)
-							if err != nil {
-								sub.SugaredLogger.Errorw("sifchain client failed in get burn lock message from event.",
-									errorMessageKey, err.Error())
-								continue
-							}
+				sub.SugaredLogger.Infow("claimtype cosmos.go: ", "claimType: ", claimType)
 
-							sub.SugaredLogger.Infow(
-								"Received message from sifchain: ",
-								"msg", cosmosMsg,
+				switch claimType {
+				case types.MsgBurn, types.MsgLock:
+					// the relayer for signature aggregator not handle burn and lock
+					cosmosMsg, err := txs.BurnLockEventToCosmosMsg(event.GetAttributes(), sub.SugaredLogger)
+					if err != nil {
+						sub.SugaredLogger.Errorw("sifchain client failed in get burn lock message from event.",
+							errorMessageKey, err.Error())
+						continue
+					}
+
+					sub.SugaredLogger.Infow(
+						"Received message from sifchain: ",
+						"msg", cosmosMsg,
+					)
+
+					if cosmosMsg.NetworkDescriptor == sub.NetworkDescriptor {
+						// if global nonce is expected, sign prophecy and send back to cosmos
+						// if global nonce is less than expected, just ignore the event. it is normal to see processed nonce coexist with expected one
+						// if global nonce is larger than expected, it is wrong and we must miss something.
+						if cosmosMsg.GlobalNonce == globalNonce+1 {
+							sub.witnessSignProphecyID(txFactory, cosmosMsg)
+							// update expected global nonce
+							globalNonce++
+
+						} else if cosmosMsg.GlobalNonce > globalNonce+1 {
+							sub.SugaredLogger.Errorw(
+								"The global nonce is invalid",
+								"expected global nonce is:", globalNonce+1,
+								"global nonce from message is:", cosmosMsg.GlobalNonce,
 							)
-
-							if cosmosMsg.NetworkDescriptor == sub.NetworkDescriptor {
-								sub.witnessSignProphecyID(txFactory, cosmosMsg)
-							}
+							return
 						}
 					}
 				}
-
-				lastProcessedBlock = blockNumber
-				err = sub.DB.Put([]byte(cosmosLevelDBKey), big.NewInt(lastProcessedBlock).Bytes(), nil)
-				if err != nil {
-					// if you can't write to leveldb, then error out as something is seriously amiss
-					log.Fatalf("Error saving lastProcessedBlock to leveldb: %v", err)
-				}
-				blockNumber++
 			}
 		}
+
+		blockNumber++
 	}
 }
 
@@ -284,8 +272,44 @@ func (sub CosmosSub) witnessSignProphecyID(
 		)
 	}
 
-	signProphecy := ebrelayertypes.NewMsgSignProphecy(valAddr.String(), cosmosMsg.NetworkDescriptor,
+	signProphecy := ethbridgetypes.NewMsgSignProphecy(valAddr.String(), cosmosMsg.NetworkDescriptor,
 		cosmosMsg.ProphecyID, address.String(), string(signature))
 
 	txs.SignProphecyToCosmos(txFactory, signProphecy, sub.CliContext, sub.SugaredLogger)
+}
+
+// GetGlobalNonceBlockNumberFromCosmos get global nonce block number via rpc
+func (sub CosmosSub) GetGlobalNonceBlockNumberFromCosmos(
+	networkDescriptor oracletypes.NetworkDescriptor,
+	relayerValAddress string) (uint64, uint64, error) {
+	conn, err := grpc.Dial(sub.TmProvider)
+	if err != nil {
+		return 0, 0, err
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	defer cancel()
+	client := ethbridgetypes.NewQueryClient(conn)
+
+	request := ethbridgetypes.QueryWitnessLockBurnNonceRequest{
+		NetworkDescriptor: networkDescriptor,
+		RelayerValAddress: relayerValAddress,
+	}
+	response, err := client.WitnessLockBurnNonce(ctx, &request)
+	if err != nil {
+		return 0, 0, err
+	}
+	globalNonce := response.WitnessLockBurnNonce
+
+	request2 := ethbridgetypes.QueryGlocalNonceBlockNumberRequest{
+		NetworkDescriptor: networkDescriptor,
+		GlobalNonce:       globalNonce + 1,
+	}
+
+	response2, err := client.GlocalNonceBlockNumber(ctx, &request2)
+	if err != nil {
+		return 0, 0, err
+	}
+
+	return globalNonce, response2.BlockNumber, nil
 }
