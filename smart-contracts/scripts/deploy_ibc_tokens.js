@@ -80,6 +80,8 @@ async function main() {
     activeAccount.address
   );
 
+  const gasPrice = await estimateGasPrice(MINIMUM_GAS_PRICE_IN_GWEI);
+
   // Deploy each token in the list
   for (let i = 0; i < tokensToDeploy.length; i++) {
     const tokenData = tokensToDeploy[i];
@@ -90,6 +92,7 @@ async function main() {
       denom: tokenData.denom,
       deployer: activeAccount,
       bridgeBank,
+      gasPrice,
     });
   }
 
@@ -110,12 +113,11 @@ async function deployToken({
   denom,
   deployer,
   bridgeBank,
+  gasPrice,
 }) {
   sanityCheck({ name, symbol, decimals, deployer });
 
   print("yellow", `🔑 Deploying ${name} token. Please wait...`);
-
-  const gasPrice = await estimateGasPrice(MINIMUM_GAS_PRICE_IN_GWEI);
 
   // Deploy the token
   const bridgeTokenFactory = await ethers.getContractFactory("BridgeToken");
