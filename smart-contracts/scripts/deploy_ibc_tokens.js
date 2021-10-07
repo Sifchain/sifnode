@@ -1,6 +1,8 @@
 /**
  * This script will deploy a new BridgeToken to an EVM network.
- //TODO
+ // TODO runbook
+ // TODO get list from file
+ // TODO write the attach script
  */
 
 require("dotenv").config();
@@ -14,6 +16,8 @@ const {
   print,
   generateTodayFilename,
   estimateGasPrice,
+  MINTER_ROLE,
+  ADMIN_ROLE,
 } = require("./helpers/utils");
 
 const USE_FORKING = !!process.env.USE_FORKING;
@@ -23,11 +27,6 @@ const DEPLOYMENT_NAME = process.env.DEPLOYMENT_NAME || "sifchain-1";
 
 // If there is no FORKING_CHAIN_ID env var, we'll use the mainnet id
 const CHAIN_ID = process.env.FORKING_CHAIN_ID || 1;
-
-// Roles to grant and renounce
-const MINTER_ROLE = web3.utils.soliditySha3("MINTER_ROLE");
-const ADMIN_ROLE =
-  "0x0000000000000000000000000000000000000000000000000000000000000000";
 
 const MINIMUM_GAS_PRICE_IN_GWEI = 100;
 

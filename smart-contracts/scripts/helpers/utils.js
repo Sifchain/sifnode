@@ -1,7 +1,13 @@
+const web3 = require("web3");
 const { ethers } = require("hardhat");
 
 // The estimate gas function multiplies its result by this value (wiggle room)
 GAS_PRICE_BUFFER = 1.2;
+
+// Roles in IbcTokens / BridgeTokens
+const MINTER_ROLE = web3.utils.soliditySha3("MINTER_ROLE");
+const ADMIN_ROLE =
+  "0x0000000000000000000000000000000000000000000000000000000000000000";
 
 /**
  * List of colors to be used in the `print` function
@@ -207,6 +213,8 @@ module.exports = {
   removeDuplicates,
   hasSameElements,
   generateV1Denom,
-  SIFNODE_MODEL,
   estimateGasPrice,
+  SIFNODE_MODEL,
+  MINTER_ROLE,
+  ADMIN_ROLE,
 };
