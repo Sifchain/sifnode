@@ -17,18 +17,18 @@ const ropstenUrl = process.env['ROPSTEN_URL'] ?? "https://example.com"
 const ropstenPrivateKey = process.env['ROPSTEN_PRIVATE_KEY'] ?? "0xabcd"
 const mainnetPrivateKey = process.env['MAINNET_PRIVATE_KEY'] ?? "0xabcd"
 
+// Works only for 'hardhat' network:
+const useForking = !!process.env.USE_FORKING;
+
 const config: HardhatUserConfig = {
     networks: {
         hardhat: {
-            allowUnlimitedContractSize: false
-        },
-        mainnetFork: {
-            url: mainnetUrl,
             allowUnlimitedContractSize: false,
             chainId: 1,
             forking: {
+                enabled: useForking,
                 url: mainnetUrl,
-                blockNumber: 10959000,
+                blockNumber: 13374085,
             }
         },
         ropsten: {
