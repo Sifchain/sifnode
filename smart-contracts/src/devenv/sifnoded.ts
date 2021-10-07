@@ -77,31 +77,35 @@ export class SifnodedRunner extends ShellCommand<SifnodedResults> {
     )
     const file = fs.readFileSync(this.networkConfigFile, 'utf8')
     const networkConfig: ValidatorValues[] = YAML.parse(file)
-    const moniker = networkConfig[0]["moniker"]
-    let mnemonic = networkConfig[0]["mnemonic"]
-    let password = networkConfig[0]["password"]
-    const chainDir = path.join(
-      this.networkDir,
-      "validators",
-      this.chainId,
-      moniker
-    )
-    const homeDir = path.join(chainDir, ".sifnoded")
-    await this.addValidatorKeyToTestKeyring(
-      moniker,
-      this.networkDir,
-      mnemonic,
-    )
-    const valOperKey = await this.readValoperKey(
-      moniker,
-      this.networkDir,
-      mnemonic,
-    )
-    const stdout = await this.addGenesisValidator(chainDir, valOperKey)
-    const whitelistedValidator = ChildProcess.execSync(
-      `${sifnodedCommand} keys show -a --bech val ${moniker} --keyring-backend test`,
-      { encoding: "utf8", input: password }
-    ).trim()
+    let chainDir: string = "";
+    let homeDir: string = "";
+    for (const validator of networkConfig) {
+      const moniker = validator["moniker"]
+      const mnemonic = validator["mnemonic"]
+      const password = validator["password"]
+      chainDir = path.join(
+        this.networkDir,
+        "validators",
+        this.chainId,
+        moniker
+      )
+      homeDir = path.join(chainDir, ".sifnoded")
+      await this.addValidatorKeyToTestKeyring(
+        moniker,
+        this.networkDir,
+        mnemonic,
+      )
+      const valOperKey = await this.readValoperKey(
+        moniker,
+        this.networkDir,
+        mnemonic,
+      )
+      const stdout = await this.addGenesisValidator(chainDir, valOperKey)
+      const whitelistedValidator = ChildProcess.execSync(
+        `${sifnodedCommand} keys show -a --bech val ${moniker} --keyring-backend test`,
+        { encoding: "utf8", input: password }
+      ).trim()
+    }
     let sifnodeadmincmd = `${sifnodedCommand} keys add sifnodeadmin --keyring-backend test --output json`;
     const sifnodedadminJson = ChildProcess.execSync(
       sifnodeadmincmd,
@@ -133,6 +137,7 @@ export class SifnodedRunner extends ShellCommand<SifnodedResults> {
       { encoding: "utf8" }
     ).trim()
     let sifnodedDaemonCmd = `${sifnodedCommand} start --log_format json --minimum-gas-prices 0.5rowan --rpc.laddr tcp://0.0.0.0:26657 --home ${homeDir}`;
+
     const sifnoded = ChildProcess.spawn(
       sifnodedDaemonCmd,
       { shell: true, stdio: "inherit" }
@@ -161,11 +166,12 @@ export class SifnodedRunner extends ShellCommand<SifnodedResults> {
       moniker,
       "--keyring-backend",
       "test",
+      "--recover",
     ]
     let child = ChildProcess.execFileSync(
       path.join(this.golangResults.goBin, "sifnoded"),
       sifgenArgs,
-      { input: mnemonic, encoding: "utf8" }
+      { encoding: "utf8", shell: false, input: `${mnemonic}\n` }
     );
     child
   }
