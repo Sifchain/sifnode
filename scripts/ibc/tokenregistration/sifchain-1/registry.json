@@ -23,48 +23,6 @@
     },
     {
       "is_whitelisted": true,
-      "decimals": "4",
-      "denom": "ccel",
-      "base_denom": "ccel",
-      "path": "",
-      "ibc_channel_id": "",
-      "ibc_counterparty_channel_id": "",
-      "display_name": "",
-      "display_symbol": "",
-      "network": "",
-      "address": "",
-      "external_symbol": "",
-      "transfer_limit": "",
-      "permissions": [
-        "CLP"
-      ],
-      "unit_denom": "",
-      "ibc_counterparty_denom": "",
-      "ibc_counterparty_chain_id": ""
-    },
-    {
-      "is_whitelisted": true,
-      "decimals": "6",
-      "denom": "causc",
-      "base_denom": "causc",
-      "path": "",
-      "ibc_channel_id": "",
-      "ibc_counterparty_channel_id": "",
-      "display_name": "",
-      "display_symbol": "",
-      "network": "",
-      "address": "",
-      "external_symbol": "",
-      "transfer_limit": "",
-      "permissions": [
-        "CLP"
-      ],
-      "unit_denom": "",
-      "ibc_counterparty_denom": "",
-      "ibc_counterparty_chain_id": ""
-    },
-    {
-      "is_whitelisted": true,
       "decimals": "6",
       "denom": "cusdt",
       "base_denom": "cusdt",
@@ -1242,8 +1200,8 @@
     {
       "is_whitelisted": true,
       "decimals": "18",
-      "denom": "cust",
-      "base_denom": "cust",
+      "denom": "crly",
+      "base_denom": "crly",
       "path": "",
       "ibc_channel_id": "",
       "ibc_counterparty_channel_id": "",
@@ -1577,12 +1535,12 @@
     },
     {
       "is_whitelisted": true,
-      "decimals": "6",
-      "denom": "ibc/C9D28A562D872C72C68336CB3031F5ED3289B994EDC0C7D02216A312D4EC842D",
-      "base_denom": "uakt",
-      "path": "transfer/channel-77",
-      "ibc_channel_id": "channel-77",
-      "ibc_counterparty_channel_id": "channel-44",
+      "decimals": "18",
+      "denom": "cust",
+      "base_denom": "cust",
+      "path": "",
+      "ibc_channel_id": "",
+      "ibc_counterparty_channel_id": "",
       "display_name": "",
       "display_symbol": "",
       "network": "",
@@ -1590,82 +1548,11 @@
       "external_symbol": "",
       "transfer_limit": "",
       "permissions": [
-        "CLP",
-        "IBCIMPORT",
-        "IBCEXPORT"
+        "CLP"
       ],
       "unit_denom": "",
       "ibc_counterparty_denom": "",
-      "ibc_counterparty_chain_id": "akash-testnet-6"
-    },
-    {
-      "is_whitelisted": true,
-      "decimals": "6",
-      "denom": "ibc/6D5142030EDCBBF7396B98C3F0C0BE58E0C8CA306F3D49FC52CBF0CF3C1FBD02",
-      "base_denom": "udvpn",
-      "path": "transfer/channel-79",
-      "ibc_channel_id": "channel-79",
-      "ibc_counterparty_channel_id": "channel-19",
-      "display_name": "",
-      "display_symbol": "",
-      "network": "",
-      "address": "",
-      "external_symbol": "",
-      "transfer_limit": "",
-      "permissions": [
-        "CLP",
-        "IBCIMPORT",
-        "IBCEXPORT"
-      ],
-      "unit_denom": "",
-      "ibc_counterparty_denom": "",
-      "ibc_counterparty_chain_id": "sentinelhub-2"
-    },
-    {
-      "is_whitelisted": true,
-      "decimals": "6",
-      "denom": "ibc/8395BFD6DF6EFE215B56CBEB14B7B265598E6F14AFFAF28337E9B627F0334059",
-      "base_denom": "unyan",
-      "path": "transfer/channel-74",
-      "ibc_channel_id": "channel-74",
-      "ibc_counterparty_channel_id": "channel-22",
-      "display_name": "",
-      "display_symbol": "",
-      "network": "",
-      "address": "",
-      "external_symbol": "",
-      "transfer_limit": "",
-      "permissions": [
-        "CLP",
-        "IBCIMPORT",
-        "IBCEXPORT"
-      ],
-      "unit_denom": "",
-      "ibc_counterparty_denom": "",
-      "ibc_counterparty_chain_id": "nyancat-8"
-    },
-    {
-      "is_whitelisted": true,
-      "decimals": "6",
-      "denom": "ibc/C782C1DE5F380BC8A5B7D490684894B439D31847A004B271D7B7BA07751E582A",
-      "base_denom": "uphoton",
-      "path": "transfer/channel-101",
-      "ibc_channel_id": "channel-101",
-      "ibc_counterparty_channel_id": "channel-3",
-      "display_name": "",
-      "display_symbol": "",
-      "network": "",
-      "address": "",
-      "external_symbol": "",
-      "transfer_limit": "",
-      "permissions": [
-        "CLP",
-        "IBCEXPORT",
-        "IBCIMPORT"
-      ],
-      "unit_denom": "",
-      "ibc_counterparty_denom": "",
-      "ibc_counterparty_chain_id": "cosmoshub-testnet"
+      "ibc_counterparty_chain_id": ""
     }
   ]
 }
