@@ -1,15 +1,18 @@
 package keeper
 
 import (
+	"encoding/binary"
 	"strconv"
 
 	"github.com/Sifchain/sifnode/x/ethbridge/types"
+	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 // GetFirstLockDoublePeg get first lock double peg
-func (k Keeper) GetFirstLockDoublePeg(ctx sdk.Context, denom string) bool {
-	prefix := k.GetFirstLockDoublePegPrefix(ctx, denom)
+func (k Keeper) GetFirstLockDoublePeg(ctx sdk.Context, denom string, networkDescriptor oracletypes.NetworkDescriptor) bool {
+	prefix := k.GetFirstLockDoublePegPrefix(ctx, denom, networkDescriptor)
 	store := ctx.KVStore(k.storeKey)
 
 	if !k.ExistsFirstLockDoublePeg(ctx, prefix) {
@@ -25,8 +28,8 @@ func (k Keeper) GetFirstLockDoublePeg(ctx sdk.Context, denom string) bool {
 }
 
 // SetFirstLockDoublePeg set first lock double peg
-func (k Keeper) SetFirstLockDoublePeg(ctx sdk.Context, denom string) {
-	prefix := k.GetFirstLockDoublePegPrefix(ctx, denom)
+func (k Keeper) SetFirstLockDoublePeg(ctx sdk.Context, denom string, networkDescriptor oracletypes.NetworkDescriptor) {
+	prefix := k.GetFirstLockDoublePegPrefix(ctx, denom, networkDescriptor)
 	store := ctx.KVStore(k.storeKey)
 	b := []byte{}
 	b = strconv.AppendBool(b, true)
@@ -42,7 +45,10 @@ func (k Keeper) ExistsFirstLockDoublePeg(ctx sdk.Context, prefix []byte) bool {
 }
 
 // GetFirstLockDoublePegPrefix compute the prefix
-func (k Keeper) GetFirstLockDoublePegPrefix(ctx sdk.Context, denom string) []byte {
+func (k Keeper) GetFirstLockDoublePegPrefix(ctx sdk.Context, denom string, networkDescriptor oracletypes.NetworkDescriptor) []byte {
+	bs := make([]byte, 4)
+	binary.LittleEndian.PutUint32(bs, uint32(networkDescriptor))
+	tmpKey := append(types.FirstLockDoublePegPrefix, bs[:]...)
 
-	return append(types.FirstLockDoublePegPrefix, []byte(denom)[:]...)
+	return append(tmpKey, []byte(denom)[:]...)
 }

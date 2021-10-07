@@ -47,7 +47,7 @@ func (srv msgServer) Lock(goCtx context.Context, msg *types.MsgLock) (*types.Msg
 	}
 
 	doublePeg := tokenMetadata.NetworkDescriptor != msg.NetworkDescriptor
-	firstDoublePeg := doublePeg && srv.Keeper.GetFirstLockDoublePeg(ctx, msg.DenomHash)
+	firstDoublePeg := doublePeg && srv.Keeper.GetFirstLockDoublePeg(ctx, msg.DenomHash, msg.NetworkDescriptor)
 
 	prophecyID, err := srv.Keeper.ProcessLock(ctx, cosmosSender, account.GetSequence(), msg, tokenMetadata, firstDoublePeg)
 
@@ -59,7 +59,7 @@ func (srv msgServer) Lock(goCtx context.Context, msg *types.MsgLock) (*types.Msg
 	logger.Info("sifnode emit lock event.", "message", msg)
 	globalNonce := srv.Keeper.GetGlobalNonce(ctx, msg.NetworkDescriptor)
 	srv.Keeper.UpdateGlobalNonce(ctx, msg.NetworkDescriptor, uint64(ctx.BlockHeight()))
-	srv.Keeper.SetFirstLockDoublePeg(ctx, msg.DenomHash)
+	srv.Keeper.SetFirstLockDoublePeg(ctx, msg.DenomHash, msg.NetworkDescriptor)
 
 	err = srv.oracleKeeper.SetProphecyInfo(ctx,
 		prophecyID,

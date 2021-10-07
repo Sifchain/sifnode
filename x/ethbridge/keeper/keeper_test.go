@@ -426,6 +426,41 @@ func TestProcessLockWithReceiver(t *testing.T) {
 
 }
 
+func TestProcessLockFirstDoublePeg(t *testing.T) {
+	ctx, keeper, bankKeeper, _, oracleKeeper, _, _, _ := test.CreateTestKeepers(t, 0.7, []int64{3, 3}, "")
+	cosmosSender, err := sdk.AccAddressFromBech32(types.TestAddress)
+	require.NoError(t, err)
+	oracleKeeper.SetAdminAccount(ctx, cosmosSender)
+	denomHash := keeper.AddTokenMetadata(ctx, testMetadataStake)
+
+	networkIdentity := oracletypes.NewNetworkIdentity(networkDescriptor)
+	crossChainFeeConfig, _ := oracleKeeper.GetCrossChainFeeConfig(ctx, networkIdentity)
+	crossChainFee := crossChainFeeConfig.FeeCurrency
+	coins := sdk.NewCoins(sdk.NewCoin(crossChainFee, amount))
+	_ = bankKeeper.MintCoins(ctx, types.ModuleName, coins)
+	_ = bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, cosmosReceivers[0], coins)
+
+	receiverCoins := bankKeeper.GetAllBalances(ctx, cosmosReceivers[0])
+	require.Equal(t, receiverCoins, coins)
+
+	msg := types.NewMsgLock(1, cosmosReceivers[0], ethereumSender, amount, denomHash, amount)
+
+	account := keeper.GetAccountKeeper().GetAccount(ctx, cosmosReceivers[0])
+	_, err = keeper.ProcessLock(ctx, cosmosReceivers[0], account.GetSequence(), &msg, testMetadataRowan, true)
+	require.ErrorIs(t, err, sdkerrors.ErrInsufficientFunds)
+
+	coins = sdk.NewCoins(sdk.NewCoin("rowan", amount), sdk.NewCoin(crossChainFee, amount))
+	_ = bankKeeper.MintCoins(ctx, types.ModuleName, coins)
+	_ = bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, cosmosReceivers[0], coins)
+
+	_, err = keeper.ProcessLock(ctx, cosmosReceivers[0], account.GetSequence(), &msg, testMetadataRowan, true)
+	require.NoError(t, err)
+
+	receiverCoins = bankKeeper.GetAllBalances(ctx, cosmosReceivers[0])
+	require.Equal(t, receiverCoins.String(), string(""))
+
+}
+
 func TestProcessUpdateCrossChainFeeReceiverAccount(t *testing.T) {
 	ctx, keeper, _, _, oracleKeeper, _, _, _ := test.CreateTestKeepers(t, 0.7, []int64{3, 3}, "")
 	cosmosSender, err := sdk.AccAddressFromBech32(types.TestAddress)
