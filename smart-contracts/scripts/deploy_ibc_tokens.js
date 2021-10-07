@@ -1,9 +1,20 @@
+/**
+ * This script will deploy a new BridgeToken to an EVM network.
+ //TODO
+ */
+
 require("dotenv").config();
 
+const fs = require("fs");
 const web3 = require("web3");
 const { ethers } = require("hardhat");
+
 const support = require("./helpers/forkingSupport");
-const { print } = require("./helpers/utils");
+const {
+  print,
+  generateTodayFilename,
+  estimateGasPrice,
+} = require("./helpers/utils");
 
 const USE_FORKING = !!process.env.USE_FORKING;
 
@@ -18,20 +29,37 @@ const MINTER_ROLE = web3.utils.soliditySha3("MINTER_ROLE");
 const ADMIN_ROLE =
   "0x0000000000000000000000000000000000000000000000000000000000000000";
 
-const state = {
-  token: {
-    name: process.env.TOKEN_NAME,
-    symbol: process.env.TOKEN_SYMBOL,
-    decimals: process.env.TOKEN_DECIMALS,
-    denom: process.env.TOKEN_DENOM || "",
-  },
+const MINIMUM_GAS_PRICE_IN_GWEI = 100;
+
+const log = {
+  tokens: [],
 };
+
+const tokensToDeploy = [
+  {
+    name: "Dan Token",
+    symbol: "DAN",
+    decimals: 6,
+    denom: "",
+  },
+  {
+    name: "Alice Token",
+    symbol: "ALI",
+    decimals: 10,
+    denom: "Alice denom",
+  },
+  {
+    name: "Bruce Token",
+    symbol: "BRU",
+    decimals: 18,
+    denom: "Bruce denom",
+  },
+];
 
 async function main() {
   print("highlight", "~~~ DEPLOY IBC TOKENS ~~~");
 
-  // Guarantee we have all the needed variables
-  sanityCheck();
+  print("yellow", `📢 Will deploy ${tokensToDeploy.length} tokens.`);
 
   // If we're forking, we want to impersonate the owner account
   if (USE_FORKING) await setupForking();
@@ -48,70 +76,149 @@ async function main() {
   const activeAccount = accounts[0];
   print("cyan", `🤵 Active account is ${activeAccount.address}`);
 
+  const startingBalance = await ethers.provider.getBalance(
+    activeAccount.address
+  );
+
+  // Deploy each token in the list
+  for (let i = 0; i < tokensToDeploy.length; i++) {
+    const tokenData = tokensToDeploy[i];
+    await deployToken({
+      name: tokenData.name,
+      symbol: tokenData.symbol,
+      decimals: tokenData.decimals,
+      denom: tokenData.denom,
+      deployer: activeAccount,
+      bridgeBank,
+    });
+  }
+
+  // Calculate and log the total cost
+  await logTotalCost(activeAccount, startingBalance);
+
+  // Write logs to the data folder
+  logFilename = saveToFile();
+
+  print("yellow", `🧾 Results have been written to ${logFilename}`);
+  print("highlight", "~~~ DONE! ~~~");
+}
+
+async function deployToken({
+  name,
+  symbol,
+  decimals,
+  denom,
+  deployer,
+  bridgeBank,
+}) {
+  sanityCheck({ name, symbol, decimals, deployer });
+
+  print("yellow", `🔑 Deploying ${name} token. Please wait...`);
+
+  const gasPrice = await estimateGasPrice(MINIMUM_GAS_PRICE_IN_GWEI);
+
   // Deploy the token
   const bridgeTokenFactory = await ethers.getContractFactory("BridgeToken");
   const bridgeToken = await bridgeTokenFactory.deploy(
-    state.token.name,
-    state.token.symbol,
-    state.token.decimals,
-    state.token.denom
+    name,
+    symbol,
+    decimals,
+    denom,
+    { gasPrice }
   );
   await bridgeToken.deployed();
   print(
     "green",
-    `✅ 1/5: The token ${state.token.name} is deployed at ${bridgeToken.address}`
+    `✅ 1/5: The token ${name} is deployed at ${bridgeToken.address}`
   );
 
   // Grant the minter role to BridgeBank
   const grantMinterTx = await bridgeToken.grantRole(
     MINTER_ROLE,
-    bridgeBank.address
+    bridgeBank.address,
+    { gasPrice }
   );
   print("green", `✅ 2/5: Grant Minter TX: ${grantMinterTx.hash}`);
 
   // Grant the admin role to BridgeBank
   const grantAdminTx = await bridgeToken.grantRole(
     ADMIN_ROLE,
-    bridgeBank.address
+    bridgeBank.address,
+    { gasPrice }
   );
   print("green", `✅ 3/5: Grant Admin TX: ${grantAdminTx.hash}`);
 
   // Renounce the minter role
   const renounceMinterTx = await bridgeToken.renounceRole(
     MINTER_ROLE,
-    activeAccount.address
+    deployer.address,
+    { gasPrice }
   );
   print("green", `✅ 4/5: Renounce Minter TX: ${renounceMinterTx.hash}`);
 
   // Renounce the admin role
   const renounceAdminTx = await bridgeToken.renounceRole(
     ADMIN_ROLE,
-    activeAccount.address
+    deployer.address,
+    { gasPrice }
   );
   print("green", `✅ 5/5: Renounce Admin TX: ${renounceAdminTx.hash}`);
 
-  // Should estimate gas?!
-
-  print("highlight", "~~~ DONE! ~~~");
+  const receipt = {
+    name: name,
+    symbol: symbol,
+    decimals: decimals,
+    denom: denom,
+    address: bridgeToken.address,
+    grantMinterRoleTx: grantMinterTx.hash,
+    grantAdminRoleTx: grantAdminTx.hash,
+    renounceMinterRoleTx: renounceMinterTx.hash,
+    renounceAdminRoleTx: renounceAdminTx.hash,
+  };
+  log.tokens.push(receipt);
 }
 
 async function setupForking() {
   // Impersonate the admin account
-  state.proxyAdmin = await support.impersonateAccount(
+  await support.impersonateAccount(
     support.PROXY_ADMIN_ADDRESS,
     "10000000000000000000",
     "Proxy Admin"
   );
 }
 
-function sanityCheck() {
-  if (!state.token.name || !state.token.symbol || !state.token.decimals) {
+function sanityCheck({ name, symbol, decimals, deployer }) {
+  if (!deployer) {
+    throw new Error("💥 CRITICAL: MISSING DEPLOYER ACCOUNT");
+  }
+  if (!name || !symbol || !decimals) {
     print(
       "h_red",
-      `Token name: ${state.token.name} | Token symbol: ${state.token.symbol} | Token decimals: ${state.token.decimals}`
+      `Missing token data! Name: ${name} | symbol: ${symbol} | decimals: ${decimals}`
     );
-    throw new Error("💥 CRITICAL: MISSING ENV VARIABLES");
   }
+}
+
+async function logTotalCost(account, startingBalance) {
+  const endingBalance = await ethers.provider.getBalance(account.address);
+  const totalCost = ethers.BigNumber.from(startingBalance).sub(
+    ethers.BigNumber.from(endingBalance)
+  );
+
+  log.totalCost = web3.utils.fromWei(totalCost.toString());
+  print("cyan", `Total ETH spent: ${log.totalCost}`);
+}
+
+function saveToFile() {
+  // write the log to a file named after today
+  const logFileName = generateTodayFilename({
+    prefix: "deployed_ibc_tokens",
+    extension: "json",
+    directory: "data",
+  });
+  fs.writeFileSync(logFileName, JSON.stringify(log, null, 1));
+
+  return logFileName;
 }
 
 function treatCommonErrors(e) {

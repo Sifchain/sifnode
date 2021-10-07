@@ -1,3 +1,8 @@
+const { ethers } = require("hardhat");
+
+// The estimate gas function multiplies its result by this value (wiggle room)
+GAS_PRICE_BUFFER = 1.2;
+
 /**
  * List of colors to be used in the `print` function
  */
@@ -168,6 +173,32 @@ const SIFNODE_MODEL = {
   ibc_counterparty_chain_id: "",
 };
 
+/**
+ * Estimates gas price
+ * @param {string} forceMinimum The minimum value allowed
+ * @returns {string} The ideal gas price according to the web3 provider
+ */
+async function estimateGasPrice(minimumGasPriceInGwei = 10) {
+  print("magenta", "🕑 Estimating ideal Gas price, please wait...");
+
+  const gasPrice = await ethers.provider.getGasPrice();
+  const calculatedGasPrice = Math.round(gasPrice.toNumber() * GAS_PRICE_BUFFER);
+  const minimumGasPriceInWei = ethers.BigNumber.from(minimumGasPriceInGwei).mul(
+    "1000000000"
+  );
+  const finalGasPrice = Math.max(calculatedGasPrice, minimumGasPriceInWei);
+
+  print(
+    "magenta",
+    `🚕 Using ideal Gas price: ${ethers.utils.formatUnits(
+      finalGasPrice,
+      "gwei"
+    )} GWEI`
+  );
+
+  return finalGasPrice;
+}
+
 module.exports = {
   print,
   isValidSymbol,
@@ -177,4 +208,5 @@ module.exports = {
   hasSameElements,
   generateV1Denom,
   SIFNODE_MODEL,
+  estimateGasPrice,
 };

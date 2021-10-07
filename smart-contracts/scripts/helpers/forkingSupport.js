@@ -32,8 +32,8 @@ async function getDeployedContract(deploymentName, contractName, chainId) {
 
   const address = parsed.networks[chainId].address;
   print(
-    "yellow",
-    `🕑 Connecting to ${contractName} at ${address} on chain ${chainId}`
+    "magenta",
+    `🕑 Connecting to ${contractName} at ${address} on chain ${chainId}, please wait...`
   );
 
   const accounts = await ethers.getSigners();
@@ -43,7 +43,7 @@ async function getDeployedContract(deploymentName, contractName, chainId) {
   const instance = await contract.attach(address);
 
   print(
-    "green",
+    "magenta",
     `🌎 Connected to ${contractName} at ${address} on chain ${chainId}`
   );
 
