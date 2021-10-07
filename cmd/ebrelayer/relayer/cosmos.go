@@ -117,7 +117,7 @@ func (sub CosmosSub) CheckNonceAndProcess(txFactory tx.Factory,
 		return
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(cosmosSleepDuration)*time.Second)
 	defer cancel()
 	block, err := client.Block(ctx, nil)
 	if err != nil {
@@ -180,7 +180,7 @@ func (sub CosmosSub) ProcessLockBurnWithScope(txFactory tx.Factory, client *tmcl
 							sub.SugaredLogger.Errorw(
 								"The global nonce is invalid",
 								"expected global nonce is:", globalNonce+1,
-								"globa nonce from message is:", cosmosMsg.GlobalNonce,
+								"global nonce from message is:", cosmosMsg.GlobalNonce,
 							)
 							return
 						}

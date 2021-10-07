@@ -428,7 +428,7 @@ func (sub EthereumSub) handleEthereumEvent(txFactory tx.Factory,
 				prophecyClaims = append(prophecyClaims, &prophecyClaim)
 				nextLockBurnNonce++
 			} else {
-				sub.SugaredLogger.Infow("ock burn nonce is not expected.",
+				sub.SugaredLogger.Infow("lock burn nonce is not expected.",
 					"expected lock burn nonce is %d", nextLockBurnNonce,
 					"lock burn nonce from event is %d", prophecyClaim.EthereumLockBurnNonce)
 				return nextLockBurnNonce, errors.New("lock burn nonce is not expected")
@@ -455,7 +455,7 @@ func (sub EthereumSub) GetLockBurnNonceFromCosmos(
 		return 0, err
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(cosmosSleepDuration)*time.Second)
 	defer cancel()
 	client := ethbridgetypes.NewQueryClient(conn)
 	request := ethbridgetypes.QueryEthereumLockBurnNonceRequest{
