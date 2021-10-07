@@ -324,6 +324,7 @@ func NewSifApp(
 		app.BankKeeper,
 		app.AccountKeeper,
 		app.GetSubspace(disptypes.ModuleName),
+		app.TokenRegistryKeeper,
 	)
 
 	// This map defines heights to skip for updates
