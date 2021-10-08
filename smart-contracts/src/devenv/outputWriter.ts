@@ -60,12 +60,14 @@ interface EnvDictionary {
   [key: string]: string
 }
 
-export function EnvJSONWriter(args: {
+export interface DevEnvObject {
   ethResults?: EthereumResults,
   goResults?: GolangResults,
   sifResults?: SifnodedResults,
   contractResults?: SmartContractDeployResult,
-}) {
+}
+
+export function EnvJSONWriter(args: DevEnvObject) {
   const baseDir = path.resolve(__dirname, "../../..")
   const output: EnvOutput = {
     COMPUTED: {
