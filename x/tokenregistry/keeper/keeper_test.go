@@ -3,6 +3,7 @@ package keeper_test
 import (
 	"testing"
 
+	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
 	"github.com/Sifchain/sifnode/x/tokenregistry/test"
 	"github.com/Sifchain/sifnode/x/tokenregistry/types"
 	"github.com/stretchr/testify/assert"
@@ -33,4 +34,21 @@ func TestKeeper_CheckDenomPermissions(t *testing.T) {
 	assert.False(t, app.TokenRegistryKeeper.CheckDenomPermissions(ctx, "t2", []types.Permission{types.Permission_PERMISSION_IBCEXPORT, types.Permission_PERMISSION_IBCIMPORT}))
 	assert.True(t, app.TokenRegistryKeeper.CheckDenomPermissions(ctx, "rowan", []types.Permission{}))
 
+}
+
+func TestKeeper_CheckFirstLockDoublePeg(t *testing.T) {
+	app, ctx, _ := test.CreateTestApp(false)
+	networkDescriptor := oracletypes.NetworkDescriptor_NETWORK_DESCRIPTOR_ETHEREUM
+
+	app.TokenRegistryKeeper.SetToken(ctx, &types.RegistryEntry{
+		Denom:                "rowan",
+		Decimals:             18,
+		DoublePeggedNetworks: []oracletypes.NetworkDescriptor{},
+	})
+
+	assert.True(t, app.TokenRegistryKeeper.GetFirstLockDoublePeg(ctx, "rowan", networkDescriptor))
+
+	// check after set the value
+	app.TokenRegistryKeeper.SetFirstLockDoublePeg(ctx, "rowan", networkDescriptor)
+	assert.False(t, app.TokenRegistryKeeper.GetFirstLockDoublePeg(ctx, "rowan", networkDescriptor))
 }

@@ -58,6 +58,7 @@ message RegistryEntry {
   // the packet level. i.e rowan -> microrowan i.e microrowan -> microrowan
   string ibc_counterparty_denom = 17;
   string ibc_counterparty_chain_id = 18;
+  repeated sifnode.oracle.v1.NetworkDescriptor double_pegged_networks = 19;
 }
 
 // Coin Metadata Modlue structure for storing

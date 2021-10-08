@@ -10,6 +10,7 @@ import (
 	gogotypes "github.com/gogo/protobuf/types"
 	"github.com/tendermint/tendermint/libs/log"
 
+	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
 	"github.com/Sifchain/sifnode/x/tokenregistry/types"
 )
 
@@ -155,4 +156,25 @@ func (k keeper) GetDenomWhitelist(ctx sdk.Context) types.Registry {
 func (k keeper) Exists(ctx sdk.Context, key []byte) bool {
 	store := ctx.KVStore(k.storeKey)
 	return store.Has(key)
+}
+
+func (k keeper) GetFirstLockDoublePeg(ctx sdk.Context, denom string, networkDescriptor oracletypes.NetworkDescriptor) bool {
+	registry := k.GetDenom(ctx, denom)
+	result := true
+	for _, pegged_network := range registry.DoublePeggedNetworks {
+		if networkDescriptor == pegged_network {
+			result = false
+			break
+		}
+	}
+	return result
+}
+
+func (k keeper) SetFirstLockDoublePeg(ctx sdk.Context, denom string, networkDescriptor oracletypes.NetworkDescriptor) {
+	firstLockDoublePeg := k.GetFirstLockDoublePeg(ctx, denom, networkDescriptor)
+	if firstLockDoublePeg {
+		registry := k.GetDenom(ctx, denom)
+		registry.DoublePeggedNetworks = append(registry.DoublePeggedNetworks, networkDescriptor)
+		k.SetToken(ctx, &registry)
+	}
 }
