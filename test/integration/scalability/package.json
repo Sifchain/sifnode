@@ -1,0 +1,26 @@
+{
+  "name": "scalability",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "scripts": {
+    "initAllChains": "zx ./cmd/initAllChains.mjs",
+    "initChain": "zx ./cmd/initChain.mjs",
+    "checkBalance": "zx ./cmd/checkBalance.mjs",
+    "checkTx": "zx ./cmd/checkTx.mjs",
+    "createAccount": "zx ./cmd/createAccount.mjs",
+    "feedAccount": "zx ./cmd/feedAccount.mjs",
+    "ibc": "zx ./cmd/ibc.mjs",
+    "recoverAccount": "zx ./cmd/recoverAccount.mjs",
+    "send": "zx ./cmd/send.mjs",
+    "startAllChains": "zx ./cmd/startAllChains.mjs",
+    "startChain": "zx ./cmd/startChain.mjs",
+    "whitelistedTokens": "zx ./cmd/whitelistedTokens.mjs"
+  },
+  "dependencies": {
+    "@confio/relayer": "^0.3.0",
+    "arg": "^5.0.1",
+    "js-yaml": "^4.1.0",
+    "zx": "^4.2.0"
+  }
+}

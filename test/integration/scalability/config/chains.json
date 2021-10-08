@@ -1,0 +1,144 @@
+{
+  "sifchain": {
+    "binary": "sifnoded",
+    "denom": "rowan",
+    "prefix": "sif",
+    "fees": 100000,
+    "devnet-1": {
+      "node": "https://rpc-devnet.sifchain.finance:443",
+      "chainId": "sifchain-devnet-1"
+    },
+    "testnet-1": {
+      "node": "https://rpc-testnet.sifchain.finance:443",
+      "chainId": "sifchain-testnet-1"
+    },
+    "betanet": {
+      "node": "https://rpc.sifchain.finance:443",
+      "chainId": "sifchain-1"
+    }
+  },
+  "cosmos": {
+    "node": "https://rpc.testnet.cosmos.network:443",
+    "chainId": "cosmoshub-testnet",
+    "binary": "gaiad",
+    "fees": 0,
+    "denom": "uphoton",
+    "prefix": "cosmos",
+    "devnet-1": {
+      "channelId": 101,
+      "counterpartyChannelId": 3
+    },
+    "testnet-1": {
+      "channelId": 11,
+      "counterpartyChannelId": 27
+    },
+    "faucet": "https://faucet.testnet.cosmos.network"
+  },
+  "akash": {
+    "node": "http://147.75.32.35:26657",
+    "chainId": "akash-testnet-6",
+    "binary": "akash",
+    "fees": 5000,
+    "denom": "uakt",
+    "prefix": "akash",
+    "devnet-1": {
+      "channelId": 115,
+      "counterpartyChannelId": 65
+    },
+    "testnet-1": {
+      "channelId": 12,
+      "counterpartyChannelId": 66
+    }
+  },
+  "iris": {
+    "node": "http://35.234.10.84:26657",
+    "chainId": "nyancat-8",
+    "binary": "iris",
+    "fees": 400,
+    "denom": "unyan",
+    "prefix": "iaa",
+    "devnet-1": {
+      "channelId": 117,
+      "counterpartyChannelId": 24
+    },
+    "testnet-1": {
+      "channelId": 14,
+      "counterpartyChannelId": 25,
+      "receiver": {
+        "fees": 150000,
+        "gas": 300000,
+        "denom": "ibc/7EABFE14CD2B6F8B0444A0ED0D7BCB947A81D0B74CE5B571C73DE61DFA261193"
+      }
+    }
+  },
+  "sentinel": {
+    "disabled": true,
+    "node": "http://rpc.sentinel.co:26657",
+    "chainId": "sentinelhub-2",
+    "binary": "sentinelhub",
+    "fees": 20000,
+    "denom": "udvpn",
+    "prefix": "sent",
+    "devnet-1": {
+      "channelId": 79,
+      "counterpartyChannelId": 19
+    },
+    "testnet-1": {
+      "channelId": 39,
+      "counterpartyChannelId": 2
+    }
+  },
+  "osmosis": {
+    "disabled": true,
+    "node": "http://osmosis-rpc.osmosis-node:26657",
+    "chainId": "osmosis-1",
+    "binary": "osmosis",
+    "fees": 0,
+    "denom": "uosmo",
+    "devnet-1": {
+      "channelId": 74,
+      "counterpartyChannelId": 22
+    },
+    "testnet-1": {
+      "channelId": 74,
+      "counterpartyChannelId": 22
+    }
+  },
+  "persistence": {
+    "node": "https://persistence.testnet.rpc.audit.one:443",
+    "chainId": "test-core-1",
+    "binary": "persistenceCore",
+    "fees": 100000000000,
+    "denom": "uxprt",
+    "prefix": "persistence",
+    "devnet-1": {
+      "channelId": 120,
+      "counterpartyChannelId": 25
+    },
+    "testnet-1": {
+      "channelId": 15,
+      "counterpartyChannelId": 24,
+      "receiver": {
+        "fees": 150000,
+        "gas": 300000,
+        "denom": "ibc/2915CCA550DA6840CB2D4F5BC95A067A7924A767B2EBEB3227DD66124AA8A626"
+      }
+    }
+  },
+  "terra": {
+    "node": "http://3.34.163.215:26657",
+    "chainId": "bombay-10",
+    "binary": "terrad",
+    "fees": 0,
+    "denom": "uluna",
+    "prefix": "terra",
+    "devnet-1": {
+      "channelId": 123,
+      "counterpartyChannelId": 3
+    },
+    "testnet-1": {
+      "channelId": 29,
+      "counterpartyChannelId": 4
+    }
+  }
+}
