@@ -1,1 +1,0 @@
-{"entries":[{"is_whitelisted":true,"decimals":"10","denom":"xeth","base_denom":"xeth","path":"","ibc_channel_id":"","ibc_counterparty_channel_id":"","display_name":"ETH","display_symbol":"","network":"","address":"","external_symbol":"ETH","transfer_limit":"","permissions":["IBCIMPORT"],"unit_denom":"ceth","ibc_counterparty_denom":"","ibc_counterparty_chain_id":""}]}

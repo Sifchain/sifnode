@@ -1,0 +1,76 @@
+{
+  "array": [
+    {
+      "address": "0x05079687d35b93538cbd59fe5596380cae9054a9",
+      "name": "BitSong",
+      "symbol": "BTSG",
+      "decimals": 18,
+      "network": "ethereum",
+      "homeNetwork": "ethereum",
+      "imageUrl": "https://static.alchemyapi.io/images/assets/8905.png"
+    },
+    {
+      "address": "0x6c28aef8977c9b773996d0e8376d2ee379446f2f",
+      "name": "Quickswap",
+      "symbol": "QUICK",
+      "decimals": 18,
+      "network": "ethereum",
+      "homeNetwork": "ethereum",
+      "imageUrl": "https://static.alchemyapi.io/images/assets/8206.png"
+    },
+    {
+      "address": "0x9695e0114e12c0d3a3636fab5a18e6b737529023",
+      "name": "DFYN Token",
+      "symbol": "DFYN",
+      "decimals": 18,
+      "network": "ethereum",
+      "homeNetwork": "ethereum",
+      "imageUrl": "https://static.alchemyapi.io/images/assets/9511.png"
+    },
+    {
+      "address": "0x5a98fcbea516cf06857215779fd812ca3bef1b32",
+      "name": "Lido DAO Token",
+      "symbol": "LDO",
+      "decimals": 18,
+      "network": "ethereum",
+      "homeNetwork": "ethereum",
+      "imageUrl": "https://static.alchemyapi.io/images/assets/8000.png"
+    },
+    {
+      "address": "0xe76c6c83af64e4c60245d8c7de953df673a7a33d",
+      "name": "Rail",
+      "symbol": "RAIL",
+      "decimals": 18,
+      "network": "ethereum",
+      "homeNetwork": "ethereum",
+      "imageUrl": "https://static.alchemyapi.io/images/assets/10854.png"
+    },
+    {
+      "address": "0x57b946008913b82e4df85f501cbaed910e58d26c",
+      "name": "Marlin POND",
+      "symbol": "POND",
+      "decimals": 18,
+      "network": "ethereum",
+      "homeNetwork": "ethereum",
+      "imageUrl": "https://static.alchemyapi.io/images/assets/7497.png"
+    },
+    {
+      "address": "0x2701E1D67219a49F5691C92468Fe8D8ADc03e609",
+      "name": "DinoSwap",
+      "symbol": "DINO",
+      "decimals": 18,
+      "network": "ethereum",
+      "homeNetwork": "ethereum",
+      "imageUrl": null
+    },
+    {
+      "address": "0x249e38ea4102d0cf8264d3701f1a0e39c4f2dc3b",
+      "name": "THE TRUTH",
+      "symbol": "UFO",
+      "decimals": 18,
+      "network": "ethereum",
+      "homeNetwork": "ethereum",
+      "imageUrl": "https://static.alchemyapi.io/images/assets/10729.png"
+    }
+  ]
+}
