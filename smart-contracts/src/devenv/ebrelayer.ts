@@ -6,6 +6,7 @@ import notifier from 'node-notifier';
 import * as path from "path"
 import { GolangResults } from "./golangBuilder";
 import * as fs from "fs";
+import {spawn} from "child_process";
 
 export interface EbrelayerArguments {
   readonly validatorValues: ValidatorValues,
@@ -73,7 +74,6 @@ export class WitnessRunner extends ShellCommand<EbrelayerResults> {
       this.relayerdbPath,
       "--home",
       this.args.sifnodeAccount.homeDir,
-      this.relayerdbPath,
       "--log_format",
       "json"
     ]]
