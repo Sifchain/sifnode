@@ -1,5 +1,3 @@
-// TODO: test with less coins to see it fail in the middle of the script (should save the file)
-
 require("dotenv").config();
 
 const fs = require("fs");
