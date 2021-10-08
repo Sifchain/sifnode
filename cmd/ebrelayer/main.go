@@ -28,7 +28,6 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
-	"github.com/syndtr/goleveldb/leveldb"
 	"go.uber.org/zap"
 )
 
@@ -142,30 +141,12 @@ func RunInitRelayerCmd(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
-	log.Printf("got result from GetClientQueryContext: %v", cliContext)
 
 	// Load the validator's Ethereum private key from environment variables
 	privateKey, err := txs.LoadPrivateKey()
 	if err != nil {
 		return errors.Errorf("invalid [ETHEREUM_PRIVATE_KEY] environment variable")
 	}
-
-	// TODO peggy2merge
-
-	levelDbFile, err := cmd.Flags().GetString(ebrelayertypes.FlagRelayerDbPath)
-	if err != nil {
-		return err
-	}
-	// Open the level db
-	db, err := leveldb.OpenFile(levelDbFile, nil)
-	if err != nil {
-		log.Fatal("Error opening leveldb: ", err)
-	}
-	defer func() {
-		if err := db.Close(); err != nil {
-			log.Println("db.Close filed: ", err.Error())
-		}
-	}()
 
 	nodeURL, err := cmd.Flags().GetString(flags.FlagNode)
 	if err != nil {
@@ -211,6 +192,7 @@ func RunInitRelayerCmd(cmd *cobra.Command, args []string) error {
 
 	logConfig := zap.NewDevelopmentConfig()
 	logConfig.Sampling = nil
+	logConfig.Encoding = "json"
 	logger, err := logConfig.Build()
 
 	if err != nil {
@@ -238,7 +220,6 @@ func RunInitRelayerCmd(cmd *cobra.Command, args []string) error {
 		web3Provider,
 		contractAddress,
 		nil,
-		db,
 		sugaredLogger,
 	)
 
@@ -248,7 +229,6 @@ func RunInitRelayerCmd(cmd *cobra.Command, args []string) error {
 		tendermintNode,
 		web3Provider,
 		contractAddress,
-		db,
 		cliContext,
 		validatorMoniker,
 		sugaredLogger)
@@ -270,29 +250,12 @@ func RunInitWitnessCmd(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
-	log.Printf("got result from GetClientQueryContext: %v", cliContext)
 
 	// Load the validator's Ethereum private key from environment variables
 	privateKey, err := txs.LoadPrivateKey()
 	if err != nil {
 		return errors.Errorf("invalid [ETHEREUM_PRIVATE_KEY] environment variable")
 	}
-
-	// Open the level db
-	// TODO check if still use the level db in peggy2
-	levelDbFile, err := cmd.Flags().GetString(ebrelayertypes.FlagRelayerDbPath)
-	if err != nil {
-		return err
-	}
-	db, err := leveldb.OpenFile(levelDbFile, nil)
-	if err != nil {
-		log.Fatal("Error opening leveldb: ", err)
-	}
-	defer func() {
-		if err := db.Close(); err != nil {
-			log.Println("db.Close filed: ", err.Error())
-		}
-	}()
 
 	nodeURL, err := cmd.Flags().GetString(flags.FlagNode)
 	if err != nil {
@@ -337,6 +300,7 @@ func RunInitWitnessCmd(cmd *cobra.Command, args []string) error {
 	validatorMoniker := args[4]
 
 	logConfig := zap.NewDevelopmentConfig()
+	logConfig.Encoding = "json"
 	logConfig.Sampling = nil
 	logger, err := logConfig.Build()
 
@@ -365,7 +329,6 @@ func RunInitWitnessCmd(cmd *cobra.Command, args []string) error {
 		web3Provider,
 		contractAddress,
 		nil,
-		db,
 		sugaredLogger,
 	)
 
@@ -375,7 +338,6 @@ func RunInitWitnessCmd(cmd *cobra.Command, args []string) error {
 		tendermintNode,
 		web3Provider,
 		contractAddress,
-		db,
 		cliContext,
 		validatorMoniker,
 		sugaredLogger)
@@ -393,10 +355,10 @@ func RunInitWitnessCmd(cmd *cobra.Command, args []string) error {
 func replayEthereumCmd() *cobra.Command {
 	//nolint:lll
 	replayEthereumCmd := &cobra.Command{
-		Use:     "replayEthereum [tendermintNode] [web3Provider] [bridgeRegistryContractAddress] [validatorMoniker] [fromBlock] [toBlock] [sifFromBlock] [sifEndBlock]",
+		Use:     "replayEthereum [tendermintNode] [web3Provider] [bridgeRegistryContractAddress] [validatorMoniker]",
 		Short:   "replay missed ethereum events",
-		Args:    cobra.ExactArgs(8),
-		Example: "replayEthereum tcp://localhost:26657 ws://localhost:7545/ 0x30753E4A8aad7F8597332E813735Def5dD395028 validator 100 200 100 200 --chain-id=peggy",
+		Args:    cobra.ExactArgs(4),
+		Example: "replayEthereum tcp://localhost:26657 ws://localhost:7545/ 0x30753E4A8aad7F8597332E813735Def5dD395028 validator --chain-id=peggy",
 		RunE:    RunReplayEthereumCmd,
 	}
 

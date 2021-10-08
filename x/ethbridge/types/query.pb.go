@@ -325,24 +325,24 @@ func (m *ProphciesCompletedQueryResponse) GetProphecyInfo() []*types.ProphecyInf
 	return nil
 }
 
-// QueryLockBurnNonceRequest payload for LockBurnNonce rpc query
-type QueryLockBurnNonceRequest struct {
+// QueryEthereumLockBurnNonceRequest payload for EthereumLockBurnNonce rpc query
+type QueryEthereumLockBurnNonceRequest struct {
 	NetworkDescriptor types.NetworkDescriptor `protobuf:"varint,1,opt,name=network_descriptor,json=networkDescriptor,proto3,enum=sifnode.oracle.v1.NetworkDescriptor" json:"network_descriptor,omitempty"`
 	RelayerValAddress string                  `protobuf:"bytes,2,opt,name=relayer_val_address,json=relayerValAddress,proto3" json:"relayer_val_address,omitempty"`
 }
 
-func (m *QueryLockBurnNonceRequest) Reset()         { *m = QueryLockBurnNonceRequest{} }
-func (m *QueryLockBurnNonceRequest) String() string { return proto.CompactTextString(m) }
-func (*QueryLockBurnNonceRequest) ProtoMessage()    {}
-func (*QueryLockBurnNonceRequest) Descriptor() ([]byte, []int) {
+func (m *QueryEthereumLockBurnNonceRequest) Reset()         { *m = QueryEthereumLockBurnNonceRequest{} }
+func (m *QueryEthereumLockBurnNonceRequest) String() string { return proto.CompactTextString(m) }
+func (*QueryEthereumLockBurnNonceRequest) ProtoMessage()    {}
+func (*QueryEthereumLockBurnNonceRequest) Descriptor() ([]byte, []int) {
 	return fileDescriptor_7077edcf9f792b78, []int{6}
 }
-func (m *QueryLockBurnNonceRequest) XXX_Unmarshal(b []byte) error {
+func (m *QueryEthereumLockBurnNonceRequest) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *QueryLockBurnNonceRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *QueryEthereumLockBurnNonceRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_QueryLockBurnNonceRequest.Marshal(b, m, deterministic)
+		return xxx_messageInfo_QueryEthereumLockBurnNonceRequest.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -352,49 +352,49 @@ func (m *QueryLockBurnNonceRequest) XXX_Marshal(b []byte, deterministic bool) ([
 		return b[:n], nil
 	}
 }
-func (m *QueryLockBurnNonceRequest) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_QueryLockBurnNonceRequest.Merge(m, src)
+func (m *QueryEthereumLockBurnNonceRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryEthereumLockBurnNonceRequest.Merge(m, src)
 }
-func (m *QueryLockBurnNonceRequest) XXX_Size() int {
+func (m *QueryEthereumLockBurnNonceRequest) XXX_Size() int {
 	return m.Size()
 }
-func (m *QueryLockBurnNonceRequest) XXX_DiscardUnknown() {
-	xxx_messageInfo_QueryLockBurnNonceRequest.DiscardUnknown(m)
+func (m *QueryEthereumLockBurnNonceRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryEthereumLockBurnNonceRequest.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_QueryLockBurnNonceRequest proto.InternalMessageInfo
+var xxx_messageInfo_QueryEthereumLockBurnNonceRequest proto.InternalMessageInfo
 
-func (m *QueryLockBurnNonceRequest) GetNetworkDescriptor() types.NetworkDescriptor {
+func (m *QueryEthereumLockBurnNonceRequest) GetNetworkDescriptor() types.NetworkDescriptor {
 	if m != nil {
 		return m.NetworkDescriptor
 	}
 	return types.NetworkDescriptor_NETWORK_DESCRIPTOR_UNSPECIFIED
 }
 
-func (m *QueryLockBurnNonceRequest) GetRelayerValAddress() string {
+func (m *QueryEthereumLockBurnNonceRequest) GetRelayerValAddress() string {
 	if m != nil {
 		return m.RelayerValAddress
 	}
 	return ""
 }
 
-// QueryLockBurnNonceResponse return LockBurnNonce
-type QueryLockBurnNonceResponse struct {
-	LockBurnNonce uint64 `protobuf:"varint,1,opt,name=lock_burn_nonce,json=lockBurnNonce,proto3" json:"lock_burn_nonce,omitempty"`
+// QueryEthereumLockBurnNonceResponse return EthereumLockBurnNonce
+type QueryEthereumLockBurnNonceResponse struct {
+	EthereumLockBurnNonce uint64 `protobuf:"varint,1,opt,name=ethereum_lock_burn_nonce,json=ethereumLockBurnNonce,proto3" json:"ethereum_lock_burn_nonce,omitempty"`
 }
 
-func (m *QueryLockBurnNonceResponse) Reset()         { *m = QueryLockBurnNonceResponse{} }
-func (m *QueryLockBurnNonceResponse) String() string { return proto.CompactTextString(m) }
-func (*QueryLockBurnNonceResponse) ProtoMessage()    {}
-func (*QueryLockBurnNonceResponse) Descriptor() ([]byte, []int) {
+func (m *QueryEthereumLockBurnNonceResponse) Reset()         { *m = QueryEthereumLockBurnNonceResponse{} }
+func (m *QueryEthereumLockBurnNonceResponse) String() string { return proto.CompactTextString(m) }
+func (*QueryEthereumLockBurnNonceResponse) ProtoMessage()    {}
+func (*QueryEthereumLockBurnNonceResponse) Descriptor() ([]byte, []int) {
 	return fileDescriptor_7077edcf9f792b78, []int{7}
 }
-func (m *QueryLockBurnNonceResponse) XXX_Unmarshal(b []byte) error {
+func (m *QueryEthereumLockBurnNonceResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *QueryLockBurnNonceResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *QueryEthereumLockBurnNonceResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_QueryLockBurnNonceResponse.Marshal(b, m, deterministic)
+		return xxx_messageInfo_QueryEthereumLockBurnNonceResponse.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -404,21 +404,218 @@ func (m *QueryLockBurnNonceResponse) XXX_Marshal(b []byte, deterministic bool) (
 		return b[:n], nil
 	}
 }
-func (m *QueryLockBurnNonceResponse) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_QueryLockBurnNonceResponse.Merge(m, src)
+func (m *QueryEthereumLockBurnNonceResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryEthereumLockBurnNonceResponse.Merge(m, src)
 }
-func (m *QueryLockBurnNonceResponse) XXX_Size() int {
+func (m *QueryEthereumLockBurnNonceResponse) XXX_Size() int {
 	return m.Size()
 }
-func (m *QueryLockBurnNonceResponse) XXX_DiscardUnknown() {
-	xxx_messageInfo_QueryLockBurnNonceResponse.DiscardUnknown(m)
+func (m *QueryEthereumLockBurnNonceResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryEthereumLockBurnNonceResponse.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_QueryLockBurnNonceResponse proto.InternalMessageInfo
+var xxx_messageInfo_QueryEthereumLockBurnNonceResponse proto.InternalMessageInfo
 
-func (m *QueryLockBurnNonceResponse) GetLockBurnNonce() uint64 {
+func (m *QueryEthereumLockBurnNonceResponse) GetEthereumLockBurnNonce() uint64 {
 	if m != nil {
-		return m.LockBurnNonce
+		return m.EthereumLockBurnNonce
+	}
+	return 0
+}
+
+// QueryWitnessLockBurnNonceRequest payload for WitnessLockBurnNonce rpc query
+type QueryWitnessLockBurnNonceRequest struct {
+	NetworkDescriptor types.NetworkDescriptor `protobuf:"varint,1,opt,name=network_descriptor,json=networkDescriptor,proto3,enum=sifnode.oracle.v1.NetworkDescriptor" json:"network_descriptor,omitempty"`
+	RelayerValAddress string                  `protobuf:"bytes,2,opt,name=relayer_val_address,json=relayerValAddress,proto3" json:"relayer_val_address,omitempty"`
+}
+
+func (m *QueryWitnessLockBurnNonceRequest) Reset()         { *m = QueryWitnessLockBurnNonceRequest{} }
+func (m *QueryWitnessLockBurnNonceRequest) String() string { return proto.CompactTextString(m) }
+func (*QueryWitnessLockBurnNonceRequest) ProtoMessage()    {}
+func (*QueryWitnessLockBurnNonceRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_7077edcf9f792b78, []int{8}
+}
+func (m *QueryWitnessLockBurnNonceRequest) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *QueryWitnessLockBurnNonceRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_QueryWitnessLockBurnNonceRequest.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *QueryWitnessLockBurnNonceRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryWitnessLockBurnNonceRequest.Merge(m, src)
+}
+func (m *QueryWitnessLockBurnNonceRequest) XXX_Size() int {
+	return m.Size()
+}
+func (m *QueryWitnessLockBurnNonceRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryWitnessLockBurnNonceRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_QueryWitnessLockBurnNonceRequest proto.InternalMessageInfo
+
+func (m *QueryWitnessLockBurnNonceRequest) GetNetworkDescriptor() types.NetworkDescriptor {
+	if m != nil {
+		return m.NetworkDescriptor
+	}
+	return types.NetworkDescriptor_NETWORK_DESCRIPTOR_UNSPECIFIED
+}
+
+func (m *QueryWitnessLockBurnNonceRequest) GetRelayerValAddress() string {
+	if m != nil {
+		return m.RelayerValAddress
+	}
+	return ""
+}
+
+// QueryWitnessLockBurnNonceResponse return WitnessLockBurnNonce
+type QueryWitnessLockBurnNonceResponse struct {
+	WitnessLockBurnNonce uint64 `protobuf:"varint,1,opt,name=witness_lock_burn_nonce,json=witnessLockBurnNonce,proto3" json:"witness_lock_burn_nonce,omitempty"`
+}
+
+func (m *QueryWitnessLockBurnNonceResponse) Reset()         { *m = QueryWitnessLockBurnNonceResponse{} }
+func (m *QueryWitnessLockBurnNonceResponse) String() string { return proto.CompactTextString(m) }
+func (*QueryWitnessLockBurnNonceResponse) ProtoMessage()    {}
+func (*QueryWitnessLockBurnNonceResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_7077edcf9f792b78, []int{9}
+}
+func (m *QueryWitnessLockBurnNonceResponse) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *QueryWitnessLockBurnNonceResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_QueryWitnessLockBurnNonceResponse.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *QueryWitnessLockBurnNonceResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryWitnessLockBurnNonceResponse.Merge(m, src)
+}
+func (m *QueryWitnessLockBurnNonceResponse) XXX_Size() int {
+	return m.Size()
+}
+func (m *QueryWitnessLockBurnNonceResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryWitnessLockBurnNonceResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_QueryWitnessLockBurnNonceResponse proto.InternalMessageInfo
+
+func (m *QueryWitnessLockBurnNonceResponse) GetWitnessLockBurnNonce() uint64 {
+	if m != nil {
+		return m.WitnessLockBurnNonce
+	}
+	return 0
+}
+
+// QueryGlocalNonceBlockNumberRequest payload for GlocalNonceBlockNumber rpc
+// query
+type QueryGlocalNonceBlockNumberRequest struct {
+	NetworkDescriptor types.NetworkDescriptor `protobuf:"varint,1,opt,name=network_descriptor,json=networkDescriptor,proto3,enum=sifnode.oracle.v1.NetworkDescriptor" json:"network_descriptor,omitempty"`
+	GlobalNonce       uint64                  `protobuf:"varint,2,opt,name=global_nonce,json=globalNonce,proto3" json:"global_nonce,omitempty"`
+}
+
+func (m *QueryGlocalNonceBlockNumberRequest) Reset()         { *m = QueryGlocalNonceBlockNumberRequest{} }
+func (m *QueryGlocalNonceBlockNumberRequest) String() string { return proto.CompactTextString(m) }
+func (*QueryGlocalNonceBlockNumberRequest) ProtoMessage()    {}
+func (*QueryGlocalNonceBlockNumberRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_7077edcf9f792b78, []int{10}
+}
+func (m *QueryGlocalNonceBlockNumberRequest) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *QueryGlocalNonceBlockNumberRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_QueryGlocalNonceBlockNumberRequest.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *QueryGlocalNonceBlockNumberRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryGlocalNonceBlockNumberRequest.Merge(m, src)
+}
+func (m *QueryGlocalNonceBlockNumberRequest) XXX_Size() int {
+	return m.Size()
+}
+func (m *QueryGlocalNonceBlockNumberRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryGlocalNonceBlockNumberRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_QueryGlocalNonceBlockNumberRequest proto.InternalMessageInfo
+
+func (m *QueryGlocalNonceBlockNumberRequest) GetNetworkDescriptor() types.NetworkDescriptor {
+	if m != nil {
+		return m.NetworkDescriptor
+	}
+	return types.NetworkDescriptor_NETWORK_DESCRIPTOR_UNSPECIFIED
+}
+
+func (m *QueryGlocalNonceBlockNumberRequest) GetGlobalNonce() uint64 {
+	if m != nil {
+		return m.GlobalNonce
+	}
+	return 0
+}
+
+// QueryGlocalNonceBlockNumberResponse return GlocalNonceBlockNumber
+type QueryGlocalNonceBlockNumberResponse struct {
+	BlockNumber uint64 `protobuf:"varint,1,opt,name=block_number,json=blockNumber,proto3" json:"block_number,omitempty"`
+}
+
+func (m *QueryGlocalNonceBlockNumberResponse) Reset()         { *m = QueryGlocalNonceBlockNumberResponse{} }
+func (m *QueryGlocalNonceBlockNumberResponse) String() string { return proto.CompactTextString(m) }
+func (*QueryGlocalNonceBlockNumberResponse) ProtoMessage()    {}
+func (*QueryGlocalNonceBlockNumberResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_7077edcf9f792b78, []int{11}
+}
+func (m *QueryGlocalNonceBlockNumberResponse) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *QueryGlocalNonceBlockNumberResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_QueryGlocalNonceBlockNumberResponse.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *QueryGlocalNonceBlockNumberResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryGlocalNonceBlockNumberResponse.Merge(m, src)
+}
+func (m *QueryGlocalNonceBlockNumberResponse) XXX_Size() int {
+	return m.Size()
+}
+func (m *QueryGlocalNonceBlockNumberResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryGlocalNonceBlockNumberResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_QueryGlocalNonceBlockNumberResponse proto.InternalMessageInfo
+
+func (m *QueryGlocalNonceBlockNumberResponse) GetBlockNumber() uint64 {
+	if m != nil {
+		return m.BlockNumber
 	}
 	return 0
 }
@@ -430,55 +627,67 @@ func init() {
 	proto.RegisterType((*QueryCrosschainFeeConfigResponse)(nil), "sifnode.ethbridge.v1.QueryCrosschainFeeConfigResponse")
 	proto.RegisterType((*ProphciesCompletedQueryRequest)(nil), "sifnode.ethbridge.v1.ProphciesCompletedQueryRequest")
 	proto.RegisterType((*ProphciesCompletedQueryResponse)(nil), "sifnode.ethbridge.v1.ProphciesCompletedQueryResponse")
-	proto.RegisterType((*QueryLockBurnNonceRequest)(nil), "sifnode.ethbridge.v1.QueryLockBurnNonceRequest")
-	proto.RegisterType((*QueryLockBurnNonceResponse)(nil), "sifnode.ethbridge.v1.QueryLockBurnNonceResponse")
+	proto.RegisterType((*QueryEthereumLockBurnNonceRequest)(nil), "sifnode.ethbridge.v1.QueryEthereumLockBurnNonceRequest")
+	proto.RegisterType((*QueryEthereumLockBurnNonceResponse)(nil), "sifnode.ethbridge.v1.QueryEthereumLockBurnNonceResponse")
+	proto.RegisterType((*QueryWitnessLockBurnNonceRequest)(nil), "sifnode.ethbridge.v1.QueryWitnessLockBurnNonceRequest")
+	proto.RegisterType((*QueryWitnessLockBurnNonceResponse)(nil), "sifnode.ethbridge.v1.QueryWitnessLockBurnNonceResponse")
+	proto.RegisterType((*QueryGlocalNonceBlockNumberRequest)(nil), "sifnode.ethbridge.v1.QueryGlocalNonceBlockNumberRequest")
+	proto.RegisterType((*QueryGlocalNonceBlockNumberResponse)(nil), "sifnode.ethbridge.v1.QueryGlocalNonceBlockNumberResponse")
 }
 
 func init() { proto.RegisterFile("sifnode/ethbridge/v1/query.proto", fileDescriptor_7077edcf9f792b78) }
 
 var fileDescriptor_7077edcf9f792b78 = []byte{
-	// 652 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xb4, 0x55, 0xbf, 0x6f, 0xd3, 0x40,
-	0x14, 0x8e, 0x5b, 0xa8, 0xd4, 0x4b, 0x7f, 0xd0, 0x6b, 0x11, 0xc1, 0x52, 0x9d, 0x60, 0xa1, 0x2a,
-	0x20, 0xd5, 0xa6, 0x81, 0x32, 0xb0, 0xd1, 0x14, 0x50, 0x25, 0x54, 0x81, 0x83, 0x3a, 0x74, 0xb1,
-	0x9c, 0xf3, 0x8b, 0x63, 0xd5, 0xbd, 0x73, 0xef, 0x2e, 0x6e, 0xb3, 0x30, 0x32, 0x33, 0xc2, 0x80,
-	0xc4, 0x9f, 0xc3, 0xd8, 0x91, 0x11, 0xb5, 0xff, 0x03, 0x33, 0xca, 0xd9, 0x0e, 0x29, 0x71, 0x4a,
-	0x3b, 0x74, 0x4b, 0xde, 0xfb, 0xde, 0xfb, 0xbe, 0xfb, 0xee, 0x3d, 0x1f, 0xaa, 0x89, 0xb0, 0x43,
-	0x99, 0x0f, 0x36, 0xc8, 0x6e, 0x9b, 0x87, 0x7e, 0x00, 0x76, 0xb2, 0x61, 0x1f, 0xf5, 0x80, 0xf7,
-	0xad, 0x98, 0x33, 0xc9, 0xf0, 0x4a, 0x86, 0xb0, 0x86, 0x08, 0x2b, 0xd9, 0xd0, 0x57, 0x02, 0x16,
-	0x30, 0x05, 0xb0, 0x07, 0xbf, 0x52, 0xac, 0x5e, 0xdc, 0x4d, 0xf6, 0x63, 0x10, 0x19, 0x62, 0x35,
-	0x47, 0x30, 0xee, 0x91, 0x68, 0x2c, 0xfd, 0x78, 0x3c, 0x4d, 0x41, 0x1e, 0x33, 0x7e, 0xe0, 0xfa,
-	0x20, 0x08, 0x0f, 0x63, 0xc9, 0x78, 0x8a, 0x35, 0x5f, 0xa0, 0x7b, 0xef, 0x07, 0x3a, 0x5f, 0xc9,
-	0xee, 0x3b, 0xce, 0xe2, 0x2e, 0x90, 0xbe, 0x03, 0x47, 0x3d, 0x10, 0x12, 0x57, 0x51, 0x39, 0xce,
-	0x42, 0x6e, 0xe8, 0x57, 0xb4, 0x9a, 0x56, 0x9f, 0x73, 0x50, 0x1e, 0xda, 0xf1, 0xcd, 0x6f, 0x1a,
-	0xaa, 0x8c, 0x17, 0x8b, 0x98, 0x51, 0x01, 0xff, 0xad, 0xc6, 0x9b, 0x68, 0x46, 0x48, 0x4f, 0xf6,
-	0x44, 0x65, 0xaa, 0xa6, 0xd5, 0x17, 0x1a, 0xab, 0x56, 0xee, 0x51, 0x2a, 0xdb, 0x4a, 0x36, 0xac,
-	0x96, 0x02, 0x7c, 0x80, 0x13, 0xe9, 0x64, 0x60, 0xfc, 0x08, 0xdd, 0x21, 0x91, 0x17, 0x1e, 0xba,
-	0x89, 0x17, 0x85, 0xbe, 0x27, 0x19, 0x17, 0x95, 0xe9, 0xda, 0x74, 0x7d, 0xd6, 0x59, 0x54, 0xf1,
-	0xbd, 0x61, 0xd8, 0x4c, 0x50, 0x55, 0xc9, 0x6b, 0x72, 0x26, 0x04, 0xe9, 0x7a, 0x21, 0x7d, 0x0d,
-	0xd0, 0x64, 0xb4, 0x13, 0x06, 0xf9, 0x19, 0x5b, 0x08, 0x8f, 0x5b, 0xa3, 0xc4, 0x2e, 0x34, 0x1e,
-	0x16, 0x08, 0xda, 0x4d, 0xc1, 0xdb, 0x43, 0xac, 0xb3, 0x44, 0xff, 0x0d, 0x99, 0x1f, 0x51, 0x6d,
-	0x32, 0x6f, 0x66, 0xcf, 0x3e, 0xba, 0x4b, 0x86, 0x69, 0xb7, 0x03, 0xe0, 0x12, 0x05, 0x50, 0xdc,
-	0xe5, 0xc6, 0x5a, 0x01, 0xb7, 0x6a, 0xd7, 0xbc, 0xd8, 0x6e, 0x99, 0x8c, 0x73, 0x98, 0x5f, 0x34,
-	0x64, 0xa8, 0xfb, 0x20, 0x21, 0x88, 0x26, 0x3b, 0x8c, 0x23, 0x90, 0xe0, 0x2b, 0x49, 0x37, 0x79,
-	0x6e, 0xfc, 0x00, 0xcd, 0x05, 0x11, 0x6b, 0x7b, 0x91, 0x4b, 0x19, 0x25, 0xa0, 0xee, 0xf5, 0x96,
-	0x53, 0x4e, 0x63, 0xbb, 0x83, 0x90, 0x19, 0xa0, 0xea, 0x44, 0x65, 0x99, 0x33, 0xdb, 0x68, 0xfe,
-	0xef, 0xe0, 0xd0, 0x0e, 0xab, 0x68, 0xb5, 0xe9, 0x7a, 0xb9, 0x51, 0x2d, 0x50, 0x95, 0x0f, 0xdd,
-	0x0e, 0xed, 0x30, 0x67, 0x2e, 0x1e, 0xf9, 0x67, 0x7e, 0xd7, 0xd0, 0x7d, 0xd5, 0xf7, 0x2d, 0x23,
-	0x07, 0x5b, 0x3d, 0x4e, 0x15, 0xff, 0x8d, 0x1e, 0xdf, 0x42, 0xcb, 0x1c, 0x22, 0xaf, 0x0f, 0x7c,
-	0x30, 0x9b, 0xae, 0xe7, 0xfb, 0x1c, 0x44, 0x3a, 0xdd, 0xb3, 0xce, 0x52, 0x96, 0xda, 0xf3, 0xa2,
-	0x97, 0x69, 0xc2, 0xdc, 0x46, 0x7a, 0x91, 0xc2, 0xcc, 0x86, 0x35, 0xb4, 0x18, 0x31, 0x72, 0xe0,
-	0xb6, 0x7b, 0x9c, 0x66, 0x7e, 0x6a, 0xca, 0xcf, 0xf9, 0x68, 0x14, 0xdf, 0xf8, 0x3d, 0x85, 0x6e,
-	0xab, 0x36, 0x98, 0xa2, 0xf2, 0xc8, 0x22, 0xe2, 0x75, 0xab, 0xe8, 0x9b, 0x63, 0x4d, 0xd8, 0x76,
-	0xdd, 0xba, 0x2a, 0x3c, 0xd5, 0x67, 0x96, 0xf0, 0x27, 0x0d, 0x2d, 0x17, 0x8c, 0x38, 0xde, 0xbc,
-	0xa4, 0xd3, 0xe4, 0x55, 0xd4, 0x9f, 0x5f, 0xb7, 0x6c, 0x28, 0x44, 0xa2, 0xf9, 0x0b, 0x1e, 0x62,
-	0xfb, 0x92, 0x56, 0x45, 0xf3, 0xa0, 0x3f, 0xb9, 0x7a, 0x41, 0xce, 0xda, 0xf8, 0x3a, 0x79, 0xcb,
-	0x5a, 0xc0, 0x93, 0x90, 0x00, 0x3e, 0x46, 0x33, 0x2d, 0xf0, 0x38, 0xe9, 0xe2, 0x67, 0xc5, 0x04,
-	0x97, 0x6f, 0xa9, 0xbe, 0x79, 0xcd, 0xaa, 0x5c, 0xdb, 0xd6, 0x9b, 0x1f, 0x67, 0x86, 0x76, 0x7a,
-	0x66, 0x68, 0xbf, 0xce, 0x0c, 0xed, 0xf3, 0xb9, 0x51, 0x3a, 0x3d, 0x37, 0x4a, 0x3f, 0xcf, 0x8d,
-	0xd2, 0xfe, 0x7a, 0x10, 0xca, 0x6e, 0xaf, 0x6d, 0x11, 0x76, 0x68, 0xb7, 0xc2, 0x8e, 0xf2, 0xd4,
-	0xce, 0xdf, 0x8b, 0x93, 0x91, 0x27, 0x47, 0x3d, 0x28, 0xed, 0x19, 0xf5, 0x4a, 0x3c, 0xfd, 0x13,
-	0x00, 0x00, 0xff, 0xff, 0x01, 0x9f, 0x4b, 0xca, 0xe2, 0x06, 0x00, 0x00,
+	// 784 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xcc, 0x56, 0xcf, 0x6f, 0xd3, 0x48,
+	0x14, 0xce, 0x6c, 0xb7, 0x95, 0x3a, 0xc9, 0x76, 0xb7, 0x6e, 0xba, 0x8d, 0x2c, 0x35, 0x49, 0xbd,
+	0xab, 0x55, 0x76, 0xa5, 0x3a, 0x6a, 0x76, 0xb3, 0x05, 0x6e, 0x34, 0x85, 0x52, 0x09, 0x55, 0xe0,
+	0xa0, 0x22, 0x55, 0x42, 0x96, 0x3d, 0x7e, 0x49, 0xac, 0x3a, 0x1e, 0x77, 0x6c, 0x27, 0xcd, 0x85,
+	0x23, 0x12, 0x12, 0x12, 0x1c, 0x41, 0x82, 0x33, 0x5c, 0xf8, 0x3f, 0x38, 0xf6, 0xc8, 0x11, 0xb5,
+	0xff, 0x08, 0xca, 0x78, 0x9c, 0x16, 0xe2, 0x18, 0x82, 0x54, 0xc1, 0x2d, 0x79, 0xef, 0x7b, 0x6f,
+	0xbe, 0xf7, 0xf9, 0x9b, 0x1f, 0xb8, 0xec, 0xdb, 0x2d, 0x97, 0x5a, 0x50, 0x85, 0xa0, 0x63, 0x32,
+	0xdb, 0x6a, 0x43, 0xb5, 0xb7, 0x51, 0x3d, 0x0a, 0x81, 0x0d, 0x54, 0x8f, 0xd1, 0x80, 0x4a, 0x79,
+	0x81, 0x50, 0x47, 0x08, 0xb5, 0xb7, 0x21, 0xe7, 0xdb, 0xb4, 0x4d, 0x39, 0xa0, 0x3a, 0xfc, 0x15,
+	0x61, 0xe5, 0xe4, 0x6e, 0xc1, 0xc0, 0x03, 0x5f, 0x20, 0x56, 0x63, 0x04, 0x65, 0x06, 0x71, 0xc6,
+	0xd2, 0xff, 0x8c, 0xa7, 0x5d, 0x08, 0xfa, 0x94, 0x1d, 0xea, 0x16, 0xf8, 0x84, 0xd9, 0x5e, 0x40,
+	0x59, 0x84, 0x55, 0xae, 0xe1, 0x95, 0xbb, 0x43, 0x9e, 0x37, 0x82, 0xce, 0x1d, 0x46, 0xbd, 0x0e,
+	0x90, 0x81, 0x06, 0x47, 0x21, 0xf8, 0x81, 0x54, 0xc2, 0x59, 0x4f, 0x84, 0x74, 0xdb, 0x2a, 0xa0,
+	0x32, 0xaa, 0xe4, 0x34, 0x1c, 0x87, 0x76, 0x2d, 0xe5, 0x15, 0xc2, 0x85, 0xf1, 0x62, 0xdf, 0xa3,
+	0xae, 0x0f, 0x5f, 0xac, 0x96, 0xea, 0x78, 0xce, 0x0f, 0x8c, 0x20, 0xf4, 0x0b, 0x3f, 0x95, 0x51,
+	0x65, 0xa1, 0xb6, 0xaa, 0xc6, 0x1a, 0x45, 0xb4, 0xd5, 0xde, 0x86, 0xda, 0xe4, 0x80, 0x7b, 0x70,
+	0x1c, 0x68, 0x02, 0x2c, 0xfd, 0x8d, 0x7f, 0x23, 0x8e, 0x61, 0x77, 0xf5, 0x9e, 0xe1, 0xd8, 0x96,
+	0x11, 0x50, 0xe6, 0x17, 0x66, 0xca, 0x33, 0x95, 0x79, 0xed, 0x57, 0x1e, 0xdf, 0x1f, 0x85, 0x95,
+	0x1e, 0x2e, 0x71, 0x7a, 0x0d, 0x46, 0x7d, 0x9f, 0x74, 0x0c, 0xdb, 0xbd, 0x09, 0xd0, 0xa0, 0x6e,
+	0xcb, 0x6e, 0xc7, 0x33, 0x36, 0xb1, 0x34, 0x2e, 0x0d, 0x27, 0xbb, 0x50, 0xfb, 0x33, 0x81, 0xd0,
+	0x5e, 0x04, 0xde, 0x1e, 0x61, 0xb5, 0x45, 0xf7, 0xf3, 0x90, 0xf2, 0x10, 0x97, 0x27, 0xaf, 0x2b,
+	0xe4, 0x39, 0xc0, 0xcb, 0x64, 0x94, 0xd6, 0x5b, 0x00, 0x3a, 0xe1, 0x00, 0xbe, 0x76, 0xb6, 0xf6,
+	0x57, 0xc2, 0xda, 0xbc, 0x5d, 0xe3, 0xd3, 0x76, 0x4b, 0x64, 0x7c, 0x0d, 0xe5, 0x39, 0xc2, 0x45,
+	0xfe, 0x3d, 0x88, 0x0d, 0x7e, 0x83, 0x76, 0x3d, 0x07, 0x02, 0xb0, 0x38, 0xa5, 0xcb, 0x9c, 0x5b,
+	0x5a, 0xc3, 0xb9, 0xb6, 0x43, 0x4d, 0xc3, 0xd1, 0x5d, 0xea, 0x12, 0xe0, 0xdf, 0xf5, 0x67, 0x2d,
+	0x1b, 0xc5, 0xf6, 0x86, 0x21, 0xa5, 0x8d, 0x4b, 0x13, 0x99, 0x09, 0x65, 0xb6, 0xf1, 0x2f, 0xe7,
+	0xc6, 0x71, 0x5b, 0xb4, 0x80, 0xca, 0x33, 0x95, 0x6c, 0xad, 0x94, 0xc0, 0x2a, 0x36, 0xdd, 0xae,
+	0xdb, 0xa2, 0x5a, 0xce, 0xbb, 0xf0, 0x4f, 0x79, 0x83, 0xf0, 0x5a, 0xec, 0x4d, 0x60, 0x10, 0x76,
+	0x6f, 0x53, 0x72, 0xb8, 0x15, 0x32, 0x97, 0xf3, 0xb8, 0x54, 0x19, 0x54, 0xbc, 0xc4, 0xc0, 0x31,
+	0x06, 0xc0, 0x86, 0x1e, 0xd5, 0x0d, 0xcb, 0x62, 0xe0, 0x47, 0x2e, 0x9f, 0xd7, 0x16, 0x45, 0x6a,
+	0xdf, 0x70, 0xae, 0x47, 0x09, 0xe5, 0x01, 0x56, 0xd2, 0x98, 0x0a, 0x59, 0x36, 0x71, 0x01, 0x04,
+	0x40, 0x77, 0x28, 0x39, 0xd4, 0xcd, 0x90, 0xb9, 0x42, 0x68, 0xc4, 0x85, 0x5e, 0x86, 0xa4, 0x06,
+	0xca, 0x6b, 0x24, 0xec, 0x78, 0xdf, 0x0e, 0x5c, 0xf0, 0xfd, 0x1f, 0x57, 0x88, 0x03, 0xf1, 0xc9,
+	0x92, 0x89, 0x0a, 0x1d, 0xea, 0x78, 0xa5, 0x1f, 0xe5, 0x27, 0xc8, 0x90, 0xef, 0x27, 0x94, 0x2b,
+	0x2f, 0x91, 0x50, 0x79, 0xc7, 0xa1, 0x44, 0xb8, 0x71, 0x6b, 0xd8, 0x60, 0x2f, 0xec, 0x9a, 0xc0,
+	0xbe, 0xf7, 0xbe, 0xb8, 0x85, 0xff, 0x48, 0x65, 0x27, 0x86, 0x5f, 0xc3, 0x39, 0x93, 0x4f, 0xed,
+	0xf2, 0xb8, 0x98, 0x38, 0x6b, 0x9e, 0x43, 0x6b, 0x6f, 0x67, 0xf1, 0x2c, 0x6f, 0x25, 0xb9, 0x38,
+	0x7b, 0xe1, 0x60, 0x96, 0xd6, 0xd5, 0xa4, 0x3b, 0x48, 0x9d, 0x70, 0xfa, 0xcb, 0xea, 0xd7, 0xc2,
+	0x23, 0x6a, 0x4a, 0x46, 0x7a, 0x84, 0xf0, 0x52, 0xc2, 0x91, 0x27, 0xd5, 0x53, 0x3a, 0x4d, 0x3e,
+	0x9a, 0xe5, 0xff, 0xa7, 0x2d, 0x1b, 0x11, 0x79, 0x82, 0xf0, 0x72, 0xe2, 0x66, 0x92, 0x36, 0xd3,
+	0x87, 0x9a, 0x78, 0x50, 0xc8, 0x57, 0xa6, 0x2f, 0x1c, 0xd1, 0x79, 0x8c, 0x70, 0x3e, 0xc9, 0xd2,
+	0x52, 0xda, 0x84, 0x29, 0x9b, 0x55, 0xde, 0x9c, 0xba, 0x6e, 0xc4, 0xe5, 0x29, 0xc2, 0xbf, 0x27,
+	0x7b, 0x4c, 0x4a, 0x1b, 0x31, 0x75, 0xd3, 0xc8, 0x57, 0xbf, 0xa1, 0x32, 0x66, 0x54, 0x7b, 0x31,
+	0xf9, 0xb2, 0x6a, 0x02, 0xeb, 0xd9, 0x04, 0xa4, 0x3e, 0x9e, 0x6b, 0x82, 0xc1, 0x48, 0x47, 0xfa,
+	0x2f, 0x79, 0xa5, 0xf4, 0xcb, 0x4e, 0xae, 0x4f, 0x59, 0x15, 0x73, 0xdb, 0xda, 0x79, 0x77, 0x5a,
+	0x44, 0x27, 0xa7, 0x45, 0xf4, 0xe1, 0xb4, 0x88, 0x9e, 0x9d, 0x15, 0x33, 0x27, 0x67, 0xc5, 0xcc,
+	0xfb, 0xb3, 0x62, 0xe6, 0x60, 0xbd, 0x6d, 0x07, 0x9d, 0xd0, 0x54, 0x09, 0xed, 0x56, 0x9b, 0x76,
+	0x8b, 0x5b, 0xb1, 0x1a, 0x3f, 0xbb, 0x8e, 0x2f, 0xbc, 0xdc, 0xf8, 0xbb, 0xcc, 0x9c, 0xe3, 0x8f,
+	0xad, 0x7f, 0x3f, 0x06, 0x00, 0x00, 0xff, 0xff, 0xd4, 0xa2, 0x19, 0xa2, 0x29, 0x0a, 0x00, 0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -497,8 +706,14 @@ type QueryClient interface {
 	EthProphecy(ctx context.Context, in *QueryEthProphecyRequest, opts ...grpc.CallOption) (*QueryEthProphecyResponse, error)
 	// CrosschainFeeConfig queries crosschain fee config for a network
 	CrosschainFeeConfig(ctx context.Context, in *QueryCrosschainFeeConfigRequest, opts ...grpc.CallOption) (*QueryCrosschainFeeConfigResponse, error)
-	// LockBurnNonce query lock burn nonce for a relayer in a network
-	LockBurnNonce(ctx context.Context, in *QueryLockBurnNonceRequest, opts ...grpc.CallOption) (*QueryLockBurnNonceResponse, error)
+	// EthereumLockBurnNonce query ethereum lock burn nonce for a relayer in a
+	// network
+	EthereumLockBurnNonce(ctx context.Context, in *QueryEthereumLockBurnNonceRequest, opts ...grpc.CallOption) (*QueryEthereumLockBurnNonceResponse, error)
+	// WitnessLockBurnNonce query witness lock burn nonce for a relayer in a
+	// network
+	WitnessLockBurnNonce(ctx context.Context, in *QueryWitnessLockBurnNonceRequest, opts ...grpc.CallOption) (*QueryWitnessLockBurnNonceResponse, error)
+	// GlocalNonceBlockNumber query block number for a global nonce
+	GlocalNonceBlockNumber(ctx context.Context, in *QueryGlocalNonceBlockNumberRequest, opts ...grpc.CallOption) (*QueryGlocalNonceBlockNumberResponse, error)
 }
 
 type queryClient struct {
@@ -527,9 +742,27 @@ func (c *queryClient) CrosschainFeeConfig(ctx context.Context, in *QueryCrosscha
 	return out, nil
 }
 
-func (c *queryClient) LockBurnNonce(ctx context.Context, in *QueryLockBurnNonceRequest, opts ...grpc.CallOption) (*QueryLockBurnNonceResponse, error) {
-	out := new(QueryLockBurnNonceResponse)
-	err := c.cc.Invoke(ctx, "/sifnode.ethbridge.v1.Query/LockBurnNonce", in, out, opts...)
+func (c *queryClient) EthereumLockBurnNonce(ctx context.Context, in *QueryEthereumLockBurnNonceRequest, opts ...grpc.CallOption) (*QueryEthereumLockBurnNonceResponse, error) {
+	out := new(QueryEthereumLockBurnNonceResponse)
+	err := c.cc.Invoke(ctx, "/sifnode.ethbridge.v1.Query/EthereumLockBurnNonce", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *queryClient) WitnessLockBurnNonce(ctx context.Context, in *QueryWitnessLockBurnNonceRequest, opts ...grpc.CallOption) (*QueryWitnessLockBurnNonceResponse, error) {
+	out := new(QueryWitnessLockBurnNonceResponse)
+	err := c.cc.Invoke(ctx, "/sifnode.ethbridge.v1.Query/WitnessLockBurnNonce", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *queryClient) GlocalNonceBlockNumber(ctx context.Context, in *QueryGlocalNonceBlockNumberRequest, opts ...grpc.CallOption) (*QueryGlocalNonceBlockNumberResponse, error) {
+	out := new(QueryGlocalNonceBlockNumberResponse)
+	err := c.cc.Invoke(ctx, "/sifnode.ethbridge.v1.Query/GlocalNonceBlockNumber", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -542,8 +775,14 @@ type QueryServer interface {
 	EthProphecy(context.Context, *QueryEthProphecyRequest) (*QueryEthProphecyResponse, error)
 	// CrosschainFeeConfig queries crosschain fee config for a network
 	CrosschainFeeConfig(context.Context, *QueryCrosschainFeeConfigRequest) (*QueryCrosschainFeeConfigResponse, error)
-	// LockBurnNonce query lock burn nonce for a relayer in a network
-	LockBurnNonce(context.Context, *QueryLockBurnNonceRequest) (*QueryLockBurnNonceResponse, error)
+	// EthereumLockBurnNonce query ethereum lock burn nonce for a relayer in a
+	// network
+	EthereumLockBurnNonce(context.Context, *QueryEthereumLockBurnNonceRequest) (*QueryEthereumLockBurnNonceResponse, error)
+	// WitnessLockBurnNonce query witness lock burn nonce for a relayer in a
+	// network
+	WitnessLockBurnNonce(context.Context, *QueryWitnessLockBurnNonceRequest) (*QueryWitnessLockBurnNonceResponse, error)
+	// GlocalNonceBlockNumber query block number for a global nonce
+	GlocalNonceBlockNumber(context.Context, *QueryGlocalNonceBlockNumberRequest) (*QueryGlocalNonceBlockNumberResponse, error)
 }
 
 // UnimplementedQueryServer can be embedded to have forward compatible implementations.
@@ -556,8 +795,14 @@ func (*UnimplementedQueryServer) EthProphecy(ctx context.Context, req *QueryEthP
 func (*UnimplementedQueryServer) CrosschainFeeConfig(ctx context.Context, req *QueryCrosschainFeeConfigRequest) (*QueryCrosschainFeeConfigResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CrosschainFeeConfig not implemented")
 }
-func (*UnimplementedQueryServer) LockBurnNonce(ctx context.Context, req *QueryLockBurnNonceRequest) (*QueryLockBurnNonceResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method LockBurnNonce not implemented")
+func (*UnimplementedQueryServer) EthereumLockBurnNonce(ctx context.Context, req *QueryEthereumLockBurnNonceRequest) (*QueryEthereumLockBurnNonceResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method EthereumLockBurnNonce not implemented")
+}
+func (*UnimplementedQueryServer) WitnessLockBurnNonce(ctx context.Context, req *QueryWitnessLockBurnNonceRequest) (*QueryWitnessLockBurnNonceResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method WitnessLockBurnNonce not implemented")
+}
+func (*UnimplementedQueryServer) GlocalNonceBlockNumber(ctx context.Context, req *QueryGlocalNonceBlockNumberRequest) (*QueryGlocalNonceBlockNumberResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GlocalNonceBlockNumber not implemented")
 }
 
 func RegisterQueryServer(s grpc1.Server, srv QueryServer) {
@@ -600,20 +845,56 @@ func _Query_CrosschainFeeConfig_Handler(srv interface{}, ctx context.Context, de
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Query_LockBurnNonce_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(QueryLockBurnNonceRequest)
+func _Query_EthereumLockBurnNonce_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryEthereumLockBurnNonceRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(QueryServer).LockBurnNonce(ctx, in)
+		return srv.(QueryServer).EthereumLockBurnNonce(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/sifnode.ethbridge.v1.Query/LockBurnNonce",
+		FullMethod: "/sifnode.ethbridge.v1.Query/EthereumLockBurnNonce",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(QueryServer).LockBurnNonce(ctx, req.(*QueryLockBurnNonceRequest))
+		return srv.(QueryServer).EthereumLockBurnNonce(ctx, req.(*QueryEthereumLockBurnNonceRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Query_WitnessLockBurnNonce_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryWitnessLockBurnNonceRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServer).WitnessLockBurnNonce(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/sifnode.ethbridge.v1.Query/WitnessLockBurnNonce",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServer).WitnessLockBurnNonce(ctx, req.(*QueryWitnessLockBurnNonceRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Query_GlocalNonceBlockNumber_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryGlocalNonceBlockNumberRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServer).GlocalNonceBlockNumber(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/sifnode.ethbridge.v1.Query/GlocalNonceBlockNumber",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServer).GlocalNonceBlockNumber(ctx, req.(*QueryGlocalNonceBlockNumberRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -631,8 +912,16 @@ var _Query_serviceDesc = grpc.ServiceDesc{
 			Handler:    _Query_CrosschainFeeConfig_Handler,
 		},
 		{
-			MethodName: "LockBurnNonce",
-			Handler:    _Query_LockBurnNonce_Handler,
+			MethodName: "EthereumLockBurnNonce",
+			Handler:    _Query_EthereumLockBurnNonce_Handler,
+		},
+		{
+			MethodName: "WitnessLockBurnNonce",
+			Handler:    _Query_WitnessLockBurnNonce_Handler,
+		},
+		{
+			MethodName: "GlocalNonceBlockNumber",
+			Handler:    _Query_GlocalNonceBlockNumber_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
@@ -920,7 +1209,7 @@ func (m *ProphciesCompletedQueryResponse) MarshalToSizedBuffer(dAtA []byte) (int
 	return len(dAtA) - i, nil
 }
 
-func (m *QueryLockBurnNonceRequest) Marshal() (dAtA []byte, err error) {
+func (m *QueryEthereumLockBurnNonceRequest) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -930,12 +1219,12 @@ func (m *QueryLockBurnNonceRequest) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *QueryLockBurnNonceRequest) MarshalTo(dAtA []byte) (int, error) {
+func (m *QueryEthereumLockBurnNonceRequest) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *QueryLockBurnNonceRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *QueryEthereumLockBurnNonceRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
@@ -955,7 +1244,7 @@ func (m *QueryLockBurnNonceRequest) MarshalToSizedBuffer(dAtA []byte) (int, erro
 	return len(dAtA) - i, nil
 }
 
-func (m *QueryLockBurnNonceResponse) Marshal() (dAtA []byte, err error) {
+func (m *QueryEthereumLockBurnNonceResponse) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -965,18 +1254,142 @@ func (m *QueryLockBurnNonceResponse) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *QueryLockBurnNonceResponse) MarshalTo(dAtA []byte) (int, error) {
+func (m *QueryEthereumLockBurnNonceResponse) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *QueryLockBurnNonceResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *QueryEthereumLockBurnNonceResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
 	_ = l
-	if m.LockBurnNonce != 0 {
-		i = encodeVarintQuery(dAtA, i, uint64(m.LockBurnNonce))
+	if m.EthereumLockBurnNonce != 0 {
+		i = encodeVarintQuery(dAtA, i, uint64(m.EthereumLockBurnNonce))
+		i--
+		dAtA[i] = 0x8
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *QueryWitnessLockBurnNonceRequest) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *QueryWitnessLockBurnNonceRequest) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *QueryWitnessLockBurnNonceRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.RelayerValAddress) > 0 {
+		i -= len(m.RelayerValAddress)
+		copy(dAtA[i:], m.RelayerValAddress)
+		i = encodeVarintQuery(dAtA, i, uint64(len(m.RelayerValAddress)))
+		i--
+		dAtA[i] = 0x12
+	}
+	if m.NetworkDescriptor != 0 {
+		i = encodeVarintQuery(dAtA, i, uint64(m.NetworkDescriptor))
+		i--
+		dAtA[i] = 0x8
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *QueryWitnessLockBurnNonceResponse) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *QueryWitnessLockBurnNonceResponse) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *QueryWitnessLockBurnNonceResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.WitnessLockBurnNonce != 0 {
+		i = encodeVarintQuery(dAtA, i, uint64(m.WitnessLockBurnNonce))
+		i--
+		dAtA[i] = 0x8
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *QueryGlocalNonceBlockNumberRequest) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *QueryGlocalNonceBlockNumberRequest) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *QueryGlocalNonceBlockNumberRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.GlobalNonce != 0 {
+		i = encodeVarintQuery(dAtA, i, uint64(m.GlobalNonce))
+		i--
+		dAtA[i] = 0x10
+	}
+	if m.NetworkDescriptor != 0 {
+		i = encodeVarintQuery(dAtA, i, uint64(m.NetworkDescriptor))
+		i--
+		dAtA[i] = 0x8
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *QueryGlocalNonceBlockNumberResponse) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *QueryGlocalNonceBlockNumberResponse) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *QueryGlocalNonceBlockNumberResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.BlockNumber != 0 {
+		i = encodeVarintQuery(dAtA, i, uint64(m.BlockNumber))
 		i--
 		dAtA[i] = 0x8
 	}
@@ -1084,7 +1497,7 @@ func (m *ProphciesCompletedQueryResponse) Size() (n int) {
 	return n
 }
 
-func (m *QueryLockBurnNonceRequest) Size() (n int) {
+func (m *QueryEthereumLockBurnNonceRequest) Size() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -1100,14 +1513,69 @@ func (m *QueryLockBurnNonceRequest) Size() (n int) {
 	return n
 }
 
-func (m *QueryLockBurnNonceResponse) Size() (n int) {
+func (m *QueryEthereumLockBurnNonceResponse) Size() (n int) {
 	if m == nil {
 		return 0
 	}
 	var l int
 	_ = l
-	if m.LockBurnNonce != 0 {
-		n += 1 + sovQuery(uint64(m.LockBurnNonce))
+	if m.EthereumLockBurnNonce != 0 {
+		n += 1 + sovQuery(uint64(m.EthereumLockBurnNonce))
+	}
+	return n
+}
+
+func (m *QueryWitnessLockBurnNonceRequest) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.NetworkDescriptor != 0 {
+		n += 1 + sovQuery(uint64(m.NetworkDescriptor))
+	}
+	l = len(m.RelayerValAddress)
+	if l > 0 {
+		n += 1 + l + sovQuery(uint64(l))
+	}
+	return n
+}
+
+func (m *QueryWitnessLockBurnNonceResponse) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.WitnessLockBurnNonce != 0 {
+		n += 1 + sovQuery(uint64(m.WitnessLockBurnNonce))
+	}
+	return n
+}
+
+func (m *QueryGlocalNonceBlockNumberRequest) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.NetworkDescriptor != 0 {
+		n += 1 + sovQuery(uint64(m.NetworkDescriptor))
+	}
+	if m.GlobalNonce != 0 {
+		n += 1 + sovQuery(uint64(m.GlobalNonce))
+	}
+	return n
+}
+
+func (m *QueryGlocalNonceBlockNumberResponse) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.BlockNumber != 0 {
+		n += 1 + sovQuery(uint64(m.BlockNumber))
 	}
 	return n
 }
@@ -1664,7 +2132,7 @@ func (m *ProphciesCompletedQueryResponse) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *QueryLockBurnNonceRequest) Unmarshal(dAtA []byte) error {
+func (m *QueryEthereumLockBurnNonceRequest) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -1687,10 +2155,10 @@ func (m *QueryLockBurnNonceRequest) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: QueryLockBurnNonceRequest: wiretype end group for non-group")
+			return fmt.Errorf("proto: QueryEthereumLockBurnNonceRequest: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: QueryLockBurnNonceRequest: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: QueryEthereumLockBurnNonceRequest: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
@@ -1765,7 +2233,7 @@ func (m *QueryLockBurnNonceRequest) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *QueryLockBurnNonceResponse) Unmarshal(dAtA []byte) error {
+func (m *QueryEthereumLockBurnNonceResponse) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -1788,17 +2256,17 @@ func (m *QueryLockBurnNonceResponse) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: QueryLockBurnNonceResponse: wiretype end group for non-group")
+			return fmt.Errorf("proto: QueryEthereumLockBurnNonceResponse: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: QueryLockBurnNonceResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: QueryEthereumLockBurnNonceResponse: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
 			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field LockBurnNonce", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field EthereumLockBurnNonce", wireType)
 			}
-			m.LockBurnNonce = 0
+			m.EthereumLockBurnNonce = 0
 			for shift := uint(0); ; shift += 7 {
 				if shift >= 64 {
 					return ErrIntOverflowQuery
@@ -1808,7 +2276,334 @@ func (m *QueryLockBurnNonceResponse) Unmarshal(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				m.LockBurnNonce |= uint64(b&0x7F) << shift
+				m.EthereumLockBurnNonce |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *QueryWitnessLockBurnNonceRequest) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: QueryWitnessLockBurnNonceRequest: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: QueryWitnessLockBurnNonceRequest: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field NetworkDescriptor", wireType)
+			}
+			m.NetworkDescriptor = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.NetworkDescriptor |= types.NetworkDescriptor(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field RelayerValAddress", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.RelayerValAddress = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *QueryWitnessLockBurnNonceResponse) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: QueryWitnessLockBurnNonceResponse: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: QueryWitnessLockBurnNonceResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field WitnessLockBurnNonce", wireType)
+			}
+			m.WitnessLockBurnNonce = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.WitnessLockBurnNonce |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *QueryGlocalNonceBlockNumberRequest) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: QueryGlocalNonceBlockNumberRequest: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: QueryGlocalNonceBlockNumberRequest: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field NetworkDescriptor", wireType)
+			}
+			m.NetworkDescriptor = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.NetworkDescriptor |= types.NetworkDescriptor(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 2:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field GlobalNonce", wireType)
+			}
+			m.GlobalNonce = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.GlobalNonce |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *QueryGlocalNonceBlockNumberResponse) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: QueryGlocalNonceBlockNumberResponse: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: QueryGlocalNonceBlockNumberResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field BlockNumber", wireType)
+			}
+			m.BlockNumber = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.BlockNumber |= uint64(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}

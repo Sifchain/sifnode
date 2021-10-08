@@ -14,72 +14,63 @@ const envconfig = dotenv.config()
 
 const mainnetUrl = process.env["MAINNET_URL"] ?? "https://example.com"
 const ropstenUrl = process.env['ROPSTEN_URL'] ?? "https://example.com"
-const ropstenPrivateKey = process.env['ROPSTEN_PRIVATE_KEY'] ?? "0xabcd"
-const mainnetPrivateKey = process.env['MAINNET_PRIVATE_KEY'] ?? "0xabcd"
+
+const activePrivateKey = process.env[process.env['ACTIVE_PRIVATE_KEY'] ?? "0xabcd"] ?? "0xabcd";
 
 // Works only for 'hardhat' network:
 const useForking = !!process.env.USE_FORKING;
 
 const config: HardhatUserConfig = {
-    networks: {
-        hardhat: {
-            allowUnlimitedContractSize: false,
-            chainId: 1,
-            forking: {
-                enabled: useForking,
-                url: mainnetUrl,
-                blockNumber: 13374085,
-            }
-        },
-        ropsten: {
-            url: ropstenUrl,
-            accounts: [ropstenPrivateKey],
-            gas: 2000000
-        },
-        mainnet: {
-            url: mainnetUrl,
-            accounts: [mainnetPrivateKey],
-            gas: 2000000,
-            gasPrice: "auto",
-            gasMultiplier: 1.2
-        },
+  networks: {
+    hardhat: {
+      allowUnlimitedContractSize: false,
+      chainId: 1,
+      forking: {
+        enabled: useForking,
+        url: mainnetUrl,
+        blockNumber: 13374085,
+      }
     },
-    solidity: {
-        compilers: [
-            {
-                version: "0.8.0",
-                settings: {
-                    optimizer: {
-                        enabled: true,
-                        runs: 200
-                    },
-                }
-            },
-            {
-                version: "0.5.16",
-                settings: {
-                    optimizer: {
-                        enabled: true,
-                        runs: 200
-                    },
-                }
-            },
-        ],
+    ropsten: {
+      url: ropstenUrl,
+      accounts: [activePrivateKey],
+      gas: 2000000
     },
-    typechain: {
-        outDir: "build",
-        target: "ethers-v5"
-    },
-    mocha: {
-        timeout: 200000
-    },
-    /*
-    etherscan: {
-        // Your API key for Etherscan
-        // Obtain one at https://etherscan.io/
-        apiKey: process.env['ETHERSCAN_API_KEY']
+    mainnet: {
+      url: mainnetUrl,
+      accounts: [activePrivateKey],
+      gas: 2000000
     }
-    */
+  },
+  solidity: {
+    compilers: [
+      {
+        version: "0.8.0",
+        settings: {
+          optimizer: {
+            enabled: true,
+            runs: 200
+          },
+        }
+      },
+      {
+        version: "0.5.16",
+        settings: {
+          optimizer: {
+            enabled: true,
+            runs: 200
+          },
+        }
+      },
+    ],
+  },
+  typechain: {
+    outDir: "build",
+    target: "ethers-v5"
+  },
+  mocha: {
+    timeout: 200000
+  }
 }
 
 export default config

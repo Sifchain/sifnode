@@ -20,6 +20,8 @@ func NewQuerier(keeper Keeper, legacyQuerierCdc *codec.LegacyAmino) sdk.Querier 
 			return queryPools(ctx, path[1:], req, legacyQuerierCdc, querier)
 		case types.QueryLiquidityProvider:
 			return queryLiquidityProvider(ctx, path[1:], req, legacyQuerierCdc, querier)
+		case types.QueryLiquidityProviderData:
+			return queryLiquidityProviderData(ctx, path[1:], req, legacyQuerierCdc, querier)
 		case types.QueryAssetList:
 			return queryAssetList(ctx, path[1:], req, legacyQuerierCdc, querier)
 		case types.QueryLPList:
@@ -68,6 +70,23 @@ func queryLiquidityProvider(ctx sdk.Context, path []string, req abci.RequestQuer
 		return nil, sdkerrors.Wrap(sdkerrors.ErrJSONUnmarshal, err.Error())
 	}
 	res, err := querier.GetLiquidityProvider(sdk.WrapSDKContext(ctx), &params)
+	if err != nil {
+		return nil, err
+	}
+	bz, err := codec.MarshalJSONIndent(legacyQuerierCdc, res)
+	if err != nil {
+		return nil, sdkerrors.Wrap(sdkerrors.ErrJSONMarshal, err.Error())
+	}
+	return bz, nil
+}
+
+func queryLiquidityProviderData(ctx sdk.Context, path []string, req abci.RequestQuery, legacyQuerierCdc *codec.LegacyAmino, querier Querier) ([]byte, error) {
+	var params types.LiquidityProviderDataReq
+	err := legacyQuerierCdc.UnmarshalJSON(req.Data, &params)
+	if err != nil {
+		return nil, sdkerrors.Wrap(sdkerrors.ErrJSONUnmarshal, err.Error())
+	}
+	res, err := querier.GetLiquidityProviderData(sdk.WrapSDKContext(ctx), &params)
 	if err != nil {
 		return nil, err
 	}

@@ -73,10 +73,10 @@ func GetCmdGetCrosschainFeeConfig() *cobra.Command {
 }
 
 // GetLockBurnNonce queries lock burn nonce for a relayer
-func GetLockBurnNonce() *cobra.Command {
+func GetEthereumLockBurnNonce() *cobra.Command {
 	return &cobra.Command{
-		Use:   `lock-burn-nonce [network-descriptor] [val-address]`,
-		Short: "Query lock-burn-nonce",
+		Use:   `ethereum-lock-burn-nonce [network-descriptor] [val-address]`,
+		Short: "Query ethereum-lock-burn-nonce",
 		Args:  cobra.ExactArgs(2),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx, err := client.GetClientTxContext(cmd)
@@ -91,12 +91,85 @@ func GetLockBurnNonce() *cobra.Command {
 
 			queryClient := types.NewQueryClient(clientCtx)
 
-			req := &types.QueryLockBurnNonceRequest{
+			req := &types.QueryEthereumLockBurnNonceRequest{
 				NetworkDescriptor: oracletypes.NetworkDescriptor(networkDescriptor),
 				RelayerValAddress: args[1],
 			}
 
-			res, err := queryClient.LockBurnNonce(context.Background(), req)
+			res, err := queryClient.EthereumLockBurnNonce(context.Background(), req)
+			if err != nil {
+				return err
+			}
+
+			return clientCtx.PrintProto(res)
+		},
+	}
+}
+
+// GetWitnessLockBurnNonce queries lock burn nonce for a relayer
+func GetWitnessLockBurnNonce() *cobra.Command {
+	return &cobra.Command{
+		Use:   `witness-lock-burn-nonce [network-descriptor] [val-address]`,
+		Short: "Query witness-lock-burn-nonce",
+		Args:  cobra.ExactArgs(2),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			clientCtx, err := client.GetClientTxContext(cmd)
+			if err != nil {
+				return err
+			}
+
+			networkDescriptor, err := strconv.Atoi(args[0])
+			if err != nil {
+				return err
+			}
+
+			queryClient := types.NewQueryClient(clientCtx)
+
+			req := &types.QueryWitnessLockBurnNonceRequest{
+				NetworkDescriptor: oracletypes.NetworkDescriptor(networkDescriptor),
+				RelayerValAddress: args[1],
+			}
+
+			res, err := queryClient.WitnessLockBurnNonce(context.Background(), req)
+			if err != nil {
+				return err
+			}
+
+			return clientCtx.PrintProto(res)
+		},
+	}
+}
+
+// GetGlocalNonceBlockNumber queries block number for global nonce
+func GetGlocalNonceBlockNumber() *cobra.Command {
+	return &cobra.Command{
+		Use:   `global-nonce-block-number [network-descriptor] [global-nonce]`,
+		Short: "Query global-nonce-block-number",
+		Args:  cobra.ExactArgs(2),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			clientCtx, err := client.GetClientTxContext(cmd)
+			if err != nil {
+				return err
+			}
+
+			networkDescriptor, err := strconv.Atoi(args[0])
+			if err != nil {
+				return err
+			}
+
+			globalNonce, err := strconv.Atoi(args[1])
+			if err != nil {
+				return err
+			}
+
+			queryClient := types.NewQueryClient(clientCtx)
+
+			req := &types.QueryGlocalNonceBlockNumberRequest{
+				NetworkDescriptor: oracletypes.NetworkDescriptor(networkDescriptor),
+				GlobalNonce:       uint64(globalNonce),
+			}
+
+			res, err := queryClient.GlocalNonceBlockNumber(context.Background(), req)
 			if err != nil {
 				return err
 			}

@@ -9,6 +9,7 @@ import (
 	"time"
 	"unicode/utf8"
 
+	clpkeeper "github.com/Sifchain/sifnode/x/clp/keeper"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
@@ -59,7 +60,7 @@ func GenerateRandomPool(numberOfPools int) []types.Pool {
 	for i := 0; i < numberOfPools; i++ {
 		// initialize global pseudo random generator
 		externalToken := tokens[rand.Intn(len(tokens))]
-		externalAsset := types.NewAsset(trimFirstRune(externalToken))
+		externalAsset := types.NewAsset(TrimFirstRune(externalToken))
 		pool, err := types.NewPool(&externalAsset, sdk.NewUint(1000), sdk.NewUint(100), sdk.NewUint(1))
 		if err != nil {
 			fmt.Println("Error Generating new pool :", err)
@@ -75,7 +76,7 @@ func GenerateRandomLP(numberOfLp int) []types.LiquidityProvider {
 	rand.Seed(time.Now().Unix())
 	for i := 0; i < numberOfLp; i++ {
 		externalToken := tokens[rand.Intn(len(tokens))]
-		asset := types.NewAsset(trimFirstRune(externalToken))
+		asset := types.NewAsset(TrimFirstRune(externalToken))
 		lpAddess, err := sdk.AccAddressFromBech32("sif1azpar20ck9lpys89r8x7zc8yu0qzgvtp48ng5v")
 		if err != nil {
 			panic(err)
@@ -86,7 +87,33 @@ func GenerateRandomLP(numberOfLp int) []types.LiquidityProvider {
 	return lpList
 }
 
-func trimFirstRune(s string) string {
+func GeneratePoolsAndLPs(keeper clpkeeper.Keeper, ctx sdk.Context, tokens []string) ([]types.Pool, []types.LiquidityProvider) {
+	var poolList []types.Pool
+	var lpList []types.LiquidityProvider
+	for i := 0; i < len(tokens); i++ {
+		externalToken := tokens[i]
+		externalAsset := types.NewAsset(TrimFirstRune(externalToken))
+		pool, err := types.NewPool(&externalAsset, sdk.NewUint(1000*uint64(i+1)), sdk.NewUint(100*uint64(i+1)), sdk.NewUint(1))
+		if err != nil {
+			panic(err)
+		}
+		err = keeper.SetPool(ctx, &pool)
+		if err != nil {
+			panic(err)
+		}
+		poolList = append(poolList, pool)
+		lpAddess, err := sdk.AccAddressFromBech32("sif1azpar20ck9lpys89r8x7zc8yu0qzgvtp48ng5v")
+		if err != nil {
+			panic(err)
+		}
+		lp := types.NewLiquidityProvider(&externalAsset, sdk.NewUint(1), lpAddess)
+		keeper.SetLiquidityProvider(ctx, &lp)
+		lpList = append(lpList, lp)
+	}
+	return poolList, lpList
+}
+
+func TrimFirstRune(s string) string {
 	_, i := utf8.DecodeRuneInString(s)
 	return strings.ToLower(s[i:])
 }

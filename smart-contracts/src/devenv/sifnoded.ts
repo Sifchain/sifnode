@@ -6,6 +6,11 @@ import * as fs from "fs";
 import YAML from 'yaml'
 import { boolean } from "yargs";
 import notifier from 'node-notifier';
+import {
+  ExecFileSyncOptions,
+  ExecFileSyncOptionsWithStringEncoding, ExecSyncOptionsWithStringEncoding,
+  StdioOptions
+} from "child_process";
 
 export interface ValidatorValues {
   chain_id: string,
@@ -31,7 +36,7 @@ export class SifnodedRunner extends ShellCommand<SifnodedResults> {
 
   constructor(
     readonly golangResults: GolangResults,
-    readonly logfile = "/tmp/sifnoded.log",
+    readonly logfile = "/tmp/sifnode/sifnoded.log",
     readonly rpcPort = 9000,
     readonly nValidators = 1,
     readonly chainId = "localnet",
@@ -67,6 +72,10 @@ export class SifnodedRunner extends ShellCommand<SifnodedResults> {
     ]
 
     await fs.promises.mkdir(this.networkDir, { recursive: true });
+
+    const sifnodedLogFile = fs.openSync(this.logfile, "w");
+
+    let stdioOptions: StdioOptions = ["ignore", sifnodedLogFile, sifnodedLogFile]
 
     const sifgenOutput = ChildProcess.execFileSync(
       path.join(this.golangResults.goBin, "sifgen"),
@@ -130,10 +139,10 @@ export class SifnodedRunner extends ShellCommand<SifnodedResults> {
       `${sifnodedCommand} set-gen-denom-whitelist ${this.whitelistFile} --home ${homeDir}`,
       { encoding: "utf8" }
     ).trim()
-    let sifnodedDaemonCmd = `${sifnodedCommand} start --minimum-gas-prices 0.5rowan --rpc.laddr tcp://0.0.0.0:26657 --home ${homeDir}`;
+    let sifnodedDaemonCmd = `${sifnodedCommand} start --log_format json --minimum-gas-prices 0.5rowan --rpc.laddr tcp://0.0.0.0:26657 --home ${homeDir}`;
     const sifnoded = ChildProcess.spawn(
       sifnodedDaemonCmd,
-      { shell: true, stdio: "inherit" }
+      { shell: true, stdio: stdioOptions }
     )
 
     sifnoded.on('exit', (code) => {
@@ -141,6 +150,7 @@ export class SifnodedRunner extends ShellCommand<SifnodedResults> {
         title: "Sifnoded Notice",
         message: `Sifnoded has just exited with exit code: ${code}`
       })
+      fs.closeSync(sifnodedLogFile)
     });
 
     return {

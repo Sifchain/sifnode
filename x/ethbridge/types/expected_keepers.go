@@ -2,6 +2,7 @@ package types
 
 import (
 	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
+	types "github.com/Sifchain/sifnode/x/oracle/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 )
@@ -38,4 +39,5 @@ type OracleKeeper interface {
 	SetProphecyWithInitValue(ctx sdk.Context, prophecyID []byte)
 	SetProphecyInfo(ctx sdk.Context, prophecyID []byte, networkDescriptor oracletypes.NetworkDescriptor, cosmosSender string, cosmosSenderSequence uint64, ethereumReceiver string, tokenSymbol string, tokenContractAddress string, tokenAmount sdk.Int, crosschainFee sdk.Int, doublePeg bool, globalNonce uint64) error
 	GetProphecyInfoWithScopeGlocalNonce(ctx sdk.Context, networkDescriptor oracletypes.NetworkDescriptor, startGlobalNonce uint64) []*oracletypes.ProphecyInfo
+	GetWitnessLockBurnNonce(ctx sdk.Context, networkDescriptor types.NetworkDescriptor, valAccount sdk.ValAddress) uint64
 }

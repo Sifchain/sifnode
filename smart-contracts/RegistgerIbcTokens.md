@@ -12,11 +12,12 @@ REGISTER_TOKENS_SOURCE_FILENAME=./data/deployed_ibc_tokens_08_Oct_2021.json
 
 _Please note that you should change the filename accordingly._
 
-You will also need a mainnet Private Key and a mainnet URL. Please add them to tour .env like so:
+You will also need the BridgeBank's owner Private Key and a mainnet URL. Please add them to tour .env like so:
 
 ```
 MAINNET_URL=https://eth-mainnet.alchemyapi.io/v2/XXXXXXXXXXXXXXXXXXXXXXXX
 MAINNET_PRIVATE_KEY=XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+ACTIVE_PRIVATE_KEY=MAINNET_PRIVATE_KEY
 ```
 
 Now, run the following command:

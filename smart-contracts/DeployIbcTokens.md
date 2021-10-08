@@ -7,6 +7,7 @@ Before executing this script, add the following variables to your .env, changing
 ```
 MAINNET_URL=https://eth-mainnet.alchemyapi.io/v2/XXXXXXXXXXXXXXXXXXXXXXXX
 MAINNET_PRIVATE_KEY=XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+ACTIVE_PRIVATE_KEY=MAINNET_PRIVATE_KEY
 ```
 
 Then, create or edit the file data/ibc_tokens_to_deploy.json so that it has only the IbcTokens that you want to deploy.  

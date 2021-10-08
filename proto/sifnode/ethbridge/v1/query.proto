@@ -15,9 +15,17 @@ service Query {
   // CrosschainFeeConfig queries crosschain fee config for a network
   rpc CrosschainFeeConfig(QueryCrosschainFeeConfigRequest)
       returns (QueryCrosschainFeeConfigResponse) {}
-  // LockBurnNonce query lock burn nonce for a relayer in a network
-  rpc LockBurnNonce(QueryLockBurnNonceRequest)
-      returns (QueryLockBurnNonceResponse) {}
+  // EthereumLockBurnNonce query ethereum lock burn nonce for a relayer in a
+  // network
+  rpc EthereumLockBurnNonce(QueryEthereumLockBurnNonceRequest)
+      returns (QueryEthereumLockBurnNonceResponse) {}
+  // WitnessLockBurnNonce query witness lock burn nonce for a relayer in a
+  // network
+  rpc WitnessLockBurnNonce(QueryWitnessLockBurnNonceRequest)
+      returns (QueryWitnessLockBurnNonceResponse) {}
+  // GlocalNonceBlockNumber query block number for a global nonce
+  rpc GlocalNonceBlockNumber(QueryGlocalNonceBlockNumberRequest)
+      returns (QueryGlocalNonceBlockNumberResponse) {}
 }
 
 // QueryEthProphecyRequest payload for EthProphecy rpc query
@@ -58,11 +66,34 @@ message ProphciesCompletedQueryResponse {
   repeated sifnode.oracle.v1.ProphecyInfo prophecy_info = 1;
 }
 
-// QueryLockBurnNonceRequest payload for LockBurnNonce rpc query
-message QueryLockBurnNonceRequest {
+// QueryEthereumLockBurnNonceRequest payload for EthereumLockBurnNonce rpc query
+message QueryEthereumLockBurnNonceRequest {
   sifnode.oracle.v1.NetworkDescriptor network_descriptor = 1;
   string relayer_val_address = 2;
 }
 
-// QueryLockBurnNonceResponse return LockBurnNonce
-message QueryLockBurnNonceResponse { uint64 lock_burn_nonce = 1; }
+// QueryEthereumLockBurnNonceResponse return EthereumLockBurnNonce
+message QueryEthereumLockBurnNonceResponse {
+  uint64 ethereum_lock_burn_nonce = 1;
+}
+
+// QueryWitnessLockBurnNonceRequest payload for WitnessLockBurnNonce rpc query
+message QueryWitnessLockBurnNonceRequest {
+  sifnode.oracle.v1.NetworkDescriptor network_descriptor = 1;
+  string relayer_val_address = 2;
+}
+
+// QueryWitnessLockBurnNonceResponse return WitnessLockBurnNonce
+message QueryWitnessLockBurnNonceResponse {
+  uint64 witness_lock_burn_nonce = 1;
+}
+
+// QueryGlocalNonceBlockNumberRequest payload for GlocalNonceBlockNumber rpc
+// query
+message QueryGlocalNonceBlockNumberRequest {
+  sifnode.oracle.v1.NetworkDescriptor network_descriptor = 1;
+  uint64 global_nonce = 2;
+}
+
+// QueryGlocalNonceBlockNumberResponse return GlocalNonceBlockNumber
+message QueryGlocalNonceBlockNumberResponse { uint64 block_number = 1; }

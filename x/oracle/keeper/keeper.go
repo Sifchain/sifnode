@@ -203,6 +203,17 @@ func (k Keeper) ProcessSignProphecy(ctx sdk.Context, networkDescriptor types.Net
 		return err
 	}
 
+	prophecyInfo, ok := k.GetProphecyInfo(ctx, prophecyID)
+	if !ok {
+		return errors.New("prophecy info not available in keeper")
+	}
+
+	// check the order of witness lock burn nonce
+	lastLockBurnNonce := k.GetWitnessLockBurnNonce(ctx, networkDescriptor, valAddr)
+	if lastLockBurnNonce != 0 && lastLockBurnNonce+1 != prophecyInfo.GlobalNonce {
+		return errors.New("witness node not send the signature in order")
+	}
+
 	oldStatus := prophecy.Status
 
 	newStatus, err := k.AppendValidatorToProphecy(ctx, networkDescriptor, prophecyID, valAddr)
@@ -215,13 +226,15 @@ func (k Keeper) ProcessSignProphecy(ctx sdk.Context, networkDescriptor types.Net
 		return err
 	}
 
-	// emit the event when status from pending to success
-	if oldStatus == types.StatusText_STATUS_TEXT_PENDING && newStatus == types.StatusText_STATUS_TEXT_SUCCESS {
-		prophecyInfo, ok := k.GetProphecyInfo(ctx, prophecyID)
-		if !ok {
-			return errors.New("prophecy info not available in keeper")
-		}
+	// update witness's lock burn nonce
+	k.SetWitnessLockBurnNonce(ctx, networkDescriptor, valAddr, prophecyInfo.GlobalNonce)
 
+	// emit the event when status from pending to success
+	// old = unspecified, new = pending  the prophecy just created, not emit the event
+	// old = unspecified, new = success no such path
+	// old = pending, new = success the only case we will emit the event
+	// old = success, new = success not emit the same event twice
+	if oldStatus == types.StatusText_STATUS_TEXT_PENDING && newStatus == types.StatusText_STATUS_TEXT_SUCCESS {
 		ctx.EventManager().EmitEvents(sdk.Events{
 
 			sdk.NewEvent(
