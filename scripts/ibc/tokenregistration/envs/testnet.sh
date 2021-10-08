@@ -1,6 +1,8 @@
 #!/bin/sh
 
 SIFCHAIN_ID=sifchain-testnet-1 \
+  KEYRING_BACKEND=test \
+  SIF_NODE=https://rpc-testnet.sifchain.finance:443 \
   COSMOS_BASE_DENOM=uphoton \
   COSMOS_CHANNEL_ID=channel-11 \
   COSMOS_COUNTERPARTY_CHANNEL_ID=channel-27 \
@@ -27,9 +29,12 @@ SIFCHAIN_ID=sifchain-testnet-1 \
   JUNO_CHAIN_ID=juno-1 \
   JUNO_CHANNEL_ID=channel-36 \
   JUNO_COUNTERPARTY_CHANNEL_ID=channel-4 \
+  IXO_CHAIN_ID=impacthub-3 \
+  IXO_CHANNEL_ID=channel-38 \
+  IXO_COUNTERPARTY_CHANNEL_ID=channel-12 \
   TERRA_CHAIN_ID=bombay-12 \
   TERRA_CHANNEL_ID=channel-33 \
   TERRA_COUNTERPARTY_CHANNEL_ID=channel-0 \
   CRYPTO_ORG_CHAIN_ID=crypto-org-chain-mainnet-1 \
   CRYPTO_ORG_CHANNEL_ID=channel-16 \
-  CRYPTO_ORG_COUNTERPARTY_CHANNEL_ID=channel-32 ./template/generate-ibc-jsons.sh
+  CRYPTO_ORG_COUNTERPARTY_CHANNEL_ID=channel-32
