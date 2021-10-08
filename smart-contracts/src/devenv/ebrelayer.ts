@@ -6,6 +6,7 @@ import notifier from 'node-notifier';
 import * as path from "path"
 import { GolangResults } from "./golangBuilder";
 import * as fs from "fs";
+import {spawn} from "child_process";
 
 export interface EbrelayerArguments {
   readonly validatorValues: ValidatorValues,

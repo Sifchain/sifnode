@@ -3,6 +3,7 @@ import {HardhatRuntimeEnvironmentToken,} from "./injectionTokens";
 import {SignerWithAddress} from "@nomiclabs/hardhat-ethers/signers";
 import {inject, injectable} from "tsyringe";
 import {isHardhatRuntimeEnvironment} from "./hardhatSupport";
+import {Signer} from "ethers";
 
 /**
  * The accounts necessary for testing a sifchain system

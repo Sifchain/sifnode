@@ -146,7 +146,7 @@ export class SifnodedRunner extends ShellCommand<SifnodedResults> {
 
     const sifnoded = ChildProcess.spawn(
       sifnodedDaemonCmd,
-      { shell: true, stdio: "inherit" }
+      { shell: true, stdio: stdioOptions }
     )
 
     sifnoded.on('exit', (code) => {

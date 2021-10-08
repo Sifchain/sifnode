@@ -68,7 +68,7 @@ describe("BridgeBank", () => {
             smallAmount = amount.div(100)
             const testTokenFactory = (await container.resolve(SifchainContractFactories).bridgeToken).connect(sender)
             testToken = await testTokenFactory.deploy("TEST token", "test", 18, "cosmosDenomHere")
-            
+
             await testToken.connect(sender).grantRole(minterRole, operator.address)
             await testToken.connect(operator).mint(sender.address, amount)
             await testToken.approve(bridgeBank.address, hardhat.ethers.constants.MaxUint256)
@@ -92,7 +92,7 @@ describe("BridgeBank", () => {
         it("should read the whitelist", async () => {
             const btf = await container.resolve(SifchainContractFactories).bridgeToken
             const whitelistItems = await getWhitelistItems(bridgeBank, btf)
-            expect(whitelistItems.length).to.eq(2)
+            expect(whitelistItems.length).to.eq(1)
         })
 
         it("should fail to lock a test token to an invalid address", async () => {
