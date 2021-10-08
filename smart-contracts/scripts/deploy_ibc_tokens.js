@@ -78,7 +78,7 @@ async function main() {
   const data = fs.readFileSync(TOKEN_DATA_SOURCE_FILENAME, "utf8");
   const tokensToDeploy = JSON.parse(data);
 
-  print("yellow", `📢 Will deploy ${tokensToDeploy.length} tokens.`);
+  print("yellow", `📢 Will deploy ${tokensToDeploy.length} tokens`);
 
   // Get the current account
   const accounts = await ethers.getSigners();
@@ -193,7 +193,7 @@ async function deployToken({
     symbol: symbol,
     decimals: decimals,
     denom: denom,
-    address: bridgeToken.address,
+    address: web3.utils.toChecksumAddress(bridgeToken.address),
     grantMinterRoleTx: grantMinterTx.hash,
     grantAdminRoleTx: grantAdminTx.hash,
     renounceMinterRoleTx: renounceMinterTx.hash,
