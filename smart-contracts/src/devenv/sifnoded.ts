@@ -4,7 +4,6 @@ import { GolangResults } from "./golangBuilder";
 import * as path from "path"
 import * as fs from "fs";
 import YAML from 'yaml'
-import { boolean } from "yargs";
 import notifier from 'node-notifier';
 import { EbrelayerArguments } from "./ebrelayer";
 
@@ -38,6 +37,7 @@ export class SifnodedRunner extends ShellCommand<SifnodedResults> {
   output: Promise<SifnodedResults>;
   private outputResolve: any;
   private sifnodedCommand: string;
+  private sifgenCommand: string;
 
   constructor(
     readonly golangResults: GolangResults,
@@ -57,6 +57,8 @@ export class SifnodedRunner extends ShellCommand<SifnodedResults> {
     this.output = new Promise<SifnodedResults>((res, _) => {
       this.outputResolve = res;
     });
+    this.sifgenCommand = path.join(this.golangResults.goBin, "sifgen")
+    this.sifnodedCommand = path.join(this.golangResults.goBin, "sifnoded")
   }
 
   cmd(): [string, string[]] {
@@ -66,6 +68,7 @@ export class SifnodedRunner extends ShellCommand<SifnodedResults> {
   }
 
   async sifgenNetworkCreate(): Promise<SifnodedResults> {
+    // Missing mint amount. Although it has default value
     const sifgenArgs = [
       "network",
       "create",
@@ -80,36 +83,40 @@ export class SifnodedRunner extends ShellCommand<SifnodedResults> {
 
     await fs.promises.mkdir(this.networkDir, { recursive: true });
 
+    // sifgen network create
     const sifgenOutput = ChildProcess.execFileSync(
-      path.join(this.golangResults.goBin, "sifgen"),
+      this.sifgenCommand,
       sifgenArgs,
       { encoding: "utf8" }
     )
+
+    // Debug log
+    // TODO: Add formal loglevel aware logging
+    console.log("SifgenOutput", sifgenOutput)
+
     const file = fs.readFileSync(this.networkConfigFile, 'utf8')
     const networkConfig: ValidatorValues[] = YAML.parse(file)
-    let chainDir: string = "";
     let homeDir: string = "";
+
     for (const validator of networkConfig) {
       const moniker = validator["moniker"]
       const mnemonic = validator["mnemonic"]
       const password = validator["password"]
-      chainDir = path.join(
+      let chainDir: string = path.join(
         this.networkDir,
         "validators",
         this.chainId,
         moniker
       )
+
       homeDir = path.join(chainDir, ".sifnoded")
       await this.addValidatorKeyToTestKeyring(
         moniker,
-        this.networkDir,
         mnemonic,
       )
-      const valOperKey = await this.readValoperKey(
-        moniker,
-        this.networkDir,
-        mnemonic,
-      )
+
+      const valOperKey = await this.readValoperKey(moniker, chainDir)
+
       const stdout = await this.addGenesisValidator(chainDir, valOperKey)
       const whitelistedValidator = ChildProcess.execSync(
         `${this.sifnodedCommand} keys show -a --bech val ${moniker} --keyring-backend test`,
@@ -166,6 +173,8 @@ export class SifnodedRunner extends ShellCommand<SifnodedResults> {
     // sifnoded set-genesis-oracle-admin $adminuser --home $CHAINDIR/.sifnoded
     // sifnoded set-genesis-whitelister-admin $adminuser --home $CHAINDIR/.sifnoded
     // sifnoded set-gen-denom-whitelist $SCRIPT_DIR/whitelisted-denoms.json --home $CHAINDIR/.sifnoded
+
+    // TODO: Homedir would contain value of last assignment. Might need to be fixed when we support more than 1 acc
     ChildProcess.execSync(
       `${this.sifnodedCommand} add-genesis-account ${accountAddress} 100000000000000000000rowan --home ${homeDir}`,
       { encoding: "utf8" }
@@ -188,8 +197,8 @@ export class SifnodedRunner extends ShellCommand<SifnodedResults> {
     };
   }
 
-  async addValidatorKeyToTestKeyring(moniker: string, chainDir: string, mnemonic: string) {
-    const sifgenArgs = [
+  async addValidatorKeyToTestKeyring(moniker: string, mnemonic: string) {
+    const sifnodedArgs = [
       "keys",
       "add",
       moniker,
@@ -197,15 +206,23 @@ export class SifnodedRunner extends ShellCommand<SifnodedResults> {
       "test",
       "--recover",
     ]
+
+    console.log("Add Validator with mnemonics: ", mnemonic);
+
     let child = ChildProcess.execFileSync(
-      path.join(this.golangResults.goBin, "sifnoded"),
-      sifgenArgs,
-      { encoding: "utf8", shell: false, input: `${mnemonic}\n` }
+      this.sifnodedCommand,
+      sifnodedArgs,
+      {
+        encoding: "utf8",
+        shell: false,
+        input: `${mnemonic}\n`
+      }
     );
-    child
+    console.log("Add Validator key to test ring output:", child)
   }
 
-  async readValoperKey(moniker: string, chainDir: string, mnemonic: string): Promise<string> {
+  // TODO: args Position
+  async readValoperKey(moniker: string, homeDirectory: string): Promise<string> {
     const sifgenArgs = [
       "keys",
       "show",
@@ -213,13 +230,11 @@ export class SifnodedRunner extends ShellCommand<SifnodedResults> {
       "--bech",
       "val",
       moniker,
-      // "--home",
-      // path.join(chainDir, ".sifnoded"),
-      "--keyring-backend",
-      "test",
+      "--keyring-backend", "test",
+      "--home", path.join(homeDirectory, ".sifnoded")
     ]
     return ChildProcess.execFileSync(
-      path.join(this.golangResults.goBin, "sifnoded"),
+      this.sifnodedCommand,
       sifgenArgs,
       { encoding: "utf8" }
     ).trim()
@@ -232,19 +247,31 @@ export class SifnodedRunner extends ShellCommand<SifnodedResults> {
       "1",
       valoper,
       "100",
-      "--home",
-      path.join(chainDir, ".sifnoded"),
+      "--home", path.join(chainDir, ".sifnoded"),
     ]
+
+    console.log("Add genesis validator")
     return ChildProcess.execFileSync(
-      path.join(this.golangResults.goBin, "sifnoded"),
+      this.sifnodedCommand,
       sifgenArgs,
       { encoding: "utf8" }
     )
   }
 
-  // async execute() {
-  //   await this.sifgenNetworkCreate()
-  // }
+  // TODO: This function is incomplete. it is extracted from sifchain_start_daemon.sh
+  // Currently fails in CLI
+  async whitelistValidators(moniker: string): Promise<string> {
+    const sifnodedArgs = [
+      "keys",
+      "show",
+      "--keyring-backend",
+      "file",
+      "-a",
+      "--bech", "val",
+      moniker,
+    ]
+    return "";
+  }
 
   override async run(): Promise<void> {
     const output = await this.sifgenNetworkCreate();
