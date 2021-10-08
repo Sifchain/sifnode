@@ -22,10 +22,7 @@ describe("watcher", () => {
         const sifchainAccounts = await ethereumResultsToSifchainAccounts(devEnvObject.ethResults!, hardhat.ethers.provider)
         const factories = container.resolve(SifchainContractFactories)
         const contracts = await buildDevEnvContracts(devEnvObject, hardhat, factories)
-        console.log("xis: ", contracts.bridgeBank.address)
-        console.log("xis: ", await contracts.bridgeBank.owner())
         const sender1 = sifchainAccounts.availableAccounts[0]
-        const sender2 = new Wallet("0x47e179ec197488593b187f80a00eb0da91f1b9d0b13f8733639f19c30a34926a", hardhat.ethers.provider)
         const smallAmount = BigNumber.from(1017)
         await contracts.bridgeBank.connect(sender1).lock(
             recipient,
