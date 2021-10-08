@@ -25,7 +25,7 @@ describe("accounts", async () => {
 })
 
 describe("watcher", () => {
-    const devEnvObject = readDevEnvObj("/home/james/workspace/sifnode/smart-contracts/environment.json")
+    const devEnvObject = readDevEnvObj("environment.json")
     const recipient = web3.utils.utf8ToHex("sif1nx650s8q9w28f2g3t9ztxyg48ugldptuwzpace")
 
     before('register HardhatRuntimeEnvironmentToken', async () => {
