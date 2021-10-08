@@ -1,3 +1,5 @@
+# How to deploy IbcTokens / BridgeTokens
+
 This script will deploy N new BridgeTokens to an EVM network.
 
 Before executing this script, add the following variables to your .env, changing the values to your actual mainnet Alchemy URL and Private Key:
@@ -32,5 +34,3 @@ Note that the `denom` field is optional. If you don't have that information, you
 Finally, run the command `yarn deployIbcTokens:run`.
 
 A new file will be created with the results. It's name will be something like data/deployed_ibc_tokens_07_Oct_2021.json, but with today's date.
-
-@dev If you want to TEST this script, run the command `yarn deployIbcTokens:test`

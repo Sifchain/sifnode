@@ -271,5 +271,11 @@ function treatCommonErrors(e) {
 main()
   .catch((error) => {
     treatCommonErrors(error);
+    logFilename = saveToFile();
+    print(
+      "yellow",
+      `🧾 There was an error, but results have been written to ${logFilename}`
+    );
+    process.exit(0);
   })
   .finally(() => process.exit(0));

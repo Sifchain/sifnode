@@ -1,3 +1,5 @@
+// TODO: test with less coins to see it fail in the middle of the script (should save the file)
+
 require("dotenv").config();
 
 const fs = require("fs");
@@ -5,13 +7,7 @@ const web3 = require("web3");
 const { ethers } = require("hardhat");
 
 const support = require("./helpers/forkingSupport");
-const {
-  print,
-  generateTodayFilename,
-  estimateGasPrice,
-  MINTER_ROLE,
-  ADMIN_ROLE,
-} = require("./helpers/utils");
+const { print, estimateGasPrice } = require("./helpers/utils");
 
 const USE_FORKING = !!process.env.USE_FORKING;
 
@@ -22,24 +18,23 @@ const DEPLOYMENT_NAME = process.env.DEPLOYMENT_NAME || "sifchain-1";
 const CHAIN_ID = process.env.FORKING_CHAIN_ID || 1;
 
 // Will get the token data from this file
-// TODO get it from .env
-const TOKEN_DATA_SOURCE_FILENAME =
-  "./data/deployed_ibc_tokens_07_Oct_2021.json";
+// should be something like "./data/deployed_ibc_tokens_08_Oct_2021.json";
+const TOKEN_DATA_SOURCE_FILENAME = process.env.REGISTER_TOKENS_SOURCE_FILENAME;
 
 // Safeguard: if there is an error estimating gasPrice, it cannot go below this value
 const MINIMUM_GAS_PRICE_IN_GWEI = 100;
 
-const log = {};
+let log = {};
 
 async function main() {
-  print("highlight", "~~~ DEPLOY IBC TOKENS ~~~");
+  print("highlight", "~~~ REGISTER IBC TOKENS ~~~");
 
   // get tokens from file:
   print("yellow", `📢 Getting token data from ${TOKEN_DATA_SOURCE_FILENAME}`);
   const data = fs.readFileSync(TOKEN_DATA_SOURCE_FILENAME, "utf8");
-  const tokensToRegister = JSON.parse(data).tokens;
+  log = JSON.parse(data);
 
-  print("yellow", `📢 Will register ${tokensToRegister.length} tokens`);
+  print("yellow", `📢 Will register ${log.tokens.length} tokens`);
 
   // Create an instance of BridgeBank from the deployed code
   const { instance: bridgeBank } = await support.getDeployedContract(
@@ -53,34 +48,32 @@ async function main() {
   let activeAccount = accounts[0];
 
   // If we're forking, we want to impersonate the owner account
-  let signerOwner;
   if (USE_FORKING) {
-    signerOwner = await setupForking(bridgeBank);
+    const signerOwner = await setupForking(bridgeBank);
     activeAccount = signerOwner;
   } else {
-    signerOwner = ethers.getSigner(activeAccount.address);
     print("cyan", `🤵 Active account is ${activeAccount.address}`);
   }
 
+  // Get the current balance to be able to calculate how much it all cost
   const startingBalance = await ethers.provider.getBalance(
     activeAccount.address
   );
 
+  // Get the ideal gasPrice
   const gasPrice = await estimateGasPrice(MINIMUM_GAS_PRICE_IN_GWEI);
 
-  const txs = [];
-  for (let i = 0; i < tokensToRegister.length; i++) {
-    const tokenData = tokensToRegister[i];
+  // Send transactions
+  for (let i = 0; i < log.tokens.length; i++) {
+    const tokenData = log.tokens[i];
     const tx = await bridgeBank
-      .connect(signerOwner)
+      .connect(activeAccount)
       .addExistingBridgeToken(tokenData.address, {
         gasPrice,
       });
 
-    txs.push({
-      token: tokenData.name,
-      registerTx: tx.hash,
-    });
+    // Add this tx to the file
+    tokenData.registerTx = tx.hash;
 
     print("green", `✅ ${tokenData.name} TX: ${tx.hash}`);
   }
@@ -88,25 +81,40 @@ async function main() {
   // Calculate and log the total cost
   await logTotalCost(activeAccount, startingBalance);
 
+  // Save results to the souce file
+  saveToFile();
+
   print("highlight", "~~~ DONE! ~~~");
 }
 
+// Will add the total cost of this script with the total cost from the deployment script
 async function logTotalCost(account, startingBalance) {
   const endingBalance = await ethers.provider.getBalance(account.address);
-  const totalCost = ethers.BigNumber.from(startingBalance).sub(
+
+  const cost = ethers.BigNumber.from(startingBalance).sub(
     ethers.BigNumber.from(endingBalance)
   );
+  const costInEth = web3.utils.fromWei(cost.toString());
 
-  log.totalCost = web3.utils.fromWei(totalCost.toString());
+  const previousCost = web3.utils.toWei(log.totalCost);
+  const totalCost = ethers.BigNumber.from(cost)
+    .add(ethers.BigNumber.from(previousCost))
+    .toString();
+
+  const totalCostInEth = web3.utils.fromWei(totalCost);
+
+  // Add to the previous cost to save to file
+  log.totalCost = totalCostInEth;
+
   print("cyan", "----");
-  print("cyan", `💵 Total ETH spent: ${log.totalCost}`);
+  print("cyan", `💵 Total ETH spent: ${costInEth}`);
   print("cyan", "----");
 }
 
+// Impersonate the owner account
 async function setupForking(contractInstance) {
   const owner = await contractInstance.owner();
 
-  // Impersonate the admin account
   const signerOwner = await support.impersonateAccount(
     owner,
     "10000000000000000000",
@@ -114,6 +122,14 @@ async function setupForking(contractInstance) {
   );
 
   return signerOwner;
+}
+
+function saveToFile() {
+  fs.writeFileSync(TOKEN_DATA_SOURCE_FILENAME, JSON.stringify(log, null, 1));
+  print(
+    "yellow",
+    `🧾 Results have been written to ${TOKEN_DATA_SOURCE_FILENAME}`
+  );
 }
 
 function treatCommonErrors(e) {
@@ -140,5 +156,7 @@ function treatCommonErrors(e) {
 main()
   .catch((error) => {
     treatCommonErrors(error);
+    saveToFile();
+    process.exit(0);
   })
   .finally(() => process.exit(0));

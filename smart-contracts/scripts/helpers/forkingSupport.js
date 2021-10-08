@@ -3,6 +3,7 @@
  */
 const fs = require("fs");
 const { ethers, network } = require("hardhat");
+const Web3 = require("web3");
 const { print } = require("./utils");
 
 // By default, this will work with a mainnet fork,
@@ -93,7 +94,12 @@ async function setNewEthBalance(address, newBalance) {
   const newValue = `0x${newBalance.toString(16)}`;
   await ethers.provider.send("hardhat_setBalance", [address, newValue]);
 
-  print("magenta", `💰 Balance of account ${address} set to ${newBalance}`);
+  const newBalanceInEth = Web3.utils.fromWei(newBalance);
+
+  print(
+    "magenta",
+    `💰 Balance of account ${address} set to ${newBalanceInEth} ETH`
+  );
 }
 
 /**

@@ -43,11 +43,6 @@ const config: HardhatUserConfig = {
             gasPrice: "auto",
             gasMultiplier: 1.2
         },
-        localRpc: {
-            allowUnlimitedContractSize: false,
-            chainId: 31337,
-            url: 'http://127.0.0.1:8545/',
-        },
     },
     solidity: {
         compilers: [
