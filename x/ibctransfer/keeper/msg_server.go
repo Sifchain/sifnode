@@ -52,7 +52,7 @@ func (srv msgServer) Transfer(goCtx context.Context, msg *sdktransfertypes.MsgTr
 			if token.Amount.Equal(sdk.NewInt(0)) || tokenConversion.Amount.Equal(sdk.NewInt(0)) {
 				return nil, types.ErrAmountTooLowToConvert
 			}
-			if !token.Amount.IsUint64() || !tokenConversion.Amount.IsUint64() {
+			if !tokenConversion.Amount.IsInt64() {
 				return nil, types.ErrAmountTooLargeToSend
 			}
 			err := PrepareToSendConvertedCoins(goCtx, msg, token, tokenConversion, srv.bankKeeper)
@@ -62,8 +62,11 @@ func (srv msgServer) Transfer(goCtx context.Context, msg *sdktransfertypes.MsgTr
 			msg.Token = tokenConversion
 		}
 	}
-	if !msg.Token.Amount.IsUint64() || msg.Token.Amount.Equal(sdk.NewInt(0)) {
+	if !msg.Token.Amount.IsInt64() {
 		return nil, types.ErrAmountTooLargeToSend
+	}
+	if msg.Token.Amount.Equal(sdk.NewInt(0)) {
+		return nil, types.ErrAmountTooLowToConvert
 	}
 	return srv.sdkMsgServer.Transfer(goCtx, msg)
 }
