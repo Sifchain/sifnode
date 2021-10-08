@@ -45,17 +45,6 @@
    "renounceAdminRoleTx": "0xa73e794772613065c3e53db0f25d910f53c0326f52e12a990772c82e72121f0f"
   },
   {
-   "name": "Ion",
-   "symbol": "ION",
-   "decimals": 6,
-   "denom": "",
-   "address": "0xa4Bfc52B96531D2a3412089c04A5411c56F7c1d2",
-   "grantMinterRoleTx": "0x6761d924cce6555d1f64aedae2c50d3e9d9d3521560f186545a0396a8d5a6322",
-   "grantAdminRoleTx": "0x045aa96dbd467ef1387244a6206c5bcceebf950af43396c8a1612078cccf7213",
-   "renounceMinterRoleTx": "0x34aec551064a9e8ac55902afd870f3ecfd9952e6de768c8e240a1dbfcdc7833a",
-   "renounceAdminRoleTx": "0x508efcb1e3a5a8cc1dfcf553830aaab7777df33a0726d05981496feaa28fa954"
-  },
-  {
    "name": "Microtick",
    "symbol": "TICK",
    "decimals": 6,
