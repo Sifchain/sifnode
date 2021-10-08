@@ -1,6 +1,6 @@
 import { HardhatNodeRunner } from "../src/devenv/hardhatNode";
 import { GolangBuilder, GolangResults } from "../src/devenv/golangBuilder";
-import { SifnodedResults, SifnodedRunner, ValidatorValues } from "../src/devenv/sifnoded";
+import { SifnodedResults, SifnodedRunner, ValidatorValues, EbRelayerAccount } from "../src/devenv/sifnoded";
 import { DeployedContractAddresses } from "../scripts/deploy_contracts";
 import { SmartContractDeployer, SmartContractDeployResult } from "../src/devenv/smartcontractDeployer";
 import { RelayerRunner, WitnessRunner, EbrelayerArguments } from "../src/devenv/ebrelayer";
@@ -69,7 +69,7 @@ async function ebrelayerWitnessBuilder(
   contractAddresses: DeployedContractAddresses,
   ethereumAccount: EthereumAddressAndKey,
   validater: ValidatorValues,
-  sifnodeAdminAddress: string,
+  sifnodeAdminAddress: EbRelayerAccount,
   golangResults: GolangResults
 ) {
   const args: EbrelayerArguments = {

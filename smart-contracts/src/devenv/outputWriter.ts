@@ -44,6 +44,7 @@ interface SifEnv {
   VALIDATOR_PUB_KEY: string
   VALIDATOR_ADDRESS: string
   ADMIN_ADDRESS: string
+  ADMIN_NAME: string
   VALIDATOR_CONSENSUS_ADDRESS: string
   CHAINDIR: string
 }
@@ -122,7 +123,8 @@ export function EnvJSONWriter(args: {
       VALIDATOR_MONIKER: val.moniker,
       VALIDATOR_PASSWORD: val.password,
       VALIDATOR_PUB_KEY: val.pub_key,
-      ADMIN_ADDRESS: sif.adminAddress,
+      ADMIN_ADDRESS: sif.adminAddress.account,
+      ADMIN_NAME: sif.adminAddress.name,
       // TODO: Remove hardcoded strings
       CHAINDIR: path.resolve("/tmp/sifnodedNetwork/validators", val.chain_id, val.moniker)
     }
