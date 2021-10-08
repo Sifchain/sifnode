@@ -4,10 +4,7 @@ import {container} from "tsyringe";
 import {HardhatRuntimeEnvironmentToken} from "../../src/tsyringe/injectionTokens";
 import * as hardhat from "hardhat";
 import {BigNumber, Wallet} from "ethers";
-import {
-    devenvEthereumResults,
-    ethereumResultsToSifchainAccounts, readDevEnvObj
-} from "../../src/tsyringe/devenvUtilities";
+import {ethereumResultsToSifchainAccounts, readDevEnvObj} from "../../src/tsyringe/devenvUtilities";
 import {createSignerWithAddresss} from "../../src/tsyringe/hardhatSupport";
 import {SifchainContractFactories} from "../../src/tsyringe/contracts";
 import {buildDevEnvContracts} from "../../src/contractSupport";

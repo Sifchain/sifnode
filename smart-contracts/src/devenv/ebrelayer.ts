@@ -1,12 +1,10 @@
 import * as ChildProcess from "child_process"
-import { ShellCommand, EthereumAddressAndKey } from "./devEnv"
-import { ValidatorValues, EbRelayerAccount } from "./sifnoded"
-import { DeployedContractAddresses } from "../../scripts/deploy_contracts";
+import {EthereumAddressAndKey, ShellCommand} from "./devEnv"
+import {EbRelayerAccount, ValidatorValues} from "./sifnoded"
+import {DeployedContractAddresses} from "../../scripts/deploy_contracts";
 import notifier from 'node-notifier';
-import * as path from "path"
-import { GolangResults } from "./golangBuilder";
+import {GolangResults} from "./golangBuilder";
 import * as fs from "fs";
-import {spawn} from "child_process";
 
 export interface EbrelayerArguments {
   readonly validatorValues: ValidatorValues,
