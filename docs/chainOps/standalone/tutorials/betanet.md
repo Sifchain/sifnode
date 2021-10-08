@@ -16,14 +16,19 @@ make -C ./deploy bundler
 export GOPATH=~/go
 export PATH=$PATH:$GOPATH/bin
 ```
+4. Compile `sifnoded`:
 
-4. Generate a new mnemonic key for your node. This key is what your node will use to eventually sign transactions/blocks on the network.
+```bash
+make install
+```
+
+5. Generate a new mnemonic key for your node. This key is what your node will use to eventually sign transactions/blocks on the network.
 
 ```bash
 rake "sifnode:keys:generate:mnemonic"
 ```
 
-5. Import your newly generated key:
+6. Import your newly generated key:
 
 ```bash
 rake "sifnode:keys:import[<moniker>]"
@@ -41,7 +46,7 @@ e.g.:
 rake "sifnode:keys:import[my-node]"
 ```
 
-6. Check that it's been imported accordingly:
+7. Check that it's been imported accordingly:
 
 ```bash
 rake "sifnode:keys:show[<moniker>]"
@@ -59,13 +64,12 @@ e.g.:
 rake "sifnode:keys:show[my-node]"
 ```
 
-7. Compile `sifnoded`:
+8. Ask for Rowan
 
-```bash
-make install
-```
+Use the address from the command in step 7 to ask for Rowan on our Discord server https://discord.gg/geqyCWSU5K if you plan to stake as a validator.
 
-8. Boot your node:
+
+9. Boot your node:
 
 ```bash
 rake "sifnode:standalone:boot[<chain_id>,<moniker>,'<mnemonic>',<gas_price>,<bind_ip_address>,'<flags>']"
@@ -92,7 +96,7 @@ and your node will start synchronizing with the network. Please note that this m
 
 ## Stake to become a validator
 
-In order to become a validator, that is a node which can participate in consensus on the network, you'll need to stake `rowan`.
+In order to become a validator, that is a node which can participate in consensus on the network, you'll need to stake `rowan`. Make sure you have asked for Rowan for your node as mentioned in step 8 above. 
 
 1. Get the public key of your node:
 
