@@ -201,6 +201,24 @@ sifnoded q tokenregistry generate \
 	--token_permission_ibc_export=true \
 	--token_permission_ibc_import=true | jq > $SIFCHAIN_ID/juno.json
 
-echo "\n\ngenerated entry for $OSMOSIS_CHAIN_ID"
+echo "\n\ngenerated entry for $JUNO_CHAIN_ID"
 
 cat $SIFCHAIN_ID/juno.json | jq
+
+sifnoded q tokenregistry generate \
+	--token_base_denom=uixo \
+	--token_ibc_counterparty_chain_id=$IXO_CHAIN_ID \
+  --token_ibc_channel_id=$IXO_CHANNEL_ID \
+  --token_ibc_counterparty_channel_id=$IXO_COUNTERPARTY_CHANNEL_ID \
+	--token_ibc_counterparty_denom="" \
+	--token_unit_denom="" \
+	--token_decimals=6 \
+	--token_display_name="" \
+	--token_external_symbol="" \
+	--token_permission_clp=true \
+	--token_permission_ibc_export=true \
+	--token_permission_ibc_import=true | jq > $SIFCHAIN_ID/ixo.json
+
+echo "\n\ngenerated entry for $IXO_CHAIN_ID"
+
+cat $SIFCHAIN_ID/ixo.json | jq
