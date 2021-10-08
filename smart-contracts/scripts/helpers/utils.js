@@ -2,7 +2,7 @@ const web3 = require("web3");
 const { ethers } = require("hardhat");
 
 // The estimate gas function multiplies its result by this value (wiggle room)
-GAS_PRICE_BUFFER = 1.2;
+GAS_PRICE_BUFFER = 1.3;
 
 // Roles in IbcTokens / BridgeTokens
 const MINTER_ROLE = web3.utils.soliditySha3("MINTER_ROLE");
