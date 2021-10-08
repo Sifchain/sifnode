@@ -11,7 +11,6 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/stretchr/testify/require"
-	"github.com/syndtr/goleveldb/leveldb"
 
 	"go.uber.org/zap"
 )
@@ -27,8 +26,6 @@ const (
 
 func TestNewCosmosSub(t *testing.T) {
 
-	db, err := leveldb.OpenFile("relayerdb", nil)
-	require.Equal(t, err, nil)
 	privateKey, _ := crypto.HexToECDSA(privateKeyStr)
 	logger, err := zap.NewProduction()
 	if err != nil {
@@ -38,7 +35,7 @@ func TestNewCosmosSub(t *testing.T) {
 	sugaredLogger := logger.Sugar()
 	registryContractAddress := common.HexToAddress(contractAddress)
 	sub := NewCosmosSub(oracletypes.NetworkDescriptor(networkDescriptor), privateKey, tmProvider, ethProvider, registryContractAddress,
-		db, client.Context{}, validatorMoniker, sugaredLogger)
+		client.Context{}, validatorMoniker, sugaredLogger)
 	require.NotEqual(t, sub, nil)
 }
 

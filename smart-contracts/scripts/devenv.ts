@@ -10,6 +10,7 @@ import { notify } from "node-notifier";
 import { strict, string } from "yargs";
 import { ContractFactory } from "ethers";
 import { EnvJSONWriter } from "../src/devenv/outputWriter";
+import fs from "fs";
 
 async function startHardhat() {
   const node = new HardhatNodeRunner()
@@ -91,6 +92,7 @@ async function ebrelayerWitnessBuilder(
 
 async function main() {
   try {
+    await fs.promises.mkdir("/tmp/sifnode", { recursive: true });
     const sigterm = new Promise((res, _) => {
       process.on('SIGINT', res);
       process.on('SIGTERM', res);

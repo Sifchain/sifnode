@@ -17,6 +17,7 @@ linters:
     - govet
     - ineffassign
 #    - interfacer
+    # - fieldalignment
     - misspell
     - nakedret
     - prealloc

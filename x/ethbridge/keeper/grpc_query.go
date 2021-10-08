@@ -89,3 +89,19 @@ func (srv queryServer) WitnessLockBurnNonce(ctx context.Context, req *types.Quer
 
 	return &res, nil
 }
+
+func (srv queryServer) GlocalNonceBlockNumber(ctx context.Context, req *types.QueryGlocalNonceBlockNumberRequest) (*types.QueryGlocalNonceBlockNumberResponse, error) {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+
+	networkDescriptor := req.GetNetworkDescriptor()
+	globalNonce := req.GlobalNonce
+
+	blockNumber, err := srv.Keeper.GetGlocalNonceToBlockNumber(sdkCtx, networkDescriptor, globalNonce)
+	if err != nil {
+		return nil, err
+	}
+
+	res := types.NewGlocalNonceBlockNumberResponse(blockNumber)
+
+	return &res, nil
+}

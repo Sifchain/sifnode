@@ -6,10 +6,11 @@ import (
 
 // query endpoints supported by the oracle Querier
 const (
-	QueryEthProphecy           = "prophecies"
-	QueryCrosschainFeeConfig   = "crosschainFeeConfig"
-	QueryEthereumLockBurnNonce = "ethereumLockBurnNonce"
-	QueryWitnessLockBurnNonce  = "witnessLockBurnNonce"
+	QueryEthProphecy            = "prophecies"
+	QueryCrosschainFeeConfig    = "crosschainFeeConfig"
+	QueryEthereumLockBurnNonce  = "ethereumLockBurnNonce"
+	QueryWitnessLockBurnNonce   = "witnessLockBurnNonce"
+	QueryGlocalNonceBlockNumber = "glocalNonceBlockNumber"
 )
 
 // NewQueryEthProphecyRequest creates a new QueryEthProphecyParams
@@ -69,5 +70,20 @@ func NewWitnessLockBurnNonceRequest(networkDescriptor oracletypes.NetworkDescrip
 func NewWitnessLockBurnNonceResponse(lockBurnNonce uint64) QueryWitnessLockBurnNonceResponse {
 	return QueryWitnessLockBurnNonceResponse{
 		WitnessLockBurnNonce: lockBurnNonce,
+	}
+}
+
+// NewQueryGlocalNonceBlockNumberRequest creates a new QueryGlocalNonceBlockNumberRequest
+func NewQueryGlocalNonceBlockNumberRequest(networkDescriptor oracletypes.NetworkDescriptor, globalNonce uint64) *QueryGlocalNonceBlockNumberRequest {
+	return &QueryGlocalNonceBlockNumberRequest{
+		NetworkDescriptor: networkDescriptor,
+		GlobalNonce:       globalNonce,
+	}
+}
+
+// NewGlocalNonceBlockNumberResponse creates a new QueryWitnessLockBurnNonceResponse instance
+func NewGlocalNonceBlockNumberResponse(blockNumber uint64) QueryGlocalNonceBlockNumberResponse {
+	return QueryGlocalNonceBlockNumberResponse{
+		BlockNumber: blockNumber,
 	}
 }

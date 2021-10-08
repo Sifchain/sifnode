@@ -1,15 +1,17 @@
 import * as fs from 'fs';
-import { BaseContract, ContractFactory } from "ethers";
-import { HardhatRuntimeEnvironment } from "hardhat/types";
-import { inject, injectable, singleton } from "tsyringe";
+import {BaseContract} from "ethers";
+import {HardhatRuntimeEnvironment} from "hardhat/types";
+import {inject, injectable, singleton} from "tsyringe";
 import {
   DeploymentChainId,
   DeploymentDirectory,
   DeploymentName,
   HardhatRuntimeEnvironmentToken
 } from "./tsyringe/injectionTokens";
-import { BridgeBank, BridgeRegistry, BridgeToken, CosmosBridge, IbcToken } from "../build";
+import {BridgeBank, BridgeRegistry, BridgeToken, CosmosBridge, IbcToken} from "../build";
 import * as path from "path"
+import {SifchainContractFactories} from "./tsyringe/contracts";
+import {DevEnvObject} from "./devenv/outputWriter";
 
 export async function getContractFromTruffleArtifact<T extends BaseContract>(
   hre: HardhatRuntimeEnvironment,
@@ -38,12 +40,10 @@ export class DeployableContract<T extends BaseContract> {
     @inject(DeploymentName) deploymentName: string,
     @inject(DeploymentChainId) deploymentChainId: number,
   ) {
-    const t = this
-    const r = typeof this
-    const n = this.contractName()
+    const contractName = this.contractName()
     this.contract = getContractFromTruffleArtifact(
       hre,
-      path.join(deploymentDirectory, deploymentName, `${n}.json`),
+      path.join(deploymentDirectory, deploymentName, `${contractName}.json`),
       deploymentChainId
     )
   }
@@ -96,5 +96,22 @@ export function requiredEnvVar(name: string): string {
     return result
   } else {
     throw `No setting for ${name} in environment`
+  }
+}
+
+export interface DevEnvContracts {
+  cosmosBridge: CosmosBridge
+  bridgeBank: BridgeBank
+  bridgeRegistry: BridgeRegistry
+  rowanContract: BridgeToken
+}
+
+export async function buildDevEnvContracts(devEnv: DevEnvObject, hre: HardhatRuntimeEnvironment, factories: SifchainContractFactories): Promise<DevEnvContracts> {
+  let addresses = devEnv.contractResults?.contractAddresses!
+  return {
+    cosmosBridge: (await factories.cosmosBridge).attach(addresses.cosmosBridge),
+    bridgeBank: (await factories.bridgeBank).attach(addresses.bridgeBank),
+    bridgeRegistry: (await factories.bridgeRegistry).attach(addresses.bridgeRegistry),
+    rowanContract: (await factories.bridgeToken).attach(addresses.rowanContract)
   }
 }

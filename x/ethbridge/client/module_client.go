@@ -28,7 +28,8 @@ func GetQueryCmd() *cobra.Command {
 	ethBridgeQueryCmd.AddCommand(
 		cli.GetCmdGetEthBridgeProphecy(),
 		cli.GetCmdGetCrosschainFeeConfig(),
-		cli.GetLockBurnNonce(),
+		cli.GetEthereumLockBurnNonce(),
+		cli.GetWitnessLockBurnNonce(),
 	)
 
 	return ethBridgeQueryCmd
