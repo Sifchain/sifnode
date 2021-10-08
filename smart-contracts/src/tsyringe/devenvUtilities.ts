@@ -2,8 +2,8 @@ import {EthereumResults} from "../devenv/devEnv";
 import fs from "fs";
 import {SifchainAccounts} from "./sifchainAccounts";
 import {createSignerWithAddresss} from "./hardhatSupport";
-import {SignerWithAddress} from "@nomiclabs/hardhat-ethers/signers";
 import {DevEnvObject} from "../devenv/outputWriter";
+import * as ethers from "ethers";
 
 export function readDevEnvObj(devenvJsonPath: string): DevEnvObject {
     const contents = fs.readFileSync(devenvJsonPath, 'utf8')
@@ -17,11 +17,11 @@ export function devenvEthereumResults(devenvJsonPath: string): EthereumResults {
     return jsonObj["ethResults"] as EthereumResults
 }
 
-export async function ethereumResultsToSifchainAccounts(e: EthereumResults): Promise<SifchainAccounts> {
-    const operator = createSignerWithAddresss(e.accounts.operator.address, e.accounts.operator.privateKey)
-    const owner = createSignerWithAddresss(e.accounts.owner.address, e.accounts.owner.privateKey)
-    const pauser = createSignerWithAddresss(e.accounts.pauser.address, e.accounts.pauser.privateKey)
-    const validators = e.accounts.validators.map(k => createSignerWithAddresss(k.address, k.privateKey))
-    const av = e.accounts.available.map(k => createSignerWithAddresss(k.address, k.privateKey))
+export async function ethereumResultsToSifchainAccounts(e: EthereumResults, provider: ethers.providers.JsonRpcProvider): Promise<SifchainAccounts> {
+    const operator = createSignerWithAddresss(e.accounts.operator.address, e.accounts.operator.privateKey, provider)
+    const owner = createSignerWithAddresss(e.accounts.owner.address, e.accounts.owner.privateKey, provider)
+    const pauser = createSignerWithAddresss(e.accounts.pauser.address, e.accounts.pauser.privateKey, provider)
+    const validators = e.accounts.validators.map(k => createSignerWithAddresss(k.address, k.privateKey, provider))
+    const av = e.accounts.available.map(k => createSignerWithAddresss(k.address, k.privateKey, provider))
     return new SifchainAccounts(operator, owner, pauser, validators, av)
 }
