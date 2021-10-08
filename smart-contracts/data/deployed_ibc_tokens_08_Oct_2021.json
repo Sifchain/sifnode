@@ -1,0 +1,104 @@
+{
+ "tokens": [
+  {
+   "name": "Starname",
+   "symbol": "IOV",
+   "decimals": 6,
+   "denom": "",
+   "address": "0x3dE8006B2c571eBC19a5d3a85a0940A7a9339470",
+   "grantMinterRoleTx": "0xafb82ce51391123f00225a37db81e5728badb92691e99847fc9c8381627a0861",
+   "grantAdminRoleTx": "0x503b81c7975a087441551ba5e37bb962b237f09435a0a600d7e3b10ab004dcf9",
+   "renounceMinterRoleTx": "0x4087d1abb2f5b41e7e2cb7b1627ccd07121d6d62eda1d20353b2e0caed0db20d",
+   "renounceAdminRoleTx": "0xe7e0c40fdf70efd864310170a104f92c459569bf078372707f7a84caa4d6509b"
+  },
+  {
+   "name": "Certik",
+   "symbol": "CTK",
+   "decimals": 6,
+   "denom": "",
+   "address": "0x4c67B8392fC17892338d590e5AE1aB7BE485BE50",
+   "grantMinterRoleTx": "0x5fb6455ed854fe8cff8efb318b3ea8b039ed6729be5fc563c1f921a6d3fc9e51",
+   "grantAdminRoleTx": "0x0392e4d148d2e1011d3237d6d643d1fa00b4d8363bd932557dfcf012990183d4",
+   "renounceMinterRoleTx": "0xc84997322d0da5632c3d3786b37c29d89376fb2b8fbbf3c9d60bbab52b44ccf5",
+   "renounceAdminRoleTx": "0xaf238b38f83dc89a5a06b85ff408d913087b9b63d8b40ea3c2f57f1c9096995f"
+  },
+  {
+   "name": "ixo",
+   "symbol": "IXO",
+   "decimals": 6,
+   "denom": "",
+   "address": "0x8Ea2645CD39D5e0C901bCA25dF8d0998a6926cf2",
+   "grantMinterRoleTx": "0x5abae88969776e926cde55ad2cad07a691323cb0eb5579ae92048f56743774df",
+   "grantAdminRoleTx": "0x938e79acdbaab8236a42080644da1f31cba64b68da4275866b7318a7b8448f92",
+   "renounceMinterRoleTx": "0x7fef85d35475d8925154759591da071da30fe487d82a2fe3944047eb74eb4fbe",
+   "renounceAdminRoleTx": "0xd3889cec427565248e26aff21e0f47bbd04f9bfe7d4b2f55233376b2d85dd34d"
+  },
+  {
+   "name": "e-Money",
+   "symbol": "NGM",
+   "decimals": 6,
+   "denom": "",
+   "address": "0x56667705DF047677A15D3D417A138b10B6ed62C4",
+   "grantMinterRoleTx": "0x16318a768485a6be8885cebae995a7c564ad5e0693043490d157dbec52c3d4bc",
+   "grantAdminRoleTx": "0x4fea2f47994fab0a3d91924c2ae47ede633f0b8dcd5fc3595d312cb93bd45031",
+   "renounceMinterRoleTx": "0x3ceb29e50cbe91de7bc46f4bebe04bc14f980b858eb4780799bf367d3b252e09",
+   "renounceAdminRoleTx": "0xa73e794772613065c3e53db0f25d910f53c0326f52e12a990772c82e72121f0f"
+  },
+  {
+   "name": "Microtick",
+   "symbol": "TICK",
+   "decimals": 6,
+   "denom": "",
+   "address": "0xcf9902B43D01D7C6cd5c12e0c1112cc2C4FC4Ec5",
+   "grantMinterRoleTx": "0xc8a1ac379869198bf762cdbd4168e47ff1422140940a6449aef54c9f5c482aac",
+   "grantAdminRoleTx": "0xb2213392e2f14d6918ae4e72a3b1871fe1c371929f6a40f453f80ee77b8d7704",
+   "renounceMinterRoleTx": "0xf6c33153fc21075941d1406f79500704091a4d70d632c20f2f6d80e91e619416",
+   "renounceAdminRoleTx": "0xa48289d41c46b62bb2a99a3b43088299c53fe8754823e3fbf3ac65800fe7e623"
+  },
+  {
+   "name": "e-Money EUR",
+   "symbol": "EEUR",
+   "decimals": 6,
+   "denom": "",
+   "address": "0x714bfD06Da6EB24fAc379f0d9DEBFa85261bF439",
+   "grantMinterRoleTx": "0x67bcc0ddf0f8012bbe32d2da8e251e97d27441d36094c878806c3427e99b5d83",
+   "grantAdminRoleTx": "0xe512f7d3b2a00bea68b59d5fc5b1c4321a2fdc5f3951e4529859650202ad9583",
+   "renounceMinterRoleTx": "0x42d46695f64a9469b522e154aee9643ae779766ca9a84d797678e9a265312c8c",
+   "renounceAdminRoleTx": "0xfe991bc1fe78cc19f33351f9bb46b5f678c4af0c26c3a077b147d708cc0273c3"
+  },
+  {
+   "name": "BitCanna",
+   "symbol": "BCNA",
+   "decimals": 6,
+   "denom": "",
+   "address": "0xeB5Bea778339e5F0C8D9419cf9891445af823A29",
+   "grantMinterRoleTx": "0x071a6360cef97ea2800bd75722d520d6070750f257e3d472f166c9d034142e17",
+   "grantAdminRoleTx": "0x98d92937988f7a2ef589e593ac2dbc9e84f079055461694f99ad25f3a2dc48e5",
+   "renounceMinterRoleTx": "0x2aa3f19051366c898b50947ae26e2cf87846b6f1649f4ccd31c76d164520e29a",
+   "renounceAdminRoleTx": "0x982d4d260a7681059dc01f0fbf9d841f6b0cd21f7f5051b9e781a8c462ebdf9e"
+  },
+  {
+   "name": "Junø",
+   "symbol": "JUNO",
+   "decimals": 6,
+   "denom": "",
+   "address": "0x413e8196E7D6d2C02A6BCcc46366F881017ea479",
+   "grantMinterRoleTx": "0xe385586f6a1e3a218979b4264e0dfdce420ad2cb74d434fe858df1d42331576a",
+   "grantAdminRoleTx": "0x519f677d4df0316fcd54663f373267e26f817b264452534412c0d8034bb3283c",
+   "renounceMinterRoleTx": "0xe4ac1abc6d93731defc25253b9d7df5264920614a57052ce72bc4fb794b04299",
+   "renounceAdminRoleTx": "0x68b304c45c55c9dd644d8a80a2ab44c84ad63063b1b61535f8567184b7eb43d2"
+  },
+  {
+   "name": "Sentinel",
+   "symbol": "DVPN",
+   "decimals": 6,
+   "denom": "",
+   "address": "0xc81978862b6cE566400579a5F8975732D42BD410",
+   "grantMinterRoleTx": "0x99f86ac8ad41cc8cc6c1333875f32e62a96c22d1591be75775f5e67101cb4bf2",
+   "grantAdminRoleTx": "0xc86bf540a86559fe73558876c2447f46af2f9d0e5cf36dda2b12a4b122c7b302",
+   "renounceMinterRoleTx": "0x0b614e3bcba22356d925858933a21f50bc2efb9db7310919d3099b6cc9cdec79",
+   "renounceAdminRoleTx": "0xae6822534e4fca641b7ade72fa3ff72a17ddca90895f024cbc73767f5708775f"
+  }
+ ],
+ "totalCost": "1.610953733612433920"
+}

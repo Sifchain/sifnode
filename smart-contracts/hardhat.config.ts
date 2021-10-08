@@ -1,7 +1,7 @@
 import * as dotenv from "dotenv"
 import { HardhatUserConfig } from "hardhat/config"
 import "@nomiclabs/hardhat-ethers"
-import "@nomiclabs/hardhat-etherscan"
+//import "@nomiclabs/hardhat-etherscan"
 import '@openzeppelin/hardhat-upgrades'
 import "reflect-metadata"; // needed by tsyringe
 import "@typechain/hardhat"
@@ -17,18 +17,18 @@ const ropstenUrl = process.env['ROPSTEN_URL'] ?? "https://example.com"
 
 const activePrivateKey = process.env[process.env['ACTIVE_PRIVATE_KEY'] ?? "0xabcd"] ?? "0xabcd";
 
+// Works only for 'hardhat' network:
+const useForking = !!process.env.USE_FORKING;
+
 const config: HardhatUserConfig = {
   networks: {
     hardhat: {
-      allowUnlimitedContractSize: false
-    },
-    mainnetFork: {
-      url: mainnetUrl,
       allowUnlimitedContractSize: false,
       chainId: 1,
       forking: {
+        enabled: useForking,
         url: mainnetUrl,
-        blockNumber: 13200632,
+        blockNumber: 13378744,
       }
     },
     ropsten: {
@@ -70,11 +70,6 @@ const config: HardhatUserConfig = {
   },
   mocha: {
     timeout: 200000
-  },
-  etherscan: {
-    // Your API key for Etherscan
-    // Obtain one at https://etherscan.io/
-    apiKey: process.env['ETHERSCAN_API_KEY']
   }
 }
 
