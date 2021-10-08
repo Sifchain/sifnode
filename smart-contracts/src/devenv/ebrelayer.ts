@@ -68,7 +68,9 @@ export class WitnessRunner extends ShellCommand<EbrelayerResults> {
       "--symbol-translator-file",
       this.symbolTranslatorFile,
       "--relayerdb-path",
-      this.relayerdbPath
+      this.relayerdbPath,
+      "--home",
+      this.args.sifnodeAccount.homeDir
     ]]
   }
 
@@ -141,6 +143,8 @@ export class RelayerRunner extends ShellCommand<EbrelayerResults> {
       this.args.sifnodeAccount.account,
       "--symbol-translator-file",
       this.symbolTranslatorFile,
+      "--home",
+      this.args.sifnodeAccount.homeDir
       // "--relayerdb-path",
       // this.relayerdbPath
     ]]

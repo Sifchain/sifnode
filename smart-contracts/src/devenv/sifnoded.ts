@@ -23,6 +23,7 @@ export interface ValidatorValues {
 export interface EbRelayerAccount {
   name: string;
   account: string;
+  homeDir: string;
 }
 export interface SifnodedResults {
   validatorValues: ValidatorValues[];
@@ -115,7 +116,7 @@ export class SifnodedRunner extends ShellCommand<SifnodedResults> {
         mnemonic,
       )
 
-      const valOperKey = await this.readValoperKey(moniker, chainDir)
+      const valOperKey = this.readValoperKey(moniker, homeDir)
 
       const stdout = await this.addGenesisValidator(chainDir, valOperKey)
       const whitelistedValidator = ChildProcess.execSync(
@@ -159,7 +160,7 @@ export class SifnodedRunner extends ShellCommand<SifnodedResults> {
   }
 
   addRelayerWitnessAccount(name: string, homeDir: string): EbRelayerAccount {
-    let accountAddCmd = `${this.sifnodedCommand} keys add ${name} --keyring-backend test --output json`;
+    let accountAddCmd = `${this.sifnodedCommand} keys add ${name} --keyring-backend test --output json --home ${homeDir}`;
     const accountJSON = ChildProcess.execSync(
       accountAddCmd,
       { encoding: "utf8", input: "yes\nyes" }
@@ -191,9 +192,19 @@ export class SifnodedRunner extends ShellCommand<SifnodedResults> {
       `${this.sifnodedCommand} set-gen-denom-whitelist ${this.whitelistFile} --home ${homeDir}`,
       { encoding: "utf8" }
     ).trim()
+    // Whitelist Relayer/Witness Account
+    const EVM_Network_Descriptor = 1;
+    const Validator_Power = 100;
+    const bachAddress = this.readValoperKey(name, homeDir);
+    ChildProcess.execSync(
+      `${this.sifnodedCommand} add-genesis-validators ${EVM_Network_Descriptor} ${bachAddress} ${Validator_Power} --home ${homeDir}`,
+      { encoding: "utf8" }
+    ).trim()
+
     return {
       account: accountAddress,
-      name: name
+      name: name,
+      homeDir
     };
   }
 
@@ -222,20 +233,9 @@ export class SifnodedRunner extends ShellCommand<SifnodedResults> {
   }
 
   // TODO: args Position
-  async readValoperKey(moniker: string, homeDirectory: string): Promise<string> {
-    const sifgenArgs = [
-      "keys",
-      "show",
-      "-a",
-      "--bech",
-      "val",
-      moniker,
-      "--keyring-backend", "test",
-      "--home", path.join(homeDirectory, ".sifnoded")
-    ]
-    return ChildProcess.execFileSync(
-      this.sifnodedCommand,
-      sifgenArgs,
+  readValoperKey(moniker: string, homeDir: string): string {
+    return ChildProcess.execSync(
+      `${this.sifnodedCommand} keys show -a --bech val ${moniker} --keyring-backend test --home ${homeDir}`,
       { encoding: "utf8" }
     ).trim()
   }
