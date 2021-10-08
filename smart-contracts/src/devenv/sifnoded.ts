@@ -93,7 +93,6 @@ export class SifnodedRunner extends ShellCommand<SifnodedResults> {
 
     let stdioOptions: StdioOptions = ["ignore", sifnodedLogFile, sifnodedLogFile]
 
-    // sifgen network create
     const sifgenOutput = ChildProcess.execFileSync(
       this.sifgenCommand,
       sifgenArgs,
