@@ -28,7 +28,7 @@ const config: HardhatUserConfig = {
       forking: {
         enabled: useForking,
         url: mainnetUrl,
-        blockNumber: 13374085,
+        blockNumber: 13378744,
       }
     },
     ropsten: {
