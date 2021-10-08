@@ -6,6 +6,11 @@ import * as fs from "fs";
 import YAML from 'yaml'
 import notifier from 'node-notifier';
 import { EbrelayerArguments } from "./ebrelayer";
+import {
+  ExecFileSyncOptions,
+  ExecFileSyncOptionsWithStringEncoding, ExecSyncOptionsWithStringEncoding,
+  StdioOptions
+} from "child_process";
 
 export interface ValidatorValues {
   chain_id: string,
@@ -42,7 +47,7 @@ export class SifnodedRunner extends ShellCommand<SifnodedResults> {
 
   constructor(
     readonly golangResults: GolangResults,
-    readonly logfile = "/tmp/sifnoded.log",
+    readonly logfile = "/tmp/sifnode/sifnoded.log",
     readonly rpcPort = 9000,
     readonly nValidators = 1,
     readonly nRelayers = 1,
@@ -84,7 +89,10 @@ export class SifnodedRunner extends ShellCommand<SifnodedResults> {
 
     await fs.promises.mkdir(this.networkDir, { recursive: true });
 
-    // sifgen network create
+    const sifnodedLogFile = fs.openSync(this.logfile, "w");
+
+    let stdioOptions: StdioOptions = ["ignore", sifnodedLogFile, sifnodedLogFile]
+
     const sifgenOutput = ChildProcess.execFileSync(
       this.sifgenCommand,
       sifgenArgs,

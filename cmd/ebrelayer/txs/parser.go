@@ -2,7 +2,6 @@ package txs
 
 import (
 	"errors"
-	"fmt"
 	"log"
 	"strconv"
 	"strings"
@@ -84,6 +83,7 @@ func EthereumEventToEthBridgeClaim(valAddr sdk.ValAddress, event types.EthereumE
 func BurnLockEventToCosmosMsg(attributes []abci.EventAttribute, sugaredLogger *zap.SugaredLogger) (types.CosmosMsg, error) {
 	var prophecyID []byte
 	var networkDescriptor uint32
+	var globalNonce uint64
 
 	attributeNumber := 0
 
@@ -91,12 +91,9 @@ func BurnLockEventToCosmosMsg(attributes []abci.EventAttribute, sugaredLogger *z
 		key := string(attribute.GetKey())
 		val := string(attribute.GetValue())
 
-		fmt.Printf(" key is %v, value is %v\n", key, val)
-
 		// Set variable based on the attribute's key
 		switch key {
 		case types.ProphecyID.String():
-			fmt.Printf(" prophecy id is %v\n", val)
 			prophecyID = []byte(val)
 			attributeNumber++
 
@@ -113,14 +110,22 @@ func BurnLockEventToCosmosMsg(attributes []abci.EventAttribute, sugaredLogger *z
 			if !oracletypes.NetworkDescriptor(networkDescriptor).IsValid() {
 				return types.CosmosMsg{}, errors.New("network id is invalid")
 			}
+		case types.GlobalNonce.String():
+			attributeNumber++
+			tempGlobalNonce, err := strconv.ParseUint(val, 10, 64)
+			if err != nil {
+				sugaredLogger.Errorw("globalNonce can't parse", "globalNonce", val)
+				return types.CosmosMsg{}, errors.New("globalNonce can't parse")
+			}
+			globalNonce = tempGlobalNonce
 		}
 	}
 
-	if attributeNumber < 2 {
+	if attributeNumber < 3 {
 		sugaredLogger.Errorw("message not complete", "attributeNumber", attributeNumber)
 		return types.CosmosMsg{}, errors.New("message not complete")
 	}
-	return types.NewCosmosMsg(oracletypes.NetworkDescriptor(networkDescriptor), prophecyID), nil
+	return types.NewCosmosMsg(oracletypes.NetworkDescriptor(networkDescriptor), prophecyID, globalNonce), nil
 }
 
 // AttributesToEthereumBridgeClaim parses data from event to EthereumBridgeClaim

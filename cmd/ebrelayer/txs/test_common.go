@@ -93,16 +93,17 @@ func CreateTestProphecyClaimEvent(t *testing.T) types.ProphecyClaimEvent {
 // CreateTestCosmosMsg creates a sample Cosmos Msg for testing purposes
 func CreateTestCosmosMsg(t *testing.T, claimType types.Event) types.CosmosMsg {
 	prophecyID := []byte{}
+	globalNonce := uint64(0)
 
 	// Create new Cosmos Msg
-	cosmosMsg := types.NewCosmosMsg(oracletypes.NetworkDescriptor(TestNetworkDescriptor), prophecyID)
+	cosmosMsg := types.NewCosmosMsg(oracletypes.NetworkDescriptor(TestNetworkDescriptor), prophecyID, globalNonce)
 
 	return cosmosMsg
 }
 
 // CreateCosmosMsgAttributes creates expected attributes for a MsgBurn/MsgLock for testing purposes
 func CreateCosmosMsgAttributes(t *testing.T, claimType types.Event) []abci.EventAttribute {
-	attributes := [2]abci.EventAttribute{}
+	attributes := [3]abci.EventAttribute{}
 
 	// (key, value) pairing for "network-descriptor" key
 	pairEthereumChainID := abci.EventAttribute{
@@ -116,9 +117,16 @@ func CreateCosmosMsgAttributes(t *testing.T, claimType types.Event) []abci.Event
 		Value: []byte{},
 	}
 
+	// (key, value) pairing for "network-descriptor" key
+	pairGlobalNonce := abci.EventAttribute{
+		Key:   []byte("global_nonce"),
+		Value: []byte(strconv.Itoa(0)),
+	}
+
 	// Assign pairs to attributes array
 	attributes[0] = pairEthereumChainID
 	attributes[1] = pairProphecyID
+	attributes[2] = pairGlobalNonce
 	return attributes[:]
 }
 
