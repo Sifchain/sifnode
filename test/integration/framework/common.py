@@ -8,6 +8,7 @@ import urllib.request
 log = logging.getLogger(__name__)
 
 NULL_ADDRESS = "0x0000000000000000000000000000000000000000"
+ANY_ADDR = "0.0.0.0"
 
 
 def stdout(res):
