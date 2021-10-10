@@ -253,7 +253,7 @@ class UIStackEnvironment:
         self.project.yarn([], cwd=project_dir("ui/chains/eth"))  # Installs ui/chains/eth/node_modules
         # Note that this runs ganache-cli from $PATH whereas scripts start it with yarn in ui/chains/eth
         ganache_proc = Ganache.start_ganache_cli(self.cmd, mnemonic=self.ethereum_root_mnemonic, db=self.ganache_db_path,
-            port=7545, network_id=self.network_id, gas_price=20000000000, gas_limit=6721975, host="0.0.0.0")
+            port=7545, network_id=self.network_id, gas_price=20000000000, gas_limit=6721975, host=ANY_ADDR)
 
         # ui/scripts/stack-launch.sh -> ui/scripts/_sif.sh -> ui/chains/sif/launch.sh
         self.cmd.sifnoded_init("test", self.chain_id)
@@ -469,7 +469,7 @@ class IntegrationTestsEnvironment:
         self.test_integration_dir = project_dir("test/integration")
         self.data_dir = project_dir("test/integration/vagrant/data")
         self.chainnet = "localnet"
-        self.tcp_url = "tcp://0.0.0.0:26657"
+        self.tcp_url = f"tcp://{ANY_ADDR}:26657"
         self.ethereum_websocket_address = "ws://localhost:7545/"
         self.ganache_mnemonic = ["candy", "maple", "cake", "sugar", "pudding", "cream", "honey", "rich", "smooth",
                 "crumble", "sweet", "treat"]
@@ -508,7 +508,7 @@ class IntegrationTestsEnvironment:
             block_time = None  # TODO
             account_keys_path = os.path.join(self.data_dir, "ganachekeys.json")
             ganache_db_path = self.cmd.mktempdir()
-            ganache_proc = Ganache.start_ganache_cli(self.cmd, block_time=block_time, host="0.0.0.0",
+            ganache_proc = Ganache.start_ganache_cli(self.cmd, block_time=block_time, host=ANY_ADDR,
                 mnemonic=self.ganache_mnemonic, network_id=self.network_id, port=7545, db=ganache_db_path,
                 account_keys_path=account_keys_path, log_file=ganache_log_file)
 
@@ -719,7 +719,7 @@ class IntegrationTestsEnvironment:
         ganache_db_path = self.state_vars["GANACHE_DB_DIR"]
         account_keys_path = os.path.join(self.data_dir, "ganachekeys.json")  # TODO this is in test/integration/vagrant/data, which is supposed to be cleared
 
-        ganache_proc = Ganache.start_ganache_cli(self.cmd, block_time=block_time, host="0.0.0.0",
+        ganache_proc = Ganache.start_ganache_cli(self.cmd, block_time=block_time, host=ANY_ADDR,
             mnemonic=self.ganache_mnemonic, network_id=self.network_id, port=7545, db=ganache_db_path,
             account_keys_path=account_keys_path)  # TODO log_file
 
@@ -853,7 +853,7 @@ class Peggy2Environment(IntegrationTestsEnvironment):
         self.cmd.sifchain_init_peggy(validator_moniker, validator_mnemonic, sifnoded_home, denom_whitelist_file)
 
         tendermint_port = 26657
-        tcp_url = "tcp://{}:{}".format("0.0.0.0", tendermint_port)
+        tcp_url = "tcp://{}:{}".format(ANY_ADDR, tendermint_port)
         sifnoded_proc = self.cmd.sifnoded_start(minimum_gas_prices=[0.5, "rowan"], tcp_url=tcp_url,
             sifnoded_home=sifnoded_home, log_format_json=True, log_file=sifnoded_log_file)
 
