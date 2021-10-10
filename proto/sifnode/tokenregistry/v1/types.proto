@@ -20,6 +20,7 @@ enum Permission {
   IBCEXPORT =  2;
   IBCIMPORT = 3;
 }
+
 /*
   unit_denom -
   name of denomination unit of this token that is the smallest unit stored.
@@ -43,14 +44,21 @@ enum Permission {
 */
 
 message RegistryEntry {
-  int32 decimals = 1;
-  string denom = 2;
-  string base_denom = 3;
-  string unit_denom = 4;
-  string ibc_transfer_port = 5;
+  reserved 1, 2;
+  string denom = 3;
+  string base_denom = 4;
+  string path = 5;
   string ibc_channel_id = 6;
   string ibc_counterparty_channel_id = 7;
-  string ibc_counterparty_chain_id =  8;
-  string ibc_counterparty_denom = 9;
-  repeated Permission permissions = 10;
+  string display_name = 8;
+  string display_symbol = 9;
+  string network = 10;
+  string address = 11;
+  string external_symbol = 12;
+  string transfer_limit = 13;
+  uint32 decimals = 14;
+  repeated Permission permissions = 15;
+  string unit_denom = 16;
+  string ibc_counterparty_denom = 17;
+  string ibc_counterparty_chain_id = 18;
 }

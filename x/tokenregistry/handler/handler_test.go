@@ -14,7 +14,7 @@ import (
 func TestHandleRegister(t *testing.T) {
 	app, ctx, admin := test.CreateTestApp(false)
 	h := handler.NewHandler(app.TokenRegistryKeeper)
-	registry := app.TokenRegistryKeeper.GetDenomWhitelist(ctx)
+	registry := app.TokenRegistryKeeper.GetRegistry(ctx)
 	require.Empty(t, registry)
 	tests := []struct {
 		name           string
@@ -33,9 +33,10 @@ func TestHandleRegister(t *testing.T) {
 			},
 			errorAssertion: assert.NoError,
 			valueAssertion: func(t require.TestingT, res interface{}, i ...interface{}) {
-				registry = app.TokenRegistryKeeper.GetDenomWhitelist(ctx)
+				registry = app.TokenRegistryKeeper.GetRegistry(ctx)
 				require.Len(t, registry.Entries, 1)
-				d := app.TokenRegistryKeeper.GetDenom(registry, "TestDenom")
+				d, err := app.TokenRegistryKeeper.GetEntry(registry, "TestDenom")
+				require.NoError(t, err)
 				require.Equal(t, "TestDenom", d.Denom)
 			},
 		},
@@ -50,9 +51,10 @@ func TestHandleRegister(t *testing.T) {
 			},
 			errorAssertion: assert.NoError,
 			valueAssertion: func(t require.TestingT, res interface{}, i ...interface{}) {
-				registry = app.TokenRegistryKeeper.GetDenomWhitelist(ctx)
+				registry = app.TokenRegistryKeeper.GetRegistry(ctx)
 				require.Len(t, registry.Entries, 2)
-				d := app.TokenRegistryKeeper.GetDenom(registry, "TestDenomIBC")
+				d, err := app.TokenRegistryKeeper.GetEntry(registry, "TestDenomIBC")
+				require.NoError(t, err)
 				require.Equal(t, "TestDenomIBC", d.Denom)
 			},
 		},
@@ -67,9 +69,10 @@ func TestHandleRegister(t *testing.T) {
 			},
 			errorAssertion: assert.NoError,
 			valueAssertion: func(t require.TestingT, res interface{}, i ...interface{}) {
-				registry = app.TokenRegistryKeeper.GetDenomWhitelist(ctx)
+				registry = app.TokenRegistryKeeper.GetRegistry(ctx)
 				require.Len(t, registry.Entries, 3)
-				d := app.TokenRegistryKeeper.GetDenom(registry, "TestDenomIBC2")
+				d, err := app.TokenRegistryKeeper.GetEntry(registry, "TestDenomIBC2")
+				require.NoError(t, err)
 				require.Equal(t, "TestDenomIBC2", d.Denom)
 			},
 		},
@@ -85,9 +88,10 @@ func TestHandleRegister(t *testing.T) {
 			errorAssertion: assert.NoError,
 			valueAssertion: func(t require.TestingT, res interface{}, i ...interface{}) {
 				// Denom whitelist size is still 3, duplicate denoms are ignored.
-				registry = app.TokenRegistryKeeper.GetDenomWhitelist(ctx)
+				registry = app.TokenRegistryKeeper.GetRegistry(ctx)
 				require.Len(t, registry.Entries, 3)
-				d := app.TokenRegistryKeeper.GetDenom(registry, "TestDenomIBC")
+				d, err := app.TokenRegistryKeeper.GetEntry(registry, "TestDenomIBC")
+				require.NoError(t, err)
 				require.Equal(t, "TestDenomIBC", d.Denom)
 			},
 		},
@@ -128,7 +132,7 @@ func TestHandleDeregister(t *testing.T) {
 		Denom:    "ibcTokenToRemove2",
 		Decimals: 8,
 	})
-	registry := app.TokenRegistryKeeper.GetDenomWhitelist(ctx)
+	registry := app.TokenRegistryKeeper.GetRegistry(ctx)
 	require.Len(t, registry.Entries, 3)
 	h := handler.NewHandler(app.TokenRegistryKeeper)
 	tests := []struct {
@@ -145,10 +149,10 @@ func TestHandleDeregister(t *testing.T) {
 			},
 			errorAssertion: assert.NoError,
 			valueAssertion: func(t require.TestingT, res interface{}, i ...interface{}) {
-				registry = app.TokenRegistryKeeper.GetDenomWhitelist(ctx)
+				registry = app.TokenRegistryKeeper.GetRegistry(ctx)
 				require.Len(t, registry.Entries, 2)
-				tokenToRemove := app.TokenRegistryKeeper.GetDenom(registry, "tokenToRemove")
-				require.Nil(t, tokenToRemove)
+				_, err := app.TokenRegistryKeeper.GetEntry(registry, "tokenToRemove")
+				require.Error(t, err)
 			},
 		},
 		{
@@ -159,10 +163,10 @@ func TestHandleDeregister(t *testing.T) {
 			},
 			errorAssertion: assert.NoError,
 			valueAssertion: func(t require.TestingT, res interface{}, i ...interface{}) {
-				registry = app.TokenRegistryKeeper.GetDenomWhitelist(ctx)
+				registry = app.TokenRegistryKeeper.GetRegistry(ctx)
 				require.Len(t, registry.Entries, 1)
-				ibcTokenToRemove := app.TokenRegistryKeeper.GetDenom(registry, "ibcTokenToRemove")
-				require.Nil(t, ibcTokenToRemove)
+				_, err := app.TokenRegistryKeeper.GetEntry(registry, "ibcTokenToRemove")
+				require.Error(t, err)
 			},
 		},
 		{
@@ -173,10 +177,10 @@ func TestHandleDeregister(t *testing.T) {
 			},
 			errorAssertion: assert.NoError,
 			valueAssertion: func(t require.TestingT, res interface{}, i ...interface{}) {
-				registry = app.TokenRegistryKeeper.GetDenomWhitelist(ctx)
+				registry = app.TokenRegistryKeeper.GetRegistry(ctx)
 				require.Empty(t, registry.Entries)
-				ibcTokenToRemove2 := app.TokenRegistryKeeper.GetDenom(registry, "ibcTokenToRemove2")
-				require.Nil(t, ibcTokenToRemove2)
+				_, err := app.TokenRegistryKeeper.GetEntry(registry, "ibcTokenToRemove2")
+				require.Error(t, err)
 			},
 		},
 		{

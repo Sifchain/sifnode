@@ -16,7 +16,6 @@ func UnmarshalGenesis(marshaler codec.JSONCodec, state json.RawMessage) GenesisS
 			panic(fmt.Sprintf("Failed to get genesis state from app state: %s", err.Error()))
 		}
 	}
-
 	return genesisState
 }
 
@@ -35,23 +34,15 @@ func InitialRegistry() Registry {
 	entries := Registry{
 		Entries: []*RegistryEntry{
 			{Denom: "rowan", Decimals: 18, Permissions: []Permission{Permission_CLP}},
-			{Denom: "ccel", Decimals: 4, Permissions: []Permission{Permission_CLP}},
 			{Denom: "causc", Decimals: 6, Permissions: []Permission{Permission_CLP}},
 			{Denom: "cusdt", Decimals: 6, Permissions: []Permission{Permission_CLP}},
 			{Denom: "cusdc", Decimals: 6, Permissions: []Permission{Permission_CLP}},
-			{Denom: "ccro", Decimals: 8, Permissions: []Permission{Permission_CLP}},
-			{Denom: "ccdai", Decimals: 8, Permissions: []Permission{Permission_CLP}},
+			{Denom: "cwscrt", Decimals: 6, Permissions: []Permission{Permission_CLP}},
 			{Denom: "cwbtc", Decimals: 8, Permissions: []Permission{Permission_CLP}},
-			{Denom: "cceth", Decimals: 8, Permissions: []Permission{Permission_CLP}},
-			{Denom: "crenbtc", Decimals: 8, Permissions: []Permission{Permission_CLP}},
-			{Denom: "ccusdc", Decimals: 8, Permissions: []Permission{Permission_CLP}},
-			{Denom: "chusd", Decimals: 8, Permissions: []Permission{Permission_CLP}},
-			{Denom: "campl", Decimals: 9, Permissions: []Permission{Permission_CLP}},
 			{Denom: "ceth", Decimals: 18, Permissions: []Permission{Permission_CLP}},
 			{Denom: "cdai", Decimals: 18, Permissions: []Permission{Permission_CLP}},
 			{Denom: "cyfi", Decimals: 18, Permissions: []Permission{Permission_CLP}},
 			{Denom: "czrx", Decimals: 18, Permissions: []Permission{Permission_CLP}},
-			{Denom: "cwscrt", Decimals: 6, Permissions: []Permission{Permission_CLP}},
 			{Denom: "cwfil", Decimals: 18, Permissions: []Permission{Permission_CLP}},
 			{Denom: "cuni", Decimals: 18, Permissions: []Permission{Permission_CLP}},
 			{Denom: "cuma", Decimals: 18, Permissions: []Permission{Permission_CLP}},
@@ -102,12 +93,10 @@ func InitialRegistry() Registry {
 			{Denom: "ckeep", Decimals: 18, Permissions: []Permission{Permission_CLP}},
 		},
 	}
-
 	for i := range entries.Entries {
 		if !strings.HasPrefix(entries.Entries[i].Denom, "ibc/") {
 			entries.Entries[i].BaseDenom = entries.Entries[i].Denom
 		}
 	}
-
 	return entries
 }

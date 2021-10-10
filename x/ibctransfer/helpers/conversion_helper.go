@@ -18,14 +18,14 @@ import (
 func ConvertCoinsForTransfer(msg *sdktransfertypes.MsgTransfer, sendRegistryEntry *tokenregistrytypes.RegistryEntry,
 	sendAsRegistryEntry *tokenregistrytypes.RegistryEntry) (sdk.Coin, sdk.Coin) {
 	// calculate the conversion difference and reduce precision
-	po := sendRegistryEntry.Decimals - sendAsRegistryEntry.Decimals
+	po := uint64(sendRegistryEntry.Decimals - sendAsRegistryEntry.Decimals)
 	decAmount := sdk.NewDecFromInt(msg.Token.Amount)
-	convAmountDec := ReducePrecision(decAmount, int64(po))
+	convAmountDec := ReducePrecision(decAmount, po)
 	convAmount := sdk.NewIntFromBigInt(convAmountDec.TruncateInt().BigInt())
 	// create converted and Sifchain tokens with corresponding denoms and amounts
 	convToken := sdk.NewCoin(sendRegistryEntry.IbcCounterpartyDenom, convAmount)
 	// increase convAmount precision to ensure amount deducted from address is the same that gets sent
-	tokenAmountDec := IncreasePrecision(sdk.NewDecFromInt(convAmount), int64(po))
+	tokenAmountDec := IncreasePrecision(sdk.NewDecFromInt(convAmount), po)
 	tokenAmount := sdk.NewIntFromBigInt(tokenAmountDec.TruncateInt().BigInt())
 	token := sdk.NewCoin(msg.Token.Denom, tokenAmount)
 	return token, convToken
@@ -74,7 +74,7 @@ func IsRecvPacketAllowed(ctx sdk.Context, whitelistKeeper tokenregistrytypes.Kee
 	if sdktransfertypes.ReceiverChainIsSource(packet.GetSourcePort(), packet.GetSourceChannel(), data.Denom) {
 		return true
 	}
-	return mintedDenomEntry != nil && whitelistKeeper.CheckDenomPermissions(mintedDenomEntry, []tokenregistrytypes.Permission{tokenregistrytypes.Permission_IBCIMPORT})
+	return whitelistKeeper.CheckEntryPermissions(mintedDenomEntry, []tokenregistrytypes.Permission{tokenregistrytypes.Permission_IBCIMPORT})
 }
 
 func GetMintedDenomFromPacket(packet channeltypes.Packet, data sdktransfertypes.FungibleTokenPacketData) string {
@@ -89,19 +89,13 @@ func GetMintedDenomFromPacket(packet channeltypes.Packet, data sdktransfertypes.
 	return sdktransfertypes.ParseDenomTrace(sdktransfertypes.GetDenomPrefix(packet.GetDestPort(), packet.GetDestChannel()) + data.Denom).IBCDenom()
 }
 
-func ConvertIncomingCoins(
-	ctx sdk.Context,
-	whitelistKeeper tokenregistrytypes.Keeper,
-	amount uint64,
-	diff uint64,
-) sdk.Int {
-	return sdk.NewIntFromBigInt(IncreasePrecision(sdk.NewDecFromInt(sdk.NewIntFromUint64(amount)), int64(diff)).TruncateInt().BigInt())
+func ConvertIncomingCoins(amount uint64, diff uint64) sdk.Int {
+	return sdk.NewIntFromBigInt(IncreasePrecision(sdk.NewDecFromInt(sdk.NewIntFromUint64(amount)), diff).TruncateInt().BigInt())
 }
 
 func ExecConvForIncomingCoins(
 	ctx sdk.Context,
 	bankKeeper sdktransfertypes.BankKeeper,
-	whitelistKeeper tokenregistrytypes.Keeper,
 	mintedDenomEntry *tokenregistrytypes.RegistryEntry,
 	convertToDenomEntry *tokenregistrytypes.RegistryEntry,
 	packet channeltypes.Packet,
@@ -112,7 +106,8 @@ func ExecConvForIncomingCoins(
 	if err != nil {
 		return err
 	}
-	incomingCoins := sdk.NewCoins(sdk.NewCoin(mintedDenomEntry.Denom, sdk.NewIntFromUint64(data.Amount)))
+	amount := sdk.NewIntFromUint64(data.Amount)
+	incomingCoins := sdk.NewCoins(sdk.NewCoin(mintedDenomEntry.Denom, amount))
 	// send ibcdenom coins from account to module
 	err = bankKeeper.SendCoinsFromAccountToModule(ctx, receiver, sctransfertypes.ModuleName, incomingCoins)
 	if err != nil {
@@ -123,9 +118,13 @@ func ExecConvForIncomingCoins(
 	if err != nil {
 		return err
 	}
-	diff := uint64(convertToDenomEntry.Decimals - mintedDenomEntry.Decimals)
-	convAmount := ConvertIncomingCoins(ctx, whitelistKeeper, data.Amount, diff)
+	convAmount := amount
 	finalCoins := sdk.NewCoins(sdk.NewCoin(convertToDenomEntry.Denom, convAmount))
+	if convertToDenomEntry.Decimals > mintedDenomEntry.Decimals {
+		diff := uint64(convertToDenomEntry.Decimals - mintedDenomEntry.Decimals)
+		convAmount = ConvertIncomingCoins(data.Amount, diff)
+		finalCoins = sdk.NewCoins(sdk.NewCoin(convertToDenomEntry.Denom, convAmount))
+	}
 	// unescrow original tokens
 	escrowAddress := sctransfertypes.GetEscrowAddress(packet.GetDestPort(), packet.GetDestChannel())
 	if err := bankKeeper.SendCoins(ctx, escrowAddress, receiver, finalCoins); err != nil {
@@ -151,7 +150,6 @@ func ExecConvForIncomingCoins(
 func ExecConvForRefundCoins(
 	ctx sdk.Context,
 	bankKeeper sdktransfertypes.BankKeeper,
-	whitelistKeeper tokenregistrytypes.Keeper,
 	mintedDenomEntry *tokenregistrytypes.RegistryEntry,
 	convertToDenomEntry *tokenregistrytypes.RegistryEntry,
 	packet channeltypes.Packet,
@@ -162,15 +160,20 @@ func ExecConvForRefundCoins(
 	if err != nil {
 		return err
 	}
-	incomingCoins := sdk.NewCoins(sdk.NewCoin(mintedDenomEntry.Denom, sdk.NewIntFromUint64(data.Amount)))
+	amount := sdk.NewIntFromUint64(data.Amount)
+	incomingCoins := sdk.NewCoins(sdk.NewCoin(mintedDenomEntry.Denom, amount))
 	// send ibcdenom coins from account to module
 	err = bankKeeper.SendCoinsFromAccountToModule(ctx, sender, sctransfertypes.ModuleName, incomingCoins)
 	if err != nil {
 		return err
 	}
-	diff := uint64(convertToDenomEntry.Decimals - mintedDenomEntry.Decimals)
-	convAmount := ConvertIncomingCoins(ctx, whitelistKeeper, data.Amount, diff)
+	convAmount := amount
 	finalCoins := sdk.NewCoins(sdk.NewCoin(convertToDenomEntry.Denom, convAmount))
+	if convertToDenomEntry.Decimals > mintedDenomEntry.Decimals {
+		diff := uint64(convertToDenomEntry.Decimals - mintedDenomEntry.Decimals)
+		convAmount = ConvertIncomingCoins(data.Amount, diff)
+		finalCoins = sdk.NewCoins(sdk.NewCoin(convertToDenomEntry.Denom, convAmount))
+	}
 	// unescrow original tokens
 	escrowAddress := sctransfertypes.GetEscrowAddress(packet.GetSourcePort(), packet.GetSourceChannel())
 	if err := bankKeeper.SendCoins(ctx, escrowAddress, sender, finalCoins); err != nil {
@@ -198,12 +201,12 @@ func ExecConvForRefundCoins(
 	return nil
 }
 
-func IncreasePrecision(dec sdk.Dec, po int64) sdk.Dec {
-	p := sdk.NewDec(10).Power(uint64(po))
+func IncreasePrecision(dec sdk.Dec, po uint64) sdk.Dec {
+	p := sdk.NewDec(10).Power(po)
 	return dec.MulTruncate(p)
 }
 
-func ReducePrecision(dec sdk.Dec, po int64) sdk.Dec {
-	p := sdk.NewDec(10).Power(uint64(po))
+func ReducePrecision(dec sdk.Dec, po uint64) sdk.Dec {
+	p := sdk.NewDec(10).Power(po)
 	return dec.QuoTruncate(p)
 }

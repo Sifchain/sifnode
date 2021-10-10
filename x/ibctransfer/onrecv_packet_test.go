@@ -15,6 +15,45 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
+func TestShouldConvertIncomingCoins(t *testing.T) {
+	app, ctx, _ := tokenregistrytest.CreateTestApp(false)
+	unitDenomEntry := tokenregistrytypes.RegistryEntry{
+		Denom:     "ceth",
+		Decimals:  18,
+		UnitDenom: "ceth",
+	}
+	ibcRegistryEntry := tokenregistrytypes.RegistryEntry{
+		Denom:     "ueth",
+		Decimals:  10,
+		UnitDenom: "ceth",
+	}
+	nonIBCRegistryEntry := tokenregistrytypes.RegistryEntry{
+		Denom:    "cusdt",
+		Decimals: 6,
+	}
+	app.TokenRegistryKeeper.SetToken(ctx, &unitDenomEntry)
+	app.TokenRegistryKeeper.SetToken(ctx, &ibcRegistryEntry)
+	app.TokenRegistryKeeper.SetToken(ctx, &nonIBCRegistryEntry)
+	registry := app.TokenRegistryKeeper.GetRegistry(ctx)
+	entry1, err := app.TokenRegistryKeeper.GetEntry(registry, "ueth")
+	require.NoError(t, err)
+	entry1c, err := app.TokenRegistryKeeper.GetEntry(registry, entry1.UnitDenom)
+	require.NoError(t, err)
+	require.True(t, entry1c.Decimals > entry1.Decimals)
+	diff := uint64(entry1c.Decimals - entry1.Decimals)
+	convAmount := helpers.ConvertIncomingCoins(1000000000000, diff)
+	incomingDeduction := sdk.NewCoin("ueth", sdk.NewIntFromUint64(1000000000000))
+	incomingAddition := sdk.NewCoin("ceth", convAmount)
+	require.Equal(t, incomingDeduction.Denom, "ueth")
+	require.Equal(t, incomingDeduction.Amount.String(), "1000000000000")
+	require.Equal(t, incomingAddition.Denom, "ceth")
+	require.Equal(t, incomingAddition.Amount.String(), "100000000000000000000")
+	entry2, err := app.TokenRegistryKeeper.GetEntry(registry, "cusdt")
+	require.NoError(t, err)
+	_, err = app.TokenRegistryKeeper.GetEntry(registry, entry2.UnitDenom)
+	require.Error(t, err)
+}
+
 func TestGetConvForIncomingCoins(t *testing.T) {
 	app, ctx, _ := tokenregistrytest.CreateTestApp(false)
 	ibcRegistryEntry := tokenregistrytypes.RegistryEntry{
@@ -28,15 +67,16 @@ func TestGetConvForIncomingCoins(t *testing.T) {
 	}
 	app.TokenRegistryKeeper.SetToken(ctx, &unitDenomEntry)
 	app.TokenRegistryKeeper.SetToken(ctx, &ibcRegistryEntry)
-	registry := app.TokenRegistryKeeper.GetDenomWhitelist(ctx)
-	entry1 := app.TokenRegistryKeeper.GetDenom(registry, "ueth")
-	require.NotNil(t, entry1)
-	entry2 := app.TokenRegistryKeeper.GetDenom(registry, "ceth")
-	require.NotNil(t, entry2)
-	entry1c := app.TokenRegistryKeeper.GetDenom(registry, entry1.UnitDenom)
-	require.NotNil(t, entry1c)
+	registry := app.TokenRegistryKeeper.GetRegistry(ctx)
+	entry1, err := app.TokenRegistryKeeper.GetEntry(registry, "ueth")
+	require.NoError(t, err)
+	_, err = app.TokenRegistryKeeper.GetEntry(registry, "ceth")
+	require.NoError(t, err)
+	entry1c, err := app.TokenRegistryKeeper.GetEntry(registry, entry1.UnitDenom)
+	require.NoError(t, err)
+	require.True(t, entry1c.Decimals > entry1.Decimals)
 	diff := uint64(entry1c.Decimals - entry1.Decimals)
-	convAmount := helpers.ConvertIncomingCoins(ctx, app.TokenRegistryKeeper, 1000000000000, diff)
+	convAmount := helpers.ConvertIncomingCoins(1000000000000, diff)
 	incomingDeduction := sdk.NewCoin("ueth", sdk.NewIntFromUint64(1000000000000))
 	incomingAddition := sdk.NewCoin("ceth", convAmount)
 	intAmount, _ := sdk.NewIntFromString("100000000000000000000")
@@ -81,21 +121,21 @@ func TestIsRecvPacketAllowed(t *testing.T) {
 		IbcCounterpartyDenom: "",
 		Permissions:          []tokenregistrytypes.Permission{},
 	})
-	registry := app.TokenRegistryKeeper.GetDenomWhitelist(ctx)
-	entry1 := app.TokenRegistryKeeper.GetDenom(registry, "ibc/44F0BAC50DDD0C83DAC9CEFCCC770C12F700C0D1F024ED27B8A3EE9DD949BAD3")
-	require.NotNil(t, entry1)
-	permitted1 := app.TokenRegistryKeeper.CheckDenomPermissions(entry1, []tokenregistrytypes.Permission{tokenregistrytypes.Permission_IBCIMPORT})
+	registry := app.TokenRegistryKeeper.GetRegistry(ctx)
+	entry1, err := app.TokenRegistryKeeper.GetEntry(registry, "ibc/44F0BAC50DDD0C83DAC9CEFCCC770C12F700C0D1F024ED27B8A3EE9DD949BAD3")
+	require.NoError(t, err)
+	permitted1 := app.TokenRegistryKeeper.CheckEntryPermissions(entry1, []tokenregistrytypes.Permission{tokenregistrytypes.Permission_IBCIMPORT})
 	require.Equal(t, permitted1, true)
 	got := helpers.IsRecvPacketAllowed(ctx, app.TokenRegistryKeeper, transferPacket, whitelistedDenom, entry1)
 	require.Equal(t, got, true)
-	entry2 := app.TokenRegistryKeeper.GetDenom(registry, "ibc/A916425D9C00464330F8B333711C4A51AA8CF0141392E7E250371EC6D4285BF2")
-	require.NotNil(t, entry2)
-	permitted2 := app.TokenRegistryKeeper.CheckDenomPermissions(entry2, []tokenregistrytypes.Permission{tokenregistrytypes.Permission_IBCIMPORT})
+	entry2, err := app.TokenRegistryKeeper.GetEntry(registry, "ibc/A916425D9C00464330F8B333711C4A51AA8CF0141392E7E250371EC6D4285BF2")
+	require.NoError(t, err)
+	permitted2 := app.TokenRegistryKeeper.CheckEntryPermissions(entry2, []tokenregistrytypes.Permission{tokenregistrytypes.Permission_IBCIMPORT})
 	require.Equal(t, permitted2, false)
 	got = helpers.IsRecvPacketAllowed(ctx, app.TokenRegistryKeeper, transferPacket, disallowedDenom, entry2)
 	require.Equal(t, got, false)
-	entry3 := app.TokenRegistryKeeper.GetDenom(registry, "rowan")
-	require.Nil(t, entry3)
+	entry3, err := app.TokenRegistryKeeper.GetEntry(registry, "rowan")
+	require.Error(t, err)
 	got = helpers.IsRecvPacketAllowed(ctx, app.TokenRegistryKeeper, transferPacket, returningDenom, entry3)
 	require.Equal(t, got, true)
 }
@@ -136,23 +176,23 @@ func TestExecConvForIncomingCoins(t *testing.T) {
 	app.TokenRegistryKeeper.SetToken(ctx, &ibcRegistryEntry)
 	app.TokenRegistryKeeper.SetToken(ctx, &ibcRegistryEntry2)
 	mintedDenom := helpers.GetMintedDenomFromPacket(packet, returningData)
-	registry := app.TokenRegistryKeeper.GetDenomWhitelist(ctx)
-	mintedDenomEntry := app.TokenRegistryKeeper.GetDenom(registry, mintedDenom)
-	require.NotNil(t, mintedDenomEntry)
+	registry := app.TokenRegistryKeeper.GetRegistry(ctx)
+	mintedDenomEntry, err := app.TokenRegistryKeeper.GetEntry(registry, mintedDenom)
+	require.NoError(t, err)
 	allowed := helpers.IsRecvPacketAllowed(ctx, app.TokenRegistryKeeper, packet, returningData, mintedDenomEntry)
 	require.Equal(t, allowed, true)
-	convertToDenomEntry := app.TokenRegistryKeeper.GetDenom(registry, mintedDenomEntry.UnitDenom)
-	require.NotNil(t, convertToDenomEntry)
-	err := helpers.ExecConvForIncomingCoins(ctx, app.BankKeeper, app.TokenRegistryKeeper, mintedDenomEntry, convertToDenomEntry, packet, returningData)
+	convertToDenomEntry, err := app.TokenRegistryKeeper.GetEntry(registry, mintedDenomEntry.UnitDenom)
+	require.NoError(t, err)
+	err = helpers.ExecConvForIncomingCoins(ctx, app.BankKeeper, mintedDenomEntry, convertToDenomEntry, packet, returningData)
 	require.NoError(t, err)
 	mintedDenom = helpers.GetMintedDenomFromPacket(packet, nonReturningData)
-	mintedDenomEntry = app.TokenRegistryKeeper.GetDenom(registry, mintedDenom)
-	require.NotNil(t, mintedDenomEntry)
+	mintedDenomEntry, err = app.TokenRegistryKeeper.GetEntry(registry, mintedDenom)
+	require.NoError(t, err)
 	allowed = helpers.IsRecvPacketAllowed(ctx, app.TokenRegistryKeeper, packet, nonReturningData, mintedDenomEntry)
 	require.Equal(t, allowed, true)
-	convertToDenomEntry = app.TokenRegistryKeeper.GetDenom(registry, mintedDenomEntry.UnitDenom)
-	require.NotNil(t, convertToDenomEntry)
-	err = helpers.ExecConvForIncomingCoins(ctx, app.BankKeeper, app.TokenRegistryKeeper, mintedDenomEntry, convertToDenomEntry, packet, nonReturningData)
+	convertToDenomEntry, err = app.TokenRegistryKeeper.GetEntry(registry, mintedDenomEntry.UnitDenom)
+	require.NoError(t, err)
+	err = helpers.ExecConvForIncomingCoins(ctx, app.BankKeeper, mintedDenomEntry, convertToDenomEntry, packet, nonReturningData)
 	require.NoError(t, err)
 }
 

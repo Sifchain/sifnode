@@ -3,16 +3,15 @@ package ibctransfer_test
 import (
 	"testing"
 
-	"github.com/Sifchain/sifnode/x/ibctransfer/helpers"
 	sifapp "github.com/Sifchain/sifnode/app"
 	"github.com/Sifchain/sifnode/x/ethbridge/test"
-	"github.com/Sifchain/sifnode/x/ibctransfer"
-	"github.com/Sifchain/sifnode/x/ibctransfer/keeper"
+	"github.com/Sifchain/sifnode/x/ibctransfer/helpers"
 	"github.com/Sifchain/sifnode/x/ibctransfer/keeper/testhelpers"
 	tokenregistrytest "github.com/Sifchain/sifnode/x/tokenregistry/test"
 	tokenregistrytypes "github.com/Sifchain/sifnode/x/tokenregistry/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	transfertypes "github.com/cosmos/ibc-go/modules/apps/transfer/types"
+	channeltypes "github.com/cosmos/ibc-go/modules/core/04-channel/types"
 	"github.com/stretchr/testify/require"
 )
 
@@ -33,17 +32,18 @@ func TestExportImportConversionEquality(t *testing.T) {
 	}
 	app.TokenRegistryKeeper.SetToken(ctx, &rowanEntry)
 	app.TokenRegistryKeeper.SetToken(ctx, &microRowanEntry)
-	registry := app.TokenRegistryKeeper.GetDenomWhitelist(ctx)
-	rEntry := app.TokenRegistryKeeper.GetDenom(registry, "rowan")
-	require.NotNil(t, rEntry)
-	mrEntry := app.TokenRegistryKeeper.GetDenom(registry, "microrowan")
-	require.NotNil(t, mrEntry)
+	registry := app.TokenRegistryKeeper.GetRegistry(ctx)
+	rEntry, err := app.TokenRegistryKeeper.GetEntry(registry, "rowan")
+	require.NoError(t, err)
+	mrEntry, err := app.TokenRegistryKeeper.GetEntry(registry, "microrowan")
+	require.NoError(t, err)
 	msg := &transfertypes.MsgTransfer{Token: sdk.NewCoin("rowan", sdk.NewIntFromUint64(maxUInt64))}
 	outgoingDeduction, outgoingAddition := helpers.ConvertCoinsForTransfer(msg, rEntry, mrEntry)
-	mrEntryUnit := app.TokenRegistryKeeper.GetDenom(registry, mrEntry.UnitDenom)
-	require.NotNil(t, mrEntryUnit)
+	mrEntryUnit, err := app.TokenRegistryKeeper.GetEntry(registry, mrEntry.UnitDenom)
+	require.NoError(t, err)
+	require.True(t, mrEntryUnit.Decimals > mrEntry.Decimals)
 	diff := uint64(mrEntryUnit.Decimals - mrEntry.Decimals)
-	convAmount := helpers.ConvertIncomingCoins(ctx, app.TokenRegistryKeeper, 184467440737, diff)
+	convAmount := helpers.ConvertIncomingCoins(184467440737, diff)
 	incomingDeduction := sdk.NewCoin("microrowan", sdk.NewIntFromUint64(184467440737))
 	incomingAddition := sdk.NewCoin("rowan", convAmount)
 	require.Greater(t, incomingAddition.Amount.String(), incomingDeduction.Amount.String())

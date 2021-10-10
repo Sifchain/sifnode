@@ -33,9 +33,9 @@ var _ sdktransfertypes.MsgServer = msgServer{}
 // Transfer defines a rpc handler method for MsgTransfer.
 func (srv msgServer) Transfer(goCtx context.Context, msg *sdktransfertypes.MsgTransfer) (*sdktransfertypes.MsgTransferResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
-	registry := srv.tokenRegistryKeeper.GetDenomWhitelist(ctx)
-	registryEntry := srv.tokenRegistryKeeper.GetDenom(registry, msg.Token.Denom)
-	if registryEntry == nil {
+	registry := srv.tokenRegistryKeeper.GetRegistry(ctx)
+	registryEntry, err := srv.tokenRegistryKeeper.GetEntry(registry, msg.Token.Denom)
+	if err != nil {
 		return nil, sdkerrors.Wrap(tokenregistrytypes.ErrPermissionDenied, "denom is not whitelisted")
 	}
 	// disallow direct transfers of denom aliases
@@ -43,15 +43,15 @@ func (srv msgServer) Transfer(goCtx context.Context, msg *sdktransfertypes.MsgTr
 		return nil, sdkerrors.Wrap(tokenregistrytypes.ErrPermissionDenied, "transfers of denom aliases are not yet supported")
 	}
 	// check export permission
-	if !srv.tokenRegistryKeeper.CheckDenomPermissions(registryEntry, []tokenregistrytypes.Permission{tokenregistrytypes.Permission_IBCEXPORT}) {
+	if !srv.tokenRegistryKeeper.CheckEntryPermissions(registryEntry, []tokenregistrytypes.Permission{tokenregistrytypes.Permission_IBCEXPORT}) {
 		return nil, sdkerrors.Wrap(tokenregistrytypes.ErrPermissionDenied, "denom cannot be exported")
 	}
 	// check if registry entry has an IBC counterparty conversion to process
 	if registryEntry.IbcCounterpartyDenom != "" && registryEntry.IbcCounterpartyDenom != registryEntry.Denom {
-		sendAsRegistryEntry := srv.tokenRegistryKeeper.GetDenom(registry, registryEntry.IbcCounterpartyDenom)
-		if sendAsRegistryEntry != nil && sendAsRegistryEntry.Decimals > 0 && registryEntry.Decimals > sendAsRegistryEntry.Decimals {
+		sendAsRegistryEntry, err := srv.tokenRegistryKeeper.GetEntry(registry, registryEntry.IbcCounterpartyDenom)
+		if err == nil && sendAsRegistryEntry.Decimals > 0 && registryEntry.Decimals > sendAsRegistryEntry.Decimals {
 			token, tokenConversion := helpers.ConvertCoinsForTransfer(msg, registryEntry, sendAsRegistryEntry)
-			if token.Amount.Equal(sdk.NewInt(0)) || tokenConversion.Amount.Equal(sdk.NewInt(0)) {
+			if token.Amount.LTE(sdk.NewInt(0)) || tokenConversion.Amount.LTE(sdk.NewInt(0)) {
 				return nil, types.ErrAmountTooLowToConvert
 			}
 			if !tokenConversion.Amount.IsInt64() {
@@ -67,7 +67,7 @@ func (srv msgServer) Transfer(goCtx context.Context, msg *sdktransfertypes.MsgTr
 	if !msg.Token.Amount.IsInt64() {
 		return nil, types.ErrAmountTooLargeToSend
 	}
-	if msg.Token.Amount.Equal(sdk.NewInt(0)) {
+	if msg.Token.Amount.LTE(sdk.NewInt(0)) {
 		return nil, types.ErrAmountTooLowToConvert
 	}
 	return srv.sdkMsgServer.Transfer(goCtx, msg)

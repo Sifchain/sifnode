@@ -36,9 +36,9 @@ func OnRecvPacketWhitelistConvert(
 	// For a native token that has been returned, this will just be a base_denom,
 	// which will be on the whitelist.
 	mintedDenom := helpers.GetMintedDenomFromPacket(packet, data)
-	registry := whitelistKeeper.GetDenomWhitelist(ctx)
-	mintedDenomEntry := whitelistKeeper.GetDenom(registry, mintedDenom)
-	if !helpers.IsRecvPacketAllowed(ctx, whitelistKeeper, packet, data, mintedDenomEntry) {
+	registry := whitelistKeeper.GetRegistry(ctx)
+	mintedDenomEntry, err := whitelistKeeper.GetEntry(registry, mintedDenom)
+	if err != nil || !helpers.IsRecvPacketAllowed(ctx, whitelistKeeper, packet, data, mintedDenomEntry) {
 		acknowledgement := channeltypes.NewErrorAcknowledgement(
 			sdkerrors.Wrapf(sdkerrors.ErrInvalidCoins, "denom not whitelisted").Error(),
 		)
@@ -54,9 +54,9 @@ func OnRecvPacketWhitelistConvert(
 		)
 		return acknowledgement
 	}
-	convertToDenomEntry := whitelistKeeper.GetDenom(registry, mintedDenomEntry.UnitDenom)
-	if convertToDenomEntry != nil && convertToDenomEntry.Decimals > 0 && mintedDenomEntry.Decimals > 0 && convertToDenomEntry.Decimals > mintedDenomEntry.Decimals {
-		err = helpers.ExecConvForIncomingCoins(ctx, bankKeeper, whitelistKeeper, mintedDenomEntry, convertToDenomEntry, packet, data)
+	convertToDenomEntry, err := whitelistKeeper.GetEntry(registry, mintedDenomEntry.UnitDenom)
+	if err == nil && convertToDenomEntry.Decimals > 0 && mintedDenomEntry.Decimals > 0 && convertToDenomEntry.Decimals > mintedDenomEntry.Decimals {
+		err = helpers.ExecConvForIncomingCoins(ctx, bankKeeper, mintedDenomEntry, convertToDenomEntry, packet, data)
 		// Revert, although this may cause packet to be relayed again.
 		if err != nil {
 			acknowledgement := channeltypes.NewErrorAcknowledgement(

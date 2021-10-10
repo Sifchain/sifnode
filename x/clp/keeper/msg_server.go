@@ -3,7 +3,6 @@ package keeper
 import (
 	"context"
 	"errors"
-	"fmt"
 	"math"
 	"strconv"
 
@@ -33,12 +32,10 @@ func (k msgServer) DecommissionPool(goCtx context.Context, msg *types.MsgDecommi
 	if err != nil {
 		return nil, types.ErrPoolDoesNotExist
 	}
-
 	addAddr, err := sdk.AccAddressFromBech32(msg.Signer)
 	if err != nil {
 		return nil, err
 	}
-
 	if !k.Keeper.ValidateAddress(ctx, addAddr) {
 		return nil, sdkerrors.Wrap(types.ErrInvalid, "user does not have permission to decommission pool")
 	}
@@ -100,7 +97,6 @@ func (k msgServer) DecommissionPool(goCtx context.Context, msg *types.MsgDecommi
 			sdk.NewAttribute(sdk.AttributeKeySender, msg.Signer),
 		),
 	})
-
 	return &types.MsgDecommissionPoolResponse{}, nil
 }
 
@@ -109,14 +105,20 @@ func (k msgServer) Swap(goCtx context.Context, msg *types.MsgSwap) (*types.MsgSw
 	var (
 		priceImpact sdk.Uint
 	)
-	wl := k.tokenRegistryKeeper.GetDenomWhitelist(ctx)
-	sAsset := k.tokenRegistryKeeper.GetDenom(wl, msg.SentAsset.Symbol)
-	rAsset := k.tokenRegistryKeeper.GetDenom(wl, msg.ReceivedAsset.Symbol)
-	if sAsset == nil || rAsset == nil {
+	registry := k.tokenRegistryKeeper.GetRegistry(ctx)
+	sAsset, err := k.tokenRegistryKeeper.GetEntry(registry, msg.SentAsset.Symbol)
+	if err != nil {
 		return nil, types.ErrTokenNotSupported
 	}
-	if !k.tokenRegistryKeeper.CheckDenomPermissions(sAsset, types.GetCLPermissons()) || !k.tokenRegistryKeeper.CheckDenomPermissions(rAsset, types.GetCLPermissons()) {
+	rAsset, err := k.tokenRegistryKeeper.GetEntry(registry, msg.ReceivedAsset.Symbol)
+	if err != nil {
 		return nil, types.ErrTokenNotSupported
+	}
+	if !k.tokenRegistryKeeper.CheckEntryPermissions(sAsset, []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP}) {
+		return nil, tokenregistrytypes.ErrPermissionDenied
+	}
+	if !k.tokenRegistryKeeper.CheckEntryPermissions(rAsset, []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP}) {
+		return nil, tokenregistrytypes.ErrPermissionDenied
 	}
 	decimals := sAsset.Decimals
 	liquidityFeeNative := sdk.ZeroUint()
@@ -129,7 +131,6 @@ func (k msgServer) Swap(goCtx context.Context, msg *types.MsgSwap) (*types.MsgSw
 	// Get native asset
 	nativeAsset := types.GetSettlementAsset()
 	inPool, outPool := types.Pool{}, types.Pool{}
-	err := errors.New("Swap Error")
 	// If sending rowan ,deduct directly from the Native balance  instead of fetching from rowan pool
 	if !msg.SentAsset.Equals(types.GetSettlementAsset()) {
 		inPool, err = k.Keeper.GetPool(ctx, msg.SentAsset.Symbol)
@@ -137,7 +138,6 @@ func (k msgServer) Swap(goCtx context.Context, msg *types.MsgSwap) (*types.MsgSw
 			return nil, sdkerrors.Wrap(types.ErrPoolDoesNotExist, msg.SentAsset.String())
 		}
 	}
-	fmt.Println(err)
 	sentAmountInt, ok := k.Keeper.ParseToInt(sentAmount.String())
 	if !ok {
 		return nil, types.ErrUnableToParseInt
@@ -241,12 +241,12 @@ func (k msgServer) Swap(goCtx context.Context, msg *types.MsgSwap) (*types.MsgSw
 
 func (k msgServer) RemoveLiquidity(goCtx context.Context, msg *types.MsgRemoveLiquidity) (*types.MsgRemoveLiquidityResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
-	wl := k.tokenRegistryKeeper.GetDenomWhitelist(ctx)
-	eAsset := k.tokenRegistryKeeper.GetDenom(wl, msg.ExternalAsset.Symbol)
-	if eAsset == nil {
+	registry := k.tokenRegistryKeeper.GetRegistry(ctx)
+	eAsset, err := k.tokenRegistryKeeper.GetEntry(registry, msg.ExternalAsset.Symbol)
+	if err != nil {
 		return nil, types.ErrTokenNotSupported
 	}
-	if !k.tokenRegistryKeeper.CheckDenomPermissions(eAsset, types.GetCLPermissons()) {
+	if !k.tokenRegistryKeeper.CheckEntryPermissions(eAsset, []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP}) {
 		return nil, tokenregistrytypes.ErrPermissionDenied
 	}
 	pool, err := k.Keeper.GetPool(ctx, msg.ExternalAsset.Symbol)
@@ -322,7 +322,6 @@ func (k msgServer) RemoveLiquidity(goCtx context.Context, msg *types.MsgRemoveLi
 			}
 			swapCoin := sdk.NewCoin(types.GetSettlementAsset().Symbol, swapInt)
 			swapAmountInCoin := sdk.NewCoin(msg.ExternalAsset.Symbol, swapAmountInt)
-
 			nativeAssetCoin = nativeAssetCoin.Add(swapCoin)
 			externalAssetCoin = externalAssetCoin.Sub(swapAmountInCoin)
 		}
@@ -345,7 +344,6 @@ func (k msgServer) RemoveLiquidity(goCtx context.Context, msg *types.MsgRemoveLi
 			sdk.NewAttribute(sdk.AttributeKeySender, msg.Signer),
 		),
 	})
-
 	return &types.MsgRemoveLiquidityResponse{}, nil
 }
 
@@ -356,12 +354,12 @@ func (k msgServer) CreatePool(goCtx context.Context, msg *types.MsgCreatePool) (
 	if msg.NativeAssetAmount.LT(MinThreshold) { // Need to verify
 		return nil, types.ErrTotalAmountTooLow
 	}
-	wl := k.tokenRegistryKeeper.GetDenomWhitelist(ctx)
-	eAsset := k.tokenRegistryKeeper.GetDenom(wl, msg.ExternalAsset.Symbol)
-	if eAsset == nil {
+	registry := k.tokenRegistryKeeper.GetRegistry(ctx)
+	eAsset, err := k.tokenRegistryKeeper.GetEntry(registry, msg.ExternalAsset.Symbol)
+	if err != nil {
 		return nil, types.ErrTokenNotSupported
 	}
-	if !k.tokenRegistryKeeper.CheckDenomPermissions(eAsset, types.GetCLPermissons()) {
+	if !k.tokenRegistryKeeper.CheckEntryPermissions(eAsset, []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP}) {
 		return nil, tokenregistrytypes.ErrPermissionDenied
 	}
 	// Check if pool already exists
@@ -407,12 +405,12 @@ func (k msgServer) CreatePool(goCtx context.Context, msg *types.MsgCreatePool) (
 
 func (k msgServer) AddLiquidity(goCtx context.Context, msg *types.MsgAddLiquidity) (*types.MsgAddLiquidityResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
-	wl := k.tokenRegistryKeeper.GetDenomWhitelist(ctx)
-	eAsset := k.tokenRegistryKeeper.GetDenom(wl, msg.ExternalAsset.Symbol)
-	if eAsset == nil {
+	registry := k.tokenRegistryKeeper.GetRegistry(ctx)
+	eAsset, err := k.tokenRegistryKeeper.GetEntry(registry, msg.ExternalAsset.Symbol)
+	if err != nil {
 		return nil, types.ErrTokenNotSupported
 	}
-	if !k.tokenRegistryKeeper.CheckDenomPermissions(eAsset, types.GetCLPermissons()) {
+	if !k.tokenRegistryKeeper.CheckEntryPermissions(eAsset, []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP}) {
 		return nil, tokenregistrytypes.ErrPermissionDenied
 	}
 	// Get pool

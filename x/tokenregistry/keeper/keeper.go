@@ -6,6 +6,7 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/cosmos-sdk/types/errors"
 	gogotypes "github.com/gogo/protobuf/types"
 
 	"github.com/Sifchain/sifnode/x/tokenregistry/types"
@@ -47,7 +48,7 @@ func (k keeper) GetAdminAccount(ctx sdk.Context) (adminAccount sdk.AccAddress) {
 	return adminAccount
 }
 
-func (k keeper) CheckDenomPermissions(entry *types.RegistryEntry, requiredPermissions []types.Permission) bool {
+func (k keeper) CheckEntryPermissions(entry *types.RegistryEntry, requiredPermissions []types.Permission) bool {
 	for _, requiredPermission := range requiredPermissions {
 		var has bool
 		for _, allowedPermission := range entry.Permissions {
@@ -63,18 +64,18 @@ func (k keeper) CheckDenomPermissions(entry *types.RegistryEntry, requiredPermis
 	return true
 }
 
-func (k keeper) GetDenom(wl types.Registry, denom string) *types.RegistryEntry {
+func (k keeper) GetEntry(wl types.Registry, denom string) (*types.RegistryEntry, error) {
 	for i := range wl.Entries {
 		e := wl.Entries[i]
 		if e != nil && strings.EqualFold(e.Denom, denom) {
-			return wl.Entries[i]
+			return wl.Entries[i], nil
 		}
 	}
-	return nil
+	return nil, errors.Wrap(errors.ErrKeyNotFound, "registry entry not found")
 }
 
 func (k keeper) SetToken(ctx sdk.Context, entry *types.RegistryEntry) {
-	wl := k.GetDenomWhitelist(ctx)
+	wl := k.GetRegistry(ctx)
 	for i := range wl.Entries {
 		if wl.Entries[i] != nil && strings.EqualFold(wl.Entries[i].Denom, entry.Denom) {
 			wl.Entries[i] = entry
@@ -87,7 +88,7 @@ func (k keeper) SetToken(ctx sdk.Context, entry *types.RegistryEntry) {
 }
 
 func (k keeper) RemoveToken(ctx sdk.Context, denom string) {
-	registry := k.GetDenomWhitelist(ctx)
+	registry := k.GetRegistry(ctx)
 	updated := make([]*types.RegistryEntry, 0)
 	for _, t := range registry.Entries {
 		if t != nil && !strings.EqualFold(t.Denom, denom) {
@@ -105,7 +106,7 @@ func (k keeper) SetDenomWhitelist(ctx sdk.Context, wl types.Registry) {
 	store.Set(types.WhitelistStorePrefix, bz)
 }
 
-func (k keeper) GetDenomWhitelist(ctx sdk.Context) types.Registry {
+func (k keeper) GetRegistry(ctx sdk.Context) types.Registry {
 	var whitelist types.Registry
 	store := ctx.KVStore(k.storeKey)
 	bz := store.Get(types.WhitelistStorePrefix)

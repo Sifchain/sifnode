@@ -3,6 +3,7 @@ package cli
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
@@ -10,6 +11,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/Sifchain/sifnode/x/tokenregistry/types"
+	whitelistutils "github.com/Sifchain/sifnode/x/tokenregistry/utils"
 )
 
 func GetQueryCmd() *cobra.Command {
@@ -23,6 +25,8 @@ func GetQueryCmd() *cobra.Command {
 	cmd.AddCommand(
 		GetCmdQueryEntries(),
 		GetCmdGenerateEntry(),
+		GetCmdAddEntry(),
+		GetCmdAddAllEntries(),
 	)
 	return cmd
 }
@@ -50,15 +54,15 @@ func GetCmdQueryEntries() *cobra.Command {
 }
 
 func GetCmdGenerateEntry() *cobra.Command {
-	var flagDecimals = "token_decimals"
 	var flagDenom = "token_denom"
 	var flagBaseDenom = "token_base_denom"
 	var flagUnitDenom = "token_unit_denom"
-	var flagIbcTransferPort = "token_ibc_transfer_port"
+	var flagIbcPath = "token_path"
 	var flagIbcChannelID = "token_ibc_channel_id"
 	var flagIbcCounterpartyChannelID = "token_ibc_counterparty_channel_id"
 	var flagIbcCounterpartyChainID = "token_ibc_counterparty_chain_id"
 	var flagIbcCounterpartyDenom = "token_ibc_counterparty_denom"
+	var flagDecimals = "token_decimals"
 	var flagsPermission = []string{"token_permission_clp", "token_permission_ibc_export", "token_permission_ibc_import"}
 	cmd := &cobra.Command{
 		Use:   "generate",
@@ -70,7 +74,7 @@ func GetCmdGenerateEntry() *cobra.Command {
 				return err
 			}
 			flags := cmd.Flags()
-			decimals, err := flags.GetInt(flagDecimals)
+			decimals, err := flags.GetUint32(flagDecimals)
 			if err != nil {
 				return err
 			}
@@ -90,7 +94,7 @@ func GetCmdGenerateEntry() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			ibcTransferPort, err := flags.GetString(flagIbcTransferPort)
+			ibcPath, err := flags.GetString(flagIbcPath)
 			if err != nil {
 				return err
 			}
@@ -136,7 +140,7 @@ func GetCmdGenerateEntry() *cobra.Command {
 			// otherwise fallback to base_denom
 			if ibcChannelID != "" {
 				// normalise path slashes before generating hash (do this in MsgRegister.ValidateBasic as well)
-				path = ibcTransferPort + "/" + ibcChannelID
+				path = "transfer/" + ibcChannelID
 				// generate IBC hash from baseDenom and ibc channel id
 				denomTrace := transfertypes.DenomTrace{
 					Path:      path,
@@ -150,10 +154,10 @@ func GetCmdGenerateEntry() *cobra.Command {
 				denom = baseDenom
 			}
 			entry := types.RegistryEntry{
-				Decimals:                 int32(decimals),
+				Decimals:                 decimals,
 				Denom:                    denom,
 				BaseDenom:                baseDenom,
-				IbcTransferPort:          ibcTransferPort,
+				Path:                     ibcPath,
 				IbcChannelId:             ibcChannelID,
 				IbcCounterpartyChannelId: ibcCounterpartyChannelID,
 				IbcCounterpartyChainId:   ibcCounterpartyChainID,
@@ -164,8 +168,8 @@ func GetCmdGenerateEntry() *cobra.Command {
 			return clientCtx.PrintProto(&types.Registry{Entries: []*types.RegistryEntry{&entry}})
 		},
 	}
-	cmd.Flags().Bool(flagIbcTransferPort, true,
-		"The ibc transfer port name (default: 'transfer')")
+	cmd.Flags().Bool(flagIbcPath, true,
+		"The ibc transfer path")
 	cmd.Flags().String(flagDenom, "",
 		"The IBC hash / denom  stored on sifchain - to generate this hash for IBC token, leave blank and specify base_denom and ibc_channel_id")
 	cmd.Flags().String(flagBaseDenom, "",
@@ -188,5 +192,86 @@ func GetCmdGenerateEntry() *cobra.Command {
 	}
 	_ = cmd.MarkFlagRequired(flagBaseDenom)
 	_ = cmd.MarkFlagRequired(flagDecimals)
+	return cmd
+}
+
+func GetCmdAddEntry() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "add [registry.json] [entry.json]",
+		Short: "",
+		Args:  cobra.ExactArgs(2),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			clientCtx, err := client.GetClientQueryContext(cmd)
+			if err != nil {
+				return err
+			}
+			registry, err := whitelistutils.ParseDenoms(clientCtx.JSONCodec, args[0])
+			if err != nil {
+				return err
+			}
+			reg, err := whitelistutils.ParseDenoms(clientCtx.JSONCodec, args[1])
+			if err != nil {
+				return err
+			}
+			entryToAdd := reg.Entries[0]
+			entries := registry.Entries
+			entries = append(entries, entryToAdd)
+			registry.Entries = entries
+			return clientCtx.PrintBytes(clientCtx.JSONCodec.MustMarshalJSON(&registry))
+		},
+	}
+	flags.AddQueryFlagsToCmd(cmd)
+	return cmd
+}
+
+func GetCmdAddAllEntries() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "add-all [registry.json]",
+		Short: "",
+		Args:  cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			clientCtx, err := client.GetClientQueryContext(cmd)
+			if err != nil {
+				return err
+			}
+			registry, err := whitelistutils.ParseDenoms(clientCtx.JSONCodec, args[0])
+			if err != nil {
+				return err
+			}
+			finalRegistry := types.Registry{Entries: []*types.RegistryEntry{}}
+			for _, entry := range registry.Entries {
+				entryForConversion := entry
+				finalRegistry.Entries = append(finalRegistry.Entries, entryForConversion)
+				if entry.Decimals > 10 {
+					conversionDenom := ""
+					if strings.HasPrefix(entry.Denom, "c") {
+						conversionDenom = "x" + strings.TrimPrefix(entry.Denom, "c")
+					} else if strings.EqualFold(entry.Denom, "rowan") {
+						conversionDenom = "xrowan"
+					}
+					entryForConversion.IbcCounterpartyDenom = conversionDenom
+					entryForConversion.Permissions = []types.Permission{
+						types.Permission_CLP,
+						types.Permission_IBCEXPORT,
+					}
+					finalRegistry.Entries = append(finalRegistry.Entries, &types.RegistryEntry{
+						Denom:       conversionDenom,
+						BaseDenom:   conversionDenom,
+						Decimals:    10,
+						UnitDenom:   entry.Denom,
+						Permissions: []types.Permission{types.Permission_IBCIMPORT},
+					})
+				} else {
+					entryForConversion.Permissions = []types.Permission{
+						types.Permission_CLP,
+						types.Permission_IBCEXPORT,
+						types.Permission_IBCIMPORT,
+					}
+				}
+			}
+			return clientCtx.PrintBytes(clientCtx.JSONCodec.MustMarshalJSON(&finalRegistry))
+		},
+	}
+	flags.AddQueryFlagsToCmd(cmd)
 	return cmd
 }

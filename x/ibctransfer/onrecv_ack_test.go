@@ -125,30 +125,6 @@ func TestOnAcknowledgementMaybeConvert_Sink(t *testing.T) {
 		BaseDenom: "uatom",
 		Decimals:  6,
 	}
-	/*croGweiDenomTrace := types.DenomTrace{
-		// A token coming from source will have this chain's source channel prepended when this chain generates hash.
-		Path:      "transfer/channel-0",
-		BaseDenom: "gwei",
-	}
-	croKweiDenomTrace := types.DenomTrace{
-		// A token coming from source will have this chain's source channel prepended when this chain generates hash.
-		Path:      "transfer/channel-0",
-		BaseDenom: "kwei",
-	}
-	croGweiToken := tokenregistrytypes.RegistryEntry{
-		IsWhitelisted: true,
-		Denom:     croGweiDenomTrace.IBCDenom(),
-		BaseDenom: "gwei",
-		Decimals:  18,
-		IbcCounterpartyDenom: croKweiDenomTrace.IBCDenom(),
-	}
-	croKweiToken := tokenregistrytypes.RegistryEntry{
-		IsWhitelisted: true,
-		Denom:     croKweiDenomTrace.IBCDenom(),
-		BaseDenom: "kwei",
-		Decimals:  10,
-		UnitDenom: croGweiToken.Denom,
-	}*/
 	errorAck := channeltypes.NewErrorAcknowledgement("failed packet transfer")
 	msgSinkTransfer := types.NewMsgTransfer(
 		"transfer",
@@ -159,15 +135,6 @@ func TestOnAcknowledgementMaybeConvert_Sink(t *testing.T) {
 		clienttypes.NewHeight(0, 0),
 		0,
 	)
-	/*msgSinkTransferWithConv := types.NewMsgTransfer(
-		"transfer",
-		"channel-0", // Sent from this chain back to source
-		sdk.NewCoin(croGweiToken.Denom, sdk.NewIntFromUint64(123456789123456789)),
-		addrs[0],
-		addrs[1].String(),
-		clienttypes.NewHeight(0, 0),
-		0,
-	)*/
 	type args struct {
 		goCtx           context.Context
 		msg             *types.MsgTransfer
@@ -193,18 +160,6 @@ func TestOnAcknowledgementMaybeConvert_Sink(t *testing.T) {
 			err:    nil,
 			events: []sdk.Event{},
 		},
-		/*{
-			name: "Ack err sender is sink, causes refund with conversion - not supported",
-			args: args{
-				context.Background(),
-				msgSinkTransferWithConv,
-				croGweiToken,
-				croKweiToken,
-				errorAck,
-			},
-			err:    nil,
-			events: []sdk.Event{},
-		},*/
 	}
 	for _, tt := range tests {
 		tt := tt
@@ -295,23 +250,23 @@ func TestExecConvForRefundCoins(t *testing.T) {
 	app.TokenRegistryKeeper.SetToken(ctx, &ibcRegistryEntry)
 	app.TokenRegistryKeeper.SetToken(ctx, &ibcRegistryEntry2)
 	mintedDenom := helpers.GetMintedDenomFromPacket(packet, returningData)
-	registry := app.TokenRegistryKeeper.GetDenomWhitelist(ctx)
-	mintedDenomEntry := app.TokenRegistryKeeper.GetDenom(registry, mintedDenom)
-	require.NotNil(t, mintedDenomEntry)
+	registry := app.TokenRegistryKeeper.GetRegistry(ctx)
+	mintedDenomEntry, err := app.TokenRegistryKeeper.GetEntry(registry, mintedDenom)
+	require.NoError(t, err)
 	allowed := helpers.IsRecvPacketAllowed(ctx, app.TokenRegistryKeeper, packet, returningData, mintedDenomEntry)
 	require.Equal(t, allowed, true)
-	convertToDenomEntry := app.TokenRegistryKeeper.GetDenom(registry, mintedDenomEntry.UnitDenom)
-	require.NotNil(t, convertToDenomEntry)
-	err := helpers.ExecConvForRefundCoins(ctx, app.BankKeeper, app.TokenRegistryKeeper, mintedDenomEntry, convertToDenomEntry, packet, returningData)
+	convertToDenomEntry, err := app.TokenRegistryKeeper.GetEntry(registry, mintedDenomEntry.UnitDenom)
+	require.NoError(t, err)
+	err = helpers.ExecConvForRefundCoins(ctx, app.BankKeeper, mintedDenomEntry, convertToDenomEntry, packet, returningData)
 	require.NoError(t, err)
 	mintedDenom = helpers.GetMintedDenomFromPacket(packet, nonReturningData)
-	mintedDenomEntry = app.TokenRegistryKeeper.GetDenom(registry, mintedDenom)
-	require.NotNil(t, mintedDenomEntry)
+	mintedDenomEntry, err = app.TokenRegistryKeeper.GetEntry(registry, mintedDenom)
+	require.NoError(t, err)
 	allowed = helpers.IsRecvPacketAllowed(ctx, app.TokenRegistryKeeper, packet, nonReturningData, mintedDenomEntry)
 	require.Equal(t, allowed, true)
-	convertToDenomEntry = app.TokenRegistryKeeper.GetDenom(registry, mintedDenomEntry.UnitDenom)
-	require.NotNil(t, convertToDenomEntry)
-	err = helpers.ExecConvForRefundCoins(ctx, app.BankKeeper, app.TokenRegistryKeeper, mintedDenomEntry, convertToDenomEntry, packet, nonReturningData)
+	convertToDenomEntry, err = app.TokenRegistryKeeper.GetEntry(registry, mintedDenomEntry.UnitDenom)
+	require.NoError(t, err)
+	err = helpers.ExecConvForRefundCoins(ctx, app.BankKeeper, mintedDenomEntry, convertToDenomEntry, packet, nonReturningData)
 	require.NoError(t, err)
 }
 

@@ -1,31 +1,19 @@
 {
   "entries": [
     {
-      "decimals": "18",
-      "denom": "rowan",
-      "base_denom": "rowan",
-      "ibc_transfer_port": "",
-      "ibc_channel_id": "",
-      "ibc_counterparty_channel_id": "",
-      "permissions": [
-        "CLP",
-        "IBCEXPORT",
-        "IBCIMPORT"
-      ],
-      "unit_denom": "rowan",
-      "ibc_counterparty_denom": "xrowan",
-      "ibc_counterparty_chain_id": ""
-    },
-    {
       "decimals": "4",
       "denom": "ccel",
       "base_denom": "ccel",
       "ibc_transfer_port": "",
       "ibc_channel_id": "",
       "ibc_counterparty_channel_id": "",
-      "permissions": [
-        "CLP"
-      ],
+      "display_name": "",
+      "display_symbol": "",
+      "network": "",
+      "address": "",
+      "external_symbol": "",
+      "transfer_limit": "",
+      "permissions": ["CLP", "IBCEXPORT", "IBCIMPORT"],
       "unit_denom": "",
       "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
@@ -37,9 +25,13 @@
       "ibc_transfer_port": "",
       "ibc_channel_id": "",
       "ibc_counterparty_channel_id": "",
-      "permissions": [
-        "CLP"
-      ],
+      "display_name": "",
+      "display_symbol": "",
+      "network": "",
+      "address": "",
+      "external_symbol": "",
+      "transfer_limit": "",
+      "permissions": ["CLP", "IBCEXPORT", "IBCIMPORT"],
       "unit_denom": "",
       "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
@@ -51,11 +43,13 @@
       "ibc_transfer_port": "",
       "ibc_channel_id": "",
       "ibc_counterparty_channel_id": "",
-      "permissions": [
-        "CLP",
-        "IBCEXPORT",
-        "IBCIMPORT"
-      ],
+      "display_name": "USDT",
+      "display_symbol": "",
+      "network": "",
+      "address": "",
+      "external_symbol": "USDT",
+      "transfer_limit": "",
+      "permissions": ["CLP", "IBCEXPORT", "IBCIMPORT"],
       "unit_denom": "",
       "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
@@ -67,11 +61,49 @@
       "ibc_transfer_port": "",
       "ibc_channel_id": "",
       "ibc_counterparty_channel_id": "",
-      "permissions": [
-        "CLP",
-        "IBCEXPORT",
-        "IBCIMPORT"
-      ],
+      "display_name": "USDC",
+      "display_symbol": "",
+      "network": "",
+      "address": "",
+      "external_symbol": "USDC",
+      "transfer_limit": "",
+      "permissions": ["CLP", "IBCEXPORT", "IBCIMPORT"],
+      "unit_denom": "",
+      "ibc_counterparty_denom": "",
+      "ibc_counterparty_chain_id": ""
+    },
+    {
+      "decimals": "6",
+      "denom": "cwscrt",
+      "base_denom": "cwscrt",
+      "path": "",
+      "ibc_channel_id": "",
+      "ibc_counterparty_channel_id": "",
+      "display_name": "",
+      "display_symbol": "",
+      "network": "",
+      "address": "",
+      "external_symbol": "",
+      "transfer_limit": "",
+      "permissions": ["CLP", "IBCEXPORT", "IBCIMPORT"],
+      "unit_denom": "",
+      "ibc_counterparty_denom": "",
+      "ibc_counterparty_chain_id": ""
+    },
+    {
+      "decimals": "6",
+      "denom": "csrm",
+      "base_denom": "csrm",
+      "path": "",
+      "ibc_channel_id": "",
+      "ibc_counterparty_channel_id": "",
+      "display_name": "",
+      "display_symbol": "",
+      "network": "",
+      "address": "",
+      "external_symbol": "",
+      "transfer_limit": "",
+      "permissions": ["CLP", "IBCEXPORT", "IBCIMPORT"],
       "unit_denom": "",
       "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
@@ -83,9 +115,13 @@
       "ibc_transfer_port": "",
       "ibc_channel_id": "",
       "ibc_counterparty_channel_id": "",
-      "permissions": [
-        "CLP"
-      ],
+      "display_name": "",
+      "display_symbol": "",
+      "network": "",
+      "address": "",
+      "external_symbol": "",
+      "transfer_limit": "",
+      "permissions": ["CLP", "IBCEXPORT", "IBCIMPORT"],
       "unit_denom": "",
       "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
@@ -97,9 +133,13 @@
       "ibc_transfer_port": "",
       "ibc_channel_id": "",
       "ibc_counterparty_channel_id": "",
-      "permissions": [
-        "CLP"
-      ],
+      "display_name": "",
+      "display_symbol": "",
+      "network": "",
+      "address": "",
+      "external_symbol": "",
+      "transfer_limit": "",
+      "permissions": ["CLP", "IBCEXPORT", "IBCIMPORT"],
       "unit_denom": "",
       "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
@@ -111,10 +151,13 @@
       "ibc_transfer_port": "",
       "ibc_channel_id": "",
       "ibc_counterparty_channel_id": "",
-
-      "permissions": [
-        "CLP"
-      ],
+      "display_name": "",
+      "display_symbol": "",
+      "network": "",
+      "address": "",
+      "external_symbol": "",
+      "transfer_limit": "",
+      "permissions": ["CLP", "IBCEXPORT", "IBCIMPORT"],
       "unit_denom": "",
       "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
@@ -126,9 +169,13 @@
       "ibc_transfer_port": "",
       "ibc_channel_id": "",
       "ibc_counterparty_channel_id": "",
-      "permissions": [
-        "CLP"
-      ],
+      "display_name": "",
+      "display_symbol": "",
+      "network": "",
+      "address": "",
+      "external_symbol": "",
+      "transfer_limit": "",
+      "permissions": ["CLP", "IBCEXPORT", "IBCIMPORT"],
       "unit_denom": "",
       "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
@@ -140,9 +187,13 @@
       "ibc_transfer_port": "",
       "ibc_channel_id": "",
       "ibc_counterparty_channel_id": "",
-      "permissions": [
-        "CLP"
-      ],
+      "display_name": "",
+      "display_symbol": "",
+      "network": "",
+      "address": "",
+      "external_symbol": "",
+      "transfer_limit": "",
+      "permissions": ["CLP", "IBCEXPORT", "IBCIMPORT"],
       "unit_denom": "",
       "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
@@ -154,9 +205,13 @@
       "ibc_transfer_port": "",
       "ibc_channel_id": "",
       "ibc_counterparty_channel_id": "",
-      "permissions": [
-        "CLP"
-      ],
+      "display_name": "",
+      "display_symbol": "",
+      "network": "",
+      "address": "",
+      "external_symbol": "",
+      "transfer_limit": "",
+      "permissions": ["CLP", "IBCEXPORT", "IBCIMPORT"],
       "unit_denom": "",
       "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
@@ -168,9 +223,13 @@
       "ibc_transfer_port": "",
       "ibc_channel_id": "",
       "ibc_counterparty_channel_id": "",
-      "permissions": [
-        "CLP"
-      ],
+      "display_name": "",
+      "display_symbol": "",
+      "network": "",
+      "address": "",
+      "external_symbol": "",
+      "transfer_limit": "",
+      "permissions": ["CLP", "IBCEXPORT", "IBCIMPORT"],
       "unit_denom": "",
       "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
@@ -182,11 +241,33 @@
       "ibc_transfer_port": "",
       "ibc_channel_id": "",
       "ibc_counterparty_channel_id": "",
-      "permissions": [
-        "CLP"
-      ],
+      "display_name": "",
+      "display_symbol": "",
+      "network": "",
+      "address": "",
+      "external_symbol": "",
+      "transfer_limit": "",
+      "permissions": ["CLP", "IBCEXPORT", "IBCIMPORT"],
       "unit_denom": "",
       "ibc_counterparty_denom": "",
+      "ibc_counterparty_chain_id": ""
+    },
+    {
+      "decimals": "18",
+      "denom": "rowan",
+      "base_denom": "rowan",
+      "path": "",
+      "ibc_channel_id": "",
+      "ibc_counterparty_channel_id": "",
+      "display_name": "Rowan",
+      "display_symbol": "",
+      "network": "",
+      "address": "",
+      "external_symbol": "eRowan",
+      "transfer_limit": "",
+      "permissions": ["CLP", "IBCEXPORT"],
+      "unit_denom": "rowan",
+      "ibc_counterparty_denom": "xrowan",
       "ibc_counterparty_chain_id": ""
     },
     {
@@ -196,11 +277,13 @@
       "ibc_transfer_port": "",
       "ibc_channel_id": "",
       "ibc_counterparty_channel_id": "",
-      "permissions": [
-        "CLP",
-        "IBCEXPORT",
-        "IBCIMPORT"
-      ],
+      "display_name": "ETH",
+      "display_symbol": "",
+      "network": "",
+      "address": "",
+      "external_symbol": "ETH",
+      "transfer_limit": "",
+      "permissions": ["CLP", "IBCEXPORT"],
       "unit_denom": "",
       "ibc_counterparty_denom": "xeth",
       "ibc_counterparty_chain_id": ""
@@ -212,9 +295,13 @@
       "ibc_transfer_port": "",
       "ibc_channel_id": "",
       "ibc_counterparty_channel_id": "",
-      "permissions": [
-        "CLP"
-      ],
+      "display_name": "",
+      "display_symbol": "",
+      "network": "",
+      "address": "",
+      "external_symbol": "",
+      "transfer_limit": "",
+      "permissions": ["CLP", "IBCEXPORT"],
       "unit_denom": "",
       "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
@@ -226,9 +313,13 @@
       "ibc_transfer_port": "",
       "ibc_channel_id": "",
       "ibc_counterparty_channel_id": "",
-      "permissions": [
-        "CLP"
-      ],
+      "display_name": "",
+      "display_symbol": "",
+      "network": "",
+      "address": "",
+      "external_symbol": "",
+      "transfer_limit": "",
+      "permissions": ["CLP", "IBCEXPORT"],
       "unit_denom": "",
       "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
@@ -240,23 +331,13 @@
       "ibc_transfer_port": "",
       "ibc_channel_id": "",
       "ibc_counterparty_channel_id": "",
-      "permissions": [
-        "CLP"
-      ],
-      "unit_denom": "",
-      "ibc_counterparty_denom": "",
-      "ibc_counterparty_chain_id": ""
-    },
-    {
-      "decimals": "6",
-      "denom": "cwscrt",
-      "base_denom": "cwscrt",
-      "ibc_transfer_port": "",
-      "ibc_channel_id": "",
-      "ibc_counterparty_channel_id": "",
-      "permissions": [
-        "CLP"
-      ],
+      "display_name": "",
+      "display_symbol": "",
+      "network": "",
+      "address": "",
+      "external_symbol": "",
+      "transfer_limit": "",
+      "permissions": ["CLP", "IBCEXPORT"],
       "unit_denom": "",
       "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
@@ -268,9 +349,13 @@
       "ibc_transfer_port": "",
       "ibc_channel_id": "",
       "ibc_counterparty_channel_id": "",
-      "permissions": [
-        "CLP"
-      ],
+      "display_name": "",
+      "display_symbol": "",
+      "network": "",
+      "address": "",
+      "external_symbol": "",
+      "transfer_limit": "",
+      "permissions": ["CLP", "IBCEXPORT"],
       "unit_denom": "",
       "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
@@ -282,9 +367,13 @@
       "ibc_transfer_port": "",
       "ibc_channel_id": "",
       "ibc_counterparty_channel_id": "",
-      "permissions": [
-        "CLP"
-      ],
+      "display_name": "",
+      "display_symbol": "",
+      "network": "",
+      "address": "",
+      "external_symbol": "",
+      "transfer_limit": "",
+      "permissions": ["CLP", "IBCEXPORT"],
       "unit_denom": "",
       "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
@@ -296,9 +385,13 @@
       "ibc_transfer_port": "",
       "ibc_channel_id": "",
       "ibc_counterparty_channel_id": "",
-      "permissions": [
-        "CLP"
-      ],
+      "display_name": "",
+      "display_symbol": "",
+      "network": "",
+      "address": "",
+      "external_symbol": "",
+      "transfer_limit": "",
+      "permissions": ["CLP", "IBCEXPORT"],
       "unit_denom": "",
       "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
@@ -310,9 +403,13 @@
       "ibc_transfer_port": "",
       "ibc_channel_id": "",
       "ibc_counterparty_channel_id": "",
-      "permissions": [
-        "CLP"
-      ],
+      "display_name": "",
+      "display_symbol": "",
+      "network": "",
+      "address": "",
+      "external_symbol": "",
+      "transfer_limit": "",
+      "permissions": ["CLP", "IBCEXPORT"],
       "unit_denom": "",
       "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
@@ -324,9 +421,13 @@
       "ibc_transfer_port": "",
       "ibc_channel_id": "",
       "ibc_counterparty_channel_id": "",
-      "permissions": [
-        "CLP"
-      ],
+      "display_name": "",
+      "display_symbol": "",
+      "network": "",
+      "address": "",
+      "external_symbol": "",
+      "transfer_limit": "",
+      "permissions": ["CLP", "IBCEXPORT"],
       "unit_denom": "",
       "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
@@ -338,9 +439,13 @@
       "ibc_transfer_port": "",
       "ibc_channel_id": "",
       "ibc_counterparty_channel_id": "",
-      "permissions": [
-        "CLP"
-      ],
+      "display_name": "",
+      "display_symbol": "",
+      "network": "",
+      "address": "",
+      "external_symbol": "",
+      "transfer_limit": "",
+      "permissions": ["CLP", "IBCEXPORT"],
       "unit_denom": "",
       "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
@@ -352,23 +457,13 @@
       "ibc_transfer_port": "",
       "ibc_channel_id": "",
       "ibc_counterparty_channel_id": "",
-      "permissions": [
-        "CLP"
-      ],
-      "unit_denom": "",
-      "ibc_counterparty_denom": "",
-      "ibc_counterparty_chain_id": ""
-    },
-    {
-      "decimals": "18",
-      "denom": "csrm",
-      "base_denom": "csrm",
-      "ibc_transfer_port": "",
-      "ibc_channel_id": "",
-      "ibc_counterparty_channel_id": "",
-      "permissions": [
-        "CLP"
-      ],
+      "display_name": "",
+      "display_symbol": "",
+      "network": "",
+      "address": "",
+      "external_symbol": "",
+      "transfer_limit": "",
+      "permissions": ["CLP", "IBCEXPORT"],
       "unit_denom": "",
       "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
@@ -380,9 +475,13 @@
       "ibc_transfer_port": "",
       "ibc_channel_id": "",
       "ibc_counterparty_channel_id": "",
-      "permissions": [
-        "CLP"
-      ],
+      "display_name": "",
+      "display_symbol": "",
+      "network": "",
+      "address": "",
+      "external_symbol": "",
+      "transfer_limit": "",
+      "permissions": ["CLP", "IBCEXPORT"],
       "unit_denom": "",
       "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
@@ -394,9 +493,13 @@
       "ibc_transfer_port": "",
       "ibc_channel_id": "",
       "ibc_counterparty_channel_id": "",
-      "permissions": [
-        "CLP"
-      ],
+      "display_name": "",
+      "display_symbol": "",
+      "network": "",
+      "address": "",
+      "external_symbol": "",
+      "transfer_limit": "",
+      "permissions": ["CLP", "IBCEXPORT"],
       "unit_denom": "",
       "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
@@ -408,9 +511,13 @@
       "ibc_transfer_port": "",
       "ibc_channel_id": "",
       "ibc_counterparty_channel_id": "",
-      "permissions": [
-        "CLP"
-      ],
+      "display_name": "",
+      "display_symbol": "",
+      "network": "",
+      "address": "",
+      "external_symbol": "",
+      "transfer_limit": "",
+      "permissions": ["CLP", "IBCEXPORT"],
       "unit_denom": "",
       "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
@@ -422,9 +529,13 @@
       "ibc_transfer_port": "",
       "ibc_channel_id": "",
       "ibc_counterparty_channel_id": "",
-      "permissions": [
-        "CLP"
-      ],
+      "display_name": "",
+      "display_symbol": "",
+      "network": "",
+      "address": "",
+      "external_symbol": "",
+      "transfer_limit": "",
+      "permissions": ["CLP", "IBCEXPORT"],
       "unit_denom": "",
       "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
@@ -436,9 +547,13 @@
       "ibc_transfer_port": "",
       "ibc_channel_id": "",
       "ibc_counterparty_channel_id": "",
-      "permissions": [
-        "CLP"
-      ],
+      "display_name": "",
+      "display_symbol": "",
+      "network": "",
+      "address": "",
+      "external_symbol": "",
+      "transfer_limit": "",
+      "permissions": ["CLP", "IBCEXPORT"],
       "unit_denom": "",
       "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
@@ -450,9 +565,13 @@
       "ibc_transfer_port": "",
       "ibc_channel_id": "",
       "ibc_counterparty_channel_id": "",
-      "permissions": [
-        "CLP"
-      ],
+      "display_name": "",
+      "display_symbol": "",
+      "network": "",
+      "address": "",
+      "external_symbol": "",
+      "transfer_limit": "",
+      "permissions": ["CLP", "IBCEXPORT"],
       "unit_denom": "",
       "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
@@ -464,9 +583,13 @@
       "ibc_transfer_port": "",
       "ibc_channel_id": "",
       "ibc_counterparty_channel_id": "",
-      "permissions": [
-        "CLP"
-      ],
+      "display_name": "",
+      "display_symbol": "",
+      "network": "",
+      "address": "",
+      "external_symbol": "",
+      "transfer_limit": "",
+      "permissions": ["CLP", "IBCEXPORT"],
       "unit_denom": "",
       "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
@@ -478,9 +601,13 @@
       "ibc_transfer_port": "",
       "ibc_channel_id": "",
       "ibc_counterparty_channel_id": "",
-      "permissions": [
-        "CLP"
-      ],
+      "display_name": "",
+      "display_symbol": "",
+      "network": "",
+      "address": "",
+      "external_symbol": "",
+      "transfer_limit": "",
+      "permissions": ["CLP", "IBCEXPORT"],
       "unit_denom": "",
       "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
@@ -492,9 +619,13 @@
       "ibc_transfer_port": "",
       "ibc_channel_id": "",
       "ibc_counterparty_channel_id": "",
-      "permissions": [
-        "CLP"
-      ],
+      "display_name": "",
+      "display_symbol": "",
+      "network": "",
+      "address": "",
+      "external_symbol": "",
+      "transfer_limit": "",
+      "permissions": ["CLP", "IBCEXPORT"],
       "unit_denom": "",
       "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
@@ -506,9 +637,13 @@
       "ibc_transfer_port": "",
       "ibc_channel_id": "",
       "ibc_counterparty_channel_id": "",
-      "permissions": [
-        "CLP"
-      ],
+      "display_name": "",
+      "display_symbol": "",
+      "network": "",
+      "address": "",
+      "external_symbol": "",
+      "transfer_limit": "",
+      "permissions": ["CLP", "IBCEXPORT"],
       "unit_denom": "",
       "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
@@ -520,9 +655,13 @@
       "ibc_transfer_port": "",
       "ibc_channel_id": "",
       "ibc_counterparty_channel_id": "",
-      "permissions": [
-        "CLP"
-      ],
+      "display_name": "",
+      "display_symbol": "",
+      "network": "",
+      "address": "",
+      "external_symbol": "",
+      "transfer_limit": "",
+      "permissions": ["CLP", "IBCEXPORT"],
       "unit_denom": "",
       "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
@@ -534,9 +673,13 @@
       "ibc_transfer_port": "",
       "ibc_channel_id": "",
       "ibc_counterparty_channel_id": "",
-      "permissions": [
-        "CLP"
-      ],
+      "display_name": "",
+      "display_symbol": "",
+      "network": "",
+      "address": "",
+      "external_symbol": "",
+      "transfer_limit": "",
+      "permissions": ["CLP", "IBCEXPORT"],
       "unit_denom": "",
       "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
@@ -548,9 +691,13 @@
       "ibc_transfer_port": "",
       "ibc_channel_id": "",
       "ibc_counterparty_channel_id": "",
-      "permissions": [
-        "CLP"
-      ],
+      "display_name": "",
+      "display_symbol": "",
+      "network": "",
+      "address": "",
+      "external_symbol": "",
+      "transfer_limit": "",
+      "permissions": ["CLP", "IBCEXPORT"],
       "unit_denom": "",
       "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
@@ -562,9 +709,13 @@
       "ibc_transfer_port": "",
       "ibc_channel_id": "",
       "ibc_counterparty_channel_id": "",
-      "permissions": [
-        "CLP"
-      ],
+      "display_name": "",
+      "display_symbol": "",
+      "network": "",
+      "address": "",
+      "external_symbol": "",
+      "transfer_limit": "",
+      "permissions": ["CLP", "IBCEXPORT"],
       "unit_denom": "",
       "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
@@ -576,9 +727,13 @@
       "ibc_transfer_port": "",
       "ibc_channel_id": "",
       "ibc_counterparty_channel_id": "",
-      "permissions": [
-        "CLP"
-      ],
+      "display_name": "",
+      "display_symbol": "",
+      "network": "",
+      "address": "",
+      "external_symbol": "",
+      "transfer_limit": "",
+      "permissions": ["CLP", "IBCEXPORT"],
       "unit_denom": "",
       "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
@@ -590,9 +745,13 @@
       "ibc_transfer_port": "",
       "ibc_channel_id": "",
       "ibc_counterparty_channel_id": "",
-      "permissions": [
-        "CLP"
-      ],
+      "display_name": "",
+      "display_symbol": "",
+      "network": "",
+      "address": "",
+      "external_symbol": "",
+      "transfer_limit": "",
+      "permissions": ["CLP", "IBCEXPORT"],
       "unit_denom": "",
       "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
@@ -604,9 +763,13 @@
       "ibc_transfer_port": "",
       "ibc_channel_id": "",
       "ibc_counterparty_channel_id": "",
-      "permissions": [
-        "CLP"
-      ],
+      "display_name": "",
+      "display_symbol": "",
+      "network": "",
+      "address": "",
+      "external_symbol": "",
+      "transfer_limit": "",
+      "permissions": ["CLP", "IBCEXPORT"],
       "unit_denom": "",
       "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
@@ -618,9 +781,13 @@
       "ibc_transfer_port": "",
       "ibc_channel_id": "",
       "ibc_counterparty_channel_id": "",
-      "permissions": [
-        "CLP"
-      ],
+      "display_name": "",
+      "display_symbol": "",
+      "network": "",
+      "address": "",
+      "external_symbol": "",
+      "transfer_limit": "",
+      "permissions": ["CLP", "IBCEXPORT"],
       "unit_denom": "",
       "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
@@ -632,9 +799,13 @@
       "ibc_transfer_port": "",
       "ibc_channel_id": "",
       "ibc_counterparty_channel_id": "",
-      "permissions": [
-        "CLP"
-      ],
+      "display_name": "",
+      "display_symbol": "",
+      "network": "",
+      "address": "",
+      "external_symbol": "",
+      "transfer_limit": "",
+      "permissions": ["CLP", "IBCEXPORT"],
       "unit_denom": "",
       "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
@@ -646,9 +817,13 @@
       "ibc_transfer_port": "",
       "ibc_channel_id": "",
       "ibc_counterparty_channel_id": "",
-      "permissions": [
-        "CLP"
-      ],
+      "display_name": "",
+      "display_symbol": "",
+      "network": "",
+      "address": "",
+      "external_symbol": "",
+      "transfer_limit": "",
+      "permissions": ["CLP", "IBCEXPORT"],
       "unit_denom": "",
       "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
@@ -660,9 +835,13 @@
       "ibc_transfer_port": "",
       "ibc_channel_id": "",
       "ibc_counterparty_channel_id": "",
-      "permissions": [
-        "CLP"
-      ],
+      "display_name": "",
+      "display_symbol": "",
+      "network": "",
+      "address": "",
+      "external_symbol": "",
+      "transfer_limit": "",
+      "permissions": ["CLP", "IBCEXPORT"],
       "unit_denom": "",
       "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
@@ -674,9 +853,13 @@
       "ibc_transfer_port": "",
       "ibc_channel_id": "",
       "ibc_counterparty_channel_id": "",
-      "permissions": [
-        "CLP"
-      ],
+      "display_name": "",
+      "display_symbol": "",
+      "network": "",
+      "address": "",
+      "external_symbol": "",
+      "transfer_limit": "",
+      "permissions": ["CLP", "IBCEXPORT"],
       "unit_denom": "",
       "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
@@ -688,9 +871,13 @@
       "ibc_transfer_port": "",
       "ibc_channel_id": "",
       "ibc_counterparty_channel_id": "",
-      "permissions": [
-        "CLP"
-      ],
+      "display_name": "",
+      "display_symbol": "",
+      "network": "",
+      "address": "",
+      "external_symbol": "",
+      "transfer_limit": "",
+      "permissions": ["CLP", "IBCEXPORT"],
       "unit_denom": "",
       "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
@@ -702,9 +889,13 @@
       "ibc_transfer_port": "",
       "ibc_channel_id": "",
       "ibc_counterparty_channel_id": "",
-      "permissions": [
-        "CLP"
-      ],
+      "display_name": "",
+      "display_symbol": "",
+      "network": "",
+      "address": "",
+      "external_symbol": "",
+      "transfer_limit": "",
+      "permissions": ["CLP", "IBCEXPORT"],
       "unit_denom": "",
       "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
@@ -716,9 +907,13 @@
       "ibc_transfer_port": "",
       "ibc_channel_id": "",
       "ibc_counterparty_channel_id": "",
-      "permissions": [
-        "CLP"
-      ],
+      "display_name": "",
+      "display_symbol": "",
+      "network": "",
+      "address": "",
+      "external_symbol": "",
+      "transfer_limit": "",
+      "permissions": ["CLP", "IBCEXPORT"],
       "unit_denom": "",
       "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
@@ -730,9 +925,13 @@
       "ibc_transfer_port": "",
       "ibc_channel_id": "",
       "ibc_counterparty_channel_id": "",
-      "permissions": [
-        "CLP"
-      ],
+      "display_name": "",
+      "display_symbol": "",
+      "network": "",
+      "address": "",
+      "external_symbol": "",
+      "transfer_limit": "",
+      "permissions": ["CLP", "IBCEXPORT"],
       "unit_denom": "",
       "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
@@ -744,9 +943,13 @@
       "ibc_transfer_port": "",
       "ibc_channel_id": "",
       "ibc_counterparty_channel_id": "",
-      "permissions": [
-        "CLP"
-      ],
+      "display_name": "",
+      "display_symbol": "",
+      "network": "",
+      "address": "",
+      "external_symbol": "",
+      "transfer_limit": "",
+      "permissions": ["CLP", "IBCEXPORT"],
       "unit_denom": "",
       "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
@@ -758,9 +961,13 @@
       "ibc_transfer_port": "",
       "ibc_channel_id": "",
       "ibc_counterparty_channel_id": "",
-      "permissions": [
-        "CLP"
-      ],
+      "display_name": "",
+      "display_symbol": "",
+      "network": "",
+      "address": "",
+      "external_symbol": "",
+      "transfer_limit": "",
+      "permissions": ["CLP", "IBCEXPORT"],
       "unit_denom": "",
       "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
@@ -772,9 +979,13 @@
       "ibc_transfer_port": "",
       "ibc_channel_id": "",
       "ibc_counterparty_channel_id": "",
-      "permissions": [
-        "CLP"
-      ],
+      "display_name": "",
+      "display_symbol": "",
+      "network": "",
+      "address": "",
+      "external_symbol": "",
+      "transfer_limit": "",
+      "permissions": ["CLP", "IBCEXPORT"],
       "unit_denom": "",
       "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
@@ -786,9 +997,13 @@
       "ibc_transfer_port": "",
       "ibc_channel_id": "",
       "ibc_counterparty_channel_id": "",
-      "permissions": [
-        "CLP"
-      ],
+      "display_name": "",
+      "display_symbol": "",
+      "network": "",
+      "address": "",
+      "external_symbol": "",
+      "transfer_limit": "",
+      "permissions": ["CLP", "IBCEXPORT"],
       "unit_denom": "",
       "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
@@ -800,9 +1015,13 @@
       "ibc_transfer_port": "",
       "ibc_channel_id": "",
       "ibc_counterparty_channel_id": "",
-      "permissions": [
-        "CLP"
-      ],
+      "display_name": "",
+      "display_symbol": "",
+      "network": "",
+      "address": "",
+      "external_symbol": "",
+      "transfer_limit": "",
+      "permissions": ["CLP", "IBCEXPORT"],
       "unit_denom": "",
       "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
@@ -814,9 +1033,13 @@
       "ibc_transfer_port": "",
       "ibc_channel_id": "",
       "ibc_counterparty_channel_id": "",
-      "permissions": [
-        "CLP"
-      ],
+      "display_name": "",
+      "display_symbol": "",
+      "network": "",
+      "address": "",
+      "external_symbol": "",
+      "transfer_limit": "",
+      "permissions": ["CLP", "IBCEXPORT"],
       "unit_denom": "",
       "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
@@ -828,9 +1051,13 @@
       "ibc_transfer_port": "",
       "ibc_channel_id": "",
       "ibc_counterparty_channel_id": "",
-      "permissions": [
-        "CLP"
-      ],
+      "display_name": "",
+      "display_symbol": "",
+      "network": "",
+      "address": "",
+      "external_symbol": "",
+      "transfer_limit": "",
+      "permissions": ["CLP", "IBCEXPORT"],
       "unit_denom": "",
       "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
@@ -842,9 +1069,13 @@
       "ibc_transfer_port": "",
       "ibc_channel_id": "",
       "ibc_counterparty_channel_id": "",
-      "permissions": [
-        "CLP"
-      ],
+      "display_name": "",
+      "display_symbol": "",
+      "network": "",
+      "address": "",
+      "external_symbol": "",
+      "transfer_limit": "",
+      "permissions": ["CLP", "IBCEXPORT"],
       "unit_denom": "",
       "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
@@ -856,9 +1087,13 @@
       "ibc_transfer_port": "",
       "ibc_channel_id": "",
       "ibc_counterparty_channel_id": "",
-      "permissions": [
-        "CLP"
-      ],
+      "display_name": "",
+      "display_symbol": "",
+      "network": "",
+      "address": "",
+      "external_symbol": "",
+      "transfer_limit": "",
+      "permissions": ["CLP", "IBCEXPORT"],
       "unit_denom": "",
       "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
@@ -870,9 +1105,13 @@
       "ibc_transfer_port": "",
       "ibc_channel_id": "",
       "ibc_counterparty_channel_id": "",
-      "permissions": [
-        "CLP"
-      ],
+      "display_name": "",
+      "display_symbol": "",
+      "network": "",
+      "address": "",
+      "external_symbol": "",
+      "transfer_limit": "",
+      "permissions": ["CLP", "IBCEXPORT"],
       "unit_denom": "",
       "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
@@ -884,9 +1123,13 @@
       "ibc_transfer_port": "",
       "ibc_channel_id": "",
       "ibc_counterparty_channel_id": "",
-      "permissions": [
-        "CLP"
-      ],
+      "display_name": "",
+      "display_symbol": "",
+      "network": "",
+      "address": "",
+      "external_symbol": "",
+      "transfer_limit": "",
+      "permissions": ["CLP", "IBCEXPORT"],
       "unit_denom": "",
       "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
@@ -898,9 +1141,13 @@
       "ibc_transfer_port": "",
       "ibc_channel_id": "",
       "ibc_counterparty_channel_id": "",
-      "permissions": [
-        "CLP"
-      ],
+      "display_name": "",
+      "display_symbol": "",
+      "network": "",
+      "address": "",
+      "external_symbol": "",
+      "transfer_limit": "",
+      "permissions": ["CLP", "IBCEXPORT"],
       "unit_denom": "",
       "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
@@ -912,9 +1159,13 @@
       "ibc_transfer_port": "",
       "ibc_channel_id": "",
       "ibc_counterparty_channel_id": "",
-      "permissions": [
-        "CLP"
-      ],
+      "display_name": "",
+      "display_symbol": "",
+      "network": "",
+      "address": "",
+      "external_symbol": "",
+      "transfer_limit": "",
+      "permissions": ["CLP", "IBCEXPORT"],
       "unit_denom": "",
       "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
@@ -926,216 +1177,34 @@
       "ibc_transfer_port": "",
       "ibc_channel_id": "",
       "ibc_counterparty_channel_id": "",
-      "permissions": [
-        "CLP"
-      ],
+      "display_name": "",
+      "display_symbol": "",
+      "network": "",
+      "address": "",
+      "external_symbol": "",
+      "transfer_limit": "",
+      "permissions": ["CLP", "IBCEXPORT"],
       "unit_denom": "",
       "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
     },
     {
-      "decimals": "6",
-      "denom": "ibc/1A807A9792E3051609C5997C0B118FAC298F762C019A5EFAF8B983305D737BB7",
-      "base_denom": "uphoton",
-      "ibc_transfer_port": "transfer",
-      "ibc_channel_id": "channel-114",
-      "ibc_counterparty_channel_id": "channel-26",
-      "permissions": [
-        "CLP",
-        "IBCEXPORT",
-        "IBCIMPORT"
-      ],
-      "unit_denom": "",
-      "ibc_counterparty_denom": "",
-      "ibc_counterparty_chain_id": "cosmoshub-testnet"
-    },
-    {
-      "decimals": "6",
-      "denom": "ibc/5D0018BE54A23C89FFEF0EC45A1209A51140D7CCA8A73B00BC8B97E716A92131",
-      "base_denom": "uakt",
-      "ibc_transfer_port": "transfer",
-      "ibc_channel_id": "channel-110",
-      "ibc_counterparty_channel_id": "channel-63",
-      "permissions": [
-        "CLP",
-        "IBCEXPORT",
-        "IBCIMPORT"
-      ],
-      "unit_denom": "",
-      "ibc_counterparty_denom": "",
-      "ibc_counterparty_chain_id": "akash-testnet-6"
-    },
-    {
-      "decimals": "6",
-      "denom": "ibc/196953F37BE10851E68C01434989C6B8E1748A836796CA1ABFF2E414D58863C5",
-      "base_denom": "udvpn",
-      "ibc_transfer_port": "transfer",
-      "ibc_channel_id": "channel-111",
-      "ibc_counterparty_channel_id": "channel-35",
-      "permissions": [
-        "CLP",
-        "IBCEXPORT",
-        "IBCIMPORT"
-      ],
-      "unit_denom": "",
-      "ibc_counterparty_denom": "",
-      "ibc_counterparty_chain_id": "sentinelhub-2"
-    },
-    {
-      "decimals": "6",
-      "denom": "ibc/8395BFD6DF6EFE215B56CBEB14B7B265598E6F14AFFAF28337E9B627F0334059",
-      "base_denom": "unyan",
-      "ibc_transfer_port": "transfer",
-      "ibc_channel_id": "channel-74",
-      "ibc_counterparty_channel_id": "channel-22",
-      "permissions": [
-        "CLP",
-        "IBCEXPORT",
-        "IBCIMPORT"
-      ],
-      "unit_denom": "",
-      "ibc_counterparty_denom": "",
-      "ibc_counterparty_chain_id": "nyancat-8"
-    },
-    {
-      "decimals": "6",
-      "denom": "ibc/FA2A11411CA6EE8DBB2247799FEEA3B918FF5E699361B47CA820AA908FA3418E",
-      "base_denom": "unyan",
-      "ibc_transfer_port": "transfer",
-      "ibc_channel_id": "channel-117",
-      "ibc_counterparty_channel_id": "channel-24",
-      "permissions": [
-        "CLP",
-        "IBCEXPORT",
-        "IBCIMPORT"
-      ],
-      "unit_denom": "",
-      "ibc_counterparty_denom": "",
-      "ibc_counterparty_chain_id": "nyancat-8"
-    },
-    {
-      "decimals": "6",
-      "denom": "ibc/C9C7D0BEEA163F1F35F3D916A7EA7099FD39FFBB2AAA8257A34277F0429F52BF",
-      "base_denom": "uxprt",
-      "ibc_transfer_port": "transfer",
-      "ibc_channel_id": "channel-120",
-      "ibc_counterparty_channel_id": "channel-25",
-      "permissions": [
-        "CLP",
-        "IBCEXPORT",
-        "IBCIMPORT"
-      ],
-      "unit_denom": "",
-      "ibc_counterparty_denom": "",
-      "ibc_counterparty_chain_id": "test-core-1"
-    },
-    {
-      "decimals": "8",
-      "denom": "ibc/18DC6C5D781FB1D2398D925166810F63E4BE63D84486047D2F771151CD4AD64E",
-      "base_denom": "basecro",
-      "ibc_transfer_port": "transfer",
-      "ibc_channel_id": "channel-118",
-      "ibc_counterparty_channel_id": "channel-31",
-      "permissions": [
-        "CLP",
-        "IBCEXPORT",
-        "IBCIMPORT"
-      ],
-      "unit_denom": "",
-      "ibc_counterparty_denom": "",
-      "ibc_counterparty_chain_id": "crypto-org-chain-mainnet-1"
-    },
-    {
-      "decimals": "6",
-      "denom": "ibc/057E0E697E069620BD0E3C063EC861BA7FFC3EAD236A3EAB258D12D6BFE3C939",
-      "base_denom": "uregen",
-      "ibc_transfer_port": "transfer",
-      "ibc_channel_id": "channel-121",
-      "ibc_counterparty_channel_id": "channel-26",
-      "permissions": [
-        "CLP",
-        "IBCEXPORT",
-        "IBCIMPORT"
-      ],
-      "unit_denom": "",
-      "ibc_counterparty_denom": "",
-      "ibc_counterparty_chain_id": "regen-1"
-    },
-    {
-      "decimals": "10",
-      "denom": "xeth",
-      "base_denom": "xeth",
-      "ibc_transfer_port": "",
+      "decimals": "18",
+      "denom": "cust",
+      "base_denom": "cust",
+      "path": "",
       "ibc_channel_id": "",
       "ibc_counterparty_channel_id": "",
-      "permissions": [
-        "IBCIMPORT"
-      ],
-      "unit_denom": "ceth",
+      "display_name": "",
+      "display_symbol": "",
+      "network": "",
+      "address": "",
+      "external_symbol": "",
+      "transfer_limit": "",
+      "permissions": ["CLP", "IBCEXPORT"],
+      "unit_denom": "",
       "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
-    },
-    {
-      "decimals": "10",
-      "denom": "xrowan",
-      "base_denom": "xrowan",
-      "ibc_transfer_port": "",
-      "ibc_channel_id": "",
-      "ibc_counterparty_channel_id": "",
-      "permissions": [
-        "IBCIMPORT"
-      ],
-      "unit_denom": "rowan",
-      "ibc_counterparty_denom": "",
-      "ibc_counterparty_chain_id": ""
-    },
-    {
-      "decimals": "6",
-      "denom": "ibc/8A6E703951D3907FD8F83DE69AC0E6C247C0E58F78C7B33C335E008C56115042",
-      "base_denom": "uluna",
-      "ibc_transfer_port": "transfer",
-      "ibc_channel_id": "channel-123",
-      "ibc_counterparty_channel_id": "channel-3",
-      "permissions": [
-        "CLP",
-        "IBCEXPORT",
-        "IBCIMPORT"
-      ],
-      "unit_denom": "",
-      "ibc_counterparty_denom": "",
-      "ibc_counterparty_chain_id": "bombay-10"
-    },
-    {
-      "decimals": "6",
-      "denom": "ibc/788BAF91C4E411B0252776FC1B201264457EE886A9E534DF8A52C56A87924D20",
-      "base_denom": "uosmo",
-      "ibc_transfer_port": "transfer",
-      "ibc_channel_id": "channel-122",
-      "ibc_counterparty_channel_id": "channel-34",
-      "permissions": [
-        "CLP",
-        "IBCEXPORT",
-        "IBCIMPORT"
-      ],
-      "unit_denom": "",
-      "ibc_counterparty_denom": "",
-      "ibc_counterparty_chain_id": "osmosis-1"
-    },
-    {
-      "decimals": "6",
-      "denom": "ibc/217BC2C4AD4953D957243A8D0ED015E6689E9C88ADE3D04C9F7BE48916A00457",
-      "base_denom": "uusd",
-      "ibc_transfer_port": "transfer",
-      "ibc_channel_id": "channel-123",
-      "ibc_counterparty_channel_id": "channel-3",
-      "permissions": [
-        "CLP",
-        "IBCEXPORT",
-        "IBCIMPORT"
-      ],
-      "unit_denom": "",
-      "ibc_counterparty_denom": "",
-      "ibc_counterparty_chain_id": "bombay-10"
     }
   ]
 }

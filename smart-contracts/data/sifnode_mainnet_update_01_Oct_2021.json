@@ -1,6 +1,5 @@
 [
   {
-    "is_whitelisted": true,
     "decimals": 18,
     "denom": "cbtsg",
     "base_denom": "cbtsg",
@@ -21,7 +20,6 @@
     "ibc_counterparty_chain_id": ""
   },
   {
-    "is_whitelisted": true,
     "decimals": 18,
     "denom": "cquick",
     "base_denom": "cquick",
@@ -42,7 +40,6 @@
     "ibc_counterparty_chain_id": ""
   },
   {
-    "is_whitelisted": true,
     "decimals": 18,
     "denom": "cdfyn",
     "base_denom": "cdfyn",
@@ -63,7 +60,6 @@
     "ibc_counterparty_chain_id": ""
   },
   {
-    "is_whitelisted": true,
     "decimals": 18,
     "denom": "cldo",
     "base_denom": "cldo",
@@ -84,7 +80,6 @@
     "ibc_counterparty_chain_id": ""
   },
   {
-    "is_whitelisted": true,
     "decimals": 18,
     "denom": "crail",
     "base_denom": "crail",
@@ -105,7 +100,6 @@
     "ibc_counterparty_chain_id": ""
   },
   {
-    "is_whitelisted": true,
     "decimals": 18,
     "denom": "cpond",
     "base_denom": "cpond",
@@ -126,7 +120,6 @@
     "ibc_counterparty_chain_id": ""
   },
   {
-    "is_whitelisted": true,
     "decimals": 18,
     "denom": "cdino",
     "base_denom": "cdino",
@@ -147,7 +140,6 @@
     "ibc_counterparty_chain_id": ""
   },
   {
-    "is_whitelisted": true,
     "decimals": 18,
     "denom": "cufo",
     "base_denom": "cufo",
