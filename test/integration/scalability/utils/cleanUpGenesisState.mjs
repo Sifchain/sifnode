@@ -54,7 +54,12 @@ export function cleanUpGenesisState({ remoteGenesis, defaultGenesis }) {
       staking: {
         ...defaultGenesis.app_state.staking,
         ...(remoteGenesis.app_state
-          ? { params: remoteGenesis.app_state.staking.params }
+          ? {
+              params: {
+                ...remoteGenesis.app_state.staking.params,
+                historical_entries: 100,
+              },
+            }
           : {}),
       },
       distribution: {
