@@ -1,5 +1,14 @@
+import json
 import re
 from common import *
+
+ETH = 10**18  # 1 ether = 10**18 wei
+
+
+def js_fmt(str, *params):
+    esc_params = tuple(json.dumps(x) for x in params)
+    return str.format(*esc_params)
+
 
 # Documentation: https://geth.ethereum.org/docs/
 # - Dev mode ("--dev") https://geth.ethereum.org/docs/getting-started/dev-mode
@@ -24,7 +33,7 @@ class Geth:
             (["--ws.addr", ws_addr] if ws_addr else []) + \
             (["--ws.port", str(ws_port)] if ws_port is not None else []) + \
             (["--ws.api", ",".join(ws_api)] if ws_api else []) + \
-            (["--http"] if http else None) + \
+            (["--http"] if http else []) + \
             (["--http.addr", http_addr] if http_addr is not None else []) + \
             (["--http.port", str(http_port)] if http_port is not None else []) + \
             (["--http.api", ",".join(http_api)] if http_api else []) + \
@@ -40,10 +49,56 @@ class Geth:
         args = [self.program, "--exec", geth_cmd_string, ipcpath]
         return self.cmd.execst(args)
 
-    # Creating an account by importing a private key: https://geth.ethereum.org/docs/interface/managing-your-accounts
-    # This uses "geth account import", the keys are stored in datadir/keys.
+    class AttachEvalFunction:
+        def __init__(self, geth, ipcpath):
+            self.geth = geth
+            self.ipcpath = ipcpath
+
+        def __call__(self, js_expr, raw=False):
+            args = [self.geth.program, "attach", "--exec", js_expr, self.ipcpath]
+            res = stdout(self.geth.cmd.execst(args))
+            return res if raw else json.loads(res)
+
+        @property
+        def coinbase_addr(self):
+            js_expr = f"eth.coinbase"
+            return self(js_expr)
+
+        def create_account(self, password):
+            js_expr = js_fmt("personal.newAccount({})", password)
+            return self(js_expr)
+
+        def unlock_account(self, addr, password):
+            js_expr = js_fmt("personal.unlockAccount({}, {})", addr, password)
+            # TODO Exception if unlock fails
+            # Returns true if acount was unlocked successfully
+            # Prints an error if not successful
+            return self(js_expr)
+
+        def get_balance(self, addr):
+            js_expr = js_fmt("eth.getBalance({})", addr)
+            return self(js_expr)
+
+        # Amount is in wei
+        # Returns txhash
+        def send(self, from_addr, to_addr, amount):
+            js_expr = js_fmt("eth.sendTransaction({{from: {}, to: {}, value: {}}})", from_addr, to_addr, amount)
+            return self(js_expr)
+
+
+    def attach_eval_fn(self, ipcpath):
+        return Geth.AttachEvalFunction(self, ipcpath)
+
+    # Creates a password-protected account in geth keyring for a given private key. This works deterministically,
+    # meaning the account address/pubkey is the same for the same private key, and also the same that you would get
+    # when creating address/pubkey in Hardhat.
+    #
+    # This uses "geth account import", the keys are stored in datadir/keys. The alternative is to use "geth console"
+    # personal.createAccount().
+    #
     # Private key has is a hex string without "0x" prefix
     # Datadir cannot be the same datadir that a running geth uses
+    # See "Creating an account by importing a private key": https://geth.ethereum.org/docs/interface/managing-your-accounts
     def create_account(self, password, private_key, datadir=None):
         assert (not private_key.startswith("0x")) and (len(private_key) == 64)
         passfile = self.cmd.mktempfile()
@@ -60,11 +115,25 @@ class Geth:
             self.cmd.rm(keyfile)
             self.cmd.rm(passfile)
 
+    def run_dev(self, network_id, datadir=None, http_port=None, ws_port=None, ipcpath=None):
+        kwargs = {}
+        if http_port is not None:
+            kwargs["http"] = True
+            kwargs["http_port"] = http_port
+            kwargs["http_addr"] = ANY_ADDR
+            kwargs["http_api"] = ("personal", "eth", "net", "web3", "debug")
+        if ws_port is not None:
+            kwargs["ws"] = True
+            kwargs["ws_addr"] = ANY_ADDR
+        cmd = self.geth_cmd(network_id=network_id, datadir=datadir, ipcpath=ipcpath, **kwargs)
+        res = self.cmd.popen(cmd)
+        return res
+
     # <editor-fold>
 
-    # Examples of usage of geth from branch 'test-integration-geth'
+    # Examples of usage of geth from branch 'test-integration-geth'.
+    # Dev mode creates one account with a near-infinite balance (console: eth.getBalance(eth.accounts[0])).
     # Not used at the moment
-
     def geth_cmd__test_integration_geth_branch(self, datadir=None):
         # def geth_cmd(args: env_ethereum.EthereumInput) -> str:
         #     apis = "personal,eth,net,web3,debug"
