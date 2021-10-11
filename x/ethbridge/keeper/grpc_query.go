@@ -83,7 +83,7 @@ func (srv queryServer) WitnessLockBurnNonce(ctx context.Context, req *types.Quer
 		return nil, err
 	}
 
-	lockBurnNonce := srv.Keeper.GetEthereumLockBurnNonce(sdkCtx, networkDescriptor, address)
+	lockBurnNonce := srv.Keeper.GetWitnessLockBurnNonce(sdkCtx, networkDescriptor, address)
 
 	res := types.NewWitnessLockBurnNonceResponse(lockBurnNonce)
 

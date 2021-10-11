@@ -282,7 +282,8 @@ func (sub CosmosSub) witnessSignProphecyID(
 func (sub CosmosSub) GetGlobalNonceBlockNumberFromCosmos(
 	networkDescriptor oracletypes.NetworkDescriptor,
 	relayerValAddress string) (uint64, uint64, error) {
-	conn, err := grpc.Dial(sub.TmProvider)
+
+	conn, err := grpc.Dial("0.0.0.0:9090", grpc.WithInsecure())
 	if err != nil {
 		return 0, 0, err
 	}
