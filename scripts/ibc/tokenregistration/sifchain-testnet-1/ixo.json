@@ -14,10 +14,14 @@
 			"address": "",
 			"external_symbol": "",
 			"transfer_limit": "",
-			"permissions": ["CLP", "IBCEXPORT", "IBCIMPORT"],
-			"unit_denom": "",
-			"ibc_counterparty_denom": "",
-			"ibc_counterparty_chain_id": "impacthub-3"
-		}
-	]
+      "permissions": [
+        "CLP",
+        "IBCEXPORT",
+        "IBCIMPORT"
+      ],
+      "unit_denom": "",
+      "ibc_counterparty_denom": "",
+      "ibc_counterparty_chain_id": "impacthub-3"
+    }
+  ]
 }
