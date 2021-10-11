@@ -1,3 +1,9 @@
+/**
+ * This script will test the Blocklist upgrade off of a Mainnet fork
+ * It will try many different scenarios regarding the Blocklist integration.
+ * If anything blows up, you'll see a red error on your shell/console.
+ */
+
 require("dotenv").config();
 
 const hardhat = require("hardhat");
@@ -36,6 +42,9 @@ const state = {
     admin: null,
     operator: null,
     user1: null,
+    validator1: null,
+    validator2: null,
+    validator3: null,
   },
   contracts: {
     bridgeBank: null,
@@ -113,7 +122,42 @@ async function main() {
   // Try to lock tokens to see it go through
   await lock({ expectedError: null });
 
-  // TODO: test with a prophecyClaim
+  // Send prohpecyClaim to see it go through 3 times
+  await newProphecyClaim({
+    signer: state.signers.validator1,
+    nonce: 1,
+    expectedError: null,
+  });
+  await newProphecyClaim({
+    signer: state.signers.validator2,
+    nonce: 1,
+    expectedError: null,
+  });
+  await newProphecyClaim({
+    signer: state.signers.validator3,
+    nonce: 1,
+    expectedError: null,
+  });
+
+  // Block user1 again
+  print("yellow", `🕑 Blocklisting user1...`);
+  await state.contracts.blocklist.addToBlocklist(state.addresses.user1);
+  print("green", `✅ User1 blocklisted`);
+
+  // Send prohpecyClaim to see it fail on the third time
+  await newProphecyClaim({
+    signer: state.signers.validator1,
+    nonce: 2,
+  });
+  await newProphecyClaim({
+    signer: state.signers.validator2,
+    nonce: 2,
+  });
+  await newProphecyClaim({
+    signer: state.signers.validator3,
+    nonce: 2,
+    expectedError: "Address is blocklisted",
+  });
 
   // Clean up temporary files
   cleanup();
@@ -142,6 +186,24 @@ async function impersonateAccounts() {
     state.addresses.user1,
     "10000000000000000000",
     "User1"
+  );
+
+  state.signers.validator1 = await support.impersonateAccount(
+    state.addresses.validator1,
+    "10000000000000000000",
+    "Validator 1"
+  );
+
+  state.signers.validator2 = await support.impersonateAccount(
+    state.addresses.validator2,
+    "10000000000000000000",
+    "Validator 2"
+  );
+
+  state.signers.validator3 = await support.impersonateAccount(
+    state.addresses.validator3,
+    "10000000000000000000",
+    "Validator 3"
   );
 }
 
@@ -220,7 +282,8 @@ async function setupBridgeToken() {
 async function lock({ expectedError }) {
   print("yellow", `🕑 Trying to lock tokens...`);
 
-  if (!expectedError) {
+  let errorMessage;
+  try {
     await state.contracts.upgradedBridgeBank
       .connect(state.signers.user1)
       .lock(
@@ -231,29 +294,68 @@ async function lock({ expectedError }) {
           value: 0,
         }
       );
-    print("green", `✅ lock() went through as expected`);
-  } else {
-    try {
-      await state.contracts.upgradedBridgeBank
-        .connect(state.signers.user1)
-        .lock(
-          state.addresses.sifRecipient,
-          state.contracts.bridgeToken.address,
-          state.amount,
-          {
-            value: 0,
-          }
-        );
-    } catch (e) {
-      if (e.message.indexOf(expectedError) !== -1) {
-        print("green", `✅ lock() failed as expected`);
-      } else {
-        throw new Error(
-          "💥 CRITICAL: lock() should have failed, but it went through!"
-        );
-      }
-    }
+  } catch (e) {
+    errorMessage = e.message;
   }
+
+  treatExpectedError({ functionName: "lock", expectedError, errorMessage });
+}
+
+async function newProphecyClaim({ signer, nonce, expectedError }) {
+  print("yellow", `🕑 Sending new ProphecyClaim...`);
+
+  let errorMessage;
+  try {
+    await state.contracts.cosmosBridge.connect(signer).newProphecyClaim(
+      2, // LOCK TYPE
+      state.addresses.sifRecipient,
+      nonce,
+      state.addresses.user1,
+      "TEST",
+      state.amount
+    );
+  } catch (e) {
+    errorMessage = e.message;
+  }
+
+  treatExpectedError({
+    functionName: "newProphecyClaim",
+    expectedError,
+    errorMessage,
+  });
+}
+
+function treatExpectedError({ functionName, expectedError, errorMessage }) {
+  if (!expectedError && !errorMessage) {
+    print("green", `✅ ${functionName}() went through as expected`);
+    return;
+  }
+
+  if (expectedError && errorMessage) {
+    if (errorMessage.indexOf(expectedError) !== -1) {
+      print("green", `✅ ${functionName}() failed as expected`);
+    } else {
+      throw new Error(
+        `💥 CRITICAL: ${functionName}() should have failed with '${expectedError}', but failed with '${errorMessage}'`
+      );
+    }
+    return;
+  }
+
+  if (!expectedError && errorMessage) {
+    throw new Error(errorMessage);
+  }
+
+  if (expectedError && !errorMessage) {
+    throw new Error(
+      `💥 CRITICAL: ${functionName}() should have failed with '${expectedError}', but it went through normally`
+    );
+  }
+
+  print(
+    "highlight",
+    "OOPS: Shouldn't have gotten here! Please review the flow, something is wrong"
+  );
 }
 
 // Copy the manifest to the right place (where Hardhat wants it)
