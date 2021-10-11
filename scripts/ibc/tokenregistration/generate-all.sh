@@ -1,4 +1,5 @@
 #!/bin/sh
+. ./envs/$1.sh 
 
 mkdir -p ./$SIFCHAIN_ID
 rm -f ./$SIFCHAIN_ID/temp.json

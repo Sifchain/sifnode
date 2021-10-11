@@ -1,5 +1,3 @@
-#!/bin/sh
-
 # REMEMBER to use right counterparty network denom,
 # i.e for BetaNet use MAINNET denom registered on counterparty chain, not denom registered on counterparty TESTNET
 # i.e for BetaNet, uatom not uphoton, and for TestNet uphoton not uatom.
@@ -19,6 +17,8 @@
 #SENTINEL_CHANNEL_ID="channel-"
 #SENTINEL_COUNTERPARTY_CHANNEL_ID="channel-"
 #SENTINEL_CHAIN_ID=""
+
+. ./envs/$1.sh 
 
 echo "\n\ngenerating and storing all entries for network $SIFCHAIN_ID"
 
