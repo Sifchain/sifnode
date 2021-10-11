@@ -1,4 +1,7 @@
 #!/bin/sh
+
+# sh ./deregister-all.sh testnet
+
 . ./envs/$1.sh 
 
 TOKEN_REGISTRY_ADMIN_ADDRESS="sif1tpypxpppcf5lea47vcvgy09675nllmcucxydvu"

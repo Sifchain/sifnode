@@ -1,4 +1,7 @@
 #!/bin/sh
+
+# sh ./deregister-all.sh testnet
+
 . ./envs/$1.sh 
 
 mkdir -p ./$SIFCHAIN_ID

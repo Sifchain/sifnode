@@ -20,6 +20,8 @@
 
 . ./envs/$1.sh 
 
+# sh ./generate-ibc-jsons.sh testnet
+
 echo "\n\ngenerating and storing all entries for network $SIFCHAIN_ID"
 
 mkdir -p ./$SIFCHAIN_ID
