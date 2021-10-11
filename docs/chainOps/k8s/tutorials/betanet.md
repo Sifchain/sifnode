@@ -209,7 +209,11 @@ rake "sifnode:status[my-cluster,sifnode]"
 
 In order to become a validator, that is a node which can participate in consensus on the network, you'll need to stake `rowan`.
 
-1. Get the public key of your node:
+1. Ask for Rowan to stake
+
+Use the address from step 3 above to request Rowan from administrators on our Discord server https://discord.gg/geqyCWSU5K
+
+2. Get the public key of your node:
 
 ```bash
 rake "sifnode:keys:kubernetes:public[<cluster>,<provider>,<namespace>]"
