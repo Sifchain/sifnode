@@ -1,6 +1,8 @@
 #!/bin/sh
 
 SIFCHAIN_ID=sifchain-1 \
+  KEYRING_BACKEND=test \
+  SIF_NODE=https://rpc.sifchain.finance:443 \
   COSMOS_BASE_DENOM=uatom \
   COSMOS_CHANNEL_ID=channel-0 \
   COSMOS_COUNTERPARTY_CHANNEL_ID=channel-192 \
@@ -32,4 +34,4 @@ SIFCHAIN_ID=sifchain-1 \
   OSMOSIS_COUNTERPARTY_CHANNEL_ID= \
   CRYPTO_ORG_CHAIN_ID=crypto-org-chain-mainnet-1 \
   CRYPTO_ORG_CHANNEL_ID=channel-9 \
-  CRYPTO_ORG_COUNTERPARTY_CHANNEL_ID=channel-33 ./template/generate-ibc-jsons.sh
+  CRYPTO_ORG_COUNTERPARTY_CHANNEL_ID=channel-33 
