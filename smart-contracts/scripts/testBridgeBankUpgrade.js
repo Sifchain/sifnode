@@ -114,7 +114,7 @@ async function main() {
   // Try to lock tokens to see it fail
   await lock({ expectedError: "Address is blocklisted" });
 
-  // UNblock the sender's address and send a prophecy claim to see it go through
+  // UNblock the sender's address
   print("yellow", `🕑 Removing user1 from the blocklist...`);
   await state.contracts.blocklist.removeFromBlocklist(state.addresses.user1);
   print("green", `✅ User1 removed from the blocklist`);
