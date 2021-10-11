@@ -2,6 +2,8 @@ require("dotenv").config();
 
 const hardhat = require("hardhat");
 const fs = require("fs-extra");
+const Web3 = require("web3");
+const web3 = new Web3();
 
 const support = require("./helpers/forkingSupport");
 const { print } = require("./helpers/utils");
@@ -16,6 +18,36 @@ const CHAIN_ID = process.env.FORKING_CHAIN_ID || 1;
 // We want to verify whther old pausers are still there after an upgrade
 const PAUSER = "0x627306090abaB3A6e1400e9345bC60c78a8BEf57";
 
+const state = {
+  addresses: {
+    validator1: "0x0D7dEF5C00a8B6ddc58A0255f0a94cc739C6d0B5",
+    validator2: "0x9B4002670C210A3b64e13807250BE62B8dEae201",
+    validator3: "0xbF45BFc92ebD305d4C0baf8395c4299bdFCE9EA2",
+    validator4: "0xeB29C7016eDd2D6B413fceE4C51474FED058005a",
+    operator: "",
+    user1: "0xfc854524613dA7244417908d199857754189633c",
+    user2: "0xb6fa1F5304aa0a17E5B85088e720b0e39dD1b233",
+    user3: "0x6F165B30ee4bFc9565E977Ae252E4110624ab147",
+    sifRecipient: web3.utils.utf8ToHex(
+      "sif1nx650s8q9w28f2g3t9ztxyg48ugldptuwzpace"
+    ),
+  },
+  signers: {
+    admin: null,
+    operator: null,
+    user1: null,
+  },
+  contracts: {
+    bridgeBank: null,
+    cosmosBridge: null,
+    blocklist: null,
+    bridgeToken: null,
+    upgradedBridgeBank: null,
+  },
+  tokenBalance: 10000,
+  amount: 1000,
+};
+
 async function main() {
   print("highlight", "~~~ TEST BRIDGEBANK UPGRADE ~~~");
 
@@ -25,59 +57,203 @@ async function main() {
   // Fetch the manifest and inject the new variables
   copyManifest(true);
 
-  // Create an instance of BridgeBank from the deployed code
-  const { instance: bridgeBank } = await support.getDeployedContract(
-    DEPLOYMENT_NAME,
-    "BridgeBank",
-    CHAIN_ID
-  );
+  // Deploy or connect to each contract
+  await deployContracts();
 
-  // Fetch and log the operator
-  const operator_before = await bridgeBank.operator();
-  print("white", `🤵 Operator: ${operator_before}`);
+  // Impersonate accounts
+  await impersonateAccounts();
 
   // Fetch current values from the deployed contract
-  const pauser_before = await bridgeBank.pausers(PAUSER);
-  const owner_before = await bridgeBank.owner();
-  const nonce_before = await bridgeBank.lockBurnNonce();
-
-  // Impersonate the admin account
-  const admin = await support.impersonateAccount(
-    support.PROXY_ADMIN_ADDRESS,
-    "10000000000000000000",
-    "Proxy Admin"
-  );
+  const pauser_before = await state.contracts.bridgeBank.pausers(PAUSER);
+  const owner_before = await state.contracts.bridgeBank.owner();
+  const nonce_before = await state.contracts.bridgeBank.lockBurnNonce();
 
   // Upgrade BridgeBank
-  const newBridgeBankFactory = await hardhat.ethers.getContractFactory(
-    "BridgeBank"
-  );
-  const upgradedBridgeBank = await hardhat.upgrades.upgradeProxy(
-    bridgeBank,
-    newBridgeBankFactory.connect(admin)
-  );
-  await upgradedBridgeBank.deployed();
+  await upgradeBridgeBank();
 
   // Fetch values after the upgrade
-  const pauser_after = await upgradedBridgeBank.pausers(PAUSER);
-  const owner_after = await upgradedBridgeBank.owner();
-  const nonce_after = await upgradedBridgeBank.lockBurnNonce();
+  const pauser_after = await state.contracts.upgradedBridgeBank.pausers(PAUSER);
+  const owner_after = await state.contracts.upgradedBridgeBank.owner();
+  const nonce_after = await state.contracts.upgradedBridgeBank.lockBurnNonce();
 
   // Compare values before and after the upgrade
   testMatch(pauser_before, pauser_after, "Pauser");
   testMatch(owner_before, owner_after, "Owner");
   testMatch(nonce_before.toString(), nonce_after.toString(), "LockBurnNonce");
 
-  // Send a prophecy claim to see it fail
+  // Setup the BridgeToken (register in BridgeBank, mint and set allowance)
+  await setupBridgeToken();
 
-  // Set the blocklist and send a prophecy claim to see it go through
+  // Try to lock tokens to see it fail (because BridgeBank doesn't know the Blocklist yet)
+  await lock({ expectedError: "function call to a non-contract account" });
 
-  // Block the sender's address and send a prophecy claim to see it fail
+  // Set the Blocklist in BridgeBank
+  print("yellow", `🕑 Registering the Blocklist in BridgeBank...`);
+  await state.contracts.upgradedBridgeBank
+    .connect(state.signers.operator)
+    .setBlocklist(state.contracts.blocklist.address);
+  print("green", `✅ Blocklist registered in BridgeBank`);
+
+  // Try to lock tokens to see it go through
+  await lock({ expectedError: null });
+
+  // Block the sender's address
+  print("yellow", `🕑 Blocklisting user1...`);
+  await state.contracts.blocklist.addToBlocklist(state.addresses.user1);
+  print("green", `✅ User1 blocklisted`);
+
+  // Try to lock tokens to see it fail
+  await lock({ expectedError: "Address is blocklisted" });
+
+  // UNblock the sender's address and send a prophecy claim to see it go through
+  print("yellow", `🕑 Removing user1 from the blocklist...`);
+  await state.contracts.blocklist.removeFromBlocklist(state.addresses.user1);
+  print("green", `✅ User1 removed from the blocklist`);
+
+  // Try to lock tokens to see it go through
+  await lock({ expectedError: null });
+
+  // TODO: test with a prophecyClaim
 
   // Clean up temporary files
   cleanup();
 
   print("highlight", "~~~ DONE! 👏 Everything worked as expected. ~~~");
+}
+
+async function impersonateAccounts() {
+  // Fetch and log the operator
+  state.addresses.operator = await state.contracts.bridgeBank.operator();
+  print("white", `🤵 Operator: ${state.addresses.operator}`);
+
+  state.signers.admin = await support.impersonateAccount(
+    support.PROXY_ADMIN_ADDRESS,
+    "10000000000000000000",
+    "Proxy Admin"
+  );
+
+  state.signers.operator = await support.impersonateAccount(
+    state.addresses.operator,
+    "10000000000000000000",
+    "Operator"
+  );
+
+  state.signers.user1 = await support.impersonateAccount(
+    state.addresses.user1,
+    "10000000000000000000",
+    "User1"
+  );
+}
+
+async function deployContracts() {
+  print("yellow", `🕑 Deploying contracts...`);
+  // Create an instance of BridgeBank from the deployed code
+  const { instance: bridgeBank } = await support.getDeployedContract(
+    DEPLOYMENT_NAME,
+    "BridgeBank",
+    CHAIN_ID
+  );
+  state.contracts.bridgeBank = bridgeBank;
+
+  // Create an instance of CosmosBridge from the deployed code
+  const { instance: cosmosBridge } = await support.getDeployedContract(
+    DEPLOYMENT_NAME,
+    "CosmosBridge",
+    CHAIN_ID
+  );
+  state.contracts.cosmosBridge = cosmosBridge;
+
+  // Deploy the Blocklist
+  const blocklistFactory = await hardhat.ethers.getContractFactory("Blocklist");
+  const blocklist = await blocklistFactory.deploy();
+  await blocklist.deployed();
+  state.contracts.blocklist = blocklist;
+
+  // Deploy the BridgeToken
+  const bridgeTokenFactory = await hardhat.ethers.getContractFactory(
+    "BridgeToken"
+  );
+  const token = await bridgeTokenFactory.deploy("TEST");
+  await token.deployed();
+  state.contracts.bridgeToken = token;
+
+  print("green", `✅ Contracts deployed`);
+}
+
+async function upgradeBridgeBank() {
+  print("yellow", `🕑 Upgrading BridgeBank...`);
+  const newBridgeBankFactory = await hardhat.ethers.getContractFactory(
+    "BridgeBank"
+  );
+  state.contracts.upgradedBridgeBank = await hardhat.upgrades.upgradeProxy(
+    state.contracts.bridgeBank,
+    newBridgeBankFactory.connect(state.signers.admin)
+  );
+  await state.contracts.upgradedBridgeBank.deployed();
+  print("green", `✅ BridgeBank Upgraded`);
+}
+
+async function setupBridgeToken() {
+  // Add it to the whitelist (only the OPERATOR can do that)
+  print("yellow", `🕑 Adding the token to the whitelist...`);
+  await state.contracts.bridgeBank
+    .connect(state.signers.operator)
+    .updateEthWhiteList(state.contracts.bridgeToken.address, true);
+  print("green", `✅ Token added to the whitelist`);
+
+  // Load user account with ERC20 tokens
+  print("yellow", `🕑 Minting tokens to user1...`);
+  await state.contracts.bridgeToken.mint(
+    state.addresses.user1,
+    state.tokenBalance
+  );
+  print("green", `✅ Tokens minted to user1`);
+
+  // Approve tokens to contract
+  print("yellow", `🕑 Approving BridgeBank to spend BridgeTokens...`);
+  await state.contracts.bridgeToken
+    .connect(state.signers.user1)
+    .approve(state.contracts.upgradedBridgeBank.address, state.tokenBalance);
+  print("green", `✅ BridgeBank approved to spend BridgeTokens`);
+}
+
+async function lock({ expectedError }) {
+  print("yellow", `🕑 Trying to lock tokens...`);
+
+  if (!expectedError) {
+    await state.contracts.upgradedBridgeBank
+      .connect(state.signers.user1)
+      .lock(
+        state.addresses.sifRecipient,
+        state.contracts.bridgeToken.address,
+        state.amount,
+        {
+          value: 0,
+        }
+      );
+    print("green", `✅ lock() went through as expected`);
+  } else {
+    try {
+      await state.contracts.upgradedBridgeBank
+        .connect(state.signers.user1)
+        .lock(
+          state.addresses.sifRecipient,
+          state.contracts.bridgeToken.address,
+          state.amount,
+          {
+            value: 0,
+          }
+        );
+    } catch (e) {
+      if (e.message.indexOf(expectedError) !== -1) {
+        print("green", `✅ lock() failed as expected`);
+      } else {
+        throw new Error(
+          "💥 CRITICAL: lock() should have failed, but it went through!"
+        );
+      }
+    }
+  }
 }
 
 // Copy the manifest to the right place (where Hardhat wants it)
