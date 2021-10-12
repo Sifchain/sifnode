@@ -84,7 +84,8 @@ func TestOnTimeoutPacketConvert_Source(t *testing.T) {
 			require.Equal(t, tokensConverted.String(), app.BankKeeper.GetBalance(ctx, sender, tokensConverted.Denom).String())
 			require.Equal(t, tt.args.msg.Token.Sub(tokenDeduction).String(), app.BankKeeper.GetBalance(ctx, sender, tt.args.msg.Token.Denom).String())
 			// Simulate send with SDK stub.
-			sdkSentDenom, _ := testhelpers.SendStub(ctx, app.TransferKeeper, app.BankKeeper, tokensConverted, sender, tt.args.msg.SourcePort, tt.args.msg.SourceChannel)
+			sdkSentDenom, err := testhelpers.SendStub(ctx, app.TransferKeeper, app.BankKeeper, tokensConverted, sender, tt.args.msg.SourcePort, tt.args.msg.SourceChannel)
+			require.NoError(t, err)
 			require.Equal(t, tt.args.msg.Token.Sub(tokenDeduction).String(), app.BankKeeper.GetBalance(ctx, sender, tt.args.msg.Token.Denom).String())
 			require.Equal(t, "0"+tokensConverted.Denom, app.BankKeeper.GetBalance(ctx, sender, tokensConverted.Denom).String())
 			// Test Ack.
@@ -176,8 +177,8 @@ func TestOnTimeoutPacketConvert_Sink(t *testing.T) {
 			sender, err := sdk.AccAddressFromBech32(tt.args.msg.Sender)
 			require.NoError(t, err)
 			// Simulate send from this chain, with SDK stub.
-			sdkSentDenom, _ := testhelpers.SendStub(ctx, app.TransferKeeper, app.BankKeeper, tt.args.msg.Token, sender, tt.args.msg.SourcePort, tt.args.msg.SourceChannel)
-			// Test Ack.
+			sdkSentDenom, err := testhelpers.SendStub(ctx, app.TransferKeeper, app.BankKeeper, tt.args.msg.Token, sender, tt.args.msg.SourcePort, tt.args.msg.SourceChannel)
+			require.NoError(t, err)
 			ackPacket := channeltypes.Packet{
 				SourceChannel:      "channel-0",
 				SourcePort:         "transfer",
@@ -230,7 +231,8 @@ func TestOnTimeoutMaybeConvert(t *testing.T) {
 	tokenDeduction, tokensConverted := helpers.ConvertCoinsForTransfer(msgSourceTransfer, &rowanToken, &xrowanToken)
 	err = helpers.PrepareToSendConvertedCoins(sdk.WrapSDKContext(ctx), msgSourceTransfer, tokenDeduction, tokensConverted, app.BankKeeper)
 	require.NoError(t, err)
-	sentDenom, _ := testhelpers.SendStub(ctx, app.TransferKeeper, app.BankKeeper, tokensConverted, sender, "transfer", "channel-0")
+	sentDenom, err := testhelpers.SendStub(ctx, app.TransferKeeper, app.BankKeeper, tokensConverted, sender, "transfer", "channel-0")
+	require.NoError(t, err)
 	require.Equal(t, "0", app.BankKeeper.GetBalance(ctx, sender, sentDenom).Amount.String())
 	timeoutPacket := channeltypes.Packet{
 		SourceChannel:      "channel-0",
