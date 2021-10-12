@@ -33,8 +33,8 @@ func TestGetGlocalNonceToBlockNumber(t *testing.T) {
 
 	// test the init value
 	globalNonceOne := uint64(1)
-	_, err := keeper.GetGlocalNonceToBlockNumber(ctx, networkDescriptor, globalNonceOne)
-	assert.Error(t, err)
+	initNonce := keeper.GetGlocalNonceToBlockNumber(ctx, networkDescriptor, globalNonceOne)
+	assert.Equal(t, initNonce, uint64(0))
 
 	// set the block number
 	blockNumber := uint64(100)
@@ -42,7 +42,6 @@ func TestGetGlocalNonceToBlockNumber(t *testing.T) {
 	assert.Equal(t, globalNonce, globalNonceOne)
 	keeper.UpdateGlobalNonce(ctx, networkDescriptor, blockNumber)
 
-	testBlockNumber, err := keeper.GetGlocalNonceToBlockNumber(ctx, networkDescriptor, globalNonceOne)
-	assert.NoError(t, err)
+	testBlockNumber := keeper.GetGlocalNonceToBlockNumber(ctx, networkDescriptor, globalNonceOne)
 	assert.Equal(t, testBlockNumber, blockNumber)
 }

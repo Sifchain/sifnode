@@ -2,7 +2,6 @@ package keeper
 
 import (
 	"encoding/binary"
-	"errors"
 
 	"github.com/Sifchain/sifnode/x/ethbridge/types"
 	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
@@ -60,17 +59,17 @@ func (k Keeper) GetGlobalNoncePrefix(ctx sdk.Context, networkDescriptor oraclety
 func (k Keeper) GetGlocalNonceToBlockNumber(
 	ctx sdk.Context,
 	networkDescriptor oracletypes.NetworkDescriptor,
-	globalNonce uint64) (uint64, error) {
+	globalNonce uint64) uint64 {
 
 	store := ctx.KVStore(k.storeKey)
 	prefix := k.GetGlobalNonceToBlockNumberPrefix(ctx, networkDescriptor, globalNonce)
 
 	if !k.ExistsGlobalNonce(ctx, prefix) {
-		return uint64(0), errors.New("block number not stored")
+		return uint64(0)
 	}
 
 	value := store.Get(prefix)
-	return binary.LittleEndian.Uint64(value), nil
+	return binary.LittleEndian.Uint64(value)
 }
 
 // SetGlobalNonceToBlockNumber

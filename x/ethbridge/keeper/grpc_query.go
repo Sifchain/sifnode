@@ -96,10 +96,7 @@ func (srv queryServer) GlocalNonceBlockNumber(ctx context.Context, req *types.Qu
 	networkDescriptor := req.GetNetworkDescriptor()
 	globalNonce := req.GlobalNonce
 
-	blockNumber, err := srv.Keeper.GetGlocalNonceToBlockNumber(sdkCtx, networkDescriptor, globalNonce)
-	if err != nil {
-		return nil, err
-	}
+	blockNumber := srv.Keeper.GetGlocalNonceToBlockNumber(sdkCtx, networkDescriptor, globalNonce)
 
 	res := types.NewGlocalNonceBlockNumberResponse(blockNumber)
 

@@ -33,8 +33,9 @@ import (
 )
 
 const (
-	errorMessageKey     = "errorMessage"
-	cosmosSleepDuration = 60
+	errorMessageKey      = "errorMessage"
+	cosmosSleepDuration  = 60
+	maxCosmosQueryBlocks = 5000
 )
 
 // CosmosSub defines a Cosmos listener that relays events to Ethereum and Cosmos
@@ -133,12 +134,20 @@ func (sub CosmosSub) CheckNonceAndProcess(txFactory tx.Factory,
 		return
 	}
 	currentBlockHeight := uint64(block.Block.Header.Height)
+	if currentBlockHeight-blockNumber > maxCosmosQueryBlocks {
+		currentBlockHeight = blockNumber + maxCosmosQueryBlocks
 
+	}
 	sub.ProcessLockBurnWithScope(txFactory, client, globalNonce, blockNumber, currentBlockHeight)
 }
 
 // ProcessLockBurnWithScope scan blocks in scope and handle all burn lock events
 func (sub CosmosSub) ProcessLockBurnWithScope(txFactory tx.Factory, client *tmclient.HTTP, globalNonce, fromBlockNumber, toBlockNumber uint64) {
+	sub.SugaredLogger.Infow("ProcessLockBurnWithScope",
+		"globalNonce", globalNonce,
+		"fromBlockNumber", fromBlockNumber,
+		"toBlockNumber", toBlockNumber)
+
 	for blockNumber := fromBlockNumber; blockNumber <= toBlockNumber; {
 		tmpBlockNumber := int64(blockNumber)
 
