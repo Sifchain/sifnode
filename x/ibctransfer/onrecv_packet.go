@@ -12,6 +12,8 @@ import (
 	channeltypes "github.com/cosmos/cosmos-sdk/x/ibc/core/04-channel/types"
 )
 
+// OnRecvPacketWhitelistConvert receives a transfer, check if the denom is whitelisted, and converts it
+// to match unit_denom decimals if conversion is needed.
 func OnRecvPacketWhitelistConvert(
 	ctx sdk.Context,
 	sdkTransferKeeper sctransfertypes.SDKTransferKeeper,
