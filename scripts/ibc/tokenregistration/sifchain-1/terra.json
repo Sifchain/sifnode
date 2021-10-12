@@ -1,13 +1,14 @@
 {
   "entries": [
     {
+      "is_whitelisted": true,
       "decimals": "6",
-      "denom": "uosmo",
-      "base_denom": "uosmo",
+      "denom": "uluna",
+      "base_denom": "uluna",
       "path": "",
       "ibc_channel_id": "",
       "ibc_counterparty_channel_id": "",
-      "display_name": "",
+      "display_name": "Luna",
       "display_symbol": "",
       "network": "",
       "address": "",

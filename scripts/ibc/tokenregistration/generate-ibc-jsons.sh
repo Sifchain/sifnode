@@ -1,5 +1,3 @@
-#!/bin/sh
-
 # REMEMBER to use right counterparty network denom,
 # i.e for BetaNet use MAINNET denom registered on counterparty chain, not denom registered on counterparty TESTNET
 # i.e for BetaNet, uatom not uphoton, and for TestNet uphoton not uatom.
@@ -19,6 +17,10 @@
 #SENTINEL_CHANNEL_ID="channel-"
 #SENTINEL_COUNTERPARTY_CHANNEL_ID="channel-"
 #SENTINEL_CHAIN_ID=""
+
+. ./envs/$1.sh 
+
+# sh ./generate-ibc-jsons.sh testnet
 
 echo "\n\ngenerating and storing all entries for network $SIFCHAIN_ID"
 
@@ -201,6 +203,24 @@ sifnoded q tokenregistry generate \
 	--token_permission_ibc_export=true \
 	--token_permission_ibc_import=true | jq > $SIFCHAIN_ID/juno.json
 
-echo "\n\ngenerated entry for $OSMOSIS_CHAIN_ID"
+echo "\n\ngenerated entry for $JUNO_CHAIN_ID"
 
 cat $SIFCHAIN_ID/juno.json | jq
+
+sifnoded q tokenregistry generate \
+	--token_base_denom=uixo \
+	--token_ibc_counterparty_chain_id=$IXO_CHAIN_ID \
+  --token_ibc_channel_id=$IXO_CHANNEL_ID \
+  --token_ibc_counterparty_channel_id=$IXO_COUNTERPARTY_CHANNEL_ID \
+	--token_ibc_counterparty_denom="" \
+	--token_unit_denom="" \
+	--token_decimals=6 \
+	--token_display_name="" \
+	--token_external_symbol="" \
+	--token_permission_clp=true \
+	--token_permission_ibc_export=true \
+	--token_permission_ibc_import=true | jq > $SIFCHAIN_ID/ixo.json
+
+echo "\n\ngenerated entry for $IXO_CHAIN_ID"
+
+cat $SIFCHAIN_ID/ixo.json | jq
