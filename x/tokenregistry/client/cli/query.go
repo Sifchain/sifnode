@@ -162,18 +162,15 @@ func GetCmdGenerateEntry() *cobra.Command {
 			if permissionIBCImport {
 				permissions = append(permissions, types.Permission_IBCIMPORT)
 			}
-			var path string
 			var denom string
 			// base_denom is required.
 			// generate denom if path is also provided.
 			// override the IBC generation with --denom if specified explicitly.
 			// otherwise fallback to base_denom
-			if ibcChannelID != "" {
-				// normalise path slashes before generating hash (do this in MsgRegister.ValidateBasic as well)
-				path = "transfer/" + ibcChannelID
+			if ibcPath != "" {
 				// generate IBC hash from baseDenom and ibc channel id
 				denomTrace := transfertypes.DenomTrace{
-					Path:      path,
+					Path:      ibcPath,
 					BaseDenom: baseDenom,
 				}
 				denom = denomTrace.IBCDenom()
