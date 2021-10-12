@@ -57,7 +57,6 @@ func GetCmdGenerateEntry() *cobra.Command {
 	var flagDenom = "token_denom"
 	var flagBaseDenom = "token_base_denom"
 	var flagUnitDenom = "token_unit_denom"
-	var flagIbcPath = "token_path"
 	var flagIbcChannelID = "token_ibc_channel_id"
 	var flagIbcCounterpartyChannelID = "token_ibc_counterparty_channel_id"
 	var flagIbcCounterpartyChainID = "token_ibc_counterparty_chain_id"
@@ -97,10 +96,6 @@ func GetCmdGenerateEntry() *cobra.Command {
 				return err
 			}
 			ibcChannelID, err := flags.GetString(flagIbcChannelID)
-			if err != nil {
-				return err
-			}
-			ibcPath, err := flags.GetString(flagIbcPath)
 			if err != nil {
 				return err
 			}
@@ -165,12 +160,9 @@ func GetCmdGenerateEntry() *cobra.Command {
 			var denom string
 			var path string
 			// base_denom is required.
-			// generate denom if path is also provided.
 			// override the IBC generation with --denom if specified explicitly.
 			// otherwise fallback to base_denom
-			if ibcPath != "" {
-				path = ibcPath
-			} else if ibcChannelID != "" {
+			if ibcChannelID != "" {
 				path = "transfer/" + ibcChannelID
 			}
 			// generate IBC hash from baseDenom and ibc channel id
@@ -188,7 +180,6 @@ func GetCmdGenerateEntry() *cobra.Command {
 				Decimals:                 decimals,
 				Denom:                    denom,
 				BaseDenom:                baseDenom,
-				Path:                     ibcPath,
 				IbcChannelId:             ibcChannelID,
 				IbcCounterpartyChannelId: ibcCounterpartyChannelID,
 				IbcCounterpartyChainId:   ibcCounterpartyChainID,
@@ -205,8 +196,6 @@ func GetCmdGenerateEntry() *cobra.Command {
 			return clientCtx.PrintProto(&types.Registry{Entries: []*types.RegistryEntry{&entry}})
 		},
 	}
-	cmd.Flags().Bool(flagIbcPath, true,
-		"The ibc transfer path")
 	cmd.Flags().String(flagDenom, "",
 		"The IBC hash / denom  stored on sifchain - to generate this hash for IBC token, leave blank and specify base_denom and ibc_channel_id")
 	cmd.Flags().String(flagBaseDenom, "",
@@ -223,6 +212,18 @@ func GetCmdGenerateEntry() *cobra.Command {
 		"The denom in registry that holds the funds for this denom, ie the most precise denom for a token")
 	cmd.Flags().String(flagIbcCounterpartyDenom, "",
 		"The denom in registry that funds in this account will get sent as over IBC")
+	cmd.Flags().String(flagDisplayName, "",
+		"Friendly name for use by UI etc")
+	cmd.Flags().String(flagDisplaySymbol, "",
+		"Friendly symbol for use by UI etc")
+	cmd.Flags().String(flagExternalSymbol, "",
+		"The original symbol as seen on external network")
+	cmd.Flags().String(flagTransferLimit, "",
+		"Used by UI")
+	cmd.Flags().String(flagNetwork, "",
+		"Original network of token i.e ethereum")
+	cmd.Flags().String(flagAddress, "",
+		"Contract address i.e in EVM cases")
 	// Permission flags, default true.
 	for _, flag := range flagsPermission {
 		cmd.Flags().Bool(flag, true, fmt.Sprintf("Flag to specify permission for %s", types.GetPermissionFromString(flag)))
