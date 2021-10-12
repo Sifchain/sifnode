@@ -1,4 +1,4 @@
-export async function saveGenesis({
+export async function createGenesisFiles({
   home,
   genesis,
   remoteGenesis,

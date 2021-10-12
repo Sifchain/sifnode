@@ -1,6 +1,8 @@
 import { cleanUpGenesisState } from "../utils/cleanUpGenesisState.mjs";
+import { createDenomsFile } from "../utils/createDenomsFile.mjs";
+import { createGenesisFiles } from "../utils/createGenesisFiles.mjs";
+import { getDenoms } from "../utils/getDenoms.mjs";
 import { getRemoteGenesis } from "../utils/getRemoteGenesis.mjs";
-import { saveGenesis } from "../utils/saveGenesis.mjs";
 
 export async function initChain(props) {
   const {
@@ -50,7 +52,13 @@ home                  ${home}
 
   const defaultGenesis = require(`${home}/config/genesis.json`);
   const genesis = cleanUpGenesisState({ remoteGenesis, defaultGenesis });
-  await saveGenesis({ home, genesis, remoteGenesis, defaultGenesis });
+  await createGenesisFiles({ home, genesis, remoteGenesis, defaultGenesis });
+
+  if (chain === "sifchain") {
+    const denoms = getDenoms();
+    await createDenomsFile({ home, denoms });
+    await $`${binary} set-gen-denom-whitelist ${home}/config/denoms.json --home ${home}`;
+  }
 
   await $`${binary} gentx ${validatorAccountName} ${amount}${denom} --chain-id ${chainId} --keyring-backend test --home ${home}`;
   $.verbose = false;
