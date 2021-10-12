@@ -54,7 +54,7 @@ export function EnvJSONWriter(args: DevEnvObject) {
   try {
     RenderTemplateToFile(path.resolve(__dirname, "templates", "env.hbs"), path.resolve(__dirname, "../../", ".env"), output)
     fs.writeFileSync(path.resolve(__dirname, "../../", "environment.json"), JSON.stringify(args));
-    RenderTemplateToFile(path.resolve(__dirname, "templates", "environment.json.hbs"), path.resolve(__dirname, "../../", "environment.json"), output)
+    RenderTemplateToFile(path.resolve(__dirname, "templates", "env.json.hbs"), path.resolve(__dirname, "../../", "env.json"), output)
     RenderTemplateToFile(path.resolve(__dirname, "templates", "launch.json.hbs"), path.resolve(__dirname, "../../../", ".vscode", "launch.json"), args)
     console.log("Wrote environment and JSON values to disk. PATH: ", path.resolve(__dirname));
   }

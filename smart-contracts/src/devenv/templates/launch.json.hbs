@@ -24,27 +24,29 @@
       "program": "cmd/ebrelayer",
       "envFile": "${workspaceFolder}/smart-contracts/.env",
       "env": {
-        "ETHEREUM_PRIVATE_KEY": "{{ethResults.accounts.available.[@index].privateKey}}"
+        "ETHEREUM_PRIVATE_KEY": "{{@root.ethResults.accounts.available.[@index].privateKey}}"
       },
       "args": [
         "init-relayer",
-        "{{ethResults.chainId}}",
-        "{{sifResults.tcpurl}}",
-        "ws://{{ethResults.httpHost}}:{{ethResults.httpPort}}/",
+        "{{@root.ethResults.chainId}}",
+        "{{@root.sifResults.tcpurl}}",
+        "ws://{{@root.ethResults.httpHost}}:{{@root.ethResults.httpPort}}/",
         "0xB7f8BC63BbcaD18155201308C8f3540b07f84F5e",
         "{{this.name}}",
         "--chain-id",
         "localnet",
         "--node",
-        "{{sifResults.tcpurl}}",
+        "{{@root.sifResults.tcpurl}}",
         "--keyring-backend",
         "test",
         "--from",
-        "{{this.address}}",
+        "{{this.account}}",
         "--symbol-translator-file",
         "${workspaceFolder}/test/integration/config/symbol_translator.json",
         "--relayerdb-path",
-        "./relayer-{{@index}}"
+        "./relayer-{{@index}}",
+        "--home",
+        "{{this.homeDir}}"
       ]
     }{{/each}}{{#each sifResults.witnessAddresses}},
     {
@@ -55,27 +57,29 @@
       "program": "cmd/ebrelayer",
       "envFile": "${workspaceFolder}/smart-contracts/.env",
       "env": {
-        "ETHEREUM_PRIVATE_KEY": "{{ethResults.accounts.available.[@index].privateKey}}"
+        "ETHEREUM_PRIVATE_KEY": "{{@root.ethResults.accounts.available.[@index].privateKey}}"
       },
       "args": [
         "init-witness",
-        "{{ethResults.chainId}}",
-        "{{sifResults.tcpurl}}",
-        "ws://{{ethResults.httpHost}}:{{ethResults.httpPort}}/",
+        "{{@root.ethResults.chainId}}",
+        "{{@root.sifResults.tcpurl}}",
+        "ws://{{@root.ethResults.httpHost}}:{{@root.ethResults.httpPort}}/",
         "0xB7f8BC63BbcaD18155201308C8f3540b07f84F5e",
         "{{this.name}}",
         "--chain-id",
         "localnet",
         "--node",
-        "{{sifResults.tcpurl}}",
+        "{{@root.sifResults.tcpurl}}",
         "--keyring-backend",
         "test",
         "--from",
-        "{{this.address}}",
+        "{{this.account}}",
         "--symbol-translator-file",
         "${workspaceFolder}/test/integration/config/symbol_translator.json",
         "--relayerdb-path",
-        "./witness-{{@index}}"
+        "./witness-{{@index}}",
+        "--home",
+        "{{this.homeDir}}"
       ]
     }{{/each}},
     {
@@ -92,9 +96,9 @@
         "--minimum-gas-prices",
         "0.5rowan",
         "--rpc.laddr",
-        "{{sifResults.tcpurl}}",
+        "{{@root.sifResults.tcpurl}}",
         "--home",
-        "/tmp/sifnodedNetwork/validators/localnet/{{sifResults.validatorValues.[0].moniker}}/.sifnoded"
+        "/tmp/sifnodedNetwork/validators/localnet/{{@root.sifResults.validatorValues.[0].moniker}}/.sifnoded"
       ]
     }
     
