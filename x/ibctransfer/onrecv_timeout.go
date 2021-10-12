@@ -3,6 +3,7 @@ package ibctransfer
 import (
 	"fmt"
 
+	"github.com/Sifchain/sifnode/x/ibctransfer/helpers"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	transfertypes "github.com/cosmos/cosmos-sdk/x/ibc/applications/transfer/types"
@@ -20,7 +21,8 @@ import (
 // were burnt in the original send so new tokens are minted and sent to
 // the sending address.
 //
-// OnTimeoutMaybeConvert() potentially does a conversion from the denom that was sent out,
+
+// OnTimeoutMaybeConvert potentially does a conversion from the denom that was sent out,
 // back to the original unit_denom.
 func OnTimeoutMaybeConvert(
 	ctx sdk.Context,
@@ -37,7 +39,6 @@ func OnTimeoutMaybeConvert(
 	if err := sdkTransferKeeper.OnTimeoutPacket(ctx, packet, data); err != nil {
 		return nil, err
 	}
-
 	ctx.EventManager().EmitEvent(
 		sdk.NewEvent(
 			transfertypes.EventTypeTimeout,
@@ -47,18 +48,23 @@ func OnTimeoutMaybeConvert(
 			sdk.NewAttribute(transfertypes.AttributeKeyRefundAmount, fmt.Sprintf("%d", data.Amount)),
 		),
 	)
-	// if needs conversion, convert and send
-	if ShouldConvertRefundCoins(ctx, whitelistKeeper, packet, data) {
-		incomingCoins, finalCoins := GetConvForRefundCoins(ctx, whitelistKeeper, packet, data)
-		err := ExecConvForRefundCoins(ctx, incomingCoins, finalCoins, bankKeeper, packet, data)
-		if err != nil {
-			return nil, err
+	denom := data.Denom
+	registry := whitelistKeeper.GetRegistry(ctx)
+	denomEntry, err := whitelistKeeper.GetEntry(registry, denom)
+	if err != nil {
+		ctx.Logger().Error(err.Error())
+	} else if denomEntry.Decimals > 0 && denomEntry.UnitDenom != "" {
+		convertToDenomEntry, err := whitelistKeeper.GetEntry(registry, denomEntry.UnitDenom)
+		if err == nil && convertToDenomEntry.Decimals > denomEntry.Decimals {
+			err := helpers.ExecConvForRefundCoins(ctx, bankKeeper, denomEntry, convertToDenomEntry, packet, data)
+			if err != nil {
+				return nil, err
+			}
+			return &sdk.Result{
+				Events: ctx.EventManager().Events().ToABCIEvents(),
+			}, nil
 		}
-		return &sdk.Result{
-			Events: ctx.EventManager().Events().ToABCIEvents(),
-		}, nil
 	}
-
 	return &sdk.Result{
 		Events: ctx.EventManager().Events().ToABCIEvents(),
 	}, nil
