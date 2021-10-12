@@ -1,7 +1,6 @@
 {
   "entries": [
     {
-      "is_whitelisted": true,
       "decimals": "6",
       "denom": "ibc/2915CCA550DA6840CB2D4F5BC95A067A7924A767B2EBEB3227DD66124AA8A626",
       "base_denom": "uxprt",

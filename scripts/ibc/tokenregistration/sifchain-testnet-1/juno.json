@@ -1,7 +1,6 @@
 {
   "entries": [
     {
-      "is_whitelisted": true,
       "decimals": "6",
       "denom": "ibc/330D65554F859FB20E13413C88951CFE774DD2D83F593417A0552C0607C92225",
       "base_denom": "ujuno",
