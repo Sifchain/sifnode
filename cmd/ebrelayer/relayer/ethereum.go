@@ -76,7 +76,6 @@ func NewEthereumSub(
 	validatorMoniker,
 	ethProvider string,
 	registryContractAddress common.Address,
-	validatorAddress sdk.ValAddress,
 	sugaredLogger *zap.SugaredLogger,
 ) EthereumSub {
 
@@ -85,7 +84,7 @@ func NewEthereumSub(
 		TmProvider:              nodeURL,
 		RegistryContractAddress: registryContractAddress,
 		ValidatorName:           validatorMoniker,
-		ValidatorAddress:        validatorAddress,
+		ValidatorAddress:        nil,
 		CliCtx:                  cliCtx,
 		SugaredLogger:           sugaredLogger,
 	}
@@ -126,6 +125,13 @@ func (sub EthereumSub) Start(txFactory tx.Factory,
 		go sub.Start(txFactory, completionEvent, symbolTranslator)
 		return
 	}
+
+	validatorAddress, err := GetValAddressFromKeyring(txFactory.Keybase(), sub.ValidatorName)
+	if err != nil {
+		log.Fatal("Error getting validator address: ", err.Error())
+	}
+
+	sub.ValidatorAddress = validatorAddress
 
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
@@ -179,11 +185,11 @@ func (sub EthereumSub) CheckNonceAndProcess(txFactory tx.Factory,
 		return
 	}
 
-	var endBlockHeight *big.Int
+	endBlockHeight := big.NewInt(0)
 	endBlockHeight = endBlockHeight.Sub(currentBlockHeight, big.NewInt(trailingBlocks))
 
 	// get lock burn nonce from cosmos
-	lockBurnNonce, err := sub.GetLockBurnNonceFromCosmos(oracletypes.NetworkDescriptor(networkID.Uint64()), string(sub.ValidatorAddress))
+	lockBurnNonce, err := sub.GetLockBurnNonceFromCosmos(oracletypes.NetworkDescriptor(networkID.Uint64()), sub.ValidatorAddress.String())
 	if err != nil {
 		sub.SugaredLogger.Errorw("failed to get the lock burn nonce from cosmos rpc",
 			errorMessageKey, err.Error())
@@ -454,7 +460,8 @@ func (sub EthereumSub) handleEthereumEvent(txFactory tx.Factory,
 func (sub EthereumSub) GetLockBurnNonceFromCosmos(
 	networkDescriptor oracletypes.NetworkDescriptor,
 	relayerValAddress string) (uint64, error) {
-	conn, err := grpc.Dial(sub.TmProvider)
+
+	conn, err := grpc.Dial("0.0.0.0:9090", grpc.WithInsecure())
 	if err != nil {
 		return 0, err
 	}
