@@ -3,8 +3,8 @@
     {
       "is_whitelisted": true,
       "decimals": "6",
-      "denom": "uosmo",
-      "base_denom": "uosmo",
+      "denom": "uixo",
+      "base_denom": "uixo",
       "path": "",
       "ibc_channel_id": "",
       "ibc_counterparty_channel_id": "",
