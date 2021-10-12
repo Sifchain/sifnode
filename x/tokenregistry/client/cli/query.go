@@ -63,6 +63,12 @@ func GetCmdGenerateEntry() *cobra.Command {
 	var flagIbcCounterpartyChainID = "token_ibc_counterparty_chain_id"
 	var flagIbcCounterpartyDenom = "token_ibc_counterparty_denom"
 	var flagDecimals = "token_decimals"
+	var flagDisplayName = "token_display_name"
+	var flagDisplaySymbol = "token_display_symbol"
+	var flagExternalSymbol = "token_external_symbol"
+	var flagTransferLimit = "token_transfer_limit"
+	var flagNetwork = "token_network"
+	var flagAddress = "token_address"
 	var flagsPermission = []string{"token_permission_clp", "token_permission_ibc_export", "token_permission_ibc_import"}
 	cmd := &cobra.Command{
 		Use:   "generate",
@@ -107,6 +113,30 @@ func GetCmdGenerateEntry() *cobra.Command {
 				return err
 			}
 			ibcCounterpartyDenom, err := flags.GetString(flagIbcCounterpartyDenom)
+			if err != nil {
+				return err
+			}
+			displayName, err := flags.GetString(flagDisplayName)
+			if err != nil {
+				return err
+			}
+			displaySymbol, err := flags.GetString(flagDisplaySymbol)
+			if err != nil {
+				return err
+			}
+			externalSymbol, err := flags.GetString(flagExternalSymbol)
+			if err != nil {
+				return err
+			}
+			transferLimit, err := flags.GetString(flagTransferLimit)
+			if err != nil {
+				return err
+			}
+			network, err := flags.GetString(flagNetwork)
+			if err != nil {
+				return err
+			}
+			address, err := flags.GetString(flagAddress)
 			if err != nil {
 				return err
 			}
@@ -163,6 +193,12 @@ func GetCmdGenerateEntry() *cobra.Command {
 				IbcCounterpartyChainId:   ibcCounterpartyChainID,
 				IbcCounterpartyDenom:     ibcCounterpartyDenom,
 				UnitDenom:                unitDenom,
+				DisplayName:              displayName,
+				DisplaySymbol:            displaySymbol,
+				Network:                  network,
+				Address:                  address,
+				ExternalSymbol:           externalSymbol,
+				TransferLimit:            transferLimit,
 				Permissions:              permissions,
 			}
 			return clientCtx.PrintProto(&types.Registry{Entries: []*types.RegistryEntry{&entry}})
