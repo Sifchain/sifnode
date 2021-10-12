@@ -423,7 +423,11 @@ func (sub EthereumSub) handleEthereumEvent(txFactory tx.Factory,
 	lockBurnNonce uint64) (uint64, error) {
 
 	var prophecyClaims []*ethbridgetypes.EthBridgeClaim
+
 	nextLockBurnNonce := lockBurnNonce + 1
+	if lockBurnNonce == 0 {
+		nextLockBurnNonce = 0
+	}
 	valAddr, err := GetValAddressFromKeyring(txFactory.Keybase(), sub.ValidatorName)
 	if err != nil {
 		return nextLockBurnNonce, err
