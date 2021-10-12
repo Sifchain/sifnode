@@ -52,7 +52,7 @@ func OnTimeoutMaybeConvert(
 	registry := whitelistKeeper.GetRegistry(ctx)
 	denomEntry, err := whitelistKeeper.GetEntry(registry, denom)
 	if err != nil {
-		fmt.Println(err.Error())
+		ctx.Logger().Error(err.Error())
 	} else if denomEntry.Decimals > 0 && denomEntry.UnitDenom != "" {
 		convertToDenomEntry, err := whitelistKeeper.GetEntry(registry, denomEntry.UnitDenom)
 		if err == nil && convertToDenomEntry.Decimals > denomEntry.Decimals {
