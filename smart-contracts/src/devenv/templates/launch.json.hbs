@@ -1,0 +1,102 @@
+{
+  // Launch.json file to debug the Dev Environment Scripts
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "runtimeArgs": [
+        "node_modules/.bin/hardhat",
+        "run"
+      ],
+      "cwd": "${workspaceFolder}/smart-contracts",
+      "type": "node",
+      "request": "launch",
+      "name": "Dev Environment Debugger",
+      "skipFiles": [
+        "<node_internals>/**"
+      ],
+      "program": "${workspaceFolder}/smart-contracts/scripts/devenv.ts"
+    }{{#each sifResults.relayerAddresses}},
+    {
+      "name": "Debug Relayer-{{@index}}",
+      "type": "go",
+      "request": "launch",
+      "mode": "debug",
+      "program": "cmd/ebrelayer",
+      "envFile": "${workspaceFolder}/smart-contracts/.env",
+      "env": {
+        "ETHEREUM_PRIVATE_KEY": "{{ethResults.accounts.available.[@index].privateKey}}"
+      },
+      "args": [
+        "init-relayer",
+        "{{ethResults.chainId}}",
+        "{{sifResults.tcpurl}}",
+        "ws://{{ethResults.httpHost}}:{{ethResults.httpPort}}/",
+        "0xB7f8BC63BbcaD18155201308C8f3540b07f84F5e",
+        "{{this.name}}",
+        "--chain-id",
+        "localnet",
+        "--node",
+        "{{sifResults.tcpurl}}",
+        "--keyring-backend",
+        "test",
+        "--from",
+        "{{this.address}}",
+        "--symbol-translator-file",
+        "${workspaceFolder}/test/integration/config/symbol_translator.json",
+        "--relayerdb-path",
+        "./relayer-{{@index}}"
+      ]
+    }{{/each}}{{#each sifResults.witnessAddresses}},
+    {
+      "name": "Debug Witness-{{@index}}",
+      "type": "go",
+      "request": "launch",
+      "mode": "debug",
+      "program": "cmd/ebrelayer",
+      "envFile": "${workspaceFolder}/smart-contracts/.env",
+      "env": {
+        "ETHEREUM_PRIVATE_KEY": "{{ethResults.accounts.available.[@index].privateKey}}"
+      },
+      "args": [
+        "init-witness",
+        "{{ethResults.chainId}}",
+        "{{sifResults.tcpurl}}",
+        "ws://{{ethResults.httpHost}}:{{ethResults.httpPort}}/",
+        "0xB7f8BC63BbcaD18155201308C8f3540b07f84F5e",
+        "{{this.name}}",
+        "--chain-id",
+        "localnet",
+        "--node",
+        "{{sifResults.tcpurl}}",
+        "--keyring-backend",
+        "test",
+        "--from",
+        "{{this.address}}",
+        "--symbol-translator-file",
+        "${workspaceFolder}/test/integration/config/symbol_translator.json",
+        "--relayerdb-path",
+        "./witness-{{@index}}"
+      ]
+    }{{/each}},
+    {
+      "name": "Debug Sifnoded",
+      "type": "go",
+      "request": "launch",
+      "mode": "debug",
+      "program": "cmd/sifnoded",
+      "envFile": "${workspaceFolder}/smart-contracts/.env",
+      "args": [
+        "start",
+        "--log_format",
+        "json",
+        "--minimum-gas-prices",
+        "0.5rowan",
+        "--rpc.laddr",
+        "{{sifResults.tcpurl}}",
+        "--home",
+        "/tmp/sifnodedNetwork/validators/localnet/{{sifResults.validatorValues.[0].moniker}}/.sifnoded"
+      ]
+    }
+    
+  ]
+}

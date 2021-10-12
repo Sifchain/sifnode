@@ -1,67 +1,17 @@
 import { GolangResults } from "./golangBuilder";
-import { SifnodedResults, SifnodedRunner, ValidatorValues } from "./sifnoded";
+import { SifnodedResults } from "./sifnoded";
 import { SmartContractDeployResult } from "./smartcontractDeployer";
 import { EthereumResults } from "./devEnv";
 import path from 'path';
 import fs from 'fs';
-
-interface ETHEnv {
-  ETH_CHAIN_ID: number,
-  ETH_HOST: string,
-  ETH_PORT: number,
-  ETHEREUM_ADDRESS: string,
-  ETHEREUM_PRIVATE_KEY: string,
-  ROWAN_SOURCE: string,
-  ETH_ACCOUNT_OPERATOR_ADDRESS: string
-  ETH_ACCOUNT_OPERATOR_PRIVATEKEY: string
-  ETH_ACCOUNT_OWNER_ADDRESS: string
-  ETH_ACCOUNT_OWNER_PRIVATEKEY: string
-  ETH_ACCOUNT_PAUSER_ADDRESS: string
-  ETH_ACCOUNT_PAUSER_PRIVATEKEY: string
-  ETH_ACCOUNT_PROXYADMIN_ADDRESS: string
-  ETH_ACCOUNT_PROXYADMIN_PRIVATEKEY: string
-  ETH_ACCOUNT_VALIDATOR_ADDRESS: string
-  ETH_ACCOUNT_VALIDATOR_PRIVATEKEY: string
-}
-
-interface ContractEnv {
-  BRIDGE_BANK_ADDRESS: string
-  BRIDGE_REGISTERY_ADDRESS: string
-  COSMOS_BRIDGE_ADDRESS: string
-  ROWANTOKEN_ADDRESS: string
-  BRIDGE_TOKEN_ADDRESS: string // Same address as Rowantoken
-}
-
-interface GOEnv {
-  GOBIN: string
-}
-
-interface SifEnv {
-  TCP_URL: string
-  VALIDATOR_MENOMONIC: string
-  VALIDATOR_MONIKER: string
-  VALIDATOR_PASSWORD: string
-  VALIDATOR_PUB_KEY: string
-  VALIDATOR_ADDRESS: string
-  ADMIN_ADDRESS: string
-  ADMIN_NAME: string
-  VALIDATOR_CONSENSUS_ADDRESS: string
-  CHAINDIR: string
-}
+import hb from 'handlebars';
 interface EnvOutput {
-  COMPUTED: {
+  Computed: {
     BASEDIR: string
+    CHAINDIR?: string
   }
-  SIFNODE?: SifEnv
-  GOLANG?: GOEnv
-  CONTRACTS?: ContractEnv
-  ETHEREUM?: ETHEnv
+  Dev: DevEnvObject
 }
-
-interface EnvDictionary {
-  [key: string]: string
-}
-
 export interface DevEnvObject {
   ethResults?: EthereumResults,
   goResults?: GolangResults,
@@ -69,82 +19,43 @@ export interface DevEnvObject {
   contractResults?: SmartContractDeployResult,
 }
 
+/**
+ * Takes a Handle Bars Template file, a object of arguments to replace in the template file, and
+ * then compiles and saves the rendered document to the save location
+ * @param templateLocation Location of the handlebars template *.hbs
+ * @param saveLocation Where the rendered document should be saved
+ * @param args The variables to be replaced in the template during render
+ */
+function RenderTemplateToFile(templateLocation: string, saveLocation: string, args: unknown) {
+  const template = fs.readFileSync(templateLocation, 'utf8');
+  const compiledTemplate = hb.compile(template);
+  const renderedTemplate = compiledTemplate(args);
+  // Make sure the .vscode directory exists
+  const dirPath = path.dirname(saveLocation);
+  fs.mkdirSync(dirPath, { recursive: true });
+  // Save the file in the .vscode directory
+  fs.writeFileSync(saveLocation, renderedTemplate);
+}
+
 export function EnvJSONWriter(args: DevEnvObject) {
   const baseDir = path.resolve(__dirname, "../../..")
   const output: EnvOutput = {
-    COMPUTED: {
+    Computed: {
       BASEDIR: baseDir
-    }
+
+    },
+    Dev: args
   };
-  if (args.ethResults != undefined) {
-    const eth = args.ethResults
-    const env: ETHEnv = {
-      ETHEREUM_ADDRESS: eth.accounts.available[0].address,
-      ETHEREUM_PRIVATE_KEY: eth.accounts.available[0].privateKey,
-      ROWAN_SOURCE: eth.accounts.operator.privateKey,
-      ETH_ACCOUNT_OPERATOR_ADDRESS: eth.accounts.operator.address,
-      ETH_ACCOUNT_OPERATOR_PRIVATEKEY: eth.accounts.operator.privateKey,
-      ETH_ACCOUNT_OWNER_ADDRESS: eth.accounts.owner.address,
-      ETH_ACCOUNT_OWNER_PRIVATEKEY: eth.accounts.owner.privateKey,
-      ETH_ACCOUNT_PAUSER_ADDRESS: eth.accounts.pauser.address,
-      ETH_ACCOUNT_PAUSER_PRIVATEKEY: eth.accounts.pauser.privateKey,
-      ETH_ACCOUNT_PROXYADMIN_ADDRESS: eth.accounts.proxyAdmin.address,
-      ETH_ACCOUNT_PROXYADMIN_PRIVATEKEY: eth.accounts.proxyAdmin.privateKey,
-      ETH_ACCOUNT_VALIDATOR_ADDRESS: eth.accounts.validators[0].address,
-      ETH_ACCOUNT_VALIDATOR_PRIVATEKEY: eth.accounts.validators[0].privateKey,
-      ETH_CHAIN_ID: eth.chainId,
-      ETH_HOST: eth.httpHost,
-      ETH_PORT: eth.httpPort,
-    }
-    output.ETHEREUM = env
-  }
-  if (args.contractResults != undefined) {
-    const contract = args.contractResults.contractAddresses
-    const env: ContractEnv = {
-      BRIDGE_BANK_ADDRESS: contract.bridgeBank,
-      BRIDGE_REGISTERY_ADDRESS: contract.bridgeRegistry,
-      COSMOS_BRIDGE_ADDRESS: contract.cosmosBridge,
-      ROWANTOKEN_ADDRESS: contract.rowanContract,
-      BRIDGE_TOKEN_ADDRESS: contract.rowanContract
-    }
-    output.CONTRACTS = env
-  }
-  if (args.goResults != undefined) {
-    output.GOLANG = {
-      GOBIN: args.goResults.goBin
-    }
-  }
   if (args.sifResults != undefined) {
     const sif = args.sifResults
     const val = sif.validatorValues[0]
-    const env: SifEnv = {
-      TCP_URL: sif.tcpurl,
-      VALIDATOR_ADDRESS: val.address,
-      VALIDATOR_CONSENSUS_ADDRESS: val.validator_consensus_address,
-      VALIDATOR_MENOMONIC: val.mnemonic,
-      VALIDATOR_MONIKER: val.moniker,
-      VALIDATOR_PASSWORD: val.password,
-      VALIDATOR_PUB_KEY: val.pub_key,
-      ADMIN_ADDRESS: sif.adminAddress.account,
-      ADMIN_NAME: sif.adminAddress.name,
-      // TODO: Remove hardcoded strings
-      CHAINDIR: path.resolve("/tmp/sifnodedNetwork/validators", val.chain_id, val.moniker)
-    }
-    output.SIFNODE = env
+    output.Computed.CHAINDIR = path.resolve("/tmp/sifnodedNetwork/validators", val.chain_id, val.moniker)
   }
   try {
-    const envValues: string[] = []
-    const rootValues: EnvDictionary = {}
-    Object.values(output).forEach(module => {
-      Object.entries(module).forEach(entry => {
-        envValues.push(`export ${entry[0]}="${entry[1]}"`);
-        rootValues[entry[0]] = entry[1] as string;
-      });
-    });
-    const envText = envValues.join("\n")
-    fs.writeFileSync(path.resolve(__dirname, "../../", ".env"), envText);
-    fs.writeFileSync(path.resolve(__dirname, "../../", "env.json"), JSON.stringify(rootValues))
+    RenderTemplateToFile(path.resolve(__dirname, "templates", "env.hbs"), path.resolve(__dirname, "../../", ".env"), output)
     fs.writeFileSync(path.resolve(__dirname, "../../", "environment.json"), JSON.stringify(args));
+    RenderTemplateToFile(path.resolve(__dirname, "templates", "environment.json.hbs"), path.resolve(__dirname, "../../", "environment.json"), output)
+    RenderTemplateToFile(path.resolve(__dirname, "templates", "launch.json.hbs"), path.resolve(__dirname, "../../../", ".vscode", "launch.json"), args)
     console.log("Wrote environment and JSON values to disk. PATH: ", path.resolve(__dirname));
   }
   catch (error) {
