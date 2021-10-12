@@ -109,8 +109,15 @@ func (sub CosmosSub) Start(txFactory tx.Factory, completionEvent *sync.WaitGroup
 func (sub CosmosSub) CheckNonceAndProcess(txFactory tx.Factory,
 	client *tmclient.HTTP) {
 
+	valAddr, err := GetValAddressFromKeyring(txFactory.Keybase(), sub.ValidatorName)
+	if err != nil {
+		sub.SugaredLogger.Errorw("failed to get the validator address from validataor moniker",
+			errorMessageKey, err.Error())
+		return
+	}
+
 	// get lock burn nonce and start block number from cosmos
-	globalNonce, blockNumber, err := sub.GetGlobalNonceBlockNumberFromCosmos(sub.NetworkDescriptor, sub.ValidatorName)
+	globalNonce, blockNumber, err := sub.GetGlobalNonceBlockNumberFromCosmos(sub.NetworkDescriptor, valAddr.String())
 	if err != nil {
 		sub.SugaredLogger.Errorw("failed to get the lock burn nonce from cosmos rpc",
 			errorMessageKey, err.Error())
