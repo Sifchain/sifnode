@@ -80,7 +80,7 @@ func GetCmdGenerateEntry() *cobra.Command {
 				return err
 			}
 			flags := cmd.Flags()
-			decimals, err := flags.GetUint32(flagDecimals)
+			decimals, err := flags.GetInt64(flagDecimals)
 			if err != nil {
 				return err
 			}
