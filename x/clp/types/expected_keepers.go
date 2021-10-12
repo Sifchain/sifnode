@@ -33,7 +33,7 @@ type AuthKeeper interface {
 }
 
 type TokenRegistryKeeper interface {
-	GetDenom(ctx sdk.Context, denom string) tokenregistryTypes.RegistryEntry
-	IsDenomWhitelisted(ctx sdk.Context, denom string) bool
-	CheckDenomPermissions(ctx sdk.Context, denom string, permissions []tokenregistryTypes.Permission) bool
+	GetEntry(registry tokenregistryTypes.Registry, denom string) (*tokenregistryTypes.RegistryEntry, error)
+	CheckEntryPermissions(entry *tokenregistryTypes.RegistryEntry, permissions []tokenregistryTypes.Permission) bool
+	GetRegistry(ctx sdk.Context) tokenregistryTypes.Registry
 }

@@ -19,7 +19,6 @@ func ParseDenoms(codec codec.JSONMarshaler, dir string) (tokenregistrytypes.Regi
 	if err != nil {
 		return denoms, err
 	}
-
 	err = codec.UnmarshalJSON(o, &denoms)
 	if err != nil {
 		return denoms, err

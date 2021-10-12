@@ -5,20 +5,21 @@ import (
 	"math"
 	"testing"
 
-	sdk "github.com/cosmos/cosmos-sdk/types"
-	sdktransfertypes "github.com/cosmos/cosmos-sdk/x/ibc/applications/transfer/types"
-	clienttypes "github.com/cosmos/cosmos-sdk/x/ibc/core/02-client/types"
-	"github.com/golang/mock/gomock"
-	"github.com/stretchr/testify/require"
-
 	"github.com/Sifchain/sifnode/x/ethbridge/test"
+	"github.com/Sifchain/sifnode/x/ibctransfer/helpers"
 	"github.com/Sifchain/sifnode/x/ibctransfer/keeper"
 	scibctransfertypes "github.com/Sifchain/sifnode/x/ibctransfer/types"
 	scibctransfermocks "github.com/Sifchain/sifnode/x/ibctransfer/types/mocks"
 	tokenregistrytest "github.com/Sifchain/sifnode/x/tokenregistry/test"
 	tokenregistrytypes "github.com/Sifchain/sifnode/x/tokenregistry/types"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdktransfertypes "github.com/cosmos/cosmos-sdk/x/ibc/applications/transfer/types"
+	clienttypes "github.com/cosmos/cosmos-sdk/x/ibc/core/02-client/types"
+	"github.com/golang/mock/gomock"
+	"github.com/stretchr/testify/require"
 )
 
+/* Test that when a conversion is needed the right amounts are converted before sending to underlying SDK Transfer. */
 func TestMsgServer_Transfer(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	bankKeeper := scibctransfermocks.NewMockBankKeeper(ctrl)
@@ -27,23 +28,26 @@ func TestMsgServer_Transfer(t *testing.T) {
 	addrs, _ := test.CreateTestAddrs(2)
 	app.TokenRegistryKeeper.SetToken(ctx, &tokenregistrytypes.RegistryEntry{
 		Denom:                "rowan",
-		IsWhitelisted:        true,
 		Decimals:             18,
 		IbcCounterpartyDenom: "xrowan",
 		Permissions:          []tokenregistrytypes.Permission{tokenregistrytypes.Permission_IBCEXPORT},
 	})
 	app.TokenRegistryKeeper.SetToken(ctx, &tokenregistrytypes.RegistryEntry{
-		Denom:         "xrowan",
-		IsWhitelisted: true,
-		Decimals:      10,
-		UnitDenom:     "rowan",
-		Permissions:   []tokenregistrytypes.Permission{tokenregistrytypes.Permission_IBCEXPORT},
+		Denom:       "xrowan",
+		Decimals:    10,
+		UnitDenom:   "rowan",
+		Permissions: []tokenregistrytypes.Permission{tokenregistrytypes.Permission_IBCEXPORT},
 	})
 	app.TokenRegistryKeeper.SetToken(ctx, &tokenregistrytypes.RegistryEntry{
-		Denom:         "misconfigured",
-		IsWhitelisted: true,
-		Decimals:      18,
-		Permissions:   []tokenregistrytypes.Permission{tokenregistrytypes.Permission_IBCEXPORT},
+		Denom:       "misconfigured",
+		Decimals:    18,
+		Permissions: []tokenregistrytypes.Permission{tokenregistrytypes.Permission_IBCEXPORT},
+	})
+	app.TokenRegistryKeeper.SetToken(ctx, &tokenregistrytypes.RegistryEntry{
+		Denom:                "ceth",
+		Decimals:             18,
+		IbcCounterpartyDenom: "ceth",
+		Permissions:          []tokenregistrytypes.Permission{},
 	})
 	rowanAmount, ok := sdk.NewIntFromString("1234567891123456789")
 	require.True(t, ok)
@@ -168,6 +172,23 @@ func TestMsgServer_Transfer(t *testing.T) {
 			setupMsgServerCalls:  func() {},
 		},
 		{
+			name:       "transfer denom is not whitelisted",
+			err:        tokenregistrytypes.ErrPermissionDenied,
+			bankKeeper: bankKeeper,
+			msgSrv:     msgSrv,
+			msg: sdktransfertypes.NewMsgTransfer(
+				"transfer",
+				"channel-0",
+				sdk.NewCoin("caave", sdk.NewInt(1)),
+				addrs[0],
+				addrs[1].String(),
+				clienttypes.NewHeight(0, 0),
+				0,
+			),
+			setupBankKeeperCalls: func() {},
+			setupMsgServerCalls:  func() {},
+		},
+		{
 			name:       "transfer denom alias with unit denom set in registry",
 			err:        tokenregistrytypes.ErrPermissionDenied,
 			bankKeeper: bankKeeper,
@@ -278,40 +299,30 @@ func TestMsgServer_Transfer(t *testing.T) {
 
 func TestConvertCoins(t *testing.T) {
 	ctx := context.Background()
-
 	maxUInt64 := uint64(18446744073709551615)
-
 	rowanEntry := tokenregistrytypes.RegistryEntry{
-		IsWhitelisted:        true,
 		Decimals:             18,
 		Denom:                "rowan",
 		BaseDenom:            "rowan",
 		IbcCounterpartyDenom: "microrowan",
 	}
-
 	microRowanEntry := tokenregistrytypes.RegistryEntry{
-		IsWhitelisted: true,
-		Decimals:      10,
-		Denom:         "microrowan",
-		BaseDenom:     "microrowan",
-		UnitDenom:     "rowan",
+		Decimals:  10,
+		Denom:     "microrowan",
+		BaseDenom: "microrowan",
+		UnitDenom: "rowan",
 	}
-
 	decimal12Entry := tokenregistrytypes.RegistryEntry{
-		IsWhitelisted:        true,
 		Decimals:             12,
 		Denom:                "twelve",
 		BaseDenom:            "twelve",
 		IbcCounterpartyDenom: "microtwelve",
 	}
-
 	decimal10Entry := tokenregistrytypes.RegistryEntry{
-		IsWhitelisted: true,
-		Decimals:      10,
-		Denom:         "microtwelce",
-		BaseDenom:     "microtwelve",
+		Decimals:  10,
+		Denom:     "microtwelce",
+		BaseDenom: "microtwelve",
 	}
-
 	type args struct {
 		goCtx         context.Context
 		msg           *sdktransfertypes.MsgTransfer
@@ -346,8 +357,9 @@ func TestConvertCoins(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
-			tokenDeduction, tokensConverted := keeper.ConvertCoinsForTransfer(tt.args.goCtx, tt.args.msg, tt.args.registryEntry, tt.args.sendAsEntry)
+			tokenDeduction, tokensConverted := helpers.ConvertCoinsForTransfer(tt.args.msg, &tt.args.registryEntry, &tt.args.sendAsEntry)
 			require.Equal(t, tt.tokensConverted, tokensConverted)
 			require.Equal(t, tt.tokenDeduction, tokenDeduction)
 		})
@@ -357,38 +369,29 @@ func TestConvertCoins(t *testing.T) {
 func TestPrepareToSendConvertedCoins(t *testing.T) {
 	maxUInt64 := uint64(18446744073709551615)
 	app, appCtx, admin := tokenregistrytest.CreateTestApp(false)
-
 	rowanEntry := tokenregistrytypes.RegistryEntry{
-		IsWhitelisted:        true,
 		Decimals:             18,
 		Denom:                "rowan",
 		BaseDenom:            "rowan",
 		IbcCounterpartyDenom: "microrowan",
 	}
-
 	microRowanEntry := tokenregistrytypes.RegistryEntry{
-		IsWhitelisted: true,
-		Decimals:      10,
-		Denom:         "microrowan",
-		BaseDenom:     "microrowan",
-		UnitDenom:     "rowan",
+		Decimals:  10,
+		Denom:     "microrowan",
+		BaseDenom: "microrowan",
+		UnitDenom: "rowan",
 	}
-
 	decimal12Entry := tokenregistrytypes.RegistryEntry{
-		IsWhitelisted:        true,
 		Decimals:             12,
 		Denom:                "twelve",
 		BaseDenom:            "twelve",
 		IbcCounterpartyDenom: "microtwelve",
 	}
-
 	decimal10Entry := tokenregistrytypes.RegistryEntry{
-		IsWhitelisted: true,
-		Decimals:      10,
-		Denom:         "microtwelce",
-		BaseDenom:     "microtwelve",
+		Decimals:  10,
+		Denom:     "microtwelce",
+		BaseDenom: "microtwelve",
 	}
-
 	type args struct {
 		goCtx         context.Context
 		msg           *sdktransfertypes.MsgTransfer
@@ -423,21 +426,18 @@ func TestPrepareToSendConvertedCoins(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
-			tokenDeduction, tokensConverted := keeper.ConvertCoinsForTransfer(tt.args.goCtx, tt.args.msg, tt.args.registryEntry, tt.args.sendAsEntry)
+			tokenDeduction, tokensConverted := helpers.ConvertCoinsForTransfer(tt.args.msg, &tt.args.registryEntry, &tt.args.sendAsEntry)
 			require.Equal(t, tt.tokensConverted, tokensConverted)
 			require.Equal(t, tt.tokenDeduction, tokenDeduction)
-
 			initCoins := sdk.NewCoins(tokenDeduction)
 			sender, err := sdk.AccAddressFromBech32(admin)
 			require.NoError(t, err)
-
 			err = app.BankKeeper.AddCoins(appCtx, sender, initCoins)
 			require.NoError(t, err)
-
-			err = keeper.PrepareToSendConvertedCoins(sdk.WrapSDKContext(appCtx), tt.args.msg, tokenDeduction, tokensConverted, app.BankKeeper)
+			err = helpers.PrepareToSendConvertedCoins(sdk.WrapSDKContext(appCtx), tt.args.msg, tokenDeduction, tokensConverted, app.BankKeeper)
 			require.NoError(t, err)
-			// Amounts.
 		})
 	}
 }
