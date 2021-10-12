@@ -18,6 +18,11 @@ module.exports = async (cb) => {
 
         const bridgeBankContract = await contractUtilites.buildContract(this, argv, logging, "BridgeBank", argv.bridgebank_address);
 
+        // Set the blocklist in BridgeBank
+        const blocklistBuilder = await contractUtilites.buildBaseContract(this, argv, logging, "Blocklist");
+        const blocklist = await blocklistBuilder.new({ from: argv.ethereum_address });
+        await bridgeBankContract.setBlocklist(blocklist.address, { from: argv.ethereum_address });
+
         let cosmosRecipient = Web3.utils.utf8ToHex(argv.sifchain_address);
         let coinDenom = argv.symbol;
         let amount = new BN(argv.amount);
