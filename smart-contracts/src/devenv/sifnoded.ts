@@ -201,7 +201,7 @@ export class SifnodedRunner extends ShellCommand<SifnodedResults> {
       { encoding: "utf8" }
     ).trim()
     // Whitelist Relayer/Witness Account
-    const EVM_Network_Descriptor = 1;
+    const EVM_Network_Descriptor = 31337;
     const Validator_Power = 100;
     const bachAddress = this.readValoperKey(name, homeDir);
     ChildProcess.execSync(

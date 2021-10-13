@@ -23,4 +23,6 @@ enum NetworkDescriptor {
   NETWORK_DESCRIPTOR_BINANCE_SMART_CHAIN_TESTNET = 97;
   // Ganache local testnet
   NETWORK_DESCRIPTOR_GANACHE = 5777;
+  // Hardhat local testnet
+  NETWORK_DESCRIPTOR_HARDHAT = 31337;
 }
