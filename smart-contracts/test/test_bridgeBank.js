@@ -120,7 +120,7 @@ contract("BridgeBank", function (accounts) {
       // Deploy the Blocklist and set it in BridgeBank
       this.blocklist = await Blocklist.new();
       await this.bridgeBank.setBlocklist(this.blocklist.address);
-      
+
       // Operator sets Bridge Bank
       await this.cosmosBridge.setBridgeBank(this.bridgeBank.address, {
         from: operator

@@ -398,7 +398,7 @@ contract("Blocklist", function (accounts) {
       state.blocklist = await Blocklist.new();
     });
 
-    it("should allow us to add and remove users to and from the blocklist sequentially a consistently", async function () {
+    it("should allow us to add and remove users to and from the blocklist sequentially and consistently", async function () {
       // Batch add 3 users to the blocklist
       const addressList = [state.accounts.userOne, state.accounts.userTwo, state.accounts.userThree];
       await expect(state.blocklist.batchAddToBlocklist(

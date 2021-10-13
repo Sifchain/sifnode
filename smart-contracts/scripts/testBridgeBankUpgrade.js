@@ -13,7 +13,8 @@ const web3 = new Web3();
 
 const support = require("./helpers/forkingSupport");
 const { print } = require("./helpers/utils");
-const toInject = require("../data/injector_upgrade_blocklist.json");
+const toInject_1 = require("../data/injector_upgrade_blocklist-1.json");
+const toInject_2 = require("../data/injector_upgrade_blocklist-2.json");
 
 // If there is no DEPLOYMENT_NAME env var, we'll use the mainnet deployment
 const DEPLOYMENT_NAME = process.env.DEPLOYMENT_NAME || "sifchain-1";
@@ -93,8 +94,8 @@ async function main() {
   // Setup the BridgeToken (register in BridgeBank, mint and set allowance)
   await setupBridgeToken();
 
-  // Try to lock tokens to see it fail (because BridgeBank doesn't know the Blocklist yet)
-  await lock({ expectedError: "function call to a non-contract account" });
+  // Try to lock tokens to see it go through (because BridgeBank doesn't know the Blocklist yet)
+  await lock({ expectedError: null });
 
   // Set the Blocklist in BridgeBank
   print("yellow", `🕑 Registering the Blocklist in BridgeBank...`);
@@ -387,12 +388,15 @@ function injectStorageChanges() {
   // Parse the deployed manifest
   const parsedManifest = JSON.parse(currentManifest);
 
-  // Inject the new variable and change the gap
-  toInject.parsedManifest = parsedManifest;
-  const modManifest = support.injectInManifest(toInject);
+  // Inject the new variables and change the gap
+  toInject_1.parsedManifest = parsedManifest;
+  const modManifest_1 = support.injectInManifest(toInject_1);
+
+  toInject_2.parsedManifest = modManifest_1;
+  const modManifest_2 = support.injectInManifest(toInject_2);
 
   // Write to file
-  fs.writeFileSync("./.openzeppelin/mainnet.json", JSON.stringify(modManifest));
+  fs.writeFileSync("./.openzeppelin/mainnet.json", JSON.stringify(modManifest_2));
 }
 
 function testMatch(before, after, slotName) {

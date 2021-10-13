@@ -18,12 +18,17 @@ contract EthereumWhiteList {
     /**
      * @dev the blocklist contract
      */
-    IBlocklist blocklist;
+    IBlocklist public blocklist;
+
+    /**
+     * @dev is the blocklist active?
+     */
+    bool public hasBlocklist;
 
     /**
      * @notice gap of storage for future upgrades
      */
-    uint256[99] private ____gap;
+    uint256[98] private ____gap;
     /*
      * @dev: Event declarations
      */
@@ -50,7 +55,9 @@ contract EthereumWhiteList {
      * @dev Modifier to restrict EVM addresses
      */
     modifier onlyNotBlocklisted(address account) {
-        require(!blocklist.isBlocklisted(account), "Address is blocklisted");
+        if(hasBlocklist) {
+          require(!blocklist.isBlocklisted(account), "Address is blocklisted");
+        }
         _;
     }
 
@@ -86,5 +93,6 @@ contract EthereumWhiteList {
      */
     function _setBlocklist(address blocklistAddress) internal {
         blocklist = IBlocklist(blocklistAddress);
+        hasBlocklist = true;
     }
 }
