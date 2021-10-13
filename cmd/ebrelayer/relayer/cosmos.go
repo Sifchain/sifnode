@@ -148,6 +148,11 @@ func (sub CosmosSub) ProcessLockBurnWithScope(txFactory tx.Factory, client *tmcl
 		"fromBlockNumber", fromBlockNumber,
 		"toBlockNumber", toBlockNumber)
 
+	// BlockResults API require the block number greater than zero
+	if fromBlockNumber == 0 {
+		fromBlockNumber = 1
+	}
+
 	for blockNumber := fromBlockNumber; blockNumber <= toBlockNumber; {
 		tmpBlockNumber := int64(blockNumber)
 
