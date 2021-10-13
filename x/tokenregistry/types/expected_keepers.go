@@ -8,12 +8,11 @@ import (
 type Keeper interface {
 	IsAdminAccount(ctx sdk.Context, adminAccount sdk.AccAddress) bool
 	SetAdminAccount(ctx sdk.Context, adminAccount sdk.AccAddress)
-	IsDenomWhitelisted(ctx sdk.Context, denom string) bool
-	CheckDenomPermissions(ctx sdk.Context, denom string, permissions []Permission) bool
-	GetDenom(ctx sdk.Context, denom string) RegistryEntry
+	CheckEntryPermissions(entry *RegistryEntry, permissions []Permission) bool
+	GetEntry(registry Registry, denom string) (*RegistryEntry, error)
 	SetToken(ctx sdk.Context, entry *RegistryEntry)
 	RemoveToken(ctx sdk.Context, denom string)
 	InitGenesis(ctx sdk.Context, state GenesisState) []abci.ValidatorUpdate
 	ExportGenesis(ctx sdk.Context) *GenesisState
-	GetDenomWhitelist(ctx sdk.Context) Registry
+	GetRegistry(ctx sdk.Context) Registry
 }
