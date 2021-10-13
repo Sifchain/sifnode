@@ -1,6 +1,8 @@
 package cmd
 
 import (
+	"fmt"
+	"github.com/cosmos/cosmos-sdk/client/config"
 	"io"
 
 	"os"
@@ -37,17 +39,25 @@ func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
 	encodingConfig := app.MakeTestEncodingConfig()
 	initClientCtx := client.Context{}.
 		WithJSONCodec(encodingConfig.Marshaler).
+		//WithCodec(encodingConfig.Marshaler).
 		WithInterfaceRegistry(encodingConfig.InterfaceRegistry).
 		WithTxConfig(encodingConfig.TxConfig).
 		WithLegacyAmino(encodingConfig.Amino).
 		WithInput(os.Stdin).
 		WithAccountRetriever(types.AccountRetriever{}).
 		WithBroadcastMode(flags.BroadcastBlock).
-		WithHomeDir(app.DefaultNodeHome)
+		WithHomeDir(app.DefaultNodeHome).
+		WithViper("")
 	rootCmd := &cobra.Command{
 		Use:   "sifnoded",
 		Short: "app Daemon (server)",
 		PersistentPreRunE: func(cmd *cobra.Command, _ []string) error {
+			initClientCtx = client.ReadHomeFlag(initClientCtx, cmd)
+			fmt.Println(initClientCtx.HomeDir, initClientCtx.Viper)
+			initClientCtx, err := config.ReadFromClientConfig(initClientCtx)
+			if err != nil {
+				return err
+			}
 			if err := client.SetCmdClientContextHandler(initClientCtx, cmd); err != nil {
 				return err
 			}
