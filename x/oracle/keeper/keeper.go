@@ -155,8 +155,8 @@ func (k Keeper) processCompletion(ctx sdk.Context, networkDescriptor types.Netwo
 }
 
 // SetFeeInfo set crosschain fee for a network
-func (k Keeper) SetFeeInfo(ctx sdk.Context, networkDescriptor types.NetworkDescriptor, crossChainFee string, gas, lockCost, burnCost sdk.Int) error {
-	k.SetCrossChainFee(ctx, types.NewNetworkIdentity(networkDescriptor), crossChainFee, gas, lockCost, burnCost)
+func (k Keeper) SetFeeInfo(ctx sdk.Context, networkDescriptor types.NetworkDescriptor, crossChainFee string, gas, lockCost, burnCost, firstLockDoublePeggyCost sdk.Int) error {
+	k.SetCrossChainFee(ctx, types.NewNetworkIdentity(networkDescriptor), crossChainFee, gas, lockCost, burnCost, firstLockDoublePeggyCost)
 	return nil
 }
 

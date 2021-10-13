@@ -58,6 +58,7 @@ message RegistryEntry {
   // the packet level. i.e rowan -> microrowan i.e microrowan -> microrowan
   string ibc_counterparty_denom = 17;
   string ibc_counterparty_chain_id = 18;
+  map<uint32, bool> double_pegged_network_map = 19;
 }
 
 // Coin Metadata Modlue structure for storing

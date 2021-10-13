@@ -1,6 +1,7 @@
 package types
 
 import (
+	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
 	"github.com/tendermint/tendermint/libs/log"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -23,6 +24,8 @@ type Keeper interface {
 	GetTokenMetadata(ctx sdk.Context, denomHash string) (TokenMetadata, bool)
 	AddTokenMetadata(ctx sdk.Context, metadata TokenMetadata) string
 	AddIBCTokenMetadata(ctx sdk.Context, metadata TokenMetadata, cosmosSender sdk.AccAddress) string
+	GetFirstLockDoublePeg(ctx sdk.Context, denom string, networkDescriptor oracletypes.NetworkDescriptor) bool
+	SetFirstLockDoublePeg(ctx sdk.Context, denom string, networkDescriptor oracletypes.NetworkDescriptor)
 }
 
 type AccountKeeper interface {
