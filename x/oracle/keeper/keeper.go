@@ -71,12 +71,6 @@ func (k Keeper) ProcessClaim(ctx sdk.Context, networkDescriptor types.NetworkDes
 		return types.StatusText_STATUS_TEXT_UNSPECIFIED, errors.New("validator not in white list")
 	}
 
-	activeValidator := k.checkActiveValidator(ctx, valAddr)
-	if !activeValidator {
-		logger.Error("sifnode oracle keeper ProcessClaim validator not active.")
-		return types.StatusText_STATUS_TEXT_UNSPECIFIED, types.ErrInvalidValidator
-	}
-
 	if len(prophecyID) == 0 {
 		logger.Error("sifnode oracle keeper ProcessClaim wrong claim id.", "claimID", prophecyID)
 		return types.StatusText_STATUS_TEXT_UNSPECIFIED, types.ErrInvalidIdentifier

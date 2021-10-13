@@ -1,9 +1,9 @@
 import * as ChildProcess from "child_process"
-import {EthereumAddressAndKey, ShellCommand} from "./devEnv"
-import {EbRelayerAccount, ValidatorValues} from "./sifnoded"
-import {DeployedContractAddresses} from "../../scripts/deploy_contracts";
+import { EthereumAddressAndKey, ShellCommand } from "./devEnv"
+import { EbRelayerAccount, ValidatorValues } from "./sifnoded"
+import { DeployedContractAddresses } from "../../scripts/deploy_contracts";
 import notifier from 'node-notifier';
-import {GolangResults} from "./golangBuilder";
+import { GolangResults } from "./golangBuilder";
 import * as fs from "fs";
 
 export interface EbrelayerArguments {
@@ -163,11 +163,11 @@ export class RelayerRunner extends ShellCommand<EbrelayerResults> {
     const spawncmd = "ebrelayer " + this.cmd()[1].join(" ");
     const ebrelayerLogFile = fs.openSync(this.logFile, "w");
     const commandResult = ChildProcess.spawn(
-        spawncmd,
-        {
-          shell: true,
-          stdio: ["inherit", ebrelayerLogFile, ebrelayerLogFile],
-        }
+      spawncmd,
+      {
+        shell: true,
+        stdio: ["inherit", ebrelayerLogFile, ebrelayerLogFile],
+      }
     )
     commandResult.on('exit', (code) => {
       notifier.notify({
