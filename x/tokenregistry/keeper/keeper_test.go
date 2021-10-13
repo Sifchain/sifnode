@@ -41,9 +41,9 @@ func TestKeeper_CheckFirstLockDoublePeg(t *testing.T) {
 	networkDescriptor := oracletypes.NetworkDescriptor_NETWORK_DESCRIPTOR_ETHEREUM
 
 	app.TokenRegistryKeeper.SetToken(ctx, &types.RegistryEntry{
-		Denom:                "rowan",
-		Decimals:             18,
-		DoublePeggedNetworks: []oracletypes.NetworkDescriptor{},
+		Denom:                   "rowan",
+		Decimals:                18,
+		DoublePeggedNetworksMap: map[uint32]bool{uint32(networkDescriptor): true},
 	})
 
 	assert.True(t, app.TokenRegistryKeeper.GetFirstLockDoublePeg(ctx, "rowan", networkDescriptor))

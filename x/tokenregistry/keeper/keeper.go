@@ -160,21 +160,18 @@ func (k keeper) Exists(ctx sdk.Context, key []byte) bool {
 
 func (k keeper) GetFirstLockDoublePeg(ctx sdk.Context, denom string, networkDescriptor oracletypes.NetworkDescriptor) bool {
 	registry := k.GetDenom(ctx, denom)
-	result := true
-	for _, pegged_network := range registry.DoublePeggedNetworks {
-		if networkDescriptor == pegged_network {
-			result = false
-			break
-		}
+	if result, ok := registry.DoublePeggedNetworksMap[uint32(networkDescriptor)]; ok {
+		return result
 	}
-	return result
+
+	return true
 }
 
 func (k keeper) SetFirstLockDoublePeg(ctx sdk.Context, denom string, networkDescriptor oracletypes.NetworkDescriptor) {
 	firstLockDoublePeg := k.GetFirstLockDoublePeg(ctx, denom, networkDescriptor)
 	if firstLockDoublePeg {
 		registry := k.GetDenom(ctx, denom)
-		registry.DoublePeggedNetworks = append(registry.DoublePeggedNetworks, networkDescriptor)
+		registry.DoublePeggedNetworksMap[uint32(networkDescriptor)] = false
 		k.SetToken(ctx, &registry)
 	}
 }
