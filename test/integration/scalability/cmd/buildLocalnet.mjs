@@ -1,6 +1,6 @@
 #!/usr/bin/env zx
 
-import { initAllChains } from "../lib/initAllChains.mjs";
+import { buildLocalnet } from "../lib/buildLocalnet.mjs";
 import { arg } from "../utils/arg.mjs";
 import { getChainProps } from "../utils/getChainProps.mjs";
 
@@ -12,9 +12,9 @@ const args = arg(
   `
 Usage:
 
-  yarn initAllChains [options]
+  yarn buildLocalnet [options]
 
-Initiate all the chains locally based on an existing remote chain.
+Initiate all the chains locally based on an existing remote chain and take a snapshot.
 
 Options:
 
@@ -31,4 +31,4 @@ const chainProps = getChainProps({
   home,
 });
 
-await initAllChains({ ...chainProps });
+await buildLocalnet({ ...chainProps });

@@ -1,7 +1,7 @@
 import { generateRelayerRegistry } from "../utils/generateRelayerRegistry.mjs";
 import { send } from "./send.mjs";
 
-export async function initRelayer({
+export async function initRelayers({
   chainsProps,
   registryFrom = `/tmp/localnet/registry`,
 }) {
@@ -62,7 +62,6 @@ export async function initRelayer({
       const relayerHome = `${home}/relayer`;
 
       await nothrow($`ibc-setup ics20 --home ${relayerHome}`);
-      await nothrow($`ibc-relayer start -v --poll 10 --home ${relayerHome}`);
     })
   );
 }

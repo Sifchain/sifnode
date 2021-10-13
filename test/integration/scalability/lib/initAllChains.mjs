@@ -3,9 +3,7 @@ import { initChain } from "./initChain.mjs";
 
 const chains = require("../config/chains.json");
 
-export async function initAllChains(props) {
-  const { network, home = `/tmp/localnet` } = props;
-
+export async function initAllChains({ network, home = `/tmp/localnet` }) {
   await $`rm -rf ${home}`;
 
   await Promise.all(

@@ -30,25 +30,25 @@ const chainBAddress = await getAddress({
 await $`${chainAProps.binary} q bank balances ${chainAAddress} --node ${CHAIN_A_NODE}`;
 await $`${chainBProps.binary} q bank balances ${chainBAddress} --node ${CHAIN_B_NODE}`;
 
-// await $`
-// ${chainAProps.binary} \
-//     tx \
-//     ibc-transfer \
-//     transfer \
-//     transfer \
-//     ${channel} \
-//     ${chainBAddress} \
-//     100000000rowan \
-//     --from ${chainAAddress} \
-//     --node ${CHAIN_A_NODE} \
-//     --keyring-backend test \
-//     --home ${chainAHome} \
-//     --chain-id ${chainAProps.chainId} \
-//     --broadcast-mode block \
-//     -y
-// `;
+await $`
+${chainAProps.binary} \
+    tx \
+    ibc-transfer \
+    transfer \
+    transfer \
+    ${channel} \
+    ${chainBAddress} \
+    100000000rowan \
+    --from ${chainAAddress} \
+    --node ${CHAIN_A_NODE} \
+    --keyring-backend test \
+    --home ${chainAHome} \
+    --chain-id ${chainAProps.chainId} \
+    --broadcast-mode block \
+    -y
+`;
 
-// await sleep(10000);
+await sleep(10000);
 
-// await $`${chainAProps.binary} q bank balances ${chainAAddress} --node ${CHAIN_A_NODE}`;
-// await $`${chainBProps.binary} q bank balances ${chainBAddress} --node ${CHAIN_B_NODE}`;
+await $`${chainAProps.binary} q bank balances ${chainAAddress} --node ${CHAIN_A_NODE}`;
+await $`${chainBProps.binary} q bank balances ${chainBAddress} --node ${CHAIN_B_NODE}`;

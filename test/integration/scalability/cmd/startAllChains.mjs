@@ -13,6 +13,7 @@ const args = arg(
     "--p2pPort": Number,
     "--pprofPort": Number,
     "--home": String,
+    "--initRelayer": Boolean,
   },
   `
 Usage:
@@ -23,11 +24,12 @@ Start all the chains locally.
 
 Options:
 
---network   Select a predifined network in chains.json
---rpcPort   Initial RPC port number
---p2pPort   Initial P2P port number
---pprofPort Initial pprof port number
---home      Global directory for config and data of initiated chains
+--network       Select a predifined network in chains.json
+--rpcPort       Initial RPC port number
+--p2pPort       Initial P2P port number
+--pprofPort     Initial pprof port number
+--home          Global directory for config and data of initiated chains
+--initRelayer   Init and start relayers
 `
 );
 
@@ -36,6 +38,7 @@ const rpcPort = args["--rpcPort"] || undefined;
 const p2pPort = args["--p2pPort"] || undefined;
 const pprofPort = args["--pprofPort"] || undefined;
 const home = args["--home"] || undefined;
+const initRelayer = args["--initRelayer"] || undefined;
 
 const chainProps = getChainProps({
   network,
@@ -43,6 +46,7 @@ const chainProps = getChainProps({
   p2pPort,
   pprofPort,
   home,
+  initRelayer,
 });
 await startAllChains({
   ...chainProps,
