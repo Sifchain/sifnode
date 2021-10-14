@@ -20,7 +20,6 @@ import (
 )
 
 func TestAddGenesisValidatorCmd(t *testing.T) {
-	t.Skip()
 	homeDir, err := ioutil.TempDir("", "")
 	require.NoError(t, err)
 	defer os.RemoveAll(homeDir)
