@@ -134,7 +134,7 @@ export class SifnodedRunner extends ShellCommand<SifnodedResults> {
     }
 
     // Create an ADMIN account on sifnode with name sifnodeadmin
-    const sifnodedAdminAddress = this.addRelayerWitnessAccount("sifnodeadmin", homeDir);
+    const sifnodedAdminAddress = this.addAdminAccount("sifnodeadmin", homeDir);
     // Create an account for each relayer as requested
     const relayerAddresses = Array.from({ length: this.nRelayers },
       (_, relayer) => this.addRelayerWitnessAccount(`relayer-${relayer}`, homeDir));
@@ -148,6 +148,13 @@ export class SifnodedRunner extends ShellCommand<SifnodedResults> {
       sifnodedDaemonCmd,
       { shell: true, stdio: stdioOptions }
     )
+
+    // Register tokens in the token registry
+    const registryPath = path.resolve(__dirname, "../../../", "scripts/ibc/tokenregistration/sifchain-1/registry.json");
+    ChildProcess.execSync(
+      `${this.sifnodedCommand} tx tokenregistry register-all ${registryPath} --home ${homeDir}`,
+      { encoding: "utf8" }
+    ).trim()
 
     sifnoded.on('exit', (code) => {
       notifier.notify({
@@ -167,21 +174,13 @@ export class SifnodedRunner extends ShellCommand<SifnodedResults> {
     //    return lastValueFrom(eventEmitterToObservable(sifnoded, "sifnoded"))
   }
 
-  addRelayerWitnessAccount(name: string, homeDir: string): EbRelayerAccount {
+  addAdminAccount(name: string, homeDir: string): EbRelayerAccount {
     let accountAddCmd = `${this.sifnodedCommand} keys add ${name} --keyring-backend test --output json --home ${homeDir}`;
     const accountJSON = ChildProcess.execSync(
       accountAddCmd,
       { encoding: "utf8", input: "yes\nyes" }
     ).trim()
     const accountAddress = JSON.parse(accountJSON)["address"]
-    // const q = ChildProcess.execSync(
-    //     `${sifnodedCommand} add-genesis-validators ${whitelistedValidator} --home ${homeDir}`,
-    //     {encoding: "utf8", input: password}
-    // ).trim()
-    // sifnoded add-genesis-account $adminuser 100000000000000000000rowan --home $CHAINDIR/.sifnoded
-    // sifnoded set-genesis-oracle-admin $adminuser --home $CHAINDIR/.sifnoded
-    // sifnoded set-genesis-whitelister-admin $adminuser --home $CHAINDIR/.sifnoded
-    // sifnoded set-gen-denom-whitelist $SCRIPT_DIR/whitelisted-denoms.json --home $CHAINDIR/.sifnoded
 
     // TODO: Homedir would contain value of last assignment. Might need to be fixed when we support more than 1 acc
     ChildProcess.execSync(
@@ -196,6 +195,16 @@ export class SifnodedRunner extends ShellCommand<SifnodedResults> {
       `${this.sifnodedCommand} set-genesis-whitelister-admin ${accountAddress} --home ${homeDir}`,
       { encoding: "utf8" }
     ).trim()
+
+    return {
+      account: accountAddress,
+      name: name,
+      homeDir
+    }
+  }
+
+  addRelayerWitnessAccount(name: string, homeDir: string): EbRelayerAccount {
+    const adminAccount = this.addAdminAccount(name, homeDir);
     ChildProcess.execSync(
       `${this.sifnodedCommand} set-gen-denom-whitelist ${this.whitelistFile} --home ${homeDir}`,
       { encoding: "utf8" }
@@ -209,11 +218,7 @@ export class SifnodedRunner extends ShellCommand<SifnodedResults> {
       { encoding: "utf8" }
     ).trim()
 
-    return {
-      account: accountAddress,
-      name: name,
-      homeDir
-    };
+    return adminAccount
   }
 
   async addValidatorKeyToTestKeyring(moniker: string, mnemonic: string) {
