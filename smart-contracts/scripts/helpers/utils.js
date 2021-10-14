@@ -99,7 +99,7 @@ function generateTodayFilename({ prefix, extension, directory }) {
 /**
  * Busts cache
  * @param {string} url The url to be cacheBusted
- * @returns {string} The same URL with something '?cacheBuster=95508245028' appended to it
+ * @returns {string} The same URL with something like '?cacheBuster=95508245028' appended to it
  */
 function cacheBuster(url) {
   const rand = Math.floor(Math.random() * (9999999999 - 2) + 1);
@@ -119,12 +119,12 @@ function removeDuplicates(list) {
 }
 
 /**
- * Compares two arrays and returns true if they have the exact same elements, even if out of order
+ * Compares two arrays and returns true if they have the same length and the exact same elements, even if out of order
  * @param {array} List 1
  * @param {array} List 2
- * @returns {bool} Do they have the same elements?
+ * @returns {bool} Do they have the same elements and length?
  */
-function hasSameElements(a, b) {
+function hasSameElementsAndLength(a, b) {
   if (a.length !== b.length) return false;
   const uniqueValues = new Set([...a, ...b]);
   for (const v of uniqueValues) {
@@ -173,7 +173,7 @@ module.exports = {
   generateTodayFilename,
   cacheBuster,
   removeDuplicates,
-  hasSameElements,
+  hasSameElementsAndLength,
   generateV1Denom,
   SIFNODE_MODEL,
 };
