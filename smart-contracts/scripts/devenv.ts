@@ -70,18 +70,21 @@ async function ebrelayerWitnessBuilder(
   contractAddresses: DeployedContractAddresses,
   ethereumAccount: EthereumAddressAndKey,
   validater: ValidatorValues,
-  sifnodeAdminAddress: EbRelayerAccount,
+  relayerAccount: EbRelayerAccount,
+  witnessAccount: EbRelayerAccount,
   golangResults: GolangResults
 ) {
-  const args: EbrelayerArguments = {
+  const relayerArgs: EbrelayerArguments = {
     smartContract: contractAddresses,
     account: ethereumAccount,
     validatorValues: validater,
-    sifnodeAccount: sifnodeAdminAddress,
+    sifnodeAccount: relayerAccount,
     golangResults
   };
-  const relayerPromise = relayerBuilder(args)
-  const witnessPromise = witnessBuilder(args)
+  const witnessArgs = { ...relayerArgs };
+  witnessArgs.sifnodeAccount = witnessAccount;
+  const relayerPromise = relayerBuilder(relayerArgs)
+  const witnessPromise = witnessBuilder(witnessArgs)
   const [relayer, witness] = await Promise.all([relayerPromise, witnessPromise])
   return {
     relayer,
@@ -104,7 +107,8 @@ async function main() {
       smartcontract.result.contractAddresses,
       hardhat.results.accounts.validators[0],
       sifnode.results.validatorValues[0],
-      sifnode.results.adminAddress,
+      sifnode.results.relayerAddresses[0],
+      sifnode.results.witnessAddresses[0],
       golang.results
     );
     EnvJSONWriter({
