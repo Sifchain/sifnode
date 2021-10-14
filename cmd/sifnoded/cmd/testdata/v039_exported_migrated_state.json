@@ -313,6 +313,8 @@
             },
             "pool_list": null
         },
+        "authz": {},
+        "crisis": {},
         "dispensation": {},
         "distribution": {
             "delegator_starting_infos": [
