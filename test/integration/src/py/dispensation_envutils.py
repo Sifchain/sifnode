@@ -41,7 +41,7 @@ def send_sample_rowan(from_address, to_address, amount, keyring_backend, chain_i
         keyring_backend_entry,
         sifchain_fees_entry,
         f"--chain-id {chain_id}",
-        f"--yes"
+        f"--yes -o json"
     ])
     json_str = get_shell_output_json(cmd)
     assert (json_str.get("code", 0) == 0)
