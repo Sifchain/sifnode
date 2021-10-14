@@ -19,7 +19,6 @@ func CreateTestApp(isCheckTx bool) (*sifapp.SifchainApp, sdk.Context) {
 	ctx := app.BaseApp.NewContext(isCheckTx, tmproto.Header{})
 	app.AccountKeeper.SetParams(ctx, authtypes.DefaultParams())
 	initTokens := sdk.TokensFromConsensusPower(1000, sdk.DefaultPowerReduction)
-	// app.BankKeeper.SetSupply(ctx, types.NewSupply(sdk.NewCoins()))
 	_ = sifapp.AddTestAddrs(app, ctx, 6, initTokens)
 	return app, ctx
 }

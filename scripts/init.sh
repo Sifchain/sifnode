@@ -3,7 +3,7 @@
 ### chain init script for development purposes only ###
 
 make clean install
-sifnoded init test --chain-id=localnet
+sifnoded init test --chain-id=localnet -o
 
 echo "Generating deterministic account - sif"
 echo "race draft rival universe maid cheese steel logic crowd fork comic easy truth drift tomorrow eye buddy head time cash swing swift midnight borrow" | sifnoded keys add sif --recover --keyring-backend=test
