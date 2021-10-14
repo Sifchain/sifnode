@@ -114,9 +114,13 @@ sif1j3mmq2dsfws0pv5fut3ce2252w0ere8g2alrvd
 ```
 ```json
 {
+            "address": "",
             "base_denom": "uphoton",
             "decimals": "6",
             "denom": "ibc/C782C1DE5F380BC8A5B7D490684894B439D31847A004B271D7B7BA07751E582A",
+            "display_name": "",
+            "display_symbol": "",
+            "external_symbol": "",
             "ibc_channel_id": "channel-101",
             "ibc_counterparty_chain_id": "cosmoshub-testnet",
             "ibc_counterparty_channel_id": "channel-3",
@@ -128,6 +132,7 @@ sif1j3mmq2dsfws0pv5fut3ce2252w0ere8g2alrvd
                 "IBCEXPORT",
                 "IBCIMPORT"
             ],
+            "transfer_limit": "",
             "unit_denom": ""
         }
 ```
