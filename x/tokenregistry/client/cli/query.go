@@ -57,12 +57,17 @@ func GetCmdGenerateEntry() *cobra.Command {
 	var flagDenom = "token_denom"
 	var flagBaseDenom = "token_base_denom"
 	var flagUnitDenom = "token_unit_denom"
-	var flagIbcPath = "token_path"
 	var flagIbcChannelID = "token_ibc_channel_id"
 	var flagIbcCounterpartyChannelID = "token_ibc_counterparty_channel_id"
 	var flagIbcCounterpartyChainID = "token_ibc_counterparty_chain_id"
 	var flagIbcCounterpartyDenom = "token_ibc_counterparty_denom"
 	var flagDecimals = "token_decimals"
+	var flagDisplayName = "token_display_name"
+	var flagDisplaySymbol = "token_display_symbol"
+	var flagExternalSymbol = "token_external_symbol"
+	var flagTransferLimit = "token_transfer_limit"
+	var flagNetwork = "token_network"
+	var flagAddress = "token_address"
 	var flagsPermission = []string{"token_permission_clp", "token_permission_ibc_export", "token_permission_ibc_import"}
 	cmd := &cobra.Command{
 		Use:   "generate",
@@ -74,7 +79,7 @@ func GetCmdGenerateEntry() *cobra.Command {
 				return err
 			}
 			flags := cmd.Flags()
-			decimals, err := flags.GetUint32(flagDecimals)
+			decimals, err := flags.GetInt64(flagDecimals)
 			if err != nil {
 				return err
 			}
@@ -94,10 +99,6 @@ func GetCmdGenerateEntry() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			ibcPath, err := flags.GetString(flagIbcPath)
-			if err != nil {
-				return err
-			}
 			ibcCounterpartyChannelID, err := flags.GetString(flagIbcCounterpartyChannelID)
 			if err != nil {
 				return err
@@ -107,6 +108,30 @@ func GetCmdGenerateEntry() *cobra.Command {
 				return err
 			}
 			ibcCounterpartyDenom, err := flags.GetString(flagIbcCounterpartyDenom)
+			if err != nil {
+				return err
+			}
+			displayName, err := flags.GetString(flagDisplayName)
+			if err != nil {
+				return err
+			}
+			displaySymbol, err := flags.GetString(flagDisplaySymbol)
+			if err != nil {
+				return err
+			}
+			externalSymbol, err := flags.GetString(flagExternalSymbol)
+			if err != nil {
+				return err
+			}
+			transferLimit, err := flags.GetString(flagTransferLimit)
+			if err != nil {
+				return err
+			}
+			network, err := flags.GetString(flagNetwork)
+			if err != nil {
+				return err
+			}
+			address, err := flags.GetString(flagAddress)
 			if err != nil {
 				return err
 			}
@@ -132,22 +157,20 @@ func GetCmdGenerateEntry() *cobra.Command {
 			if permissionIBCImport {
 				permissions = append(permissions, types.Permission_IBCIMPORT)
 			}
-			var path string
 			var denom string
+			var path string
 			// base_denom is required.
-			// generate denom if path is also provided.
 			// override the IBC generation with --denom if specified explicitly.
 			// otherwise fallback to base_denom
 			if ibcChannelID != "" {
-				// normalise path slashes before generating hash (do this in MsgRegister.ValidateBasic as well)
 				path = "transfer/" + ibcChannelID
-				// generate IBC hash from baseDenom and ibc channel id
-				denomTrace := transfertypes.DenomTrace{
-					Path:      path,
-					BaseDenom: baseDenom,
-				}
-				denom = denomTrace.IBCDenom()
 			}
+			// generate IBC hash from baseDenom and ibc channel id
+			denomTrace := transfertypes.DenomTrace{
+				Path:      path,
+				BaseDenom: baseDenom,
+			}
+			denom = denomTrace.IBCDenom()
 			if initialDenom != "" {
 				denom = initialDenom
 			} else if denom == "" {
@@ -157,19 +180,22 @@ func GetCmdGenerateEntry() *cobra.Command {
 				Decimals:                 decimals,
 				Denom:                    denom,
 				BaseDenom:                baseDenom,
-				Path:                     ibcPath,
 				IbcChannelId:             ibcChannelID,
 				IbcCounterpartyChannelId: ibcCounterpartyChannelID,
 				IbcCounterpartyChainId:   ibcCounterpartyChainID,
 				IbcCounterpartyDenom:     ibcCounterpartyDenom,
 				UnitDenom:                unitDenom,
+				DisplayName:              displayName,
+				DisplaySymbol:            displaySymbol,
+				Network:                  network,
+				Address:                  address,
+				ExternalSymbol:           externalSymbol,
+				TransferLimit:            transferLimit,
 				Permissions:              permissions,
 			}
 			return clientCtx.PrintProto(&types.Registry{Entries: []*types.RegistryEntry{&entry}})
 		},
 	}
-	cmd.Flags().Bool(flagIbcPath, true,
-		"The ibc transfer path")
 	cmd.Flags().String(flagDenom, "",
 		"The IBC hash / denom  stored on sifchain - to generate this hash for IBC token, leave blank and specify base_denom and ibc_channel_id")
 	cmd.Flags().String(flagBaseDenom, "",
@@ -186,6 +212,18 @@ func GetCmdGenerateEntry() *cobra.Command {
 		"The denom in registry that holds the funds for this denom, ie the most precise denom for a token")
 	cmd.Flags().String(flagIbcCounterpartyDenom, "",
 		"The denom in registry that funds in this account will get sent as over IBC")
+	cmd.Flags().String(flagDisplayName, "",
+		"Friendly name for use by UI etc")
+	cmd.Flags().String(flagDisplaySymbol, "",
+		"Friendly symbol for use by UI etc")
+	cmd.Flags().String(flagExternalSymbol, "",
+		"The original symbol as seen on external network")
+	cmd.Flags().String(flagTransferLimit, "",
+		"Used by UI")
+	cmd.Flags().String(flagNetwork, "",
+		"Original network of token i.e ethereum")
+	cmd.Flags().String(flagAddress, "",
+		"Contract address i.e in EVM cases")
 	// Permission flags, default true.
 	for _, flag := range flagsPermission {
 		cmd.Flags().Bool(flag, true, fmt.Sprintf("Flag to specify permission for %s", types.GetPermissionFromString(flag)))

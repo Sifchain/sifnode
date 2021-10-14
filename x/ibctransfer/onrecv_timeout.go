@@ -43,7 +43,9 @@ func OnTimeoutMaybeConvert(
 	denom := data.Denom
 	registry := whitelistKeeper.GetRegistry(ctx)
 	denomEntry, err := whitelistKeeper.GetEntry(registry, denom)
-	if err == nil && denomEntry.Decimals > 0 && denomEntry.UnitDenom != "" {
+	if err != nil {
+		ctx.Logger().Error(err.Error())
+	} else if denomEntry.Decimals > 0 && denomEntry.UnitDenom != "" {
 		convertToDenomEntry, err := whitelistKeeper.GetEntry(registry, denomEntry.UnitDenom)
 		if err == nil && convertToDenomEntry.Decimals > denomEntry.Decimals {
 			err := helpers.ExecConvForRefundCoins(ctx, bankKeeper, denomEntry, convertToDenomEntry, packet, data)

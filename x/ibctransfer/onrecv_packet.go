@@ -13,6 +13,8 @@ import (
 	tokenregistrytypes "github.com/Sifchain/sifnode/x/tokenregistry/types"
 )
 
+// OnRecvPacketWhitelistConvert receives a transfer, check if the denom is whitelisted, and converts it
+// to match unit_denom decimals if conversion is needed.
 func OnRecvPacketWhitelistConvert(
 	ctx sdk.Context,
 	sdkTransferKeeper sctransfertypes.SDKTransferKeeper,
