@@ -391,7 +391,7 @@ def send_from_sifchain_to_sifchain_cmd(
         sifchain_fees_entry,
         home_entry,
         "--gas auto",
-        "-y",
+        "-y -o json",
     ])
     return cmd
 

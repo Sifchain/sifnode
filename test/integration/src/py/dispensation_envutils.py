@@ -41,7 +41,7 @@ def send_sample_rowan(from_address, to_address, amount, keyring_backend, chain_i
         keyring_backend_entry,
         sifchain_fees_entry,
         f"--chain-id {chain_id}",
-        f"--yes"
+        f"--yes -o json"
     ])
     json_str = get_shell_output_json(cmd)
     assert (json_str.get("code", 0) == 0)
@@ -166,7 +166,7 @@ def sign_txn(signingaddress, file):
         f"{file}",
         keyring_backend_entry,
         "--chain-id localnet",
-        f"--yes"
+        f"--yes -o json"
     ])
     json_str = get_shell_output_json(cmd)
     return json_str
@@ -177,7 +177,7 @@ def broadcast_txn(file_path):
     cmd = " ".join([
         "sifnoded tx broadcast",
         f"{file_path}",
-        f"--yes"
+        f"--yes -o json"
     ])
     json_str = get_shell_output_json(cmd)
     txn = json_str["txhash"]
@@ -190,7 +190,7 @@ def broadcast_async_txn(file_path):
         "sifnoded tx broadcast",
         f"{file_path}",
         f"--broadcast-mode async",
-        f"--yes"
+        f"--yes -o json"
     ])
     json_str = get_shell_output_json(cmd)
     txn = json_str["txhash"]
