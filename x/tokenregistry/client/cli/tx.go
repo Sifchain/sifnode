@@ -22,6 +22,7 @@ func GetTxCmd() *cobra.Command {
 		GetCmdDeregister(),
 		GetCmdRegisterAll(),
 		GetCmdDeregisterAll(),
+		GetCmdSetRegistry(),
 	)
 	return cmd
 }
@@ -119,7 +120,7 @@ func GetCmdSetRegistry() *cobra.Command {
 			}
 			msg := types.MsgSetRegistry{
 				From:  clientCtx.GetFromAddress().String(),
-				Registry: registry,
+				Registry: &registry,
 			}
 			if err := msg.ValidateBasic(); err != nil {
 				return err

@@ -134,7 +134,7 @@ func TestHandleSetRegistry(t *testing.T) {
 			msg: types.MsgSetRegistry{
 				From: admin,
 				Registry: &types.Registry {
-					Entries: [1]*types.RegistryEntry{&types.RegistryEntry{Denom: "TestDenom", Decimals: 18}},
+					Entries: []*types.RegistryEntry{{Denom: "TestDenom", Decimals: 18}},
 				},
 			},
 			errorAssertion: assert.NoError,
@@ -151,7 +151,7 @@ func TestHandleSetRegistry(t *testing.T) {
 			msg: types.MsgSetRegistry{
 				From: admin,
 				Registry: &types.Registry {
-					Entries: [1]*types.RegistryEntry{&types.RegistryEntry{Denom: "TestDenomIBC", Decimals: 18}},
+					Entries: []*types.RegistryEntry{{Denom: "TestDenomIBC", Decimals: 18}},
 				},
 			},
 			errorAssertion: assert.NoError,
@@ -168,7 +168,7 @@ func TestHandleSetRegistry(t *testing.T) {
 			msg: types.MsgSetRegistry{
 				From: admin,
 				Registry: &types.Registry{
-					Entries: [1]*types.RegistryEntry{&types.RegistryEntry{Denom: "TestDenomIBC2", Decimals: 8}},
+					Entries: []*types.RegistryEntry{{Denom: "TestDenomIBC2", Decimals: 8}},
 				},
 			},
 			errorAssertion: assert.NoError,
@@ -185,7 +185,7 @@ func TestHandleSetRegistry(t *testing.T) {
 			msg: types.MsgSetRegistry{
 				From: admin,
 				Registry: &types.Registry{
-					Entries: [1]*types.RegistryEntry{&types.RegistryEntry{Denom: "TestDenomIBC", Decimals: 18}},
+					Entries: []*types.RegistryEntry{{Denom: "TestDenomIBC", Decimals: 18}},
 				},
 			},
 			errorAssertion: assert.NoError,
@@ -203,7 +203,7 @@ func TestHandleSetRegistry(t *testing.T) {
 			msg: types.MsgSetRegistry{
 				From: sdk.AccAddress("addr2_______________").String(),
 				Registry: &types.Registry{
-					Entries: [1]*types.RegistryEntry{&types.RegistryEntry{Denom: "TestDenom", Decimals: 18}},
+					Entries: []*types.RegistryEntry{{Denom: "TestDenom", Decimals: 18}},
 				},
 			},
 			errorAssertion: assert.Error,

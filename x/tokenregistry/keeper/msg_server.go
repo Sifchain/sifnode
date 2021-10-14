@@ -33,7 +33,7 @@ func (m msgServer) SetRegistry(ctx context.Context, req *types.MsgSetRegistry) (
 	if !m.keeper.IsAdminAccount(sdk.UnwrapSDKContext(ctx), addr) {
 		return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, "unauthorised signer")
 	}
-	m.keeper.SetRegistry(sdk.UnwrapSDKContext(ctx), req.Registry)
+	m.keeper.SetRegistry(sdk.UnwrapSDKContext(ctx), *req.Registry)
 	return &types.MsgSetRegistryResponse{}, nil
 }
 
