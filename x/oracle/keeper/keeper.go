@@ -116,14 +116,14 @@ func (k Keeper) AppendValidatorToProphecy(ctx sdk.Context, networkDescriptor typ
 	}
 }
 
-func (k Keeper) checkActiveValidator(ctx sdk.Context, validatorAddress sdk.ValAddress) bool {
-	validator, found := k.stakeKeeper.GetValidator(ctx, validatorAddress)
-	if !found {
-		return false
-	}
+// func (k Keeper) checkActiveValidator(ctx sdk.Context, validatorAddress sdk.ValAddress) bool {
+// 	validator, found := k.stakeKeeper.GetValidator(ctx, validatorAddress)
+// 	if !found {
+// 		return false
+// 	}
 
-	return validator.IsBonded()
-}
+// 	return validator.IsBonded()
+// }
 
 // ProcessUpdateWhiteListValidator processes the update whitelist validator from admin
 func (k Keeper) ProcessUpdateWhiteListValidator(ctx sdk.Context, networkDescriptor types.NetworkDescriptor, cosmosSender sdk.AccAddress, validator sdk.ValAddress, power uint32) error {
