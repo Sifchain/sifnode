@@ -46,6 +46,7 @@ contract Blocklist is Ownable {
   /**
    * @dev Adds an address to the blocklist
    * @param account The address to add
+   * @return true if the operation succeeded
    * @dev Fails if the address was already blocklisted
    */
   function _addToBlocklist(address account) private onlyNotInBlocklist(account) returns(bool) {
@@ -71,6 +72,7 @@ contract Blocklist is Ownable {
   /**
    * @notice Adds an address to the blocklist
    * @param account The address to add
+   * @return true if the operation succeeded
    * @dev Fails if the address was already blocklisted
    */
   function addToBlocklist(address account) external onlyOwner returns(bool) {
@@ -80,6 +82,7 @@ contract Blocklist is Ownable {
   /**
    * @dev Removes an address from the blocklist
    * @param account The address to remove
+   * @return true if the operation succeeds
    * @dev Fails if the address was not blocklisted
    */
   function _removeFromBlocklist(address account) private onlyInBlocklist(account) returns(bool) {
@@ -109,6 +112,7 @@ contract Blocklist is Ownable {
    * @notice Removes an address from the blocklist
    * @param account The address to remove
    * @dev Fails if the address was not blocklisted
+   * @return true if the operation succeeded
    */
   function removeFromBlocklist(address account) external onlyOwner returns(bool) {
     return _removeFromBlocklist(account);
@@ -121,6 +125,10 @@ contract Blocklist is Ownable {
    */
   function isBlocklisted(address account) public view returns(bool) {
     if(_userList.length == 0) return false;
+
+    // We don't want to throw when querying for an out-of-bounds index.
+    // It can happen when the list has been shrunk after a deletion.
+    // With this flow, we save some gas.
     if(_userIndex[account] >= _userList.length) return false;
 
     return _userList[_userIndex[account]] == account;
