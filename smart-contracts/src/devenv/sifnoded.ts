@@ -11,6 +11,7 @@ import {
   ExecFileSyncOptionsWithStringEncoding, ExecSyncOptionsWithStringEncoding,
   StdioOptions
 } from "child_process";
+import { network } from "hardhat";
 
 export interface ValidatorValues {
   chain_id: string,
@@ -38,6 +39,23 @@ export interface SifnodedResults {
   process: ChildProcess.ChildProcess;
   tcpurl: string;
 }
+
+export function waitForSifAccount(address: string) {
+  const scriptArgs = [
+    "FirstOptionIsIgnored",
+    address
+  ]
+  const filePath = path.resolve(
+    __dirname,
+    "wait_for_sif_account.py",
+  );
+  console.log("File path is ", { filePath, __dirname })
+  const child = ChildProcess.execFileSync(
+    filePath,
+    scriptArgs
+  )
+}
+
 
 export class SifnodedRunner extends ShellCommand<SifnodedResults> {
   output: Promise<SifnodedResults>;
@@ -150,9 +168,12 @@ export class SifnodedRunner extends ShellCommand<SifnodedResults> {
     )
 
     // Register tokens in the token registry
+    // Must wait for sifnode to fully start first
+    waitForSifAccount(networkConfig[0].address);
+    console.log("Account has been reached, moving on to token registry")
     const registryPath = path.resolve(__dirname, "./", "registry.json");
     ChildProcess.execSync(
-      `${this.sifnodedCommand} tx tokenregistry register-all ${registryPath} --home ${homeDir} --from sifnodeadmin --yes`,
+      `${this.sifnodedCommand} tx tokenregistry register-all ${registryPath} --home ${homeDir} --from ${sifnodedAdminAddress.name} --yes --keyring-backend test --chain-id ${this.chainId}`,
       { encoding: "utf8" }
     ).trim()
 
@@ -205,14 +226,14 @@ export class SifnodedRunner extends ShellCommand<SifnodedResults> {
 
   addRelayerWitnessAccount(name: string, homeDir: string): EbRelayerAccount {
     const adminAccount = this.addAdminAccount(name, homeDir);
-    ChildProcess.execSync(
-      `${this.sifnodedCommand} set-gen-denom-whitelist ${this.whitelistFile} --home ${homeDir}`,
-      { encoding: "utf8" }
-    ).trim()
     // Whitelist Relayer/Witness Account
     const EVM_Network_Descriptor = 31337;
     const Validator_Power = 100;
     const bachAddress = this.readValoperKey(name, homeDir);
+    ChildProcess.execSync(
+      `${this.sifnodedCommand} set-gen-denom-whitelist ${this.whitelistFile} --home ${homeDir}`,
+      { encoding: "utf8" }
+    ).trim()
     ChildProcess.execSync(
       `${this.sifnodedCommand} add-genesis-validators ${EVM_Network_Descriptor} ${bachAddress} ${Validator_Power} --home ${homeDir}`,
       { encoding: "utf8" }

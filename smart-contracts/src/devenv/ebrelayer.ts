@@ -1,6 +1,6 @@
 import * as ChildProcess from "child_process"
 import { EthereumAddressAndKey, ShellCommand } from "./devEnv"
-import { EbRelayerAccount, ValidatorValues } from "./sifnoded"
+import { EbRelayerAccount, ValidatorValues, waitForSifAccount } from "./sifnoded"
 import { DeployedContractAddresses } from "../../scripts/deploy_contracts";
 import notifier from 'node-notifier';
 import { GolangResults } from "./golangBuilder";
@@ -19,16 +19,6 @@ interface EbrelayerResults {
   process: ChildProcess.ChildProcess;
 }
 
-async function waitForSifAccount(validatorAddress: string) {
-  const scriptArgs = [
-    "FirstOptionIsIgnored",
-    validatorAddress
-  ]
-  const child = ChildProcess.execFileSync(
-    "./src/devenv/wait_for_sif_account.py",
-    scriptArgs
-  )
-}
 
 export class WitnessRunner extends ShellCommand<EbrelayerResults> {
   private output: Promise<EbrelayerResults>;
@@ -79,7 +69,7 @@ export class WitnessRunner extends ShellCommand<EbrelayerResults> {
 
 
   override async run(): Promise<void> {
-    await waitForSifAccount(this.args.validatorValues.address)
+    waitForSifAccount(this.args.validatorValues.address)
     process.env["ETHEREUM_PRIVATE_KEY"] = this.args.account.privateKey.slice(2);
     process.env["ETHEREUM_ADDRESS"] = this.args.account.address.slice(2);
     const spawncmd = "ebrelayer " + this.cmd()[1].join(" ");
