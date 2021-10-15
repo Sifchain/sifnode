@@ -63,7 +63,7 @@ func (m *MsgSetRegistry) Route() string {
 }
 
 func (m *MsgSetRegistry) Type() string {
-	return "register"
+	return "set_registry"
 }
 
 func (m *MsgSetRegistry) ValidateBasic() error {
