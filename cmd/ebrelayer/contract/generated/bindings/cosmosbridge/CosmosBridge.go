@@ -1058,8 +1058,7 @@ func (it *CosmosBridgeLogProphecyCompletedIterator) Error() error {
 	return it.fail
 }
 
-// Close terminates the iteration process, releasing any pending underlying
-// resources.
+// Close terminates the iteration process, releasing any pending underlying resources.
 func (it *CosmosBridgeLogProphecyCompletedIterator) Close() error {
 	it.sub.Unsubscribe()
 	return nil
