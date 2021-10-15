@@ -152,7 +152,7 @@ export class SifnodedRunner extends ShellCommand<SifnodedResults> {
     // Register tokens in the token registry
     const registryPath = path.resolve(__dirname, "./", "registry.json");
     ChildProcess.execSync(
-      `${this.sifnodedCommand} tx tokenregistry register-all ${registryPath} --home ${homeDir}`,
+      `${this.sifnodedCommand} tx tokenregistry register-all ${registryPath} --home ${homeDir} --from sifnodeadmin --yes`,
       { encoding: "utf8" }
     ).trim()
 
