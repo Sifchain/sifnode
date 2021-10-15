@@ -2,43 +2,64 @@
   "wallet": {
     "sif": "sif19q2swhcxkxlc6va3pz5jz42jfsfv2ly4kuu8y0",
     "cosmos": "cosmos19q2swhcxkxlc6va3pz5jz42jfsfv2ly4npn3ty",
-    "akash": "akash19q2swhcxkxlc6va3pz5jz42jfsfv2ly4767kj7"
+    "akash": "akash19q2swhcxkxlc6va3pz5jz42jfsfv2ly4767kj7",
+    "iris": "iaa19q2swhcxkxlc6va3pz5jz42jfsfv2ly4xrnqf4"
   },
   "tx": [
     {
+      "sif_asset": "ibc/4BFA1CE7B80A9A830F8E164495276CCD9E9B5424951749ED92F80B394E8C91C8",
+      "ibc_denom": "ibc/DBA44CEB12003B393687079A67D86B80DC0003B770D4B08F758ABC9E16829788",
+      "ibc_denom_iris": "ibc/DBA44CEB12003B393687079A67D86B80DC0003B770D4B08F758ABC9E16829788",
+      "ibc_denom_akash": "ibc/ED52642E49540BE90488C9027BEA1C1AFA2BD296A548D99CA20EDAEF8F3BB5B9",
+      "ibc_denom_cosmos": "uphoton",
+      "sif_asset_dp_value": 6,
+      "ibc_denom_dp_value": 6,
+      "amount": [
+        7000200,
+        1000,
+        1
+      ]
+    },
+    {
       "sif_asset": "ceth",
-      "ibc_denom": "ibc/95E612BDDA3E5F9B30579490CBA2F6AA2956ED9FBC2CD7310BAE5FABD769AAB1",
+      "ibc_denom": "ibc/86E4507AC212CE3B96C98DC4888DC9BEFB7DCE646BA4C34A5E1A8B8AE1D610BF",
+      "ibc_denom_iris": "ibc/86E4507AC212CE3B96C98DC4888DC9BEFB7DCE646BA4C34A5E1A8B8AE1D610BF",
+      "ibc_denom_akash": "ibc/95E612BDDA3E5F9B30579490CBA2F6AA2956ED9FBC2CD7310BAE5FABD769AAB1",
+      "ibc_denom_cosmos": "",
       "sif_asset_dp_value": 18,
       "ibc_denom_dp_value": 10,
       "amount": [
-        1,
-        1000,
         7000000000000,
-        2000000005555
+        2000033335555,
+        133335555,
+        1,
+        1000
       ]
     },
     {
       "sif_asset": "cusdt",
-      "ibc_denom": "ibc/4BC8BBA23191E0B48BC766E34A27663A34518D0967CB8B5C616126B9591F12E8",
+      "ibc_denom": "ibc/EA42BD746E85286D34FE303EBF162273E8FC86B072A35F053866E5F16F9F246E",
+      "ibc_denom_iris": "ibc/EA42BD746E85286D34FE303EBF162273E8FC86B072A35F053866E5F16F9F246E",
+      "ibc_denom_akash": "ibc/10CD333A451FAE602172F612E6F0D695476C8A0C4BEC6E0A9F1789A599B9F135",
+      "ibc_denom_cosmos": "ibc/10CD333A451FAE602172F612E6F0D695476C8A0C4BEC6E0A9F1789A599B9F135",
       "sif_asset_dp_value": 6,
       "ibc_denom_dp_value": 6,
       "amount": [
-        1,
+        70000200,
         1000,
-        70000200
+        1
       ]
     }
-    
   ],
   "chain": [
     {
       "name": "cosmos",
       "channel": "channel-11",
-      "counterparty_channel" : "channel-27",
+      "counterparty_channel": "channel-27",
       "cli_tool": "gaiad",
       "chain_id": "cosmoshub-testnet",
-      "node": "https://rpc-testnet.sifchain.finance:443",
-      "gas_price": "50.0uphoton"
+      "node": "https://rpc.testnet.cosmos.network:443",
+      "gas_price": "5.0uphoton"
     },
     {
       "name": "akash",
@@ -47,7 +68,25 @@
       "cli_tool": "akash",
       "chain_id": "akash-testnet-6",
       "node": "http://147.75.32.35:26657",
-      "gas_price": "5.0uakt"
+      "gas_price": "0.5uakt"
+    },
+    {
+      "name": "iris",
+      "channel": "channel-14",
+      "counterparty_channel": "channel-25",
+      "cli_tool": "iris",
+      "chain_id": "nyancat-8",
+      "node": "http://35.234.10.84:26657",
+      "gas_price": "1.0unyan"
+    },
+    {
+      "name": "cro",
+      "channel": "channel-16",
+      "counterparty_channel": "channel-32",
+      "cli_tool": "cronosd",
+      "chain_id": "crypto-org-chain-mainnet-1",
+      "node": "<tbd>",
+      "gas_price": "0.003basecro"
     },
     {
       "name": "sifchain-testnet",

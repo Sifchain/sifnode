@@ -10,19 +10,38 @@ json_data_file = os.environ.get('JSON_DATA_FILE')
 external_network = os.environ.get('EXTERNAL_NETWORK')
 sifchain_network = os.environ.get('SIFCHAIN_NETWORK')
 logging_flag = os.environ.get('LOG')
+get_gas_info_flag = os.environ.get('GAS_INFO')
+
+formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
+general_logger = ''
+gas_logger = ''
+
+
+def setup_logger(name, log_file, level=logging.DEBUG):
+    handler = logging.FileHandler(log_file)
+    handler.setFormatter(formatter)
+
+    logger = logging.getLogger(name)
+    logger.setLevel(level)
+    logger.addHandler(handler)
+
+    return logger
+
+
 if logging_flag:
-    logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s',
-                        filename='decimal_precision.log', filemode='a',
-                        level=logging.DEBUG)
+    general_logger = setup_logger('general logger', 'decimal_precision.log')
+    gas_logger = setup_logger('gas logger', 'ibc_transfers_gas.log')
 # if we don't output to a file and set default logging level to WARNING, basically nothing extra (INFO, DEBUG) will be logged
 else:
-    logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s',
-                        level=logging.WARNING)
+    general_logger = setup_logger(
+        'general logger', 'decimal_precision.log', logging.WARNING)
+    gas_logger = setup_logger(
+        'gas logger', 'ibc_transfers_gas.log', logging.WARNING)
 
 with open(json_data_file) as json_file:
     data = json.load(json_file)
 
-
+tx_info_table = {"sifchain": {}, external_network: {}}
 sif_wallet = data["wallet"]["sif"]
 external_wallet = data["wallet"][external_network]
 external_chain_config = [x for x in data["chain"]
@@ -74,14 +93,14 @@ def query_balance(asset, chain=Chain.SIFCHAIN):
         cmd = cmd_external_q_balance
 
     # print(cmd)  # delete me
-    logging.info(cmd)
+    general_logger.info(cmd)
     result = subprocess.run(cmd.split(' '),
                             capture_output=True, text=True)
     if result.returncode != 0:
         print(result.stderr)
-        logging.error(result.stderr)
+        general_logger.error(result.stderr)
         exit(1)
-    logging.info(result.stdout)
+    general_logger.info(result.stdout)
     balances = result.stdout.split('\n')
     denom_index = [index for index, value in enumerate(
         balances) if value.find(f'denom: {asset}') != -1]
@@ -92,29 +111,55 @@ def query_balance(asset, chain=Chain.SIFCHAIN):
     else:
         raise Exception(f'Denom balance for {asset} not found.')
 
-    logging.info(f'{chain}:{asset} balance = {balance}')
-    return balance.replace('"', '')  # remove surrounding '"' chars
+    general_logger.info(f'{chain}:{asset} balance = {balance}')
+    # remove surrounding '"' chars and possible '.'
+    return balance.replace('"', '').replace('.', '')
 
 
-def transfer_tx(sourceChain=Chain.SIFCHAIN, destChain=Chain.AKASH):
-    if sourceChain == Chain.SIFCHAIN:
+# def transfer_tx(denom, tx_amount, source_chain=Chain.SIFCHAIN.value, dest_chain=Chain.AKASH.value):
+def transfer_tx(source_chain=Chain.SIFCHAIN.value, dest_chain=Chain.AKASH.value):
+    if source_chain == Chain.SIFCHAIN.value:
         cmd = cmd_tx_sif_to_external
-    elif destChain == Chain.SIFCHAIN:
+    elif dest_chain == Chain.SIFCHAIN.value:
         cmd = cmd_tx_external_to_sif
     else:
         raise Exception(
-            f'Transaction from {sourceChain} to {destChain} is not supported.')
+            f'Transaction from {source_chain} to {dest_chain} is not supported.')
 
     # print(cmd)  # delete me
-    logging.info(cmd)
+    general_logger.info(cmd)
     result = subprocess.run(cmd.split(' '),
                             capture_output=True, text=True)
     if result.returncode != 0:
         print(result.stderr)
-        logging.error(result.stderr)
+        general_logger.error(result.stderr)
         exit(1)
 
-    logging.info(result.stdout)
+    general_logger.info(result.stdout)
+    json_data = json.loads(result.stdout)
+
+    tx_info = dict()
+    tx_info['txhash'] = json_data["txhash"]
+    tx_info['gas_used'] = json_data["gas_used"]
+    return tx_info
+
+
+def query_tx_hash(cmd):
+    gas_logger.info(cmd)
+    result = subprocess.run(cmd.split(' '),
+                            capture_output=True, text=True)
+    if result.returncode != 0:
+        print(result.stderr)
+        gas_logger.error(result.stderr)
+        exit(1)
+
+    gas_logger.info(result.stdout)
+    json_data = json.loads(result.stdout)
+
+    tx_info = dict()
+    tx_info['gas_amount'] = json_data["tx"]["auth_info"]["fee"]["amount"][0]
+    return tx_info
+
 
 # method used to truncate 18dp transferred amount, i.e.
 # 123456789012345678 -> 123456789000000000
@@ -130,7 +175,7 @@ def convert_amount(value, digits_to_truncate=8):
     else:
         result = value[0:len(value)-digits_to_truncate]
 
-    logging.info(f'Converted amount = {result}')
+    general_logger.info(f'Converted amount = {result}')
     return result
 
 
@@ -175,18 +220,35 @@ def normalize_ibc_amount_to_sif_dp(amount):
     else:
         normalized = int(amount)
 
-    logging.info(f'Normalized amount = {normalized}')
+    general_logger.info(f'Normalized amount = {normalized}')
     return normalized
+
+
+def save_tx_info(denom, tx_amount, source_chain, tx_info):
+    if not tx_amount in tx_info_table[source_chain][denom]:
+        tx_info_table[source_chain][denom][tx_amount] = {}
+    tx_info_table[source_chain][denom][tx_amount].update(tx_info)
+    gas_logger.info(tx_info_table)
+
+
+def save_tx_info_new_denom(denom):
+    tx_info_table['sifchain'][denom] = {}
+    tx_info_table[external_network][denom] = {}
+
+
+general_logger.info('++++++++++ New run started ++++++++++')
 
 
 for tx_data in data["tx"]:
     sif_asset = tx_data["sif_asset"]
-    ibc_denom = tx_data["ibc_denom"]
+    ibc_denom = tx_data[f'ibc_denom_{external_network}']
     sif_asset_dp_value = tx_data["sif_asset_dp_value"]
     ibc_denom_dp_value = tx_data["ibc_denom_dp_value"]
+    save_tx_info_new_denom(sif_asset)
     for tx_amount in tx_data["amount"]:
         digits_to_truncate = int(sif_asset_dp_value) - int(ibc_denom_dp_value)
-        tx_amount_converted = int(convert_amount(tx_amount))
+        tx_amount_converted = int(
+            convert_amount(tx_amount, digits_to_truncate))
         tx_amount_normalized = normalize_ibc_amount_to_sif_dp(
             tx_amount_converted)
         cmd_tx_sif_to_external = f'sifnoded tx ibc-transfer transfer transfer {channel} {external_wallet} {tx_amount}{sif_asset} --from={sif_wallet} --keyring-backend=test --node={sif_node} --chain-id={sif_chain_id} -y --packet-timeout-timestamp=6000000000000 --gas=500000 --gas-prices=0.5rowan'
@@ -201,11 +263,17 @@ for tx_data in data["tx"]:
         external_asset_balance = query_balance(ibc_denom, external_network)
         print(f'\t{external_asset_balance}')
 
-        transfer_tx(destChain=external_network)
+        tx_info = transfer_tx(dest_chain=external_network)
+        save_tx_info(sif_asset, tx_amount, Chain.SIFCHAIN.value, tx_info)
         assert_expected_value(calculate_expected_value(
             sif_asset_balance, tx_amount_normalized, TxType.DEDUCT), sif_asset, Chain.SIFCHAIN)
         assert_expected_value(calculate_expected_value(
             external_asset_balance, tx_amount_converted, TxType.INCREASE), ibc_denom, external_network)
+
+        if get_gas_info_flag:
+            cmd_tx_hash_info = f'sifnoded q tx {tx_info["txhash"]} --node={sif_node} --output=json'
+            tx_info = query_tx_hash(cmd_tx_hash_info)
+            save_tx_info(sif_asset, tx_amount, Chain.SIFCHAIN.value, tx_info)
 
         time.sleep(2)
         print(f'\tTransferring {external_network}->sif')
@@ -215,10 +283,21 @@ for tx_data in data["tx"]:
             external_asset_balance = query_balance(ibc_denom, external_network)
             print(f'\t{external_asset_balance}')
 
-            transfer_tx(sourceChain=external_network, destChain=Chain.SIFCHAIN)
+            tx_info = transfer_tx(
+                source_chain=external_network, dest_chain=Chain.SIFCHAIN.value)
+            save_tx_info(sif_asset, tx_amount_converted,
+                         external_network, tx_info)
             assert_expected_value(calculate_expected_value(
                 external_asset_balance, tx_amount_converted, TxType.DEDUCT), ibc_denom, external_network)
             assert_expected_value(calculate_expected_value(
                 sif_asset_balance, tx_amount_normalized, TxType.INCREASE), sif_asset, Chain.SIFCHAIN)
+            if get_gas_info_flag:
+                cmd_tx_hash_info = f'sifnoded q tx {tx_info["txhash"]} --node={external_node} --output=json'
+                tx_info = query_tx_hash(cmd_tx_hash_info)
+                save_tx_info(sif_asset, tx_amount_converted,
+                             external_network, tx_info)
         else:
             print("\t\tSkipping: tx amount = 0")
+
+if get_gas_info_flag:
+    gas_logger.info(json.dumps(tx_info_table, indent=4))
