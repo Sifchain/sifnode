@@ -3,7 +3,6 @@ package keeper
 import (
 	"fmt"
 	"github.com/Sifchain/sifnode/x/dispensation/types"
-	tokenregistrytypes "github.com/Sifchain/sifnode/x/tokenregistry/types"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
@@ -12,21 +11,19 @@ import (
 
 // Keeper of the clp store
 type Keeper struct {
-	storeKey            sdk.StoreKey
-	cdc                 codec.BinaryMarshaler
-	bankKeeper          types.BankKeeper
-	tokenRegistryKeeper types.TokenRegistryKeeper
-	accountKeeper       types.AccountKeeper
+	storeKey      sdk.StoreKey
+	cdc           codec.BinaryMarshaler
+	bankKeeper    types.BankKeeper
+	accountKeeper types.AccountKeeper
 }
 
 // NewKeeper creates a dispensation keeper
-func NewKeeper(cdc codec.BinaryMarshaler, key sdk.StoreKey, bankkeeper types.BankKeeper, accountKeeper types.AccountKeeper, ps paramtypes.Subspace, tokenRegistryKeeper tokenregistrytypes.Keeper) Keeper {
+func NewKeeper(cdc codec.BinaryMarshaler, key sdk.StoreKey, bankkeeper types.BankKeeper, accountKeeper types.AccountKeeper, ps paramtypes.Subspace) Keeper {
 	keeper := Keeper{
-		storeKey:            key,
-		cdc:                 cdc,
-		bankKeeper:          bankkeeper,
-		accountKeeper:       accountKeeper,
-		tokenRegistryKeeper: tokenRegistryKeeper,
+		storeKey:      key,
+		cdc:           cdc,
+		bankKeeper:    bankkeeper,
+		accountKeeper: accountKeeper,
 	}
 	return keeper
 }

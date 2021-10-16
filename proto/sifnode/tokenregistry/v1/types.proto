@@ -19,7 +19,6 @@ enum Permission {
   CLP = 1;
   IBCEXPORT =  2;
   IBCIMPORT = 3;
-  DISPENSATION = 4;
 }
 
 message RegistryEntry {
