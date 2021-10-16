@@ -56,9 +56,6 @@ func (m MsgCreateDistribution) ValidateBasic() error {
 		if len(out.Coins) > 1 {
 			return errors.Wrapf(ErrInvalid, "Invalid Coins Can only specify one coin type for an entry")
 		}
-		if !IsCoinAccepted(out.Coins.GetDenomByIndex(0)) {
-			return errors.Wrapf(ErrInvalid, "Denom not supported for Dispensation %s", out.Coins.GetDenomByIndex(0))
-		}
 	}
 	return nil
 }
