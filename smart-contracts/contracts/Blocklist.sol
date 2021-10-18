@@ -128,7 +128,6 @@ contract Blocklist is Ownable {
 
     // We don't want to throw when querying for an out-of-bounds index.
     // It can happen when the list has been shrunk after a deletion.
-    // With this flow, we save some gas.
     if(_userIndex[account] >= _userList.length) return false;
 
     return _userList[_userIndex[account]] == account;
