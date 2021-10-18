@@ -25,6 +25,18 @@ func (m msgServer) Register(ctx context.Context, req *types.MsgRegister) (*types
 	return &types.MsgRegisterResponse{}, nil
 }
 
+func (m msgServer) SetRegistry(ctx context.Context, req *types.MsgSetRegistry) (*types.MsgSetRegistryResponse, error) {
+	addr, err := sdk.AccAddressFromBech32(req.From)
+	if err != nil {
+		return nil, err
+	}
+	if !m.keeper.IsAdminAccount(sdk.UnwrapSDKContext(ctx), addr) {
+		return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, "unauthorised signer")
+	}
+	m.keeper.SetRegistry(sdk.UnwrapSDKContext(ctx), *req.Registry)
+	return &types.MsgSetRegistryResponse{}, nil
+}
+
 func (m msgServer) Deregister(ctx context.Context, req *types.MsgDeregister) (*types.MsgDeregisterResponse, error) {
 	addr, err := sdk.AccAddressFromBech32(req.From)
 	if err != nil {
