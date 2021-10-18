@@ -196,7 +196,7 @@ contract("Blocklist", function (accounts) {
         { from: state.accounts.owner }
       )).to.be.fulfilled;
       
-      // try yo remove userOne from the blocklist
+      // try to remove userOne from the blocklist
       await expect(state.blocklist.removeFromBlocklist(
         state.accounts.userOne,
         { from: state.accounts.userTwo }
@@ -222,7 +222,7 @@ contract("Blocklist", function (accounts) {
         { from: state.accounts.owner }
       );
 
-      // check if three events have been emitted correctly
+      // check if two events have been emitted correctly
       for (let i = 0; i < logs.length; i++) {
         const log = logs[i];
         const address = smallAddressList[i];
@@ -391,6 +391,53 @@ contract("Blocklist", function (accounts) {
       const gas = Number(tx.receipt.gasUsed);
       printDiff('Remove the last user from the blocklist', gasProfiling.removeLastUser, gas);
     });
+
+    it("should allow us to compare the cost of adding three addresses to the blocklist VS batch-adding them", async function () {
+      let isolatedAddCost = 0;
+      let isolatedRemoveCost = 0;
+      
+      // add userOne to the blocklist
+      let tx = await addSingleAddress(state.accounts.userOne, state);
+      isolatedAddCost += Number(tx.receipt.gasUsed);
+
+      // add userTwo to the blocklist
+      tx = await addSingleAddress(state.accounts.userTwo, state);
+      isolatedAddCost += Number(tx.receipt.gasUsed);
+
+      // add userThree to the blocklist
+      tx = await addSingleAddress(state.accounts.userThree, state);
+      isolatedAddCost += Number(tx.receipt.gasUsed);
+
+      // remove userOne from the blocklist
+      tx = await removeSingleAddress(state.accounts.userOne, state);
+      isolatedRemoveCost += Number(tx.receipt.gasUsed);
+
+      // remove userTwo from the blocklist
+      tx = await removeSingleAddress(state.accounts.userTwo, state);
+      isolatedRemoveCost += Number(tx.receipt.gasUsed);
+
+      // remove userThree from the blocklist
+      tx = await removeSingleAddress(state.accounts.userThree, state);
+      isolatedRemoveCost += Number(tx.receipt.gasUsed);
+
+      // Add three users in a batch:
+      const addressList = [state.accounts.userOne, state.accounts.userTwo, state.accounts.userThree];
+      tx = await state.blocklist.batchAddToBlocklist(
+        addressList,
+        { from: state.accounts.owner }
+      );
+      const batchAddCost = Number(tx.receipt.gasUsed);
+
+      // Remove three users in a batch:
+      tx = await state.blocklist.batchRemoveFromBlocklist(
+        addressList,
+        { from: state.accounts.owner }
+      );
+      const batchRemoveCost = Number(tx.receipt.gasUsed);
+
+      printDiff('Add 3 users separately VS batch add them', isolatedAddCost, batchAddCost);
+      printDiff('Remove 3 users separately VS batch remove them', isolatedRemoveCost, batchRemoveCost);
+    });
   });
 
   describe("Convoluted flows", function () {
@@ -532,6 +579,24 @@ contract("Blocklist", function (accounts) {
     });
   });
 });
+
+async function addSingleAddress(address, state) {
+  const tx = await state.blocklist.addToBlocklist(
+    address,
+    { from: state.accounts.owner }
+  );
+
+  return tx;
+}
+
+async function removeSingleAddress(address, state) {
+  const tx = await state.blocklist.removeFromBlocklist(
+    address,
+    { from: state.accounts.owner }
+  );
+
+  return tx;
+}
 
 function printDiff(title, original, current) {
   if(!gasProfiling.use) return;
