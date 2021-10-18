@@ -15,4 +15,5 @@ type Keeper interface {
 	InitGenesis(ctx sdk.Context, state GenesisState) []abci.ValidatorUpdate
 	ExportGenesis(ctx sdk.Context) *GenesisState
 	GetRegistry(ctx sdk.Context) Registry
+	SetRegistry(ctx sdk.Context, registry Registry)
 }
