@@ -158,6 +158,7 @@ func InitRelayConfig(
 	transactOptsAuth.Value = big.NewInt(0) // in wei
 	transactOptsAuth.GasLimit = GasLimit
 	transactOptsAuth.GasPrice = gasPrice
+	log.Println("transactOptsAuth.Nonce: ", transactOptsAuth.Nonce)
 
 	sugaredLogger.Infow("nonce before send transaction.",
 		"transactOptsAuth.Nonce", transactOptsAuth.Nonce)
@@ -183,4 +184,12 @@ func InitRelayConfig(
 
 	}
 	return client, transactOptsAuth, target, nil
+}
+
+func incrementNextNonce() {
+	atomic.AddUint64(&nextNonce, 1)
+}
+
+func setNextNonce(nonce uint64) {
+	atomic.StoreUint64(&nextNonce, nonce)
 }
