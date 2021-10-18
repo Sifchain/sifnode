@@ -40,20 +40,18 @@ export interface SifnodedResults {
   tcpurl: string;
 }
 
-export function waitForSifAccount(address: string) {
-  const scriptArgs = [
-    "FirstOptionIsIgnored",
-    address
-  ]
-  const filePath = path.resolve(
-    __dirname,
-    "wait_for_sif_account.py",
-  );
-  console.log("File path is ", { filePath, __dirname })
-  const child = ChildProcess.execFileSync(
-    filePath,
-    scriptArgs
-  )
+export function waitForSifAccount(address: string, sifnoded: string) {
+  for (; ;) {
+    try {
+      console.log("Attempting to check account")
+      ChildProcess.execSync(
+        `${sifnoded} query account ${address}`,
+        { encoding: "utf8", stdio: "ignore" }
+      ).trim()
+      console.log("Sifnoded is now running, continunig onwards");
+      return;
+    } catch {/* Do Nothing weeee */ }
+  }
 }
 
 
@@ -169,8 +167,7 @@ export class SifnodedRunner extends ShellCommand<SifnodedResults> {
 
     // Register tokens in the token registry
     // Must wait for sifnode to fully start first
-    waitForSifAccount(networkConfig[0].address);
-    console.log("Account has been reached, moving on to token registry")
+    waitForSifAccount(networkConfig[0].address, this.sifnodedCommand);
     const registryPath = path.resolve(__dirname, "./", "registry.json");
     ChildProcess.execSync(
       `${this.sifnodedCommand} tx tokenregistry register-all ${registryPath} --home ${homeDir} --from ${sifnodedAdminAddress.name} --yes --keyring-backend test --chain-id ${this.chainId}`,

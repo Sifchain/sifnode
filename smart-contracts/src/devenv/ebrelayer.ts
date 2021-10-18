@@ -5,6 +5,8 @@ import { DeployedContractAddresses } from "../../scripts/deploy_contracts";
 import notifier from 'node-notifier';
 import { GolangResults } from "./golangBuilder";
 import * as fs from "fs";
+import * as path from "path"
+
 
 export interface EbrelayerArguments {
   readonly validatorValues: ValidatorValues,
@@ -69,7 +71,8 @@ export class WitnessRunner extends ShellCommand<EbrelayerResults> {
 
 
   override async run(): Promise<void> {
-    waitForSifAccount(this.args.validatorValues.address)
+    const sifnodedCommand = path.join(this.args.golangResults.goBin, "sifnoded")
+    waitForSifAccount(this.args.validatorValues.address, sifnodedCommand)
     process.env["ETHEREUM_PRIVATE_KEY"] = this.args.account.privateKey.slice(2);
     process.env["ETHEREUM_ADDRESS"] = this.args.account.address.slice(2);
     const spawncmd = "ebrelayer " + this.cmd()[1].join(" ");
@@ -147,7 +150,8 @@ export class RelayerRunner extends ShellCommand<EbrelayerResults> {
   }
 
   override async run(): Promise<void> {
-    await waitForSifAccount(this.args.validatorValues.address)
+    const sifnodedCommand = path.join(this.args.golangResults.goBin, "sifnoded")
+    waitForSifAccount(this.args.validatorValues.address, sifnodedCommand)
     process.env["ETHEREUM_PRIVATE_KEY"] = this.args.account.privateKey.slice(2);
     process.env["ETHEREUM_ADDRESS"] = this.args.account.address.slice(2);
     const spawncmd = "ebrelayer " + this.cmd()[1].join(" ");
