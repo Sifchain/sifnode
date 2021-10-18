@@ -46,7 +46,9 @@ export function waitForSifAccount(address: string, sifnoded: string) {
       console.log("Attempting to check account")
       ChildProcess.execSync(
         `${sifnoded} query account ${address}`,
-        { encoding: "utf8", stdio: "ignore" }
+        {
+          encoding: "utf8"
+        }
       ).trim()
       console.log("Sifnoded is now running, continunig onwards");
       return;
