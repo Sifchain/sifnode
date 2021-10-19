@@ -224,3 +224,39 @@ sifnoded q tokenregistry generate \
 echo "\n\ngenerated entry for $IXO_CHAIN_ID"
 
 cat $SIFCHAIN_ID/ixo.json | jq
+
+sifnoded q tokenregistry generate \
+	--token_base_denom=nanolike \
+	--token_ibc_counterparty_chain_id=$LIKECOIN_CHAIN_ID \
+  --token_ibc_channel_id=$LIKECOIN_CHANNEL_ID \
+  --token_ibc_counterparty_channel_id=$LIKECOIN_COUNTERPARTY_CHANNEL_ID \
+	--token_ibc_counterparty_denom="" \
+	--token_unit_denom="" \
+	--token_decimals=9 \
+	--token_display_name="" \
+	--token_external_symbol="" \
+	--token_permission_clp=true \
+	--token_permission_ibc_export=true \
+	--token_permission_ibc_import=true | jq > $SIFCHAIN_ID/likecoin.json
+
+echo "\n\ngenerated entry for $LIKECOIN_CHAIN_ID"
+
+cat $SIFCHAIN_ID/likecoin.json | jq
+
+sifnoded q tokenregistry generate \
+	--token_base_denom=ubtsg \
+	--token_ibc_counterparty_chain_id=$BITSONG_CHAIN_ID \
+  --token_ibc_channel_id=$BITSONG_CHANNEL_ID \
+  --token_ibc_counterparty_channel_id=$BITSONG_COUNTERPARTY_CHANNEL_ID \
+	--token_ibc_counterparty_denom="" \
+	--token_unit_denom="" \
+	--token_decimals=6 \
+	--token_display_name="" \
+	--token_external_symbol="" \
+	--token_permission_clp=true \
+	--token_permission_ibc_export=true \
+	--token_permission_ibc_import=true | jq > $SIFCHAIN_ID/bitsong.json
+
+echo "\n\ngenerated entry for $BITSONG_CHAIN_ID"
+
+cat $SIFCHAIN_ID/bitsong.json | jq
