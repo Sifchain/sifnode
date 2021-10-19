@@ -31,6 +31,14 @@
       "permissions": [
         "PERMISSION_CLP"
       ]
+    },
+    {
+      "is_whitelisted": true,
+      "denom": "sifff1d4cf7b65ec14cbe24428001ed0bd6b68919c11acd7edbf4bc6b95a228e99b",
+      "decimals": "18",
+      "permissions": [
+        "PERMISSION_CLP"
+      ]
     }
   ]
 }
