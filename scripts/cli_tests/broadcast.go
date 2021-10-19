@@ -8,6 +8,9 @@ import (
 
 func BroadCast(txf tx.Factory, clientCtx sdkclient.Context, msg sdk.Msg) *sdk.TxResponse {
 	preparedTfx, err := tx.PrepareFactory(clientCtx, txf)
+	if err != nil {
+		panic(err)
+	}
 	unsignedTx, err := tx.BuildUnsignedTx(preparedTfx, msg)
 	if err != nil {
 		panic(err)

@@ -7,9 +7,9 @@ import (
 	"github.com/tendermint/tendermint/crypto"
 )
 
-type CreateDispensation_Multi_Tx struct{}
+type CreateDispensationMultiTx struct{}
 
-func (CreateDispensation_Multi_Tx) GetMsgAndArgs(_ CommonArgs) (sdk.Msg, Args) {
+func (CreateDispensationMultiTx) GetMsgAndArgs(_ CommonArgs) (sdk.Msg, Args) {
 	args := getDispensationTxArgs()
 	amount, ok := sdk.NewIntFromString("10000000000000000000")
 	if !ok {
@@ -23,10 +23,10 @@ func (CreateDispensation_Multi_Tx) GetMsgAndArgs(_ CommonArgs) (sdk.Msg, Args) {
 	createDispensation := dispensationtypes.NewMsgCreateDistribution(args.Sender, dispensationtypes.DistributionType_DISTRIBUTION_TYPE_VALIDATOR_SUBSIDY, output, args.Sender.String())
 	return &createDispensation, args
 }
-func (CreateDispensation_Multi_Tx) GetName() string {
+func (CreateDispensationMultiTx) GetName() string {
 	return "CREATE-DISPENSATION"
 }
 
-func (s CreateDispensation_Multi_Tx) Assert(response *sdk.TxResponse, _ *CommonArgs) {
+func (s CreateDispensationMultiTx) Assert(response *sdk.TxResponse, _ *CommonArgs) {
 	defaultAssert(response, s.GetName())
 }

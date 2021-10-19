@@ -31,5 +31,5 @@
 ```
 - And the Distribution creator should have enough balances in all tokens 
 - Internally only one record is created as the coins are aggregated per address.
-- NOTE : Number of records created will be equivalent to the the number of unique address in the output.json and not the number of entries .
+- NOTE : Number of records created will be equivalent to the number of unique address in the output.json and not the number of entries .
 ----

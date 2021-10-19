@@ -16,6 +16,7 @@ func TestKeeper_AccumulateDrops(t *testing.T) {
 	keeper := app.DispensationKeeper
 	outputList := test.CreatOutputList(3000, "10000000000000000000")
 	totalCoins, err := dispensationUtils.TotalOutput(outputList)
+	assert.NoError(t, err)
 	distributor := sdk.AccAddress(crypto.AddressHash([]byte("Creator")))
 	err = keeper.GetBankKeeper().AddCoins(ctx, distributor, totalCoins)
 	assert.NoError(t, err)
@@ -29,14 +30,14 @@ func TestKeeper_CreateAndDistributeDrops(t *testing.T) {
 	app, ctx := test.CreateTestApp(false)
 	keeper := app.DispensationKeeper
 	outputAmount := "10000000000000000000"
-	dispensation_creator := sdk.AccAddress(crypto.AddressHash([]byte("Creator")))
+	dispensationCreator := sdk.AccAddress(crypto.AddressHash([]byte("Creator")))
 	outputList := test.CreatOutputList(3, outputAmount)
 	totalCoins, err := dispensationUtils.TotalOutput(outputList)
 	assert.NoError(t, err)
 	totalCoins = totalCoins.Add(totalCoins...).Add(totalCoins...)
-	err = keeper.GetBankKeeper().AddCoins(ctx, dispensation_creator, totalCoins)
+	err = keeper.GetBankKeeper().AddCoins(ctx, dispensationCreator, totalCoins)
 	assert.NoError(t, err)
-	err = keeper.AccumulateDrops(ctx, dispensation_creator.String(), totalCoins)
+	err = keeper.AccumulateDrops(ctx, dispensationCreator.String(), totalCoins)
 	assert.NoError(t, err)
 	assert.True(t, keeper.HasCoins(ctx, types.GetDistributionModuleAddress(), totalCoins))
 	distributionName := "ar1"

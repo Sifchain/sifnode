@@ -9,9 +9,9 @@ import (
 	"github.com/tendermint/tendermint/crypto"
 )
 
-type CreateDispensation_Negative_Tx struct{}
+type CreateDispensationNegativeTx struct{}
 
-func (CreateDispensation_Negative_Tx) GetMsgAndArgs(_ CommonArgs) (sdk.Msg, Args) {
+func (CreateDispensationNegativeTx) GetMsgAndArgs(_ CommonArgs) (sdk.Msg, Args) {
 	args := getDispensationTxArgs()
 	output := test.CreatOutputList(9, "10000000000000000000")
 	amount, ok := sdk.NewIntFromString("10000000000000000000")
@@ -27,11 +27,11 @@ func (CreateDispensation_Negative_Tx) GetMsgAndArgs(_ CommonArgs) (sdk.Msg, Args
 	createDispensation := dispensationtypes.NewMsgCreateDistribution(args.Sender, dispensationtypes.DistributionType_DISTRIBUTION_TYPE_VALIDATOR_SUBSIDY, output, args.Sender.String())
 	return &createDispensation, args
 }
-func (CreateDispensation_Negative_Tx) GetName() string {
+func (CreateDispensationNegativeTx) GetName() string {
 	return "CREATE-DISPENSATION"
 }
 
-func (s CreateDispensation_Negative_Tx) Assert(response *sdk.TxResponse, _ *CommonArgs) {
+func (s CreateDispensationNegativeTx) Assert(response *sdk.TxResponse, _ *CommonArgs) {
 	fmt.Println(response.RawLog)
 	if response.Code == 0 {
 		panic("Test Failed , Transaction successfully submitted ")
