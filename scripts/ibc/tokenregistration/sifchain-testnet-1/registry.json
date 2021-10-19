@@ -1,7 +1,6 @@
 {
   "entries": [
     {
-      "is_whitelisted": true,
       "decimals": "4",
       "denom": "ccel",
       "base_denom": "ccel",
@@ -20,7 +19,6 @@
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "6",
       "denom": "causc",
       "base_denom": "causc",
@@ -39,7 +37,6 @@
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "6",
       "denom": "cusdt",
       "base_denom": "cusdt",
@@ -58,7 +55,6 @@
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "6",
       "denom": "cusdc",
       "base_denom": "cusdc",
@@ -77,7 +73,6 @@
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "6",
       "denom": "cwscrt",
       "base_denom": "cwscrt",
@@ -96,7 +91,6 @@
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "6",
       "denom": "csrm",
       "base_denom": "csrm",
@@ -115,7 +109,6 @@
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "8",
       "denom": "ccro",
       "base_denom": "ccro",
@@ -134,7 +127,6 @@
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "8",
       "denom": "ccdai",
       "base_denom": "ccdai",
@@ -153,7 +145,6 @@
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "8",
       "denom": "cwbtc",
       "base_denom": "cwbtc",
@@ -172,7 +163,6 @@
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "8",
       "denom": "cceth",
       "base_denom": "cceth",
@@ -191,7 +181,6 @@
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "8",
       "denom": "crenbtc",
       "base_denom": "crenbtc",
@@ -210,7 +199,6 @@
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "8",
       "denom": "ccusdc",
       "base_denom": "ccusdc",
@@ -229,7 +217,6 @@
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "8",
       "denom": "chusd",
       "base_denom": "chusd",
@@ -248,7 +235,6 @@
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "9",
       "denom": "campl",
       "base_denom": "campl",
@@ -267,7 +253,6 @@
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "18",
       "denom": "rowan",
       "base_denom": "rowan",
@@ -286,7 +271,6 @@
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "18",
       "denom": "ceth",
       "base_denom": "ceth",
@@ -305,7 +289,6 @@
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "18",
       "denom": "cdai",
       "base_denom": "cdai",
@@ -324,7 +307,6 @@
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "18",
       "denom": "cyfi",
       "base_denom": "cyfi",
@@ -343,7 +325,6 @@
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "18",
       "denom": "czrx",
       "base_denom": "czrx",
@@ -362,7 +343,6 @@
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "18",
       "denom": "cwfil",
       "base_denom": "cwfil",
@@ -381,7 +361,6 @@
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "18",
       "denom": "cuni",
       "base_denom": "cuni",
@@ -400,7 +379,6 @@
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "18",
       "denom": "cuma",
       "base_denom": "cuma",
@@ -419,7 +397,6 @@
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "18",
       "denom": "ctusd",
       "base_denom": "ctusd",
@@ -438,7 +415,6 @@
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "18",
       "denom": "csxp",
       "base_denom": "csxp",
@@ -457,7 +433,6 @@
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "18",
       "denom": "csushi",
       "base_denom": "csushi",
@@ -476,7 +451,6 @@
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "18",
       "denom": "csusd",
       "base_denom": "csusd",
@@ -495,7 +469,6 @@
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "18",
       "denom": "csnx",
       "base_denom": "csnx",
@@ -514,7 +487,6 @@
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "18",
       "denom": "csand",
       "base_denom": "csand",
@@ -533,7 +505,6 @@
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "18",
       "denom": "crune",
       "base_denom": "crune",
@@ -552,7 +523,6 @@
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "18",
       "denom": "creef",
       "base_denom": "creef",
@@ -571,7 +541,6 @@
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "18",
       "denom": "cogn",
       "base_denom": "cogn",
@@ -590,7 +559,6 @@
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "18",
       "denom": "cocean",
       "base_denom": "cocean",
@@ -609,7 +577,6 @@
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "18",
       "denom": "cmana",
       "base_denom": "cmana",
@@ -628,7 +595,6 @@
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "18",
       "denom": "clrc",
       "base_denom": "clrc",
@@ -647,7 +613,6 @@
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "18",
       "denom": "clon",
       "base_denom": "clon",
@@ -666,7 +631,6 @@
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "18",
       "denom": "clink",
       "base_denom": "clink",
@@ -685,7 +649,6 @@
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "18",
       "denom": "ciotx",
       "base_denom": "ciotx",
@@ -704,7 +667,6 @@
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "18",
       "denom": "cgrt",
       "base_denom": "cgrt",
@@ -723,7 +685,6 @@
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "18",
       "denom": "cftm",
       "base_denom": "cftm",
@@ -742,7 +703,6 @@
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "18",
       "denom": "cesd",
       "base_denom": "cesd",
@@ -761,7 +721,6 @@
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "18",
       "denom": "cenj",
       "base_denom": "cenj",
@@ -780,7 +739,6 @@
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "18",
       "denom": "ccream",
       "base_denom": "ccream",
@@ -799,7 +757,6 @@
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "18",
       "denom": "ccomp",
       "base_denom": "ccomp",
@@ -818,7 +775,6 @@
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "18",
       "denom": "ccocos",
       "base_denom": "ccocos",
@@ -837,7 +793,6 @@
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "18",
       "denom": "cbond",
       "base_denom": "cbond",
@@ -856,7 +811,6 @@
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "18",
       "denom": "cbnt",
       "base_denom": "cbnt",
@@ -875,7 +829,6 @@
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "18",
       "denom": "cbat",
       "base_denom": "cbat",
@@ -894,7 +847,6 @@
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "18",
       "denom": "cband",
       "base_denom": "cband",
@@ -913,7 +865,6 @@
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "18",
       "denom": "cbal",
       "base_denom": "cbal",
@@ -932,7 +883,6 @@
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "18",
       "denom": "cant",
       "base_denom": "cant",
@@ -951,7 +901,6 @@
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "18",
       "denom": "caave",
       "base_denom": "caave",
@@ -970,7 +919,6 @@
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "18",
       "denom": "c1inch",
       "base_denom": "c1inch",
@@ -989,7 +937,6 @@
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "18",
       "denom": "cleash",
       "base_denom": "cleash",
@@ -1008,7 +955,6 @@
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "18",
       "denom": "cshib",
       "base_denom": "cshib",
@@ -1027,7 +973,6 @@
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "18",
       "denom": "ctidal",
       "base_denom": "ctidal",
@@ -1046,7 +991,6 @@
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "18",
       "denom": "cpaid",
       "base_denom": "cpaid",
@@ -1065,7 +1009,6 @@
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "18",
       "denom": "crndr",
       "base_denom": "crndr",
@@ -1084,7 +1027,6 @@
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "18",
       "denom": "cconv",
       "base_denom": "cconv",
@@ -1103,7 +1045,6 @@
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "18",
       "denom": "crally",
       "base_denom": "crally",
@@ -1122,7 +1063,6 @@
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "18",
       "denom": "crfuel",
       "base_denom": "crfuel",
@@ -1141,7 +1081,6 @@
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "18",
       "denom": "cakro",
       "base_denom": "cakro",
@@ -1160,7 +1099,6 @@
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "18",
       "denom": "cb20",
       "base_denom": "cb20",
@@ -1179,7 +1117,6 @@
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "18",
       "denom": "ctshp",
       "base_denom": "ctshp",
@@ -1198,7 +1135,6 @@
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "18",
       "denom": "clina",
       "base_denom": "clina",
@@ -1217,7 +1153,6 @@
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "18",
       "denom": "cdaofi",
       "base_denom": "cdaofi",
@@ -1236,7 +1171,6 @@
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "18",
       "denom": "ckeep",
       "base_denom": "ckeep",
@@ -1255,7 +1189,6 @@
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "18",
       "denom": "cust",
       "base_denom": "cust",

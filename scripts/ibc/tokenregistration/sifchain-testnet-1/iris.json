@@ -1,7 +1,6 @@
 {
   "entries": [
     {
-      "is_whitelisted": true,
       "decimals": "6",
       "denom": "ibc/7EABFE14CD2B6F8B0444A0ED0D7BCB947A81D0B74CE5B571C73DE61DFA261193",
       "base_denom": "unyan",

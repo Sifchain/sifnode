@@ -1,10 +1,11 @@
 package types_test
 
 import (
+	"testing"
+
 	"github.com/Sifchain/sifnode/x/tokenregistry/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/assert"
-	"testing"
 )
 
 func TestMsgUpdateWhitelist_ValidateBasic(t *testing.T) {
@@ -42,7 +43,7 @@ func TestMsgUpdateWhitelist_ValidateBasic(t *testing.T) {
 				From: admin.String(),
 				Entry: &types.RegistryEntry{
 					Denom:    "TestDenom",
-					Decimals: -1,
+					Decimals: 0,
 				},
 			},
 			assertion: assert.Error,
