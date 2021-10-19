@@ -1,6 +1,14 @@
 package cli_test
 
-/* TODO: convert to integration tests
+import (
+	"io/ioutil"
+	"testing"
+
+	"github.com/Sifchain/sifnode/x/clp/client/cli"
+	"github.com/cosmos/cosmos-sdk/client/flags"
+	"github.com/spf13/viper"
+	"github.com/stretchr/testify/assert"
+)
 
 func SetupViper() {
 	viper.Set(flags.FlagKeyringBackend, flags.DefaultKeyringBackend)
@@ -104,5 +112,3 @@ func TestGetCmdDecommissionPool(t *testing.T) {
 	err := clpcmd.Execute()
 	assert.NoError(t, err)
 }
-
-*/
