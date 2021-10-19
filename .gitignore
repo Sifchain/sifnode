@@ -22,3 +22,8 @@ relayerdb
 venv/
 
 deploy
+
+smart-contracts/combined.log
+smart-contracts/yarn-error.log
+test/integration/output.json
+test/integration/sifchainrelayerdb/*
