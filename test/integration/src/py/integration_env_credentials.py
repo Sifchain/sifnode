@@ -9,13 +9,15 @@ def sifchain_cli_credentials_for_test(key: str) -> SifchaincliCredentials:
         keyring_passphrase="",
         keyring_backend="test",
         from_key=key,
-        sifnoded_homedir=f"""{get_required_env_var("HOME")}/.sifnoded"""
+        # TODO: THIS NEEDS TO ACTUALLY WORK
+        sifnoded_homedir=f"""{get_required_env_var("CHAINDIR")}/.sifnoded"""
     )
 
 
 def create_new_sifaddr_and_credentials() -> (str, SifchaincliCredentials):
     new_account_key = get_shell_output("uuidgen")
     credentials = sifchain_cli_credentials_for_test(new_account_key)
-    new_addr = burn_lock_functions.create_new_sifaddr(credentials=credentials, keyname=new_account_key)
+    new_addr = burn_lock_functions.create_new_sifaddr(
+        credentials=credentials, keyname=new_account_key)
     credentials.from_key = new_addr["name"]
     return new_addr["address"], credentials,
