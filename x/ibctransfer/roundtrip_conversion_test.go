@@ -1,72 +1,51 @@
 package ibctransfer_test
 
 import (
-	"context"
 	"testing"
 
-	sdk "github.com/cosmos/cosmos-sdk/types"
-	transfertypes "github.com/cosmos/cosmos-sdk/x/ibc/applications/transfer/types"
-	channeltypes "github.com/cosmos/cosmos-sdk/x/ibc/core/04-channel/types"
-	"github.com/golang/mock/gomock"
-	"github.com/stretchr/testify/require"
-	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
-
 	sifapp "github.com/Sifchain/sifnode/app"
-	"github.com/Sifchain/sifnode/x/ethbridge/test"
-	"github.com/Sifchain/sifnode/x/ibctransfer"
-	"github.com/Sifchain/sifnode/x/ibctransfer/keeper"
+	test "github.com/Sifchain/sifnode/x/ethbridge/test"
+	"github.com/Sifchain/sifnode/x/ibctransfer/helpers"
 	"github.com/Sifchain/sifnode/x/ibctransfer/keeper/testhelpers"
 	tokenregistrytest "github.com/Sifchain/sifnode/x/tokenregistry/test"
 	tokenregistrytypes "github.com/Sifchain/sifnode/x/tokenregistry/types"
-	whitelistmocks "github.com/Sifchain/sifnode/x/tokenregistry/types/mock"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+	transfertypes "github.com/cosmos/cosmos-sdk/x/ibc/applications/transfer/types"
+	channeltypes "github.com/cosmos/cosmos-sdk/x/ibc/core/04-channel/types"
+	"github.com/stretchr/testify/require"
 )
 
 func TestExportImportConversionEquality(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	wl := whitelistmocks.NewMockKeeper(ctrl)
-	ctx := sdk.NewContext(nil, tmproto.Header{ChainID: "foochainid"}, false, nil)
-
+	app, ctx, _ := tokenregistrytest.CreateTestApp(false)
 	maxUInt64 := uint64(18446744073709551615)
-	microRowanEntry := tokenregistrytypes.RegistryEntry{
-		IsWhitelisted: true,
-		Decimals:      10,
-		Denom:         "microrowan",
-		BaseDenom:     "microrowan",
-		UnitDenom:     "rowan",
-	}
 	rowanEntry := tokenregistrytypes.RegistryEntry{
-		IsWhitelisted:        true,
 		Decimals:             18,
 		Denom:                "rowan",
 		BaseDenom:            "rowan",
 		IbcCounterpartyDenom: "microrowan",
 	}
-
-	wl.EXPECT().GetDenom(ctx, "microrowan").Return(microRowanEntry)
-
+	microRowanEntry := tokenregistrytypes.RegistryEntry{
+		Decimals:  10,
+		Denom:     "microrowan",
+		BaseDenom: "microrowan",
+		UnitDenom: "rowan",
+	}
+	app.TokenRegistryKeeper.SetToken(ctx, &rowanEntry)
+	app.TokenRegistryKeeper.SetToken(ctx, &microRowanEntry)
+	registry := app.TokenRegistryKeeper.GetRegistry(ctx)
+	rEntry, err := app.TokenRegistryKeeper.GetEntry(registry, "rowan")
+	require.NoError(t, err)
+	mrEntry, err := app.TokenRegistryKeeper.GetEntry(registry, "microrowan")
+	require.NoError(t, err)
 	msg := &transfertypes.MsgTransfer{Token: sdk.NewCoin("rowan", sdk.NewIntFromUint64(maxUInt64))}
-	outgoingDeduction, outgoingAddition := keeper.ConvertCoinsForTransfer(context.Background(), msg, rowanEntry, microRowanEntry)
-
-	returningTransferPacket := channeltypes.Packet{
-		Sequence:           0,
-		SourcePort:         "transfer",
-		SourceChannel:      "channel-0",
-		DestinationPort:    "transfer",
-		DestinationChannel: "channel-1",
-		Data:               nil,
-	}
-
-	tokenPacket := transfertypes.FungibleTokenPacketData{
-		// When sender chain is the source,
-		// it simply sends the base denom without path prefix
-		Denom:  "transfer/channel-0/microrowan",
-		Amount: 184467440737,
-	}
-
-	wl.EXPECT().GetDenom(ctx, "microrowan").Return(microRowanEntry)
-	wl.EXPECT().GetDenom(ctx, "rowan").Return(rowanEntry)
-
-	incomingDeduction, incomingAddition := ibctransfer.GetConvForIncomingCoins(ctx, wl, returningTransferPacket, tokenPacket)
+	outgoingDeduction, outgoingAddition := helpers.ConvertCoinsForTransfer(msg, rEntry, mrEntry)
+	mrEntryUnit, err := app.TokenRegistryKeeper.GetEntry(registry, mrEntry.UnitDenom)
+	require.NoError(t, err)
+	require.True(t, mrEntryUnit.Decimals > mrEntry.Decimals)
+	diff := uint64(mrEntryUnit.Decimals - mrEntry.Decimals)
+	convAmount := helpers.ConvertIncomingCoins(184467440737, diff)
+	incomingDeduction := sdk.NewCoin("microrowan", sdk.NewIntFromUint64(184467440737))
+	incomingAddition := sdk.NewCoin("rowan", convAmount)
 	require.Greater(t, incomingAddition.Amount.String(), incomingDeduction.Amount.String())
 	require.Equal(t, outgoingDeduction, incomingAddition)
 	require.Equal(t, outgoingAddition, incomingDeduction)

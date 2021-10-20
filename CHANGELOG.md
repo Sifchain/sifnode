@@ -1,4 +1,12 @@
- # v0.9.10
+# v0.9.11
+> October 19, 2021
+>
+## ⭐ Features
+
+- [Sifnode] Optimisations for high precision IBC transfers and token registry use
+- [Sifnode] Upgrade Cosmos SDK to v0.42.10
+
+# v0.9.10
 > October 8, 2021
 >
 ## ⭐ Features
