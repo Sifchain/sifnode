@@ -206,7 +206,7 @@ func GetCmdGenerateEntry() *cobra.Command {
 		"The counterparty channel if this is an IBC token - used by clients when initiating send from a counterparty chain")
 	cmd.Flags().String(flagIbcCounterpartyChainID, "",
 		"The chain id of ibc counter party chain")
-	cmd.Flags().Int(flagDecimals, -1,
+	cmd.Flags().Int64(flagDecimals, -1,
 		"The number of decimal points")
 	cmd.Flags().String(flagUnitDenom, "",
 		"The denom in registry that holds the funds for this denom, ie the most precise denom for a token")
