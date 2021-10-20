@@ -24,7 +24,10 @@
       "program": "cmd/ebrelayer",
       "envFile": "${workspaceFolder}/smart-contracts/.env",
       "env": {
-        "ETHEREUM_PRIVATE_KEY": "{{@root.ethResults.accounts.available.[@index].privateKey}}"
+        {{!-- we cant use @index directly to access array --}}
+        {{#with (lookup @root.ethResults.accounts.available @index)}}
+        "ETHEREUM_PRIVATE_KEY": "{{subString privateKey 2}}"
+        {{/with}}
       },
       "args": [
         "init-relayer",
@@ -57,7 +60,10 @@
       "program": "cmd/ebrelayer",
       "envFile": "${workspaceFolder}/smart-contracts/.env",
       "env": {
-        "ETHEREUM_PRIVATE_KEY": "{{@root.ethResults.accounts.available.[@index].privateKey}}"
+        {{!-- we cant use @index directly to access array --}}
+        {{#with (lookup @root.ethResults.accounts.available @index)}}
+        "ETHEREUM_PRIVATE_KEY": "{{subString privateKey 2}}"
+        {{/with}}
       },
       "args": [
         "init-witness",
@@ -101,6 +107,5 @@
         "/tmp/sifnodedNetwork/validators/localnet/{{@root.sifResults.validatorValues.[0].moniker}}/.sifnoded"
       ]
     }
-    
   ]
 }

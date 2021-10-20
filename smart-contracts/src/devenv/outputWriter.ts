@@ -27,6 +27,18 @@ export interface DevEnvObject {
  * @param args The variables to be replaced in the template during render
  */
 function RenderTemplateToFile(templateLocation: string, saveLocation: string, args: unknown) {
+  hb.registerHelper('subString', function(inputString: string, startIndex: number, endIndex?: number) {
+    /**
+     * This if statement is needed because handlebar passes in a hash as it's
+     * last param. This causes issue because endIndex is optional
+     */
+    if (!endIndex || typeof endIndex != 'number') {
+      endIndex = undefined
+    }
+    let trimmedString: string = inputString.substring(startIndex, endIndex);
+    return new hb.SafeString(trimmedString);
+  })
+
   const template = fs.readFileSync(templateLocation, 'utf8');
   const compiledTemplate = hb.compile(template);
   const renderedTemplate = compiledTemplate(args);
