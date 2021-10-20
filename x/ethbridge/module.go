@@ -43,6 +43,7 @@ func (AppModuleBasic) Name() string {
 }
 
 // RegisterCodec registers the ethbridge module's types for the given codec.
+//nolint
 func (AppModuleBasic) RegisterLegacyAminoCodec(cdc *codec.LegacyAmino) {
 	types.RegisterLegacyAminoCodec(cdc)
 }
@@ -148,6 +149,7 @@ func (AppModule) QuerierRoute() string {
 }
 
 // Deprecated: LegacyQuerierHandler use RegisterServices
+//nolint
 func (am AppModule) LegacyQuerierHandler(amino *codec.LegacyAmino) sdk.Querier {
 	return NewQuerier(am.BridgeKeeper, amino)
 }

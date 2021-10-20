@@ -32,6 +32,7 @@ func (AppModuleBasic) Name() string {
 }
 
 // RegisterLegacyAminoCodec registers the oracle module's types on the given LegacyAmino codec.
+//nolint
 func (AppModuleBasic) RegisterLegacyAminoCodec(cdc *codec.LegacyAmino) {}
 
 // RegisterInterfaces registers the module's interface types
@@ -118,6 +119,7 @@ func (AppModule) QuerierRoute() string {
 }
 
 // NewQuerierHandler returns the oracle module sdk.Querier.
+//nolint
 func (am AppModule) LegacyQuerierHandler(legacyQuerierCdc *codec.LegacyAmino) sdk.Querier {
 	return nil
 }

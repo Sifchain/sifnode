@@ -9,6 +9,7 @@ import (
 )
 
 // RegisterCodec registers concrete types on codec
+//nolint
 func RegisterLegacyAminoCodec(cdc *codec.LegacyAmino) {
 	cdc.RegisterConcrete(&MsgCreatePool{}, "clp/CreatePool", nil)
 	cdc.RegisterConcrete(&MsgAddLiquidity{}, "clp/AddLiquidity", nil)
