@@ -215,10 +215,6 @@ def test_run_online_singlekey_txn(claimType):
     assert distribution_msg_keys[2] == 'authorized_runner'
     assert distribution_msg_keys[3] == 'distribution_type'
 
-    distribution_name = resp['logs'][0]['events'][0]['attributes'][1]['value']
-    distribution_type = resp['logs'][0]['events'][0]['attributes'][2]['value']
-    logging.info(f"distribution_name = {distribution_name}, distribution_type = {distribution_type}")
-
     # RUN DISPENSATION TXN; GET TXN HASH
     runtxnhash = run_dispensation(distribution_name, claimType, runner_address, chain_id)
     logging.info(f"txn hash for running dispensation = {runtxnhash}")
