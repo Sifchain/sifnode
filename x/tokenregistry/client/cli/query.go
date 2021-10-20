@@ -177,7 +177,7 @@ func GetCmdGenerateEntry() *cobra.Command {
 				denom = baseDenom
 			}
 			entry := types.RegistryEntry{
-				Decimals:                 decimals,
+				Decimals:                 int64(decimals),
 				Denom:                    denom,
 				BaseDenom:                baseDenom,
 				IbcChannelId:             ibcChannelID,
