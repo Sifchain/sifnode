@@ -338,7 +338,7 @@ contract BridgeBank is BankStorage,
         address payable ethereumReceiver,
         address tokenAddress,
         uint256 amount
-    ) external onlyCosmosBridge whenNotPaused {
+    ) external onlyCosmosBridge whenNotPaused onlyNotBlocklisted(ethereumReceiver) {
         // if this is a bridge controlled token, then we need to mint
         if (getCosmosTokenInWhiteList(tokenAddress)) {
             mintNewBridgeTokens(
@@ -363,7 +363,7 @@ contract BridgeBank is BankStorage,
         bytes calldata recipient,
         address token,
         uint256 amount
-    ) external validSifAddress(recipient) onlyCosmosTokenWhiteList(token) whenNotPaused {
+    ) external validSifAddress(recipient) onlyCosmosTokenWhiteList(token) onlyNotBlocklisted(msg.sender) whenNotPaused {
         // burn the tokens
         BridgeToken(token).burnFrom(msg.sender, amount);
         
@@ -594,7 +594,7 @@ contract BridgeBank is BankStorage,
         address tokenAddress,
         uint256 tokenAmount,
         uint256 _lockBurnNonce
-    ) private onlyTokenNotInCosmosWhiteList(tokenAddress) validSifAddress(recipient) {
+    ) private onlyTokenNotInCosmosWhiteList(tokenAddress) validSifAddress(recipient) onlyNotBlocklisted(msg.sender) {
         IERC20 tokenToTransfer = IERC20(tokenAddress);
         // lock tokens
         tokenToTransfer.safeTransferFrom(
@@ -635,7 +635,7 @@ contract BridgeBank is BankStorage,
         address tokenAddress,
         uint256 tokenAmount,
         uint256 _lockBurnNonce
-    ) private onlyCosmosTokenWhiteList(tokenAddress) validSifAddress(recipient) {
+    ) private onlyCosmosTokenWhiteList(tokenAddress) validSifAddress(recipient) onlyNotBlocklisted(msg.sender) {
         BridgeToken tokenToTransfer = BridgeToken(tokenAddress);
         
         // burn tokens
@@ -674,7 +674,7 @@ contract BridgeBank is BankStorage,
     function handleNativeCurrencyLock(
         bytes calldata recipient,
         uint256 amount
-    ) internal validSifAddress(recipient) {
+    ) internal validSifAddress(recipient) onlyNotBlocklisted(msg.sender) {
         require(msg.value == amount, "amount mismatch");
 
         address token = address(0);

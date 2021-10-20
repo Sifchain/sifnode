@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity 0.8.0;
 
+import "../interfaces/IBlocklist.sol";
+
 /**
  * @title Ethereum WhiteList
  * @dev WhiteList contract records the ERC 20 list that can be locked in BridgeBank.
@@ -17,9 +19,19 @@ contract EthereumWhiteList {
     mapping(address => bool) private _ethereumTokenWhiteList;
 
     /**
+     * @dev the blocklist contract
+     */
+    IBlocklist public blocklist;
+
+    /**
+     * @dev is the blocklist active?
+     */
+    bool public hasBlocklist;
+
+    /**
      * @dev gap of storage for future upgrades
      */
-    uint256[100] private ____gap;
+    uint256[98] private ____gap;
 
     /**
      * @notice Event emitted when the whitelist is updated
@@ -43,6 +55,16 @@ contract EthereumWhiteList {
             getTokenInEthWhiteList(_token),
             "Only token in eth whitelist can be transferred to cosmos"
         );
+        _;
+    }
+
+    /**
+     * @dev Modifier to restrict EVM addresses
+     */
+    modifier onlyNotBlocklisted(address account) {
+        if(hasBlocklist) {
+          require(!blocklist.isBlocklisted(account), "Address is blocklisted");
+        }
         _;
     }
 
