@@ -227,11 +227,15 @@ def test_run_online_singlekey_txn(claimType):
     rundistributiontag = runresp['logs'][0]['events'][2]['type']
     rundistname = runresp['logs'][0]['events'][2]['attributes'][0]['value']
     runrunneraddress = runresp['logs'][0]['events'][2]['attributes'][1]['value']
-    rundistreceiverlist = [runresp['logs'][0]['events'][4]['attributes'][0]['value'], runresp['logs'][0]['events'][4]['attributes'][3]['value']]
-    sortedrundistreceiverlist = sorted(rundistreceiverlist)
-    logging.info(f"sortedrundistreceiverlist = {sortedrundistreceiverlist}")
-    logging.info(f"sortedrundistreceiverlist first item = {sortedrundistreceiverlist[0]}")
-    logging.info(f"sortedrundistreceiverlist second item = {sortedrundistreceiverlist[1]}")
+    events = runresp['logs'][0]['events']
+    rundistamount = [int(i[:-5]) for i in events]
+
+    sortedrundistreceiverlist = []
+    for e in events:
+        if str(e['type']) == 'transfer':
+            attrs = e['attributes']
+            filtered = list(filter(lambda a: a['key'] == 'receiver', attrs))
+            sortedrundistreceiverlist = sorted(list(map(lambda r: r['value'])))
 
     # RUN DISTRIBUTION TXN JSON TAGS ASSERTIONS
     assert str(rundistributiontag) == 'distribution_run'
