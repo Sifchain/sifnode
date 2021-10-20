@@ -40,7 +40,7 @@ func GetCmdRegisterAll() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			registry, err := whitelistutils.ParseDenoms(clientCtx.JSONCodec, args[0])
+			registry, err := whitelistutils.ParseDenoms(clientCtx.Codec, args[0])
 			if err != nil {
 				return err
 			} else if len(registry.Entries) < 1 {
@@ -172,7 +172,7 @@ func GetCmdDeregisterAll() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			registry, err := whitelistutils.ParseDenoms(clientCtx.JSONCodec, args[0])
+			registry, err := whitelistutils.ParseDenoms(clientCtx.Codec, args[0])
 			if err != nil {
 				return err
 			} else if len(registry.Entries) < 1 {

@@ -243,11 +243,11 @@ func GetCmdAddEntry() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			registry, err := whitelistutils.ParseDenoms(clientCtx.JSONCodec, args[0])
+			registry, err := whitelistutils.ParseDenoms(clientCtx.Codec, args[0])
 			if err != nil {
 				return err
 			}
-			reg, err := whitelistutils.ParseDenoms(clientCtx.JSONCodec, args[1])
+			reg, err := whitelistutils.ParseDenoms(clientCtx.Codec, args[1])
 			if err != nil {
 				return err
 			}
@@ -255,7 +255,7 @@ func GetCmdAddEntry() *cobra.Command {
 			entries := registry.Entries
 			entries = append(entries, entryToAdd)
 			registry.Entries = entries
-			return clientCtx.PrintBytes(clientCtx.JSONCodec.MustMarshalJSON(&registry))
+			return clientCtx.PrintBytes(clientCtx.Codec.MustMarshalJSON(&registry))
 		},
 	}
 	flags.AddQueryFlagsToCmd(cmd)
@@ -272,7 +272,7 @@ func GetCmdAddAllEntries() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			registry, err := whitelistutils.ParseDenoms(clientCtx.JSONCodec, args[0])
+			registry, err := whitelistutils.ParseDenoms(clientCtx.Codec, args[0])
 			if err != nil {
 				return err
 			}
@@ -307,7 +307,7 @@ func GetCmdAddAllEntries() *cobra.Command {
 					}
 				}
 			}
-			return clientCtx.PrintBytes(clientCtx.JSONCodec.MustMarshalJSON(&finalRegistry))
+			return clientCtx.PrintBytes(clientCtx.Codec.MustMarshalJSON(&finalRegistry))
 		},
 	}
 	flags.AddQueryFlagsToCmd(cmd)
