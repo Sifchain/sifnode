@@ -106,6 +106,29 @@
         "--home",
         "/tmp/sifnodedNetwork/validators/localnet/{{@root.sifResults.validatorValues.[0].moniker}}/.sifnoded"
       ]
+    },
+    {
+      "name": "Pytest",
+      "type": "python",
+      "request": "launch",
+      "stopOnEntry": false,
+      "python": "${command:python.interpreterPath}",
+      "module": "pytest",
+      "args": [
+        "-olog_cli=false",
+        "-olog_level=DEBUG",
+        "-olog_file=/tmp/pytest.out",
+        "-v",
+        "test/integration/src/py/test_eth_transfers.py::test_eth_to_ceth_and_back_to_eth"
+      ],
+      "cwd": "${workspaceRoot}",
+      "env": {
+      }
+      "debugOptions": [
+        "WaitOnAbnormalExit",
+        "WaitOnNormalExit",
+        "RedirectOutput"
+      ]
     }
   ]
 }
