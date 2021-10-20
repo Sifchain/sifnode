@@ -11,6 +11,7 @@ interface EnvOutput {
     CHAINDIR?: string
   }
   Dev: DevEnvObject
+  Env?: string
 }
 export interface DevEnvObject {
   ethResults?: EthereumResults,
@@ -26,8 +27,8 @@ export interface DevEnvObject {
  * @param saveLocation Where the rendered document should be saved
  * @param args The variables to be replaced in the template during render
  */
-function RenderTemplateToFile(templateLocation: string, saveLocation: string, args: unknown) {
-  hb.registerHelper('subString', function(inputString: string, startIndex: number, endIndex?: number) {
+function RenderTemplateToFile(templateLocation: string, saveLocation: string, args: unknown): string {
+  hb.registerHelper('subString', function (inputString: string, startIndex: number, endIndex?: number) {
     /**
      * This if statement is needed because handlebar passes in a hash as it's
      * last param. This causes issue because endIndex is optional
@@ -47,6 +48,7 @@ function RenderTemplateToFile(templateLocation: string, saveLocation: string, ar
   fs.mkdirSync(dirPath, { recursive: true });
   // Save the file in the .vscode directory
   fs.writeFileSync(saveLocation, renderedTemplate);
+  return renderedTemplate;
 }
 
 export function EnvJSONWriter(args: DevEnvObject) {
@@ -66,8 +68,9 @@ export function EnvJSONWriter(args: DevEnvObject) {
   try {
     RenderTemplateToFile(path.resolve(__dirname, "templates", "env.hbs"), path.resolve(__dirname, "../../", ".env"), output)
     fs.writeFileSync(path.resolve(__dirname, "../../", "environment.json"), JSON.stringify(args));
-    RenderTemplateToFile(path.resolve(__dirname, "templates", "env.json.hbs"), path.resolve(__dirname, "../../", "env.json"), output)
-    RenderTemplateToFile(path.resolve(__dirname, "templates", "launch.json.hbs"), path.resolve(__dirname, "../../../", ".vscode", "launch.json"), args)
+    const envJSON = RenderTemplateToFile(path.resolve(__dirname, "templates", "env.json.hbs"), path.resolve(__dirname, "../../", "env.json"), output)
+    output.Env = envJSON;
+    RenderTemplateToFile(path.resolve(__dirname, "templates", "launch.json.hbs"), path.resolve(__dirname, "../../../", ".vscode", "launch.json"), output)
     console.log("Wrote environment and JSON values to disk. PATH: ", path.resolve(__dirname));
   }
   catch (error) {

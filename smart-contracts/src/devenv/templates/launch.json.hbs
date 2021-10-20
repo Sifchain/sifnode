@@ -15,7 +15,7 @@
         "<node_internals>/**"
       ],
       "program": "${workspaceFolder}/smart-contracts/scripts/devenv.ts"
-    }{{#each sifResults.relayerAddresses}},
+    }{{#each Dev.sifResults.relayerAddresses}},
     {
       "name": "Debug Relayer-{{@index}}",
       "type": "go",
@@ -25,21 +25,21 @@
       "envFile": "${workspaceFolder}/smart-contracts/.env",
       "env": {
         {{!-- we cant use @index directly to access array --}}
-        {{#with (lookup @root.ethResults.accounts.available @index)}}
+        {{#with (lookup @root.Dev.ethResults.accounts.available @index)}}
         "ETHEREUM_PRIVATE_KEY": "{{subString privateKey 2}}"
         {{/with}}
       },
       "args": [
         "init-relayer",
-        "{{@root.ethResults.chainId}}",
-        "{{@root.sifResults.tcpurl}}",
-        "ws://{{@root.ethResults.httpHost}}:{{@root.ethResults.httpPort}}/",
-        "{{@root.contractResults.contractAddresses.bridgeRegistry}}",
+        "{{@root.Dev.ethResults.chainId}}",
+        "{{@root.Dev.sifResults.tcpurl}}",
+        "ws://{{@root.Dev.ethResults.httpHost}}:{{@root.Dev.ethResults.httpPort}}/",
+        "{{@root.Dev.contractResults.contractAddresses.bridgeRegistry}}",
         "{{this.name}}",
         "--chain-id",
         "localnet",
         "--node",
-        "{{@root.sifResults.tcpurl}}",
+        "{{@root.Dev.sifResults.tcpurl}}",
         "--keyring-backend",
         "test",
         "--from",
@@ -51,7 +51,7 @@
         "--home",
         "{{this.homeDir}}"
       ]
-    }{{/each}}{{#each sifResults.witnessAddresses}},
+    }{{/each}}{{#each Dev.sifResults.witnessAddresses}},
     {
       "name": "Debug Witness-{{@index}}",
       "type": "go",
@@ -61,21 +61,21 @@
       "envFile": "${workspaceFolder}/smart-contracts/.env",
       "env": {
         {{!-- we cant use @index directly to access array --}}
-        {{#with (lookup @root.ethResults.accounts.available @index)}}
+        {{#with (lookup @root.Dev.ethResults.accounts.available @index)}}
         "ETHEREUM_PRIVATE_KEY": "{{subString privateKey 2}}"
         {{/with}}
       },
       "args": [
         "init-witness",
-        "{{@root.ethResults.chainId}}",
-        "{{@root.sifResults.tcpurl}}",
-        "ws://{{@root.ethResults.httpHost}}:{{@root.ethResults.httpPort}}/",
-        "{{@root.contractResults.contractAddresses.bridgeRegistry}}",
+        "{{@root.Dev.ethResults.chainId}}",
+        "{{@root.Dev.sifResults.tcpurl}}",
+        "ws://{{@root.Dev.ethResults.httpHost}}:{{@root.Dev.ethResults.httpPort}}/",
+        "{{@root.Dev.contractResults.contractAddresses.bridgeRegistry}}",
         "{{this.name}}",
         "--chain-id",
         "localnet",
         "--node",
-        "{{@root.sifResults.tcpurl}}",
+        "{{@root.Dev.sifResults.tcpurl}}",
         "--keyring-backend",
         "test",
         "--from",
@@ -102,9 +102,9 @@
         "--minimum-gas-prices",
         "0.5rowan",
         "--rpc.laddr",
-        "{{@root.sifResults.tcpurl}}",
+        "{{@root.Dev.sifResults.tcpurl}}",
         "--home",
-        "/tmp/sifnodedNetwork/validators/localnet/{{@root.sifResults.validatorValues.[0].moniker}}/.sifnoded"
+        "/tmp/sifnodedNetwork/validators/localnet/{{@root.Dev.sifResults.validatorValues.[0].moniker}}/.sifnoded"
       ]
     },
     {
@@ -122,8 +122,7 @@
         "test/integration/src/py/test_eth_transfers.py::test_eth_to_ceth_and_back_to_eth"
       ],
       "cwd": "${workspaceRoot}",
-      "env": {
-      }
+      "env": {{{Env}}}, 
       "debugOptions": [
         "WaitOnAbnormalExit",
         "WaitOnNormalExit",
