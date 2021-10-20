@@ -1,6 +1,12 @@
-const chains = require("../config/chains.json");
+const defaultChains = require("../config/chains.json");
 
-export function getChainProps({ chain, network, type, ...rest }) {
+export function getChainProps({
+  chains = defaultChains,
+  chain,
+  network,
+  type,
+  ...rest
+}) {
   if (chain && !chains[chain])
     throw new Error("this chain name is not defined within chains.json file");
 

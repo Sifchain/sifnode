@@ -9,9 +9,9 @@ const args = arg(
     "--chain": String,
     "--network": String,
     "--binary": String,
-    "--rpcPort": Number,
-    "--p2pPort": Number,
-    "--pprofPort": Number,
+    "--rpcInitialPort": Number,
+    "--p2pInitialPort": Number,
+    "--pprofInitialPort": Number,
     "--home": String,
     "--initRelayer": Boolean,
   },
@@ -24,27 +24,27 @@ Start all the chains locally.
 
 Options:
 
---network       Select a predifined network in chains.json
---rpcPort       Initial RPC port number
---p2pPort       Initial P2P port number
---pprofPort     Initial pprof port number
---home          Global directory for config and data of initiated chains
---initRelayer   Init and start relayers
+--network               Select a predifined network in chains.json
+--rpcInitialPort        Initial RPC port number
+--p2pInitialPort        Initial P2P port number
+--pprofInitialPort      Initial pprof port number
+--home                  Global directory for config and data of initiated chains
+--initRelayer           Init and start relayers
 `
 );
 
 const network = args["--network"] || undefined;
-const rpcPort = args["--rpcPort"] || undefined;
-const p2pPort = args["--p2pPort"] || undefined;
-const pprofPort = args["--pprofPort"] || undefined;
+const rpcInitialPort = args["--rpcInitialPort"] || undefined;
+const p2pInitialPort = args["--p2pInitialPort"] || undefined;
+const pprofInitialPort = args["--pprofInitialPort"] || undefined;
 const home = args["--home"] || undefined;
 const initRelayer = args["--initRelayer"] || undefined;
 
 const chainProps = getChainProps({
   network,
-  rpcPort,
-  p2pPort,
-  pprofPort,
+  rpcInitialPort,
+  p2pInitialPort,
+  pprofInitialPort,
   home,
   initRelayer,
 });

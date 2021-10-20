@@ -13,6 +13,8 @@
     "ibc": "zx ./cmd/ibc.mjs",
     "initAllChains": "zx ./cmd/initAllChains.mjs",
     "initChain": "zx ./cmd/initChain.mjs",
+    "initRelayer": "zx ./cmd/initRelayer.mjs",
+    "initRelayers": "zx ./cmd/initRelayers.mjs",
     "loadLocalnet": "zx ./cmd/loadLocalnet.mjs",
     "recoverAccount": "zx ./cmd/recoverAccount.mjs",
     "send": "zx ./cmd/send.mjs",

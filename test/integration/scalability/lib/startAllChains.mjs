@@ -1,31 +1,36 @@
+import { getChains } from "../utils/getChains.mjs";
 import { getChainProps } from "../utils/getChainProps.mjs";
 import { initRelayers } from "./initRelayers.mjs";
 import { startChain } from "./startChain.mjs";
 import { startRelayers } from "./startRelayers.mjs";
 
-const chains = require("../config/chains.json");
-
 export async function startAllChains({
   network,
   home = `/tmp/localnet`,
-  rpcPort = 11000,
-  p2pPort = 12000,
-  pprofPort = 13000,
+  rpcInitialPort = 11000,
+  p2pInitialPort = 12000,
+  pprofInitialPort = 13000,
   initRelayer = false,
 }) {
+  const chains = getChains({
+    rpcInitialPort,
+    p2pInitialPort,
+    pprofInitialPort,
+    home,
+  });
+
   const chainsProps = (
     await Promise.all(
       Object.entries(chains)
         .filter(([_, { disabled = false }]) => disabled === false)
-        .map(async ([chain], index) => {
-          const chainProps = getChainProps({ chain, network });
-
-          return startChain({
+        .map(async ([chain, chainProps]) => {
+          const newChainProps = getChainProps({
+            chain,
+            network,
             ...chainProps,
-            rpcPort: rpcPort + index,
-            p2pPort: p2pPort + index,
-            pprofPort: pprofPort + index,
-            home: `${home}/${chainProps.chain}/${chainProps.chainId}`,
+          });
+          return startChain({
+            ...newChainProps,
           });
         })
     )
@@ -47,7 +52,7 @@ export async function startAllChains({
     return;
   }
 
-  const procs = await startRelayers({ chainsProps });
+  // const procs = await startRelayers({ chainsProps });
 
   // await Promise.all(
   //   procs.map(async ({ proc }) => {

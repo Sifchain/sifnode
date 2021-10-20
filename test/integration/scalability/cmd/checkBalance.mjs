@@ -3,7 +3,7 @@
 import { getBalances } from "../lib/getBalances.mjs";
 import { arg } from "../utils/arg.mjs";
 import { getChainProps } from "../utils/getChainProps.mjs";
-import { getChains } from "../utils/getChains.mjs";
+import { pickChains } from "../utils/pickChains.mjs";
 
 const args = arg(
   {
@@ -39,7 +39,7 @@ const chainId = args["--chain-id"] || undefined;
 const binary = args["--binary"] || undefined;
 const name = args["--name"] || undefined;
 
-const chains = getChains({ chain });
+const chains = pickChains({ chain });
 
 for (let currentChain of chains) {
   console.log(`Chain "${currentChain}"`);

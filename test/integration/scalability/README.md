@@ -43,6 +43,8 @@ Now you can start all the IBC chains and create the IBC relayers connection poin
 yarn startAllChains --initRelayer
 ```
 
+In order to stop all the running processes, you just have to terminate the running command line with `CTRL+C` on your shell or any other combinations to stop a running command.
+
 ### Testing
 
 Run the following test command that transfers a certain amonut from IBC chain to another:
