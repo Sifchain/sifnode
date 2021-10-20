@@ -38,7 +38,10 @@
       "decimals": "18",
       "permissions": [
         "PERMISSION_CLP"
-      ]
+      ],
+      "display_name": "ceth",
+      "display_symbol": "ceth",
+      "address": "0x00000000000000000000"
     }
   ]
 }
