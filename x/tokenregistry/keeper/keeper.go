@@ -86,6 +86,9 @@ func (k keeper) CheckDenomPermissions(ctx sdk.Context, denom string, requiredPer
 func (k keeper) GetDenom(ctx sdk.Context, denom string) types.RegistryEntry {
 	wl := k.GetDenomWhitelist(ctx)
 
+	// TODO: This is inefficient, and potentially an attack vector. Investigate
+	// using a map instead
+	// See ticket #2065
 	for i := range wl.Entries {
 		if wl.Entries[i] != nil && strings.EqualFold(wl.Entries[i].Denom, denom) {
 			return *wl.Entries[i]
