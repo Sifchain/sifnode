@@ -235,11 +235,8 @@ def test_run_offline_singlekey_txn(claimType):
     assert str(authorized_runner) == runner_address
     assert str(distribution_type) in ['DISTRIBUTION_TYPE_VALIDATOR_SUBSIDY', 'DISTRIBUTION_TYPE_LIQUIDITY_MINING']
 
-    distribution_name = resp['logs'][0]['events'][0]['attributes'][1]['value']
-    distribution_type = resp['logs'][0]['events'][0]['attributes'][2]['value']
-    logging.info(f"distribution_name = {distribution_name}, distribution_type = {distribution_type}")
-
     # RUN DISPENSATION TXN; GET TXN HASH
+    distribution_name = f"{str(resp['height'])}_{str(distributor)}"
     runtxnhash = run_dispensation(distribution_name, claimType, runner_address, chain_id)
     logging.info(f"txn hash for running dispensation = {runtxnhash}")
     time.sleep(5)
