@@ -79,12 +79,12 @@ func (k keeper) SetToken(ctx sdk.Context, entry *types.RegistryEntry) {
 	for i := range wl.Entries {
 		if wl.Entries[i] != nil && strings.EqualFold(wl.Entries[i].Denom, entry.Denom) {
 			wl.Entries[i] = entry
-			k.SetDenomWhitelist(ctx, wl)
+			k.SetRegistry(ctx, wl)
 			return
 		}
 	}
 	wl.Entries = append(wl.Entries, entry)
-	k.SetDenomWhitelist(ctx, wl)
+	k.SetRegistry(ctx, wl)
 }
 
 func (k keeper) RemoveToken(ctx sdk.Context, denom string) {
@@ -95,12 +95,12 @@ func (k keeper) RemoveToken(ctx sdk.Context, denom string) {
 			updated = append(updated, t)
 		}
 	}
-	k.SetDenomWhitelist(ctx, types.Registry{
+	k.SetRegistry(ctx, types.Registry{
 		Entries: updated,
 	})
 }
 
-func (k keeper) SetDenomWhitelist(ctx sdk.Context, wl types.Registry) {
+func (k keeper) SetRegistry(ctx sdk.Context, wl types.Registry) {
 	store := ctx.KVStore(k.storeKey)
 	bz := k.cdc.MustMarshal(&wl)
 	store.Set(types.WhitelistStorePrefix, bz)

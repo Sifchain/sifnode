@@ -16,7 +16,7 @@ func (k keeper) InitGenesis(ctx sdk.Context, state types.GenesisState) []abci.Va
 		k.SetAdminAccount(ctx, addr)
 	}
 	if state.Registry != nil {
-		k.SetDenomWhitelist(ctx, *state.Registry)
+		k.SetRegistry(ctx, *state.Registry)
 	}
 	return []abci.ValidatorUpdate{}
 }
