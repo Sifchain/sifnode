@@ -4,6 +4,8 @@
     "denom": "rowan",
     "prefix": "sif",
     "fees": 100000,
+    "node": "https://rpc-testnet.sifchain.finance:443",
+    "chainId": "sifchain-testnet-1",
     "devnet-1": {
       "node": "https://rpc-devnet.sifchain.finance:443",
       "chainId": "sifchain-devnet-1"
