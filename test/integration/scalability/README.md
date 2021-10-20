@@ -40,7 +40,7 @@ All the IBC chains have been created along with their genesis accounts and valid
 Now you can start all the IBC chains and create the IBC relayers connection point between the chains using the following command line:
 
 ```
-yarn startAllChains
+yarn startAllChains --initRelayer
 ```
 
 ### Testing

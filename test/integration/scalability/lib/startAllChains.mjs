@@ -49,16 +49,16 @@ export async function startAllChains({
 
   const procs = await startRelayers({ chainsProps });
 
-  await Promise.all(
-    procs.map(async ({ proc }) => {
-      for await (let chunk of proc.stderr) {
-        console.log(`######`);
-        console.log(chunk);
-        if (chunk.includes("waking up")) break;
-      }
-      proc.kill("SIGINT");
-    })
-  );
+  // await Promise.all(
+  //   procs.map(async ({ proc }) => {
+  //     for await (let chunk of proc.stderr) {
+  //       console.log(`######`);
+  //       console.log(chunk);
+  //       if (chunk.includes("waking up")) break;
+  //     }
+  //     proc.kill("SIGINT");
+  //   })
+  // );
 
   // await Object.values(chainsProps).map(async ({ proc }) => {
   //   proc.kill("SIGINT");
