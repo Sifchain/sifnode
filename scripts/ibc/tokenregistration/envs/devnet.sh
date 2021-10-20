@@ -1,6 +1,8 @@
 #!/bin/sh
 
 SIFCHAIN_ID=sifchain-devnet-1 \
+  KEYRING_BACKEND=test \
+  SIF_NODE=https://rpc-devnet.sifchain.finance:443 \
   COSMOS_BASE_DENOM=uphoton \
   COSMOS_CHANNEL_ID=channel-114 \
   COSMOS_COUNTERPARTY_CHANNEL_ID=channel-26 \
@@ -30,6 +32,9 @@ SIFCHAIN_ID=sifchain-devnet-1 \
   TERRA_CHAIN_ID=bombay-10 \
   TERRA_CHANNEL_ID=channel-123 \
   TERRA_COUNTERPARTY_CHANNEL_ID=channel-3 \
+  IXO_CHAIN_ID= \
+  IXO_CHANNEL_ID= \
+  IXO_COUNTERPARTY_CHANNEL_ID= \
   OSMOSIS_CHAIN_ID=osmosis-1 \
   OSMOSIS_CHANNEL_ID=channel-122 \
-  OSMOSIS_COUNTERPARTY_CHANNEL_ID=channel-34 ./template/generate-ibc-jsons.sh
+  OSMOSIS_COUNTERPARTY_CHANNEL_ID=channel-34 
