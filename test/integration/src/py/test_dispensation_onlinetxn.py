@@ -216,6 +216,7 @@ def test_run_online_singlekey_txn(claimType):
     assert distribution_msg_keys[3] == 'distribution_type'
 
     # RUN DISPENSATION TXN; GET TXN HASH
+    distribution_name = f"{str(resp['height'])}_{str(distributor)}"
     runtxnhash = run_dispensation(distribution_name, claimType, runner_address, chain_id)
     logging.info(f"txn hash for running dispensation = {runtxnhash}")
     time.sleep(5)
