@@ -55,17 +55,6 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
     event LogProphecyCompleted(uint256 prophecyID, bool success);
 
     /**
-     * @dev Modifier to restrict access to current ValSet validators
-     */
-    modifier onlyValidator {
-        require(
-            isActiveValidator(msg.sender),
-            "Must be an active validator"
-        );
-        _;
-    }
-
-    /**
      * @notice Initializer
      * @param _operator Address of the operator
      * @param _consensusThreshold Minimum required power for a valid prophecy
