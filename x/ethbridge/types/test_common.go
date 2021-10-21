@@ -121,10 +121,15 @@ func CreateTestUpdateWhiteListValidatorMsg(_ *testing.T, networkDescriptor oracl
 	}
 }
 
-func CreateTestSetCrossChainFeeMsg(t *testing.T, testCosmosSender string, networkDescriptor oracletypes.NetworkDescriptor, crossChainFee string) MsgSetFeeInfo {
+func CreateTestSetCrossChainFeeMsg(t *testing.T, testCosmosSender string,
+	networkDescriptor oracletypes.NetworkDescriptor,
+	crossChainFee string,
+	feeCurrencyGas sdk.Int,
+	minimumLockCost sdk.Int,
+	minimumBurnCost sdk.Int) MsgSetFeeInfo {
 	accAddress, err := sdk.AccAddressFromBech32(testCosmosSender)
 	require.NoError(t, err)
 
-	msgSetFeeInfo := NewMsgSetFeeInfo(accAddress, networkDescriptor, crossChainFee)
+	msgSetFeeInfo := NewMsgSetFeeInfo(accAddress, networkDescriptor, crossChainFee, feeCurrencyGas, minimumLockCost, minimumBurnCost)
 	return msgSetFeeInfo
 }

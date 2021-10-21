@@ -306,6 +306,24 @@ export class SifnodedRunner extends ShellCommand<SifnodedResults> {
     return "";
   }
 
+  // TODO set cross chain fee for an EVM based chain
+  // sifnoded tx ethbridge set-cross-chain-fee sif1f8sz5779td3y6xsq296k3wurflsdnfxmq5hudd 1 ceth 1 1 1
+  // set-cross-chain-fee [cosmos-sender-address] [network-id] [cross-chain-fee] [fee-currency-gas] [minimum-lock-cost] [minimum-burn-cost]
+  async setCrossChainFee(networkId: string, fee: string, homeDir: string): Promise<string> {
+    const sifgenArgs = [
+      "tx ethbridge set-cross-chain-fee",
+      networkId,
+      fee,
+      "--home", path.join(homeDir, ".sifnoded"),
+    ]
+
+    return ChildProcess.execFileSync(
+      this.sifnodedCommand,
+      sifgenArgs,
+      { encoding: "utf8" }
+    )
+  }
+
   override async run(): Promise<void> {
     const output = await this.sifgenNetworkCreate();
     this.outputResolve(output)

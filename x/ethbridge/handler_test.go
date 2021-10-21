@@ -583,9 +583,13 @@ func TestUpdateWhiteListValidator(t *testing.T) {
 
 func TestSetCrossChainFeeMsg(t *testing.T) {
 	ctx, _, _, accountKeeper, handler, _, oracleKeeper := CreateTestHandler(t, 0.5, []int64{5})
+	feeCurrencyGas := sdk.NewInt(1)
+	minimumLockCost := sdk.NewInt(1)
+	minimumBurnCost := sdk.NewInt(1)
 
 	testSetAtiveTokenMsg := types.CreateTestSetCrossChainFeeMsg(
-		t, types.TestAddress, oracletypes.NetworkDescriptor_NETWORK_DESCRIPTOR_ETHEREUM, "ceth")
+		t, types.TestAddress, oracletypes.NetworkDescriptor_NETWORK_DESCRIPTOR_ETHEREUM, "ceth",
+		feeCurrencyGas, minimumLockCost, minimumBurnCost)
 
 	cosmosSender, err := sdk.AccAddressFromBech32(types.TestAddress)
 	require.NoError(t, err)

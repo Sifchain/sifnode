@@ -394,7 +394,7 @@ func GetCmdRescueCrossChainFee() *cobra.Command {
 // GetCmdSetCrossChainFee is the CLI command to send the message to set crosschain fee for network
 func GetCmdSetCrossChainFee() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "set-cross-chain-fee [cosmos-sender-address] [network-id] [cross-chain-fee]",
+		Use:   "set-cross-chain-fee [cosmos-sender-address] [network-id] [cross-chain-fee] [fee-currency-gas] [minimum-lock-cost] [minimum-burn-cost]",
 		Short: "This should be used to set crosschain fee for a network.",
 		Args:  cobra.ExactArgs(3),
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -415,7 +415,23 @@ func GetCmdSetCrossChainFee() *cobra.Command {
 
 			crossChainFee := args[2]
 
-			msg := types.NewMsgSetFeeInfo(cosmosSender, oracletypes.NetworkDescriptor(networkDescriptor), crossChainFee)
+			feeCurrencyGas, ok := sdk.NewIntFromString(args[3])
+			if !ok {
+				return errors.New("Error parsing feeCurrencyGas")
+			}
+
+			minimumLockCost, ok := sdk.NewIntFromString(args[4])
+			if !ok {
+				return errors.New("Error parsing minimumLockCost")
+			}
+
+			minimumBurnCost, ok := sdk.NewIntFromString(args[5])
+			if !ok {
+				return errors.New("Error parsing minimumBurnCost")
+			}
+
+			msg := types.NewMsgSetFeeInfo(cosmosSender, oracletypes.NetworkDescriptor(networkDescriptor), crossChainFee,
+				feeCurrencyGas, minimumLockCost, minimumBurnCost)
 			if err := msg.ValidateBasic(); err != nil {
 				return err
 			}
