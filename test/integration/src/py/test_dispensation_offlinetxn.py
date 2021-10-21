@@ -247,14 +247,11 @@ def test_run_offline_singlekey_txn(claimType):
     rundistributiontag = runresp['logs'][0]['events'][4]['type']
     rundistname = runresp['logs'][0]['events'][4]['attributes'][0]['value']
     runrunneraddress = runresp['logs'][0]['events'][4]['attributes'][1]['value']
-
-    events = runresp['logs'][0]['events']
-    sortedrundistreceiverlist = []
-    for e in events:
-        if str(e['type']) == 'transfer':
-            attrs = e['attributes']
-            filtered = list(filter(lambda a: a['key'] == 'receiver', attrs))
-            sortedrundistreceiverlist = sorted(list(map(lambda r: r['value'], filtered)))
+    rundistreceiverlist = [runresp['logs'][0]['events'][6]['attributes'][0]['value'], runresp['logs'][0]['events'][6]['attributes'][3]['value']]
+    sortedrundistreceiverlist = sorted(rundistreceiverlist)
+    logging.info(f"sortedrundistreceiverlist = {sortedrundistreceiverlist}")
+    logging.info(f"sortedrundistreceiverlist first item = {sortedrundistreceiverlist[0]}")
+    logging.info(f"sortedrundistreceiverlist second item = {sortedrundistreceiverlist[1]}")
 
     # RUN DISTRIBUTION TXN JSON TAGS ASSERTIONS
     assert str(rundistributiontag) == 'distribution_run'
@@ -278,16 +275,16 @@ def test_run_offline_singlekey_txn(claimType):
     assert str(run_distribution_type) in ['DISTRIBUTION_TYPE_VALIDATOR_SUBSIDY', 'DISTRIBUTION_TYPE_LIQUIDITY_MINING']
 
     # READING TAGS FROM RUN DISPENSATION CMD
-    temprundistamount1 = runresp['logs'][0]['events'][4]['attributes'][2]['value']
+    temprundistamount1 = runresp['logs'][0]['events'][6]['attributes'][2]['value']
     logging.info(f"temp amount distributed 1 = {temprundistamount1}")
-    temprundistamount2 = runresp['logs'][0]['events'][4]['attributes'][5]['value']
+    temprundistamount2 = runresp['logs'][0]['events'][6]['attributes'][5]['value']
     logging.info(f"temp amount distributed 2 = {temprundistamount2}")
     my_list = [temprundistamount1, temprundistamount2]
     logging.info(f"my list = {my_list}")
     rundistamount = [int(i[:-5]) for i in my_list]
     logging.info(f"temp amount distributed 2 = {rundistamount}")
-    runrecipientaddress1 = runresp['logs'][0]['events'][4]['attributes'][0]['value']
-    runrecipientaddress2 = runresp['logs'][0]['events'][4]['attributes'][3]['value']
+    runrecipientaddress1 = runresp['logs'][0]['events'][6]['attributes'][0]['value']
+    runrecipientaddress2 = runresp['logs'][0]['events'][6]['attributes'][3]['value']
     amount_distributed = [rundistamount[0], rundistamount[1]]
     recipient_dispensation_addresses = [runrecipientaddress1, runrecipientaddress2]
     logging.info(f"dispensation txn addresses = {recipient_dispensation_addresses}")
