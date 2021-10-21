@@ -70,7 +70,7 @@ func TestMsgCreateDistribution_ValidateBasic_MultipleCoins(t *testing.T) {
 		AuthorizedRunner: authorizedRunner.String(),
 	}
 	err := msg.ValidateBasic()
-	assert.Error(t, err)
+	assert.NoError(t, err)
 }
 
 func TestMsgCreateDistribution_ValidateBasic_ZeroCoins(t *testing.T) {

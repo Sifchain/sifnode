@@ -61,7 +61,7 @@ type CommonArgs struct {
 
 func main() {
 	SetConfig(true)
-	tests := []TestCase{CreateDispensationTx{}, CreateDispensationNegativeTx{}, CreateDispensationMultiTx{}}
+	tests := []TestCase{CreateDispensationTx{}}
 	cArgs := CommonArgs{}
 	for _, test := range tests {
 		msg, args := test.GetMsgAndArgs(cArgs)

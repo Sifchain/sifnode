@@ -34,8 +34,14 @@ func CreatOutputList(count int, rowanAmount string) []types.Output {
 	rand.Seed(time.Now().UnixNano())
 	for i := 0; i < count; i++ {
 		address := sdk.AccAddress(crypto.AddressHash([]byte("Output1" + strconv.Itoa(i))))
-		index := rand.Intn(3-0) + 0
-		out := types.NewOutput(address, sdk.NewCoins(coin[index]))
+		index1 := rand.Intn(3-0) + 0
+		index2 := rand.Intn(3-0) + 0
+		out := types.Output{}
+		if index2 != index1 {
+			out = types.NewOutput(address, sdk.NewCoins(coin[index1], coin[index2]))
+		} else {
+			out = types.NewOutput(address, sdk.NewCoins(coin[index1]))
+		}
 		outputList[i] = out
 	}
 	return outputList
