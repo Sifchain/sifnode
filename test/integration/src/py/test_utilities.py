@@ -1,3 +1,4 @@
+from typing import Tuple
 from web3 import Web3
 import json
 import logging
@@ -170,10 +171,12 @@ def get_shell_output_json(command_line):
 
 
 def get_shell_output_yaml(command_line):
+    logging.debug(f"Executing cmd: {command_line}")
     output = get_shell_output(command_line)
     if not output:
         print_error_message(f"no result returned from {command_line}")
     try:
+        logging.debug(f"Cmd output: {output}")
         result = yaml.safe_load(output)
         return result
     except:
@@ -231,7 +234,7 @@ def get_password(network_definition_file_json):
 
 def get_eth_balance(transfer_request: EthereumToSifchainTransferRequest):
     w3 = Web3(Web3.WebsocketProvider(ethereum_websocket))
-    return w3.eth.get_balance()
+    return w3.eth.get_balance(transfer_request.ethereum_address)
     # network_element = f"--ethereum_network {transfer_request.ethereum_network} " if transfer_request.ethereum_network else ""
     # symbol_element = f"--symbol {transfer_request.ethereum_symbol} " if transfer_request.ethereum_symbol else ""
     # private_element = f"--ethereum_private_key_env_var \"{transfer_request.ethereum_private_key_env_var}\"" if transfer_request.ethereum_private_key_env_var else ""
@@ -298,7 +301,10 @@ def get_sifchain_addr_balance(sifaddress, sifnoded_node, denom):
     node = f"--node {sifnoded_node}" if sifnoded_node else ""
     command_line = f"{sifnoded_binary} query bank balances {node} {sifaddress} --output json --limit 100000000"
     json_str = get_shell_output_json(command_line)
+    logging.debug(json_str)
+    logging.debug(f"Cmd: {command_line}. Json Output: {json_str}")
     coins = json_str["balances"]
+
     for coin in coins:
         if coin["denom"] == denom:
             return int(coin["amount"])
@@ -474,7 +480,7 @@ def send_from_sifchain_to_ethereum_cmd(
                    f"{ceth_charge} " \
                    f"{keyring_backend_entry} " \
                    f"{sifchain_fees_entry} " \
-                   f"--ethereum-chain-id={transfer_request.ethereum_chain_id} " \
+                   f"--network-descriptor={transfer_request.ethereum_chain_id} " \
                    f"--chain-id={transfer_request.chain_id} " \
                    f"{home_entry} " \
                    f"{from_entry} " \
@@ -672,23 +678,19 @@ def set_lock_burn_limit(smart_contracts_dir: str, token: str, amount: int):
           f"integrationtest:setTokenLockBurnLimit {amount}"
     return get_shell_output(cmd)
 
-
-def create_ethereum_address(smart_contracts_dir: str, ethereum_network: str) -> (str, str):
-    cmd = f"yarn -s --cwd {smart_contracts_dir} " \
-          "integrationtest:createEthereumAddress " \
-          f"--ethereum_network {ethereum_network} "
-    result = run_yarn_command(cmd)
-    return result["address"], result["privateKey"]
+# The parameters are needed for previous impl. Can be removed.
+def create_ethereum_address(smart_contracts_dir: str, ethereum_network: str) -> Tuple[str, str]:
+    w3 = Web3(Web3.WebsocketProvider(ethereum_websocket))
+    account = w3.eth.account.create()
+    return account.address, account.key.hex()
 
 
 def create_ethereum_addresses(smart_contracts_dir: str, ethereum_network: str, count: int = 1):
-    count_element = f"--count {count}" if count > 1 else ""
-    cmd = f"yarn -s --cwd {smart_contracts_dir} " \
-          "integrationtest:createEthereumAddress " \
-          f"{count_element} " \
-          f"--ethereum_network {ethereum_network} "
-    return run_yarn_command(cmd)
-
+    result = []
+    for _ in range(count):
+        ethereum_address = create_ethereum_address(smart_contracts_dir, ethereum_network)
+        result.append(ethereum_address)
+    return result
 
 def display_currency_value(x: int) -> str:
     """if x is 19 + 18 zeros, return (19000000000000000000 | 19)"""
