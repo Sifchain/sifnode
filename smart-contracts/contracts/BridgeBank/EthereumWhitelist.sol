@@ -62,8 +62,11 @@ contract EthereumWhiteList {
      * @dev Modifier to restrict EVM addresses
      */
     modifier onlyNotBlocklisted(address account) {
-        if(hasBlocklist) {
-          require(!blocklist.isBlocklisted(account), "Address is blocklisted");
+        if (hasBlocklist) {
+            require(
+                !blocklist.isBlocklisted(account),
+                "Address is blocklisted"
+            );
         }
         _;
     }
@@ -91,5 +94,14 @@ contract EthereumWhiteList {
      */
     function getTokenInEthWhiteList(address _token) public view returns (bool) {
         return _ethereumTokenWhiteList[_token];
+    }
+
+    /**
+     * @notice Lets the operator set the blocklist address
+     * @param blocklistAddress The address of the blocklist contract
+     */
+    function _setBlocklist(address blocklistAddress) internal {
+        blocklist = IBlocklist(blocklistAddress);
+        hasBlocklist = true;
     }
 }

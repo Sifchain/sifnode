@@ -800,4 +800,12 @@ contract BridgeBank is BankStorage,
 
       return true;
     }
+
+    /**
+     * @notice Lets the operator set the blocklist address
+     * @param blocklistAddress The address of the blocklist contract
+     */
+    function setBlocklist(address blocklistAddress) public onlyOperator {
+      _setBlocklist(blocklistAddress);
+    }
 }
