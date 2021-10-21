@@ -1,22 +1,40 @@
 import { createRelayer } from "../utils/createRelayer.mjs";
 import { createRelayerRegistry } from "../utils/createRelayerRegistry.mjs";
 import { getChainProps } from "../utils/getChainProps.mjs";
+import { setupRelayerChannelIds } from "../utils/setupRelayerChannelIds.mjs";
 import { send } from "./send.mjs";
 
 export async function initRelayer(props) {
-  const {
-    chainProps: otherChainProps,
-    registryFrom = `/tmp/localnet/registry`,
-  } = props;
-  const {
-    rpcPort = 26657,
-    p2pPort = 26656,
-    pprofPort = 6060,
-    home = `/tmp/localnet/${otherChainProps.chain}/${otherChainProps.chainId}`,
-  } = otherChainProps;
-
   // 0) retrieve sifchain props
-  const sifChainProps = getChainProps({ chain: "sifchain" });
+  const candidateSifChainProps = getChainProps({ chain: "sifchain" });
+
+  const {
+    chainProps: candidateOtherChainProps,
+    registryFrom = `/tmp/localnet/registry`,
+    rpcPortA = 26657,
+    p2pPortA = 26656,
+    pprofPortA = 6060,
+    homeA = `/tmp/localnet/${candidateSifChainProps.chain}/${candidateSifChainProps.chainId}`,
+    rpcPortB = 36657,
+    p2pPortB = 36656,
+    pprofPortB = 7060,
+    homeB = `/tmp/localnet/${props.chainProps.chain}/${props.chainProps.chainId}`,
+  } = props;
+
+  const sifChainProps = {
+    ...candidateSifChainProps,
+    rpcPort: rpcPortA,
+    p2pPort: p2pPortA,
+    pprofPort: pprofPortA,
+    home: homeA,
+  };
+  const otherChainProps = {
+    ...candidateOtherChainProps,
+    rpcPort: rpcPortB,
+    p2pPort: p2pPortB,
+    pprofPort: pprofPortB,
+    home: homeB,
+  };
 
   // 1) create global registry for relayers
   await createRelayerRegistry({
@@ -27,7 +45,7 @@ export async function initRelayer(props) {
   // 2) create relayer for pair of chain
   const createdRelayer = await createRelayer({
     sifChainProps,
-    otherChainProps: { ...otherChainProps, rpcPort, p2pPort, pprofPort, home },
+    otherChainProps,
     registryFrom,
   });
 
@@ -38,5 +56,5 @@ export async function initRelayer(props) {
   await sleep(1000);
 
   // 5) generate channel IDs
-  await setupRelayerChannelIds({ home });
+  await setupRelayerChannelIds({ home: otherChainProps.home });
 }

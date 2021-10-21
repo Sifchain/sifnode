@@ -1,6 +1,6 @@
 #!/usr/bin/env zx
 
-import { startAllChains } from "../lib/startAllChains.mjs";
+import { startAllRelayers } from "../lib/startAllRelayers.mjs";
 import { arg } from "../utils/arg.mjs";
 import { getChainProps } from "../utils/getChainProps.mjs";
 
@@ -15,9 +15,9 @@ const args = arg(
   `
 Usage:
 
-  yarn startAllChains [options]
+  yarn startAllRelayers [options]
 
-Start all the chains locally.
+Start all the IBC realyers locally.
 
 Options:
 
@@ -42,6 +42,6 @@ const chainProps = getChainProps({
   pprofInitialPort,
   home,
 });
-await startAllChains({
+await startAllRelayers({
   ...chainProps,
 });

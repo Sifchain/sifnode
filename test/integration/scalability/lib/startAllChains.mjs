@@ -1,8 +1,8 @@
 import { getChains } from "../utils/getChains.mjs";
 import { getChainProps } from "../utils/getChainProps.mjs";
-import { initRelayers } from "./initRelayers.mjs";
 import { startChain } from "./startChain.mjs";
-import { startRelayers } from "./startRelayers.mjs";
+// import { initRelayers } from "./initRelayers.mjs";
+// import { startRelayers } from "./startRelayers.mjs";
 
 export async function startAllChains({
   network,
@@ -10,7 +10,6 @@ export async function startAllChains({
   rpcInitialPort = 11000,
   p2pInitialPort = 12000,
   pprofInitialPort = 13000,
-  initRelayer = false,
 }) {
   const chains = getChains({
     rpcInitialPort,
@@ -36,21 +35,21 @@ export async function startAllChains({
     )
   ).reduce((acc, cur) => ({ ...acc, [cur.chain]: cur }), {});
 
-  if (initRelayer) {
-    await initRelayers({ chainsProps });
-    const procs = await startRelayers({ chainsProps });
+  // if (initRelayer) {
+  //   await initRelayers({ chainsProps });
+  //   const procs = await startRelayers({ chainsProps });
 
-    await Promise.all(
-      procs.map(async ({ proc }) => {
-        for await (let chunk of proc.stderr) {
-          if (chunk.includes("waking up and checking for packets!")) break;
-        }
-        proc.kill("SIGINT");
-      })
-    );
+  //   await Promise.all(
+  //     procs.map(async ({ proc }) => {
+  //       for await (let chunk of proc.stderr) {
+  //         if (chunk.includes("waking up and checking for packets!")) break;
+  //       }
+  //       proc.kill("SIGINT");
+  //     })
+  //   );
 
-    return;
-  }
+  //   return;
+  // }
 
   // const procs = await startRelayers({ chainsProps });
 

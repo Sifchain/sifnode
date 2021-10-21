@@ -35,15 +35,35 @@ yarn initAllChains
 
 All the IBC chains have been created along with their genesis accounts and validators nodes.
 
-### Start all the IBC chains and relayers
+### Start all the IBC chains
 
-Now you can start all the IBC chains and create the IBC relayers connection point between the chains using the following command line:
+Start now all the IBC chains that have been previously created using the following command line:
 
 ```
-yarn startAllChains --initRelayer
+yarn startAllChains
 ```
 
-In order to stop all the running processes, you just have to terminate the running command line with `CTRL+C` on your shell or any other combinations to stop a running command.
+To stop all the running processes, use `CTRL+C` or any other combinations to stop a running command.
+
+### Initiate all the IBC relayers
+
+Let's create now all the IBC relayers connection point between the chains using the following command line:
+
+```
+yarn initAllRelayers
+```
+
+All the IBC relayers files have been now created along with their connections and channels information.
+
+### Start all the IBC relayers
+
+Now start the relayers with this command line:
+
+```
+yarn startAllRelayers
+```
+
+To stop all the running processes, use `CTRL+C` or any other combinations to stop a running command.
 
 ### Testing
 
