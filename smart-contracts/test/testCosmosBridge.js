@@ -119,6 +119,34 @@ describe("Test Cosmos Bridge", function () {
       isUserFourValidator.should.be.equal(false);
     });
 
+    it("Can change the operator", async function () {
+      // Confirm that the operator has changed
+      const originalOperator = await state.cosmosBridge.operator();
+      expect(originalOperator).to.be.equal(operator.address);
+
+      // Operator resets the valset
+      await state.cosmosBridge.connect(operator).changeOperator(userOne.address)
+        .should.be.fulfilled;
+
+      // Confirm that the operator has changed
+      const newOperator = await state.cosmosBridge.operator();
+      expect(newOperator).to.be.equal(userOne.address);
+    });
+
+    it("should NOT allow to change the operator to the zero address", async function () {
+      // Confirm that the operator has changed
+      const originalOperator = await state.cosmosBridge.operator();
+      expect(originalOperator).to.be.equal(operator.address);
+
+      // Operator resets the valset
+      await expect(state.cosmosBridge.connect(operator).changeOperator(state.constants.zeroAddress))
+        .to.be.rejectedWith('invalid address');
+
+      // Confirm that the operator has NOT changed
+      const newOperator = await state.cosmosBridge.operator();
+      expect(newOperator).to.be.equal(operator.address);
+    });
+
     it("Can update the validator set", async function () {
       // Also make sure everything runs fourth time after switching validators a second time.
       // Operator resets the valset
