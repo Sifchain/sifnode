@@ -21,6 +21,7 @@
     "startAllChains": "zx ./cmd/startAllChains.mjs",
     "startAllRelayers": "zx ./cmd/startAllRelayers.mjs",
     "startChain": "zx ./cmd/startChain.mjs",
+    "startRelayer": "zx ./cmd/startRelayer.mjs",
     "whitelistedTokens": "zx ./cmd/whitelistedTokens.mjs"
   },
   "dependencies": {

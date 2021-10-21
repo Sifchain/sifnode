@@ -1,5 +1,6 @@
 import { getChains } from "../utils/getChains.mjs";
 import { getChainsProps } from "../utils/getChainsProps.mjs";
+import { runRelayer } from "../utils/runRelayer.mjs";
 
 export async function startAllRelayers({
   network,
@@ -18,17 +19,10 @@ export async function startAllRelayers({
   const chainsProps = getChainsProps({ chains, network });
   const { sifchain: sifChainProps, ...otherChainsProps } = chainsProps;
 
+  // 1) start relayers
   return Promise.all(
     Object.values(otherChainsProps).map(async ({ home }) => {
-      const relayerHome = `${home}/relayer`;
-
-      const proc = await nothrow(
-        $`ibc-relayer start -v --poll 10 --home ${relayerHome}`
-      );
-
-      return {
-        proc,
-      };
+      return runRelayer({ home });
     })
   );
 }
