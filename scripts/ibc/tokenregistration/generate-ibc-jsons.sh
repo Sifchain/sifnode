@@ -278,3 +278,21 @@ sifnoded q tokenregistry generate \
 echo "\n\ngenerated entry for $EMONEY_CHAIN_ID"
 
 cat $SIFCHAIN_ID/emoney.json | jq
+
+sifnoded q tokenregistry generate \
+	--token_base_denom=eeur \
+	--token_ibc_counterparty_chain_id=$EMONEY_CHAIN_ID \
+  --token_ibc_channel_id=$EMONEY_CHANNEL_ID \
+  --token_ibc_counterparty_channel_id=$EMONEY_COUNTERPARTY_CHANNEL_ID \
+	--token_ibc_counterparty_denom="" \
+	--token_unit_denom="" \
+	--token_decimals=6 \
+	--token_display_name="" \
+	--token_external_symbol="" \
+	--token_permission_clp=true \
+	--token_permission_ibc_export=true \
+	--token_permission_ibc_import=true | jq > $SIFCHAIN_ID/emoney-eeur.json
+
+echo "\n\ngenerated entry for $EMONEY_CHAIN_ID"
+
+cat $SIFCHAIN_ID/emoney-eeur.json | jq
