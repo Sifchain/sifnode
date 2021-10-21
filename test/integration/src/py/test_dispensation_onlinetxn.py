@@ -224,9 +224,9 @@ def test_run_online_singlekey_txn(claimType):
     # QUERY BLOCK USING TXN HASH
     runresp = query_block_claim(runtxnhash)
     logging.info(f"response from block for run dispensation = {runresp}")
-    rundistributiontag = runresp['logs'][0]['events'][3]['type']
-    rundistname = runresp['logs'][0]['events'][3]['attributes'][0]['value']
-    runrunneraddress = runresp['logs'][0]['events'][3]['attributes'][1]['value']
+    rundistributiontag = runresp['logs'][0]['events'][4]['type']
+    rundistname = runresp['logs'][0]['events'][4]['attributes'][0]['value']
+    runrunneraddress = runresp['logs'][0]['events'][4]['attributes'][1]['value']
 
     events = runresp['logs'][0]['events']
     sortedrundistreceiverlist = []
