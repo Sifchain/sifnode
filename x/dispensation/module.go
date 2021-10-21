@@ -37,7 +37,7 @@ func (AppModuleBasic) Name() string {
 	return types.ModuleName
 }
 
-func (AppModuleBasic) RegisterLegacyAminoCodec(cdc *codec.LegacyAmino) {
+func (AppModuleBasic) RegisterLegacyAminoCodec(cdc *codec.LegacyAmino) { //nolint
 	types.RegisterLegacyAminoCodec(cdc)
 }
 
@@ -52,7 +52,7 @@ func (AppModuleBasic) DefaultGenesis(cdc codec.JSONCodec) json.RawMessage {
 }
 
 // RegisterCodec registers the dispensation module's types for the given codec.
-func (AppModuleBasic) RegisterCodec(cdc *codec.LegacyAmino) {
+func (AppModuleBasic) RegisterCodec(cdc *codec.LegacyAmino) { //nolint
 	RegisterCodec(cdc)
 }
 
@@ -96,7 +96,7 @@ type AppModule struct {
 	accountKeeper types.AccountKeeper
 }
 
-func (am AppModule) LegacyQuerierHandler(amino *codec.LegacyAmino) sdk.Querier {
+func (am AppModule) LegacyQuerierHandler(amino *codec.LegacyAmino) sdk.Querier { //nolint
 	return keeper.NewLegacyQuerier(am.keeper)
 }
 

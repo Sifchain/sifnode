@@ -44,7 +44,7 @@ func (AppModuleBasic) Name() string {
 }
 
 // RegisterCodec registers the module's types for the given codec.
-func (AppModuleBasic) RegisterLegacyAminoCodec(cdc *codec.LegacyAmino) {
+func (AppModuleBasic) RegisterLegacyAminoCodec(cdc *codec.LegacyAmino) { //nolint
 	types.RegisterLegacyAminoCodec(cdc)
 }
 
@@ -140,7 +140,7 @@ func (AppModule) QuerierRoute() string {
 }
 
 // Deprecated: LegacyQuerierHandler use RegisterServices
-func (am AppModule) LegacyQuerierHandler(_ *codec.LegacyAmino) sdk.Querier {
+func (am AppModule) LegacyQuerierHandler(_ *codec.LegacyAmino) sdk.Querier { //nolint
 	return keeper.NewLegacyQuerier(am.Keeper)
 }
 
