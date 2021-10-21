@@ -26,7 +26,8 @@ func (k Keeper) GetEthereumLockBurnNonce(ctx sdk.Context, networkDescriptor orac
 	store := ctx.KVStore(k.storeKey)
 	key := k.getEthereumLockBurnNoncePrefix(networkDescriptor, valAccount)
 
-	// nonce start from 1, 0 represent the relayer is a new one
+	// nonces start from 0, and the first ethereum transaction
+	// should have a nonce of 1
 	if !store.Has(key) {
 		return 0
 	}

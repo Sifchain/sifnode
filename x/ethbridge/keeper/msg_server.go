@@ -180,7 +180,7 @@ func (srv msgServer) CreateEthBridgeClaim(goCtx context.Context, msg *types.MsgC
 
 	newLockBurnNonce := msg.EthBridgeClaim.EthereumLockBurnNonce
 
-	if lockBurnNonce != 0 && newLockBurnNonce != lockBurnNonce+1 {
+	if newLockBurnNonce != lockBurnNonce+1 {
 		return nil, errors.New("lock burn nonce out of order")
 	}
 

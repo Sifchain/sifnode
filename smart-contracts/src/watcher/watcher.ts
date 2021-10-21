@@ -10,31 +10,13 @@ import {
 import {EvmStateTransition, toEvmRelayerEvent} from "./ebrelayer";
 import {lastValueFrom} from "rxjs";
 
-
-// const evmRelayerLines = readableStreamToObservable(fs.createReadStream("/tmp/sifnode/evmrelayer.log"))
-const evmRelayerLines = tailFileAsObservable("/tmp/sifnode/evmrelayer.log")
-
-async function main() {
+export function sifwatch(filename: string): Observable<EvmStateTransition> {
+    // const evmRelayerLines = readableStreamToObservable(fs.createReadStream("/tmp/sifnode/evmrelayer.log"))
+    const evmRelayerLines = tailFileAsObservable(filename)
     const evmRelayerEvents = evmRelayerLines.pipe(
         map(jsonParseSimple),
         map(toEvmRelayerEvent),
         filter<EvmStateTransition | undefined, EvmStateTransition>(isNotNullOrUndefined)
     )
-
-    evmRelayerEvents.subscribe({
-        next: x => {
-            console.log(x)
-        },
-        error: e => console.log("goterror: ", e),
-        complete: () => console.log("alldone")
-    })
-
-    const lv = await lastValueFrom(evmRelayerEvents)
-    console.log("exitingwatcher")
+    return evmRelayerEvents
 }
-
-main()
-    .catch((error) => {
-        console.error(error);
-    })
-    .finally(() => process.exit(0))

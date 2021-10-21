@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/Sifchain/sifnode/cmd/ebrelayer/internal"
 	"log"
 	"net/url"
 	"os"
@@ -211,6 +212,8 @@ func RunInitRelayerCmd(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
+
+	sugaredLogger.Debugw(internal.PeggyTestMarker, "kind", "Startup", zap.Reflect("ebrelayerstartup", true))
 
 	// Initialize new Ethereum event listener
 	ethSub := relayer.NewEthereumSub(

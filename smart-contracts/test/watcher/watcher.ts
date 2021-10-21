@@ -9,6 +9,10 @@ import {SifchainContractFactories} from "../../src/tsyringe/contracts";
 import {buildDevEnvContracts} from "../../src/contractSupport";
 import web3 from "web3";
 import * as ethereumAddress from "../../src/ethereumAddress";
+import {sifwatch} from "../../src/watcher/watcher";
+import {lastValueFrom} from "rxjs";
+import {filter} from "rxjs/operators";
+import {EvmError} from "../../src/watcher/ebrelayer";
 
 chai.use(solidity)
 
@@ -19,11 +23,31 @@ describe("watcher", () => {
 
     before('register HardhatRuntimeEnvironmentToken', async () => {
         container.register(HardhatRuntimeEnvironmentToken, {useValue: hardhat})
-        const sifchainAccounts = await ethereumResultsToSifchainAccounts(devEnvObject.ethResults!, hardhat.ethers.provider)
+    })
+
+    it("should get the accounts from devenv")
+
+    it("should send a lock transaction", async () => {
+        const ethereumAccounts = await ethereumResultsToSifchainAccounts(devEnvObject.ethResults!, hardhat.ethers.provider)
         const factories = container.resolve(SifchainContractFactories)
         const contracts = await buildDevEnvContracts(devEnvObject, hardhat, factories)
-        const sender1 = sifchainAccounts.availableAccounts[0]
+        const sender1 = ethereumAccounts.availableAccounts[0]
         const smallAmount = BigNumber.from(1017)
+
+        const evmRelayerEvents = sifwatch("/tmp/sifnode/evmrelayer.log")
+        evmRelayerEvents.subscribe({
+            next: x => {
+                console.log(x)
+            },
+            error: e => console.log("goterror: ", e),
+            complete: () => console.log("alldone")
+        })
+        evmRelayerEvents.pipe(
+            filter(x => x instanceof EvmError)
+        ).subscribe(t => {
+            throw Error(`got error: ${JSON.stringify(t)}`)
+        })
+
         await contracts.bridgeBank.connect(sender1).lock(
             recipient,
             ethereumAddress.eth.address,
@@ -32,11 +56,12 @@ describe("watcher", () => {
                 value: smallAmount
             }
         )
-        console.log("doneit")
+
+        console.log("lock sent")
+
+        const lv = await lastValueFrom(evmRelayerEvents)
     })
 
-    it("should get the accounts from devenv")
-    it("should send a lock transaction")
     it("should watch evmrelayer logs")
     it("should watch for evm events")
     it("should fail if evmrelayer gets an error")
