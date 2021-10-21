@@ -87,9 +87,9 @@
     "token:mint": "npx truffle exec scripts/mintTestTokens.js",
     "token:approve": "npx truffle exec scripts/sendApproveTx.js",
     "test:setup": "cp .env.example .env",
-    "coverage": "truffle run coverage",
+    "coverage": "RUN_COVERAGE=1 npx hardhat coverage",
     "compile": "hardhat compile",
-    "test": "concurrently -r -k -s first \"yarn develop\" \"truffle test --network develop test/test*.js\" ",
+    "test": "npx hardhat test",
     "testHardhat": "npx hardhat test test/test_bridgeBankMigration.ts  test/test_newBridgeBank.ts",
     "whitelist:run": "npx hardhat run scripts/fetchTokenDetails.js --network mainnet && npx hardhat run scripts/bulk_set_whitelist.ts --network mainnet",
     "whitelist:test": "npx hardhat run scripts/fetchTokenDetails.js --network hardhat && npx hardhat run scripts/bulk_set_whitelist.ts --network hardhat"

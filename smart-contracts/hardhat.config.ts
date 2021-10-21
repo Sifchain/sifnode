@@ -6,9 +6,8 @@ import '@openzeppelin/hardhat-upgrades'
 import "reflect-metadata"; // needed by tsyringe
 import "@typechain/hardhat"
 import '@float-capital/solidity-coverage'
-
+import 'hardhat-contract-sizer'
 // require("hardhat-gas-reporter");
-// require('hardhat-contract-sizer');
 
 const envconfig = dotenv.config()
 
