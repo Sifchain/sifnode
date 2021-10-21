@@ -8,132 +8,132 @@ query_block_claim, create_online_singlekey_txn_with_runner, run_dispensation
 
 
 # AUTOMATED TEST TO VALIDATE ONLINE TXN
-@pytest.mark.parametrize("claimType", ['ValidatorSubsidy', 'LiquidityMining'])
-def test_create_online_singlekey_txn(claimType):
-    distributor_address, distributor_name = create_new_sifaddr_and_key()
-    runner_address, runner_name = create_new_sifaddr_and_key()
-    logging.info(f"distributor_address = {distributor_address}, distributor_name = {distributor_name}")
-    logging.info(f"runner_address = {runner_address}, runner_name = {runner_name}")
-    destaddress1, destname1 = create_new_sifaddr_and_key()
-    destaddress2, destname2 = create_new_sifaddr_and_key()
-    from_address = 'sifnodeadmin'
-    keyring_backend = 'test'
-    chain_id = 'localnet'
-    amount = '10000000rowan'
-    sampleamount = '1000rowan'
+# @pytest.mark.parametrize("claimType", ['ValidatorSubsidy', 'LiquidityMining'])
+# def test_create_online_singlekey_txn(claimType):
+#     distributor_address, distributor_name = create_new_sifaddr_and_key()
+#     runner_address, runner_name = create_new_sifaddr_and_key()
+#     logging.info(f"distributor_address = {distributor_address}, distributor_name = {distributor_name}")
+#     logging.info(f"runner_address = {runner_address}, runner_name = {runner_name}")
+#     destaddress1, destname1 = create_new_sifaddr_and_key()
+#     destaddress2, destname2 = create_new_sifaddr_and_key()
+#     from_address = 'sifnodeadmin'
+#     keyring_backend = 'test'
+#     chain_id = 'localnet'
+#     amount = '10000000rowan'
+#     sampleamount = '1000rowan'
 
-    # THESE 4 TXNS ARE TO REGISTER NEW ACCOUNTS ON CHAIN
-    send_sample_rowan(from_address, runner_address, amount, keyring_backend, chain_id, "")
-    time.sleep(5)
-    send_sample_rowan(from_address, distributor_address, amount, keyring_backend, chain_id, "")
-    time.sleep(5)
-    send_sample_rowan(from_address, destaddress1, sampleamount, keyring_backend, chain_id, "")
-    time.sleep(5)
-    send_sample_rowan(from_address, destaddress2, sampleamount, keyring_backend, chain_id, "")
-    time.sleep(5)
+#     # THESE 4 TXNS ARE TO REGISTER NEW ACCOUNTS ON CHAIN
+#     send_sample_rowan(from_address, runner_address, amount, keyring_backend, chain_id, "")
+#     time.sleep(5)
+#     send_sample_rowan(from_address, distributor_address, amount, keyring_backend, chain_id, "")
+#     time.sleep(5)
+#     send_sample_rowan(from_address, destaddress1, sampleamount, keyring_backend, chain_id, "")
+#     time.sleep(5)
+#     send_sample_rowan(from_address, destaddress2, sampleamount, keyring_backend, chain_id, "")
+#     time.sleep(5)
 
-    # CREATING TEST DATA HERE MIMICKING OUTPUT.JSON TO BE SUPPLIED BY NIKO'S API
-    dict1 = {"denom": "rowan", "amount": "5000"}
-    dict2 = {"denom": "rowan", "amount": "7000"}
-    dict3 = {"address": destaddress1, "coins": [dict1]}
-    dict4 = {"address": destaddress2, "coins": [dict2]}
-    dict5 = {"Output": [dict3, dict4]}
-    data = json.dumps(dict5)
-    with open("output.json", "w") as f:
-        f.write(data)
+#     # CREATING TEST DATA HERE MIMICKING OUTPUT.JSON TO BE SUPPLIED BY NIKO'S API
+#     dict1 = {"denom": "rowan", "amount": "5000"}
+#     dict2 = {"denom": "rowan", "amount": "7000"}
+#     dict3 = {"address": destaddress1, "coins": [dict1]}
+#     dict4 = {"address": destaddress2, "coins": [dict2]}
+#     dict5 = {"Output": [dict3, dict4]}
+#     data = json.dumps(dict5)
+#     with open("output.json", "w") as f:
+#         f.write(data)
 
-    # READ OUTPUT.JSON WITH CLAIMING ADDRESSES AND AMOUNT
-    with open("output.json", "r") as f:
-        data = f.read()
+#     # READ OUTPUT.JSON WITH CLAIMING ADDRESSES AND AMOUNT
+#     with open("output.json", "r") as f:
+#         data = f.read()
 
-    d = json.loads(data)
-    one_claiming_address = str(d['Output'][0]['address'])
-    logging.info(f"one claiming address = {one_claiming_address}")
+#     d = json.loads(data)
+#     one_claiming_address = str(d['Output'][0]['address'])
+#     logging.info(f"one claiming address = {one_claiming_address}")
 
-    # ACTUAL DISPENSATION TXN; GET TXN HASH
-    txhash = str((create_online_singlekey_txn_with_runner(claimType, runner_address, distributor_name, chain_id)))
-    logging.info(f"txn hash = {txhash}")
-    time.sleep(5)
+#     # ACTUAL DISPENSATION TXN; GET TXN HASH
+#     txhash = str((create_online_singlekey_txn_with_runner(claimType, runner_address, distributor_name, chain_id)))
+#     logging.info(f"txn hash = {txhash}")
+#     time.sleep(5)
 
-    # QUERY BLOCK USING TXN HASH
-    resp = query_block_claim(txhash)
-    logging.info(f"valid hash response = {resp}")
+#     # QUERY BLOCK USING TXN HASH
+#     resp = query_block_claim(txhash)
+#     logging.info(f"valid hash response = {resp}")
 
-    distribution_msg = resp['tx']['body']['messages'][0]
-    msg_type = distribution_msg['@type']
-    distributor = distribution_msg['distributor']
-    authorized_runner = distribution_msg['authorized_runner']
-    distribution_type = distribution_msg['distribution_type']
-    distribution_msg_keys = list(distribution_msg.keys())
+#     distribution_msg = resp['tx']['body']['messages'][0]
+#     msg_type = distribution_msg['@type']
+#     distributor = distribution_msg['distributor']
+#     authorized_runner = distribution_msg['authorized_runner']
+#     distribution_type = distribution_msg['distribution_type']
+#     distribution_msg_keys = list(distribution_msg.keys())
 
-    assert distribution_msg_keys[0] == '@type'
-    assert distribution_msg_keys[1] == 'distributor'
-    assert distribution_msg_keys[2] == 'authorized_runner'
-    assert distribution_msg_keys[3] == 'distribution_type'
-    assert str(msg_type) == '/sifnode.dispensation.v1.MsgCreateDistribution'
-    assert str(distributor) == distributor_address
-    assert str(authorized_runner) == runner_address
-    assert str(distribution_type) in ['DISTRIBUTION_TYPE_VALIDATOR_SUBSIDY', 'DISTRIBUTION_TYPE_LIQUIDITY_MINING']
+#     assert distribution_msg_keys[0] == '@type'
+#     assert distribution_msg_keys[1] == 'distributor'
+#     assert distribution_msg_keys[2] == 'authorized_runner'
+#     assert distribution_msg_keys[3] == 'distribution_type'
+#     assert str(msg_type) == '/sifnode.dispensation.v1.MsgCreateDistribution'
+#     assert str(distributor) == distributor_address
+#     assert str(authorized_runner) == runner_address
+#     assert str(distribution_type) in ['DISTRIBUTION_TYPE_VALIDATOR_SUBSIDY', 'DISTRIBUTION_TYPE_LIQUIDITY_MINING']
 
-    try:
-        os.remove('signed.json')
-        os.remove('sample.json')
-        os.remove('output.json')
-    except OSError as e:
-        print("Error: %s - %s." % (e.filename, e.strerror))
+#     try:
+#         os.remove('signed.json')
+#         os.remove('sample.json')
+#         os.remove('output.json')
+#     except OSError as e:
+#         print("Error: %s - %s." % (e.filename, e.strerror))
 
 
 # AUTOMTED TEST TO VALIDATE IF FUNDING ADDRESS DOESN'T HAVE ENOUGH BALANCE
-@pytest.mark.parametrize("claimType", ['ValidatorSubsidy', 'LiquidityMining'])
-def test_insufficient_funds_dispensation_txn(claimType):
-    distributor_address, distributor_name = create_new_sifaddr_and_key()
-    runner_address, runner_name = create_new_sifaddr_and_key()
-    logging.info(f"distributor_address = {distributor_address}, distributor_name = {distributor_name}")
-    logging.info(f"runner_address = {runner_address}, runner_name = {runner_name}")
-    destaddress1, destname1 = create_new_sifaddr_and_key()
-    destaddress2, destname2 = create_new_sifaddr_and_key()
-    from_address = 'sifnodeadmin'
-    keyring_backend = 'test'
-    chain_id = 'localnet'
-    amount = '70000rowan'
-    sampleamount = '1000rowan'
+# @pytest.mark.parametrize("claimType", ['ValidatorSubsidy', 'LiquidityMining'])
+# def test_insufficient_funds_dispensation_txn(claimType):
+#     distributor_address, distributor_name = create_new_sifaddr_and_key()
+#     runner_address, runner_name = create_new_sifaddr_and_key()
+#     logging.info(f"distributor_address = {distributor_address}, distributor_name = {distributor_name}")
+#     logging.info(f"runner_address = {runner_address}, runner_name = {runner_name}")
+#     destaddress1, destname1 = create_new_sifaddr_and_key()
+#     destaddress2, destname2 = create_new_sifaddr_and_key()
+#     from_address = 'sifnodeadmin'
+#     keyring_backend = 'test'
+#     chain_id = 'localnet'
+#     amount = '70000rowan'
+#     sampleamount = '1000rowan'
 
-    # THESE 4 TXNS ARE TO REGISTER NEW ACCOUNTS ON CHAIN
-    send_sample_rowan(from_address, runner_address, amount, keyring_backend, chain_id, "")
-    time.sleep(5)
-    send_sample_rowan(from_address, distributor_address, amount, keyring_backend, chain_id, "")
-    time.sleep(5)
-    send_sample_rowan(from_address, destaddress1, sampleamount, keyring_backend, chain_id, "")
-    time.sleep(5)
-    send_sample_rowan(from_address, destaddress2, sampleamount, keyring_backend, chain_id, "")
-    time.sleep(5)
+#     # THESE 4 TXNS ARE TO REGISTER NEW ACCOUNTS ON CHAIN
+#     send_sample_rowan(from_address, runner_address, amount, keyring_backend, chain_id, "")
+#     time.sleep(5)
+#     send_sample_rowan(from_address, distributor_address, amount, keyring_backend, chain_id, "")
+#     time.sleep(5)
+#     send_sample_rowan(from_address, destaddress1, sampleamount, keyring_backend, chain_id, "")
+#     time.sleep(5)
+#     send_sample_rowan(from_address, destaddress2, sampleamount, keyring_backend, chain_id, "")
+#     time.sleep(5)
 
-    # CREATING TEST DATA HERE MIMICKING OUTPUT.JSON TO BE SUPPLIED BY NIKO'S API
-    dict1 = {"denom": "rowan", "amount": "5000"}
-    dict2 = {"denom": "rowan", "amount": "19000"}
-    dict3 = {"address": destaddress1, "coins": [dict1]}
-    dict4 = {"address": destaddress2, "coins": [dict2]}
-    dict5 = {"Output": [dict3, dict4]}
-    data = json.dumps(dict5)
-    with open("output.json", "w") as f:
-        f.write(data)
+#     # CREATING TEST DATA HERE MIMICKING OUTPUT.JSON TO BE SUPPLIED BY NIKO'S API
+#     dict1 = {"denom": "rowan", "amount": "5000"}
+#     dict2 = {"denom": "rowan", "amount": "19000"}
+#     dict3 = {"address": destaddress1, "coins": [dict1]}
+#     dict4 = {"address": destaddress2, "coins": [dict2]}
+#     dict5 = {"Output": [dict3, dict4]}
+#     data = json.dumps(dict5)
+#     with open("output.json", "w") as f:
+#         f.write(data)
 
-    # READ OUTPUT.JSON WITH CLAIMING ADDRESSES AND AMOUNT
-    with open("output.json", "r") as f:
-        data = f.read()
+#     # READ OUTPUT.JSON WITH CLAIMING ADDRESSES AND AMOUNT
+#     with open("output.json", "r") as f:
+#         data = f.read()
 
-    # ACTUAL DISPENSATION TXN; TXN RAISES AN EXCEPTION ABOUT INSUFFICIENT FUNDS, CAPTURED HERE AND TEST IS MARKED PASS
-    with pytest.raises(Exception) as execinfo:
-        txhash = str((create_online_singlekey_txn_with_runner(claimType, runner_address, distributor_address, chain_id)))
-        assert str(execinfo.value) == f"for address  : {distributor_address}: Failed in collecting funds for airdrop: failed to execute message; message index: 0: failed to simulate tx"
-        logging.info(f"Insufficient Funds Message = {txhash}")
+#     # ACTUAL DISPENSATION TXN; TXN RAISES AN EXCEPTION ABOUT INSUFFICIENT FUNDS, CAPTURED HERE AND TEST IS MARKED PASS
+#     with pytest.raises(Exception) as execinfo:
+#         txhash = str((create_online_singlekey_txn_with_runner(claimType, runner_address, distributor_address, chain_id)))
+#         assert str(execinfo.value) == f"for address  : {distributor_address}: Failed in collecting funds for airdrop: failed to execute message; message index: 0: failed to simulate tx"
+#         logging.info(f"Insufficient Funds Message = {txhash}")
 
-    try:
-        os.remove('signed.json')
-        os.remove('sample.json')
-        os.remove('output.json')
-    except OSError as e:
-        print("Error: %s - %s." % (e.filename, e.strerror))
+#     try:
+#         os.remove('signed.json')
+#         os.remove('sample.json')
+#         os.remove('output.json')
+#     except OSError as e:
+#         print("Error: %s - %s." % (e.filename, e.strerror))
 
 
 # AUTOMATED TEST TO VALIDATE ONLINE RUN DISPENSATION TXN
