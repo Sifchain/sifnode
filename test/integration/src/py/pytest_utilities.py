@@ -7,7 +7,6 @@ from burn_lock_functions import EthereumToSifchainTransferRequest
 from integration_env_credentials import sifchain_cli_credentials_for_test
 from test_utilities import get_shell_output, SifchaincliCredentials
 
-
 def generate_minimal_test_account(
         base_transfer_request: EthereumToSifchainTransferRequest,
         target_ceth_balance: int = 10 ** 18,
@@ -53,7 +52,9 @@ def generate_test_account(
         rowan_request.sifchain_destination_address = new_sifaddr
         rowan_request.amount = target_rowan_balance
         logging.debug(f"transfer {target_rowan_balance} rowan to {new_sifaddr} from {rowan_request.sifchain_address}")
-        test_utilities.send_from_sifchain_to_sifchain(rowan_request, rowan_source_integrationtest_env_credentials)
+        # Should we use credentials instead of rowansourceint...credentials?
+        # test_utilities.send_from_sifchain_to_sifchain(rowan_request, rowan_source_integrationtest_env_credentials)
+        test_utilities.send_from_sifchain_to_sifchain(rowan_request, credentials)
 
     request: EthereumToSifchainTransferRequest = copy.deepcopy(base_transfer_request)
     request.sifchain_address = new_sifaddr

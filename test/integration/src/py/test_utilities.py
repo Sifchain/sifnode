@@ -430,6 +430,7 @@ def send_from_sifchain_to_sifchain_cmd(
         node,
         f"{transfer_request.amount}{transfer_request.sifchain_symbol}",
         sifchain_fees_entry,
+        home_entry,
         "--gas auto",
         "-y",
     ])
