@@ -77,7 +77,7 @@ from dispensation_envutils import create_offline_singlekey_txn, create_new_sifad
 
 
 #TEST CODE TO ASSERT TAGS GENERATED ON A BLOCK WHEN A NEW SIGNED DISPENSATION IS BROADCASTED on BLOCKCHAIN
-@pytest.mark.parametrize("claimType", ['ValidatorSubsidy', 'LiquidityMining'])
+@pytest.mark.parametrize("claimType", ['ValidatorSubsidy'])
 def test_broadcast_txn(claimType):
     distributor_address, distributor_name = create_new_sifaddr_and_key()
     runner_address, runner_name = create_new_sifaddr_and_key()
@@ -152,7 +152,7 @@ def test_broadcast_txn(claimType):
 
 
 # AUTOMATED TEST TO VALIDATE ONLINE TXN
-@pytest.mark.parametrize("claimType", ['ValidatorSubsidy', 'LiquidityMining'])
+@pytest.mark.parametrize("claimType", ['ValidatorSubsidy'])
 def test_run_offline_singlekey_txn(claimType):
     distributor_address, distributor_name = create_new_sifaddr_and_key()
     runner_address, runner_name = create_new_sifaddr_and_key()

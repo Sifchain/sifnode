@@ -137,7 +137,7 @@ query_block_claim, create_online_singlekey_txn_with_runner, run_dispensation
 
 
 # AUTOMATED TEST TO VALIDATE ONLINE RUN DISPENSATION TXN
-@pytest.mark.parametrize("claimType", ['ValidatorSubsidy', 'LiquidityMining'])
+@pytest.mark.parametrize("claimType", ['ValidatorSubsidy'])
 def test_run_online_singlekey_txn(claimType):
     distributor_address, distributor_name = create_new_sifaddr_and_key()
     runner_address, runner_name = create_new_sifaddr_and_key()
