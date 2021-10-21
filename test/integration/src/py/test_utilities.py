@@ -141,6 +141,7 @@ cmdfile = open("/tmp/testcmds.txt", "w")
 
 
 def get_shell_output(command_line):
+    logging.debug(f"Executing cmd: {command_line}")
     cmdfile.write(command_line)
     if sifnoded_binary in command_line and not "q auth account" in command_line:
         time.sleep(2)
@@ -149,6 +150,7 @@ def get_shell_output(command_line):
     stdout_string = sub.stdout.decode("utf-8").rstrip()
     stderr_string = sub.stderr.decode("utf-8").rstrip()
     logging.debug(f"execute shell command stdout:\n{stdout_string}\n")
+    logging.debug(f"execute shell command exitcode:{sub.returncode}")
     if stderr_string:
         logging.debug(f"\nexecute shell command stderr:\n{stderr_string}")
     if sub.returncode != 0:
@@ -171,12 +173,10 @@ def get_shell_output_json(command_line):
 
 
 def get_shell_output_yaml(command_line):
-    logging.debug(f"Executing cmd: {command_line}")
     output = get_shell_output(command_line)
     if not output:
         print_error_message(f"no result returned from {command_line}")
     try:
-        logging.debug(f"Cmd output: {output}")
         result = yaml.safe_load(output)
         return result
     except:
@@ -235,20 +235,6 @@ def get_password(network_definition_file_json):
 def get_eth_balance(transfer_request: EthereumToSifchainTransferRequest):
     w3 = Web3(Web3.WebsocketProvider(ethereum_websocket))
     return w3.eth.get_balance(transfer_request.ethereum_address)
-    # network_element = f"--ethereum_network {transfer_request.ethereum_network} " if transfer_request.ethereum_network else ""
-    # symbol_element = f"--symbol {transfer_request.ethereum_symbol} " if transfer_request.ethereum_symbol else ""
-    # private_element = f"--ethereum_private_key_env_var \"{transfer_request.ethereum_private_key_env_var}\"" if transfer_request.ethereum_private_key_env_var else ""
-    # command_line = " ".join(
-    #     [f"yarn -s --cwd {transfer_request.smart_contracts_dir}",
-    #      f"integrationtest:getTokenBalance",
-    #      f"--ethereum_address {transfer_request.ethereum_address}",
-    #      f"--json_path {transfer_request.solidity_json_path}",
-    #      private_element,
-    #      symbol_element,
-    #      network_element]
-    # )
-    # result = run_yarn_command(command_line)
-    # return int(result["balanceWei"])
 
 
 def get_whitelisted_tokens(transfer_request: EthereumToSifchainTransferRequest):

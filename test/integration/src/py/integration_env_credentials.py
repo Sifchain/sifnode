@@ -1,3 +1,4 @@
+from typing import Tuple
 import burn_lock_functions
 from burn_lock_functions import SifchaincliCredentials
 from test_utilities import get_required_env_var, get_shell_output
@@ -14,7 +15,7 @@ def sifchain_cli_credentials_for_test(key: str) -> SifchaincliCredentials:
     )
 
 
-def create_new_sifaddr_and_credentials() -> (str, SifchaincliCredentials):
+def create_new_sifaddr_and_credentials() -> Tuple[str, SifchaincliCredentials]:
     new_account_key = get_shell_output("uuidgen")
     credentials = sifchain_cli_credentials_for_test(new_account_key)
     new_addr = burn_lock_functions.create_new_sifaddr(

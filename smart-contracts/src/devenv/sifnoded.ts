@@ -125,6 +125,7 @@ export class SifnodedRunner extends ShellCommand<SifnodedResults> {
     const networkConfig: ValidatorValues[] = YAML.parse(file)
     let homeDir: string = "";
 
+    // TODO: Extract this into function
     for (const validator of networkConfig) {
       const moniker = validator["moniker"]
       const mnemonic = validator["mnemonic"]
@@ -149,10 +150,11 @@ export class SifnodedRunner extends ShellCommand<SifnodedResults> {
         `${this.sifnodedCommand} keys show -a --bech val ${moniker} --keyring-backend test`,
         { encoding: "utf8", input: password }
       ).trim()
+
     }
 
     // Create an ADMIN account on sifnode with name sifnodeadmin
-    const sifnodedAdminAddress = this.addAdminAccount("sifnodeadmin", homeDir);
+    const sifnodedAdminAddress: EbRelayerAccount = this.addAdminAccount("sifnodeadmin", homeDir);
     // Create an account for each relayer as requested
     const relayerAddresses = Array.from({ length: this.nRelayers },
       (_, relayer) => this.addRelayerWitnessAccount(`relayer-${relayer}`, homeDir));
@@ -175,6 +177,9 @@ export class SifnodedRunner extends ShellCommand<SifnodedResults> {
       `${this.sifnodedCommand} tx tokenregistry register-all ${registryPath} --home ${homeDir} --from ${sifnodedAdminAddress.name} --yes --keyring-backend test --chain-id ${this.chainId}`,
       { encoding: "utf8" }
     ).trim()
+
+    // Reference actual value for readability
+    // await this.setCrossChainFee(sifnodedAdminAddress.account, 31337, "ceth", 1, 1, 1, 1)
 
     sifnoded.on('exit', (code) => {
       notifier.notify({
@@ -291,30 +296,21 @@ export class SifnodedRunner extends ShellCommand<SifnodedResults> {
     )
   }
 
-  // TODO: This function is incomplete. it is extracted from sifchain_start_daemon.sh
-  // Currently fails in CLI
-  async whitelistValidators(moniker: string): Promise<string> {
-    const sifnodedArgs = [
-      "keys",
-      "show",
-      "--keyring-backend",
-      "file",
-      "-a",
-      "--bech", "val",
-      moniker,
-    ]
-    return "";
-  }
 
   // TODO set cross chain fee for an EVM based chain
   // sifnoded tx ethbridge set-cross-chain-fee sif1f8sz5779td3y6xsq296k3wurflsdnfxmq5hudd 1 ceth 1 1 1
   // set-cross-chain-fee [cosmos-sender-address] [network-id] [cross-chain-fee] [fee-currency-gas] [minimum-lock-cost] [minimum-burn-cost]
-  async setCrossChainFee(networkId: string, fee: string, homeDir: string): Promise<string> {
+  async setCrossChainFee(sifaddress:string, networkId: string, crossChainFee: string, feeCurrencyGas: string, minLockCost: string, minBurnCost: string, homeDir: string): Promise<string> {
     const sifgenArgs = [
       "tx ethbridge set-cross-chain-fee",
-      networkId,
-      fee,
+      sifaddress,
+      networkId, // This is 31377 for HARDHAT
+      crossChainFee,
+      feeCurrencyGas,
+      minLockCost,
+      minBurnCost,
       "--home", path.join(homeDir, ".sifnoded"),
+      "--from",
     ]
 
     return ChildProcess.execFileSync(
