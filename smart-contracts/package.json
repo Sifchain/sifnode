@@ -61,7 +61,6 @@
     "migrate": "npx truffle migrate --reset",
     "advance": "node scripts/advanceBlock.js",
     "integrationtest:approve": "npx truffle exec scripts/test/approve.js",
-    "integrationtest:createEthereumAddress": "npx truffle exec scripts/test/createEthereumAddress.js",
     "integrationtest:sendBurnTx": "npx truffle exec scripts/test/sendBurnTx.js",
     "integrationtest:sendLockTx": "npx truffle exec scripts/test/sendLockTx.js",
     "integrationtest:sendBulkLockTx": "npx truffle exec scripts/test/sendBulkLockTx.js",
