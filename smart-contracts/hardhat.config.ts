@@ -5,8 +5,8 @@ import "@nomiclabs/hardhat-etherscan"
 import '@openzeppelin/hardhat-upgrades'
 import "reflect-metadata"; // needed by tsyringe
 import "@typechain/hardhat"
+import '@float-capital/solidity-coverage'
 
-// require('solidity-coverage');
 // require("hardhat-gas-reporter");
 // require('hardhat-contract-sizer');
 
@@ -17,10 +17,15 @@ const ropstenUrl = process.env['ROPSTEN_URL'] ?? "https://example.com"
 
 const activePrivateKey = process.env[process.env['ACTIVE_PRIVATE_KEY'] ?? "0xabcd"] ?? "0xabcd";
 
+const runCoverage = !!process.env['RUN_COVERAGE'];
+
+console.log('COVERAGE: ', runCoverage)
+
 const config: HardhatUserConfig = {
   networks: {
     hardhat: {
-      allowUnlimitedContractSize: false
+      allowUnlimitedContractSize: false,
+      initialBaseFeePerGas: runCoverage ? 0 : 875000000
     },
     mainnetFork: {
       url: mainnetUrl,
