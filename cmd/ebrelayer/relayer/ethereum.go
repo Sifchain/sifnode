@@ -389,12 +389,22 @@ func (sub EthereumSub) logToEvent(clientChainID *big.Int, contractAddress common
 		return event, false, nil
 	}
 
-	_, err := contractABI.Unpack(eventName, cLog.Data)
+	evs, err := contractABI.Unpack(eventName, cLog.Data)
 	if err != nil {
 		sub.SugaredLogger.Errorw(".",
 			errorMessageKey, err.Error())
 		return event, false, err
+	} else if len(evs) == 0 {
+		sub.SugaredLogger.Errorw("no event to unpack")
+		return event, false, err
 	}
+
+	event, ok := evs[0].(types.EthereumEvent)
+	if !ok {
+		sub.SugaredLogger.Errorw("invalid event unpacked")
+		return event, false, err
+	}
+
 	event.BridgeContractAddress = contractAddress
 	event.EthereumChainID = clientChainID
 	if eventName == types.LogBurn.String() {
