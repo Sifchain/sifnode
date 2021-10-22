@@ -36,6 +36,8 @@ class EthereumToSifchainTransferRequest:
     ceth_amount: int = 0
     # Deprecated, see https://github.com/Sifchain/sifnode/pull/1802#discussion_r697403408
     sifchain_fees: str = ""
+    gas_prices = "0.5rowan"
+    gas_adjustment = "1.5"
     smart_contracts_dir: str = ""
     ethereum_chain_id: str = "5777"
     chain_id: str = "localnet"  # cosmos chain id
@@ -404,7 +406,10 @@ def send_from_sifchain_to_sifchain_cmd(
     chain_id_entry = f"--chain-id {transfer_request.chain_id}" if transfer_request.chain_id else ""
     node = f"--node {transfer_request.sifnoded_node}" if transfer_request.sifnoded_node else ""
     # Deprecated, see https://github.com/Sifchain/sifnode/pull/1802#discussion_r697403408
-    sifchain_fees_entry = f"--fees {transfer_request.sifchain_fees}" if transfer_request.sifchain_fees else ""
+    # sifchain_fees_entry = f"--fees {transfer_request.sifchain_fees}" if transfer_request.sifchain_fees else ""
+    gas_prices_entry = f"--gas-prices {transfer_request.gas_prices}"
+    gas_adjustment_entry = f"--gas-adjustment {transfer_request.gas_adjustment}"
+
     home_entry = f"--home {credentials.sifnoded_homedir}" if credentials.sifnoded_homedir else ""
     cmd = " ".join([
         yes_entry,
@@ -415,7 +420,8 @@ def send_from_sifchain_to_sifchain_cmd(
         chain_id_entry,
         node,
         f"{transfer_request.amount}{transfer_request.sifchain_symbol}",
-        sifchain_fees_entry,
+        gas_prices_entry,
+        gas_adjustment_entry,
         home_entry,
         "--gas auto",
         "-y",
@@ -449,7 +455,10 @@ def send_from_sifchain_to_ethereum_cmd(
     keyring_backend_entry = f"--keyring-backend {credentials.keyring_backend}" if credentials.keyring_backend else ""
     node = f"--node {transfer_request.sifnoded_node}" if transfer_request.sifnoded_node else ""
     # Deprecated, see https://github.com/Sifchain/sifnode/pull/1802#discussion_r697403408
-    sifchain_fees_entry = f"--fees {transfer_request.sifchain_fees}" if transfer_request.sifchain_fees else ""
+    # sifchain_fees_entry = f"--fees {transfer_request.sifchain_fees}" if transfer_request.sifchain_fees else ""s
+    gas_prices_entry = f"--gas-prices {transfer_request.gas_prices}"
+    gas_adjustment_entry = f"--gas-adjustment {transfer_request.gas_adjustment}"
+
     direction = "lock" if transfer_request.sifchain_symbol == "rowan" else "burn"
     home_entry = f"--home {credentials.sifnoded_homedir}" if credentials.sifnoded_homedir else ""
     from_entry = f"--from {credentials.from_key} " if credentials.from_key else ""
@@ -466,7 +475,8 @@ def send_from_sifchain_to_ethereum_cmd(
                    f"{transfer_request.sifchain_symbol} " \
                    f"{ceth_charge} " \
                    f"{keyring_backend_entry} " \
-                   f"{sifchain_fees_entry} " \
+                   f"{gas_prices_entry}" \
+                   f"{gas_adjustment_entry}" \
                    f"--network-descriptor={transfer_request.ethereum_chain_id} " \
                    f"--chain-id={transfer_request.chain_id} " \
                    f"{home_entry} " \
@@ -802,7 +812,9 @@ def build_sifchain_command(
     home_entry = f"--home {credentials.sifnoded_homedir}" if credentials.sifnoded_homedir else ""
     from_entry = f"--from {credentials.from_key} " if credentials.from_key else ""
     # Deprecated, see https://github.com/Sifchain/sifnode/pull/1802#discussion_r697403408
-    sifchain_fees_entry = f"--fees {transfer_request.sifchain_fees}" if transfer_request.sifchain_fees else ""
+    # sifchain_fees_entry = f"--fees {transfer_request.sifchain_fees}" if transfer_request.sifchain_fees else ""
+    gas_prices_entry = f"--gas-prices {transfer_request.gas_prices}"
+    gas_adjustment_entry = f"--gas-adjustment {transfer_request.gas_adjustment}"
     return " ".join([
         yes_entry,
         command_contents,
@@ -811,5 +823,6 @@ def build_sifchain_command(
         node_entry,
         home_entry,
         from_entry,
-        sifchain_fees_entry,
+        gas_prices_entry,
+        gas_prices_entry,
     ])
