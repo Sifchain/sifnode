@@ -87,13 +87,13 @@
     "token:mint": "npx truffle exec scripts/mintTestTokens.js",
     "token:approve": "npx truffle exec scripts/sendApproveTx.js",
     "test:setup": "cp .env.example .env",
-    "coverage": "RUN_COVERAGE=1 npx hardhat coverage",
-    "compile": "hardhat compile",
+    "compile": "npx hardhat compile --force",
     "test": "npx hardhat test",
-    "gas": "REPORT_GAS=1 npx hardhat test",
-    "testHardhat": "npx hardhat test test/test_bridgeBankMigration.ts  test/test_newBridgeBank.ts",
+    "gas": "REPORT_GAS=1 yarn test",
+    "size": "yarn compile && npx hardhat size-contracts",
+    "coverage": "RUN_COVERAGE=1 npx hardhat coverage",
     "whitelist:run": "npx hardhat run scripts/fetchTokenDetails.js --network mainnet && npx hardhat run scripts/bulk_set_whitelist.ts --network mainnet",
-    "whitelist:test": "npx hardhat run scripts/fetchTokenDetails.js --network hardhat && npx hardhat run scripts/bulk_set_whitelist.ts --network hardhat"
+    "whitelist:test": "USE_FORKING=1 npx hardhat run scripts/fetchTokenDetails.js --network hardhat && USE_FORKING=1 npx hardhat run scripts/bulk_set_whitelist.ts --network hardhat"
   },
   "dependencies": {
     "@types/node": "^10.17.19",
