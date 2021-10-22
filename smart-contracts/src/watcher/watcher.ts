@@ -1,22 +1,29 @@
 import {filter, map} from 'rxjs/operators';
-import * as fs from 'fs';
-import * as readline from 'readline'
-import {Observable, ReplaySubject} from "rxjs";
-import {
-    isNotNullOrUndefined,
-    jsonParseSimple,
-    readableStreamToObservable, tailFileAsObservable
-} from "./utilities";
-import {EvmStateTransition, toEvmRelayerEvent} from "./ebrelayer";
-import {lastValueFrom} from "rxjs";
+import {interval, merge, Observable} from "rxjs";
+import {isNotNullOrUndefined, jsonParseSimple, tailFileAsObservable} from "./utilities";
+import {EbRelayerEvent, toEvmRelayerEvent} from "./ebrelayer";
 
-export function sifwatch(filename: string): Observable<EvmStateTransition> {
+export interface SifwatchLogs {
+    evmrelayer: string
+}
+
+export interface SifHeartbeat {
+    kind: "SifHeartbeat"
+    value: number
+}
+
+export type SifEvent = EbRelayerEvent | SifHeartbeat
+
+export function sifwatch(logs: SifwatchLogs): Observable<SifEvent> {
     // const evmRelayerLines = readableStreamToObservable(fs.createReadStream("/tmp/sifnode/evmrelayer.log"))
-    const evmRelayerLines = tailFileAsObservable(filename)
-    const evmRelayerEvents = evmRelayerLines.pipe(
+    const evmRelayerLines = tailFileAsObservable(logs.evmrelayer)
+    const evmRelayerEvents: Observable<EbRelayerEvent> = evmRelayerLines.pipe(
         map(jsonParseSimple),
         map(toEvmRelayerEvent),
-        filter<EvmStateTransition | undefined, EvmStateTransition>(isNotNullOrUndefined)
+        filter<EbRelayerEvent | undefined, EbRelayerEvent>(isNotNullOrUndefined)
     )
-    return evmRelayerEvents
+    const heartbeat = interval(1000).pipe(map(i => {
+        return {kind: "SifHeartbeat", value: i} as SifHeartbeat
+    }))
+    return merge(evmRelayerEvents, heartbeat)
 }
