@@ -120,7 +120,7 @@ rake "sifnode:keys:docker:public[sifchain/sifnoded, sifchain-1]"
 2. Stake:
 
 ```bash
-rake "sifnode:staking:stake[<commission_max_change_rate>,<commission_max_rate>,<commission_rate>,<chain_id>,<moniker>,<amount>,<gas>,<gas_prices>,<public_key>,<node>]"
+rake "sifnode:staking:stake[<commission_max_change_rate>,<commission_max_rate>,<commission_rate>,<chain_id>,<moniker>,<amount>,<gas>,<gas_prices>,<public_key>,<node_rpc_address>,<keyring_backend>]"
 ```
 
 where:
@@ -137,11 +137,11 @@ where:
 |`<gas_prices>`|The minimum gas price to use  (e.g.: `0.5rowan`).|
 |`<public_key>`|The public key of your validator (you got this in the previous step).|
 |`<node_rpc_address>`|The address to broadcast the transaction to (e.g.: `tcp://rpc.sifchain.finance:80`).|
-
+|`<keyring_backend>`|The keyring backend to use (e.g.: `file`).|
 e.g.:
 
 ```bash
-rake "sifnode:staking:stake[0.1,0.1,0.1,sifchain-1,my-node,10000000rowan,300000,0.5rowan,<public_key>,tcp://rpc.sifchain.finance:80]"
+rake "sifnode:staking:stake[0.1,0.1,0.1,sifchain-1,my-node,10000000rowan,300000,0.5rowan,<public_key>,tcp://rpc.sifchain.finance:80,os]"
 ```
 
 3. It may take several blocks before your node appears as a validator on the network, but you can always check by running:
