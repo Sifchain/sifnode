@@ -10,11 +10,8 @@ func Init(ctx sdk.Context, keeper tokenregistrytypes.Keeper) {
 	if err != nil {
 		panic(err)
 	}
-
 	keeper.SetAdminAccount(ctx, addr)
-
 	registry := tokenregistrytypes.InitialRegistry()
-
 	for _, t := range registry.Entries {
 		keeper.SetToken(ctx, t)
 	}
