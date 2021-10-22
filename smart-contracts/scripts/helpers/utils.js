@@ -1,16 +1,35 @@
 /**
- * List of colors to be used in the below function
+ * List of colors to be used in the `print` function
  */
 const colors = {
+  // simple font colors
   black: "\x1b[30m",
-  green: "\x1b[42m\x1b[30m",
-  red: "\x1b[41m\x1b[37m",
+  red: "\x1b[31m",
+  green: "\x1b[32m",
   yellow: "\x1b[33m",
   blue: "\x1b[34m",
   magenta: "\x1b[35m",
   cyan: "\x1b[36m",
   white: "\x1b[37m",
-  highlight: "\x1b[40m\x1b[37m",
+
+  // highlights
+  h_black: "\x1b[40m\x1b[37m",
+  h_red: "\x1b[41m\x1b[37m",
+  h_green: "\x1b[42m\x1b[30m",
+  h_yellow: "\x1b[43m\x1b[30m",
+  h_blue: "\x1b[44m\x1b[37m",
+  h_magenta: "\x1b[45m\x1b[37m",
+  h_cyan: "\x1b[46m\x1b[30m",
+  h_white: "\x1b[47m\x1b[30m",
+
+  // aliases
+  highlight: "\x1b[47m\x1b[30m", // white bg and black font
+  error: "\x1b[41m\x1b[37m💥 ", // red bg, white font and explosion emoji
+  success: "\x1b[32m✅ ", // green font and check emoji
+  bigSuccess: "\x1b[42m\x1b[30m✅ ", // green bg, black font and check emoji
+  warn: "\x1b[43m\x1b[30m📣 ", // yellow bg, black font and megaphone emoji
+
+  // mandatory close
   close: "\x1b[0m",
 };
 
@@ -84,7 +103,7 @@ function generateTodayFilename({ prefix, extension, directory }) {
 /**
  * Busts cache
  * @param {string} url The url to be cacheBusted
- * @returns The same URL with something '?cacheBuster=95508245028' appended to it
+ * @returns {string} The same URL with something like '?cacheBuster=95508245028' appended to it
  */
 function cacheBuster(url) {
   const rand = Math.floor(Math.random() * (9999999999 - 2) + 1);
@@ -94,9 +113,36 @@ function cacheBuster(url) {
 }
 
 /**
+ * Removes duplicates from arrays
+ * @param {array} list Your array
+ * @returns {array} an array containing no duplicates
+ */
+function removeDuplicates(list) {
+  const uniqueSet = new Set(list);
+  return [...uniqueSet];
+}
+
+/**
+ * Compares two arrays and returns true if they have the same length and the exact same elements, even if out of order
+ * @param {array} List 1
+ * @param {array} List 2
+ * @returns {bool} Do they have the same elements and length?
+ */
+function hasSameElementsAndLength(a, b) {
+  if (a.length !== b.length) return false;
+  const uniqueValues = new Set([...a, ...b]);
+  for (const v of uniqueValues) {
+    const aCount = a.filter((e) => e === v).length;
+    const bCount = b.filter((e) => e === v).length;
+    if (aCount !== bCount) return false;
+  }
+  return true;
+}
+
+/**
  * Generates a valid Peggy1 Denom
  * @param {string} symbol The symbol that should be converted to a V1 denom
- * @returns The denom, something like 'ceth'
+ * @returns {string} The denom, something like 'ceth'
  */
 function generateV1Denom(symbol) {
   const denom = "c" + symbol.toLowerCase();
@@ -107,7 +153,6 @@ function generateV1Denom(symbol) {
  * Model of an object that the Sifnode team cares about
  */
 const SIFNODE_MODEL = {
-  is_whitelisted: true,
   decimals: "",
   denom: "",
   base_denom: "",
@@ -131,6 +176,8 @@ module.exports = {
   isValidSymbol,
   generateTodayFilename,
   cacheBuster,
+  removeDuplicates,
+  hasSameElementsAndLength,
   generateV1Denom,
   SIFNODE_MODEL,
 };

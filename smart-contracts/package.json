@@ -90,6 +90,7 @@
     "coverage": "RUN_COVERAGE=1 npx hardhat coverage",
     "compile": "hardhat compile",
     "test": "npx hardhat test",
+    "gas": "REPORT_GAS=1 npx hardhat test",
     "testHardhat": "npx hardhat test test/test_bridgeBankMigration.ts  test/test_newBridgeBank.ts",
     "whitelist:run": "npx hardhat run scripts/fetchTokenDetails.js --network mainnet && npx hardhat run scripts/bulk_set_whitelist.ts --network mainnet",
     "whitelist:test": "npx hardhat run scripts/fetchTokenDetails.js --network hardhat && npx hardhat run scripts/bulk_set_whitelist.ts --network hardhat"
