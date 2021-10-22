@@ -60,6 +60,11 @@ message CrossChainFeeConfig {
     (gogoproto.nullable) = false,
     (gogoproto.moretags) = "yaml:\"minimum_burn_cost\""
   ];
+  string first_lock_double_peggy_cost = 5 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.nullable) = false,
+    (gogoproto.moretags) = "yaml:\"first_lock_double_peggy_cost\""
+  ];
 }
 
 // ProphecyInfo include the ethereum addressed and signatures.

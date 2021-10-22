@@ -23,4 +23,5 @@ var (
 	GlobalNoncePrefix                  = []byte{0x02}
 	EthereumLockBurnNoncePrefix        = []byte{0x03}
 	GlobalNonceToBlockNumberPrefix     = []byte{0x04}
+	FirstLockDoublePegPrefix           = []byte{0x05}
 )

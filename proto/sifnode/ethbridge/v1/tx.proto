@@ -124,6 +124,11 @@ message MsgSetFeeInfo {
     (gogoproto.nullable) = false,
     (gogoproto.moretags) = "yaml:\"minimum_burn_cost\""
   ];
+  string first_lock_double_peggy_cost = 7 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.nullable) = false,
+    (gogoproto.moretags) = "yaml:\"first_lock_double_peggy_cost\""
+  ];
 }
 
 message MsgSetFeeInfoResponse {}

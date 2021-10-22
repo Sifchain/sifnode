@@ -29,8 +29,9 @@ func TestKeeper_GetCrossChainFee(t *testing.T) {
 	gas := sdk.NewInt(0)
 	lockCost := sdk.NewInt(0)
 	burnCost := sdk.NewInt(0)
+	firstLockDoublePeggyCost := sdk.NewInt(0)
 
-	app.OracleKeeper.SetCrossChainFee(ctx, networkDescriptor, token, gas, lockCost, burnCost)
+	app.OracleKeeper.SetCrossChainFee(ctx, networkDescriptor, token, gas, lockCost, burnCost, firstLockDoublePeggyCost)
 
 	// case for well set the configure
 	tokenStored, err := app.OracleKeeper.GetCrossChainFee(ctx, networkDescriptor)
@@ -47,8 +48,9 @@ func TestKeeper_SetCrossChainFee(t *testing.T) {
 	gas := sdk.NewInt(0)
 	lockCost := sdk.NewInt(0)
 	burnCost := sdk.NewInt(0)
+	firstLockDoublePeggyCost := sdk.NewInt(0)
 
-	app.OracleKeeper.SetCrossChainFee(ctx, networkDescriptor, token, gas, lockCost, burnCost)
+	app.OracleKeeper.SetCrossChainFee(ctx, networkDescriptor, token, gas, lockCost, burnCost, firstLockDoublePeggyCost)
 
 	tokenStored, err := app.OracleKeeper.GetCrossChainFee(ctx, networkDescriptor)
 	assert.NoError(t, err)
