@@ -2,11 +2,11 @@
   "entries": [
     {
       "decimals": "6",
-      "denom": "ibc/F288763980626E19E9BC3B3ABDB24F1C660073FDFAD096EDE1B0ABCB35705210",
+      "denom": "ibc/A2E0EFABD035F5460225E92C0F604F7C01AE3A9DF0CFF18FB08519CCD23AAE9D",
       "base_denom": "uusd",
       "path": "",
-      "ibc_channel_id": "channel-33",
-      "ibc_counterparty_channel_id": "channel-0",
+      "ibc_channel_id": "channel-45",
+      "ibc_counterparty_channel_id": "channel-27",
       "display_name": "",
       "display_symbol": "",
       "network": "",
