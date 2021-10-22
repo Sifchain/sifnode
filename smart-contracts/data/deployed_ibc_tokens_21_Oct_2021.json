@@ -9,7 +9,8 @@
    "grantMinterRoleTx": "0xf9f1b195728578b59af83ee4244e4c98d7a82f86607c7bbb75db70f8f8d1b8b6",
    "grantAdminRoleTx": "0xd1cf411d6396f0fdec275d7a615e8371411e4f346f845e5cb3ac443234f8fd23",
    "renounceMinterRoleTx": "0xc36934c4af584cd02d6468a5385a4c48f991fe7e8ea8ddba0e6e01ca1c1e2756",
-   "renounceAdminRoleTx": "0x15008a431e21c6a9f7ca12058a5a7d28bffd9bd5455fe19d243c9376d0a69e5f"
+   "renounceAdminRoleTx": "0x15008a431e21c6a9f7ca12058a5a7d28bffd9bd5455fe19d243c9376d0a69e5f",
+   "registerTx": "0xcac6ffd0400e4c2da9852162e3373ea7c3638ad3ebf6b2f88c2d21042b56daf0"
   }
  ],
  "totalCost": "0.153928591390941388"
