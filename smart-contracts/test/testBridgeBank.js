@@ -101,11 +101,6 @@ describe("Test Bridge Bank", function () {
       const FakeTokenFactory = await ethers.getContractFactory("FakeERC20");
       const fakeToken = await FakeTokenFactory.deploy();
 
-      // Add the token into white list
-      await state.bridgeBank.connect(operator)
-        .updateEthWhiteList(fakeToken.address, true)
-        .should.be.fulfilled;
-
       // Approve and lock tokens
       await expect(state.bridgeBank.connect(userOne).lock(state.sender, fakeToken.address, state.amount))
         .to.emit(state.bridgeBank, 'LogLock')

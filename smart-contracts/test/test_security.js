@@ -488,11 +488,6 @@ describe("Security Test", function () {
     });
 
     it("should allow users to unpeg troll token, but then does not receive", async function () {
-      // Add the token into white list
-      await state.bridgeBank.connect(operator)
-        .updateEthWhiteList(state.troll.address, true)
-        .should.be.fulfilled;
-
       // approve and lock tokens
       await state.troll.connect(userOne).approve(
         state.bridgeBank.address,
@@ -557,11 +552,6 @@ describe("Security Test", function () {
       );
       await reentrancyToken.deployed();
 
-      // Add the token into white list
-      await state.bridgeBank.connect(operator)
-        .updateEthWhiteList(reentrancyToken.address, true)
-        .should.be.fulfilled;
-
       // approve and lock tokens
       await reentrancyToken.connect(userOne).approve(
         state.bridgeBank.address,
@@ -613,71 +603,6 @@ describe("Security Test", function () {
       // Last nonce should now be 1 (because it does NOT REVERT)
       let lastNonceSubmitted = Number(await state.cosmosBridge.lastNonceSubmitted());
       expect(lastNonceSubmitted).to.be.equal(1);
-    });
-
-    it("should not allow the operator to add a token to Eth whitelist if it's already in Cosmos whitelist", async function () {
-      // assert that the cosmos bridge token has not been created
-      let bridgeToken = await state.cosmosBridge.sourceAddressToDestinationAddress(
-        state.token1.address
-      );
-      expect(bridgeToken).to.be.equal(state.constants.zeroAddress);
-
-      // to create a new token we send a new double-peg prophecyClaim
-      state.nonce = 1;
-      const { digest, claimData, signatures } = await getValidClaim({
-        sender: state.sender,
-        senderSequence: state.senderSequence,
-        recipientAddress: state.recipient.address,
-        tokenAddress: state.token1.address,
-        amount: state.amount,
-        doublePeg: true,
-        nonce: state.nonce,
-        networkDescriptor: state.networkDescriptor,
-        tokenName: state.name,
-        tokenSymbol: state.symbol,
-        tokenDecimals: state.decimals,
-        cosmosDenom: state.constants.denom.one,
-        validators: [userOne, userTwo, userFour],
-      });
-
-      const expectedAddress = ethers.utils.getContractAddress({ from: state.bridgeBank.address, nonce: 1 });
-
-      await expect(state.cosmosBridge
-        .connect(userOne)
-        .submitProphecyClaimAggregatedSigs(
-          digest,
-          claimData,
-          signatures
-        )).to.emit(state.cosmosBridge, 'LogNewBridgeTokenCreated')
-        .withArgs(
-          state.decimals,
-          state.networkDescriptor,
-          state.name,
-          state.symbol,
-          state.token1.address,
-          expectedAddress,
-          state.constants.denom.one
-        );
-
-      const newlyCreatedTokenAddress = await state.cosmosBridge.sourceAddressToDestinationAddress(state.token1.address);
-      expect(newlyCreatedTokenAddress).to.be.equal(expectedAddress);
-
-      // now assert that the bridge token has been created and is in cosmosWhitelist
-      const isInCosmosWhitelist = await state.bridgeBank.getCosmosTokenInWhiteList(
-        expectedAddress
-      );
-      expect(isInCosmosWhitelist).to.be.true;
-
-      // Try adding the token into white list
-      await expect(state.bridgeBank.connect(operator)
-        .updateEthWhiteList(expectedAddress, true))
-        .to.be.revertedWith('already in cosmos whitelist');
-    });
-
-    it("should not allow the operator to batch add tokens to Eth whitelist if the lists length don't match", async function () {
-      await expect(state.bridgeBank.connect(operator)
-        .batchUpdateEthWhiteList([state.token2.address, state.token3.address], [true]))
-        .to.be.revertedWith('INV_LEN');
     });
   });
 });

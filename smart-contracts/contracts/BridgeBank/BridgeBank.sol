@@ -157,44 +157,6 @@ contract BridgeBank is BankStorage,
     }
 
     /**
-     * @notice Allows the operator to add or remove `_token` to/from the Eth whitelist
-     * @dev Set the token address in Eth whitelist
-     * @param _token ERC 20's address
-     * @param _inList Set the _token in list or not
-     * @return New value of if _token in whitelist
-     */
-    function updateEthWhiteList(address _token, bool _inList)
-        public
-        onlyOperator
-        returns (bool)
-    {
-        // Do not allow a token with the same address to be whitelisted
-        if (_inList) {
-            // if we want to add it to the whitelist, make sure it's not there yet
-            require(!getTokenInEthWhiteList(_token), "already in eth whitelist");
-            require(!getCosmosTokenInWhiteList(_token), "already in cosmos whitelist");
-        } else {
-            // if we want to de-whitelist it, make sure that the token is already whitelisted 
-            require(getTokenInEthWhiteList(_token), "!whitelisted");
-        }
-        return setTokenInEthWhiteList(_token, _inList);
-    }
-
-    /**
-     * @notice Allows the operator to add or remove a list of tokens to/from the Eth whitelist
-     * @dev Set N token addresses in Eth whitelist
-     * @param _tokens List of ERC 20's addresses
-     * @param _inList List of booleans for each address: set _tokens[i] in list or not
-     */
-    function batchUpdateEthWhiteList(address[] calldata _tokens, bool[] calldata _inList) public onlyOperator {
-        require(_tokens.length == _inList.length, "INV_LEN");
-
-        for (uint256 i = 0; i < _tokens.length; i++) {
-            updateEthWhiteList(_tokens[i], _inList[i]);
-        }
-    }
-
-    /**
      * @dev Set the token address in Cosmos whitelist
      * @param token ERC 20's address
      * @param inList Set the token in list or not

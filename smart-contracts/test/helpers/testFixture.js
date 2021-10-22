@@ -91,7 +91,6 @@ async function setup({
 
   await deployBaseContracts(state);
   await deployRowan(state);
-  await addTokenToEthWhitelist(state, state.token.address);
 
   if (lockTokensOnBridgeBank) {
     // Lock tokens on contract
@@ -312,18 +311,6 @@ async function deployTrollToken() {
   return troll;
 }
 
-async function addTokenToEthWhitelist(state, tokenAddress) {
-  await state.bridgeBank.connect(state.operator).updateEthWhiteList(tokenAddress, true).should.be
-    .fulfilled;
-}
-
-async function batchAddTokensToEthWhitelist(state, tokenAddressList) {
-  const inList = Array(tokenAddressList.length).fill(true);
-
-  await state.bridgeBank.connect(state.operator).batchUpdateEthWhiteList(tokenAddressList, inList)
-    .should.be.fulfilled;
-}
-
 /**
  * Creates a valid claim
  * @returns { digest, signatures, claimData }
@@ -392,6 +379,4 @@ module.exports = {
   signHash,
   getDigestNewProphecyClaim,
   getValidClaim,
-  addTokenToEthWhitelist,
-  batchAddTokensToEthWhitelist,
 };
