@@ -64,5 +64,5 @@ export async function buildLocalNet({
       proc.kill("SIGTERM");
     })
   );
-  // await takeSnapshot({ home });
+  await takeSnapshot({ home });
 }
