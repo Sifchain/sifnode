@@ -136,24 +136,6 @@ echo "\n\ngenerated entry for $REGEN_CHAIN_ID"
 cat $SIFCHAIN_ID/regen.json | jq
 
 sifnoded q tokenregistry generate \
-	--token_base_denom=uluna \
-	--token_ibc_counterparty_chain_id=$TERRA_CHAIN_ID \
-  --token_ibc_channel_id=$TERRA_CHANNEL_ID \
-  --token_ibc_counterparty_channel_id=$TERRA_COUNTERPARTY_CHANNEL_ID \
-	--token_ibc_counterparty_denom="" \
-	--token_unit_denom="" \
-	--token_decimals=6 \
-	--token_display_name="Luna" \
-	--token_external_symbol="" \
-	--token_permission_clp=true \
-	--token_permission_ibc_export=true \
-	--token_permission_ibc_import=true | jq > $SIFCHAIN_ID/terra.json
-
-echo "\n\ngenerated entry for bombay-10"
-
-cat $SIFCHAIN_ID/terra.json | jq
-
-sifnoded q tokenregistry generate \
 	--token_base_denom=uosmo \
 	--token_ibc_counterparty_chain_id=$OSMOSIS_CHAIN_ID \
   --token_ibc_channel_id=$OSMOSIS_CHANNEL_ID \
@@ -296,3 +278,39 @@ sifnoded q tokenregistry generate \
 echo "\n\ngenerated entry for $EMONEY_CHAIN_ID"
 
 cat $SIFCHAIN_ID/emoney-eeur.json | jq
+
+sifnoded q tokenregistry generate \
+	--token_base_denom=uluna \
+	--token_ibc_counterparty_chain_id=$TERRA_CHAIN_ID \
+  --token_ibc_channel_id=$TERRA_CHANNEL_ID \
+  --token_ibc_counterparty_channel_id=$TERRA_COUNTERPARTY_CHANNEL_ID \
+	--token_ibc_counterparty_denom="" \
+	--token_unit_denom="" \
+	--token_decimals=6 \
+	--token_display_name="" \
+	--token_external_symbol="" \
+	--token_permission_clp=true \
+	--token_permission_ibc_export=true \
+	--token_permission_ibc_import=true | jq > $SIFCHAIN_ID/terra.json
+
+echo "\n\ngenerated entry for $TERRA_CHAIN_ID"
+
+cat $SIFCHAIN_ID/terra.json | jq
+
+sifnoded q tokenregistry generate \
+	--token_base_denom=uusd \
+	--token_ibc_counterparty_chain_id=$TERRA_CHAIN_ID \
+  --token_ibc_channel_id=$TERRA_CHANNEL_ID \
+  --token_ibc_counterparty_channel_id=$TERRA_COUNTERPARTY_CHANNEL_ID \
+	--token_ibc_counterparty_denom="" \
+	--token_unit_denom="" \
+	--token_decimals=6 \
+	--token_display_name="" \
+	--token_external_symbol="" \
+	--token_permission_clp=true \
+	--token_permission_ibc_export=true \
+	--token_permission_ibc_import=true | jq > $SIFCHAIN_ID/terra-uusd.json
+
+echo "\n\ngenerated entry for $TERRA_CHAIN_ID"
+
+cat $SIFCHAIN_ID/terra-uusd.json | jq

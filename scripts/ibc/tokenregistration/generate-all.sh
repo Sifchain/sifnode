@@ -38,7 +38,9 @@ sifnoded q tokenregistry add ./$SIFCHAIN_ID/temp.json ./$SIFCHAIN_ID/likecoin.js
 rm ./$SIFCHAIN_ID/temp.json
 sifnoded q tokenregistry add ./$SIFCHAIN_ID/tokenregistry.json ./$SIFCHAIN_ID/bitsong.json | jq > $SIFCHAIN_ID/temp.json
 rm ./$SIFCHAIN_ID/tokenregistry.json
-sifnoded q tokenregistry add ./$SIFCHAIN_ID/temp.json ./$SIFCHAIN_ID/band.json | jq > $SIFCHAIN_ID/temp2.json
+sifnoded q tokenregistry add ./$SIFCHAIN_ID/temp.json ./$SIFCHAIN_ID/band.json | jq > $SIFCHAIN_ID/tokenregistry.json
 rm ./$SIFCHAIN_ID/temp.json
-sifnoded q tokenregistry add ./$SIFCHAIN_ID/temp2.json ./$SIFCHAIN_ID/emoney-eeur.json | jq > $SIFCHAIN_ID/tokenregistry.json
-rm ./$SIFCHAIN_ID/temp2.json
+sifnoded q tokenregistry add ./$SIFCHAIN_ID/tokenregistry.json ./$SIFCHAIN_ID/emoney-eeur.json | jq > $SIFCHAIN_ID/temp.json
+rm ./$SIFCHAIN_ID/tokenregistry.json
+sifnoded q tokenregistry add ./$SIFCHAIN_ID/temp.json ./$SIFCHAIN_ID/terra-uusd.json | jq > $SIFCHAIN_ID/tokenregistry.json
+rm ./$SIFCHAIN_ID/temp.json

@@ -2637,12 +2637,12 @@
     },
     {
       "decimals": "6",
-      "denom": "ibc/0F24FDC3E75A4724A875A37B4F742AC12010F540325864D5AEB213CEB2595A9D",
+      "denom": "ibc/452372B8214E22C625E98958C5EDFB939C48E6590E40B711E9D30206EF8EDC9B",
       "base_denom": "uluna",
-      "path": "transfer/channel-33",
-      "ibc_channel_id": "channel-33",
-      "ibc_counterparty_channel_id": "channel-0",
-      "display_name": "Luna",
+      "path": "",
+      "ibc_channel_id": "channel-45",
+      "ibc_counterparty_channel_id": "channel-27",
+      "display_name": "",
       "display_symbol": "",
       "network": "",
       "address": "",
@@ -2832,6 +2832,28 @@
       "unit_denom": "",
       "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": "emoney-3"
+    },
+    {
+      "decimals": "6",
+      "denom": "ibc/A2E0EFABD035F5460225E92C0F604F7C01AE3A9DF0CFF18FB08519CCD23AAE9D",
+      "base_denom": "uusd",
+      "path": "",
+      "ibc_channel_id": "channel-45",
+      "ibc_counterparty_channel_id": "channel-27",
+      "display_name": "",
+      "display_symbol": "",
+      "network": "",
+      "address": "",
+      "external_symbol": "",
+      "transfer_limit": "",
+      "permissions": [
+        "CLP",
+        "IBCEXPORT",
+        "IBCIMPORT"
+      ],
+      "unit_denom": "",
+      "ibc_counterparty_denom": "",
+      "ibc_counterparty_chain_id": "bombay-12"
     }
   ]
 }
