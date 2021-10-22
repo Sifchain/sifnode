@@ -48,17 +48,6 @@ contract EthereumWhiteList {
     }
 
     /**
-     * @dev Modifier to restrict erc20 can be locked
-     */
-    modifier onlyEthTokenWhiteList(address _token) {
-        require(
-            getTokenInEthWhiteList(_token),
-            "Only token in eth whitelist can be transferred to cosmos"
-        );
-        _;
-    }
-
-    /**
      * @dev Modifier to restrict EVM addresses
      */
     modifier onlyNotBlocklisted(address account) {
