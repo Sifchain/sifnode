@@ -1,6 +1,6 @@
 #!/usr/bin/env zx
 
-import { buildLocalnet } from "../lib/buildLocalnet.mjs";
+import { buildLocalNet } from "../lib/buildLocalNet.mjs";
 import { arg } from "../utils/arg.mjs";
 import { getChainProps } from "../utils/getChainProps.mjs";
 
@@ -31,4 +31,4 @@ const chainProps = getChainProps({
   home,
 });
 
-await buildLocalnet({ ...chainProps });
+await buildLocalNet({ ...chainProps });

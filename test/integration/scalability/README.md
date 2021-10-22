@@ -75,4 +75,16 @@ yarn zx test/test-ibc-transfer-between-two-chains.mjs
 
 ### Snapshot
 
-TBD
+The initiation steps of the IBC chains and relayers take quite some time, that's why it is possible to take a snapshot of the current state of the IBC chains and relayers and store them in a `tar` archive file. This snapshot could be reused each time we are running a test.
+
+If you have initiated and started your chains and relayers manually using the command described above, then all that remains is to call the following command line to create the snapshot file:
+
+```
+yarn takeSnapshot
+```
+
+Otherwise if want to create a snapshot from scratch that runs all the commands described above for you, then use instead the command line below:
+
+```
+yarn buildLocalNet
+```

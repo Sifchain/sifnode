@@ -28,17 +28,7 @@ pprofPort   ${pprofPort}
 home        ${home}
   `);
 
-  const proc = nothrow(
-    $`${binary} start --home ${home} --rpc.laddr tcp://127.0.0.1:${rpcPort} --p2p.laddr tcp://127.0.0.1:${p2pPort} --grpc.enable=0 --rpc.pprof_laddr 127.0.0.1:${pprofPort}`
-  );
-
-  //   for await (let chunk of proc.stderr) {
-  //     if (chunk.includes("indexed block")) break;
-  //   }
-  //   proc.kill("SIGINT");
-
-  await sleep(5000);
-
+  const proc = $`${binary} start --home ${home} --rpc.laddr tcp://127.0.0.1:${rpcPort} --p2p.laddr tcp://127.0.0.1:${p2pPort} --grpc.enable=0 --rpc.pprof_laddr 127.0.0.1:${pprofPort}`;
   return {
     proc,
     ...props,

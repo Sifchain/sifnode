@@ -1,8 +1,6 @@
 import { getChains } from "../utils/getChains.mjs";
 import { getChainProps } from "../utils/getChainProps.mjs";
 import { startChain } from "./startChain.mjs";
-// import { initRelayers } from "./initRelayers.mjs";
-// import { startRelayers } from "./startRelayers.mjs";
 
 export async function startAllChains({
   network,
@@ -18,22 +16,20 @@ export async function startAllChains({
     home,
   });
 
-  const chainsProps = (
-    await Promise.all(
-      Object.entries(chains)
-        .filter(([_, { disabled = false }]) => disabled === false)
-        .map(async ([chain, chainProps]) => {
-          const newChainProps = getChainProps({
-            chain,
-            network,
-            ...chainProps,
-          });
-          return startChain({
-            ...newChainProps,
-          });
-        })
-    )
-  ).reduce((acc, cur) => ({ ...acc, [cur.chain]: cur }), {});
+  return Promise.all(
+    Object.entries(chains)
+      .filter(([_, { disabled = false }]) => disabled === false)
+      .map(async ([chain, chainProps]) => {
+        const newChainProps = getChainProps({
+          chain,
+          network,
+          ...chainProps,
+        });
+        return startChain({
+          ...newChainProps,
+        });
+      })
+  );
 
   // if (initRelayer) {
   //   await initRelayers({ chainsProps });
