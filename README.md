@@ -6,15 +6,7 @@ Built using the Cosmos SDK and Tendermint, and generated with [Starport](https:/
 
 ## Getting Started
 
-Follow the links below to setup sifnode as a standalone (compile and run on your own hardware/VPS) node, or via kubernetes on AWS.
-
-### Standalone
-
-See [here](https://github.com/Sifchain/sifnode/tree/develop/docs/chainOps/standalone/README.md).
-
-### Kubernetes (k8s)
-
-See [here](https://github.com/Sifchain/sifnode/tree/develop/docs/chainOps/k8s/README.md).
+To launch a validator or full-node on Sifchain, on either TestNet or BetaNet, then please see [here](https://github.com/Sifchain/sifchain-validators).
 
 ## Additional Resources
 
