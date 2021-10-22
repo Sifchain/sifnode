@@ -178,8 +178,7 @@ export class SifnodedRunner extends ShellCommand<SifnodedResults> {
       { encoding: "utf8" }
     ).trim()
 
-    // Reference actual value for readability
-    // await this.setCrossChainFee(sifnodedAdminAddress.account, 31337, "ceth", 1, 1, 1, 1)
+    await this.setCrossChainFee(sifnodedAdminAddress, "31337", "ceth", "1", "1", "1", this.chainId)
 
     sifnoded.on('exit', (code) => {
       notifier.notify({
@@ -296,21 +295,33 @@ export class SifnodedRunner extends ShellCommand<SifnodedResults> {
     )
   }
 
-
-  // TODO set cross chain fee for an EVM based chain
   // sifnoded tx ethbridge set-cross-chain-fee sif1f8sz5779td3y6xsq296k3wurflsdnfxmq5hudd 1 ceth 1 1 1
   // set-cross-chain-fee [cosmos-sender-address] [network-id] [cross-chain-fee] [fee-currency-gas] [minimum-lock-cost] [minimum-burn-cost]
-  async setCrossChainFee(sifaddress:string, networkId: string, crossChainFee: string, feeCurrencyGas: string, minLockCost: string, minBurnCost: string, homeDir: string): Promise<string> {
-    const sifgenArgs = [
-      "tx ethbridge set-cross-chain-fee",
-      sifaddress,
+  async setCrossChainFee(sifnodeAdminAccount: EbRelayerAccount,
+                          networkId: string,
+                          crossChainFee: string,
+                          feeCurrencyGas: string,
+                          minLockCost: string,
+                          minBurnCost: string,
+                          chainId: string): Promise<string> {
+
+      const sifgenArgs = [
+      "tx",
+      "ethbridge",
+      "set-cross-chain-fee",
+      sifnodeAdminAccount.account,
       networkId, // This is 31377 for HARDHAT
       crossChainFee,
       feeCurrencyGas,
       minLockCost,
       minBurnCost,
-      "--home", path.join(homeDir, ".sifnoded"),
-      "--from",
+      "--home", sifnodeAdminAccount.homeDir,
+      "--from", sifnodeAdminAccount.name,
+      "--keyring-backend", "test",
+      "--chain-id", chainId,
+      "--gas-prices", "0.5rowan",
+      "--gas-adjustment", "1.5",
+      "-y",
     ]
 
     return ChildProcess.execFileSync(
