@@ -15,7 +15,7 @@ require (
 	github.com/grpc-ecosystem/grpc-gateway v1.16.0
 	github.com/joho/godotenv v1.3.0
 	github.com/miguelmota/go-solidity-sha3 v0.1.0
-	github.com/onsi/ginkgo v1.14.2
+	github.com/onsi/ginkgo v1.16.5
 	github.com/onsi/gomega v1.10.5
 	github.com/pkg/errors v0.9.1
 	github.com/rakyll/statik v0.1.7
@@ -107,7 +107,7 @@ require (
 	github.com/mitchellh/go-homedir v1.1.0 // indirect
 	github.com/mitchellh/mapstructure v1.3.3 // indirect
 	github.com/mtibben/percent v0.2.1 // indirect
-	github.com/nxadm/tail v1.4.4 // indirect
+	github.com/nxadm/tail v1.4.8 // indirect
 	github.com/olekukonko/tablewriter v0.0.0-20170122224234-a0225b3f23b5 // indirect
 	github.com/pborman/uuid v1.2.0 // indirect
 	github.com/pelletier/go-toml v1.8.1 // indirect
