@@ -34,7 +34,7 @@ import (
 
 const (
 	errorMessageKey      = "errorMessage"
-	cosmosSleepDuration  = 60
+	cosmosSleepDuration  = 1
 	maxCosmosQueryBlocks = 5000
 )
 

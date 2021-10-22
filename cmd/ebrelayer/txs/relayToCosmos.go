@@ -3,6 +3,7 @@ package txs
 // DONTCOVER
 
 import (
+	"github.com/Sifchain/sifnode/cmd/ebrelayer/internal"
 	ethbridge "github.com/Sifchain/sifnode/x/ethbridge/types"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/tx"
@@ -24,6 +25,7 @@ func RelayToCosmos(factory tx.Factory, claims []*ethbridge.EthBridgeClaim, cliCt
 		"relay prophecies to cosmos.",
 		"claimAmount", len(claims),
 	)
+	sugaredLogger.Debugw(internal.PeggyTestMarker, "kind", "EthBridgeClaimArray", zap.Reflect("claims", claims))
 
 	for _, claim := range claims {
 		// Packages the claim as a Tendermint message

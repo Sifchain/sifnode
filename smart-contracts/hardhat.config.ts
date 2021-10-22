@@ -20,7 +20,11 @@ const activePrivateKey = process.env[process.env['ACTIVE_PRIVATE_KEY'] ?? "0xabc
 const config: HardhatUserConfig = {
   networks: {
     hardhat: {
-      allowUnlimitedContractSize: false
+      allowUnlimitedContractSize: false,
+      mining: {
+        auto: true,
+        interval: 200
+      }
     },
     mainnetFork: {
       url: mainnetUrl,

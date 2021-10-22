@@ -16,7 +16,7 @@ export class EvmError extends EvmStateTransition {
 }
 
 export function toEvmRelayerEvent(x: any): EvmStateTransition | undefined {
-    if (x["M"] === "devenv") {
+    if (x["M"] === "peggytest") {
         switch (x["kind"]) {
             case "EthereumEvent":
                 return new EvmEvent(x)

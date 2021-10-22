@@ -6,6 +6,7 @@ import (
 	"context"
 	"crypto/ecdsa"
 	"errors"
+	"github.com/Sifchain/sifnode/cmd/ebrelayer/internal"
 	"log"
 	"math/big"
 	"os"
@@ -41,7 +42,7 @@ import (
 const (
 	transactionInterval   = 10 * time.Second
 	trailingBlocks        = 50
-	ethereumSleepDuration = 60
+	ethereumSleepDuration = 1
 	maxQueryBlocks        = 5000
 )
 
@@ -202,7 +203,8 @@ func (sub EthereumSub) CheckNonceAndProcess(txFactory tx.Factory,
 	burnTopic := bridgeBankContractABI.Events[types.LogBurn.String()].ID()
 	topics = append(topics, []common.Hash{lockTopic, burnTopic})
 
-	// add the lock burn nonce as second topic, combined search filter will be (lockTopic or burnTopic) and lockBurnNonceTopic
+	// add the lock burn nonce as second topic, combined search filter will be (lockTopic or burnTopic)
+	// and lockBurnNonceTopic
 	var lockBurnNonceTopic [32]byte
 	copy(lockBurnNonceTopic[:], abi.U256(big.NewInt(int64(lockBurnNonce + 1)))[:32])
 	topics = append(topics, []common.Hash{lockBurnNonceTopic})
@@ -222,8 +224,9 @@ func (sub EthereumSub) CheckNonceAndProcess(txFactory tx.Factory,
 	}
 
 	fromBlockNumber := uint64(0)
-	if len(ethLogs) != 1 {
-		sub.SugaredLogger.Errorw("the result from filter is wrong.")
+	lenEthLogs := len(ethLogs)
+	if lenEthLogs != 1 {
+		//sub.SugaredLogger.Debugw("no results from filter", "lenEthLogs", lenEthLogs)
 		return
 	}
 
@@ -408,8 +411,7 @@ func (sub EthereumSub) logToEvent(networkDescriptor oracletypes.NetworkDescripto
 	} else {
 		event.ClaimType = ethbridgetypes.ClaimType_CLAIM_TYPE_LOCK
 	}
-	sub.SugaredLogger.Infow("receive an event.",
-		"event", event)
+	sub.SugaredLogger.Debugw(internal.PeggyTestMarker, "kind", "EthereumEvent", zap.Reflect("event", event))
 
 	// Add the event to the record
 	types.NewEventWrite(cLog.TxHash.Hex(), event)
@@ -442,9 +444,9 @@ func (sub EthereumSub) handleEthereumEvent(txFactory tx.Factory,
 				prophecyClaims = append(prophecyClaims, &prophecyClaim)
 				nextLockBurnNonce++
 			} else {
-				sub.SugaredLogger.Infow("lock burn nonce is not expected.",
-					"expected lock burn nonce is %d", nextLockBurnNonce,
-					"lock burn nonce from event is %d", prophecyClaim.EthereumLockBurnNonce)
+				sub.SugaredLogger.Infow("lock burn nonce is not expected",
+					"nextLockBurnNonce", nextLockBurnNonce,
+					"prophecyClaim.EthereumLockBurnNonce", prophecyClaim.EthereumLockBurnNonce)
 				return nextLockBurnNonce, errors.New("lock burn nonce is not expected")
 			}
 
@@ -465,12 +467,13 @@ func (sub EthereumSub) GetLockBurnNonceFromCosmos(
 	networkDescriptor oracletypes.NetworkDescriptor,
 	relayerValAddress string) (uint64, error) {
 
+	// TODO cannot use this ip address
 	conn, err := grpc.Dial("0.0.0.0:9090", grpc.WithInsecure())
 	if err != nil {
 		return 0, err
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(cosmosSleepDuration)*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(cosmosSleepDuration)*time.Second*10)
 	defer cancel()
 	client := ethbridgetypes.NewQueryClient(conn)
 	request := ethbridgetypes.QueryEthereumLockBurnNonceRequest{
