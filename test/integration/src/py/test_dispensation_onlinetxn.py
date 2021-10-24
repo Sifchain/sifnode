@@ -195,7 +195,6 @@ def test_run_online_singlekey_txn(claimType):
 
     # QUERY BLOCK USING TXN HASH
     resp = query_block_claim(txhash)
-
     distribution_msg = resp['tx']['body']['messages'][0]
     msg_type = distribution_msg['@type']
     distributor = distribution_msg['distributor']

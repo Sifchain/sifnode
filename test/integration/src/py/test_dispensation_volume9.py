@@ -106,11 +106,14 @@ def test_run_online_morethan10distribution_txn(claimType):
 
     # QUERY BLOCK USING TXN HASH
     resp = query_block_claim(txhash)
-    distribution_name = resp['logs'][0]['events'][0]['attributes'][1]['value']
-    distribution_type = resp['logs'][0]['events'][0]['attributes'][2]['value']
-    logging.info(f"distribution_name = {distribution_name}, distribution_type = {distribution_type}")
+    distribution_msg = resp['tx']['body']['messages'][0]
+    msg_type = distribution_msg['@type']
+    distributor = distribution_msg['distributor']
+    authorized_runner = distribution_msg['authorized_runner']
+    distribution_type = distribution_msg['distribution_type']
 
     # RUN DISPENSATION TXN; GET TXN HASH
+    distribution_name = f"{str(resp['height'])}_{str(distributor)}"
     runtxnhash = run_dispensation(distribution_name, claimType, runner_address, chain_id)
     logging.info(f"txn hash for running dispensation = {runtxnhash}")
     time.sleep(5)
