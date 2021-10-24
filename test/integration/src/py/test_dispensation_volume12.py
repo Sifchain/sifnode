@@ -142,9 +142,9 @@ def test_run_online_morethan10distribution_txn(claimType):
     runresp2 = query_block_claim(runtxnhash2)
     logging.info(f"response from block for run dispensation = {runresp2}")
 
-    rundistributiontag1 = runresp1['logs'][0]['events'][10]['type']
-    rundistname1 = runresp1['logs'][0]['events'][10]['attributes'][0]['value']
-    runrunneraddress1 = runresp1['logs'][0]['events'][10]['attributes'][1]['value']
+    rundistributiontag1 = runresp1['logs'][0]['events'][12]['type']
+    rundistname1 = runresp1['logs'][0]['events'][12]['attributes'][0]['value']
+    runrunneraddress1 = runresp1['logs'][0]['events'][12]['attributes'][1]['value']
 
     assert str(rundistributiontag1) == 'distribution_run'
     assert str(rundistname1) == distribution_name

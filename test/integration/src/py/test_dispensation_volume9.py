@@ -121,9 +121,9 @@ def test_run_online_morethan10distribution_txn(claimType):
     # QUERY BLOCK USING TXN HASH
     runresp = query_block_claim(runtxnhash)
     logging.info(f"response from block for run dispensation = {runresp}")
-    rundistributiontag = runresp['logs'][0]['events'][9]['type']
-    rundistname = runresp['logs'][0]['events'][9]['attributes'][0]['value']
-    runrunneraddress = runresp['logs'][0]['events'][9]['attributes'][1]['value']
+    rundistributiontag = runresp['logs'][0]['events'][11]['type']
+    rundistname = runresp['logs'][0]['events'][11]['attributes'][0]['value']
+    runrunneraddress = runresp['logs'][0]['events'][11]['attributes'][1]['value']
 
     # RUN DISTRIBUTION TXN JSON TAGS ASSERTIONS
     assert str(rundistributiontag) == 'distribution_run'
