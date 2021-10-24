@@ -279,6 +279,8 @@ func replayCosmosCmd() *cobra.Command {
 		RunE:    RunReplayCosmosCmd,
 	}
 
+	flags.AddTxFlagsToCmd(replayCosmosCmd)
+
 	return replayCosmosCmd
 }
 

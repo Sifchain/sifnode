@@ -40,6 +40,6 @@ type Asset struct {
 	Symbol string `json:"symbol"`
 }
 
-func RegisterLegacyAminoCodec(cdc *codec.LegacyAmino) {
+func RegisterLegacyAminoCodec(cdc *codec.LegacyAmino) { //nolint
 	cryptocodec.RegisterCrypto(cdc)
 }
