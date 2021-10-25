@@ -4,9 +4,35 @@ import * as readline from 'readline'
 import {Observable, ReplaySubject} from "rxjs";
 import {jsonParseSimple, readableStreamToObservable} from "./utilities";
 
-interface EbRelayerEvmEvent {
+export interface EbRelayerEvmEvent {
     kind: "EbRelayerEvmEvent"
-    data: object
+    data: {
+        event: {
+            // "To": "c2lmMW54NjUwczhxOXcyOGYyZzN0OXp0eHlnNDh1Z2xkcHR1d3pwYWNl",
+            // "Symbol": "EVM_NATIVE",
+            // "Name": "EVM_NATIVE",
+            // "Decimals": 18,
+            // "NetworkDescriptor": 31337,
+            // "Value": 1017,
+            // "Nonce": 1,
+            // "ClaimType": 2,
+            // "ID": [
+            // "BridgeContractAddress": "0x5fc8d32690cc91d4c39d9d3abcbd16989f875707",
+            // "From": "0x15d34aaf54267db7d7c367839aaf71a00a2c6a65",
+            // "Token": "0x0000000000000000000000000000000000000000"
+            To: string
+            Symbol: string
+            Name: string
+            Decimals: number
+            NetworkDescriptor: number,
+            Value: number
+            Nonce: number
+            ClaimType: number
+            BridgeContractAddress: string
+            From: string
+            Token: string
+        }
+    }
 }
 
 interface EbRelayerEthBridgeClaimArray {

@@ -11,12 +11,14 @@ import web3 from "web3";
 import * as ethereumAddress from "../../src/ethereumAddress";
 import {SifEvent, SifHeartbeat, sifwatch} from "../../src/watcher/watcher";
 import {lastValueFrom, Observable, scan, takeUntil, takeWhile} from "rxjs";
+import {EbRelayerEvent, EbRelayerEvmEvent} from "../../src/watcher/ebrelayer";
 
 chai.use(solidity)
 
 interface Failure {
     kind: "failure",
     value: SifEvent | "timeout"
+    message: string
 }
 
 interface Success {
@@ -61,6 +63,10 @@ function attachDebugPrintfs<T>(xs: Observable<T>) {
     })
 }
 
+function hasDuplicateNonce(a: EbRelayerEvmEvent, b: EbRelayerEvmEvent): boolean {
+    return a.data.event.Nonce === b.data.event.Nonce
+}
+
 describe("watcher", () => {
     const devEnvObject = readDevEnvObj("environment.json")
     // a generic sif address, nothing special about it
@@ -91,6 +97,15 @@ describe("watcher", () => {
                     return {...acc, value: {kind: "failure", value: "timeout"}} as State
                 }
                 return {...acc, currentHeartbeat: v.value} as State
+            } else if ((acc.value.kind == "EbRelayerEvmEvent" && v.kind == "EbRelayerEvmEvent" && hasDuplicateNonce(acc.value, v))) {
+                return {
+                    ...acc,
+                    value: {
+                        kind: "failure",
+                        value: v,
+                        message: "hasDuplicateNonce"
+                    } as Failure
+                }
             } else if (v.kind == "EbRelayerEvmStateTransition" || v.kind === "EbRelayerEvmEvent") {
                 return {...acc, value: v as SifEvent, createdAt: acc.currentHeartbeat} as State
             } else if (v.kind == "EbRelayerEthBridgeClaimArray") {
