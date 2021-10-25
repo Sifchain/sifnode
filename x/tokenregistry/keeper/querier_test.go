@@ -17,7 +17,7 @@ func TestQueryEntries(t *testing.T) {
 		Decimals: 18,
 	})
 
-	expectedRegistry := app.TokenRegistryKeeper.GetDenomWhitelist(ctx)
+	expectedRegistry := app.TokenRegistryKeeper.GetRegistry(ctx)
 
 	querier := keeper.NewLegacyQuerier(app.TokenRegistryKeeper)
 

@@ -110,9 +110,9 @@ func (mr *MockKeeperMockRecorder) GetDenom(ctx, denom interface{}) *gomock.Call 
 }
 
 // GetDenomWhitelist mocks base method.
-func (m *MockKeeper) GetDenomWhitelist(ctx types1.Context) types0.Registry {
+func (m *MockKeeper) GetRegistry(ctx types1.Context) types0.Registry {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetDenomWhitelist", ctx)
+	ret := m.ctrl.Call(m, "GetRegistry", ctx)
 	ret0, _ := ret[0].(types0.Registry)
 	return ret0
 }
@@ -120,7 +120,7 @@ func (m *MockKeeper) GetDenomWhitelist(ctx types1.Context) types0.Registry {
 // GetDenomWhitelist indicates an expected call of GetDenomWhitelist.
 func (mr *MockKeeperMockRecorder) GetDenomWhitelist(ctx interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetDenomWhitelist", reflect.TypeOf((*MockKeeper)(nil).GetDenomWhitelist), ctx)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetRegistry", reflect.TypeOf((*MockKeeper)(nil).GetRegistry), ctx)
 }
 
 // GetFirstLockDoublePeg mocks base method.

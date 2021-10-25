@@ -85,7 +85,7 @@ func (k keeper) CheckDenomPermissions(ctx sdk.Context, denom string, requiredPer
 }
 
 func (k keeper) GetDenom(ctx sdk.Context, denom string) types.RegistryEntry {
-	wl := k.GetDenomWhitelist(ctx)
+	wl := k.GetRegistry(ctx)
 
 	// TODO: This is inefficient, and potentially an attack vector. Investigate
 	// using a map instead
@@ -103,7 +103,7 @@ func (k keeper) GetDenom(ctx sdk.Context, denom string) types.RegistryEntry {
 }
 
 func (k keeper) SetToken(ctx sdk.Context, entry *types.RegistryEntry) {
-	wl := k.GetDenomWhitelist(ctx)
+	wl := k.GetRegistry(ctx)
 
 	entry.Sanitize()
 
@@ -111,18 +111,18 @@ func (k keeper) SetToken(ctx sdk.Context, entry *types.RegistryEntry) {
 		if wl.Entries[i] != nil && strings.EqualFold(wl.Entries[i].Denom, entry.Denom) {
 			wl.Entries[i] = entry
 
-			k.SetDenomWhitelist(ctx, wl)
+			k.SetRegistry(ctx, wl)
 			return
 		}
 	}
 
 	wl.Entries = append(wl.Entries, entry)
 
-	k.SetDenomWhitelist(ctx, wl)
+	k.SetRegistry(ctx, wl)
 }
 
 func (k keeper) RemoveToken(ctx sdk.Context, denom string) {
-	registry := k.GetDenomWhitelist(ctx)
+	registry := k.GetRegistry(ctx)
 
 	updated := make([]*types.RegistryEntry, 0)
 	for _, t := range registry.Entries {
@@ -131,12 +131,12 @@ func (k keeper) RemoveToken(ctx sdk.Context, denom string) {
 		}
 	}
 
-	k.SetDenomWhitelist(ctx, types.Registry{
+	k.SetRegistry(ctx, types.Registry{
 		Entries: updated,
 	})
 }
 
-func (k keeper) SetDenomWhitelist(ctx sdk.Context, wl types.Registry) {
+func (k keeper) SetRegistry(ctx sdk.Context, wl types.Registry) {
 	store := ctx.KVStore(k.storeKey)
 
 	bz := k.cdc.MustMarshalBinaryBare(&wl)
@@ -144,7 +144,7 @@ func (k keeper) SetDenomWhitelist(ctx sdk.Context, wl types.Registry) {
 	store.Set(types.WhitelistStorePrefix, bz)
 }
 
-func (k keeper) GetDenomWhitelist(ctx sdk.Context) types.Registry {
+func (k keeper) GetRegistry(ctx sdk.Context) types.Registry {
 	var whitelist types.Registry
 	store := ctx.KVStore(k.storeKey)
 	bz := store.Get(types.WhitelistStorePrefix)
