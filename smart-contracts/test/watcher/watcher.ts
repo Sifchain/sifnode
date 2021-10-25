@@ -51,6 +51,16 @@ function isNotTerminalState(s: State) {
     return !isTerminalState(s)
 }
 
+function attachDebugPrintfs<T>(xs: Observable<T>) {
+    xs.subscribe({
+        next: x => {
+            console.log(JSON.stringify(x, undefined, 2))
+        },
+        error: e => console.log("goterror: ", e),
+        complete: () => console.log("alldone")
+    })
+}
+
 describe("watcher", () => {
     const devEnvObject = readDevEnvObj("environment.json")
     // a generic sif address, nothing special about it
@@ -94,22 +104,8 @@ describe("watcher", () => {
             }
         }, {value: {kind: "initialState"}, createdAt: 0, currentHeartbeat: 0} as State))
 
-        // Debugging output
-        evmRelayerEvents.subscribe({
-            next: x => {
-                console.log(JSON.stringify(x, undefined, 2))
-            },
-            error: e => console.log("goterror: ", e),
-            complete: () => console.log("alldone")
-        })
-
-        states.subscribe({
-            next: x => {
-                console.log(JSON.stringify(x, undefined, 2))
-            },
-            error: e => console.log("goterror: ", e),
-            complete: () => console.log("alldone")
-        })
+        attachDebugPrintfs(evmRelayerEvents)
+        attachDebugPrintfs(states)
 
         await contracts.bridgeBank.connect(sender1).lock(
             recipient,
