@@ -131,46 +131,32 @@ def test_run_online_morethan10distribution_txn(claimType):
     assert str(runrunneraddress) == runner_address
 
     # READING TAGS FROM RUN DISPENSATION CMD
-    temprundistamount1 = runresp['logs'][0]['events'][0]['attributes'][2]['value']
-    logging.info(f"temp amount distributed 1 = {temprundistamount1}")
-    temprundistamount2 = runresp['logs'][0]['events'][1]['attributes'][2]['value']
-    logging.info(f"temp amount distributed 2 = {temprundistamount2}")
-    temprundistamount3 = runresp['logs'][0]['events'][2]['attributes'][2]['value']
-    logging.info(f"temp amount distributed 3 = {temprundistamount3}")
-    temprundistamount4 = runresp['logs'][0]['events'][3]['attributes'][2]['value']
-    logging.info(f"temp amount distributed 4 = {temprundistamount4}")
-    temprundistamount5 = runresp['logs'][0]['events'][4]['attributes'][2]['value']
-    logging.info(f"temp amount distributed 5 = {temprundistamount5}")
-    temprundistamount6 = runresp['logs'][0]['events'][5]['attributes'][2]['value']
-    logging.info(f"temp amount distributed 6 = {temprundistamount6}")
-    temprundistamount7 = runresp['logs'][0]['events'][6]['attributes'][2]['value']
-    logging.info(f"temp amount distributed 7 = {temprundistamount7}")
-    temprundistamount8 = runresp['logs'][0]['events'][7]['attributes'][2]['value']
-    logging.info(f"temp amount distributed 8 = {temprundistamount8}")
-    temprundistamount9 = runresp['logs'][0]['events'][8]['attributes'][2]['value']
-    logging.info(f"temp amount distributed 9 = {temprundistamount9}")
+    temprundistamount1 = runresp['logs'][0]['events'][0]['attributes'][1]['value']
+    temprundistamount2 = runresp['logs'][0]['events'][0]['attributes'][3]['value']
+    temprundistamount3 = runresp['logs'][0]['events'][0]['attributes'][5]['value']
+    temprundistamount4 = runresp['logs'][0]['events'][0]['attributes'][7]['value']
+    temprundistamount5 = runresp['logs'][0]['events'][0]['attributes'][9]['value']
+    temprundistamount6 = runresp['logs'][0]['events'][0]['attributes'][11]['value']
+    temprundistamount7 = runresp['logs'][0]['events'][0]['attributes'][13]['value']
+    temprundistamount8 = runresp['logs'][0]['events'][0]['attributes'][15]['value']
+    temprundistamount9 = runresp['logs'][0]['events'][0]['attributes'][17]['value']
 
     my_list = [temprundistamount1, temprundistamount2, temprundistamount3, temprundistamount4, temprundistamount5, temprundistamount6, temprundistamount7, temprundistamount8, temprundistamount9]
-    logging.info(f"my list = {my_list}")
     rundistamount = [int(i[:-5]) for i in my_list]
-    logging.info(f"temp amount distributed 2 = {rundistamount}")
     amount_distributed = [rundistamount[0], rundistamount[1], rundistamount[2], rundistamount[3], rundistamount[4], rundistamount[5], rundistamount[6], rundistamount[7], rundistamount[8]]
-    logging.info(f"amount distributed = {amount_distributed}")
     total_amount_distributed = sum(int(i) for i in amount_distributed)
 
     runrecipientaddress1 = runresp['logs'][0]['events'][0]['attributes'][0]['value']
-    runrecipientaddress2 = runresp['logs'][0]['events'][1]['attributes'][0]['value']
-    runrecipientaddress3 = runresp['logs'][0]['events'][2]['attributes'][0]['value']
-    runrecipientaddress4 = runresp['logs'][0]['events'][3]['attributes'][0]['value']
-    runrecipientaddress5 = runresp['logs'][0]['events'][4]['attributes'][0]['value']
-    runrecipientaddress6 = runresp['logs'][0]['events'][5]['attributes'][0]['value']
-    runrecipientaddress7 = runresp['logs'][0]['events'][6]['attributes'][0]['value']
-    runrecipientaddress8 = runresp['logs'][0]['events'][7]['attributes'][0]['value']
-    runrecipientaddress9 = runresp['logs'][0]['events'][8]['attributes'][0]['value']
+    runrecipientaddress2 = runresp['logs'][0]['events'][0]['attributes'][2]['value']
+    runrecipientaddress3 = runresp['logs'][0]['events'][0]['attributes'][4]['value']
+    runrecipientaddress4 = runresp['logs'][0]['events'][0]['attributes'][6]['value']
+    runrecipientaddress5 = runresp['logs'][0]['events'][0]['attributes'][8]['value']
+    runrecipientaddress6 = runresp['logs'][0]['events'][0]['attributes'][10]['value']
+    runrecipientaddress7 = runresp['logs'][0]['events'][0]['attributes'][12]['value']
+    runrecipientaddress8 = runresp['logs'][0]['events'][0]['attributes'][14]['value']
+    runrecipientaddress9 = runresp['logs'][0]['events'][0]['attributes'][16]['value']
     recipient_dispensation_addresses = [runrecipientaddress1, runrecipientaddress2, runrecipientaddress3, runrecipientaddress4, runrecipientaddress5, runrecipientaddress6, runrecipientaddress7, runrecipientaddress8, runrecipientaddress9]
-    logging.info(f"dispensation txn addresses = {recipient_dispensation_addresses}")
     sortedrundistreceiverlist = sorted(recipient_dispensation_addresses)
-    logging.info(f"sortedrundistreceiverlist = {sortedrundistreceiverlist}")
 
     assert sortedrundistreceiverlist[0] == sorted_dest_address_list[0]
     assert sortedrundistreceiverlist[1] == sorted_dest_address_list[1]
