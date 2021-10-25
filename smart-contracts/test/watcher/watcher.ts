@@ -14,6 +14,43 @@ import {lastValueFrom, Observable, scan, takeUntil, takeWhile} from "rxjs";
 
 chai.use(solidity)
 
+interface Failure {
+    kind: "failure",
+    value: SifEvent | "timeout"
+}
+
+interface Success {
+    kind: "success"
+}
+
+interface InitialState {
+    kind: "initialState"
+}
+
+interface Terminate {
+    kind: "terminate"
+}
+
+interface State {
+    value: SifEvent | Success | Failure | InitialState | Terminate
+    createdAt: number
+    currentHeartbeat: number
+}
+
+function isTerminalState(s: State) {
+    switch (s.value.kind) {
+        case "success":
+        case "failure":
+            return true
+        default:
+            return false
+    }
+}
+
+function isNotTerminalState(s: State) {
+    return !isTerminalState(s)
+}
+
 describe("watcher", () => {
     const devEnvObject = readDevEnvObj("environment.json")
     // a generic sif address, nothing special about it
@@ -33,43 +70,6 @@ describe("watcher", () => {
         const smallAmount = BigNumber.from(1017)
 
         const evmRelayerEvents = sifwatch({evmrelayer: "/tmp/sifnode/evmrelayer.log"})
-
-        interface Failure {
-            kind: "failure",
-            value: SifEvent | "timeout"
-        }
-
-        interface Success {
-            kind: "success"
-        }
-
-        interface InitialState {
-            kind: "initialState"
-        }
-
-        interface Terminate {
-            kind: "terminate"
-        }
-
-        interface State {
-            value: SifEvent | Success | Failure | InitialState | Terminate
-            createdAt: number
-            currentHeartbeat: number
-        }
-
-        function isTerminalState(s: State) {
-            switch (s.value.kind) {
-                case "success":
-                case "failure":
-                    return true
-                default:
-                    return false
-            }
-        }
-
-        function isNotTerminalState(s: State) {
-            return !isTerminalState(s)
-        }
 
         const states: Observable<State> = evmRelayerEvents.pipe(scan((acc: State, v: SifEvent) => {
             if (isTerminalState(acc))
