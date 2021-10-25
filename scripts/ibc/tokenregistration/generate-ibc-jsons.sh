@@ -1,26 +1,8 @@
-# REMEMBER to use right counterparty network denom,
-# i.e for BetaNet use MAINNET denom registered on counterparty chain, not denom registered on counterparty TESTNET
-# i.e for BetaNet, uatom not uphoton, and for TestNet uphoton not uatom.
-
-# Specify these variables when running - see ./run-testnet.sh
-#SIFCHAIN_ID=""
-
-#COSMOS_BASE_DENOM
-#COSMOS_CHANNEL_ID="channel-"
-#COSMOS_COUNTERPARTY_CHANNEL_ID="channel-"
-#COSMOS_CHAIN_ID=""
-
-#AKASH_CHANNEL_ID="channel-"
-#AKASH_COUNTERPARTY_CHANNEL_ID="channel-"
-#AKASH_CHAIN_ID=""
-
-#SENTINEL_CHANNEL_ID="channel-"
-#SENTINEL_COUNTERPARTY_CHANNEL_ID="channel-"
-#SENTINEL_CHAIN_ID=""
-
-. ./envs/$1.sh 
+#!/bin/sh
 
 # sh ./generate-ibc-jsons.sh testnet
+
+. ./envs/$1.sh 
 
 echo "\n\ngenerating and storing all entries for network $SIFCHAIN_ID"
 
@@ -154,24 +136,6 @@ echo "\n\ngenerated entry for $REGEN_CHAIN_ID"
 cat $SIFCHAIN_ID/regen.json | jq
 
 sifnoded q tokenregistry generate \
-	--token_base_denom=uluna \
-	--token_ibc_counterparty_chain_id=$TERRA_CHAIN_ID \
-  --token_ibc_channel_id=$TERRA_CHANNEL_ID \
-  --token_ibc_counterparty_channel_id=$TERRA_COUNTERPARTY_CHANNEL_ID \
-	--token_ibc_counterparty_denom="" \
-	--token_unit_denom="" \
-	--token_decimals=6 \
-	--token_display_name="Luna" \
-	--token_external_symbol="" \
-	--token_permission_clp=true \
-	--token_permission_ibc_export=true \
-	--token_permission_ibc_import=true | jq > $SIFCHAIN_ID/terra.json
-
-echo "\n\ngenerated entry for bombay-10"
-
-cat $SIFCHAIN_ID/terra.json | jq
-
-sifnoded q tokenregistry generate \
 	--token_base_denom=uosmo \
 	--token_ibc_counterparty_chain_id=$OSMOSIS_CHAIN_ID \
   --token_ibc_channel_id=$OSMOSIS_CHANNEL_ID \
@@ -224,3 +188,129 @@ sifnoded q tokenregistry generate \
 echo "\n\ngenerated entry for $IXO_CHAIN_ID"
 
 cat $SIFCHAIN_ID/ixo.json | jq
+
+sifnoded q tokenregistry generate \
+	--token_base_denom=nanolike \
+	--token_ibc_counterparty_chain_id=$LIKECOIN_CHAIN_ID \
+  --token_ibc_channel_id=$LIKECOIN_CHANNEL_ID \
+  --token_ibc_counterparty_channel_id=$LIKECOIN_COUNTERPARTY_CHANNEL_ID \
+	--token_ibc_counterparty_denom="" \
+	--token_unit_denom="" \
+	--token_decimals=9 \
+	--token_display_name="" \
+	--token_external_symbol="" \
+	--token_permission_clp=true \
+	--token_permission_ibc_export=true \
+	--token_permission_ibc_import=true | jq > $SIFCHAIN_ID/likecoin.json
+
+echo "\n\ngenerated entry for $LIKECOIN_CHAIN_ID"
+
+cat $SIFCHAIN_ID/likecoin.json | jq
+
+sifnoded q tokenregistry generate \
+	--token_base_denom=ubtsg \
+	--token_ibc_counterparty_chain_id=$BITSONG_CHAIN_ID \
+  --token_ibc_channel_id=$BITSONG_CHANNEL_ID \
+  --token_ibc_counterparty_channel_id=$BITSONG_COUNTERPARTY_CHANNEL_ID \
+	--token_ibc_counterparty_denom="" \
+	--token_unit_denom="" \
+	--token_decimals=6 \
+	--token_display_name="" \
+	--token_external_symbol="" \
+	--token_permission_clp=true \
+	--token_permission_ibc_export=true \
+	--token_permission_ibc_import=true | jq > $SIFCHAIN_ID/bitsong.json
+
+echo "\n\ngenerated entry for $BITSONG_CHAIN_ID"
+
+cat $SIFCHAIN_ID/bitsong.json | jq
+
+sifnoded q tokenregistry generate \
+	--token_base_denom=uband \
+	--token_ibc_counterparty_chain_id=$BAND_CHAIN_ID \
+  --token_ibc_channel_id=$BAND_CHANNEL_ID \
+  --token_ibc_counterparty_channel_id=$BAND_COUNTERPARTY_CHANNEL_ID \
+	--token_ibc_counterparty_denom="" \
+	--token_unit_denom="" \
+	--token_decimals=6 \
+	--token_display_name="" \
+	--token_external_symbol="" \
+	--token_permission_clp=true \
+	--token_permission_ibc_export=true \
+	--token_permission_ibc_import=true | jq > $SIFCHAIN_ID/band.json
+
+echo "\n\ngenerated entry for $BAND_CHAIN_ID"
+
+cat $SIFCHAIN_ID/band.json | jq
+
+sifnoded q tokenregistry generate \
+	--token_base_denom=ungm \
+	--token_ibc_counterparty_chain_id=$EMONEY_CHAIN_ID \
+  --token_ibc_channel_id=$EMONEY_CHANNEL_ID \
+  --token_ibc_counterparty_channel_id=$EMONEY_COUNTERPARTY_CHANNEL_ID \
+	--token_ibc_counterparty_denom="" \
+	--token_unit_denom="" \
+	--token_decimals=6 \
+	--token_display_name="" \
+	--token_external_symbol="" \
+	--token_permission_clp=true \
+	--token_permission_ibc_export=true \
+	--token_permission_ibc_import=true | jq > $SIFCHAIN_ID/emoney.json
+
+echo "\n\ngenerated entry for $EMONEY_CHAIN_ID"
+
+cat $SIFCHAIN_ID/emoney.json | jq
+
+sifnoded q tokenregistry generate \
+	--token_base_denom=eeur \
+	--token_ibc_counterparty_chain_id=$EMONEY_CHAIN_ID \
+  --token_ibc_channel_id=$EMONEY_CHANNEL_ID \
+  --token_ibc_counterparty_channel_id=$EMONEY_COUNTERPARTY_CHANNEL_ID \
+	--token_ibc_counterparty_denom="" \
+	--token_unit_denom="" \
+	--token_decimals=6 \
+	--token_display_name="" \
+	--token_external_symbol="" \
+	--token_permission_clp=true \
+	--token_permission_ibc_export=true \
+	--token_permission_ibc_import=true | jq > $SIFCHAIN_ID/emoney-eeur.json
+
+echo "\n\ngenerated entry for $EMONEY_CHAIN_ID"
+
+cat $SIFCHAIN_ID/emoney-eeur.json | jq
+
+sifnoded q tokenregistry generate \
+	--token_base_denom=uluna \
+	--token_ibc_counterparty_chain_id=$TERRA_CHAIN_ID \
+  --token_ibc_channel_id=$TERRA_CHANNEL_ID \
+  --token_ibc_counterparty_channel_id=$TERRA_COUNTERPARTY_CHANNEL_ID \
+	--token_ibc_counterparty_denom="" \
+	--token_unit_denom="" \
+	--token_decimals=6 \
+	--token_display_name="" \
+	--token_external_symbol="" \
+	--token_permission_clp=true \
+	--token_permission_ibc_export=true \
+	--token_permission_ibc_import=true | jq > $SIFCHAIN_ID/terra.json
+
+echo "\n\ngenerated entry for $TERRA_CHAIN_ID"
+
+cat $SIFCHAIN_ID/terra.json | jq
+
+sifnoded q tokenregistry generate \
+	--token_base_denom=uusd \
+	--token_ibc_counterparty_chain_id=$TERRA_CHAIN_ID \
+  --token_ibc_channel_id=$TERRA_CHANNEL_ID \
+  --token_ibc_counterparty_channel_id=$TERRA_COUNTERPARTY_CHANNEL_ID \
+	--token_ibc_counterparty_denom="" \
+	--token_unit_denom="" \
+	--token_decimals=6 \
+	--token_display_name="" \
+	--token_external_symbol="" \
+	--token_permission_clp=true \
+	--token_permission_ibc_export=true \
+	--token_permission_ibc_import=true | jq > $SIFCHAIN_ID/terra-uusd.json
+
+echo "\n\ngenerated entry for $TERRA_CHAIN_ID"
+
+cat $SIFCHAIN_ID/terra-uusd.json | jq

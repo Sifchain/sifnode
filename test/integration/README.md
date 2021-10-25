@@ -36,6 +36,7 @@ Run the tests in a container with:
 ```
 cd /sifnode/test/integration
 ./start-integration-env.sh && . vagrantenv.sh
+pip3  install -r src/py/requirements.txt
 python3 -m pytest -v src/py/test_*
 ```
 

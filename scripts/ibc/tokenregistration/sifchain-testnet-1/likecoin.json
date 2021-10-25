@@ -1,13 +1,12 @@
 {
   "entries": [
     {
-      "is_whitelisted": true,
-      "decimals": "6",
-      "denom": "uluna",
-      "base_denom": "uluna",
+      "decimals": "9",
+      "denom": "ibc/123466F93BD086614AB9BBC674B6B58453D2B293CE12C7D802FA0582BC69E024",
+      "base_denom": "nanolike",
       "path": "",
-      "ibc_channel_id": "",
-      "ibc_counterparty_channel_id": "",
+      "ibc_channel_id": "channel-43",
+      "ibc_counterparty_channel_id": "channel-4",
       "display_name": "",
       "display_symbol": "",
       "network": "",
@@ -21,7 +20,7 @@
       ],
       "unit_denom": "",
       "ibc_counterparty_denom": "",
-      "ibc_counterparty_chain_id": ""
+      "ibc_counterparty_chain_id": "likecoin-mainnet-2"
     }
   ]
 }

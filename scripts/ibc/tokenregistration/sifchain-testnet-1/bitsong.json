@@ -1,13 +1,12 @@
 {
   "entries": [
     {
-      "is_whitelisted": true,
       "decimals": "6",
-      "denom": "uluna",
-      "base_denom": "uluna",
+      "denom": "ibc/066F76D25D87E549F7EC9BD7BCB524933FD2576EE9D039113F60A80BA290AD99",
+      "base_denom": "ubtsg",
       "path": "",
-      "ibc_channel_id": "",
-      "ibc_counterparty_channel_id": "",
+      "ibc_channel_id": "channel-42",
+      "ibc_counterparty_channel_id": "channel-4",
       "display_name": "",
       "display_symbol": "",
       "network": "",
@@ -21,7 +20,7 @@
       ],
       "unit_denom": "",
       "ibc_counterparty_denom": "",
-      "ibc_counterparty_chain_id": ""
+      "ibc_counterparty_chain_id": "bitsong-testnet-6"
     }
   ]
 }
