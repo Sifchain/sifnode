@@ -12,6 +12,8 @@ import * as ethereumAddress from "../../src/ethereumAddress";
 import {SifEvent, SifHeartbeat, sifwatch} from "../../src/watcher/watcher";
 import {lastValueFrom, Observable, scan, takeUntil, takeWhile} from "rxjs";
 import {EbRelayerEvent, EbRelayerEvmEvent} from "../../src/watcher/ebrelayer";
+import {isNotSifnodedEvent, isSifnodedEvent} from "../../src/watcher/sifnoded";
+import {filter} from "rxjs/operators";
 
 chai.use(solidity)
 
@@ -56,7 +58,8 @@ function isNotTerminalState(s: State) {
 function attachDebugPrintfs<T>(xs: Observable<T>) {
     xs.subscribe({
         next: x => {
-            console.log(JSON.stringify(x, undefined, 2))
+            console.log(JSON.stringify(x))
+            // console.log(JSON.stringify(x, undefined, 2))
         },
         error: e => console.log("goterror: ", e),
         complete: () => console.log("alldone")
@@ -85,7 +88,10 @@ describe("watcher", () => {
         const sender1 = ethereumAccounts.availableAccounts[0]
         const smallAmount = BigNumber.from(1017)
 
-        const evmRelayerEvents = sifwatch({evmrelayer: "/tmp/sifnode/evmrelayer.log"})
+        const evmRelayerEvents = sifwatch({
+            evmrelayer: "/tmp/sifnode/evmrelayer.log",
+            sifnoded: "/tmp/sifnode/sifnoded.log"
+        })
 
         const states: Observable<State> = evmRelayerEvents.pipe(scan((acc: State, v: SifEvent) => {
             if (isTerminalState(acc))
@@ -114,13 +120,16 @@ describe("watcher", () => {
                 } else {
                     return {...acc, value: v, createdAt: acc.currentHeartbeat} as State
                 }
+            } else if (isSifnodedEvent(v)) {
+                return {...acc, value: v, createdAt: acc.currentHeartbeat} as State
             } else {
                 return acc as State
             }
         }, {value: {kind: "initialState"}, createdAt: 0, currentHeartbeat: 0} as State))
 
         attachDebugPrintfs(evmRelayerEvents)
-        attachDebugPrintfs(states)
+        // attachDebugPrintfs(evmRelayerEvents.pipe(filter(isNotSifnodedEvent)))
+        // attachDebugPrintfs(states)
 
         await contracts.bridgeBank.connect(sender1).lock(
             recipient,
