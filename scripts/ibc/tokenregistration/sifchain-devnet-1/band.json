@@ -3,8 +3,8 @@
     {
       "is_whitelisted": true,
       "decimals": "6",
-      "denom": "uluna",
-      "base_denom": "uluna",
+      "denom": "uband",
+      "base_denom": "uband",
       "path": "",
       "ibc_channel_id": "",
       "ibc_counterparty_channel_id": "",
