@@ -1,6 +1,5 @@
 [
   {
-    "is_whitelisted": true,
     "decimals": "18",
     "denom": "cdon",
     "base_denom": "cdon",
@@ -21,7 +20,6 @@
     "ibc_counterparty_chain_id": ""
   },
   {
-    "is_whitelisted": true,
     "decimals": "18",
     "denom": "cmetis",
     "base_denom": "cmetis",
@@ -42,7 +40,6 @@
     "ibc_counterparty_chain_id": ""
   },
   {
-    "is_whitelisted": true,
     "decimals": "18",
     "denom": "czcx",
     "base_denom": "czcx",
@@ -63,7 +60,6 @@
     "ibc_counterparty_chain_id": ""
   },
   {
-    "is_whitelisted": true,
     "decimals": "18",
     "denom": "cfxs",
     "base_denom": "cfxs",
@@ -84,7 +80,6 @@
     "ibc_counterparty_chain_id": ""
   },
   {
-    "is_whitelisted": true,
     "decimals": "18",
     "denom": "cfrax",
     "base_denom": "cfrax",
@@ -105,7 +100,6 @@
     "ibc_counterparty_chain_id": ""
   },
   {
-    "is_whitelisted": true,
     "decimals": "18",
     "denom": "ckft",
     "base_denom": "ckft",
@@ -126,7 +120,6 @@
     "ibc_counterparty_chain_id": ""
   },
   {
-    "is_whitelisted": true,
     "decimals": "10",
     "denom": "czcn",
     "base_denom": "czcn",
@@ -147,7 +140,6 @@
     "ibc_counterparty_chain_id": ""
   },
   {
-    "is_whitelisted": true,
     "decimals": "18",
     "denom": "csaito",
     "base_denom": "csaito",
@@ -168,7 +160,6 @@
     "ibc_counterparty_chain_id": ""
   },
   {
-    "is_whitelisted": true,
     "decimals": "18",
     "denom": "cdfyn",
     "base_denom": "cdfyn",
@@ -189,7 +180,6 @@
     "ibc_counterparty_chain_id": ""
   },
   {
-    "is_whitelisted": true,
     "decimals": "18",
     "denom": "cdnxc",
     "base_denom": "cdnxc",
@@ -210,7 +200,6 @@
     "ibc_counterparty_chain_id": ""
   },
   {
-    "is_whitelisted": true,
     "decimals": "18",
     "denom": "cern",
     "base_denom": "cern",
@@ -231,7 +220,6 @@
     "ibc_counterparty_chain_id": ""
   },
   {
-    "is_whitelisted": true,
     "decimals": "18",
     "denom": "cpols",
     "base_denom": "cpols",
@@ -252,7 +240,6 @@
     "ibc_counterparty_chain_id": ""
   },
   {
-    "is_whitelisted": true,
     "decimals": "18",
     "denom": "caxs",
     "base_denom": "caxs",
@@ -273,7 +260,6 @@
     "ibc_counterparty_chain_id": ""
   },
   {
-    "is_whitelisted": true,
     "decimals": "18",
     "denom": "cmatic",
     "base_denom": "cmatic",
@@ -294,7 +280,6 @@
     "ibc_counterparty_chain_id": ""
   },
   {
-    "is_whitelisted": true,
     "decimals": "18",
     "denom": "ctoke",
     "base_denom": "ctoke",
