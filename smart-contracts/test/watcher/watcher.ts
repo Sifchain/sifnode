@@ -6,14 +6,17 @@ import * as hardhat from "hardhat";
 import {BigNumber} from "ethers";
 import {ethereumResultsToSifchainAccounts, readDevEnvObj} from "../../src/tsyringe/devenvUtilities";
 import {SifchainContractFactories} from "../../src/tsyringe/contracts";
-import {buildDevEnvContracts} from "../../src/contractSupport";
+import {buildDevEnvContracts, DevEnvContracts} from "../../src/contractSupport";
 import web3 from "web3";
 import * as ethereumAddress from "../../src/ethereumAddress";
 import {SifEvent, SifHeartbeat, sifwatch} from "../../src/watcher/watcher";
-import {lastValueFrom, Observable, scan, takeUntil, takeWhile} from "rxjs";
-import {EbRelayerEvent, EbRelayerEvmEvent} from "../../src/watcher/ebrelayer";
-import {isNotSifnodedEvent, isSifnodedEvent} from "../../src/watcher/sifnoded";
+import {distinct, distinctUntilChanged, lastValueFrom, Observable, scan, takeWhile} from "rxjs";
+import {EbRelayerEvmEvent} from "../../src/watcher/ebrelayer";
+import {isSifnodedEvent} from "../../src/watcher/sifnoded";
+import {EthereumMainnetEvent, isEthereumMainnetEvent} from "../../src/watcher/ethereumMainnet";
 import {filter} from "rxjs/operators";
+import deepEqual = require("deep-equal")
+import {SignerWithAddress} from "@nomiclabs/hardhat-ethers/signers";
 
 chai.use(solidity)
 
@@ -36,9 +39,11 @@ interface Terminate {
 }
 
 interface State {
-    value: SifEvent | Success | Failure | InitialState | Terminate
+    value: SifEvent | EthereumMainnetEvent | Success | Failure | InitialState | Terminate
     createdAt: number
     currentHeartbeat: number
+    sawClaim: boolean
+    sawLogLock: boolean
 }
 
 function isTerminalState(s: State) {
@@ -81,55 +86,55 @@ describe("watcher", () => {
 
     it("should get the accounts from devenv")
 
-    it("should send a lock transaction", async () => {
-        const ethereumAccounts = await ethereumResultsToSifchainAccounts(devEnvObject.ethResults!, hardhat.ethers.provider)
-        const factories = container.resolve(SifchainContractFactories)
-        const contracts = await buildDevEnvContracts(devEnvObject, hardhat, factories)
-        const sender1 = ethereumAccounts.availableAccounts[0]
-        const smallAmount = BigNumber.from(1017)
-
+    async function executeLock(contracts: DevEnvContracts, smallAmount: BigNumber, sender1: SignerWithAddress) {
         const evmRelayerEvents = sifwatch({
             evmrelayer: "/tmp/sifnode/evmrelayer.log",
             sifnoded: "/tmp/sifnode/sifnoded.log"
-        })
+        }, hardhat, contracts.bridgeBank).pipe(filter(x => x.kind !== "SifnodedInfoEvent"))
 
         const states: Observable<State> = evmRelayerEvents.pipe(scan((acc: State, v: SifEvent) => {
             if (isTerminalState(acc))
+                // we've reached a decision
                 return {...acc, value: {kind: "terminate"} as Terminate}
             else if (v.kind == "EbRelayerError") {
-                return {...acc, value: {kind: "failure", value: v}} as State
+                // if we get an EbRelayerError, that's always a failure
+                return {...acc, value: {kind: "failure", value: v, message: "simple error"}}
             } else if (v.kind === "SifHeartbeat") {
-                if (acc.value.kind === "EbRelayerEvmEvent" && acc.createdAt + 5 < v.value) {
-                    return {...acc, value: {kind: "failure", value: "timeout"}} as State
-                }
+                // we just store the heartbeat
                 return {...acc, currentHeartbeat: v.value} as State
-            } else if ((acc.value.kind == "EbRelayerEvmEvent" && v.kind == "EbRelayerEvmEvent" && hasDuplicateNonce(acc.value, v))) {
-                return {
-                    ...acc,
-                    value: {
-                        kind: "failure",
-                        value: v,
-                        message: "hasDuplicateNonce"
-                    } as Failure
-                }
-            } else if (v.kind == "EbRelayerEvmStateTransition" || v.kind === "EbRelayerEvmEvent") {
-                return {...acc, value: v as SifEvent, createdAt: acc.currentHeartbeat} as State
             } else if (v.kind == "EbRelayerEthBridgeClaimArray") {
-                if (v.data.claims[0].amount === smallAmount.toString()) {
-                    return {...acc, value: {kind: "success"}} as State
+                // we should see exactly one correct claim
+                if (!acc.sawClaim && v.data.claims[0].amount === smallAmount.toString()) {
+                    return {...acc, value: v, sawClaim: true}
                 } else {
-                    return {...acc, value: v, createdAt: acc.currentHeartbeat} as State
+                    return {
+                        ...acc,
+                        value: {kind: "failure", value: v, message: "more than one claim"}
+                    }
                 }
-            } else if (isSifnodedEvent(v)) {
-                return {...acc, value: v, createdAt: acc.currentHeartbeat} as State
+            } else if (v.kind == "EthereumMainnetLogLock" && v.value.eq(smallAmount)) {
+                // we should see exactly one lock
+                return {...acc, value: v, sawLogLock: true}
             } else {
-                return acc as State
+                // we have a new value and it should use the current heartbeat as its creation time
+                return {...acc, value: v, createdAt: acc.currentHeartbeat}
             }
-        }, {value: {kind: "initialState"}, createdAt: 0, currentHeartbeat: 0} as State))
+        }, {
+            value: {kind: "initialState"},
+            createdAt: 0,
+            currentHeartbeat: 0,
+            sawClaim: false,
+            sawLogLock: false
+        } as State))
 
-        attachDebugPrintfs(evmRelayerEvents)
+        // it's useful to skip debug prints of states where only the heartbeat changed
+        const withoutHeartbeat = states.pipe(distinctUntilChanged<State>((a, b) => {
+            return deepEqual({...a, currentHeartbeat: 0}, {...b, currentHeartbeat: 0})
+        }))
+
+        // attachDebugPrintfs(evmRelayerEvents)
         // attachDebugPrintfs(evmRelayerEvents.pipe(filter(isNotSifnodedEvent)))
-        // attachDebugPrintfs(states)
+        attachDebugPrintfs(withoutHeartbeat)
 
         await contracts.bridgeBank.connect(sender1).lock(
             recipient,
@@ -140,13 +145,23 @@ describe("watcher", () => {
             }
         )
 
-        console.log("lock sent")
-
         const lv = await lastValueFrom(states.pipe(takeWhile(x => x.value.kind !== "terminate")))
 
         console.debug("lastValueIs: ", JSON.stringify(lv, undefined, 2))
 
         expect((lv as State).value.kind).to.eq("success")
+    }
+
+    it("should send a lock transaction", async () => {
+        const ethereumAccounts = await ethereumResultsToSifchainAccounts(devEnvObject.ethResults!, hardhat.ethers.provider)
+        const factories = container.resolve(SifchainContractFactories)
+        const contracts = await buildDevEnvContracts(devEnvObject, hardhat, factories)
+        const sender1 = ethereumAccounts.availableAccounts[0]
+        const smallAmount = BigNumber.from(1017)
+
+        // Do two locks of ethereum
+        await executeLock(contracts, smallAmount, sender1);
+        await executeLock(contracts, smallAmount, sender1);
     })
 
     it("should watch evmrelayer logs")

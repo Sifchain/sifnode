@@ -61,7 +61,7 @@ interface EbRelayerEvmStateTransition {
     data: object
 }
 
-interface EbRelayerError {
+export interface EbRelayerError {
     kind: "EbRelayerError"
     data: object
 }

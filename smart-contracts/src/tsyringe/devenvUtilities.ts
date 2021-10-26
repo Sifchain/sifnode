@@ -5,7 +5,14 @@ import {createSignerWithAddresss} from "./hardhatSupport";
 import {DevEnvObject} from "../devenv/outputWriter";
 import * as ethers from "ethers";
 
+export function waitForFileToExist(filename: string): boolean {
+    while (!fs.existsSync(filename)) {
+    }
+    return true
+}
+
 export function readDevEnvObj(devenvJsonPath: string): DevEnvObject {
+    waitForFileToExist(devenvJsonPath)
     const contents = fs.readFileSync(devenvJsonPath, 'utf8')
     const jsonObj = JSON.parse(contents)
     return jsonObj as DevEnvObject
