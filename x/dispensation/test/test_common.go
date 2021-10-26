@@ -36,7 +36,7 @@ func CreatOutputList(count int, rowanAmount string) []types.Output {
 		address := sdk.AccAddress(crypto.AddressHash([]byte("Output1" + strconv.Itoa(i))))
 		index1 := rand.Intn(3-0) + 0
 		index2 := rand.Intn(3-0) + 0
-		out := types.Output{}
+		var out types.Output
 		if index2 != index1 {
 			out = types.NewOutput(address, sdk.NewCoins(coin[index1], coin[index2]))
 		} else {
