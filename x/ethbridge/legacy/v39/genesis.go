@@ -14,6 +14,6 @@ type GenesisState struct {
 	CethReceiverAccount sdk.AccAddress `json:"ceth_receiver_account"`
 }
 
-func RegisterLegacyAminoCodec(cdc *codec.LegacyAmino) {
+func RegisterLegacyAminoCodec(cdc *codec.LegacyAmino) { //nolint
 	cryptocodec.RegisterCrypto(cdc)
 }

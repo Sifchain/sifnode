@@ -1,13 +1,12 @@
 {
   "entries": [
     {
-      "is_whitelisted": true,
       "decimals": "6",
-      "denom": "uluna",
-      "base_denom": "uluna",
+      "denom": "ibc/A2E0EFABD035F5460225E92C0F604F7C01AE3A9DF0CFF18FB08519CCD23AAE9D",
+      "base_denom": "uusd",
       "path": "",
-      "ibc_channel_id": "",
-      "ibc_counterparty_channel_id": "",
+      "ibc_channel_id": "channel-45",
+      "ibc_counterparty_channel_id": "channel-27",
       "display_name": "",
       "display_symbol": "",
       "network": "",
@@ -21,7 +20,7 @@
       ],
       "unit_denom": "",
       "ibc_counterparty_denom": "",
-      "ibc_counterparty_chain_id": ""
+      "ibc_counterparty_chain_id": "bombay-12"
     }
   ]
 }
