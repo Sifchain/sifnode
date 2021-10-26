@@ -27,7 +27,9 @@ def generate_minimal_test_account(
     request.sifchain_symbol = "ceth"
     request.ethereum_symbol = "eth"
     logging.debug(f"transfer {target_ceth_balance} eth to {new_sifaddr} from {base_transfer_request.ethereum_address}")
+    logging.info(f"Python :|=X=X=X= transfer request : {request.as_json()}")
     burn_lock_functions.transfer_ethereum_to_sifchain(request, timeout)
+
     logging.info(
         f"created sifchain addr {new_sifaddr} with {test_utilities.display_currency_value(target_ceth_balance)} ceth")
     return request, credentials
