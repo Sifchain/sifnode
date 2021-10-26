@@ -13,7 +13,6 @@ func NewLegacyQuerier(keeper types.Keeper) sdk.Querier {
 		switch path[0] {
 		case types.QueryEntries:
 			return queryDenoms(ctx, querier)
-
 		default:
 			return nil, sdkerrors.Wrap(sdkerrors.ErrUnknownRequest, "unknown dispensation query endpoint")
 		}
@@ -24,6 +23,5 @@ func queryDenoms(ctx sdk.Context, querier Querier) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-
 	return types.ModuleCdc.MarshalJSON(res)
 }

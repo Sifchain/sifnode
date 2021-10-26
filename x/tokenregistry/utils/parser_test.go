@@ -2,21 +2,22 @@ package utils_test
 
 import (
 	"encoding/json"
+
 	"github.com/Sifchain/sifnode/x/tokenregistry/test"
 	"github.com/Sifchain/sifnode/x/tokenregistry/types"
 	"github.com/Sifchain/sifnode/x/tokenregistry/utils"
 
-	"github.com/stretchr/testify/assert"
 	"io/ioutil"
 	"os"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func createInput(t *testing.T, filename string) {
 	denomEntry := types.RegistryEntry{
-		IsWhitelisted: true,
-		Denom:         "ceth",
-		Decimals:      18,
+		Denom:    "ceth",
+		Decimals: 18,
 	}
 	denomEntryList := []*types.RegistryEntry{&denomEntry}
 	list := types.Registry{Entries: denomEntryList}
