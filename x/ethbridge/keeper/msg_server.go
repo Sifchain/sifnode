@@ -32,6 +32,7 @@ func (srv msgServer) Lock(goCtx context.Context, msg *types.MsgLock) (*types.Msg
 
 	cosmosSender, err := sdk.AccAddressFromBech32(msg.CosmosSender)
 	if err != nil {
+		logger.Error("validator address is wrong", errorMessageKey, err.Error())
 		return nil, err
 	}
 
@@ -43,6 +44,7 @@ func (srv msgServer) Lock(goCtx context.Context, msg *types.MsgLock) (*types.Msg
 
 	tokenMetadata, ok := srv.Keeper.GetTokenMetadata(ctx, msg.DenomHash)
 	if !ok {
+		logger.Error("token metadata not available", "DenomHash", msg.DenomHash)
 		return &types.MsgLockResponse{}, fmt.Errorf("token metadata not available for %s", msg.DenomHash)
 	}
 
@@ -103,6 +105,7 @@ func (srv msgServer) Burn(goCtx context.Context, msg *types.MsgBurn) (*types.Msg
 
 	cosmosSender, err := sdk.AccAddressFromBech32(msg.CosmosSender)
 	if err != nil {
+		logger.Error("validator address is wrong", errorMessageKey, err.Error())
 		return nil, err
 	}
 
@@ -114,6 +117,7 @@ func (srv msgServer) Burn(goCtx context.Context, msg *types.MsgBurn) (*types.Msg
 
 	tokenMetadata, ok := srv.Keeper.GetTokenMetadata(ctx, msg.DenomHash)
 	if !ok {
+		logger.Error("token metadata not available", "DenomHash", msg.DenomHash)
 		return nil, fmt.Errorf("token metadata not available for %s", msg.DenomHash)
 	}
 
@@ -174,6 +178,7 @@ func (srv msgServer) CreateEthBridgeClaim(goCtx context.Context, msg *types.MsgC
 	cosmosSender := msg.EthBridgeClaim.ValidatorAddress
 	valAddress, err := sdk.ValAddressFromBech32(cosmosSender)
 	if err != nil {
+		logger.Error("validator address is wrong", errorMessageKey, err.Error())
 		return nil, err
 	}
 
@@ -182,7 +187,8 @@ func (srv msgServer) CreateEthBridgeClaim(goCtx context.Context, msg *types.MsgC
 
 	newLockBurnNonce := msg.EthBridgeClaim.EthereumLockBurnNonce
 
-	if newLockBurnNonce != lockBurnNonce+1 {
+	if newLockBurnNonce != 0 && newLockBurnNonce != lockBurnNonce+1 {
+		logger.Error("lock burn nonce out of order", errorMessageKey, err.Error())
 		return nil, errors.New("lock burn nonce out of order")
 	}
 
@@ -190,15 +196,13 @@ func (srv msgServer) CreateEthBridgeClaim(goCtx context.Context, msg *types.MsgC
 
 	if err != nil {
 		if err != oracletypes.ErrProphecyFinalized {
-			logger.Error("bridge keeper failed to process claim.",
-				errorMessageKey, err.Error())
+			logger.Error("bridge keeper failed to process claim.", errorMessageKey, err.Error())
 			return nil, err
 		}
 
 	} else if status == oracletypes.StatusText_STATUS_TEXT_SUCCESS {
 		if err = srv.Keeper.ProcessSuccessfulClaim(ctx, msg.EthBridgeClaim); err != nil {
-			logger.Error("bridge keeper failed to process successful claim.",
-				errorMessageKey, err.Error())
+			logger.Error("bridge keeper failed to process successful claim.", errorMessageKey, err.Error())
 			return nil, err
 		}
 	}
@@ -212,9 +216,7 @@ func (srv msgServer) CreateEthBridgeClaim(goCtx context.Context, msg *types.MsgC
 		NetworkDescriptor: claim.NetworkDescriptor,
 	}
 
-	if !srv.Keeper.tokenRegistryKeeper.IsDenomWhitelisted(ctx, claim.DenomHash) {
-		srv.Keeper.AddTokenMetadata(ctx, metadata)
-	}
+	srv.Keeper.AddTokenMetadata(ctx, metadata)
 
 	// update lock burn nonce in keeper
 	srv.Keeper.SetEthereumLockBurnNonce(ctx, msg.EthBridgeClaim.NetworkDescriptor, valAddress, newLockBurnNonce)
@@ -264,18 +266,19 @@ func (srv msgServer) UpdateWhiteListValidator(goCtx context.Context,
 
 	cosmosSender, err := sdk.AccAddressFromBech32(msg.CosmosSender)
 	if err != nil {
+		logger.Error("cosmos address is wrong", errorMessageKey, err.Error())
 		return nil, err
 	}
 
 	account := srv.Keeper.accountKeeper.GetAccount(ctx, cosmosSender)
 	if account == nil {
 		logger.Error("account is nil.", "CosmosSender", msg.CosmosSender)
-
 		return nil, sdkerrors.Wrap(sdkerrors.ErrUnknownAddress, msg.CosmosSender)
 	}
 
 	valAddr, err := sdk.ValAddressFromBech32(msg.Validator)
 	if err != nil {
+		logger.Error("validator address is wrong", errorMessageKey, err.Error())
 		return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.Validator)
 	}
 
@@ -319,18 +322,19 @@ func (srv msgServer) UpdateCrossChainFeeReceiverAccount(goCtx context.Context,
 
 	cosmosSender, err := sdk.AccAddressFromBech32(msg.CosmosSender)
 	if err != nil {
+		logger.Error("cosmos address is wrong", errorMessageKey, err.Error())
 		return nil, err
 	}
 
 	crossChainFeeReceiverAddress, err := sdk.AccAddressFromBech32(msg.CrosschainFeeReceiver)
 	if err != nil {
+		logger.Error("cosmos receiver address is wrong", errorMessageKey, err.Error())
 		return nil, err
 	}
 
 	account := srv.Keeper.accountKeeper.GetAccount(ctx, cosmosSender)
 	if account == nil {
 		logger.Error("account is nil.", "CosmosSender", msg.CosmosSender)
-
 		return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.CosmosSender)
 	}
 
@@ -368,6 +372,7 @@ func (srv msgServer) RescueCrossChainFee(goCtx context.Context, msg *types.MsgRe
 
 	cosmosSender, err := sdk.AccAddressFromBech32(msg.CosmosSender)
 	if err != nil {
+		logger.Error("validator address is wrong", errorMessageKey, err.Error())
 		return nil, err
 	}
 
@@ -396,6 +401,7 @@ func (srv msgServer) SetFeeInfo(goCtx context.Context, msg *types.MsgSetFeeInfo)
 
 	cosmosSender, err := sdk.AccAddressFromBech32(msg.CosmosSender)
 	if err != nil {
+		logger.Error("cosmos address is wrong", errorMessageKey, err.Error())
 		return nil, err
 	}
 
@@ -439,6 +445,7 @@ func (srv msgServer) SignProphecy(goCtx context.Context, msg *types.MsgSignProph
 
 	cosmosSender, err := sdk.AccAddressFromBech32(msg.CosmosSender)
 	if err != nil {
+		logger.Error("cosmos address is wrong", errorMessageKey, err.Error())
 		return nil, err
 	}
 
