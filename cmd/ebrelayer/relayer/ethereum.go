@@ -389,7 +389,7 @@ func (sub EthereumSub) logToEvent(clientChainID *big.Int, contractAddress common
 		return event, false, nil
 	}
 
-	_, err := contractABI.Unpack(eventName, cLog.Data)
+	err := contractABI.UnpackIntoInterface(&event, eventName, cLog.Data)
 	if err != nil {
 		sub.SugaredLogger.Errorw(".",
 			errorMessageKey, err.Error())
