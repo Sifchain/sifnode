@@ -30,6 +30,7 @@ contract BridgeToken is ERC20Burnable, AccessControl {
         _decimals = _tokenDecimals;
         cosmosDenom = _cosmosDenom;
         _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
+        _setupRole(MINTER_ROLE, msg.sender);
     }
 
     /**
@@ -38,7 +39,11 @@ contract BridgeToken is ERC20Burnable, AccessControl {
      * @param amount How much should be minted
      * @return true if the operation succeeds
      */
-    function mint(address user, uint256 amount) external onlyRole(MINTER_ROLE) returns (bool) {
+    function mint(address user, uint256 amount)
+        external
+        onlyRole(MINTER_ROLE)
+        returns (bool)
+    {
         _mint(user, amount);
         return true;
     }
@@ -55,7 +60,11 @@ contract BridgeToken is ERC20Burnable, AccessControl {
      * @param denom The new cosmos denom
      * @return true if the operation succeeds
      */
-    function setDenom(string calldata denom) external onlyRole(DEFAULT_ADMIN_ROLE) returns (bool) {
+    function setDenom(string calldata denom)
+        external
+        onlyRole(DEFAULT_ADMIN_ROLE)
+        returns (bool)
+    {
         cosmosDenom = denom;
         return true;
     }
