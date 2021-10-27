@@ -65,7 +65,7 @@ func TestKeeper_CreateAndDistributeDrops(t *testing.T) {
 	totalCoins, err := utils.TotalOutput(outputList)
 	assert.NoError(t, err)
 	totalCoins = totalCoins.Add(totalCoins...).Add(totalCoins...)
-	err = keeper.GetBankKeeper().SendCoinsFromModuleToAccount(ctx, types.ModuleName, dispensationCreator, totalCoins)
+	err = sifapp.AddCoinsToAccount(types.ModuleName, app.BankKeeper, ctx, dispensationCreator, totalCoins)
 	assert.NoError(t, err)
 	err = keeper.AccumulateDrops(ctx, dispensationCreator.String(), totalCoins)
 	assert.NoError(t, err)
