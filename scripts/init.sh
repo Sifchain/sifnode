@@ -10,7 +10,7 @@ sifnoded init test --chain-id=localnet -o
 #sifnoded config trust-node true
 #sifnoded config chain-id localnet
 #sifnoded config keyring-backend test
-#echo "chef ugly wisdom predict produce invest dirt skill aspect vocal zebra spatial grief enemy trophy avoid enough chapter minute caution fox between ancient conduct" | gaiad keys add csif --recover --keyring-backend=test
+
 echo "Generating deterministic account - sif"
 echo "race draft rival universe maid cheese steel logic crowd fork comic easy truth drift tomorrow eye buddy head time cash swing swift midnight borrow" | sifnoded keys add sif --recover --keyring-backend=test
 
