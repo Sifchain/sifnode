@@ -13,7 +13,11 @@
       "address": "",
       "external_symbol": "",
       "transfer_limit": "",
-      "permissions": ["CLP", "IBCEXPORT", "IBCIMPORT"],
+      "permissions": [
+        "CLP",
+        "IBCEXPORT",
+        "IBCIMPORT"
+      ],
       "unit_denom": "",
       "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": "impacthub-3"
