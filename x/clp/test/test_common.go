@@ -2,7 +2,6 @@ package test
 
 import (
 	"bytes"
-	"fmt"
 	"math/rand"
 	"strconv"
 	"strings"
@@ -49,11 +48,6 @@ func CreateTestAppClp(isCheckTx bool) (sdk.Context, *sifapp.SifchainApp) {
 	return ctx, app
 }
 
-func GetSimApp(isCheckTx bool) (sdk.Context, *sifapp.SifchainApp) {
-	app, ctx := CreateTestApp(isCheckTx)
-	return ctx, app
-}
-
 func GenerateRandomPool(numberOfPools int) []types.Pool {
 	var poolList []types.Pool
 	tokens := []string{"ceth", "cbtc", "ceos", "cbch", "cbnb", "cusdt", "cada", "ctrx"}
@@ -64,7 +58,7 @@ func GenerateRandomPool(numberOfPools int) []types.Pool {
 		externalAsset := types.NewAsset(TrimFirstRune(externalToken))
 		pool, err := types.NewPool(&externalAsset, sdk.NewUint(1000), sdk.NewUint(100), sdk.NewUint(1))
 		if err != nil {
-			fmt.Println("Error Generating new pool :", err)
+			continue
 		}
 		poolList = append(poolList, pool)
 	}

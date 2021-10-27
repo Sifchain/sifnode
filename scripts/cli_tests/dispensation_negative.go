@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"github.com/Sifchain/sifnode/x/dispensation/test"
 	dispensationtypes "github.com/Sifchain/sifnode/x/dispensation/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -32,7 +31,6 @@ func (CreateDispensationNegativeTx) GetName() string {
 }
 
 func (s CreateDispensationNegativeTx) Assert(response *sdk.TxResponse, _ *CommonArgs) {
-	fmt.Println(response.RawLog)
 	if response.Code == 0 {
 		panic("Test Failed , Transaction successfully submitted ")
 	}
