@@ -36,7 +36,7 @@ func TestKeeper_CreateAndDistributeDrops(t *testing.T) {
 	app, ctx := test.CreateTestApp(false)
 	keeper := app.DispensationKeeper
 	outputAmount := "10000000000000000000"
-	inputList := test.CreateInputList(3, "90000000000000000000")
+	dispensationCreator := sdk.AccAddress(crypto.AddressHash([]byte("Creator")))
 	outputList := test.CreatOutputList(3, outputAmount)
 	for _, in := range inputList {
 		address, err := sdk.AccAddressFromBech32(in.Address)
@@ -47,10 +47,11 @@ func TestKeeper_CreateAndDistributeDrops(t *testing.T) {
 	totalCoins, err := dispensationUtils.TotalOutput(outputList)
 	assert.NoError(t, err)
 	totalCoins = totalCoins.Add(totalCoins...).Add(totalCoins...)
-	err = keeper.AccumulateDrops(ctx, inputList[0].Address, totalCoins)
+	err = keeper.GetBankKeeper().AddCoins(ctx, dispensationCreator, totalCoins)
 	assert.NoError(t, err)
-	moduleBalance, _ := sdk.NewIntFromString("15000000000000000000")
-	assert.True(t, keeper.HasCoins(ctx, types.GetDistributionModuleAddress(), sdk.NewCoins(sdk.NewCoin("rowan", moduleBalance))))
+	err = keeper.AccumulateDrops(ctx, dispensationCreator.String(), totalCoins)
+	assert.NoError(t, err)
+	assert.True(t, keeper.HasCoins(ctx, types.GetDistributionModuleAddress(), totalCoins))
 	distributionName := "ar1"
 	runner := ""
 	err = keeper.CreateDrops(ctx, outputList, distributionName, types.DistributionType_DISTRIBUTION_TYPE_AIRDROP, runner)
@@ -73,7 +74,9 @@ func TestKeeper_CreateAndDistributeDrops(t *testing.T) {
 	assert.True(t, ok)
 	for i := 0; i < len(outputList); i++ {
 		assert.True(t, recordsLM.DistributionRecords[i].Coins.IsAllGT(recordsAD.DistributionRecords[i].Coins))
-		assert.True(t, recordsLM.DistributionRecords[i].Coins.AmountOf("rowan").Equal(doubleOutputAmount))
+		assert.True(t, recordsLM.DistributionRecords[i].Coins.AmountOf("rowan").Equal(doubleOutputAmount) ||
+			recordsLM.DistributionRecords[i].Coins.AmountOf("ceth").Equal(doubleOutputAmount) ||
+			recordsLM.DistributionRecords[i].Coins.AmountOf("catk").Equal(doubleOutputAmount))
 	}
 }
 

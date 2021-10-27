@@ -29,7 +29,7 @@ func TestMsgCreateDistribution_ValidateBasic(t *testing.T) {
 
 func TestMsgCreateDistribution_ValidateBasic_WrongAddress(t *testing.T) {
 	distributor := sdk.AccAddress("addr1_______________")
-	outputList := test.CreatOutputList(1, "1")
+	outputList := test.CreatOutputList(10, "1")
 	validAddress := sdk.AccAddress("addr2_______________")
 	authorizedRunner := sdk.AccAddress("addr3_______________")
 	// Address is valid as long as its length is between 1-255 bytes.
@@ -68,7 +68,7 @@ func TestMsgCreateDistribution_ValidateBasic_NonRowan(t *testing.T) {
 		AuthorizedRunner: authorizedRunner.String(),
 	}
 	err := msg.ValidateBasic()
-	assert.Error(t, err)
+	assert.NoError(t, err)
 }
 
 func TestMsgCreateDistribution_ValidateBasic_MultipleCoins(t *testing.T) {
@@ -84,7 +84,7 @@ func TestMsgCreateDistribution_ValidateBasic_MultipleCoins(t *testing.T) {
 		AuthorizedRunner: authorizedRunner.String(),
 	}
 	err := msg.ValidateBasic()
-	assert.Error(t, err)
+	assert.NoError(t, err)
 }
 
 func TestMsgCreateDistribution_ValidateBasic_ZeroCoins(t *testing.T) {

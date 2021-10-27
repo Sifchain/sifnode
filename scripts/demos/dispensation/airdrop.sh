@@ -19,7 +19,7 @@ sifnoded q dispensation distributions-all -chain-id localnet
 
 sifnoded tx dispensation create Airdrop output.json --gas 90128 --from $(sifnoded keys show sif -a) --yes --broadcast-mode async --sequence 26 --account-number 3 --chain-id localnet
 sifnoded tx dispensation create Airdrop output.json --gas 90128 --from $(sifnoded keys show sif -a) --yes --broadcast-mode async --sequence 27 --account-number 3 --chain-id localnet
-sifnoded tx dispensation run 29_sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd ValidatorSubsidy --from sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd --yes --gas auto --gas-adjustment=1.5 --gas-prices 1.0rowan --chain-id=localnet --keyring-backend=test
+sifnoded tx dispensation run 25_sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd ValidatorSubsidy --from sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd --yes --gas auto --gas-adjustment=1.5 --gas-prices 1.0rowan --chain-id=localnet --keyring-backend=test
 
 
 
