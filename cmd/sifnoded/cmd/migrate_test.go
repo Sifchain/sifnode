@@ -33,8 +33,4 @@ func TestMigrateGenesisDataCmd(t *testing.T) {
 	require.NoError(t, err)
 	err = ioutil.WriteFile(homeDir+"/config/genesis.json", migrateOutputBuf.Bytes(), 0600)
 	require.NoError(t, err)
-	// cmd, _ = NewRootCmd()
-	// cmd.SetArgs([]string{"validate-genesis"})
-	// err = svrcmd.Execute(cmd, homeDir)
-	// require.NoError(t, err)
 }
