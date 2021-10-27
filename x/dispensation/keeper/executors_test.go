@@ -56,12 +56,6 @@ func TestKeeper_CreateAndDistributeDrops(t *testing.T) {
 	outputAmount := "10000000000000000000"
 	dispensationCreator := sdk.AccAddress(crypto.AddressHash([]byte("Creator")))
 	outputList := test.CreatOutputList(3, outputAmount)
-	for _, in := range outputList {
-		address, err := sdk.AccAddressFromBech32(in.Address)
-		assert.NoError(t, err)
-		err = sifapp.AddCoinsToAccount(types.ModuleName, app.BankKeeper, ctx, address, in.Coins)
-		assert.NoError(t, err)
-	}
 	totalCoins, err := utils.TotalOutput(outputList)
 	assert.NoError(t, err)
 	totalCoins = totalCoins.Add(totalCoins...).Add(totalCoins...)
