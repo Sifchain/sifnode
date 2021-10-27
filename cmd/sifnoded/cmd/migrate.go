@@ -124,7 +124,7 @@ $ %s migrate v0.9 /path/to/genesis.json
 func Migrate(appState types.AppMap, clientCtx client.Context) types.AppMap {
 	v039Codec := codec.NewLegacyAmino()
 	v039ethbridge.RegisterLegacyAminoCodec(v039Codec)
-	v040Codec := clientCtx.JSONCodec
+	v040Codec := clientCtx.Codec
 	// CLP
 	if appState[v039clp.ModuleName] != nil {
 		var genesis v039clp.GenesisState

@@ -35,7 +35,7 @@ func buildRootCmd() *cobra.Command {
 	// same thing in ebrelayer
 	encodingConfig := sifapp.MakeTestEncodingConfig()
 	initClientCtx := client.Context{}.
-		WithJSONCodec(encodingConfig.Marshaler).
+		WithCodec(encodingConfig.Marshaler).
 		WithInterfaceRegistry(encodingConfig.InterfaceRegistry).
 		WithTxConfig(encodingConfig.TxConfig).
 		WithLegacyAmino(encodingConfig.Amino).

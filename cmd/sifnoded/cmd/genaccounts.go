@@ -127,7 +127,7 @@ contain valid denominations. Accounts may optionally be supplied with vesting pa
 				return fmt.Errorf("failed to marshal auth genesis state: %w", err)
 			}
 			appState[authtypes.ModuleName] = authGenStateBz
-			bankGenState := banktypes.GetGenesisStateFromAppState(clientCtx.JSONCodec, appState)
+			bankGenState := banktypes.GetGenesisStateFromAppState(clientCtx.Codec, appState)
 			bankGenState.Balances = append(bankGenState.Balances, balances)
 			bankGenState.Balances = banktypes.SanitizeGenesisBalances(bankGenState.Balances)
 			bankGenState.Supply = bankGenState.Supply.Add(balances.Coins...)

@@ -139,7 +139,18 @@ func InitRelayConfig(
 	}
 
 	// Set up TransactOpts auth's tx signature authorization
-	transactOptsAuth := bind.NewKeyedTransactor(key)
+	chainID, err := client.NetworkID(context.Background())
+	if err != nil {
+		sugaredLogger.Errorw("failed to get network ID.", errorMessageKey, err.Error())
+		return nil, nil, common.Address{}, err
+	}
+
+	transactOptsAuth, err := bind.NewKeyedTransactorWithChainID(key, chainID)
+	if err != nil {
+		sugaredLogger.Errorw("New Keystore Transaction failure",
+			errorMessageKey, err.Error())
+		return nil, nil, common.Address{}, err
+	}
 
 	sugaredLogger.Infow("ethereum tx current nonce from client api.",
 		"nonce", nonce,

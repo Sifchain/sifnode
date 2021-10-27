@@ -9,7 +9,7 @@ import (
 	"github.com/tendermint/tendermint/crypto"
 )
 
-type CreateDispensationNegativeTx struct{}
+type CreateDispensationNegativeTx struct{} //nolint
 
 func (CreateDispensationNegativeTx) GetMsgAndArgs(_ CommonArgs) (sdk.Msg, Args) {
 	args := getDispensationTxArgs()

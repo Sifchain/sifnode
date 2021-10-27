@@ -11,7 +11,6 @@ import (
 	"github.com/Sifchain/sifnode/x/dispensation/test"
 	"github.com/Sifchain/sifnode/x/dispensation/types"
 	"github.com/Sifchain/sifnode/x/dispensation/utils"
-	dispensationUtils "github.com/Sifchain/sifnode/x/dispensation/utils"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	"github.com/stretchr/testify/assert"
@@ -63,7 +62,7 @@ func TestKeeper_CreateAndDistributeDrops(t *testing.T) {
 		err = sifapp.AddCoinsToAccount(types.ModuleName, app.BankKeeper, ctx, address, in.Coins)
 		assert.NoError(t, err)
 	}
-	totalCoins, err := dispensationUtils.TotalOutput(outputList)
+	totalCoins, err := utils.TotalOutput(outputList)
 	assert.NoError(t, err)
 	totalCoins = totalCoins.Add(totalCoins...).Add(totalCoins...)
 	err = keeper.GetBankKeeper().SendCoinsFromModuleToAccount(ctx, types.ModuleName, dispensationCreator, totalCoins)
