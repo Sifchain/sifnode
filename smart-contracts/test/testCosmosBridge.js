@@ -11,12 +11,17 @@ require("chai").use(require("chai-as-promised")).use(require("chai-bignumber")(B
 
 use(solidity);
 
-const getBalance = async function (address) {
-  const balance = await network.provider.send("eth_getBalance", [address]);
-  return new web3.utils.BN(balance);
+const getBalance = async function (address, fromWei = false) {
+  let balance = await network.provider.send("eth_getBalance", [address]);
+
+  if (fromWei) {
+    balance = Web3Utils.fromWei(balance);
+  }
+
+  return balance;
 };
 
-describe.only("Test Cosmos Bridge", function () {
+describe("Test Cosmos Bridge", function () {
   let userOne;
   let userTwo;
   let userThree;
@@ -242,10 +247,8 @@ describe.only("Test Cosmos Bridge", function () {
 
     it("should unlock eth upon the successful processing of a burn prophecy claim", async function () {
       // assert recipient balance before receiving proceeds from newProphecyClaim is correct
-      const recipientStartingBalance = await getBalance(state.recipient.address);
-      const recipientCurrentBalance = Web3Utils.fromWei(recipientStartingBalance);
-
-      expect(recipientCurrentBalance).to.be.equal("10000");
+      const startingBalance = await getBalance(state.recipient.address, true);
+      expect(startingBalance).to.be.equal("10000");
       state.nonce = 1;
 
       const { digest, claimData, signatures } = await getValidClaim({
@@ -269,10 +272,9 @@ describe.only("Test Cosmos Bridge", function () {
         .connect(userOne)
         .submitProphecyClaimAggregatedSigs(digest, claimData, signatures);
 
-      const recipientEndingBalance = await getBalance(state.recipient.address);
-      const recipientBalance = Web3Utils.fromWei(recipientEndingBalance);
-
-      expect(recipientBalance).to.be.equal("10000.0000000000000001");
+      const endingBalance = await getBalance(state.recipient.address, true);
+      expectedEndingBalance = "10000.0000000000000001"; // added 100 weis
+      expect(endingBalance).to.be.equal(expectedEndingBalance);
     });
 
     it("should NOT unlock to a blocklisted address eth upon the processing of a burn prophecy claim", async function () {
@@ -281,13 +283,9 @@ describe.only("Test Cosmos Bridge", function () {
         .fulfilled;
 
       // assert recipient balance before receiving proceeds from newProphecyClaim is correct
-      const recipientStartingBalance = await getBalance(state.recipient.address);
-
-      console.log(`recipientStartingBalance: ${recipientStartingBalance}`);
-      expect(recipientStartingBalance).to.be.equal(new web3.utils.BN("10000"));
+      const startingBalance = await getBalance(state.recipient.address, true);
+      expect(startingBalance).to.be.equal("10000.0000000000000001");
       state.nonce = 1;
-
-      console.log("b");
 
       const { digest, claimData, signatures } = await getValidClaim({
         sender: state.sender,
@@ -305,8 +303,6 @@ describe.only("Test Cosmos Bridge", function () {
         validators: [userOne, userTwo, userFour],
       });
 
-      console.log("c");
-
       // get the prophecyID:
       const prophecyID = await state.cosmosBridge.getProphecyID(
         state.sender, // cosmosSender
@@ -323,8 +319,6 @@ describe.only("Test Cosmos Bridge", function () {
         state.constants.denom.ether // cosmosDenom
       );
 
-      console.log("d");
-
       // Doesn't revert, but user doesn't get the funds either
       await expect(
         state.cosmosBridge
@@ -334,14 +328,9 @@ describe.only("Test Cosmos Bridge", function () {
         .to.emit(state.cosmosBridge, "LogProphecyCompleted")
         .withArgs(prophecyID, false); // the second argument here is 'success'
 
-      console.log("e");
-
       // Make sure the balance didn't change
-      const recipientEndingBalance = await getBalance(state.recipient.address);
-      const recipientBalance = Web3Utils.fromWei(recipientEndingBalance);
-      expect(recipientBalance).to.be.equal(recipientStartingBalance);
-
-      console.log("f");
+      const endingBalance = await getBalance(state.recipient.address, true);
+      expect(endingBalance).to.be.equal(startingBalance);
     });
 
     it("should deploy a new token upon the successful processing of a double-pegged burn prophecy claim", async function () {
@@ -569,6 +558,12 @@ describe.only("Test Cosmos Bridge", function () {
           .connect(userOne)
           .submitProphecyClaimAggregatedSigs(digest2, claimData2, signatures2)
       ).to.not.emit(state.cosmosBridge, "LogNewBridgeTokenCreated");
+
+      // But should have minted:
+      const deployedTokenFactory = await ethers.getContractFactory("BridgeToken");
+      const deployedToken = await deployedTokenFactory.attach(newlyCreatedTokenAddress);
+      const endingBalance = await deployedToken.balanceOf(state.recipient.address);
+      expect(endingBalance).to.be.equal(state.amount * 2);
     });
   });
 });
