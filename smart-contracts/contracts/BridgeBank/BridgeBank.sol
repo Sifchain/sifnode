@@ -273,9 +273,6 @@ contract BridgeBank is
         setTokenInCosmosWhiteList(newTokenAddress, true);
         contractDenom[newTokenAddress] = cosmosDenom;
 
-        console.log("BridgeBank::createNewBridgeToken()::Token address:");
-        console.log(newTokenAddress);
-
         return newTokenAddress;
     }
 
@@ -328,17 +325,10 @@ contract BridgeBank is
         whenNotPaused
         onlyNotBlocklisted(ethereumReceiver)
     {
-        console.log("BridgeBank::handleUnpeg():tokenAddress:");
-        console.log(tokenAddress);
-
         // if this is a bridge controlled token, then we need to mint
         if (getCosmosTokenInWhiteList(tokenAddress)) {
-            console.log(
-                "o/ --> Will MINT tokens! ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
-            );
             mintNewBridgeTokens(ethereumReceiver, tokenAddress, amount);
         } else {
-            console.log("--> Will UNLOCK tokens!");
             // if this is an external token, we unlock
             unlock(ethereumReceiver, tokenAddress, amount);
         }

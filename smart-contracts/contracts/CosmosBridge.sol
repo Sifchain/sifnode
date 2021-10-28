@@ -473,9 +473,6 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
         address tokenAddress,
         uint256 amount
     ) internal {
-        console.log("CosmosBridge::completeProphecyClaim:tokenAddress:");
-        console.log(tokenAddress);
-
         (bool success, ) = bridgeBank.call{gas: 120000}(
             abi.encodeWithSignature(
                 "handleUnpeg(address,address,uint256)",
