@@ -13,8 +13,8 @@ const web3 = new Web3();
 
 const support = require("../../helpers/forkingSupport");
 const { print } = require("../../helpers/utils");
-const toInject_1 = require("../../../data/injector_upgrade_blocklist-1.json");
-const toInject_2 = require("../../../data/injector_upgrade_blocklist-2.json");
+const toInject_1 = require("./injector_upgrade_blocklist-1.json");
+const toInject_2 = require("./injector_upgrade_blocklist-2.json");
 
 // If there is no DEPLOYMENT_NAME env var, we'll use the mainnet deployment
 const DEPLOYMENT_NAME = process.env.DEPLOYMENT_NAME || "sifchain-1";
@@ -23,6 +23,7 @@ const DEPLOYMENT_NAME = process.env.DEPLOYMENT_NAME || "sifchain-1";
 const CHAIN_ID = process.env.FORKING_CHAIN_ID || 1;
 
 // We want to verify whther old pausers are still there after an upgrade
+// TODO: query the correct pauser address (this is not it)
 const PAUSER = "0x627306090abaB3A6e1400e9345bC60c78a8BEf57";
 
 const state = {

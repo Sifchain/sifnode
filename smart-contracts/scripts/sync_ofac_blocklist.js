@@ -6,7 +6,7 @@ const parser = require("./helpers/ofacParser");
 
 // Defaults to the Ethereum Mainnet address
 const BLOCKLIST_ADDRESS =
-  process.env.BLOCKLIST_ADDRESS || "0x2a9714AA672419cd189Dd8ac06Fc61478573Ba2C";
+  process.env.BLOCKLIST_ADDRESS || "0x1FBeF5a068bFCC4CB1Fae9039EA716EAaaDaeA82";
 
 const USE_FORKING = !!process.env.USE_FORKING;
 
@@ -42,10 +42,7 @@ async function main() {
 
 async function setupState() {
   // Set the deployed blocklist instance
-  state.blocklistInstance = await support.getContractAt(
-    "Blocklist",
-    BLOCKLIST_ADDRESS
-  );
+  state.blocklistInstance = await support.getContractAt("Blocklist", BLOCKLIST_ADDRESS);
 
   // Set the OFAC list
   state.ofac = await parser.getList();
@@ -77,10 +74,7 @@ async function setupForking() {
   const ownerAddress = await state.blocklistInstance.owner();
 
   // Impersonate the blocklist owner
-  const owner = await support.impersonateAccount(
-    ownerAddress,
-    "10000000000000000000"
-  );
+  const owner = await support.impersonateAccount(ownerAddress, "10000000000000000000");
 
   // Set the owner as the caller for blocklist functions
   state.blocklistInstance = state.blocklistInstance.connect(owner);
@@ -97,18 +91,14 @@ async function addToBlocklist() {
 
   let tx;
   if (state.toAdd.length === 1) {
-    tx = await state.blocklistInstance
-      .addToBlocklist(state.toAdd[0])
-      .catch((e) => {
-        throw e;
-      });
+    tx = await state.blocklistInstance.addToBlocklist(state.toAdd[0]).catch((e) => {
+      throw e;
+    });
   } else {
     // there are many addresses to add
-    tx = await state.blocklistInstance
-      .batchAddToBlocklist(state.toAdd)
-      .catch((e) => {
-        throw e;
-      });
+    tx = await state.blocklistInstance.batchAddToBlocklist(state.toAdd).catch((e) => {
+      throw e;
+    });
   }
 
   print("cyan", `Added ${state.toAdd} to the blocklist.`);
@@ -125,18 +115,14 @@ async function removeFromBlocklist() {
 
   let tx;
   if (state.toRemove.length === 1) {
-    tx = await state.blocklistInstance
-      .removeFromBlocklist(state.toRemove[0])
-      .catch((e) => {
-        throw e;
-      });
+    tx = await state.blocklistInstance.removeFromBlocklist(state.toRemove[0]).catch((e) => {
+      throw e;
+    });
   } else {
     // there are many addresses to remove
-    tx = await state.blocklistInstance
-      .batchRemoveFromBlocklist(state.toRemove)
-      .catch((e) => {
-        throw e;
-      });
+    tx = await state.blocklistInstance.batchRemoveFromBlocklist(state.toRemove).catch((e) => {
+      throw e;
+    });
   }
 
   print("cyan", `Removed ${state.toRemove} from the blocklist.`);
