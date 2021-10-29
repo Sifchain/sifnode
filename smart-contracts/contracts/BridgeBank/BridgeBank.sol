@@ -56,8 +56,8 @@ contract BridgeBank is BankStorage,
         CosmosWhiteList._cosmosWhitelistInitialize();
         EthereumWhiteList.initialize();
 
-        contractName[address(0)] = "EVM_NATIVE";
-        contractSymbol[address(0)] = "EVM_NATIVE";
+        contractName[address(0)] = "EVMNATIVE";
+        contractSymbol[address(0)] = "EVMNATIVE";
 
         _initialized = true;
 
@@ -688,8 +688,8 @@ contract BridgeBank is BankStorage,
             amount,
             lockBurnNonce,
             18, // decimals
-            "EVM_NATIVE", // symbol
-            "EVM_NATIVE", // name
+            "EVMNATIVE", // symbol
+            "EVMNATIVE", // name
             networkDescriptor
         );
     }
