@@ -9,20 +9,23 @@ import test_utilities
 from pytest_utilities import generate_test_account, get_shell_output, sifchain_cli_credentials_for_test
 from test_utilities import EthereumToSifchainTransferRequest, SifchaincliCredentials
 
-
-
 import json
 import web3
 from web3.exceptions import ContractLogicError
 import logging
-from integration_test_context import make_py_module as main
-
+from integration_test_context import main
+from integration_test_context import common
+from common import *
 
 cmd = main.Integrator()
 
 
 def web3_connect_ws(host, port):
     return web3.Web3(web3.Web3.WebsocketProvider("ws://{}:{}".format(host, port)))
+
+def get_web3_connection_for_test():
+    ethereum_ws_url = test_utilities.get_required_env_var("ETHEREUM_WEBSOCKET_ADDRESS")
+    return web3.Web3(web3.WebsocketProvider(ethereum_ws_url))
 
 def get_compiled_sc_ganache(sc_name):
     path = main.project_dir("smart-contracts/build/contracts/{}.json".format(sc_name))
@@ -56,20 +59,10 @@ def set_blocklist_to(w3, blocklist_sc, addrs):
     current = blocklist_sc.functions.getFullList().call()
     assert set(addrs) == set(current)
 
-def random_string(length):
-    import string, random
-    chars = string.ascii_letters + string.digits
-    return "".join([chars[random.randrange(len(chars))] for _ in range(length)])
-
 def create_sifchain_addr():
     mnemonic = random_string(20)
     acct = cmd.sifnoded_keys_add_1(mnemonic)
     return acct["address"]
-
-
-GWEI = 10**18
-NULL_ADDRESS = "0x0000000000000000000000000000000000000000"
-
 
 def send_ether(w3, from_account, to_account, amount):
     logging.info(f"Send {amount} from {from_account} to {to_account}...")
@@ -115,9 +108,6 @@ def get_sifchain_balance(sif_addr):
     res = json.loads(stdout)["balances"]
     return dict(((x["denom"], int(x["amount"])) for x in res))
 
-def test_transfer_eth(basic_transfer_request: EthereumToSifchainTransferRequest, source_ethereum_address: str):
-    return run_parametrized_test_eth("127.0.0.1", 7545, basic_transfer_request, source_ethereum_address)
-
 def sif_balances_equal(dict1, dict2):
     d2k = set(dict2.keys())
     for k in dict1.keys():
@@ -125,6 +115,27 @@ def sif_balances_equal(dict1, dict2):
             return False
         d2k.remove(k)
     return len(d2k) == 0
+
+def deploy_bridge_token_for_testing(w3, token_symbol, owner_address, mint_amount):
+    # Get BridgeToken contract; on peggy1 branch it is already deployed by truffle migrate.
+    sc_json = get_compiled_sc_ganache("BridgeToken")
+    abi = sc_json["abi"]
+    bytecode = sc_json["bytecode"]
+    bridge_token = w3.eth.contract(abi=abi, bytecode=bytecode)
+    txhash = bridge_token.constructor(token_symbol).transact()
+    txrcpt = w3.eth.get_transaction_receipt(txhash)
+    address = txrcpt.contractAddress
+
+    bridge_token = w3.eth.contract(address=address, abi=abi)
+    txhash = bridge_token.functions.mint(owner_address, mint_amount).transact()
+    txrcpt = w3.eth.get_transaction_receipt(txhash)
+
+    assert bridge_token.functions.balanceOf(owner_address).call() == mint_amount
+    assert bridge_token.functions.totalSupply().call() == mint_amount
+    assert bridge_token.functions.symbol().call() == token_symbol
+    assert bridge_token.address == address
+
+    return bridge_token
 
 def wait_for_sif_balance_change(sif_addr, old_balances, polling_time=1, timeout=90):
     advance_block_truffle(50)
@@ -139,9 +150,11 @@ def wait_for_sif_balance_change(sif_addr, old_balances, polling_time=1, timeout=
         if now - start_time > timeout:
             raise Exception("Timeout waiting for sif balance to change")
 
-def run_parametrized_test_eth(web3_host, web3_port, basic_transfer_request, source_ethereum_address):
-    w3 = web3_connect_ws(web3_host, web3_port)
+def test_blocklist_eth(basic_transfer_request: EthereumToSifchainTransferRequest, source_ethereum_address: str):
+    w3 = get_web3_connection_for_test()
+    return _test_blocklist_eth(w3, source_ethereum_address)
 
+def _test_blocklist_eth(w3, source_ethereum_address):
     default_account = w3.eth.accounts[0]  # Should be deployer
     assert default_account == test_utilities.get_required_env_var("OWNER"), "OWNER account is not the same as default"
     assert default_account.lower() == source_ethereum_address.lower(), "source_ethereum_address account is not the same as default"
@@ -155,8 +168,8 @@ def run_parametrized_test_eth(web3_host, web3_port, basic_transfer_request, sour
     blocked_accounts = [x for x in all_accounts[:3]]
     nonblocked_accounts = [x for x in all_accounts if x not in blocked_accounts]
 
-    amount_to_fund = GWEI  # 1 eth
-    amount_to_lock = GWEI // 100  # 0.01 eth
+    amount_to_fund = ETHER
+    amount_to_lock = ETHER // 100
     assert w3.eth.get_balance(default_account) > len(all_accounts) * amount_to_fund, \
         f"Source account {default_account} has insufficient ether balance"
 
@@ -197,46 +210,29 @@ def run_parametrized_test_eth(web3_host, web3_port, basic_transfer_request, sour
             balances_after = wait_for_sif_balance_change(sif_acct1, balances_before)
             assert balances_after.get(sif_symbol, 0) == balances_before.get(sif_symbol, 0) + amount_to_lock
 
-
-def deploy_bridge_token_for_testing(w3, token_symbol, owner_address, mint_amount):
-    # Get BridgeToken contract; on peggy1 branch it is already deployed by truffle migrate.
-    sc_json = get_compiled_sc_ganache("BridgeToken")
-    abi = sc_json["abi"]
-    bytecode = sc_json["bytecode"]
-    bridge_token = w3.eth.contract(abi=abi, bytecode=bytecode)
-    txhash = bridge_token.constructor(token_symbol).transact()
-    txrcpt = w3.eth.get_transaction_receipt(txhash)
-    address = txrcpt.contractAddress
-
-    bridge_token = w3.eth.contract(address=address, abi=abi)
-    txhash = bridge_token.functions.mint(owner_address, mint_amount).transact()
-    txrcpt = w3.eth.get_transaction_receipt(txhash)
-
-    assert bridge_token.functions.balanceOf(owner_address).call() == mint_amount
-    assert bridge_token.functions.totalSupply().call() == mint_amount
-    assert bridge_token.functions.symbol().call() == token_symbol
-    assert bridge_token.address == address
-
-    return bridge_token
-
-
-# For ERC20 tokens, you need to create a new instance, deploy it and whitelist it with BridgeBank.
-# In peggy1, the token matching in BridgeBank is done via symbol, so we need to give our token a unique symbol such as
-# TEST or MOCK + random suffix + call updateEthWtiteList() + mint() + approve().
-# See smart-contracts/test/test_bridgeBank.js:131-160 for example.
 def test_blocklist_erc20(basic_transfer_request: EthereumToSifchainTransferRequest, source_ethereum_address: str):
     web3_host = "127.0.0.1"
     web3_port = 7545
-    w3 = web3_connect_ws(web3_host, web3_port)
+    # w3 = web3_connect_ws(web3_host, web3_port)
+
+    w3 = get_web3_connection_for_test()
+
+    return _test_blocklist_erc20(w3, basic_transfer_request, source_ethereum_address)
+
+def _test_blocklist_erc20(w3, basic_transfer_request, source_ethereum_address):
+    # For ERC20 tokens, we need to create a new instance of Blocklist smart contract, deploy it and whitelist it with
+    # BridgeBank. In peggy1, the token matching in BridgeBank is done by symbol, so we need to give our token a unique
+    # symbol such as TEST or MOCK + random suffix + call updateEthWtiteList() + mint() + approve().
+    # See smart-contracts/test/test_bridgeBank.js:131-160 for example.
 
     default_account = w3.eth.accounts[0]  # Should be deployer
     w3.eth.defaultAccount = default_account
 
     # Must not exist on EVM yet
-    token_symbol = "MOCK" + random_string(6)
-    sif_symbol = "c" + token_symbol.lower()
+    eth_token_symbol = "MOCK" + random_string(6)
+    sif_token_symbol = "c" + eth_token_symbol.lower()
 
-    bridge_token = deploy_bridge_token_for_testing(w3, token_symbol, default_account, 1000)
+    bridge_token = deploy_bridge_token_for_testing(w3, eth_token_symbol, default_account, 1000)
     bridge_bank = get_bridge_bank_sc(w3)
 
     symbol = bridge_token.functions.symbol().call()
@@ -244,7 +240,7 @@ def test_blocklist_erc20(basic_transfer_request: EthereumToSifchainTransferReque
     acct1 = create_eth_account(w3)
     acct2 = create_eth_account(w3)
 
-    amount_to_fund = 2 * GWEI
+    amount_to_fund = 2 * ETHER
     send_ether(w3, default_account, acct1, amount_to_fund)
     send_ether(w3, default_account, acct2, amount_to_fund)
 
@@ -332,104 +328,6 @@ def test_blocklist_erc20(basic_transfer_request: EthereumToSifchainTransferReque
         balances_before = get_sifchain_balance(to_sif_acct)
         bridgebank_lock_erc20(acct1, to_sif_acct, bridge_token.address, amount_to_send)
         balances_after = wait_for_sif_balance_change(to_sif_acct, balances_before)
-        assert balances_after[sif_symbol] == amount_to_send
+        assert balances_after[sif_token_symbol] == amount_to_send
     finally:
         w3.eth.uninstall_filter(filter.filter_id)
-
-
-@pytest.mark.skip
-def test_eth_to_ceth(
-        basic_transfer_request: EthereumToSifchainTransferRequest,
-        source_ethereum_address: str,
-):
-    basic_transfer_request.ethereum_address = source_ethereum_address
-    logging.info(f"transfer_request: {basic_transfer_request}")
-    return generate_minimal_test_account(
-        base_transfer_request=basic_transfer_request,
-        target_ceth_balance=100
-    )
-
-def generate_minimal_test_account(
-        base_transfer_request: EthereumToSifchainTransferRequest,
-        target_ceth_balance: int = 10 ** 18,
-        timeout=burn_lock_functions.default_timeout_for_ganache
-) -> (EthereumToSifchainTransferRequest, SifchaincliCredentials):
-    """Creates a test account with ceth.  The address for the new account is in request.sifchain_address"""
-    assert base_transfer_request.ethereum_address is not None
-    new_account_key = get_shell_output("uuidgen")
-    credentials = sifchain_cli_credentials_for_test(new_account_key)
-    new_addr = burn_lock_functions.create_new_sifaddr(credentials=credentials, keyname=new_account_key)
-    new_sifaddr = new_addr["address"]
-    credentials.from_key = new_addr["name"]
-
-    request: EthereumToSifchainTransferRequest = copy.deepcopy(base_transfer_request)
-    request.sifchain_address = new_sifaddr
-    request.amount = target_ceth_balance
-    request.sifchain_symbol = "ceth"
-    request.ethereum_symbol = "eth"
-    logging.debug(f"transfer {target_ceth_balance} eth to {new_sifaddr} from {base_transfer_request.ethereum_address}")
-    burn_lock_functions.transfer_ethereum_to_sifchain(request, timeout)
-    logging.info(
-        f"created sifchain addr {new_sifaddr} with {test_utilities.display_currency_value(target_ceth_balance)} ceth")
-    return request, credentials
-
-
-
-@pytest.mark.skip
-def test_eth_to_ceth_and_back_to_eth(
-        basic_transfer_request: EthereumToSifchainTransferRequest,
-        source_ethereum_address: str,
-        rowan_source_integrationtest_env_credentials: SifchaincliCredentials,
-        rowan_source_integrationtest_env_transfer_request: EthereumToSifchainTransferRequest,
-        ethereum_network,
-        smart_contracts_dir,
-        bridgetoken_address,
-        sifchain_fees_int,
-):
-    basic_transfer_request.ethereum_address = source_ethereum_address
-    basic_transfer_request.check_wait_blocks = True
-    small_amount = 100
-
-    logging.info("the test account needs enough rowan and ceth for one burn and one lock, make sure it has that")
-    request, credentials = generate_test_account(
-        basic_transfer_request,
-        rowan_source_integrationtest_env_transfer_request,
-        rowan_source_integrationtest_env_credentials,
-        target_ceth_balance=test_utilities.burn_gas_cost + test_utilities.lock_gas_cost + small_amount,
-        target_rowan_balance=sifchain_fees_int * 2 + small_amount
-    )
-    # send some test account ceth back to a new ethereum address
-    request.ethereum_address, _ = test_utilities.create_ethereum_address(
-        smart_contracts_dir, ethereum_network
-    )
-    request.sifchain_symbol = "rowan"
-    request.ethereum_symbol = bridgetoken_address
-    request.amount = small_amount
-    burn_lock_functions.transfer_sifchain_to_ethereum(request, credentials)
-    test_utilities.get_eth_balance(request)
-
-    logging.info("send eth back to ethereum chain")
-    request.sifchain_symbol = "ceth"
-    request.ethereum_symbol = "eth"
-    request.amount = small_amount
-    burn_lock_functions.transfer_sifchain_to_ethereum(request, credentials)
-
-
-@pytest.mark.skip
-def test_transfer_eth_to_ceth_over_limit(
-        basic_transfer_request: EthereumToSifchainTransferRequest,
-        source_ethereum_address: str,
-        rowan_source_integrationtest_env_credentials: SifchaincliCredentials,
-        rowan_source_integrationtest_env_transfer_request: EthereumToSifchainTransferRequest,
-):
-    basic_transfer_request.ethereum_symbol = "eth"
-    basic_transfer_request.ethereum_address = source_ethereum_address
-    basic_transfer_request.amount = 35 * 10 ** 18
-    with pytest.raises(Exception):
-        basic_transfer_request.ethereum_address = source_ethereum_address
-        generate_test_account(
-            basic_transfer_request,
-            rowan_source_integrationtest_env_transfer_request,
-            rowan_source_integrationtest_env_credentials,
-            target_ceth_balance=50 * 10 ** 19,
-        )
