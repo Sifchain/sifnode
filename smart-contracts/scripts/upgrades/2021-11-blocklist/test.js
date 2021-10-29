@@ -11,10 +11,10 @@ const fs = require("fs-extra");
 const Web3 = require("web3");
 const web3 = new Web3();
 
-const support = require("./helpers/forkingSupport");
-const { print } = require("./helpers/utils");
-const toInject_1 = require("../data/injector_upgrade_blocklist-1.json");
-const toInject_2 = require("../data/injector_upgrade_blocklist-2.json");
+const support = require("../../helpers/forkingSupport");
+const { print } = require("../../helpers/utils");
+const toInject_1 = require("../../../data/injector_upgrade_blocklist-1.json");
+const toInject_2 = require("../../../data/injector_upgrade_blocklist-2.json");
 
 // If there is no DEPLOYMENT_NAME env var, we'll use the mainnet deployment
 const DEPLOYMENT_NAME = process.env.DEPLOYMENT_NAME || "sifchain-1";
@@ -35,9 +35,7 @@ const state = {
     user1: "0xfc854524613dA7244417908d199857754189633c",
     user2: "0xb6fa1F5304aa0a17E5B85088e720b0e39dD1b233",
     user3: "0x6F165B30ee4bFc9565E977Ae252E4110624ab147",
-    sifRecipient: web3.utils.utf8ToHex(
-      "sif1nx650s8q9w28f2g3t9ztxyg48ugldptuwzpace"
-    ),
+    sifRecipient: web3.utils.utf8ToHex("sif1nx650s8q9w28f2g3t9ztxyg48ugldptuwzpace"),
   },
   signers: {
     admin: null,
@@ -233,9 +231,7 @@ async function deployContracts() {
   state.contracts.blocklist = blocklist;
 
   // Deploy the BridgeToken
-  const bridgeTokenFactory = await hardhat.ethers.getContractFactory(
-    "BridgeToken"
-  );
+  const bridgeTokenFactory = await hardhat.ethers.getContractFactory("BridgeToken");
   const token = await bridgeTokenFactory.deploy("TEST");
   await token.deployed();
   state.contracts.bridgeToken = token;
@@ -245,9 +241,7 @@ async function deployContracts() {
 
 async function upgradeBridgeBank() {
   print("yellow", `🕑 Upgrading BridgeBank...`);
-  const newBridgeBankFactory = await hardhat.ethers.getContractFactory(
-    "BridgeBank"
-  );
+  const newBridgeBankFactory = await hardhat.ethers.getContractFactory("BridgeBank");
   state.contracts.upgradedBridgeBank = await hardhat.upgrades.upgradeProxy(
     state.contracts.bridgeBank,
     newBridgeBankFactory.connect(state.signers.admin)
@@ -266,10 +260,7 @@ async function setupBridgeToken() {
 
   // Load user account with ERC20 tokens
   print("yellow", `🕑 Minting tokens to user1...`);
-  await state.contracts.bridgeToken.mint(
-    state.addresses.user1,
-    state.tokenBalance
-  );
+  await state.contracts.bridgeToken.mint(state.addresses.user1, state.tokenBalance);
   print("green", `✅ Tokens minted to user1`);
 
   // Approve tokens to contract
@@ -287,14 +278,9 @@ async function lock({ expectedError }) {
   try {
     await state.contracts.upgradedBridgeBank
       .connect(state.signers.user1)
-      .lock(
-        state.addresses.sifRecipient,
-        state.contracts.bridgeToken.address,
-        state.amount,
-        {
-          value: 0,
-        }
-      );
+      .lock(state.addresses.sifRecipient, state.contracts.bridgeToken.address, state.amount, {
+        value: 0,
+      });
   } catch (e) {
     errorMessage = e.message;
   }
@@ -403,9 +389,7 @@ function testMatch(before, after, slotName) {
   if (before === after) {
     print("green", `✅ ${slotName} slot is safe`);
   } else {
-    throw new Error(
-      `💥 CRITICAL: ${slotName} Mismatch! From ${before} to ${after}`
-    );
+    throw new Error(`💥 CRITICAL: ${slotName} Mismatch! From ${before} to ${after}`);
   }
 }
 
