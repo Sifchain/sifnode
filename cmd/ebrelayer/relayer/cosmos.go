@@ -162,8 +162,6 @@ func (sub CosmosSub) Start(completionEvent *sync.WaitGroup, symbolTranslator *sy
 
 						claimType := getOracleClaimType(event.GetType())
 
-						sub.SugaredLogger.Infow("claimtype cosmos.go: ", "claimType: ", claimType)
-
 						switch claimType {
 						case types.MsgBurn, types.MsgLock:
 							cosmosMsg, err := txs.BurnLockEventToCosmosMsg(claimType, event.GetAttributes(), symbolTranslator, sub.SugaredLogger)
