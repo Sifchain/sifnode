@@ -116,7 +116,7 @@ describe("watcher", () => {
                 // we should see exactly one lock
                 return {...acc, value: v, sawLogLock: true}
             } else {
-                // we have a new value and it should use the current heartbeat as its creation time
+                // we have a new value (of any kind) and it should use the current heartbeat as its creation time
                 return {...acc, value: v, createdAt: acc.currentHeartbeat}
             }
         }, {
