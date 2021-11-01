@@ -1,7 +1,5 @@
 pragma solidity 0.5.16;
 
-import "../interfaces/IBlocklist.sol";
-
 /**
  * @title WhiteList
  * @dev WhiteList contract records the ERC 20 list that can be locked in BridgeBank.
@@ -16,19 +14,9 @@ contract EthereumWhiteList {
     mapping(address => bool) private _ethereumTokenWhiteList;
 
     /**
-     * @dev the blocklist contract
-     */
-    IBlocklist public blocklist;
-
-    /**
-     * @dev is the blocklist active?
-     */
-    bool public hasBlocklist;
-
-    /**
      * @notice gap of storage for future upgrades
      */
-    uint256[98] private ____gap;
+    uint256[100] private ____gap;
     /*
      * @dev: Event declarations
      */
@@ -48,16 +36,6 @@ contract EthereumWhiteList {
             getTokenInEthWhiteList(_token),
             "Only token in whitelist can be transferred to cosmos"
         );
-        _;
-    }
-
-    /**
-     * @dev Modifier to restrict EVM addresses
-     */
-    modifier onlyNotBlocklisted(address account) {
-        if(hasBlocklist) {
-          require(!blocklist.isBlocklisted(account), "Address is blocklisted");
-        }
         _;
     }
 
@@ -85,14 +63,5 @@ contract EthereumWhiteList {
      */
     function getTokenInEthWhiteList(address _token) public view returns (bool) {
         return _ethereumTokenWhiteList[_token];
-    }
-
-    /**
-     * @notice Lets the operator set the blocklist address
-     * @param blocklistAddress The address of the blocklist contract
-     */
-    function _setBlocklist(address blocklistAddress) internal {
-        blocklist = IBlocklist(blocklistAddress);
-        hasBlocklist = true;
     }
 }

@@ -16,20 +16,31 @@ import "../interfaces/IBlocklist.sol";
  *      CosmosBank manages the minting and burning of tokens which
  *      represent Cosmos based assets, while EthereumBank manages
  *      the locking and unlocking of Ethereum and ERC20 token assets
- *      based on Ethereum. WhiteList records the ERC20 token address 
+ *      based on Ethereum. WhiteList records the ERC20 token address
  *      list that can be locked.
  **/
 
-contract BridgeBank is BankStorage,
+contract BridgeBank is
+    BankStorage,
     CosmosBank,
     EthereumBank,
     EthereumWhiteList,
     CosmosWhiteList,
-    Pausable {
-
+    Pausable
+{
     bool private _initialized;
-    
+
     using SafeMath for uint256;
+
+    /**
+     * @dev the blocklist contract
+     */
+    IBlocklist public blocklist;
+
+    /**
+     * @dev is the blocklist active?
+     */
+    bool public hasBlocklist;
 
     /*
      * @dev: Initializer, sets operator
@@ -76,10 +87,20 @@ contract BridgeBank is BankStorage,
      * @dev: Modifier to restrict access to the cosmos bridge
      */
     modifier onlyCosmosBridge() {
-        require(
-            msg.sender == cosmosBridge,
-            "!cosmosbridge"
-        );
+        require(msg.sender == cosmosBridge, "!cosmosbridge");
+        _;
+    }
+
+    /**
+     * @dev Modifier to restrict EVM addresses
+     */
+    modifier onlyNotBlocklisted(address account) {
+        if (hasBlocklist) {
+            require(
+                !blocklist.isBlocklisted(account),
+                "Address is blocklisted"
+            );
+        }
         _;
     }
 
@@ -105,7 +126,11 @@ contract BridgeBank is BankStorage,
     /*
      * @dev: function to validate if a sif address has a correct prefix
      */
-    function verifySifPrefix(bytes memory _sifAddress) public pure returns (bool) {
+    function verifySifPrefix(bytes memory _sifAddress)
+        public
+        pure
+        returns (bool)
+    {
         bytes3 sifInHex = 0x736966;
 
         for (uint256 i = 0; i < sifInHex.length; i++) {
@@ -138,9 +163,11 @@ contract BridgeBank is BankStorage,
      * @param _symbol: The new BridgeToken's symbol
      * @return: The new BridgeToken contract's address
      */
-    function addExistingBridgeToken(
-        address _contractAddress
-    ) public onlyOwner returns (address) {
+    function addExistingBridgeToken(address _contractAddress)
+        public
+        onlyOwner
+        returns (address)
+    {
         setTokenInCosmosWhiteList(_contractAddress, true);
 
         return useExistingBridgeToken(_contractAddress);
@@ -160,14 +187,14 @@ contract BridgeBank is BankStorage,
     {
         string memory symbol = BridgeToken(_token).symbol();
         address listAddress = lockedTokenList[symbol];
-        
+
         // Do not allow a token with the same symbol to be whitelisted
         if (_inList) {
             // if we want to add it to the whitelist, make sure that the address
             // is 0, meaning we have not seen that symbol in the whitelist before
             require(listAddress == address(0), "whitelisted");
         } else {
-            // if we want to de-whitelist it, make sure that the symbol is 
+            // if we want to de-whitelist it, make sure that the symbol is
             // in fact stored in our locked token list before we set to false
             require(uint256(listAddress) > 0, "!whitelisted");
         }
@@ -201,7 +228,12 @@ contract BridgeBank is BankStorage,
         address payable _intendedRecipient,
         string memory _symbol,
         uint256 _amount
-    ) public onlyCosmosBridge whenNotPaused onlyNotBlocklisted(_intendedRecipient) {
+    )
+        public
+        onlyCosmosBridge
+        whenNotPaused
+        onlyNotBlocklisted(_intendedRecipient)
+    {
         string memory symbol = safeLowerToUpperTokens(_symbol);
         address tokenAddress = controlledBridgeTokens[symbol];
         return
@@ -224,11 +256,12 @@ contract BridgeBank is BankStorage,
         bytes memory _recipient,
         address _token,
         uint256 _amount
-    ) public
-      validSifAddress(_recipient)
-      onlyCosmosTokenWhiteList(_token)
-      onlyNotBlocklisted(msg.sender)
-      whenNotPaused
+    )
+        public
+        validSifAddress(_recipient)
+        onlyCosmosTokenWhiteList(_token)
+        onlyNotBlocklisted(msg.sender)
+        whenNotPaused
     {
         string memory symbol = BridgeToken(_token).symbol();
 
@@ -247,24 +280,20 @@ contract BridgeBank is BankStorage,
         bytes memory _recipient,
         address _token,
         uint256 _amount
-    ) public payable
-      onlyEthTokenWhiteList(_token)
-      validSifAddress(_recipient)
-      onlyNotBlocklisted(msg.sender)
-      whenNotPaused
+    )
+        public
+        payable
+        onlyEthTokenWhiteList(_token)
+        validSifAddress(_recipient)
+        onlyNotBlocklisted(msg.sender)
+        whenNotPaused
     {
         string memory symbol;
 
         // Ethereum deposit
         if (msg.value > 0) {
-            require(
-                _token == address(0),
-                "!address(0)"
-            );
-            require(
-                msg.value == _amount,
-                "incorrect eth amount"
-            );
+            require(_token == address(0), "!address(0)");
+            require(msg.value == _amount, "incorrect eth amount");
             symbol = "eth";
             // ERC20 deposit
         } else {
@@ -305,12 +334,17 @@ contract BridgeBank is BankStorage,
      * @param blocklistAddress The address of the blocklist contract
      */
     function setBlocklist(address blocklistAddress) public onlyOperator {
-      _setBlocklist(blocklistAddress);
+        blocklist = IBlocklist(blocklistAddress);
+        hasBlocklist = true;
     }
 
     /*
-    * @dev fallback function for ERC223 tokens so that we can receive these tokens in our contract
-    * Don't need to do anything to handle these tokens
-    */
-    function tokenFallback(address _from, uint _value, bytes memory _data) public {}
+     * @dev fallback function for ERC223 tokens so that we can receive these tokens in our contract
+     * Don't need to do anything to handle these tokens
+     */
+    function tokenFallback(
+        address _from,
+        uint256 _value,
+        bytes memory _data
+    ) public {}
 }
