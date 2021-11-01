@@ -42,19 +42,24 @@ func NewAdjustGasPriceDecorator() AdjustGasPriceDecorator {
 // AnteHandle adjusts the gas price based on the tx type.
 func (r AdjustGasPriceDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate bool, next sdk.AnteHandler) (newCtx sdk.Context, err error) {
 	msgs := tx.GetMsgs()
-	minGasPrice := sdk.DecCoin{
-		Denom:  "rowan",
-		Amount: sdk.MustNewDecFromStr("100000000000000000"),
-	}
 	if len(msgs) == 1 && (msgs[0].Type() == disptypes.MsgTypeCreateDistribution || msgs[0].Type() == disptypes.MsgTypeRunDistribution) {
-		minGasPrice = sdk.DecCoin{
+		minGasPrice := sdk.DecCoin{
 			Denom:  "rowan",
 			Amount: sdk.MustNewDecFromStr("0.00000005"),
 		}
+		if !minGasPrice.IsValid() {
+			return ctx, sdkerrors.Wrap(sdkerrors.ErrLogic, "invalid gas price")
+		}
+		ctx = ctx.WithMinGasPrices(sdk.NewDecCoins(minGasPrice))
+		return next(ctx, tx, simulate)
 	}
-	if !minGasPrice.IsValid() {
-		return ctx, sdkerrors.Wrap(sdkerrors.ErrLogic, "invalid gas price")
+	feeTx, ok := tx.(sdk.FeeTx)
+	if !ok {
+		return ctx, sdkerrors.Wrap(sdkerrors.ErrTxDecode, "Tx must be a FeeTx")
 	}
-	ctx = ctx.WithMinGasPrices(sdk.NewDecCoins(minGasPrice))
+	fees := feeTx.GetFee()
+	if len(fees) == 1 && fees[0].Amount.LT(sdk.NewInt(100000000000000000)) {
+		return ctx, sdkerrors.Wrap(sdkerrors.ErrLogic, "fee is too low")
+	}
 	return next(ctx, tx, simulate)
 }
