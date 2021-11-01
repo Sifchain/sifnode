@@ -23,7 +23,7 @@ func TestAdjustGasPriceDecorator_AnteHandle(t *testing.T) {
 	decorator := ante.AdjustGasPriceDecorator{}
 	highGasPrice := sdk.DecCoin{
 		Denom:  "rowan",
-		Amount: sdk.MustNewDecFromStr("100000000000000000"),
+		Amount: sdk.MustNewDecFromStr("0.5"),
 	}
 	loweredGasPrice := sdk.DecCoin{
 		Denom:  "rowan",
