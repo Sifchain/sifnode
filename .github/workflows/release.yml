@@ -23,25 +23,8 @@ jobs:
       - name: Inject slug/short variables
         uses: rlespinasse/github-slug-action@v2.x
 
-      - if: contains(github.ref, 'devnet')
-        run: |
-          echo "CHAINNET=testnet" >> "$GITHUB_ENV"
-
-      - if: contains(github.ref, 'testnet')
-        run: |
-          echo "CHAINNET=testnet" >> "$GITHUB_ENV"
-
-      - if: contains(github.ref, 'betanet')
-        run: |
-          echo "CHAINNET=betanet" >> "$GITHUB_ENV"
-
-      - if: contains(github.ref, 'mainnet')
-        run: |
-          echo "CHAINNET=mainnet" >> "$GITHUB_ENV"
-
       - name: Build docker images
         run: |
-          echo ${{ env.CHAINNET }}
           make CHAINNET=${{ env.CHAINNET }} IMAGE_TAG=${{ env.GITHUB_REF_SLUG }} BINARY=sifnoded build-image
           make CHAINNET=${{ env.CHAINNET }} IMAGE_TAG=${{ env.GITHUB_REF_SLUG }} BINARY=ebrelayer build-image
 
@@ -56,7 +39,7 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           goos: linux
           goarch: amd64
-          goversion: "https://dl.google.com/go/go1.15.1.linux-amd64.tar.gz"
+          goversion: "1.16"
           project_path: "./cmd/sifnoded"
           binary_name: "sifnoded"
           sha256sum: true
