@@ -1,13 +1,12 @@
 /**
- * This script will actually upgrade BridgeBank in production and connect it to the Blocklist.
- * It will also work with Ropsten, as long as you set
+ * This script will upgrade BridgeBank in production and connect it to the Blocklist.
+ * For instructions, please consult scripts/upgrades/2021-11-blocklist/runbook.md
  */
 require("dotenv").config();
 
 const hardhat = require("hardhat");
 const fs = require("fs-extra");
 const Web3 = require("web3");
-const web3 = new Web3();
 
 const support = require("../../helpers/forkingSupport");
 const { print } = require("../../helpers/utils");
@@ -16,7 +15,8 @@ const toInject_2 = require("./injector_upgrade_blocklist-2.json");
 
 // Defaults to the Ethereum Mainnet address
 const BLOCKLIST_ADDRESS =
-  process.env.BLOCKLIST_ADDRESS || "0x1FBeF5a068bFCC4CB1Fae9039EA716EAaaDaeA82";
+  process.env.BLOCKLIST_ADDRESS ||
+  Web3.utils.toChecksumAddress("0x1FBeF5a068bFCC4CB1Fae9039EA716EAaaDaeA82");
 
 // If there is no DEPLOYMENT_NAME env var, we'll use the mainnet deployment
 const DEPLOYMENT_NAME = process.env.DEPLOYMENT_NAME || "sifchain-1";
@@ -29,8 +29,12 @@ const USE_FORKING = !!process.env.USE_FORKING;
 
 const state = {
   addresses: {
-    pauser: "0x627306090abaB3A6e1400e9345bC60c78a8BEf57", // TODO: get the correct pauser address (this is not it)
-    whitelistedToken: "0x5a98fcbea516cf06857215779fd812ca3bef1b32",
+    pauser1: Web3.utils.toChecksumAddress("c0a586fb260b2c14098a9d95b75f56f13cad2dd9"),
+    pauser2: Web3.utils.toChecksumAddress("0x9910ade709043d8b9ed2a31fdfcbfb6538f9a397"),
+    whitelistedToken: Web3.utils.toChecksumAddress("0x5a98fcbea516cf06857215779fd812ca3bef1b32"),
+    cosmosWhitelistedtoken: Web3.utils.toChecksumAddress(
+      "0x8D983cb9388EaC77af0474fA441C4815500Cb7BB"
+    ),
   },
   signers: {
     admin: null,
@@ -44,17 +48,21 @@ const state = {
   },
   storageSlots: {
     before: {
-      pauser: "",
+      pauser1: "",
+      pauser2: "",
       owner: "",
       nonce: "",
       whitelist: "",
+      cosmosWhitelist: "",
       lockedFunds: "",
     },
     after: {
-      pauser: "",
+      pauser1: "",
+      pauser2: "",
       owner: "",
       nonce: "",
       whitelist: "",
+      cosmosWhitelist: "",
       lockedFunds: "",
     },
   },
@@ -64,7 +72,8 @@ async function main() {
   print("highlight", "~~~ UPGRADE BRIDGEBANK: BLOCKLIST ~~~");
 
   // Fetch the manifest and inject the new variables
-  copyManifest(true);
+  //copyManifest(true);
+  copyManifest(false);
 
   // Connect to each contract
   await connectToContracts();
@@ -87,27 +96,32 @@ async function main() {
   // Register the Blocklist in BridgeBank
   await registerBlocklist();
 
-  // Populate the Blocklist // should this be run before the upgrade? I think it should, and it be done separetely
-  //await syncBlocklist();
-
-  // Save the deployment
-  //await saveDeployment();
-
   // Clean up temporary files
   cleanup();
 
   print("highlight", "~~~ DONE! 👏 Everything worked as expected. ~~~");
+
+  if (!USE_FORKING) {
+    print(
+      "h_green",
+      `The BridgeBank is upgraded in ${currentEnv} and the Blocklist is registered correctly.`
+    );
+  }
 }
 
 async function setStorageSlots(beforeUpgrade = true) {
   const contract = beforeUpgrade ? state.contracts.bridgeBank : state.contracts.upgradedBridgeBank;
   const prefix = beforeUpgrade ? "before" : "after";
 
-  state.storageSlots[prefix].pauser = await contract.pausers(state.addresses.pauser);
+  state.storageSlots[prefix].pauser1 = await contract.pausers(state.addresses.pauser1);
+  state.storageSlots[prefix].pauser2 = await contract.pausers(state.addresses.pauser2);
   state.storageSlots[prefix].owner = await contract.owner();
   state.storageSlots[prefix].nonce = await contract.lockBurnNonce();
   state.storageSlots[prefix].whitelist = await contract.getTokenInEthWhiteList(
     state.addresses.whitelistedToken
+  );
+  state.storageSlots[prefix].cosmosWhitelist = await contract.getCosmosTokenInWhiteList(
+    state.addresses.cosmosWhitelistedtoken
   );
   state.storageSlots[prefix].lockedFunds = await contract.getLockedFunds(
     state.addresses.whitelistedToken
@@ -118,10 +132,12 @@ function checkStorageSlots() {
   print("yellow", "🎯 Checking storage layout");
 
   const storage = state.storageSlots;
-  testMatch(storage.before.pauser, storage.after.pauser, "Pauser");
+  testMatch(storage.before.pauser1, storage.after.pauser1, "Pauser 1");
+  testMatch(storage.before.pauser2, storage.after.pauser2, "Pauser 2");
   testMatch(storage.before.owner, storage.after.owner, "Owner");
   testMatch(storage.before.nonce, storage.after.nonce, "Nonce");
-  testMatch(storage.before.whitelist, storage.after.whitelist, "Whitelist");
+  testMatch(storage.before.whitelist, storage.after.whitelist, "EthWhitelist");
+  testMatch(storage.before.cosmosWhitelist, storage.after.cosmosWhitelist, "CosmosWhitelist");
   testMatch(storage.before.lockedFunds, storage.after.lockedFunds, "LockedFunds");
 }
 
@@ -182,16 +198,30 @@ async function setupAccounts() {
     state.signers.operator = accounts[1];
 
     if (state.signers.admin.address != support.PROXY_ADMIN_ADDRESS) {
-      throw new Error("ACCOUNT_IS_NOT_PROXY_ADMIN");
+      throw new Error(
+        `The first Private Key is not the PROXY ADMIN's private key. Please use the Private Key that corresponds to the address ${support.PROXY_ADMIN_ADDRESS}`
+      );
     }
 
     if (state.signers.operator.address != operatorAddress) {
-      throw new Error("ACCOUNT_IS_NOT_PROXY_ADMIN");
+      throw new Error(
+        `The second Private Key is not the BridgeBank OPERATOR's private key. Please use the Private Key that corresponds to the address ${operatorAddress}`
+      );
     }
   }
 
-  print("white", `🤵 ProxyAdmin: ${state.signers.admin.address}`);
-  print("white", `🤵 Operator: ${state.signers.operator.address}`);
+  const adminColor =
+    state.signers.admin.address.toLowerCase() === support.PROXY_ADMIN_ADDRESS.toLowerCase()
+      ? "white"
+      : "red";
+
+  const operatorColor =
+    state.signers.operator.address.toLowerCase() === operatorAddress.toLowerCase()
+      ? "white"
+      : "red";
+
+  print(adminColor, `🤵 ProxyAdmin: ${state.signers.admin.address}`);
+  print(operatorColor, `🤵 Operator: ${state.signers.operator.address}`);
 }
 
 async function upgradeBridgeBank() {
