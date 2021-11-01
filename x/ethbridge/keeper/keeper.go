@@ -3,6 +3,7 @@ package keeper
 import (
 	"errors"
 	"fmt"
+	"go.uber.org/zap"
 
 	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
 	tokenregistrytypes "github.com/Sifchain/sifnode/x/tokenregistry/types"
@@ -69,6 +70,9 @@ func (k Keeper) ProcessClaim(ctx sdk.Context, claim *types.EthBridgeClaim) (orac
 // ProcessSuccessfulClaim processes a claim that has just completed successfully with consensus
 func (k Keeper) ProcessSuccessfulClaim(ctx sdk.Context, claim *types.EthBridgeClaim) error {
 	logger := k.Logger(ctx)
+
+	logger.Debug(types.PeggyTestMarker, "kind", "ProcessSuccessfulClaim", zap.Reflect("claim", claim))
+
 	tokenMetadata, ok := k.tokenRegistryKeeper.GetTokenMetadata(ctx, claim.DenomHash)
 	if !ok {
 		return fmt.Errorf("token metadata not available for %s", claim.DenomHash)
@@ -104,6 +108,8 @@ func (k Keeper) ProcessSuccessfulClaim(ctx sdk.Context, claim *types.EthBridgeCl
 	); err != nil {
 		panic(err)
 	}
+
+	ctx.Logger().Debug(types.PeggyTestMarker, "kind", "coinsSent", zap.Reflect("claim", claim))
 
 	return nil
 }

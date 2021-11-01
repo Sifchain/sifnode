@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"go.uber.org/zap"
 	"strconv"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -173,6 +174,8 @@ func (srv msgServer) Burn(goCtx context.Context, msg *types.MsgBurn) (*types.Msg
 func (srv msgServer) CreateEthBridgeClaim(goCtx context.Context, msg *types.MsgCreateEthBridgeClaim) (*types.MsgCreateEthBridgeClaimResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 	logger := srv.Keeper.Logger(ctx)
+
+	logger.Debug(types.PeggyTestMarker, "kind", "CreateEthBridgeClaim", zap.Reflect("message", msg))
 
 	// check the account
 	cosmosSender := msg.EthBridgeClaim.ValidatorAddress

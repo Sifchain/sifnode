@@ -3,6 +3,7 @@ package keeper
 import (
 	"errors"
 	"fmt"
+	"go.uber.org/zap"
 	"strconv"
 	"strings"
 
@@ -13,6 +14,7 @@ import (
 	"github.com/tendermint/tendermint/libs/log"
 
 	"github.com/Sifchain/sifnode/x/oracle/types"
+	ethbridgeTypes "github.com/Sifchain/sifnode/x/ethbridge/types"
 )
 
 // Keeper maintains the link to data storage and
@@ -77,7 +79,6 @@ func (k Keeper) ProcessClaim(ctx sdk.Context, networkDescriptor types.NetworkDes
 	}
 
 	return k.AppendValidatorToProphecy(ctx, networkDescriptor, prophecyID, valAddr)
-
 }
 
 // AppendValidatorToProphecy append the validator's signature to prophecy
@@ -87,6 +88,8 @@ func (k Keeper) AppendValidatorToProphecy(ctx sdk.Context, networkDescriptor typ
 		prophecy.Id = prophecyID
 		prophecy.Status = types.StatusText_STATUS_TEXT_PENDING
 	}
+
+	ctx.Logger().Debug(ethbridgeTypes.PeggyTestMarker, "kind", "AppendValidatorToProphecy", zap.Reflect("prophecy", prophecy))
 
 	switch prophecy.Status {
 	case types.StatusText_STATUS_TEXT_PENDING:
@@ -145,6 +148,9 @@ func (k Keeper) processCompletion(ctx sdk.Context, networkDescriptor types.Netwo
 	if voteRate >= k.consensusNeeded {
 		prophecy.Status = types.StatusText_STATUS_TEXT_SUCCESS
 	}
+
+	ctx.Logger().Debug(ethbridgeTypes.PeggyTestMarker, "kind", "processCompletion", zap.Reflect("prophecy", prophecy))
+
 	return prophecy
 }
 

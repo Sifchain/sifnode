@@ -411,7 +411,7 @@ func (sub EthereumSub) logToEvent(networkDescriptor oracletypes.NetworkDescripto
 	} else {
 		event.ClaimType = ethbridgetypes.ClaimType_CLAIM_TYPE_LOCK
 	}
-	sub.SugaredLogger.Debugw(internal.PeggyTestMarker, "kind", "EthereumEvent", zap.Reflect("event", event))
+	sub.SugaredLogger.Debugw(internal.PeggyTestMarker, "kind", "EthereumEvent", zap.Reflect("event", event), "txhash", cLog.TxHash.Hex())
 
 	// Add the event to the record
 	types.NewEventWrite(cLog.TxHash.Hex(), event)
