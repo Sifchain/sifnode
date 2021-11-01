@@ -219,29 +219,26 @@ func GetCmdSwap() *cobra.Command {
 			if err != nil {
 				return err
 			}
-
 			sentAsset := types.NewAsset(viper.GetString(FlagSentAssetSymbol))
 			receivedAsset := types.NewAsset(viper.GetString(FlagReceivedAssetSymbol))
-
 			sentAmount := viper.GetString(FlagAmount)
 			minReceivingAmount := viper.GetString(FlagMinimumReceivingAmount)
-
 			signer := clientCtx.GetFromAddress()
-
-			msg := types.NewMsgSwap(signer, sentAsset, receivedAsset, sdk.NewUintFromString(sentAmount), sdk.NewUintFromString(minReceivingAmount))
+			sentAmountUint := sdk.NewUintFromString(sentAmount)
+			if sentAsset.Equals(types.GetSettlementAsset()) && sentAmountUint.LT(sdk.NewUintFromString("1000000000000000000")) {
+				return types.ErrAmountTooLow
+			}
+			msg := types.NewMsgSwap(signer, sentAsset, receivedAsset, sentAmountUint, sdk.NewUintFromString(minReceivingAmount))
 			if err := msg.ValidateBasic(); err != nil {
 				return err
 			}
-
 			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), &msg)
 		},
 	}
-
 	cmd.Flags().AddFlagSet(FsSentAssetSymbol)
 	cmd.Flags().AddFlagSet(FsReceivedAssetSymbol)
 	cmd.Flags().AddFlagSet(FsAmount)
 	cmd.Flags().AddFlagSet(FsMinReceivingAmount)
-
 	if err := cmd.MarkFlagRequired(FlagSentAssetSymbol); err != nil {
 		log.Println("MarkFlagRequired failed: ", err.Error())
 	}
@@ -254,8 +251,6 @@ func GetCmdSwap() *cobra.Command {
 	if err := cmd.MarkFlagRequired(FlagMinimumReceivingAmount); err != nil {
 		log.Println("MarkFlagRequired failed: ", err.Error())
 	}
-
 	flags.AddTxFlagsToCmd(cmd)
-
 	return cmd
 }
