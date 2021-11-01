@@ -412,7 +412,7 @@ func (srv msgServer) SetFeeInfo(goCtx context.Context, msg *types.MsgSetFeeInfo)
 	}
 
 	if err := srv.Keeper.SetFeeInfo(ctx, msg); err != nil {
-		logger.Error("keeper failed to process rescue crosschain fee message.", errorMessageKey, err.Error())
+		logger.Error("keeper failed to process setting crosschain fee message.", errorMessageKey, err.Error())
 		return nil, err
 	}
 	logger.Info("sifnode emit set crosschain fee event.",
