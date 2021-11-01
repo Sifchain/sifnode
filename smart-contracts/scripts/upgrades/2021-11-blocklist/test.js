@@ -2,6 +2,11 @@
  * This script will test the Blocklist upgrade off of a Mainnet fork
  * It will try many different scenarios regarding the Blocklist integration.
  * If anything blows up, you'll see a red error on your shell/console.
+ *
+ * It's a good idea to run this script before actually upgrading the BridgeBank in production.
+ *
+ * Usage: run the following command
+ * `USE_FORKING=1 npx hardhat run scripts/upgrades/2021-11-blocklist/test.js`
  */
 
 require("dotenv").config();
@@ -22,10 +27,6 @@ const DEPLOYMENT_NAME = process.env.DEPLOYMENT_NAME || "sifchain-1";
 // If there is no FORKING_CHAIN_ID env var, we'll use the mainnet id
 const CHAIN_ID = process.env.FORKING_CHAIN_ID || 1;
 
-// We want to verify whther old pausers are still there after an upgrade
-// TODO: query the correct pauser address (this is not it)
-const PAUSER = "0x627306090abaB3A6e1400e9345bC60c78a8BEf57";
-
 const state = {
   addresses: {
     validator1: "0x0D7dEF5C00a8B6ddc58A0255f0a94cc739C6d0B5",
@@ -37,6 +38,9 @@ const state = {
     user2: "0xb6fa1F5304aa0a17E5B85088e720b0e39dD1b233",
     user3: "0x6F165B30ee4bFc9565E977Ae252E4110624ab147",
     sifRecipient: web3.utils.utf8ToHex("sif1nx650s8q9w28f2g3t9ztxyg48ugldptuwzpace"),
+    pauser: "c0a586fb260b2c14098a9d95b75f56f13cad2dd9",
+    whitelistedToken: "0x5a98fcbea516cf06857215779fd812ca3bef1b32",
+    cosmosWhitelistedtoken: "0x8D983cb9388EaC77af0474fA441C4815500Cb7BB",
   },
   signers: {
     admin: null,
@@ -53,6 +57,24 @@ const state = {
     bridgeToken: null,
     upgradedBridgeBank: null,
   },
+  storageSlots: {
+    before: {
+      pauser: "",
+      owner: "",
+      nonce: "",
+      whitelist: "",
+      cosmosWhitelist: "",
+      lockedFunds: "",
+    },
+    after: {
+      pauser: "",
+      owner: "",
+      nonce: "",
+      whitelist: "",
+      cosmosWhitelist: "",
+      lockedFunds: "",
+    },
+  },
   tokenBalance: 10000,
   amount: 1000,
 };
@@ -63,8 +85,8 @@ async function main() {
   // Make sure we're forking
   support.enforceForking();
 
-  // Fetch the manifest and inject the new variables
-  copyManifest(true);
+  // Fetch the manifest
+  copyManifest(false);
 
   // Deploy or connect to each contract
   await deployContracts();
@@ -73,22 +95,16 @@ async function main() {
   await impersonateAccounts();
 
   // Fetch current values from the deployed contract
-  const pauser_before = await state.contracts.bridgeBank.pausers(PAUSER);
-  const owner_before = await state.contracts.bridgeBank.owner();
-  const nonce_before = await state.contracts.bridgeBank.lockBurnNonce();
+  await setStorageSlots();
 
   // Upgrade BridgeBank
   await upgradeBridgeBank();
 
   // Fetch values after the upgrade
-  const pauser_after = await state.contracts.upgradedBridgeBank.pausers(PAUSER);
-  const owner_after = await state.contracts.upgradedBridgeBank.owner();
-  const nonce_after = await state.contracts.upgradedBridgeBank.lockBurnNonce();
+  await setStorageSlots(false);
 
-  // Compare values before and after the upgrade
-  testMatch(pauser_before, pauser_after, "Pauser");
-  testMatch(owner_before, owner_after, "Owner");
-  testMatch(nonce_before.toString(), nonce_after.toString(), "LockBurnNonce");
+  // Compare slots before and after the upgrade
+  checkStorageSlots();
 
   // Setup the BridgeToken (register in BridgeBank, mint and set allowance)
   await setupBridgeToken();
@@ -162,7 +178,10 @@ async function main() {
   // Clean up temporary files
   cleanup();
 
-  print("highlight", "~~~ DONE! 👏 Everything worked as expected. ~~~");
+  print(
+    "highlight",
+    "~~~ DONE! 👏 Everything worked as expected. It's safe to execute the script in production. ~~~"
+  );
 }
 
 async function impersonateAccounts() {
@@ -386,8 +405,38 @@ function injectStorageChanges() {
   fs.writeFileSync("./.openzeppelin/mainnet.json", JSON.stringify(modManifest_2));
 }
 
+async function setStorageSlots(beforeUpgrade = true) {
+  const contract = beforeUpgrade ? state.contracts.bridgeBank : state.contracts.upgradedBridgeBank;
+  const prefix = beforeUpgrade ? "before" : "after";
+
+  state.storageSlots[prefix].pauser = await contract.pausers(state.addresses.pauser);
+  state.storageSlots[prefix].owner = await contract.owner();
+  state.storageSlots[prefix].nonce = await contract.lockBurnNonce();
+  state.storageSlots[prefix].whitelist = await contract.getTokenInEthWhiteList(
+    state.addresses.whitelistedToken
+  );
+  state.storageSlots[prefix].cosmosWhitelist = await contract.getCosmosTokenInWhiteList(
+    state.addresses.cosmosWhitelistedtoken
+  );
+  state.storageSlots[prefix].lockedFunds = await contract.getLockedFunds(
+    state.addresses.whitelistedToken
+  );
+}
+
+function checkStorageSlots() {
+  print("yellow", "🎯 Checking storage layout");
+
+  const storage = state.storageSlots;
+  testMatch(storage.before.pauser, storage.after.pauser, "Pauser");
+  testMatch(storage.before.owner, storage.after.owner, "Owner");
+  testMatch(storage.before.nonce, storage.after.nonce, "Nonce");
+  testMatch(storage.before.whitelist, storage.after.whitelist, "Whitelist");
+  testMatch(storage.before.cosmosWhitelist, storage.after.cosmosWhitelist, "CosmosWhitelist");
+  testMatch(storage.before.lockedFunds, storage.after.lockedFunds, "LockedFunds");
+}
+
 function testMatch(before, after, slotName) {
-  if (before === after) {
+  if (String(before) === String(after)) {
     print("green", `✅ ${slotName} slot is safe`);
   } else {
     throw new Error(`💥 CRITICAL: ${slotName} Mismatch! From ${before} to ${after}`);
