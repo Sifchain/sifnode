@@ -8,13 +8,12 @@ import (
 	authkeeper "github.com/cosmos/cosmos-sdk/x/auth/keeper"
 	"github.com/cosmos/cosmos-sdk/x/auth/signing"
 	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
-	"github.com/pkg/errors"
 )
 
 func NewAnteHandler(ak authkeeper.AccountKeeper, bk bankkeeper.Keeper, gasConsumer ante.SignatureVerificationGasConsumer, signModeHandler signing.SignModeHandler) sdk.AnteHandler {
 	return sdk.ChainAnteDecorators(
 		ante.NewSetUpContextDecorator(), // outermost AnteDecorator. SetUpContext must be called first
-		NewReduceGasPriceDecorator(),    // Custom decorator to reduce gas price for specific msg types
+		NewAdjustGasPriceDecorator(),    // Custom decorator to adjust gas price for specific msg types
 		ante.NewRejectExtensionOptionsDecorator(),
 		ante.NewMempoolFeeDecorator(),
 		ante.NewValidateBasicDecorator(),
@@ -31,46 +30,31 @@ func NewAnteHandler(ak authkeeper.AccountKeeper, bk bankkeeper.Keeper, gasConsum
 	)
 }
 
-// ReduceGasPriceDecorator is a custom decorator to reduce fee prices .
-type ReduceGasPriceDecorator struct {
+// AdjustGasPriceDecorator is a custom decorator to reduce fee prices .
+type AdjustGasPriceDecorator struct {
 }
 
-// NewReduceGasPriceDecorator create a new instance of ReduceGasPriceDecorator
-func NewReduceGasPriceDecorator() ReduceGasPriceDecorator {
-	return ReduceGasPriceDecorator{}
+// NewAdjustGasPriceDecorator create a new instance of AdjustGasPriceDecorator
+func NewAdjustGasPriceDecorator() AdjustGasPriceDecorator {
+	return AdjustGasPriceDecorator{}
 }
 
-// AnteHandle reduces the gas price to a lower value which is hardcoded.The ReduceGasPriceDecorator should only be used for specific transaction types to lower the fee cost.
-func (r ReduceGasPriceDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate bool, next sdk.AnteHandler) (newCtx sdk.Context, err error) {
+// AnteHandle adjusts the gas price based on the tx type.
+func (r AdjustGasPriceDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate bool, next sdk.AnteHandler) (newCtx sdk.Context, err error) {
 	msgs := tx.GetMsgs()
-
-	var found bool
-	for i := range msgs {
-		if msgs[i].Type() == disptypes.MsgTypeCreateDistribution || msgs[i].Type() == disptypes.MsgTypeRunDistribution {
-			found = true
+	minGasPrice := sdk.DecCoin{
+		Denom:  "rowan",
+		Amount: sdk.MustNewDecFromStr("100000000000000000"),
+	}
+	if len(msgs) == 1 && (msgs[0].Type() == disptypes.MsgTypeCreateDistribution || msgs[0].Type() == disptypes.MsgTypeRunDistribution) {
+		minGasPrice = sdk.DecCoin{
+			Denom:  "rowan",
+			Amount: sdk.MustNewDecFromStr("0.00000005"),
 		}
 	}
-
-	// Pass earlier if not a dispensation tx.
-	if !found {
-		return next(ctx, tx, simulate)
+	if !minGasPrice.IsValid() {
+		return ctx, sdkerrors.Wrap(sdkerrors.ErrLogic, "invalid gas price")
 	}
-
-	// If number of messages is greater than one, the other messages will be able to get away with a lower tx fee
-	if len(msgs) != 1 {
-		return ctx, errors.New("transaction for dispensation create / run must have exactly one message")
-	}
-
-	loweredGasPrice := sdk.DecCoin{
-		Denom:  "rowan",
-		Amount: sdk.MustNewDecFromStr("0.00000005"),
-	}
-
-	if !loweredGasPrice.IsValid() {
-		return ctx, sdkerrors.Wrap(sdkerrors.ErrLogic, "unable to lower gas price")
-	}
-
-	ctx = ctx.WithMinGasPrices(sdk.NewDecCoins(loweredGasPrice))
-
+	ctx = ctx.WithMinGasPrices(sdk.NewDecCoins(minGasPrice))
 	return next(ctx, tx, simulate)
 }
