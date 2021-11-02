@@ -210,12 +210,14 @@ func (sub EthereumSub) CheckNonceAndProcess(txFactory tx.Factory,
 	topics = append(topics, []common.Hash{lockBurnNonceTopic})
 
 	// query the exact block number with the lock burn nonce
-	ethLogs, err := ethClient.FilterLogs(context.Background(), ethereum.FilterQuery{
+	filterQuery := ethereum.FilterQuery{
 		FromBlock: big.NewInt(0),
 		ToBlock:   endBlockHeight,
 		Addresses: []common.Address{bridgeBankAddress},
 		Topics:    topics,
-	})
+	}
+	sub.SugaredLogger.Debugw(internal.PeggyTestMarker, "filter", filterQuery)
+	ethLogs, err := ethClient.FilterLogs(context.Background(), filterQuery)
 
 	if err != nil {
 		sub.SugaredLogger.Errorw("failed to filter the logs from ethereum client",
