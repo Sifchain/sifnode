@@ -15,6 +15,24 @@
         "<node_internals>/**"
       ],
       "program": "${workspaceFolder}/smart-contracts/scripts/devenv.ts"
+    },
+    {
+      "runtimeArgs": [
+        "node_modules/.bin/hardhat",
+        "test"
+      ],
+      "args": [
+        "--network",
+        "localhost"
+      ],
+      "cwd": "${workspaceFolder}/smart-contracts",
+      "type": "node",
+      "request": "launch",
+      "name": "Typescript Tests",
+      "skipFiles": [
+        "<node_internals>/**"
+      ],
+      "program": "${workspaceFolder}/smart-contracts/test/watcher/watcher.ts"
     }{{#each Dev.sifResults.relayerAddresses}},
     {
       "name": "Debug Relayer-{{@index}}",
