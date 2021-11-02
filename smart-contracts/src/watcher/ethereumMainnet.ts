@@ -56,7 +56,8 @@ export function subscribeToEthereumEvents(hre: HardhatRuntimeEnvironment, bridge
             decimals: args[5],
             symbol: args[6],
             name: args[7],
-            networkDescriptor: args[8]
+            networkDescriptor: args[8],
+            block: args[9]
         } as EthereumMainnetLogLock)
     })
     return events
