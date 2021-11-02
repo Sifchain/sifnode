@@ -6,7 +6,6 @@ import (
 	"context"
 	"crypto/ecdsa"
 	"errors"
-	"github.com/Sifchain/sifnode/cmd/ebrelayer/internal"
 	"log"
 	"math/big"
 	"os"
@@ -14,6 +13,8 @@ import (
 	"sync"
 	"syscall"
 	"time"
+
+	"github.com/Sifchain/sifnode/cmd/ebrelayer/internal"
 
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/internal/symbol_translator"
 	"google.golang.org/grpc"
@@ -260,11 +261,7 @@ func (sub EthereumSub) CheckNonceAndProcess(txFactory tx.Factory,
 	topics = [][]common.Hash{}
 	topics = append(topics, []common.Hash{lockTopic, burnTopic})
 
-	for {
-		endBlock := endBlockHeight.Uint64()
-		if fromBlockNumber > endBlock {
-			break
-		}
+	for endBlock := endBlockHeight.Uint64(); fromBlockNumber > endBlock; endBlock = endBlockHeight.Uint64() {
 
 		// query block scope limited to maxQueryBlocks
 		if endBlock > fromBlockNumber+maxQueryBlocks {
