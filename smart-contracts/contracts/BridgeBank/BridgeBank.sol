@@ -36,6 +36,16 @@ contract BridgeBank is
     bool private _initialized;
 
     /**
+     * @dev the blocklist contract
+     */
+    IBlocklist public blocklist;
+
+    /**
+     * @notice is the blocklist active?
+     */
+    bool public hasBlocklist;
+
+    /**
      * @dev Has the contract been reinitialized?
      */
     bool private _reinitialized;
@@ -146,6 +156,19 @@ contract BridgeBank is
      */
     modifier onlyCosmosBridge() {
         require(msg.sender == cosmosBridge, "!cosmosbridge");
+        _;
+    }
+
+    /**
+     * @dev Modifier to restrict EVM addresses
+     */
+    modifier onlyNotBlocklisted(address account) {
+        if (hasBlocklist) {
+            require(
+                !blocklist.isBlocklisted(account),
+                "Address is blocklisted"
+            );
+        }
         _;
     }
 
@@ -828,6 +851,7 @@ contract BridgeBank is
      * @param blocklistAddress The address of the blocklist contract
      */
     function setBlocklist(address blocklistAddress) public onlyOperator {
-        _setBlocklist(blocklistAddress);
+        blocklist = IBlocklist(blocklistAddress);
+        hasBlocklist = true;
     }
 }

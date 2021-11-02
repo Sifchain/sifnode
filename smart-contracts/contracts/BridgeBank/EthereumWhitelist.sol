@@ -19,19 +19,9 @@ contract EthereumWhiteList {
     mapping(address => bool) private _ethereumTokenWhiteList;
 
     /**
-     * @dev the blocklist contract
-     */
-    IBlocklist public blocklist;
-
-    /**
-     * @dev is the blocklist active?
-     */
-    bool public hasBlocklist;
-
-    /**
      * @dev gap of storage for future upgrades
      */
-    uint256[98] private ____gap;
+    uint256[100] private ____gap;
 
     /**
      * @notice Event emitted when the whitelist is updated
@@ -45,27 +35,5 @@ contract EthereumWhiteList {
         require(!_initialized, "Initialized");
         _ethereumTokenWhiteList[address(0)] = true;
         _initialized = true;
-    }
-
-    /**
-     * @dev Modifier to restrict EVM addresses
-     */
-    modifier onlyNotBlocklisted(address account) {
-        if (hasBlocklist) {
-            require(
-                !blocklist.isBlocklisted(account),
-                "Address is blocklisted"
-            );
-        }
-        _;
-    }
-
-    /**
-     * @notice Lets the operator set the blocklist address
-     * @param blocklistAddress The address of the blocklist contract
-     */
-    function _setBlocklist(address blocklistAddress) internal {
-        blocklist = IBlocklist(blocklistAddress);
-        hasBlocklist = true;
     }
 }
