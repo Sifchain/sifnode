@@ -154,13 +154,13 @@ export class SifnodedRunner extends ShellCommand<SifnodedResults> {
     }
 
     // Create an ADMIN account on sifnode with name sifnodeadmin
-    const sifnodedAdminAddress: EbRelayerAccount = this.addAdminAccount("sifnodeadmin", homeDir);
+    const sifnodedAdminAddress: EbRelayerAccount = this.addAccount("sifnodeadmin", homeDir, true);
     // Create an account for each relayer as requested
     const relayerAddresses = Array.from({ length: this.nRelayers },
-      (_, relayer) => this.addRelayerWitnessAccount(`relayer-${relayer}`, homeDir, sifnodedAdminAddress.account));
+      (_, relayer) => this.addRelayerWitnessAccount(`relayer-${relayer}`, homeDir));
     // Create an account for each witness as requested
     const witnessAddresses = Array.from({ length: this.nWitnesses },
-      (_, witness) => this.addRelayerWitnessAccount(`witness-${witness}`, homeDir, sifnodedAdminAddress.account));
+      (_, witness) => this.addRelayerWitnessAccount(`witness-${witness}`, homeDir));
 
     let sifnodedDaemonCmd = `${this.sifnodedCommand} start --log_format json --minimum-gas-prices 0.5rowan --rpc.laddr tcp://0.0.0.0:26657 --home ${homeDir}`;
 
@@ -198,7 +198,7 @@ export class SifnodedRunner extends ShellCommand<SifnodedResults> {
     //    return lastValueFrom(eventEmitterToObservable(sifnoded, "sifnoded"))
   }
 
-  addAdminAccount(name: string, homeDir: string): EbRelayerAccount {
+  addAccount(name: string, homeDir: string, isAdmin: boolean): EbRelayerAccount {
     let accountAddCmd = `${this.sifnodedCommand} keys add ${name} --keyring-backend test --output json --home ${homeDir}`;
     const accountJSON = ChildProcess.execSync(
       accountAddCmd,
@@ -211,10 +211,13 @@ export class SifnodedRunner extends ShellCommand<SifnodedResults> {
       `${this.sifnodedCommand} add-genesis-account ${accountAddress} 100000000000000000000rowan --home ${homeDir}`,
       { encoding: "utf8" }
     ).trim()
-    ChildProcess.execSync(
-      `${this.sifnodedCommand} set-genesis-oracle-admin ${accountAddress} --home ${homeDir}`,
-      { encoding: "utf8" }
-    ).trim()
+    if (isAdmin === true) {
+      ChildProcess.execSync(
+        `${this.sifnodedCommand} set-genesis-oracle-admin ${accountAddress} --home ${homeDir}`,
+        { encoding: "utf8" }
+      ).trim()
+    }
+    
     ChildProcess.execSync(
       `${this.sifnodedCommand} set-genesis-whitelister-admin ${accountAddress} --home ${homeDir}`,
       { encoding: "utf8" }
@@ -227,7 +230,8 @@ export class SifnodedRunner extends ShellCommand<SifnodedResults> {
     }
   }
 
-  addRelayerWitnessAccount(name: string, homeDir: string, adminAccount: string): EbRelayerAccount {
+  addRelayerWitnessAccount(name: string, homeDir: string): EbRelayerAccount {
+    const adminAccount = this.addAccount(name, homeDir, false);
     // Whitelist Relayer/Witness Account
     const EVM_Network_Descriptor = 31337;
     const Validator_Power = 100;
