@@ -46,9 +46,14 @@ interface State {
 }
 
 enum TransactionStep {
-    initial,
-    sawClaim,
-    sawLogLock
+    Initial,
+    SawClaim,
+    SawLogLock,
+    BroadcastTx,
+    ProcessSuccessfulClaim,
+    CreateEthBridgeClaim,
+    AppendValidatorToProphecy,
+    CoinsSent,
 }
 
 function isTerminalState(s: State) {
@@ -109,8 +114,8 @@ describe("watcher", () => {
                 return {...acc, currentHeartbeat: v.value} as State
             } else if (v.kind == "EbRelayerEthBridgeClaimArray") {
                 // we should see exactly one correct claim
-                if (acc.transactionStep === TransactionStep.sawLogLock && v.data.claims[0].amount === smallAmount.toString()) {
-                    return {...acc, value: v, transactionStep: TransactionStep.sawClaim}
+                if (acc.transactionStep === TransactionStep.SawLogLock && v.data.claims[0].amount === smallAmount.toString()) {
+                    return {...acc, value: v, transactionStep: TransactionStep.SawClaim}
                 } else {
                     return {
                         ...acc,
@@ -119,12 +124,16 @@ describe("watcher", () => {
                 }
             } else if (v.kind == "EthereumMainnetLogLock") {
                 // we should see exactly one lock
-                if (v.value.eq(smallAmount) && acc.transactionStep == TransactionStep.initial)
-                    return {...acc, value: v, transactionStep: TransactionStep.sawLogLock}
+                if (v.value.eq(smallAmount) && acc.transactionStep == TransactionStep.Initial)
+                    return {...acc, value: v, transactionStep: TransactionStep.SawLogLock}
                 else
                     return {
                         ...acc,
-                        value: {kind: "failure", value: v, message: "incorrect EthereumMainnetLogLock"}
+                        value: {
+                            kind: "failure",
+                            value: v,
+                            message: "incorrect EthereumMainnetLogLock"
+                        }
                     }
             } else {
                 // we have a new value (of any kind) and it should use the current heartbeat as its creation time
@@ -134,7 +143,7 @@ describe("watcher", () => {
             value: {kind: "initialState"},
             createdAt: 0,
             currentHeartbeat: 0,
-            transactionStep: TransactionStep.initial
+            transactionStep: TransactionStep.Initial
         } as State))
 
         // it's useful to skip debug prints of states where only the heartbeat changed
@@ -159,7 +168,8 @@ describe("watcher", () => {
 
         console.debug("lastValueIs: ", JSON.stringify(lv, undefined, 2))
 
-        expect((lv as State).value.kind).to.eq("success")
+        expect(lv.value.kind).to.eq("success")
+        expect(lv.transactionStep).to.eq(TransactionStep.CoinsSent)
     }
 
     it("should send a lock transaction", async () => {
