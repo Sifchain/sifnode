@@ -261,7 +261,7 @@ func (sub EthereumSub) CheckNonceAndProcess(txFactory tx.Factory,
 	topics = [][]common.Hash{}
 	topics = append(topics, []common.Hash{lockTopic, burnTopic})
 
-	for endBlock := endBlockHeight.Uint64(); fromBlockNumber > endBlock; endBlock = endBlockHeight.Uint64() {
+	for endBlock := endBlockHeight.Uint64(); fromBlockNumber <= endBlock; endBlock = endBlockHeight.Uint64() {
 
 		// query block scope limited to maxQueryBlocks
 		if endBlock > fromBlockNumber+maxQueryBlocks {
