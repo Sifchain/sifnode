@@ -157,10 +157,10 @@ export class SifnodedRunner extends ShellCommand<SifnodedResults> {
     const sifnodedAdminAddress: EbRelayerAccount = this.addAdminAccount("sifnodeadmin", homeDir);
     // Create an account for each relayer as requested
     const relayerAddresses = Array.from({ length: this.nRelayers },
-      (_, relayer) => this.addRelayerWitnessAccount(`relayer-${relayer}`, homeDir));
+      (_, relayer) => this.addRelayerWitnessAccount(`relayer-${relayer}`, homeDir, sifnodedAdminAddress.account));
     // Create an account for each witness as requested
     const witnessAddresses = Array.from({ length: this.nWitnesses },
-      (_, witness) => this.addRelayerWitnessAccount(`witness-${witness}`, homeDir));
+      (_, witness) => this.addRelayerWitnessAccount(`witness-${witness}`, homeDir, sifnodedAdminAddress.account));
 
     let sifnodedDaemonCmd = `${this.sifnodedCommand} start --log_format json --minimum-gas-prices 0.5rowan --rpc.laddr tcp://0.0.0.0:26657 --home ${homeDir}`;
 
@@ -227,8 +227,7 @@ export class SifnodedRunner extends ShellCommand<SifnodedResults> {
     }
   }
 
-  addRelayerWitnessAccount(name: string, homeDir: string): EbRelayerAccount {
-    const adminAccount = this.addAdminAccount(name, homeDir);
+  addRelayerWitnessAccount(name: string, homeDir: string, adminAccount: string): EbRelayerAccount {
     // Whitelist Relayer/Witness Account
     const EVM_Network_Descriptor = 31337;
     const Validator_Power = 100;
