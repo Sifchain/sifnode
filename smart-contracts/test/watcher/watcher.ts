@@ -42,8 +42,13 @@ interface State {
     value: SifEvent | EthereumMainnetEvent | Success | Failure | InitialState | Terminate
     createdAt: number
     currentHeartbeat: number
-    sawClaim: boolean
-    sawLogLock: boolean
+    transactionStep: TransactionStep
+}
+
+enum TransactionStep {
+    initial,
+    sawClaim,
+    sawLogLock
 }
 
 function isTerminalState(s: State) {
@@ -104,17 +109,23 @@ describe("watcher", () => {
                 return {...acc, currentHeartbeat: v.value} as State
             } else if (v.kind == "EbRelayerEthBridgeClaimArray") {
                 // we should see exactly one correct claim
-                if (!acc.sawClaim && v.data.claims[0].amount === smallAmount.toString()) {
-                    return {...acc, value: v, sawClaim: true}
+                if (acc.transactionStep === TransactionStep.sawLogLock && v.data.claims[0].amount === smallAmount.toString()) {
+                    return {...acc, value: v, transactionStep: TransactionStep.sawClaim}
                 } else {
                     return {
                         ...acc,
                         value: {kind: "failure", value: v, message: "more than one claim"}
                     }
                 }
-            } else if (v.kind == "EthereumMainnetLogLock" && v.value.eq(smallAmount)) {
+            } else if (v.kind == "EthereumMainnetLogLock") {
                 // we should see exactly one lock
-                return {...acc, value: v, sawLogLock: true}
+                if (v.value.eq(smallAmount) && acc.transactionStep == TransactionStep.initial)
+                    return {...acc, value: v, transactionStep: TransactionStep.sawLogLock}
+                else
+                    return {
+                        ...acc,
+                        value: {kind: "failure", value: v, message: "incorrect EthereumMainnetLogLock"}
+                    }
             } else {
                 // we have a new value (of any kind) and it should use the current heartbeat as its creation time
                 return {...acc, value: v, createdAt: acc.currentHeartbeat}
@@ -123,8 +134,7 @@ describe("watcher", () => {
             value: {kind: "initialState"},
             createdAt: 0,
             currentHeartbeat: 0,
-            sawClaim: false,
-            sawLogLock: false
+            transactionStep: TransactionStep.initial
         } as State))
 
         // it's useful to skip debug prints of states where only the heartbeat changed
