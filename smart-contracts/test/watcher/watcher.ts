@@ -106,8 +106,8 @@ describe("watcher", () => {
             if (isTerminalState(acc))
                 // we've reached a decision
                 return {...acc, value: {kind: "terminate"} as Terminate}
-            else if (v.kind == "EbRelayerError") {
-                // if we get an EbRelayerError, that's always a failure
+            else if (v.kind == "EbRelayerError" || v.kind == "SifnodedError") {
+                // if we get an actual error, that's always a failure
                 return {...acc, value: {kind: "failure", value: v, message: "simple error"}}
             } else if (v.kind === "SifHeartbeat") {
                 // we just store the heartbeat
