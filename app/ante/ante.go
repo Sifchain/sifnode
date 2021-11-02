@@ -8,6 +8,7 @@ import (
 	authkeeper "github.com/cosmos/cosmos-sdk/x/auth/keeper"
 	"github.com/cosmos/cosmos-sdk/x/auth/signing"
 	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
+	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 )
 
 func NewAnteHandler(ak authkeeper.AccountKeeper, bk bankkeeper.Keeper, gasConsumer ante.SignatureVerificationGasConsumer, signModeHandler signing.SignModeHandler) sdk.AnteHandler {
@@ -53,13 +54,20 @@ func (r AdjustGasPriceDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate
 		ctx = ctx.WithMinGasPrices(sdk.NewDecCoins(minGasPrice))
 		return next(ctx, tx, simulate)
 	}
-	feeTx, ok := tx.(sdk.FeeTx)
-	if !ok {
-		return ctx, sdkerrors.Wrap(sdkerrors.ErrTxDecode, "Tx must be a FeeTx")
-	}
-	fees := feeTx.GetFee()
-	if len(fees) == 1 && fees[0].Amount.LT(sdk.NewInt(100000000000000000)) {
-		return ctx, sdkerrors.Wrap(sdkerrors.ErrLogic, "fee is too low")
+	for i := range msgs {
+		if msgs[i].Type() == banktypes.TypeMsgSend || msgs[i].Type() == banktypes.TypeMsgMultiSend ||
+			msgs[i].Type() == "createUserClaim" || msgs[i].Type() == "swap" ||
+			msgs[i].Type() == "remove_liquidity" || msgs[i].Type() == "add_liquidity" {
+			feeTx, ok := tx.(sdk.FeeTx)
+			if !ok {
+				return ctx, sdkerrors.Wrap(sdkerrors.ErrTxDecode, "Tx must be a FeeTx")
+			}
+			fees := feeTx.GetFee()
+			if len(fees) == 1 && fees[0].Amount.LT(sdk.NewInt(100000000000000000)) {
+				return ctx, sdkerrors.Wrap(sdkerrors.ErrLogic, "fee is too low")
+			}
+			return next(ctx, tx, simulate)
+		}
 	}
 	return next(ctx, tx, simulate)
 }
