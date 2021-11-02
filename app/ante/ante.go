@@ -63,8 +63,18 @@ func (r AdjustGasPriceDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate
 				return ctx, sdkerrors.Wrap(sdkerrors.ErrTxDecode, "Tx must be a FeeTx")
 			}
 			fees := feeTx.GetFee()
-			if len(fees) == 1 && fees[0].Amount.LT(sdk.NewInt(100000000000000000)) {
+			if len(fees) == 1 && fees[0].Amount.LT(sdk.NewInt(100000000000000000)) { // 0.1
 				return ctx, sdkerrors.Wrap(sdkerrors.ErrLogic, "fee is too low")
+			}
+			return next(ctx, tx, simulate)
+		} else if msgs[i].Type() == "transfer" {
+			feeTx, ok := tx.(sdk.FeeTx)
+			if !ok {
+				return ctx, sdkerrors.Wrap(sdkerrors.ErrTxDecode, "Tx must be a FeeTx")
+			}
+			fees := feeTx.GetFee()
+			if len(fees) == 1 && fees[0].Amount.LT(sdk.NewInt(10000000000000000)) { // 0.01
+				return ctx, sdkerrors.Wrap(sdkerrors.ErrLogic, "ibc transfer fee is too low")
 			}
 			return next(ctx, tx, simulate)
 		}
