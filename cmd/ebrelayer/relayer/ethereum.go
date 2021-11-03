@@ -229,7 +229,7 @@ func (sub EthereumSub) CheckNonceAndProcess(txFactory tx.Factory,
 	fromBlockNumber := uint64(0)
 	lenEthLogs := len(ethLogs)
 	if lenEthLogs != 1 {
-		//sub.SugaredLogger.Debugw("no results from filter", "lenEthLogs", lenEthLogs)
+		sub.SugaredLogger.Debugw("no results from filter", "lenEthLogs", lenEthLogs)
 		return
 	}
 
@@ -302,14 +302,11 @@ func (sub EthereumSub) CheckNonceAndProcess(txFactory tx.Factory,
 		}
 
 		if len(events) > 0 {
-			var nextLockBurnNonce uint64
-			if nextLockBurnNonce, err = sub.handleEthereumEvent(txFactory, events, symbolTranslator, lockBurnNonce); err != nil {
+			if lockBurnNonce, err = sub.handleEthereumEvent(txFactory, events, symbolTranslator, lockBurnNonce); err != nil {
 				sub.SugaredLogger.Errorw("failed to handle ethereum event.",
 					errorMessageKey, err.Error())
 				return
 			}
-			// handleEthereumEvent return the next expected lock burn nonce
-			lockBurnNonce = nextLockBurnNonce - 1
 			time.Sleep(transactionInterval)
 		}
 
@@ -399,9 +396,11 @@ func (sub EthereumSub) logToEvent(networkDescriptor oracletypes.NetworkDescripto
 			errorMessageKey, err.Error())
 		return event, false, err
 	}
+	sub.SugaredLogger.Debugw(internal.PeggyTestMarker, "Unpacked event is", event.String())
 
 	// Assumes nonce is the 1st field to be indexed, thus available at Topic[1]
 	event.Nonce = cLog.Topics[1].Big()
+	sub.SugaredLogger.Debugw(internal.PeggyTestMarker, "burn lock nonce from topic", event.Nonce)
 
 	event.BridgeContractAddress = contractAddress
 	event.NetworkDescriptor = int32(networkDescriptor)
@@ -425,13 +424,9 @@ func (sub EthereumSub) handleEthereumEvent(txFactory tx.Factory,
 
 	var prophecyClaims []*ethbridgetypes.EthBridgeClaim
 
-	nextLockBurnNonce := lockBurnNonce + 1
-	if lockBurnNonce == 0 {
-		nextLockBurnNonce = 0
-	}
 	valAddr, err := GetValAddressFromKeyring(txFactory.Keybase(), sub.ValidatorName)
 	if err != nil {
-		return nextLockBurnNonce, err
+		return lockBurnNonce, err
 	}
 	for _, event := range events {
 		prophecyClaim, err := txs.EthereumEventToEthBridgeClaim(valAddr, event, symbolTranslator, sub.SugaredLogger)
@@ -439,15 +434,17 @@ func (sub EthereumSub) handleEthereumEvent(txFactory tx.Factory,
 			sub.SugaredLogger.Errorw(".",
 				errorMessageKey, err.Error())
 		} else {
-			if prophecyClaim.EthereumLockBurnNonce == nextLockBurnNonce {
+			// lockBurnNonce is zero, means the relayer is new one, never process event before
+			// then it start from current event and sifnode will accept it
+			if lockBurnNonce == 0 || prophecyClaim.EthereumLockBurnNonce == lockBurnNonce+1 {
 				prophecyClaims = append(prophecyClaims, &prophecyClaim)
 				sub.SugaredLogger.Debugw(internal.PeggyTestMarker, "kind", "EthereumProphecyClaim", zap.Reflect("event", event))
-				nextLockBurnNonce++
+				lockBurnNonce = prophecyClaim.EthereumLockBurnNonce
 			} else {
 				sub.SugaredLogger.Infow("lock burn nonce is not expected",
-					"nextLockBurnNonce", nextLockBurnNonce,
+					"nextLockBurnNonce", lockBurnNonce,
 					"prophecyClaim.EthereumLockBurnNonce", prophecyClaim.EthereumLockBurnNonce)
-				return nextLockBurnNonce, errors.New("lock burn nonce is not expected")
+				return lockBurnNonce, errors.New("lock burn nonce is not expected")
 			}
 
 		}
@@ -456,10 +453,10 @@ func (sub EthereumSub) handleEthereumEvent(txFactory tx.Factory,
 		"prophecy claims length", len(prophecyClaims))
 
 	if len(events) == 0 {
-		return nextLockBurnNonce, nil
+		return lockBurnNonce, nil
 	}
 
-	return nextLockBurnNonce, txs.RelayToCosmos(txFactory, prophecyClaims, sub.CliCtx, sub.SugaredLogger)
+	return lockBurnNonce, txs.RelayToCosmos(txFactory, prophecyClaims, sub.CliCtx, sub.SugaredLogger)
 }
 
 // GetLockBurnNonceFromCosmos via rpc
