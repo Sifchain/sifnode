@@ -441,6 +441,7 @@ func (sub EthereumSub) handleEthereumEvent(txFactory tx.Factory,
 		} else {
 			if prophecyClaim.EthereumLockBurnNonce == nextLockBurnNonce {
 				prophecyClaims = append(prophecyClaims, &prophecyClaim)
+				sub.SugaredLogger.Debugw(internal.PeggyTestMarker, "kind", "EthereumProphecyClaim", zap.Reflect("event", event))
 				nextLockBurnNonce++
 			} else {
 				sub.SugaredLogger.Infow("lock burn nonce is not expected",
