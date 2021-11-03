@@ -395,11 +395,9 @@ func (sub EthereumSub) logToEvent(networkDescriptor oracletypes.NetworkDescripto
 			errorMessageKey, err.Error())
 		return event, false, err
 	}
-	sub.SugaredLogger.Debugw(internal.PeggyTestMarker, "Unpacked event is", event.String())
 
 	// Assumes nonce is the 1st field to be indexed, thus available at Topic[1]
 	event.Nonce = cLog.Topics[1].Big()
-	sub.SugaredLogger.Debugw(internal.PeggyTestMarker, "burn lock nonce from topic", event.Nonce)
 
 	event.BridgeContractAddress = contractAddress
 	event.NetworkDescriptor = int32(networkDescriptor)
