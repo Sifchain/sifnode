@@ -62,7 +62,7 @@ function isTerminalState(s: State) {
         case "failure":
             return true
         default:
-            return false
+            return s.transactionStep === TransactionStep.CoinsSent
     }
 }
 
@@ -106,28 +106,36 @@ describe("watcher", () => {
             if (isTerminalState(acc))
                 // we've reached a decision
                 return {...acc, value: {kind: "terminate"} as Terminate}
-            else if (v.kind == "EbRelayerError" || v.kind == "SifnodedError") {
-                // if we get an actual error, that's always a failure
-                return {...acc, value: {kind: "failure", value: v, message: "simple error"}}
-            } else if (v.kind === "SifHeartbeat") {
-                // we just store the heartbeat
-                return {...acc, currentHeartbeat: v.value} as State
-            } else if (v.kind == "EthereumMainnetLogLock") {
-                // we should see exactly one lock
-                if (v.data.value.eq(smallAmount) && acc.transactionStep == TransactionStep.Initial)
-                    return {...acc, value: v, transactionStep: TransactionStep.SawLogLock}
-                else
-                    return {
-                        ...acc,
-                        value: {
-                            kind: "failure",
-                            value: v,
-                            message: "incorrect EthereumMainnetLogLock"
+            switch (v.kind) {
+                case "EbRelayerError":
+                case "SifnodedError":
+                    // if we get an actual error, that's always a failure
+                    return {...acc, value: {kind: "failure", value: v, message: "simple error"}}
+                case "SifHeartbeat":
+                    // we just store the heartbeat
+                    return {...acc, currentHeartbeat: v.value} as State
+                case "EthereumMainnetLogLock":
+                    // we should see exactly one lock
+                    if (v.data.value.eq(smallAmount) && acc.transactionStep == TransactionStep.Initial)
+                        return {...acc, value: v, transactionStep: TransactionStep.SawLogLock}
+                    else
+                        return {
+                            ...acc,
+                            value: {
+                                kind: "failure",
+                                value: v,
+                                message: "incorrect EthereumMainnetLogLock"
+                            }
                         }
+                case "SifnodedPeggyEvent":
+                    switch (v.data.kind) {
+                        case "coinsSent":
+                            return { ...acc, value: v, transactionStep: TransactionStep.CoinsSent }
                     }
-            } else {
-                // we have a new value (of any kind) and it should use the current heartbeat as its creation time
-                return {...acc, value: v, createdAt: acc.currentHeartbeat}
+                    return {...acc, value: v, createdAt: acc.currentHeartbeat}
+                default:
+                    // we have a new value (of any kind) and it should use the current heartbeat as its creation time
+                    return {...acc, value: v, createdAt: acc.currentHeartbeat}
             }
         }, {
             value: {kind: "initialState"},
@@ -158,7 +166,6 @@ describe("watcher", () => {
 
         console.debug("lastValueIs: ", JSON.stringify(lv, undefined, 2))
 
-        expect(lv.value.kind).to.eq("success")
         expect(lv.transactionStep).to.eq(TransactionStep.CoinsSent)
     }
 

@@ -63,14 +63,6 @@ export type EbRelayerEvent =
 export function toEvmRelayerEvent(x: any): EbRelayerEvent | undefined {
   if (x["M"] === "peggytest") {
     switch (x["kind"]) {
-      case "EthereumProphecyClaim":
-        return { kind: "EbRelayerEvmEvent", data: x }
-        break
-      case "EthBridgeClaimArray":
-        return {
-          kind: "EbRelayerEthBridgeClaimArray",
-          data: x
-        } as EbRelayerEthBridgeClaimArray
       default:
         return { kind: "EbRelayerEvmStateTransition", data: x }
         break

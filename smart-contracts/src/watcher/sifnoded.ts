@@ -16,7 +16,9 @@ export interface SifnodedError {
 
 export interface SifnodedPeggyEvent {
     kind: "SifnodedPeggyEvent"
-    data: object
+    data: {
+        kind: string
+    }
 }
 
 export type SifnodedEvent = SifnodedInfoEvent | SifnodedError | SifnodedPeggyEvent
