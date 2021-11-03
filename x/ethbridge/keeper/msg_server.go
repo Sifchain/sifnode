@@ -175,7 +175,7 @@ func (srv msgServer) CreateEthBridgeClaim(goCtx context.Context, msg *types.MsgC
 	ctx := sdk.UnwrapSDKContext(goCtx)
 	logger := srv.Keeper.Logger(ctx)
 
-	logger.Debug(types.PeggyTestMarker, "kind", "CreateEthBridgeClaim", zap.Reflect("message", msg))
+	logger.Debug(types.PeggyTestMarker, "kind", "CreateEthBridgeClaim", "message", zap.Reflect("message", msg))
 
 	// check the account
 	cosmosSender := msg.EthBridgeClaim.ValidatorAddress

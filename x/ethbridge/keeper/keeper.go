@@ -71,7 +71,7 @@ func (k Keeper) ProcessClaim(ctx sdk.Context, claim *types.EthBridgeClaim) (orac
 func (k Keeper) ProcessSuccessfulClaim(ctx sdk.Context, claim *types.EthBridgeClaim) error {
 	logger := k.Logger(ctx)
 
-	logger.Debug(types.PeggyTestMarker, "kind", "ProcessSuccessfulClaim", zap.Reflect("claim", claim))
+	logger.Debug(types.PeggyTestMarker, "kind", "ProcessSuccessfulClaim", "claim", zap.Reflect("claim", claim))
 
 	tokenMetadata, ok := k.tokenRegistryKeeper.GetTokenMetadata(ctx, claim.DenomHash)
 	if !ok {
@@ -109,7 +109,7 @@ func (k Keeper) ProcessSuccessfulClaim(ctx sdk.Context, claim *types.EthBridgeCl
 		panic(err)
 	}
 
-	ctx.Logger().Debug(types.PeggyTestMarker, "kind", "coinsSent", zap.Reflect("claim", claim))
+	ctx.Logger().Debug(types.PeggyTestMarker, "kind", "coinsSent", "claim", zap.Reflect("claim", claim))
 
 	return nil
 }

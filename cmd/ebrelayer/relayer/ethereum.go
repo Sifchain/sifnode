@@ -217,7 +217,6 @@ func (sub EthereumSub) CheckNonceAndProcess(txFactory tx.Factory,
 		Addresses: []common.Address{bridgeBankAddress},
 		Topics:    topics,
 	}
-	sub.SugaredLogger.Debugw(internal.PeggyTestMarker, "filter", filterQuery)
 	ethLogs, err := ethClient.FilterLogs(context.Background(), filterQuery)
 
 	if err != nil {

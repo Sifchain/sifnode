@@ -55,6 +55,7 @@ export async function waitForSifAccount(address: string, sifnoded: string) {
       return;
     } catch {
       await sleep(1000)
+    }
   }
 }
 
@@ -220,7 +221,7 @@ export class SifnodedRunner extends ShellCommand<SifnodedResults> {
         { encoding: "utf8" }
       ).trim()
     }
-    
+
     ChildProcess.execSync(
       `${this.sifnodedCommand} set-genesis-whitelister-admin ${accountAddress} --home ${homeDir}`,
       { encoding: "utf8" }
