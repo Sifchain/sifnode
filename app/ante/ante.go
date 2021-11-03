@@ -54,30 +54,26 @@ func (r AdjustGasPriceDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate
 		ctx = ctx.WithMinGasPrices(sdk.NewDecCoins(minGasPrice))
 		return next(ctx, tx, simulate)
 	}
+	minFees := sdk.ZeroInt()
 	for i := range msgs {
 		if msgs[i].Type() == banktypes.TypeMsgSend || msgs[i].Type() == banktypes.TypeMsgMultiSend ||
 			msgs[i].Type() == "createUserClaim" || msgs[i].Type() == "swap" ||
 			msgs[i].Type() == "remove_liquidity" || msgs[i].Type() == "add_liquidity" {
-			feeTx, ok := tx.(sdk.FeeTx)
-			if !ok {
-				return ctx, sdkerrors.Wrap(sdkerrors.ErrTxDecode, "Tx must be a FeeTx")
-			}
-			fees := feeTx.GetFee()
-			if len(fees) == 1 && fees[0].Amount.LT(sdk.NewInt(100000000000000000)) { // 0.1
-				return ctx, sdkerrors.Wrap(sdkerrors.ErrLogic, "fee is too low")
-			}
-			return next(ctx, tx, simulate)
-		} else if msgs[i].Type() == "transfer" {
-			feeTx, ok := tx.(sdk.FeeTx)
-			if !ok {
-				return ctx, sdkerrors.Wrap(sdkerrors.ErrTxDecode, "Tx must be a FeeTx")
-			}
-			fees := feeTx.GetFee()
-			if len(fees) == 1 && fees[0].Amount.LT(sdk.NewInt(10000000000000000)) { // 0.01
-				return ctx, sdkerrors.Wrap(sdkerrors.ErrLogic, "ibc transfer fee is too low")
-			}
-			return next(ctx, tx, simulate)
+			minFees = sdk.NewInt(100000000000000000) // 0.1
+		} else if msgs[i].Type() == "transfer" && minFees.LTE(sdk.NewInt(10000000000000000)) {
+			minFees = sdk.NewInt(10000000000000000) // 0.01
 		}
+	}
+	if minFees.Equal(sdk.ZeroInt()) {
+		return next(ctx, tx, simulate)
+	}
+	feeTx, ok := tx.(sdk.FeeTx)
+	if !ok {
+		return ctx, sdkerrors.Wrap(sdkerrors.ErrTxDecode, "Tx must be a FeeTx")
+	}
+	fees := feeTx.GetFee()
+	if len(fees) == 1 && fees[0].Amount.LT(minFees) {
+		return ctx, sdkerrors.Wrap(sdkerrors.ErrLogic, "tx fee is too low")
 	}
 	return next(ctx, tx, simulate)
 }
