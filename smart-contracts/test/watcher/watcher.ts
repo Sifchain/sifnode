@@ -169,7 +169,7 @@ describe("watcher", () => {
         expect(lv.transactionStep).to.eq(TransactionStep.CoinsSent)
     }
 
-    it("should send a lock transaction", async () => {
+    it("should send two locks of ethereum", async () => {
         const ethereumAccounts = await ethereumResultsToSifchainAccounts(devEnvObject.ethResults!, hardhat.ethers.provider)
         const factories = container.resolve(SifchainContractFactories)
         const contracts = await buildDevEnvContracts(devEnvObject, hardhat, factories)
