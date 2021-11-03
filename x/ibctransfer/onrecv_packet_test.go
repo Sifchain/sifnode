@@ -7,8 +7,8 @@ import (
 
 	tokenregistrytest "github.com/Sifchain/sifnode/x/tokenregistry/test"
 	tokenregistrytypes "github.com/Sifchain/sifnode/x/tokenregistry/types"
-	transfertypes "github.com/cosmos/ibc-go/modules/apps/transfer/types"
-	channeltypes "github.com/cosmos/ibc-go/modules/core/04-channel/types"
+	transfertypes "github.com/cosmos/ibc-go/v2/modules/apps/transfer/types"
+	channeltypes "github.com/cosmos/ibc-go/v2/modules/core/04-channel/types"
 	"github.com/stretchr/testify/require"
 
 	"github.com/Sifchain/sifnode/x/ibctransfer/helpers"

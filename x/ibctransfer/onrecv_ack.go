@@ -6,8 +6,8 @@ import (
 	"github.com/Sifchain/sifnode/x/ibctransfer/helpers"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
-	sdktransfertypes "github.com/cosmos/ibc-go/modules/apps/transfer/types"
-	channeltypes "github.com/cosmos/ibc-go/modules/core/04-channel/types"
+	sdktransfertypes "github.com/cosmos/ibc-go/v2/modules/apps/transfer/types"
+	channeltypes "github.com/cosmos/ibc-go/v2/modules/core/04-channel/types"
 
 	sctransfertypes "github.com/Sifchain/sifnode/x/ibctransfer/types"
 	tokenregistrytypes "github.com/Sifchain/sifnode/x/tokenregistry/types"
@@ -25,21 +25,21 @@ func OnAcknowledgementMaybeConvert(
 	packet channeltypes.Packet,
 	acknowledgement []byte,
 	relayer sdk.AccAddress,
-) (*sdk.Result, error) {
+) error {
 	var ack channeltypes.Acknowledgement
 	if err := sdktransfertypes.ModuleCdc.UnmarshalJSON(acknowledgement, &ack); err != nil {
-		return nil, sdkerrors.Wrapf(sdkerrors.ErrUnknownRequest, "cannot unmarshal ICS-20 transfer packet acknowledgement: %v", err)
+		return  sdkerrors.Wrapf(sdkerrors.ErrUnknownRequest, "cannot unmarshal ICS-20 transfer packet acknowledgement: %v", err)
 	}
 	var data sdktransfertypes.FungibleTokenPacketData
 	if err := sdktransfertypes.ModuleCdc.UnmarshalJSON(packet.GetData(), &data); err != nil {
-		return nil, sdkerrors.Wrapf(sdkerrors.ErrUnknownRequest, "cannot unmarshal ICS-20 transfer packet data: %s", err.Error())
+		return sdkerrors.Wrapf(sdkerrors.ErrUnknownRequest, "cannot unmarshal ICS-20 transfer packet data: %s", err.Error())
 	}
 	// OnAcknowledgementPacket responds to the the success or failure of a packet
 	// acknowledgement written on the receiving chain. If the acknowledgement
 	// was a success then nothing occurs. If the acknowledgement failed, then
 	// the sender is refunded their tokens using the refundPacketToken function.
 	if err := sdkTransferKeeper.OnAcknowledgementPacket(ctx, packet, data, ack); err != nil {
-		return nil, err
+		return err
 	}
 	switch resp := ack.Response.(type) {
 	case *channeltypes.Acknowledgement_Result:
@@ -74,15 +74,11 @@ func OnAcknowledgementMaybeConvert(
 			if err == nil && convertToDenomEntry.Decimals > denomEntry.Decimals {
 				err := helpers.ExecConvForRefundCoins(ctx, bankKeeper, denomEntry, convertToDenomEntry, packet, data)
 				if err != nil {
-					return nil, err
+					return err
 				}
-				return &sdk.Result{
-					Events: ctx.EventManager().Events().ToABCIEvents(),
-				}, nil
+				return nil
 			}
 		}
 	}
-	return &sdk.Result{
-		Events: ctx.EventManager().Events().ToABCIEvents(),
-	}, nil
+	return nil
 }

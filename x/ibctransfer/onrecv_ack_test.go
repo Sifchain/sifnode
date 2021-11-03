@@ -2,6 +2,7 @@ package ibctransfer_test
 
 import (
 	"context"
+	"strconv"
 	"testing"
 
 	"github.com/Sifchain/sifnode/x/tokenregistry/test"
@@ -14,9 +15,9 @@ import (
 	"github.com/Sifchain/sifnode/x/ibctransfer/keeper/testhelpers"
 	tokenregistrytypes "github.com/Sifchain/sifnode/x/tokenregistry/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/cosmos/ibc-go/modules/apps/transfer/types"
-	clienttypes "github.com/cosmos/ibc-go/modules/core/02-client/types"
-	channeltypes "github.com/cosmos/ibc-go/modules/core/04-channel/types"
+	"github.com/cosmos/ibc-go/v2/modules/apps/transfer/types"
+	clienttypes "github.com/cosmos/ibc-go/v2/modules/core/02-client/types"
+	channeltypes "github.com/cosmos/ibc-go/v2/modules/core/04-channel/types"
 )
 
 func TestOnAcknowledgementMaybeConvert_Source(t *testing.T) {
@@ -101,7 +102,7 @@ func TestOnAcknowledgementMaybeConvert_Source(t *testing.T) {
 				DestinationPort:    "transfer",
 				Data: app.AppCodec().MustMarshalJSON(&types.FungibleTokenPacketData{
 					Denom:    sdkSentDenom,
-					Amount:   tokensConverted.Amount.Uint64(),
+					Amount: strconv.FormatUint(tokensConverted.Amount.Uint64(), 10),
 					Sender:   tt.args.msg.Sender,
 					Receiver: tt.args.msg.Receiver,
 				}),
@@ -170,7 +171,7 @@ func TestOnAcknowledgementMaybeConvert_Sink(t *testing.T) {
 			app.TokenRegistryKeeper.SetToken(ctx, &tt.args.transferAsToken)
 			recvTokenPacket := types.FungibleTokenPacketData{
 				Denom:  tt.args.transferToken.BaseDenom,
-				Amount: tt.args.msg.Token.Amount.Uint64(),
+				Amount: strconv.FormatUint(tt.args.msg.Token.Amount.Uint64(), 10),
 				Sender: tt.args.msg.Receiver,
 				// Fund the addr that will do a send later.
 				Receiver: tt.args.msg.Sender,
@@ -201,7 +202,7 @@ func TestOnAcknowledgementMaybeConvert_Sink(t *testing.T) {
 				DestinationPort:    "transfer",
 				Data: app.AppCodec().MustMarshalJSON(&types.FungibleTokenPacketData{
 					Denom:    sdkSentDenom,
-					Amount:   tt.args.msg.Token.Amount.Uint64(),
+					Amount: strconv.FormatUint(tt.args.msg.Token.Amount.Uint64(), 10),
 					Sender:   tt.args.msg.Sender,
 					Receiver: tt.args.msg.Receiver,
 				}),
@@ -315,7 +316,7 @@ func TestOnAcknowledgementMaybeConvert(t *testing.T) {
 		DestinationPort:    "transfer",
 		Data: app.AppCodec().MustMarshalJSON(&types.FungibleTokenPacketData{
 			Denom:    sentDenom,
-			Amount:   uint64(1234567891),
+			Amount:   "1234567891",
 			Sender:   addrs[0].String(),
 			Receiver: addrs[1].String(),
 		}),
