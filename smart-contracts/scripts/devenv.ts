@@ -16,7 +16,6 @@ async function startHardhat() {
   const node = new HardhatNodeRunner()
   const resultsPromise = node.go()
   const results = await resultsPromise
-  console.log(`rsltis: ${JSON.stringify(results, undefined, 2)}`)
   return { process, results }
 }
 

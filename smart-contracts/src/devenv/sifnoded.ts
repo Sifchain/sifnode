@@ -12,6 +12,7 @@ import {
   StdioOptions
 } from "child_process";
 import { network } from "hardhat";
+import {sleep} from "./devEnvUtilities";
 
 export interface ValidatorValues {
   chain_id: string,
@@ -40,7 +41,7 @@ export interface SifnodedResults {
   tcpurl: string;
 }
 
-export function waitForSifAccount(address: string, sifnoded: string) {
+export async function waitForSifAccount(address: string, sifnoded: string) {
   for (; ;) {
     try {
       console.log("Attempting to check account")
@@ -52,7 +53,8 @@ export function waitForSifAccount(address: string, sifnoded: string) {
       ).trim()
       console.log("Sifnoded is now running, continunig onwards");
       return;
-    } catch {/* Do Nothing weeee */ }
+    } catch {
+      await sleep(1000)
   }
 }
 
@@ -162,8 +164,9 @@ export class SifnodedRunner extends ShellCommand<SifnodedResults> {
     const witnessAddresses = Array.from({ length: this.nWitnesses },
       (_, witness) => this.addRelayerWitnessAccount(`witness-${witness}`, homeDir));
 
-    let sifnodedDaemonCmd = `${this.sifnodedCommand} start --log_format json --minimum-gas-prices 0.5rowan --rpc.laddr tcp://0.0.0.0:26657 --home ${homeDir}`;
+    let sifnodedDaemonCmd = `${this.sifnodedCommand} start --log_level debug --log_format json --minimum-gas-prices 0.5rowan --rpc.laddr tcp://0.0.0.0:26657 --home ${homeDir}`;
 
+    console.log(`start sifnoded with: \n${sifnodedDaemonCmd}`)
     const sifnoded = ChildProcess.spawn(
       sifnodedDaemonCmd,
       { shell: true, stdio: stdioOptions }
@@ -171,7 +174,7 @@ export class SifnodedRunner extends ShellCommand<SifnodedResults> {
 
     // Register tokens in the token registry
     // Must wait for sifnode to fully start first
-    waitForSifAccount(networkConfig[0].address, this.sifnodedCommand);
+    await waitForSifAccount(networkConfig[0].address, this.sifnodedCommand);
     const registryPath = path.resolve(__dirname, "./", "registry.json");
     ChildProcess.execSync(
       `${this.sifnodedCommand} tx tokenregistry register-all ${registryPath} --home ${homeDir} --from ${sifnodedAdminAddress.name} --yes --keyring-backend test --chain-id ${this.chainId}`,

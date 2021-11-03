@@ -26,3 +26,6 @@ export function eventEmitterToObservable(eventEmitter: events.EventEmitter, sour
     return subject.asObservable()
 }
 
+export async function sleep(milliseconds: number) {
+    await new Promise(resolve => setTimeout(resolve, milliseconds))
+}

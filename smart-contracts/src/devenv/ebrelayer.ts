@@ -72,7 +72,7 @@ export class WitnessRunner extends ShellCommand<EbrelayerResults> {
 
   override async run(): Promise<void> {
     const sifnodedCommand = path.join(this.args.golangResults.goBin, "sifnoded")
-    waitForSifAccount(this.args.validatorValues.address, sifnodedCommand)
+    await waitForSifAccount(this.args.validatorValues.address, sifnodedCommand)
     process.env["ETHEREUM_PRIVATE_KEY"] = this.args.account.privateKey.slice(2);
     process.env["ETHEREUM_ADDRESS"] = this.args.account.address.slice(2);
     const spawncmd = "ebrelayer " + this.cmd()[1].join(" ");
@@ -151,7 +151,7 @@ export class RelayerRunner extends ShellCommand<EbrelayerResults> {
 
   override async run(): Promise<void> {
     const sifnodedCommand = path.join(this.args.golangResults.goBin, "sifnoded")
-    waitForSifAccount(this.args.validatorValues.address, sifnodedCommand)
+    await waitForSifAccount(this.args.validatorValues.address, sifnodedCommand)
     process.env["ETHEREUM_PRIVATE_KEY"] = this.args.account.privateKey.slice(2);
     process.env["ETHEREUM_ADDRESS"] = this.args.account.address.slice(2);
     const spawncmd = "ebrelayer " + this.cmd()[1].join(" ");
