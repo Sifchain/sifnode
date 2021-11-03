@@ -14,15 +14,18 @@ export interface EthereumMainnetBlock {
 
 export interface EthereumMainnetLogLock {
     kind: "EthereumMainnetLogLock"
-    from: string
-    to: string
-    token: string
-    value: BigNumber
-    nonce: BigNumber
-    decimals: number
-    symbol: string
-    name: string
-    networkDescriptor: number
+    data: {
+        kind: "EthereumMainnetLogLock"
+        from: string
+        to: string
+        token: string
+        value: BigNumber
+        nonce: BigNumber
+        decimals: number
+        symbol: string
+        name: string
+        networkDescriptor: number
+    }
 }
 
 export type EthereumMainnetEvent = EthereumMainnetBlock | EthereumMainnetLogLock
@@ -48,16 +51,19 @@ export function subscribeToEthereumEvents(hre: HardhatRuntimeEnvironment, bridge
     bridgeBank.on(bridgeBank.filters.LogLock(), (...args) => {
         events.next({
             kind: "EthereumMainnetLogLock",
-            from: args[0],
-            to: args[1],
-            token: args[2],
-            value: args[3],
-            nonce: args[4],
-            decimals: args[5],
-            symbol: args[6],
-            name: args[7],
-            networkDescriptor: args[8],
-            block: args[9]
+            data: {
+                kind: "EthereumMainnetLogLock",
+                from: args[0],
+                to: args[1],
+                token: args[2],
+                value: args[3],
+                nonce: args[4],
+                decimals: args[5],
+                symbol: args[6],
+                name: args[7],
+                networkDescriptor: args[8],
+                block: args[9]
+            }
         } as EthereumMainnetLogLock)
     })
     return events
