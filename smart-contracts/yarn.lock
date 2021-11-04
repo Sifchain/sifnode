@@ -1070,7 +1070,7 @@
     "@nodelib/fs.scandir" "2.1.5"
     "fastq" "^1.6.0"
 
-"@nomiclabs/hardhat-ethers@^2.0.2":
+"@nomiclabs/hardhat-ethers@^2.0.0", "@nomiclabs/hardhat-ethers@^2.0.2":
   "integrity" "sha512-6quxWe8wwS4X5v3Au8q1jOvXYEPkS1Fh+cME5u6AwNdnI4uERvPlVjlgRWzpnb+Rrt1l/cEqiNRH9GlsBMSDQg=="
   "resolved" "https://registry.npmjs.org/@nomiclabs/hardhat-ethers/-/hardhat-ethers-2.0.2.tgz"
   "version" "2.0.2"
@@ -1126,12 +1126,12 @@
   "resolved" "https://registry.npmjs.org/@openzeppelin/contracts/-/contracts-4.3.1.tgz"
   "version" "4.3.1"
 
-"@openzeppelin/hardhat-upgrades@^1.9.0":
-  "integrity" "sha512-iGe058iV7Ba/g11RxlbqBG47nbqbZn1FRdg1FCQq7xPmvjRhXmFsoI/5gGw5el0aZlLDRtpFOBZbzMZvI/S7iw=="
-  "resolved" "https://registry.npmjs.org/@openzeppelin/hardhat-upgrades/-/hardhat-upgrades-1.10.0.tgz"
-  "version" "1.10.0"
+"@openzeppelin/hardhat-upgrades@^1.11.0":
+  "integrity" "sha512-TQ1WYrfOuYjybBiSIHFq/J7/9VvmKnUR/4Cq9WLHzZ3uDVq7E2DOy+MtNdjlLOTN5JsqgxmR6VwgIKAsFYMeCg=="
+  "resolved" "https://registry.npmjs.org/@openzeppelin/hardhat-upgrades/-/hardhat-upgrades-1.11.0.tgz"
+  "version" "1.11.0"
   dependencies:
-    "@openzeppelin/upgrades-core" "^1.9.0"
+    "@openzeppelin/upgrades-core" "^1.10.0"
 
 "@openzeppelin/test-helpers@^0.5.12":
   "integrity" "sha512-H9LUHM0nqZVObWyzJrXJ9FLDgtcBZZK0L+LhA0wdcvK3M4Um2LpLX4KbP/mUYcgvHK03pK7Ub4T6RYp3Vjy/mg=="
@@ -1158,10 +1158,10 @@
     "@truffle/contract" "^4.3.26"
     "solidity-ast" "^0.4.15"
 
-"@openzeppelin/upgrades-core@^1.9.0":
-  "integrity" "sha512-dd2VhRItfMSUOJwhXh1OUR/74LqbVhmkCSShfqf9OjFJAJbMuWdbEi2Fy2SxLvMGwdzrpbjtlB74KI5y+YT2RA=="
-  "resolved" "https://registry.npmjs.org/@openzeppelin/upgrades-core/-/upgrades-core-1.9.0.tgz"
-  "version" "1.9.0"
+"@openzeppelin/upgrades-core@^1.10.0", "@openzeppelin/upgrades-core@^1.9.0":
+  "integrity" "sha512-N20t1i1wlHrVmu3etVZLiaRxT6XLkCrO9gIo4mUZNpsaVftl8V+WBu8o940AjoYXvzTEqj7O0re2DSFzjpkRBw=="
+  "resolved" "https://registry.npmjs.org/@openzeppelin/upgrades-core/-/upgrades-core-1.10.0.tgz"
+  "version" "1.10.0"
   dependencies:
     "bn.js" "^5.1.2"
     "cbor" "^8.0.0"
@@ -1345,15 +1345,17 @@
   dependencies:
     "@sinonjs/commons" "^1.7.0"
 
-"@solidity-parser/parser@^0.11.0":
-  "integrity" "sha512-H8BSBoKE8EubJa0ONqecA2TviT3TnHeC4NpgnAHSUiuhZoQBfPB4L2P9bs8R6AoTW10Endvh3vc+fomVMIDIYQ=="
-  "resolved" "https://registry.npmjs.org/@solidity-parser/parser/-/parser-0.11.1.tgz"
-  "version" "0.11.1"
-
 "@solidity-parser/parser@^0.12.0":
   "integrity" "sha512-d7VS7PxgMosm5NyaiyDJRNID5pK4AWj1l64Dbz0147hJgy5k2C0/ZiKK/9u5c5K+HRUVHmp+RMvGEjGh84oA5Q=="
   "resolved" "https://registry.npmjs.org/@solidity-parser/parser/-/parser-0.12.2.tgz"
   "version" "0.12.2"
+
+"@solidity-parser/parser@^0.14.0":
+  "integrity" "sha512-cX0JJRcmPtNUJpzD2K7FdA7qQsTOk1UZnFx2k7qAg9ZRvuaH5NBe5IEdBMXGlmf2+FmjhqbygJ26H8l2SV7aKQ=="
+  "resolved" "https://registry.npmjs.org/@solidity-parser/parser/-/parser-0.14.0.tgz"
+  "version" "0.14.0"
+  dependencies:
+    "antlr4ts" "^0.5.0-alpha.4"
 
 "@szmarczak/http-timer@^1.1.2":
   "integrity" "sha512-XIB2XbzHTN6ieIjfIMV9hlVcfPU26s2vafYWQcZHWXHOxiaRZYEDKEwdl129Zyg50+foYV2jCgtrqSA6qNuNSA=="
@@ -2477,6 +2479,11 @@
   "version" "4.3.0"
   dependencies:
     "color-convert" "^2.0.1"
+
+"antlr4ts@^0.5.0-alpha.4":
+  "integrity" "sha512-WPQDt1B74OfPv/IMS2ekXAKkTZIHl88uMetg6q3OTqgFxZ/dxDXI0EWLyZid/1Pe6hTftyg5N7gel5wNAGxXyQ=="
+  "resolved" "https://registry.npmjs.org/antlr4ts/-/antlr4ts-0.5.0-alpha.4.tgz"
+  "version" "0.5.0-alpha.4"
 
 "anymatch@~3.1.1", "anymatch@~3.1.2":
   "integrity" "sha512-P43ePfOAIupkguHUycrc4qJ9kz8ZiuOUijaETwX7THt0Y/GNK7v0aa8rY816xWjZ7rJdA5XdMcpVFTKMq+RvWg=="
@@ -7287,10 +7294,10 @@
     "eth-gas-reporter" "^0.2.20"
     "sha1" "^1.1.1"
 
-"hardhat@^2.6.0":
-  "integrity" "sha512-83kCYIrkRq+vrsjOLIv349fbMpL7Vp/ZGpWtu+KLMH3wcAAs+aMsABZJ8W5hb5uo69+06KeF0pCHQ6y8tBAcwA=="
-  "resolved" "https://registry.npmjs.org/hardhat/-/hardhat-2.6.2.tgz"
-  "version" "2.6.2"
+"hardhat@^2.0.2", "hardhat@^2.6.7":
+  "integrity" "sha512-Mua01f6ZN1feQLktHSH2p5A5LCdA+Wf7+O2lJDH6wClvWPtI2eqKNNY2gxBwYXoQ28GZrT3K6mqQOZeRWAca6Q=="
+  "resolved" "https://registry.npmjs.org/hardhat/-/hardhat-2.6.7.tgz"
+  "version" "2.6.7"
   dependencies:
     "@ethereumjs/block" "^3.4.0"
     "@ethereumjs/blockchain" "^5.4.0"
@@ -7299,7 +7306,7 @@
     "@ethereumjs/vm" "^5.5.2"
     "@ethersproject/abi" "^5.1.2"
     "@sentry/node" "^5.18.1"
-    "@solidity-parser/parser" "^0.11.0"
+    "@solidity-parser/parser" "^0.14.0"
     "@types/bn.js" "^5.1.0"
     "@types/lru-cache" "^5.1.0"
     "abort-controller" "^3.0.0"
