@@ -23,7 +23,6 @@ const (
 	QuerierRoute       = ModuleName
 	DefaultParamspace  = ModuleName
 	MaxRecordsPerBlock = 10
-	TokenSupported     = "rowan"
 )
 
 var (
