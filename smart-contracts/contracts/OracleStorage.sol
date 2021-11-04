@@ -12,32 +12,27 @@ contract OracleStorage {
     address public cosmosBridge;
 
     /**
-    * @dev {DEPRECATED}
-    */
-    address private _operator;
+     * @dev {DEPRECATED}
+     */
+    address private operator;
 
     /**
-    * @notice Tracks the number of OracleClaims made on an individual BridgeClaim
-    */
+     * @notice Tracks the number of OracleClaims made on an individual BridgeClaim
+     */
     uint256 public consensusThreshold; // e.g. 75 = 75%
 
     /**
-    * @dev {DEPRECATED}
-    */
+     * @dev {DEPRECATED}
+     */
     mapping(uint256 => uint256) private oracleClaimValidators;
 
     /**
-    * @dev {DEPRECATED}
-    */
+     * @dev {DEPRECATED}
+     */
     mapping(uint256 => mapping(address => bool)) private hasMadeClaim;
 
     /**
-    * @notice mapping of validator address to last nonce submitted
-    */
-    uint256 public lastNonceSubmitted;
-
-    /**
-    * @dev gap of storage for future upgrades
-    */
-    uint256[99] private ____gap;
+     * @dev gap of storage for future upgrades
+     */
+    uint256[100] private ____gap;
 }

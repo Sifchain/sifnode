@@ -23,6 +23,21 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
     uint256[100] private ___gap;
 
     /**
+     * @notice Maps the original address of a token to its address in another network
+     */
+    mapping(address => address) public sourceAddressToDestinationAddress;
+
+    /**
+     * @notice network descriptor
+     */
+    int32 public networkDescriptor;
+
+    /**
+     * @notice mapping of validator address to last nonce submitted
+     */
+    uint256 public lastNonceSubmitted;
+
+    /**
      * @dev Event emitted when BridgeBank's address has been set
      */
     event LogBridgeBankSet(address bridgeBank);

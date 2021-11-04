@@ -10,58 +10,62 @@ pragma solidity 0.8.0;
  **/
 contract CosmosBridgeStorage {
     /**
-    * @dev {DEPRECATED}
-    */
+     * @dev {DEPRECATED}
+     */
     string private COSMOS_NATIVE_ASSET_PREFIX;
 
     /**
-     * @dev Public variable declarations
+     * @dev {DEPRECATED}
      */
-    address private _operator;
+    address private operator;
 
     /**
-    * @dev {DEPRECATED}
-    */
+     * @dev {DEPRECATED}
+     */
     address payable private valset;
 
     /**
-    * @dev {DEPRECATED}
-    */
+     * @dev {DEPRECATED}
+     */
     address payable private oracle;
 
     /**
-    * @notice Address of the BridgeBank contract
-    */
+     * @notice Address of the BridgeBank contract
+     */
     address payable public bridgeBank;
-    
+
     /**
-    * @notice Has the BridgeBank contract been registered yet?
-    */
+     * @notice Has the BridgeBank contract been registered yet?
+     */
     bool public hasBridgeBank;
 
     /**
-    * @dev {DEPRECATED}
-    */
+     * @dev {DEPRECATED}
+     */
     mapping(uint256 => ProphecyClaim) private prophecyClaims;
 
     /**
-    * @notice Maps the original address of a token to its address in another network
-    */
-    mapping (address => address) public sourceAddressToDestinationAddress;
+     * @dev {DEPRECATED}
+     */
+    enum Status {
+        Null,
+        Pending,
+        Success,
+        Failed
+    }
 
     /**
-    * @dev {DEPRECATED}
-    */
-    enum Status {Null, Pending, Success, Failed}
+     * @dev {DEPRECATED}
+     */
+    enum ClaimType {
+        Unsupported,
+        Burn,
+        Lock
+    }
 
     /**
-    * @dev {DEPRECATED}
-    */
-    enum ClaimType {Unsupported, Burn, Lock}
-
-    /**
-    * @notice {DEPRECATED}
-    */
+     * @notice {DEPRECATED}
+     */
     struct ProphecyClaim {
         address payable ethereumReceiver;
         string symbol;
@@ -69,12 +73,7 @@ contract CosmosBridgeStorage {
     }
 
     /**
-    * @notice network descriptor
-    */
-    int32 public networkDescriptor;
-
-    /**
-    * @dev gap of storage for future upgrades
-    */
-    uint256[98] private ____gap;
+     * @dev gap of storage for future upgrades
+     */
+    uint256[100] private ____gap;
 }
