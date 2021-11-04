@@ -24,18 +24,18 @@ module.exports = async () => {
    *** Set contract provider based on --network flag
    ******************************************/
   let provider;
-  if (NETWORK_ROPSTEN) {
-    provider = new HDWalletProvider(
-      process.env.ETHEREUM_PRIVATE_KEY,
-      "https://ropsten.infura.io/v3/".concat(process.env.INFURA_PROJECT_ID)
-    );
-  } else {
-    provider = new Web3.providers.HttpProvider(process.env.LOCAL_PROVIDER);
-  }
-
+    if (NETWORK_ROPSTEN) {
+      provider = new HDWalletProvider(
+          process.env.ETHEREUM_PRIVATE_KEY,
+          process.env['WEB3_PROVIDER']
+      );
+    } else {
+      provider = new Web3.providers.HttpProvider(process.env.LOCAL_PROVIDER);
+    }
   const web3 = new Web3(provider);
-  contract.setProvider(web3.currentProvider);
-  /*******************************************
+
+    contract.setProvider(web3.currentProvider);
+    /*******************************************
    *** Contract interaction
    ******************************************/
   const address = await contract.deployed().then(function(instance) {

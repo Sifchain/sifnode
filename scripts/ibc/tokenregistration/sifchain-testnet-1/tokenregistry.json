@@ -2637,12 +2637,12 @@
     },
     {
       "decimals": "6",
-      "denom": "ibc/0F24FDC3E75A4724A875A37B4F742AC12010F540325864D5AEB213CEB2595A9D",
+      "denom": "ibc/452372B8214E22C625E98958C5EDFB939C48E6590E40B711E9D30206EF8EDC9B",
       "base_denom": "uluna",
-      "path": "transfer/channel-33",
-      "ibc_channel_id": "channel-33",
-      "ibc_counterparty_channel_id": "channel-0",
-      "display_name": "Luna",
+      "path": "",
+      "ibc_channel_id": "channel-45",
+      "ibc_counterparty_channel_id": "channel-27",
+      "display_name": "",
       "display_symbol": "",
       "network": "",
       "address": "",
@@ -2702,7 +2702,6 @@
       "ibc_counterparty_chain_id": "juno-1"
     },
     {
-      "is_whitelisted": true,
       "decimals": "6",
       "denom": "ibc/F3FF7A84A73B62921538642F9797C423D2B4C4ACB3C7FCFFCE7F12AA69909C4B",
       "base_denom": "uixo",
@@ -2723,6 +2722,138 @@
       "unit_denom": "",
       "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": "impacthub-3"
+    },
+    {
+      "decimals": "6",
+      "denom": "ibc/818F2D0885F7BBD871E946AFC75ABB7C7C6ABE27009D9913331ACE48DAC326D3",
+      "base_denom": "ungm",
+      "path": "",
+      "ibc_channel_id": "channel-44",
+      "ibc_counterparty_channel_id": "channel-12",
+      "display_name": "",
+      "display_symbol": "",
+      "network": "",
+      "address": "",
+      "external_symbol": "",
+      "transfer_limit": "",
+      "permissions": [
+        "CLP",
+        "IBCEXPORT",
+        "IBCIMPORT"
+      ],
+      "unit_denom": "",
+      "ibc_counterparty_denom": "",
+      "ibc_counterparty_chain_id": "emoney-3"
+    },
+    {
+      "decimals": "9",
+      "denom": "ibc/123466F93BD086614AB9BBC674B6B58453D2B293CE12C7D802FA0582BC69E024",
+      "base_denom": "nanolike",
+      "path": "",
+      "ibc_channel_id": "channel-43",
+      "ibc_counterparty_channel_id": "channel-4",
+      "display_name": "",
+      "display_symbol": "",
+      "network": "",
+      "address": "",
+      "external_symbol": "",
+      "transfer_limit": "",
+      "permissions": [
+        "CLP",
+        "IBCEXPORT",
+        "IBCIMPORT"
+      ],
+      "unit_denom": "",
+      "ibc_counterparty_denom": "",
+      "ibc_counterparty_chain_id": "likecoin-mainnet-2"
+    },
+    {
+      "decimals": "6",
+      "denom": "ibc/066F76D25D87E549F7EC9BD7BCB524933FD2576EE9D039113F60A80BA290AD99",
+      "base_denom": "ubtsg",
+      "path": "",
+      "ibc_channel_id": "channel-42",
+      "ibc_counterparty_channel_id": "channel-4",
+      "display_name": "",
+      "display_symbol": "",
+      "network": "",
+      "address": "",
+      "external_symbol": "",
+      "transfer_limit": "",
+      "permissions": [
+        "CLP",
+        "IBCEXPORT",
+        "IBCIMPORT"
+      ],
+      "unit_denom": "",
+      "ibc_counterparty_denom": "",
+      "ibc_counterparty_chain_id": "bitsong-testnet-6"
+    },
+    {
+      "decimals": "6",
+      "denom": "ibc/0E27F87D6329E120923EF03591FA62F090005853B17D1E327D88FD03B17A5CFB",
+      "base_denom": "uband",
+      "path": "",
+      "ibc_channel_id": "channel-41",
+      "ibc_counterparty_channel_id": "channel-28",
+      "display_name": "",
+      "display_symbol": "",
+      "network": "",
+      "address": "",
+      "external_symbol": "",
+      "transfer_limit": "",
+      "permissions": [
+        "CLP",
+        "IBCEXPORT",
+        "IBCIMPORT"
+      ],
+      "unit_denom": "",
+      "ibc_counterparty_denom": "",
+      "ibc_counterparty_chain_id": "band-laozi-testnet4"
+    },
+    {
+      "decimals": "6",
+      "denom": "ibc/0193489264F41BB6C5099A28CD6A806AADB79A83A00142B7D1BC9BF5AE643E87",
+      "base_denom": "eeur",
+      "path": "",
+      "ibc_channel_id": "channel-44",
+      "ibc_counterparty_channel_id": "channel-12",
+      "display_name": "",
+      "display_symbol": "",
+      "network": "",
+      "address": "",
+      "external_symbol": "",
+      "transfer_limit": "",
+      "permissions": [
+        "CLP",
+        "IBCEXPORT",
+        "IBCIMPORT"
+      ],
+      "unit_denom": "",
+      "ibc_counterparty_denom": "",
+      "ibc_counterparty_chain_id": "emoney-3"
+    },
+    {
+      "decimals": "6",
+      "denom": "ibc/A2E0EFABD035F5460225E92C0F604F7C01AE3A9DF0CFF18FB08519CCD23AAE9D",
+      "base_denom": "uusd",
+      "path": "",
+      "ibc_channel_id": "channel-45",
+      "ibc_counterparty_channel_id": "channel-27",
+      "display_name": "",
+      "display_symbol": "",
+      "network": "",
+      "address": "",
+      "external_symbol": "",
+      "transfer_limit": "",
+      "permissions": [
+        "CLP",
+        "IBCEXPORT",
+        "IBCIMPORT"
+      ],
+      "unit_denom": "",
+      "ibc_counterparty_denom": "",
+      "ibc_counterparty_chain_id": "bombay-12"
     }
   ]
 }

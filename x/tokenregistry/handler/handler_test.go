@@ -166,7 +166,6 @@ func TestHandleSetRegistry(t *testing.T) {
 			},
 		},
 	}
-
 	tests := []struct {
 		name           string
 		msg            types.MsgSetRegistry
@@ -177,7 +176,7 @@ func TestHandleSetRegistry(t *testing.T) {
 			name: "Successful Registration",
 			msg: types.MsgSetRegistry{
 				From: admin,
-				Registry: &types.Registry {
+				Registry: &types.Registry{
 					Entries: []*types.RegistryEntry{{Denom: "TestDenom", Decimals: 18}},
 				},
 			},
@@ -202,7 +201,6 @@ func TestHandleSetRegistry(t *testing.T) {
 			valueAssertion: require.Nil,
 		},
 	}
-
 	for _, tt := range setup {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
@@ -211,7 +209,6 @@ func TestHandleSetRegistry(t *testing.T) {
 			tt.valueAssertion(t, res)
 		})
 	}
-
 	for _, tt := range tests {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
