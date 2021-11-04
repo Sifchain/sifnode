@@ -158,7 +158,6 @@ func (sub CosmosSub) Start(completionEvent *sync.WaitGroup, symbolTranslator *sy
 				}
 
 				for _, txLog := range block.TxsResults {
-					sub.SugaredLogger.Infow("block.TxsResults: ", "block.TxsResults: ", block.TxsResults)
 					for _, event := range txLog.Events {
 
 						claimType := getOracleClaimType(event.GetType())
