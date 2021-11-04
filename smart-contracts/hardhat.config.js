@@ -11,6 +11,7 @@ const { print } = require("./scripts/helpers/utils");
 
 const networkUrl = process.env["NETWORK_URL"];
 const activePrivateKey = process.env[process.env.ACTIVE_PRIVATE_KEY];
+const keyList = activePrivateKey.indexOf(",") ? activePrivateKey.split(",") : [activePrivateKey];
 
 if (!networkUrl) {
   print("error", "ABORTED! Missing NETWORK_URL env variable");
@@ -45,12 +46,12 @@ module.exports = {
     },
     ropsten: {
       url: networkUrl,
-      accounts: [activePrivateKey],
+      accounts: keyList,
       gas: 2000000,
     },
     mainnet: {
       url: networkUrl,
-      accounts: [activePrivateKey],
+      accounts: keyList,
       gas: 2000000,
       gasPrice: "auto",
       gasMultiplier: 1.2,
