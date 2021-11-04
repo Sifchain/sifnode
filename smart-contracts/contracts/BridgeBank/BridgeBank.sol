@@ -95,8 +95,8 @@ contract BridgeBank is
         CosmosWhiteList._cosmosWhitelistInitialize();
         EthereumWhiteList.initialize();
 
-        contractName[address(0)] = "EVM_NATIVE";
-        contractSymbol[address(0)] = "EVM_NATIVE";
+        contractName[address(0)] = "EVMNATIVE";
+        contractSymbol[address(0)] = "EVMNATIVE";
 
         _initialized = true;
 
