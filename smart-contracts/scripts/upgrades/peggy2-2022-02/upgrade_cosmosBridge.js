@@ -20,13 +20,16 @@ const CHAIN_ID = process.env.CHAIN_ID || 1;
 // Are we running this script in test mode?
 const USE_FORKING = !!process.env.USE_FORKING;
 
+// Helps converting an address to a checksum address
+const addr = Web3.utils.toChecksumAddress;
+
 const state = {
   addresses: {
-    pauser1: Web3.utils.toChecksumAddress("c0a586fb260b2c14098a9d95b75f56f13cad2dd9"),
-    pauser2: Web3.utils.toChecksumAddress("0x9910ade709043d8b9ed2a31fdfcbfb6538f9a397"),
-    cosmosWhitelistedtoken: Web3.utils.toChecksumAddress(
-      "0x8D983cb9388EaC77af0474fA441C4815500Cb7BB"
-    ),
+    validator1: addr("0x0D7dEF5C00a8B6ddc58A0255f0a94cc739C6d0B5"),
+    validator2: addr("0x9B4002670C210A3b64e13807250BE62B8dEae201"),
+    validator3: addr("0xbF45BFc92ebD305d4C0baf8395c4299bdFCE9EA2"),
+    validator4: addr("0xeB29C7016eDd2D6B413fceE4C51474FED058005a"),
+    operator: addr("0x2dc894e2e87fb728b2520ce8418983a834357824"),
   },
   signers: {
     admin: null,
@@ -40,18 +43,38 @@ const state = {
   },
   storageSlots: {
     before: {
-      pauser1: "",
-      pauser2: "",
-      owner: "",
-      nonce: "",
-      cosmosWhitelist: "",
+      bridgeBank: "", // addr("0xb5f54ac4466f5ce7e0d8a5cb9fe7b8c0f35b7ba8"),
+      consensusThreshold: "", // 75,
+      currentValsetVersion: "", // 1,
+      hasBridgeBank: "", // true,
+      totalPower: "", // 100,
+      validatorCount: "", // 4,
+      validator1IsValidator: "", // true,
+      validator2IsValidator: "", // true,
+      validator3IsValidator: "", // true,
+      validator4IsValidator: "", // true,
+      validator1Power: "", // 25,
+      validator2Power: "", // 25,
+      validator3Power: "", // 25,
+      validator4Power: "", // 25,
+      operator: "", // addr("0x2dc894e2e87fb728b2520ce8418983a834357824"),
     },
     after: {
-      pauser1: "",
-      pauser2: "",
-      owner: "",
-      nonce: "",
-      cosmosWhitelist: "",
+      bridgeBank: "", // addr("0xb5f54ac4466f5ce7e0d8a5cb9fe7b8c0f35b7ba8"),
+      consensusThreshold: "", // 75,
+      currentValsetVersion: "", // 1,
+      hasBridgeBank: "", // true,
+      totalPower: "", // 100,
+      validatorCount: "", // 4,
+      validator1IsValidator: "", // true,
+      validator2IsValidator: "", // true,
+      validator3IsValidator: "", // true,
+      validator4IsValidator: "", // true,
+      validator1Power: "", // 25,
+      validator2Power: "", // 25,
+      validator3Power: "", // 25,
+      validator4Power: "", // 25,
+      operator: "", // addr("0x2dc894e2e87fb728b2520ce8418983a834357824"),
     },
   },
 };
@@ -72,16 +95,16 @@ async function main() {
   await setupAccounts();
 
   // Fetch current values from the deployed contract
-  //await setStorageSlots();
+  await setStorageSlots();
 
   // Upgrade CosmosBridge
   await upgradeCosmosBridge();
 
   // Fetch values after the upgrade
-  //await setStorageSlots(false);
+  await setStorageSlots(false);
 
   // Compare slots before and after the upgrade
-  //checkStorageSlots();
+  checkStorageSlots();
 
   // Clean up temporary files
   cleanup();
@@ -97,27 +120,55 @@ async function main() {
 }
 
 async function setStorageSlots(beforeUpgrade = true) {
-  const contract = beforeUpgrade ? state.contracts.bridgeBank : state.contracts.upgradedBridgeBank;
+  const contract = beforeUpgrade
+    ? state.contracts.cosmosBridge
+    : state.contracts.upgradedCosmosBridge;
   const prefix = beforeUpgrade ? "before" : "after";
 
-  state.storageSlots[prefix].pauser1 = await contract.pausers(state.addresses.pauser1);
-  state.storageSlots[prefix].pauser2 = await contract.pausers(state.addresses.pauser2);
-  state.storageSlots[prefix].owner = await contract.owner();
-  state.storageSlots[prefix].nonce = await contract.lockBurnNonce();
-  state.storageSlots[prefix].cosmosWhitelist = await contract.getCosmosTokenInWhiteList(
-    state.addresses.cosmosWhitelistedtoken
+  state.storageSlots[prefix].bridgeBank = await contract.bridgeBank();
+  state.storageSlots[prefix].consensusThreshold = await contract.consensusThreshold();
+  state.storageSlots[prefix].currentValsetVersion = await contract.currentValsetVersion();
+  state.storageSlots[prefix].hasBridgeBank = await contract.hasBridgeBank();
+  state.storageSlots[prefix].totalPower = await contract.totalPower();
+  state.storageSlots[prefix].validatorCount = await contract.validatorCount();
+
+  state.storageSlots[prefix].validator1IsValidator = await contract.isActiveValidator(
+    state.addresses.validator1
   );
+  state.storageSlots[prefix].validator2IsValidator = await contract.isActiveValidator(
+    state.addresses.validator2
+  );
+  state.storageSlots[prefix].validator3IsValidator = await contract.isActiveValidator(
+    state.addresses.validator3
+  );
+  state.storageSlots[prefix].validator4IsValidator = await contract.isActiveValidator(
+    state.addresses.validator4
+  );
+
+  state.storageSlots[prefix].validator1Power = await contract.getValidatorPower(
+    state.addresses.validator1
+  );
+  state.storageSlots[prefix].validator2Power = await contract.getValidatorPower(
+    state.addresses.validator2
+  );
+  state.storageSlots[prefix].validator3Power = await contract.getValidatorPower(
+    state.addresses.validator3
+  );
+  state.storageSlots[prefix].validator4Power = await contract.getValidatorPower(
+    state.addresses.validator4
+  );
+
+  state.storageSlots[prefix].operator = await contract.operator();
 }
 
 function checkStorageSlots() {
   print("yellow", "🎯 Checking storage layout");
 
-  const storage = state.storageSlots;
-  testMatch(storage.before.pauser1, storage.after.pauser1, "Pauser 1");
-  testMatch(storage.before.pauser2, storage.after.pauser2, "Pauser 2");
-  testMatch(storage.before.owner, storage.after.owner, "Owner");
-  testMatch(storage.before.nonce, storage.after.nonce, "Nonce");
-  testMatch(storage.before.cosmosWhitelist, storage.after.cosmosWhitelist, "CosmosWhitelist");
+  const keys = Object.keys(state.storageSlots.before);
+
+  keys.forEach((key) => {
+    testMatch(state.storageSlots.before[key], state.storageSlots.after[key], key);
+  });
 }
 
 function testMatch(before, after, slotName) {
@@ -173,7 +224,7 @@ async function setupAccounts() {
 
     if (state.signers.operator.address != operatorAddress) {
       throw new Error(
-        `The second Private Key is not the BridgeBank OPERATOR's private key. Please use the Private Key that corresponds to the address ${operatorAddress}`
+        `The second Private Key is not the CosmosBank OPERATOR's private key. Please use the Private Key that corresponds to the address ${operatorAddress}`
       );
     }
   }
@@ -201,7 +252,7 @@ async function upgradeCosmosBridge() {
     { unsafeAllow: ["delegatecall"] }
   );
   await state.contracts.upgradedCosmosBridge.deployed();
-  print("green", `✅ BridgeBank Upgraded`);
+  print("green", `✅ CosmosBridge Upgraded`);
 }
 
 // Copy the manifest to the right place (where Hardhat wants it)
