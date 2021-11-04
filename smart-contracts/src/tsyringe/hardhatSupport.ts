@@ -7,6 +7,6 @@ export function isHardhatRuntimeEnvironment(x: any): x is HardhatRuntimeEnvironm
     return 'hardhatArguments' in x && 'tasks' in x
 }
 
-export function createSignerWithAddresss(address: string, privateKey: string, provider: ethers.providers.JsonRpcProvider): SignerWithAddress {
+export function createSignerWithAddresss(privateKey: string, provider: ethers.providers.JsonRpcProvider): SignerWithAddress {
     return (new Wallet(privateKey, provider) as unknown) as SignerWithAddress
 }
