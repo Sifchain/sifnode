@@ -522,6 +522,7 @@ def send_from_ethereum_to_sifchain(transfer_request: EthereumToSifchainTransferR
             NULL_ADDRESS,
             transfer_request.amount).transact({"value": transfer_request.amount if transfer_request.ethereum_symbol == "eth" else 0})
     lock_burn_tx = w3.eth.get_transaction(tx_hash)
+    logging.debug("EthToSifchain lockBurnTx", lock_burn_tx)
     return lock_burn_tx.blockNumber
 
 
