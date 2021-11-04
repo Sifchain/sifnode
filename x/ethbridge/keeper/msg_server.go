@@ -202,13 +202,12 @@ func (srv msgServer) CreateEthBridgeClaim(goCtx context.Context, msg *types.MsgC
 
 	status, err := srv.Keeper.ProcessClaim(ctx, msg.EthBridgeClaim)
 
-	if err != nil {
-		if err != oracletypes.ErrProphecyFinalized {
-			logger.Error("bridge keeper failed to process claim.", errorMessageKey, err.Error())
-			return nil, err
-		}
+	if err != nil && err != oracletypes.ErrProphecyFinalized {
+		logger.Error("bridge keeper failed to process claim.", errorMessageKey, err.Error())
+		return nil, err
+	}
 
-	} else if status == oracletypes.StatusText_STATUS_TEXT_SUCCESS {
+	if status == oracletypes.StatusText_STATUS_TEXT_SUCCESS {
 		if err = srv.Keeper.ProcessSuccessfulClaim(ctx, msg.EthBridgeClaim); err != nil {
 			logger.Error("bridge keeper failed to process successful claim.", errorMessageKey, err.Error())
 			return nil, err

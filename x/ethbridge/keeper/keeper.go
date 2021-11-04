@@ -109,7 +109,7 @@ func (k Keeper) ProcessSuccessfulClaim(ctx sdk.Context, claim *types.EthBridgeCl
 		panic(err)
 	}
 
-	ctx.Logger().Debug(types.PeggyTestMarker, "kind", "coinsSent", "claim", zap.Reflect("claim", claim))
+	ctx.Logger().Debug(types.PeggyTestMarker, "kind", "coinsSent", "claim", zap.Reflect("claim", claim), "receiverAddress", receiverAddress, "coins", coins)
 
 	return nil
 }

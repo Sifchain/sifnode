@@ -47,13 +47,13 @@ interface State {
 
 enum TransactionStep {
     Initial = "Initial",
-    SawLogLock = "SawLog",
+    SawLogLock = "SawLogLock",
     SawClaim = "SawClaim",
-    BroadcastTx = 0,
-    ProcessSuccessfulClaim,
-    CreateEthBridgeClaim,
-    AppendValidatorToProphecy,
-    CoinsSent,
+    BroadcastTx = "BroadcastTx",
+    ProcessSuccessfulClaim = "ProcessSuccessfulClaim",
+    CreateEthBridgeClaim = "CreateEthBridgeClaim",
+    AppendValidatorToProphecy = "AppendValidatorToProphecy",
+    CoinsSent = "CoinsSent",
 }
 
 function isTerminalState(s: State) {
@@ -130,7 +130,18 @@ describe("watcher", () => {
                 case "SifnodedPeggyEvent":
                     switch (v.data.kind) {
                         case "coinsSent":
-                            return { ...acc, value: v, transactionStep: TransactionStep.CoinsSent }
+                            const coins = ((v.data as any).coins as any)[0]
+                            if (coins["denom"] === "ceth" && coins["amount"] === smallAmount)
+                                return {...acc, value: v, transactionStep: TransactionStep.CoinsSent}
+                            else
+                                return {
+                                    ...acc,
+                                    value: {
+                                        kind: "failure",
+                                        value: v,
+                                        message: "incorrect coins"
+                                    }
+                                }
                     }
                     return {...acc, value: v, createdAt: acc.currentHeartbeat}
                 default:
