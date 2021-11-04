@@ -25,10 +25,10 @@ export function devenvEthereumResults(devenvJsonPath: string): EthereumResults {
 }
 
 export async function ethereumResultsToSifchainAccounts(e: EthereumResults, provider: ethers.providers.JsonRpcProvider): Promise<SifchainAccounts> {
-    const operator = createSignerWithAddresss(e.accounts.operator.address, e.accounts.operator.privateKey, provider)
-    const owner = createSignerWithAddresss(e.accounts.owner.address, e.accounts.owner.privateKey, provider)
-    const pauser = createSignerWithAddresss(e.accounts.pauser.address, e.accounts.pauser.privateKey, provider)
-    const validators = e.accounts.validators.map(k => createSignerWithAddresss(k.address, k.privateKey, provider))
-    const av = e.accounts.available.map(k => createSignerWithAddresss(k.address, k.privateKey, provider))
+    const operator = createSignerWithAddresss(e.accounts.operator.privateKey, provider)
+    const owner = createSignerWithAddresss(e.accounts.owner.privateKey, provider)
+    const pauser = createSignerWithAddresss(e.accounts.pauser.privateKey, provider)
+    const validators = e.accounts.validators.map(k => createSignerWithAddresss(k.privateKey, provider))
+    const av = e.accounts.available.map(k => createSignerWithAddresss(k.privateKey, provider))
     return new SifchainAccounts(operator, owner, pauser, validators, av)
 }
