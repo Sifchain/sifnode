@@ -118,26 +118,34 @@ func TestKeeper_DecommissionPool(t *testing.T) {
 
 func TestKeeper_InitiateSwap(t *testing.T) {
 	ctx, app := test.CreateTestAppClp(false)
-	senderAddress, _ := sdk.AccAddressFromBech32(test.AddressKey1)
+	signer := test.GenerateAddress(test.AddressKey1)
+	//Parameters for create pool
 	asset := types.NewAsset("eth")
 	externalCoin := sdk.NewCoin(asset.Symbol, sdk.Int(sdk.NewUint(10000)))
-	err := app.ClpKeeper.InitiateSwap(ctx, externalCoin, senderAddress)
+	nativeCoin := sdk.NewCoin(types.NativeSymbol, sdk.Int(sdk.NewUint(10000)))
+	_ = app.ClpKeeper.GetBankKeeper().AddCoins(ctx, signer, sdk.NewCoins(externalCoin, nativeCoin))
+	err := app.ClpKeeper.InitiateSwap(ctx, externalCoin, signer)
 	if err != nil {
 		fmt.Println("Error doing initialSwap :", err)
 	}
 	require.NoError(t, err)
+	ok := app.ClpKeeper.HasBalance(ctx, signer, nativeCoin)
+	assert.True(t, ok, "")
 
 }
 
 func TestKeeper_FinalizeSwap(t *testing.T) {
 	ctx, app := test.CreateTestAppClp(false)
-	signer := test.GenerateAddress("")
-	assetEth := types.NewAsset("eth")
-	assetDash := types.NewAsset("dash")
+	signer := test.GenerateAddress(test.AddressKey1)
+	//Parameters for create pool
 	nativeAssetAmount := sdk.NewUintFromString("998")
 	externalAssetAmount := sdk.NewUintFromString("998")
-	asset := types.NewAsset("eth")
-	msgCreatePool := types.NewMsgCreatePool(signer, asset, nativeAssetAmount, externalAssetAmount)
+	assetEth := types.NewAsset("eth")
+	assetDash := types.NewAsset("dash")
+	externalCoin := sdk.NewCoin(assetEth.Symbol, sdk.Int(sdk.NewUint(10000)))
+	nativeCoin := sdk.NewCoin(types.NativeSymbol, sdk.Int(sdk.NewUint(10000)))
+	_ = app.ClpKeeper.GetBankKeeper().AddCoins(ctx, signer, sdk.NewCoins(externalCoin, nativeCoin))
+	msgCreatePool := types.NewMsgCreatePool(signer, assetEth, nativeAssetAmount, externalAssetAmount)
 	// Create Pool
 	pool, err := app.ClpKeeper.CreatePool(ctx, sdk.NewUint(1), &msgCreatePool)
 	if err != nil {
@@ -147,9 +155,8 @@ func TestKeeper_FinalizeSwap(t *testing.T) {
 	// initialBalance: Initial account balance for all assets created.
 	initialBalance := sdk.NewUintFromString("1000000000000000000000")
 	// poolBalance: Amount funded to pool. The same amount is used both for native and external asset.
-	externalCoin1 := sdk.NewCoin(assetEth.Symbol, sdk.Int(initialBalance))
-	externalCoin2 := sdk.NewCoin(assetDash.Symbol, sdk.Int(initialBalance))
-	nativeCoin := sdk.NewCoin(types.NativeSymbol, sdk.Int(initialBalance))
+	externalCoin1 := sdk.NewCoin("eth", sdk.Int(initialBalance))
+	externalCoin2 := sdk.NewCoin("dash", sdk.Int(initialBalance))
 	// Signer is given ETH and RWN (Signer will creat pool and become LP)
 	_ = app.ClpKeeper.GetBankKeeper().AddCoins(ctx, signer, sdk.NewCoins(externalCoin1, nativeCoin))
 	_ = app.ClpKeeper.GetBankKeeper().AddCoins(ctx, signer, sdk.NewCoins(externalCoin2))
@@ -162,5 +169,5 @@ func TestKeeper_ParseToInt(t *testing.T) {
 	_, app := test.CreateTestAppClp(false)
 	res, boolean := app.ClpKeeper.ParseToInt("1")
 	assert.True(t, boolean)
-	assert.Equal(t, res, sdk.NewUint(1))
+	assert.Equal(t, res.String(), "1")
 }
