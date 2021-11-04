@@ -6,10 +6,9 @@ pragma solidity 0.8.0;
  * @dev Stores Cosmos deposits, nonces, networkDescriptor
  */
 contract CosmosBankStorage {
-
     /**
-    * @dev {DEPRECATED}
-    */
+     * @dev {DEPRECATED}
+     */
     struct CosmosDeposit {
         bytes cosmosSender;
         address payable ethereumRecipient;
@@ -19,32 +18,27 @@ contract CosmosBankStorage {
     }
 
     /**
-    * @notice number of bridge tokens
-    */
-    uint256 public bridgeTokenCount;
+     * @dev number of bridge tokens
+     */
+    uint256 private bridgeTokenCount;
 
     /**
-    * @dev {DEPRECATED}
-    */
-    uint256 public cosmosDepositNonce;
+     * @dev {DEPRECATED}
+     */
+    uint256 private cosmosDepositNonce;
 
     /**
-    * @dev {DEPRECATED}
-    */
-    mapping(string => address) private controlledBridgeTokens;
+     * @dev {DEPRECATED}
+     */
+    mapping(string => address) internal controlledBridgeTokens;
 
     /**
-    * @dev {DEPRECATED}
-    */
+     * @dev {DEPRECATED}
+     */
     mapping(string => string) private lowerToUpperTokens;
 
     /**
-    * @notice network descriptor
-    */
-    int32 public networkDescriptor;
-
-    /**
-    * @dev gap of storage for future upgrades
-    */
-    uint256[99] private ____gap;
+     * @dev gap of storage for future upgrades
+     */
+    uint256[100] private ____gap;
 }

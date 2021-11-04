@@ -7,44 +7,24 @@ pragma solidity 0.8.0;
  **/
 contract EthereumBankStorage {
     /**
-    * @notice current lock and or burn nonce
-    */
+     * @notice current lock and or burn nonce
+     */
     uint256 public lockBurnNonce;
 
     /**
-    * @dev {DEPRECATED}
-    */
+     * @dev {DEPRECATED}
+     */
     mapping(address => uint256) private lockedFunds;
 
     /**
-    * @notice map the token symbol to the token address
-    */
+     * @notice map the token symbol to the token address
+     */
     mapping(string => address) public lockedTokenList;
 
     /**
-    * @notice contract decimals based off of contract address
-    */
-    mapping (address => uint8) public contractDecimals;
-
-    /**
-    * @notice contract symbol based off of address
-    */
-    mapping (address => string) public contractSymbol;
-
-    /**
-    * @notice contract name based off of address
-    */
-    mapping (address => string) public contractName;
-
-    /**
-    * @notice contract denom based off of address
-    */
-    mapping (address => string) public contractDenom;
-
-    /**
-    * @dev gap of storage for future upgrades
-    */
-    uint256[96] private ____gap;
+     * @dev gap of storage for future upgrades
+     */
+    uint256[100] private ____gap;
 
     /**
      * @dev Event emitted when tokens are burned
@@ -78,9 +58,5 @@ contract EthereumBankStorage {
     /**
      * @dev Event emitted when tokens are unlocked
      */
-    event LogUnlock(
-        address _to,
-        address _token,
-        uint256 _value
-    );
+    event LogUnlock(address _to, address _token, uint256 _value);
 }

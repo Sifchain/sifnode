@@ -46,6 +46,31 @@ contract BridgeBank is
     bool public hasBlocklist;
 
     /**
+     * @notice network descriptor
+     */
+    int32 public networkDescriptor;
+
+    /**
+     * @notice contract decimals based off of contract address
+     */
+    mapping(address => uint8) public contractDecimals;
+
+    /**
+     * @notice contract symbol based off of address
+     */
+    mapping(address => string) public contractSymbol;
+
+    /**
+     * @notice contract name based off of address
+     */
+    mapping(address => string) public contractName;
+
+    /**
+     * @notice contract denom based off of address
+     */
+    mapping(address => string) public contractDenom;
+
+    /**
      * @dev Has the contract been reinitialized?
      */
     bool private _reinitialized;
