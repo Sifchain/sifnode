@@ -89,6 +89,9 @@ async function setup({
     networkDescriptorMismatch,
   });
 
+  // Our upgrades use a delegateCall to the Address lib internally; we'll silence warnings
+  upgrades.silenceWarnings();
+
   await deployBaseContracts(state);
   await deployRowan(state);
 
@@ -175,7 +178,10 @@ async function deployBaseContracts(state) {
       state.initialPowers,
       state.networkDescriptorMismatch ? state.networkDescriptor + 1 : state.networkDescriptor,
     ],
-    { initializer: "initialize(address,uint256,address[],uint256[],int32)" }
+    {
+      initializer: "initialize(address,uint256,address[],uint256[],int32)",
+      unsafeAllow: ["delegatecall"],
+    }
   );
   await state.cosmosBridge.deployed();
 
@@ -189,7 +195,10 @@ async function deployBaseContracts(state) {
       state.pauser.address,
       state.networkDescriptorMismatch ? state.networkDescriptor + 2 : state.networkDescriptor,
     ],
-    { initializer: "initialize(address,address,address,address,int32)" }
+    {
+      initializer: "initialize(address,address,address,address,int32)",
+      unsafeAllow: ["delegatecall"],
+    }
   );
   await state.bridgeBank.deployed();
 
