@@ -1,17 +1,18 @@
 import copy
 import logging
+from typing import Tuple
 
 import burn_lock_functions
 import test_utilities
 from burn_lock_functions import EthereumToSifchainTransferRequest
-from integration_env_credentials import sifchain_cli_credentials_for_test
+from integration_env_credentials import sifchain_cli_credentials_for_test, create_new_sifaddr_and_credentials
 from test_utilities import get_shell_output, SifchaincliCredentials
 
 def generate_minimal_test_account(
         base_transfer_request: EthereumToSifchainTransferRequest,
         target_ceth_balance: int = 10 ** 18,
         timeout=burn_lock_functions.default_timeout_for_ganache
-) -> (EthereumToSifchainTransferRequest, SifchaincliCredentials):
+) -> Tuple[EthereumToSifchainTransferRequest, SifchaincliCredentials]:
     """Creates a test account with ceth.  The address for the new account is in request.sifchain_address"""
     assert base_transfer_request.ethereum_address is not None
     new_account_key = get_shell_output("uuidgen")
@@ -38,7 +39,7 @@ def generate_test_account(
         rowan_source_integrationtest_env_credentials: SifchaincliCredentials,
         target_ceth_balance: int = 10 ** 18,
         target_rowan_balance: int = 10 ** 18
-) -> (EthereumToSifchainTransferRequest, SifchaincliCredentials):
+) -> Tuple[EthereumToSifchainTransferRequest, SifchaincliCredentials]:
     """Creates a test account with ceth and rowan"""
     new_account_key = get_shell_output("uuidgen")
     credentials = sifchain_cli_credentials_for_test(new_account_key)
@@ -59,7 +60,7 @@ def generate_test_account(
     request: EthereumToSifchainTransferRequest = copy.deepcopy(base_transfer_request)
     request.sifchain_address = new_sifaddr
     request.amount = target_ceth_balance
-    request.sifchain_symbol = "ceth"
+    request.sifchain_symbol = "evmnative"
     request.ethereum_symbol = "eth"
     if target_ceth_balance > 0:
         logging.debug(f"transfer {target_ceth_balance} eth to {new_sifaddr} from {base_transfer_request.ethereum_address}")
@@ -67,7 +68,7 @@ def generate_test_account(
 
     logging.info(
         f"created sifchain addr {new_sifaddr} "
-        f"with {test_utilities.display_currency_value(target_ceth_balance)} ceth "
+        f"with {test_utilities.display_currency_value(target_ceth_balance)} evmnative "
         f"and {test_utilities.display_currency_value(target_rowan_balance)} rowan"
     )
 
