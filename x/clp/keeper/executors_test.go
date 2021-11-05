@@ -149,7 +149,7 @@ func TestKeeper_FinalizeSwap(t *testing.T) {
 	_ = app.ClpKeeper.GetBankKeeper().AddCoins(ctx, signer, sdk.NewCoins(externalCoin, nativeCoin))
 	msgCreatePool := types.NewMsgCreatePool(signer, assetEth, nativeAssetAmount, externalAssetAmount)
 	// Create Pool
-	pool, err := app.ClpKeeper.CreatePool(ctx, sdk.NewUint(1), &msgCreatePool)
+	_, err := app.ClpKeeper.CreatePool(ctx, sdk.NewUint(1), &msgCreatePool)
 	if err != nil {
 		fmt.Println("Error Generating new pool :", err)
 	}
@@ -158,7 +158,7 @@ func TestKeeper_FinalizeSwap(t *testing.T) {
 	_ = app.ClpKeeper.GetBankKeeper().AddCoins(ctx, signer, sdk.NewCoins(externalCoin, nativeCoin))
 	msgCreatePool = types.NewMsgCreatePool(signer, assetDash, nativeAssetAmount, externalAssetAmount)
 	// Create Pool
-	pool, err = app.ClpKeeper.CreatePool(ctx, sdk.NewUint(1), &msgCreatePool)
+	pool, err := app.ClpKeeper.CreatePool(ctx, sdk.NewUint(1), &msgCreatePool)
 	if err != nil {
 		fmt.Println("Error Generating new pool :", err)
 	}
