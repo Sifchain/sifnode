@@ -48,7 +48,8 @@ interface State {
 enum TransactionStep {
     Initial = "Initial",
     SawLogLock = "SawLogLock",
-    SawClaim = "SawClaim",
+    SawProphecyClaim = "SawProphecyClaim",
+    SawEthbridgeClaimArray = "SawEthbridgeClaimArray",
     BroadcastTx = "BroadcastTx",
     ProcessSuccessfulClaim = "ProcessSuccessfulClaim",
     CreateEthBridgeClaim = "CreateEthBridgeClaim",
@@ -127,8 +128,17 @@ describe("watcher", () => {
                                 message: "incorrect EthereumMainnetLogLock"
                             }
                         }
+                case "EbRelayerEvmStateTransition":
+                    switch ((v.data as any).kind) {
+                        case "EthereumProphecyClaim":
+                            return {...acc, value: v, transactionStep: TransactionStep.SawProphecyClaim}
+                        case "EthBridgeClaimArray":
+                            return {...acc, value: v, transactionStep: TransactionStep.SawEthbridgeClaimArray}
+                        case "BroadcastTx":
+                            return {...acc, value: v, transactionStep: TransactionStep.BroadcastTx}
+                    }
                 case "SifnodedPeggyEvent":
-                    switch (v.data.kind) {
+                    switch ((v.data as any).kind) {
                         case "coinsSent":
                             const coins = ((v.data as any).coins as any)[0]
                             if (coins["denom"] === "ceth" && coins["amount"] === smallAmount)
@@ -142,6 +152,11 @@ describe("watcher", () => {
                                         message: "incorrect coins"
                                     }
                                 }
+                        // TODO these steps need validation to make sure they're happing in the right order with the right data
+                        case "CreateEthBridgeClaim":
+                            return {...acc, value: v, transactionStep: TransactionStep.CreateEthBridgeClaim}
+                        case "AppendValidatorToProphecy":
+                            return {...acc, value: v, transactionStep: TransactionStep.AppendValidatorToProphecy}
                     }
                     return {...acc, value: v, createdAt: acc.currentHeartbeat}
                 default:
