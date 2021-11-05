@@ -60,7 +60,7 @@ def generate_test_account(
     request: EthereumToSifchainTransferRequest = copy.deepcopy(base_transfer_request)
     request.sifchain_address = new_sifaddr
     request.amount = target_ceth_balance
-    request.sifchain_symbol = "evmnative"
+    request.sifchain_symbol = "ceth"
     request.ethereum_symbol = "eth"
     if target_ceth_balance > 0:
         logging.debug(f"transfer {target_ceth_balance} eth to {new_sifaddr} from {base_transfer_request.ethereum_address}")
