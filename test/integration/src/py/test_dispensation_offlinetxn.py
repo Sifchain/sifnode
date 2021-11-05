@@ -23,7 +23,7 @@ def test_create_offline_singlekey_txn(claimType):
     from_address = 'sifnodeadmin'
     keyring_backend = 'test'
     chain_id = 'localnet'
-    amount = '10000000rowan'
+    amount = '100000000000000000rowan'
     sampleamount = '1000rowan'
 
     #THESE 4 TXNS ARE TO REGISTER NEW ACCOUNTS ON CHAIN
@@ -86,7 +86,7 @@ def test_broadcast_txn(claimType):
     from_address = 'sifnodeadmin'
     keyring_backend = 'test'
     chain_id = 'localnet'
-    amount = '10000000rowan'
+    amount = '100000000000000000rowan'
     sampleamount = '1000rowan'
 
     #THESE 4 TXNS ARE TO REGISTER NEW ACCOUNTS ON CHAIN
@@ -163,8 +163,8 @@ def test_run_offline_singlekey_txn(claimType):
     from_address = 'sifnodeadmin'
     keyring_backend = 'test'
     chain_id = 'localnet'
-    amount = '10000000rowan'
-    fee = '150000'
+    amount = '100000000000000000rowan'
+    fee = '100000000000000000'
     currency = 'rowan'
     sampleamount = '1000rowan'
 
