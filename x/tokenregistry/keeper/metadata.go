@@ -52,6 +52,7 @@ func (k keeper) AddTokenMetadata(ctx sdk.Context, metadata types.TokenMetadata) 
 
 	entry := k.GetDenom(ctx, denomHash)
 
+
 	if !entry.IsWhitelisted {
 		entry.Decimals = metadata.Decimals
 		entry.DisplayName = metadata.Name
@@ -62,6 +63,8 @@ func (k keeper) AddTokenMetadata(ctx sdk.Context, metadata types.TokenMetadata) 
 
 		k.SetToken(ctx, &entry)
 	}
+
+	k.Logger(ctx).Debug(ethbridgetypes.PeggyTestMarker, "kind", "AddTokenMetadata", "entry", entry)
 
 	return denomHash
 }
