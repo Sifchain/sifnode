@@ -164,7 +164,7 @@ def test_run_offline_singlekey_txn(claimType):
     keyring_backend = 'test'
     chain_id = 'localnet'
     amount = '100000000000000000rowan'
-    fee = '100000000000000000'
+    fee = '150000'
     currency = 'rowan'
     sampleamount = '1000rowan'
 
