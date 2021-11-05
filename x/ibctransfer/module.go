@@ -96,12 +96,8 @@ type AppModule struct {
 	cdc               codec.BinaryCodec
 }
 
-
-
-
-
 func (am AppModule) NegotiateAppVersion(ctx sdk.Context, order types.Order, connectionID string, portID string, counterparty types.Counterparty, proposedVersion string) (version string, err error) {
-	return am.cosmosAppModule.NegotiateAppVersion(ctx,order,connectionID,portID,counterparty,proposedVersion)
+	return am.cosmosAppModule.NegotiateAppVersion(ctx, order, connectionID, portID, counterparty, proposedVersion)
 }
 
 func (am AppModule) OnChanOpenInit(ctx sdk.Context, order types.Order, connectionHops []string, portID string, channelID string, channelCap *capabilitytypes.Capability, counterparty types.Counterparty, version string) error {
@@ -133,14 +129,12 @@ func (am AppModule) OnRecvPacket(ctx sdk.Context, packet types.Packet, relayer s
 }
 
 func (am AppModule) OnAcknowledgementPacket(ctx sdk.Context, packet types.Packet, acknowledgement []byte, relayer sdk.AccAddress) error {
-	return OnAcknowledgementMaybeConvert(ctx, am.sdkTransferKeeper, am.whitelistKeeper, am.bankKeeper, packet, acknowledgement, relayer)
+	return am.cosmosAppModule.OnAcknowledgementPacket(ctx, packet, acknowledgement, relayer)
 }
 
-func (am AppModule) OnTimeoutPacket(ctx sdk.Context, packet types.Packet, relayer sdk.AccAddress) error{
-	return OnTimeoutMaybeConvert(ctx, am.sdkTransferKeeper, am.whitelistKeeper, am.bankKeeper, packet, relayer)
+func (am AppModule) OnTimeoutPacket(ctx sdk.Context, packet types.Packet, relayer sdk.AccAddress) error {
+	return am.cosmosAppModule.OnTimeoutPacket(ctx, packet, relayer)
 }
-
-
 
 func NewAppModule(sdkTransferKeeper sdktransferkeeper.Keeper, whitelistKeeper tokenregistrytypes.Keeper, bankKeeper bankkeeper.Keeper, cdc codec.BinaryCodec) AppModule {
 	return AppModule{

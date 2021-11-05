@@ -41,7 +41,8 @@ func TestShouldConvertIncomingCoins(t *testing.T) {
 	require.NoError(t, err)
 	require.True(t, entry1c.Decimals > entry1.Decimals)
 	diff := uint64(entry1c.Decimals - entry1.Decimals)
-	convAmount := helpers.ConvertIncomingCoins(1000000000000, diff)
+	convAmount, err := helpers.ConvertIncomingCoins("1000000000000", diff)
+	require.NoError(t, err)
 	incomingDeduction := sdk.NewCoin("ueth", sdk.NewIntFromUint64(1000000000000))
 	incomingAddition := sdk.NewCoin("ceth", convAmount)
 	require.Equal(t, incomingDeduction.Denom, "ueth")
@@ -76,7 +77,8 @@ func TestGetConvForIncomingCoins(t *testing.T) {
 	require.NoError(t, err)
 	require.True(t, entry1c.Decimals > entry1.Decimals)
 	diff := uint64(entry1c.Decimals - entry1.Decimals)
-	convAmount := helpers.ConvertIncomingCoins(1000000000000, diff)
+	convAmount, err := helpers.ConvertIncomingCoins("1000000000000", diff)
+	require.NoError(t, err)
 	incomingDeduction := sdk.NewCoin("ueth", sdk.NewIntFromUint64(1000000000000))
 	incomingAddition := sdk.NewCoin("ceth", convAmount)
 	intAmount, _ := sdk.NewIntFromString("100000000000000000000")
@@ -152,10 +154,12 @@ func TestExecConvForIncomingCoins(t *testing.T) {
 	returningData := transfertypes.FungibleTokenPacketData{
 		Denom:    "transfer/channel-0/ueth",
 		Receiver: addrs[0].String(),
+		Amount:   "0",
 	}
 	nonReturningData := transfertypes.FungibleTokenPacketData{
 		Denom:    "transfer/channel-1/ueth",
 		Receiver: addrs[0].String(),
+		Amount:   "0",
 	}
 	ibcRegistryEntry := tokenregistrytypes.RegistryEntry{
 		Denom:     "ueth",

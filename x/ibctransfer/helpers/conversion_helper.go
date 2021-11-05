@@ -3,6 +3,7 @@ package helpers
 import (
 	"context"
 	"fmt"
+	"github.com/pkg/errors"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
@@ -15,6 +16,8 @@ import (
 
 // ConvertCoinsForTransfer Converts the coins requested for transfer into an amount that should be deducted from requested denom,
 // and the Coins that should be minted in the new denom.
+
+//TODO only used in tests , remove this function completely
 func ConvertCoinsForTransfer(msg *sdktransfertypes.MsgTransfer, sendRegistryEntry *tokenregistrytypes.RegistryEntry,
 	sendAsRegistryEntry *tokenregistrytypes.RegistryEntry) (sdk.Coin, sdk.Coin) {
 	// calculate the conversion difference and reduce precision
@@ -89,8 +92,12 @@ func GetMintedDenomFromPacket(packet channeltypes.Packet, data sdktransfertypes.
 	return sdktransfertypes.ParseDenomTrace(sdktransfertypes.GetDenomPrefix(packet.GetDestPort(), packet.GetDestChannel()) + data.Denom).IBCDenom()
 }
 
-func ConvertIncomingCoins(amount uint64, diff uint64) sdk.Int {
-	return sdk.NewIntFromBigInt(IncreasePrecision(sdk.NewDecFromInt(sdk.NewIntFromUint64(amount)), diff).TruncateInt().BigInt())
+func ConvertIncomingCoins(amount string, diff uint64) (sdk.Int, error) {
+	intAmount, ok := sdk.NewIntFromString(amount)
+	if !ok {
+		return sdk.ZeroInt(), errors.New("Failed to convert to int from string")
+	}
+	return sdk.NewIntFromBigInt(IncreasePrecision(sdk.NewDecFromInt(intAmount), diff).TruncateInt().BigInt()), nil
 }
 
 func ExecConvForIncomingCoins(
@@ -106,7 +113,10 @@ func ExecConvForIncomingCoins(
 	if err != nil {
 		return err
 	}
-	amount := sdk.NewIntFromUint64(data.Amount)
+	amount, ok := sdk.NewIntFromString(data.Amount)
+	if !ok {
+		return errors.New("Unable to get string amount")
+	}
 	incomingCoins := sdk.NewCoins(sdk.NewCoin(mintedDenomEntry.Denom, amount))
 	// send ibcdenom coins from account to module
 	err = bankKeeper.SendCoinsFromAccountToModule(ctx, receiver, sctransfertypes.ModuleName, incomingCoins)
@@ -122,7 +132,11 @@ func ExecConvForIncomingCoins(
 	finalCoins := sdk.NewCoins(sdk.NewCoin(convertToDenomEntry.Denom, convAmount))
 	if convertToDenomEntry.Decimals > mintedDenomEntry.Decimals {
 		diff := uint64(convertToDenomEntry.Decimals - mintedDenomEntry.Decimals)
-		convAmount = ConvertIncomingCoins(data.Amount, diff)
+		// This is the reduced precision xToken coming in , so we know for sure conversion to uint64 will not cause problems
+		convAmount, err = ConvertIncomingCoins(data.Amount, diff)
+		if err != nil {
+			return err
+		}
 		finalCoins = sdk.NewCoins(sdk.NewCoin(convertToDenomEntry.Denom, convAmount))
 	}
 	// unescrow original tokens
@@ -160,7 +174,10 @@ func ExecConvForRefundCoins(
 	if err != nil {
 		return err
 	}
-	amount := sdk.NewIntFromUint64(data.Amount)
+	amount, ok := sdk.NewIntFromString(data.Amount)
+	if !ok {
+		return errors.New("Unable to get amount from string")
+	}
 	incomingCoins := sdk.NewCoins(sdk.NewCoin(mintedDenomEntry.Denom, amount))
 	// send ibcdenom coins from account to module
 	err = bankKeeper.SendCoinsFromAccountToModule(ctx, sender, sctransfertypes.ModuleName, incomingCoins)
@@ -171,7 +188,10 @@ func ExecConvForRefundCoins(
 	finalCoins := sdk.NewCoins(sdk.NewCoin(convertToDenomEntry.Denom, convAmount))
 	if convertToDenomEntry.Decimals > mintedDenomEntry.Decimals {
 		diff := uint64(convertToDenomEntry.Decimals - mintedDenomEntry.Decimals)
-		convAmount = ConvertIncomingCoins(data.Amount, diff)
+		convAmount, err = ConvertIncomingCoins(data.Amount, diff)
+		if err != nil {
+			return err
+		}
 		finalCoins = sdk.NewCoins(sdk.NewCoin(convertToDenomEntry.Denom, convAmount))
 	}
 	// unescrow original tokens

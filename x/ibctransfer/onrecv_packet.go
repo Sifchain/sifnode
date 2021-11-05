@@ -50,12 +50,13 @@ func OnRecvPacketWhitelistConvert(
 				sdk.NewAttribute(sdk.AttributeKeyModule, transfertypes.ModuleName),
 				sdk.NewAttribute(transfertypes.AttributeKeyReceiver, data.Receiver),
 				sdk.NewAttribute(transfertypes.AttributeKeyDenom, data.Denom),
-				sdk.NewAttribute(transfertypes.AttributeKeyAmount, fmt.Sprintf("%d", data.Amount)),
+				sdk.NewAttribute(transfertypes.AttributeKeyAmount, fmt.Sprintf("%s", data.Amount)),
 				sdk.NewAttribute(transfertypes.AttributeKeyAckSuccess, fmt.Sprintf("%t", false)),
 			),
 		)
 		return acknowledgement
 	}
+	// TODO Check entries to add rowan
 	convertToDenomEntry, err := whitelistKeeper.GetEntry(registry, mintedDenomEntry.UnitDenom)
 	if err == nil && convertToDenomEntry.Decimals > 0 && mintedDenomEntry.Decimals > 0 && convertToDenomEntry.Decimals > mintedDenomEntry.Decimals {
 		err = helpers.ExecConvForIncomingCoins(ctx, bankKeeper, mintedDenomEntry, convertToDenomEntry, packet, data)
@@ -73,7 +74,7 @@ func OnRecvPacketWhitelistConvert(
 			sdk.NewAttribute(sdk.AttributeKeyModule, transfertypes.ModuleName),
 			sdk.NewAttribute(transfertypes.AttributeKeyReceiver, data.Receiver),
 			sdk.NewAttribute(transfertypes.AttributeKeyDenom, data.Denom),
-			sdk.NewAttribute(transfertypes.AttributeKeyAmount, fmt.Sprintf("%d", data.Amount)),
+			sdk.NewAttribute(transfertypes.AttributeKeyAmount, fmt.Sprintf("%s", data.Amount)),
 			sdk.NewAttribute(transfertypes.AttributeKeyAckSuccess, fmt.Sprintf("%t", err == nil)),
 		),
 	)

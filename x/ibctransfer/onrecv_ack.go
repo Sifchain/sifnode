@@ -28,7 +28,7 @@ func OnAcknowledgementMaybeConvert(
 ) error {
 	var ack channeltypes.Acknowledgement
 	if err := sdktransfertypes.ModuleCdc.UnmarshalJSON(acknowledgement, &ack); err != nil {
-		return  sdkerrors.Wrapf(sdkerrors.ErrUnknownRequest, "cannot unmarshal ICS-20 transfer packet acknowledgement: %v", err)
+		return sdkerrors.Wrapf(sdkerrors.ErrUnknownRequest, "cannot unmarshal ICS-20 transfer packet acknowledgement: %v", err)
 	}
 	var data sdktransfertypes.FungibleTokenPacketData
 	if err := sdktransfertypes.ModuleCdc.UnmarshalJSON(packet.GetData(), &data); err != nil {
@@ -49,7 +49,7 @@ func OnAcknowledgementMaybeConvert(
 				sdk.NewAttribute(sdk.AttributeKeyModule, sdktransfertypes.ModuleName),
 				sdk.NewAttribute(sdktransfertypes.AttributeKeyReceiver, data.Receiver),
 				sdk.NewAttribute(sdktransfertypes.AttributeKeyDenom, data.Denom),
-				sdk.NewAttribute(sdktransfertypes.AttributeKeyAmount, fmt.Sprintf("%d", data.Amount)),
+				sdk.NewAttribute(sdktransfertypes.AttributeKeyAmount, fmt.Sprintf("%s", data.Amount)),
 				sdk.NewAttribute(sdktransfertypes.AttributeKeyAck, fmt.Sprintf("%v", ack)),
 				sdk.NewAttribute(sdktransfertypes.AttributeKeyAckSuccess, string(resp.Result)),
 			),
@@ -62,7 +62,7 @@ func OnAcknowledgementMaybeConvert(
 				sdk.NewAttribute(sdk.AttributeKeyModule, sdktransfertypes.ModuleName),
 				sdk.NewAttribute(sdktransfertypes.AttributeKeyReceiver, data.Receiver),
 				sdk.NewAttribute(sdktransfertypes.AttributeKeyDenom, data.Denom),
-				sdk.NewAttribute(sdktransfertypes.AttributeKeyAmount, fmt.Sprintf("%d", data.Amount)),
+				sdk.NewAttribute(sdktransfertypes.AttributeKeyAmount, fmt.Sprintf("%s", data.Amount)),
 				sdk.NewAttribute(sdktransfertypes.AttributeKeyAck, fmt.Sprintf("%v", ack)),
 				sdk.NewAttribute(sdktransfertypes.AttributeKeyAckError, resp.Error),
 			),
