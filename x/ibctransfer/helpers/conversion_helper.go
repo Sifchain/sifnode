@@ -141,6 +141,7 @@ func ExecConvForIncomingCoins(
 	}
 	// unescrow original tokens
 	escrowAddress := sctransfertypes.GetEscrowAddress(packet.GetDestPort(), packet.GetDestChannel())
+
 	if err := bankKeeper.SendCoins(ctx, escrowAddress, receiver, finalCoins); err != nil {
 		// NOTE: this error is only expected to occur given an unexpected bug or a malicious
 		// counterparty module. The bug may occur in bank or any part of the code that allows

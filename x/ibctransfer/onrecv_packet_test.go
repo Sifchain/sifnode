@@ -1,6 +1,8 @@
 package ibctransfer_test
 
 import (
+	app2 "github.com/Sifchain/sifnode/app"
+	sctransfertypes "github.com/Sifchain/sifnode/x/ibctransfer/types"
 	"testing"
 
 	"github.com/Sifchain/sifnode/x/ethbridge/test"
@@ -197,6 +199,61 @@ func TestExecConvForIncomingCoins(t *testing.T) {
 	convertToDenomEntry, err = app.TokenRegistryKeeper.GetEntry(registry, mintedDenomEntry.UnitDenom)
 	require.NoError(t, err)
 	err = helpers.ExecConvForIncomingCoins(ctx, app.BankKeeper, mintedDenomEntry, convertToDenomEntry, packet, nonReturningData)
+	require.NoError(t, err)
+}
+
+func TestOnRecvPacketV2(t *testing.T) {
+	addrs, _ := test.CreateTestAddrs(2)
+	app, ctx, _ := tokenregistrytest.CreateTestApp(false)
+	packet := channeltypes.Packet{
+		SourcePort:         "transfer",
+		SourceChannel:      "channel-0",
+		DestinationPort:    "transfer",
+		DestinationChannel: "channel-1",
+	}
+	// Xrowan which originated on Sifchain
+	xRowanV2Amount := "10000000000"
+	returningXrowan := transfertypes.FungibleTokenPacketData{
+		Denom:    "transfer/channel-0/xrowan",
+		Receiver: addrs[0].String(),
+		Amount:   xRowanV2Amount,
+	}
+	ibcRegistryEntryXRowan := tokenregistrytypes.RegistryEntry{
+		Denom:     "xrowan",
+		Decimals:  10,
+		UnitDenom: "rowan",
+	}
+	// Adding registry entry for rowan as rowan is UnitDenom for xrowan
+	ibcRegistryEntryRowan := tokenregistrytypes.RegistryEntry{
+		Denom:     "rowan",
+		Decimals:  18,
+		UnitDenom: "rowan",
+	}
+	app.TokenRegistryKeeper.SetToken(ctx, &ibcRegistryEntryXRowan)
+	app.TokenRegistryKeeper.SetToken(ctx, &ibcRegistryEntryRowan)
+	mintedXRowan := helpers.GetMintedDenomFromPacket(packet, returningXrowan)
+	registry := app.TokenRegistryKeeper.GetRegistry(ctx)
+	mintedXRowanEntry, err := app.TokenRegistryKeeper.GetEntry(registry, mintedXRowan)
+	require.NoError(t, err)
+
+	allowed := helpers.IsRecvPacketAllowed(ctx, app.TokenRegistryKeeper, packet, returningXrowan, mintedXRowanEntry)
+	require.Equal(t, allowed, true)
+	convertToDenomEntry, err := app.TokenRegistryKeeper.GetEntry(registry, mintedXRowanEntry.UnitDenom)
+	require.NoError(t, err)
+	intAmount, ok := sdk.NewIntFromString(xRowanV2Amount)
+	require.True(t, ok)
+	err = app2.AddCoinsToAccount(sctransfertypes.ModuleName, app.BankKeeper, ctx, addrs[0], sdk.NewCoins(sdk.NewCoin("xrowan", intAmount)))
+	require.NoError(t, err)
+
+	diff := uint64(convertToDenomEntry.Decimals - mintedXRowanEntry.Decimals)
+	// This is the reduced precision xToken coming in , so we know for sure conversion to uint64 will not cause problems
+	convAmount, err := helpers.ConvertIncomingCoins(xRowanV2Amount, diff)
+	require.NoError(t, err)
+	finalCoins := sdk.NewCoins(sdk.NewCoin(convertToDenomEntry.Denom, convAmount))
+	escrowAddress := sctransfertypes.GetEscrowAddress(packet.GetDestPort(), packet.GetDestChannel())
+	err = app2.AddCoinsToAccount(sctransfertypes.ModuleName, app.BankKeeper, ctx, escrowAddress, finalCoins)
+	require.NoError(t, err)
+	err = helpers.ExecConvForIncomingCoins(ctx, app.BankKeeper, mintedXRowanEntry, convertToDenomEntry, packet, returningXrowan)
 	require.NoError(t, err)
 }
 
