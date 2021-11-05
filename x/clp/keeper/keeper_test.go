@@ -14,7 +14,6 @@ import (
 
 	"github.com/Sifchain/sifnode/x/clp/test"
 	"github.com/Sifchain/sifnode/x/clp/types"
-	clptypes "github.com/Sifchain/sifnode/x/clp/types"
 )
 
 func TestKeeper_Errors(t *testing.T) {
@@ -218,17 +217,17 @@ func TestKeeper_SwapOne(t *testing.T) {
 	//Parameters for create pool
 	nativeAssetAmount := sdk.NewUintFromString("998")
 	externalAssetAmount := sdk.NewUintFromString("998")
-	asset := clptypes.NewAsset("eth")
+	asset := types.NewAsset("eth")
 	externalCoin := sdk.NewCoin(asset.Symbol, sdk.Int(sdk.NewUint(10000)))
-	nativeCoin := sdk.NewCoin(clptypes.NativeSymbol, sdk.Int(sdk.NewUint(10000)))
+	nativeCoin := sdk.NewCoin(types.NativeSymbol, sdk.Int(sdk.NewUint(10000)))
 	wBasis := sdk.NewInt(1000)
 	asymmetry := sdk.NewInt(10000)
 	_ = app.ClpKeeper.GetBankKeeper().AddCoins(ctx, signer, sdk.NewCoins(externalCoin, nativeCoin))
-	msgCreatePool := clptypes.NewMsgCreatePool(signer, asset, nativeAssetAmount, externalAssetAmount)
+	msgCreatePool := types.NewMsgCreatePool(signer, asset, nativeAssetAmount, externalAssetAmount)
 	// Create Pool
 	pool, err := app.ClpKeeper.CreatePool(ctx, sdk.NewUint(1), &msgCreatePool)
 	assert.NoError(t, err)
-	msg := clptypes.NewMsgAddLiquidity(signer, asset, nativeAssetAmount, externalAssetAmount)
+	msg := types.NewMsgAddLiquidity(signer, asset, nativeAssetAmount, externalAssetAmount)
 	app.ClpKeeper.CreateLiquidityProvider(ctx, &asset, sdk.NewUint(1), signer)
 	lp, err := app.ClpKeeper.AddLiquidity(ctx, &msg, *pool, sdk.NewUint(1), sdk.NewUint(998))
 	assert.NoError(t, err)
@@ -239,7 +238,7 @@ func TestKeeper_SwapOne(t *testing.T) {
 	normalizationFactor, adjustExternalToken := app.ClpKeeper.GetNormalizationFactor(eAsset.Decimals)
 	_, _, _, swapAmount := clpkeeper.CalculateWithdrawal(pool.PoolUnits,
 		pool.NativeAssetBalance.String(), pool.ExternalAssetBalance.String(), lp.LiquidityProviderUnits.String(), wBasis.String(), asymmetry)
-	swapResult, liquidityFee, priceImpact, _, err := clpkeeper.SwapOne(clptypes.GetSettlementAsset(), swapAmount, asset, *pool, normalizationFactor, adjustExternalToken)
+	swapResult, liquidityFee, priceImpact, _, err := clpkeeper.SwapOne(types.GetSettlementAsset(), swapAmount, asset, *pool, normalizationFactor, adjustExternalToken)
 	assert.NoError(t, err)
 	assert.Equal(t, swapResult.String(), "10")
 	assert.Equal(t, liquidityFee.String(), "978")
@@ -252,11 +251,11 @@ func TestKeeper_SetInputs(t *testing.T) {
 	//Parameters for create pool
 	nativeAssetAmount := sdk.NewUintFromString("998")
 	externalAssetAmount := sdk.NewUintFromString("998")
-	asset := clptypes.NewAsset("eth")
+	asset := types.NewAsset("eth")
 	externalCoin := sdk.NewCoin(asset.Symbol, sdk.Int(sdk.NewUint(10000)))
-	nativeCoin := sdk.NewCoin(clptypes.NativeSymbol, sdk.Int(sdk.NewUint(10000)))
+	nativeCoin := sdk.NewCoin(types.NativeSymbol, sdk.Int(sdk.NewUint(10000)))
 	_ = app.ClpKeeper.GetBankKeeper().AddCoins(ctx, signer, sdk.NewCoins(externalCoin, nativeCoin))
-	msgCreatePool := clptypes.NewMsgCreatePool(signer, asset, nativeAssetAmount, externalAssetAmount)
+	msgCreatePool := types.NewMsgCreatePool(signer, asset, nativeAssetAmount, externalAssetAmount)
 	// Create Pool
 	pool, _ := app.ClpKeeper.CreatePool(ctx, sdk.NewUint(1), &msgCreatePool)
 	X, x, Y, toRowan := clpkeeper.SetInputs(sdk.NewUint(1), asset, *pool)
@@ -272,11 +271,11 @@ func TestKeeper_GetSwapFee(t *testing.T) {
 	//Parameters for create pool
 	nativeAssetAmount := sdk.NewUintFromString("998")
 	externalAssetAmount := sdk.NewUintFromString("998")
-	asset := clptypes.NewAsset("eth")
+	asset := types.NewAsset("eth")
 	externalCoin := sdk.NewCoin(asset.Symbol, sdk.Int(sdk.NewUint(10000)))
-	nativeCoin := sdk.NewCoin(clptypes.NativeSymbol, sdk.Int(sdk.NewUint(10000)))
+	nativeCoin := sdk.NewCoin(types.NativeSymbol, sdk.Int(sdk.NewUint(10000)))
 	_ = app.ClpKeeper.GetBankKeeper().AddCoins(ctx, signer, sdk.NewCoins(externalCoin, nativeCoin))
-	msgCreatePool := clptypes.NewMsgCreatePool(signer, asset, nativeAssetAmount, externalAssetAmount)
+	msgCreatePool := types.NewMsgCreatePool(signer, asset, nativeAssetAmount, externalAssetAmount)
 	// Create Pool
 	pool, _ := app.ClpKeeper.CreatePool(ctx, sdk.NewUint(1), &msgCreatePool)
 	registry := app.TokenRegistryKeeper.GetRegistry(ctx)
