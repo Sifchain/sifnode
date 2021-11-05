@@ -112,7 +112,7 @@ func TestKeeper_DecommissionPool(t *testing.T) {
 	if err != nil {
 		fmt.Println("Error Generating new pool :", err)
 	}
-	app.ClpKeeper.DecommissionPool(ctx, *pool)
+	err = app.ClpKeeper.DecommissionPool(ctx, *pool)
 	require.NoError(t, err)
 	_, err = app.ClpKeeper.GetPool(ctx, pool.ExternalAsset.Symbol)
 	assert.Error(t, err, "Pool should be deleted")
