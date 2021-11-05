@@ -25,6 +25,9 @@ func TestKeeper_CreatePool_And_AddLiquidity_RemoveLiquidity(t *testing.T) {
 	msgCreatePool := types.NewMsgCreatePool(signer, asset, nativeAssetAmount, externalAssetAmount)
 	// Create Pool
 	pool, err := app.ClpKeeper.CreatePool(ctx, sdk.NewUint(1), &msgCreatePool)
+	if err != nil {
+		fmt.Println("Error Generating new pool :", err)
+	}
 	msg := types.NewMsgAddLiquidity(signer, asset, nativeAssetAmount, externalAssetAmount)
 	app.ClpKeeper.CreateLiquidityProvider(ctx, &asset, sdk.NewUint(1), signer)
 	lp, err := app.ClpKeeper.AddLiquidity(ctx, &msg, *pool, sdk.NewUint(1), sdk.NewUint(998))
@@ -33,20 +36,19 @@ func TestKeeper_CreatePool_And_AddLiquidity_RemoveLiquidity(t *testing.T) {
 		fmt.Println("Error Adding Liquidity :", err)
 	}
 	assert.NoError(t, err)
-	if err != nil {
-		fmt.Println("Error Generating new pool :", err)
-	}
+
 	assert.Equal(t, pool.ExternalAssetBalance, externalAssetAmount)
 	assert.Equal(t, pool.NativeAssetBalance, nativeAssetAmount)
 	fmt.Println(pool.ExternalAssetBalance.String())
 	fmt.Println(pool.NativeAssetBalance.String())
 	subCoin := sdk.NewCoin(asset.Symbol, sdk.Int(sdk.NewUint(100)))
-	error_removeLiquidity := app.ClpKeeper.RemoveLiquidity(ctx, *pool, subCoin, subCoin, *lp, sdk.NewUint(989), sdk.NewUint(10001), sdk.NewUint(10001))
-	assert.NoError(t, error_removeLiquidity)
+	errorRemoveLiquidity := app.ClpKeeper.RemoveLiquidity(ctx, *pool, subCoin, subCoin, *lp, sdk.NewUint(989), sdk.NewUint(10001), sdk.NewUint(10001))
+	assert.NoError(t, errorRemoveLiquidity)
 	ok := app.ClpKeeper.HasBalance(ctx, signer, subCoin)
 	assert.True(t, ok, "")
 	subCoin = sdk.NewCoin(asset.Symbol, sdk.Int(sdk.NewUint(100)))
-	error_removeLiquidity = app.ClpKeeper.RemoveLiquidity(ctx, *pool, subCoin, subCoin, *lp, sdk.NewUint(989), sdk.NewUint(10001), sdk.NewUint(10001))
+	errorRemoveLiquidity = app.ClpKeeper.RemoveLiquidity(ctx, *pool, subCoin, subCoin, *lp, sdk.NewUint(989), sdk.NewUint(10001), sdk.NewUint(10001))
+	assert.NoError(t, errorRemoveLiquidity)
 	res := app.ClpKeeper.HasBalance(ctx, signer, subCoin)
 	assert.True(t, res, "Cannot withdraw pool is too shallow")
 
@@ -78,18 +80,18 @@ func TestKeeper_RemoveLiquidityProvider(t *testing.T) {
 	_ = app.ClpKeeper.GetBankKeeper().AddCoins(ctx, signer, sdk.NewCoins(externalCoin, nativeCoin))
 	msgCreatePool := types.NewMsgCreatePool(signer, asset, nativeAssetAmount, externalAssetAmount)
 	// Create Pool
-	pool, err := app.ClpKeeper.CreatePool(ctx, sdk.NewUint(1), &msgCreatePool)
+	pool, _ := app.ClpKeeper.CreatePool(ctx, sdk.NewUint(1), &msgCreatePool)
 	msg := types.NewMsgAddLiquidity(signer, asset, nativeAssetAmount, externalAssetAmount)
 	app.ClpKeeper.CreateLiquidityProvider(ctx, &asset, sdk.NewUint(1), signer)
-	lp, err := app.ClpKeeper.AddLiquidity(ctx, &msg, *pool, sdk.NewUint(1), sdk.NewUint(998))
-	getlp, err := app.ClpKeeper.GetLiquidityProvider(ctx, lp.Asset.Symbol, lp.LiquidityProviderAddress)
-	assert.NoError(t, err, "Error in get liquidityProvider")
+	lp, _ := app.ClpKeeper.AddLiquidity(ctx, &msg, *pool, sdk.NewUint(1), sdk.NewUint(998))
+	getlp, _ := app.ClpKeeper.GetLiquidityProvider(ctx, lp.Asset.Symbol, lp.LiquidityProviderAddress)
 	assert.True(t, app.ClpKeeper.GetLiquidityProviderIterator(ctx).Valid())
 	app.ClpKeeper.DestroyLiquidityProvider(ctx, lp.Asset.Symbol, lp.LiquidityProviderAddress)
-	_, err = app.ClpKeeper.GetLiquidityProvider(ctx, lp.Asset.Symbol, lp.LiquidityProviderAddress)
+	_, err := app.ClpKeeper.GetLiquidityProvider(ctx, lp.Asset.Symbol, lp.LiquidityProviderAddress)
 	assert.Error(t, err, "LiquidityProvider has been deleted")
 	// This should do nothing
-	app.ClpKeeper.RemoveLiquidityProvider(ctx, sdk.Coins{newAssetCoin}.Sort(), getlp)
+	err = app.ClpKeeper.RemoveLiquidityProvider(ctx, sdk.Coins{newAssetCoin}.Sort(), getlp)
+	assert.NoError(t, err)
 	assert.False(t, app.ClpKeeper.GetLiquidityProviderIterator(ctx).Valid())
 }
 
@@ -161,7 +163,7 @@ func TestKeeper_FinalizeSwap(t *testing.T) {
 	_ = app.ClpKeeper.GetBankKeeper().AddCoins(ctx, signer, sdk.NewCoins(externalCoin1, nativeCoin))
 	_ = app.ClpKeeper.GetBankKeeper().AddCoins(ctx, signer, sdk.NewCoins(externalCoin2))
 	msg := types.NewMsgSwap(signer, assetEth, assetDash, sdk.NewUint(1), sdk.NewUint(10))
-	app.ClpKeeper.FinalizeSwap(ctx, "1", *pool, msg)
+	err = app.ClpKeeper.FinalizeSwap(ctx, "1", *pool, msg)
 	require.NoError(t, err)
 }
 
