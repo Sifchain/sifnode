@@ -212,7 +212,7 @@ func TestKeeper_GetLiquidityProviderData(t *testing.T) {
 	}
 }
 
-func TestSwapOne(t *testing.T) {
+func TestKeeper_SwapOne(t *testing.T) {
 	ctx, app := test.CreateTestAppClp(false)
 	signer := test.GenerateAddress(test.AddressKey1)
 	//Parameters for create pool
@@ -246,7 +246,7 @@ func TestSwapOne(t *testing.T) {
 	assert.Equal(t, priceImpact.String(), "0")
 }
 
-func TestSetInputs(t *testing.T) {
+func TestKeeper_SetInputs(t *testing.T) {
 	ctx, app := test.CreateTestAppClp(false)
 	signer := test.GenerateAddress(test.AddressKey1)
 	//Parameters for create pool
@@ -266,7 +266,7 @@ func TestSetInputs(t *testing.T) {
 	assert.Equal(t, toRowan, false)
 }
 
-func TestGetSwapFee(t *testing.T) {
+func TestKeeper_GetSwapFee(t *testing.T) {
 	ctx, app := test.CreateTestAppClp(false)
 	signer := test.GenerateAddress(test.AddressKey1)
 	//Parameters for create pool
