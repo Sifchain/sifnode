@@ -52,7 +52,7 @@ func (k keeper) AddTokenMetadata(ctx sdk.Context, metadata types.TokenMetadata) 
 
 	entry := k.GetDenom(ctx, denomHash)
 
-	if entry.IsWhitelisted {
+	if !entry.IsWhitelisted {
 		entry.Decimals = metadata.Decimals
 		entry.DisplayName = metadata.Name
 		entry.DisplaySymbol = metadata.Symbol

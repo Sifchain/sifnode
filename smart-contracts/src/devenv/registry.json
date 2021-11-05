@@ -14,13 +14,12 @@
       "address": "0x00000000000000000000",
       "external_symbol": "",
       "transfer_limit": "",
-      "permissions": [
-      ],
+      "permissions": [],
       "unit_denom": "",
       "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
     },
-    
+
     {
       "is_whitelisted": true,
       "decimals": "18",
@@ -29,14 +28,13 @@
       "path": "",
       "ibc_channel_id": "",
       "ibc_counterparty_channel_id": "",
-      "display_name": "",
-      "display_symbol": "",
-      "network": "NETWORK_DESCRIPTOR_UNSPECIFIED",
+      "display_name": "Ethereum",
+      "display_symbol": "ETH",
+      "network": "NETWORK_DESCRIPTOR_HARDHAT",
       "address": "0x00000000000000000000",
       "external_symbol": "",
       "transfer_limit": "",
-      "permissions": [
-      ],
+      "permissions": [],
       "unit_denom": "",
       "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
