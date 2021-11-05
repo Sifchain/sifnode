@@ -153,6 +153,15 @@ func TestKeeper_FinalizeSwap(t *testing.T) {
 	if err != nil {
 		fmt.Println("Error Generating new pool :", err)
 	}
+	externalCoin = sdk.NewCoin(assetDash.Symbol, sdk.Int(sdk.NewUint(10000)))
+	nativeCoin = sdk.NewCoin(types.NativeSymbol, sdk.Int(sdk.NewUint(10000)))
+	_ = app.ClpKeeper.GetBankKeeper().AddCoins(ctx, signer, sdk.NewCoins(externalCoin, nativeCoin))
+	msgCreatePool = types.NewMsgCreatePool(signer, assetDash, nativeAssetAmount, externalAssetAmount)
+	// Create Pool
+	pool, err = app.ClpKeeper.CreatePool(ctx, sdk.NewUint(1), &msgCreatePool)
+	if err != nil {
+		fmt.Println("Error Generating new pool :", err)
+	}
 	// Test Parameters for swap
 	// initialBalance: Initial account balance for all assets created.
 	initialBalance := sdk.NewUintFromString("1000000000000000000000")
@@ -161,7 +170,7 @@ func TestKeeper_FinalizeSwap(t *testing.T) {
 	externalCoin2 := sdk.NewCoin("dash", sdk.Int(initialBalance))
 	// Signer is given ETH and RWN (Signer will creat pool and become LP)
 	_ = app.ClpKeeper.GetBankKeeper().AddCoins(ctx, signer, sdk.NewCoins(externalCoin1, nativeCoin))
-	_ = app.ClpKeeper.GetBankKeeper().AddCoins(ctx, signer, sdk.NewCoins(externalCoin2))
+	_ = app.ClpKeeper.GetBankKeeper().AddCoins(ctx, signer, sdk.NewCoins(externalCoin2, nativeCoin))
 	msg := types.NewMsgSwap(signer, assetEth, assetDash, sdk.NewUint(1), sdk.NewUint(10))
 	err = app.ClpKeeper.FinalizeSwap(ctx, "1", *pool, msg)
 	require.NoError(t, err)
