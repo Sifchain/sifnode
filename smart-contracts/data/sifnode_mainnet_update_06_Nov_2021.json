@@ -1,0 +1,142 @@
+[
+  {
+    "decimals": 18,
+    "denom": "cmim",
+    "base_denom": "cmim",
+    "path": "",
+    "ibc_channel_id": "",
+    "ibc_counterparty_channel_id": "",
+    "display_name": "",
+    "display_symbol": "",
+    "network": "",
+    "address": "",
+    "external_symbol": "",
+    "transfer_limit": "",
+    "permissions": [
+      "CLP"
+    ],
+    "unit_denom": "",
+    "ibc_counterparty_denom": "",
+    "ibc_counterparty_chain_id": ""
+  },
+  {
+    "decimals": 18,
+    "denom": "cstnd",
+    "base_denom": "cstnd",
+    "path": "",
+    "ibc_channel_id": "",
+    "ibc_counterparty_channel_id": "",
+    "display_name": "",
+    "display_symbol": "",
+    "network": "",
+    "address": "",
+    "external_symbol": "",
+    "transfer_limit": "",
+    "permissions": [
+      "CLP"
+    ],
+    "unit_denom": "",
+    "ibc_counterparty_denom": "",
+    "ibc_counterparty_chain_id": ""
+  },
+  {
+    "decimals": 18,
+    "denom": "cbzn",
+    "base_denom": "cbzn",
+    "path": "",
+    "ibc_channel_id": "",
+    "ibc_counterparty_channel_id": "",
+    "display_name": "",
+    "display_symbol": "",
+    "network": "",
+    "address": "",
+    "external_symbol": "",
+    "transfer_limit": "",
+    "permissions": [
+      "CLP"
+    ],
+    "unit_denom": "",
+    "ibc_counterparty_denom": "",
+    "ibc_counterparty_chain_id": ""
+  },
+  {
+    "decimals": 18,
+    "denom": "cwoo",
+    "base_denom": "cwoo",
+    "path": "",
+    "ibc_channel_id": "",
+    "ibc_counterparty_channel_id": "",
+    "display_name": "",
+    "display_symbol": "",
+    "network": "",
+    "address": "",
+    "external_symbol": "",
+    "transfer_limit": "",
+    "permissions": [
+      "CLP"
+    ],
+    "unit_denom": "",
+    "ibc_counterparty_denom": "",
+    "ibc_counterparty_chain_id": ""
+  },
+  {
+    "decimals": 18,
+    "denom": "csuper",
+    "base_denom": "csuper",
+    "path": "",
+    "ibc_channel_id": "",
+    "ibc_counterparty_channel_id": "",
+    "display_name": "",
+    "display_symbol": "",
+    "network": "",
+    "address": "",
+    "external_symbol": "",
+    "transfer_limit": "",
+    "permissions": [
+      "CLP"
+    ],
+    "unit_denom": "",
+    "ibc_counterparty_denom": "",
+    "ibc_counterparty_chain_id": ""
+  },
+  {
+    "decimals": 18,
+    "denom": "cchz",
+    "base_denom": "cchz",
+    "path": "",
+    "ibc_channel_id": "",
+    "ibc_counterparty_channel_id": "",
+    "display_name": "",
+    "display_symbol": "",
+    "network": "",
+    "address": "",
+    "external_symbol": "",
+    "transfer_limit": "",
+    "permissions": [
+      "CLP"
+    ],
+    "unit_denom": "",
+    "ibc_counterparty_denom": "",
+    "ibc_counterparty_chain_id": ""
+  },
+  {
+    "decimals": 4,
+    "denom": "ctlm",
+    "base_denom": "ctlm",
+    "path": "",
+    "ibc_channel_id": "",
+    "ibc_counterparty_channel_id": "",
+    "display_name": "",
+    "display_symbol": "",
+    "network": "",
+    "address": "",
+    "external_symbol": "",
+    "transfer_limit": "",
+    "permissions": [
+      "CLP"
+    ],
+    "unit_denom": "",
+    "ibc_counterparty_denom": "",
+    "ibc_counterparty_chain_id": ""
+  }
+]
