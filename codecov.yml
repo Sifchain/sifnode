@@ -12,9 +12,13 @@ coverage:
     # Learn more at https://docs.codecov.io/docs/commit-status
     default_rules:
       flag_coverage_not_uploaded_behavior: exclude # don't send status checks that don't have flag coverage uploaded
-    patch: off
+    patch:
+      default:
+        enabled: yes
+        target: auto
     project:
       default:
+        enabled: yes
         target: 50%
         flags:
         paths:
