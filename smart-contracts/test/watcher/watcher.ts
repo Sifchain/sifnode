@@ -10,13 +10,12 @@ import {buildDevEnvContracts, DevEnvContracts} from "../../src/contractSupport";
 import web3 from "web3";
 import * as ethereumAddress from "../../src/ethereumAddress";
 import {SifEvent, SifHeartbeat, sifwatch} from "../../src/watcher/watcher";
-import {distinct, distinctUntilChanged, lastValueFrom, Observable, scan, takeWhile} from "rxjs";
+import {distinctUntilChanged, lastValueFrom, Observable, scan, takeWhile} from "rxjs";
 import {EbRelayerEvmEvent} from "../../src/watcher/ebrelayer";
-import {isSifnodedEvent} from "../../src/watcher/sifnoded";
-import {EthereumMainnetEvent, isEthereumMainnetEvent} from "../../src/watcher/ethereumMainnet";
+import {EthereumMainnetEvent} from "../../src/watcher/ethereumMainnet";
 import {filter} from "rxjs/operators";
-import deepEqual = require("deep-equal")
 import {SignerWithAddress} from "@nomiclabs/hardhat-ethers/signers";
+import deepEqual = require("deep-equal");
 
 // The hash value for ethereum on mainnet
 const ethDenomHash = "sif5ebfaf95495ceb5a3efbd0b0c63150676ec71e023b1043c40bcaaf91c00e15b2"
@@ -54,9 +53,9 @@ enum TransactionStep {
     SawProphecyClaim = "SawProphecyClaim",
     SawEthbridgeClaimArray = "SawEthbridgeClaimArray",
     BroadcastTx = "BroadcastTx",
-    ProcessSuccessfulClaim = "ProcessSuccessfulClaim",
     CreateEthBridgeClaim = "CreateEthBridgeClaim",
     AppendValidatorToProphecy = "AppendValidatorToProphecy",
+    ProcessSuccessfulClaim = "ProcessSuccessfulClaim",
     CoinsSent = "CoinsSent",
 }
 
@@ -74,11 +73,14 @@ function isNotTerminalState(s: State) {
     return !isTerminalState(s)
 }
 
-function attachDebugPrintfs<T>(xs: Observable<T>) {
+function attachDebugPrintfs<T>(xs: Observable<T>, summary: boolean) {
     xs.subscribe({
         next: x => {
-            console.log(JSON.stringify(x))
-            // console.log(JSON.stringify(x, undefined, 2))
+            const p = x as any
+            if (summary)
+                console.log(`${p.currentHeartbeat}\t${p.transactionStep}\t${p.value?.kind}\t${p.value?.data?.kind}`)
+            else
+                console.log(JSON.stringify(x))
         },
         error: e => console.log("goterror: ", e),
         complete: () => console.log("alldone")
@@ -99,6 +101,35 @@ describe("watcher", () => {
     })
 
     it("should get the accounts from devenv")
+
+    function ensureCorrectTransition(acc: State, v: SifEvent, predecessor: TransactionStep | TransactionStep[], successor: TransactionStep): State {
+        var stepIsCorrect: boolean
+        if (Array.isArray(predecessor)) {
+            stepIsCorrect = (predecessor as string[]).indexOf(acc.transactionStep) >= 0
+        } else {
+            stepIsCorrect = predecessor === acc.transactionStep
+        }
+        if (stepIsCorrect)
+            return {
+                ...acc,
+                value: v,
+                createdAt: acc.currentHeartbeat,
+                transactionStep: successor
+            }
+        else
+            return buildFailure(acc, v, `bad transition: expected ${predecessor}, got ${acc.transactionStep} before transition to ${successor}`)
+    }
+
+    function buildFailure(acc: State, v: SifEvent, message: string): State {
+        return {
+            ...acc,
+            value: {
+                kind: "failure",
+                value: v,
+                message: message
+            }
+        }
+    }
 
     async function executeLock(contracts: DevEnvContracts, smallAmount: BigNumber, sender1: SignerWithAddress) {
         const evmRelayerEvents = sifwatch({
@@ -134,9 +165,17 @@ describe("watcher", () => {
                 case "EbRelayerEvmStateTransition":
                     switch ((v.data as any).kind) {
                         case "EthereumProphecyClaim":
-                            return {...acc, value: v, transactionStep: TransactionStep.SawProphecyClaim}
+                            return {
+                                ...acc,
+                                value: v,
+                                transactionStep: TransactionStep.SawProphecyClaim
+                            }
                         case "EthBridgeClaimArray":
-                            return {...acc, value: v, transactionStep: TransactionStep.SawEthbridgeClaimArray}
+                            return {
+                                ...acc,
+                                value: v,
+                                transactionStep: TransactionStep.SawEthbridgeClaimArray
+                            }
                         case "BroadcastTx":
                             return {...acc, value: v, transactionStep: TransactionStep.BroadcastTx}
                     }
@@ -145,21 +184,21 @@ describe("watcher", () => {
                         case "coinsSent":
                             const coins = ((v.data as any).coins as any)[0]
                             if (coins["denom"] === ethDenomHash && smallAmount.eq(coins["amount"]))
-                                return {...acc, value: v, transactionStep: TransactionStep.CoinsSent}
+                                return ensureCorrectTransition(acc, v, TransactionStep.ProcessSuccessfulClaim, TransactionStep.CoinsSent)
                             else
-                                return {
-                                    ...acc,
-                                    value: {
-                                        kind: "failure",
-                                        value: v,
-                                        message: "incorrect coins"
-                                    }
-                                }
+                                return buildFailure(acc, v, "incorrect hash or amount")
                         // TODO these steps need validation to make sure they're happing in the right order with the right data
                         case "CreateEthBridgeClaim":
-                            return {...acc, value: v, transactionStep: TransactionStep.CreateEthBridgeClaim}
+                            return ensureCorrectTransition(
+                                acc,
+                                v,
+                                [TransactionStep.BroadcastTx, TransactionStep.AppendValidatorToProphecy],
+                                TransactionStep.CreateEthBridgeClaim
+                            )
                         case "AppendValidatorToProphecy":
-                            return {...acc, value: v, transactionStep: TransactionStep.AppendValidatorToProphecy}
+                            return ensureCorrectTransition(acc, v, TransactionStep.CreateEthBridgeClaim, TransactionStep.AppendValidatorToProphecy)
+                        case "ProcessSuccessfulClaim":
+                            return ensureCorrectTransition(acc, v, TransactionStep.AppendValidatorToProphecy, TransactionStep.ProcessSuccessfulClaim)
                     }
                     return {...acc, value: v, createdAt: acc.currentHeartbeat}
                 default:
@@ -180,7 +219,7 @@ describe("watcher", () => {
 
         // attachDebugPrintfs(evmRelayerEvents)
         // attachDebugPrintfs(evmRelayerEvents.pipe(filter(isNotSifnodedEvent)))
-        attachDebugPrintfs(withoutHeartbeat)
+        attachDebugPrintfs(withoutHeartbeat, true)
 
         await contracts.bridgeBank.connect(sender1).lock(
             recipient,
@@ -192,8 +231,6 @@ describe("watcher", () => {
         )
 
         const lv = await lastValueFrom(states.pipe(takeWhile(x => x.value.kind !== "terminate")))
-
-        console.debug("lastValueIs: ", JSON.stringify(lv, undefined, 2))
 
         expect(lv.transactionStep).to.eq(TransactionStep.CoinsSent)
     }
