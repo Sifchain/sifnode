@@ -18,6 +18,9 @@ import {filter} from "rxjs/operators";
 import deepEqual = require("deep-equal")
 import {SignerWithAddress} from "@nomiclabs/hardhat-ethers/signers";
 
+// The hash value for ethereum on mainnet
+const ethDenomHash = "sif5ebfaf95495ceb5a3efbd0b0c63150676ec71e023b1043c40bcaaf91c00e15b2"
+
 chai.use(solidity)
 
 interface Failure {
@@ -141,7 +144,7 @@ describe("watcher", () => {
                     switch ((v.data as any).kind) {
                         case "coinsSent":
                             const coins = ((v.data as any).coins as any)[0]
-                            if (coins["denom"] === "sif5ebfaf95495ceb5a3efbd0b0c63150676ec71e023b1043c40bcaaf91c00e15b2" && coins["amount"] === smallAmount.toString())
+                            if (coins["denom"] === ethDenomHash && smallAmount.eq(coins["amount"]))
                                 return {...acc, value: v, transactionStep: TransactionStep.CoinsSent}
                             else
                                 return {
