@@ -67,7 +67,7 @@ func TestBasicMsgs(t *testing.T) {
 				require.Equal(t, value, valAddress.String())
 			case "ethereum_sender":
 				require.Equal(t, value, types.TestEthereumAddress)
-			case "ethereum_sender_nonce":
+			case "ethereum_sender_sequence":
 				require.Equal(t, value, strconv.Itoa(types.TestNonce))
 			case "cosmos_receiver":
 				require.Equal(t, value, types.TestAddress)
@@ -88,11 +88,6 @@ func TestBasicMsgs(t *testing.T) {
 			}
 		}
 	}
-
-	//Bad Creation
-	badCreateMsg := types.CreateTestEthMsg(t, valAddress, types.ClaimType_CLAIM_TYPE_LOCK)
-	err = badCreateMsg.ValidateBasic()
-	require.Error(t, err)
 }
 
 func TestDuplicateMsgs(t *testing.T) {
