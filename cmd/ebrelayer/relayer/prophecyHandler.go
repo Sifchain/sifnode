@@ -177,7 +177,7 @@ func (sub CosmosSub) handleBatchProphecyCompleted(
 // 3. This function returns all of the prophecies that need to be relayed from sifchain to that EVM chain
 
 // TODO add a limit of maximum of n prophecies to query for
-func GetAllProphciesCompleted(rpcServer string, networkDescriptor oracletypes.NetworkDescriptor, startGlobalNonce uint64) []*oracletypes.ProphecyInfo {
+func GetAllProphciesCompleted(rpcServer string, networkDescriptor oracletypes.NetworkDescriptor, startGlobalSequence uint64) []*oracletypes.ProphecyInfo {
 	conn, err := grpc.Dial(rpcServer)
 	if err != nil {
 		return []*oracletypes.ProphecyInfo{}
@@ -188,7 +188,7 @@ func GetAllProphciesCompleted(rpcServer string, networkDescriptor oracletypes.Ne
 	client := ethbridgetypes.NewProphciesCompletedQueryServiceClient(conn)
 	request := ethbridgetypes.ProphciesCompletedQueryRequest{
 		NetworkDescriptor: networkDescriptor,
-		GlobalNonce:       startGlobalNonce,
+		GlobalSequence:    startGlobalSequence,
 	}
 	response, err := client.Search(ctx, &request)
 	if err != nil {

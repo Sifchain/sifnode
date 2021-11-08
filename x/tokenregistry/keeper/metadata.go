@@ -45,14 +45,11 @@ func (k keeper) AddTokenMetadata(ctx sdk.Context, metadata types.TokenMetadata) 
 	denomHash := ethbridgetypes.GetDenomHash(
 		metadata.NetworkDescriptor,
 		metadata.TokenAddress,
-		metadata.Decimals,
-		metadata.Name,
-		metadata.Symbol,
 	)
 
 	entry := k.GetDenom(ctx, denomHash)
 
-	if entry.IsWhitelisted {
+	if !entry.IsWhitelisted {
 		entry.Decimals = metadata.Decimals
 		entry.DisplayName = metadata.Name
 		entry.DisplaySymbol = metadata.Symbol
@@ -62,6 +59,8 @@ func (k keeper) AddTokenMetadata(ctx sdk.Context, metadata types.TokenMetadata) 
 
 		k.SetToken(ctx, &entry)
 	}
+
+	k.Logger(ctx).Debug(ethbridgetypes.PeggyTestMarker, "kind", "AddTokenMetadata", "entry", entry)
 
 	return denomHash
 }

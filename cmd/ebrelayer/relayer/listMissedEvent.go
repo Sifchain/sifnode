@@ -115,7 +115,7 @@ func (list ListMissedCosmosEvent) ListMissedCosmosEvent(symbolTranslator *symbol
 						continue
 					}
 
-					if cosmosMsg.GlobalNonce <= lastSubmittedNonce.Uint64() {
+					if cosmosMsg.GlobalSequence <= lastSubmittedNonce.Uint64() {
 						endLoop = true
 					} else if cosmosMsg.NetworkDescriptor == list.NetworkDescriptor {
 						log.Printf("missed cosmos event: %s\n", cosmosMsg.String())

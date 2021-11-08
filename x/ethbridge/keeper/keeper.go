@@ -4,6 +4,8 @@ import (
 	"errors"
 	"fmt"
 
+	"go.uber.org/zap"
+
 	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
 	tokenregistrytypes "github.com/Sifchain/sifnode/x/tokenregistry/types"
 	"github.com/tendermint/tendermint/libs/log"
@@ -69,19 +71,17 @@ func (k Keeper) ProcessClaim(ctx sdk.Context, claim *types.EthBridgeClaim) (orac
 // ProcessSuccessfulClaim processes a claim that has just completed successfully with consensus
 func (k Keeper) ProcessSuccessfulClaim(ctx sdk.Context, claim *types.EthBridgeClaim) error {
 	logger := k.Logger(ctx)
-	tokenMetadata, ok := k.tokenRegistryKeeper.GetTokenMetadata(ctx, claim.DenomHash)
-	if !ok {
-		return fmt.Errorf("token metadata not available for %s", claim.DenomHash)
-	}
+
+	logger.Debug(types.PeggyTestMarker, "kind", "ProcessSuccessfulClaim", "claim", zap.Reflect("claim", claim))
 
 	var coins sdk.Coins
 	var err error
 	switch claim.ClaimType {
 	case types.ClaimType_CLAIM_TYPE_LOCK:
-		coins = sdk.NewCoins(sdk.NewCoin(tokenMetadata.Symbol, claim.Amount))
+		coins = sdk.NewCoins(sdk.NewCoin(claim.DenomHash, claim.Amount))
 		err = k.bankKeeper.MintCoins(ctx, types.ModuleName, coins)
 	case types.ClaimType_CLAIM_TYPE_BURN:
-		coins = sdk.NewCoins(sdk.NewCoin(tokenMetadata.Symbol, claim.Amount))
+		coins = sdk.NewCoins(sdk.NewCoin(claim.DenomHash, claim.Amount))
 		err = nil
 	default:
 		err = types.ErrInvalidClaimType
@@ -104,6 +104,8 @@ func (k Keeper) ProcessSuccessfulClaim(ctx sdk.Context, claim *types.EthBridgeCl
 	); err != nil {
 		panic(err)
 	}
+
+	ctx.Logger().Debug(types.PeggyTestMarker, "kind", "coinsSent", "claim", zap.Reflect("claim", claim), "receiverAddress", receiverAddress, "coins", coins)
 
 	return nil
 }
@@ -144,13 +146,13 @@ func (k Keeper) ProcessBurn(ctx sdk.Context,
 			return []byte{}, err
 		}
 
-		coins = sdk.NewCoins(sdk.NewCoin(tokenMetadata.Symbol, msg.Amount))
+		coins = sdk.NewCoins(sdk.NewCoin(msg.DenomHash, msg.Amount))
 
 	} else {
 		if msg.DenomHash == crossChainFeeConfig.FeeCurrency {
-			coins = sdk.NewCoins(sdk.NewCoin(crossChainFeeConfig.FeeCurrency, msg.CrosschainFee.Add(msg.Amount)))
+			coins = sdk.NewCoins(sdk.NewCoin(msg.DenomHash, msg.CrosschainFee.Add(msg.Amount)))
 		} else {
-			coins = sdk.NewCoins(sdk.NewCoin(tokenMetadata.Symbol, msg.Amount), sdk.NewCoin(crossChainFeeConfig.FeeCurrency, msg.CrosschainFee))
+			coins = sdk.NewCoins(sdk.NewCoin(msg.DenomHash, msg.Amount), sdk.NewCoin(crossChainFeeConfig.FeeCurrency, msg.CrosschainFee))
 		}
 	}
 
@@ -163,7 +165,7 @@ func (k Keeper) ProcessBurn(ctx sdk.Context,
 
 	// not burn the token if it is sifchain native token
 	if !tokenMetadata.NetworkDescriptor.IsSifchain() {
-		coins = sdk.NewCoins(sdk.NewCoin(tokenMetadata.Symbol, msg.Amount))
+		coins = sdk.NewCoins(sdk.NewCoin(msg.DenomHash, msg.Amount))
 		err = k.bankKeeper.BurnCoins(ctx, types.ModuleName, coins)
 		if err != nil {
 			logger.Error("failed to burn locked coin.",
@@ -172,7 +174,7 @@ func (k Keeper) ProcessBurn(ctx sdk.Context,
 		}
 	}
 
-	prophecyID := msg.GetProphecyID(false, senderSequence, k.GetGlobalNonce(ctx, msg.NetworkDescriptor), tokenMetadata.TokenAddress)
+	prophecyID := msg.GetProphecyID(false, senderSequence, k.GetGlobalSequence(ctx, msg.NetworkDescriptor), tokenMetadata.TokenAddress)
 	k.oracleKeeper.SetProphecyWithInitValue(ctx, prophecyID)
 
 	return prophecyID, nil
@@ -221,10 +223,10 @@ func (k Keeper) ProcessLock(ctx sdk.Context,
 			return []byte{}, err
 		}
 
-		coins = sdk.NewCoins(sdk.NewCoin(tokenMetadata.Symbol, msg.Amount))
+		coins = sdk.NewCoins(sdk.NewCoin(msg.DenomHash, msg.Amount))
 
 	} else {
-		coins = sdk.NewCoins(sdk.NewCoin(tokenMetadata.Symbol, msg.Amount), sdk.NewCoin(crossChainFeeConfig.FeeCurrency, msg.CrosschainFee))
+		coins = sdk.NewCoins(sdk.NewCoin(msg.DenomHash, msg.Amount), sdk.NewCoin(crossChainFeeConfig.FeeCurrency, msg.CrosschainFee))
 	}
 
 	err = k.bankKeeper.SendCoinsFromAccountToModule(ctx, cosmosSender, types.ModuleName, coins)
@@ -235,7 +237,7 @@ func (k Keeper) ProcessLock(ctx sdk.Context,
 		return []byte{}, err
 	}
 
-	coins = sdk.NewCoins(sdk.NewCoin(tokenMetadata.Symbol, msg.Amount))
+	coins = sdk.NewCoins(sdk.NewCoin(msg.DenomHash, msg.Amount))
 	err = k.bankKeeper.BurnCoins(ctx, types.ModuleName, coins)
 	if err != nil {
 		logger.Error("failed to burn burned coin.",
@@ -243,7 +245,7 @@ func (k Keeper) ProcessLock(ctx sdk.Context,
 		return []byte{}, err
 	}
 
-	prophecyID := msg.GetProphecyID(false, senderSequence, k.GetGlobalNonce(ctx, msg.NetworkDescriptor), tokenMetadata.TokenAddress)
+	prophecyID := msg.GetProphecyID(false, senderSequence, k.GetGlobalSequence(ctx, msg.NetworkDescriptor), tokenMetadata.TokenAddress)
 	k.oracleKeeper.SetProphecyWithInitValue(ctx, prophecyID)
 
 	return prophecyID, nil
@@ -348,9 +350,9 @@ func (k Keeper) AddTokenMetadata(ctx sdk.Context, metadata tokenregistrytypes.To
 	return k.tokenRegistryKeeper.AddTokenMetadata(ctx, metadata)
 }
 
-// GetWitnessLockBurnNonce return witness lock burn nonce from oracle keeper
-func (k Keeper) GetWitnessLockBurnNonce(ctx sdk.Context, networkDescriptor oracletypes.NetworkDescriptor, valAccount sdk.ValAddress) uint64 {
-	return k.oracleKeeper.GetWitnessLockBurnNonce(ctx, networkDescriptor, valAccount)
+// GetWitnessLockBurnSequence return witness lock burn nonce from oracle keeper
+func (k Keeper) GetWitnessLockBurnSequence(ctx sdk.Context, networkDescriptor oracletypes.NetworkDescriptor, valAccount sdk.ValAddress) uint64 {
+	return k.oracleKeeper.GetWitnessLockBurnSequence(ctx, networkDescriptor, valAccount)
 }
 
 // Exists chec if the key existed in db.

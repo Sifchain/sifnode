@@ -52,7 +52,7 @@ func (srv queryServer) CrosschainFeeConfig(ctx context.Context, req *types.Query
 	return &res, nil
 }
 
-func (srv queryServer) EthereumLockBurnNonce(ctx context.Context, req *types.QueryEthereumLockBurnNonceRequest) (*types.QueryEthereumLockBurnNonceResponse, error) {
+func (srv queryServer) EthereumLockBurnSequence(ctx context.Context, req *types.QueryEthereumLockBurnSequenceRequest) (*types.QueryEthereumLockBurnSequenceResponse, error) {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 
 	networkDescriptor := req.GetNetworkDescriptor()
@@ -64,14 +64,14 @@ func (srv queryServer) EthereumLockBurnNonce(ctx context.Context, req *types.Que
 		return nil, err
 	}
 
-	lockBurnNonce := srv.Keeper.GetEthereumLockBurnNonce(sdkCtx, networkDescriptor, address)
+	LockBurnSequence := srv.Keeper.GetEthereumLockBurnSequence(sdkCtx, networkDescriptor, address)
 
-	res := types.NewEthereumLockBurnNonceResponse(lockBurnNonce)
+	res := types.NewEthereumLockBurnSequenceResponse(LockBurnSequence)
 
 	return &res, nil
 }
 
-func (srv queryServer) WitnessLockBurnNonce(ctx context.Context, req *types.QueryWitnessLockBurnNonceRequest) (*types.QueryWitnessLockBurnNonceResponse, error) {
+func (srv queryServer) WitnessLockBurnSequence(ctx context.Context, req *types.QueryWitnessLockBurnSequenceRequest) (*types.QueryWitnessLockBurnSequenceResponse, error) {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 
 	networkDescriptor := req.GetNetworkDescriptor()
@@ -83,25 +83,22 @@ func (srv queryServer) WitnessLockBurnNonce(ctx context.Context, req *types.Quer
 		return nil, err
 	}
 
-	lockBurnNonce := srv.Keeper.GetEthereumLockBurnNonce(sdkCtx, networkDescriptor, address)
+	LockBurnSequence := srv.Keeper.GetWitnessLockBurnSequence(sdkCtx, networkDescriptor, address)
 
-	res := types.NewWitnessLockBurnNonceResponse(lockBurnNonce)
+	res := types.NewWitnessLockBurnSequenceResponse(LockBurnSequence)
 
 	return &res, nil
 }
 
-func (srv queryServer) GlocalNonceBlockNumber(ctx context.Context, req *types.QueryGlocalNonceBlockNumberRequest) (*types.QueryGlocalNonceBlockNumberResponse, error) {
+func (srv queryServer) GlobalSequenceBlockNumber(ctx context.Context, req *types.QueryGlobalSequenceBlockNumberRequest) (*types.QueryGlobalSequenceBlockNumberResponse, error) {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 
 	networkDescriptor := req.GetNetworkDescriptor()
-	globalNonce := req.GlobalNonce
+	globalSequence := req.GlobalSequence
 
-	blockNumber, err := srv.Keeper.GetGlocalNonceToBlockNumber(sdkCtx, networkDescriptor, globalNonce)
-	if err != nil {
-		return nil, err
-	}
+	blockNumber := srv.Keeper.GetGlobalSequenceToBlockNumber(sdkCtx, networkDescriptor, globalSequence)
 
-	res := types.NewGlocalNonceBlockNumberResponse(blockNumber)
+	res := types.NewGlobalSequenceBlockNumberResponse(blockNumber)
 
 	return &res, nil
 }

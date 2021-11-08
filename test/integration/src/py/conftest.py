@@ -179,6 +179,13 @@ def is_ganache(ethereum_network):
     """true if we're using ganache"""
     return not ethereum_network
 
+@pytest.fixture
+def gas_prices():
+    return "0.5rowan"
+
+@pytest.fixture
+def gas_adjustment():
+    return "1.5"
 
 # Deprecated: sifnoded accepts --gas-prices=0.5rowan along with --gas-adjustment=1.5 instead of a fixed fee.
 # Using those parameters is the best way to have the fees set robustly after the .42 upgrade.
@@ -187,7 +194,6 @@ def is_ganache(ethereum_network):
 def sifchain_fees(sifchain_fees_int):
     """returns a string suitable for passing to sifnoded"""
     return f"{sifchain_fees_int}rowan"
-
 
 # Deprecated: sifnoded accepts --gas-prices=0.5rowan along with --gas-adjustment=1.5 instead of a fixed fee.
 # Using those parameters is the best way to have the fees set robustly after the .42 upgrade.

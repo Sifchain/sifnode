@@ -3,6 +3,7 @@ package txs
 // DONTCOVER
 
 import (
+	"github.com/Sifchain/sifnode/cmd/ebrelayer/internal"
 	ethbridge "github.com/Sifchain/sifnode/x/ethbridge/types"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/tx"
@@ -24,6 +25,7 @@ func RelayToCosmos(factory tx.Factory, claims []*ethbridge.EthBridgeClaim, cliCt
 		"relay prophecies to cosmos.",
 		"claimAmount", len(claims),
 	)
+	sugaredLogger.Debugw(internal.PeggyTestMarker, "kind", "EthBridgeClaimArray", zap.Reflect("claims", claims))
 
 	for _, claim := range claims {
 		// Packages the claim as a Tendermint message
@@ -43,9 +45,8 @@ func RelayToCosmos(factory tx.Factory, claims []*ethbridge.EthBridgeClaim, cliCt
 	}
 
 	sugaredLogger.Infow("RelayToCosmos building, signing, and broadcasting", "messages", messages)
-	// TODO this WithGas isn't correct
-	// TODO we need to investigate retries
-	// TODO we need to investigate what happens when the transaction has already been completed
+	sugaredLogger.Debugw(internal.PeggyTestMarker, "kind", "BroadcastTx", zap.Reflect("messages", messages))
+
 	err := tx.BroadcastTx(
 		cliCtx,
 		factory.
@@ -65,8 +66,6 @@ func RelayToCosmos(factory tx.Factory, claims []*ethbridge.EthBridgeClaim, cliCt
 		)
 		return err
 	}
-
-	sugaredLogger.Infow("Broadcasted tx without error")
 
 	return nil
 }

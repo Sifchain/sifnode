@@ -6,12 +6,15 @@ import (
 	"strconv"
 	"strings"
 
+	"go.uber.org/zap"
+
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	gethCommon "github.com/ethereum/go-ethereum/common"
 	gethCrypto "github.com/ethereum/go-ethereum/crypto"
 	"github.com/tendermint/tendermint/libs/log"
 
+	ethbridgeTypes "github.com/Sifchain/sifnode/x/ethbridge/types"
 	"github.com/Sifchain/sifnode/x/oracle/types"
 )
 
@@ -71,19 +74,12 @@ func (k Keeper) ProcessClaim(ctx sdk.Context, networkDescriptor types.NetworkDes
 		return types.StatusText_STATUS_TEXT_UNSPECIFIED, errors.New("validator not in white list")
 	}
 
-	activeValidator := k.checkActiveValidator(ctx, valAddr)
-	if !activeValidator {
-		logger.Error("sifnode oracle keeper ProcessClaim validator not active.")
-		return types.StatusText_STATUS_TEXT_UNSPECIFIED, types.ErrInvalidValidator
-	}
-
 	if len(prophecyID) == 0 {
 		logger.Error("sifnode oracle keeper ProcessClaim wrong claim id.", "claimID", prophecyID)
 		return types.StatusText_STATUS_TEXT_UNSPECIFIED, types.ErrInvalidIdentifier
 	}
 
 	return k.AppendValidatorToProphecy(ctx, networkDescriptor, prophecyID, valAddr)
-
 }
 
 // AppendValidatorToProphecy append the validator's signature to prophecy
@@ -93,6 +89,8 @@ func (k Keeper) AppendValidatorToProphecy(ctx sdk.Context, networkDescriptor typ
 		prophecy.Id = prophecyID
 		prophecy.Status = types.StatusText_STATUS_TEXT_PENDING
 	}
+
+	ctx.Logger().Debug(ethbridgeTypes.PeggyTestMarker, "kind", "AppendValidatorToProphecy", "prophecy", zap.Reflect("prophecy", prophecy))
 
 	switch prophecy.Status {
 	case types.StatusText_STATUS_TEXT_PENDING:
@@ -122,14 +120,14 @@ func (k Keeper) AppendValidatorToProphecy(ctx sdk.Context, networkDescriptor typ
 	}
 }
 
-func (k Keeper) checkActiveValidator(ctx sdk.Context, validatorAddress sdk.ValAddress) bool {
-	validator, found := k.stakeKeeper.GetValidator(ctx, validatorAddress)
-	if !found {
-		return false
-	}
+// func (k Keeper) checkActiveValidator(ctx sdk.Context, validatorAddress sdk.ValAddress) bool {
+// 	validator, found := k.stakeKeeper.GetValidator(ctx, validatorAddress)
+// 	if !found {
+// 		return false
+// 	}
 
-	return validator.IsBonded()
-}
+// 	return validator.IsBonded()
+// }
 
 // ProcessUpdateWhiteListValidator processes the update whitelist validator from admin
 func (k Keeper) ProcessUpdateWhiteListValidator(ctx sdk.Context, networkDescriptor types.NetworkDescriptor, cosmosSender sdk.AccAddress, validator sdk.ValAddress, power uint32) error {
@@ -151,6 +149,9 @@ func (k Keeper) processCompletion(ctx sdk.Context, networkDescriptor types.Netwo
 	if voteRate >= k.consensusNeeded {
 		prophecy.Status = types.StatusText_STATUS_TEXT_SUCCESS
 	}
+
+	ctx.Logger().Debug(ethbridgeTypes.PeggyTestMarker, "kind", "processCompletion", "prophecy", zap.Reflect("prophecy", prophecy))
+
 	return prophecy
 }
 
@@ -208,9 +209,9 @@ func (k Keeper) ProcessSignProphecy(ctx sdk.Context, networkDescriptor types.Net
 		return errors.New("prophecy info not available in keeper")
 	}
 
-	// check the order of witness lock burn nonce
-	lastLockBurnNonce := k.GetWitnessLockBurnNonce(ctx, networkDescriptor, valAddr)
-	if lastLockBurnNonce != 0 && lastLockBurnNonce+1 != prophecyInfo.GlobalNonce {
+	// check the order of witness lock burn sequence
+	lastLockBurnNonce := k.GetWitnessLockBurnSequence(ctx, networkDescriptor, valAddr)
+	if lastLockBurnNonce != 0 && lastLockBurnNonce+1 != prophecyInfo.GlobalSequence {
 		return errors.New("witness node not send the signature in order")
 	}
 
@@ -226,8 +227,8 @@ func (k Keeper) ProcessSignProphecy(ctx sdk.Context, networkDescriptor types.Net
 		return err
 	}
 
-	// update witness's lock burn nonce
-	k.SetWitnessLockBurnNonce(ctx, networkDescriptor, valAddr, prophecyInfo.GlobalNonce)
+	// update witness's lock burn sequence
+	k.SetWitnessLockBurnNonce(ctx, networkDescriptor, valAddr, prophecyInfo.GlobalSequence)
 
 	// emit the event when status from pending to success
 	// old = unspecified, new = pending  the prophecy just created, not emit the event
@@ -247,7 +248,7 @@ func (k Keeper) ProcessSignProphecy(ctx sdk.Context, networkDescriptor types.Net
 				sdk.NewAttribute(types.AttributeKeyTokenContractAddress, tokenAddress),
 				sdk.NewAttribute(types.AttributeKeyAmount, strconv.FormatInt(prophecyInfo.TokenAmount.Int64(), 10)),
 				sdk.NewAttribute(types.AttributeKeyDoublePeggy, strconv.FormatBool(prophecyInfo.DoublePeg)),
-				sdk.NewAttribute(types.AttributeKeyGlobalNonce, strconv.FormatInt(int64(prophecyInfo.GlobalNonce), 10)),
+				sdk.NewAttribute(types.AttributeKeyGlobalNonce, strconv.FormatInt(int64(prophecyInfo.GlobalSequence), 10)),
 				sdk.NewAttribute(types.AttributeKeycrossChainFee, strconv.FormatInt(prophecyInfo.CrosschainFee.Int64(), 10)),
 				sdk.NewAttribute(types.AttributeKeySignatures, strings.Join(prophecyInfo.Signatures, ",")),
 				sdk.NewAttribute(types.AttributeKeyEthereumAddresses, strings.Join(prophecyInfo.EthereumAddress, ",")),

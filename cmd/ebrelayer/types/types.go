@@ -128,21 +128,21 @@ func (p ProphecyClaimEvent) String() string {
 type CosmosMsg struct {
 	NetworkDescriptor oracle.NetworkDescriptor
 	ProphecyID        []byte
-	GlobalNonce       uint64
+	GlobalSequence    uint64
 }
 
 // NewCosmosMsg creates a new CosmosMsg
-func NewCosmosMsg(networkDescriptor oracle.NetworkDescriptor, prophecyID []byte, globalNonce uint64) CosmosMsg {
+func NewCosmosMsg(networkDescriptor oracle.NetworkDescriptor, prophecyID []byte, globalSequence uint64) CosmosMsg {
 	return CosmosMsg{
 		NetworkDescriptor: networkDescriptor,
 		ProphecyID:        prophecyID,
-		GlobalNonce:       globalNonce,
+		GlobalSequence:    globalSequence,
 	}
 }
 
 // String implements fmt.Stringer
 func (c CosmosMsg) String() string {
-	return fmt.Sprintf("\nNetwork id: %v\nProphecy ID: %v\nGlobal nonce: %v\n", c.NetworkDescriptor.String(), c.ProphecyID, c.GlobalNonce)
+	return fmt.Sprintf("\nNetwork id: %v\nProphecy ID: %v\nGlobal sequence: %v\n", c.NetworkDescriptor.String(), c.ProphecyID, c.GlobalSequence)
 }
 
 // CosmosMsgAttributeKey enum containing supported attribute keys
@@ -163,8 +163,8 @@ const (
 	Symbol
 	// EthereumSender is ethereum sender address
 	EthereumSender
-	// EthereumSenderNonce is ethereum sender nonce
-	EthereumSenderNonce
+	// EthereumSenderSequence is ethereum lock burn sequence
+	EthereumSenderSequence
 	// NetworkDescriptor is different blockchain identity
 	NetworkDescriptor
 	// EthereumAddresses all relayer's ethereum addresses
@@ -175,8 +175,8 @@ const (
 	ProphecyID
 	// DoublePeg indicates if the token is double pegged
 	DoublePeg
-	// GlobalNonce an increment value for lock/burn
-	GlobalNonce
+	// GlobalSequence an increment value for lock/burn
+	GlobalSequence
 )
 
 // String returns the event type as a string
@@ -186,20 +186,20 @@ func (d CosmosMsgAttributeKey) String() string {
 		"cosmos_sender_sequence",
 		"ethereum_receiver", "amount",
 		"symbol", "ethereum_sender",
-		"ethereum_sender_nonce",
+		"ethereum_sender_sequence",
 		"network_id",
 		"ethereum_addresses",
 		"signatures",
 		"prophecy_id",
 		"double_peg",
-		"global_nonce"}[d]
+		"global_sequence"}[d]
 }
 
 // EthereumBridgeClaim for store the EventTypeCreateClaim from cosmos
 type EthereumBridgeClaim struct {
 	EthereumSender common.Address
 	CosmosSender   sdk.ValAddress
-	Nonce          sdk.Int
+	Sequence       sdk.Int
 }
 
 // ProphecyClaimUnique for data part of ProphecyClaim transaction in Ethereum
@@ -223,7 +223,7 @@ type ProphecyInfo struct {
 	EthereumReceiver        string
 	TokenSymbol             string
 	CosmosSenderSequence    uint64
-	GlobalNonce             uint64
+	GlobalSequence          uint64
 	NetworkDescriptor       oracle.NetworkDescriptor
 	DoublePeg               bool
 }

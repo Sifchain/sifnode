@@ -67,7 +67,7 @@ func TestBasicMsgs(t *testing.T) {
 				require.Equal(t, value, valAddress.String())
 			case "ethereum_sender":
 				require.Equal(t, value, types.TestEthereumAddress)
-			case "ethereum_sender_nonce":
+			case "ethereum_sender_sequence":
 				require.Equal(t, value, strconv.Itoa(types.TestNonce))
 			case "cosmos_receiver":
 				require.Equal(t, value, types.TestAddress)
@@ -88,12 +88,6 @@ func TestBasicMsgs(t *testing.T) {
 			}
 		}
 	}
-
-	//Bad Creation
-	badCreateMsg := types.CreateTestEthMsg(t, valAddress, types.ClaimType_CLAIM_TYPE_LOCK)
-	badCreateMsg.EthBridgeClaim.Nonce = -1
-	err = badCreateMsg.ValidateBasic()
-	require.Error(t, err)
 }
 
 func TestDuplicateMsgs(t *testing.T) {
@@ -583,9 +577,13 @@ func TestUpdateWhiteListValidator(t *testing.T) {
 
 func TestSetCrossChainFeeMsg(t *testing.T) {
 	ctx, _, _, accountKeeper, handler, _, oracleKeeper := CreateTestHandler(t, 0.5, []int64{5})
+	feeCurrencyGas := sdk.NewInt(1)
+	minimumLockCost := sdk.NewInt(1)
+	minimumBurnCost := sdk.NewInt(1)
 
 	testSetAtiveTokenMsg := types.CreateTestSetCrossChainFeeMsg(
-		t, types.TestAddress, oracletypes.NetworkDescriptor_NETWORK_DESCRIPTOR_ETHEREUM, "ceth")
+		t, types.TestAddress, oracletypes.NetworkDescriptor_NETWORK_DESCRIPTOR_ETHEREUM, "ceth",
+		feeCurrencyGas, minimumLockCost, minimumBurnCost)
 
 	cosmosSender, err := sdk.AccAddressFromBech32(types.TestAddress)
 	require.NoError(t, err)

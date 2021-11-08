@@ -22,3 +22,8 @@ func RegisterInterfaces(registry cdctypes.InterfaceRegistry) {
 
 	msgservice.RegisterMsgServiceDesc(registry, &_Msg_serviceDesc)
 }
+
+const (
+	// Used in debugging logging statements for logs that are interesting for the Peggy test environment
+	PeggyTestMarker = "peggytest"
+)

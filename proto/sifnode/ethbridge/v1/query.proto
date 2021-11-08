@@ -15,17 +15,17 @@ service Query {
   // CrosschainFeeConfig queries crosschain fee config for a network
   rpc CrosschainFeeConfig(QueryCrosschainFeeConfigRequest)
       returns (QueryCrosschainFeeConfigResponse) {}
-  // EthereumLockBurnNonce query ethereum lock burn nonce for a relayer in a
+  // EthereumLockBurnSequence query ethereum lock burn sequence for a relayer in
+  // a network
+  rpc EthereumLockBurnSequence(QueryEthereumLockBurnSequenceRequest)
+      returns (QueryEthereumLockBurnSequenceResponse) {}
+  // WitnessLockBurnSequence query witness lock burn sequence for a relayer in a
   // network
-  rpc EthereumLockBurnNonce(QueryEthereumLockBurnNonceRequest)
-      returns (QueryEthereumLockBurnNonceResponse) {}
-  // WitnessLockBurnNonce query witness lock burn nonce for a relayer in a
-  // network
-  rpc WitnessLockBurnNonce(QueryWitnessLockBurnNonceRequest)
-      returns (QueryWitnessLockBurnNonceResponse) {}
-  // GlocalNonceBlockNumber query block number for a global nonce
-  rpc GlocalNonceBlockNumber(QueryGlocalNonceBlockNumberRequest)
-      returns (QueryGlocalNonceBlockNumberResponse) {}
+  rpc WitnessLockBurnSequence(QueryWitnessLockBurnSequenceRequest)
+      returns (QueryWitnessLockBurnSequenceResponse) {}
+  // GlobalSequenceBlockNumber query block number for a global sequence
+  rpc GlobalSequenceBlockNumber(QueryGlobalSequenceBlockNumberRequest)
+      returns (QueryGlobalSequenceBlockNumberResponse) {}
 }
 
 // QueryEthProphecyRequest payload for EthProphecy rpc query
@@ -49,7 +49,8 @@ message QueryCrosschainFeeConfigResponse {
 }
 
 service ProphciesCompletedQueryService {
-  // Prophecies Completed Query Service to fetch prophecy info from global nonce
+  // Prophecies Completed Query Service to fetch prophecy info from global
+  // sequence
   rpc Search(ProphciesCompletedQueryRequest)
       returns (ProphciesCompletedQueryResponse) {}
 }
@@ -57,7 +58,7 @@ service ProphciesCompletedQueryService {
 // query
 message ProphciesCompletedQueryRequest {
   sifnode.oracle.v1.NetworkDescriptor network_descriptor = 1;
-  uint64 global_nonce = 2;
+  uint64 global_sequence = 2;
 }
 
 // QueryCrosschainFeeConfigResponse payload for ProphciesCompletedQueryResponse
@@ -66,34 +67,36 @@ message ProphciesCompletedQueryResponse {
   repeated sifnode.oracle.v1.ProphecyInfo prophecy_info = 1;
 }
 
-// QueryEthereumLockBurnNonceRequest payload for EthereumLockBurnNonce rpc query
-message QueryEthereumLockBurnNonceRequest {
-  sifnode.oracle.v1.NetworkDescriptor network_descriptor = 1;
-  string relayer_val_address = 2;
-}
-
-// QueryEthereumLockBurnNonceResponse return EthereumLockBurnNonce
-message QueryEthereumLockBurnNonceResponse {
-  uint64 ethereum_lock_burn_nonce = 1;
-}
-
-// QueryWitnessLockBurnNonceRequest payload for WitnessLockBurnNonce rpc query
-message QueryWitnessLockBurnNonceRequest {
-  sifnode.oracle.v1.NetworkDescriptor network_descriptor = 1;
-  string relayer_val_address = 2;
-}
-
-// QueryWitnessLockBurnNonceResponse return WitnessLockBurnNonce
-message QueryWitnessLockBurnNonceResponse {
-  uint64 witness_lock_burn_nonce = 1;
-}
-
-// QueryGlocalNonceBlockNumberRequest payload for GlocalNonceBlockNumber rpc
+// QueryEthereumLockBurnSequenceRequest payload for EthereumLockBurnSequence rpc
 // query
-message QueryGlocalNonceBlockNumberRequest {
+message QueryEthereumLockBurnSequenceRequest {
   sifnode.oracle.v1.NetworkDescriptor network_descriptor = 1;
-  uint64 global_nonce = 2;
+  string relayer_val_address = 2;
 }
 
-// QueryGlocalNonceBlockNumberResponse return GlocalNonceBlockNumber
-message QueryGlocalNonceBlockNumberResponse { uint64 block_number = 1; }
+// QueryEthereumLockBurnSequenceResponse return EthereumLockBurnSequence
+message QueryEthereumLockBurnSequenceResponse {
+  uint64 ethereum_lock_burn_sequence = 1;
+}
+
+// QueryWitnessLockBurnSequenceRequest payload for WitnessLockBurnSequence rpc
+// query
+message QueryWitnessLockBurnSequenceRequest {
+  sifnode.oracle.v1.NetworkDescriptor network_descriptor = 1;
+  string relayer_val_address = 2;
+}
+
+// QueryWitnessLockBurnSequenceResponse return WitnessLockBurnSequence
+message QueryWitnessLockBurnSequenceResponse {
+  uint64 witness_lock_burn_sequence = 1;
+}
+
+// QueryGlobalSequenceBlockNumberRequest payload for GlobalsequenceBlockNumber
+// rpc query
+message QueryGlobalSequenceBlockNumberRequest {
+  sifnode.oracle.v1.NetworkDescriptor network_descriptor = 1;
+  uint64 global_sequence = 2;
+}
+
+// QueryGlobalSequenceBlockNumberResponse return GlobalsequenceBlockNumber
+message QueryGlobalSequenceBlockNumberResponse { uint64 block_number = 1; }

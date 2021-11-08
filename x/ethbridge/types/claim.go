@@ -17,7 +17,7 @@ import (
 func NewEthBridgeClaim(
 	networkDescriptor oracletypes.NetworkDescriptor,
 	bridgeContract EthereumAddress,
-	nonce int64,
+	ethereumLockBurnSequence uint64,
 	symbol string,
 	tokenContract EthereumAddress,
 	ethereumSender EthereumAddress,
@@ -28,21 +28,21 @@ func NewEthBridgeClaim(
 	tokenName string,
 	decimals uint8,
 ) *EthBridgeClaim {
-	denomHash := GetDenomHash(networkDescriptor, tokenContract.String(), int64(decimals), tokenName, symbol)
+	denomHash := GetDenomHash(networkDescriptor, tokenContract.String())
 	return &EthBridgeClaim{
-		NetworkDescriptor:     networkDescriptor,
-		BridgeContractAddress: bridgeContract.String(),
-		Nonce:                 nonce,
-		Symbol:                symbol,
-		TokenContractAddress:  tokenContract.String(),
-		EthereumSender:        ethereumSender.String(),
-		CosmosReceiver:        cosmosReceiver.String(),
-		ValidatorAddress:      validator.String(),
-		Amount:                amount,
-		ClaimType:             claimType,
-		TokenName:             tokenName,
-		Decimals:              int64(decimals),
-		DenomHash:             denomHash,
+		NetworkDescriptor:        networkDescriptor,
+		BridgeContractAddress:    bridgeContract.String(),
+		EthereumLockBurnSequence: ethereumLockBurnSequence,
+		Symbol:                   symbol,
+		TokenContractAddress:     tokenContract.String(),
+		EthereumSender:           ethereumSender.String(),
+		CosmosReceiver:           cosmosReceiver.String(),
+		ValidatorAddress:         validator.String(),
+		Amount:                   amount,
+		ClaimType:                claimType,
+		TokenName:                tokenName,
+		Decimals:                 int64(decimals),
+		DenomHash:                denomHash,
 	}
 }
 
@@ -51,7 +51,7 @@ func (claim *EthBridgeClaim) GetProphecyID() []byte {
 	allContentString := fmt.Sprintf("%s%s%s%s%s%s%s%s%s%s%s%s",
 		claim.NetworkDescriptor.String(),
 		claim.BridgeContractAddress,
-		strconv.Itoa(int(claim.Nonce)),
+		strconv.Itoa(int(claim.EthereumLockBurnSequence)),
 		claim.Symbol,
 		claim.TokenContractAddress,
 		claim.EthereumSender,
@@ -71,9 +71,6 @@ func (claim *EthBridgeClaim) GetProphecyID() []byte {
 func GetDenomHash(
 	networkDescriptor oracletypes.NetworkDescriptor,
 	tokenContractAddress string,
-	decimals int64,
-	tokenName string,
-	symbol string,
 ) string {
 	/**
 	  * Metadata Denom Naming Convention:
@@ -93,13 +90,10 @@ func GetDenomHash(
 	  *					sife0d5240024941c95aa2ca714f4d798f81f36da2cb8ed0c2318970c12b4acca1f
 	  *
 	**/
-	// "{Network Descriptor}{ERC20 Token Address}{Decimals}{Token Name}{Token Symbol}"
-	denomHashedString := fmt.Sprintf("%d%s%d%s%s",
+	// "{Network Descriptor}{ERC20 Token Address}"
+	denomHashedString := fmt.Sprintf("%d%s",
 		networkDescriptor,
 		strings.ToLower(tokenContractAddress),
-		decimals,
-		strings.ToLower(tokenName),
-		strings.ToLower(symbol),
 	)
 
 	rawDenomHash := sha256.Sum256([]byte(denomHashedString))

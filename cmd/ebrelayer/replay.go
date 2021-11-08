@@ -51,7 +51,7 @@ func RunReplayEthereumCmd(cmd *cobra.Command, args []string) error {
 	sugaredLogger := logger.Sugar()
 
 	ethSub := relayer.NewEthereumSub(cliContext, tendermintNode, validatorMoniker, web3Provider,
-		contractAddress, nil, sugaredLogger)
+		contractAddress, sugaredLogger)
 
 	txFactory := tx.NewFactoryCLI(cliContext, cmd.Flags())
 	ethSub.Replay(txFactory, symbolTranslator)

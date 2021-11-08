@@ -2,16 +2,15 @@ package keeper
 
 import (
 	"encoding/binary"
-	"errors"
 
 	"github.com/Sifchain/sifnode/x/ethbridge/types"
 	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-// GetGlobalNonce get current global nonce and update it
-func (k Keeper) GetGlobalNonce(ctx sdk.Context, networkDescriptor oracletypes.NetworkDescriptor) uint64 {
-	prefix := k.GetGlobalNoncePrefix(ctx, networkDescriptor)
+// GetGlobalSequence get current global nonce and update it
+func (k Keeper) GetGlobalSequence(ctx sdk.Context, networkDescriptor oracletypes.NetworkDescriptor) uint64 {
+	prefix := k.GetGlobalSequencePrefix(ctx, networkDescriptor)
 	store := ctx.KVStore(k.storeKey)
 
 	if !k.ExistsGlobalNonce(ctx, prefix) {
@@ -25,14 +24,14 @@ func (k Keeper) GetGlobalNonce(ctx sdk.Context, networkDescriptor oracletypes.Ne
 	return globalNonce
 }
 
-// UpdateGlobalNonce get current global nonce and update it
-func (k Keeper) UpdateGlobalNonce(ctx sdk.Context,
+// UpdateGlobalSequence get current global nonce and update it
+func (k Keeper) UpdateGlobalSequence(ctx sdk.Context,
 	networkDescriptor oracletypes.NetworkDescriptor,
 	blockNumber uint64) {
-	prefix := k.GetGlobalNoncePrefix(ctx, networkDescriptor)
+	prefix := k.GetGlobalSequencePrefix(ctx, networkDescriptor)
 	store := ctx.KVStore(k.storeKey)
 
-	globalNonce := k.GetGlobalNonce(ctx, networkDescriptor)
+	globalNonce := k.GetGlobalSequence(ctx, networkDescriptor)
 
 	bs := make([]byte, 8)
 	binary.LittleEndian.PutUint64(bs, globalNonce+1)
@@ -48,29 +47,29 @@ func (k Keeper) ExistsGlobalNonce(ctx sdk.Context, prefix []byte) bool {
 	return true
 }
 
-// GetGlobalNoncePrefix compute the prefix
-func (k Keeper) GetGlobalNoncePrefix(ctx sdk.Context, networkDescriptor oracletypes.NetworkDescriptor) []byte {
+// GetGlobalSequencePrefix compute the prefix
+func (k Keeper) GetGlobalSequencePrefix(ctx sdk.Context, networkDescriptor oracletypes.NetworkDescriptor) []byte {
 	bs := make([]byte, 4)
 	binary.LittleEndian.PutUint32(bs, uint32(networkDescriptor))
 
 	return append(types.GlobalNoncePrefix, bs[:]...)
 }
 
-// GetGlobalNonceToBlockNumber
-func (k Keeper) GetGlocalNonceToBlockNumber(
+// GetGlobalSequenceToBlockNumber
+func (k Keeper) GetGlobalSequenceToBlockNumber(
 	ctx sdk.Context,
 	networkDescriptor oracletypes.NetworkDescriptor,
-	globalNonce uint64) (uint64, error) {
+	globalNonce uint64) uint64 {
 
 	store := ctx.KVStore(k.storeKey)
-	prefix := k.GetGlobalNonceToBlockNumberPrefix(ctx, networkDescriptor, globalNonce)
+	prefix := k.GetGlobalSequenceToBlockNumberPrefix(ctx, networkDescriptor, globalNonce)
 
 	if !k.ExistsGlobalNonce(ctx, prefix) {
-		return uint64(0), errors.New("block number not stored")
+		return uint64(0)
 	}
 
 	value := store.Get(prefix)
-	return binary.LittleEndian.Uint64(value), nil
+	return binary.LittleEndian.Uint64(value)
 }
 
 // SetGlobalNonceToBlockNumber
@@ -81,7 +80,7 @@ func (k Keeper) SetGlobalNonceToBlockNumber(
 	blockNumber uint64) {
 
 	store := ctx.KVStore(k.storeKey)
-	prefix := k.GetGlobalNonceToBlockNumberPrefix(ctx, networkDescriptor, globalNonce)
+	prefix := k.GetGlobalSequenceToBlockNumberPrefix(ctx, networkDescriptor, globalNonce)
 
 	bs := make([]byte, 8)
 	binary.LittleEndian.PutUint64(bs, blockNumber)
@@ -89,8 +88,8 @@ func (k Keeper) SetGlobalNonceToBlockNumber(
 	store.Set(prefix, bs)
 }
 
-// GetGlobalNonceToBlockNumberPrefix
-func (k Keeper) GetGlobalNonceToBlockNumberPrefix(ctx sdk.Context, networkDescriptor oracletypes.NetworkDescriptor, globalNonce uint64) []byte {
+// GetGlobalSequenceToBlockNumberPrefix
+func (k Keeper) GetGlobalSequenceToBlockNumberPrefix(ctx sdk.Context, networkDescriptor oracletypes.NetworkDescriptor, globalNonce uint64) []byte {
 	bs := make([]byte, 4)
 	binary.LittleEndian.PutUint32(bs, uint32(networkDescriptor))
 	tmpKey := append(types.GlobalNonceToBlockNumberPrefix, bs[:]...)

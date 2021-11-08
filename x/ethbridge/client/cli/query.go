@@ -91,12 +91,12 @@ func GetEthereumLockBurnNonce() *cobra.Command {
 
 			queryClient := types.NewQueryClient(clientCtx)
 
-			req := &types.QueryEthereumLockBurnNonceRequest{
+			req := &types.QueryEthereumLockBurnSequenceRequest{
 				NetworkDescriptor: oracletypes.NetworkDescriptor(networkDescriptor),
 				RelayerValAddress: args[1],
 			}
 
-			res, err := queryClient.EthereumLockBurnNonce(context.Background(), req)
+			res, err := queryClient.EthereumLockBurnSequence(context.Background(), req)
 			if err != nil {
 				return err
 			}
@@ -106,8 +106,8 @@ func GetEthereumLockBurnNonce() *cobra.Command {
 	}
 }
 
-// GetWitnessLockBurnNonce queries lock burn nonce for a relayer
-func GetWitnessLockBurnNonce() *cobra.Command {
+// GetWitnessLockBurnSequence queries lock burn nonce for a relayer
+func GetWitnessLockBurnSequence() *cobra.Command {
 	return &cobra.Command{
 		Use:   `witness-lock-burn-nonce [network-descriptor] [val-address]`,
 		Short: "Query witness-lock-burn-nonce",
@@ -125,12 +125,12 @@ func GetWitnessLockBurnNonce() *cobra.Command {
 
 			queryClient := types.NewQueryClient(clientCtx)
 
-			req := &types.QueryWitnessLockBurnNonceRequest{
+			req := &types.QueryWitnessLockBurnSequenceRequest{
 				NetworkDescriptor: oracletypes.NetworkDescriptor(networkDescriptor),
 				RelayerValAddress: args[1],
 			}
 
-			res, err := queryClient.WitnessLockBurnNonce(context.Background(), req)
+			res, err := queryClient.WitnessLockBurnSequence(context.Background(), req)
 			if err != nil {
 				return err
 			}
@@ -140,8 +140,8 @@ func GetWitnessLockBurnNonce() *cobra.Command {
 	}
 }
 
-// GetGlocalNonceBlockNumber queries block number for global nonce
-func GetGlocalNonceBlockNumber() *cobra.Command {
+// GetGlobalSequenceBlockNumber queries block number for global nonce
+func GetGlobalSequenceBlockNumber() *cobra.Command {
 	return &cobra.Command{
 		Use:   `global-nonce-block-number [network-descriptor] [global-nonce]`,
 		Short: "Query global-nonce-block-number",
@@ -157,19 +157,19 @@ func GetGlocalNonceBlockNumber() *cobra.Command {
 				return err
 			}
 
-			globalNonce, err := strconv.Atoi(args[1])
+			globalSequence, err := strconv.Atoi(args[1])
 			if err != nil {
 				return err
 			}
 
 			queryClient := types.NewQueryClient(clientCtx)
 
-			req := &types.QueryGlocalNonceBlockNumberRequest{
+			req := &types.QueryGlobalSequenceBlockNumberRequest{
 				NetworkDescriptor: oracletypes.NetworkDescriptor(networkDescriptor),
-				GlobalNonce:       uint64(globalNonce),
+				GlobalSequence:    uint64(globalSequence),
 			}
 
-			res, err := queryClient.GlocalNonceBlockNumber(context.Background(), req)
+			res, err := queryClient.GlobalSequenceBlockNumber(context.Background(), req)
 			if err != nil {
 				return err
 			}

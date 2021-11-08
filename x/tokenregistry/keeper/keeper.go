@@ -87,6 +87,9 @@ func (k keeper) CheckDenomPermissions(ctx sdk.Context, denom string, requiredPer
 func (k keeper) GetDenom(ctx sdk.Context, denom string) types.RegistryEntry {
 	wl := k.GetRegistry(ctx)
 
+	// TODO: This is inefficient, and potentially an attack vector. Investigate
+	// using a map instead
+	// See ticket #2065
 	for i := range wl.Entries {
 		if wl.Entries[i] != nil && strings.EqualFold(wl.Entries[i].Denom, denom) {
 			return *wl.Entries[i]
@@ -160,7 +163,7 @@ func (k keeper) Exists(ctx sdk.Context, key []byte) bool {
 
 func (k keeper) GetFirstLockDoublePeg(ctx sdk.Context, denom string, networkDescriptor oracletypes.NetworkDescriptor) bool {
 	registry := k.GetDenom(ctx, denom)
-	if result, ok := registry.DoublePeggedNetworksMap[uint32(networkDescriptor)]; ok {
+	if result, ok := registry.DoublePeggedNetworkMap[uint32(networkDescriptor)]; ok {
 		return result
 	}
 
@@ -171,7 +174,7 @@ func (k keeper) SetFirstLockDoublePeg(ctx sdk.Context, denom string, networkDesc
 	firstLockDoublePeg := k.GetFirstLockDoublePeg(ctx, denom, networkDescriptor)
 	if firstLockDoublePeg {
 		registry := k.GetDenom(ctx, denom)
-		registry.DoublePeggedNetworksMap[uint32(networkDescriptor)] = false
+		registry.DoublePeggedNetworkMap[uint32(networkDescriptor)] = false
 		k.SetToken(ctx, &registry)
 	}
 }
