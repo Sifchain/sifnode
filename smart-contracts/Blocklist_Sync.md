@@ -26,11 +26,10 @@ yarn blocklist:run
 
 ## Devnotes
 
-If you just want to test the sync, all you have to do is add this to your .env file:
+If you just want to test the sync, all you have to do is run the command
 
 ```
-USE_FORKING=1
+yarn blocklist:test
 ```
 
-Then, run the command `yarn blocklist:test`.  
 It will fork the mainnet and simulate the sync.

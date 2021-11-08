@@ -90,7 +90,7 @@
     "whitelist:run": "npx hardhat run scripts/fetchTokenDetails.js --network mainnet && npx hardhat run scripts/bulk_set_whitelist.ts --network mainnet",
     "whitelist:test": "npx hardhat run scripts/fetchTokenDetails.js --network hardhat && npx hardhat run scripts/bulk_set_whitelist.ts --network hardhat",
     "blocklist:run": "npx hardhat run scripts/sync_ofac_blocklist.js --network mainnet",
-    "blocklist:test": "npx hardhat run scripts/sync_ofac_blocklist.js --network hardhat"
+    "blocklist:test": "USE_FORKING=1 npx hardhat run scripts/sync_ofac_blocklist.js --network hardhat"
   },
   "dependencies": {
     "concurrently": "^6.2.0",
