@@ -11,7 +11,7 @@ var (
 	EventTypeSignProphecy             = "sign_prophecy"
 
 	AttributeKeyEthereumSender               = "ethereum_sender"
-	AttributeKeyEthereumSenderNonce          = "ethereum_sender_nonce"
+	AttributeKeyEthereumSenderSequence       = "ethereum_sender_sequence"
 	AttributeKeyCosmosReceiver               = "cosmos_receiver"
 	AttributeKeyAmount                       = "amount"
 	AttributeKeycrossChainFee                = "cross_chain_fee_amount"
@@ -33,7 +33,7 @@ var (
 	AttributeKeyMinimumLockCost      = "minimum_lock_cost"
 	AttributeKeyMinimumBurnCost      = "minimum_burn_cost"
 	AttributeKeyProphecyID           = "prophecy_id"
-	AttributeKeyGlobalNonce          = "global_nonce"
+	AttributeKeyGlobalSequence       = "global_sequence"
 
 	AttributeValueCategory = ModuleName
 )

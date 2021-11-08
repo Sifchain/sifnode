@@ -91,7 +91,6 @@ func TestBasicMsgs(t *testing.T) {
 
 	//Bad Creation
 	badCreateMsg := types.CreateTestEthMsg(t, valAddress, types.ClaimType_CLAIM_TYPE_LOCK)
-	badCreateMsg.EthBridgeClaim.Nonce = -1
 	err = badCreateMsg.ValidateBasic()
 	require.Error(t, err)
 }

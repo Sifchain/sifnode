@@ -14,7 +14,10 @@ message EthBridgeClaim {
   // bridge_contract_address is an EthereumAddress
   string bridge_contract_address = 2
       [ (gogoproto.moretags) = "yaml:\"bridge_contract_address\"" ];
-  int64 nonce = 3 [ (gogoproto.moretags) = "yaml:\"nonce\"" ];
+  // Lock burn nonce from bridge bank
+  uint64 ethereum_lock_burn_sequence = 3
+      [ (gogoproto.moretags) = "yaml:\"ethereum_lock_burn_sequence\"" ];
+  // token symbol
   string symbol = 4 [ (gogoproto.moretags) = "yaml:\"symbol\"" ];
   // token_contract_address is an EthereumAddress
   string token_contract_address = 5
@@ -42,9 +45,6 @@ message EthBridgeClaim {
   // Token decimals, name and symbol
   // Marked optional because messages sent by the relayer may not be hashed
   string denom_hash = 13 [ (gogoproto.moretags) = "yaml:\"denom_hash\"" ];
-  // Lock burn nonce from bridge bank
-  uint64 ethereum_lock_burn_nonce = 14
-      [ (gogoproto.moretags) = "yaml:\"ethereum_lock_burn_nonce\"" ];
 }
 
 message PeggyTokens { repeated string tokens = 1; }

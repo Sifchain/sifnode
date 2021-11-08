@@ -100,7 +100,7 @@ func InitRelayConfig(
 	}
 
 	sugaredLogger.Infow("nonce before send transaction.",
-		"transactOptsAuth.Nonce", transactOptsAuth.Nonce)
+		"transactOptsAuth.Sequence", transactOptsAuth.Nonce)
 
 	targetContract := CosmosBridge
 
@@ -139,7 +139,7 @@ func RelayProphecyCompletedToEthereum(
 		TokenAddress:         common.HexToAddress(prophecyInfo.TokenSymbol),
 		Amount:               &prophecyInfo.TokenAmount,
 		DoublePeg:            prophecyInfo.DoublePeg,
-		Nonce:                big.NewInt(int64(prophecyInfo.GlobalNonce)),
+		Nonce:                big.NewInt(int64(prophecyInfo.GlobalSequence)),
 	}
 
 	var signatureData = make([]cosmosbridge.CosmosBridgeSignatureData, len(prophecyInfo.EthereumSignerAddresses))
@@ -237,7 +237,7 @@ func RelayBatchProphecyCompletedToEthereum(
 			TokenAddress:         common.HexToAddress(prophecyInfo.TokenContractAddress),
 			Amount:               big.NewInt(prophecyInfo.TokenAmount.Int64()),
 			DoublePeg:            prophecyInfo.DoublePeg,
-			Nonce:                big.NewInt(int64(prophecyInfo.GlobalNonce)),
+			Nonce:                big.NewInt(int64(prophecyInfo.GlobalSequence)),
 		}
 		batchClaimData[index] = claimData
 

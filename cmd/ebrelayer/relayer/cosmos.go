@@ -100,14 +100,14 @@ func (sub CosmosSub) Start(txFactory tx.Factory, completionEvent *sync.WaitGroup
 			log.Println("we receive the quit signal and exit")
 			return
 		default:
-			sub.CheckNonceAndProcess(txFactory, client)
+			sub.CheckSequenceAndProcess(txFactory, client)
 			time.Sleep(time.Second * cosmosSleepDuration)
 		}
 	}
 }
 
-// CheckNonceAndProcess check the lock burn nonce and process the event
-func (sub CosmosSub) CheckNonceAndProcess(txFactory tx.Factory,
+// CheckSequenceAndProcess check the lock burn Sequence and process the event
+func (sub CosmosSub) CheckSequenceAndProcess(txFactory tx.Factory,
 	client *tmclient.HTTP) {
 
 	valAddr, err := GetValAddressFromKeyring(txFactory.Keybase(), sub.ValidatorName)
@@ -117,10 +117,10 @@ func (sub CosmosSub) CheckNonceAndProcess(txFactory tx.Factory,
 		return
 	}
 
-	// get lock burn nonce and start block number from cosmos
-	globalNonce, blockNumber, err := sub.GetGlobalNonceBlockNumberFromCosmos(sub.NetworkDescriptor, valAddr.String())
+	// get lock burn Sequence and start block number from cosmos
+	globalSequence, blockNumber, err := sub.GetGlobalSequenceBlockNumberFromCosmos(sub.NetworkDescriptor, valAddr.String())
 	if err != nil {
-		sub.SugaredLogger.Errorw("failed to get the lock burn nonce from cosmos rpc",
+		sub.SugaredLogger.Errorw("failed to get the lock burn Sequence from cosmos rpc",
 			errorMessageKey, err.Error())
 		return
 	}
@@ -138,13 +138,13 @@ func (sub CosmosSub) CheckNonceAndProcess(txFactory tx.Factory,
 		currentBlockHeight = blockNumber + maxCosmosQueryBlocks
 
 	}
-	sub.ProcessLockBurnWithScope(txFactory, client, globalNonce, blockNumber, currentBlockHeight)
+	sub.ProcessLockBurnWithScope(txFactory, client, globalSequence, blockNumber, currentBlockHeight)
 }
 
 // ProcessLockBurnWithScope scan blocks in scope and handle all burn lock events
-func (sub CosmosSub) ProcessLockBurnWithScope(txFactory tx.Factory, client *tmclient.HTTP, globalNonce, fromBlockNumber, toBlockNumber uint64) {
+func (sub CosmosSub) ProcessLockBurnWithScope(txFactory tx.Factory, client *tmclient.HTTP, globalSequence, fromBlockNumber, toBlockNumber uint64) {
 	sub.SugaredLogger.Infow("ProcessLockBurnWithScope",
-		"globalNonce", globalNonce,
+		"globalSequence", globalSequence,
 		"fromBlockNumber", fromBlockNumber,
 		"toBlockNumber", toBlockNumber)
 
@@ -189,19 +189,19 @@ func (sub CosmosSub) ProcessLockBurnWithScope(txFactory tx.Factory, client *tmcl
 					)
 
 					if cosmosMsg.NetworkDescriptor == sub.NetworkDescriptor {
-						// if global nonce is expected, sign prophecy and send back to cosmos
-						// if global nonce is less than expected, just ignore the event. it is normal to see processed nonce coexist with expected one
-						// if global nonce is larger than expected, it is wrong and we must miss something.
-						if cosmosMsg.GlobalNonce == globalNonce+1 {
+						// if global Sequence is expected, sign prophecy and send back to cosmos
+						// if global Sequence is less than expected, just ignore the event. it is normal to see processed Sequence coexist with expected one
+						// if global Sequence is larger than expected, it is wrong and we must miss something.
+						if cosmosMsg.GlobalSequence == globalSequence+1 {
 							sub.witnessSignProphecyID(txFactory, cosmosMsg)
-							// update expected global nonce
-							globalNonce++
+							// update expected global Sequence
+							globalSequence++
 
-						} else if cosmosMsg.GlobalNonce > globalNonce+1 {
+						} else if cosmosMsg.GlobalSequence > globalSequence+1 {
 							sub.SugaredLogger.Errorw(
-								"The global nonce is invalid",
-								"expected global nonce is:", globalNonce+1,
-								"global nonce from message is:", cosmosMsg.GlobalNonce,
+								"The global Sequence is invalid",
+								"expected global Sequence is:", globalSequence+1,
+								"global Sequence from message is:", cosmosMsg.GlobalSequence,
 							)
 							return
 						}
@@ -299,8 +299,8 @@ func (sub CosmosSub) witnessSignProphecyID(
 	txs.SignProphecyToCosmos(txFactory, signProphecy, sub.CliContext, sub.SugaredLogger)
 }
 
-// GetGlobalNonceBlockNumberFromCosmos get global nonce block number via rpc
-func (sub CosmosSub) GetGlobalNonceBlockNumberFromCosmos(
+// GetGlobalSequenceBlockNumberFromCosmos get global Sequence block number via rpc
+func (sub CosmosSub) GetGlobalSequenceBlockNumberFromCosmos(
 	networkDescriptor oracletypes.NetworkDescriptor,
 	relayerValAddress string) (uint64, uint64, error) {
 
@@ -313,25 +313,25 @@ func (sub CosmosSub) GetGlobalNonceBlockNumberFromCosmos(
 	defer cancel()
 	client := ethbridgetypes.NewQueryClient(conn)
 
-	request := ethbridgetypes.QueryWitnessLockBurnNonceRequest{
+	request := ethbridgetypes.QueryWitnessLockBurnSequenceRequest{
 		NetworkDescriptor: networkDescriptor,
 		RelayerValAddress: relayerValAddress,
 	}
-	response, err := client.WitnessLockBurnNonce(ctx, &request)
+	response, err := client.WitnessLockBurnSequence(ctx, &request)
 	if err != nil {
 		return 0, 0, err
 	}
-	globalNonce := response.WitnessLockBurnNonce
+	globalSequence := response.WitnessLockBurnSequence
 
-	request2 := ethbridgetypes.QueryGlocalNonceBlockNumberRequest{
+	request2 := ethbridgetypes.QueryGlobalSequenceBlockNumberRequest{
 		NetworkDescriptor: networkDescriptor,
-		GlobalNonce:       globalNonce + 1,
+		GlobalSequence:    globalSequence + 1,
 	}
 
-	response2, err := client.GlocalNonceBlockNumber(ctx, &request2)
+	response2, err := client.GlobalSequenceBlockNumber(ctx, &request2)
 	if err != nil {
 		return 0, 0, err
 	}
 
-	return globalNonce, response2.BlockNumber, nil
+	return globalSequence, response2.BlockNumber, nil
 }

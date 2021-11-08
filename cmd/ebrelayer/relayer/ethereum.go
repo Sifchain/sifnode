@@ -191,7 +191,7 @@ func (sub EthereumSub) CheckNonceAndProcess(txFactory tx.Factory,
 	endBlockHeight = endBlockHeight.Sub(currentBlockHeight, big.NewInt(trailingBlocks))
 
 	// get lock burn nonce from cosmos
-	lockBurnNonce, err := sub.GetLockBurnNonceFromCosmos(oracletypes.NetworkDescriptor(networkID.Uint64()), sub.ValidatorAddress.String())
+	lockBurnSequence, err := sub.GetLockBurnSequenceFromCosmos(oracletypes.NetworkDescriptor(networkID.Uint64()), sub.ValidatorAddress.String())
 	if err != nil {
 		sub.SugaredLogger.Errorw("failed to get the lock burn nonce from cosmos rpc",
 			errorMessageKey, err.Error())
@@ -207,7 +207,7 @@ func (sub EthereumSub) CheckNonceAndProcess(txFactory tx.Factory,
 	// add the lock burn nonce as second topic, combined search filter will be (lockTopic or burnTopic)
 	// and lockBurnNonceTopic
 	var lockBurnNonceTopic [32]byte
-	copy(lockBurnNonceTopic[:], abi.U256(big.NewInt(int64(lockBurnNonce + 1)))[:32])
+	copy(lockBurnNonceTopic[:], abi.U256(big.NewInt(int64(lockBurnSequence + 1)))[:32])
 	topics = append(topics, []common.Hash{lockBurnNonceTopic})
 
 	// query the exact block number with the lock burn nonce
@@ -247,7 +247,7 @@ func (sub EthereumSub) CheckNonceAndProcess(txFactory tx.Factory,
 		return
 	}
 
-	if event.Nonce.Uint64() != lockBurnNonce+1 {
+	if event.Nonce.Uint64() != lockBurnSequence+1 {
 		sub.SugaredLogger.Errorw("the lock burn nonce is not expected.")
 		return
 	}
@@ -301,7 +301,7 @@ func (sub EthereumSub) CheckNonceAndProcess(txFactory tx.Factory,
 		}
 
 		if len(events) > 0 {
-			if lockBurnNonce, err = sub.handleEthereumEvent(txFactory, events, symbolTranslator, lockBurnNonce); err != nil {
+			if lockBurnSequence, err = sub.handleEthereumEvent(txFactory, events, symbolTranslator, lockBurnSequence); err != nil {
 				sub.SugaredLogger.Errorw("failed to handle ethereum event.",
 					errorMessageKey, err.Error())
 				return
@@ -433,14 +433,14 @@ func (sub EthereumSub) handleEthereumEvent(txFactory tx.Factory,
 		} else {
 			// lockBurnNonce is zero, means the relayer is new one, never process event before
 			// then it start from current event and sifnode will accept it
-			if lockBurnNonce == 0 || prophecyClaim.EthereumLockBurnNonce == lockBurnNonce+1 {
+			if lockBurnNonce == 0 || prophecyClaim.EthereumLockBurnSequence == lockBurnNonce+1 {
 				prophecyClaims = append(prophecyClaims, &prophecyClaim)
 				sub.SugaredLogger.Debugw(internal.PeggyTestMarker, "kind", "EthereumProphecyClaim", zap.Reflect("event", event))
-				lockBurnNonce = prophecyClaim.EthereumLockBurnNonce
+				lockBurnNonce = prophecyClaim.EthereumLockBurnSequence
 			} else {
 				sub.SugaredLogger.Infow("lock burn nonce is not expected",
 					"nextLockBurnNonce", lockBurnNonce,
-					"prophecyClaim.EthereumLockBurnNonce", prophecyClaim.EthereumLockBurnNonce)
+					"prophecyClaim.EthereumLockBurnNonce", prophecyClaim.EthereumLockBurnSequence)
 				return lockBurnNonce, errors.New("lock burn nonce is not expected")
 			}
 
@@ -457,7 +457,7 @@ func (sub EthereumSub) handleEthereumEvent(txFactory tx.Factory,
 }
 
 // GetLockBurnNonceFromCosmos via rpc
-func (sub EthereumSub) GetLockBurnNonceFromCosmos(
+func (sub EthereumSub) GetLockBurnSequenceFromCosmos(
 	networkDescriptor oracletypes.NetworkDescriptor,
 	relayerValAddress string) (uint64, error) {
 
@@ -470,15 +470,15 @@ func (sub EthereumSub) GetLockBurnNonceFromCosmos(
 	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(cosmosSleepDuration)*time.Second*10)
 	defer cancel()
 	client := ethbridgetypes.NewQueryClient(conn)
-	request := ethbridgetypes.QueryEthereumLockBurnNonceRequest{
+	request := ethbridgetypes.QueryEthereumLockBurnSequenceRequest{
 		NetworkDescriptor: networkDescriptor,
 		RelayerValAddress: relayerValAddress,
 	}
-	response, err := client.EthereumLockBurnNonce(ctx, &request)
+	response, err := client.EthereumLockBurnSequence(ctx, &request)
 	if err != nil {
 		return 0, err
 	}
-	return response.EthereumLockBurnNonce, nil
+	return response.EthereumLockBurnSequence, nil
 }
 
 // GetValAddressFromKeyring get validator address from keyring

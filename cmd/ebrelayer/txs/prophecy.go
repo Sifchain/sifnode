@@ -25,7 +25,7 @@ func ProphecyCompletedEventToProphecyInfo(attributes []abci.EventAttribute, suga
 	var amount big.Int
 	var networkDescriptor uint32
 	var doublePeg bool
-	var globalNonce uint64
+	var globalSequence uint64
 
 	var ethereumSignerAddresses []string
 	var signatures []string
@@ -102,15 +102,15 @@ func ProphecyCompletedEventToProphecyInfo(attributes []abci.EventAttribute, suga
 			}
 			doublePeg = tmpDoublePeg
 
-		case types.GlobalNonce.String():
+		case types.GlobalSequence.String():
 			attributeNumber++
-			tempGlobalNonce, ok := sdk.NewIntFromString(val)
+			tempGlobalSequence, ok := sdk.NewIntFromString(val)
 			if !ok {
 				sugaredLogger.Errorw("Invalid global nonce", "global nonce", val)
 
 				return types.ProphecyInfo{}, errors.New("invalid amount:" + val)
 			}
-			globalNonce = tempGlobalNonce.Uint64()
+			globalSequence = tempGlobalSequence.Uint64()
 
 		case types.EthereumAddresses.String():
 			attributeNumber++
@@ -136,7 +136,7 @@ func ProphecyCompletedEventToProphecyInfo(attributes []abci.EventAttribute, suga
 		TokenSymbol:             symbol,
 		TokenAmount:             amount,
 		DoublePeg:               doublePeg,
-		GlobalNonce:             globalNonce,
+		GlobalSequence:          globalSequence,
 		EthereumSignerAddresses: ethereumSignerAddresses,
 		Signatures:              signatures,
 	}, nil

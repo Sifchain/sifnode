@@ -58,14 +58,10 @@ func EthereumEventToEthBridgeClaim(valAddr sdk.ValAddress, event types.EthereumE
 
 	amount := sdk.NewIntFromBigInt(event.Value)
 
-	// Nonce type casting (*big.Int -> int)
-	nonce := int(event.Nonce.Int64())
-
 	// Package the information in a unique EthBridgeClaim
 	witnessClaim.NetworkDescriptor = networkDescriptor
 	witnessClaim.BridgeContractAddress = bridgeContractAddress.String()
-	// TODO check if we can get transaction nonce from event log
-	witnessClaim.Nonce = int64(nonce)
+	witnessClaim.EthereumLockBurnSequence = event.Nonce.Uint64()
 	witnessClaim.TokenContractAddress = tokenContractAddress.String()
 	witnessClaim.Symbol = symbol
 	witnessClaim.EthereumSender = sender.String()
@@ -76,8 +72,7 @@ func EthereumEventToEthBridgeClaim(valAddr sdk.ValAddress, event types.EthereumE
 	witnessClaim.Decimals = int64(event.Decimals)
 	witnessClaim.TokenName = event.Name
 	// the nonce from ethereum event is lock burn nonce, not transaction nonce
-	witnessClaim.EthereumLockBurnNonce = event.Nonce.Uint64()
-	witnessClaim.DenomHash = ethbridge.GetDenomHash(networkDescriptor, tokenContractAddress.String(), int64(event.Decimals), event.Name, event.Symbol)
+	witnessClaim.DenomHash = ethbridge.GetDenomHash(networkDescriptor, tokenContractAddress.String())
 
 	return witnessClaim, nil
 }
@@ -86,7 +81,7 @@ func EthereumEventToEthBridgeClaim(valAddr sdk.ValAddress, event types.EthereumE
 func BurnLockEventToCosmosMsg(attributes []abci.EventAttribute, sugaredLogger *zap.SugaredLogger) (types.CosmosMsg, error) {
 	var prophecyID []byte
 	var networkDescriptor uint32
-	var globalNonce uint64
+	var globalSequence uint64
 
 	attributeNumber := 0
 
@@ -113,14 +108,14 @@ func BurnLockEventToCosmosMsg(attributes []abci.EventAttribute, sugaredLogger *z
 			if !oracletypes.NetworkDescriptor(networkDescriptor).IsValid() {
 				return types.CosmosMsg{}, errors.New("network id is invalid")
 			}
-		case types.GlobalNonce.String():
+		case types.GlobalSequence.String():
 			attributeNumber++
-			tempGlobalNonce, err := strconv.ParseUint(val, 10, 64)
+			tempGlobalSequence, err := strconv.ParseUint(val, 10, 64)
 			if err != nil {
-				sugaredLogger.Errorw("globalNonce can't parse", "globalNonce", val)
-				return types.CosmosMsg{}, errors.New("globalNonce can't parse")
+				sugaredLogger.Errorw("globalSequence can't parse", "globalSequence", val)
+				return types.CosmosMsg{}, errors.New("globalSequence can't parse")
 			}
-			globalNonce = tempGlobalNonce
+			globalSequence = tempGlobalSequence
 		}
 	}
 
@@ -128,13 +123,13 @@ func BurnLockEventToCosmosMsg(attributes []abci.EventAttribute, sugaredLogger *z
 		sugaredLogger.Errorw("message not complete", "attributeNumber", attributeNumber)
 		return types.CosmosMsg{}, errors.New("message not complete")
 	}
-	return types.NewCosmosMsg(oracletypes.NetworkDescriptor(networkDescriptor), prophecyID, globalNonce), nil
+	return types.NewCosmosMsg(oracletypes.NetworkDescriptor(networkDescriptor), prophecyID, globalSequence), nil
 }
 
 // AttributesToEthereumBridgeClaim parses data from event to EthereumBridgeClaim
 func AttributesToEthereumBridgeClaim(attributes []abci.EventAttribute) (types.EthereumBridgeClaim, error) {
 	var cosmosSender sdk.ValAddress
-	var ethereumSenderNonce sdk.Int
+	var ethereumSenderSequence sdk.Int
 	var ethereumSender common.Address
 	var err error
 
@@ -157,20 +152,20 @@ func AttributesToEthereumBridgeClaim(attributes []abci.EventAttribute) (types.Et
 			}
 			ethereumSender = common.HexToAddress(val)
 
-		case types.EthereumSenderNonce.String():
-			tempNonce, ok := sdk.NewIntFromString(val)
+		case types.EthereumSenderSequence.String():
+			tempSequence, ok := sdk.NewIntFromString(val)
 			if !ok {
 				log.Println("Invalid nonce:", val)
 				return types.EthereumBridgeClaim{}, errors.New("invalid nonce:" + val)
 			}
-			ethereumSenderNonce = tempNonce
+			ethereumSenderSequence = tempSequence
 		}
 	}
 
 	return types.EthereumBridgeClaim{
 		EthereumSender: ethereumSender,
 		CosmosSender:   cosmosSender,
-		Nonce:          ethereumSenderNonce,
+		Sequence:       ethereumSenderSequence,
 	}, nil
 }
 

@@ -56,7 +56,8 @@ func TestProcessClaimLock(t *testing.T) {
 	validator1Pow3 := validatorAddresses[0]
 	validator2Pow3 := validatorAddresses[1]
 
-	nonce := int64(1)
+	nonce := uint64(1)
+
 	// TODO(timlind): This default does not seem to be in any version history.
 	//invalid claim defaults to lock
 	//claimType, err := types.StringToClaimType("lkfjdsk")
@@ -115,7 +116,7 @@ func TestProcessClaimBurn(t *testing.T) {
 	validator1Pow3 := validatorAddresses[0]
 	validator2Pow3 := validatorAddresses[1]
 
-	nonce := int64(1)
+	nonce := uint64(1)
 
 	claimType := types.ClaimType_CLAIM_TYPE_BURN
 

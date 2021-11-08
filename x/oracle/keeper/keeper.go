@@ -3,9 +3,10 @@ package keeper
 import (
 	"errors"
 	"fmt"
-	"go.uber.org/zap"
 	"strconv"
 	"strings"
+
+	"go.uber.org/zap"
 
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -208,9 +209,9 @@ func (k Keeper) ProcessSignProphecy(ctx sdk.Context, networkDescriptor types.Net
 		return errors.New("prophecy info not available in keeper")
 	}
 
-	// check the order of witness lock burn nonce
-	lastLockBurnNonce := k.GetWitnessLockBurnNonce(ctx, networkDescriptor, valAddr)
-	if lastLockBurnNonce != 0 && lastLockBurnNonce+1 != prophecyInfo.GlobalNonce {
+	// check the order of witness lock burn sequence
+	lastLockBurnNonce := k.GetWitnessLockBurnSequence(ctx, networkDescriptor, valAddr)
+	if lastLockBurnNonce != 0 && lastLockBurnNonce+1 != prophecyInfo.GlobalSequence {
 		return errors.New("witness node not send the signature in order")
 	}
 
@@ -226,8 +227,8 @@ func (k Keeper) ProcessSignProphecy(ctx sdk.Context, networkDescriptor types.Net
 		return err
 	}
 
-	// update witness's lock burn nonce
-	k.SetWitnessLockBurnNonce(ctx, networkDescriptor, valAddr, prophecyInfo.GlobalNonce)
+	// update witness's lock burn sequence
+	k.SetWitnessLockBurnNonce(ctx, networkDescriptor, valAddr, prophecyInfo.GlobalSequence)
 
 	// emit the event when status from pending to success
 	// old = unspecified, new = pending  the prophecy just created, not emit the event
@@ -247,7 +248,7 @@ func (k Keeper) ProcessSignProphecy(ctx sdk.Context, networkDescriptor types.Net
 				sdk.NewAttribute(types.AttributeKeyTokenContractAddress, tokenAddress),
 				sdk.NewAttribute(types.AttributeKeyAmount, strconv.FormatInt(prophecyInfo.TokenAmount.Int64(), 10)),
 				sdk.NewAttribute(types.AttributeKeyDoublePeggy, strconv.FormatBool(prophecyInfo.DoublePeg)),
-				sdk.NewAttribute(types.AttributeKeyGlobalNonce, strconv.FormatInt(int64(prophecyInfo.GlobalNonce), 10)),
+				sdk.NewAttribute(types.AttributeKeyGlobalNonce, strconv.FormatInt(int64(prophecyInfo.GlobalSequence), 10)),
 				sdk.NewAttribute(types.AttributeKeycrossChainFee, strconv.FormatInt(prophecyInfo.CrosschainFee.Int64(), 10)),
 				sdk.NewAttribute(types.AttributeKeySignatures, strings.Join(prophecyInfo.Signatures, ",")),
 				sdk.NewAttribute(types.AttributeKeyEthereumAddresses, strings.Join(prophecyInfo.EthereumAddress, ",")),

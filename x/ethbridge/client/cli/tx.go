@@ -58,7 +58,7 @@ func GetCmdCreateEthBridgeClaim() *cobra.Command {
 			}
 			bridgeContract := types.NewEthereumAddress(args[0])
 
-			nonce, err := strconv.ParseInt(args[1], 10, 64)
+			nonce, err := strconv.ParseUint(args[1], 10, 64)
 			if err != nil {
 				return err
 			}

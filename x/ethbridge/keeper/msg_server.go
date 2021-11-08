@@ -63,8 +63,8 @@ func (srv msgServer) Lock(goCtx context.Context, msg *types.MsgLock) (*types.Msg
 	}
 
 	logger.Info("sifnode emit lock event.", "message", msg)
-	globalNonce := srv.Keeper.GetGlobalNonce(ctx, msg.NetworkDescriptor)
-	srv.Keeper.UpdateGlobalNonce(ctx, msg.NetworkDescriptor, uint64(ctx.BlockHeight()))
+	globalSequence := srv.Keeper.GetGlobalSequence(ctx, msg.NetworkDescriptor)
+	srv.Keeper.UpdateGlobalSequence(ctx, msg.NetworkDescriptor, uint64(ctx.BlockHeight()))
 	srv.tokenRegistryKeeper.SetFirstLockDoublePeg(ctx, msg.DenomHash, msg.NetworkDescriptor)
 
 	err = srv.oracleKeeper.SetProphecyInfo(ctx,
@@ -78,7 +78,7 @@ func (srv msgServer) Lock(goCtx context.Context, msg *types.MsgLock) (*types.Msg
 		msg.Amount,
 		msg.CrosschainFee,
 		doublePeg,
-		globalNonce,
+		globalSequence,
 	)
 
 	if err != nil {
@@ -96,7 +96,7 @@ func (srv msgServer) Lock(goCtx context.Context, msg *types.MsgLock) (*types.Msg
 			types.EventTypeLock,
 			sdk.NewAttribute(types.AttributeKeyNetworkDescriptor, strconv.FormatInt(int64(msg.NetworkDescriptor), 10)),
 			sdk.NewAttribute(types.AttributeKeyProphecyID, string(prophecyID[:])),
-			sdk.NewAttribute(types.AttributeKeyGlobalNonce, strconv.FormatInt(int64(globalNonce), 10)),
+			sdk.NewAttribute(types.AttributeKeyGlobalSequence, strconv.FormatInt(int64(globalSequence), 10)),
 		),
 	})
 
@@ -135,8 +135,8 @@ func (srv msgServer) Burn(goCtx context.Context, msg *types.MsgBurn) (*types.Msg
 	}
 
 	logger.Info("sifnode emit burn event.", "message", msg)
-	globalNonce := srv.Keeper.GetGlobalNonce(ctx, msg.NetworkDescriptor)
-	srv.Keeper.UpdateGlobalNonce(ctx, msg.NetworkDescriptor, uint64(ctx.BlockHeight()))
+	globalSequence := srv.Keeper.GetGlobalSequence(ctx, msg.NetworkDescriptor)
+	srv.Keeper.UpdateGlobalSequence(ctx, msg.NetworkDescriptor, uint64(ctx.BlockHeight()))
 
 	doublePeg := tokenMetadata.NetworkDescriptor != msg.NetworkDescriptor
 
@@ -151,7 +151,7 @@ func (srv msgServer) Burn(goCtx context.Context, msg *types.MsgBurn) (*types.Msg
 		msg.Amount,
 		msg.CrosschainFee,
 		doublePeg,
-		globalNonce,
+		globalSequence,
 	)
 
 	if err != nil {
@@ -169,7 +169,7 @@ func (srv msgServer) Burn(goCtx context.Context, msg *types.MsgBurn) (*types.Msg
 			types.EventTypeBurn,
 			sdk.NewAttribute(types.AttributeKeyNetworkDescriptor, strconv.FormatInt(int64(msg.NetworkDescriptor), 10)),
 			sdk.NewAttribute(types.AttributeKeyProphecyID, string(prophecyID[:])),
-			sdk.NewAttribute(types.AttributeKeyGlobalNonce, strconv.FormatInt(int64(globalNonce), 10)),
+			sdk.NewAttribute(types.AttributeKeyGlobalSequence, strconv.FormatInt(int64(globalSequence), 10)),
 		),
 	})
 
@@ -191,11 +191,11 @@ func (srv msgServer) CreateEthBridgeClaim(goCtx context.Context, msg *types.MsgC
 	}
 
 	// check the lock burn nonce
-	lockBurnNonce := srv.Keeper.GetEthereumLockBurnNonce(ctx, msg.EthBridgeClaim.NetworkDescriptor, valAddress)
+	lockBurnSequence := srv.Keeper.GetEthereumLockBurnSequence(ctx, msg.EthBridgeClaim.NetworkDescriptor, valAddress)
 
-	newLockBurnNonce := msg.EthBridgeClaim.EthereumLockBurnNonce
+	newLockBurnSequence := msg.EthBridgeClaim.EthereumLockBurnSequence
 
-	if newLockBurnNonce != 0 && newLockBurnNonce != lockBurnNonce+1 {
+	if newLockBurnSequence != 0 && newLockBurnSequence != lockBurnSequence+1 {
 		logger.Error("lock burn nonce out of order", errorMessageKey, err.Error())
 		return nil, errors.New("lock burn nonce out of order")
 	}
@@ -207,31 +207,31 @@ func (srv msgServer) CreateEthBridgeClaim(goCtx context.Context, msg *types.MsgC
 		return nil, err
 	}
 
+	claim := msg.EthBridgeClaim
 	if status == oracletypes.StatusText_STATUS_TEXT_SUCCESS {
 		if err = srv.Keeper.ProcessSuccessfulClaim(ctx, msg.EthBridgeClaim); err != nil {
 			logger.Error("bridge keeper failed to process successful claim.", errorMessageKey, err.Error())
 			return nil, err
+		} else {
+
+			metadata := tokenregistrytypes.TokenMetadata{
+				Decimals:          claim.Decimals,
+				Name:              claim.TokenName,
+				Symbol:            claim.Symbol,
+				TokenAddress:      claim.TokenContractAddress,
+				NetworkDescriptor: claim.NetworkDescriptor,
+			}
+			srv.Keeper.AddTokenMetadata(ctx, metadata)
 		}
 	}
 
-	claim := msg.EthBridgeClaim
-	metadata := tokenregistrytypes.TokenMetadata{
-		Decimals:          claim.Decimals,
-		Name:              claim.TokenName,
-		Symbol:            claim.Symbol,
-		TokenAddress:      claim.TokenContractAddress,
-		NetworkDescriptor: claim.NetworkDescriptor,
-	}
-
-	srv.Keeper.AddTokenMetadata(ctx, metadata)
-
 	// update lock burn nonce in keeper
-	srv.Keeper.SetEthereumLockBurnNonce(ctx, msg.EthBridgeClaim.NetworkDescriptor, valAddress, newLockBurnNonce)
+	srv.Keeper.SetEthereumLockBurnSequence(ctx, msg.EthBridgeClaim.NetworkDescriptor, valAddress, newLockBurnSequence)
 
 	logger.Info("sifnode emit create event.",
 		"CosmosSender", claim.ValidatorAddress,
 		"EthereumSender", claim.EthereumSender,
-		"EthereumSenderNonce", strconv.FormatInt(claim.Nonce, 10),
+		"EthereumSenderSequence", strconv.FormatUint(claim.EthereumLockBurnSequence, 10),
 		"CosmosReceiver", claim.CosmosReceiver,
 		"Amount", claim.Amount.String(),
 		"Symbol", claim.Symbol,
@@ -253,7 +253,7 @@ func (srv msgServer) CreateEthBridgeClaim(goCtx context.Context, msg *types.MsgC
 			types.EventTypeCreateClaim,
 			sdk.NewAttribute(types.AttributeKeyCosmosSender, claim.ValidatorAddress),
 			sdk.NewAttribute(types.AttributeKeyEthereumSender, claim.EthereumSender),
-			sdk.NewAttribute(types.AttributeKeyEthereumSenderNonce, strconv.FormatInt(claim.Nonce, 10)),
+			sdk.NewAttribute(types.AttributeKeyEthereumSenderSequence, strconv.FormatUint(claim.EthereumLockBurnSequence, 10)),
 			sdk.NewAttribute(types.AttributeKeyCosmosReceiver, claim.CosmosReceiver),
 			sdk.NewAttribute(types.AttributeKeyAmount, claim.Amount.String()),
 			sdk.NewAttribute(types.AttributeKeySymbol, claim.Symbol),

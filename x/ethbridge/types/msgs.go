@@ -257,10 +257,6 @@ func (msg MsgCreateEthBridgeClaim) ValidateBasic() error {
 		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.EthBridgeClaim.ValidatorAddress)
 	}
 
-	if msg.EthBridgeClaim.Nonce < 0 {
-		return ErrInvalidEthNonce
-	}
-
 	if !gethCommon.IsHexAddress(msg.EthBridgeClaim.EthereumSender) {
 		return ErrInvalidEthAddress
 	}
