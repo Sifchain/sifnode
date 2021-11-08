@@ -1,7 +1,6 @@
 {
   "entries": [
     {
-      "is_whitelisted": true,
       "decimals": "6",
       "denom": "ibc/057E0E697E069620BD0E3C063EC861BA7FFC3EAD236A3EAB258D12D6BFE3C939",
       "base_denom": "uregen",

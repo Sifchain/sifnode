@@ -13,7 +13,7 @@ jobs:
       - uses: actions/checkout@v2
       - uses: actions/checkout@v2
         with:
-          repository: Sifchain/sifchain-deploy
+          repository: Sifchain/sifchain-devops
           path: deploy
           token: "${{ secrets.GIT_PAT }}"
 
