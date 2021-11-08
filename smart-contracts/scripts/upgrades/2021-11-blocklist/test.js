@@ -84,7 +84,7 @@ async function main() {
   support.enforceForking();
 
   // Fetch the manifest
-  copyManifest(false);
+  copyManifest();
 
   // Deploy or connect to each contract
   await deployContracts();

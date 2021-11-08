@@ -10,8 +10,6 @@ const Web3 = require("web3");
 
 const support = require("../../helpers/forkingSupport");
 const { print } = require("../../helpers/utils");
-const toInject_1 = require("./injector_upgrade_blocklist-1.json");
-const toInject_2 = require("./injector_upgrade_blocklist-2.json");
 
 // Defaults to the Ethereum Mainnet address
 const BLOCKLIST_ADDRESS =
@@ -72,8 +70,7 @@ async function main() {
   print("highlight", "~~~ UPGRADE BRIDGEBANK: BLOCKLIST ~~~");
 
   // Fetch the manifest and inject the new variables
-  //copyManifest(true);
-  copyManifest(false);
+  copyManifest();
 
   // Connect to each contract
   await connectToContracts();
@@ -239,40 +236,10 @@ async function upgradeBridgeBank() {
 function copyManifest(injectChanges) {
   print("cyan", `👀 Fetching the correct manifest`);
 
-  if (!injectChanges) {
-    // just copy the file over to the correct directory
-    fs.copySync(
-      `./deployments/sifchain-1/.openzeppelin/mainnet.json`,
-      `./.openzeppelin/mainnet.json`
-    );
-  } else {
-    // will write the file into the correct directory at the end
-    injectStorageChanges();
-  }
-}
-
-// https://forum.openzeppelin.com/t/storage-layout-upgrade-with-hardhat-upgrades/14567
-function injectStorageChanges() {
-  print("cyan", "🕵  Injecting changes into manifest");
-
-  // Fetch the deployed manifest
-  const currentManifest = fs.readFileSync(
-    "./deployments/sifchain-1/.openzeppelin/mainnet.json",
-    "utf8"
+  fs.copySync(
+    `./deployments/sifchain-1/.openzeppelin/mainnet.json`,
+    `./.openzeppelin/mainnet.json`
   );
-
-  // Parse the deployed manifest
-  const parsedManifest = JSON.parse(currentManifest);
-
-  // Inject the new variables and change the gap
-  toInject_1.parsedManifest = parsedManifest;
-  const modManifest_1 = support.injectInManifest(toInject_1);
-
-  toInject_2.parsedManifest = modManifest_1;
-  const modManifest_2 = support.injectInManifest(toInject_2);
-
-  // Write to file
-  fs.writeFileSync("./.openzeppelin/mainnet.json", JSON.stringify(modManifest_2));
 }
 
 async function registerBlocklist() {
