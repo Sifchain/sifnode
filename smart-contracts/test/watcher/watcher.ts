@@ -141,7 +141,7 @@ describe("watcher", () => {
                     switch ((v.data as any).kind) {
                         case "coinsSent":
                             const coins = ((v.data as any).coins as any)[0]
-                            if (coins["denom"] === "ceth" && coins["amount"] === smallAmount)
+                            if (coins["denom"] === "sif5ebfaf95495ceb5a3efbd0b0c63150676ec71e023b1043c40bcaaf91c00e15b2" && coins["amount"] === smallAmount.toString())
                                 return {...acc, value: v, transactionStep: TransactionStep.CoinsSent}
                             else
                                 return {
