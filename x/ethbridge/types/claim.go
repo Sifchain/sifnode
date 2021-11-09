@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
+	gethcommon "github.com/ethereum/go-ethereum/common"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	crypto "github.com/ethereum/go-ethereum/crypto"
@@ -91,6 +92,10 @@ func GetDenomHash(
 	  *
 	**/
 	// "{Network Descriptor}{ERC20 Token Address}"
+	if !gethcommon.IsHexAddress(tokenContractAddress) {
+		panic("invalid ethereum address")
+	}
+
 	denomHashedString := fmt.Sprintf("%d%s",
 		networkDescriptor,
 		strings.ToLower(tokenContractAddress),
