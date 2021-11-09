@@ -119,7 +119,7 @@ func CreateCosmosMsgAttributes(t *testing.T, claimType types.Event) []abci.Event
 
 	// (key, value) pairing for "network-descriptor" key
 	pairGlobalNonce := abci.EventAttribute{
-		Key:   []byte("global_nonce"),
+		Key:   []byte("global_sequence"),
 		Value: []byte(strconv.Itoa(0)),
 	}
 

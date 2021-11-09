@@ -14,7 +14,7 @@ var (
 	AttributeKeyProphecyID           = "prophecy_id"
 	AttributeKeyTokenAddress         = "token_address"
 	AttributeKeyDoublePeggy          = "double_peggy"
-	AttributeKeyGlobalNonce          = "global_nonce"
+	AttributeKeyGlobalNonce          = "global_sequence"
 	AttributeKeyEthereumAddresses    = "ethereum_addresses"
 
 	AttributeKeySignatures = "ethereum_signatures"
