@@ -103,8 +103,6 @@ describe("lock of ethereum", () => {
         container.register(HardhatRuntimeEnvironmentToken, {useValue: hardhat})
     })
 
-    it("should get the accounts from devenv")
-
     function ensureCorrectTransition(acc: State, v: SifEvent, predecessor: TransactionStep | TransactionStep[], successor: TransactionStep): State {
         var stepIsCorrect: boolean
         if (Array.isArray(predecessor)) {
@@ -220,8 +218,6 @@ describe("lock of ethereum", () => {
             return deepEqual({...a, currentHeartbeat: 0}, {...b, currentHeartbeat: 0})
         }))
 
-        // attachDebugPrintfs(evmRelayerEvents)
-        // attachDebugPrintfs(evmRelayerEvents.pipe(filter(isNotSifnodedEvent)))
         attachDebugPrintfs(withoutHeartbeat, true)
 
         await contracts.bridgeBank.connect(sender1).lock(
