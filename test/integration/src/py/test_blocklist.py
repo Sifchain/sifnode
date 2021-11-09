@@ -62,6 +62,7 @@ def bridge_bank_lock_eth(w3, bridge_bank, from_eth_acct, to_sif_acct, amount):
 
     recipient = to_sif_acct.encode("UTF-8")
     coin_denom = NULL_ADDRESS  # For "eth", otherwise use coin's address
+
     txhash = bridge_bank.functions.lock(recipient, coin_denom, amount) \
         .transact({"from": from_eth_acct, "gas": max_gas_required, "value": amount})
     txrcpt = w3.eth.wait_for_transaction_receipt(txhash)
@@ -72,12 +73,10 @@ def bridge_bank_lock_erc20(w3, bridge_bank, bridge_token, from_eth_acct, to_sif_
     assert eth.get_erc20_token_balance(w3, bridge_token, from_eth_acct) >= amount, "Not enough tokens for test"
 
     recipient = to_sif_acct.encode("UTF-8")
-    nonce = w3.eth.get_transaction_count(from_eth_acct)
 
     # When transfering ERC20, the amount needs to be passed as argument, and the "message.value" should be 0
-    # nonce seems to be not neccessary, but it is in sendLockTx.js
     txhash = bridge_bank.functions.lock(recipient, bridge_token.address, amount) \
-        .transact({"from": from_eth_acct, "gas": max_gas_required, "nonce": nonce})
+        .transact({"from": from_eth_acct, "gas": max_gas_required})
     txrcpt = w3.eth.wait_for_transaction_receipt(txhash)
     return txrcpt
 
@@ -159,7 +158,7 @@ def wait_for_sif_balance_change(sif_addr, old_balances, polling_time=1, timeout=
             raise Exception("Timeout waiting for sif balance to change")
 
 
-def test_blocklist_eth(basic_transfer_request: EthereumToSifchainTransferRequest, source_ethereum_address: str):
+def test_blocklist_eth(source_ethereum_address: str):
     _test_blocklist_eth(get_web3_connection_for_test(), source_ethereum_address)
 
 def _test_blocklist_eth(w3, source_ethereum_address):
@@ -226,14 +225,14 @@ def _test_blocklist_eth(w3, source_ethereum_address):
         w3.eth.uninstall_filter(filter.filter_id)
 
 
-def test_blocklist_erc20(basic_transfer_request: EthereumToSifchainTransferRequest, source_ethereum_address: str):
-    _test_blocklist_erc20(get_web3_connection_for_test(), basic_transfer_request, source_ethereum_address)
+def test_blocklist_erc20(source_ethereum_address: str):
+    _test_blocklist_erc20(get_web3_connection_for_test(), source_ethereum_address)
 
 # For ERC20 tokens, we need to create a new instance of Blocklist smart contract, deploy it and whitelist it with
 # BridgeBank. In peggy1, the token matching in BridgeBank is done by symbol, so we need to give our token a unique
 # symbol such as TEST or MOCK + random suffix + call updateEthWtiteList() + mint() + approve().
 # See smart-contracts/test/test_bridgeBank.js:131-160 for example.
-def _test_blocklist_erc20(w3, basic_transfer_request, source_ethereum_address):
+def _test_blocklist_erc20(w3, source_ethereum_address):
     default_account = w3.eth.accounts[0]  # Should be deployer
     assert default_account == test_utilities.get_required_env_var("OWNER"), "OWNER account is not the same as default"
     assert default_account.lower() == source_ethereum_address.lower(), "source_ethereum_address account is not the same as default"
