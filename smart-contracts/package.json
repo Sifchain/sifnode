@@ -27,6 +27,7 @@
     "@types/deep-equal": "^1.0.1",
     "@types/mocha": "^9.0.0",
     "@types/node-notifier": "^8.0.1",
+    "@types/uuid": "^8.3.1",
     "@types/yargs": "^17.0.2",
     "axios": "^0.21.4",
     "big-integer": "^1.6.48",
@@ -102,6 +103,7 @@
     "handlebars": "^4.7.7",
     "node-notifier": "^10.0.0",
     "node-notify": "^1.0.0",
-    "truffle": "^5.4.7"
+    "truffle": "^5.4.7",
+    "uuid": "^8.3.2"
   }
 }
