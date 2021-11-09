@@ -101,6 +101,8 @@ func (k Keeper) SetProphecyInfo(ctx sdk.Context, prophecyID []byte, networkDescr
 		BlockNumber:          uint64(k.currentHeight),
 	}
 
+	ctx.Logger().Debug(ethbridgeTypes.PeggyTestMarker, "kind", "SetProphecyInfo", prophecyInfo)
+
 	k.SetGlobalNonceProphecyID(ctx, networkDescriptor, globalSequence, prophecyID)
 	store.Set(storePrefix, k.cdc.MustMarshalBinaryBare(&prophecyInfo))
 	return nil
@@ -163,6 +165,14 @@ func (k Keeper) SetGlobalNonceProphecyID(ctx sdk.Context,
 	prophecyID []byte) {
 	store := ctx.KVStore(k.storeKey)
 	storeKey := k.getKeyViaNetworkDescriptorGlobalNonce(networkDescriptor, globalSequence)
+
+	ctx.Logger().Debug(ethbridgeTypes.PeggyTestMarker,
+		"kind", "SetGlobalNonceProphecyID",
+		"storeKey", storeKey,
+		"prophecyID", prophecyID,
+		"networkDescriptor", networkDescriptor,
+		"globalSequence", globalSequence,
+	)
 
 	store.Set(storeKey, prophecyID)
 }
