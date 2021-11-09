@@ -450,7 +450,7 @@ func TestProcessLockFirstDoublePeg(t *testing.T) {
 	_, err = keeper.ProcessLock(ctx, cosmosReceivers[0], account.GetSequence(), &msg, testMetadataRowan, true)
 	require.ErrorIs(t, err, sdkerrors.ErrInsufficientFunds)
 
-	coins = sdk.NewCoins(sdk.NewCoin("rowan", amount), sdk.NewCoin(crossChainFee, amount))
+	coins = sdk.NewCoins(sdk.NewCoin(msg.DenomHash, amount), sdk.NewCoin(crossChainFee, amount))
 	_ = bankKeeper.MintCoins(ctx, types.ModuleName, coins)
 	_ = bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, cosmosReceivers[0], coins)
 
