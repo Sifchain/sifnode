@@ -232,6 +232,8 @@ describe("watcher", () => {
 
         const lv = await lastValueFrom(states.pipe(takeWhile(x => x.value.kind !== "terminate")))
 
+        console.debug("last step was: ", JSON.stringify(lv, undefined, 2))
+
         expect(lv.transactionStep).to.eq(TransactionStep.CoinsSent)
     }
 
