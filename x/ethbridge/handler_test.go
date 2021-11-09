@@ -148,7 +148,7 @@ func TestMintSuccess(t *testing.T) {
 	require.NoError(t, err)
 	receiverCoins := bankKeeper.GetAllBalances(ctx, receiverAddress)
 	// TODO peggy2merge
-	expectedCoins := sdk.NewCoins(sdk.NewInt64Coin(types.TestCoinsSymbol, types.TestCoinIntAmount))
+	expectedCoins := sdk.NewCoins(sdk.NewInt64Coin(normalCreateMsg.EthBridgeClaim.DenomHash, types.TestCoinIntAmount))
 	require.True(t, receiverCoins.IsEqual(expectedCoins))
 	for _, event := range res.Events {
 		for _, attribute := range event.Attributes {
@@ -164,7 +164,8 @@ func TestMintSuccess(t *testing.T) {
 	_, err = handler(ctx, &normalCreateMsg)
 	require.Nil(t, err)
 	receiverCoins = bankKeeper.GetAllBalances(ctx, receiverAddress)
-	expectedCoins = sdk.NewCoins(sdk.NewInt64Coin(types.TestCoinsSymbol, types.TestCoinIntAmount))
+
+	expectedCoins = sdk.NewCoins(sdk.NewInt64Coin(normalCreateMsg.EthBridgeClaim.DenomHash, types.TestCoinIntAmount))
 	require.True(t, receiverCoins.IsEqual(expectedCoins))
 }
 
