@@ -132,6 +132,28 @@ describe("lock of ethereum", () => {
         }
     }
 
+    // This is placed here now because devObject is available in this scope
+    async function sifTransfer(sender: string, destination: SignerWithAddress, amount: BigNumber,
+        symbol: string,
+        // TODO: What is correct value for corsschainfee?
+        crossChainFee: string, netwrokDescriptor: number) {}
+
+    async function executeSifBurn(sender: string, destination: SignerWithAddress,
+        amount: BigNumber,
+        symbol: string,
+        // TODO: What is correct value for corsschainfee?
+        crossChainFee: string, netwrokDescriptor: number) {
+        // call console, send from sifchain to ethereum
+        let sifnodedCmd: string = `sifnoded tx ethbridge lock ${sender} ${destination.address}
+                                        ${amount} ${symbol} ${crossChainFee}
+                                        --network-descriptor ${netwrokDescriptor}
+                                        --keyring-backend test
+                                        --gas-prices=0.5rowan --gas-adjustment=1.5
+                                        --chain-id 31337`
+
+        console.log("Executing: ", sifnodedCmd);
+    }
+
     async function executeLock(contracts: DevEnvContracts, smallAmount: BigNumber, sender1: SignerWithAddress) {
         const evmRelayerEvents = sifwatch({
             evmrelayer: "/tmp/sifnode/evmrelayer.log",
@@ -246,6 +268,22 @@ describe("lock of ethereum", () => {
         await executeLock(contracts, smallAmount, sender1);
     })
 
+
+
+    it("should allow ceth to eth tx", async () => {
+        const ethereumAccounts = await ethereumResultsToSifchainAccounts(devEnvObject.ethResults!, hardhat.ethers.provider)
+        const factories = container.resolve(SifchainContractFactories)
+        const contracts = await buildDevEnvContracts(devEnvObject, hardhat, factories)
+        const destinationEthereumAddress = ethereumAccounts.availableAccounts[0]
+        const sendAmount = BigNumber.from(3500)
+
+        // Use env to get validator address
+        const sifAccount = devEnvObject.sifResults.validatorValues[0].address;
+        const networkDescriptor = devEnvObject.ethResults.chainId;
+        console.log("Hardhat network descriptor is: ", hardhat.network.config.chainId);
+        await executeSifBurn(sifAccount, destinationEthereumAddress, sendAmount, "ceth", "1", networkDescriptor)
+
+    })
     it("should watch evmrelayer logs")
     it("should watch for evm events")
     it("should fail if evmrelayer gets an error")
