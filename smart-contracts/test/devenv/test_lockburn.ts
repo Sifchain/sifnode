@@ -16,6 +16,9 @@ import {EthereumMainnetEvent} from "../../src/watcher/ethereumMainnet";
 import {filter} from "rxjs/operators";
 import {SignerWithAddress} from "@nomiclabs/hardhat-ethers/signers";
 import deepEqual = require("deep-equal");
+import * as ChildProcess from "child_process"
+import { EbRelayerAccount } from "../../src/devenv/sifnoded";
+import {v4 as uuidv4} from 'uuid';
 
 // The hash value for ethereum on mainnet
 const ethDenomHash = "sif5ebfaf95495ceb5a3efbd0b0c63150676ec71e023b1043c40bcaaf91c00e15b2"
@@ -132,7 +135,28 @@ describe("lock of ethereum", () => {
         }
     }
 
-    // This is placed here now because devObject is available in this scope
+    // TODO: This ISNT an ebrelayer Account. it is a SIFACCOUNT
+    function createTestSifAccount(): EbRelayerAccount {
+        // Generate uuid
+        let testSifAccountName = uuidv4();
+        let cmd: string = `sifnoded keys add ${testSifAccountName} --home ${devEnvObject!.sifResults!.adminAddress!.homeDir} --keyring-backend test --output json 2>&1`
+        let responseString: string = ChildProcess.execSync(cmd, { encoding: "utf8"})
+        let responseJson = JSON.parse(responseString);
+
+        console.log("CreateTestAccount Response: ", responseJson)
+        return {
+            name: responseJson.name,
+            account: responseJson.address,
+            homeDir: "",
+        };
+    }
+
+    // TODO: Rethink naming
+    function fundSifAccount(): void {
+
+    }
+
+    // TODO: This is placed here now because devObject is available in this scope
     async function sifTransfer(sender: string, destination: SignerWithAddress, amount: BigNumber,
         symbol: string,
         // TODO: What is correct value for corsschainfee?
@@ -143,15 +167,14 @@ describe("lock of ethereum", () => {
         symbol: string,
         // TODO: What is correct value for corsschainfee?
         crossChainFee: string, netwrokDescriptor: number) {
-        // call console, send from sifchain to ethereum
-        let sifnodedCmd: string = `sifnoded tx ethbridge lock ${sender} ${destination.address}
-                                        ${amount} ${symbol} ${crossChainFee}
-                                        --network-descriptor ${netwrokDescriptor}
-                                        --keyring-backend test
-                                        --gas-prices=0.5rowan --gas-adjustment=1.5
-                                        --chain-id 31337`
 
-        console.log("Executing: ", sifnodedCmd);
+            let output = createTestSifAccount();
+            let sifnodedCmd: string = `sifnoded tx ethbridge lock ${sender} ${destination.address} ${amount} ${symbol} ${crossChainFee} --network-descriptor ${netwrokDescriptor} --keyring-backend test --gas-prices=0.5rowan --gas-adjustment=1.5 --chain-id 31337 -y`
+
+            console.log("Executing: ", sifnodedCmd);
+            // ChildProcess.execSync(sifnodedCmd,
+            //     { encoding: "utf8" }
+            // )
     }
 
     async function executeLock(contracts: DevEnvContracts, smallAmount: BigNumber, sender1: SignerWithAddress) {
@@ -270,7 +293,7 @@ describe("lock of ethereum", () => {
 
 
 
-    it("should allow ceth to eth tx", async () => {
+    it.only("should allow ceth to eth tx", async () => {
         const ethereumAccounts = await ethereumResultsToSifchainAccounts(devEnvObject.ethResults!, hardhat.ethers.provider)
         const factories = container.resolve(SifchainContractFactories)
         const contracts = await buildDevEnvContracts(devEnvObject, hardhat, factories)
@@ -278,9 +301,9 @@ describe("lock of ethereum", () => {
         const sendAmount = BigNumber.from(3500)
 
         // Use env to get validator address
-        const sifAccount = devEnvObject.sifResults.validatorValues[0].address;
-        const networkDescriptor = devEnvObject.ethResults.chainId;
-        console.log("Hardhat network descriptor is: ", hardhat.network.config.chainId);
+        const sifAccount = devEnvObject!.sifResults!.validatorValues[0].address;
+        const networkDescriptor = devEnvObject!.ethResults!.chainId;
+        console.log("Hardhat network descriptor is: ", networkDescriptor);
         await executeSifBurn(sifAccount, destinationEthereumAddress, sendAmount, "ceth", "1", networkDescriptor)
 
     })
