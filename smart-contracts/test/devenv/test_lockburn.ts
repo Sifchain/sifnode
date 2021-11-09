@@ -91,7 +91,10 @@ function hasDuplicateNonce(a: EbRelayerEvmEvent, b: EbRelayerEvmEvent): boolean 
     return a.data.event.Nonce === b.data.event.Nonce
 }
 
-describe("watcher", () => {
+describe("lock of ethereum", () => {
+    // This test only works when devenv is running, and that requires a connection to localhost
+    expect(hardhat.network.name, "please use devenv").to.eq("localhost")
+
     const devEnvObject = readDevEnvObj("environment.json")
     // a generic sif address, nothing special about it
     const recipient = web3.utils.utf8ToHex("sif1nx650s8q9w28f2g3t9ztxyg48ugldptuwzpace")
@@ -232,9 +235,7 @@ describe("watcher", () => {
 
         const lv = await lastValueFrom(states.pipe(takeWhile(x => x.value.kind !== "terminate")))
 
-        console.debug("last step was: ", JSON.stringify(lv, undefined, 2))
-
-        expect(lv.transactionStep).to.eq(TransactionStep.CoinsSent)
+        expect(lv.transactionStep, `did not get CoinsSent, last step was ${JSON.stringify(lv, undefined, 2)}`).to.eq(TransactionStep.CoinsSent)
     }
 
     it("should send two locks of ethereum", async () => {
