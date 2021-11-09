@@ -106,6 +106,8 @@ export class SifnodedRunner extends ShellCommand<SifnodedResults> {
       this.networkConfigFile,
       "--keyring-backend",
       "test",
+      // Mint goes to validator
+      "--mint-amount", "999999000000000000000000000rowan,1370000000000000000ibc/FEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACE,999999000000000000000000000ceth"
     ]
 
     await fs.promises.mkdir(this.networkDir, { recursive: true });
