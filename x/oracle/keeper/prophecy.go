@@ -3,7 +3,6 @@ package keeper
 import (
 	"encoding/binary"
 	"errors"
-
 	ethbridgeTypes "github.com/Sifchain/sifnode/x/ethbridge/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
@@ -121,6 +120,8 @@ func (k Keeper) AppendSignature(ctx sdk.Context, prophecyID []byte, ethereumAddr
 	prophecySignatures.Signatures = append(prophecySignatures.Signatures, signature)
 
 	storePrefix := append(types.SignaturePrefix, prophecyID[:]...)
+
+	ctx.Logger().Debug(ethbridgeTypes.PeggyTestMarker, "kind", "AppendSignature", "storePrefix", storePrefix, "prophecySignatures", prophecySignatures)
 
 	store.Set(storePrefix, k.cdc.MustMarshalBinaryBare(&prophecySignatures))
 	return nil

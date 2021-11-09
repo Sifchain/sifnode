@@ -450,6 +450,8 @@ func (srv msgServer) SignProphecy(goCtx context.Context, msg *types.MsgSignProph
 	ctx := sdk.UnwrapSDKContext(goCtx)
 	logger := srv.Keeper.Logger(ctx)
 
+	logger.Debug(types.PeggyTestMarker, "kind", "SignProphecy", "msg", msg)
+
 	cosmosSender, err := sdk.AccAddressFromBech32(msg.CosmosSender)
 	if err != nil {
 		logger.Error("cosmos address is wrong", errorMessageKey, err.Error())
@@ -458,7 +460,7 @@ func (srv msgServer) SignProphecy(goCtx context.Context, msg *types.MsgSignProph
 
 	account := srv.Keeper.accountKeeper.GetAccount(ctx, cosmosSender)
 	if account == nil {
-		logger.Error("account is nil.", "CosmosSender", msg.CosmosSender)
+		logger.Error("account is nil", "CosmosSender", msg.CosmosSender)
 		return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.CosmosSender)
 	}
 

@@ -10,6 +10,7 @@ import (
 	gogotypes "github.com/gogo/protobuf/types"
 	"github.com/tendermint/tendermint/libs/log"
 
+	ethbridgeTypes "github.com/Sifchain/sifnode/x/ethbridge/types"
 	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
 	"github.com/Sifchain/sifnode/x/tokenregistry/types"
 )
@@ -176,5 +177,7 @@ func (k keeper) SetFirstLockDoublePeg(ctx sdk.Context, denom string, networkDesc
 		registry := k.GetDenom(ctx, denom)
 		registry.DoublePeggedNetworkMap[uint32(networkDescriptor)] = false
 		k.SetToken(ctx, &registry)
+
+		ctx.Logger().Debug(ethbridgeTypes.PeggyTestMarker, "kind", "SetFirstLockDoublePeg", "networkDescriptor", networkDescriptor, "registry", registry)
 	}
 }
