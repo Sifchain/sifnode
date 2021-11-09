@@ -18,7 +18,7 @@ contract CosmosBankStorage {
 	}
 
 	/**
-	 * @dev number of bridge tokens
+	 * @dev {DEPRECATED}
 	 */
 	uint256 private bridgeTokenCount;
 

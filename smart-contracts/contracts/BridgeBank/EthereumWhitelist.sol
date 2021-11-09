@@ -14,7 +14,7 @@ contract EthereumWhiteList {
 	bool private _initialized;
 
 	/**
-	 * @dev [DEPRECATED] mapping to keep track of whitelisted tokens
+	 * @dev {DEPRECATED} mapping to keep track of whitelisted tokens
 	 */
 	mapping(address => bool) private _ethereumTokenWhiteList;
 
