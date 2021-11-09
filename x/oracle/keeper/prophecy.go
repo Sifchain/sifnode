@@ -4,6 +4,7 @@ import (
 	"encoding/binary"
 	"errors"
 
+	ethbridgeTypes "github.com/Sifchain/sifnode/x/ethbridge/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	"github.com/Sifchain/sifnode/x/oracle/types"
@@ -46,6 +47,8 @@ func (k Keeper) SetProphecy(ctx sdk.Context, prophecy types.Prophecy) {
 	store := ctx.KVStore(k.storeKey)
 
 	storePrefix := append(types.ProphecyPrefix, prophecy.Id[:]...)
+
+	ctx.Logger().Debug(ethbridgeTypes.PeggyTestMarker, "kind", "SetProphecy", "prophecy", prophecy, "storePrefix", storePrefix)
 
 	store.Set(storePrefix, k.cdc.MustMarshalBinaryBare(&prophecy))
 }

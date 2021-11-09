@@ -21,7 +21,7 @@ func IsIBCToken(name string) bool {
 	return true
 }
 
-// Fetches token meteadata if it exists
+// Fetches token metadata if it exists
 func (k keeper) GetTokenMetadata(ctx sdk.Context, denomHash string) (types.TokenMetadata, bool) {
 
 	entry := k.GetDenom(ctx, denomHash)
@@ -37,6 +37,9 @@ func (k keeper) GetTokenMetadata(ctx sdk.Context, denomHash string) (types.Token
 		TokenAddress:      entry.Address,
 		NetworkDescriptor: entry.Network,
 	}
+
+	ctx.Logger().Debug(ethbridgetypes.PeggyTestMarker, "kind", "GetTokenMetadata", "denomHash", denomHash, "metadata", metadata)
+
 	return metadata, true
 }
 

@@ -132,7 +132,7 @@ func (k Keeper) ProcessBurn(ctx sdk.Context,
 	}
 
 	if tokenMetadata.NetworkDescriptor.IsSifchain() {
-		logger.Error("sifchain natvie token can't be burn.", "tokenSymbol", tokenMetadata.Symbol)
+		logger.Error("sifchain native token can't be burned", "tokenMetadata", tokenMetadata)
 		return []byte{}, fmt.Errorf("sifchain native token %s can't be burn", tokenMetadata.Symbol)
 	}
 
@@ -163,6 +163,8 @@ func (k Keeper) ProcessBurn(ctx sdk.Context,
 		return []byte{}, err
 	}
 
+	logger.Debug(types.PeggyTestMarker, "kind", "SendCoinsFromAccountToModule", "cosmosSender", cosmosSender, "moduleName", types.ModuleName, "coins", coins)
+
 	// not burn the token if it is sifchain native token
 	if !tokenMetadata.NetworkDescriptor.IsSifchain() {
 		coins = sdk.NewCoins(sdk.NewCoin(msg.DenomHash, msg.Amount))
@@ -172,6 +174,7 @@ func (k Keeper) ProcessBurn(ctx sdk.Context,
 				errorMessageKey, err.Error())
 			return []byte{}, err
 		}
+		logger.Debug(types.PeggyTestMarker, "kind", "BurnCoins", "moduleName", types.ModuleName, "coins", coins)
 	}
 
 	prophecyID := msg.GetProphecyID(false, senderSequence, k.GetGlobalSequence(ctx, msg.NetworkDescriptor), tokenMetadata.TokenAddress)
