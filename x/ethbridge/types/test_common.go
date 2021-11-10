@@ -12,7 +12,7 @@ import (
 const (
 	TestNetworkDescriptorSifchain = oracletypes.NetworkDescriptor(0)
 
-	TestNetworkDescriptor     = oracletypes.NetworkDescriptor(1)
+	TestNetworkDescriptor     = oracletypes.NetworkDescriptor_NETWORK_DESCRIPTOR_ETHEREUM
 	TestBridgeContractAddress = "0xC4cE93a5699c68241fc2fB503Fb0f21724A624BB"
 	TestAddress               = "cosmos1gn8409qq9hnrxde37kuxwx5hrxpfpv8426szuv"
 	TestValidator             = "cosmos1xdp5tvt7lxh8rf9xx07wy2xlagzhq24ha48xtq"
@@ -31,7 +31,7 @@ const (
 	TestProphecyID            = "test_prophecy_id"
 )
 
-var testcrossChainFee = sdk.NewInt(65000000000 * 300000)
+var testcrossChainFee = sdk.NewInt(1)
 var TestCoinsAmount = sdk.NewInt(10)
 var AltTestCoinsAmountSDKInt = sdk.NewInt(12)
 

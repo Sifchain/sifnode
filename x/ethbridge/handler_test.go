@@ -281,7 +281,7 @@ func TestBurnEthSuccess(t *testing.T) {
 
 	// Initial message to mint some eth
 	coinsToMintAmount := sdk.NewInt(7)
-	coinsToMintSymbol := "ether"
+	coinsToMintSymbol := "eth"
 
 	testTokenContractAddress := types.NewEthereumAddress(types.TestTokenContractAddress)
 	testEthereumAddress := types.NewEthereumAddress(types.TestEthereumAddress)
@@ -291,24 +291,17 @@ func TestBurnEthSuccess(t *testing.T) {
 		valAddressVal1Pow5, testEthereumAddress, coinsToMintAmount, coinsToMintSymbol, types.ClaimType_CLAIM_TYPE_LOCK, types.TestDecimals, types.TestName)
 	ethMsg1 := types.NewMsgCreateEthBridgeClaim(ethClaim1)
 
+	denomHash := ethClaim1.DenomHash
+
 	entry := tokenregistrytypes.RegistryEntry{
-		Denom:         ethMsg1.EthBridgeClaim.DenomHash,
+		Denom:         denomHash,
 		DisplaySymbol: ethMsg1.EthBridgeClaim.Symbol,
 		Decimals:      18,
 		IsWhitelisted: true,
+		Network:       oracletypes.NetworkDescriptor_NETWORK_DESCRIPTOR_ETHEREUM,
 		Permissions:   []tokenregistrytypes.Permission{tokenregistrytypes.Permission_PERMISSION_CLP},
 	}
 	keeper.GetTokenRegistryKeeper().SetToken(ctx, &entry)
-
-	denom := tokenregistrytypes.TokenMetadata{
-		Decimals:          types.TestDecimals,
-		Name:              types.TestName,
-		NetworkDescriptor: oracletypes.NetworkDescriptor_NETWORK_DESCRIPTOR_ETHEREUM,
-		Symbol:            coinsToMintSymbol,
-		TokenAddress:      types.TestTokenContractAddress,
-	}
-	denomHash := keeper.AddTokenMetadata(ctx, denom)
-	require.Equal(t, denomHash, ethClaim1.DenomHash)
 
 	// Initial message succeeds and mints eth
 	res, err := handler(ctx, &ethMsg1)
@@ -317,58 +310,20 @@ func TestBurnEthSuccess(t *testing.T) {
 	receiverAddress, err := sdk.AccAddressFromBech32(types.TestAddress)
 	require.NoError(t, err)
 	receiverCoins := bankKeeper.GetAllBalances(ctx, receiverAddress)
-	mintedCoins := sdk.NewCoins(sdk.NewCoin(coinsToMintSymbol, coinsToMintAmount))
+	mintedCoins := sdk.NewCoins(sdk.NewCoin(ethMsg1.EthBridgeClaim.DenomHash, coinsToMintAmount))
+
 	require.True(t, receiverCoins.IsEqual(mintedCoins))
 
-	coinsToMintAmount = sdk.NewInt(65000000000 * 300000)
-	coinsToMintSymbol = "ceth"
-	testEthereumAddress = types.NewEthereumAddress(types.AltTestEthereumAddress)
-
-	ethClaim1 = types.CreateTestEthClaim(
-		t, testEthereumAddress, testTokenContractAddress,
-		valAddressVal1Pow5, testEthereumAddress, coinsToMintAmount, coinsToMintSymbol, types.ClaimType_CLAIM_TYPE_LOCK, types.TestDecimals, types.TestName)
-	ethMsg1 = types.NewMsgCreateEthBridgeClaim(ethClaim1)
-
-	entry = tokenregistrytypes.RegistryEntry{
-		Denom:         ethMsg1.EthBridgeClaim.DenomHash,
-		DisplaySymbol: ethMsg1.EthBridgeClaim.Symbol,
-		Decimals:      18,
-		IsWhitelisted: true,
-		Permissions:   []tokenregistrytypes.Permission{tokenregistrytypes.Permission_PERMISSION_CLP},
-	}
-	keeper.GetTokenRegistryKeeper().SetToken(ctx, &entry)
-
-	denom = tokenregistrytypes.TokenMetadata{
-		Decimals:          types.TestDecimals,
-		Name:              types.TestName,
-		NetworkDescriptor: oracletypes.NetworkDescriptor_NETWORK_DESCRIPTOR_ETHEREUM,
-		Symbol:            coinsToMintSymbol,
-		TokenAddress:      types.TestTokenContractAddress,
-	}
-	keeper.AddTokenMetadata(ctx, denom)
-
-	// Initial message succeeds and mints eth
-	res, err = handler(ctx, &ethMsg1)
-	require.NoError(t, err)
-	require.NotNil(t, res)
-
 	coinsToBurnAmount := sdk.NewInt(3)
-	coinsToBurnSymbol := "ether"
 	ethereumReceiver := types.NewEthereumAddress(types.AltTestEthereumAddress)
 
 	// Second message succeeds, burns eth and fires correct event
-	burnMsg := types.CreateTestBurnMsg(t, types.TestAddress, ethereumReceiver, coinsToBurnAmount,
-		denomHash)
+	burnMsg := types.CreateTestBurnMsg(t, types.TestAddress, ethereumReceiver, coinsToBurnAmount, denomHash)
 
 	res, err = handler(ctx, &burnMsg)
 	require.NoError(t, err)
 	require.NotNil(t, res)
-	senderAddress := receiverAddress
-	burnedCoins := sdk.NewCoins(sdk.NewCoin(coinsToBurnSymbol, coinsToBurnAmount))
-	// senderSequence := "0"
-	remainingCoins := mintedCoins.Sub(burnedCoins)
-	senderCoins := bankKeeper.GetAllBalances(ctx, senderAddress)
-	require.True(t, senderCoins.IsEqual(remainingCoins))
+
 	networkDescriptor := ""
 	for _, event := range res.Events {
 		for _, attribute := range event.Attributes {
@@ -400,24 +355,6 @@ func TestBurnEthSuccess(t *testing.T) {
 		t, testEthereumAddress, testTokenContractAddress,
 		valAddressVal1Pow5, testEthereumAddress, coinsToMintAmount, coinsToMintSymbol, types.ClaimType_CLAIM_TYPE_LOCK, types.TestDecimals, types.TestName)
 	ethMsg1 = types.NewMsgCreateEthBridgeClaim(ethClaim1)
-
-	entry = tokenregistrytypes.RegistryEntry{
-		Denom:         ethMsg1.EthBridgeClaim.DenomHash,
-		DisplaySymbol: ethMsg1.EthBridgeClaim.Symbol,
-		Decimals:      18,
-		IsWhitelisted: true,
-		Permissions:   []tokenregistrytypes.Permission{tokenregistrytypes.Permission_PERMISSION_CLP},
-	}
-	keeper.GetTokenRegistryKeeper().SetToken(ctx, &entry)
-
-	denom = tokenregistrytypes.TokenMetadata{
-		Decimals:          types.TestDecimals,
-		Name:              types.TestName,
-		NetworkDescriptor: oracletypes.NetworkDescriptor_NETWORK_DESCRIPTOR_ETHEREUM,
-		Symbol:            coinsToMintSymbol,
-		TokenAddress:      types.TestTokenContractAddress,
-	}
-	keeper.AddTokenMetadata(ctx, denom)
 
 	// Initial message succeeds and mints eth
 	res, err = handler(ctx, &ethMsg1)
