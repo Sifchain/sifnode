@@ -176,13 +176,22 @@ describe("lock of ethereum", () => {
         // TODO: What is correct value for corsschainfee?
         crossChainFee: string, netwrokDescriptor: number) {
 
-            let output = createTestSifAccount();
-            let sifnodedCmd: string = `sifnoded tx ethbridge lock ${sender} ${destination.address} ${amount} ${symbol} ${crossChainFee} --network-descriptor ${netwrokDescriptor} --keyring-backend test --gas-prices=0.5rowan --gas-adjustment=1.5 --chain-id 31337 -y`
+            // TODO: Move these out of this test function
+            let testSifAccount: EbRelayerAccount = createTestSifAccount();
+            fundSifAccount(devEnvObject!.sifResults!.adminAddress!.account, testSifAccount!.account, 10000000000, "ceth", devEnvObject!.sifResults!.adminAddress!.homeDir);
+            fundSifAccount(devEnvObject!.sifResults!.adminAddress!.account, testSifAccount!.account, 10000000000, "rowan", devEnvObject!.sifResults!.adminAddress!.homeDir);
+
+
+            let sifnodedCmd: string = `sifnoded tx ethbridge burn ${testSifAccount.account} ${destination.address} ${amount} ${symbol} ${crossChainFee} --network-descriptor ${netwrokDescriptor} --keyring-backend test --gas-prices=0.5rowan --gas-adjustment=1.5 --chain-id localnet --home ${devEnvObject!.sifResults!.adminAddress!.homeDir} --from ${testSifAccount.name} -y `
 
             console.log("Executing: ", sifnodedCmd);
-            // ChildProcess.execSync(sifnodedCmd,
+            // let responseString = ChildProcess.execSync(sifnodedCmd,
             //     { encoding: "utf8" }
             // )
+            // let responseJson = JSON.parse(responseString);
+
+            // console.log("FundSifAccount response:", responseJson);
+
     }
 
     async function executeLock(contracts: DevEnvContracts, smallAmount: BigNumber, sender1: SignerWithAddress) {
