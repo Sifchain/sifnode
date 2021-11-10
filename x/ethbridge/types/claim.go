@@ -28,7 +28,7 @@ func NewEthBridgeClaim(
 	tokenName string,
 	decimals uint8,
 ) *EthBridgeClaim {
-	denomHash := GetDenomHash(networkDescriptor, tokenContract.String())
+	denomHash := GetDenomHash(networkDescriptor, tokenContract)
 	return &EthBridgeClaim{
 		NetworkDescriptor:        networkDescriptor,
 		BridgeContractAddress:    bridgeContract.String(),
@@ -70,7 +70,7 @@ func (claim *EthBridgeClaim) GetProphecyID() []byte {
 // TODO: Can this decimal be uint8?
 func GetDenomHash(
 	networkDescriptor oracletypes.NetworkDescriptor,
-	tokenContractAddress string,
+	tokenContractAddress EthereumAddress,
 ) string {
 	/**
 	  * Metadata Denom Naming Convention:
@@ -94,8 +94,10 @@ func GetDenomHash(
 
 	denomHashedString := fmt.Sprintf("%d%s",
 		networkDescriptor,
-		strings.ToLower(tokenContractAddress),
+		strings.ToLower(tokenContractAddress.String()),
 	)
+
+	fmt.Printf("++++++ %s\n", denomHashedString)
 
 	rawDenomHash := sha256.Sum256([]byte(denomHashedString))
 	// Cosmos SDK requires first character to be [a-zA-Z] so we prepend sif

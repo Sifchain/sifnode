@@ -72,7 +72,7 @@ func EthereumEventToEthBridgeClaim(valAddr sdk.ValAddress, event types.EthereumE
 	witnessClaim.Decimals = int64(event.Decimals)
 	witnessClaim.TokenName = event.Name
 	// the nonce from ethereum event is lock burn nonce, not transaction nonce
-	witnessClaim.DenomHash = ethbridge.GetDenomHash(networkDescriptor, tokenContractAddress.String())
+	witnessClaim.DenomHash = ethbridge.GetDenomHash(networkDescriptor, tokenContractAddress)
 
 	return witnessClaim, nil
 }

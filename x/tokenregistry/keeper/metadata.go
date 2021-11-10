@@ -47,7 +47,7 @@ func (k keeper) GetTokenMetadata(ctx sdk.Context, denomHash string) (types.Token
 func (k keeper) AddTokenMetadata(ctx sdk.Context, metadata types.TokenMetadata) string {
 	denomHash := ethbridgetypes.GetDenomHash(
 		metadata.NetworkDescriptor,
-		metadata.TokenAddress,
+		ethbridgetypes.NewEthereumAddress(metadata.TokenAddress),
 	)
 
 	entry := k.GetDenom(ctx, denomHash)
