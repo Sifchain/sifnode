@@ -19,6 +19,7 @@ import deepEqual = require("deep-equal");
 import * as ChildProcess from "child_process"
 import { EbRelayerAccount } from "../../src/devenv/sifnoded";
 import {v4 as uuidv4} from 'uuid';
+import * as dotenv from "dotenv"
 
 // The hash value for ethereum on mainnet
 const ethDenomHash = "sif5ebfaf95495ceb5a3efbd0b0c63150676ec71e023b1043c40bcaaf91c00e15b2"
@@ -95,6 +96,8 @@ function hasDuplicateNonce(a: EbRelayerEvmEvent, b: EbRelayerEvmEvent): boolean 
 }
 
 describe("lock of ethereum", () => {
+    dotenv.config()
+
     // This test only works when devenv is running, and that requires a connection to localhost
     expect(hardhat.network.name, "please use devenv").to.eq("localhost")
 
@@ -280,7 +283,16 @@ describe("lock of ethereum", () => {
             return deepEqual({...a, currentHeartbeat: 0}, {...b, currentHeartbeat: 0})
         }))
 
-        attachDebugPrintfs(withoutHeartbeat, true)
+        switch(process.env["VERBOSE"]) {
+            case undefined:
+                break
+            case "summary":
+                attachDebugPrintfs(withoutHeartbeat, true)
+                break
+            default:
+                attachDebugPrintfs(withoutHeartbeat, false)
+                break
+        }
 
         await contracts.bridgeBank.connect(sender1).lock(
             recipient,
