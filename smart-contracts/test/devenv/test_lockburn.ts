@@ -151,9 +151,17 @@ describe("lock of ethereum", () => {
         };
     }
 
-    // TODO: Rethink naming
-    function fundSifAccount(): void {
+    // TODO: Move all these sif TS SDK to it's own class. I think it should go to smart-contract/devenv
+    // TODO: Rethink naming. SendToSif?
+    function fundSifAccount(adminAccount: string, destination: string, amount: number, symbol: string, homeDir: string): void {
+        // sifnoded tx bank send adminAccount testAccountToBeFunded --keyring-backend test --chain-id localnet concat(amount,symbol) --gas-prices=0.5rowan --gas-adjustment=1.5 --home <homeDir> --gas auto -y
+        let sifnodedCmd: string = `sifnoded tx bank send ${adminAccount} ${destination} --keyring-backend test --chain-id localnet ${amount}${symbol} --gas-prices=0.5rowan --gas-adjustment=1.5 --home ${homeDir} --gas auto -y`
+        let responseString: string = ChildProcess.execSync(sifnodedCmd, { encoding: "utf8"})
+        let responseJson = JSON.parse(responseString);
 
+        console.log("FundSifAccount response:", responseJson);
+
+        return;
     }
 
     // TODO: This is placed here now because devObject is available in this scope
