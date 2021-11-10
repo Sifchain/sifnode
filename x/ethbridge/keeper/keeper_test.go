@@ -40,7 +40,7 @@ var testMetadataCeth = tokenregistrytypes.TokenMetadata{
 	Name:              "ceth",
 	NetworkDescriptor: oracletypes.NetworkDescriptor_NETWORK_DESCRIPTOR_ETHEREUM,
 	Symbol:            "ceth",
-	TokenAddress:      "0x0123456789ABCDEF",
+	TokenAddress:      "Ox00000000000000000000",
 }
 
 var testMetadataRowan = tokenregistrytypes.TokenMetadata{
@@ -298,6 +298,7 @@ func TestProcessBurnCrossChainFee(t *testing.T) {
 	networkIdentity := oracletypes.NewNetworkIdentity(networkDescriptor)
 	crossChainFeeConfig, _ := oracleKeeper.GetCrossChainFeeConfig(ctx, networkIdentity)
 	crossChainFee := crossChainFeeConfig.FeeCurrency
+
 	denomHash := keeper.AddTokenMetadata(ctx, testMetadataCeth)
 
 	msg := types.NewMsgBurn(networkDescriptor, cosmosReceivers[0], ethereumSender, amount, denomHash, amount)
