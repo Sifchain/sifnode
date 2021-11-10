@@ -97,8 +97,6 @@ func GetDenomHash(
 		strings.ToLower(tokenContractAddress.String()),
 	)
 
-	fmt.Printf("++++++ %s\n", denomHashedString)
-
 	rawDenomHash := sha256.Sum256([]byte(denomHashedString))
 	// Cosmos SDK requires first character to be [a-zA-Z] so we prepend sif
 	denomHash := "sif" + hex.EncodeToString(rawDenomHash[:])
