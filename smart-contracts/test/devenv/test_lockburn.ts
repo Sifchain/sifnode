@@ -13,7 +13,7 @@ import {SifEvent, SifHeartbeat, sifwatch} from "../../src/watcher/watcher";
 import {distinctUntilChanged, lastValueFrom, Observable, scan, takeWhile} from "rxjs";
 import {EbRelayerEvmEvent} from "../../src/watcher/ebrelayer";
 import {EthereumMainnetEvent} from "../../src/watcher/ethereumMainnet";
-import {filter} from "rxjs/operators";
+import {filter, map} from "rxjs/operators";
 import {SignerWithAddress} from "@nomiclabs/hardhat-ethers/signers";
 import * as ChildProcess from "child_process"
 import {EbRelayerAccount} from "../../src/devenv/sifnoded";
@@ -77,14 +77,33 @@ function isNotTerminalState(s: State) {
     return !isTerminalState(s)
 }
 
-function attachDebugPrintfs<T>(xs: Observable<T>, summary: boolean) {
+type VerbosityLevel = "summary" | "full" | "none"
+
+function verbosityLevel(): VerbosityLevel {
+    switch (process.env["VERBOSE"]) {
+        case undefined:
+            return "none"
+        case "summary":
+            return "summary"
+            break
+        default:
+            return "full"
+            break
+    }
+}
+
+function attachDebugPrintfs<T>(xs: Observable<T>, verbosity: VerbosityLevel) {
     xs.subscribe({
         next: x => {
-            const p = x as any
-            if (summary)
-                console.log(`${p.currentHeartbeat}\t${p.transactionStep}\t${p.value?.kind}\t${p.value?.data?.kind}`)
-            else
-                console.log(JSON.stringify(x))
+            switch (verbosity) {
+                case "full":
+                    console.log(JSON.stringify(x))
+                    break
+                case "summary":
+                    const p = x as any
+                    console.log(`${p.currentHeartbeat}\t${p.transactionStep}\t${p.value?.kind}\t${p.value?.data?.kind}`)
+                    break
+            }
         },
         error: e => console.log("goterror: ", e),
         complete: () => console.log("alldone")
@@ -145,7 +164,7 @@ describe("lock of ethereum", () => {
         // Generate uuid
         let testSifAccountName = uuidv4();
         let cmd: string = `${gobin}/sifnoded keys add ${testSifAccountName} --home ${devEnvObject!.sifResults!.adminAddress!.homeDir} --keyring-backend test --output json`
-        let responseString: string = ChildProcess.execSync(cmd, { encoding: "utf8"})
+        let responseString: string = ChildProcess.execSync(cmd, {encoding: "utf8"})
         let responseJson = JSON.parse(responseString);
 
         console.log("CreateTestAccount Response: ", responseJson)
@@ -161,7 +180,7 @@ describe("lock of ethereum", () => {
     function fundSifAccount(adminAccount: string, destination: string, amount: number, symbol: string, homeDir: string): void {
         // sifnoded tx bank send adminAccount testAccountToBeFunded --keyring-backend test --chain-id localnet concat(amount,symbol) --gas-prices=0.5rowan --gas-adjustment=1.5 --home <homeDir> --gas auto -y
         let sifnodedCmd: string = `${gobin}/sifnoded tx bank send ${adminAccount} ${destination} --keyring-backend test --chain-id localnet ${amount}${symbol} --gas-prices=0.5rowan --gas-adjustment=1.5 --home ${homeDir} --gas auto -y`
-        let responseString: string = ChildProcess.execSync(sifnodedCmd, { encoding: "utf8"})
+        let responseString: string = ChildProcess.execSync(sifnodedCmd, {encoding: "utf8"})
         let responseJson = JSON.parse(responseString);
 
         console.log("FundSifAccount response:", responseJson);
@@ -171,31 +190,32 @@ describe("lock of ethereum", () => {
 
     // TODO: This is placed here now because devObject is available in this scope
     async function sifTransfer(sender: string, destination: SignerWithAddress, amount: BigNumber,
-        symbol: string,
-        // TODO: What is correct value for corsschainfee?
-        crossChainFee: string, netwrokDescriptor: number) {}
+                               symbol: string,
+                               // TODO: What is correct value for corsschainfee?
+                               crossChainFee: string, netwrokDescriptor: number) {
+    }
 
     async function executeSifBurn(sender: string, destination: SignerWithAddress,
-        amount: BigNumber,
-        symbol: string,
-        // TODO: What is correct value for corsschainfee?
-        crossChainFee: string, netwrokDescriptor: number) {
+                                  amount: BigNumber,
+                                  symbol: string,
+                                  // TODO: What is correct value for corsschainfee?
+                                  crossChainFee: string, netwrokDescriptor: number) {
 
-            // TODO: Move these out of this test function
-            let testSifAccount: EbRelayerAccount = createTestSifAccount();
-            fundSifAccount(devEnvObject!.sifResults!.adminAddress!.account, testSifAccount!.account, 10000000000, "ceth", devEnvObject!.sifResults!.adminAddress!.homeDir);
-            fundSifAccount(devEnvObject!.sifResults!.adminAddress!.account, testSifAccount!.account, 10000000000, "rowan", devEnvObject!.sifResults!.adminAddress!.homeDir);
+        // TODO: Move these out of this test function
+        let testSifAccount: EbRelayerAccount = createTestSifAccount();
+        fundSifAccount(devEnvObject!.sifResults!.adminAddress!.account, testSifAccount!.account, 10000000000, "ceth", devEnvObject!.sifResults!.adminAddress!.homeDir);
+        fundSifAccount(devEnvObject!.sifResults!.adminAddress!.account, testSifAccount!.account, 10000000000, "rowan", devEnvObject!.sifResults!.adminAddress!.homeDir);
 
 
-            let sifnodedCmd: string = `${gobin}/sifnoded tx ethbridge burn ${testSifAccount.account} ${destination.address} ${amount} ${symbol} ${crossChainFee} --network-descriptor ${netwrokDescriptor} --keyring-backend test --gas-prices=0.5rowan --gas-adjustment=1.5 --chain-id localnet --home ${devEnvObject!.sifResults!.adminAddress!.homeDir} --from ${testSifAccount.name} -y `
+        let sifnodedCmd: string = `${gobin}/sifnoded tx ethbridge burn ${testSifAccount.account} ${destination.address} ${amount} ${symbol} ${crossChainFee} --network-descriptor ${netwrokDescriptor} --keyring-backend test --gas-prices=0.5rowan --gas-adjustment=1.5 --chain-id localnet --home ${devEnvObject!.sifResults!.adminAddress!.homeDir} --from ${testSifAccount.name} -y `
 
-            console.log("Executing: ", sifnodedCmd);
-            let responseString = ChildProcess.execSync(sifnodedCmd,
-                { encoding: "utf8" }
-            )
-            let responseJson = JSON.parse(responseString);
+        console.log("Executing: ", sifnodedCmd);
+        let responseString = ChildProcess.execSync(sifnodedCmd,
+            {encoding: "utf8"}
+        )
+        let responseJson = JSON.parse(responseString);
 
-            console.log("FundSifAccount response:", responseJson);
+        console.log("FundSifAccount response:", responseJson);
     }
 
     async function executeLock(contracts: DevEnvContracts, smallAmount: BigNumber, sender1: SignerWithAddress) {
@@ -284,16 +304,7 @@ describe("lock of ethereum", () => {
             return deepEqual({...a, currentHeartbeat: 0}, {...b, currentHeartbeat: 0})
         }))
 
-        switch(process.env["VERBOSE"]) {
-            case undefined:
-                break
-            case "summary":
-                attachDebugPrintfs(withoutHeartbeat, true)
-                break
-            default:
-                attachDebugPrintfs(withoutHeartbeat, false)
-                break
-        }
+        attachDebugPrintfs(withoutHeartbeat, verbosityLevel())
 
         await contracts.bridgeBank.connect(sender1).lock(
             recipient,
@@ -309,7 +320,7 @@ describe("lock of ethereum", () => {
         expect(lv.transactionStep, `did not get CoinsSent, last step was ${JSON.stringify(lv, undefined, 2)}`).to.eq(TransactionStep.CoinsSent)
     }
 
-    it.only("should allow ceth to eth tx", async () => {
+    it("should allow ceth to eth tx", async () => {
         const ethereumAccounts = await ethereumResultsToSifchainAccounts(devEnvObject.ethResults!, hardhat.ethers.provider)
         const factories = container.resolve(SifchainContractFactories)
         const contracts = await buildDevEnvContracts(devEnvObject, hardhat, factories)
@@ -321,16 +332,9 @@ describe("lock of ethereum", () => {
             sifnoded: "/tmp/sifnode/sifnoded.log"
         }, hardhat, contracts.bridgeBank).pipe(filter(x => x.kind !== "SifnodedInfoEvent"))
 
-        switch(process.env["VERBOSE"]) {
-            case undefined:
-                break
-            case "summary":
-                attachDebugPrintfs(evmRelayerEvents, true)
-                break
-            default:
-                attachDebugPrintfs(evmRelayerEvents, false)
-                break
-        }
+        attachDebugPrintfs(evmRelayerEvents.pipe(map(x => {
+            return {value: x}
+        })), verbosityLevel())
 
         // Use env to get validator address
         const sifAccount = devEnvObject!.sifResults!.validatorValues[0].address;
