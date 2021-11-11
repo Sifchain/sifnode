@@ -95,7 +95,6 @@ export class SifnodedRunner extends ShellCommand<SifnodedResults> {
   }
 
   async sifgenNetworkCreate(): Promise<SifnodedResults> {
-    // Missing mint amount. Although it has default value
     const sifgenArgs = [
       "network",
       "create",
@@ -107,7 +106,7 @@ export class SifnodedRunner extends ShellCommand<SifnodedResults> {
       "--keyring-backend",
       "test",
       // Mint goes to validator
-      "--mint-amount", "999999000000000000000000000rowan,1370000000000000000ibc/FEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACE,999999000000000000000000000ceth"
+      "--mint-amount", "999999000000000000000000000rowan,1370000000000000000ibc/FEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACE,999999000000000000000000000sif5ebfaf95495ceb5a3efbd0b0c63150676ec71e023b1043c40bcaaf91c00e15b2"
     ]
 
     await fs.promises.mkdir(this.networkDir, { recursive: true });
