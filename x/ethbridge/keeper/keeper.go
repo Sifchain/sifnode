@@ -326,6 +326,8 @@ func (k Keeper) SetFeeInfo(ctx sdk.Context, msg *types.MsgSetFeeInfo) error {
 
 // ProcessSignProphecy processes the set sign prophecy from validator
 func (k Keeper) ProcessSignProphecy(ctx sdk.Context, msg *types.MsgSignProphecy) error {
+	ctx.Logger().Debug(instrumentation.PeggyTestMarker, "kind", "SignProphecy", "SignProphecy", zap.Reflect("msgProphecy", msg))
+
 	prophecyInfo, ok := k.oracleKeeper.GetProphecyInfo(ctx, msg.ProphecyId)
 	if !ok {
 		return errors.New("prophecy not found in oracle keeper")

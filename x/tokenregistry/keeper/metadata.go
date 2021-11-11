@@ -1,8 +1,10 @@
 package keeper
 
 import (
-	"github.com/Sifchain/sifnode/x/instrumentation"
 	"strings"
+
+	"github.com/Sifchain/sifnode/x/instrumentation"
+	"go.uber.org/zap"
 
 	ethbridgetypes "github.com/Sifchain/sifnode/x/ethbridge/types"
 	"github.com/Sifchain/sifnode/x/tokenregistry/types"
@@ -39,7 +41,7 @@ func (k keeper) GetTokenMetadata(ctx sdk.Context, denomHash string) (types.Token
 		NetworkDescriptor: entry.Network,
 	}
 
-	ctx.Logger().Debug(instrumentation.PeggyTestMarker, "kind", "GetTokenMetadata", "denomHash", denomHash, "metadata", metadata)
+	ctx.Logger().Debug(instrumentation.PeggyTestMarker, "kind", "GetTokenMetadata", "denomHash", denomHash, "entry", zap.Reflect("entry", entry), "metadata", zap.Reflect("metadata", metadata))
 
 	return metadata, true
 }

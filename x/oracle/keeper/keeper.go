@@ -236,6 +236,8 @@ func (k Keeper) ProcessSignProphecy(ctx sdk.Context, networkDescriptor types.Net
 	// old = pending, new = success the only case we will emit the event
 	// old = success, new = success not emit the same event twice
 	if oldStatus == types.StatusText_STATUS_TEXT_PENDING && newStatus == types.StatusText_STATUS_TEXT_SUCCESS {
+		ctx.Logger().Debug(instrumentation.PeggyTestMarker, "kind", "ProphecyStatus", "Status", newStatus)
+
 		ctx.EventManager().EmitEvents(sdk.Events{
 
 			sdk.NewEvent(
