@@ -97,7 +97,6 @@ func (sub EthereumSub) Start(txFactory tx.Factory,
 	symbolTranslator *symbol_translator.SymbolTranslator) {
 
 	defer completionEvent.Done()
-	time.Sleep(time.Second)
 	ethClient, err := SetupWebsocketEthClient(sub.EthProvider)
 	if err != nil {
 		sub.SugaredLogger.Errorw("SetupWebsocketEthClient failed.",
@@ -152,14 +151,16 @@ func (sub EthereumSub) Start(txFactory tx.Factory,
 		case <-quit:
 			return
 		default:
-			sub.CheckNonceAndProcess(txFactory,
+			if !sub.CheckNonceAndProcess(txFactory,
 				networkID,
 				ethClient,
 				tmClient,
 				bridgeBankAddress,
 				bridgeBankContractABI,
-				symbolTranslator)
-			time.Sleep(time.Second * ethereumSleepDuration)
+				symbolTranslator) {
+				// CheckNonceAndProcess did no work, so we pause for a bit
+				time.Sleep(time.Second * ethereumSleepDuration)
+			}
 		}
 	}
 }
@@ -171,13 +172,13 @@ func (sub EthereumSub) CheckNonceAndProcess(txFactory tx.Factory,
 	tmClient *tmclient.HTTP,
 	bridgeBankAddress common.Address,
 	bridgeBankContractABI abi.ABI,
-	symbolTranslator *symbol_translator.SymbolTranslator) {
+	symbolTranslator *symbol_translator.SymbolTranslator) (processedBlocks bool) {
 	// get current block height
 	currentBlock, err := ethClient.HeaderByNumber(context.Background(), nil)
 	if err != nil {
 		sub.SugaredLogger.Errorw("failed to get the current block from ethereum client",
 			errorMessageKey, err.Error())
-		return
+		return false
 	}
 	currentBlockHeight := currentBlock.Number
 
@@ -305,12 +306,13 @@ func (sub EthereumSub) CheckNonceAndProcess(txFactory tx.Factory,
 					errorMessageKey, err.Error())
 				return
 			}
-			time.Sleep(transactionInterval)
+			processedBlocks = true
 		}
 
 		// update fromBlockNumber
 		fromBlockNumber += maxQueryBlocks
 	}
+	return processedBlocks
 }
 
 // Replay the missed events

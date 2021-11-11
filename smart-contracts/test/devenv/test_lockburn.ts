@@ -58,6 +58,7 @@ enum TransactionStep {
     SawEthbridgeClaimArray = "SawEthbridgeClaimArray",
     BroadcastTx = "BroadcastTx",
     CreateEthBridgeClaim = "CreateEthBridgeClaim",
+    AddTokenMetadata = "AddTokenMetadata",
     AppendValidatorToProphecy = "AppendValidatorToProphecy",
     ProcessSuccessfulClaim = "ProcessSuccessfulClaim",
     CoinsSent = "CoinsSent",
@@ -286,6 +287,8 @@ describe("lock of ethereum", () => {
                             return ensureCorrectTransition(acc, v, TransactionStep.CreateEthBridgeClaim, TransactionStep.AppendValidatorToProphecy)
                         case "ProcessSuccessfulClaim":
                             return ensureCorrectTransition(acc, v, TransactionStep.AppendValidatorToProphecy, TransactionStep.ProcessSuccessfulClaim)
+                        case "AddTokenMetadata":
+                            return ensureCorrectTransition(acc, v, TransactionStep.ProcessSuccessfulClaim, TransactionStep.AddTokenMetadata)
                     }
                     return {...acc, value: v, createdAt: acc.currentHeartbeat}
                 default:
@@ -320,7 +323,7 @@ describe("lock of ethereum", () => {
         expect(lv.transactionStep, `did not get CoinsSent, last step was ${JSON.stringify(lv, undefined, 2)}`).to.eq(TransactionStep.CoinsSent)
     }
 
-    it("should allow ceth to eth tx", async () => {
+    it.only("should allow ceth to eth tx", async () => {
         const ethereumAccounts = await ethereumResultsToSifchainAccounts(devEnvObject.ethResults!, hardhat.ethers.provider)
         const factories = container.resolve(SifchainContractFactories)
         const contracts = await buildDevEnvContracts(devEnvObject, hardhat, factories)
@@ -335,6 +338,9 @@ describe("lock of ethereum", () => {
         attachDebugPrintfs(evmRelayerEvents.pipe(map(x => {
             return {value: x}
         })), verbosityLevel())
+
+        // Need to have a burn of eth happen at least once or there's no data about eth in the token metadata
+        await executeLock(contracts, sendAmount, ethereumAccounts.availableAccounts[0]);
 
         // Use env to get validator address
         const sifAccount = devEnvObject!.sifResults!.validatorValues[0].address;

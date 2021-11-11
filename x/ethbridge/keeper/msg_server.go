@@ -213,17 +213,16 @@ func (srv msgServer) CreateEthBridgeClaim(goCtx context.Context, msg *types.MsgC
 		if err = srv.Keeper.ProcessSuccessfulClaim(ctx, msg.EthBridgeClaim); err != nil {
 			logger.Error("bridge keeper failed to process successful claim.", errorMessageKey, err.Error())
 			return nil, err
-		} else {
-
-			metadata := tokenregistrytypes.TokenMetadata{
-				Decimals:          claim.Decimals,
-				Name:              claim.TokenName,
-				Symbol:            claim.Symbol,
-				TokenAddress:      claim.TokenContractAddress,
-				NetworkDescriptor: claim.NetworkDescriptor,
-			}
-			srv.Keeper.AddTokenMetadata(ctx, metadata)
 		}
+
+		metadata := tokenregistrytypes.TokenMetadata{
+			Decimals:          claim.Decimals,
+			Name:              claim.TokenName,
+			Symbol:            claim.Symbol,
+			TokenAddress:      claim.TokenContractAddress,
+			NetworkDescriptor: claim.NetworkDescriptor,
+		}
+		srv.Keeper.AddTokenMetadata(ctx, metadata)
 	}
 
 	// update lock burn nonce in keeper
