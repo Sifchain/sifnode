@@ -162,66 +162,6 @@ func ExecConvForIncomingCoins(
 	return nil
 }
 
-func ExecConvForRefundCoins(
-	ctx sdk.Context,
-	bankKeeper sdktransfertypes.BankKeeper,
-	mintedDenomEntry *tokenregistrytypes.RegistryEntry,
-	convertToDenomEntry *tokenregistrytypes.RegistryEntry,
-	packet channeltypes.Packet,
-	data sdktransfertypes.FungibleTokenPacketData,
-) error {
-	// decode the sender address
-	sender, err := sdk.AccAddressFromBech32(data.Sender)
-	if err != nil {
-		return err
-	}
-	amount, ok := sdk.NewIntFromString(data.Amount)
-	if !ok {
-		return errors.New("Unable to get amount from string")
-	}
-	incomingCoins := sdk.NewCoins(sdk.NewCoin(mintedDenomEntry.Denom, amount))
-	// send ibcdenom coins from account to module
-	err = bankKeeper.SendCoinsFromAccountToModule(ctx, sender, sctransfertypes.ModuleName, incomingCoins)
-	if err != nil {
-		return err
-	}
-	convAmount := amount
-	finalCoins := sdk.NewCoins(sdk.NewCoin(convertToDenomEntry.Denom, convAmount))
-	if convertToDenomEntry.Decimals > mintedDenomEntry.Decimals {
-		diff := uint64(convertToDenomEntry.Decimals - mintedDenomEntry.Decimals)
-		convAmount, err = ConvertIncomingCoins(data.Amount, diff)
-		if err != nil {
-			return err
-		}
-		finalCoins = sdk.NewCoins(sdk.NewCoin(convertToDenomEntry.Denom, convAmount))
-	}
-	// unescrow original tokens
-	escrowAddress := sctransfertypes.GetEscrowAddress(packet.GetSourcePort(), packet.GetSourceChannel())
-	if err := bankKeeper.SendCoins(ctx, escrowAddress, sender, finalCoins); err != nil {
-		// NOTE: this error is only expected to occur given an unexpected bug or a malicious
-		// counterparty module. The bug may occur in bank or any part of the code that allows
-		// the escrow address to be drained. A malicious counterparty module could drain the
-		// escrow address by allowing more tokens to be sent back then were escrowed.
-		return sdkerrors.Wrap(err, "unable to unescrow original tokens")
-	}
-	// burn ibcdenom coins
-	err = bankKeeper.BurnCoins(ctx, sctransfertypes.ModuleName, incomingCoins)
-	if err != nil {
-		return err
-	}
-	ctx.EventManager().EmitEvent(
-		sdk.NewEvent(
-			sctransfertypes.EventTypeConvertRefund,
-			sdk.NewAttribute(sdk.AttributeKeyModule, sctransfertypes.ModuleName),
-			sdk.NewAttribute(sctransfertypes.AttributeKeyPacketAmount, fmt.Sprintf("%v", data.Amount)),
-			sdk.NewAttribute(sctransfertypes.AttributeKeyPacketDenom, mintedDenomEntry.Denom),
-			sdk.NewAttribute(sctransfertypes.AttributeKeyConvertAmount, fmt.Sprintf("%v", convAmount)),
-			sdk.NewAttribute(sctransfertypes.AttributeKeyConvertDenom, convertToDenomEntry.Denom),
-		),
-	)
-	return nil
-}
-
 func IncreasePrecision(dec sdk.Dec, po uint64) sdk.Dec {
 	p := sdk.NewDec(10).Power(po)
 	return dec.MulTruncate(p)

@@ -81,11 +81,7 @@ func TestMsgServer_Transfer(t *testing.T) {
 					TimeoutTimestamp: 0,
 				})
 			},
-			setupBankKeeperCalls: func() {
-				//bankKeeper.EXPECT().SendCoins(gomock.Any(), addrs[0], scibctransfertypes.GetEscrowAddress("transfer", "channel-0"), sdk.NewCoins(sdk.NewCoin("rowan", rowanSmallest))).Return(nil)
-				//bankKeeper.EXPECT().MintCoins(gomock.Any(), scibctransfertypes.ModuleName, sdk.NewCoins(sdk.NewCoin("rowan", rowanSmallest))).Return(nil)
-				//bankKeeper.EXPECT().SendCoinsFromModuleToAccount(gomock.Any(), scibctransfertypes.ModuleName, addrs[0], sdk.NewCoins(sdk.NewCoin("rowan", rowanSmallest))).Return(nil)
-			},
+			setupBankKeeperCalls: func() {},
 		},
 		{
 			name:       "transfer denom without ibc export permission",

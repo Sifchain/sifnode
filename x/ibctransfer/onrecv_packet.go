@@ -21,7 +21,6 @@ func OnRecvPacketWhitelistConvert(
 	whitelistKeeper tokenregistrytypes.Keeper,
 	bankKeeper transfertypes.BankKeeper,
 	packet channeltypes.Packet,
-	relayer sdk.AccAddress,
 ) channeltypes.Acknowledgement {
 	var data transfertypes.FungibleTokenPacketData
 	if err := transfertypes.ModuleCdc.UnmarshalJSON(packet.GetData(), &data); err != nil {
@@ -56,7 +55,7 @@ func OnRecvPacketWhitelistConvert(
 		)
 		return acknowledgement
 	}
-	// TODO Check entries to add rowan
+	// TODO Add entries fpr Non-X versions of tokens to tokenRegistry
 	convertToDenomEntry, err := whitelistKeeper.GetEntry(registry, mintedDenomEntry.UnitDenom)
 	if err == nil && convertToDenomEntry.Decimals > 0 && mintedDenomEntry.Decimals > 0 && convertToDenomEntry.Decimals > mintedDenomEntry.Decimals {
 		err = helpers.ExecConvForIncomingCoins(ctx, bankKeeper, mintedDenomEntry, convertToDenomEntry, packet, data)
