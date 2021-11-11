@@ -3,6 +3,7 @@ package keeper
 import (
 	"errors"
 	"fmt"
+	"github.com/Sifchain/sifnode/x/instrumentation"
 
 	"go.uber.org/zap"
 
@@ -72,7 +73,7 @@ func (k Keeper) ProcessClaim(ctx sdk.Context, claim *types.EthBridgeClaim) (orac
 func (k Keeper) ProcessSuccessfulClaim(ctx sdk.Context, claim *types.EthBridgeClaim) error {
 	logger := k.Logger(ctx)
 
-	logger.Debug(types.PeggyTestMarker, "kind", "ProcessSuccessfulClaim", "claim", zap.Reflect("claim", claim))
+	logger.Debug(instrumentation.PeggyTestMarker, "kind", "ProcessSuccessfulClaim", "claim", zap.Reflect("claim", claim))
 
 	var coins sdk.Coins
 	var err error
@@ -105,7 +106,7 @@ func (k Keeper) ProcessSuccessfulClaim(ctx sdk.Context, claim *types.EthBridgeCl
 		panic(err)
 	}
 
-	ctx.Logger().Debug(types.PeggyTestMarker, "kind", "coinsSent", "claim", zap.Reflect("claim", claim), "receiverAddress", receiverAddress, "coins", coins)
+	ctx.Logger().Debug(instrumentation.PeggyTestMarker, "kind", "coinsSent", "claim", zap.Reflect("claim", claim), "receiverAddress", receiverAddress, "coins", coins)
 
 	return nil
 }
@@ -163,7 +164,7 @@ func (k Keeper) ProcessBurn(ctx sdk.Context,
 		return []byte{}, err
 	}
 
-	logger.Debug(types.PeggyTestMarker, "kind", "SendCoinsFromAccountToModule", "cosmosSender", cosmosSender, "moduleName", types.ModuleName, "coins", coins)
+	logger.Debug(instrumentation.PeggyTestMarker, "kind", "SendCoinsFromAccountToModule", "cosmosSender", cosmosSender, "moduleName", types.ModuleName, "coins", coins)
 
 	// not burn the token if it is sifchain native token
 	if !tokenMetadata.NetworkDescriptor.IsSifchain() {
@@ -174,7 +175,7 @@ func (k Keeper) ProcessBurn(ctx sdk.Context,
 				errorMessageKey, err.Error())
 			return []byte{}, err
 		}
-		logger.Debug(types.PeggyTestMarker, "kind", "BurnCoins", "moduleName", types.ModuleName, "coins", coins)
+		logger.Debug(instrumentation.PeggyTestMarker, "kind", "BurnCoins", "moduleName", types.ModuleName, "coins", coins)
 	}
 
 	prophecyID := msg.GetProphecyID(false, senderSequence, k.GetGlobalSequence(ctx, msg.NetworkDescriptor), tokenMetadata.TokenAddress)

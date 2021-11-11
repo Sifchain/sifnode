@@ -6,6 +6,7 @@ import (
 	"context"
 	"crypto/ecdsa"
 	"errors"
+	"github.com/Sifchain/sifnode/x/instrumentation"
 	"log"
 	"math/big"
 	"os"
@@ -13,8 +14,6 @@ import (
 	"sync"
 	"syscall"
 	"time"
-
-	"github.com/Sifchain/sifnode/cmd/ebrelayer/internal"
 
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/internal/symbol_translator"
 	"google.golang.org/grpc"
@@ -406,7 +405,7 @@ func (sub EthereumSub) logToEvent(networkDescriptor oracletypes.NetworkDescripto
 	} else {
 		event.ClaimType = ethbridgetypes.ClaimType_CLAIM_TYPE_LOCK
 	}
-	sub.SugaredLogger.Debugw(internal.PeggyTestMarker, "kind", "EthereumEvent", zap.Reflect("event", event), "txhash", cLog.TxHash.Hex())
+	sub.SugaredLogger.Debugw(instrumentation.PeggyTestMarker, "kind", "EthereumEvent", zap.Reflect("event", event), "txhash", cLog.TxHash.Hex())
 
 	// Add the event to the record
 	types.NewEventWrite(cLog.TxHash.Hex(), event)
@@ -435,7 +434,7 @@ func (sub EthereumSub) handleEthereumEvent(txFactory tx.Factory,
 			// then it start from current event and sifnode will accept it
 			if lockBurnNonce == 0 || prophecyClaim.EthereumLockBurnSequence == lockBurnNonce+1 {
 				prophecyClaims = append(prophecyClaims, &prophecyClaim)
-				sub.SugaredLogger.Debugw(internal.PeggyTestMarker, "kind", "EthereumProphecyClaim", zap.Reflect("event", event))
+				sub.SugaredLogger.Debugw(instrumentation.PeggyTestMarker, "kind", "EthereumProphecyClaim", zap.Reflect("event", event))
 				lockBurnNonce = prophecyClaim.EthereumLockBurnSequence
 			} else {
 				sub.SugaredLogger.Infow("lock burn nonce is not expected",
