@@ -62,6 +62,9 @@ enum TransactionStep {
     AppendValidatorToProphecy = "AppendValidatorToProphecy",
     ProcessSuccessfulClaim = "ProcessSuccessfulClaim",
     CoinsSent = "CoinsSent",
+
+    Burn = "Burn",
+    GetTokenMetadata = "GetTokenMetadata",
 }
 
 function isTerminalState(s: State) {
@@ -168,7 +171,7 @@ describe("lock of ethereum", () => {
         let responseString: string = ChildProcess.execSync(cmd, {encoding: "utf8"})
         let responseJson = JSON.parse(responseString);
 
-        console.log("CreateTestAccount Response: ", responseJson)
+        // console.log("CreateTestAccount Response: ", responseJson)
         return {
             name: responseJson.name,
             account: responseJson.address,
@@ -184,7 +187,7 @@ describe("lock of ethereum", () => {
         let responseString: string = ChildProcess.execSync(sifnodedCmd, {encoding: "utf8"})
         let responseJson = JSON.parse(responseString);
 
-        console.log("FundSifAccount response:", responseJson);
+        // console.log("FundSifAccount response:", responseJson);
 
         return;
     }
@@ -196,27 +199,20 @@ describe("lock of ethereum", () => {
                                crossChainFee: string, netwrokDescriptor: number) {
     }
 
-    async function executeSifBurn(sender: string, destination: SignerWithAddress,
+    async function executeSifBurn(sender: EbRelayerAccount, destination: SignerWithAddress,
                                   amount: BigNumber,
                                   symbol: string,
                                   // TODO: What is correct value for corsschainfee?
                                   crossChainFee: string, netwrokDescriptor: number) {
-
-        // TODO: Move these out of this test function
-        let testSifAccount: EbRelayerAccount = createTestSifAccount();
-        fundSifAccount(devEnvObject!.sifResults!.adminAddress!.account, testSifAccount!.account, 10000000000, "ceth", devEnvObject!.sifResults!.adminAddress!.homeDir);
-        fundSifAccount(devEnvObject!.sifResults!.adminAddress!.account, testSifAccount!.account, 10000000000, "rowan", devEnvObject!.sifResults!.adminAddress!.homeDir);
-
-
-        let sifnodedCmd: string = `${gobin}/sifnoded tx ethbridge burn ${testSifAccount.account} ${destination.address} ${amount} ${symbol} ${crossChainFee} --network-descriptor ${netwrokDescriptor} --keyring-backend test --gas-prices=0.5rowan --gas-adjustment=1.5 --chain-id localnet --home ${devEnvObject!.sifResults!.adminAddress!.homeDir} --from ${testSifAccount.name} -y `
+        let sifnodedCmd: string = `${gobin}/sifnoded tx ethbridge burn ${sender.account} ${destination.address} ${amount} ${symbol} ${crossChainFee} --network-descriptor ${netwrokDescriptor} --keyring-backend test --gas-prices=0.5rowan --gas-adjustment=1.5 --chain-id localnet --home ${devEnvObject!.sifResults!.adminAddress!.homeDir} --from ${sender.name} -y `
 
         console.log("Executing: ", sifnodedCmd);
         let responseString = ChildProcess.execSync(sifnodedCmd,
             {encoding: "utf8"}
         )
         let responseJson = JSON.parse(responseString);
-
-        console.log("FundSifAccount response:", responseJson);
+        // console.log("FundSifAccount response:", responseJson);
+        return
     }
 
     async function executeLock(contracts: DevEnvContracts, smallAmount: BigNumber, sender1: SignerWithAddress) {
@@ -329,6 +325,11 @@ describe("lock of ethereum", () => {
         const contracts = await buildDevEnvContracts(devEnvObject, hardhat, factories)
         const destinationEthereumAddress = ethereumAccounts.availableAccounts[0]
         const sendAmount = BigNumber.from(3500)
+        const networkDescriptor = devEnvObject!.ethResults!.chainId;
+
+        let testSifAccount: EbRelayerAccount = createTestSifAccount();
+        fundSifAccount(devEnvObject!.sifResults!.adminAddress!.account, testSifAccount!.account, 10000000000, "ceth", devEnvObject!.sifResults!.adminAddress!.homeDir);
+        fundSifAccount(devEnvObject!.sifResults!.adminAddress!.account, testSifAccount!.account, 10000000000, "rowan", devEnvObject!.sifResults!.adminAddress!.homeDir);
 
         const evmRelayerEvents = sifwatch({
             evmrelayer: "/tmp/sifnode/evmrelayer.log",
@@ -343,12 +344,104 @@ describe("lock of ethereum", () => {
         await executeLock(contracts, sendAmount, ethereumAccounts.availableAccounts[0]);
 
         // Use env to get validator address
-        const sifAccount = devEnvObject!.sifResults!.validatorValues[0].address;
-        const networkDescriptor = devEnvObject!.ethResults!.chainId;
-        console.log("Hardhat network descriptor is: ", networkDescriptor);
-        await executeSifBurn(sifAccount, destinationEthereumAddress, sendAmount, "ceth", "1", networkDescriptor)
+        // console.log("Hardhat network descriptor is: ", networkDescriptor);
 
-        await lastValueFrom(evmRelayerEvents)
+
+        const states: Observable<State> = evmRelayerEvents.pipe(scan((acc: State, v: SifEvent) => {
+            if (isTerminalState(acc))
+                // we've reached a decision
+                return {...acc, value: {kind: "terminate"} as Terminate}
+            switch (v.kind) {
+                case "EbRelayerError":
+                case "SifnodedError":
+                    // if we get an actual error, that's always a failure
+                    return {...acc, value: {kind: "failure", value: v, message: "simple error"}}
+                case "SifHeartbeat":
+                    // we just store the heartbeat
+                    return {...acc, currentHeartbeat: v.value} as State
+
+                // Ebrelayer side log assertions
+                case "EbRelayerEvmStateTransition": {
+                    switch ((v.data as any).kind) {
+
+                        // case "EthereumProphecyClaim":
+                        //     return {
+                        //         ...acc,
+                        //         value: v,
+                        //         transactionStep: TransactionStep.SawProphecyClaim
+                        //     }
+                        // case "EthBridgeClaimArray":
+                        //     return {
+                        //         ...acc,
+                        //         value: v,
+                        //         transactionStep: TransactionStep.SawEthbridgeClaimArray
+                        //     }
+                        // case "BroadcastTx":
+                        //     return {...acc, value: v, transactionStep: TransactionStep.BroadcastTx}
+                    }
+                }
+                // Sifnoded side log assertions
+                case "SifnodedPeggyEvent": {
+                    let sifnodedEvent: any = v.data ;
+                    switch (sifnodedEvent.kind) {
+                        case "Burn":
+                            let cosmos_sender = sifnodedEvent.msg.Interface.cosmos_sender;
+                            console.log("Cosmos burn event from", cosmos_sender);
+                            return ensureCorrectTransition(acc, v, TransactionStep.Initial, TransactionStep.Burn) // v.data
+
+                        case "GetTokenMetadata":
+                            return ensureCorrectTransition(acc, v, TransactionStep.Burn, TransactionStep.GetTokenMetadata)
+
+                        case "SignProphecy":
+                            return {} as State
+                            // return enssureCorrectTransition(acc, v, TransitionStep. )
+
+                            // case "PublishedBurnMessage":
+                        //     return {} as State
+
+
+
+                        // case "coinsSent":
+                        //     const coins = ((v.data as any).coins as any)[0]
+                        //     if (coins["denom"] === ethDenomHash && smallAmount.eq(coins["amount"]))
+                        //         return ensureCorrectTransition(acc, v, TransactionStep.ProcessSuccessfulClaim, TransactionStep.CoinsSent)
+                        //     else
+                        //         return buildFailure(acc, v, "incorrect hash or amount")
+                        // // TODO these steps need validation to make sure they're happing in the right order with the right data
+                        // case "CreateEthBridgeClaim":
+                        //     return ensureCorrectTransition(
+                        //         acc,
+                        //         v,
+                        //         [TransactionStep.BroadcastTx, TransactionStep.AppendValidatorToProphecy],
+                        //         TransactionStep.CreateEthBridgeClaim
+                        //     )
+                        // case "AppendValidatorToProphecy":
+                        //     return ensureCorrectTransition(acc, v, TransactionStep.CreateEthBridgeClaim, TransactionStep.AppendValidatorToProphecy)
+                        // case "ProcessSuccessfulClaim":
+                        //     return ensureCorrectTransition(acc, v, TransactionStep.AppendValidatorToProphecy, TransactionStep.ProcessSuccessfulClaim)
+                        // case "AddTokenMetadata":
+                        //     return ensureCorrectTransition(acc, v, TransactionStep.ProcessSuccessfulClaim, TransactionStep.AddTokenMetadata)
+                    }
+                    return {...acc, value: v, createdAt: acc.currentHeartbeat}
+                }
+
+                default:
+                    // we have a new value (of any kind) and it should use the current heartbeat as its creation time
+                    return {...acc, value: v, createdAt: acc.currentHeartbeat}
+            }
+        }, {
+            value: {kind: "initialState"},
+            createdAt: 0,
+            currentHeartbeat: 0,
+            transactionStep: TransactionStep.Initial
+        } as State))
+
+        await executeSifBurn(testSifAccount, destinationEthereumAddress, sendAmount, "ceth", "1", networkDescriptor)
+
+        // await lastValueFrom(evmRelayerEvents)
+
+        const lv = await lastValueFrom(states.pipe(takeWhile(x => x.value.kind !== "terminate")))
+        console.log("Last Value:", lv)
     })
 
     it("should send two locks of ethereum", async () => {

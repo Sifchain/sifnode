@@ -38,4 +38,6 @@ export function sifwatch(logs: SifwatchLogs, hre: HardhatRuntimeEnvironment, bri
     }))
     const ethereumEvents = subscribeToEthereumEvents(hre, bridgeBank)
     return merge(evmRelayerEvents, sifnodedEvents, ethereumEvents, heartbeat)
+
+    // TODO: Add cosmosEvent
 }
