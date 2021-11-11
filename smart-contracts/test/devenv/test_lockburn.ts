@@ -65,6 +65,9 @@ enum TransactionStep {
 
     Burn = "Burn",
     GetTokenMetadata = "GetTokenMetadata",
+    CosmosEvent = "CosmosEvent",
+    PublishedProphecy = "PublishedProphecy",
+    
 }
 
 function isTerminalState(s: State) {
@@ -362,7 +365,15 @@ describe("lock of ethereum", () => {
 
                 // Ebrelayer side log assertions
                 case "EbRelayerEvmStateTransition": {
-                    switch ((v.data as any).kind) {
+                    let ebrelayerEvent: any = v.data
+                    switch (ebrelayerEvent.kind) {
+                        case "CosmosEvent": {
+                            return ensureCorrectTransition(acc, v, TransactionStep.Burn, TransactionStep.CosmosEvent)
+                        }
+
+                        case "PublishedProphecy": {
+                            return ensureCorrectTransition(acc, v, TransactionStep.CosmosEvent, TransactionStep.PublishedProphecy)
+                        }
 
                         // case "EthereumProphecyClaim":
                         //     return {
@@ -393,6 +404,10 @@ describe("lock of ethereum", () => {
                             return ensureCorrectTransition(acc, v, TransactionStep.Burn, TransactionStep.GetTokenMetadata)
 
                         case "SignProphecy":
+                            return {} as State
+
+                        case "ProphecyStatus":
+                            // Assert it is successful. But we dn need to coz thats the only end state
                             return {} as State
                             // return enssureCorrectTransition(acc, v, TransitionStep. )
 
@@ -436,7 +451,7 @@ describe("lock of ethereum", () => {
             transactionStep: TransactionStep.Initial
         } as State))
 
-        await executeSifBurn(testSifAccount, destinationEthereumAddress, sendAmount, "ceth", "1", networkDescriptor)
+        await executeSifBurn(testSifAccount, destinationEthereumAddress, sendAmount, "sif5ebfaf95495ceb5a3efbd0b0c63150676ec71e023b1043c40bcaaf91c00e15b2", "1", networkDescriptor)
 
         // await lastValueFrom(evmRelayerEvents)
 
