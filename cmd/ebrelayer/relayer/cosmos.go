@@ -300,6 +300,8 @@ func (sub CosmosSub) witnessSignProphecyID(
 		cosmosMsg.ProphecyID, address.String(), string(signature))
 
 	txs.SignProphecyToCosmos(txFactory, signProphecy, sub.CliContext, sub.SugaredLogger)
+
+	sub.SugaredLogger.Debugw(instrumentation.PeggyTestMarker, "kind", "SignProphecy", zap.Reflect("prophecy", signProphecy))
 }
 
 // GetGlobalSequenceBlockNumberFromCosmos get global Sequence block number via rpc
