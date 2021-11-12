@@ -89,17 +89,15 @@ func (k keeper) GetDenomPrefix(ctx sdk.Context, denom string) []byte {
 }
 
 func (k keeper) GetDenom(ctx sdk.Context, denom string) types.RegistryEntry {
-	var registry types.Registry
+
+	var entry types.RegistryEntry
 	key := k.GetDenomPrefix(ctx, denom)
 	store := ctx.KVStore(k.storeKey)
 	bz := store.Get(key)
 
-	k.cdc.MustUnmarshalBinaryBare(bz, &registry)
+	k.cdc.MustUnmarshalBinaryBare(bz, &entry)
 
-	return types.RegistryEntry{
-		IsWhitelisted: false,
-		Denom:         denom,
-	}
+	return entry
 }
 
 func (k keeper) SetToken(ctx sdk.Context, entry *types.RegistryEntry) {
@@ -120,12 +118,12 @@ func (k keeper) RemoveToken(ctx sdk.Context, denom string) {
 
 func (k keeper) GetRegistry(ctx sdk.Context) types.Registry {
 	var entries []*types.RegistryEntry
-	var registry types.RegistryEntry
 
 	store := ctx.KVStore(k.storeKey)
 	iterator := sdk.KVStorePrefixIterator(store, types.TokenDenomPrefix)
 	defer iterator.Close()
 	for ; iterator.Valid(); iterator.Next() {
+		var registry types.RegistryEntry
 		key := iterator.Key()
 		bz := store.Get(key)
 		k.cdc.MustUnmarshalBinaryBare(bz, &registry)
