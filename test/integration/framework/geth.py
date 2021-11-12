@@ -109,7 +109,7 @@ class Geth:
             args = [self.program, "account", "import", keyfile, "--password", passfile] + \
                    (["--datadir", datadir] if datadir else [])
             res = self.cmd.execst(args)
-            address = "0x" + re.compile("^Address: \{(.*)\}$").match(exactly_one(stdout_lines(res)))[1]
+            address = "0x" + re.compile("^Address: \\{(.*)\\}$").match(exactly_one(stdout_lines(res)))[1]
             return address
         finally:
             self.cmd.rm(keyfile)
