@@ -1100,7 +1100,7 @@ def main(argv):
             force_kill_processes(cmd)
             e = IntegrationTestsEnvironment(cmd)
             processes = e.run()
-            cmd.execst(script, cwd=project_dir("test", "integration"))
+            cmd.execst(script, cwd=project.test_integration_dir)
             killall(processes)
             force_kill_processes(cmd)  # Some processes are restarted during integration tests so we don't own them
         log.info("Everything OK")
