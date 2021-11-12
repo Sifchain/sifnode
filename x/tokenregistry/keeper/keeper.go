@@ -101,6 +101,7 @@ func (k keeper) GetDenom(ctx sdk.Context, denom string) types.RegistryEntry {
 	return entry
 }
 
+// SetToken add a new denom
 func (k keeper) SetToken(ctx sdk.Context, entry *types.RegistryEntry) {
 	entry.Sanitize()
 	key := k.GetDenomPrefix(ctx, entry.Denom)
@@ -111,12 +112,14 @@ func (k keeper) SetToken(ctx sdk.Context, entry *types.RegistryEntry) {
 	store.Set(key, bz)
 }
 
+// RemoveToken remove a token
 func (k keeper) RemoveToken(ctx sdk.Context, denom string) {
 	key := k.GetDenomPrefix(ctx, denom)
 	store := ctx.KVStore(k.storeKey)
 	store.Delete(key)
 }
 
+// GetRegistry get all token's metadata
 func (k keeper) GetRegistry(ctx sdk.Context) types.Registry {
 	var entries []*types.RegistryEntry
 
@@ -137,6 +140,7 @@ func (k keeper) GetRegistry(ctx sdk.Context) types.Registry {
 	}
 }
 
+// SetRegistry add a bunch of tokens
 func (k keeper) SetRegistry(ctx sdk.Context, wl types.Registry) {
 
 	for _, item := range wl.Entries {
