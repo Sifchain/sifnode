@@ -13,7 +13,7 @@ import {SifEvent, SifHeartbeat, sifwatch} from "../../src/watcher/watcher";
 import {distinctUntilChanged, lastValueFrom, Observable, scan, takeWhile} from "rxjs";
 import {EbRelayerEvmEvent} from "../../src/watcher/ebrelayer";
 import {EthereumMainnetEvent} from "../../src/watcher/ethereumMainnet";
-import {filter, map} from "rxjs/operators";
+import {filter} from "rxjs/operators";
 import {SignerWithAddress} from "@nomiclabs/hardhat-ethers/signers";
 import * as ChildProcess from "child_process"
 import {EbRelayerAccount} from "../../src/devenv/sifnoded";
@@ -67,7 +67,7 @@ enum TransactionStep {
     GetTokenMetadata = "GetTokenMetadata",
     CosmosEvent = "CosmosEvent",
     PublishedProphecy = "PublishedProphecy",
-
+    LogBridgeTokenMint = "LogBridgeTokenMint",
 }
 
 function isTerminalState(s: State) {
@@ -184,14 +184,11 @@ describe("lock of ethereum", () => {
 
     // TODO: Move all these sif TS SDK to it's own class. I think it should go to smart-contract/devenv
     // TODO: Rethink naming. SendToSif?
-    function fundSifAccount(adminAccount: string, destination: string, amount: number, symbol: string, homeDir: string) {
+    function fundSifAccount(adminAccount: string, destination: string, amount: number, symbol: string, homeDir: string): object {
         // sifnoded tx bank send adminAccount testAccountToBeFunded --keyring-backend test --chain-id localnet concat(amount,symbol) --gas-prices=0.5rowan --gas-adjustment=1.5 --home <homeDir> --gas auto -y
-        console.log("FundSifAccount request:", destination);
         let sifnodedCmd: string = `${gobin}/sifnoded tx bank send ${adminAccount} ${destination} --keyring-backend test --chain-id localnet ${amount}${symbol} --gas-prices=0.5rowan --gas-adjustment=1.5 --home ${homeDir} --gas auto -y`
         let responseString: string = ChildProcess.execSync(sifnodedCmd, {encoding: "utf8"})
-        let responseJson = JSON.parse(responseString);
-
-        console.log("FundSifAccount response:", responseJson);
+        return JSON.parse(responseString)
     }
 
     // TODO: This is placed here now because devObject is available in this scope
@@ -205,19 +202,16 @@ describe("lock of ethereum", () => {
                                   amount: BigNumber,
                                   symbol: string,
                                   // TODO: What is correct value for corsschainfee?
-                                  crossChainFee: string, netwrokDescriptor: number) {
+                                  crossChainFee: string, netwrokDescriptor: number): Promise<object> {
         let sifnodedCmd: string = `${gobin}/sifnoded tx ethbridge burn ${sender.account} ${destination.address} ${amount} ${symbol} ${crossChainFee} --network-descriptor ${netwrokDescriptor} --keyring-backend test --gas-prices=0.5rowan --gas-adjustment=1.5 --chain-id localnet --home ${devEnvObject!.sifResults!.adminAddress!.homeDir} --from ${sender.name} -y `
 
-        console.log("Executing: ", sifnodedCmd);
         let responseString = ChildProcess.execSync(sifnodedCmd,
             {encoding: "utf8"}
         )
-        let responseJson = JSON.parse(responseString);
-        // console.log("FundSifAccount response:", responseJson);
-        return
+        return JSON.parse(responseString)
     }
 
-    async function executeLock(contracts: DevEnvContracts, smallAmount: BigNumber, sender1: SignerWithAddress, sifchainRecipient: string) {
+    async function executeLock(contracts: DevEnvContracts, smallAmount: BigNumber, sender1: SignerWithAddress, sifchainRecipient: string, verbose: boolean) {
         const evmRelayerEvents = sifwatch({
             evmrelayer: "/tmp/sifnode/evmrelayer.log",
             sifnoded: "/tmp/sifnode/sifnoded.log"
@@ -305,7 +299,8 @@ describe("lock of ethereum", () => {
             return deepEqual({...a, currentHeartbeat: 0}, {...b, currentHeartbeat: 0})
         }))
 
-        attachDebugPrintfs(withoutHeartbeat, verbosityLevel())
+        if (verbose)
+            attachDebugPrintfs(withoutHeartbeat, verbosityLevel())
 
         await contracts.bridgeBank.connect(sender1).lock(
             sifchainRecipient,
@@ -321,7 +316,7 @@ describe("lock of ethereum", () => {
         expect(lv.transactionStep, `did not get CoinsSent, last step was ${JSON.stringify(lv, undefined, 2)}`).to.eq(TransactionStep.CoinsSent)
     }
 
-    it.only("should allow ceth to eth tx", async () => {
+    it("should allow ceth to eth tx", async () => {
         const ethereumAccounts = await ethereumResultsToSifchainAccounts(devEnvObject.ethResults!, hardhat.ethers.provider)
         const factories = container.resolve(SifchainContractFactories)
         const contracts = await buildDevEnvContracts(devEnvObject, hardhat, factories)
@@ -332,22 +327,19 @@ describe("lock of ethereum", () => {
         let testSifAccount: EbRelayerAccount = createTestSifAccount();
         fundSifAccount(devEnvObject!.sifResults!.adminAddress!.account, testSifAccount!.account, 10000000000, "rowan", devEnvObject!.sifResults!.adminAddress!.homeDir);
 
-        const evmRelayerEvents = sifwatch({
-            evmrelayer: "/tmp/sifnode/evmrelayer.log",
-            sifnoded: "/tmp/sifnode/sifnoded.log"
-        }, hardhat, contracts.bridgeBank).pipe(filter(x => x.kind !== "SifnodedInfoEvent"))
-
-        attachDebugPrintfs(evmRelayerEvents.pipe(map(x => {
-            return {value: x}
-        })), verbosityLevel())
-
         // Need to have a burn of eth happen at least once or there's no data about eth in the token metadata
         await executeLock(
             contracts,
             sendAmount,
             ethereumAccounts.availableAccounts[0],
-            web3.utils.utf8ToHex(testSifAccount.account)
+            web3.utils.utf8ToHex(testSifAccount.account),
+            false
         );
+
+        const evmRelayerEvents = sifwatch({
+            evmrelayer: "/tmp/sifnode/evmrelayer.log",
+            sifnoded: "/tmp/sifnode/sifnoded.log"
+        }, hardhat, contracts.bridgeBank).pipe(filter(x => x.kind !== "SifnodedInfoEvent"))
 
         const states: Observable<State> = evmRelayerEvents.pipe(scan((acc: State, v: SifEvent) => {
             if (isTerminalState(acc))
@@ -377,11 +369,10 @@ describe("lock of ethereum", () => {
                 }
                 // Sifnoded side log assertions
                 case "SifnodedPeggyEvent": {
-                    let sifnodedEvent: any = v.data ;
+                    let sifnodedEvent: any = v.data;
                     switch (sifnodedEvent.kind) {
                         case "Burn":
                             let cosmos_sender = sifnodedEvent.msg.Interface.cosmos_sender;
-                            console.log("Cosmos burn event from", cosmos_sender);
                             return ensureCorrectTransition(acc, v, TransactionStep.Initial, TransactionStep.Burn) // v.data
 
                         case "GetTokenMetadata":
@@ -408,6 +399,13 @@ describe("lock of ethereum", () => {
             transactionStep: TransactionStep.Initial
         } as State))
 
+        // it's useful to skip debug prints of states where only the heartbeat changed
+        const withoutHeartbeat = states.pipe(distinctUntilChanged<State>((a, b) => {
+            return deepEqual({...a, currentHeartbeat: 0}, {...b, currentHeartbeat: 0})
+        }))
+
+        attachDebugPrintfs(withoutHeartbeat, verbosityLevel())
+
         await executeSifBurn(
             testSifAccount,
             destinationEthereumAddress,
@@ -418,10 +416,10 @@ describe("lock of ethereum", () => {
         )
 
         const lv = await lastValueFrom(states.pipe(takeWhile(x => x.value.kind !== "terminate")))
-        console.log("Last Value:", lv)
+        expect(lv.transactionStep, `did not get a LogBridgeTokenMint, last step was ${JSON.stringify(lv, undefined, 2)}`).to.eq(TransactionStep.LogBridgeTokenMint)
     })
 
-    it.only("should send two locks of ethereum", async () => {
+    it("should send two locks of ethereum", async () => {
         const ethereumAccounts = await ethereumResultsToSifchainAccounts(devEnvObject.ethResults!, hardhat.ethers.provider)
         const factories = container.resolve(SifchainContractFactories)
         const contracts = await buildDevEnvContracts(devEnvObject, hardhat, factories)
@@ -429,11 +427,7 @@ describe("lock of ethereum", () => {
         const smallAmount = BigNumber.from(1017)
 
         // Do two locks of ethereum
-        await executeLock(contracts, smallAmount, sender1, recipient)
-        await executeLock(contracts, smallAmount, sender1, recipient)
+        await executeLock(contracts, smallAmount, sender1, recipient, true)
+        await executeLock(contracts, smallAmount, sender1, recipient, true)
     })
-
-    it("should watch evmrelayer logs")
-    it("should watch for evm events")
-    it("should fail if evmrelayer gets an error")
 })

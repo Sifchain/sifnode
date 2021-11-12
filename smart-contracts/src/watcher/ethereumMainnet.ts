@@ -1,8 +1,4 @@
-import {filter, map} from 'rxjs/operators';
-import * as fs from 'fs';
-import * as readline from 'readline'
-import {from, Observable, ReplaySubject} from "rxjs";
-import {jsonParseSimple, readableStreamToObservable} from "./utilities";
+import {Observable} from "rxjs";
 import {HardhatRuntimeEnvironment} from "hardhat/types";
 import {BridgeBank} from "../../build";
 import {BigNumber} from "ethers";
@@ -25,10 +21,28 @@ export interface EthereumMainnetLogLock {
         symbol: string
         name: string
         networkDescriptor: number
+        block: object
     }
 }
 
-export type EthereumMainnetEvent = EthereumMainnetBlock | EthereumMainnetLogLock
+export interface EthereumMainnetLogBurn {
+    kind: "EthereumMainnetLogBurn"
+    data: {
+        kind: "EthereumMainnetLogBurn"
+        from: string
+        to: string
+        token: string
+        value: BigNumber
+        nonce: BigNumber
+        decimals: number
+        symbol: string
+        name: string
+        networkDescriptor: number
+        block: object
+    }
+}
+
+export type EthereumMainnetEvent = EthereumMainnetBlock | EthereumMainnetLogLock | EthereumMainnetLogBurn
 
 export function isEthereumMainnetEvent(x: object): x is EthereumMainnetEvent {
     switch ((x as EthereumMainnetEvent).kind) {
@@ -45,26 +59,50 @@ export function isNotEthereumMainnetEvent(x: object): x is EthereumMainnetEvent 
 }
 
 export function subscribeToEthereumEvents(hre: HardhatRuntimeEnvironment, bridgeBank: BridgeBank): Observable<EthereumMainnetEvent> {
-    const events = new ReplaySubject<EthereumMainnetEvent>()
-
-    // subscribe to new blocks, just as the evm liveness indicator
-    bridgeBank.on(bridgeBank.filters.LogLock(), (...args) => {
-        events.next({
-            kind: "EthereumMainnetLogLock",
-            data: {
+    return new Observable<EthereumMainnetEvent>(subscriber => {
+        const logLockListener = (...args: any[]) => {
+            const newVar: EthereumMainnetLogLock = {
                 kind: "EthereumMainnetLogLock",
-                from: args[0],
-                to: args[1],
-                token: args[2],
-                value: args[3],
-                nonce: args[4],
-                decimals: args[5],
-                symbol: args[6],
-                name: args[7],
-                networkDescriptor: args[8],
-                block: args[9]
+                data: {
+                    kind: "EthereumMainnetLogLock",
+                    from: args[0],
+                    to: args[1],
+                    token: args[2],
+                    value: BigNumber.from(args[3]),
+                    nonce: BigNumber.from(args[4]),
+                    decimals: parseInt(args[5]),
+                    symbol: args[6],
+                    name: args[7],
+                    networkDescriptor: parseInt(args[8]),
+                    block: args[9]
+                }
             }
-        } as EthereumMainnetLogLock)
+            subscriber.next(newVar)
+        };
+        bridgeBank.on(bridgeBank.filters.LogLock(), logLockListener)
+        const logBurnListener = (...args: any[]) => {
+            let newVar: EthereumMainnetLogBurn = {
+                kind: "EthereumMainnetLogBurn",
+                data: {
+                    kind: "EthereumMainnetLogBurn",
+                    from: args[0],
+                    to: args[1],
+                    token: args[2],
+                    value: BigNumber.from(args[3]),
+                    nonce: BigNumber.from(args[4]),
+                    decimals: parseInt(args[5]),
+                    symbol: args[6],
+                    name: args[7],
+                    networkDescriptor: parseInt(args[8]),
+                    block: args[9]
+                }
+            };
+            subscriber.next(newVar)
+        };
+        bridgeBank.on(bridgeBank.filters.LogBurn(), logBurnListener)
+        return () => {
+            bridgeBank.off(bridgeBank.filters.LogLock(), logLockListener)
+            bridgeBank.off(bridgeBank.filters.LogBurn(), logBurnListener)
+        }
     })
-    return events
 }
