@@ -67,7 +67,7 @@ enum TransactionStep {
     GetTokenMetadata = "GetTokenMetadata",
     CosmosEvent = "CosmosEvent",
     PublishedProphecy = "PublishedProphecy",
-    
+
 }
 
 function isTerminalState(s: State) {
@@ -184,15 +184,14 @@ describe("lock of ethereum", () => {
 
     // TODO: Move all these sif TS SDK to it's own class. I think it should go to smart-contract/devenv
     // TODO: Rethink naming. SendToSif?
-    function fundSifAccount(adminAccount: string, destination: string, amount: number, symbol: string, homeDir: string): void {
+    function fundSifAccount(adminAccount: string, destination: string, amount: number, symbol: string, homeDir: string) {
         // sifnoded tx bank send adminAccount testAccountToBeFunded --keyring-backend test --chain-id localnet concat(amount,symbol) --gas-prices=0.5rowan --gas-adjustment=1.5 --home <homeDir> --gas auto -y
+        console.log("FundSifAccount request:", destination);
         let sifnodedCmd: string = `${gobin}/sifnoded tx bank send ${adminAccount} ${destination} --keyring-backend test --chain-id localnet ${amount}${symbol} --gas-prices=0.5rowan --gas-adjustment=1.5 --home ${homeDir} --gas auto -y`
         let responseString: string = ChildProcess.execSync(sifnodedCmd, {encoding: "utf8"})
         let responseJson = JSON.parse(responseString);
 
-        // console.log("FundSifAccount response:", responseJson);
-
-        return;
+        console.log("FundSifAccount response:", responseJson);
     }
 
     // TODO: This is placed here now because devObject is available in this scope
@@ -218,7 +217,7 @@ describe("lock of ethereum", () => {
         return
     }
 
-    async function executeLock(contracts: DevEnvContracts, smallAmount: BigNumber, sender1: SignerWithAddress) {
+    async function executeLock(contracts: DevEnvContracts, smallAmount: BigNumber, sender1: SignerWithAddress, sifchainRecipient: string) {
         const evmRelayerEvents = sifwatch({
             evmrelayer: "/tmp/sifnode/evmrelayer.log",
             sifnoded: "/tmp/sifnode/sifnoded.log"
@@ -309,7 +308,7 @@ describe("lock of ethereum", () => {
         attachDebugPrintfs(withoutHeartbeat, verbosityLevel())
 
         await contracts.bridgeBank.connect(sender1).lock(
-            recipient,
+            sifchainRecipient,
             ethereumAddress.eth.address,
             smallAmount,
             {
@@ -331,7 +330,6 @@ describe("lock of ethereum", () => {
         const networkDescriptor = devEnvObject!.ethResults!.chainId;
 
         let testSifAccount: EbRelayerAccount = createTestSifAccount();
-        fundSifAccount(devEnvObject!.sifResults!.adminAddress!.account, testSifAccount!.account, 10000000000, "ceth", devEnvObject!.sifResults!.adminAddress!.homeDir);
         fundSifAccount(devEnvObject!.sifResults!.adminAddress!.account, testSifAccount!.account, 10000000000, "rowan", devEnvObject!.sifResults!.adminAddress!.homeDir);
 
         const evmRelayerEvents = sifwatch({
@@ -344,11 +342,12 @@ describe("lock of ethereum", () => {
         })), verbosityLevel())
 
         // Need to have a burn of eth happen at least once or there's no data about eth in the token metadata
-        await executeLock(contracts, sendAmount, ethereumAccounts.availableAccounts[0]);
-
-        // Use env to get validator address
-        // console.log("Hardhat network descriptor is: ", networkDescriptor);
-
+        await executeLock(
+            contracts,
+            sendAmount,
+            ethereumAccounts.availableAccounts[0],
+            web3.utils.utf8ToHex(testSifAccount.account)
+        );
 
         const states: Observable<State> = evmRelayerEvents.pipe(scan((acc: State, v: SifEvent) => {
             if (isTerminalState(acc))
@@ -374,21 +373,6 @@ describe("lock of ethereum", () => {
                         case "PublishedProphecy": {
                             return ensureCorrectTransition(acc, v, TransactionStep.CosmosEvent, TransactionStep.PublishedProphecy)
                         }
-
-                        // case "EthereumProphecyClaim":
-                        //     return {
-                        //         ...acc,
-                        //         value: v,
-                        //         transactionStep: TransactionStep.SawProphecyClaim
-                        //     }
-                        // case "EthBridgeClaimArray":
-                        //     return {
-                        //         ...acc,
-                        //         value: v,
-                        //         transactionStep: TransactionStep.SawEthbridgeClaimArray
-                        //     }
-                        // case "BroadcastTx":
-                        //     return {...acc, value: v, transactionStep: TransactionStep.BroadcastTx}
                     }
                 }
                 // Sifnoded side log assertions
@@ -409,33 +393,6 @@ describe("lock of ethereum", () => {
                         case "ProphecyStatus":
                             // Assert it is successful. But we dn need to coz thats the only end state
                             return {} as State
-                            // return enssureCorrectTransition(acc, v, TransitionStep. )
-
-                            // case "PublishedBurnMessage":
-                        //     return {} as State
-
-
-
-                        // case "coinsSent":
-                        //     const coins = ((v.data as any).coins as any)[0]
-                        //     if (coins["denom"] === ethDenomHash && smallAmount.eq(coins["amount"]))
-                        //         return ensureCorrectTransition(acc, v, TransactionStep.ProcessSuccessfulClaim, TransactionStep.CoinsSent)
-                        //     else
-                        //         return buildFailure(acc, v, "incorrect hash or amount")
-                        // // TODO these steps need validation to make sure they're happing in the right order with the right data
-                        // case "CreateEthBridgeClaim":
-                        //     return ensureCorrectTransition(
-                        //         acc,
-                        //         v,
-                        //         [TransactionStep.BroadcastTx, TransactionStep.AppendValidatorToProphecy],
-                        //         TransactionStep.CreateEthBridgeClaim
-                        //     )
-                        // case "AppendValidatorToProphecy":
-                        //     return ensureCorrectTransition(acc, v, TransactionStep.CreateEthBridgeClaim, TransactionStep.AppendValidatorToProphecy)
-                        // case "ProcessSuccessfulClaim":
-                        //     return ensureCorrectTransition(acc, v, TransactionStep.AppendValidatorToProphecy, TransactionStep.ProcessSuccessfulClaim)
-                        // case "AddTokenMetadata":
-                        //     return ensureCorrectTransition(acc, v, TransactionStep.ProcessSuccessfulClaim, TransactionStep.AddTokenMetadata)
                     }
                     return {...acc, value: v, createdAt: acc.currentHeartbeat}
                 }
@@ -451,9 +408,14 @@ describe("lock of ethereum", () => {
             transactionStep: TransactionStep.Initial
         } as State))
 
-        await executeSifBurn(testSifAccount, destinationEthereumAddress, sendAmount, "sif5ebfaf95495ceb5a3efbd0b0c63150676ec71e023b1043c40bcaaf91c00e15b2", "1", networkDescriptor)
-
-        // await lastValueFrom(evmRelayerEvents)
+        await executeSifBurn(
+            testSifAccount,
+            destinationEthereumAddress,
+            sendAmount,
+            ethDenomHash,
+            "1",
+            networkDescriptor
+        )
 
         const lv = await lastValueFrom(states.pipe(takeWhile(x => x.value.kind !== "terminate")))
         console.log("Last Value:", lv)
@@ -467,8 +429,8 @@ describe("lock of ethereum", () => {
         const smallAmount = BigNumber.from(1017)
 
         // Do two locks of ethereum
-        await executeLock(contracts, smallAmount, sender1);
-        await executeLock(contracts, smallAmount, sender1);
+        await executeLock(contracts, smallAmount, sender1, recipient)
+        await executeLock(contracts, smallAmount, sender1, recipient)
     })
 
     it("should watch evmrelayer logs")
