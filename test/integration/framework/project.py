@@ -22,6 +22,7 @@ class Project:
         self.cmd = cmd
         self.base_dir = base_dir
         self.smart_contracts_dir = project_dir("smart-contracts")
+        self.test_integration_dir = project_dir("test", "integration")
         self.go_bin_dir = os.environ["GOBIN"]
 
     def project_dir(self, *paths):
@@ -147,7 +148,7 @@ class Project:
             # For running test/integration/execute_integration_tests_against_*.sh
             "TEST_INTEGRATION_DIR": project_dir("test/integration"),
             "TEST_INTEGRATION_PY_DIR": project_dir("test/integration/src/py"),
-            "SMART_CONTRACTS_DIR": self.cmd.smart_contracts_dir,
+            "SMART_CONTRACTS_DIR": self.smart_contracts_dir,
             "datadir": data_dir,  # Needed by test_rollback_chain.py that calls ganache_start.sh
             "GANACHE_KEYS_JSON": os.path.join(data_dir, "ganachekeys.json"),  # Needed by test_rollback_chain.py that calls ganache_start.sh
             "ETHEREUM_WEBSOCKET_ADDRESS": ethereum_websocket_address,   # Needed by test_ebrelayer_replay.py (and possibly others)
