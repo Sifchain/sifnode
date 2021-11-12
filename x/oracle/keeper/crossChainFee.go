@@ -2,9 +2,9 @@ package keeper
 
 import (
 	"fmt"
+	"github.com/Sifchain/sifnode/x/instrumentation"
 	"go.uber.org/zap"
 
-	ethbridgeTypes "github.com/Sifchain/sifnode/x/ethbridge/types"
 	"github.com/Sifchain/sifnode/x/oracle/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
@@ -39,7 +39,7 @@ func (k Keeper) GetCrossChainFeeConfig(ctx sdk.Context, networkIdentity types.Ne
 	crossChainFeeConfig := &types.CrossChainFeeConfig{}
 	k.cdc.MustUnmarshalBinaryBare(bz, crossChainFeeConfig)
 
-	ctx.Logger().Debug(ethbridgeTypes.PeggyTestMarker, "kind", "GetCrossChainFeeConfig", "crossChainFeeConfig", zap.Reflect("crossChainFeeConfig", crossChainFeeConfig))
+	ctx.Logger().Debug(instrumentation.PeggyTestMarker, "kind", "GetCrossChainFeeConfig", "crossChainFeeConfig", zap.Reflect("crossChainFeeConfig", crossChainFeeConfig))
 
 	return *crossChainFeeConfig, nil
 }

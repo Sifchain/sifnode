@@ -3,6 +3,7 @@ package keeper
 import (
 	"errors"
 	"fmt"
+	"github.com/Sifchain/sifnode/x/instrumentation"
 	"strconv"
 	"strings"
 
@@ -14,7 +15,6 @@ import (
 	gethCrypto "github.com/ethereum/go-ethereum/crypto"
 	"github.com/tendermint/tendermint/libs/log"
 
-	ethbridgeTypes "github.com/Sifchain/sifnode/x/ethbridge/types"
 	"github.com/Sifchain/sifnode/x/oracle/types"
 )
 
@@ -90,7 +90,7 @@ func (k Keeper) AppendValidatorToProphecy(ctx sdk.Context, networkDescriptor typ
 		prophecy.Status = types.StatusText_STATUS_TEXT_PENDING
 	}
 
-	ctx.Logger().Debug(ethbridgeTypes.PeggyTestMarker, "kind", "AppendValidatorToProphecy", "prophecy", zap.Reflect("prophecy", prophecy))
+	ctx.Logger().Debug(instrumentation.PeggyTestMarker, "kind", "AppendValidatorToProphecy", "prophecy", zap.Reflect("prophecy", prophecy))
 
 	switch prophecy.Status {
 	case types.StatusText_STATUS_TEXT_PENDING:
@@ -150,7 +150,7 @@ func (k Keeper) processCompletion(ctx sdk.Context, networkDescriptor types.Netwo
 		prophecy.Status = types.StatusText_STATUS_TEXT_SUCCESS
 	}
 
-	ctx.Logger().Debug(ethbridgeTypes.PeggyTestMarker, "kind", "processCompletion", "prophecy", zap.Reflect("prophecy", prophecy))
+	ctx.Logger().Debug(instrumentation.PeggyTestMarker, "kind", "processCompletion", "prophecy", zap.Reflect("prophecy", prophecy))
 
 	return prophecy
 }

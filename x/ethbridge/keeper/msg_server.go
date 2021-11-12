@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/Sifchain/sifnode/x/instrumentation"
 	"strconv"
 
 	"go.uber.org/zap"
@@ -32,7 +33,7 @@ func (srv msgServer) Lock(goCtx context.Context, msg *types.MsgLock) (*types.Msg
 	ctx := sdk.UnwrapSDKContext(goCtx)
 	logger := srv.Keeper.Logger(ctx)
 
-	logger.Debug(types.PeggyTestMarker, "kind", "Lock", "msg", zap.Reflect("message", msg))
+	logger.Debug(instrumentation.PeggyTestMarker, "kind", "Lock", "msg", zap.Reflect("message", msg))
 
 	cosmosSender, err := sdk.AccAddressFromBech32(msg.CosmosSender)
 	if err != nil {
@@ -107,7 +108,7 @@ func (srv msgServer) Burn(goCtx context.Context, msg *types.MsgBurn) (*types.Msg
 	ctx := sdk.UnwrapSDKContext(goCtx)
 	logger := srv.Keeper.Logger(ctx)
 
-	logger.Debug(types.PeggyTestMarker, "kind", "Burn", "msg", zap.Reflect("message", msg))
+	logger.Debug(instrumentation.PeggyTestMarker, "kind", "Burn", "msg", zap.Reflect("message", msg))
 
 	cosmosSender, err := sdk.AccAddressFromBech32(msg.CosmosSender)
 	if err != nil {
@@ -180,7 +181,7 @@ func (srv msgServer) CreateEthBridgeClaim(goCtx context.Context, msg *types.MsgC
 	ctx := sdk.UnwrapSDKContext(goCtx)
 	logger := srv.Keeper.Logger(ctx)
 
-	logger.Debug(types.PeggyTestMarker, "kind", "CreateEthBridgeClaim", "msg", zap.Reflect("message", msg))
+	logger.Debug(instrumentation.PeggyTestMarker, "kind", "CreateEthBridgeClaim", "msg", zap.Reflect("message", msg))
 
 	// check the account
 	cosmosSender := msg.EthBridgeClaim.ValidatorAddress
@@ -212,17 +213,16 @@ func (srv msgServer) CreateEthBridgeClaim(goCtx context.Context, msg *types.MsgC
 		if err = srv.Keeper.ProcessSuccessfulClaim(ctx, msg.EthBridgeClaim); err != nil {
 			logger.Error("bridge keeper failed to process successful claim.", errorMessageKey, err.Error())
 			return nil, err
-		} else {
-
-			metadata := tokenregistrytypes.TokenMetadata{
-				Decimals:          claim.Decimals,
-				Name:              claim.TokenName,
-				Symbol:            claim.Symbol,
-				TokenAddress:      claim.TokenContractAddress,
-				NetworkDescriptor: claim.NetworkDescriptor,
-			}
-			srv.Keeper.AddTokenMetadata(ctx, metadata)
 		}
+
+		metadata := tokenregistrytypes.TokenMetadata{
+			Decimals:          claim.Decimals,
+			Name:              claim.TokenName,
+			Symbol:            claim.Symbol,
+			TokenAddress:      claim.TokenContractAddress,
+			NetworkDescriptor: claim.NetworkDescriptor,
+		}
+		srv.Keeper.AddTokenMetadata(ctx, metadata)
 	}
 
 	// update lock burn nonce in keeper
@@ -450,7 +450,7 @@ func (srv msgServer) SignProphecy(goCtx context.Context, msg *types.MsgSignProph
 	ctx := sdk.UnwrapSDKContext(goCtx)
 	logger := srv.Keeper.Logger(ctx)
 
-	logger.Debug(types.PeggyTestMarker, "kind", "SignProphecy", "msg", msg)
+	logger.Debug(instrumentation.PeggyTestMarker, "kind", "SignProphecy", "msg", msg)
 
 	cosmosSender, err := sdk.AccAddressFromBech32(msg.CosmosSender)
 	if err != nil {

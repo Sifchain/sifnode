@@ -3,7 +3,7 @@ package keeper
 import (
 	"bytes"
 	"encoding/binary"
-	ethbridgeTypes "github.com/Sifchain/sifnode/x/ethbridge/types"
+	"github.com/Sifchain/sifnode/x/instrumentation"
 	"github.com/Sifchain/sifnode/x/oracle/types"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -17,7 +17,7 @@ func (k Keeper) SetWitnessLockBurnNonce(ctx sdk.Context, networkDescriptor types
 	bs := make([]byte, 8)
 	binary.BigEndian.PutUint64(bs, newNonce)
 
-	ctx.Logger().Debug(ethbridgeTypes.PeggyTestMarker, "kind", "SetWitnessLockBurnNonce", "networkDescriptor", networkDescriptor, "valAccount", valAccount, "newNonce", newNonce, "key", key)
+	ctx.Logger().Debug(instrumentation.PeggyTestMarker, "kind", "SetWitnessLockBurnNonce", "networkDescriptor", networkDescriptor, "valAccount", valAccount, "newNonce", newNonce, "key", key)
 
 	store.Set(key, bs)
 }

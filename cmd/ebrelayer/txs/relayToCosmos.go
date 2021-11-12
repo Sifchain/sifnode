@@ -3,8 +3,8 @@ package txs
 // DONTCOVER
 
 import (
-	"github.com/Sifchain/sifnode/cmd/ebrelayer/internal"
 	ethbridge "github.com/Sifchain/sifnode/x/ethbridge/types"
+	"github.com/Sifchain/sifnode/x/instrumentation"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/tx"
 	"go.uber.org/zap"
@@ -25,7 +25,7 @@ func RelayToCosmos(factory tx.Factory, claims []*ethbridge.EthBridgeClaim, cliCt
 		"relay prophecies to cosmos.",
 		"claimAmount", len(claims),
 	)
-	sugaredLogger.Debugw(internal.PeggyTestMarker, "kind", "EthBridgeClaimArray", zap.Reflect("claims", claims))
+	sugaredLogger.Debugw(instrumentation.PeggyTestMarker, "kind", "EthBridgeClaimArray", zap.Reflect("claims", claims))
 
 	for _, claim := range claims {
 		// Packages the claim as a Tendermint message
@@ -45,7 +45,7 @@ func RelayToCosmos(factory tx.Factory, claims []*ethbridge.EthBridgeClaim, cliCt
 	}
 
 	sugaredLogger.Infow("RelayToCosmos building, signing, and broadcasting", "messages", messages)
-	sugaredLogger.Debugw(internal.PeggyTestMarker, "kind", "BroadcastTx", zap.Reflect("messages", messages))
+	sugaredLogger.Debugw(instrumentation.PeggyTestMarker, "kind", "BroadcastTx", zap.Reflect("messages", messages))
 
 	err := tx.BroadcastTx(
 		cliCtx,

@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	"github.com/Sifchain/sifnode/x/instrumentation"
 	"strings"
 
 	ethbridgetypes "github.com/Sifchain/sifnode/x/ethbridge/types"
@@ -38,12 +39,12 @@ func (k keeper) GetTokenMetadata(ctx sdk.Context, denomHash string) (types.Token
 		NetworkDescriptor: entry.Network,
 	}
 
-	ctx.Logger().Debug(ethbridgetypes.PeggyTestMarker, "kind", "GetTokenMetadata", "denomHash", denomHash, "metadata", metadata)
+	ctx.Logger().Debug(instrumentation.PeggyTestMarker, "kind", "GetTokenMetadata", "denomHash", denomHash, "metadata", metadata)
 
 	return metadata, true
 }
 
-// Add new token metadata information
+// AddTokenMetadata adds new token metadata information if the token does not exist in the keeper, or it does exist and IsWhitelisted is false.
 func (k keeper) AddTokenMetadata(ctx sdk.Context, metadata types.TokenMetadata) string {
 	denomHash := ethbridgetypes.GetDenomHash(
 		metadata.NetworkDescriptor,
@@ -63,7 +64,7 @@ func (k keeper) AddTokenMetadata(ctx sdk.Context, metadata types.TokenMetadata) 
 		k.SetToken(ctx, &entry)
 	}
 
-	k.Logger(ctx).Debug(ethbridgetypes.PeggyTestMarker, "kind", "AddTokenMetadata", "entry", entry)
+	k.Logger(ctx).Debug(instrumentation.PeggyTestMarker, "kind", "AddTokenMetadata", "entry", entry)
 
 	return denomHash
 }

@@ -14,7 +14,7 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/Sifchain/sifnode/cmd/ebrelayer/internal"
+	"github.com/Sifchain/sifnode/x/instrumentation"
 
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/internal/symbol_translator"
 	"google.golang.org/grpc"
@@ -41,7 +41,6 @@ import (
 )
 
 const (
-	transactionInterval   = 10 * time.Second
 	trailingBlocks        = 50
 	ethereumSleepDuration = 1
 	maxQueryBlocks        = 5000
@@ -98,7 +97,6 @@ func (sub EthereumSub) Start(txFactory tx.Factory,
 	symbolTranslator *symbol_translator.SymbolTranslator) {
 
 	defer completionEvent.Done()
-	time.Sleep(time.Second)
 	ethClient, err := SetupWebsocketEthClient(sub.EthProvider)
 	if err != nil {
 		sub.SugaredLogger.Errorw("SetupWebsocketEthClient failed.",
@@ -153,14 +151,16 @@ func (sub EthereumSub) Start(txFactory tx.Factory,
 		case <-quit:
 			return
 		default:
-			sub.CheckNonceAndProcess(txFactory,
+			if !sub.CheckNonceAndProcess(txFactory,
 				networkID,
 				ethClient,
 				tmClient,
 				bridgeBankAddress,
 				bridgeBankContractABI,
-				symbolTranslator)
-			time.Sleep(time.Second * ethereumSleepDuration)
+				symbolTranslator) {
+				// CheckNonceAndProcess did no work, so we pause for a bit
+				time.Sleep(time.Second * ethereumSleepDuration)
+			}
 		}
 	}
 }
@@ -172,13 +172,13 @@ func (sub EthereumSub) CheckNonceAndProcess(txFactory tx.Factory,
 	tmClient *tmclient.HTTP,
 	bridgeBankAddress common.Address,
 	bridgeBankContractABI abi.ABI,
-	symbolTranslator *symbol_translator.SymbolTranslator) {
+	symbolTranslator *symbol_translator.SymbolTranslator) (processedBlocks bool) {
 	// get current block height
 	currentBlock, err := ethClient.HeaderByNumber(context.Background(), nil)
 	if err != nil {
 		sub.SugaredLogger.Errorw("failed to get the current block from ethereum client",
 			errorMessageKey, err.Error())
-		return
+		return false
 	}
 	currentBlockHeight := currentBlock.Number
 
@@ -306,12 +306,13 @@ func (sub EthereumSub) CheckNonceAndProcess(txFactory tx.Factory,
 					errorMessageKey, err.Error())
 				return
 			}
-			time.Sleep(transactionInterval)
+			processedBlocks = true
 		}
 
 		// update fromBlockNumber
 		fromBlockNumber += maxQueryBlocks
 	}
+	return processedBlocks
 }
 
 // Replay the missed events
@@ -406,7 +407,7 @@ func (sub EthereumSub) logToEvent(networkDescriptor oracletypes.NetworkDescripto
 	} else {
 		event.ClaimType = ethbridgetypes.ClaimType_CLAIM_TYPE_LOCK
 	}
-	sub.SugaredLogger.Debugw(internal.PeggyTestMarker, "kind", "EthereumEvent", zap.Reflect("event", event), "txhash", cLog.TxHash.Hex())
+	sub.SugaredLogger.Debugw(instrumentation.PeggyTestMarker, "kind", "EthereumEvent", zap.Reflect("event", event), "txhash", cLog.TxHash.Hex())
 
 	// Add the event to the record
 	types.NewEventWrite(cLog.TxHash.Hex(), event)
@@ -435,7 +436,7 @@ func (sub EthereumSub) handleEthereumEvent(txFactory tx.Factory,
 			// then it start from current event and sifnode will accept it
 			if lockBurnNonce == 0 || prophecyClaim.EthereumLockBurnSequence == lockBurnNonce+1 {
 				prophecyClaims = append(prophecyClaims, &prophecyClaim)
-				sub.SugaredLogger.Debugw(internal.PeggyTestMarker, "kind", "EthereumProphecyClaim", zap.Reflect("event", event))
+				sub.SugaredLogger.Debugw(instrumentation.PeggyTestMarker, "kind", "EthereumProphecyClaim", zap.Reflect("event", event))
 				lockBurnNonce = prophecyClaim.EthereumLockBurnSequence
 			} else {
 				sub.SugaredLogger.Infow("lock burn nonce is not expected",

@@ -3,7 +3,7 @@ package keeper
 import (
 	"encoding/binary"
 	"errors"
-	ethbridgeTypes "github.com/Sifchain/sifnode/x/ethbridge/types"
+	"github.com/Sifchain/sifnode/x/instrumentation"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	"github.com/Sifchain/sifnode/x/oracle/types"
@@ -47,7 +47,7 @@ func (k Keeper) SetProphecy(ctx sdk.Context, prophecy types.Prophecy) {
 
 	storePrefix := append(types.ProphecyPrefix, prophecy.Id[:]...)
 
-	ctx.Logger().Debug(ethbridgeTypes.PeggyTestMarker, "kind", "SetProphecy", "prophecy", prophecy, "storePrefix", storePrefix)
+	ctx.Logger().Debug(instrumentation.PeggyTestMarker, "kind", "SetProphecy", "prophecy", prophecy, "storePrefix", storePrefix)
 
 	store.Set(storePrefix, k.cdc.MustMarshalBinaryBare(&prophecy))
 }
@@ -100,7 +100,7 @@ func (k Keeper) SetProphecyInfo(ctx sdk.Context, prophecyID []byte, networkDescr
 		BlockNumber:          uint64(k.currentHeight),
 	}
 
-	ctx.Logger().Debug(ethbridgeTypes.PeggyTestMarker, "kind", "SetProphecyInfo", prophecyInfo)
+	ctx.Logger().Debug(instrumentation.PeggyTestMarker, "kind", "SetProphecyInfo", prophecyInfo)
 
 	k.SetGlobalNonceProphecyID(ctx, networkDescriptor, globalSequence, prophecyID)
 	store.Set(storePrefix, k.cdc.MustMarshalBinaryBare(&prophecyInfo))
@@ -121,7 +121,7 @@ func (k Keeper) AppendSignature(ctx sdk.Context, prophecyID []byte, ethereumAddr
 
 	storePrefix := append(types.SignaturePrefix, prophecyID[:]...)
 
-	ctx.Logger().Debug(ethbridgeTypes.PeggyTestMarker, "kind", "AppendSignature", "storePrefix", storePrefix, "prophecySignatures", prophecySignatures)
+	ctx.Logger().Debug(instrumentation.PeggyTestMarker, "kind", "AppendSignature", "storePrefix", storePrefix, "prophecySignatures", prophecySignatures)
 
 	store.Set(storePrefix, k.cdc.MustMarshalBinaryBare(&prophecySignatures))
 	return nil
@@ -167,7 +167,7 @@ func (k Keeper) SetGlobalNonceProphecyID(ctx sdk.Context,
 	store := ctx.KVStore(k.storeKey)
 	storeKey := k.getKeyViaNetworkDescriptorGlobalNonce(networkDescriptor, globalSequence)
 
-	ctx.Logger().Debug(ethbridgeTypes.PeggyTestMarker,
+	ctx.Logger().Debug(instrumentation.PeggyTestMarker,
 		"kind", "SetGlobalNonceProphecyID",
 		"storeKey", storeKey,
 		"prophecyID", prophecyID,
