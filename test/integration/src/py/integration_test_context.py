@@ -10,6 +10,7 @@ base_dir = os.path.join(project_root, "test", "integration", "framework")
 sys.path = sys.path + [base_dir]
 import command
 import cosmos
+import eth
 import main
 import common
 import project

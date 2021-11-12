@@ -2,8 +2,6 @@ import json
 import re
 from common import *
 
-ETH = 10**18  # 1 ether = 10**18 wei
-
 
 def js_fmt(str, *params):
     esc_params = tuple(json.dumps(x) for x in params)

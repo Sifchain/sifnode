@@ -1,7 +1,7 @@
 import main as mod_main
 import geth as mod_geth
+from eth import ETH
 
-ETH = mod_geth.ETH
 
 def geth_proof_of_concept():
     cmd = mod_main.Integrator()
