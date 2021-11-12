@@ -130,20 +130,20 @@ class Ebrelayer:
         self.binary = "ebrelayer"
 
     def peggy2_init_relayer(
-            self,
-            network_descriptor,
-            tendermint_node,
-            web3_provider,
-            bridge_registry_contract_address,
-            validator_moniker,
-            validator_mnemonic,
-            chain_id,
-            symbol_translator_file,
-            ethereum_address,
-            ethereum_private_key,
-            keyring_backend=None,
-            log_file=None,
-            cwd=None,
+        self,
+        network_descriptor,
+        tendermint_node,
+        web3_provider,
+        bridge_registry_contract_address,
+        validator_moniker,
+        validator_mnemonic,
+        chain_id,
+        symbol_translator_file,
+        ethereum_address,
+        ethereum_private_key,
+        keyring_backend=None,
+        log_file=None,
+        cwd=None,
     ):
         # Usage:
         #   ebrelayer init-relayer [networkDescriptor] [tendermintNode] [web3Provider] [bridgeRegistryContractAddress] [validatorMnemonic] [flags]
@@ -157,21 +157,21 @@ class Ebrelayer:
             keyring_backend=keyring_backend, cwd=cwd, log_file=log_file)
 
     def peggy2_init_witness(
-            self,
-            network_descriptor,
-            tendermint_node,
-            web3_provider,
-            bridge_registry_contract_address,
-            validator_moniker,
-            validator_mnemonic,
-            chain_id,
-            symbol_translator_file,
-            ethereum_address,
-            ethereum_private_key,
-            relayerdb_path=None,
-            keyring_backend=None,
-            log_file=None,
-            cwd=None,
+        self,
+        network_descriptor,
+        tendermint_node,
+        web3_provider,
+        bridge_registry_contract_address,
+        validator_moniker,
+        validator_mnemonic,
+        chain_id,
+        symbol_translator_file,
+        ethereum_address,
+        ethereum_private_key,
+        relayerdb_path=None,
+        keyring_backend=None,
+        log_file=None,
+        cwd=None,
     ):
         # Usage:
         #   ebrelayer init-witness [networkDescriptor] [tendermintNode] [web3Provider] [bridgeRegistryContractAddress] [validatorMnemonic] [flags]

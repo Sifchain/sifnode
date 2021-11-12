@@ -8,7 +8,14 @@ import test_utilities
 project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), *([os.path.pardir] * 4)))
 base_dir = os.path.join(project_root, "test", "integration", "framework")
 sys.path = sys.path + [base_dir]
+import command
+import cosmos
 import main
+import common
+import project
+import geth
+import hardhat
+import truffle
 
 
 class IntegrationTestContext:

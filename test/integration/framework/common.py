@@ -1,6 +1,8 @@
 import os
 import logging
 import subprocess
+import string
+import random
 import yaml
 import urllib.request
 
@@ -9,6 +11,7 @@ log = logging.getLogger(__name__)
 
 NULL_ADDRESS = "0x0000000000000000000000000000000000000000"
 ANY_ADDR = "0.0.0.0"
+ETHER = 10**18
 
 
 def stdout(res):
@@ -27,6 +30,10 @@ def exactly_one(items):
         raise ValueError("Multiple items")
     else:
         return items[0]
+
+def random_string(length):
+    chars = string.ascii_letters + string.digits
+    return "".join([chars[random.randrange(len(chars))] for _ in range(length)])
 
 def project_dir(*paths):
     return os.path.abspath(os.path.join(os.path.normpath(os.path.join(os.path.dirname(__file__), *([os.path.pardir]*3))), *paths))
