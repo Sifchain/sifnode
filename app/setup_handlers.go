@@ -8,7 +8,7 @@ import (
 	dispensationtypes "github.com/Sifchain/sifnode/x/dispensation/types"
 )
 
-const upgradeName = "Reward-Mint"
+const upgradeName = "0.9.13"
 
 func SetupHandlers(app *SifchainApp) {
 	app.UpgradeKeeper.SetUpgradeHandler(upgradeName, func(ctx sdk.Context, plan types.Plan) {
