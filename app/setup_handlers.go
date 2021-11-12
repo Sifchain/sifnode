@@ -4,6 +4,8 @@ import (
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/upgrade/types"
+
+	dispensationtypes "github.com/Sifchain/sifnode/x/dispensation/types"
 )
 
 const upgradeName = "0.9.12"
@@ -11,6 +13,20 @@ const upgradeName = "0.9.12"
 func SetupHandlers(app *SifchainApp) {
 	app.UpgradeKeeper.SetUpgradeHandler(upgradeName, func(ctx sdk.Context, plan types.Plan) {
 		app.Logger().Info("Running upgrade handler for " + upgradeName)
+
+		mintAmount, ok := sdk.NewIntFromString("200000000000000000000000000")
+		if !ok {
+			panic("failed to convert mint amount")
+		}
+		mintCoins := sdk.NewCoins(sdk.NewCoin(app.StakingKeeper.BondDenom(ctx), mintAmount))
+		err := app.BankKeeper.MintCoins(ctx, dispensationtypes.ModuleName, mintCoins)
+		if err != nil {
+			panic(err)
+		}
+		// err = app.BankKeeper.SendCoinsFromModuleToAccount(ctx, dispensationtypes.ModuleName, address, mintCoins) // TODO: get destination address
+		// if err != nil {
+		// 	panic(err)
+		// }
 	})
 
 	upgradeInfo, err := app.UpgradeKeeper.ReadUpgradeInfoFromDisk()
