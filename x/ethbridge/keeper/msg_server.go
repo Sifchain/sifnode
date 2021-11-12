@@ -7,7 +7,6 @@ import (
 	"strconv"
 
 	"github.com/Sifchain/sifnode/x/instrumentation"
-
 	"go.uber.org/zap"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"

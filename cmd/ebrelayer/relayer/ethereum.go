@@ -14,14 +14,12 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/Sifchain/sifnode/x/instrumentation"
-
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/internal/symbol_translator"
+	"github.com/Sifchain/sifnode/x/instrumentation"
 	"google.golang.org/grpc"
 
-	"github.com/cosmos/cosmos-sdk/client/tx"
-
 	"github.com/cosmos/cosmos-sdk/client"
+	"github.com/cosmos/cosmos-sdk/client/tx"
 	"github.com/cosmos/cosmos-sdk/crypto/hd"
 	"github.com/cosmos/cosmos-sdk/crypto/keyring"
 	sdk "github.com/cosmos/cosmos-sdk/types"
