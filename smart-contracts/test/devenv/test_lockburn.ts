@@ -421,7 +421,7 @@ describe("lock of ethereum", () => {
         console.log("Last Value:", lv)
     })
 
-    it("should send two locks of ethereum", async () => {
+    it.only("should send two locks of ethereum", async () => {
         const ethereumAccounts = await ethereumResultsToSifchainAccounts(devEnvObject.ethResults!, hardhat.ethers.provider)
         const factories = container.resolve(SifchainContractFactories)
         const contracts = await buildDevEnvContracts(devEnvObject, hardhat, factories)

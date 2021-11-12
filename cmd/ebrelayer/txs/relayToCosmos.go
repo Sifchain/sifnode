@@ -25,7 +25,7 @@ func RelayToCosmos(factory tx.Factory, claims []*ethbridge.EthBridgeClaim, cliCt
 		"relay prophecies to cosmos.",
 		"claimAmount", len(claims),
 	)
-	sugaredLogger.Debugw(instrumentation.PeggyTestMarker, "kind", "EthBridgeClaimArray", zap.Reflect("claims", claims))
+	instrumentation.PeggyCheckpointZap(sugaredLogger, "EthBridgeClaimArray", zap.Reflect("claims", claims))
 
 	for _, claim := range claims {
 		// Packages the claim as a Tendermint message
@@ -45,7 +45,7 @@ func RelayToCosmos(factory tx.Factory, claims []*ethbridge.EthBridgeClaim, cliCt
 	}
 
 	sugaredLogger.Infow("RelayToCosmos building, signing, and broadcasting", "messages", messages)
-	sugaredLogger.Debugw(instrumentation.PeggyTestMarker, "kind", "BroadcastTx", zap.Reflect("messages", messages))
+	instrumentation.PeggyCheckpointZap(sugaredLogger, "BroadcastTx", zap.Reflect("messages", messages))
 
 	err := tx.BroadcastTx(
 		cliCtx,

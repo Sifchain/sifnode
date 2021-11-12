@@ -173,7 +173,7 @@ func (sub CosmosSub) ProcessLockBurnWithScope(txFactory tx.Factory, client *tmcl
 				claimType := getOracleClaimType(event.GetType())
 
 				sub.SugaredLogger.Infow("claimtype cosmos.go: ", "claimType: ", claimType)
-				sub.SugaredLogger.Debugw(instrumentation.PeggyTestMarker, "kind", "CosmosEvent", zap.Reflect("event", event))
+				instrumentation.PeggyCheckpointZap(sub.SugaredLogger, "CosmosEvent", zap.Reflect("event", event))
 
 				switch claimType {
 				case types.MsgBurn, types.MsgLock:
@@ -301,7 +301,7 @@ func (sub CosmosSub) witnessSignProphecyID(
 
 	txs.SignProphecyToCosmos(txFactory, signProphecy, sub.CliContext, sub.SugaredLogger)
 
-	sub.SugaredLogger.Debugw(instrumentation.PeggyTestMarker, "kind", "SignProphecy", zap.Reflect("prophecy", signProphecy))
+	instrumentation.PeggyCheckpointZap(sub.SugaredLogger, "SignProphecy", zap.Reflect("prophecy", signProphecy))
 }
 
 // GetGlobalSequenceBlockNumberFromCosmos get global Sequence block number via rpc

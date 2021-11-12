@@ -86,7 +86,7 @@ func (k Keeper) SetGlobalNonceToBlockNumber(
 	bs := make([]byte, 8)
 	binary.LittleEndian.PutUint64(bs, blockNumber)
 
-	ctx.Logger().Debug(instrumentation.PeggyTestMarker, "kind", "SetGlobalNonceToBlockNumber", "networkDescriptor", networkDescriptor, "globalNonce", globalNonce, "blockNumber", blockNumber)
+	instrumentation.PeggyCheckpoint(ctx.Logger(), "SetGlobalNonceToBlockNumber", "networkDescriptor", networkDescriptor, "globalNonce", globalNonce, "blockNumber", blockNumber)
 
 	store.Set(prefix, bs)
 }

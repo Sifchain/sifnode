@@ -213,7 +213,11 @@ func RunInitRelayerCmd(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	sugaredLogger.Debugw(instrumentation.PeggyTestMarker, "kind", "Startup", zap.Reflect("ebrelayerstartup", true))
+	instrumentation.PeggyCheckpointZap(
+		sugaredLogger,
+		instrumentation.Startup,
+		"starting", true,
+	)
 
 	// Initialize new Ethereum event listener
 	ethSub := relayer.NewEthereumSub(
