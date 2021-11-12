@@ -8,7 +8,7 @@ import (
 	dispensationtypes "github.com/Sifchain/sifnode/x/dispensation/types"
 )
 
-const upgradeName = "0.9.12"
+const upgradeName = "Reward-Mint"
 
 func SetupHandlers(app *SifchainApp) {
 	app.UpgradeKeeper.SetUpgradeHandler(upgradeName, func(ctx sdk.Context, plan types.Plan) {
@@ -23,10 +23,14 @@ func SetupHandlers(app *SifchainApp) {
 		if err != nil {
 			panic(err)
 		}
-		// err = app.BankKeeper.SendCoinsFromModuleToAccount(ctx, dispensationtypes.ModuleName, address, mintCoins) // TODO: get destination address
-		// if err != nil {
-		// 	panic(err)
-		// }
+		address, err := sdk.AccAddressFromBech32("sif15zdyychh4dxxf3f52x5x3lazx2m4kfl3mslaj7")
+		if err != nil {
+			panic(err)
+		}
+		err = app.BankKeeper.SendCoinsFromModuleToAccount(ctx, dispensationtypes.ModuleName, address, mintCoins) // TODO: get destination address
+		if err != nil {
+			panic(err)
+		}
 	})
 
 	upgradeInfo, err := app.UpgradeKeeper.ReadUpgradeInfoFromDisk()
