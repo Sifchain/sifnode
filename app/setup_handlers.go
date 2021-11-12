@@ -13,23 +13,24 @@ const upgradeName = "0.9.13"
 func SetupHandlers(app *SifchainApp) {
 	app.UpgradeKeeper.SetUpgradeHandler(upgradeName, func(ctx sdk.Context, plan types.Plan) {
 		app.Logger().Info("Running upgrade handler for " + upgradeName)
-
-		mintAmount, ok := sdk.NewIntFromString("200000000000000000000000000")
-		if !ok {
-			panic("failed to convert mint amount")
-		}
-		mintCoins := sdk.NewCoins(sdk.NewCoin(app.StakingKeeper.BondDenom(ctx), mintAmount))
-		err := app.BankKeeper.MintCoins(ctx, dispensationtypes.ModuleName, mintCoins)
-		if err != nil {
-			panic(err)
-		}
-		address, err := sdk.AccAddressFromBech32("sif1ct2s3t8u2kffjpaekhtngzv6yc4vm97xajqyl3")
-		if err != nil {
-			panic(err)
-		}
-		err = app.BankKeeper.SendCoinsFromModuleToAccount(ctx, dispensationtypes.ModuleName, address, mintCoins) // TODO: get destination address
-		if err != nil {
-			panic(err)
+		if plan.Name == "0.9.13" {
+			mintAmount, ok := sdk.NewIntFromString("200000000000000000000000000")
+			if !ok {
+				panic("failed to convert mint amount")
+			}
+			mintCoins := sdk.NewCoins(sdk.NewCoin(app.StakingKeeper.BondDenom(ctx), mintAmount))
+			err := app.BankKeeper.MintCoins(ctx, dispensationtypes.ModuleName, mintCoins)
+			if err != nil {
+				panic(err)
+			}
+			address, err := sdk.AccAddressFromBech32("sif1ct2s3t8u2kffjpaekhtngzv6yc4vm97xajqyl3")
+			if err != nil {
+				panic(err)
+			}
+			err = app.BankKeeper.SendCoinsFromModuleToAccount(ctx, dispensationtypes.ModuleName, address, mintCoins) // TODO: get destination address
+			if err != nil {
+				panic(err)
+			}
 		}
 	})
 
