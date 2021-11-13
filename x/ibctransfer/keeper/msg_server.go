@@ -45,11 +45,9 @@ func (srv msgServer) Transfer(goCtx context.Context, msg *sdktransfertypes.MsgTr
 	if !srv.tokenRegistryKeeper.CheckEntryPermissions(registryEntry, []tokenregistrytypes.Permission{tokenregistrytypes.Permission_IBCEXPORT}) {
 		return nil, sdkerrors.Wrap(tokenregistrytypes.ErrPermissionDenied, "denom cannot be exported")
 	}
-	if !msg.Token.Amount.IsInt64() {
-		return nil, types.ErrAmountTooLargeToSend
-	}
 	if msg.Token.Amount.LTE(sdk.NewInt(0)) {
 		return nil, types.ErrAmountTooLowToConvert
 	}
+
 	return srv.sdkMsgServer.Transfer(goCtx, msg)
 }
