@@ -35,6 +35,11 @@ jobs:
           docker push sifchain/sifnoded:${{ steps.version.outputs.version }}
           docker push sifchain/ebrelayer:${{ steps.version.outputs.version }}
 
+      - name: Get commit hash
+        id: hash
+        run: |
+          echo "::set-output name=sha_short::$(git rev-parse --short HEAD)"
+
       - name: Release a new sifnoded binary
         uses: ./sifchain-devops/release
         with:
@@ -44,5 +49,5 @@ jobs:
           goversion: "1.16"
           project_path: "./cmd/sifnoded"
           binary_name: "sifnoded"
-          ldflags: "-X github.com/cosmos/cosmos-sdk/version.Name=sifchain -X github.com/cosmos/cosmos-sdk/version.ServerName=sifnoded -X github.com/cosmos/cosmos-sdk/version.ClientName=sifnoded -X github.com/cosmos/cosmos-sdk/version.Version=${{ steps.version.outputs.version }} -X github.com/cosmos/cosmos-sdk/version.Commit=${{ env.GITHUB_SHA }}"
+          ldflags: "-X github.com/cosmos/cosmos-sdk/version.Name=sifchain -X github.com/cosmos/cosmos-sdk/version.ServerName=sifnoded -X github.com/cosmos/cosmos-sdk/version.ClientName=sifnoded -X github.com/cosmos/cosmos-sdk/version.Version=${{ steps.version.outputs.version }} -X github.com/cosmos/cosmos-sdk/version.Commit=${{ steps.hash.outputs.sha_short }}"
           sha256sum: true
