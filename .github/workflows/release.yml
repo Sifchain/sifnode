@@ -13,33 +13,30 @@ jobs:
       - uses: actions/checkout@v2
       - uses: actions/checkout@v2
         with:
-          repository: Sifchain/sifchain-deploy
-          path: deploy
+          repository: Sifchain/sifchain-devops
+          path: sifchain-devops
           token: "${{ secrets.GIT_PAT }}"
 
       - name: Login to Docker Hub
         run: docker login -u ${{ secrets.DOCKERHUB_USERNAME }} -p ${{ secrets.DOCKERHUB_TOKEN }}
-
-      - name: Inject slug/short variables
-        uses: rlespinasse/github-slug-action@v2.x
-
-      - name: Build docker images
-        run: |
-          make IMAGE_TAG=${{ env.GITHUB_REF_SLUG }} BINARY=sifnoded build-image
-          make IMAGE_TAG=${{ env.GITHUB_REF_SLUG }} BINARY=ebrelayer build-image
-
-      - name: Push docker images
-        run: |
-          docker push sifchain/sifnoded:${{ env.GITHUB_REF_SLUG }}
-          docker push sifchain/ebrelayer:${{ env.GITHUB_REF_SLUG }}
 
       - name: Get version
         id: version
         run: |
           echo "::set-output name=version::$(cat version)"
 
+      - name: Build docker images
+        run: |
+          make IMAGE_TAG=${{ steps.version.outputs.version }} BINARY=sifnoded build-image
+          make IMAGE_TAG=${{ steps.version.outputs.version }} BINARY=ebrelayer build-image
+
+      - name: Push docker images
+        run: |
+          docker push sifchain/sifnoded:${{ steps.version.outputs.version }}
+          docker push sifchain/ebrelayer:${{ steps.version.outputs.version }}
+
       - name: Release a new sifnoded binary
-        uses: ./deploy/release
+        uses: ./sifchain-devops/release
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           goos: linux
@@ -47,5 +44,5 @@ jobs:
           goversion: "1.16"
           project_path: "./cmd/sifnoded"
           binary_name: "sifnoded"
-          ldflags: "-X github.com/cosmos/cosmos-sdk/version.Name=sifchain -X github.com/cosmos/cosmos-sdk/version.ServerName=sifnoded -X github.com/cosmos/cosmos-sdk/version.ClientName=sifnoded -X github.com/cosmos/cosmos-sdk/version.Version=${{ env.GITHUB_REF_SLUG }} -X github.com/cosmos/cosmos-sdk/version.Commit=${{ steps.version.outputs.version }}"
+          ldflags: "-X github.com/cosmos/cosmos-sdk/version.Name=sifchain -X github.com/cosmos/cosmos-sdk/version.ServerName=sifnoded -X github.com/cosmos/cosmos-sdk/version.ClientName=sifnoded -X github.com/cosmos/cosmos-sdk/version.Version=${{ steps.version.outputs.version }} -X github.com/cosmos/cosmos-sdk/version.Commit=${GITHUB_SHA}"
           sha256sum: true
