@@ -23,32 +23,20 @@ jobs:
       - name: Inject slug/short variables
         uses: rlespinasse/github-slug-action@v2.x
 
-      - if: contains(github.ref, 'devnet')
-        run: |
-          echo "CHAINNET=testnet" >> "$GITHUB_ENV"
-
-      - if: contains(github.ref, 'testnet')
-        run: |
-          echo "CHAINNET=testnet" >> "$GITHUB_ENV"
-
-      - if: contains(github.ref, 'betanet')
-        run: |
-          echo "CHAINNET=betanet" >> "$GITHUB_ENV"
-
-      - if: contains(github.ref, 'mainnet')
-        run: |
-          echo "CHAINNET=mainnet" >> "$GITHUB_ENV"
-
       - name: Build docker images
         run: |
-          echo ${{ env.CHAINNET }}
-          make CHAINNET=${{ env.CHAINNET }} IMAGE_TAG=${{ env.GITHUB_REF_SLUG }} BINARY=sifnoded build-image
-          make CHAINNET=${{ env.CHAINNET }} IMAGE_TAG=${{ env.GITHUB_REF_SLUG }} BINARY=ebrelayer build-image
+          make IMAGE_TAG=${{ env.GITHUB_REF_SLUG }} BINARY=sifnoded build-image
+          make IMAGE_TAG=${{ env.GITHUB_REF_SLUG }} BINARY=ebrelayer build-image
 
       - name: Push docker images
         run: |
           docker push sifchain/sifnoded:${{ env.GITHUB_REF_SLUG }}
           docker push sifchain/ebrelayer:${{ env.GITHUB_REF_SLUG }}
+
+      - name: Get version
+        id: version
+        run: |
+          echo "::set-output name=version::$(cat version)"
 
       - name: Release a new sifnoded binary
         uses: ./deploy/release
@@ -59,4 +47,10 @@ jobs:
           goversion: "1.16"
           project_path: "./cmd/sifnoded"
           binary_name: "sifnoded"
+          ldflags:
+            - -X github.com/cosmos/cosmos-sdk/version.Name=sifchain
+            - -X github.com/cosmos/cosmos-sdk/version.ServerName=sifnoded
+            - -X github.com/cosmos/cosmos-sdk/version.ClientName=sifnoded
+            - -X github.com/cosmos/cosmos-sdk/version.Version=${{ env.GITHUB_REF_SLUG }}
+            - -X github.com/cosmos/cosmos-sdk/version.Commit=${{ steps.version.outputs.version }}
           sha256sum: true
