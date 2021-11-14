@@ -44,11 +44,11 @@ func TestAdjustGasPriceDecorator_AnteHandle(t *testing.T) {
 	}{
 		{"no messages", ctx, []sdk.Msg{}, highGasPrice, false},
 		{"dispensation create", ctx, []sdk.Msg{&dispensationCreateMsg}, loweredGasPrice, false},
-		{"dispensation create with extra msg", ctx, []sdk.Msg{&dispensationCreateMsg, otherMsg}, highGasPrice, false},
+		{"dispensation create with extra msg", ctx, []sdk.Msg{&dispensationCreateMsg, otherMsg}, highGasPrice, true},
 		{"dispensation run", ctx, []sdk.Msg{&dispensationRunMsg}, loweredGasPrice, false},
-		{"dispensation run with extra msg", ctx, []sdk.Msg{&dispensationRunMsg, otherMsg}, highGasPrice, false},
-		{"other message without dispensation", ctx, []sdk.Msg{otherMsg}, highGasPrice, false},
-		{"other messages without dispensation", ctx, []sdk.Msg{otherMsg, otherMsg}, highGasPrice, false},
+		{"dispensation run with extra msg", ctx, []sdk.Msg{&dispensationRunMsg, otherMsg}, highGasPrice, true},
+		{"other message without dispensation", ctx, []sdk.Msg{otherMsg}, highGasPrice, true},
+		{"other messages without dispensation", ctx, []sdk.Msg{otherMsg, otherMsg}, highGasPrice, true},
 	}
 	for _, tc := range tt {
 		tc := tc
