@@ -44,5 +44,5 @@ jobs:
           goversion: "1.16"
           project_path: "./cmd/sifnoded"
           binary_name: "sifnoded"
-          ldflags: "-X github.com/cosmos/cosmos-sdk/version.Name=sifchain -X github.com/cosmos/cosmos-sdk/version.ServerName=sifnoded -X github.com/cosmos/cosmos-sdk/version.ClientName=sifnoded -X github.com/cosmos/cosmos-sdk/version.Version=${{ steps.version.outputs.version }} -X github.com/cosmos/cosmos-sdk/version.Commit=${GITHUB_SHA}"
+          ldflags: "-X github.com/cosmos/cosmos-sdk/version.Name=sifchain -X github.com/cosmos/cosmos-sdk/version.ServerName=sifnoded -X github.com/cosmos/cosmos-sdk/version.ClientName=sifnoded -X github.com/cosmos/cosmos-sdk/version.Version=${{ steps.version.outputs.version }} -X github.com/cosmos/cosmos-sdk/version.Commit=${{ env.GITHUB_SHA }}"
           sha256sum: true
