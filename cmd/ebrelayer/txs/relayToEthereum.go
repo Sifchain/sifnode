@@ -74,6 +74,9 @@ func RelayProphecyClaimToEthereum(
 		receipt, err = client.TransactionReceipt(context.Background(), tx.Hash())
 
 		if err != nil {
+			sugaredLogger.Errorw("Error trying to retrieve transaction",
+				"ProphecyClaimHash", tx.Hash().Hex(),
+				"error", err.Error())
 			sleepThread(1)
 		} else {
 			break

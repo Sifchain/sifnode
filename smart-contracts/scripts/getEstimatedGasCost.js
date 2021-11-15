@@ -1,7 +1,7 @@
 module.exports = async (cb) => {
     try {
-        
-    
+
+
     const CosmosBridge = artifacts.require("CosmosBridge");
 
     /*******************************************
@@ -10,15 +10,15 @@ module.exports = async (cb) => {
     require("dotenv").config();
     const Web3 = require("web3");
     const HDWalletProvider = require("@truffle/hdwallet-provider");
-  
+
     // Contract abstraction
-  
+
     /*******************************************
      *** Constants
      ******************************************/
     const NETWORK_ROPSTEN =
       process.argv[4] === "--network" && process.argv[5] === "ropsten";
-  
+
     /*******************************************
      *** Web3 provider
      *** Set contract provider based on --network flag
@@ -27,7 +27,7 @@ module.exports = async (cb) => {
     if (NETWORK_ROPSTEN) {
       provider = new HDWalletProvider(
         process.env.ETHEREUM_PRIVATE_KEY,
-        "https://ropsten.infura.io/v3/".concat(process.env.INFURA_PROJECT_ID)
+        process.env['WEB3_PROVIDER']
       );
     } else {
       provider = new Web3.providers.HttpProvider(process.env.LOCAL_PROVIDER);
@@ -53,7 +53,7 @@ module.exports = async (cb) => {
         {
             from: "0x1Aa97F2463A78364F6D3Da90EEb99F8CDb9392f4"
         }
-    );  
+    );
     console.log("Estimated gas cost: ", estimatedGas);
 
     estimatedGas = await cosmosBridge.newProphecyClaim.estimateGas(
@@ -66,7 +66,7 @@ module.exports = async (cb) => {
         {
             from: "0x1Aa97F2463A78364F6D3Da90EEb99F8CDb9392f4"
         }
-    );  
+    );
     console.log("Estimated gas cost: ", estimatedGas);
     cb();
     } catch (error) {
@@ -74,4 +74,3 @@ module.exports = async (cb) => {
         cb();
     }
   };
-  

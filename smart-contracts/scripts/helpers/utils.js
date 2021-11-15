@@ -107,7 +107,6 @@ function generateV1Denom(symbol) {
  * Model of an object that the Sifnode team cares about
  */
 const SIFNODE_MODEL = {
-  is_whitelisted: true,
   decimals: "",
   denom: "",
   base_denom: "",
