@@ -10,6 +10,7 @@ import { EthereumMainnetEvent, subscribeToEthereumEvents } from "./ethereumMainn
 export interface SifwatchLogs {
   evmrelayer: string
   sifnoded: string
+  witness?: string
 }
 
 export interface SifHeartbeat {
@@ -43,9 +44,19 @@ export function sifwatch(
     })
   )
   const ethereumEvents = subscribeToEthereumEvents(hre, bridgeBank)
-  return merge(evmRelayerEvents, sifnodedEvents, ethereumEvents, heartbeat)
 
-  // TODO: Add cosmosEvent
+  if (logs.witness != undefined) {
+    const witnessLines = tailFileAsObservable(logs.witness)
+    const witnessEvents: Observable<EbRelayerEvent> = witnessLines.pipe(
+      map(jsonParseSimple),
+      map(toEvmRelayerEvent),
+      filter<EbRelayerEvent | undefined, EbRelayerEvent>(isNotNullOrUndefined)
+    )
+    console.log("Adding witness logs")
+    return merge(evmRelayerEvents, sifnodedEvents, ethereumEvents, witnessEvents, heartbeat)
+  }
+
+  return merge(evmRelayerEvents, sifnodedEvents, ethereumEvents, heartbeat)
 }
 
 export function sifwatchReplayable(

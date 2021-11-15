@@ -38,8 +38,11 @@ const config: HardhatUserConfig = {
   networks: {
     hardhat: {
       allowUnlimitedContractSize: false,
-      chainId: 1,
       initialBaseFeePerGas: runCoverage ? 0 : 875000000,
+      mining: {
+        auto: true,
+        interval: 200
+      },
       forking: {
         enabled: useForking,
         url: networkUrl,

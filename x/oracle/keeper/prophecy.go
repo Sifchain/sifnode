@@ -48,7 +48,7 @@ func (k Keeper) SetProphecy(ctx sdk.Context, prophecy types.Prophecy) {
 
 	storePrefix := append(types.ProphecyPrefix, prophecy.Id[:]...)
 
-	instrumentation.PeggyCheckpoint(ctx.Logger(), instrumentation.SetProphecy, "prophecy", prophecy, "storePrefix", storePrefix)
+	instrumentation.PeggyCheckpoint(ctx.Logger(), instrumentation.SetProphecy, "prophecy", prophecy, "validatorlength", prophecy.ClaimValidators, "storePrefix", string(storePrefix))
 
 	store.Set(storePrefix, k.cdc.MustMarshalBinaryBare(&prophecy))
 }

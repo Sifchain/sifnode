@@ -36,6 +36,8 @@ const (
 	SetFirstLockDoublePeg          = "SetFirstLockDoublePeg"
 	AddTokenMetadata               = "AddTokenMetadata"
 	GetTokenMetadata               = "GetTokenMetadata"
+	PublishCosmosBurnMessage       = "PublishCosmosBurnMessage"
+	ReceiveCosmosBurnMessage       = "ReceiveCosmosBurnMessage"
 )
 
 func PeggyCheckpoint(logger log.Logger, kind string, keysAndValues ...interface{}) {

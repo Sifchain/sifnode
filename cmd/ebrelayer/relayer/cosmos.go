@@ -103,6 +103,8 @@ func (sub CosmosSub) Start(txFactory tx.Factory, completionEvent *sync.WaitGroup
 
 	defer client.Stop() //nolint:errcheck
 
+	sub.SugaredLogger.Info("Initialized cosmos subscription")
+
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	defer close(quit)
@@ -167,7 +169,7 @@ func (sub CosmosSub) ProcessLockBurnWithScope(txFactory tx.Factory, client *tmcl
 		fromBlockNumber = 1
 	}
 
-	for blockNumber := fromBlockNumber; blockNumber <= toBlockNumber; {
+	for blockNumber := fromBlockNumber; blockNumber <= toBlockNumber; blockNumber++ {
 		tmpBlockNumber := int64(blockNumber)
 
 		ctx := context.Background()
@@ -186,15 +188,15 @@ func (sub CosmosSub) ProcessLockBurnWithScope(txFactory tx.Factory, client *tmcl
 				claimType := getOracleClaimType(event.GetType())
 
 				sub.SugaredLogger.Infow("claimtype cosmos.go: ", "claimType: ", claimType)
-				instrumentation.PeggyCheckpointZap(sub.SugaredLogger, "CosmosEvent", zap.Reflect("event", event))
+				// instrumentation.PeggyCheckpointZap(sub.SugaredLogger, instrumentation.CosmosEvent, zap.Reflect("event", event))
 
 				switch claimType {
 				case types.MsgBurn, types.MsgLock:
-
 					// the relayer for signature aggregator not handle burn and lock
 					cosmosMsg, err := txs.BurnLockEventToCosmosMsg(event.GetAttributes(), sub.SugaredLogger)
+					instrumentation.PeggyCheckpointZap(sub.SugaredLogger, instrumentation.ReceiveCosmosBurnMessage, zap.Reflect("cosmosMsg", cosmosMsg), zap.Reflect("sub", sub), "globalSequence", globalSequence)
 					if err != nil {
-						sub.SugaredLogger.Errorw("sifchain client failed in get burn lock message from event.",
+						sub.SugaredLogger.Errorw("sifchain client receive a malformed burn/lock message.",
 							errorMessageKey, err.Error())
 						continue
 					}
@@ -228,7 +230,6 @@ func (sub CosmosSub) ProcessLockBurnWithScope(txFactory tx.Factory, client *tmcl
 			}
 		}
 
-		blockNumber++
 	}
 }
 
@@ -302,7 +303,7 @@ func (sub CosmosSub) witnessSignProphecyID(
 
 	txs.SignProphecyToCosmos(txFactory, signProphecy, sub.CliContext, sub.SugaredLogger)
 
-	instrumentation.PeggyCheckpointZap(sub.SugaredLogger, "SignProphecy", zap.Reflect("prophecy", signProphecy))
+	instrumentation.PeggyCheckpointZap(sub.SugaredLogger, instrumentation.SignProphecy, zap.Reflect("prophecy", signProphecy))
 }
 
 // GetGlobalSequenceBlockNumberFromCosmos get global Sequence block number via rpc
@@ -319,6 +320,8 @@ func (sub CosmosSub) GetGlobalSequenceBlockNumberFromCosmos(
 	defer cancel()
 	client := ethbridgetypes.NewQueryClient(conn)
 
+	// Get lockburn sequence per networkdescriptor+relayer address
+	// TODO: Should relayer be witness?
 	request := ethbridgetypes.QueryWitnessLockBurnSequenceRequest{
 		NetworkDescriptor: networkDescriptor,
 		RelayerValAddress: relayerValAddress,
@@ -329,6 +332,9 @@ func (sub CosmosSub) GetGlobalSequenceBlockNumberFromCosmos(
 	}
 	globalSequence := response.WitnessLockBurnSequence
 
+	sub.SugaredLogger.Debugw("Retrieved witness lockburn sequence", "globalSequence", globalSequence)
+
+	// Get the block number of the global sequence to be processed next
 	request2 := ethbridgetypes.QueryGlobalSequenceBlockNumberRequest{
 		NetworkDescriptor: networkDescriptor,
 		GlobalSequence:    globalSequence + 1,
@@ -338,6 +344,8 @@ func (sub CosmosSub) GetGlobalSequenceBlockNumberFromCosmos(
 	if err != nil {
 		return 0, 0, err
 	}
+
+	sub.SugaredLogger.Debugw("Retrieved block number", "response", &response2)
 
 	return globalSequence, response2.BlockNumber, nil
 }

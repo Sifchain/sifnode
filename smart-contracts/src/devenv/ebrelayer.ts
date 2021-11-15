@@ -42,7 +42,7 @@ export class WitnessRunner extends ShellCommand<EbrelayerResults> {
   }
 
   cmd(): [string, string[]] {
-    return [
+    let witnessCmd: [string, string[]] = [
       "ebrelayer",
       [
         "init-witness",
@@ -74,6 +74,9 @@ export class WitnessRunner extends ShellCommand<EbrelayerResults> {
         "json",
       ],
     ]
+    // TODO: Switch this to debug
+    console.log("Running witness command", witnessCmd)
+    return witnessCmd
   }
 
   override async run(): Promise<void> {
@@ -126,7 +129,7 @@ export class RelayerRunner extends ShellCommand<EbrelayerResults> {
   }
 
   cmd(): [string, string[]] {
-    return [
+    let relayerCmd: [string, string[]] = [
       "ebrelayer",
       [
         "init-relayer",
@@ -156,6 +159,8 @@ export class RelayerRunner extends ShellCommand<EbrelayerResults> {
         // this.relayerdbPath
       ],
     ]
+    console.log("Running relayer command", relayerCmd)
+    return relayerCmd
   }
 
   override async run(): Promise<void> {
