@@ -21,32 +21,32 @@ const PROXY_ADMIN_ADDRESS = "0x7c6c6ea036e56efad829af5070c8fb59dc163d88";
  * @returns An object containing the factory, the instance, its address and the first user found in the accounts list
  */
 async function getDeployedContract(deploymentName, contractName, chainId) {
-  deploymentName = deploymentName ?? DEFAULT_DEPLOYMENT_NAME;
-  contractName = contractName ?? "BridgeBank";
-  chainId = chainId ?? 1;
+	deploymentName = deploymentName ?? DEFAULT_DEPLOYMENT_NAME;
+	contractName = contractName ?? "BridgeBank";
+	chainId = chainId ?? 1;
 
-  const filename = `${DEPLOYMENT_DIRECTORY}/${deploymentName}/${contractName}.json`;
-  const artifactContents = fs.readFileSync(filename, { encoding: "utf-8" });
-  const parsed = JSON.parse(artifactContents);
-  const ethersInterface = new ethers.utils.Interface(parsed.abi);
+	const filename = `${DEPLOYMENT_DIRECTORY}/${deploymentName}/${contractName}.json`;
+	const artifactContents = fs.readFileSync(filename, { encoding: "utf-8" });
+	const parsed = JSON.parse(artifactContents);
+	const ethersInterface = new ethers.utils.Interface(parsed.abi);
 
-  const address = parsed.networks[chainId].address;
-  print("yellow", `🕑 Connecting to ${contractName} at ${address} on chain ${chainId}`);
+	const address = parsed.networks[chainId].address;
+	print("yellow", `🕑 Connecting to ${contractName} at ${address} on chain ${chainId}`);
 
-  const accounts = await ethers.getSigners();
-  const activeUser = accounts[0];
+	const accounts = await ethers.getSigners();
+	const activeUser = accounts[0];
 
-  const contract = new ethers.Contract(address, ethersInterface, activeUser);
-  const instance = await contract.attach(address);
+	const contract = new ethers.Contract(address, ethersInterface, activeUser);
+	const instance = await contract.attach(address);
 
-  print("green", `🌎 Connected to ${contractName} at ${address} on chain ${chainId}`);
+	print("green", `🌎 Connected to ${contractName} at ${address} on chain ${chainId}`);
 
-  return {
-    contract,
-    instance,
-    address,
-    activeUser,
-  };
+	return {
+		contract,
+		instance,
+		address,
+		activeUser,
+	};
 }
 
 /**
@@ -57,22 +57,22 @@ async function getDeployedContract(deploymentName, contractName, chainId) {
  * @returns An ethers SIGNER object
  */
 async function impersonateAccount(address, newBalance, accountName) {
-  accountName = accountName ? ` (${accountName})` : "";
+	accountName = accountName ? ` (${accountName})` : "";
 
-  print("magenta", `🔒 Impersonating account ${address}${accountName}`);
+	print("magenta", `🔒 Impersonating account ${address}${accountName}`);
 
-  await network.provider.request({
-    method: "hardhat_impersonateAccount",
-    params: [address],
-  });
+	await network.provider.request({
+		method: "hardhat_impersonateAccount",
+		params: [address],
+	});
 
-  if (newBalance) {
-    await setNewEthBalance(address, newBalance);
-  }
+	if (newBalance) {
+		await setNewEthBalance(address, newBalance);
+	}
 
-  print("magenta", `🔓 Account ${address}${accountName} successfully impersonated`);
+	print("magenta", `🔓 Account ${address}${accountName} successfully impersonated`);
 
-  return ethers.getSigner(address);
+	return ethers.getSigner(address);
 }
 
 /**
@@ -81,20 +81,20 @@ async function impersonateAccount(address, newBalance, accountName) {
  * @param {string | number} newBalance
  */
 async function setNewEthBalance(address, newBalance) {
-  const newValue = `0x${newBalance.toString(16)}`;
-  await ethers.provider.send("hardhat_setBalance", [address, newValue]);
+	const newValue = `0x${newBalance.toString(16)}`;
+	await ethers.provider.send("hardhat_setBalance", [address, newValue]);
 
-  print("magenta", `💰 Balance of account ${address} set to ${newBalance}`);
+	print("magenta", `💰 Balance of account ${address} set to ${newBalance}`);
 }
 
 /**
  * Throws an error if USE_FORKING is not set in .env
  */
 function enforceForking() {
-  const forkingActive = !!process.env.USE_FORKING;
-  if (!forkingActive) {
-    throw new Error("❌ Forking is not active. Operation aborted.");
-  }
+	const forkingActive = !!process.env.USE_FORKING;
+	if (!forkingActive) {
+		throw new Error("❌ Forking is not active. Operation aborted.");
+	}
 }
 
 /**
@@ -107,8 +107,8 @@ function enforceForking() {
  * @returns An instance of the contract on the currently connected network
  */
 async function getContractAt(contractName, contractAddress) {
-  const factory = await ethers.getContractFactory(contractName);
-  return await factory.attach(contractAddress);
+	const factory = await ethers.getContractFactory(contractName);
+	return await factory.attach(contractAddress);
 }
 
 /**
@@ -143,86 +143,86 @@ async function getContractAt(contractName, contractAddress) {
    }
   */
 function injectInManifest({
-  topContractMainnetAddress,
-  parsedManifest,
-  contractName,
-  previousLabel,
-  newVarObject,
-  previousGapSize,
-  newGapSize,
-  newTypeName,
-  newTypeLabel,
+	topContractMainnetAddress,
+	parsedManifest,
+	contractName,
+	previousLabel,
+	newVarObject,
+	previousGapSize,
+	newGapSize,
+	newTypeName,
+	newTypeLabel,
 }) {
-  // Make a copy of the manifest
-  parsedManifest = { ...parsedManifest };
+	// Make a copy of the manifest
+	parsedManifest = { ...parsedManifest };
 
-  // Find the correct implementation in the Manifest
-  const impls = parsedManifest.impls;
-  const implIndex = Object.keys(impls).findIndex((key) => {
-    return impls[key].address.toLowerCase() === topContractMainnetAddress.toLowerCase();
-  });
-  const impl = impls[Object.keys(impls)[implIndex]];
+	// Find the correct implementation in the Manifest
+	const impls = parsedManifest.impls;
+	const implIndex = Object.keys(impls).findIndex((key) => {
+		return impls[key].address.toLowerCase() === topContractMainnetAddress.toLowerCase();
+	});
+	const impl = impls[Object.keys(impls)[implIndex]];
 
-  // Helpers
-  const layout = impl.layout;
-  const storage = layout.storage;
-  const types = layout.types;
-  const newStorage = [];
+	// Helpers
+	const layout = impl.layout;
+	const storage = layout.storage;
+	const types = layout.types;
+	const newStorage = [];
 
-  // STORAGE
-  // Find the slot where to inject the new var
-  // @dev: this is not optimal, but we might want it as is to be able to deal with many new vars at once
-  const storagePreviousItemIndex = storage.findIndex((elem) => {
-    return elem.contract === contractName && elem.label === previousLabel;
-  });
+	// STORAGE
+	// Find the slot where to inject the new var
+	// @dev: this is not optimal, but we might want it as is to be able to deal with many new vars at once
+	const storagePreviousItemIndex = storage.findIndex((elem) => {
+		return elem.contract === contractName && elem.label === previousLabel;
+	});
 
-  // Populate the new storage up to the slot
-  for (let i = 0; i < storagePreviousItemIndex + 1; i++) {
-    newStorage.push(storage[i]);
-  }
+	// Populate the new storage up to the slot
+	for (let i = 0; i < storagePreviousItemIndex + 1; i++) {
+		newStorage.push(storage[i]);
+	}
 
-  // Push the new var to storage
-  newStorage.push(newVarObject);
+	// Push the new var to storage
+	newStorage.push(newVarObject);
 
-  // Finish populating the storage with what was already there
-  for (let i = storagePreviousItemIndex + 1; i < storage.length; i++) {
-    newStorage.push(storage[i]);
-  }
+	// Finish populating the storage with what was already there
+	for (let i = storagePreviousItemIndex + 1; i < storage.length; i++) {
+		newStorage.push(storage[i]);
+	}
 
-  // GAP IN STORAGE:
-  // Find the gap declaration
-  const gapIndex = newStorage.findIndex((elem) => {
-    return elem.contract === contractName && elem.label === "____gap";
-  });
+	// GAP IN STORAGE:
+	// Find the gap declaration
+	const gapIndex = newStorage.findIndex((elem) => {
+		return elem.contract === contractName && elem.label === "____gap";
+	});
 
-  // Replace the size of the gap
-  newStorage[gapIndex]["type"] = newStorage[gapIndex]["type"].replace(previousGapSize, newGapSize);
+	// Replace the size of the gap
+	newStorage[gapIndex]["type"] = newStorage[gapIndex]["type"].replace(previousGapSize, newGapSize);
 
-  // GAP IN TYPES
-  // In the Types object of the manifest, add a new gap with the new size
-  types[`t_array(t_uint256)${newGapSize}_storage`] = {
-    label: "uint256[${newGapSize}]",
-  };
+	// GAP IN TYPES
+	// In the Types object of the manifest, add a new gap with the new size
+	types[`t_array(t_uint256)${newGapSize}_storage`] = {
+		label: "uint256[${newGapSize}]",
+	};
 
-  // Delete the old gap
-  delete types[`t_array(t_uint256)${previousGapSize}_storage`];
+	// Delete the old gap
+	delete types[`t_array(t_uint256)${previousGapSize}_storage`];
 
-  // If there's a new type to add, add it to the types object
-  if (newTypeName) {
-    if (!newTypeLabel) throw new Error("MISSING_NEW_TYPE_LABEL");
+	// If there's a new type to add, add it to the types object
+	if (newTypeName) {
+		if (!newTypeLabel) throw new Error("MISSING_NEW_TYPE_LABEL");
 
-    types[newTypeName] = {
-      label: newTypeLabel,
-    };
-  }
+		types[newTypeName] = {
+			label: newTypeLabel,
+		};
+	}
 
-  // Restructure the manifest
-  layout.storage = newStorage;
-  layout.types = types;
-  impl.layout = layout;
-  parsedManifest.impls[Object.keys(impls)[implIndex]] = impl;
+	// Restructure the manifest
+	layout.storage = newStorage;
+	layout.types = types;
+	impl.layout = layout;
+	parsedManifest.impls[Object.keys(impls)[implIndex]] = impl;
 
-  return parsedManifest;
+	return parsedManifest;
 }
 
 /**
@@ -241,23 +241,23 @@ function injectInManifest({
  * });
  */
 function replaceTypesInManifest({ parsedManifest, originalType, newType }) {
-  // Make a copy of the manifest
-  parsedManifest = { ...parsedManifest };
+	// Make a copy of the manifest
+	parsedManifest = { ...parsedManifest };
 
-  const stringManifest = JSON.stringify(parsedManifest);
-  const replacedStringManifest = stringManifest.replace(new RegExp(originalType, "g"), newType);
-  const reconstructedManifest = JSON.parse(replacedStringManifest);
+	const stringManifest = JSON.stringify(parsedManifest);
+	const replacedStringManifest = stringManifest.replace(new RegExp(originalType, "g"), newType);
+	const reconstructedManifest = JSON.parse(replacedStringManifest);
 
-  return reconstructedManifest;
+	return reconstructedManifest;
 }
 
 module.exports = {
-  PROXY_ADMIN_ADDRESS,
-  getDeployedContract,
-  impersonateAccount,
-  setNewEthBalance,
-  enforceForking,
-  getContractAt,
-  injectInManifest,
-  replaceTypesInManifest,
+	PROXY_ADMIN_ADDRESS,
+	getDeployedContract,
+	impersonateAccount,
+	setNewEthBalance,
+	enforceForking,
+	getContractAt,
+	injectInManifest,
+	replaceTypesInManifest,
 };
