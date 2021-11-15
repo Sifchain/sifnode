@@ -58,7 +58,7 @@ func GetCmdCreateEthBridgeClaim() *cobra.Command {
 			}
 			bridgeContract := types.NewEthereumAddress(args[0])
 
-			nonce, err := strconv.ParseInt(args[1], 10, 64)
+			nonce, err := strconv.ParseUint(args[1], 10, 64)
 			if err != nil {
 				return err
 			}
@@ -394,9 +394,11 @@ func GetCmdRescueCrossChainFee() *cobra.Command {
 // GetCmdSetCrossChainFee is the CLI command to send the message to set crosschain fee for network
 func GetCmdSetCrossChainFee() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "set-cross-chain-fee [cosmos-sender-address] [network-id] [cross-chain-fee]",
+		// TODO: cross-chain-fee should be renamed to feeCurrency
+		// TODO: Rename variable network-id to network descriptor
+		Use:   "set-cross-chain-fee [cosmos-sender-address] [network-id] [cross-chain-fee] [fee-currency-gas] [minimum-lock-cost] [minimum-burn-cost]",
 		Short: "This should be used to set crosschain fee for a network.",
-		Args:  cobra.ExactArgs(3),
+		Args:  cobra.ExactArgs(6),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx, err := client.GetClientTxContext(cmd)
 			if err != nil {
@@ -404,6 +406,7 @@ func GetCmdSetCrossChainFee() *cobra.Command {
 			}
 
 			cosmosSender, err := sdk.AccAddressFromBech32(args[0])
+
 			if err != nil {
 				return err
 			}
@@ -413,9 +416,30 @@ func GetCmdSetCrossChainFee() *cobra.Command {
 				return errors.New("Error parsing network descriptor")
 			}
 
+			// TODO: This should be renamed to feeCurrency
 			crossChainFee := args[2]
 
-			msg := types.NewMsgSetFeeInfo(cosmosSender, oracletypes.NetworkDescriptor(networkDescriptor), crossChainFee)
+			feeCurrencyGas, ok := sdk.NewIntFromString(args[3])
+			if !ok {
+				return errors.New("Error parsing feeCurrencyGas")
+			}
+
+			minimumLockCost, ok := sdk.NewIntFromString(args[4])
+			if !ok {
+				return errors.New("Error parsing minimumLockCost")
+			}
+
+			minimumBurnCost, ok := sdk.NewIntFromString(args[5])
+			if !ok {
+				return errors.New("Error parsing minimumBurnCost")
+			}
+
+			msg := types.NewMsgSetFeeInfo(cosmosSender,
+				oracletypes.NetworkDescriptor(networkDescriptor),
+				crossChainFee,
+				feeCurrencyGas,
+				minimumLockCost,
+				minimumBurnCost)
 			if err := msg.ValidateBasic(); err != nil {
 				return err
 			}

@@ -1,3 +1,4 @@
+from typing import Tuple
 from web3 import Web3
 import json
 import logging
@@ -140,6 +141,7 @@ cmdfile = open("/tmp/testcmds.txt", "w")
 
 
 def get_shell_output(command_line):
+    logging.debug(f"Executing cmd: {command_line}")
     cmdfile.write(command_line)
     if sifnoded_binary in command_line and not "q auth account" in command_line:
         time.sleep(2)
@@ -148,6 +150,7 @@ def get_shell_output(command_line):
     stdout_string = sub.stdout.decode("utf-8").rstrip()
     stderr_string = sub.stderr.decode("utf-8").rstrip()
     logging.debug(f"execute shell command stdout:\n{stdout_string}\n")
+    logging.debug(f"execute shell command exitcode:{sub.returncode}")
     if stderr_string:
         logging.debug(f"\nexecute shell command stderr:\n{stderr_string}")
     if sub.returncode != 0:
@@ -231,21 +234,7 @@ def get_password(network_definition_file_json):
 
 def get_eth_balance(transfer_request: EthereumToSifchainTransferRequest):
     w3 = Web3(Web3.WebsocketProvider(ethereum_websocket))
-    return w3.eth.get_balance()
-    # network_element = f"--ethereum_network {transfer_request.ethereum_network} " if transfer_request.ethereum_network else ""
-    # symbol_element = f"--symbol {transfer_request.ethereum_symbol} " if transfer_request.ethereum_symbol else ""
-    # private_element = f"--ethereum_private_key_env_var \"{transfer_request.ethereum_private_key_env_var}\"" if transfer_request.ethereum_private_key_env_var else ""
-    # command_line = " ".join(
-    #     [f"yarn -s --cwd {transfer_request.smart_contracts_dir}",
-    #      f"integrationtest:getTokenBalance",
-    #      f"--ethereum_address {transfer_request.ethereum_address}",
-    #      f"--json_path {transfer_request.solidity_json_path}",
-    #      private_element,
-    #      symbol_element,
-    #      network_element]
-    # )
-    # result = run_yarn_command(command_line)
-    # return int(result["balanceWei"])
+    return w3.eth.get_balance(transfer_request.ethereum_address)
 
 
 def get_whitelisted_tokens(transfer_request: EthereumToSifchainTransferRequest):
@@ -298,7 +287,10 @@ def get_sifchain_addr_balance(sifaddress, sifnoded_node, denom):
     node = f"--node {sifnoded_node}" if sifnoded_node else ""
     command_line = f"{sifnoded_binary} query bank balances {node} {sifaddress} --output json --limit 100000000"
     json_str = get_shell_output_json(command_line)
+    logging.debug(json_str)
+    logging.debug(f"Cmd: {command_line}. Json Output: {json_str}")
     coins = json_str["balances"]
+
     for coin in coins:
         if coin["denom"] == denom:
             return int(coin["amount"])
@@ -412,7 +404,8 @@ def send_from_sifchain_to_sifchain_cmd(
     chain_id_entry = f"--chain-id {transfer_request.chain_id}" if transfer_request.chain_id else ""
     node = f"--node {transfer_request.sifnoded_node}" if transfer_request.sifnoded_node else ""
     # Deprecated, see https://github.com/Sifchain/sifnode/pull/1802#discussion_r697403408
-    sifchain_fees_entry = f"--fees {transfer_request.sifchain_fees}" if transfer_request.sifchain_fees else ""
+    # sifchain_fees_entry = f"--fees {transfer_request.sifchain_fees}" if transfer_request.sifchain_fees else ""
+    sifchain_fees_entry = "--gas-prices=0.5rowan --gas-adjustment=1.5"
     home_entry = f"--home {credentials.sifnoded_homedir}" if credentials.sifnoded_homedir else ""
     cmd = " ".join([
         yes_entry,
@@ -457,10 +450,12 @@ def send_from_sifchain_to_ethereum_cmd(
     keyring_backend_entry = f"--keyring-backend {credentials.keyring_backend}" if credentials.keyring_backend else ""
     node = f"--node {transfer_request.sifnoded_node}" if transfer_request.sifnoded_node else ""
     # Deprecated, see https://github.com/Sifchain/sifnode/pull/1802#discussion_r697403408
-    sifchain_fees_entry = f"--fees {transfer_request.sifchain_fees}" if transfer_request.sifchain_fees else ""
+    # sifchain_fees_entry = f"--fees {transfer_request.sifchain_fees}" if transfer_request.sifchain_fees else ""
     direction = "lock" if transfer_request.sifchain_symbol == "rowan" else "burn"
     home_entry = f"--home {credentials.sifnoded_homedir}" if credentials.sifnoded_homedir else ""
     from_entry = f"--from {credentials.from_key} " if credentials.from_key else ""
+    gas_prices_entry = f"--gas-prices=0.5rowan"
+    gas_adjustment_entry = f"--gas-adjustment=1.5"
     if not transfer_request.ceth_amount:
         if direction == "lock":
             ceth_charge = lock_gas_cost
@@ -474,8 +469,9 @@ def send_from_sifchain_to_ethereum_cmd(
                    f"{transfer_request.sifchain_symbol} " \
                    f"{ceth_charge} " \
                    f"{keyring_backend_entry} " \
-                   f"{sifchain_fees_entry} " \
-                   f"--ethereum-chain-id={transfer_request.ethereum_chain_id} " \
+                   f"{gas_prices_entry} " \
+                   f"{gas_adjustment_entry} " \
+                   f"--network-descriptor={transfer_request.ethereum_chain_id} " \
                    f"--chain-id={transfer_request.chain_id} " \
                    f"{home_entry} " \
                    f"{from_entry} " \
@@ -526,6 +522,7 @@ def send_from_ethereum_to_sifchain(transfer_request: EthereumToSifchainTransferR
             NULL_ADDRESS,
             transfer_request.amount).transact({"value": transfer_request.amount if transfer_request.ethereum_symbol == "eth" else 0})
     lock_burn_tx = w3.eth.get_transaction(tx_hash)
+    logging.debug(f"EthToSifchain lockBurnTx txHash: ${tx_hash}. TxData: ${lock_burn_tx}.")
     return lock_burn_tx.blockNumber
 
 
@@ -673,23 +670,19 @@ def set_lock_burn_limit(smart_contracts_dir: str, token: str, amount: int):
           f"integrationtest:setTokenLockBurnLimit {amount}"
     return get_shell_output(cmd)
 
-
-def create_ethereum_address(smart_contracts_dir: str, ethereum_network: str) -> (str, str):
-    cmd = f"yarn -s --cwd {smart_contracts_dir} " \
-          "integrationtest:createEthereumAddress " \
-          f"--ethereum_network {ethereum_network} "
-    result = run_yarn_command(cmd)
-    return result["address"], result["privateKey"]
+# The parameters are needed for previous impl. Can be removed.
+def create_ethereum_address(smart_contracts_dir: str, ethereum_network: str) -> Tuple[str, str]:
+    w3 = Web3(Web3.WebsocketProvider(ethereum_websocket))
+    account = w3.eth.account.create()
+    return account.address, account.key.hex()
 
 
 def create_ethereum_addresses(smart_contracts_dir: str, ethereum_network: str, count: int = 1):
-    count_element = f"--count {count}" if count > 1 else ""
-    cmd = f"yarn -s --cwd {smart_contracts_dir} " \
-          "integrationtest:createEthereumAddress " \
-          f"{count_element} " \
-          f"--ethereum_network {ethereum_network} "
-    return run_yarn_command(cmd)
-
+    result = []
+    for _ in range(count):
+        ethereum_address = create_ethereum_address(smart_contracts_dir, ethereum_network)
+        result.append(ethereum_address)
+    return result
 
 def display_currency_value(x: int) -> str:
     """if x is 19 + 18 zeros, return (19000000000000000000 | 19)"""

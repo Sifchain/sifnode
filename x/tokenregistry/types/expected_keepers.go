@@ -19,7 +19,7 @@ type Keeper interface {
 	RemoveToken(ctx sdk.Context, denom string)
 	InitGenesis(ctx sdk.Context, state GenesisState) []abci.ValidatorUpdate
 	ExportGenesis(ctx sdk.Context) *GenesisState
-	GetDenomWhitelist(ctx sdk.Context) Registry
+	GetRegistry(ctx sdk.Context) Registry
 	Logger(ctx sdk.Context) log.Logger
 	GetTokenMetadata(ctx sdk.Context, denomHash string) (TokenMetadata, bool)
 	AddTokenMetadata(ctx sdk.Context, metadata TokenMetadata) string

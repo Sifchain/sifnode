@@ -2,6 +2,8 @@ package keeper
 
 import (
 	"fmt"
+	"github.com/Sifchain/sifnode/x/instrumentation"
+	"go.uber.org/zap"
 
 	"github.com/Sifchain/sifnode/x/oracle/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -36,6 +38,9 @@ func (k Keeper) GetCrossChainFeeConfig(ctx sdk.Context, networkIdentity types.Ne
 	bz := store.Get(key)
 	crossChainFeeConfig := &types.CrossChainFeeConfig{}
 	k.cdc.MustUnmarshalBinaryBare(bz, crossChainFeeConfig)
+
+	instrumentation.PeggyCheckpoint(ctx.Logger(), "GetCrossChainFeeConfig", "crossChainFeeConfig", zap.Reflect("crossChainFeeConfig", crossChainFeeConfig))
+
 	return *crossChainFeeConfig, nil
 }
 

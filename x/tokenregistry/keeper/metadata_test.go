@@ -27,19 +27,20 @@ func TestGetAddTokenMetadata(t *testing.T) {
 	result, _ := keeper.GetTokenMetadata(ctx, invalidDenom)
 	require.Equal(t, expected, result)
 
+	address := ethbridgetypes.NewEthereumAddress(testTokenMetadata.TokenAddress)
 	expectedDenom := ethbridgetypes.GetDenomHash(
 		testTokenMetadata.NetworkDescriptor,
-		testTokenMetadata.TokenAddress,
-		testTokenMetadata.Decimals,
-		testTokenMetadata.Name,
-		testTokenMetadata.Symbol,
+		address,
 	)
 
 	entry := types.RegistryEntry{
 		Denom:         expectedDenom,
+		DisplayName:   testTokenMetadata.Name,
 		DisplaySymbol: testTokenMetadata.Symbol,
 		Decimals:      testTokenMetadata.Decimals,
+		Address:       testTokenMetadata.TokenAddress,
 		IsWhitelisted: true,
+		Network:       testTokenMetadata.NetworkDescriptor,
 		Permissions:   []types.Permission{types.Permission_PERMISSION_CLP},
 	}
 	keeper.GetTokenRegistryKeeper().SetToken(ctx, &entry)

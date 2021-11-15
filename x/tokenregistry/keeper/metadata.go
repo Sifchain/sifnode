@@ -3,6 +3,9 @@ package keeper
 import (
 	"strings"
 
+	"github.com/Sifchain/sifnode/x/instrumentation"
+	"go.uber.org/zap"
+
 	ethbridgetypes "github.com/Sifchain/sifnode/x/ethbridge/types"
 	"github.com/Sifchain/sifnode/x/tokenregistry/types"
 
@@ -21,7 +24,7 @@ func IsIBCToken(name string) bool {
 	return true
 }
 
-// Fetches token meteadata if it exists
+// Fetches token metadata if it exists
 func (k keeper) GetTokenMetadata(ctx sdk.Context, denomHash string) (types.TokenMetadata, bool) {
 
 	entry := k.GetDenom(ctx, denomHash)
@@ -37,22 +40,22 @@ func (k keeper) GetTokenMetadata(ctx sdk.Context, denomHash string) (types.Token
 		TokenAddress:      entry.Address,
 		NetworkDescriptor: entry.Network,
 	}
+
+	instrumentation.PeggyCheckpoint(ctx.Logger(), "GetTokenMetadata", "denomHash", denomHash, "entry", zap.Reflect("entry", entry), "metadata", zap.Reflect("metadata", metadata))
+
 	return metadata, true
 }
 
-// Add new token metadata information
+// AddTokenMetadata adds new token metadata information if the token does not exist in the keeper, or it does exist and IsWhitelisted is false.
 func (k keeper) AddTokenMetadata(ctx sdk.Context, metadata types.TokenMetadata) string {
 	denomHash := ethbridgetypes.GetDenomHash(
 		metadata.NetworkDescriptor,
-		metadata.TokenAddress,
-		metadata.Decimals,
-		metadata.Name,
-		metadata.Symbol,
+		ethbridgetypes.NewEthereumAddress(metadata.TokenAddress),
 	)
 
 	entry := k.GetDenom(ctx, denomHash)
 
-	if entry.IsWhitelisted {
+	if !entry.IsWhitelisted {
 		entry.Decimals = metadata.Decimals
 		entry.DisplayName = metadata.Name
 		entry.DisplaySymbol = metadata.Symbol
@@ -62,6 +65,8 @@ func (k keeper) AddTokenMetadata(ctx sdk.Context, metadata types.TokenMetadata) 
 
 		k.SetToken(ctx, &entry)
 	}
+
+	instrumentation.PeggyCheckpoint(k.Logger(ctx), "AddTokenMetadata", "entry", entry)
 
 	return denomHash
 }

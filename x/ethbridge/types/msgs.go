@@ -257,10 +257,6 @@ func (msg MsgCreateEthBridgeClaim) ValidateBasic() error {
 		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.EthBridgeClaim.ValidatorAddress)
 	}
 
-	if msg.EthBridgeClaim.Nonce < 0 {
-		return ErrInvalidEthNonce
-	}
-
 	if !gethCommon.IsHexAddress(msg.EthBridgeClaim.EthereumSender) {
 		return ErrInvalidEthAddress
 	}
@@ -449,14 +445,21 @@ func (msg MsgUpdateWhiteListValidator) GetSigners() []sdk.AccAddress {
 }
 
 // NewMsgSetFeeInfo is a constructor function for MsgSetFeeInfo
-func NewMsgSetFeeInfo(cosmosSender sdk.AccAddress, networkDescriptor oracletypes.NetworkDescriptor, feeCurrency string) MsgSetFeeInfo {
+func NewMsgSetFeeInfo(cosmosSender sdk.AccAddress,
+	networkDescriptor oracletypes.NetworkDescriptor,
+	feeCurrency string,
+	feeCurrencyGas sdk.Int,
+	minimumLockCost sdk.Int,
+	minimumBurnCost sdk.Int) MsgSetFeeInfo {
 	return MsgSetFeeInfo{
 		CosmosSender:      cosmosSender.String(),
 		NetworkDescriptor: networkDescriptor,
 		FeeCurrency:       feeCurrency,
+		FeeCurrencyGas:    feeCurrencyGas,
+		MinimumLockCost:   minimumLockCost,
+		MinimumBurnCost:   minimumBurnCost,
 	}
 }
-
 
 // Route should return the name of the module
 func (msg MsgSignProphecy) Route() string { return RouterKey }

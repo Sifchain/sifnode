@@ -6,11 +6,11 @@ import (
 
 // query endpoints supported by the oracle Querier
 const (
-	QueryEthProphecy            = "prophecies"
-	QueryCrosschainFeeConfig    = "crosschainFeeConfig"
-	QueryEthereumLockBurnNonce  = "ethereumLockBurnNonce"
-	QueryWitnessLockBurnNonce   = "witnessLockBurnNonce"
-	QueryGlocalNonceBlockNumber = "glocalNonceBlockNumber"
+	QueryEthProphecy               = "prophecies"
+	QueryCrosschainFeeConfig       = "crosschainFeeConfig"
+	QueryEthereumLockBurnSequence  = "ethereumLockBurnSequence"
+	QueryWitnessLockBurnSequence   = "witnessLockBurnSequence"
+	QueryGlobalSequenceBlockNumber = "globalSequenceBlockNumber"
 )
 
 // NewQueryEthProphecyRequest creates a new QueryEthProphecyParams
@@ -43,47 +43,47 @@ func NewQueryCrosschainFeeConfigResponse(crosschainFeeConfig oracletypes.CrossCh
 	}
 }
 
-// NewEthereumLockBurnNonceRequest creates a new QueryLockBurnNonceRequest
-func NewEthereumLockBurnNonceRequest(networkDescriptor oracletypes.NetworkDescriptor, relayerValAddress string) *QueryEthereumLockBurnNonceRequest {
-	return &QueryEthereumLockBurnNonceRequest{
+// NewEthereumLockBurnSequenceRequest creates a new QueryLockBurnSequenceRequest
+func NewEthereumLockBurnSequenceRequest(networkDescriptor oracletypes.NetworkDescriptor, relayerValAddress string) *QueryEthereumLockBurnSequenceRequest {
+	return &QueryEthereumLockBurnSequenceRequest{
 		NetworkDescriptor: networkDescriptor,
 		RelayerValAddress: relayerValAddress,
 	}
 }
 
-// NewEthereumLockBurnNonceResponse creates a new QueryEthereumLockBurnNonceResponse instance
-func NewEthereumLockBurnNonceResponse(lockBurnNonce uint64) QueryEthereumLockBurnNonceResponse {
-	return QueryEthereumLockBurnNonceResponse{
-		EthereumLockBurnNonce: lockBurnNonce,
+// NewEthereumLockBurnSequenceResponse creates a new QueryEthereumLockBurnSequenceResponse instance
+func NewEthereumLockBurnSequenceResponse(LockBurnSequence uint64) QueryEthereumLockBurnSequenceResponse {
+	return QueryEthereumLockBurnSequenceResponse{
+		EthereumLockBurnSequence: LockBurnSequence,
 	}
 }
 
-// NewWitnessLockBurnNonceRequest creates a new QueryWitnessLockBurnNonceRequest
-func NewWitnessLockBurnNonceRequest(networkDescriptor oracletypes.NetworkDescriptor, relayerValAddress string) *QueryWitnessLockBurnNonceRequest {
-	return &QueryWitnessLockBurnNonceRequest{
+// NewWitnessLockBurnSequenceRequest creates a new QueryWitnessLockBurnSequenceRequest
+func NewWitnessLockBurnSequenceRequest(networkDescriptor oracletypes.NetworkDescriptor, relayerValAddress string) *QueryWitnessLockBurnSequenceRequest {
+	return &QueryWitnessLockBurnSequenceRequest{
 		NetworkDescriptor: networkDescriptor,
 		RelayerValAddress: relayerValAddress,
 	}
 }
 
-// NewWitnessLockBurnNonceResponse creates a new QueryWitnessLockBurnNonceResponse instance
-func NewWitnessLockBurnNonceResponse(lockBurnNonce uint64) QueryWitnessLockBurnNonceResponse {
-	return QueryWitnessLockBurnNonceResponse{
-		WitnessLockBurnNonce: lockBurnNonce,
+// NewWitnessLockBurnSequenceResponse creates a new QueryWitnessLockBurnSequenceResponse instance
+func NewWitnessLockBurnSequenceResponse(LockBurnSequence uint64) QueryWitnessLockBurnSequenceResponse {
+	return QueryWitnessLockBurnSequenceResponse{
+		WitnessLockBurnSequence: LockBurnSequence,
 	}
 }
 
-// NewQueryGlocalNonceBlockNumberRequest creates a new QueryGlocalNonceBlockNumberRequest
-func NewQueryGlocalNonceBlockNumberRequest(networkDescriptor oracletypes.NetworkDescriptor, globalNonce uint64) *QueryGlocalNonceBlockNumberRequest {
-	return &QueryGlocalNonceBlockNumberRequest{
+// NewQueryGlobalSequenceBlockNumberRequest creates a new QueryGlobalSequenceBlockNumberRequest
+func NewQueryGlobalSequenceBlockNumberRequest(networkDescriptor oracletypes.NetworkDescriptor, globalSequence uint64) *QueryGlobalSequenceBlockNumberRequest {
+	return &QueryGlobalSequenceBlockNumberRequest{
 		NetworkDescriptor: networkDescriptor,
-		GlobalNonce:       globalNonce,
+		GlobalSequence:    globalSequence,
 	}
 }
 
-// NewGlocalNonceBlockNumberResponse creates a new QueryWitnessLockBurnNonceResponse instance
-func NewGlocalNonceBlockNumberResponse(blockNumber uint64) QueryGlocalNonceBlockNumberResponse {
-	return QueryGlocalNonceBlockNumberResponse{
+// NewGlobalSequenceBlockNumberResponse creates a new QueryWitnessLockBurnSequenceResponse instance
+func NewGlobalSequenceBlockNumberResponse(blockNumber uint64) QueryGlobalSequenceBlockNumberResponse {
+	return QueryGlobalSequenceBlockNumberResponse{
 		BlockNumber: blockNumber,
 	}
 }

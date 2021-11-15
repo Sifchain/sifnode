@@ -50,6 +50,7 @@ const (
 	AnotherAlternateTestString       = "{value: 9}"
 	TestCrossChainFeeReceiverAddress = "cosmos1gn8409qq9hnrxde37kuxwx5hrxpfpv8426szuv" //nolint
 	NetworkDescriptor                = oracleTypes.NetworkDescriptor_NETWORK_DESCRIPTOR_ETHEREUM
+	EthAddress                       = "0x0000000000000000000"
 	CrossChainFee                    = "ceth"
 	CrossChainFeeGas                 = 1
 	MinimumCost                      = 1
@@ -186,7 +187,8 @@ func CreateTestKeepers(t *testing.T, consensusNeeded float64, validatorAmounts [
 
 	networkIdentity := oracleTypes.NewNetworkIdentity(NetworkDescriptor)
 
-	oracleKeeper.SetCrossChainFee(ctx, networkIdentity, CrossChainFee,
+	oracleKeeper.SetCrossChainFee(ctx, networkIdentity,
+		types.GetDenomHash(NetworkDescriptor, types.NewEthereumAddress(EthAddress)),
 		sdk.NewInt(CrossChainFeeGas), sdk.NewInt(MinimumCost), sdk.NewInt(MinimumCost), sdk.NewInt(FirstLockDoublePeggyCost))
 	whitelist := oracleTypes.ValidatorWhiteList{WhiteList: valAddrs}
 	oracleKeeper.SetOracleWhiteList(ctx, networkIdentity, whitelist)

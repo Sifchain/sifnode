@@ -25,9 +25,9 @@ func (srv prophciesCompletedQueryServiceServer) Search(ctx context.Context, req 
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 
 	networkDescriptor := req.NetworkDescriptor
-	globalNonce := req.GlobalNonce
+	globalSequence := req.GlobalSequence
 
-	prophecyInfo := srv.Keeper.oracleKeeper.GetProphecyInfoWithScopeGlocalNonce(sdkCtx, networkDescriptor, globalNonce)
+	prophecyInfo := srv.Keeper.oracleKeeper.GetProphecyInfoWithScopeGlobalSequence(sdkCtx, networkDescriptor, globalSequence)
 
 	res := types.ProphciesCompletedQueryResponse{
 		ProphecyInfo: prophecyInfo,

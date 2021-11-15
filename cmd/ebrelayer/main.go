@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/Sifchain/sifnode/x/instrumentation"
 	"log"
 	"net/url"
 	"os"
@@ -212,6 +213,12 @@ func RunInitRelayerCmd(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
+	instrumentation.PeggyCheckpointZap(
+		sugaredLogger,
+		instrumentation.Startup,
+		"starting", true,
+	)
+
 	// Initialize new Ethereum event listener
 	ethSub := relayer.NewEthereumSub(
 		cliContext,
@@ -219,7 +226,6 @@ func RunInitRelayerCmd(cmd *cobra.Command, args []string) error {
 		validatorMoniker,
 		web3Provider,
 		contractAddress,
-		nil,
 		sugaredLogger,
 	)
 
@@ -328,7 +334,6 @@ func RunInitWitnessCmd(cmd *cobra.Command, args []string) error {
 		validatorMoniker,
 		web3Provider,
 		contractAddress,
-		nil,
 		sugaredLogger,
 	)
 

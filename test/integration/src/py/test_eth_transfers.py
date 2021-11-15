@@ -53,7 +53,7 @@ def test_eth_to_ceth_and_back_to_eth(
     test_utilities.get_eth_balance(request)
 
     logging.info("send eth back to ethereum chain")
-    request.sifchain_symbol = "ceth"
+    request.sifchain_symbol = "evmnative"
     request.ethereum_symbol = "eth"
     request.amount = small_amount
     burn_lock_functions.transfer_sifchain_to_ethereum(request, credentials)

@@ -1,6 +1,6 @@
 import { HardhatNodeRunner } from "../src/devenv/hardhatNode";
 import { GolangBuilder, GolangResults } from "../src/devenv/golangBuilder";
-import { SifnodedResults, SifnodedRunner, ValidatorValues } from "../src/devenv/sifnoded";
+import { SifnodedResults, SifnodedRunner, ValidatorValues, EbRelayerAccount } from "../src/devenv/sifnoded";
 import { DeployedContractAddresses } from "../scripts/deploy_contracts";
 import { SmartContractDeployer, SmartContractDeployResult } from "../src/devenv/smartcontractDeployer";
 import { RelayerRunner, WitnessRunner, EbrelayerArguments } from "../src/devenv/ebrelayer";
@@ -16,7 +16,6 @@ async function startHardhat() {
   const node = new HardhatNodeRunner()
   const resultsPromise = node.go()
   const results = await resultsPromise
-  console.log(`rsltis: ${JSON.stringify(results, undefined, 2)}`)
   return { process, results }
 }
 
@@ -70,16 +69,21 @@ async function ebrelayerWitnessBuilder(
   contractAddresses: DeployedContractAddresses,
   ethereumAccount: EthereumAddressAndKey,
   validater: ValidatorValues,
+  relayerAccount: EbRelayerAccount,
+  witnessAccount: EbRelayerAccount,
   golangResults: GolangResults
 ) {
-  const args: EbrelayerArguments = {
+  const relayerArgs: EbrelayerArguments = {
     smartContract: contractAddresses,
     account: ethereumAccount,
     validatorValues: validater,
+    sifnodeAccount: relayerAccount,
     golangResults
   };
-  const relayerPromise = relayerBuilder(args)
-  const witnessPromise = witnessBuilder(args)
+  const witnessArgs = { ...relayerArgs };
+  witnessArgs.sifnodeAccount = witnessAccount;
+  const relayerPromise = relayerBuilder(relayerArgs)
+  const witnessPromise = witnessBuilder(witnessArgs)
   const [relayer, witness] = await Promise.all([relayerPromise, witnessPromise])
   return {
     relayer,
@@ -102,6 +106,8 @@ async function main() {
       smartcontract.result.contractAddresses,
       hardhat.results.accounts.validators[0],
       sifnode.results.validatorValues[0],
+      sifnode.results.relayerAddresses[0],
+      sifnode.results.witnessAddresses[0],
       golang.results
     );
     EnvJSONWriter({

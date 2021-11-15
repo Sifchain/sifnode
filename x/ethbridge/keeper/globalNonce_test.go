@@ -9,40 +9,39 @@ import (
 	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
 )
 
-func TestGetAndUpdateGlobalNonce(t *testing.T) {
+func TestGetAndUpdateGlobalSequence(t *testing.T) {
 	var ctx, keeper, _, _, _, _, _, _ = test.CreateTestKeepers(t, 0.7, []int64{3, 3}, "")
 	networkDescriptor := oracletypes.NetworkDescriptor_NETWORK_DESCRIPTOR_ETHEREUM
 
 	// test the init value
 	globalNonceOne := uint64(1)
 	blockNumber := uint64(100)
-	globalNonce := keeper.GetGlobalNonce(ctx, networkDescriptor)
+	globalNonce := keeper.GetGlobalSequence(ctx, networkDescriptor)
 	assert.Equal(t, globalNonce, globalNonceOne)
 
 	// test the second value
-	keeper.UpdateGlobalNonce(ctx, networkDescriptor, blockNumber)
+	keeper.UpdateGlobalSequence(ctx, networkDescriptor, blockNumber)
 
 	globalNonceTwo := uint64(2)
-	globalNonce = keeper.GetGlobalNonce(ctx, networkDescriptor)
+	globalNonce = keeper.GetGlobalSequence(ctx, networkDescriptor)
 	assert.Equal(t, globalNonce, globalNonceTwo)
 }
 
-func TestGetGlocalNonceToBlockNumber(t *testing.T) {
+func TestGetGlobalSequenceToBlockNumber(t *testing.T) {
 	var ctx, keeper, _, _, _, _, _, _ = test.CreateTestKeepers(t, 0.7, []int64{3, 3}, "")
 	networkDescriptor := oracletypes.NetworkDescriptor_NETWORK_DESCRIPTOR_ETHEREUM
 
 	// test the init value
 	globalNonceOne := uint64(1)
-	_, err := keeper.GetGlocalNonceToBlockNumber(ctx, networkDescriptor, globalNonceOne)
-	assert.Error(t, err)
+	initNonce := keeper.GetGlobalSequenceToBlockNumber(ctx, networkDescriptor, globalNonceOne)
+	assert.Equal(t, initNonce, uint64(0))
 
 	// set the block number
 	blockNumber := uint64(100)
-	globalNonce := keeper.GetGlobalNonce(ctx, networkDescriptor)
+	globalNonce := keeper.GetGlobalSequence(ctx, networkDescriptor)
 	assert.Equal(t, globalNonce, globalNonceOne)
-	keeper.UpdateGlobalNonce(ctx, networkDescriptor, blockNumber)
+	keeper.UpdateGlobalSequence(ctx, networkDescriptor, blockNumber)
 
-	testBlockNumber, err := keeper.GetGlocalNonceToBlockNumber(ctx, networkDescriptor, globalNonceOne)
-	assert.NoError(t, err)
+	testBlockNumber := keeper.GetGlobalSequenceToBlockNumber(ctx, networkDescriptor, globalNonceOne)
 	assert.Equal(t, testBlockNumber, blockNumber)
 }

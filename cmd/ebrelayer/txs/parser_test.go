@@ -38,7 +38,8 @@ func TestLogLockToEthBridgeClaim(t *testing.T) {
 	// Set up expected EthBridgeClaim
 	expectedEthBridgeClaim := ethbridge.NewEthBridgeClaim(
 		TestNetworkDescriptor, testBridgeContractAddress, TestNonce, strings.ToLower(TestSymbol), testTokenContractAddress,
-		testEthereumAddress, testCosmosAddress, testCosmosValidatorBech32Address, testSDKAmount, ethbridge.ClaimType_CLAIM_TYPE_LOCK, TestName, TestDecimals)
+		testEthereumAddress, testCosmosAddress, testCosmosValidatorBech32Address, testSDKAmount, ethbridge.ClaimType_CLAIM_TYPE_LOCK,
+		TestName, TestDecimals)
 
 	// Create test ethereum event
 	ethereumEvent := CreateTestLogEthereumEvent(t)
@@ -51,12 +52,13 @@ func TestLogLockToEthBridgeClaim(t *testing.T) {
 }
 
 func TestDenomCalculated(t *testing.T) {
+	address := ethbridge.NewEthereumAddress("0X0000000000000000000000000000000000000000")
 	// Test strings with uppercase values
-	expectedDenom := "sif55cbdb67a80a963d4bce4a6f28c5bdf0f712114c88aeb72ac91b5660d9af085a"
-	actualDenom := ethbridge.GetDenomHash(1, "0X0000000000000000000000000000000000000000", 18, "Ethereum", "ETH")
+	expectedDenom := "siffa33aa4b83b0e09f21c221b25b6e46480ae151a36932dc44fd09f4f073e9f54f"
+	actualDenom := ethbridge.GetDenomHash(1, address)
 	require.Equal(t, expectedDenom, actualDenom)
 	// Test strings with lowercase values
-	actualDenom = ethbridge.GetDenomHash(1, "0x0000000000000000000000000000000000000000", 18, "ethereum", "eth")
+	actualDenom = ethbridge.GetDenomHash(1, address)
 	require.Equal(t, expectedDenom, actualDenom)
 }
 

@@ -40,7 +40,7 @@ var testMetadataCeth = tokenregistrytypes.TokenMetadata{
 	Name:              "ceth",
 	NetworkDescriptor: oracletypes.NetworkDescriptor_NETWORK_DESCRIPTOR_ETHEREUM,
 	Symbol:            "ceth",
-	TokenAddress:      "0x0123456789ABCDEF",
+	TokenAddress:      "Ox00000000000000000000",
 }
 
 var testMetadataRowan = tokenregistrytypes.TokenMetadata{
@@ -56,7 +56,8 @@ func TestProcessClaimLock(t *testing.T) {
 	validator1Pow3 := validatorAddresses[0]
 	validator2Pow3 := validatorAddresses[1]
 
-	nonce := int64(1)
+	nonce := uint64(1)
+
 	// TODO(timlind): This default does not seem to be in any version history.
 	//invalid claim defaults to lock
 	//claimType, err := types.StringToClaimType("lkfjdsk")
@@ -115,7 +116,7 @@ func TestProcessClaimBurn(t *testing.T) {
 	validator1Pow3 := validatorAddresses[0]
 	validator2Pow3 := validatorAddresses[1]
 
-	nonce := int64(1)
+	nonce := uint64(1)
 
 	claimType := types.ClaimType_CLAIM_TYPE_BURN
 
@@ -279,7 +280,7 @@ func TestProcessBurn(t *testing.T) {
 	denomHash := keeper.AddTokenMetadata(ctx, testMetadataStake)
 
 	msg := types.NewMsgBurn(1, cosmosReceivers[0], ethereumSender, amount, denomHash, amount)
-	coins := sdk.NewCoins(sdk.NewCoin("stake", amount), sdk.NewCoin(crossChainFee, amount))
+	coins := sdk.NewCoins(sdk.NewCoin(denomHash, amount), sdk.NewCoin(crossChainFee, amount))
 	_ = bankKeeper.MintCoins(ctx, types.ModuleName, coins)
 	_ = bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, cosmosReceivers[0], coins)
 
@@ -297,6 +298,7 @@ func TestProcessBurnCrossChainFee(t *testing.T) {
 	networkIdentity := oracletypes.NewNetworkIdentity(networkDescriptor)
 	crossChainFeeConfig, _ := oracleKeeper.GetCrossChainFeeConfig(ctx, networkIdentity)
 	crossChainFee := crossChainFeeConfig.FeeCurrency
+
 	denomHash := keeper.AddTokenMetadata(ctx, testMetadataCeth)
 
 	msg := types.NewMsgBurn(networkDescriptor, cosmosReceivers[0], ethereumSender, amount, denomHash, amount)
@@ -330,7 +332,7 @@ func TestProcessLock(t *testing.T) {
 	_, err := keeper.ProcessLock(ctx, cosmosReceivers[0], account.GetSequence(), &msg, testMetadataRowan, false)
 	require.ErrorIs(t, err, sdkerrors.ErrInsufficientFunds)
 
-	coins = sdk.NewCoins(sdk.NewCoin("rowan", amount), sdk.NewCoin(crossChainFee, amount))
+	coins = sdk.NewCoins(sdk.NewCoin(denomHash, amount), sdk.NewCoin(crossChainFee, amount))
 	_ = bankKeeper.MintCoins(ctx, types.ModuleName, coins)
 	_ = bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, cosmosReceivers[0], coins)
 
@@ -354,7 +356,7 @@ func TestProcessBurnWithReceiver(t *testing.T) {
 	denomHash := keeper.AddTokenMetadata(ctx, testMetadataStake)
 
 	msg := types.NewMsgBurn(1, cosmosReceivers[0], ethereumSender, amount, denomHash, amount)
-	coins := sdk.NewCoins(sdk.NewCoin("stake", amount), sdk.NewCoin(crossChainFee, amount))
+	coins := sdk.NewCoins(sdk.NewCoin(denomHash, amount), sdk.NewCoin(crossChainFee, amount))
 	_ = bankKeeper.MintCoins(ctx, types.ModuleName, coins)
 	_ = bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, cosmosReceivers[0], coins)
 
@@ -414,7 +416,7 @@ func TestProcessLockWithReceiver(t *testing.T) {
 	_, err = keeper.ProcessLock(ctx, cosmosReceivers[0], account.GetSequence(), &msg, testMetadataRowan, false)
 	require.ErrorIs(t, err, sdkerrors.ErrInsufficientFunds)
 
-	coins = sdk.NewCoins(sdk.NewCoin("rowan", amount), sdk.NewCoin(crossChainFee, amount))
+	coins = sdk.NewCoins(sdk.NewCoin(denomHash, amount), sdk.NewCoin(crossChainFee, amount))
 	_ = bankKeeper.MintCoins(ctx, types.ModuleName, coins)
 	_ = bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, cosmosReceivers[0], coins)
 
@@ -449,7 +451,7 @@ func TestProcessLockFirstDoublePeg(t *testing.T) {
 	_, err = keeper.ProcessLock(ctx, cosmosReceivers[0], account.GetSequence(), &msg, testMetadataRowan, true)
 	require.ErrorIs(t, err, sdkerrors.ErrInsufficientFunds)
 
-	coins = sdk.NewCoins(sdk.NewCoin("rowan", amount), sdk.NewCoin(crossChainFee, amount))
+	coins = sdk.NewCoins(sdk.NewCoin(msg.DenomHash, amount), sdk.NewCoin(crossChainFee, amount))
 	_ = bankKeeper.MintCoins(ctx, types.ModuleName, coins)
 	_ = bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, cosmosReceivers[0], coins)
 

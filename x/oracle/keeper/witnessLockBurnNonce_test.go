@@ -24,29 +24,29 @@ func TestSetWitnessLockBurnNonce(t *testing.T) {
 	testCosmosAddress, err := sdk.ValAddressFromBech32(testAddress)
 	require.NoError(t, err)
 
-	lockBurnNonce := keeper.GetWitnessLockBurnNonce(ctx, testNetwork, testCosmosAddress)
+	lockBurnNonce := keeper.GetWitnessLockBurnSequence(ctx, testNetwork, testCosmosAddress)
 	assert.Equal(t, lockBurnNonce, testInitNonce)
 
 	keeper.SetWitnessLockBurnNonce(ctx, testNetwork, testCosmosAddress, testLockBurnNonce)
 
-	lockBurnNonce = keeper.GetWitnessLockBurnNonce(ctx, testNetwork, testCosmosAddress)
+	lockBurnNonce = keeper.GetWitnessLockBurnSequence(ctx, testNetwork, testCosmosAddress)
 	assert.Equal(t, lockBurnNonce, testLockBurnNonce)
 }
 
-func TestGetWitnessLockBurnNonce(t *testing.T) {
+func TestGetWitnessLockBurnSequence(t *testing.T) {
 	var ctx, _, _, _, keeper, _, _, _ = test.CreateTestKeepers(t, 0.7, []int64{3, 3}, "")
 	testCosmosAddress, err := sdk.ValAddressFromBech32(testAddress)
 	require.NoError(t, err)
 
-	lockBurnNonce := keeper.GetWitnessLockBurnNonce(ctx, testNetwork, testCosmosAddress)
+	lockBurnNonce := keeper.GetWitnessLockBurnSequence(ctx, testNetwork, testCosmosAddress)
 	assert.Equal(t, lockBurnNonce, testInitNonce)
 }
 
-func TestGetWitnessLockBurnNoncePrefix(t *testing.T) {
+func TestGetWitnessLockBurnSequencePrefix(t *testing.T) {
 	var _, _, _, _, keeper, _, _, _ = test.CreateTestKeepers(t, 0.7, []int64{3, 3}, "")
 	testCosmosAddress, err := sdk.ValAddressFromBech32(testAddress)
 	require.NoError(t, err)
 
-	prefix := keeper.GetWitnessLockBurnNoncePrefix(testNetwork, testCosmosAddress)
+	prefix := keeper.GetWitnessLockBurnSequencePrefix(testNetwork, testCosmosAddress)
 	assert.Equal(t, prefix, testPrefix)
 }
