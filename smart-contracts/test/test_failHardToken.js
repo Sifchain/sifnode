@@ -12,7 +12,6 @@ use(solidity);
 describe("Fail Hard Token", function () {
 	let userOne;
 	let userTwo;
-	let accs;
 	let addresses;
 	let state;
 	let failFactory;
