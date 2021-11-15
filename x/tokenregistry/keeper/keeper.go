@@ -3,8 +3,8 @@ package keeper
 import (
 	"bytes"
 	"fmt"
+
 	"github.com/Sifchain/sifnode/x/instrumentation"
-	"strings"
 
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -85,75 +85,67 @@ func (k keeper) CheckDenomPermissions(ctx sdk.Context, denom string, requiredPer
 	return true
 }
 
+func (k keeper) GetDenomPrefix(ctx sdk.Context, denom string) []byte {
+	return append(types.TokenDenomPrefix, []byte(denom)...)
+}
+
 func (k keeper) GetDenom(ctx sdk.Context, denom string) types.RegistryEntry {
-	wl := k.GetRegistry(ctx)
 
-	// TODO: This is inefficient, and potentially an attack vector. Investigate
-	// using a map instead
-	// See ticket #2065
-	for i := range wl.Entries {
-		if wl.Entries[i] != nil && strings.EqualFold(wl.Entries[i].Denom, denom) {
-			return *wl.Entries[i]
-		}
-	}
+	var entry types.RegistryEntry
+	key := k.GetDenomPrefix(ctx, denom)
+	store := ctx.KVStore(k.storeKey)
+	bz := store.Get(key)
 
-	return types.RegistryEntry{
-		IsWhitelisted: false,
-		Denom:         denom,
-	}
+	k.cdc.MustUnmarshalBinaryBare(bz, &entry)
+
+	return entry
 }
 
+// SetToken add a new denom
 func (k keeper) SetToken(ctx sdk.Context, entry *types.RegistryEntry) {
-	wl := k.GetRegistry(ctx)
-
 	entry.Sanitize()
+	key := k.GetDenomPrefix(ctx, entry.Denom)
+	store := ctx.KVStore(k.storeKey)
 
-	for i := range wl.Entries {
-		if wl.Entries[i] != nil && strings.EqualFold(wl.Entries[i].Denom, entry.Denom) {
-			wl.Entries[i] = entry
+	bz := k.cdc.MustMarshalBinaryBare(entry)
 
-			k.SetRegistry(ctx, wl)
-			return
-		}
-	}
-
-	wl.Entries = append(wl.Entries, entry)
-
-	k.SetRegistry(ctx, wl)
+	store.Set(key, bz)
 }
 
+// RemoveToken remove a token
 func (k keeper) RemoveToken(ctx sdk.Context, denom string) {
-	registry := k.GetRegistry(ctx)
-
-	updated := make([]*types.RegistryEntry, 0)
-	for _, t := range registry.Entries {
-		if t != nil && !strings.EqualFold(t.Denom, denom) {
-			updated = append(updated, t)
-		}
-	}
-
-	k.SetRegistry(ctx, types.Registry{
-		Entries: updated,
-	})
-}
-
-func (k keeper) SetRegistry(ctx sdk.Context, wl types.Registry) {
+	key := k.GetDenomPrefix(ctx, denom)
 	store := ctx.KVStore(k.storeKey)
-
-	bz := k.cdc.MustMarshalBinaryBare(&wl)
-
-	store.Set(types.WhitelistStorePrefix, bz)
+	store.Delete(key)
 }
 
+// GetRegistry get all token's metadata
 func (k keeper) GetRegistry(ctx sdk.Context) types.Registry {
-	var whitelist types.Registry
+	var entries []*types.RegistryEntry
+
 	store := ctx.KVStore(k.storeKey)
-	bz := store.Get(types.WhitelistStorePrefix)
-	if len(bz) == 0 {
-		return types.Registry{}
+	iterator := sdk.KVStorePrefixIterator(store, types.TokenDenomPrefix)
+	defer iterator.Close()
+	for ; iterator.Valid(); iterator.Next() {
+		var registry types.RegistryEntry
+		key := iterator.Key()
+		bz := store.Get(key)
+		k.cdc.MustUnmarshalBinaryBare(bz, &registry)
+
+		entries = append(entries, &registry)
 	}
-	k.cdc.MustUnmarshalBinaryBare(bz, &whitelist)
-	return whitelist
+
+	return types.Registry{
+		Entries: entries,
+	}
+}
+
+// SetRegistry add a bunch of tokens
+func (k keeper) SetRegistry(ctx sdk.Context, wl types.Registry) {
+
+	for _, item := range wl.Entries {
+		k.SetToken(ctx, item)
+	}
 }
 
 // Exists chec if the key existed in db.
