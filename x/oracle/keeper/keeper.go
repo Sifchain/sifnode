@@ -90,7 +90,7 @@ func (k Keeper) AppendValidatorToProphecy(ctx sdk.Context, networkDescriptor typ
 		prophecy.Status = types.StatusText_STATUS_TEXT_PENDING
 	}
 
-	instrumentation.PeggyCheckpoint(ctx.Logger(), "AppendValidatorToProphecy", "prophecy", zap.Reflect("prophecy", prophecy))
+	instrumentation.PeggyCheckpoint(ctx.Logger(), instrumentation.AppendValidatorToProphecy, "prophecy", zap.Reflect("prophecy", prophecy))
 
 	switch prophecy.Status {
 	case types.StatusText_STATUS_TEXT_PENDING:
@@ -150,7 +150,7 @@ func (k Keeper) processCompletion(ctx sdk.Context, networkDescriptor types.Netwo
 		prophecy.Status = types.StatusText_STATUS_TEXT_SUCCESS
 	}
 
-	instrumentation.PeggyCheckpoint(ctx.Logger(), "processCompletion", "prophecy", zap.Reflect("prophecy", prophecy))
+	instrumentation.PeggyCheckpoint(ctx.Logger(), instrumentation.ProcessCompletion, "prophecy", zap.Reflect("prophecy", prophecy))
 
 	return prophecy
 }
@@ -236,7 +236,7 @@ func (k Keeper) ProcessSignProphecy(ctx sdk.Context, networkDescriptor types.Net
 	// old = pending, new = success the only case we will emit the event
 	// old = success, new = success not emit the same event twice
 	if oldStatus == types.StatusText_STATUS_TEXT_PENDING && newStatus == types.StatusText_STATUS_TEXT_SUCCESS {
-		instrumentation.PeggyCheckpoint(ctx.Logger(), "ProphecyStatus", "Status", newStatus)
+		instrumentation.PeggyCheckpoint(ctx.Logger(), instrumentation.ProphecyStatus, "Status", newStatus)
 
 		ctx.EventManager().EmitEvents(sdk.Events{
 

@@ -73,7 +73,7 @@ func (k Keeper) ProcessClaim(ctx sdk.Context, claim *types.EthBridgeClaim) (orac
 func (k Keeper) ProcessSuccessfulClaim(ctx sdk.Context, claim *types.EthBridgeClaim) error {
 	logger := k.Logger(ctx)
 
-	instrumentation.PeggyCheckpoint(logger, "ProcessSuccessfulClaim", "claim", zap.Reflect("claim", claim))
+	instrumentation.PeggyCheckpoint(logger, instrumentation.ProcessSuccessfulClaim, "claim", zap.Reflect("claim", claim))
 
 	var coins sdk.Coins
 	var err error
@@ -106,7 +106,7 @@ func (k Keeper) ProcessSuccessfulClaim(ctx sdk.Context, claim *types.EthBridgeCl
 		panic(err)
 	}
 
-	instrumentation.PeggyCheckpoint(ctx.Logger(), "coinsSent", "claim", zap.Reflect("claim", claim), "receiverAddress", receiverAddress, "coins", coins)
+	instrumentation.PeggyCheckpoint(ctx.Logger(), instrumentation.CoinsSent, "claim", zap.Reflect("claim", claim), "receiverAddress", receiverAddress, "coins", coins)
 
 	return nil
 }
@@ -164,7 +164,7 @@ func (k Keeper) ProcessBurn(ctx sdk.Context,
 		return []byte{}, err
 	}
 
-	instrumentation.PeggyCheckpoint(logger, "SendCoinsFromAccountToModule", "cosmosSender", cosmosSender, "moduleName", types.ModuleName, "coins", coins)
+	instrumentation.PeggyCheckpoint(logger, instrumentation.SendCoinsFromAccountToModule, "cosmosSender", cosmosSender, "moduleName", types.ModuleName, "coins", coins)
 
 	// not burn the token if it is sifchain native token
 	if !tokenMetadata.NetworkDescriptor.IsSifchain() {
@@ -175,7 +175,7 @@ func (k Keeper) ProcessBurn(ctx sdk.Context,
 				errorMessageKey, err.Error())
 			return []byte{}, err
 		}
-		instrumentation.PeggyCheckpoint(logger, "BurnCoins", "moduleName", types.ModuleName, "coins", coins)
+		instrumentation.PeggyCheckpoint(logger, instrumentation.BurnCoins, "moduleName", types.ModuleName, "coins", coins)
 	}
 
 	prophecyID := msg.GetProphecyID(false, senderSequence, k.GetGlobalSequence(ctx, msg.NetworkDescriptor), tokenMetadata.TokenAddress)
@@ -326,7 +326,7 @@ func (k Keeper) SetFeeInfo(ctx sdk.Context, msg *types.MsgSetFeeInfo) error {
 
 // ProcessSignProphecy processes the set sign prophecy from validator
 func (k Keeper) ProcessSignProphecy(ctx sdk.Context, msg *types.MsgSignProphecy) error {
-	instrumentation.PeggyCheckpoint(ctx.Logger(), "SignProphecy", "SignProphecy", zap.Reflect("msgProphecy", msg))
+	instrumentation.PeggyCheckpoint(ctx.Logger(), instrumentation.SignProphecy, "SignProphecy", zap.Reflect("msgProphecy", msg))
 
 	prophecyInfo, ok := k.oracleKeeper.GetProphecyInfo(ctx, msg.ProphecyId)
 	if !ok {

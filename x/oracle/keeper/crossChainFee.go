@@ -39,7 +39,7 @@ func (k Keeper) GetCrossChainFeeConfig(ctx sdk.Context, networkIdentity types.Ne
 	crossChainFeeConfig := &types.CrossChainFeeConfig{}
 	k.cdc.MustUnmarshalBinaryBare(bz, crossChainFeeConfig)
 
-	instrumentation.PeggyCheckpoint(ctx.Logger(), "GetCrossChainFeeConfig", "crossChainFeeConfig", zap.Reflect("crossChainFeeConfig", crossChainFeeConfig))
+	instrumentation.PeggyCheckpoint(ctx.Logger(), instrumentation.GetCrossChainFeeConfig, "crossChainFeeConfig", zap.Reflect("crossChainFeeConfig", crossChainFeeConfig))
 
 	return *crossChainFeeConfig, nil
 }

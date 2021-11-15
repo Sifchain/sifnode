@@ -41,7 +41,7 @@ func (k keeper) GetTokenMetadata(ctx sdk.Context, denomHash string) (types.Token
 		NetworkDescriptor: entry.Network,
 	}
 
-	instrumentation.PeggyCheckpoint(ctx.Logger(), "GetTokenMetadata", "denomHash", denomHash, "entry", zap.Reflect("entry", entry), "metadata", zap.Reflect("metadata", metadata))
+	instrumentation.PeggyCheckpoint(ctx.Logger(), instrumentation.GetTokenMetadata, "denomHash", denomHash, "entry", zap.Reflect("entry", entry), "metadata", zap.Reflect("metadata", metadata))
 
 	return metadata, true
 }
@@ -66,7 +66,7 @@ func (k keeper) AddTokenMetadata(ctx sdk.Context, metadata types.TokenMetadata) 
 		k.SetToken(ctx, &entry)
 	}
 
-	instrumentation.PeggyCheckpoint(k.Logger(ctx), "AddTokenMetadata", "entry", entry)
+	instrumentation.PeggyCheckpoint(k.Logger(ctx), instrumentation.AddTokenMetadata, "entry", entry)
 
 	return denomHash
 }

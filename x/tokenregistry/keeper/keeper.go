@@ -170,6 +170,6 @@ func (k keeper) SetFirstLockDoublePeg(ctx sdk.Context, denom string, networkDesc
 		registry.DoublePeggedNetworkMap[uint32(networkDescriptor)] = false
 		k.SetToken(ctx, &registry)
 
-		instrumentation.PeggyCheckpoint(ctx.Logger(), "SetFirstLockDoublePeg", "networkDescriptor", networkDescriptor, "registry", registry)
+		instrumentation.PeggyCheckpoint(ctx.Logger(), instrumentation.SetFirstLockDoublePeg, "networkDescriptor", networkDescriptor, "registry", registry)
 	}
 }
