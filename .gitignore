@@ -1,4 +1,5 @@
-.idea
+.idea/
+.run/
 .vscode
 .coverage.txt
 frontend/node_modules
