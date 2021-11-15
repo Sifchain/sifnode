@@ -432,7 +432,6 @@ contract BridgeBank is BankStorage, CosmosBank, EthereumWhiteList, CosmosWhiteLi
 		}
 
 		try BridgeToken(token).decimals() returns (uint8 _decimals) {
-			require(decimals < 100, "invalid decimals");
 			decimals = _decimals;
 			contractDecimals[token] = _decimals;
 		} catch {
