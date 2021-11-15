@@ -2,10 +2,11 @@ package keeper
 
 import (
 	"context"
+	"strconv"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/pkg/errors"
-	"strconv"
 
 	"github.com/Sifchain/sifnode/x/ethbridge/types"
 	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
@@ -318,4 +319,13 @@ func (srv msgServer) RescueCeth(goCtx context.Context, msg *types.MsgRescueCeth)
 		"CethAmount", msg.CethAmount)
 
 	return &types.MsgRescueCethResponse{}, nil
+}
+
+func (srv msgServer) SetBlacklist(goCtx context.Context, msg *types.MsgSetBlacklist) (*types.MsgSetBlacklistResponse, error) {
+	err := srv.Keeper.SetBlacklist(sdk.UnwrapSDKContext(goCtx), msg)
+	if err != nil {
+		return nil, err
+	}
+
+	return &types.MsgSetBlacklistResponse{}, nil
 }

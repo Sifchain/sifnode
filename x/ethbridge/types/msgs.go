@@ -406,3 +406,18 @@ func MapOracleClaimsToEthBridgeClaims(
 
 	return mappedClaims, nil
 }
+
+var _ sdk.MsgRequest = &MsgSetBlacklist{}
+
+func (msg *MsgSetBlacklist) ValidateBasic() error {
+	return nil
+}
+
+func (msg *MsgSetBlacklist) GetSigners() []sdk.AccAddress {
+	from, err := sdk.AccAddressFromBech32(msg.From)
+	if err != nil {
+		panic(err)
+	}
+
+	return []sdk.AccAddress{from}
+}

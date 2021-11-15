@@ -104,6 +104,10 @@ func (k Keeper) ProcessBurn(ctx sdk.Context, cosmosSender sdk.AccAddress, msg *t
 	logger := k.Logger(ctx)
 	var coins sdk.Coins
 
+	if k.IsBlacklisted(ctx, msg.EthereumReceiver) {
+		return types.ErrInvalidEthAddress
+	}
+
 	if k.IsCethReceiverAccountSet(ctx) {
 		coins = sdk.NewCoins(sdk.NewCoin(types.CethSymbol, msg.CethAmount))
 
@@ -145,6 +149,11 @@ func (k Keeper) ProcessBurn(ctx sdk.Context, cosmosSender sdk.AccAddress, msg *t
 // ProcessLock processes the lockup of cosmos coins from the given sender
 func (k Keeper) ProcessLock(ctx sdk.Context, cosmosSender sdk.AccAddress, msg *types.MsgLock) error {
 	logger := k.Logger(ctx)
+
+	if k.IsBlacklisted(ctx, msg.EthereumReceiver) {
+		return types.ErrInvalidEthAddress
+	}
+
 	var coins sdk.Coins
 
 	if k.IsCethReceiverAccountSet(ctx) {
