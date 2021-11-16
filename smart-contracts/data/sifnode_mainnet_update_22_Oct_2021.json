@@ -1,0 +1,22 @@
+[
+  {
+    "decimals": 18,
+    "denom": "cfis",
+    "base_denom": "cfis",
+    "path": "",
+    "ibc_channel_id": "",
+    "ibc_counterparty_channel_id": "",
+    "display_name": "",
+    "display_symbol": "",
+    "network": "",
+    "address": "",
+    "external_symbol": "",
+    "transfer_limit": "",
+    "permissions": [
+      "CLP"
+    ],
+    "unit_denom": "",
+    "ibc_counterparty_denom": "",
+    "ibc_counterparty_chain_id": ""
+  }
+]

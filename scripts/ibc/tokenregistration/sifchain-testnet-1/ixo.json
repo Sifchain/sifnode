@@ -1,0 +1,26 @@
+{
+  "entries": [
+    {
+      "decimals": "6",
+      "denom": "ibc/F3FF7A84A73B62921538642F9797C423D2B4C4ACB3C7FCFFCE7F12AA69909C4B",
+      "base_denom": "uixo",
+      "path": "transfer/channel-38",
+      "ibc_channel_id": "channel-38",
+      "ibc_counterparty_channel_id": "channel-12",
+      "display_name": "",
+      "display_symbol": "",
+      "network": "",
+      "address": "",
+      "external_symbol": "",
+      "transfer_limit": "",
+      "permissions": [
+        "CLP",
+        "IBCEXPORT",
+        "IBCIMPORT"
+      ],
+      "unit_denom": "",
+      "ibc_counterparty_denom": "",
+      "ibc_counterparty_chain_id": "impacthub-3"
+    }
+  ]
+}

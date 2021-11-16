@@ -11,10 +11,7 @@ import (
 )
 
 func RegisterRESTRoutes(cliCtx client.Context, r *mux.Router) {
-	r.HandleFunc(
-		"/tokenregistry/entries",
-		getTokenRegistryHandler(cliCtx),
-	).Methods("GET")
+	r.HandleFunc("/tokenregistry/entries", getTokenRegistryHandler(cliCtx)).Methods("GET")
 }
 
 type QueryEntriesRequest struct {
@@ -27,22 +24,18 @@ func getTokenRegistryHandler(cliCtx client.Context) http.HandlerFunc {
 		if !ok {
 			return
 		}
-
 		route := fmt.Sprintf("custom/%s/%s", types.QuerierRoute, types.QueryEntries)
-
 		bz, height, err := cliCtx.QueryWithData(route, nil)
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
 			return
 		}
-
 		var res types.QueryEntriesResponse
 		err = types.ModuleCdc.UnmarshalJSON(bz, &res)
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
 			return
 		}
-
 		cliCtx = cliCtx.WithHeight(height)
 		rest.PostProcessResponse(w, cliCtx, res)
 	}

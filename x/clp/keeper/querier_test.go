@@ -20,7 +20,7 @@ import (
 
 // createTestInput Returns a simapp with custom StakingKeeper
 // to avoid messing with the hooks.
-func createTestInput() (*codec.LegacyAmino, *sifapp.SifchainApp, sdk.Context) {
+func createTestInput() (*codec.LegacyAmino, *sifapp.SifchainApp, sdk.Context) { //nolint
 	app := sifapp.Setup(false)
 	sifapp.SetConfig(false)
 	ctx := app.BaseApp.NewContext(false, tmproto.Header{})
