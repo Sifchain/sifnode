@@ -322,7 +322,6 @@ describe("lock of ethereum", () => {
         const contracts = await buildDevEnvContracts(devEnvObject, hardhat, factories)
         const destinationEthereumAddress = ethereumAccounts.availableAccounts[0]
         const sendAmount = BigNumber.from(3500)
-        const fundAmount = BigNumber.from(3501)
         const networkDescriptor = devEnvObject!.ethResults!.chainId;
 
         let testSifAccount: EbRelayerAccount = createTestSifAccount();
