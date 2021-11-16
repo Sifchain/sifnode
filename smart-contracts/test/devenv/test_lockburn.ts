@@ -16,7 +16,7 @@ import {EthereumMainnetEvent} from "../../src/watcher/ethereumMainnet";
 import {filter} from "rxjs/operators";
 import {SignerWithAddress} from "@nomiclabs/hardhat-ethers/signers";
 import * as ChildProcess from "child_process"
-import {EbRelayerAccount} from "../../src/devenv/sifnoded";
+import {EbRelayerAccount, crossChainFeeBase, crossChainLockFee, crossChainBurnFee} from "../../src/devenv/sifnoded";
 import {v4 as uuidv4} from 'uuid';
 import * as dotenv from "dotenv"
 import deepEqual = require("deep-equal");
@@ -322,6 +322,7 @@ describe("lock of ethereum", () => {
         const contracts = await buildDevEnvContracts(devEnvObject, hardhat, factories)
         const destinationEthereumAddress = ethereumAccounts.availableAccounts[0]
         const sendAmount = BigNumber.from(3500)
+        const fundAmount = BigNumber.from(3501)
         const networkDescriptor = devEnvObject!.ethResults!.chainId;
 
         let testSifAccount: EbRelayerAccount = createTestSifAccount();
@@ -405,13 +406,15 @@ describe("lock of ethereum", () => {
         }))
 
         attachDebugPrintfs(withoutHeartbeat, verbosityLevel())
+        
+        let crossChainCethFee = crossChainFeeBase * crossChainBurnFee
 
         await executeSifBurn(
             testSifAccount,
             destinationEthereumAddress,
-            sendAmount,
+            sendAmount.sub(crossChainCethFee),
             ethDenomHash,
-            "1",
+            String(crossChainCethFee),
             networkDescriptor
         )
 

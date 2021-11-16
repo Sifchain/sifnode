@@ -16,6 +16,11 @@ import {
 import { network } from "hardhat";
 import {sleep} from "./devEnvUtilities";
 
+export const crossChainFeeBase: number = 1
+export const crossChainLockFee: number = 1
+export const crossChainBurnFee: number = 1
+const ethereumCrossChainFeeToken: string = "sif5ebfaf95495ceb5a3efbd0b0c63150676ec71e023b1043c40bcaaf91c00e15b2"
+
 export interface ValidatorValues {
   chain_id: string,
   node_id: string,
@@ -187,7 +192,12 @@ export class SifnodedRunner extends ShellCommand<SifnodedResults> {
       { encoding: "utf8" }
     ).trim()
 
-    await this.setCrossChainFee(sifnodedAdminAddress, "31337", "sif5ebfaf95495ceb5a3efbd0b0c63150676ec71e023b1043c40bcaaf91c00e15b2", "1", "1", "1", this.chainId)
+    await this.setCrossChainFee(sifnodedAdminAddress, "31337", 
+      ethereumCrossChainFeeToken,
+      String(crossChainFeeBase),
+      String(crossChainLockFee),
+      String(crossChainBurnFee),
+      this.chainId)
 
     sifnoded.on('exit', (code) => {
       notifier.notify({
