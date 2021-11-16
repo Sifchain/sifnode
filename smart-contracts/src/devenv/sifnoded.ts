@@ -187,7 +187,7 @@ export class SifnodedRunner extends ShellCommand<SifnodedResults> {
       { encoding: "utf8" }
     ).trim()
 
-    await this.setCrossChainFee(sifnodedAdminAddress, "31337", "ceth", "1", "1", "1", this.chainId)
+    await this.setCrossChainFee(sifnodedAdminAddress, "31337", "sif5ebfaf95495ceb5a3efbd0b0c63150676ec71e023b1043c40bcaaf91c00e15b2", "1", "1", "1", this.chainId)
 
     sifnoded.on('exit', (code) => {
       notifier.notify({
