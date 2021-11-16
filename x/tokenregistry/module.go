@@ -44,7 +44,7 @@ func (AppModuleBasic) Name() string {
 }
 
 // RegisterCodec registers the module's types for the given codec.
-func (AppModuleBasic) RegisterLegacyAminoCodec(cdc *codec.LegacyAmino) {
+func (AppModuleBasic) RegisterLegacyAminoCodec(cdc *codec.LegacyAmino) { //nolint
 	types.RegisterLegacyAminoCodec(cdc)
 }
 
@@ -56,14 +56,12 @@ func (b AppModuleBasic) DefaultGenesis(marshaler codec.JSONMarshaler) json.RawMe
 // ValidateGenesis performs genesis state validation.
 func (b AppModuleBasic) ValidateGenesis(marshaler codec.JSONMarshaler, _ sdkclient.TxEncodingConfig, message json.RawMessage) error {
 	var data types.GenesisState
-
 	if message != nil {
 		err := marshaler.UnmarshalJSON(message, &data)
 		if err != nil {
 			return fmt.Errorf("failed to unmarshal %s genesis state: %w", types.ModuleName, err)
 		}
 	}
-
 	return nil
 }
 
@@ -111,17 +109,13 @@ func (am AppModule) RegisterServices(cfg module.Configurator) {
 
 // NewAppModule creates a new AppModule object
 func NewAppModule(
-	// bankKeeper types.BankKeeper,
 	keeper types.Keeper,
 	cdc *codec.Marshaler) AppModule {
-
 	return AppModule{
 		AppModuleBasic:      AppModuleBasic{},
 		AppModuleSimulation: AppModuleSimulation{},
-
-		// BankKeeper:    bankKeeper,
-		Keeper: keeper,
-		Codec:  cdc,
+		Keeper:              keeper,
+		Codec:               cdc,
 	}
 }
 
@@ -150,7 +144,7 @@ func (AppModule) QuerierRoute() string {
 }
 
 // Deprecated: LegacyQuerierHandler use RegisterServices
-func (am AppModule) LegacyQuerierHandler(_ *codec.LegacyAmino) sdk.Querier {
+func (am AppModule) LegacyQuerierHandler(_ *codec.LegacyAmino) sdk.Querier { //nolint
 	return keeper.NewLegacyQuerier(am.Keeper)
 }
 
@@ -159,7 +153,6 @@ func (am AppModule) LegacyQuerierHandler(_ *codec.LegacyAmino) sdk.Querier {
 func (am AppModule) InitGenesis(ctx sdk.Context, marshaler codec.JSONMarshaler, data json.RawMessage) []abci.ValidatorUpdate {
 	var genesisState types.GenesisState
 	marshaler.MustUnmarshalJSON(data, &genesisState)
-
 	return am.Keeper.InitGenesis(ctx, genesisState)
 }
 
@@ -171,8 +164,7 @@ func (am AppModule) ExportGenesis(ctx sdk.Context, marshaler codec.JSONMarshaler
 // BeginBlock returns the begin blocker.
 func (AppModule) BeginBlock(_ sdk.Context, _ abci.RequestBeginBlock) {}
 
-// EndBlock returns the end blocker. It returns no validator
-// updates.
+// EndBlock returns the end blocker. It returns no validator updates.
 func (am AppModule) EndBlock(_ sdk.Context, _ abci.RequestEndBlock) []abci.ValidatorUpdate {
 	return nil
 }

@@ -1,7 +1,7 @@
 # scripts description
 The document describes the scripts in smart contract. 
 
-At first, you need set up the execution environment variable by `cp .env.example .env`, replace the ETHEREUM_PRIVATE_KEY and INFURA_PROJECT_ID. Then you can call `yarn develop` to start ganache-cli to start local Ethereum node.
+At first, you need set up the execution environment variable by `cp .env.example .env`, replace the ETHEREUM_PRIVATE_KEY and WEB3_PROVIDER. Then you can call `yarn develop` to start ganache-cli to start local Ethereum node.
 
 For each script, you can call `yarn XXX`, the XXX list can be found in the package.json scripts. For the prefix with integrationtest, just used in the integration test. You can send transaction to different Ethereum network via parameter `--network ropsten`, default is local network. All scripts for integration test not explained in the document, they are similar to scripts listed below, just applied to the integration environment, for some special account, or load test and so on.
 

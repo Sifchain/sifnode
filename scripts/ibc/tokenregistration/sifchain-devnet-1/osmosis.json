@@ -1,7 +1,6 @@
 {
   "entries": [
     {
-      "is_whitelisted": true,
       "decimals": "6",
       "denom": "ibc/788BAF91C4E411B0252776FC1B201264457EE886A9E534DF8A52C56A87924D20",
       "base_denom": "uosmo",

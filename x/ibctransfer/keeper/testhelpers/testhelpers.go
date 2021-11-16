@@ -22,12 +22,10 @@ func (srv *MsgServerStub) Transfer(ctx context.Context, msg *sdktransfertypes.Ms
 	if err != nil {
 		return nil, err
 	}
-
 	_, err = SendStub(sdk.UnwrapSDKContext(ctx), srv.transferKeeper, srv.bankKeeper, msg.Token, sender, msg.SourcePort, msg.SourceChannel)
 	if err != nil {
 		return nil, err
 	}
-
 	return &sdktransfertypes.MsgTransferResponse{}, nil
 }
 
@@ -42,18 +40,15 @@ func SendStub(ctx sdk.Context, transferKeeper sdktransferkeeper.Keeper, bankKeep
 			return "", err
 		}
 	}
-
 	if sdktransfertypes.SenderChainIsSource(sourcePort, sourceChannel, fullDenomPath) {
 		// create the escrow address for the tokens
 		escrowAddress := sdktransfertypes.GetEscrowAddress(sourcePort, sourceChannel)
-
 		// escrow source tokens. It fails if balance insufficient.
 		if err := bankKeeper.SendCoins(
 			ctx, sender, escrowAddress, sdk.NewCoins(token),
 		); err != nil {
 			return "", err
 		}
-
 	} else {
 		// transfer the coins to the module account and burn them
 		if err := bankKeeper.SendCoinsFromAccountToModule(
@@ -61,7 +56,6 @@ func SendStub(ctx sdk.Context, transferKeeper sdktransferkeeper.Keeper, bankKeep
 		); err != nil {
 			return "", err
 		}
-
 		if err := bankKeeper.BurnCoins(
 			ctx, sdktransfertypes.ModuleName, sdk.NewCoins(token),
 		); err != nil {
@@ -71,6 +65,5 @@ func SendStub(ctx sdk.Context, transferKeeper sdktransferkeeper.Keeper, bankKeep
 			panic(fmt.Sprintf("cannot burn coins after a successful send to a module account: %v", err))
 		}
 	}
-
 	return fullDenomPath, nil
 }

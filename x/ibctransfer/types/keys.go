@@ -21,7 +21,6 @@ func GetEscrowAddress(portID, channelID string) sdk.AccAddress {
 	// a slash is used to create domain separation between port and channel identifiers to
 	// prevent address collisions between escrow addresses created for different channels
 	contents := fmt.Sprintf("%s/%s", portID, channelID)
-
 	// ADR 028 AddressHash construction
 	preImage := []byte(Version)
 	preImage = append(preImage, 0)
