@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-go test -v ./... -coverprofile=coverage.txt -covermode=atomic
+go test -v ./... -coverprofile=coverage.txt -covermode=atomic -coverpkg $(go list ./...)
 excludelist="$(find ./ -type f -name '*.go' | xargs grep -l 'DONTCOVER')"
 for filename in ${excludelist}; do
   filename=$(echo $filename | sed 's/^../github.com\/Sifchain\/sifnode/g')
