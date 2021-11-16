@@ -4,9 +4,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/Sifchain/sifnode/x/instrumentation"
 	"strconv"
 
+	"github.com/Sifchain/sifnode/x/instrumentation"
 	"go.uber.org/zap"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -33,7 +33,7 @@ func (srv msgServer) Lock(goCtx context.Context, msg *types.MsgLock) (*types.Msg
 	ctx := sdk.UnwrapSDKContext(goCtx)
 	logger := srv.Keeper.Logger(ctx)
 
-	instrumentation.PeggyCheckpoint(logger, "Lock", "msg", zap.Reflect("message", msg))
+	instrumentation.PeggyCheckpoint(logger, instrumentation.Lock, "msg", zap.Reflect("message", msg))
 
 	cosmosSender, err := sdk.AccAddressFromBech32(msg.CosmosSender)
 	if err != nil {
@@ -108,7 +108,7 @@ func (srv msgServer) Burn(goCtx context.Context, msg *types.MsgBurn) (*types.Msg
 	ctx := sdk.UnwrapSDKContext(goCtx)
 	logger := srv.Keeper.Logger(ctx)
 
-	instrumentation.PeggyCheckpoint(logger, "Burn", "msg", zap.Reflect("message", msg))
+	instrumentation.PeggyCheckpoint(logger, instrumentation.Burn, "msg", zap.Reflect("message", msg))
 
 	cosmosSender, err := sdk.AccAddressFromBech32(msg.CosmosSender)
 	if err != nil {
@@ -181,7 +181,7 @@ func (srv msgServer) CreateEthBridgeClaim(goCtx context.Context, msg *types.MsgC
 	ctx := sdk.UnwrapSDKContext(goCtx)
 	logger := srv.Keeper.Logger(ctx)
 
-	instrumentation.PeggyCheckpoint(logger, "CreateEthBridgeClaim", "msg", zap.Reflect("message", msg))
+	instrumentation.PeggyCheckpoint(logger, instrumentation.CreateEthBridgeClaim, "msg", zap.Reflect("message", msg))
 
 	// check the account
 	cosmosSender := msg.EthBridgeClaim.ValidatorAddress
@@ -450,7 +450,7 @@ func (srv msgServer) SignProphecy(goCtx context.Context, msg *types.MsgSignProph
 	ctx := sdk.UnwrapSDKContext(goCtx)
 	logger := srv.Keeper.Logger(ctx)
 
-	instrumentation.PeggyCheckpoint(logger, "SignProphecy", "msg", msg)
+	instrumentation.PeggyCheckpoint(logger, instrumentation.SignProphecy, "msg", msg)
 
 	cosmosSender, err := sdk.AccAddressFromBech32(msg.CosmosSender)
 	if err != nil {

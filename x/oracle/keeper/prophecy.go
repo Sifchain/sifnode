@@ -47,7 +47,7 @@ func (k Keeper) SetProphecy(ctx sdk.Context, prophecy types.Prophecy) {
 
 	storePrefix := append(types.ProphecyPrefix, prophecy.Id[:]...)
 
-	instrumentation.PeggyCheckpoint(ctx.Logger(), "SetProphecy", "prophecy", prophecy, "storePrefix", storePrefix)
+	instrumentation.PeggyCheckpoint(ctx.Logger(), instrumentation.SetProphecy, "prophecy", prophecy, "storePrefix", storePrefix)
 
 	store.Set(storePrefix, k.cdc.MustMarshalBinaryBare(&prophecy))
 }
@@ -100,7 +100,7 @@ func (k Keeper) SetProphecyInfo(ctx sdk.Context, prophecyID []byte, networkDescr
 		BlockNumber:          uint64(k.currentHeight),
 	}
 
-	instrumentation.PeggyCheckpoint(ctx.Logger(), "SetProphecyInfo", prophecyInfo)
+	instrumentation.PeggyCheckpoint(ctx.Logger(), instrumentation.SetProphecyInfo, prophecyInfo)
 
 	k.SetGlobalNonceProphecyID(ctx, networkDescriptor, globalSequence, prophecyID)
 	store.Set(storePrefix, k.cdc.MustMarshalBinaryBare(&prophecyInfo))
@@ -121,7 +121,7 @@ func (k Keeper) AppendSignature(ctx sdk.Context, prophecyID []byte, ethereumAddr
 
 	storePrefix := append(types.SignaturePrefix, prophecyID[:]...)
 
-	instrumentation.PeggyCheckpoint(ctx.Logger(), "AppendSignature", "storePrefix", storePrefix, "prophecySignatures", prophecySignatures)
+	instrumentation.PeggyCheckpoint(ctx.Logger(), instrumentation.AppendSignature, "storePrefix", storePrefix, "prophecySignatures", prophecySignatures)
 
 	store.Set(storePrefix, k.cdc.MustMarshalBinaryBare(&prophecySignatures))
 	return nil
@@ -167,7 +167,7 @@ func (k Keeper) SetGlobalNonceProphecyID(ctx sdk.Context,
 	store := ctx.KVStore(k.storeKey)
 	storeKey := k.getKeyViaNetworkDescriptorGlobalNonce(networkDescriptor, globalSequence)
 
-	instrumentation.PeggyCheckpoint(ctx.Logger(), "SetGlobalNonceProphecyID",
+	instrumentation.PeggyCheckpoint(ctx.Logger(), instrumentation.SetGlobalNonceProphecyID,
 		"storeKey", storeKey,
 		"prophecyID", prophecyID,
 		"networkDescriptor", networkDescriptor,

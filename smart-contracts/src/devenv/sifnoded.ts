@@ -6,6 +6,8 @@ import * as fs from "fs";
 import YAML from 'yaml'
 import notifier from 'node-notifier';
 import { EbrelayerArguments } from "./ebrelayer";
+import * as delay from 'delay';
+
 import {
   ExecFileSyncOptions,
   ExecFileSyncOptionsWithStringEncoding, ExecSyncOptionsWithStringEncoding,
@@ -13,6 +15,11 @@ import {
 } from "child_process";
 import { network } from "hardhat";
 import {sleep} from "./devEnvUtilities";
+
+export const crossChainFeeBase: number = 1
+export const crossChainLockFee: number = 1
+export const crossChainBurnFee: number = 1
+const ethereumCrossChainFeeToken: string = "sif5ebfaf95495ceb5a3efbd0b0c63150676ec71e023b1043c40bcaaf91c00e15b2"
 
 export interface ValidatorValues {
   chain_id: string,
@@ -174,16 +181,23 @@ export class SifnodedRunner extends ShellCommand<SifnodedResults> {
       { shell: true, stdio: stdioOptions }
     )
 
+
+
     // Register tokens in the token registry
     // Must wait for sifnode to fully start first
     await waitForSifAccount(networkConfig[0].address, this.sifnodedCommand);
     const registryPath = path.resolve(__dirname, "./", "registry.json");
     ChildProcess.execSync(
-      `${this.sifnodedCommand} tx tokenregistry register-all ${registryPath} --home ${homeDir} --from ${sifnodedAdminAddress.name} --yes --keyring-backend test --chain-id ${this.chainId}`,
+      `${this.sifnodedCommand} tx tokenregistry register-all ${registryPath} --home ${homeDir} --gas-prices 0.5rowan --gas-adjustment 1.5 --from ${sifnodedAdminAddress.name} --yes --keyring-backend test --chain-id ${this.chainId}`,
       { encoding: "utf8" }
     ).trim()
 
-    await this.setCrossChainFee(sifnodedAdminAddress, "31337", "ceth", "1", "1", "1", this.chainId)
+    await this.setCrossChainFee(sifnodedAdminAddress, "31337", 
+      ethereumCrossChainFeeToken,
+      String(crossChainFeeBase),
+      String(crossChainLockFee),
+      String(crossChainBurnFee),
+      this.chainId)
 
     sifnoded.on('exit', (code) => {
       notifier.notify({

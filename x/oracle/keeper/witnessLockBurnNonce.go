@@ -17,7 +17,7 @@ func (k Keeper) SetWitnessLockBurnNonce(ctx sdk.Context, networkDescriptor types
 	bs := make([]byte, 8)
 	binary.BigEndian.PutUint64(bs, newNonce)
 
-	instrumentation.PeggyCheckpoint(ctx.Logger(), "SetWitnessLockBurnNonce", "networkDescriptor", networkDescriptor, "valAccount", valAccount, "newNonce", newNonce, "key", key)
+	instrumentation.PeggyCheckpoint(ctx.Logger(), instrumentation.SetWitnessLockBurnNonce, "networkDescriptor", networkDescriptor, "valAccount", valAccount, "newNonce", newNonce, "key", key)
 
 	store.Set(key, bs)
 }
