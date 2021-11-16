@@ -6,6 +6,8 @@ import * as fs from "fs";
 import YAML from 'yaml'
 import notifier from 'node-notifier';
 import { EbrelayerArguments } from "./ebrelayer";
+import * as delay from 'delay';
+
 import {
   ExecFileSyncOptions,
   ExecFileSyncOptionsWithStringEncoding, ExecSyncOptionsWithStringEncoding,
@@ -174,12 +176,14 @@ export class SifnodedRunner extends ShellCommand<SifnodedResults> {
       { shell: true, stdio: stdioOptions }
     )
 
+
+
     // Register tokens in the token registry
     // Must wait for sifnode to fully start first
     await waitForSifAccount(networkConfig[0].address, this.sifnodedCommand);
     const registryPath = path.resolve(__dirname, "./", "registry.json");
     ChildProcess.execSync(
-      `${this.sifnodedCommand} tx tokenregistry register-all ${registryPath} --home ${homeDir} --from ${sifnodedAdminAddress.name} --yes --keyring-backend test --chain-id ${this.chainId}`,
+      `${this.sifnodedCommand} tx tokenregistry register-all ${registryPath} --home ${homeDir} --gas-prices 0.5rowan --gas-adjustment 1.5 --from ${sifnodedAdminAddress.name} --yes --keyring-backend test --chain-id ${this.chainId}`,
       { encoding: "utf8" }
     ).trim()
 
