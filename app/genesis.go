@@ -8,6 +8,6 @@ import (
 
 type GenesisState map[string]json.RawMessage
 
-func NewDefaultGenesisState(cdc codec.JSONMarshaler) GenesisState {
+func NewDefaultGenesisState(cdc codec.Codec) GenesisState {
 	return ModuleBasics.DefaultGenesis(cdc)
 }

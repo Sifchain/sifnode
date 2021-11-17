@@ -13,7 +13,7 @@ import (
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 )
 
-func NewAnteHandler(ak authkeeper.AccountKeeper, bk bankkeeper.Keeper, gasConsumer ante.SignatureVerificationGasConsumer, signModeHandler signing.SignModeHandler) sdk.AnteHandler {
+func NewAnteHandler(ak authkeeper.AccountKeeper, bk bankkeeper.Keeper, fk ante.FeegrantKeeper, gasConsumer ante.SignatureVerificationGasConsumer, signModeHandler signing.SignModeHandler) sdk.AnteHandler {
 	return sdk.ChainAnteDecorators(
 		ante.NewSetUpContextDecorator(), // outermost AnteDecorator. SetUpContext must be called first
 		NewAdjustGasPriceDecorator(),    // Custom decorator to adjust gas price for specific msg types
@@ -23,10 +23,9 @@ func NewAnteHandler(ak authkeeper.AccountKeeper, bk bankkeeper.Keeper, gasConsum
 		ante.TxTimeoutHeightDecorator{},
 		ante.NewValidateMemoDecorator(ak),
 		ante.NewConsumeGasForTxSizeDecorator(ak),
-		ante.NewRejectFeeGranterDecorator(),
 		ante.NewSetPubKeyDecorator(ak), // SetPubKeyDecorator must be called before all signature verification decorators
 		ante.NewValidateSigCountDecorator(ak),
-		ante.NewDeductFeeDecorator(ak, bk),
+		ante.NewDeductFeeDecorator(ak, bk, fk),
 		ante.NewSigGasConsumeDecorator(ak, gasConsumer),
 		ante.NewSigVerificationDecorator(ak, signModeHandler),
 		ante.NewIncrementSequenceDecorator(ak),
@@ -45,7 +44,9 @@ func NewAdjustGasPriceDecorator() AdjustGasPriceDecorator {
 // AnteHandle adjusts the gas price based on the tx type.
 func (r AdjustGasPriceDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate bool, next sdk.AnteHandler) (newCtx sdk.Context, err error) {
 	msgs := tx.GetMsgs()
-	if len(msgs) == 1 && (msgs[0].Type() == disptypes.MsgTypeCreateDistribution || msgs[0].Type() == disptypes.MsgTypeRunDistribution) {
+	if len(msgs) == 1 && (strings.Contains(strings.ToLower(sdk.MsgTypeURL(msgs[0])), strings.ToLower(disptypes.MsgTypeCreateDistribution)) ||
+		strings.Contains(strings.ToLower(sdk.MsgTypeURL(msgs[0])), strings.ToLower(disptypes.MsgTypeRunDistribution))) {
+
 		minGasPrice := sdk.DecCoin{
 			Denom:  "rowan",
 			Amount: sdk.MustNewDecFromStr("0.00000005"),
@@ -58,11 +59,16 @@ func (r AdjustGasPriceDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate
 	}
 	minFee := sdk.ZeroInt()
 	for i := range msgs {
-		if msgs[i].Type() == banktypes.TypeMsgSend || msgs[i].Type() == banktypes.TypeMsgMultiSend ||
-			msgs[i].Type() == "createUserClaim" || msgs[i].Type() == "swap" ||
-			msgs[i].Type() == "remove_liquidity" || msgs[i].Type() == "add_liquidity" {
+		msgTypeURLLower := strings.ToLower(sdk.MsgTypeURL(msgs[i]))
+
+		if strings.Contains(msgTypeURLLower, strings.ToLower(banktypes.TypeMsgSend)) ||
+			strings.Contains(msgTypeURLLower, strings.ToLower(banktypes.TypeMsgMultiSend)) ||
+			strings.Contains(msgTypeURLLower, "createuserclaim") ||
+			strings.Contains(msgTypeURLLower, "swap") ||
+			strings.Contains(msgTypeURLLower, "removeliquidity") ||
+			strings.Contains(msgTypeURLLower, "addliquidity") {
 			minFee = sdk.NewInt(100000000000000000) // 0.1
-		} else if msgs[i].Type() == "transfer" && minFee.LTE(sdk.NewInt(10000000000000000)) {
+		} else if strings.Contains(msgTypeURLLower, "transfer") && minFee.LTE(sdk.NewInt(10000000000000000)) {
 			minFee = sdk.NewInt(10000000000000000) // 0.01
 		}
 	}
