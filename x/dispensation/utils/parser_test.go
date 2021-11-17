@@ -30,7 +30,7 @@ func SetConfig() {
 	config.SetBech32PrefixForAccount(AccountAddressPrefix, AccountPubKeyPrefix)
 	config.SetBech32PrefixForValidator(ValidatorAddressPrefix, ValidatorPubKeyPrefix)
 	config.SetBech32PrefixForConsensusNode(ConsNodeAddressPrefix, ConsNodePubKeyPrefix)
-	config.Seal()
+	// config.Seal()
 }
 
 func createInput(t *testing.T, filename string) {
