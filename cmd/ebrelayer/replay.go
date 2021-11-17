@@ -41,12 +41,12 @@ func RunReplayEthereumCmd(cmd *cobra.Command, args []string) error {
 	web3Provider := args[2]
 
 	if !common.IsHexAddress(args[3]) {
-		return errors.Errorf("invalid [bridge-registry-contract-address]: %s", args[1])
+		return errors.Errorf("invalid [bridge-registry-contract-address]: %s", args[3])
 	}
 	contractAddress := common.HexToAddress(args[3])
 
 	if len(strings.Trim(args[4], "")) == 0 {
-		return errors.Errorf("invalid [validator-moniker]: %s", args[2])
+		return errors.Errorf("invalid [validator-moniker]: %s", args[4])
 	}
 	validatorMoniker := args[4]
 
