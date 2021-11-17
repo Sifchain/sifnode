@@ -44,7 +44,9 @@ func NewAdjustGasPriceDecorator() AdjustGasPriceDecorator {
 // AnteHandle adjusts the gas price based on the tx type.
 func (r AdjustGasPriceDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate bool, next sdk.AnteHandler) (newCtx sdk.Context, err error) {
 	msgs := tx.GetMsgs()
-	if len(msgs) == 1 && (msgs[0].Type() == disptypes.MsgTypeCreateDistribution || msgs[0].Type() == disptypes.MsgTypeRunDistribution) {
+	if len(msgs) == 1 && (strings.Contains(strings.ToLower(sdk.MsgTypeURL(msgs[0])), strings.ToLower(disptypes.MsgTypeCreateDistribution)) ||
+		strings.Contains(strings.ToLower(sdk.MsgTypeURL(msgs[0])), strings.ToLower(disptypes.MsgTypeRunDistribution))) {
+
 		minGasPrice := sdk.DecCoin{
 			Denom:  "rowan",
 			Amount: sdk.MustNewDecFromStr("0.00000005"),
@@ -57,11 +59,16 @@ func (r AdjustGasPriceDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate
 	}
 	minFee := sdk.ZeroInt()
 	for i := range msgs {
-		if msgs[i].Type() == banktypes.TypeMsgSend || msgs[i].Type() == banktypes.TypeMsgMultiSend ||
-			msgs[i].Type() == "createUserClaim" || msgs[i].Type() == "swap" ||
-			msgs[i].Type() == "remove_liquidity" || msgs[i].Type() == "add_liquidity" {
+		msgTypeURLLower := strings.ToLower(sdk.MsgTypeURL(msgs[i]))
+
+		if strings.Contains(msgTypeURLLower, strings.ToLower(banktypes.TypeMsgSend)) ||
+			strings.Contains(msgTypeURLLower, strings.ToLower(banktypes.TypeMsgMultiSend)) ||
+			strings.Contains(msgTypeURLLower, "createuserclaim") ||
+			strings.Contains(msgTypeURLLower, "swap") ||
+			strings.Contains(msgTypeURLLower, "remove_liquidity") ||
+			strings.Contains(msgTypeURLLower, "add_liquidity") {
 			minFee = sdk.NewInt(100000000000000000) // 0.1
-		} else if msgs[i].Type() == "transfer" && minFee.LTE(sdk.NewInt(10000000000000000)) {
+		} else if strings.Contains(msgTypeURLLower, "transfer") && minFee.LTE(sdk.NewInt(10000000000000000)) {
 			minFee = sdk.NewInt(10000000000000000) // 0.01
 		}
 	}

@@ -37,6 +37,7 @@ func SetupHandlers(app *SifchainApp) {
 				panic(err)
 			}
 		}
+		return vm, nil
 	})
 
 	upgradeInfo, err := app.UpgradeKeeper.ReadUpgradeInfoFromDisk()
