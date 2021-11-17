@@ -127,7 +127,8 @@ export class RelayerRunner extends ShellCommand<EbrelayerResults> {
   cmd(): [string, string[]] {
     return ["ebrelayer", [
       "init-relayer",
-      "31337", // TODO: DONT HARDCODE ME
+      // TODO: Where to read this value?
+      "31337",
       this.tcpURL,
       this.websocketAddress,
       this.args.smartContract.bridgeRegistry,
