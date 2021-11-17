@@ -56,7 +56,7 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           goos: linux
           goarch: amd64
-          goversion: "https://dl.google.com/go/go1.15.1.linux-amd64.tar.gz"
+          goversion: "1.16"
           project_path: "./cmd/sifnoded"
           binary_name: "sifnoded"
           sha256sum: true
