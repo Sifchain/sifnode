@@ -15,16 +15,17 @@ import (
 )
 
 func CreateTestApp(isCheckTx bool) (*sifapp.SifchainApp, sdk.Context) {
+	sifapp.SetConfig(false)
 	app := sifapp.Setup(isCheckTx)
 	ctx := app.BaseApp.NewContext(isCheckTx, tmproto.Header{})
 	app.AccountKeeper.SetParams(ctx, authtypes.DefaultParams())
-	initTokens := sdk.TokensFromConsensusPower(1000)
-	app.BankKeeper.SetSupply(ctx, types.NewSupply(sdk.NewCoins()))
+	initTokens := sdk.TokensFromConsensusPower(1000, sdk.DefaultPowerReduction)
 	_ = sifapp.AddTestAddrs(app, ctx, 6, initTokens)
 	return app, ctx
 }
 
 func CreatOutputList(count int, rowanAmount string) []types.Output {
+	sifapp.SetConfig(false)
 	outputList := make([]types.Output, count)
 	amount, ok := sdk.NewIntFromString(rowanAmount)
 	if !ok {

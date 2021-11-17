@@ -7,15 +7,11 @@ import (
 )
 
 func BroadCast(txf tx.Factory, clientCtx sdkclient.Context, msg sdk.Msg) *sdk.TxResponse {
-	preparedTfx, err := tx.PrepareFactory(clientCtx, txf)
+	unsignedTx, err := tx.BuildUnsignedTx(txf, msg)
 	if err != nil {
 		panic(err)
 	}
-	unsignedTx, err := tx.BuildUnsignedTx(preparedTfx, msg)
-	if err != nil {
-		panic(err)
-	}
-	err = tx.Sign(preparedTfx, clientCtx.GetFromName(), unsignedTx, true)
+	err = tx.Sign(txf, clientCtx.GetFromName(), unsignedTx, true)
 	if err != nil {
 		panic(err)
 	}

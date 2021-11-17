@@ -155,7 +155,7 @@ func bindBridgeBank(address common.Address, caller bind.ContractCaller, transact
 // returns, a slice of interfaces for anonymous returns and a struct for named
 // returns.
 func (_BridgeBank *BridgeBankRaw) Call(opts *bind.CallOpts, result interface{}, method string, params ...interface{}) error {
-	return _BridgeBank.Contract.BridgeBankCaller.contract.Call(opts, result, method, params...)
+	return _BridgeBank.Contract.BridgeBankCaller.contract.Call(opts, &[]interface{}{result}, method, params...)
 }
 
 // Transfer initiates a plain transaction to move funds to the contract, calling
@@ -174,7 +174,7 @@ func (_BridgeBank *BridgeBankRaw) Transact(opts *bind.TransactOpts, method strin
 // returns, a slice of interfaces for anonymous returns and a struct for named
 // returns.
 func (_BridgeBank *BridgeBankCallerRaw) Call(opts *bind.CallOpts, result interface{}, method string, params ...interface{}) error {
-	return _BridgeBank.Contract.contract.Call(opts, result, method, params...)
+	return _BridgeBank.Contract.contract.Call(opts, &[]interface{}{result}, method, params...)
 }
 
 // Transfer initiates a plain transaction to move funds to the contract, calling
@@ -196,7 +196,7 @@ func (_BridgeBank *BridgeBankCaller) BridgeTokenCount(opts *bind.CallOpts) (*big
 		ret0 = new(*big.Int)
 	)
 	out := ret0
-	err := _BridgeBank.contract.Call(opts, out, "bridgeTokenCount")
+	err := _BridgeBank.contract.Call(opts, &[]interface{}{out}, "bridgeTokenCount")
 	return *ret0, err
 }
 
@@ -222,7 +222,7 @@ func (_BridgeBank *BridgeBankCaller) CosmosBridge(opts *bind.CallOpts) (common.A
 		ret0 = new(common.Address)
 	)
 	out := ret0
-	err := _BridgeBank.contract.Call(opts, out, "cosmosBridge")
+	err := _BridgeBank.contract.Call(opts, &[]interface{}{out}, "cosmosBridge")
 	return *ret0, err
 }
 
@@ -248,7 +248,7 @@ func (_BridgeBank *BridgeBankCaller) CosmosDepositNonce(opts *bind.CallOpts) (*b
 		ret0 = new(*big.Int)
 	)
 	out := ret0
-	err := _BridgeBank.contract.Call(opts, out, "cosmosDepositNonce")
+	err := _BridgeBank.contract.Call(opts, &[]interface{}{out}, "cosmosDepositNonce")
 	return *ret0, err
 }
 
@@ -274,7 +274,7 @@ func (_BridgeBank *BridgeBankCaller) GetBridgeToken(opts *bind.CallOpts, _symbol
 		ret0 = new(common.Address)
 	)
 	out := ret0
-	err := _BridgeBank.contract.Call(opts, out, "getBridgeToken", _symbol)
+	err := _BridgeBank.contract.Call(opts, &[]interface{}{out}, "getBridgeToken", _symbol)
 	return *ret0, err
 }
 
@@ -300,7 +300,7 @@ func (_BridgeBank *BridgeBankCaller) GetCosmosDepositStatus(opts *bind.CallOpts,
 		ret0 = new(bool)
 	)
 	out := ret0
-	err := _BridgeBank.contract.Call(opts, out, "getCosmosDepositStatus", _id)
+	err := _BridgeBank.contract.Call(opts, &[]interface{}{out}, "getCosmosDepositStatus", _id)
 	return *ret0, err
 }
 
@@ -326,7 +326,7 @@ func (_BridgeBank *BridgeBankCaller) GetCosmosTokenInWhiteList(opts *bind.CallOp
 		ret0 = new(bool)
 	)
 	out := ret0
-	err := _BridgeBank.contract.Call(opts, out, "getCosmosTokenInWhiteList", _token)
+	err := _BridgeBank.contract.Call(opts, &[]interface{}{out}, "getCosmosTokenInWhiteList", _token)
 	return *ret0, err
 }
 
@@ -352,7 +352,7 @@ func (_BridgeBank *BridgeBankCaller) GetLockedFunds(opts *bind.CallOpts, _symbol
 		ret0 = new(*big.Int)
 	)
 	out := ret0
-	err := _BridgeBank.contract.Call(opts, out, "getLockedFunds", _symbol)
+	err := _BridgeBank.contract.Call(opts, &[]interface{}{out}, "getLockedFunds", _symbol)
 	return *ret0, err
 }
 
@@ -378,7 +378,7 @@ func (_BridgeBank *BridgeBankCaller) GetLockedTokenAddress(opts *bind.CallOpts, 
 		ret0 = new(common.Address)
 	)
 	out := ret0
-	err := _BridgeBank.contract.Call(opts, out, "getLockedTokenAddress", _symbol)
+	err := _BridgeBank.contract.Call(opts, &[]interface{}{out}, "getLockedTokenAddress", _symbol)
 	return *ret0, err
 }
 
@@ -404,7 +404,7 @@ func (_BridgeBank *BridgeBankCaller) GetTokenInEthWhiteList(opts *bind.CallOpts,
 		ret0 = new(bool)
 	)
 	out := ret0
-	err := _BridgeBank.contract.Call(opts, out, "getTokenInEthWhiteList", _token)
+	err := _BridgeBank.contract.Call(opts, &[]interface{}{out}, "getTokenInEthWhiteList", _token)
 	return *ret0, err
 }
 
@@ -430,7 +430,7 @@ func (_BridgeBank *BridgeBankCaller) LockBurnNonce(opts *bind.CallOpts) (*big.In
 		ret0 = new(*big.Int)
 	)
 	out := ret0
-	err := _BridgeBank.contract.Call(opts, out, "lockBurnNonce")
+	err := _BridgeBank.contract.Call(opts, &[]interface{}{out}, "lockBurnNonce")
 	return *ret0, err
 }
 
@@ -456,7 +456,7 @@ func (_BridgeBank *BridgeBankCaller) LockedFunds(opts *bind.CallOpts, arg0 commo
 		ret0 = new(*big.Int)
 	)
 	out := ret0
-	err := _BridgeBank.contract.Call(opts, out, "lockedFunds", arg0)
+	err := _BridgeBank.contract.Call(opts, &[]interface{}{out}, "lockedFunds", arg0)
 	return *ret0, err
 }
 
@@ -482,7 +482,7 @@ func (_BridgeBank *BridgeBankCaller) LockedTokenList(opts *bind.CallOpts, arg0 s
 		ret0 = new(common.Address)
 	)
 	out := ret0
-	err := _BridgeBank.contract.Call(opts, out, "lockedTokenList", arg0)
+	err := _BridgeBank.contract.Call(opts, &[]interface{}{out}, "lockedTokenList", arg0)
 	return *ret0, err
 }
 
@@ -508,7 +508,7 @@ func (_BridgeBank *BridgeBankCaller) Operator(opts *bind.CallOpts) (common.Addre
 		ret0 = new(common.Address)
 	)
 	out := ret0
-	err := _BridgeBank.contract.Call(opts, out, "operator")
+	err := _BridgeBank.contract.Call(opts, &[]interface{}{out}, "operator")
 	return *ret0, err
 }
 
@@ -534,7 +534,7 @@ func (_BridgeBank *BridgeBankCaller) Oracle(opts *bind.CallOpts) (common.Address
 		ret0 = new(common.Address)
 	)
 	out := ret0
-	err := _BridgeBank.contract.Call(opts, out, "oracle")
+	err := _BridgeBank.contract.Call(opts, &[]interface{}{out}, "oracle")
 	return *ret0, err
 }
 
@@ -560,7 +560,7 @@ func (_BridgeBank *BridgeBankCaller) Owner(opts *bind.CallOpts) (common.Address,
 		ret0 = new(common.Address)
 	)
 	out := ret0
-	err := _BridgeBank.contract.Call(opts, out, "owner")
+	err := _BridgeBank.contract.Call(opts, &[]interface{}{out}, "owner")
 	return *ret0, err
 }
 
@@ -586,7 +586,7 @@ func (_BridgeBank *BridgeBankCaller) VerifySifPrefix(opts *bind.CallOpts, _sifAd
 		ret0 = new(bool)
 	)
 	out := ret0
-	err := _BridgeBank.contract.Call(opts, out, "verifySifPrefix", _sifAddress)
+	err := _BridgeBank.contract.Call(opts, &[]interface{}{out}, "verifySifPrefix", _sifAddress)
 	return *ret0, err
 }
 
