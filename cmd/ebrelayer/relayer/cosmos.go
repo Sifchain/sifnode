@@ -7,13 +7,14 @@ import (
 	"context"
 	"crypto/ecdsa"
 	"errors"
-	"github.com/Sifchain/sifnode/x/instrumentation"
 	"log"
 	"os"
 	"os/signal"
 	"sync"
 	"syscall"
 	"time"
+
+	"github.com/Sifchain/sifnode/x/instrumentation"
 
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/internal/symbol_translator"
 	"google.golang.org/grpc"
@@ -278,7 +279,7 @@ func (sub CosmosSub) witnessSignProphecyID(
 		"cosmosMsg", cosmosMsg,
 	)
 
-	valAddr, err := GetValAddressFromKeyring(txFactory.Keybase(), sub.ValidatorName)
+	accAddr, err := GetAccAddressFromKeyring(txFactory.Keybase(), sub.ValidatorName)
 	if err != nil {
 		sub.SugaredLogger.Infow(
 			"get the prophecy claim.",
@@ -296,7 +297,7 @@ func (sub CosmosSub) witnessSignProphecyID(
 		)
 	}
 
-	signProphecy := ethbridgetypes.NewMsgSignProphecy(valAddr.String(), cosmosMsg.NetworkDescriptor,
+	signProphecy := ethbridgetypes.NewMsgSignProphecy(accAddr.String(), cosmosMsg.NetworkDescriptor,
 		cosmosMsg.ProphecyID, address.String(), string(signature))
 
 	txs.SignProphecyToCosmos(txFactory, signProphecy, sub.CliContext, sub.SugaredLogger)
