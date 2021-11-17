@@ -51,6 +51,7 @@ type EthereumSub struct {
 	RegistryContractAddress common.Address
 	ValidatorName           string
 	ValidatorAddress        sdk.ValAddress
+	NetworkDescriptor       oracletypes.NetworkDescriptor
 	CliCtx                  client.Context
 	PrivateKey              *ecdsa.PrivateKey
 	SugaredLogger           *zap.SugaredLogger
@@ -72,7 +73,8 @@ func NewKeybase(validatorMoniker, mnemonic, password string) (keyring.Keyring, k
 func NewEthereumSub(
 	cliCtx client.Context,
 	nodeURL string,
-	validatorMoniker,
+	validatorMoniker string,
+	networkDescriptor oracletypes.NetworkDescriptor,
 	ethProvider string,
 	registryContractAddress common.Address,
 	sugaredLogger *zap.SugaredLogger,
@@ -81,6 +83,7 @@ func NewEthereumSub(
 	return EthereumSub{
 		EthProvider:             ethProvider,
 		TmProvider:              nodeURL,
+		NetworkDescriptor:       networkDescriptor,
 		RegistryContractAddress: registryContractAddress,
 		ValidatorName:           validatorMoniker,
 		ValidatorAddress:        nil,
@@ -115,14 +118,7 @@ func (sub EthereumSub) Start(txFactory tx.Factory,
 		return
 	}
 
-	networkID, err := ethClient.NetworkID(context.Background())
-	if err != nil {
-		sub.SugaredLogger.Errorw("failed to get network ID.",
-			errorMessageKey, err.Error())
-		completionEvent.Add(1)
-		go sub.Start(txFactory, completionEvent, symbolTranslator)
-		return
-	}
+	networkID := big.NewInt(int64(sub.NetworkDescriptor))
 
 	validatorAddress, err := GetValAddressFromKeyring(txFactory.Keybase(), sub.ValidatorName)
 	if err != nil {
