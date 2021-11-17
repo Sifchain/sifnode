@@ -18,6 +18,7 @@ import (
 
 	sifapp "github.com/Sifchain/sifnode/app"
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/relayer"
+	oracleTypes "github.com/Sifchain/sifnode/x/oracle/types"
 	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
@@ -31,6 +32,10 @@ import (
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
+)
+
+const (
+	networkDescriptorFlag = "networkDescriptor"
 )
 
 func buildRootCmd() *cobra.Command {
@@ -117,6 +122,7 @@ func initRelayerCmd() *cobra.Command {
 		RunE:    RunInitRelayerCmd,
 	}
 	flags.AddTxFlagsToCmd(initRelayerCmd)
+	AddRelayerFlagsToCmd(initRelayerCmd)
 
 	return initRelayerCmd
 }
@@ -132,6 +138,7 @@ func initWitnessCmd() *cobra.Command {
 		RunE:    RunInitWitnessCmd,
 	}
 	flags.AddTxFlagsToCmd(initWitnessCmd)
+	AddRelayerFlagsToCmd(initWitnessCmd)
 
 	return initWitnessCmd
 }
@@ -371,8 +378,18 @@ func replayEthereumCmd() *cobra.Command {
 	}
 
 	flags.AddTxFlagsToCmd(replayEthereumCmd)
+	AddRelayerFlagsToCmd(replayEthereumCmd)
 
 	return replayEthereumCmd
+}
+
+// AddRelayerFlagsToCmd adds all common flags to relayer commands.
+func AddRelayerFlagsToCmd(cmd *cobra.Command) {
+	cmd.Flags().Int32(
+		networkDescriptorFlag,
+		int32(oracleTypes.NetworkDescriptor_NETWORK_DESCRIPTOR_ETHEREUM),
+		"The network descriptor for the chain",
+	)
 }
 
 func replayCosmosBurnLockCmd() *cobra.Command {
