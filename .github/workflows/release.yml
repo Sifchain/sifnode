@@ -20,43 +20,34 @@ jobs:
       - name: Login to Docker Hub
         run: docker login -u ${{ secrets.DOCKERHUB_USERNAME }} -p ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Inject slug/short variables
-        uses: rlespinasse/github-slug-action@v2.x
-
-      - if: contains(github.ref, 'devnet')
+      - name: Get version
+        id: version
         run: |
-          echo "CHAINNET=testnet" >> "$GITHUB_ENV"
-
-      - if: contains(github.ref, 'testnet')
-        run: |
-          echo "CHAINNET=testnet" >> "$GITHUB_ENV"
-
-      - if: contains(github.ref, 'betanet')
-        run: |
-          echo "CHAINNET=betanet" >> "$GITHUB_ENV"
-
-      - if: contains(github.ref, 'mainnet')
-        run: |
-          echo "CHAINNET=mainnet" >> "$GITHUB_ENV"
+          echo "::set-output name=version::$(cat version)"
 
       - name: Build docker images
         run: |
-          echo ${{ env.CHAINNET }}
-          make CHAINNET=${{ env.CHAINNET }} IMAGE_TAG=${{ env.GITHUB_REF_SLUG }} BINARY=sifnoded build-image
-          make CHAINNET=${{ env.CHAINNET }} IMAGE_TAG=${{ env.GITHUB_REF_SLUG }} BINARY=ebrelayer build-image
+          make IMAGE_TAG=${{ steps.version.outputs.version }} BINARY=sifnoded build-image
+          make IMAGE_TAG=${{ steps.version.outputs.version }} BINARY=ebrelayer build-image
 
       - name: Push docker images
         run: |
-          docker push sifchain/sifnoded:${{ env.GITHUB_REF_SLUG }}
-          docker push sifchain/ebrelayer:${{ env.GITHUB_REF_SLUG }}
+          docker push sifchain/sifnoded:${{ steps.version.outputs.version }}
+          docker push sifchain/ebrelayer:${{ steps.version.outputs.version }}
+
+      - name: Get commit hash
+        id: hash
+        run: |
+          echo "::set-output name=sha_short::$(git rev-parse --short HEAD)"
 
       - name: Release a new sifnoded binary
-        uses: ./deploy/release
+        uses: ./sifchain-devops/release
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           goos: linux
           goarch: amd64
-          goversion: "https://dl.google.com/go/go1.15.1.linux-amd64.tar.gz"
+          goversion: "1.16"
           project_path: "./cmd/sifnoded"
           binary_name: "sifnoded"
+          ldflags: "-X github.com/cosmos/cosmos-sdk/version.Name=sifchain -X github.com/cosmos/cosmos-sdk/version.ServerName=sifnoded -X github.com/cosmos/cosmos-sdk/version.ClientName=sifnoded -X github.com/cosmos/cosmos-sdk/version.Version=${{ steps.version.outputs.version }} -X github.com/cosmos/cosmos-sdk/version.Commit=${{ steps.hash.outputs.sha_short }}"
           sha256sum: true

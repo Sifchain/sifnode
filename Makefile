@@ -1,4 +1,4 @@
-CHAINNET?=testnet # Options; localnet, testnet, chaosnet ,mainnet
+CHAINNET?=betanet
 BINARY?=sifnoded
 GOBIN?=${GOPATH}/bin
 NOW=$(shell date +'%Y-%m-%d_%T')
@@ -9,25 +9,13 @@ HTTPS_GIT := https://github.com/sifchain/sifnode.git
 DOCKER := $(shell which docker)
 DOCKER_BUF := $(DOCKER) run --rm -v $(CURDIR):/workspace --workdir /workspace bufbuild/buf
 
-ifeq (mainnet,${CHAINNET})
-	BUILD_TAGS=mainnet
-else
-	BUILD_TAGS=testnet
-endif
-
-whitespace :=
-whitespace += $(whitespace)
-comma := ,
-build_tags_comma_sep := $(subst $(whitespace),$(comma),$(BUILD_TAGS))
-
 ldflags = -X github.com/cosmos/cosmos-sdk/version.Name=sifchain \
 		  -X github.com/cosmos/cosmos-sdk/version.ServerName=sifnoded \
 		  -X github.com/cosmos/cosmos-sdk/version.ClientName=sifnoded \
 		  -X github.com/cosmos/cosmos-sdk/version.Version=$(VERSION) \
-		  -X github.com/cosmos/cosmos-sdk/version.Commit=$(COMMIT) \
-		  -X "github.com/cosmos/cosmos-sdk/version.BuildTags=$(build_tags_comma_sep)"
+		  -X github.com/cosmos/cosmos-sdk/version.Commit=$(COMMIT)
 
-BUILD_FLAGS := -ldflags '$(ldflags)' -tags ${BUILD_TAGS}
+BUILD_FLAGS := -ldflags '$(ldflags)'
 
 BINARIES=./cmd/sifnoded ./cmd/sifgen ./cmd/ebrelayer
 
@@ -35,7 +23,6 @@ all: lint install
 
 build-config:
 	echo $(CHAINNET)
-	echo $(BUILD_TAGS)
 	echo $(BUILD_FLAGS)
 
 init:
