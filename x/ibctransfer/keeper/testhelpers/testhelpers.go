@@ -6,8 +6,8 @@ import (
 	"strings"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	sdktransferkeeper "github.com/cosmos/ibc-go/modules/apps/transfer/keeper"
-	sdktransfertypes "github.com/cosmos/ibc-go/modules/apps/transfer/types"
+	sdktransferkeeper "github.com/cosmos/ibc-go/v2/modules/apps/transfer/keeper"
+	sdktransfertypes "github.com/cosmos/ibc-go/v2/modules/apps/transfer/types"
 )
 
 // Can be passed to sctransferkeeper.MsgServer as the SDK stub,

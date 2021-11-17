@@ -4,8 +4,8 @@ import (
 	"context"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	transfertypes "github.com/cosmos/ibc-go/modules/apps/transfer/types"
-	channeltypes "github.com/cosmos/ibc-go/modules/core/04-channel/types"
+	transfertypes "github.com/cosmos/ibc-go/v2/modules/apps/transfer/types"
+	channeltypes "github.com/cosmos/ibc-go/v2/modules/core/04-channel/types"
 )
 
 type SDKTransferKeeper interface {

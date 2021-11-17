@@ -6,8 +6,8 @@ import (
 	"github.com/Sifchain/sifnode/x/ibctransfer/helpers"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
-	transfertypes "github.com/cosmos/ibc-go/modules/apps/transfer/types"
-	channeltypes "github.com/cosmos/ibc-go/modules/core/04-channel/types"
+	transfertypes "github.com/cosmos/ibc-go/v2/modules/apps/transfer/types"
+	channeltypes "github.com/cosmos/ibc-go/v2/modules/core/04-channel/types"
 
 	sctransfertypes "github.com/Sifchain/sifnode/x/ibctransfer/types"
 	tokenregistrytypes "github.com/Sifchain/sifnode/x/tokenregistry/types"
@@ -21,7 +21,6 @@ func OnRecvPacketWhitelistConvert(
 	whitelistKeeper tokenregistrytypes.Keeper,
 	bankKeeper transfertypes.BankKeeper,
 	packet channeltypes.Packet,
-	relayer sdk.AccAddress,
 ) channeltypes.Acknowledgement {
 	var data transfertypes.FungibleTokenPacketData
 	if err := transfertypes.ModuleCdc.UnmarshalJSON(packet.GetData(), &data); err != nil {
@@ -50,12 +49,13 @@ func OnRecvPacketWhitelistConvert(
 				sdk.NewAttribute(sdk.AttributeKeyModule, transfertypes.ModuleName),
 				sdk.NewAttribute(transfertypes.AttributeKeyReceiver, data.Receiver),
 				sdk.NewAttribute(transfertypes.AttributeKeyDenom, data.Denom),
-				sdk.NewAttribute(transfertypes.AttributeKeyAmount, fmt.Sprintf("%d", data.Amount)),
+				sdk.NewAttribute(transfertypes.AttributeKeyAmount, fmt.Sprintf("%s", data.Amount)),
 				sdk.NewAttribute(transfertypes.AttributeKeyAckSuccess, fmt.Sprintf("%t", false)),
 			),
 		)
 		return acknowledgement
 	}
+	// TODO Add entries fpr Non-X versions of tokens to tokenRegistry
 	convertToDenomEntry, err := whitelistKeeper.GetEntry(registry, mintedDenomEntry.UnitDenom)
 	if err == nil && convertToDenomEntry.Decimals > 0 && mintedDenomEntry.Decimals > 0 && convertToDenomEntry.Decimals > mintedDenomEntry.Decimals {
 		err = helpers.ExecConvForIncomingCoins(ctx, bankKeeper, mintedDenomEntry, convertToDenomEntry, packet, data)
@@ -73,7 +73,7 @@ func OnRecvPacketWhitelistConvert(
 			sdk.NewAttribute(sdk.AttributeKeyModule, transfertypes.ModuleName),
 			sdk.NewAttribute(transfertypes.AttributeKeyReceiver, data.Receiver),
 			sdk.NewAttribute(transfertypes.AttributeKeyDenom, data.Denom),
-			sdk.NewAttribute(transfertypes.AttributeKeyAmount, fmt.Sprintf("%d", data.Amount)),
+			sdk.NewAttribute(transfertypes.AttributeKeyAmount, fmt.Sprintf("%s", data.Amount)),
 			sdk.NewAttribute(transfertypes.AttributeKeyAckSuccess, fmt.Sprintf("%t", err == nil)),
 		),
 	)

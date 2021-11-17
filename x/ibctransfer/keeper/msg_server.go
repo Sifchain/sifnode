@@ -3,13 +3,12 @@ package keeper
 import (
 	"context"
 
-	"github.com/Sifchain/sifnode/x/ibctransfer/helpers"
 	"github.com/Sifchain/sifnode/x/ibctransfer/types"
 	tokenregistrytypes "github.com/Sifchain/sifnode/x/tokenregistry/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 
-	sdktransfertypes "github.com/cosmos/ibc-go/modules/apps/transfer/types"
+	sdktransfertypes "github.com/cosmos/ibc-go/v2/modules/apps/transfer/types"
 )
 
 type msgServer struct {
@@ -46,31 +45,9 @@ func (srv msgServer) Transfer(goCtx context.Context, msg *sdktransfertypes.MsgTr
 	if !srv.tokenRegistryKeeper.CheckEntryPermissions(registryEntry, []tokenregistrytypes.Permission{tokenregistrytypes.Permission_IBCEXPORT}) {
 		return nil, sdkerrors.Wrap(tokenregistrytypes.ErrPermissionDenied, "denom cannot be exported")
 	}
-	// check if registry entry has an IBC counterparty conversion to process
-	if registryEntry.IbcCounterpartyDenom != "" && registryEntry.IbcCounterpartyDenom != registryEntry.Denom {
-		sendAsRegistryEntry, err := srv.tokenRegistryKeeper.GetEntry(registry, registryEntry.IbcCounterpartyDenom)
-		if err != nil {
-			ctx.Logger().Error(err.Error())
-		} else if sendAsRegistryEntry.Decimals > 0 && registryEntry.Decimals > sendAsRegistryEntry.Decimals {
-			token, tokenConversion := helpers.ConvertCoinsForTransfer(msg, registryEntry, sendAsRegistryEntry)
-			if token.Amount.LTE(sdk.NewInt(0)) || tokenConversion.Amount.LTE(sdk.NewInt(0)) {
-				return nil, types.ErrAmountTooLowToConvert
-			}
-			if !tokenConversion.Amount.IsInt64() {
-				return nil, types.ErrAmountTooLargeToSend
-			}
-			err := helpers.PrepareToSendConvertedCoins(goCtx, msg, token, tokenConversion, srv.bankKeeper)
-			if err != nil {
-				return nil, sdkerrors.Wrap(types.ErrConvertingToCounterpartyDenom, err.Error())
-			}
-			msg.Token = tokenConversion
-		}
-	}
-	if !msg.Token.Amount.IsInt64() {
-		return nil, types.ErrAmountTooLargeToSend
-	}
 	if msg.Token.Amount.LTE(sdk.NewInt(0)) {
 		return nil, types.ErrAmountTooLowToConvert
 	}
+
 	return srv.sdkMsgServer.Transfer(goCtx, msg)
 }
