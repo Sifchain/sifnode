@@ -1,17 +1,28 @@
 package app
 
 import (
+	tokenRegistryTypes "github.com/Sifchain/sifnode/x/tokenregistry/types"
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	m "github.com/cosmos/cosmos-sdk/types/module"
 	"github.com/cosmos/cosmos-sdk/x/upgrade/types"
 )
 
-const upgradeName = "0.9.10"
+const upgradeName = "0.9.14"
 
 func SetupHandlers(app *SifchainApp) {
 	app.UpgradeKeeper.SetUpgradeHandler(upgradeName, func(ctx sdk.Context, plan types.Plan, vm m.VersionMap) (m.VersionMap, error) {
 		app.Logger().Info("Running upgrade handler for " + upgradeName)
+		if plan.Name == "0.9.14" {
+			registry := app.TokenRegistryKeeper.GetRegistry(ctx)
+			for _, entry := range registry.Entries {
+				if entry.Decimals > 9 && app.TokenRegistryKeeper.CheckEntryPermissions(entry, []tokenRegistryTypes.Permission{tokenRegistryTypes.Permission_CLP, tokenRegistryTypes.Permission_IBCEXPORT}) {
+					entry.Permissions = append(entry.Permissions, tokenRegistryTypes.Permission_IBCIMPORT)
+					entry.IbcCounterpartyDenom = ""
+				}
+			}
+			app.TokenRegistryKeeper.SetRegistry(ctx, registry)
+		}
 		return vm, nil
 	})
 
