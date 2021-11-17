@@ -20,10 +20,15 @@ func TestKeeper_Errors(t *testing.T) {
 	pool := test.GenerateRandomPool(1)[0]
 	ctx, app := test.CreateTestAppClp(false)
 	clpKeeper := app.ClpKeeper
+	num := clpKeeper.GetMinCreatePoolThreshold(ctx)
+	assert.Equal(t, num, uint64(100))
+	_ = clpKeeper.GetParams(ctx)
 	_ = clpKeeper.Logger(ctx)
 	pool.ExternalAsset.Symbol = ""
 	err := clpKeeper.SetPool(ctx, &pool)
-	assert.Error(t, err)
+	assert.Error(t, err, "Unable to set pool")
+	boolean := clpKeeper.ValidatePool(pool)
+	assert.False(t, boolean)
 	getpools, _, err := clpKeeper.GetPoolsPaginated(ctx, &query.PageRequest{})
 	assert.NoError(t, err)
 	assert.Equal(t, len(getpools), 0, "No pool added")
@@ -47,7 +52,7 @@ func TestKeeper_CalculateAssetsForLP(t *testing.T) {
 	assert.Equal(t, "1000", native.String())
 }
 
-func TestKeeper_SetPool(t *testing.T) {
+func TestKeeper_SetPool_ValidatePool(t *testing.T) {
 	pool := test.GenerateRandomPool(1)[0]
 	ctx, app := test.CreateTestAppClp(false)
 	clpKeeper := app.ClpKeeper
@@ -57,6 +62,8 @@ func TestKeeper_SetPool(t *testing.T) {
 	assert.NoError(t, err, "Error in get pool")
 	assert.Equal(t, getpool, pool)
 	assert.Equal(t, clpKeeper.ExistsPool(ctx, pool.ExternalAsset.Symbol), true)
+	boolean := clpKeeper.ValidatePool(pool)
+	assert.True(t, boolean)
 }
 
 func TestKeeper_GetPools(t *testing.T) {
