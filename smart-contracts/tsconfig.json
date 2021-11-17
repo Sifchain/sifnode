@@ -21,7 +21,6 @@
   },
   "allowJs": true,
   "include": [
-    "./hardhat.config.ts",
     "./scripts",
     "./deploy",
     "./recover/test"

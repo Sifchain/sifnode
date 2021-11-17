@@ -5,19 +5,17 @@ const { ethers } = require("hardhat");
 const { use, expect } = require("chai");
 const { solidity } = require("ethereum-waffle");
 
-require("chai")
-  .use(require("chai-as-promised"))
-  .use(require("chai-bignumber")(BigNumber))
-  .should();
+require("chai").use(require("chai-as-promised")).use(require("chai-bignumber")(BigNumber)).should();
 
 use(solidity);
 
 // Bytes32 representation of Roles, according to OpenZeppelin's docs
-const MINTER_ROLE = web3.utils.soliditySha3('MINTER_ROLE');
-const DEFAULT_ADMIN_ROLE = '0x0000000000000000000000000000000000000000000000000000000000000000';
+const MINTER_ROLE = web3.utils.soliditySha3("MINTER_ROLE");
+const DEFAULT_ADMIN_ROLE = "0x0000000000000000000000000000000000000000000000000000000000000000";
 
 describe("Test Bridge Token", function () {
   let userOne;
+  let userTwo;
   let accounts;
   let owner;
   let bridgeTokenFactory;
@@ -31,20 +29,16 @@ describe("Test Bridge Token", function () {
 
   before(async function () {
     accounts = await ethers.getSigners();
-  
+
     bridgeTokenFactory = await ethers.getContractFactory("BridgeToken");
-  
+
     owner = accounts[0];
     userOne = accounts[1];
+    userTwo = accounts[2];
   });
-  
+
   beforeEach(async function () {
-    bridgeToken = await bridgeTokenFactory.deploy(
-      name,
-      symbol,
-      decimals,
-      denom
-    );
+    bridgeToken = await bridgeTokenFactory.deploy(name, symbol, decimals, denom);
     await bridgeToken.deployed();
   });
 
@@ -61,12 +55,12 @@ describe("Test Bridge Token", function () {
     expect(_decimals).to.be.equal(decimals);
     expect(_denom).to.be.equal(denom);
     expect(isAdmin).to.be.true;
-    expect(isMinter).to.be.false;
+    expect(isMinter).to.be.true;
   });
 
   it("should allow owner to add a new minter", async function () {
     await expect(bridgeToken.connect(owner).grantRole(MINTER_ROLE, userOne.address))
-      .to.emit(bridgeToken, 'RoleGranted')
+      .to.emit(bridgeToken, "RoleGranted")
       .withArgs(MINTER_ROLE, userOne.address, owner.address);
 
     // check if the user received the minter role
@@ -102,10 +96,9 @@ describe("Test Bridge Token", function () {
 
     // Try to mint some tokens (should fail)
     const amount = 1000000;
-    await expect(bridgeToken.connect(userOne).mint(userOne.address, amount))
-      .to.be.revertedWith(
-        `AccessControl: account ${userOne.address.toLowerCase()} is missing role ${MINTER_ROLE}`
-      );
+    await expect(bridgeToken.connect(userOne).mint(userOne.address, amount)).to.be.revertedWith(
+      `AccessControl: account ${userOne.address.toLowerCase()} is missing role ${MINTER_ROLE}`
+    );
 
     // check if the user received the minted tokens (should not have)
     userBalance = Number(await bridgeToken.balanceOf(userOne.address));
@@ -114,10 +107,11 @@ describe("Test Bridge Token", function () {
 
   it("should NOT allow a user to add a new minter", async function () {
     // Add a new minter
-    await expect(bridgeToken.connect(userOne).grantRole(MINTER_ROLE, userOne.address))
-      .to.be.revertedWith(
-        `AccessControl: account ${userOne.address.toLowerCase()} is missing role ${DEFAULT_ADMIN_ROLE}`
-      );
+    await expect(
+      bridgeToken.connect(userOne).grantRole(MINTER_ROLE, userOne.address)
+    ).to.be.revertedWith(
+      `AccessControl: account ${userOne.address.toLowerCase()} is missing role ${DEFAULT_ADMIN_ROLE}`
+    );
 
     // check if the user received the minter role
     isMinter = await bridgeToken.hasRole(MINTER_ROLE, userOne.address);
@@ -148,14 +142,14 @@ describe("Test Bridge Token", function () {
   it("should allow owner to revoke minter role", async function () {
     // Add a new minter
     await bridgeToken.connect(owner).grantRole(MINTER_ROLE, userOne.address);
-      
+
     // check if the user received the minter role
     let isMinter = await bridgeToken.hasRole(MINTER_ROLE, userOne.address);
     expect(isMinter).to.be.true;
 
     // Revoke minter role
     await expect(bridgeToken.connect(owner).revokeRole(MINTER_ROLE, userOne.address))
-      .to.emit(bridgeToken, 'RoleRevoked')
+      .to.emit(bridgeToken, "RoleRevoked")
       .withArgs(MINTER_ROLE, userOne.address, owner.address);
 
     // check if the user lost the minter role
@@ -168,10 +162,9 @@ describe("Test Bridge Token", function () {
 
     // Try to mint some tokens (should fail)
     const amount = 1000000;
-    await expect(bridgeToken.connect(userOne).mint(userOne.address, amount))
-      .to.be.revertedWith(
-        `AccessControl: account ${userOne.address.toLowerCase()} is missing role ${MINTER_ROLE}`
-      );
+    await expect(bridgeToken.connect(userOne).mint(userOne.address, amount)).to.be.revertedWith(
+      `AccessControl: account ${userOne.address.toLowerCase()} is missing role ${MINTER_ROLE}`
+    );
 
     // check if the user received the minted tokens (should not have)
     userBalance = Number(await bridgeToken.balanceOf(userOne.address));
@@ -181,16 +174,17 @@ describe("Test Bridge Token", function () {
   it("should NOT allow a user to revoke minter role", async function () {
     // Add a new minter
     await bridgeToken.connect(owner).grantRole(MINTER_ROLE, userOne.address);
-      
+
     // check if the user received the minter role
     let isMinter = await bridgeToken.hasRole(MINTER_ROLE, userOne.address);
     expect(isMinter).to.be.true;
 
     // Try to revoke minter role (should fail)
-    await expect(bridgeToken.connect(userOne).revokeRole(MINTER_ROLE, userOne.address))
-      .to.be.revertedWith(
-        `AccessControl: account ${userOne.address.toLowerCase()} is missing role ${DEFAULT_ADMIN_ROLE}`
-      );
+    await expect(
+      bridgeToken.connect(userOne).revokeRole(MINTER_ROLE, userOne.address)
+    ).to.be.revertedWith(
+      `AccessControl: account ${userOne.address.toLowerCase()} is missing role ${DEFAULT_ADMIN_ROLE}`
+    );
 
     // check if the user kept the minter role
     isMinter = await bridgeToken.hasRole(MINTER_ROLE, userOne.address);
@@ -200,14 +194,14 @@ describe("Test Bridge Token", function () {
   it("should allow a minter to renounce it's own minter role", async function () {
     // Add a new minter
     await bridgeToken.connect(owner).grantRole(MINTER_ROLE, userOne.address);
-      
+
     // check if the user received the minter role
     let isMinter = await bridgeToken.hasRole(MINTER_ROLE, userOne.address);
     expect(isMinter).to.be.true;
 
     // Renounces the minter role
     await expect(bridgeToken.connect(userOne).renounceRole(MINTER_ROLE, userOne.address))
-      .to.emit(bridgeToken, 'RoleRevoked')
+      .to.emit(bridgeToken, "RoleRevoked")
       .withArgs(MINTER_ROLE, userOne.address, userOne.address);
 
     // check if the user lost the minter role
@@ -218,7 +212,7 @@ describe("Test Bridge Token", function () {
   it("should allow admin to transfer adminship of roles", async function () {
     // Grants the Admin role to userOne
     await expect(bridgeToken.connect(owner).grantRole(DEFAULT_ADMIN_ROLE, userOne.address))
-      .to.emit(bridgeToken, 'RoleGranted')
+      .to.emit(bridgeToken, "RoleGranted")
       .withArgs(DEFAULT_ADMIN_ROLE, userOne.address, owner.address);
 
     // check if the user received the minter role
@@ -227,7 +221,7 @@ describe("Test Bridge Token", function () {
 
     // Onwer renounces admin role
     await expect(bridgeToken.connect(owner).renounceRole(DEFAULT_ADMIN_ROLE, owner.address))
-      .to.emit(bridgeToken, 'RoleRevoked')
+      .to.emit(bridgeToken, "RoleRevoked")
       .withArgs(DEFAULT_ADMIN_ROLE, owner.address, owner.address);
 
     // check if owner lost the admin role
@@ -235,31 +229,31 @@ describe("Test Bridge Token", function () {
     expect(hasAdminRole).to.be.false;
 
     // Owner now tries to manage roles (should fail)
-    await expect(bridgeToken.connect(owner).grantRole(DEFAULT_ADMIN_ROLE, owner.address))
-      .to.be.revertedWith(
-        `AccessControl: account ${owner.address.toLowerCase()} is missing role ${DEFAULT_ADMIN_ROLE}`
-      );
+    await expect(
+      bridgeToken.connect(owner).grantRole(DEFAULT_ADMIN_ROLE, owner.address)
+    ).to.be.revertedWith(
+      `AccessControl: account ${owner.address.toLowerCase()} is missing role ${DEFAULT_ADMIN_ROLE}`
+    );
 
     // check if the owner received the admin role (should not have)
     hasAdminRole = await bridgeToken.hasRole(DEFAULT_ADMIN_ROLE, owner.address);
     expect(hasAdminRole).to.be.false;
 
-    // guarantees the owner has no minter rights
-    let hasMinterRole = await bridgeToken.hasRole(MINTER_ROLE, owner.address);
+    // guarantees userTwo has no minter rights
+    let hasMinterRole = await bridgeToken.hasRole(MINTER_ROLE, userTwo.address);
     expect(hasMinterRole).to.be.false;
 
-    // new admin grants the minter role to owner
-    await expect(bridgeToken.connect(userOne).grantRole(MINTER_ROLE, owner.address))
-      .to.emit(bridgeToken, 'RoleGranted')
-      .withArgs(MINTER_ROLE, owner.address, userOne.address);
+    // new admin grants the minter role to userTwo
+    await expect(bridgeToken.connect(userOne).grantRole(MINTER_ROLE, userTwo.address))
+      .to.emit(bridgeToken, "RoleGranted")
+      .withArgs(MINTER_ROLE, userTwo.address, userOne.address);
 
     // check if owner received the minter role
-    hasMinterRole = await bridgeToken.hasRole(MINTER_ROLE, owner.address);
+    hasMinterRole = await bridgeToken.hasRole(MINTER_ROLE, userTwo.address);
     expect(hasMinterRole).to.be.true;
 
     // new admin changes the cosmosDenom:
-    await expect(bridgeToken.connect(userOne).setDenom(anotherDenom))
-      .to.be.fulfilled;
+    await expect(bridgeToken.connect(userOne).setDenom(anotherDenom)).to.be.fulfilled;
 
     // check if the denom changed
     const newDenom = await bridgeToken.cosmosDenom();
@@ -267,8 +261,7 @@ describe("Test Bridge Token", function () {
   });
 
   it("should allow owner to set the cosmosDenom", async function () {
-    await expect(bridgeToken.connect(owner).setDenom(anotherDenom))
-      .to.be.fulfilled;
+    await expect(bridgeToken.connect(owner).setDenom(anotherDenom)).to.be.fulfilled;
 
     // check if the denom changed
     const newDenom = await bridgeToken.cosmosDenom();
@@ -276,9 +269,8 @@ describe("Test Bridge Token", function () {
   });
 
   it("should NOT allow a user to set the cosmosDenom", async function () {
-    await expect(bridgeToken.connect(userOne).setDenom(anotherDenom))
-      .to.be.revertedWith(
-        `AccessControl: account ${userOne.address.toLowerCase()} is missing role ${DEFAULT_ADMIN_ROLE}`
-      );
+    await expect(bridgeToken.connect(userOne).setDenom(anotherDenom)).to.be.revertedWith(
+      `AccessControl: account ${userOne.address.toLowerCase()} is missing role ${DEFAULT_ADMIN_ROLE}`
+    );
   });
 });

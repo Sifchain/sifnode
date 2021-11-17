@@ -70,6 +70,8 @@ describe("Test Bridge Bank", function () {
 
   describe("BridgeBank single lock burn transactions", function () {
     it("should allow user to lock ERC20 tokens", async function () {
+      const bridgeBankBalanceBefore = await state.token.balanceOf(state.bridgeBank.address);
+
       // approve and lock tokens
       await state.token.connect(userOne).approve(
         state.bridgeBank.address,
@@ -88,16 +90,16 @@ describe("Test Bridge Bank", function () {
         await state.token.balanceOf(userOne.address)
       );
       afterUserBalance.should.be.bignumber.equal(0);
+
+      // check if BridgeBank now owns the tokens
+      const bridgeBankBalanceAfter = await state.token.balanceOf(state.bridgeBank.address);
+      const expectedBalance = Number(bridgeBankBalanceBefore) + Number(state.amount);
+      expect(bridgeBankBalanceAfter).to.be.equal(expectedBalance);
     });
 
-    it("should not allow user to lock ERC20 tokens", async function () {
-      const FakeToken = await ethers.getContractFactory("FakeERC20");
-      fakeToken = await FakeToken.deploy();
-      
-      // Add the token into white list
-      await state.bridgeBank.connect(operator)
-        .updateEthWhiteList(fakeToken.address, true)
-        .should.be.fulfilled;
+    it("should allow user to lock fake ERC20 tokens", async function () {
+      const FakeTokenFactory = await ethers.getContractFactory("FakeERC20");
+      const fakeToken = await FakeTokenFactory.deploy();
 
       // Approve and lock tokens
       await expect(state.bridgeBank.connect(userOne).lock(state.sender, fakeToken.address, state.amount))
@@ -167,6 +169,55 @@ describe("Test Bridge Bank", function () {
       const afterUserBalance = Number(
         await bridgeToken.balanceOf(userOne.address)
       );
+      afterUserBalance.should.be.bignumber.equal(0);
+    });
+
+    it("should allow a user to burn tokens twice from the bridge bank", async function () {
+      const BridgeTokenFactory = await ethers.getContractFactory("BridgeToken");
+      const bridgeToken = await BridgeTokenFactory.deploy("rowan", "rowan", 18, state.constants.denom.rowan);
+
+      const doubleAmount = Number(state.amount) * 2;
+
+      await bridgeToken.connect(operator).grantRole(state.constants.roles.minter, operator.address)
+      await bridgeToken.connect(operator).mint(userOne.address, doubleAmount);
+      await bridgeToken.connect(userOne).approve(state.bridgeBank.address, doubleAmount);
+      await state.bridgeBank.connect(owner).addExistingBridgeToken(bridgeToken.address);
+  
+      await state.bridgeBank.connect(userOne).burn(
+        state.sender,
+        bridgeToken.address,
+        state.amount
+      );
+
+      let afterUserBalance = Number(await bridgeToken.balanceOf(userOne.address));
+      afterUserBalance.should.be.bignumber.equal(state.amount);
+
+      // Do it again
+      await state.bridgeBank.connect(userOne).burn(
+        state.sender,
+        bridgeToken.address,
+        state.amount
+      );
+
+      afterUserBalance = Number(await bridgeToken.balanceOf(userOne.address));
+      afterUserBalance.should.be.bignumber.equal(0);
+    });
+
+    it("should allow a user to burn a token that doesn't have a denom", async function () {
+      const oldTokenFactory = await ethers.getContractFactory("Erowan");
+      const oldToken = await oldTokenFactory.deploy("OLD");
+
+      await oldToken.mint(userOne.address, state.amount);
+      await oldToken.connect(userOne).approve(state.bridgeBank.address, state.amount);
+      await state.bridgeBank.connect(owner).addExistingBridgeToken(oldToken.address);
+  
+      await state.bridgeBank.connect(userOne).burn(
+        state.sender,
+        oldToken.address,
+        state.amount
+      );
+
+      let afterUserBalance = Number(await oldToken.balanceOf(userOne.address));
       afterUserBalance.should.be.bignumber.equal(0);
     });
   });

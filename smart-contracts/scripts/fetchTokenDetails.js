@@ -37,11 +37,7 @@ async function main() {
   const data = fs.readFileSync(addressListFile, "utf8");
   const addressList = JSON.parse(data);
 
-  print(
-    "yellow",
-    `Will fetch data for the following addresses:\n${addressList.join(", ")}`,
-    true
-  );
+  print("yellow", `Will fetch data for the following addresses:\n${addressList.join(", ")}`, true);
 
   const finalList = [];
   const sifnodeList = [];
@@ -91,10 +87,7 @@ async function main() {
         true
       );
     } catch (e) {
-      print(
-        "red",
-        `--> Failed to fetch details of token ${address}: ${e.message}`
-      );
+      print("red", `--> Failed to fetch details of token ${address}: ${e.message}`);
     }
   }
 
@@ -106,7 +99,7 @@ async function main() {
   fs.writeFileSync(destinationFile, JSON.stringify(output, null, 2));
   fs.writeFileSync(sifnodeDestinationFile, JSON.stringify(sifnodeList, null, 2));
 
-  print('green', 'The first part is done!');
+  print("green", "The first part is done!");
   print("cyan", `Results have been written to ${destinationFile}`);
   print("magenta", `Sifnode results have been written to ${sifnodeDestinationFile}.`);
   print("yellow", `Please wait while we send the whitelist to the blockchain...`);
@@ -114,7 +107,7 @@ async function main() {
 
 async function getTokenMetadata(address) {
   const response = await axios
-    .post(process.env.MAINNET_URL, {
+    .post(process.env.NETWORK_URL, {
       jsonrpc: "2.0",
       method: "alchemy_getTokenMetadata",
       params: [address],

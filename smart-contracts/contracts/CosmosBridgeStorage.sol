@@ -9,72 +9,71 @@ pragma solidity 0.8.0;
         sourceAddressToDestinationAddress of a pegged token
  **/
 contract CosmosBridgeStorage {
-    /**
-    * @dev {DEPRECATED}
-    */
-    string private COSMOS_NATIVE_ASSET_PREFIX;
+	/**
+	 * @dev {DEPRECATED}
+	 */
+	string private COSMOS_NATIVE_ASSET_PREFIX;
 
-    /**
-     * @dev Public variable declarations
-     */
-    address private _operator;
+	/**
+	 * @dev {DEPRECATED}
+	 */
+	address private operator;
 
-    /**
-    * @dev {DEPRECATED}
-    */
-    address payable private valset;
+	/**
+	 * @dev {DEPRECATED}
+	 */
+	address payable private valset;
 
-    /**
-    * @dev {DEPRECATED}
-    */
-    address payable private oracle;
+	/**
+	 * @dev {DEPRECATED}
+	 */
+	address payable private oracle;
 
-    /**
-    * @notice Address of the BridgeBank contract
-    */
-    address payable public bridgeBank;
-    
-    /**
-    * @notice Has the BridgeBank contract been registered yet?
-    */
-    bool public hasBridgeBank;
+	/**
+	 * @notice Address of the BridgeBank contract
+	 */
+	address payable public bridgeBank;
 
-    /**
-    * @dev {DEPRECATED}
-    */
-    mapping(uint256 => ProphecyClaim) private prophecyClaims;
+	/**
+	 * @notice Has the BridgeBank contract been registered yet?
+	 */
+	bool public hasBridgeBank;
 
-    /**
-    * @notice Maps the original address of a token to its address in another network
-    */
-    mapping (address => address) public sourceAddressToDestinationAddress;
+	/**
+	 * @dev {DEPRECATED}
+	 */
+	mapping(uint256 => ProphecyClaim) private prophecyClaims;
 
-    /**
-    * @dev {DEPRECATED}
-    */
-    enum Status {Null, Pending, Success, Failed}
+	/**
+	 * @dev {DEPRECATED}
+	 */
+	enum Status {
+		Null,
+		Pending,
+		Success,
+		Failed
+	}
 
-    /**
-    * @dev {DEPRECATED}
-    */
-    enum ClaimType {Unsupported, Burn, Lock}
+	/**
+	 * @dev {DEPRECATED}
+	 */
+	enum ClaimType {
+		Unsupported,
+		Burn,
+		Lock
+	}
 
-    /**
-    * @notice {DEPRECATED}
-    */
-    struct ProphecyClaim {
-        address payable ethereumReceiver;
-        string symbol;
-        uint256 amount;
-    }
+	/**
+	 * @notice {DEPRECATED}
+	 */
+	struct ProphecyClaim {
+		address payable ethereumReceiver;
+		string symbol;
+		uint256 amount;
+	}
 
-    /**
-    * @notice network descriptor
-    */
-    int32 public networkDescriptor;
-
-    /**
-    * @dev gap of storage for future upgrades
-    */
-    uint256[98] private ____gap;
+	/**
+	 * @dev gap of storage for future upgrades
+	 */
+	uint256[100] private ____gap;
 }

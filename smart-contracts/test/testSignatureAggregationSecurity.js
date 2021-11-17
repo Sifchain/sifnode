@@ -4,7 +4,6 @@ const {
   deployTrollToken,
   getDigestNewProphecyClaim,
   getValidClaim,
-  batchAddTokensToEthWhitelist
 } = require('./helpers/testFixture');
 
 const web3 = require("web3");
@@ -69,11 +68,6 @@ describe("submitProphecyClaimAggregatedSigs Security", function () {
       pauser,
       networkDescriptor
     });
-
-    // Add the token into white list
-    await state.bridgeBank.connect(operator)
-      .updateEthWhiteList(state.token1.address, true)
-      .should.be.fulfilled;
 
     // Lock tokens on contract
     await state.bridgeBank.connect(userOne).lock(
@@ -392,9 +386,6 @@ describe("submitProphecyClaimAggregatedSigs Security", function () {
     });
 
     it("one of the claims in a batch prophecy claim has the wrong nonce", async function () {
-      // Add tokens 2 and 3 into white list
-      await batchAddTokensToEthWhitelist(state, [state.token2.address, state.token3.address])
-      
       // Lock token2 on contract
       await state.bridgeBank.connect(userOne).lock(
         state.sender,

@@ -6,81 +6,57 @@ pragma solidity 0.8.0;
  * @dev Stores nonces, locked tokens, token data (name, symbol, decimals, and denom)
  **/
 contract EthereumBankStorage {
-    /**
-    * @notice current lock and or burn nonce
-    */
-    uint256 public lockBurnNonce;
+	/**
+	 * @notice current lock and or burn nonce
+	 */
+	uint256 public lockBurnNonce;
 
-    /**
-    * @dev {DEPRECATED}
-    */
-    mapping(address => uint256) private lockedFunds;
+	/**
+	 * @dev {DEPRECATED}
+	 */
+	mapping(address => uint256) private lockedFunds;
 
-    /**
-    * @notice map the token symbol to the token address
-    */
-    mapping(string => address) public lockedTokenList;
+	/**
+	 * @dev {DEPRECATED}
+	 */
+	mapping(string => address) private lockedTokenList;
 
-    /**
-    * @notice contract decimals based off of contract address
-    */
-    mapping (address => uint8) public contractDecimals;
+	/**
+	 * @dev gap of storage for future upgrades
+	 */
+	uint256[100] private ____gap;
 
-    /**
-    * @notice contract symbol based off of address
-    */
-    mapping (address => string) public contractSymbol;
+	/**
+	 * @dev Event emitted when tokens are burned
+	 */
+	event LogBurn(
+		address _from,
+		bytes _to,
+		address _token,
+		uint256 _value,
+		uint256 indexed _nonce,
+		uint8 _decimals,
+		int32 _networkDescriptor,
+		string _denom
+	);
 
-    /**
-    * @notice contract name based off of address
-    */
-    mapping (address => string) public contractName;
+	/**
+	 * @dev Event emitted when tokens are locked
+	 */
+	event LogLock(
+		address _from,
+		bytes _to,
+		address _token,
+		uint256 _value,
+		uint256 indexed _nonce,
+		uint8 _decimals,
+		string _symbol,
+		string _name,
+		int32 _networkDescriptor
+	);
 
-    /**
-    * @notice contract denom based off of address
-    */
-    mapping (address => string) public contractDenom;
-
-    /**
-    * @dev gap of storage for future upgrades
-    */
-    uint256[96] private ____gap;
-
-    /**
-     * @dev Event emitted when tokens are burned
-     */
-    event LogBurn(
-        address _from,
-        bytes _to,
-        address _token,
-        uint256 _value,
-        uint256 indexed _nonce,
-        uint8 _decimals,
-        int32 _networkDescriptor,
-        string _denom
-    );
-
-    /**
-     * @dev Event emitted when tokens are locked
-     */
-    event LogLock(
-        address _from,
-        bytes _to,
-        address _token,
-        uint256 _value,
-        uint256 indexed _nonce,
-        uint8 _decimals,
-        string _symbol,
-        string _name,
-        int32 _networkDescriptor
-    );
-
-    /**
-     * @dev Event emitted when tokens are unlocked
-     */
-    event LogUnlock(
-        address _to,
-        address _token,
-        uint256 _value
-    );
+	/**
+	 * @dev Event emitted when tokens are unlocked
+	 */
+	event LogUnlock(address _to, address _token, uint256 _value);
 }
