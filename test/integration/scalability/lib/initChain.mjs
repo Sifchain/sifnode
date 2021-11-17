@@ -1,8 +1,12 @@
+import { $ } from "zx";
 import { cleanUpGenesisState } from "../utils/cleanUpGenesisState.mjs";
 import { createDenomsFile } from "../utils/createDenomsFile.mjs";
 import { createGenesisFiles } from "../utils/createGenesisFiles.mjs";
 import { getDenoms } from "../utils/getDenoms.mjs";
 import { getRemoteGenesis } from "../utils/getRemoteGenesis.mjs";
+
+import { createRequire } from "module";
+const require = createRequire(import.meta.url);
 
 export async function initChain(props) {
   const {

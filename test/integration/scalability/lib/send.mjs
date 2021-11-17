@@ -1,3 +1,4 @@
+import { $ } from "zx";
 import { getAddress } from "./getAddress.mjs";
 
 export async function send({

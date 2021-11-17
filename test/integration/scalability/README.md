@@ -9,7 +9,7 @@ The current directly hosts two important testing components known as:
 
 ## Context
 
-The current test environment Sifchain relies on requires several minutes to hours to run tests and are not conveninant for fast iteration development cycles as the developers have to wait a long time before getting any meaningful test result. It also discourages anyone involved in test engineering to write further tests in such environment as the short-term benefits of testing manually but poorly outpaces writing test code that takes long to provide results but do not improve testing and QA processes overall.
+The current test environment Sifchain requires several minutes to hours to run tests and are not conveninant for fast iteration development cycles as the developers have to wait a long time before getting any meaningful test result. It also discourages anyone involved in test engineering to write further tests in such environment as the short-term benefits of testing manually but poorly outpaces writing test code that takes long to provide results but do not improve testing and QA processes overall.
 
 The localnet test environment solves those issues by running a local stack of services that combines IBC chains and IBC relayers all hosted within the same local machine and network layer. Therefore removing any costly latency due to containerization or network reliability.
 
@@ -67,10 +67,10 @@ To stop all the running processes, use `CTRL+C` or any other combinations to sto
 
 ### Testing
 
-Run the following test command that transfers a certain amonut from IBC chain to another:
+Run the following command to start the tests:
 
 ```
-yarn zx test/test-ibc-transfer-between-two-chains.mjs
+yarn test
 ```
 
 ### Snapshot

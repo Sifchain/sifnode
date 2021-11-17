@@ -1,3 +1,5 @@
+import { $, nothrow } from "zx";
+
 export async function runRelayer({ home }) {
   const relayerHome = `${home}/relayer`;
 

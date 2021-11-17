@@ -1,3 +1,4 @@
+import { $, fs } from "zx";
 import { generateRelayerRegistry } from "./generateRelayerRegistry.mjs";
 
 export async function createRelayerRegistry({

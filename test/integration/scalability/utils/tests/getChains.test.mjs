@@ -1,10 +1,11 @@
 import { getChains } from "../getChains.mjs";
+
+import { createRequire } from "module";
+const require = createRequire(import.meta.url);
 const defaultChains = require("../../config/chains.json");
 
-function test() {
+test("gets chains", () => {
   const chains = getChains({ chains: defaultChains });
 
-  console.log(chains);
-}
-
-test();
+  expect(chains).toMatchSnapshot();
+});

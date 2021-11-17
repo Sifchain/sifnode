@@ -1,3 +1,5 @@
+import { $, nothrow } from "zx";
+
 export async function setupRelayerChannelIds({ home }) {
   const relayerHome = `${home}/relayer`;
 

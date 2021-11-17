@@ -1,13 +1,12 @@
-#!/usr/bin/env zx
-
 import { createAccount } from "../lib/createAccount.mjs";
 import { arg } from "../utils/arg.mjs";
 
-const args = arg(
-  {
-    "--name": String,
-  },
-  `
+export async function start() {
+  const args = arg(
+    {
+      "--name": String,
+    },
+    `
 Usage:
 
   yarn createAccount [options]
@@ -18,8 +17,13 @@ Options:
 
 --name      Account name or address
 `
-);
+  );
 
-const name = args["--name"] || undefined;
+  const name = args["--name"] || undefined;
 
-await createAccount({ name });
+  await createAccount({ name });
+}
+
+if (process.env.NODE_ENV !== "test") {
+  start();
+}

@@ -1,3 +1,4 @@
+import { fetch } from "zx";
 import { getAddress } from "./getAddress.mjs";
 
 export async function feedAccount({ binary, node, chainId, name, faucet }) {

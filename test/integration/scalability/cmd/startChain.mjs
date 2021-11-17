@@ -1,20 +1,19 @@
-#!/usr/bin/env zx
-
 import { startChain } from "../lib/startChain.mjs";
 import { arg } from "../utils/arg.mjs";
 import { getChainProps } from "../utils/getChainProps.mjs";
 
-const args = arg(
-  {
-    "--chain": String,
-    "--network": String,
-    "--binary": String,
-    "--rpcPort": Number,
-    "--p2pPort": Number,
-    "--pprofPort": Number,
-    "--home": String,
-  },
-  `
+export async function start() {
+  const args = arg(
+    {
+      "--chain": String,
+      "--network": String,
+      "--binary": String,
+      "--rpcPort": Number,
+      "--p2pPort": Number,
+      "--pprofPort": Number,
+      "--home": String,
+    },
+    `
 Usage:
 
   yarn startChain [options]
@@ -31,25 +30,30 @@ Options:
 --pprofPort pprof port number
 --home      Directory for config and data
 `
-);
+  );
 
-const chain = args["--chain"] || undefined;
-const network = args["--network"] || undefined;
-const binary = args["--binary"] || undefined;
-const rpcPort = args["--rpcPort"] || undefined;
-const p2pPort = args["--p2pPort"] || undefined;
-const pprofPort = args["--pprofPort"] || undefined;
-const home = args["--home"] || undefined;
+  const chain = args["--chain"] || undefined;
+  const network = args["--network"] || undefined;
+  const binary = args["--binary"] || undefined;
+  const rpcPort = args["--rpcPort"] || undefined;
+  const p2pPort = args["--p2pPort"] || undefined;
+  const pprofPort = args["--pprofPort"] || undefined;
+  const home = args["--home"] || undefined;
 
-const chainProps = getChainProps({
-  chain,
-  network,
-  binary,
-  rpcPort,
-  p2pPort,
-  pprofPort,
-  home,
-});
-await startChain({
-  ...chainProps,
-});
+  const chainProps = getChainProps({
+    chain,
+    network,
+    binary,
+    rpcPort,
+    p2pPort,
+    pprofPort,
+    home,
+  });
+  await startChain({
+    ...chainProps,
+  });
+}
+
+if (process.env.NODE_ENV !== "test") {
+  start();
+}

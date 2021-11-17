@@ -1,18 +1,17 @@
-#!/usr/bin/env zx
-
 import { startAllRelayers } from "../lib/startAllRelayers.mjs";
 import { arg } from "../utils/arg.mjs";
 import { getChainProps } from "../utils/getChainProps.mjs";
 
-const args = arg(
-  {
-    "--network": String,
-    "--rpcInitialPort": Number,
-    "--p2pInitialPort": Number,
-    "--pprofInitialPort": Number,
-    "--home": String,
-  },
-  `
+export async function start() {
+  const args = arg(
+    {
+      "--network": String,
+      "--rpcInitialPort": Number,
+      "--p2pInitialPort": Number,
+      "--pprofInitialPort": Number,
+      "--home": String,
+    },
+    `
 Usage:
 
   yarn startAllRelayers [options]
@@ -27,21 +26,26 @@ Options:
 --pprofInitialPort      Initial pprof port number
 --home                  Global directory for config and data of initiated chains
 `
-);
+  );
 
-const network = args["--network"] || undefined;
-const rpcInitialPort = args["--rpcInitialPort"] || undefined;
-const p2pInitialPort = args["--p2pInitialPort"] || undefined;
-const pprofInitialPort = args["--pprofInitialPort"] || undefined;
-const home = args["--home"] || undefined;
+  const network = args["--network"] || undefined;
+  const rpcInitialPort = args["--rpcInitialPort"] || undefined;
+  const p2pInitialPort = args["--p2pInitialPort"] || undefined;
+  const pprofInitialPort = args["--pprofInitialPort"] || undefined;
+  const home = args["--home"] || undefined;
 
-const chainProps = getChainProps({
-  network,
-  rpcInitialPort,
-  p2pInitialPort,
-  pprofInitialPort,
-  home,
-});
-await startAllRelayers({
-  ...chainProps,
-});
+  const chainProps = getChainProps({
+    network,
+    rpcInitialPort,
+    p2pInitialPort,
+    pprofInitialPort,
+    home,
+  });
+  await startAllRelayers({
+    ...chainProps,
+  });
+}
+
+if (process.env.NODE_ENV !== "test") {
+  start();
+}

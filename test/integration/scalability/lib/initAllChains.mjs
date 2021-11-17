@@ -1,6 +1,9 @@
+import { $ } from "zx";
 import { getChainProps } from "../utils/getChainProps.mjs";
 import { initChain } from "./initChain.mjs";
 
+import { createRequire } from "module";
+const require = createRequire(import.meta.url);
 const chains = require("../config/chains.json");
 
 export async function initAllChains({ network, home = `/tmp/localnet` }) {

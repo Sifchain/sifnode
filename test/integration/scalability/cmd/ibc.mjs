@@ -1,30 +1,29 @@
-#!/usr/bin/env zx
-
 import { ibc } from "../lib/ibc.mjs";
 import { arg } from "../utils/arg.mjs";
 import { getChainProps } from "../utils/getChainProps.mjs";
 
-const args = arg(
-  {
-    "--times": Number,
-    "--broadcast": String,
-    "--chain": String,
-    "--network": String,
-    "--type": String,
-    "--channelId": String,
-    "--counterpartyChannelId": String,
-    "--node": String,
-    "--chain-id": String,
-    "--binary": String,
-    "--name": String,
-    "--denom": String,
-    "--amount": Number,
-    "--fees": Number,
-    "--gas": Number,
-    "--timeout": Number,
-    "--dry-run": Boolean,
-  },
-  `
+export async function start() {
+  const args = arg(
+    {
+      "--times": Number,
+      "--broadcast": String,
+      "--chain": String,
+      "--network": String,
+      "--type": String,
+      "--channelId": String,
+      "--counterpartyChannelId": String,
+      "--node": String,
+      "--chain-id": String,
+      "--binary": String,
+      "--name": String,
+      "--denom": String,
+      "--amount": Number,
+      "--fees": Number,
+      "--gas": Number,
+      "--timeout": Number,
+      "--dry-run": Boolean,
+    },
+    `
 Usage:
 
   yarn send [options]
@@ -51,45 +50,50 @@ Options:
 --timeout                       Packet timeout timestamp
 --dry-run                       Dry run
 `
-);
+  );
 
-const times = args["--times"] || undefined;
-const broadcast = args["--broadcast"] || undefined;
-const chain = args["--chain"] || undefined;
-const network = args["--network"] || undefined;
-const type = args["--type"] || undefined;
-const channelId = args["--channelId"] || undefined;
-const counterpartyChannelId = args["--counterpartyChannelId"] || undefined;
-const node = args["--node"] || undefined;
-const chainId = args["--chain-id"] || undefined;
-const binary = args["--binary"] || undefined;
-const name = args["--name"] || undefined;
-const denom = args["--denom"] || undefined;
-const amount = args["--amount"] || undefined;
-const fees = args["--fees"] || undefined;
-const gas = args["--gas"] || undefined;
-const timeout = args["--timeout"] || undefined;
-const dryRun = args["--dry-run"] || undefined;
+  const times = args["--times"] || undefined;
+  const broadcast = args["--broadcast"] || undefined;
+  const chain = args["--chain"] || undefined;
+  const network = args["--network"] || undefined;
+  const type = args["--type"] || undefined;
+  const channelId = args["--channelId"] || undefined;
+  const counterpartyChannelId = args["--counterpartyChannelId"] || undefined;
+  const node = args["--node"] || undefined;
+  const chainId = args["--chain-id"] || undefined;
+  const binary = args["--binary"] || undefined;
+  const name = args["--name"] || undefined;
+  const denom = args["--denom"] || undefined;
+  const amount = args["--amount"] || undefined;
+  const fees = args["--fees"] || undefined;
+  const gas = args["--gas"] || undefined;
+  const timeout = args["--timeout"] || undefined;
+  const dryRun = args["--dry-run"] || undefined;
 
-const chainProps = getChainProps({
-  chain,
-  network,
-  type,
-  times,
-  broadcast,
-  node,
-  chainId,
-  binary,
-  channelId,
-  counterpartyChannelId,
-  name,
-  denom,
-  amount,
-  fees,
-  gas,
-  timeout,
-  dryRun,
-});
-await ibc({
-  ...chainProps,
-});
+  const chainProps = getChainProps({
+    chain,
+    network,
+    type,
+    times,
+    broadcast,
+    node,
+    chainId,
+    binary,
+    channelId,
+    counterpartyChannelId,
+    name,
+    denom,
+    amount,
+    fees,
+    gas,
+    timeout,
+    dryRun,
+  });
+  await ibc({
+    ...chainProps,
+  });
+}
+
+if (process.env.NODE_ENV !== "test") {
+  start();
+}

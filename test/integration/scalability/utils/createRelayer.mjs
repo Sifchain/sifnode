@@ -1,3 +1,4 @@
+import { $, nothrow } from "zx";
 import { send } from "../lib/send.mjs";
 
 export async function createRelayer({

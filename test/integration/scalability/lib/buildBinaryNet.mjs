@@ -3,6 +3,7 @@ import { initChain } from "./initChain.mjs";
 import { getChains } from "../utils/getChains.mjs";
 import { getChainsProps } from "../utils/getChainsProps.mjs";
 import { startChain } from "./startChain.mjs";
+import { $ } from "zx";
 
 export async function buildBinaryNet({
   chainProps: candidateOtherChainProps,

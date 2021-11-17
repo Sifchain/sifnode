@@ -1,3 +1,5 @@
+import { createRequire } from "module";
+const require = createRequire(import.meta.url);
 const defaultChains = require("../config/chains.json");
 
 export function getChainProps({

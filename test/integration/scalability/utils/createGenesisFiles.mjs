@@ -1,3 +1,5 @@
+import { fs } from "zx";
+
 export async function createGenesisFiles({
   home,
   genesis,

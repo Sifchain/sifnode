@@ -1,3 +1,8 @@
+import { $, nothrow } from "zx";
+
+import { createRequire } from "module";
+const require = createRequire(import.meta.url);
+
 const chains = require("../config/chains.json");
 const accounts = require("../config/accounts.json");
 

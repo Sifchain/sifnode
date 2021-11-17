@@ -1,24 +1,23 @@
-#!/usr/bin/env zx
-
 import { send } from "../lib/send.mjs";
 import { arg } from "../utils/arg.mjs";
 import { getChainProps } from "../utils/getChainProps.mjs";
 
-const args = arg(
-  {
-    "--chain": String,
-    "--network": String,
-    "--node": String,
-    "--chain-id": String,
-    "--binary": String,
-    "--src": String,
-    "--dst": String,
-    "--denom": String,
-    "--amount": Number,
-    "--fees": Number,
-    "--dry-run": Boolean,
-  },
-  `
+export async function start() {
+  const args = arg(
+    {
+      "--chain": String,
+      "--network": String,
+      "--node": String,
+      "--chain-id": String,
+      "--binary": String,
+      "--src": String,
+      "--dst": String,
+      "--denom": String,
+      "--amount": Number,
+      "--fees": Number,
+      "--dry-run": Boolean,
+    },
+    `
 Usage:
 
   yarn send [options]
@@ -39,33 +38,38 @@ Options:
 --fees      Minimum required fees amount to pay
 --dry-run   Dry run
 `
-);
+  );
 
-const chain = args["--chain"] || undefined;
-const network = args["--network"] || undefined;
-const node = args["--node"] || undefined;
-const chainId = args["--chain-id"] || undefined;
-const binary = args["--binary"] || undefined;
-const src = args["--src"] || undefined;
-const dst = args["--dst"] || undefined;
-const denom = args["--denom"] || undefined;
-const amount = args["--amount"] || undefined;
-const fees = args["--fees"] || undefined;
-const dryRun = args["--dry-run"] || undefined;
+  const chain = args["--chain"] || undefined;
+  const network = args["--network"] || undefined;
+  const node = args["--node"] || undefined;
+  const chainId = args["--chain-id"] || undefined;
+  const binary = args["--binary"] || undefined;
+  const src = args["--src"] || undefined;
+  const dst = args["--dst"] || undefined;
+  const denom = args["--denom"] || undefined;
+  const amount = args["--amount"] || undefined;
+  const fees = args["--fees"] || undefined;
+  const dryRun = args["--dry-run"] || undefined;
 
-const chainProps = getChainProps({
-  chain,
-  network,
-  node,
-  chainId,
-  binary,
-  src,
-  dst,
-  denom,
-  amount,
-  fees,
-  dryRun,
-});
-await send({
-  ...chainProps,
-});
+  const chainProps = getChainProps({
+    chain,
+    network,
+    node,
+    chainId,
+    binary,
+    src,
+    dst,
+    denom,
+    amount,
+    fees,
+    dryRun,
+  });
+  await send({
+    ...chainProps,
+  });
+}
+
+if (process.env.NODE_ENV !== "test") {
+  start();
+}

@@ -1,3 +1,4 @@
+import { $ } from "zx";
 import { getChainProps } from "../utils/getChainProps.mjs";
 import { getAddress } from "./getAddress.mjs";
 

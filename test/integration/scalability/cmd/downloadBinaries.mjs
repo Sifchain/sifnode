@@ -1,14 +1,13 @@
-#!/usr/bin/env zx
-
 import { downloadBinaries } from "../lib/downloadBinaries.mjs";
 import { arg } from "../utils/arg.mjs";
 import { getChainProps } from "../utils/getChainProps.mjs";
 
-const args = arg(
-  {
-    "--home": String,
-  },
-  `
+export async function start() {
+  const args = arg(
+    {
+      "--home": String,
+    },
+    `
 Usage:
 
   yarn downloadBinaries [options]
@@ -19,12 +18,17 @@ Options:
 
 --home      Global directory for config and data of initiated chains
 `
-);
+  );
 
-const home = args["--home"] || undefined;
+  const home = args["--home"] || undefined;
 
-const chainProps = getChainProps({
-  home,
-});
+  const chainProps = getChainProps({
+    home,
+  });
 
-await downloadBinaries({ ...chainProps });
+  await downloadBinaries({ ...chainProps });
+}
+
+if (process.env.NODE_ENV !== "test") {
+  start();
+}

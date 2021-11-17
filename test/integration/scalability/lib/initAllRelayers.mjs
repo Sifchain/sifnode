@@ -4,6 +4,7 @@ import { setupRelayerChannelIds } from "../utils/setupRelayerChannelIds.mjs";
 import { getChains } from "../utils/getChains.mjs";
 import { getChainsProps } from "../utils/getChainsProps.mjs";
 import { send } from "./send.mjs";
+import { sleep } from "zx";
 
 export async function initAllRelayers({
   network,

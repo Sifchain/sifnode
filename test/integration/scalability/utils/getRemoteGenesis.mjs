@@ -1,3 +1,5 @@
+import { fetch } from "zx";
+
 export async function getRemoteGenesis({ node }) {
   const response = await fetch(`${node}/genesis`);
   const data = await response.json();

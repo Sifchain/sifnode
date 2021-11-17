@@ -1,3 +1,5 @@
+import { $ } from "zx";
+
 export async function getTx({ binary, hash, node, chainId }) {
   if (!node) throw new Error("missing requirement argument: --node");
   if (!chainId) throw new Error("missing requirement argument: --chain-id");

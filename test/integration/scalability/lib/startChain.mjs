@@ -1,3 +1,5 @@
+import { $ } from "zx";
+
 export async function startChain(props) {
   const {
     disabled,

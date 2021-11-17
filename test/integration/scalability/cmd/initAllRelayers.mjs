@@ -1,19 +1,18 @@
-#!/usr/bin/env zx
-
 import { initAllRelayers } from "../lib/initAllRelayers.mjs";
 import { arg } from "../utils/arg.mjs";
 import { getChainProps } from "../utils/getChainProps.mjs";
 
-const args = arg(
-  {
-    "--network": String,
-    "--home": String,
-    "--registryFrom": Number,
-    "--rpcInitialPort": Number,
-    "--p2pInitialPort": Number,
-    "--pprofInitialPort": Number,
-  },
-  `
+export async function start() {
+  const args = arg(
+    {
+      "--network": String,
+      "--home": String,
+      "--registryFrom": Number,
+      "--rpcInitialPort": Number,
+      "--p2pInitialPort": Number,
+      "--pprofInitialPort": Number,
+    },
+    `
 Usage:
 
   yarn initAllRelayers [options]
@@ -29,22 +28,27 @@ Options:
 --p2pInitialPort        Initial P2P port number
 --pprofInitialPort      Initial pprof port number
 `
-);
+  );
 
-const network = args["--network"] || undefined;
-const home = args["--home"] || undefined;
-const registryFrom = args["--registryFrom"] || undefined;
-const rpcInitialPort = args["--rpcInitialPort"] || undefined;
-const p2pInitialPort = args["--p2pInitialPort"] || undefined;
-const pprofInitialPort = args["--pprofInitialPort"] || undefined;
+  const network = args["--network"] || undefined;
+  const home = args["--home"] || undefined;
+  const registryFrom = args["--registryFrom"] || undefined;
+  const rpcInitialPort = args["--rpcInitialPort"] || undefined;
+  const p2pInitialPort = args["--p2pInitialPort"] || undefined;
+  const pprofInitialPort = args["--pprofInitialPort"] || undefined;
 
-const chainProps = getChainProps({
-  network,
-  home,
-  registryFrom,
-  rpcInitialPort,
-  p2pInitialPort,
-  pprofInitialPort,
-});
+  const chainProps = getChainProps({
+    network,
+    home,
+    registryFrom,
+    rpcInitialPort,
+    p2pInitialPort,
+    pprofInitialPort,
+  });
 
-await initAllRelayers({ ...chainProps });
+  await initAllRelayers({ ...chainProps });
+}
+
+if (process.env.NODE_ENV !== "test") {
+  start();
+}

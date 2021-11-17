@@ -1,10 +1,7 @@
-import assert from "assert";
 import { pickChains } from "../pickChains.mjs";
 
-function test() {
+test("pick chains", () => {
   const result = pickChains({ chain: "sifnode,cosmos,akash" });
 
-  assert.deepEqual(result, ["sifnode", "cosmos", "akash"]);
-}
-
-test();
+  expect(result).toMatchSnapshot();
+});

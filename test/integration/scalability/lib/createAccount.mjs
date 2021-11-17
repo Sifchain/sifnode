@@ -1,5 +1,8 @@
+import { $, nothrow, fs } from "zx";
 import { recoverAccount } from "./recoverAccount.mjs";
 
+import { createRequire } from "module";
+const require = createRequire(import.meta.url);
 const accounts = require("./accounts.json");
 
 export async function createAccount({ name }) {
