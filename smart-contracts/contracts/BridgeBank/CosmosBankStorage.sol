@@ -30,7 +30,7 @@ contract CosmosBankStorage {
 	/**
 	 * @dev {DEPRECATED}
 	 */
-	mapping(string => address) internal controlledBridgeTokens;
+	mapping(string => address) private controlledBridgeTokens;
 
 	/**
 	 * @dev {DEPRECATED}
