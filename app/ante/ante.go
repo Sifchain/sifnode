@@ -65,8 +65,8 @@ func (r AdjustGasPriceDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate
 			strings.Contains(msgTypeURLLower, strings.ToLower(banktypes.TypeMsgMultiSend)) ||
 			strings.Contains(msgTypeURLLower, "createuserclaim") ||
 			strings.Contains(msgTypeURLLower, "swap") ||
-			strings.Contains(msgTypeURLLower, "remove_liquidity") ||
-			strings.Contains(msgTypeURLLower, "add_liquidity") {
+			strings.Contains(msgTypeURLLower, "removeliquidity") ||
+			strings.Contains(msgTypeURLLower, "addliquidity") {
 			minFee = sdk.NewInt(100000000000000000) // 0.1
 		} else if strings.Contains(msgTypeURLLower, "transfer") && minFee.LTE(sdk.NewInt(10000000000000000)) {
 			minFee = sdk.NewInt(10000000000000000) // 0.01
