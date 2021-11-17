@@ -2,13 +2,14 @@ package main
 
 import (
 	"fmt"
-	"github.com/Sifchain/sifnode/x/instrumentation"
 	"log"
 	"net/url"
 	"os"
 	"strconv"
 	"strings"
 	"sync"
+
+	"github.com/Sifchain/sifnode/x/instrumentation"
 
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/internal/symbol_translator"
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/txs"
@@ -224,6 +225,7 @@ func RunInitRelayerCmd(cmd *cobra.Command, args []string) error {
 		cliContext,
 		nodeURL,
 		validatorMoniker,
+		oracletypes.NetworkDescriptor(networkDescriptor),
 		web3Provider,
 		contractAddress,
 		sugaredLogger,
@@ -332,6 +334,7 @@ func RunInitWitnessCmd(cmd *cobra.Command, args []string) error {
 		cliContext,
 		nodeURL,
 		validatorMoniker,
+		oracletypes.NetworkDescriptor(networkDescriptor),
 		web3Provider,
 		contractAddress,
 		sugaredLogger,
@@ -360,9 +363,9 @@ func RunInitWitnessCmd(cmd *cobra.Command, args []string) error {
 func replayEthereumCmd() *cobra.Command {
 	//nolint:lll
 	replayEthereumCmd := &cobra.Command{
-		Use:     "replayEthereum [tendermintNode] [web3Provider] [bridgeRegistryContractAddress] [validatorMoniker]",
+		Use:     "replayEthereum  [networkDescriptor][tendermintNode] [web3Provider] [bridgeRegistryContractAddress] [validatorMoniker]",
 		Short:   "replay missed ethereum events",
-		Args:    cobra.ExactArgs(4),
+		Args:    cobra.ExactArgs(5),
 		Example: "replayEthereum tcp://localhost:26657 ws://localhost:7545/ 0x30753E4A8aad7F8597332E813735Def5dD395028 validator --chain-id=peggy",
 		RunE:    RunReplayEthereumCmd,
 	}

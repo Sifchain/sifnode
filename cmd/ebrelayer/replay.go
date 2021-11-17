@@ -26,18 +26,29 @@ func RunReplayEthereumCmd(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	tendermintNode := args[0]
-	web3Provider := args[1]
+	// Validate and parse arguments
+	networkDescriptor, err := strconv.Atoi(args[0])
+	if err != nil {
+		return errors.Errorf("%s is invalid network id", args[0])
+	}
 
-	if !common.IsHexAddress(args[2]) {
+	// check if the networkDescriptor is valid
+	if !oracletypes.NetworkDescriptor(networkDescriptor).IsValid() {
+		return errors.Errorf("network id: %d is invalid", networkDescriptor)
+	}
+
+	tendermintNode := args[1]
+	web3Provider := args[2]
+
+	if !common.IsHexAddress(args[3]) {
 		return errors.Errorf("invalid [bridge-registry-contract-address]: %s", args[1])
 	}
-	contractAddress := common.HexToAddress(args[2])
+	contractAddress := common.HexToAddress(args[3])
 
-	if len(strings.Trim(args[3], "")) == 0 {
+	if len(strings.Trim(args[4], "")) == 0 {
 		return errors.Errorf("invalid [validator-moniker]: %s", args[2])
 	}
-	validatorMoniker := args[3]
+	validatorMoniker := args[4]
 
 	symbolTranslator, err := buildSymbolTranslator(cmd.Flags())
 	if err != nil {
@@ -50,7 +61,11 @@ func RunReplayEthereumCmd(cmd *cobra.Command, args []string) error {
 	}
 	sugaredLogger := logger.Sugar()
 
-	ethSub := relayer.NewEthereumSub(cliContext, tendermintNode, validatorMoniker, web3Provider,
+	ethSub := relayer.NewEthereumSub(cliContext,
+		tendermintNode,
+		validatorMoniker,
+		oracletypes.NetworkDescriptor(networkDescriptor),
+		web3Provider,
 		contractAddress, sugaredLogger)
 
 	txFactory := tx.NewFactoryCLI(cliContext, cmd.Flags())
