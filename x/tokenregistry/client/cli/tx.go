@@ -40,7 +40,7 @@ func GetCmdRegisterAll() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			registry, err := whitelistutils.ParseDenoms(clientCtx.JSONMarshaler, args[0])
+			registry, err := whitelistutils.ParseDenoms(clientCtx.Codec, args[0])
 			if err != nil {
 				return err
 			} else if len(registry.Entries) < 1 {
@@ -79,7 +79,7 @@ func GetCmdRegister() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			registry, err := whitelistutils.ParseDenoms(clientCtx.JSONMarshaler, args[0])
+			registry, err := whitelistutils.ParseDenoms(clientCtx.Codec, args[0])
 			if err != nil {
 				return err
 			} else if len(registry.Entries) != 1 {
@@ -112,14 +112,14 @@ func GetCmdSetRegistry() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			registry, err := whitelistutils.ParseDenoms(clientCtx.JSONMarshaler, args[0])
+			registry, err := whitelistutils.ParseDenoms(clientCtx.Codec, args[0])
 			if err != nil {
 				return err
 			} else if len(registry.Entries) != 1 {
 				return errors.New("exactly one token entry must be specified in input file")
 			}
 			msg := types.MsgSetRegistry{
-				From:  clientCtx.GetFromAddress().String(),
+				From:     clientCtx.GetFromAddress().String(),
 				Registry: &registry,
 			}
 			if err := msg.ValidateBasic(); err != nil {
@@ -172,7 +172,7 @@ func GetCmdDeregisterAll() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			registry, err := whitelistutils.ParseDenoms(clientCtx.JSONMarshaler, args[0])
+			registry, err := whitelistutils.ParseDenoms(clientCtx.Codec, args[0])
 			if err != nil {
 				return err
 			} else if len(registry.Entries) < 1 {

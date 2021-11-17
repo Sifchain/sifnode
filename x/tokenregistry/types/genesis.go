@@ -8,7 +8,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 )
 
-func UnmarshalGenesis(marshaler codec.JSONMarshaler, state json.RawMessage) GenesisState {
+func UnmarshalGenesis(marshaler codec.JSONCodec, state json.RawMessage) GenesisState {
 	var genesisState GenesisState
 	if state != nil {
 		err := marshaler.UnmarshalJSON(state, &genesisState)
@@ -19,7 +19,7 @@ func UnmarshalGenesis(marshaler codec.JSONMarshaler, state json.RawMessage) Gene
 	return genesisState
 }
 
-func GetGenesisStateFromAppState(marshaler codec.JSONMarshaler, appState map[string]json.RawMessage) GenesisState {
+func GetGenesisStateFromAppState(marshaler codec.JSONCodec, appState map[string]json.RawMessage) GenesisState {
 	var genesisState GenesisState
 	if appState[ModuleName] != nil {
 		err := marshaler.UnmarshalJSON(appState[ModuleName], &genesisState)

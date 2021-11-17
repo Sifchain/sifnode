@@ -5,13 +5,7 @@ rm -rf sifnode.log
 rm -rf testlog.log
 
 
-sifnoded init test --chain-id=sifchain
-
-sifnoded config output json
-sifnoded config indent true
-sifnoded config trust-node true
-sifnoded config chain-id sifchain
-sifnoded config keyring-backend test
+sifnoded init test --chain-id=sifchain -o
 
 echo "Generating deterministic account - sif"
 echo "race draft rival universe maid cheese steel logic crowd fork comic easy truth drift tomorrow eye buddy head time cash swing swift midnight borrow" | sifnoded keys add sif --recover
@@ -27,7 +21,7 @@ sifnoded add-genesis-clp-admin $(sifnoded keys show akasha -a)
 
 sifnoded  add-genesis-validators $(sifnoded keys show sif -a --bech val)
 
-sifnoded gentx --name sif --amount 1000000000000000000000000stake --keyring-backend test
+sifnoded gentx sif 1000000000000000000000000stake --keyring-backend test
 
 echo "Collecting genesis txs..."
 sifnoded collect-gentxs

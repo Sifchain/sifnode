@@ -7,7 +7,7 @@ import (
 	"github.com/tendermint/tendermint/crypto"
 )
 
-type CreateDispensationMultiTx struct{}
+type CreateDispensationMultiTx struct{} //nolint
 
 func (CreateDispensationMultiTx) GetMsgAndArgs(_ CommonArgs) (sdk.Msg, Args) {
 	args := getDispensationTxArgs()
