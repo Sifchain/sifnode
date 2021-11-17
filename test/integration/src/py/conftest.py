@@ -194,7 +194,7 @@ def sifchain_fees(sifchain_fees_int):
 # See https://github.com/Sifchain/sifnode/pull/1802#discussion_r697403408
 @pytest.fixture
 def sifchain_fees_int():
-    return 200000
+    return 100000000000000000
 
 
 @pytest.fixture
