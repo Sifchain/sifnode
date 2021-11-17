@@ -45,7 +45,7 @@ export class WitnessRunner extends ShellCommand<EbrelayerResults> {
   cmd(): [string, string[]] {
     return ["ebrelayer", [
       "init-witness",
-      "1", // TODO: DONT HARDCODE ME
+      "31337", // TODO: DONT HARDCODE ME
       this.tcpURL,
       this.websocketAddress,
       this.args.smartContract.bridgeRegistry,
@@ -127,7 +127,8 @@ export class RelayerRunner extends ShellCommand<EbrelayerResults> {
   cmd(): [string, string[]] {
     return ["ebrelayer", [
       "init-relayer",
-      "1", // TODO: DONT HARDCODE ME
+      // TODO: Where to read this value?
+      "31337",
       this.tcpURL,
       this.websocketAddress,
       this.args.smartContract.bridgeRegistry,
