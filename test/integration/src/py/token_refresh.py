@@ -2,6 +2,7 @@ import copy
 import json
 import logging
 import os
+from multiprocessing import Pool
 
 import burn_lock_functions
 import test_utilities
@@ -30,7 +31,7 @@ def test_can_mint_token_and_peg_it_for_everything_in_whitelist(
     tokens = test_utilities.get_whitelisted_tokens(request)
     logging.info(f"whitelisted tokens: {tokens}")
 
-    for t in tokens:
+    def do_refresh_currency(t):
         destination_symbol = "c" + t["symbol"]
         if t["symbol"] == "erowan":
             destination_symbol = "rowan"
@@ -46,5 +47,9 @@ def test_can_mint_token_and_peg_it_for_everything_in_whitelist(
             # try to get as many tokens across the bridge as you can,
             # don't stop if one of them fails
             logging.info(f"failed to mint and send for {t}, error was {e}")
+
+    with Pool(len(tokens)) as p:
+        p.map(do_refresh_currency, tokens)
+
     logging.info(f"sent new batch of tokens to {rowan_source}")
     test_utilities.get_sifchain_addr_balance(rowan_source, request.sifnoded_node, "rowan")

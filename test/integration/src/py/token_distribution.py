@@ -3,6 +3,7 @@ import logging
 
 import pytest
 import time
+from multiprocessing import Pool
 
 import burn_lock_functions
 import test_utilities
@@ -27,7 +28,7 @@ def test_token_distribution(
     request = basic_transfer_request
     amount_in_tokens = 10000000
 
-    for t in tokens:
+    def do_distrube_token(t):
         try:
             logging.info(f"sending: {t}")
             destination_symbol = "c" + t["symbol"]
@@ -41,3 +42,6 @@ def test_token_distribution(
             test_utilities.send_from_sifchain_to_sifchain(request, rowan_source_integrationtest_env_credentials)
         except Exception as e:
             logging.error(f"error: {e}")
+
+    with Pool(len(tokens)) as p:
+        p.map(do_distrube_token, tokens)
