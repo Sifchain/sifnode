@@ -1,13 +1,13 @@
 import copy
 import json
 import logging
+from multiprocessing import Pool
 
 import burn_lock_functions
 import test_utilities
 from burn_lock_functions import EthereumToSifchainTransferRequest
 from integration_env_credentials import create_new_sifaddr_and_credentials
 from test_utilities import create_new_currency
-
 
 # This file is for setting up an installation with a set of currencies given
 # in a json file like ui/core/src/assets.sifchain.mainnet.json.
@@ -54,7 +54,8 @@ def test_can_create_a_new_token_and_peg_it(
     # ceth is special since we can't just mint it or create an ERC20 contract for it
     existing_tokens.add("ceth")
     logging.info(f"requested tokens: {tokens}")
-    for t in tokens["assets"]:
+
+    def do_create_new_currency(t):
         if t["symbol"] in existing_tokens or t["symbol"] == "rowan":
             logging.info(f"token {t} already whitelisted, skipping")
             continue
@@ -72,3 +73,6 @@ def test_can_create_a_new_token_and_peg_it(
             operator_address=operator_address,
             ethereum_network=ethereum_network
         )
+
+    with Pool(len(tokens["assets"])) as p:
+        p.map(do_create_new_currency, tokens["assets"])
