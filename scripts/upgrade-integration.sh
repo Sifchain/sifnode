@@ -88,7 +88,7 @@ echo "${contents}" > $DAEMON_HOME/config/genesis.json
 
 cosmovisor start >> sifnode.log 2>&1  &
 sleep 7
-sifnoded tx tokenregistry register-all /Users/tanmay/Documents/sifnode/scripts/ibc/tokenregistration/sifchain-devnet-1/rowan.json --from sif --keyring-backend=test --chain-id=localnet --yes
+#sifnoded tx tokenregistry register-all /Users/tanmay/Documents/sifnode/scripts/ibc/tokenregistration/sifchain-devnet-1/rowan.json --from sif --keyring-backend=test --chain-id=localnet --yes
 sleep 7
 sifnoded tx gov submit-proposal software-upgrade $UpgradeName --from sif --deposit 100000000stake --upgrade-height 10 --title $UpgradeName --description $UpgradeName --keyring-backend test --chain-id localnet --yes
 sleep 7
