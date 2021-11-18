@@ -35,7 +35,7 @@ func SetupHandlers(app *SifchainApp) {
 
 	if upgradeInfo.Name == upgradeName && !app.UpgradeKeeper.IsSkipHeight(upgradeInfo.Height) {
 		storeUpgrades := storetypes.StoreUpgrades{
-			Added: []string{authz.ModuleName, feegrant.ModuleName},
+			Added: []string{authz.ModuleName, feegrant.ModuleName, "vesting", "crisis"},
 		}
 
 		// Use upgrade store loader for the initial loading of all stores when app starts,
