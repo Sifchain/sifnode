@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"fmt"
+
 	"github.com/Sifchain/sifnode/x/dispensation/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/errors"
@@ -16,7 +17,7 @@ func (k Keeper) SetDistributionRecord(ctx sdk.Context, dr types.DistributionReco
 	}
 	store := ctx.KVStore(k.storeKey)
 	key := types.GetDistributionRecordKey(dr.DistributionStatus, dr.DistributionName, dr.RecipientAddress, dr.DistributionType)
-	store.Set(key, k.cdc.MustMarshalBinaryBare(&dr))
+	store.Set(key, k.cdc.MustMarshal(&dr))
 	return nil
 }
 
@@ -28,7 +29,7 @@ func (k Keeper) GetDistributionRecord(ctx sdk.Context, airdropName string, recip
 		return &dr, errors.Wrapf(types.ErrInvalid, "record Does not exist : %s", dr.String())
 	}
 	bz := store.Get(key)
-	k.cdc.MustUnmarshalBinaryBare(bz, &dr)
+	k.cdc.MustUnmarshal(bz, &dr)
 	return &dr, nil
 }
 
@@ -74,7 +75,7 @@ func (k Keeper) GetRecordsForNameAndStatus(ctx sdk.Context, name string, status 
 	for ; iterator.Valid(); iterator.Next() {
 		var dr types.DistributionRecord
 		bytesValue := iterator.Value()
-		k.cdc.MustUnmarshalBinaryBare(bytesValue, &dr)
+		k.cdc.MustUnmarshal(bytesValue, &dr)
 		if dr.DistributionName == name {
 			res.DistributionRecords = append(res.DistributionRecords, &dr)
 		}
@@ -94,7 +95,7 @@ func (k Keeper) GetRecordsForNameStatusAndType(ctx sdk.Context, name string, sta
 	for ; iterator.Valid(); iterator.Next() {
 		var dr types.DistributionRecord
 		bytesValue := iterator.Value()
-		k.cdc.MustUnmarshalBinaryBare(bytesValue, &dr)
+		k.cdc.MustUnmarshal(bytesValue, &dr)
 		if dr.DistributionName == name && dr.DistributionType == distributionType {
 			res.DistributionRecords = append(res.DistributionRecords, &dr)
 		}
@@ -114,7 +115,7 @@ func (k Keeper) GetRecordsForRecipient(ctx sdk.Context, recipient string) *types
 	for ; iterator.Valid(); iterator.Next() {
 		var dr types.DistributionRecord
 		bytesValue := iterator.Value()
-		k.cdc.MustUnmarshalBinaryBare(bytesValue, &dr)
+		k.cdc.MustUnmarshal(bytesValue, &dr)
 		if dr.RecipientAddress == recipient {
 			res.DistributionRecords = append(res.DistributionRecords, &dr)
 		}
@@ -129,7 +130,7 @@ func (k Keeper) GetRecordsForRecipient(ctx sdk.Context, recipient string) *types
 	for ; iterator.Valid(); iterator.Next() {
 		var dr types.DistributionRecord
 		bytesValue := iterator.Value()
-		k.cdc.MustUnmarshalBinaryBare(bytesValue, &dr)
+		k.cdc.MustUnmarshal(bytesValue, &dr)
 		if dr.RecipientAddress == recipient {
 			res.DistributionRecords = append(res.DistributionRecords, &dr)
 		}
@@ -144,7 +145,7 @@ func (k Keeper) GetRecordsForRecipient(ctx sdk.Context, recipient string) *types
 	for ; iterator.Valid(); iterator.Next() {
 		var dr types.DistributionRecord
 		bytesValue := iterator.Value()
-		k.cdc.MustUnmarshalBinaryBare(bytesValue, &dr)
+		k.cdc.MustUnmarshal(bytesValue, &dr)
 		if dr.RecipientAddress == recipient {
 			res.DistributionRecords = append(res.DistributionRecords, &dr)
 		}
@@ -165,7 +166,7 @@ func (k Keeper) GetLimitedRecordsForStatus(ctx sdk.Context, status types.Distrib
 	for ; iterator.Valid(); iterator.Next() {
 		var dr types.DistributionRecord
 		bytesValue := iterator.Value()
-		k.cdc.MustUnmarshalBinaryBare(bytesValue, &dr)
+		k.cdc.MustUnmarshal(bytesValue, &dr)
 		res.DistributionRecords = append(res.DistributionRecords, &dr)
 		count++
 		if count == types.MaxRecordsPerBlock {
@@ -195,7 +196,7 @@ func (k Keeper) GetLimitedRecordsForRunner(ctx sdk.Context,
 		}
 		var dr types.DistributionRecord
 		bytesValue := iterator.Value()
-		k.cdc.MustUnmarshalBinaryBare(bytesValue, &dr)
+		k.cdc.MustUnmarshal(bytesValue, &dr)
 		if dr.DistributionName == distributionName &&
 			dr.DistributionStatus == types.DistributionStatus_DISTRIBUTION_STATUS_PENDING &&
 			dr.AuthorizedRunner == authorizedRunner &&
@@ -219,7 +220,7 @@ func (k Keeper) GetRecords(ctx sdk.Context) *types.DistributionRecords {
 	for ; iterator.Valid(); iterator.Next() {
 		var dr types.DistributionRecord
 		bytesValue := iterator.Value()
-		err := k.cdc.UnmarshalBinaryBare(bytesValue, &dr)
+		err := k.cdc.Unmarshal(bytesValue, &dr)
 		if err != nil {
 			ctx.Logger().Error(fmt.Sprintf("Unmarshal failed for record bytes : %s ", bytesValue))
 			// Not panicking here .
@@ -233,14 +234,14 @@ func (k Keeper) GetRecords(ctx sdk.Context) *types.DistributionRecords {
 	for ; iterator.Valid(); iterator.Next() {
 		var dr types.DistributionRecord
 		bytesValue := iterator.Value()
-		k.cdc.MustUnmarshalBinaryBare(bytesValue, &dr)
+		k.cdc.MustUnmarshal(bytesValue, &dr)
 		res.DistributionRecords = append(res.DistributionRecords, &dr)
 	}
 	iterator = k.GetDistributionRecordsIterator(ctx, types.DistributionStatus_DISTRIBUTION_STATUS_FAILED)
 	for ; iterator.Valid(); iterator.Next() {
 		var dr types.DistributionRecord
 		bytesValue := iterator.Value()
-		k.cdc.MustUnmarshalBinaryBare(bytesValue, &dr)
+		k.cdc.MustUnmarshal(bytesValue, &dr)
 		res.DistributionRecords = append(res.DistributionRecords, &dr)
 	}
 	return &res
@@ -258,17 +259,16 @@ func (k Keeper) GetRecordsForName(ctx sdk.Context, name string) *types.Distribut
 	for ; iterator.Valid(); iterator.Next() {
 		var dr types.DistributionRecord
 		bytesValue := iterator.Value()
-		k.cdc.MustUnmarshalBinaryBare(bytesValue, &dr)
+		k.cdc.MustUnmarshal(bytesValue, &dr)
 		if dr.DistributionName == name {
 			res.DistributionRecords = append(res.DistributionRecords, &dr)
 		}
-
 	}
 	iterator = k.GetDistributionRecordsIterator(ctx, types.DistributionStatus_DISTRIBUTION_STATUS_COMPLETED)
 	for ; iterator.Valid(); iterator.Next() {
 		var dr types.DistributionRecord
 		bytesValue := iterator.Value()
-		k.cdc.MustUnmarshalBinaryBare(bytesValue, &dr)
+		k.cdc.MustUnmarshal(bytesValue, &dr)
 		if dr.DistributionName == name {
 			res.DistributionRecords = append(res.DistributionRecords, &dr)
 		}
@@ -277,7 +277,7 @@ func (k Keeper) GetRecordsForName(ctx sdk.Context, name string) *types.Distribut
 	for ; iterator.Valid(); iterator.Next() {
 		var dr types.DistributionRecord
 		bytesValue := iterator.Value()
-		k.cdc.MustUnmarshalBinaryBare(bytesValue, &dr)
+		k.cdc.MustUnmarshal(bytesValue, &dr)
 		if dr.DistributionName == name {
 			res.DistributionRecords = append(res.DistributionRecords, &dr)
 		}

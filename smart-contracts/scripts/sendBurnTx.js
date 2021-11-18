@@ -5,7 +5,7 @@ module.exports = async (cb) => {
     const Web3 = require("web3");
     const HDWalletProvider = require("@truffle/hdwallet-provider");
     const BigNumber = require("bignumber.js");
-  
+
     // Contract abstraction
     const truffleContract = require("truffle-contract");
     const contract = truffleContract(
@@ -14,9 +14,9 @@ module.exports = async (cb) => {
     const tokenContract = truffleContract(
       require("../build/contracts/BridgeToken.json")
     );
-  
+
     const NULL_ADDRESS = "0x0000000000000000000000000000000000000000";
-  
+
     console.log("Expected usage: \n\ntruffle exec scripts/sendBurnTx.js --network ropsten sif1nx650s8q9w28f2g3t9ztxyg48ugldptuwzpace <token smart contract address> 100\n");
     /*******************************************
      *** Constants
@@ -27,18 +27,18 @@ module.exports = async (cb) => {
     );
     const DEFAULT_ETH_DENOM = "eth";
     const DEFAULT_AMOUNT = 10;
-  
+
     // Config values
     const NETWORK_ROPSTEN =
       process.argv[4] === "--network" && process.argv[5] === "ropsten";
     const NETWORK_MAINNET =
       process.argv[4] === "--network" && process.argv[5] === "mainnet";
-  
+
     const DEFAULT_PARAMS =
       process.argv[4] === "--default" ||
       (NETWORK_ROPSTEN && process.argv[6] === "--default");
     const NUM_ARGS = process.argv.length - 4;
-  
+
     /*******************************************
      *** Command line argument error checking
      ***
@@ -70,14 +70,14 @@ module.exports = async (cb) => {
         );
       }
     }
-  
+
     /*******************************************
      *** Burn transaction parameters
      ******************************************/
     let cosmosRecipient = DEFAULT_COSMOS_RECIPIENT;
     let coinDenom = DEFAULT_ETH_DENOM;
     let amount = DEFAULT_AMOUNT;
-  
+
     if (!DEFAULT_PARAMS) {
       if (NETWORK_ROPSTEN || NETWORK_MAINNET) {
         cosmosRecipient = Web3.utils.utf8ToHex(process.argv[6]);
@@ -89,12 +89,12 @@ module.exports = async (cb) => {
         amount = process.argv[6]
       }
     }
-  
+
     // Convert default 'eth' coin denom into null address
     if (coinDenom == "eth") {
       coinDenom = NULL_ADDRESS;
     }
-  
+
     /*******************************************
      *** Web3 provider
      *** Set contract provider based on --network flag
@@ -103,17 +103,17 @@ module.exports = async (cb) => {
     if (NETWORK_ROPSTEN) {
       provider = new HDWalletProvider(
         process.env.ETHEREUM_PRIVATE_KEY,
-        "https://ropsten.infura.io/v3/".concat(process.env.INFURA_PROJECT_ID)
+        process.env['WEB3_PROVIDER']
       );
     } else if (NETWORK_MAINNET) {
       provider = new HDWalletProvider(
         process.env.ETHEREUM_PRIVATE_KEY,
-        "https://mainnet.infura.io/v3/".concat(process.env.INFURA_PROJECT_ID)
+        process.env['WEB3_PROVIDER']
       );
     } else {
       provider = new Web3.providers.HttpProvider(process.env.LOCAL_PROVIDER);
     }
-  
+
     const web3 = new Web3(provider);
     contract.setProvider(web3.currentProvider);
     tokenContract.setProvider(web3.currentProvider);
@@ -139,22 +139,22 @@ module.exports = async (cb) => {
           value: 0,
           gas: 300000 // 300,000 Gwei
         });
-  
+
         console.log("Sent approval...");
-          
+
         // Get event logs
         const eventA = logs.find(e => e.event === "Approval");
-  
+
         // Parse event fields
         const approvalEvent = {
           owner: eventA.args.owner,
           spender: eventA.args.spender,
           value: Number(eventA.args.value)
         };
-  
+
         console.log(approvalEvent);
       }
-     
+
       // Send Burn transaction
       console.log("Connecting to contract....");
       const { logs: logs2 } = await contract.deployed().then(function (instance) {
@@ -165,12 +165,12 @@ module.exports = async (cb) => {
           gas: 300000 // 300,000 Gwei
         });
       });
-  
+
       console.log("Sent burn...");
-  
+
       // Get event logs
       const eventB = logs2.find(e => e.event === "LogBurn");
-  
+
       // Parse event fields
       const burnEvent = {
         to: eventB.args._to,
@@ -180,11 +180,10 @@ module.exports = async (cb) => {
         value: Number(eventB.args._value),
         nonce: Number(eventB.args._nonce)
       };
-  
+
       console.log(burnEvent);
     } catch (error) {
       console.error({ error });
     }
     return cb();
   };
-  

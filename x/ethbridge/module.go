@@ -49,12 +49,12 @@ func (AppModuleBasic) RegisterLegacyAminoCodec(cdc *codec.LegacyAmino) { //nolin
 
 // DefaultGenesis returns default genesis state as raw bytes for the ethbridge
 // module.
-func (b AppModuleBasic) DefaultGenesis(marshaler codec.JSONMarshaler) json.RawMessage {
+func (b AppModuleBasic) DefaultGenesis(marshaler codec.JSONCodec) json.RawMessage {
 	return marshaler.MustMarshalJSON(DefaultGenesis())
 }
 
 // ValidateGenesis performs genesis state validation for the ethbridge module.
-func (b AppModuleBasic) ValidateGenesis(marshaler codec.JSONMarshaler, config sdkclient.TxEncodingConfig, message json.RawMessage) error {
+func (b AppModuleBasic) ValidateGenesis(marshaler codec.JSONCodec, config sdkclient.TxEncodingConfig, message json.RawMessage) error {
 	var data types.GenesisState
 	err := marshaler.UnmarshalJSON(message, &data)
 	if err != nil {
@@ -65,7 +65,6 @@ func (b AppModuleBasic) ValidateGenesis(marshaler codec.JSONMarshaler, config sd
 
 func (b AppModuleBasic) RegisterGRPCGatewayRoutes(c sdkclient.Context, serveMux *runtime.ServeMux) {
 	// TODO: Register grpc gateway
-	return
 }
 
 // RegisterRESTRoutes registers the REST routes for the ethbridge module.
@@ -92,12 +91,11 @@ type AppModuleSimulation struct{}
 type AppModule struct {
 	AppModuleBasic
 	AppModuleSimulation
-
 	OracleKeeper  types.OracleKeeper
 	BankKeeper    types.BankKeeper
 	AccountKeeper types.AccountKeeper
 	BridgeKeeper  Keeper
-	Codec         *codec.Marshaler
+	Codec         *codec.Codec
 }
 
 func (am AppModule) RegisterServices(cfg module.Configurator) {
@@ -109,17 +107,15 @@ func (am AppModule) RegisterServices(cfg module.Configurator) {
 func NewAppModule(
 	oracleKeeper types.OracleKeeper, bankKeeper types.BankKeeper,
 	accountKeeper types.AccountKeeper, bridgeKeeper Keeper,
-	cdc *codec.Marshaler) AppModule {
-
+	cdc *codec.Codec) AppModule {
 	return AppModule{
 		AppModuleBasic:      AppModuleBasic{},
 		AppModuleSimulation: AppModuleSimulation{},
-
-		OracleKeeper:  oracleKeeper,
-		BankKeeper:    bankKeeper,
-		AccountKeeper: accountKeeper,
-		BridgeKeeper:  bridgeKeeper,
-		Codec:         cdc,
+		OracleKeeper:        oracleKeeper,
+		BankKeeper:          bankKeeper,
+		AccountKeeper:       accountKeeper,
+		BridgeKeeper:        bridgeKeeper,
+		Codec:               cdc,
 	}
 }
 
@@ -154,19 +150,17 @@ func (am AppModule) LegacyQuerierHandler(amino *codec.LegacyAmino) sdk.Querier {
 
 // InitGenesis performs genesis initialization for the ethbridge module. It returns
 // no validator updates.
-func (am AppModule) InitGenesis(ctx sdk.Context, marshaler codec.JSONMarshaler, data json.RawMessage) []abci.ValidatorUpdate {
+func (am AppModule) InitGenesis(ctx sdk.Context, marshaler codec.JSONCodec, data json.RawMessage) []abci.ValidatorUpdate {
 	bridgeAccount := authtypes.NewEmptyModuleAccount(ModuleName, authtypes.Burner, authtypes.Minter)
 	am.AccountKeeper.SetModuleAccount(ctx, bridgeAccount)
-
 	var genesisState types.GenesisState
 	marshaler.MustUnmarshalJSON(data, &genesisState)
-
 	return InitGenesis(ctx, am.BridgeKeeper, genesisState)
 }
 
 // ExportGenesis returns the exported genesis state as raw bytes for the ethbridge
 // module.
-func (am AppModule) ExportGenesis(ctx sdk.Context, marshaler codec.JSONMarshaler) json.RawMessage {
+func (am AppModule) ExportGenesis(ctx sdk.Context, marshaler codec.JSONCodec) json.RawMessage {
 	return marshaler.MustMarshalJSON(ExportGenesis(ctx, am.BridgeKeeper))
 }
 
@@ -178,3 +172,5 @@ func (AppModule) BeginBlock(_ sdk.Context, _ abci.RequestBeginBlock) {}
 func (am AppModule) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.ValidatorUpdate {
 	return nil
 }
+
+func (AppModule) ConsensusVersion() uint64 { return 1 }

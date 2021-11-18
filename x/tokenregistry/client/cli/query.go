@@ -7,7 +7,7 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
-	transfertypes "github.com/cosmos/cosmos-sdk/x/ibc/applications/transfer/types"
+	transfertypes "github.com/cosmos/ibc-go/v2/modules/apps/transfer/types"
 	"github.com/spf13/cobra"
 
 	"github.com/Sifchain/sifnode/x/tokenregistry/types"
@@ -46,7 +46,7 @@ func GetCmdQueryEntries() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			return clientCtx.PrintBytes(clientCtx.JSONMarshaler.MustMarshalJSON(res.Registry))
+			return clientCtx.PrintBytes(clientCtx.Codec.MustMarshalJSON(res.Registry))
 		},
 	}
 	flags.AddQueryFlagsToCmd(cmd)
@@ -243,11 +243,11 @@ func GetCmdAddEntry() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			registry, err := whitelistutils.ParseDenoms(clientCtx.JSONMarshaler, args[0])
+			registry, err := whitelistutils.ParseDenoms(clientCtx.Codec, args[0])
 			if err != nil {
 				return err
 			}
-			reg, err := whitelistutils.ParseDenoms(clientCtx.JSONMarshaler, args[1])
+			reg, err := whitelistutils.ParseDenoms(clientCtx.Codec, args[1])
 			if err != nil {
 				return err
 			}
@@ -255,7 +255,7 @@ func GetCmdAddEntry() *cobra.Command {
 			entries := registry.Entries
 			entries = append(entries, entryToAdd)
 			registry.Entries = entries
-			return clientCtx.PrintBytes(clientCtx.JSONMarshaler.MustMarshalJSON(&registry))
+			return clientCtx.PrintBytes(clientCtx.Codec.MustMarshalJSON(&registry))
 		},
 	}
 	flags.AddQueryFlagsToCmd(cmd)
@@ -272,7 +272,7 @@ func GetCmdAddAllEntries() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			registry, err := whitelistutils.ParseDenoms(clientCtx.JSONMarshaler, args[0])
+			registry, err := whitelistutils.ParseDenoms(clientCtx.Codec, args[0])
 			if err != nil {
 				return err
 			}
@@ -307,7 +307,7 @@ func GetCmdAddAllEntries() *cobra.Command {
 					}
 				}
 			}
-			return clientCtx.PrintBytes(clientCtx.JSONMarshaler.MustMarshalJSON(&finalRegistry))
+			return clientCtx.PrintBytes(clientCtx.Codec.MustMarshalJSON(&finalRegistry))
 		},
 	}
 	flags.AddQueryFlagsToCmd(cmd)

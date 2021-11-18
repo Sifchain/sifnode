@@ -18,7 +18,7 @@ func (k Keeper) SetPool(ctx sdk.Context, pool *types.Pool) error {
 	if err != nil {
 		return err
 	}
-	store.Set(key, k.cdc.MustMarshalBinaryBare(pool))
+	store.Set(key, k.cdc.MustMarshal(pool))
 	return nil
 }
 
@@ -40,7 +40,7 @@ func (k Keeper) GetPool(ctx sdk.Context, symbol string) (types.Pool, error) {
 		return pool, types.ErrPoolDoesNotExist
 	}
 	bz := store.Get(key)
-	k.cdc.MustUnmarshalBinaryBare(bz, &pool)
+	k.cdc.MustUnmarshal(bz, &pool)
 	return pool, nil
 }
 
@@ -60,7 +60,7 @@ func (k Keeper) GetPools(ctx sdk.Context) []*types.Pool {
 	for ; iterator.Valid(); iterator.Next() {
 		var pool types.Pool
 		bytesValue := iterator.Value()
-		k.cdc.MustUnmarshalBinaryBare(bytesValue, &pool)
+		k.cdc.MustUnmarshal(bytesValue, &pool)
 		poolList = append(poolList, &pool)
 	}
 	return poolList
@@ -72,7 +72,7 @@ func (k Keeper) GetPoolsPaginated(ctx sdk.Context, pagination *query.PageRequest
 	poolStore := prefix.NewStore(store, types.PoolPrefix)
 	pageRes, err := query.Paginate(poolStore, pagination, func(key []byte, value []byte) error {
 		var pool types.Pool
-		err := k.cdc.UnmarshalBinaryBare(value, &pool)
+		err := k.cdc.Unmarshal(value, &pool)
 		if err != nil {
 			return err
 		}
