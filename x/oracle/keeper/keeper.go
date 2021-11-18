@@ -13,9 +13,8 @@ import (
 // Keeper maintains the link to data storage and
 // exposes getter/setter methods for the various parts of the state machine
 type Keeper struct {
-	cdc      codec.BinaryMarshaler // The wire codec for binary encoding/decoding.
-	storeKey sdk.StoreKey          // Unexposed key to access store from sdk.Context
-
+	cdc         codec.BinaryCodec // The wire codec for binary encoding/decoding.
+	storeKey    sdk.StoreKey      // Unexposed key to access store from sdk.Context
 	stakeKeeper types.StakingKeeper
 	// TODO: use this as param instead
 	consensusNeeded float64 // The minimum % of stake needed to sign claims in order for consensus to occur
@@ -23,7 +22,7 @@ type Keeper struct {
 
 // NewKeeper creates new instances of the oracle Keeper
 func NewKeeper(
-	cdc codec.BinaryMarshaler, storeKey sdk.StoreKey, stakeKeeper types.StakingKeeper, consensusNeeded float64,
+	cdc codec.BinaryCodec, storeKey sdk.StoreKey, stakeKeeper types.StakingKeeper, consensusNeeded float64,
 ) Keeper {
 	if consensusNeeded <= 0 || consensusNeeded > 1 {
 		panic(types.ErrMinimumConsensusNeededInvalid.Error())
@@ -47,14 +46,12 @@ func (k Keeper) GetProphecies(ctx sdk.Context) []types.Prophecy {
 	iter := store.Iterator(types.ProphecyPrefix, nil)
 	for ; iter.Valid(); iter.Next() {
 		var dbProphecy types.DBProphecy
-		k.cdc.MustUnmarshalBinaryBare(iter.Value(), &dbProphecy)
-
+		k.cdc.MustUnmarshal(iter.Value(), &dbProphecy)
 		deSerializedProphecy, err := dbProphecy.DeserializeFromDB()
 		if err != nil {
 			panic(err)
 		}
 		prophecies = append(prophecies, deSerializedProphecy)
-
 	}
 	return prophecies
 }
@@ -66,15 +63,12 @@ func (k Keeper) GetProphecy(ctx sdk.Context, id string) (types.Prophecy, bool) {
 	if bz == nil {
 		return types.Prophecy{}, false
 	}
-
 	var dbProphecy types.DBProphecy
-	k.cdc.MustUnmarshalBinaryBare(bz, &dbProphecy)
-
+	k.cdc.MustUnmarshal(bz, &dbProphecy)
 	deSerializedProphecy, err := dbProphecy.DeserializeFromDB()
 	if err != nil {
 		return types.Prophecy{}, false
 	}
-
 	return deSerializedProphecy, true
 }
 
@@ -84,15 +78,13 @@ func (k Keeper) SetProphecy(ctx sdk.Context, prophecy types.Prophecy) error {
 	if err != nil {
 		return err
 	}
-
 	k.SetDBProphecy(ctx, dbProphecy)
-
 	return nil
 }
 
 func (k Keeper) SetDBProphecy(ctx sdk.Context, prophecy types.DBProphecy) {
 	store := ctx.KVStore(k.storeKey)
-	store.Set([]byte(fmt.Sprintf("%s_%s", types.ProphecyPrefix, prophecy.Id)), k.cdc.MustMarshalBinaryBare(&prophecy))
+	store.Set([]byte(fmt.Sprintf("%s_%s", types.ProphecyPrefix, prophecy.Id)), k.cdc.MustMarshal(&prophecy))
 }
 
 func (k Keeper) EnsureAddressIsInWhitelist(ctx sdk.Context, validatorAddress string) error {
@@ -103,43 +95,36 @@ func (k Keeper) EnsureAddressIsInWhitelist(ctx sdk.Context, validatorAddress str
 			return nil
 		}
 	}
-
 	k.Logger(ctx).Error(
 		"sifnode oracle keeper ProcessClaim validator not in whitelist",
 		"address", validatorAddress,
-		"whitelist", whiteList)
-
+		"whitelist", whiteList,
+	)
 	return types.ErrValidatorNotInWhiteList
 }
 
 func (k Keeper) ProcessClaim(ctx sdk.Context, claim types.Claim) (types.Status, error) {
 	logger := k.Logger(ctx)
-
 	if err := k.EnsureAddressIsInWhitelist(ctx, claim.ValidatorAddress); err != nil {
 		return types.Status{}, err
 	}
-
 	valAddr, err := sdk.ValAddressFromBech32(claim.ValidatorAddress)
 	if err != nil {
 		return types.Status{}, err
 	}
-
 	activeValidator := k.checkActiveValidator(ctx, valAddr)
 	if !activeValidator {
 		logger.Error("sifnode oracle keeper ProcessClaim validator not active.")
 		return types.Status{}, types.ErrInvalidValidator
 	}
-
 	if claim.Id == "" {
 		logger.Error("sifnode oracle keeper ProcessClaim wrong claim id.", "claimID", claim.Id)
 		return types.Status{}, types.ErrInvalidIdentifier
 	}
-
 	if claim.Content == "" {
 		logger.Error("sifnode oracle keeper ProcessClaim claim content is empty.")
 		return types.Status{}, types.ErrInvalidClaim
 	}
-
 	prophecy, found := k.GetProphecy(ctx, claim.Id)
 	if !found {
 		prophecy = types.NewProphecy(claim.Id)
@@ -150,19 +135,15 @@ func (k Keeper) ProcessClaim(ctx sdk.Context, claim types.Claim) (types.Status, 
 	default:
 		return types.Status{}, types.ErrProphecyFinalized
 	}
-
 	if prophecy.ValidatorClaims[claim.ValidatorAddress] != "" {
 		return types.Status{}, types.ErrDuplicateMessage
 	}
-
 	prophecy.AddClaim(valAddr, claim.Content)
 	prophecy = k.processCompletion(ctx, prophecy)
-
 	err = k.SetProphecy(ctx, prophecy)
 	if err != nil {
 		return types.Status{}, err
 	}
-
 	return prophecy.Status, nil
 }
 
@@ -171,7 +152,6 @@ func (k Keeper) checkActiveValidator(ctx sdk.Context, validatorAddress sdk.ValAd
 	if !found {
 		return false
 	}
-
 	return validator.IsBonded()
 }
 
@@ -182,7 +162,6 @@ func (k Keeper) ProcessUpdateWhiteListValidator(ctx sdk.Context, cosmosSender sd
 		logger.Error("cosmos sender is not admin account.")
 		return types.ErrNotAdminAccount
 	}
-
 	switch operationtype {
 	case "add":
 		k.AddOracleWhiteList(ctx, validator)
@@ -191,7 +170,6 @@ func (k Keeper) ProcessUpdateWhiteListValidator(ctx sdk.Context, cosmosSender sd
 	default:
 		return types.ErrInvalidOperationType
 	}
-
 	return nil
 }
 
@@ -202,19 +180,16 @@ func (k Keeper) ProcessUpdateWhiteListValidator(ctx sdk.Context, cosmosSender sd
 // left to push it over the threshold required for consensus.
 func (k Keeper) processCompletion(ctx sdk.Context, prophecy types.Prophecy) types.Prophecy {
 	highestClaim, highestClaimPower, totalClaimsPower, totalPower := prophecy.FindHighestClaim(ctx, k.stakeKeeper, k.GetOracleWhiteList(ctx))
-
 	highestConsensusRatio := float64(highestClaimPower) / float64(totalPower)
 	remainingPossibleClaimPower := totalPower - totalClaimsPower
 	highestPossibleClaimPower := highestClaimPower + remainingPossibleClaimPower
 	highestPossibleConsensusRatio := float64(highestPossibleClaimPower) / float64(totalPower)
-
 	if highestConsensusRatio >= k.consensusNeeded {
 		prophecy.Status.Text = types.StatusText_STATUS_TEXT_SUCCESS
 		prophecy.Status.FinalClaim = highestClaim
 	} else if highestPossibleConsensusRatio < k.consensusNeeded {
 		prophecy.Status.Text = types.StatusText_STATUS_TEXT_FAILED
 	}
-
 	return prophecy
 }
 

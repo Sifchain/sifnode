@@ -1,29 +1,53 @@
 package keeper_test
 
 import (
+	"encoding/json"
+	"io/ioutil"
+	"os"
 	"testing"
+
+	sifapp "github.com/Sifchain/sifnode/app"
 
 	"github.com/Sifchain/sifnode/x/dispensation/test"
 	"github.com/Sifchain/sifnode/x/dispensation/types"
-	dispensationUtils "github.com/Sifchain/sifnode/x/dispensation/utils"
+	"github.com/Sifchain/sifnode/x/dispensation/utils"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	"github.com/stretchr/testify/assert"
+
 	"github.com/tendermint/tendermint/crypto"
 )
 
+func createInput(t *testing.T, filename string) {
+	in, err := sdk.AccAddressFromBech32("sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd")
+	assert.NoError(t, err)
+	out, err := sdk.AccAddressFromBech32("sif1l7hypmqk2yc334vc6vmdwzp5sdefygj2ad93p5")
+	assert.NoError(t, err)
+	coin := sdk.NewCoins(sdk.NewCoin("rowan", sdk.NewInt(10)))
+	inputList := []banktypes.Input{banktypes.NewInput(in, coin), banktypes.NewInput(out, coin)}
+	tempInput := utils.TempInput{In: inputList}
+	file, _ := json.MarshalIndent(tempInput, "", " ")
+	_ = ioutil.WriteFile(filename, file, 0600)
+}
+
+func removeFile(t *testing.T, filename string) {
+	err := os.Remove(filename)
+	assert.NoError(t, err)
+}
+
 func TestKeeper_AccumulateDrops(t *testing.T) {
 	app, ctx := test.CreateTestApp(false)
-	keeper := app.DispensationKeeper
-	outputList := test.CreatOutputList(3000, "10000000000000000000")
-	totalCoins, err := dispensationUtils.TotalOutput(outputList)
+	file := "input.json"
+	createInput(t, file)
+	defer removeFile(t, file)
+	inputList, err := utils.ParseInput(file)
 	assert.NoError(t, err)
-	distributor := sdk.AccAddress(crypto.AddressHash([]byte("Creator")))
-	err = keeper.GetBankKeeper().AddCoins(ctx, distributor, totalCoins)
-	assert.NoError(t, err)
-	err = keeper.AccumulateDrops(ctx, distributor.String(), totalCoins)
-	assert.NoError(t, err)
-	assert.True(t, keeper.HasCoins(ctx, types.GetDistributionModuleAddress(), totalCoins))
-
+	for _, in := range inputList {
+		address, err := sdk.AccAddressFromBech32(in.Address)
+		assert.NoError(t, err)
+		err = sifapp.AddCoinsToAccount(types.ModuleName, app.BankKeeper, ctx, address, in.Coins)
+		assert.NoError(t, err)
+	}
 }
 
 func TestKeeper_CreateAndDistributeDrops(t *testing.T) {
@@ -32,10 +56,10 @@ func TestKeeper_CreateAndDistributeDrops(t *testing.T) {
 	outputAmount := "10000000000000000000"
 	dispensationCreator := sdk.AccAddress(crypto.AddressHash([]byte("Creator")))
 	outputList := test.CreatOutputList(3, outputAmount)
-	totalCoins, err := dispensationUtils.TotalOutput(outputList)
+	totalCoins, err := utils.TotalOutput(outputList)
 	assert.NoError(t, err)
 	totalCoins = totalCoins.Add(totalCoins...).Add(totalCoins...)
-	err = keeper.GetBankKeeper().AddCoins(ctx, dispensationCreator, totalCoins)
+	err = sifapp.AddCoinsToAccount(types.ModuleName, app.BankKeeper, ctx, dispensationCreator, totalCoins)
 	assert.NoError(t, err)
 	err = keeper.AccumulateDrops(ctx, dispensationCreator.String(), totalCoins)
 	assert.NoError(t, err)
@@ -48,7 +72,6 @@ func TestKeeper_CreateAndDistributeDrops(t *testing.T) {
 	assert.NoError(t, err)
 	err = keeper.CreateDrops(ctx, outputList, distributionName, types.DistributionType_DISTRIBUTION_TYPE_LIQUIDITY_MINING, runner)
 	assert.NoError(t, err)
-
 	_, err = keeper.DistributeDrops(ctx, 1, distributionName, runner, types.DistributionType_DISTRIBUTION_TYPE_AIRDROP)
 	assert.NoError(t, err)
 	_, err = keeper.DistributeDrops(ctx, 1, distributionName, runner, types.DistributionType_DISTRIBUTION_TYPE_LIQUIDITY_MINING)
