@@ -145,7 +145,10 @@ export class BridgeBankProxy {
       const bridgeBankArguments = await this.bridgeBankArguments.asArray()
       const bridgeBankProxy = await h.upgrades.deployProxy(bridgeBankFactory,
         bridgeBankArguments,
-        { initializer: 'initialize(address,address,address,address,int32)' }
+        {
+          initializer: 'initialize(address,address,address,address,int32)',
+          unsafeAllow: ["delegatecall"]
+        },  
       ) as BridgeBank
       await bridgeBankProxy.deployed()
       const own = await bridgeBankProxy.owner()

@@ -25,17 +25,20 @@ export class SmartContractDeployer extends SynchronousCommand<SmartContractDeplo
   }
 
   cmd(): [string, string[]] {
-    return ["npx", [
+    let deployCmd: [string, string[]] = ["npx", [
       "hardhat",
       "run",
       "scripts/deploy_contracts.ts",
       "--network",
       "localhost"
     ]]
+    console.log("smartcontractDeployer running cmd:", deployCmd)
+    return deployCmd;
   }
 
   resultConverter(r: SynchronousCommandResult): SmartContractDeployResult {
     // This is to handle npx commmand outputting "No need to generate any newer types"
+    console.log(r.output)
     const jsonOutput = JSON.parse(r.output.split('\n')[1]);
     return new SmartContractDeployResult({
       cosmosBridge: jsonOutput.cosmosBridge,
