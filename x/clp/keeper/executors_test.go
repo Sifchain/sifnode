@@ -69,9 +69,6 @@ func TestKeeper_CreatePool_And_AddLiquidity_RemoveLiquidity(t *testing.T) {
 	}
 	_, err = app.ClpKeeper.CreatePool(ctx, sdk.NewUint(1), nil)
 	assert.Error(t, err, "MsgCreatePool can not be nil")
-	msgCreatePool = types.NewMsgCreatePool(signer2, asset2, sdk.NewUint(max*2), sdk.NewUint(max*2))
-	_, err = app.ClpKeeper.CreatePool(ctx, sdk.NewUint(1), &msgCreatePool)
-	assert.Error(t, err, "Unable to parse to Int")
 	msg := types.NewMsgAddLiquidity(signer, asset, nativeAssetAmount, externalAssetAmount)
 	app.ClpKeeper.CreateLiquidityProvider(ctx, &asset, sdk.NewUint(1), signer)
 	lp, err := app.ClpKeeper.AddLiquidity(ctx, &msg, *pool, sdk.NewUint(1), sdk.NewUint(998))
@@ -82,6 +79,9 @@ func TestKeeper_CreatePool_And_AddLiquidity_RemoveLiquidity(t *testing.T) {
 	msg = types.NewMsgAddLiquidity(signer2, asset2, nativeAssetAmount, externalAssetAmount)
 	_, err = app.ClpKeeper.AddLiquidity(ctx, &msg, *pool, sdk.NewUint(1), sdk.NewUint(998))
 	assert.Error(t, err, "insufficient funds")
+	msg = types.NewMsgAddLiquidity(nil, asset, nativeAssetAmount, externalAssetAmount)
+	_, err = app.ClpKeeper.AddLiquidity(ctx, &msg, *pool, sdk.NewUint(1), sdk.NewUint(998))
+	assert.Error(t, err, "empty address string is not allowed")
 	msg = types.NewMsgAddLiquidity(signer2, asset2, sdk.NewUintFromString("998"), sdk.NewUintFromString("998"))
 	_, err = app.ClpKeeper.AddLiquidity(ctx, &msg, *pool, sdk.NewUint(1), sdk.NewUint(998))
 	assert.Error(t, err, "Unable to parse to Int")
@@ -98,6 +98,9 @@ func TestKeeper_CreatePool_And_AddLiquidity_RemoveLiquidity(t *testing.T) {
 	subCoin = sdk.NewCoin(asset.Symbol, sdk.Int(sdk.NewUint(100)))
 	errorRemoveLiquidity = app.ClpKeeper.RemoveLiquidity(ctx, *pool, subCoin, subCoin, *lp, sdk.NewUint(0), sdk.NewUint(10001), sdk.NewUint(10001))
 	assert.NoError(t, errorRemoveLiquidity)
+	lp.LiquidityProviderAddress = ""
+	errorRemoveLiquidity = app.ClpKeeper.RemoveLiquidity(ctx, *pool, subCoin, subCoin, *lp, sdk.NewUint(0), sdk.NewUint(10001), sdk.NewUint(10001))
+	assert.Error(t, err, "empty address string is not allowed")
 }
 
 func TestKeeper_CreateLiquidityProvider(t *testing.T) {
@@ -133,10 +136,14 @@ func TestKeeper_RemoveLiquidityProvider(t *testing.T) {
 	app.ClpKeeper.CreateLiquidityProvider(ctx, &asset, sdk.NewUint(1), signer)
 	lp, _ := app.ClpKeeper.AddLiquidity(ctx, &msg, *pool, sdk.NewUint(1), sdk.NewUint(998))
 	getlp, _ := app.ClpKeeper.GetLiquidityProvider(ctx, lp.Asset.Symbol, lp.LiquidityProviderAddress)
+	lp1, _ := app.ClpKeeper.GetLiquidityProvider(ctx, lp.Asset.Symbol, lp.LiquidityProviderAddress)
 	assert.True(t, app.ClpKeeper.GetLiquidityProviderIterator(ctx).Valid())
 	app.ClpKeeper.DestroyLiquidityProvider(ctx, lp.Asset.Symbol, lp.LiquidityProviderAddress)
 	_, err := app.ClpKeeper.GetLiquidityProvider(ctx, lp.Asset.Symbol, lp.LiquidityProviderAddress)
 	assert.Error(t, err, "LiquidityProvider has been deleted")
+	lp1.LiquidityProviderAddress = ""
+	err = app.ClpKeeper.RemoveLiquidityProvider(ctx, sdk.Coins{newAssetCoin2}.Sort(), lp1)
+	assert.Error(t, err, "empty address string is not allowed")
 	err = app.ClpKeeper.RemoveLiquidityProvider(ctx, sdk.Coins{newAssetCoin2}.Sort(), getlp)
 	assert.Error(t, err, "unable to add balance")
 	// This should do nothing
@@ -170,6 +177,8 @@ func TestKeeper_DecommissionPool(t *testing.T) {
 	require.NoError(t, err)
 	_, err = app.ClpKeeper.GetPool(ctx, pool.ExternalAsset.Symbol)
 	assert.Error(t, err, "Pool should be deleted")
+	err = app.ClpKeeper.DecommissionPool(ctx, *pool)
+	assert.Error(t, err, "Unable to destroy pool")
 }
 
 func TestKeeper_InitiateSwap(t *testing.T) {

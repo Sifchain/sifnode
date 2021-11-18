@@ -36,6 +36,7 @@ func (k Keeper) CreatePool(ctx sdk.Context, poolUints sdk.Uint, msg *types.MsgCr
 		return nil, types.ErrBalanceNotAvailable
 	}
 
+	// (testing) this part can not be triggered, because newPool always return nil err LOL.
 	pool, err := types.NewPool(msg.ExternalAsset, msg.NativeAssetAmount, msg.ExternalAssetAmount, poolUints)
 	if err != nil {
 		return nil, sdkerrors.Wrap(types.ErrUnableToCreatePool, err.Error())
@@ -48,6 +49,7 @@ func (k Keeper) CreatePool(ctx sdk.Context, poolUints sdk.Uint, msg *types.MsgCr
 	}
 
 	// Pool creator becomes the first LP
+	// (testing) this part I think can never be triggered. if no err above
 	err = k.SetPool(ctx, &pool)
 	if err != nil {
 		return nil, sdkerrors.Wrap(types.ErrUnableToSetPool, err.Error())
@@ -91,7 +93,7 @@ func (k Keeper) AddLiquidity(ctx sdk.Context, msg *types.MsgAddLiquidity, pool t
 	if err != nil {
 		return nil, err
 	}
-
+	// (testing) this part I think can never be triggered. because if the balance is 0 for above coins object cannot be created
 	if !k.bankKeeper.HasBalance(ctx, addr, coins[0]) && !k.bankKeeper.HasBalance(ctx, addr, coins[1]) {
 		return nil, types.ErrBalanceNotAvailable
 	}
