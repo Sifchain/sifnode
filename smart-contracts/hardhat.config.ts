@@ -45,6 +45,10 @@ const config: HardhatUserConfig = {
         url: networkUrl,
         blockNumber: 13469882,
       },
+      mining: {
+        auto: true,
+        interval: 200
+      }
     },
     ropsten: {
       url: networkUrl,
