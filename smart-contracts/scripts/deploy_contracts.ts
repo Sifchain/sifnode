@@ -27,7 +27,6 @@ export type DeployedContractAddresses = {
 // npx hardhat run scripts/deploy_contracts.ts
 
 async function main() {
-  // console.log("Attempting to deploy contracts to hardhat")
   container.register(HardhatRuntimeEnvironmentToken, { useValue: hardhat })
   await container.resolve(BridgeTokenSetup).complete
   const bridgeBank = await container.resolve(BridgeBankProxy).contract
