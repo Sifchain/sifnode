@@ -452,13 +452,13 @@ func (srv msgServer) SignProphecy(goCtx context.Context, msg *types.MsgSignProph
 
 	instrumentation.PeggyCheckpoint(logger, instrumentation.SignProphecy, "msg", msg)
 
-	cosmosSender, err := sdk.AccAddressFromBech32(msg.CosmosSender)
+	cosmosSender, err := sdk.ValAddressFromBech32(msg.CosmosSender)
 	if err != nil {
 		logger.Error("cosmos address is wrong", errorMessageKey, err.Error())
 		return nil, err
 	}
 
-	account := srv.Keeper.accountKeeper.GetAccount(ctx, cosmosSender)
+	account := srv.Keeper.accountKeeper.GetAccount(ctx, sdk.AccAddress(cosmosSender))
 	if account == nil {
 		logger.Error("account is nil", "CosmosSender", msg.CosmosSender)
 		return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.CosmosSender)
@@ -468,7 +468,7 @@ func (srv msgServer) SignProphecy(goCtx context.Context, msg *types.MsgSignProph
 
 	// if error is ErrProphecyFinalized, will continue and emit event, not return error.
 	if err != nil && err != oracletypes.ErrProphecyFinalized {
-		logger.Error("keeper failed to process rescue native_token message.", errorMessageKey, err.Error())
+		logger.Error("keeper failed to process sign prophecy message.", errorMessageKey, err.Error())
 		return nil, err
 	}
 

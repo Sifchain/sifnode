@@ -503,12 +503,12 @@ func (msg MsgSignProphecy) GetSignBytes() []byte {
 
 // GetSigners defines whose signature is required
 func (msg MsgSignProphecy) GetSigners() []sdk.AccAddress {
-	cosmosSender, err := sdk.AccAddressFromBech32(msg.CosmosSender)
+	cosmosSender, err := sdk.ValAddressFromBech32(msg.CosmosSender)
 	if err != nil {
 		panic(err)
 	}
 
-	return []sdk.AccAddress{cosmosSender}
+	return []sdk.AccAddress{sdk.AccAddress(cosmosSender)}
 }
 
 // Route should return the name of the module

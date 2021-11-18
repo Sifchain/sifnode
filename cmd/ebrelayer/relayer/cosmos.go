@@ -279,7 +279,7 @@ func (sub CosmosSub) witnessSignProphecyID(
 		"cosmosMsg", cosmosMsg,
 	)
 
-	accAddr, err := GetAccAddressFromKeyring(txFactory.Keybase(), sub.ValidatorName)
+	valAddr, err := GetValAddressFromKeyring(txFactory.Keybase(), sub.ValidatorName)
 	if err != nil {
 		sub.SugaredLogger.Infow(
 			"get the prophecy claim.",
@@ -297,7 +297,7 @@ func (sub CosmosSub) witnessSignProphecyID(
 		)
 	}
 
-	signProphecy := ethbridgetypes.NewMsgSignProphecy(accAddr.String(), cosmosMsg.NetworkDescriptor,
+	signProphecy := ethbridgetypes.NewMsgSignProphecy(valAddr.String(), cosmosMsg.NetworkDescriptor,
 		cosmosMsg.ProphecyID, address.String(), string(signature))
 
 	txs.SignProphecyToCosmos(txFactory, signProphecy, sub.CliContext, sub.SugaredLogger)
