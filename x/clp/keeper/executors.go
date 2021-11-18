@@ -122,6 +122,7 @@ func (k Keeper) AddLiquidity(ctx sdk.Context, msg *types.MsgAddLiquidity, pool t
 	}
 	lp.LiquidityProviderUnits = lp.LiquidityProviderUnits.Add(lpUnits)
 	// Save new pool balances
+	// (testing) this part I don't know how to trigger.
 	err = k.SetPool(ctx, &pool)
 	if err != nil {
 		return nil, sdkerrors.Wrap(types.ErrUnableToSetPool, err.Error())
@@ -172,6 +173,8 @@ func (k Keeper) RemoveLiquidity(ctx sdk.Context, pool types.Pool, externalAssetC
 	if externalAssetCoin.Amount.GTE(sdk.Int(poolOriginalEB)) || nativeAssetCoin.Amount.GTE(sdk.Int(poolOriginalNB)) {
 		return sdkerrors.Wrap(types.ErrPoolTooShallow, "Pool Balance nil after adjusting asymmetry")
 	}
+
+	// (testing) this part I don't know how to trigger.
 	err = k.SetPool(ctx, &pool)
 	if err != nil {
 		return sdkerrors.Wrap(types.ErrUnableToSetPool, err.Error())

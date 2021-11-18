@@ -90,6 +90,15 @@ func TestKeeper_CreatePool_And_AddLiquidity_RemoveLiquidity(t *testing.T) {
 	assert.NoError(t, errorRemoveLiquidity)
 	ok := app.ClpKeeper.HasBalance(ctx, signer, subCoin)
 	assert.True(t, ok, "")
+
+	subCoin = sdk.NewCoin(asset.Symbol, sdk.Int(sdk.NewUint(100)))
+	errorRemoveLiquidity = app.ClpKeeper.RemoveLiquidity(ctx, *pool, subCoin, subCoin, *lp, sdk.NewUint(989), sdk.NewUint(99), sdk.NewUint(99))
+	assert.Error(t, errorRemoveLiquidity, "Cannot withdraw pool is too shallow")
+
+	subCoin = sdk.NewCoin(asset.Symbol, sdk.Int(sdk.NewUint(100)))
+	errorRemoveLiquidity = app.ClpKeeper.RemoveLiquidity(ctx, types.Pool{}, subCoin, subCoin, *lp, sdk.NewUint(989), sdk.NewUint(99), sdk.NewUint(99))
+	assert.Error(t, errorRemoveLiquidity, "Cannot withdraw pool is too shallow")
+
 	subCoin = sdk.NewCoin(asset.Symbol, sdk.Int(sdk.NewUint(100)))
 	errorRemoveLiquidity = app.ClpKeeper.RemoveLiquidity(ctx, *pool, subCoin, subCoin, *lp, sdk.NewUint(989), sdk.NewUint(10001), sdk.NewUint(10001))
 	assert.NoError(t, errorRemoveLiquidity)
