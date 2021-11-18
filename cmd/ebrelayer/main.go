@@ -103,10 +103,6 @@ func buildRootCmd() *cobra.Command {
 		rpc.StatusCommand(),
 		initRelayerCmd(),
 		initWitnessCmd(),
-		replayEthereumCmd(),
-		replayCosmosBurnLockCmd(),
-		replayCosmosSignatureAggregationCmd(),
-		listMissedCosmosEventCmd(),
 	)
 	return rootCmd
 }
@@ -367,22 +363,6 @@ func RunInitWitnessCmd(cmd *cobra.Command, args []string) error {
 	return nil
 }
 
-func replayEthereumCmd() *cobra.Command {
-	//nolint:lll
-	replayEthereumCmd := &cobra.Command{
-		Use:     "replayEthereum  [networkDescriptor][tendermintNode] [web3Provider] [bridgeRegistryContractAddress] [validatorMoniker]",
-		Short:   "replay missed ethereum events",
-		Args:    cobra.ExactArgs(5),
-		Example: "replayEthereum tcp://localhost:26657 ws://localhost:7545/ 0x30753E4A8aad7F8597332E813735Def5dD395028 validator --chain-id=peggy",
-		RunE:    RunReplayEthereumCmd,
-	}
-
-	flags.AddTxFlagsToCmd(replayEthereumCmd)
-	AddRelayerFlagsToCmd(replayEthereumCmd)
-
-	return replayEthereumCmd
-}
-
 // AddRelayerFlagsToCmd adds all common flags to relayer commands.
 func AddRelayerFlagsToCmd(cmd *cobra.Command) {
 	cmd.Flags().Int32(
@@ -390,45 +370,6 @@ func AddRelayerFlagsToCmd(cmd *cobra.Command) {
 		int32(oracleTypes.NetworkDescriptor_NETWORK_DESCRIPTOR_ETHEREUM),
 		"The network descriptor for the chain",
 	)
-}
-
-func replayCosmosBurnLockCmd() *cobra.Command {
-	//nolint:lll
-	replayCosmosBurnLockCmd := &cobra.Command{
-		Use:     "replayCosmosBurnLock [tendermintNode] [web3Provider] [bridgeRegistryContractAddress] [validatorMoniker]",
-		Short:   "replay missed cosmos events",
-		Args:    cobra.ExactArgs(4),
-		Example: "replayCosmos tcp://localhost:26657 ws://localhost:7545/ 0x30753E4A8aad7F8597332E813735Def5dD395028 validator",
-		RunE:    RunReplayCosmosBurnLockCmd,
-	}
-
-	return replayCosmosBurnLockCmd
-}
-
-func replayCosmosSignatureAggregationCmd() *cobra.Command {
-	//nolint:lll
-	replayCosmosSignatureAggregationCmd := &cobra.Command{
-		Use:     "replayCosmosSignatureAggregation [tendermintNode] [web3Provider] [bridgeRegistryContractAddress] [validatorMoniker]",
-		Short:   "replay missed cosmos events",
-		Args:    cobra.ExactArgs(4),
-		Example: "replayCosmos tcp://localhost:26657 ws://localhost:7545/ 0x30753E4A8aad7F8597332E813735Def5dD395028 validator",
-		RunE:    RunReplayCosmosSignatureAggregationCmd,
-	}
-
-	return replayCosmosSignatureAggregationCmd
-}
-
-func listMissedCosmosEventCmd() *cobra.Command {
-	//nolint:lll
-	listMissedCosmosEventCmd := &cobra.Command{
-		Use:     "listMissedCosmosEventCmd [tendermintNode] [web3Provider] [bridgeRegistryContractAddress] [ebrelayerEthereumAddress]",
-		Short:   "replay missed cosmos events",
-		Args:    cobra.ExactArgs(4),
-		Example: "listMissedCosmosEventCmd tcp://localhost:26657 ws://localhost:7545/ 0x30753E4A8aad7F8597332E813735Def5dD395028 0x627306090abaB3A6e1400e9345bC60c78a8BEf57",
-		RunE:    RunListMissedCosmosEventCmd,
-	}
-
-	return listMissedCosmosEventCmd
 }
 
 func buildSymbolTranslator(flags *flag.FlagSet) (*symbol_translator.SymbolTranslator, error) {
