@@ -139,21 +139,22 @@ class Integrator(Ganache, Sifnoded, Command):
 
         self.execst(["sifnoded", "add-genesis-validators", valoper, "--home", sifnoded_home])
 
-        try:
-            # Probable bug in test/integration/sifchain_start_daemon.sh:
-            # whitelisted_validator=$(yes $VALIDATOR1_PASSWORD | sifnoded keys show --keyring-backend file -a \
-            #     --bech val $MONIKER --home $CHAINDIR/.sifnoded)
-            # TODO We probably don't need validator1_passsword
-            # TODO This could then be merged with "sifnoded_keys_show"
-            whitelisted_validator = exactly_one(stdout_lines(self.execst(["sifnoded", "keys", "show",
-                "--keyring-backend", "file", "-a", "--bech", "val", validator_moniker, "--home", sifnoded_home],
-                stdin=[validator1_password])))
-            assert False
-            log.info(f"Whitelisted validator: {whitelisted_validator}")
-            self.cmd.execst(["sifnoded", "add-genesis-validators", whitelisted_validator, "--home", sifnoded_home])
-        except:
-            log.error("Failed to get whitelisted validator (probable bug)", exc_info=True)
-            assert True
+        # This was not working in sifchain_start_daemon.sh and has been removed
+        # try:
+        #     # Probable bug in test/integration/sifchain_start_daemon.sh:
+        #     # whitelisted_validator=$(yes $VALIDATOR1_PASSWORD | sifnoded keys show --keyring-backend file -a \
+        #     #     --bech val $MONIKER --home $CHAINDIR/.sifnoded)
+        #     # TODO We probably don't need validator1_passsword
+        #     # TODO This could then be merged with "sifnoded_keys_show"
+        #     whitelisted_validator = exactly_one(stdout_lines(self.execst(["sifnoded", "keys", "show",
+        #         "--keyring-backend", "file", "-a", "--bech", "val", validator_moniker, "--home", sifnoded_home],
+        #         stdin=[validator1_password])))
+        #     assert False
+        #     log.info(f"Whitelisted validator: {whitelisted_validator}")
+        #     self.cmd.execst(["sifnoded", "add-genesis-validators", whitelisted_validator, "--home", sifnoded_home])
+        # except:
+        #     log.error("Failed to get whitelisted validator (probable bug)", exc_info=True)
+        #     assert True
 
         adminuser_addr = self.sifchain_init_common(denom_whitelist_file, sifnoded_home)
         return adminuser_addr
@@ -463,7 +464,6 @@ class IntegrationTestsEnvironment:
         # set_persistant_env_var CHAINNET localnet $envexportfile
         self.network_name = "develop"
         self.network_id = 5777
-        self.using_ganache_gui = False
         self.peruser_storage_dir = self.cmd.get_user_home(".sifnode-integration")
         self.state_vars = {}
         self.test_integration_dir = project_dir("test/integration")
@@ -489,39 +489,33 @@ class IntegrationTestsEnvironment:
         sifnoded_log_file = open(os.path.join(log_dir, "sifnoded.log"), "w")  # TODO close
         ebrelayer_log_file = open(os.path.join(log_dir, "ebrelayer.log"), "w")  # TODO close
 
-        if self.using_ganache_gui:
-            ebrelayer_ethereum_addr = "0x8e2bE12daDbCcbf7c98DBb59f98f22DFF0eF3F2c"
-            ebrelayer_ethereum_private_key = "2eaddbc0bca859ff5b09c5a48a2feaeaf464f7cbf8ddbfa4a32a625a8322fe99"
-            ganache_db_path = None
-            ganache_proc = None
-        else:
-            # test/integration/ganache-start.sh:
-            # 1. pkill -9 -f ganache-cli || true
-            # 2. while nc -z localhost 7545; do sleep 1; done
-            # 3. nohup tmux new-session -d -s my_session "ganache-cli ${block_delay} -h 0.0.0.0 --mnemonic \
-            #     'candy maple cake sugar pudding cream honey rich smooth crumble sweet treat' \
-            #     --networkId '5777' --port '7545' --db ${GANACHE_DB_DIR} --account_keys_path $GANACHE_KEYS_JSON \
-            #     > $GANACHE_LOG 2>&1"
-            # 4. sleep 5
-            # 5. while ! nc -z localhost 4545; do sleep 5; done
-            # GANACHE_LOG=ui/test/integration/vagrant/data/logs/ganache.$(filenamedate).txt
-            block_time = None  # TODO
-            account_keys_path = os.path.join(self.data_dir, "ganachekeys.json")
-            ganache_db_path = self.cmd.mktempdir()
-            ganache_proc = Ganache.start_ganache_cli(self.cmd, block_time=block_time, host=ANY_ADDR,
-                mnemonic=self.ganache_mnemonic, network_id=self.network_id, port=7545, db=ganache_db_path,
-                account_keys_path=account_keys_path, log_file=ganache_log_file)
+        # test/integration/ganache-start.sh:
+        # 1. pkill -9 -f ganache-cli || true
+        # 2. while nc -z localhost 7545; do sleep 1; done
+        # 3. nohup tmux new-session -d -s my_session "ganache-cli ${block_delay} -h 0.0.0.0 --mnemonic \
+        #     'candy maple cake sugar pudding cream honey rich smooth crumble sweet treat' \
+        #     --networkId '5777' --port '7545' --db ${GANACHE_DB_DIR} --account_keys_path $GANACHE_KEYS_JSON \
+        #     > $GANACHE_LOG 2>&1"
+        # 4. sleep 5
+        # 5. while ! nc -z localhost 4545; do sleep 5; done
+        # GANACHE_LOG=ui/test/integration/vagrant/data/logs/ganache.$(filenamedate).txt
+        block_time = None  # TODO
+        account_keys_path = os.path.join(self.data_dir, "ganachekeys.json")
+        ganache_db_path = self.cmd.mktempdir()
+        ganache_proc = Ganache.start_ganache_cli(self.cmd, block_time=block_time, host=ANY_ADDR,
+            mnemonic=self.ganache_mnemonic, network_id=self.network_id, port=7545, db=ganache_db_path,
+            account_keys_path=account_keys_path, log_file=ganache_log_file)
 
-            self.cmd.wait_for_file(account_keys_path)  # Created by ganache-cli
-            time.sleep(2)
+        self.cmd.wait_for_file(account_keys_path)  # Created by ganache-cli
+        time.sleep(2)
 
-            ganache_keys = json.loads(self.cmd.read_text_file(account_keys_path))
-            ebrelayer_ethereum_addr = list(ganache_keys["private_keys"].keys())[9]
-            ebrelayer_ethereum_private_key = ganache_keys["private_keys"][ebrelayer_ethereum_addr]
-            # TODO Check for possible non-determinism of dict().keys() ordering (c.f. test/integration/vagrantenv.sh)
-            # TODO ebrelayer_ethereum_private_key is NOT the same as in test/integration/.env.ciExample
-            assert ebrelayer_ethereum_addr == "0x5aeda56215b167893e80b4fe645ba6d5bab767de"
-            assert ebrelayer_ethereum_private_key == "8d5366123cb560bb606379f90a0bfd4769eecc0557f1b362dcae9012b548b1e5"
+        ganache_keys = json.loads(self.cmd.read_text_file(account_keys_path))
+        ebrelayer_ethereum_addr = list(ganache_keys["private_keys"].keys())[9]
+        ebrelayer_ethereum_private_key = ganache_keys["private_keys"][ebrelayer_ethereum_addr]
+        # TODO Check for possible non-determinism of dict().keys() ordering (c.f. test/integration/vagrantenv.sh)
+        # TODO ebrelayer_ethereum_private_key is NOT the same as in test/integration/.env.ciExample
+        assert ebrelayer_ethereum_addr == "0x5aeda56215b167893e80b4fe645ba6d5bab767de"
+        assert ebrelayer_ethereum_private_key == "8d5366123cb560bb606379f90a0bfd4769eecc0557f1b362dcae9012b548b1e5"
 
         env_file = project_dir("test/integration/.env.ciExample")
         env_vars = self.cmd.primitive_parse_env_file(env_file)
@@ -582,11 +576,14 @@ class IntegrationTestsEnvironment:
         sifnoded_proc = self.cmd.sifnoded_start(tcp_url=self.tcp_url, minimum_gas_prices=[0.5, "rowan"],
             sifnoded_home=sifnoded_home, log_file=sifnoded_log_file)
 
-        # TODO: should we wait for sifnoded to come up before continuing? If so, how do we do it?
+        # TODO: wait for sifnoded to come up before continuing
+        # in sifchain_start_daemon.sh: "sleep 10"
+        # in sifchain_run_ebrelayer.sh (also run_ebrelayer here) we already wait for connection to port 26657 and sif account validator1_addr
 
-        # TODO Process exits immediately with returncode 1
-        # TODO Why does it not stop start-integration-env.sh?
-        # rest_server_proc = self.cmd.popen(["sifnoded", "rest-server", "--laddr", "tcp://0.0.0.0:1317"])  # TODO cwd
+        # Removed
+        # # TODO Process exits immediately with returncode 1
+        # # TODO Why does it not stop start-integration-env.sh?
+        # # rest_server_proc = self.cmd.popen(["sifnoded", "rest-server", "--laddr", "tcp://0.0.0.0:1317"])  # TODO cwd
 
         # test/integration/sifchain_start_ebrelayer.sh -> test/integration/sifchain_run_ebrelayer.sh
         # This script is also called from tests
@@ -634,6 +631,7 @@ class IntegrationTestsEnvironment:
         return ganache_proc, sifnoded_proc, ebrelayer_proc
 
     def wait_for_sif_account(self, netdef_json, validator1_address):
+        # TODO Replace with test_utilities.wait_for_sif_account
         return self.cmd.execst(["python3", os.path.join(self.test_integration_dir, "src/py/wait_for_sif_account.py"),
             netdef_json, validator1_address], env={"USER1ADDR": "nothing"})
 
