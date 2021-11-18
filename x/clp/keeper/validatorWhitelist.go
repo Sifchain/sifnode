@@ -16,7 +16,7 @@ func (k Keeper) SetClpWhiteList(ctx sdk.Context, validatorList []sdk.AccAddress)
 	for i, entry := range validatorList {
 		valList[i] = entry.String()
 	}
-	store.Set(key, k.cdc.MustMarshalBinaryBare(&stakingtypes.ValAddresses{Addresses: valList}))
+	store.Set(key, k.cdc.MustMarshal(&stakingtypes.ValAddresses{Addresses: valList}))
 }
 
 func (k Keeper) ExistsClpWhiteList(ctx sdk.Context) bool {
@@ -29,7 +29,7 @@ func (k Keeper) GetClpWhiteList(ctx sdk.Context) []sdk.AccAddress {
 	key := types.WhiteListValidatorPrefix
 	bz := store.Get(key)
 	valAddresses := &stakingtypes.ValAddresses{}
-	k.cdc.MustUnmarshalBinaryBare(bz, valAddresses)
+	k.cdc.MustUnmarshal(bz, valAddresses)
 	vl := make([]sdk.AccAddress, len(valAddresses.Addresses))
 	for i, entry := range valAddresses.Addresses {
 		addr, err := sdk.AccAddressFromBech32(entry)

@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"github.com/Sifchain/sifnode/x/dispensation/test"
 	dispensationtypes "github.com/Sifchain/sifnode/x/dispensation/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -12,7 +11,6 @@ type CreateDispensationTx struct{}
 func (CreateDispensationTx) GetMsgAndArgs(_ CommonArgs) (sdk.Msg, Args) {
 	args := getDispensationTxArgs()
 	output := test.CreatOutputList(2, "10000000000000000000")
-	fmt.Println(output)
 	createDispensation := dispensationtypes.NewMsgCreateDistribution(args.Sender, dispensationtypes.DistributionType_DISTRIBUTION_TYPE_VALIDATOR_SUBSIDY, output, args.Sender.String())
 	return &createDispensation, args
 }

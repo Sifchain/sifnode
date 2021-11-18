@@ -50,8 +50,7 @@ func newClientContext(uri string, client *rpchttp.HTTP, args Args, config params
 		WithSkipConfirmation(true).
 		WithFromName(args.SenderName).
 		WithBroadcastMode("block").
-		WithOutputFormat("json").
-		WithJSONMarshaler(config.Marshaler)
+		WithOutputFormat("json")
 
 	return txf, clientCtx
 }

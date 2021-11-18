@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"os"
 
 	"github.com/cosmos/cosmos-sdk/crypto/hd"
@@ -60,7 +59,6 @@ func defaultAssert(res *sdk.TxResponse, testName string) *sdk.TxResponse {
 	if res.Code != 0 {
 		panic("Transaction Failed")
 	}
-	fmt.Printf("%s : %s \n", testName, res.TxHash)
 	return res
 }
 

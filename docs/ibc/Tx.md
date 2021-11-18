@@ -8,7 +8,7 @@ General Flow
 3. If the sending chain is sifchain, the token is checked against the tokenregistry for the following:
     - Check if we need to modify decimal precision
     - Check if the token has permission for IBCEXPORT
-4. The transfer packet then goes through the IBC Send,Receive,Ack flow. More details on events https://github.com/cosmos/ibc-go/blob/main/modules/core/spec/06_events.md
+4. The transfer packet then goes through the IBC Send,Receive,Ack flow. More details on events https://github.com/cosmos/ibc-go/v2/blob/main/modules/core/spec/06_events.md
 5. The Receiving Chain
     - if is is the token source chain (origin chain), then the tokens are unlocked from the escrow address
     - if the token did **not** originate in the sending chain, then the tokens are minted with a new denom. The new denom is created by appending the port and the channel to the existing denom to create the denom trace.
