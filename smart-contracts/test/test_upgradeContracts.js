@@ -1,14 +1,11 @@
-const { setup } = require('./helpers/testFixture');
-const { upgrades } = require('hardhat');
-const { use, expect } = require('chai');
+const { setup } = require("./helpers/testFixture");
+const { upgrades } = require("hardhat");
+const { use, expect } = require("chai");
 
 const web3 = require("web3");
 const BigNumber = web3.BigNumber;
 
-require("chai")
-  .use(require("chai-as-promised"))
-  .use(require("chai-bignumber")(BigNumber))
-  .should();
+require("chai").use(require("chai-as-promised")).use(require("chai-bignumber")(BigNumber)).should();
 
 describe("CosmosBridge Upgrade", function () {
   const consensusThreshold = 70;
@@ -27,10 +24,12 @@ describe("CosmosBridge Upgrade", function () {
   let pauser;
   let MockCosmosBridgeUpgrade;
 
-  before(async function() {
+  before(async function () {
     accounts = await ethers.getSigners();
 
-    signerAccounts = accounts.map((e) => { return e.address });
+    signerAccounts = accounts.map((e) => {
+      return e.address;
+    });
 
     operator = accounts[0];
     userOne = accounts[1];
@@ -59,24 +58,24 @@ describe("CosmosBridge Upgrade", function () {
         user: userOne,
         recipient: userThree,
         pauser,
-        networkDescriptor
+        networkDescriptor,
       });
 
       state.cosmosBridge = await upgrades.upgradeProxy(
-          state.cosmosBridge.address,
-          MockCosmosBridgeUpgrade,
+        state.cosmosBridge.address,
+        MockCosmosBridgeUpgrade
       );
     });
 
     it("should be able to mint tokens for a user", async function () {
       const amount = 100000000000;
       state.cosmosBridge.should.exist;
-  
+
       await state.cosmosBridge.connect(operator).tokenFaucet();
       const operatorBalance = await state.cosmosBridge.balanceOf(operator.address);
       Number(operatorBalance).should.be.bignumber.equal(amount);
     });
-    
+
     it("should be able to transfer tokens from the operator", async function () {
       const startingOperatorBalance = await state.cosmosBridge.balanceOf(operator.address);
       Number(startingOperatorBalance).should.be.bignumber.equal(0);
@@ -89,7 +88,7 @@ describe("CosmosBridge Upgrade", function () {
 
       const operatorBalance = await state.cosmosBridge.balanceOf(operator.address);
       const userOneBalance = await state.cosmosBridge.balanceOf(userOne.address);
-      
+
       Number(operatorBalance).should.be.bignumber.equal(0);
       Number(userOneBalance).should.be.bignumber.equal(amount);
     });
@@ -98,7 +97,13 @@ describe("CosmosBridge Upgrade", function () {
       state.cosmosBridge.should.exist;
 
       await expect(
-        state.cosmosBridge.initialize(userFour.address, 50, state.initialValidators, state.initialPowers, state.networkDescriptor),
+        state.cosmosBridge.initialize(
+          userFour.address,
+          50,
+          state.initialValidators,
+          state.initialPowers,
+          state.networkDescriptor
+        )
       ).to.be.revertedWith("Initialized");
     });
 

@@ -42,11 +42,7 @@ async function main() {
   const data = fs.readFileSync(addressListFile, "utf8");
   const addressList = JSON.parse(data);
 
-  print(
-    "yellow",
-    `Will fetch data for the following addresses:\n${addressList.join(", ")}`,
-    true
-  );
+  print("yellow", `Will fetch data for the following addresses:\n${addressList.join(", ")}`, true);
 
   const finalList = [];
 
@@ -71,16 +67,9 @@ async function main() {
 
       finalList.push(obj);
 
-      print(
-        "green",
-        `--> Processed token ${symbol} successfully: ${decimals} decimals.`,
-        true
-      );
+      print("green", `--> Processed token ${symbol} successfully: ${decimals} decimals.`, true);
     } catch (e) {
-      print(
-        "red",
-        `--> Failed to fetch details of token ${address}: ${e.message}`
-      );
+      print("red", `--> Failed to fetch details of token ${address}: ${e.message}`);
     }
   }
 

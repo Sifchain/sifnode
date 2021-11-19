@@ -10,7 +10,7 @@ import "openzeppelin-solidity/contracts/token/ERC20/ERC20Detailed.sol";
  **/
 
 contract Erowan is ERC20Mintable, ERC20Burnable, ERC20Detailed {
-	constructor(string memory _symbol) public ERC20Detailed(_symbol, _symbol, 18) {
-		// Intentionally left blank
-	}
+  constructor(string memory _symbol) public ERC20Detailed(_symbol, _symbol, 18) {
+    // Intentionally left blank
+  }
 }

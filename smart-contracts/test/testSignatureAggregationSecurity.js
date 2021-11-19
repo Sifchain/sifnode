@@ -4,16 +4,13 @@ const {
   deployTrollToken,
   getDigestNewProphecyClaim,
   getValidClaim,
-} = require('./helpers/testFixture');
+} = require("./helpers/testFixture");
 
 const web3 = require("web3");
-const { expect } = require('chai');
+const { expect } = require("chai");
 const BigNumber = web3.BigNumber;
 
-require("chai")
-  .use(require("chai-as-promised"))
-  .use(require("chai-bignumber")(BigNumber))
-  .should();
+require("chai").use(require("chai-as-promised")).use(require("chai-bignumber")(BigNumber)).should();
 
 describe("submitProphecyClaimAggregatedSigs Security", function () {
   let userOne;
@@ -32,9 +29,9 @@ describe("submitProphecyClaimAggregatedSigs Security", function () {
   let networkDescriptor;
   let state;
 
-  before(async function() {
+  before(async function () {
     accounts = await ethers.getSigners();
-    
+
     operator = accounts[0];
     userOne = accounts[1];
     userTwo = accounts[2];
@@ -45,12 +42,7 @@ describe("submitProphecyClaimAggregatedSigs Security", function () {
     pauser = accounts[6];
 
     initialPowers = [25, 25, 25, 25];
-    initialValidators = [
-      userOne.address,
-      userTwo.address,
-      userThree.address,
-      userFour.address
-    ];
+    initialValidators = [userOne.address, userTwo.address, userThree.address, userFour.address];
 
     networkDescriptor = 1;
   });
@@ -66,15 +58,13 @@ describe("submitProphecyClaimAggregatedSigs Security", function () {
       user: userOne,
       recipient: userThree,
       pauser,
-      networkDescriptor
+      networkDescriptor,
     });
 
     // Lock tokens on contract
-    await state.bridgeBank.connect(userOne).lock(
-      state.sender,
-      state.token1.address,
-      state.amount
-    ).should.be.fulfilled;
+    await state.bridgeBank
+      .connect(userOne)
+      .lock(state.sender, state.token1.address, state.amount).should.be.fulfilled;
 
     let TrollToken = await deployTrollToken();
     state.troll = TrollToken;
@@ -103,16 +93,10 @@ describe("submitProphecyClaimAggregatedSigs Security", function () {
       });
 
       await expect(
-        state.cosmosBridge
-          .connect(userOne)
-          .submitProphecyClaimAggregatedSigs(
-            digest,
-            claimData,
-            []
-          )
+        state.cosmosBridge.connect(userOne).submitProphecyClaimAggregatedSigs(digest, claimData, [])
       ).to.be.revertedWith("INV_SIG_LEN");
     });
-    
+
     it("hash digest doesn't match provided data", async function () {
       state.nonce = 1;
       const digest = getDigestNewProphecyClaim([
@@ -127,7 +111,7 @@ describe("submitProphecyClaimAggregatedSigs Security", function () {
         state.networkDescriptor,
         false,
         state.nonce + 1,
-        state.constants.denom.none
+        state.constants.denom.none,
       ]);
 
       const signatures = await signHash([userOne, userTwo, userFour], digest);
@@ -143,17 +127,13 @@ describe("submitProphecyClaimAggregatedSigs Security", function () {
         tokenName: state.name,
         tokenSymbol: state.symbol,
         tokenDecimals: state.decimals,
-        cosmosDenom: state.constants.denom.none
+        cosmosDenom: state.constants.denom.none,
       };
 
       await expect(
         state.cosmosBridge
           .connect(userOne)
-          .submitProphecyClaimAggregatedSigs(
-            digest,
-            claimData,
-            signatures
-          )
+          .submitProphecyClaimAggregatedSigs(digest, claimData, signatures)
       ).to.be.revertedWith("INV_DATA");
     });
 
@@ -180,11 +160,7 @@ describe("submitProphecyClaimAggregatedSigs Security", function () {
       await expect(
         state.cosmosBridge
           .connect(userOne)
-          .submitProphecyClaimAggregatedSigs(
-            digest,
-            claimData,
-            signatures
-          )
+          .submitProphecyClaimAggregatedSigs(digest, claimData, signatures)
       ).to.be.revertedWith("DUP_SIGNER");
     });
 
@@ -211,11 +187,7 @@ describe("submitProphecyClaimAggregatedSigs Security", function () {
       await expect(
         state.cosmosBridge
           .connect(userOne)
-          .submitProphecyClaimAggregatedSigs(
-            digest,
-            claimData,
-            signatures
-          )
+          .submitProphecyClaimAggregatedSigs(digest, claimData, signatures)
       ).to.be.revertedWith("INV_SIGNER");
     });
 
@@ -276,11 +248,7 @@ describe("submitProphecyClaimAggregatedSigs Security", function () {
       await expect(
         state.cosmosBridge
           .connect(userOne)
-          .submitProphecyClaimAggregatedSigs(
-            digest,
-            claimData,
-            signatures
-          )
+          .submitProphecyClaimAggregatedSigs(digest, claimData, signatures)
       ).to.be.revertedWith("INV_SIG");
     });
 
@@ -307,11 +275,7 @@ describe("submitProphecyClaimAggregatedSigs Security", function () {
       await expect(
         state.cosmosBridge
           .connect(userOne)
-          .submitProphecyClaimAggregatedSigs(
-            digest,
-            claimData,
-            signatures
-          )
+          .submitProphecyClaimAggregatedSigs(digest, claimData, signatures)
       ).to.be.revertedWith("INV_POW");
     });
 
@@ -338,11 +302,7 @@ describe("submitProphecyClaimAggregatedSigs Security", function () {
       await expect(
         state.cosmosBridge
           .connect(userOne)
-          .submitProphecyClaimAggregatedSigs(
-            digest,
-            claimData,
-            signatures
-          )
+          .submitProphecyClaimAggregatedSigs(digest, claimData, signatures)
       ).to.be.revertedWith("INV_ORD");
     });
 
@@ -368,37 +328,23 @@ describe("submitProphecyClaimAggregatedSigs Security", function () {
 
       state.cosmosBridge
         .connect(userOne)
-        .submitProphecyClaimAggregatedSigs(
-            digest,
-            claimData,
-            signatures
-      );
+        .submitProphecyClaimAggregatedSigs(digest, claimData, signatures);
 
       await expect(
         state.cosmosBridge
           .connect(userOne)
-          .submitProphecyClaimAggregatedSigs(
-            digest,
-            claimData,
-            signatures
-          )
+          .submitProphecyClaimAggregatedSigs(digest, claimData, signatures)
       ).to.be.revertedWith("INV_ORD");
     });
 
     it("one of the claims in a batch prophecy claim has the wrong nonce", async function () {
       // Lock token2 on contract
-      await state.bridgeBank.connect(userOne).lock(
-        state.sender,
-        state.token2.address,
-        state.amount
-      ).should.be.fulfilled;
+      await state.bridgeBank.connect(userOne).lock(state.sender, state.token2.address, state.amount)
+        .should.be.fulfilled;
 
       // Lock token3 on contract
-      await state.bridgeBank.connect(userOne).lock(
-        state.sender,
-        state.token3.address,
-        state.amount
-      ).should.be.fulfilled;
+      await state.bridgeBank.connect(userOne).lock(state.sender, state.token3.address, state.amount)
+        .should.be.fulfilled;
 
       // Last nonce should be 0
       let lastNonceSubmitted = Number(await state.cosmosBridge.lastNonceSubmitted());
@@ -422,7 +368,11 @@ describe("submitProphecyClaimAggregatedSigs Security", function () {
         validators: accounts.slice(1, 5),
       });
 
-      const { digest: digest2, claimData: claimData2, signatures: signatures2 } = await getValidClaim({
+      const {
+        digest: digest2,
+        claimData: claimData2,
+        signatures: signatures2,
+      } = await getValidClaim({
         sender: state.sender,
         senderSequence: state.senderSequence,
         recipientAddress: state.recipient.address,
@@ -438,14 +388,18 @@ describe("submitProphecyClaimAggregatedSigs Security", function () {
         validators: accounts.slice(1, 5),
       });
 
-      const { digest: digest3, claimData: claimData3, signatures: signatures3 } = await getValidClaim({
+      const {
+        digest: digest3,
+        claimData: claimData3,
+        signatures: signatures3,
+      } = await getValidClaim({
         sender: state.sender,
         senderSequence: state.senderSequence,
         recipientAddress: state.recipient.address,
         tokenAddress: state.token3.address,
         amount: state.amount,
         doublePeg: false,
-        nonce: state.nonce + 2, 
+        nonce: state.nonce + 2,
         networkDescriptor: state.networkDescriptor,
         tokenName: state.name,
         tokenSymbol: state.symbol,
@@ -454,15 +408,16 @@ describe("submitProphecyClaimAggregatedSigs Security", function () {
         validators: accounts.slice(1, 5),
       });
 
-      await expect(state.cosmosBridge
-        .connect(userOne)
-        .batchSubmitProphecyClaimAggregatedSigs(
+      await expect(
+        state.cosmosBridge
+          .connect(userOne)
+          .batchSubmitProphecyClaimAggregatedSigs(
             [digest, digest2, digest3],
             [claimData, claimData2, claimData3],
             [signatures, signatures2, signatures3]
-        ))
-        .to.be.rejectedWith('INV_ORD');
-      
+          )
+      ).to.be.rejectedWith("INV_ORD");
+
       // global nonce should not have changed:
       lastNonceSubmitted = Number(await state.cosmosBridge.lastNonceSubmitted());
       expect(lastNonceSubmitted).to.be.equal(0);
