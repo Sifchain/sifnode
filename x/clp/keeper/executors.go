@@ -188,6 +188,7 @@ func (k Keeper) RemoveLiquidity(ctx sdk.Context, pool types.Pool, externalAssetC
 		}
 		err = k.bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, lpAddr, sendCoins)
 		if err != nil {
+			// (testing) this part I don't know how to trigger. because we verify if have coins in lp.
 			return err
 		}
 	}

@@ -32,6 +32,7 @@ func TestKeeper_CreatePool_And_AddLiquidity_RemoveLiquidity(t *testing.T) {
 	asset := types.NewAsset("eth")
 	externalCoin := sdk.NewCoin(asset.Symbol, sdk.Int(sdk.NewUint(10000)))
 	nativeCoin := sdk.NewCoin(types.NativeSymbol, sdk.Int(sdk.NewUint(10000)))
+
 	_ = app.ClpKeeper.GetBankKeeper().AddCoins(ctx, signer, sdk.NewCoins(externalCoin, nativeCoin))
 
 	msgCreatePool := types.NewMsgCreatePool(nil, asset, nativeAssetAmount, externalAssetAmount)
@@ -91,10 +92,19 @@ func TestKeeper_CreatePool_And_AddLiquidity_RemoveLiquidity(t *testing.T) {
 	ok := app.ClpKeeper.HasBalance(ctx, signer, subCoin)
 	assert.True(t, ok, "")
 
+	subCoin = sdk.NewCoin(asset2.Symbol, sdk.Int(sdk.NewUint(100)))
+	errorRemoveLiquidity = app.ClpKeeper.RemoveLiquidity(ctx, *pool, subCoin, subCoin, *lp, sdk.NewUint(989), sdk.NewUint(1000), sdk.NewUint(1000))
+	assert.Error(t, errorRemoveLiquidity, "pool does not have sufficient balance")
+
+	_ = app.ClpKeeper.GetBankKeeper().AddCoins(ctx, signer, sdk.NewCoins(externalCoin, nativeCoin))
+	subCoin = sdk.NewCoin(asset2.Symbol, sdk.Int(sdk.NewUint(100)))
+	errorRemoveLiquidity = app.ClpKeeper.RemoveLiquidity(ctx, *pool, subCoin, subCoin, *lp, sdk.NewUint(989), sdk.NewUint(1000), sdk.NewUint(1000))
+	assert.Error(t, errorRemoveLiquidity, "pool does not have sufficient balance")
+
 	subCoin = sdk.NewCoin(asset.Symbol, sdk.Int(sdk.NewUint(100)))
 	errorRemoveLiquidity = app.ClpKeeper.RemoveLiquidity(ctx, *pool, subCoin, subCoin, *lp, sdk.NewUint(989), sdk.NewUint(99), sdk.NewUint(99))
 	assert.Error(t, errorRemoveLiquidity, "Cannot withdraw pool is too shallow")
-
+	// create to test setPool, but doesn't work
 	subCoin = sdk.NewCoin(asset.Symbol, sdk.Int(sdk.NewUint(100)))
 	errorRemoveLiquidity = app.ClpKeeper.RemoveLiquidity(ctx, types.Pool{}, subCoin, subCoin, *lp, sdk.NewUint(989), sdk.NewUint(99), sdk.NewUint(99))
 	assert.Error(t, errorRemoveLiquidity, "Cannot withdraw pool is too shallow")
@@ -196,12 +206,16 @@ func TestKeeper_InitiateSwap(t *testing.T) {
 	//Parameters for create pool
 	asset := types.NewAsset("eth")
 	externalCoin := sdk.NewCoin(asset.Symbol, sdk.Int(sdk.NewUint(10000)))
+	externalCoin1 := sdk.NewCoin(asset.Symbol, sdk.Int(sdk.NewUint(10000000000000)))
 	nativeCoin := sdk.NewCoin(types.NativeSymbol, sdk.Int(sdk.NewUint(10000)))
 	_ = app.ClpKeeper.GetBankKeeper().AddCoins(ctx, signer, sdk.NewCoins(externalCoin, nativeCoin))
 	err := app.ClpKeeper.InitiateSwap(ctx, externalCoin, signer)
 	require.NoError(t, err)
 	ok := app.ClpKeeper.HasBalance(ctx, signer, nativeCoin)
 	assert.True(t, ok, "")
+
+	err = app.ClpKeeper.InitiateSwap(ctx, externalCoin1, signer)
+	assert.Error(t, err, "user does not have enough balance of the required coin")
 
 }
 
@@ -247,6 +261,16 @@ func TestKeeper_FinalizeSwap(t *testing.T) {
 
 	err = app.ClpKeeper.FinalizeSwap(ctx, "1", *pool, msg)
 	require.NoError(t, err)
+
+	// err = app.ClpKeeper.FinalizeSwap(ctx, "0", *pool, msg)
+	// assert.Error(t, err, "Unable to set pool")
+	msg = types.NewMsgSwap(nil, assetEth, assetDash, sdk.NewUint(1), sdk.NewUint(10))
+	err = app.ClpKeeper.FinalizeSwap(ctx, "1", *pool, msg)
+	assert.Error(t, err, "empty address string is not allowed")
+	msg = types.NewMsgSwap(signer, assetEth, assetDash, sdk.NewUint(1), sdk.NewUint(10))
+	pool.ExternalAsset.Symbol = ""
+	err = app.ClpKeeper.FinalizeSwap(ctx, "1", *pool, msg)
+	assert.Error(t, err, "Unable to set pool")
 }
 
 func TestKeeper_ParseToInt(t *testing.T) {
