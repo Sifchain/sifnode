@@ -1,11 +1,19 @@
 import { HardhatNodeRunner } from "../src/devenv/hardhatNode";
 import { GolangBuilder, GolangResults } from "../src/devenv/golangBuilder";
-import { SifnodedResults, SifnodedRunner, ValidatorValues, EbRelayerAccount } from "../src/devenv/sifnoded";
+import {
+  SifnodedResults,
+  SifnodedRunner,
+  ValidatorValues,
+  EbRelayerAccount,
+} from "../src/devenv/sifnoded";
 import { DeployedContractAddresses } from "../scripts/deploy_contracts";
-import { SmartContractDeployer, SmartContractDeployResult } from "../src/devenv/smartcontractDeployer";
+import {
+  SmartContractDeployer,
+  SmartContractDeployResult,
+} from "../src/devenv/smartcontractDeployer";
 import { RelayerRunner, WitnessRunner, EbrelayerArguments } from "../src/devenv/ebrelayer";
 import { EthereumAddressAndKey, EthereumResults } from "../src/devenv/devEnv";
-import path from 'path';
+import path from "path";
 import { notify } from "node-notifier";
 import { strict, string } from "yargs";
 import { ContractFactory } from "ethers";
@@ -13,41 +21,41 @@ import { EnvJSONWriter } from "../src/devenv/outputWriter";
 import fs from "fs";
 
 async function startHardhat() {
-  const node = new HardhatNodeRunner()
-  const resultsPromise = node.go()
-  const results = await resultsPromise
-  return { process, results }
+  const node = new HardhatNodeRunner();
+  const resultsPromise = node.go();
+  const results = await resultsPromise;
+  return { process, results };
 }
 
 async function golangBuilder() {
-  const node = new GolangBuilder()
-  const resultsPromise = node.go()
-  const results = await resultsPromise
-  console.log(`golangBuilder: ${JSON.stringify(results, undefined, 2)}`)
-  const output = await Promise.all([process, results])
+  const node = new GolangBuilder();
+  const resultsPromise = node.go();
+  const results = await resultsPromise;
+  console.log(`golangBuilder: ${JSON.stringify(results, undefined, 2)}`);
+  const output = await Promise.all([process, results]);
   return {
     process: output[0],
-    results: output[1]
-  }
+    results: output[1],
+  };
 }
 
 async function sifnodedBuilder(golangResults: GolangResults) {
-  console.log('in sifnodedBuilder')
-  const node = new SifnodedRunner(golangResults)
-  const resultsPromise = node.go()
-  const results = await resultsPromise
-  console.log(`golangBuilder: ${JSON.stringify(results, undefined, 2)}`)
+  console.log("in sifnodedBuilder");
+  const node = new SifnodedRunner(golangResults);
+  const resultsPromise = node.go();
+  const results = await resultsPromise;
+  console.log(`golangBuilder: ${JSON.stringify(results, undefined, 2)}`);
   return {
     process,
-    results
-  }
+    results,
+  };
 }
 
 async function smartContractDeployer() {
   const node: SmartContractDeployer = new SmartContractDeployer();
   const resultsPromise = node.go();
   const result = await resultsPromise;
-  console.log(`Contracts deployed: ${JSON.stringify(result.contractAddresses, undefined, 2)}`)
+  console.log(`Contracts deployed: ${JSON.stringify(result.contractAddresses, undefined, 2)}`);
   return { process, result };
 }
 
@@ -80,28 +88,27 @@ async function ebrelayerWitnessBuilder(
     validatorValues: validater,
     sifnodeAccount: relayerAccount,
     golangResults,
-    chainId
+    chainId,
   };
   const witnessArgs = { ...relayerArgs };
   witnessArgs.sifnodeAccount = witnessAccount;
-  const relayerPromise = relayerBuilder(relayerArgs)
-  const witnessPromise = witnessBuilder(witnessArgs)
-  const [relayer, witness] = await Promise.all([relayerPromise, witnessPromise])
+  const relayerPromise = relayerBuilder(relayerArgs);
+  const witnessPromise = witnessBuilder(witnessArgs);
+  const [relayer, witness] = await Promise.all([relayerPromise, witnessPromise]);
   return {
     relayer,
-    witness
-  }
+    witness,
+  };
 }
-
 
 async function main() {
   try {
     await fs.promises.mkdir("/tmp/sifnode", { recursive: true });
     const sigterm = new Promise((res, _) => {
-      process.on('SIGINT', res);
-      process.on('SIGTERM', res);
+      process.on("SIGINT", res);
+      process.on("SIGTERM", res);
     });
-    const [hardhat, golang] = (await Promise.all([startHardhat(), golangBuilder()]));
+    const [hardhat, golang] = await Promise.all([startHardhat(), golangBuilder()]);
     const sifnode = await sifnodedBuilder(golang.results);
     const smartcontract = await smartContractDeployer();
     const { relayer, witness } = await ebrelayerWitnessBuilder(
@@ -112,15 +119,14 @@ async function main() {
       sifnode.results.witnessAddresses[0],
       golang.results,
       hardhat.results.chainId
-
     );
     EnvJSONWriter({
       contractResults: smartcontract.result,
       ethResults: hardhat.results,
       goResults: golang.results,
-      sifResults: sifnode.results
+      sifResults: sifnode.results,
     });
-    await sigterm
+    await sigterm;
     console.log("Caught interrupt signal, cleaning up.");
     sifnode.process.kill(sifnode.process.pid);
     hardhat.process.kill(hardhat.process.pid);
@@ -129,7 +135,7 @@ async function main() {
     console.log("All child process terminated, goodbye.");
     notify({
       title: "Sifchain DevEnvironment Notice",
-      message: `Dev Environment has recieved either a SIGINT or SIGTERM signal, all process have exited.`
+      message: `Dev Environment has recieved either a SIGINT or SIGTERM signal, all process have exited.`,
     });
   } catch (error) {
     console.log("Deployment failed. Lets log where it broke: ", error);
@@ -139,8 +145,7 @@ async function main() {
 main()
   .then(() => process.exit(0))
   .catch((error) => {
-    if (typeof error == "number")
-      process.exit(error);
+    if (typeof error == "number") process.exit(error);
     else {
       console.error(error);
       process.exit(1);

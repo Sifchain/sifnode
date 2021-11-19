@@ -4,42 +4,43 @@ import {
   DeployedBridgeBank,
   DeployedBridgeRegistry,
   DeployedCosmosBridge,
-  requiredEnvVar
+  requiredEnvVar,
 } from "../src/contractSupport";
 import { DeploymentName, HardhatRuntimeEnvironmentToken } from "../src/tsyringe/injectionTokens";
 import { setupRopstenDeployment, setupSifchainMainnetDeployment } from "../src/hardhatFunctions";
 import {
-  BridgeBankProxy, BridgeRegistryProxy,
+  BridgeBankProxy,
+  BridgeRegistryProxy,
   BridgeTokenSetup,
   CosmosBridgeProxy,
   RowanContract,
-  SifchainContractFactories
+  SifchainContractFactories,
 } from "../src/tsyringe/contracts";
 import * as dotenv from "dotenv";
 export type DeployedContractAddresses = {
-  cosmosBridge: string,
-  bridgeBank: string,
-  bridgeRegistry: string,
-  rowanContract: string,
-}
+  cosmosBridge: string;
+  bridgeBank: string;
+  bridgeRegistry: string;
+  rowanContract: string;
+};
 // Usage
 //
 // npx hardhat run scripts/deploy_contracts.ts
 
 async function main() {
-  container.register(HardhatRuntimeEnvironmentToken, { useValue: hardhat })
-  await container.resolve(BridgeTokenSetup).complete
-  const bridgeBank = await container.resolve(BridgeBankProxy).contract
-  const bridgeRegistry = await container.resolve(BridgeRegistryProxy).contract
-  const rowanContract = await container.resolve(RowanContract).contract
-  const cosmosBridge = await container.resolve(CosmosBridgeProxy).contract
+  container.register(HardhatRuntimeEnvironmentToken, { useValue: hardhat });
+  await container.resolve(BridgeTokenSetup).complete;
+  const bridgeBank = await container.resolve(BridgeBankProxy).contract;
+  const bridgeRegistry = await container.resolve(BridgeRegistryProxy).contract;
+  const rowanContract = await container.resolve(RowanContract).contract;
+  const cosmosBridge = await container.resolve(CosmosBridgeProxy).contract;
   const result: DeployedContractAddresses = {
     cosmosBridge: cosmosBridge.address,
     bridgeBank: bridgeBank.address,
     bridgeRegistry: bridgeRegistry.address,
     rowanContract: rowanContract.address,
-  }
-  console.log(JSON.stringify(result))
+  };
+  console.log(JSON.stringify(result));
 }
 
 main()

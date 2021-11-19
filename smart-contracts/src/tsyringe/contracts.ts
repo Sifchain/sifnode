@@ -1,5 +1,5 @@
 import { inject, injectable, instanceCachingFactory, registry, singleton } from "tsyringe";
-import type { Contract } from 'ethers';
+import type { Contract } from "ethers";
 import { BigNumber, ContractFactory } from "ethers";
 import { HardhatRuntimeEnvironment } from "hardhat/types";
 import { EthereumAddress, NotNativeCurrencyAddress } from "../ethereumAddress";
@@ -16,21 +16,29 @@ import {
 } from "../../build";
 
 import web3 from "web3";
-const MINTER_ROLE = web3.utils.soliditySha3('MINTER_ROLE');
-const ADMIN_ROLE = '0x0000000000000000000000000000000000000000000000000000000000000000';
+const MINTER_ROLE = web3.utils.soliditySha3("MINTER_ROLE");
+const ADMIN_ROLE = "0x0000000000000000000000000000000000000000000000000000000000000000";
 
 @singleton()
 export class SifchainContractFactories {
-  bridgeBank: Promise<BridgeBank__factory>
-  cosmosBridge: Promise<CosmosBridge__factory>
-  bridgeRegistry: Promise<BridgeRegistry__factory>
-  bridgeToken: Promise<BridgeToken__factory>
+  bridgeBank: Promise<BridgeBank__factory>;
+  cosmosBridge: Promise<CosmosBridge__factory>;
+  bridgeRegistry: Promise<BridgeRegistry__factory>;
+  bridgeToken: Promise<BridgeToken__factory>;
 
   constructor(@inject(HardhatRuntimeEnvironmentToken) hre: HardhatRuntimeEnvironment) {
-    this.bridgeBank = hre.ethers.getContractFactory("BridgeBank").then((x: ContractFactory) => x as BridgeBank__factory)
-    this.cosmosBridge = hre.ethers.getContractFactory("CosmosBridge").then((x: ContractFactory) => x as CosmosBridge__factory)
-    this.bridgeRegistry = hre.ethers.getContractFactory("BridgeRegistry").then((x: ContractFactory) => x as BridgeRegistry__factory)
-    this.bridgeToken = hre.ethers.getContractFactory("BridgeToken").then((x: ContractFactory) => x as BridgeToken__factory)
+    this.bridgeBank = hre.ethers
+      .getContractFactory("BridgeBank")
+      .then((x: ContractFactory) => x as BridgeBank__factory);
+    this.cosmosBridge = hre.ethers
+      .getContractFactory("CosmosBridge")
+      .then((x: ContractFactory) => x as CosmosBridge__factory);
+    this.bridgeRegistry = hre.ethers
+      .getContractFactory("BridgeRegistry")
+      .then((x: ContractFactory) => x as BridgeRegistry__factory);
+    this.bridgeToken = hre.ethers
+      .getContractFactory("BridgeToken")
+      .then((x: ContractFactory) => x as BridgeToken__factory);
   }
 }
 
@@ -40,142 +48,145 @@ export class CosmosBridgeArguments {
     readonly consensusThreshold: number,
     readonly initialValidators: Array<EthereumAddress>,
     readonly initialPowers: Array<number>,
-    readonly networkDescriptor: number,
-  ) {
-  }
+    readonly networkDescriptor: number
+  ) {}
 
   asArray() {
     return [
       this.operator.address,
       this.consensusThreshold,
-      this.initialValidators.map(x => x.address),
+      this.initialValidators.map((x) => x.address),
       this.initialPowers,
-      this.networkDescriptor
-    ]
+      this.networkDescriptor,
+    ];
   }
 }
 
 export class CosmosBridgeArgumentsPromise {
-  constructor(readonly cosmosBridgeArguments: Promise<CosmosBridgeArguments>) {
-  }
+  constructor(readonly cosmosBridgeArguments: Promise<CosmosBridgeArguments>) {}
 }
 
 @singleton()
 export class CosmosBridgeProxy {
-  contract: Promise<Contract>
+  contract: Promise<Contract>;
 
   constructor(
     @inject(HardhatRuntimeEnvironmentToken) hardhatRuntimeEnvironment: HardhatRuntimeEnvironment,
     sifchainContractFactories: SifchainContractFactories,
-    cosmosBridgeArgumentsPromise: CosmosBridgeArgumentsPromise,
+    cosmosBridgeArgumentsPromise: CosmosBridgeArgumentsPromise
   ) {
-    this.contract = sifchainContractFactories.cosmosBridge.then(async cosmosBridgeFactory => {
-      const args = await cosmosBridgeArgumentsPromise.cosmosBridgeArguments
-      const cosmosBridgeProxy = await hardhatRuntimeEnvironment.upgrades.deployProxy(cosmosBridgeFactory,
+    this.contract = sifchainContractFactories.cosmosBridge.then(async (cosmosBridgeFactory) => {
+      const args = await cosmosBridgeArgumentsPromise.cosmosBridgeArguments;
+      const cosmosBridgeProxy = await hardhatRuntimeEnvironment.upgrades.deployProxy(
+        cosmosBridgeFactory,
         args.asArray(),
-        { initializer: 'initialize(address,uint256,address[],uint256[],int32)' }
-      )
-      await cosmosBridgeProxy.deployed()
-      return cosmosBridgeProxy
-    })
+        { initializer: "initialize(address,uint256,address[],uint256[],int32)" }
+      );
+      await cosmosBridgeProxy.deployed();
+      return cosmosBridgeProxy;
+    });
   }
 }
 
-export function defaultCosmosBridgeArguments(sifchainAccounts: SifchainAccounts, power: number = 100, networkDescriptor: number = 1): CosmosBridgeArguments {
-  const powers = sifchainAccounts.validatatorAccounts.map(_ => power)
-  const threshold = powers.reduce((acc, x) => acc + x)
+export function defaultCosmosBridgeArguments(
+  sifchainAccounts: SifchainAccounts,
+  power: number = 100,
+  networkDescriptor: number = 1
+): CosmosBridgeArguments {
+  const powers = sifchainAccounts.validatatorAccounts.map((_) => power);
+  const threshold = powers.reduce((acc, x) => acc + x);
   return new CosmosBridgeArguments(
     new NotNativeCurrencyAddress(sifchainAccounts.operatorAccount.address),
     threshold,
-    sifchainAccounts.validatatorAccounts.map(x => new NotNativeCurrencyAddress(x.address)),
+    sifchainAccounts.validatatorAccounts.map((x) => new NotNativeCurrencyAddress(x.address)),
     powers,
     networkDescriptor
-  )
+  );
 }
 
 @registry([
   {
     token: CosmosBridgeArgumentsPromise,
-    useFactory: instanceCachingFactory<CosmosBridgeArgumentsPromise>(c => {
-      const accountsPromise = c.resolve(SifchainAccountsPromise)
-      return new CosmosBridgeArgumentsPromise(accountsPromise.accounts.then(accts => {
-        return defaultCosmosBridgeArguments(accts)
-      }))
-    })
+    useFactory: instanceCachingFactory<CosmosBridgeArgumentsPromise>((c) => {
+      const accountsPromise = c.resolve(SifchainAccountsPromise);
+      return new CosmosBridgeArgumentsPromise(
+        accountsPromise.accounts.then((accts) => {
+          return defaultCosmosBridgeArguments(accts);
+        })
+      );
+    }),
   },
   {
     token: NetworkDescriptorToken,
-    useValue: 1
-  }
+    useValue: 1,
+  },
 ])
-
 @injectable()
 export class BridgeBankArguments {
   constructor(
     private readonly cosmosBridgeProxy: CosmosBridgeProxy,
     private readonly sifchainAccountsPromise: SifchainAccountsPromise,
     @inject(NetworkDescriptorToken) private readonly networkDescriptor: number
-  ) {
-  }
+  ) {}
 
   async asArray() {
-    const cosmosBridge = await this.cosmosBridgeProxy.contract
-    const accts = await this.sifchainAccountsPromise.accounts
+    const cosmosBridge = await this.cosmosBridgeProxy.contract;
+    const accts = await this.sifchainAccountsPromise.accounts;
     const result = [
       accts.operatorAccount.address,
       cosmosBridge.address,
       accts.ownerAccount.address,
       accts.pauserAccount.address,
-      this.networkDescriptor
-    ]
-    return result
+      this.networkDescriptor,
+    ];
+    return result;
   }
 }
 
 @singleton()
 export class BridgeBankProxy {
-  contract: Promise<BridgeBank>
+  contract: Promise<BridgeBank>;
 
   constructor(
     @inject(HardhatRuntimeEnvironmentToken) h: HardhatRuntimeEnvironment,
     private sifchainContractFactories: SifchainContractFactories,
-    private bridgeBankArguments: BridgeBankArguments,
+    private bridgeBankArguments: BridgeBankArguments
   ) {
-    this.contract = sifchainContractFactories.bridgeBank.then(async bridgeBankFactory => {
-      const bridgeBankArguments = await this.bridgeBankArguments.asArray()
-      const bridgeBankProxy = await h.upgrades.deployProxy(bridgeBankFactory,
+    this.contract = sifchainContractFactories.bridgeBank.then(async (bridgeBankFactory) => {
+      const bridgeBankArguments = await this.bridgeBankArguments.asArray();
+      const bridgeBankProxy = (await h.upgrades.deployProxy(
+        bridgeBankFactory,
         bridgeBankArguments,
         {
-          initializer: 'initialize(address,address,address,address,int32)',
-          unsafeAllow: ["delegatecall"]
-        },  
-      ) as BridgeBank
-      await bridgeBankProxy.deployed()
-      const own = await bridgeBankProxy.owner()
-      return bridgeBankProxy
-    })
+          initializer: "initialize(address,address,address,address,int32)",
+          unsafeAllow: ["delegatecall"],
+        }
+      )) as BridgeBank;
+      await bridgeBankProxy.deployed();
+      const own = await bridgeBankProxy.owner();
+      return bridgeBankProxy;
+    });
   }
 }
 
-
 @singleton()
 export class BridgeRegistryProxy {
-  contract: Promise<BridgeRegistry>
+  contract: Promise<BridgeRegistry>;
 
   constructor(
     @inject(HardhatRuntimeEnvironmentToken) h: HardhatRuntimeEnvironment,
     private sifchainContractFactories: SifchainContractFactories,
     private cosmosBridgeProxy: CosmosBridgeProxy,
-    private bridgeBankProxy: BridgeBankProxy,
+    private bridgeBankProxy: BridgeBankProxy
   ) {
-    this.contract = sifchainContractFactories.bridgeRegistry.then(async bridgeRegistryFactory => {
+    this.contract = sifchainContractFactories.bridgeRegistry.then(async (bridgeRegistryFactory) => {
       const bridgeRegistryProxy = await h.upgrades.deployProxy(bridgeRegistryFactory, [
         (await cosmosBridgeProxy.contract).address,
-        (await bridgeBankProxy.contract).address
-      ])
-      await bridgeRegistryProxy.deployed()
-      return bridgeRegistryProxy as BridgeRegistry
-    })
+        (await bridgeBankProxy.contract).address,
+      ]);
+      await bridgeRegistryProxy.deployed();
+      return bridgeRegistryProxy as BridgeRegistry;
+    });
   }
 }
 
@@ -184,38 +195,41 @@ export class BridgeRegistryProxy {
  */
 @singleton()
 export class RowanContract {
-  readonly contract: Promise<BridgeToken>
+  readonly contract: Promise<BridgeToken>;
 
-  constructor(
-    private sifchainContractFactories: SifchainContractFactories,
-  ) {
-    this.contract = sifchainContractFactories.bridgeToken.then(async bridgeToken => {
-      return await (bridgeToken as BridgeToken__factory).deploy("erowan", "erowan", 18, "cosmosDenom") as BridgeToken
-    })
+  constructor(private sifchainContractFactories: SifchainContractFactories) {
+    this.contract = sifchainContractFactories.bridgeToken.then(async (bridgeToken) => {
+      return (await (bridgeToken as BridgeToken__factory).deploy(
+        "erowan",
+        "erowan",
+        18,
+        "cosmosDenom"
+      )) as BridgeToken;
+    });
   }
 }
 
 @singleton()
 export class BridgeTokenSetup {
-  readonly complete: Promise<boolean>
+  readonly complete: Promise<boolean>;
 
   private async build(
     rowan: RowanContract,
     bridgeBankProxy: BridgeBankProxy,
     sifchainAccounts: SifchainAccountsPromise
   ) {
-    const erowan = await rowan.contract
-    const owner = (await sifchainAccounts.accounts).ownerAccount
-    const bridgebank = (await bridgeBankProxy.contract).connect(owner)
-    await bridgebank.addExistingBridgeToken(erowan.address)
-    await erowan.grantRole(String(MINTER_ROLE), bridgebank.address)
-    await erowan.grantRole(String(MINTER_ROLE), owner.address)
-    await erowan.grantRole(ADMIN_ROLE, bridgebank.address)
-    await erowan.approve(bridgebank.address, "10000000000000000000")
-    const accounts = await sifchainAccounts.accounts
-    const muchRowan = BigNumber.from(100000000).mul(BigNumber.from(10).pow(18))
-    await erowan.connect(owner).mint(accounts.operatorAccount.address, muchRowan)
-    return true
+    const erowan = await rowan.contract;
+    const owner = (await sifchainAccounts.accounts).ownerAccount;
+    const bridgebank = (await bridgeBankProxy.contract).connect(owner);
+    await bridgebank.addExistingBridgeToken(erowan.address);
+    await erowan.grantRole(String(MINTER_ROLE), bridgebank.address);
+    await erowan.grantRole(String(MINTER_ROLE), owner.address);
+    await erowan.grantRole(ADMIN_ROLE, bridgebank.address);
+    await erowan.approve(bridgebank.address, "10000000000000000000");
+    const accounts = await sifchainAccounts.accounts;
+    const muchRowan = BigNumber.from(100000000).mul(BigNumber.from(10).pow(18));
+    await erowan.connect(owner).mint(accounts.operatorAccount.address, muchRowan);
+    return true;
   }
 
   constructor(
@@ -223,6 +237,6 @@ export class BridgeTokenSetup {
     bridgeBankProxy: BridgeBankProxy,
     sifchainAccounts: SifchainAccountsPromise
   ) {
-    this.complete = this.build(rowan, bridgeBankProxy, sifchainAccounts)
+    this.complete = this.build(rowan, bridgeBankProxy, sifchainAccounts);
   }
 }

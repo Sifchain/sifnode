@@ -2,22 +2,22 @@ import { GolangResults } from "./golangBuilder";
 import { SifnodedResults } from "./sifnoded";
 import { SmartContractDeployResult } from "./smartcontractDeployer";
 import { EthereumResults } from "./devEnv";
-import path from 'path';
-import fs from 'fs';
-import hb from 'handlebars';
+import path from "path";
+import fs from "fs";
+import hb from "handlebars";
 interface EnvOutput {
   Computed: {
-    BASEDIR: string
-    CHAINDIR?: string
-  }
-  Dev: DevEnvObject
-  Env?: string
+    BASEDIR: string;
+    CHAINDIR?: string;
+  };
+  Dev: DevEnvObject;
+  Env?: string;
 }
 export interface DevEnvObject {
-  ethResults?: EthereumResults,
-  goResults?: GolangResults,
-  sifResults?: SifnodedResults,
-  contractResults?: SmartContractDeployResult,
+  ethResults?: EthereumResults;
+  goResults?: GolangResults;
+  sifResults?: SifnodedResults;
+  contractResults?: SmartContractDeployResult;
 }
 
 /**
@@ -27,20 +27,27 @@ export interface DevEnvObject {
  * @param saveLocation Where the rendered document should be saved
  * @param args The variables to be replaced in the template during render
  */
-function RenderTemplateToFile(templateLocation: string, saveLocation: string, args: unknown): string {
-  hb.registerHelper('subString', function (inputString: string, startIndex: number, endIndex?: number) {
-    /**
-     * This if statement is needed because handlebar passes in a hash as it's
-     * last param. This causes issue because endIndex is optional
-     */
-    if (!endIndex || typeof endIndex != 'number') {
-      endIndex = undefined
+function RenderTemplateToFile(
+  templateLocation: string,
+  saveLocation: string,
+  args: unknown
+): string {
+  hb.registerHelper(
+    "subString",
+    function (inputString: string, startIndex: number, endIndex?: number) {
+      /**
+       * This if statement is needed because handlebar passes in a hash as it's
+       * last param. This causes issue because endIndex is optional
+       */
+      if (!endIndex || typeof endIndex != "number") {
+        endIndex = undefined;
+      }
+      let trimmedString: string = inputString.substring(startIndex, endIndex);
+      return new hb.SafeString(trimmedString);
     }
-    let trimmedString: string = inputString.substring(startIndex, endIndex);
-    return new hb.SafeString(trimmedString);
-  })
+  );
 
-  const template = fs.readFileSync(templateLocation, 'utf8');
+  const template = fs.readFileSync(templateLocation, "utf8");
   const compiledTemplate = hb.compile(template);
   const renderedTemplate = compiledTemplate(args);
   // Make sure the .vscode directory exists
@@ -52,28 +59,42 @@ function RenderTemplateToFile(templateLocation: string, saveLocation: string, ar
 }
 
 export function EnvJSONWriter(args: DevEnvObject) {
-  const baseDir = path.resolve(__dirname, "../../..")
+  const baseDir = path.resolve(__dirname, "../../..");
   const output: EnvOutput = {
     Computed: {
-      BASEDIR: baseDir
-
+      BASEDIR: baseDir,
     },
-    Dev: args
+    Dev: args,
   };
   if (args.sifResults != undefined) {
-    const sif = args.sifResults
-    const val = sif.validatorValues[0]
-    output.Computed.CHAINDIR = path.resolve("/tmp/sifnodedNetwork/validators", val.chain_id, val.moniker)
+    const sif = args.sifResults;
+    const val = sif.validatorValues[0];
+    output.Computed.CHAINDIR = path.resolve(
+      "/tmp/sifnodedNetwork/validators",
+      val.chain_id,
+      val.moniker
+    );
   }
   try {
-    RenderTemplateToFile(path.resolve(__dirname, "templates", "env.hbs"), path.resolve(__dirname, "../../", ".env"), output)
+    RenderTemplateToFile(
+      path.resolve(__dirname, "templates", "env.hbs"),
+      path.resolve(__dirname, "../../", ".env"),
+      output
+    );
     fs.writeFileSync(path.resolve(__dirname, "../../", "environment.json"), JSON.stringify(args));
-    const envJSON = RenderTemplateToFile(path.resolve(__dirname, "templates", "env.json.hbs"), path.resolve(__dirname, "../../", "env.json"), output)
+    const envJSON = RenderTemplateToFile(
+      path.resolve(__dirname, "templates", "env.json.hbs"),
+      path.resolve(__dirname, "../../", "env.json"),
+      output
+    );
     output.Env = envJSON;
-    RenderTemplateToFile(path.resolve(__dirname, "templates", "launch.json.hbs"), path.resolve(__dirname, "../../../", ".vscode", "launch.json"), output)
+    RenderTemplateToFile(
+      path.resolve(__dirname, "templates", "launch.json.hbs"),
+      path.resolve(__dirname, "../../../", ".vscode", "launch.json"),
+      output
+    );
     console.log("Wrote environment and JSON values to disk. PATH: ", path.resolve(__dirname));
-  }
-  catch (error) {
+  } catch (error) {
     console.error("Failed to write environment/json values to disk, ERROR: ", error);
   }
 }

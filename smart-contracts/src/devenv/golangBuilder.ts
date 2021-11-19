@@ -13,10 +13,7 @@ export class GolangResults extends SynchronousCommandResult {
 }
 
 export class GolangResultsPromise {
-  constructor(
-    readonly results: Promise<GolangResults>
-  ) {
-  }
+  constructor(readonly results: Promise<GolangResults>) {}
 }
 
 export class GolangBuilder extends SynchronousCommand<GolangResults> {
@@ -25,15 +22,11 @@ export class GolangBuilder extends SynchronousCommand<GolangResults> {
   }
 
   cmd(): [string, string[]] {
-    return ["make", [
-      "-C",
-      "..",
-      "install",
-    ]]
+    return ["make", ["-C", "..", "install"]];
   }
 
   resultConverter(r: SynchronousCommandResult): GolangResults {
-    const goBin = requiredEnvVar("GOBIN")
-    return new GolangResults(goBin, r.completed, r.error, r.output)
+    const goBin = requiredEnvVar("GOBIN");
+    return new GolangResults(goBin, r.completed, r.error, r.output);
   }
 }

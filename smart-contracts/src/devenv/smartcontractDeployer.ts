@@ -13,10 +13,7 @@ export class SmartContractDeployResult extends SynchronousCommandResult {
 }
 
 export class SmartContractDeployResultsPromise {
-  constructor(
-    readonly results: Promise<SmartContractDeployResult>
-  ) {
-  }
+  constructor(readonly results: Promise<SmartContractDeployResult>) {}
 }
 
 export class SmartContractDeployer extends SynchronousCommand<SmartContractDeployResult> {
@@ -25,27 +22,28 @@ export class SmartContractDeployer extends SynchronousCommand<SmartContractDeplo
   }
 
   cmd(): [string, string[]] {
-    let deployCmd: [string, string[]] = ["npx", [
-      "hardhat",
-      "run",
-      "scripts/deploy_contracts.ts",
-      "--network",
-      "localhost"
-    ]]
-    console.log("smartcontractDeployer running cmd:", deployCmd)
+    let deployCmd: [string, string[]] = [
+      "npx",
+      ["hardhat", "run", "scripts/deploy_contracts.ts", "--network", "localhost"],
+    ];
+    console.log("smartcontractDeployer running cmd:", deployCmd);
     return deployCmd;
   }
 
   resultConverter(r: SynchronousCommandResult): SmartContractDeployResult {
     // This is to handle npx commmand outputting "No need to generate any newer types"
-    console.log(r.output)
-    const jsonOutput = JSON.parse(r.output.split('\n')[1]);
-    return new SmartContractDeployResult({
-      cosmosBridge: jsonOutput.cosmosBridge,
-      bridgeBank: jsonOutput.bridgeBank,
-      bridgeRegistry: jsonOutput.bridgeRegistry,
-      rowanContract: jsonOutput.rowanContract
-    },
-      r.completed, r.error, r.output);
+    console.log(r.output);
+    const jsonOutput = JSON.parse(r.output.split("\n")[1]);
+    return new SmartContractDeployResult(
+      {
+        cosmosBridge: jsonOutput.cosmosBridge,
+        bridgeBank: jsonOutput.bridgeBank,
+        bridgeRegistry: jsonOutput.bridgeRegistry,
+        rowanContract: jsonOutput.rowanContract,
+      },
+      r.completed,
+      r.error,
+      r.output
+    );
   }
 }
