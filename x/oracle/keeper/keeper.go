@@ -3,15 +3,15 @@ package keeper
 import (
 	"errors"
 	"fmt"
-	"github.com/Sifchain/sifnode/x/instrumentation"
 	"strconv"
 	"strings"
+
+	"github.com/Sifchain/sifnode/x/instrumentation"
 
 	"go.uber.org/zap"
 
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	gethCommon "github.com/ethereum/go-ethereum/common"
 	gethCrypto "github.com/ethereum/go-ethereum/crypto"
 	"github.com/tendermint/tendermint/libs/log"
 
@@ -189,7 +189,7 @@ func (k Keeper) ProcessSignProphecy(ctx sdk.Context, networkDescriptor types.Net
 	}
 
 	// verify the signature
-	publicKey, err := gethCrypto.Ecrecover(prophecyID, gethCommon.FromHex(signature))
+	publicKey, err := gethCrypto.Ecrecover(prophecyID, []byte(signature))
 	if err != nil {
 		return err
 	}
