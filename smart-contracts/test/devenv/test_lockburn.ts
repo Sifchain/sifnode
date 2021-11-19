@@ -9,14 +9,15 @@ import {SifchainContractFactories} from "../../src/tsyringe/contracts";
 import {buildDevEnvContracts, DevEnvContracts} from "../../src/contractSupport";
 import web3 from "web3";
 import * as ethereumAddress from "../../src/ethereumAddress";
-import {SifEvent, SifHeartbeat, sifwatch} from "../../src/watcher/watcher";
-import {distinctUntilChanged, lastValueFrom, Observable, scan, takeWhile} from "rxjs";
+import {SifEvent, SifHeartbeat, sifwatch, sifwatchReplayable} from "../../src/watcher/watcher";
+import * as rxjs from "rxjs";
+import {defer, distinctUntilChanged, lastValueFrom, Observable, scan, Subscription, takeWhile} from "rxjs";
 import {EbRelayerEvmEvent} from "../../src/watcher/ebrelayer";
 import {EthereumMainnetEvent} from "../../src/watcher/ethereumMainnet";
 import {filter} from "rxjs/operators";
 import {SignerWithAddress} from "@nomiclabs/hardhat-ethers/signers";
 import * as ChildProcess from "child_process"
-import {EbRelayerAccount, crossChainFeeBase, crossChainLockFee, crossChainBurnFee} from "../../src/devenv/sifnoded";
+import {crossChainBurnFee, crossChainFeeBase, EbRelayerAccount} from "../../src/devenv/sifnoded";
 import {v4 as uuidv4} from 'uuid';
 import * as dotenv from "dotenv"
 import deepEqual = require("deep-equal");
@@ -48,7 +49,12 @@ interface State {
     value: SifEvent | EthereumMainnetEvent | Success | Failure | InitialState | Terminate
     createdAt: number
     currentHeartbeat: number
+    fromEthereumAddress: string
+    ethereumNonce: BigNumber
+    denomHash: string
+    ethereumLockBurnSequence: BigNumber
     transactionStep: TransactionStep
+    uniqueId: string
 }
 
 enum TransactionStep {
@@ -57,6 +63,7 @@ enum TransactionStep {
     SawProphecyClaim = "SawProphecyClaim",
     SawEthbridgeClaimArray = "SawEthbridgeClaimArray",
     BroadcastTx = "BroadcastTx",
+    EthBridgeClaimArray = "EthBridgeClaimArray",
     CreateEthBridgeClaim = "CreateEthBridgeClaim",
     AddTokenMetadata = "AddTokenMetadata",
     AppendValidatorToProphecy = "AppendValidatorToProphecy",
@@ -92,15 +99,13 @@ function verbosityLevel(): VerbosityLevel {
             return "none"
         case "summary":
             return "summary"
-            break
         default:
             return "full"
-            break
     }
 }
 
-function attachDebugPrintfs<T>(xs: Observable<T>, verbosity: VerbosityLevel) {
-    xs.subscribe({
+function attachDebugPrintfs<T>(xs: Observable<T>, verbosity: VerbosityLevel): Subscription {
+    return xs.subscribe({
         next: x => {
             switch (verbosity) {
                 case "full":
@@ -123,7 +128,7 @@ function hasDuplicateNonce(a: EbRelayerEvmEvent, b: EbRelayerEvmEvent): boolean 
 
 const gobin = process.env["GOBIN"]
 
-describe("lock of ethereum", () => {
+describe("lock and burn tests", () => {
     dotenv.config()
 
     // This test only works when devenv is running, and that requires a connection to localhost
@@ -211,98 +216,18 @@ describe("lock of ethereum", () => {
         return JSON.parse(responseString)
     }
 
-    async function executeLock(contracts: DevEnvContracts, smallAmount: BigNumber, sender1: SignerWithAddress, sifchainRecipient: string, verbose: boolean) {
-        const evmRelayerEvents = sifwatch({
+    // Wrap an async function into an Observable<T>
+    function deferAsync<T>(fn: () => Promise<T>): Observable<T> {
+        return defer(() => rxjs.from(fn()))
+    }
+
+    async function executeLock(contracts: DevEnvContracts, smallAmount: BigNumber, sender1: SignerWithAddress, sifchainRecipient: string, verbose: boolean, identifier: string) {
+        const [evmRelayerEvents, replayedEvents] = sifwatchReplayable({
             evmrelayer: "/tmp/sifnode/evmrelayer.log",
             sifnoded: "/tmp/sifnode/sifnoded.log"
-        }, hardhat, contracts.bridgeBank).pipe(filter(x => x.kind !== "SifnodedInfoEvent"))
+        }, hardhat, contracts.bridgeBank)
 
-        const states: Observable<State> = evmRelayerEvents.pipe(scan((acc: State, v: SifEvent) => {
-            if (isTerminalState(acc))
-                // we've reached a decision
-                return {...acc, value: {kind: "terminate"} as Terminate}
-            switch (v.kind) {
-                case "EbRelayerError":
-                case "SifnodedError":
-                    // if we get an actual error, that's always a failure
-                    return {...acc, value: {kind: "failure", value: v, message: "simple error"}}
-                case "SifHeartbeat":
-                    // we just store the heartbeat
-                    return {...acc, currentHeartbeat: v.value} as State
-                case "EthereumMainnetLogLock":
-                    // we should see exactly one lock
-                    if (v.data.value.eq(smallAmount) && acc.transactionStep == TransactionStep.Initial)
-                        return {...acc, value: v, transactionStep: TransactionStep.SawLogLock}
-                    else
-                        return {
-                            ...acc,
-                            value: {
-                                kind: "failure",
-                                value: v,
-                                message: "incorrect EthereumMainnetLogLock"
-                            }
-                        }
-                case "EbRelayerEvmStateTransition":
-                    switch ((v.data as any).kind) {
-                        case "EthereumProphecyClaim":
-                            return {
-                                ...acc,
-                                value: v,
-                                transactionStep: TransactionStep.SawProphecyClaim
-                            }
-                        case "EthBridgeClaimArray":
-                            return {
-                                ...acc,
-                                value: v,
-                                transactionStep: TransactionStep.SawEthbridgeClaimArray
-                            }
-                        case "BroadcastTx":
-                            return {...acc, value: v, transactionStep: TransactionStep.BroadcastTx}
-                    }
-                case "SifnodedPeggyEvent":
-                    switch ((v.data as any).kind) {
-                        case "coinsSent":
-                            const coins = ((v.data as any).coins as any)[0]
-                            if (coins["denom"] === ethDenomHash && smallAmount.eq(coins["amount"]))
-                                return ensureCorrectTransition(acc, v, TransactionStep.ProcessSuccessfulClaim, TransactionStep.CoinsSent)
-                            else
-                                return buildFailure(acc, v, "incorrect hash or amount")
-                        // TODO these steps need validation to make sure they're happing in the right order with the right data
-                        case "CreateEthBridgeClaim":
-                            return ensureCorrectTransition(
-                                acc,
-                                v,
-                                [TransactionStep.BroadcastTx, TransactionStep.AppendValidatorToProphecy],
-                                TransactionStep.CreateEthBridgeClaim
-                            )
-                        case "AppendValidatorToProphecy":
-                            return ensureCorrectTransition(acc, v, TransactionStep.CreateEthBridgeClaim, TransactionStep.AppendValidatorToProphecy)
-                        case "ProcessSuccessfulClaim":
-                            return ensureCorrectTransition(acc, v, TransactionStep.AppendValidatorToProphecy, TransactionStep.ProcessSuccessfulClaim)
-                        case "AddTokenMetadata":
-                            return ensureCorrectTransition(acc, v, TransactionStep.ProcessSuccessfulClaim, TransactionStep.AddTokenMetadata)
-                    }
-                    return {...acc, value: v, createdAt: acc.currentHeartbeat}
-                default:
-                    // we have a new value (of any kind) and it should use the current heartbeat as its creation time
-                    return {...acc, value: v, createdAt: acc.currentHeartbeat}
-            }
-        }, {
-            value: {kind: "initialState"},
-            createdAt: 0,
-            currentHeartbeat: 0,
-            transactionStep: TransactionStep.Initial
-        } as State))
-
-        // it's useful to skip debug prints of states where only the heartbeat changed
-        const withoutHeartbeat = states.pipe(distinctUntilChanged<State>((a, b) => {
-            return deepEqual({...a, currentHeartbeat: 0}, {...b, currentHeartbeat: 0})
-        }))
-
-        if (verbose)
-            attachDebugPrintfs(withoutHeartbeat, verbosityLevel())
-
-        await contracts.bridgeBank.connect(sender1).lock(
+        const tx = await contracts.bridgeBank.connect(sender1).lock(
             sifchainRecipient,
             ethereumAddress.eth.address,
             smallAmount,
@@ -311,9 +236,113 @@ describe("lock of ethereum", () => {
             }
         )
 
+        const states: Observable<State> = evmRelayerEvents
+            .pipe(filter(x => x.kind !== "SifnodedInfoEvent"))
+            .pipe(scan((acc: State, v: SifEvent) => {
+                if (isTerminalState(acc))
+                    // we've reached a decision
+                    return {...acc, value: {kind: "terminate"} as Terminate}
+                switch (v.kind) {
+                    case "EbRelayerError":
+                    case "SifnodedError":
+                        // if we get an actual error, that's always a failure
+                        return {...acc, value: {kind: "failure", value: v, message: "simple error"}}
+                    case "SifHeartbeat":
+                        // we just store the heartbeat
+                        return {...acc, currentHeartbeat: v.value} as State
+                    case "EthereumMainnetLogLock":
+                        // we should see exactly one lock
+                        let ethBlock = v.data.block as any;
+                        if (ethBlock.transactionHash === tx.hash && v.data.value.eq(smallAmount)) {
+                            const newAcc: State = {
+                                ...acc,
+                                fromEthereumAddress: v.data.from,
+                                ethereumNonce: BigNumber.from(v.data.nonce)
+                            }
+                            return ensureCorrectTransition(newAcc, v, TransactionStep.Initial, TransactionStep.SawLogLock)
+                        } else
+                            return {
+                                ...acc,
+                                value: {
+                                    kind: "failure",
+                                    value: v,
+                                    message: "incorrect EthereumMainnetLogLock"
+                                }
+                            }
+                    case "EbRelayerEvmStateTransition":
+                        switch ((v.data as any).kind) {
+                            case "EthereumProphecyClaim":
+                                const d = v.data as any
+                                if (d.prophecyClaim.ethereum_sender == acc.fromEthereumAddress && BigNumber.from(d.event.Nonce).eq(acc.ethereumNonce))
+                                    return ensureCorrectTransition({
+                                        ...acc,
+                                        denomHash: d.prophecyClaim.denom_hash
+                                    }, v, TransactionStep.SawLogLock, TransactionStep.SawProphecyClaim)
+                                break
+                            case "EthBridgeClaimArray":
+                                let claims = (v.data as any).claims as any[];
+                                const matchingClaim = claims.find(claim => claim.denom_hash === acc.denomHash)
+                                if (matchingClaim)
+                                    return ensureCorrectTransition(acc, v, TransactionStep.SawProphecyClaim, TransactionStep.EthBridgeClaimArray)
+                                break
+                            case "BroadcastTx":
+                                const messages = (v.data as any).messages as any[];
+                                const matchingMessage = messages.find(msg => msg.eth_bridge_claim.denom_hash === acc.denomHash)
+                                if (matchingMessage)
+                                    return ensureCorrectTransition(acc, v, TransactionStep.EthBridgeClaimArray, TransactionStep.BroadcastTx)
+                        }
+                    case "SifnodedPeggyEvent":
+                        switch ((v.data as any).kind) {
+                            case "coinsSent":
+                                const coins = ((v.data as any).coins as any)[0]
+                                if (coins["denom"] === ethDenomHash && smallAmount.eq(coins["amount"]))
+                                    return ensureCorrectTransition(acc, v, TransactionStep.ProcessSuccessfulClaim, TransactionStep.CoinsSent)
+                                else
+                                    return buildFailure(acc, v, "incorrect hash or amount")
+                            // TODO these steps need validation to make sure they're happing in the right order with the right data
+                            case "CreateEthBridgeClaim":
+                                let newSequenceNumber = (v.data as any).msg.Interface.eth_bridge_claim.ethereum_lock_burn_sequence;
+                                if (acc.ethereumNonce?.eq(newSequenceNumber))
+                                    return ensureCorrectTransition(
+                                        acc,
+                                        v,
+                                        [TransactionStep.BroadcastTx, TransactionStep.AppendValidatorToProphecy],
+                                        TransactionStep.CreateEthBridgeClaim
+                                    )
+                                break
+                            case "AppendValidatorToProphecy":
+                                return ensureCorrectTransition(acc, v, TransactionStep.CreateEthBridgeClaim, TransactionStep.AppendValidatorToProphecy)
+                            case "ProcessSuccessfulClaim":
+                                return ensureCorrectTransition(acc, v, TransactionStep.AppendValidatorToProphecy, TransactionStep.ProcessSuccessfulClaim)
+                            case "AddTokenMetadata":
+                                return ensureCorrectTransition(acc, v, TransactionStep.ProcessSuccessfulClaim, TransactionStep.AddTokenMetadata)
+                        }
+                        return {...acc, value: v, createdAt: acc.currentHeartbeat}
+                    default:
+                        // we have a new value (of any kind) and it should use the current heartbeat as its creation time
+                        return {...acc, value: v, createdAt: acc.currentHeartbeat}
+                }
+            }, {
+                value: {kind: "initialState"},
+                createdAt: 0,
+                currentHeartbeat: 0,
+                transactionStep: TransactionStep.Initial,
+                uniqueId: identifier
+            } as State))
+
+        // it's useful to skip debug prints of states where only the heartbeat changed
+        const withoutHeartbeat = states.pipe(distinctUntilChanged<State>((a, b) => {
+            return deepEqual({...a, currentHeartbeat: 0}, {...b, currentHeartbeat: 0})
+        }))
+
+        const verboseSubscription = attachDebugPrintfs(withoutHeartbeat, verbosityLevel())
+
         const lv = await lastValueFrom(states.pipe(takeWhile(x => x.value.kind !== "terminate")))
 
         expect(lv.transactionStep, `did not get CoinsSent, last step was ${JSON.stringify(lv, undefined, 2)}`).to.eq(TransactionStep.CoinsSent)
+
+        verboseSubscription.unsubscribe()
+        replayedEvents.unsubscribe()
     }
 
     it("should allow ceth to eth tx", async () => {
@@ -333,7 +362,8 @@ describe("lock of ethereum", () => {
             sendAmount,
             ethereumAccounts.availableAccounts[0],
             web3.utils.utf8ToHex(testSifAccount.account),
-            false
+            false,
+            "ceth to eth"
         );
 
         const evmRelayerEvents = sifwatch({
@@ -404,8 +434,8 @@ describe("lock of ethereum", () => {
             return deepEqual({...a, currentHeartbeat: 0}, {...b, currentHeartbeat: 0})
         }))
 
-        attachDebugPrintfs(withoutHeartbeat, verbosityLevel())
-        
+        const verboseSubscription = attachDebugPrintfs(withoutHeartbeat, verbosityLevel())
+
         let crossChainCethFee = crossChainFeeBase * crossChainBurnFee
 
         await executeSifBurn(
@@ -419,9 +449,11 @@ describe("lock of ethereum", () => {
 
         const lv = await lastValueFrom(states.pipe(takeWhile(x => x.value.kind !== "terminate")))
         expect(lv.transactionStep, `did not get a LogBridgeTokenMint, last step was ${JSON.stringify(lv, undefined, 2)}`).to.eq(TransactionStep.LogBridgeTokenMint)
+
+        verboseSubscription.unsubscribe()
     })
 
-    it("should send two locks of ethereum", async () => {
+    it.only("should send two locks of ethereum", async () => {
         const ethereumAccounts = await ethereumResultsToSifchainAccounts(devEnvObject.ethResults!, hardhat.ethers.provider)
         const factories = container.resolve(SifchainContractFactories)
         const contracts = await buildDevEnvContracts(devEnvObject, hardhat, factories)
@@ -429,7 +461,7 @@ describe("lock of ethereum", () => {
         const smallAmount = BigNumber.from(1017)
 
         // Do two locks of ethereum
-        await executeLock(contracts, smallAmount, sender1, recipient, true)
-        await executeLock(contracts, smallAmount, sender1, recipient, true)
+        await executeLock(contracts, smallAmount, sender1, recipient, true, "lock of eth")
+        await executeLock(contracts, smallAmount, sender1, recipient, true, "second lock of eth")
     })
 })
