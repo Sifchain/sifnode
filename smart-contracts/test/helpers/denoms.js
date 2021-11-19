@@ -6,9 +6,6 @@ const crypto = require("crypto");
  * @dev this function expects an object with the following properties
  * @param {Number} networkDescriptor : what is the token's current network? Use 1 for Ethereum mainnet
  * @param {String} tokenAddress : the address of this token in its current network
- * @param {String} tokenName : the name of the token
- * @param {String} tokenSymbol : the symbol of the token
- * @param {Number} tokenDecimals : how many decimals it has
  * @param {Boolean} isERC20 : is this an EVM token (true), or an IBC token (false)?
  * @returns {String} the final denom
  */
