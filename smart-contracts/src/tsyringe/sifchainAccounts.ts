@@ -1,9 +1,9 @@
-import { HardhatRuntimeEnvironment } from "hardhat/types";
-import { HardhatRuntimeEnvironmentToken } from "./injectionTokens";
-import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
-import { inject, injectable } from "tsyringe";
-import { isHardhatRuntimeEnvironment } from "./hardhatSupport";
-import { Signer } from "ethers";
+import { HardhatRuntimeEnvironment } from "hardhat/types"
+import { HardhatRuntimeEnvironmentToken } from "./injectionTokens"
+import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers"
+import { inject, injectable } from "tsyringe"
+import { isHardhatRuntimeEnvironment } from "./hardhatSupport"
+import { Signer } from "ethers"
 
 /**
  * The accounts necessary for testing a sifchain system
@@ -24,17 +24,17 @@ export class SifchainAccounts {
  */
 @injectable()
 export class SifchainAccountsPromise {
-  accounts: Promise<SifchainAccounts>;
+  accounts: Promise<SifchainAccounts>
 
-  constructor(accounts: Promise<SifchainAccounts>);
+  constructor(accounts: Promise<SifchainAccounts>)
   constructor(
     @inject(HardhatRuntimeEnvironmentToken)
     hardhatOrAccounts: HardhatRuntimeEnvironment | Promise<SifchainAccounts>
   ) {
     if (isHardhatRuntimeEnvironment(hardhatOrAccounts)) {
-      this.accounts = hreToSifchainAccountsAsync(hardhatOrAccounts);
+      this.accounts = hreToSifchainAccountsAsync(hardhatOrAccounts)
     } else {
-      this.accounts = hardhatOrAccounts;
+      this.accounts = hardhatOrAccounts
     }
   }
 }
@@ -42,14 +42,14 @@ export class SifchainAccountsPromise {
 export async function hreToSifchainAccountsAsync(
   hardhat: HardhatRuntimeEnvironment
 ): Promise<SifchainAccounts> {
-  const accounts = await hardhat.ethers.getSigners();
+  const accounts = await hardhat.ethers.getSigners()
   const [operatorAccount, ownerAccount, pauserAccount, validator1Account, ...extraAccounts] =
-    accounts;
+    accounts
   return new SifchainAccounts(
     operatorAccount,
     ownerAccount,
     pauserAccount,
     [validator1Account],
     extraAccounts
-  );
+  )
 }

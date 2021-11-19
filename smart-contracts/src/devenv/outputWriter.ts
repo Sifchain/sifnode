@@ -1,23 +1,23 @@
-import { GolangResults } from "./golangBuilder";
-import { SifnodedResults } from "./sifnoded";
-import { SmartContractDeployResult } from "./smartcontractDeployer";
-import { EthereumResults } from "./devEnv";
-import path from "path";
-import fs from "fs";
-import hb from "handlebars";
+import { GolangResults } from "./golangBuilder"
+import { SifnodedResults } from "./sifnoded"
+import { SmartContractDeployResult } from "./smartcontractDeployer"
+import { EthereumResults } from "./devEnv"
+import path from "path"
+import fs from "fs"
+import hb from "handlebars"
 interface EnvOutput {
   Computed: {
-    BASEDIR: string;
-    CHAINDIR?: string;
-  };
-  Dev: DevEnvObject;
-  Env?: string;
+    BASEDIR: string
+    CHAINDIR?: string
+  }
+  Dev: DevEnvObject
+  Env?: string
 }
 export interface DevEnvObject {
-  ethResults?: EthereumResults;
-  goResults?: GolangResults;
-  sifResults?: SifnodedResults;
-  contractResults?: SmartContractDeployResult;
+  ethResults?: EthereumResults
+  goResults?: GolangResults
+  sifResults?: SifnodedResults
+  contractResults?: SmartContractDeployResult
 }
 
 /**
@@ -40,61 +40,61 @@ function RenderTemplateToFile(
        * last param. This causes issue because endIndex is optional
        */
       if (!endIndex || typeof endIndex != "number") {
-        endIndex = undefined;
+        endIndex = undefined
       }
-      let trimmedString: string = inputString.substring(startIndex, endIndex);
-      return new hb.SafeString(trimmedString);
+      let trimmedString: string = inputString.substring(startIndex, endIndex)
+      return new hb.SafeString(trimmedString)
     }
-  );
+  )
 
-  const template = fs.readFileSync(templateLocation, "utf8");
-  const compiledTemplate = hb.compile(template);
-  const renderedTemplate = compiledTemplate(args);
+  const template = fs.readFileSync(templateLocation, "utf8")
+  const compiledTemplate = hb.compile(template)
+  const renderedTemplate = compiledTemplate(args)
   // Make sure the .vscode directory exists
-  const dirPath = path.dirname(saveLocation);
-  fs.mkdirSync(dirPath, { recursive: true });
+  const dirPath = path.dirname(saveLocation)
+  fs.mkdirSync(dirPath, { recursive: true })
   // Save the file in the .vscode directory
-  fs.writeFileSync(saveLocation, renderedTemplate);
-  return renderedTemplate;
+  fs.writeFileSync(saveLocation, renderedTemplate)
+  return renderedTemplate
 }
 
 export function EnvJSONWriter(args: DevEnvObject) {
-  const baseDir = path.resolve(__dirname, "../../..");
+  const baseDir = path.resolve(__dirname, "../../..")
   const output: EnvOutput = {
     Computed: {
       BASEDIR: baseDir,
     },
     Dev: args,
-  };
+  }
   if (args.sifResults != undefined) {
-    const sif = args.sifResults;
-    const val = sif.validatorValues[0];
+    const sif = args.sifResults
+    const val = sif.validatorValues[0]
     output.Computed.CHAINDIR = path.resolve(
       "/tmp/sifnodedNetwork/validators",
       val.chain_id,
       val.moniker
-    );
+    )
   }
   try {
     RenderTemplateToFile(
       path.resolve(__dirname, "templates", "env.hbs"),
       path.resolve(__dirname, "../../", ".env"),
       output
-    );
-    fs.writeFileSync(path.resolve(__dirname, "../../", "environment.json"), JSON.stringify(args));
+    )
+    fs.writeFileSync(path.resolve(__dirname, "../../", "environment.json"), JSON.stringify(args))
     const envJSON = RenderTemplateToFile(
       path.resolve(__dirname, "templates", "env.json.hbs"),
       path.resolve(__dirname, "../../", "env.json"),
       output
-    );
-    output.Env = envJSON;
+    )
+    output.Env = envJSON
     RenderTemplateToFile(
       path.resolve(__dirname, "templates", "launch.json.hbs"),
       path.resolve(__dirname, "../../../", ".vscode", "launch.json"),
       output
-    );
-    console.log("Wrote environment and JSON values to disk. PATH: ", path.resolve(__dirname));
+    )
+    console.log("Wrote environment and JSON values to disk. PATH: ", path.resolve(__dirname))
   } catch (error) {
-    console.error("Failed to write environment/json values to disk, ERROR: ", error);
+    console.error("Failed to write environment/json values to disk, ERROR: ", error)
   }
 }

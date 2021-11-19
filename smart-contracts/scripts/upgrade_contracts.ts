@@ -1,10 +1,10 @@
-import * as hardhat from "hardhat";
-import { container } from "tsyringe";
-import { DeployedBridgeBank, DeployedCosmosBridge, requiredEnvVar } from "../src/contractSupport";
-import { DeploymentName, HardhatRuntimeEnvironmentToken } from "../src/tsyringe/injectionTokens";
-import { setupRopstenDeployment, setupSifchainMainnetDeployment } from "../src/hardhatFunctions";
-import { SifchainContractFactories } from "../src/tsyringe/contracts";
-import * as dotenv from "dotenv";
+import * as hardhat from "hardhat"
+import { container } from "tsyringe"
+import { DeployedBridgeBank, DeployedCosmosBridge, requiredEnvVar } from "../src/contractSupport"
+import { DeploymentName, HardhatRuntimeEnvironmentToken } from "../src/tsyringe/injectionTokens"
+import { setupRopstenDeployment, setupSifchainMainnetDeployment } from "../src/hardhatFunctions"
+import { SifchainContractFactories } from "../src/tsyringe/contracts"
+import * as dotenv from "dotenv"
 
 // Usage
 //
@@ -19,21 +19,21 @@ import * as dotenv from "dotenv";
 // DEPLOYMENT_NAME="sifchain-testnet-042-ibc"
 
 async function main() {
-  const [proxyAdmin] = await hardhat.ethers.getSigners();
+  const [proxyAdmin] = await hardhat.ethers.getSigners()
 
-  container.register(HardhatRuntimeEnvironmentToken, { useValue: hardhat });
+  container.register(HardhatRuntimeEnvironmentToken, { useValue: hardhat })
 
-  const deploymentName = requiredEnvVar("DEPLOYMENT_NAME");
+  const deploymentName = requiredEnvVar("DEPLOYMENT_NAME")
 
-  container.register(DeploymentName, { useValue: deploymentName });
+  container.register(DeploymentName, { useValue: deploymentName })
 
   switch (hardhat.network.name) {
     case "ropsten":
-      await setupRopstenDeployment(container, hardhat, deploymentName);
-      break;
+      await setupRopstenDeployment(container, hardhat, deploymentName)
+      break
     case "mainnet":
-      await setupSifchainMainnetDeployment(container, hardhat);
-      break;
+      await setupSifchainMainnetDeployment(container, hardhat)
+      break
   }
 
   // upgradeProxy wants two things: a ContractFactory to build the new logic contract,
@@ -41,26 +41,26 @@ async function main() {
 
   const factories = (await container.resolve(
     SifchainContractFactories
-  )) as SifchainContractFactories;
-  const bridgeBankFactory = await factories.bridgeBank;
-  const cosmosBridgeFactory = await factories.cosmosBridge;
+  )) as SifchainContractFactories
+  const bridgeBankFactory = await factories.bridgeBank
+  const cosmosBridgeFactory = await factories.cosmosBridge
 
-  const existingBridgeBank = await container.resolve(DeployedBridgeBank).contract;
-  const existingCosmosBridge = await container.resolve(DeployedCosmosBridge).contract;
+  const existingBridgeBank = await container.resolve(DeployedBridgeBank).contract
+  const existingCosmosBridge = await container.resolve(DeployedCosmosBridge).contract
 
   await hardhat.upgrades.upgradeProxy(existingBridgeBank, bridgeBankFactory.connect(proxyAdmin), {
     unsafeAllowCustomTypes: true,
-  });
+  })
   await hardhat.upgrades.upgradeProxy(
     existingCosmosBridge,
     cosmosBridgeFactory.connect(proxyAdmin),
     { unsafeAllowCustomTypes: true }
-  );
+  )
 }
 
 main()
   .then(() => process.exit(0))
   .catch((error) => {
-    console.error(error);
-    process.exit(1);
-  });
+    console.error(error)
+    process.exit(1)
+  })

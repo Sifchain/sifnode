@@ -1,5 +1,5 @@
-import { SynchronousCommand, SynchronousCommandResult } from "./synchronousCommand";
-import { DeployedContractAddresses } from "../../scripts/deploy_contracts";
+import { SynchronousCommand, SynchronousCommandResult } from "./synchronousCommand"
+import { DeployedContractAddresses } from "../../scripts/deploy_contracts"
 
 export class SmartContractDeployResult extends SynchronousCommandResult {
   constructor(
@@ -8,7 +8,7 @@ export class SmartContractDeployResult extends SynchronousCommandResult {
     readonly error: Error | undefined,
     readonly output: string
   ) {
-    super(completed, error, output);
+    super(completed, error, output)
   }
 }
 
@@ -18,22 +18,22 @@ export class SmartContractDeployResultsPromise {
 
 export class SmartContractDeployer extends SynchronousCommand<SmartContractDeployResult> {
   constructor() {
-    super();
+    super()
   }
 
   cmd(): [string, string[]] {
     let deployCmd: [string, string[]] = [
       "npx",
       ["hardhat", "run", "scripts/deploy_contracts.ts", "--network", "localhost"],
-    ];
-    console.log("smartcontractDeployer running cmd:", deployCmd);
-    return deployCmd;
+    ]
+    console.log("smartcontractDeployer running cmd:", deployCmd)
+    return deployCmd
   }
 
   resultConverter(r: SynchronousCommandResult): SmartContractDeployResult {
     // This is to handle npx commmand outputting "No need to generate any newer types"
-    console.log(r.output);
-    const jsonOutput = JSON.parse(r.output.split("\n")[1]);
+    console.log(r.output)
+    const jsonOutput = JSON.parse(r.output.split("\n")[1])
     return new SmartContractDeployResult(
       {
         cosmosBridge: jsonOutput.cosmosBridge,
@@ -44,6 +44,6 @@ export class SmartContractDeployer extends SynchronousCommand<SmartContractDeplo
       r.completed,
       r.error,
       r.output
-    );
+    )
   }
 }
