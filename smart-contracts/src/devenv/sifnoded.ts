@@ -150,6 +150,7 @@ export class SifnodedRunner extends ShellCommand<SifnodedResults> {
         `${this.sifnodedCommand} keys show -a --bech val ${moniker} --keyring-backend test`,
         { encoding: "utf8", input: password }
       ).trim()
+      console.log(`--bech val output: ${whitelistedValidator}`)
     }
 
     // Create an ADMIN account on sifnode with name sifnodeadmin
