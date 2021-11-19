@@ -14,6 +14,7 @@ const (
 	EthereumEvent = "EthereumEvent"
 	CosmosEvent   = "CosmosEvent"
 
+	EthereumProphecyClaim        = "EthereumProphecyClaim"
 	SetGlobalNonceToBlockNumber  = "SetGlobalNonceToBlockNumber"
 	SendCoinsFromAccountToModule = "SendCoinsFromAccountToModule"
 	BurnCoins                    = "BurnCoins"

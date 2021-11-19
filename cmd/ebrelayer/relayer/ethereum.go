@@ -435,7 +435,7 @@ func (sub EthereumSub) handleEthereumEvent(txFactory tx.Factory,
 			// then it start from current event and sifnode will accept it
 			if lockBurnNonce == 0 || prophecyClaim.EthereumLockBurnSequence == lockBurnNonce+1 {
 				prophecyClaims = append(prophecyClaims, &prophecyClaim)
-				instrumentation.PeggyCheckpointZap(sub.SugaredLogger, "EthereumProphecyClaim", zap.Reflect("event", event))
+				instrumentation.PeggyCheckpointZap(sub.SugaredLogger, instrumentation.EthereumProphecyClaim, zap.Reflect("event", event), "prophecyClaim", prophecyClaim)
 				lockBurnNonce = prophecyClaim.EthereumLockBurnSequence
 			} else {
 				sub.SugaredLogger.Infow("lock burn nonce is not expected",
