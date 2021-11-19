@@ -31,7 +31,7 @@ def create_new_sifaddr_and_key():
 # CODE TO SEND SOME SAMPLE TOKEN TO NEW ADDRESS
 def send_sample_rowan(from_address, to_address, amount, keyring_backend, chain_id, offline):
     logging.debug(f"transfer_rowan")
-    sifchain_fees_entry = f"--fees 150000rowan"
+    sifchain_fees_entry = f"--fees 100000000000000000rowan"
     keyring_backend_entry = f"--keyring-backend {keyring_backend}"
     cmd = " ".join([
         "sifnoded tx bank send",
@@ -41,7 +41,7 @@ def send_sample_rowan(from_address, to_address, amount, keyring_backend, chain_i
         keyring_backend_entry,
         sifchain_fees_entry,
         f"--chain-id {chain_id}",
-        f"--yes"
+        f"--yes -o json"
     ])
     json_str = get_shell_output_json(cmd)
     assert (json_str.get("code", 0) == 0)
@@ -166,7 +166,7 @@ def sign_txn(signingaddress, file):
         f"{file}",
         keyring_backend_entry,
         "--chain-id localnet",
-        f"--yes"
+        f"--yes -o json"
     ])
     json_str = get_shell_output_json(cmd)
     return json_str
@@ -177,7 +177,7 @@ def broadcast_txn(file_path):
     cmd = " ".join([
         "sifnoded tx broadcast",
         f"{file_path}",
-        f"--yes"
+        f"--yes -o json"
     ])
     json_str = get_shell_output_json(cmd)
     txn = json_str["txhash"]
@@ -190,7 +190,7 @@ def broadcast_async_txn(file_path):
         "sifnoded tx broadcast",
         f"{file_path}",
         f"--broadcast-mode async",
-        f"--yes"
+        f"--yes -o json"
     ])
     json_str = get_shell_output_json(cmd)
     txn = json_str["txhash"]
@@ -306,7 +306,7 @@ def create_claim(
     logging.debug(f"create_claim")
     keyring_backend_entry = f"--keyring-backend {keyring_backend}"
     sifchain_gas_entry = f"--gas auto --gas-adjustment=1.5"
-    sifchain_fees_entry = f"--fees 100000rowan"
+    sifchain_fees_entry = f"--fees 100000000000000000rowan"
     cmd = " ".join([
         "sifnoded tx dispensation claim",
         f"{claimType}",
