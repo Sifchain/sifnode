@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"errors"
+	"log"
 	"strconv"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -19,11 +20,13 @@ func (k Keeper) CreatePool(ctx sdk.Context, poolUints sdk.Uint, msg *types.MsgCr
 	if !ok {
 		return nil, types.ErrUnableToParseInt
 	}
+	log.Println("extInt=", extInt)
 
 	nativeInt, ok := k.ParseToInt(msg.NativeAssetAmount.String())
 	if !ok {
 		return nil, types.ErrUnableToParseInt
 	}
+	log.Println("nativeInt=", extInt)
 
 	addr, err := sdk.AccAddressFromBech32(msg.Signer)
 	if err != nil {

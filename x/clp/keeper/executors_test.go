@@ -11,12 +11,34 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-const MaxUint = ^uint(0)
+//const MaxUint = sdk.NewUint(0)
 const MinUint = 0
-const MaxInt = int(MaxUint >> 1)
-const MinInt = -MaxInt - 1
+//const MaxInt = int(MaxUint >> 1)
+//const MinInt = -MaxInt - 1
 const maxBitLen = 255
 const max = 2 ^ maxBitLen - 1
+
+func TestKeeper_CreatePool_Range(t *testing.T) {
+	// nativeAssetAmount sdk.Uint, externalAssetAmount
+	ctx, app := test.CreateTestAppClp(false)
+	signer := test.GenerateAddress(test.AddressKey1)
+	//Parameters for create pool
+	nativeAssetAmount2 := sdk.NewUintFromString("0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff")
+	externalAssetAmount2 := sdk.NewUintFromString("0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff")
+	asset := types.NewAsset("eth")
+	externalCoin := sdk.NewCoin(asset.Symbol, sdk.Int(sdk.NewUintFromString("0x7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff")))
+	nativeCoin := sdk.NewCoin(types.NativeSymbol, sdk.Int(sdk.NewUintFromString("0x7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff")))
+	_ = app.ClpKeeper.GetBankKeeper().AddCoins(ctx, signer, sdk.NewCoins(externalCoin, nativeCoin))
+
+	msgCreatePool := types.NewMsgCreatePool(signer, asset, nativeAssetAmount2, externalAssetAmount2)
+	// Create Pool
+	pool, err := app.ClpKeeper.CreatePool(ctx, sdk.NewUint(1), &msgCreatePool)
+	assert.Error(t, err, "Unable to parse to Int")
+	//assert.NoError(t, err)
+	//assert.NotNil(t, pool)
+	assert.Nil(t, pool)
+
+}
 
 func TestKeeper_CreatePool_And_AddLiquidity_RemoveLiquidity(t *testing.T) {
 	// nativeAssetAmount sdk.Uint, externalAssetAmount
@@ -27,11 +49,11 @@ func TestKeeper_CreatePool_And_AddLiquidity_RemoveLiquidity(t *testing.T) {
 	//Parameters for create pool
 	nativeAssetAmount := sdk.NewUintFromString("998")
 	externalAssetAmount := sdk.NewUintFromString("998")
-	// nativeAssetAmount2 := sdk.NewUintFromString("")
-	// externalAssetAmount2 := sdk.NewUintFromString("")
+	nativeAssetAmount2 := sdk.NewUintFromString("0xffff")
+	externalAssetAmount2 := sdk.NewUintFromString("0xffff")
 	asset := types.NewAsset("eth")
-	externalCoin := sdk.NewCoin(asset.Symbol, sdk.Int(sdk.NewUint(10000)))
-	nativeCoin := sdk.NewCoin(types.NativeSymbol, sdk.Int(sdk.NewUint(10000)))
+	externalCoin := sdk.NewCoin(asset.Symbol, sdk.Int(sdk.NewUintFromString("100000")))
+	nativeCoin := sdk.NewCoin(types.NativeSymbol, sdk.Int(sdk.NewUintFromString("100000")))
 	_ = app.ClpKeeper.GetBankKeeper().AddCoins(ctx, signer, sdk.NewCoins(externalCoin, nativeCoin))
 
 	msgCreatePool := types.NewMsgCreatePool(nil, asset, nativeAssetAmount, externalAssetAmount)
@@ -39,17 +61,17 @@ func TestKeeper_CreatePool_And_AddLiquidity_RemoveLiquidity(t *testing.T) {
 	pool, err := app.ClpKeeper.CreatePool(ctx, sdk.NewUint(1), &msgCreatePool)
 	assert.Error(t, err, "empty address string is not allowed")
 
-	/*
-		msgCreatePool = types.NewMsgCreatePool(signer, asset, nativeAssetAmount2, externalAssetAmount)
-		// Create Pool
-		pool, err = app.ClpKeeper.CreatePool(ctx, sdk.NewUint(1), &msgCreatePool)
-		assert.Error(t, err, "Unable to parse to Int")
+	msgCreatePool = types.NewMsgCreatePool(signer, asset, nativeAssetAmount2, externalAssetAmount2)
+	// Create Pool
+	pool, err = app.ClpKeeper.CreatePool(ctx, sdk.NewUint(1), &msgCreatePool)
+	//assert.Error(t, err, "Unable to parse to Int")
+	assert.NoError(t, err)
 
-		msgCreatePool = types.NewMsgCreatePool(signer, asset, nativeAssetAmount, externalAssetAmount2)
-		// Create Pool
-		pool, err = app.ClpKeeper.CreatePool(ctx, sdk.NewUint(1), &msgCreatePool)
-		assert.Error(t, err, "Unable to parse to Int")
-	*/
+	/* msgCreatePool = types.NewMsgCreatePool(signer, asset, nativeAssetAmount, externalAssetAmount2)
+	// Create Pool
+	pool, err = app.ClpKeeper.CreatePool(ctx, sdk.NewUint(1), &msgCreatePool)
+	//assert.Error(t, err, "Unable to parse to Int")
+	assert.NoError(t, err) */
 
 	msgCreatePool = types.NewMsgCreatePool(signer2, asset2, nativeAssetAmount, externalAssetAmount)
 	// Create Pool
