@@ -9,11 +9,15 @@ import "hardhat-gas-reporter";
 import "reflect-metadata"; // needed by tsyringe
 import "@typechain/hardhat";
 
+dotenv.config();
+
 const { print } = require("./scripts/helpers/utils");
 
 const networkUrl = process.env["NETWORK_URL"] ?? "http://needToSetNETWORK_URL.nothing";
-const activePrivateKey = "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80";
-const keyList = ["0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80"];
+const activePrivateKey = process.env["ACTIVE_PRIVATE_KEY"];
+const keyList = activePrivateKey?.split(",") ?? [
+  "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80",
+];
 
 if (!networkUrl) {
   print("error", "ABORTED! Missing NETWORK_URL env variable");
