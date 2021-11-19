@@ -18,11 +18,11 @@ function generateDenom({
   tokenName,
   tokenSymbol,
   tokenDecimals,
-  isERC20
+  isERC20,
 }) {
-  const prefix = isERC20 ? 'sif' : 'ibc/';
+  const prefix = isERC20 ? "sif" : "ibc/";
   const fullString = `${networkDescriptor}${tokenAddress}${tokenDecimals}${tokenName}${tokenSymbol}`;
-  const hash = crypto.createHash('sha256').update(fullString).digest('hex');
+  const hash = crypto.createHash("sha256").update(fullString).digest("hex");
   const denom = `${prefix}${hash}`;
 
   return denom;
@@ -89,5 +89,5 @@ module.exports = {
   DENOM_1,
   DENOM_2,
   DENOM_3,
-  DENOM_4
-}
+  DENOM_4,
+};

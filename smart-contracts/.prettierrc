@@ -5,7 +5,7 @@
       "options": {
         "printWidth": 100,
         "tabWidth": 2,
-        "useTabs": true,
+        "useTabs": false,
         "singleQuote": false,
         "bracketSpacing": true,
         "explicitTypes": "always"
@@ -16,7 +16,7 @@
       "options": {
         "printWidth": 100,
         "tabWidth": 2,
-        "useTabs": true,
+        "useTabs": false,
         "singleQuote": false
       }
     }

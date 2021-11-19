@@ -8,32 +8,32 @@ import "../interfaces/IBlocklist.sol";
  * @dev WhiteList contract records the ERC 20 list that can be locked in BridgeBank.
  */
 contract EthereumWhiteList {
-	/**
-	 * @dev has the contract been initialized?
-	 */
-	bool private _initialized;
+  /**
+   * @dev has the contract been initialized?
+   */
+  bool private _initialized;
 
-	/**
-	 * @dev {DEPRECATED} mapping to keep track of whitelisted tokens
-	 */
-	mapping(address => bool) private _ethereumTokenWhiteList;
+  /**
+   * @dev {DEPRECATED} mapping to keep track of whitelisted tokens
+   */
+  mapping(address => bool) private _ethereumTokenWhiteList;
 
-	/**
-	 * @dev gap of storage for future upgrades
-	 */
-	uint256[100] private ____gap;
+  /**
+   * @dev gap of storage for future upgrades
+   */
+  uint256[100] private ____gap;
 
-	/**
-	 * @notice Event emitted when the whitelist is updated
-	 */
-	event LogWhiteListUpdate(address _token, bool _value);
+  /**
+   * @notice Event emitted when the whitelist is updated
+   */
+  event LogWhiteListUpdate(address _token, bool _value);
 
-	/**
-	 * @notice Initializer
-	 */
-	function initialize() public {
-		require(!_initialized, "Initialized");
-		_ethereumTokenWhiteList[address(0)] = true;
-		_initialized = true;
-	}
+  /**
+   * @notice Initializer
+   */
+  function initialize() public {
+    require(!_initialized, "Initialized");
+    _ethereumTokenWhiteList[address(0)] = true;
+    _initialized = true;
+  }
 }

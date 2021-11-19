@@ -4,12 +4,9 @@ const BigNumber = web3.BigNumber;
 const { ethers } = require("hardhat");
 const { use, expect } = require("chai");
 const { solidity } = require("ethereum-waffle");
-const { ROWAN_DENOM } = require('./helpers/denoms');
+const { ROWAN_DENOM } = require("./helpers/denoms");
 
-require("chai")
-  .use(require("chai-as-promised"))
-  .use(require("chai-bignumber")(BigNumber))
-  .should();
+require("chai").use(require("chai-as-promised")).use(require("chai-bignumber")(BigNumber)).should();
 
 use(solidity);
 
@@ -23,8 +20,7 @@ async function setAllowance(user, erowan, rowan) {
   expect(rowanBalance).to.be.equal(0);
 
   // Provides allowance
-  await expect(erowan.connect(user).approve(rowan.address, erowanBalance))
-    .to.be.fulfilled;
+  await expect(erowan.connect(user).approve(rowan.address, erowanBalance)).to.be.fulfilled;
 
   // Make sure the allowance is set
   const allowance = await erowan.allowance(user.address, rowan.address);
@@ -44,35 +40,33 @@ describe("Test Erowan migration", function () {
 
   const state = {
     erowan: {
-      name: 'SifChain',
-      symbol: 'erowan',
+      name: "SifChain",
+      symbol: "erowan",
       decimals: 18,
-      denom: ""
+      denom: "",
     },
     rowan: {
-      name: 'Rowan',
-      symbol: 'Rowan',
+      name: "Rowan",
+      symbol: "Rowan",
       decimals: 18,
-      denom: ROWAN_DENOM
+      denom: ROWAN_DENOM,
     },
-    amountToMint: 1000000
-  }
+    amountToMint: 1000000,
+  };
 
   before(async function () {
     accounts = await ethers.getSigners();
-  
+
     rowanTokenFactory = await ethers.getContractFactory("Rowan");
     erowanTokenFactory = await ethers.getContractFactory("Erowan");
-  
+
     owner = accounts[0];
     userOne = accounts[1];
   });
-  
+
   beforeEach(async function () {
     // Deploy the old Erowan token
-    erowanToken = await erowanTokenFactory.deploy(
-      state.erowan.symbol,
-    );
+    erowanToken = await erowanTokenFactory.deploy(state.erowan.symbol);
     await erowanToken.deployed();
 
     // Deploy the new Rowan token
@@ -86,8 +80,7 @@ describe("Test Erowan migration", function () {
     await rowanToken.deployed();
 
     // Mint Erowans to userOne
-    await expect(erowanToken.mint(userOne.address, state.amountToMint))
-      .to.be.fulfilled;
+    await expect(erowanToken.mint(userOne.address, state.amountToMint)).to.be.fulfilled;
   });
 
   it("should allow a user to migrate their Erowans to the new Rowan token after a correct allowance", async function () {
@@ -95,7 +88,7 @@ describe("Test Erowan migration", function () {
 
     // Calls the migrate function on Rowan
     await expect(rowanToken.connect(userOne).migrate())
-      .to.emit(rowanToken, 'MigrationComplete')
+      .to.emit(rowanToken, "MigrationComplete")
       .withArgs(userOne.address, state.amountToMint);
 
     // Check if userOne received the tokens
@@ -109,8 +102,9 @@ describe("Test Erowan migration", function () {
 
   it("should NOT allow a user to migrate their Erowans to the new Rowan token without allowance", async function () {
     // Calls the migrate function on Rowan
-    await expect(rowanToken.connect(userOne).migrate())
-      .to.be.rejectedWith('ERC20: burn amount exceeds allowance');
+    await expect(rowanToken.connect(userOne).migrate()).to.be.rejectedWith(
+      "ERC20: burn amount exceeds allowance"
+    );
 
     // Check if userOne received the tokens (should not have)
     const rowanBalance = await rowanToken.balanceOf(userOne.address);
@@ -122,11 +116,15 @@ describe("Test Erowan migration", function () {
   });
 
   it("should allow a user to migrate 0 Erowans to the new Rowan token, but receive 0 Rowans", async function () {
-    const { erowanBalance:erowanBalanceBefore } = await setAllowance(userOne, erowanToken, rowanToken);
+    const { erowanBalance: erowanBalanceBefore } = await setAllowance(
+      userOne,
+      erowanToken,
+      rowanToken
+    );
 
     // Calls the migrate function on Rowan
     await expect(rowanToken.connect(userOne).migrate())
-      .to.emit(rowanToken, 'MigrationComplete')
+      .to.emit(rowanToken, "MigrationComplete")
       .withArgs(userOne.address, state.amountToMint);
 
     // Check if userOne received the tokens
@@ -139,7 +137,7 @@ describe("Test Erowan migration", function () {
 
     // Calls the migrate function on Rowan AGAIN (event should inform that 0 tokens have been migrated)
     await expect(rowanToken.connect(userOne).migrate())
-      .to.emit(rowanToken, 'MigrationComplete')
+      .to.emit(rowanToken, "MigrationComplete")
       .withArgs(userOne.address, 0);
 
     // Check if userOne's Rowan balance remains the same

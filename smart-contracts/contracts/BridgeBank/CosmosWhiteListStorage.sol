@@ -6,13 +6,13 @@ pragma solidity 0.8.0;
  * @dev Records the Cosmos whitelisted tokens
  **/
 contract CosmosWhiteListStorage {
-	/**
-	 * @dev mapping to keep track of whitelisted tokens
-	 */
-	mapping(address => bool) internal _cosmosTokenWhiteList;
+  /**
+   * @dev mapping to keep track of whitelisted tokens
+   */
+  mapping(address => bool) internal _cosmosTokenWhiteList;
 
-	/**
-	 * @dev gap of storage for future upgrades
-	 */
-	uint256[100] private ____gap;
+  /**
+   * @dev gap of storage for future upgrades
+   */
+  uint256[100] private ____gap;
 }

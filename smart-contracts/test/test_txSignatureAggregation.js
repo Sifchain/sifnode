@@ -1,12 +1,9 @@
-const {
-  setup,
-  getValidClaim,
-} = require('./helpers/testFixture');
+const { setup, getValidClaim } = require("./helpers/testFixture");
 
-const { colorLog } = require('./helpers/helpers');
+const { colorLog } = require("./helpers/helpers");
 
 const web3 = require("web3");
-const { expect } = require('chai');
+const { expect } = require("chai");
 const BigNumber = web3.BigNumber;
 
 // Set `use` to `true` to compare a new implementation with the previous gas costs;
@@ -17,13 +14,10 @@ const gasProfiling = {
   mint: 182155,
   newBt: 1665776,
   multiLock: 346709,
-  current: {}
-}
+  current: {},
+};
 
-require("chai")
-  .use(require("chai-as-promised"))
-  .use(require("chai-bignumber")(BigNumber))
-  .should();
+require("chai").use(require("chai-as-promised")).use(require("chai-bignumber")(BigNumber)).should();
 
 describe("Gas Cost Tests", function () {
   let userOne;
@@ -42,9 +36,9 @@ describe("Gas Cost Tests", function () {
   let networkDescriptor;
   let state;
 
-  before(async function() {
+  before(async function () {
     accounts = await ethers.getSigners();
-    
+
     operator = accounts[0];
     userOne = accounts[1];
     userTwo = accounts[2];
@@ -55,12 +49,7 @@ describe("Gas Cost Tests", function () {
     pauser = accounts[6];
 
     initialPowers = [25, 25, 25, 25];
-    initialValidators = [
-      userOne.address,
-      userTwo.address,
-      userThree.address,
-      userFour.address
-    ];
+    initialValidators = [userOne.address, userTwo.address, userThree.address, userFour.address];
 
     networkDescriptor = 1;
   });
@@ -76,15 +65,13 @@ describe("Gas Cost Tests", function () {
       user: userOne,
       recipient: userThree,
       pauser,
-      networkDescriptor
+      networkDescriptor,
     });
 
     // Lock tokens on contract
-    await state.bridgeBank.connect(userOne).lock(
-      state.sender,
-      state.token1.address,
-      state.amount
-    ).should.be.fulfilled;
+    await state.bridgeBank
+      .connect(userOne)
+      .lock(state.sender, state.token1.address, state.amount).should.be.fulfilled;
   });
 
   describe("Gas Cost With 4 Validators", function () {
@@ -116,17 +103,13 @@ describe("Gas Cost Tests", function () {
 
       const tx = await state.cosmosBridge
         .connect(userOne)
-        .submitProphecyClaimAggregatedSigs(
-            digest,
-            claimData,
-            signatures
-        );
+        .submitProphecyClaimAggregatedSigs(digest, claimData, signatures);
       const receipt = await tx.wait();
       const sum = Number(receipt.gasUsed);
-      
-      if(gasProfiling.use) {
+
+      if (gasProfiling.use) {
         gasProfiling.current.lock = sum;
-        logGasDiff('LOCK:', gasProfiling.lock, sum);
+        logGasDiff("LOCK:", gasProfiling.lock, sum);
       } else {
         console.log("~~~~~~~~~~~~\nTotal: ", sum);
       }
@@ -172,9 +155,9 @@ describe("Gas Cost Tests", function () {
       const receipt = await tx.wait();
       const sum = Number(receipt.gasUsed);
 
-      if(gasProfiling.use) {
+      if (gasProfiling.use) {
         gasProfiling.current.mint = sum;
-        logGasDiff('MINT:', gasProfiling.mint, sum);
+        logGasDiff("MINT:", gasProfiling.mint, sum);
       } else {
         console.log("~~~~~~~~~~~~\nTotal: ", sum);
       }
@@ -207,26 +190,27 @@ describe("Gas Cost Tests", function () {
         validators: accounts.slice(1, 5),
       });
 
-      const expectedAddress = ethers.utils.getContractAddress({ from: state.bridgeBank.address, nonce: 1 });
+      const expectedAddress = ethers.utils.getContractAddress({
+        from: state.bridgeBank.address,
+        nonce: 1,
+      });
 
       const tx = await state.cosmosBridge
         .connect(userOne)
-        .submitProphecyClaimAggregatedSigs(
-            digest,
-            claimData,
-            signatures
-        );
+        .submitProphecyClaimAggregatedSigs(digest, claimData, signatures);
       const receipt = await tx.wait();
       const sum = Number(receipt.gasUsed);
-      
-      if(gasProfiling.use) {
+
+      if (gasProfiling.use) {
         gasProfiling.current.newBt = sum;
-        logGasDiff('DoublePeg :: New BridgeToken:', gasProfiling.newBt, sum);
+        logGasDiff("DoublePeg :: New BridgeToken:", gasProfiling.newBt, sum);
       } else {
         console.log("~~~~~~~~~~~~\nTotal: ", Number(receipt.gasUsed));
       }
 
-      const newlyCreatedTokenAddress = await state.cosmosBridge.sourceAddressToDestinationAddress(state.token1.address);
+      const newlyCreatedTokenAddress = await state.cosmosBridge.sourceAddressToDestinationAddress(
+        state.token1.address
+      );
       expect(newlyCreatedTokenAddress).to.be.equal(expectedAddress);
 
       // expect the token to have a denom
@@ -236,18 +220,12 @@ describe("Gas Cost Tests", function () {
 
     it("should allow us to check the cost of submitting a batch prophecy claim lock", async function () {
       // Lock token2 on contract
-      await state.bridgeBank.connect(userOne).lock(
-        state.sender,
-        state.token2.address,
-        state.amount
-      ).should.be.fulfilled;
+      await state.bridgeBank.connect(userOne).lock(state.sender, state.token2.address, state.amount)
+        .should.be.fulfilled;
 
       // Lock token3 on contract
-      await state.bridgeBank.connect(userOne).lock(
-        state.sender,
-        state.token3.address,
-        state.amount
-      ).should.be.fulfilled;
+      await state.bridgeBank.connect(userOne).lock(state.sender, state.token3.address, state.amount)
+        .should.be.fulfilled;
 
       let balanceToken1 = Number(await state.token1.balanceOf(state.recipient.address));
       expect(balanceToken1).to.be.equal(0);
@@ -280,7 +258,11 @@ describe("Gas Cost Tests", function () {
         validators: accounts.slice(1, 5),
       });
 
-      const { digest: digest2, claimData: claimData2, signatures: signatures2 } = await getValidClaim({
+      const {
+        digest: digest2,
+        claimData: claimData2,
+        signatures: signatures2,
+      } = await getValidClaim({
         sender: state.sender,
         senderSequence: state.senderSequence,
         recipientAddress: state.recipient.address,
@@ -296,7 +278,11 @@ describe("Gas Cost Tests", function () {
         validators: accounts.slice(1, 5),
       });
 
-      const { digest: digest3, claimData: claimData3, signatures: signatures3 } = await getValidClaim({
+      const {
+        digest: digest3,
+        claimData: claimData3,
+        signatures: signatures3,
+      } = await getValidClaim({
         sender: state.sender,
         senderSequence: state.senderSequence,
         recipientAddress: state.recipient.address,
@@ -315,17 +301,22 @@ describe("Gas Cost Tests", function () {
       const tx = await state.cosmosBridge
         .connect(userOne)
         .batchSubmitProphecyClaimAggregatedSigs(
-            [digest, digest2, digest3],
-            [claimData, claimData2, claimData3],
-            [signatures, signatures2, signatures3]
+          [digest, digest2, digest3],
+          [claimData, claimData2, claimData3],
+          [signatures, signatures2, signatures3]
         );
       const receipt = await tx.wait();
       const sum = Number(receipt.gasUsed);
-      
-      if(gasProfiling.use) {
+
+      if (gasProfiling.use) {
         const numberOfClaimsInBatch = 3;
-        logGasDiff('BATCH, regarding previous implementation:', gasProfiling.multiLock, sum);
-        logGasDiff(`${numberOfClaimsInBatch} Batched claims VS single claim:`, gasProfiling.current.lock * numberOfClaimsInBatch, sum, true);
+        logGasDiff("BATCH, regarding previous implementation:", gasProfiling.multiLock, sum);
+        logGasDiff(
+          `${numberOfClaimsInBatch} Batched claims VS single claim:`,
+          gasProfiling.current.lock * numberOfClaimsInBatch,
+          sum,
+          true
+        );
       } else {
         console.log("~~~~~~~~~~~~\nTotal: ", sum);
       }
@@ -362,7 +353,11 @@ describe("Gas Cost Tests", function () {
         validators: accounts.slice(1, 5),
       });
 
-      const { digest: digest2, claimData: claimData2, signatures: signatures2 } = await getValidClaim({
+      const {
+        digest: digest2,
+        claimData: claimData2,
+        signatures: signatures2,
+      } = await getValidClaim({
         sender: state.sender,
         senderSequence: state.senderSequence,
         recipientAddress: state.recipient.address,
@@ -378,7 +373,11 @@ describe("Gas Cost Tests", function () {
         validators: accounts.slice(1, 5),
       });
 
-      const { digest: digest3, claimData: claimData3, signatures: signatures3 } = await getValidClaim({
+      const {
+        digest: digest3,
+        claimData: claimData3,
+        signatures: signatures3,
+      } = await getValidClaim({
         sender: state.sender,
         senderSequence: state.senderSequence,
         recipientAddress: state.recipient.address,
@@ -394,9 +393,18 @@ describe("Gas Cost Tests", function () {
         validators: accounts.slice(1, 5),
       });
 
-      const expectedAddress1 = ethers.utils.getContractAddress({ from: state.bridgeBank.address, nonce: 1 });
-      const expectedAddress2 = ethers.utils.getContractAddress({ from: state.bridgeBank.address, nonce: 2 });
-      const expectedAddress3 = ethers.utils.getContractAddress({ from: state.bridgeBank.address, nonce: 3 });
+      const expectedAddress1 = ethers.utils.getContractAddress({
+        from: state.bridgeBank.address,
+        nonce: 1,
+      });
+      const expectedAddress2 = ethers.utils.getContractAddress({
+        from: state.bridgeBank.address,
+        nonce: 2,
+      });
+      const expectedAddress3 = ethers.utils.getContractAddress({
+        from: state.bridgeBank.address,
+        nonce: 3,
+      });
 
       const tx = await state.cosmosBridge
         .connect(userOne)
@@ -407,21 +415,31 @@ describe("Gas Cost Tests", function () {
         );
       const receipt = await tx.wait();
       const sum = Number(receipt.gasUsed);
-      
-      if(gasProfiling.use) {
+
+      if (gasProfiling.use) {
         const numberOfClaimsInBatch = 3;
-        logGasDiff(`DoublePeg :: ${numberOfClaimsInBatch} Batched claims VS single claim:`, gasProfiling.current.newBt * numberOfClaimsInBatch, sum);
+        logGasDiff(
+          `DoublePeg :: ${numberOfClaimsInBatch} Batched claims VS single claim:`,
+          gasProfiling.current.newBt * numberOfClaimsInBatch,
+          sum
+        );
       } else {
         console.log("~~~~~~~~~~~~\nTotal: ", Number(receipt.gasUsed));
       }
 
-      const newlyCreatedTokenAddress1 = await state.cosmosBridge.sourceAddressToDestinationAddress(state.token1.address);
+      const newlyCreatedTokenAddress1 = await state.cosmosBridge.sourceAddressToDestinationAddress(
+        state.token1.address
+      );
       expect(newlyCreatedTokenAddress1).to.be.equal(expectedAddress1);
 
-      const newlyCreatedTokenAddress2 = await state.cosmosBridge.sourceAddressToDestinationAddress(state.token2.address);
+      const newlyCreatedTokenAddress2 = await state.cosmosBridge.sourceAddressToDestinationAddress(
+        state.token2.address
+      );
       expect(newlyCreatedTokenAddress2).to.be.equal(expectedAddress2);
 
-      const newlyCreatedTokenAddress3 = await state.cosmosBridge.sourceAddressToDestinationAddress(state.token3.address);
+      const newlyCreatedTokenAddress3 = await state.cosmosBridge.sourceAddressToDestinationAddress(
+        state.token3.address
+      );
       expect(newlyCreatedTokenAddress3).to.be.equal(expectedAddress3);
     });
   });
@@ -429,22 +447,22 @@ describe("Gas Cost Tests", function () {
 
 // Helper function to aid comparing implementations wrt gas costs
 function logGasDiff(title, original, current, useShortTitle) {
-  const separator = useShortTitle ? '---' : '~~~~~~~~~~~~';
-  colorLog('cyan', `${separator}\n${title}`);
-  console.log('Original:', original);
-  console.log('Current :', current);
-  const pct = Math.abs(((1 - current / original) * 100)).toFixed(2);
+  const separator = useShortTitle ? "---" : "~~~~~~~~~~~~";
+  colorLog("cyan", `${separator}\n${title}`);
+  console.log("Original:", original);
+  console.log("Current :", current);
+  const pct = Math.abs((1 - current / original) * 100).toFixed(2);
   const diff = current - original;
   colorLog(getColorName(diff), `Diff    : ${diff} (${pct}%)`);
 }
 
 function getColorName(value) {
-  if(value > 0) {
-    return 'red';
-  } else if(value < 0) {
-    return 'green';
+  if (value > 0) {
+    return "red";
+  } else if (value < 0) {
+    return "green";
   } else {
-    return 'white';
+    return "white";
   }
 }
 
