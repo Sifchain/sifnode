@@ -92,12 +92,12 @@ async function main() {
   // Get signers to send transactions
   await setupAccounts();
 
+  // Pause the system
+  await pauseBridgeBank();
+
   // Fetch current values from the deployed contract
   await setBridgeBankStorageSlots();
   await setCosmosBridgeStorageSlots();
-
-  // Pause the system
-  await pauseBridgeBank();
 
   // Upgrade BridgeBank
   await upgradeBridgeBank();
@@ -119,10 +119,7 @@ async function main() {
   cleanup();
 
   print("highlight", "~~~ DONE! 👏 Everything worked as expected. ~~~");
-
-  if (!USE_FORKING) {
-    print("h_green", `Peggy 1.0 has been upgraded to Peggy 2.0 in ${currentEnv}`);
-  }
+  print("h_green", "Peggy 1.0 has been upgraded to Peggy 2.0");
 }
 
 async function setBridgeBankStorageSlots(beforeUpgrade = true) {
@@ -296,14 +293,30 @@ async function pauseBridgeBank() {
     "yellow",
     `🕑 Pausing the system before the upgrade. Please wait, this may take a while...`
   );
-  await state.contracts.bridgeBank.connect(state.signers.pauser).pause();
-  print("green", `✅ System is paused`);
+
+  // We check if the system is already paused
+  // We'll only pause it if needed (or else it would blow up)
+  const isPaused = await state.contracts.bridgeBank.paused();
+
+  if (isPaused) {
+    print("green", `✅ System was already paused`);
+  } else {
+    await state.contracts.bridgeBank.connect(state.signers.pauser).pause();
+    print("green", `✅ System is paused`);
+  }
 }
 
 async function resumeBridgeBank() {
   print("yellow", `🕑 Unpausing the system. Please wait, this may take a while...`);
-  await state.contracts.bridgeBank.connect(state.signers.pauser).unpause();
-  print("green", `✅ System has been resumed`);
+
+  const isPaused = await state.contracts.bridgeBank.paused();
+
+  if (isPaused) {
+    await state.contracts.bridgeBank.connect(state.signers.pauser).unpause();
+    print("green", `✅ System has been resumed`);
+  } else {
+    print("green", `✅ System was already unpaused`);
+  }
 }
 
 async function upgradeBridgeBank() {
