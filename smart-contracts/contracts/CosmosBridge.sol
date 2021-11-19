@@ -4,7 +4,6 @@ pragma solidity 0.8.0;
 import "./Oracle.sol";
 import "./BridgeBank/BridgeBank.sol";
 import "./CosmosBridgeStorage.sol";
-import "hardhat/console.sol";
 
 /**
  * @title Cosmos Bridge
@@ -396,14 +395,8 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
       sourceAddressToDestinationAddress[sourceChainTokenAddress] == address(0),
       "INV_SRC_ADDR"
     );
-    // need to make a business decision on what this symbol should be
     // First lock of this asset, deploy new contract and get new symbol/token address
-    address tokenAddress = BridgeBank(bridgeBank).createNewBridgeToken(
-      name,
-      symbol,
-      decimals,
-      cosmosDenom
-    );
+    tokenAddress = BridgeBank(bridgeBank).createNewBridgeToken(name, symbol, decimals, cosmosDenom);
 
     sourceAddressToDestinationAddress[sourceChainTokenAddress] = tokenAddress;
 
