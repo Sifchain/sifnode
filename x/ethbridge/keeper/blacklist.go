@@ -41,7 +41,10 @@ func (k Keeper) SetBlacklist(ctx sdk.Context, msg *types.MsgSetBlacklist) error 
 			}
 		}
 	}
-	iter.Close()
+	err = iter.Close()
+	if err != nil {
+		return err
+	}
 
 	for _, address := range removals {
 		store.Delete(append(types.BlacklistPrefix, []byte(address)...))
@@ -52,4 +55,18 @@ func (k Keeper) SetBlacklist(ctx sdk.Context, msg *types.MsgSetBlacklist) error 
 	}
 
 	return nil
+}
+
+func (k Keeper) GetBlacklist(ctx sdk.Context) []string {
+	var addresses []string
+	store := ctx.KVStore(k.storeKey)
+	iter := store.Iterator(types.BlacklistPrefix, nil)
+	defer iter.Close()
+	for ; iter.Valid(); iter.Next() {
+		key := iter.Key()
+		address := string(key[1:])
+		addresses = append(addresses, address)
+	}
+
+	return addresses
 }
