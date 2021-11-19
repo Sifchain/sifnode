@@ -4,8 +4,6 @@ import (
 	"log"
 	"testing"
 
-	"github.com/Sifchain/sifnode/cmd/ebrelayer/txs"
-	"github.com/Sifchain/sifnode/cmd/ebrelayer/types"
 	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/ethereum/go-ethereum/common"
@@ -37,23 +35,4 @@ func TestNewCosmosSub(t *testing.T) {
 	sub := NewCosmosSub(oracletypes.NetworkDescriptor(networkDescriptor), privateKey, tmProvider, ethProvider, registryContractAddress,
 		client.Context{}, validatorMoniker, sugaredLogger)
 	require.NotEqual(t, sub, nil)
-}
-
-func TestMessageProcessed(t *testing.T) {
-	message := txs.CreateTestCosmosMsg(t, types.MsgBurn)
-	var claims []types.ProphecyClaimUnique
-	claims = append(claims, types.ProphecyClaimUnique{
-		ProphecyID: []byte{},
-	})
-
-	processed := MessageProcessed(message.ProphecyID, claims)
-	require.Equal(t, processed, true)
-}
-
-func TestMessageNotProcessed(t *testing.T) {
-	message := txs.CreateTestCosmosMsg(t, types.MsgBurn)
-	var claims []types.ProphecyClaimUnique
-
-	processed := MessageProcessed(message.ProphecyID, claims)
-	require.Equal(t, processed, false)
 }

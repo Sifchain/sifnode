@@ -3,11 +3,11 @@ package relayer
 // DONTCOVER
 
 import (
-	"bytes"
 	"context"
 	"crypto/ecdsa"
 	"errors"
 	"log"
+	"math/big"
 	"os"
 	"os/signal"
 	"sync"
@@ -16,6 +16,7 @@ import (
 
 	"github.com/Sifchain/sifnode/x/instrumentation"
 
+	cosmosbridge "github.com/Sifchain/sifnode/cmd/ebrelayer/contract/generated/bindings/cosmosbridge"
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/internal/symbol_translator"
 	"google.golang.org/grpc"
 
@@ -25,6 +26,8 @@ import (
 	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/tx"
+	"github.com/cosmos/cosmos-sdk/crypto/keyring"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
@@ -38,6 +41,11 @@ const (
 	errorMessageKey      = "errorMessage"
 	cosmosSleepDuration  = 1
 	maxCosmosQueryBlocks = 5000
+	// ProphecyLifeTime signature info life time on chain
+	blockTimeInSecond = 5
+	secondsPerDay     = 60 * 60 * 24
+	daysPerMonth      = 30
+	ProphecyLifeTime  = (secondsPerDay * daysPerMonth) / blockTimeInSecond
 )
 
 // CosmosSub defines a Cosmos listener that relays events to Ethereum and Cosmos
@@ -218,17 +226,6 @@ func (sub CosmosSub) ProcessLockBurnWithScope(txFactory tx.Factory, client *tmcl
 	}
 }
 
-// MessageProcessed check if cosmogs message already processed
-func MessageProcessed(prophecyID []byte, prophecyClaims []types.ProphecyClaimUnique) bool {
-	for _, prophecyClaim := range prophecyClaims {
-		if bytes.Compare(prophecyID, prophecyClaim.ProphecyID) == 0 {
-
-			return true
-		}
-	}
-	return false
-}
-
 // getOracleClaimType sets the OracleClaim's claim type based upon the witnessed event type
 func getOracleClaimType(eventType string) types.Event {
 	var claimType types.Event
@@ -340,4 +337,26 @@ func (sub CosmosSub) GetGlobalSequenceBlockNumberFromCosmos(
 	}
 
 	return globalSequence, response2.BlockNumber, nil
+}
+
+// GetLastNonceSubmitted get last nonce submitted in cosmos bridge contract
+func GetLastNonceSubmitted(client *ethclient.Client, cosmosBridgeAddress common.Address, sugaredLogger *zap.SugaredLogger) (*big.Int, error) {
+
+	// Initialize CosmosBridge instance
+	cosmosBridgeInstance, err := cosmosbridge.NewCosmosBridge(cosmosBridgeAddress, client)
+	if err != nil {
+		sugaredLogger.Errorw("failed to get cosmosBridge instance.",
+			errorMessageKey, err.Error())
+		return nil, err
+	}
+	return cosmosBridgeInstance.LastNonceSubmitted(nil)
+}
+
+// GetAccAddressFromKeyring get the address from key ring and keyname
+func GetAccAddressFromKeyring(k keyring.Keyring, keyname string) (sdk.AccAddress, error) {
+	keyInfo, err := k.Key(keyname)
+	if err != nil {
+		return nil, err
+	}
+	return keyInfo.GetAddress(), nil
 }
