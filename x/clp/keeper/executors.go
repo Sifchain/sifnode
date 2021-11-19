@@ -208,6 +208,7 @@ func (k Keeper) InitiateSwap(ctx sdk.Context, sentCoin sdk.Coin, swapper sdk.Acc
 	}
 	err := k.bankKeeper.SendCoinsFromAccountToModule(ctx, swapper, types.ModuleName, sdk.NewCoins(sentCoin))
 	if err != nil {
+		// this part cannot be test because we checked if user have balance
 		return err
 	}
 	return nil
