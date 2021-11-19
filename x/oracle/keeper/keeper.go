@@ -12,10 +12,12 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/ethereum/go-ethereum/crypto"
 	gethCrypto "github.com/ethereum/go-ethereum/crypto"
 	"github.com/tendermint/tendermint/libs/log"
 
 	"github.com/Sifchain/sifnode/x/oracle/types"
+	solsha3 "github.com/miguelmota/go-solidity-sha3"
 )
 
 // Keeper maintains the link to data storage and
@@ -189,13 +191,22 @@ func (k Keeper) ProcessSignProphecy(ctx sdk.Context, networkDescriptor types.Net
 	}
 
 	// verify the signature
-	publicKey, err := gethCrypto.Ecrecover(prophecyID, []byte(signature))
+	sigData := PrefixMsg(prophecyID)
+
+	publicKey, err := gethCrypto.Ecrecover(sigData, []byte(signature))
 	if err != nil {
 		return err
 	}
 
-	ok = gethCrypto.VerifySignature(publicKey, prophecyID, []byte(signature))
-	if !ok {
+	pubKey, err := crypto.UnmarshalPubkey(publicKey)
+	if err != nil {
+		return err
+	}
+
+	recoveredAddr := crypto.PubkeyToAddress(*pubKey)
+
+	// ok = gethCrypto.VerifySignature(publicKey, prophecyID, []byte(signature))
+	if recoveredAddr.String() != ethereumAddress {
 		return errors.New("incorrect ethereum signature")
 	}
 
@@ -264,4 +275,9 @@ func (k Keeper) ProcessSignProphecy(ctx sdk.Context, networkDescriptor types.Net
 func (k Keeper) Exists(ctx sdk.Context, key []byte) bool {
 	store := ctx.KVStore(k.storeKey)
 	return store.Has(key)
+}
+
+// PrefixMsg prefixes a message for verification, mimics behavior of web3.eth.sign
+func PrefixMsg(msg []byte) []byte {
+	return solsha3.SoliditySHA3(solsha3.String("\x19Ethereum Signed Message:\n32"), msg)
 }
