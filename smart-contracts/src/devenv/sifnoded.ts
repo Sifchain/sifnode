@@ -142,8 +142,10 @@ export class SifnodedRunner extends ShellCommand<SifnodedResults> {
       await this.addValidatorKeyToTestKeyring(moniker, mnemonic)
 
       const valOperKey = this.readValoperKey(moniker, homeDir)
-
       const stdout = await this.addGenesisValidator(chainDir, valOperKey)
+      console.log(
+        `Added genesis validator: ${JSON.stringify({ moniker, homeDir, chainDir, valOperKey })}`
+      )
       const whitelistedValidator = ChildProcess.execSync(
         `${this.sifnodedCommand} keys show -a --bech val ${moniker} --keyring-backend test`,
         { encoding: "utf8", input: password }
@@ -285,7 +287,7 @@ export class SifnodedRunner extends ShellCommand<SifnodedResults> {
       path.join(chainDir, ".sifnoded"),
     ]
 
-    console.log("Add genesis validator")
+    console.log(`Add genesis validator: ${JSON.stringify({ chainDir, valoper })}`)
     return ChildProcess.execFileSync(this.sifnodedCommand, sifgenArgs, { encoding: "utf8" })
   }
 

@@ -77,6 +77,7 @@ export class WitnessRunner extends ShellCommand<EbrelayerResults> {
     process.env["ETHEREUM_PRIVATE_KEY"] = this.args.account.privateKey.slice(2)
     process.env["ETHEREUM_ADDRESS"] = this.args.account.address.slice(2)
     const spawncmd = "ebrelayer " + this.cmd()[1].join(" ")
+    console.log(`ebrelayer cmd: ${spawncmd}`)
     const witnessLogFile = fs.openSync(this.logFile, "w")
     const commandResult = ChildProcess.spawn(spawncmd, {
       shell: true,
