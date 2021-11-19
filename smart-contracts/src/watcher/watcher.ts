@@ -1,8 +1,8 @@
 import {filter, map} from 'rxjs/operators';
-import {interval, merge, Observable} from "rxjs";
+import {connectable, interval, merge, Observable, ReplaySubject, Subscription} from "rxjs";
 import {isNotNullOrUndefined, jsonParseSimple, tailFileAsObservable} from "./utilities";
 import {EbRelayerEvent, toEvmRelayerEvent} from "./ebrelayer";
-import {SifnodedEvent, SifnodedInfoEvent, toSifnodedEvent} from "./sifnoded";
+import {SifnodedEvent, toSifnodedEvent} from "./sifnoded";
 import {HardhatRuntimeEnvironment} from "hardhat/types";
 import {BridgeBank} from "../../build";
 import {EthereumMainnetEvent, subscribeToEthereumEvents} from "./ethereumMainnet";
@@ -40,4 +40,13 @@ export function sifwatch(logs: SifwatchLogs, hre: HardhatRuntimeEnvironment, bri
     return merge(evmRelayerEvents, sifnodedEvents, ethereumEvents, heartbeat)
 
     // TODO: Add cosmosEvent
+}
+
+export function sifwatchReplayable(logs: SifwatchLogs, hre: HardhatRuntimeEnvironment, bridgeBank: BridgeBank): [Observable<SifEvent>, Subscription] {
+    const eventStream = connectable(
+        sifwatch(logs, hre, bridgeBank),
+        { connector: () => new ReplaySubject(), resetOnDisconnect: false }
+    )
+    const subscription = eventStream.connect()
+    return [eventStream, subscription]
 }

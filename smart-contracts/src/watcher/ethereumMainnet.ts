@@ -79,7 +79,8 @@ export function subscribeToEthereumEvents(hre: HardhatRuntimeEnvironment, bridge
             }
             subscriber.next(newVar)
         };
-        bridgeBank.on(bridgeBank.filters.LogLock(), logLockListener)
+        let lockLogFilter = bridgeBank.filters.LogLock();
+        bridgeBank.on(lockLogFilter, logLockListener)
         const logBurnListener = (...args: any[]) => {
             let newVar: EthereumMainnetLogBurn = {
                 kind: "EthereumMainnetLogBurn",
@@ -99,10 +100,11 @@ export function subscribeToEthereumEvents(hre: HardhatRuntimeEnvironment, bridge
             };
             subscriber.next(newVar)
         };
-        bridgeBank.on(bridgeBank.filters.LogBurn(), logBurnListener)
+        let logBurnFilter = bridgeBank.filters.LogBurn();
+        bridgeBank.on(logBurnFilter, logBurnListener)
         return () => {
-            bridgeBank.off(bridgeBank.filters.LogLock(), logLockListener)
-            bridgeBank.off(bridgeBank.filters.LogBurn(), logBurnListener)
+            bridgeBank.off(lockLogFilter, logLockListener)
+            bridgeBank.off(logBurnFilter, logBurnListener)
         }
     })
 }
