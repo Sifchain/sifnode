@@ -1,5 +1,5 @@
-import { SynchronousCommand, SynchronousCommandResult } from "./synchronousCommand";
-import { requiredEnvVar } from "../contractSupport";
+import { SynchronousCommand, SynchronousCommandResult } from "./synchronousCommand"
+import { requiredEnvVar } from "../contractSupport"
 
 export class GolangResults extends SynchronousCommandResult {
   constructor(
@@ -8,7 +8,7 @@ export class GolangResults extends SynchronousCommandResult {
     readonly error: Error | undefined,
     readonly output: string
   ) {
-    super(completed, error, output);
+    super(completed, error, output)
   }
 }
 
@@ -18,15 +18,15 @@ export class GolangResultsPromise {
 
 export class GolangBuilder extends SynchronousCommand<GolangResults> {
   constructor() {
-    super();
+    super()
   }
 
   cmd(): [string, string[]] {
-    return ["make", ["-C", "..", "install"]];
+    return ["make", ["-C", "..", "install"]]
   }
 
   resultConverter(r: SynchronousCommandResult): GolangResults {
-    const goBin = requiredEnvVar("GOBIN");
-    return new GolangResults(goBin, r.completed, r.error, r.output);
+    const goBin = requiredEnvVar("GOBIN")
+    return new GolangResults(goBin, r.completed, r.error, r.output)
   }
 }

@@ -1,11 +1,11 @@
-import * as hre from "hardhat";
-import { EthereumAccounts, EthereumAddressAndKey, EthereumResults, ShellCommand } from "./devEnv";
-import * as ChildProcess from "child_process";
-import notifier from "node-notifier";
+import * as hre from "hardhat"
+import { EthereumAccounts, EthereumAddressAndKey, EthereumResults, ShellCommand } from "./devEnv"
+import * as ChildProcess from "child_process"
+import notifier from "node-notifier"
 
 export class HardhatNodeRunner extends ShellCommand<EthereumResults> {
-  private output: Promise<EthereumResults>;
-  private outputResolve: any;
+  private output: Promise<EthereumResults>
+  private outputResolve: any
   constructor(
     readonly host = "localhost",
     readonly port = 8545,
@@ -13,45 +13,45 @@ export class HardhatNodeRunner extends ShellCommand<EthereumResults> {
     readonly networkId = 1,
     readonly chainId = 1
   ) {
-    super();
+    super()
     this.output = new Promise<EthereumResults>((res, rej) => {
-      this.outputResolve = res;
-    });
+      this.outputResolve = res
+    })
   }
 
   cmd(): [string, string[]] {
     return [
       "node_modules/.bin/hardhat",
       ["node", "--hostname", this.host, "--port", this.port.toString()],
-    ];
+    ]
   }
 
   override async run(): Promise<void> {
-    const [c, args] = this.cmd();
+    const [c, args] = this.cmd()
     const childInfo = ChildProcess.spawn(c, args, {
       stdio: "inherit",
-    });
-    let ethereumAccounts = signerArrayToEthereumAccounts(defaultHardhatAccounts, this.nValidators);
+    })
+    let ethereumAccounts = signerArrayToEthereumAccounts(defaultHardhatAccounts, this.nValidators)
     this.outputResolve({
       process: childInfo,
       accounts: ethereumAccounts,
       httpHost: this.host,
       httpPort: this.port,
       chainId: hre.network.config.chainId,
-    });
+    })
 
     childInfo.on("exit", (code) => {
       notifier.notify({
         title: "HardHat Notice",
         message: `Hardhat has just exited with exit code: ${code}`,
-      });
-    });
+      })
+    })
 
-    return;
+    return
   }
 
   override async results(): Promise<EthereumResults> {
-    return this.output;
+    return this.output
   }
 }
 
@@ -98,15 +98,15 @@ const defaultHardhatAccounts: EthereumAddressAndKey[] = [
     address: "0xa0ee7a142d267c1f36714e4a8f75612f20a79720",
     privateKey: "0x2a871d0798f97d79848a013d4936a73bf4cc922c825d33c1cf7073dff6d409c6",
   },
-];
+]
 
 function signerArrayToEthereumAccounts(
   accounts: EthereumAddressAndKey[],
   nValidators: number
 ): EthereumAccounts {
-  const [operator, owner, pauser, ...moreAccounts] = accounts;
-  const validators = moreAccounts.slice(0, nValidators);
-  const available = moreAccounts.slice(nValidators);
+  const [operator, owner, pauser, ...moreAccounts] = accounts
+  const validators = moreAccounts.slice(0, nValidators)
+  const available = moreAccounts.slice(nValidators)
   return {
     proxyAdmin: operator,
     operator,
@@ -114,5 +114,5 @@ function signerArrayToEthereumAccounts(
     pauser,
     validators: validators,
     available,
-  };
+  }
 }

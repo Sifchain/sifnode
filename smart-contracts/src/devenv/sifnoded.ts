@@ -1,75 +1,75 @@
-import * as ChildProcess from "child_process";
-import { ShellCommand } from "./devEnv";
-import { GolangResults } from "./golangBuilder";
-import * as path from "path";
-import * as fs from "fs";
-import YAML from "yaml";
-import notifier from "node-notifier";
-import { EbrelayerArguments } from "./ebrelayer";
-import * as delay from "delay";
+import * as ChildProcess from "child_process"
+import { ShellCommand } from "./devEnv"
+import { GolangResults } from "./golangBuilder"
+import * as path from "path"
+import * as fs from "fs"
+import YAML from "yaml"
+import notifier from "node-notifier"
+import { EbrelayerArguments } from "./ebrelayer"
+import * as delay from "delay"
 
 import {
   ExecFileSyncOptions,
   ExecFileSyncOptionsWithStringEncoding,
   ExecSyncOptionsWithStringEncoding,
   StdioOptions,
-} from "child_process";
-import { network } from "hardhat";
-import { sleep } from "./devEnvUtilities";
+} from "child_process"
+import { network } from "hardhat"
+import { sleep } from "./devEnvUtilities"
 
-export const crossChainFeeBase: number = 1;
-export const crossChainLockFee: number = 1;
-export const crossChainBurnFee: number = 1;
+export const crossChainFeeBase: number = 1
+export const crossChainLockFee: number = 1
+export const crossChainBurnFee: number = 1
 const ethereumCrossChainFeeToken: string =
-  "sif5ebfaf95495ceb5a3efbd0b0c63150676ec71e023b1043c40bcaaf91c00e15b2";
+  "sif5ebfaf95495ceb5a3efbd0b0c63150676ec71e023b1043c40bcaaf91c00e15b2"
 
 export interface ValidatorValues {
-  chain_id: string;
-  node_id: string;
-  ipv4_address: string;
-  moniker: string;
-  password: string;
-  address: string;
-  pub_key: string;
-  mnemonic: string;
-  validator_address: string;
-  validator_consensus_address: string;
-  is_seed: boolean;
+  chain_id: string
+  node_id: string
+  ipv4_address: string
+  moniker: string
+  password: string
+  address: string
+  pub_key: string
+  mnemonic: string
+  validator_address: string
+  validator_consensus_address: string
+  is_seed: boolean
 }
 export interface EbRelayerAccount {
-  name: string;
-  account: string;
-  homeDir: string;
+  name: string
+  account: string
+  homeDir: string
 }
 export interface SifnodedResults {
-  validatorValues: ValidatorValues[];
-  relayerAddresses: EbRelayerAccount[];
-  witnessAddresses: EbRelayerAccount[];
-  adminAddress: EbRelayerAccount;
-  process: ChildProcess.ChildProcess;
-  tcpurl: string;
+  validatorValues: ValidatorValues[]
+  relayerAddresses: EbRelayerAccount[]
+  witnessAddresses: EbRelayerAccount[]
+  adminAddress: EbRelayerAccount
+  process: ChildProcess.ChildProcess
+  tcpurl: string
 }
 
 export async function waitForSifAccount(address: string, sifnoded: string) {
   for (;;) {
     try {
-      console.log("Attempting to check account");
+      console.log("Attempting to check account")
       ChildProcess.execSync(`${sifnoded} query account ${address}`, {
         encoding: "utf8",
-      }).trim();
-      console.log("Sifnoded is now running, continunig onwards");
-      return;
+      }).trim()
+      console.log("Sifnoded is now running, continunig onwards")
+      return
     } catch {
-      await sleep(1000);
+      await sleep(1000)
     }
   }
 }
 
 export class SifnodedRunner extends ShellCommand<SifnodedResults> {
-  output: Promise<SifnodedResults>;
-  private outputResolve: any;
-  private sifnodedCommand: string;
-  private sifgenCommand: string;
+  output: Promise<SifnodedResults>
+  private outputResolve: any
+  private sifnodedCommand: string
+  private sifgenCommand: string
 
   constructor(
     readonly golangResults: GolangResults,
@@ -84,17 +84,17 @@ export class SifnodedRunner extends ShellCommand<SifnodedResults> {
     readonly seedIpAddress = "10.10.1.1",
     readonly whitelistFile = "../test/integration/whitelisted-denoms.json"
   ) {
-    super();
-    this.sifnodedCommand = path.join(this.golangResults.goBin, "sifnoded");
+    super()
+    this.sifnodedCommand = path.join(this.golangResults.goBin, "sifnoded")
     this.output = new Promise<SifnodedResults>((res, _) => {
-      this.outputResolve = res;
-    });
-    this.sifgenCommand = path.join(this.golangResults.goBin, "sifgen");
-    this.sifnodedCommand = path.join(this.golangResults.goBin, "sifnoded");
+      this.outputResolve = res
+    })
+    this.sifgenCommand = path.join(this.golangResults.goBin, "sifgen")
+    this.sifnodedCommand = path.join(this.golangResults.goBin, "sifnoded")
   }
 
   cmd(): [string, string[]] {
-    return ["sifgen", ["node"]];
+    return ["sifgen", ["node"]]
   }
 
   async sifgenNetworkCreate(): Promise<SifnodedResults> {
@@ -111,69 +111,69 @@ export class SifnodedRunner extends ShellCommand<SifnodedResults> {
       // Mint goes to validator
       "--mint-amount",
       "999999000000000000000000000rowan,1370000000000000000ibc/FEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACEFEEDFACE,999999000000000000000000000sif5ebfaf95495ceb5a3efbd0b0c63150676ec71e023b1043c40bcaaf91c00e15b2",
-    ];
+    ]
 
-    await fs.promises.mkdir(this.networkDir, { recursive: true });
+    await fs.promises.mkdir(this.networkDir, { recursive: true })
 
-    const sifnodedLogFile = fs.openSync(this.logfile, "w");
+    const sifnodedLogFile = fs.openSync(this.logfile, "w")
 
-    let stdioOptions: StdioOptions = ["ignore", sifnodedLogFile, sifnodedLogFile];
+    let stdioOptions: StdioOptions = ["ignore", sifnodedLogFile, sifnodedLogFile]
 
     const sifgenOutput = ChildProcess.execFileSync(this.sifgenCommand, sifgenArgs, {
       encoding: "utf8",
-    });
+    })
 
     // Debug log
     // TODO: Add formal loglevel aware logging
-    console.log("SifgenOutput", sifgenOutput);
+    console.log("SifgenOutput", sifgenOutput)
 
-    const file = fs.readFileSync(this.networkConfigFile, "utf8");
-    const networkConfig: ValidatorValues[] = YAML.parse(file);
-    let homeDir: string = "";
+    const file = fs.readFileSync(this.networkConfigFile, "utf8")
+    const networkConfig: ValidatorValues[] = YAML.parse(file)
+    let homeDir: string = ""
 
     // TODO: Extract this into function
     for (const validator of networkConfig) {
-      const moniker = validator["moniker"];
-      const mnemonic = validator["mnemonic"];
-      const password = validator["password"];
-      let chainDir: string = path.join(this.networkDir, "validators", this.chainId, moniker);
+      const moniker = validator["moniker"]
+      const mnemonic = validator["mnemonic"]
+      const password = validator["password"]
+      let chainDir: string = path.join(this.networkDir, "validators", this.chainId, moniker)
 
-      homeDir = path.join(chainDir, ".sifnoded");
-      await this.addValidatorKeyToTestKeyring(moniker, mnemonic);
+      homeDir = path.join(chainDir, ".sifnoded")
+      await this.addValidatorKeyToTestKeyring(moniker, mnemonic)
 
-      const valOperKey = this.readValoperKey(moniker, homeDir);
+      const valOperKey = this.readValoperKey(moniker, homeDir)
 
-      const stdout = await this.addGenesisValidator(chainDir, valOperKey);
+      const stdout = await this.addGenesisValidator(chainDir, valOperKey)
       const whitelistedValidator = ChildProcess.execSync(
         `${this.sifnodedCommand} keys show -a --bech val ${moniker} --keyring-backend test`,
         { encoding: "utf8", input: password }
-      ).trim();
+      ).trim()
     }
 
     // Create an ADMIN account on sifnode with name sifnodeadmin
-    const sifnodedAdminAddress: EbRelayerAccount = this.addAccount("sifnodeadmin", homeDir, true);
+    const sifnodedAdminAddress: EbRelayerAccount = this.addAccount("sifnodeadmin", homeDir, true)
     // Create an account for each relayer as requested
     const relayerAddresses = Array.from({ length: this.nRelayers }, (_, relayer) =>
       this.addRelayerWitnessAccount(`relayer-${relayer}`, homeDir)
-    );
+    )
     // Create an account for each witness as requested
     const witnessAddresses = Array.from({ length: this.nWitnesses }, (_, witness) =>
       this.addRelayerWitnessAccount(`witness-${witness}`, homeDir)
-    );
+    )
 
-    let sifnodedDaemonCmd = `${this.sifnodedCommand} start --log_level debug --log_format json --minimum-gas-prices 0.5rowan --rpc.laddr tcp://0.0.0.0:26657 --home ${homeDir}`;
+    let sifnodedDaemonCmd = `${this.sifnodedCommand} start --log_level debug --log_format json --minimum-gas-prices 0.5rowan --rpc.laddr tcp://0.0.0.0:26657 --home ${homeDir}`
 
-    console.log(`start sifnoded with: \n${sifnodedDaemonCmd}`);
-    const sifnoded = ChildProcess.spawn(sifnodedDaemonCmd, { shell: true, stdio: stdioOptions });
+    console.log(`start sifnoded with: \n${sifnodedDaemonCmd}`)
+    const sifnoded = ChildProcess.spawn(sifnodedDaemonCmd, { shell: true, stdio: stdioOptions })
 
     // Register tokens in the token registry
     // Must wait for sifnode to fully start first
-    await waitForSifAccount(networkConfig[0].address, this.sifnodedCommand);
-    const registryPath = path.resolve(__dirname, "./", "registry.json");
+    await waitForSifAccount(networkConfig[0].address, this.sifnodedCommand)
+    const registryPath = path.resolve(__dirname, "./", "registry.json")
     ChildProcess.execSync(
       `${this.sifnodedCommand} tx tokenregistry register-all ${registryPath} --home ${homeDir} --gas-prices 0.5rowan --gas-adjustment 1.5 --from ${sifnodedAdminAddress.name} --yes --keyring-backend test --chain-id ${this.chainId}`,
       { encoding: "utf8" }
-    ).trim();
+    ).trim()
 
     await this.setCrossChainFee(
       sifnodedAdminAddress,
@@ -183,14 +183,14 @@ export class SifnodedRunner extends ShellCommand<SifnodedResults> {
       String(crossChainLockFee),
       String(crossChainBurnFee),
       this.chainId
-    );
+    )
 
     sifnoded.on("exit", (code) => {
       notifier.notify({
         title: "Sifnoded Notice",
         message: `Sifnoded has just exited with exit code: ${code}`,
-      });
-    });
+      })
+    })
 
     return {
       validatorValues: networkConfig,
@@ -199,71 +199,71 @@ export class SifnodedRunner extends ShellCommand<SifnodedResults> {
       witnessAddresses: witnessAddresses,
       process: sifnoded,
       tcpurl: "tcp://0.0.0.0:26657",
-    };
+    }
     //    return lastValueFrom(eventEmitterToObservable(sifnoded, "sifnoded"))
   }
 
   addAccount(name: string, homeDir: string, isAdmin: boolean): EbRelayerAccount {
-    let accountAddCmd = `${this.sifnodedCommand} keys add ${name} --keyring-backend test --output json --home ${homeDir}`;
+    let accountAddCmd = `${this.sifnodedCommand} keys add ${name} --keyring-backend test --output json --home ${homeDir}`
     const accountJSON = ChildProcess.execSync(accountAddCmd, {
       encoding: "utf8",
       input: "yes\nyes",
-    }).trim();
-    const accountAddress = JSON.parse(accountJSON)["address"];
+    }).trim()
+    const accountAddress = JSON.parse(accountJSON)["address"]
 
     // TODO: Homedir would contain value of last assignment. Might need to be fixed when we support more than 1 acc
     ChildProcess.execSync(
       `${this.sifnodedCommand} add-genesis-account ${accountAddress} 100000000000000000000rowan,20000000000000000000ceth --home ${homeDir}`,
       { encoding: "utf8" }
-    ).trim();
+    ).trim()
     if (isAdmin === true) {
       ChildProcess.execSync(
         `${this.sifnodedCommand} set-genesis-oracle-admin ${accountAddress} --home ${homeDir}`,
         { encoding: "utf8" }
-      ).trim();
+      ).trim()
     }
 
     ChildProcess.execSync(
       `${this.sifnodedCommand} set-genesis-whitelister-admin ${accountAddress} --home ${homeDir}`,
       { encoding: "utf8" }
-    ).trim();
+    ).trim()
 
     return {
       account: accountAddress,
       name: name,
       homeDir,
-    };
+    }
   }
 
   addRelayerWitnessAccount(name: string, homeDir: string): EbRelayerAccount {
-    const adminAccount = this.addAccount(name, homeDir, false);
+    const adminAccount = this.addAccount(name, homeDir, false)
     // Whitelist Relayer/Witness Account
-    const EVM_Network_Descriptor = 31337;
-    const Validator_Power = 100;
-    const bachAddress = this.readValoperKey(name, homeDir);
+    const EVM_Network_Descriptor = 31337
+    const Validator_Power = 100
+    const bachAddress = this.readValoperKey(name, homeDir)
     ChildProcess.execSync(
       `${this.sifnodedCommand} set-gen-denom-whitelist ${this.whitelistFile} --home ${homeDir}`,
       { encoding: "utf8" }
-    ).trim();
+    ).trim()
     ChildProcess.execSync(
       `${this.sifnodedCommand} add-genesis-validators ${EVM_Network_Descriptor} ${bachAddress} ${Validator_Power} --home ${homeDir}`,
       { encoding: "utf8" }
-    ).trim();
+    ).trim()
 
-    return adminAccount;
+    return adminAccount
   }
 
   async addValidatorKeyToTestKeyring(moniker: string, mnemonic: string) {
-    const sifnodedArgs = ["keys", "add", moniker, "--keyring-backend", "test", "--recover"];
+    const sifnodedArgs = ["keys", "add", moniker, "--keyring-backend", "test", "--recover"]
 
-    console.log("Add Validator with mnemonics: ", mnemonic);
+    console.log("Add Validator with mnemonics: ", mnemonic)
 
     let child = ChildProcess.execFileSync(this.sifnodedCommand, sifnodedArgs, {
       encoding: "utf8",
       shell: false,
       input: `${mnemonic}\n`,
-    });
-    console.log("Add Validator key to test ring output:", child);
+    })
+    console.log("Add Validator key to test ring output:", child)
   }
 
   // TODO: args Position
@@ -271,7 +271,7 @@ export class SifnodedRunner extends ShellCommand<SifnodedResults> {
     return ChildProcess.execSync(
       `${this.sifnodedCommand} keys show -a --bech val ${moniker} --keyring-backend test --home ${homeDir}`,
       { encoding: "utf8" }
-    ).trim();
+    ).trim()
   }
 
   // sifnoded add-genesis-validators $valoper --home $CHAINDIR/.sifnoded
@@ -283,10 +283,10 @@ export class SifnodedRunner extends ShellCommand<SifnodedResults> {
       "100",
       "--home",
       path.join(chainDir, ".sifnoded"),
-    ];
+    ]
 
-    console.log("Add genesis validator");
-    return ChildProcess.execFileSync(this.sifnodedCommand, sifgenArgs, { encoding: "utf8" });
+    console.log("Add genesis validator")
+    return ChildProcess.execFileSync(this.sifnodedCommand, sifgenArgs, { encoding: "utf8" })
   }
 
   // sifnoded tx ethbridge set-cross-chain-fee sif1f8sz5779td3y6xsq296k3wurflsdnfxmq5hudd 1 ceth 1 1 1
@@ -323,17 +323,17 @@ export class SifnodedRunner extends ShellCommand<SifnodedResults> {
       "--gas-adjustment",
       "1.5",
       "-y",
-    ];
+    ]
 
-    return ChildProcess.execFileSync(this.sifnodedCommand, sifgenArgs, { encoding: "utf8" });
+    return ChildProcess.execFileSync(this.sifnodedCommand, sifgenArgs, { encoding: "utf8" })
   }
 
   override async run(): Promise<void> {
-    const output = await this.sifgenNetworkCreate();
-    this.outputResolve(output);
+    const output = await this.sifgenNetworkCreate()
+    this.outputResolve(output)
   }
 
   override async results(): Promise<SifnodedResults> {
-    return this.output;
+    return this.output
   }
 }

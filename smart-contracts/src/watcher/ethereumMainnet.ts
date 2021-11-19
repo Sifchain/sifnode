@@ -1,64 +1,64 @@
-import { Observable } from "rxjs";
-import { HardhatRuntimeEnvironment } from "hardhat/types";
-import { BridgeBank } from "../../build";
-import { BigNumber } from "ethers";
+import { Observable } from "rxjs"
+import { HardhatRuntimeEnvironment } from "hardhat/types"
+import { BridgeBank } from "../../build"
+import { BigNumber } from "ethers"
 
 export interface EthereumMainnetBlock {
-  kind: "EthereumMainnetBlock";
-  blockNumber: number;
+  kind: "EthereumMainnetBlock"
+  blockNumber: number
 }
 
 export interface EthereumMainnetLogLock {
-  kind: "EthereumMainnetLogLock";
+  kind: "EthereumMainnetLogLock"
   data: {
-    kind: "EthereumMainnetLogLock";
-    from: string;
-    to: string;
-    token: string;
-    value: BigNumber;
-    nonce: BigNumber;
-    decimals: number;
-    symbol: string;
-    name: string;
-    networkDescriptor: number;
-    block: object;
-  };
+    kind: "EthereumMainnetLogLock"
+    from: string
+    to: string
+    token: string
+    value: BigNumber
+    nonce: BigNumber
+    decimals: number
+    symbol: string
+    name: string
+    networkDescriptor: number
+    block: object
+  }
 }
 
 export interface EthereumMainnetLogBurn {
-  kind: "EthereumMainnetLogBurn";
+  kind: "EthereumMainnetLogBurn"
   data: {
-    kind: "EthereumMainnetLogBurn";
-    from: string;
-    to: string;
-    token: string;
-    value: BigNumber;
-    nonce: BigNumber;
-    decimals: number;
-    symbol: string;
-    name: string;
-    networkDescriptor: number;
-    block: object;
-  };
+    kind: "EthereumMainnetLogBurn"
+    from: string
+    to: string
+    token: string
+    value: BigNumber
+    nonce: BigNumber
+    decimals: number
+    symbol: string
+    name: string
+    networkDescriptor: number
+    block: object
+  }
 }
 
 export type EthereumMainnetEvent =
   | EthereumMainnetBlock
   | EthereumMainnetLogLock
-  | EthereumMainnetLogBurn;
+  | EthereumMainnetLogBurn
 
 export function isEthereumMainnetEvent(x: object): x is EthereumMainnetEvent {
   switch ((x as EthereumMainnetEvent).kind) {
     case "EthereumMainnetBlock":
     case "EthereumMainnetLogLock":
-      return true;
+      return true
     default:
-      return false;
+      return false
   }
 }
 
 export function isNotEthereumMainnetEvent(x: object): x is EthereumMainnetEvent {
-  return !isEthereumMainnetEvent(x);
+  return !isEthereumMainnetEvent(x)
 }
 
 export function subscribeToEthereumEvents(
@@ -82,11 +82,11 @@ export function subscribeToEthereumEvents(
           networkDescriptor: parseInt(args[8]),
           block: args[9],
         },
-      };
-      subscriber.next(newVar);
-    };
-    let lockLogFilter = bridgeBank.filters.LogLock();
-    bridgeBank.on(lockLogFilter, logLockListener);
+      }
+      subscriber.next(newVar)
+    }
+    let lockLogFilter = bridgeBank.filters.LogLock()
+    bridgeBank.on(lockLogFilter, logLockListener)
     const logBurnListener = (...args: any[]) => {
       let newVar: EthereumMainnetLogBurn = {
         kind: "EthereumMainnetLogBurn",
@@ -103,14 +103,14 @@ export function subscribeToEthereumEvents(
           networkDescriptor: parseInt(args[8]),
           block: args[9],
         },
-      };
-      subscriber.next(newVar);
-    };
-    let logBurnFilter = bridgeBank.filters.LogBurn();
-    bridgeBank.on(logBurnFilter, logBurnListener);
+      }
+      subscriber.next(newVar)
+    }
+    let logBurnFilter = bridgeBank.filters.LogBurn()
+    bridgeBank.on(logBurnFilter, logBurnListener)
     return () => {
-      bridgeBank.off(lockLogFilter, logLockListener);
-      bridgeBank.off(logBurnFilter, logBurnListener);
-    };
-  });
+      bridgeBank.off(lockLogFilter, logLockListener)
+      bridgeBank.off(logBurnFilter, logBurnListener)
+    }
+  })
 }
