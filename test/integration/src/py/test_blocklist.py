@@ -2,7 +2,6 @@ import time
 import json
 import web3
 import test_utilities
-from test_utilities import EthereumToSifchainTransferRequest
 from integration_test_context import main, common, eth
 from common import *
 from eth import ETH
