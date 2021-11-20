@@ -2,6 +2,9 @@ package dispensation_test
 
 import (
 	"fmt"
+	sifapp "github.com/Sifchain/sifnode/app"
+	"testing"
+
 	"github.com/Sifchain/sifnode/x/dispensation"
 	"github.com/Sifchain/sifnode/x/dispensation/test"
 	"github.com/Sifchain/sifnode/x/dispensation/types"
@@ -11,7 +14,6 @@ import (
 	"github.com/stretchr/testify/require"
 	"github.com/tendermint/tendermint/crypto"
 	"github.com/tendermint/tendermint/crypto/ed25519"
-	"testing"
 )
 
 func TestNewHandler_CreateDistribution(t *testing.T) {
@@ -23,7 +25,7 @@ func TestNewHandler_CreateDistribution(t *testing.T) {
 	distributor := sdk.AccAddress(ed25519.GenPrivKey().PubKey().Address())
 	totalCoins, err := dispensationUtils.TotalOutput(outputList)
 	assert.NoError(t, err)
-	err = keeper.GetBankKeeper().AddCoins(ctx, distributor, totalCoins)
+	err = sifapp.AddCoinsToAccount(types.ModuleName, app.BankKeeper, ctx, distributor, totalCoins)
 	assert.NoError(t, err)
 
 	msgAirdrop := types.NewMsgCreateDistribution(distributor, types.DistributionType_DISTRIBUTION_TYPE_AIRDROP, outputList, "")
@@ -55,9 +57,9 @@ func TestNewHandler_CreateDistribution_MultipleTypes(t *testing.T) {
 	distributor := sdk.AccAddress(ed25519.GenPrivKey().PubKey().Address())
 	totalCoins, err := dispensationUtils.TotalOutput(outputList)
 	assert.NoError(t, err)
-	err = keeper.GetBankKeeper().AddCoins(ctx, distributor, totalCoins)
+	err = sifapp.AddCoinsToAccount(types.ModuleName, app.BankKeeper, ctx, distributor, totalCoins)
 	assert.NoError(t, err)
-	err = keeper.GetBankKeeper().AddCoins(ctx, distributor, totalCoins)
+	err = sifapp.AddCoinsToAccount(types.ModuleName, app.BankKeeper, ctx, distributor, totalCoins)
 	assert.NoError(t, err)
 	msgAirdrop := types.NewMsgCreateDistribution(distributor, types.DistributionType_DISTRIBUTION_TYPE_AIRDROP, outputList, "")
 	res, err := handler(ctx, &msgAirdrop)
@@ -98,7 +100,7 @@ func TestNewHandler_RunDistribution(t *testing.T) {
 	totalCoins, err := dispensationUtils.TotalOutput(outputList)
 	assert.NoError(t, err)
 	totalCoins = totalCoins.Add(totalCoins...)
-	err = keeper.GetBankKeeper().AddCoins(ctx, distributor, totalCoins)
+	err = sifapp.AddCoinsToAccount(types.ModuleName, app.BankKeeper, ctx, distributor, totalCoins)
 	assert.NoError(t, err)
 	msgAirdrop := types.NewMsgCreateDistribution(distributor, types.DistributionType_DISTRIBUTION_TYPE_AIRDROP, outputList, runner.String())
 	res, err := handler(ctx, &msgAirdrop)

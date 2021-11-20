@@ -11,7 +11,6 @@ from pytest_utilities import generate_test_account
 from test_utilities import get_required_env_var, SifchaincliCredentials, get_optional_env_var, ganache_owner_account, \
     get_shell_output_json, get_shell_output, detect_errors_in_sifnoded_output, get_transaction_result, amount_in_wei, sifnoded_binary
 
-
 smart_contracts_dir = get_required_env_var("SMART_CONTRACTS_DIR")
 bridgebank_address = get_required_env_var("BRIDGE_BANK_ADDRESS")
 bridgetoken_address = get_required_env_var("BRIDGE_TOKEN_ADDRESS")
@@ -32,7 +31,6 @@ def generate_new_currency(symbol, amount, solidity_json_path, operator_address, 
     )
     return new_currency
 
-
 def get_pools(sifnoded_node):
     node = f"--node {sifnoded_node}" if sifnoded_node else ""
     command_line = f"{sifnoded_binary} q clp pools {node} --output json"
@@ -42,7 +40,6 @@ def get_pools(sifnoded_node):
         return json_str
     except Exception as e:
         logging.debug(f"get_pools is empty.")
-
 
 def create_pool(
         transfer_request: EthereumToSifchainTransferRequest,
@@ -69,7 +66,6 @@ def create_pool(
         "-y --output json"
     ])
     return get_shell_output_json(cmd)
-
 
 def swap_pool(
         transfer_request: EthereumToSifchainTransferRequest,
@@ -102,7 +98,6 @@ def swap_pool(
     tx = txn["tx"]
     logging.debug(f"resulting tx: {tx}")
     return txn
-
 
 def remove_pool_liquidity(
         transfer_request: EthereumToSifchainTransferRequest,
@@ -165,7 +160,6 @@ def add_pool_liquidity(
     logging.debug(f"resulting tx: {tx}")
     return txn
 
-
 @pytest.mark.skip(reason="not now")
 def test_create_pools(
         basic_transfer_request: EthereumToSifchainTransferRequest,
@@ -215,7 +209,6 @@ def test_create_pools(
     current_rowan_balance = current_rowan_balance - sifchain_fees_int
     assert(test_utilities.get_sifchain_addr_balance(sifaddress, basic_transfer_request.sifnoded_node, "rowan") == current_rowan_balance)
     assert(test_utilities.get_sifchain_addr_balance(sifaddress, basic_transfer_request.sifnoded_node, "ceth") == current_ceth_balance)
-
 
 # @pytest.mark.skip(reason="not now")
 @pytest.mark.usefixtures("operator_private_key")
