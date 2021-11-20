@@ -401,12 +401,6 @@ func NewSifApp(
 		app.GetSubspace(disptypes.ModuleName),
 	)
 
-	// This map defines heights to skip for updates
-	// The mapping represents height to bool. if the value is true for a height that height
-	// will be skipped even if we have a update proposal for it
-
-	// Create IBC Keeper
-
 	// NOTE: the IBC mock keeper and application module is used only for testing core IBC. Do
 	// note replicate if you do not need to test core IBC or light clients.
 	mockModule := ibcmock.NewAppModule(scopedIBCMockKeeper, &app.IBCKeeper.PortKeeper)
@@ -547,7 +541,7 @@ func NewSifApp(
 		// that in-memory capabilities get regenerated on app restart.
 		// Note that since this reads from the store, we can only perform it when
 		// `loadLatest` is set to true.
-		//app.CapabilityKeeper.Seal()
+		app.CapabilityKeeper.Seal()
 	}
 	// NOTE: the IBC mock keeper and application module is used only for testing core IBC. Do
 	// note replicate if you do not need to test core IBC or light clients.
