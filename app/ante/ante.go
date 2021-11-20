@@ -7,29 +7,44 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/cosmos/cosmos-sdk/x/auth/ante"
-	authkeeper "github.com/cosmos/cosmos-sdk/x/auth/keeper"
-	"github.com/cosmos/cosmos-sdk/x/auth/signing"
-	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 	"github.com/pkg/errors"
 )
 
-func NewAnteHandler(ak authkeeper.AccountKeeper, bk bankkeeper.Keeper, fk ante.FeegrantKeeper, gasConsumer ante.SignatureVerificationGasConsumer, signModeHandler signing.SignModeHandler) sdk.AnteHandler {
+func NewAnteHandler(options ante.HandlerOptions) (sdk.AnteHandler, error) {
+
+	if options.AccountKeeper == nil {
+		return nil, sdkerrors.Wrap(sdkerrors.ErrLogic, "account keeper is required for ante builder")
+	}
+
+	if options.BankKeeper == nil {
+		return nil, sdkerrors.Wrap(sdkerrors.ErrLogic, "bank keeper is required for ante builder")
+	}
+
+	if options.SignModeHandler == nil {
+		return nil, sdkerrors.Wrap(sdkerrors.ErrLogic, "sign mode handler is required for ante builder")
+	}
+
+	var sigGasConsumer = options.SigGasConsumer
+	if sigGasConsumer == nil {
+		sigGasConsumer = ante.DefaultSigVerificationGasConsumer
+	}
 	return sdk.ChainAnteDecorators(
 		ante.NewSetUpContextDecorator(), // outermost AnteDecorator. SetUpContext must be called first
 		NewReduceGasPriceDecorator(),    // Custom decorator to reduce gas price for specific msg types
 		ante.NewRejectExtensionOptionsDecorator(),
 		ante.NewMempoolFeeDecorator(),
 		ante.NewValidateBasicDecorator(),
-		ante.TxTimeoutHeightDecorator{},
-		ante.NewValidateMemoDecorator(ak),
-		ante.NewConsumeGasForTxSizeDecorator(ak),
-		ante.NewSetPubKeyDecorator(ak), // SetPubKeyDecorator must be called before all signature verification decorators
-		ante.NewValidateSigCountDecorator(ak),
-		ante.NewDeductFeeDecorator(ak, bk, fk),
-		ante.NewSigGasConsumeDecorator(ak, gasConsumer),
-		ante.NewSigVerificationDecorator(ak, signModeHandler),
-		ante.NewIncrementSequenceDecorator(ak),
-	)
+		ante.NewTxTimeoutHeightDecorator(),
+		ante.NewValidateMemoDecorator(options.AccountKeeper),
+		ante.NewConsumeGasForTxSizeDecorator(options.AccountKeeper),
+		ante.NewDeductFeeDecorator(options.AccountKeeper, options.BankKeeper, options.FeegrantKeeper),
+		ante.NewSetPubKeyDecorator(options.AccountKeeper), // SetPubKeyDecorator must be called before all signature verification decorators
+		ante.NewValidateSigCountDecorator(options.AccountKeeper),
+		ante.NewSigGasConsumeDecorator(options.AccountKeeper, sigGasConsumer),
+		ante.NewSigVerificationDecorator(options.AccountKeeper, options.SignModeHandler),
+		ante.NewIncrementSequenceDecorator(options.AccountKeeper),
+	), nil
+
 }
 
 // ReduceGasPriceDecorator is a custom decorator to reduce fee prices .

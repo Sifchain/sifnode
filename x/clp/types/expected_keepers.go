@@ -34,4 +34,5 @@ type TokenRegistryKeeper interface {
 	GetEntry(registry tokenregistryTypes.Registry, denom string) (*tokenregistryTypes.RegistryEntry, error)
 	CheckEntryPermissions(entry *tokenregistryTypes.RegistryEntry, permissions []tokenregistryTypes.Permission) bool
 	GetRegistry(ctx sdk.Context) tokenregistryTypes.Registry
+	SetRegistry(ctx sdk.Context, registry tokenregistryTypes.Registry)
 }
