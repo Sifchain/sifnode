@@ -31,7 +31,7 @@ def create_new_sifaddr_and_key():
 # CODE TO SEND SOME SAMPLE TOKEN TO NEW ADDRESS
 def send_sample_rowan(from_address, to_address, amount, keyring_backend, chain_id, offline):
     logging.debug(f"transfer_rowan")
-    sifchain_fees_entry = f"--fees 150000rowan"
+    sifchain_fees_entry = f"--fees 100000000000000000rowan"
     keyring_backend_entry = f"--keyring-backend {keyring_backend}"
     cmd = " ".join([
         "sifnoded tx bank send",
@@ -306,7 +306,7 @@ def create_claim(
     logging.debug(f"create_claim")
     keyring_backend_entry = f"--keyring-backend {keyring_backend}"
     sifchain_gas_entry = f"--gas auto --gas-adjustment=1.5"
-    sifchain_fees_entry = f"--fees 100000rowan"
+    sifchain_fees_entry = f"--fees 100000000000000000rowan"
     cmd = " ".join([
         "sifnoded tx dispensation claim",
         f"{claimType}",

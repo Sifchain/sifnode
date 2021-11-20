@@ -210,3 +210,80 @@ func TestKeeper_GetLiquidityProviderData(t *testing.T) {
 		assert.Equal(t, fmt.Sprint(1000*uint64(i+1)), lpData.NativeAssetBalance)
 	}
 }
+
+func TestKeeper_SwapOne(t *testing.T) {
+	ctx, app := test.CreateTestAppClp(false)
+	signer := test.GenerateAddress(test.AddressKey1)
+	//Parameters for create pool
+	nativeAssetAmount := sdk.NewUintFromString("998")
+	externalAssetAmount := sdk.NewUintFromString("998")
+	asset := types.NewAsset("eth")
+	externalCoin := sdk.NewCoin(asset.Symbol, sdk.Int(sdk.NewUint(10000)))
+	nativeCoin := sdk.NewCoin(types.NativeSymbol, sdk.Int(sdk.NewUint(10000)))
+	wBasis := sdk.NewInt(1000)
+	asymmetry := sdk.NewInt(10000)
+	err := sifapp.AddCoinsToAccount(types.ModuleName, app.BankKeeper, ctx, signer, sdk.NewCoins(externalCoin, nativeCoin))
+	require.NoError(t, err)
+	msgCreatePool := types.NewMsgCreatePool(signer, asset, nativeAssetAmount, externalAssetAmount)
+	// Create Pool
+	pool, err := app.ClpKeeper.CreatePool(ctx, sdk.NewUint(1), &msgCreatePool)
+	assert.NoError(t, err)
+	msg := types.NewMsgAddLiquidity(signer, asset, nativeAssetAmount, externalAssetAmount)
+	app.ClpKeeper.CreateLiquidityProvider(ctx, &asset, sdk.NewUint(1), signer)
+	lp, err := app.ClpKeeper.AddLiquidity(ctx, &msg, *pool, sdk.NewUint(1), sdk.NewUint(998))
+	assert.NoError(t, err)
+	registry := app.TokenRegistryKeeper.GetRegistry(ctx)
+	eAsset, err := app.TokenRegistryKeeper.GetEntry(registry, pool.ExternalAsset.Symbol)
+	assert.NoError(t, err)
+	// asymmetry is positive
+	normalizationFactor, adjustExternalToken := app.ClpKeeper.GetNormalizationFactor(eAsset.Decimals)
+	_, _, _, swapAmount := clpkeeper.CalculateWithdrawal(pool.PoolUnits,
+		pool.NativeAssetBalance.String(), pool.ExternalAssetBalance.String(), lp.LiquidityProviderUnits.String(), wBasis.String(), asymmetry)
+	swapResult, liquidityFee, priceImpact, _, err := clpkeeper.SwapOne(types.GetSettlementAsset(), swapAmount, asset, *pool, normalizationFactor, adjustExternalToken)
+	assert.NoError(t, err)
+	assert.Equal(t, swapResult.String(), "10")
+	assert.Equal(t, liquidityFee.String(), "978")
+	assert.Equal(t, priceImpact.String(), "0")
+}
+
+func TestKeeper_SetInputs(t *testing.T) {
+	ctx, app := test.CreateTestAppClp(false)
+	signer := test.GenerateAddress(test.AddressKey1)
+	//Parameters for create pool
+	nativeAssetAmount := sdk.NewUintFromString("998")
+	externalAssetAmount := sdk.NewUintFromString("998")
+	asset := types.NewAsset("eth")
+	externalCoin := sdk.NewCoin(asset.Symbol, sdk.Int(sdk.NewUint(10000)))
+	nativeCoin := sdk.NewCoin(types.NativeSymbol, sdk.Int(sdk.NewUint(10000)))
+	err := sifapp.AddCoinsToAccount(types.ModuleName, app.BankKeeper, ctx, signer, sdk.NewCoins(externalCoin, nativeCoin))
+	require.NoError(t, err)
+	msgCreatePool := types.NewMsgCreatePool(signer, asset, nativeAssetAmount, externalAssetAmount)
+	// Create Pool
+	pool, _ := app.ClpKeeper.CreatePool(ctx, sdk.NewUint(1), &msgCreatePool)
+	X, x, Y, toRowan := clpkeeper.SetInputs(sdk.NewUint(1), asset, *pool)
+	assert.Equal(t, X, sdk.NewUint(998))
+	assert.Equal(t, x, sdk.NewUint(1))
+	assert.Equal(t, Y, sdk.NewUint(998))
+	assert.Equal(t, toRowan, false)
+}
+
+func TestKeeper_GetSwapFee(t *testing.T) {
+	ctx, app := test.CreateTestAppClp(false)
+	signer := test.GenerateAddress(test.AddressKey1)
+	//Parameters for create pool
+	nativeAssetAmount := sdk.NewUintFromString("998")
+	externalAssetAmount := sdk.NewUintFromString("998")
+	asset := types.NewAsset("eth")
+	externalCoin := sdk.NewCoin(asset.Symbol, sdk.Int(sdk.NewUint(10000)))
+	nativeCoin := sdk.NewCoin(types.NativeSymbol, sdk.Int(sdk.NewUint(10000)))
+	err := sifapp.AddCoinsToAccount(types.ModuleName, app.BankKeeper, ctx, signer, sdk.NewCoins(externalCoin, nativeCoin))
+	require.NoError(t, err)
+	msgCreatePool := types.NewMsgCreatePool(signer, asset, nativeAssetAmount, externalAssetAmount)
+	// Create Pool
+	pool, _ := app.ClpKeeper.CreatePool(ctx, sdk.NewUint(1), &msgCreatePool)
+	registry := app.TokenRegistryKeeper.GetRegistry(ctx)
+	eAsset, _ := app.TokenRegistryKeeper.GetEntry(registry, pool.ExternalAsset.Symbol)
+	normalizationFactor, adjustExternalToken := app.ClpKeeper.GetNormalizationFactor(eAsset.Decimals)
+	swapResult := clpkeeper.GetSwapFee(sdk.NewUint(1), asset, *pool, normalizationFactor, adjustExternalToken)
+	assert.Equal(t, swapResult.String(), "1")
+}
