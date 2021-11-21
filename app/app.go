@@ -133,7 +133,6 @@ var (
 		evidence.AppModuleBasic{},
 		ibc.AppModuleBasic{},
 		ibctransferoverride.AppModuleBasic{},
-
 		clp.AppModuleBasic{},
 		oracle.AppModuleBasic{},
 		ethbridge.AppModuleBasic{},
@@ -160,7 +159,6 @@ var (
 
 func init() {
 	sdk.DefaultPowerReduction = sdk.NewIntFromBigInt(new(big.Int).Exp(big.NewInt(10), big.NewInt(18), nil))
-
 	_, err := os.UserHomeDir()
 	if err != nil {
 		panic(err)
@@ -177,8 +175,7 @@ type SifchainApp struct {
 	legacyAmino       *codec.LegacyAmino //nolint
 	appCodec          codec.Codec
 	interfaceRegistry types.InterfaceRegistry
-
-	invCheckPeriod uint
+	invCheckPeriod    uint
 
 	// keys to access the substores
 	keys    map[string]*sdk.KVStoreKey
@@ -265,14 +262,12 @@ func NewSifApp(
 		tkeys:             tkeys,
 		memKeys:           memKeys,
 	}
-
 	if homePath == "" {
 		homePath = DefaultNodeHome
 	}
 	app.ParamsKeeper = initParamsKeeper(appCodec, legacyAmino, keys[paramstypes.StoreKey], tkeys[paramstypes.TStoreKey]) //nolint
 	// set the BaseApp's parameter store
 	bApp.SetParamStore(app.ParamsKeeper.Subspace(baseapp.Paramspace).WithKeyTable(paramskeeper.ConsensusParamsKeyTable()))
-
 	// add capability keeper and ScopeToModule for ibc module
 	app.CapabilityKeeper = capabilitykeeper.NewKeeper(appCodec, keys[capabilitytypes.StoreKey], memKeys[capabilitytypes.MemStoreKey])
 	scopedIBCKeeper := app.CapabilityKeeper.ScopeToModule(ibchost.ModuleName)
@@ -280,7 +275,6 @@ func NewSifApp(
 	// NOTE: the IBC mock keeper and application module is used only for testing core IBC. Do
 	// note replicate if you do not need to test core IBC or light clients.
 	scopedIBCMockKeeper := app.CapabilityKeeper.ScopeToModule(ibcmock.ModuleName)
-
 	app.AccountKeeper = authkeeper.NewAccountKeeper(
 		appCodec,
 		keys[authtypes.StoreKey],
@@ -288,7 +282,6 @@ func NewSifApp(
 		authtypes.ProtoBaseAccount,
 		maccPerms,
 	)
-
 	app.BankKeeper = bankkeeper.NewBaseKeeper(
 		appCodec, keys[banktypes.StoreKey],
 		app.AccountKeeper,
@@ -300,11 +293,9 @@ func NewSifApp(
 		appCodec,
 		app.BaseApp.MsgServiceRouter(),
 	)
-
 	app.FeegrantKeeper = feegrantkeeper.NewKeeper(
 		appCodec, keys[banktypes.StoreKey], app.AccountKeeper,
 	)
-
 	stakingKeeper := stakingkeeper.NewKeeper(
 		appCodec, keys[stakingtypes.StoreKey], app.AccountKeeper, app.BankKeeper, app.GetSubspace(stakingtypes.ModuleName),
 	)
@@ -315,12 +306,10 @@ func NewSifApp(
 		appCodec, keys[minttypes.StoreKey], app.GetSubspace(minttypes.ModuleName), &stakingKeeper,
 		app.AccountKeeper, app.BankKeeper, authtypes.FeeCollectorName,
 	)
-
 	app.DistrKeeper = distrkeeper.NewKeeper(
 		appCodec, keys[distrtypes.StoreKey], app.GetSubspace(distrtypes.ModuleName), app.AccountKeeper, app.BankKeeper,
 		&stakingKeeper, authtypes.FeeCollectorName, app.ModuleAccountAddrs(),
 	)
-
 	app.SlashingKeeper = slashingkeeper.NewKeeper(
 		appCodec, keys[slashingtypes.StoreKey], &stakingKeeper, app.GetSubspace(slashingtypes.ModuleName),
 	)
@@ -340,11 +329,9 @@ func NewSifApp(
 	)
 	// register the staking hooks
 	// NOTE: stakingKeeper above is passed by reference, so that it will contain these hooks
-
 	app.IBCKeeper = ibckeeper.NewKeeper(
 		appCodec, keys[ibchost.StoreKey], app.GetSubspace(ibchost.ModuleName), app.StakingKeeper, app.UpgradeKeeper, scopedIBCKeeper,
 	)
-
 	govRouter := govtypes.NewRouter()
 	govRouter.AddRoute(govtypes.RouterKey, govtypes.ProposalHandler).
 		AddRoute(paramproposal.RouterKey, params.NewParamChangeProposalHandler(app.ParamsKeeper)).
@@ -365,7 +352,6 @@ func NewSifApp(
 		// register governance hooks
 		),
 	)
-
 	// Create Transfer Keepers
 	app.TransferKeeper = ibctransferkeeper.NewKeeper(
 		appCodec,
@@ -384,7 +370,6 @@ func NewSifApp(
 		app.StakingKeeper,
 		oracletypes.DefaultConsensusNeeded,
 	)
-
 	app.EthbridgeKeeper = ethbridgekeeper.NewKeeper(
 		appCodec,
 		app.BankKeeper,
@@ -392,7 +377,6 @@ func NewSifApp(
 		app.AccountKeeper,
 		keys[ethbridgetypes.StoreKey],
 	)
-
 	app.DispensationKeeper = dispkeeper.NewKeeper(
 		appCodec,
 		keys[disptypes.StoreKey],
@@ -400,7 +384,6 @@ func NewSifApp(
 		app.AccountKeeper,
 		app.GetSubspace(disptypes.ModuleName),
 	)
-
 	// NOTE: the IBC mock keeper and application module is used only for testing core IBC. Do
 	// note replicate if you do not need to test core IBC or light clients.
 	mockModule := ibcmock.NewAppModule(scopedIBCMockKeeper, &app.IBCKeeper.PortKeeper)
@@ -423,10 +406,8 @@ func NewSifApp(
 	if opt, ok := opt.(bool); ok {
 		skipGenesisInvariants = opt
 	}
-
 	cfg := module.NewConfigurator(app.appCodec, app.MsgServiceRouter(), app.GRPCQueryRouter())
 	app.configurator = cfg
-
 	// NOTE: Any module instantiated in the module manager that is later modified
 	// must be passed by reference here.
 	app.mm = module.NewManager(
@@ -505,13 +486,11 @@ func NewSifApp(
 	)
 	app.mm.RegisterInvariants(&app.CrisisKeeper)
 	app.mm.RegisterRoutes(app.Router(), app.QueryRouter(), encodingConfig.Amino)
-
 	app.mm.RegisterServices(app.configurator)
 	// initialize stores
 	app.MountKVStores(keys)
 	app.MountTransientStores(tkeys)
 	app.MountMemoryStores(memKeys)
-
 	anteHandler, err := sifchainAnte.NewAnteHandler(
 		ante.HandlerOptions{
 			AccountKeeper:   app.AccountKeeper,
@@ -553,11 +532,9 @@ func NewSifApp(
 
 func (app *SifchainApp) InitChainer(ctx sdk.Context, req abci.RequestInitChain) abci.ResponseInitChain {
 	var genesisState GenesisState
-
 	if err := tmjson.Unmarshal(req.AppStateBytes, &genesisState); err != nil {
 		panic(err)
 	}
-
 	return app.mm.InitGenesis(ctx, app.appCodec, genesisState)
 }
 
@@ -618,7 +595,6 @@ func (app *SifchainApp) ModuleAccountAddrs() map[string]bool {
 	for acc := range maccPerms {
 		modAccAddrs[authtypes.NewModuleAddress(acc).String()] = true
 	}
-
 	return modAccAddrs
 }
 
@@ -645,11 +621,9 @@ func (app *SifchainApp) RegisterAPIRoutes(apiSvr *api.Server, apiConfig config.A
 	authtx.RegisterGRPCGatewayRoutes(clientCtx, apiSvr.GRPCGatewayRouter)
 	// Register new tendermint queries routes from grpc-gateway.
 	tmservice.RegisterGRPCGatewayRoutes(clientCtx, apiSvr.GRPCGatewayRouter)
-
 	// Register legacy and grpc-gateway routes for all modules.
 	ModuleBasics.RegisterRESTRoutes(clientCtx, apiSvr.Router)
 	ModuleBasics.RegisterGRPCGatewayRoutes(clientCtx, apiSvr.GRPCGatewayRouter)
-
 	// register swagger API from root so that other applications can override easily
 	if apiConfig.Swagger {
 		RegisterSwaggerAPI(clientCtx, apiSvr.Router)

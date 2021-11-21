@@ -29,7 +29,6 @@ func SetupHandlers(app *SifchainApp) {
 		fromVM[feegrant.ModuleName] = 0
 		fromVM["vesting"] = 0
 		fromVM["crisis"] = 0
-
 		return app.mm.RunMigrations(ctx, app.configurator, fromVM)
 	})
 	upgradeInfo, err := app.UpgradeKeeper.ReadUpgradeInfoFromDisk()

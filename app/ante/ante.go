@@ -11,26 +11,22 @@ import (
 )
 
 func NewAnteHandler(options ante.HandlerOptions) (sdk.AnteHandler, error) {
-
 	if options.AccountKeeper == nil {
 		return nil, sdkerrors.Wrap(sdkerrors.ErrLogic, "account keeper is required for ante builder")
 	}
-
 	if options.BankKeeper == nil {
 		return nil, sdkerrors.Wrap(sdkerrors.ErrLogic, "bank keeper is required for ante builder")
 	}
-
 	if options.SignModeHandler == nil {
 		return nil, sdkerrors.Wrap(sdkerrors.ErrLogic, "sign mode handler is required for ante builder")
 	}
-
 	var sigGasConsumer = options.SigGasConsumer
 	if sigGasConsumer == nil {
 		sigGasConsumer = ante.DefaultSigVerificationGasConsumer
 	}
 	return sdk.ChainAnteDecorators(
 		ante.NewSetUpContextDecorator(), // outermost AnteDecorator. SetUpContext must be called first
-		NewAdjustGasPriceDecorator(),    // Custom decorator to reduce gas price for specific msg types
+		NewAdjustGasPriceDecorator(),    // Custom decorator to adjust gas price for specific msg types
 		ante.NewRejectExtensionOptionsDecorator(),
 		ante.NewMempoolFeeDecorator(),
 		ante.NewValidateBasicDecorator(),
@@ -61,7 +57,6 @@ func (r AdjustGasPriceDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate
 	msgs := tx.GetMsgs()
 	if len(msgs) == 1 && (strings.Contains(strings.ToLower(sdk.MsgTypeURL(msgs[0])), strings.ToLower(disptypes.MsgTypeCreateDistribution)) ||
 		strings.Contains(strings.ToLower(sdk.MsgTypeURL(msgs[0])), strings.ToLower(disptypes.MsgTypeRunDistribution))) {
-
 		minGasPrice := sdk.DecCoin{
 			Denom:  "rowan",
 			Amount: sdk.MustNewDecFromStr("0.00000005"),
@@ -75,7 +70,6 @@ func (r AdjustGasPriceDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate
 	minFee := sdk.ZeroInt()
 	for i := range msgs {
 		msgTypeURLLower := strings.ToLower(sdk.MsgTypeURL(msgs[i]))
-
 		if strings.Contains(msgTypeURLLower, strings.ToLower(banktypes.TypeMsgSend)) ||
 			strings.Contains(msgTypeURLLower, strings.ToLower(banktypes.TypeMsgMultiSend)) ||
 			strings.Contains(msgTypeURLLower, "createuserclaim") ||
