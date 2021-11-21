@@ -17,8 +17,8 @@ type RegistryEntryParser struct {
 	Denom                    string   `json:"denom"`
 	BaseDenom                string   `json:"base_denom"`
 	Path                     string   `json:"path"`
-	IbcChannelId             string   `json:"ibc_channel_id"`
-	IbcCounterpartyChannelId string   `json:"ibc_counterparty_channel_id"`
+	IbcChannelId             string   `json:"ibc_channel_id"`              //nolint
+	IbcCounterpartyChannelId string   `json:"ibc_counterparty_channel_id"` //nolint
 	DisplayName              string   `json:"display_name"`
 	DisplaySymbol            string   `json:"display_symbol"`
 	Network                  string   `json:"network"`
@@ -28,8 +28,9 @@ type RegistryEntryParser struct {
 	Permissions              []string `json:"permissions"`
 	UnitDenom                string   `json:"unit_denom"`
 	IbcCounterpartyDenom     string   `json:"ibc_counterparty_denom"`
-	IbcCounterpartyChainId   string   `json:"ibc_counterparty_chain_id"`
+	IbcCounterpartyChainId   string   `json:"ibc_counterparty_chain_id"` //nolint
 }
+
 type File struct {
 	chain     string
 	filenames []string
@@ -51,7 +52,6 @@ func main() {
 			filenames: []string{"tokenregistry", "registry"},
 		},
 	}
-
 	basepath := "scripts/ibc/tokenregistration/"
 	extension := ".json"
 	for _, chain := range files {
