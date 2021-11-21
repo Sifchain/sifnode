@@ -1481,7 +1481,7 @@
       "ibc_counterparty_chain_id": ""
     },
     {
-      "decimals": 18,
+      "decimals": "18",
       "denom": "cbtsg",
       "base_denom": "cbtsg",
       "path": "",
@@ -1501,7 +1501,7 @@
       "ibc_counterparty_chain_id": ""
     },
     {
-      "decimals": 18,
+      "decimals": "18",
       "denom": "cquick",
       "base_denom": "cquick",
       "path": "",
@@ -1521,7 +1521,7 @@
       "ibc_counterparty_chain_id": ""
     },
     {
-      "decimals": 18,
+      "decimals": "18",
       "denom": "cldo",
       "base_denom": "cldo",
       "path": "",
@@ -1541,7 +1541,7 @@
       "ibc_counterparty_chain_id": ""
     },
     {
-      "decimals": 18,
+      "decimals": "18",
       "denom": "crail",
       "base_denom": "crail",
       "path": "",
@@ -1561,7 +1561,7 @@
       "ibc_counterparty_chain_id": ""
     },
     {
-      "decimals": 18,
+      "decimals": "18",
       "denom": "cpond",
       "base_denom": "cpond",
       "path": "",
@@ -1581,7 +1581,7 @@
       "ibc_counterparty_chain_id": ""
     },
     {
-      "decimals": 18,
+      "decimals": "18",
       "denom": "cdino",
       "base_denom": "cdino",
       "path": "",
@@ -1601,7 +1601,7 @@
       "ibc_counterparty_chain_id": ""
     },
     {
-      "decimals": 18,
+      "decimals": "18",
       "denom": "cufo",
       "base_denom": "cufo",
       "path": "",

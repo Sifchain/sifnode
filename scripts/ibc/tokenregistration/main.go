@@ -67,16 +67,16 @@ func main() {
 			}
 			err = json.Unmarshal(input, &inputs)
 			if err != nil {
-				panic(err)
+				panic(fmt.Sprintf("Error : %s | %s", err, file))
 			}
 			newReg := Migration(inputs.Entries)
-			for _, e := range newReg {
-				fmt.Println(e.Decimals, "  ", e.Permissions, " ", e.Denom)
-			}
 			updatedList := Wrapper{Entries: newReg}
 			f, _ := json.MarshalIndent(updatedList, "", " ")
-			outpath := filepath.Join(basepath, chain.chain, filename, "_updated")
-			_ = ioutil.WriteFile(outpath+extension, f, 0600)
+			outpath := filepath.Join(basepath, chain.chain, filename)
+			// Uncomment these lines to replace
+			//os.Remove(file)
+			//_ = ioutil.WriteFile(file, f, 0600)
+			_ = ioutil.WriteFile(outpath+"_updated"+extension, f, 0600)
 		}
 	}
 }
@@ -91,13 +91,9 @@ func Migration(entries []RegistryEntryParser) []RegistryEntryParser {
 		if dec > 9 && CheckEntryPermissions(entry) {
 			entry.Permissions = append(entry.Permissions, "IBCIMPORT")
 			entry.IbcCounterpartyDenom = ""
-			fmt.Println(entry)
 		}
 		newreg[i] = entry
 	}
-	//for _,e := range newreg{
-	//	fmt.Println(e.Decimals, "  ",e.Permissions , " " ,e.Denom)
-	//}
 	return newreg
 }
 
