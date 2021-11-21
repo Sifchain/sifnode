@@ -20,6 +20,7 @@ func SetupHandlers(app *SifchainApp) {
 		// Old Modules can execute Migrations if needed .
 		// State migration logic should be added to a migrator function
 		// Migrating modules should increment the ConsensusVersion
+		// FromVersion NotEqual to ConsensusVersion is required to trigger a migration.
 		for moduleName := range app.mm.Modules {
 			fromVM[moduleName] = 1
 		}

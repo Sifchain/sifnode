@@ -73,7 +73,7 @@ func main() {
 			updatedList := Wrapper{Entries: newReg}
 			f, _ := json.MarshalIndent(updatedList, "", " ")
 			outpath := filepath.Join(basepath, chain.chain, filename)
-			// Uncomment these lines to replace
+			// Uncomment these lines to replace old files
 			//os.Remove(file)
 			//_ = ioutil.WriteFile(file, f, 0600)
 			_ = ioutil.WriteFile(outpath+"_updated"+extension, f, 0600)
