@@ -76,6 +76,7 @@ func RegisterRESTRoutes(cliCtx client.Context, r *mux.Router, storeName string) 
 	getEthereumLockBurnNonceRoute := fmt.Sprintf("/%s/ethereumLockBurnNonce/{%s}/{%s}", storeName, restNetworkDescriptor, restRelayerCosmosAddress)
 	getWitnessLockBurnNonceRoute := fmt.Sprintf("/%s/witnessLockBurnNonce/{%s}/{%s}", storeName, restNetworkDescriptor, restRelayerCosmosAddress)
 	getGlobalSequenceBlockNumberRoute := fmt.Sprintf("/%s/globalSequenceBlockNumber/{%s}/{%s}", storeName, restNetworkDescriptor, restSequence)
+	getProphciesCompletedRoute := fmt.Sprintf("/%s/ProphciesCompleted/{%s}/{%s}", storeName, restNetworkDescriptor, restSequence)
 
 	r.HandleFunc(fmt.Sprintf("/%s/prophecies", storeName), createClaimHandler(cliCtx)).Methods("POST")
 	r.HandleFunc(getProhechyRoute, getProphecyHandler(cliCtx, storeName)).Methods("GET")
@@ -86,6 +87,7 @@ func RegisterRESTRoutes(cliCtx client.Context, r *mux.Router, storeName string) 
 	r.HandleFunc(getEthereumLockBurnNonceRoute, getEthereumLockBurnSequenceHandler(cliCtx, storeName)).Methods("GET")
 	r.HandleFunc(getWitnessLockBurnNonceRoute, getWitnessLockBurnSequenceHandler(cliCtx, storeName)).Methods("GET")
 	r.HandleFunc(getGlobalSequenceBlockNumberRoute, getQueryGlobalSequenceBlockNumberHandler(cliCtx, storeName)).Methods("GET")
+	r.HandleFunc(getProphciesCompletedRoute, getProphciesCompletedHandler(cliCtx, storeName)).Methods("GET")
 }
 
 func createClaimHandler(cliCtx client.Context) http.HandlerFunc {
@@ -364,6 +366,38 @@ func getQueryGlobalSequenceBlockNumberHandler(cliCtx client.Context, storeName s
 		}
 
 		route := fmt.Sprintf("custom/%s/%s", storeName, types.QueryGlobalSequenceBlockNumber)
+		res, _, err := cliCtx.QueryWithData(route, bz)
+		if err != nil {
+			rest.WriteErrorResponse(w, http.StatusNotFound, err.Error())
+			return
+		}
+
+		rest.PostProcessResponse(w, cliCtx, res)
+	}
+}
+
+func getProphciesCompletedHandler(cliCtx client.Context, storeName string) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		vars := mux.Vars(r)
+
+		restNetworkDescriptor := vars[restNetworkDescriptor]
+
+		networkDescriptor, err := strconv.Atoi(restNetworkDescriptor)
+		if err != nil {
+			rest.WriteErrorResponse(w, http.StatusNotFound, err.Error())
+		}
+		globalSequence, err := strconv.Atoi(restSequence)
+		if err != nil {
+			rest.WriteErrorResponse(w, http.StatusNotFound, err.Error())
+		}
+
+		bz, err := cliCtx.LegacyAmino.MarshalJSON(types.NewProphciesCompletedRequest(oracletypes.NetworkDescriptor(networkDescriptor), uint64(globalSequence)))
+		if err != nil {
+			rest.WriteErrorResponse(w, http.StatusNotFound, err.Error())
+			return
+		}
+
+		route := fmt.Sprintf("custom/%s/%s", storeName, types.QueryProphciesCompleted)
 		res, _, err := cliCtx.QueryWithData(route, bz)
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusNotFound, err.Error())

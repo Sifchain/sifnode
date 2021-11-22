@@ -178,3 +178,42 @@ func GetGlobalSequenceBlockNumber() *cobra.Command {
 		},
 	}
 }
+
+// GetProphecyCompleted queries block number for global nonce
+func GetProphecyCompleted() *cobra.Command {
+	return &cobra.Command{
+		Use:   `prophecy-completed [network-descriptor] [global-nonce]`,
+		Short: "Query prophecy-completed",
+		Args:  cobra.ExactArgs(2),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			clientCtx, err := client.GetClientTxContext(cmd)
+			if err != nil {
+				return err
+			}
+
+			networkDescriptor, err := strconv.Atoi(args[0])
+			if err != nil {
+				return err
+			}
+
+			globalSequence, err := strconv.Atoi(args[1])
+			if err != nil {
+				return err
+			}
+
+			queryClient := types.NewQueryClient(clientCtx)
+
+			req := &types.QueryProphciesCompletedRequest{
+				NetworkDescriptor: oracletypes.NetworkDescriptor(networkDescriptor),
+				GlobalSequence:    uint64(globalSequence),
+			}
+
+			res, err := queryClient.ProphciesCompleted(context.Background(), req)
+			if err != nil {
+				return err
+			}
+
+			return clientCtx.PrintProto(res)
+		},
+	}
+}

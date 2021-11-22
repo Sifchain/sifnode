@@ -185,12 +185,12 @@ func GetAllProphciesCompleted(rpcServer string, networkDescriptor oracletypes.Ne
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
-	client := ethbridgetypes.NewProphciesCompletedQueryServiceClient(conn)
-	request := ethbridgetypes.ProphciesCompletedQueryRequest{
+	client := ethbridgetypes.NewQueryClient(conn)
+	request := ethbridgetypes.QueryProphciesCompletedRequest{
 		NetworkDescriptor: networkDescriptor,
 		GlobalSequence:    startGlobalSequence,
 	}
-	response, err := client.Search(ctx, &request)
+	response, err := client.ProphciesCompleted(ctx, &request)
 	if err != nil {
 		return []*oracletypes.ProphecyInfo{}
 	}

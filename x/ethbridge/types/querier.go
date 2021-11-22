@@ -2,6 +2,7 @@ package types
 
 import (
 	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
+	types "github.com/Sifchain/sifnode/x/oracle/types"
 )
 
 // query endpoints supported by the oracle Querier
@@ -11,6 +12,8 @@ const (
 	QueryEthereumLockBurnSequence  = "ethereumLockBurnSequence"
 	QueryWitnessLockBurnSequence   = "witnessLockBurnSequence"
 	QueryGlobalSequenceBlockNumber = "globalSequenceBlockNumber"
+	QueryProphciesCompleted = "prophciesCompleted"
+
 )
 
 // NewQueryEthProphecyRequest creates a new QueryEthProphecyParams
@@ -85,5 +88,20 @@ func NewQueryGlobalSequenceBlockNumberRequest(networkDescriptor oracletypes.Netw
 func NewGlobalSequenceBlockNumberResponse(blockNumber uint64) QueryGlobalSequenceBlockNumberResponse {
 	return QueryGlobalSequenceBlockNumberResponse{
 		BlockNumber: blockNumber,
+	}
+}
+
+// NewProphciesCompletedRequest creates a new NewGlobalSequenceBlockNumberResponse instance
+func NewProphciesCompletedRequest(networkDescriptor oracletypes.NetworkDescriptor, globalSequence uint64) *QueryProphciesCompletedRequest {
+	return &QueryProphciesCompletedRequest{
+		NetworkDescriptor: networkDescriptor,
+		GlobalSequence:    globalSequence,
+	}
+}
+
+// NewQueryProphciesCompletedResponse creates a new QueryWitnessLockBurnSequenceResponse instance
+func NewQueryProphciesCompletedResponse(prophecyInfo []*types.ProphecyInfo) QueryProphciesCompletedResponse {
+	return QueryProphciesCompletedResponse{
+		ProphecyInfo: prophecyInfo,
 	}
 }

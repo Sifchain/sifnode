@@ -26,6 +26,10 @@ service Query {
   // GlobalSequenceBlockNumber query block number for a global sequence
   rpc GlobalSequenceBlockNumber(QueryGlobalSequenceBlockNumberRequest)
       returns (QueryGlobalSequenceBlockNumberResponse) {}
+  // Prophecies Completed Query Service to fetch prophecy info from global
+  // sequence
+  rpc ProphciesCompleted(QueryProphciesCompletedRequest)
+      returns (QueryProphciesCompletedResponse) {}
 }
 
 // QueryEthProphecyRequest payload for EthProphecy rpc query
@@ -48,22 +52,16 @@ message QueryCrosschainFeeConfigResponse {
   sifnode.oracle.v1.CrossChainFeeConfig crosschain_fee_config = 1;
 }
 
-service ProphciesCompletedQueryService {
-  // Prophecies Completed Query Service to fetch prophecy info from global
-  // sequence
-  rpc Search(ProphciesCompletedQueryRequest)
-      returns (ProphciesCompletedQueryResponse) {}
-}
-// ProphciesCompletedQueryRequest payload for ProphciesCompletedQueryRequest rpc
-// query
-message ProphciesCompletedQueryRequest {
+// QueryProphciesCompletedRequest payload for
+// ProphciesCompletedQueryRequest rpc query
+message QueryProphciesCompletedRequest {
   sifnode.oracle.v1.NetworkDescriptor network_descriptor = 1;
   uint64 global_sequence = 2;
 }
 
-// QueryCrosschainFeeConfigResponse payload for ProphciesCompletedQueryResponse
-// rpc query response
-message ProphciesCompletedQueryResponse {
+// QueryProphciesCompletedResponse payload for
+// ProphciesCompletedQueryResponse rpc query response
+message QueryProphciesCompletedResponse {
   repeated sifnode.oracle.v1.ProphecyInfo prophecy_info = 1;
 }
 
