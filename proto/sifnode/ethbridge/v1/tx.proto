@@ -17,6 +17,7 @@ service Msg {
   rpc UpdateCethReceiverAccount(MsgUpdateCethReceiverAccount)
       returns (MsgUpdateCethReceiverAccountResponse);
   rpc RescueCeth(MsgRescueCeth) returns (MsgRescueCethResponse);
+  rpc SetBlacklist(MsgSetBlacklist) returns (MsgSetBlacklistResponse);
 }
 
 // MsgLock defines a message for locking coins and triggering a related event
@@ -97,3 +98,10 @@ message MsgRescueCeth {
 }
 
 message MsgRescueCethResponse {}
+
+message MsgSetBlacklist {
+  string from = 1;
+  repeated string addresses = 2;
+}
+
+message MsgSetBlacklistResponse {}
