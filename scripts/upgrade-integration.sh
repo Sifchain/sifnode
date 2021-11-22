@@ -35,8 +35,6 @@ export DAEMON_ALLOW_DOWNLOAD_BINARIES=true
 make clean
 rm -rf sifnode.log
 #wget $CurrentBinary -P $GOPATH/bin
-# Use ./scripts/upgrade-integration.sh -u 0.9.14 -c test -n test if you do not want to download binaries to test upgrade
-# lines 40 - 42 make sure the old binary is present in the GOPATH , change the following to whatever works
 rm -rm $GOPATH/sifnoded
 cp $GOPATH/old/sifnoded $GOPATH/
 chmod +x $GOPATH/sifnoded
@@ -79,8 +77,6 @@ mkdir -p $DAEMON_HOME/cosmovisor/upgrades/$UpgradeName/bin
 #wget $CurrentBinary -P $DAEMON_HOME/cosmovisor/genesis/bin
 cp $GOPATH/old/sifnoded $DAEMON_HOME/cosmovisor/genesis/bin
 #wget $NewBinary -P $DAEMON_HOME/cosmovisor/upgrades/$UpgradeName/bin/
-
-# If using local binaries make sure the new binry can be copied ,The script uses $GOPATH/new/ <place binary here> , But this can be changed according to the local setup
 cp $GOPATH/new/sifnoded $DAEMON_HOME/cosmovisor/upgrades/$UpgradeName/bin/
 chmod +x $DAEMON_HOME/cosmovisor/genesis/bin/sifnoded
 chmod +x $DAEMON_HOME/cosmovisor/upgrades/$UpgradeName/bin/sifnoded
@@ -92,9 +88,9 @@ echo "${contents}" > $DAEMON_HOME/config/genesis.json
 
 cosmovisor start >> sifnode.log 2>&1  &
 sleep 7
-sifnoded tx tokenregistry register-all /Users/tanmay/Documents/sifnode/scripts/ibc/tokenregistration/localnet/rowan.json --from sif --keyring-backend=test --chain-id=localnet --yes
+#sifnoded tx tokenregistry register-all /Users/tanmay/Documents/sifnode/scripts/ibc/tokenregistration/sifchain-devnet-1/rowan.json --from sif --keyring-backend=test --chain-id=localnet --yes
 sleep 7
-sifnoded tx gov submit-proposal software-upgrade $UpgradeName --from sif --deposit 100000000stake --upgrade-height 8 --title $UpgradeName --description $UpgradeName --keyring-backend test --chain-id localnet --yes
+sifnoded tx gov submit-proposal software-upgrade $UpgradeName --from sif --deposit 100000000stake --upgrade-height 10 --title $UpgradeName --description $UpgradeName --keyring-backend test --chain-id localnet --yes
 sleep 7
 sifnoded tx gov vote 1 yes --from sif --keyring-backend test --chain-id localnet --yes
 clear
