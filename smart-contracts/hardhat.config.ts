@@ -41,16 +41,12 @@ const config: HardhatUserConfig = {
       initialBaseFeePerGas: runCoverage ? 0 : 875000000,
       mining: {
         auto: true,
-        interval: 200
+        interval: 200,
       },
       forking: {
         enabled: useForking,
         url: networkUrl,
         blockNumber: 13469882,
-      },
-      mining: {
-        auto: true,
-        interval: 200,
       },
     },
     ropsten: {
