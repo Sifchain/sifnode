@@ -517,9 +517,10 @@ describe("lock and burn tests", () => {
     const states: Observable<State> = evmRelayerEvents.pipe(
       scan(
         (acc: State, v: SifEvent) => {
-          if (isTerminalState(acc))
+          if (isTerminalState(acc)) {
             // we've reached a decision
             return { ...acc, value: { kind: "terminate" } as Terminate }
+          }
           switch (v.kind) {
             case "EbRelayerError":
             case "SifnodedError":
@@ -533,12 +534,21 @@ describe("lock and burn tests", () => {
             case "EbRelayerEvmStateTransition": {
               let ebrelayerEvent: any = v.data
               switch (ebrelayerEvent.kind) {
-                case "CosmosEvent": {
+                case "ReceiveCosmosBurnMessage": {
+                  // return { ...acc, value: v, createdAt: acc.currentHeartbeat };
                   return ensureCorrectTransition(
                     acc,
                     v,
-                    TransactionStep.Burn,
-                    TransactionStep.CosmosEvent
+                    TransactionStep.PublishCosmosBurnMessage,
+                    TransactionStep.ReceiveCosmosBurnMessage
+                  )
+                }
+                case "SignProphecy": {
+                  return ensureCorrectTransition(
+                    acc,
+                    v,
+                    TransactionStep.ReceiveCosmosBurnMessage,
+                    TransactionStep.SignProphecy
                   )
                 }
 
@@ -546,7 +556,7 @@ describe("lock and burn tests", () => {
                   return ensureCorrectTransition(
                     acc,
                     v,
-                    TransactionStep.CosmosEvent,
+                    TransactionStep.SignProphecy,
                     TransactionStep.PublishedProphecy
                   )
                 }
@@ -643,7 +653,7 @@ describe("lock and burn tests", () => {
     const lv = await lastValueFrom(states.pipe(takeWhile((x) => x.value.kind !== "terminate")))
     expect(
       lv.transactionStep,
-      `did not get a LogBridgeTokenMint, last step was ${JSON.stringify(lv, undefined, 2)}`
+      `did not complete, last step was ${JSON.stringify(lv, undefined, 2)}`
     ).to.eq(TransactionStep.LogBridgeTokenMint)
 
     verboseSubscription.unsubscribe()
