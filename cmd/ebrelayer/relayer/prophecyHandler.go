@@ -178,7 +178,7 @@ func (sub CosmosSub) handleBatchProphecyCompleted(
 
 // TODO add a limit of maximum of n prophecies to query for
 func GetAllProphciesCompleted(rpcServer string, networkDescriptor oracletypes.NetworkDescriptor, startGlobalSequence uint64) []*oracletypes.ProphecyInfo {
-	conn, err := grpc.Dial(rpcServer)
+	conn, err := grpc.Dial("0.0.0.0:9090", grpc.WithInsecure())
 	if err != nil {
 		return []*oracletypes.ProphecyInfo{}
 	}
