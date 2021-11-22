@@ -359,15 +359,17 @@ def ctx(snapshot_name):
 
 @pytest.fixture(scope="function")
 def with_snapshot(snapshot_name):
-    make = integration_test_context.make_py_module
-    make.cleanup_and_reset_state()
+    main = integration_test_context.main
+    cmd = main.Integrator()
+    project = cmd.project
+    project.cleanup_and_reset_state()
     ctx = integration_test_context.IntegrationTestContext(snapshot_name)
     logging.info("Started processes: {}".format(repr(ctx.processes)))
     threadlocals.ctx = ctx
-    os.environ["VAGRANT_ENV_JSON"] = make.project_dir("test/integration/vagrantenv.json")  # TODO HACK
+    os.environ["VAGRANT_ENV_JSON"] = main.project_dir("test/integration/vagrantenv.json")  # TODO HACK
     logging.debug("Before with_snapshot()")
     yield
     logging.debug("After with_snapshot()")
-    make.killall(ctx.processes)  # TODO Ensure this is called even in the case of exception
+    main.project.killall(ctx.processes)  # TODO Ensure this is called even in the case of exception
     logging.info("Terminated processes: {}".format(repr(ctx.processes)))
     del threadlocals.ctx
