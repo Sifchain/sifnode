@@ -49,7 +49,8 @@ func (k Keeper) CreatePool(ctx sdk.Context, poolUints sdk.Uint, msg *types.MsgCr
 	}
 
 	// Pool creator becomes the first LP
-	// (testing) this part I think can never be triggered. if no err above
+	// (testing) this part I think can never be triggered. because if we have error in either ctx or &pool it should be
+	// catched before setPool.
 	err = k.SetPool(ctx, &pool)
 	if err != nil {
 		return nil, sdkerrors.Wrap(types.ErrUnableToSetPool, err.Error())
@@ -93,7 +94,9 @@ func (k Keeper) AddLiquidity(ctx sdk.Context, msg *types.MsgAddLiquidity, pool t
 	if err != nil {
 		return nil, err
 	}
-	// (testing) this part I think can never be triggered. because if the balance is 0 for above coins object cannot be created
+	// (testing) this part I think can never be triggered. because if the balance is 0 for above coins object cannot be created/
+	// This part we check whether our bank has balance for coins[0] or coins[1], one of the token is EROWAN and we always have none-zero balance.
+	// solution: only check if have coins[1]
 	if !k.bankKeeper.HasBalance(ctx, addr, coins[0]) && !k.bankKeeper.HasBalance(ctx, addr, coins[1]) {
 		return nil, types.ErrBalanceNotAvailable
 	}
@@ -186,7 +189,7 @@ func (k Keeper) RemoveLiquidity(ctx sdk.Context, pool types.Pool, externalAssetC
 		}
 		err = k.bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, lpAddr, sendCoins)
 		if err != nil {
-			// (testing) this part I don't know how to trigger. because we verify if have coins in lp.
+			// (testing) this part I don't know how to trigger. because we verify if have coins in lp and all others verification already been handled.
 			return err
 		}
 	}
