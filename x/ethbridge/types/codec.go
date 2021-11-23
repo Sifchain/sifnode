@@ -13,7 +13,7 @@ func RegisterLegacyAminoCodec(cdc *codec.LegacyAmino) { //nolint
 	cdc.RegisterConcrete(&MsgUpdateWhiteListValidator{}, "ethbridge/MsgUpdateWhiteListValidator", nil)
 	cdc.RegisterConcrete(&MsgUpdateCethReceiverAccount{}, "ethbridge/MsgUpdateCethReceiverAccount", nil)
 	cdc.RegisterConcrete(&MsgRescueCeth{}, "ethbridge/MsgRescueCeth", nil)
-
+	cdc.RegisterConcrete(&MsgSetBlacklist{}, "ethbridge/MsgSetBlacklist", nil)
 }
 
 var (

@@ -4,6 +4,7 @@ const CosmosBridge = artifacts.require("CosmosBridge");
 const Oracle = artifacts.require("Oracle");
 const BridgeBank = artifacts.require("BridgeBank");
 const BridgeToken = artifacts.require("BridgeToken");
+const Blocklist = artifacts.require("Blocklist");
 
 const EVMRevert = "revert";
 const BigNumber = web3.BigNumber;
@@ -120,6 +121,10 @@ contract("CosmosBridge", function (accounts) {
       ],
       {unsafeAllowCustomTypes: true}
       );
+
+      // Deploy the Blocklist and set it in BridgeBank
+      this.blocklist = await Blocklist.new();
+      await this.bridgeBank.setBlocklist(this.blocklist.address);
 
       // Fail to set BridgeBank if not the operator.
       await expectRevert(
@@ -347,6 +352,10 @@ contract("CosmosBridge", function (accounts) {
       ],
       {unsafeAllowCustomTypes: true}
       );
+
+      // Deploy the Blocklist and set it in BridgeBank
+      this.blocklist = await Blocklist.new();
+      await this.bridgeBank.setBlocklist(this.blocklist.address);
 
       // Operator sets Bridge Bank
       await this.cosmosBridge.setBridgeBank(this.bridgeBank.address, {
