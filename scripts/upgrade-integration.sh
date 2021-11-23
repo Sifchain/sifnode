@@ -69,7 +69,6 @@ echo "Validating genesis file..."
 sifnoded validate-genesis
 
 
-
 mkdir -p $DAEMON_HOME/cosmovisor/genesis/bin
 mkdir -p $DAEMON_HOME/cosmovisor/upgrades/$UpgradeName/bin
 

@@ -296,6 +296,9 @@ func NewSifApp(
 	app.FeegrantKeeper = feegrantkeeper.NewKeeper(
 		appCodec, keys[banktypes.StoreKey], app.AccountKeeper,
 	)
+	app.FeegrantKeeper = feegrantkeeper.NewKeeper(
+		appCodec, keys[banktypes.StoreKey], app.AccountKeeper,
+	)
 	stakingKeeper := stakingkeeper.NewKeeper(
 		appCodec, keys[stakingtypes.StoreKey], app.AccountKeeper, app.BankKeeper, app.GetSubspace(stakingtypes.ModuleName),
 	)
@@ -384,8 +387,6 @@ func NewSifApp(
 		app.AccountKeeper,
 		app.GetSubspace(disptypes.ModuleName),
 	)
-	// NOTE: the IBC mock keeper and application module is used only for testing core IBC. Do
-	// note replicate if you do not need to test core IBC or light clients.
 	mockModule := ibcmock.NewAppModule(scopedIBCMockKeeper, &app.IBCKeeper.PortKeeper)
 	// Create static IBC router, add transfer route, then set and seal it
 	ibcRouter := porttypes.NewRouter()
