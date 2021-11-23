@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"os"
 	"path/filepath"
 	"strconv"
 )
@@ -72,11 +73,14 @@ func main() {
 			newReg := Migration(inputs.Entries)
 			updatedList := Wrapper{Entries: newReg}
 			f, _ := json.MarshalIndent(updatedList, "", " ")
-			outpath := filepath.Join(basepath, chain.chain, filename)
+			//outpath := filepath.Join(basepath, chain.chain, filename)
 			// Uncomment these lines to replace old files
-			//os.Remove(file)
-			//_ = ioutil.WriteFile(file, f, 0600)
-			_ = ioutil.WriteFile(outpath+"_updated"+extension, f, 0600)
+			err = os.Remove(file)
+			if err != nil {
+				panic(err)
+			}
+			_ = ioutil.WriteFile(file, f, 0600)
+			//_ = ioutil.WriteFile(outpath+"_updated"+extension, f, 0600)
 		}
 	}
 }

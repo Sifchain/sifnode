@@ -103,10 +103,11 @@
       "transfer_limit": "",
       "permissions": [
         "CLP",
-        "IBCEXPORT"
+        "IBCEXPORT",
+        "IBCIMPORT"
       ],
       "unit_denom": "",
-      "ibc_counterparty_denom": "xrowan",
+      "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
     },
     {
@@ -144,10 +145,11 @@
       "transfer_limit": "",
       "permissions": [
         "CLP",
-        "IBCEXPORT"
+        "IBCEXPORT",
+        "IBCIMPORT"
       ],
       "unit_denom": "",
-      "ibc_counterparty_denom": "xeth",
+      "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
     },
     {
@@ -185,10 +187,11 @@
       "transfer_limit": "",
       "permissions": [
         "CLP",
-        "IBCEXPORT"
+        "IBCEXPORT",
+        "IBCIMPORT"
       ],
       "unit_denom": "",
-      "ibc_counterparty_denom": "xdai",
+      "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
     },
     {
@@ -226,10 +229,11 @@
       "transfer_limit": "",
       "permissions": [
         "CLP",
-        "IBCEXPORT"
+        "IBCEXPORT",
+        "IBCIMPORT"
       ],
       "unit_denom": "",
-      "ibc_counterparty_denom": "xyfi",
+      "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
     },
     {
@@ -267,10 +271,11 @@
       "transfer_limit": "",
       "permissions": [
         "CLP",
-        "IBCEXPORT"
+        "IBCEXPORT",
+        "IBCIMPORT"
       ],
       "unit_denom": "",
-      "ibc_counterparty_denom": "xzrx",
+      "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
     },
     {
@@ -330,10 +335,11 @@
       "transfer_limit": "",
       "permissions": [
         "CLP",
-        "IBCEXPORT"
+        "IBCEXPORT",
+        "IBCIMPORT"
       ],
       "unit_denom": "",
-      "ibc_counterparty_denom": "xwfil",
+      "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
     },
     {
@@ -371,10 +377,11 @@
       "transfer_limit": "",
       "permissions": [
         "CLP",
-        "IBCEXPORT"
+        "IBCEXPORT",
+        "IBCIMPORT"
       ],
       "unit_denom": "",
-      "ibc_counterparty_denom": "xuni",
+      "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
     },
     {
@@ -412,10 +419,11 @@
       "transfer_limit": "",
       "permissions": [
         "CLP",
-        "IBCEXPORT"
+        "IBCEXPORT",
+        "IBCIMPORT"
       ],
       "unit_denom": "",
-      "ibc_counterparty_denom": "xuma",
+      "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
     },
     {
@@ -453,10 +461,11 @@
       "transfer_limit": "",
       "permissions": [
         "CLP",
-        "IBCEXPORT"
+        "IBCEXPORT",
+        "IBCIMPORT"
       ],
       "unit_denom": "",
-      "ibc_counterparty_denom": "xtusd",
+      "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
     },
     {
@@ -494,10 +503,11 @@
       "transfer_limit": "",
       "permissions": [
         "CLP",
-        "IBCEXPORT"
+        "IBCEXPORT",
+        "IBCIMPORT"
       ],
       "unit_denom": "",
-      "ibc_counterparty_denom": "xsxp",
+      "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
     },
     {
@@ -535,10 +545,11 @@
       "transfer_limit": "",
       "permissions": [
         "CLP",
-        "IBCEXPORT"
+        "IBCEXPORT",
+        "IBCIMPORT"
       ],
       "unit_denom": "",
-      "ibc_counterparty_denom": "xsushi",
+      "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
     },
     {
@@ -576,10 +587,11 @@
       "transfer_limit": "",
       "permissions": [
         "CLP",
-        "IBCEXPORT"
+        "IBCEXPORT",
+        "IBCIMPORT"
       ],
       "unit_denom": "",
-      "ibc_counterparty_denom": "xsusd",
+      "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
     },
     {
@@ -639,10 +651,11 @@
       "transfer_limit": "",
       "permissions": [
         "CLP",
-        "IBCEXPORT"
+        "IBCEXPORT",
+        "IBCIMPORT"
       ],
       "unit_denom": "",
-      "ibc_counterparty_denom": "xsnx",
+      "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
     },
     {
@@ -680,10 +693,11 @@
       "transfer_limit": "",
       "permissions": [
         "CLP",
-        "IBCEXPORT"
+        "IBCEXPORT",
+        "IBCIMPORT"
       ],
       "unit_denom": "",
-      "ibc_counterparty_denom": "xsand",
+      "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
     },
     {
@@ -721,10 +735,11 @@
       "transfer_limit": "",
       "permissions": [
         "CLP",
-        "IBCEXPORT"
+        "IBCEXPORT",
+        "IBCIMPORT"
       ],
       "unit_denom": "",
-      "ibc_counterparty_denom": "xrune",
+      "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
     },
     {
@@ -762,10 +777,11 @@
       "transfer_limit": "",
       "permissions": [
         "CLP",
-        "IBCEXPORT"
+        "IBCEXPORT",
+        "IBCIMPORT"
       ],
       "unit_denom": "",
-      "ibc_counterparty_denom": "xreef",
+      "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
     },
     {
@@ -803,10 +819,11 @@
       "transfer_limit": "",
       "permissions": [
         "CLP",
-        "IBCEXPORT"
+        "IBCEXPORT",
+        "IBCIMPORT"
       ],
       "unit_denom": "",
-      "ibc_counterparty_denom": "xogn",
+      "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
     },
     {
@@ -844,10 +861,11 @@
       "transfer_limit": "",
       "permissions": [
         "CLP",
-        "IBCEXPORT"
+        "IBCEXPORT",
+        "IBCIMPORT"
       ],
       "unit_denom": "",
-      "ibc_counterparty_denom": "xocean",
+      "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
     },
     {
@@ -885,10 +903,11 @@
       "transfer_limit": "",
       "permissions": [
         "CLP",
-        "IBCEXPORT"
+        "IBCEXPORT",
+        "IBCIMPORT"
       ],
       "unit_denom": "",
-      "ibc_counterparty_denom": "xmana",
+      "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
     },
     {
@@ -926,10 +945,11 @@
       "transfer_limit": "",
       "permissions": [
         "CLP",
-        "IBCEXPORT"
+        "IBCEXPORT",
+        "IBCIMPORT"
       ],
       "unit_denom": "",
-      "ibc_counterparty_denom": "xlrc",
+      "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
     },
     {
@@ -967,10 +987,11 @@
       "transfer_limit": "",
       "permissions": [
         "CLP",
-        "IBCEXPORT"
+        "IBCEXPORT",
+        "IBCIMPORT"
       ],
       "unit_denom": "",
-      "ibc_counterparty_denom": "xlon",
+      "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
     },
     {
@@ -1008,10 +1029,11 @@
       "transfer_limit": "",
       "permissions": [
         "CLP",
-        "IBCEXPORT"
+        "IBCEXPORT",
+        "IBCIMPORT"
       ],
       "unit_denom": "",
-      "ibc_counterparty_denom": "xlink",
+      "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
     },
     {
@@ -1049,10 +1071,11 @@
       "transfer_limit": "",
       "permissions": [
         "CLP",
-        "IBCEXPORT"
+        "IBCEXPORT",
+        "IBCIMPORT"
       ],
       "unit_denom": "",
-      "ibc_counterparty_denom": "xiotx",
+      "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
     },
     {
@@ -1090,10 +1113,11 @@
       "transfer_limit": "",
       "permissions": [
         "CLP",
-        "IBCEXPORT"
+        "IBCEXPORT",
+        "IBCIMPORT"
       ],
       "unit_denom": "",
-      "ibc_counterparty_denom": "xgrt",
+      "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
     },
     {
@@ -1131,10 +1155,11 @@
       "transfer_limit": "",
       "permissions": [
         "CLP",
-        "IBCEXPORT"
+        "IBCEXPORT",
+        "IBCIMPORT"
       ],
       "unit_denom": "",
-      "ibc_counterparty_denom": "xftm",
+      "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
     },
     {
@@ -1172,10 +1197,11 @@
       "transfer_limit": "",
       "permissions": [
         "CLP",
-        "IBCEXPORT"
+        "IBCEXPORT",
+        "IBCIMPORT"
       ],
       "unit_denom": "",
-      "ibc_counterparty_denom": "xesd",
+      "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
     },
     {
@@ -1213,10 +1239,11 @@
       "transfer_limit": "",
       "permissions": [
         "CLP",
-        "IBCEXPORT"
+        "IBCEXPORT",
+        "IBCIMPORT"
       ],
       "unit_denom": "",
-      "ibc_counterparty_denom": "xenj",
+      "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
     },
     {
@@ -1254,10 +1281,11 @@
       "transfer_limit": "",
       "permissions": [
         "CLP",
-        "IBCEXPORT"
+        "IBCEXPORT",
+        "IBCIMPORT"
       ],
       "unit_denom": "",
-      "ibc_counterparty_denom": "xcream",
+      "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
     },
     {
@@ -1295,10 +1323,11 @@
       "transfer_limit": "",
       "permissions": [
         "CLP",
-        "IBCEXPORT"
+        "IBCEXPORT",
+        "IBCIMPORT"
       ],
       "unit_denom": "",
-      "ibc_counterparty_denom": "xcomp",
+      "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
     },
     {
@@ -1336,10 +1365,11 @@
       "transfer_limit": "",
       "permissions": [
         "CLP",
-        "IBCEXPORT"
+        "IBCEXPORT",
+        "IBCIMPORT"
       ],
       "unit_denom": "",
-      "ibc_counterparty_denom": "xcocos",
+      "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
     },
     {
@@ -1377,10 +1407,11 @@
       "transfer_limit": "",
       "permissions": [
         "CLP",
-        "IBCEXPORT"
+        "IBCEXPORT",
+        "IBCIMPORT"
       ],
       "unit_denom": "",
-      "ibc_counterparty_denom": "xbond",
+      "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
     },
     {
@@ -1418,10 +1449,11 @@
       "transfer_limit": "",
       "permissions": [
         "CLP",
-        "IBCEXPORT"
+        "IBCEXPORT",
+        "IBCIMPORT"
       ],
       "unit_denom": "",
-      "ibc_counterparty_denom": "xbnt",
+      "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
     },
     {
@@ -1459,10 +1491,11 @@
       "transfer_limit": "",
       "permissions": [
         "CLP",
-        "IBCEXPORT"
+        "IBCEXPORT",
+        "IBCIMPORT"
       ],
       "unit_denom": "",
-      "ibc_counterparty_denom": "xbat",
+      "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
     },
     {
@@ -1500,10 +1533,11 @@
       "transfer_limit": "",
       "permissions": [
         "CLP",
-        "IBCEXPORT"
+        "IBCEXPORT",
+        "IBCIMPORT"
       ],
       "unit_denom": "",
-      "ibc_counterparty_denom": "xband",
+      "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
     },
     {
@@ -1541,10 +1575,11 @@
       "transfer_limit": "",
       "permissions": [
         "CLP",
-        "IBCEXPORT"
+        "IBCEXPORT",
+        "IBCIMPORT"
       ],
       "unit_denom": "",
-      "ibc_counterparty_denom": "xbal",
+      "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
     },
     {
@@ -1582,10 +1617,11 @@
       "transfer_limit": "",
       "permissions": [
         "CLP",
-        "IBCEXPORT"
+        "IBCEXPORT",
+        "IBCIMPORT"
       ],
       "unit_denom": "",
-      "ibc_counterparty_denom": "xant",
+      "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
     },
     {
@@ -1623,10 +1659,11 @@
       "transfer_limit": "",
       "permissions": [
         "CLP",
-        "IBCEXPORT"
+        "IBCEXPORT",
+        "IBCIMPORT"
       ],
       "unit_denom": "",
-      "ibc_counterparty_denom": "xaave",
+      "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
     },
     {
@@ -1664,10 +1701,11 @@
       "transfer_limit": "",
       "permissions": [
         "CLP",
-        "IBCEXPORT"
+        "IBCEXPORT",
+        "IBCIMPORT"
       ],
       "unit_denom": "",
-      "ibc_counterparty_denom": "x1inch",
+      "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
     },
     {
@@ -1705,10 +1743,11 @@
       "transfer_limit": "",
       "permissions": [
         "CLP",
-        "IBCEXPORT"
+        "IBCEXPORT",
+        "IBCIMPORT"
       ],
       "unit_denom": "",
-      "ibc_counterparty_denom": "xleash",
+      "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
     },
     {
@@ -1746,10 +1785,11 @@
       "transfer_limit": "",
       "permissions": [
         "CLP",
-        "IBCEXPORT"
+        "IBCEXPORT",
+        "IBCIMPORT"
       ],
       "unit_denom": "",
-      "ibc_counterparty_denom": "xshib",
+      "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
     },
     {
@@ -1787,10 +1827,11 @@
       "transfer_limit": "",
       "permissions": [
         "CLP",
-        "IBCEXPORT"
+        "IBCEXPORT",
+        "IBCIMPORT"
       ],
       "unit_denom": "",
-      "ibc_counterparty_denom": "xtidal",
+      "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
     },
     {
@@ -1828,10 +1869,11 @@
       "transfer_limit": "",
       "permissions": [
         "CLP",
-        "IBCEXPORT"
+        "IBCEXPORT",
+        "IBCIMPORT"
       ],
       "unit_denom": "",
-      "ibc_counterparty_denom": "xpaid",
+      "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
     },
     {
@@ -1869,10 +1911,11 @@
       "transfer_limit": "",
       "permissions": [
         "CLP",
-        "IBCEXPORT"
+        "IBCEXPORT",
+        "IBCIMPORT"
       ],
       "unit_denom": "",
-      "ibc_counterparty_denom": "xrndr",
+      "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
     },
     {
@@ -1910,10 +1953,11 @@
       "transfer_limit": "",
       "permissions": [
         "CLP",
-        "IBCEXPORT"
+        "IBCEXPORT",
+        "IBCIMPORT"
       ],
       "unit_denom": "",
-      "ibc_counterparty_denom": "xconv",
+      "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
     },
     {
@@ -1951,10 +1995,11 @@
       "transfer_limit": "",
       "permissions": [
         "CLP",
-        "IBCEXPORT"
+        "IBCEXPORT",
+        "IBCIMPORT"
       ],
       "unit_denom": "",
-      "ibc_counterparty_denom": "xrfuel",
+      "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
     },
     {
@@ -1992,10 +2037,11 @@
       "transfer_limit": "",
       "permissions": [
         "CLP",
-        "IBCEXPORT"
+        "IBCEXPORT",
+        "IBCIMPORT"
       ],
       "unit_denom": "",
-      "ibc_counterparty_denom": "xakro",
+      "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
     },
     {
@@ -2033,10 +2079,11 @@
       "transfer_limit": "",
       "permissions": [
         "CLP",
-        "IBCEXPORT"
+        "IBCEXPORT",
+        "IBCIMPORT"
       ],
       "unit_denom": "",
-      "ibc_counterparty_denom": "xb20",
+      "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
     },
     {
@@ -2074,10 +2121,11 @@
       "transfer_limit": "",
       "permissions": [
         "CLP",
-        "IBCEXPORT"
+        "IBCEXPORT",
+        "IBCIMPORT"
       ],
       "unit_denom": "",
-      "ibc_counterparty_denom": "xtshp",
+      "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
     },
     {
@@ -2115,10 +2163,11 @@
       "transfer_limit": "",
       "permissions": [
         "CLP",
-        "IBCEXPORT"
+        "IBCEXPORT",
+        "IBCIMPORT"
       ],
       "unit_denom": "",
-      "ibc_counterparty_denom": "xlina",
+      "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
     },
     {
@@ -2156,10 +2205,11 @@
       "transfer_limit": "",
       "permissions": [
         "CLP",
-        "IBCEXPORT"
+        "IBCEXPORT",
+        "IBCIMPORT"
       ],
       "unit_denom": "",
-      "ibc_counterparty_denom": "xdaofi",
+      "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
     },
     {
@@ -2197,10 +2247,11 @@
       "transfer_limit": "",
       "permissions": [
         "CLP",
-        "IBCEXPORT"
+        "IBCEXPORT",
+        "IBCIMPORT"
       ],
       "unit_denom": "",
-      "ibc_counterparty_denom": "xkeep",
+      "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
     },
     {
@@ -2238,10 +2289,11 @@
       "transfer_limit": "",
       "permissions": [
         "CLP",
-        "IBCEXPORT"
+        "IBCEXPORT",
+        "IBCIMPORT"
       ],
       "unit_denom": "",
-      "ibc_counterparty_denom": "xrly",
+      "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
     },
     {
@@ -2279,10 +2331,11 @@
       "transfer_limit": "",
       "permissions": [
         "CLP",
-        "IBCEXPORT"
+        "IBCEXPORT",
+        "IBCIMPORT"
       ],
       "unit_denom": "",
-      "ibc_counterparty_denom": "xaxs",
+      "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
     },
     {
@@ -2320,10 +2373,11 @@
       "transfer_limit": "",
       "permissions": [
         "CLP",
-        "IBCEXPORT"
+        "IBCEXPORT",
+        "IBCIMPORT"
       ],
       "unit_denom": "",
-      "ibc_counterparty_denom": "xdfyn",
+      "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
     },
     {
@@ -2361,10 +2415,11 @@
       "transfer_limit": "",
       "permissions": [
         "CLP",
-        "IBCEXPORT"
+        "IBCEXPORT",
+        "IBCIMPORT"
       ],
       "unit_denom": "",
-      "ibc_counterparty_denom": "xdnxc",
+      "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
     },
     {
@@ -2402,10 +2457,11 @@
       "transfer_limit": "",
       "permissions": [
         "CLP",
-        "IBCEXPORT"
+        "IBCEXPORT",
+        "IBCIMPORT"
       ],
       "unit_denom": "",
-      "ibc_counterparty_denom": "xdon",
+      "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
     },
     {
@@ -2443,10 +2499,11 @@
       "transfer_limit": "",
       "permissions": [
         "CLP",
-        "IBCEXPORT"
+        "IBCEXPORT",
+        "IBCIMPORT"
       ],
       "unit_denom": "",
-      "ibc_counterparty_denom": "xern",
+      "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
     },
     {
@@ -2484,10 +2541,11 @@
       "transfer_limit": "",
       "permissions": [
         "CLP",
-        "IBCEXPORT"
+        "IBCEXPORT",
+        "IBCIMPORT"
       ],
       "unit_denom": "",
-      "ibc_counterparty_denom": "xfrax",
+      "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
     },
     {
@@ -2525,10 +2583,11 @@
       "transfer_limit": "",
       "permissions": [
         "CLP",
-        "IBCEXPORT"
+        "IBCEXPORT",
+        "IBCIMPORT"
       ],
       "unit_denom": "",
-      "ibc_counterparty_denom": "xfxs",
+      "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
     },
     {
@@ -2566,10 +2625,11 @@
       "transfer_limit": "",
       "permissions": [
         "CLP",
-        "IBCEXPORT"
+        "IBCEXPORT",
+        "IBCIMPORT"
       ],
       "unit_denom": "",
-      "ibc_counterparty_denom": "xkft",
+      "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
     },
     {
@@ -2607,10 +2667,11 @@
       "transfer_limit": "",
       "permissions": [
         "CLP",
-        "IBCEXPORT"
+        "IBCEXPORT",
+        "IBCIMPORT"
       ],
       "unit_denom": "",
-      "ibc_counterparty_denom": "xmatic",
+      "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
     },
     {
@@ -2648,10 +2709,11 @@
       "transfer_limit": "",
       "permissions": [
         "CLP",
-        "IBCEXPORT"
+        "IBCEXPORT",
+        "IBCIMPORT"
       ],
       "unit_denom": "",
-      "ibc_counterparty_denom": "xmetis",
+      "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
     },
     {
@@ -2689,10 +2751,11 @@
       "transfer_limit": "",
       "permissions": [
         "CLP",
-        "IBCEXPORT"
+        "IBCEXPORT",
+        "IBCIMPORT"
       ],
       "unit_denom": "",
-      "ibc_counterparty_denom": "xpols",
+      "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
     },
     {
@@ -2730,10 +2793,11 @@
       "transfer_limit": "",
       "permissions": [
         "CLP",
-        "IBCEXPORT"
+        "IBCEXPORT",
+        "IBCIMPORT"
       ],
       "unit_denom": "",
-      "ibc_counterparty_denom": "xsaito",
+      "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
     },
     {
@@ -2771,10 +2835,11 @@
       "transfer_limit": "",
       "permissions": [
         "CLP",
-        "IBCEXPORT"
+        "IBCEXPORT",
+        "IBCIMPORT"
       ],
       "unit_denom": "",
-      "ibc_counterparty_denom": "xtoke",
+      "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
     },
     {
@@ -2834,10 +2899,11 @@
       "transfer_limit": "",
       "permissions": [
         "CLP",
-        "IBCEXPORT"
+        "IBCEXPORT",
+        "IBCIMPORT"
       ],
       "unit_denom": "",
-      "ibc_counterparty_denom": "xzcx",
+      "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
     },
     {
@@ -2875,10 +2941,11 @@
       "transfer_limit": "",
       "permissions": [
         "CLP",
-        "IBCEXPORT"
+        "IBCEXPORT",
+        "IBCIMPORT"
       ],
       "unit_denom": "",
-      "ibc_counterparty_denom": "xust",
+      "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
     },
     {
@@ -2916,10 +2983,11 @@
       "transfer_limit": "",
       "permissions": [
         "CLP",
-        "IBCEXPORT"
+        "IBCEXPORT",
+        "IBCIMPORT"
       ],
       "unit_denom": "",
-      "ibc_counterparty_denom": "xbtsg",
+      "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
     },
     {
@@ -2957,10 +3025,11 @@
       "transfer_limit": "",
       "permissions": [
         "CLP",
-        "IBCEXPORT"
+        "IBCEXPORT",
+        "IBCIMPORT"
       ],
       "unit_denom": "",
-      "ibc_counterparty_denom": "xquick",
+      "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
     },
     {
@@ -2998,10 +3067,11 @@
       "transfer_limit": "",
       "permissions": [
         "CLP",
-        "IBCEXPORT"
+        "IBCEXPORT",
+        "IBCIMPORT"
       ],
       "unit_denom": "",
-      "ibc_counterparty_denom": "xldo",
+      "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
     },
     {
@@ -3039,10 +3109,11 @@
       "transfer_limit": "",
       "permissions": [
         "CLP",
-        "IBCEXPORT"
+        "IBCEXPORT",
+        "IBCIMPORT"
       ],
       "unit_denom": "",
-      "ibc_counterparty_denom": "xrail",
+      "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
     },
     {
@@ -3080,10 +3151,11 @@
       "transfer_limit": "",
       "permissions": [
         "CLP",
-        "IBCEXPORT"
+        "IBCEXPORT",
+        "IBCIMPORT"
       ],
       "unit_denom": "",
-      "ibc_counterparty_denom": "xpond",
+      "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
     },
     {
@@ -3121,10 +3193,11 @@
       "transfer_limit": "",
       "permissions": [
         "CLP",
-        "IBCEXPORT"
+        "IBCEXPORT",
+        "IBCIMPORT"
       ],
       "unit_denom": "",
-      "ibc_counterparty_denom": "xdino",
+      "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
     },
     {
@@ -3162,10 +3235,11 @@
       "transfer_limit": "",
       "permissions": [
         "CLP",
-        "IBCEXPORT"
+        "IBCEXPORT",
+        "IBCIMPORT"
       ],
       "unit_denom": "",
-      "ibc_counterparty_denom": "xufo",
+      "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
     },
     {
