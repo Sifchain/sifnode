@@ -1,19 +1,16 @@
 package keeper
 
 import (
-	"github.com/Sifchain/sifnode/x/clp/types"
 	tkrtypes "github.com/Sifchain/sifnode/x/tokenregistry/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/gogo/protobuf/grpc"
 )
 
 type Migrator struct {
-	keeper      types.TokenRegistryKeeper
-	queryServer grpc.Server
+	keeper tkrtypes.Keeper
 }
 
-func NewMigrator(keeper types.TokenRegistryKeeper, queryServer grpc.Server) Migrator {
-	return Migrator{keeper: keeper, queryServer: queryServer}
+func NewMigrator(keeper tkrtypes.Keeper) Migrator {
+	return Migrator{keeper: keeper}
 }
 
 func (m Migrator) MigrateToVer2(ctx sdk.Context) error {

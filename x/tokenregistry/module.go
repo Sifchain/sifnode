@@ -103,7 +103,7 @@ type AppModule struct {
 func (am AppModule) RegisterServices(cfg module.Configurator) {
 	types.RegisterMsgServer(cfg.MsgServer(), keeper.NewMsgServerImpl(am.Keeper))
 	types.RegisterQueryServer(cfg.QueryServer(), keeper.NewQueryServer(am.Keeper))
-	m := keeper.NewMigrator(am.Keeper, cfg.QueryServer())
+	m := keeper.NewMigrator(am.Keeper)
 	err := cfg.RegisterMigration(types.ModuleName, 1, m.MigrateToVer2)
 	if err != nil {
 		panic(err)
