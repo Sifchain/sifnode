@@ -15,6 +15,7 @@ for filename in x/*/client/*/*.go; do
   sed -i.bak "/$(echo $filename | sed 's/\//\\\//g')/d" coverage.txt
 done
 
+cp coverage.txt .coverage
 rm coverage.txt.bak
 
 
