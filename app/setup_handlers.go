@@ -13,6 +13,9 @@ import (
 const upgradeName = "0.10.0-rc.1"
 
 func SetupHandlers(app *SifchainApp) {
+	app.UpgradeKeeper.SetUpgradeHandler("0.10.0-rc.2", func(ctx sdk.Context, plan types.Plan, fromVM m.VersionMap) (m.VersionMap, error) {
+		return app.mm.RunMigrations(ctx, app.configurator, fromVM)
+	})
 	app.UpgradeKeeper.SetUpgradeHandler(upgradeName, func(ctx sdk.Context, plan types.Plan, vm m.VersionMap) (m.VersionMap, error) {
 		app.Logger().Info("Running upgrade handler for " + upgradeName)
 		app.IBCKeeper.ConnectionKeeper.SetParams(ctx, ibcconnectiontypes.DefaultParams())
