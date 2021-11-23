@@ -118,7 +118,9 @@ async function main() {
       sifnode.results.relayerAddresses[0],
       sifnode.results.witnessAddresses[0],
       golang.results,
-      hardhat.results.chainId
+      // we need configure the chain id as hardhat
+      // hardhat.results.chainId
+      31337
     )
     EnvJSONWriter({
       contractResults: smartcontract.result,
