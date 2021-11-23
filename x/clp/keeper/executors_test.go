@@ -19,6 +19,25 @@ const MinUint = 0
 const maxBitLen = 255
 const max = 2 ^ maxBitLen - 1
 
+func TestKeeper_CreatePool_Error(t *testing.T) {
+	// nativeAssetAmount sdk.Uint, externalAssetAmount
+	ctx, app := test.CreateTestAppClp(false)
+	signer := test.GenerateAddress(test.AddressKey1)
+	//Parameters for create pool
+	nativeAssetAmount := sdk.NewUintFromString("998")
+	externalAssetAmount := sdk.NewUintFromString("998")
+	asset := types.NewAsset("eth0123456789012345678901234567890123456789012345678901234567890123456789")
+	externalCoin := sdk.NewCoin(asset.Symbol, sdk.Int(sdk.NewUintFromString("10000")))
+	nativeCoin := sdk.NewCoin(types.NativeSymbol, sdk.Int(sdk.NewUintFromString("10000")))
+	_ = app.ClpKeeper.GetBankKeeper().AddCoins(ctx, signer, sdk.NewCoins(externalCoin, nativeCoin))
+
+	msgCreatePool := types.NewMsgCreatePool(signer, asset, nativeAssetAmount, externalAssetAmount)
+	// Create Pool
+	pool, err := app.ClpKeeper.CreatePool(ctx, sdk.NewUint(1), &msgCreatePool)
+	assert.Error(t, err, "Invalid pool asset name.")
+	assert.Nil(t, pool)
+}
+
 func TestKeeper_CreatePool_Range(t *testing.T) {
 	// nativeAssetAmount sdk.Uint, externalAssetAmount
 	ctx, app := test.CreateTestAppClp(false)
@@ -114,6 +133,9 @@ func TestKeeper_CreatePool_And_AddLiquidity_RemoveLiquidity(t *testing.T) {
 	msg = types.NewMsgAddLiquidity(signer2, asset2, sdk.NewUintFromString("998"), sdk.NewUintFromString("0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"))
 	_, err = app.ClpKeeper.AddLiquidity(ctx, &msg, *pool, sdk.NewUint(1), sdk.NewUint(998))
 	assert.Error(t, err, "Unable to parse to Int")
+	msg = types.NewMsgAddLiquidity(signer2, asset2, sdk.NewUintFromString("99800000001"), sdk.NewUintFromString("99800000001"))
+	_, err = app.ClpKeeper.AddLiquidity(ctx, &msg, *pool, sdk.NewUint(1), sdk.NewUint(998))
+	assert.Error(t, err, "Not enough money in account")
 	subCoin := sdk.NewCoin(asset.Symbol, sdk.Int(sdk.NewUint(100)))
 	errorRemoveLiquidity := app.ClpKeeper.RemoveLiquidity(ctx, *pool, subCoin, subCoin, *lp, sdk.NewUint(989), sdk.NewUint(10001), sdk.NewUint(10001))
 	assert.NoError(t, errorRemoveLiquidity)

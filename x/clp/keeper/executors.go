@@ -37,10 +37,10 @@ func (k Keeper) CreatePool(ctx sdk.Context, poolUints sdk.Uint, msg *types.MsgCr
 	}
 
 	// (testing) this part can not be triggered, because newPool always return nil err LOL.
-	pool, err := types.NewPool(msg.ExternalAsset, msg.NativeAssetAmount, msg.ExternalAssetAmount, poolUints)
-	if err != nil {
-		return nil, sdkerrors.Wrap(types.ErrUnableToCreatePool, err.Error())
-	}
+	pool := types.NewPool(msg.ExternalAsset, msg.NativeAssetAmount, msg.ExternalAssetAmount, poolUints)
+	//if err != nil {
+	//	return nil, sdkerrors.Wrap(types.ErrUnableToCreatePool, err.Error())
+	//}
 
 	// Send coins from user to pool
 	err = k.bankKeeper.SendCoinsFromAccountToModule(ctx, addr, types.ModuleName, sdk.NewCoins(externalAssetCoin, nativeAssetCoin))
@@ -51,6 +51,8 @@ func (k Keeper) CreatePool(ctx sdk.Context, poolUints sdk.Uint, msg *types.MsgCr
 	// Pool creator becomes the first LP
 	// (testing) this part I think can never be triggered. because if we have error in either ctx or &pool it should be
 	// catched before setPool.
+	// This can fail if !pool.Validate() -> !msg.ExternalAsset.Validate() -> !VerifyRange(len(strings.TrimSpace(a.Symbol)), 0, MaxSymbolLength) -> len(ExternalAsset) > 71
+	// See TestKeeper_CreatePool_Error for test that triggers this condition.
 	err = k.SetPool(ctx, &pool)
 	if err != nil {
 		return nil, sdkerrors.Wrap(types.ErrUnableToSetPool, err.Error())
@@ -97,6 +99,7 @@ func (k Keeper) AddLiquidity(ctx sdk.Context, msg *types.MsgAddLiquidity, pool t
 	// (testing) this part I think can never be triggered. because if the balance is 0 for above coins object cannot be created/
 	// This part we check whether our bank has balance for coins[0] or coins[1], one of the token is EROWAN and we always have none-zero balance.
 	// solution: only check if have coins[1]
+	// This can be triggered by passing in a request for more coins than we gave the user account, see check for "Not enough money in account"
 	if !k.bankKeeper.HasBalance(ctx, addr, coins[0]) && !k.bankKeeper.HasBalance(ctx, addr, coins[1]) {
 		return nil, types.ErrBalanceNotAvailable
 	}
@@ -189,6 +192,7 @@ func (k Keeper) RemoveLiquidity(ctx sdk.Context, pool types.Pool, externalAssetC
 		}
 		err = k.bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, lpAddr, sendCoins)
 		if err != nil {
+			// I think you can trigger this if the lpAddr is a Blocked Address, see https://docs.cosmos.network/master/modules/bank/02_keepers.html
 			// (testing) this part I don't know how to trigger. because we verify if have coins in lp and all others verification already been handled.
 			return err
 		}
@@ -209,6 +213,7 @@ func (k Keeper) InitiateSwap(ctx sdk.Context, sentCoin sdk.Coin, swapper sdk.Acc
 	}
 	err := k.bankKeeper.SendCoinsFromAccountToModule(ctx, swapper, types.ModuleName, sdk.NewCoins(sentCoin))
 	if err != nil {
+		// I think you can trigger this if the lpAddr is a Blocked Address, see https://docs.cosmos.network/master/modules/bank/02_keepers.html
 		// (testing) this part I don't know how to trigger. because we verify if have balance.
 		return err
 	}
