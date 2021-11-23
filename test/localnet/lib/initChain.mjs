@@ -18,6 +18,8 @@ export async function initChain(props) {
     amount = 10e18,
     denom,
     home = `/tmp/localnet/${props.chain}/${props.chainId}`,
+    rootPath = `/tmp/localnet`,
+    binPath = `/tmp/localnet/.bin`,
   } = props;
 
   if (disabled) return;
@@ -34,7 +36,7 @@ export async function initChain(props) {
 
   console.log(`
 chain                 ${chain}
-binary                ${binary}
+binary                ${binPath}/${binary}
 chainId               ${chainId}
 node                  ${node}
 validatorAccountName  ${validatorAccountName}
@@ -48,11 +50,11 @@ home                  ${home}
 
   await $`rm -rf ${home}`;
   await $`mkdir -p ${home}`;
-  await $`${binary} init ${chainId} --chain-id ${chainId} --home ${home}`;
-  await $`${binary} keys add ${validatorAccountName} --keyring-backend test --home ${home}`;
-  await $`${binary} keys add ${sourceAccountName} --keyring-backend test --home ${home}`;
-  await $`${binary} add-genesis-account ${validatorAccountName} ${amount}${denom} --keyring-backend test --home ${home}`;
-  await $`${binary} add-genesis-account ${sourceAccountName} ${amount}${denom} --keyring-backend test --home ${home}`;
+  await $`${binPath}/${binary} init ${chainId} --chain-id ${chainId} --home ${home}`;
+  await $`${binPath}/${binary} keys add ${validatorAccountName} --keyring-backend test --home ${home}`;
+  await $`${binPath}/${binary} keys add ${sourceAccountName} --keyring-backend test --home ${home}`;
+  await $`${binPath}/${binary} add-genesis-account ${validatorAccountName} ${amount}${denom} --keyring-backend test --home ${home}`;
+  await $`${binPath}/${binary} add-genesis-account ${sourceAccountName} ${amount}${denom} --keyring-backend test --home ${home}`;
 
   const defaultGenesis = require(`${home}/config/genesis.json`);
   const genesis = cleanUpGenesisState({ remoteGenesis, defaultGenesis });
@@ -61,11 +63,11 @@ home                  ${home}
   if (chain === "sifchain") {
     const denoms = getDenoms();
     await createDenomsFile({ home, denoms });
-    await $`${binary} set-gen-denom-whitelist ${home}/config/denoms.json --home ${home}`;
+    await $`${binPath}/${binary} set-gen-denom-whitelist ${home}/config/denoms.json --home ${home}`;
   }
 
-  await $`${binary} gentx ${validatorAccountName} ${amount}${denom} --chain-id ${chainId} --keyring-backend test --home ${home}`;
+  await $`${binPath}/${binary} gentx ${validatorAccountName} ${amount}${denom} --chain-id ${chainId} --keyring-backend test --home ${home}`;
   $.verbose = false;
-  await $`${binary} collect-gentxs --home ${home}`;
+  await $`${binPath}/${binary} collect-gentxs --home ${home}`;
   $.verbose = true;
 }

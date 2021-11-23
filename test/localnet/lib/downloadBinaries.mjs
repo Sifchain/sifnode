@@ -4,29 +4,53 @@ import { createRequire } from "module";
 const require = createRequire(import.meta.url);
 const chains = require("../config/chains.json");
 
-export async function downloadBinaries({ home = `/tmp/localnet` }) {
+export async function downloadBinaries({ home = `/tmp/localnet/.bin` }) {
   await $`mkdir -p ${home}`;
 
   const chainsProps = Object.values(chains);
-  const binaryFile = `${home}/binary-file`;
+  const tempFile = `${home}/temp-file`;
 
   cd(home);
 
-  for (const { binary, binaryUrl } of chainsProps) {
-    if (!binaryUrl) {
+  for (const {
+    disabled,
+    binary,
+    binaryUrl,
+    binaryRelativePath,
+    sourceUrl,
+    sourceRelativePath,
+  } of chainsProps) {
+    if (disabled) {
       continue;
     }
 
-    console.log(`download ${binaryUrl}`);
+    const url = binaryUrl || sourceUrl;
 
-    await $`wget ${binaryUrl} -O ${binaryFile}`;
+    console.log(`download ${url}`);
 
-    if (binaryUrl.endsWith(".zip")) {
-      await $`unzip ${binaryFile}`;
+    await $`wget ${url} -O ${tempFile}`;
+
+    if (url.endsWith(".zip")) {
+      await $`unzip ${tempFile}`;
+    } else if (binaryUrl.endsWith(".tar.gz")) {
+      await $`tar xvzf ${tempFile}`;
     } else {
-      await $`cp -a ${binaryFile} ${binary}`;
+      if (binaryUrl) {
+        await $`cp -a ${tempFile} ${binary}`;
+      }
+    }
+
+    if (binaryUrl && binaryRelativePath) {
+      await $`mv ${binaryRelativePath} ${binary}`;
+    } else if (sourceUrl && sourceRelativePath) {
+      cd(`${home}/${sourceRelativePath}`);
+      await $`GOBIN=${home} make install`;
+      cd(home);
+      await $`rm -rf ${home}/${sourceRelativePath}`;
     }
 
     await nothrow($`chmod +x ${binary}`);
   }
+
+  await $`rm -f ${tempFile}`;
 }

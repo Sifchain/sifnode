@@ -7,7 +7,7 @@ const require = createRequire(import.meta.url);
 const chains = require("../config/chains.json");
 
 export async function initAllChains({ network, home = `/tmp/localnet` }) {
-  await $`rm -rf ${home}`;
+  // await $`rm -rf ${home}`;
 
   await Promise.all(
     Object.entries(chains)

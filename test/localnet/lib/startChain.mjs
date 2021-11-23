@@ -10,6 +10,8 @@ export async function startChain(props) {
     pprofPort = 6060,
     denom,
     home = `/tmp/localnet/${props.chain}/${props.chainId}`,
+    rootPath = `/tmp/localnet`,
+    binPath = `/tmp/localnet/.bin`,
   } = props;
 
   if (disabled) return;
@@ -23,7 +25,7 @@ export async function startChain(props) {
 
   console.log(`
 chain       ${chain}
-binary      ${binary}
+binary      ${binPath}/${binary}
 rpcPort     ${rpcPort}
 p2pPort     ${p2pPort}
 pprofPort   ${pprofPort}
@@ -31,7 +33,7 @@ home        ${home}
   `);
 
   const proc = nothrow(
-    $`${binary} start --home ${home} --rpc.laddr tcp://127.0.0.1:${rpcPort} --p2p.laddr tcp://127.0.0.1:${p2pPort} --grpc.enable=0 --rpc.pprof_laddr 127.0.0.1:${pprofPort}`
+    $`${binPath}/${binary} start --home ${home} --rpc.laddr tcp://127.0.0.1:${rpcPort} --p2p.laddr tcp://127.0.0.1:${p2pPort} --grpc.enable=0 --rpc.pprof_laddr 127.0.0.1:${pprofPort}`
   );
   return {
     proc,

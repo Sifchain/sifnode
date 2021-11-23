@@ -1,12 +1,12 @@
 {
   "sifchain": {
     "binary": "sifnoded",
-    "binaryUrl": "https://github.com/Sifchain/sifnode/releases/download/betanet-0.9.12/sifnoded-betanet-0.9.12-linux-amd64.zip",
+    "binaryUrl": "https://github.com/Sifchain/sifnode/releases/download/v0.9.14/sifnoded-v0.9.14-linux-amd64.zip",
     "denom": "rowan",
     "prefix": "sif",
     "fees": 100000,
-    "node": "https://rpc-testnet.sifchain.finance:443",
-    "chainId": "sifchain-testnet-1",
+    "node": "https://rpc.sifchain.finance:443",
+    "chainId": "sifchain-1",
     "devnet-1": {
       "node": "https://rpc-devnet.sifchain.finance:443",
       "chainId": "sifchain-devnet-1"
@@ -39,10 +39,12 @@
     "faucet": "https://faucet.testnet.cosmos.network"
   },
   "akash": {
+    "disabled": true,
     "node": "http://147.75.32.35:26657",
     "chainId": "akash-testnet-6",
     "binary": "akash",
     "binaryUrl": "https://github.com/ovrclk/akash/releases/download/v0.14.0/akash_0.14.0_linux_amd64.zip",
+    "binaryRelativePath": "akash_0.14.0_linux_amd64/akash",
     "fees": 5000,
     "denom": "uakt",
     "prefix": "akash",
@@ -60,6 +62,7 @@
     "chainId": "nyancat-8",
     "binary": "iris",
     "sourceUrl": "https://github.com/irisnet/irishub/archive/refs/tags/v1.2.0.zip",
+    "sourceRelativePath": "irishub-1.2.0",
     "fees": 400,
     "denom": "unyan",
     "prefix": "iaa",
@@ -135,7 +138,8 @@
     }
   },
   "terra": {
-    "node": "http://3.34.163.215:26657",
+    "disabled": true,
+    "node": "http://3.34.120.243:26657",
     "chainId": "bombay-10",
     "binary": "terrad",
     "binaryUrl": "https://github.com/terra-money/core/releases/download/v0.5.10/terra_0.5.10_Linux_x86_64.tar.gz",
