@@ -6,7 +6,6 @@ import (
 	"net/url"
 	"os"
 	"strconv"
-	"strings"
 	"sync"
 
 	"github.com/Sifchain/sifnode/x/instrumentation"
@@ -18,7 +17,6 @@ import (
 
 	sifapp "github.com/Sifchain/sifnode/app"
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/relayer"
-	oracleTypes "github.com/Sifchain/sifnode/x/oracle/types"
 	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
@@ -35,7 +33,11 @@ import (
 )
 
 const (
-	networkDescriptorFlag = "networkDescriptor"
+	networkDescriptorFlag             = "network-descriptor"
+	tendermintNodeFlag                = "tendermint-node"
+	web3ProviderFlag                  = "web3-provider"
+	bridgeRegistryContractAddressFlag = "bridge-registry-contract-address"
+	validatorMnemonicFlag             = "validator-mnemonic"
 )
 
 func buildRootCmd() *cobra.Command {
@@ -111,10 +113,10 @@ func buildRootCmd() *cobra.Command {
 func initRelayerCmd() *cobra.Command {
 	//nolint:lll
 	initRelayerCmd := &cobra.Command{
-		Use:     "init-relayer [networkDescriptor] [tendermintNode] [web3Provider] [bridgeRegistryContractAddress] [validatorMnemonic]",
+		Use:     "init-relayer --network-descriptor 1 --tendermint-node tcp://localhost:26657 --web3-provider ws://localhost:7545/ --bridge-registry-contract-address 0x --validator-mnemonic mnemonic --chain-id=peggy",
 		Short:   "Validate credentials and initialize subscriptions to both chains",
-		Args:    cobra.ExactArgs(5),
-		Example: "ebrelayer init-relayer 1 tcp://localhost:26657 ws://localhost:7545/ 0x30753E4A8aad7F8597332E813735Def5dD395028 mnemonic --chain-id=peggy",
+		Args:    cobra.ExactArgs(0),
+		Example: "ebrelayer init-relayer --network-descriptor 1 --tendermint-node tcp://localhost:26657 --web3-provider ws://localhost:7545/ --bridge-registry-contract-address 0x --validator-mnemonic mnemonic  --chain-id=peggy",
 		RunE:    RunInitRelayerCmd,
 	}
 	flags.AddTxFlagsToCmd(initRelayerCmd)
@@ -127,10 +129,10 @@ func initRelayerCmd() *cobra.Command {
 func initWitnessCmd() *cobra.Command {
 	//nolint:lll
 	initWitnessCmd := &cobra.Command{
-		Use:     "init-witness [networkDescriptor] [tendermintNode] [web3Provider] [bridgeRegistryContractAddress] [validatorMnemonic]",
+		Use:     "init-witness --network-descriptor 1 --tendermint-node tcp://localhost:26657 --web3-provider ws://localhost:7545/ --bridge-registry-contract-address 0x --validator-mnemonic mnemonic ",
 		Short:   "Validate credentials and initialize subscriptions to both chains",
-		Args:    cobra.ExactArgs(5),
-		Example: "ebrelayer init-witness 1 tcp://localhost:26657 ws://localhost:7545/ 0x30753E4A8aad7F8597332E813735Def5dD395028 mnemonic --chain-id=peggy",
+		Args:    cobra.ExactArgs(0),
+		Example: "ebrelayer init-witness --network-descriptor 1 --tendermint-node tcp://localhost:26657 --web3-provider ws://localhost:7545/ --bridge-registry-contract-address 0x --validator-mnemonic mnemonic  --chain-id=peggy",
 		RunE:    RunInitWitnessCmd,
 	}
 	flags.AddTxFlagsToCmd(initWitnessCmd)
@@ -165,9 +167,18 @@ func RunInitRelayerCmd(cmd *cobra.Command, args []string) error {
 	}
 
 	// Validate and parse arguments
-	networkDescriptor, err := strconv.Atoi(args[0])
+	networkDescriptorString, err := cmd.Flags().GetString(networkDescriptorFlag)
 	if err != nil {
-		return errors.Errorf("%s is invalid network id", args[0])
+		return errors.Errorf("network descriptor is invalid: %s", err.Error())
+	}
+
+	if len(networkDescriptorString) == 0 {
+		return errors.New("network descriptor is empty")
+	}
+
+	networkDescriptor, err := strconv.Atoi(networkDescriptorString)
+	if err != nil {
+		return errors.Errorf("network id: %s is invalid", networkDescriptorString)
 	}
 
 	// check if the networkDescriptor is valid
@@ -175,25 +186,46 @@ func RunInitRelayerCmd(cmd *cobra.Command, args []string) error {
 		return errors.Errorf("network id: %d is invalid", networkDescriptor)
 	}
 
-	if len(strings.Trim(args[1], "")) == 0 {
-		return errors.Errorf("invalid [tendermint-node]: %s", args[1])
+	tendermintNode, err := cmd.Flags().GetString(tendermintNodeFlag)
+	if err != nil {
+		return errors.Errorf("tendermint node is invalid: %s", err.Error())
 	}
-	tendermintNode := args[1]
 
-	if !relayer.IsWebsocketURL(args[2]) {
-		return errors.Errorf("invalid [web3-provider]: %s", args[2])
+	if len(tendermintNode) == 0 {
+		return errors.New("tendermint node is empty")
 	}
-	web3Provider := args[2]
 
-	if !common.IsHexAddress(args[3]) {
-		return errors.Errorf("invalid [bridge-registry-contract-address]: %s", args[3])
+	web3Provider, err := cmd.Flags().GetString(web3ProviderFlag)
+	if err != nil {
+		return errors.Errorf("web3 provider is invalid: %s", err.Error())
 	}
-	contractAddress := common.HexToAddress(args[3])
 
-	if len(strings.Trim(args[4], "")) == 0 {
-		return errors.Errorf("invalid [validator-moniker]: %s", args[4])
+	if len(web3Provider) == 0 {
+		return errors.New("web3 provider is empty")
 	}
-	validatorMoniker := args[4]
+
+	contractAddressString, err := cmd.Flags().GetString(bridgeRegistryContractAddressFlag)
+	if err != nil {
+		return errors.Errorf("contract address is invalid: %s", err.Error())
+	}
+
+	if len(contractAddressString) == 0 {
+		return errors.New("contract address is empty")
+	}
+
+	if !common.IsHexAddress(contractAddressString) {
+		return errors.Errorf("invalid [bridge-registry-contract-address]: %s", contractAddressString)
+	}
+	contractAddress := common.HexToAddress(contractAddressString)
+
+	validatorMoniker, err := cmd.Flags().GetString(validatorMnemonicFlag)
+	if err != nil {
+		return errors.Errorf("validator moniker is invalid: %s", err.Error())
+	}
+
+	if len(validatorMoniker) == 0 {
+		return errors.New("validator moniker is empty")
+	}
 
 	logConfig := zap.NewDevelopmentConfig()
 	logConfig.Sampling = nil
@@ -279,10 +311,18 @@ func RunInitWitnessCmd(cmd *cobra.Command, args []string) error {
 		}
 	}
 
-	// Validate and parse arguments
-	networkDescriptor, err := strconv.Atoi(args[0])
+	networkDescriptorString, err := cmd.Flags().GetString(networkDescriptorFlag)
 	if err != nil {
-		return errors.Errorf("%s is invalid network id", args[0])
+		return errors.Errorf("network descriptor is invalid: %s", err.Error())
+	}
+
+	if len(networkDescriptorString) == 0 {
+		return errors.New("network descriptor is empty")
+	}
+
+	networkDescriptor, err := strconv.Atoi(networkDescriptorString)
+	if err != nil {
+		return errors.Errorf("network id: %s is invalid", networkDescriptorString)
 	}
 
 	// check if the networkDescriptor is valid
@@ -290,25 +330,46 @@ func RunInitWitnessCmd(cmd *cobra.Command, args []string) error {
 		return errors.Errorf("network id: %d is invalid", networkDescriptor)
 	}
 
-	if len(strings.Trim(args[1], "")) == 0 {
-		return errors.Errorf("invalid [tendermint-node]: %s", args[1])
+	tendermintNode, err := cmd.Flags().GetString(tendermintNodeFlag)
+	if err != nil {
+		return errors.Errorf("tendermint node is invalid: %s", err.Error())
 	}
-	tendermintNode := args[1]
 
-	if !relayer.IsWebsocketURL(args[2]) {
-		return errors.Errorf("invalid [web3-provider]: %s", args[2])
+	if len(tendermintNode) == 0 {
+		return errors.New("tendermint node is empty")
 	}
-	web3Provider := args[2]
 
-	if !common.IsHexAddress(args[3]) {
-		return errors.Errorf("invalid [bridge-registry-contract-address]: %s", args[3])
+	web3Provider, err := cmd.Flags().GetString(web3ProviderFlag)
+	if err != nil {
+		return errors.Errorf("web3 provider is invalid: %s", err.Error())
 	}
-	contractAddress := common.HexToAddress(args[3])
 
-	if len(strings.Trim(args[4], "")) == 0 {
-		return errors.Errorf("invalid [validator-moniker]: %s", args[4])
+	if len(web3Provider) == 0 {
+		return errors.New("web3 provider is empty")
 	}
-	validatorMoniker := args[4]
+
+	contractAddressString, err := cmd.Flags().GetString(bridgeRegistryContractAddressFlag)
+	if err != nil {
+		return errors.Errorf("contract address is invalid: %s", err.Error())
+	}
+
+	if len(contractAddressString) == 0 {
+		return errors.New("contract address is empty")
+	}
+
+	if !common.IsHexAddress(contractAddressString) {
+		return errors.Errorf("invalid [bridge-registry-contract-address]: %s", contractAddressString)
+	}
+	contractAddress := common.HexToAddress(contractAddressString)
+
+	validatorMoniker, err := cmd.Flags().GetString(validatorMnemonicFlag)
+	if err != nil {
+		return errors.Errorf("validator moniker is invalid: %s", err.Error())
+	}
+
+	if len(validatorMoniker) == 0 {
+		return errors.New("validator moniker is empty")
+	}
 
 	logConfig := zap.NewDevelopmentConfig()
 	logConfig.Encoding = "json"
@@ -365,10 +426,30 @@ func RunInitWitnessCmd(cmd *cobra.Command, args []string) error {
 
 // AddRelayerFlagsToCmd adds all common flags to relayer commands.
 func AddRelayerFlagsToCmd(cmd *cobra.Command) {
-	cmd.Flags().Int32(
+	cmd.Flags().String(
 		networkDescriptorFlag,
-		int32(oracleTypes.NetworkDescriptor_NETWORK_DESCRIPTOR_ETHEREUM),
+		"",
 		"The network descriptor for the chain",
+	)
+	cmd.Flags().String(
+		tendermintNodeFlag,
+		"",
+		"Sifchain node address",
+	)
+	cmd.Flags().String(
+		web3ProviderFlag,
+		"",
+		"Ethereum web3 service address",
+	)
+	cmd.Flags().String(
+		bridgeRegistryContractAddressFlag,
+		"",
+		"Ethereum bridge registry contract address",
+	)
+	cmd.Flags().String(
+		validatorMnemonicFlag,
+		"",
+		"Validator mnemonic",
 	)
 }
 
