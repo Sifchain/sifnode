@@ -1,7 +1,10 @@
 import { $, cd } from "zx";
 
-export async function createArchive({ src, basePath = "/tmp", name }) {
-  cd(`/`);
-  await $`rm -f ${basePath}/${name}.tbz`;
-  await $`tar cvjf ${basePath}/${name}.tbz ${src}`;
+export async function createArchive({
+  configPath = "/tmp/localnet/config",
+  archivePath = "/tmp/localnet/config.tbz",
+}) {
+  cd(configPath);
+  await $`rm -f ${archivePath}`;
+  await $`tar -cjf ${archivePath} .`;
 }

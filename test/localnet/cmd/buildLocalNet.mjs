@@ -6,7 +6,7 @@ export async function start() {
   const args = arg(
     {
       "--network": String,
-      "--home": String,
+      "--configPath": String,
     },
     `
 Usage:
@@ -17,17 +17,17 @@ Initiate all the chains locally based on an existing remote chain and take a sna
 
 Options:
 
---network   Select a predifined network in chains.json
---home      Global directory for config and data of initiated chains
+--network         Select a predifined network in chains.json
+--configPath      Global directory for config and data of initiated chains
 `
   );
 
   const network = args["--network"] || undefined;
-  const home = args["--home"] || undefined;
+  const configPath = args["--configPath"] || undefined;
 
   const chainProps = getChainProps({
     network,
-    home,
+    configPath,
   });
 
   await buildLocalNet({ ...chainProps });

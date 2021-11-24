@@ -5,8 +5,8 @@ import { getChainProps } from "../utils/getChainProps.mjs";
 export async function start() {
   const args = arg(
     {
-      "--basePath": String,
-      "--name": String,
+      "--configPath": String,
+      "--archivePath": String,
     },
     `
 Usage:
@@ -17,17 +17,17 @@ Load an existing snapshot of localnet to run chains + relayers on top.
 
 Options:
 
---basePath  Location of the snapshot archive
---name      Name of the snapshot to load
+--configPath       Location of the config directory where chains and relayers data will be stored
+--archivePath      Location of the snapshot archive file that contains all the config files
 `
   );
 
-  const basePath = args["--basePath"] || undefined;
-  const name = args["--name"] || undefined;
+  const configPath = args["--configPath"] || undefined;
+  const archivePath = args["--archivePath"] || undefined;
 
   const chainProps = getChainProps({
-    basePath,
-    name,
+    configPath,
+    archivePath,
   });
 
   await loadLocalNet({ ...chainProps });

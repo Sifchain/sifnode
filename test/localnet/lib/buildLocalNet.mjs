@@ -8,18 +8,18 @@ import { takeSnapshot } from "./takeSnapshot.mjs";
 
 export async function buildLocalNet({
   network,
-  home = "/tmp/localnet",
-  registryFrom = `/tmp/localnet/registry`,
+  configPath = "/tmp/localnet/config",
+  registryFrom = `/tmp/localnet/config/registry`,
   rpcInitialPort = 11000,
   p2pInitialPort = 12000,
   pprofInitialPort = 13000,
 }) {
   // 1) init all IBC chains
-  await initAllChains({ network, home });
+  await initAllChains({ network, configPath });
   // 2) start all IBC chains
   const chainsProps = await startAllChains({
     network,
-    home,
+    configPath,
     rpcInitialPort,
     p2pInitialPort,
     pprofInitialPort,
@@ -38,11 +38,11 @@ export async function buildLocalNet({
   await sleep(5000);
   await $`curl http://localhost:11000`;
   // 3) init all IBC relayers
-  await initAllRelayers({ network, home, registryFrom });
+  await initAllRelayers({ network, configPath, registryFrom });
   // 4) start all IBC relayers
   const relayersProps = await startAllRelayers({
     network,
-    home,
+    configPath,
     rpcInitialPort,
     p2pInitialPort,
     pprofInitialPort,
@@ -65,5 +65,5 @@ export async function buildLocalNet({
       proc.kill("SIGTERM");
     })
   );
-  await takeSnapshot({ home });
+  await takeSnapshot({ configPath });
 }

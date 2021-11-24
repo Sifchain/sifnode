@@ -1,69 +1,36 @@
 name: Run localnet tests on localnet environment
 
-on:
-  push:
-    paths-ignore:
-      - "ui/**"
+on: [push, pull_request]
 
 jobs:
-  build_localnet_stack_snapshot:
-    name: Build Localnet Stack snapshot image
-
+  build:
+    name: Build Stack
     defaults:
       run:
         working-directory: test/localnet
-
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout sifnode
-        uses: actions/checkout@v2
-
-      - name: Use Node.js
-        uses: actions/setup-node@v2.1.4
-        with:
-          node-version: "14.x"
-
-      - name: Set up Go 1.x
-        uses: actions/setup-go@v2
+      - uses: actions/checkout@v2
+      - uses: actions/setup-go@v2
         with:
           go-version: ^1.15
         id: go
-
-      - name: Get yarn cache directory path
-        id: yarn-cache-dir-path
-        run: echo "::set-output name=dir::${yarn cache dir)"
-
-      - name: Cache Node.js modules
-        id: yarn-cache
-        uses: actions/cache@v2.1.3
+      - uses: actions/setup-node@v2
         with:
-          path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
-          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
-          restore-keys: ${{ runner.os }}-yarn-
-
-      - name: Install dependencies
-        run: yarn install --frozen-lockfile --silent
-
-      - name: Download binaries
+          node-version: "14"
+          cache: "yarn"
+      - run: yarn install
+      - uses: actions/cache@v2
+        id: cache-localnet-binaries
+        with:
+          path: /tmp/localnet/bin
+          key: ${{ runner.os }}-localnet-bin
+      - if: steps.cache-localnet-binaries.outputs.cache-hit != 'true'
         run: yarn downloadBinaries
-
-      - name: Build LocalNet stack and take snapshot
+      - uses: actions/cache@v2
+        id: cache-localnet-snapshot
+        with:
+          path: /tmp/localnet/config.tbz
+          key: ${{ runner.os }}-localnet-snapshot
+      - if: steps.cache-localnet-snapshot.outputs.cache-hit != 'true'
         run: yarn buildLocalNet
-
-  test_localnet:
-    name: Run localnet tests
-    needs: build_localnet_stack_snapshot
-    defaults:
-      run:
-        working-directiory: test/localnet
-
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check out sifnode
-        uses: actions/checkout@v2
-
-      - name: Run tests
-        run: yarn test
-        env:
-          CI: true

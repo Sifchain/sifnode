@@ -6,7 +6,7 @@ export async function start() {
   const args = arg(
     {
       "--network": String,
-      "--home": String,
+      "--configPath": String,
       "--registryFrom": Number,
       "--rpcInitialPort": Number,
       "--p2pInitialPort": Number,
@@ -22,7 +22,7 @@ Initiate all the IBC relayers connected to sifchain.
 Options:
 
 --network               Select a predifined network in chains.json
---home                  Global directory for config and data of initiated chains
+--configPath            Global directory for config and data of initiated chains
 --registryFrom          Directory for storing global relayer registry data
 --rpcInitialPort        Initial RPC port number
 --p2pInitialPort        Initial P2P port number
@@ -31,7 +31,7 @@ Options:
   );
 
   const network = args["--network"] || undefined;
-  const home = args["--home"] || undefined;
+  const configPath = args["--configPath"] || undefined;
   const registryFrom = args["--registryFrom"] || undefined;
   const rpcInitialPort = args["--rpcInitialPort"] || undefined;
   const p2pInitialPort = args["--p2pInitialPort"] || undefined;
@@ -39,7 +39,7 @@ Options:
 
   const chainProps = getChainProps({
     network,
-    home,
+    configPath,
     registryFrom,
     rpcInitialPort,
     p2pInitialPort,

@@ -5,7 +5,7 @@ import { getChainProps } from "../utils/getChainProps.mjs";
 export async function start() {
   const args = arg(
     {
-      "--home": String,
+      "--binPath": String,
     },
     `
 Usage:
@@ -16,14 +16,14 @@ Download all the binaries of IBC chains.
 
 Options:
 
---home      Global directory for config and data of initiated chains
+--binPath      Global directory for binaries location
 `
   );
 
-  const home = args["--home"] || undefined;
+  const binPath = args["--binPath"] || undefined;
 
   const chainProps = getChainProps({
-    home,
+    binPath,
   });
 
   await downloadBinaries({ ...chainProps });

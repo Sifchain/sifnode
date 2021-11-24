@@ -1,6 +1,10 @@
 import { $, cd } from "zx";
 
-export async function extractArchive({ dst = "/", basePath = "/tmp", name }) {
-  cd(`${dst}`);
-  await $`tar xvjf ${basePath}/${name}.tbz`;
+export async function extractArchive({
+  configPath = "/tmp/localnet/config",
+  archivePath = "/tmp/localnet/config.tbz",
+}) {
+  await $`mkdir -p ${configPath}`;
+  cd(`${configPath}`);
+  await $`tar -xjf ${archivePath}`;
 }

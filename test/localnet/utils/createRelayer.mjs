@@ -4,7 +4,7 @@ import { send } from "../lib/send.mjs";
 export async function createRelayer({
   sifChainProps,
   otherChainProps,
-  registryFrom = `/tmp/localnet/registry`,
+  registryFrom = `/tmp/localnet/config/registry`,
 }) {
   const { chain, home } = otherChainProps;
   const relayerHome = `${home}/relayer`;

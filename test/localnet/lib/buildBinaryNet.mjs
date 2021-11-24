@@ -11,20 +11,20 @@ export async function buildBinaryNet({
   rpcInitialPort = 11000,
   p2pInitialPort = 12000,
   pprofInitialPort = 13000,
-  home = `/tmp/localnet`,
-  registryFrom = `/tmp/localnet/registry`,
+  configPath = `/tmp/localnet/config`,
+  registryFrom = `/tmp/localnet/config/registry`,
 }) {
   const chains = getChains({
     rpcInitialPort,
     p2pInitialPort,
     pprofInitialPort,
-    home,
+    configPath,
   });
   const chainsProps = getChainsProps({ chains, network });
   const sifChainProps = chainsProps.sifchain;
   const otherChainProps = chainsProps[candidateOtherChainProps.chain];
 
-  await $`rm -rf ${home}`;
+  await $`rm -rf ${configPath}`;
 
   await initChain(sifChainProps);
   //   await initChain(otherChainProps);

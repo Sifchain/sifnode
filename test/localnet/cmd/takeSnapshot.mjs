@@ -5,7 +5,8 @@ import { getChainProps } from "../utils/getChainProps.mjs";
 export async function start() {
   const args = arg(
     {
-      "--home": String,
+      "--configPath": String,
+      "--archivePath": String,
     },
     `
 Usage:
@@ -17,13 +18,17 @@ Create a snapshot of all the localnet file-based data including the IBC chains +
 Options:
 
 --home      Global directory for config and data of initiated chains
+--configPath       Location of the config directory where chains and relayers data are stored
+--archivePath      Location where the snapshot archive file will be created
 `
   );
 
-  const home = args["--home"] || undefined;
+  const configPath = args["--configPath"] || undefined;
+  const archivePath = args["--archivePath"] || undefined;
 
   const chainProps = getChainProps({
-    home,
+    configPath,
+    archivePath,
   });
 
   await takeSnapshot({ ...chainProps });

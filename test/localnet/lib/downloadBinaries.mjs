@@ -4,13 +4,14 @@ import { createRequire } from "module";
 const require = createRequire(import.meta.url);
 const chains = require("../config/chains.json");
 
-export async function downloadBinaries({ home = `/tmp/localnet/.bin` }) {
-  await $`mkdir -p ${home}`;
+export async function downloadBinaries({ binPath = `/tmp/localnet/bin` }) {
+  await $`rm -rf ${binPath}`;
+  await $`mkdir -p ${binPath}`;
 
   const chainsProps = Object.values(chains);
-  const tempFile = `${home}/temp-file`;
+  const tempFile = `${binPath}/.tempFile`;
 
-  cd(home);
+  cd(binPath);
 
   for (const {
     disabled,
@@ -28,10 +29,10 @@ export async function downloadBinaries({ home = `/tmp/localnet/.bin` }) {
 
     console.log(`download ${url}`);
 
-    await $`wget ${url} -O ${tempFile}`;
+    await $`wget -q ${url} -O ${tempFile}`;
 
     if (url.endsWith(".zip")) {
-      await $`unzip ${tempFile}`;
+      await $`unzip -q ${tempFile}`;
     } else if (binaryUrl.endsWith(".tar.gz")) {
       await $`tar xvzf ${tempFile}`;
     } else {
@@ -43,10 +44,10 @@ export async function downloadBinaries({ home = `/tmp/localnet/.bin` }) {
     if (binaryUrl && binaryRelativePath) {
       await $`mv ${binaryRelativePath} ${binary}`;
     } else if (sourceUrl && sourceRelativePath) {
-      cd(`${home}/${sourceRelativePath}`);
-      await $`GOBIN=${home} make install`;
-      cd(home);
-      await $`rm -rf ${home}/${sourceRelativePath}`;
+      cd(`${binPath}/${sourceRelativePath}`);
+      await $`GOBIN=${binPath} make install`;
+      cd(binPath);
+      await $`rm -rf ${binPath}/${sourceRelativePath}`;
     }
 
     await nothrow($`chmod +x ${binary}`);

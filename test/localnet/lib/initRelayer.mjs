@@ -11,15 +11,15 @@ export async function initRelayer(props) {
 
   const {
     chainProps: candidateOtherChainProps,
-    registryFrom = `/tmp/localnet/registry`,
+    registryFrom = `/tmp/localnet/config/registry`,
     rpcPortA = 26657,
     p2pPortA = 26656,
     pprofPortA = 6060,
-    homeA = `/tmp/localnet/${candidateSifChainProps.chain}/${candidateSifChainProps.chainId}`,
+    homeA = `/tmp/localnet/config/${candidateSifChainProps.chain}/${candidateSifChainProps.chainId}`,
     rpcPortB = 36657,
     p2pPortB = 36656,
     pprofPortB = 7060,
-    homeB = `/tmp/localnet/${props.chainProps.chain}/${props.chainProps.chainId}`,
+    homeB = `/tmp/localnet/config/${props.chainProps.chain}/${props.chainProps.chainId}`,
   } = props;
 
   const sifChainProps = {

@@ -17,9 +17,8 @@ export async function initChain(props) {
     node,
     amount = 10e18,
     denom,
-    home = `/tmp/localnet/${props.chain}/${props.chainId}`,
-    rootPath = `/tmp/localnet`,
-    binPath = `/tmp/localnet/.bin`,
+    home = `/tmp/localnet/config/${props.chain}/${props.chainId}`,
+    binPath = `/tmp/localnet/bin`,
   } = props;
 
   if (disabled) return;

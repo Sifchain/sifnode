@@ -4,7 +4,7 @@ import { startChain } from "./startChain.mjs";
 
 export async function startAllChains({
   network,
-  home = `/tmp/localnet`,
+  configPath = `/tmp/localnet/config`,
   rpcInitialPort = 11000,
   p2pInitialPort = 12000,
   pprofInitialPort = 13000,
@@ -13,7 +13,7 @@ export async function startAllChains({
     rpcInitialPort,
     p2pInitialPort,
     pprofInitialPort,
-    home,
+    configPath,
   });
 
   return Promise.all(

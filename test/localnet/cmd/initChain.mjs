@@ -14,6 +14,7 @@ export async function start() {
       "--amount": Number,
       "--denom": String,
       "--home": String,
+      "--binPath": String,
     },
     `
 Usage:
@@ -33,6 +34,7 @@ Options:
 --amount    Amount to send to receiver account
 --denom     Chain denom
 --home      Directory for config and data
+--binPath   Directory for binaries location
 `
   );
 
@@ -45,6 +47,7 @@ Options:
   const amount = args["--amount"] || undefined;
   const denom = args["--denom"] || undefined;
   const home = args["--home"] || undefined;
+  const binPath = args["--binPath"] || undefined;
 
   const chainProps = getChainProps({
     chain,
@@ -56,6 +59,7 @@ Options:
     amount,
     denom,
     home,
+    binPath,
   });
   await initChain({
     ...chainProps,

@@ -7,7 +7,7 @@ export async function start() {
     {
       "--chain": String,
       "--network": String,
-      "--home": String,
+      "--configPath": String,
     },
     `
 Usage:
@@ -18,22 +18,22 @@ Initiate two IBC chains locally based on an existing remote chain and take a sna
 
 Options:
 
---chain     Select a predifined chain in chains.json
---network   Select a predifined network in chains.json
---home      Global directory for config and data of initiated chains
+--chain           Select a predifined chain in chains.json
+--network         Select a predifined network in chains.json
+--configPath      Global directory for config and data of initiated chains
 `
   );
 
   const chain = args["--chain"] || undefined;
   const network = args["--network"] || undefined;
-  const home = args["--home"] || undefined;
+  const configPath = args["--configPath"] || undefined;
 
   const chainProps = getChainProps({
     chain,
     network,
   });
 
-  await buildBinaryNet({ chainProps, network, home });
+  await buildBinaryNet({ chainProps, network, configPath });
 }
 
 if (process.env.NODE_ENV !== "test") {

@@ -8,8 +8,8 @@ import { sleep } from "zx";
 
 export async function initAllRelayers({
   network,
-  home = `/tmp/localnet`,
-  registryFrom = `/tmp/localnet/registry`,
+  configPath = `/tmp/localnet/config`,
+  registryFrom = `/tmp/localnet/config/registry`,
   rpcInitialPort = 11000,
   p2pInitialPort = 12000,
   pprofInitialPort = 13000,
@@ -19,7 +19,7 @@ export async function initAllRelayers({
     rpcInitialPort,
     p2pInitialPort,
     pprofInitialPort,
-    home,
+    configPath,
   });
   const chainsProps = getChainsProps({ chains, network });
   const { sifchain: sifChainProps, ...otherChainsProps } = chainsProps;

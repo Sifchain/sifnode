@@ -5,26 +5,24 @@ import { startAllChains } from "./startAllChains.mjs";
 import { startAllRelayers } from "./startAllRelayers.mjs";
 
 export async function loadLocalNet({
-  basePath = "/tmp",
-  name = "localnet",
+  configPath = "/tmp/localnet/config",
+  archivePath = "/tmp/localnet/config.tbz",
   network,
   rpcInitialPort = 11000,
   p2pInitialPort = 12000,
   pprofInitialPort = 13000,
 }) {
-  const home = `${basePath}/${name}`;
-
   // 0) first make sure we start from an empty targeted folder
-  await $`rm -rf ${home}`;
+  await $`rm -rf ${configPath}`;
 
   // 1) extract the snapshot archive into the targeted folder
-  await extractArchive({ basePath, name });
+  await extractArchive({ archivePath, configPath });
 
   try {
     // 2) start all IBC chains
     const chainsProps = await startAllChains({
       network,
-      home,
+      configPath,
       rpcInitialPort,
       p2pInitialPort,
       pprofInitialPort,
@@ -44,7 +42,7 @@ export async function loadLocalNet({
     // 3) start all IBC relayers
     const relayersProps = await startAllRelayers({
       network,
-      home,
+      configPath,
       rpcInitialPort,
       p2pInitialPort,
       pprofInitialPort,

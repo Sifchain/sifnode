@@ -12,6 +12,7 @@ export async function start() {
       "--p2pPort": Number,
       "--pprofPort": Number,
       "--home": String,
+      "--binPath": String,
     },
     `
 Usage:
@@ -29,6 +30,7 @@ Options:
 --p2pPort   P2P port number
 --pprofPort pprof port number
 --home      Directory for config and data
+--binPath   Directory for binaries location
 `
   );
 
@@ -39,6 +41,7 @@ Options:
   const p2pPort = args["--p2pPort"] || undefined;
   const pprofPort = args["--pprofPort"] || undefined;
   const home = args["--home"] || undefined;
+  const binPath = args["--binPath"] || undefined;
 
   const chainProps = getChainProps({
     chain,
@@ -48,6 +51,7 @@ Options:
     p2pPort,
     pprofPort,
     home,
+    binPath,
   });
   await startChain({
     ...chainProps,

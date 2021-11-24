@@ -7,7 +7,7 @@ export function getChains({
   rpcInitialPort = 11000,
   p2pInitialPort = 12000,
   pprofInitialPort = 13000,
-  home = `/tmp/localnet`,
+  configPath = `/tmp/localnet/config`,
 }) {
   const newChains = { ...chains };
 
@@ -17,7 +17,7 @@ export function getChains({
       rpcPort: rpcInitialPort + index,
       p2pPort: p2pInitialPort + index,
       pprofPort: pprofInitialPort + index,
-      home: `${home}/${chain}/${newChains[chain].chainId}`,
+      home: `${configPath}/${chain}/${newChains[chain].chainId}`,
     };
   });
 

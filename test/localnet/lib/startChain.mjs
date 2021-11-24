@@ -9,9 +9,8 @@ export async function startChain(props) {
     p2pPort = 26656,
     pprofPort = 6060,
     denom,
-    home = `/tmp/localnet/${props.chain}/${props.chainId}`,
-    rootPath = `/tmp/localnet`,
-    binPath = `/tmp/localnet/.bin`,
+    home = `/tmp/localnet/config/${props.chain}/${props.chainId}`,
+    binPath = `/tmp/localnet/bin`,
   } = props;
 
   if (disabled) return;
@@ -22,6 +21,7 @@ export async function startChain(props) {
   if (!pprofPort) throw new Error("missing requirement argument: --pprofPort");
   if (!denom) throw new Error("missing requirement argument: --denom");
   if (!home) throw new Error("missing requirement argument: --home");
+  if (!binPath) throw new Error("missing requirement argument: --binPath");
 
   console.log(`
 chain       ${chain}
@@ -30,6 +30,7 @@ rpcPort     ${rpcPort}
 p2pPort     ${p2pPort}
 pprofPort   ${pprofPort}
 home        ${home}
+binPath     ${binPath}
   `);
 
   const proc = nothrow(

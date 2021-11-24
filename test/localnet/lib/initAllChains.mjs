@@ -6,8 +6,11 @@ import { createRequire } from "module";
 const require = createRequire(import.meta.url);
 const chains = require("../config/chains.json");
 
-export async function initAllChains({ network, home = `/tmp/localnet` }) {
-  // await $`rm -rf ${home}`;
+export async function initAllChains({
+  network,
+  configPath = `/tmp/localnet/config`,
+}) {
+  await $`rm -rf ${configPath}`;
 
   await Promise.all(
     Object.entries(chains)
@@ -17,7 +20,7 @@ export async function initAllChains({ network, home = `/tmp/localnet` }) {
 
         return initChain({
           ...chainProps,
-          home: `${home}/${chainProps.chain}/${chainProps.chainId}`,
+          configPath: `${configPath}/${chainProps.chain}/${chainProps.chainId}`,
         });
       })
   );

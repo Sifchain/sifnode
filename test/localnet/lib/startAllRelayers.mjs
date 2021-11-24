@@ -4,7 +4,7 @@ import { runRelayer } from "../utils/runRelayer.mjs";
 
 export async function startAllRelayers({
   network,
-  home = `/tmp/localnet`,
+  configPath = `/tmp/localnet/config`,
   rpcInitialPort = 11000,
   p2pInitialPort = 12000,
   pprofInitialPort = 13000,
@@ -14,7 +14,7 @@ export async function startAllRelayers({
     rpcInitialPort,
     p2pInitialPort,
     pprofInitialPort,
-    home,
+    configPath,
   });
   const chainsProps = getChainsProps({ chains, network });
   const { sifchain: sifChainProps, ...otherChainsProps } = chainsProps;
