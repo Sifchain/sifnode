@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/url"
 	"os"
+	"strconv"
 	"sync"
 
 	"github.com/Sifchain/sifnode/x/instrumentation"
@@ -16,7 +17,6 @@ import (
 
 	sifapp "github.com/Sifchain/sifnode/app"
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/relayer"
-	oracleTypes "github.com/Sifchain/sifnode/x/oracle/types"
 	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
@@ -167,9 +167,18 @@ func RunInitRelayerCmd(cmd *cobra.Command, args []string) error {
 	}
 
 	// Validate and parse arguments
-	networkDescriptor, err := cmd.Flags().GetInt32(networkDescriptorFlag)
+	networkDescriptorString, err := cmd.Flags().GetString(networkDescriptorFlag)
 	if err != nil {
 		return errors.Errorf("network descriptor is invalid: %s", err.Error())
+	}
+
+	if len(networkDescriptorString) == 0 {
+		return errors.New("network descriptor is empty")
+	}
+
+	networkDescriptor, err := strconv.Atoi(networkDescriptorString)
+	if err != nil {
+		return errors.Errorf("network id: %s is invalid", networkDescriptorString)
 	}
 
 	// check if the networkDescriptor is valid
@@ -182,14 +191,26 @@ func RunInitRelayerCmd(cmd *cobra.Command, args []string) error {
 		return errors.Errorf("tendermint node is invalid: %s", err.Error())
 	}
 
+	if len(tendermintNode) == 0 {
+		return errors.New("tendermint node is empty")
+	}
+
 	web3Provider, err := cmd.Flags().GetString(web3ProviderFlag)
 	if err != nil {
 		return errors.Errorf("web3 provider is invalid: %s", err.Error())
 	}
 
+	if len(web3Provider) == 0 {
+		return errors.New("web3 provider is empty")
+	}
+
 	contractAddressString, err := cmd.Flags().GetString(bridgeRegistryContractAddressFlag)
 	if err != nil {
 		return errors.Errorf("contract address is invalid: %s", err.Error())
+	}
+
+	if len(contractAddressString) == 0 {
+		return errors.New("contract address is empty")
 	}
 
 	if !common.IsHexAddress(contractAddressString) {
@@ -200,6 +221,10 @@ func RunInitRelayerCmd(cmd *cobra.Command, args []string) error {
 	validatorMoniker, err := cmd.Flags().GetString(validatorMnemonicFlag)
 	if err != nil {
 		return errors.Errorf("validator moniker is invalid: %s", err.Error())
+	}
+
+	if len(validatorMoniker) == 0 {
+		return errors.New("validator moniker is empty")
 	}
 
 	logConfig := zap.NewDevelopmentConfig()
@@ -286,9 +311,18 @@ func RunInitWitnessCmd(cmd *cobra.Command, args []string) error {
 		}
 	}
 
-	networkDescriptor, err := cmd.Flags().GetInt32(networkDescriptorFlag)
+	networkDescriptorString, err := cmd.Flags().GetString(networkDescriptorFlag)
 	if err != nil {
 		return errors.Errorf("network descriptor is invalid: %s", err.Error())
+	}
+
+	if len(networkDescriptorString) == 0 {
+		return errors.New("network descriptor is empty")
+	}
+
+	networkDescriptor, err := strconv.Atoi(networkDescriptorString)
+	if err != nil {
+		return errors.Errorf("network id: %s is invalid", networkDescriptorString)
 	}
 
 	// check if the networkDescriptor is valid
@@ -301,14 +335,26 @@ func RunInitWitnessCmd(cmd *cobra.Command, args []string) error {
 		return errors.Errorf("tendermint node is invalid: %s", err.Error())
 	}
 
+	if len(tendermintNode) == 0 {
+		return errors.New("tendermint node is empty")
+	}
+
 	web3Provider, err := cmd.Flags().GetString(web3ProviderFlag)
 	if err != nil {
 		return errors.Errorf("web3 provider is invalid: %s", err.Error())
 	}
 
+	if len(web3Provider) == 0 {
+		return errors.New("web3 provider is empty")
+	}
+
 	contractAddressString, err := cmd.Flags().GetString(bridgeRegistryContractAddressFlag)
 	if err != nil {
 		return errors.Errorf("contract address is invalid: %s", err.Error())
+	}
+
+	if len(contractAddressString) == 0 {
+		return errors.New("contract address is empty")
 	}
 
 	if !common.IsHexAddress(contractAddressString) {
@@ -319,6 +365,10 @@ func RunInitWitnessCmd(cmd *cobra.Command, args []string) error {
 	validatorMoniker, err := cmd.Flags().GetString(validatorMnemonicFlag)
 	if err != nil {
 		return errors.Errorf("validator moniker is invalid: %s", err.Error())
+	}
+
+	if len(validatorMoniker) == 0 {
+		return errors.New("validator moniker is empty")
 	}
 
 	logConfig := zap.NewDevelopmentConfig()
@@ -376,9 +426,9 @@ func RunInitWitnessCmd(cmd *cobra.Command, args []string) error {
 
 // AddRelayerFlagsToCmd adds all common flags to relayer commands.
 func AddRelayerFlagsToCmd(cmd *cobra.Command) {
-	cmd.Flags().Int32(
+	cmd.Flags().String(
 		networkDescriptorFlag,
-		int32(oracleTypes.NetworkDescriptor_NETWORK_DESCRIPTOR_ETHEREUM),
+		"",
 		"The network descriptor for the chain",
 	)
 	cmd.Flags().String(
