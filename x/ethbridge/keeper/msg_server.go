@@ -188,8 +188,8 @@ func (srv msgServer) Burn(goCtx context.Context, msg *types.MsgBurn) (*types.Msg
 	)))
 
 	return &types.MsgBurnResponse{}, nil
-
 }
+
 func (srv msgServer) CreateEthBridgeClaim(goCtx context.Context, msg *types.MsgCreateEthBridgeClaim) (*types.MsgCreateEthBridgeClaimResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 	logger := srv.Keeper.Logger(ctx)
@@ -463,7 +463,7 @@ func (srv msgServer) SignProphecy(goCtx context.Context, msg *types.MsgSignProph
 	ctx := sdk.UnwrapSDKContext(goCtx)
 	logger := srv.Keeper.Logger(ctx)
 
-	instrumentation.PeggyCheckpoint(logger, instrumentation.SignProphecy, "msg", msg)
+	instrumentation.PeggyCheckpoint(logger, instrumentation.SignProphecy, "Msg Server msg", msg)
 
 	cosmosSender, err := sdk.ValAddressFromBech32(msg.CosmosSender)
 	if err != nil {
