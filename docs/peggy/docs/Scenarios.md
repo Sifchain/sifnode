@@ -8,12 +8,53 @@ sifnode side, the created assets will be minted when the bridgebank locks or bur
 @TODO@ It would be useful to name scenarios in the same way as they are named in user interface
 
 ## Lock
-
+```mermaid
+sequenceDiagram
+  autonumber
+  actor User
+  participant ERC20 Contract
+  participant BridgeBank
+  participant Relayer
+  participant Witness
+  participant EthBridge Module
+  participant Oracle Module
+  participant Token Registry Module
+  participant Bank Module
+  User ->> ERC20 Contract: Approve Bridgebank
+  User ->> BridgeBank: Lock()
+  BridgeBank ->> ERC20 Contract: Transfer()
+  ERC20 Contract -->> BridgeBank: Balance Trnsfered to Bridgebank Address
+  loop Every Minute
+    par Witness Wakeup
+      Witness ->> EthBridge Module: Get last sequence on wakeup
+      EthBridge Module -->> Witness: Returns Last Sequence Number
+    and Relayer Wakeup
+          Relayer ->> EthBridge Module: Get last sequence on wakeup
+      EthBridge Module -->> Relayer: Returns Last Sequence Number
+    end
+  end
+  Note over Witness,Relayer: EthBridgeClaim constructed
+  par EVM logEvent Recieved by Witness
+  BridgeBank ->> Witness: LogLock Event
+  Witness ->> Oracle Module: Broadcast claim to Sifchain
+  and EVM logEvent Recieved by Relayer
+  BridgeBank ->> Relayer: LogLock Event
+  Relayer ->> Oracle Module: Broadcast claim to Sifchain
+  end
+  Oracle Module ->> Token Registry Module: Add Token Metadata
+  Oracle Module ->> Bank Module: Mint Coins()
+  par Witness Update Sequence Number
+    Witness ->> EthBridge Module: SetEthereumLockBurnSequence()
+  and Relayer Update Sequence Number
+      Relayer ->> EthBridge Module: SetEthereumLockBurnSequence()
+  end
+  Bank Module -->> User: Balance updated for user in Sifchain
+```
 This is for moving EVM-native assets (either EVM native currency or ERC20 tokens) from EVM chain to Sifchain.
 
 1. User initiates the scenario by calling `lock()` function on the [BridgeBank](SmartContracts#BridgeBank) smart contract.
-1. @TODO@ Describe parameters to lock(). Describe what happens to user's ether/tokens. Mention that the user needs to approve tokens for the BridgeBank.
-1. In turn, BridgeBank will emit a [LogLock](Events#LogLock) event on EVM network with the following data:
+2. @TODO@ Describe parameters to lock(). Describe what happens to user's ether/tokens. Mention that the user needs to approve tokens for the BridgeBank.
+3. In turn, BridgeBank will emit a [LogLock](Events#LogLock) event on EVM network with the following data:
    - `_from`: Ethereum address that initiated the lock 
    - `_to`: the sifchain address that the imported assets should be credited to (UTF-8 encoded string)
    - `_token`: the token's contract address or the null address for EVM-native currency
@@ -23,7 +64,7 @@ This is for moving EVM-native assets (either EVM native currency or ERC20 tokens
    - `_symbol`: the symbol of the asset which defaults to empty string if not found
    - `_name`: the name of the asset which defaults to empty string if not found (_name)
    - `_networkDescriptor`: the network descriptor for the chain this asset is on
-1. Upon seeing the LogLock event, [relayers](Components#relayer) and [witnesses](Components#witness) will:
+4. Upon seeing the LogLock event, [relayers](Components#relayer) and [witnesses](Components#witness) will:
    - @TODO@ Is it witness or relayer that does this?
    - [calculate the denom hash](Concepts) and add it along with the other fields to the
    - create a [NewEthBridgeClaim](Events/NewEthBridgeClaim) and broadcast it to sifnode claim, and then broadcast the event to sifnode. The relayers/witnesses will then update the sequence number they stored
