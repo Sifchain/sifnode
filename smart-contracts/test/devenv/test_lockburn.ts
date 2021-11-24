@@ -104,6 +104,9 @@ enum TransactionStep {
   BurnCoins = "BurnCoins",
   PublishCosmosBurnMessage = "PublishCosmosBurnMessage",
   ReceiveCosmosBurnMessage = "ReceiveCosmosBurnMessage",
+
+  // Witness
+  WitnessSignProphecy = "WitnessSignProphecy",
 }
 
 function isTerminalState(s: State) {
@@ -495,6 +498,9 @@ describe("lock and burn tests", () => {
       devEnvObject!.sifResults!.adminAddress!.homeDir
     )
 
+    // TODO: This is temporary. I think the right thing is for them to accept a verbose level
+    let originalVerboseLevel: string | undefined = process.env["VERBOSE"]
+    process.env["VERBOSE"] = "summary"
     // Need to have a burn of eth happen at least once or there's no data about eth in the token metadata
     await executeLock(
       contracts,
@@ -505,10 +511,15 @@ describe("lock and burn tests", () => {
       "ceth to eth"
     )
 
+    process.env["VERBOSE"] = originalVerboseLevel
+
+    console.log("Lock complete")
+
     const evmRelayerEvents = sifwatch(
       {
         evmrelayer: "/tmp/sifnode/evmrelayer.log",
         sifnoded: "/tmp/sifnode/sifnoded.log",
+        witness: "/tmp/sifnode/witness.log",
       },
       hardhat,
       contracts.bridgeBank
@@ -535,7 +546,7 @@ describe("lock and burn tests", () => {
               let ebrelayerEvent: any = v.data
               switch (ebrelayerEvent.kind) {
                 case "ReceiveCosmosBurnMessage": {
-                  // return { ...acc, value: v, createdAt: acc.currentHeartbeat };
+                  // return { ...acc, value: v, createdAt: acc.currentHeartbeat }
                   return ensureCorrectTransition(
                     acc,
                     v,
@@ -543,12 +554,12 @@ describe("lock and burn tests", () => {
                     TransactionStep.ReceiveCosmosBurnMessage
                   )
                 }
-                case "SignProphecy": {
+                case "WitnessSignProphecy": {
                   return ensureCorrectTransition(
                     acc,
                     v,
                     TransactionStep.ReceiveCosmosBurnMessage,
-                    TransactionStep.SignProphecy
+                    TransactionStep.WitnessSignProphecy
                   )
                 }
 
@@ -572,13 +583,21 @@ describe("lock and burn tests", () => {
                     v,
                     TransactionStep.Initial,
                     TransactionStep.Burn
-                  )
+                  ) // v.data
+
+                // case "GetTokenMetadata":
+                //   return ensureCorrectTransition(
+                //     acc,
+                //     v,
+                //     TransactionStep.Burn,
+                //     TransactionStep.GetTokenMetadata
+                //   )
 
                 case "GetCrossChainFeeConfig":
                   return ensureCorrectTransition(
                     acc,
                     v,
-                    TransactionStep.GetTokenMetadata,
+                    TransactionStep.Burn,
                     TransactionStep.GetCrossChainFeeConfig
                   )
 
@@ -591,6 +610,7 @@ describe("lock and burn tests", () => {
                   )
 
                 case "BurnCoins":
+                  // TODO: Add assertion on expected amount, and expected denom
                   return ensureCorrectTransition(
                     acc,
                     v,
@@ -654,7 +674,7 @@ describe("lock and burn tests", () => {
     expect(
       lv.transactionStep,
       `did not complete, last step was ${JSON.stringify(lv, undefined, 2)}`
-    ).to.eq(TransactionStep.LogBridgeTokenMint)
+    ).to.eq(TransactionStep.PublishedProphecy)
 
     verboseSubscription.unsubscribe()
   })

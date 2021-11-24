@@ -9,7 +9,7 @@ import (
 
 	"github.com/Sifchain/sifnode/x/ethbridge/keeper"
 	"github.com/Sifchain/sifnode/x/ethbridge/types"
-	"log"
+	// "log"
 )
 
 // NewHandler returns a handler for "ethbridge" type messages.
@@ -23,7 +23,7 @@ func NewHandler(k Keeper) sdk.Handler {
 			res, err := msgServer.CreateEthBridgeClaim(sdk.WrapSDKContext(ctx), msg)
 			return sdk.WrapServiceResult(ctx, res, err)
 		case *types.MsgBurn:
-			log.Println("MsgServerhandler received msgBurn")
+			// log.Println("MsgServerhandler received msgBurn")
 			res, err := msgServer.Burn(sdk.WrapSDKContext(ctx), msg)
 			return sdk.WrapServiceResult(ctx, res, err)
 		case *types.MsgLock:

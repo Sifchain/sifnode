@@ -33,7 +33,14 @@ export function tailFileAsObservable<T>(filename: string): Observable<string> {
   return str
 }
 
-export const jsonParseSimple = (x: string) => JSON.parse(x)
+export const jsonParseSimple = (x: string) => {
+  try {
+    return JSON.parse(x)
+  } catch (err) {
+    console.error("Error parsing json", x)
+    return undefined
+  }
+}
 export const jsonStringifySimple = (x: any) => JSON.stringify(x)
 
 export function isNotNullOrUndefined<T>(input: null | undefined | T): input is T {

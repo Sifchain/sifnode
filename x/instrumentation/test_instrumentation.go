@@ -38,6 +38,7 @@ const (
 	GetTokenMetadata               = "GetTokenMetadata"
 	PublishCosmosBurnMessage       = "PublishCosmosBurnMessage"
 	ReceiveCosmosBurnMessage       = "ReceiveCosmosBurnMessage"
+	WitnessSignProphecy            = "WitnessSignProphecy"
 )
 
 func PeggyCheckpoint(logger log.Logger, kind string, keysAndValues ...interface{}) {
