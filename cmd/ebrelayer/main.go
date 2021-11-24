@@ -169,7 +169,7 @@ func RunInitRelayerCmd(cmd *cobra.Command, args []string) error {
 	// Validate and parse arguments
 	networkDescriptor, err := cmd.Flags().GetInt32(networkDescriptorFlag)
 	if err != nil {
-		return err
+		return errors.Errorf("network descriptor is invalid: %s", err.Error())
 	}
 
 	// check if the networkDescriptor is valid
@@ -179,17 +179,17 @@ func RunInitRelayerCmd(cmd *cobra.Command, args []string) error {
 
 	tendermintNode, err := cmd.Flags().GetString(tendermintNodeFlag)
 	if err != nil {
-		return err
+		return errors.Errorf("tendermint node is invalid: %s", err.Error())
 	}
 
 	web3Provider, err := cmd.Flags().GetString(web3ProviderFlag)
 	if err != nil {
-		return err
+		return errors.Errorf("web3 provider is invalid: %s", err.Error())
 	}
 
 	contractAddressString, err := cmd.Flags().GetString(bridgeRegistryContractAddressFlag)
 	if err != nil {
-		return err
+		return errors.Errorf("contract address is invalid: %s", err.Error())
 	}
 
 	if !common.IsHexAddress(contractAddressString) {
@@ -199,7 +199,7 @@ func RunInitRelayerCmd(cmd *cobra.Command, args []string) error {
 
 	validatorMoniker, err := cmd.Flags().GetString(validatorMnemonicFlag)
 	if err != nil {
-		return err
+		return errors.Errorf("validator moniker is invalid: %s", err.Error())
 	}
 
 	logConfig := zap.NewDevelopmentConfig()
@@ -288,7 +288,7 @@ func RunInitWitnessCmd(cmd *cobra.Command, args []string) error {
 
 	networkDescriptor, err := cmd.Flags().GetInt32(networkDescriptorFlag)
 	if err != nil {
-		return err
+		return errors.Errorf("network descriptor is invalid: %s", err.Error())
 	}
 
 	// check if the networkDescriptor is valid
@@ -298,17 +298,17 @@ func RunInitWitnessCmd(cmd *cobra.Command, args []string) error {
 
 	tendermintNode, err := cmd.Flags().GetString(tendermintNodeFlag)
 	if err != nil {
-		return err
+		return errors.Errorf("tendermint node is invalid: %s", err.Error())
 	}
 
 	web3Provider, err := cmd.Flags().GetString(web3ProviderFlag)
 	if err != nil {
-		return err
+		return errors.Errorf("web3 provider is invalid: %s", err.Error())
 	}
 
 	contractAddressString, err := cmd.Flags().GetString(bridgeRegistryContractAddressFlag)
 	if err != nil {
-		return err
+		return errors.Errorf("contract address is invalid: %s", err.Error())
 	}
 
 	if !common.IsHexAddress(contractAddressString) {
@@ -318,7 +318,7 @@ func RunInitWitnessCmd(cmd *cobra.Command, args []string) error {
 
 	validatorMoniker, err := cmd.Flags().GetString(validatorMnemonicFlag)
 	if err != nil {
-		return err
+		return errors.Errorf("validator moniker is invalid: %s", err.Error())
 	}
 
 	logConfig := zap.NewDevelopmentConfig()
