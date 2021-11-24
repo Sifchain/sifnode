@@ -1,0 +1,8 @@
+* [Main page](README)
+* [Concepts](Concepts)
+* [Components](Components)
+* [Scenarios](Scenarios)
+* [Differences between Peggy 1 and Peggy 2.0](DifferencesPeggy1VsPeggy2)
+* [Modules](Modules)
+* [Smart contracts](SmartContracts)
+* [Events](Events)
