@@ -19,6 +19,7 @@ jobs:
         with:
           node-version: "14"
           cache: "yarn"
+          cache-dependency-path: "test/localnet/yarn.lock"
       - run: yarn install
       - uses: actions/cache@v2
         id: cache-localnet-binaries
