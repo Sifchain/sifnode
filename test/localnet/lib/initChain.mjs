@@ -29,6 +29,7 @@ export async function initChain(props) {
   if (!amount) throw new Error("missing requirement argument: --amount");
   if (!denom) throw new Error("missing requirement argument: --denom");
   if (!home) throw new Error("missing requirement argument: --home");
+  if (!binPath) throw new Error("missing requirement argument: --binPath");
 
   const validatorAccountName = `${chain}-validator`;
   const sourceAccountName = `${chain}-source`;
@@ -43,6 +44,7 @@ sourceAccountName     ${sourceAccountName}
 amount                ${amount}
 denom                 ${denom}
 home                  ${home}
+binPath               ${binPath}
   `);
 
   const { remoteGenesis } = await getRemoteGenesis({ node });
@@ -66,7 +68,7 @@ home                  ${home}
   }
 
   await $`${binPath}/${binary} gentx ${validatorAccountName} ${amount}${denom} --chain-id ${chainId} --keyring-backend test --home ${home}`;
-  $.verbose = false;
+  // $.verbose = false;
   await $`${binPath}/${binary} collect-gentxs --home ${home}`;
-  $.verbose = true;
+  // $.verbose = true;
 }

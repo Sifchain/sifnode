@@ -10,5 +10,5 @@ export async function startRelayer(props) {
   for await (let chunk of proc.stdout) {
     if (chunk.includes("next heights to relay")) break;
   }
-  proc.kill("SIGTERM");
+  proc.kill();
 }

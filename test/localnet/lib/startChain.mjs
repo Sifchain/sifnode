@@ -36,6 +36,8 @@ binPath     ${binPath}
   const proc = nothrow(
     $`${binPath}/${binary} start --home ${home} --rpc.laddr tcp://127.0.0.1:${rpcPort} --p2p.laddr tcp://127.0.0.1:${p2pPort} --grpc.enable=0 --rpc.pprof_laddr 127.0.0.1:${pprofPort}`
   );
+  proc.catch(console.log);
+
   return {
     proc,
     ...props,

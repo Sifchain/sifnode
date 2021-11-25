@@ -14,6 +14,7 @@ export async function buildLocalNet({
   p2pInitialPort = 12000,
   pprofInitialPort = 13000,
 }) {
+  $.verbose = false;
   // 1) init all IBC chains
   await initAllChains({ network, configPath });
   // 2) start all IBC chains
@@ -37,6 +38,7 @@ export async function buildLocalNet({
   );
   await sleep(5000);
   await $`curl http://localhost:11000`;
+  $.verbose = true;
   // 3) init all IBC relayers
   await initAllRelayers({ network, configPath, registryFrom });
   // 4) start all IBC relayers
@@ -56,13 +58,13 @@ export async function buildLocalNet({
       for await (let chunk of asyncIterator) {
         if (chunk.includes("next heights to relay")) break;
       }
-      proc.kill("SIGTERM");
+      proc.kill();
     })
   );
   // 6) now stop IBC chains
   await Promise.all(
     chainsProps.map(async ({ proc }) => {
-      proc.kill("SIGTERM");
+      proc.kill();
     })
   );
   await takeSnapshot({ configPath });

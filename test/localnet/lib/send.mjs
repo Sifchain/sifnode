@@ -12,6 +12,7 @@ export async function send({
   fees,
   home = undefined,
   dryRun = false,
+  binPath = "/tmp/localnet/bin",
 }) {
   if (!node) throw new Error("missing requirement argument: --node");
   if (!chainId) throw new Error("missing requirement argument: --chain-id");
@@ -20,6 +21,7 @@ export async function send({
   if (!dst) throw new Error("missing requirement argument: --dst");
   if (!denom) throw new Error("missing requirement argument: --denom");
   if (!amount) throw new Error("missing requirement argument: --amount");
+  if (!binPath) throw new Error("missing requirement argument: --binPath");
 
   console.log(`
 node    ${node}
@@ -30,13 +32,14 @@ dst     ${dst}
 denom   ${denom}
 amount  ${amount}
 fees    ${fees}
+binPath ${binPath}
 `);
 
-  const srcAddr = await getAddress({ binary, name: src, home });
-  const dstAddr = await getAddress({ binary, name: dst, home });
+  const srcAddr = await getAddress({ binary, name: src, home, binPath });
+  const dstAddr = await getAddress({ binary, name: dst, home, binPath });
 
   await $`
-${binary} \
+${binPath}/${binary} \
     tx \
     bank \
     send \

@@ -25,7 +25,7 @@ jobs:
         id: cache-localnet-binaries
         with:
           path: /tmp/localnet/bin
-          key: ${{ runner.os }}-localnet-bin
+          key: ${{ runner.os }}-localnet-bin-v1
       - if: steps.cache-localnet-binaries.outputs.cache-hit != 'true'
         run: yarn downloadBinaries
       - uses: actions/cache@v2

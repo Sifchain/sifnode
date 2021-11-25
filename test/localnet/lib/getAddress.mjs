@@ -1,11 +1,17 @@
 import { $ } from "zx";
 
-export async function getAddress({ binary, name, home = undefined }) {
+export async function getAddress({
+  binary,
+  name,
+  home = undefined,
+  binPath = "/tmp/localnet/bin",
+}) {
   if (!binary) throw new Error("missing requirement argument: --binary");
   if (!name) throw new Error("missing requirement argument: --name");
+  if (!binPath) throw new Error("missing requirement argument: --binPath");
 
   const addr = await $`
-${binary} \
+${binPath}/${binary} \
     keys \
     show \
     ${name} \

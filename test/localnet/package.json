@@ -31,6 +31,7 @@
   "dependencies": {
     "@types/jest": "^27.0.2",
     "arg": "^5.0.1",
+    "debug": "^4.3.2",
     "jest": "^27.3.1",
     "js-yaml": "^4.1.0",
     "p-event": "^4.2.0",

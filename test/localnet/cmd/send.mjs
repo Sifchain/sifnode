@@ -16,6 +16,7 @@ export async function start() {
       "--amount": Number,
       "--fees": Number,
       "--dry-run": Boolean,
+      "--binPath": String,
     },
     `
 Usage:
@@ -37,6 +38,7 @@ Options:
 --amount    Amount to send to receiver account
 --fees      Minimum required fees amount to pay
 --dry-run   Dry run
+--binPath   Directory for binaries location
 `
   );
 
@@ -51,6 +53,7 @@ Options:
   const amount = args["--amount"] || undefined;
   const fees = args["--fees"] || undefined;
   const dryRun = args["--dry-run"] || undefined;
+  const binPath = args["--binPath"] || undefined;
 
   const chainProps = getChainProps({
     chain,
@@ -64,6 +67,7 @@ Options:
     amount,
     fees,
     dryRun,
+    binPath,
   });
   await send({
     ...chainProps,
