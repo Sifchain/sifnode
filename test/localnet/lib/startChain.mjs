@@ -11,6 +11,7 @@ export async function startChain(props) {
     denom,
     home = `/tmp/localnet/config/${props.chain}/${props.chainId}`,
     binPath = `/tmp/localnet/bin`,
+    debug = false,
   } = props;
 
   if (disabled) return;
@@ -23,7 +24,8 @@ export async function startChain(props) {
   if (!home) throw new Error("missing requirement argument: --home");
   if (!binPath) throw new Error("missing requirement argument: --binPath");
 
-  console.log(`
+  if (debug) {
+    console.log(`
 chain       ${chain}
 binary      ${binPath}/${binary}
 rpcPort     ${rpcPort}
@@ -32,6 +34,7 @@ pprofPort   ${pprofPort}
 home        ${home}
 binPath     ${binPath}
   `);
+  }
 
   const proc = nothrow(
     $`${binPath}/${binary} start --home ${home} --rpc.laddr tcp://127.0.0.1:${rpcPort} --p2p.laddr tcp://127.0.0.1:${p2pPort} --grpc.enable=0 --rpc.pprof_laddr 127.0.0.1:${pprofPort}`

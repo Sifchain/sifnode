@@ -1,4 +1,7 @@
+import { $ } from "zx";
 import { start } from "./checkBalance";
+
+$.verbose = false;
 
 test("checks balance with no arguments", async () => {
   await expect(start()).rejects.toThrowError("chain not defined");

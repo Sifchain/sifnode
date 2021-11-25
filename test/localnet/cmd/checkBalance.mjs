@@ -28,6 +28,7 @@ Options:
 --chain-id  Chain ID
 --binary    Binary name of the chain
 --name      Account name or address
+--binPath   Location of binaries
 `
   );
 
@@ -37,6 +38,7 @@ Options:
   const chainId = args["--chain-id"] || undefined;
   const binary = args["--binary"] || undefined;
   const name = args["--name"] || undefined;
+  const binPath = args["--binPath"] || undefined;
 
   const chains = pickChains({ chain });
 
@@ -49,6 +51,7 @@ Options:
       chainId,
       binary,
       name,
+      binPath,
     });
     const balances = await getBalances({
       ...chainProps,

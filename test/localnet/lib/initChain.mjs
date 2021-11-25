@@ -19,6 +19,7 @@ export async function initChain(props) {
     denom,
     home = `/tmp/localnet/config/${props.chain}/${props.chainId}`,
     binPath = `/tmp/localnet/bin`,
+    debug = false,
   } = props;
 
   if (disabled) return;
@@ -34,7 +35,8 @@ export async function initChain(props) {
   const validatorAccountName = `${chain}-validator`;
   const sourceAccountName = `${chain}-source`;
 
-  console.log(`
+  if (debug) {
+    console.log(`
 chain                 ${chain}
 binary                ${binPath}/${binary}
 chainId               ${chainId}
@@ -46,6 +48,7 @@ denom                 ${denom}
 home                  ${home}
 binPath               ${binPath}
   `);
+  }
 
   const { remoteGenesis } = await getRemoteGenesis({ node });
 

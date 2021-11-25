@@ -35,3 +35,4 @@ jobs:
           key: ${{ runner.os }}-localnet-snapshot
       - if: steps.cache-localnet-snapshot.outputs.cache-hit != 'true'
         run: yarn buildLocalNet
+      - run: yarn test
