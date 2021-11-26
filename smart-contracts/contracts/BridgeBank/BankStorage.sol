@@ -13,7 +13,6 @@ contract BankStorage is CosmosBankStorage, EthereumBankStorage, CosmosWhiteListS
   /**
    * @notice Operator address that can:
    *         Reinitialize BridgeBank
-   *         Update Eth whitelist
    *         Change the operator
    */
   address public operator;

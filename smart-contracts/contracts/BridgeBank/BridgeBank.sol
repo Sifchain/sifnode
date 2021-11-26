@@ -85,7 +85,6 @@ contract BridgeBank is BankStorage, CosmosBank, EthereumWhiteList, CosmosWhiteLi
     require(!_initialized, "Init");
 
     CosmosWhiteList._cosmosWhitelistInitialize();
-    EthereumWhiteList.initialize();
 
     contractName[address(0)] = "EVMNATIVE";
     contractSymbol[address(0)] = "EVMNATIVE";
