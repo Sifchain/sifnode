@@ -457,7 +457,10 @@ describe("lock and burn tests", () => {
     const contracts = await buildDevEnvContracts(devEnvObject, hardhat, factories)
     const destinationEthereumAddress = ethereumAccounts.availableAccounts[0]
     const sendAmount = BigNumber.from(3500)
-    const networkDescriptor = devEnvObject!.ethResults!.chainId
+
+    // TODO seems the chainId from dev object is wrong.
+    // const networkDescriptor = devEnvObject!.ethResults!.chainId
+    const networkDescriptor = 31337
 
     let testSifAccount: EbRelayerAccount = createTestSifAccount()
     fundSifAccount(
