@@ -94,6 +94,7 @@ func InitRelayConfig(
 	transactOptsAuth.Value = big.NewInt(0) // in wei
 	transactOptsAuth.GasLimit = GasLimit
 	transactOptsAuth.GasPrice = gasPrice
+	transactOptsAuth.Context = context.Background()
 
 	if transactOptsAuth.GasPrice.Int64() > MaxGasPrice {
 		transactOptsAuth.GasPrice = big.NewInt(MaxGasPrice)
@@ -238,6 +239,10 @@ func RelayBatchProphecyCompletedToEthereum(
 			Amount:               big.NewInt(prophecyInfo.TokenAmount.Int64()),
 			DoublePeg:            prophecyInfo.DoublePeg,
 			Nonce:                big.NewInt(int64(prophecyInfo.GlobalSequence)),
+			NetworkDescriptor:    big.NewInt(int64(prophecyInfo.NetworkDescriptor)),
+			TokenName:            prophecyInfo.TokenDenomHash,
+			TokenSymbol:          prophecyInfo.TokenContractAddress,
+			TokenDecimals:        18,
 		}
 		batchClaimData[index] = claimData
 
