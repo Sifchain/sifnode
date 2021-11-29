@@ -15,6 +15,7 @@ const mainnetUrl = process.env["MAINNET_URL"] ?? "https://example.com"
 const ropstenUrl = process.env['ROPSTEN_URL'] ?? "https://example.com"
 
 const activePrivateKey = process.env[process.env['ACTIVE_PRIVATE_KEY'] ?? "0xabcd"] ?? "0xabcd";
+const keyList = activePrivateKey.indexOf(',') ? activePrivateKey.split(',') : [activePrivateKey];
 
 const config: HardhatUserConfig = {
     networks: {
@@ -23,17 +24,17 @@ const config: HardhatUserConfig = {
             chainId: 1,
             forking: {
                 url: mainnetUrl,
-                blockNumber: 13407396,
+                blockNumber: 13635180,
             }
         },
         ropsten: {
             url: ropstenUrl,
-            accounts: [activePrivateKey],
+            accounts: keyList,
             gas: 2000000
         },
         mainnet: {
             url: mainnetUrl,
-            accounts: [activePrivateKey],
+            accounts: keyList,
             gas: 2000000
         }
     },

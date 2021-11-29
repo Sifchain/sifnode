@@ -1,7 +1,6 @@
 {
   "entries": [
     {
-      "is_whitelisted": true,
       "decimals": "6",
       "denom": "cusdt",
       "base_denom": "cusdt",
@@ -24,7 +23,6 @@
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "6",
       "denom": "cusdc",
       "base_denom": "cusdc",
@@ -47,7 +45,6 @@
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "8",
       "denom": "ccro",
       "base_denom": "ccro",
@@ -70,7 +67,6 @@
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "8",
       "denom": "cwbtc",
       "base_denom": "cwbtc",
@@ -93,7 +89,6 @@
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "18",
       "denom": "rowan",
       "base_denom": "rowan",
@@ -108,14 +103,14 @@
       "transfer_limit": "",
       "permissions": [
         "CLP",
-        "IBCEXPORT"
+        "IBCEXPORT",
+        "IBCIMPORT"
       ],
       "unit_denom": "",
-      "ibc_counterparty_denom": "xrowan",
+      "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "10",
       "denom": "xrowan",
       "base_denom": "xrowan",
@@ -136,7 +131,6 @@
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "18",
       "denom": "ceth",
       "base_denom": "ceth",
@@ -151,14 +145,14 @@
       "transfer_limit": "",
       "permissions": [
         "CLP",
-        "IBCEXPORT"
+        "IBCEXPORT",
+        "IBCIMPORT"
       ],
       "unit_denom": "",
-      "ibc_counterparty_denom": "xeth",
+      "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "10",
       "denom": "xeth",
       "base_denom": "xeth",
@@ -179,7 +173,6 @@
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "18",
       "denom": "cdai",
       "base_denom": "cdai",
@@ -194,14 +187,14 @@
       "transfer_limit": "",
       "permissions": [
         "CLP",
-        "IBCEXPORT"
+        "IBCEXPORT",
+        "IBCIMPORT"
       ],
       "unit_denom": "",
-      "ibc_counterparty_denom": "xdai",
+      "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "10",
       "denom": "xdai",
       "base_denom": "xdai",
@@ -222,7 +215,6 @@
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "18",
       "denom": "cyfi",
       "base_denom": "cyfi",
@@ -237,14 +229,14 @@
       "transfer_limit": "",
       "permissions": [
         "CLP",
-        "IBCEXPORT"
+        "IBCEXPORT",
+        "IBCIMPORT"
       ],
       "unit_denom": "",
-      "ibc_counterparty_denom": "xyfi",
+      "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "10",
       "denom": "xyfi",
       "base_denom": "xyfi",
@@ -265,7 +257,6 @@
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "18",
       "denom": "czrx",
       "base_denom": "czrx",
@@ -280,14 +271,14 @@
       "transfer_limit": "",
       "permissions": [
         "CLP",
-        "IBCEXPORT"
+        "IBCEXPORT",
+        "IBCIMPORT"
       ],
       "unit_denom": "",
-      "ibc_counterparty_denom": "xzrx",
+      "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "10",
       "denom": "xzrx",
       "base_denom": "xzrx",
@@ -308,7 +299,6 @@
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "6",
       "denom": "cwscrt",
       "base_denom": "cwscrt",
@@ -331,7 +321,6 @@
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "18",
       "denom": "cwfil",
       "base_denom": "cwfil",
@@ -346,14 +335,14 @@
       "transfer_limit": "",
       "permissions": [
         "CLP",
-        "IBCEXPORT"
+        "IBCEXPORT",
+        "IBCIMPORT"
       ],
       "unit_denom": "",
-      "ibc_counterparty_denom": "xwfil",
+      "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "10",
       "denom": "xwfil",
       "base_denom": "xwfil",
@@ -374,7 +363,6 @@
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "18",
       "denom": "cuni",
       "base_denom": "cuni",
@@ -389,14 +377,14 @@
       "transfer_limit": "",
       "permissions": [
         "CLP",
-        "IBCEXPORT"
+        "IBCEXPORT",
+        "IBCIMPORT"
       ],
       "unit_denom": "",
-      "ibc_counterparty_denom": "xuni",
+      "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "10",
       "denom": "xuni",
       "base_denom": "xuni",
@@ -417,7 +405,6 @@
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "18",
       "denom": "cuma",
       "base_denom": "cuma",
@@ -432,14 +419,14 @@
       "transfer_limit": "",
       "permissions": [
         "CLP",
-        "IBCEXPORT"
+        "IBCEXPORT",
+        "IBCIMPORT"
       ],
       "unit_denom": "",
-      "ibc_counterparty_denom": "xuma",
+      "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "10",
       "denom": "xuma",
       "base_denom": "xuma",
@@ -460,7 +447,6 @@
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "18",
       "denom": "ctusd",
       "base_denom": "ctusd",
@@ -475,14 +461,14 @@
       "transfer_limit": "",
       "permissions": [
         "CLP",
-        "IBCEXPORT"
+        "IBCEXPORT",
+        "IBCIMPORT"
       ],
       "unit_denom": "",
-      "ibc_counterparty_denom": "xtusd",
+      "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "10",
       "denom": "xtusd",
       "base_denom": "xtusd",
@@ -503,7 +489,6 @@
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "18",
       "denom": "csxp",
       "base_denom": "csxp",
@@ -518,14 +503,14 @@
       "transfer_limit": "",
       "permissions": [
         "CLP",
-        "IBCEXPORT"
+        "IBCEXPORT",
+        "IBCIMPORT"
       ],
       "unit_denom": "",
-      "ibc_counterparty_denom": "xsxp",
+      "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "10",
       "denom": "xsxp",
       "base_denom": "xsxp",
@@ -546,7 +531,6 @@
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "18",
       "denom": "csushi",
       "base_denom": "csushi",
@@ -561,14 +545,14 @@
       "transfer_limit": "",
       "permissions": [
         "CLP",
-        "IBCEXPORT"
+        "IBCEXPORT",
+        "IBCIMPORT"
       ],
       "unit_denom": "",
-      "ibc_counterparty_denom": "xsushi",
+      "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "10",
       "denom": "xsushi",
       "base_denom": "xsushi",
@@ -589,7 +573,6 @@
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "18",
       "denom": "csusd",
       "base_denom": "csusd",
@@ -604,14 +587,14 @@
       "transfer_limit": "",
       "permissions": [
         "CLP",
-        "IBCEXPORT"
+        "IBCEXPORT",
+        "IBCIMPORT"
       ],
       "unit_denom": "",
-      "ibc_counterparty_denom": "xsusd",
+      "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "10",
       "denom": "xsusd",
       "base_denom": "xsusd",
@@ -632,7 +615,6 @@
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "6",
       "denom": "csrm",
       "base_denom": "csrm",
@@ -655,7 +637,6 @@
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "18",
       "denom": "csnx",
       "base_denom": "csnx",
@@ -670,14 +651,14 @@
       "transfer_limit": "",
       "permissions": [
         "CLP",
-        "IBCEXPORT"
+        "IBCEXPORT",
+        "IBCIMPORT"
       ],
       "unit_denom": "",
-      "ibc_counterparty_denom": "xsnx",
+      "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "10",
       "denom": "xsnx",
       "base_denom": "xsnx",
@@ -698,7 +679,6 @@
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "18",
       "denom": "csand",
       "base_denom": "csand",
@@ -713,14 +693,14 @@
       "transfer_limit": "",
       "permissions": [
         "CLP",
-        "IBCEXPORT"
+        "IBCEXPORT",
+        "IBCIMPORT"
       ],
       "unit_denom": "",
-      "ibc_counterparty_denom": "xsand",
+      "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "10",
       "denom": "xsand",
       "base_denom": "xsand",
@@ -741,7 +721,6 @@
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "18",
       "denom": "crune",
       "base_denom": "crune",
@@ -756,14 +735,14 @@
       "transfer_limit": "",
       "permissions": [
         "CLP",
-        "IBCEXPORT"
+        "IBCEXPORT",
+        "IBCIMPORT"
       ],
       "unit_denom": "",
-      "ibc_counterparty_denom": "xrune",
+      "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "10",
       "denom": "xrune",
       "base_denom": "xrune",
@@ -784,7 +763,6 @@
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "18",
       "denom": "creef",
       "base_denom": "creef",
@@ -799,14 +777,14 @@
       "transfer_limit": "",
       "permissions": [
         "CLP",
-        "IBCEXPORT"
+        "IBCEXPORT",
+        "IBCIMPORT"
       ],
       "unit_denom": "",
-      "ibc_counterparty_denom": "xreef",
+      "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "10",
       "denom": "xreef",
       "base_denom": "xreef",
@@ -827,7 +805,6 @@
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "18",
       "denom": "cogn",
       "base_denom": "cogn",
@@ -842,14 +819,14 @@
       "transfer_limit": "",
       "permissions": [
         "CLP",
-        "IBCEXPORT"
+        "IBCEXPORT",
+        "IBCIMPORT"
       ],
       "unit_denom": "",
-      "ibc_counterparty_denom": "xogn",
+      "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "10",
       "denom": "xogn",
       "base_denom": "xogn",
@@ -870,7 +847,6 @@
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "18",
       "denom": "cocean",
       "base_denom": "cocean",
@@ -885,14 +861,14 @@
       "transfer_limit": "",
       "permissions": [
         "CLP",
-        "IBCEXPORT"
+        "IBCEXPORT",
+        "IBCIMPORT"
       ],
       "unit_denom": "",
-      "ibc_counterparty_denom": "xocean",
+      "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "10",
       "denom": "xocean",
       "base_denom": "xocean",
@@ -913,7 +889,6 @@
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "18",
       "denom": "cmana",
       "base_denom": "cmana",
@@ -928,14 +903,14 @@
       "transfer_limit": "",
       "permissions": [
         "CLP",
-        "IBCEXPORT"
+        "IBCEXPORT",
+        "IBCIMPORT"
       ],
       "unit_denom": "",
-      "ibc_counterparty_denom": "xmana",
+      "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "10",
       "denom": "xmana",
       "base_denom": "xmana",
@@ -956,7 +931,6 @@
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "18",
       "denom": "clrc",
       "base_denom": "clrc",
@@ -971,14 +945,14 @@
       "transfer_limit": "",
       "permissions": [
         "CLP",
-        "IBCEXPORT"
+        "IBCEXPORT",
+        "IBCIMPORT"
       ],
       "unit_denom": "",
-      "ibc_counterparty_denom": "xlrc",
+      "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "10",
       "denom": "xlrc",
       "base_denom": "xlrc",
@@ -999,7 +973,6 @@
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "18",
       "denom": "clon",
       "base_denom": "clon",
@@ -1014,14 +987,14 @@
       "transfer_limit": "",
       "permissions": [
         "CLP",
-        "IBCEXPORT"
+        "IBCEXPORT",
+        "IBCIMPORT"
       ],
       "unit_denom": "",
-      "ibc_counterparty_denom": "xlon",
+      "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "10",
       "denom": "xlon",
       "base_denom": "xlon",
@@ -1042,7 +1015,6 @@
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "18",
       "denom": "clink",
       "base_denom": "clink",
@@ -1057,14 +1029,14 @@
       "transfer_limit": "",
       "permissions": [
         "CLP",
-        "IBCEXPORT"
+        "IBCEXPORT",
+        "IBCIMPORT"
       ],
       "unit_denom": "",
-      "ibc_counterparty_denom": "xlink",
+      "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "10",
       "denom": "xlink",
       "base_denom": "xlink",
@@ -1085,7 +1057,6 @@
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "18",
       "denom": "ciotx",
       "base_denom": "ciotx",
@@ -1100,14 +1071,14 @@
       "transfer_limit": "",
       "permissions": [
         "CLP",
-        "IBCEXPORT"
+        "IBCEXPORT",
+        "IBCIMPORT"
       ],
       "unit_denom": "",
-      "ibc_counterparty_denom": "xiotx",
+      "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "10",
       "denom": "xiotx",
       "base_denom": "xiotx",
@@ -1128,7 +1099,6 @@
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "18",
       "denom": "cgrt",
       "base_denom": "cgrt",
@@ -1143,14 +1113,14 @@
       "transfer_limit": "",
       "permissions": [
         "CLP",
-        "IBCEXPORT"
+        "IBCEXPORT",
+        "IBCIMPORT"
       ],
       "unit_denom": "",
-      "ibc_counterparty_denom": "xgrt",
+      "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "10",
       "denom": "xgrt",
       "base_denom": "xgrt",
@@ -1171,7 +1141,6 @@
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "18",
       "denom": "cftm",
       "base_denom": "cftm",
@@ -1186,14 +1155,14 @@
       "transfer_limit": "",
       "permissions": [
         "CLP",
-        "IBCEXPORT"
+        "IBCEXPORT",
+        "IBCIMPORT"
       ],
       "unit_denom": "",
-      "ibc_counterparty_denom": "xftm",
+      "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "10",
       "denom": "xftm",
       "base_denom": "xftm",
@@ -1214,7 +1183,6 @@
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "18",
       "denom": "cesd",
       "base_denom": "cesd",
@@ -1229,14 +1197,14 @@
       "transfer_limit": "",
       "permissions": [
         "CLP",
-        "IBCEXPORT"
+        "IBCEXPORT",
+        "IBCIMPORT"
       ],
       "unit_denom": "",
-      "ibc_counterparty_denom": "xesd",
+      "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "10",
       "denom": "xesd",
       "base_denom": "xesd",
@@ -1257,7 +1225,6 @@
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "18",
       "denom": "cenj",
       "base_denom": "cenj",
@@ -1272,14 +1239,14 @@
       "transfer_limit": "",
       "permissions": [
         "CLP",
-        "IBCEXPORT"
+        "IBCEXPORT",
+        "IBCIMPORT"
       ],
       "unit_denom": "",
-      "ibc_counterparty_denom": "xenj",
+      "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "10",
       "denom": "xenj",
       "base_denom": "xenj",
@@ -1300,7 +1267,6 @@
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "18",
       "denom": "ccream",
       "base_denom": "ccream",
@@ -1315,14 +1281,14 @@
       "transfer_limit": "",
       "permissions": [
         "CLP",
-        "IBCEXPORT"
+        "IBCEXPORT",
+        "IBCIMPORT"
       ],
       "unit_denom": "",
-      "ibc_counterparty_denom": "xcream",
+      "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "10",
       "denom": "xcream",
       "base_denom": "xcream",
@@ -1343,7 +1309,6 @@
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "18",
       "denom": "ccomp",
       "base_denom": "ccomp",
@@ -1358,14 +1323,14 @@
       "transfer_limit": "",
       "permissions": [
         "CLP",
-        "IBCEXPORT"
+        "IBCEXPORT",
+        "IBCIMPORT"
       ],
       "unit_denom": "",
-      "ibc_counterparty_denom": "xcomp",
+      "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "10",
       "denom": "xcomp",
       "base_denom": "xcomp",
@@ -1386,7 +1351,6 @@
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "18",
       "denom": "ccocos",
       "base_denom": "ccocos",
@@ -1401,14 +1365,14 @@
       "transfer_limit": "",
       "permissions": [
         "CLP",
-        "IBCEXPORT"
+        "IBCEXPORT",
+        "IBCIMPORT"
       ],
       "unit_denom": "",
-      "ibc_counterparty_denom": "xcocos",
+      "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "10",
       "denom": "xcocos",
       "base_denom": "xcocos",
@@ -1429,7 +1393,6 @@
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "18",
       "denom": "cbond",
       "base_denom": "cbond",
@@ -1444,14 +1407,14 @@
       "transfer_limit": "",
       "permissions": [
         "CLP",
-        "IBCEXPORT"
+        "IBCEXPORT",
+        "IBCIMPORT"
       ],
       "unit_denom": "",
-      "ibc_counterparty_denom": "xbond",
+      "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "10",
       "denom": "xbond",
       "base_denom": "xbond",
@@ -1472,7 +1435,6 @@
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "18",
       "denom": "cbnt",
       "base_denom": "cbnt",
@@ -1487,14 +1449,14 @@
       "transfer_limit": "",
       "permissions": [
         "CLP",
-        "IBCEXPORT"
+        "IBCEXPORT",
+        "IBCIMPORT"
       ],
       "unit_denom": "",
-      "ibc_counterparty_denom": "xbnt",
+      "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "10",
       "denom": "xbnt",
       "base_denom": "xbnt",
@@ -1515,7 +1477,6 @@
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "18",
       "denom": "cbat",
       "base_denom": "cbat",
@@ -1530,14 +1491,14 @@
       "transfer_limit": "",
       "permissions": [
         "CLP",
-        "IBCEXPORT"
+        "IBCEXPORT",
+        "IBCIMPORT"
       ],
       "unit_denom": "",
-      "ibc_counterparty_denom": "xbat",
+      "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "10",
       "denom": "xbat",
       "base_denom": "xbat",
@@ -1558,7 +1519,6 @@
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "18",
       "denom": "cband",
       "base_denom": "cband",
@@ -1573,14 +1533,14 @@
       "transfer_limit": "",
       "permissions": [
         "CLP",
-        "IBCEXPORT"
+        "IBCEXPORT",
+        "IBCIMPORT"
       ],
       "unit_denom": "",
-      "ibc_counterparty_denom": "xband",
+      "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "10",
       "denom": "xband",
       "base_denom": "xband",
@@ -1601,7 +1561,6 @@
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "18",
       "denom": "cbal",
       "base_denom": "cbal",
@@ -1616,14 +1575,14 @@
       "transfer_limit": "",
       "permissions": [
         "CLP",
-        "IBCEXPORT"
+        "IBCEXPORT",
+        "IBCIMPORT"
       ],
       "unit_denom": "",
-      "ibc_counterparty_denom": "xbal",
+      "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "10",
       "denom": "xbal",
       "base_denom": "xbal",
@@ -1644,7 +1603,6 @@
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "18",
       "denom": "cant",
       "base_denom": "cant",
@@ -1659,14 +1617,14 @@
       "transfer_limit": "",
       "permissions": [
         "CLP",
-        "IBCEXPORT"
+        "IBCEXPORT",
+        "IBCIMPORT"
       ],
       "unit_denom": "",
-      "ibc_counterparty_denom": "xant",
+      "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "10",
       "denom": "xant",
       "base_denom": "xant",
@@ -1687,7 +1645,6 @@
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "18",
       "denom": "caave",
       "base_denom": "caave",
@@ -1702,14 +1659,14 @@
       "transfer_limit": "",
       "permissions": [
         "CLP",
-        "IBCEXPORT"
+        "IBCEXPORT",
+        "IBCIMPORT"
       ],
       "unit_denom": "",
-      "ibc_counterparty_denom": "xaave",
+      "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "10",
       "denom": "xaave",
       "base_denom": "xaave",
@@ -1730,7 +1687,6 @@
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "18",
       "denom": "c1inch",
       "base_denom": "c1inch",
@@ -1745,14 +1701,14 @@
       "transfer_limit": "",
       "permissions": [
         "CLP",
-        "IBCEXPORT"
+        "IBCEXPORT",
+        "IBCIMPORT"
       ],
       "unit_denom": "",
-      "ibc_counterparty_denom": "x1inch",
+      "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "10",
       "denom": "x1inch",
       "base_denom": "x1inch",
@@ -1773,7 +1729,6 @@
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "18",
       "denom": "cleash",
       "base_denom": "cleash",
@@ -1788,14 +1743,14 @@
       "transfer_limit": "",
       "permissions": [
         "CLP",
-        "IBCEXPORT"
+        "IBCEXPORT",
+        "IBCIMPORT"
       ],
       "unit_denom": "",
-      "ibc_counterparty_denom": "xleash",
+      "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "10",
       "denom": "xleash",
       "base_denom": "xleash",
@@ -1816,7 +1771,6 @@
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "18",
       "denom": "cshib",
       "base_denom": "cshib",
@@ -1831,14 +1785,14 @@
       "transfer_limit": "",
       "permissions": [
         "CLP",
-        "IBCEXPORT"
+        "IBCEXPORT",
+        "IBCIMPORT"
       ],
       "unit_denom": "",
-      "ibc_counterparty_denom": "xshib",
+      "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "10",
       "denom": "xshib",
       "base_denom": "xshib",
@@ -1859,7 +1813,6 @@
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "18",
       "denom": "ctidal",
       "base_denom": "ctidal",
@@ -1874,14 +1827,14 @@
       "transfer_limit": "",
       "permissions": [
         "CLP",
-        "IBCEXPORT"
+        "IBCEXPORT",
+        "IBCIMPORT"
       ],
       "unit_denom": "",
-      "ibc_counterparty_denom": "xtidal",
+      "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "10",
       "denom": "xtidal",
       "base_denom": "xtidal",
@@ -1902,7 +1855,6 @@
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "18",
       "denom": "cpaid",
       "base_denom": "cpaid",
@@ -1917,14 +1869,14 @@
       "transfer_limit": "",
       "permissions": [
         "CLP",
-        "IBCEXPORT"
+        "IBCEXPORT",
+        "IBCIMPORT"
       ],
       "unit_denom": "",
-      "ibc_counterparty_denom": "xpaid",
+      "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "10",
       "denom": "xpaid",
       "base_denom": "xpaid",
@@ -1945,7 +1897,6 @@
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "18",
       "denom": "crndr",
       "base_denom": "crndr",
@@ -1960,14 +1911,14 @@
       "transfer_limit": "",
       "permissions": [
         "CLP",
-        "IBCEXPORT"
+        "IBCEXPORT",
+        "IBCIMPORT"
       ],
       "unit_denom": "",
-      "ibc_counterparty_denom": "xrndr",
+      "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "10",
       "denom": "xrndr",
       "base_denom": "xrndr",
@@ -1988,7 +1939,6 @@
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "18",
       "denom": "cconv",
       "base_denom": "cconv",
@@ -2003,14 +1953,14 @@
       "transfer_limit": "",
       "permissions": [
         "CLP",
-        "IBCEXPORT"
+        "IBCEXPORT",
+        "IBCIMPORT"
       ],
       "unit_denom": "",
-      "ibc_counterparty_denom": "xconv",
+      "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "10",
       "denom": "xconv",
       "base_denom": "xconv",
@@ -2031,7 +1981,6 @@
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "18",
       "denom": "crfuel",
       "base_denom": "crfuel",
@@ -2046,14 +1995,14 @@
       "transfer_limit": "",
       "permissions": [
         "CLP",
-        "IBCEXPORT"
+        "IBCEXPORT",
+        "IBCIMPORT"
       ],
       "unit_denom": "",
-      "ibc_counterparty_denom": "xrfuel",
+      "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "10",
       "denom": "xrfuel",
       "base_denom": "xrfuel",
@@ -2074,7 +2023,6 @@
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "18",
       "denom": "cakro",
       "base_denom": "cakro",
@@ -2089,14 +2037,14 @@
       "transfer_limit": "",
       "permissions": [
         "CLP",
-        "IBCEXPORT"
+        "IBCEXPORT",
+        "IBCIMPORT"
       ],
       "unit_denom": "",
-      "ibc_counterparty_denom": "xakro",
+      "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "10",
       "denom": "xakro",
       "base_denom": "xakro",
@@ -2117,7 +2065,6 @@
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "18",
       "denom": "cb20",
       "base_denom": "cb20",
@@ -2132,14 +2079,14 @@
       "transfer_limit": "",
       "permissions": [
         "CLP",
-        "IBCEXPORT"
+        "IBCEXPORT",
+        "IBCIMPORT"
       ],
       "unit_denom": "",
-      "ibc_counterparty_denom": "xb20",
+      "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "10",
       "denom": "xb20",
       "base_denom": "xb20",
@@ -2160,7 +2107,6 @@
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "18",
       "denom": "ctshp",
       "base_denom": "ctshp",
@@ -2175,14 +2121,14 @@
       "transfer_limit": "",
       "permissions": [
         "CLP",
-        "IBCEXPORT"
+        "IBCEXPORT",
+        "IBCIMPORT"
       ],
       "unit_denom": "",
-      "ibc_counterparty_denom": "xtshp",
+      "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "10",
       "denom": "xtshp",
       "base_denom": "xtshp",
@@ -2203,7 +2149,6 @@
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "18",
       "denom": "clina",
       "base_denom": "clina",
@@ -2218,14 +2163,14 @@
       "transfer_limit": "",
       "permissions": [
         "CLP",
-        "IBCEXPORT"
+        "IBCEXPORT",
+        "IBCIMPORT"
       ],
       "unit_denom": "",
-      "ibc_counterparty_denom": "xlina",
+      "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "10",
       "denom": "xlina",
       "base_denom": "xlina",
@@ -2246,7 +2191,6 @@
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "18",
       "denom": "cdaofi",
       "base_denom": "cdaofi",
@@ -2261,14 +2205,14 @@
       "transfer_limit": "",
       "permissions": [
         "CLP",
-        "IBCEXPORT"
+        "IBCEXPORT",
+        "IBCIMPORT"
       ],
       "unit_denom": "",
-      "ibc_counterparty_denom": "xdaofi",
+      "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "10",
       "denom": "xdaofi",
       "base_denom": "xdaofi",
@@ -2289,7 +2233,6 @@
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "18",
       "denom": "ckeep",
       "base_denom": "ckeep",
@@ -2304,14 +2247,14 @@
       "transfer_limit": "",
       "permissions": [
         "CLP",
-        "IBCEXPORT"
+        "IBCEXPORT",
+        "IBCIMPORT"
       ],
       "unit_denom": "",
-      "ibc_counterparty_denom": "xkeep",
+      "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "10",
       "denom": "xkeep",
       "base_denom": "xkeep",
@@ -2332,7 +2275,6 @@
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "18",
       "denom": "crly",
       "base_denom": "crly",
@@ -2347,14 +2289,14 @@
       "transfer_limit": "",
       "permissions": [
         "CLP",
-        "IBCEXPORT"
+        "IBCEXPORT",
+        "IBCIMPORT"
       ],
       "unit_denom": "",
-      "ibc_counterparty_denom": "xrly",
+      "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "10",
       "denom": "xrly",
       "base_denom": "xrly",
@@ -2375,7 +2317,6 @@
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "18",
       "denom": "caxs",
       "base_denom": "caxs",
@@ -2390,14 +2331,14 @@
       "transfer_limit": "",
       "permissions": [
         "CLP",
-        "IBCEXPORT"
+        "IBCEXPORT",
+        "IBCIMPORT"
       ],
       "unit_denom": "",
-      "ibc_counterparty_denom": "xaxs",
+      "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "10",
       "denom": "xaxs",
       "base_denom": "xaxs",
@@ -2418,7 +2359,6 @@
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "18",
       "denom": "cdfyn",
       "base_denom": "cdfyn",
@@ -2433,14 +2373,14 @@
       "transfer_limit": "",
       "permissions": [
         "CLP",
-        "IBCEXPORT"
+        "IBCEXPORT",
+        "IBCIMPORT"
       ],
       "unit_denom": "",
-      "ibc_counterparty_denom": "xdfyn",
+      "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "10",
       "denom": "xdfyn",
       "base_denom": "xdfyn",
@@ -2461,7 +2401,6 @@
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "18",
       "denom": "cdnxc",
       "base_denom": "cdnxc",
@@ -2476,14 +2415,14 @@
       "transfer_limit": "",
       "permissions": [
         "CLP",
-        "IBCEXPORT"
+        "IBCEXPORT",
+        "IBCIMPORT"
       ],
       "unit_denom": "",
-      "ibc_counterparty_denom": "xdnxc",
+      "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "10",
       "denom": "xdnxc",
       "base_denom": "xdnxc",
@@ -2504,7 +2443,6 @@
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "18",
       "denom": "cdon",
       "base_denom": "cdon",
@@ -2519,14 +2457,14 @@
       "transfer_limit": "",
       "permissions": [
         "CLP",
-        "IBCEXPORT"
+        "IBCEXPORT",
+        "IBCIMPORT"
       ],
       "unit_denom": "",
-      "ibc_counterparty_denom": "xdon",
+      "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "10",
       "denom": "xdon",
       "base_denom": "xdon",
@@ -2547,7 +2485,6 @@
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "18",
       "denom": "cern",
       "base_denom": "cern",
@@ -2562,14 +2499,14 @@
       "transfer_limit": "",
       "permissions": [
         "CLP",
-        "IBCEXPORT"
+        "IBCEXPORT",
+        "IBCIMPORT"
       ],
       "unit_denom": "",
-      "ibc_counterparty_denom": "xern",
+      "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "10",
       "denom": "xern",
       "base_denom": "xern",
@@ -2590,7 +2527,6 @@
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "18",
       "denom": "cfrax",
       "base_denom": "cfrax",
@@ -2605,14 +2541,14 @@
       "transfer_limit": "",
       "permissions": [
         "CLP",
-        "IBCEXPORT"
+        "IBCEXPORT",
+        "IBCIMPORT"
       ],
       "unit_denom": "",
-      "ibc_counterparty_denom": "xfrax",
+      "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "10",
       "denom": "xfrax",
       "base_denom": "xfrax",
@@ -2633,7 +2569,6 @@
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "18",
       "denom": "cfxs",
       "base_denom": "cfxs",
@@ -2648,14 +2583,14 @@
       "transfer_limit": "",
       "permissions": [
         "CLP",
-        "IBCEXPORT"
+        "IBCEXPORT",
+        "IBCIMPORT"
       ],
       "unit_denom": "",
-      "ibc_counterparty_denom": "xfxs",
+      "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "10",
       "denom": "xfxs",
       "base_denom": "xfxs",
@@ -2676,7 +2611,6 @@
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "18",
       "denom": "ckft",
       "base_denom": "ckft",
@@ -2691,14 +2625,14 @@
       "transfer_limit": "",
       "permissions": [
         "CLP",
-        "IBCEXPORT"
+        "IBCEXPORT",
+        "IBCIMPORT"
       ],
       "unit_denom": "",
-      "ibc_counterparty_denom": "xkft",
+      "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "10",
       "denom": "xkft",
       "base_denom": "xkft",
@@ -2719,7 +2653,6 @@
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "18",
       "denom": "cmatic",
       "base_denom": "cmatic",
@@ -2734,14 +2667,14 @@
       "transfer_limit": "",
       "permissions": [
         "CLP",
-        "IBCEXPORT"
+        "IBCEXPORT",
+        "IBCIMPORT"
       ],
       "unit_denom": "",
-      "ibc_counterparty_denom": "xmatic",
+      "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "10",
       "denom": "xmatic",
       "base_denom": "xmatic",
@@ -2762,7 +2695,6 @@
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "18",
       "denom": "cmetis",
       "base_denom": "cmetis",
@@ -2777,14 +2709,14 @@
       "transfer_limit": "",
       "permissions": [
         "CLP",
-        "IBCEXPORT"
+        "IBCEXPORT",
+        "IBCIMPORT"
       ],
       "unit_denom": "",
-      "ibc_counterparty_denom": "xmetis",
+      "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "10",
       "denom": "xmetis",
       "base_denom": "xmetis",
@@ -2805,7 +2737,6 @@
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "18",
       "denom": "cpols",
       "base_denom": "cpols",
@@ -2820,14 +2751,14 @@
       "transfer_limit": "",
       "permissions": [
         "CLP",
-        "IBCEXPORT"
+        "IBCEXPORT",
+        "IBCIMPORT"
       ],
       "unit_denom": "",
-      "ibc_counterparty_denom": "xpols",
+      "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "10",
       "denom": "xpols",
       "base_denom": "xpols",
@@ -2848,7 +2779,6 @@
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "18",
       "denom": "csaito",
       "base_denom": "csaito",
@@ -2863,14 +2793,14 @@
       "transfer_limit": "",
       "permissions": [
         "CLP",
-        "IBCEXPORT"
+        "IBCEXPORT",
+        "IBCIMPORT"
       ],
       "unit_denom": "",
-      "ibc_counterparty_denom": "xsaito",
+      "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "10",
       "denom": "xsaito",
       "base_denom": "xsaito",
@@ -2891,7 +2821,6 @@
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "18",
       "denom": "ctoke",
       "base_denom": "ctoke",
@@ -2906,14 +2835,14 @@
       "transfer_limit": "",
       "permissions": [
         "CLP",
-        "IBCEXPORT"
+        "IBCEXPORT",
+        "IBCIMPORT"
       ],
       "unit_denom": "",
-      "ibc_counterparty_denom": "xtoke",
+      "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "10",
       "denom": "xtoke",
       "base_denom": "xtoke",
@@ -2934,7 +2863,6 @@
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "10",
       "denom": "czcn",
       "base_denom": "czcn",
@@ -2957,7 +2885,6 @@
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "18",
       "denom": "czcx",
       "base_denom": "czcx",
@@ -2972,14 +2899,14 @@
       "transfer_limit": "",
       "permissions": [
         "CLP",
-        "IBCEXPORT"
+        "IBCEXPORT",
+        "IBCIMPORT"
       ],
       "unit_denom": "",
-      "ibc_counterparty_denom": "xzcx",
+      "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "10",
       "denom": "xzcx",
       "base_denom": "xzcx",
@@ -3000,7 +2927,6 @@
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "18",
       "denom": "cust",
       "base_denom": "cust",
@@ -3015,14 +2941,14 @@
       "transfer_limit": "",
       "permissions": [
         "CLP",
-        "IBCEXPORT"
+        "IBCEXPORT",
+        "IBCIMPORT"
       ],
       "unit_denom": "",
-      "ibc_counterparty_denom": "xust",
+      "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "10",
       "denom": "xust",
       "base_denom": "xust",
@@ -3043,7 +2969,6 @@
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "18",
       "denom": "cbtsg",
       "base_denom": "cbtsg",
@@ -3058,14 +2983,14 @@
       "transfer_limit": "",
       "permissions": [
         "CLP",
-        "IBCEXPORT"
+        "IBCEXPORT",
+        "IBCIMPORT"
       ],
       "unit_denom": "",
-      "ibc_counterparty_denom": "xbtsg",
+      "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "10",
       "denom": "xbtsg",
       "base_denom": "xbtsg",
@@ -3086,7 +3011,6 @@
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "18",
       "denom": "cquick",
       "base_denom": "cquick",
@@ -3101,14 +3025,14 @@
       "transfer_limit": "",
       "permissions": [
         "CLP",
-        "IBCEXPORT"
+        "IBCEXPORT",
+        "IBCIMPORT"
       ],
       "unit_denom": "",
-      "ibc_counterparty_denom": "xquick",
+      "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "10",
       "denom": "xquick",
       "base_denom": "xquick",
@@ -3129,7 +3053,6 @@
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "18",
       "denom": "cldo",
       "base_denom": "cldo",
@@ -3144,14 +3067,14 @@
       "transfer_limit": "",
       "permissions": [
         "CLP",
-        "IBCEXPORT"
+        "IBCEXPORT",
+        "IBCIMPORT"
       ],
       "unit_denom": "",
-      "ibc_counterparty_denom": "xldo",
+      "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "10",
       "denom": "xldo",
       "base_denom": "xldo",
@@ -3172,7 +3095,6 @@
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "18",
       "denom": "crail",
       "base_denom": "crail",
@@ -3187,14 +3109,14 @@
       "transfer_limit": "",
       "permissions": [
         "CLP",
-        "IBCEXPORT"
+        "IBCEXPORT",
+        "IBCIMPORT"
       ],
       "unit_denom": "",
-      "ibc_counterparty_denom": "xrail",
+      "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "10",
       "denom": "xrail",
       "base_denom": "xrail",
@@ -3215,7 +3137,6 @@
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "18",
       "denom": "cpond",
       "base_denom": "cpond",
@@ -3230,14 +3151,14 @@
       "transfer_limit": "",
       "permissions": [
         "CLP",
-        "IBCEXPORT"
+        "IBCEXPORT",
+        "IBCIMPORT"
       ],
       "unit_denom": "",
-      "ibc_counterparty_denom": "xpond",
+      "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "10",
       "denom": "xpond",
       "base_denom": "xpond",
@@ -3258,7 +3179,6 @@
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "18",
       "denom": "cdino",
       "base_denom": "cdino",
@@ -3273,14 +3193,14 @@
       "transfer_limit": "",
       "permissions": [
         "CLP",
-        "IBCEXPORT"
+        "IBCEXPORT",
+        "IBCIMPORT"
       ],
       "unit_denom": "",
-      "ibc_counterparty_denom": "xdino",
+      "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "10",
       "denom": "xdino",
       "base_denom": "xdino",
@@ -3301,7 +3221,6 @@
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "18",
       "denom": "cufo",
       "base_denom": "cufo",
@@ -3316,14 +3235,14 @@
       "transfer_limit": "",
       "permissions": [
         "CLP",
-        "IBCEXPORT"
+        "IBCEXPORT",
+        "IBCIMPORT"
       ],
       "unit_denom": "",
-      "ibc_counterparty_denom": "xufo",
+      "ibc_counterparty_denom": "",
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "10",
       "denom": "xufo",
       "base_denom": "xufo",
@@ -3344,7 +3263,6 @@
       "ibc_counterparty_chain_id": ""
     },
     {
-      "is_whitelisted": true,
       "decimals": "6",
       "denom": "ibc/27394FB092D2ECCD56123C74F36E4C1F926001CEADA9CA97EA622B25F41E5EB2",
       "base_denom": "uatom",
@@ -3367,7 +3285,6 @@
       "ibc_counterparty_chain_id": "cosmoshub-4"
     },
     {
-      "is_whitelisted": true,
       "decimals": "6",
       "denom": "ibc/6D717BFF5537D129035BAB39F593D638BA258A9F8D86FB7ECCEAB05B6950CC3E",
       "base_denom": "uakt",
@@ -3390,7 +3307,6 @@
       "ibc_counterparty_chain_id": "akashnet-2"
     },
     {
-      "is_whitelisted": true,
       "decimals": "6",
       "denom": "ibc/21CB41565FCA19AB6613EE06B0D56E588E0DC3E53FF94BA499BB9635794A1A35",
       "base_denom": "udvpn",
@@ -3413,7 +3329,6 @@
       "ibc_counterparty_chain_id": "sentinelhub-2"
     },
     {
-      "is_whitelisted": true,
       "decimals": "6",
       "denom": "ibc/11DFDFADE34DCE439BA732EBA5CD8AA804A544BA1ECC0882856289FAF01FE53F",
       "base_denom": "uiris",
@@ -3436,7 +3351,6 @@
       "ibc_counterparty_chain_id": "irishub-1"
     },
     {
-      "is_whitelisted": true,
       "decimals": "6",
       "denom": "ibc/D87BC708A791246AA683D514C273736F07579CBD56C9CA79B7823F9A01C16270",
       "base_denom": "uxprt",
@@ -3459,7 +3373,6 @@
       "ibc_counterparty_chain_id": "core-1"
     },
     {
-      "is_whitelisted": true,
       "decimals": "8",
       "denom": "ibc/B21954812E6E642ADC0B5ACB233E02A634BF137C572575BF80F7C0CC3DB2E74D",
       "base_denom": "basecro",
@@ -3482,7 +3395,6 @@
       "ibc_counterparty_chain_id": "crypto-org-chain-mainnet-1"
     },
     {
-      "is_whitelisted": true,
       "decimals": "6",
       "denom": "ibc/2CC6F10253D563A7C238096BA63D060F7F356E37D5176E517034B8F730DB4AB6",
       "base_denom": "uregen",
@@ -3505,7 +3417,6 @@
       "ibc_counterparty_chain_id": "regen-1"
     },
     {
-      "is_whitelisted": true,
       "decimals": "6",
       "denom": "ibc/B4314D0E670CB43C88A5DCA09F76E5E812BD831CC2FEC6E434C9E5A9D1F57953",
       "base_denom": "uosmo",
@@ -3528,7 +3439,6 @@
       "ibc_counterparty_chain_id": "osmosis-1"
     },
     {
-      "is_whitelisted": true,
       "decimals": "6",
       "denom": "ibc/F279AB967042CAC10BFF70FAECB179DCE37AAAE4CD4C1BC4565C2BBC383BC0FA",
       "base_denom": "ujuno",
@@ -3551,7 +3461,6 @@
       "ibc_counterparty_chain_id": "juno-1"
     },
     {
-      "is_whitelisted": true,
       "decimals": "6",
       "denom": "ibc/C5C8682EB9AA1313EF1B12C991ADCDA465B80C05733BFB2972E2005E01BCE459",
       "base_denom": "uixo",

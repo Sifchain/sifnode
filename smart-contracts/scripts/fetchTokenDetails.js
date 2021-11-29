@@ -58,7 +58,7 @@ async function main() {
 
       if (!isValidSymbol(symbol)) {
         print(
-          "red",
+          "h_red",
           `Skipping token ${address} (${name}) because it's symbol has spaces or special characters: ${symbol}`
         );
         continue;
@@ -86,13 +86,13 @@ async function main() {
       sifnodeList.push(sifnodeObj);
 
       print(
-        "green",
+        "h_green",
         `--> Processed token "${name}" (${symbol}) successfully: ${decimals} decimals.`,
         true
       );
     } catch (e) {
       print(
-        "red",
+        "h_red",
         `--> Failed to fetch details of token ${address}: ${e.message}`
       );
     }
@@ -104,12 +104,21 @@ async function main() {
   };
 
   fs.writeFileSync(destinationFile, JSON.stringify(output, null, 2));
-  fs.writeFileSync(sifnodeDestinationFile, JSON.stringify(sifnodeList, null, 2));
+  fs.writeFileSync(
+    sifnodeDestinationFile,
+    JSON.stringify(sifnodeList, null, 2)
+  );
 
-  print('green', 'The first part is done!');
+  print("h_green", "The first part is done!");
   print("cyan", `Results have been written to ${destinationFile}`);
-  print("magenta", `Sifnode results have been written to ${sifnodeDestinationFile}.`);
-  print("yellow", `Please wait while we send the whitelist to the blockchain...`);
+  print(
+    "magenta",
+    `Sifnode results have been written to ${sifnodeDestinationFile}.`
+  );
+  print(
+    "yellow",
+    `Please wait while we send the whitelist to the blockchain...`
+  );
 }
 
 async function getTokenMetadata(address) {
@@ -121,7 +130,7 @@ async function getTokenMetadata(address) {
       id: 1,
     })
     .catch((e) => {
-      print("red", `-> Cannot find imageUrl. Setting imageUrl to null.`);
+      print("h_red", `-> Cannot find imageUrl. Setting imageUrl to null.`);
       return null;
     });
 
