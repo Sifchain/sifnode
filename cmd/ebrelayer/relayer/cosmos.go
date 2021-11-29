@@ -301,9 +301,10 @@ func (sub CosmosSub) witnessSignProphecyID(
 	signProphecy := ethbridgetypes.NewMsgSignProphecy(valAddr.String(), cosmosMsg.NetworkDescriptor,
 		cosmosMsg.ProphecyID, address.String(), string(signature))
 
+	instrumentation.PeggyCheckpointZap(sub.SugaredLogger, instrumentation.WitnessSignProphecy, zap.Reflect("prophecy", signProphecy))
+
 	txs.SignProphecyToCosmos(txFactory, signProphecy, sub.CliContext, sub.SugaredLogger)
 
-	instrumentation.PeggyCheckpointZap(sub.SugaredLogger, instrumentation.WitnessSignProphecy, zap.Reflect("prophecy", signProphecy))
 }
 
 // GetGlobalSequenceBlockNumberFromCosmos get global Sequence block number via rpc
@@ -321,12 +322,11 @@ func (sub CosmosSub) GetGlobalSequenceBlockNumberFromCosmos(
 	client := ethbridgetypes.NewQueryClient(conn)
 
 	// Get lockburn sequence per networkdescriptor+relayer address
-	// TODO: Should relayer be witness?
-	request := ethbridgetypes.QueryWitnessLockBurnSequenceRequest{
+	witnessLockBurnSequenceRequest := ethbridgetypes.QueryWitnessLockBurnSequenceRequest{
 		NetworkDescriptor: networkDescriptor,
 		RelayerValAddress: relayerValAddress,
 	}
-	response, err := client.WitnessLockBurnSequence(ctx, &request)
+	response, err := client.WitnessLockBurnSequence(ctx, &witnessLockBurnSequenceRequest)
 	if err != nil {
 		return 0, 0, err
 	}
@@ -335,12 +335,12 @@ func (sub CosmosSub) GetGlobalSequenceBlockNumberFromCosmos(
 	sub.SugaredLogger.Debugw("Retrieved witness lockburn sequence", "globalSequence", globalSequence)
 
 	// Get the block number of the global sequence to be processed next
-	request2 := ethbridgetypes.QueryGlobalSequenceBlockNumberRequest{
+	sequenceToBlockNumberRequest := ethbridgetypes.QueryGlobalSequenceBlockNumberRequest{
 		NetworkDescriptor: networkDescriptor,
 		GlobalSequence:    globalSequence + 1,
 	}
 
-	response2, err := client.GlobalSequenceBlockNumber(ctx, &request2)
+	response2, err := client.GlobalSequenceBlockNumber(ctx, &sequenceToBlockNumberRequest)
 	if err != nil {
 		return 0, 0, err
 	}
