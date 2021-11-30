@@ -31,10 +31,7 @@ async function getDeployedContract(deploymentName, contractName, chainId) {
   const ethersInterface = new ethers.utils.Interface(parsed.abi);
 
   const address = parsed.networks[chainId].address;
-  print(
-    "yellow",
-    `🕑 Connecting to ${contractName} at ${address} on chain ${chainId}`
-  );
+  print("yellow", `🕑 Connecting to ${contractName} at ${address} on chain ${chainId}`);
 
   const accounts = await ethers.getSigners();
   const activeUser = accounts[0];
@@ -42,10 +39,7 @@ async function getDeployedContract(deploymentName, contractName, chainId) {
   const contract = new ethers.Contract(address, ethersInterface, activeUser);
   const instance = await contract.attach(address);
 
-  print(
-    "green",
-    `🌎 Connected to ${contractName} at ${address} on chain ${chainId}`
-  );
+  print("green", `🌎 Connected to ${contractName} at ${address} on chain ${chainId}`);
 
   return {
     contract,
@@ -76,10 +70,7 @@ async function impersonateAccount(address, newBalance, accountName) {
     await setNewEthBalance(address, newBalance);
   }
 
-  print(
-    "magenta",
-    `🔓 Account ${address}${accountName} successfully impersonated`
-  );
+  print("magenta", `🔓 Account ${address}${accountName} successfully impersonated`);
 
   return ethers.getSigner(address);
 }
@@ -90,7 +81,14 @@ async function impersonateAccount(address, newBalance, accountName) {
  * @param {string | number} newBalance
  */
 async function setNewEthBalance(address, newBalance) {
-  const newValue = `0x${newBalance.toString(16)}`;
+  let newValue;
+  if (typeof newBalance === "string") {
+    const bigNum = ethers.BigNumber.from(newBalance);
+    newValue = bigNum.toHexString();
+  } else {
+    newValue = `0x${newBalance.toString(16)}`;
+  }
+
   await ethers.provider.send("hardhat_setBalance", [address, newValue]);
 
   print("magenta", `💰 Balance of account ${address} set to ${newBalance}`);
@@ -168,10 +166,7 @@ function injectInManifest({
   // Find the correct implementation in the Manifest
   const impls = parsedManifest.impls;
   const implIndex = Object.keys(impls).findIndex((key) => {
-    return (
-      impls[key].address.toLowerCase() ===
-      topContractMainnetAddress.toLowerCase()
-    );
+    return impls[key].address.toLowerCase() === topContractMainnetAddress.toLowerCase();
   });
   const impl = impls[Object.keys(impls)[implIndex]];
 
@@ -208,10 +203,7 @@ function injectInManifest({
   });
 
   // Replace the size of the gap
-  newStorage[gapIndex]["type"] = newStorage[gapIndex]["type"].replace(
-    previousGapSize,
-    newGapSize
-  );
+  newStorage[gapIndex]["type"] = newStorage[gapIndex]["type"].replace(previousGapSize, newGapSize);
 
   // GAP IN TYPES
   // In the Types object of the manifest, add a new gap with the new size

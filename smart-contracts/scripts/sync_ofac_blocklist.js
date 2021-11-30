@@ -3,12 +3,16 @@ require("dotenv").config();
 const support = require("./helpers/forkingSupport");
 const { print } = require("./helpers/utils");
 const parser = require("./helpers/ofacParser");
+const { ethers } = require("hardhat");
 
 // Defaults to the Ethereum Mainnet address
 const BLOCKLIST_ADDRESS =
-  process.env.BLOCKLIST_ADDRESS || "0x1FBeF5a068bFCC4CB1Fae9039EA716EAaaDaeA82";
+  process.env.BLOCKLIST_ADDRESS || "0x9C8a2011cCb697D7EDe3c94f9FBa5686a04DeACB";
 
 const USE_FORKING = !!process.env.USE_FORKING;
+
+// Will estimate gas and multiply the result by this value (wiggle room)
+const GAS_PRICE_BUFFER = 1.2;
 
 const state = {
   ofac: [],
@@ -16,6 +20,8 @@ const state = {
   toAdd: [],
   toRemove: [],
   blocklistInstance: null,
+  activeAccount: null,
+  idealGasPrice: null,
 };
 
 async function main() {
@@ -24,8 +30,20 @@ async function main() {
   // Fetches lists, compares them and figures out what has to be added or removed
   await setupState();
 
+  // Get the current account
+  const accounts = await ethers.getSigners();
+  state.activeAccount = accounts[0];
+
   // If we're forking, we want to impersonate the owner account
-  if (USE_FORKING) await setupForking();
+  if (USE_FORKING) {
+    const signerOwner = await setupForking();
+    state.activeAccount = signerOwner;
+  } else {
+    print("cyan", `🤵 Active account is ${state.activeAccount.address}`);
+  }
+
+  // Estimate gasPrice:
+  state.idealGasPrice = await estimateGasPrice();
 
   // Add addresses to the blocklist
   await addToBlocklist();
@@ -78,7 +96,20 @@ async function setupForking() {
 
   // Set the owner as the caller for blocklist functions
   state.blocklistInstance = state.blocklistInstance.connect(owner);
+
   print("cyan", "----");
+  return owner;
+}
+
+async function estimateGasPrice() {
+  console.log("Estimating ideal Gas price, please wait...");
+
+  const gasPrice = await ethers.provider.getGasPrice();
+  const finalGasPrice = Math.round(gasPrice.toNumber() * GAS_PRICE_BUFFER);
+
+  console.log(`Using ideal Gas price: ${ethers.utils.formatUnits(finalGasPrice, "gwei")} GWEI`);
+
+  return finalGasPrice;
 }
 
 async function addToBlocklist() {
@@ -91,14 +122,18 @@ async function addToBlocklist() {
 
   let tx;
   if (state.toAdd.length === 1) {
-    tx = await state.blocklistInstance.addToBlocklist(state.toAdd[0]).catch((e) => {
-      throw e;
-    });
+    tx = await state.blocklistInstance
+      .addToBlocklist(state.toAdd[0], { gasPrice: state.idealGasPrice })
+      .catch((e) => {
+        throw e;
+      });
   } else {
     // there are many addresses to add
-    tx = await state.blocklistInstance.batchAddToBlocklist(state.toAdd).catch((e) => {
-      throw e;
-    });
+    tx = await state.blocklistInstance
+      .batchAddToBlocklist(state.toAdd, { gasPrice: state.idealGasPrice })
+      .catch((e) => {
+        throw e;
+      });
   }
 
   print("cyan", `Added ${state.toAdd} to the blocklist.`);
@@ -115,14 +150,18 @@ async function removeFromBlocklist() {
 
   let tx;
   if (state.toRemove.length === 1) {
-    tx = await state.blocklistInstance.removeFromBlocklist(state.toRemove[0]).catch((e) => {
-      throw e;
-    });
+    tx = await state.blocklistInstance
+      .removeFromBlocklist(state.toRemove[0], { gasPrice: state.idealGasPrice })
+      .catch((e) => {
+        throw e;
+      });
   } else {
     // there are many addresses to remove
-    tx = await state.blocklistInstance.batchRemoveFromBlocklist(state.toRemove).catch((e) => {
-      throw e;
-    });
+    tx = await state.blocklistInstance
+      .batchRemoveFromBlocklist(state.toRemove, { gasPrice: state.idealGasPrice })
+      .catch((e) => {
+        throw e;
+      });
   }
 
   print("cyan", `Removed ${state.toRemove} from the blocklist.`);
@@ -158,5 +197,6 @@ function treatCommonErrors(e) {
 main()
   .catch((error) => {
     treatCommonErrors(error);
+    process.exit(0);
   })
   .finally(() => process.exit(0));
