@@ -6,3 +6,8 @@ option go_package = "github.com/Sifchain/sifnode/x/margin/types";
 
 message GenesisState {
 }
+
+message MTP {
+  string address = 1;
+  string asset = 2;
+}
