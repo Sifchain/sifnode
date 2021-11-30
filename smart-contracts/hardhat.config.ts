@@ -21,7 +21,6 @@ const config: HardhatUserConfig = {
   networks: {
     hardhat: {
       allowUnlimitedContractSize: false,
-      chainId: 1,
       forking: {
         url: mainnetUrl,
         blockNumber: 13691103,
