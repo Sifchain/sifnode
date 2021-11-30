@@ -186,11 +186,11 @@ func (msg MsgBurn) GetProphecyID(doublePeggy bool, sequence, globalNonce uint64,
 func ComputeProphecyID(cosmosSender string, sequence uint64, ethereumReceiver string, tokenAddress string, amount sdk.Int,
 	doublePeggy bool, globalNonce uint64, networkDescriptor oracletypes.NetworkDescriptor) []byte {
 
-	bytesTy, _ := abi.NewType("bytes", nil)
-	boolTy, _ := abi.NewType("bool", nil)
-	uint128Ty, _ := abi.NewType("uint128", nil)
-	uint256Ty, _ := abi.NewType("uint256", nil)
-	addressTy, _ := abi.NewType("address", nil)
+	bytesTy, _ := abi.NewType("bytes", "bytes", nil)
+	boolTy, _ := abi.NewType("bool", "bool", nil)
+	uint128Ty, _ := abi.NewType("uint128", "uint128", nil)
+	uint256Ty, _ := abi.NewType("uint256", "uint256", nil)
+	addressTy, _ := abi.NewType("address", "address", nil)
 
 	arguments := abi.Arguments{
 		{

@@ -16,7 +16,7 @@ import (
 
 	"github.com/Sifchain/sifnode/x/instrumentation"
 
-	cosmosbridge "github.com/Sifchain/sifnode/cmd/ebrelayer/contract/generated/bindings/cosmosbridge"
+	cosmosbridge "github.com/Sifchain/sifnode/cmd/ebrelayer/contract/generated/artifacts/contracts/CosmosBridge.sol"
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/internal/symbol_translator"
 	"google.golang.org/grpc"
 

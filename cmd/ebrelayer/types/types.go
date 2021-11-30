@@ -1,7 +1,6 @@
 package types
 
 import (
-	"bytes"
 	"fmt"
 	"math/big"
 
@@ -59,26 +58,9 @@ type EthereumEvent struct {
 	Value                 *big.Int
 	Nonce                 *big.Int
 	ClaimType             ethbridge.ClaimType
-	ID                    [32]byte
 	BridgeContractAddress common.Address
 	From                  common.Address
 	Token                 common.Address
-}
-
-// Equal two events
-func (e EthereumEvent) Equal(other EthereumEvent) bool {
-	return e.NetworkDescriptor == other.NetworkDescriptor &&
-		e.BridgeContractAddress == other.BridgeContractAddress &&
-		bytes.Equal(e.ID[:], other.ID[:]) &&
-		e.From == other.From &&
-		bytes.Equal(e.To, other.To) &&
-		e.Token == other.Token &&
-		e.Symbol == other.Symbol &&
-		e.Name == other.Name &&
-		e.Decimals == other.Decimals &&
-		e.Value.Cmp(other.Value) == 0 &&
-		e.Nonce.Cmp(other.Nonce) == 0 &&
-		e.ClaimType == other.ClaimType
 }
 
 // String implements fmt.Stringer

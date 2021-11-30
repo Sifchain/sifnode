@@ -64,7 +64,6 @@ func CreateTestLogEthereumEvent(t *testing.T) types.EthereumEvent {
 	return types.EthereumEvent{
 		NetworkDescriptor:     int32(networkDescriptor),
 		BridgeContractAddress: testBridgeContractAddress,
-		ID:                    testProphecyID32,
 		From:                  testEthereumSender,
 		To:                    testCosmosRecipient,
 		Token:                 testTokenAddress,

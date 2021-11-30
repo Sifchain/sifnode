@@ -9,7 +9,7 @@ import (
 	"math/big"
 	"time"
 
-	cosmosbridge "github.com/Sifchain/sifnode/cmd/ebrelayer/contract/generated/bindings/cosmosbridge"
+	cosmosbridge "github.com/Sifchain/sifnode/cmd/ebrelayer/contract/generated/artifacts/contracts/CosmosBridge.sol"
 	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
@@ -146,7 +146,7 @@ func RelayBatchProphecyCompletedToEthereum(
 			Amount:               big.NewInt(prophecyInfo.TokenAmount.Int64()),
 			DoublePeg:            prophecyInfo.DoublePeg,
 			Nonce:                big.NewInt(int64(prophecyInfo.GlobalSequence)),
-			NetworkDescriptor:    big.NewInt(int64(prophecyInfo.NetworkDescriptor)),
+			NetworkDescriptor:    int32(prophecyInfo.NetworkDescriptor),
 			TokenName:            prophecyInfo.TokenName,
 			TokenSymbol:          prophecyInfo.TokenSymbol,
 			TokenDecimals:        uint8(prophecyInfo.Decimail),

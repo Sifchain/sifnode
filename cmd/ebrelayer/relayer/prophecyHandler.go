@@ -8,7 +8,7 @@ import (
 	"syscall"
 	"time"
 
-	cosmosbridge "github.com/Sifchain/sifnode/cmd/ebrelayer/contract/generated/bindings/cosmosbridge"
+	cosmosbridge "github.com/Sifchain/sifnode/cmd/ebrelayer/contract/generated/artifacts/contracts/CosmosBridge.sol"
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/internal/symbol_translator"
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/txs"
 	"github.com/cosmos/cosmos-sdk/client/tx"
