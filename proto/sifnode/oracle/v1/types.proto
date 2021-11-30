@@ -90,6 +90,9 @@ message ProphecyInfo {
     (gogoproto.nullable) = false,
     (gogoproto.moretags) = "yaml:\"crosschain_fee\""
   ];
-  repeated string ethereum_address = 13;
-  repeated string signatures = 14;
+  uint32 decimail = 13;
+  string token_name = 14;
+  string token_symbol = 15;
+  repeated string ethereum_address = 16;
+  repeated string signatures = 17;
 }

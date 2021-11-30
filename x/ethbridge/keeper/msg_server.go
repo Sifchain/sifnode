@@ -80,6 +80,9 @@ func (srv msgServer) Lock(goCtx context.Context, msg *types.MsgLock) (*types.Msg
 		msg.CrosschainFee,
 		doublePeg,
 		globalSequence,
+		uint8(tokenMetadata.Decimals),
+		tokenMetadata.Name,
+		tokenMetadata.Symbol,
 	)
 
 	if err != nil {
@@ -153,6 +156,9 @@ func (srv msgServer) Burn(goCtx context.Context, msg *types.MsgBurn) (*types.Msg
 		msg.CrosschainFee,
 		doublePeg,
 		globalSequence,
+		uint8(tokenMetadata.Decimals),
+		tokenMetadata.Name,
+		tokenMetadata.Symbol,
 	)
 
 	if err != nil {

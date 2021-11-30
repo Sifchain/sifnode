@@ -3,6 +3,7 @@ package keeper
 import (
 	"encoding/binary"
 	"errors"
+
 	"github.com/Sifchain/sifnode/x/instrumentation"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
@@ -77,7 +78,10 @@ func (k Keeper) SetProphecyInfo(ctx sdk.Context, prophecyID []byte, networkDescr
 	tokenAmount sdk.Int,
 	crosschainFee sdk.Int,
 	doublePeg bool,
-	globalSequence uint64) error {
+	globalSequence uint64,
+	tokenDecimal uint8,
+	tokenName string,
+	tokenSymbol string) error {
 
 	store := ctx.KVStore(k.storeKey)
 
@@ -98,6 +102,9 @@ func (k Keeper) SetProphecyInfo(ctx sdk.Context, prophecyID []byte, networkDescr
 		EthereumAddress:      []string{},
 		Signatures:           []string{},
 		BlockNumber:          uint64(k.currentHeight),
+		TokenName:            tokenName,
+		TokenSymbol:          tokenSymbol,
+		Decimail:             uint32(tokenDecimal),
 	}
 
 	instrumentation.PeggyCheckpoint(ctx.Logger(), instrumentation.SetProphecyInfo, prophecyInfo)

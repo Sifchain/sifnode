@@ -37,7 +37,10 @@ type OracleKeeper interface {
 	GetCrossChainFeeConfig(ctx sdk.Context, networkIdentity oracletypes.NetworkIdentity) (oracletypes.CrossChainFeeConfig, error)
 	SetFeeInfo(ctx sdk.Context, networkDescriptor oracletypes.NetworkDescriptor, feeCurrency string, gas, burnCost, lockCost, firstLockDoublePeggyCost sdk.Int) error
 	SetProphecyWithInitValue(ctx sdk.Context, prophecyID []byte)
-	SetProphecyInfo(ctx sdk.Context, prophecyID []byte, networkDescriptor oracletypes.NetworkDescriptor, cosmosSender string, cosmosSenderSequence uint64, ethereumReceiver string, tokenSymbol string, tokenContractAddress string, tokenAmount sdk.Int, crosschainFee sdk.Int, doublePeg bool, globalNonce uint64) error
+	SetProphecyInfo(ctx sdk.Context, prophecyID []byte, networkDescriptor oracletypes.NetworkDescriptor, cosmosSender string,
+		cosmosSenderSequence uint64, ethereumReceiver, tokenDenomHash, tokenContractAddress string,
+		tokenAmount sdk.Int, crosschainFee sdk.Int, doublePeg bool, globalNonce uint64,
+		tokenDecimal uint8, tokenName, tokenSymbol string) error
 	GetProphecyInfoWithScopeGlobalSequence(ctx sdk.Context, networkDescriptor oracletypes.NetworkDescriptor, startGlobalNonce uint64) []*oracletypes.ProphecyInfo
 	GetWitnessLockBurnSequence(ctx sdk.Context, networkDescriptor types.NetworkDescriptor, valAccount sdk.ValAddress) uint64
 }
