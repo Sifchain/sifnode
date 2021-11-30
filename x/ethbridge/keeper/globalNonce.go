@@ -43,12 +43,14 @@ func (k Keeper) UpdateGlobalSequence(ctx sdk.Context,
 // ExistsGlobalNonce check if the global nonce exists
 func (k Keeper) ExistsGlobalNonce(ctx sdk.Context, prefix []byte) bool {
 	if !k.Exists(ctx, prefix) {
+		// The store doesnt exist.
 		return false
 	}
 	return true
 }
 
 // GetGlobalSequencePrefix compute the prefix
+// TODO: oracletypes.NetworkDescriptor is int32 (default type for enums), we are converting it to uint32 here.
 func (k Keeper) GetGlobalSequencePrefix(ctx sdk.Context, networkDescriptor oracletypes.NetworkDescriptor) []byte {
 	bs := make([]byte, 4)
 	binary.LittleEndian.PutUint32(bs, uint32(networkDescriptor))
