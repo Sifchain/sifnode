@@ -15,6 +15,14 @@ type Keeper struct {
 	paramStore paramtypes.Subspace
 }
 
+func NewKeeper(storeKey sdk.StoreKey,
+	cdc codec.BinaryCodec,
+	bankKeeper types.BankKeeper,
+	clpKeeper types.CLPKeeper) KeeperI {
+
+	return Keeper{bankKeeper: bankKeeper, clpKeeper: clpKeeper, storeKey: storeKey, cdc: cdc}
+}
+
 func (k Keeper) SetMTP(ctx sdk.Context, mtp *types.MTP) error {
 	if err := mtp.Validate(); err != nil {
 		return err
