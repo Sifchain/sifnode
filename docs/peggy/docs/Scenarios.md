@@ -146,7 +146,7 @@ Steps:
    prophecyID, but signed with different keys, it will call a `submitProphecyClaimAggregatedSigs()` @TODO@ parameters
    function on target chain's [CosmosBridge][SmartContracts#CosmosBridge] smart contract. @TODO@ What happens if the signature is invalid, or if a long time passes? Where are they stored in the meantime and for how long? 
 1. Next, the relayer will increment the sequence number of sifnode side. (@TODO@ How? Potential bottleneck?)
-1. The `CosmosBridge` smart contract will verify that the signatures are valid. (@TODO@ How?)
+1. The `CosmosBridge` smart contract will [verify that the signatures are valid](SmartContracts#verifySignature).
     - If not all signatures are valid, it will ignore it 
     - If the signature is valid, it will mint the bridge token representing the asset. (@TODO@ more details needed - we're potentially doing it the first time etc.)
     - The value of `cosmosDenom` in the token will be set to `denomHash` from originating chain 
