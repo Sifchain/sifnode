@@ -5,6 +5,7 @@ import { EthereumResults } from "./devEnv"
 import path from "path"
 import fs from "fs"
 import hb from "handlebars"
+import { renderIntellijFiles } from "./transform_vscode_run_scripts_to_intellij"
 interface EnvOutput {
   Computed: {
     BASEDIR: string
@@ -93,6 +94,8 @@ export function EnvJSONWriter(args: DevEnvObject) {
       path.resolve(__dirname, "../../../", ".vscode", "launch.json"),
       output
     )
+    console.log("dirname is: ", __dirname)
+    renderIntellijFiles(path.join(__dirname, "../../.."))
     console.log("Wrote environment and JSON values to disk. PATH: ", path.resolve(__dirname))
   } catch (error) {
     console.error("Failed to write environment/json values to disk, ERROR: ", error)

@@ -90,8 +90,7 @@ async function ebrelayerWitnessBuilder(
     golangResults,
     chainId,
   }
-  const witnessArgs = { ...relayerArgs }
-  witnessArgs.sifnodeAccount = witnessAccount
+  const witnessArgs = { ...relayerArgs, sifnodeAccount: witnessAccount }
   const relayerPromise = relayerBuilder(relayerArgs)
   const witnessPromise = witnessBuilder(witnessArgs)
   const [relayer, witness] = await Promise.all([relayerPromise, witnessPromise])
