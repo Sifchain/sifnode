@@ -28,7 +28,7 @@ func (k Keeper) SetMTP(ctx sdk.Context, mtp *types.MTP) error {
 		return err
 	}
 	store := ctx.KVStore(k.storeKey)
-	key := types.GetMTPKey(mtp.Asset, mtp.Address)
+	key := types.GetMTPKey(mtp.CollateralAsset, mtp.Address)
 	store.Set(key, k.cdc.MustMarshal(mtp))
 	return nil
 }
@@ -71,7 +71,7 @@ func (k Keeper) GetMTPsForAsset(ctx sdk.Context, asset string) []*types.MTP {
 		var mtp types.MTP
 		bytesValue := iterator.Value()
 		k.cdc.MustUnmarshal(bytesValue, &mtp)
-		if mtp.Asset == asset {
+		if mtp.CollateralAsset == asset {
 			mtpList = append(mtpList, &mtp)
 		}
 	}
@@ -87,7 +87,7 @@ func (k Keeper) GetAssetsForMTP(ctx sdk.Context, mtpAddress sdk.Address) []strin
 		bytesValue := iterator.Value()
 		k.cdc.MustUnmarshal(bytesValue, &mtp)
 		if mtpAddress.String() == mtp.Address {
-			assetList = append(assetList, mtp.Asset)
+			assetList = append(assetList, mtp.CollateralAsset)
 		}
 	}
 	return assetList

@@ -16,7 +16,7 @@ const (
 )
 
 func (mtp MTP) Validate() error {
-	if mtp.Asset == "" {
+	if mtp.CollateralAsset == "" {
 		return sdkerrors.Wrap(ErrMTPInvalid, "no asset specified")
 	}
 	if mtp.Address == "" {
