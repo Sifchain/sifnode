@@ -486,8 +486,12 @@ describe("lock and burn tests", () => {
     const sendAmount = BigNumber.from(3500)
 
     // TODO seems the chainId from dev object is wrong.
-    // const networkDescriptor = devEnvObject!.ethResults!.chainId
-    const networkDescriptor = 31337
+    const networkDescriptor = devEnvObject?.ethResults?.chainId ?? 31337
+    console.log("Using network descriptor value:", networkDescriptor)
+    // const networkDescriptor = 31337
+    if (networkDescriptor != 31337) {
+      console.log("Unexpected, networkdescriptor should have value of 31337")
+    }
 
     let testSifAccount: EbRelayerAccount = createTestSifAccount()
     fundSifAccount(
@@ -525,6 +529,8 @@ describe("lock and burn tests", () => {
       contracts.bridgeBank
     ).pipe(filter((x) => x.kind !== "SifnodedInfoEvent"))
 
+    let receivedCosmosBurnmsg: boolean = false
+    let witnessSignedProphecy: boolean = false
     const states: Observable<State> = evmRelayerEvents.pipe(
       scan(
         (acc: State, v: SifEvent) => {
@@ -547,21 +553,32 @@ describe("lock and burn tests", () => {
               switch (ebrelayerEvent.kind) {
                 case "ReceiveCosmosBurnMessage": {
                   // return { ...acc, value: v, createdAt: acc.currentHeartbeat }
-                  return ensureCorrectTransition(
-                    acc,
-                    v,
-                    TransactionStep.PublishCosmosBurnMessage,
-                    TransactionStep.ReceiveCosmosBurnMessage
-                  )
+                  console.log("Seeing ReceiveCosmosBurnMessage")
+                  if (!receivedCosmosBurnmsg) {
+                    console.log("Receiving ReceiveCosmosBurnMessage for the first time")
+                    // Ignore subsequence occurrences, witness will reprocess until keeper updates nonce
+                    receivedCosmosBurnmsg = true
+                    return ensureCorrectTransition(
+                      acc,
+                      v,
+                      TransactionStep.PublishCosmosBurnMessage,
+                      TransactionStep.ReceiveCosmosBurnMessage
+                    )
+                  }
                 }
                 case "WitnessSignProphecy": {
-                  return ensureCorrectTransition(
-                    acc,
-                    v,
-                    TransactionStep.ReceiveCosmosBurnMessage,
-                    TransactionStep.WitnessSignProphecy
-                  )
+                  if (!witnessSignedProphecy) {
+                    witnessSignedProphecy = true
+                    return ensureCorrectTransition(
+                      acc,
+                      v,
+                      TransactionStep.ReceiveCosmosBurnMessage,
+                      TransactionStep.WitnessSignProphecy
+                    )
+                  }
                 }
+
+                // TODO: Add SetWitnessLockBurnNonce
               }
             }
             // Sifnoded side log assertions
