@@ -29,5 +29,5 @@ type KeeperI interface {
 	TakeInCustody(ctx sdk.Context, mtp types.MTP, pool clptypes.Pool) error
 
 	UpdatePoolHealth(ctx sdk.Context, pool clptypes.Pool) error
-	UpdateMTPHealth(ctx sdk.Context, mtp types.MTP, pool clptypes.Pool) (sdk.Uint, error)
+	UpdateMTPHealth(ctx sdk.Context, mtp types.MTP, pool clptypes.Pool) (sdk.Dec, error)
 }

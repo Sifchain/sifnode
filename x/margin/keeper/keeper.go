@@ -138,8 +138,8 @@ func (k Keeper) CustodySwap(sentBalance sdk.Uint, sentLiabilities sdk.Uint, rece
 
 func (k Keeper) Borrow(ctx sdk.Context, collateralAsset string, collateralAmount sdk.Uint, borrowAmount sdk.Uint, mtp types.MTP, pool clptypes.Pool, leverage sdk.Uint) error {
 	mtp.CollateralAmount = mtp.CollateralAmount.Add(collateralAmount)
-	mtp.LiabilitiesP = mtp.ExternalLiabilitiesP.Add(collateralAmount.Mul(leverage))
-	mtp.CustodyAssets = mtp.CustodyAssets.Add(borrowAmount)
+	mtp.LiabilitiesP = mtp.LiabilitiesP.Add(collateralAmount.Mul(leverage))
+	mtp.CustodyAmount = mtp.CustodyAmount.Add(borrowAmount)
 	mtp.Leverage = leverage
 
 	var err error
@@ -170,12 +170,12 @@ func (k Keeper) UpdatePoolHealth(ctx sdk.Context, pool clptypes.Pool) error {
 
 	H := mul1.Mul(mul2)
 
-	pool.Health = H
+	pool.Health = sdk.NewDecFromBigInt(H.BigInt())
 	return k.ClpKeeper().SetPool(ctx, &pool)
 }
 
-// TODO mtp.MtpHealth needs sdk.Dec not sdk.Uint. Is error needed here? Rename to CalcMTPHealth if not storing.
-func (k Keeper) UpdateMTPHealth(ctx sdk.Context, mtp types.MTP, pool clptypes.Pool) (sdk.Uint, error) {
+// TODO Rename to CalcMTPHealth if not storing.
+func (k Keeper) UpdateMTPHealth(ctx sdk.Context, mtp types.MTP, pool clptypes.Pool) (sdk.Dec, error) {
 	// delta x in calculate in y currency
 	nativeAsset := types.GetSettlementAsset()
 
@@ -191,12 +191,12 @@ func (k Keeper) UpdateMTPHealth(ctx sdk.Context, mtp types.MTP, pool clptypes.Po
 	}
 
 	if normalizedCollateral.Add(normalizedLiabilities).Add(normalizedCustody).Equal(sdk.ZeroUint()) {
-		return sdk.Uint{}, err // need error types
+		return sdk.Dec{}, types.ErrMTPInvalid
 	}
 
 	health := normalizedCollateral.Quo(normalizedCollateral.Add(normalizedLiabilities).Add(normalizedCustody))
 
-	return health, nil
+	return sdk.NewDecFromBigInt(health.BigInt()), nil
 }
 
 func (k Keeper) TakeInCustody(ctx sdk.Context, mtp types.MTP, pool clptypes.Pool) error {
