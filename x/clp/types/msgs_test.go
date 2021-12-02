@@ -1,11 +1,14 @@
 package types
 
 import (
+	//"fmt"
+
 	"bytes"
-	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/stretchr/testify/assert"
 	"strconv"
 	"testing"
+
+	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/stretchr/testify/assert"
 )
 
 func NewSigner(signer string) sdk.AccAddress {
@@ -37,6 +40,10 @@ func GetETHAsset() Asset {
 	return NewAsset("eth")
 }
 
+func GetROWANAsset() Asset {
+	return NewAsset("rowan")
+}
+
 func GetWrongAsset() Asset {
 	return NewAsset("01234567890123456789012345678901234567890123456789012345678901234567890123456789")
 }
@@ -52,6 +59,22 @@ func TestNewMsgCreatePool(t *testing.T) {
 	newpool = NewMsgCreatePool(signer, wrongAsset, sdk.NewUint(1000), sdk.NewUint(100))
 	err = newpool.ValidateBasic()
 	assert.Error(t, err)
+	str := newpool.Route()
+	assert.Equal(t, str, "clp")
+	str = newpool.Type()
+	assert.Equal(t, str, "create_pool")
+	newpool = NewMsgCreatePool(nil, asset, sdk.NewUint(1000), sdk.NewUint(100))
+	err = newpool.ValidateBasic()
+	assert.Error(t, err, "invalid address")
+	newpool = NewMsgCreatePool(signer, GetROWANAsset(), sdk.NewUint(1000), sdk.NewUint(100))
+	err = newpool.ValidateBasic()
+	assert.Error(t, err, "External Asset cannot be rowan")
+	newpool = NewMsgCreatePool(signer, asset, sdk.NewUint(0), sdk.NewUint(100))
+	err = newpool.ValidateBasic()
+	assert.Error(t, err, "amount is invalid")
+	newpool = NewMsgCreatePool(signer, asset, sdk.NewUint(1000), sdk.NewUint(0))
+	err = newpool.ValidateBasic()
+	assert.Error(t, err, "amount is invalid")
 }
 
 func TestNewMsgDecommissionPool(t *testing.T) {
@@ -65,6 +88,14 @@ func TestNewMsgDecommissionPool(t *testing.T) {
 	tx = NewMsgDecommissionPool(signer, wrongAsset.Symbol)
 	err = tx.ValidateBasic()
 	assert.Error(t, err)
+
+	str := tx.Route()
+	assert.Equal(t, str, "clp")
+	str = tx.Type()
+	assert.Equal(t, str, "decommission_pool")
+	tx = NewMsgDecommissionPool(nil, asset.Symbol)
+	err = tx.ValidateBasic()
+	assert.Error(t, err, "invalid address")
 }
 
 func TestNewMsgSwap(t *testing.T) {
