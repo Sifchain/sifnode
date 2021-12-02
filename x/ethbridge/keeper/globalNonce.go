@@ -37,7 +37,7 @@ func (k Keeper) UpdateGlobalSequence(ctx sdk.Context,
 	bs := make([]byte, 8)
 	binary.LittleEndian.PutUint64(bs, globalNonce+1)
 	store.Set(prefix, bs)
-	k.SetGlobalNonceToBlockNumber(ctx, networkDescriptor, globalNonce, blockNumber)
+	k.SetGlobalSequenceToBlockNumber(ctx, networkDescriptor, globalNonce, blockNumber)
 }
 
 // ExistsGlobalNonce check if the global nonce exists
@@ -73,8 +73,8 @@ func (k Keeper) GetGlobalSequenceToBlockNumber(
 	return binary.LittleEndian.Uint64(value)
 }
 
-// SetGlobalNonceToBlockNumber
-func (k Keeper) SetGlobalNonceToBlockNumber(
+// SetGlobalSequenceToBlockNumber
+func (k Keeper) SetGlobalSequenceToBlockNumber(
 	ctx sdk.Context,
 	networkDescriptor oracletypes.NetworkDescriptor,
 	globalNonce uint64,
@@ -86,7 +86,7 @@ func (k Keeper) SetGlobalNonceToBlockNumber(
 	bs := make([]byte, 8)
 	binary.LittleEndian.PutUint64(bs, blockNumber)
 
-	instrumentation.PeggyCheckpoint(ctx.Logger(), instrumentation.SetGlobalNonceToBlockNumber, "networkDescriptor", networkDescriptor, "globalNonce", globalNonce, "blockNumber", blockNumber)
+	instrumentation.PeggyCheckpoint(ctx.Logger(), instrumentation.SetGlobalSequenceToBlockNumber, "networkDescriptor", networkDescriptor, "globalNonce", globalNonce, "blockNumber", blockNumber)
 
 	store.Set(prefix, bs)
 }
