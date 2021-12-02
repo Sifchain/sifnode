@@ -60,10 +60,10 @@ func (k Keeper) GetGlobalSequencePrefix(ctx sdk.Context, networkDescriptor oracl
 func (k Keeper) GetGlobalSequenceToBlockNumber(
 	ctx sdk.Context,
 	networkDescriptor oracletypes.NetworkDescriptor,
-	globalNonce uint64) uint64 {
+	globalSequence uint64) uint64 {
 
 	store := ctx.KVStore(k.storeKey)
-	prefix := k.GetGlobalSequenceToBlockNumberPrefix(ctx, networkDescriptor, globalNonce)
+	prefix := k.GetGlobalSequenceToBlockNumberPrefix(ctx, networkDescriptor, globalSequence)
 
 	if !k.ExistsGlobalNonce(ctx, prefix) {
 		return uint64(0)
