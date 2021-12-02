@@ -150,8 +150,7 @@ func RelayBatchProphecyCompletedToEthereum(
 			TokenName:            prophecyInfo.TokenName,
 			TokenSymbol:          prophecyInfo.TokenSymbol,
 			TokenDecimals:        uint8(prophecyInfo.Decimail),
-			// TODO after regenerate the go binding file, we need denomHash in claim data
-			//TokenDenomHash: prophecyInfo.TokenDenomHash,
+			CosmosDenom:          prophecyInfo.TokenDenomHash,
 		}
 		batchClaimData[index] = claimData
 
