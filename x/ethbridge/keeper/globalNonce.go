@@ -9,7 +9,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-// GetGlobalSequence get current global nonce and update it
+// GetGlobalSequence get current sequence.  Default is 1 if there's no existing value stored.
 func (k Keeper) GetGlobalSequence(ctx sdk.Context, networkDescriptor oracletypes.NetworkDescriptor) uint64 {
 	prefix := k.GetGlobalSequencePrefix(ctx, networkDescriptor)
 	store := ctx.KVStore(k.storeKey)

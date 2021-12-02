@@ -361,7 +361,7 @@ func (k Keeper) GetWitnessLockBurnSequence(ctx sdk.Context, networkDescriptor or
 	return k.oracleKeeper.GetWitnessLockBurnSequence(ctx, networkDescriptor, valAccount)
 }
 
-// Exists chec if the key existed in db.
+// Exists returns true if the key exists in the store.  Passing nil will panic.
 func (k Keeper) Exists(ctx sdk.Context, key []byte) bool {
 	store := ctx.KVStore(k.storeKey)
 	return store.Has(key)
