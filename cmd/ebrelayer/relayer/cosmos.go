@@ -198,6 +198,8 @@ func (sub CosmosSub) ProcessLockBurnWithScope(txFactory tx.Factory, client *tmcl
 					sub.SugaredLogger.Infow(
 						"Received message from sifchain: ",
 						"msg", cosmosMsg,
+						"NetworkDescriptor", cosmosMsg.NetworkDescriptor,
+						"GlobalSequence", globalSequence,
 					)
 
 					if cosmosMsg.NetworkDescriptor == sub.NetworkDescriptor {
