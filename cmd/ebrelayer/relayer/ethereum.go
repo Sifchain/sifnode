@@ -378,7 +378,7 @@ func (sub EthereumSub) logToEvent(networkDescriptor oracletypes.NetworkDescripto
 	event.BridgeContractAddress = contractAddress
 
 	if decodedEvent, err := bridgeBank.BridgeBankFilterer.ParseLogLock(cLog); err == nil {
-		event.ClaimType = ethbridgetypes.ClaimType_CLAIM_TYPE_BURN
+		event.ClaimType = ethbridgetypes.ClaimType_CLAIM_TYPE_LOCK
 		event.To = append(event.To, decodedEvent.To...)
 		event.Symbol = decodedEvent.Symbol
 		event.Name = decodedEvent.Name
