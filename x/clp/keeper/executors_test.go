@@ -13,10 +13,6 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-const MinUint = 0
-const maxBitLen = 255
-const max = 2 ^ maxBitLen - 1
-
 func TestKeeper_CreatePool_Error(t *testing.T) {
 	// nativeAssetAmount sdk.Uint, externalAssetAmount
 	ctx, app := test.CreateTestAppClp(false)
@@ -80,22 +76,22 @@ func TestKeeper_CreatePool_And_AddLiquidity_RemoveLiquidity(t *testing.T) {
 
 	msgCreatePool := types.NewMsgCreatePool(nil, asset, nativeAssetAmount, externalAssetAmount)
 	// Create Pool with empty address
-	pool, err := app.ClpKeeper.CreatePool(ctx, sdk.NewUint(1), &msgCreatePool)
+	_, err := app.ClpKeeper.CreatePool(ctx, sdk.NewUint(1), &msgCreatePool)
 	assert.Error(t, err, "empty address string is not allowed")
 
 	msgCreatePool = types.NewMsgCreatePool(signer, asset, nativeAssetAmount2, externalAssetAmount2)
 	// Create Pool with user does not have enough balance
-	pool, err = app.ClpKeeper.CreatePool(ctx, sdk.NewUint(1), &msgCreatePool)
+	_, err = app.ClpKeeper.CreatePool(ctx, sdk.NewUint(1), &msgCreatePool)
 	assert.Error(t, err, "user does not have enough balance of the required coin")
 
 	msgCreatePool = types.NewMsgCreatePool(signer2, asset2, nativeAssetAmount, externalAssetAmount)
 	// Create Pool with user does not have enough balance for singer2
-	pool, err = app.ClpKeeper.CreatePool(ctx, sdk.NewUint(1), &msgCreatePool)
+	_, err = app.ClpKeeper.CreatePool(ctx, sdk.NewUint(1), &msgCreatePool)
 	assert.Error(t, err, "user does not have enough balance of the required coin")
 
 	msgCreatePool = types.NewMsgCreatePool(signer, asset, nativeAssetAmount, externalAssetAmount)
 	// Create Pool
-	pool, err = app.ClpKeeper.CreatePool(ctx, sdk.NewUint(1), &msgCreatePool)
+	pool, err := app.ClpKeeper.CreatePool(ctx, sdk.NewUint(1), &msgCreatePool)
 	if err != nil {
 		fmt.Println("Error Generating new pool :", err)
 	}
@@ -158,7 +154,7 @@ func TestKeeper_CreatePool_And_AddLiquidity_RemoveLiquidity(t *testing.T) {
 	errorRemoveLiquidity = app.ClpKeeper.RemoveLiquidity(ctx, *pool, subCoin, subCoin, *lp, sdk.NewUint(0), sdk.NewUint(10001), sdk.NewUint(10001))
 	assert.NoError(t, errorRemoveLiquidity)
 	lp.LiquidityProviderAddress = ""
-	errorRemoveLiquidity = app.ClpKeeper.RemoveLiquidity(ctx, *pool, subCoin, subCoin, *lp, sdk.NewUint(0), sdk.NewUint(10001), sdk.NewUint(10001))
+	_ = app.ClpKeeper.RemoveLiquidity(ctx, *pool, subCoin, subCoin, *lp, sdk.NewUint(0), sdk.NewUint(10001), sdk.NewUint(10001))
 	assert.Error(t, err, "empty address string is not allowed")
 }
 
