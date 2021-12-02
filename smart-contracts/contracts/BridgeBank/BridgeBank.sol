@@ -486,37 +486,6 @@ contract BridgeBank is BankStorage, CosmosBank, EthereumWhiteList, CosmosWhiteLi
   }
 
   /**
-   * @notice Locks multiple tokens in the bridge contract in a single tx
-   * @dev This is used to handle the case where the user is sending tokens
-   * @param recipient Bytes representation of destination address
-   * @param token Token address
-   * @param amount Value of deposit
-   */
-  function multiLock(
-    bytes[] calldata recipient,
-    address[] calldata token,
-    uint256[] calldata amount
-  ) external whenNotPaused {
-    require(recipient.length == token.length, "M_P");
-    require(token.length == amount.length, "M_P");
-
-    // use intermediate lock burn nonce to distinguish between different lock calls
-    // this alows us to track the lock calls in the logs
-    // and to prevent double locking
-    // (i.e. if a user calls lock twice with the same amount, we don't want to lock twice)
-    // This pattern of using the intermediate value will save us gas
-    // by utilizing the stack for all intermediate values
-    uint256 intermediateLockBurnNonce = lockBurnNonce;
-
-    for (uint256 i = 0; i < recipient.length; i++) {
-      intermediateLockBurnNonce++;
-
-      _lockTokens(recipient[i], token[i], amount[i], intermediateLockBurnNonce);
-    }
-    lockBurnNonce = intermediateLockBurnNonce;
-  }
-
-  /**
    * @notice Locks or burns multiple tokens in the bridge contract in a single tx
    * @param recipient Bytes representation of destination address
    * @param token Token address

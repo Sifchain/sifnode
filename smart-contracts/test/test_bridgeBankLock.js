@@ -2,10 +2,10 @@ const Web3Utils = require("web3-utils");
 const web3 = require("web3");
 const BigNumber = web3.BigNumber;
 
-const { ethers } = require("hardhat");
-const { use, expect } = require("chai");
-const { solidity } = require("ethereum-waffle");
-const { setup } = require("./helpers/testFixture");
+const {ethers} = require("hardhat");
+const {use, expect} = require("chai");
+const {solidity} = require("ethereum-waffle");
+const {setup} = require("./helpers/testFixture");
 
 require("chai").use(require("chai-as-promised")).use(require("chai-bignumber")(BigNumber)).should();
 
@@ -168,10 +168,11 @@ describe("Test Bridge Bank", function () {
       // Attempt to lock tokens
       await state.bridgeBank
         .connect(userOne)
-        .multiLock(
+        .multiLockBurn(
           [state.sender, state.sender, state.sender],
           [state.token1.address, state.token2.address, state.token3.address],
-          [state.amount, state.amount, state.amount]
+          [state.amount, state.amount, state.amount],
+          [false, false, false]
         );
 
       // Confirm that the user has been minted the correct token
@@ -194,10 +195,11 @@ describe("Test Bridge Bank", function () {
       await expect(
         state.bridgeBank
           .connect(userOne)
-          .multiLock(
+          .multiLockBurn(
             [state.sender, state.sender, state.sender],
             [state.token1.address, state.token2.address, state.token3.address],
-            [state.amount, state.amount, state.amount]
+            [state.amount, state.amount, state.amount],
+            [false, false, false]
           )
       ).to.be.rejectedWith("Address is blocklisted");
 
@@ -369,10 +371,11 @@ describe("Test Bridge Bank", function () {
       await expect(
         state.bridgeBank
           .connect(userOne)
-          .multiLock(
+          .multiLockBurn(
             [state.sender, state.sender, state.sender],
             [state.token1.address, state.token2.address, state.token3.address],
-            [state.amount, state.amount, state.amount]
+            [state.amount, state.amount, state.amount],
+            [false, false, false]
           )
       ).to.be.revertedWith("transfer amount exceeds allowance");
 
@@ -392,10 +395,11 @@ describe("Test Bridge Bank", function () {
       await expect(
         state.bridgeBank
           .connect(userOne)
-          .multiLock(
+          .multiLockBurn(
             [state.sender, state.sender, state.sender],
             [state.token1.address, state.token2.address, state.token3.address],
-            [state.amount, state.amount]
+            [state.amount, state.amount],
+            [false, false, false]
           )
       ).to.be.revertedWith("M_P");
     });
@@ -405,10 +409,11 @@ describe("Test Bridge Bank", function () {
       await expect(
         state.bridgeBank
           .connect(userOne)
-          .multiLock(
+          .multiLockBurn(
             [state.sender, state.sender, state.sender],
             [state.token1.address, state.token2.address],
-            [state.amount, state.amount, state.amount]
+            [state.amount, state.amount, state.amount],
+            [false, false, false]
           )
       ).to.be.revertedWith("M_P");
     });
@@ -418,10 +423,11 @@ describe("Test Bridge Bank", function () {
       await expect(
         state.bridgeBank
           .connect(userOne)
-          .multiLock(
+          .multiLockBurn(
             [state.sender, state.sender],
             [state.token1.address, state.token2.address, state.token3.address],
-            [state.amount, state.amount, state.amount]
+            [state.amount, state.amount, state.amount],
+            [false, false, false]
           )
       ).to.be.revertedWith("M_P");
     });
@@ -431,10 +437,11 @@ describe("Test Bridge Bank", function () {
       await expect(
         state.bridgeBank
           .connect(userOne)
-          .multiLock(
+          .multiLockBurn(
             [state.sender + "ee", state.sender, state.sender],
             [state.token1.address, state.token2.address, state.token3.address],
-            [state.amount, state.amount, state.amount]
+            [state.amount, state.amount, state.amount],
+            [false, false, false]
           )
       ).to.be.revertedWith("INV_SIF_ADDR");
     });
@@ -445,10 +452,11 @@ describe("Test Bridge Bank", function () {
       await expect(
         state.bridgeBank
           .connect(userOne)
-          .multiLock(
+          .multiLockBurn(
             [state.sender, state.sender, state.sender],
             [state.token1.address, state.token2.address, state.token3.address],
-            [state.amount, state.amount, state.amount]
+            [state.amount, state.amount, state.amount],
+            [false, false, false]
           )
       ).to.be.revertedWith("Pausable: paused");
     });
@@ -458,7 +466,7 @@ describe("Test Bridge Bank", function () {
       await expect(
         state.bridgeBank
           .connect(userOne)
-          .multiLock(
+          .multiLockBurn(
             [state.sender, state.sender, state.sender, state.sender],
             [
               state.token1.address,
@@ -466,9 +474,10 @@ describe("Test Bridge Bank", function () {
               state.token3.address,
               state.constants.zeroAddress,
             ],
-            [state.amount, state.amount, state.amount, state.amount]
+            [state.amount, state.amount, state.amount, state.amount],
+            [false, false, false, false]
           ),
-        { value: 100 }
+        {value: 100}
       ).to.be.revertedWith("Address: call to non-contract");
     });
 
@@ -610,10 +619,11 @@ describe("Test Bridge Bank", function () {
       await expect(
         state.bridgeBank
           .connect(userOne)
-          .multiLock(
+          .multiLockBurn(
             [state.sender, state.sender, state.sender],
             [state.token1.address, state.token2.address, state.token3.address],
-            [state.amount, state.amount, state.amount]
+            [state.amount, state.amount, state.amount],
+            [false, false, false]
           )
       ).to.be.revertedWith("Only token not in cosmos whitelist can be locked");
     });
