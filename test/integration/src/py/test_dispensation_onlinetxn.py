@@ -6,7 +6,6 @@ import pytest
 from dispensation_envutils import create_online_singlekey_txn, create_new_sifaddr_and_key, send_sample_rowan, balance_check, \
 query_block_claim, create_online_singlekey_txn_with_runner, run_dispensation
 
-
 # AUTOMATED TEST TO VALIDATE ONLINE TXN
 @pytest.mark.parametrize("claimType", ['ValidatorSubsidy', 'LiquidityMining'])
 def test_create_online_singlekey_txn(claimType):
@@ -19,7 +18,7 @@ def test_create_online_singlekey_txn(claimType):
     from_address = 'sifnodeadmin'
     keyring_backend = 'test'
     chain_id = 'localnet'
-    amount = '10000000rowan'
+    amount = '100000000000000000rowan'
     sampleamount = '1000rowan'
 
     # THESE 4 TXNS ARE TO REGISTER NEW ACCOUNTS ON CHAIN
@@ -135,7 +134,6 @@ def test_insufficient_funds_dispensation_txn(claimType):
     except OSError as e:
         print("Error: %s - %s." % (e.filename, e.strerror))
 
-
 # AUTOMATED TEST TO VALIDATE ONLINE RUN DISPENSATION TXN
 @pytest.mark.parametrize("claimType", ['ValidatorSubsidy', 'LiquidityMining'])
 def test_run_online_singlekey_txn(claimType):
@@ -148,7 +146,7 @@ def test_run_online_singlekey_txn(claimType):
     from_address = 'sifnodeadmin'
     keyring_backend = 'test'
     chain_id = 'localnet'
-    amount = '10000000rowan'
+    amount = '100000000000000000rowan'
     fee = '150000'
     currency = 'rowan'
     sampleamount = '1000rowan'
@@ -197,7 +195,6 @@ def test_run_online_singlekey_txn(claimType):
 
     # QUERY BLOCK USING TXN HASH
     resp = query_block_claim(txhash)
-
     distribution_msg = resp['tx']['body']['messages'][0]
     msg_type = distribution_msg['@type']
     distributor = distribution_msg['distributor']
@@ -215,11 +212,8 @@ def test_run_online_singlekey_txn(claimType):
     assert distribution_msg_keys[2] == 'authorized_runner'
     assert distribution_msg_keys[3] == 'distribution_type'
 
-    distribution_name = resp['logs'][0]['events'][0]['attributes'][1]['value']
-    distribution_type = resp['logs'][0]['events'][0]['attributes'][2]['value']
-    logging.info(f"distribution_name = {distribution_name}, distribution_type = {distribution_type}")
-
     # RUN DISPENSATION TXN; GET TXN HASH
+    distribution_name = f"{str(resp['height'])}_{str(distributor)}"
     runtxnhash = run_dispensation(distribution_name, claimType, runner_address, chain_id)
     logging.info(f"txn hash for running dispensation = {runtxnhash}")
     time.sleep(5)
@@ -227,10 +221,10 @@ def test_run_online_singlekey_txn(claimType):
     # QUERY BLOCK USING TXN HASH
     runresp = query_block_claim(runtxnhash)
     logging.info(f"response from block for run dispensation = {runresp}")
-    rundistributiontag = runresp['logs'][0]['events'][2]['type']
-    rundistname = runresp['logs'][0]['events'][2]['attributes'][0]['value']
-    runrunneraddress = runresp['logs'][0]['events'][2]['attributes'][1]['value']
-    rundistreceiverlist = [runresp['logs'][0]['events'][4]['attributes'][0]['value'], runresp['logs'][0]['events'][4]['attributes'][3]['value']]
+    rundistributiontag = runresp['logs'][0]['events'][4]['type']
+    rundistname = runresp['logs'][0]['events'][4]['attributes'][0]['value']
+    runrunneraddress = runresp['logs'][0]['events'][4]['attributes'][1]['value']
+    rundistreceiverlist = [runresp['logs'][0]['events'][6]['attributes'][0]['value'], runresp['logs'][0]['events'][6]['attributes'][3]['value']]
     sortedrundistreceiverlist = sorted(rundistreceiverlist)
     logging.info(f"sortedrundistreceiverlist = {sortedrundistreceiverlist}")
     logging.info(f"sortedrundistreceiverlist first item = {sortedrundistreceiverlist[0]}")
@@ -259,16 +253,16 @@ def test_run_online_singlekey_txn(claimType):
     assert run_distr_msg_keys[3] == 'distribution_type'
 
     # READING TAGS FROM RUN DISPENSATION CMD
-    temprundistamount1 = runresp['logs'][0]['events'][4]['attributes'][2]['value']
+    temprundistamount1 = runresp['logs'][0]['events'][6]['attributes'][2]['value']
     logging.info(f"temp amount distributed 1 = {temprundistamount1}")
-    temprundistamount2 = runresp['logs'][0]['events'][4]['attributes'][5]['value']
+    temprundistamount2 = runresp['logs'][0]['events'][6]['attributes'][5]['value']
     logging.info(f"temp amount distributed 2 = {temprundistamount2}")
     my_list = [temprundistamount1, temprundistamount2]
     logging.info(f"my list = {my_list}")
     rundistamount = [int(i[:-5]) for i in my_list]
     logging.info(f"temp amount distributed 2 = {rundistamount}")
-    runrecipientaddress1 = runresp['logs'][0]['events'][4]['attributes'][0]['value']
-    runrecipientaddress2 = runresp['logs'][0]['events'][4]['attributes'][3]['value']
+    runrecipientaddress1 = runresp['logs'][0]['events'][6]['attributes'][0]['value']
+    runrecipientaddress2 = runresp['logs'][0]['events'][6]['attributes'][3]['value']
     amount_distributed = [rundistamount[0], rundistamount[1]]
     recipient_dispensation_addresses = [runrecipientaddress1, runrecipientaddress2]
     logging.info(f"dispensation txn addresses = {recipient_dispensation_addresses}")

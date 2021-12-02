@@ -5,12 +5,6 @@
 make clean-config
 sifnoded init test --chain-id=localnet
 
-sifnoded config output json
-sifnoded config indent true
-sifnoded config trust-node true
-sifnoded config chain-id localnet
-sifnoded config keyring-backend test
-
 echo "Generating deterministic account - sif"
 echo "race draft rival universe maid cheese steel logic crowd fork comic easy truth drift tomorrow eye buddy head time cash swing swift midnight borrow" | sifnoded keys add sif --recover
 
@@ -23,9 +17,9 @@ sifnoded add-genesis-account $(sifnoded keys show akasha -a) 5000000000000000000
 sifnoded add-genesis-clp-admin $(sifnoded keys show sif -a)
 sifnoded add-genesis-clp-admin $(sifnoded keys show akasha -a)
 
-sifnoded  add-genesis-validators $(sifnoded keys show sif -a --bech val)
+sifnoded add-genesis-validators $(sifnoded keys show sif -a --bech val)
 
-sifnoded gentx --name sif --amount 1000000000000000000000000stake --keyring-backend test
+sifnoded gentx sif 1000000000000000000000000stake --keyring-backend test
 
 echo "Collecting genesis txs..."
 sifnoded collect-gentxs

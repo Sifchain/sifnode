@@ -4,8 +4,6 @@ const { deployProxy } = require('@openzeppelin/truffle-upgrades');
 
 const CosmosBridge = artifacts.require("CosmosBridge");
 const Oracle = artifacts.require("Oracle");
-const BridgeBank = artifacts.require("BridgeBank");
-const BridgeRegistry = artifacts.require("BridgeRegistry");
 const eRowan = artifacts.require("BridgeToken");
 
 module.exports = function(deployer, network, accounts) {

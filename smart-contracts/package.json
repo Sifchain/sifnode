@@ -78,6 +78,7 @@
     "peggy:burn": "npx truffle exec scripts/sendBurnTx.js",
     "peggy:check": "npx truffle exec scripts/sendCheckProphecy.js",
     "peggy:getTokenBalance": "npx truffle exec scripts/getTokenBalance.js",
+    "peggy:upgradeBridgeBank:test": "USE_FORKING=1 npx hardhat run scripts/testBridgeBankUpgrade.js",
     "token:address": "npx truffle exec scripts/getTokenContractAddress.js",
     "token:mint": "npx truffle exec scripts/mintTestTokens.js",
     "token:approve": "npx truffle exec scripts/sendApproveTx.js",
@@ -87,7 +88,9 @@
     "test": "concurrently -r -k -s first \"yarn develop\" \"truffle test --network develop test/test*.js\" ",
     "testHardhat": "npx hardhat test test/test_bridgeBankMigration.ts  test/test_newBridgeBank.ts",
     "whitelist:run": "npx hardhat run scripts/fetchTokenDetails.js --network mainnet && npx hardhat run scripts/bulk_set_whitelist.ts --network mainnet",
-    "whitelist:test": "npx hardhat run scripts/fetchTokenDetails.js --network hardhat && npx hardhat run scripts/bulk_set_whitelist.ts --network hardhat"
+    "whitelist:test": "npx hardhat run scripts/fetchTokenDetails.js --network hardhat && npx hardhat run scripts/bulk_set_whitelist.ts --network hardhat",
+    "blocklist:run": "npx hardhat run scripts/sync_ofac_blocklist.js --network mainnet",
+    "blocklist:test": "USE_FORKING=1 npx hardhat run scripts/sync_ofac_blocklist.js --network hardhat"
   },
   "dependencies": {
     "concurrently": "^6.2.0",

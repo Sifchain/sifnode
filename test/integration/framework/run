@@ -1,0 +1,62 @@
+#!/bin/python3
+
+# This is an executable command-line frontend that makes sure we are running with a suitable Python virtual environment.
+# If the virtual environment does not exist yet, it is created on first use.
+
+import os
+import sys
+import glob
+import fcntl
+import subprocess
+
+
+def execst(args, cwd=None):
+    return subprocess.run(args, cwd=cwd, check=True, capture_output=False)
+
+def get_basedir():
+    return os.path.abspath(os.path.join(os.path.normpath(os.path.dirname(__file__))))
+
+def init_venv(venv_dir, requirements_txt):
+    execst(["python3", "-m", "venv", venv_dir])
+    venv_pip = os.path.join(venv_dir, "bin", "pip3")
+    execst([venv_pip, "install", "--upgrade", "pip"])
+    execst([venv_pip, "install", "wheel"])
+    execst([venv_pip, "install", "-r", requirements_txt])
+
+def ensure_venv(venv_dir, requirements_txt, lock_file=None):
+    def wrapped():
+        if not os.path.exists(venv_dir):
+            print("Initializing Python virtual environment on first use in '{}'...".format(venv_dir))
+            init_venv(venv_dir, requirements_txt)
+    if lock_file:
+        with open(lock_file, "w") as f:
+            fcntl.lockf(f.fileno(), fcntl.LOCK_EX)  # Blocks
+            try:
+                wrapped()
+            finally:
+                fcntl.lockf(f.fileno(), fcntl.F_UNLCK)
+    else:
+        wrapped()
+
+def load_main_module():
+    base_dir = get_basedir()
+    project_root = os.path.abspath(os.path.join(os.path.normpath(os.path.join(base_dir, *([os.path.pardir] * 3)))))
+    venv_dir = os.path.join(base_dir, "venv")
+    requirements_txt = os.path.join(base_dir, "requirements.txt")
+    lock_file = os.path.join(base_dir, ".lock")
+
+    ensure_venv(venv_dir, requirements_txt, lock_file=lock_file)
+    venv_lib_dir = glob.glob(os.path.join(venv_dir, "lib", "python3.*"))[0]
+    sys.path = sys.path + [
+        os.path.join(venv_lib_dir, "site-packages"),
+        os.path.join(project_root, "test", "integration"),  # For running integration tests in-process
+    ]
+    import main as main_module
+    return main_module
+
+def main(argv):
+    main_module = load_main_module()
+    main_module.main(argv)
+
+if __name__ == "__main__":
+    main(sys.argv[1:])
