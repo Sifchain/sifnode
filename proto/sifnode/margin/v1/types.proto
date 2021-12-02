@@ -22,31 +22,16 @@ message MTP {
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Uint",
     (gogoproto.nullable) = false
   ];
-  string custody_assets = 6 [
+  string custody_asset = 6;
+  string custody_amount = 7 [
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Uint",
     (gogoproto.nullable) = false
   ];
-  string x_value = 7 [
+  string leverage = 8 [
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Uint",
     (gogoproto.nullable) = false
   ];
-  string y_value = 8 [
-    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Uint",
-    (gogoproto.nullable) = false
-  ];
-  string borrow_fee_rate = 9 [
-    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
-    (gogoproto.nullable) = false
-  ];
-  string borrow_fees_accrued = 10 [
-    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Uint",
-    (gogoproto.nullable) = false
-  ];
-  string leverage = 11 [
-    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Uint",
-    (gogoproto.nullable) = false
-  ];
-  string mtp_health = 12 [
+  string mtp_health = 9 [
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
     (gogoproto.nullable) = false
   ];
