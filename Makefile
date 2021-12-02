@@ -67,7 +67,8 @@ clean-config:
 	@rm -rf ~/.sifnode*
 
 clean: clean-config
-	@rm -rf ${GOBIN}/sif*
+	@rm -rf ${GOBIN}/sif* 
+	git clean -fdx cmd/ebrelayer/contract/generated
 
 coverage:
 	@go test -v ./... -coverprofile=coverage.txt -covermode=atomic
