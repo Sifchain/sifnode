@@ -165,6 +165,7 @@ func (sub CosmosSub) ProcessLockBurnWithScope(txFactory tx.Factory, client *tmcl
 		"toBlockNumber", toBlockNumber)
 
 	// BlockResults API require the block number greater than zero
+	// When will this be zero?
 	if fromBlockNumber == 0 {
 		fromBlockNumber = 1
 	}
@@ -188,7 +189,6 @@ func (sub CosmosSub) ProcessLockBurnWithScope(txFactory tx.Factory, client *tmcl
 				claimType := getOracleClaimType(event.GetType())
 
 				sub.SugaredLogger.Infow("claimtype cosmos.go: ", "claimType: ", claimType)
-				// instrumentation.PeggyCheckpointZap(sub.SugaredLogger, instrumentation.CosmosEvent, zap.Reflect("event", event))
 
 				switch claimType {
 				case types.MsgBurn, types.MsgLock:
@@ -198,6 +198,11 @@ func (sub CosmosSub) ProcessLockBurnWithScope(txFactory tx.Factory, client *tmcl
 					if err != nil {
 						sub.SugaredLogger.Errorw("sifchain client receive a malformed burn/lock message.",
 							errorMessageKey, err.Error())
+						/**
+						TODO: This continue would cause the bridge to be stuck.
+						This is same as skipping a msg, the next cosmosMsg.GlobalSequence
+						will be +2 of current global sequence,
+						*/
 						continue
 					}
 
@@ -272,6 +277,10 @@ func (sub CosmosSub) witnessSignProphecyID(
 	txFactory tx.Factory,
 	cosmosMsg types.CosmosMsg,
 ) {
+	/**
+	err in this func are ignored, and they would cause an issue because we
+	assume any cosmos msgs would be processed in here
+	*/
 	sub.SugaredLogger.Infow("handle burn lock message.",
 		"cosmosMessage", cosmosMsg.String())
 
@@ -282,6 +291,7 @@ func (sub CosmosSub) witnessSignProphecyID(
 
 	valAddr, err := GetValAddressFromKeyring(txFactory.Keybase(), sub.ValidatorName)
 	if err != nil {
+		// err is being thrown silently.
 		sub.SugaredLogger.Infow(
 			"get the prophecy claim.",
 			"cosmosMsg", err,
@@ -312,14 +322,14 @@ func (sub CosmosSub) GetGlobalSequenceBlockNumberFromCosmos(
 	networkDescriptor oracletypes.NetworkDescriptor,
 	relayerValAddress string) (uint64, uint64, error) {
 
-	conn, err := grpc.Dial("0.0.0.0:9090", grpc.WithInsecure())
+	gRpcClientConn, err := grpc.Dial("0.0.0.0:9090", grpc.WithInsecure())
 	if err != nil {
 		return 0, 0, err
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
-	client := ethbridgetypes.NewQueryClient(conn)
+	client := ethbridgetypes.NewQueryClient(gRpcClientConn)
 
 	// Get lockburn sequence per networkdescriptor+relayer address
 	witnessLockBurnSequenceRequest := ethbridgetypes.QueryWitnessLockBurnSequenceRequest{

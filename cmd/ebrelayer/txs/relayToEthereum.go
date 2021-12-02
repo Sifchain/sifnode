@@ -175,6 +175,7 @@ func RelayBatchProphecyCompletedToEthereum(
 		receipt, err = client.TransactionReceipt(context.Background(), tx.Hash())
 
 		if err != nil {
+			sugaredLogger.Errorw("Failed to submit to ethereum client", "error", err)
 			sleepThread(1)
 		} else {
 			break
