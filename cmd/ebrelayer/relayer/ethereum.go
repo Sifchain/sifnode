@@ -6,8 +6,6 @@ import (
 	"context"
 	"crypto/ecdsa"
 	"errors"
-	bridgeBankContract "github.com/Sifchain/sifnode/cmd/ebrelayer/contract/generated/artifacts/contracts/BridgeBank/BridgeBank.sol"
-	"github.com/ethereum/go-ethereum/common/math"
 	"log"
 	"math/big"
 	"os"
@@ -15,6 +13,9 @@ import (
 	"sync"
 	"syscall"
 	"time"
+
+	bridgeBankContract "github.com/Sifchain/sifnode/cmd/ebrelayer/contract/generated/artifacts/contracts/BridgeBank/BridgeBank.sol"
+	"github.com/ethereum/go-ethereum/common/math"
 
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/internal/symbol_translator"
 	"github.com/Sifchain/sifnode/x/instrumentation"
@@ -382,7 +383,7 @@ func (sub EthereumSub) logToEvent(networkDescriptor oracletypes.NetworkDescripto
 		event.Symbol = decodedEvent.Symbol
 		event.Name = decodedEvent.Name
 		event.Decimals = decodedEvent.Decimals
-		event.NetworkDescriptor = decodedEvent.NetworkDescriptor
+		event.NetworkDescriptor = int32(networkDescriptor)
 		event.Value = decodedEvent.Value
 		event.Nonce = (&big.Int{}).Set(decodedEvent.Nonce)
 		event.From = decodedEvent.From
@@ -395,7 +396,7 @@ func (sub EthereumSub) logToEvent(networkDescriptor oracletypes.NetworkDescripto
 		//event.Symbol = decodedEvent.Symbol
 		//event.Name = decodedEvent.Name
 		event.Decimals = decodedEvent.Decimals
-		event.NetworkDescriptor = decodedEvent.NetworkDescriptor
+		event.NetworkDescriptor = int32(networkDescriptor)
 		event.Value = decodedEvent.Value
 		event.Nonce = (&big.Int{}).Set(decodedEvent.Nonce)
 		event.From = decodedEvent.From
