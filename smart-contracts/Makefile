@@ -9,7 +9,7 @@ gofiles=$(artifacts:.json=.go)
 artifacts/%.go: artifacts/%.json
 	bash scripts/do_abigen.sh $< ../cmd/ebrelayer/contract/generated
 
-all: .built ${gofiles}
+all: ${gofiles}
 
 node_modules:
 	npm install
