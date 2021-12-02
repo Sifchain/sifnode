@@ -1,6 +1,9 @@
 package keeper
 
 import (
+	"strings"
+
+	clptypes "github.com/Sifchain/sifnode/x/clp/types"
 	"github.com/Sifchain/sifnode/x/margin/types"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -101,4 +104,113 @@ func (k Keeper) DestroyMTP(ctx sdk.Context, symbol string, mtpAddress string) er
 	}
 	store.Delete(key)
 	return nil
+}
+
+func (k Keeper) ClpKeeper() types.CLPKeeper {
+	return k.clpKeeper
+}
+
+func (k Keeper) BankKeeper() types.BankKeeper {
+	return k.bankKeeper
+}
+
+func (k Keeper) GetLeverageParam(context sdk.Context) sdk.Uint {
+	panic("implement me")
+}
+
+func (k Keeper) CustodySwap(sentBalance sdk.Uint, sentLiabilities sdk.Uint, receivedBalance sdk.Uint, receivedLiabilities sdk.Uint, sentAmount sdk.Uint) sdk.Uint {
+	/*
+	   calculate swap fee based on math spec
+	   lambda_L = (0,1)
+	   Notice this is NOT a simple hybrid of uniswap model and Thorchain slippaged based model
+	   But a upgraded version that include swap, updating bouding curve (to be inside the old one)
+	   One can think about this as a state jump:
+	*/
+
+	// todo review
+	//receivedAmount := sentAmount.Mul(receivedBalance.Add(receivedLiabilities)).
+	//	Quo(sentAmount.Add(sentBalance).Add(sentLiabilities)).
+	//	Add(sentAmount.Mul(receivedBalance.Add(receivedLiabilities)).
+	//	Mul(sentBalance.Add(sentLiabilities)).Quo(sentAmount.Add(sentBalance).Add(sentLiabilities))).MulUint64(2)
+	receivedAmount := sdk.Uint{}
+	return receivedAmount
+}
+
+func (k Keeper) Borrow(ctx sdk.Context, collateralAsset string, collateralAmount sdk.Uint, borrowAmount sdk.Uint, mtp types.MTP, pool clptypes.Pool, leverage sdk.Uint) error {
+	mtp.CollateralAmount = mtp.CollateralAmount.Add(collateralAmount)
+	mtp.LiabilitiesP = mtp.ExternalLiabilitiesP.Add(collateralAmount.Mul(leverage))
+	mtp.CustodyAssets = mtp.CustodyAssets.Add(borrowAmount)
+	mtp.Leverage = leverage
+
+	var err error
+	mtp.MtpHealth, err = k.UpdateMTPHealth(ctx, mtp, pool) // set mtp in func or return h?
+
+	mtpAddress, err := sdk.AccAddressFromBech32(mtp.Address)
+	if err != nil {
+		return err
+	}
+	collateralCoins := sdk.NewCoins(sdk.NewCoin(collateralAsset, sdk.NewIntFromBigInt(collateralAmount.BigInt())))
+	err = k.BankKeeper().SendCoinsFromAccountToModule(ctx, mtpAddress, types.ModuleName, collateralCoins)
+	if err != nil {
+		return err
+	}
+
+	return k.SetMTP(ctx, &mtp)
+}
+
+func (k Keeper) UpdatePoolHealth(ctx sdk.Context, pool clptypes.Pool) error {
+	// can be both X and Y
+	ExternalAssetBalance := pool.ExternalAssetBalance
+	ExternalLiabilities := pool.ExternalLiabilities
+	NativeAssetBalance := pool.NativeAssetBalance
+	NativeLiabilities := pool.NativeLiabilities
+
+	mul1 := ExternalAssetBalance.Quo(ExternalAssetBalance.Add(ExternalLiabilities))
+	mul2 := NativeAssetBalance.Quo(NativeAssetBalance.Add(NativeLiabilities))
+
+	H := mul1.Mul(mul2)
+
+	pool.Health = H
+	return k.ClpKeeper().SetPool(ctx, &pool)
+}
+
+// TODO mtp.MtpHealth needs sdk.Dec not sdk.Uint. Is error needed here? Rename to CalcMTPHealth if not storing.
+func (k Keeper) UpdateMTPHealth(ctx sdk.Context, mtp types.MTP, pool clptypes.Pool) (sdk.Uint, error) {
+	// delta x in calculate in y currency
+	nativeAsset := types.GetSettlementAsset()
+
+	var normalizedCollateral, normalizedLiabilities, normalizedCustody sdk.Uint
+	if strings.EqualFold(mtp.CollateralAsset, nativeAsset) { // collateral is native
+		normalizedCustody = k.CustodySwap(pool.ExternalAssetBalance, pool.ExternalLiabilities, pool.NativeAssetBalance, pool.NativeLiabilities, mtp.CustodyAmount)
+		normalizedCollateral = mtp.CollateralAmount
+		normalizedLiabilities = mtp.LiabilitiesP
+	} else { // collateral is external
+		normalizedCollateral = k.CustodySwap(pool.ExternalAssetBalance, pool.ExternalLiabilities, pool.NativeAssetBalance, pool.NativeLiabilities, mtp.CollateralAmount)
+		normalizedLiabilities = k.CustodySwap(pool.ExternalAssetBalance, pool.ExternalLiabilities, pool.NativeAssetBalance, pool.NativeLiabilities, mtp.LiabilitiesP)
+		normalizedCustody = mtp.CustodyAmount
+	}
+
+	if normalizedCollateral.Add(normalizedLiabilities).Add(normalizedCustody).Equal(sdk.ZeroUint()) {
+		return sdk.Uint{}, err // need error types
+	}
+
+	health := normalizedCollateral.Quo(normalizedCollateral.Add(normalizedLiabilities).Add(normalizedCustody))
+
+	return health, nil
+}
+
+func (k Keeper) TakeInCustody(ctx sdk.Context, mtp types.MTP, pool clptypes.Pool) error {
+	nativeAsset := types.GetSettlementAsset()
+
+	if strings.EqualFold(mtp.CollateralAsset, nativeAsset) {
+		pool.NativeAssetBalance = pool.NativeAssetBalance.Sub(mtp.CollateralAmount)
+		pool.NativeLiabilities = pool.NativeLiabilities.Add(mtp.CollateralAmount)
+		pool.ExternalCustody = pool.ExternalCustody.Add(mtp.CustodyAmount)
+	} else {
+		pool.ExternalAssetBalance = pool.ExternalAssetBalance.Sub(mtp.CollateralAmount)
+		pool.ExternalLiabilities = pool.NativeLiabilities.Add(mtp.CollateralAmount)
+		pool.NativeCustody = pool.NativeCustody.Add(mtp.CustodyAmount)
+	}
+
+	return k.ClpKeeper().SetPool(ctx, &pool)
 }

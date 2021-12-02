@@ -7,4 +7,17 @@ import "sifnode/margin/v1/types.proto";
 option go_package = "github.com/Sifchain/sifnode/x/margin/types";
 
 service Msg {
+  rpc OpenLong(MsgOpenLong) returns (MsgOpenLongResponse) {}
 }
+
+message MsgOpenLong {
+  string signer = 1;
+  string collateral_asset = 2;
+  string collateral_amount = 3 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Uint",
+    (gogoproto.nullable) = false
+  ];
+  string borrow_asset = 4;
+}
+
+message MsgOpenLongResponse {}

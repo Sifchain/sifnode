@@ -1,6 +1,13 @@
 package keeper
 
-import "github.com/Sifchain/sifnode/x/margin/types"
+import (
+	"context"
+	"strings"
+
+	clptypes "github.com/Sifchain/sifnode/x/clp/types"
+	"github.com/Sifchain/sifnode/x/margin/types"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+)
 
 type msgServer struct {
 	KeeperI
@@ -12,4 +19,63 @@ func NewMsgServerImpl(k KeeperI) types.MsgServer {
 	return msgServer{
 		k,
 	}
+}
+
+func (k msgServer) OpenLong(goCtx context.Context, msg *types.MsgOpenLong) (*types.MsgOpenLongResponse, error) {
+	ctx := sdk.UnwrapSDKContext(goCtx)
+	leverage := k.GetLeverageParam(ctx)
+
+	collateralAmount := msg.CollateralAmount
+
+	mtp := types.MTP{
+		Address:          msg.Signer,
+		CollateralAsset:  msg.CollateralAsset,
+		CollateralAmount: msg.CollateralAmount,
+	}
+
+	var err error
+	var pool clptypes.Pool
+	var pCollateralAssets, pCollateralLiabilities, pCustodyAssets, pCustodyLiabilities sdk.Uint
+	nativeAsset := types.GetSettlementAsset()
+
+	if strings.EqualFold(msg.CollateralAsset, nativeAsset) {
+		pool, err = k.ClpKeeper().GetPool(ctx, msg.BorrowAsset)
+		if err != nil {
+			return nil, err
+		}
+		pCollateralAssets = pool.NativeAssetBalance
+		pCollateralLiabilities = pool.NativeLiabilities
+		pCustodyAssets = pool.ExternalAssetBalance
+		pCustodyLiabilities = pool.ExternalLiabilities
+	} else {
+		pool, err = k.ClpKeeper().GetPool(ctx, msg.CollateralAsset)
+		if err != nil {
+			return nil, err
+		}
+		pCollateralAssets = pool.ExternalAssetBalance
+		pCollateralLiabilities = pool.ExternalLiabilities
+		pCustodyAssets = pool.NativeAssetBalance
+		pCustodyLiabilities = pool.NativeLiabilities
+	}
+
+	leveragedAmount := collateralAmount.Mul(sdk.NewUint(1).Add(leverage))
+
+	borrowAmount := k.CustodySwap(pCollateralAssets, pCollateralLiabilities, pCustodyAssets, pCustodyLiabilities, leveragedAmount)
+
+	err = k.Borrow(ctx, msg.CollateralAsset, collateralAmount, borrowAmount, mtp, pool, leverage)
+	if err != nil {
+		return nil, err
+	}
+
+	err = k.UpdatePoolHealth(ctx, pool)
+	if err != nil {
+		return nil, err
+	}
+
+	err = k.TakeInCustody(ctx, mtp, pool)
+	if err != nil {
+		return nil, err
+	}
+
+	return &types.MsgOpenLongResponse{}, nil
 }
