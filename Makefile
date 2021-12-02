@@ -27,6 +27,9 @@ ldflags = -X github.com/cosmos/cosmos-sdk/version.Name=sifchain \
 		  -X github.com/cosmos/cosmos-sdk/version.Commit=$(COMMIT) \
 		  -X "github.com/cosmos/cosmos-sdk/version.BuildTags=$(build_tags_comma_sep)"
 
+# We use one smart contract file as a signal that the abigen files have been created
+smart_contract_file=cmd/ebrelayer/contract/generated/artifacts/contracts/BridgeRegistry.sol/BridgeRegistry.go
+
 BUILD_FLAGS := -ldflags '$(ldflags)' -tags ${BUILD_TAGS}
 
 BINARIES=./cmd/sifnoded ./cmd/sifgen ./cmd/ebrelayer
@@ -54,7 +57,7 @@ lint: lint-pre
 lint-verbose: lint-pre
 	@golangci-lint run -v --timeout=5m
 
-install: go.sum
+install: go.sum ${smart_contract_file}
 	go install ${BUILD_FLAGS} ${BINARIES}
 
 build-sifd: go.sum
@@ -131,3 +134,6 @@ proto-check-breaking:
 	# we should turn this back on after our first release
 	# $(DOCKER_BUF) breaking --against $(HTTPS_GIT)#branch=master
 .PHONY: proto-check-breaking
+
+${smart_contract_file}:
+	cd smart-contracts && make
