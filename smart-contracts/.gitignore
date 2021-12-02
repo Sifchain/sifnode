@@ -12,3 +12,4 @@ venv
 relayerdb/
 witnessdb/
 *.pyc
+package-lock.json
