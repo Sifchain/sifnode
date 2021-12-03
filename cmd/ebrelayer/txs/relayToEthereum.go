@@ -34,6 +34,8 @@ func InitRelayConfig(
 	provider string,
 	registry common.Address,
 	key *ecdsa.PrivateKey,
+	maxFeePerGas *big.Int,
+	maxPriorityFeePerGas *big.Int,
 	sugaredLogger *zap.SugaredLogger,
 ) (
 	*ethclient.Client,
@@ -49,58 +51,15 @@ func InitRelayConfig(
 		return nil, nil, common.Address{}, err
 	}
 
-	// Load the validator's address
-	sender, err := LoadSender()
-	if err != nil {
-		sugaredLogger.Errorw("failed to load validator address.",
-			errorMessageKey, err.Error())
-		return nil, nil, common.Address{}, err
-	}
-
-	nonce, err := client.PendingNonceAt(context.Background(), sender)
-	sugaredLogger.Infow("Current eth operator at pending nonce.", "pendingNonce", nonce)
-
-	if err != nil {
-		sugaredLogger.Errorw("failed to broadcast transaction.",
-			errorMessageKey, err.Error())
-		return nil, nil, common.Address{}, err
-	}
-
-	gasPrice, err := client.SuggestGasPrice(context.Background())
-	if err != nil {
-		sugaredLogger.Errorw("failed to get gas price.",
-			errorMessageKey, err.Error())
-		return nil, nil, common.Address{}, err
-	}
-
 	// Set up TransactOpts auth's tx signature authorization
 	transactOptsAuth := bind.NewKeyedTransactor(key)
 
-	sugaredLogger.Infow("ethereum tx current nonce from client api.",
-		"nonce", nonce,
-		"suggestedGasPrice", gasPrice)
-
-	gasPrice = gasPrice.Mul(gasPrice, big.NewInt(2))
-
-	quarterGasPrice := big.NewInt(0)
-	quarterGasPrice = quarterGasPrice.Div(gasPrice, big.NewInt(4))
-
-	gasPrice.Sub(gasPrice, quarterGasPrice)
-	sugaredLogger.Infow("final gas price after adjustment.",
-		"finalGasPrice", gasPrice)
-
-	transactOptsAuth.Nonce = big.NewInt(int64(nonce))
 	transactOptsAuth.Value = big.NewInt(0) // in wei
 	transactOptsAuth.GasLimit = GasLimit
-	transactOptsAuth.GasPrice = gasPrice
+	// GasFeeCap is maxFeePerGas; GasTipCap is maxPriorityFeePerGas
+	transactOptsAuth.GasFeeCap = maxFeePerGas
+	transactOptsAuth.GasTipCap = maxPriorityFeePerGas
 	transactOptsAuth.Context = context.Background()
-
-	if transactOptsAuth.GasPrice.Int64() > MaxGasPrice {
-		transactOptsAuth.GasPrice = big.NewInt(MaxGasPrice)
-	}
-
-	sugaredLogger.Infow("nonce before send transaction.",
-		"transactOptsAuth.Sequence", transactOptsAuth.Nonce)
 
 	targetContract := CosmosBridge
 

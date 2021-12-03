@@ -2,6 +2,7 @@ package relayer
 
 import (
 	"log"
+	"math/big"
 	"testing"
 
 	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
@@ -32,7 +33,8 @@ func TestNewCosmosSub(t *testing.T) {
 
 	sugaredLogger := logger.Sugar()
 	registryContractAddress := common.HexToAddress(contractAddress)
+
 	sub := NewCosmosSub(oracletypes.NetworkDescriptor(networkDescriptor), privateKey, tmProvider, ethProvider, registryContractAddress,
-		client.Context{}, validatorMoniker, sugaredLogger)
+		client.Context{}, validatorMoniker, sugaredLogger, big.NewInt(30000), big.NewInt(1))
 	require.NotEqual(t, sub, nil)
 }

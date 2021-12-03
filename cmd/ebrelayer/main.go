@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"math/big"
 	"net/url"
 	"os"
 	"strconv"
@@ -38,6 +39,8 @@ const (
 	web3ProviderFlag                  = "web3-provider"
 	bridgeRegistryContractAddressFlag = "bridge-registry-contract-address"
 	validatorMnemonicFlag             = "validator-mnemonic"
+	maxFeePerGasFlag                  = "maxFeePerGasFlag"
+	maxPriorityFeePerGasFlag          = "maxPriorityFeePerGasFlag"
 )
 
 func buildRootCmd() *cobra.Command {
@@ -139,6 +142,23 @@ func initWitnessCmd() *cobra.Command {
 	AddRelayerFlagsToCmd(initWitnessCmd)
 
 	return initWitnessCmd
+}
+
+func parseGasArguments(cmd *cobra.Command) (maxFeePerGas, maxPriorityFeePerGas *big.Int) {
+	maxFeePerGasString, err := cmd.Flags().GetString(maxFeePerGasFlag)
+	if err != nil {
+		log.Fatalln("failed to parse maxFeePerGasFlag")
+	}
+
+	maxPriorityFeePerGasString, err := cmd.Flags().GetString(maxPriorityFeePerGasFlag)
+	if err != nil {
+		log.Fatalln("failed to parse maxPriorityFeePerGasFlag")
+	}
+
+	maxFeePerGas, _ = (&big.Int{}).SetString(maxFeePerGasString, 10)
+	maxPriorityFeePerGas, _ = (&big.Int{}).SetString(maxPriorityFeePerGasString, 10)
+
+	return maxFeePerGas, maxPriorityFeePerGas
 }
 
 // RunInitRelayerCmd executes initRelayerCmd
@@ -266,6 +286,8 @@ func RunInitRelayerCmd(cmd *cobra.Command, args []string) error {
 		sugaredLogger,
 	)
 
+	maxFeePerGas, maxPriorityFeePerGas := parseGasArguments(cmd)
+
 	// Initialize new Cosmos event listener
 	cosmosSub := relayer.NewCosmosSub(oracletypes.NetworkDescriptor(networkDescriptor),
 		privateKey,
@@ -274,7 +296,10 @@ func RunInitRelayerCmd(cmd *cobra.Command, args []string) error {
 		contractAddress,
 		cliContext,
 		validatorMoniker,
-		sugaredLogger)
+		sugaredLogger,
+		maxFeePerGas,
+		maxPriorityFeePerGas,
+	)
 
 	waitForAll := sync.WaitGroup{}
 	waitForAll.Add(2)
@@ -404,6 +429,8 @@ func RunInitWitnessCmd(cmd *cobra.Command, args []string) error {
 		sugaredLogger,
 	)
 
+	maxFeePerGas, maxPriorityFeePerGas := parseGasArguments(cmd)
+
 	// Initialize new Cosmos event listener
 	cosmosSub := relayer.NewCosmosSub(oracletypes.NetworkDescriptor(networkDescriptor),
 		privateKey,
@@ -412,7 +439,10 @@ func RunInitWitnessCmd(cmd *cobra.Command, args []string) error {
 		contractAddress,
 		cliContext,
 		validatorMoniker,
-		sugaredLogger)
+		sugaredLogger,
+		maxFeePerGas,
+		maxPriorityFeePerGas,
+	)
 
 	waitForAll := sync.WaitGroup{}
 	waitForAll.Add(2)
@@ -450,6 +480,16 @@ func AddRelayerFlagsToCmd(cmd *cobra.Command) {
 		validatorMnemonicFlag,
 		"",
 		"Validator mnemonic",
+	)
+	cmd.Flags().String(
+		maxFeePerGasFlag,
+		"30000000000000",
+		"maxFeePerGasFlag for ethereum in wei",
+	)
+	cmd.Flags().String(
+		maxPriorityFeePerGasFlag,
+		"1000000000",
+		"maxFeePerGasFlag for ethereum in wei",
 	)
 }
 

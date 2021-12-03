@@ -57,7 +57,7 @@ lint: lint-pre
 lint-verbose: lint-pre
 	@golangci-lint run -v --timeout=5m
 
-install: go.sum ${smart_contract_file}
+install: go.sum ${smart_contract_file} .proto-gen
 	go install ${BUILD_FLAGS} ${BINARIES}
 
 build-sifd: go.sum
@@ -104,12 +104,16 @@ rollback:
 ###                                Protobuf                                 ###
 ###############################################################################
 
-proto-all: proto-format proto-lint proto-gen
+# You can regenerate Makefile.protofiles with
+#     find . -name *.proto | sort | grep -v node_mo | paste -s -d " " > Makefile.protofiles
+# if the list of .proto files changes
+proto_files=$(file <Makefile.protofiles)
 
-proto-gen:
-	@echo "Generating Protobuf files"
-	$(DOCKER) run --rm -v $(CURDIR):/workspace --workdir /workspace tendermintdev/sdk-proto-gen sh ./scripts/protocgen.sh
-.PHONY: proto-gen
+proto-all: proto-format proto-lint .proto-gen
+
+.proto-gen: $(proto_files)
+	$(DOCKER) run -e SIFUSER=$(shell id -u):$(shell id -g) --rm -v $(CURDIR):/workspace --workdir /workspace tendermintdev/sdk-proto-gen sh -x ./scripts/protocgen.sh
+	touch $@
 
 proto-format:
 	@echo "Formatting Protobuf files"

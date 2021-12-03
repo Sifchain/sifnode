@@ -135,38 +135,22 @@ func (sub CosmosSub) handleBatchProphecyCompleted(
 		return false
 	}
 
-	maxRetries := 5
-	i := 0
+	err = txs.RelayBatchProphecyCompletedToEthereum(
+		batchProphecyInfo,
+		sub.SugaredLogger,
+		client,
+		auth,
+		cosmosBridgeInstance,
+	)
 
-	for i < maxRetries {
-		err = txs.RelayBatchProphecyCompletedToEthereum(
-			batchProphecyInfo,
-			sub.SugaredLogger,
-			client,
-			auth,
-			cosmosBridgeInstance,
-		)
-
-		if err != nil {
-			sub.SugaredLogger.Errorw(
-				"failed to send new prophecy completed to ethereum",
-				errorMessageKey, err.Error(),
-			)
-		} else {
-			break
-		}
-		i++
-	}
-
-	if i == maxRetries {
+	if err != nil {
 		sub.SugaredLogger.Errorw(
-			"failed to broadcast transaction after 5 attempts",
+			"failed to send new prophecy completed to ethereum",
 			errorMessageKey, err.Error(),
 		)
 		return false
 	}
 
-	// process successfully complete
 	return true
 
 }

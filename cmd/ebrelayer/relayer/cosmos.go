@@ -58,11 +58,13 @@ type CosmosSub struct {
 	RegistryContractAddress common.Address
 	CliContext              client.Context
 	ValidatorName           string
+	MaxFeePerGas            *big.Int
+	MaxPriorityFeePerGas    *big.Int
 }
 
 // NewCosmosSub initializes a new CosmosSub
 func NewCosmosSub(networkDescriptor oracletypes.NetworkDescriptor, privateKey *ecdsa.PrivateKey, tmProvider, ethProvider string, registryContractAddress common.Address,
-	cliContext client.Context, validatorName string, sugaredLogger *zap.SugaredLogger) CosmosSub {
+	cliContext client.Context, validatorName string, sugaredLogger *zap.SugaredLogger, maxFeePerGas, maxPriorityFeePerGas *big.Int) CosmosSub {
 
 	return CosmosSub{
 		NetworkDescriptor:       networkDescriptor,
@@ -73,6 +75,8 @@ func NewCosmosSub(networkDescriptor oracletypes.NetworkDescriptor, privateKey *e
 		CliContext:              cliContext,
 		ValidatorName:           validatorName,
 		SugaredLogger:           sugaredLogger,
+		MaxFeePerGas:            maxFeePerGas,
+		MaxPriorityFeePerGas:    maxPriorityFeePerGas,
 	}
 }
 
@@ -245,24 +249,21 @@ func getOracleClaimType(eventType string) types.Event {
 }
 
 func tryInitRelayConfig(sub CosmosSub) (*ethclient.Client, *bind.TransactOpts, common.Address, error) {
+	client, auth, target, err := txs.InitRelayConfig(
+		sub.EthProvider,
+		sub.RegistryContractAddress,
+		sub.PrivateKey,
+		sub.MaxFeePerGas,
+		sub.MaxPriorityFeePerGas,
+		sub.SugaredLogger,
+	)
 
-	for i := 0; i < 5; i++ {
-		client, auth, target, err := txs.InitRelayConfig(
-			sub.EthProvider,
-			sub.RegistryContractAddress,
-			sub.PrivateKey,
-			sub.SugaredLogger,
-		)
-
-		if err != nil {
-			sub.SugaredLogger.Errorw("failed in init relay config.",
-				errorMessageKey, err.Error())
-			continue
-		}
-		return client, auth, target, err
+	if err != nil {
+		sub.SugaredLogger.Errorw("tryInitRelayConfig", errorMessageKey, err.Error())
+		return nil, nil, common.Address{}, errors.New("tryInitRelayConfig")
 	}
 
-	return nil, nil, common.Address{}, errors.New("hit max initRelayConfig retries")
+	return client, auth, target, err
 }
 
 // witness node sign against prophecyID of lock and burn message and send the singnature in message back to Sifnode.
