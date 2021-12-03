@@ -59,6 +59,7 @@ func TestNewMsgCreatePool(t *testing.T) {
 	newpool = NewMsgCreatePool(signer, wrongAsset, sdk.NewUint(1000), sdk.NewUint(100))
 	err = newpool.ValidateBasic()
 	assert.Error(t, err)
+
 	str := newpool.Route()
 	assert.Equal(t, str, "clp")
 	str = newpool.Type()
@@ -112,6 +113,23 @@ func TestNewMsgSwap(t *testing.T) {
 	tx = NewMsgSwap(signer, asset, GetSettlementAsset(), sdk.NewUint(0), sdk.NewUint(90))
 	err = tx.ValidateBasic()
 	assert.Error(t, err)
+
+	str := tx.Route()
+	assert.Equal(t, str, "clp")
+	str = tx.Type()
+	assert.Equal(t, str, "swap")
+	tx = NewMsgSwap(nil, asset, GetSettlementAsset(), sdk.NewUint(100), sdk.NewUint(90))
+	err = tx.ValidateBasic()
+	assert.Error(t, err, "invalid address")
+	tx = NewMsgSwap(signer, asset, wrongAsset, sdk.NewUint(100), sdk.NewUint(90))
+	err = tx.ValidateBasic()
+	assert.Error(t, err, "asset is invalid")
+	tx = NewMsgSwap(signer, asset, GetSettlementAsset(), sdk.NewUint(100), sdk.NewUint(100))
+	err = tx.ValidateBasic()
+	assert.Error(t, err, "Sent And Received asset cannot be the same")
+	tx = NewMsgSwap(signer, asset, GetSettlementAsset(), sdk.NewUint(0), sdk.NewUint(100))
+	err = tx.ValidateBasic()
+	assert.Error(t, err, "amount is invalid")
 }
 
 func TestNewMsgAddLiquidity(t *testing.T) {
