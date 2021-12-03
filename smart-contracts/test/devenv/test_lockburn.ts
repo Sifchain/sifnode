@@ -316,7 +316,6 @@ describe("lock and burn tests", () => {
                                         message: "incorrect EthereumMainnetLogLock",
                                     },
                                 }
-                                break
                             case "EbRelayerEvmStateTransition":
                                 switch ((v.data as any).kind) {
                                     case "EthereumProphecyClaim":
@@ -524,33 +523,18 @@ describe("lock and burn tests", () => {
                         }
                         // Sifnoded side log assertions
                         case "SifnodedPeggyEvent": {
-                            let sifnodedEvent: any = v.data
+                            const sifnodedEvent: any = v.data
                             switch (sifnodedEvent.kind) {
                                 case "Burn":
-                                    let cosmos_sender = sifnodedEvent.msg.Interface.cosmos_sender
                                     return ensureCorrectTransition(
                                         acc,
                                         v,
                                         TransactionStep.Initial,
                                         TransactionStep.Burn
-                                    ) // v.data
-
-                                case "GetTokenMetadata":
-                                    return ensureCorrectTransition(
-                                        acc,
-                                        v,
-                                        TransactionStep.Burn,
-                                        TransactionStep.GetTokenMetadata
                                     )
-
-                                case "SignProphecy":
-                                    return {} as State
-
-                                case "ProphecyStatus":
-                                    // Assert it is successful. But we dn need to coz thats the only end state
-                                    return {} as State
+                                default:
+                                    return {...acc, value: v, createdAt: acc.currentHeartbeat}
                             }
-                            return {...acc, value: v, createdAt: acc.currentHeartbeat}
                         }
 
                         default:
