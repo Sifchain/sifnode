@@ -17,6 +17,7 @@ import (
 	"google.golang.org/grpc"
 
 	ethbridgetypes "github.com/Sifchain/sifnode/x/ethbridge/types"
+	"github.com/Sifchain/sifnode/x/instrumentation"
 	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
 )
 
@@ -30,8 +31,8 @@ func (sub CosmosSub) StartProphecyHandler(txFactory tx.Factory, completionEvent 
 	if err != nil {
 		sub.SugaredLogger.Errorw("failed to initialize a sifchain client.",
 			errorMessageKey, err.Error())
-		completionEvent.Add(1)
-		go sub.Start(txFactory, completionEvent, symbolTranslator)
+		// completionEvent.Add(1)
+		// go sub.Start(txFactory, completionEvent, symbolTranslator)
 		return
 	}
 
@@ -92,9 +93,9 @@ func (sub CosmosSub) handleNewProphecyCompleted(client *tmClient.HTTP) {
 	prophecyInfoArray := GetAllProphciesCompleted(sub.TmProvider, sub.NetworkDescriptor, lastSubmittedNonce.Uint64()+1)
 
 	batches := (len(prophecyInfoArray) + 4) / 5
-	batch := 0
 
-	for batch < batches {
+	for batch := 0; batch < batches; batch++ {
+		// for batch < batches {
 		end := (batch + 1) * 5
 		if end > len(prophecyInfoArray) {
 			end = len(prophecyInfoArray)
@@ -106,8 +107,6 @@ func (sub CosmosSub) handleNewProphecyCompleted(client *tmClient.HTTP) {
 			sub.SugaredLogger.Errorw("fail to process prophecy.")
 			return
 		}
-
-		batch++
 	}
 }
 
@@ -151,6 +150,8 @@ func (sub CosmosSub) handleBatchProphecyCompleted(
 		return false
 	}
 
+	// process successfully complete
+	instrumentation.PeggyCheckpointZap(sub.SugaredLogger, instrumentation.ProphecyClaimSubmitted)
 	return true
 
 }
@@ -159,7 +160,6 @@ func (sub CosmosSub) handleBatchProphecyCompleted(
 // 1. Call ethereum and get lastNonceSubmitted
 // 2. Call this function with the lastNonceSubmitted on ethereum side
 // 3. This function returns all of the prophecies that need to be relayed from sifchain to that EVM chain
-
 // TODO add a limit of maximum of n prophecies to query for
 func GetAllProphciesCompleted(rpcServer string, networkDescriptor oracletypes.NetworkDescriptor, startGlobalSequence uint64) []*oracletypes.ProphecyInfo {
 	conn, err := grpc.Dial("0.0.0.0:9090", grpc.WithInsecure())
