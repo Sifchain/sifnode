@@ -95,7 +95,6 @@ func (sub CosmosSub) handleNewProphecyCompleted(client *tmClient.HTTP) {
 	batches := (len(prophecyInfoArray) + 4) / 5
 
 	for batch := 0; batch < batches; batch++ {
-		// for batch < batches {
 		end := (batch + 1) * 5
 		if end > len(prophecyInfoArray) {
 			end = len(prophecyInfoArray)
