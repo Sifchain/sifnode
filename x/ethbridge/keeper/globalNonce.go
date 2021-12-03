@@ -65,7 +65,7 @@ func (k Keeper) GetGlobalSequenceToBlockNumber(
 	globalSequence uint64) uint64 {
 
 	store := ctx.KVStore(k.storeKey)
-	prefix := k.getGlobalSequenceToBlockNumberPrefix(ctx, networkDescriptor, globalNonce)
+	prefix := k.getGlobalSequenceToBlockNumberPrefix(ctx, networkDescriptor, globalSequence)
 
 	if !k.existsGlobalNonce(ctx, prefix) {
 		return uint64(0)
