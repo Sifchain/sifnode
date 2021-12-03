@@ -13,7 +13,7 @@ const (
 	Startup       = "Startup"
 	EthereumEvent = "EthereumEvent"
 	CosmosEvent   = "CosmosEvent"
-
+	// TODO: rename, there isnt ethereumprophecyclaim, is there?
 	EthereumProphecyClaim          = "EthereumProphecyClaim"
 	SetGlobalSequenceToBlockNumber = "SetGlobalSequenceToBlockNumber"
 	SendCoinsFromAccountToModule   = "SendCoinsFromAccountToModule"
@@ -39,6 +39,8 @@ const (
 	PublishCosmosBurnMessage       = "PublishCosmosBurnMessage"
 	ReceiveCosmosBurnMessage       = "ReceiveCosmosBurnMessage"
 	WitnessSignProphecy            = "WitnessSignProphecy"
+	// TODO: Ambiguous naming
+	ProphecyClaimSubmitted = "ProphecyClaimSubmitted"
 )
 
 func PeggyCheckpoint(logger log.Logger, kind string, keysAndValues ...interface{}) {
