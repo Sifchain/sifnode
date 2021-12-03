@@ -110,6 +110,7 @@ enum TransactionStep {
   SetWitnessLockBurnNonce = "SetWitnessLockBurnNonce",
 
   ProphecyStatus = "ProphecyStatus",
+  ProphecyClaimSubmitted = "ProphecyClaimSubmitted",
 }
 
 function isTerminalState(s: State) {
@@ -591,6 +592,15 @@ describe("lock and burn tests", () => {
                     TransactionStep.SetWitnessLockBurnNonce
                   )
                 }
+
+                case "ProphecyClaimSubmitted": {
+                  return ensureCorrectTransition(
+                    acc,
+                    v,
+                    TransactionStep.ProphecyStatus,
+                    TransactionStep.ProphecyClaimSubmitted
+                  )
+                }
               }
             }
             // Sifnoded side log assertions
@@ -706,10 +716,10 @@ describe("lock and burn tests", () => {
     )
 
     const lv = await lastValueFrom(states.pipe(takeWhile((x) => x.value.kind !== "terminate")))
-    // expect(
-    //   lv.transactionStep,
-    //   `did not complete, last step was ${JSON.stringify(lv, undefined, 2)}`
-    // ).to.eq(TransactionStep.PublishedProphecy)
+    expect(
+      lv.transactionStep,
+      `did not complete, last step was ${JSON.stringify(lv, undefined, 2)}`
+    ).to.eq(TransactionStep.ProphecyClaimSubmitted)
 
     verboseSubscription.unsubscribe()
   })
