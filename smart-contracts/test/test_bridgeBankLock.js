@@ -2,10 +2,10 @@ const Web3Utils = require("web3-utils");
 const web3 = require("web3");
 const BigNumber = web3.BigNumber;
 
-const {ethers} = require("hardhat");
-const {use, expect} = require("chai");
-const {solidity} = require("ethereum-waffle");
-const {setup} = require("./helpers/testFixture");
+const { ethers } = require("hardhat");
+const { use, expect } = require("chai");
+const { solidity } = require("ethereum-waffle");
+const { setup } = require("./helpers/testFixture");
 
 require("chai").use(require("chai-as-promised")).use(require("chai-bignumber")(BigNumber)).should();
 
@@ -477,7 +477,7 @@ describe("Test Bridge Bank", function () {
             [state.amount, state.amount, state.amount, state.amount],
             [false, false, false, false]
           ),
-        {value: 100}
+        { value: 100 }
       ).to.be.revertedWith("Address: call to non-contract");
     });
 
