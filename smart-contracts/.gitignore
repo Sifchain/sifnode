@@ -13,3 +13,4 @@ relayerdb/
 witnessdb/
 *.pyc
 package-lock.json
+.hardhat-compile
