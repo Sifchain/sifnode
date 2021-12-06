@@ -21,9 +21,14 @@ type Keeper struct {
 func NewKeeper(storeKey sdk.StoreKey,
 	cdc codec.BinaryCodec,
 	bankKeeper types.BankKeeper,
-	clpKeeper types.CLPKeeper) KeeperI {
+	clpKeeper types.CLPKeeper,
+	ps paramtypes.Subspace) KeeperI {
 
-	return Keeper{bankKeeper: bankKeeper, clpKeeper: clpKeeper, storeKey: storeKey, cdc: cdc}
+	// set KeyTable if it has not already been set
+	if !ps.HasKeyTable() {
+		ps = ps.WithKeyTable(types.ParamKeyTable())
+	}
+	return Keeper{bankKeeper: bankKeeper, clpKeeper: clpKeeper, paramStore: ps, storeKey: storeKey, cdc: cdc}
 }
 
 func (k Keeper) SetMTP(ctx sdk.Context, mtp *types.MTP) error {
@@ -114,8 +119,10 @@ func (k Keeper) BankKeeper() types.BankKeeper {
 	return k.bankKeeper
 }
 
-func (k Keeper) GetLeverageParam(context sdk.Context) sdk.Uint {
-	panic("implement me")
+func (k Keeper) GetLeverageParam(ctx sdk.Context) sdk.Uint {
+	var leverageMax sdk.Uint
+	k.paramStore.Get(ctx, types.KeyLeverageMaxParam, &leverageMax)
+	return leverageMax
 }
 
 func (k Keeper) CustodySwap(sentBalance sdk.Uint, sentLiabilities sdk.Uint, receivedBalance sdk.Uint, receivedLiabilities sdk.Uint, sentAmount sdk.Uint) sdk.Uint {

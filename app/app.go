@@ -351,7 +351,7 @@ func NewSifApp(
 		app.TokenRegistryKeeper,
 		app.GetSubspace(clptypes.ModuleName),
 	)
-	app.MarginKeeper = marginkeeper.NewKeeper(keys[margintypes.StoreKey], appCodec, app.BankKeeper, app.ClpKeeper)
+	app.MarginKeeper = marginkeeper.NewKeeper(keys[margintypes.StoreKey], appCodec, app.BankKeeper, app.ClpKeeper, app.GetSubspace(clptypes.ModuleName))
 	// register the staking hooks
 	// NOTE: stakingKeeper above is passed by reference, so that it will contain these hooks
 	app.StakingKeeper = *stakingKeeper.SetHooks(
