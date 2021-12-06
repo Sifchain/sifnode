@@ -72,8 +72,8 @@ func (m MsgSwap) ValidateBasic() error {
 	if !m.ReceivedAsset.Validate() {
 		return sdkerrors.Wrap(ErrInValidAsset, m.ReceivedAsset.Symbol)
 	}
-
-	if m.SentAsset == m.ReceivedAsset {
+	// == compare the address instead of value here so I think we should use .Equals here.
+	if m.SentAsset.Equals(*m.ReceivedAsset) {
 		return sdkerrors.Wrap(ErrInValidAsset, "Sent And Received asset cannot be the same")
 	}
 	if m.SentAmount.IsZero() {
@@ -156,6 +156,9 @@ func (m MsgAddLiquidity) ValidateBasic() error {
 	if m.ExternalAsset.Equals(GetSettlementAsset()) {
 		return sdkerrors.Wrap(ErrInValidAsset, "External asset cannot be rowan")
 	}
+	// (testing) I think this part is wrong because GTE will retrun true if NativeAssetAmount and ExternalAssetAmount are both zero which is
+	// conflicate with comment: Both asset ammounts cannot be 0
+	// func (u Uint) GTE(u2 Uint) bool { return u.GT(u2) || u.Equal(u2) }
 	if !(m.NativeAssetAmount.GTE(sdk.ZeroUint())) && (m.ExternalAssetAmount.GTE(sdk.ZeroUint())) {
 		return sdkerrors.Wrap(ErrInValidAmount, fmt.Sprintf("Both asset ammounts cannot be 0 %s / %s", m.NativeAssetAmount.String(), m.ExternalAssetAmount.String()))
 	}
