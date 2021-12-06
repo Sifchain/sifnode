@@ -91,7 +91,7 @@ export class CosmosBridgeProxy {
 export function defaultCosmosBridgeArguments(
   sifchainAccounts: SifchainAccounts,
   power: number = 100,
-  networkDescriptor: number = 1
+  networkDescriptor: number = 31337
 ): CosmosBridgeArguments {
   const powers = sifchainAccounts.validatatorAccounts.map((_) => power)
   const threshold = powers.reduce((acc, x) => acc + x)
