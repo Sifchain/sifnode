@@ -151,17 +151,19 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
         keccak256(
           abi.encode(
             cosmosSender,
-            cosmosSenderSequence,
-            ethereumReceiver,
-            tokenAddress,
-            amount,
-            tokenName,
-            tokenSymbol,
-            tokenDecimals,
-            _networkDescriptor,
-            doublePeg,
-            nonce,
-            cosmosDenom
+            cosmosSenderSequence
+            // TODO to make sure same algorithm with sifnode side
+            // comment some items, need add some back 
+            // ethereumReceiver,
+            // tokenAddress,
+            // amount,
+            // tokenName,
+            // tokenSymbol,
+            // tokenDecimals,
+            // _networkDescriptor,
+            // doublePeg,
+            // nonce,
+            // cosmosDenom
           )
         )
       );

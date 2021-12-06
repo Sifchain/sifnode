@@ -186,11 +186,13 @@ func (msg MsgBurn) GetProphecyID(doublePeggy bool, sequence, globalNonce uint64,
 func ComputeProphecyID(cosmosSender string, sequence uint64, ethereumReceiver string, tokenAddress string, amount sdk.Int,
 	doublePeggy bool, globalNonce uint64, networkDescriptor oracletypes.NetworkDescriptor) []byte {
 
+	// TODO to make sure the prophecy id is the same with smart contract side
+	// just use cosmos sender and sequence, need include more itmes
 	bytesTy, _ := abi.NewType("bytes", "bytes", nil)
-	boolTy, _ := abi.NewType("bool", "bool", nil)
-	uint128Ty, _ := abi.NewType("uint128", "uint128", nil)
+	// boolTy, _ := abi.NewType("bool", "bool", nil)
+	// uint128Ty, _ := abi.NewType("uint128", "uint128", nil)
 	uint256Ty, _ := abi.NewType("uint256", "uint256", nil)
-	addressTy, _ := abi.NewType("address", "address", nil)
+	// addressTy, _ := abi.NewType("address", "address", nil)
 
 	arguments := abi.Arguments{
 		{
@@ -199,35 +201,35 @@ func ComputeProphecyID(cosmosSender string, sequence uint64, ethereumReceiver st
 		{
 			Type: uint256Ty,
 		},
-		{
-			Type: addressTy,
-		},
-		{
-			Type: addressTy,
-		},
-		{
-			Type: uint256Ty,
-		},
-		{
-			Type: boolTy,
-		},
-		{
-			Type: uint128Ty,
-		},
-		{
-			Type: uint256Ty,
-		},
+		// {
+		// 	Type: addressTy,
+		// },
+		// {
+		// 	Type: addressTy,
+		// },
+		// {
+		// 	Type: uint256Ty,
+		// },
+		// {
+		// 	Type: boolTy,
+		// },
+		// {
+		// 	Type: uint128Ty,
+		// },
+		// {
+		// 	Type: uint256Ty,
+		// },
 	}
 
 	bytes, _ := arguments.Pack(
 		[]byte(cosmosSender),
 		big.NewInt(int64(sequence)),
-		gethCommon.HexToAddress(ethereumReceiver),
-		gethCommon.HexToAddress(tokenAddress),
-		big.NewInt(amount.Int64()),
-		doublePeggy,
-		big.NewInt(int64(globalNonce)),
-		big.NewInt(int64(networkDescriptor)),
+		// gethCommon.HexToAddress(ethereumReceiver),
+		// gethCommon.HexToAddress(tokenAddress),
+		// big.NewInt(amount.Int64()),
+		// doublePeggy,
+		// big.NewInt(int64(globalNonce)),
+		// big.NewInt(int64(networkDescriptor)),
 	)
 
 	hashBytes := crypto.Keccak256(bytes)
