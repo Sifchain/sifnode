@@ -154,7 +154,13 @@ func RelayBatchProphecyCompletedToEthereum(
 	sleepThread(2)
 
 	if err != nil {
-		sugaredLogger.Errorw("cosmosBridgeInstance.BatchSubmitProphecyClaimAggregatedSigs", "batchID", batchID, "batchClaimData", batchClaimData, "batchSignatureData", batchSignatureData)
+		sugaredLogger.Errorw(
+			"cosmosBridgeInstance.BatchSubmitProphecyClaimAggregatedSigs",
+			"batchID", batchID,
+			"batchClaimData", batchClaimData,
+			"batchSignatureData", batchSignatureData,
+			errorMessageKey, err,
+		)
 		return err
 	}
 
