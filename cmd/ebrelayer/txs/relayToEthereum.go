@@ -56,9 +56,14 @@ func InitRelayConfig(
 
 	transactOptsAuth.Value = big.NewInt(0) // in wei
 	transactOptsAuth.GasLimit = GasLimit
+
+	// TODO now, the transaction only works with the gasPrice set.
+	// need to investigate if it is a feature not supported by hardhat.
+	// revert to gas price set temporarily.
+	transactOptsAuth.GasPrice = big.NewInt(150000)
 	// GasFeeCap is maxFeePerGas; GasTipCap is maxPriorityFeePerGas
-	transactOptsAuth.GasFeeCap = maxFeePerGas
-	transactOptsAuth.GasTipCap = maxPriorityFeePerGas
+	// transactOptsAuth.GasFeeCap = maxFeePerGas
+	// transactOptsAuth.GasTipCap = maxPriorityFeePerGas
 	transactOptsAuth.Context = context.Background()
 
 	targetContract := CosmosBridge
