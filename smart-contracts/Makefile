@@ -35,6 +35,3 @@ clean-smartcontracts:
 
 clean-node:
 	rm -rf node_modules
-
-abi:
-	yarn peggy:generateAbi
