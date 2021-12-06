@@ -24,7 +24,7 @@ type KeeperI interface {
 
 	GetLeverageParam(sdk.Context) sdk.Uint
 
-	CustodySwap(sentBalance sdk.Uint, sentLiabilities sdk.Uint, receivedBalance sdk.Uint, receivedLiabilities sdk.Uint, sentAmount sdk.Uint) sdk.Uint
+	CustodySwap(ctx sdk.Context, pool clptypes.Pool, to string, sentAmount sdk.Uint) (sdk.Uint, error)
 	Borrow(ctx sdk.Context, collateralAsset string, collateralAmount sdk.Uint, borrowAmount sdk.Uint, mtp types.MTP, pool clptypes.Pool, leverage sdk.Uint) error
 	TakeInCustody(ctx sdk.Context, mtp types.MTP, pool clptypes.Pool) error
 

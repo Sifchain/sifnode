@@ -35,7 +35,6 @@ func (k msgServer) OpenLong(goCtx context.Context, msg *types.MsgOpenLong) (*typ
 
 	var err error
 	var pool clptypes.Pool
-	var pCollateralAssets, pCollateralLiabilities, pCustodyAssets, pCustodyLiabilities sdk.Uint
 	nativeAsset := types.GetSettlementAsset()
 
 	if strings.EqualFold(msg.CollateralAsset, nativeAsset) {
@@ -43,24 +42,16 @@ func (k msgServer) OpenLong(goCtx context.Context, msg *types.MsgOpenLong) (*typ
 		if err != nil {
 			return nil, err
 		}
-		pCollateralAssets = pool.NativeAssetBalance
-		pCollateralLiabilities = pool.NativeLiabilities
-		pCustodyAssets = pool.ExternalAssetBalance
-		pCustodyLiabilities = pool.ExternalLiabilities
 	} else {
 		pool, err = k.ClpKeeper().GetPool(ctx, msg.CollateralAsset)
 		if err != nil {
 			return nil, err
 		}
-		pCollateralAssets = pool.ExternalAssetBalance
-		pCollateralLiabilities = pool.ExternalLiabilities
-		pCustodyAssets = pool.NativeAssetBalance
-		pCustodyLiabilities = pool.NativeLiabilities
 	}
 
 	leveragedAmount := collateralAmount.Mul(sdk.NewUint(1).Add(leverage))
 
-	borrowAmount := k.CustodySwap(pCollateralAssets, pCollateralLiabilities, pCustodyAssets, pCustodyLiabilities, leveragedAmount)
+	borrowAmount, err := k.CustodySwap(ctx, pool, msg.BorrowAsset, leveragedAmount)
 
 	err = k.Borrow(ctx, msg.CollateralAsset, collateralAmount, borrowAmount, mtp, pool, leverage)
 	if err != nil {

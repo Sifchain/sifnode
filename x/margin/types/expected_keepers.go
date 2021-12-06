@@ -14,4 +14,10 @@ type BankKeeper interface {
 type CLPKeeper interface {
 	GetPool(ctx sdk.Context, symbol string) (clptypes.Pool, error)
 	SetPool(ctx sdk.Context, pool *clptypes.Pool) error
+	GetNormalizationFactorForAsset(sdk.Context, string) (sdk.Dec, bool, error)
+
+	ValidateZero(inputs []sdk.Uint) bool
+	ReducePrecision(dec sdk.Dec, po int64) sdk.Dec
+	IncreasePrecision(dec sdk.Dec, po int64) sdk.Dec
+	GetMinLen(inputs []sdk.Uint) int64
 }

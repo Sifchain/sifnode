@@ -6,6 +6,10 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
+func (k Keeper) ValidateZero(inputs []sdk.Uint) bool {
+	return ValidateZero(inputs)
+}
+
 func ValidateZero(inputs []sdk.Uint) bool {
 	for _, val := range inputs {
 		if val.IsZero() {
@@ -15,14 +19,26 @@ func ValidateZero(inputs []sdk.Uint) bool {
 	return true
 }
 
+func (k Keeper) ReducePrecision(dec sdk.Dec, po int64) sdk.Dec {
+	return ReducePrecision(dec, po)
+}
+
 func ReducePrecision(dec sdk.Dec, po int64) sdk.Dec {
 	p := sdk.NewDec(10).Power(uint64(po))
 	return dec.Quo(p)
 }
 
+func (k Keeper) IncreasePrecision(dec sdk.Dec, po int64) sdk.Dec {
+	return IncreasePrecision(dec, po)
+}
+
 func IncreasePrecision(dec sdk.Dec, po int64) sdk.Dec {
 	p := sdk.NewDec(10).Power(uint64(po))
 	return dec.Mul(p)
+}
+
+func (k Keeper) GetMinLen(inputs []sdk.Uint) int64 {
+	return GetMinLen(inputs)
 }
 
 func GetMinLen(inputs []sdk.Uint) int64 {
