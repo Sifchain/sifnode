@@ -10,12 +10,12 @@ import (
 )
 
 type msgServer struct {
-	KeeperI
+	types.Keeper
 }
 
 var _ types.MsgServer = msgServer{}
 
-func NewMsgServerImpl(k KeeperI) types.MsgServer {
+func NewMsgServerImpl(k types.Keeper) types.MsgServer {
 	return msgServer{
 		k,
 	}

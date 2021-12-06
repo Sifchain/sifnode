@@ -22,7 +22,7 @@ func NewKeeper(storeKey sdk.StoreKey,
 	cdc codec.BinaryCodec,
 	bankKeeper types.BankKeeper,
 	clpKeeper types.CLPKeeper,
-	ps paramtypes.Subspace) KeeperI {
+	ps paramtypes.Subspace) types.Keeper {
 
 	// set KeyTable if it has not already been set
 	if !ps.HasKeyTable() {

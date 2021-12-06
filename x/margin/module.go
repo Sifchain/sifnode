@@ -94,7 +94,7 @@ type AppModuleSimulation struct{}
 type AppModule struct {
 	AppModuleBasic
 	AppModuleSimulation
-	Keeper keeper.KeeperI
+	Keeper types.Keeper
 	Codec  *codec.Codec
 }
 
@@ -104,7 +104,7 @@ func (am AppModule) RegisterServices(cfg module.Configurator) {
 }
 
 // NewAppModule creates a new AppModule object
-func NewAppModule(keeper keeper.KeeperI, cdc *codec.Codec) AppModule {
+func NewAppModule(keeper types.Keeper, cdc *codec.Codec) AppModule {
 	return AppModule{
 		AppModuleBasic:      AppModuleBasic{},
 		AppModuleSimulation: AppModuleSimulation{},
