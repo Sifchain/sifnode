@@ -558,7 +558,6 @@ describe("lock and burn tests", () => {
               let ebrelayerEvent: any = v.data
               switch (ebrelayerEvent.kind) {
                 case "ReceiveCosmosBurnMessage": {
-                  // return { ...acc, value: v, createdAt: acc.currentHeartbeat }
                   console.log("Seeing ReceiveCosmosBurnMessage")
                   if (!receivedCosmosBurnmsg) {
                     console.log("Receiving ReceiveCosmosBurnMessage for the first time")
@@ -570,10 +569,14 @@ describe("lock and burn tests", () => {
                       TransactionStep.PublishCosmosBurnMessage,
                       TransactionStep.ReceiveCosmosBurnMessage
                     )
+                  } else {
+                    return { ...acc, value: v, createdAt: acc.currentHeartbeat }
                   }
                 }
                 case "WitnessSignProphecy": {
+                  console.log("Seeing WitnessSignProphecy")
                   if (!witnessSignedProphecy) {
+                    console.log("Receiving WitnessSignProphecy for the first time")
                     witnessSignedProphecy = true
                     return ensureCorrectTransition(
                       acc,
@@ -581,6 +584,8 @@ describe("lock and burn tests", () => {
                       TransactionStep.ReceiveCosmosBurnMessage,
                       TransactionStep.WitnessSignProphecy
                     )
+                  } else {
+                    return { ...acc, value: v, createdAt: acc.currentHeartbeat }
                   }
                 }
 
