@@ -57,9 +57,6 @@ func GenerateRandomPool(numberOfPools int) []types.Pool {
 		externalToken := tokens[rand.Intn(len(tokens))]
 		externalAsset := types.NewAsset(TrimFirstRune(externalToken))
 		pool := types.NewPool(&externalAsset, sdk.NewUint(1000), sdk.NewUint(100), sdk.NewUint(1))
-		//if err != nil {
-		//	fmt.Println("Error Generating new pool :", err)
-		//}
 		poolList = append(poolList, pool)
 	}
 	return poolList
@@ -89,9 +86,6 @@ func GeneratePoolsAndLPs(keeper clpkeeper.Keeper, ctx sdk.Context, tokens []stri
 		externalToken := tokens[i]
 		externalAsset := types.NewAsset(TrimFirstRune(externalToken))
 		pool := types.NewPool(&externalAsset, sdk.NewUint(1000*uint64(i+1)), sdk.NewUint(100*uint64(i+1)), sdk.NewUint(1))
-		//if err != nil {
-		//	panic(err)
-		//}
 		err := keeper.SetPool(ctx, &pool)
 		if err != nil {
 			panic(err)
