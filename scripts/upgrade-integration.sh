@@ -35,9 +35,10 @@ export DAEMON_ALLOW_DOWNLOAD_BINARIES=true
 make clean
 rm -rf sifnode.log
 #wget $CurrentBinary -P $GOPATH/bin
-rm -rm $GOPATH/sifnoded
-cp $GOPATH/old/sifnoded $GOPATH/
-chmod +x $GOPATH/sifnoded
+#rm -rm $GOPATH/bin/sifnoded
+cp $GOPATH/bin/sifnoded $GOPATH/bin/new/
+cp $GOPATH/bin/old/sifnoded $GOPATH/bin/
+chmod +x $GOPATH/bin/sifnoded
 sifnoded init test --chain-id=localnet -o
 
 echo "Generating deterministic account - sif"
@@ -74,9 +75,9 @@ mkdir -p $DAEMON_HOME/cosmovisor/upgrades/$UpgradeName/bin
 
 
 #wget $CurrentBinary -P $DAEMON_HOME/cosmovisor/genesis/bin
-cp $GOPATH/old/sifnoded $DAEMON_HOME/cosmovisor/genesis/bin
+cp $GOPATH/bin/old/sifnoded $DAEMON_HOME/cosmovisor/genesis/bin
 #wget $NewBinary -P $DAEMON_HOME/cosmovisor/upgrades/$UpgradeName/bin/
-cp $GOPATH/new/sifnoded $DAEMON_HOME/cosmovisor/upgrades/$UpgradeName/bin/
+cp $GOPATH/bin/new/sifnoded $DAEMON_HOME/cosmovisor/upgrades/$UpgradeName/bin/
 chmod +x $DAEMON_HOME/cosmovisor/genesis/bin/sifnoded
 chmod +x $DAEMON_HOME/cosmovisor/upgrades/$UpgradeName/bin/sifnoded
 
@@ -86,8 +87,8 @@ echo "${contents}" > $DAEMON_HOME/config/genesis.json
 # Add state data here if required
 
 cosmovisor start >> sifnode.log 2>&1  &
-sleep 7
-sifnoded tx tokenregistry register-all /Users/tanmay/Documents/sifnode/scripts/ibc/tokenregistration/localnet/rowan.json --from sif --keyring-backend=test --chain-id=localnet --yes
+#sleep 7
+#sifnoded tx tokenregistry register-all /Users/tanmay/Documents/sifnode/scripts/ibc/tokenregistration/localnet/rowan.json --from sif --keyring-backend=test --chain-id=localnet --yes
 sleep 7
 sifnoded tx gov submit-proposal software-upgrade $UpgradeName --from sif --deposit 100000000stake --upgrade-height 10 --title $UpgradeName --description $UpgradeName --keyring-backend test --chain-id localnet --yes
 sleep 7

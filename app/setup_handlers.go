@@ -1,7 +1,6 @@
 package app
 
 import (
-	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	m "github.com/cosmos/cosmos-sdk/types/module"
 	"github.com/cosmos/cosmos-sdk/x/authz"
@@ -10,10 +9,10 @@ import (
 	ibcconnectiontypes "github.com/cosmos/ibc-go/v2/modules/core/03-connection/types"
 )
 
-const upgradeName = "0.10.0-rc.1"
+const upgradeName = "0.10.0-rc.0"
 
 func SetupHandlers(app *SifchainApp) {
-	app.UpgradeKeeper.SetUpgradeHandler("0.10.0-rc.2", func(ctx sdk.Context, plan types.Plan, fromVM m.VersionMap) (m.VersionMap, error) {
+	app.UpgradeKeeper.SetUpgradeHandler("0.10.0-rc.0", func(ctx sdk.Context, plan types.Plan, fromVM m.VersionMap) (m.VersionMap, error) {
 		return app.mm.RunMigrations(ctx, app.configurator, fromVM)
 	})
 	app.UpgradeKeeper.SetUpgradeHandler(upgradeName, func(ctx sdk.Context, plan types.Plan, vm m.VersionMap) (m.VersionMap, error) {
@@ -39,13 +38,13 @@ func SetupHandlers(app *SifchainApp) {
 		panic(err)
 	}
 	if upgradeInfo.Name == upgradeName && !app.UpgradeKeeper.IsSkipHeight(upgradeInfo.Height) {
-		storeUpgrades := storetypes.StoreUpgrades{
-			Added: []string{authz.ModuleName, feegrant.ModuleName, "vesting", "crisis"},
-		}
+		//storeUpgrades := storetypes.StoreUpgrades{
+		//	Added: []string{authz.ModuleName, feegrant.ModuleName, "vesting", "crisis"},
+		//}
 		// Use upgrade store loader for the initial loading of all stores when app starts,
 		// it checks if version == upgradeHeight and applies store upgrades before loading the stores,
 		// so that new stores start with the correct version (the current height of chain),
 		// instead the default which is the latest version that store last committed i.e 0 for new stores.
-		app.SetStoreLoader(types.UpgradeStoreLoader(upgradeInfo.Height, &storeUpgrades))
+		//app.SetStoreLoader(types.UpgradeStoreLoader(upgradeInfo.Height, &storeUpgrades))
 	}
 }
