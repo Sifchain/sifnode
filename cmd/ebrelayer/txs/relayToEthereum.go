@@ -124,12 +124,12 @@ func RelayBatchProphecyCompletedToEthereum(
 			signature := []byte(prophecyInfo.Signatures[index])
 			var r [32]byte
 			var s [32]byte
-			copy(r[:], signature[1:33])
-			copy(s[:], signature[33:65])
+			copy(r[:], signature[0:32])
+			copy(s[:], signature[32:64])
 
 			tmpSignature := cosmosbridge.CosmosBridgeSignatureData{
 				Signer: common.HexToAddress(address),
-				V:      signature[0],
+				V:      signature[64] + 27,
 				R:      r,
 				S:      s,
 			}
