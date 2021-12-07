@@ -238,26 +238,28 @@ func (k Keeper) ProcessSignProphecy(ctx sdk.Context, networkDescriptor types.Net
 	// old = pending, new = success the only case we will emit the event
 	// old = success, new = success not emit the same event twice
 	if oldStatus == types.StatusText_STATUS_TEXT_PENDING && newStatus == types.StatusText_STATUS_TEXT_SUCCESS {
-		instrumentation.PeggyCheckpoint(ctx.Logger(), instrumentation.ProphecyStatus, "Status", newStatus)
-
-		ctx.EventManager().EmitEvents(sdk.Events{
-
-			sdk.NewEvent(
-				types.EventTypeProphecyCompleted,
-				sdk.NewAttribute(types.AttributeKeyProphecyID, string(prophecyID)),
-				sdk.NewAttribute(types.AttributeKeyNetworkDescriptor, prophecyInfo.NetworkDescriptor.String()),
-				sdk.NewAttribute(types.AttributeKeyCosmosSender, prophecyInfo.CosmosSender),
-				sdk.NewAttribute(types.AttributeKeyCosmosSenderSequence, strconv.FormatInt(int64(prophecyInfo.CosmosSenderSequence), 10)),
-				sdk.NewAttribute(types.AttributeKeyEthereumReceiver, prophecyInfo.EthereumReceiver),
-				sdk.NewAttribute(types.AttributeKeyTokenContractAddress, tokenAddress),
-				sdk.NewAttribute(types.AttributeKeyAmount, strconv.FormatInt(prophecyInfo.TokenAmount.Int64(), 10)),
-				sdk.NewAttribute(types.AttributeKeyDoublePeggy, strconv.FormatBool(prophecyInfo.DoublePeg)),
-				sdk.NewAttribute(types.AttributeKeyGlobalNonce, strconv.FormatInt(int64(prophecyInfo.GlobalSequence), 10)),
-				sdk.NewAttribute(types.AttributeKeycrossChainFee, strconv.FormatInt(prophecyInfo.CrosschainFee.Int64(), 10)),
-				sdk.NewAttribute(types.AttributeKeySignatures, strings.Join(prophecyInfo.Signatures, ",")),
-				sdk.NewAttribute(types.AttributeKeyEthereumAddresses, strings.Join(prophecyInfo.EthereumAddress, ",")),
-			),
-		})
+		event := sdk.NewEvent(
+			types.EventTypeProphecyCompleted,
+			sdk.NewAttribute(types.AttributeKeyProphecyID, string(prophecyID)),
+			sdk.NewAttribute(types.AttributeKeyNetworkDescriptor, prophecyInfo.NetworkDescriptor.String()),
+			sdk.NewAttribute(types.AttributeKeyCosmosSender, prophecyInfo.CosmosSender),
+			sdk.NewAttribute(types.AttributeKeyCosmosSenderSequence, strconv.FormatInt(int64(prophecyInfo.CosmosSenderSequence), 10)),
+			sdk.NewAttribute(types.AttributeKeyEthereumReceiver, prophecyInfo.EthereumReceiver),
+			sdk.NewAttribute(types.AttributeKeyTokenContractAddress, tokenAddress),
+			sdk.NewAttribute(types.AttributeKeyAmount, strconv.FormatInt(prophecyInfo.TokenAmount.Int64(), 10)),
+			sdk.NewAttribute(types.AttributeKeyDoublePeggy, strconv.FormatBool(prophecyInfo.DoublePeg)),
+			sdk.NewAttribute(types.AttributeKeyGlobalNonce, strconv.FormatInt(int64(prophecyInfo.GlobalSequence), 10)),
+			sdk.NewAttribute(types.AttributeKeycrossChainFee, strconv.FormatInt(prophecyInfo.CrosschainFee.Int64(), 10)),
+			sdk.NewAttribute(types.AttributeKeySignatures, strings.Join(prophecyInfo.Signatures, ",")),
+			sdk.NewAttribute(types.AttributeKeyEthereumAddresses, strings.Join(prophecyInfo.EthereumAddress, ",")),
+		)
+		ctx.EventManager().EmitEvents(sdk.Events{event})
+		instrumentation.PeggyCheckpoint(
+			ctx.Logger(),
+			instrumentation.ProphecyStatus,
+			"event", zap.Reflect("event", event),
+			"prophecyInfo", zap.Reflect("prophecyInfo", prophecyInfo),
+		)
 	}
 	return nil
 }
