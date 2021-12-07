@@ -29,6 +29,7 @@ func (k keeper) GetTokenMetadata(ctx sdk.Context, denomHash string) (types.Token
 
 	entry := k.GetDenom(ctx, denomHash)
 
+	// This is commented out because it is superceded by whats in develop, this change makes testing easier
 	// if !entry.IsWhitelisted {
 	// 	ctx.Logger().Debug(instrumentation.PeggyTestMarker, "It is not whitelisted", zap.Reflect("entry", entry))
 	// 	instrumentation.PeggyCheckpoint(ctx.Logger(), instrument)

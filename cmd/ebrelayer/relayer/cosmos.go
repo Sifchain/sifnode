@@ -279,7 +279,7 @@ func (sub CosmosSub) witnessSignProphecyID(
 ) {
 	/**
 	err in this func are ignored, and they would cause an issue because we
-	assume any cosmos msgs would be processed in here
+	assume any cosmos msgs would be processed in here, since globalSequence++ is done in any case
 	*/
 	sub.SugaredLogger.Infow("handle burn lock message.",
 		"cosmosMessage", cosmosMsg.String())
