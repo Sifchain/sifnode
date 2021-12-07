@@ -119,7 +119,10 @@ function isTerminalState(s: State) {
     case "failure":
       return true
     default:
-      return s.transactionStep === TransactionStep.CoinsSent
+      return (
+        s.transactionStep === TransactionStep.CoinsSent ||
+        s.transactionStep === TransactionStep.ProphecyClaimSubmitted
+      )
   }
 }
 
@@ -192,19 +195,22 @@ describe("lock and burn tests", () => {
     } else {
       stepIsCorrect = predecessor === acc.transactionStep
     }
-    if (stepIsCorrect)
+    if (stepIsCorrect) {
+      console.log("Setting transactionStep", successor)
       return {
         ...acc,
         value: v,
         createdAt: acc.currentHeartbeat,
         transactionStep: successor,
       }
-    else
+    } else {
+      console.log("Step is incorrect", successor)
       return buildFailure(
         acc,
         v,
         `bad transition: expected ${predecessor}, got ${acc.transactionStep} before transition to ${successor}`
       )
+    }
   }
 
   function buildFailure(acc: State, v: SifEvent, message: string): State {
@@ -542,6 +548,7 @@ describe("lock and burn tests", () => {
         (acc: State, v: SifEvent) => {
           if (isTerminalState(acc)) {
             // we've reached a decision
+            console.log("Reached terminate state", acc)
             return { ...acc, value: { kind: "terminate" } as Terminate }
           }
           switch (v.kind) {
@@ -589,15 +596,6 @@ describe("lock and burn tests", () => {
                   }
                 }
 
-                case "SetWitnessLockBurnNonce": {
-                  return ensureCorrectTransition(
-                    acc,
-                    v,
-                    TransactionStep.WitnessSignProphecy,
-                    TransactionStep.SetWitnessLockBurnNonce
-                  )
-                }
-
                 case "ProphecyClaimSubmitted": {
                   return ensureCorrectTransition(
                     acc,
@@ -612,13 +610,14 @@ describe("lock and burn tests", () => {
             case "SifnodedPeggyEvent": {
               const sifnodedEvent: any = v.data
               switch (sifnodedEvent.kind) {
-                case "Burn":
+                case "Burn": {
                   return ensureCorrectTransition(
                     acc,
                     v,
                     TransactionStep.Initial,
                     TransactionStep.Burn
-                  ) // v.data
+                  )
+                }
 
                 // case "GetTokenMetadata":
                 //   return ensureCorrectTransition(
@@ -628,23 +627,25 @@ describe("lock and burn tests", () => {
                 //     TransactionStep.GetTokenMetadata
                 //   )
 
-                case "GetCrossChainFeeConfig":
+                case "GetCrossChainFeeConfig": {
                   return ensureCorrectTransition(
                     acc,
                     v,
                     TransactionStep.Burn,
                     TransactionStep.GetCrossChainFeeConfig
                   )
+                }
 
-                case "SendCoinsFromAccountToModule":
+                case "SendCoinsFromAccountToModule": {
                   return ensureCorrectTransition(
                     acc,
                     v,
                     TransactionStep.GetCrossChainFeeConfig,
                     TransactionStep.SendCoinsFromAccountToModule
                   )
+                }
 
-                case "BurnCoins":
+                case "BurnCoins": {
                   // TODO: Add assertion on expected amount, and expected denom
                   return ensureCorrectTransition(
                     acc,
@@ -652,6 +653,7 @@ describe("lock and burn tests", () => {
                     TransactionStep.SendCoinsFromAccountToModule,
                     TransactionStep.BurnCoins
                   )
+                }
 
                 /**
                  * We comment this out because SetProphecy is the crUd operation, gets invoked multiple times throughout
@@ -668,21 +670,34 @@ describe("lock and burn tests", () => {
                 //     TransactionStep.SetProphecy
                 //   )
 
-                case "PublishCosmosBurnMessage":
+                case "PublishCosmosBurnMessage": {
+                  console.log("Received PublishCosmosBurnMessage")
                   return ensureCorrectTransition(
                     acc,
                     v,
                     TransactionStep.BurnCoins,
                     TransactionStep.PublishCosmosBurnMessage
                   )
+                }
 
-                case "ProphecyStatus":
+                case "SetWitnessLockBurnNonce": {
+                  console.log("Receiving SetWitnessLockBurnNonce. Acc,", acc)
+                  return ensureCorrectTransition(
+                    acc,
+                    v,
+                    TransactionStep.WitnessSignProphecy,
+                    TransactionStep.SetWitnessLockBurnNonce
+                  )
+                }
+
+                case "ProphecyStatus": {
                   return ensureCorrectTransition(
                     acc,
                     v,
                     TransactionStep.SetWitnessLockBurnNonce,
                     TransactionStep.ProphecyStatus
                   )
+                }
               }
             }
 
