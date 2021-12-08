@@ -109,7 +109,6 @@ require (
 	github.com/mtibben/percent v0.2.1 // indirect
 	github.com/nxadm/tail v1.4.8 // indirect
 	github.com/petermattis/goid v0.0.0-20180202154549-b0b1615b78e5 // indirect
-	github.com/phayes/freeport v0.0.0-20180830031419-95f893ade6f2
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/prometheus/client_golang v1.11.0 // indirect
 	github.com/prometheus/client_model v0.2.0 // indirect
@@ -145,7 +144,6 @@ require (
 	nhooyr.io/websocket v1.8.6 // indirect
 )
 
-require github.com/aws/aws-lambda-go v1.13.3
 
 require (
 	github.com/fsnotify/fsnotify v1.5.1 // indirect
@@ -157,9 +155,8 @@ require (
 )
 
 replace (
-	github.com/cosmos/cosmos-sdk => github.com/jedi2002/cosmos-sdk v0.43.0-rc3.0.20211119062100-2f81f59f3aa1
+	github.com/cosmos/cosmos-sdk => github.com/cosmos/cosmos-sdk v0.43.0
 	github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.3-alpha.regen.1
 	github.com/tendermint/tendermint => github.com/tendermint/tendermint v0.34.14
 	google.golang.org/grpc => google.golang.org/grpc v1.33.2
-	github.com/tendermint/tm-db => github.com/osmosis-labs/tm-db v0.6.5-0.20210911033928-ba9154613417
 )
