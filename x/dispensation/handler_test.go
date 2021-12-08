@@ -2,8 +2,9 @@ package dispensation_test
 
 import (
 	"fmt"
-	sifapp "github.com/Sifchain/sifnode/app"
 	"testing"
+
+	sifapp "github.com/Sifchain/sifnode/app"
 
 	"github.com/Sifchain/sifnode/x/dispensation"
 	"github.com/Sifchain/sifnode/x/dispensation/test"
@@ -72,6 +73,85 @@ func TestNewHandler_CreateDistribution_MultipleTypes(t *testing.T) {
 	res, err = handler(ctx, &msgLm)
 	require.NoError(t, err)
 	require.NotNil(t, res)
+}
+
+func TestNewHandler_CreateDistribution_PayRewardsInAnyToken_HappyCase(t *testing.T) {
+	app, ctx := test.CreateTestApp(false)
+	keeper := app.DispensationKeeper
+	handler := dispensation.NewHandler(keeper)
+	recipients := 3000
+	outputList := test.CreatOutputList(recipients, "10")
+	distributor := sdk.AccAddress(ed25519.GenPrivKey().PubKey().Address())
+	totalCoins, err := dispensationUtils.TotalOutput(outputList)
+	assert.NoError(t, err)
+	err = sifapp.AddCoinsToAccount(types.ModuleName, app.BankKeeper, ctx, distributor, totalCoins)
+	assert.NoError(t, err)
+	err = sifapp.AddCoinsToAccount(types.ModuleName, app.BankKeeper, ctx, distributor, totalCoins)
+	assert.NoError(t, err)
+	msgAirdrop := types.NewMsgCreateDistribution(distributor, types.DistributionType_DISTRIBUTION_TYPE_AIRDROP, outputList, "")
+	res, err := handler(ctx, &msgAirdrop)
+	require.NoError(t, err)
+	require.NotNil(t, res)
+	res, err = handler(ctx, &msgAirdrop)
+	require.Error(t, err)
+	require.Nil(t, res)
+	msgLm := types.NewMsgCreateDistribution(distributor, types.DistributionType_DISTRIBUTION_TYPE_LIQUIDITY_MINING, outputList, "")
+	res, err = handler(ctx, &msgLm)
+	require.NoError(t, err)
+	require.NotNil(t, res)
+	distributionName := fmt.Sprintf("%d_%s", ctx.BlockHeight(), msgAirdrop.Distributor)
+	recordsCR := keeper.GetRecordsForNameStatusAndType(ctx, distributionName, types.DistributionStatus_DISTRIBUTION_STATUS_COMPLETED, types.DistributionType_DISTRIBUTION_TYPE_LIQUIDITY_MINING)
+	for i := 0; i < len(outputList); i++ {
+		assert.True(t, recordsCR.DistributionRecords[i].Coins.AmountOf("rowan").Equal(sdk.NewInt(20)) ||
+			recordsCR.DistributionRecords[i].Coins.AmountOf("ceth").Equal(sdk.NewInt(20)) ||
+			recordsCR.DistributionRecords[i].Coins.AmountOf("catk").Equal(sdk.NewInt(20)))
+	}
+
+}
+
+func TestNewHandler_CreateDistribution_PayRewardsInAnyToken_Errors(t *testing.T) {
+	app, ctx := test.CreateTestApp(false)
+	keeper := app.DispensationKeeper
+	handler := dispensation.NewHandler(keeper)
+	recipients := 3000
+	outputList := test.CreatOutputList(recipients, "10000000000000000000")
+	distributor := sdk.AccAddress(ed25519.GenPrivKey().PubKey().Address())
+	totalCoins, err := dispensationUtils.TotalOutput(outputList)
+	assert.NoError(t, err)
+	err = sifapp.AddCoinsToAccount(types.ModuleName, app.BankKeeper, ctx, distributor, totalCoins)
+	assert.NoError(t, err)
+	err = sifapp.AddCoinsToAccount(types.ModuleName, app.BankKeeper, ctx, distributor, totalCoins)
+	assert.NoError(t, err)
+	msgAirdrop := types.NewMsgCreateDistribution(distributor, types.DistributionType_DISTRIBUTION_TYPE_AIRDROP, outputList, "")
+	res, err := handler(ctx, &msgAirdrop)
+	require.NoError(t, err)
+	require.NotNil(t, res)
+	res, err = handler(ctx, &msgAirdrop)
+	require.Error(t, err)
+	require.Nil(t, res)
+	msgLm := types.NewMsgCreateDistribution(distributor, types.DistributionType_DISTRIBUTION_TYPE_LIQUIDITY_MINING, outputList, "")
+	res, err = handler(ctx, &msgLm)
+	require.NoError(t, err)
+	require.NotNil(t, res)
+	msgCR := types.NewMsgCreateDistribution(distributor, types.DistributionType(types.DistributionStatus_DISTRIBUTION_STATUS_COMPLETED), outputList, "")
+	res, err = handler(ctx, &msgCR)
+	require.NoError(t, err)
+	require.NotNil(t, res)
+	distributionName := fmt.Sprintf("%d_%s", ctx.BlockHeight(), msgAirdrop.Distributor)
+	_ = keeper.GetRecordsForNameStatusAndType(ctx, distributionName, types.DistributionStatus_DISTRIBUTION_STATUS_COMPLETED, types.DistributionType_DISTRIBUTION_TYPE_LIQUIDITY_MINING)
+	msgSF := types.NewMsgCreateDistribution(distributor, types.DistributionType(types.DistributionStatus_DISTRIBUTION_STATUS_FAILED), outputList, "")
+	res, err = handler(ctx, &msgSF)
+	require.NoError(t, err)
+	require.NotNil(t, res)
+	msgTU := types.NewMsgCreateDistribution(distributor, types.DistributionType(types.DistributionType_DISTRIBUTION_TYPE_UNSPECIFIED), outputList, "")
+	res, err = handler(ctx, &msgTU)
+	require.NoError(t, err)
+	require.NotNil(t, res)
+	msgVS := types.NewMsgCreateDistribution(distributor, types.DistributionType(types.DistributionType_DISTRIBUTION_TYPE_VALIDATOR_SUBSIDY), outputList, "")
+	res, err = handler(ctx, &msgVS)
+	require.NoError(t, err)
+	require.NotNil(t, res)
+
 }
 
 func TestNewHandler_CreateClaim(t *testing.T) {
