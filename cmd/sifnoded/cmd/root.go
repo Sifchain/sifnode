@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"fmt"
 	"github.com/cosmos/cosmos-sdk/client/config"
 	"github.com/cosmos/cosmos-sdk/x/auth/types"
 	"io"
@@ -51,6 +52,7 @@ func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
 		Use:   "sifnoded",
 		Short: "app Daemon (server)",
 		PersistentPreRunE: func(cmd *cobra.Command, _ []string) error {
+			fmt.Println("Generating node context")
 			initClientCtx, err := client.ReadPersistentCommandFlags(initClientCtx, cmd.Flags())
 			if err != nil {
 				return err
@@ -62,6 +64,7 @@ func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
 			if err := client.SetCmdClientContextHandler(initClientCtx, cmd); err != nil {
 				return err
 			}
+			fmt.Println("Generating node context for : ", initClientCtx.HomeDir)
 			return server.InterceptConfigsPreRunHandler(cmd, "", nil)
 		},
 	}
