@@ -72,8 +72,9 @@ func (n *Network) Build(count int, outputDir, seedIPv4Addr string) (*string, err
 		fmt.Sprintf("%s/%s", outputDir, ValidatorsDir),
 		fmt.Sprintf("%s/%s", outputDir, GentxsDir),
 	}
-
+	fmt.Println("Create DIR")
 	if err := n.createDirs(initDirs); err != nil {
+		fmt.Println("err create ", err)
 		return nil, err
 	}
 
