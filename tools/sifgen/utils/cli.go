@@ -241,7 +241,7 @@ func (c CLI) shellExecInput(cmd string, inputs [][]byte, args ...string) (*strin
 	cm := exec.Command(cmd, args...)
 	var stderr bytes.Buffer
 	cm.Stderr = &stderr
-
+	fmt.Println("Command :", cm.String())
 	stdin, err := cm.StdinPipe()
 	if err != nil {
 		return nil, err

@@ -221,17 +221,18 @@ func (n *Network) createDirs(toCreate []string) error {
 }
 
 func (n *Network) generateKey(validator *Validator) error {
+	fmt.Println("Home :", validator.HomeDir)
 	output, err := n.CLI.AddKey(validator.Moniker, validator.Mnemonic, validator.Password, fmt.Sprintf("%s/%s", validator.HomeDir, ".sifnoded"))
 	if err != nil {
 		return err
 	}
-	fmt.Println("Output", output)
+	fmt.Println("Output", *output)
 	yml, err := ioutil.ReadAll(strings.NewReader(*output))
 	if err != nil {
 		fmt.Println("Yaml read")
 		return err
 	}
-
+	fmt.Println(yml)
 	var keys common.Keys
 
 	err = yaml.Unmarshal(yml, &keys)
