@@ -89,7 +89,8 @@ func (n *Network) Build(count int, outputDir, seedIPv4Addr string) (*string, err
 		if err := n.generateKey(validator); err != nil {
 			return nil, err
 		}
-
+		fmt.Println("init Chain")
+		os.RemoveAll(validator.NodeHomeDir)
 		if err := n.initChain(validator); err != nil {
 			return nil, err
 		}

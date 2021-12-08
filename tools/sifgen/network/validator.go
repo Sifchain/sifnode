@@ -37,7 +37,6 @@ type Validator struct {
 func NewValidator(rootDir, chainID string, seed bool, lastIPv4Addr string) *Validator {
 	moniker := haikunator.New(time.Now().UTC().UnixNano()).Haikunate()
 	homeDir := fmt.Sprintf("%s/%s/%s/%s", rootDir, ValidatorsDir, chainID, moniker)
-
 	return &Validator{
 		IPv4Address: nextIP(lastIPv4Addr),
 		ChainID:     chainID,
