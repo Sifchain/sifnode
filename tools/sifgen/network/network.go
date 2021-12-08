@@ -108,8 +108,13 @@ func (n *Network) Build(count int, outputDir, seedIPv4Addr string) (*string, err
 		if err != nil {
 			log.Println(err)
 		}
-		data, err := ioutil.ReadFile(validator.NodeHomeDir + "/config/priv_validator_key.json")
-		fmt.Println("starting setAddress", data)
+		keydir := validator.NodeHomeDir + "/config/priv_validator_key.json"
+		fmt.Println("Looking for priv key at : ", keydir)
+		data, err := ioutil.ReadFile(keydir)
+		if err != nil {
+			fmt.Println(err)
+		}
+		fmt.Println("starting setAddress :", data)
 		if err := n.setValidatorAddress(validator); err != nil {
 			return nil, err
 		}
