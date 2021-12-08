@@ -82,12 +82,14 @@ func (n *Network) Build(count int, outputDir, seedIPv4Addr string) (*string, err
 	for _, validator := range validators {
 		//fmt.Printf("Validator : %v", validator)
 		appDirs := []string{validator.NodeHomeDir}
-		fmt.Println("AppDir : ", appDirs)
+		//fmt.Println("AppDir : ", appDirs)
 		if err := n.createDirs(appDirs); err != nil {
+			fmt.Println("error :", err)
 			return nil, err
 		}
 
 		if err := n.generateKey(validator); err != nil {
+			fmt.Println("error 2 :", err)
 			return nil, err
 		}
 		fmt.Println("Keys :", validator.PubKey, validator.Address)
