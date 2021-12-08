@@ -485,7 +485,7 @@ describe("lock and burn tests", () => {
     replayedEvents.unsubscribe()
   }
 
-  it.only("should allow ceth to eth tx", async () => {
+  it("should allow ceth to eth tx", async () => {
     // TODO: Could these be moved out of the test fx? and instantiated via beforeEach?
     const ethereumAccounts = await ethereumResultsToSifchainAccounts(
       devEnvObject.ethResults!,
