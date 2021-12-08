@@ -77,13 +77,16 @@ func (n *Network) Build(count int, outputDir, seedIPv4Addr string) (*string, err
 		fmt.Println("err create ", err)
 		return nil, err
 	}
-
+	fmt.Println("GEnTX")
 	gentxDir := fmt.Sprintf("%s/%s", outputDir, GentxsDir)
+	fmt.Println("InitValidator")
 	validators := n.initValidators(count, outputDir, seedIPv4Addr)
 	for _, validator := range validators {
 		//fmt.Printf("Validator : %v", validator)
+		fmt.Println("AppDIRS")
 		appDirs := []string{validator.NodeHomeDir}
 		//fmt.Println("AppDir : ", appDirs)
+		fmt.Println("CREATE LOOP")
 		if err := n.createDirs(appDirs); err != nil {
 			fmt.Println("error :", err)
 			return nil, err
@@ -200,7 +203,7 @@ func (n *Network) initValidators(count int, outputDir, seedIPv4Addr string) []*V
 
 		validator := NewValidator(outputDir, n.ChainID, seed, lastIPv4Addr)
 		validators = append(validators, validator)
-
+		fmt.Println("Validators :", validators)
 		lastIPv4Addr = validator.IPv4Address
 	}
 
