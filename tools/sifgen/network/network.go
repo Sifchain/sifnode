@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/Sifchain/sifnode/tools/sifgen/common"
@@ -96,16 +97,19 @@ func (n *Network) Build(count int, outputDir, seedIPv4Addr string) (*string, err
 		if err := n.initChain(validator); err != nil {
 			return nil, err
 		}
-		files, err := ioutil.ReadDir(validator.NodeHomeDir)
+		err := filepath.Walk(validator.NodeHomeDir,
+			func(path string, info os.FileInfo, err error) error {
+				if err != nil {
+					return err
+				}
+				fmt.Println(path, info.Size())
+				return nil
+			})
 		if err != nil {
-			log.Fatal(err)
+			log.Println(err)
 		}
-		fmt.Println("List directories in Node Home")
-		for _, f := range files {
-			fmt.Println(f.Name())
-		}
-
-		fmt.Println("starting setAddress")
+		data, err := ioutil.ReadFile(validator.NodeHomeDir + "/config/priv_validator_key.json")
+		fmt.Println("starting setAddress", data)
 		if err := n.setValidatorAddress(validator); err != nil {
 			return nil, err
 		}
@@ -243,7 +247,7 @@ func (n *Network) initChain(validator *Validator) error {
 	if err != nil {
 		return err
 	}
-	fmt.Println("Node Initialised : ", res, *res)
+	fmt.Println("Node Initialised : ", res, "|||", *res, "|||")
 	return nil
 }
 
