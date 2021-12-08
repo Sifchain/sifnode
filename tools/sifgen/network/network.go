@@ -78,14 +78,14 @@ func (n *Network) Build(count int, outputDir, seedIPv4Addr string) (*string, err
 
 	gentxDir := fmt.Sprintf("%s/%s", outputDir, GentxsDir)
 	validators := n.initValidators(count, outputDir, seedIPv4Addr)
-	fmt.Println("1", validators)
 	for _, validator := range validators {
-		fmt.Println("Validator : ", validator)
+		fmt.Printf("Validator : %v", validator)
 		appDirs := []string{validator.NodeHomeDir}
+		fmt.Println("AppDir : ", appDirs)
 		if err := n.createDirs(appDirs); err != nil {
 			return nil, err
 		}
-		fmt.Println("2")
+
 		if err := n.generateKey(validator); err != nil {
 			return nil, err
 		}
@@ -93,7 +93,7 @@ func (n *Network) Build(count int, outputDir, seedIPv4Addr string) (*string, err
 		if err := n.initChain(validator); err != nil {
 			return nil, err
 		}
-		fmt.Println("3")
+		fmt.Println("starting setAddress")
 		if err := n.setValidatorAddress(validator); err != nil {
 			return nil, err
 		}
@@ -101,7 +101,7 @@ func (n *Network) Build(count int, outputDir, seedIPv4Addr string) (*string, err
 		if err := n.setValidatorConsensusAddress(validator); err != nil {
 			return nil, err
 		}
-		fmt.Println("3")
+		fmt.Println("4")
 		if err := genesis.ReplaceStakingBondDenom(validator.NodeHomeDir); err != nil {
 			return nil, err
 		}
@@ -236,8 +236,10 @@ func (n *Network) initChain(validator *Validator) error {
 }
 
 func (n *Network) setValidatorAddress(validator *Validator) error {
+	fmt.Println("Set Validators : ", validator.NodeHomeDir)
 	output, err := n.CLI.ValidatorAddress(validator.NodeHomeDir)
 	if err != nil {
+		fmt.Println("Error in show-validator: ", err)
 		return err
 	}
 
