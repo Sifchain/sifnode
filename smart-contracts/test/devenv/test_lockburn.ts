@@ -551,7 +551,6 @@ describe("lock and burn tests", () => {
             console.log("Reached terminate state", acc)
             return { ...acc, value: { kind: "terminate" } as Terminate }
           }
-          console.log(v)
           switch (v.kind) {
             case "EbRelayerError":
             case "SifnodedError":
