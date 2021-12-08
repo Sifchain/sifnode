@@ -233,6 +233,7 @@ func (c CLI) shellExec(cmd string, args ...string) (*string, error) {
 	}
 
 	result := out.String()
+	fmt.Println("Command executed : ", cm.String(), "result : ", result)
 	return &result, nil
 }
 
