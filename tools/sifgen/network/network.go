@@ -79,7 +79,7 @@ func (n *Network) Build(count int, outputDir, seedIPv4Addr string) (*string, err
 	gentxDir := fmt.Sprintf("%s/%s", outputDir, GentxsDir)
 	validators := n.initValidators(count, outputDir, seedIPv4Addr)
 	for _, validator := range validators {
-		fmt.Printf("Validator : %v", validator)
+		//fmt.Printf("Validator : %v", validator)
 		appDirs := []string{validator.NodeHomeDir}
 		fmt.Println("AppDir : ", appDirs)
 		if err := n.createDirs(appDirs); err != nil {
@@ -89,11 +89,22 @@ func (n *Network) Build(count int, outputDir, seedIPv4Addr string) (*string, err
 		if err := n.generateKey(validator); err != nil {
 			return nil, err
 		}
+		fmt.Println("Keys :", validator.PubKey, validator.Address)
 		fmt.Println("init Chain")
-		os.RemoveAll(validator.NodeHomeDir)
+		//os.RemoveAll(validator.NodeHomeDir)
+		fmt.Println("Node : ")
 		if err := n.initChain(validator); err != nil {
 			return nil, err
 		}
+		files, err := ioutil.ReadDir(validator.NodeHomeDir)
+		if err != nil {
+			log.Fatal(err)
+		}
+		fmt.Println("List directories in Node Home")
+		for _, f := range files {
+			fmt.Println(f.Name())
+		}
+
 		fmt.Println("starting setAddress")
 		if err := n.setValidatorAddress(validator); err != nil {
 			return nil, err
@@ -228,11 +239,11 @@ func (n *Network) addValidatorKeyToSeed(validator, seedValidator *Validator) err
 }
 
 func (n *Network) initChain(validator *Validator) error {
-	_, err := n.CLI.InitChain(validator.ChainID, validator.Moniker, validator.NodeHomeDir)
+	res, err := n.CLI.InitChain(validator.ChainID, validator.Moniker, validator.NodeHomeDir)
 	if err != nil {
 		return err
 	}
-
+	fmt.Println("Node Initialised : ", res, *res)
 	return nil
 }
 
