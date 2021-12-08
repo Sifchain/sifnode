@@ -6,7 +6,7 @@ func DefaultGenesis() *GenesisState {
 	return &GenesisState{
 		// TODO review default param values
 		Params: &Params{
-			LeverageMax: sdk.NewUint(0),
+			LeverageMax: sdk.NewUint(1),
 		},
 	}
 }
