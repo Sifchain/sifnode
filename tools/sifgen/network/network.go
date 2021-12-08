@@ -91,7 +91,7 @@ func (n *Network) Build(count int, outputDir, seedIPv4Addr string) (*string, err
 			fmt.Println("error :", err)
 			return nil, err
 		}
-
+		fmt.Println("Complete CREATE LOOP")
 		if err := n.generateKey(validator); err != nil {
 			fmt.Println("error 2 :", err)
 			return nil, err
@@ -225,9 +225,10 @@ func (n *Network) generateKey(validator *Validator) error {
 	if err != nil {
 		return err
 	}
-
+	fmt.Println("Output", output)
 	yml, err := ioutil.ReadAll(strings.NewReader(*output))
 	if err != nil {
+		fmt.Println("Yaml read")
 		return err
 	}
 
@@ -235,6 +236,7 @@ func (n *Network) generateKey(validator *Validator) error {
 
 	err = yaml.Unmarshal(yml, &keys)
 	if err != nil {
+		fmt.Println("Yml unmarshal")
 		return err
 	}
 
