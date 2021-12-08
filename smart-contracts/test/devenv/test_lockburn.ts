@@ -39,6 +39,7 @@ import { v4 as uuidv4 } from "uuid"
 import * as dotenv from "dotenv"
 import "@nomiclabs/hardhat-ethers"
 import deepEqual = require("deep-equal")
+import { ethers } from "hardhat"
 
 // The hash value for ethereum on mainnet
 const ethDenomHash = "sif5ebfaf95495ceb5a3efbd0b0c63150676ec71e023b1043c40bcaaf91c00e15b2"
@@ -279,12 +280,12 @@ describe("lock and burn tests", () => {
     symbol: string,
     // TODO: What is correct value for corsschainfee?
     crossChainFee: string,
-    netwrokDescriptor: number
+    networkDescriptor: number
   ): Promise<object> {
     // TODO: Formatting
     let sifnodedCmd: string = `${gobin}/sifnoded tx ethbridge burn ${sender.account} ${
       destination.address
-    } ${amount} ${symbol} ${crossChainFee} --network-descriptor ${netwrokDescriptor} --keyring-backend test --gas-prices=0.5rowan --gas-adjustment=1.5 --chain-id localnet --home ${
+    } ${amount} ${symbol} ${crossChainFee} --network-descriptor ${networkDescriptor} --keyring-backend test --gas-prices=0.5rowan --gas-adjustment=1.5 --chain-id localnet --home ${
       devEnvObject!.sifResults!.adminAddress!.homeDir
     } --from ${sender.name} -y `
 
@@ -494,7 +495,16 @@ describe("lock and burn tests", () => {
     const factories = container.resolve(SifchainContractFactories)
     const contracts = await buildDevEnvContracts(devEnvObject, hardhat, factories)
     const destinationEthereumAddress = ethereumAccounts.availableAccounts[0]
-    const sendAmount = BigNumber.from(3500)
+
+    const initialBalance = (
+      await ethers.provider.getBalance(destinationEthereumAddress.address)
+    ).toString()
+
+    let contractInitialBalance = (
+      await ethers.provider.getBalance(contracts.bridgeBank.address)
+    ).toString()
+
+    const sendAmount = BigNumber.from(3500 * Math.pow(10, 9)) // 3500 gwei
 
     // TODO seems the chainId from dev object is wrong.
     const networkDescriptor = devEnvObject?.ethResults?.chainId ?? 31337
@@ -526,6 +536,13 @@ describe("lock and burn tests", () => {
       "ceth to eth"
     )
 
+    const intermediateBalance = (
+      await ethers.provider.getBalance(destinationEthereumAddress.address)
+    ).toString()
+    let contractIntermediateBalance = (
+      await ethers.provider.getBalance(contracts.bridgeBank.address)
+    ).toString()
+
     // These are temporarily added to make the logging lvl lower
     process.env["VERBOSE"] = originalVerboseLevel
 
@@ -546,6 +563,7 @@ describe("lock and burn tests", () => {
     const states: Observable<State> = evmRelayerEvents.pipe(
       scan(
         (acc: State, v: SifEvent) => {
+          console.log(v)
           if (isTerminalState(acc)) {
             // we've reached a decision
             console.log("Reached terminate state", acc)
@@ -560,6 +578,9 @@ describe("lock and burn tests", () => {
               // we just store the heartbeat
               return { ...acc, currentHeartbeat: v.value } as State
 
+            // case "EthereumMainnetLogBurn": {
+            //   console.log(v)
+            // }
             // Ebrelayer side log assertions
             case "EbRelayerEvmStateTransition": {
               let ebrelayerEvent: any = v.data
@@ -726,10 +747,11 @@ describe("lock and burn tests", () => {
 
     let crossChainCethFee = crossChainFeeBase * crossChainBurnFee
 
+    let newSendAmount = BigNumber.from(2300 * Math.pow(10, 9)) // 2300 gwei
     await executeSifBurn(
       testSifAccount,
       destinationEthereumAddress,
-      sendAmount.sub(crossChainCethFee),
+      newSendAmount.sub(crossChainCethFee),
       ethDenomHash,
       String(crossChainCethFee),
       networkDescriptor
@@ -740,6 +762,22 @@ describe("lock and burn tests", () => {
       lv.transactionStep,
       `did not complete, last step was ${JSON.stringify(lv, undefined, 2)}`
     ).to.eq(TransactionStep.ProphecyClaimSubmitted)
+
+    // Here we verify the user balance is correct
+    const finalBalance = (
+      await ethers.provider.getBalance(destinationEthereumAddress.address)
+    ).toString()
+    let contractFinalBalance = (
+      await ethers.provider.getBalance(contracts.bridgeBank.address)
+    ).toString()
+
+    console.log("Initial Balance     ", initialBalance)
+    console.log("intermediate Balance", intermediateBalance)
+    console.log("final Balance       ", finalBalance)
+
+    console.log("Contract Initial Balance     ", contractInitialBalance)
+    console.log("Contract intermediate Balance", contractIntermediateBalance)
+    console.log("Contract Final Balance       ", contractFinalBalance)
 
     // verboseSubscription.unsubscribe()
   })
