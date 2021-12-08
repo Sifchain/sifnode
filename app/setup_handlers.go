@@ -16,7 +16,7 @@ func SetupHandlers(app *SifchainApp) {
 		return app.mm.RunMigrations(ctx, app.configurator, fromVM)
 	})
 	app.UpgradeKeeper.SetUpgradeHandler(upgradeName, func(ctx sdk.Context, plan types.Plan, vm m.VersionMap) (m.VersionMap, error) {
-		app.Logger().Info("Testing upgrade handler for " + upgradeName)
+		app.Logger().Info("Running upgrade handler for " + upgradeName)
 		app.IBCKeeper.ConnectionKeeper.SetParams(ctx, ibcconnectiontypes.DefaultParams())
 		fromVM := make(map[string]uint64)
 		// Old Modules can execute Migrations if needed .
