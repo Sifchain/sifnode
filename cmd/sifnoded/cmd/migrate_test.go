@@ -15,6 +15,7 @@ import (
 func TestMigrateGenesisDataCmd(t *testing.T) {
 	homeDir, err := ioutil.TempDir("", "")
 	require.NoError(t, err)
+	RemoveNodeDir()
 	defer os.RemoveAll(homeDir)
 	cmd, _ := NewRootCmd()
 	migrateOutputBuf := new(bytes.Buffer)

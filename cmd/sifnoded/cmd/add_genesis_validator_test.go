@@ -1,4 +1,4 @@
-package cmd_test
+package cmd
 
 import (
 	"bytes"
@@ -15,15 +15,15 @@ import (
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 
 	"github.com/Sifchain/sifnode/app"
-	sifnodedcmd "github.com/Sifchain/sifnode/cmd/sifnoded/cmd"
 	"github.com/Sifchain/sifnode/x/oracle"
 )
 
 func TestAddGenesisValidatorCmd(t *testing.T) {
 	homeDir, err := ioutil.TempDir("", "")
+	RemoveNodeDir()
 	require.NoError(t, err)
 	defer os.RemoveAll(homeDir)
-	initCmd, _ := sifnodedcmd.NewRootCmd()
+	initCmd, _ := NewRootCmd()
 	initBuf := new(bytes.Buffer)
 	initCmd.SetOut(initBuf)
 	initCmd.SetErr(initBuf)
@@ -32,7 +32,7 @@ func TestAddGenesisValidatorCmd(t *testing.T) {
 	expectedValidatorBech32 := "sifvaloper1rwqp4q88ue83ag3kgnmxxypq0td59df4782tjn"
 	expectedValidator, err := sdk.ValAddressFromBech32(expectedValidatorBech32)
 	require.NoError(t, err)
-	addValCmd, _ := sifnodedcmd.NewRootCmd()
+	addValCmd, _ := NewRootCmd()
 	addValBuf := new(bytes.Buffer)
 	addValCmd.SetOut(addValBuf)
 	addValCmd.SetErr(addValBuf)
