@@ -196,7 +196,7 @@ describe("lock and burn tests", () => {
       stepIsCorrect = predecessor === acc.transactionStep
     }
     if (stepIsCorrect) {
-      console.log("Setting transactionStep", successor)
+      // console.log("Setting transactionStep", successor)
       return {
         ...acc,
         value: v,
@@ -204,7 +204,7 @@ describe("lock and burn tests", () => {
         transactionStep: successor,
       }
     } else {
-      console.log("Step is incorrect", successor)
+      // console.log("Step is incorrect", successor)
       return buildFailure(
         acc,
         v,
@@ -531,7 +531,7 @@ describe("lock and burn tests", () => {
 
     console.log("Lock complete")
 
-    const evmRelayerEvents = sifwatch(
+    const evmRelayerEvents: rxjs.Observable<SifEvent> = sifwatch(
       {
         evmrelayer: "/tmp/sifnode/evmrelayer.log",
         sifnoded: "/tmp/sifnode/sifnoded.log",
@@ -551,6 +551,7 @@ describe("lock and burn tests", () => {
             console.log("Reached terminate state", acc)
             return { ...acc, value: { kind: "terminate" } as Terminate }
           }
+          console.log(v)
           switch (v.kind) {
             case "EbRelayerError":
             case "SifnodedError":
@@ -565,9 +566,9 @@ describe("lock and burn tests", () => {
               let ebrelayerEvent: any = v.data
               switch (ebrelayerEvent.kind) {
                 case "ReceiveCosmosBurnMessage": {
-                  console.log("Seeing ReceiveCosmosBurnMessage")
+                  // console.log("Seeing ReceiveCosmosBurnMessage")
                   if (!receivedCosmosBurnmsg) {
-                    console.log("Receiving ReceiveCosmosBurnMessage for the first time")
+                    // console.log("Receiving ReceiveCosmosBurnMessage for the first time")
                     // Ignore subsequence occurrences, witness will reprocess until keeper updates nonce
                     receivedCosmosBurnmsg = true
                     return ensureCorrectTransition(
@@ -581,9 +582,9 @@ describe("lock and burn tests", () => {
                   }
                 }
                 case "WitnessSignProphecy": {
-                  console.log("Seeing WitnessSignProphecy")
+                  // console.log("Seeing WitnessSignProphecy")
                   if (!witnessSignedProphecy) {
-                    console.log("Receiving WitnessSignProphecy for the first time")
+                    // console.log("Receiving WitnessSignProphecy for the first time")
                     witnessSignedProphecy = true
                     return ensureCorrectTransition(
                       acc,
@@ -671,7 +672,7 @@ describe("lock and burn tests", () => {
                 //   )
 
                 case "PublishCosmosBurnMessage": {
-                  console.log("Received PublishCosmosBurnMessage")
+                  // console.log("Received PublishCosmosBurnMessage")
                   return ensureCorrectTransition(
                     acc,
                     v,
@@ -681,7 +682,7 @@ describe("lock and burn tests", () => {
                 }
 
                 case "SetWitnessLockBurnNonce": {
-                  console.log("Receiving SetWitnessLockBurnNonce. Acc,", acc)
+                  // console.log("Receiving SetWitnessLockBurnNonce. Acc,", acc)
                   return ensureCorrectTransition(
                     acc,
                     v,
@@ -722,7 +723,7 @@ describe("lock and burn tests", () => {
       })
     )
 
-    const verboseSubscription = attachDebugPrintfs(withoutHeartbeat, verbosityLevel())
+    // const verboseSubscription = attachDebugPrintfs(withoutHeartbeat, verbosityLevel())
 
     let crossChainCethFee = crossChainFeeBase * crossChainBurnFee
 
@@ -741,7 +742,7 @@ describe("lock and burn tests", () => {
       `did not complete, last step was ${JSON.stringify(lv, undefined, 2)}`
     ).to.eq(TransactionStep.ProphecyClaimSubmitted)
 
-    verboseSubscription.unsubscribe()
+    // verboseSubscription.unsubscribe()
   })
 
   it("should send two locks of ethereum", async () => {
