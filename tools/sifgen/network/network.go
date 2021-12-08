@@ -242,7 +242,7 @@ func (n *Network) generateKey(validator *Validator) error {
 	}
 
 	validator.Address = keys[0].Address
-	validator.PubKey = keys[0].PubKey
+	validator.PubKey = keys[0].PubKey.Key
 
 	return nil
 }
