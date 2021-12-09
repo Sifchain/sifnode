@@ -153,17 +153,20 @@ function verbosityLevel(): VerbosityLevel {
 function attachDebugPrintfs<T>(xs: Observable<T>, verbosity: VerbosityLevel): Subscription {
   return xs.subscribe({
     next: (x) => {
-      switch (verbosity) {
-        case "full":
-          console.log("DebugPrintf", JSON.stringify(x))
-          break
-        case "summary":
-          const p = x as any
-          console.log(
-            `${p.currentHeartbeat}\t${p.transactionStep}\t${p.value?.kind}\t${p.value?.data?.kind}`
-          )
-          break
-      }
+      console.log("Got event")
+      // switch (verbosity) {
+      //   case "full": {
+      //     console.log("DebugPrintf", JSON.stringify(x))
+      //     break
+      //   }
+      //   case "summary": {
+      //     const p = x as any
+      //     console.log(
+      //       `${p.currentHeartbeat}\t${p.transactionStep}\t${p.value?.kind}\t${p.value?.data?.kind}`
+      //     )
+      //     break
+      //   }
+      // }
     },
     error: (e) => console.log("goterror: ", e),
     complete: () => console.log("alldone"),
@@ -499,7 +502,7 @@ describe("lock and burn tests", () => {
       contracts.bridgeBank
     ).pipe(filter((x) => x.kind !== "SifnodedInfoEvent"))
 
-    evmRelayerEvents.subscribe((event) => console.log("Subscription", event))
+    // evmRelayerEvents.subscribe((event) => console.log("Subscription", event))
 
     let receivedCosmosBurnmsg: boolean = false
     let witnessSignedProphecy: boolean = false
@@ -685,7 +688,7 @@ describe("lock and burn tests", () => {
       })
     )
 
-    const verboseSubscription = attachDebugPrintfs(withoutHeartbeat, verbosityLevel())
+    // const verboseSubscription = attachDebugPrintfs(withoutHeartbeat, verbosityLevel())
 
     let crossChainCethFee = crossChainFeeBase * crossChainBurnFee
 
@@ -722,7 +725,7 @@ describe("lock and burn tests", () => {
     console.log("Contract intermediate Balance", contractIntermediateBalance)
     console.log("Contract Final Balance       ", contractFinalBalance)
 
-    verboseSubscription.unsubscribe()
+    // verboseSubscription.unsubscribe()
   })
 
   it("should send two locks of ethereum", async () => {
