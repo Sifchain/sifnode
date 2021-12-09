@@ -461,10 +461,6 @@ describe("lock and burn tests", () => {
 
     const sendAmount = BigNumber.from(3500 * GWEI) // 3500 gwei
 
-    // // TODO seems the chainId from dev object is wrong.
-    // const networkDescriptor = devEnvObject?.ethResults?.chainId ?? 31337
-    // console.log("Using network descriptor value:", networkDescriptor)
-
     let testSifAccount: EbRelayerAccount = sifnodedAdapter.createTestSifAccount()
     // sifnodedAdapter.fundSifAccount(testSifAccount!.account, 10000000000, "rowan")
 
@@ -526,9 +522,6 @@ describe("lock and burn tests", () => {
               return { ...acc, currentHeartbeat: v.value } as State
             }
 
-            // case "EthereumMainnetLogBurn": {
-            //   console.log(v)
-            // }
             // Ebrelayer side log assertions
             case "EbRelayerEvmStateTransition": {
               let ebrelayerEvent: any = v.data
