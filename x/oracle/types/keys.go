@@ -22,4 +22,5 @@ var (
 	SignaturePrefix             = []byte{0x04}
 	GlobalNonceProphecyIDPrefix = []byte{0x05}
 	WitnessLockBurnNoncePrefix  = []byte{0x06}
+	ConsensusNeededPrefix       = []byte{0x07}
 )

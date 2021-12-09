@@ -492,3 +492,44 @@ func GetCmdSignProphecy() *cobra.Command {
 
 	return cmd
 }
+
+// GetCmdUpdateConsensusNeeded is the CLI command to send the message to update consensusNeeded
+func GetCmdUpdateConsensusNeeded() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "update-consensus-needed [cosmos-sender-address] [network-id] [consensus-needed]",
+		Short: "This should be used to update consensus-needed.",
+		Args:  cobra.ExactArgs(3),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			clientCtx, err := client.GetClientTxContext(cmd)
+			if err != nil {
+				return err
+			}
+
+			_, err = sdk.AccAddressFromBech32(args[0])
+			if err != nil {
+				return err
+			}
+
+			networkDescriptor, err := strconv.Atoi(args[1])
+			if err != nil {
+				return errors.New("Error parsing network descriptor")
+			}
+
+			consensusNeeded, err := strconv.ParseFloat(args[2], 32)
+			if err != nil {
+				return errors.New("Error parsing consensus needed")
+			}
+
+			msg := types.NewMsgUpdateConsensusNeeded(args[0], oracletypes.NetworkDescriptor(networkDescriptor), float32(consensusNeeded))
+			if err := msg.ValidateBasic(); err != nil {
+				return err
+			}
+
+			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), &msg)
+		},
+	}
+
+	flags.AddTxFlagsToCmd(cmd)
+
+	return cmd
+}

@@ -43,4 +43,5 @@ type OracleKeeper interface {
 		tokenDecimal uint8, tokenName, tokenSymbol string) error
 	GetProphecyInfoWithScopeGlobalSequence(ctx sdk.Context, networkDescriptor oracletypes.NetworkDescriptor, startGlobalNonce uint64) []*oracletypes.ProphecyInfo
 	GetWitnessLockBurnSequence(ctx sdk.Context, networkDescriptor types.NetworkDescriptor, valAccount sdk.ValAddress) uint64
+	ProcessUpdateConsensusNeeded(ctx sdk.Context, cosmosSender sdk.AccAddress, networkDescriptor types.NetworkDescriptor, ConsensusNeeded float32) error
 }

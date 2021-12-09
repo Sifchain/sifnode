@@ -1,4 +1,4 @@
-#!/usr/bin/env sh
+#!/usr/bin/env bash
 
 set -eo pipefail
 
@@ -36,5 +36,4 @@ done
 
 # move proto files to the right places
 cp -r github.com/Sifchain/sifnode/* ./
-chown $SIFUSER $(find ./ -name *.pb.go)
 rm -rf github.com

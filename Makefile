@@ -27,9 +27,6 @@ ldflags = -X github.com/cosmos/cosmos-sdk/version.Name=sifchain \
 		  -X github.com/cosmos/cosmos-sdk/version.Commit=$(COMMIT) \
 		  -X "github.com/cosmos/cosmos-sdk/version.BuildTags=$(build_tags_comma_sep)"
 
-# We use one smart contract file as a signal that the abigen files have been created
-smart_contract_file=cmd/ebrelayer/contract/generated/artifacts/contracts/BridgeRegistry.sol/BridgeRegistry.go
-
 BUILD_FLAGS := -ldflags '$(ldflags)' -tags ${BUILD_TAGS}
 
 BINARIES=./cmd/sifnoded ./cmd/sifgen ./cmd/ebrelayer
@@ -57,7 +54,7 @@ lint: lint-pre
 lint-verbose: lint-pre
 	@golangci-lint run -v --timeout=5m
 
-install: go.sum ${smart_contract_file} .proto-gen
+install: go.sum
 	go install ${BUILD_FLAGS} ${BINARIES}
 
 build-sifd: go.sum
@@ -67,8 +64,7 @@ clean-config:
 	@rm -rf ~/.sifnode*
 
 clean: clean-config
-	@rm -rf ${GOBIN}/sif* 
-	git clean -fdx cmd/ebrelayer/contract/generated
+	@rm -rf ${GOBIN}/sif*
 
 coverage:
 	@go test -v ./... -coverprofile=coverage.txt -covermode=atomic
@@ -104,16 +100,12 @@ rollback:
 ###                                Protobuf                                 ###
 ###############################################################################
 
-# You can regenerate Makefile.protofiles with
-#     find . -name *.proto | sort | grep -v node_mo | paste -s -d " " > Makefile.protofiles
-# if the list of .proto files changes
-proto_files=$(file <Makefile.protofiles)
+proto-all: proto-format proto-lint proto-gen
 
-proto-all: proto-format proto-lint .proto-gen
-
-.proto-gen: $(proto_files)
-	$(DOCKER) run -e SIFUSER=$(shell id -u):$(shell id -g) --rm -v $(CURDIR):/workspace --workdir /workspace tendermintdev/sdk-proto-gen sh -x ./scripts/protocgen.sh
-	touch $@
+proto-gen:
+	@echo "Generating Protobuf files"
+	$(DOCKER) run --rm -v $(CURDIR):/workspace --workdir /workspace tendermintdev/sdk-proto-gen sh ./scripts/protocgen.sh
+.PHONY: proto-gen
 
 proto-format:
 	@echo "Formatting Protobuf files"
@@ -139,6 +131,3 @@ proto-check-breaking:
 	# we should turn this back on after our first release
 	# $(DOCKER_BUF) breaking --against $(HTTPS_GIT)#branch=master
 .PHONY: proto-check-breaking
-
-${smart_contract_file}:
-	cd smart-contracts && make

@@ -551,3 +551,51 @@ func (msg MsgSetFeeInfo) GetSigners() []sdk.AccAddress {
 
 	return []sdk.AccAddress{cosmosSender}
 }
+
+// Route should return the name of the module
+func (msg MsgUpdateConsensusNeeded) Route() string { return RouterKey }
+
+// Type should return the action
+func (msg MsgUpdateConsensusNeeded) Type() string { return "update_consensus_needed" }
+
+// ValidateBasic runs stateless checks on the message
+func (msg MsgUpdateConsensusNeeded) ValidateBasic() error {
+	if msg.CosmosSender == "" {
+		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.CosmosSender)
+	}
+
+	if !msg.NetworkDescriptor.IsValid() {
+		return errors.New("network descriptor is invalid")
+	}
+
+	return nil
+}
+
+// GetSignBytes encodes the message for signing
+func (msg MsgUpdateConsensusNeeded) GetSignBytes() []byte {
+	b, err := json.Marshal(msg)
+	if err != nil {
+		panic(err)
+	}
+
+	return sdk.MustSortJSON(b)
+}
+
+// GetSigners defines whose signature is required
+func (msg MsgUpdateConsensusNeeded) GetSigners() []sdk.AccAddress {
+	cosmosSender, err := sdk.AccAddressFromBech32(msg.CosmosSender)
+	if err != nil {
+		panic(err)
+	}
+
+	return []sdk.AccAddress{cosmosSender}
+}
+
+// NewMsgUpdateConsensusNeeded is a constructor function for MsgUpdateConsensusNeeded
+func NewMsgUpdateConsensusNeeded(cosmosSender string, networkDescriptor oracletypes.NetworkDescriptor, consensusNeeded float32) MsgUpdateConsensusNeeded {
+	return MsgUpdateConsensusNeeded{
+		CosmosSender:      cosmosSender,
+		NetworkDescriptor: networkDescriptor,
+		ConsensusNeeded:   consensusNeeded,
+	}
+}

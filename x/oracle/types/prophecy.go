@@ -10,7 +10,7 @@ import (
 // TODO integration test environment just one witness node with 50% vote power
 // to make the burn ceth finalized, reduce it to 0.49 temporarily
 // TODO revert to 0.7 after integration test
-const DefaultConsensusNeeded float64 = 0.49
+const DefaultConsensusNeeded float64 = 0.7
 
 // AddClaim adds a given claim to this prophecy
 func (prophecy *Prophecy) AddClaim(address sdk.ValAddress) error {

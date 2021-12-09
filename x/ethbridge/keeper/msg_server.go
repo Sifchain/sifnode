@@ -510,3 +510,48 @@ func (srv msgServer) SignProphecy(goCtx context.Context, msg *types.MsgSignProph
 
 	return &types.MsgSignProphecyResponse{}, nil
 }
+
+// UpdateConsensusNeeded admin account use it to update consensusNeeded
+func (srv msgServer) UpdateConsensusNeeded(goCtx context.Context, msg *types.MsgUpdateConsensusNeeded) (*types.MsgUpdateConsensusNeededResponse, error) {
+	ctx := sdk.UnwrapSDKContext(goCtx)
+	logger := srv.Keeper.Logger(ctx)
+
+	cosmosSender, err := sdk.AccAddressFromBech32(msg.CosmosSender)
+	if err != nil {
+		logger.Error("cosmos address is wrong", errorMessageKey, err.Error())
+		return nil, err
+	}
+
+	account := srv.Keeper.accountKeeper.GetAccount(ctx, cosmosSender)
+	if account == nil {
+		logger.Error("account is nil", "CosmosSender", msg.CosmosSender)
+		return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.CosmosSender)
+	}
+
+	err = srv.Keeper.ProcessUpdateConsensusNeeded(ctx, cosmosSender, msg.NetworkDescriptor, msg.ConsensusNeeded)
+
+	if err != nil {
+		logger.Error("keeper failed to process update consensus needed message.", errorMessageKey, err.Error())
+		return nil, err
+	}
+
+	logger.Info("sifnode received the update consensus needed message.",
+		"Message", msg)
+
+	ctx.EventManager().EmitEvents(sdk.Events{
+		sdk.NewEvent(
+			sdk.EventTypeMessage,
+			sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
+			sdk.NewAttribute(sdk.AttributeKeySender, msg.CosmosSender),
+		),
+		sdk.NewEvent(
+			types.EventTypeUpdateConsensusNeeded,
+			sdk.NewAttribute(types.AttributeKeyCosmosSender, msg.CosmosSender),
+			sdk.NewAttribute(types.AttributeKeyCosmosSenderSequence, strconv.FormatUint(account.GetSequence(), 10)),
+			sdk.NewAttribute(types.AttributeKeyNetworkDescriptor, msg.NetworkDescriptor.String()),
+			sdk.NewAttribute(types.AttributeKeyUpdateConsensusNeeded, fmt.Sprintf("%f", msg.ConsensusNeeded)),
+		),
+	})
+
+	return &types.MsgUpdateConsensusNeededResponse{}, nil
+}
