@@ -1,7 +1,7 @@
 package types
 
 import (
-	//"fmt"
+	// "fmt"
 
 	// "encoding/hex"
 	"testing"
@@ -10,26 +10,25 @@ import (
 )
 
 func Test_ParamKeyTable(t *testing.T) {
-	paramKeyTable := ParamKeyTable()
-	assert.NoError()
-}
+	_ = ParamKeyTable()
 
+}
 func Test_ParamSetPairs(t *testing.T) {
-	genesisState := ParamSetPairs()
-	assert.NoError()
+	params := DefaultParams()
+	_ = params.ParamSetPairs()
 }
 
 func Test_Validate(t *testing.T) {
-	genesisState := Validate()
-	assert.NoError()
-}
-
-func Test_validateMinCreatePoolThreshold(t *testing.T) {
-	genesisState := validateMinCreatePoolThreshold()
-	assert.NoError()
+	params := DefaultParams()
+	err := params.Validate()
+	assert.NoError(t, err)
 }
 
 func Test_Equal(t *testing.T) {
-	boolean := DefaultParams().Equal()
-	assert.NoError()
+	params1 := DefaultParams()
+	params2 := DefaultParams()
+	boolean := params1.Equal(params2)
+	assert.True(t, boolean)
+	boolean = params1.Equal(NewParams(uint64(10)))
+	assert.False(t, boolean)
 }
