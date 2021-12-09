@@ -24,7 +24,7 @@ func Test_Validate(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func Test_Equal(t *testing.T) {
+func Test_ParamsEqual(t *testing.T) {
 	params1 := DefaultParams()
 	params2 := DefaultParams()
 	boolean := params1.Equal(params2)
