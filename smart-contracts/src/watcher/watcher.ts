@@ -43,7 +43,7 @@ export function sifwatch(
       return { kind: "SifHeartbeat", value: i } as SifHeartbeat
     })
   )
-  const ethereumEvents = subscribeToEthereumEvents(hre, bridgeBank)
+  const ethereumEvents = subscribeToEthereumEvents(bridgeBank)
 
   if (logs.witness != undefined) {
     const witnessLines = tailFileAsObservable(logs.witness)
