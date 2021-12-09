@@ -512,6 +512,7 @@ func NewSifApp(
 		feegrant.ModuleName,
 		authz.ModuleName,
 		clptypes.ModuleName,
+		margintypes.ModuleName,
 		oracletypes.ModuleName,
 		ethbridge.ModuleName,
 		dispensation.ModuleName,
