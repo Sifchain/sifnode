@@ -3,6 +3,7 @@ package types
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"math/big"
 	"strconv"
 	"strings"
@@ -521,6 +522,8 @@ func (msg MsgSetFeeInfo) Type() string { return "set_crosschain_fee_info" }
 
 // ValidateBasic runs stateless checks on the message
 func (msg MsgSetFeeInfo) ValidateBasic() error {
+	fmt.Println("++++++ MsgSetFeeInfo ValidateBasic")
+
 	if msg.CosmosSender == "" {
 		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.CosmosSender)
 	}
@@ -560,6 +563,8 @@ func (msg MsgUpdateConsensusNeeded) Type() string { return "update_consensus_nee
 
 // ValidateBasic runs stateless checks on the message
 func (msg MsgUpdateConsensusNeeded) ValidateBasic() error {
+	fmt.Println("++++++ MsgUpdateConsensusNeeded ValidateBasic")
+
 	if msg.CosmosSender == "" {
 		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.CosmosSender)
 	}
@@ -567,6 +572,8 @@ func (msg MsgUpdateConsensusNeeded) ValidateBasic() error {
 	if !msg.NetworkDescriptor.IsValid() {
 		return errors.New("network descriptor is invalid")
 	}
+
+	fmt.Println("++++++ MsgUpdateConsensusNeeded ValidateBasic done")
 
 	return nil
 }
@@ -592,7 +599,7 @@ func (msg MsgUpdateConsensusNeeded) GetSigners() []sdk.AccAddress {
 }
 
 // NewMsgUpdateConsensusNeeded is a constructor function for MsgUpdateConsensusNeeded
-func NewMsgUpdateConsensusNeeded(cosmosSender string, networkDescriptor oracletypes.NetworkDescriptor, consensusNeeded float32) MsgUpdateConsensusNeeded {
+func NewMsgUpdateConsensusNeeded(cosmosSender string, networkDescriptor oracletypes.NetworkDescriptor, consensusNeeded uint32) MsgUpdateConsensusNeeded {
 	return MsgUpdateConsensusNeeded{
 		CosmosSender:      cosmosSender,
 		NetworkDescriptor: networkDescriptor,

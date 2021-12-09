@@ -368,6 +368,10 @@ export class SifnodedRunner extends ShellCommand<SifnodedResults> {
       "1.5",
       "-y",
     ]
+    console.log("++++++ ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
+    console.log("++++++ call updateConsensusNeeded ", this.sifnodedCommand, sifnodeAdminAccount)
+    console.log("++++++ ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
+
 
     return ChildProcess.execFileSync(this.sifnodedCommand, sifgenArgs, { encoding: "utf8" })
   }

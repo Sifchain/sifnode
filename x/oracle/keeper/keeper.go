@@ -139,10 +139,13 @@ func (k Keeper) processCompletion(ctx sdk.Context, networkDescriptor types.Netwo
 	whiteList := k.GetOracleWhiteList(ctx, types.NewNetworkIdentity(networkDescriptor))
 	voteRate := whiteList.GetPowerRatio(prophecy.ClaimValidators)
 
-	consensusNeeded, err := k.GetConsensusNeeded(ctx, types.NewNetworkIdentity(networkDescriptor))
+	var consensusNeeded float64
+	consensusNeededUint, err := k.GetConsensusNeeded(ctx, types.NewNetworkIdentity(networkDescriptor))
 	// consensusNeeded unavailable from keeper, use the default one.
 	if err != nil {
 		consensusNeeded = k.consensusNeeded
+	} else {
+		consensusNeeded = float64(consensusNeededUint) / 100.0
 	}
 
 	if voteRate >= consensusNeeded {
@@ -271,7 +274,7 @@ func (k Keeper) ProcessSignProphecy(ctx sdk.Context, networkDescriptor types.Net
 }
 
 // ProcessUpdateConsensusNeeded
-func (k Keeper) ProcessUpdateConsensusNeeded(ctx sdk.Context, cosmosSender sdk.AccAddress, networkDescriptor types.NetworkDescriptor, consensusNeeded float32) error {
+func (k Keeper) ProcessUpdateConsensusNeeded(ctx sdk.Context, cosmosSender sdk.AccAddress, networkDescriptor types.NetworkDescriptor, consensusNeeded uint32) error {
 	logger := k.Logger(ctx)
 	if !k.IsAdminAccount(ctx, cosmosSender) {
 		logger.Error("cosmos sender is not admin account.")

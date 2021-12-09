@@ -516,6 +516,8 @@ func (srv msgServer) UpdateConsensusNeeded(goCtx context.Context, msg *types.Msg
 	ctx := sdk.UnwrapSDKContext(goCtx)
 	logger := srv.Keeper.Logger(ctx)
 
+	logger.Error("++++++ UpdateConsensusNeeded")
+
 	cosmosSender, err := sdk.AccAddressFromBech32(msg.CosmosSender)
 	if err != nil {
 		logger.Error("cosmos address is wrong", errorMessageKey, err.Error())
@@ -549,7 +551,7 @@ func (srv msgServer) UpdateConsensusNeeded(goCtx context.Context, msg *types.Msg
 			sdk.NewAttribute(types.AttributeKeyCosmosSender, msg.CosmosSender),
 			sdk.NewAttribute(types.AttributeKeyCosmosSenderSequence, strconv.FormatUint(account.GetSequence(), 10)),
 			sdk.NewAttribute(types.AttributeKeyNetworkDescriptor, msg.NetworkDescriptor.String()),
-			sdk.NewAttribute(types.AttributeKeyUpdateConsensusNeeded, fmt.Sprintf("%f", msg.ConsensusNeeded)),
+			sdk.NewAttribute(types.AttributeKeyUpdateConsensusNeeded, strconv.FormatUint(uint64(msg.ConsensusNeeded), 10)),
 		),
 	})
 

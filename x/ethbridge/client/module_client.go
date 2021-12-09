@@ -56,6 +56,7 @@ func GetTxCmd() *cobra.Command {
 		cli.GetCmdRescueCrossChainFee(),
 		cli.GetCmdSetCrossChainFee(),
 		cli.GetCmdSignProphecy(),
+		cli.GetCmdUpdateConsensusNeeded(),
 	)
 
 	return ethBridgeTxCmd

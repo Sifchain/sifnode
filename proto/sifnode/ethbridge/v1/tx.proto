@@ -151,7 +151,7 @@ message MsgUpdateConsensusNeeded {
   string cosmos_sender = 1;
   sifnode.oracle.v1.NetworkDescriptor network_descriptor = 2
       [ (gogoproto.moretags) = "yaml:\"network_descriptor\"" ];
-  float consensus_needed = 3;
+  uint32 consensus_needed = 3;
 }
 
 message MsgUpdateConsensusNeededResponse {}

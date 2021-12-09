@@ -342,7 +342,7 @@ func (k Keeper) ProcessSignProphecy(ctx sdk.Context, msg *types.MsgSignProphecy)
 	return k.oracleKeeper.ProcessSignProphecy(ctx, msg.NetworkDescriptor, msg.ProphecyId, msg.CosmosSender, metadata.TokenAddress, msg.EthereumAddress, msg.Signature)
 }
 
-func (k Keeper) ProcessUpdateConsensusNeeded(ctx sdk.Context, cosmosAddress sdk.AccAddress, networkDescriptor oracletypes.NetworkDescriptor, consensusNeeded float32) error {
+func (k Keeper) ProcessUpdateConsensusNeeded(ctx sdk.Context, cosmosAddress sdk.AccAddress, networkDescriptor oracletypes.NetworkDescriptor, consensusNeeded uint32) error {
 	return k.oracleKeeper.ProcessUpdateConsensusNeeded(ctx, cosmosAddress, networkDescriptor, consensusNeeded)
 }
 

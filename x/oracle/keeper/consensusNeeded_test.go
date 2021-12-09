@@ -1,7 +1,6 @@
 package keeper_test
 
 import (
-	"math"
 	"testing"
 
 	"github.com/Sifchain/sifnode/x/oracle/types"
@@ -25,13 +24,12 @@ func TestKeeper_GetConsensusNeeded(t *testing.T) {
 	_, err = app.OracleKeeper.GetConsensusNeeded(ctx, networkDescriptor)
 	assert.Error(t, err)
 
-	app.OracleKeeper.SetConsensusNeeded(ctx, networkDescriptor, float32(0.1))
+	app.OracleKeeper.SetConsensusNeeded(ctx, networkDescriptor, 10)
 
 	// case for well set the ConsensusNeeded
 	consensusNeeded, err := app.OracleKeeper.GetConsensusNeeded(ctx, networkDescriptor)
 	assert.NoError(t, err)
-	diff := math.Abs(consensusNeeded - float64(0.1))
-	assert.Equal(t, diff < 0.0001, true)
+	assert.Equal(t, consensusNeeded, uint32(10))
 }
 
 func TestKeeper_SetConsensusNeeded(t *testing.T) {
@@ -40,10 +38,9 @@ func TestKeeper_SetConsensusNeeded(t *testing.T) {
 
 	networkDescriptor := types.NewNetworkIdentity(types.NetworkDescriptor_NETWORK_DESCRIPTOR_ETHEREUM)
 
-	app.OracleKeeper.SetConsensusNeeded(ctx, networkDescriptor, float32(0.1))
+	app.OracleKeeper.SetConsensusNeeded(ctx, networkDescriptor, 10)
 
 	consensusNeeded, err := app.OracleKeeper.GetConsensusNeeded(ctx, networkDescriptor)
 	assert.NoError(t, err)
-	diff := math.Abs(consensusNeeded - float64(0.1))
-	assert.Equal(t, diff < 0.0001, true)
+	assert.Equal(t, uint32(10), consensusNeeded)
 }

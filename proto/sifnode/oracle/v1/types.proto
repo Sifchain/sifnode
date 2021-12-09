@@ -96,5 +96,3 @@ message ProphecyInfo {
   repeated string ethereum_address = 16;
   repeated string signatures = 17;
 }
-
-message ConsensusNeeded { float consensus_needed = 1; }

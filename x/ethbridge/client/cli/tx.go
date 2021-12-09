@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"fmt"
 	"regexp"
 	"strconv"
 
@@ -500,6 +501,7 @@ func GetCmdUpdateConsensusNeeded() *cobra.Command {
 		Short: "This should be used to update consensus-needed.",
 		Args:  cobra.ExactArgs(3),
 		RunE: func(cmd *cobra.Command, args []string) error {
+			fmt.Println("++++++ GetCmdUpdateConsensusNeeded ")
 			clientCtx, err := client.GetClientTxContext(cmd)
 			if err != nil {
 				return err
@@ -507,7 +509,7 @@ func GetCmdUpdateConsensusNeeded() *cobra.Command {
 
 			_, err = sdk.AccAddressFromBech32(args[0])
 			if err != nil {
-				return err
+				return errors.New("Error cosmos sender address")
 			}
 
 			networkDescriptor, err := strconv.Atoi(args[1])
@@ -515,12 +517,16 @@ func GetCmdUpdateConsensusNeeded() *cobra.Command {
 				return errors.New("Error parsing network descriptor")
 			}
 
-			consensusNeeded, err := strconv.ParseFloat(args[2], 32)
+			consensusNeeded, err := strconv.ParseUint(args[2], 10, 32)
 			if err != nil {
 				return errors.New("Error parsing consensus needed")
 			}
 
-			msg := types.NewMsgUpdateConsensusNeeded(args[0], oracletypes.NetworkDescriptor(networkDescriptor), float32(consensusNeeded))
+			if consensusNeeded > 100 {
+				return errors.New("Error consensus needed value too large")
+			}
+
+			msg := types.NewMsgUpdateConsensusNeeded(args[0], oracletypes.NetworkDescriptor(networkDescriptor), uint32(consensusNeeded))
 			if err := msg.ValidateBasic(); err != nil {
 				return err
 			}

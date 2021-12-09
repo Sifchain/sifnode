@@ -18,6 +18,7 @@ func RegisterInterfaces(registry cdctypes.InterfaceRegistry) {
 		&MsgRescueCrossChainFee{},
 		&MsgSignProphecy{},
 		&MsgSetFeeInfo{},
+		&MsgUpdateConsensusNeeded{},
 	)
 
 	msgservice.RegisterMsgServiceDesc(registry, &_Msg_serviceDesc)

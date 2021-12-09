@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	"encoding/binary"
 	"fmt"
 
 	"github.com/Sifchain/sifnode/x/oracle/types"
@@ -10,17 +11,20 @@ import (
 // SetCrossChainFee set the crosschain fee for a network.
 func (k Keeper) SetConsensusNeeded(ctx sdk.Context,
 	networkIdentity types.NetworkIdentity,
-	consensusNeeded float32) {
+	consensusNeeded uint32) {
 	store := ctx.KVStore(k.storeKey)
 	key := networkIdentity.GetConsensusNeededPrefix()
 
-	store.Set(key, k.cdc.MustMarshalBinaryBare(&types.ConsensusNeeded{
-		ConsensusNeeded: consensusNeeded,
-	}))
+	fmt.Println("++++++ SetConsensusNeeded")
+
+	bs := make([]byte, 4)
+	binary.BigEndian.PutUint32(bs, consensusNeeded)
+
+	store.Set(key, bs)
 }
 
 // GetCrossChainFeeConfig return crosschain fee config
-func (k Keeper) GetConsensusNeeded(ctx sdk.Context, networkIdentity types.NetworkIdentity) (float64, error) {
+func (k Keeper) GetConsensusNeeded(ctx sdk.Context, networkIdentity types.NetworkIdentity) (uint32, error) {
 	store := ctx.KVStore(k.storeKey)
 	key := networkIdentity.GetConsensusNeededPrefix()
 
@@ -29,8 +33,5 @@ func (k Keeper) GetConsensusNeeded(ctx sdk.Context, networkIdentity types.Networ
 	}
 
 	bz := store.Get(key)
-	consensusNeeded := &types.ConsensusNeeded{}
-	k.cdc.MustUnmarshalBinaryBare(bz, consensusNeeded)
-
-	return float64(consensusNeeded.ConsensusNeeded), nil
+	return binary.BigEndian.Uint32(bz), nil
 }

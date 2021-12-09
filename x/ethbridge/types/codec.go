@@ -16,6 +16,7 @@ func RegisterLegacyAminoCodec(cdc *codec.LegacyAmino) {
 	cdc.RegisterConcrete(MsgRescueCrossChainFee{}, "ethbridge/MsgRescueCrossChainFee", nil)
 	cdc.RegisterConcrete(MsgSetFeeInfo{}, "ethbridge/MsgSetFeeInfo", nil)
 	cdc.RegisterConcrete(MsgSignProphecy{}, "ethbridge/MsgSignProphecy", nil)
+	cdc.RegisterConcrete(MsgUpdateConsensusNeeded{}, "ethbridge/MsgUpdateConsensusNeeded", nil)
 }
 
 var (
