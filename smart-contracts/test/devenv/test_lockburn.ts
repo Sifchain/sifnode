@@ -40,11 +40,17 @@ import * as dotenv from "dotenv"
 import "@nomiclabs/hardhat-ethers"
 import deepEqual = require("deep-equal")
 import { ethers } from "hardhat"
+import { SifnodedAdapter } from "./sifnodedAdapter"
+// import { SifnodedAdapter, SifnodedAdapter } from "./sifnodedAdapter"
+// import { createTestSifAccount, fundSifAccount } from "./sifnodedAdapter"
 
 // The hash value for ethereum on mainnet
 const ethDenomHash = "sif5ebfaf95495ceb5a3efbd0b0c63150676ec71e023b1043c40bcaaf91c00e15b2"
 
 chai.use(solidity)
+
+const GWEI = Math.pow(10, 9)
+const ETH = Math.pow(10, 18)
 
 interface Failure {
   kind: "failure"
@@ -149,7 +155,7 @@ function attachDebugPrintfs<T>(xs: Observable<T>, verbosity: VerbosityLevel): Su
     next: (x) => {
       switch (verbosity) {
         case "full":
-          console.log(JSON.stringify(x))
+          console.log("DebugPrintf", JSON.stringify(x))
           break
         case "summary":
           const p = x as any
@@ -168,17 +174,32 @@ function hasDuplicateNonce(a: EbRelayerEvmEvent, b: EbRelayerEvmEvent): boolean 
   return a.data.event.Nonce === b.data.event.Nonce
 }
 
-const gobin = process.env["GOBIN"]
+// const gobin = process.env["GOBIN"]
 
 describe("lock and burn tests", () => {
   dotenv.config()
-
+  // const INIT_STATE: State = {
+  //   value: { kind: "initialState" },
+  //   createdAt: 0,
+  //   currentHeartbeat: 0,
+  //   transactionStep: TransactionStep.Initial,
+  // }
   // This test only works when devenv is running, and that requires a connection to localhost
   expect(hardhat.network.name, "please use devenv").to.eq("localhost")
 
   const devEnvObject = readDevEnvObj("environment.json")
   // a generic sif address, nothing special about it
   const recipient = web3.utils.utf8ToHex("sif1nx650s8q9w28f2g3t9ztxyg48ugldptuwzpace")
+  const networkDescriptor = devEnvObject?.ethResults?.chainId ?? 31337
+
+  // const factories = container.resolve(SifchainContractFactories)
+  // const contracts = await buildDevEnvContracts(devEnvObject, hardhat, factories)
+
+  const sifnodedAdapter: SifnodedAdapter = new SifnodedAdapter(
+    devEnvObject!.sifResults!.adminAddress!.homeDir,
+    devEnvObject!.sifResults!.adminAddress!.account,
+    process.env["GOBIN"]
+  )
 
   before("register HardhatRuntimeEnvironmentToken", async () => {
     container.register(HardhatRuntimeEnvironmentToken, { useValue: hardhat })
@@ -223,74 +244,6 @@ describe("lock and burn tests", () => {
         message: message,
       },
     }
-  }
-
-  // TODO: This ISNT an ebrelayer Account. it is a SIFACCOUNT
-  function createTestSifAccount(): EbRelayerAccount {
-    // Generate uuid
-    let testSifAccountName = uuidv4()
-    let cmd: string = `${gobin}/sifnoded keys add ${testSifAccountName} --home ${
-      devEnvObject!.sifResults!.adminAddress!.homeDir
-    } --keyring-backend test --output json`
-    let responseString: string = ChildProcess.execSync(cmd, {
-      encoding: "utf8",
-    })
-    let responseJson = JSON.parse(responseString)
-
-    // console.log("CreateTestAccount Response: ", responseJson)
-    return {
-      name: responseJson.name,
-      account: responseJson.address,
-      homeDir: "",
-    }
-  }
-
-  // TODO: Move all these sif TS SDK to it's own class. I think it should go to smart-contract/devenv
-  // TODO: Rethink naming. SendToSif?
-  function fundSifAccount(
-    adminAccount: string,
-    destination: string,
-    amount: number,
-    symbol: string,
-    homeDir: string
-  ): object {
-    // sifnoded tx bank send adminAccount testAccountToBeFunded --keyring-backend test --chain-id localnet concat(amount,symbol) --gas-prices=0.5rowan --gas-adjustment=1.5 --home <homeDir> --gas auto -y
-    let sifnodedCmd: string = `${gobin}/sifnoded tx bank send ${adminAccount} ${destination} --keyring-backend test --chain-id localnet ${amount}${symbol} --gas-prices=0.5rowan --gas-adjustment=1.5 --home ${homeDir} --gas auto -y`
-    let responseString: string = ChildProcess.execSync(sifnodedCmd, {
-      encoding: "utf8",
-    })
-    return JSON.parse(responseString)
-  }
-
-  // TODO: This is placed here now because devObject is available in this scope
-  async function sifTransfer(
-    sender: string,
-    destination: SignerWithAddress,
-    amount: BigNumber,
-    symbol: string,
-    // TODO: What is correct value for corsschainfee?
-    crossChainFee: string,
-    netwrokDescriptor: number
-  ) {}
-
-  async function executeSifBurn(
-    sender: EbRelayerAccount,
-    destination: SignerWithAddress,
-    amount: BigNumber,
-    symbol: string,
-    // TODO: What is correct value for corsschainfee?
-    crossChainFee: string,
-    networkDescriptor: number
-  ): Promise<object> {
-    // TODO: Formatting
-    let sifnodedCmd: string = `${gobin}/sifnoded tx ethbridge burn ${sender.account} ${
-      destination.address
-    } ${amount} ${symbol} ${crossChainFee} --network-descriptor ${networkDescriptor} --keyring-backend test --gas-prices=0.5rowan --gas-adjustment=1.5 --chain-id localnet --home ${
-      devEnvObject!.sifResults!.adminAddress!.homeDir
-    } --from ${sender.name} -y `
-
-    let responseString = ChildProcess.execSync(sifnodedCmd, { encoding: "utf8" })
-    return JSON.parse(responseString)
   }
 
   // Wrap an async function into an Observable<T>
@@ -486,42 +439,34 @@ describe("lock and burn tests", () => {
     replayedEvents.unsubscribe()
   }
 
-  it("should allow ceth to eth tx", async () => {
+  it.only("should allow ceth to eth tx", async () => {
     // TODO: Could these be moved out of the test fx? and instantiated via beforeEach?
+    const factories = container.resolve(SifchainContractFactories)
+    const contracts = await buildDevEnvContracts(devEnvObject, hardhat, factories)
+
     const ethereumAccounts = await ethereumResultsToSifchainAccounts(
       devEnvObject.ethResults!,
       hardhat.ethers.provider
     )
-    const factories = container.resolve(SifchainContractFactories)
-    const contracts = await buildDevEnvContracts(devEnvObject, hardhat, factories)
     const destinationEthereumAddress = ethereumAccounts.availableAccounts[0]
 
+    // These two can happen together
     const initialBalance = (
       await ethers.provider.getBalance(destinationEthereumAddress.address)
     ).toString()
 
-    let contractInitialBalance = (
+    const contractInitialBalance = (
       await ethers.provider.getBalance(contracts.bridgeBank.address)
     ).toString()
 
-    const sendAmount = BigNumber.from(3500 * Math.pow(10, 9)) // 3500 gwei
+    const sendAmount = BigNumber.from(3500 * GWEI) // 3500 gwei
 
-    // TODO seems the chainId from dev object is wrong.
-    const networkDescriptor = devEnvObject?.ethResults?.chainId ?? 31337
-    console.log("Using network descriptor value:", networkDescriptor)
-    // const networkDescriptor = 31337
-    if (networkDescriptor != 31337) {
-      console.log("Unexpected, networkdescriptor should have value of 31337")
-    }
+    // // TODO seems the chainId from dev object is wrong.
+    // const networkDescriptor = devEnvObject?.ethResults?.chainId ?? 31337
+    // console.log("Using network descriptor value:", networkDescriptor)
 
-    let testSifAccount: EbRelayerAccount = createTestSifAccount()
-    fundSifAccount(
-      devEnvObject!.sifResults!.adminAddress!.account,
-      testSifAccount!.account,
-      10000000000,
-      "rowan",
-      devEnvObject!.sifResults!.adminAddress!.homeDir
-    )
+    let testSifAccount: EbRelayerAccount = sifnodedAdapter.createTestSifAccount()
+    // sifnodedAdapter.fundSifAccount(testSifAccount!.account, 10000000000, "rowan")
 
     // TODO: This is temporary. I think the right thing is for them to accept a verbose level
     let originalVerboseLevel: string | undefined = process.env["VERBOSE"]
@@ -558,12 +503,14 @@ describe("lock and burn tests", () => {
       contracts.bridgeBank
     ).pipe(filter((x) => x.kind !== "SifnodedInfoEvent"))
 
+    evmRelayerEvents.subscribe((event) => console.log("Subscription", event))
+
     let receivedCosmosBurnmsg: boolean = false
     let witnessSignedProphecy: boolean = false
     const states: Observable<State> = evmRelayerEvents.pipe(
       scan(
         (acc: State, v: SifEvent) => {
-          console.log(v)
+          console.log("State assertion machine", v)
           if (isTerminalState(acc)) {
             // we've reached a decision
             console.log("Reached terminate state", acc)
@@ -574,9 +521,10 @@ describe("lock and burn tests", () => {
             case "SifnodedError":
               // if we get an actual error, that's always a failure
               return { ...acc, value: { kind: "failure", value: v, message: "simple error" } }
-            case "SifHeartbeat":
+            case "SifHeartbeat": {
               // we just store the heartbeat
               return { ...acc, currentHeartbeat: v.value } as State
+            }
 
             // case "EthereumMainnetLogBurn": {
             //   console.log(v)
@@ -722,9 +670,10 @@ describe("lock and burn tests", () => {
               }
             }
 
-            default:
+            default: {
               // we have a new value (of any kind) and it should use the current heartbeat as its creation time
               return { ...acc, value: v, createdAt: acc.currentHeartbeat }
+            }
           }
         },
         {
@@ -743,12 +692,12 @@ describe("lock and burn tests", () => {
       })
     )
 
-    // const verboseSubscription = attachDebugPrintfs(withoutHeartbeat, verbosityLevel())
+    const verboseSubscription = attachDebugPrintfs(withoutHeartbeat, verbosityLevel())
 
     let crossChainCethFee = crossChainFeeBase * crossChainBurnFee
 
     let newSendAmount = BigNumber.from(2300 * Math.pow(10, 9)) // 2300 gwei
-    await executeSifBurn(
+    await sifnodedAdapter.executeSifBurn(
       testSifAccount,
       destinationEthereumAddress,
       newSendAmount.sub(crossChainCethFee),
@@ -758,10 +707,11 @@ describe("lock and burn tests", () => {
     )
 
     const lv = await lastValueFrom(states.pipe(takeWhile((x) => x.value.kind !== "terminate")))
+    const expectedEndState: TransactionStep = TransactionStep.ProphecyClaimSubmitted
     expect(
       lv.transactionStep,
       `did not complete, last step was ${JSON.stringify(lv, undefined, 2)}`
-    ).to.eq(TransactionStep.ProphecyClaimSubmitted)
+    ).to.eq(expectedEndState)
 
     // Here we verify the user balance is correct
     const finalBalance = (
@@ -779,7 +729,7 @@ describe("lock and burn tests", () => {
     console.log("Contract intermediate Balance", contractIntermediateBalance)
     console.log("Contract Final Balance       ", contractFinalBalance)
 
-    // verboseSubscription.unsubscribe()
+    verboseSubscription.unsubscribe()
   })
 
   it("should send two locks of ethereum", async () => {
