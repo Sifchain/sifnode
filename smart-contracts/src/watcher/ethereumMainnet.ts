@@ -74,7 +74,6 @@ export function isNotEthereumMainnetEvent(x: object): x is EthereumMainnetEvent 
 }
 
 export function subscribeToEthereumEvents(
-  hre: HardhatRuntimeEnvironment,
   bridgeBank: BridgeBank
 ): Observable<EthereumMainnetEvent> {
   return new Observable<EthereumMainnetEvent>((subscriber) => {
