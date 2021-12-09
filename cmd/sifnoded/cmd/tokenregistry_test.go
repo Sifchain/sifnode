@@ -12,7 +12,6 @@ import (
 
 func TestGenerateEntry(t *testing.T) {
 	cmd, _ := NewRootCmd()
-	RemoveNodeDir()
 	cmd.SetArgs([]string{
 		"query",
 		"tokenregistry",

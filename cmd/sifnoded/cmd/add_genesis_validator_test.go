@@ -23,7 +23,6 @@ import (
 func TestAddGenesisValidatorCmd(t *testing.T) {
 	homeDir, err := ioutil.TempDir("", "")
 	require.NoError(t, err)
-	RemoveNodeDir()
 	defer func(path string) {
 		err := os.RemoveAll(path)
 		if err != nil {
