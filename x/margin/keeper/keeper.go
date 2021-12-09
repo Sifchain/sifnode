@@ -125,6 +125,10 @@ func (k Keeper) GetLeverageParam(ctx sdk.Context) sdk.Uint {
 	return leverageMax
 }
 
+func (k Keeper) SetParams(ctx sdk.Context, params *types.Params) {
+	k.paramStore.SetParamSet(ctx, params)
+}
+
 func (k Keeper) CustodySwap(ctx sdk.Context, pool clptypes.Pool, to string, sentAmount sdk.Uint) (sdk.Uint, error) {
 	/*
 	   calculate swap fee based on math spec
