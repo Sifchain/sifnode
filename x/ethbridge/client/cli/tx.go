@@ -501,7 +501,6 @@ func GetCmdUpdateConsensusNeeded() *cobra.Command {
 		Short: "This should be used to update consensus-needed.",
 		Args:  cobra.ExactArgs(3),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			fmt.Println("++++++ GetCmdUpdateConsensusNeeded ")
 			clientCtx, err := client.GetClientTxContext(cmd)
 			if err != nil {
 				return err

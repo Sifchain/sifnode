@@ -23,7 +23,7 @@ export const crossChainBurnFee: number = 1
 const ethereumCrossChainFeeToken: string =
   "sif5ebfaf95495ceb5a3efbd0b0c63150676ec71e023b1043c40bcaaf91c00e15b2"
 
-const ConsensusNeeded = "0.49"
+const ConsensusNeeded = "49"
 export interface ValidatorValues {
   chain_id: string
   node_id: string
@@ -368,11 +368,7 @@ export class SifnodedRunner extends ShellCommand<SifnodedResults> {
       "1.5",
       "-y",
     ]
-    console.log("++++++ ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
-    console.log("++++++ call updateConsensusNeeded ", this.sifnodedCommand, sifnodeAdminAccount)
-    console.log("++++++ ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
-
-
+    
     return ChildProcess.execFileSync(this.sifnodedCommand, sifgenArgs, { encoding: "utf8" })
   }
 

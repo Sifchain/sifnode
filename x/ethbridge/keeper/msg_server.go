@@ -516,8 +516,6 @@ func (srv msgServer) UpdateConsensusNeeded(goCtx context.Context, msg *types.Msg
 	ctx := sdk.UnwrapSDKContext(goCtx)
 	logger := srv.Keeper.Logger(ctx)
 
-	logger.Error("++++++ UpdateConsensusNeeded")
-
 	cosmosSender, err := sdk.AccAddressFromBech32(msg.CosmosSender)
 	if err != nil {
 		logger.Error("cosmos address is wrong", errorMessageKey, err.Error())

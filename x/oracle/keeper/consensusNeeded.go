@@ -15,8 +15,6 @@ func (k Keeper) SetConsensusNeeded(ctx sdk.Context,
 	store := ctx.KVStore(k.storeKey)
 	key := networkIdentity.GetConsensusNeededPrefix()
 
-	fmt.Println("++++++ SetConsensusNeeded")
-
 	bs := make([]byte, 4)
 	binary.BigEndian.PutUint32(bs, consensusNeeded)
 
