@@ -17,7 +17,8 @@
     ],
     "unit_denom": "",
     "ibc_counterparty_denom": "",
-    "ibc_counterparty_chain_id": ""
+    "ibc_counterparty_chain_id": "",
+    "is_whitelisted": true
   },
   {
     "decimals": 18,
@@ -37,6 +38,7 @@
     ],
     "unit_denom": "",
     "ibc_counterparty_denom": "",
-    "ibc_counterparty_chain_id": ""
+    "ibc_counterparty_chain_id": "",
+    "is_whitelisted": true
   }
 ]
