@@ -40,6 +40,7 @@ func NewLiquidityProvider(asset *Asset, liquidityProviderUnits sdk.Uint, liquidi
 // ----------------------------------------------------------------------------
 // Client Types
 
+// (testing) no one uses this method.
 func NewPoolsResponse(pools []*Pool, height int64, address string) PoolsRes {
 	return PoolsRes{Pools: pools, Height: height, ClpModuleAddress: address}
 }
