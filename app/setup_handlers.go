@@ -4,6 +4,7 @@ import (
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	m "github.com/cosmos/cosmos-sdk/types/module"
+	crisistypes "github.com/cosmos/cosmos-sdk/x/crisis/types"
 	"github.com/cosmos/cosmos-sdk/x/feegrant"
 	"github.com/cosmos/cosmos-sdk/x/upgrade/types"
 	ibcconnectiontypes "github.com/cosmos/ibc-go/v2/modules/core/03-connection/types"
@@ -23,10 +24,14 @@ func SetupHandlers(app *SifchainApp) {
 		for moduleName := range app.mm.Modules {
 			fromVM[moduleName] = 1
 		}
+
+		delete(fromVM, feegrant.ModuleName)
+		delete(fromVM, crisistypes.ModuleName)
+
 		// New Modules must execute Init Genesis
-		fromVM[feegrant.ModuleName] = 0
-		fromVM["vesting"] = 0
-		fromVM["crisis"] = 0
+		//fromVM[feegrant.ModuleName] = 0
+		//fromVM["vesting"] = 0
+		//fromVM["crisis"] = 0
 		return app.mm.RunMigrations(ctx, app.configurator, fromVM)
 	})
 	upgradeInfo, err := app.UpgradeKeeper.ReadUpgradeInfoFromDisk()
@@ -35,7 +40,7 @@ func SetupHandlers(app *SifchainApp) {
 	}
 	if upgradeInfo.Name == upgradeName && !app.UpgradeKeeper.IsSkipHeight(upgradeInfo.Height) {
 		storeUpgrades := storetypes.StoreUpgrades{
-			Added: []string{feegrant.ModuleName, "vesting", "crisis"},
+			Added: []string{feegrant.ModuleName, crisistypes.ModuleName},
 		}
 		// Use upgrade store loader for the initial loading of all stores when app starts,
 		// it checks if version == upgradeHeight and applies store upgrades before loading the stores,
