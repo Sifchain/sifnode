@@ -297,7 +297,7 @@ func NewSifApp(
 	)
 
 	app.FeegrantKeeper = feegrantkeeper.NewKeeper(
-		appCodec, keys[banktypes.StoreKey], app.AccountKeeper,
+		appCodec, keys[feegrant.StoreKey], app.AccountKeeper,
 	)
 
 	stakingKeeper := stakingkeeper.NewKeeper(
