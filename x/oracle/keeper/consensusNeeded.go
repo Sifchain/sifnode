@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"encoding/binary"
+	"errors"
 	"fmt"
 
 	"github.com/Sifchain/sifnode/x/oracle/types"
@@ -31,5 +32,9 @@ func (k Keeper) GetConsensusNeeded(ctx sdk.Context, networkIdentity types.Networ
 	}
 
 	bz := store.Get(key)
-	return binary.BigEndian.Uint32(bz), nil
+	consensusNeeded := binary.BigEndian.Uint32(bz)
+	if consensusNeeded > 100 {
+		return 0, errors.New("consensusNeeded stored is too large")
+	}
+	return consensusNeeded, nil
 }

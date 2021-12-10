@@ -528,6 +528,11 @@ func (srv msgServer) UpdateConsensusNeeded(goCtx context.Context, msg *types.Msg
 		return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.CosmosSender)
 	}
 
+	// ConsensusNeeded unit is percent
+	if msg.ConsensusNeeded > 100 {
+		return nil, errors.New("ConsensusNeeded is too large")
+	}
+
 	err = srv.Keeper.ProcessUpdateConsensusNeeded(ctx, cosmosSender, msg.NetworkDescriptor, msg.ConsensusNeeded)
 
 	if err != nil {

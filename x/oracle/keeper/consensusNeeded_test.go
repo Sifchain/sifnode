@@ -44,3 +44,16 @@ func TestKeeper_SetConsensusNeeded(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, uint32(10), consensusNeeded)
 }
+
+// test if the value is too large
+func TestKeeper_SetConsensusNeededWithLargeNumber(t *testing.T) {
+	app := sifapp.Setup(false)
+	ctx := app.BaseApp.NewContext(false, tmproto.Header{})
+
+	networkDescriptor := types.NewNetworkIdentity(types.NetworkDescriptor_NETWORK_DESCRIPTOR_ETHEREUM)
+
+	app.OracleKeeper.SetConsensusNeeded(ctx, networkDescriptor, 1000)
+
+	_, err := app.OracleKeeper.GetConsensusNeeded(ctx, networkDescriptor)
+	assert.Error(t, err)
+}

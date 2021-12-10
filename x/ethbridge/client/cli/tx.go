@@ -1,7 +1,6 @@
 package cli
 
 import (
-	"fmt"
 	"regexp"
 	"strconv"
 

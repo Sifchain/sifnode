@@ -744,18 +744,18 @@ describe("lock and burn tests", () => {
     // verboseSubscription.unsubscribe()
   })
 
-  // it("should send two locks of ethereum", async () => {
-  //   const ethereumAccounts = await ethereumResultsToSifchainAccounts(
-  //     devEnvObject.ethResults!,
-  //     hardhat.ethers.provider
-  //   )
-  //   const factories = container.resolve(SifchainContractFactories)
-  //   const contracts = await buildDevEnvContracts(devEnvObject, hardhat, factories)
-  //   const sender1 = ethereumAccounts.availableAccounts[0]
-  //   const smallAmount = BigNumber.from(1017)
+  it("should send two locks of ethereum", async () => {
+    const ethereumAccounts = await ethereumResultsToSifchainAccounts(
+      devEnvObject.ethResults!,
+      hardhat.ethers.provider
+    )
+    const factories = container.resolve(SifchainContractFactories)
+    const contracts = await buildDevEnvContracts(devEnvObject, hardhat, factories)
+    const sender1 = ethereumAccounts.availableAccounts[0]
+    const smallAmount = BigNumber.from(1017)
 
-  //   // Do two locks of ethereum
-  //   await executeLock(contracts, smallAmount, sender1, recipient, true, "lock of eth")
-  //   await executeLock(contracts, smallAmount, sender1, recipient, true, "second lock of eth")
-  // })
+    // Do two locks of ethereum
+    await executeLock(contracts, smallAmount, sender1, recipient, true, "lock of eth")
+    await executeLock(contracts, smallAmount, sender1, recipient, true, "second lock of eth")
+  })
 })
