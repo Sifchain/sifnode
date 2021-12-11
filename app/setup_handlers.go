@@ -23,22 +23,18 @@ func SetupHandlers(app *SifchainApp) {
 		// Migrating modules should increment the ConsensusVersion
 		// FromVersion NotEqual to ConsensusVersion is required to trigger a migration.
 		for moduleName := range app.mm.Modules {
-			//fmt.Println("Migrate Module : ",moduleName)
 			fromVM[moduleName] = 1
 		}
 		delete(fromVM, feegrant.ModuleName)
 		delete(fromVM, crisistypes.ModuleName)
 		delete(fromVM, "vesting")
-		//delete(fromVM, authtypes.ModuleName)
-		//
-		//delete(fromVM, banktypes.ModuleName)
+
 		fromVM[authtypes.ModuleName] = 2
 		newVM, err := app.mm.RunMigrations(ctx, app.configurator, fromVM)
 		if err != nil {
 			panic(err)
 		}
 		newVM[authtypes.ModuleName] = 1
-		//newVM["distribution"]= 1
 		return app.mm.RunMigrations(ctx, app.configurator, newVM)
 	})
 	upgradeInfo, err := app.UpgradeKeeper.ReadUpgradeInfoFromDisk()
