@@ -1,8 +1,6 @@
 package types
 
 import (
-	//"fmt"
-
 	"bytes"
 	"strconv"
 	"testing"
@@ -156,8 +154,7 @@ func TestNewMsgAddLiquidity(t *testing.T) {
 	assert.Error(t, err, "External asset cannot be rowan")
 	tx = NewMsgAddLiquidity(signer, asset, sdk.ZeroUint(), sdk.ZeroUint())
 	err = tx.ValidateBasic()
-	// we should get Error here but not.
-	// assert.Error(t, err)
+	assert.Error(t, err, "Both asset ammounts cannot be 0 0 / 0")
 }
 
 func TestNewMsgRemoveLiquidity(t *testing.T) {

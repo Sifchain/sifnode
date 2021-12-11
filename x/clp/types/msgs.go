@@ -156,10 +156,7 @@ func (m MsgAddLiquidity) ValidateBasic() error {
 	if m.ExternalAsset.Equals(GetSettlementAsset()) {
 		return sdkerrors.Wrap(ErrInValidAsset, "External asset cannot be rowan")
 	}
-	// (testing) I think this part is wrong because GTE will retrun true if NativeAssetAmount and ExternalAssetAmount are both zero which is
-	// conflicate with comment: Both asset ammounts cannot be 0
-	// func (u Uint) GTE(u2 Uint) bool { return u.GT(u2) || u.Equal(u2) }
-	if !(m.NativeAssetAmount.GT(sdk.ZeroUint())) && (m.ExternalAssetAmount.GT(sdk.ZeroUint())) {
+	if (!m.NativeAssetAmount.GT(sdk.ZeroUint())) && (!m.ExternalAssetAmount.GT(sdk.ZeroUint())) {
 		return sdkerrors.Wrap(ErrInValidAmount, fmt.Sprintf("Both asset ammounts cannot be 0 %s / %s", m.NativeAssetAmount.String(), m.ExternalAssetAmount.String()))
 	}
 

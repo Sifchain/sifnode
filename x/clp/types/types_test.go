@@ -2,8 +2,7 @@ package types
 
 import (
 	// "fmt"
-	"bytes"
-	"strconv"
+
 	"testing"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -41,11 +40,11 @@ func Test_TypesValidate(t *testing.T) {
 
 func Test_NewLiquidityProvider(t *testing.T) {
 	newAsset := NewAsset("eth")
-	address := GenerateAddress("A58856F0FD53BF058B4909A21AEC019107BA6")
+	address, _ := sdk.AccAddressFromBech32("A58856F0FD53BF058B4909A21AEC019107BA6")
 	liquidityProviderUnits := sdk.NewUint(1)
 	liquidityProvider := NewLiquidityProvider(&newAsset, liquidityProviderUnits, address)
 	assert.Equal(t, liquidityProvider.Asset, &newAsset)
-	assert.Equal(t, liquidityProvider.LiquidityProviderAddress, "cosmos15ky9du8a2wlstz6fpx3p4mqpjyrm5cgqjwl8sq")
+	assert.Equal(t, liquidityProvider.LiquidityProviderAddress, "")
 	assert.Equal(t, liquidityProvider.LiquidityProviderUnits, liquidityProviderUnits)
 	boolean := liquidityProvider.Validate()
 	assert.True(t, boolean)
@@ -58,7 +57,7 @@ func Test_NewLiquidityProvider(t *testing.T) {
 
 func Test_NewLiquidityProviderResponse(t *testing.T) {
 	newAsset := NewAsset("eth")
-	address := GenerateAddress("A58856F0FD53BF058B4909A21AEC019107BA6")
+	address, _ := sdk.AccAddressFromBech32("A58856F0FD53BF058B4909A21AEC019107BA6")
 	liquidityProviderUnits := sdk.NewUint(1)
 	nativeAssetAmount := sdk.NewUintFromString("998")
 	externalAssetAmount := sdk.NewUintFromString("998")
@@ -68,32 +67,4 @@ func Test_NewLiquidityProviderResponse(t *testing.T) {
 	assert.Equal(t, liquidityProviderResponse.NativeAssetBalance, nativeAssetAmount.String())
 	assert.Equal(t, liquidityProviderResponse.Height, int64(10))
 	assert.Equal(t, liquidityProviderResponse.LiquidityProvider, &liquidityProvider)
-}
-
-func GenerateAddress(key string) sdk.AccAddress {
-	if key == "" {
-		key = AddressKey1
-	}
-	var buffer bytes.Buffer
-	buffer.WriteString(key)
-	buffer.WriteString(strconv.Itoa(100))
-	res, _ := sdk.AccAddressFromHex(buffer.String())
-	bech := res.String()
-	addr := buffer.String()
-	res, err := sdk.AccAddressFromHex(addr)
-	if err != nil {
-		panic(err)
-	}
-	bechexpected := res.String()
-	if bech != bechexpected {
-		panic("Bech encoding doesn't match reference")
-	}
-	bechres, err := sdk.AccAddressFromBech32(bech)
-	if err != nil {
-		panic(err)
-	}
-	if !bytes.Equal(bechres, res) {
-		panic("Bech decode and hex decode don't match")
-	}
-	return res
 }
