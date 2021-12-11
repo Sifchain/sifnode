@@ -11,7 +11,7 @@ import (
 	ibcconnectiontypes "github.com/cosmos/ibc-go/v2/modules/core/03-connection/types"
 )
 
-const upgradeName = "0.10.0-rc.3"
+const upgradeName = "0.10.0-rc.4"
 
 func SetupHandlers(app *SifchainApp) {
 	app.UpgradeKeeper.SetUpgradeHandler(upgradeName, func(ctx sdk.Context, plan types.Plan, vm m.VersionMap) (m.VersionMap, error) {
