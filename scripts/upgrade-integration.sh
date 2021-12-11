@@ -53,12 +53,12 @@ echo "hand inmate canvas head lunar naive increase recycle dog ecology inhale de
 sifnoded keys add mkey --multisig sif,akasha --multisig-threshold 2 --keyring-backend=test
 
 sifnoded add-genesis-account $(sifnoded keys show sif -a --keyring-backend=test) 500000000000000000000000rowan,500000000000000000000000catk,500000000000000000000000cbtk,500000000000000000000000ceth,990000000000000000000000000stake,500000000000000000000000cdash,500000000000000000000000clink --keyring-backend=test
-sifnoded add-genesis-account $(sifnoded keys show akasha -a --keyring-backend=test) 500000000000000000000000rowan,500000000000000000000000catk,500000000000000000000000cbtk,500000000000000000000000ceth,990000000000000000000000000stake,500000000000000000000000cdash,500000000000000000000000clink --keyring-backend=test
+#sifnoded add-genesis-account $(sifnoded keys show akasha -a --keyring-backend=test) 500000000000000000000000rowan,500000000000000000000000catk,500000000000000000000000cbtk,500000000000000000000000ceth,990000000000000000000000000stake,500000000000000000000000cdash,500000000000000000000000clink --keyring-backend=test
 
-sifnoded add-genesis-clp-admin $(sifnoded keys show sif -a --keyring-backend=test) --keyring-backend=test
-sifnoded add-genesis-clp-admin $(sifnoded keys show akasha -a --keyring-backend=test) --keyring-backend=test
+#/sifnoded add-genesis-clp-admin $(sifnoded keys show sif -a --keyring-backend=test) --keyring-backend=test
+#sifnoded add-genesis-clp-admin $(sifnoded keys show akasha -a --keyring-backend=test) --keyring-backend=test
 
-sifnoded set-genesis-whitelister-admin sif --keyring-backend=test
+#sifnoded set-genesis-whitelister-admin sif --keyring-backend=test
 #sifnoded set-gen-denom-whitelist scripts/denoms.json
 
 sifnoded add-genesis-validators $(sifnoded keys show sif -a --bech val --keyring-backend=test) --keyring-backend=test
@@ -100,8 +100,9 @@ sleep 7
 sifnoded query gov proposal 1
 
 cp $GOPATH/bin/new/sifnoded $GOPATH/bin/
-sleep 10
-pkill sifnoded
-sifnoded export
+#sleep 10
+tail -f sifnode.log
+#pkill sifnoded
+#sifnoded export
 
 #yes Y | sifnoded tx gov submit-proposal software-upgrade 0.9.14 --from sif --deposit 100000000stake --upgrade-height 30 --title 0.9.14 --description 0.9.14 --keyring-backend test --chain-id localnet
