@@ -37,8 +37,9 @@ make install
 rm -rf sifnode.log
 #wget $CurrentBinary -P $GOPATH/bin
 #rm -rm $GOPATH/bin/sifnoded
+echo $GOPATH
 cp $GOPATH/bin/sifnoded $GOPATH/bin/new/
-rm -rm $GOPATH/bin/sifnoded
+rm -rf $GOPATH/bin/sifnoded
 cp $GOPATH/bin/old/sifnoded $GOPATH/bin/
 chmod +x $GOPATH/bin/sifnoded
 sifnoded init test --chain-id=localnet -o
