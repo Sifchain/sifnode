@@ -27,14 +27,15 @@ func SetupHandlers(app *SifchainApp) {
 		}
 		delete(fromVM, feegrant.ModuleName)
 		delete(fromVM, crisistypes.ModuleName)
-		delete(fromVM, "vesting")
-
+		// Set to 2 , which is the same as the ConsensusVersion to disable migrate function
 		fromVM[authtypes.ModuleName] = 2
 		newVM, err := app.mm.RunMigrations(ctx, app.configurator, fromVM)
 		if err != nil {
 			panic(err)
 		}
+		// Set it back to 1 to run only auth migration
 		newVM[authtypes.ModuleName] = 1
+		// This is to make sure auth module migrates after staking
 		return app.mm.RunMigrations(ctx, app.configurator, newVM)
 	})
 	upgradeInfo, err := app.UpgradeKeeper.ReadUpgradeInfoFromDisk()
@@ -43,7 +44,7 @@ func SetupHandlers(app *SifchainApp) {
 	}
 	if upgradeInfo.Name == upgradeName && !app.UpgradeKeeper.IsSkipHeight(upgradeInfo.Height) {
 		storeUpgrades := storetypes.StoreUpgrades{
-			Added: []string{feegrant.ModuleName, crisistypes.ModuleName, "vesting"},
+			Added: []string{feegrant.ModuleName, crisistypes.ModuleName},
 		}
 		// Use upgrade store loader for the initial loading of all stores when app starts,
 		// it checks if version == upgradeHeight and applies store upgrades before loading the stores,
