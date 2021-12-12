@@ -325,7 +325,7 @@ func NewSifApp(
 	   https://github.com/cosmos/cosmos-sdk/blob/d3a8e1e9535e4d980723fbabdc274cd55cf965ae/x/crisis/abci.go#L20
 	   Controlled by `invCheckPeriod`
 
-	   InitGenesis of the Crisis module .
+	   InitGenesis of the Crisis module.
 	   https://github.com/cosmos/cosmos-sdk/blob/d3a8e1e9535e4d980723fbabdc274cd55cf965ae/x/crisis/module.go#L147
 	   Controlled by `skipGenesisInvariants`
 
