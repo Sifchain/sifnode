@@ -42,15 +42,27 @@ export interface EthereumMainnetLogBurn {
   }
 }
 
+export interface EthereumMainnetLogUnlock {
+  kind: "EthereumMainnetLogUnlock"
+  data: {
+    kind: "EthereumMainnetLogUnlock"
+    to: string
+    token: string
+    value: string
+  }
+}
+
 export type EthereumMainnetEvent =
   | EthereumMainnetBlock
   | EthereumMainnetLogLock
   | EthereumMainnetLogBurn
+  | EthereumMainnetLogUnlock
 
 export function isEthereumMainnetEvent(x: object): x is EthereumMainnetEvent {
   switch ((x as EthereumMainnetEvent).kind) {
     case "EthereumMainnetBlock":
     case "EthereumMainnetLogLock":
+    case "EthereumMainnetLogUnlock":
       return true
     default:
       return false
@@ -62,7 +74,6 @@ export function isNotEthereumMainnetEvent(x: object): x is EthereumMainnetEvent 
 }
 
 export function subscribeToEthereumEvents(
-  hre: HardhatRuntimeEnvironment,
   bridgeBank: BridgeBank
 ): Observable<EthereumMainnetEvent> {
   return new Observable<EthereumMainnetEvent>((subscriber) => {
@@ -87,6 +98,7 @@ export function subscribeToEthereumEvents(
     }
     let lockLogFilter = bridgeBank.filters.LogLock()
     bridgeBank.on(lockLogFilter, logLockListener)
+
     const logBurnListener = (...args: any[]) => {
       let newVar: EthereumMainnetLogBurn = {
         kind: "EthereumMainnetLogBurn",
@@ -108,9 +120,26 @@ export function subscribeToEthereumEvents(
     }
     let logBurnFilter = bridgeBank.filters.LogBurn()
     bridgeBank.on(logBurnFilter, logBurnListener)
+
+    let logUnlockFilter = bridgeBank.filters.LogUnlock()
+    // TODO: Naming
+    const logUnlockListener = (...args: any[]) => {
+      const log: EthereumMainnetLogUnlock = {
+        kind: "EthereumMainnetLogUnlock",
+        data: {
+          kind: "EthereumMainnetLogUnlock",
+          to: args[0],
+          token: args[1],
+          value: args[2],
+        },
+      }
+    }
+    bridgeBank.on(logUnlockFilter, logUnlockListener)
+
     return () => {
       bridgeBank.off(lockLogFilter, logLockListener)
       bridgeBank.off(logBurnFilter, logBurnListener)
+      bridgeBank.off(logUnlockFilter, logUnlockListener)
     }
   })
 }
