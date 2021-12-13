@@ -3,12 +3,30 @@ package app
 import (
 	paramproposal "github.com/cosmos/cosmos-sdk/x/params/types/proposal"
 	ibcclient "github.com/cosmos/ibc-go/v2/modules/core/02-client"
+	"github.com/spf13/cast"
 	"io"
 	"math/big"
 	"net/http"
 	"os"
 
+	sifchainAnte "github.com/Sifchain/sifnode/app/ante"
+	"github.com/Sifchain/sifnode/x/clp"
+	clpkeeper "github.com/Sifchain/sifnode/x/clp/keeper"
+	clptypes "github.com/Sifchain/sifnode/x/clp/types"
+	"github.com/Sifchain/sifnode/x/dispensation"
+	dispkeeper "github.com/Sifchain/sifnode/x/dispensation/keeper"
+	disptypes "github.com/Sifchain/sifnode/x/dispensation/types"
+	"github.com/Sifchain/sifnode/x/ethbridge"
+	ethbridgekeeper "github.com/Sifchain/sifnode/x/ethbridge/keeper"
+	ethbridgetypes "github.com/Sifchain/sifnode/x/ethbridge/types"
+	ibctransferoverride "github.com/Sifchain/sifnode/x/ibctransfer"
+	sctransfertypes "github.com/Sifchain/sifnode/x/ibctransfer/types"
+	"github.com/Sifchain/sifnode/x/oracle"
+	oraclekeeper "github.com/Sifchain/sifnode/x/oracle/keeper"
+	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
+	"github.com/Sifchain/sifnode/x/tokenregistry"
 	tokenregistrykeeper "github.com/Sifchain/sifnode/x/tokenregistry/keeper"
+	tokenregistrytypes "github.com/Sifchain/sifnode/x/tokenregistry/types"
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/grpc/tmservice"
@@ -88,24 +106,6 @@ import (
 	"github.com/tendermint/tendermint/libs/log"
 	tmos "github.com/tendermint/tendermint/libs/os"
 	dbm "github.com/tendermint/tm-db"
-
-	sifchainAnte "github.com/Sifchain/sifnode/app/ante"
-	"github.com/Sifchain/sifnode/x/clp"
-	clpkeeper "github.com/Sifchain/sifnode/x/clp/keeper"
-	clptypes "github.com/Sifchain/sifnode/x/clp/types"
-	"github.com/Sifchain/sifnode/x/dispensation"
-	dispkeeper "github.com/Sifchain/sifnode/x/dispensation/keeper"
-	disptypes "github.com/Sifchain/sifnode/x/dispensation/types"
-	"github.com/Sifchain/sifnode/x/ethbridge"
-	ethbridgekeeper "github.com/Sifchain/sifnode/x/ethbridge/keeper"
-	ethbridgetypes "github.com/Sifchain/sifnode/x/ethbridge/types"
-	ibctransferoverride "github.com/Sifchain/sifnode/x/ibctransfer"
-	sctransfertypes "github.com/Sifchain/sifnode/x/ibctransfer/types"
-	"github.com/Sifchain/sifnode/x/oracle"
-	oraclekeeper "github.com/Sifchain/sifnode/x/oracle/keeper"
-	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
-	"github.com/Sifchain/sifnode/x/tokenregistry"
-	tokenregistrytypes "github.com/Sifchain/sifnode/x/tokenregistry/types"
 )
 
 const appName = "sifnode"
@@ -317,6 +317,21 @@ func NewSifApp(
 	app.SlashingKeeper = slashingkeeper.NewKeeper(
 		appCodec, keys[slashingtypes.StoreKey], &stakingKeeper, app.GetSubspace(slashingtypes.ModuleName),
 	)
+	/*
+	   Invariants are certain conditions which are checked , which should hold true to certify the network is not byzantine .
+	   The invariants are asserted in two places
+
+	   End of every block
+	   https://github.com/cosmos/cosmos-sdk/blob/d3a8e1e9535e4d980723fbabdc274cd55cf965ae/x/crisis/abci.go#L20
+	   Controlled by `invCheckPeriod`
+
+	   InitGenesis of the Crisis module.
+	   https://github.com/cosmos/cosmos-sdk/blob/d3a8e1e9535e4d980723fbabdc274cd55cf965ae/x/crisis/module.go#L147
+	   Controlled by `skipGenesisInvariants`
+
+	   We remove the invariant check from crisis module and add to be checked once every 600 blocks instead.
+	*/
+	skipGenesisInvariants := cast.ToBool(appOpts.Get(crisis.FlagSkipGenesisInvariants))
 	app.CrisisKeeper = crisiskeeper.NewKeeper(
 		app.GetSubspace(crisistypes.ModuleName), invCheckPeriod, app.BankKeeper, authtypes.FeeCollectorName,
 	)
@@ -411,11 +426,6 @@ func NewSifApp(
 	)
 	// If evidence needs to be handled for the app, set routes in router here and seal
 	app.EvidenceKeeper = *evidenceKeeper
-	var skipGenesisInvariants = false
-	opt := appOpts.Get(crisis.FlagSkipGenesisInvariants)
-	if opt, ok := opt.(bool); ok {
-		skipGenesisInvariants = opt
-	}
 	cfg := module.NewConfigurator(app.appCodec, app.MsgServiceRouter(), app.GRPCQueryRouter())
 	app.configurator = cfg
 
