@@ -1,12 +1,13 @@
 package app
 
 import (
-	paramproposal "github.com/cosmos/cosmos-sdk/x/params/types/proposal"
-	ibcclient "github.com/cosmos/ibc-go/v2/modules/core/02-client"
 	"io"
 	"math/big"
 	"net/http"
 	"os"
+
+	paramproposal "github.com/cosmos/cosmos-sdk/x/params/types/proposal"
+	ibcclient "github.com/cosmos/ibc-go/v2/modules/core/02-client"
 
 	tokenregistrykeeper "github.com/Sifchain/sifnode/x/tokenregistry/keeper"
 	"github.com/cosmos/cosmos-sdk/baseapp"
@@ -104,6 +105,9 @@ import (
 	ethbridgetypes "github.com/Sifchain/sifnode/x/ethbridge/types"
 	ibctransferoverride "github.com/Sifchain/sifnode/x/ibctransfer"
 	sctransfertypes "github.com/Sifchain/sifnode/x/ibctransfer/types"
+	"github.com/Sifchain/sifnode/x/margin"
+	marginkeeper "github.com/Sifchain/sifnode/x/margin/keeper"
+	margintypes "github.com/Sifchain/sifnode/x/margin/types"
 	"github.com/Sifchain/sifnode/x/oracle"
 	oraclekeeper "github.com/Sifchain/sifnode/x/oracle/keeper"
 	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
@@ -145,6 +149,8 @@ var (
 		ethbridge.AppModuleBasic{},
 		dispensation.AppModuleBasic{},
 		tokenregistry.AppModuleBasic{},
+		margin.AppModuleBasic{},
+
 		authzmodule.AppModuleBasic{},
 		vesting.AppModuleBasic{},
 	)
@@ -161,6 +167,7 @@ var (
 		ethbridgetypes.ModuleName:      {authtypes.Minter, authtypes.Burner},
 		clptypes.ModuleName:            {authtypes.Burner, authtypes.Minter},
 		dispensation.ModuleName:        {authtypes.Burner, authtypes.Minter},
+		margintypes.ModuleName:         {authtypes.Burner, authtypes.Minter},
 	}
 )
 
@@ -215,6 +222,7 @@ type SifchainApp struct {
 	ScopedIBCMockKeeper  capabilitykeeper.ScopedKeeper
 
 	ClpKeeper           clpkeeper.Keeper
+	MarginKeeper        marginkeeper.KeeperI
 	OracleKeeper        oraclekeeper.Keeper
 	EthbridgeKeeper     ethbridgekeeper.Keeper
 	DispensationKeeper  dispkeeper.Keeper
@@ -255,6 +263,7 @@ func NewSifApp(
 		disptypes.StoreKey,
 		ethbridgetypes.StoreKey,
 		clptypes.StoreKey,
+		margintypes.StoreKey,
 		oracletypes.StoreKey,
 		tokenregistrytypes.StoreKey,
 		authzkeeper.StoreKey,
@@ -342,6 +351,7 @@ func NewSifApp(
 		app.TokenRegistryKeeper,
 		app.GetSubspace(clptypes.ModuleName),
 	)
+	app.MarginKeeper = marginkeeper.NewKeeper(keys[margintypes.StoreKey], appCodec, app.BankKeeper, app.ClpKeeper)
 	// register the staking hooks
 	// NOTE: stakingKeeper above is passed by reference, so that it will contain these hooks
 	app.StakingKeeper = *stakingKeeper.SetHooks(
@@ -457,6 +467,7 @@ func NewSifApp(
 		params.NewAppModule(app.ParamsKeeper),
 		transferModule,
 		clp.NewAppModule(app.ClpKeeper, app.BankKeeper),
+		margin.NewAppModule(app.MarginKeeper, &appCodec),
 		oracle.NewAppModule(app.OracleKeeper),
 		ethbridge.NewAppModule(app.OracleKeeper, app.BankKeeper, app.AccountKeeper, app.EthbridgeKeeper, &appCodec),
 		dispensation.NewAppModule(app.DispensationKeeper, app.BankKeeper, app.AccountKeeper),

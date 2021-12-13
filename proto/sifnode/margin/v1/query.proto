@@ -1,0 +1,11 @@
+syntax = "proto3";
+package sifnode.margin.v1;
+
+import "gogoproto/gogo.proto";
+import "google/api/annotations.proto";
+import "sifnode/margin/v1/types.proto";
+
+option go_package = "github.com/Sifchain/sifnode/x/margin/types";
+
+service Query {
+}
