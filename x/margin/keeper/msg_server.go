@@ -73,3 +73,32 @@ func (k msgServer) OpenLong(goCtx context.Context, msg *types.MsgOpenLong) (*typ
 
 	return &types.MsgOpenLongResponse{}, nil
 }
+
+func (k msgServer) CloseLong(goCtx context.Context, msg *types.MsgCloseLong) (*types.MsgCloseLongResponse, error) {
+	ctx := sdk.UnwrapSDKContext(goCtx)
+
+	mtp, err := k.GetMTP(ctx, msg.CollateralAsset, msg.Signer)
+	if err != nil {
+		return nil, err
+	}
+	pool := clptypes.Pool{}
+
+	nativeAsset := types.GetSettlementAsset()
+	if msg.CollateralAsset == nativeAsset {
+		pool, err = k.ClpKeeper().GetPool(ctx, msg.BorrowAsset)
+	} else {
+		pool, err = k.ClpKeeper().GetPool(ctx, msg.CollateralAsset)
+	}
+
+	err = k.TakeOutCustody(ctx, mtp, pool)
+
+	repayAmount, err := k.CustodySwap(ctx, pool, mtp.CollateralAsset, mtp.CustodyAmount)
+
+	interestRate, err := k.InterestRateComputation(ctx, pool)
+
+	err = k.UpdateMTPInterestLiabilities(ctx, mtp, interestRate)
+
+	err = k.Repay(ctx, mtp, pool, repayAmount)
+
+	return &types.MsgCloseLongResponse{}, nil
+}

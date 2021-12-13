@@ -119,16 +119,6 @@ func (k Keeper) BankKeeper() types.BankKeeper {
 	return k.bankKeeper
 }
 
-func (k Keeper) GetLeverageParam(ctx sdk.Context) sdk.Uint {
-	var leverageMax sdk.Uint
-	k.paramStore.Get(ctx, types.KeyLeverageMaxParam, &leverageMax)
-	return leverageMax
-}
-
-func (k Keeper) SetParams(ctx sdk.Context, params *types.Params) {
-	k.paramStore.SetParamSet(ctx, params)
-}
-
 func (k Keeper) CustodySwap(ctx sdk.Context, pool clptypes.Pool, to string, sentAmount sdk.Uint) (sdk.Uint, error) {
 	/*
 	   calculate swap fee based on math spec
@@ -314,4 +304,126 @@ func (k Keeper) TakeInCustody(ctx sdk.Context, mtp types.MTP, pool clptypes.Pool
 	}
 
 	return k.ClpKeeper().SetPool(ctx, &pool)
+}
+
+func (k Keeper) TakeOutCustody(ctx sdk.Context, mtp types.MTP, pool clptypes.Pool) error {
+	nativeAsset := types.GetSettlementAsset()
+
+	if mtp.CollateralAsset == nativeAsset {
+		pool.ExternalCustody = pool.ExternalCustody.Sub(mtp.CustodyAmount)
+	} else {
+		pool.NativeCustody = pool.NativeCustody.Sub(mtp.CustodyAmount)
+	}
+
+	return k.clpKeeper.SetPool(ctx, &pool)
+}
+
+func (k Keeper) Repay(ctx sdk.Context, mtp types.MTP, pool clptypes.Pool, repayAmount sdk.Uint) error {
+	returnAmount, debtP, debtI := sdk.ZeroUint(), sdk.ZeroUint(), sdk.ZeroUint()
+	CollateralAmount := mtp.CollateralAmount
+	LiabilitiesP := mtp.LiabilitiesP
+	LiabilitiesI := mtp.LiabilitiesI
+
+	var err error
+	mtp.MtpHealth, err = k.UpdateMTPHealth(ctx, mtp, pool)
+	if err != nil {
+		return err
+	}
+
+	have := repayAmount.Add(CollateralAmount)
+	owe := LiabilitiesP.Add(LiabilitiesI)
+
+	if have.LT(LiabilitiesP) {
+		//can't affort principle liability
+		returnAmount = sdk.ZeroUint()
+		debtP = LiabilitiesP.Sub(have)
+		debtI = LiabilitiesI
+	} else if have.LT(owe) {
+		// v principle liability; x excess liability
+		returnAmount = sdk.ZeroUint()
+		debtP = sdk.ZeroUint()
+		debtI = LiabilitiesP.Add(LiabilitiesI).Sub(have)
+	} else {
+		// can afford both
+		returnAmount = have.Sub(LiabilitiesP).Sub(LiabilitiesI)
+		debtP = sdk.ZeroUint()
+		debtI = sdk.ZeroUint()
+	}
+
+	if !returnAmount.IsZero() {
+		var coins sdk.Coins
+		returnCoin := sdk.NewCoin(mtp.CollateralAsset, sdk.NewIntFromBigInt(returnAmount.BigInt()))
+		returnCoins := coins.Add(returnCoin)
+		addr, err := sdk.AccAddressFromBech32(mtp.Address)
+		if err != nil {
+			return err
+		}
+		err = k.BankKeeper().SendCoinsFromModuleToAccount(ctx, types.ModuleName, addr, returnCoins)
+		if err != nil {
+			return err
+		}
+	}
+
+	nativeAsset := types.GetSettlementAsset()
+
+	if mtp.CollateralAsset == nativeAsset {
+		pool.NativeAssetBalance = pool.NativeAssetBalance.Sub(debtI).Sub(debtP)
+		pool.NativeLiabilities = pool.NativeLiabilities.Sub(mtp.LiabilitiesP)
+	} else {
+		pool.ExternalAssetBalance = pool.NativeAssetBalance.Sub(debtI).Sub(debtP)
+		pool.ExternalLiabilities = pool.NativeLiabilities.Sub(mtp.LiabilitiesP)
+	}
+
+	err = k.DestroyMTP(ctx, mtp.CollateralAsset, mtp.Address)
+	if err != nil {
+		return err
+	}
+
+	return k.clpKeeper.SetPool(ctx, &pool)
+}
+
+func (k Keeper) UpdateMTPInterestLiabilities(ctx sdk.Context, mtp types.MTP, interestRate sdk.Dec) error {
+	//liabilitiesI := mtp.LiabilitiesI
+	//liabilitiesP := mtp.LiabilitiesP
+
+	// mtp.LiabilitiesI = interestRate.Mul(liabilitiesP.Add(liabilitiesI)).Add(liabilitiesI)
+
+	return k.SetMTP(ctx, &mtp)
+}
+
+func (k Keeper) InterestRateComputation(ctx sdk.Context, pool clptypes.Pool) (sdk.Dec, error) {
+	interestRateMax := k.GetInterestRateMax(ctx)
+	interestRateMin := k.GetInterestRateMin(ctx)
+	interestRateIncrease := k.GetInterestRateIncrease(ctx)
+	interestRateDecrease := k.GetInterestRateDecrease(ctx)
+	healthGainFactor := k.GetHealthGainFactor(ctx)
+
+	prevInterestRate := pool.InterestRate
+
+	mul1 := pool.ExternalAssetBalance.Add(pool.ExternalLiabilities).Quo(pool.ExternalAssetBalance)
+	mul2 := pool.NativeAssetBalance.Add(pool.NativeLiabilities).Quo(pool.NativeAssetBalance)
+
+	targetInterestRate := healthGainFactor.Mul(sdk.NewDecFromBigInt(mul1.BigInt())).Mul(sdk.NewDecFromBigInt(mul2.BigInt()))
+
+	interestRateChange := targetInterestRate.Sub(prevInterestRate)
+	interestRate := prevInterestRate
+	if interestRateChange.LTE(interestRateDecrease.Mul(sdk.NewDec(-1))) && interestRateChange.LTE(interestRateIncrease) {
+		interestRate = targetInterestRate
+	} else if interestRateChange.GT(interestRateIncrease) {
+		interestRate = prevInterestRate.Add(interestRateIncrease)
+	} else if interestRateChange.LT(interestRateDecrease.Mul(sdk.NewDec(-1))) {
+		interestRate = prevInterestRate.Sub(interestRateDecrease)
+	}
+
+	newInterestRate := interestRate
+
+	if interestRate.GT(interestRateMin) && interestRate.LT(interestRateMax) {
+		newInterestRate = interestRate
+	} else if interestRate.LTE(interestRateMin) {
+		newInterestRate = interestRateMin
+	} else if interestRate.GTE(interestRateMax) {
+		newInterestRate = interestRateMax
+	}
+
+	return newInterestRate, nil
 }

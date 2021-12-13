@@ -8,6 +8,7 @@ option go_package = "github.com/Sifchain/sifnode/x/margin/types";
 
 service Msg {
   rpc OpenLong(MsgOpenLong) returns (MsgOpenLongResponse) {}
+  rpc CloseLong(MsgCloseLong) returns (MsgCloseLongResponse) {}
 }
 
 message MsgOpenLong {
@@ -21,3 +22,11 @@ message MsgOpenLong {
 }
 
 message MsgOpenLongResponse {}
+
+message MsgCloseLong {
+    string signer = 1;
+    string collateral_asset = 2;
+    string borrow_asset = 3;
+}
+
+message MsgCloseLongResponse {}
