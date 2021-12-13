@@ -6,7 +6,9 @@ import (
 	abci "github.com/tendermint/tendermint/abci/types"
 )
 
-func (k Keeper) InitGenesis(sdk.Context, types.GenesisState) []abci.ValidatorUpdate {
+func (k Keeper) InitGenesis(ctx sdk.Context, data types.GenesisState) []abci.ValidatorUpdate {
+	k.SetParams(ctx, data.Params)
+
 	return []abci.ValidatorUpdate{}
 }
 

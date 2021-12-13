@@ -5,6 +5,14 @@ import "gogoproto/gogo.proto";
 option go_package = "github.com/Sifchain/sifnode/x/margin/types";
 
 message GenesisState {
+  Params params = 1;
+}
+
+message Params {
+  string leverage_max = 1 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Uint",
+    (gogoproto.nullable) = false
+  ];
 }
 
 message MTP {

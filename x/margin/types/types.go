@@ -15,6 +15,10 @@ const (
 	RouterKey = ModuleName
 )
 
+func NewMTP() MTP {
+	return MTP{}
+}
+
 func (mtp MTP) Validate() error {
 	if mtp.CollateralAsset == "" {
 		return sdkerrors.Wrap(ErrMTPInvalid, "no asset specified")
@@ -24,4 +28,8 @@ func (mtp MTP) Validate() error {
 	}
 
 	return nil
+}
+
+func GetSettlementAsset() string {
+	return "rowan"
 }

@@ -3,6 +3,7 @@ package margin
 import (
 	"encoding/json"
 	"fmt"
+
 	"github.com/Sifchain/sifnode/x/margin/client/cli"
 	"github.com/Sifchain/sifnode/x/margin/client/rest"
 
@@ -47,7 +48,7 @@ func (AppModuleBasic) RegisterLegacyAminoCodec(cdc *codec.LegacyAmino) { //nolin
 
 // DefaultGenesis returns default genesis state as raw bytes.
 func (b AppModuleBasic) DefaultGenesis(marshaler codec.JSONCodec) json.RawMessage {
-	return marshaler.MustMarshalJSON(&types.GenesisState{})
+	return marshaler.MustMarshalJSON(types.DefaultGenesis())
 }
 
 // ValidateGenesis performs genesis state validation.
@@ -93,7 +94,7 @@ type AppModuleSimulation struct{}
 type AppModule struct {
 	AppModuleBasic
 	AppModuleSimulation
-	Keeper keeper.KeeperI
+	Keeper types.Keeper
 	Codec  *codec.Codec
 }
 
@@ -103,7 +104,7 @@ func (am AppModule) RegisterServices(cfg module.Configurator) {
 }
 
 // NewAppModule creates a new AppModule object
-func NewAppModule(keeper keeper.KeeperI, cdc *codec.Codec) AppModule {
+func NewAppModule(keeper types.Keeper, cdc *codec.Codec) AppModule {
 	return AppModule{
 		AppModuleBasic:      AppModuleBasic{},
 		AppModuleSimulation: AppModuleSimulation{},
