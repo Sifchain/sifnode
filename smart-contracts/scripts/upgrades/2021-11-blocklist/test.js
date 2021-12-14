@@ -36,7 +36,7 @@ const state = {
     user2: "0xb6fa1F5304aa0a17E5B85088e720b0e39dD1b233",
     user3: "0x6F165B30ee4bFc9565E977Ae252E4110624ab147",
     sifRecipient: web3.utils.utf8ToHex("sif1nx650s8q9w28f2g3t9ztxyg48ugldptuwzpace"),
-    pauser: "c0a586fb260b2c14098a9d95b75f56f13cad2dd9",
+    pauser: "0xc0a586fb260b2c14098a9d95b75f56f13cad2dd9",
     whitelistedToken: "0x5a98fcbea516cf06857215779fd812ca3bef1b32",
     cosmosWhitelistedtoken: "0x8D983cb9388EaC77af0474fA441C4815500Cb7BB",
   },
@@ -47,6 +47,7 @@ const state = {
     validator1: null,
     validator2: null,
     validator3: null,
+    pauser: null,
   },
   contracts: {
     bridgeBank: null,
@@ -92,6 +93,9 @@ async function main() {
   // Impersonate accounts
   await impersonateAccounts();
 
+  // Pause the system
+  await pauseBridgeBank();
+
   // Fetch current values from the deployed contract
   await setStorageSlots();
 
@@ -104,6 +108,10 @@ async function main() {
   // Compare slots before and after the upgrade
   checkStorageSlots();
 
+  // Resume the system
+  await resumeBridgeBank();
+
+  /** Below this point we have tests only; the upgrade is done */
   // Setup the BridgeToken (register in BridgeBank, mint and set allowance)
   await setupBridgeToken();
 
@@ -199,6 +207,12 @@ async function impersonateAccounts() {
     "Operator"
   );
 
+  state.signers.pauser = await support.impersonateAccount(
+    state.addresses.pauser,
+    "10000000000000000000",
+    "Pauser"
+  );
+
   state.signers.user1 = await support.impersonateAccount(
     state.addresses.user1,
     "10000000000000000000",
@@ -222,6 +236,33 @@ async function impersonateAccounts() {
     "10000000000000000000",
     "Validator 3"
   );
+}
+
+async function pauseBridgeBank() {
+  print(
+    "yellow",
+    `🕑 Pausing the system before the upgrade. Please wait, this may take a while...`
+  );
+
+  const isPaused = await state.contracts.bridgeBank.paused();
+
+  if (!isPaused) {
+    await state.contracts.bridgeBank.connect(state.signers.pauser).pause();
+  }
+
+  print("green", `✅ System is paused`);
+}
+
+async function resumeBridgeBank() {
+  print("yellow", `🕑 Unpausing the system. Please wait, this may take a while...`);
+
+  const isPaused = await state.contracts.bridgeBank.paused();
+
+  if (isPaused) {
+    await state.contracts.bridgeBank.connect(state.signers.pauser).unpause();
+  }
+
+  print("green", `✅ System has been resumed`);
 }
 
 async function deployContracts() {
