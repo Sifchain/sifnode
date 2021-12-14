@@ -4,8 +4,12 @@ import { isNotNullOrUndefined, jsonParseSimple, tailFileAsObservable } from "./u
 import { EbRelayerEvent, toEvmRelayerEvent } from "./ebrelayer"
 import { SifnodedEvent, toSifnodedEvent } from "./sifnoded"
 import { HardhatRuntimeEnvironment } from "hardhat/types"
-import { BridgeBank } from "../../build"
-import { EthereumMainnetEvent, subscribeToEthereumEvents } from "./ethereumMainnet"
+import { BridgeBank, CosmosBridge } from "../../build"
+import {
+  EthereumMainnetEvent,
+  subscribeToEthereumCosmosEvents,
+  subscribeToEthereumEvents,
+} from "./ethereumMainnet"
 
 export interface SifwatchLogs {
   evmrelayer: string
@@ -23,8 +27,12 @@ export type SifEvent = EbRelayerEvent | SifnodedEvent | EthereumMainnetEvent | S
 export function sifwatch(
   logs: SifwatchLogs,
   hre: HardhatRuntimeEnvironment,
-  bridgeBank: BridgeBank
+  bridgeBank: BridgeBank,
+  cosmosBridge?: CosmosBridge
 ): Observable<SifEvent> {
+  // TODO: Const?
+  let observables: Observable<SifEvent>[] = new Array()
+
   // const evmRelayerLines = readableStreamToObservable(fs.createReadStream("/tmp/sifnode/evmrelayer.log"))
   const evmRelayerLines = tailFileAsObservable(logs.evmrelayer)
   const evmRelayerEvents: Observable<EbRelayerEvent> = evmRelayerLines.pipe(
@@ -32,18 +40,27 @@ export function sifwatch(
     map(toEvmRelayerEvent),
     filter<EbRelayerEvent | undefined, EbRelayerEvent>(isNotNullOrUndefined)
   )
+
+  observables.push(evmRelayerEvents)
+
   const sifnodedLines = tailFileAsObservable(logs.sifnoded)
   const sifnodedEvents: Observable<SifnodedEvent> = sifnodedLines.pipe(
     map(jsonParseSimple),
     map(toSifnodedEvent),
     filter<SifnodedEvent | undefined, SifnodedEvent>(isNotNullOrUndefined)
   )
+
+  observables.push(sifnodedEvents)
+
   const heartbeat = interval(1000).pipe(
     map((i) => {
       return { kind: "SifHeartbeat", value: i } as SifHeartbeat
     })
   )
+  observables.push(heartbeat)
+
   const ethereumEvents = subscribeToEthereumEvents(bridgeBank)
+  observables.push(ethereumEvents)
 
   if (logs.witness != undefined) {
     const witnessLines = tailFileAsObservable(logs.witness)
@@ -53,10 +70,15 @@ export function sifwatch(
       filter<EbRelayerEvent | undefined, EbRelayerEvent>(isNotNullOrUndefined)
     )
     console.log("Adding witness logs")
-    return merge(evmRelayerEvents, sifnodedEvents, ethereumEvents, witnessEvents, heartbeat)
+    observables.push(witnessEvents)
   }
 
-  return merge(evmRelayerEvents, sifnodedEvents, ethereumEvents, heartbeat)
+  if (cosmosBridge != undefined) {
+    console.log("Cosmosbridge subscription")
+    observables.push(subscribeToEthereumCosmosEvents(cosmosBridge))
+  }
+
+  return merge(...observables)
 }
 
 export function sifwatchReplayable(
