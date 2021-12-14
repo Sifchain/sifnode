@@ -12,6 +12,7 @@ var (
 	KeyInterestRateIncreaseParam = []byte("InterestRateIncrease")
 	KeyInterestRateDecreaseParam = []byte("InterestRateDecrease")
 	KeyHealthGainFactorParam     = []byte("HealthGainFactor")
+	KeyEpochLengthParam          = []byte("EpochLength")
 )
 
 var _ paramtypes.ParamSet = (*Params)(nil)

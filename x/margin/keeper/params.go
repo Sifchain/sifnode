@@ -41,6 +41,12 @@ func (k Keeper) GetHealthGainFactor(ctx sdk.Context) sdk.Dec {
 	return d
 }
 
+func (k Keeper) GetEpochLength(ctx sdk.Context) int64 {
+	var d int64
+	k.paramStore.Get(ctx, types.KeyEpochLengthParam, &d)
+	return d
+}
+
 func (k Keeper) SetParams(ctx sdk.Context, params *types.Params) {
 	k.paramStore.SetParamSet(ctx, params)
 }

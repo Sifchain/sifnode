@@ -239,7 +239,7 @@ func (k Keeper) Borrow(ctx sdk.Context, collateralAsset string, collateralAmount
 	return k.SetMTP(ctx, &mtp)
 }
 
-func (k Keeper) UpdatePoolHealth(ctx sdk.Context, pool clptypes.Pool) error {
+func (k Keeper) UpdatePoolHealth(ctx sdk.Context, pool *clptypes.Pool) error {
 	// can be both X and Y
 	ExternalAssetBalance := pool.ExternalAssetBalance
 	ExternalLiabilities := pool.ExternalLiabilities
@@ -252,7 +252,7 @@ func (k Keeper) UpdatePoolHealth(ctx sdk.Context, pool clptypes.Pool) error {
 	H := mul1.Mul(mul2)
 
 	pool.Health = sdk.NewDecFromBigInt(H.BigInt())
-	return k.ClpKeeper().SetPool(ctx, &pool)
+	return k.ClpKeeper().SetPool(ctx, pool)
 }
 
 // TODO Rename to CalcMTPHealth if not storing.
@@ -382,13 +382,17 @@ func (k Keeper) Repay(ctx sdk.Context, mtp types.MTP, pool clptypes.Pool, repayA
 	return k.clpKeeper.SetPool(ctx, &pool)
 }
 
-func (k Keeper) UpdateMTPInterestLiabilities(ctx sdk.Context, mtp types.MTP, interestRate sdk.Dec) error {
-	//liabilitiesI := mtp.LiabilitiesI
-	//liabilitiesP := mtp.LiabilitiesP
+func (k Keeper) UpdateMTPInterestLiabilities(ctx sdk.Context, mtp *types.MTP, interestRate sdk.Dec) error {
+	liabilitiesI := mtp.LiabilitiesI
+	liabilitiesP := mtp.LiabilitiesP
 
-	// mtp.LiabilitiesI = interestRate.Mul(liabilitiesP.Add(liabilitiesI)).Add(liabilitiesI)
+	liabilitiesIDec := interestRate.
+		Mul(sdk.NewDecFromBigInt(liabilitiesP.Add(liabilitiesI).BigInt())).
+		Add(sdk.NewDecFromBigInt(liabilitiesI.BigInt()))
 
-	return k.SetMTP(ctx, &mtp)
+	mtp.LiabilitiesI = sdk.NewUintFromBigInt(liabilitiesIDec.TruncateInt().BigInt())
+
+	return k.SetMTP(ctx, mtp)
 }
 
 func (k Keeper) InterestRateComputation(ctx sdk.Context, pool clptypes.Pool) (sdk.Dec, error) {

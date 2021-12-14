@@ -156,7 +156,9 @@ func (am AppModule) ExportGenesis(ctx sdk.Context, marshaler codec.JSONCodec) js
 }
 
 // BeginBlock returns the begin blocker.
-func (AppModule) BeginBlock(_ sdk.Context, _ abci.RequestBeginBlock) {}
+func (am AppModule) BeginBlock(ctx sdk.Context, _ abci.RequestBeginBlock) {
+	am.Keeper.BeginBlocker(ctx)
+}
 
 // EndBlock returns the end blocker. It returns no validator updates.
 func (am AppModule) EndBlock(_ sdk.Context, _ abci.RequestEndBlock) []abci.ValidatorUpdate {

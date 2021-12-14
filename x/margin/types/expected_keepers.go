@@ -13,6 +13,7 @@ type BankKeeper interface {
 }
 
 type CLPKeeper interface {
+	GetPools(ctx sdk.Context) []*clptypes.Pool
 	GetPool(ctx sdk.Context, symbol string) (clptypes.Pool, error)
 	SetPool(ctx sdk.Context, pool *clptypes.Pool) error
 	GetNormalizationFactorForAsset(sdk.Context, string) (sdk.Dec, bool, error)
@@ -26,6 +27,7 @@ type CLPKeeper interface {
 type Keeper interface {
 	InitGenesis(sdk.Context, GenesisState) []types.ValidatorUpdate
 	ExportGenesis(sdk.Context) *GenesisState
+	BeginBlocker(sdk.Context)
 
 	ClpKeeper() CLPKeeper
 	BankKeeper() BankKeeper
@@ -47,7 +49,7 @@ type Keeper interface {
 	Repay(ctx sdk.Context, mtp MTP, pool clptypes.Pool, repayAmount sdk.Uint) error
 	InterestRateComputation(ctx sdk.Context, pool clptypes.Pool) (sdk.Dec, error)
 
-	UpdateMTPInterestLiabilities(ctx sdk.Context, mtp MTP, interestRate sdk.Dec) error
-	UpdatePoolHealth(ctx sdk.Context, pool clptypes.Pool) error
+	UpdateMTPInterestLiabilities(ctx sdk.Context, mtp *MTP, interestRate sdk.Dec) error
+	UpdatePoolHealth(ctx sdk.Context, pool *clptypes.Pool) error
 	UpdateMTPHealth(ctx sdk.Context, mtp MTP, pool clptypes.Pool) (sdk.Dec, error)
 }
