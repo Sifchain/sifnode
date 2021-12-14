@@ -654,14 +654,14 @@ describe("lock and burn tests", () => {
                   )
                 }
 
-                // case "ProphecyStatus": {
-                //   return ensureCorrectTransition(
-                //     acc,
-                //     v,
-                //     TransactionStep.SetWitnessLockBurnNonce,
-                //     TransactionStep.ProphecyStatus
-                //   )
-                // }
+                case "ProphecyStatus": {
+                  return ensureCorrectTransition(
+                    acc,
+                    v,
+                    TransactionStep.SetWitnessLockBurnNonce,
+                    TransactionStep.ProphecyStatus
+                  )
+                }
               }
             }
 
@@ -691,7 +691,7 @@ describe("lock and burn tests", () => {
 
     let crossChainCethFee = crossChainFeeBase * crossChainBurnFee
 
-    let newSendAmount = BigNumber.from(2300 * Math.pow(10, 9)) // 2300 gwei
+    let newSendAmount = BigNumber.from("2300000000000000000") // 2300 gwei
     await sifnodedAdapter.executeSifBurn(
       testSifAccount,
       destinationEthereumAddress,
