@@ -240,3 +240,29 @@ export class BridgeTokenSetup {
     this.complete = this.build(rowan, bridgeBankProxy, sifchainAccounts)
   }
 }
+
+@singleton()
+export class BridgeBankSetup {
+  readonly complete: Promise<boolean>
+
+  private async build(
+    bridgebankProxy: BridgeBankProxy,
+    cosmosBridgeProxy: CosmosBridgeProxy,
+    sifchainAccounts: SifchainAccountsPromise
+  ): Promise<boolean> {
+    const cosmosBridge = await cosmosBridgeProxy.contract
+    const operator = (await sifchainAccounts.accounts).operatorAccount
+    const bridgebank = await bridgebankProxy.contract
+
+    await cosmosBridge.connect(operator).setBridgeBank(bridgebank.address)
+    return true
+  }
+
+  constructor(
+    bridgebankProxy: BridgeBankProxy,
+    cosmosBridgeProxy: CosmosBridgeProxy,
+    sifchainAccounts: SifchainAccountsPromise
+  ) {
+    this.complete = this.build(bridgebankProxy, cosmosBridgeProxy, sifchainAccounts)
+  }
+}
