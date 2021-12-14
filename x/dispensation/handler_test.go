@@ -66,6 +66,16 @@ func TestNewHandler_CreateDistribution_MultipleTypes(t *testing.T) {
 	res, err := handler(ctx, &msgAirdrop)
 	require.NoError(t, err)
 	require.NotNil(t, res)
+	outputlist = append(outputlist, banktypes.NewOutput(sdk.AccAddress(ed25519.GenPrivKey().PubKey().Address()),
+		sdk.NewCoins(sdk.NewCoin("dash", sdk.NewInt(10)))))
+	msg := types.MsgCreateDistribution{
+		Distributor:      distributor.String(),
+		DistributionType: types.DistributionType_DISTRIBUTION_TYPE_AIRDROP,
+		Output:           outputlist,
+		AuthorizedRunner: authorizedRunner.String(),
+	}
+	err := msg.ValidateBasic()
+	assert.NoError(t, err)
 	res, err = handler(ctx, &msgAirdrop)
 	require.Error(t, err)
 	require.Nil(t, res)
