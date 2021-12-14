@@ -169,10 +169,13 @@ func RelayBatchProphecyCompletedToEthereum(
 	var receipt *ethereumtypes.Receipt
 	maxRetries := 60
 	i := 0
+
 	// if there is an error getting the tx, or if the tx fails, retry 60 times
 	for i < maxRetries {
 		// Get the transaction receipt
 		receipt, err = client.TransactionReceipt(context.Background(), tx.Hash())
+
+		sugaredLogger.Debugw("Transaction receipt", "receipt", receipt.Logs)
 
 		if err != nil {
 			sugaredLogger.Errorw("Failed to submit to ethereum client", "error", err)
