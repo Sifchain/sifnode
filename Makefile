@@ -114,6 +114,7 @@ proto-all: proto-format proto-lint .proto-gen
 .proto-gen: $(proto_files)
 	$(DOCKER) run -e SIFUSER=$(shell id -u):$(shell id -g) --rm -v $(CURDIR):/workspace --workdir /workspace tendermintdev/sdk-proto-gen sh -x ./scripts/protocgen.sh
 	touch $@
+.PHONY: .proto-gen
 
 proto-format:
 	@echo "Formatting Protobuf files"
