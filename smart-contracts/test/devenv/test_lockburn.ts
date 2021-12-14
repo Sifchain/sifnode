@@ -35,14 +35,11 @@ import {
   crossChainLockFee,
   crossChainBurnFee,
 } from "../../src/devenv/sifnoded"
-import { v4 as uuidv4 } from "uuid"
 import * as dotenv from "dotenv"
 import "@nomiclabs/hardhat-ethers"
 import deepEqual = require("deep-equal")
 import { ethers } from "hardhat"
 import { SifnodedAdapter } from "./sifnodedAdapter"
-// import { SifnodedAdapter, SifnodedAdapter } from "./sifnodedAdapter"
-// import { createTestSifAccount, fundSifAccount } from "./sifnodedAdapter"
 
 // The hash value for ethereum on mainnet
 const ethDenomHash = "sif5ebfaf95495ceb5a3efbd0b0c63150676ec71e023b1043c40bcaaf91c00e15b2"
@@ -462,7 +459,8 @@ describe("lock and burn tests", () => {
       await ethers.provider.getBalance(contracts.bridgeBank.address)
     ).toString()
 
-    const sendAmount = BigNumber.from(3500 * GWEI) // 3500 gwei
+    // const sendAmount = BigNumber.from(5 * ETH) // 3500 gwei
+    const sendAmount = BigNumber.from("5000000000000000000") // 3500 gwei
 
     let testSifAccount: EbRelayerAccount = sifnodedAdapter.createTestSifAccount()
     // sifnodedAdapter.fundSifAccount(testSifAccount!.account, 10000000000, "rowan")
@@ -474,7 +472,7 @@ describe("lock and burn tests", () => {
     await executeLock(
       contracts,
       sendAmount,
-      ethereumAccounts.availableAccounts[0],
+      ethereumAccounts.availableAccounts[1],
       web3.utils.utf8ToHex(testSifAccount.account),
       false,
       "ceth to eth"
@@ -499,7 +497,8 @@ describe("lock and burn tests", () => {
         witness: "/tmp/sifnode/witness.log",
       },
       hardhat,
-      contracts.bridgeBank
+      contracts.bridgeBank,
+      contracts.cosmosBridge
     ).pipe(filter((x) => x.kind !== "SifnodedInfoEvent"))
 
     // evmRelayerEvents.subscribe((event) => console.log("Subscription", event))
@@ -655,14 +654,14 @@ describe("lock and burn tests", () => {
                   )
                 }
 
-                case "ProphecyStatus": {
-                  return ensureCorrectTransition(
-                    acc,
-                    v,
-                    TransactionStep.SetWitnessLockBurnNonce,
-                    TransactionStep.ProphecyStatus
-                  )
-                }
+                // case "ProphecyStatus": {
+                //   return ensureCorrectTransition(
+                //     acc,
+                //     v,
+                //     TransactionStep.SetWitnessLockBurnNonce,
+                //     TransactionStep.ProphecyStatus
+                //   )
+                // }
               }
             }
 
@@ -725,6 +724,7 @@ describe("lock and burn tests", () => {
     console.log("Contract intermediate Balance", contractIntermediateBalance)
     console.log("Contract Final Balance       ", contractFinalBalance)
 
+    // contracts.cosmosBridge.interface.getEvent("LogBridgeTokenMint")
     // verboseSubscription.unsubscribe()
   })
 
