@@ -14,6 +14,7 @@ import {
   BridgeToken__factory,
   CosmosBridge__factory,
 } from "../../build"
+import "@openzeppelin/hardhat-upgrades"
 
 import web3 from "web3"
 const MINTER_ROLE = web3.utils.soliditySha3("MINTER_ROLE")
@@ -163,7 +164,6 @@ export class BridgeBankProxy {
         }
       )) as BridgeBank
       await bridgeBankProxy.deployed()
-      const own = await bridgeBankProxy.owner()
       return bridgeBankProxy
     })
   }
