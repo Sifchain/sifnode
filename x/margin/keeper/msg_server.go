@@ -61,7 +61,7 @@ func (k msgServer) OpenLong(goCtx context.Context, msg *types.MsgOpenLong) (*typ
 		return nil, err
 	}
 
-	err = k.UpdatePoolHealth(ctx, pool)
+	err = k.UpdatePoolHealth(ctx, &pool)
 	if err != nil {
 		return nil, err
 	}
@@ -77,7 +77,7 @@ func (k msgServer) OpenLong(goCtx context.Context, msg *types.MsgOpenLong) (*typ
 func (k msgServer) CloseLong(goCtx context.Context, msg *types.MsgCloseLong) (*types.MsgCloseLongResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
-	mtp, err := k.GetMTP(ctx, msg.CollateralAsset, msg.Signer)
+	mtp, err := k.GetMTP(ctx, msg.CollateralAsset, msg.BorrowAsset, msg.Signer)
 	if err != nil {
 		return nil, err
 	}
@@ -96,7 +96,7 @@ func (k msgServer) CloseLong(goCtx context.Context, msg *types.MsgCloseLong) (*t
 
 	interestRate, err := k.InterestRateComputation(ctx, pool)
 
-	err = k.UpdateMTPInterestLiabilities(ctx, mtp, interestRate)
+	err = k.UpdateMTPInterestLiabilities(ctx, &mtp, interestRate)
 
 	err = k.Repay(ctx, mtp, pool, repayAmount)
 

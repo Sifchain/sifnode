@@ -36,14 +36,14 @@ func (k Keeper) SetMTP(ctx sdk.Context, mtp *types.MTP) error {
 		return err
 	}
 	store := ctx.KVStore(k.storeKey)
-	key := types.GetMTPKey(mtp.CollateralAsset, mtp.Address)
+	key := types.GetMTPKey(mtp.CollateralAsset, mtp.CustodyAsset, mtp.Address)
 	store.Set(key, k.cdc.MustMarshal(mtp))
 	return nil
 }
 
-func (k Keeper) GetMTP(ctx sdk.Context, symbol string, mtpAddress string) (types.MTP, error) {
+func (k Keeper) GetMTP(ctx sdk.Context, collateralAsset, custodyAsset, mtpAddress string) (types.MTP, error) {
 	var mtp types.MTP
-	key := types.GetMTPKey(symbol, mtpAddress)
+	key := types.GetMTPKey(collateralAsset, custodyAsset, mtpAddress)
 	store := ctx.KVStore(k.storeKey)
 	if !store.Has(key) {
 		return mtp, types.ErrMTPDoesNotExist
@@ -101,8 +101,8 @@ func (k Keeper) GetAssetsForMTP(ctx sdk.Context, mtpAddress sdk.Address) []strin
 	return assetList
 }
 
-func (k Keeper) DestroyMTP(ctx sdk.Context, symbol string, mtpAddress string) error {
-	key := types.GetMTPKey(symbol, mtpAddress)
+func (k Keeper) DestroyMTP(ctx sdk.Context, collateralAsset, custodyAsset, mtpAddress string) error {
+	key := types.GetMTPKey(collateralAsset, custodyAsset, mtpAddress)
 	store := ctx.KVStore(k.storeKey)
 	if !store.Has(key) {
 		return types.ErrMTPDoesNotExist
@@ -374,7 +374,7 @@ func (k Keeper) Repay(ctx sdk.Context, mtp types.MTP, pool clptypes.Pool, repayA
 		pool.ExternalLiabilities = pool.NativeLiabilities.Sub(mtp.LiabilitiesP)
 	}
 
-	err = k.DestroyMTP(ctx, mtp.CollateralAsset, mtp.Address)
+	err = k.DestroyMTP(ctx, mtp.CollateralAsset, mtp.CustodyAsset, mtp.Address)
 	if err != nil {
 		return err
 	}
