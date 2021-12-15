@@ -115,6 +115,8 @@ enum TransactionStep {
 
   ProphecyStatus = "ProphecyStatus",
   ProphecyClaimSubmitted = "ProphecyClaimSubmitted",
+
+  EthereumMainnetLogUnlock = "EthereumMainnetLogUnlock",
 }
 
 function isTerminalState(s: State) {
@@ -439,7 +441,7 @@ describe("lock and burn tests", () => {
     replayedEvents.unsubscribe()
   }
 
-  it.only("should allow ceth to eth tx", async () => {
+  it("should allow ceth to eth tx", async () => {
     // TODO: Could these be moved out of the test fx? and instantiated via beforeEach?
     const factories = container.resolve(SifchainContractFactories)
     const contracts = await buildDevEnvContracts(devEnvObject, hardhat, factories)
@@ -463,9 +465,6 @@ describe("lock and burn tests", () => {
     const sendAmount = BigNumber.from("5000000000000000000") // 3500 gwei
 
     let testSifAccount: EbRelayerAccount = sifnodedAdapter.createTestSifAccount()
-    // sifnodedAdapter.fundSifAccount(testSifAccount!.account, 10000000000, "rowan")
-
-    // TODO: This is temporary. I think the right thing is for them to accept a verbose level
     let originalVerboseLevel: string | undefined = process.env["VERBOSE"]
     process.env["VERBOSE"] = "summary"
     // Need to have a burn of eth happen at least once or there's no data about eth in the token metadata
@@ -523,7 +522,14 @@ describe("lock and burn tests", () => {
               // we just store the heartbeat
               return { ...acc, currentHeartbeat: v.value } as State
             }
-
+            case "EthereumMainnetLogUnlock": {
+              return ensureCorrectTransition(
+                acc,
+                v,
+                TransactionStep.ProphecyStatus,
+                TransactionStep.EthereumMainnetLogUnlock
+              )
+            }
             // Ebrelayer side log assertions
             case "EbRelayerEvmStateTransition": {
               let ebrelayerEvent: any = v.data
@@ -564,7 +570,7 @@ describe("lock and burn tests", () => {
                   return ensureCorrectTransition(
                     acc,
                     v,
-                    TransactionStep.ProphecyStatus,
+                    TransactionStep.EthereumMainnetLogUnlock,
                     TransactionStep.ProphecyClaimSubmitted
                   )
                 }
@@ -582,14 +588,6 @@ describe("lock and burn tests", () => {
                     TransactionStep.Burn
                   )
                 }
-
-                // case "GetTokenMetadata":
-                //   return ensureCorrectTransition(
-                //     acc,
-                //     v,
-                //     TransactionStep.Burn,
-                //     TransactionStep.GetTokenMetadata
-                //   )
 
                 case "GetCrossChainFeeConfig": {
                   return ensureCorrectTransition(
