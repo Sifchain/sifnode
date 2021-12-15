@@ -16,12 +16,14 @@ var (
 // RegisterLegacyAminoCodec registers concrete types on the Amino codec
 func RegisterLegacyAminoCodec(cdc *codec.LegacyAmino) { //nolint
 	cdc.RegisterConcrete(&MsgOpenLong{}, "MsgOpenLong", nil)
+	cdc.RegisterConcrete(&MsgCloseLong{}, "MsgCloseLong", nil)
 }
 
 func RegisterInterfaces(registry cdctypes.InterfaceRegistry) {
 	registry.RegisterImplementations(
 		(*sdk.Msg)(nil),
 		&MsgOpenLong{},
+		&MsgCloseLong{},
 	)
 	msgservice.RegisterMsgServiceDesc(registry, &_Msg_serviceDesc)
 }

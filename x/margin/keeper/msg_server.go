@@ -4,6 +4,8 @@ import (
 	"context"
 	"strings"
 
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+
 	clptypes "github.com/Sifchain/sifnode/x/clp/types"
 	"github.com/Sifchain/sifnode/x/margin/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -40,13 +42,16 @@ func (k msgServer) OpenLong(goCtx context.Context, msg *types.MsgOpenLong) (*typ
 	if strings.EqualFold(msg.CollateralAsset, nativeAsset) {
 		pool, err = k.ClpKeeper().GetPool(ctx, msg.BorrowAsset)
 		if err != nil {
-			return nil, err
+			return nil, sdkerrors.Wrap(clptypes.ErrPoolDoesNotExist, msg.BorrowAsset)
 		}
 	} else {
 		pool, err = k.ClpKeeper().GetPool(ctx, msg.CollateralAsset)
 		if err != nil {
-			return nil, err
+			return nil, sdkerrors.Wrap(clptypes.ErrPoolDoesNotExist, msg.CollateralAsset)
 		}
+	}
+	if !pool.MarginEnabled {
+		return nil, sdkerrors.Wrap(types.ErrMTPDisabled, msg.CollateralAsset)
 	}
 
 	leveragedAmount := collateralAmount.Mul(sdk.NewUint(1).Add(leverage))
@@ -84,21 +89,42 @@ func (k msgServer) CloseLong(goCtx context.Context, msg *types.MsgCloseLong) (*t
 	pool := clptypes.Pool{}
 
 	nativeAsset := types.GetSettlementAsset()
-	if msg.CollateralAsset == nativeAsset {
+	if strings.EqualFold(msg.CollateralAsset, nativeAsset) {
 		pool, err = k.ClpKeeper().GetPool(ctx, msg.BorrowAsset)
+		if err != nil {
+			return nil, sdkerrors.Wrap(clptypes.ErrPoolDoesNotExist, msg.BorrowAsset)
+		}
 	} else {
 		pool, err = k.ClpKeeper().GetPool(ctx, msg.CollateralAsset)
+		if err != nil {
+			return nil, sdkerrors.Wrap(clptypes.ErrPoolDoesNotExist, msg.CollateralAsset)
+		}
 	}
 
 	err = k.TakeOutCustody(ctx, mtp, pool)
+	if err != nil {
+		return nil, err
+	}
 
 	repayAmount, err := k.CustodySwap(ctx, pool, mtp.CollateralAsset, mtp.CustodyAmount)
+	if err != nil {
+		return nil, err
+	}
 
 	interestRate, err := k.InterestRateComputation(ctx, pool)
+	if err != nil {
+		return nil, err
+	}
 
 	err = k.UpdateMTPInterestLiabilities(ctx, mtp, interestRate)
+	if err != nil {
+		return nil, err
+	}
 
 	err = k.Repay(ctx, mtp, pool, repayAmount)
+	if err != nil {
+		return nil, err
+	}
 
 	return &types.MsgCloseLongResponse{}, nil
 }
