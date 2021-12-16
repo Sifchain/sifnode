@@ -25,6 +25,9 @@ const DEPLOYMENT_NAME = process.env.DEPLOYMENT_NAME || "sifchain-1";
 // If there is no FORKING_CHAIN_ID env var, we'll use the mainnet id
 const CHAIN_ID = process.env.FORKING_CHAIN_ID || 1;
 
+// Will estimate gas and multiply the result by this value to use as MaxFeePerGas
+const GAS_PRICE_BUFFER = 5;
+
 const state = {
   addresses: {
     validator1: "0x0D7dEF5C00a8B6ddc58A0255f0a94cc739C6d0B5",
@@ -76,6 +79,7 @@ const state = {
   },
   tokenBalance: 10000,
   amount: 1000,
+  maxFeePerGas: 1e12, // 1000 GWEI as default
 };
 
 async function main() {
@@ -86,6 +90,9 @@ async function main() {
 
   // Fetch the manifest
   copyManifest();
+
+  // Estimate gasPrice:
+  state.maxFeePerGas = await estimateGasPrice();
 
   // Deploy or connect to each contract
   await deployContracts();
@@ -122,7 +129,7 @@ async function main() {
   print("yellow", `🕑 Registering the Blocklist in BridgeBank...`);
   await state.contracts.upgradedBridgeBank
     .connect(state.signers.operator)
-    .setBlocklist(state.contracts.blocklist.address);
+    .setBlocklist(state.contracts.blocklist.address, { maxFeePerGas: state.maxFeePerGas });
   print("green", `✅ Blocklist registered in BridgeBank`);
 
   // Try to lock tokens to see it go through
@@ -190,6 +197,22 @@ async function main() {
   );
 }
 
+async function estimateGasPrice() {
+  console.log("Estimating ideal Gas price, please wait...");
+
+  let finalGasPrice;
+  try {
+    const gasPrice = await ethers.provider.getGasPrice();
+    finalGasPrice = Math.round(gasPrice.toNumber() * GAS_PRICE_BUFFER);
+  } catch (e) {
+    finalGasPrice = state.maxFeePerGas;
+  }
+
+  console.log(`Using ideal Gas price: ${ethers.utils.formatUnits(finalGasPrice, "gwei")} GWEI`);
+
+  return finalGasPrice;
+}
+
 async function impersonateAccounts() {
   // Fetch and log the operator
   state.addresses.operator = await state.contracts.bridgeBank.operator();
@@ -247,7 +270,9 @@ async function pauseBridgeBank() {
   const isPaused = await state.contracts.bridgeBank.paused();
 
   if (!isPaused) {
-    await state.contracts.bridgeBank.connect(state.signers.pauser).pause();
+    await state.contracts.bridgeBank
+      .connect(state.signers.pauser)
+      .pause({ maxFeePerGas: state.maxFeePerGas });
   }
 
   print("green", `✅ System is paused`);
@@ -259,7 +284,9 @@ async function resumeBridgeBank() {
   const isPaused = await state.contracts.bridgeBank.paused();
 
   if (isPaused) {
-    await state.contracts.bridgeBank.connect(state.signers.pauser).unpause();
+    await state.contracts.bridgeBank
+      .connect(state.signers.pauser)
+      .unpause({ maxFeePerGas: state.maxFeePerGas });
   }
 
   print("green", `✅ System has been resumed`);
@@ -303,7 +330,8 @@ async function upgradeBridgeBank() {
   const newBridgeBankFactory = await hardhat.ethers.getContractFactory("BridgeBank");
   state.contracts.upgradedBridgeBank = await hardhat.upgrades.upgradeProxy(
     state.contracts.bridgeBank,
-    newBridgeBankFactory.connect(state.signers.admin)
+    newBridgeBankFactory.connect(state.signers.admin),
+    { maxFeePerGas: state.maxFeePerGas }
   );
   await state.contracts.upgradedBridgeBank.deployed();
   print("green", `✅ BridgeBank Upgraded`);
