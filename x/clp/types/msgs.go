@@ -72,7 +72,6 @@ func (m MsgSwap) ValidateBasic() error {
 	if !m.ReceivedAsset.Validate() {
 		return sdkerrors.Wrap(ErrInValidAsset, m.ReceivedAsset.Symbol)
 	}
-	// == compare the address instead of value here so I think we should use .Equals here.
 	if m.SentAsset.Equals(*m.ReceivedAsset) {
 		return sdkerrors.Wrap(ErrInValidAsset, "Sent And Received asset cannot be the same")
 	}

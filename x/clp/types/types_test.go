@@ -1,8 +1,6 @@
 package types
 
 import (
-	// "fmt"
-
 	"testing"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -52,7 +50,6 @@ func Test_NewLiquidityProvider(t *testing.T) {
 	liquidityProvider = NewLiquidityProvider(&wrongAsset, liquidityProviderUnits, address)
 	boolean = liquidityProvider.Validate()
 	assert.False(t, boolean)
-
 }
 
 func Test_NewLiquidityProviderResponse(t *testing.T) {
