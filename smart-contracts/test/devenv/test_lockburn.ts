@@ -152,20 +152,19 @@ function verbosityLevel(): VerbosityLevel {
 function attachDebugPrintfs<T>(xs: Observable<T>, verbosity: VerbosityLevel): Subscription {
   return xs.subscribe({
     next: (x) => {
-      console.log("Got event")
-      // switch (verbosity) {
-      //   case "full": {
-      //     console.log("DebugPrintf", JSON.stringify(x))
-      //     break
-      //   }
-      //   case "summary": {
-      //     const p = x as any
-      //     console.log(
-      //       `${p.currentHeartbeat}\t${p.transactionStep}\t${p.value?.kind}\t${p.value?.data?.kind}`
-      //     )
-      //     break
-      //   }
-      // }
+      switch (verbosity) {
+        case "full": {
+          console.log("DebugPrintf", JSON.stringify(x))
+          break
+        }
+        case "summary": {
+          const p = x as any
+          console.log(
+            `${p.currentHeartbeat}\t${p.transactionStep}\t${p.value?.kind}\t${p.value?.data?.kind}`
+          )
+          break
+        }
+      }
     },
     error: (e) => console.log("goterror: ", e),
     complete: () => console.log("alldone"),
@@ -180,12 +179,6 @@ function hasDuplicateNonce(a: EbRelayerEvmEvent, b: EbRelayerEvmEvent): boolean 
 
 describe("lock and burn tests", () => {
   dotenv.config()
-  // const INIT_STATE: State = {
-  //   value: { kind: "initialState" },
-  //   createdAt: 0,
-  //   currentHeartbeat: 0,
-  //   transactionStep: TransactionStep.Initial,
-  // }
   // This test only works when devenv is running, and that requires a connection to localhost
   expect(hardhat.network.name, "please use devenv").to.eq("localhost")
 
@@ -193,9 +186,6 @@ describe("lock and burn tests", () => {
   // a generic sif address, nothing special about it
   const recipient = web3.utils.utf8ToHex("sif1nx650s8q9w28f2g3t9ztxyg48ugldptuwzpace")
   const networkDescriptor = devEnvObject?.ethResults?.chainId ?? 31337
-
-  // const factories = container.resolve(SifchainContractFactories)
-  // const contracts = await buildDevEnvContracts(devEnvObject, hardhat, factories)
 
   const sifnodedAdapter: SifnodedAdapter = new SifnodedAdapter(
     devEnvObject!.sifResults!.adminAddress!.homeDir,
@@ -507,7 +497,6 @@ describe("lock and burn tests", () => {
     const states: Observable<State> = evmRelayerEvents.pipe(
       scan(
         (acc: State, v: SifEvent) => {
-          console.log("State assertion machine", v)
           if (isTerminalState(acc)) {
             // we've reached a decision
             console.log("Reached terminate state", acc)
@@ -722,7 +711,6 @@ describe("lock and burn tests", () => {
     console.log("Contract intermediate Balance", contractIntermediateBalance)
     console.log("Contract Final Balance       ", contractFinalBalance)
 
-    // contracts.cosmosBridge.interface.getEvent("LogBridgeTokenMint")
     // verboseSubscription.unsubscribe()
   })
 

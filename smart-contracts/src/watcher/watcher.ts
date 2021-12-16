@@ -7,7 +7,7 @@ import { HardhatRuntimeEnvironment } from "hardhat/types"
 import { BridgeBank, CosmosBridge } from "../../build"
 import {
   EthereumMainnetEvent,
-  subscribeToEthereumCosmosEvents,
+  subscribeToEthereumCosmosBridgeEvents,
   subscribeToEthereumEvents,
 } from "./ethereumMainnet"
 
@@ -31,7 +31,7 @@ export function sifwatch(
   cosmosBridge?: CosmosBridge
 ): Observable<SifEvent> {
   // TODO: Const?
-  let observables: Observable<SifEvent>[] = new Array()
+  const observables: Observable<SifEvent>[] = new Array()
 
   // const evmRelayerLines = readableStreamToObservable(fs.createReadStream("/tmp/sifnode/evmrelayer.log"))
   const evmRelayerLines = tailFileAsObservable(logs.evmrelayer)
@@ -75,7 +75,7 @@ export function sifwatch(
 
   if (cosmosBridge != undefined) {
     console.log("Cosmosbridge subscription")
-    observables.push(subscribeToEthereumCosmosEvents(cosmosBridge))
+    observables.push(subscribeToEthereumCosmosBridgeEvents(cosmosBridge))
   }
 
   return merge(...observables)

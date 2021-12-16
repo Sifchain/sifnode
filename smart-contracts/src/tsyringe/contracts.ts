@@ -241,6 +241,11 @@ export class BridgeTokenSetup {
   }
 }
 
+/**
+ * TODO: BridgeBank does not function unless this runs. This should be part of
+ * BridgeBankProxy. This is a temporary setup because we ran into circular
+ * dependency issue when we tried to
+ */
 @singleton()
 export class BridgeBankSetup {
   readonly complete: Promise<boolean>
