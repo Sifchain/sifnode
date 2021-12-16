@@ -11,7 +11,7 @@ import (
 	ibcconnectiontypes "github.com/cosmos/ibc-go/v2/modules/core/03-connection/types"
 )
 
-const upgradeName = "0.10.0-rc.4"
+const upgradeName = "0.10.0"
 
 func SetupHandlers(app *SifchainApp) {
 	app.UpgradeKeeper.SetUpgradeHandler(upgradeName, func(ctx sdk.Context, plan types.Plan, vm m.VersionMap) (m.VersionMap, error) {
@@ -37,6 +37,11 @@ func SetupHandlers(app *SifchainApp) {
 		newVM[authtypes.ModuleName] = 1
 		// This is to make sure auth module migrates after staking
 		return app.mm.RunMigrations(ctx, app.configurator, newVM)
+	})
+	app.UpgradeKeeper.SetUpgradeHandler("0.10.0-rc.4", func(ctx sdk.Context, plan types.Plan, vm m.VersionMap) (m.VersionMap, error) {
+		delete(vm, feegrant.ModuleName)
+		delete(vm, crisistypes.ModuleName)
+		return app.mm.RunMigrations(ctx, app.configurator, vm)
 	})
 	upgradeInfo, err := app.UpgradeKeeper.ReadUpgradeInfoFromDisk()
 	if err != nil {
