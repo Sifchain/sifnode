@@ -6,10 +6,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func Test_ParamKeyTable(t *testing.T) {
-	_ = ParamKeyTable()
-
-}
 func Test_ParamSetPairs(t *testing.T) {
 	params := DefaultParams()
 	_ = params.ParamSetPairs()

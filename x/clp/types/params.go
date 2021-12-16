@@ -48,7 +48,6 @@ func (p Params) Validate() error {
 	return validateMinCreatePoolThreshold(p.MinCreatePoolThreshold)
 }
 
-//(skip thi one because this method invoked by validate)
 func validateMinCreatePoolThreshold(i interface{}) error {
 	v, ok := i.(uint64)
 	if !ok {

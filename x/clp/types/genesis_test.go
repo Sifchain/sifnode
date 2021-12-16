@@ -1,9 +1,6 @@
 package types
 
 import (
-	//"fmt"
-
-	// "encoding/hex"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
