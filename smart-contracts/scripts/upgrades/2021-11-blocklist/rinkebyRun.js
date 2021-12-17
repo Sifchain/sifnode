@@ -5,8 +5,8 @@
  * Instead, we'll use an alternate list of contracts that were deployed specifically for this.
  *
  * The list is as follows (Rinkeby addresses):
- * CosmosBridge: 0x01b4b99307D51ea93c0f4a39C3de38464E998b2C
- * BridgeBank: 0x77E0a7A7e8997Cc8023Ce627fcd49D9Bc193175F
+ * CosmosBridge: 0x84A096672AA417e1afF2bAA9994247FF73347E55
+ * BridgeBank: 0x5CAf4CB0693AD0e8f354A30D01CC20F9496988D4
  * Blocklist: 0xbB4fa6cC28f18Ae005998a5336dbA3bC49e3dc57
  *
  * There are 3 important roles:
