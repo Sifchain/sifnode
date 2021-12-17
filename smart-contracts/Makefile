@@ -10,8 +10,6 @@ all: ${artifacts}
 
 install: all
 
-# x:; echo artifcats: ${artifacts}
-
 artifacts/%.go: artifacts/%.json
 	bash scripts/do_abigen.sh $< ../cmd/ebrelayer/contract/generated
 
