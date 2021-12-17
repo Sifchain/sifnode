@@ -1,8 +1,8 @@
 # EVM Import
 ## EVM Lock sequence
-Peggy 2.0 can import EVM native assets (EVM Native Currency such as ETH and ERC20 tokens) 
+Peggy 2.0 can import EVM native assets (EVM Native Currency such as ETH and ERC20 tokens)
 into the sifchain (cosmos) blockchain. It does this by locking EVM native assets
-into a solidity smart contract on the EVM chain called the [BridgeBank](SmartContracts#BridgeBank). 
+into a solidity smart contract on the EVM chain called the [BridgeBank](SmartContracts#BridgeBank).
 Once locked the peggy 2.0 mechanisms watching for LogLock Events spring into action with the following sequences:
 
 ```mermaid
@@ -77,7 +77,7 @@ This is for moving EVM-native assets (either EVM native currency or ERC20 tokens
    - `valAccount`: An address for the relayer on sifchain
 10. The EthBridgeModule will lookup and return to the relayer the last sequence number that relayer processed and if it has no history will return `0` as the current sequence number.
 11. Upon completion of the `lock()` function the [BridgeBank](SmartContracts#BridgeBank) will emit a [LogLock](Events#LogLock) event on EVM network with the following data:
-     - `_from`: Ethereum address that initiated the lock 
+     - `_from`: Ethereum address that initiated the lock
      - `_to`: the sifchain address that the imported assets should be credited to (UTF-8 encoded string)
      - `_token`: the token's contract address or the null address for EVM-native currency
      - `_value`: the quantity of asset being transferred (a uint256 representing the smallest unit of the base value)
@@ -93,19 +93,19 @@ for the last processed block.
 13. The same as #11
 14. Upon seeing the LogLock event, [relayer](Components#relayer) will:
       - [calculate the denom hash](Concepts?id=token-denom-hashing-for-evm-native-assets)
-      - create a [NewEthBridgeClaim](Events/NewEthBridgeClaim) and broadcast it to sifnode claim, and then broadcast the event to sifnode. The relayers will then update the sequence number they stored 
+      - create a [NewEthBridgeClaim](Events/NewEthBridgeClaim) and broadcast it to sifnode claim, and then broadcast the event to sifnode. The relayers will then update the sequence number they stored
 15. When sifnode starts to process the [NewEthBridgeClaim](Events/NewEthbridgeClaim) the message handler for `CreateEthBridgeClaim` is called, during this it will:
       - Verify the sender of the claim is a valid Relayer/Witness
       - Verify the Claim Sequence number is properly ordered, (i.e. a claim is not being handled out of order)
       - Attempt to process the claim depending upon the number of already submitted claims from relayers/witnesses
       - Query the TokenRegistry for metadata on the EVM native asset and determine if it needs to be stored. If no metadata exists the
         TokenRegistry keeper method `AddTokenMetadata` will be called, storing all metadata from the claim.
-16. When the [NewEthBridgeClaim](Event/NewEthbridgeClaim) message handler calls `ProcessClaim` it will return a status code 
-    of `oracletypes.StatusText` which will be checked to see if the claim status is `StatusText_STATUS_TEXT_SUCCESS` if it is the message handler will 
+16. When the [NewEthBridgeClaim](Event/NewEthbridgeClaim) message handler calls `ProcessClaim` it will return a status code
+    of `oracletypes.StatusText` which will be checked to see if the claim status is `StatusText_STATUS_TEXT_SUCCESS` if it is the message handler will
     call `ProcessSuccessfulClaim` which will instruct the bank module to mint new coins for the denom and value of the claim.
-17. After submitting the [NewEthBridgeClaim](Events/NewEthBridgeClaim) the [witnesses](Components#witness) will call `SetEthereumLockBurnSequence` in the 
+17. After submitting the [NewEthBridgeClaim](Events/NewEthBridgeClaim) the [witnesses](Components#witness) will call `SetEthereumLockBurnSequence` in the
     `EthBridge Module` to update its state on the sifchain blockchain as having processed that claim.
-18. After submitting the [NewEthBridgeClaim](Events/NewEthBridgeClaim) the [relayers](Components#relayer) will call `SetEthereumLockBurnSequence` in the 
+18. After submitting the [NewEthBridgeClaim](Events/NewEthBridgeClaim) the [relayers](Components#relayer) will call `SetEthereumLockBurnSequence` in the
     `EthBridge Module` to update its state on the sifchain blockchain as having processed that claim.
 19. Finally after sifchain successfully processes the successful claim it will emit a new event signaling the claim was processed successfully.
 
@@ -123,7 +123,7 @@ The only fees a user will incur during an import into sifchain will be the EVM n
 At the time of writing this developers are expecting the average import on Ethereum would cost a user roughly $40~$85.
 
 ### Witness/Relayer Incurred Fees
-When a user initates an import each relayer and witness must submit a [NewEthBridgeClaim](Events/NewEthBridgeClaim) as well as a message to increment their sequence numbers to the 
+When a user initates an import each relayer and witness must submit a [NewEthBridgeClaim](Events/NewEthBridgeClaim) as well as a message to increment their sequence numbers to the
 sifchain blockchain. These messages cost rowan to perform.
 
 !> What is the average cost to a relayer/witness in rowan to perform these operations?
@@ -144,13 +144,13 @@ let bridgeBank: ethers.Contract;
 let token: ethers.Contract;
 
 async main() {
-  
+
   try {
     /* Connect to the network and get access to the users signing keys */
     const provider = new ethers.getDefaultProvider()
     await provider.send("eth_requestAccounts", []);
     const signer = provider.getSigner();
-  
+
     /* Create an object representing each contract we intend to interact with */
     bridgeBank = new ethers.Contract(
         BridgeBankAddress,
@@ -158,7 +158,7 @@ async main() {
         signer
     );
     token = new ethers.Contract(TokenAddress, TokenABI, signer);
-  
+
     /* Query the balance so that we can approve the bridgebank as a spender */
     balance = await token.balanceOf(signer.getAddress());
 
@@ -195,4 +195,62 @@ async main() {
 async()
   .then(() => console.log("Huzzah! The token lock has been initiated!"))
   .catch((error) => console.error("Boo, something went wrong ", error));
+```
+
+
+## Sequences in ethereum import flow
+
+Variables
+
+| Variable       | Key | Interface (TBD Naming) | Invariant | If not found |
+| :------------- | :--------- | :--- | :------- | :-- |
+| EthereumLockBurnSequence | NetworkDescriptor, ValidatorAddress | ethbridge.keeper | Stored value is the lockBurnNonce of last completed ethbridgeclaim | 0 |
+| lockBurnNonce | NA | BridgeBank.sol | Stored value is equal to latest emitted event | NA |
+
+#### Ethereum Contract
+```mermaid
+sequenceDiagram
+    User ->> BridgeBankEvmContract: lock OR burn
+    BridgeBankEvmContract ->> BridgeBankEvmContract: lockBurnNonce++
+    BridgeBankEvmContract ->> EvmEventBus: emit Lock/Burn event{lockBurnNonce}
+```
+
+
+#### Ethereum Relayer
+
+```mermaid
+sequenceDiagram
+    loop interval
+      ebrelayer ->> sifnoded grpcInterface: EthereumLockBurnSequence(networkDescriptor, relayerValAddress)
+      sifnoded grpcInterface ->> ebrelayer: nonce
+      note over ebrelayer, sifnoded grpcInterface: 0 if not found
+      ebrelayer ->> EVM Node: FilterQuery(0, endBlockHeight, bridgeBankAddress, nonce + 1)
+      EVM Node ->> ebrelayer: ethLogs{firstBlock}
+
+      loop events in [firstBlock -> endBlock]
+          %% TODO: This is inprecise. Revise this
+          ebrelayer ->> Cosmos Msg Server: MsgCreateEthBridgeClaim{EthereumLockBurnSequence=event.Nonce}
+      end
+    end
+```
+
+#### Ethbridge module
+Note here we will proceed to operate on prophecy claim iff EthereumLockBurnSequence is 1+ nonce stored in keeper
+
+```mermaid
+sequenceDiagram
+    ebrelayer ->> ethBridge_module: MsgCreateEthBridgeClaim{EthereumLockBurnSequence}
+    ethBridge_module ->> keeper: EthereumLockBurnSequence(NetworkDescriptor, validatorAddress)
+    keeper ->> ethBridge_module: nonce
+    note over keeper, ethBridge_module: 0 if not found
+    alt nonce + 1 != EthereumLockBurnSequence
+        note over ethBridge_module: exit
+    end
+    ethBridge_module ->> ethBridge_module: operation on prophecyclaim
+
+    alt it is a newly successful claim
+      ethBridge_module ->> ethBridge_module: ProcessSuccessfulClaim
+    end
+    ethBridge_module ->> keeper:SetEthereumLockBurnSequence(NetworkDescriptor, ValidatorAddress, EthereumLockBurnSequence)
+    ethBridge_module ->> cosmosEventBus: CreateClaim
 ```
