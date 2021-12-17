@@ -49,9 +49,9 @@ const { print } = require("../../helpers/utils");
 // Helps converting an address to a checksum address
 const addr = Web3.utils.toChecksumAddress;
 
-// Defaults to the Ropsten address
+// Defaults to the Rinkeby address
 const BLOCKLIST_ADDRESS =
-  process.env.BLOCKLIST_ADDRESS || addr("0xbB4fa6cC28f18Ae005998a5336dbA3bC49e3dc57");
+  process.env.BLOCKLIST_ADDRESS || addr("0xAE864F340043ba8d45dbDdFd589F3957A74Dc7FF");
 
 const BRIDGEBANK_ADDRESS =
   process.env.BRIDGEBANK_ADDRESS || addr("0x5CAf4CB0693AD0e8f354A30D01CC20F9496988D4");
