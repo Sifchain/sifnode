@@ -215,6 +215,16 @@ func SetInputs(sentAmount sdk.Uint, to string, pool clptypes.Pool) (sdk.Uint, sd
 }
 
 func (k Keeper) Borrow(ctx sdk.Context, collateralAsset string, collateralAmount sdk.Uint, borrowAmount sdk.Uint, mtp types.MTP, pool clptypes.Pool, leverage sdk.Uint) error {
+	mtpAddress, err := sdk.AccAddressFromBech32(mtp.Address)
+	if err != nil {
+		return err
+	}
+	collateralCoin := sdk.NewCoin(collateralAsset, sdk.NewIntFromBigInt(collateralAmount.BigInt()))
+
+	if !k.bankKeeper.HasBalance(ctx, mtpAddress, collateralCoin) {
+		return clptypes.ErrBalanceNotAvailable
+	}
+
 	mtp.CollateralAmount = mtp.CollateralAmount.Add(collateralAmount)
 	mtp.LiabilitiesP = mtp.LiabilitiesP.Add(collateralAmount.Mul(leverage))
 	mtp.CustodyAmount = mtp.CustodyAmount.Add(borrowAmount)
@@ -226,11 +236,7 @@ func (k Keeper) Borrow(ctx sdk.Context, collateralAsset string, collateralAmount
 	}
 	mtp.MtpHealth = h
 
-	mtpAddress, err := sdk.AccAddressFromBech32(mtp.Address)
-	if err != nil {
-		return err
-	}
-	collateralCoins := sdk.NewCoins(sdk.NewCoin(collateralAsset, sdk.NewIntFromBigInt(collateralAmount.BigInt())))
+	collateralCoins := sdk.NewCoins(collateralCoin)
 	err = k.BankKeeper().SendCoinsFromAccountToModule(ctx, mtpAddress, types.ModuleName, collateralCoins)
 	if err != nil {
 		return err
@@ -309,13 +315,13 @@ func (k Keeper) TakeInCustody(ctx sdk.Context, mtp types.MTP, pool clptypes.Pool
 func (k Keeper) TakeOutCustody(ctx sdk.Context, mtp types.MTP, pool clptypes.Pool) error {
 	nativeAsset := types.GetSettlementAsset()
 
-	if mtp.CollateralAsset == nativeAsset {
+	if strings.EqualFold(mtp.CollateralAsset, nativeAsset) {
 		pool.ExternalCustody = pool.ExternalCustody.Sub(mtp.CustodyAmount)
 	} else {
 		pool.NativeCustody = pool.NativeCustody.Sub(mtp.CustodyAmount)
 	}
 
-	return k.clpKeeper.SetPool(ctx, &pool)
+	return k.ClpKeeper().SetPool(ctx, &pool)
 }
 
 func (k Keeper) Repay(ctx sdk.Context, mtp types.MTP, pool clptypes.Pool, repayAmount sdk.Uint) error {
@@ -366,7 +372,7 @@ func (k Keeper) Repay(ctx sdk.Context, mtp types.MTP, pool clptypes.Pool, repayA
 
 	nativeAsset := types.GetSettlementAsset()
 
-	if mtp.CollateralAsset == nativeAsset {
+	if strings.EqualFold(mtp.CollateralAsset, nativeAsset) {
 		pool.NativeAssetBalance = pool.NativeAssetBalance.Sub(debtI).Sub(debtP)
 		pool.NativeLiabilities = pool.NativeLiabilities.Sub(mtp.LiabilitiesP)
 	} else {
