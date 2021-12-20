@@ -79,17 +79,17 @@ func TestNewHandler_CreateDistribution_PayRewardsInAnyToken_HappyCase(t *testing
 	app, ctx := test.CreateTestApp(false)
 	keeper := app.DispensationKeeper
 	handler := dispensation.NewHandler(keeper)
-	recipients := 2
+	recipients := 3
 	outputList := test.CreatOutputList(recipients, "10")
+	runner := sdk.AccAddress(ed25519.GenPrivKey().PubKey().Address())
 	distributor := sdk.AccAddress(ed25519.GenPrivKey().PubKey().Address())
 	totalCoins, err := dispensationUtils.TotalOutput(outputList)
 	assert.NoError(t, err)
-	err = sifapp.AddCoinsToAccount(types.ModuleName, app.BankKeeper, ctx, distributor, totalCoins)
-	assert.NoError(t, err)
+	totalCoins = totalCoins.Add(totalCoins...)
 	err = sifapp.AddCoinsToAccount(types.ModuleName, app.BankKeeper, ctx, distributor, totalCoins)
 	assert.NoError(t, err)
 	// Airdrop distribution type
-	msgAirdrop := types.NewMsgCreateDistribution(distributor, types.DistributionType_DISTRIBUTION_TYPE_AIRDROP, outputList, "")
+	msgAirdrop := types.NewMsgCreateDistribution(distributor, types.DistributionType_DISTRIBUTION_TYPE_AIRDROP, outputList, runner.String())
 	res, err := handler(ctx, &msgAirdrop)
 	require.NoError(t, err)
 	require.NotNil(t, res)
@@ -103,6 +103,22 @@ func TestNewHandler_CreateDistribution_PayRewardsInAnyToken_HappyCase(t *testing
 		assert.True(t, msgAirdropOutput[i].Coins.AmountOf("catk").Equal(sdk.NewInt(10)) ||
 			msgAirdropOutput[i].Coins.AmountOf("ceth").Equal(sdk.NewInt(10)))
 	}
+	msgLM := types.NewMsgCreateDistribution(distributor, types.DistributionType_DISTRIBUTION_TYPE_LIQUIDITY_MINING, outputList, runner.String())
+	res, err = handler(ctx, &msgLM)
+	require.NoError(t, err)
+	require.NotNil(t, res)
+	distributionName := fmt.Sprintf("%d_%s", ctx.BlockHeight(), msgAirdrop.Distributor)
+	msgRun := types.NewMsgRunDistribution(runner.String(), distributionName, types.DistributionType_DISTRIBUTION_TYPE_AIRDROP)
+	res, err = handler(ctx, &msgRun)
+	require.NoError(t, err)
+	require.NotNil(t, res)
+	records := keeper.GetRecordsForNameAndStatus(ctx, distributionName, types.DistributionStatus_DISTRIBUTION_STATUS_COMPLETED)
+	assert.Len(t, records.DistributionRecords, 3)
+	records = keeper.GetRecordsForNameAndStatus(ctx, distributionName, types.DistributionStatus_DISTRIBUTION_STATUS_PENDING)
+	assert.Len(t, records.DistributionRecords, (recipients*2)-3)
+
+	err = sifapp.AddCoinsToAccount(types.ModuleName, app.BankKeeper, ctx, distributor, totalCoins)
+	assert.NoError(t, err)
 	// Liquidity mining distribution type
 	msgLiquidityMining := types.NewMsgCreateDistribution(distributor, types.DistributionType_DISTRIBUTION_TYPE_LIQUIDITY_MINING, outputList, "")
 	res, err = handler(ctx, &msgLiquidityMining)
@@ -112,8 +128,8 @@ func TestNewHandler_CreateDistribution_PayRewardsInAnyToken_HappyCase(t *testing
 	require.Error(t, err)
 	require.Nil(t, res)
 	msgLiquidityMiningOutput := msgLiquidityMining.Output
-	assert.Equal(t, recipients, len(msgAirdropOutput))
-	for i := 0; i < len(msgAirdropOutput); i++ {
+	assert.Equal(t, recipients, len(msgLiquidityMiningOutput))
+	for i := 0; i < len(msgLiquidityMiningOutput); i++ {
 		//(testing) So users should get random catk or ceth coins here.
 		assert.True(t, msgLiquidityMiningOutput[i].Coins.AmountOf("catk").Equal(sdk.NewInt(10)) ||
 			msgLiquidityMiningOutput[i].Coins.AmountOf("ceth").Equal(sdk.NewInt(10)))
@@ -148,8 +164,8 @@ func TestNewHandler_CreateDistribution_PayRewardsInAnyToken_HappyCase(t *testing
 	require.Error(t, err)
 	require.Nil(t, res)
 	msgValidatorSubsidyOutput := msgValidatorSubsidy.Output
-	assert.Equal(t, recipients, len(msgAirdropOutput))
-	for i := 0; i < len(msgAirdropOutput); i++ {
+	assert.Equal(t, recipients, len(msgValidatorSubsidyOutput))
+	for i := 0; i < len(msgValidatorSubsidyOutput); i++ {
 		//(testing) So users should get random catk or ceth coins here.
 		assert.True(t, msgValidatorSubsidyOutput[i].Coins.AmountOf("catk").Equal(sdk.NewInt(10)) ||
 			msgValidatorSubsidyOutput[i].Coins.AmountOf("ceth").Equal(sdk.NewInt(10)))
