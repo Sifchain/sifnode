@@ -179,9 +179,9 @@ func TestNewHandler_CreateDistribution_PayRewardsInAnyToken_Error(t *testing.T) 
 	recipients := 2
 	outputList := test.CreatOutputList(recipients, "10")
 	distributor := sdk.AccAddress(ed25519.GenPrivKey().PubKey().Address())
-	totalCoins, err := dispensationUtils.TotalOutput(nil)
+	_, err := dispensationUtils.TotalOutput(nil)
 	assert.Error(t, err, "Outputlist is empty")
-	totalCoins, err = dispensationUtils.TotalOutput(outputList)
+	totalCoins, _ := dispensationUtils.TotalOutput(outputList)
 	err = sifapp.AddCoinsToAccount(types.ModuleName, app.BankKeeper, ctx, distributor, totalCoins)
 	assert.NoError(t, err)
 	msgAirdrop := types.NewMsgCreateDistribution(distributor, types.DistributionType_DISTRIBUTION_TYPE_AIRDROP, outputList, "")
@@ -198,7 +198,7 @@ func TestNewHandler_CreateDistribution_PayRewardsInAnyToken_Error(t *testing.T) 
 			msgAirdropOutput[i].Coins.AmountOf("ceth").Equal(sdk.NewInt(10)))
 	}
 	msgAirdrop = types.NewMsgCreateDistribution(distributor, types.DistributionType_DISTRIBUTION_TYPE_AIRDROP, outputList, "")
-	res, err = handler(ctx, &msgAirdrop)
+	_, err = handler(ctx, &msgAirdrop)
 	assert.Error(t, err, "Failed in collecting funds")
 
 	err = sifapp.AddCoinsToAccount(types.ModuleName, app.BankKeeper, ctx, distributor, totalCoins)
@@ -219,7 +219,7 @@ func TestNewHandler_CreateDistribution_PayRewardsInAnyToken_Error(t *testing.T) 
 	}
 
 	msgLiquidityMining = types.NewMsgCreateDistribution(distributor, types.DistributionType_DISTRIBUTION_TYPE_LIQUIDITY_MINING, outputList, "")
-	res, err = handler(ctx, &msgLiquidityMining)
+	_, err = handler(ctx, &msgLiquidityMining)
 	assert.Error(t, err, "Failed in collecting funds")
 
 	err = sifapp.AddCoinsToAccount(types.ModuleName, app.BankKeeper, ctx, distributor, totalCoins)
@@ -240,7 +240,7 @@ func TestNewHandler_CreateDistribution_PayRewardsInAnyToken_Error(t *testing.T) 
 	}
 
 	msgUnspecified = types.NewMsgCreateDistribution(distributor, types.DistributionType_DISTRIBUTION_TYPE_UNSPECIFIED, outputList, "")
-	res, err = handler(ctx, &msgUnspecified)
+	_, err = handler(ctx, &msgUnspecified)
 	assert.Error(t, err, "Failed in collecting funds")
 
 	err = sifapp.AddCoinsToAccount(types.ModuleName, app.BankKeeper, ctx, distributor, totalCoins)
