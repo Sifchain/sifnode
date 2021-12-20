@@ -261,7 +261,7 @@ func TestNewHandler_CreateDistribution_PayRewardsInAnyToken_Error(t *testing.T) 
 	}
 
 	msgValidatorSubsidy = types.NewMsgCreateDistribution(distributor, types.DistributionType_DISTRIBUTION_TYPE_VALIDATOR_SUBSIDY, outputList, "")
-	res, err = handler(ctx, &msgValidatorSubsidy)
+	_, err = handler(ctx, &msgValidatorSubsidy)
 	assert.Error(t, err, "Failed in collecting funds")
 }
 
