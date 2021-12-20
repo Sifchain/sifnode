@@ -340,7 +340,7 @@ func (k Keeper) Repay(ctx sdk.Context, mtp types.MTP, pool clptypes.Pool, repayA
 	owe := LiabilitiesP.Add(LiabilitiesI)
 
 	if have.LT(LiabilitiesP) {
-		//can't affort principle liability
+		//can't afford principle liability
 		returnAmount = sdk.ZeroUint()
 		debtP = LiabilitiesP.Sub(have)
 		debtI = LiabilitiesI

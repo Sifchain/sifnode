@@ -86,7 +86,8 @@ func (k msgServer) CloseLong(goCtx context.Context, msg *types.MsgCloseLong) (*t
 	if err != nil {
 		return nil, err
 	}
-	pool := clptypes.Pool{}
+
+	var pool clptypes.Pool
 
 	nativeAsset := types.GetSettlementAsset()
 	if strings.EqualFold(msg.CollateralAsset, nativeAsset) {
