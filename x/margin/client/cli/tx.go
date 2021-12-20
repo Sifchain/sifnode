@@ -90,7 +90,7 @@ func GetCloseLongCmd() *cobra.Command {
 				return err
 			}
 
-			msg := types.MsgOpenLong{
+			msg := types.MsgCloseLong{
 				Signer:          clientCtx.GetFromAddress().String(),
 				CollateralAsset: collateralAsset,
 				BorrowAsset:     borrowAsset,
