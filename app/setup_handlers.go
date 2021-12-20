@@ -4,18 +4,16 @@ import (
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	m "github.com/cosmos/cosmos-sdk/types/module"
-	"github.com/cosmos/cosmos-sdk/x/authz"
+	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
+	crisistypes "github.com/cosmos/cosmos-sdk/x/crisis/types"
 	"github.com/cosmos/cosmos-sdk/x/feegrant"
 	"github.com/cosmos/cosmos-sdk/x/upgrade/types"
 	ibcconnectiontypes "github.com/cosmos/ibc-go/v2/modules/core/03-connection/types"
 )
 
-const upgradeName = "0.10.0-rc.1"
+const upgradeName = "0.10.0"
 
 func SetupHandlers(app *SifchainApp) {
-	app.UpgradeKeeper.SetUpgradeHandler("0.10.0-rc.2", func(ctx sdk.Context, plan types.Plan, fromVM m.VersionMap) (m.VersionMap, error) {
-		return app.mm.RunMigrations(ctx, app.configurator, fromVM)
-	})
 	app.UpgradeKeeper.SetUpgradeHandler(upgradeName, func(ctx sdk.Context, plan types.Plan, vm m.VersionMap) (m.VersionMap, error) {
 		app.Logger().Info("Running upgrade handler for " + upgradeName)
 		app.IBCKeeper.ConnectionKeeper.SetParams(ctx, ibcconnectiontypes.DefaultParams())
@@ -27,12 +25,23 @@ func SetupHandlers(app *SifchainApp) {
 		for moduleName := range app.mm.Modules {
 			fromVM[moduleName] = 1
 		}
-		// New Modules must execute Init Genesis
-		fromVM[authz.ModuleName] = 0
-		fromVM[feegrant.ModuleName] = 0
-		fromVM["vesting"] = 0
-		fromVM["crisis"] = 0
-		return app.mm.RunMigrations(ctx, app.configurator, fromVM)
+		delete(fromVM, feegrant.ModuleName)
+		delete(fromVM, crisistypes.ModuleName)
+		// Set to 2 , which is the same as the ConsensusVersion to disable migrate function
+		fromVM[authtypes.ModuleName] = 2
+		newVM, err := app.mm.RunMigrations(ctx, app.configurator, fromVM)
+		if err != nil {
+			panic(err)
+		}
+		// Set it back to 1 to run only auth migration
+		newVM[authtypes.ModuleName] = 1
+		// This is to make sure auth module migrates after staking
+		return app.mm.RunMigrations(ctx, app.configurator, newVM)
+	})
+	app.UpgradeKeeper.SetUpgradeHandler("0.10.0-rc.4", func(ctx sdk.Context, plan types.Plan, vm m.VersionMap) (m.VersionMap, error) {
+		delete(vm, feegrant.ModuleName)
+		delete(vm, crisistypes.ModuleName)
+		return app.mm.RunMigrations(ctx, app.configurator, vm)
 	})
 	upgradeInfo, err := app.UpgradeKeeper.ReadUpgradeInfoFromDisk()
 	if err != nil {
@@ -40,7 +49,7 @@ func SetupHandlers(app *SifchainApp) {
 	}
 	if upgradeInfo.Name == upgradeName && !app.UpgradeKeeper.IsSkipHeight(upgradeInfo.Height) {
 		storeUpgrades := storetypes.StoreUpgrades{
-			Added: []string{authz.ModuleName, feegrant.ModuleName, "vesting", "crisis"},
+			Added: []string{feegrant.ModuleName, crisistypes.ModuleName},
 		}
 		// Use upgrade store loader for the initial loading of all stores when app starts,
 		// it checks if version == upgradeHeight and applies store upgrades before loading the stores,
