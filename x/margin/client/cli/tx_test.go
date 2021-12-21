@@ -27,9 +27,13 @@ func (s *IntegrationTestSuite) SetupSuite() {
 
 	cfg := testnetwork.DefaultConfig()
 	cfg.NumValidators = 1
+	encConfig := sifapp.MakeTestEncodingConfig()
+	cfg.InterfaceRegistry = encConfig.InterfaceRegistry
+	cfg.Codec = encConfig.Marshaler
+	cfg.TxConfig = encConfig.TxConfig
 	cfg.AppConstructor = func(val testnetwork.Validator) servertypes.Application {
 		db := dbm.NewMemDB()
-		return sifapp.NewSifApp(log.NewTMLogger(log.NewSyncWriter(os.Stdout)), db, nil, true, map[int64]bool{}, val.Dir, 0, sifapp.MakeTestEncodingConfig(), sifapp.EmptyAppOptions{})
+		return sifapp.NewSifApp(log.NewTMLogger(log.NewSyncWriter(os.Stdout)), db, nil, true, map[int64]bool{}, val.Dir, 0, encConfig, sifapp.EmptyAppOptions{})
 	}
 
 	s.cfg = cfg
@@ -49,7 +53,6 @@ func (s *IntegrationTestSuite) TearDownSuite() {
 
 func (s *IntegrationTestSuite) TestOpenLongCmd() {
 	val := s.network.Validators[0]
-	// baseURL := val.APIAddress
 
 	// Use baseURL to make API HTTP requests or use val.RPCClient to make direct
 	// Tendermint RPC calls.
@@ -59,8 +62,22 @@ func (s *IntegrationTestSuite) TestOpenLongCmd() {
 		"--borrow_asset=atom",
 		"--collateral_amount=1000",
 		"--from=" + val.Address.String(),
+		"-y",
 	}
 	_, err := testutilcli.ExecTestCLICmd(val.ClientCtx, cli.GetOpenLongCmd(), args)
+	require.NoError(s.T(), err)
+}
+
+func (s *IntegrationTestSuite) TestCloseLongCmd() {
+	val := s.network.Validators[0]
+
+	args := []string{
+		"--collateral_asset=rowan",
+		"--borrow_asset=atom",
+		"--from=" + val.Address.String(),
+		"-y",
+	}
+	_, err := testutilcli.ExecTestCLICmd(val.ClientCtx, cli.GetCloseLongCmd(), args)
 	require.NoError(s.T(), err)
 }
 
