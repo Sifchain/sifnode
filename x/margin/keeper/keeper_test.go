@@ -45,8 +45,8 @@ func TestKeeper_SetMTP(t *testing.T) {
 func TestKeeper_GetMTP(t *testing.T) {
 	t.Run("get MTP from a store key that exists", func(t *testing.T) {
 		ctx, app, marginKeeper := initKeeper(t)
-		want := addMTPKey(t, ctx, app, marginKeeper, "ceth", "xxx")
-		got, err := marginKeeper.GetMTP(ctx, "ceth", "xxx")
+		want := addMTPKey(t, ctx, app, marginKeeper, "ceth", "xxx", "xxx")
+		got, err := marginKeeper.GetMTP(ctx, "ceth", "xxx", want.Address)
 
 		if err != nil {
 			t.Error("got an error but didn't want one")
@@ -58,13 +58,13 @@ func TestKeeper_GetMTP(t *testing.T) {
 
 	t.Run("fails when store keys does not exist", func(t *testing.T) {
 		ctx, _, marginKeeper := initKeeper(t)
-		marginKeeper.GetMTP(ctx, "ceth", "xxx")
+		marginKeeper.GetMTP(ctx, "ceth", "xxx", "xxx")
 	})
 }
 
 func TestKeeper_GetMTPIterator(t *testing.T) {
 	ctx, app, marginKeeper := initKeeper(t)
-	want := addMTPKey(t, ctx, app, marginKeeper, "ceth", "xxx")
+	want := addMTPKey(t, ctx, app, marginKeeper, "ceth", "xxx", "xxx")
 	iterator := marginKeeper.GetMTPIterator(ctx)
 	bytesValue := iterator.Value()
 	var got types.MTP
@@ -77,8 +77,8 @@ func TestKeeper_GetMTPIterator(t *testing.T) {
 
 func TestKeeper_GetMTPs(t *testing.T) {
 	ctx, app, marginKeeper := initKeeper(t)
-	key1 := addMTPKey(t, ctx, app, marginKeeper, "ceth", "key1")
-	key2 := addMTPKey(t, ctx, app, marginKeeper, "ceth", "key2")
+	key1 := addMTPKey(t, ctx, app, marginKeeper, "ceth", "xxx", "key1")
+	key2 := addMTPKey(t, ctx, app, marginKeeper, "ceth", "xxx", "key2")
 	want := []*types.MTP{&key1, &key2}
 	got := marginKeeper.GetMTPs(ctx)
 
@@ -89,8 +89,8 @@ func TestKeeper_GetMTPs(t *testing.T) {
 
 func TestKeeper_GetMTPsForAsset(t *testing.T) {
 	ctx, app, marginKeeper := initKeeper(t)
-	key1 := addMTPKey(t, ctx, app, marginKeeper, "ceth", "key1")
-	key2 := addMTPKey(t, ctx, app, marginKeeper, "ceth", "key2")
+	key1 := addMTPKey(t, ctx, app, marginKeeper, "ceth", "xxx", "key1")
+	key2 := addMTPKey(t, ctx, app, marginKeeper, "ceth", "xxx", "key2")
 	want := []*types.MTP{&key1, &key2}
 	got := marginKeeper.GetMTPsForAsset(ctx, "ceth")
 
@@ -103,8 +103,8 @@ func TestKeeper_GetAssetsForMTP(t *testing.T) {
 	ctx, app, marginKeeper := initKeeper(t)
 	addr, _ := sdk.AccAddressFromBech32("sif1azpar20ck9lpys89r8x7zc8yu0qzgvtp48ng5v")
 
-	addMTPKey(t, ctx, app, marginKeeper, "ceth", addr.String())
-	addMTPKey(t, ctx, app, marginKeeper, "ceth", addr.String())
+	addMTPKey(t, ctx, app, marginKeeper, "ceth", "xxx", addr.String())
+	addMTPKey(t, ctx, app, marginKeeper, "ceth", "xxx", addr.String())
 	want := []string{"ceth"}
 	got := marginKeeper.GetAssetsForMTP(ctx, addr)
 
@@ -116,14 +116,14 @@ func TestKeeper_GetAssetsForMTP(t *testing.T) {
 func TestKeeper_DestroyMTP(t *testing.T) {
 	t.Run("key does not exist", func(t *testing.T) {
 		ctx, _, marginKeeper := initKeeper(t)
-		got := marginKeeper.DestroyMTP(ctx, "ceth", "xxx")
+		got := marginKeeper.DestroyMTP(ctx, "ceth", "xxx", "xxx")
 
 		assertError(t, got, types.ErrMTPDoesNotExist)
 	})
 	t.Run("key exists", func(t *testing.T) {
 		ctx, app, marginKeeper := initKeeper(t)
-		addMTPKey(t, ctx, app, marginKeeper, "ceth", "xxx")
-		got := marginKeeper.DestroyMTP(ctx, "ceth", "xxx")
+		mtp := addMTPKey(t, ctx, app, marginKeeper, "ceth", "xxx", "xxx")
+		got := marginKeeper.DestroyMTP(ctx, "ceth", "xxx", mtp.Address)
 
 		assertNoError(t, got)
 	})
@@ -265,11 +265,35 @@ func TestKeeper_Borrow(t *testing.T) {
 		errString        error
 	}{
 		{
-			name:             "denom not registered",
+			name:             "wrong address",
 			denom:            "unregistered_denom",
 			decimals:         18,
 			to:               "rowan",
 			address:          "xxx",
+			collateralAmount: sdk.NewUint(10000),
+			borrowAmount:     sdk.NewUint(1000),
+			leverage:         sdk.NewUint(1),
+			health:           sdk.NewDec(1),
+			errString:        errors.New("decoding bech32 failed: invalid bech32 string length 3"),
+		},
+		{
+			name:             "not enough fund",
+			denom:            "unregistered_denom",
+			decimals:         18,
+			to:               "rowan",
+			address:          "sif1azpar20ck9lpys89r8x7zc8yu0qzgvtp48ng5v",
+			collateralAmount: sdk.NewUint(10000),
+			borrowAmount:     sdk.NewUint(1000),
+			leverage:         sdk.NewUint(1),
+			health:           sdk.NewDec(1),
+			errString:        errors.New("user does not have enough balance of the required coin"),
+		},
+		{
+			name:             "denom not registered",
+			denom:            "unregistered_denom",
+			decimals:         18,
+			to:               "rowan",
+			address:          "sif1azpar20ck9lpys89r8x7zc8yu0qzgvtp48ng5v",
 			collateralAmount: sdk.NewUint(10000),
 			borrowAmount:     sdk.NewUint(1000),
 			leverage:         sdk.NewUint(1),
@@ -336,7 +360,7 @@ func TestKeeper_Borrow(t *testing.T) {
 				Permissions: []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP},
 			})
 
-			mtp := addMTPKey(t, ctx, app, marginKeeper, tt.to, tt.address)
+			mtp := addMTPKey(t, ctx, app, marginKeeper, tt.to, "xxx", tt.address)
 
 			got := marginKeeper.Borrow(ctx, tt.to, tt.collateralAmount, tt.borrowAmount, mtp, pool, tt.leverage)
 
@@ -367,7 +391,7 @@ func TestKeeper_UpdatePoolHealth(t *testing.T) {
 
 	ctx, _, marginKeeper := initKeeper(t)
 
-	err := marginKeeper.UpdatePoolHealth(ctx, pool)
+	err := marginKeeper.UpdatePoolHealth(ctx, &pool)
 	assert.Nil(t, err)
 }
 
@@ -482,7 +506,7 @@ func TestKeeper_UpdateMTPHealth(t *testing.T) {
 				Permissions: []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP},
 			})
 
-			mtp := addMTPKey(t, ctx, app, marginKeeper, tt.to, "xxx")
+			mtp := addMTPKey(t, ctx, app, marginKeeper, tt.to, "xxx", "xxx")
 			mtp.CustodyAmount = tt.custodyAmount
 			mtp.LiabilitiesP = tt.liabilitiesP
 			mtp.CollateralAmount = tt.collateralAmount
@@ -517,7 +541,7 @@ func TestKeeper_TestInCustody(t *testing.T) {
 
 	t.Run("settlement asset and mtp asset is equal", func(t *testing.T) {
 		ctx, app, marginKeeper := initKeeper(t)
-		mtp := addMTPKey(t, ctx, app, marginKeeper, "rowan", "xxx")
+		mtp := addMTPKey(t, ctx, app, marginKeeper, "rowan", "xxx", "xxx")
 
 		got := marginKeeper.TakeInCustody(ctx, mtp, pool)
 
@@ -526,12 +550,283 @@ func TestKeeper_TestInCustody(t *testing.T) {
 
 	t.Run("settlement asset and mtp asset is not equal", func(t *testing.T) {
 		ctx, app, marginKeeper := initKeeper(t)
-		mtp := addMTPKey(t, ctx, app, marginKeeper, "notrowan", "xxx")
+		mtp := addMTPKey(t, ctx, app, marginKeeper, "notrowan", "xxx", "xxx")
 
 		got := marginKeeper.TakeInCustody(ctx, mtp, pool)
 
 		assertNoError(t, got)
 	})
+}
+
+func TestKeeper_TestOutCustody(t *testing.T) {
+	asset := clptypes.Asset{Symbol: "rowan"}
+	pool := clptypes.Pool{
+		ExternalAsset:        &asset,
+		NativeAssetBalance:   sdk.NewUint(1000),
+		NativeLiabilities:    sdk.NewUint(1000),
+		ExternalCustody:      sdk.NewUint(1000),
+		ExternalAssetBalance: sdk.NewUint(1000),
+		ExternalLiabilities:  sdk.NewUint(1000),
+		NativeCustody:        sdk.NewUint(1000),
+		PoolUnits:            sdk.NewUint(1),
+		Health:               sdk.NewDec(1),
+	}
+
+	t.Run("settlement asset and mtp asset is equal", func(t *testing.T) {
+		ctx, app, marginKeeper := initKeeper(t)
+		mtp := addMTPKey(t, ctx, app, marginKeeper, "rowan", "xxx", "xxx")
+
+		got := marginKeeper.TakeOutCustody(ctx, mtp, pool)
+
+		assertNoError(t, got)
+	})
+
+	t.Run("settlement asset and mtp asset is not equal", func(t *testing.T) {
+		ctx, app, marginKeeper := initKeeper(t)
+		mtp := addMTPKey(t, ctx, app, marginKeeper, "notrowan", "xxx", "xxx")
+
+		got := marginKeeper.TakeOutCustody(ctx, mtp, pool)
+
+		assertNoError(t, got)
+	})
+}
+
+func TestKeeper_Repay(t *testing.T) {
+	asset := clptypes.Asset{Symbol: "rowan"}
+	pool := clptypes.Pool{
+		ExternalAsset:        &asset,
+		NativeAssetBalance:   sdk.NewUint(1000000000),
+		NativeLiabilities:    sdk.NewUint(1000000000),
+		ExternalCustody:      sdk.NewUint(1000000000),
+		ExternalAssetBalance: sdk.NewUint(1000000000),
+		ExternalLiabilities:  sdk.NewUint(1000000000),
+		NativeCustody:        sdk.NewUint(1000000000),
+		PoolUnits:            sdk.NewUint(1),
+		Health:               sdk.NewDec(1),
+	}
+
+	repayTests := []struct {
+		name             string
+		denom            string
+		decimals         int64
+		to               string
+		address          string
+		collateralAmount sdk.Uint
+		custodyAmount    sdk.Uint
+		liabilitiesP     sdk.Uint
+		liabilitiesI     sdk.Uint
+		health           sdk.Dec
+		repayAmount      sdk.Uint
+		overrideAddress  string
+		err              error
+		errString        error
+	}{
+		{
+			name:             "denom not registered",
+			denom:            "unregistred_denom",
+			decimals:         18,
+			to:               "xxx",
+			address:          "xxx",
+			collateralAmount: sdk.NewUint(1000),
+			custodyAmount:    sdk.NewUint(1000),
+			liabilitiesP:     sdk.NewUint(1000),
+			liabilitiesI:     sdk.NewUint(1000),
+			health:           sdk.NewDec(1),
+			repayAmount:      sdk.NewUint(1),
+			err:              tokenregistrytypes.ErrNotFound,
+		},
+		{
+			name:             "cannot affort principle liability",
+			denom:            "rowan",
+			decimals:         18,
+			to:               "xxx",
+			address:          "xxx",
+			collateralAmount: sdk.NewUint(0),
+			custodyAmount:    sdk.NewUint(1000),
+			liabilitiesP:     sdk.NewUint(1000),
+			liabilitiesI:     sdk.NewUint(1000),
+			health:           sdk.NewDec(1),
+			repayAmount:      sdk.NewUint(0),
+			err:              nil,
+		},
+		{
+			name:             "v principle libarity; x excess liability",
+			denom:            "rowan",
+			decimals:         18,
+			to:               "xxx",
+			address:          "xxx",
+			collateralAmount: sdk.NewUint(0),
+			custodyAmount:    sdk.NewUint(1000),
+			liabilitiesP:     sdk.NewUint(0),
+			liabilitiesI:     sdk.NewUint(1000),
+			health:           sdk.NewDec(1),
+			repayAmount:      sdk.NewUint(0),
+			err:              nil,
+		},
+		{
+			name:             "can affort both",
+			denom:            "rowan",
+			decimals:         18,
+			to:               "xxx",
+			address:          "xxx",
+			collateralAmount: sdk.NewUint(0),
+			custodyAmount:    sdk.NewUint(1000),
+			liabilitiesP:     sdk.NewUint(0),
+			liabilitiesI:     sdk.NewUint(0),
+			health:           sdk.NewDec(1),
+			repayAmount:      sdk.NewUint(0),
+			err:              nil,
+		},
+		{
+			name:             "non zero return amount + fails because of wrong address",
+			denom:            "rowan",
+			decimals:         18,
+			to:               "xxx",
+			address:          "xxx",
+			collateralAmount: sdk.NewUint(0),
+			custodyAmount:    sdk.NewUint(1000),
+			liabilitiesP:     sdk.NewUint(0),
+			liabilitiesI:     sdk.NewUint(0),
+			health:           sdk.NewDec(1),
+			repayAmount:      sdk.NewUint(1000),
+			errString:        errors.New("decoding bech32 failed: invalid bech32 string length 3"),
+		},
+		{
+			name:             "non zero return amount",
+			denom:            "rowan",
+			decimals:         18,
+			to:               "xxx",
+			address:          "sif1azpar20ck9lpys89r8x7zc8yu0qzgvtp48ng5v",
+			collateralAmount: sdk.NewUint(0),
+			custodyAmount:    sdk.NewUint(1000),
+			liabilitiesP:     sdk.NewUint(0),
+			liabilitiesI:     sdk.NewUint(0),
+			health:           sdk.NewDec(1),
+			repayAmount:      sdk.NewUint(1000),
+			errString:        errors.New("0xxx is smaller than 1000xxx: insufficient funds"),
+		},
+		{
+			name:             "collateral and native assets are equal",
+			denom:            "rowan",
+			decimals:         18,
+			to:               "rowan",
+			address:          "xxx",
+			collateralAmount: sdk.NewUint(0),
+			custodyAmount:    sdk.NewUint(1000),
+			liabilitiesP:     sdk.NewUint(1000),
+			liabilitiesI:     sdk.NewUint(1000),
+			health:           sdk.NewDec(1),
+			repayAmount:      sdk.NewUint(0),
+			err:              nil,
+		},
+		{
+			name:             "mtp not found",
+			denom:            "rowan",
+			decimals:         18,
+			to:               "rowan",
+			address:          "xxx",
+			overrideAddress:  "yyy",
+			collateralAmount: sdk.NewUint(0),
+			custodyAmount:    sdk.NewUint(1000),
+			liabilitiesP:     sdk.NewUint(1000),
+			liabilitiesI:     sdk.NewUint(1000),
+			health:           sdk.NewDec(1),
+			repayAmount:      sdk.NewUint(0),
+			err:              types.ErrMTPDoesNotExist,
+		},
+	}
+
+	for _, tt := range repayTests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctx, app, marginKeeper := initKeeper(t)
+
+			app.TokenRegistryKeeper.SetToken(ctx, &tokenregistrytypes.RegistryEntry{
+				Denom:       tt.denom,
+				Decimals:    tt.decimals,
+				Permissions: []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP},
+			})
+
+			mtp := addMTPKey(t, ctx, app, marginKeeper, tt.to, "xxx", tt.address)
+			mtp.CustodyAmount = tt.custodyAmount
+			mtp.LiabilitiesP = tt.liabilitiesP
+			mtp.CollateralAmount = tt.collateralAmount
+			mtp.LiabilitiesI = tt.liabilitiesI
+			if tt.overrideAddress != "" {
+				mtp.Address = tt.overrideAddress
+			}
+
+			got := marginKeeper.Repay(ctx, mtp, pool, tt.repayAmount)
+
+			if tt.errString != nil {
+				assertErrorString(t, got, tt.errString)
+			} else if tt.err != nil {
+				assertError(t, got, tt.err)
+			} else {
+				assertNoError(t, got)
+			}
+		})
+	}
+}
+
+func TestKeeper_UpdateMTPInterestLiabilities(t *testing.T) {
+	ctx, app, marginKeeper := initKeeper(t)
+
+	mtp := addMTPKey(t, ctx, app, marginKeeper, "rowan", "xxx", "xxx")
+
+	got := marginKeeper.UpdateMTPInterestLiabilities(ctx, &mtp, sdk.NewDec(1.0))
+	assert.Nil(t, got)
+}
+
+func TestKeeper_InterestRateComputation(t *testing.T) {
+	asset := clptypes.Asset{Symbol: "rowan"}
+	pool := clptypes.Pool{
+		ExternalAsset:        &asset,
+		NativeAssetBalance:   sdk.NewUint(1000000000),
+		NativeLiabilities:    sdk.NewUint(1000000000),
+		ExternalCustody:      sdk.NewUint(1000000000),
+		ExternalAssetBalance: sdk.NewUint(1000000000),
+		ExternalLiabilities:  sdk.NewUint(1000000000),
+		NativeCustody:        sdk.NewUint(1000000000),
+		PoolUnits:            sdk.NewUint(1),
+		Health:               sdk.NewDec(1),
+	}
+
+	interestRateComputationTests := []struct {
+		name      string
+		denom     string
+		decimals  int64
+		err       error
+		errString error
+	}{
+		{
+			name:     "denom not registered",
+			denom:    "unregistred_denom",
+			decimals: 18,
+			err:      tokenregistrytypes.ErrNotFound,
+		},
+	}
+
+	for _, tt := range interestRateComputationTests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctx, app, marginKeeper := initKeeper(t)
+
+			app.TokenRegistryKeeper.SetToken(ctx, &tokenregistrytypes.RegistryEntry{
+				Denom:       tt.denom,
+				Decimals:    tt.decimals,
+				Permissions: []tokenregistrytypes.Permission{tokenregistrytypes.Permission_CLP},
+			})
+
+			_, got := marginKeeper.InterestRateComputation(ctx, pool)
+
+			if tt.errString != nil {
+				assertErrorString(t, got, tt.errString)
+			} else if tt.err != nil {
+				assertError(t, got, tt.err)
+			} else {
+				assertNoError(t, got)
+			}
+		})
+	}
 }
 
 func initKeeper(t testing.TB) (sdk.Context, *app.SifchainApp, types.Keeper) {
@@ -540,18 +835,18 @@ func initKeeper(t testing.TB) (sdk.Context, *app.SifchainApp, types.Keeper) {
 	assert.NotNil(t, marginKeeper)
 	return ctx, app, marginKeeper
 }
-func addMTPKey(t testing.TB, ctx sdk.Context, app *app.SifchainApp, marginKeeper types.Keeper, asset string, address string) types.MTP {
+func addMTPKey(t testing.TB, ctx sdk.Context, app *app.SifchainApp, marginKeeper types.Keeper, collateralAsset string, custodyAsset string, address string) types.MTP {
 	storeKey := app.GetKey(types.StoreKey)
 	store := ctx.KVStore(storeKey)
-	key := types.GetMTPKey(asset, address)
+	key := types.GetMTPKey(collateralAsset, custodyAsset, address)
 
 	newMTP := types.MTP{
 		Address:          address,
-		CollateralAsset:  asset,
+		CollateralAsset:  collateralAsset,
 		LiabilitiesP:     sdk.NewUint(1000),
 		LiabilitiesI:     sdk.NewUint(1000),
 		CollateralAmount: sdk.NewUint(1000),
-		CustodyAsset:     "xxx",
+		CustodyAsset:     custodyAsset,
 		CustodyAmount:    sdk.NewUint(1000),
 		Leverage:         sdk.NewUint(10),
 		MtpHealth:        sdk.NewDec(20)}
