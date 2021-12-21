@@ -13,6 +13,27 @@ message Params {
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Uint",
     (gogoproto.nullable) = false
   ];
+  string interest_rate_max = 2 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+    (gogoproto.nullable) = false
+  ];
+  string interest_rate_min = 3 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+    (gogoproto.nullable) = false
+  ];
+  string interest_rate_increase = 4 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+    (gogoproto.nullable) = false
+  ];
+  string interest_rate_decrease = 5 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+    (gogoproto.nullable) = false
+  ];
+  string health_gain_factor = 6 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+    (gogoproto.nullable) = false
+  ];
+  int64 epoch_length = 7;
 }
 
 message MTP {

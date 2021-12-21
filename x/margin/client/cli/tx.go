@@ -2,6 +2,7 @@ package cli
 
 import (
 	"github.com/Sifchain/sifnode/x/margin/types"
+
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/client/tx"
@@ -62,6 +63,47 @@ func GetOpenLongCmd() *cobra.Command {
 		},
 	}
 	cmd.Flags().Uint64("collateral_amount", 0, "amount of collateral asset < max_uint64")
+	cmd.Flags().String("collateral_asset", "", "symbol of asset")
+	cmd.Flags().String("borrow_asset", "", "symbol of asset")
+	flags.AddTxFlagsToCmd(cmd)
+	return cmd
+
+}
+
+func GetCloseLongCmd() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "close-long",
+		Short: "Close long position",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			clientCtx, err := client.GetClientTxContext(cmd)
+			if err != nil {
+				return err
+			}
+
+			collateralAsset, err := cmd.Flags().GetString("collateral_asset")
+			if err != nil {
+				return err
+			}
+
+			borrowAsset, err := cmd.Flags().GetString("borrow_asset")
+			if err != nil {
+				return err
+			}
+
+			msg := types.MsgCloseLong{
+				Signer:          clientCtx.GetFromAddress().String(),
+				CollateralAsset: collateralAsset,
+				BorrowAsset:     borrowAsset,
+			}
+
+			err = tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), &msg)
+			if err != nil {
+				return err
+			}
+
+			return nil
+		},
+	}
 	cmd.Flags().String("collateral_asset", "", "symbol of asset")
 	cmd.Flags().String("borrow_asset", "", "symbol of asset")
 	flags.AddTxFlagsToCmd(cmd)
