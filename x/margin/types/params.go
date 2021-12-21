@@ -6,7 +6,13 @@ import (
 
 // Parameter store keys
 var (
-	KeyLeverageMaxParam = []byte("LeverageMax")
+	KeyLeverageMaxParam          = []byte("LeverageMax")
+	KeyInterestRateMaxParam      = []byte("InterestRateMax")
+	KeyInterestRateMinParam      = []byte("InterestRateMin")
+	KeyInterestRateIncreaseParam = []byte("InterestRateIncrease")
+	KeyInterestRateDecreaseParam = []byte("InterestRateDecrease")
+	KeyHealthGainFactorParam     = []byte("HealthGainFactor")
+	KeyEpochLengthParam          = []byte("EpochLength")
 )
 
 var _ paramtypes.ParamSet = (*Params)(nil)

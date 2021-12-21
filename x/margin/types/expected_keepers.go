@@ -8,11 +8,13 @@ import (
 
 type BankKeeper interface {
 	//SendCoins(ctx sdk.Context, fromAddr sdk.AccAddress, toAddr sdk.AccAddress, amt sdk.Coins) error
-	//SendCoinsFromModuleToAccount(ctx sdk.Context, senderModule string, recipientAddr sdk.AccAddress, amt sdk.Coins) error
+	SendCoinsFromModuleToAccount(ctx sdk.Context, senderModule string, recipientAddr sdk.AccAddress, amt sdk.Coins) error
 	SendCoinsFromAccountToModule(ctx sdk.Context, senderAddr sdk.AccAddress, recipientModule string, amt sdk.Coins) error
+	HasBalance(ctx sdk.Context, addr sdk.AccAddress, amt sdk.Coin) bool
 }
 
 type CLPKeeper interface {
+	GetPools(ctx sdk.Context) []*clptypes.Pool
 	GetPool(ctx sdk.Context, symbol string) (clptypes.Pool, error)
 	SetPool(ctx sdk.Context, pool *clptypes.Pool) error
 	GetNormalizationFactorForAsset(sdk.Context, string) (sdk.Dec, bool, error)
@@ -26,24 +28,29 @@ type CLPKeeper interface {
 type Keeper interface {
 	InitGenesis(sdk.Context, GenesisState) []types.ValidatorUpdate
 	ExportGenesis(sdk.Context) *GenesisState
+	BeginBlocker(sdk.Context)
 
 	ClpKeeper() CLPKeeper
 	BankKeeper() BankKeeper
 
 	SetMTP(ctx sdk.Context, mtp *MTP) error
-	GetMTP(ctx sdk.Context, symbol string, mtpAddress string) (MTP, error)
+	GetMTP(sdk.Context, string, string, string) (MTP, error)
 	GetMTPIterator(ctx sdk.Context) sdk.Iterator
 	GetMTPs(ctx sdk.Context) []*MTP
 	GetMTPsForAsset(ctx sdk.Context, asset string) []*MTP
 	GetAssetsForMTP(ctx sdk.Context, mtpAddress sdk.Address) []string
-	DestroyMTP(ctx sdk.Context, symbol string, mtpAddress string) error
+	DestroyMTP(sdk.Context, string, string, string) error
 
 	GetLeverageParam(sdk.Context) sdk.Uint
 
 	CustodySwap(ctx sdk.Context, pool clptypes.Pool, to string, sentAmount sdk.Uint) (sdk.Uint, error)
 	Borrow(ctx sdk.Context, collateralAsset string, collateralAmount sdk.Uint, borrowAmount sdk.Uint, mtp MTP, pool clptypes.Pool, leverage sdk.Uint) error
 	TakeInCustody(ctx sdk.Context, mtp MTP, pool clptypes.Pool) error
+	TakeOutCustody(ctx sdk.Context, mtp MTP, pool clptypes.Pool) error
+	Repay(ctx sdk.Context, mtp MTP, pool clptypes.Pool, repayAmount sdk.Uint) error
+	InterestRateComputation(ctx sdk.Context, pool clptypes.Pool) (sdk.Dec, error)
 
-	UpdatePoolHealth(ctx sdk.Context, pool clptypes.Pool) error
+	UpdateMTPInterestLiabilities(ctx sdk.Context, mtp *MTP, interestRate sdk.Dec) error
+	UpdatePoolHealth(ctx sdk.Context, pool *clptypes.Pool) error
 	UpdateMTPHealth(ctx sdk.Context, mtp MTP, pool clptypes.Pool) (sdk.Dec, error)
 }
