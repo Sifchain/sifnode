@@ -5,7 +5,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	sifapp "github.com/Sifchain/sifnode/app"
 	clptest "github.com/Sifchain/sifnode/x/clp/test"
@@ -19,7 +19,7 @@ import (
 func TestKeeper_Errors(t *testing.T) {
 	_, app := test.CreateTestAppMargin(false)
 	marginKeeper := app.MarginKeeper
-	assert.NotNil(t, marginKeeper)
+	require.NotNil(t, marginKeeper)
 }
 
 func TestKeeper_SetMTP(t *testing.T) {
@@ -27,19 +27,19 @@ func TestKeeper_SetMTP(t *testing.T) {
 		ctx, _, marginKeeper := initKeeper(t)
 		mtp := types.MTP{}
 		err := marginKeeper.SetMTP(ctx, &mtp)
-		assert.EqualError(t, err, "no asset specified: mtp invalid")
+		require.EqualError(t, err, "no asset specified: mtp invalid")
 	})
 	t.Run("define asset but no address", func(t *testing.T) {
 		ctx, _, marginKeeper := initKeeper(t)
 		mtp := types.MTP{CollateralAsset: "xxx"}
 		err := marginKeeper.SetMTP(ctx, &mtp)
-		assert.EqualError(t, err, "no address specified: mtp invalid")
+		require.EqualError(t, err, "no address specified: mtp invalid")
 	})
 	t.Run("define asset and address", func(t *testing.T) {
 		ctx, _, marginKeeper := initKeeper(t)
 		mtp := types.MTP{CollateralAsset: "xxx", Address: "xxx"}
 		err := marginKeeper.SetMTP(ctx, &mtp)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 	})
 }
 
@@ -407,7 +407,7 @@ func TestKeeper_UpdatePoolHealth(t *testing.T) {
 	ctx, _, marginKeeper := initKeeper(t)
 
 	err := marginKeeper.UpdatePoolHealth(ctx, &pool)
-	assert.Nil(t, err)
+	require.Nil(t, err)
 }
 
 func TestKeeper_UpdateMTPHealth(t *testing.T) {
@@ -789,7 +789,7 @@ func TestKeeper_UpdateMTPInterestLiabilities(t *testing.T) {
 	mtp := addMTPKey(t, ctx, app, marginKeeper, "rowan", "xxx", "xxx")
 
 	got := marginKeeper.UpdateMTPInterestLiabilities(ctx, &mtp, sdk.NewDec(1.0))
-	assert.Nil(t, got)
+	require.Nil(t, got)
 }
 
 func TestKeeper_InterestRateComputation(t *testing.T) {
@@ -848,7 +848,7 @@ func TestKeeper_InterestRateComputation(t *testing.T) {
 func initKeeper(t testing.TB) (sdk.Context, *sifapp.SifchainApp, types.Keeper) {
 	ctx, app := test.CreateTestAppMargin(false)
 	marginKeeper := app.MarginKeeper
-	assert.NotNil(t, marginKeeper)
+	require.NotNil(t, marginKeeper)
 	return ctx, app, marginKeeper
 }
 func addMTPKey(t testing.TB, ctx sdk.Context, app *sifapp.SifchainApp, marginKeeper types.Keeper, collateralAsset string, custodyAsset string, address string) types.MTP {
