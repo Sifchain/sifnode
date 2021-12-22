@@ -49,17 +49,15 @@ func TestKeeper_GetMTP(t *testing.T) {
 		want := addMTPKey(t, ctx, app, marginKeeper, "ceth", "xxx", "xxx")
 		got, err := marginKeeper.GetMTP(ctx, "ceth", "xxx", want.Address)
 
-		if err != nil {
-			t.Error("got an error but didn't want one")
-		}
-		if !reflect.DeepEqual(got, want) {
-			t.Errorf("got %v want %v", got, want)
-		}
+		require.NoError(t, err)
+		require.Equal(t, got, want)
 	})
 
 	t.Run("fails when store keys does not exist", func(t *testing.T) {
 		ctx, _, marginKeeper := initKeeper(t)
-		marginKeeper.GetMTP(ctx, "ceth", "xxx", "xxx")
+		_, got := marginKeeper.GetMTP(ctx, "ceth", "xxx", "xxx")
+
+		require.ErrorIs(t, got, types.ErrMTPDoesNotExist)
 	})
 }
 
@@ -71,9 +69,7 @@ func TestKeeper_GetMTPIterator(t *testing.T) {
 	var got types.MTP
 	types.ModuleCdc.MustUnmarshal(bytesValue, &got)
 
-	if !reflect.DeepEqual(got, want) {
-		t.Errorf("got %v want %v", got, want)
-	}
+	require.Equal(t, got, want)
 }
 
 func TestKeeper_GetMTPs(t *testing.T) {
@@ -119,30 +115,33 @@ func TestKeeper_DestroyMTP(t *testing.T) {
 		ctx, _, marginKeeper := initKeeper(t)
 		got := marginKeeper.DestroyMTP(ctx, "ceth", "xxx", "xxx")
 
-		assertError(t, got, types.ErrMTPDoesNotExist)
+		require.ErrorIs(t, got, types.ErrMTPDoesNotExist)
 	})
 	t.Run("key exists", func(t *testing.T) {
 		ctx, app, marginKeeper := initKeeper(t)
 		mtp := addMTPKey(t, ctx, app, marginKeeper, "ceth", "xxx", "xxx")
 		got := marginKeeper.DestroyMTP(ctx, "ceth", "xxx", mtp.Address)
 
-		assertNoError(t, got)
+		require.NoError(t, got)
 	})
 }
 
 func TestKeeper_ClpKeeper(t *testing.T) {
 	_, _, marginKeeper := initKeeper(t)
-	marginKeeper.ClpKeeper()
+	clp := marginKeeper.ClpKeeper()
+	require.NotNil(t, clp)
 }
 
 func TestKeeper_BankKeeper(t *testing.T) {
 	_, _, marginKeeper := initKeeper(t)
-	marginKeeper.BankKeeper()
+	bank := marginKeeper.BankKeeper()
+	require.NotNil(t, bank)
 }
 
 func TestKeeper_GetLeverageParam(t *testing.T) {
 	ctx, _, marginKeeper := initKeeper(t)
-	marginKeeper.GetLeverageParam(ctx)
+	leverage := marginKeeper.GetLeverageParam(ctx)
+	require.NotNil(t, leverage)
 }
 
 func TestKeeper_CustodySwap(t *testing.T) {
@@ -218,6 +217,7 @@ func TestKeeper_CustodySwap(t *testing.T) {
 	}
 
 	for _, tt := range custodySwapTests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			ctx, app, marginKeeper := initKeeper(t)
 
@@ -230,9 +230,9 @@ func TestKeeper_CustodySwap(t *testing.T) {
 			_, got := marginKeeper.CustodySwap(ctx, pool, tt.to, tt.sentAmount)
 
 			if tt.err == nil {
-				assertNoError(t, got)
+				require.NoError(t, got)
 			} else {
-				assertError(t, got, tt.err)
+				require.ErrorIs(t, got, tt.err)
 			}
 		})
 	}
@@ -355,6 +355,7 @@ func TestKeeper_Borrow(t *testing.T) {
 	}
 
 	for _, tt := range borrowTests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			ctx, app, marginKeeper := initKeeper(t)
 
@@ -380,11 +381,11 @@ func TestKeeper_Borrow(t *testing.T) {
 			got := marginKeeper.Borrow(ctx, tt.to, tt.collateralAmount, tt.borrowAmount, mtp, pool, tt.leverage)
 
 			if tt.errString != nil {
-				assertErrorString(t, got, tt.errString)
-			} else if tt.err != nil {
-				assertError(t, got, tt.err)
+				require.EqualError(t, got, tt.errString.Error())
+			} else if tt.err == nil {
+				require.NoError(t, got)
 			} else {
-				assertNoError(t, got)
+				require.ErrorIs(t, got, tt.err)
 			}
 		})
 	}
@@ -512,6 +513,7 @@ func TestKeeper_UpdateMTPHealth(t *testing.T) {
 	}
 
 	for _, tt := range updateMTPHealthTests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			ctx, app, marginKeeper := initKeeper(t)
 
@@ -530,11 +532,11 @@ func TestKeeper_UpdateMTPHealth(t *testing.T) {
 			_, got := marginKeeper.UpdateMTPHealth(ctx, mtp, pool)
 
 			if tt.errString != nil {
-				assertErrorString(t, got, tt.errString)
-			} else if tt.err != nil {
-				assertError(t, got, tt.err)
+				require.EqualError(t, got, tt.errString.Error())
+			} else if tt.err == nil {
+				require.NoError(t, got)
 			} else {
-				assertNoError(t, got)
+				require.ErrorIs(t, got, tt.err)
 			}
 		})
 	}
@@ -560,7 +562,7 @@ func TestKeeper_TestInCustody(t *testing.T) {
 
 		got := marginKeeper.TakeInCustody(ctx, mtp, pool)
 
-		assertNoError(t, got)
+		require.NoError(t, got)
 	})
 
 	t.Run("settlement asset and mtp asset is not equal", func(t *testing.T) {
@@ -569,7 +571,7 @@ func TestKeeper_TestInCustody(t *testing.T) {
 
 		got := marginKeeper.TakeInCustody(ctx, mtp, pool)
 
-		assertNoError(t, got)
+		require.NoError(t, got)
 	})
 }
 
@@ -593,7 +595,7 @@ func TestKeeper_TestOutCustody(t *testing.T) {
 
 		got := marginKeeper.TakeOutCustody(ctx, mtp, pool)
 
-		assertNoError(t, got)
+		require.NoError(t, got)
 	})
 
 	t.Run("settlement asset and mtp asset is not equal", func(t *testing.T) {
@@ -602,7 +604,7 @@ func TestKeeper_TestOutCustody(t *testing.T) {
 
 		got := marginKeeper.TakeOutCustody(ctx, mtp, pool)
 
-		assertNoError(t, got)
+		require.NoError(t, got)
 	})
 }
 
@@ -752,6 +754,7 @@ func TestKeeper_Repay(t *testing.T) {
 	}
 
 	for _, tt := range repayTests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			ctx, app, marginKeeper := initKeeper(t)
 
@@ -773,11 +776,11 @@ func TestKeeper_Repay(t *testing.T) {
 			got := marginKeeper.Repay(ctx, mtp, pool, tt.repayAmount)
 
 			if tt.errString != nil {
-				assertErrorString(t, got, tt.errString)
-			} else if tt.err != nil {
-				assertError(t, got, tt.err)
+				require.EqualError(t, got, tt.errString.Error())
+			} else if tt.err == nil {
+				require.NoError(t, got)
 			} else {
-				assertNoError(t, got)
+				require.ErrorIs(t, got, tt.err)
 			}
 		})
 	}
@@ -823,6 +826,7 @@ func TestKeeper_InterestRateComputation(t *testing.T) {
 	}
 
 	for _, tt := range interestRateComputationTests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			ctx, app, marginKeeper := initKeeper(t)
 
@@ -835,11 +839,11 @@ func TestKeeper_InterestRateComputation(t *testing.T) {
 			_, got := marginKeeper.InterestRateComputation(ctx, pool)
 
 			if tt.errString != nil {
-				assertErrorString(t, got, tt.errString)
-			} else if tt.err != nil {
-				assertError(t, got, tt.err)
+				require.EqualError(t, got, tt.errString.Error())
+			} else if tt.err == nil {
+				require.NoError(t, got)
 			} else {
-				assertNoError(t, got)
+				require.ErrorIs(t, got, tt.err)
 			}
 		})
 	}
@@ -869,28 +873,4 @@ func addMTPKey(t testing.TB, ctx sdk.Context, app *sifapp.SifchainApp, marginKee
 	store.Set(key, types.ModuleCdc.MustMarshal(&newMTP))
 
 	return newMTP
-}
-func assertError(t testing.TB, got error, want error) {
-	t.Helper()
-	if got == nil {
-		t.Fatal("didn't get an error but wanted one")
-	}
-	if got != want {
-		t.Errorf("got %q, want %q", got, want)
-	}
-}
-func assertErrorString(t testing.TB, got error, want error) {
-	t.Helper()
-	if got == nil {
-		t.Fatal("didn't get an error but wanted one")
-	}
-	if got.Error() != want.Error() {
-		t.Errorf("got %q, want %q", got, want)
-	}
-}
-func assertNoError(t testing.TB, got error) {
-	t.Helper()
-	if got != nil {
-		t.Fatal("got an error but didn't want one")
-	}
 }
