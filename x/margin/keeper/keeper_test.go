@@ -653,7 +653,7 @@ func TestKeeper_Repay(t *testing.T) {
 			err:              tokenregistrytypes.ErrNotFound,
 		},
 		{
-			name:             "cannot affort principle liability",
+			name:             "cannot afford principle liability",
 			denom:            "rowan",
 			decimals:         18,
 			to:               "xxx",
@@ -681,7 +681,7 @@ func TestKeeper_Repay(t *testing.T) {
 			err:              nil,
 		},
 		{
-			name:             "can affort both",
+			name:             "can afford both",
 			denom:            "rowan",
 			decimals:         18,
 			to:               "xxx",
