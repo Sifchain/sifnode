@@ -78,6 +78,10 @@ func GetCmdGenerateEntry() *cobra.Command {
 			if err != nil {
 				return err
 			}
+			clientCtx, err = client.ReadPersistentCommandFlags(clientCtx, cmd.Flags())
+			if err != nil {
+				return err
+			}
 			flags := cmd.Flags()
 			decimals, err := flags.GetInt64(flagDecimals)
 			if err != nil {
@@ -230,6 +234,7 @@ func GetCmdGenerateEntry() *cobra.Command {
 	}
 	_ = cmd.MarkFlagRequired(flagBaseDenom)
 	_ = cmd.MarkFlagRequired(flagDecimals)
+	flags.AddQueryFlagsToCmd(cmd)
 	return cmd
 }
 
