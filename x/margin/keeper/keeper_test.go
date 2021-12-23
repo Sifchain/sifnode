@@ -138,12 +138,6 @@ func TestKeeper_BankKeeper(t *testing.T) {
 	require.NotNil(t, bank)
 }
 
-func TestKeeper_GetLeverageParam(t *testing.T) {
-	ctx, _, marginKeeper := initKeeper(t)
-	leverage := marginKeeper.GetLeverageParam(ctx)
-	require.NotNil(t, leverage)
-}
-
 func TestKeeper_CustodySwap(t *testing.T) {
 	asset := clptypes.Asset{Symbol: "rowan"}
 	pool := clptypes.Pool{

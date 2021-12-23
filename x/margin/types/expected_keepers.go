@@ -42,6 +42,12 @@ type Keeper interface {
 	DestroyMTP(sdk.Context, string, string, string) error
 
 	GetLeverageParam(sdk.Context) sdk.Uint
+	GetInterestRateMax(sdk.Context) sdk.Dec
+	GetInterestRateMin(ctx sdk.Context) sdk.Dec
+	GetInterestRateIncrease(ctx sdk.Context) sdk.Dec
+	GetInterestRateDecrease(ctx sdk.Context) sdk.Dec
+	GetHealthGainFactor(ctx sdk.Context) sdk.Dec
+	GetEpochLength(ctx sdk.Context) int64
 
 	CustodySwap(ctx sdk.Context, pool clptypes.Pool, to string, sentAmount sdk.Uint) (sdk.Uint, error)
 	Borrow(ctx sdk.Context, collateralAsset string, collateralAmount sdk.Uint, borrowAmount sdk.Uint, mtp MTP, pool clptypes.Pool, leverage sdk.Uint) error
