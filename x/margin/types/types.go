@@ -1,6 +1,7 @@
 package types
 
 import (
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
 
@@ -17,8 +18,18 @@ const (
 	RouterKey = ModuleName
 )
 
-func NewMTP() MTP {
-	return MTP{}
+func NewMTP(signer string, collateralAsset string, collateralAmount sdk.Uint, borrowAsset string) MTP {
+	return MTP{
+		Address:          signer,
+		CollateralAsset:  collateralAsset,
+		CollateralAmount: collateralAmount,
+		LiabilitiesP:     sdk.Uint{},
+		LiabilitiesI:     sdk.Uint{},
+		CustodyAsset:     borrowAsset,
+		CustodyAmount:    sdk.Uint{},
+		Leverage:         sdk.Uint{},
+		MtpHealth:        sdk.Dec{},
+	}
 }
 
 func (mtp MTP) Validate() error {

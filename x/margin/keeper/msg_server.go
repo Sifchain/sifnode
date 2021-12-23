@@ -29,11 +29,7 @@ func (k msgServer) OpenLong(goCtx context.Context, msg *types.MsgOpenLong) (*typ
 
 	collateralAmount := msg.CollateralAmount
 
-	mtp := types.MTP{
-		Address:          msg.Signer,
-		CollateralAsset:  msg.CollateralAsset,
-		CollateralAmount: msg.CollateralAmount,
-	}
+	mtp := types.NewMTP(msg.Signer, msg.CollateralAsset, msg.CollateralAmount, msg.BorrowAsset)
 
 	var err error
 	var pool clptypes.Pool
